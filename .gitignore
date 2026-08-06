@@ -1,0 +1,18 @@
+# Залежності та збірки
+node_modules/
+dist/
+.wrangler/
+
+# Секрети — НІКОЛИ в репозиторій
+.dev.vars
+.dev.vars.*
+
+# Редактори / ОС
+.vscode/
+.idea/
+.DS_Store
+
+# Старе і службове — не для репозиторію
+snapshots/
+
+*.tsbuildinfo

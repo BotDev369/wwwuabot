@@ -1,0 +1,51 @@
+name = "wwwuabot"
+main = "src/index.ts"
+compatibility_date = "2026-06-16"
+
+# Production середовище
+[env.production]
+name = "wwwuabot-prod"
+
+[env.production.vars]
+ENVIRONMENT = "prod"
+CLOUDINARY_CLOUD_NAME = "ddoumoe5n"
+
+[[env.production.d1_databases]]
+binding = "DB"
+database_name = "wwwuabot-db-prod"
+database_id = "6e690692-7671-4598-826c-c2db591399a2"
+
+[[env.production.queues.producers]]
+binding = "LOG_QUEUE"
+queue = "wwwuabot-logs"
+
+[[env.production.queues.consumers]]
+queue = "wwwuabot-logs"
+max_batch_size = 100
+max_batch_timeout = 30
+
+# Development середовище
+[env.dev]
+name = "wwwuabot-dev"
+
+[env.dev.vars]
+ENVIRONMENT = "dev"
+CLOUDINARY_CLOUD_NAME = "ddoumoe5n"
+
+[[env.dev.d1_databases]]
+binding = "DB"
+database_name = "wwwuabot-db-dev"
+database_id = "9fc03f61-d497-4d92-bae4-c92b02c2d1c5"
+
+[[env.dev.queues.producers]]
+binding = "LOG_QUEUE"
+queue = "wwwuabot-logs"
+
+[[env.dev.queues.consumers]]
+queue = "wwwuabot-logs"
+max_batch_size = 100
+max_batch_timeout = 30
+
+[observability.logs]
+enabled = true
+invocation_logs = false

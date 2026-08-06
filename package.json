@@ -1,0 +1,30 @@
+{
+  "name": "wwwuabot",
+  "version": "1.0.0",
+  "description": "Professional Telegram Bot on Cloudflare Workers",
+  "main": "src/index.ts",
+  "scripts": {
+    "dev": "wrangler dev",
+    "deploy:dev": "wrangler deploy --env dev",
+    "deploy:prod": "wrangler deploy --env production",
+    "tail:dev": "wrangler tail --env dev",
+    "tail:prod": "wrangler tail --env production"
+  },
+  "keywords": [
+    "telegram",
+    "bot",
+    "cloudflare",
+    "workers"
+  ],
+  "author": "",
+  "license": "ISC",
+  "type": "module",
+  "dependencies": {
+    "grammy": "^1.45.1"
+  },
+  "devDependencies": {
+    "@cloudflare/workers-types": "^5.20260714.1",
+    "typescript": "^6.0.3",
+    "wrangler": "^4.110.0"
+  }
+}

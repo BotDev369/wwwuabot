@@ -1,0 +1,21 @@
+import { createBrowserRouter } from "react-router-dom";
+import { AppShell } from "../layout/AppShell";
+import { HomePage } from "../pages/home/HomePage";
+import { EditorPage } from "../pages/editor/EditorPage";
+import { ScenariosPage } from "../pages/scenarios/ScenariosPage";
+import { ScenarioPreviewPage } from "../pages/scenarios/ScenarioPreviewPage";
+import { ScenarioFormPage } from "../pages/scenarios/ScenarioFormPage";
+
+export const router = createBrowserRouter([
+  {
+    element: <AppShell />,
+    children: [
+      { index: true, element: <HomePage /> },
+      { path: "editor", element: <EditorPage /> },
+      { path: "scenarios", element: <ScenariosPage /> },
+      { path: "scenarios/new", element: <ScenarioFormPage /> },
+      { path: "scenarios/:codeword", element: <ScenarioPreviewPage /> },
+      { path: "scenarios/:codeword/edit", element: <ScenarioFormPage /> },
+    ],
+  },
+]);

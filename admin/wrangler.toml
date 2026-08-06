@@ -1,0 +1,12 @@
+name = "wwwuabot-web-admin"
+main = "src/worker.ts"
+compatibility_date = "2026-07-18"
+
+[assets]
+directory = "./dist/client"
+binding = "ASSETS"
+
+[[d1_databases]]
+binding = "DB"
+database_name = "wwwuabot-db-dev"
+database_id = "9fc03f61-d497-4d92-bae4-c92b02c2d1c5"
