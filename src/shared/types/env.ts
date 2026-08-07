@@ -13,6 +13,7 @@ export interface Env {
 
 export interface ScreenState {
     codeword: string;
+    title?: string | null;
     photo_url: string;
     caption: {
         top?: string;
@@ -32,6 +33,7 @@ export type AppContext = Context & {
     env: Env;
     user?: Record<string, any>;
     userDirty?: boolean;
+    menuDirty?: boolean;
     screen?: ScreenState;
     liveMessageSent?: boolean;
     pickTarget?: string;

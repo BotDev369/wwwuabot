@@ -39,6 +39,7 @@ export class ScenarioRepository extends DatabaseRepository {
 
     return {
       codeword: row.codeword,
+      title: row.title ?? null,
       photo_url: row.photo_url,
       caption_top: row.caption_top,
       caption_mid: row.caption_mid,

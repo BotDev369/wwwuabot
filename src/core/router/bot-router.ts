@@ -127,6 +127,7 @@ export async function botRouter(ctx: AppContext): Promise<void> {
   // 7. Передаємо сценарій у ctx.screen
   ctx.screen = {
     codeword: scenario.codeword,
+    title: scenario.title,
     photo_url: scenario.photo_url,
     caption: {
       top: scenario.caption_top ?? undefined,

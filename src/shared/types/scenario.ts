@@ -1,5 +1,6 @@
 export interface ScenarioRow {
   codeword: string;
+  title: string | null;
   photo_url: string;
   caption_top: string | null;
   caption_mid: string | null;
@@ -27,6 +28,7 @@ export interface ScenarioButton {
 
 export interface Scenario {
   codeword: string;
+  title: string | null;
   photo_url: string;
   caption_top: string | null;
   caption_mid: string | null;
