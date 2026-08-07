@@ -104,8 +104,10 @@ export async function sendOrEditLiveMessage(ctx: AppContext): Promise<boolean> {
         const errMsg = getErrorMessage(err);
         if (isMessageNotModified(err)) {
           log("SCREEN:rich", "edit skipped — content identical", { message_id: messageId });
-          ctx.liveMessageSent = true;
-          return true;
+          ctx.user!.message_id = null;
+          ctx.userDirty = true;
+          messageId = null;
+          // провалюємось до sendRichMessage
         }
         if (isMessageNotFound(err)) {
           log("SCREEN:rich", "edit failed — message gone, will send new", { reason: errMsg });
@@ -114,6 +116,8 @@ export async function sendOrEditLiveMessage(ctx: AppContext): Promise<boolean> {
           messageId = null;
         } else {
           log("SCREEN:rich", "edit failed — falling back to send", { reason: errMsg });
+          ctx.user!.message_id = null;
+          ctx.userDirty = true;
           messageId = null;
         }
       }
@@ -179,8 +183,10 @@ export async function sendOrEditLiveMessage(ctx: AppContext): Promise<boolean> {
       const errMsg = getErrorMessage(err);
       if (isMessageNotModified(err)) {
         log("SCREEN", "edit skipped — content identical", { message_id: messageId });
-        ctx.liveMessageSent = true;
-        return true;
+        ctx.user!.message_id = null;
+        ctx.userDirty = true;
+        messageId = null;
+        // провалюємось до sendPhoto
       }
       if (isMessageNotFound(err)) {
         log("SCREEN", "edit failed — message deleted, will send new", { reason: errMsg });
@@ -190,7 +196,10 @@ export async function sendOrEditLiveMessage(ctx: AppContext): Promise<boolean> {
       } else {
         log("SCREEN", "edit failed — unhandled error", { reason: errMsg });
         console.error(`[Screen] Unhandled edit error: ${errMsg}`);
-        return false;
+        ctx.user!.message_id = null;
+        ctx.userDirty = true;
+        messageId = null;
+        // провалюємось до sendPhoto
       }
     }
   }
