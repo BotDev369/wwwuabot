@@ -2,6 +2,15 @@ import type { AppContext } from "../../shared/types/env";
 import { log } from "../../shared/utils/debug";
 
 /**
+ * Перевіряє, чи є текст командою /restart.
+ * Ігнорує аргументи та bot username (@botname).
+ */
+export function isRestartCommand(text: string): boolean {
+  const command = text.split(" ")[0].split("@")[0];
+  return command === "/restart";
+}
+
+/**
  * Обробляє Telegram-команди (наразі тільки /start).
  * 
  * @param ctx - Контекст бота

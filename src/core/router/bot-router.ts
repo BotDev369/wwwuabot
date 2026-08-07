@@ -1,6 +1,8 @@
 import type { AppContext } from "../../shared/types/env";
 import { ScenarioRepository } from "../../repositories/scenario.repository";
 import { log } from "../../shared/utils/debug";
+import { handleRestart } from "./restart";
+import { isRestartCommand } from "./command";
 import { handleCommand } from "./command";
 import { handleCallback } from "./callback";
 import { handleTextInput } from "./text-input";
@@ -22,10 +24,16 @@ export async function botRouter(ctx: AppContext): Promise<void> {
     return;
   }
 
+  // 1. Обробка сервісної команди /restart (пріоритет)
+  if (isCommand && isRestartCommand(text!)) {
+    await handleRestart(ctx);
+    return;
+  }
+
   let codeword: string = ctx.user.active_scenario || "main";
   let actionData: string | null = null; // ← ЗМІНА: Зберігаємо дані дії, але не виконуємо її ще
 
-  // 1. Callback-кнопка
+  // 2. Callback-кнопка
   if (isCallback) {
     const data = ctx.callbackQuery!.data;
 
@@ -46,7 +54,7 @@ export async function botRouter(ctx: AppContext): Promise<void> {
     }
   }
 
-  // 2. Команда /start
+  // 3. Команда /start
   if (isCommand) {
     const commandCodeword = handleCommand(ctx, text!);
     if (commandCodeword) {
