@@ -104,9 +104,8 @@ export async function sendOrEditLiveMessage(ctx: AppContext): Promise<boolean> {
       } catch (err) {
         const errMsg = getErrorMessage(err);
         if (isMessageNotModified(err)) {
-          log("SCREEN:rich", "edit skipped — content identical", { message_id: messageId });
-          ctx.liveMessageSent = true;
-          return true;
+          log("SCREEN:rich", "edit skipped — content identical, will resend", { message_id: messageId });
+          messageId = null;
         }
         if (isMessageNotFound(err)) {
           log("SCREEN:rich", "edit failed — message gone, will send new", { reason: errMsg });
@@ -177,9 +176,8 @@ export async function sendOrEditLiveMessage(ctx: AppContext): Promise<boolean> {
     } catch (err) {
       const errMsg = getErrorMessage(err);
       if (isMessageNotModified(err)) {
-        log("SCREEN", "edit skipped — content identical", { message_id: messageId });
-        ctx.liveMessageSent = true;
-        return true;
+        log("SCREEN", "edit skipped — content identical, will resend", { message_id: messageId });
+        messageId = null;
       }
       if (isMessageNotFound(err)) {
         log("SCREEN", "edit failed — message deleted, will send new", { reason: errMsg });
