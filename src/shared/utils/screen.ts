@@ -50,6 +50,7 @@ export async function sendOrEditLiveMessage(ctx: AppContext): Promise<boolean> {
   const keyboard = ctx.pickTarget ? buildPickKeyboard(ctx) : originalButtons;
 
   let messageId = ctx.user?.message_id as number | null | undefined;
+  const oldLiveId = typeof messageId === "number" ? messageId : null;
 
   log("SCREEN", "rendering", { codeword, chat_id: chatId, existing_message_id: messageId ?? null, is_pick: !!ctx.pickTarget });
 
@@ -104,20 +105,14 @@ export async function sendOrEditLiveMessage(ctx: AppContext): Promise<boolean> {
         const errMsg = getErrorMessage(err);
         if (isMessageNotModified(err)) {
           log("SCREEN:rich", "edit skipped — content identical", { message_id: messageId });
-          ctx.user!.message_id = null;
-          ctx.userDirty = true;
-          messageId = null;
-          // провалюємось до sendRichMessage
+          ctx.liveMessageSent = true;
+          return true;
         }
         if (isMessageNotFound(err)) {
           log("SCREEN:rich", "edit failed — message gone, will send new", { reason: errMsg });
-          ctx.user!.message_id = null;
-          ctx.userDirty = true;
           messageId = null;
         } else {
           log("SCREEN:rich", "edit failed — falling back to send", { reason: errMsg });
-          ctx.user!.message_id = null;
-          ctx.userDirty = true;
           messageId = null;
         }
       }
@@ -183,23 +178,16 @@ export async function sendOrEditLiveMessage(ctx: AppContext): Promise<boolean> {
       const errMsg = getErrorMessage(err);
       if (isMessageNotModified(err)) {
         log("SCREEN", "edit skipped — content identical", { message_id: messageId });
-        ctx.user!.message_id = null;
-        ctx.userDirty = true;
-        messageId = null;
-        // провалюємось до sendPhoto
+        ctx.liveMessageSent = true;
+        return true;
       }
       if (isMessageNotFound(err)) {
         log("SCREEN", "edit failed — message deleted, will send new", { reason: errMsg });
-        ctx.user!.message_id = null;
-        ctx.userDirty = true;
         messageId = null;
       } else {
         log("SCREEN", "edit failed — unhandled error", { reason: errMsg });
         console.error(`[Screen] Unhandled edit error: ${errMsg}`);
-        ctx.user!.message_id = null;
-        ctx.userDirty = true;
         messageId = null;
-        // провалюємось до sendPhoto
       }
     }
   }
@@ -212,6 +200,17 @@ export async function sendOrEditLiveMessage(ctx: AppContext): Promise<boolean> {
       parse_mode: "HTML",
     });
     log("SCREEN", "send success", { new_message_id: sent.message_id });
+    if (oldLiveId && oldLiveId !== sent.message_id) {
+      try {
+        await (ctx.api as any).raw.deleteMessages({
+          chat_id: chatId,
+          message_ids: [oldLiveId],
+        });
+        log("SCREEN", "deleted old live message", { id: oldLiveId });
+      } catch (err) {
+        log("SCREEN", "failed to delete old live message (non-critical)", { error: getErrorMessage(err), id: oldLiveId });
+      }
+    }
     ctx.user!.message_id = sent.message_id;
     ctx.userDirty = true;
     ctx.liveMessageSent = true;
