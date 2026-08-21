@@ -1,0 +1,9 @@
+name = "wwwuabot-web"
+main = "src/worker.ts"
+compatibility_date = "2026-08-21"
+
+[env.dev]
+name = "wwwuabot-web-dev"
+
+[env.production]
+name = "wwwuabot-web-prod"
