@@ -1,3 +1,3 @@
 export function AppFooter() {
-  return <footer>AppFooter</footer>;
+  return <footer>© 2026 WWWUABot</footer>;
 }
