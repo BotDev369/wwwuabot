@@ -68,7 +68,7 @@ export function App() {
       <div className="layout">
         <AppSidebar open={sidebarOpen} onClose={() => setSidebarOpen(false)} />
         <div className="content">
-          <AppHeader onMenuClick={() => setSidebarOpen(v => !v)} scenarioName={scenarioName} />
+          <AppHeader onMenuClick={() => setSidebarOpen(v => !v)} />
           <Routes>
             <Route path="/*" element={<DefaultPage />} />
           </Routes>
