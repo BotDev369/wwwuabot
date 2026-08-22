@@ -4,7 +4,6 @@ import { AppHeader } from './components/layout/AppHeader';
 import { AppFooter } from './components/layout/AppFooter';
 import { AppSidebar } from './components/layout/AppSidebar';
 
-//  БЛОК: FALLBACK-ХАРКОД Base 1.0 — каскад G4: якщо API недоступний, сторінка все одно працює.
 const FALLBACK_CONFIG = {
   v: 1,
   meta: { title: 'WWWUABot — Головна' },
@@ -16,9 +15,8 @@ const FALLBACK_CONFIG = {
   },
 };
 
-function DefaultPage() {
+function DefaultPage({ onScenarioName }: { onScenarioName: (name: string | null) => void }) {
   const [config, setConfig] = useState<any>(null);
-  const [scenarioName, setScenarioName] = useState<string | null>(null);
 
   useEffect(() => {
     const slug = window.location.pathname === '/' ? '__base__' : window.location.pathname.slice(1);
@@ -27,13 +25,17 @@ function DefaultPage() {
       .then((data) => {
         if (data?.ok && data?.config?.v === 1) {
           setConfig(data.config);
-          setScenarioName(data.config.scenarioName ?? null);
+          onScenarioName(data.config.scenarioName ?? null);
         } else {
           setConfig(FALLBACK_CONFIG);
+          onScenarioName(null);
         }
       })
-      .catch(() => setConfig(FALLBACK_CONFIG));
-  }, []);
+      .catch(() => {
+        setConfig(FALLBACK_CONFIG);
+        onScenarioName(null);
+      });
+  }, [onScenarioName]);
 
   const cfg = config ?? FALLBACK_CONFIG;
 
@@ -62,15 +64,16 @@ export function App() {
   const [sidebarOpen, setSidebarOpen] = useState(
     () => window.matchMedia('(min-width: 769px)').matches
   );
+  const [scenarioName, setScenarioName] = useState<string | null>(null);
 
   return (
     <BrowserRouter>
       <div className="layout">
         <AppSidebar open={sidebarOpen} onClose={() => setSidebarOpen(false)} />
         <div className="content">
-          <AppHeader onMenuClick={() => setSidebarOpen(v => !v)} />
+          <AppHeader onMenuClick={() => setSidebarOpen(v => !v)} scenarioName={scenarioName} />
           <Routes>
-            <Route path="/*" element={<DefaultPage />} />
+            <Route path="/*" element={<DefaultPage onScenarioName={setScenarioName} />} />
           </Routes>
           <AppFooter />
         </div>
