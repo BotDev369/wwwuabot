@@ -11,5 +11,9 @@ not_found_handling = "single-page-application"
 [env.dev]
 name = "wwwuabot-web-dev"
 
+[[env.dev.services]]
+binding = "API"
+service = "wwwuabot-api-dev"
+
 [env.production]
 name = "wwwuabot-web-prod"
