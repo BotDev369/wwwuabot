@@ -8,6 +8,9 @@ name = "wwwuabot-api-dev"
 binding = "DB"
 database_name = "wwwuabot-db-dev"
 database_id = "9fc03f61-d497-4d92-bae4-c92b02c2d1c5"
+[[env.dev.kv_namespaces]]
+binding = "CONTENT_KV"
+id = "bda7a5fca58b4fbda87d75105d558ebf"
 
 [env.production]
 name = "wwwuabot-api-prod"

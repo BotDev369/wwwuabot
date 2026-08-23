@@ -3,6 +3,7 @@
 
 export interface Env {
   DB: D1Database;
+  CONTENT_KV: KVNamespace;
 }
 
 // 🔶 БЛОК: КОНФІГ __base__ — дефолтна сторінка Base 1.0.
@@ -129,6 +130,18 @@ export default {
         worker: "wwwuabot-api",
         timestamp: new Date().toISOString()
       });
+    }
+
+    // 🔶 БЛОК: MYDATE SYSTEMS — список систем аналізу з KV.
+    if (url.pathname === "/api/mydate/systems") {
+      try {
+        const raw = await env.CONTENT_KV.get("mydate:systems");
+        const systems = raw ? JSON.parse(raw) : [];
+        return json({ ok: true, systems });
+      } catch (e: any) {
+        console.error("KV systems error:", e);
+        return json({ ok: false, error: e?.message ?? "Unknown error" }, 500);
+      }
     }
 
     // Scenario endpoint
