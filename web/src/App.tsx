@@ -21,8 +21,7 @@ function DateInputBlock({ label, buttonLabel, basePath }: { label: string; butto
 
   const handleSubmit = () => {
     if (!value) return;
-    const [yyyy, mm, dd] = value.split('-');
-    window.location.href = `${basePath}/${dd}-${mm}-${yyyy}`;
+    window.location.href = `${basePath}/${value}`;
   };
 
   return (
