@@ -99,7 +99,6 @@ export function App() {
     setScenarioName(name);
     const shouldShowContextual = forceContextual || name === 'MyDate';
     setShowContextualMenu(shouldShowContextual);
-    setContextualSidebarOpen(false);
   };
 
   const contextualMenuItems = [

@@ -24,7 +24,7 @@ export function AppHeader({ onMenuClick, scenarioName, showContextualMenu, onCon
           className="hamburger" 
           onClick={onContextualMenuClick} 
           aria-label="Контекстне меню"
-          style={{ color: '#c0392b', marginLeft: '8px' }}
+          style={{ marginLeft: '8px' }}
         >
           <span></span>
           <span></span>
