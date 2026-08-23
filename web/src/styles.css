@@ -50,3 +50,17 @@ footer{padding:14px 20px;background:#1c1c1c;color:#9a9a9a;font-size:13px;text-al
 .coming-soon{margin-top:14px;font-size:12px;color:#b0b0b0;font-style:italic}
 .card .btn{margin-top:12px;padding:10px 20px;font-size:14px}
 .card .btn:disabled{opacity:0.6;cursor:default}
+
+.sidebar.contextual {
+  left: auto !important;
+  right: 0;
+}
+
+.contextual-menu-item:hover {
+  background-color: #c0392b !important;
+  color: #fff !important;
+}
+
+.contextual-hamburger span {
+  background-color: #c0392b !important;
+}

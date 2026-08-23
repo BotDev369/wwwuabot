@@ -18,12 +18,12 @@ export function ContextualSidebar({ isOpen, onClose, items, title = 'Дії' }: 
   return (
     <>
       <div className="backdrop show" onClick={onClose} style={{ zIndex: 999 }}></div>
-      <aside 
-        className="sidebar" 
-        style={{ 
-          zIndex: 1000, 
-          right: 0, 
-          left: 'auto', 
+      <aside
+        className="sidebar contextual"
+        style={{
+          zIndex: 1000,
+          right: 0,
+          left: 'auto',
           boxShadow: '-2px 0 8px rgba(0,0,0,0.15)',
           transform: 'translateX(0)'
         }}
@@ -49,6 +49,7 @@ export function ContextualSidebar({ isOpen, onClose, items, title = 'Дії' }: 
               key={index}
               href={item.path}
               onClick={onClose}
+              className="contextual-menu-item"
               style={{
                 display: 'block',
                 padding: '12px 16px',
@@ -56,10 +57,16 @@ export function ContextualSidebar({ isOpen, onClose, items, title = 'Дії' }: 
                 color: '#4a4a4a',
                 textDecoration: 'none',
                 borderRadius: '6px',
-                transition: 'background-color 0.2s'
+                transition: 'all 0.2s'
               }}
-              onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = '#f5f5f5')}
-              onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = 'transparent')}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.backgroundColor = '#c0392b';
+                e.currentTarget.style.color = '#fff';
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.backgroundColor = 'transparent';
+                e.currentTarget.style.color = '#4a4a4a';
+              }}
             >
               {item.label}
             </a>

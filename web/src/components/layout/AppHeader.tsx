@@ -14,23 +14,25 @@ export function AppHeader({ onMenuClick, scenarioName, showContextualMenu, onCon
         <span></span>
       </button>
       <span className="brand">WWWUABot</span>
-      {scenarioName && (
-        <span className="header-sub" style={{ color: '#c0392b', fontWeight: 600 }}>
-          {scenarioName}
-        </span>
-      )}
-      {showContextualMenu && (
-        <button 
-          className="hamburger" 
-          onClick={onContextualMenuClick} 
-          aria-label="Контекстне меню"
-          style={{ marginLeft: '8px' }}
-        >
-          <span></span>
-          <span></span>
-          <span></span>
-        </button>
-      )}
+      <div style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: '8px' }}>
+        {scenarioName && (
+          <span className="header-sub" style={{ color: '#c0392b', fontWeight: 600 }}>
+            {scenarioName}
+          </span>
+        )}
+        {showContextualMenu && (
+          <button 
+            className="hamburger contextual-hamburger" 
+            onClick={onContextualMenuClick} 
+            aria-label="Контекстне меню"
+            style={{ color: '#c0392b' }}
+          >
+            <span></span>
+            <span></span>
+            <span></span>
+          </button>
+        )}
+      </div>
     </header>
   );
 }
