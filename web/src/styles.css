@@ -54,6 +54,16 @@ footer{padding:14px 20px;background:#1c1c1c;color:#9a9a9a;font-size:13px;text-al
 .sidebar.contextual {
   left: auto !important;
   right: 0;
+  position: fixed !important;
+  top: 0;
+  bottom: 0;
+  transform: translateX(0) !important;
+}
+
+@media (min-width: 769px) {
+  .sidebar.contextual {
+    margin-left: 0 !important;
+  }
 }
 
 .contextual-menu-item:hover {
