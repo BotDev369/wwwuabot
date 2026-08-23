@@ -3,6 +3,7 @@ import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import { AppHeader } from './components/layout/AppHeader';
 import { AppFooter } from './components/layout/AppFooter';
 import { AppSidebar } from './components/layout/AppSidebar';
+import { ContextualSidebar } from './components/layout/ContextualSidebar';
 import { MydateResultPage } from './pages/MydateResultPage';
 
 const FALLBACK_CONFIG = {
@@ -38,7 +39,7 @@ function DateInputBlock({ label, buttonLabel, basePath }: { label: string; butto
   );
 }
 
-function DefaultPage({ onScenarioName }: { onScenarioName: (name: string | null) => void }) {
+function DefaultPage({ onScenarioName }: { onScenarioName: (name: string | null, forceContextual?: boolean) => void }) {
   const [config, setConfig] = useState<any>(null);
 
   useEffect(() => {
@@ -48,15 +49,15 @@ function DefaultPage({ onScenarioName }: { onScenarioName: (name: string | null)
       .then((data) => {
         if (data?.ok && data?.config?.v === 1) {
           setConfig(data.config);
-          onScenarioName(data.config.scenarioName ?? null);
+          onScenarioName(data.config.scenarioName ?? null, false);
         } else {
           setConfig(FALLBACK_CONFIG);
-          onScenarioName(null);
+          onScenarioName(null, false);
         }
       })
       .catch(() => {
         setConfig(FALLBACK_CONFIG);
-        onScenarioName(null);
+        onScenarioName(null, false);
       });
   }, [onScenarioName]);
 
@@ -91,16 +92,42 @@ export function App() {
     () => window.matchMedia('(min-width: 769px)').matches
   );
   const [scenarioName, setScenarioName] = useState<string | null>(null);
+  const [showContextualMenu, setShowContextualMenu] = useState(false);
+  const [contextualSidebarOpen, setContextualSidebarOpen] = useState(false);
+
+  const handleScenarioName = (name: string | null, forceContextual: boolean = false) => {
+    setScenarioName(name);
+    const shouldShowContextual = forceContextual || name === 'MyDate';
+    setShowContextualMenu(shouldShowContextual);
+    setContextualSidebarOpen(false);
+  };
+
+  const contextualMenuItems = [
+    { label: 'Співставлення дат', path: '/mydate/compare' },
+    { label: 'Збережені аналізи', path: '/mydate/saved' },
+    { label: 'Про системи аналізу', path: '/mydate/about' }
+  ];
 
   return (
     <BrowserRouter>
       <div className="layout">
         <AppSidebar open={sidebarOpen} onClose={() => setSidebarOpen(false)} />
+        <ContextualSidebar 
+          isOpen={contextualSidebarOpen} 
+          onClose={() => setContextualSidebarOpen(false)} 
+          items={contextualMenuItems}
+          title={scenarioName || 'Дії'}
+        />
         <div className="content">
-          <AppHeader onMenuClick={() => setSidebarOpen(v => !v)} scenarioName={scenarioName} />
+          <AppHeader 
+            onMenuClick={() => setSidebarOpen(v => !v)} 
+            scenarioName={scenarioName}
+            showContextualMenu={showContextualMenu}
+            onContextualMenuClick={() => setContextualSidebarOpen(v => !v)}
+          />
           <Routes>
-            <Route path="/mydate/:date" element={<MydateResultPage onScenarioName={setScenarioName} />} />
-            <Route path="/*" element={<DefaultPage onScenarioName={setScenarioName} />} />
+            <Route path="/mydate/:date" element={<MydateResultPage onScenarioName={(name) => handleScenarioName(name, true)} />} />
+            <Route path="/*" element={<DefaultPage onScenarioName={handleScenarioName} />} />
           </Routes>
           <AppFooter />
         </div>
