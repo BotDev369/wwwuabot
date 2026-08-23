@@ -16,7 +16,7 @@ export function AppHeader({ onMenuClick, scenarioName, showContextualMenu, onCon
       <span className="brand">WWWUABot</span>
       <div style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: '8px' }}>
         {scenarioName && (
-          <span className="header-sub" style={{ color: '#c0392b', fontWeight: 600 }}>
+          <span className="header-sub" style={{ color: '#c0392b', fontWeight: 600, fontSize: '16px' }}>
             {scenarioName}
           </span>
         )}
