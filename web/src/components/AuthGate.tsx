@@ -2,16 +2,22 @@ import { useEffect, useState, type ReactNode } from 'react';
 
 const TELEGRAM_BOT = 'botdev_test_001_bot';
 
+/**
+ * Отримує user_id з Telegram WebApp.
+ * initData доступний завжди (навіть з inline keyboard web_app кнопок).
+ * initDataUnsafe.user НЕ доступний з inline keyboard — тільки з reply keyboard.
+ */
 function getTelegramUserId(): number | null {
   const tg = (window as any).Telegram?.WebApp;
   if (!tg) return null;
 
-  // Спосіб 1: initDataUnsafe (працює з reply keyboard web_app кнопок)
+  // Спосіб 1: initDataUnsafe (reply keyboard)
   if (tg.initDataUnsafe?.user?.id) {
     return tg.initDataUnsafe.user.id;
   }
 
-  // Спосіб 2: парсимо initData string
+  // Спосіб 2: парсимо initData (доступний завжди навіть з inline keyboard)
+  // Формат: user=%7B%22id%22%3A123456%7D&chat_instance=...&hash=...
   if (tg.initData) {
     try {
       const params = new URLSearchParams(tg.initData);
@@ -37,18 +43,24 @@ export function AuthGate({ children }: AuthGateProps) {
     let cancelled = false;
 
     async function check() {
-      // Викликаємо ready() — обов'язково для ініціалізації SDK
+      // Викликаємо ready()
       const tg = (window as any).Telegram?.WebApp;
       if (tg) {
         try { tg.ready(); } catch {}
       }
 
-      // Чекаємо SDK (до 3 сек)
-      let userId: number | null = null;
-      for (let i = 0; i < 15; i++) {
-        await new Promise(r => setTimeout(r, 200));
-        userId = getTelegramUserId();
-        if (userId) break;
+      // Даємо SDK час ініціалізуватися
+      await new Promise(r => setTimeout(r, 500));
+
+      let userId = getTelegramUserId();
+
+      // Retry до 3 сек
+      if (!userId) {
+        for (let i = 0; i < 12; i++) {
+          await new Promise(r => setTimeout(r, 200));
+          userId = getTelegramUserId();
+          if (userId) break;
+        }
       }
 
       if (cancelled) return;
@@ -72,7 +84,6 @@ export function AuthGate({ children }: AuthGateProps) {
     return () => { cancelled = true; };
   }, []);
 
-  // Завантаження
   if (authorized === null) {
     return (
       <main>
@@ -83,7 +94,6 @@ export function AuthGate({ children }: AuthGateProps) {
     );
   }
 
-  // Не авторизований
   if (!authorized) {
     const currentPath = window.location.pathname;
     const slug = currentPath === '/' ? 'main' : currentPath.replace(/^\//, '');
@@ -94,35 +104,19 @@ export function AuthGate({ children }: AuthGateProps) {
       <main>
         <section className="hero">
           <h1>WWWUABot</h1>
+          <p className="hero-text">
+            {isTelegram
+              ? 'Авторизацію не вдалося визначити. Оновіть сторінку.'
+              : 'Відкрийте веб-платформу через Telegram бот.'}
+          </p>
           {isTelegram ? (
-            // Відкрито в Telegram, але SDK не повернув user_id
-            // Можливо inline keyboard кнопка — потрібен restart
-            <>
-              <p className="hero-text">
-                Авторизацію не вдалося визначити. Спробуйте оновити сторінку.
-              </p>
-              <button
-                className="btn btn-telegram"
-                onClick={() => window.location.reload()}
-              >
-                🔄 Оновити
-              </button>
-            </>
+            <button className="btn btn-telegram" onClick={() => window.location.reload()}>
+              🔄 Оновити
+            </button>
           ) : (
-            // Відкрито в браузері — направляємо в Telegram
-            <>
-              <p className="hero-text">
-                Відкрийте веб-платформу через Telegram бот.
-              </p>
-              <a
-                className="btn btn-telegram"
-                href={botLink}
-                target="_blank"
-                rel="noopener noreferrer"
-              >
-                ✈ Відкрити в Telegram
-              </a>
-            </>
+            <a className="btn btn-telegram" href={botLink} target="_blank" rel="noopener noreferrer">
+              ✈ Відкрити в Telegram
+            </a>
           )}
         </section>
       </main>
