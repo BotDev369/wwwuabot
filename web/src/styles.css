@@ -128,8 +128,53 @@ footer{padding:14px 20px;background:#1c1c1c;color:#9a9a9a;font-size:13px;text-al
 .my-date-notes{font-size:14px;color:#4a4a4a;line-height:1.4;margin:4px 0 8px}
 .my-date-card-actions{display:flex;align-items:center;gap:8px;margin-top:8px}
 .btn-sm{padding:8px 16px;font-size:13px;margin-top:0}
+.btn-secondary{background:#f0f0f0;color:#111;border:1px solid #ccc}
+.btn-secondary:hover{background:#e0e0e0}
 .btn-analyze{background:var(--brand-red)}
 .btn-analyze:hover{background:#a93226}
+.btn-compare{background:#2c3e50;color:#fff}
+.btn-compare:hover{background:#1a252f}
+
+/* ═══════════════════════════════════════════════════
+   СОРТУВАННЯ ТА ФІЛЬТРУВАННЯ — ТУЛБАР
+   ═══════════════════════════════════════════════════ */
+.my-dates-toolbar{display:flex;flex-wrap:wrap;gap:12px;align-items:center;margin:16px 0;padding:12px 16px;background:#f7f7f7;border:1px solid #e5e5e5;border-radius:10px}
+.toolbar-group{display:flex;align-items:center;gap:8px}
+.toolbar-label{font-size:13px;font-weight:600;color:#4a4a4a;white-space:nowrap}
+.sort-controls{display:flex;align-items:center;gap:6px}
+.sort-select,.filter-field-select{padding:8px 12px;font-size:13px;border-radius:6px;border:1px solid #ccc;background:#fff;color:#111;cursor:pointer}
+.sort-select:focus,.filter-field-select:focus{outline:none;border-color:#999}
+.sort-order-btn{padding:8px 12px;font-size:13px;font-weight:600;border-radius:6px;border:1px solid #ccc;background:#fff;color:#111;cursor:pointer;transition:background .15s ease}
+.sort-order-btn:hover{background:#f0f0f0}
+.toolbar-btn{padding:8px 14px;font-size:13px;font-weight:600;border-radius:6px;border:1px solid #ccc;background:#fff;color:#111;cursor:pointer;transition:background .15s ease}
+.toolbar-btn:hover{background:#f0f0f0}
+.toolbar-btn.active{background:var(--black);color:#fff;border-color:var(--black)}
+.filter-controls{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.filter-value-input{padding:8px 12px;font-size:13px;border-radius:6px;border:1px solid #ccc;width:180px}
+.filter-value-input:focus{outline:none;border-color:#999}
+.btn-clear-filter{padding:6px 12px;font-size:12px;background:#fbeae9;color:var(--brand-red);border:1px solid #e5c4c0}
+.btn-clear-filter:hover{background:#f5d0cd}
+
+/* ═══════════════════════════════════════════════════
+   ВИПАДАЮЧЕ МЕНЮ (DROPDOWN)
+   ═══════════════════════════════════════════════════ */
+.dropdown{position:relative;display:inline-block}
+.dropdown-toggle{font-size:18px;font-weight:700;letter-spacing:2px}
+.dropdown-menu{display:none;position:absolute;right:0;top:calc(100% + 4px);min-width:160px;background:#fff;border:1px solid #e5e5e5;border-radius:8px;box-shadow:0 4px 16px rgba(0,0,0,.1);z-index:10;padding:4px 0}
+.dropdown:hover .dropdown-menu,.dropdown:focus-within .dropdown-menu{display:block}
+.dropdown-item{display:flex;align-items:center;gap:8px;width:100%;padding:10px 14px;font-size:14px;color:#111;background:none;border:none;cursor:pointer;text-align:left;transition:background .1s ease}
+.dropdown-item:hover{background:#f5f5f5}
+.dropdown-item.danger{color:var(--brand-red)}
+.dropdown-item.danger:hover{background:#fbeae9}
+
+/* ═══════════════════════════════════════════════════
+   МОДАЛЬНЕ ВІКНО (EDIT MODAL)
+   ═══════════════════════════════════════════════════ */
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.45);display:flex;align-items:center;justify-content:center;z-index:100;padding:20px}
+.modal{background:#fff;border-radius:12px;padding:24px;max-width:480px;width:100%;max-height:90vh;overflow-y:auto;box-shadow:0 8px 32px rgba(0,0,0,.2)}
+.modal h3{margin:0 0 16px;font-size:18px;font-weight:700;color:#111}
+.modal-actions{display:flex;justify-content:flex-end;gap:10px;margin-top:20px}
+.modal-actions .btn{margin-top:0;padding:10px 20px;font-size:14px}
 
 /* MyDate — таблиця співставлення */
 .table-wrap{border:1px solid #e5e5e5;border-radius:8px;margin-top:16px;text-align:left;overflow:visible}
@@ -214,6 +259,20 @@ footer{padding:14px 20px;background:#1c1c1c;color:#9a9a9a;font-size:13px;text-al
   .my-date-card-actions{flex-wrap:wrap}
   .btn-sm{width:100%;text-align:center}
   .my-date-card-actions .icon-btn{flex-shrink:0}
+
+  /* Toolbar → stack vertically */
+  .my-dates-toolbar{flex-direction:column;align-items:stretch;gap:10px;padding:12px}
+  .toolbar-group{flex-wrap:wrap}
+  .sort-controls{flex-wrap:wrap}
+  .filter-controls{flex-direction:column;align-items:stretch}
+  .filter-value-input{width:100%}
+  .sort-select,.filter-field-select{flex:1;min-width:0}
+
+  /* Modal → full width */
+  .modal-overlay{padding:12px}
+  .modal{padding:18px}
+  .modal-actions{flex-direction:column}
+  .modal-actions .btn{width:100%;text-align:center}
 }
 
 /* Very small screens (< 360px) */
