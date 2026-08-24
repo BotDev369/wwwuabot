@@ -29,7 +29,7 @@ export async function handleRequest(request: Request, env: Env, ctx: ExecutionCo
     return handleDbProxy(request, env);
   }
 
-  if (url.pathname === "/my-dates") {
+  if (url.pathname === "/my-dates" || url.pathname === "/api/my-dates") {
     return handleMyDates(request, env);
   }
 
