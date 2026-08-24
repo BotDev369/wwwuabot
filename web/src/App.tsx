@@ -5,6 +5,7 @@ import { AppFooter } from './components/layout/AppFooter';
 import { AppSidebar } from './components/layout/AppSidebar';
 import { ContextualSidebar } from './components/layout/ContextualSidebar';
 import { MydatePage } from './pages/MydateResultPage';
+import { MyDatesPage } from './pages/MyDatesPage';
 import { CompareSetupPage } from './pages/CompareSetupPage';
 import { CompareSystemsPage } from './pages/CompareSystemsPage';
 
@@ -106,8 +107,8 @@ export function App() {
   };
 
   const contextualMenuItems = [
+    { label: 'Мої дати', path: '/mydate/my-dates' },
     { label: 'Співставлення дат', path: '/mydate/compare' },
-    { label: 'Збережені аналізи', path: '/mydate/saved' },
     { label: 'Про системи аналізу', path: '/mydate/about' }
   ];
 
@@ -130,6 +131,7 @@ export function App() {
           <Routes>
             <Route path="/mydate/compare/systems" element={<CompareSystemsPage onScenarioName={(name) => handleScenarioName(name, true)} />} />
             <Route path="/mydate/compare" element={<CompareSetupPage onScenarioName={(name) => handleScenarioName(name, true)} />} />
+            <Route path="/mydate/my-dates" element={<MyDatesPage onScenarioName={(name) => handleScenarioName(name, true)} />} />
             <Route path="/mydate/:date" element={<MydatePage onScenarioName={(name) => handleScenarioName(name, true)} />} />
             <Route path="/*" element={<DefaultPage onScenarioName={handleScenarioName} />} />
           </Routes>

@@ -105,6 +105,32 @@ footer{padding:14px 20px;background:#1c1c1c;color:#9a9a9a;font-size:13px;text-al
 .sys-param{display:flex;align-items:center;gap:8px;font-size:14px;color:#4a4a4a;cursor:pointer}
 .sys-param input{width:16px;height:16px;cursor:pointer}
 
+/* ═══════════════════════════════════════════════════
+   МОЇ ДАТИ — ФОРМА ТА СПИСОК
+   ═══════════════════════════════════════════════════ */
+.my-dates-form{background:#f7f7f7;border:1px solid #e5e5e5;border-radius:10px;padding:20px;margin:24px 0 20px;text-align:left}
+.form-title{font-size:16px;font-weight:700;color:#111;margin:0 0 14px}
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px}
+.form-field{display:flex;flex-direction:column;gap:4px}
+.form-field.full-width{grid-column:1 / -1}
+.form-label{font-size:13px;font-weight:600;color:#4a4a4a}
+.text-input{padding:10px 14px;font-size:15px;border-radius:6px;border:1px solid #ccc;width:100%}
+.text-input:focus{outline:none;border-color:#999}
+.textarea{resize:vertical;min-height:48px}
+
+.my-dates-list{margin-top:20px;display:flex;flex-direction:column;gap:10px}
+.my-date-card{background:#fff;border:1px solid #e5e5e5;border-radius:10px;padding:16px;text-align:left;transition:border-color .15s ease}
+.my-date-card:hover{border-color:#ccc}
+.my-date-card-header{display:flex;align-items:center;gap:10px;margin-bottom:6px;flex-wrap:wrap}
+.my-date-value{font-size:18px;font-weight:800;color:#111}
+.my-date-alias{font-size:14px;color:#4a4a4a;background:#f0f0f0;padding:2px 8px;border-radius:4px}
+.my-date-category{display:inline-block;font-size:12px;font-weight:600;color:var(--brand-red);background:#fbeae9;padding:2px 8px;border-radius:4px;margin-bottom:6px}
+.my-date-notes{font-size:14px;color:#4a4a4a;line-height:1.4;margin:4px 0 8px}
+.my-date-card-actions{display:flex;align-items:center;gap:8px;margin-top:8px}
+.btn-sm{padding:8px 16px;font-size:13px;margin-top:0}
+.btn-analyze{background:var(--brand-red)}
+.btn-analyze:hover{background:#a93226}
+
 /* MyDate — таблиця співставлення */
 .table-wrap{border:1px solid #e5e5e5;border-radius:8px;margin-top:16px;text-align:left;overflow:visible}
 .compare-table{border-collapse:separate;border-spacing:0;width:max-content;min-width:100%;font-size:14px}
@@ -174,6 +200,16 @@ footer{padding:14px 20px;background:#1c1c1c;color:#9a9a9a;font-size:13px;text-al
 
   /* Footer */
   footer{padding:16px 12px;font-size:12px}
+}
+
+/* My Dates — mobile */
+@media (max-width:768px){
+  .form-grid{grid-template-columns:1fr}
+  .my-dates-form{padding:16px}
+  .my-date-card-header{flex-direction:column;align-items:flex-start;gap:4px}
+  .my-date-card-actions{flex-wrap:wrap}
+  .btn-sm{width:100%;text-align:center}
+  .my-date-card-actions .icon-btn{flex-shrink:0}
 }
 
 /* Very small screens (< 360px) */

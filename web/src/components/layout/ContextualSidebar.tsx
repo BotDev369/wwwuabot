@@ -1,3 +1,5 @@
+import { Link } from 'react-router-dom';
+
 interface ContextualMenuItem {
   label: string;
   path: string;
@@ -24,11 +26,11 @@ export function ContextualSidebar({ isOpen, onClose, items }: ContextualSidebarP
           </button>
         </div>
         <nav>
-          <a href="/wwwuabot/mydate" className="active" onClick={onClose}>Головна</a>
+          <Link to="/mydate" onClick={onClose}>Головна</Link>
           {items.map((item) => (
-            <a key={item.path} href={item.path} onClick={onClose}>
+            <Link key={item.path} to={item.path} onClick={onClose}>
               {item.label}
-            </a>
+            </Link>
           ))}
         </nav>
       </aside>

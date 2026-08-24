@@ -2,6 +2,7 @@ import { handleStatus } from "./controllers/status.controller";
 import { handleSetupWebhook, handleWebhookInfo } from "./controllers/webhook.controller";
 import { handleTelegramWebhook } from "./controllers/telegram.controller";
 import { handleDbProxy } from "./controllers/db-proxy.controller";
+import { handleMyDates } from "./controllers/my-dates.controller";
 import type { Env } from "../shared/types/env";
 
 export async function handleRequest(request: Request, env: Env, ctx: ExecutionContext): Promise<Response> {
@@ -25,6 +26,10 @@ export async function handleRequest(request: Request, env: Env, ctx: ExecutionCo
 
   if (request.method === "POST" && url.pathname === "/db-proxy") {
     return handleDbProxy(request, env);
+  }
+
+  if (url.pathname === "/my-dates") {
+    return handleMyDates(request, env);
   }
 
   return new Response("Not Found", { status: 404 });
