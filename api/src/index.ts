@@ -431,6 +431,86 @@ async function saveAnalysis(db: D1Database, kv: KVNamespace, date: string, syste
       }
     }
 
+    // 🔶 БЛОК: MY-DATES — CRUD для персональних дат користувача.
+    if (url.pathname === "/api/my-dates") {
+      const userIdStr = request.headers.get("X-Telegram-User-Id");
+      if (!userIdStr) {
+        return json({ ok: false, error: "X-Telegram-User-Id header required" }, 401);
+      }
+      const userId = parseInt(userIdStr, 10);
+      if (isNaN(userId)) {
+        return json({ ok: false, error: "Invalid user_id" }, 401);
+      }
+
+      // Отримуємо або створюємо користувача
+      let user = await env.DB.prepare("SELECT * FROM users WHERE user_id = ?").bind(userId).first();
+      if (!user) {
+        await env.DB.prepare(
+          "INSERT INTO users (user_id, first_name, last_name, username, language) VALUES (?, '...', '...', '...', '...')"
+        ).bind(userId).run();
+        user = await env.DB.prepare("SELECT * FROM users WHERE user_id = ?").bind(userId).first();
+      }
+      if (!user) {
+        return json({ ok: false, error: "Failed to create user" }, 500);
+      }
+
+      // Читаємо my_dates з JSON колонки
+      let dates: any[] = [];
+      try {
+        const raw = (user as any).my_dates;
+        if (raw && typeof raw === "string") {
+          const parsed = JSON.parse(raw);
+          dates = Array.isArray(parsed.items) ? parsed.items : [];
+        } else if (raw && typeof raw === "object" && Array.isArray(raw.items)) {
+          dates = raw.items;
+        }
+      } catch { dates = []; }
+
+      // GET — список дат
+      if (request.method === "GET") {
+        return json({ ok: true, dates });
+      }
+
+      // POST — додати дату
+      if (request.method === "POST") {
+        let body: any;
+        try { body = await request.json(); } catch {
+          return json({ ok: false, error: "Invalid JSON" }, 400);
+        }
+        const { date, alias, category, notes } = body;
+        if (!date) return json({ ok: false, error: "date is required" }, 400);
+
+        const newDate = {
+          id: Date.now().toString(36) + Math.random().toString(36).slice(2, 6),
+          user_id: userId, date,
+          alias: alias || "", category: category || "", notes: notes || "",
+          created_at: new Date().toISOString().replace("T", " ").slice(0, 19),
+        };
+        dates.push(newDate);
+
+        await env.DB.prepare("UPDATE users SET my_dates = ? WHERE user_id = ?")
+          .bind(JSON.stringify({ items: dates }), userId).run();
+
+        return json({ ok: true, id: newDate.id });
+      }
+
+      // DELETE — видалити дату
+      if (request.method === "DELETE") {
+        const id = url.searchParams.get("id");
+        if (!id) return json({ ok: false, error: "id required" }, 400);
+
+        const filtered = dates.filter((d: any) => d.id !== id);
+        if (filtered.length === dates.length) return json({ ok: false, error: "Not found" }, 404);
+
+        await env.DB.prepare("UPDATE users SET my_dates = ? WHERE user_id = ?")
+          .bind(JSON.stringify({ items: filtered }), userId).run();
+
+        return json({ ok: true });
+      }
+
+      return json({ ok: false, error: "Method not allowed" }, 405);
+    }
+
     return new Response("Not Found", { status: 404 });
   }
 };
