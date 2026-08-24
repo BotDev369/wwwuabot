@@ -18,7 +18,7 @@ export function AppHeader({ onMenuClick, scenarioName, showContextualMenu, onCon
         <span className="header-sub scenario">{scenarioName}</span>
       )}
       {showContextualMenu && (
-        <button className="hamburger" onClick={onContextualMenuClick} aria-label="Контекстне меню">
+        <button className="hamburger brand-color" onClick={onContextualMenuClick} aria-label="Контекстне меню">
           <span></span>
           <span></span>
           <span></span>
