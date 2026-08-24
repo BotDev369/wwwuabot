@@ -44,10 +44,38 @@ export function MyDatesPage({ onScenarioName }: { onScenarioName: (name: string 
 
   const [userId, setUserId] = useState<number | null>(null);
 
-  // Перевіряємо авторизацію після монтування (SDK може завантажитись пізніше)
+  // Ініціалізація Telegram WebApp SDK
   useEffect(() => {
     onScenarioName('MyDate');
-    setUserId(readTelegramUserId());
+
+    const tg = (window as any).Telegram?.WebApp;
+    if (tg) {
+      // Викликаємо ready() щоб SDK повідомив про готовність
+      try { tg.ready(); } catch {}
+    }
+
+    // Retry: SDK може завантажитись пізніше (різні браузери/WebView)
+    let attempts = 0;
+    const maxAttempts = 10;
+    const interval = setInterval(() => {
+      attempts++;
+      const id = readTelegramUserId();
+      if (id) {
+        setUserId(id);
+        clearInterval(interval);
+      } else if (attempts >= maxAttempts) {
+        clearInterval(interval);
+      }
+    }, 200);
+
+    // Перша спроба одразу
+    const immediateId = readTelegramUserId();
+    if (immediateId) {
+      setUserId(immediateId);
+      clearInterval(interval);
+    }
+
+    return () => clearInterval(interval);
   }, [onScenarioName]);
 
   const fetchDates = useCallback(async () => {
