@@ -2,7 +2,7 @@ import { useState, useEffect, type ReactNode } from 'react';
 
 const TELEGRAM_BOT = 'botdev_test_001_bot';
 
-function isTelegramWebApp(): boolean {
+function hasTelegramSDK(): boolean {
   return !!(window as any).Telegram?.WebApp;
 }
 
@@ -14,11 +14,27 @@ export function AuthGate({ children }: AuthGateProps) {
   const [inTelegram, setInTelegram] = useState<boolean | null>(null);
 
   useEffect(() => {
-    // Даємо SDK час завантажитись
-    const timer = setTimeout(() => {
-      setInTelegram(isTelegramWebApp());
-    }, 300);
-    return () => clearTimeout(timer);
+    // Спочатку перевіряємо одразу
+    if (hasTelegramSDK()) {
+      setInTelegram(true);
+      return;
+    }
+
+    // SDK може завантажитись пізніше — чекаємо до 5 сек
+    let attempts = 0;
+    const maxAttempts = 25;
+    const interval = setInterval(() => {
+      attempts++;
+      if (hasTelegramSDK()) {
+        setInTelegram(true);
+        clearInterval(interval);
+      } else if (attempts >= maxAttempts) {
+        setInTelegram(false);
+        clearInterval(interval);
+      }
+    }, 200);
+
+    return () => clearInterval(interval);
   }, []);
 
   // Завантаження
@@ -32,7 +48,7 @@ export function AuthGate({ children }: AuthGateProps) {
     );
   }
 
-  // В браузері — направляємо в Telegram
+  // В браузері
   if (!inTelegram) {
     const currentPath = window.location.pathname;
     const slug = currentPath === '/' ? 'main' : currentPath.replace(/^\//, '');
@@ -53,6 +69,6 @@ export function AuthGate({ children }: AuthGateProps) {
     );
   }
 
-  // В Telegram WebApp — авторизовано
+  // В Telegram WebApp
   return <>{children}</>;
 }
