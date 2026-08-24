@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
+import { CompareTablePage } from './CompareTablePage';
 
 interface SystemCard {
   id: string;
@@ -80,6 +81,14 @@ function SystemCardView({
       )}
     </div>
   );
+}
+
+export function MydatePage({ onScenarioName }: { onScenarioName: (name: string | null) => void }) {
+  const { date } = useParams<{ date: string }>();
+  if (date && date.includes('+')) {
+    return <CompareTablePage onScenarioName={onScenarioName} />;
+  }
+  return <MydateResultPage onScenarioName={onScenarioName} />;
 }
 
 export function MydateResultPage({ onScenarioName }: { onScenarioName: (name: string | null) => void }) {

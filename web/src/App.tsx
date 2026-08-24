@@ -4,7 +4,9 @@ import { AppHeader } from './components/layout/AppHeader';
 import { AppFooter } from './components/layout/AppFooter';
 import { AppSidebar } from './components/layout/AppSidebar';
 import { ContextualSidebar } from './components/layout/ContextualSidebar';
-import { MydateResultPage } from './pages/MydateResultPage';
+import { MydatePage } from './pages/MydateResultPage';
+import { CompareSetupPage } from './pages/CompareSetupPage';
+import { CompareSystemsPage } from './pages/CompareSystemsPage';
 
 const FALLBACK_CONFIG = {
   v: 1,
@@ -124,7 +126,9 @@ export function App() {
             onContextualMenuClick={() => setContextualSidebarOpen(v => !v)}
           />
           <Routes>
-            <Route path="/mydate/:date" element={<MydateResultPage onScenarioName={(name) => handleScenarioName(name, true)} />} />
+            <Route path="/mydate/compare/systems" element={<CompareSystemsPage onScenarioName={(name) => handleScenarioName(name, true)} />} />
+            <Route path="/mydate/compare" element={<CompareSetupPage onScenarioName={(name) => handleScenarioName(name, true)} />} />
+            <Route path="/mydate/:date" element={<MydatePage onScenarioName={(name) => handleScenarioName(name, true)} />} />
             <Route path="/*" element={<DefaultPage onScenarioName={handleScenarioName} />} />
           </Routes>
           <AppFooter />

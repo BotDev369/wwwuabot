@@ -30,6 +30,9 @@ dist/
 build/
 target/
 
+# Cloudflare local state
+.wrangler/
+
 # OS generated files
 .DS_Store
 Thumbs.db

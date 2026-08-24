@@ -223,6 +223,51 @@ const SYSTEM_CALCULATORS: Record<string, (date: string) => any> = {
   }
 };
 
+// 🔶 БЛОК: МИДЕЙТ СИСТЕМИ — дефолтний реєстр з параметрами.
+// KV `mydate:systems` має пріоритет (поля перевизначаються), дефолт заповнює прогалини (напр. parameters).
+const DEFAULT_MYDATE_SYSTEMS: Array<{
+  id: string;
+  name: string;
+  description: string;
+  implemented: boolean;
+  parameters: Array<{ key: string; label: string }>;
+}> = [
+  {
+    id: "western",
+    name: "Західна астрологія",
+    description: "Параметри на основі положення Сонця в зодіакальному колі.",
+    implemented: true,
+    parameters: [
+      { key: "sunSign", label: "Знак Сонця" },
+      { key: "element", label: "Стихія" },
+      { key: "modality", label: "Якість (хрест)" },
+      { key: "ruler", label: "Управитель (сучасний)" },
+      { key: "traditionalRuler", label: "Традиційний управитель" },
+      { key: "decan", label: "Декан" },
+      { key: "degree", label: "Наближений градус Сонця" },
+      { key: "cusp", label: "Прикордонний знак" }
+    ]
+  }
+];
+
+async function getSystemsRegistry(env: Env): Promise<any[]> {
+  const raw = await env.CONTENT_KV.get("mydate:systems");
+  const kvSystems: any[] = raw ? JSON.parse(raw) : [];
+  const kvById = new Map(kvSystems.map((s) => [s.id, s]));
+  const merged: any[] = DEFAULT_MYDATE_SYSTEMS.map((def) => {
+    const kv = kvById.get(def.id);
+    if (!kv) return def;
+    const params = Array.isArray(kv.parameters) && kv.parameters.length ? kv.parameters : def.parameters;
+    return { ...def, ...kv, parameters: params };
+  });
+  for (const s of kvSystems) {
+    if (!DEFAULT_MYDATE_SYSTEMS.some((d) => d.id === s.id)) {
+      merged.push({ ...s, parameters: Array.isArray(s.parameters) ? s.parameters : [] });
+    }
+  }
+  return merged;
+}
+
 // 🔶 БЛОК: MYDATE ANALYSIS STORAGE — D1 (джерело правди) + KV (write-through кеш).
 async function getAnalysis(db: D1Database, kv: KVNamespace, date: string): Promise<Record<string, any>> {
   const kvKey = `mydate:analysis:${date}`;
@@ -300,14 +345,68 @@ async function saveAnalysis(db: D1Database, kv: KVNamespace, date: string, syste
       }
     }
 
-    // 🔶 БЛОК: MYDATE SYSTEMS — список систем аналізу з KV.
+    // 🔶 БЛОК: MYDATE SYSTEMS — список систем аналізу (KV-реєстр + дефолтні параметри).
     if (url.pathname === "/api/mydate/systems") {
       try {
-        const raw = await env.CONTENT_KV.get("mydate:systems");
-        const systems = raw ? JSON.parse(raw) : [];
+        const systems = await getSystemsRegistry(env);
         return json({ ok: true, systems });
       } catch (e: any) {
         console.error("KV systems error:", e);
+        return json({ ok: false, error: e?.message ?? "Unknown error" }, 500);
+      }
+    }
+
+    // 🔶 БЛОК: MYDATE COMPARE — співставлення кількох дат за обраними системами/параметрами.
+    if (url.pathname === "/api/mydate/compare" && request.method === "POST") {
+      try {
+        const body: any = await request.json();
+        const dates: string[] = Array.isArray(body?.dates) ? body.dates : [];
+        const systemIds: string[] | undefined =
+          Array.isArray(body?.systemIds) && body.systemIds.length ? body.systemIds : undefined;
+        const parameterKeys: string[] | undefined =
+          Array.isArray(body?.parameterKeys) && body.parameterKeys.length ? body.parameterKeys : undefined;
+
+        const validDates = dates.filter((d) => /^\d{4}-\d{2}-\d{2}$/.test(d));
+        if (validDates.length === 0) {
+          return json({ ok: false, error: "No valid dates provided" }, 400);
+        }
+        if (validDates.length > 30) {
+          return json({ ok: false, error: "Too many dates, max 30" }, 400);
+        }
+
+        const registry = await getSystemsRegistry(env);
+        const targetSystems = systemIds
+          ? registry.filter((s) => systemIds.includes(s.id) && s.implemented)
+          : registry.filter((s) => s.implemented);
+
+        const matrix: Record<string, any> = {};
+        for (const date of validDates) {
+          const analysis = await getAnalysis(env.DB, env.CONTENT_KV, date);
+          const perSystem: Record<string, any> = {};
+          for (const sys of targetSystems) {
+            let result = analysis[sys.id];
+            if (!result) {
+              const calculator = SYSTEM_CALCULATORS[sys.id];
+              if (!calculator) continue;
+              result = calculator(date);
+              await saveAnalysis(env.DB, env.CONTENT_KV, date, sys.id, result);
+            }
+            const selected = parameterKeys
+              ? (result.parameters ?? []).filter((p: any) => parameterKeys.includes(p.key))
+              : result.parameters ?? [];
+            perSystem[sys.id] = Object.fromEntries(selected.map((p: any) => [p.key, p.value]));
+          }
+          matrix[date] = perSystem;
+        }
+
+        return json({
+          ok: true,
+          dates: validDates,
+          systems: targetSystems.map((s) => s.id),
+          matrix
+        });
+      } catch (e: any) {
+        console.error("Compare error:", e);
         return json({ ok: false, error: e?.message ?? "Unknown error" }, 500);
       }
     }
