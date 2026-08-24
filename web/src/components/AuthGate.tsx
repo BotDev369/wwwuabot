@@ -1,74 +1,81 @@
-import { useState, useEffect, type ReactNode } from 'react';
+import { type ReactNode, useState, useEffect } from "react";
 
-const TELEGRAM_BOT = 'botdev_test_001_bot';
-
-function hasTelegramSDK(): boolean {
-  return !!(window as any).Telegram?.WebApp;
-}
+const BOT_USERNAME = "botdev_test_001_bot";
 
 interface AuthGateProps {
   children: ReactNode;
 }
 
-export function AuthGate({ children }: AuthGateProps) {
-  const [inTelegram, setInTelegram] = useState<boolean | null>(null);
+function isTelegramWebApp(): boolean {
+  try {
+    // @ts-expect-error Telegram WebApp SDK
+    const tg = window.Telegram?.WebApp;
+    return !!tg;
+  } catch {
+    return false;
+  }
+}
+
+export default function AuthGate({ children }: AuthGateProps) {
+  const [authorized, setAuthorized] = useState<boolean | null>(null);
 
   useEffect(() => {
-    // Спочатку перевіряємо одразу
-    if (hasTelegramSDK()) {
-      setInTelegram(true);
-      return;
-    }
-
-    // SDK може завантажитись пізніше — чекаємо до 5 сек
-    let attempts = 0;
-    const maxAttempts = 25;
-    const interval = setInterval(() => {
-      attempts++;
-      if (hasTelegramSDK()) {
-        setInTelegram(true);
-        clearInterval(interval);
-      } else if (attempts >= maxAttempts) {
-        setInTelegram(false);
-        clearInterval(interval);
-      }
-    }, 200);
-
-    return () => clearInterval(interval);
+    // Telegram SDK is loaded synchronously via script tag in index.html
+    setAuthorized(isTelegramWebApp());
   }, []);
 
-  // Завантаження
-  if (inTelegram === null) {
+  // Loading — SDK initializing
+  if (authorized === null) {
     return (
-      <main>
-        <section className="hero">
-          <p className="status-text">...</p>
-        </section>
-      </main>
+      <div style={{ 
+        display: "flex", 
+        justifyContent: "center", 
+        alignItems: "center", 
+        height: "100vh",
+        flexDirection: "column",
+        gap: "16px",
+        padding: "24px",
+        textAlign: "center"
+      }}>
+        <p>Завантаження...</p>
+      </div>
     );
   }
 
-  // В браузері
-  if (!inTelegram) {
-    const currentPath = window.location.pathname;
-    const slug = currentPath === '/' ? 'main' : currentPath.replace(/^\//, '');
-    const botLink = `https://t.me/${TELEGRAM_BOT}?start=${encodeURIComponent(slug)}`;
-
+  // Not in Telegram — show redirect
+  if (!authorized) {
     return (
-      <main>
-        <section className="hero">
-          <h1>WWWUABot</h1>
-          <p className="hero-text">
-            Відкрийте веб-платформу через Telegram бот.
-          </p>
-          <a className="btn btn-telegram" href={botLink} target="_blank" rel="noopener noreferrer">
-            ✈ Відкрити в Telegram
-          </a>
-        </section>
-      </main>
+      <div style={{ 
+        display: "flex", 
+        justifyContent: "center", 
+        alignItems: "center", 
+        height: "100vh",
+        flexDirection: "column",
+        gap: "16px",
+        padding: "24px",
+        textAlign: "center"
+      }}>
+        <h2>WWWUABot</h2>
+        <p>Відкрийте веб-платформу через Telegram бот.</p>
+        <a
+          href={`https://t.me/${BOT_USERNAME}`}
+          style={{
+            display: "inline-block",
+            padding: "14px 32px",
+            backgroundColor: "#0088cc",
+            color: "#fff",
+            borderRadius: "12px",
+            textDecoration: "none",
+            fontSize: "16px",
+            fontWeight: 600,
+          }}
+        >
+          ✈️ Відкрити в Telegram
+        </a>
+      </div>
     );
   }
 
-  // В Telegram WebApp
+  // In Telegram — show content
   return <>{children}</>;
 }

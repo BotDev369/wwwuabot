@@ -4,7 +4,7 @@ import { AppHeader } from './components/layout/AppHeader';
 import { AppFooter } from './components/layout/AppFooter';
 import { AppSidebar } from './components/layout/AppSidebar';
 import { ContextualSidebar } from './components/layout/ContextualSidebar';
-import { AuthGate } from './components/AuthGate';
+import AuthGate from './components/AuthGate';
 import { MydatePage } from './pages/MydateResultPage';
 import { MyDatesPage } from './pages/MyDatesPage';
 import { CompareSetupPage } from './pages/CompareSetupPage';
