@@ -8,6 +8,8 @@ import { handleCallback } from "./callback";
 import { handleTextInput } from "./text-input";
 import { getFamilyBox, setByPath, saveFamilyBox } from "../../shared/utils/family-box";
 import { dispatchAction } from "./actions";
+import { getErrorMessage } from "../../core/errors";
+import { UserRepository } from "../../modules/users/user.repository";
 
 export async function botRouter(ctx: AppContext): Promise<void> {
   if (!ctx.user) return;
@@ -28,6 +30,19 @@ export async function botRouter(ctx: AppContext): Promise<void> {
   if (isCommand && isRestartCommand(text!)) {
     await handleRestart(ctx);
     return;
+  }
+
+  // 1.5. Спеціальна обробка deep link mydate_авторизація
+  if (isCommand) {
+    const command = text!.split(" ")[0].split("@")[0];
+    if (command === "/start") {
+      const param = text!.split(" ")[1]?.trim();
+      if (param === "mydate_авторизація") {
+        log("ROUTER", "deep link: mydate_авторизація", { user_id: ctx.from?.id });
+        await handleMydateAuth(ctx);
+        return;
+      }
+    }
   }
 
   let codeword: string = ctx.user.active_scenario || "main";
@@ -161,5 +176,68 @@ export async function botRouter(ctx: AppContext): Promise<void> {
     }
 
     log("ROUTER", "action handled, will re-render current screen", { codeword });
+  }
+}
+
+/**
+ * Обробка deep link mydate_авторизація.
+ * Відправляє вітальне повідомлення з кнопкою веб-додатку.
+ */
+async function handleMydateAuth(ctx: AppContext): Promise<void> {
+  const chatId = ctx.chat?.id;
+  if (!chatId) return;
+
+  const userRepo = new UserRepository(ctx.env);
+  const from = ctx.from;
+
+  // Перевіряємо чи є користувач в таблиці users
+  if (from?.id) {
+    const existing = await userRepo.getUser(from.id);
+    if (!existing) {
+      log("ROUTER:mydate_auth", "creating new user", { user_id: from.id });
+      await userRepo.createUser({
+        user_id: from.id,
+        first_name: from.first_name ?? "",
+        last_name: from.last_name ?? "",
+        username: from.username ?? "",
+        language: from.language_code ?? "",
+      });
+    } else {
+      log("ROUTER:mydate_auth", "user already exists", { user_id: from.id });
+    }
+  }
+
+  const WEBAPP_URL = ctx.env.ENVIRONMENT === "prod"
+    ? "https://wwwuabot-web-prod.diskomate.workers.dev/wwwuabot/mydate"
+    : "https://wwwuabot-web-dev.diskomate.workers.dev/wwwuabot/mydate";
+
+  const welcomeText =
+    "<b>Вітаємо з авторизацією на wwwuabot!</b>\n\n" +
+    "Тепер веб-платформа wwwuabot доступна Вам на всі 100% і не потребує від Вас введення логінів, паролів, пошту, номера телефонів, та іншу особисту інформацію.\n\n" +
+    "Використовується Ваш публічний айді Телеграм для ідентифікації у веб-платформі. Безпека на вищому рівні.";
+
+  try {
+    const sent = await ctx.api.sendMessage(chatId, welcomeText, {
+      parse_mode: "HTML",
+      reply_markup: {
+        inline_keyboard: [[
+          {
+            text: "🌐 Відкрити сайт MyDate",
+            web_app: { url: WEBAPP_URL },
+          },
+        ]],
+      },
+    });
+
+    log("ROUTER:mydate_auth", "welcome sent", { chat_id: chatId, message_id: sent.message_id });
+
+    // Оновлюємо активний сценарій та message_id
+    if (ctx.user) {
+      ctx.user.active_scenario = "mydate";
+      ctx.user.message_id = sent.message_id;
+      ctx.userDirty = true;
+    }
+  } catch (err) {
+    log("ROUTER:mydate_auth", "failed to send welcome", { error: getErrorMessage(err) });
   }
 }
