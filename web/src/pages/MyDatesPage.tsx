@@ -11,20 +11,15 @@ interface MyDate {
   created_at: string;
 }
 
-function getTelegramUserId(): number | null {
-  // Telegram WebApp SDK
-  const tg = (window as any).Telegram?.WebApp;
-  if (tg?.initDataUnsafe?.user?.id) {
-    return tg.initDataUnsafe.user.id;
-  }
-  // URL params (від бота з user_id)
-  const params = new URLSearchParams(window.location.search);
-  const uid = params.get('user_id');
-  if (uid) return parseInt(uid, 10);
-  // Кеш в localStorage
+function readTelegramUserId(): number | null {
   try {
-    const raw = localStorage.getItem('tg_user_id');
-    if (raw) return parseInt(raw, 10);
+    const tg = (window as any).Telegram?.WebApp;
+    if (tg) {
+      tg.ready();
+      if (tg.initDataUnsafe?.user?.id) {
+        return tg.initDataUnsafe.user.id;
+      }
+    }
   } catch {}
   return null;
 }
@@ -47,7 +42,27 @@ export function MyDatesPage({ onScenarioName }: { onScenarioName: (name: string 
   const [formNotes, setFormNotes] = useState('');
   const [submitting, setSubmitting] = useState(false);
 
-  const userId = getTelegramUserId();
+  const [userId, setUserId] = useState<number | null>(null);
+
+  useEffect(() => {
+    // Try immediately
+    const id = readTelegramUserId();
+    if (id) { setUserId(id); return; }
+
+    // Retry — SDK user data may load async
+    let attempts = 0;
+    const interval = setInterval(() => {
+      attempts++;
+      const id = readTelegramUserId();
+      if (id) {
+        setUserId(id);
+        clearInterval(interval);
+      } else if (attempts >= 25) {
+        clearInterval(interval);
+      }
+    }, 200);
+    return () => clearInterval(interval);
+  }, []);
 
   useEffect(() => {
     onScenarioName('MyDate');
@@ -55,8 +70,7 @@ export function MyDatesPage({ onScenarioName }: { onScenarioName: (name: string 
 
   const fetchDates = useCallback(async () => {
     if (!userId) {
-      setError('Не вдалося визначити користувача. Відкрийте через Telegram бот.');
-      setLoading(false);
+      // Not yet — will retry via useEffect above
       return;
     }
 
@@ -78,8 +92,12 @@ export function MyDatesPage({ onScenarioName }: { onScenarioName: (name: string 
   }, [userId]);
 
   useEffect(() => {
-    fetchDates();
-  }, [fetchDates]);
+    if (userId) {
+      setLoading(true);
+      setError(null);
+      fetchDates();
+    }
+  }, [userId, fetchDates]);
 
   const handleAdd = async () => {
     if (!formDate || !userId) return;
@@ -196,7 +214,9 @@ export function MyDatesPage({ onScenarioName }: { onScenarioName: (name: string 
         {error && <p className="status-text error">{error}</p>}
 
         {/* Список дат */}
-        {loading ? (
+        {!userId ? (
+          <p className="status-text">Завантаження...</p>
+        ) : loading ? (
           <p className="status-text">Завантажуємо...</p>
         ) : dates.length === 0 ? (
           <p className="status-text">Поки що немає жодної дати. Додайте першу!</p>
