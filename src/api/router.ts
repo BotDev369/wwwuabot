@@ -3,6 +3,7 @@ import { handleSetupWebhook, handleWebhookInfo } from "./controllers/webhook.con
 import { handleTelegramWebhook } from "./controllers/telegram.controller";
 import { handleDbProxy } from "./controllers/db-proxy.controller";
 import { handleMyDates } from "./controllers/my-dates.controller";
+import { handleAuthCheck } from "./controllers/auth-check.controller";
 import type { Env } from "../shared/types/env";
 
 export async function handleRequest(request: Request, env: Env, ctx: ExecutionContext): Promise<Response> {
@@ -30,6 +31,10 @@ export async function handleRequest(request: Request, env: Env, ctx: ExecutionCo
 
   if (url.pathname === "/my-dates") {
     return handleMyDates(request, env);
+  }
+
+  if (request.method === "GET" && url.pathname === "/auth/check") {
+    return handleAuthCheck(request, env);
   }
 
   return new Response("Not Found", { status: 404 });

@@ -3,37 +3,14 @@ import { useEffect, useState, type ReactNode } from 'react';
 const TELEGRAM_BOT = 'botdev_test_001_bot';
 
 /**
- * Зчитує user_id з Telegram WebApp SDK або URL params.
- * Робить кілька спроб оскільки SDK може завантажитись пізніше.
+ * Зчитує user_id ТІЛЬКИ з Telegram WebApp SDK.
+ * SDK підписує дані криптографічно — це безпечно.
  */
-function readUserId(): number | null {
-  // 1. Telegram WebApp SDK
+function getTelegramUserId(): number | null {
   const tg = (window as any).Telegram?.WebApp;
   if (tg?.initDataUnsafe?.user?.id) {
     return tg.initDataUnsafe.user.id;
   }
-  // 2. URL params (?user_id=XXX) — бот повертає сюди з user_id
-  const params = new URLSearchParams(window.location.search);
-  const uid = params.get('user_id');
-  if (uid) {
-    const id = parseInt(uid, 10);
-    if (!isNaN(id)) return id;
-  }
-  return null;
-}
-
-/**
- * Зберігає user_id в localStorage для наступних відвідувань.
- */
-function cacheUserId(id: number) {
-  try { localStorage.setItem('tg_user_id', String(id)); } catch {}
-}
-
-function getCachedUserId(): number | null {
-  try {
-    const raw = localStorage.getItem('tg_user_id');
-    if (raw) return parseInt(raw, 10);
-  } catch {}
   return null;
 }
 
@@ -42,56 +19,64 @@ interface AuthGateProps {
 }
 
 export function AuthGate({ children }: AuthGateProps) {
-  const [userId, setUserId] = useState<number | null>(null);
-  const [checking, setChecking] = useState(true);
+  const [authorized, setAuthorized] = useState<boolean | null>(null);
 
   useEffect(() => {
-    // 1. Спробувати прочитати одразу
-    let id = readUserId();
+    let cancelled = false;
 
-    // 2. Якщо є кешований — використати
-    if (!id) id = getCachedUserId();
+    async function check() {
+      // Спочатку пробуємо одразу
+      let userId = getTelegramUserId();
 
-    if (id) {
-      cacheUserId(id);
-      setUserId(id);
-      setChecking(false);
-      return;
+      // Якщо SDK ще не завантажився — чекаємо (до 3 сек)
+      if (!userId) {
+        for (let i = 0; i < 15; i++) {
+          await new Promise(r => setTimeout(r, 200));
+          userId = getTelegramUserId();
+          if (userId) break;
+        }
+      }
+
+      if (cancelled) return;
+
+      if (!userId) {
+        // SDK не знайдений — користувач поза Telegram (браузер)
+        setAuthorized(false);
+        return;
+      }
+
+      // SDK знайдений — перевіряємо на бекенді чи є юзер в базі
+      try {
+        const res = await fetch(`/api/auth/check?user_id=${userId}`);
+        const data = await res.json();
+        if (!cancelled) {
+          setAuthorized(data.exists === true);
+        }
+      } catch {
+        if (!cancelled) {
+          setAuthorized(false);
+        }
+      }
     }
 
-    // 3. Retry: SDK може завантажитись пізніше (до 3 сек)
-    let attempts = 0;
-    const maxAttempts = 15;
-    const interval = setInterval(() => {
-      attempts++;
-      const found = readUserId();
-      if (found) {
-        cacheUserId(found);
-        setUserId(found);
-        setChecking(false);
-        clearInterval(interval);
-      } else if (attempts >= maxAttempts) {
-        setChecking(false);
-        clearInterval(interval);
-      }
-    }, 200);
-
-    return () => clearInterval(interval);
+    check();
+    return () => { cancelled = true; };
   }, []);
 
-  // Показуємо завантаження поки перевіряємо
-  if (checking) {
+  // Завантаження
+  if (authorized === null) {
     return (
       <main>
         <section className="hero">
-          <p className="status-text">Перевірка авторизації...</p>
+          <p className="status-text">...</p>
         </section>
       </main>
     );
   }
 
-  // Не авторизований — показуємо кнопку
-  if (!userId) {
+  // Не авторизований
+  if (!authorized) {
+    // Визначаємо slug поточної сторінки для повернення
     const currentPath = window.location.pathname;
     const slug = currentPath === '/' ? 'main' : currentPath.replace(/^\//, '');
     const botLink = `https://t.me/${TELEGRAM_BOT}?start=${encodeURIComponent(slug)}`;
@@ -110,6 +95,7 @@ export function AuthGate({ children }: AuthGateProps) {
             rel="noopener noreferrer"
             onClick={(e) => {
               e.preventDefault();
+              // Закриваємо WebApp щоб побачити бота
               const tg = (window as any).Telegram?.WebApp;
               if (tg?.close) {
                 tg.close();

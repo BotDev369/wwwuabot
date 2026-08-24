@@ -207,13 +207,10 @@ async function handleDeepLink(ctx: AppContext, slug: string): Promise<void> {
     }
   }
 
-  // Формуємо URL назад з user_id
-  const baseUrl = ctx.env.ENVIRONMENT === "prod"
+  // Формуємо URL назад (без user_id — безпека!)
+  const webAppUrl = ctx.env.ENVIRONMENT === "prod"
     ? `https://wwwuabot-web-prod.diskomate.workers.dev/${slug}`
     : `https://wwwuabot-web-dev.diskomate.workers.dev/${slug}`;
-  const webAppUrl = from?.id
-    ? `${baseUrl}?user_id=${from.id}`
-    : baseUrl;
 
   const welcomeText =
     `<b>Авторизацію підтверджено!</b>\n\n` +
