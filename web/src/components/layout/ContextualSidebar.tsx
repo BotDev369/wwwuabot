@@ -13,19 +13,16 @@ interface ContextualSidebarProps {
 }
 
 export function ContextualSidebar({ isOpen, onClose, items, title = 'Дії' }: ContextualSidebarProps) {
-  if (!isOpen) return null;
-
   return (
     <>
-      <div className="backdrop show" onClick={onClose} style={{ zIndex: 999 }}></div>
+      <div className={`backdrop ${isOpen ? 'show' : ''}`} onClick={onClose} style={{ zIndex: 999, display: isOpen ? 'block' : 'none' }}></div>
       <aside
-        className="sidebar contextual"
+        className={`sidebar contextual ${isOpen ? '' : 'closed'}`}
         style={{
           zIndex: 1000,
           right: 0,
           left: 'auto',
-          boxShadow: '-2px 0 8px rgba(0,0,0,0.15)',
-          transform: 'translateX(0)'
+          boxShadow: '-2px 0 8px rgba(0,0,0,0.15)'
         }}
       >
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
