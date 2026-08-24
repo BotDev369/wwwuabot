@@ -43,6 +43,7 @@ export function MyDatesPage({ onScenarioName }: { onScenarioName: (name: string 
   const [submitting, setSubmitting] = useState(false);
 
   const userId = getTelegramUserId();
+  const tg = (window as any).Telegram?.WebApp;
 
   useEffect(() => {
     onScenarioName('MyDate');
@@ -141,6 +142,12 @@ export function MyDatesPage({ onScenarioName }: { onScenarioName: (name: string 
             href="https://t.me/botdev_test_001_bot?start=mydate_authorization"
             target="_blank"
             rel="noopener noreferrer"
+            onClick={() => {
+              // Закриваємо WebApp щоб користувач побачив повідомлення в боті
+              if (tg?.close) {
+                tg.close();
+              }
+            }}
           >
             ✈ Authorize via Telegram
           </a>
