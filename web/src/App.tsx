@@ -113,7 +113,7 @@ export function App() {
   ];
 
   return (
-    <BrowserRouter basename="/wwwuabot">
+    <BrowserRouter>
       <div className="layout">
         <AppSidebar open={sidebarOpen} onClose={() => setSidebarOpen(false)} />
         <ContextualSidebar 

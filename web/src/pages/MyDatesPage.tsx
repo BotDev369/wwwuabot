@@ -134,8 +134,16 @@ export function MyDatesPage({ onScenarioName }: { onScenarioName: (name: string 
         <section className="hero">
           <h1>Мої дати</h1>
           <p className="hero-text">
-            Щоб користуватися цією сторінкою, відкрийте її через Telegram бот (натисніть кнопку "Веб-платформа").
+            Щоб користуватися цією сторінкою, авторизуйтесь через Telegram.
           </p>
+          <a
+            className="btn btn-telegram"
+            href="https://t.me/wwwuabot?start=mydate_%D0%B0%D0%B2%D1%82%D0%BE%D1%80%D0%B8%D0%B7%D0%B0%D1%86%D1%96%D1%8F"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            ✈ Авторизуватись Telegram
+          </a>
         </section>
       </main>
     );
