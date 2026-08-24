@@ -43,7 +43,7 @@ export function CompareSetupPage({ onScenarioName }: { onScenarioName: (name: st
     <main>
       <section className="hero">
         <h1>Співставлення дат</h1>
-        <p style={{ fontSize: '18px', color: '#4a4a4a', marginBottom: '24px' }}>
+        <p className="hero-text">
           Вкажіть дати для аналізу. Дати можна переміщати — це визначить порядок відображення в таблиці.
         </p>
 
@@ -80,11 +80,9 @@ export function CompareSetupPage({ onScenarioName }: { onScenarioName: (name: st
           </ul>
         )}
 
-        <div style={{ marginTop: '24px' }}>
-          <button className="btn" onClick={goSelect} disabled={dates.length === 0}>
-            {dates.length === 0 ? 'Додайте хоча б одну дату' : 'Обрати системи для співставлення'}
-          </button>
-        </div>
+        <button className="btn" onClick={goSelect} disabled={dates.length === 0}>
+          {dates.length === 0 ? 'Додайте хоча б одну дату' : 'Обрати системи для співставлення'}
+        </button>
       </section>
     </main>
   );

@@ -111,7 +111,7 @@ export function MydateResultPage({ onScenarioName }: { onScenarioName: (name: st
     return (
       <main>
         <section className="hero">
-          <p style={{ fontSize: '18px', color: '#4a4a4a' }}>Невірний формат дати.</p>
+          <p className="hero-text">Невірний формат дати.</p>
           <a className="btn" href="/mydate">Спробувати ще раз</a>
         </section>
       </main>
@@ -121,7 +121,7 @@ export function MydateResultPage({ onScenarioName }: { onScenarioName: (name: st
   return (
     <main>
       <section className="hero">
-        <p style={{ fontSize: '18px', color: '#4a4a4a', marginBottom: '24px' }}>
+        <p className="hero-text">
           Ви вказували дату: {formatDate(date)}
         </p>
         <div className="cards-grid">

@@ -94,7 +94,7 @@ export function CompareTablePage({ onScenarioName }: { onScenarioName: (name: st
     return (
       <main>
         <section className="hero">
-          <p style={{ fontSize: '18px', color: '#4a4a4a' }}>Невірний формат дат у посиланні.</p>
+          <p className="hero-text">Невірний формат дат у посиланні.</p>
           <a className="btn" href="/mydate/compare">Співставити дати</a>
         </section>
       </main>
@@ -107,8 +107,8 @@ export function CompareTablePage({ onScenarioName }: { onScenarioName: (name: st
         <h1>Співставлення дат</h1>
         <p className="hint">Прокручуйте таблицю горизонтально, щоб бачити всі дати.</p>
 
-        {loading && <p style={{ marginTop: '24px', color: '#4a4a4a' }}>Аналізуємо...</p>}
-        {error && <p style={{ marginTop: '24px', color: '#c0392b' }}>{error}</p>}
+        {loading && <p className="status-text">Аналізуємо...</p>}
+        {error && <p className="status-text error">{error}</p>}
 
         {!loading && !error && (
           <div className="table-wrap">

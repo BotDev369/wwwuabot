@@ -28,15 +28,17 @@ function DateInputBlock({ label, buttonLabel, basePath }: { label: string; butto
   };
 
   return (
-    <div style={{ marginTop: '16px' }}>
-      <label style={{ display: 'block', marginBottom: '8px', color: '#4a4a4a', fontSize: '15px' }}>{label}</label>
-      <input
-        type="date"
-        value={value}
-        onChange={(e) => setValue(e.target.value)}
-        style={{ padding: '10px 14px', fontSize: '15px', borderRadius: '6px', border: '1px solid #ccc', marginRight: '12px' }}
-      />
-      <button className="btn" onClick={handleSubmit}>{buttonLabel}</button>
+    <div className="date-input-block">
+      <label className="date-input-label">{label}</label>
+      <div className="date-input-row">
+        <input
+          type="date"
+          value={value}
+          onChange={(e) => setValue(e.target.value)}
+          className="date-input"
+        />
+        <button className="btn btn-inline" onClick={handleSubmit}>{buttonLabel}</button>
+      </div>
     </div>
   );
 }
@@ -72,7 +74,7 @@ function DefaultPage({ onScenarioName }: { onScenarioName: (name: string | null,
           <div key={i}>
             {block.component === 'Heading' && <h1>{block.props.text}</h1>}
             {block.component === 'Paragraph' && (
-              <p style={{ fontSize: '18px', lineHeight: '1.6', marginBottom: '24px', color: '#4a4a4a' }}>
+              <p className="hero-text">
                 {block.props.text}
               </p>
             )}
