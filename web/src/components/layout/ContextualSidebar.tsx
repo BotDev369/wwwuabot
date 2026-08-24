@@ -49,6 +49,24 @@ export function ContextualSidebar({ isOpen, onClose, items, title = 'Дії' }: 
               key={index}
               href={item.path}
               onClick={onClose}
+              className="contextual-menu-item"
+              style={{
+                display: 'block',
+                padding: '12px 16px',
+                marginBottom: '8px',
+                color: '#4a4a4a',
+                textDecoration: 'none',
+                borderRadius: '6px',
+                transition: 'all 0.2s'
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.backgroundColor = '#c0392b';
+                e.currentTarget.style.color = '#fff';
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.backgroundColor = 'transparent';
+                e.currentTarget.style.color = '#4a4a4a';
+              }}
             >
               {item.label}
             </a>
