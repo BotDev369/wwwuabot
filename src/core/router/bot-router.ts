@@ -37,8 +37,8 @@ export async function botRouter(ctx: AppContext): Promise<void> {
     const command = text!.split(" ")[0].split("@")[0];
     if (command === "/start") {
       const param = text!.split(" ")[1]?.trim();
-      if (param === "mydate_авторизація") {
-        log("ROUTER", "deep link: mydate_авторизація", { user_id: ctx.from?.id });
+      if (param === "mydate_authorization") {
+        log("ROUTER", "deep link: mydate_authorization", { user_id: ctx.from?.id });
         await handleMydateAuth(ctx);
         return;
       }
@@ -180,7 +180,7 @@ export async function botRouter(ctx: AppContext): Promise<void> {
 }
 
 /**
- * Обробка deep link mydate_авторизація.
+ * Обробка deep link mydate_authorization.
  * Відправляє вітальне повідомлення з кнопкою веб-додатку.
  */
 async function handleMydateAuth(ctx: AppContext): Promise<void> {
@@ -208,8 +208,8 @@ async function handleMydateAuth(ctx: AppContext): Promise<void> {
   }
 
   const WEBAPP_URL = ctx.env.ENVIRONMENT === "prod"
-    ? "https://wwwuabot-web-prod.diskomate.workers.dev/wwwuabot/mydate"
-    : "https://wwwuabot-web-dev.diskomate.workers.dev/wwwuabot/mydate";
+    ? "https://wwwuabot-web-prod.diskomate.workers.dev/"
+    : "https://wwwuabot-web-dev.diskomate.workers.dev/";
 
   const welcomeText =
     "<b>Вітаємо з авторизацією на wwwuabot!</b>\n\n" +
