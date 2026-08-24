@@ -208,8 +208,8 @@ async function handleMydateAuth(ctx: AppContext): Promise<void> {
   }
 
   const WEBAPP_URL = ctx.env.ENVIRONMENT === "prod"
-    ? "https://wwwuabot-web-prod.diskomate.workers.dev/"
-    : "https://wwwuabot-web-dev.diskomate.workers.dev/";
+    ? "https://wwwuabot-web-prod.diskomate.workers.dev/mydate"
+    : "https://wwwuabot-web-dev.diskomate.workers.dev/mydate";
 
   const welcomeText =
     "<b>Вітаємо з авторизацією на wwwuabot!</b>\n\n" +
