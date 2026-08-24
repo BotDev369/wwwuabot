@@ -115,7 +115,6 @@ export function App() {
           isOpen={contextualSidebarOpen} 
           onClose={() => setContextualSidebarOpen(false)} 
           items={contextualMenuItems}
-          title={scenarioName || 'Дії'}
         />
         <div className="content">
           <AppHeader 
