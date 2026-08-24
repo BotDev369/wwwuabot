@@ -32,14 +32,14 @@ export async function botRouter(ctx: AppContext): Promise<void> {
     return;
   }
 
-  // 1.5. Спеціальна обробка deep link mydate_авторизація
+  // 1.5. Спеціальна обробка deep link (будь-який slug)
   if (isCommand) {
     const command = text!.split(" ")[0].split("@")[0];
     if (command === "/start") {
       const param = text!.split(" ")[1]?.trim();
-      if (param === "mydate_authorization") {
-        log("ROUTER", "deep link: mydate_authorization", { user_id: ctx.from?.id });
-        await handleMydateAuth(ctx);
+      if (param && param !== "main") {
+        log("ROUTER", `deep link: ${param}`, { user_id: ctx.from?.id });
+        await handleDeepLink(ctx, param);
         return;
       }
     }
@@ -180,10 +180,10 @@ export async function botRouter(ctx: AppContext): Promise<void> {
 }
 
 /**
- * Обробка deep link mydate_authorization.
- * Відправляє вітальне повідомлення з кнопкою веб-додатку.
+ * Обробка deep link (будь-який slug).
+ * Створює юзера якщо потрібно і відправляє WebApp кнопку назад.
  */
-async function handleMydateAuth(ctx: AppContext): Promise<void> {
+async function handleDeepLink(ctx: AppContext, slug: string): Promise<void> {
   const chatId = ctx.chat?.id;
   if (!chatId) return;
 
@@ -194,7 +194,7 @@ async function handleMydateAuth(ctx: AppContext): Promise<void> {
   if (from?.id) {
     const existing = await userRepo.getUser(from.id);
     if (!existing) {
-      log("ROUTER:mydate_auth", "creating new user", { user_id: from.id });
+      log("ROUTER:deep_link", "creating new user", { user_id: from.id, slug });
       await userRepo.createUser({
         user_id: from.id,
         first_name: from.first_name ?? "",
@@ -203,18 +203,21 @@ async function handleMydateAuth(ctx: AppContext): Promise<void> {
         language: from.language_code ?? "",
       });
     } else {
-      log("ROUTER:mydate_auth", "user already exists", { user_id: from.id });
+      log("ROUTER:deep_link", "user already exists", { user_id: from.id, slug });
     }
   }
 
-  const WEBAPP_URL = ctx.env.ENVIRONMENT === "prod"
-    ? "https://wwwuabot-web-prod.diskomate.workers.dev/mydate"
-    : "https://wwwuabot-web-dev.diskomate.workers.dev/mydate";
+  // Формуємо URL назад з user_id
+  const baseUrl = ctx.env.ENVIRONMENT === "prod"
+    ? `https://wwwuabot-web-prod.diskomate.workers.dev/${slug}`
+    : `https://wwwuabot-web-dev.diskomate.workers.dev/${slug}`;
+  const webAppUrl = from?.id
+    ? `${baseUrl}?user_id=${from.id}`
+    : baseUrl;
 
   const welcomeText =
-    "<b>Вітаємо з авторизацією на wwwuabot!</b>\n\n" +
-    "Тепер веб-платформа wwwuabot доступна Вам на всі 100% і не потребує від Вас введення логінів, паролів, пошту, номера телефонів, та іншу особисту інформацію.\n\n" +
-    "Використовується Ваш публічний айді Телеграм для ідентифікації у веб-платформі. Безпека на вищому рівні.";
+    `<b>Авторизацію підтверджено!</b>\n\n` +
+    `Тепер веб-платформа доступна для Вас. Натисніть кнопку нижче щоб продовжити.`;
 
   try {
     const sent = await ctx.api.sendMessage(chatId, welcomeText, {
@@ -222,22 +225,22 @@ async function handleMydateAuth(ctx: AppContext): Promise<void> {
       reply_markup: {
         inline_keyboard: [[
           {
-            text: "🌐 Відкрити сайт MyDate",
-            web_app: { url: WEBAPP_URL },
+            text: "🌐 Відкрити веб-платформу",
+            web_app: { url: webAppUrl },
           },
         ]],
       },
     });
 
-    log("ROUTER:mydate_auth", "welcome sent", { chat_id: chatId, message_id: sent.message_id });
+    log("ROUTER:deep_link", "webapp sent", { chat_id: chatId, message_id: sent.message_id, slug });
 
     // Оновлюємо активний сценарій та message_id
     if (ctx.user) {
-      ctx.user.active_scenario = "mydate";
+      ctx.user.active_scenario = slug;
       ctx.user.message_id = sent.message_id;
       ctx.userDirty = true;
     }
   } catch (err) {
-    log("ROUTER:mydate_auth", "failed to send welcome", { error: getErrorMessage(err) });
+    log("ROUTER:deep_link", "failed to send webapp", { error: getErrorMessage(err) });
   }
 }

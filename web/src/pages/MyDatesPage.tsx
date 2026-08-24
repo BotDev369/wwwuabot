@@ -11,16 +11,21 @@ interface MyDate {
   created_at: string;
 }
 
-function readTelegramUserId(): number | null {
-  // Telegram WebApp SDK — читаємо СВІЖО з window (не кешуємо)
+function getTelegramUserId(): number | null {
+  // Telegram WebApp SDK
   const tg = (window as any).Telegram?.WebApp;
   if (tg?.initDataUnsafe?.user?.id) {
     return tg.initDataUnsafe.user.id;
   }
-  // Fallback: зчитуємо з URL params (для тестування)
+  // URL params (від бота з user_id)
   const params = new URLSearchParams(window.location.search);
   const uid = params.get('user_id');
   if (uid) return parseInt(uid, 10);
+  // Кеш в localStorage
+  try {
+    const raw = localStorage.getItem('tg_user_id');
+    if (raw) return parseInt(raw, 10);
+  } catch {}
   return null;
 }
 
@@ -42,40 +47,10 @@ export function MyDatesPage({ onScenarioName }: { onScenarioName: (name: string 
   const [formNotes, setFormNotes] = useState('');
   const [submitting, setSubmitting] = useState(false);
 
-  const [userId, setUserId] = useState<number | null>(null);
+  const userId = getTelegramUserId();
 
-  // Ініціалізація Telegram WebApp SDK
   useEffect(() => {
     onScenarioName('MyDate');
-
-    const tg = (window as any).Telegram?.WebApp;
-    if (tg) {
-      // Викликаємо ready() щоб SDK повідомив про готовність
-      try { tg.ready(); } catch {}
-    }
-
-    // Retry: SDK може завантажитись пізніше (різні браузери/WebView)
-    let attempts = 0;
-    const maxAttempts = 10;
-    const interval = setInterval(() => {
-      attempts++;
-      const id = readTelegramUserId();
-      if (id) {
-        setUserId(id);
-        clearInterval(interval);
-      } else if (attempts >= maxAttempts) {
-        clearInterval(interval);
-      }
-    }, 200);
-
-    // Перша спроба одразу
-    const immediateId = readTelegramUserId();
-    if (immediateId) {
-      setUserId(immediateId);
-      clearInterval(interval);
-    }
-
-    return () => clearInterval(interval);
   }, [onScenarioName]);
 
   const fetchDates = useCallback(async () => {
@@ -158,37 +133,7 @@ export function MyDatesPage({ onScenarioName }: { onScenarioName: (name: string 
     }
   };
 
-  if (!userId) {
-    return (
-      <main>
-        <section className="hero">
-          <h1>Мої дати</h1>
-          <p className="hero-text">
-            Щоб користуватися цією сторінкою, авторизуйтесь через Telegram.
-          </p>
-          <a
-            className="btn btn-telegram"
-            href="https://t.me/botdev_test_001_bot?start=mydate_authorization"
-            target="_blank"
-            rel="noopener noreferrer"
-            onClick={(e) => {
-              e.preventDefault();
-              // Читаємо tg СВІЖО з window (не кешований)
-              const freshTg = (window as any).Telegram?.WebApp;
-              if (freshTg?.close) {
-                freshTg.close();
-              } else {
-                // Fallback: якщо SDK недоступний — переходимо за посиланням
-                window.location.href = 'https://t.me/botdev_test_001_bot?start=mydate_authorization';
-              }
-            }}
-          >
-            ✈ Authorize via Telegram
-          </a>
-        </section>
-      </main>
-    );
-  }
+
 
   return (
     <main>

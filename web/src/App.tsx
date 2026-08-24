@@ -4,6 +4,7 @@ import { AppHeader } from './components/layout/AppHeader';
 import { AppFooter } from './components/layout/AppFooter';
 import { AppSidebar } from './components/layout/AppSidebar';
 import { ContextualSidebar } from './components/layout/ContextualSidebar';
+import { AuthGate } from './components/AuthGate';
 import { MydatePage } from './pages/MydateResultPage';
 import { MyDatesPage } from './pages/MyDatesPage';
 import { CompareSetupPage } from './pages/CompareSetupPage';
@@ -114,30 +115,32 @@ export function App() {
 
   return (
     <BrowserRouter>
-      <div className="layout">
-        <AppSidebar open={sidebarOpen} onClose={() => setSidebarOpen(false)} />
-        <ContextualSidebar 
-          isOpen={contextualSidebarOpen} 
-          onClose={() => setContextualSidebarOpen(false)} 
-          items={contextualMenuItems}
-        />
-        <div className="content">
-          <AppHeader 
-            onMenuClick={() => setSidebarOpen(v => !v)} 
-            scenarioName={scenarioName}
-            showContextualMenu={showContextualMenu}
-            onContextualMenuClick={() => setContextualSidebarOpen(v => !v)}
+      <AuthGate>
+        <div className="layout">
+          <AppSidebar open={sidebarOpen} onClose={() => setSidebarOpen(false)} />
+          <ContextualSidebar 
+            isOpen={contextualSidebarOpen} 
+            onClose={() => setContextualSidebarOpen(false)} 
+            items={contextualMenuItems}
           />
-          <Routes>
-            <Route path="/mydate/compare/systems" element={<CompareSystemsPage onScenarioName={(name) => handleScenarioName(name, true)} />} />
-            <Route path="/mydate/compare" element={<CompareSetupPage onScenarioName={(name) => handleScenarioName(name, true)} />} />
-            <Route path="/mydate/my-dates" element={<MyDatesPage onScenarioName={(name) => handleScenarioName(name, true)} />} />
-            <Route path="/mydate/:date" element={<MydatePage onScenarioName={(name) => handleScenarioName(name, true)} />} />
-            <Route path="/*" element={<DefaultPage onScenarioName={handleScenarioName} />} />
-          </Routes>
-          <AppFooter />
+          <div className="content">
+            <AppHeader 
+              onMenuClick={() => setSidebarOpen(v => !v)} 
+              scenarioName={scenarioName}
+              showContextualMenu={showContextualMenu}
+              onContextualMenuClick={() => setContextualSidebarOpen(v => !v)}
+            />
+            <Routes>
+              <Route path="/mydate/compare/systems" element={<CompareSystemsPage onScenarioName={(name) => handleScenarioName(name, true)} />} />
+              <Route path="/mydate/compare" element={<CompareSetupPage onScenarioName={(name) => handleScenarioName(name, true)} />} />
+              <Route path="/mydate/my-dates" element={<MyDatesPage onScenarioName={(name) => handleScenarioName(name, true)} />} />
+              <Route path="/mydate/:date" element={<MydatePage onScenarioName={(name) => handleScenarioName(name, true)} />} />
+              <Route path="/*" element={<DefaultPage onScenarioName={handleScenarioName} />} />
+            </Routes>
+            <AppFooter />
+          </div>
         </div>
-      </div>
+      </AuthGate>
     </BrowserRouter>
   );
 }
