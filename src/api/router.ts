@@ -33,7 +33,7 @@ export async function handleRequest(request: Request, env: Env, ctx: ExecutionCo
     return handleMyDates(request, env);
   }
 
-  if (request.method === "GET" && url.pathname === "/auth/check") {
+  if (request.method === "GET" && (url.pathname === "/auth/check" || url.pathname === "/api/auth/check")) {
     return handleAuthCheck(request, env);
   }
 
