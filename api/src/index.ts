@@ -510,6 +510,27 @@ async function saveAnalysis(db: D1Database, kv: KVNamespace, date: string, syste
           return json({ ok: true, id: newDate.id });
         }
 
+        // PUT — оновити дату
+        if (request.method === "PUT") {
+          let body: any;
+          try { body = await request.json(); } catch {
+            return json({ ok: false, error: "Invalid JSON" }, 400);
+          }
+          const { id, date, alias, category, notes } = body;
+          if (!id) return json({ ok: false, error: "id is required" }, 400);
+          if (!date) return json({ ok: false, error: "date is required" }, 400);
+
+          const idx = dates.findIndex((d: any) => d.id === id);
+          if (idx === -1) return json({ ok: false, error: "Not found" }, 404);
+
+          dates[idx] = { ...dates[idx], date, alias: alias || "", category: category || "", notes: notes || "" };
+
+          await env.DB.prepare("UPDATE users SET my_dates = ? WHERE user_id = ?")
+            .bind(JSON.stringify({ items: dates }), userId).run();
+
+          return json({ ok: true });
+        }
+
         // DELETE — видалити дату
         if (request.method === "DELETE") {
           const id = url.searchParams.get("id");
