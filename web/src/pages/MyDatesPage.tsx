@@ -11,17 +11,12 @@ interface MyDate {
   created_at: string;
 }
 
-function readTelegramUserId(): number | null {
+function getTelegramUserId(): number | null {
   try {
-    const tg = (window as any).Telegram?.WebApp;
-    if (tg) {
-      tg.ready();
-      if (tg.initDataUnsafe?.user?.id) {
-        return tg.initDataUnsafe.user.id;
-      }
-    }
-  } catch {}
-  return null;
+    return (window as any).Telegram?.WebApp?.initDataUnsafe?.user?.id ?? null;
+  } catch {
+    return null;
+  }
 }
 
 function formatDate(raw: string): string {
@@ -35,45 +30,23 @@ export function MyDatesPage({ onScenarioName }: { onScenarioName: (name: string 
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  // форма додавання
   const [formDate, setFormDate] = useState('');
   const [formAlias, setFormAlias] = useState('');
   const [formCategory, setFormCategory] = useState('');
   const [formNotes, setFormNotes] = useState('');
   const [submitting, setSubmitting] = useState(false);
 
-  const [userId, setUserId] = useState<number | null>(null);
-
-  useEffect(() => {
-    // Try immediately
-    const id = readTelegramUserId();
-    if (id) { setUserId(id); return; }
-
-    // Retry — SDK user data may load async
-    let attempts = 0;
-    const interval = setInterval(() => {
-      attempts++;
-      const id = readTelegramUserId();
-      if (id) {
-        setUserId(id);
-        clearInterval(interval);
-      } else if (attempts >= 25) {
-        clearInterval(interval);
-      }
-    }, 200);
-    return () => clearInterval(interval);
-  }, []);
-
   useEffect(() => {
     onScenarioName('MyDate');
   }, [onScenarioName]);
 
+  const userId = getTelegramUserId();
+
   const fetchDates = useCallback(async () => {
     if (!userId) {
-      // Not yet — will retry via useEffect above
+      setLoading(false);
       return;
     }
-
     try {
       const res = await fetch('/api/my-dates', {
         headers: { 'X-Telegram-User-Id': String(userId) },
@@ -92,12 +65,8 @@ export function MyDatesPage({ onScenarioName }: { onScenarioName: (name: string 
   }, [userId]);
 
   useEffect(() => {
-    if (userId) {
-      setLoading(true);
-      setError(null);
-      fetchDates();
-    }
-  }, [userId, fetchDates]);
+    fetchDates();
+  }, [fetchDates]);
 
   const handleAdd = async () => {
     if (!formDate || !userId) return;
@@ -151,14 +120,11 @@ export function MyDatesPage({ onScenarioName }: { onScenarioName: (name: string 
     }
   };
 
-
-
   return (
     <main>
       <section className="hero">
         <h1>Мої дати</h1>
 
-        {/* Форма додавання */}
         <div className="my-dates-form">
           <h3 className="form-title">Додати нову дату</h3>
           <div className="form-grid">
@@ -213,10 +179,7 @@ export function MyDatesPage({ onScenarioName }: { onScenarioName: (name: string 
 
         {error && <p className="status-text error">{error}</p>}
 
-        {/* Список дат */}
-        {!userId ? (
-          <p className="status-text">Завантаження...</p>
-        ) : loading ? (
+        {loading ? (
           <p className="status-text">Завантажуємо...</p>
         ) : dates.length === 0 ? (
           <p className="status-text">Поки що немає жодної дати. Додайте першу!</p>
