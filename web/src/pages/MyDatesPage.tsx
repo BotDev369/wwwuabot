@@ -51,14 +51,19 @@ export function MyDatesPage({ onScenarioName }: { onScenarioName: (name: string 
       const res = await fetch('/api/my-dates', {
         headers: { 'X-Telegram-User-Id': String(userId) },
       });
+      if (!res.ok) {
+        const text = await res.text();
+        setError(`Помилка ${res.status}: ${text.slice(0, 100)}`);
+        return;
+      }
       const data = await res.json();
       if (data.ok) {
         setDates(data.dates);
       } else {
         setError(data.error ?? 'Помилка завантаження');
       }
-    } catch {
-      setError('Помилка мережі');
+    } catch (e) {
+      setError(`Помилка мережі: ${String(e).slice(0, 100)}`);
     } finally {
       setLoading(false);
     }
@@ -85,6 +90,11 @@ export function MyDatesPage({ onScenarioName }: { onScenarioName: (name: string 
           notes: formNotes,
         }),
       });
+      if (!res.ok) {
+        const text = await res.text();
+        setError(`Помилка ${res.status}: ${text.slice(0, 100)}`);
+        return;
+      }
       const data = await res.json();
       if (data.ok) {
         setFormDate('');
@@ -95,8 +105,8 @@ export function MyDatesPage({ onScenarioName }: { onScenarioName: (name: string 
       } else {
         setError(data.error ?? 'Помилка додавання');
       }
-    } catch {
-      setError('Помилка мережі');
+    } catch (e) {
+      setError(`Помилка мережі: ${String(e).slice(0, 100)}`);
     } finally {
       setSubmitting(false);
     }
