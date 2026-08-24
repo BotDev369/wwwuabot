@@ -220,12 +220,14 @@ async function handleDeepLink(ctx: AppContext, slug: string): Promise<void> {
     const sent = await ctx.api.sendMessage(chatId, welcomeText, {
       parse_mode: "HTML",
       reply_markup: {
-        inline_keyboard: [[
+        keyboard: [[
           {
             text: "🌐 Відкрити веб-платформу",
             web_app: { url: webAppUrl },
           },
         ]],
+        resize_keyboard: true,
+        one_time_keyboard: true,
       },
     });
 

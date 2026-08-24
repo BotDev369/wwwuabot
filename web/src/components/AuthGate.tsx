@@ -2,21 +2,16 @@ import { useEffect, useState, type ReactNode } from 'react';
 
 const TELEGRAM_BOT = 'botdev_test_001_bot';
 
-/**
- * Зчитує user_id з Telegram WebApp SDK.
- * Крок 1: ready() → крок 2: initDataUnsafe → крок 3: парсимо initData string.
- */
 function getTelegramUserId(): number | null {
   const tg = (window as any).Telegram?.WebApp;
   if (!tg) return null;
 
-  // Спосіб 1: initDataUnsafe.user.id (найпростіший)
+  // Спосіб 1: initDataUnsafe (працює з reply keyboard web_app кнопок)
   if (tg.initDataUnsafe?.user?.id) {
     return tg.initDataUnsafe.user.id;
   }
 
-  // Спосіб 2: парсимо initData (URL-encoded query string)
-  // Формат: user=%7B%22id%22%3A123456%7D&chat_instance=...
+  // Спосіб 2: парсимо initData string
   if (tg.initData) {
     try {
       const params = new URLSearchParams(tg.initData);
@@ -42,51 +37,34 @@ export function AuthGate({ children }: AuthGateProps) {
     let cancelled = false;
 
     async function check() {
+      // Викликаємо ready() — обов'язково для ініціалізації SDK
       const tg = (window as any).Telegram?.WebApp;
-
-      // Обов'язково викликаємо ready() — без цього SDK може не працювати
       if (tg) {
         try { tg.ready(); } catch {}
       }
 
-      // Даємо SDK час ініціалізуватися
-      await new Promise(r => setTimeout(r, 300));
-
-      let userId = getTelegramUserId();
-
-      // Якщо SDK ще не готовий — retry до 3 сек
-      if (!userId) {
-        for (let i = 0; i < 14; i++) {
-          await new Promise(r => setTimeout(r, 200));
-          userId = getTelegramUserId();
-          if (userId) break;
-        }
+      // Чекаємо SDK (до 3 сек)
+      let userId: number | null = null;
+      for (let i = 0; i < 15; i++) {
+        await new Promise(r => setTimeout(r, 200));
+        userId = getTelegramUserId();
+        if (userId) break;
       }
 
       if (cancelled) return;
 
       if (!userId) {
-        // SDK не знайдений — користувач поза Telegram (браузер)
-        console.log('[AuthGate] No Telegram SDK found — showing auth button');
         setAuthorized(false);
         return;
       }
 
-      console.log('[AuthGate] User ID found:', userId);
-
-      // SDK знайдений — перевіряємо на бекенді чи є юзер в базі
+      // Перевіряємо в БД
       try {
         const res = await fetch(`/api/auth/check?user_id=${userId}`);
         const data = await res.json();
-        console.log('[AuthGate] Auth check result:', data);
-        if (!cancelled) {
-          setAuthorized(data.exists === true);
-        }
-      } catch (err) {
-        console.error('[AuthGate] Auth check failed:', err);
-        if (!cancelled) {
-          setAuthorized(false);
-        }
+        if (!cancelled) setAuthorized(data.exists === true);
+      } catch {
+        if (!cancelled) setAuthorized(false);
       }
     }
 
@@ -99,7 +77,7 @@ export function AuthGate({ children }: AuthGateProps) {
     return (
       <main>
         <section className="hero">
-          <p className="status-text">Перевірка авторизації...</p>
+          <p className="status-text">...</p>
         </section>
       </main>
     );
@@ -110,31 +88,42 @@ export function AuthGate({ children }: AuthGateProps) {
     const currentPath = window.location.pathname;
     const slug = currentPath === '/' ? 'main' : currentPath.replace(/^\//, '');
     const botLink = `https://t.me/${TELEGRAM_BOT}?start=${encodeURIComponent(slug)}`;
+    const isTelegram = !!(window as any).Telegram?.WebApp;
 
     return (
       <main>
         <section className="hero">
           <h1>WWWUABot</h1>
-          <p className="hero-text">
-            Для доступу до веб-платформи авторизуйтесь через Telegram бот.
-          </p>
-          <a
-            className="btn btn-telegram"
-            href={botLink}
-            target="_blank"
-            rel="noopener noreferrer"
-            onClick={(e) => {
-              e.preventDefault();
-              const tg = (window as any).Telegram?.WebApp;
-              if (tg?.close) {
-                tg.close();
-              } else {
-                window.location.href = botLink;
-              }
-            }}
-          >
-            ✈ Authorize via Telegram
-          </a>
+          {isTelegram ? (
+            // Відкрито в Telegram, але SDK не повернув user_id
+            // Можливо inline keyboard кнопка — потрібен restart
+            <>
+              <p className="hero-text">
+                Авторизацію не вдалося визначити. Спробуйте оновити сторінку.
+              </p>
+              <button
+                className="btn btn-telegram"
+                onClick={() => window.location.reload()}
+              >
+                🔄 Оновити
+              </button>
+            </>
+          ) : (
+            // Відкрито в браузері — направляємо в Telegram
+            <>
+              <p className="hero-text">
+                Відкрийте веб-платформу через Telegram бот.
+              </p>
+              <a
+                className="btn btn-telegram"
+                href={botLink}
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                ✈ Відкрити в Telegram
+              </a>
+            </>
+          )}
         </section>
       </main>
     );
