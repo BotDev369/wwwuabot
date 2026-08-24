@@ -1,7 +1,8 @@
 import { useEffect, useState, useCallback } from 'react';
+import { Link } from 'react-router-dom';
 
 interface MyDate {
-  id: number;
+  id: string;
   user_id: number;
   date: string;
   alias: string;
@@ -109,7 +110,7 @@ export function MyDatesPage({ onScenarioName }: { onScenarioName: (name: string 
     }
   };
 
-  const handleDelete = async (id: number) => {
+  const handleDelete = async (id: string) => {
     if (!userId) return;
     try {
       const res = await fetch(`/api/my-dates?id=${id}`, {
@@ -220,9 +221,9 @@ export function MyDatesPage({ onScenarioName }: { onScenarioName: (name: string 
                   <p className="my-date-notes">{d.notes}</p>
                 )}
                 <div className="my-date-card-actions">
-                  <a className="btn btn-sm btn-analyze" href={`/mydate/${d.date}`}>
+                  <Link className="btn btn-sm btn-analyze" to={`/mydate/${d.date}`}>
                     Аналізувати
-                  </a>
+                  </Link>
                   <button
                     className="icon-btn danger"
                     onClick={() => handleDelete(d.id)}
