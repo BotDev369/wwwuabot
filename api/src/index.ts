@@ -502,6 +502,11 @@ async function saveAnalysis(db: D1Database, kv: KVNamespace, date: string, syste
             needsMigration = true;
             return { ...d, type: "other" };
           }
+          // Якщо tags відсутні або не масив — відновити з category або порожній
+          if (d.name !== undefined && !Array.isArray(d.tags)) {
+            needsMigration = true;
+            return { ...d, tags: d.category ? [d.category] : [] };
+          }
           return d;
         });
 
