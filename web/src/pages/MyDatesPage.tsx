@@ -349,23 +349,12 @@ export function MyDatesPage({ onScenarioName }: { onScenarioName: (name: string 
   const [modalMode, setModalMode] = useState<ModalMode | null>(null);
   const [modalDate, setModalDate] = useState<MyDate | null>(null);
 
-  // Row dropdown
-  const [openDropdown, setOpenDropdown] = useState<string | null>(null);
-  const dropdownRef = useRef<HTMLDivElement>(null);
+  // Row action modal
+  const [rowActionDate, setRowActionDate] = useState<MyDate | null>(null);
 
   // Header context menu
   const [headerMenu, setHeaderMenu] = useState<{ field: SortField; mode: 'menu' | 'filter' } | null>(null);
   const [headerFilterText, setHeaderFilterText] = useState('');
-
-  // Close row dropdown on outside click
-  useEffect(() => {
-    const handler = (e: MouseEvent) => {
-      const target = e.target as Node;
-      if (dropdownRef.current && !dropdownRef.current.contains(target)) setOpenDropdown(null);
-    };
-    document.addEventListener('mousedown', handler);
-    return () => document.removeEventListener('mousedown', handler);
-  }, []);
 
   useEffect(() => {
     onScenarioName('MyDate');
@@ -830,27 +819,7 @@ export function MyDatesPage({ onScenarioName }: { onScenarioName: (name: string 
                     return (
                       <tr key={d.id} className={selectedIds.has(d.id) ? 'selected' : ''}>
                         <td className="sticky-col-menu">
-                          <div className={`row-dropdown ${openDropdown === d.id ? 'open' : ''}`} ref={openDropdown === d.id ? dropdownRef : undefined}>
-                            <button className="row-dropdown-toggle" onClick={(e) => {
-                              e.stopPropagation();
-                              const isOpen = openDropdown === d.id;
-                              setOpenDropdown(isOpen ? null : d.id);
-                              if (!isOpen) {
-                                const rect = (e.currentTarget as HTMLElement).getBoundingClientRect();
-                                const menuEl = (e.currentTarget as HTMLElement).nextElementSibling as HTMLElement;
-                                if (menuEl) {
-                                  menuEl.style.top = rect.bottom + 2 + 'px';
-                                  menuEl.style.left = Math.min(rect.left, window.innerWidth - 170) + 'px';
-                                }
-                              }
-                            }}>⋮</button>
-                            <div className="row-dropdown-menu">
-                              <Link className="row-dropdown-item" to={`/mydate/${d.date}`} onClick={() => setOpenDropdown(null)}>📊 Аналіз</Link>
-                              <button className="row-dropdown-item" onClick={() => { setModalMode('view'); setModalDate(d); setOpenDropdown(null); }}>👁 Переглянути</button>
-                              <button className="row-dropdown-item" onClick={() => { setModalMode('edit'); setModalDate(d); setOpenDropdown(null); }}>✏️ Редагувати</button>
-                              <button className="row-dropdown-item danger" onClick={() => { handleDelete(d.id); setOpenDropdown(null); }}>🗑 Видалити</button>
-                            </div>
-                          </div>
+                          <button className="row-dropdown-toggle" onClick={() => setRowActionDate(d)}>⋮</button>
                         </td>
                         <td className="sticky-col-check">
                           <input type="checkbox" checked={selectedIds.has(d.id)}
@@ -948,6 +917,25 @@ export function MyDatesPage({ onScenarioName }: { onScenarioName: (name: string 
                   )}
                 </div>
               )}
+            </div>
+          </div>
+        )}
+
+        {/* ═══ ROW ACTION MODAL ═══ */}
+        {rowActionDate && (
+          <div className="modal-overlay" onClick={() => setRowActionDate(null)}>
+            <div className="header-modal row-action-modal" onClick={e => e.stopPropagation()}>
+              <div className="header-modal-header">
+                <span className="header-modal-title">{rowActionDate.name || rowActionDate.date}</span>
+                <button className="header-modal-close" onClick={() => setRowActionDate(null)}>✕</button>
+              </div>
+              <div className="header-modal-body">
+                <Link className="header-modal-btn" to={`/mydate/${rowActionDate.date}`} onClick={() => setRowActionDate(null)}>📊 Аналіз</Link>
+                <button className="header-modal-btn" onClick={() => { setModalMode('view'); setModalDate(rowActionDate); setRowActionDate(null); }}>👁 Переглянути</button>
+                <button className="header-modal-btn" onClick={() => { setModalMode('edit'); setModalDate(rowActionDate); setRowActionDate(null); }}>✏️ Редагувати</button>
+                <div className="header-modal-divider" />
+                <button className="header-modal-btn header-modal-btn--danger" onClick={() => { handleDelete(rowActionDate.id); setRowActionDate(null); }}>🗑 Видалити</button>
+              </div>
             </div>
           </div>
         )}

@@ -219,15 +219,9 @@ footer{padding:14px 20px;background:#1c1c1c;color:#9a9a9a;font-size:13px;text-al
 .dates-table tr:last-child td{border-bottom:none}
 
 /* Випадаюче меню дій */
-.row-dropdown{position:static;display:inline-block}
 .row-dropdown-toggle{width:28px;height:28px;border-radius:6px;border:1px solid #ddd;background:#fff;cursor:pointer;font-size:16px;color:#555;display:flex;align-items:center;justify-content:center;line-height:1}
 .row-dropdown-toggle:hover{background:#f0f0f0}
-.row-dropdown-menu{display:none;position:fixed;min-width:160px;background:#fff;border:1px solid #e5e5e5;border-radius:8px;box-shadow:0 4px 16px rgba(0,0,0,.15);z-index:1000;padding:4px 0}
-.row-dropdown.open .row-dropdown-menu{display:block}
-.row-dropdown-item{display:flex;align-items:center;gap:8px;width:100%;padding:9px 14px;font-size:13px;color:#111;background:none;border:none;cursor:pointer;text-align:left;transition:background .1s}
-.row-dropdown-item:hover{background:#f5f5f5}
-.row-dropdown-item.danger{color:#dc2626}
-.row-dropdown-item.danger:hover{background:#fef2f2}
+.row-action-modal{max-width:280px}
 
 /* Фільтри */
 .table-filters{display:flex;flex-wrap:wrap;gap:8px;margin:12px 0 0;align-items:center}
