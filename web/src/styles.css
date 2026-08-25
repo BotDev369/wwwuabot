@@ -106,75 +106,99 @@ footer{padding:14px 20px;background:#1c1c1c;color:#9a9a9a;font-size:13px;text-al
 .sys-param input{width:16px;height:16px;cursor:pointer}
 
 /* ═══════════════════════════════════════════════════
-   МОЇ ДАТИ — ФОРМА ТА СПИСОК
+   МОЇ ДАТИ — СТОРІНКА
    ═══════════════════════════════════════════════════ */
-.my-dates-form{background:#f7f7f7;border:1px solid #e5e5e5;border-radius:10px;padding:20px;margin:24px 0 20px;text-align:left}
-.form-title{font-size:16px;font-weight:700;color:#111;margin:0 0 14px}
-.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px}
-.form-field{display:flex;flex-direction:column;gap:4px}
-.form-field.full-width{grid-column:1 / -1}
-.form-label{font-size:13px;font-weight:600;color:#4a4a4a}
-.text-input{padding:10px 14px;font-size:15px;border-radius:6px;border:1px solid #ccc;width:100%}
-.text-input:focus{outline:none;border-color:#999}
-.textarea{resize:vertical;min-height:48px}
+.page-header{display:flex;align-items:baseline;gap:12px;justify-content:center}
+.date-count{font-size:14px;color:#8a8a8a;font-weight:400}
 
-.my-dates-list{margin-top:20px;display:flex;flex-direction:column;gap:10px}
-.my-date-card{background:#fff;border:1px solid #e5e5e5;border-radius:10px;padding:16px;text-align:left;transition:border-color .15s ease}
-.my-date-card:hover{border-color:#ccc}
-.my-date-card-header{display:flex;align-items:center;gap:10px;margin-bottom:6px;flex-wrap:wrap}
-.my-date-value{font-size:18px;font-weight:800;color:#111}
-.my-date-alias{font-size:14px;color:#4a4a4a;background:#f0f0f0;padding:2px 8px;border-radius:4px}
-.my-date-category{display:inline-block;font-size:12px;font-weight:600;color:var(--brand-red);background:#fbeae9;padding:2px 8px;border-radius:4px;margin-bottom:6px}
-.my-date-notes{font-size:14px;color:#4a4a4a;line-height:1.4;margin:4px 0 8px}
-.my-date-card-actions{display:flex;align-items:center;gap:8px;margin-top:8px}
+/* Кнопки */
 .btn-sm{padding:8px 16px;font-size:13px;margin-top:0}
 .btn-secondary{background:#f0f0f0;color:#111;border:1px solid #ccc}
 .btn-secondary:hover{background:#e0e0e0}
+.btn-danger{background:#fff;color:#dc2626;border:1px solid #fca5a5}
+.btn-danger:hover{background:#fef2f2;border-color:#dc2626}
 .btn-analyze{background:var(--brand-red)}
 .btn-analyze:hover{background:#a93226}
 .btn-compare{background:#2c3e50;color:#fff}
 .btn-compare:hover{background:#1a252f}
+.btn-add-bottom{margin-top:20px;display:block;width:100%}
 
-/* ═══════════════════════════════════════════════════
-   СОРТУВАННЯ ТА ФІЛЬТРУВАННЯ — ТУЛБАР
-   ═══════════════════════════════════════════════════ */
-.my-dates-toolbar{display:flex;flex-wrap:wrap;gap:12px;align-items:center;margin:16px 0;padding:12px 16px;background:#f7f7f7;border:1px solid #e5e5e5;border-radius:10px}
-.toolbar-group{display:flex;align-items:center;gap:8px}
-.toolbar-label{font-size:13px;font-weight:600;color:#4a4a4a;white-space:nowrap}
-.sort-controls{display:flex;align-items:center;gap:6px}
-.sort-select,.filter-field-select{padding:8px 12px;font-size:13px;border-radius:6px;border:1px solid #ccc;background:#fff;color:#111;cursor:pointer}
-.sort-select:focus,.filter-field-select:focus{outline:none;border-color:#999}
-.sort-order-btn{padding:8px 12px;font-size:13px;font-weight:600;border-radius:6px;border:1px solid #ccc;background:#fff;color:#111;cursor:pointer;transition:background .15s ease}
-.sort-order-btn:hover{background:#f0f0f0}
-.toolbar-btn{padding:8px 14px;font-size:13px;font-weight:600;border-radius:6px;border:1px solid #ccc;background:#fff;color:#111;cursor:pointer;transition:background .15s ease}
-.toolbar-btn:hover{background:#f0f0f0}
-.toolbar-btn.active{background:var(--black);color:#fff;border-color:var(--black)}
-.filter-controls{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
-.filter-value-input{padding:8px 12px;font-size:13px;border-radius:6px;border:1px solid #ccc;width:180px}
-.filter-value-input:focus{outline:none;border-color:#999}
-.btn-clear-filter{padding:6px 12px;font-size:12px;background:#fbeae9;color:var(--brand-red);border:1px solid #e5c4c0}
-.btn-clear-filter:hover{background:#f5d0cd}
+/* ═══ АКОРДЕОН ═══ */
+.accordion{border:1px solid #e5e5e5;border-radius:10px;margin:20px 0;overflow:hidden}
+.accordion-toggle{width:100%;display:flex;align-items:center;gap:8px;padding:14px 18px;background:#f7f7f7;border:none;cursor:pointer;font-size:15px;font-weight:700;color:#111;transition:background .15s ease}
+.accordion-toggle:hover{background:#efefef}
+.accordion-icon{font-size:10px;transition:transform .2s ease;display:inline-block}
+.accordion-icon.rotated{transform:rotate(90deg)}
+.accordion-content{padding:18px;background:#fff;border-top:1px solid #e5e5e5;text-align:left}
 
-/* ═══════════════════════════════════════════════════
-   ВИПАДАЮЧЕ МЕНЮ (DROPDOWN)
-   ═══════════════════════════════════════════════════ */
-.dropdown{position:relative;display:inline-block}
-.dropdown-toggle{font-size:18px;font-weight:700;letter-spacing:2px}
-.dropdown-menu{display:none;position:absolute;right:0;top:calc(100% + 4px);min-width:160px;background:#fff;border:1px solid #e5e5e5;border-radius:8px;box-shadow:0 4px 16px rgba(0,0,0,.1);z-index:10;padding:4px 0}
-.dropdown:hover .dropdown-menu,.dropdown:focus-within .dropdown-menu{display:block}
-.dropdown-item{display:flex;align-items:center;gap:8px;width:100%;padding:10px 14px;font-size:14px;color:#111;background:none;border:none;cursor:pointer;text-align:left;transition:background .1s ease}
-.dropdown-item:hover{background:#f5f5f5}
-.dropdown-item.danger{color:var(--brand-red)}
+/* Тип-селектор */
+.type-selector{display:flex;gap:8px;flex-wrap:wrap}
+.type-chip{padding:6px 14px;border-radius:20px;border:2px solid #e5e5e5;background:#fff;font-size:13px;font-weight:600;cursor:pointer;transition:all .15s ease}
+.type-chip:hover{opacity:.85}
+.type-chip.active{box-shadow:0 0 0 1px transparent}
+.type-chip:disabled{opacity:.5;cursor:default}
+
+/* Теги */
+.tags-input-wrapper{display:flex;flex-wrap:wrap;gap:6px;align-items:center;padding:8px 10px;border:1px solid #ccc;border-radius:6px;min-height:40px;background:#fff}
+.tags-input-wrapper:focus-within{border-color:#999}
+.tag-chip{display:inline-flex;align-items:center;gap:4px;padding:3px 10px;border-radius:12px;font-size:12px;font-weight:600;line-height:1.4}
+.tag-chip--sm{padding:2px 8px;font-size:11px}
+.tag-remove{background:none;border:none;cursor:pointer;font-size:14px;line-height:1;padding:0 2px;opacity:.6}
+.tag-remove:hover{opacity:1}
+.tag-input-container{position:relative;flex:1;min-width:80px}
+.tag-input{border:none;outline:none;font-size:13px;width:100%;padding:4px 0;background:transparent}
+.tag-suggestions{position:absolute;top:100%;left:0;right:0;background:#fff;border:1px solid #e5e5e5;border-radius:8px;box-shadow:0 4px 12px rgba(0,0,0,.1);z-index:20;padding:4px 0;max-height:200px;overflow-y:auto}
+.tag-suggestion-item{display:block;width:100%;text-align:left;padding:8px 14px;border:none;background:none;cursor:pointer;font-size:13px;color:#111}
+.tag-suggestion-item:hover{background:#f5f5f5}
+
+/* ═══ ТАБЛИЦЯ ═══ */
+.table-wrap{border:1px solid #e5e5e5;border-radius:10px;margin-top:16px;text-align:left;overflow:visible}
+.dates-table{border-collapse:separate;border-spacing:0;width:100%;min-width:640px;font-size:14px}
+.dates-table th,.dates-table td{border-bottom:1px solid #eee;border-right:1px solid #eee;padding:10px 12px;text-align:left;background:#fff;white-space:nowrap}
+.dates-table thead th{position:sticky;top:0;z-index:2;background:#f7f7f7;color:#111;font-weight:700;cursor:default;user-select:none}
+.dates-table th.sortable{cursor:pointer}
+.dates-table th.sortable:hover{background:#efefef}
+.sort-arrow{font-size:11px;margin-left:4px;color:var(--brand-red)}
+.dates-table th.corner{position:sticky;left:0;z-index:3;background:#ececec;min-width:42px}
+.dates-table tr.selected td{background:#f0f7ff}
+.dates-table tr.selected td.corner{background:#dbeafe}
+.dates-table td.date-cell{font-weight:700;color:#111;min-width:60px}
+.dates-table td.type-cell{min-width:100px}
+.type-badge{display:inline-flex;align-items:center;gap:4px;padding:3px 10px;border-radius:12px;font-size:12px;font-weight:600;white-space:nowrap}
+.dates-table td.name-cell{font-weight:600;color:#111;min-width:120px}
+.dates-table td.tags-cell{min-width:140px}
+.tags-inline{display:flex;flex-wrap:wrap;gap:4px}
+.no-tags{color:#ccc}
+.dates-table td.actions-cell,.dates-table th.actions-col{text-align:right}
+.dates-table .actions-cell{display:flex;gap:4px;justify-content:flex-end}
+.dates-table tr:last-child td{border-bottom:none}
+
+/* Фільтри */
+.table-filters{display:flex;flex-wrap:wrap;gap:8px;margin:12px 0 0;align-items:center}
+.filter-search{padding:8px 12px;font-size:13px;border-radius:6px;border:1px solid #ccc;width:200px}
+.filter-search:focus{outline:none;border-color:#999}
+.filter-select{padding:8px 12px;font-size:13px;border-radius:6px;border:1px solid #ccc;background:#fff;cursor:pointer}
+.filter-select:focus{outline:none;border-color:#999}
+
+/* Bulk actions */
+.bulk-bar{display:flex;align-items:center;gap:10px;margin:12px 0 0;padding:10px 16px;background:#eff6ff;border:1px solid #bfdbfe;border-radius:10px;flex-wrap:wrap}
+.bulk-count{font-size:13px;font-weight:700;color:#1d4ed8}
+
+.row-checkbox{width:16px;height:16px;cursor:pointer}
 .dropdown-item.danger:hover{background:#fbeae9}
 
 /* ═══════════════════════════════════════════════════
    МОДАЛЬНЕ ВІКНО (EDIT MODAL)
    ═══════════════════════════════════════════════════ */
 .modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.45);display:flex;align-items:center;justify-content:center;z-index:100;padding:20px}
-.modal{background:#fff;border-radius:12px;padding:24px;max-width:480px;width:100%;max-height:90vh;overflow-y:auto;box-shadow:0 8px 32px rgba(0,0,0,.2)}
-.modal h3{margin:0 0 16px;font-size:18px;font-weight:700;color:#111}
-.modal-actions{display:flex;justify-content:flex-end;gap:10px;margin-top:20px}
-.modal-actions .btn{margin-top:0;padding:10px 20px;font-size:14px}
+.modal{background:#fff;border-radius:12px;max-width:480px;width:100%;max-height:90vh;overflow-y:auto;box-shadow:0 8px 32px rgba(0,0,0,.2);display:flex;flex-direction:column}
+.modal-header{display:flex;align-items:center;justify-content:space-between;padding:18px 20px 0}
+.modal-header h3{margin:0;font-size:18px;font-weight:700;color:#111}
+.modal-close{background:none;border:none;font-size:24px;color:#999;cursor:pointer;padding:4px 8px;line-height:1}
+.modal-close:hover{color:#111}
+.modal-body{padding:16px 20px;overflow-y:auto;flex:1}
+.modal-actions{display:flex;align-items:center;gap:10px;padding:14px 20px;border-top:1px solid #eee;flex-wrap:wrap}
+.modal-actions .btn{margin-top:0;padding:8px 16px;font-size:13px}
 
 /* MyDate — таблиця співставлення */
 .table-wrap{border:1px solid #e5e5e5;border-radius:8px;margin-top:16px;text-align:left;overflow:visible}
@@ -254,24 +278,26 @@ footer{padding:14px 20px;background:#1c1c1c;color:#9a9a9a;font-size:13px;text-al
 /* My Dates — mobile */
 @media (max-width:768px){
   .form-grid{grid-template-columns:1fr}
-  .my-dates-form{padding:16px}
-  .my-date-card-header{flex-direction:column;align-items:flex-start;gap:4px}
-  .my-date-card-actions{flex-wrap:wrap}
-  .btn-sm{width:100%;text-align:center}
-  .my-date-card-actions .icon-btn{flex-shrink:0}
 
-  /* Toolbar → stack vertically */
-  .my-dates-toolbar{flex-direction:column;align-items:stretch;gap:10px;padding:12px}
-  .toolbar-group{flex-wrap:wrap}
-  .sort-controls{flex-wrap:wrap}
-  .filter-controls{flex-direction:column;align-items:stretch}
-  .filter-value-input{width:100%}
-  .sort-select,.filter-field-select{flex:1;min-width:0}
+  /* Table → horizontal scroll */
+  .table-filters{flex-direction:column;align-items:stretch}
+  .filter-search{width:100%}
+  .filter-select{width:100%}
+  .table-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch}
+  .dates-table{font-size:13px;min-width:520px}
+  .dates-table th,.dates-table td{padding:8px 10px}
+  .dates-table th.corner{min-width:36px}
+
+  /* Bulk bar */
+  .bulk-bar{flex-direction:column;align-items:stretch}
+  .bulk-bar .btn{width:100%;text-align:center}
 
   /* Modal → full width */
-  .modal-overlay{padding:12px}
-  .modal{padding:18px}
-  .modal-actions{flex-direction:column}
+  .modal-overlay{padding:10px}
+  .modal{max-height:95vh}
+  .modal-body{padding:12px 16px}
+  .modal-actions{flex-direction:column;gap:8px}
+  .modal-actions .btn{width:100%;text-align:center}
   .modal-actions .btn{width:100%;text-align:center}
 }
 

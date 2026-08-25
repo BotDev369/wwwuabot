@@ -472,6 +472,7 @@ async function saveAnalysis(db: D1Database, kv: KVNamespace, date: string, syste
 
         // Читаємо my_dates з JSON колонки
         let dates: any[] = [];
+        let needsMigration = false;
         try {
           const raw = (user as any).my_dates;
           if (raw && typeof raw === "string") {
@@ -481,6 +482,28 @@ async function saveAnalysis(db: D1Database, kv: KVNamespace, date: string, syste
             dates = raw.items;
           }
         } catch { dates = []; }
+
+        // Міграція: старі формати (alias/category) → нові (name/type/tags)
+        dates = dates.map((d: any) => {
+          if (d.name === undefined && (d.alias || d.category)) {
+            needsMigration = true;
+            return {
+              ...d,
+              type: d.type || d.category || "other",
+              name: d.name || d.alias || "",
+              tags: Array.isArray(d.tags) ? d.tags : (d.category ? [d.category] : []),
+              created_at: d.created_at || new Date().toISOString().replace("T", " ").slice(0, 19),
+              updated_at: d.updated_at || d.created_at || new Date().toISOString().replace("T", " ").slice(0, 19),
+            };
+          }
+          return d;
+        });
+
+        // Зберігаємо мігровані дані
+        if (needsMigration && dates.length > 0) {
+          await env.DB.prepare("UPDATE users SET my_dates = ? WHERE user_id = ?")
+            .bind(JSON.stringify({ items: dates }), userId).run();
+        }
 
         // GET — список дат
         if (request.method === "GET") {
@@ -493,14 +516,19 @@ async function saveAnalysis(db: D1Database, kv: KVNamespace, date: string, syste
           try { body = await request.json(); } catch {
             return json({ ok: false, error: "Invalid JSON" }, 400);
           }
-          const { date, alias, category, notes } = body;
+          const { date, type, name, tags, notes, alias, category } = body;
           if (!date) return json({ ok: false, error: "date is required" }, 400);
 
+          const now = new Date().toISOString().replace("T", " ").slice(0, 19);
           const newDate = {
             id: Date.now().toString(36) + Math.random().toString(36).slice(2, 6),
             user_id: userId, date,
-            alias: alias || "", category: category || "", notes: notes || "",
-            created_at: new Date().toISOString().replace("T", " ").slice(0, 19),
+            type: type || alias && !category ? "other" : (category || "other"),
+            name: name || alias || "",
+            tags: Array.isArray(tags) ? tags : (category ? [category] : []),
+            notes: notes || "",
+            created_at: now,
+            updated_at: now,
           };
           dates.push(newDate);
 
@@ -516,14 +544,22 @@ async function saveAnalysis(db: D1Database, kv: KVNamespace, date: string, syste
           try { body = await request.json(); } catch {
             return json({ ok: false, error: "Invalid JSON" }, 400);
           }
-          const { id, date, alias, category, notes } = body;
+          const { id, date, type, name, tags, notes, alias, category } = body;
           if (!id) return json({ ok: false, error: "id is required" }, 400);
           if (!date) return json({ ok: false, error: "date is required" }, 400);
 
           const idx = dates.findIndex((d: any) => d.id === id);
           if (idx === -1) return json({ ok: false, error: "Not found" }, 404);
 
-          dates[idx] = { ...dates[idx], date, alias: alias || "", category: category || "", notes: notes || "" };
+          dates[idx] = {
+            ...dates[idx],
+            date,
+            type: type || dates[idx].type || "other",
+            name: name || alias || dates[idx].name || "",
+            tags: Array.isArray(tags) ? tags : (category ? [category] : dates[idx].tags || []),
+            notes: notes || "",
+            updated_at: new Date().toISOString().replace("T", " ").slice(0, 19),
+          };
 
           await env.DB.prepare("UPDATE users SET my_dates = ? WHERE user_id = ?")
             .bind(JSON.stringify({ items: dates }), userId).run();
@@ -531,18 +567,20 @@ async function saveAnalysis(db: D1Database, kv: KVNamespace, date: string, syste
           return json({ ok: true });
         }
 
-        // DELETE — видалити дату
+        // DELETE — видалити дату(и)
         if (request.method === "DELETE") {
           const id = url.searchParams.get("id");
-          if (!id) return json({ ok: false, error: "id required" }, 400);
+          const ids = url.searchParams.get("ids");
+          if (!id && !ids) return json({ ok: false, error: "id or ids required" }, 400);
 
-          const filtered = dates.filter((d: any) => d.id !== id);
+          const toDelete = ids ? ids.split(",").filter(Boolean) : [id!];
+          const filtered = dates.filter((d: any) => !toDelete.includes(d.id));
           if (filtered.length === dates.length) return json({ ok: false, error: "Not found" }, 404);
 
           await env.DB.prepare("UPDATE users SET my_dates = ? WHERE user_id = ?")
             .bind(JSON.stringify({ items: filtered }), userId).run();
 
-          return json({ ok: true });
+          return json({ ok: true, deleted: toDelete.length });
         }
 
         return json({ ok: false, error: "Method not allowed" }, 405);
