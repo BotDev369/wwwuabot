@@ -502,10 +502,10 @@ async function saveAnalysis(db: D1Database, kv: KVNamespace, date: string, syste
             needsMigration = true;
             return { ...d, type: "other" };
           }
-          // Якщо tags відсутні або не масив — відновити з category або порожній
-          if (d.name !== undefined && !Array.isArray(d.tags)) {
+          // Якщо tags порожні або не масив — відновити з category
+          if (d.name !== undefined && (!Array.isArray(d.tags) || d.tags.length === 0) && d.category) {
             needsMigration = true;
-            return { ...d, tags: d.category ? [d.category] : [] };
+            return { ...d, tags: [d.category] };
           }
           return d;
         });
@@ -564,12 +564,16 @@ async function saveAnalysis(db: D1Database, kv: KVNamespace, date: string, syste
           if (idx === -1) return json({ ok: false, error: "Not found" }, 404);
 
           const VALID_TYPES_PUT = ["person", "event", "other"];
+          // Зберігаємо tags з БД якщо frontend надіслав порожній масив
+          const existingTags = dates[idx].tags || [];
+          const incomingTags = Array.isArray(tags) ? tags : (category ? [category] : undefined);
+          const finalTags = incomingTags && incomingTags.length > 0 ? incomingTags : (existingTags.length > 0 ? existingTags : []);
           dates[idx] = {
             ...dates[idx],
             date,
             type: VALID_TYPES_PUT.includes(type) ? type : (dates[idx].type || "other"),
             name: name || alias || dates[idx].name || "",
-            tags: Array.isArray(tags) ? tags : (category ? [category] : dates[idx].tags || []),
+            tags: finalTags,
             notes: notes || "",
             updated_at: new Date().toISOString().replace("T", " ").slice(0, 19),
           };

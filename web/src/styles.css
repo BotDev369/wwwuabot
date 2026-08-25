@@ -132,14 +132,14 @@ footer{padding:14px 20px;background:#1c1c1c;color:#9a9a9a;font-size:13px;text-al
 .accordion-content{padding:18px;background:#fff;border-top:1px solid #e5e5e5;text-align:left}
 
 /* Форма (акордеон + модалка) */
-.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px}
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:16px}
 .form-grid .form-field.span-full{grid-column:1/-1}
-.form-field{display:flex;flex-direction:column;gap:4px}
+.form-field{display:flex;flex-direction:column;gap:5px}
 .form-field.full-width{grid-column:1/-1}
-.form-label{font-size:13px;font-weight:600;color:#4a4a4a}
-.text-input{padding:10px 14px;font-size:15px;border-radius:6px;border:1px solid #ccc;width:100%}
-.text-input:focus{outline:none;border-color:#999}
-.textarea{resize:vertical;min-height:48px}
+.form-label{font-size:13px;font-weight:600;color:#374151;margin-bottom:1px}
+.text-input{padding:10px 14px;font-size:15px;border-radius:8px;border:1.5px solid #d1d5db;width:100%;transition:border-color .15s}
+.text-input:focus{outline:none;border-color:#6366f1;box-shadow:0 0 0 3px rgba(99,102,241,.1)}
+.textarea{resize:vertical;min-height:60px}
 .type-selector{display:flex;gap:8px;flex-wrap:wrap}
 .type-chip{padding:6px 14px;border-radius:20px;border:2px solid #e5e5e5;background:#fff;font-size:13px;font-weight:600;cursor:pointer;transition:all .15s ease}
 .type-chip:hover{opacity:.85}
@@ -179,15 +179,23 @@ footer{padding:14px 20px;background:#1c1c1c;color:#9a9a9a;font-size:13px;text-al
 .dates-table td.type-cell{min-width:90px}
 .type-badge{display:inline-flex;align-items:center;gap:3px;padding:3px 8px;border-radius:12px;font-size:11px;font-weight:600;white-space:nowrap}
 .dates-table td.notes-cell{max-width:120px;overflow:hidden;text-overflow:ellipsis;font-size:12px;color:#888}
-.dates-table td.menu-cell{position:sticky;left:0;z-index:1;background:#fff;min-width:36px;text-align:center}
-.dates-table tr.selected td.menu-cell{background:#dbeafe}
+/* Sticky 3 columns (menu + check + name) */
+.dates-table .sticky-col-menu{position:sticky;left:0;z-index:5;background:inherit;min-width:36px;text-align:center}
+.dates-table .sticky-col-check{position:sticky;left:36px;z-index:5;background:inherit;min-width:36px;text-align:center}
+.dates-table .sticky-col-name{position:sticky;left:72px;z-index:5;background:inherit;min-width:100px}
+.dates-table td.sticky-col-menu{position:sticky;left:0;z-index:3;background:#fff;min-width:36px;text-align:center}
+.dates-table td.sticky-col-check{position:sticky;left:36px;z-index:3;background:#fff;min-width:36px;text-align:center}
+.dates-table td.sticky-col-name{position:sticky;left:72px;z-index:3;background:#fff;min-width:100px;font-weight:600;color:#111}
+.dates-table tr.selected td.sticky-col-menu,
+.dates-table tr.selected td.sticky-col-check,
+.dates-table tr.selected td.sticky-col-name{background:#dbeafe}
 .dates-table tr:last-child td{border-bottom:none}
 
 /* Випадаюче меню дій */
-.row-dropdown{position:relative;display:inline-block}
+.row-dropdown{position:static;display:inline-block}
 .row-dropdown-toggle{width:28px;height:28px;border-radius:6px;border:1px solid #ddd;background:#fff;cursor:pointer;font-size:16px;color:#555;display:flex;align-items:center;justify-content:center;line-height:1}
 .row-dropdown-toggle:hover{background:#f0f0f0}
-.row-dropdown-menu{display:none;position:absolute;right:0;top:calc(100% + 2px);min-width:150px;background:#fff;border:1px solid #e5e5e5;border-radius:8px;box-shadow:0 4px 16px rgba(0,0,0,.12);z-index:50;padding:4px 0}
+.row-dropdown-menu{display:none;position:fixed;min-width:160px;background:#fff;border:1px solid #e5e5e5;border-radius:8px;box-shadow:0 4px 16px rgba(0,0,0,.15);z-index:1000;padding:4px 0}
 .row-dropdown.open .row-dropdown-menu{display:block}
 .row-dropdown-item{display:flex;align-items:center;gap:8px;width:100%;padding:9px 14px;font-size:13px;color:#111;background:none;border:none;cursor:pointer;text-align:left;transition:background .1s}
 .row-dropdown-item:hover{background:#f5f5f5}
@@ -308,7 +316,12 @@ footer{padding:14px 20px;background:#1c1c1c;color:#9a9a9a;font-size:13px;text-al
   .dates-table{font-size:13px;min-width:500px}
   .dates-table th,.dates-table td{padding:8px 6px}
   .dates-table th.corner{min-width:34px}
-  .dates-table td.menu-cell{min-width:34px}
+  .dates-table .sticky-col-menu{min-width:30px}
+  .dates-table .sticky-col-check{left:30px;min-width:30px}
+  .dates-table .sticky-col-name{left:60px;min-width:70px}
+  .dates-table td.sticky-col-menu{min-width:30px}
+  .dates-table td.sticky-col-check{left:30px;min-width:30px}
+  .dates-table td.sticky-col-name{left:60px;min-width:70px}
   .dates-table td.date-cell{min-width:80px;font-size:12px}
   .dates-table td.name-cell{min-width:80px}
   .dates-table td.tags-cell{min-width:90px}

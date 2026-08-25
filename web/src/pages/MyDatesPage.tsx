@@ -20,7 +20,7 @@ interface MyDate {
   category?: string;
 }
 
-type SortField = 'date' | 'type' | 'name' | 'created_at';
+type SortField = 'date' | 'type' | 'name' | 'tags' | 'notes' | 'created_at';
 type SortOrder = 'asc' | 'desc';
 type ModalMode = 'create' | 'edit' | 'view';
 
@@ -460,6 +460,14 @@ export function MyDatesPage({ onScenarioName }: { onScenarioName: (name: string 
           aVal = (a.type || '').toLowerCase();
           bVal = (b.type || '').toLowerCase();
           break;
+        case 'tags':
+          aVal = (a.tags || []).join(', ').toLowerCase();
+          bVal = (b.tags || []).join(', ').toLowerCase();
+          break;
+        case 'notes':
+          aVal = (a.notes || '').toLowerCase();
+          bVal = (b.notes || '').toLowerCase();
+          break;
         case 'name':
         default:
           aVal = (a.name || '').toLowerCase();
@@ -761,22 +769,26 @@ export function MyDatesPage({ onScenarioName }: { onScenarioName: (name: string 
               <table className="dates-table">
                 <thead>
                   <tr>
-                    <th className="corner"></th>
-                    <th className="corner">
+                    <th className="sticky-col-menu"></th>
+                    <th className="sticky-col-check">
                       <input type="checkbox" checked={processedDates.length > 0 && selectedIds.size === processedDates.length}
                         onChange={toggleAll} className="row-checkbox" />
+                    </th>
+                    <th onClick={() => handleSort('name')} className="sortable sticky-col-name">
+                      Назва {sortField === 'name' && <span className="sort-arrow">{sortOrder === 'asc' ? '▲' : '▼'}</span>}
                     </th>
                     <th onClick={() => handleSort('date')} className="sortable">
                       Дата {sortField === 'date' && <span className="sort-arrow">{sortOrder === 'asc' ? '▲' : '▼'}</span>}
                     </th>
-                    <th onClick={() => handleSort('name')} className="sortable">
-                      Назва {sortField === 'name' && <span className="sort-arrow">{sortOrder === 'asc' ? '▲' : '▼'}</span>}
+                    <th onClick={() => handleSort('tags')} className="sortable">
+                      Теги {sortField === 'tags' && <span className="sort-arrow">{sortOrder === 'asc' ? '▲' : '▼'}</span>}
                     </th>
-                    <th>Теги</th>
                     <th onClick={() => handleSort('type')} className="sortable">
                       Тип {sortField === 'type' && <span className="sort-arrow">{sortOrder === 'asc' ? '▲' : '▼'}</span>}
                     </th>
-                    <th>Примітки</th>
+                    <th onClick={() => handleSort('notes')} className="sortable">
+                      Примітки {sortField === 'notes' && <span className="sort-arrow">{sortOrder === 'asc' ? '▲' : '▼'}</span>}
+                    </th>
                   </tr>
                 </thead>
                 <tbody>
@@ -785,9 +797,21 @@ export function MyDatesPage({ onScenarioName }: { onScenarioName: (name: string 
                     const typeLabel = d.type === 'person' ? 'Людина' : d.type === 'event' ? 'Подія' : d.type === 'other' ? 'Інше' : d.type;
                     return (
                       <tr key={d.id} className={selectedIds.has(d.id) ? 'selected' : ''}>
-                        <td className="menu-cell">
+                        <td className="sticky-col-menu">
                           <div className={`row-dropdown ${openDropdown === d.id ? 'open' : ''}`} ref={openDropdown === d.id ? dropdownRef : undefined}>
-                            <button className="row-dropdown-toggle" onClick={() => setOpenDropdown(openDropdown === d.id ? null : d.id)}>⋮</button>
+                            <button className="row-dropdown-toggle" onClick={(e) => {
+                              e.stopPropagation();
+                              const isOpen = openDropdown === d.id;
+                              setOpenDropdown(isOpen ? null : d.id);
+                              if (!isOpen) {
+                                const rect = (e.currentTarget as HTMLElement).getBoundingClientRect();
+                                const menuEl = (e.currentTarget as HTMLElement).nextElementSibling as HTMLElement;
+                                if (menuEl) {
+                                  menuEl.style.top = rect.bottom + 2 + 'px';
+                                  menuEl.style.left = Math.min(rect.left, window.innerWidth - 170) + 'px';
+                                }
+                              }
+                            }}>⋮</button>
                             <div className="row-dropdown-menu">
                               <Link className="row-dropdown-item" to={`/mydate/${d.date}`} onClick={() => setOpenDropdown(null)}>📊 Аналіз</Link>
                               <button className="row-dropdown-item" onClick={() => { setModalMode('view'); setModalDate(d); setOpenDropdown(null); }}>👁 Переглянути</button>
@@ -796,12 +820,12 @@ export function MyDatesPage({ onScenarioName }: { onScenarioName: (name: string 
                             </div>
                           </div>
                         </td>
-                        <td className="corner-cell">
+                        <td className="sticky-col-check">
                           <input type="checkbox" checked={selectedIds.has(d.id)}
                             onChange={() => toggleSelect(d.id)} className="row-checkbox" />
                         </td>
+                        <td className="sticky-col-name name-cell">{d.name || '—'}</td>
                         <td className="date-cell">{formatDateShort(d.date)}</td>
-                        <td className="name-cell">{d.name || '—'}</td>
                         <td className="tags-cell">
                           {(d.tags || []).length > 0 ? (
                             <div className="tags-inline">
