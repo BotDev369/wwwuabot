@@ -180,15 +180,15 @@ footer{padding:14px 20px;background:#1c1c1c;color:#9a9a9a;font-size:13px;text-al
 .type-badge{display:inline-flex;align-items:center;gap:3px;padding:3px 8px;border-radius:12px;font-size:11px;font-weight:600;white-space:nowrap}
 .dates-table td.notes-cell{max-width:120px;overflow:hidden;text-overflow:ellipsis;font-size:12px;color:#888}
 /* Sticky 3 columns (menu + check + name) */
-.dates-table .sticky-col-menu{position:sticky;left:0;z-index:5;background:inherit;min-width:36px;text-align:center}
-.dates-table .sticky-col-check{position:sticky;left:36px;z-index:5;background:inherit;min-width:36px;text-align:center}
-.dates-table .sticky-col-name{position:sticky;left:72px;z-index:5;background:inherit;min-width:100px}
-.dates-table td.sticky-col-menu{position:sticky;left:0;z-index:3;background:#fff;min-width:36px;text-align:center}
-.dates-table td.sticky-col-check{position:sticky;left:36px;z-index:3;background:#fff;min-width:36px;text-align:center}
-.dates-table td.sticky-col-name{position:sticky;left:72px;z-index:3;background:#fff;min-width:100px;font-weight:600;color:#111}
+.dates-table .sticky-col-menu{position:sticky;left:0;z-index:6;background:#f7f7f7;min-width:36px;text-align:center;border-right:1px solid #e5e5e5}
+.dates-table .sticky-col-check{position:sticky;left:37px;z-index:6;background:#f7f7f7;min-width:36px;text-align:center;border-right:1px solid #e5e5e5}
+.dates-table .sticky-col-name{position:sticky;left:74px;z-index:6;background:#f7f7f7;min-width:100px;border-right:1px solid #e5e5e5}
+.dates-table td.sticky-col-menu{position:sticky;left:0;z-index:4;background:#fff;min-width:36px;text-align:center;border-right:1px solid #eee}
+.dates-table td.sticky-col-check{position:sticky;left:37px;z-index:4;background:#fff;min-width:36px;text-align:center;border-right:1px solid #eee}
+.dates-table td.sticky-col-name{position:sticky;left:74px;z-index:4;background:#fff;min-width:100px;font-weight:600;color:#111;border-right:1px solid #eee}
 .dates-table tr.selected td.sticky-col-menu,
 .dates-table tr.selected td.sticky-col-check,
-.dates-table tr.selected td.sticky-col-name{background:#dbeafe}
+.dates-table tr.selected td.sticky-col-name{background:#dbeafe!important}
 .dates-table tr:last-child td{border-bottom:none}
 
 /* Випадаюче меню дій */
@@ -317,11 +317,11 @@ footer{padding:14px 20px;background:#1c1c1c;color:#9a9a9a;font-size:13px;text-al
   .dates-table th,.dates-table td{padding:8px 6px}
   .dates-table th.corner{min-width:34px}
   .dates-table .sticky-col-menu{min-width:30px}
-  .dates-table .sticky-col-check{left:30px;min-width:30px}
-  .dates-table .sticky-col-name{left:60px;min-width:70px}
+  .dates-table .sticky-col-check{left:31px;min-width:30px}
+  .dates-table .sticky-col-name{left:62px;min-width:70px}
   .dates-table td.sticky-col-menu{min-width:30px}
-  .dates-table td.sticky-col-check{left:30px;min-width:30px}
-  .dates-table td.sticky-col-name{left:60px;min-width:70px}
+  .dates-table td.sticky-col-check{left:31px;min-width:30px}
+  .dates-table td.sticky-col-name{left:62px;min-width:70px}
   .dates-table td.date-cell{min-width:80px;font-size:12px}
   .dates-table td.name-cell{min-width:80px}
   .dates-table td.tags-cell{min-width:90px}
