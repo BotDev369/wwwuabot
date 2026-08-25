@@ -219,7 +219,7 @@ footer{padding:14px 20px;background:#1c1c1c;color:#9a9a9a;font-size:13px;text-al
 @media (max-width:768px){
   /* Layout */
   .layout{flex-direction:column}
-  main{padding:24px 16px;overflow-x:auto;-webkit-overflow-scrolling:touch}
+  main{padding:24px 16px}
   .hero{max-width:none;width:100%;text-align:center}
   .hero h1{font-size:24px;line-height:1.3}
   .hint{text-align:center;font-size:13px}
@@ -279,25 +279,46 @@ footer{padding:14px 20px;background:#1c1c1c;color:#9a9a9a;font-size:13px;text-al
 @media (max-width:768px){
   .form-grid{grid-template-columns:1fr}
 
-  /* Table → horizontal scroll */
+  /* Table → compact */
   .table-filters{flex-direction:column;align-items:stretch}
   .filter-search{width:100%}
   .filter-select{width:100%}
   .table-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch}
-  .dates-table{font-size:13px;min-width:520px}
-  .dates-table th,.dates-table td{padding:8px 10px}
-  .dates-table th.corner{min-width:36px}
+  .dates-table{font-size:13px;min-width:340px}
+  .dates-table th,.dates-table td{padding:8px 8px}
+  .dates-table th.corner{min-width:32px}
+  /* Hide tags and name columns on very small screens */
+  .dates-table th:nth-child(5),.dates-table td:nth-child(5){display:none}
+  .dates-table th:nth-child(4),.dates-table td:nth-child(4){min-width:80px}
+  .dates-table td.type-cell{min-width:90px}
+  .dates-table td.date-cell{min-width:50px}
 
   /* Bulk bar */
-  .bulk-bar{flex-direction:column;align-items:stretch}
-  .bulk-bar .btn{width:100%;text-align:center}
+  .bulk-bar{flex-direction:row;flex-wrap:wrap;justify-content:center;gap:8px}
+  .bulk-bar .btn{flex:1;min-width:120px;text-align:center;font-size:12px;padding:8px 10px}
 
-  /* Modal → full width */
-  .modal-overlay{padding:10px}
-  .modal{max-height:95vh}
+  /* Modal → full width, stacked */
+  .modal-overlay{padding:8px}
+  .modal{max-height:95vh;border-radius:10px}
+  .modal-header{padding:14px 16px 0}
   .modal-body{padding:12px 16px}
-  .modal-actions{flex-direction:column;gap:8px}
+  .modal-body .form-field{margin-bottom:10px}
+  .modal-body .form-label{font-size:12px}
+  .modal-body .text-input,.modal-body .date-input{font-size:15px;padding:10px 12px}
+  .type-selector{gap:6px}
+  .type-chip{padding:5px 10px;font-size:12px}
+  .modal-actions{flex-direction:column;gap:8px;padding:12px 16px}
   .modal-actions .btn{width:100%;text-align:center}
+
+  /* Type badge on mobile */
+  .type-badge{font-size:11px;padding:2px 8px}
+  .tags-inline{gap:3px}
+  .tag-chip--sm{font-size:10px;padding:2px 6px}
+
+  /* Sticky z-index on mobile */
+  .dates-table th.corner{z-index:6;background:#ececec}
+  .dates-table thead th{z-index:5;background:#f7f7f7}
+  .dates-table tr.selected td.corner{background:#dbeafe;z-index:7}
   .modal-actions .btn{width:100%;text-align:center}
 }
 

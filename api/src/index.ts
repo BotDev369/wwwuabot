@@ -484,17 +484,23 @@ async function saveAnalysis(db: D1Database, kv: KVNamespace, date: string, syste
         } catch { dates = []; }
 
         // Міграція: старі формати (alias/category) → нові (name/type/tags)
+        const VALID_TYPES = ["person", "event", "other"];
         dates = dates.map((d: any) => {
           if (d.name === undefined && (d.alias || d.category)) {
             needsMigration = true;
             return {
               ...d,
-              type: d.type || d.category || "other",
+              type: VALID_TYPES.includes(d.type) ? d.type : "other",
               name: d.name || d.alias || "",
               tags: Array.isArray(d.tags) ? d.tags : (d.category ? [d.category] : []),
               created_at: d.created_at || new Date().toISOString().replace("T", " ").slice(0, 19),
               updated_at: d.updated_at || d.created_at || new Date().toISOString().replace("T", " ").slice(0, 19),
             };
+          }
+          // Якщо name вже є, але type невалідний — виправити
+          if (d.name !== undefined && !VALID_TYPES.includes(d.type)) {
+            needsMigration = true;
+            return { ...d, type: "other" };
           }
           return d;
         });
@@ -520,10 +526,11 @@ async function saveAnalysis(db: D1Database, kv: KVNamespace, date: string, syste
           if (!date) return json({ ok: false, error: "date is required" }, 400);
 
           const now = new Date().toISOString().replace("T", " ").slice(0, 19);
+          const VALID_TYPES = ["person", "event", "other"];
           const newDate = {
             id: Date.now().toString(36) + Math.random().toString(36).slice(2, 6),
             user_id: userId, date,
-            type: type || alias && !category ? "other" : (category || "other"),
+            type: VALID_TYPES.includes(type) ? type : "other",
             name: name || alias || "",
             tags: Array.isArray(tags) ? tags : (category ? [category] : []),
             notes: notes || "",
@@ -551,10 +558,11 @@ async function saveAnalysis(db: D1Database, kv: KVNamespace, date: string, syste
           const idx = dates.findIndex((d: any) => d.id === id);
           if (idx === -1) return json({ ok: false, error: "Not found" }, 404);
 
+          const VALID_TYPES_PUT = ["person", "event", "other"];
           dates[idx] = {
             ...dates[idx],
             date,
-            type: type || dates[idx].type || "other",
+            type: VALID_TYPES_PUT.includes(type) ? type : (dates[idx].type || "other"),
             name: name || alias || dates[idx].name || "",
             tags: Array.isArray(tags) ? tags : (category ? [category] : dates[idx].tags || []),
             notes: notes || "",
