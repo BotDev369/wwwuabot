@@ -65,10 +65,9 @@ function formatDate(raw: string): string {
   return `${parts[2]}.${parts[1]}.${parts[0]}`;
 }
 
-function formatDateShort(raw: string): string {
-  const parts = raw.split('-');
-  if (parts.length !== 3) return raw;
-  return `${parts[2]}.${parts[1]}`;
+function formatDateShort(_raw: string): string {
+  // Повна дата: DD.MM.YYYY
+  return formatDate(_raw);
 }
 
 function getCustomTypes(dates: MyDate[]): string[] {
@@ -348,6 +347,21 @@ export function MyDatesPage({ onScenarioName }: { onScenarioName: (name: string 
   // Modal
   const [modalMode, setModalMode] = useState<ModalMode | null>(null);
   const [modalDate, setModalDate] = useState<MyDate | null>(null);
+
+  // Row dropdown
+  const [openDropdown, setOpenDropdown] = useState<string | null>(null);
+  const dropdownRef = useRef<HTMLDivElement>(null);
+
+  // Close dropdown on outside click
+  useEffect(() => {
+    const handler = (e: MouseEvent) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(e.target as Node)) {
+        setOpenDropdown(null);
+      }
+    };
+    if (openDropdown) document.addEventListener('mousedown', handler);
+    return () => document.removeEventListener('mousedown', handler);
+  }, [openDropdown]);
 
   useEffect(() => {
     onScenarioName('MyDate');
@@ -747,6 +761,7 @@ export function MyDatesPage({ onScenarioName }: { onScenarioName: (name: string 
               <table className="dates-table">
                 <thead>
                   <tr>
+                    <th className="corner"></th>
                     <th className="corner">
                       <input type="checkbox" checked={processedDates.length > 0 && selectedIds.size === processedDates.length}
                         onChange={toggleAll} className="row-checkbox" />
@@ -754,14 +769,14 @@ export function MyDatesPage({ onScenarioName }: { onScenarioName: (name: string 
                     <th onClick={() => handleSort('date')} className="sortable">
                       Дата {sortField === 'date' && <span className="sort-arrow">{sortOrder === 'asc' ? '▲' : '▼'}</span>}
                     </th>
-                    <th onClick={() => handleSort('type')} className="sortable">
-                      Тип {sortField === 'type' && <span className="sort-arrow">{sortOrder === 'asc' ? '▲' : '▼'}</span>}
-                    </th>
                     <th onClick={() => handleSort('name')} className="sortable">
                       Назва {sortField === 'name' && <span className="sort-arrow">{sortOrder === 'asc' ? '▲' : '▼'}</span>}
                     </th>
                     <th>Теги</th>
-                    <th className="actions-col">Дії</th>
+                    <th onClick={() => handleSort('type')} className="sortable">
+                      Тип {sortField === 'type' && <span className="sort-arrow">{sortOrder === 'asc' ? '▲' : '▼'}</span>}
+                    </th>
+                    <th>Примітки</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -770,16 +785,22 @@ export function MyDatesPage({ onScenarioName }: { onScenarioName: (name: string 
                     const typeLabel = d.type === 'person' ? 'Людина' : d.type === 'event' ? 'Подія' : d.type === 'other' ? 'Інше' : d.type;
                     return (
                       <tr key={d.id} className={selectedIds.has(d.id) ? 'selected' : ''}>
-                        <td className="corner">
+                        <td className="menu-cell">
+                          <div className={`row-dropdown ${openDropdown === d.id ? 'open' : ''}`} ref={openDropdown === d.id ? dropdownRef : undefined}>
+                            <button className="row-dropdown-toggle" onClick={() => setOpenDropdown(openDropdown === d.id ? null : d.id)}>⋮</button>
+                            <div className="row-dropdown-menu">
+                              <Link className="row-dropdown-item" to={`/mydate/${d.date}`} onClick={() => setOpenDropdown(null)}>📊 Аналіз</Link>
+                              <button className="row-dropdown-item" onClick={() => { setModalMode('view'); setModalDate(d); setOpenDropdown(null); }}>👁 Переглянути</button>
+                              <button className="row-dropdown-item" onClick={() => { setModalMode('edit'); setModalDate(d); setOpenDropdown(null); }}>✏️ Редагувати</button>
+                              <button className="row-dropdown-item danger" onClick={() => { handleDelete(d.id); setOpenDropdown(null); }}>🗑 Видалити</button>
+                            </div>
+                          </div>
+                        </td>
+                        <td className="corner-cell">
                           <input type="checkbox" checked={selectedIds.has(d.id)}
                             onChange={() => toggleSelect(d.id)} className="row-checkbox" />
                         </td>
                         <td className="date-cell">{formatDateShort(d.date)}</td>
-                        <td className="type-cell">
-                          <span className="type-badge" style={{ color: cfg.color, background: cfg.bg }}>
-                            {cfg.emoji} {typeLabel}
-                          </span>
-                        </td>
                         <td className="name-cell">{d.name || '—'}</td>
                         <td className="tags-cell">
                           {(d.tags || []).length > 0 ? (
@@ -794,15 +815,12 @@ export function MyDatesPage({ onScenarioName }: { onScenarioName: (name: string 
                             <span className="no-tags">—</span>
                           )}
                         </td>
-                        <td className="actions-cell">
-                          <button className="icon-btn" title="Переглянути"
-                            onClick={() => { setModalMode('view'); setModalDate(d); }}>👁</button>
-                          <button className="icon-btn" title="Редагувати"
-                            onClick={() => { setModalMode('edit'); setModalDate(d); }}>✏️</button>
-                          <button className="icon-btn danger" title="Видалити"
-                            onClick={() => handleDelete(d.id)}>🗑</button>
-                          <Link className="icon-btn" title="Аналіз дати" to={`/mydate/${d.date}`}>📊</Link>
+                        <td className="type-cell">
+                          <span className="type-badge" style={{ color: cfg.color, background: cfg.bg }}>
+                            {cfg.emoji} {typeLabel}
+                          </span>
                         </td>
+                        <td className="notes-cell" title={d.notes || ''}>{d.notes || '—'}</td>
                       </tr>
                     );
                   })}

@@ -124,14 +124,22 @@ footer{padding:14px 20px;background:#1c1c1c;color:#9a9a9a;font-size:13px;text-al
 .btn-add-bottom{margin-top:20px;display:block;width:100%}
 
 /* ═══ АКОРДЕОН ═══ */
-.accordion{border:1px solid #e5e5e5;border-radius:10px;margin:20px 0;overflow:hidden}
+.accordion{border:1px solid #e5e5e5;border-radius:10px;margin:20px 0}
 .accordion-toggle{width:100%;display:flex;align-items:center;gap:8px;padding:14px 18px;background:#f7f7f7;border:none;cursor:pointer;font-size:15px;font-weight:700;color:#111;transition:background .15s ease}
 .accordion-toggle:hover{background:#efefef}
 .accordion-icon{font-size:10px;transition:transform .2s ease;display:inline-block}
 .accordion-icon.rotated{transform:rotate(90deg)}
 .accordion-content{padding:18px;background:#fff;border-top:1px solid #e5e5e5;text-align:left}
 
-/* Тип-селектор */
+/* Форма (акордеон + модалка) */
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px}
+.form-grid .form-field.span-full{grid-column:1/-1}
+.form-field{display:flex;flex-direction:column;gap:4px}
+.form-field.full-width{grid-column:1/-1}
+.form-label{font-size:13px;font-weight:600;color:#4a4a4a}
+.text-input{padding:10px 14px;font-size:15px;border-radius:6px;border:1px solid #ccc;width:100%}
+.text-input:focus{outline:none;border-color:#999}
+.textarea{resize:vertical;min-height:48px}
 .type-selector{display:flex;gap:8px;flex-wrap:wrap}
 .type-chip{padding:6px 14px;border-radius:20px;border:2px solid #e5e5e5;background:#fff;font-size:13px;font-weight:600;cursor:pointer;transition:all .15s ease}
 .type-chip:hover{opacity:.85}
@@ -151,27 +159,40 @@ footer{padding:14px 20px;background:#1c1c1c;color:#9a9a9a;font-size:13px;text-al
 .tag-suggestion-item{display:block;width:100%;text-align:left;padding:8px 14px;border:none;background:none;cursor:pointer;font-size:13px;color:#111}
 .tag-suggestion-item:hover{background:#f5f5f5}
 
-/* ═══ ТАБЛИЦЯ ═══ */
-.table-wrap{border:1px solid #e5e5e5;border-radius:10px;margin-top:16px;text-align:left;overflow:visible}
-.dates-table{border-collapse:separate;border-spacing:0;width:100%;min-width:640px;font-size:14px}
-.dates-table th,.dates-table td{border-bottom:1px solid #eee;border-right:1px solid #eee;padding:10px 12px;text-align:left;background:#fff;white-space:nowrap}
-.dates-table thead th{background:#f7f7f7;color:#111;font-weight:700;cursor:default;user-select:none}
+/* ═══ ТАБЛИЦЯ (scroll container + sticky) ═══ */
+.table-wrap{border:1px solid #e5e5e5;border-radius:10px;margin-top:16px;overflow:auto;max-height:calc(100vh - 280px);-webkit-overflow-scrolling:touch}
+.dates-table{border-collapse:separate;border-spacing:0;width:100%;min-width:580px;font-size:14px}
+.dates-table th,.dates-table td{border-bottom:1px solid #eee;padding:10px 10px;text-align:left;background:#fff;white-space:nowrap}
+.dates-table thead th{position:sticky;top:0;z-index:2;background:#f7f7f7;color:#111;font-weight:700;cursor:default;user-select:none}
 .dates-table th.sortable{cursor:pointer}
 .dates-table th.sortable:hover{background:#efefef}
 .sort-arrow{font-size:11px;margin-left:4px;color:var(--brand-red)}
-.dates-table th.corner{background:#ececec;min-width:42px}
-.dates-table tr.selected td{background:#f0f7ff}
-.dates-table tr.selected td.corner{background:#dbeafe}
-.dates-table td.date-cell{font-weight:700;color:#111;min-width:60px}
-.dates-table td.type-cell{min-width:100px}
-.type-badge{display:inline-flex;align-items:center;gap:4px;padding:3px 10px;border-radius:12px;font-size:12px;font-weight:600;white-space:nowrap}
-.dates-table td.name-cell{font-weight:600;color:#111;min-width:120px}
-.dates-table td.tags-cell{min-width:140px}
-.tags-inline{display:flex;flex-wrap:wrap;gap:4px}
-.no-tags{color:#ccc}
-.dates-table td.actions-cell,.dates-table th.actions-col{text-align:right}
-.dates-table .actions-cell{display:flex;gap:4px;justify-content:flex-end}
+/* Sticky corner (menu + checkbox column) */
+.dates-table th.corner{position:sticky;left:0;z-index:3;background:#ececec;min-width:40px}
+.dates-table td.corner-cell{position:sticky;left:0;z-index:1;background:#fff}
+.dates-table tr.selected td.corner-cell{background:#dbeafe}
+.dates-table td.date-cell{font-weight:600;color:#111;min-width:90px;font-size:13px}
+.dates-table td.name-cell{font-weight:600;color:#111;min-width:90px}
+.dates-table td.tags-cell{min-width:100px}
+.tags-inline{display:flex;flex-wrap:wrap;gap:3px}
+.no-tags{color:#ccc;font-size:12px}
+.dates-table td.type-cell{min-width:90px}
+.type-badge{display:inline-flex;align-items:center;gap:3px;padding:3px 8px;border-radius:12px;font-size:11px;font-weight:600;white-space:nowrap}
+.dates-table td.notes-cell{max-width:120px;overflow:hidden;text-overflow:ellipsis;font-size:12px;color:#888}
+.dates-table td.menu-cell{position:sticky;left:0;z-index:1;background:#fff;min-width:36px;text-align:center}
+.dates-table tr.selected td.menu-cell{background:#dbeafe}
 .dates-table tr:last-child td{border-bottom:none}
+
+/* Випадаюче меню дій */
+.row-dropdown{position:relative;display:inline-block}
+.row-dropdown-toggle{width:28px;height:28px;border-radius:6px;border:1px solid #ddd;background:#fff;cursor:pointer;font-size:16px;color:#555;display:flex;align-items:center;justify-content:center;line-height:1}
+.row-dropdown-toggle:hover{background:#f0f0f0}
+.row-dropdown-menu{display:none;position:absolute;right:0;top:calc(100% + 2px);min-width:150px;background:#fff;border:1px solid #e5e5e5;border-radius:8px;box-shadow:0 4px 16px rgba(0,0,0,.12);z-index:50;padding:4px 0}
+.row-dropdown.open .row-dropdown-menu{display:block}
+.row-dropdown-item{display:flex;align-items:center;gap:8px;width:100%;padding:9px 14px;font-size:13px;color:#111;background:none;border:none;cursor:pointer;text-align:left;transition:background .1s}
+.row-dropdown-item:hover{background:#f5f5f5}
+.row-dropdown-item.danger{color:#dc2626}
+.row-dropdown-item.danger:hover{background:#fef2f2}
 
 /* Фільтри */
 .table-filters{display:flex;flex-wrap:wrap;gap:8px;margin:12px 0 0;align-items:center}
@@ -185,7 +206,6 @@ footer{padding:14px 20px;background:#1c1c1c;color:#9a9a9a;font-size:13px;text-al
 .bulk-count{font-size:13px;font-weight:700;color:#1d4ed8}
 
 .row-checkbox{width:16px;height:16px;cursor:pointer}
-.dropdown-item.danger:hover{background:#fbeae9}
 
 /* ═══════════════════════════════════════════════════
    МОДАЛЬНЕ ВІКНО (EDIT MODAL)
@@ -201,7 +221,7 @@ footer{padding:14px 20px;background:#1c1c1c;color:#9a9a9a;font-size:13px;text-al
 .modal-actions .btn{margin-top:0;padding:8px 16px;font-size:13px}
 
 /* MyDate — таблиця співставлення */
-.table-wrap{border:1px solid #e5e5e5;border-radius:8px;margin-top:16px;text-align:left;overflow:visible}
+.compare-wrap{border:1px solid #e5e5e5;border-radius:8px;margin-top:16px;text-align:left;overflow:visible}
 .compare-table{border-collapse:separate;border-spacing:0;width:max-content;min-width:100%;font-size:14px}
 .compare-table th,.compare-table td{border-bottom:1px solid #eee;border-right:1px solid #eee;padding:10px 12px;text-align:left;white-space:nowrap;background:#fff}
 .compare-table thead th{position:sticky;top:0;z-index:2;background:#f7f7f7;color:#111;font-weight:700}
@@ -278,45 +298,41 @@ footer{padding:14px 20px;background:#1c1c1c;color:#9a9a9a;font-size:13px;text-al
 /* My Dates — mobile */
 @media (max-width:768px){
   .form-grid{grid-template-columns:1fr}
+  .accordion-content{padding:14px}
 
-  /* Table → compact with horizontal scroll */
+  /* Table on mobile — scrollable with sticky */
+  .table-wrap{max-height:calc(100vh - 200px);overflow:auto}
   .table-filters{flex-direction:column;align-items:stretch}
   .filter-search{width:100%}
   .filter-select{width:100%}
-  .table-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch;border-radius:10px}
-  .dates-table{font-size:13px;min-width:480px}
+  .dates-table{font-size:13px;min-width:500px}
   .dates-table th,.dates-table td{padding:8px 6px}
-  .dates-table th.corner{min-width:30px}
+  .dates-table th.corner{min-width:34px}
+  .dates-table td.menu-cell{min-width:34px}
+  .dates-table td.date-cell{min-width:80px;font-size:12px}
+  .dates-table td.name-cell{min-width:80px}
+  .dates-table td.tags-cell{min-width:90px}
   .dates-table td.type-cell{min-width:80px}
-  .dates-table td.date-cell{min-width:46px}
-  .dates-table td.name-cell{min-width:70px}
-  .dates-table td.tags-cell{min-width:80px}
-  .dates-table td.actions-cell{min-width:100px}
+  .dates-table td.notes-cell{min-width:80px}
+  .type-badge{font-size:10px;padding:2px 6px}
+  .tags-inline{gap:2px}
+  .tag-chip--sm{font-size:10px;padding:2px 5px}
 
   /* Bulk bar */
-  .bulk-bar{flex-direction:row;flex-wrap:wrap;justify-content:center;gap:8px}
-  .bulk-bar .btn{flex:1;min-width:120px;text-align:center;font-size:12px;padding:8px 10px}
+  .bulk-bar{flex-direction:row;flex-wrap:wrap;justify-content:center;gap:6px}
+  .bulk-bar .btn{flex:1;min-width:100px;text-align:center;font-size:12px;padding:8px 8px}
 
   /* Modal → full width, stacked */
-  .modal-overlay{padding:8px}
+  .modal-overlay{padding:6px}
   .modal{max-height:95vh;border-radius:10px}
-  .modal-header{padding:14px 16px 0}
-  .modal-body{padding:12px 16px}
-  .modal-body .form-field{margin-bottom:10px}
+  .modal-header{padding:12px 14px 0}
+  .modal-body{padding:10px 14px}
+  .modal-body .form-field{margin-bottom:8px}
   .modal-body .form-label{font-size:12px}
   .modal-body .text-input,.modal-body .date-input{font-size:15px;padding:10px 12px}
   .type-selector{gap:6px}
   .type-chip{padding:5px 10px;font-size:12px}
-  .modal-actions{flex-direction:column;gap:8px;padding:12px 16px}
-  .modal-actions .btn{width:100%;text-align:center}
-
-  /* Type badge on mobile */
-  .type-badge{font-size:11px;padding:2px 8px}
-  .tags-inline{gap:3px}
-  .tag-chip--sm{font-size:10px;padding:2px 6px}
-
-  /* Table compact on mobile */
-  .dates-table th,.dates-table td{vertical-align:middle}
+  .modal-actions{flex-direction:column;gap:8px;padding:10px 14px}
   .modal-actions .btn{width:100%;text-align:center}
 }
 
