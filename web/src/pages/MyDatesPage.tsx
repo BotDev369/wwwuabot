@@ -354,15 +354,13 @@ export function MyDatesPage({ onScenarioName }: { onScenarioName: (name: string 
 
   // Header context menu
   const [headerMenu, setHeaderMenu] = useState<{ field: SortField; mode: 'menu' | 'filter' } | null>(null);
-  const headerMenuRef = useRef<HTMLDivElement>(null);
   const [headerFilterText, setHeaderFilterText] = useState('');
 
-  // Close dropdowns on outside click
+  // Close row dropdown on outside click
   useEffect(() => {
     const handler = (e: MouseEvent) => {
       const target = e.target as Node;
       if (dropdownRef.current && !dropdownRef.current.contains(target)) setOpenDropdown(null);
-      if (headerMenuRef.current && !headerMenuRef.current.contains(target)) setHeaderMenu(null);
     };
     document.addEventListener('mousedown', handler);
     return () => document.removeEventListener('mousedown', handler);
@@ -799,38 +797,9 @@ export function MyDatesPage({ onScenarioName }: { onScenarioName: (name: string 
                     {(['name','date','tags','type','notes'] as SortField[]).map(field => {
                       const label = field === 'name' ? 'Назва' : field === 'date' ? 'Дата' : field === 'tags' ? 'Теги' : field === 'type' ? 'Тип' : 'Примітки';
                       const isSticky = field === 'name';
-                      const isOpen = headerMenu?.field === field;
-                      const uniqueVals = getUniqueValues(field);
                       return (
                         <th key={field} className={isSticky ? 'sticky-col-name' : ''}>
-                          <div className="th-content" onClick={() => {
-                            if (isOpen && headerMenu?.mode === 'menu') { setHeaderMenu(null); }
-                            else { setHeaderMenu({ field, mode: 'menu' }); setHeaderFilterText(''); }
-                          }}>{label} {sortField === field && <span className="sort-arrow">{sortOrder === 'asc' ? '▲' : '▼'}</span>}</div>
-                          {isOpen && headerMenu?.mode === 'menu' && (
-                            <div className="header-dropdown" ref={headerMenuRef}>
-                              <button className={sortOrder === 'asc' && sortField === field ? 'active' : ''} onClick={() => handleHeaderMenuSort(field, 'asc')}>▲ А → Я</button>
-                              <button className={sortOrder === 'desc' && sortField === field ? 'active' : ''} onClick={() => handleHeaderMenuSort(field, 'desc')}>▼ Я → А</button>
-                              <div className="header-dropdown-divider" />
-                              <button onClick={() => setHeaderMenu({ field, mode: 'filter' })}>🔍 Фільтр...</button>
-                            </div>
-                          )}
-                          {isOpen && headerMenu?.mode === 'filter' && (
-                            <div className="header-dropdown header-filter-dropdown" ref={headerMenuRef}>
-                              <div className="header-filter-title">Фільтр: {label}</div>
-                              <input className="header-filter-input" type="text" placeholder="Пошук..." value={headerFilterText} onChange={e => setHeaderFilterText(e.target.value)} autoFocus />
-                              <div className="header-filter-list">
-                                <label className="header-filter-item">
-                                  <input type="radio" name={`filter-${field}`} checked={field === 'type' ? filterType === 'all' : field === 'tags' ? filterTag === 'all' : searchQuery === ''} onChange={() => handleHeaderMenuFilter(field, '')} /><span>Усі</span>
-                                </label>
-                                {uniqueVals.filter(v => !headerFilterText || v.toLowerCase().includes(headerFilterText.toLowerCase())).map(v => (
-                                  <label key={v} className="header-filter-item">
-                                    <input type="radio" name={`filter-${field}`} checked={field === 'type' ? filterType === v : field === 'tags' ? filterTag === v : false} onChange={() => handleHeaderMenuFilter(field, v)} /><span>{v}</span>
-                                  </label>
-                                ))}
-                              </div>
-                            </div>
-                          )}
+                          <div className="th-content" onClick={() => { setHeaderMenu({ field, mode: 'menu' }); setHeaderFilterText(''); }}>{label} {sortField === field && <span className="sort-arrow">{sortOrder === 'asc' ? '▲' : '▼'}</span>}</div>
                         </th>
                       );
                     })}
@@ -912,6 +881,45 @@ export function MyDatesPage({ onScenarioName }: { onScenarioName: (name: string 
           <button className="btn btn-add-bottom" onClick={() => { setModalMode('create'); setModalDate(null); }}>
             ＋ Нова дата
           </button>
+        )}
+
+        {/* ═══ HEADER MENU MODAL ═══ */}
+        {headerMenu && (
+          <div className="modal-overlay" onClick={() => setHeaderMenu(null)}>
+            <div className="header-modal" onClick={e => e.stopPropagation()}>
+              <div className="header-modal-header">
+                <span className="header-modal-title">
+                  {headerMenu.field === 'name' ? 'Назва' : headerMenu.field === 'date' ? 'Дата' : headerMenu.field === 'tags' ? 'Теги' : headerMenu.field === 'type' ? 'Тип' : 'Примітки'}
+                </span>
+                <button className="header-modal-close" onClick={() => setHeaderMenu(null)}>✕</button>
+              </div>
+
+              {headerMenu.mode === 'menu' && (
+                <div className="header-modal-body">
+                  <button className={`header-modal-btn ${sortOrder === 'asc' && sortField === headerMenu.field ? 'active' : ''}`} onClick={() => handleHeaderMenuSort(headerMenu.field, 'asc')}>▲ А → Я</button>
+                  <button className={`header-modal-btn ${sortOrder === 'desc' && sortField === headerMenu.field ? 'active' : ''}`} onClick={() => handleHeaderMenuSort(headerMenu.field, 'desc')}>▼ Я → А</button>
+                  <div className="header-modal-divider" />
+                  <button className="header-modal-btn" onClick={() => setHeaderMenu({ field: headerMenu.field, mode: 'filter' })}>🔍 Фільтр...</button>
+                </div>
+              )}
+
+              {headerMenu.mode === 'filter' && (
+                <div className="header-modal-body">
+                  <input className="header-modal-filter-input" type="text" placeholder="Пошук..." value={headerFilterText} onChange={e => setHeaderFilterText(e.target.value)} autoFocus />
+                  <div className="header-modal-filter-list">
+                    <label className="header-modal-filter-item">
+                      <input type="radio" name={`filter-${headerMenu.field}`} checked={headerMenu.field === 'type' ? filterType === 'all' : headerMenu.field === 'tags' ? filterTag === 'all' : searchQuery === ''} onChange={() => handleHeaderMenuFilter(headerMenu.field, '')} /><span>Усі</span>
+                    </label>
+                    {getUniqueValues(headerMenu.field).filter(v => !headerFilterText || v.toLowerCase().includes(headerFilterText.toLowerCase())).map(v => (
+                      <label key={v} className="header-modal-filter-item">
+                        <input type="radio" name={`filter-${headerMenu.field}`} checked={headerMenu.field === 'type' ? filterType === v : headerMenu.field === 'tags' ? filterTag === v : false} onChange={() => handleHeaderMenuFilter(headerMenu.field, v)} /><span>{v}</span>
+                      </label>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
         )}
 
         {/* ═══ МОДАЛЬНЕ ВІКНО ═══ */}

@@ -171,19 +171,24 @@ footer{padding:14px 20px;background:#1c1c1c;color:#9a9a9a;font-size:13px;text-al
 /* ═══ HEADER DROPDOWN MENU ═══ */
 .th-content{cursor:pointer;padding:2px 4px;border-radius:4px;transition:background .15s}
 .th-content:hover{background:#e5e5e5}
-.header-dropdown{position:absolute;top:100%;left:0;min-width:160px;background:#fff;border:1px solid #e5e5e5;border-radius:8px;box-shadow:0 4px 16px rgba(0,0,0,.12);z-index:100;padding:4px 0;animation:fadeSlideDown .15s ease}
-.header-dropdown button{display:block;width:100%;text-align:left;padding:8px 14px;font-size:13px;background:none;border:none;cursor:pointer;color:#333;transition:background .1s}
-.header-dropdown button:hover{background:#f0f0f0}
-.header-dropdown button.active{background:#dbeafe;color:#2563eb;font-weight:600}
-.header-dropdown-divider{height:1px;background:#eee;margin:4px 0}
-.header-filter-dropdown{min-width:220px;padding:10px}
-.header-filter-title{font-size:12px;font-weight:700;color:#888;margin-bottom:6px;text-transform:uppercase;letter-spacing:.5px}
-.header-filter-input{width:100%;padding:8px 10px;font-size:13px;border:1px solid #ddd;border-radius:6px;box-sizing:border-box;margin-bottom:6px}
-.header-filter-input:focus{outline:none;border-color:var(--brand-red)}
-.header-filter-list{max-height:180px;overflow-y:auto}
-.header-filter-item{display:flex;align-items:center;gap:6px;padding:4px 6px;border-radius:4px;font-size:13px;cursor:pointer;transition:background .1s}
-.header-filter-item:hover{background:#f5f5f5}
-.header-filter-item input{margin:0}
+
+/* ═══ HEADER MENU MODAL ═══ */
+.header-modal{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);min-width:260px;max-width:90vw;max-height:80vh;background:#fff;border-radius:14px;box-shadow:0 8px 40px rgba(0,0,0,.25);z-index:2000;display:flex;flex-direction:column;animation:modalIn .2s ease}
+.header-modal-header{display:flex;align-items:center;justify-content:space-between;padding:16px 18px 0}
+.header-modal-title{font-size:16px;font-weight:700;color:#111}
+.header-modal-close{width:28px;height:28px;border:none;background:#f0f0f0;border-radius:50%;font-size:14px;cursor:pointer;display:flex;align-items:center;justify-content:center;color:#666;transition:background .15s}
+.header-modal-close:hover{background:#e0e0e0}
+.header-modal-body{padding:14px 18px 18px;display:flex;flex-direction:column;gap:6px}
+.header-modal-btn{width:100%;text-align:left;padding:12px 14px;font-size:14px;background:none;border:none;border-radius:8px;cursor:pointer;color:#333;transition:background .1s}
+.header-modal-btn:hover{background:#f0f0f0}
+.header-modal-btn.active{background:#dbeafe;color:#2563eb;font-weight:600}
+.header-modal-divider{height:1px;background:#eee;margin:4px 0}
+.header-modal-filter-input{width:100%;padding:10px 12px;font-size:14px;border:1px solid #ddd;border-radius:8px;box-sizing:border-box}
+.header-modal-filter-input:focus{outline:none;border-color:var(--brand-red)}
+.header-modal-filter-list{max-height:200px;overflow-y:auto;margin-top:8px}
+.header-modal-filter-item{display:flex;align-items:center;gap:8px;padding:8px 10px;border-radius:6px;font-size:14px;cursor:pointer;transition:background .1s}
+.header-modal-filter-item:hover{background:#f5f5f5}
+.header-modal-filter-item input{margin:0}
 /* Sticky corner (menu + checkbox column) */
 .dates-table th.corner{position:sticky;left:0;z-index:3;background:#ececec;min-width:40px}
 .dates-table td.corner-cell{position:sticky;left:0;z-index:1;background:#fff}
