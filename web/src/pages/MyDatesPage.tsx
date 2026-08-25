@@ -352,16 +352,21 @@ export function MyDatesPage({ onScenarioName }: { onScenarioName: (name: string 
   const [openDropdown, setOpenDropdown] = useState<string | null>(null);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
-  // Close dropdown on outside click
+  // Header context menu
+  const [headerMenu, setHeaderMenu] = useState<{ field: SortField; mode: 'menu' | 'filter' } | null>(null);
+  const headerMenuRef = useRef<HTMLDivElement>(null);
+  const [headerFilterText, setHeaderFilterText] = useState('');
+
+  // Close dropdowns on outside click
   useEffect(() => {
     const handler = (e: MouseEvent) => {
-      if (dropdownRef.current && !dropdownRef.current.contains(e.target as Node)) {
-        setOpenDropdown(null);
-      }
+      const target = e.target as Node;
+      if (dropdownRef.current && !dropdownRef.current.contains(target)) setOpenDropdown(null);
+      if (headerMenuRef.current && !headerMenuRef.current.contains(target)) setHeaderMenu(null);
     };
-    if (openDropdown) document.addEventListener('mousedown', handler);
+    document.addEventListener('mousedown', handler);
     return () => document.removeEventListener('mousedown', handler);
-  }, [openDropdown]);
+  }, []);
 
   useEffect(() => {
     onScenarioName('MyDate');
@@ -596,14 +601,31 @@ export function MyDatesPage({ onScenarioName }: { onScenarioName: (name: string 
     window.location.href = `/mydate/compare/systems?dates=${encodeURIComponent(selectedDates.join(','))}`;
   };
 
-  // Sorting
-  const handleSort = (field: SortField) => {
-    if (sortField === field) {
-      setSortOrder(prev => prev === 'asc' ? 'desc' : 'asc');
+  const handleHeaderMenuSort = (field: SortField, order: SortOrder) => {
+    setSortField(field);
+    setSortOrder(order);
+    setHeaderMenu(null);
+  };
+
+  const handleHeaderMenuFilter = (field: SortField, value: string) => {
+    if (field === 'type') {
+      setFilterType(value || 'all');
+    } else if (field === 'tags') {
+      setFilterTag(value || 'all');
     } else {
-      setSortField(field);
-      setSortOrder('asc');
+      // name, notes, date — use search query
+      setSearchQuery(value);
     }
+    setHeaderMenu(null);
+    setHeaderFilterText('');
+  };
+
+  const getUniqueValues = (field: SortField): string[] => {
+    if (field === 'type') return allTypes;
+    if (field === 'tags') return allTags;
+    if (field === 'name') return [...new Set(dates.map(d => d.name).filter(Boolean))].sort();
+    if (field === 'notes') return [...new Set(dates.map(d => d.notes).filter(Boolean))].sort();
+    return [];
   };
 
   // Selection
@@ -774,21 +796,44 @@ export function MyDatesPage({ onScenarioName }: { onScenarioName: (name: string 
                       <input type="checkbox" checked={processedDates.length > 0 && selectedIds.size === processedDates.length}
                         onChange={toggleAll} className="row-checkbox" />
                     </th>
-                    <th onClick={() => handleSort('name')} className="sortable sticky-col-name">
-                      Назва {sortField === 'name' && <span className="sort-arrow">{sortOrder === 'asc' ? '▲' : '▼'}</span>}
-                    </th>
-                    <th onClick={() => handleSort('date')} className="sortable">
-                      Дата {sortField === 'date' && <span className="sort-arrow">{sortOrder === 'asc' ? '▲' : '▼'}</span>}
-                    </th>
-                    <th onClick={() => handleSort('tags')} className="sortable">
-                      Теги {sortField === 'tags' && <span className="sort-arrow">{sortOrder === 'asc' ? '▲' : '▼'}</span>}
-                    </th>
-                    <th onClick={() => handleSort('type')} className="sortable">
-                      Тип {sortField === 'type' && <span className="sort-arrow">{sortOrder === 'asc' ? '▲' : '▼'}</span>}
-                    </th>
-                    <th onClick={() => handleSort('notes')} className="sortable">
-                      Примітки {sortField === 'notes' && <span className="sort-arrow">{sortOrder === 'asc' ? '▲' : '▼'}</span>}
-                    </th>
+                    {(['name','date','tags','type','notes'] as SortField[]).map(field => {
+                      const label = field === 'name' ? 'Назва' : field === 'date' ? 'Дата' : field === 'tags' ? 'Теги' : field === 'type' ? 'Тип' : 'Примітки';
+                      const isSticky = field === 'name';
+                      const isOpen = headerMenu?.field === field;
+                      const uniqueVals = getUniqueValues(field);
+                      return (
+                        <th key={field} className={isSticky ? 'sticky-col-name' : ''} style={{position:'relative'}}>
+                          <div className="th-content" onClick={() => {
+                            if (isOpen && headerMenu?.mode === 'menu') { setHeaderMenu(null); }
+                            else { setHeaderMenu({ field, mode: 'menu' }); setHeaderFilterText(''); }
+                          }}>{label} {sortField === field && <span className="sort-arrow">{sortOrder === 'asc' ? '▲' : '▼'}</span>}</div>
+                          {isOpen && headerMenu?.mode === 'menu' && (
+                            <div className="header-dropdown" ref={headerMenuRef}>
+                              <button className={sortOrder === 'asc' && sortField === field ? 'active' : ''} onClick={() => handleHeaderMenuSort(field, 'asc')}>▲ А → Я</button>
+                              <button className={sortOrder === 'desc' && sortField === field ? 'active' : ''} onClick={() => handleHeaderMenuSort(field, 'desc')}>▼ Я → А</button>
+                              <div className="header-dropdown-divider" />
+                              <button onClick={() => setHeaderMenu({ field, mode: 'filter' })}>🔍 Фільтр...</button>
+                            </div>
+                          )}
+                          {isOpen && headerMenu?.mode === 'filter' && (
+                            <div className="header-dropdown header-filter-dropdown" ref={headerMenuRef}>
+                              <div className="header-filter-title">Фільтр: {label}</div>
+                              <input className="header-filter-input" type="text" placeholder="Пошук..." value={headerFilterText} onChange={e => setHeaderFilterText(e.target.value)} autoFocus />
+                              <div className="header-filter-list">
+                                <label className="header-filter-item">
+                                  <input type="radio" name={`filter-${field}`} checked={field === 'type' ? filterType === 'all' : field === 'tags' ? filterTag === 'all' : searchQuery === ''} onChange={() => handleHeaderMenuFilter(field, '')} /><span>Усі</span>
+                                </label>
+                                {uniqueVals.filter(v => !headerFilterText || v.toLowerCase().includes(headerFilterText.toLowerCase())).map(v => (
+                                  <label key={v} className="header-filter-item">
+                                    <input type="radio" name={`filter-${field}`} checked={field === 'type' ? filterType === v : field === 'tags' ? filterTag === v : false} onChange={() => handleHeaderMenuFilter(field, v)} /><span>{v}</span>
+                                  </label>
+                                ))}
+                              </div>
+                            </div>
+                          )}
+                        </th>
+                      );
+                    })}
                   </tr>
                 </thead>
                 <tbody>
