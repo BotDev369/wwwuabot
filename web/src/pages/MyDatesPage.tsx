@@ -802,7 +802,7 @@ export function MyDatesPage({ onScenarioName }: { onScenarioName: (name: string 
                       const isOpen = headerMenu?.field === field;
                       const uniqueVals = getUniqueValues(field);
                       return (
-                        <th key={field} className={isSticky ? 'sticky-col-name' : ''} style={{position:'relative'}}>
+                        <th key={field} className={isSticky ? 'sticky-col-name' : ''}>
                           <div className="th-content" onClick={() => {
                             if (isOpen && headerMenu?.mode === 'menu') { setHeaderMenu(null); }
                             else { setHeaderMenu({ field, mode: 'menu' }); setHeaderFilterText(''); }
