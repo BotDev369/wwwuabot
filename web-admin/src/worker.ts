@@ -215,7 +215,7 @@ export default {
         const result = await env.DB.prepare(
           "SELECT * FROM scenarios ORDER BY codeword ASC"
         ).all();
-        const items = (result.results ?? []).map((row) => {
+        const items = (result.results ?? []).map((row: Record<string, unknown>) => {
           const copy = { ...(row as Record<string, unknown>) };
           delete copy.buttons;
           delete copy.rich_data;
