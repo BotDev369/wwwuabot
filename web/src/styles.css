@@ -182,7 +182,12 @@ footer{padding:14px 20px;background:#1c1c1c;color:#9a9a9a;font-size:13px;text-al
 .header-modal-btn{width:100%;text-align:left;padding:12px 14px;font-size:14px;background:none;border:none;border-radius:8px;cursor:pointer;color:#333;transition:background .1s}
 .header-modal-btn:hover{background:#f0f0f0}
 .header-modal-btn.active{background:#dbeafe;color:#2563eb;font-weight:600}
+.header-modal-btn--danger{color:#dc2626}
+.header-modal-btn--danger:hover{background:#fef2f2}
+.header-modal-btn--clear{color:#6b7280;font-size:13px;margin-top:4px}
+.header-modal-btn--clear:hover{background:#f3f4f6}
 .header-modal-divider{height:1px;background:#eee;margin:4px 0}
+.header-modal-empty{text-align:center;padding:16px;color:#999;font-size:13px}
 .header-modal-filter-input{width:100%;padding:10px 12px;font-size:14px;border:1px solid #ddd;border-radius:8px;box-sizing:border-box}
 .header-modal-filter-input:focus{outline:none;border-color:var(--brand-red)}
 .header-modal-filter-list{max-height:200px;overflow-y:auto;margin-top:8px}
@@ -228,8 +233,10 @@ footer{padding:14px 20px;background:#1c1c1c;color:#9a9a9a;font-size:13px;text-al
 .table-filters{display:flex;flex-wrap:wrap;gap:8px;margin:12px 0 0;align-items:center}
 .filter-search{padding:8px 12px;font-size:13px;border-radius:6px;border:1px solid #ccc;width:200px}
 .filter-search:focus{outline:none;border-color:#999}
-.filter-select{padding:8px 12px;font-size:13px;border-radius:6px;border:1px solid #ccc;background:#fff;cursor:pointer}
-.filter-select:focus{outline:none;border-color:#999}
+.active-filter-chips{display:flex;flex-wrap:wrap;gap:4px;align-items:center}
+.active-filter-label{font-size:12px;font-weight:600;color:#888}
+.active-filter-chip{display:inline-flex;align-items:center;gap:4px;padding:3px 8px;background:#dbeafe;color:#2563eb;border-radius:12px;font-size:12px;font-weight:500;cursor:pointer;transition:background .15s}
+.active-filter-chip:hover{background:#bfdbfe}
 
 /* Bulk actions */
 .bulk-bar{display:flex;align-items:center;gap:10px;margin:12px 0 0;padding:10px 16px;background:#eff6ff;border:1px solid #bfdbfe;border-radius:10px;flex-wrap:wrap}
@@ -334,7 +341,6 @@ footer{padding:14px 20px;background:#1c1c1c;color:#9a9a9a;font-size:13px;text-al
   .table-wrap{max-height:calc(100vh - 200px);overflow:auto}
   .table-filters{flex-direction:column;align-items:stretch}
   .filter-search{width:100%}
-  .filter-select{width:100%}
   .dates-table{font-size:13px;min-width:500px}
   .dates-table th,.dates-table td{padding:8px 6px}
   .dates-table th.corner{min-width:34px}

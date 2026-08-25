@@ -322,8 +322,9 @@ export function MyDatesPage({ onScenarioName }: { onScenarioName: (name: string 
 
   // Filtering
   const [searchQuery, setSearchQuery] = useState('');
-  const [filterType, setFilterType] = useState('all');
-  const [filterTag, setFilterTag] = useState('all');
+  const [columnFilters, setColumnFilters] = useState<Record<string, string[]>>({
+    name: [], date: [], tags: [], type: [], notes: []
+  });
 
   // Selection
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
@@ -435,14 +436,28 @@ export function MyDatesPage({ onScenarioName }: { onScenarioName: (name: string 
       );
     }
 
-    // Type filter
-    if (filterType !== 'all') {
-      result = result.filter(d => d.type === filterType);
+    // Column filters (multi-select)
+    for (const [field, values] of Object.entries(columnFilters)) {
+      if (values.length === 0) continue;
+      result = result.filter(d => {
+        let cellVal = '';
+        if (field === 'type') cellVal = d.type || '';
+        else if (field === 'tags') return (d.tags || []).some(t => values.includes(t));
+        else if (field === 'name') cellVal = d.name || '';
+        else if (field === 'notes') cellVal = d.notes || '';
+        else if (field === 'date') cellVal = d.date || '';
+        return values.includes(cellVal);
+      });
     }
 
-    // Tag filter
-    if (filterTag !== 'all') {
-      result = result.filter(d => (d.tags || []).includes(filterTag));
+    // Search query (legacy — now handled by columnFilters name field, but keep for compatibility)
+    if (searchQuery) {
+      const q = searchQuery.toLowerCase();
+      result = result.filter(d =>
+        (d.name || '').toLowerCase().includes(q) ||
+        (d.notes || '').toLowerCase().includes(q) ||
+        (d.tags || []).some(t => t.toLowerCase().includes(q))
+      );
     }
 
     // Sort
@@ -484,7 +499,7 @@ export function MyDatesPage({ onScenarioName }: { onScenarioName: (name: string 
     });
 
     return result;
-  }, [dates, searchQuery, filterType, filterTag, sortField, sortOrder]);
+  }, [dates, searchQuery, columnFilters, sortField, sortOrder]);
 
   // Accordion toggle
   const toggleForm = () => {
@@ -605,14 +620,21 @@ export function MyDatesPage({ onScenarioName }: { onScenarioName: (name: string 
     setHeaderMenu(null);
   };
 
-  const handleHeaderMenuFilter = (field: SortField, value: string) => {
-    if (field === 'type') {
-      setFilterType(value || 'all');
-    } else if (field === 'tags') {
-      setFilterTag(value || 'all');
-    } else {
-      // name, notes, date — use search query
-      setSearchQuery(value);
+  const handleHeaderMenuFilterToggle = (field: SortField, value: string) => {
+    setColumnFilters(prev => {
+      const current = prev[field] || [];
+      const next = current.includes(value)
+        ? current.filter(v => v !== value)
+        : [...current, value];
+      return { ...prev, [field]: next };
+    });
+  };
+
+  const handleHeaderMenuClear = (field: SortField) => {
+    setColumnFilters(prev => ({ ...prev, [field]: [] }));
+    if (sortField === field) {
+      setSortField('name');
+      setSortOrder('asc');
     }
     setHeaderMenu(null);
     setHeaderFilterText('');
@@ -752,20 +774,16 @@ export function MyDatesPage({ onScenarioName }: { onScenarioName: (name: string 
             <div className="table-filters">
               <input type="text" value={searchQuery} onChange={e => setSearchQuery(e.target.value)}
                 placeholder="🔍 Пошук..." className="filter-search" />
-              <select value={filterType} onChange={e => setFilterType(e.target.value)} className="filter-select">
-                <option value="all">Усі типи</option>
-                {allTypes.map(t => {
-                  const cfg = getTypeConfig(t);
-                  const label = t === 'person' ? 'Людина' : t === 'event' ? 'Подія' : t === 'other' ? 'Інше' : t;
-                  return <option key={t} value={t}>{cfg.emoji} {label}</option>;
-                })}
-              </select>
-              {allTags.length > 0 && (
-                <select value={filterTag} onChange={e => setFilterTag(e.target.value)} className="filter-select">
-                  <option value="all">Усі теги</option>
-                  {allTags.map(t => <option key={t} value={t}>{t}</option>)}
-                </select>
-              )}
+              {Object.entries(columnFilters).filter(([,v]) => v.length > 0).map(([field, values]) => (
+                <div key={field} className="active-filter-chips">
+                  <span className="active-filter-label">{field === 'type' ? 'Тип' : field === 'tags' ? 'Теги' : field === 'name' ? 'Назва' : field === 'notes' ? 'Примітки' : 'Дата'}:</span>
+                  {values.map(v => (
+                    <span key={v} className="active-filter-chip" onClick={() => setColumnFilters(prev => ({ ...prev, [field]: prev[field].filter(x => x !== v) }))}>
+                      {v} ✕
+                    </span>
+                  ))}
+                </div>
+              ))}
             </div>
 
             {/* Bulk actions */}
@@ -900,22 +918,34 @@ export function MyDatesPage({ onScenarioName }: { onScenarioName: (name: string 
                   <button className={`header-modal-btn ${sortOrder === 'desc' && sortField === headerMenu.field ? 'active' : ''}`} onClick={() => handleHeaderMenuSort(headerMenu.field, 'desc')}>▼ Я → А</button>
                   <div className="header-modal-divider" />
                   <button className="header-modal-btn" onClick={() => setHeaderMenu({ field: headerMenu.field, mode: 'filter' })}>🔍 Фільтр...</button>
+                  {(columnFilters[headerMenu.field]?.length > 0 || sortField === headerMenu.field) && (
+                    <>
+                      <div className="header-modal-divider" />
+                      <button className="header-modal-btn header-modal-btn--danger" onClick={() => handleHeaderMenuClear(headerMenu.field)}>🧹 Очистити</button>
+                    </>
+                  )}
                 </div>
               )}
 
               {headerMenu.mode === 'filter' && (
                 <div className="header-modal-body">
-                  <input className="header-modal-filter-input" type="text" placeholder="Пошук..." value={headerFilterText} onChange={e => setHeaderFilterText(e.target.value)} autoFocus />
+                  <input className="header-modal-filter-input" type="text" placeholder="Пошук у списках..." value={headerFilterText} onChange={e => setHeaderFilterText(e.target.value)} autoFocus />
                   <div className="header-modal-filter-list">
-                    <label className="header-modal-filter-item">
-                      <input type="radio" name={`filter-${headerMenu.field}`} checked={headerMenu.field === 'type' ? filterType === 'all' : headerMenu.field === 'tags' ? filterTag === 'all' : searchQuery === ''} onChange={() => handleHeaderMenuFilter(headerMenu.field, '')} /><span>Усі</span>
-                    </label>
-                    {getUniqueValues(headerMenu.field).filter(v => !headerFilterText || v.toLowerCase().includes(headerFilterText.toLowerCase())).map(v => (
-                      <label key={v} className="header-modal-filter-item">
-                        <input type="radio" name={`filter-${headerMenu.field}`} checked={headerMenu.field === 'type' ? filterType === v : headerMenu.field === 'tags' ? filterTag === v : false} onChange={() => handleHeaderMenuFilter(headerMenu.field, v)} /><span>{v}</span>
-                      </label>
-                    ))}
+                    {getUniqueValues(headerMenu.field).filter(v => !headerFilterText || v.toLowerCase().includes(headerFilterText.toLowerCase())).map(v => {
+                      const isSelected = (columnFilters[headerMenu.field] || []).includes(v);
+                      return (
+                        <label key={v} className="header-modal-filter-item">
+                          <input type="checkbox" checked={isSelected} onChange={() => handleHeaderMenuFilterToggle(headerMenu.field, v)} /><span>{v}</span>
+                        </label>
+                      );
+                    })}
+                    {getUniqueValues(headerMenu.field).filter(v => !headerFilterText || v.toLowerCase().includes(headerFilterText.toLowerCase())).length === 0 && (
+                      <div className="header-modal-empty">Нічого не знайдено</div>
+                    )}
                   </div>
+                  {(columnFilters[headerMenu.field]?.length || 0) > 0 && (
+                    <button className="header-modal-btn header-modal-btn--clear" onClick={() => setColumnFilters(prev => ({ ...prev, [headerMenu.field]: [] }))}>Скинути вибір</button>
+                  )}
                 </div>
               )}
             </div>
