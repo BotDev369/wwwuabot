@@ -1,37 +1,32 @@
-```
-# Executable/binary files
-wwwuabot
-
-# Logs and temp files
-*.log
-*.tmp
+# Dependencies
+node_modules/
 
 # Environment files
 .env
 .env.local
 *.env.*
 
+# Build/dist directories
+bot/dist/
+api/dist/
+web/dist/
+web-admin/dist/
+
+# Cloudflare local state
+.wrangler/
+
+# TypeScript build info
+*.tsbuildinfo
+
+# Logs
+*.log
+*.tmp
+
 # Editor/IDE files
 .vscode/
 .idea/
 *.swp
 *.swo
-
-# Dependencies
-node_modules/
-venv/
-.venv/
-__pycache__/
-.mypy_cache/
-.pytest_cache/
-
-# Build/dist directories
-dist/
-build/
-target/
-
-# Cloudflare local state
-.wrangler/
 
 # OS generated files
 .DS_Store
@@ -65,4 +60,3 @@ htmlcov/
 *.tar.bz2
 *.tar.xz
 *.tar.zst
-```
