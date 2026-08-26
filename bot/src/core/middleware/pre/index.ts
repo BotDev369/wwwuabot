@@ -63,7 +63,11 @@ preMiddleware.use(async (ctx, next) => {
       ctx.userDirty = true;
       log("PRE:user", "loaded | profile updated", { user_id: ctx.from.id, changed });
     } else {
-      log("PRE:user", "loaded", { user_id: ctx.from.id, active_scenario: user.active_scenario, message_id: user.message_id });
+      log("PRE:user", "loaded", {
+        user_id: ctx.from.id,
+        active_scenario: user.active_scenario,
+        message_id: user.message_id,
+      });
     }
   }
 

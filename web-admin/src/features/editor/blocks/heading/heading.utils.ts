@@ -13,9 +13,7 @@ export function toTelegram(block: InternalHeadingBlock): TgHeadingBlock {
 
 export function fromTelegram(tgBlock: TgHeadingBlock, index: number): InternalHeadingBlock {
   const size =
-    typeof tgBlock.size === "number" && tgBlock.size >= 1 && tgBlock.size <= 6
-      ? tgBlock.size
-      : 2;
+    typeof tgBlock.size === "number" && tgBlock.size >= 1 && tgBlock.size <= 6 ? tgBlock.size : 2;
   return {
     id: `block_${Date.now()}_${index}`,
     type: "heading",

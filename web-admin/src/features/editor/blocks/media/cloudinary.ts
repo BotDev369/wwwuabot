@@ -33,7 +33,10 @@ export function buildCloudinaryUrl(cfg: CloudinaryConfig): string {
   const w = cfg.width || 600;
   const h = cfg.height || 420;
   const bg = normHex(cfg.bgColor);
-  const lines = cfg.text.split("\n").map((l) => l.trim()).filter((l) => l !== "");
+  const lines = cfg.text
+    .split("\n")
+    .map((l) => l.trim())
+    .filter((l) => l !== "");
   const parts: string[] = [`w_${w},h_${h},c_fill,b_rgb:${bg}`];
   if (lines.length > 0) {
     const n = lines.length;
@@ -44,12 +47,16 @@ export function buildCloudinaryUrl(cfg: CloudinaryConfig): string {
     lines.forEach((line, i) => {
       const y = Math.round((i - (n - 1) / 2) * lineHeight);
       const g =
-        cfg.align === "left" ? `g_west,x_${pad}` :
-          cfg.align === "right" ? `g_east,x_${pad}` :
-            "g_center";
+        cfg.align === "left"
+          ? `g_west,x_${pad}`
+          : cfg.align === "right"
+            ? `g_east,x_${pad}`
+            : "g_center";
       parts.push(`l_text:${font}:${enc(line)},co_white,c_fit,w_${textW}`);
       parts.push(`fl_layer_apply,${g},y_${y}`);
     });
   }
-  return `https://res.cloudinary.com/${CLOUDINARY_CLOUD}/image/upload/` + parts.join("/") + "/blank.png";
+  return (
+    `https://res.cloudinary.com/${CLOUDINARY_CLOUD}/image/upload/` + parts.join("/") + "/blank.png"
+  );
 }

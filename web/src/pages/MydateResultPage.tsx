@@ -1,6 +1,6 @@
-import { useEffect, useState } from 'react';
-import { useParams } from 'react-router-dom';
-import { CompareTablePage } from './CompareTablePage';
+import { useEffect, useState } from "react";
+import { useParams } from "react-router-dom";
+import { CompareTablePage } from "./CompareTablePage";
 
 interface SystemCard {
   id: string;
@@ -15,7 +15,7 @@ interface SystemResult {
 }
 
 function formatDate(raw: string): string {
-  const parts = raw.split('-');
+  const parts = raw.split("-");
   if (parts.length !== 3) return raw;
   const [yyyy, mm, dd] = parts;
   return `${dd}.${mm}.${yyyy}`;
@@ -40,9 +40,9 @@ function SystemCardView({
 
   const handleAnalyze = () => {
     setLoading(true);
-    fetch('/api/mydate/analyze', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+    fetch("/api/mydate/analyze", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ date, systemId: system.id }),
     })
       .then((r) => r.json())
@@ -66,7 +66,7 @@ function SystemCardView({
             ))}
           </ul>
           {result.comingSoon.length > 0 && (
-            <p className="coming-soon">Скоро підключимо: {result.comingSoon.join(', ')}</p>
+            <p className="coming-soon">Скоро підключимо: {result.comingSoon.join(", ")}</p>
           )}
         </>
       ) : (
@@ -74,7 +74,7 @@ function SystemCardView({
           <p>{system.description}</p>
           {system.implemented && (
             <button className="btn" onClick={handleAnalyze} disabled={loading}>
-              {loading ? 'Аналізуємо...' : 'Проаналізувати'}
+              {loading ? "Аналізуємо..." : "Проаналізувати"}
             </button>
           )}
         </>
@@ -85,21 +85,25 @@ function SystemCardView({
 
 export function MydatePage({ onScenarioName }: { onScenarioName: (name: string | null) => void }) {
   const { date } = useParams<{ date: string }>();
-  if (date && date.includes('+')) {
+  if (date && date.includes("+")) {
     return <CompareTablePage onScenarioName={onScenarioName} />;
   }
   return <MydateResultPage onScenarioName={onScenarioName} />;
 }
 
-export function MydateResultPage({ onScenarioName }: { onScenarioName: (name: string | null) => void }) {
+export function MydateResultPage({
+  onScenarioName,
+}: {
+  onScenarioName: (name: string | null) => void;
+}) {
   const { date } = useParams<{ date: string }>();
   const [systems, setSystems] = useState<SystemCard[] | null>(null);
   const [analysis, setAnalysis] = useState<Record<string, SystemResult>>({});
 
   useEffect(() => {
     if (!date || !isValidDate(date)) return;
-    onScenarioName('MyDate');
-    fetch('/api/mydate/systems')
+    onScenarioName("MyDate");
+    fetch("/api/mydate/systems")
       .then((r) => r.json())
       .then((data) => setSystems(data?.ok ? data.systems : []));
     fetch(`/api/mydate/analysis/${date}`)
@@ -112,7 +116,9 @@ export function MydateResultPage({ onScenarioName }: { onScenarioName: (name: st
       <main>
         <section className="hero">
           <p className="hero-text">Невірний формат дати.</p>
-          <a className="btn" href="/mydate">Спробувати ще раз</a>
+          <a className="btn" href="/mydate">
+            Спробувати ще раз
+          </a>
         </section>
       </main>
     );
@@ -121,9 +127,7 @@ export function MydateResultPage({ onScenarioName }: { onScenarioName: (name: st
   return (
     <main>
       <section className="hero">
-        <p className="hero-text">
-          Ви вказували дату: {formatDate(date)}
-        </p>
+        <p className="hero-text">Ви вказували дату: {formatDate(date)}</p>
         <div className="cards-grid">
           {(systems ?? []).map((s) => (
             <SystemCardView

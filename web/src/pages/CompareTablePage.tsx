@@ -1,5 +1,5 @@
-import { Fragment, useEffect, useMemo, useState } from 'react';
-import { useParams, useSearchParams } from 'react-router-dom';
+import { Fragment, useEffect, useMemo, useState } from "react";
+import { useParams, useSearchParams } from "react-router-dom";
 
 interface SystemDef {
   id: string;
@@ -9,12 +9,16 @@ interface SystemDef {
 }
 
 function formatDate(raw: string): string {
-  const parts = raw.split('-');
+  const parts = raw.split("-");
   if (parts.length !== 3) return raw;
   return `${parts[2]}.${parts[1]}.${parts[0]}`;
 }
 
-export function CompareTablePage({ onScenarioName }: { onScenarioName: (name: string | null) => void }) {
+export function CompareTablePage({
+  onScenarioName,
+}: {
+  onScenarioName: (name: string | null) => void;
+}) {
   const { date: dateParam } = useParams<{ date: string }>();
   const [search] = useSearchParams();
   const [systems, setSystems] = useState<SystemDef[]>([]);
@@ -23,21 +27,21 @@ export function CompareTablePage({ onScenarioName }: { onScenarioName: (name: st
   const [error, setError] = useState<string | null>(null);
 
   const dates = useMemo(
-    () => (dateParam ?? '').split('+').filter((d) => /^\d{4}-\d{2}-\d{2}$/.test(d)),
-    [dateParam]
+    () => (dateParam ?? "").split("+").filter((d) => /^\d{4}-\d{2}-\d{2}$/.test(d)),
+    [dateParam],
   );
 
   const selectedSystems = useMemo(
-    () => (search.get('sys') ?? '').split(',').filter(Boolean),
-    [search]
+    () => (search.get("sys") ?? "").split(",").filter(Boolean),
+    [search],
   );
   const selectedParams = useMemo(
-    () => (search.get('p') ?? '').split(',').filter(Boolean),
-    [search]
+    () => (search.get("p") ?? "").split(",").filter(Boolean),
+    [search],
   );
 
   useEffect(() => {
-    onScenarioName('MyDate');
+    onScenarioName("MyDate");
     if (dates.length === 0) {
       setLoading(false);
       return;
@@ -45,30 +49,30 @@ export function CompareTablePage({ onScenarioName }: { onScenarioName: (name: st
     let cancelled = false;
     setLoading(true);
     setError(null);
-    fetch('/api/mydate/systems')
+    fetch("/api/mydate/systems")
       .then((r) => r.json())
       .then((data) => {
         if (!cancelled && data?.ok) setSystems(data.systems);
       })
       .then(() =>
-        fetch('/api/mydate/compare', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+        fetch("/api/mydate/compare", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
             dates,
             systemIds: selectedSystems.length ? selectedSystems : undefined,
             parameterKeys: selectedParams.length ? selectedParams : undefined,
           }),
-        })
+        }),
       )
       .then((r) => r.json())
       .then((data) => {
         if (cancelled) return;
         if (data?.ok) setMatrix(data.matrix);
-        else setError(data?.error ?? 'Помилка співставлення');
+        else setError(data?.error ?? "Помилка співставлення");
       })
       .catch(() => {
-        if (!cancelled) setError('Помилка мережі');
+        if (!cancelled) setError("Помилка мережі");
       })
       .finally(() => {
         if (!cancelled) setLoading(false);
@@ -84,8 +88,11 @@ export function CompareTablePage({ onScenarioName }: { onScenarioName: (name: st
       : systems;
     const out: { systemId: string; systemName: string; key: string; label: string }[] = [];
     for (const s of systemIds) {
-      const params = (s.parameters ?? []).filter((p) => !selectedParams.length || selectedParams.includes(p.key));
-      for (const p of params) out.push({ systemId: s.id, systemName: s.name, key: p.key, label: p.label });
+      const params = (s.parameters ?? []).filter(
+        (p) => !selectedParams.length || selectedParams.includes(p.key),
+      );
+      for (const p of params)
+        out.push({ systemId: s.id, systemName: s.name, key: p.key, label: p.label });
     }
     return out;
   }, [systems, selectedSystems, selectedParams]);
@@ -95,7 +102,9 @@ export function CompareTablePage({ onScenarioName }: { onScenarioName: (name: st
       <main>
         <section className="hero">
           <p className="hero-text">Невірний формат дат у посиланні.</p>
-          <a className="btn" href="/mydate/compare">Співставити дати</a>
+          <a className="btn" href="/mydate/compare">
+            Співставити дати
+          </a>
         </section>
       </main>
     );
@@ -140,7 +149,7 @@ export function CompareTablePage({ onScenarioName }: { onScenarioName: (name: st
                           const value = matrix[d]?.[r.systemId]?.[r.key];
                           return (
                             <td key={d} className="value-cell">
-                              {value ?? '—'}
+                              {value ?? "—"}
                             </td>
                           );
                         })}

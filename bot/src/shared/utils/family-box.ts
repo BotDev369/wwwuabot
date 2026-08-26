@@ -4,17 +4,20 @@ import { log } from "./debug";
  * Безпечно читає JSON-коробку сім'ї з об'єкта користувача.
  * Якщо дані відсутні або биті — повертає порожній об'єкт {}.
  */
-export function getFamilyBox(user: Record<string, any> | undefined, family: string): Record<string, any> {
+export function getFamilyBox(
+  user: Record<string, any> | undefined,
+  family: string,
+): Record<string, any> {
   // ← ВИПРАВЛЕННЯ: Додаємо перевірку на undefined і змінюємо тип параметра
   if (!user) {
     return {};
   }
-  
+
   const raw = user[family];
   if (!raw || typeof raw !== "string") {
     return {};
   }
-  
+
   try {
     const parsed = JSON.parse(raw);
     if (parsed && typeof parsed === "object" && !Array.isArray(parsed)) {
@@ -52,7 +55,7 @@ export function setByPath(box: Record<string, any>, path: string, value: any): v
 export function saveFamilyBox(
   user: Record<string, any>,
   family: string,
-  box: Record<string, any>
+  box: Record<string, any>,
 ): void {
   user[family] = JSON.stringify(box);
 }

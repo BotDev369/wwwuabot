@@ -6,7 +6,11 @@ import { handleMyDates } from "./controllers/my-dates.controller";
 import { handleAuthCheck } from "./controllers/auth-check.controller";
 import type { Env } from "../shared/types/env";
 
-export async function handleRequest(request: Request, env: Env, ctx: ExecutionContext): Promise<Response> {
+export async function handleRequest(
+  request: Request,
+  env: Env,
+  ctx: ExecutionContext,
+): Promise<Response> {
   const url = new URL(request.url);
 
   if (request.method === "GET" && url.pathname === "/") {
@@ -33,7 +37,10 @@ export async function handleRequest(request: Request, env: Env, ctx: ExecutionCo
     return handleMyDates(request, env);
   }
 
-  if (request.method === "GET" && (url.pathname === "/auth/check" || url.pathname === "/api/auth/check")) {
+  if (
+    request.method === "GET" &&
+    (url.pathname === "/auth/check" || url.pathname === "/api/auth/check")
+  ) {
     return handleAuthCheck(request, env);
   }
 

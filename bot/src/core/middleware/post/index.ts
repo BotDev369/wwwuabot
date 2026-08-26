@@ -31,7 +31,7 @@ export const postMiddleware: MiddlewareFn<AppContext> = async (ctx) => {
 
     log("POST:notify", "dispatching notification", {
       has_pending_data: !!ctx.pendingNotification,
-      data_keys: Object.keys(notificationData)
+      data_keys: Object.keys(notificationData),
     });
 
     try {

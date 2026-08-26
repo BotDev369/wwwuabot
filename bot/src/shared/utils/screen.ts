@@ -13,7 +13,7 @@ export interface CaptionBlocks {
 }
 
 export function buildCaption(blocks: CaptionBlocks): string {
-  const parts = [blocks.top, blocks.mid, blocks.bot].filter(b => b && b.trim() !== "");
+  const parts = [blocks.top, blocks.mid, blocks.bot].filter((b) => b && b.trim() !== "");
   return parts.join("\n───────\n");
 }
 
@@ -22,7 +22,10 @@ function buildPickKeyboard(ctx: AppContext): any[][] {
   const target = ctx.pickTarget;
   const qtyOptionsStr = ctx.screen.qty_options;
   const options: string[] = qtyOptionsStr
-    ? qtyOptionsStr.split(",").map((s: string) => s.trim()).filter((s: string) => s)
+    ? qtyOptionsStr
+        .split(",")
+        .map((s: string) => s.trim())
+        .filter((s: string) => s)
     : ["1"];
 
   const keyboard: any[][] = [];
@@ -30,15 +33,17 @@ function buildPickKeyboard(ctx: AppContext): any[][] {
   for (let i = 0; i < options.length; i += ROW_SIZE) {
     const row = options.slice(i, i + ROW_SIZE).map((opt: string) => ({
       text: opt,
-      callback_data: `@set:${target}:${opt}`
+      callback_data: `@set:${target}:${opt}`,
     }));
     keyboard.push(row);
   }
 
-  keyboard.push([{
-    text: "◀ Назад",
-    callback_data: ctx.screen.codeword
-  }]);
+  keyboard.push([
+    {
+      text: "◀ Назад",
+      callback_data: ctx.screen.codeword,
+    },
+  ]);
 
   return keyboard;
 }
@@ -52,7 +57,12 @@ export async function sendOrEditLiveMessage(ctx: AppContext): Promise<boolean> {
   let messageId = ctx.user?.message_id as number | null | undefined;
   const oldLiveId = typeof messageId === "number" ? messageId : null;
 
-  log("SCREEN", "rendering", { codeword, chat_id: chatId, existing_message_id: messageId ?? null, is_pick: !!ctx.pickTarget });
+  log("SCREEN", "rendering", {
+    codeword,
+    chat_id: chatId,
+    existing_message_id: messageId ?? null,
+    is_pick: !!ctx.pickTarget,
+  });
 
   const photoUrl = await getPhoto(codeword, photo_url, ctx.env);
 
@@ -85,7 +95,11 @@ export async function sendOrEditLiveMessage(ctx: AppContext): Promise<boolean> {
   const finalKeyboard = replaceQtyInButtons(keyboard, ctx);
 
   // ── ГІЛКА ДЛЯ RICH MESSAGE ──────────────────────────────────
-  if (ctx.screen.rich_message === true && ctx.screen.rich_data && Array.isArray(ctx.screen.rich_data)) {
+  if (
+    ctx.screen.rich_message === true &&
+    ctx.screen.rich_data &&
+    Array.isArray(ctx.screen.rich_data)
+  ) {
     log("SCREEN:rich", "rendering rich message", { codeword, chat_id: chatId });
     const richMessage: InputRichMessage = {
       blocks: ctx.screen.rich_data as any,
@@ -104,7 +118,9 @@ export async function sendOrEditLiveMessage(ctx: AppContext): Promise<boolean> {
       } catch (err) {
         const errMsg = getErrorMessage(err);
         if (isMessageNotModified(err)) {
-          log("SCREEN:rich", "edit skipped — content identical, will resend", { message_id: messageId });
+          log("SCREEN:rich", "edit skipped — content identical, will resend", {
+            message_id: messageId,
+          });
           messageId = null;
         }
         if (isMessageNotFound(err)) {
@@ -138,7 +154,7 @@ export async function sendOrEditLiveMessage(ctx: AppContext): Promise<boolean> {
         } catch (err) {
           log("SCREEN:rich", "failed to delete old messages (non-critical)", {
             error: getErrorMessage(err),
-            ids: idsToDelete
+            ids: idsToDelete,
           });
         }
       }
@@ -164,12 +180,17 @@ export async function sendOrEditLiveMessage(ctx: AppContext): Promise<boolean> {
   if (messageId) {
     log("SCREEN", "attempting edit", { message_id: messageId });
     try {
-      await ctx.api.editMessageMedia(chatId, messageId, {
-        type: "photo",
-        media: photoUrl,
-        caption: captionText,
-        parse_mode: "HTML",
-      }, { reply_markup: { inline_keyboard: finalKeyboard } });
+      await ctx.api.editMessageMedia(
+        chatId,
+        messageId,
+        {
+          type: "photo",
+          media: photoUrl,
+          caption: captionText,
+          parse_mode: "HTML",
+        },
+        { reply_markup: { inline_keyboard: finalKeyboard } },
+      );
       log("SCREEN", "edit success", { message_id: messageId });
       ctx.liveMessageSent = true;
       return true;
@@ -206,7 +227,10 @@ export async function sendOrEditLiveMessage(ctx: AppContext): Promise<boolean> {
         });
         log("SCREEN", "deleted old live message", { id: oldLiveId });
       } catch (err) {
-        log("SCREEN", "failed to delete old live message (non-critical)", { error: getErrorMessage(err), id: oldLiveId });
+        log("SCREEN", "failed to delete old live message (non-critical)", {
+          error: getErrorMessage(err),
+          id: oldLiveId,
+        });
       }
     }
     ctx.user!.message_id = sent.message_id;

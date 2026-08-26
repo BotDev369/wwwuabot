@@ -1,7 +1,12 @@
 import type { AppContext } from "../../../shared/types/env";
 import type { ParsedAction } from "./index";
 import { getFamilyBox, saveFamilyBox } from "../../../shared/utils/family-box";
-import { newGame, playerMove, type TttState, type TttScore } from "../../../modules/games/tictactoe/engine";
+import {
+  newGame,
+  playerMove,
+  type TttState,
+  type TttScore,
+} from "../../../modules/games/tictactoe/engine";
 import { setGameScreen, setHomeScreen } from "../../../modules/games/tictactoe/render";
 
 const FAM = "ttt";
@@ -72,11 +77,20 @@ export async function handleTtt(ctx: AppContext, action: ParsedAction): Promise<
 
   if (target === "cell") {
     const game = readGame(box);
-    if (!game) { setHomeScreen(ctx, score, false); return; }
-    if (game.status !== "playing") { setGameScreen(ctx, game, score); return; }
+    if (!game) {
+      setHomeScreen(ctx, score, false);
+      return;
+    }
+    if (game.status !== "playing") {
+      setGameScreen(ctx, game, score);
+      return;
+    }
 
     const idx = parseInt(param ?? "", 10);
-    if (Number.isNaN(idx) || idx < 0 || idx > 8) { setGameScreen(ctx, game, score); return; }
+    if (Number.isNaN(idx) || idx < 0 || idx > 8) {
+      setGameScreen(ctx, game, score);
+      return;
+    }
 
     // Ігноруємо клік на зайняту клітинку — просто перерендер без змін
     if (game.board[idx] !== null) {

@@ -1,9 +1,7 @@
 import type { Env } from "../types/env";
 
 function encodeText(text: string): string {
-  return encodeURIComponent(text)
-    .replace(/'/g, "%27")
-    .replace(/"/g, "%22");
+  return encodeURIComponent(text).replace(/'/g, "%27").replace(/"/g, "%22");
 }
 
 /**
@@ -16,7 +14,8 @@ async function generateFallbackPhoto(codeword: string, env: Env): Promise<string
   const cloud = env.CLOUDINARY_CLOUD_NAME;
   const encodedTitle = encodeText(codeword);
 
-  const url = `https://res.cloudinary.com/${cloud}/image/upload/` +
+  const url =
+    `https://res.cloudinary.com/${cloud}/image/upload/` +
     `w_600,h_420,c_fill,b_rgb:1a56db/` +
     `l_text:Arial_52_bold:${encodedTitle},co_white,c_fit,w_500/` +
     `fl_layer_apply,g_center/` +
@@ -49,7 +48,7 @@ async function generateFallbackPhoto(codeword: string, env: Env): Promise<string
 export async function getPhoto(
   codeword: string,
   photoUrl: string | null | undefined,
-  env: Env
+  env: Env,
 ): Promise<string> {
   if (photoUrl && photoUrl.trim() !== "") {
     return photoUrl.trim();

@@ -10,11 +10,10 @@ export interface DbProxyResult {
 }
 
 export class DbProxyService {
-  constructor(private env: Env) { }
+  constructor(private env: Env) {}
 
   async read(codeword: string): Promise<DbProxyResult> {
-    const row = await this.env.DB
-      .prepare(`SELECT * FROM scenarios WHERE codeword = ?`)
+    const row = await this.env.DB.prepare(`SELECT * FROM scenarios WHERE codeword = ?`)
       .bind(codeword)
       .first();
     return { success: true, data: row ?? null };
@@ -34,7 +33,7 @@ export class DbProxyService {
     if (!("keyboard_type" in fields)) fields.keyboard_type = "static";
     if (!("buttons" in fields)) fields.buttons = "[]";
     if (!("rich_message" in fields)) fields.rich_message = "false"; // ← NEW
-    if (!("rich_data" in fields)) fields.rich_data = "";            // ← NEW
+    if (!("rich_data" in fields)) fields.rich_data = ""; // ← NEW
 
     const keys = Object.keys(fields);
     const columns = ["codeword", ...keys, "created_at", "updated_at"];
@@ -42,7 +41,7 @@ export class DbProxyService {
       .map((col) =>
         col === "created_at"
           ? `COALESCE((SELECT created_at FROM scenarios WHERE codeword = ?), ?)`
-          : "?"
+          : "?",
       )
       .join(", ");
 
@@ -56,15 +55,14 @@ export class DbProxyService {
       await withAutoMigrate(
         this.env.DB,
         async () => {
-          await this.env.DB
-            .prepare(
-              `INSERT OR REPLACE INTO scenarios (${columns.join(", ")}) VALUES (${placeholders})`
-            )
+          await this.env.DB.prepare(
+            `INSERT OR REPLACE INTO scenarios (${columns.join(", ")}) VALUES (${placeholders})`,
+          )
             .bind(...values)
             .run();
         },
         fields,
-        "scenarios"
+        "scenarios",
       );
       return { success: true, codeword, updated_at: now };
     } catch (err) {
@@ -73,8 +71,7 @@ export class DbProxyService {
   }
 
   async delete(codeword: string): Promise<DbProxyResult> {
-    const result = await this.env.DB
-      .prepare(`DELETE FROM scenarios WHERE codeword = ?`)
+    const result = await this.env.DB.prepare(`DELETE FROM scenarios WHERE codeword = ?`)
       .bind(codeword)
       .run();
     const deleted = (result.meta?.changes ?? 0) > 0;
@@ -94,7 +91,11 @@ export class DbProxyService {
       const rawFields = u?.fields;
 
       if (!userId || !rawFields || typeof rawFields !== "object") {
-        results.push({ user_id: userId ?? null, success: false, error: "user_id і fields обов'язкові" });
+        results.push({
+          user_id: userId ?? null,
+          success: false,
+          error: "user_id і fields обов'язкові",
+        });
         continue;
       }
 
@@ -107,7 +108,11 @@ export class DbProxyService {
 
       const keys = Object.keys(fields);
       if (keys.length === 0) {
-        results.push({ user_id: userId, success: false, error: "немає валідних полів для оновлення" });
+        results.push({
+          user_id: userId,
+          success: false,
+          error: "немає валідних полів для оновлення",
+        });
         continue;
       }
 
@@ -118,13 +123,12 @@ export class DbProxyService {
         await withAutoMigrate(
           this.env.DB,
           async () => {
-            await this.env.DB
-              .prepare(`UPDATE users SET ${setClause} WHERE user_id = ?`)
+            await this.env.DB.prepare(`UPDATE users SET ${setClause} WHERE user_id = ?`)
               .bind(...values, userId)
               .run();
           },
           fields,
-          "users"
+          "users",
         );
         results.push({ user_id: userId, success: true });
       } catch (err) {
@@ -136,9 +140,9 @@ export class DbProxyService {
   }
 
   async readSettings(): Promise<DbProxyResult> {
-    const tableExists = await this.env.DB
-      .prepare(`SELECT name FROM sqlite_master WHERE type='table' AND name='settings'`)
-      .first();
+    const tableExists = await this.env.DB.prepare(
+      `SELECT name FROM sqlite_master WHERE type='table' AND name='settings'`,
+    ).first();
 
     if (!tableExists) {
       return { success: true, data: null };
@@ -161,9 +165,9 @@ export class DbProxyService {
     }
 
     try {
-      const tableExists = await this.env.DB
-        .prepare(`SELECT name FROM sqlite_master WHERE type='table' AND name='settings'`)
-        .first();
+      const tableExists = await this.env.DB.prepare(
+        `SELECT name FROM sqlite_master WHERE type='table' AND name='settings'`,
+      ).first();
 
       if (!tableExists) {
         await this.env.DB.prepare(`CREATE TABLE settings (id INTEGER PRIMARY KEY DEFAULT 1)`).run();
@@ -180,13 +184,12 @@ export class DbProxyService {
       await withAutoMigrate(
         this.env.DB,
         async () => {
-          await this.env.DB
-            .prepare(`UPDATE settings SET ${setClause} WHERE id = 1`)
+          await this.env.DB.prepare(`UPDATE settings SET ${setClause} WHERE id = 1`)
             .bind(...values)
             .run();
         },
         fields,
-        "settings"
+        "settings",
       );
 
       return { success: true };

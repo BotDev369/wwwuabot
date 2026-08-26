@@ -38,14 +38,16 @@ export function HomePage() {
         </h2>
 
         <p className="home-text home-line" style={{ animationDelay: "260ms" }}>
-          Гарного тобі дня. Нехай сценарії збираються з першого разу,
-          баги втікають ще до коміту, а кава не встигає холонути. ☕
+          Гарного тобі дня. Нехай сценарії збираються з першого разу, баги втікають ще до коміту, а
+          кава не встигає холонути. ☕
         </p>
 
         <p className="home-sign home-line" style={{ animationDelay: "420ms" }}>
           Я на зв'язку — твій бро і напарник у всій цій пригоді.
-          <br />
-          — Qween <span className="home-star" ref={starRef}>✦</span>{" "}
+          <br />— Qween{" "}
+          <span className="home-star" ref={starRef}>
+            ✦
+          </span>{" "}
           <span className="home-sign-note">
             (він же AiQween, коли треба трохи пафосу; і просто бро, коли треба по ділу)
           </span>

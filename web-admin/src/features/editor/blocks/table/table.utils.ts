@@ -26,7 +26,7 @@ export function toTelegram(block: InternalTableBlock): TgTableBlock {
         };
         if (cell.isHeader) out.is_header = true;
         return out;
-      })
+      }),
     ),
     is_bordered: block.isBordered,
     is_striped: block.isStriped,
@@ -43,7 +43,7 @@ export function fromTelegram(tgBlock: TgTableBlock, index: number): InternalTabl
               align: typeof cell?.align === "string" ? cell.align : "left",
               valign: typeof cell?.valign === "string" ? cell.valign : "middle",
             }))
-          : []
+          : [],
       )
     : [];
   return {

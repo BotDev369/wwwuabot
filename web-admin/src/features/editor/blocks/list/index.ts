@@ -4,20 +4,20 @@ import { ListPreview } from "./ListPreview";
 import * as utils from "./list.utils";
 
 export const listConfig = {
+  type: "list",
+  tgType: "list",
+  label: "Список",
+  icon: "•",
+  createDefault: (id: string): InternalListBlock => ({
+    id,
     type: "list",
-    tgType: "list",
-    label: "Список",
-    icon: "•",
-    createDefault: (id: string): InternalListBlock => ({
-        id,
-        type: "list",
-        style: "bullet",
-        items: [{ id: `${id}_li0`, kind: "simple", text: "" }],
-    }),
-    Editor: ListEditor as any,
-    Preview: ListPreview as any,
-    toTelegram: utils.toTelegram,
-    fromTelegram: utils.fromTelegram,
+    style: "bullet",
+    items: [{ id: `${id}_li0`, kind: "simple", text: "" }],
+  }),
+  Editor: ListEditor as any,
+  Preview: ListPreview as any,
+  toTelegram: utils.toTelegram,
+  fromTelegram: utils.fromTelegram,
 };
 
 blockRegistry.register(listConfig);

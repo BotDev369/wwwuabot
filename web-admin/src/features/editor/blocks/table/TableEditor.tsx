@@ -36,8 +36,8 @@ export function TableEditor({ block, idx, total }: Props) {
   function setCell(r: number, c: number, patch: Partial<InternalTableCell>) {
     setRows(
       block.rows.map((row, ri) =>
-        ri !== r ? row : row.map((cell, ci) => (ci !== c ? cell : { ...cell, ...patch }))
-      )
+        ri !== r ? row : row.map((cell, ci) => (ci !== c ? cell : { ...cell, ...patch })),
+      ),
     );
   }
   function addRow() {
@@ -61,19 +61,47 @@ export function TableEditor({ block, idx, total }: Props) {
         <span className="block-type-badge">T</span>
         <span className="block-type-label">Таблиця</span>
         <div className="block-actions">
-          <button className="block-action-btn" onClick={() => moveBlock(block.id, "up")} disabled={idx === 0} title="Вгору">↑</button>
-          <button className="block-action-btn" onClick={() => moveBlock(block.id, "down")} disabled={idx === total - 1} title="Вниз">↓</button>
-          <button className="block-action-btn block-action-btn--danger" onClick={() => removeBlock(block.id)} title="Видалити">✕</button>
+          <button
+            className="block-action-btn"
+            onClick={() => moveBlock(block.id, "up")}
+            disabled={idx === 0}
+            title="Вгору"
+          >
+            ↑
+          </button>
+          <button
+            className="block-action-btn"
+            onClick={() => moveBlock(block.id, "down")}
+            disabled={idx === total - 1}
+            title="Вниз"
+          >
+            ↓
+          </button>
+          <button
+            className="block-action-btn block-action-btn--danger"
+            onClick={() => removeBlock(block.id)}
+            title="Видалити"
+          >
+            ✕
+          </button>
         </div>
       </div>
       <div className="block-card-body">
         <div className="table-options">
           <label className="table-option">
-            <input type="checkbox" checked={block.isBordered} onChange={(e) => updateBlock(block.id, { isBordered: e.target.checked })} />
+            <input
+              type="checkbox"
+              checked={block.isBordered}
+              onChange={(e) => updateBlock(block.id, { isBordered: e.target.checked })}
+            />
             З рамкою
           </label>
           <label className="table-option">
-            <input type="checkbox" checked={block.isStriped} onChange={(e) => updateBlock(block.id, { isStriped: e.target.checked })} />
+            <input
+              type="checkbox"
+              checked={block.isStriped}
+              onChange={(e) => updateBlock(block.id, { isStriped: e.target.checked })}
+            />
             Смугаста
           </label>
         </div>
@@ -99,14 +127,32 @@ export function TableEditor({ block, idx, total }: Props) {
                   </button>
                 </div>
               ))}
-              <button type="button" className="block-action-btn block-action-btn--danger" onClick={() => removeRow(r)} title="Видалити рядок">✕</button>
+              <button
+                type="button"
+                className="block-action-btn block-action-btn--danger"
+                onClick={() => removeRow(r)}
+                title="Видалити рядок"
+              >
+                ✕
+              </button>
             </div>
           ))}
         </div>
         <div className="table-toolbar">
-          <button type="button" className="kb-add-btn" onClick={addRow}>+ Рядок</button>
-          <button type="button" className="kb-add-btn" onClick={addColumn}>+ Колонка</button>
-          <button type="button" className="kb-add-btn" onClick={removeColumn} disabled={colCount <= 1}>− Колонка</button>
+          <button type="button" className="kb-add-btn" onClick={addRow}>
+            + Рядок
+          </button>
+          <button type="button" className="kb-add-btn" onClick={addColumn}>
+            + Колонка
+          </button>
+          <button
+            type="button"
+            className="kb-add-btn"
+            onClick={removeColumn}
+            disabled={colCount <= 1}
+          >
+            − Колонка
+          </button>
         </div>
       </div>
     </div>

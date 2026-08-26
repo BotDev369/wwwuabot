@@ -15,7 +15,7 @@ export interface ScenarioRow {
   notify_groups: string | null;
   notify_template: string | null;
   rich_message: string | null; // ← NEW: "true"/"false" або 1/0
-  rich_data: string | null;    // ← NEW: JSON-рядок з масивом блоків
+  rich_data: string | null; // ← NEW: JSON-рядок з масивом блоків
   created_at: string;
   updated_at: string;
 }
@@ -42,6 +42,6 @@ export interface Scenario {
   qty_options: string | null;
   notify_groups: string | null;
   notify_template: string | null;
-  rich_message: boolean;       // ← NEW
-  rich_data: any[] | null;     // ← NEW: масив блоків
+  rich_message: boolean; // ← NEW
+  rich_data: any[] | null; // ← NEW: масив блоків
 }

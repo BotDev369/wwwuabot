@@ -79,15 +79,42 @@ function parseSeq(src: string, cur: { i: number }, closer: string | null): TextR
   const out: TextRun[] = [];
   let buf = "";
   const flush = () => {
-    if (buf) { out.push({ text: buf }); buf = ""; }
+    if (buf) {
+      out.push({ text: buf });
+      buf = "";
+    }
   };
   while (cur.i < src.length) {
-    if (closer && src.startsWith(closer, cur.i)) { cur.i += closer.length; flush(); return out; }
-    if (src.startsWith("**", cur.i)) { cur.i += 2; out.push(...addStyle(parseSeq(src, cur, "**"), { bold: true })); continue; }
-    if (src.startsWith("__", cur.i)) { cur.i += 2; out.push(...addStyle(parseSeq(src, cur, "__"), { underline: true })); continue; }
-    if (src.startsWith("~~", cur.i)) { cur.i += 2; out.push(...addStyle(parseSeq(src, cur, "~~"), { strikethrough: true })); continue; }
-    if (src.startsWith("||", cur.i)) { cur.i += 2; out.push(...addStyle(parseSeq(src, cur, "||"), { marked: true })); continue; }
-    if (src.startsWith("*", cur.i)) { cur.i += 1; out.push(...addStyle(parseSeq(src, cur, "*"), { italic: true })); continue; }
+    if (closer && src.startsWith(closer, cur.i)) {
+      cur.i += closer.length;
+      flush();
+      return out;
+    }
+    if (src.startsWith("**", cur.i)) {
+      cur.i += 2;
+      out.push(...addStyle(parseSeq(src, cur, "**"), { bold: true }));
+      continue;
+    }
+    if (src.startsWith("__", cur.i)) {
+      cur.i += 2;
+      out.push(...addStyle(parseSeq(src, cur, "__"), { underline: true }));
+      continue;
+    }
+    if (src.startsWith("~~", cur.i)) {
+      cur.i += 2;
+      out.push(...addStyle(parseSeq(src, cur, "~~"), { strikethrough: true }));
+      continue;
+    }
+    if (src.startsWith("||", cur.i)) {
+      cur.i += 2;
+      out.push(...addStyle(parseSeq(src, cur, "||"), { marked: true }));
+      continue;
+    }
+    if (src.startsWith("*", cur.i)) {
+      cur.i += 1;
+      out.push(...addStyle(parseSeq(src, cur, "*"), { italic: true }));
+      continue;
+    }
     if (src.startsWith("[", cur.i)) {
       cur.i += 1;
       const inner = parseSeq(src, cur, "]");
@@ -115,8 +142,14 @@ function addStyle(runs: TextRun[], style: Partial<TextRun>): TextRun[] {
 }
 
 function sameStyle(a: TextRun, b: TextRun): boolean {
-  return a.bold === b.bold && a.italic === b.italic && a.underline === b.underline &&
-    a.strikethrough === b.strikethrough && a.marked === b.marked && a.url === b.url;
+  return (
+    a.bold === b.bold &&
+    a.italic === b.italic &&
+    a.underline === b.underline &&
+    a.strikethrough === b.strikethrough &&
+    a.marked === b.marked &&
+    a.url === b.url
+  );
 }
 
 export function mergeRuns(runs: TextRun[]): TextRun[] {

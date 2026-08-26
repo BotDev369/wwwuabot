@@ -16,5 +16,14 @@ export function log(checkpoint: string, message: string, data?: Record<string, a
     Object.assign(entry, data);
   }
 
-  console.log(`[${checkpoint}] ${message}${data ? " | " + Object.entries(data).map(([k, v]) => `${k}: ${JSON.stringify(v)}`).join(" | ") : ""}`);
+  console.log(
+    `[${checkpoint}] ${message}${
+      data
+        ? " | " +
+          Object.entries(data)
+            .map(([k, v]) => `${k}: ${JSON.stringify(v)}`)
+            .join(" | ")
+        : ""
+    }`,
+  );
 }

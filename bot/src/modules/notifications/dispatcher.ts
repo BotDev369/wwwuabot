@@ -12,7 +12,7 @@ import { SettingsRepository } from "../../repositories/settings.repository";
  */
 export async function dispatchNotification(
   ctx: AppContext,
-  data: Record<string, any>
+  data: Record<string, any>,
 ): Promise<void> {
   const screen = ctx.screen;
   if (!screen) {
@@ -30,7 +30,10 @@ export async function dispatchNotification(
   const settingsRepo = new SettingsRepository(ctx.env);
 
   try {
-    const groups = notifyGroups.split(",").map((g: string) => g.trim()).filter((g: string) => g);
+    const groups = notifyGroups
+      .split(",")
+      .map((g: string) => g.trim())
+      .filter((g: string) => g);
     if (groups.length === 0) {
       log("DISPATCHER", "no groups specified");
       return;
@@ -60,7 +63,7 @@ export async function dispatchNotification(
   } catch (err: any) {
     const errMsg = err instanceof Error ? err.message : String(err);
     log("DISPATCHER", "fatal error, ignoring groups and sending to admin", { error: errMsg });
-    
+
     // ТЗ п. 7.1: Відправка хардкодного повідомлення про помилку ВИКЛЮЧНО в group_admin
     try {
       const adminChatId = await settingsRepo.getChatId("group_admin");

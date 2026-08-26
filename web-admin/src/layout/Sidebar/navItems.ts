@@ -13,9 +13,7 @@ export interface NavSection {
 export const navSections: NavSection[] = [
   {
     title: null,
-    items: [
-      { to: "/", label: "Головна", icon: "🏠" },
-    ],
+    items: [{ to: "/", label: "Головна", icon: "🏠" }],
   },
   {
     title: "Сценарії",

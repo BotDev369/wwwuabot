@@ -9,6 +9,6 @@ export function handleStatus(env: Env): Response {
     }),
     {
       headers: { "Content-Type": "application/json" },
-    }
+    },
   );
 }

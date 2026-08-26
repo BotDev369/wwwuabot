@@ -6,7 +6,7 @@ export function toTelegram(block: InternalUnknownBlock): Record<string, unknown>
 
 export function fromTelegram(
   tgBlock: Record<string, unknown>,
-  index: number
+  index: number,
 ): InternalUnknownBlock {
   return {
     id: `block_${Date.now()}_${index}`,

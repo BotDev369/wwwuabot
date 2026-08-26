@@ -8,7 +8,11 @@ export function ListPreview({ block }: { block: InternalListBlock }) {
   const renderItems = () =>
     block.items.map((item) => (
       <li key={item.id}>
-        {item.kind === "simple" ? <RichPreview value={item.text} /> : <span className="tg-placeholder">[складний пункт]</span>}
+        {item.kind === "simple" ? (
+          <RichPreview value={item.text} />
+        ) : (
+          <span className="tg-placeholder">[складний пункт]</span>
+        )}
       </li>
     ));
 

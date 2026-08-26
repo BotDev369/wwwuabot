@@ -23,9 +23,13 @@ export function TablePreview({ block }: Props) {
                 verticalAlign: (cell.valign as CSSProperties["verticalAlign"]) || "middle",
               };
               return cell.isHeader ? (
-                <th key={c} style={style}><RichPreview value={cell.text} /></th>
+                <th key={c} style={style}>
+                  <RichPreview value={cell.text} />
+                </th>
               ) : (
-                <td key={c} style={style}><RichPreview value={cell.text} /></td>
+                <td key={c} style={style}>
+                  <RichPreview value={cell.text} />
+                </td>
               );
             })}
           </tr>

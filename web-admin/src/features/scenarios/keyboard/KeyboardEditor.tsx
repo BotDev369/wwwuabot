@@ -39,17 +39,38 @@ export function KeyboardEditor({ rows, onChange }: Props) {
 
   return (
     <div className="kb-editor">
-      {rows.length === 0 && (
-        <p className="kb-empty">Кнопок немає. Додай перший рядок.</p>
-      )}
+      {rows.length === 0 && <p className="kb-empty">Кнопок немає. Додай перший рядок.</p>}
       {rows.map((row, rIdx) => (
         <div className="kb-row" key={row.id}>
           <div className="kb-row-header">
             <span className="kb-row-label">Рядок {rIdx + 1}</span>
             <div className="kb-row-actions">
-              <button type="button" className="block-action-btn" onClick={() => moveRow(row.id, -1)} disabled={rIdx === 0} title="Вгору">↑</button>
-              <button type="button" className="block-action-btn" onClick={() => moveRow(row.id, 1)} disabled={rIdx === rows.length - 1} title="Вниз">↓</button>
-              <button type="button" className="block-action-btn block-action-btn--danger" onClick={() => removeRow(row.id)} title="Видалити рядок">✕</button>
+              <button
+                type="button"
+                className="block-action-btn"
+                onClick={() => moveRow(row.id, -1)}
+                disabled={rIdx === 0}
+                title="Вгору"
+              >
+                ↑
+              </button>
+              <button
+                type="button"
+                className="block-action-btn"
+                onClick={() => moveRow(row.id, 1)}
+                disabled={rIdx === rows.length - 1}
+                title="Вниз"
+              >
+                ↓
+              </button>
+              <button
+                type="button"
+                className="block-action-btn block-action-btn--danger"
+                onClick={() => removeRow(row.id)}
+                title="Видалити рядок"
+              >
+                ✕
+              </button>
             </div>
           </div>
           <div className="kb-row-buttons">
@@ -64,7 +85,11 @@ export function KeyboardEditor({ rows, onChange }: Props) {
                 <select
                   className="block-select"
                   value={b.kind}
-                  onChange={(e) => updateButton(row.id, b.id, { kind: e.target.value as KeyboardButtonModel["kind"] })}
+                  onChange={(e) =>
+                    updateButton(row.id, b.id, {
+                      kind: e.target.value as KeyboardButtonModel["kind"],
+                    })
+                  }
                 >
                   <option value="callback">callback_data</option>
                   <option value="url">url</option>
@@ -78,14 +103,25 @@ export function KeyboardEditor({ rows, onChange }: Props) {
                     onChange={(e) => updateButton(row.id, b.id, { value: e.target.value })}
                   />
                 )}
-                <button type="button" className="block-action-btn block-action-btn--danger" onClick={() => removeButton(row.id, b.id)} title="Видалити кнопку">✕</button>
+                <button
+                  type="button"
+                  className="block-action-btn block-action-btn--danger"
+                  onClick={() => removeButton(row.id, b.id)}
+                  title="Видалити кнопку"
+                >
+                  ✕
+                </button>
               </div>
             ))}
-            <button type="button" className="kb-add-btn" onClick={() => addButton(row.id)}>+ Кнопка</button>
+            <button type="button" className="kb-add-btn" onClick={() => addButton(row.id)}>
+              + Кнопка
+            </button>
           </div>
         </div>
       ))}
-      <button type="button" className="kb-add-row" onClick={addRow}>+ Додати рядок</button>
+      <button type="button" className="kb-add-row" onClick={addRow}>
+        + Додати рядок
+      </button>
     </div>
   );
 }

@@ -37,7 +37,8 @@ export function toTelegram(block: InternalListBlock): TgListBlock {
       if (it.kind === "complex") return it.raw as TgListItem;
       const item: TgListItem = { blocks: [{ type: "paragraph", text: it.text }] };
       if (style === "ordered") {
-        item.type = block.orderedType && ORDERED_TYPES.includes(block.orderedType) ? block.orderedType : "1";
+        item.type =
+          block.orderedType && ORDERED_TYPES.includes(block.orderedType) ? block.orderedType : "1";
       }
       if (style === "checkbox") item.has_checkbox = true;
       return item;

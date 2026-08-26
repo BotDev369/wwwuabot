@@ -30,7 +30,9 @@ export class ScenarioRepository extends DatabaseRepository {
         if (Array.isArray(parsed)) {
           richData = parsed;
         } else {
-          console.error(`[ScenarioRepository] rich_data is not an array for codeword="${row.codeword}"`);
+          console.error(
+            `[ScenarioRepository] rich_data is not an array for codeword="${row.codeword}"`,
+          );
         }
       } catch {
         console.error(`[ScenarioRepository] Invalid rich_data JSON for codeword="${row.codeword}"`);

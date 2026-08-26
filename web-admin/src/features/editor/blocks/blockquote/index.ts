@@ -8,7 +8,11 @@ export const blockquoteConfig = {
   tgType: "blockquote",
   label: "Цитата",
   icon: "❝",
-  createDefault: (id: string): InternalBlockquoteBlock => ({ id, type: "blockquote", children: [] }),
+  createDefault: (id: string): InternalBlockquoteBlock => ({
+    id,
+    type: "blockquote",
+    children: [],
+  }),
   Editor: BlockquoteEditor as any,
   Preview: BlockquotePreview as any,
   toTelegram: utils.toTelegram,

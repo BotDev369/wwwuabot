@@ -1,5 +1,5 @@
-import { useEffect, useMemo, useState } from 'react';
-import { useNavigate, useSearchParams } from 'react-router-dom';
+import { useEffect, useMemo, useState } from "react";
+import { useNavigate, useSearchParams } from "react-router-dom";
 
 interface SystemDef {
   id: string;
@@ -9,20 +9,24 @@ interface SystemDef {
   parameters: { key: string; label: string }[];
 }
 
-export function CompareSystemsPage({ onScenarioName }: { onScenarioName: (name: string | null) => void }) {
+export function CompareSystemsPage({
+  onScenarioName,
+}: {
+  onScenarioName: (name: string | null) => void;
+}) {
   const [search] = useSearchParams();
   const navigate = useNavigate();
   const [systems, setSystems] = useState<SystemDef[]>([]);
   const [selected, setSelected] = useState<Record<string, Record<string, boolean>>>({});
 
   const dates = useMemo(
-    () => (search.get('dates') ?? '').split(',').filter((d) => /^\d{4}-\d{2}-\d{2}$/.test(d)),
-    [search]
+    () => (search.get("dates") ?? "").split(",").filter((d) => /^\d{4}-\d{2}-\d{2}$/.test(d)),
+    [search],
   );
 
   useEffect(() => {
-    onScenarioName('MyDate');
-    fetch('/api/mydate/systems')
+    onScenarioName("MyDate");
+    fetch("/api/mydate/systems")
       .then((r) => r.json())
       .then((data) => {
         const list: SystemDef[] = data?.ok ? data.systems : [];
@@ -54,28 +58,28 @@ export function CompareSystemsPage({ onScenarioName }: { onScenarioName: (name: 
 
   const compare = () => {
     if (dates.length === 0) return;
-    const sys = systems
-      .filter((s) => s.implemented && isSystemSelected(s.id))
-      .map((s) => s.id);
+    const sys = systems.filter((s) => s.implemented && isSystemSelected(s.id)).map((s) => s.id);
     const prm = Array.from(
       new Set(
         systems.flatMap((s) =>
-          (s.parameters ?? []).filter((p) => selected[s.id]?.[p.key]).map((p) => p.key)
-        )
-      )
+          (s.parameters ?? []).filter((p) => selected[s.id]?.[p.key]).map((p) => p.key),
+        ),
+      ),
     );
     const qs = new URLSearchParams();
-    if (sys.length) qs.set('sys', sys.join(','));
-    if (prm.length) qs.set('p', prm.join(','));
-    navigate(`/mydate/${dates.join('+')}?${qs.toString()}`);
+    if (sys.length) qs.set("sys", sys.join(","));
+    if (prm.length) qs.set("p", prm.join(","));
+    navigate(`/mydate/${dates.join("+")}?${qs.toString()}`);
   };
 
   if (dates.length === 0) {
     return (
       <main>
         <section className="hero">
-          <p style={{ fontSize: '18px', color: '#4a4a4a' }}>Не знайдено дат для аналізу.</p>
-          <a className="btn" href="/mydate/compare">Назад до введення дат</a>
+          <p style={{ fontSize: "18px", color: "#4a4a4a" }}>Не знайдено дат для аналізу.</p>
+          <a className="btn" href="/mydate/compare">
+            Назад до введення дат
+          </a>
         </section>
       </main>
     );
@@ -118,7 +122,11 @@ export function CompareSystemsPage({ onScenarioName }: { onScenarioName: (name: 
           ))}
         </div>
 
-        <button className="btn" onClick={compare} disabled={!systems.some((s) => s.implemented && isSystemSelected(s.id))}>
+        <button
+          className="btn"
+          onClick={compare}
+          disabled={!systems.some((s) => s.implemented && isSystemSelected(s.id))}
+        >
           Співставити
         </button>
       </section>

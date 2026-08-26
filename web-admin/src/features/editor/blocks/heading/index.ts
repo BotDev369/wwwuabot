@@ -4,8 +4,8 @@ import { HeadingPreview } from "./HeadingPreview";
 import * as utils from "./heading.utils";
 
 export const headingConfig = {
-  type: "heading",           // Внутрішній тип для UI
-  tgType: "heading",         // Тип для Telegram API
+  type: "heading", // Внутрішній тип для UI
+  tgType: "heading", // Тип для Telegram API
   label: "Заголовок",
   icon: "H",
   createDefault: (id: string): InternalHeadingBlock => ({
@@ -14,7 +14,7 @@ export const headingConfig = {
     text: "",
     level: "h2",
   }),
-  Editor: HeadingEditor as any, 
+  Editor: HeadingEditor as any,
   Preview: HeadingPreview as any,
   toTelegram: utils.toTelegram,
   fromTelegram: utils.fromTelegram,

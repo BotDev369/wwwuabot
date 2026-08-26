@@ -26,11 +26,18 @@ export default function AuthGate({ children }: AuthGateProps) {
 
   if (authorized === null) {
     return (
-      <div style={{ 
-        display: "flex", justifyContent: "center", alignItems: "center",
-        height: "100vh", flexDirection: "column", gap: "16px",
-        padding: "24px", textAlign: "center"
-      }}>
+      <div
+        style={{
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "center",
+          height: "100vh",
+          flexDirection: "column",
+          gap: "16px",
+          padding: "24px",
+          textAlign: "center",
+        }}
+      >
         <p>Завантаження...</p>
       </div>
     );
@@ -38,20 +45,31 @@ export default function AuthGate({ children }: AuthGateProps) {
 
   if (!authorized) {
     return (
-      <div style={{ 
-        display: "flex", justifyContent: "center", alignItems: "center",
-        height: "100vh", flexDirection: "column", gap: "16px",
-        padding: "24px", textAlign: "center"
-      }}>
+      <div
+        style={{
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "center",
+          height: "100vh",
+          flexDirection: "column",
+          gap: "16px",
+          padding: "24px",
+          textAlign: "center",
+        }}
+      >
         <h2>WWWUABot</h2>
         <p>Відкрийте веб-платформу через Telegram бот.</p>
         <a
           href={`https://t.me/${BOT_USERNAME}`}
           style={{
-            display: "inline-block", padding: "14px 32px",
-            backgroundColor: "#0088cc", color: "#fff",
-            borderRadius: "12px", textDecoration: "none",
-            fontSize: "16px", fontWeight: 600,
+            display: "inline-block",
+            padding: "14px 32px",
+            backgroundColor: "#0088cc",
+            color: "#fff",
+            borderRadius: "12px",
+            textDecoration: "none",
+            fontSize: "16px",
+            fontWeight: 600,
           }}
         >
           ✈️ Відкрити в Telegram

@@ -24,9 +24,29 @@ export function PhotoEditor({ block, idx, total }: Props) {
         <span className="block-type-badge">🖼</span>
         <span className="block-type-label">Фото</span>
         <div className="block-actions">
-          <button className="block-action-btn" onClick={() => moveBlock(block.id, "up")} disabled={idx === 0} title="Вгору">↑</button>
-          <button className="block-action-btn" onClick={() => moveBlock(block.id, "down")} disabled={idx === total - 1} title="Вниз">↓</button>
-          <button className="block-action-btn block-action-btn--danger" onClick={() => removeBlock(block.id)} title="Видалити">✕</button>
+          <button
+            className="block-action-btn"
+            onClick={() => moveBlock(block.id, "up")}
+            disabled={idx === 0}
+            title="Вгору"
+          >
+            ↑
+          </button>
+          <button
+            className="block-action-btn"
+            onClick={() => moveBlock(block.id, "down")}
+            disabled={idx === total - 1}
+            title="Вниз"
+          >
+            ↓
+          </button>
+          <button
+            className="block-action-btn block-action-btn--danger"
+            onClick={() => removeBlock(block.id)}
+            title="Видалити"
+          >
+            ✕
+          </button>
         </div>
       </div>
       <div className="block-card-body">

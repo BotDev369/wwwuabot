@@ -8,7 +8,11 @@
     "deploy:dev": "wrangler deploy --env dev",
     "deploy:prod": "wrangler deploy --env production",
     "tail:dev": "wrangler tail --env dev",
-    "tail:prod": "wrangler tail --env production"
+    "tail:prod": "wrangler tail --env production",
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix",
+    "format": "prettier --write .",
+    "format:check": "prettier --check ."
   },
   "keywords": [
     "telegram",

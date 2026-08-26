@@ -1,5 +1,5 @@
-import { useEffect, useState, useCallback, useMemo, useRef } from 'react';
-import { Link } from 'react-router-dom';
+import { useEffect, useState, useCallback, useMemo, useRef } from "react";
+import { Link } from "react-router-dom";
 
 /* ═══════════════════════════════════════════════
    TYPES
@@ -20,25 +20,25 @@ interface MyDate {
   category?: string;
 }
 
-type SortField = 'date' | 'type' | 'name' | 'tags' | 'notes' | 'created_at';
-type SortOrder = 'asc' | 'desc';
-type ModalMode = 'create' | 'edit' | 'view';
+type SortField = "date" | "type" | "name" | "tags" | "notes" | "created_at";
+type SortOrder = "asc" | "desc";
+type ModalMode = "create" | "edit" | "view";
 
 const TYPE_CONFIG: Record<string, { emoji: string; color: string; bg: string }> = {
-  person:  { emoji: '👤', color: '#2563eb', bg: '#eff6ff' },
-  event:   { emoji: '🎉', color: '#059669', bg: '#ecfdf5' },
-  other:   { emoji: '📌', color: '#7c3aed', bg: '#f5f3ff' },
+  person: { emoji: "👤", color: "#2563eb", bg: "#eff6ff" },
+  event: { emoji: "🎉", color: "#059669", bg: "#ecfdf5" },
+  other: { emoji: "📌", color: "#7c3aed", bg: "#f5f3ff" },
 };
 
 const TAG_COLORS = [
-  { color: '#b45309', bg: '#fef3c7' },
-  { color: '#0e7490', bg: '#ecfeff' },
-  { color: '#be185d', bg: '#fdf2f8' },
-  { color: '#4338ca', bg: '#eef2ff' },
-  { color: '#047857', bg: '#ecfdf5' },
-  { color: '#c2410c', bg: '#fff7ed' },
-  { color: '#7c3aed', bg: '#f5f3ff' },
-  { color: '#0369a1', bg: '#f0f9ff' },
+  { color: "#b45309", bg: "#fef3c7" },
+  { color: "#0e7490", bg: "#ecfeff" },
+  { color: "#be185d", bg: "#fdf2f8" },
+  { color: "#4338ca", bg: "#eef2ff" },
+  { color: "#047857", bg: "#ecfdf5" },
+  { color: "#c2410c", bg: "#fff7ed" },
+  { color: "#7c3aed", bg: "#f5f3ff" },
+  { color: "#0369a1", bg: "#f0f9ff" },
 ];
 
 function getTagColor(tag: string) {
@@ -60,7 +60,7 @@ function getTelegramUserId(): number | null {
 }
 
 function formatDate(raw: string): string {
-  const parts = raw.split('-');
+  const parts = raw.split("-");
   if (parts.length !== 3) return raw;
   return `${parts[2]}.${parts[1]}.${parts[0]}`;
 }
@@ -71,10 +71,8 @@ function formatDateShort(_raw: string): string {
 }
 
 function getCustomTypes(dates: MyDate[]): string[] {
-  const builtins = ['person', 'event', 'other'];
-  const custom = dates
-    .map(d => d.type)
-    .filter(t => t && !builtins.includes(t));
+  const builtins = ["person", "event", "other"];
+  const custom = dates.map((d) => d.type).filter((t) => t && !builtins.includes(t));
   return [...new Set(custom)];
 }
 
@@ -83,7 +81,13 @@ function getCustomTypes(dates: MyDate[]): string[] {
    ═══════════════════════════════════════════════ */
 
 function DateModal({
-  mode, date, allTags, onClose, onSave, onDelete, onSwitchToEdit,
+  mode,
+  date,
+  allTags,
+  onClose,
+  onSave,
+  onDelete,
+  onSwitchToEdit,
 }: {
   mode: ModalMode;
   date: MyDate | null;
@@ -93,20 +97,22 @@ function DateModal({
   onDelete: (id: string) => Promise<void>;
   onSwitchToEdit: () => void;
 }) {
-  const [formDate, setFormDate] = useState(date?.date || '');
-  const [formType, setFormType] = useState(date?.type || 'person');
-  const [formName, setFormName] = useState(date?.name || '');
+  const [formDate, setFormDate] = useState(date?.date || "");
+  const [formType, setFormType] = useState(date?.type || "person");
+  const [formName, setFormName] = useState(date?.name || "");
   const [formTags, setFormTags] = useState<string[]>(date?.tags || []);
-  const [formNotes, setFormNotes] = useState(date?.notes || '');
-  const [tagInput, setTagInput] = useState('');
+  const [formNotes, setFormNotes] = useState(date?.notes || "");
+  const [tagInput, setTagInput] = useState("");
   const [showTagSuggestions, setShowTagSuggestions] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const tagInputRef = useRef<HTMLInputElement>(null);
 
   const tagSuggestions = useMemo(() => {
-    if (!tagInput.trim()) return allTags.filter(t => !formTags.includes(t)).slice(0, 8);
+    if (!tagInput.trim()) return allTags.filter((t) => !formTags.includes(t)).slice(0, 8);
     const search = tagInput.toLowerCase();
-    return allTags.filter(t => t.toLowerCase().includes(search) && !formTags.includes(t)).slice(0, 8);
+    return allTags
+      .filter((t) => t.toLowerCase().includes(search) && !formTags.includes(t))
+      .slice(0, 8);
   }, [tagInput, allTags, formTags]);
 
   const addTag = (tag: string) => {
@@ -114,20 +120,20 @@ function DateModal({
     if (trimmed && !formTags.includes(trimmed)) {
       setFormTags([...formTags, trimmed]);
     }
-    setTagInput('');
+    setTagInput("");
     setShowTagSuggestions(false);
     tagInputRef.current?.focus();
   };
 
   const removeTag = (tag: string) => {
-    setFormTags(formTags.filter(t => t !== tag));
+    setFormTags(formTags.filter((t) => t !== tag));
   };
 
   const handleTagKeyDown = (e: React.KeyboardEvent) => {
-    if (e.key === 'Enter') {
+    if (e.key === "Enter") {
       e.preventDefault();
       if (tagInput.trim()) addTag(tagInput);
-    } else if (e.key === 'Backspace' && !tagInput && formTags.length > 0) {
+    } else if (e.key === "Backspace" && !tagInput && formTags.length > 0) {
       setFormTags(formTags.slice(0, -1));
     }
   };
@@ -150,22 +156,24 @@ function DateModal({
 
   const handleDelete = async () => {
     if (!date?.id) return;
-    if (!confirm('Видалити цю дату?')) return;
+    if (!confirm("Видалити цю дату?")) return;
     await onDelete(date.id);
   };
 
-  const isReadOnly = mode === 'view';
+  const isReadOnly = mode === "view";
 
   return (
     <div className="modal-overlay" onClick={onClose}>
-      <div className="modal" onClick={e => e.stopPropagation()}>
+      <div className="modal" onClick={(e) => e.stopPropagation()}>
         <div className="modal-header">
           <h3>
-            {mode === 'create' && 'Нова дата'}
-            {mode === 'edit' && 'Редагувати дату'}
-            {mode === 'view' && (date?.name || formatDate(date?.date || ''))}
+            {mode === "create" && "Нова дата"}
+            {mode === "edit" && "Редагувати дату"}
+            {mode === "view" && (date?.name || formatDate(date?.date || ""))}
           </h3>
-          <button className="modal-close" onClick={onClose}>×</button>
+          <button className="modal-close" onClick={onClose}>
+            ×
+          </button>
         </div>
 
         <div className="modal-body">
@@ -175,7 +183,7 @@ function DateModal({
             <input
               type="date"
               value={formDate}
-              onChange={e => setFormDate(e.target.value)}
+              onChange={(e) => setFormDate(e.target.value)}
               className="date-input"
               disabled={isReadOnly}
             />
@@ -185,22 +193,22 @@ function DateModal({
           <div className="form-field">
             <label className="form-label">Тип</label>
             <div className="type-selector">
-              {['person', 'event', 'other'].map(t => {
+              {["person", "event", "other"].map((t) => {
                 const cfg = getTypeConfig(t);
                 return (
                   <button
                     key={t}
                     type="button"
-                    className={`type-chip ${formType === t ? 'active' : ''}`}
+                    className={`type-chip ${formType === t ? "active" : ""}`}
                     style={{
-                      borderColor: formType === t ? cfg.color : '#e5e5e5',
-                      background: formType === t ? cfg.bg : '#fff',
-                      color: formType === t ? cfg.color : '#666',
+                      borderColor: formType === t ? cfg.color : "#e5e5e5",
+                      background: formType === t ? cfg.bg : "#fff",
+                      color: formType === t ? cfg.color : "#666",
                     }}
                     onClick={() => !isReadOnly && setFormType(t)}
                     disabled={isReadOnly}
                   >
-                    {cfg.emoji} {t === 'person' ? 'Людина' : t === 'event' ? 'Подія' : 'Інше'}
+                    {cfg.emoji} {t === "person" ? "Людина" : t === "event" ? "Подія" : "Інше"}
                   </button>
                 );
               })}
@@ -213,7 +221,7 @@ function DateModal({
             <input
               type="text"
               value={formName}
-              onChange={e => setFormName(e.target.value)}
+              onChange={(e) => setFormName(e.target.value)}
               placeholder="напр. Олексій, Новий рік..."
               className="text-input"
               disabled={isReadOnly}
@@ -224,11 +232,13 @@ function DateModal({
           <div className="form-field">
             <label className="form-label">Теги</label>
             <div className="tags-input-wrapper">
-              {formTags.map(tag => (
+              {formTags.map((tag) => (
                 <span key={tag} className="tag-chip" style={getTagColor(tag)}>
                   {tag}
                   {!isReadOnly && (
-                    <button type="button" className="tag-remove" onClick={() => removeTag(tag)}>×</button>
+                    <button type="button" className="tag-remove" onClick={() => removeTag(tag)}>
+                      ×
+                    </button>
                   )}
                 </span>
               ))}
@@ -238,21 +248,27 @@ function DateModal({
                     ref={tagInputRef}
                     type="text"
                     value={tagInput}
-                    onChange={e => { setTagInput(e.target.value); setShowTagSuggestions(true); }}
+                    onChange={(e) => {
+                      setTagInput(e.target.value);
+                      setShowTagSuggestions(true);
+                    }}
                     onFocus={() => setShowTagSuggestions(true)}
                     onBlur={() => setTimeout(() => setShowTagSuggestions(false), 150)}
                     onKeyDown={handleTagKeyDown}
-                    placeholder={formTags.length === 0 ? 'Додайте теги...' : ''}
+                    placeholder={formTags.length === 0 ? "Додайте теги..." : ""}
                     className="tag-input"
                   />
                   {showTagSuggestions && tagSuggestions.length > 0 && (
                     <div className="tag-suggestions">
-                      {tagSuggestions.map(tag => (
+                      {tagSuggestions.map((tag) => (
                         <button
                           key={tag}
                           type="button"
                           className="tag-suggestion-item"
-                          onMouseDown={e => { e.preventDefault(); addTag(tag); }}
+                          onMouseDown={(e) => {
+                            e.preventDefault();
+                            addTag(tag);
+                          }}
                         >
                           {tag}
                         </button>
@@ -269,7 +285,7 @@ function DateModal({
             <label className="form-label">Примітки</label>
             <textarea
               value={formNotes}
-              onChange={e => setFormNotes(e.target.value)}
+              onChange={(e) => setFormNotes(e.target.value)}
               placeholder="Додаткова інформація..."
               className="text-input textarea"
               rows={3}
@@ -279,9 +295,13 @@ function DateModal({
         </div>
 
         <div className="modal-actions">
-          {mode === 'view' ? (
+          {mode === "view" ? (
             <>
-              <Link className="btn btn-sm btn-analyze" to={`/mydate/${date?.date}`} onClick={onClose}>
+              <Link
+                className="btn btn-sm btn-analyze"
+                to={`/mydate/${date?.date}`}
+                onClick={onClose}
+              >
                 📊 Аналіз
               </Link>
               <button className="btn btn-secondary btn-sm" onClick={onSwitchToEdit}>
@@ -296,8 +316,12 @@ function DateModal({
               <button className="btn btn-secondary btn-sm" onClick={onClose} disabled={submitting}>
                 Скасувати
               </button>
-              <button className="btn btn-sm" onClick={handleSave} disabled={!formDate || submitting}>
-                {submitting ? 'Зберігаємо...' : mode === 'create' ? 'Додати' : 'Зберегти'}
+              <button
+                className="btn btn-sm"
+                onClick={handleSave}
+                disabled={!formDate || submitting}
+              >
+                {submitting ? "Зберігаємо..." : mode === "create" ? "Додати" : "Зберегти"}
               </button>
             </>
           )}
@@ -317,13 +341,17 @@ export function MyDatesPage({ onScenarioName }: { onScenarioName: (name: string 
   const [error, setError] = useState<string | null>(null);
 
   // Sorting
-  const [sortField, setSortField] = useState<SortField>('date');
-  const [sortOrder, setSortOrder] = useState<SortOrder>('desc');
+  const [sortField, setSortField] = useState<SortField>("date");
+  const [sortOrder, setSortOrder] = useState<SortOrder>("desc");
 
   // Filtering
-  const [searchQuery, setSearchQuery] = useState('');
+  const [searchQuery, setSearchQuery] = useState("");
   const [columnFilters, setColumnFilters] = useState<Record<string, string[]>>({
-    name: [], date: [], tags: [], type: [], notes: []
+    name: [],
+    date: [],
+    tags: [],
+    type: [],
+    notes: [],
   });
 
   // Selection
@@ -331,16 +359,20 @@ export function MyDatesPage({ onScenarioName }: { onScenarioName: (name: string 
 
   // Accordion
   const [formOpen, setFormOpen] = useState(() => {
-    try { return localStorage.getItem('mydates_form_open') === 'true'; } catch { return false; }
+    try {
+      return localStorage.getItem("mydates_form_open") === "true";
+    } catch {
+      return false;
+    }
   });
 
   // Form state
-  const [formDate, setFormDate] = useState('');
-  const [formType, setFormType] = useState('person');
-  const [formName, setFormName] = useState('');
+  const [formDate, setFormDate] = useState("");
+  const [formType, setFormType] = useState("person");
+  const [formName, setFormName] = useState("");
   const [formTags, setFormTags] = useState<string[]>([]);
-  const [formNotes, setFormNotes] = useState('');
-  const [tagInput, setTagInput] = useState('');
+  const [formNotes, setFormNotes] = useState("");
+  const [tagInput, setTagInput] = useState("");
   const [showTagSuggestions, setShowTagSuggestions] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const tagInputRef = useRef<HTMLInputElement>(null);
@@ -353,21 +385,27 @@ export function MyDatesPage({ onScenarioName }: { onScenarioName: (name: string 
   const [rowActionDate, setRowActionDate] = useState<MyDate | null>(null);
 
   // Header context menu
-  const [headerMenu, setHeaderMenu] = useState<{ field: SortField; mode: 'menu' | 'filter' } | null>(null);
-  const [headerFilterText, setHeaderFilterText] = useState('');
+  const [headerMenu, setHeaderMenu] = useState<{
+    field: SortField;
+    mode: "menu" | "filter";
+  } | null>(null);
+  const [headerFilterText, setHeaderFilterText] = useState("");
 
   useEffect(() => {
-    onScenarioName('MyDate');
+    onScenarioName("MyDate");
   }, [onScenarioName]);
 
   const userId = getTelegramUserId();
 
   // Fetch dates
   const fetchDates = useCallback(async () => {
-    if (!userId) { setLoading(false); return; }
+    if (!userId) {
+      setLoading(false);
+      return;
+    }
     try {
-      const res = await fetch('/api/my-dates', {
-        headers: { 'X-Telegram-User-Id': String(userId) },
+      const res = await fetch("/api/my-dates", {
+        headers: { "X-Telegram-User-Id": String(userId) },
       });
       if (!res.ok) {
         const text = await res.text();
@@ -378,7 +416,7 @@ export function MyDatesPage({ onScenarioName }: { onScenarioName: (name: string 
       if (data.ok) {
         setDates(data.dates);
       } else {
-        setError(data.error ?? 'Помилка завантаження');
+        setError(data.error ?? "Помилка завантаження");
       }
     } catch (e) {
       setError(`Помилка мережі: ${String(e).slice(0, 100)}`);
@@ -387,27 +425,31 @@ export function MyDatesPage({ onScenarioName }: { onScenarioName: (name: string 
     }
   }, [userId]);
 
-  useEffect(() => { fetchDates(); }, [fetchDates]);
+  useEffect(() => {
+    fetchDates();
+  }, [fetchDates]);
 
   // All unique tags
   const allTags = useMemo(() => {
     const tagSet = new Set<string>();
-    dates.forEach(d => (d.tags || []).forEach(t => tagSet.add(t)));
+    dates.forEach((d) => (d.tags || []).forEach((t) => tagSet.add(t)));
     return [...tagSet].sort();
   }, [dates]);
 
   // All unique types (built-in + custom)
   const allTypes = useMemo(() => {
-    const builtins = ['person', 'event', 'other'];
+    const builtins = ["person", "event", "other"];
     const custom = getCustomTypes(dates);
     return [...builtins, ...custom];
   }, [dates]);
 
   // Tag suggestions for accordion form
   const formTagSuggestions = useMemo(() => {
-    if (!tagInput.trim()) return allTags.filter(t => !formTags.includes(t)).slice(0, 8);
+    if (!tagInput.trim()) return allTags.filter((t) => !formTags.includes(t)).slice(0, 8);
     const search = tagInput.toLowerCase();
-    return allTags.filter(t => t.toLowerCase().includes(search) && !formTags.includes(t)).slice(0, 8);
+    return allTags
+      .filter((t) => t.toLowerCase().includes(search) && !formTags.includes(t))
+      .slice(0, 8);
   }, [tagInput, allTags, formTags]);
 
   // Processed dates (filter + sort)
@@ -417,24 +459,25 @@ export function MyDatesPage({ onScenarioName }: { onScenarioName: (name: string 
     // Search filter
     if (searchQuery.trim()) {
       const q = searchQuery.toLowerCase().trim();
-      result = result.filter(d =>
-        (d.name || '').toLowerCase().includes(q) ||
-        (d.notes || '').toLowerCase().includes(q) ||
-        (d.tags || []).some(t => t.toLowerCase().includes(q)) ||
-        formatDate(d.date).includes(q)
+      result = result.filter(
+        (d) =>
+          (d.name || "").toLowerCase().includes(q) ||
+          (d.notes || "").toLowerCase().includes(q) ||
+          (d.tags || []).some((t) => t.toLowerCase().includes(q)) ||
+          formatDate(d.date).includes(q),
       );
     }
 
     // Column filters (multi-select)
     for (const [field, values] of Object.entries(columnFilters)) {
       if (values.length === 0) continue;
-      result = result.filter(d => {
-        let cellVal = '';
-        if (field === 'type') cellVal = d.type || '';
-        else if (field === 'tags') return (d.tags || []).some(t => values.includes(t));
-        else if (field === 'name') cellVal = d.name || '';
-        else if (field === 'notes') cellVal = d.notes || '';
-        else if (field === 'date') cellVal = d.date || '';
+      result = result.filter((d) => {
+        let cellVal = "";
+        if (field === "type") cellVal = d.type || "";
+        else if (field === "tags") return (d.tags || []).some((t) => values.includes(t));
+        else if (field === "name") cellVal = d.name || "";
+        else if (field === "notes") cellVal = d.notes || "";
+        else if (field === "date") cellVal = d.date || "";
         return values.includes(cellVal);
       });
     }
@@ -442,10 +485,11 @@ export function MyDatesPage({ onScenarioName }: { onScenarioName: (name: string 
     // Search query (legacy — now handled by columnFilters name field, but keep for compatibility)
     if (searchQuery) {
       const q = searchQuery.toLowerCase();
-      result = result.filter(d =>
-        (d.name || '').toLowerCase().includes(q) ||
-        (d.notes || '').toLowerCase().includes(q) ||
-        (d.tags || []).some(t => t.toLowerCase().includes(q))
+      result = result.filter(
+        (d) =>
+          (d.name || "").toLowerCase().includes(q) ||
+          (d.notes || "").toLowerCase().includes(q) ||
+          (d.tags || []).some((t) => t.toLowerCase().includes(q)),
       );
     }
 
@@ -455,35 +499,35 @@ export function MyDatesPage({ onScenarioName }: { onScenarioName: (name: string 
       let bVal: string | number;
 
       switch (sortField) {
-        case 'date':
+        case "date":
           aVal = new Date(a.date).getTime();
           bVal = new Date(b.date).getTime();
           break;
-        case 'created_at':
-          aVal = a.created_at || '';
-          bVal = b.created_at || '';
+        case "created_at":
+          aVal = a.created_at || "";
+          bVal = b.created_at || "";
           break;
-        case 'type':
-          aVal = (a.type || '').toLowerCase();
-          bVal = (b.type || '').toLowerCase();
+        case "type":
+          aVal = (a.type || "").toLowerCase();
+          bVal = (b.type || "").toLowerCase();
           break;
-        case 'tags':
-          aVal = (a.tags || []).join(', ').toLowerCase();
-          bVal = (b.tags || []).join(', ').toLowerCase();
+        case "tags":
+          aVal = (a.tags || []).join(", ").toLowerCase();
+          bVal = (b.tags || []).join(", ").toLowerCase();
           break;
-        case 'notes':
-          aVal = (a.notes || '').toLowerCase();
-          bVal = (b.notes || '').toLowerCase();
+        case "notes":
+          aVal = (a.notes || "").toLowerCase();
+          bVal = (b.notes || "").toLowerCase();
           break;
-        case 'name':
+        case "name":
         default:
-          aVal = (a.name || '').toLowerCase();
-          bVal = (b.name || '').toLowerCase();
+          aVal = (a.name || "").toLowerCase();
+          bVal = (b.name || "").toLowerCase();
           break;
       }
 
-      if (aVal < bVal) return sortOrder === 'asc' ? -1 : 1;
-      if (aVal > bVal) return sortOrder === 'asc' ? 1 : -1;
+      if (aVal < bVal) return sortOrder === "asc" ? -1 : 1;
+      if (aVal > bVal) return sortOrder === "asc" ? 1 : -1;
       return 0;
     });
 
@@ -494,17 +538,19 @@ export function MyDatesPage({ onScenarioName }: { onScenarioName: (name: string 
   const toggleForm = () => {
     const next = !formOpen;
     setFormOpen(next);
-    try { localStorage.setItem('mydates_form_open', String(next)); } catch {}
+    try {
+      localStorage.setItem("mydates_form_open", String(next));
+    } catch {}
   };
 
   // Reset accordion form
   const resetForm = () => {
-    setFormDate('');
-    setFormType('person');
-    setFormName('');
+    setFormDate("");
+    setFormType("person");
+    setFormName("");
     setFormTags([]);
-    setFormNotes('');
-    setTagInput('');
+    setFormNotes("");
+    setTagInput("");
   };
 
   // Add via accordion
@@ -512,9 +558,9 @@ export function MyDatesPage({ onScenarioName }: { onScenarioName: (name: string 
     if (!formDate || !userId) return;
     setSubmitting(true);
     try {
-      const res = await fetch('/api/my-dates', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'X-Telegram-User-Id': String(userId) },
+      const res = await fetch("/api/my-dates", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", "X-Telegram-User-Id": String(userId) },
         body: JSON.stringify({
           date: formDate,
           type: formType,
@@ -527,10 +573,12 @@ export function MyDatesPage({ onScenarioName }: { onScenarioName: (name: string 
       if (data.ok) {
         resetForm();
         setFormOpen(false);
-        try { localStorage.setItem('mydates_form_open', 'false'); } catch {}
+        try {
+          localStorage.setItem("mydates_form_open", "false");
+        } catch {}
         await fetchDates();
       } else {
-        setError(data.error ?? 'Помилка додавання');
+        setError(data.error ?? "Помилка додавання");
       }
     } catch (e) {
       setError(`Помилка мережі: ${String(e).slice(0, 100)}`);
@@ -542,10 +590,10 @@ export function MyDatesPage({ onScenarioName }: { onScenarioName: (name: string 
   // Save from modal (create or edit)
   const handleModalSave = async (data: Partial<MyDate>) => {
     if (!userId) return;
-    const isCreate = modalMode === 'create';
-    const res = await fetch('/api/my-dates', {
-      method: isCreate ? 'POST' : 'PUT',
-      headers: { 'Content-Type': 'application/json', 'X-Telegram-User-Id': String(userId) },
+    const isCreate = modalMode === "create";
+    const res = await fetch("/api/my-dates", {
+      method: isCreate ? "POST" : "PUT",
+      headers: { "Content-Type": "application/json", "X-Telegram-User-Id": String(userId) },
       body: JSON.stringify(data),
     });
     const result = await res.json();
@@ -554,7 +602,7 @@ export function MyDatesPage({ onScenarioName }: { onScenarioName: (name: string 
       setModalDate(null);
       await fetchDates();
     } else {
-      setError(result.error ?? 'Помилка збереження');
+      setError(result.error ?? "Помилка збереження");
     }
   };
 
@@ -562,8 +610,8 @@ export function MyDatesPage({ onScenarioName }: { onScenarioName: (name: string 
   const handleDelete = async (id: string) => {
     if (!userId) return;
     const res = await fetch(`/api/my-dates?id=${id}`, {
-      method: 'DELETE',
-      headers: { 'X-Telegram-User-Id': String(userId) },
+      method: "DELETE",
+      headers: { "X-Telegram-User-Id": String(userId) },
     });
     const data = await res.json();
     if (data.ok) {
@@ -571,7 +619,7 @@ export function MyDatesPage({ onScenarioName }: { onScenarioName: (name: string 
       setModalDate(null);
       await fetchDates();
     } else {
-      setError(data.error ?? 'Помилка видалення');
+      setError(data.error ?? "Помилка видалення");
     }
   };
 
@@ -580,27 +628,25 @@ export function MyDatesPage({ onScenarioName }: { onScenarioName: (name: string 
     if (selectedIds.size === 0) return;
     if (!confirm(`Видалити ${selectedIds.size} дат(у)?`)) return;
     if (!userId) return;
-    const ids = [...selectedIds].join(',');
+    const ids = [...selectedIds].join(",");
     const res = await fetch(`/api/my-dates?ids=${ids}`, {
-      method: 'DELETE',
-      headers: { 'X-Telegram-User-Id': String(userId) },
+      method: "DELETE",
+      headers: { "X-Telegram-User-Id": String(userId) },
     });
     const data = await res.json();
     if (data.ok) {
       setSelectedIds(new Set());
       await fetchDates();
     } else {
-      setError(data.error ?? 'Помилка видалення');
+      setError(data.error ?? "Помилка видалення");
     }
   };
 
   // Bulk compare
   const handleBulkCompare = () => {
     if (selectedIds.size < 2) return;
-    const selectedDates = processedDates
-      .filter(d => selectedIds.has(d.id))
-      .map(d => d.date);
-    window.location.href = `/mydate/compare/systems?dates=${encodeURIComponent(selectedDates.join(','))}`;
+    const selectedDates = processedDates.filter((d) => selectedIds.has(d.id)).map((d) => d.date);
+    window.location.href = `/mydate/compare/systems?dates=${encodeURIComponent(selectedDates.join(","))}`;
   };
 
   const handleHeaderMenuSort = (field: SortField, order: SortOrder) => {
@@ -610,30 +656,30 @@ export function MyDatesPage({ onScenarioName }: { onScenarioName: (name: string 
   };
 
   const handleHeaderMenuFilterToggle = (field: SortField, value: string) => {
-    setColumnFilters(prev => {
+    setColumnFilters((prev) => {
       const current = prev[field] || [];
       const next = current.includes(value)
-        ? current.filter(v => v !== value)
+        ? current.filter((v) => v !== value)
         : [...current, value];
       return { ...prev, [field]: next };
     });
   };
 
   const handleHeaderMenuClear = (field: SortField) => {
-    setColumnFilters(prev => ({ ...prev, [field]: [] }));
+    setColumnFilters((prev) => ({ ...prev, [field]: [] }));
     if (sortField === field) {
-      setSortField('name');
-      setSortOrder('asc');
+      setSortField("name");
+      setSortOrder("asc");
     }
     setHeaderMenu(null);
-    setHeaderFilterText('');
+    setHeaderFilterText("");
   };
 
   const getUniqueValues = (field: SortField): string[] => {
-    if (field === 'type') return allTypes;
-    if (field === 'tags') return allTags;
-    if (field === 'name') return [...new Set(dates.map(d => d.name).filter(Boolean))].sort();
-    if (field === 'notes') return [...new Set(dates.map(d => d.notes).filter(Boolean))].sort();
+    if (field === "type") return allTypes;
+    if (field === "tags") return allTags;
+    if (field === "name") return [...new Set(dates.map((d) => d.name).filter(Boolean))].sort();
+    if (field === "notes") return [...new Set(dates.map((d) => d.notes).filter(Boolean))].sort();
     return [];
   };
 
@@ -642,12 +688,12 @@ export function MyDatesPage({ onScenarioName }: { onScenarioName: (name: string 
     if (selectedIds.size === processedDates.length) {
       setSelectedIds(new Set());
     } else {
-      setSelectedIds(new Set(processedDates.map(d => d.id)));
+      setSelectedIds(new Set(processedDates.map((d) => d.id)));
     }
   };
 
   const toggleSelect = (id: string) => {
-    setSelectedIds(prev => {
+    setSelectedIds((prev) => {
       const next = new Set(prev);
       if (next.has(id)) next.delete(id);
       else next.add(id);
@@ -659,16 +705,19 @@ export function MyDatesPage({ onScenarioName }: { onScenarioName: (name: string 
   const addFormTag = (tag: string) => {
     const trimmed = tag.trim();
     if (trimmed && !formTags.includes(trimmed)) setFormTags([...formTags, trimmed]);
-    setTagInput('');
+    setTagInput("");
     setShowTagSuggestions(false);
     tagInputRef.current?.focus();
   };
 
-  const removeFormTag = (tag: string) => setFormTags(formTags.filter(t => t !== tag));
+  const removeFormTag = (tag: string) => setFormTags(formTags.filter((t) => t !== tag));
 
   const handleFormTagKeyDown = (e: React.KeyboardEvent) => {
-    if (e.key === 'Enter') { e.preventDefault(); if (tagInput.trim()) addFormTag(tagInput); }
-    else if (e.key === 'Backspace' && !tagInput && formTags.length > 0) setFormTags(formTags.slice(0, -1));
+    if (e.key === "Enter") {
+      e.preventDefault();
+      if (tagInput.trim()) addFormTag(tagInput);
+    } else if (e.key === "Backspace" && !tagInput && formTags.length > 0)
+      setFormTags(formTags.slice(0, -1));
   };
 
   return (
@@ -676,34 +725,47 @@ export function MyDatesPage({ onScenarioName }: { onScenarioName: (name: string 
       <section className="hero">
         <div className="page-header">
           <h1>Мої дати</h1>
-          <span className="date-count">{processedDates.length} з {dates.length}</span>
+          <span className="date-count">
+            {processedDates.length} з {dates.length}
+          </span>
         </div>
 
         {/* ═══ АКОРДЕОН: Додати дату ═══ */}
-        <div className={`accordion ${formOpen ? 'open' : ''}`}>
+        <div className={`accordion ${formOpen ? "open" : ""}`}>
           <button className="accordion-toggle" onClick={toggleForm}>
-            <span className={`accordion-icon ${formOpen ? 'rotated' : ''}`}>▶</span>
-            {formOpen ? 'Додати нову дату' : '＋ Додати дату'}
+            <span className={`accordion-icon ${formOpen ? "rotated" : ""}`}>▶</span>
+            {formOpen ? "Додати нову дату" : "＋ Додати дату"}
           </button>
           {formOpen && (
             <div className="accordion-content">
               <div className="form-grid">
                 <div className="form-field">
                   <label className="form-label">Дата *</label>
-                  <input type="date" value={formDate} onChange={e => setFormDate(e.target.value)} className="date-input" />
+                  <input
+                    type="date"
+                    value={formDate}
+                    onChange={(e) => setFormDate(e.target.value)}
+                    className="date-input"
+                  />
                 </div>
                 <div className="form-field">
                   <label className="form-label">Тип</label>
                   <div className="type-selector">
-                    {['person', 'event', 'other'].map(t => {
+                    {["person", "event", "other"].map((t) => {
                       const cfg = getTypeConfig(t);
                       return (
-                        <button key={t} type="button"
-                          className={`type-chip ${formType === t ? 'active' : ''}`}
-                          style={{ borderColor: formType === t ? cfg.color : '#e5e5e5', background: formType === t ? cfg.bg : '#fff', color: formType === t ? cfg.color : '#666' }}
+                        <button
+                          key={t}
+                          type="button"
+                          className={`type-chip ${formType === t ? "active" : ""}`}
+                          style={{
+                            borderColor: formType === t ? cfg.color : "#e5e5e5",
+                            background: formType === t ? cfg.bg : "#fff",
+                            color: formType === t ? cfg.color : "#666",
+                          }}
                           onClick={() => setFormType(t)}
                         >
-                          {cfg.emoji} {t === 'person' ? 'Людина' : t === 'event' ? 'Подія' : 'Інше'}
+                          {cfg.emoji} {t === "person" ? "Людина" : t === "event" ? "Подія" : "Інше"}
                         </button>
                       );
                     })}
@@ -711,29 +773,56 @@ export function MyDatesPage({ onScenarioName }: { onScenarioName: (name: string 
                 </div>
                 <div className="form-field">
                   <label className="form-label">Назва / Псевдонім</label>
-                  <input type="text" value={formName} onChange={e => setFormName(e.target.value)} placeholder="напр. Олексій..." className="text-input" />
+                  <input
+                    type="text"
+                    value={formName}
+                    onChange={(e) => setFormName(e.target.value)}
+                    placeholder="напр. Олексій..."
+                    className="text-input"
+                  />
                 </div>
                 <div className="form-field full-width">
                   <label className="form-label">Теги</label>
                   <div className="tags-input-wrapper">
-                    {formTags.map(tag => (
+                    {formTags.map((tag) => (
                       <span key={tag} className="tag-chip" style={getTagColor(tag)}>
                         {tag}
-                        <button type="button" className="tag-remove" onClick={() => removeFormTag(tag)}>×</button>
+                        <button
+                          type="button"
+                          className="tag-remove"
+                          onClick={() => removeFormTag(tag)}
+                        >
+                          ×
+                        </button>
                       </span>
                     ))}
                     <div className="tag-input-container">
-                      <input ref={tagInputRef} type="text" value={tagInput}
-                        onChange={e => { setTagInput(e.target.value); setShowTagSuggestions(true); }}
+                      <input
+                        ref={tagInputRef}
+                        type="text"
+                        value={tagInput}
+                        onChange={(e) => {
+                          setTagInput(e.target.value);
+                          setShowTagSuggestions(true);
+                        }}
                         onFocus={() => setShowTagSuggestions(true)}
                         onBlur={() => setTimeout(() => setShowTagSuggestions(false), 150)}
                         onKeyDown={handleFormTagKeyDown}
-                        placeholder={formTags.length === 0 ? 'Додайте теги...' : ''} className="tag-input" />
+                        placeholder={formTags.length === 0 ? "Додайте теги..." : ""}
+                        className="tag-input"
+                      />
                       {showTagSuggestions && formTagSuggestions.length > 0 && (
                         <div className="tag-suggestions">
-                          {formTagSuggestions.map(tag => (
-                            <button key={tag} type="button" className="tag-suggestion-item"
-                              onMouseDown={e => { e.preventDefault(); addFormTag(tag); }}>
+                          {formTagSuggestions.map((tag) => (
+                            <button
+                              key={tag}
+                              type="button"
+                              className="tag-suggestion-item"
+                              onMouseDown={(e) => {
+                                e.preventDefault();
+                                addFormTag(tag);
+                              }}
+                            >
                               {tag}
                             </button>
                           ))}
@@ -744,11 +833,21 @@ export function MyDatesPage({ onScenarioName }: { onScenarioName: (name: string 
                 </div>
                 <div className="form-field full-width">
                   <label className="form-label">Примітки</label>
-                  <textarea value={formNotes} onChange={e => setFormNotes(e.target.value)} placeholder="Додаткова інформація..." className="text-input textarea" rows={2} />
+                  <textarea
+                    value={formNotes}
+                    onChange={(e) => setFormNotes(e.target.value)}
+                    placeholder="Додаткова інформація..."
+                    className="text-input textarea"
+                    rows={2}
+                  />
                 </div>
               </div>
-              <button className="btn btn-sm" onClick={handleAccordionAdd} disabled={!formDate || submitting}>
-                {submitting ? 'Додаємо...' : 'Додати дату'}
+              <button
+                className="btn btn-sm"
+                onClick={handleAccordionAdd}
+                disabled={!formDate || submitting}
+              >
+                {submitting ? "Додаємо..." : "Додати дату"}
               </button>
             </div>
           )}
@@ -761,31 +860,65 @@ export function MyDatesPage({ onScenarioName }: { onScenarioName: (name: string 
           <>
             {/* Фільтри */}
             <div className="table-filters">
-              <input type="text" value={searchQuery} onChange={e => setSearchQuery(e.target.value)}
-                placeholder="🔍 Пошук..." className="filter-search" />
-              {Object.entries(columnFilters).filter(([,v]) => v.length > 0).map(([field, values]) => (
-                <div key={field} className="active-filter-chips">
-                  <span className="active-filter-label">{field === 'type' ? 'Тип' : field === 'tags' ? 'Теги' : field === 'name' ? 'Назва' : field === 'notes' ? 'Примітки' : 'Дата'}:</span>
-                  {values.map(v => (
-                    <span key={v} className="active-filter-chip" onClick={() => setColumnFilters(prev => ({ ...prev, [field]: prev[field].filter(x => x !== v) }))}>
-                      {v} ✕
+              <input
+                type="text"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                placeholder="🔍 Пошук..."
+                className="filter-search"
+              />
+              {Object.entries(columnFilters)
+                .filter(([, v]) => v.length > 0)
+                .map(([field, values]) => (
+                  <div key={field} className="active-filter-chips">
+                    <span className="active-filter-label">
+                      {field === "type"
+                        ? "Тип"
+                        : field === "tags"
+                          ? "Теги"
+                          : field === "name"
+                            ? "Назва"
+                            : field === "notes"
+                              ? "Примітки"
+                              : "Дата"}
+                      :
                     </span>
-                  ))}
-                </div>
-              ))}
+                    {values.map((v) => (
+                      <span
+                        key={v}
+                        className="active-filter-chip"
+                        onClick={() =>
+                          setColumnFilters((prev) => ({
+                            ...prev,
+                            [field]: prev[field].filter((x) => x !== v),
+                          }))
+                        }
+                      >
+                        {v} ✕
+                      </span>
+                    ))}
+                  </div>
+                ))}
             </div>
 
             {/* Bulk actions */}
             {selectedIds.size > 0 && (
               <div className="bulk-bar">
                 <span className="bulk-count">Обрано: {selectedIds.size}</span>
-                <button className="btn btn-sm btn-compare" onClick={handleBulkCompare} disabled={selectedIds.size < 2}>
+                <button
+                  className="btn btn-sm btn-compare"
+                  onClick={handleBulkCompare}
+                  disabled={selectedIds.size < 2}
+                >
                   📊 Співставити ({selectedIds.size})
                 </button>
                 <button className="btn btn-sm btn-danger" onClick={handleBulkDelete}>
                   🗑 Видалити ({selectedIds.size})
                 </button>
-                <button className="btn btn-sm btn-secondary" onClick={() => setSelectedIds(new Set())}>
+                <button
+                  className="btn btn-sm btn-secondary"
+                  onClick={() => setSelectedIds(new Set())}
+                >
                   Скасувати вибір
                 </button>
               </div>
@@ -798,40 +931,86 @@ export function MyDatesPage({ onScenarioName }: { onScenarioName: (name: string 
                   <tr>
                     <th className="sticky-col-menu"></th>
                     <th className="sticky-col-check">
-                      <input type="checkbox" checked={processedDates.length > 0 && selectedIds.size === processedDates.length}
-                        onChange={toggleAll} className="row-checkbox" />
+                      <input
+                        type="checkbox"
+                        checked={
+                          processedDates.length > 0 && selectedIds.size === processedDates.length
+                        }
+                        onChange={toggleAll}
+                        className="row-checkbox"
+                      />
                     </th>
-                    {(['name','date','tags','type','notes'] as SortField[]).map(field => {
-                      const label = field === 'name' ? 'Назва' : field === 'date' ? 'Дата' : field === 'tags' ? 'Теги' : field === 'type' ? 'Тип' : 'Примітки';
-                      const isSticky = field === 'name';
+                    {(["name", "date", "tags", "type", "notes"] as SortField[]).map((field) => {
+                      const label =
+                        field === "name"
+                          ? "Назва"
+                          : field === "date"
+                            ? "Дата"
+                            : field === "tags"
+                              ? "Теги"
+                              : field === "type"
+                                ? "Тип"
+                                : "Примітки";
+                      const isSticky = field === "name";
                       return (
-                        <th key={field} className={isSticky ? 'sticky-col-name' : ''}>
-                          <div className="th-content" onClick={() => { setHeaderMenu({ field, mode: 'menu' }); setHeaderFilterText(''); }}>{label} {sortField === field && <span className="sort-arrow">{sortOrder === 'asc' ? '▲' : '▼'}</span>}</div>
+                        <th key={field} className={isSticky ? "sticky-col-name" : ""}>
+                          <div
+                            className="th-content"
+                            onClick={() => {
+                              setHeaderMenu({ field, mode: "menu" });
+                              setHeaderFilterText("");
+                            }}
+                          >
+                            {label}{" "}
+                            {sortField === field && (
+                              <span className="sort-arrow">{sortOrder === "asc" ? "▲" : "▼"}</span>
+                            )}
+                          </div>
                         </th>
                       );
                     })}
                   </tr>
                 </thead>
                 <tbody>
-                  {processedDates.map(d => {
+                  {processedDates.map((d) => {
                     const cfg = getTypeConfig(d.type);
-                    const typeLabel = d.type === 'person' ? 'Людина' : d.type === 'event' ? 'Подія' : d.type === 'other' ? 'Інше' : d.type;
+                    const typeLabel =
+                      d.type === "person"
+                        ? "Людина"
+                        : d.type === "event"
+                          ? "Подія"
+                          : d.type === "other"
+                            ? "Інше"
+                            : d.type;
                     return (
-                      <tr key={d.id} className={selectedIds.has(d.id) ? 'selected' : ''}>
+                      <tr key={d.id} className={selectedIds.has(d.id) ? "selected" : ""}>
                         <td className="sticky-col-menu">
-                          <button className="row-dropdown-toggle" onClick={() => setRowActionDate(d)}>⋮</button>
+                          <button
+                            className="row-dropdown-toggle"
+                            onClick={() => setRowActionDate(d)}
+                          >
+                            ⋮
+                          </button>
                         </td>
                         <td className="sticky-col-check">
-                          <input type="checkbox" checked={selectedIds.has(d.id)}
-                            onChange={() => toggleSelect(d.id)} className="row-checkbox" />
+                          <input
+                            type="checkbox"
+                            checked={selectedIds.has(d.id)}
+                            onChange={() => toggleSelect(d.id)}
+                            className="row-checkbox"
+                          />
                         </td>
-                        <td className="sticky-col-name name-cell">{d.name || '—'}</td>
+                        <td className="sticky-col-name name-cell">{d.name || "—"}</td>
                         <td className="date-cell">{formatDateShort(d.date)}</td>
                         <td className="tags-cell">
                           {(d.tags || []).length > 0 ? (
                             <div className="tags-inline">
-                              {d.tags.map(tag => (
-                                <span key={tag} className="tag-chip tag-chip--sm" style={getTagColor(tag)}>
+                              {d.tags.map((tag) => (
+                                <span
+                                  key={tag}
+                                  className="tag-chip tag-chip--sm"
+                                  style={getTagColor(tag)}
+                                >
                                   {tag}
                                 </span>
                               ))}
@@ -841,11 +1020,16 @@ export function MyDatesPage({ onScenarioName }: { onScenarioName: (name: string 
                           )}
                         </td>
                         <td className="type-cell">
-                          <span className="type-badge" style={{ color: cfg.color, background: cfg.bg }}>
+                          <span
+                            className="type-badge"
+                            style={{ color: cfg.color, background: cfg.bg }}
+                          >
                             {cfg.emoji} {typeLabel}
                           </span>
                         </td>
-                        <td className="notes-cell" title={d.notes || ''}>{d.notes || '—'}</td>
+                        <td className="notes-cell" title={d.notes || ""}>
+                          {d.notes || "—"}
+                        </td>
                       </tr>
                     );
                   })}
@@ -865,7 +1049,13 @@ export function MyDatesPage({ onScenarioName }: { onScenarioName: (name: string 
 
         {/* Кнопка "Нова дата" внизу */}
         {dates.length > 0 && !formOpen && (
-          <button className="btn btn-add-bottom" onClick={() => { setModalMode('create'); setModalDate(null); }}>
+          <button
+            className="btn btn-add-bottom"
+            onClick={() => {
+              setModalMode("create");
+              setModalDate(null);
+            }}
+          >
             ＋ Нова дата
           </button>
         )}
@@ -873,47 +1063,105 @@ export function MyDatesPage({ onScenarioName }: { onScenarioName: (name: string 
         {/* ═══ HEADER MENU MODAL ═══ */}
         {headerMenu && (
           <div className="modal-overlay" onClick={() => setHeaderMenu(null)}>
-            <div className="header-modal" onClick={e => e.stopPropagation()}>
+            <div className="header-modal" onClick={(e) => e.stopPropagation()}>
               <div className="header-modal-header">
                 <span className="header-modal-title">
-                  {headerMenu.field === 'name' ? 'Назва' : headerMenu.field === 'date' ? 'Дата' : headerMenu.field === 'tags' ? 'Теги' : headerMenu.field === 'type' ? 'Тип' : 'Примітки'}
+                  {headerMenu.field === "name"
+                    ? "Назва"
+                    : headerMenu.field === "date"
+                      ? "Дата"
+                      : headerMenu.field === "tags"
+                        ? "Теги"
+                        : headerMenu.field === "type"
+                          ? "Тип"
+                          : "Примітки"}
                 </span>
-                <button className="header-modal-close" onClick={() => setHeaderMenu(null)}>✕</button>
+                <button className="header-modal-close" onClick={() => setHeaderMenu(null)}>
+                  ✕
+                </button>
               </div>
 
-              {headerMenu.mode === 'menu' && (
+              {headerMenu.mode === "menu" && (
                 <div className="header-modal-body">
-                  <button className={`header-modal-btn ${sortOrder === 'asc' && sortField === headerMenu.field ? 'active' : ''}`} onClick={() => handleHeaderMenuSort(headerMenu.field, 'asc')}>▲ А → Я</button>
-                  <button className={`header-modal-btn ${sortOrder === 'desc' && sortField === headerMenu.field ? 'active' : ''}`} onClick={() => handleHeaderMenuSort(headerMenu.field, 'desc')}>▼ Я → А</button>
+                  <button
+                    className={`header-modal-btn ${sortOrder === "asc" && sortField === headerMenu.field ? "active" : ""}`}
+                    onClick={() => handleHeaderMenuSort(headerMenu.field, "asc")}
+                  >
+                    ▲ А → Я
+                  </button>
+                  <button
+                    className={`header-modal-btn ${sortOrder === "desc" && sortField === headerMenu.field ? "active" : ""}`}
+                    onClick={() => handleHeaderMenuSort(headerMenu.field, "desc")}
+                  >
+                    ▼ Я → А
+                  </button>
                   <div className="header-modal-divider" />
-                  <button className="header-modal-btn" onClick={() => setHeaderMenu({ field: headerMenu.field, mode: 'filter' })}>🔍 Фільтр...</button>
-                  {(columnFilters[headerMenu.field]?.length > 0 || sortField === headerMenu.field) && (
+                  <button
+                    className="header-modal-btn"
+                    onClick={() => setHeaderMenu({ field: headerMenu.field, mode: "filter" })}
+                  >
+                    🔍 Фільтр...
+                  </button>
+                  {(columnFilters[headerMenu.field]?.length > 0 ||
+                    sortField === headerMenu.field) && (
                     <>
                       <div className="header-modal-divider" />
-                      <button className="header-modal-btn header-modal-btn--danger" onClick={() => handleHeaderMenuClear(headerMenu.field)}>🧹 Очистити</button>
+                      <button
+                        className="header-modal-btn header-modal-btn--danger"
+                        onClick={() => handleHeaderMenuClear(headerMenu.field)}
+                      >
+                        🧹 Очистити
+                      </button>
                     </>
                   )}
                 </div>
               )}
 
-              {headerMenu.mode === 'filter' && (
+              {headerMenu.mode === "filter" && (
                 <div className="header-modal-body">
-                  <input className="header-modal-filter-input" type="text" placeholder="Пошук у списках..." value={headerFilterText} onChange={e => setHeaderFilterText(e.target.value)} autoFocus />
+                  <input
+                    className="header-modal-filter-input"
+                    type="text"
+                    placeholder="Пошук у списках..."
+                    value={headerFilterText}
+                    onChange={(e) => setHeaderFilterText(e.target.value)}
+                    autoFocus
+                  />
                   <div className="header-modal-filter-list">
-                    {getUniqueValues(headerMenu.field).filter(v => !headerFilterText || v.toLowerCase().includes(headerFilterText.toLowerCase())).map(v => {
-                      const isSelected = (columnFilters[headerMenu.field] || []).includes(v);
-                      return (
-                        <label key={v} className="header-modal-filter-item">
-                          <input type="checkbox" checked={isSelected} onChange={() => handleHeaderMenuFilterToggle(headerMenu.field, v)} /><span>{v}</span>
-                        </label>
-                      );
-                    })}
-                    {getUniqueValues(headerMenu.field).filter(v => !headerFilterText || v.toLowerCase().includes(headerFilterText.toLowerCase())).length === 0 && (
-                      <div className="header-modal-empty">Нічого не знайдено</div>
-                    )}
+                    {getUniqueValues(headerMenu.field)
+                      .filter(
+                        (v) =>
+                          !headerFilterText ||
+                          v.toLowerCase().includes(headerFilterText.toLowerCase()),
+                      )
+                      .map((v) => {
+                        const isSelected = (columnFilters[headerMenu.field] || []).includes(v);
+                        return (
+                          <label key={v} className="header-modal-filter-item">
+                            <input
+                              type="checkbox"
+                              checked={isSelected}
+                              onChange={() => handleHeaderMenuFilterToggle(headerMenu.field, v)}
+                            />
+                            <span>{v}</span>
+                          </label>
+                        );
+                      })}
+                    {getUniqueValues(headerMenu.field).filter(
+                      (v) =>
+                        !headerFilterText ||
+                        v.toLowerCase().includes(headerFilterText.toLowerCase()),
+                    ).length === 0 && <div className="header-modal-empty">Нічого не знайдено</div>}
                   </div>
                   {(columnFilters[headerMenu.field]?.length || 0) > 0 && (
-                    <button className="header-modal-btn header-modal-btn--clear" onClick={() => setColumnFilters(prev => ({ ...prev, [headerMenu.field]: [] }))}>Скинути вибір</button>
+                    <button
+                      className="header-modal-btn header-modal-btn--clear"
+                      onClick={() =>
+                        setColumnFilters((prev) => ({ ...prev, [headerMenu.field]: [] }))
+                      }
+                    >
+                      Скинути вибір
+                    </button>
                   )}
                 </div>
               )}
@@ -924,17 +1172,53 @@ export function MyDatesPage({ onScenarioName }: { onScenarioName: (name: string 
         {/* ═══ ROW ACTION MODAL ═══ */}
         {rowActionDate && (
           <div className="modal-overlay" onClick={() => setRowActionDate(null)}>
-            <div className="header-modal row-action-modal" onClick={e => e.stopPropagation()}>
+            <div className="header-modal row-action-modal" onClick={(e) => e.stopPropagation()}>
               <div className="header-modal-header">
-                <span className="header-modal-title">{rowActionDate.name || rowActionDate.date}</span>
-                <button className="header-modal-close" onClick={() => setRowActionDate(null)}>✕</button>
+                <span className="header-modal-title">
+                  {rowActionDate.name || rowActionDate.date}
+                </span>
+                <button className="header-modal-close" onClick={() => setRowActionDate(null)}>
+                  ✕
+                </button>
               </div>
               <div className="header-modal-body">
-                <Link className="header-modal-btn" to={`/mydate/${rowActionDate.date}`} onClick={() => setRowActionDate(null)}>📊 Аналіз</Link>
-                <button className="header-modal-btn" onClick={() => { setModalMode('view'); setModalDate(rowActionDate); setRowActionDate(null); }}>👁 Переглянути</button>
-                <button className="header-modal-btn" onClick={() => { setModalMode('edit'); setModalDate(rowActionDate); setRowActionDate(null); }}>✏️ Редагувати</button>
+                <Link
+                  className="header-modal-btn"
+                  to={`/mydate/${rowActionDate.date}`}
+                  onClick={() => setRowActionDate(null)}
+                >
+                  📊 Аналіз
+                </Link>
+                <button
+                  className="header-modal-btn"
+                  onClick={() => {
+                    setModalMode("view");
+                    setModalDate(rowActionDate);
+                    setRowActionDate(null);
+                  }}
+                >
+                  👁 Переглянути
+                </button>
+                <button
+                  className="header-modal-btn"
+                  onClick={() => {
+                    setModalMode("edit");
+                    setModalDate(rowActionDate);
+                    setRowActionDate(null);
+                  }}
+                >
+                  ✏️ Редагувати
+                </button>
                 <div className="header-modal-divider" />
-                <button className="header-modal-btn header-modal-btn--danger" onClick={() => { handleDelete(rowActionDate.id); setRowActionDate(null); }}>🗑 Видалити</button>
+                <button
+                  className="header-modal-btn header-modal-btn--danger"
+                  onClick={() => {
+                    handleDelete(rowActionDate.id);
+                    setRowActionDate(null);
+                  }}
+                >
+                  🗑 Видалити
+                </button>
               </div>
             </div>
           </div>
@@ -946,10 +1230,13 @@ export function MyDatesPage({ onScenarioName }: { onScenarioName: (name: string 
             mode={modalMode}
             date={modalDate}
             allTags={allTags}
-            onClose={() => { setModalMode(null); setModalDate(null); }}
+            onClose={() => {
+              setModalMode(null);
+              setModalDate(null);
+            }}
             onSave={handleModalSave}
             onDelete={handleDelete}
-            onSwitchToEdit={() => setModalMode('edit')}
+            onSwitchToEdit={() => setModalMode("edit")}
           />
         )}
       </section>

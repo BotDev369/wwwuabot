@@ -1,6 +1,9 @@
 import type { InternalFooterBlock } from "./FooterEditor";
 
-interface TgFooterBlock { type: "footer"; text: unknown; }
+interface TgFooterBlock {
+  type: "footer";
+  text: unknown;
+}
 
 export function toTelegram(block: InternalFooterBlock): TgFooterBlock {
   return { type: "footer", text: block.text };

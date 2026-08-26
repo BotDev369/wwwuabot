@@ -12,6 +12,6 @@ export const useSidebar = create<SidebarState>()(
       collapsed: false,
       toggle: () => set((s) => ({ collapsed: !s.collapsed })),
     }),
-    { name: "wwwuabot-admin-sidebar" }
-  )
+    { name: "wwwuabot-admin-sidebar" },
+  ),
 );

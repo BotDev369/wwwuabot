@@ -26,7 +26,7 @@ export async function withAutoMigrate<T>(
   db: D1Database,
   fn: () => Promise<T>,
   fieldsToCreate: Record<string, any>,
-  tableName: string
+  tableName: string,
 ): Promise<T> {
   let lastError: any;
   let attempts = 0;
@@ -47,12 +47,14 @@ export async function withAutoMigrate<T>(
 
         if (sampleValue !== undefined) {
           const type = inferSqliteType(sampleValue);
-          console.log(`[Auto-Migrate] Creating column: ${tableName}.${missingField} ${type} DEFAULT NULL`);
-          
-          await db.prepare(
-            `ALTER TABLE ${tableName} ADD COLUMN ${missingField} ${type} DEFAULT NULL`
-          ).run();
-          
+          console.log(
+            `[Auto-Migrate] Creating column: ${tableName}.${missingField} ${type} DEFAULT NULL`,
+          );
+
+          await db
+            .prepare(`ALTER TABLE ${tableName} ADD COLUMN ${missingField} ${type} DEFAULT NULL`)
+            .run();
+
           attempts++;
           continue; // Повторюємо спробу
         }

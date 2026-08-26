@@ -3,7 +3,7 @@
 
 export async function apiFetch<T = unknown>(
   endpoint: string,
-  options: RequestInit = {}
+  options: RequestInit = {},
 ): Promise<T> {
   const response = await fetch(endpoint, {
     ...options,
@@ -21,12 +21,8 @@ export async function apiFetch<T = unknown>(
   }
 
   if (!response.ok) {
-    const err = await response
-      .json()
-      .catch(() => ({ error: `HTTP ${response.status}` }));
-    throw new Error(
-      (err as { error?: string }).error ?? `HTTP ${response.status}`
-    );
+    const err = await response.json().catch(() => ({ error: `HTTP ${response.status}` }));
+    throw new Error((err as { error?: string }).error ?? `HTTP ${response.status}`);
   }
 
   return response.json() as Promise<T>;

@@ -2,10 +2,7 @@ import type { MessageBatch } from "@cloudflare/workers-types";
 import type { Env } from "../../shared/types/env";
 import type { LogMessage } from "../../shared/types/log";
 
-export async function handleQueue(
-  batch: MessageBatch<LogMessage>,
-  env: Env
-): Promise<void> {
+export async function handleQueue(batch: MessageBatch<LogMessage>, env: Env): Promise<void> {
   const payload = batch.messages.map((msg) => msg.body);
 
   try {
@@ -25,7 +22,7 @@ export async function handleQueue(
         context: "gas_webhook_batch_failed",
         message: error instanceof Error ? error.message : String(error),
         batch_size: payload.length,
-      })
+      }),
     );
     throw error; // Re-throw щоб Cloudflare зробив retry
   }

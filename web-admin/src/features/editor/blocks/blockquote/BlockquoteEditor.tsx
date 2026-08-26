@@ -41,9 +41,29 @@ export function BlockquoteEditor({ block, idx, total }: Props) {
         <span className="block-type-badge">❝</span>
         <span className="block-type-label">Цитата</span>
         <div className="block-actions">
-          <button className="block-action-btn" onClick={() => moveBlock(block.id, "up")} disabled={idx === 0} title="Вгору">↑</button>
-          <button className="block-action-btn" onClick={() => moveBlock(block.id, "down")} disabled={idx === total - 1} title="Вниз">↓</button>
-          <button className="block-action-btn block-action-btn--danger" onClick={() => removeBlock(block.id)} title="Видалити">✕</button>
+          <button
+            className="block-action-btn"
+            onClick={() => moveBlock(block.id, "up")}
+            disabled={idx === 0}
+            title="Вгору"
+          >
+            ↑
+          </button>
+          <button
+            className="block-action-btn"
+            onClick={() => moveBlock(block.id, "down")}
+            disabled={idx === total - 1}
+            title="Вниз"
+          >
+            ↓
+          </button>
+          <button
+            className="block-action-btn block-action-btn--danger"
+            onClick={() => removeBlock(block.id)}
+            title="Видалити"
+          >
+            ✕
+          </button>
         </div>
       </div>
       <div className="block-card-body">
@@ -57,16 +77,25 @@ export function BlockquoteEditor({ block, idx, total }: Props) {
                   multiline
                   placeholder="Текст цитати..."
                 />
-                <button type="button" className="block-action-btn block-action-btn--danger" onClick={() => removeChild(child.id)} title="Видалити абзац">✕</button>
+                <button
+                  type="button"
+                  className="block-action-btn block-action-btn--danger"
+                  onClick={() => removeChild(child.id)}
+                  title="Видалити абзац"
+                >
+                  ✕
+                </button>
               </div>
             ) : (
               <div className="bq-child" key={child.id}>
                 <p className="unknown-hint">[Вкладений блок «{child.type}» — лише перегляд]</p>
               </div>
-            )
+            ),
           )}
         </div>
-        <button type="button" className="kb-add-btn" onClick={addChild}>+ Абзац</button>
+        <button type="button" className="kb-add-btn" onClick={addChild}>
+          + Абзац
+        </button>
       </div>
     </div>
   );

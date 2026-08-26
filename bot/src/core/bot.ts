@@ -30,11 +30,13 @@ export function createBot(env: Env): Bot<AppContext> {
     await LogQueueService.push(env, log);
     const errorMsg = TEXTS.error(env.ENVIRONMENT);
     await ctx.reply(errorMsg).catch((replyErr) => {
-      console.error(JSON.stringify({
-        level: "error",
-        context: "reply_fallback_critical",
-        message: replyErr instanceof Error ? replyErr.message : String(replyErr),
-      }));
+      console.error(
+        JSON.stringify({
+          level: "error",
+          context: "reply_fallback_critical",
+          message: replyErr instanceof Error ? replyErr.message : String(replyErr),
+        }),
+      );
     });
   });
 

@@ -9,7 +9,9 @@ export function RichPreview({ value }: { value: unknown }) {
       {runs.map((r, i) => (
         <span key={i} style={runStyle(r)} className={r.marked ? "rt-marked" : undefined}>
           {r.url ? (
-            <a className="rt-link" href={r.url} target="_blank" rel="noreferrer">{r.text}</a>
+            <a className="rt-link" href={r.url} target="_blank" rel="noreferrer">
+              {r.text}
+            </a>
           ) : (
             r.text
           )}
@@ -21,7 +23,8 @@ export function RichPreview({ value }: { value: unknown }) {
 
 function runStyle(r: TextRun): CSSProperties {
   const deco = [r.underline ? "underline" : null, r.strikethrough ? "line-through" : null]
-    .filter(Boolean).join(" ");
+    .filter(Boolean)
+    .join(" ");
   return {
     fontWeight: r.bold ? 700 : undefined,
     fontStyle: r.italic ? "italic" : undefined,

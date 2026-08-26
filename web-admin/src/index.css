@@ -78,7 +78,6 @@ body {
 }
 
 @keyframes pulse {
-
   0%,
   100% {
     opacity: 0.3;
@@ -194,7 +193,9 @@ body {
   font-size: 14px;
   font-weight: 600;
   cursor: pointer;
-  transition: background 0.15s, opacity 0.15s;
+  transition:
+    background 0.15s,
+    opacity 0.15s;
 }
 
 .login-btn:hover:not(:disabled) {
@@ -263,7 +264,9 @@ body {
   text-decoration: none;
   font-size: 13px;
   font-weight: 500;
-  transition: background 0.1s, color 0.1s;
+  transition:
+    background 0.1s,
+    color 0.1s;
 }
 
 .sidebar-nav-item:hover {
@@ -297,7 +300,10 @@ body {
   font-size: 13px;
   cursor: pointer;
   text-align: left;
-  transition: background 0.1s, color 0.1s, border-color 0.1s;
+  transition:
+    background 0.1s,
+    color 0.1s,
+    border-color 0.1s;
 }
 
 .logout-btn:hover {
@@ -386,7 +392,9 @@ body {
   font-weight: 500;
   cursor: pointer;
   border: none;
-  transition: background 0.15s, opacity 0.15s;
+  transition:
+    background 0.15s,
+    opacity 0.15s;
   white-space: nowrap;
 }
 
@@ -454,7 +462,9 @@ body {
   font-size: 12px;
   color: var(--text-secondary);
   cursor: pointer;
-  transition: border-color 0.15s, color 0.15s;
+  transition:
+    border-color 0.15s,
+    color 0.15s;
 }
 
 .add-block-btn:hover {
@@ -599,7 +609,7 @@ body {
 }
 
 .btn--dirty::after {
-  content: '';
+  content: "";
   position: absolute;
   top: 5px;
   right: 5px;
@@ -623,7 +633,9 @@ body {
   border: 1px solid var(--border);
   border-radius: var(--radius);
   overflow: hidden;
-  transition: box-shadow 0.15s, border-color 0.15s;
+  transition:
+    box-shadow 0.15s,
+    border-color 0.15s;
 }
 
 .block-card:hover {
@@ -691,7 +703,9 @@ body {
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: background 0.1s, color 0.1s;
+  transition:
+    background 0.1s,
+    color 0.1s;
 }
 
 .block-action-btn:hover:not(:disabled) {
@@ -894,7 +908,7 @@ body {
 }
 
 /* Spacing between sibling tg elements inside .tg-message */
-.tg-message>*+* {
+.tg-message > * + * {
   margin-top: 4px;
 }
 
@@ -902,7 +916,8 @@ body {
    SIDEBAR — стани згорнутості, секції, тоггл (Група 6)
    ═══════════════════════════════════════════════════════════════════════════════ */
 .sidebar {
-  transition: width 0.22s cubic-bezier(0.4, 0, 0.2, 1),
+  transition:
+    width 0.22s cubic-bezier(0.4, 0, 0.2, 1),
     min-width 0.22s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
@@ -919,7 +934,9 @@ body {
   border-radius: var(--radius-sm);
   color: var(--text-muted);
   cursor: pointer;
-  transition: background 0.12s, color 0.12s;
+  transition:
+    background 0.12s,
+    color 0.12s;
 }
 
 .sidebar-toggle:hover {
@@ -1066,7 +1083,6 @@ body {
 }
 
 @keyframes star-glow {
-
   0%,
   100% {
     filter: drop-shadow(0 0 4px rgba(37, 99, 235, 0.25));
@@ -1116,7 +1132,9 @@ body {
   color: var(--text-primary);
   outline: none;
   width: 220px;
-  transition: border-color 0.15s, background 0.15s;
+  transition:
+    border-color 0.15s,
+    background 0.15s;
 }
 
 .scn-search:focus {
@@ -1379,7 +1397,9 @@ body {
   border-radius: 20px;
   font-size: 12px;
   cursor: pointer;
-  transition: background 0.12s, color 0.12s;
+  transition:
+    background 0.12s,
+    color 0.12s;
 }
 
 .kb-toggle-btn--active {
@@ -1448,7 +1468,9 @@ body {
   color: var(--text-secondary);
   cursor: pointer;
   align-self: flex-start;
-  transition: border-color 0.15s, color 0.15s;
+  transition:
+    border-color 0.15s,
+    color 0.15s;
 }
 
 .kb-add-btn:hover,
@@ -1540,7 +1562,9 @@ body {
   font-weight: 700;
   cursor: pointer;
   flex-shrink: 0;
-  transition: background 0.12s, color 0.12s;
+  transition:
+    background 0.12s,
+    color 0.12s;
 }
 
 .table-h-btn--active {
@@ -1612,7 +1636,9 @@ body {
   font-weight: 700;
   color: var(--text-secondary);
   cursor: pointer;
-  transition: border-color 0.12s, color 0.12s;
+  transition:
+    border-color 0.12s,
+    color 0.12s;
 }
 
 .rt-btn:hover {
@@ -1760,7 +1786,9 @@ body {
   border-radius: 20px;
   font-size: 12px;
   cursor: pointer;
-  transition: background 0.12s, color 0.12s;
+  transition:
+    background 0.12s,
+    color 0.12s;
 }
 
 .photo-tab--active {

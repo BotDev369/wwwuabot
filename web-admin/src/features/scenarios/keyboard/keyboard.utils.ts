@@ -21,13 +21,12 @@ export function toTelegramButton(b: KeyboardButtonModel): Record<string, unknown
 export function fromTelegramButton(btn: Record<string, unknown>): KeyboardButtonModel {
   const { text, callback_data, url, ...rest } = btn;
   const kind: ButtonKind =
-    url !== undefined && url !== null ? "url"
-    : callback_data !== undefined && callback_data !== null ? "callback"
-    : "none";
-  const value =
-    kind === "url" ? String(url)
-    : kind === "callback" ? String(callback_data)
-    : "";
+    url !== undefined && url !== null
+      ? "url"
+      : callback_data !== undefined && callback_data !== null
+        ? "callback"
+        : "none";
+  const value = kind === "url" ? String(url) : kind === "callback" ? String(callback_data) : "";
   return {
     id: genId(),
     text: typeof text === "string" ? text : String(text ?? ""),
@@ -42,14 +41,21 @@ export function parseKeyboard(json: string): KeyboardRowModel[] {
   const trimmed = (json ?? "").trim();
   if (!trimmed) return [];
   let parsed: unknown;
-  try { parsed = JSON.parse(trimmed); } catch { return []; }
+  try {
+    parsed = JSON.parse(trimmed);
+  } catch {
+    return [];
+  }
   if (!Array.isArray(parsed)) return [];
   return parsed
     .filter((r): r is unknown[] => Array.isArray(r))
     .map((row) => ({
       id: genId(),
       buttons: row
-        .filter((b): b is Record<string, unknown> => typeof b === "object" && b !== null && !Array.isArray(b))
+        .filter(
+          (b): b is Record<string, unknown> =>
+            typeof b === "object" && b !== null && !Array.isArray(b),
+        )
         .map((b) => fromTelegramButton(b)),
     }));
 }
@@ -64,7 +70,11 @@ export function validateKeyboard(json: string): string | null {
   const trimmed = (json ?? "").trim();
   if (!trimmed) return null; // порожньо = ок
   let parsed: unknown;
-  try { parsed = JSON.parse(trimmed); } catch (e) { return (e as Error).message; }
+  try {
+    parsed = JSON.parse(trimmed);
+  } catch (e) {
+    return (e as Error).message;
+  }
   if (!Array.isArray(parsed)) return "має бути масивом рядків кнопок";
   return null;
 }

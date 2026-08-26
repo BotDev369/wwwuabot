@@ -2,15 +2,11 @@ import { DatabaseRepository } from "../../core/database.repository";
 import { withAutoMigrate } from "../../core/database/auto-migrate";
 
 export class UserRepository extends DatabaseRepository {
-
   /**
    * Читаємо юзера. SELECT * повертає ВСІ існуючі колонки.
    */
   async getUser(userId: number): Promise<any> {
-    return await this.db
-      .prepare(`SELECT * FROM users WHERE user_id = ?`)
-      .bind(userId)
-      .first<any>();
+    return await this.db.prepare(`SELECT * FROM users WHERE user_id = ?`).bind(userId).first<any>();
   }
 
   /**
@@ -26,10 +22,12 @@ export class UserRepository extends DatabaseRepository {
     const now = new Date().toISOString();
 
     await this.db
-      .prepare(`
+      .prepare(
+        `
         INSERT INTO users (user_id, first_name, last_name, username, language, created_at)
         VALUES (?, ?, ?, ?, ?, ?)
-      `)
+      `,
+      )
       .bind(user.user_id, user.first_name, user.last_name, user.username, user.language, now)
       .run();
   }
@@ -42,8 +40,8 @@ export class UserRepository extends DatabaseRepository {
     const keys = Object.keys(updates);
     if (keys.length === 0) return;
 
-    const setClause = keys.map(k => `${k} = ?`).join(", ");
-    const values = keys.map(k => updates[k]);
+    const setClause = keys.map((k) => `${k} = ?`).join(", ");
+    const values = keys.map((k) => updates[k]);
 
     await withAutoMigrate(
       this.db,
@@ -54,7 +52,7 @@ export class UserRepository extends DatabaseRepository {
           .run();
       },
       updates,
-      "users"  // ← ЯВНО вказуємо таблицю
+      "users", // ← ЯВНО вказуємо таблицю
     );
   }
 }

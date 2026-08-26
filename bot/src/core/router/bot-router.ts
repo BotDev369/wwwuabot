@@ -94,7 +94,7 @@ export async function botRouter(ctx: AppContext): Promise<void> {
         log("ROUTER", "text input saved to family box", {
           family,
           path: textResult.inputPath,
-          value: textResult.value
+          value: textResult.value,
         });
 
         codeword = textResult.codeword!;
@@ -138,7 +138,7 @@ export async function botRouter(ctx: AppContext): Promise<void> {
     price: scenario.price,
     qty_options: scenario.qty_options,
     notify_groups: scenario.notify_groups,
-    notify_template: scenario.notify_template
+    notify_template: scenario.notify_template,
   });
 
   // 6. Зберігаємо активний сценарій юзера
@@ -163,7 +163,7 @@ export async function botRouter(ctx: AppContext): Promise<void> {
     notify_groups: scenario.notify_groups,
     notify_template: scenario.notify_template,
     rich_message: scenario.rich_message, // ← NEW
-    rich_data: scenario.rich_data,       // ← NEW
+    rich_data: scenario.rich_data, // ← NEW
   };
 
   // 8. ← НОВИЙ КРОК: Виконуємо відкладену дію ПІСЛЯ того, як ctx.screen заповнений
@@ -208,9 +208,10 @@ async function handleDeepLink(ctx: AppContext, slug: string): Promise<void> {
   }
 
   // Формуємо URL назад (без user_id — безпека!)
-  const webAppUrl = ctx.env.ENVIRONMENT === "prod"
-    ? `https://wwwuabot-web-prod.diskomate.workers.dev/${slug}`
-    : `https://wwwuabot-web-dev.diskomate.workers.dev/${slug}`;
+  const webAppUrl =
+    ctx.env.ENVIRONMENT === "prod"
+      ? `https://wwwuabot-web-prod.diskomate.workers.dev/${slug}`
+      : `https://wwwuabot-web-dev.diskomate.workers.dev/${slug}`;
 
   const welcomeText =
     `<b>Авторизацію підтверджено!</b>\n\n` +
@@ -220,12 +221,14 @@ async function handleDeepLink(ctx: AppContext, slug: string): Promise<void> {
     const sent = await ctx.api.sendMessage(chatId, welcomeText, {
       parse_mode: "HTML",
       reply_markup: {
-        inline_keyboard: [[
-          {
-            text: "🌐 Відкрити веб-платформу",
-            web_app: { url: webAppUrl },
-          },
-        ]],
+        inline_keyboard: [
+          [
+            {
+              text: "🌐 Відкрити веб-платформу",
+              web_app: { url: webAppUrl },
+            },
+          ],
+        ],
       },
     });
 

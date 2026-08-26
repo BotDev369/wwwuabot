@@ -47,7 +47,9 @@ export function ListEditor({ block, idx, total }: Props) {
     updateBlock(block.id, { items });
   }
   function setItemText(id: string, text: unknown) {
-    setItems(block.items.map((it) => (it.id === id && it.kind === "simple" ? { ...it, text } : it)));
+    setItems(
+      block.items.map((it) => (it.id === id && it.kind === "simple" ? { ...it, text } : it)),
+    );
   }
   function removeItem(id: string) {
     setItems(block.items.filter((it) => it.id !== id));
@@ -72,9 +74,29 @@ export function ListEditor({ block, idx, total }: Props) {
           <option value="checkbox">Чекбокси</option>
         </select>
         <div className="block-actions">
-          <button className="block-action-btn" onClick={() => moveBlock(block.id, "up")} disabled={idx === 0} title="Вгору">↑</button>
-          <button className="block-action-btn" onClick={() => moveBlock(block.id, "down")} disabled={idx === total - 1} title="Вниз">↓</button>
-          <button className="block-action-btn block-action-btn--danger" onClick={() => removeBlock(block.id)} title="Видалити">✕</button>
+          <button
+            className="block-action-btn"
+            onClick={() => moveBlock(block.id, "up")}
+            disabled={idx === 0}
+            title="Вгору"
+          >
+            ↑
+          </button>
+          <button
+            className="block-action-btn"
+            onClick={() => moveBlock(block.id, "down")}
+            disabled={idx === total - 1}
+            title="Вниз"
+          >
+            ↓
+          </button>
+          <button
+            className="block-action-btn block-action-btn--danger"
+            onClick={() => removeBlock(block.id)}
+            title="Видалити"
+          >
+            ✕
+          </button>
         </div>
       </div>
       <div className="block-card-body">
@@ -90,17 +112,26 @@ export function ListEditor({ block, idx, total }: Props) {
                   showPreview={false}
                   placeholder="Пункт списку..."
                 />
-                <button type="button" className="block-action-btn block-action-btn--danger" onClick={() => removeItem(item.id)} title="Видалити пункт">✕</button>
+                <button
+                  type="button"
+                  className="block-action-btn block-action-btn--danger"
+                  onClick={() => removeItem(item.id)}
+                  title="Видалити пункт"
+                >
+                  ✕
+                </button>
               </div>
             ) : (
               <div className="bq-child" key={item.id}>
                 <span className="list-num">{markerFor(style, n)}</span>
                 <p className="unknown-hint">[Складний пункт — лише перегляд]</p>
               </div>
-            )
+            ),
           )}
         </div>
-        <button type="button" className="kb-add-btn" onClick={addItem}>+ Пункт</button>
+        <button type="button" className="kb-add-btn" onClick={addItem}>
+          + Пункт
+        </button>
       </div>
     </div>
   );

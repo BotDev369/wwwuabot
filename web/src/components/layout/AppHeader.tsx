@@ -5,7 +5,12 @@ interface AppHeaderProps {
   onContextualMenuClick?: () => void;
 }
 
-export function AppHeader({ onMenuClick, scenarioName, showContextualMenu, onContextualMenuClick }: AppHeaderProps) {
+export function AppHeader({
+  onMenuClick,
+  scenarioName,
+  showContextualMenu,
+  onContextualMenuClick,
+}: AppHeaderProps) {
   return (
     <header className="header">
       <button className="hamburger" onClick={onMenuClick} aria-label="Меню">
@@ -14,11 +19,13 @@ export function AppHeader({ onMenuClick, scenarioName, showContextualMenu, onCon
         <span></span>
       </button>
       <span className="brand">WWWUABot</span>
-      {scenarioName && (
-        <span className="header-sub scenario">{scenarioName}</span>
-      )}
+      {scenarioName && <span className="header-sub scenario">{scenarioName}</span>}
       {showContextualMenu && (
-        <button className="hamburger brand-color" onClick={onContextualMenuClick} aria-label="Контекстне меню">
+        <button
+          className="hamburger brand-color"
+          onClick={onContextualMenuClick}
+          aria-label="Контекстне меню"
+        >
           <span></span>
           <span></span>
           <span></span>

@@ -18,7 +18,13 @@ const TOKENS = [
   { key: "marked", label: "M", open: "||", close: "||", title: "Підсвічений" },
 ] as const;
 
-export function RichTextField({ value, onChange, multiline = true, placeholder, showPreview = true }: Props) {
+export function RichTextField({
+  value,
+  onChange,
+  multiline = true,
+  placeholder,
+  showPreview = true,
+}: Props) {
   const [markup, setMarkup] = useState(() => runsToMarkup(richToRuns(value)));
   const ref = useRef<any>(null);
   const selRef = useRef<{ s: number; e: number } | null>(null);
@@ -51,14 +57,19 @@ export function RichTextField({ value, onChange, multiline = true, placeholder, 
     let next: string, ns: number, ne: number;
     if (before === open && after === close) {
       next = markup.slice(0, s - open.length) + markup.slice(s, e) + markup.slice(e + close.length);
-      ns = s - open.length; ne = e - open.length;
+      ns = s - open.length;
+      ne = e - open.length;
     } else {
       next = markup.slice(0, s) + open + sel + close + markup.slice(e);
-      ns = s + open.length; ne = ns + sel.length;
+      ns = s + open.length;
+      ne = ns + sel.length;
     }
     selRef.current = { s: ns, e: ne };
     emit(next);
-    requestAnimationFrame(() => { el.focus(); el.setSelectionRange(ns, ne); });
+    requestAnimationFrame(() => {
+      el.focus();
+      el.setSelectionRange(ns, ne);
+    });
   }
 
   function addLink() {
@@ -77,7 +88,10 @@ export function RichTextField({ value, onChange, multiline = true, placeholder, 
         const ne = Math.min(Math.max(e, start), start + inner.length);
         selRef.current = { s: ns, e: ne };
         emit(next);
-        requestAnimationFrame(() => { el.focus(); el.setSelectionRange(ns, ne); });
+        requestAnimationFrame(() => {
+          el.focus();
+          el.setSelectionRange(ns, ne);
+        });
         return;
       }
     }
@@ -86,14 +100,20 @@ export function RichTextField({ value, onChange, multiline = true, placeholder, 
     const urlStart = s + sel.length + 3;
     selRef.current = { s: urlStart, e: urlStart + 8 };
     emit(next);
-    requestAnimationFrame(() => { el.focus(); el.setSelectionRange(urlStart, urlStart + 8); });
+    requestAnimationFrame(() => {
+      el.focus();
+      el.setSelectionRange(urlStart, urlStart + 8);
+    });
   }
 
   const fieldProps = {
     ref,
     value: markup,
     placeholder,
-    onChange: (e: any) => { emit(e.target.value); rememberSelection(); },
+    onChange: (e: any) => {
+      emit(e.target.value);
+      rememberSelection();
+    },
     onSelect: rememberSelection,
     onKeyUp: rememberSelection,
     onMouseUp: rememberSelection,
@@ -109,14 +129,24 @@ export function RichTextField({ value, onChange, multiline = true, placeholder, 
       )}
       <div className="rt-toolbar">
         {TOKENS.map((t) => (
-          <button type="button" key={t.key} className="rt-btn" title={t.title} onClick={() => wrap(t.open, t.close)}>
+          <button
+            type="button"
+            key={t.key}
+            className="rt-btn"
+            title={t.title}
+            onClick={() => wrap(t.open, t.close)}
+          >
             {t.label}
           </button>
         ))}
-        <button type="button" className="rt-btn" title="Посилання" onClick={addLink}>🔗</button>
+        <button type="button" className="rt-btn" title="Посилання" onClick={addLink}>
+          🔗
+        </button>
       </div>
       {showPreview && (
-        <div className="rt-preview"><RichPreview value={runsToRich(markupToRuns(markup))} /></div>
+        <div className="rt-preview">
+          <RichPreview value={runsToRich(markupToRuns(markup))} />
+        </div>
       )}
     </div>
   );

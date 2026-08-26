@@ -12,14 +12,14 @@ const BASE_CONFIG = {
   v: 1,
   meta: { title: "WWWUABot — Головна" },
   layout: {
-    slots: ["header", "sidebar", "main", "footer"]
+    slots: ["header", "sidebar", "main", "footer"],
   },
   slots: {
     main: [
       { component: "Heading", props: { text: "Вітаємо на веб-платформі WWWUABot!" } },
-      { component: "Button", props: { label: "Перейти на головну", href: "/" } }
-    ]
-  }
+      { component: "Button", props: { label: "Перейти на головну", href: "/" } },
+    ],
+  },
 };
 
 // 🔶 БЛОК: ENSURE_BASE — гарантовано створює __base__ в D1 при першому запиті.
@@ -62,7 +62,7 @@ async function ensureBase(db: D1Database): Promise<void> {
   await db
     .prepare(
       `INSERT OR IGNORE INTO scenarios (codeword, web_slug, web_config, is_active)
-       VALUES ('__base__', '/', ?, 1)`
+       VALUES ('__base__', '/', ?, 1)`,
     )
     .bind(JSON.stringify(BASE_CONFIG))
     .run();
@@ -79,7 +79,7 @@ async function resolveScenario(db: D1Database, slug: string) {
       .prepare(
         `SELECT codeword, web_slug, web_config FROM scenarios
          WHERE (web_slug = ? OR codeword = ?) AND is_active = 1
-         LIMIT 1`
+         LIMIT 1`,
       )
       .bind(slug, slug)
       .first();
@@ -88,9 +88,7 @@ async function resolveScenario(db: D1Database, slug: string) {
   // Fallback на __base__
   if (!row) {
     row = await db
-      .prepare(
-        `SELECT codeword, web_slug, web_config FROM scenarios WHERE codeword = '__base__'`
-      )
+      .prepare(`SELECT codeword, web_slug, web_config FROM scenarios WHERE codeword = '__base__'`)
       .first();
   }
 
@@ -108,17 +106,15 @@ async function resolveScenario(db: D1Database, slug: string) {
   return {
     scenario: {
       codeword: row?.codeword ?? "__base__",
-      web_slug: row?.web_slug ?? "/"
+      web_slug: row?.web_slug ?? "/",
     },
-    config
+    config,
   };
 }
 
 // 🔶 БЛОК: ENSURE MY_DATES COLUMN — гарантовано створює колонку my_dates в таблиці users.
 async function ensureMyDatesColumn(db: D1Database): Promise<void> {
-  const check = await db
-    .prepare("PRAGMA table_info(users)")
-    .all();
+  const check = await db.prepare("PRAGMA table_info(users)").all();
   const hasColumn = check.results?.some((col: any) => col.name === "my_dates");
   if (!hasColumn) {
     console.log("[Auto-Migrate] Creating column: users.my_dates TEXT DEFAULT NULL");
@@ -132,7 +128,7 @@ export default {
     const json = (body: any, status = 200) =>
       new Response(JSON.stringify(body), {
         status,
-        headers: { "Content-Type": "application/json" }
+        headers: { "Content-Type": "application/json" },
       });
 
     // Health check
@@ -140,185 +136,322 @@ export default {
       return json({
         status: "ok",
         worker: "wwwuabot-api",
-        timestamp: new Date().toISOString()
+        timestamp: new Date().toISOString(),
       });
     }
 
-// 🔶 БЛОК: WESTERN ASTROLOGY CALCULATOR — параметри Категорії А (без часу/місця).
-const SIGN_ORDER = [
-  "Овен", "Телець", "Близнюки", "Рак", "Лев", "Діва",
-  "Терези", "Скорпіон", "Стрілець", "Козоріг", "Водолій", "Риби"
-];
+    // 🔶 БЛОК: WESTERN ASTROLOGY CALCULATOR — параметри Категорії А (без часу/місця).
+    const SIGN_ORDER = [
+      "Овен",
+      "Телець",
+      "Близнюки",
+      "Рак",
+      "Лев",
+      "Діва",
+      "Терези",
+      "Скорпіон",
+      "Стрілець",
+      "Козоріг",
+      "Водолій",
+      "Риби",
+    ];
 
-const SIGN_CUTOFFS: Array<{ md: number; sign: string }> = [
-  { md: 119, sign: "Козоріг" },
-  { md: 218, sign: "Водолій" },
-  { md: 320, sign: "Риби" },
-  { md: 419, sign: "Овен" },
-  { md: 520, sign: "Телець" },
-  { md: 620, sign: "Близнюки" },
-  { md: 722, sign: "Рак" },
-  { md: 822, sign: "Лев" },
-  { md: 922, sign: "Діва" },
-  { md: 1022, sign: "Терези" },
-  { md: 1121, sign: "Скорпіон" },
-  { md: 1221, sign: "Стрілець" },
-  { md: 1231, sign: "Козоріг" }
-];
+    const SIGN_CUTOFFS: Array<{ md: number; sign: string }> = [
+      { md: 119, sign: "Козоріг" },
+      { md: 218, sign: "Водолій" },
+      { md: 320, sign: "Риби" },
+      { md: 419, sign: "Овен" },
+      { md: 520, sign: "Телець" },
+      { md: 620, sign: "Близнюки" },
+      { md: 722, sign: "Рак" },
+      { md: 822, sign: "Лев" },
+      { md: 922, sign: "Діва" },
+      { md: 1022, sign: "Терези" },
+      { md: 1121, sign: "Скорпіон" },
+      { md: 1221, sign: "Стрілець" },
+      { md: 1231, sign: "Козоріг" },
+    ];
 
-const SIGN_META: Record<string, { element: string; modality: string; ruler: string; traditionalRuler: string; startMonth: number; startDay: number }> = {
-  "Овен": { element: "Вогонь", modality: "Кардинальний", ruler: "Марс", traditionalRuler: "Марс", startMonth: 3, startDay: 21 },
-  "Телець": { element: "Земля", modality: "Фіксований", ruler: "Венера", traditionalRuler: "Венера", startMonth: 4, startDay: 20 },
-  "Близнюки": { element: "Повітря", modality: "Мутабельний", ruler: "Меркурій", traditionalRuler: "Меркурій", startMonth: 5, startDay: 21 },
-  "Рак": { element: "Вода", modality: "Кардинальний", ruler: "Місяць", traditionalRuler: "Місяць", startMonth: 6, startDay: 21 },
-  "Лев": { element: "Вогонь", modality: "Фіксований", ruler: "Сонце", traditionalRuler: "Сонце", startMonth: 7, startDay: 23 },
-  "Діва": { element: "Земля", modality: "Мутабельний", ruler: "Меркурій", traditionalRuler: "Меркурій", startMonth: 8, startDay: 23 },
-  "Терези": { element: "Повітря", modality: "Кардинальний", ruler: "Венера", traditionalRuler: "Венера", startMonth: 9, startDay: 23 },
-  "Скорпіон": { element: "Вода", modality: "Фіксований", ruler: "Плутон", traditionalRuler: "Марс", startMonth: 10, startDay: 23 },
-  "Стрілець": { element: "Вогонь", modality: "Мутабельний", ruler: "Юпітер", traditionalRuler: "Юпітер", startMonth: 11, startDay: 22 },
-  "Козоріг": { element: "Земля", modality: "Кардинальний", ruler: "Сатурн", traditionalRuler: "Сатурн", startMonth: 12, startDay: 22 },
-  "Водолій": { element: "Повітря", modality: "Фіксований", ruler: "Уран", traditionalRuler: "Сатурн", startMonth: 1, startDay: 20 },
-  "Риби": { element: "Вода", modality: "Мутабельний", ruler: "Нептун", traditionalRuler: "Юпітер", startMonth: 2, startDay: 19 }
-};
+    const SIGN_META: Record<
+      string,
+      {
+        element: string;
+        modality: string;
+        ruler: string;
+        traditionalRuler: string;
+        startMonth: number;
+        startDay: number;
+      }
+    > = {
+      Овен: {
+        element: "Вогонь",
+        modality: "Кардинальний",
+        ruler: "Марс",
+        traditionalRuler: "Марс",
+        startMonth: 3,
+        startDay: 21,
+      },
+      Телець: {
+        element: "Земля",
+        modality: "Фіксований",
+        ruler: "Венера",
+        traditionalRuler: "Венера",
+        startMonth: 4,
+        startDay: 20,
+      },
+      Близнюки: {
+        element: "Повітря",
+        modality: "Мутабельний",
+        ruler: "Меркурій",
+        traditionalRuler: "Меркурій",
+        startMonth: 5,
+        startDay: 21,
+      },
+      Рак: {
+        element: "Вода",
+        modality: "Кардинальний",
+        ruler: "Місяць",
+        traditionalRuler: "Місяць",
+        startMonth: 6,
+        startDay: 21,
+      },
+      Лев: {
+        element: "Вогонь",
+        modality: "Фіксований",
+        ruler: "Сонце",
+        traditionalRuler: "Сонце",
+        startMonth: 7,
+        startDay: 23,
+      },
+      Діва: {
+        element: "Земля",
+        modality: "Мутабельний",
+        ruler: "Меркурій",
+        traditionalRuler: "Меркурій",
+        startMonth: 8,
+        startDay: 23,
+      },
+      Терези: {
+        element: "Повітря",
+        modality: "Кардинальний",
+        ruler: "Венера",
+        traditionalRuler: "Венера",
+        startMonth: 9,
+        startDay: 23,
+      },
+      Скорпіон: {
+        element: "Вода",
+        modality: "Фіксований",
+        ruler: "Плутон",
+        traditionalRuler: "Марс",
+        startMonth: 10,
+        startDay: 23,
+      },
+      Стрілець: {
+        element: "Вогонь",
+        modality: "Мутабельний",
+        ruler: "Юпітер",
+        traditionalRuler: "Юпітер",
+        startMonth: 11,
+        startDay: 22,
+      },
+      Козоріг: {
+        element: "Земля",
+        modality: "Кардинальний",
+        ruler: "Сатурн",
+        traditionalRuler: "Сатурн",
+        startMonth: 12,
+        startDay: 22,
+      },
+      Водолій: {
+        element: "Повітря",
+        modality: "Фіксований",
+        ruler: "Уран",
+        traditionalRuler: "Сатурн",
+        startMonth: 1,
+        startDay: 20,
+      },
+      Риби: {
+        element: "Вода",
+        modality: "Мутабельний",
+        ruler: "Нептун",
+        traditionalRuler: "Юпітер",
+        startMonth: 2,
+        startDay: 19,
+      },
+    };
 
-function getSunSign(month: number, day: number): string {
-  const md = month * 100 + day;
-  for (const c of SIGN_CUTOFFS) {
-    if (md <= c.md) return c.sign;
-  }
-  return "Козоріг";
-}
-
-function daysSinceSignStart(startMonth: number, startDay: number, month: number, day: number): number {
-  const ref = 2001;
-  const start = Date.UTC(ref, startMonth - 1, startDay);
-  let current = Date.UTC(ref, month - 1, day);
-  if (current < start) current = Date.UTC(ref + 1, month - 1, day);
-  return Math.round((current - start) / 86400000);
-}
-
-function getCuspInfo(sign: string, dayOffset: number): string {
-  const idx = SIGN_ORDER.indexOf(sign);
-  if (dayOffset <= 1) return `Можливо, межа з ${SIGN_ORDER[(idx + 11) % 12]}`;
-  if (dayOffset >= 28) return `Можливо, межа з ${SIGN_ORDER[(idx + 1) % 12]}`;
-  return "Ні";
-}
-
-function calculateWesternAstrology(day: number, month: number) {
-  const sign = getSunSign(month, day);
-  const meta = SIGN_META[sign];
-  const dayOffset = daysSinceSignStart(meta.startMonth, meta.startDay, month, day);
-  const decanIndex = Math.min(2, Math.floor(dayOffset / 10));
-  const decanLabel = ["1-й декан", "2-й декан", "3-й декан"][decanIndex];
-  const degree = Math.min(29, Math.round((dayOffset / 30) * 29));
-
-  return {
-    parameters: [
-      { key: "sunSign", label: "Знак Сонця", value: sign },
-      { key: "element", label: "Стихія", value: meta.element },
-      { key: "modality", label: "Якість (хрест)", value: meta.modality },
-      { key: "ruler", label: "Управитель (сучасний)", value: meta.ruler },
-      { key: "traditionalRuler", label: "Традиційний управитель", value: meta.traditionalRuler },
-      { key: "decan", label: "Декан", value: decanLabel },
-      { key: "degree", label: "Наближений градус Сонця", value: `~${degree}°` },
-      { key: "cusp", label: "Прикордонний знак", value: getCuspInfo(sign, dayOffset) }
-    ],
-    comingSoon: ["Місяць", "Меркурій", "Венера", "Марс", "Юпітер", "Сатурн", "Уран", "Нептун", "Плутон"]
-  };
-}
-
-// 🔶 БЛОК: РЕЄСТР КАЛЬКУЛЯТОРІВ СИСТЕМ — mapping systemId → функція розрахунку за 'YYYY-MM-DD'.
-const SYSTEM_CALCULATORS: Record<string, (date: string) => any> = {
-  western: (date: string) => {
-    const [, month, day] = date.split("-").map((n) => parseInt(n, 10));
-    return calculateWesternAstrology(day, month);
-  }
-};
-
-// 🔶 БЛОК: МИДЕЙТ СИСТЕМИ — дефолтний реєстр з параметрами.
-// KV `mydate:systems` має пріоритет (поля перевизначаються), дефолт заповнює прогалини (напр. parameters).
-const DEFAULT_MYDATE_SYSTEMS: Array<{
-  id: string;
-  name: string;
-  description: string;
-  implemented: boolean;
-  parameters: Array<{ key: string; label: string }>;
-}> = [
-  {
-    id: "western",
-    name: "Західна астрологія",
-    description: "Параметри на основі положення Сонця в зодіакальному колі.",
-    implemented: true,
-    parameters: [
-      { key: "sunSign", label: "Знак Сонця" },
-      { key: "element", label: "Стихія" },
-      { key: "modality", label: "Якість (хрест)" },
-      { key: "ruler", label: "Управитель (сучасний)" },
-      { key: "traditionalRuler", label: "Традиційний управитель" },
-      { key: "decan", label: "Декан" },
-      { key: "degree", label: "Наближений градус Сонця" },
-      { key: "cusp", label: "Прикордонний знак" }
-    ]
-  }
-];
-
-async function getSystemsRegistry(env: Env): Promise<any[]> {
-  const raw = await env.CONTENT_KV.get("mydate:systems");
-  const kvSystems: any[] = raw ? JSON.parse(raw) : [];
-  const kvById = new Map(kvSystems.map((s) => [s.id, s]));
-  const merged: any[] = DEFAULT_MYDATE_SYSTEMS.map((def) => {
-    const kv = kvById.get(def.id);
-    if (!kv) return def;
-    const params = Array.isArray(kv.parameters) && kv.parameters.length ? kv.parameters : def.parameters;
-    return { ...def, ...kv, parameters: params };
-  });
-  for (const s of kvSystems) {
-    if (!DEFAULT_MYDATE_SYSTEMS.some((d) => d.id === s.id)) {
-      merged.push({ ...s, parameters: Array.isArray(s.parameters) ? s.parameters : [] });
+    function getSunSign(month: number, day: number): string {
+      const md = month * 100 + day;
+      for (const c of SIGN_CUTOFFS) {
+        if (md <= c.md) return c.sign;
+      }
+      return "Козоріг";
     }
-  }
-  return merged;
-}
 
-// 🔶 БЛОК: MYDATE ANALYSIS STORAGE — D1 (джерело правди) + KV (write-through кеш).
-async function getAnalysis(db: D1Database, kv: KVNamespace, date: string): Promise<Record<string, any>> {
-  const kvKey = `mydate:analysis:${date}`;
-  const cached = await kv.get(kvKey);
-  if (cached) {
-    try {
-      return JSON.parse(cached);
-    } catch {
-      // падаємо нижче в D1
+    function daysSinceSignStart(
+      startMonth: number,
+      startDay: number,
+      month: number,
+      day: number,
+    ): number {
+      const ref = 2001;
+      const start = Date.UTC(ref, startMonth - 1, startDay);
+      let current = Date.UTC(ref, month - 1, day);
+      if (current < start) current = Date.UTC(ref + 1, month - 1, day);
+      return Math.round((current - start) / 86400000);
     }
-  }
-  const row = await db.prepare(`SELECT systems_data FROM mydate_analysis WHERE date = ?`).bind(date).first();
-  if (row?.systems_data) {
-    try {
-      const parsed = JSON.parse(row.systems_data as string);
-      await kv.put(kvKey, JSON.stringify(parsed));
-      return parsed;
-    } catch {
+
+    function getCuspInfo(sign: string, dayOffset: number): string {
+      const idx = SIGN_ORDER.indexOf(sign);
+      if (dayOffset <= 1) return `Можливо, межа з ${SIGN_ORDER[(idx + 11) % 12]}`;
+      if (dayOffset >= 28) return `Можливо, межа з ${SIGN_ORDER[(idx + 1) % 12]}`;
+      return "Ні";
+    }
+
+    function calculateWesternAstrology(day: number, month: number) {
+      const sign = getSunSign(month, day);
+      const meta = SIGN_META[sign];
+      const dayOffset = daysSinceSignStart(meta.startMonth, meta.startDay, month, day);
+      const decanIndex = Math.min(2, Math.floor(dayOffset / 10));
+      const decanLabel = ["1-й декан", "2-й декан", "3-й декан"][decanIndex];
+      const degree = Math.min(29, Math.round((dayOffset / 30) * 29));
+
+      return {
+        parameters: [
+          { key: "sunSign", label: "Знак Сонця", value: sign },
+          { key: "element", label: "Стихія", value: meta.element },
+          { key: "modality", label: "Якість (хрест)", value: meta.modality },
+          { key: "ruler", label: "Управитель (сучасний)", value: meta.ruler },
+          {
+            key: "traditionalRuler",
+            label: "Традиційний управитель",
+            value: meta.traditionalRuler,
+          },
+          { key: "decan", label: "Декан", value: decanLabel },
+          { key: "degree", label: "Наближений градус Сонця", value: `~${degree}°` },
+          { key: "cusp", label: "Прикордонний знак", value: getCuspInfo(sign, dayOffset) },
+        ],
+        comingSoon: [
+          "Місяць",
+          "Меркурій",
+          "Венера",
+          "Марс",
+          "Юпітер",
+          "Сатурн",
+          "Уран",
+          "Нептун",
+          "Плутон",
+        ],
+      };
+    }
+
+    // 🔶 БЛОК: РЕЄСТР КАЛЬКУЛЯТОРІВ СИСТЕМ — mapping systemId → функція розрахунку за 'YYYY-MM-DD'.
+    const SYSTEM_CALCULATORS: Record<string, (date: string) => any> = {
+      western: (date: string) => {
+        const [, month, day] = date.split("-").map((n) => parseInt(n, 10));
+        return calculateWesternAstrology(day, month);
+      },
+    };
+
+    // 🔶 БЛОК: МИДЕЙТ СИСТЕМИ — дефолтний реєстр з параметрами.
+    // KV `mydate:systems` має пріоритет (поля перевизначаються), дефолт заповнює прогалини (напр. parameters).
+    const DEFAULT_MYDATE_SYSTEMS: Array<{
+      id: string;
+      name: string;
+      description: string;
+      implemented: boolean;
+      parameters: Array<{ key: string; label: string }>;
+    }> = [
+      {
+        id: "western",
+        name: "Західна астрологія",
+        description: "Параметри на основі положення Сонця в зодіакальному колі.",
+        implemented: true,
+        parameters: [
+          { key: "sunSign", label: "Знак Сонця" },
+          { key: "element", label: "Стихія" },
+          { key: "modality", label: "Якість (хрест)" },
+          { key: "ruler", label: "Управитель (сучасний)" },
+          { key: "traditionalRuler", label: "Традиційний управитель" },
+          { key: "decan", label: "Декан" },
+          { key: "degree", label: "Наближений градус Сонця" },
+          { key: "cusp", label: "Прикордонний знак" },
+        ],
+      },
+    ];
+
+    async function getSystemsRegistry(env: Env): Promise<any[]> {
+      const raw = await env.CONTENT_KV.get("mydate:systems");
+      const kvSystems: any[] = raw ? JSON.parse(raw) : [];
+      const kvById = new Map(kvSystems.map((s) => [s.id, s]));
+      const merged: any[] = DEFAULT_MYDATE_SYSTEMS.map((def) => {
+        const kv = kvById.get(def.id);
+        if (!kv) return def;
+        const params =
+          Array.isArray(kv.parameters) && kv.parameters.length ? kv.parameters : def.parameters;
+        return { ...def, ...kv, parameters: params };
+      });
+      for (const s of kvSystems) {
+        if (!DEFAULT_MYDATE_SYSTEMS.some((d) => d.id === s.id)) {
+          merged.push({ ...s, parameters: Array.isArray(s.parameters) ? s.parameters : [] });
+        }
+      }
+      return merged;
+    }
+
+    // 🔶 БЛОК: MYDATE ANALYSIS STORAGE — D1 (джерело правди) + KV (write-through кеш).
+    async function getAnalysis(
+      db: D1Database,
+      kv: KVNamespace,
+      date: string,
+    ): Promise<Record<string, any>> {
+      const kvKey = `mydate:analysis:${date}`;
+      const cached = await kv.get(kvKey);
+      if (cached) {
+        try {
+          return JSON.parse(cached);
+        } catch {
+          // падаємо нижче в D1
+        }
+      }
+      const row = await db
+        .prepare(`SELECT systems_data FROM mydate_analysis WHERE date = ?`)
+        .bind(date)
+        .first();
+      if (row?.systems_data) {
+        try {
+          const parsed = JSON.parse(row.systems_data as string);
+          await kv.put(kvKey, JSON.stringify(parsed));
+          return parsed;
+        } catch {
+          return {};
+        }
+      }
       return {};
     }
-  }
-  return {};
-}
 
-async function saveAnalysis(db: D1Database, kv: KVNamespace, date: string, systemId: string, result: any): Promise<Record<string, any>> {
-  const existing = await getAnalysis(db, kv, date);
-  const updated = { ...existing, [systemId]: result };
-  const json = JSON.stringify(updated);
-  await db
-    .prepare(
-      `INSERT INTO mydate_analysis (date, systems_data, updated_at)
+    async function saveAnalysis(
+      db: D1Database,
+      kv: KVNamespace,
+      date: string,
+      systemId: string,
+      result: any,
+    ): Promise<Record<string, any>> {
+      const existing = await getAnalysis(db, kv, date);
+      const updated = { ...existing, [systemId]: result };
+      const json = JSON.stringify(updated);
+      await db
+        .prepare(
+          `INSERT INTO mydate_analysis (date, systems_data, updated_at)
        VALUES (?, ?, datetime('now'))
-       ON CONFLICT(date) DO UPDATE SET systems_data = excluded.systems_data, updated_at = excluded.updated_at`
-    )
-    .bind(date, json)
-    .run();
-  await kv.put(`mydate:analysis:${date}`, json);
-  return updated;
-}
+       ON CONFLICT(date) DO UPDATE SET systems_data = excluded.systems_data, updated_at = excluded.updated_at`,
+        )
+        .bind(date, json)
+        .run();
+      await kv.put(`mydate:analysis:${date}`, json);
+      return updated;
+    }
 
     // 🔶 БЛОК: MYDATE ANALYSIS READ — кешований результат аналізу дати.
     if (url.pathname.startsWith("/api/mydate/analysis/")) {
@@ -376,7 +509,9 @@ async function saveAnalysis(db: D1Database, kv: KVNamespace, date: string, syste
         const systemIds: string[] | undefined =
           Array.isArray(body?.systemIds) && body.systemIds.length ? body.systemIds : undefined;
         const parameterKeys: string[] | undefined =
-          Array.isArray(body?.parameterKeys) && body.parameterKeys.length ? body.parameterKeys : undefined;
+          Array.isArray(body?.parameterKeys) && body.parameterKeys.length
+            ? body.parameterKeys
+            : undefined;
 
         const validDates = dates.filter((d) => /^\d{4}-\d{2}-\d{2}$/.test(d));
         if (validDates.length === 0) {
@@ -405,7 +540,7 @@ async function saveAnalysis(db: D1Database, kv: KVNamespace, date: string, syste
             }
             const selected = parameterKeys
               ? (result.parameters ?? []).filter((p: any) => parameterKeys.includes(p.key))
-              : result.parameters ?? [];
+              : (result.parameters ?? []);
             perSystem[sys.id] = Object.fromEntries(selected.map((p: any) => [p.key, p.value]));
           }
           matrix[date] = perSystem;
@@ -415,7 +550,7 @@ async function saveAnalysis(db: D1Database, kv: KVNamespace, date: string, syste
           ok: true,
           dates: validDates,
           systems: targetSystems.map((s) => s.id),
-          matrix
+          matrix,
         });
       } catch (e: any) {
         console.error("Compare error:", e);
@@ -432,18 +567,15 @@ async function saveAnalysis(db: D1Database, kv: KVNamespace, date: string, syste
           ok: true,
           scenario,
           config,
-          userContext: { authenticated: false, roles: [], flags: [] }
+          userContext: { authenticated: false, roles: [], flags: [] },
         });
       } catch (e: any) {
         console.error("Scenario error:", e);
-        return json(
-          { ok: false, error: e?.message ?? "Unknown error" },
-          500
-        );
+        return json({ ok: false, error: e?.message ?? "Unknown error" }, 500);
       }
     }
 
-// 🔶 БЛОК: MY-DATES — CRUD для персональних дат користувача.
+    // 🔶 БЛОК: MY-DATES — CRUD для персональних дат користувача.
     if (url.pathname === "/api/my-dates") {
       try {
         // Гарантуємо наявність колонки my_dates
@@ -459,11 +591,15 @@ async function saveAnalysis(db: D1Database, kv: KVNamespace, date: string, syste
         }
 
         // Отримуємо або створюємо користувача
-        let user = await env.DB.prepare("SELECT * FROM users WHERE user_id = ?").bind(userId).first();
+        let user = await env.DB.prepare("SELECT * FROM users WHERE user_id = ?")
+          .bind(userId)
+          .first();
         if (!user) {
           await env.DB.prepare(
-            "INSERT INTO users (user_id, first_name, last_name, username, language) VALUES (?, '...', '...', '...', '...')"
-          ).bind(userId).run();
+            "INSERT INTO users (user_id, first_name, last_name, username, language) VALUES (?, '...', '...', '...', '...')",
+          )
+            .bind(userId)
+            .run();
           user = await env.DB.prepare("SELECT * FROM users WHERE user_id = ?").bind(userId).first();
         }
         if (!user) {
@@ -481,7 +617,9 @@ async function saveAnalysis(db: D1Database, kv: KVNamespace, date: string, syste
           } else if (raw && typeof raw === "object" && Array.isArray(raw.items)) {
             dates = raw.items;
           }
-        } catch { dates = []; }
+        } catch {
+          dates = [];
+        }
 
         // Міграція: старі формати (alias/category) → нові (name/type/tags)
         const VALID_TYPES = ["person", "event", "other"];
@@ -492,9 +630,12 @@ async function saveAnalysis(db: D1Database, kv: KVNamespace, date: string, syste
               ...d,
               type: VALID_TYPES.includes(d.type) ? d.type : "other",
               name: d.name || d.alias || "",
-              tags: Array.isArray(d.tags) ? d.tags : (d.category ? [d.category] : []),
+              tags: Array.isArray(d.tags) ? d.tags : d.category ? [d.category] : [],
               created_at: d.created_at || new Date().toISOString().replace("T", " ").slice(0, 19),
-              updated_at: d.updated_at || d.created_at || new Date().toISOString().replace("T", " ").slice(0, 19),
+              updated_at:
+                d.updated_at ||
+                d.created_at ||
+                new Date().toISOString().replace("T", " ").slice(0, 19),
             };
           }
           // Якщо name вже є, але type невалідний — виправити
@@ -503,7 +644,11 @@ async function saveAnalysis(db: D1Database, kv: KVNamespace, date: string, syste
             return { ...d, type: "other" };
           }
           // Якщо tags порожні або не масив — відновити з category
-          if (d.name !== undefined && (!Array.isArray(d.tags) || d.tags.length === 0) && d.category) {
+          if (
+            d.name !== undefined &&
+            (!Array.isArray(d.tags) || d.tags.length === 0) &&
+            d.category
+          ) {
             needsMigration = true;
             return { ...d, tags: [d.category] };
           }
@@ -513,7 +658,8 @@ async function saveAnalysis(db: D1Database, kv: KVNamespace, date: string, syste
         // Зберігаємо мігровані дані
         if (needsMigration && dates.length > 0) {
           await env.DB.prepare("UPDATE users SET my_dates = ? WHERE user_id = ?")
-            .bind(JSON.stringify({ items: dates }), userId).run();
+            .bind(JSON.stringify({ items: dates }), userId)
+            .run();
         }
 
         // GET — список дат
@@ -524,7 +670,9 @@ async function saveAnalysis(db: D1Database, kv: KVNamespace, date: string, syste
         // POST — додати дату
         if (request.method === "POST") {
           let body: any;
-          try { body = await request.json(); } catch {
+          try {
+            body = await request.json();
+          } catch {
             return json({ ok: false, error: "Invalid JSON" }, 400);
           }
           const { date, type, name, tags, notes, alias, category } = body;
@@ -534,10 +682,11 @@ async function saveAnalysis(db: D1Database, kv: KVNamespace, date: string, syste
           const VALID_TYPES = ["person", "event", "other"];
           const newDate = {
             id: Date.now().toString(36) + Math.random().toString(36).slice(2, 6),
-            user_id: userId, date,
+            user_id: userId,
+            date,
             type: VALID_TYPES.includes(type) ? type : "other",
             name: name || alias || "",
-            tags: Array.isArray(tags) ? tags : (category ? [category] : []),
+            tags: Array.isArray(tags) ? tags : category ? [category] : [],
             notes: notes || "",
             created_at: now,
             updated_at: now,
@@ -545,7 +694,8 @@ async function saveAnalysis(db: D1Database, kv: KVNamespace, date: string, syste
           dates.push(newDate);
 
           await env.DB.prepare("UPDATE users SET my_dates = ? WHERE user_id = ?")
-            .bind(JSON.stringify({ items: dates }), userId).run();
+            .bind(JSON.stringify({ items: dates }), userId)
+            .run();
 
           return json({ ok: true, id: newDate.id });
         }
@@ -553,7 +703,9 @@ async function saveAnalysis(db: D1Database, kv: KVNamespace, date: string, syste
         // PUT — оновити дату
         if (request.method === "PUT") {
           let body: any;
-          try { body = await request.json(); } catch {
+          try {
+            body = await request.json();
+          } catch {
             return json({ ok: false, error: "Invalid JSON" }, 400);
           }
           const { id, date, type, name, tags, notes, alias, category } = body;
@@ -566,12 +718,17 @@ async function saveAnalysis(db: D1Database, kv: KVNamespace, date: string, syste
           const VALID_TYPES_PUT = ["person", "event", "other"];
           // Зберігаємо tags з БД якщо frontend надіслав порожній масив
           const existingTags = dates[idx].tags || [];
-          const incomingTags = Array.isArray(tags) ? tags : (category ? [category] : undefined);
-          const finalTags = incomingTags && incomingTags.length > 0 ? incomingTags : (existingTags.length > 0 ? existingTags : []);
+          const incomingTags = Array.isArray(tags) ? tags : category ? [category] : undefined;
+          const finalTags =
+            incomingTags && incomingTags.length > 0
+              ? incomingTags
+              : existingTags.length > 0
+                ? existingTags
+                : [];
           dates[idx] = {
             ...dates[idx],
             date,
-            type: VALID_TYPES_PUT.includes(type) ? type : (dates[idx].type || "other"),
+            type: VALID_TYPES_PUT.includes(type) ? type : dates[idx].type || "other",
             name: name || alias || dates[idx].name || "",
             tags: finalTags,
             notes: notes || "",
@@ -579,7 +736,8 @@ async function saveAnalysis(db: D1Database, kv: KVNamespace, date: string, syste
           };
 
           await env.DB.prepare("UPDATE users SET my_dates = ? WHERE user_id = ?")
-            .bind(JSON.stringify({ items: dates }), userId).run();
+            .bind(JSON.stringify({ items: dates }), userId)
+            .run();
 
           return json({ ok: true });
         }
@@ -595,7 +753,8 @@ async function saveAnalysis(db: D1Database, kv: KVNamespace, date: string, syste
           if (filtered.length === dates.length) return json({ ok: false, error: "Not found" }, 404);
 
           await env.DB.prepare("UPDATE users SET my_dates = ? WHERE user_id = ?")
-            .bind(JSON.stringify({ items: filtered }), userId).run();
+            .bind(JSON.stringify({ items: filtered }), userId)
+            .run();
 
           return json({ ok: true, deleted: toDelete.length });
         }
@@ -608,5 +767,5 @@ async function saveAnalysis(db: D1Database, kv: KVNamespace, date: string, syste
     }
 
     return new Response("Not Found", { status: 404 });
-  }
+  },
 };

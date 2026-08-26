@@ -25,7 +25,9 @@ export function setHomeScreen(ctx: AppContext, score: TttScore, confirmReset = f
         type: "photo",
         media: buildBanner(ctx.env, {
           lines: ["ХРЕСТИКИ-НОЛИКИ", `Твоя перша гра, ${name}!`],
-          bgColor: COLORS.home, width: 600, height: 300,
+          bgColor: COLORS.home,
+          width: 600,
+          height: 300,
         }),
       },
     },
@@ -54,7 +56,14 @@ export function setHomeScreen(ctx: AppContext, score: TttScore, confirmReset = f
         ],
       ];
 
-  ctx.screen = { codeword: "ttt", photo_url: "", caption: {}, buttons, rich_message: true, rich_data: rich };
+  ctx.screen = {
+    codeword: "ttt",
+    photo_url: "",
+    caption: {},
+    buttons,
+    rich_message: true,
+    rich_data: rich,
+  };
 }
 
 export function setGameScreen(ctx: AppContext, state: TttState, score: TttScore): void {
@@ -62,15 +71,27 @@ export function setGameScreen(ctx: AppContext, state: TttState, score: TttScore)
   let lines: string[];
   let color: string;
 
-  if (state.status === "win") { lines = ["ПЕРЕМОГА!", `Гарно зіграно, ${name}!`]; color = COLORS.win; }
-  else if (state.status === "lose") { lines = ["БОТ ПЕРЕМІГ", "Реванш?"]; color = COLORS.lose; }
-  else if (state.status === "draw") { lines = ["НІЧИЯ", "Гідна партія!"]; color = COLORS.draw; }
-  else { lines = ["ХРЕСТИКИ-НОЛИКИ", `Твій хід, ${name}!`]; color = COLORS.play; }
+  if (state.status === "win") {
+    lines = ["ПЕРЕМОГА!", `Гарно зіграно, ${name}!`];
+    color = COLORS.win;
+  } else if (state.status === "lose") {
+    lines = ["БОТ ПЕРЕМІГ", "Реванш?"];
+    color = COLORS.lose;
+  } else if (state.status === "draw") {
+    lines = ["НІЧИЯ", "Гідна партія!"];
+    color = COLORS.draw;
+  } else {
+    lines = ["ХРЕСТИКИ-НОЛИКИ", `Твій хід, ${name}!`];
+    color = COLORS.play;
+  }
 
   const rich: any[] = [
     {
       type: "photo",
-      photo: { type: "photo", media: buildBanner(ctx.env, { lines, bgColor: color, width: 600, height: 300 }) },
+      photo: {
+        type: "photo",
+        media: buildBanner(ctx.env, { lines, bgColor: color, width: 600, height: 300 }),
+      },
     },
     { type: "paragraph", text: scoreLine(score) },
   ];
@@ -101,5 +122,12 @@ export function setGameScreen(ctx: AppContext, state: TttState, score: TttScore)
     buttons.push([{ text: "🚪 Вихід", callback_data: "main" }]);
   }
 
-  ctx.screen = { codeword: "ttt", photo_url: "", caption: {}, buttons, rich_message: true, rich_data: rich };
+  ctx.screen = {
+    codeword: "ttt",
+    photo_url: "",
+    caption: {},
+    buttons,
+    rich_message: true,
+    rich_data: rich,
+  };
 }

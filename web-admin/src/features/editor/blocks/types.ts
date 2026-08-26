@@ -8,11 +8,11 @@ export interface BaseBlock {
 
 // ─── Конфігурація для Реєстру (описує один тип блоку) ─────────────────────────
 export interface BlockConfig<TInternal extends BaseBlock = BaseBlock, TTelegram = any> {
-  type: string;           // Внутрішній тип (для UI та Zustand)
-  tgType: string;         // Тип, який вимагає Telegram Bot API (наприклад, "heading", "paragraph")
-  label: string;          // Назва для UI (наприклад, "Заголовок")
-  icon: string;           // Іконка для пікера (наприклад, "H", "¶")
-  hidden?: boolean;       // true = не показувати в пікері "Додати блок" (службові блоки)
+  type: string; // Внутрішній тип (для UI та Zustand)
+  tgType: string; // Тип, який вимагає Telegram Bot API (наприклад, "heading", "paragraph")
+  label: string; // Назва для UI (наприклад, "Заголовок")
+  icon: string; // Іконка для пікера (наприклад, "H", "¶")
+  hidden?: boolean; // true = не показувати в пікері "Додати блок" (службові блоки)
 
   // Фабрика: створює порожній блок цього типу для UI
   createDefault: (id: string) => TInternal;

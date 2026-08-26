@@ -5,11 +5,7 @@ import { cloudflare } from "@cloudflare/vite-plugin";
 import path from "path";
 
 export default defineConfig({
-  plugins: [
-    cloudflare(),
-    react(),
-    tailwindcss(),
-  ],
+  plugins: [cloudflare(), react(), tailwindcss()],
   resolve: {
     alias: {
       "@": path.resolve(__dirname, "./src"),

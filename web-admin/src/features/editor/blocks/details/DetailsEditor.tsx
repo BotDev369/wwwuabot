@@ -40,9 +40,29 @@ export function DetailsEditor({ block, idx, total }: Props) {
         <span className="block-type-badge">▸</span>
         <span className="block-type-label">Details (розгортаюча секція)</span>
         <div className="block-actions">
-          <button className="block-action-btn" onClick={() => moveBlock(block.id, "up")} disabled={idx === 0} title="Вгору">↑</button>
-          <button className="block-action-btn" onClick={() => moveBlock(block.id, "down")} disabled={idx === total - 1} title="Вниз">↓</button>
-          <button className="block-action-btn block-action-btn--danger" onClick={() => removeBlock(block.id)} title="Видалити">✕</button>
+          <button
+            className="block-action-btn"
+            onClick={() => moveBlock(block.id, "up")}
+            disabled={idx === 0}
+            title="Вгору"
+          >
+            ↑
+          </button>
+          <button
+            className="block-action-btn"
+            onClick={() => moveBlock(block.id, "down")}
+            disabled={idx === total - 1}
+            title="Вниз"
+          >
+            ↓
+          </button>
+          <button
+            className="block-action-btn block-action-btn--danger"
+            onClick={() => removeBlock(block.id)}
+            title="Видалити"
+          >
+            ✕
+          </button>
         </div>
       </div>
       <div className="block-card-body">
@@ -54,7 +74,11 @@ export function DetailsEditor({ block, idx, total }: Props) {
           placeholder="Заголовок секції (summary)..."
         />
         <label className="table-option" style={{ marginTop: 8 }}>
-          <input type="checkbox" checked={block.isOpen} onChange={(e) => updateBlock(block.id, { isOpen: e.target.checked })} />
+          <input
+            type="checkbox"
+            checked={block.isOpen}
+            onChange={(e) => updateBlock(block.id, { isOpen: e.target.checked })}
+          />
           Розгорнуто за замовчуванням
         </label>
         <div className="details-children">
@@ -62,16 +86,31 @@ export function DetailsEditor({ block, idx, total }: Props) {
             const config = blockRegistry.getByInternalType(child.type);
             if (!config) return null;
             const EditorComponent = config.Editor;
-            return <EditorComponent key={child.id} block={child as never} idx={i} total={block.children.length} />;
+            return (
+              <EditorComponent
+                key={child.id}
+                block={child as never}
+                idx={i}
+                total={block.children.length}
+              />
+            );
           })}
         </div>
         <div className="details-add">
-          <select className="block-select" value={pickType} onChange={(e) => setPickType(e.target.value)}>
+          <select
+            className="block-select"
+            value={pickType}
+            onChange={(e) => setPickType(e.target.value)}
+          >
             {blockRegistry.getAllConfigs().map((c) => (
-              <option key={c.type} value={c.type}>{c.label}</option>
+              <option key={c.type} value={c.type}>
+                {c.label}
+              </option>
             ))}
           </select>
-          <button type="button" className="kb-add-btn" onClick={addChild}>+ Додати</button>
+          <button type="button" className="kb-add-btn" onClick={addChild}>
+            + Додати
+          </button>
         </div>
       </div>
     </div>

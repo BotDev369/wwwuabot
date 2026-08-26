@@ -15,7 +15,7 @@ export interface ScenarioRow {
 export async function readScenario(codeword: string): Promise<ScenarioRow | null> {
   const res = await apiFetch<{ success: boolean; data: ScenarioRow | null }>(
     "/api/scenarios/read",
-    { method: "POST", body: JSON.stringify({ codeword }) }
+    { method: "POST", body: JSON.stringify({ codeword }) },
   );
   return res.data;
 }
@@ -23,7 +23,7 @@ export async function readScenario(codeword: string): Promise<ScenarioRow | null
 export async function writeScenario(
   codeword: string,
   richData: string,
-  richMessage: boolean
+  richMessage: boolean,
 ): Promise<void> {
   await apiFetch("/api/scenarios/write", {
     method: "POST",
@@ -77,7 +77,7 @@ export async function listScenarios(etag: string | null): Promise<ListScenariosR
 // ненадані поля (напр. rich_data) лишаються недоторканими.
 export async function saveScenarioFields(
   codeword: string,
-  fields: Record<string, unknown>
+  fields: Record<string, unknown>,
 ): Promise<void> {
   await apiFetch("/api/scenarios/write", {
     method: "POST",
@@ -86,9 +86,9 @@ export async function saveScenarioFields(
 }
 
 export async function deleteScenario(codeword: string): Promise<{ deleted: boolean }> {
-  const res = await apiFetch<{ success: boolean; deleted: boolean }>(
-    "/api/scenarios/delete",
-    { method: "POST", body: JSON.stringify({ codeword }) }
-  );
+  const res = await apiFetch<{ success: boolean; deleted: boolean }>("/api/scenarios/delete", {
+    method: "POST",
+    body: JSON.stringify({ codeword }),
+  });
   return { deleted: res.deleted };
 }

@@ -23,7 +23,10 @@ function BlockPicker({ onPick, onClose }: { onPick: (t: string) => void; onClose
         <button
           key={type}
           className="block-picker-item"
-          onClick={() => { onPick(type); onClose(); }}
+          onClick={() => {
+            onPick(type);
+            onClose();
+          }}
         >
           <span className="block-picker-icon">{icon}</span>
           <span>{label}</span>
@@ -65,21 +68,24 @@ function TgPreview({ blocks }: { blocks: BaseBlock[] }) {
 function StatusBadge() {
   const { status, errorMsg } = useEditorStore();
   if (status === "idle") return null;
-  if (status === "loading") return <span className="status-badge status-badge--loading">Завантаження…</span>;
-  if (status === "saving") return <span className="status-badge status-badge--saving">Збереження…</span>;
-  if (status === "saved") return <span className="status-badge status-badge--saved">✓ Збережено</span>;
-  if (status === "error") return <span className="status-badge status-badge--error" title={errorMsg ?? ""}>Помилка</span>;
+  if (status === "loading")
+    return <span className="status-badge status-badge--loading">Завантаження…</span>;
+  if (status === "saving")
+    return <span className="status-badge status-badge--saving">Збереження…</span>;
+  if (status === "saved")
+    return <span className="status-badge status-badge--saved">✓ Збережено</span>;
+  if (status === "error")
+    return (
+      <span className="status-badge status-badge--error" title={errorMsg ?? ""}>
+        Помилка
+      </span>
+    );
   return null;
 }
 
 // ─── Editor Page ──────────────────────────────────────────────────────────────
 export function EditorPage() {
-  const {
-    codeword, setCodeword,
-    blocks, addBlock,
-    status, isDirty,
-    load, save,
-  } = useEditorStore();
+  const { codeword, setCodeword, blocks, addBlock, status, isDirty, load, save } = useEditorStore();
   const [pickerOpen, setPickerOpen] = useState(false);
   const [searchParams] = useSearchParams();
 
@@ -116,8 +122,20 @@ export function EditorPage() {
               onKeyDown={handleKeyDown}
             />
           </div>
-          <button className="btn btn--secondary" onClick={load} disabled={!codeword.trim() || status === "loading"}>Завантажити</button>
-          <button className={`btn btn--primary${isDirty ? " btn--dirty" : ""}`} onClick={save} disabled={!codeword.trim() || status === "saving"}>Зберегти</button>
+          <button
+            className="btn btn--secondary"
+            onClick={load}
+            disabled={!codeword.trim() || status === "loading"}
+          >
+            Завантажити
+          </button>
+          <button
+            className={`btn btn--primary${isDirty ? " btn--dirty" : ""}`}
+            onClick={save}
+            disabled={!codeword.trim() || status === "saving"}
+          >
+            Зберегти
+          </button>
         </div>
       </PageTopbar>
 
@@ -126,12 +144,11 @@ export function EditorPage() {
           <div className="panel-header">
             <span className="panel-title">Блоки</span>
             <div style={{ position: "relative" }}>
-              <button className="add-block-btn" onClick={() => setPickerOpen((v) => !v)}>+ Додати блок</button>
+              <button className="add-block-btn" onClick={() => setPickerOpen((v) => !v)}>
+                + Додати блок
+              </button>
               {pickerOpen && (
-                <BlockPicker
-                  onPick={(t) => addBlock(t)}
-                  onClose={() => setPickerOpen(false)}
-                />
+                <BlockPicker onPick={(t) => addBlock(t)} onClose={() => setPickerOpen(false)} />
               )}
             </div>
           </div>
@@ -139,7 +156,8 @@ export function EditorPage() {
             {blocks.length === 0 ? (
               <div className="empty-state">
                 <p className="empty-state-text">
-                  Введіть codeword і натисніть «Завантажити»,<br />
+                  Введіть codeword і натисніть «Завантажити»,
+                  <br />
                   або натисніть «+ Додати блок».
                 </p>
               </div>

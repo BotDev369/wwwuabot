@@ -3,7 +3,9 @@ import { checkAuth } from "../shared/api/auth.api";
 import { LoginScreen } from "./LoginScreen";
 
 export function AuthGate({ children }: { children: ReactNode }) {
-  const [authState, setAuthState] = useState<"loading" | "authenticated" | "unauthenticated">("loading");
+  const [authState, setAuthState] = useState<"loading" | "authenticated" | "unauthenticated">(
+    "loading",
+  );
 
   useEffect(() => {
     checkAuth()

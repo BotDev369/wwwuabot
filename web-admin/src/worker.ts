@@ -16,7 +16,7 @@ async function getKey(secret: string): Promise<CryptoKey> {
     enc.encode(secret),
     { name: "HMAC", hash: "SHA-256" },
     false,
-    ["sign", "verify"]
+    ["sign", "verify"],
   );
 }
 
@@ -37,9 +37,7 @@ async function verifyToken(token: string, secret: string): Promise<boolean> {
   const sigHex = token.slice(lastDot + 1);
   const key = await getKey(secret);
   const enc = new TextEncoder();
-  const sigBytes = new Uint8Array(
-    sigHex.match(/.{2}/g)!.map((h) => parseInt(h, 16))
-  );
+  const sigBytes = new Uint8Array(sigHex.match(/.{2}/g)!.map((h) => parseInt(h, 16)));
   const valid = await crypto.subtle.verify("HMAC", key, sigBytes, enc.encode(payload));
   if (!valid) return false;
   const [, expiresStr] = payload.split(":");
@@ -54,7 +52,7 @@ function parseCookies(header: string | null): Record<string, string> {
     header.split(";").map((c) => {
       const [k, ...v] = c.trim().split("=");
       return [k.trim(), v.join("=")];
-    })
+    }),
   );
 }
 
@@ -147,9 +145,7 @@ export default {
           return json({ error: "Invalid JSON" }, 400);
         }
         if (!body.codeword) return json({ error: "codeword required" }, 400);
-        const row = await env.DB.prepare(
-          "SELECT * FROM scenarios WHERE codeword = ?"
-        )
+        const row = await env.DB.prepare("SELECT * FROM scenarios WHERE codeword = ?")
           .bind(body.codeword)
           .first();
         return json({ success: true, data: row ?? null });
@@ -191,7 +187,7 @@ export default {
 
         await env.DB.prepare(
           `INSERT INTO scenarios (${columns.join(", ")}) VALUES (${placeholders})
-         ON CONFLICT(codeword) DO UPDATE SET ${setClause}`
+         ON CONFLICT(codeword) DO UPDATE SET ${setClause}`,
         )
           .bind(...(values as (string | number | boolean | null)[]))
           .run();
@@ -202,7 +198,7 @@ export default {
       if (url.pathname === "/api/scenarios/list" && request.method === "GET") {
         // Дешевий aggregate для ETag: кількість + останнє оновлення.
         const meta = await env.DB.prepare(
-          "SELECT COUNT(*) AS c, MAX(updated_at) AS m FROM scenarios"
+          "SELECT COUNT(*) AS c, MAX(updated_at) AS m FROM scenarios",
         ).first<{ c: number; m: string | null }>();
         const etag = `"${meta?.c ?? 0}-${meta?.m ?? ""}"`;
 
@@ -212,9 +208,7 @@ export default {
         }
 
         // Інакше повний список, сортований A–Z, без важких buttons/rich_data.
-        const result = await env.DB.prepare(
-          "SELECT * FROM scenarios ORDER BY codeword ASC"
-        ).all();
+        const result = await env.DB.prepare("SELECT * FROM scenarios ORDER BY codeword ASC").all();
         const items = (result.results ?? []).map((row: Record<string, unknown>) => {
           const copy = { ...(row as Record<string, unknown>) };
           delete copy.buttons;
@@ -237,9 +231,9 @@ export default {
         }
         const codeword = typeof body.codeword === "string" ? body.codeword.trim() : "";
         if (!codeword) return json({ error: "codeword required" }, 400);
-        const result = await env.DB.prepare(
-          "DELETE FROM scenarios WHERE codeword = ?"
-        ).bind(codeword).run();
+        const result = await env.DB.prepare("DELETE FROM scenarios WHERE codeword = ?")
+          .bind(codeword)
+          .run();
         const deleted = (result.meta?.changes ?? 0) > 0;
         return json({ success: true, deleted, codeword });
       }
@@ -251,9 +245,7 @@ export default {
     // щоб F5 і прямі посилання працювали. Ассети з розширенням → чесний 404.
     const assetRes = await env.ASSETS.fetch(request);
     if (assetRes.status === 404 && !url.pathname.includes(".")) {
-      return env.ASSETS.fetch(
-        new Request(new URL("/", url).toString(), request)
-      );
+      return env.ASSETS.fetch(new Request(new URL("/", url).toString(), request));
     }
     return assetRes;
   },

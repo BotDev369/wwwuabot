@@ -97,8 +97,7 @@ export const useEditorStore = create<EditorStore>((set, get) => ({
     set((s) => ({ blocks: [...s.blocks, newBlock], isDirty: true }));
   },
 
-  removeBlock: (id) =>
-    set((s) => ({ blocks: removeDeep(s.blocks, id), isDirty: true })),
+  removeBlock: (id) => set((s) => ({ blocks: removeDeep(s.blocks, id), isDirty: true })),
 
   updateBlock: (id, patch) =>
     set((s) => ({
@@ -131,7 +130,11 @@ export const useEditorStore = create<EditorStore>((set, get) => ({
 
       // Парсимо JSON і віддаємо Реєстру для десеріалізації
       let tgBlocks: any[] = [];
-      try { tgBlocks = JSON.parse(data.rich_data); } catch { tgBlocks = []; }
+      try {
+        tgBlocks = JSON.parse(data.rich_data);
+      } catch {
+        tgBlocks = [];
+      }
       if (!Array.isArray(tgBlocks)) tgBlocks = [];
 
       _setBlocks(blockRegistry.deserialize(tgBlocks));

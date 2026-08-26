@@ -17,7 +17,7 @@ export function getMenu(user: Record<string, any> | undefined): MenuEntry[] {
     const parsed = typeof user.menu === "string" ? JSON.parse(user.menu) : user.menu;
     if (!Array.isArray(parsed)) return [];
     return parsed.filter(
-      (e: any) => e && typeof e.f === "string" && typeof e.t === "string"
+      (e: any) => e && typeof e.f === "string" && typeof e.t === "string",
     ) as MenuEntry[];
   } catch {
     return [];
@@ -36,7 +36,7 @@ export function getMenu(user: Record<string, any> | undefined): MenuEntry[] {
 export function upsertMenu(
   menu: MenuEntry[],
   family: string,
-  title: string
+  title: string,
 ): { menu: MenuEntry[]; changed: boolean } {
   // Валідація family як Telegram-команди
   if (!COMMAND_RE.test(family)) {
@@ -56,9 +56,7 @@ export function upsertMenu(
   } else {
     // Існуючий запис
     if (menu[existingIndex].t !== title) {
-      const newMenu = menu.map((e, i) =>
-        i === existingIndex ? { ...e, t: title } : e
-      );
+      const newMenu = menu.map((e, i) => (i === existingIndex ? { ...e, t: title } : e));
       return { menu: newMenu, changed: true };
     }
     return { menu, changed: false };

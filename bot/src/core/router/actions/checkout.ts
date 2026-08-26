@@ -37,7 +37,7 @@ export async function handleCheckout(ctx: AppContext, action: ParsedAction): Pro
   const order = {
     items: cart,
     created_at: new Date().toISOString().replace("T", " ").slice(0, 19),
-    status: "new"
+    status: "new",
   };
 
   // 5. Оновлюємо коробку: додаємо в orders, чистимо cart
@@ -51,7 +51,7 @@ export async function handleCheckout(ctx: AppContext, action: ParsedAction): Pro
     family,
     order_index: box.orders.length - 1,
     total,
-    items_count: Object.keys(cart).length
+    items_count: Object.keys(cart).length,
   });
 
   // 6. Підготовка нотифікації (відкладаємо до postMiddleware)
@@ -59,8 +59,8 @@ export async function handleCheckout(ctx: AppContext, action: ParsedAction): Pro
     data: {
       cart_items: itemsText.join("\n"),
       cart_total: total,
-      order_id: box.orders.length - 1
-    }
+      order_id: box.orders.length - 1,
+    },
   };
   log("ACTION:checkout", "notification deferred to postMiddleware");
 }

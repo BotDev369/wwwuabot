@@ -11,6 +11,9 @@
     "deploy:dev": "npm run build && wrangler deploy --env dev",
     "deploy:prod": "npm run build && wrangler deploy --env production",
     "lint": "eslint .",
+    "lint:fix": "eslint . --fix",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
     "preview": "vite preview"
   },
   "dependencies": {

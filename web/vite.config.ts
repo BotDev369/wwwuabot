@@ -1,19 +1,19 @@
-import { defineConfig } from 'vite'
-import react from '@vitejs/plugin-react'
+import { defineConfig } from "vite";
+import react from "@vitejs/plugin-react";
 
 export default defineConfig({
   plugins: [react()],
   server: {
-    allowedHosts: ['.monkeycode-ai.live'],
+    allowedHosts: [".monkeycode-ai.live"],
     proxy: {
-      '/api': {
-        target: 'http://localhost:8788',
-        changeOrigin: true
-      }
-    }
+      "/api": {
+        target: "http://localhost:8788",
+        changeOrigin: true,
+      },
+    },
   },
   build: {
-    outDir: 'dist',
-    sourcemap: true
-  }
-})
+    outDir: "dist",
+    sourcemap: true,
+  },
+});

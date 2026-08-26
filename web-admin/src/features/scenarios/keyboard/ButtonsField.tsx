@@ -62,10 +62,18 @@ export function ButtonsField({ value, onChange }: Props) {
   return (
     <>
       <div className="kb-toggle">
-        <button type="button" className={`kb-toggle-btn${mode === "visual" ? " kb-toggle-btn--active" : ""}`} onClick={() => switchMode("visual")}>
+        <button
+          type="button"
+          className={`kb-toggle-btn${mode === "visual" ? " kb-toggle-btn--active" : ""}`}
+          onClick={() => switchMode("visual")}
+        >
           Візуально
         </button>
-        <button type="button" className={`kb-toggle-btn${mode === "json" ? " kb-toggle-btn--active" : ""}`} onClick={() => switchMode("json")}>
+        <button
+          type="button"
+          className={`kb-toggle-btn${mode === "json" ? " kb-toggle-btn--active" : ""}`}
+          onClick={() => switchMode("json")}
+        >
           JSON
         </button>
       </div>
@@ -73,7 +81,12 @@ export function ButtonsField({ value, onChange }: Props) {
         <KeyboardEditor rows={rows} onChange={handleRowsChange} />
       ) : (
         <>
-          <textarea className="block-textarea" rows={6} value={jsonText} onChange={(e) => handleJsonChange(e.target.value)} />
+          <textarea
+            className="block-textarea"
+            rows={6}
+            value={jsonText}
+            onChange={(e) => handleJsonChange(e.target.value)}
+          />
           {jsonError && <p className="kb-json-error">JSON: {jsonError}</p>}
         </>
       )}

@@ -40,7 +40,9 @@ export function ScenariosPage() {
         <div className="topbar-left">
           <h1 className="topbar-title">Сценарії</h1>
           {items.length > 0 && (
-            <span className="scn-count">{filtered.length} / {items.length}</span>
+            <span className="scn-count">
+              {filtered.length} / {items.length}
+            </span>
           )}
         </div>
         <div className="topbar-right">

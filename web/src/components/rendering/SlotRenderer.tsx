@@ -1,4 +1,4 @@
-import { SlotDemo } from '../demo/SlotDemo';
+import { SlotDemo } from "../demo/SlotDemo";
 
 interface SlotRendererProps {
   component: string;
@@ -7,7 +7,7 @@ interface SlotRendererProps {
 
 export function SlotRenderer({ component, props }: SlotRendererProps) {
   switch (component) {
-    case 'SlotDemo':
+    case "SlotDemo":
       return <SlotDemo {...props} />;
     default:
       return <div>Unknown component: {component}</div>;

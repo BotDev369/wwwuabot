@@ -32,7 +32,9 @@ export function LoginScreen() {
         </div>
         <form onSubmit={handleSubmit} className="login-form">
           <div className="login-field">
-            <label htmlFor="password" className="login-label">Пароль</label>
+            <label htmlFor="password" className="login-label">
+              Пароль
+            </label>
             <input
               id="password"
               type="password"

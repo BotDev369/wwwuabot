@@ -1,6 +1,9 @@
 import type { InternalParagraphBlock } from "./ParagraphEditor";
 
-interface TgParagraphBlock { type: "paragraph"; text: unknown; }
+interface TgParagraphBlock {
+  type: "paragraph";
+  text: unknown;
+}
 
 export function toTelegram(block: InternalParagraphBlock): TgParagraphBlock {
   return { type: "paragraph", text: block.text };

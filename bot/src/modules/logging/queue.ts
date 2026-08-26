@@ -11,12 +11,14 @@ export class LogQueueService {
       await env.LOG_QUEUE.send(log);
     } catch (error) {
       // Fallback: якщо сам Queue відмовив, пишемо в консоль CF
-      console.error(JSON.stringify({
-        level: "error",
-        context: "queue_send_critical_failure",
-        message: error instanceof Error ? error.message : String(error),
-        dropped_log: log
-      }));
+      console.error(
+        JSON.stringify({
+          level: "error",
+          context: "queue_send_critical_failure",
+          message: error instanceof Error ? error.message : String(error),
+          dropped_log: log,
+        }),
+      );
     }
   }
 }
