@@ -8,6 +8,8 @@
     "local": "wrangler dev --remote",
     "build": "tsc -b && vite build",
     "deploy": "npm run build && wrangler deploy",
+    "deploy:dev": "npm run build && wrangler deploy --env dev",
+    "deploy:prod": "npm run build && wrangler deploy --env production",
     "lint": "eslint .",
     "preview": "vite preview"
   },

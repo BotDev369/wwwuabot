@@ -1,12 +1,31 @@
 name = "wwwuabot-web-admin"
 main = "src/worker.ts"
-compatibility_date = "2026-07-18"
+compatibility_date = "2026-08-21"
 
 [assets]
 directory = "./dist/client"
 binding = "ASSETS"
 
-[[d1_databases]]
+# Dev середовище (замовчування для wrangler dev)
+[env.dev]
+name = "wwwuabot-web-admin-dev"
+
+[env.dev.vars]
+ENVIRONMENT = "dev"
+
+[[env.dev.d1_databases]]
 binding = "DB"
 database_name = "wwwuabot-db-dev"
 database_id = "9fc03f61-d497-4d92-bae4-c92b02c2d1c5"
+
+# Production середовище
+[env.production]
+name = "wwwuabot-web-admin-prod"
+
+[env.production.vars]
+ENVIRONMENT = "prod"
+
+[[env.production.d1_databases]]
+binding = "DB"
+database_name = "wwwuabot-db-prod"
+database_id = "6e690692-7671-4598-826c-c2db591399a2"
