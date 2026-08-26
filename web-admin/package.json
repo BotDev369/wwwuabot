@@ -23,7 +23,7 @@
     "zustand": "^5.0.14"
   },
   "devDependencies": {
-    "@cloudflare/vite-plugin": "^1.45.1",
+    "@cloudflare/vite-plugin": "^1.53.1",
     "@cloudflare/workers-types": "^5.20260825.1",
     "@eslint/js": "^10.0.1",
     "@tailwindcss/vite": "^4.3.3",
