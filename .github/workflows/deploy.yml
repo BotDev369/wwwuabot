@@ -54,7 +54,7 @@ jobs:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
           workingDirectory: bot
-          command: deploy --env production
+          command: deploy --env dev
 
   deploy-api:
     needs: [changes, audit]
@@ -72,7 +72,7 @@ jobs:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
           workingDirectory: api
-          command: deploy --env production
+          command: deploy --env dev
 
   deploy-web:
     needs: [changes, audit]
@@ -91,7 +91,7 @@ jobs:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
           workingDirectory: web
-          command: deploy --env production
+          command: deploy --env dev
 
   deploy-web-admin:
     needs: [changes, audit]
@@ -110,4 +110,4 @@ jobs:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
           workingDirectory: web-admin
-          command: deploy --env production
+          command: deploy --env dev
