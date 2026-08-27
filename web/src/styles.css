@@ -711,12 +711,12 @@ footer {
   border-spacing: 0;
   width: 100%;
   min-width: 580px;
-  font-size: 14px;
+  font-size: var(--text-base);
 }
 .dates-table th,
 .dates-table td {
   border-bottom: 1px solid var(--border-subtle);
-  padding: 10px 10px;
+  padding: var(--sp-2) var(--sp-3);
   text-align: left;
   background: var(--bg-1);
   white-space: nowrap;
@@ -728,7 +728,7 @@ footer {
   z-index: 2;
   background: var(--bg-2);
   color: var(--text-primary);
-  font-weight: 700;
+  font-weight: var(--weight-bold);
   cursor: default;
   user-select: none;
 }
@@ -736,10 +736,10 @@ footer {
   cursor: pointer;
 }
 .dates-table th.sortable:hover {
-  background: var(--bg-4);
+  color: var(--accent);
 }
 .sort-arrow {
-  font-size: 11px;
+  font-size: var(--text-xs);
   margin-left: 4px;
   color: var(--accent);
 }
@@ -892,14 +892,16 @@ footer {
   position: sticky;
   left: 0;
   z-index: 3;
-  background: var(--bg-1);
+  background: var(--bg-2);
   min-width: 40px;
+  border-right: 1px solid var(--border);
 }
 .dates-table td.corner-cell {
   position: sticky;
   left: 0;
   z-index: 1;
   background: var(--bg-1);
+  border-right: 1px solid var(--border-subtle);
 }
 .dates-table tr.selected td.corner-cell {
   background: var(--accent-dim);
@@ -998,7 +1000,7 @@ footer {
   z-index: 4;
   background: var(--bg-1);
   min-width: 100px;
-  font-weight: 600;
+  font-weight: var(--weight-semibold);
   color: var(--text-primary);
   border-right: 1px solid var(--border-subtle);
 }
@@ -1177,36 +1179,34 @@ footer {
 
 /* MyDate — таблиця співставлення */
 .compare-wrap {
-  border: 1px solid var(--border);
-  border-radius: 8px;
+  overflow-x: auto;
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
   margin-top: 16px;
-  text-align: left;
-  overflow: visible;
 }
 .compare-table {
-  border-collapse: separate;
-  border-spacing: 0;
   width: max-content;
   min-width: 100%;
-  font-size: 14px;
+  border-collapse: separate;
+  border-spacing: 0;
+  font-size: var(--text-sm);
 }
 .compare-table th,
 .compare-table td {
-  border-bottom: 1px solid var(--border-subtle);
-  border-right: 1px solid var(--border-subtle);
-  padding: 10px 12px;
+  padding: var(--sp-2) var(--sp-3);
   text-align: left;
   white-space: nowrap;
   background: var(--bg-1);
   color: var(--text-primary);
+  border-bottom: 1px solid var(--border-subtle);
+  border-right: 1px solid var(--border-subtle);
 }
 .compare-table thead th {
   position: sticky;
   top: 0;
   z-index: 2;
   background: var(--bg-2);
-  color: var(--text-primary);
-  font-weight: 700;
+  font-weight: var(--weight-bold);
 }
 .compare-table th.corner {
   position: sticky;
@@ -1223,21 +1223,16 @@ footer {
   background: var(--bg-1);
   min-width: 180px;
   white-space: normal;
-  font-weight: 600;
-  color: var(--text-primary);
+  font-weight: var(--weight-semibold);
 }
 .compare-table td.system-name {
   position: sticky;
   left: 0;
   z-index: 1;
   background: var(--bg-2);
-  font-weight: 700;
-  color: var(--text-primary);
+  font-weight: var(--weight-bold);
 }
 .compare-table .system-row td {
-  background: var(--bg-2);
-}
-.compare-table .system-row td.system-fill {
   background: var(--bg-2);
 }
 .compare-table .value-cell {
