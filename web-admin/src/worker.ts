@@ -1,6 +1,6 @@
 /// <reference types="@cloudflare/workers-types" />
 
-import { formatSqliteDatetime } from "./shared/datetime";
+import { formatSqliteDatetime } from "./shared/datetime.js";
 
 export interface Env {
   DB: D1Database;
