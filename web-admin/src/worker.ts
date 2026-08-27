@@ -246,6 +246,8 @@ export default {
 
       if (url.pathname === "/api/users/list" && request.method === "GET") {
         try {
+          // Ensure is_blocked column exists before querying
+          await env.DB.prepare("ALTER TABLE users ADD COLUMN is_blocked INTEGER DEFAULT 0").run().catch(() => {});
           const result = await env.DB.prepare(
             "SELECT user_id, first_name, last_name, username, language, created_at, is_blocked FROM users ORDER BY user_id ASC"
           ).all();
