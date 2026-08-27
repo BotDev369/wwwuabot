@@ -1,6 +1,7 @@
 import type { Env } from "../../shared/types/env";
 import { UserRepository } from "../../modules/users/user.repository";
 import { getFamilyBox, saveFamilyBox } from "../../shared/utils/family-box";
+import { formatSqliteDatetime } from "../../shared/utils/datetime";
 
 const FAMILY = "my_dates";
 
@@ -86,7 +87,7 @@ export async function handleMyDates(request: Request, env: Env): Promise<Respons
       alias: alias || "",
       category: category || "",
       notes: notes || "",
-      created_at: new Date().toISOString().replace("T", " ").slice(0, 19),
+      created_at: formatSqliteDatetime(),
     };
     dates.push(newDate);
     setDatesList(user, dates);

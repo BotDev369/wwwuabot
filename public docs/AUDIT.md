@@ -11,14 +11,14 @@
 |---|---|---|
 | P0-1 | ✅ Виконано | `web-admin/wrangler.toml` має `[env.dev]` + `[env.production]`, додано `deploy:dev`/`deploy:prod` скрипти |
 | P0-2 | ✅ Виконано | Єдиний ESLint+Prettier на всі 4 сервіси, `.editorconfig`, 149 файлів відформатовано |
-| P1-1 | ⬜ Заплановано | `api/src/index.ts` — монолітний 612-рядковий файл |
-| P1-2 | ⬜ Заплановано | Дублікат авто-міграції D1 |
-| P1-3 | ⬜ Заплановано | `formatSqliteDatetime()` скопійовано 7 разів |
-| P1-4 | ⬜ Заплановано | `VALID_TYPES` потрійний дублікат |
+| P1-1 | ⬜ Заплановано | `api/src/index.ts` — монолітний файл ( залежить від P1-2, P1-3, P1-4) |
+| P1-2 | ✅ Виконано | `withAutoMigrate` скопійовано в `api/src/shared/auto-migrate.ts`, `ensureMyDatesColumn` видалено |
+| P1-3 | ✅ Виконано | `formatSqliteDatetime()` створено в `bot/src/shared/utils/datetime.ts`, замінено 8 входжень у всіх Worker-ах |
+| P1-4 | ✅ Виконано | `VALID_TYPES` об'єднано в одну модульну константу, `VALID_TYPES_PUT` видалено |
 | P2-1 | ⬜ Заплановано | 101 використання `any` |
 | P2-2 | ⬜ Заплановано | `MyDatesPage.tsx` — 958 рядків |
 | P2-3 | ⬜ Заплановано | Немає npm workspaces |
-| P2-4 | ⬜ Заплановано | `console.log` замість логера |
+| P2-4 | ✅ Виконано | Додано логер `api/src/shared/logger.ts`, замінено всі `console.log`/`console.error` в `api/src/index.ts` |
 | P3-1 | ⬜ Заплановано | Змішані стилі в `web-admin` |
 | P3-2 | ⬜ Заплановано | Різні `compatibility_date` |
 | P3-3 | ⬜ Заплановано | Різні версії React/Vite |

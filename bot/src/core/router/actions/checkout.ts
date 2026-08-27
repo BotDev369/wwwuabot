@@ -2,6 +2,7 @@ import type { AppContext } from "../../../shared/types/env";
 import type { ParsedAction } from "./index";
 import { log } from "../../../shared/utils/debug";
 import { getFamilyBox, saveFamilyBox } from "../../../shared/utils/family-box";
+import { formatSqliteDatetime } from "../../../shared/utils/datetime";
 
 export async function handleCheckout(ctx: AppContext, action: ParsedAction): Promise<void> {
   const { target, family } = action;
@@ -36,7 +37,7 @@ export async function handleCheckout(ctx: AppContext, action: ParsedAction): Pro
   // 4. Створюємо знімок замовлення
   const order = {
     items: cart,
-    created_at: new Date().toISOString().replace("T", " ").slice(0, 19),
+    created_at: formatSqliteDatetime(),
     status: "new",
   };
 

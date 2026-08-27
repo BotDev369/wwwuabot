@@ -1,3 +1,7 @@
+import { formatSqliteDatetime } from "./shared/datetime";
+import { withAutoMigrate } from "./shared/auto-migrate";
+import { apiLog } from "./shared/logger";
+
 // 🔶 БЛОК: API-ВОРКЕР — універсальний шлюз для всіх субпроєктів.
 // Віддає сценарії з D1 для TWA-фронтенду.
 
@@ -5,6 +9,9 @@ export interface Env {
   DB: D1Database;
   CONTENT_KV: KVNamespace;
 }
+
+// 🔶 БЛОК: VALID_TYPES — допустимі типи дат (єдина константа на весь модуль).
+const VALID_TYPES = ["person", "event", "other"] as const;
 
 // 🔶 БЛОК: КОНФІГ __base__ — дефолтна сторінка Base 1.0.
 // Контент тимчасовий, пізніше буде динамічним з БД.
@@ -100,7 +107,7 @@ async function resolveScenario(db: D1Database, slug: string) {
     }
   } catch (e) {
     // Битий JSON — повертаємо base (каскад G2 з інструкції 5.6)
-    console.error("Invalid web_config JSON for", slug, e);
+    apiLog.error("Invalid web_config JSON for " + slug, e);
   }
 
   return {
@@ -110,16 +117,6 @@ async function resolveScenario(db: D1Database, slug: string) {
     },
     config,
   };
-}
-
-// 🔶 БЛОК: ENSURE MY_DATES COLUMN — гарантовано створює колонку my_dates в таблиці users.
-async function ensureMyDatesColumn(db: D1Database): Promise<void> {
-  const check = await db.prepare("PRAGMA table_info(users)").all();
-  const hasColumn = check.results?.some((col: any) => col.name === "my_dates");
-  if (!hasColumn) {
-    console.log("[Auto-Migrate] Creating column: users.my_dates TEXT DEFAULT NULL");
-    await db.prepare("ALTER TABLE users ADD COLUMN my_dates TEXT DEFAULT NULL").run();
-  }
 }
 
 export default {
@@ -463,7 +460,7 @@ export default {
         const systems = await getAnalysis(env.DB, env.CONTENT_KV, date);
         return json({ ok: true, date, systems });
       } catch (e: any) {
-        console.error("Analysis read error:", e);
+        apiLog.error("Analysis read error", e);
         return json({ ok: false, error: e?.message ?? "Unknown error" }, 500);
       }
     }
@@ -485,7 +482,7 @@ export default {
         const allSystems = await saveAnalysis(env.DB, env.CONTENT_KV, date, systemId, result);
         return json({ ok: true, date, systemId, result, systems: allSystems });
       } catch (e: any) {
-        console.error("Analyze error:", e);
+        apiLog.error("Analyze error", e);
         return json({ ok: false, error: e?.message ?? "Unknown error" }, 500);
       }
     }
@@ -496,7 +493,7 @@ export default {
         const systems = await getSystemsRegistry(env);
         return json({ ok: true, systems });
       } catch (e: any) {
-        console.error("KV systems error:", e);
+        apiLog.error("KV systems error", e);
         return json({ ok: false, error: e?.message ?? "Unknown error" }, 500);
       }
     }
@@ -553,7 +550,7 @@ export default {
           matrix,
         });
       } catch (e: any) {
-        console.error("Compare error:", e);
+        apiLog.error("Compare error", e);
         return json({ ok: false, error: e?.message ?? "Unknown error" }, 500);
       }
     }
@@ -570,7 +567,7 @@ export default {
           userContext: { authenticated: false, roles: [], flags: [] },
         });
       } catch (e: any) {
-        console.error("Scenario error:", e);
+        apiLog.error("Scenario error", e);
         return json({ ok: false, error: e?.message ?? "Unknown error" }, 500);
       }
     }
@@ -578,8 +575,13 @@ export default {
     // 🔶 БЛОК: MY-DATES — CRUD для персональних дат користувача.
     if (url.pathname === "/api/my-dates") {
       try {
-        // Гарантуємо наявність колонки my_dates
-        await ensureMyDatesColumn(env.DB);
+        // Гарантуємо наявність колонки my_dates через авто-міграцію
+        await withAutoMigrate(
+          env.DB,
+          async () => { await env.DB.prepare("SELECT my_dates FROM users LIMIT 1").all(); },
+          { my_dates: null },
+          "users",
+        );
 
         const userIdStr = request.headers.get("X-Telegram-User-Id");
         if (!userIdStr) {
@@ -622,24 +624,23 @@ export default {
         }
 
         // Міграція: старі формати (alias/category) → нові (name/type/tags)
-        const VALID_TYPES = ["person", "event", "other"];
         dates = dates.map((d: any) => {
           if (d.name === undefined && (d.alias || d.category)) {
             needsMigration = true;
             return {
               ...d,
-              type: VALID_TYPES.includes(d.type) ? d.type : "other",
+              type: (VALID_TYPES as readonly string[]).includes(d.type) ? d.type : "other",
               name: d.name || d.alias || "",
               tags: Array.isArray(d.tags) ? d.tags : d.category ? [d.category] : [],
-              created_at: d.created_at || new Date().toISOString().replace("T", " ").slice(0, 19),
+              created_at: d.created_at || formatSqliteDatetime(),
               updated_at:
                 d.updated_at ||
                 d.created_at ||
-                new Date().toISOString().replace("T", " ").slice(0, 19),
+                formatSqliteDatetime(),
             };
           }
           // Якщо name вже є, але type невалідний — виправити
-          if (d.name !== undefined && !VALID_TYPES.includes(d.type)) {
+          if (d.name !== undefined && !(VALID_TYPES as readonly string[]).includes(d.type)) {
             needsMigration = true;
             return { ...d, type: "other" };
           }
@@ -678,13 +679,12 @@ export default {
           const { date, type, name, tags, notes, alias, category } = body;
           if (!date) return json({ ok: false, error: "date is required" }, 400);
 
-          const now = new Date().toISOString().replace("T", " ").slice(0, 19);
-          const VALID_TYPES = ["person", "event", "other"];
+          const now = formatSqliteDatetime();
           const newDate = {
             id: Date.now().toString(36) + Math.random().toString(36).slice(2, 6),
             user_id: userId,
             date,
-            type: VALID_TYPES.includes(type) ? type : "other",
+            type: (VALID_TYPES as readonly string[]).includes(type) ? type : "other",
             name: name || alias || "",
             tags: Array.isArray(tags) ? tags : category ? [category] : [],
             notes: notes || "",
@@ -715,7 +715,6 @@ export default {
           const idx = dates.findIndex((d: any) => d.id === id);
           if (idx === -1) return json({ ok: false, error: "Not found" }, 404);
 
-          const VALID_TYPES_PUT = ["person", "event", "other"];
           // Зберігаємо tags з БД якщо frontend надіслав порожній масив
           const existingTags = dates[idx].tags || [];
           const incomingTags = Array.isArray(tags) ? tags : category ? [category] : undefined;
@@ -728,11 +727,11 @@ export default {
           dates[idx] = {
             ...dates[idx],
             date,
-            type: VALID_TYPES_PUT.includes(type) ? type : dates[idx].type || "other",
+            type: (VALID_TYPES as readonly string[]).includes(type) ? type : dates[idx].type || "other",
             name: name || alias || dates[idx].name || "",
             tags: finalTags,
             notes: notes || "",
-            updated_at: new Date().toISOString().replace("T", " ").slice(0, 19),
+            updated_at: formatSqliteDatetime(),
           };
 
           await env.DB.prepare("UPDATE users SET my_dates = ? WHERE user_id = ?")
@@ -761,7 +760,7 @@ export default {
 
         return json({ ok: false, error: "Method not allowed" }, 405);
       } catch (e: any) {
-        console.error("My-dates error:", e);
+        apiLog.error("My-dates error", e);
         return json({ ok: false, error: e?.message ?? "Unknown error" }, 500);
       }
     }

@@ -1,5 +1,6 @@
 import { withAutoMigrate } from "../../core/database/auto-migrate";
 import type { Env } from "../../shared/types/env";
+import { formatSqliteDatetime } from "../../shared/utils/datetime";
 
 const SAFE_COLUMN_NAME_RE = /^[a-zA-Z_][a-zA-Z0-9_]*$/;
 
@@ -20,7 +21,7 @@ export class DbProxyService {
   }
 
   async write(codeword: string, data: Record<string, any>): Promise<DbProxyResult> {
-    const now = new Date().toISOString().replace("T", " ").slice(0, 19);
+    const now = formatSqliteDatetime();
 
     const fields: Record<string, any> = {};
     for (const [key, value] of Object.entries(data)) {

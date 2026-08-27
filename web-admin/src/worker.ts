@@ -1,5 +1,7 @@
 /// <reference types="@cloudflare/workers-types" />
 
+import { formatSqliteDatetime } from "./shared/datetime";
+
 export interface Env {
   DB: D1Database;
   ASSETS: Fetcher;
@@ -161,7 +163,7 @@ export default {
         const codeword = typeof body.codeword === "string" ? body.codeword.trim() : "";
         if (!codeword) return json({ error: "codeword required" }, 400);
 
-        const now = new Date().toISOString().replace("T", " ").slice(0, 19);
+        const now = formatSqliteDatetime();
 
         // Збираємо ЛИШЕ безпечні, не-службові поля — оновлюємо тільки те, що передано.
         const SAFE_COLUMN_NAME_RE = /^[a-zA-Z_][a-zA-Z0-9_]*$/;
