@@ -242,16 +242,24 @@ export default {
       }
 
       // ──────────────── USERS API ────────────────
+      // Wrapped in try-catch: D1 may throw if table/columns don't exist yet.
 
       if (url.pathname === "/api/users/list" && request.method === "GET") {
-        const result = await env.DB.prepare("SELECT * FROM users ORDER BY user_id ASC").all();
-        const items = (result.results ?? []).map((row: Record<string, unknown>) => {
-          const copy = { ...row };
-          // Прибираємо heavy поле зі списку за замовчуванням
-          delete copy.my_dates;
-          return copy;
-        });
-        return json({ success: true, items });
+        try {
+          const result = await env.DB.prepare("SELECT * FROM users ORDER BY user_id ASC").all();
+          const items = (result.results ?? []).map((row: Record<string, unknown>) => {
+            const copy = { ...row };
+            delete copy.my_dates;
+            return copy;
+          });
+          return json({ success: true, items });
+        } catch (e: any) {
+          const msg = e?.message || String(e);
+          if (msg.includes("no such table")) {
+            return json({ success: true, items: [] });
+          }
+          return json({ error: msg }, 500);
+        }
       }
 
       if (url.pathname === "/api/users/read" && request.method === "POST") {
@@ -262,10 +270,14 @@ export default {
           return json({ error: "Invalid JSON" }, 400);
         }
         if (!body.user_id) return json({ error: "user_id required" }, 400);
-        const row = await env.DB.prepare("SELECT * FROM users WHERE user_id = ?")
-          .bind(body.user_id)
-          .first();
-        return json({ success: true, data: row ?? null });
+        try {
+          const row = await env.DB.prepare("SELECT * FROM users WHERE user_id = ?")
+            .bind(body.user_id)
+            .first();
+          return json({ success: true, data: row ?? null });
+        } catch (e: any) {
+          return json({ error: e?.message || "DB error" }, 500);
+        }
       }
 
       if (url.pathname === "/api/users/update" && request.method === "POST") {
@@ -289,12 +301,33 @@ export default {
         const keys = Object.keys(fields);
         if (keys.length === 0) return json({ error: "no fields to update" }, 400);
 
-        const setClause = keys.map((k) => `${k} = ?`).join(", ");
-        const values = keys.map((k) => fields[k]);
-        await env.DB.prepare(`UPDATE users SET ${setClause} WHERE user_id = ?`)
-          .bind(...values, userId)
-          .run();
-        return json({ success: true });
+        try {
+          const setClause = keys.map((k) => `${k} = ?`).join(", ");
+          const values = keys.map((k) => fields[k]);
+          await env.DB.prepare(`UPDATE users SET ${setClause} WHERE user_id = ?`)
+            .bind(...values, userId)
+            .run();
+          return json({ success: true });
+        } catch (e: any) {
+          const msg = e?.message || String(e);
+          if (msg.includes("no such column")) {
+            // Column doesn't exist — try creating it via ALTER TABLE
+            const match = msg.match(/no such column: (\w+)/);
+            if (match && fields[match[1]] !== undefined) {
+              const colName = match[1];
+              const type = typeof fields[colName] === "number" ? "INTEGER" : "TEXT";
+              await env.DB.prepare(`ALTER TABLE users ADD COLUMN ${colName} ${type} DEFAULT NULL`).run();
+              // Retry
+              const setClause2 = keys.map((k) => `${k} = ?`).join(", ");
+              const values2 = keys.map((k) => fields[k]);
+              await env.DB.prepare(`UPDATE users SET ${setClause2} WHERE user_id = ?`)
+                .bind(...values2, userId)
+                .run();
+              return json({ success: true });
+            }
+          }
+          return json({ error: msg }, 500);
+        }
       }
 
       if (url.pathname === "/api/users/delete" && request.method === "POST") {
@@ -305,10 +338,14 @@ export default {
           return json({ error: "Invalid JSON" }, 400);
         }
         if (!body.user_id) return json({ error: "user_id required" }, 400);
-        const result = await env.DB.prepare("DELETE FROM users WHERE user_id = ?")
-          .bind(body.user_id)
-          .run();
-        return json({ success: true, deleted: (result.meta?.changes ?? 0) > 0 });
+        try {
+          const result = await env.DB.prepare("DELETE FROM users WHERE user_id = ?")
+            .bind(body.user_id)
+            .run();
+          return json({ success: true, deleted: (result.meta?.changes ?? 0) > 0 });
+        } catch (e: any) {
+          return json({ error: e?.message || "DB error" }, 500);
+        }
       }
 
       if (url.pathname === "/api/users/block" && request.method === "POST") {
@@ -319,11 +356,24 @@ export default {
           return json({ error: "Invalid JSON" }, 400);
         }
         if (!body.user_id) return json({ error: "user_id required" }, 400);
-        const blocked = body.blocked !== false ? 1 : 0;
-        await env.DB.prepare("UPDATE users SET is_blocked = ? WHERE user_id = ?")
-          .bind(blocked, body.user_id)
-          .run();
-        return json({ success: true });
+        try {
+          const blocked = body.blocked !== false ? 1 : 0;
+          await env.DB.prepare("UPDATE users SET is_blocked = ? WHERE user_id = ?")
+            .bind(blocked, body.user_id)
+            .run();
+          return json({ success: true });
+        } catch (e: any) {
+          const msg = e?.message || String(e);
+          if (msg.includes("no such column: is_blocked")) {
+            await env.DB.prepare("ALTER TABLE users ADD COLUMN is_blocked INTEGER DEFAULT 0").run();
+            const blocked = body.blocked !== false ? 1 : 0;
+            await env.DB.prepare("UPDATE users SET is_blocked = ? WHERE user_id = ?")
+              .bind(blocked, body.user_id)
+              .run();
+            return json({ success: true });
+          }
+          return json({ error: msg }, 500);
+        }
       }
 
       if (url.pathname === "/api/users/bulk" && request.method === "POST") {
@@ -337,24 +387,38 @@ export default {
         const ids = Array.isArray(body.ids) ? body.ids : [];
         if (!action || ids.length === 0) return json({ error: "action and ids required" }, 400);
 
-        let processed = 0;
-        if (action === "delete") {
-          const placeholders = ids.map(() => "?").join(",");
-          const result = await env.DB.prepare(`DELETE FROM users WHERE user_id IN (${placeholders})`)
-            .bind(...ids)
-            .run();
-          processed = result.meta?.changes ?? 0;
-        } else if (action === "block" || action === "unblock") {
-          const val = action === "block" ? 1 : 0;
-          const placeholders = ids.map(() => "?").join(",");
-          const result = await env.DB.prepare(`UPDATE users SET is_blocked = ? WHERE user_id IN (${placeholders})`)
-            .bind(val, ...ids)
-            .run();
-          processed = result.meta?.changes ?? 0;
-        } else {
-          return json({ error: `Unknown action: ${action}` }, 400);
+        try {
+          let processed = 0;
+          if (action === "delete") {
+            const placeholders = ids.map(() => "?").join(",");
+            const result = await env.DB.prepare(`DELETE FROM users WHERE user_id IN (${placeholders})`)
+              .bind(...ids)
+              .run();
+            processed = result.meta?.changes ?? 0;
+          } else if (action === "block" || action === "unblock") {
+            const val = action === "block" ? 1 : 0;
+            const placeholders = ids.map(() => "?").join(",");
+            const result = await env.DB.prepare(`UPDATE users SET is_blocked = ? WHERE user_id IN (${placeholders})`)
+              .bind(val, ...ids)
+              .run();
+            processed = result.meta?.changes ?? 0;
+          } else {
+            return json({ error: `Unknown action: ${action}` }, 400);
+          }
+          return json({ success: true, processed });
+        } catch (e: any) {
+          const msg = e?.message || String(e);
+          if (msg.includes("no such column: is_blocked")) {
+            await env.DB.prepare("ALTER TABLE users ADD COLUMN is_blocked INTEGER DEFAULT 0").run();
+            const val = action === "block" ? 1 : 0;
+            const placeholders = ids.map(() => "?").join(",");
+            const result = await env.DB.prepare(`UPDATE users SET is_blocked = ? WHERE user_id IN (${placeholders})`)
+              .bind(val, ...ids)
+              .run();
+            return json({ success: true, processed: result.meta?.changes ?? 0 });
+          }
+          return json({ error: msg }, 500);
         }
-        return json({ success: true, processed });
       }
 
       if (url.pathname === "/api/users/message" && request.method === "POST") {
@@ -367,16 +431,20 @@ export default {
         }
         if (!body.user_id || !body.text) return json({ error: "user_id and text required" }, 400);
 
-        const tgRes = await fetch(`https://api.telegram.org/bot${env.BOT_TOKEN}/sendMessage`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ chat_id: body.user_id, text: body.text }),
-        });
-        const tgData = (await tgRes.json()) as { ok?: boolean; description?: string };
-        if (!tgData.ok) {
-          return json({ error: tgData.description ?? "Telegram API error" }, 502);
+        try {
+          const tgRes = await fetch(`https://api.telegram.org/bot${env.BOT_TOKEN}/sendMessage`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ chat_id: body.user_id, text: body.text }),
+          });
+          const tgData = (await tgRes.json()) as { ok?: boolean; description?: string };
+          if (!tgData.ok) {
+            return json({ error: tgData.description ?? "Telegram API error" }, 502);
+          }
+          return json({ success: true });
+        } catch (e: any) {
+          return json({ error: e?.message || "Failed to send message" }, 500);
         }
-        return json({ success: true });
       }
 
       return json({ error: "Not found" }, 404);
