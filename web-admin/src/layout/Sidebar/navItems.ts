@@ -20,6 +20,7 @@ export const navSections: NavSection[] = [
     items: [
       { to: "/editor", label: "Редактор", icon: "✏️" },
       { to: "/scenarios", label: "Сценарії", icon: "📋" },
+      { to: "/scenarios-v2", label: "Сценарії v.2", icon: "📋" },
     ],
   },
   {

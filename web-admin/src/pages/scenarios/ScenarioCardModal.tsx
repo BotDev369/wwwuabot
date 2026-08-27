@@ -4,7 +4,7 @@ import { readScenarioAll } from "../../shared/api/scenarios.api";
 interface Props {
   codeword: string;
   onClose: () => void;
-  onEdit: () => void;
+  onEdit: (codeword?: string) => void;
 }
 
 export function ScenarioCardModal({ codeword, onClose, onEdit }: Props) {
@@ -175,7 +175,7 @@ export function ScenarioCardModal({ codeword, onClose, onEdit }: Props) {
         </div>
 
         <div className="modal-footer">
-          <button className="btn btn--primary" onClick={onEdit}>✏️ Змінити</button>
+          <button className="btn btn--primary" onClick={() => onEdit(codeword)}>✏️ Змінити</button>
           <button className="btn btn--secondary" onClick={onClose}>Закрити</button>
         </div>
       </div>

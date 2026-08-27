@@ -1240,38 +1240,6 @@ body {
   white-space: nowrap;
 }
 
-.scn-td-menu {
-  width: 36px;
-  text-align: center;
-  padding: 9px 4px;
-}
-
-.scn-th-menu {
-  width: 36px;
-  text-align: center;
-  padding: 10px 4px;
-}
-
-.scn-row--selected {
-  background: var(--accent-dim) !important;
-}
-
-.scn-row--selected td {
-  color: var(--accent-hover);
-}
-
-.scn-row--selected .scn-cw {
-  color: var(--accent-hover);
-}
-
-.scn-row--selected .scn-badge {
-  border-color: var(--accent-hover);
-}
-
-.scn-row--selected .scn-updated {
-  color: var(--accent-hover);
-}
-
 .scn-refreshing {
   position: absolute;
   top: 8px;

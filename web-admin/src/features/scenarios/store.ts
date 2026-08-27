@@ -2,12 +2,17 @@ import { create } from "zustand";
 import { listScenarios, type ScenarioListRow } from "../../shared/api/scenarios.api";
 
 export type ScenariosStatus = "idle" | "loading" | "refreshing" | "error";
+export type ScenariosSortField = "codeword" | "rich_message" | "updated_at";
+export type SortDir = "asc" | "desc";
 
 interface ScenariosStore {
   items: ScenarioListRow[];
   etag: string | null;
   status: ScenariosStatus;
   errorMsg: string | null;
+  sortField: ScenariosSortField;
+  sortDir: SortDir;
+  setSort: (field: ScenariosSortField) => void;
   load: (force?: boolean) => Promise<void>;
 }
 
@@ -16,6 +21,17 @@ export const useScenariosStore = create<ScenariosStore>((set, get) => ({
   etag: null,
   status: "idle",
   errorMsg: null,
+  sortField: "codeword",
+  sortDir: "asc",
+
+  setSort: (field) => {
+    const { sortField, sortDir } = get();
+    if (sortField === field) {
+      set({ sortDir: sortDir === "asc" ? "desc" : "asc" });
+    } else {
+      set({ sortField: field, sortDir: "asc" });
+    }
+  },
 
   load: async (force = false) => {
     const { items, etag } = get();

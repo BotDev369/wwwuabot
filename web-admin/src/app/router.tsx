@@ -6,6 +6,7 @@ import { ScenariosPage } from "../pages/scenarios/ScenariosPage";
 import { ScenarioPreviewPage } from "../pages/scenarios/ScenarioPreviewPage";
 import { ScenarioFormPage } from "../pages/scenarios/ScenarioFormPage";
 import { UsersPage } from "../pages/users/UsersPage";
+import { ScenariosV2Page } from "../pages/scenarios-v2/ScenariosV2Page";
 
 export const router = createBrowserRouter([
   {
@@ -18,6 +19,7 @@ export const router = createBrowserRouter([
       { path: "scenarios/:codeword", element: <ScenarioPreviewPage /> },
       { path: "scenarios/:codeword/edit", element: <ScenarioFormPage /> },
       { path: "users", element: <UsersPage /> },
+      { path: "scenarios-v2", element: <ScenariosV2Page /> },
     ],
   },
 ]);
