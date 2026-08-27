@@ -1,6 +1,5 @@
-import { useMemo, useState, useRef, useEffect } from "react";
+import { useMemo, useState, useEffect } from "react";
 import { useUsersStore, type SortField } from "../../features/users/store";
-import { UserRowMenu } from "./UserRowMenu";
 import type { UserRow } from "../../shared/api/users.api";
 
 function formatName(u: UserRow): string {
@@ -32,18 +31,16 @@ export function UsersTable({ onMessage }: Props) {
     useUsersStore();
 
   const [menuOpen, setMenuOpen] = useState<number | null>(null);
-  const menuRef = useRef<HTMLDivElement>(null);
+  const [selectedRow, setSelectedRow] = useState<number | null>(null);
 
-  // Close menu on outside click
+  // Close modal on Escape
   useEffect(() => {
-    function handleClick(e: MouseEvent) {
-      if (menuRef.current && !menuRef.current.contains(e.target as Node)) {
-        setMenuOpen(null);
-      }
+    function handleKey(e: KeyboardEvent) {
+      if (e.key === "Escape") setMenuOpen(null);
     }
     if (menuOpen !== null) {
-      document.addEventListener("mousedown", handleClick);
-      return () => document.removeEventListener("mousedown", handleClick);
+      document.addEventListener("keydown", handleKey);
+      return () => document.removeEventListener("keydown", handleKey);
     }
   }, [menuOpen]);
 
@@ -83,11 +80,14 @@ export function UsersTable({ onMessage }: Props) {
   const allIds = filtered.map((u) => u.user_id);
   const allSelected = allIds.length > 0 && allIds.every((id) => selectedIds.has(id));
 
-  function thSort(field: SortField, label: string) {
+  function thSort(field: SortField, label: string, left?: number) {
     const arrow = sortField === field ? (sortDir === "asc" ? " ↑" : " ↓") : "";
+    const stickyClass = left !== undefined ? " usr-th-sticky" : "";
+    const style = left !== undefined ? { left } : undefined;
     return (
       <th
-        className="usr-th-sortable"
+        className={`usr-th-sortable${stickyClass}`}
+        style={style}
         onClick={() => setSort(field)}
         title={`Сортувати за ${label}`}
       >
@@ -97,94 +97,144 @@ export function UsersTable({ onMessage }: Props) {
     );
   }
 
+  const menuUser = menuOpen !== null ? items.find((u) => u.user_id === menuOpen) : null;
+
   return (
-    <div className="usr-table-wrap">
-      <table className="usr-table">
-        <thead>
-          <tr>
-            <th className="usr-th-menu"></th>
-            <th className="usr-th-check">
-              <input
-                type="checkbox"
-                checked={allSelected}
-                onChange={() => selectAll(allIds)}
-                title="Вибрати всі"
-              />
-            </th>
-            {thSort("first_name", "Ім'я")}
-            {thSort("username", "Username")}
-            {thSort("user_id", "ID")}
-            {thSort("created_at", "Приєднання")}
-            <th className="usr-th-status">Статус</th>
-          </tr>
-        </thead>
-        <tbody>
-          {filtered.length === 0 ? (
+    <>
+      <div className="usr-table-wrap">
+        <table className="usr-table">
+          <thead>
             <tr>
-              <td colSpan={7} className="usr-empty">
-                {items.length === 0
-                  ? "У базі ще немає користувачів."
-                  : `Нічого не знайдено за «${search}».`}
-              </td>
+              <th className="usr-th-menu usr-th-sticky"></th>
+              <th className="usr-th-check usr-th-sticky" style={{ left: 36 }}>
+                <input
+                  type="checkbox"
+                  checked={allSelected}
+                  onChange={() => selectAll(allIds)}
+                  title="Вибрати всі"
+                />
+              </th>
+              {thSort("first_name", "Ім'я", 72)}
+              {thSort("username", "Username")}
+              {thSort("user_id", "ID")}
+              {thSort("created_at", "Приєднання")}
+              <th className="usr-th-status">Статус</th>
             </tr>
-          ) : (
-            filtered.map((u) => {
-              const blocked = u.is_blocked === 1;
-              return (
-                <tr key={u.user_id} className={`usr-row${blocked ? " usr-row--blocked" : ""}`}>
-                  <td className="usr-td-menu">
-                    <div className="usr-menu-anchor" ref={menuOpen === u.user_id ? menuRef : undefined}>
+          </thead>
+          <tbody>
+            {filtered.length === 0 ? (
+              <tr>
+                <td colSpan={7} className="usr-empty">
+                  {items.length === 0
+                    ? "У базі ще немає користувачів."
+                    : `Нічого не знайдено за «${search}».`}
+                </td>
+              </tr>
+            ) : (
+              filtered.map((u) => {
+                const blocked = u.is_blocked === 1;
+                const isSelected = selectedRow === u.user_id;
+                return (
+                  <tr
+                    key={u.user_id}
+                    className={`usr-row${blocked ? " usr-row--blocked" : ""}${isSelected ? " usr-row--selected" : ""}`}
+                    onClick={() => setSelectedRow(isSelected ? null : u.user_id)}
+                    style={{ cursor: "pointer" }}
+                  >
+                    <td className="usr-td-menu usr-td-sticky" style={{ left: 0 }}>
                       <button
                         className="usr-menu-btn"
                         onClick={(e) => {
                           e.stopPropagation();
-                          setMenuOpen(menuOpen === u.user_id ? null : u.user_id);
+                          setMenuOpen(u.user_id);
                         }}
                         title="Дії"
                       >
                         ☰
                       </button>
-                      {menuOpen === u.user_id && (
-                        <UserRowMenu
-                          user={u}
-                          onMessage={() => {
-                            setMenuOpen(null);
-                            onMessage(u.user_id);
-                          }}
-                          onClose={() => setMenuOpen(null)}
-                        />
+                    </td>
+                    <td className="usr-td-check usr-td-sticky" style={{ left: 36 }}>
+                      <input
+                        type="checkbox"
+                        checked={selectedIds.has(u.user_id)}
+                        onChange={() => toggleSelect(u.user_id)}
+                        onClick={(e) => e.stopPropagation()}
+                      />
+                    </td>
+                    <td className="usr-td-name usr-td-sticky" style={{ left: 72 }}>
+                      {formatName(u)}
+                    </td>
+                    <td className="usr-td-username">
+                      {u.username ? `@${u.username}` : "—"}
+                    </td>
+                    <td className="usr-td-id">{u.user_id}</td>
+                    <td className="usr-td-date" title={u.created_at ?? ""}>
+                      {relativeTime(u.created_at)}
+                    </td>
+                    <td className="usr-td-status">
+                      {blocked ? (
+                        <span className="usr-badge usr-badge--blocked">Заблоковано</span>
+                      ) : (
+                        <span className="usr-badge usr-badge--active">Активний</span>
                       )}
-                    </div>
-                  </td>
-                  <td className="usr-td-check">
-                    <input
-                      type="checkbox"
-                      checked={selectedIds.has(u.user_id)}
-                      onChange={() => toggleSelect(u.user_id)}
-                      onClick={(e) => e.stopPropagation()}
-                    />
-                  </td>
-                  <td className="usr-td-name">{formatName(u)}</td>
-                  <td className="usr-td-username">
-                    {u.username ? `@${u.username}` : "—"}
-                  </td>
-                  <td className="usr-td-id">{u.user_id}</td>
-                  <td className="usr-td-date" title={u.created_at ?? ""}>
-                    {relativeTime(u.created_at)}
-                  </td>
-                  <td className="usr-td-status">
-                    {blocked ? (
-                      <span className="usr-badge usr-badge--blocked">Заблоковано</span>
-                    ) : (
-                      <span className="usr-badge usr-badge--active">Активний</span>
-                    )}
-                  </td>
-                </tr>
-              );
-            })
-          )}
-        </tbody>
-      </table>
-    </div>
+                    </td>
+                  </tr>
+                );
+              })
+            )}
+          </tbody>
+        </table>
+      </div>
+
+      {/* Modal menu */}
+      {menuUser && (
+        <div className="usr-modal-overlay" onClick={() => setMenuOpen(null)}>
+          <div className="usr-modal" onClick={(e) => e.stopPropagation()}>
+            <div className="usr-modal-header">
+              <span className="usr-modal-title">
+                {formatName(menuUser)}
+                {menuUser.username ? `  @${menuUser.username}` : ""}
+              </span>
+              <button className="usr-modal-close" onClick={() => setMenuOpen(null)}>
+                ✕
+              </button>
+            </div>
+            <div className="usr-modal-body usr-modal-menu">
+              <button
+                className="usr-modal-menu-item"
+                onClick={() => {
+                  setMenuOpen(null);
+                  onMessage(menuUser.user_id);
+                }}
+              >
+                ✉️ Написати повідомлення
+              </button>
+              <button
+                className="usr-modal-menu-item"
+                onClick={async () => {
+                  const { blockOne } = useUsersStore.getState();
+                  await blockOne(menuUser.user_id, menuUser.is_blocked !== 1);
+                  setMenuOpen(null);
+                }}
+              >
+                {menuUser.is_blocked === 1 ? "🔓 Розблокувати" : "🔒 Заблокувати"}
+              </button>
+              <div className="usr-modal-divider" />
+              <button
+                className="usr-modal-menu-item usr-modal-menu-item--danger"
+                onClick={async () => {
+                  if (!confirm(`Видалити користувача ${menuUser.user_id}?`)) return;
+                  const { deleteOne } = useUsersStore.getState();
+                  await deleteOne(menuUser.user_id);
+                  setMenuOpen(null);
+                }}
+              >
+                🗑️ Видалити
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+    </>
   );
 }
