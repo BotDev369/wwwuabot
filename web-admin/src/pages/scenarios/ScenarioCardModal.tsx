@@ -83,22 +83,22 @@ export function ScenarioCardModal({ codeword, onClose, onEdit }: Props) {
     : [];
 
   return (
-    <div className="modal-overlay" onClick={onClose}>
-      <div className="modal-card" onClick={(e) => e.stopPropagation()}>
-        <div className="modal-header">
-          <h2 className="modal-title">
+    <div className="usr-modal-overlay" onClick={onClose}>
+      <div className="usr-modal" onClick={(e) => e.stopPropagation()}>
+        <div className="usr-modal-header">
+          <span className="usr-modal-title">
             📋 {codeword}
-          </h2>
-          <button className="modal-close" onClick={onClose}>✕</button>
+          </span>
+          <button className="usr-modal-close" onClick={onClose}>✕</button>
         </div>
 
-        <div className="modal-body" style={{ maxHeight: "60vh", overflow: "auto" }}>
+        <div className="usr-modal-body" style={{ maxHeight: "70vh", overflow: "auto" }}>
           {loading ? (
-            <div className="modal-loading">Завантаження…</div>
+            <div className="usr-modal-loading">Завантаження…</div>
           ) : error ? (
-            <div className="modal-error">{error}</div>
+            <div className="usr-modal-error">{error}</div>
           ) : !data ? (
-            <div className="modal-empty">Сценарій не знайдено</div>
+            <div className="usr-modal-empty">Сценарій не знайдено</div>
           ) : (
             <table className="usr-card-table">
               <thead>
@@ -174,7 +174,7 @@ export function ScenarioCardModal({ codeword, onClose, onEdit }: Props) {
           )}
         </div>
 
-        <div className="modal-footer">
+        <div className="usr-modal-footer">
           <button className="btn btn--primary" onClick={() => onEdit(codeword)}>✏️ Змінити</button>
           <button className="btn btn--secondary" onClick={onClose}>Закрити</button>
         </div>

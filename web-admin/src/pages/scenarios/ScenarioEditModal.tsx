@@ -104,20 +104,20 @@ export function ScenarioEditModal({ codeword, onClose, onSaved }: Props) {
   };
 
   return (
-    <div className="modal-overlay" onClick={onClose}>
-      <div className="modal-card" onClick={(e) => e.stopPropagation()}>
-        <div className="modal-header">
-          <h2 className="modal-title">
+    <div className="usr-modal-overlay" onClick={onClose}>
+      <div className="usr-modal" onClick={(e) => e.stopPropagation()}>
+        <div className="usr-modal-header">
+          <span className="usr-modal-title">
             ✏️ Редагування: {codeword}
-          </h2>
-          <button className="modal-close" onClick={onClose}>✕</button>
+          </span>
+          <button className="usr-modal-close" onClick={onClose}>✕</button>
         </div>
 
-        <div className="modal-body" style={{ maxHeight: "60vh", overflow: "auto" }}>
+        <div className="usr-modal-body" style={{ maxHeight: "70vh", overflow: "auto" }}>
           {loading ? (
-            <div className="modal-loading">Завантаження…</div>
+            <div className="usr-modal-loading">Завантаження…</div>
           ) : error && !data ? (
-            <div className="modal-error">{error}</div>
+            <div className="usr-modal-error">{error}</div>
           ) : (
             <div className="usr-edit-form">
               {Object.entries(fields).map(([key, value]) => {
@@ -145,10 +145,10 @@ export function ScenarioEditModal({ codeword, onClose, onSaved }: Props) {
               })}
             </div>
           )}
-          {error && data && <div className="modal-error" style={{ marginTop: 8 }}>{error}</div>}
+          {error && data && <div className="usr-modal-error" style={{ marginTop: 8 }}>{error}</div>}
         </div>
 
-        <div className="modal-footer">
+        <div className="usr-modal-footer">
           {success ? (
             <span className="usr-edit-success">✓ Збережено</span>
           ) : (
