@@ -4,6 +4,7 @@ import type { Env } from "./shared/types/env";
 import type { LogMessage } from "./shared/types/log";
 import type { MessageBatch } from "@cloudflare/workers-types";
 
+// CI/CD test deploy
 export default {
   fetch: handleRequest,
 
