@@ -6,6 +6,12 @@ compatibility_date = "2026-08-21"
 directory = "./dist/client"
 binding = "ASSETS"
 
+# Default D1 binding (for top-level deploy without --env)
+[[d1_databases]]
+binding = "DB"
+database_name = "wwwuabot-db-dev"
+database_id = "9fc03f61-d497-4d92-bae4-c92b02c2d1c5"
+
 # Dev середовище (замовчування для wrangler dev)
 [env.dev]
 name = "wwwuabot-web-admin-dev"
