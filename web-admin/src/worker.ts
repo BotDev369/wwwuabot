@@ -246,7 +246,9 @@ export default {
 
       if (url.pathname === "/api/users/list" && request.method === "GET") {
         try {
-          const result = await env.DB.prepare("SELECT * FROM users ORDER BY user_id ASC").all();
+          const result = await env.DB.prepare(
+            "SELECT user_id, first_name, last_name, username, language, created_at, is_blocked FROM users ORDER BY user_id ASC"
+          ).all();
           const items = (result.results ?? []).map((row: Record<string, unknown>) => {
             const copy = { ...row };
             delete copy.my_dates;
