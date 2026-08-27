@@ -2,6 +2,7 @@
   "name": "wwwuabot",
   "private": true,
   "workspaces": [
+    "packages/*",
     "bot",
     "web",
     "web-admin"

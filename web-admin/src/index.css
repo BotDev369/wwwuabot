@@ -1,42 +1,6 @@
 @import url("https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&display=swap");
+@import "@wwwuabot/shared/styles/index.css";
 @import "tailwindcss";
-
-/* ─── Design tokens ──────────────────────────────────────────────────────────── */
-:root {
-  /* Palette */
-  --bg-0: #f0f2f5;
-  --bg-1: #ffffff;
-  --bg-2: #f8f9fa;
-  --bg-3: #ffffff;
-  --bg-4: #f0f2f5;
-
-  --border: #dde1e7;
-  --border-subtle: #eaecef;
-
-  --text-primary: #111827;
-  --text-secondary: #6b7280;
-  --text-muted: #9ca3af;
-
-  --accent: #2563eb;
-  --accent-dim: #dbeafe;
-  --accent-hover: #1d4ed8;
-
-  --green: #16a34a;
-  --red: #dc2626;
-  --yellow: #ca8a04;
-
-  /* Typography */
-  --font-ui: "Inter", system-ui, -apple-system, sans-serif;
-  --font-mono: "JetBrains Mono", "Fira Code", ui-monospace, monospace;
-  --font-display: "Space Grotesk", var(--font-ui);
-
-  /* Layout */
-  --sidebar-w: 220px;
-  --sidebar-w-collapsed: 64px;
-  --topbar-h: 56px;
-  --radius: 6px;
-  --radius-sm: 4px;
-}
 
 /* ─── Reset ──────────────────────────────────────────────────────────────────── */
 *,

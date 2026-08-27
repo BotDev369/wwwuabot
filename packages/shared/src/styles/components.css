@@ -1,0 +1,436 @@
+/*
+ * ═══════════════════════════════════════════════════════════════════════════
+ * COMPONENT CLASSES — Reusable UI building blocks
+ * ═══════════════════════════════════════════════════════════════════════════
+ *
+ * Framework-agnostic CSS classes. Use in React, plain HTML, or any renderer.
+ * Import tokens.css + themes.css before this file.
+ *
+ * Naming convention: .wb-* (wwwuabot) to avoid conflicts with Tailwind/etc.
+ */
+
+/* ── Button ──────────────────────────────────────────────────────────────── */
+
+.wb-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--sp-2);
+  padding: var(--sp-2) var(--sp-4);
+  font-size: var(--text-sm);
+  font-weight: var(--weight-medium);
+  line-height: 1;
+  border-radius: var(--radius);
+  transition: all var(--duration) var(--ease);
+  white-space: nowrap;
+  user-select: none;
+  border: 1px solid transparent;
+}
+
+.wb-btn:active {
+  transform: scale(0.97);
+}
+
+/* Primary */
+.wb-btn-primary {
+  background: var(--accent);
+  color: var(--text-inverse);
+  border-color: var(--accent);
+}
+.wb-btn-primary:hover {
+  background: var(--accent-hover);
+  border-color: var(--accent-hover);
+}
+
+/* Secondary */
+.wb-btn-secondary {
+  background: var(--surface);
+  color: var(--text-primary);
+  border-color: var(--border);
+}
+.wb-btn-secondary:hover {
+  background: var(--surface-hover);
+  border-color: var(--text-muted);
+}
+
+/* Ghost */
+.wb-btn-ghost {
+  background: transparent;
+  color: var(--text-secondary);
+}
+.wb-btn-ghost:hover {
+  background: var(--surface-hover);
+  color: var(--text-primary);
+}
+
+/* Danger */
+.wb-btn-danger {
+  background: var(--red);
+  color: #fff;
+  border-color: var(--red);
+}
+.wb-btn-danger:hover {
+  opacity: 0.9;
+}
+
+/* Sizes */
+.wb-btn-sm {
+  padding: var(--sp-1) var(--sp-3);
+  font-size: var(--text-xs);
+}
+.wb-btn-lg {
+  padding: var(--sp-3) var(--sp-6);
+  font-size: var(--text-md);
+}
+
+/* ── Input / Select / Textarea ───────────────────────────────────────────── */
+
+.wb-input,
+.wb-select,
+.wb-textarea {
+  width: 100%;
+  padding: var(--sp-2) var(--sp-3);
+  font-size: var(--text-sm);
+  background: var(--surface);
+  color: var(--text-primary);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  outline: none;
+  transition: border-color var(--duration) var(--ease), box-shadow var(--duration) var(--ease);
+}
+
+.wb-input:focus,
+.wb-select:focus,
+.wb-textarea:focus {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px var(--accent-soft);
+}
+
+.wb-input::placeholder,
+.wb-textarea::placeholder {
+  color: var(--text-muted);
+}
+
+.wb-textarea {
+  resize: vertical;
+  min-height: 80px;
+}
+
+/* ── Label ───────────────────────────────────────────────────────────────── */
+
+.wb-label {
+  display: block;
+  font-size: var(--text-sm);
+  font-weight: var(--weight-medium);
+  color: var(--text-secondary);
+  margin-bottom: var(--sp-1);
+}
+
+/* ── Card ────────────────────────────────────────────────────────────────── */
+
+.wb-card {
+  background: var(--surface);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-xs);
+}
+
+.wb-card-header {
+  padding: var(--sp-4) var(--sp-5);
+  border-bottom: 1px solid var(--border-subtle);
+  font-weight: var(--weight-semibold);
+}
+
+.wb-card-body {
+  padding: var(--sp-5);
+}
+
+.wb-card-footer {
+  padding: var(--sp-3) var(--sp-5);
+  border-top: 1px solid var(--border-subtle);
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: var(--sp-2);
+}
+
+/* ── Modal ───────────────────────────────────────────────────────────────── */
+
+.wb-modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: var(--surface-overlay);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: var(--z-modal);
+  animation: wb-fade-in var(--duration-slow) var(--ease);
+  padding: var(--sp-4);
+}
+
+.wb-modal {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-xl);
+  width: 100%;
+  max-width: 560px;
+  max-height: 85vh;
+  display: flex;
+  flex-direction: column;
+  animation: wb-slide-up var(--duration-slow) var(--ease-spring);
+}
+
+.wb-modal-lg {
+  max-width: 800px;
+}
+
+.wb-modal-header {
+  padding: var(--sp-4) var(--sp-5);
+  border-bottom: 1px solid var(--border-subtle);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--sp-3);
+  flex-shrink: 0;
+}
+
+.wb-modal-title {
+  font-size: var(--text-md);
+  font-weight: var(--weight-semibold);
+}
+
+.wb-modal-close {
+  width: 28px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--radius-sm);
+  color: var(--text-muted);
+  font-size: var(--text-lg);
+  transition: all var(--duration-fast) var(--ease);
+}
+.wb-modal-close:hover {
+  background: var(--surface-hover);
+  color: var(--text-primary);
+}
+
+.wb-modal-body {
+  padding: var(--sp-5);
+  overflow-y: auto;
+  flex: 1;
+}
+
+.wb-modal-footer {
+  padding: var(--sp-3) var(--sp-5);
+  border-top: 1px solid var(--border-subtle);
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: var(--sp-2);
+  flex-shrink: 0;
+}
+
+@keyframes wb-fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes wb-slide-up {
+  from { opacity: 0; transform: translateY(12px) scale(0.98); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+/* ── Table ───────────────────────────────────────────────────────────────── */
+
+.wb-table-wrap {
+  overflow-x: auto;
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+}
+
+.wb-table {
+  width: 100%;
+  font-size: var(--text-sm);
+}
+
+.wb-table th {
+  padding: var(--sp-2) var(--sp-3);
+  text-align: left;
+  font-weight: var(--weight-semibold);
+  font-size: var(--text-xs);
+  color: var(--text-secondary);
+  background: var(--bg-2);
+  border-bottom: 1px solid var(--border);
+  white-space: nowrap;
+  user-select: none;
+}
+
+.wb-table td {
+  padding: var(--sp-2) var(--sp-3);
+  border-bottom: 1px solid var(--border-subtle);
+  vertical-align: middle;
+}
+
+.wb-table tr:last-child td {
+  border-bottom: none;
+}
+
+.wb-table tbody tr {
+  transition: background var(--duration-fast) var(--ease);
+}
+
+.wb-table tbody tr:hover {
+  background: var(--surface-hover);
+}
+
+.wb-table th.sortable {
+  cursor: pointer;
+}
+
+.wb-table th.sortable:hover {
+  color: var(--accent);
+}
+
+/* ── Badge ───────────────────────────────────────────────────────────────── */
+
+.wb-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px var(--sp-2);
+  font-size: var(--text-xs);
+  font-weight: var(--weight-medium);
+  border-radius: var(--radius-full);
+  line-height: 1.4;
+}
+
+.wb-badge-accent {
+  background: var(--accent-dim);
+  color: var(--accent);
+}
+
+.wb-badge-green {
+  background: var(--green-dim);
+  color: var(--green);
+}
+
+.wb-badge-red {
+  background: var(--red-dim);
+  color: var(--red);
+}
+
+.wb-badge-yellow {
+  background: var(--yellow-dim);
+  color: var(--yellow);
+}
+
+.wb-badge-neutral {
+  background: var(--surface-active);
+  color: var(--text-secondary);
+}
+
+/* ── Chip / Tag ──────────────────────────────────────────────────────────── */
+
+.wb-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sp-1);
+  padding: var(--sp-1) var(--sp-3);
+  font-size: var(--text-xs);
+  background: var(--surface-active);
+  color: var(--text-secondary);
+  border-radius: var(--radius-full);
+  border: 1px solid var(--border-subtle);
+}
+
+/* ── Toast / Alert ───────────────────────────────────────────────────────── */
+
+.wb-toast {
+  position: fixed;
+  bottom: var(--sp-5);
+  right: var(--sp-5);
+  padding: var(--sp-3) var(--sp-5);
+  background: var(--text-primary);
+  color: var(--text-inverse);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-lg);
+  font-size: var(--text-sm);
+  z-index: var(--z-toast);
+  animation: wb-slide-up var(--duration-slow) var(--ease-spring);
+}
+
+/* ── Empty state ─────────────────────────────────────────────────────────── */
+
+.wb-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: var(--sp-12) var(--sp-4);
+  color: var(--text-muted);
+  text-align: center;
+  gap: var(--sp-3);
+}
+
+.wb-empty-icon {
+  font-size: 2.5rem;
+  opacity: 0.5;
+}
+
+.wb-empty-text {
+  font-size: var(--text-sm);
+}
+
+/* ── Skeleton loader ─────────────────────────────────────────────────────── */
+
+.wb-skeleton {
+  background: linear-gradient(
+    90deg,
+    var(--surface-active) 25%,
+    var(--surface-hover) 50%,
+    var(--surface-active) 75%
+  );
+  background-size: 200% 100%;
+  animation: wb-shimmer 1.5s infinite;
+  border-radius: var(--radius-sm);
+}
+
+@keyframes wb-shimmer {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+/* ── Divider ─────────────────────────────────────────────────────────────── */
+
+.wb-divider {
+  height: 1px;
+  background: var(--border-subtle);
+  border: none;
+  margin: var(--sp-4) 0;
+}
+
+/* ── Flex utilities ──────────────────────────────────────────────────────── */
+
+.wb-flex { display: flex; }
+.wb-flex-col { display: flex; flex-direction: column; }
+.wb-flex-center { display: flex; align-items: center; justify-content: center; }
+.wb-flex-between { display: flex; align-items: center; justify-content: space-between; }
+.wb-gap-1 { gap: var(--sp-1); }
+.wb-gap-2 { gap: var(--sp-2); }
+.wb-gap-3 { gap: var(--sp-3); }
+.wb-gap-4 { gap: var(--sp-4); }
+
+/* ── Text utilities ──────────────────────────────────────────────────────── */
+
+.wb-text-xs { font-size: var(--text-xs); }
+.wb-text-sm { font-size: var(--text-sm); }
+.wb-text-base { font-size: var(--text-base); }
+.wb-text-md { font-size: var(--text-md); }
+.wb-text-muted { color: var(--text-muted); }
+.wb-text-secondary { color: var(--text-secondary); }
+.wb-text-accent { color: var(--accent); }
+.wb-text-red { color: var(--red); }
+.wb-text-green { color: var(--green); }
+.wb-font-mono { font-family: var(--font-mono); }
+.wb-truncate { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }

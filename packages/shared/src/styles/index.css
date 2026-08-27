@@ -1,0 +1,20 @@
+/*
+ * ═══════════════════════════════════════════════════════════════════════════
+ * @wwwuabot/shared — Design System
+ * ═══════════════════════════════════════════════════════════════════════════
+ *
+ * Master entry point. Import this single file to get the full design system.
+ *
+ * Usage in any worker:
+ *   import "@wwwuabot/shared/styles/index.css";
+ *
+ * Or selectively:
+ *   import "@wwwuabot/shared/styles/tokens.css";  // Just CSS variables
+ *   import "@wwwuabot/shared/styles/themes.css";   // + light/dark themes
+ *   import "@wwwuabot/shared/styles/components.css"; // + component classes
+ */
+
+@import "./tokens.css";
+@import "./themes.css";
+@import "./reset.css";
+@import "./components.css";

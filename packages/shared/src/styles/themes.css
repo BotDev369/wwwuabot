@@ -1,0 +1,134 @@
+/*
+ * ═══════════════════════════════════════════════════════════════════════════
+ * THEMES — Light & Dark
+ * ═══════════════════════════════════════════════════════════════════════════
+ *
+ * Import tokens.css before this file.
+ * Apply via: <html data-theme="dark"> or class="dark"
+ */
+
+/* ── Light theme (default) ───────────────────────────────────────────────── */
+:root,
+[data-theme="light"] {
+  --bg-0: #f0f2f5;
+  --bg-1: #ffffff;
+  --bg-2: #f8f9fa;
+  --bg-3: #ffffff;
+  --bg-4: #f0f2f5;
+
+  --border: #dde1e7;
+  --border-subtle: #eaecef;
+
+  --text-primary: #111827;
+  --text-secondary: #6b7280;
+  --text-muted: #9ca3af;
+  --text-inverse: #ffffff;
+
+  --accent: #2563eb;
+  --accent-dim: #dbeafe;
+  --accent-hover: #1d4ed8;
+  --accent-soft: rgba(37, 99, 235, 0.08);
+
+  --green: #16a34a;
+  --green-dim: #dcfce7;
+  --red: #dc2626;
+  --red-dim: #fee2e2;
+  --yellow: #ca8a04;
+  --yellow-dim: #fef9c3;
+
+  --surface: #ffffff;
+  --surface-hover: #f9fafb;
+  --surface-active: #f3f4f6;
+  --surface-overlay: rgba(0, 0, 0, 0.4);
+
+  --shadow-xs: 0 1px 2px rgba(0, 0, 0, 0.05);
+  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.1), 0 1px 2px rgba(0, 0, 0, 0.06);
+  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.1);
+  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -4px rgba(0, 0, 0, 0.1);
+
+  color-scheme: light;
+}
+
+/* ── Dark theme ──────────────────────────────────────────────────────────── */
+[data-theme="dark"] {
+  --bg-0: #0f1117;
+  --bg-1: #1a1d27;
+  --bg-2: #22262f;
+  --bg-3: #1e222b;
+  --bg-4: #282c35;
+
+  --border: #2e3340;
+  --border-subtle: #252933;
+
+  --text-primary: #f0f2f5;
+  --text-secondary: #9ca3af;
+  --text-muted: #6b7280;
+  --text-inverse: #111827;
+
+  --accent: #60a5fa;
+  --accent-dim: rgba(96, 165, 250, 0.15);
+  --accent-hover: #93bbfd;
+  --accent-soft: rgba(96, 165, 250, 0.08);
+
+  --green: #4ade80;
+  --green-dim: rgba(74, 222, 128, 0.15);
+  --red: #f87171;
+  --red-dim: rgba(248, 113, 113, 0.15);
+  --yellow: #facc15;
+  --yellow-dim: rgba(250, 204, 21, 0.15);
+
+  --surface: #1a1d27;
+  --surface-hover: #22262f;
+  --surface-active: #282c35;
+  --surface-overlay: rgba(0, 0, 0, 0.6);
+
+  --shadow-xs: 0 1px 2px rgba(0, 0, 0, 0.2);
+  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.3), 0 1px 2px rgba(0, 0, 0, 0.2);
+  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.3), 0 2px 4px -2px rgba(0, 0, 0, 0.2);
+  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.3), 0 4px 6px -4px rgba(0, 0, 0, 0.2);
+
+  color-scheme: dark;
+}
+
+/* ── Auto theme (follows OS preference) ──────────────────────────────────── */
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg-0: #0f1117;
+    --bg-1: #1a1d27;
+    --bg-2: #22262f;
+    --bg-3: #1e222b;
+    --bg-4: #282c35;
+
+    --border: #2e3340;
+    --border-subtle: #252933;
+
+    --text-primary: #f0f2f5;
+    --text-secondary: #9ca3af;
+    --text-muted: #6b7280;
+    --text-inverse: #111827;
+
+    --accent: #60a5fa;
+    --accent-dim: rgba(96, 165, 250, 0.15);
+    --accent-hover: #93bbfd;
+    --accent-soft: rgba(96, 165, 250, 0.08);
+
+    --green: #4ade80;
+    --green-dim: rgba(74, 222, 128, 0.15);
+    --red: #f87171;
+    --red-dim: rgba(248, 113, 113, 0.15);
+    --yellow: #facc15;
+    --yellow-dim: rgba(250, 204, 21, 0.15);
+
+    --surface: #1a1d27;
+    --surface-hover: #22262f;
+    --surface-active: #282c35;
+    --surface-overlay: rgba(0, 0, 0, 0.6);
+
+    --shadow-xs: 0 1px 2px rgba(0, 0, 0, 0.2);
+    --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.3), 0 1px 2px rgba(0, 0, 0, 0.2);
+    --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.3), 0 2px 4px -2px rgba(0, 0, 0, 0.2);
+    --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.3), 0 4px 6px -4px rgba(0, 0, 0, 0.2);
+
+    color-scheme: dark;
+  }
+}
