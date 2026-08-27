@@ -171,13 +171,10 @@ packages/shared/
 | Текстові константи / конфіг | `bot/src/shared/config/` | `texts.ts` |
 | Обробка задач з Cloudflare Queue | `bot/src/api/queue/queue.handler.ts` | — |
 
-`api/` **поки не дотримується** цієї структури повністю — весь код в
-одному `api/src/index.ts` (612 рядків), спільні шматки вже винесені
-в `api/src/shared/` (`logger.ts`, `datetime.ts`, `auto-migrate.ts`).
-Розбиття на router+controllers за прикладом `bot/src/api/` — задача
-**P1-1** у `PROJECT_PLAN.md` (ще не виконана). Поки що: не сприймай
-поточну структуру `api/` як зразок для нового коду — краще
-орієнтуватись на `bot/src/api/`.
+`api/` дотримується структури router+controllers (задача P1-1 ✅):
+`api/src/index.ts` → `router.ts` → `controllers/*.controller.ts`.
+Спільний код в `api/src/shared/` (`types.ts`, `constants.ts`,
+`logger.ts`, `datetime.ts`, `auto-migrate.ts`, `mydate-helpers.ts`).
 
 `web/src/` — `components/` (rendering, fallback, layout, demo) +
 `pages/`. `web-admin/src/` — feature-based:
