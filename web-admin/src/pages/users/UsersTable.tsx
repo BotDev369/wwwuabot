@@ -1,6 +1,8 @@
-import { useMemo, useState, useEffect } from "react";
+import { useMemo, useState, useEffect, useCallback } from "react";
 import { useUsersStore, type SortField } from "../../features/users/store";
 import type { UserRow } from "../../shared/api/users.api";
+import { UserCardModal } from "./UserCardModal";
+import { UserEditModal } from "./UserEditModal";
 
 function formatName(u: UserRow): string {
   const parts = [u.first_name, u.last_name].filter(Boolean);
@@ -32,17 +34,22 @@ export function UsersTable({ onMessage }: Props) {
 
   const [menuOpen, setMenuOpen] = useState<number | null>(null);
   const [selectedRow, setSelectedRow] = useState<number | null>(null);
+  const [cardUserId, setCardUserId] = useState<number | null>(null);
+  const [editUserId, setEditUserId] = useState<number | null>(null);
+
+  const openMenu = useCallback((id: number) => { setMenuOpen(id); setCardUserId(null); setEditUserId(null); }, []);
+  const closeAll = useCallback(() => { setMenuOpen(null); setCardUserId(null); setEditUserId(null); }, []);
 
   // Close modal on Escape
   useEffect(() => {
     function handleKey(e: KeyboardEvent) {
-      if (e.key === "Escape") setMenuOpen(null);
+      if (e.key === "Escape") closeAll();
     }
-    if (menuOpen !== null) {
+    if (menuOpen !== null || cardUserId !== null || editUserId !== null) {
       document.addEventListener("keydown", handleKey);
       return () => document.removeEventListener("keydown", handleKey);
     }
-  }, [menuOpen]);
+  }, [menuOpen, cardUserId, editUserId, closeAll]);
 
   const filtered = useMemo(() => {
     const q = search.trim().toLowerCase();
@@ -146,7 +153,7 @@ export function UsersTable({ onMessage }: Props) {
                         className="usr-menu-btn"
                         onClick={(e) => {
                           e.stopPropagation();
-                          setMenuOpen(u.user_id);
+                          openMenu(u.user_id);
                         }}
                         title="Дії"
                       >
@@ -186,26 +193,34 @@ export function UsersTable({ onMessage }: Props) {
         </table>
       </div>
 
-      {/* Modal menu */}
-      {menuUser && (
-        <div className="usr-modal-overlay" onClick={() => setMenuOpen(null)}>
+      {/* Action modal menu */}
+      {menuUser && !cardUserId && !editUserId && (
+        <div className="usr-modal-overlay" onClick={closeAll}>
           <div className="usr-modal" onClick={(e) => e.stopPropagation()}>
             <div className="usr-modal-header">
               <span className="usr-modal-title">
                 {formatName(menuUser)}
                 {menuUser.username ? `  @${menuUser.username}` : ""}
               </span>
-              <button className="usr-modal-close" onClick={() => setMenuOpen(null)}>
-                ✕
-              </button>
+              <button className="usr-modal-close" onClick={closeAll}>✕</button>
             </div>
             <div className="usr-modal-body usr-modal-menu">
               <button
                 className="usr-modal-menu-item"
-                onClick={() => {
-                  setMenuOpen(null);
-                  onMessage(menuUser.user_id);
-                }}
+                onClick={() => { setMenuOpen(null); setCardUserId(menuUser.user_id); }}
+              >
+                👁️ Переглянути
+              </button>
+              <button
+                className="usr-modal-menu-item"
+                onClick={() => { setMenuOpen(null); setEditUserId(menuUser.user_id); }}
+              >
+                ✏️ Змінити
+              </button>
+              <div className="usr-modal-divider" />
+              <button
+                className="usr-modal-menu-item"
+                onClick={() => { setMenuOpen(null); onMessage(menuUser.user_id); }}
               >
                 ✉️ Написати повідомлення
               </button>
@@ -226,7 +241,7 @@ export function UsersTable({ onMessage }: Props) {
                   if (!confirm(`Видалити користувача ${menuUser.user_id}?`)) return;
                   const { deleteOne } = useUsersStore.getState();
                   await deleteOne(menuUser.user_id);
-                  setMenuOpen(null);
+                  closeAll();
                 }}
               >
                 🗑️ Видалити
@@ -234,6 +249,25 @@ export function UsersTable({ onMessage }: Props) {
             </div>
           </div>
         </div>
+      )}
+
+      {/* User card (view) */}
+      {cardUserId !== null && (
+        <UserCardModal
+          userId={cardUserId}
+          onClose={closeAll}
+          onEdit={(id) => { setCardUserId(null); setEditUserId(id); }}
+          onMessage={(id) => { closeAll(); onMessage(id); }}
+        />
+      )}
+
+      {/* User edit */}
+      {editUserId !== null && (
+        <UserEditModal
+          userId={editUserId}
+          onClose={closeAll}
+          onSaved={closeAll}
+        />
       )}
     </>
   );

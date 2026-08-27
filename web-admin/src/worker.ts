@@ -275,6 +275,7 @@ export default {
         }
         if (!body.user_id) return json({ error: "user_id required" }, 400);
         try {
+          await env.DB.prepare("ALTER TABLE users ADD COLUMN is_blocked INTEGER DEFAULT 0").run().catch(() => {});
           const row = await env.DB.prepare("SELECT * FROM users WHERE user_id = ?")
             .bind(body.user_id)
             .first();

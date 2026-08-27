@@ -2316,6 +2316,188 @@ body {
   border-top: 1px solid var(--border);
 }
 
+/* ─── Wide modal (card / edit) ──────────────────────────────────────────── */
+
+.usr-modal--wide {
+  max-width: 560px;
+}
+
+.usr-card-body {
+  max-height: 60vh;
+  overflow-y: auto;
+  padding: 0;
+}
+
+.usr-card-loading,
+.usr-card-error {
+  padding: 24px 16px;
+  text-align: center;
+  font-size: 13px;
+  color: var(--text-muted);
+}
+
+.usr-card-error {
+  color: var(--red);
+}
+
+/* ─── Card table ─────────────────────────────────────────────────────────── */
+
+.usr-card-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 12px;
+}
+
+.usr-card-table thead th {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  background: var(--bg-2);
+  border-bottom: 1px solid var(--border);
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  text-align: left;
+  padding: 7px 12px;
+}
+
+.usr-card-td-field {
+  position: sticky;
+  left: 0;
+  z-index: 1;
+  background: var(--bg-1);
+  font-weight: 500;
+  color: var(--text-secondary);
+  padding: 6px 12px;
+  border-top: 1px solid var(--border-subtle);
+  white-space: nowrap;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  width: 140px;
+  min-width: 120px;
+}
+
+.usr-card-td-value {
+  padding: 6px 12px;
+  border-top: 1px solid var(--border-subtle);
+  word-break: break-word;
+  max-width: 400px;
+}
+
+.usr-card-table tbody tr:first-child .usr-card-td-field,
+.usr-card-table tbody tr:first-child .usr-card-td-value {
+  border-top: none;
+}
+
+.usr-card-text {
+  font-size: 12px;
+  color: var(--text-primary);
+}
+
+.usr-card-null {
+  font-size: 12px;
+  color: var(--text-muted);
+  font-style: italic;
+}
+
+/* JSON collapsible */
+
+.usr-card-json {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.usr-card-json-toggle {
+  background: none;
+  border: none;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--accent);
+  cursor: pointer;
+  text-align: left;
+  padding: 0;
+  font-family: var(--font-mono);
+}
+
+.usr-card-json-toggle:hover {
+  text-decoration: underline;
+}
+
+.usr-card-json-peek {
+  font-size: 10px;
+  color: var(--text-muted);
+  font-family: var(--font-mono);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  max-width: 360px;
+}
+
+.usr-card-json-full {
+  font-size: 11px;
+  font-family: var(--font-mono);
+  background: var(--bg-2);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-sm);
+  padding: 8px 10px;
+  margin: 0;
+  overflow-x: auto;
+  white-space: pre;
+  max-height: 300px;
+  overflow-y: auto;
+}
+
+/* ─── Edit form ─────────────────────────────────────────────────────────── */
+
+.usr-edit-fields {
+  display: flex;
+  flex-direction: column;
+}
+
+.usr-edit-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 5px 12px;
+  border-top: 1px solid var(--border-subtle);
+}
+
+.usr-edit-row:first-child {
+  border-top: none;
+}
+
+.usr-edit-label {
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--text-secondary);
+  font-family: var(--font-mono);
+  width: 140px;
+  min-width: 120px;
+  flex-shrink: 0;
+}
+
+.usr-edit-input {
+  flex: 1;
+  background: var(--bg-2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 5px 8px;
+  font-size: 12px;
+  font-family: var(--font-mono);
+  color: var(--text-primary);
+  outline: none;
+  min-width: 0;
+  transition: border-color 0.15s;
+}
+
+.usr-edit-input:focus {
+  border-color: var(--accent);
+  background: var(--bg-1);
+}
+
 /* ═══ Mobile adaptation ═══ */
 @media (max-width: 768px) {
   .usr-table-wrap {
