@@ -5,6 +5,7 @@ import { EditorPage } from "../pages/editor/EditorPage";
 import { ScenariosPage } from "../pages/scenarios/ScenariosPage";
 import { ScenarioPreviewPage } from "../pages/scenarios/ScenarioPreviewPage";
 import { ScenarioFormPage } from "../pages/scenarios/ScenarioFormPage";
+import { UsersPage } from "../pages/users/UsersPage";
 
 export const router = createBrowserRouter([
   {
@@ -16,6 +17,7 @@ export const router = createBrowserRouter([
       { path: "scenarios/new", element: <ScenarioFormPage /> },
       { path: "scenarios/:codeword", element: <ScenarioPreviewPage /> },
       { path: "scenarios/:codeword/edit", element: <ScenarioFormPage /> },
+      { path: "users", element: <UsersPage /> },
     ],
   },
 ]);

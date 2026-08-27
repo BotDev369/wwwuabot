@@ -22,4 +22,8 @@ export const navSections: NavSection[] = [
       { to: "/scenarios", label: "Сценарії", icon: "📋" },
     ],
   },
+  {
+    title: "Адміністрування",
+    items: [{ to: "/users", label: "Користувачі", icon: "👥" }],
+  },
 ];

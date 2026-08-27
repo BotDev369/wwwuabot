@@ -6,6 +6,7 @@ export interface Env {
   DB: D1Database;
   ASSETS: Fetcher;
   ADMIN_SECRET: string;
+  BOT_TOKEN?: string;
 }
 
 const COOKIE_NAME = "admin_session";
@@ -238,6 +239,144 @@ export default {
           .run();
         const deleted = (result.meta?.changes ?? 0) > 0;
         return json({ success: true, deleted, codeword });
+      }
+
+      // ──────────────── USERS API ────────────────
+
+      if (url.pathname === "/api/users/list" && request.method === "GET") {
+        const result = await env.DB.prepare("SELECT * FROM users ORDER BY user_id ASC").all();
+        const items = (result.results ?? []).map((row: Record<string, unknown>) => {
+          const copy = { ...row };
+          // Прибираємо heavy поле зі списку за замовчуванням
+          delete copy.my_dates;
+          return copy;
+        });
+        return json({ success: true, items });
+      }
+
+      if (url.pathname === "/api/users/read" && request.method === "POST") {
+        let body: { user_id?: number };
+        try {
+          body = await request.json();
+        } catch {
+          return json({ error: "Invalid JSON" }, 400);
+        }
+        if (!body.user_id) return json({ error: "user_id required" }, 400);
+        const row = await env.DB.prepare("SELECT * FROM users WHERE user_id = ?")
+          .bind(body.user_id)
+          .first();
+        return json({ success: true, data: row ?? null });
+      }
+
+      if (url.pathname === "/api/users/update" && request.method === "POST") {
+        let body: Record<string, unknown>;
+        try {
+          body = await request.json();
+        } catch {
+          return json({ error: "Invalid JSON" }, 400);
+        }
+        const userId = typeof body.user_id === "number" ? body.user_id : parseInt(String(body.user_id), 10);
+        if (!userId || isNaN(userId)) return json({ error: "user_id required" }, 400);
+
+        const SAFE_RE = /^[a-zA-Z_][a-zA-Z0-9_]*$/;
+        const PROTECTED = new Set(["user_id"]);
+        const fields: Record<string, unknown> = {};
+        for (const [key, value] of Object.entries(body)) {
+          if (PROTECTED.has(key)) continue;
+          if (!SAFE_RE.test(key)) continue;
+          fields[key] = value;
+        }
+        const keys = Object.keys(fields);
+        if (keys.length === 0) return json({ error: "no fields to update" }, 400);
+
+        const setClause = keys.map((k) => `${k} = ?`).join(", ");
+        const values = keys.map((k) => fields[k]);
+        await env.DB.prepare(`UPDATE users SET ${setClause} WHERE user_id = ?`)
+          .bind(...values, userId)
+          .run();
+        return json({ success: true });
+      }
+
+      if (url.pathname === "/api/users/delete" && request.method === "POST") {
+        let body: { user_id?: number };
+        try {
+          body = await request.json();
+        } catch {
+          return json({ error: "Invalid JSON" }, 400);
+        }
+        if (!body.user_id) return json({ error: "user_id required" }, 400);
+        const result = await env.DB.prepare("DELETE FROM users WHERE user_id = ?")
+          .bind(body.user_id)
+          .run();
+        return json({ success: true, deleted: (result.meta?.changes ?? 0) > 0 });
+      }
+
+      if (url.pathname === "/api/users/block" && request.method === "POST") {
+        let body: { user_id?: number; blocked?: boolean };
+        try {
+          body = await request.json();
+        } catch {
+          return json({ error: "Invalid JSON" }, 400);
+        }
+        if (!body.user_id) return json({ error: "user_id required" }, 400);
+        const blocked = body.blocked !== false ? 1 : 0;
+        await env.DB.prepare("UPDATE users SET is_blocked = ? WHERE user_id = ?")
+          .bind(blocked, body.user_id)
+          .run();
+        return json({ success: true });
+      }
+
+      if (url.pathname === "/api/users/bulk" && request.method === "POST") {
+        let body: { action?: string; ids?: number[] };
+        try {
+          body = await request.json();
+        } catch {
+          return json({ error: "Invalid JSON" }, 400);
+        }
+        const action = body.action;
+        const ids = Array.isArray(body.ids) ? body.ids : [];
+        if (!action || ids.length === 0) return json({ error: "action and ids required" }, 400);
+
+        let processed = 0;
+        if (action === "delete") {
+          const placeholders = ids.map(() => "?").join(",");
+          const result = await env.DB.prepare(`DELETE FROM users WHERE user_id IN (${placeholders})`)
+            .bind(...ids)
+            .run();
+          processed = result.meta?.changes ?? 0;
+        } else if (action === "block" || action === "unblock") {
+          const val = action === "block" ? 1 : 0;
+          const placeholders = ids.map(() => "?").join(",");
+          const result = await env.DB.prepare(`UPDATE users SET is_blocked = ? WHERE user_id IN (${placeholders})`)
+            .bind(val, ...ids)
+            .run();
+          processed = result.meta?.changes ?? 0;
+        } else {
+          return json({ error: `Unknown action: ${action}` }, 400);
+        }
+        return json({ success: true, processed });
+      }
+
+      if (url.pathname === "/api/users/message" && request.method === "POST") {
+        if (!env.BOT_TOKEN) return json({ error: "BOT_TOKEN not configured" }, 500);
+        let body: { user_id?: number; text?: string };
+        try {
+          body = await request.json();
+        } catch {
+          return json({ error: "Invalid JSON" }, 400);
+        }
+        if (!body.user_id || !body.text) return json({ error: "user_id and text required" }, 400);
+
+        const tgRes = await fetch(`https://api.telegram.org/bot${env.BOT_TOKEN}/sendMessage`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ chat_id: body.user_id, text: body.text }),
+        });
+        const tgData = (await tgRes.json()) as { ok?: boolean; description?: string };
+        if (!tgData.ok) {
+          return json({ error: tgData.description ?? "Telegram API error" }, 502);
+        }
+        return json({ success: true });
       }
 
       return json({ error: "Not found" }, 404);
