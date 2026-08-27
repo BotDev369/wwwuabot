@@ -3,6 +3,13 @@ name: Deploy
 on:
   push:
     branches: [main]
+  workflow_dispatch:
+    inputs:
+      deploy_all:
+        description: 'Deploy all workers'
+        required: false
+        default: 'false'
+        type: boolean
 
 jobs:
   changes:
@@ -40,7 +47,7 @@ jobs:
 
   deploy-bot:
     needs: [changes, audit]
-    if: needs.changes.outputs.bot == 'true'
+    if: needs.changes.outputs.bot == 'true' || github.event.inputs.deploy_all == 'true'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -57,7 +64,7 @@ jobs:
 
   deploy-api:
     needs: [changes, audit]
-    if: needs.changes.outputs.api == 'true'
+    if: needs.changes.outputs.api == 'true' || github.event.inputs.deploy_all == 'true'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -74,7 +81,7 @@ jobs:
 
   deploy-web:
     needs: [changes, audit]
-    if: needs.changes.outputs.web == 'true'
+    if: needs.changes.outputs.web == 'true' || github.event.inputs.deploy_all == 'true'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -92,7 +99,7 @@ jobs:
 
   deploy-web-admin:
     needs: [changes, audit]
-    if: needs.changes.outputs.web-admin == 'true'
+    if: needs.changes.outputs.web-admin == 'true' || github.event.inputs.deploy_all == 'true'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
