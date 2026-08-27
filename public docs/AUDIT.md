@@ -37,6 +37,13 @@
 | WA-U12 | ✅ Виконано | Top-level D1 біндинг у `web-admin/wrangler.toml` |
 | WA-U13 | ✅ Виконано | Try-catch + автостворення `is_blocked` для users API |
 | WA-U14 | ✅ Виконано | `SELECT *` → вибіркові колонки (без важких JSON) |
+| SC-V1 | ✅ Виконано | API `/api/scenarios/read-all` та `/api/scenarios/update` |
+| SC-V2 | ✅ Виконано | API-клієнт `readScenarioAll`, `updateScenarioFields` |
+| SC-V3 | ✅ Виконано | Store: `sortField`, `sortDir`, `setSort` |
+| SC-V4 | ✅ Виконано | Сторінка `/scenarios-v2` + ScenariosV2Table |
+| SC-V5 | ✅ Виконано | ScenarioCardModal — перегляд ВСІХ полів |
+| SC-V6 | ✅ Виконано | ScenarioEditModal — редагування всіх полів |
+| SC-V7 | ✅ Виконано | Маршрут + sidebar навігація |
 
 Кожен пункт нижче — окремий markdown-блок, який можна скопіювати цілком і надіслати ШІ-агенту з доступом до репозиторію.
 
