@@ -1,3 +1,5 @@
+import { ThemeToggle } from "@wwwuabot/shared/components/ThemeToggle";
+
 interface AppHeaderProps {
   onMenuClick: () => void;
   scenarioName?: string | null;
@@ -20,6 +22,7 @@ export function AppHeader({
       </button>
       <span className="brand">WWWUABot</span>
       {scenarioName && <span className="header-sub scenario">{scenarioName}</span>}
+      <ThemeToggle compact />
       {showContextualMenu && (
         <button
           className="hamburger brand-color"

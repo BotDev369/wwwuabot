@@ -4,10 +4,20 @@
   "private": true,
   "type": "module",
   "exports": {
+    ".": "./src/index.ts",
     "./styles/index.css": "./src/styles/index.css",
     "./styles/tokens.css": "./src/styles/tokens.css",
     "./styles/themes.css": "./src/styles/themes.css",
     "./styles/reset.css": "./src/styles/reset.css",
-    "./styles/components.css": "./src/styles/components.css"
+    "./styles/components.css": "./src/styles/components.css",
+    "./components/ThemeToggle": "./src/components/ThemeToggle.tsx"
+  },
+  "devDependencies": {
+    "@types/react": "^19.0.0",
+    "react": "^19.0.0",
+    "typescript": "^6.0.0"
+  },
+  "peerDependencies": {
+    "react": ">=18.0.0"
   }
 }

@@ -150,7 +150,7 @@ body {
 
 .login-btn {
   background: var(--accent);
-  color: #fff;
+  color: var(--text-inverse);
   border: none;
   border-radius: var(--radius);
   padding: 11px 16px;
@@ -271,7 +271,7 @@ body {
 }
 
 .logout-btn:hover {
-  background: #fef2f2;
+  background: var(--red-dim);
   color: var(--red);
   border-color: var(--red);
 }
@@ -364,7 +364,7 @@ body {
 
 .btn--primary {
   background: var(--accent);
-  color: #fff;
+  color: var(--text-inverse);
 }
 
 .btn--primary:hover {
@@ -477,7 +477,7 @@ body {
 }
 
 .tg-message {
-  background: #ffffff;
+  background: var(--surface);
   border-radius: 12px 12px 12px 4px;
   padding: 12px 14px;
   max-width: 320px;
@@ -552,17 +552,17 @@ body {
 }
 
 .status-badge--saving {
-  background: #fef9c3;
+  background: var(--yellow-dim);
   color: var(--yellow);
 }
 
 .status-badge--saved {
-  background: #dcfce7;
+  background: var(--green-dim);
   color: var(--green);
 }
 
 .status-badge--error {
-  background: #fee2e2;
+  background: var(--red-dim);
   color: var(--red);
   cursor: help;
 }
@@ -579,7 +579,7 @@ body {
   right: 5px;
   width: 6px;
   height: 6px;
-  background: #fbbf24;
+  background: var(--yellow);
   border-radius: 50%;
   border: 1.5px solid var(--accent);
 }
@@ -683,7 +683,7 @@ body {
 }
 
 .block-action-btn--danger:hover:not(:disabled) {
-  background: #fee2e2;
+  background: var(--red-dim);
   color: var(--red);
 }
 
@@ -971,7 +971,7 @@ body {
   justify-content: center;
   gap: 22px;
   padding: clamp(32px, 7vh, 72px) clamp(28px, 6vw, 96px);
-  background: radial-gradient(120% 90% at 12% 0%, #ffffff 0%, var(--bg-2) 55%, var(--bg-0) 100%);
+  background: radial-gradient(120% 90% at 12% 0%, var(--surface) 0%, var(--bg-2) 55%, var(--bg-0) 100%);
 }
 
 /* Тематичний водяний знак — мій знак ✦, ледь помітний, без жодного руху */
@@ -1298,13 +1298,14 @@ body {
 
 /* ═══ Scenario form (CRUD) ═══ */
 .btn--danger {
-  background: #fee2e2;
+  background: var(--red-dim);
   color: var(--red);
   border: 1px solid transparent;
 }
 
 .btn--danger:hover:not(:disabled) {
-  background: #fecaca;
+  background: var(--red);
+  color: var(--text-inverse);
 }
 
 .scn-form {
@@ -2004,12 +2005,12 @@ body {
 }
 
 .usr-badge--active {
-  background: #dcfce7;
+  background: var(--green-dim);
   color: var(--green);
 }
 
 .usr-badge--blocked {
-  background: #fee2e2;
+  background: var(--red-dim);
   color: var(--red);
 }
 
@@ -2145,7 +2146,7 @@ body {
 }
 
 .usr-modal-menu-item--danger:hover {
-  background: #fee2e2;
+  background: var(--red-dim);
 }
 
 .usr-modal-divider {
