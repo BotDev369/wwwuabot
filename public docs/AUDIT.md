@@ -23,7 +23,20 @@
 | P3-2 | ⬜ Заплановано | Різні `compatibility_date` |
 | P3-3 | ⬜ Заплановано | Різні версії React/Vite |
 | CI-1 | ✅ Виконано | GitHub Actions з path filtering, `wrangler deploy --env dev`, Dependabot, нативна Git-інтеграція Cloudflare вимкнена |
-| WA-U1..U9 | ⬜ Заплановано | Позапланові: сторінка «Користувачі» в web-admin (9 підзадач) |
+| WA-U1 | ✅ Виконано | API-ендпоінти users (CRUD, message) в `web-admin/src/worker.ts` |
+| WA-U2 | ✅ Виконано | API блокування/розблокування + bulk-дії, автостворення `is_blocked` колонки |
+| WA-U3 | ✅ Виконано | Zustand-store користувачів `web-admin/src/features/users/store.ts` |
+| WA-U4 | ✅ Виконано | API-клієнт `web-admin/src/shared/api/users.api.ts` |
+| WA-U5 | ✅ Виконано | Сторінка + таблиця + меню-модалка + bulk-бар + виділення рядків |
+| WA-U6 | ✅ Виконано | Сортування по заголовках, пошук по username/імені |
+| WA-U7 | ✅ Виконано | Модалка «Написати повідомлення» |
+| WA-U8 | ✅ Виконано | Мобільна адаптація (horizontal scroll, sticky колонки) |
+| WA-U9 | ✅ Виконано | Пункт «Користувачі» в sidebar + маршрут /users |
+| WA-U10 | ✅ Виконано | Картка користувача (UserCardModal) — перегляд ВСІХ полів |
+| WA-U11 | ✅ Виконано | Форма редагування користувача (UserEditModal) |
+| WA-U12 | ✅ Виконано | Top-level D1 біндинг у `web-admin/wrangler.toml` |
+| WA-U13 | ✅ Виконано | Try-catch + автостворення `is_blocked` для users API |
+| WA-U14 | ✅ Виконано | `SELECT *` → вибіркові колонки (без важких JSON) |
 
 Кожен пункт нижче — окремий markdown-блок, який можна скопіювати цілком і надіслати ШІ-агенту з доступом до репозиторію.
 
