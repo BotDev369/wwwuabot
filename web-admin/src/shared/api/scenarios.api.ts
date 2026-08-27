@@ -85,6 +85,25 @@ export async function saveScenarioFields(
   });
 }
 
+export async function readScenarioAll(codeword: string): Promise<Record<string, unknown> | null> {
+  const res = await apiFetch<{ success: boolean; data: Record<string, unknown> | null }>(
+    "/api/scenarios/read-all",
+    { method: "POST", body: JSON.stringify({ codeword }) },
+  );
+  return res.data;
+}
+
+export async function updateScenarioFields(
+  codeword: string,
+  fields: Record<string, unknown>,
+): Promise<{ updated_at?: string }> {
+  const res = await apiFetch<{ success: boolean; updated_at?: string }>("/api/scenarios/update", {
+    method: "POST",
+    body: JSON.stringify({ codeword, ...fields }),
+  });
+  return { updated_at: res.updated_at };
+}
+
 export async function deleteScenario(codeword: string): Promise<{ deleted: boolean }> {
   const res = await apiFetch<{ success: boolean; deleted: boolean }>("/api/scenarios/delete", {
     method: "POST",

@@ -225,6 +225,74 @@ export default {
         });
       }
 
+      if (url.pathname === "/api/scenarios/read-all" && request.method === "POST") {
+        let body: { codeword?: string };
+        try {
+          body = await request.json();
+        } catch {
+          return json({ error: "Invalid JSON" }, 400);
+        }
+        if (!body.codeword) return json({ error: "codeword required" }, 400);
+        try {
+          const row = await env.DB.prepare("SELECT * FROM scenarios WHERE codeword = ?")
+            .bind(body.codeword)
+            .first();
+          return json({ success: true, data: row ?? null });
+        } catch (e: any) {
+          return json({ error: e?.message || "DB error" }, 500);
+        }
+      }
+
+      if (url.pathname === "/api/scenarios/update" && request.method === "POST") {
+        let body: Record<string, unknown>;
+        try {
+          body = await request.json();
+        } catch {
+          return json({ error: "Invalid JSON" }, 400);
+        }
+        const codeword = typeof body.codeword === "string" ? body.codeword.trim() : "";
+        if (!codeword) return json({ error: "codeword required" }, 400);
+
+        const SAFE_RE = /^[a-zA-Z_][a-zA-Z0-9_]*$/;
+        const PROTECTED = new Set(["codeword", "created_at"]);
+        const fields: Record<string, unknown> = {};
+        for (const [key, value] of Object.entries(body)) {
+          if (PROTECTED.has(key)) continue;
+          if (!SAFE_RE.test(key)) continue;
+          fields[key] = value;
+        }
+        const keys = Object.keys(fields);
+        if (keys.length === 0) return json({ error: "no fields to update" }, 400);
+
+        try {
+          const now = formatSqliteDatetime();
+          const setClause = [...keys.map((k) => `${k} = ?`), "updated_at = ?"].join(", ");
+          const values = [...keys.map((k) => fields[k]), now];
+          await env.DB.prepare(`UPDATE scenarios SET ${setClause} WHERE codeword = ?`)
+            .bind(...(values as (string | number | boolean | null)[]), codeword)
+            .run();
+          return json({ success: true, updated_at: now });
+        } catch (e: any) {
+          const msg = e?.message || String(e);
+          if (msg.includes("no such column")) {
+            const match = msg.match(/no such column: (\w+)/);
+            if (match && fields[match[1]] !== undefined) {
+              const colName = match[1];
+              const type = typeof fields[colName] === "number" ? "INTEGER" : "TEXT";
+              await env.DB.prepare(`ALTER TABLE scenarios ADD COLUMN ${colName} ${type} DEFAULT NULL`).run();
+              const now2 = formatSqliteDatetime();
+              const setClause2 = [...keys.map((k) => `${k} = ?`), "updated_at = ?"].join(", ");
+              const values2 = [...keys.map((k) => fields[k]), now2];
+              await env.DB.prepare(`UPDATE scenarios SET ${setClause2} WHERE codeword = ?`)
+                .bind(...(values2 as (string | number | boolean | null)[]), codeword)
+                .run();
+              return json({ success: true, updated_at: now2 });
+            }
+          }
+          return json({ error: msg }, 500);
+        }
+      }
+
       if (url.pathname === "/api/scenarios/delete" && request.method === "POST") {
         let body: { codeword?: string };
         try {
