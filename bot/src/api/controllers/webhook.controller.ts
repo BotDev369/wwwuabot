@@ -9,10 +9,14 @@ export async function handleSetupWebhook(env: Env): Promise<Response> {
     );
     const deleteResult = (await deleteResponse.json()) as any;
 
+    const body: Record<string, unknown> = { url: webhookUrl };
+    if (env.SECRET_TOKEN) {
+      body.secret_token = env.SECRET_TOKEN;
+    }
     const setResponse = await fetch(`https://api.telegram.org/bot${env.BOT_TOKEN}/setWebhook`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ url: webhookUrl, secret_token: env.SECRET_TOKEN }),
+      body: JSON.stringify(body),
     });
     const setResult = (await setResponse.json()) as any;
 
