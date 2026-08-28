@@ -10,7 +10,9 @@ function fixAssetHeaders(res: Response): Response {
   headers.set("Access-Control-Allow-Origin", "*");
   const ct = headers.get("content-type") || "";
   if (ct.includes("text/html")) {
-    headers.set("Cache-Control", "no-store, no-cache, must-revalidate");
+    headers.set("Cache-Control", "no-store, no-cache, must-revalidate, max-age=0");
+    headers.set("Pragma", "no-cache");
+    headers.set("Expires", "0");
   }
   return new Response(res.body, {
     status: res.status,

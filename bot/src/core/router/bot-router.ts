@@ -208,10 +208,12 @@ async function handleDeepLink(ctx: AppContext, slug: string): Promise<void> {
   }
 
   // Формуємо URL назад (без user_id — безпека!)
+  // v= Date.now() — cache buster for Telegram WebView
+  const v = Date.now();
   const webAppUrl =
     ctx.env.ENVIRONMENT === "prod"
-      ? `https://wwwuabot-web-prod.diskomate.workers.dev/${slug}`
-      : `https://wwwuabot-web-dev.diskomate.workers.dev/${slug}`;
+      ? `https://wwwuabot-web-prod.diskomate.workers.dev/${slug}?v=${v}`
+      : `https://wwwuabot-web-dev.diskomate.workers.dev/${slug}?v=${v}`;
 
   const welcomeText =
     `<b>Авторизацію підтверджено!</b>\n\n` +
