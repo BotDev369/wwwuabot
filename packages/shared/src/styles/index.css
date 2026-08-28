@@ -8,13 +8,20 @@
  * Usage in any worker:
  *   import "@wwwuabot/shared/styles/index.css";
  *
- * Or selectively:
- *   import "@wwwuabot/shared/styles/tokens.css";  // Just CSS variables
- *   import "@wwwuabot/shared/styles/themes.css";   // + light/dark themes
- *   import "@wwwuabot/shared/styles/components.css"; // + component classes
+ * Styles:
+ *   tokens.css        — CSS variable definitions (spacing, typography, etc.)
+ *   themes.css        — Light & dark theme values
+ *   apple.css         — Apple-style theme (data-style="apple")
+ *   reset.css         — Minimal reset
+ *   components.css    — Reusable .wb-* component classes
+ *
+ * Apply via HTML attributes:
+ *   <html data-theme="light|dark">     — color scheme
+ *   <html data-style="basic|apple">    — visual style
  */
 
 @import "./tokens.css";
 @import "./themes.css";
+@import "./apple.css";
 @import "./reset.css";
 @import "./components.css";

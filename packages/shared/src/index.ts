@@ -1,1 +1,1 @@
-export { ThemeToggle, useTheme } from "./components/ThemeToggle";
+export { ThemeToggle, StyleToggle, useStyleTheme } from "./components/StyleToggle";

@@ -1,6 +1,6 @@
 import { Link } from "react-router-dom";
 import { useAppStore } from "@/stores/app.store";
-import { ThemeToggle } from "@wwwuabot/shared";
+import { StyleToggle, ThemeToggle } from "@wwwuabot/shared";
 
 const NAV_ITEMS = [
   { to: "/", label: "Головна", icon: "🏠" },
@@ -40,7 +40,8 @@ export function Sidebar() {
             </Link>
           ))}
         </nav>
-        <div style={{ padding: "12px 10px", borderTop: "1px solid var(--border)" }}>
+        <div style={{ padding: "12px 10px", borderTop: "1px solid var(--border)", display: "flex", flexDirection: "column", gap: 6 }}>
+          <StyleToggle compact />
           <ThemeToggle compact />
         </div>
       </aside>

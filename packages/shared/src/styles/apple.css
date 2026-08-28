@@ -1,0 +1,429 @@
+/*
+ * ═══════════════════════════════════════════════════════════════════════════
+ * APPLE STYLE — Premium design system inspired by Apple HIG
+ * ═══════════════════════════════════════════════════════════════════════════
+ *
+ * Applies when: <html data-style="apple">
+ * Works with both light and dark themes (data-theme="light"/"dark").
+ *
+ * Design principles:
+ * - SF Pro font family (-apple-system priority)
+ * - Vibrant, saturated accent colors (Apple palette)
+ * - Frosted glass surfaces (backdrop-filter: blur)
+ * - Minimal borders — depth through shadows
+ * - Generous spacing and breathing room
+ * - Smooth spring animations
+ * - Premium, clean, confident feel
+ *
+ * All tokens override values from tokens.css and themes.css.
+ * The component classes (.wb-*) remain unchanged — only variables change.
+ */
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   APPLE LIGHT
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+[data-style="apple"][data-theme="light"],
+[data-style="apple"]:root {
+  /* ── Background: clean, warm whites ─────────────────────────────────── */
+  --bg-0: #f5f5f7;          /* Apple's signature light gray */
+  --bg-1: #ffffff;
+  --bg-2: #fafafa;
+  --bg-3: #ffffff;
+  --bg-4: #f0f0f2;
+
+  /* ── Borders: almost invisible, depth through shadows ───────────────── */
+  --border: rgba(0, 0, 0, 0.08);
+  --border-subtle: rgba(0, 0, 0, 0.04);
+
+  /* ── Text: high contrast, clean hierarchy ───────────────────────────── */
+  --text-primary: #1d1d1f;       /* Apple's near-black */
+  --text-secondary: #6e6e73;     /* Apple's secondary gray */
+  --text-muted: #aeaeb2;         /* Apple's tertiary gray */
+  --text-inverse: #ffffff;
+
+  /* ── Accent: Apple Blue ─────────────────────────────────────────────── */
+  --accent: #007aff;             /* Apple Blue */
+  --accent-dim: rgba(0, 122, 255, 0.10);
+  --accent-hover: #0066d6;
+  --accent-soft: rgba(0, 122, 255, 0.06);
+
+  /* ── Semantic colors: Apple palette ─────────────────────────────────── */
+  --green: #34c759;              /* Apple Green */
+  --green-dim: rgba(52, 199, 89, 0.12);
+  --red: #ff3b30;                /* Apple Red */
+  --red-dim: rgba(255, 59, 48, 0.10);
+  --yellow: #ff9500;             /* Apple Orange */
+  --yellow-dim: rgba(255, 149, 0, 0.12);
+
+  /* ── Surfaces: frosted glass effect ─────────────────────────────────── */
+  --surface: rgba(255, 255, 255, 0.72);
+  --surface-hover: rgba(255, 255, 255, 0.85);
+  --surface-active: rgba(0, 0, 0, 0.04);
+  --surface-overlay: rgba(0, 0, 0, 0.35);
+
+  /* ── Typography: SF Pro priority ────────────────────────────────────── */
+  --font-ui: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text",
+    "Helvetica Neue", "Segoe UI", system-ui, sans-serif;
+  --font-mono: "SF Mono", "Menlo", "Monaco", "Cascadia Code", ui-monospace, monospace;
+  --font-display: -apple-system, BlinkMacSystemFont, "SF Pro Display",
+    "Helvetica Neue", system-ui, sans-serif;
+
+  /* ── Text sizes: slightly larger for readability ────────────────────── */
+  --text-xs: 0.75rem;            /* 12px */
+  --text-sm: 0.8125rem;          /* 13px */
+  --text-base: 0.9375rem;        /* 15px — Apple's body size */
+  --text-md: 1.0625rem;          /* 17px — Apple's large body */
+  --text-lg: 1.25rem;            /* 20px */
+  --text-xl: 1.5rem;             /* 24px */
+  --text-2xl: 2rem;              /* 32px */
+
+  /* ── Line heights: generous ─────────────────────────────────────────── */
+  --leading-tight: 1.2;
+  --leading-normal: 1.47;        /* Apple's default */
+  --leading-relaxed: 1.625;
+
+  /* ── Font weights ───────────────────────────────────────────────────── */
+  --weight-normal: 400;
+  --weight-medium: 500;
+  --weight-semibold: 600;
+  --weight-bold: 700;
+
+  /* ── Spacing: generous, Apple-like rhythm ───────────────────────────── */
+  --sp-0: 0;
+  --sp-1: 0.25rem;               /* 4px */
+  --sp-2: 0.5rem;                /* 8px */
+  --sp-3: 0.75rem;               /* 12px */
+  --sp-4: 1rem;                  /* 16px */
+  --sp-5: 1.25rem;               /* 20px */
+  --sp-6: 1.5rem;                /* 24px */
+  --sp-8: 2rem;                  /* 32px */
+  --sp-10: 2.5rem;               /* 40px */
+  --sp-12: 3rem;                 /* 48px */
+  --sp-16: 4rem;                 /* 64px */
+
+  /* ── Border radius: generous, Apple-like ────────────────────────────── */
+  --radius-xs: 4px;
+  --radius-sm: 6px;
+  --radius: 8px;
+  --radius-md: 12px;
+  --radius-lg: 16px;
+  --radius-xl: 20px;
+  --radius-full: 9999px;
+
+  /* ── Shadows: layered, subtle, premium ──────────────────────────────── */
+  --shadow-xs: 0 1px 2px rgba(0, 0, 0, 0.04);
+  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.06), 0 1px 2px rgba(0, 0, 0, 0.04);
+  --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.08), 0 2px 4px rgba(0, 0, 0, 0.04);
+  --shadow-lg: 0 12px 40px rgba(0, 0, 0, 0.12), 0 4px 12px rgba(0, 0, 0, 0.06);
+  --shadow-xl: 0 24px 80px rgba(0, 0, 0, 0.16), 0 8px 24px rgba(0, 0, 0, 0.08);
+
+  /* ── Transitions: smooth spring curves ──────────────────────────────── */
+  --duration-fast: 120ms;
+  --duration: 200ms;
+  --duration-slow: 350ms;
+  --ease: cubic-bezier(0.25, 0.1, 0.25, 1);        /* Apple ease */
+  --ease-in: cubic-bezier(0.42, 0, 1, 1);
+  --ease-out: cubic-bezier(0, 0, 0.58, 1);
+  --ease-spring: cubic-bezier(0.175, 0.885, 0.32, 1.275);  /* Spring overshoot */
+
+  /* ── Layout ────────────────────────────────────────────────────────── */
+  --sidebar-w: 240px;
+  --sidebar-w-collapsed: 68px;
+  --topbar-h: 52px;
+  --max-content: 1200px;
+
+  color-scheme: light;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   APPLE DARK
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+[data-style="apple"][data-theme="dark"] {
+  /* ── Background: Apple's dark grays ─────────────────────────────────── */
+  --bg-0: #000000;               /* True black like iOS */
+  --bg-1: #1c1c1e;               /* Apple's system background */
+  --bg-2: #2c2c2e;               /* Apple's secondary background */
+  --bg-3: #1c1c1e;
+  --bg-4: #3a3a3c;               /* Apple's tertiary background */
+
+  /* ── Borders: very subtle ───────────────────────────────────────────── */
+  --border: rgba(255, 255, 255, 0.10);
+  --border-subtle: rgba(255, 255, 255, 0.05);
+
+  /* ── Text: Apple's white hierarchy ──────────────────────────────────── */
+  --text-primary: #f5f5f7;       /* Apple's white */
+  --text-secondary: #98989d;     /* Apple's secondary label */
+  --text-muted: #636366;         /* Apple's tertiary label */
+  --text-inverse: #1d1d1f;
+
+  /* ── Accent: Apple Blue (vibrant on dark) ───────────────────────────── */
+  --accent: #0a84ff;             /* Apple Blue Dark */
+  --accent-dim: rgba(10, 132, 255, 0.18);
+  --accent-hover: #409cff;
+  --accent-soft: rgba(10, 132, 255, 0.10);
+
+  /* ── Semantic colors: Apple Dark palette ────────────────────────────── */
+  --green: #30d158;              /* Apple Green Dark */
+  --green-dim: rgba(48, 209, 88, 0.18);
+  --red: #ff453a;                /* Apple Red Dark */
+  --red-dim: rgba(255, 69, 58, 0.18);
+  --yellow: #ff9f0a;             /* Apple Orange Dark */
+  --yellow-dim: rgba(255, 159, 10, 0.18);
+
+  /* ── Surfaces: frosted glass on dark ────────────────────────────────── */
+  --surface: rgba(44, 44, 46, 0.65);
+  --surface-hover: rgba(58, 58, 60, 0.75);
+  --surface-active: rgba(255, 255, 255, 0.06);
+  --surface-overlay: rgba(0, 0, 0, 0.55);
+
+  /* ── Shadows: adapted for dark backgrounds ──────────────────────────── */
+  --shadow-xs: 0 1px 2px rgba(0, 0, 0, 0.3);
+  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.4), 0 1px 2px rgba(0, 0, 0, 0.3);
+  --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.5), 0 2px 4px rgba(0, 0, 0, 0.3);
+  --shadow-lg: 0 12px 40px rgba(0, 0, 0, 0.6), 0 4px 12px rgba(0, 0, 0, 0.4);
+  --shadow-xl: 0 24px 80px rgba(0, 0, 0, 0.7), 0 8px 24px rgba(0, 0, 0, 0.5);
+
+  color-scheme: dark;
+}
+
+/* ── Auto dark (follows OS preference) ────────────────────────────────── */
+@media (prefers-color-scheme: dark) {
+  [data-style="apple"]:root:not([data-theme="light"]) {
+    --bg-0: #000000;
+    --bg-1: #1c1c1e;
+    --bg-2: #2c2c2e;
+    --bg-3: #1c1c1e;
+    --bg-4: #3a3a3c;
+
+    --border: rgba(255, 255, 255, 0.10);
+    --border-subtle: rgba(255, 255, 255, 0.05);
+
+    --text-primary: #f5f5f7;
+    --text-secondary: #98989d;
+    --text-muted: #636366;
+    --text-inverse: #1d1d1f;
+
+    --accent: #0a84ff;
+    --accent-dim: rgba(10, 132, 255, 0.18);
+    --accent-hover: #409cff;
+    --accent-soft: rgba(10, 132, 255, 0.10);
+
+    --green: #30d158;
+    --green-dim: rgba(48, 209, 88, 0.18);
+    --red: #ff453a;
+    --red-dim: rgba(255, 69, 58, 0.18);
+    --yellow: #ff9f0a;
+    --yellow-dim: rgba(255, 159, 10, 0.18);
+
+    --surface: rgba(44, 44, 46, 0.65);
+    --surface-hover: rgba(58, 58, 60, 0.75);
+    --surface-active: rgba(255, 255, 255, 0.06);
+    --surface-overlay: rgba(0, 0, 0, 0.55);
+
+    --shadow-xs: 0 1px 2px rgba(0, 0, 0, 0.3);
+    --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.4), 0 1px 2px rgba(0, 0, 0, 0.3);
+    --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.5), 0 2px 4px rgba(0, 0, 0, 0.3);
+    --shadow-lg: 0 12px 40px rgba(0, 0, 0, 0.6), 0 4px 12px rgba(0, 0, 0, 0.4);
+    --shadow-xl: 0 24px 80px rgba(0, 0, 0, 0.7), 0 8px 24px rgba(0, 0, 0, 0.5);
+
+    color-scheme: dark;
+  }
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   APPLE STYLE — Component Overrides
+   ═══════════════════════════════════════════════════════════════════════════
+   These rules apply only when data-style="apple" is set.
+   They enhance the base .wb-* components with Apple-specific polish.
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+/* ── Buttons: more rounded, subtle press effect ────────────────────────── */
+[data-style="apple"] .wb-btn {
+  border-radius: var(--radius-md);
+  font-weight: var(--weight-medium);
+  letter-spacing: -0.01em;
+}
+
+[data-style="apple"] .wb-btn:active {
+  transform: scale(0.97);
+  opacity: 0.85;
+}
+
+[data-style="apple"] .wb-btn-primary {
+  box-shadow: 0 1px 3px rgba(0, 122, 255, 0.3);
+}
+
+[data-style="apple"] .wb-btn-primary:hover {
+  box-shadow: 0 2px 8px rgba(0, 122, 255, 0.4);
+}
+
+/* ── Cards: frosted glass, no visible border ───────────────────────────── */
+[data-style="apple"] .wb-card {
+  border: none;
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  box-shadow: var(--shadow-sm);
+}
+
+[data-style="apple"] .wb-card-header {
+  border-bottom-color: var(--border-subtle);
+}
+
+[data-style="apple"] .wb-card-footer {
+  border-top-color: var(--border-subtle);
+}
+
+/* ── Modals: larger radius, glass overlay ──────────────────────────────── */
+[data-style="apple"] .wb-modal-overlay {
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  background: var(--surface-overlay);
+}
+
+[data-style="apple"] .wb-modal {
+  border-radius: var(--radius-xl);
+  border: none;
+  box-shadow: var(--shadow-xl);
+}
+
+[data-style="apple"] .wb-modal-header {
+  padding: var(--sp-5) var(--sp-6);
+}
+
+[data-style="apple"] .wb-modal-title {
+  font-size: var(--text-md);
+  font-weight: var(--weight-semibold);
+  letter-spacing: -0.02em;
+}
+
+[data-style="apple"] .wb-modal-close {
+  width: 30px;
+  height: 30px;
+  border-radius: var(--radius-full);
+  background: var(--surface-active);
+}
+
+[data-style="apple"] .wb-modal-body {
+  padding: var(--sp-5) var(--sp-6);
+}
+
+[data-style="apple"] .wb-modal-footer {
+  padding: var(--sp-4) var(--sp-6);
+}
+
+/* ── Inputs: clean, minimal borders ────────────────────────────────────── */
+[data-style="apple"] .wb-input,
+[data-style="apple"] .wb-select,
+[data-style="apple"] .wb-textarea {
+  border-radius: var(--radius-md);
+  border-width: 1px;
+  border-color: var(--border);
+  background: var(--surface);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  font-size: var(--text-base);
+  padding: var(--sp-3) var(--sp-4);
+}
+
+[data-style="apple"] .wb-input:focus,
+[data-style="apple"] .wb-select:focus,
+[data-style="apple"] .wb-textarea:focus {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px var(--accent-soft);
+}
+
+/* ── Tables: clean, no visible cell borders ────────────────────────────── */
+[data-style="apple"] .wb-table th {
+  font-size: var(--text-xs);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--text-muted);
+}
+
+[data-style="apple"] .wb-table td {
+  border-bottom-color: var(--border-subtle);
+}
+
+[data-style="apple"] .wb-data-table th {
+  font-size: var(--text-xs);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+[data-style="apple"] .wb-data-table td {
+  border-bottom-color: var(--border-subtle);
+}
+
+[data-style="apple"] .wb-data-table tbody tr:hover {
+  background: var(--surface-hover);
+}
+
+[data-style="apple"] .wb-data-table tbody tr.selected {
+  background: var(--accent-dim);
+}
+
+/* ── Badges: more rounded, Apple pill style ────────────────────────────── */
+[data-style="apple"] .wb-badge {
+  border-radius: var(--radius-full);
+  font-size: 11px;
+  font-weight: var(--weight-medium);
+  padding: 2px 8px;
+}
+
+/* ── Chips: Apple-style tags ───────────────────────────────────────────── */
+[data-style="apple"] .wb-chip {
+  border-radius: var(--radius-full);
+  border: none;
+  background: var(--surface-active);
+}
+
+/* ── Sidebar: frosted glass effect ─────────────────────────────────────── */
+[data-style="apple"] .sidebar,
+[data-style="apple"] .app-root > .sidebar {
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+}
+
+/* ── Header/Topbar: frosted glass ──────────────────────────────────────── */
+[data-style="apple"] .header,
+[data-style="apple"] .topbar {
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+}
+
+/* ── Scrollbar: thin, Apple-like ───────────────────────────────────────── */
+[data-style="apple"] ::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+[data-style="apple"] ::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+[data-style="apple"] ::-webkit-scrollbar-thumb {
+  background: var(--text-muted);
+  border-radius: var(--radius-full);
+}
+
+[data-style="apple"] ::-webkit-scrollbar-thumb:hover {
+  background: var(--text-secondary);
+}
+
+/* ── Selection: Apple blue highlight ───────────────────────────────────── */
+[data-style="apple"] ::selection {
+  background: rgba(0, 122, 255, 0.25);
+  color: inherit;
+}
+
+/* ── Links: Apple blue ─────────────────────────────────────────────────── */
+[data-style="apple"] a {
+  color: var(--accent);
+}
+
+[data-style="apple"] a:hover {
+  text-decoration: none;
+  opacity: 0.85;
+}

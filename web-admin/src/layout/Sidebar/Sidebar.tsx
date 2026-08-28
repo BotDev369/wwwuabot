@@ -1,7 +1,7 @@
 import { useSidebar } from "./useSidebar";
 import { SidebarNav } from "./SidebarNav";
 import { logout } from "../../shared/api/auth.api";
-import { ThemeToggle } from "@wwwuabot/shared";
+import { StyleToggle, ThemeToggle } from "@wwwuabot/shared";
 
 export function Sidebar() {
   const collapsed = useSidebar((s) => s.collapsed);
@@ -47,6 +47,8 @@ export function Sidebar() {
       <SidebarNav />
 
       <div className="sidebar-footer">
+        <StyleToggle compact={collapsed} />
+        <div style={{ height: 4 }} />
         <ThemeToggle compact={collapsed} />
         <div style={{ height: 6 }} />
         <button type="button" className="logout-btn" onClick={handleLogout} title="Вийти">
