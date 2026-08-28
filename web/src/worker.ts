@@ -4,12 +4,23 @@ export interface Env {
   API: { fetch: (request: Request) => Promise<Response> };
 }
 
+/** Add CORS headers so <script type="module" crossorigin> works in all browsers. */
+function withCors(res: Response): Response {
+  const headers = new Headers(res.headers);
+  headers.set("Access-Control-Allow-Origin", "*");
+  return new Response(res.body, {
+    status: res.status,
+    statusText: res.statusText,
+    headers,
+  });
+}
+
 export default {
   async fetch(request: Request, env: Env): Promise<Response> {
     const url = new URL(request.url);
     if (url.pathname.startsWith("/api/")) {
       return env.API.fetch(request);
     }
-    return env.ASSETS.fetch(request);
+    return withCors(await env.ASSETS.fetch(request));
   },
 };
