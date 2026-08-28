@@ -20,6 +20,21 @@
  *   <html data-style="basic|apple">    — visual style
  */
 
+/* ── Open Props: 400+ design tokens (colors, shadows, easings, sizes) ── */
+@import "open-props/src/props.media.css";
+@import "open-props/src/props.fonts.css";
+@import "open-props/src/props.sizes.css";
+@import "open-props/src/props.easing.css";
+@import "open-props/src/props.zindex.css";
+@import "open-props/src/props.shadows.css";
+@import "open-props/src/props.aspects.css";
+@import "open-props/src/props.colors.css";
+@import "open-props/src/props.gradients.css";
+@import "open-props/src/props.animations.css";
+@import "open-props/src/props.borders.css";
+@import "open-props/src/props.palette.css";
+
+/* ── Our design system (overrides Open Props where needed) ── */
 @import "./tokens.css";
 @import "./themes.css";
 @import "./apple.css";

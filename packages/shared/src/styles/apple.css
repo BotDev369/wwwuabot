@@ -1,76 +1,77 @@
 /*
  * ═══════════════════════════════════════════════════════════════════════════
- * APPLE STYLE — iOS/macOS-inspired visual overhaul
+ * APPLE STYLE — Built on Open Props tokens
  * ═══════════════════════════════════════════════════════════════════════════
  *
  * Applies when: <html data-style="apple">
- * Works with both light and dark themes.
  *
- * DRAMATIC differences from Basic:
- * — 17px body text (Apple HIG standard) vs 14px basic
- * — SF Pro font family, tighter letter-spacing
- * — Pill-shaped buttons, rounded nav items with filled active state
- * — True black dark mode (#000), frosted glass surfaces
- * — Generous spacing, no visible borders (depth via shadows)
- * — Apple Blue #007AFF accent, system semantic colors
- * — Spring animations, thinner scrollbars
- * — Sidebar: glass effect, larger touch targets, section labels
- * — Tables: borderless, spacious rows, subtle hover
+ * Uses Open Props (open-props.style) for:
+ * - Colors: --gray-0..12, --blue-0..12, --red-0..12, --green-0..12
+ * - Shadows: --shadow-1..6
+ * - Easings: --ease-1..5, --ease-elastic-out-*
+ * - Sizes: --size-1..15
+ * - Borders: --radius-*
+ * - Gradients: --gradient-*
+ * - Animations: --animation-*
+ *
+ * Maps them to our design tokens (--bg-0, --accent, etc.)
+ * so existing components work without changes.
  */
 
 /* ═══════════════════════════════════════════════════════════════════════════
-   APPLE LIGHT
+   APPLE LIGHT — Open Props mapped to our tokens
    ═══════════════════════════════════════════════════════════════════════════ */
 
 [data-style="apple"][data-theme="light"],
 [data-style="apple"]:root {
-  /* ── Backgrounds ──────────────────────────────────────────────────────── */
-  --bg-0: #f2f2f7;
-  --bg-1: #ffffff;
-  --bg-2: #f2f2f7;
+  /* ── Backgrounds: Apple's system grouped layout ───────────────────────── */
+  --bg-0: var(--gray-1);          /* #f1f3f5 — grouped background */
+  --bg-1: #ffffff;                /* card/surface */
+  --bg-2: var(--gray-1);          /* secondary surface */
   --bg-3: #ffffff;
-  --bg-4: #e5e5ea;
+  --bg-4: var(--gray-3);          /* #dee2e6 — system fill */
 
-  /* ── Borders: nearly invisible ────────────────────────────────────────── */
-  --border: rgba(0, 0, 0, 0.08);
-  --border-subtle: rgba(0, 0, 0, 0.04);
+  /* ── Borders: Apple's separator (0.5px hairline) ─────────────────────── */
+  --border: var(--gray-3);        /* #dee2e6 */
+  --border-subtle: var(--gray-2); /* #e9ecef */
 
   /* ── Text: Apple label hierarchy ──────────────────────────────────────── */
-  --text-primary: #000000;
-  --text-secondary: rgba(60, 60, 67, 0.75);
-  --text-muted: rgba(60, 60, 67, 0.45);
+  --text-primary: var(--gray-9);      /* #212529 */
+  --text-secondary: var(--gray-6);    /* #868e96 */
+  --text-muted: var(--gray-5);        /* #adb5bd */
   --text-inverse: #ffffff;
 
   /* ── Accent: Apple Blue ───────────────────────────────────────────────── */
-  --accent: #007aff;
-  --accent-dim: rgba(0, 122, 255, 0.10);
-  --accent-hover: #0063d1;
-  --accent-soft: rgba(0, 122, 255, 0.06);
+  --accent: var(--blue-6);         /* #228be6 — vivid blue */
+  --accent-dim: var(--blue-1);     /* #e7f5ff */
+  --accent-hover: var(--blue-7);   /* #1c7ed6 */
+  --accent-soft: var(--blue-0);    /* #e7f5ff with opacity */
 
-  /* ── Semantic ─────────────────────────────────────────────────────────── */
-  --green: #34c759;
-  --green-dim: rgba(52, 199, 89, 0.12);
-  --red: #ff3b30;
-  --red-dim: rgba(255, 59, 48, 0.10);
-  --yellow: #ff9500;
-  --yellow-dim: rgba(255, 149, 0, 0.12);
+  /* ── Semantic colors ──────────────────────────────────────────────────── */
+  --green: var(--green-6);         /* #40c057 */
+  --green-dim: var(--green-1);     /* #ebfbee */
+  --red: var(--red-6);             /* #fa5252 */
+  --red-dim: var(--red-1);         /* #fff5f5 */
+  --yellow: var(--orange-6);       /* #fd7e14 */
+  --yellow-dim: var(--orange-1);   /* #fff4e6 */
 
   /* ── Surfaces ─────────────────────────────────────────────────────────── */
-  --surface: rgba(255, 255, 255, 0.85);
-  --surface-hover: rgba(0, 0, 0, 0.035);
-  --surface-active: rgba(0, 0, 0, 0.06);
-  --surface-overlay: rgba(0, 0, 0, 0.40);
+  --surface: var(--gray-0);        /* #f8f9fa */
+  --surface-hover: var(--gray-1);
+  --surface-active: var(--gray-2);
+  --surface-overlay: rgba(0, 0, 0, 0.45);
 
-  /* ── Typography ───────────────────────────────────────────────────────── */
+  /* ── Typography: Apple SF Pro ─────────────────────────────────────────── */
   --font-ui: -apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Display",
     "Helvetica Neue", system-ui, sans-serif;
   --font-mono: "SF Mono", "Menlo", "Monaco", ui-monospace, monospace;
   --font-display: -apple-system, BlinkMacSystemFont, "SF Pro Display",
     "Helvetica Neue", system-ui, sans-serif;
 
+  /* ── Text sizes: Apple HIG body is 17px ──────────────────────────────── */
   --text-xs: 0.6875rem;
   --text-sm: 0.8125rem;
-  --text-base: 1.0625rem;
+  --text-base: 1.0625rem;         /* 17px */
   --text-md: 1.1875rem;
   --text-lg: 1.375rem;
   --text-xl: 1.6875rem;
@@ -80,43 +81,43 @@
   --leading-normal: 1.4;
   --leading-relaxed: 1.6;
 
-  /* ── Spacing ──────────────────────────────────────────────────────────── */
+  /* ── Spacing: Apple's generous rhythm ─────────────────────────────────── */
   --sp-0: 0;
-  --sp-1: 0.3125rem;
-  --sp-2: 0.5625rem;
-  --sp-3: 0.875rem;
-  --sp-4: 1.125rem;
-  --sp-5: 1.375rem;
-  --sp-6: 1.75rem;
-  --sp-8: 2.25rem;
-  --sp-10: 3rem;
-  --sp-12: 3.75rem;
-  --sp-16: 5rem;
+  --sp-1: var(--size-1);          /* 4px */
+  --sp-2: var(--size-2);          /* 8px */
+  --sp-3: var(--size-3);          /* 16px — bigger than basic 12px */
+  --sp-4: var(--size-4);          /* 20px */
+  --sp-5: var(--size-5);          /* 24px */
+  --sp-6: var(--size-6);          /* 28px */
+  --sp-8: var(--size-7);          /* 32px */
+  --sp-10: var(--size-8);         /* 48px */
+  --sp-12: var(--size-9);         /* 64px */
+  --sp-16: var(--size-10);        /* 80px */
 
   /* ── Border radius ────────────────────────────────────────────────────── */
-  --radius-xs: 6px;
-  --radius-sm: 8px;
-  --radius: 12px;
-  --radius-md: 16px;
+  --radius-xs: var(--radius-sm, 6px);
+  --radius-sm: var(--radius-md, 8px);
+  --radius: var(--radius-lg, 12px);
+  --radius-md: var(--radius-xl, 16px);
   --radius-lg: 20px;
   --radius-xl: 24px;
   --radius-full: 9999px;
 
-  /* ── Shadows ──────────────────────────────────────────────────────────── */
-  --shadow-xs: 0 0.5px 1px rgba(0, 0, 0, 0.04);
-  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.06), 0 2px 8px rgba(0, 0, 0, 0.04);
-  --shadow-md: 0 4px 14px rgba(0, 0, 0, 0.08), 0 2px 6px rgba(0, 0, 0, 0.04);
-  --shadow-lg: 0 8px 30px rgba(0, 0, 0, 0.12), 0 4px 12px rgba(0, 0, 0, 0.05);
-  --shadow-xl: 0 20px 60px rgba(0, 0, 0, 0.15), 0 8px 20px rgba(0, 0, 0, 0.08);
+  /* ── Shadows: Open Props shadow tokens ────────────────────────────────── */
+  --shadow-xs: var(--shadow-1);
+  --shadow-sm: var(--shadow-2);
+  --shadow-md: var(--shadow-3);
+  --shadow-lg: var(--shadow-4);
+  --shadow-xl: var(--shadow-5);
 
-  /* ── Transitions ──────────────────────────────────────────────────────── */
+  /* ── Transitions: Open Props easings ──────────────────────────────────── */
   --duration-fast: 80ms;
   --duration: 160ms;
   --duration-slow: 350ms;
-  --ease: cubic-bezier(0.25, 0.1, 0.25, 1.0);
-  --ease-in: cubic-bezier(0.42, 0, 1, 1);
-  --ease-out: cubic-bezier(0, 0, 0.58, 1);
-  --ease-spring: cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  --ease: var(--ease-2);
+  --ease-in: var(--ease-in-3);
+  --ease-out: var(--ease-out-3);
+  --ease-spring: var(--ease-elastic-out-2);
 
   /* ── Layout ───────────────────────────────────────────────────────────── */
   --sidebar-w: 260px;
@@ -127,46 +128,53 @@
 }
 
 /* ═══════════════════════════════════════════════════════════════════════════
-   APPLE DARK
+   APPLE DARK — Open Props mapped to our tokens
    ═══════════════════════════════════════════════════════════════════════════ */
 
 [data-style="apple"][data-theme="dark"] {
+  /* ── Backgrounds: True black like iOS ─────────────────────────────────── */
   --bg-0: #000000;
-  --bg-1: #1c1c1e;
-  --bg-2: #2c2c2e;
-  --bg-3: #1c1c1e;
-  --bg-4: #3a3a3c;
+  --bg-1: var(--gray-10);         /* #16191d */
+  --bg-2: var(--gray-9);          /* #212529 */
+  --bg-3: var(--gray-10);
+  --bg-4: var(--gray-8);          /* #343a40 */
 
-  --border: rgba(255, 255, 255, 0.10);
-  --border-subtle: rgba(255, 255, 255, 0.05);
+  /* ── Borders ──────────────────────────────────────────────────────────── */
+  --border: var(--gray-8);
+  --border-subtle: var(--gray-9);
 
-  --text-primary: #ffffff;
-  --text-secondary: rgba(235, 235, 245, 0.65);
-  --text-muted: rgba(235, 235, 245, 0.35);
-  --text-inverse: #000000;
+  /* ── Text ─────────────────────────────────────────────────────────────── */
+  --text-primary: var(--gray-0);   /* #f8f9fa */
+  --text-secondary: var(--gray-4); /* #ced4da */
+  --text-muted: var(--gray-6);     /* #868e96 */
+  --text-inverse: var(--gray-9);
 
-  --accent: #0a84ff;
-  --accent-dim: rgba(10, 132, 255, 0.18);
-  --accent-hover: #409cff;
-  --accent-soft: rgba(10, 132, 255, 0.10);
+  /* ── Accent: darker blue for dark mode ────────────────────────────────── */
+  --accent: var(--blue-5);         /* #339af0 */
+  --accent-dim: rgba(51, 154, 240, 0.15);
+  --accent-hover: var(--blue-4);   /* #4dabf7 */
+  --accent-soft: rgba(51, 154, 240, 0.08);
 
-  --green: #30d158;
-  --green-dim: rgba(48, 209, 88, 0.18);
-  --red: #ff453a;
-  --red-dim: rgba(255, 69, 58, 0.18);
-  --yellow: #ff9f0a;
-  --yellow-dim: rgba(255, 159, 10, 0.18);
+  /* ── Semantic ─────────────────────────────────────────────────────────── */
+  --green: var(--green-5);         /* #51cf66 */
+  --green-dim: rgba(81, 207, 102, 0.15);
+  --red: var(--red-5);             /* #ff6b6b */
+  --red-dim: rgba(255, 107, 107, 0.15);
+  --yellow: var(--orange-5);       /* #ff922b */
+  --yellow-dim: rgba(255, 146, 43, 0.15);
 
-  --surface: rgba(44, 44, 46, 0.72);
-  --surface-hover: rgba(58, 58, 60, 0.85);
-  --surface-active: rgba(255, 255, 255, 0.08);
-  --surface-overlay: rgba(0, 0, 0, 0.60);
+  /* ── Surfaces ─────────────────────────────────────────────────────────── */
+  --surface: var(--gray-9);
+  --surface-hover: var(--gray-8);
+  --surface-active: var(--gray-7);
+  --surface-overlay: rgba(0, 0, 0, 0.65);
 
-  --shadow-xs: 0 0.5px 1px rgba(0, 0, 0, 0.35);
-  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.45), 0 2px 8px rgba(0, 0, 0, 0.3);
-  --shadow-md: 0 4px 14px rgba(0, 0, 0, 0.55), 0 2px 6px rgba(0, 0, 0, 0.4);
-  --shadow-lg: 0 8px 30px rgba(0, 0, 0, 0.65), 0 4px 12px rgba(0, 0, 0, 0.5);
-  --shadow-xl: 0 20px 60px rgba(0, 0, 0, 0.8), 0 8px 20px rgba(0, 0, 0, 0.6);
+  /* ── Shadows: deeper for dark ─────────────────────────────────────────── */
+  --shadow-xs: 0 1px 2px rgba(0, 0, 0, 0.4);
+  --shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.5);
+  --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.6);
+  --shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.7);
+  --shadow-xl: 0 16px 48px rgba(0, 0, 0, 0.8);
 
   color-scheme: dark;
 }
@@ -174,915 +182,44 @@
 @media (prefers-color-scheme: dark) {
   [data-style="apple"]:root:not([data-theme="light"]) {
     --bg-0: #000000;
-    --bg-1: #1c1c1e;
-    --bg-2: #2c2c2e;
-    --bg-3: #1c1c1e;
-    --bg-4: #3a3a3c;
-    --border: rgba(255, 255, 255, 0.10);
-    --border-subtle: rgba(255, 255, 255, 0.05);
-    --text-primary: #ffffff;
-    --text-secondary: rgba(235, 235, 245, 0.65);
-    --text-muted: rgba(235, 235, 245, 0.35);
-    --text-inverse: #000000;
-    --accent: #0a84ff;
-    --accent-dim: rgba(10, 132, 255, 0.18);
-    --accent-hover: #409cff;
-    --accent-soft: rgba(10, 132, 255, 0.10);
-    --green: #30d158;
-    --green-dim: rgba(48, 209, 88, 0.18);
-    --red: #ff453a;
-    --red-dim: rgba(255, 69, 58, 0.18);
-    --yellow: #ff9f0a;
-    --yellow-dim: rgba(255, 159, 10, 0.18);
-    --surface: rgba(44, 44, 46, 0.72);
-    --surface-hover: rgba(58, 58, 60, 0.85);
-    --surface-active: rgba(255, 255, 255, 0.08);
-    --surface-overlay: rgba(0, 0, 0, 0.60);
-    --shadow-xs: 0 0.5px 1px rgba(0, 0, 0, 0.35);
-    --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.45), 0 2px 8px rgba(0, 0, 0, 0.3);
-    --shadow-md: 0 4px 14px rgba(0, 0, 0, 0.55), 0 2px 6px rgba(0, 0, 0, 0.4);
-    --shadow-lg: 0 8px 30px rgba(0, 0, 0, 0.65), 0 4px 12px rgba(0, 0, 0, 0.5);
-    --shadow-xl: 0 20px 60px rgba(0, 0, 0, 0.8), 0 8px 20px rgba(0, 0, 0, 0.6);
+    --bg-1: var(--gray-10);
+    --bg-2: var(--gray-9);
+    --bg-3: var(--gray-10);
+    --bg-4: var(--gray-8);
+    --border: var(--gray-8);
+    --border-subtle: var(--gray-9);
+    --text-primary: var(--gray-0);
+    --text-secondary: var(--gray-4);
+    --text-muted: var(--gray-6);
+    --text-inverse: var(--gray-9);
+    --accent: var(--blue-5);
+    --accent-dim: rgba(51, 154, 240, 0.15);
+    --accent-hover: var(--blue-4);
+    --accent-soft: rgba(51, 154, 240, 0.08);
+    --green: var(--green-5);
+    --green-dim: rgba(81, 207, 102, 0.15);
+    --red: var(--red-5);
+    --red-dim: rgba(255, 107, 107, 0.15);
+    --yellow: var(--orange-5);
+    --yellow-dim: rgba(255, 146, 43, 0.15);
+    --surface: var(--gray-9);
+    --surface-hover: var(--gray-8);
+    --surface-active: var(--gray-7);
+    --surface-overlay: rgba(0, 0, 0, 0.65);
+    --shadow-xs: 0 1px 2px rgba(0, 0, 0, 0.4);
+    --shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.5);
+    --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.6);
+    --shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.7);
+    --shadow-xl: 0 16px 48px rgba(0, 0, 0, 0.8);
     color-scheme: dark;
   }
 }
 
 /* ═══════════════════════════════════════════════════════════════════════════
-   APPLE STYLE — Global overrides
+   APPLE STYLE — Component Overrides (high specificity with !important)
    ═══════════════════════════════════════════════════════════════════════════ */
 
-/* ── Body: larger text, SF Pro ─────────────────────────────────────────── */
-[data-style="apple"] body {
-  font-family: var(--font-ui);
-  font-size: 17px;
-  line-height: 1.47;
-  letter-spacing: -0.022em;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-}
-
-/* ── Typography ────────────────────────────────────────────────────────── */
-[data-style="apple"] h1 {
-  font-size: 34px;
-  font-weight: 700;
-  letter-spacing: -0.04em;
-  line-height: 1.12;
-}
-
-[data-style="apple"] h2 {
-  font-size: 28px;
-  font-weight: 700;
-  letter-spacing: -0.035em;
-  line-height: 1.15;
-}
-
-[data-style="apple"] h3 {
-  font-size: 22px;
-  font-weight: 600;
-  letter-spacing: -0.025em;
-  line-height: 1.2;
-}
-
-[data-style="apple"] p {
-  font-size: 17px;
-  line-height: 1.47;
-}
-
-[data-style="apple"] a {
-  color: var(--accent);
-  text-decoration: none;
-}
-
-[data-style="apple"] a:hover {
-  opacity: 0.75;
-}
-
-[data-style="apple"] ::selection {
-  background: rgba(0, 122, 255, 0.25);
-  color: inherit;
-}
-
-/* ═══════════════════════════════════════════════════════════════════════════
-   APPLE STYLE — Sidebar (DRAMATICALLY different)
-   ═══════════════════════════════════════════════════════════════════════════ */
-
-[data-style="apple"] .sidebar {
-  background: rgba(242, 242, 247, 0.85);
-  backdrop-filter: saturate(180%) blur(20px);
-  -webkit-backdrop-filter: saturate(180%) blur(20px);
-  border-right: 0.5px solid var(--border);
-}
-
-[data-style="apple"][data-theme="dark"] .sidebar {
-  background: rgba(28, 28, 30, 0.80);
-}
-
-/* Nav items: larger, rounded, pill-like */
-[data-style="apple"] .sidebar nav a {
-  border-radius: 10px;
-  font-size: 15px;
-  font-weight: 500;
-  padding: 10px 14px;
-  min-height: 42px;
-  letter-spacing: -0.015em;
-  transition: background 120ms ease, color 120ms ease;
-}
-
-[data-style="apple"] .sidebar nav a:hover {
-  background: var(--surface-hover);
-}
-
-[data-style="apple"] .sidebar nav a.active {
-  background: var(--accent);
-  color: #ffffff;
-  font-weight: 600;
-  box-shadow: 0 2px 8px rgba(0, 122, 255, 0.30);
-}
-
-/* Admin sidebar items */
-[data-style="apple"] .sidebar-nav-item {
-  border-radius: 10px;
-  font-size: 15px;
-  font-weight: 500;
-  padding: 10px 12px;
-  min-height: 42px;
-  letter-spacing: -0.015em;
-}
-
-[data-style="apple"] .sidebar-nav-item:hover {
-  background: var(--surface-hover);
-}
-
-[data-style="apple"] .sidebar-nav-item--active {
-  background: var(--accent);
-  color: #ffffff;
-  font-weight: 600;
-  box-shadow: 0 2px 8px rgba(0, 122, 255, 0.30);
-}
-
-[data-style="apple"][data-theme="dark"] .sidebar-nav-item--active {
-  box-shadow: 0 2px 8px rgba(10, 132, 255, 0.30);
-}
-
-/* Sidebar header */
-[data-style="apple"] .sidebar-header {
-  border-bottom: 0.5px solid var(--border);
-}
-
-[data-style="apple"] .sidebar-title {
-  font-size: 14px;
-  font-weight: 700;
-  letter-spacing: 0.04em;
-}
-
-/* Sidebar settings section */
-[data-style="apple"] .sidebar-settings {
-  border-top: 0.5px solid var(--border);
-  padding: 10px 10px;
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-}
-
-[data-style="apple"] .sidebar-settings-label {
-  font-size: 11px;
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
-  color: var(--text-muted);
-  padding: 6px 8px 4px;
-}
-
-[data-style="apple"] .sidebar--collapsed .sidebar-settings {
-  padding: 6px;
-}
-
-/* Settings items: Apple-style disclosure rows */
-[data-style="apple"] .sidebar-settings-item {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 8px 10px;
-  border-radius: 8px;
-  font-size: 15px;
-  font-weight: 500;
-  color: var(--text-primary);
-  cursor: pointer;
-  transition: background 100ms ease;
-  border: none;
-  background: none;
-  width: 100%;
-  text-align: left;
-  letter-spacing: -0.015em;
-}
-
-[data-style="apple"] .sidebar-settings-item:hover {
-  background: var(--surface-hover);
-}
-
-/* Sidebar footer / logout */
-[data-style="apple"] .sidebar-footer {
-  border-top: 0.5px solid var(--border);
-  padding: 10px;
-}
-
-[data-style="apple"] .logout-btn {
-  border-radius: 10px;
-  font-size: 15px;
-  font-weight: 500;
-  padding: 10px 12px;
-  border: none;
-  color: var(--red);
-  letter-spacing: -0.015em;
-}
-
-[data-style="apple"] .logout-btn:hover {
-  background: var(--red-dim);
-}
-
-/* Collapsed sidebar */
-[data-style="apple"] .sidebar--collapsed .sidebar-nav-item {
-  justify-content: center;
-  padding: 10px 0;
-  border-radius: 10px;
-}
-
-[data-style="apple"] .sidebar--collapsed .sidebar-toggle {
-  border-radius: 10px;
-}
-
-/* ═══════════════════════════════════════════════════════════════════════════
-   APPLE STYLE — Header / Topbar
-   ═══════════════════════════════════════════════════════════════════════════ */
-
-[data-style="apple"] .header,
-[data-style="apple"] .topbar {
-  background: rgba(255, 255, 255, 0.80);
-  backdrop-filter: saturate(180%) blur(20px);
-  -webkit-backdrop-filter: saturate(180%) blur(20px);
-  border-bottom: 0.5px solid var(--border);
-}
-
-[data-style="apple"][data-theme="dark"] .header,
-[data-style="apple"][data-theme="dark"] .topbar {
-  background: rgba(28, 28, 30, 0.80);
-}
-
-[data-style="apple"] .topbar-title {
-  font-size: 17px;
-  font-weight: 600;
-  letter-spacing: -0.02em;
-}
-
-[data-style="apple"] .brand {
-  font-size: 18px;
-  font-weight: 800;
-  letter-spacing: -0.02em;
-}
-
-[data-style="apple"] .header-sub {
-  font-size: 15px;
-}
-
-/* ═══════════════════════════════════════════════════════════════════════════
-   APPLE STYLE — Buttons (pill-shaped)
-   ═══════════════════════════════════════════════════════════════════════════ */
-
-[data-style="apple"] .wb-btn,
-[data-style="apple"] .btn {
-  border-radius: var(--radius-full);
-  font-size: 15px;
-  font-weight: 600;
-  letter-spacing: -0.015em;
-  padding: 10px 20px;
-  transition: all 120ms ease;
-}
-
-[data-style="apple"] .wb-btn:active,
-[data-style="apple"] .btn:active {
-  transform: scale(0.97);
-}
-
-[data-style="apple"] .wb-btn-primary,
-[data-style="apple"] .btn--primary {
-  box-shadow: 0 2px 8px rgba(0, 122, 255, 0.30);
-}
-
-[data-style="apple"] .wb-btn-primary:hover,
-[data-style="apple"] .btn--primary:hover {
-  box-shadow: 0 4px 16px rgba(0, 122, 255, 0.40);
-  transform: translateY(-0.5px);
-}
-
-[data-style="apple"] .wb-btn-secondary,
-[data-style="apple"] .btn--secondary {
-  background: var(--bg-2);
-  border: 1px solid var(--border);
-  color: var(--text-primary);
-}
-
-[data-style="apple"] .wb-btn-sm,
-[data-style="apple"] .btn-sm {
-  padding: 6px 14px;
-  font-size: 13px;
-}
-
-[data-style="apple"] .wb-btn-lg {
-  padding: 14px 28px;
-  font-size: 17px;
-}
-
-/* ═══════════════════════════════════════════════════════════════════════════
-   APPLE STYLE — Cards
-   ═══════════════════════════════════════════════════════════════════════════ */
-
-[data-style="apple"] .wb-card,
-[data-style="apple"] .card {
-  border: none;
-  border-radius: var(--radius-lg);
-  box-shadow: var(--shadow-sm);
-  background: var(--bg-1);
-}
-
-[data-style="apple"] .wb-card-header {
-  padding: var(--sp-5) var(--sp-6);
-  border-bottom: none;
-  font-size: 17px;
-  font-weight: 600;
-  letter-spacing: -0.02em;
-}
-
-[data-style="apple"] .wb-card-body {
-  padding: var(--sp-5) var(--sp-6);
-}
-
-[data-style="apple"] .wb-card-footer {
-  border-top: 0.5px solid var(--border-subtle);
-  padding: var(--sp-4) var(--sp-6);
-}
-
-/* ═══════════════════════════════════════════════════════════════════════════
-   APPLE STYLE — Modal
-   ═══════════════════════════════════════════════════════════════════════════ */
-
-[data-style="apple"] .wb-modal-overlay {
-  backdrop-filter: blur(8px) saturate(150%);
-  -webkit-backdrop-filter: blur(8px) saturate(150%);
-  background: rgba(0, 0, 0, 0.35);
-}
-
-[data-style="apple"] .wb-modal {
-  border-radius: var(--radius-xl);
-  border: none;
-  box-shadow: var(--shadow-xl);
-}
-
-[data-style="apple"] .wb-modal-header {
-  padding: var(--sp-5) var(--sp-6);
-  border-bottom: 0.5px solid var(--border);
-}
-
-[data-style="apple"] .wb-modal-title {
-  font-size: 20px;
-  font-weight: 700;
-  letter-spacing: -0.03em;
-}
-
-[data-style="apple"] .wb-modal-body {
-  padding: var(--sp-5) var(--sp-6);
-}
-
-[data-style="apple"] .wb-modal-footer {
-  padding: var(--sp-4) var(--sp-6);
-  border-top: 0.5px solid var(--border);
-}
-
-/* ═══════════════════════════════════════════════════════════════════════════
-   APPLE STYLE — Inputs
-   ═══════════════════════════════════════════════════════════════════════════ */
-
-[data-style="apple"] .wb-input,
-[data-style="apple"] .wb-select,
-[data-style="apple"] .wb-textarea,
-[data-style="apple"] .scn-search,
-[data-style="apple"] .block-input,
-[data-style="apple"] .block-textarea {
-  border-radius: 10px;
-  border: 0.5px solid var(--border);
-  background: var(--bg-2);
-  font-size: 15px;
-  padding: 11px 14px;
-  letter-spacing: -0.01em;
-}
-
-[data-style="apple"] .wb-input:focus,
-[data-style="apple"] .wb-select:focus,
-[data-style="apple"] .wb-textarea:focus,
-[data-style="apple"] .scn-search:focus {
-  border-color: var(--accent);
-  box-shadow: 0 0 0 4px var(--accent-soft);
-  background: var(--bg-1);
-}
-
-/* ═══════════════════════════════════════════════════════════════════════════
-   APPLE STYLE — Tables (spacious, borderless rows)
-   ═══════════════════════════════════════════════════════════════════════════ */
-
-[data-style="apple"] .scn-table,
-[data-style="apple"] .usr-table,
-[data-style="apple"] .wb-data-table {
-  border: none;
-  border-radius: var(--radius-lg);
-  overflow: hidden;
-}
-
-[data-style="apple"] .scn-table thead th,
-[data-style="apple"] .usr-table thead th,
-[data-style="apple"] .wb-table th,
-[data-style="apple"] .wb-data-table th {
-  font-size: 11px;
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
-  color: var(--text-muted);
-  padding: 12px 16px;
-  background: var(--bg-1);
-  border-bottom: 0.5px solid var(--border);
-}
-
-[data-style="apple"] .scn-table tbody tr td,
-[data-style="apple"] .usr-table tbody tr td,
-[data-style="apple"] .wb-data-table td {
-  padding: 14px 16px;
-  border-bottom: 0.5px solid var(--border-subtle);
-  font-size: 15px;
-}
-
-[data-style="apple"] .scn-table tbody tr:last-child td,
-[data-style="apple"] .usr-table tbody tr:last-child td {
-  border-bottom: none;
-}
-
-[data-style="apple"] .scn-row:hover,
-[data-style="apple"] .usr-row:hover,
-[data-style="apple"] .wb-data-table tbody tr:hover {
-  background: var(--surface-hover);
-}
-
-[data-style="apple"] .scn-row:hover td:first-child,
-[data-style="apple"] .usr-row:hover .usr-td-sticky {
-  background: var(--surface-hover);
-}
-
-[data-style="apple"] .usr-row--selected,
-[data-style="apple"] .wb-data-table tbody tr.selected {
-  background: var(--accent-dim) !important;
-}
-
-[data-style="apple"] .usr-td-name {
-  font-size: 15px;
-  font-weight: 500;
-}
-
-[data-style="apple"] .usr-td-username {
-  font-family: var(--font-mono);
-  font-size: 13px;
-  color: var(--text-secondary);
-}
-
-[data-style="apple"] .usr-badge {
-  border-radius: var(--radius-full);
-  font-size: 11px;
-  font-weight: 600;
-  padding: 3px 10px;
-}
-
-[data-style="apple"] .scn-badge {
-  border-radius: var(--radius-full);
-  font-size: 11px;
-  font-weight: 600;
-  padding: 3px 10px;
-  border: none;
-}
-
-[data-style="apple"] .scn-count {
-  border-radius: var(--radius-full);
-  border: none;
-  font-size: 13px;
-  font-weight: 600;
-  padding: 4px 12px;
-}
-
-[data-style="apple"] .status-badge {
-  border-radius: var(--radius-full);
-  font-size: 12px;
-  font-weight: 600;
-  padding: 4px 12px;
-}
-
-/* ═══════════════════════════════════════════════════════════════════════════
-   APPLE STYLE — Badges & Chips
-   ═══════════════════════════════════════════════════════════════════════════ */
-
-[data-style="apple"] .wb-badge {
-  border-radius: var(--radius-full);
-  font-size: 13px;
-  font-weight: 600;
-  padding: 3px 10px;
-}
-
-[data-style="apple"] .wb-chip {
-  border-radius: var(--radius-full);
-  border: none;
-  background: var(--bg-2);
-  font-size: 14px;
-  font-weight: 500;
-  padding: 6px 14px;
-}
-
-[data-style="apple"] .kb-toggle-btn {
-  border-radius: var(--radius-full);
-  font-size: 13px;
-  font-weight: 500;
-  padding: 5px 14px;
-  border: none;
-  background: var(--bg-2);
-}
-
-[data-style="apple"] .kb-toggle-btn--active {
-  background: var(--accent);
-  color: #fff;
-  box-shadow: 0 1px 4px rgba(0, 122, 255, 0.25);
-}
-
-[data-style="apple"] .photo-tab {
-  border-radius: var(--radius-full);
-  border: none;
-  font-size: 13px;
-  font-weight: 500;
-  padding: 5px 14px;
-}
-
-[data-style="apple"] .photo-tab--active {
-  background: var(--accent);
-  color: #fff;
-}
-
-[data-style="apple"] .login-logo-sub {
-  border-radius: var(--radius-full);
-  border: none;
-  background: var(--bg-2);
-  padding: 4px 12px;
-  font-size: 11px;
-  font-weight: 600;
-  letter-spacing: 0.06em;
-}
-
-[data-style="apple"] .preview-badge {
-  border-radius: var(--radius-full);
-  border: none;
-  background: var(--bg-2);
-  font-size: 11px;
-  font-weight: 600;
-  padding: 4px 12px;
-}
-
-/* ═══════════════════════════════════════════════════════════════════════════
-   APPLE STYLE — Login
-   ═══════════════════════════════════════════════════════════════════════════ */
-
-[data-style="apple"] .login-card {
-  border: none;
-  border-radius: var(--radius-xl);
-  box-shadow: var(--shadow-lg);
-  padding: 44px 40px;
-}
-
-[data-style="apple"] .login-input {
-  border-radius: 10px;
-  border: 0.5px solid var(--border);
-  background: var(--bg-2);
-  font-size: 15px;
-  padding: 12px 14px;
-}
-
-[data-style="apple"] .login-input:focus {
-  border-color: var(--accent);
-  box-shadow: 0 0 0 4px var(--accent-soft);
-}
-
-[data-style="apple"] .login-btn {
-  border-radius: var(--radius-full);
-  font-size: 17px;
-  font-weight: 600;
-  padding: 13px 20px;
-  letter-spacing: -0.01em;
-  box-shadow: 0 2px 8px rgba(0, 122, 255, 0.30);
-}
-
-[data-style="apple"] .login-label {
-  font-size: 13px;
-  font-weight: 500;
-}
-
-/* ═══════════════════════════════════════════════════════════════════════════
-   APPLE STYLE — Home page
-   ═══════════════════════════════════════════════════════════════════════════ */
-
-[data-style="apple"] .home {
-  background: radial-gradient(120% 90% at 12% 0%, var(--bg-1) 0%, var(--bg-2) 55%, var(--bg-0) 100%);
-}
-
-[data-style="apple"] .home-greeting {
-  font-family: var(--font-display);
-  font-weight: 700;
-  font-size: clamp(44px, 8vw, 92px);
-  letter-spacing: -0.04em;
-}
-
-[data-style="apple"] .home-text {
-  font-size: 19px;
-  line-height: 1.5;
-  color: var(--text-secondary);
-}
-
-/* ═══════════════════════════════════════════════════════════════════════════
-   APPLE STYLE — Scenario blocks
-   ═══════════════════════════════════════════════════════════════════════════ */
-
-[data-style="apple"] .block-card {
-  border: none;
-  border-radius: var(--radius-md);
-  box-shadow: var(--shadow-xs);
-}
-
-[data-style="apple"] .block-card:hover {
-  box-shadow: var(--shadow-sm);
-}
-
-[data-style="apple"] .block-card-header {
-  background: var(--bg-2);
-  border-bottom: 0.5px solid var(--border-subtle);
-  border-radius: var(--radius-md) var(--radius-md) 0 0;
-}
-
-[data-style="apple"] .block-type-badge {
-  border-radius: 6px;
-  font-size: 11px;
-  font-weight: 700;
-}
-
-[data-style="apple"] .tg-btn {
-  border-radius: 8px;
-  font-size: 14px;
-  font-weight: 500;
-  padding: 8px 10px;
-}
-
-[data-style="apple"] .add-block-btn,
-[data-style="apple"] .kb-add-btn,
-[data-style="apple"] .kb-add-row {
-  border-radius: var(--radius-full);
-  border: 1.5px dashed var(--border);
-  font-size: 13px;
-  font-weight: 500;
-  padding: 6px 16px;
-}
-
-[data-style="apple"] .add-block-btn:hover,
-[data-style="apple"] .kb-add-btn:hover,
-[data-style="apple"] .kb-add-row:hover {
-  border-color: var(--accent);
-  color: var(--accent);
-}
-
-[data-style="apple"] .block-picker {
-  border: none;
-  border-radius: var(--radius-md);
-  box-shadow: var(--shadow-lg);
-  padding: 6px;
-}
-
-[data-style="apple"] .block-picker-item {
-  border-radius: 8px;
-  font-size: 14px;
-  padding: 8px 12px;
-}
-
-/* ═══════════════════════════════════════════════════════════════════════════
-   APPLE STYLE — Telegram preview
-   ═══════════════════════════════════════════════════════════════════════════ */
-
-[data-style="apple"] .tg-message {
-  border-radius: 18px 18px 18px 4px;
-  padding: 14px 16px;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.10);
-}
-
-[data-style="apple"] .tg-paragraph {
-  font-size: 15px;
-  line-height: 1.5;
-}
-
-[data-style="apple"] .tg-heading--h1 {
-  font-size: 20px;
-}
-
-[data-style="apple"] .tg-heading--h2 {
-  font-size: 17px;
-}
-
-[data-style="apple"] .tg-heading--h3 {
-  font-size: 15px;
-}
-
-/* ═══════════════════════════════════════════════════════════════════════════
-   APPLE STYLE — Scrollbar
-   ═══════════════════════════════════════════════════════════════════════════ */
-
-[data-style="apple"] ::-webkit-scrollbar {
-  width: 6px;
-  height: 6px;
-}
-
-[data-style="apple"] ::-webkit-scrollbar-track {
-  background: transparent;
-}
-
-[data-style="apple"] ::-webkit-scrollbar-thumb {
-  background: rgba(0, 0, 0, 0.15);
-  border-radius: 10px;
-}
-
-[data-style="apple"][data-theme="dark"] ::-webkit-scrollbar-thumb {
-  background: rgba(255, 255, 255, 0.15);
-}
-
-[data-style="apple"] ::-webkit-scrollbar-thumb:hover {
-  background: rgba(0, 0, 0, 0.30);
-}
-
-/* ═══════════════════════════════════════════════════════════════════════════
-   APPLE STYLE — Page header / title area
-   ═══════════════════════════════════════════════════════════════════════════ */
-
-[data-style="apple"] .page-title {
-  font-size: 34px;
-  font-weight: 700;
-  letter-spacing: -0.04em;
-}
-
-[data-style="apple"] .page-subtitle {
-  font-size: 17px;
-  color: var(--text-secondary);
-}
-
-[data-style="apple"] .scn-field-label {
-  font-size: 12px;
-  font-weight: 600;
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
-  color: var(--text-muted);
-}
-
-[data-style="apple"] .panel-title {
-  font-size: 12px;
-  font-weight: 600;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-  color: var(--text-muted);
-}
-
-/* ═══════════════════════════════════════════════════════════════════════════
-   APPLE STYLE — Codeword input
-   ═══════════════════════════════════════════════════════════════════════════ */
-
-[data-style="apple"] .codeword-input-wrap {
-  border-radius: 10px;
-  border: 0.5px solid var(--border);
-  background: var(--bg-2);
-}
-
-[data-style="apple"] .codeword-input-wrap:focus-within {
-  border-color: var(--accent);
-  box-shadow: 0 0 0 4px var(--accent-soft);
-}
-
-[data-style="apple"] .codeword-input {
-  font-size: 15px;
-  padding: 9px 12px 9px 0;
-}
-
-/* ═══════════════════════════════════════════════════════════════════════════
-   APPLE STYLE — Web-specific: cards grid, date input
-   ═══════════════════════════════════════════════════════════════════════════ */
-
-[data-style="apple"] .cards-grid {
-  gap: 20px;
-}
-
-[data-style="apple"] .card {
-  border: none;
-  border-radius: var(--radius-lg);
-  box-shadow: var(--shadow-sm);
-  padding: 24px;
-}
-
-[data-style="apple"] .card h3 {
-  font-size: 20px;
-  font-weight: 600;
-  letter-spacing: -0.02em;
-}
-
-[data-style="apple"] .card p {
-  font-size: 15px;
-  line-height: 1.5;
-}
-
-[data-style="apple"] .date-input {
-  border-radius: 10px;
-  border: 0.5px solid var(--border);
-  background: var(--bg-1);
-  font-size: 17px;
-  padding: 12px 16px;
-}
-
-[data-style="apple"] .sys-group {
-  border: none;
-  border-radius: var(--radius-lg);
-  box-shadow: var(--shadow-sm);
-  padding: 18px 20px;
-  background: var(--bg-1);
-}
-
-[data-style="apple"] .sys-title {
-  font-size: 17px;
-  font-weight: 500;
-  letter-spacing: -0.015em;
-}
-
-[data-style="apple"] .param-row {
-  font-size: 15px;
-  padding: 8px 0;
-  border-bottom: 0.5px solid var(--border-subtle);
-}
-
-/* ═══════════════════════════════════════════════════════════════════════════
-   APPLE STYLE — Divider
-   ═══════════════════════════════════════════════════════════════════════════ */
-
-[data-style="apple"] .sidebar-divider {
-  height: 0.5px;
-  background: var(--border);
-  margin: 4px 12px;
-}
-
-/* ═══════════════════════════════════════════════════════════════════════════
-   APPLE STYLE — Misc
-   ═══════════════════════════════════════════════════════════════════════════ */
-
-[data-style="apple"] .empty-state-text {
-  font-size: 15px;
-  line-height: 1.6;
-}
-
-[data-style="apple"] .hint {
-  font-size: 15px;
-}
-
-[data-style="apple"] .home-date {
-  font-size: 13px;
-  letter-spacing: 0.12em;
-}
-
-[data-style="apple"] .home-sign {
-  font-size: 15px;
-}
-
-[data-style="apple"] .home-sign-note {
-  font-size: 14px;
-}
-
-[data-style="apple"] .usr-empty {
-  font-size: 15px;
-  padding: 36px 16px !important;
-}
-
-[data-style="apple"] .scn-search {
-  width: 260px;
-}
-
-[data-style="apple"] .block-select {
-  border-radius: 8px;
-  border: 0.5px solid var(--border);
-  font-size: 13px;
-  padding: 7px 10px;
-}
-
-/* ═══════════════════════════════════════════════════════════════════════════
-   APPLE STYLE — High-specificity overrides (beats Tailwind utilities)
-   ═══════════════════════════════════════════════════════════════════════════ */
-
+/* ── Body ──────────────────────────────────────────────────────────────── */
 html[data-style="apple"] body {
   font-size: 17px !important;
   font-family: var(--font-ui) !important;
@@ -1090,7 +227,41 @@ html[data-style="apple"] body {
   line-height: 1.47 !important;
 }
 
-/* Buttons: pill shape, bigger, Apple Blue */
+/* ── Typography ────────────────────────────────────────────────────────── */
+html[data-style="apple"] h1 {
+  font-size: 34px !important;
+  font-weight: 700 !important;
+  letter-spacing: -0.04em !important;
+  line-height: 1.12 !important;
+}
+
+html[data-style="apple"] h2 {
+  font-size: 28px !important;
+  font-weight: 700 !important;
+  letter-spacing: -0.035em !important;
+}
+
+html[data-style="apple"] h3 {
+  font-size: 22px !important;
+  font-weight: 600 !important;
+  letter-spacing: -0.025em !important;
+}
+
+html[data-style="apple"] p {
+  font-size: 17px !important;
+  line-height: 1.47 !important;
+}
+
+html[data-style="apple"] a {
+  color: var(--accent) !important;
+  text-decoration: none !important;
+}
+
+html[data-style="apple"] ::selection {
+  background: rgba(34, 139, 230, 0.25) !important;
+}
+
+/* ── Buttons: pill shape ───────────────────────────────────────────────── */
 html[data-style="apple"] .btn,
 html[data-style="apple"] .wb-btn {
   border-radius: 9999px !important;
@@ -1109,16 +280,16 @@ html[data-style="apple"] .wb-btn:active {
 html[data-style="apple"] .btn-primary,
 html[data-style="apple"] .btn--primary,
 html[data-style="apple"] .wb-btn-primary {
-  background: #007aff !important;
-  border-color: #007aff !important;
-  box-shadow: 0 2px 10px rgba(0, 122, 255, 0.35) !important;
+  background: var(--accent) !important;
+  border-color: var(--accent) !important;
+  box-shadow: 0 2px 10px rgba(34, 139, 230, 0.35) !important;
 }
 
 html[data-style="apple"] .btn-primary:hover,
 html[data-style="apple"] .btn--primary:hover,
 html[data-style="apple"] .wb-btn-primary:hover {
-  background: #0063d1 !important;
-  box-shadow: 0 4px 18px rgba(0, 122, 255, 0.45) !important;
+  background: var(--accent-hover) !important;
+  box-shadow: 0 4px 18px rgba(34, 139, 230, 0.45) !important;
   transform: translateY(-1px) !important;
 }
 
@@ -1129,7 +300,19 @@ html[data-style="apple"] .btn--secondary {
   color: var(--text-primary) !important;
 }
 
-/* Nav items in sidebar: pill shape, filled active */
+/* ── Sidebar: glass effect ─────────────────────────────────────────────── */
+html[data-style="apple"] .sidebar {
+  background: rgba(241, 243, 245, 0.88) !important;
+  backdrop-filter: saturate(180%) blur(20px) !important;
+  -webkit-backdrop-filter: saturate(180%) blur(20px) !important;
+  border-right: 0.5px solid var(--border) !important;
+}
+
+html[data-style="apple"][data-theme="dark"] .sidebar {
+  background: rgba(22, 25, 29, 0.82) !important;
+}
+
+/* Nav items: pill shape, filled active */
 html[data-style="apple"] .sidebar nav a {
   border-radius: 10px !important;
   font-size: 16px !important;
@@ -1140,10 +323,10 @@ html[data-style="apple"] .sidebar nav a {
 }
 
 html[data-style="apple"] .sidebar nav a.active {
-  background: #007aff !important;
+  background: var(--accent) !important;
   color: #ffffff !important;
   font-weight: 600 !important;
-  box-shadow: 0 2px 10px rgba(0, 122, 255, 0.35) !important;
+  box-shadow: 0 2px 10px rgba(34, 139, 230, 0.35) !important;
 }
 
 /* Admin nav items */
@@ -1156,29 +339,62 @@ html[data-style="apple"] .sidebar-nav-item {
 }
 
 html[data-style="apple"] .sidebar-nav-item--active {
-  background: #007aff !important;
+  background: var(--accent) !important;
   color: #ffffff !important;
   font-weight: 600 !important;
-  box-shadow: 0 2px 10px rgba(0, 122, 255, 0.35) !important;
+  box-shadow: 0 2px 10px rgba(34, 139, 230, 0.35) !important;
 }
 
 html[data-style="apple"][data-theme="dark"] .sidebar-nav-item--active {
-  box-shadow: 0 2px 10px rgba(10, 132, 255, 0.35) !important;
+  box-shadow: 0 2px 10px rgba(51, 154, 240, 0.35) !important;
 }
 
-/* Sidebar glass effect */
-html[data-style="apple"] .sidebar {
-  background: rgba(242, 242, 247, 0.88) !important;
-  backdrop-filter: saturate(180%) blur(20px) !important;
-  -webkit-backdrop-filter: saturate(180%) blur(20px) !important;
-  border-right: 0.5px solid var(--border) !important;
+/* Sidebar header */
+html[data-style="apple"] .sidebar-header {
+  border-bottom: 0.5px solid var(--border) !important;
 }
 
-html[data-style="apple"][data-theme="dark"] .sidebar {
-  background: rgba(28, 28, 30, 0.82) !important;
+html[data-style="apple"] .sidebar-title {
+  font-size: 14px !important;
+  font-weight: 700 !important;
+  letter-spacing: 0.04em !important;
 }
 
-/* Header: frosted glass */
+/* Sidebar settings */
+html[data-style="apple"] .sidebar-settings {
+  border-top: 0.5px solid var(--border) !important;
+  padding: 10px 10px !important;
+}
+
+html[data-style="apple"] .sidebar-settings-label {
+  font-size: 11px !important;
+  font-weight: 600 !important;
+  text-transform: uppercase !important;
+  letter-spacing: 0.06em !important;
+  color: var(--text-muted) !important;
+  padding: 6px 8px 4px !important;
+}
+
+/* Sidebar footer */
+html[data-style="apple"] .sidebar-footer {
+  border-top: 0.5px solid var(--border) !important;
+  padding: 10px !important;
+}
+
+html[data-style="apple"] .logout-btn {
+  border-radius: 10px !important;
+  font-size: 15px !important;
+  font-weight: 500 !important;
+  padding: 10px 12px !important;
+  border: none !important;
+  color: var(--red) !important;
+}
+
+html[data-style="apple"] .logout-btn:hover {
+  background: var(--red-dim) !important;
+}
+
+/* ── Header: frosted glass ─────────────────────────────────────────────── */
 html[data-style="apple"] .header,
 html[data-style="apple"] .topbar {
   background: rgba(255, 255, 255, 0.82) !important;
@@ -1189,7 +405,7 @@ html[data-style="apple"] .topbar {
 
 html[data-style="apple"][data-theme="dark"] .header,
 html[data-style="apple"][data-theme="dark"] .topbar {
-  background: rgba(28, 28, 30, 0.82) !important;
+  background: rgba(22, 25, 29, 0.82) !important;
 }
 
 html[data-style="apple"] .brand {
@@ -1198,26 +414,42 @@ html[data-style="apple"] .brand {
   letter-spacing: -0.02em !important;
 }
 
-/* Cards: no border, glass */
-html[data-style="apple"] .card,
-html[data-style="apple"] .wb-card {
-  border: none !important;
-  border-radius: 16px !important;
-  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.06), 0 4px 16px rgba(0, 0, 0, 0.04) !important;
-}
-
-html[data-style="apple"] .card h3 {
-  font-size: 20px !important;
+html[data-style="apple"] .topbar-title {
+  font-size: 17px !important;
   font-weight: 600 !important;
   letter-spacing: -0.02em !important;
 }
 
-html[data-style="apple"] .card p {
-  font-size: 16px !important;
-  line-height: 1.5 !important;
+/* ── Cards: no border, glass ───────────────────────────────────────────── */
+html[data-style="apple"] .card,
+html[data-style="apple"] .wb-card {
+  border: none !important;
+  border-radius: 16px !important;
+  box-shadow: var(--shadow-sm) !important;
 }
 
-/* Hero text */
+html[data-style="apple"] .card h3,
+html[data-style="apple"] .wb-card-header {
+  font-size: 20px !important;
+  font-weight: 600 !important;
+  letter-spacing: -0.02em !important;
+  padding: var(--sp-5) var(--sp-6) !important;
+  border-bottom: none !important;
+}
+
+html[data-style="apple"] .card p,
+html[data-style="apple"] .wb-card-body {
+  font-size: 16px !important;
+  line-height: 1.5 !important;
+  padding: var(--sp-5) var(--sp-6) !important;
+}
+
+html[data-style="apple"] .wb-card-footer {
+  border-top: 0.5px solid var(--border-subtle) !important;
+  padding: var(--sp-4) var(--sp-6) !important;
+}
+
+/* ── Hero ──────────────────────────────────────────────────────────────── */
 html[data-style="apple"] .hero h1 {
   font-size: 36px !important;
   font-weight: 700 !important;
@@ -1229,13 +461,34 @@ html[data-style="apple"] .hero-text {
   line-height: 1.5 !important;
 }
 
-/* Tables: borderless, spacious */
+html[data-style="apple"] .home-greeting {
+  font-family: var(--font-display) !important;
+  font-weight: 700 !important;
+  font-size: clamp(44px, 8vw, 92px) !important;
+  letter-spacing: -0.04em !important;
+}
+
+html[data-style="apple"] .home-text {
+  font-size: 19px !important;
+  line-height: 1.5 !important;
+}
+
+html[data-style="apple"] .home-date {
+  font-size: 13px !important;
+  letter-spacing: 0.12em !important;
+}
+
+/* ── Tables: borderless, spacious ──────────────────────────────────────── */
 html[data-style="apple"] .dates-table th,
 html[data-style="apple"] .dates-table td,
 html[data-style="apple"] .scn-table th,
 html[data-style="apple"] .scn-table td,
 html[data-style="apple"] .usr-table th,
-html[data-style="apple"] .usr-table td {
+html[data-style="apple"] .usr-table td,
+html[data-style="apple"] .wb-table th,
+html[data-style="apple"] .wb-table td,
+html[data-style="apple"] .wb-data-table th,
+html[data-style="apple"] .wb-data-table td {
   padding: 14px 16px !important;
   font-size: 15px !important;
   border-bottom: 0.5px solid var(--border-subtle) !important;
@@ -1243,30 +496,73 @@ html[data-style="apple"] .usr-table td {
 
 html[data-style="apple"] .dates-table thead th,
 html[data-style="apple"] .scn-table thead th,
-html[data-style="apple"] .usr-table thead th {
+html[data-style="apple"] .usr-table thead th,
+html[data-style="apple"] .wb-table th,
+html[data-style="apple"] .wb-data-table th {
   font-size: 11px !important;
   text-transform: uppercase !important;
   letter-spacing: 0.06em !important;
   color: var(--text-muted) !important;
 }
 
-/* Date inputs: rounded, larger */
+html[data-style="apple"] .scn-table,
+html[data-style="apple"] .usr-table,
+html[data-style="apple"] .wb-data-table {
+  border: none !important;
+  border-radius: 16px !important;
+  overflow: hidden !important;
+}
+
+html[data-style="apple"] .scn-row:hover,
+html[data-style="apple"] .usr-row:hover,
+html[data-style="apple"] .wb-data-table tbody tr:hover {
+  background: var(--surface-hover) !important;
+}
+
+html[data-style="apple"] .usr-row--selected,
+html[data-style="apple"] .wb-data-table tbody tr.selected {
+  background: var(--accent-dim) !important;
+}
+
+html[data-style="apple"] .usr-td-name {
+  font-size: 15px !important;
+  font-weight: 500 !important;
+}
+
+/* ── Inputs ────────────────────────────────────────────────────────────── */
 html[data-style="apple"] .date-input,
 html[data-style="apple"] .text-input,
-html[data-style="apple"] .filter-search {
+html[data-style="apple"] .filter-search,
+html[data-style="apple"] .scn-search,
+html[data-style="apple"] .block-input,
+html[data-style="apple"] .block-textarea,
+html[data-style="apple"] .codeword-input {
   border-radius: 10px !important;
   border: 0.5px solid var(--border) !important;
   font-size: 16px !important;
   padding: 12px 16px !important;
+  background: var(--bg-2) !important;
 }
 
 html[data-style="apple"] .text-input:focus,
-html[data-style="apple"] .filter-search:focus {
-  border-color: #007aff !important;
-  box-shadow: 0 0 0 4px rgba(0, 122, 255, 0.08) !important;
+html[data-style="apple"] .filter-search:focus,
+html[data-style="apple"] .scn-search:focus {
+  border-color: var(--accent) !important;
+  box-shadow: 0 0 0 4px var(--accent-soft) !important;
 }
 
-/* Modal: glass overlay */
+html[data-style="apple"] .codeword-input-wrap {
+  border-radius: 10px !important;
+  border: 0.5px solid var(--border) !important;
+  background: var(--bg-2) !important;
+}
+
+html[data-style="apple"] .codeword-input-wrap:focus-within {
+  border-color: var(--accent) !important;
+  box-shadow: 0 0 0 4px var(--accent-soft) !important;
+}
+
+/* ── Modal: glass overlay ──────────────────────────────────────────────── */
 html[data-style="apple"] .modal-overlay,
 html[data-style="apple"] .wb-modal-overlay {
   backdrop-filter: blur(8px) saturate(150%) !important;
@@ -1278,7 +574,7 @@ html[data-style="apple"] .modal,
 html[data-style="apple"] .wb-modal {
   border: none !important;
   border-radius: 20px !important;
-  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.15) !important;
+  box-shadow: var(--shadow-xl) !important;
 }
 
 html[data-style="apple"] .modal-header h3,
@@ -1288,7 +584,11 @@ html[data-style="apple"] .wb-modal-title {
   letter-spacing: -0.03em !important;
 }
 
-/* Chips: pill */
+html[data-style="apple"] .modal-actions .btn {
+  border-radius: 9999px !important;
+}
+
+/* ── Chips: pill ───────────────────────────────────────────────────────── */
 html[data-style="apple"] .type-chip {
   border-radius: 9999px !important;
   border: 1.5px solid var(--border) !important;
@@ -1298,24 +598,32 @@ html[data-style="apple"] .type-chip {
 }
 
 html[data-style="apple"] .type-chip.active {
-  background: #007aff !important;
+  background: var(--accent) !important;
   color: #fff !important;
-  border-color: #007aff !important;
-  box-shadow: 0 2px 8px rgba(0, 122, 255, 0.30) !important;
+  border-color: var(--accent) !important;
+  box-shadow: 0 2px 8px rgba(34, 139, 230, 0.30) !important;
 }
 
-/* Tags */
 html[data-style="apple"] .tag-chip {
   border-radius: 9999px !important;
   font-size: 13px !important;
   font-weight: 500 !important;
 }
 
-/* Accordion */
+html[data-style="apple"] .scn-badge,
+html[data-style="apple"] .usr-badge,
+html[data-style="apple"] .status-badge,
+html[data-style="apple"] .scn-count {
+  border-radius: 9999px !important;
+  font-weight: 600 !important;
+  border: none !important;
+}
+
+/* ── Accordion ─────────────────────────────────────────────────────────── */
 html[data-style="apple"] .accordion {
   border: none !important;
   border-radius: 14px !important;
-  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.06) !important;
+  box-shadow: var(--shadow-xs) !important;
 }
 
 html[data-style="apple"] .accordion-toggle {
@@ -1325,11 +633,11 @@ html[data-style="apple"] .accordion-toggle {
   padding: 16px 20px !important;
 }
 
-/* System selection cards */
+/* ── System selection ──────────────────────────────────────────────────── */
 html[data-style="apple"] .sys-group {
   border: none !important;
   border-radius: 14px !important;
-  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.06) !important;
+  box-shadow: var(--shadow-xs) !important;
   padding: 18px 20px !important;
 }
 
@@ -1338,27 +646,116 @@ html[data-style="apple"] .sys-title {
   font-weight: 500 !important;
 }
 
-/* Param rows */
+/* ── Param rows ────────────────────────────────────────────────────────── */
 html[data-style="apple"] .param-row {
   font-size: 16px !important;
   padding: 8px 0 !important;
   border-bottom: 0.5px solid var(--border-subtle) !important;
 }
 
-/* Bulk bar */
+/* ── Bulk bar ──────────────────────────────────────────────────────────── */
 html[data-style="apple"] .bulk-bar {
   border-radius: 14px !important;
   border: none !important;
-  background: rgba(0, 122, 255, 0.08) !important;
+  background: var(--accent-dim) !important;
   padding: 12px 20px !important;
 }
 
-html[data-style="apple"] .bulk-count {
-  font-size: 14px !important;
-  font-weight: 700 !important;
+/* ── Icon buttons ──────────────────────────────────────────────────────── */
+html[data-style="apple"] .icon-btn {
+  border-radius: 10px !important;
+  border: 0.5px solid var(--border) !important;
 }
 
-/* Scrollbar */
+html[data-style="apple"] .icon-btn:hover {
+  background: var(--surface-hover) !important;
+}
+
+/* ── Tags wrapper ──────────────────────────────────────────────────────── */
+html[data-style="apple"] .tags-input-wrapper {
+  border-radius: 10px !important;
+  border: 0.5px solid var(--border) !important;
+  padding: 10px 12px !important;
+}
+
+/* ── Hint / labels ─────────────────────────────────────────────────────── */
+html[data-style="apple"] .hint {
+  font-size: 15px !important;
+  line-height: 1.5 !important;
+}
+
+html[data-style="apple"] .form-label {
+  font-size: 14px !important;
+  font-weight: 500 !important;
+}
+
+html[data-style="apple"] .date-count {
+  font-size: 15px !important;
+}
+
+html[data-style="apple"] .page-header {
+  gap: 16px !important;
+}
+
+/* ── Table wrap ────────────────────────────────────────────────────────── */
+html[data-style="apple"] .table-wrap,
+html[data-style="apple"] .compare-wrap {
+  border: none !important;
+  border-radius: 14px !important;
+  box-shadow: var(--shadow-xs) !important;
+}
+
+/* ── Login ─────────────────────────────────────────────────────────────── */
+html[data-style="apple"] .login-card {
+  border: none !important;
+  border-radius: 24px !important;
+  box-shadow: var(--shadow-lg) !important;
+}
+
+html[data-style="apple"] .login-btn {
+  border-radius: 9999px !important;
+  font-size: 17px !important;
+  font-weight: 600 !important;
+  padding: 14px 20px !important;
+  box-shadow: 0 2px 10px rgba(34, 139, 230, 0.35) !important;
+}
+
+html[data-style="apple"] .login-input {
+  border-radius: 10px !important;
+  border: 0.5px solid var(--border) !important;
+  font-size: 16px !important;
+  padding: 12px 14px !important;
+}
+
+html[data-style="apple"] .login-input:focus {
+  border-color: var(--accent) !important;
+  box-shadow: 0 0 0 4px var(--accent-soft) !important;
+}
+
+html[data-style="apple"] .login-logo-sub {
+  border-radius: 9999px !important;
+  border: none !important;
+  background: var(--bg-2) !important;
+  padding: 4px 12px !important;
+  font-size: 11px !important;
+  font-weight: 600 !important;
+  letter-spacing: 0.06em !important;
+}
+
+html[data-style="apple"] .preview-badge {
+  border-radius: 9999px !important;
+  border: none !important;
+  background: var(--bg-2) !important;
+  padding: 4px 12px !important;
+}
+
+/* ── Hamburger ─────────────────────────────────────────────────────────── */
+html[data-style="apple"] .hamburger span {
+  height: 2.5px !important;
+  border-radius: 2px !important;
+}
+
+/* ── Scrollbar ─────────────────────────────────────────────────────────── */
 html[data-style="apple"] ::-webkit-scrollbar {
   width: 6px !important;
   height: 6px !important;
@@ -1369,103 +766,126 @@ html[data-style="apple"] ::-webkit-scrollbar-track {
 }
 
 html[data-style="apple"] ::-webkit-scrollbar-thumb {
-  background: rgba(0, 0, 0, 0.15) !important;
+  background: var(--gray-4) !important;
   border-radius: 10px !important;
 }
 
 html[data-style="apple"][data-theme="dark"] ::-webkit-scrollbar-thumb {
-  background: rgba(255, 255, 255, 0.15) !important;
+  background: var(--gray-7) !important;
 }
 
-/* Selection */
-html[data-style="apple"] ::selection {
-  background: rgba(0, 122, 255, 0.25) !important;
+/* ── Footer ────────────────────────────────────────────────────────────── */
+html[data-style="apple"] footer {
+  font-size: 14px !important;
+  padding: 20px 16px !important;
 }
 
-/* Hamburger icon */
-html[data-style="apple"] .hamburger span {
-  height: 2.5px !important;
-  border-radius: 2px !important;
+/* ── Empty state ───────────────────────────────────────────────────────── */
+html[data-style="apple"] .empty-state-text {
+  font-size: 15px !important;
+  line-height: 1.6 !important;
 }
 
-/* Login card */
-html[data-style="apple"] .login-card {
-  border: none !important;
-  border-radius: 24px !important;
-  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.12) !important;
+html[data-style="apple"] .usr-empty {
+  font-size: 15px !important;
+  padding: 36px 16px !important;
 }
 
-html[data-style="apple"] .login-btn {
-  border-radius: 9999px !important;
-  font-size: 17px !important;
-  font-weight: 600 !important;
-  padding: 14px 20px !important;
-  box-shadow: 0 2px 10px rgba(0, 122, 255, 0.35) !important;
-}
-
-/* Table wrap */
-html[data-style="apple"] .table-wrap,
-html[data-style="apple"] .compare-wrap {
+/* ── Block cards ───────────────────────────────────────────────────────── */
+html[data-style="apple"] .block-card {
   border: none !important;
   border-radius: 14px !important;
-  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.06) !important;
+  box-shadow: var(--shadow-xs) !important;
 }
 
-/* Status badge */
-html[data-style="apple"] .status-badge,
-html[data-style="apple"] .scn-count,
-html[data-style="apple"] .scn-badge,
-html[data-style="apple"] .usr-badge {
+html[data-style="apple"] .block-card:hover {
+  box-shadow: var(--shadow-sm) !important;
+}
+
+html[data-style="apple"] .block-card-header {
+  background: var(--bg-2) !important;
+  border-bottom: 0.5px solid var(--border-subtle) !important;
+  border-radius: 14px 14px 0 0 !important;
+}
+
+html[data-style="apple"] .tg-btn {
+  border-radius: 8px !important;
+  font-size: 14px !important;
+  font-weight: 500 !important;
+  padding: 8px 10px !important;
+}
+
+html[data-style="apple"] .add-block-btn,
+html[data-style="apple"] .kb-add-btn,
+html[data-style="apple"] .kb-add-row {
   border-radius: 9999px !important;
-  font-weight: 600 !important;
+  border: 1.5px dashed var(--border) !important;
+  font-size: 13px !important;
+  font-weight: 500 !important;
+  padding: 6px 16px !important;
 }
 
-/* Icon buttons */
-html[data-style="apple"] .icon-btn {
-  border-radius: 10px !important;
-  border: 0.5px solid var(--border) !important;
+html[data-style="apple"] .block-picker {
+  border: none !important;
+  border-radius: 14px !important;
+  box-shadow: var(--shadow-lg) !important;
+  padding: 6px !important;
 }
 
-html[data-style="apple"] .icon-btn:hover {
-  background: var(--surface-hover) !important;
+html[data-style="apple"] .block-picker-item {
+  border-radius: 8px !important;
+  font-size: 14px !important;
+  padding: 8px 12px !important;
 }
 
-/* Modal actions */
-html[data-style="apple"] .modal-actions .btn {
-  border-radius: 9999px !important;
+/* ── Telegram preview ──────────────────────────────────────────────────── */
+html[data-style="apple"] .tg-message {
+  border-radius: 18px 18px 18px 4px !important;
+  padding: 14px 16px !important;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.10) !important;
 }
 
-/* Date count */
-html[data-style="apple"] .date-count {
-  font-size: 15px !important;
-}
-
-/* Page header */
-html[data-style="apple"] .page-header {
-  gap: 16px !important;
-}
-
-/* Tags wrapper */
-html[data-style="apple"] .tags-input-wrapper {
-  border-radius: 10px !important;
-  border: 0.5px solid var(--border) !important;
-  padding: 10px 12px !important;
-}
-
-/* Hint text */
-html[data-style="apple"] .hint {
+html[data-style="apple"] .tg-paragraph {
   font-size: 15px !important;
   line-height: 1.5 !important;
 }
 
-/* Form labels */
-html[data-style="apple"] .form-label {
-  font-size: 14px !important;
+/* ── Toggle buttons ────────────────────────────────────────────────────── */
+html[data-style="apple"] .kb-toggle-btn {
+  border-radius: 9999px !important;
+  font-size: 13px !important;
   font-weight: 500 !important;
+  padding: 5px 14px !important;
+  border: none !important;
 }
 
-/* Footer */
-html[data-style="apple"] footer {
-  font-size: 14px !important;
-  padding: 20px 16px !important;
+html[data-style="apple"] .kb-toggle-btn--active {
+  background: var(--accent) !important;
+  color: #fff !important;
+  box-shadow: 0 1px 4px rgba(34, 139, 230, 0.25) !important;
+}
+
+html[data-style="apple"] .photo-tab {
+  border-radius: 9999px !important;
+  border: none !important;
+  font-size: 13px !important;
+  font-weight: 500 !important;
+  padding: 5px 14px !important;
+}
+
+html[data-style="apple"] .photo-tab--active {
+  background: var(--accent) !important;
+  color: #fff !important;
+}
+
+/* ── Scn search ────────────────────────────────────────────────────────── */
+html[data-style="apple"] .scn-search {
+  width: 260px !important;
+}
+
+html[data-style="apple"] .block-select {
+  border-radius: 8px !important;
+  border: 0.5px solid var(--border) !important;
+  font-size: 13px !important;
+  padding: 7px 10px !important;
 }
