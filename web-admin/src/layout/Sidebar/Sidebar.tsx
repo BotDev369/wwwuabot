@@ -46,11 +46,14 @@ export function Sidebar() {
 
       <SidebarNav />
 
-      <div className="sidebar-footer">
+      {/* Settings section — inside nav flow */}
+      <div className="sidebar-settings">
+        {!collapsed && <div className="sidebar-settings-label">Налаштування</div>}
         <StyleToggle compact={collapsed} />
-        <div style={{ height: 4 }} />
         <ThemeToggle compact={collapsed} />
-        <div style={{ height: 6 }} />
+      </div>
+
+      <div className="sidebar-footer">
         <button type="button" className="logout-btn" onClick={handleLogout} title="Вийти">
           <svg
             width="16"

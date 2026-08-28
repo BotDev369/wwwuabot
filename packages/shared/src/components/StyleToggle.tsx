@@ -94,86 +94,85 @@ export function useStyleTheme() {
   };
 }
 
+const btnBase: React.CSSProperties = {
+  display: "flex",
+  alignItems: "center",
+  gap: 8,
+  padding: "8px 12px",
+  background: "var(--bg-2)",
+  border: "1px solid var(--border)",
+  borderRadius: "var(--radius)",
+  color: "var(--text-secondary)",
+  cursor: "pointer",
+  fontSize: 13,
+  fontFamily: "var(--font-ui)",
+  fontWeight: 500,
+  transition: "background 0.15s, color 0.15s",
+  lineHeight: 1,
+  width: "100%",
+  textAlign: "left" as const,
+};
+
+const btnCompact: React.CSSProperties = {
+  ...btnBase,
+  justifyContent: "center",
+  padding: 8,
+  width: "auto",
+};
+
 /**
- * Simple toggle button for style (basic ↔ apple).
- * Shows current style icon and label.
+ * Style toggle: basic ↔ apple.
+ * Full mode shows label; compact mode shows icon only.
  */
 export function StyleToggle({ compact = false }: { compact?: boolean }) {
   const { style, cycleStyle } = useStyleTheme();
 
-  const icon = style === "apple" ? "" : "🎨";
-  const label = style === "apple" ? "Apple" : "Базовий";
+  const isApple = style === "apple";
+  const icon = isApple ? "" : "";
+  const label = isApple ? "Apple" : "Basic";
 
   return (
     <button
       type="button"
       onClick={cycleStyle}
-      title={`Стиль: ${label}`}
-      aria-label={`Перемкнути стиль (зараз: ${label})`}
-      style={{
-        display: "flex",
-        alignItems: "center",
-        gap: compact ? 0 : 6,
-        padding: compact ? 6 : "6px 10px",
-        background: "var(--bg-2)",
-        border: "1px solid var(--border)",
-        borderRadius: "var(--radius)",
-        color: "var(--text-secondary)",
-        cursor: "pointer",
-        fontSize: compact ? 16 : 13,
-        fontFamily: "var(--font-ui)",
-        transition: "background 0.15s, color 0.15s",
-        lineHeight: 1,
-      }}
+      title={`Style: ${label}`}
+      aria-label={`Toggle style (current: ${label})`}
+      style={compact ? btnCompact : btnBase}
     >
-      <span>{icon}</span>
+      <span style={{ fontSize: 16, flexShrink: 0 }}>{icon}</span>
       {!compact && <span>{label}</span>}
     </button>
   );
 }
 
 /**
- * Combined toggle: style + theme in one row.
- * Shows: [🎨 Базовий | ☀️] or [ Apple | 🌙]
+ * Theme toggle: light ↔ dark ↔ system.
+ * Full mode shows label; compact mode shows icon only.
  */
 export function ThemeToggle({ compact = false }: { compact?: boolean }) {
   const { theme, cycleTheme } = useStyleTheme();
 
   const icons: Record<Theme, string> = {
-    light: "☀️",
-    dark: "🌙",
-    system: "💻",
+    light: "\u2600\uFE0F",
+    dark: "\uD83C\uDF19",
+    system: "\uD83D\uDCBB",
   };
 
   const labels: Record<Theme, string> = {
-    light: "Світла",
-    dark: "Темна",
-    system: "Система",
+    light: "Light",
+    dark: "Dark",
+    system: "System",
   };
 
   return (
     <button
       type="button"
       onClick={cycleTheme}
-      title={`Тема: ${labels[theme]}`}
-      aria-label={`Перемкнути тему (зараз: ${labels[theme]})`}
-      style={{
-        display: "flex",
-        alignItems: "center",
-        gap: compact ? 0 : 6,
-        padding: compact ? 6 : "6px 10px",
-        background: "var(--bg-2)",
-        border: "1px solid var(--border)",
-        borderRadius: "var(--radius)",
-        color: "var(--text-secondary)",
-        cursor: "pointer",
-        fontSize: compact ? 16 : 13,
-        fontFamily: "var(--font-ui)",
-        transition: "background 0.15s, color 0.15s",
-        lineHeight: 1,
-      }}
+      title={`Theme: ${labels[theme]}`}
+      aria-label={`Toggle theme (current: ${labels[theme]})`}
+      style={compact ? btnCompact : btnBase}
     >
-      <span>{icons[theme]}</span>
+      <span style={{ fontSize: 16, flexShrink: 0 }}>{icons[theme]}</span>
       {!compact && <span>{labels[theme]}</span>}
     </button>
   );

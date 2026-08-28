@@ -40,7 +40,10 @@ export function Sidebar() {
             </Link>
           ))}
         </nav>
-        <div style={{ padding: "12px 10px", borderTop: "1px solid var(--border)", display: "flex", flexDirection: "column", gap: 6 }}>
+
+        {/* Settings section — inside nav flow */}
+        <div className="sidebar-settings">
+          <div className="sidebar-settings-label">Налаштування</div>
           <StyleToggle compact />
           <ThemeToggle compact />
         </div>

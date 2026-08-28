@@ -56,6 +56,24 @@
   font-weight: 600;
 }
 
+/* ─── Sidebar settings section ─────────────────────────────────────────── */
+.sidebar-settings {
+  border-top: 1px solid var(--border);
+  padding: 8px 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.sidebar-settings-label {
+  padding: 6px 4px 4px;
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+
 .sidebar-header {
   display: flex;
   justify-content: flex-end;

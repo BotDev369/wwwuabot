@@ -211,7 +211,6 @@ body {
 }
 
 .sidebar-nav {
-  flex: 1;
   padding: 12px 8px;
   display: flex;
   flex-direction: column;
@@ -250,6 +249,7 @@ body {
 }
 
 .sidebar-footer {
+  margin-top: auto;
   padding: 12px 8px;
   border-top: 1px solid var(--border);
 }
@@ -957,6 +957,32 @@ body {
 .sidebar--collapsed .logout-btn {
   text-align: center;
   padding: 8px 0;
+}
+
+/* ─── Sidebar settings section ───────────────────────────────────────────── */
+.sidebar-settings {
+  border-top: 1px solid var(--border);
+  padding: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.sidebar-settings-label {
+  padding: 6px 10px 4px;
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+
+.sidebar--collapsed .sidebar-settings {
+  padding: 6px;
+}
+
+.sidebar--collapsed .sidebar-settings-label {
+  display: none;
 }
 
 /* ═══════════════════════════════════════════════════════════════════════════════
