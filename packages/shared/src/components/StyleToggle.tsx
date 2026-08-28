@@ -1,6 +1,9 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
+import {
+  STYLES,
+  type StyleId,
+} from "../styles/registry";
 
-type Style = "basic" | "apple";
 type Theme = "light" | "dark" | "system";
 
 const STYLE_KEY = "wwwuabot-style";
@@ -12,9 +15,9 @@ function getSystemTheme(): "light" | "dark" {
     : "light";
 }
 
-function getStoredStyle(): Style {
+function getStoredStyle(): StyleId {
   try {
-    return (localStorage.getItem(STYLE_KEY) as Style) || "basic";
+    return (localStorage.getItem(STYLE_KEY) as StyleId) || "basic";
   } catch {
     return "basic";
   }
@@ -28,8 +31,8 @@ function getStoredTheme(): Theme {
   }
 }
 
-function applyStyle(style: Style) {
-  document.documentElement.setAttribute("data-style", style);
+function applyStyle(id: StyleId) {
+  document.documentElement.setAttribute("data-style", id);
 }
 
 function applyTheme(theme: Theme) {
@@ -39,29 +42,33 @@ function applyTheme(theme: Theme) {
 
 /**
  * Combined style + theme hook.
- * Manages two independent dimensions:
- * - Style: "basic" | "apple" (visual language)
- * - Theme: "light" | "dark" | "system" (color scheme)
+ * Manages:
+ * - Style: any StyleId from the registry
+ * - Theme: "light" | "dark" | "system"
  */
 export function useStyleTheme() {
-  const [style, setStyleState] = useState<Style>(getStoredStyle);
+  const [style, setStyleState] = useState<StyleId>(getStoredStyle);
   const [theme, setThemeState] = useState<Theme>(getStoredTheme);
 
-  const setStyle = useCallback((s: Style) => {
+  const setStyle = useCallback((s: StyleId) => {
     setStyleState(s);
-    try { localStorage.setItem(STYLE_KEY, s); } catch { /* ignore */ }
+    try {
+      localStorage.setItem(STYLE_KEY, s);
+    } catch {
+      /* ignore */
+    }
     applyStyle(s);
   }, []);
 
   const setTheme = useCallback((t: Theme) => {
     setThemeState(t);
-    try { localStorage.setItem(THEME_KEY, t); } catch { /* ignore */ }
+    try {
+      localStorage.setItem(THEME_KEY, t);
+    } catch {
+      /* ignore */
+    }
     applyTheme(t);
   }, []);
-
-  const cycleStyle = useCallback(() => {
-    setStyle(style === "basic" ? "apple" : "basic");
-  }, [style, setStyle]);
 
   const cycleTheme = useCallback(() => {
     const order: Theme[] = ["light", "dark", "system"];
@@ -89,10 +96,11 @@ export function useStyleTheme() {
     theme,
     setStyle,
     setTheme,
-    cycleStyle,
     cycleTheme,
   };
 }
+
+/* ─── Style Picker Dropdown ──────────────────────────────────────────── */
 
 const btnBase: React.CSSProperties = {
   display: "flex",
@@ -111,43 +119,121 @@ const btnBase: React.CSSProperties = {
   lineHeight: 1,
   width: "100%",
   textAlign: "left" as const,
+  position: "relative" as const,
 };
 
-const btnCompact: React.CSSProperties = {
-  ...btnBase,
-  justifyContent: "center",
-  padding: 8,
-  width: "auto",
+const dropdownStyle: React.CSSProperties = {
+  position: "absolute",
+  bottom: "100%",
+  left: 0,
+  right: 0,
+  marginBottom: 6,
+  background: "var(--bg-1)",
+  border: "1px solid var(--border)",
+  borderRadius: "var(--radius)",
+  boxShadow: "var(--shadow-lg)",
+  zIndex: 200,
+  maxHeight: 320,
+  overflowY: "auto",
+  padding: 4,
+};
+
+const itemStyle: React.CSSProperties = {
+  display: "flex",
+  alignItems: "center",
+  gap: 8,
+  padding: "7px 10px",
+  borderRadius: "var(--radius-sm)",
+  cursor: "pointer",
+  fontSize: 13,
+  fontFamily: "var(--font-ui)",
+  fontWeight: 500,
+  color: "var(--text-primary)",
+  transition: "background 0.1s",
+  border: "none",
+  background: "none",
+  width: "100%",
+  textAlign: "left",
+};
+
+const itemActiveStyle: React.CSSProperties = {
+  ...itemStyle,
+  background: "var(--accent-dim)",
+  color: "var(--accent)",
+  fontWeight: 600,
 };
 
 /**
- * Style toggle: basic ↔ apple.
- * Full mode shows label; compact mode shows icon only.
+ * Style picker dropdown — shows all available styles from registry.
+ * Click opens a dropdown list above the button.
  */
-export function StyleToggle({ compact = false }: { compact?: boolean }) {
-  const { style, cycleStyle } = useStyleTheme();
+export function StylePicker({ compact = false }: { compact?: boolean }) {
+  const { style, setStyle } = useStyleTheme();
+  const [open, setOpen] = useState(false);
+  const ref = useRef<HTMLDivElement>(null);
 
-  const isApple = style === "apple";
-  const icon = isApple ? "" : "";
-  const label = isApple ? "Apple" : "Basic";
+  const current = STYLES.find((s) => s.id === style) ?? STYLES[0];
+
+  // Close on outside click
+  useEffect(() => {
+    if (!open) return;
+    const handler = (e: MouseEvent) => {
+      if (ref.current && !ref.current.contains(e.target as Node)) {
+        setOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handler);
+    return () => document.removeEventListener("mousedown", handler);
+  }, [open]);
+
+  const handleSelect = (id: StyleId) => {
+    setStyle(id);
+    setOpen(false);
+  };
 
   return (
-    <button
-      type="button"
-      onClick={cycleStyle}
-      title={`Style: ${label}`}
-      aria-label={`Toggle style (current: ${label})`}
-      style={compact ? btnCompact : btnBase}
-    >
-      <span style={{ fontSize: 16, flexShrink: 0 }}>{icon}</span>
-      {!compact && <span>{label}</span>}
-    </button>
+    <div ref={ref} style={{ position: "relative" }}>
+      <button
+        type="button"
+        onClick={() => setOpen((v) => !v)}
+        title={`Style: ${current.labelUk}`}
+        aria-label={`Обрати стиль (зараз: ${current.labelUk})`}
+        aria-expanded={open}
+        style={compact ? { ...btnBase, justifyContent: "center", padding: 8, width: "auto" } : btnBase}
+      >
+        <span style={{ fontSize: 16, flexShrink: 0 }}>{current.icon}</span>
+        {!compact && <span>{current.labelUk}</span>}
+      </button>
+
+      {open && (
+        <div style={dropdownStyle}>
+          {STYLES.map((s) => (
+            <button
+              key={s.id}
+              type="button"
+              style={s.id === style ? itemActiveStyle : itemStyle}
+              onClick={() => handleSelect(s.id)}
+              onMouseEnter={(e) => {
+                if (s.id !== style) e.currentTarget.style.background = "var(--surface-hover)";
+              }}
+              onMouseLeave={(e) => {
+                if (s.id !== style) e.currentTarget.style.background = "none";
+              }}
+            >
+              <span style={{ fontSize: 15, flexShrink: 0, width: 22, textAlign: "center" }}>
+                {s.id === style ? "✓" : s.icon}
+              </span>
+              <span>{s.labelUk}</span>
+            </button>
+          ))}
+        </div>
+      )}
+    </div>
   );
 }
 
 /**
  * Theme toggle: light ↔ dark ↔ system.
- * Full mode shows label; compact mode shows icon only.
  */
 export function ThemeToggle({ compact = false }: { compact?: boolean }) {
   const { theme, cycleTheme } = useStyleTheme();
@@ -159,18 +245,18 @@ export function ThemeToggle({ compact = false }: { compact?: boolean }) {
   };
 
   const labels: Record<Theme, string> = {
-    light: "Light",
-    dark: "Dark",
-    system: "System",
+    light: "Світла",
+    dark: "Темна",
+    system: "Система",
   };
 
   return (
     <button
       type="button"
       onClick={cycleTheme}
-      title={`Theme: ${labels[theme]}`}
-      aria-label={`Toggle theme (current: ${labels[theme]})`}
-      style={compact ? btnCompact : btnBase}
+      title={`Тема: ${labels[theme]}`}
+      aria-label={`Перемкнути тему (зараз: ${labels[theme]})`}
+      style={compact ? { ...btnBase, justifyContent: "center", padding: 8, width: "auto" } : btnBase}
     >
       <span style={{ fontSize: 16, flexShrink: 0 }}>{icons[theme]}</span>
       {!compact && <span>{labels[theme]}</span>}

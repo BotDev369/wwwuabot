@@ -1,6 +1,6 @@
 import { Link } from "react-router-dom";
 import { useAppStore } from "@/stores/app.store";
-import { StyleToggle, ThemeToggle } from "@wwwuabot/shared";
+import { StylePicker, ThemeToggle } from "@wwwuabot/shared";
 
 const NAV_ITEMS = [
   { to: "/", label: "Головна", icon: "🏠" },
@@ -44,7 +44,7 @@ export function Sidebar() {
         {/* Settings section — inside nav flow */}
         <div className="sidebar-settings">
           <div className="sidebar-settings-label">Налаштування</div>
-          <StyleToggle compact />
+          <StylePicker compact />
           <ThemeToggle compact />
         </div>
       </aside>

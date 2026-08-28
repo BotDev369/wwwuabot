@@ -1,7 +1,7 @@
 import { useSidebar } from "./useSidebar";
 import { SidebarNav } from "./SidebarNav";
 import { logout } from "../../shared/api/auth.api";
-import { StyleToggle, ThemeToggle } from "@wwwuabot/shared";
+import { StylePicker, ThemeToggle } from "@wwwuabot/shared";
 
 export function Sidebar() {
   const collapsed = useSidebar((s) => s.collapsed);
@@ -49,7 +49,7 @@ export function Sidebar() {
       {/* Settings section — inside nav flow */}
       <div className="sidebar-settings">
         {!collapsed && <div className="sidebar-settings-label">Налаштування</div>}
-        <StyleToggle compact={collapsed} />
+        <StylePicker compact={collapsed} />
         <ThemeToggle compact={collapsed} />
       </div>
 
