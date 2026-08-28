@@ -2,6 +2,7 @@ name = "wwwuabot-web"
 main = "src/worker.ts"
 compatibility_date = "2026-08-21"
 # Unified stack with web-admin (React 19, Vite 8, Tailwind 4)
+# Deploy: npx wrangler deploy --env dev
 
 [assets]
 directory = "./dist"
