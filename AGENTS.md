@@ -1,7 +1,7 @@
 # AGENTS.md — Інструкція для AI-агентів у проєкті wwwuabot
 
-> **Версія:** 1.1
-> **Останнє оновлення:** 27.08.2026
+> **Версія:** 1.2
+> **Останнє оновлення:** 28.08.2026
 > **Статус:** містить перевірені факти та архітектурні рішення.
 
 Цей файл — стислий орієнтир для будь-якого AI-агента (Claude, GPT,
@@ -23,8 +23,8 @@ Buffy чи інший), що вперше заходить у проєкт. Ме
 wwwuabot/
 ├── bot/            # Telegram-бот: grammY + D1 (SQLite) + Cloudflare Queues + Cloudinary
 ├── api/            # REST API: калькулятори, CRUD, аналітика (D1 + KV-кеш)
-├── web/            # Telegram Mini App: React 18, Vite 5, React Router 6
-├── web-admin/      # Адмін-панель: React 19, Vite, Zustand, Tailwind CSS 4, React Router 7
+├── web/            # Telegram Mini App: React 19, Vite 8, Tailwind 4, Zustand, React Router 7
+├── web-admin/      # Адмін-панель: React 19, Vite 8, Tailwind 4, Zustand, React Router 7
 ├── packages/       # Спільний код (npm workspace package)
 │   └── shared/     # Утиліти, типи, константи для всіх воркерів
 └── public docs/    # AUDIT.md, PROJECT_PLAN.md, SCORECARD.md — читати першими
@@ -176,11 +176,31 @@ packages/shared/
 Спільний код в `api/src/shared/` (`types.ts`, `constants.ts`,
 `logger.ts`, `datetime.ts`, `auto-migrate.ts`, `mydate-helpers.ts`).
 
-`web/src/` — `components/` (rendering, fallback, layout, demo) +
-`pages/`. `web-admin/src/` — feature-based:
-`features/<domain>/` (store, логіка) + `pages/<domain>/` (компоненти
-сторінки) + `shared/api/` (API-клієнти по доменах, напр.
-`users.api.ts`, `scenarios.api.ts`) + `layout/`.
+`web/src/` і `web-admin/src/` мають **однакову архітектуру** (оновлено 28.08.2026):
+```
+src/
+├── App.tsx              # RouterProvider wrapper
+├── main.tsx             # Entry point (StrictMode + theme init)
+├── index.css            # Tailwind + shared design system + custom CSS
+├── worker.ts            # Cloudflare Worker
+├── app/
+│   ├── AuthGate.tsx     # Auth check (TWA SDK / cookie)
+│   └── router.tsx       # createBrowserRouter routes
+├── layout/
+│   ├── AppShell.tsx     # Main layout (Outlet + sidebars + header + footer)
+│   ├── Sidebar.tsx      # Left sidebar (Zustand)
+│   ├── Header.tsx       # Top header bar (Zustand)
+│   └── Footer.tsx       # Footer
+├── pages/               # Page components (feature-grouped)
+├── shared/api/          # Typed API functions (client.ts, *.api.ts)
+├── stores/              # Zustand stores (app.store.ts)
+└── features/            # (web-admin) Domain features (editor, scenarios, users)
+```
+
+**Відмінності між web і web-admin (тільки доменні):**
+- `web/`: auth через Telegram WebApp SDK, API proxy через service binding → api/
+- `web-admin/`: auth через cookie + HMAC, власні API-ендпоїнти в worker.ts (тимчасово)
+- `web-admin/` має додаткову папку `features/` з доменними модулями (editor, scenarios, users)
 
 ---
 
@@ -283,3 +303,4 @@ packages/shared/
 |---|---|---|
 | 27.08.2026 | 1.0 | Початкова версія |
 | 27.08.2026 | 1.1 | Додано розділ 3: архітектура API та спільний код, правило «двічі — в спільне», єдиний API-шлюз через `api/`, структура `packages/shared`, чек-ліст нового shared-коду |
+| 28.08.2026 | 1.2 | Оновлено web/web-admin: React 19, Vite 8, Tailwind 4, Zustand, createBrowserRouter, feature-based structure. Додано секцію 4 з однаковою архітектурою src/. Оновлено CI: npx wrangler для всіх 4 воркерів. Додано api/ до workspaces. Вирівняно compatibility_date та prod bindings. |
