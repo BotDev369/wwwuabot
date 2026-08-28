@@ -42,6 +42,9 @@ export async function botRouter(ctx: AppContext): Promise<void> {
         await handleDeepLink(ctx, param);
         return;
       }
+      // /start без параметра — хардкод вітання
+      await handleStart(ctx);
+      return;
     }
   }
 
@@ -176,6 +179,85 @@ export async function botRouter(ctx: AppContext): Promise<void> {
     }
 
     log("ROUTER", "action handled, will re-render current screen", { codeword });
+  }
+}
+
+/**
+ * Обробка /start без параметра — хардкод вітання.
+ */
+async function handleStart(ctx: AppContext): Promise<void> {
+  const chatId = ctx.chat?.id;
+  if (!chatId) return;
+
+  const userRepo = new UserRepository(ctx.env);
+  const from = ctx.from;
+  const userId = from?.id;
+
+  let isNewUser = false;
+  if (userId) {
+    const existing = await userRepo.getUser(userId);
+    if (!existing) {
+      isNewUser = true;
+      await userRepo.createUser({
+        user_id: userId,
+        first_name: from?.first_name ?? "",
+        last_name: from?.last_name ?? "",
+        username: from?.username ?? "",
+        language: from?.language_code ?? "",
+      });
+      log("ROUTER:start", "new user created", { user_id: userId });
+    }
+  }
+
+  const v = Date.now();
+  const baseUrl =
+    ctx.env.ENVIRONMENT === "prod"
+      ? "https://wwwuabot-web-prod.diskomate.workers.dev"
+      : "https://wwwuabot-web-dev.diskomate.workers.dev";
+
+  let message: string;
+  if (isNewUser) {
+    const name = from?.first_name ? `, ${from.first_name}` : "";
+    message =
+      `<b>Привіт${name}! 👋</b>\n\n` +
+      `Ласкаво просимо до <b>WWWUABot</b> — твого простору в Telegram.\n\n` +
+      `Тут ти знайдеш корисні інструменти, розваги та можливості для розвитку.\n\n` +
+      `Натисни кнопку нижче, щоб почати 👇`;
+  } else {
+    message =
+      `<b>WWWUABot</b> — сайти в Телеграмі. Своє для своїх. 🇺🇦`;
+  }
+
+  const webAppUrl = `${baseUrl}/?v=${v}`;
+
+  try {
+    const sent = await ctx.api.sendMessage(chatId, message, {
+      parse_mode: "HTML",
+      reply_markup: {
+        inline_keyboard: [
+          [
+            { text: "🌐 Головна", web_app: { url: webAppUrl } },
+          ],
+          [
+            { text: "🚀 Розвиток", web_app: { url: `${baseUrl}/mydate?v=${v}` } },
+          ],
+          [
+            { text: "ℹ️ Про проект", callback_data: "/about" },
+            { text: "👤 Мій акаунт", callback_data: "/myaccount" },
+          ],
+        ],
+      },
+    });
+
+    log("ROUTER:start", "start message sent", { chat_id: chatId, is_new: isNewUser });
+
+    if (ctx.user) {
+      ctx.user.active_scenario = "main";
+      ctx.user.message_id = sent.message_id;
+      ctx.userDirty = true;
+    }
+  } catch (err) {
+    log("ROUTER:start", "failed to send start message", { error: getErrorMessage(err) });
   }
 }
 
