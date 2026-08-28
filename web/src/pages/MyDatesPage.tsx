@@ -201,9 +201,9 @@ function DateModal({
                     type="button"
                     className={`type-chip ${formType === t ? "active" : ""}`}
                     style={{
-                      borderColor: formType === t ? cfg.color : "#e5e5e5",
-                      background: formType === t ? cfg.bg : "#fff",
-                      color: formType === t ? cfg.color : "#666",
+                      borderColor: formType === t ? cfg.color : "var(--border)",
+                      background: formType === t ? cfg.bg : "var(--bg-1)",
+                      color: formType === t ? cfg.color : "var(--text-muted)",
                     }}
                     onClick={() => !isReadOnly && setFormType(t)}
                     disabled={isReadOnly}
@@ -759,11 +759,11 @@ export function MyDatesPage({ onScenarioName }: { onScenarioName: (name: string 
                           type="button"
                           className={`type-chip ${formType === t ? "active" : ""}`}
                           style={{
-                            borderColor: formType === t ? cfg.color : "#e5e5e5",
-                            background: formType === t ? cfg.bg : "#fff",
-                            color: formType === t ? cfg.color : "#666",
-                          }}
-                          onClick={() => setFormType(t)}
+                          borderColor: formType === t ? cfg.color : "var(--border)",
+                          background: formType === t ? cfg.bg : "var(--bg-1)",
+                          color: formType === t ? cfg.color : "var(--text-muted)",
+                        }}
+                        onClick={() => setFormType(t)}
                         >
                           {cfg.emoji} {t === "person" ? "Людина" : t === "event" ? "Подія" : "Інше"}
                         </button>

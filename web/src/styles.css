@@ -281,7 +281,7 @@ footer {
 .coming-soon {
   margin-top: 14px;
   font-size: 12px;
-  color: #b0b0b0;
+  color: var(--text-muted);
   font-style: italic;
 }
 .card .btn {
@@ -752,7 +752,7 @@ footer {
   transition: background 0.15s;
 }
 .th-content:hover {
-  background: #e5e5e5;
+  background: var(--bg-4);
 }
 
 /* ═══ HEADER MENU MODAL ═══ */
@@ -1373,19 +1373,19 @@ footer {
   }
   .compare-table th.corner {
     z-index: 5;
-    background: #ececec;
+    background: var(--bg-2);
   }
   .compare-table td.param-cell {
     z-index: 3;
-    background: #fff;
+    background: var(--bg-1);
   }
   .compare-table td.system-name {
     z-index: 3;
-    background: #ececec;
+    background: var(--bg-2);
   }
   .compare-table thead th {
     z-index: 4;
-    background: #f7f7f7;
+    background: var(--bg-2);
   }
   .compare-table thead th.corner {
     z-index: 6;
