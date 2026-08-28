@@ -90,7 +90,7 @@ jobs:
         with:
           node-version: 22
       - run: npm install
-      - run: cd web && npm run build
+      - run: cd web && npm install && npm run build
       - uses: cloudflare/wrangler-action@v3
         with:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
