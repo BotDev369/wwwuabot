@@ -27,12 +27,16 @@ jobs:
           filters: |
             bot:
               - 'bot/**'
+              - 'packages/shared/**'
             api:
               - 'api/**'
+              - 'packages/shared/**'
             web:
               - 'web/**'
+              - 'packages/shared/**'
             web-admin:
               - 'web-admin/**'
+              - 'packages/shared/**'
 
   audit:
     runs-on: ubuntu-latest
