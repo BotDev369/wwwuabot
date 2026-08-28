@@ -1,18 +1,14 @@
 import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
+import { useAppStore } from "@/stores/app.store";
+import {
+  fetchSystems,
+  analyzeDate,
+  fetchAnalysis,
+  type SystemCard,
+  type SystemResult,
+} from "@/shared/api/mydate.api";
 import { CompareTablePage } from "./CompareTablePage";
-
-interface SystemCard {
-  id: string;
-  name: string;
-  description: string;
-  implemented: boolean;
-}
-
-interface SystemResult {
-  parameters: { key: string; label: string; value: string }[];
-  comingSoon: string[];
-}
 
 function formatDate(raw: string): string {
   const parts = raw.split("-");
@@ -38,18 +34,14 @@ function SystemCardView({
 }) {
   const [loading, setLoading] = useState(false);
 
-  const handleAnalyze = () => {
+  const handleAnalyze = async () => {
     setLoading(true);
-    fetch("/api/mydate/analyze", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ date, systemId: system.id }),
-    })
-      .then((r) => r.json())
-      .then((data) => {
-        if (data?.ok) onAnalyzed(system.id, data.result);
-      })
-      .finally(() => setLoading(false));
+    try {
+      const res = await analyzeDate(date, system.id);
+      onAnalyzed(system.id, res);
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -83,33 +75,24 @@ function SystemCardView({
   );
 }
 
-export function MydatePage({ onScenarioName }: { onScenarioName: (name: string | null) => void }) {
-  const { date } = useParams<{ date: string }>();
-  if (date && date.includes("+")) {
-    return <CompareTablePage onScenarioName={onScenarioName} />;
-  }
-  return <MydateResultPage onScenarioName={onScenarioName} />;
-}
-
-export function MydateResultPage({
-  onScenarioName,
-}: {
-  onScenarioName: (name: string | null) => void;
-}) {
+export function MydateResultPage() {
+  const setScenarioName = useAppStore((s) => s.setScenarioName);
   const { date } = useParams<{ date: string }>();
   const [systems, setSystems] = useState<SystemCard[] | null>(null);
   const [analysis, setAnalysis] = useState<Record<string, SystemResult>>({});
 
+  // If URL contains +, it's a comparison
+  if (date && date.includes("+")) {
+    return <CompareTablePage />;
+  }
+
   useEffect(() => {
     if (!date || !isValidDate(date)) return;
-    onScenarioName("MyDate");
-    fetch("/api/mydate/systems")
-      .then((r) => r.json())
-      .then((data) => setSystems(data?.ok ? data.systems : []));
-    fetch(`/api/mydate/analysis/${date}`)
-      .then((r) => r.json())
-      .then((data) => setAnalysis(data?.ok ? data.systems : {}));
-  }, [date, onScenarioName]);
+    setScenarioName("MyDate");
+
+    fetchSystems().then((sys) => setSystems(sys));
+    fetchAnalysis(date).then((a) => setAnalysis(a));
+  }, [date, setScenarioName]);
 
   if (!date || !isValidDate(date)) {
     return (

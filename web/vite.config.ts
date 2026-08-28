@@ -1,5 +1,8 @@
 import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react";
+import tailwindcss from "@tailwindcss/vite";
+import { cloudflare } from "@cloudflare/vite-plugin";
+import path from "path";
 
 import { createHash } from "crypto";
 
@@ -24,7 +27,12 @@ function fixHtml() {
 }
 
 export default defineConfig({
-  plugins: [react(), fixHtml()],
+  plugins: [cloudflare(), react(), tailwindcss(), fixHtml()],
+  resolve: {
+    alias: {
+      "@": path.resolve(__dirname, "./src"),
+    },
+  },
   server: {
     allowedHosts: [".monkeycode-ai.live"],
     proxy: {

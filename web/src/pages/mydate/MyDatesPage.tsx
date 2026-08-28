@@ -1,24 +1,17 @@
 import { useEffect, useState, useCallback, useMemo, useRef } from "react";
 import { Link } from "react-router-dom";
+import { useAppStore } from "@/stores/app.store";
+import {
+  fetchMyDates,
+  saveMyDate,
+  deleteMyDate,
+  deleteMyDates,
+  type MyDate,
+} from "@/shared/api/mydate.api";
 
 /* ═══════════════════════════════════════════════
-   TYPES
+   TYPES & CONSTANTS
    ═══════════════════════════════════════════════ */
-
-interface MyDate {
-  id: string;
-  user_id: number;
-  date: string;
-  type: string;
-  name: string;
-  tags: string[];
-  notes: string;
-  created_at: string;
-  updated_at: string;
-  // Legacy fields (backward compat)
-  alias?: string;
-  category?: string;
-}
 
 type SortField = "date" | "type" | "name" | "tags" | "notes" | "created_at";
 type SortOrder = "asc" | "desc";
@@ -51,23 +44,10 @@ function getTypeConfig(type: string) {
   return TYPE_CONFIG[type] || TYPE_CONFIG.other;
 }
 
-function getTelegramUserId(): number | null {
-  try {
-    return (window as any).Telegram?.WebApp?.initDataUnsafe?.user?.id ?? null;
-  } catch {
-    return null;
-  }
-}
-
 function formatDate(raw: string): string {
   const parts = raw.split("-");
   if (parts.length !== 3) return raw;
   return `${parts[2]}.${parts[1]}.${parts[0]}`;
-}
-
-function formatDateShort(_raw: string): string {
-  // Повна дата: DD.MM.YYYY
-  return formatDate(_raw);
 }
 
 function getCustomTypes(dates: MyDate[]): string[] {
@@ -177,7 +157,6 @@ function DateModal({
         </div>
 
         <div className="modal-body">
-          {/* Дата */}
           <div className="form-field">
             <label className="form-label">Дата *</label>
             <input
@@ -189,7 +168,6 @@ function DateModal({
             />
           </div>
 
-          {/* Тип */}
           <div className="form-field">
             <label className="form-label">Тип</label>
             <div className="type-selector">
@@ -215,7 +193,6 @@ function DateModal({
             </div>
           </div>
 
-          {/* Назва */}
           <div className="form-field">
             <label className="form-label">Назва / Псевдонім</label>
             <input
@@ -228,7 +205,6 @@ function DateModal({
             />
           </div>
 
-          {/* Теги */}
           <div className="form-field">
             <label className="form-label">Теги</label>
             <div className="tags-input-wrapper">
@@ -280,7 +256,6 @@ function DateModal({
             </div>
           </div>
 
-          {/* Примітки */}
           <div className="form-field">
             <label className="form-label">Примітки</label>
             <textarea
@@ -335,7 +310,8 @@ function DateModal({
    MAIN PAGE
    ═══════════════════════════════════════════════ */
 
-export function MyDatesPage({ onScenarioName }: { onScenarioName: (name: string | null) => void }) {
+export function MyDatesPage() {
+  const setScenarioName = useAppStore((s) => s.setScenarioName);
   const [dates, setDates] = useState<MyDate[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -392,38 +368,20 @@ export function MyDatesPage({ onScenarioName }: { onScenarioName: (name: string 
   const [headerFilterText, setHeaderFilterText] = useState("");
 
   useEffect(() => {
-    onScenarioName("MyDate");
-  }, [onScenarioName]);
-
-  const userId = getTelegramUserId();
+    setScenarioName("MyDate");
+  }, [setScenarioName]);
 
   // Fetch dates
   const fetchDates = useCallback(async () => {
-    if (!userId) {
-      setLoading(false);
-      return;
-    }
     try {
-      const res = await fetch("/api/my-dates", {
-        headers: { "X-Telegram-User-Id": String(userId) },
-      });
-      if (!res.ok) {
-        const text = await res.text();
-        setError(`Помилка ${res.status}: ${text.slice(0, 100)}`);
-        return;
-      }
-      const data = await res.json();
-      if (data.ok) {
-        setDates(data.dates);
-      } else {
-        setError(data.error ?? "Помилка завантаження");
-      }
+      const data = await fetchMyDates();
+      setDates(data);
     } catch (e) {
-      setError(`Помилка мережі: ${String(e).slice(0, 100)}`);
+      setError(`Помилка: ${String(e).slice(0, 100)}`);
     } finally {
       setLoading(false);
     }
-  }, [userId]);
+  }, []);
 
   useEffect(() => {
     fetchDates();
@@ -436,7 +394,7 @@ export function MyDatesPage({ onScenarioName }: { onScenarioName: (name: string 
     return [...tagSet].sort();
   }, [dates]);
 
-  // All unique types (built-in + custom)
+  // All unique types
   const allTypes = useMemo(() => {
     const builtins = ["person", "event", "other"];
     const custom = getCustomTypes(dates);
@@ -468,7 +426,7 @@ export function MyDatesPage({ onScenarioName }: { onScenarioName: (name: string 
       );
     }
 
-    // Column filters (multi-select)
+    // Column filters
     for (const [field, values] of Object.entries(columnFilters)) {
       if (values.length === 0) continue;
       result = result.filter((d) => {
@@ -480,17 +438,6 @@ export function MyDatesPage({ onScenarioName }: { onScenarioName: (name: string 
         else if (field === "date") cellVal = d.date || "";
         return values.includes(cellVal);
       });
-    }
-
-    // Search query (legacy — now handled by columnFilters name field, but keep for compatibility)
-    if (searchQuery) {
-      const q = searchQuery.toLowerCase();
-      result = result.filter(
-        (d) =>
-          (d.name || "").toLowerCase().includes(q) ||
-          (d.notes || "").toLowerCase().includes(q) ||
-          (d.tags || []).some((t) => t.toLowerCase().includes(q)),
-      );
     }
 
     // Sort
@@ -555,71 +502,50 @@ export function MyDatesPage({ onScenarioName }: { onScenarioName: (name: string 
 
   // Add via accordion
   const handleAccordionAdd = async () => {
-    if (!formDate || !userId) return;
+    if (!formDate) return;
     setSubmitting(true);
     try {
-      const res = await fetch("/api/my-dates", {
-        method: "POST",
-        headers: { "Content-Type": "application/json", "X-Telegram-User-Id": String(userId) },
-        body: JSON.stringify({
-          date: formDate,
-          type: formType,
-          name: formName,
-          tags: formTags,
-          notes: formNotes,
-        }),
+      await saveMyDate({
+        date: formDate,
+        type: formType,
+        name: formName,
+        tags: formTags,
+        notes: formNotes,
       });
-      const data = await res.json();
-      if (data.ok) {
-        resetForm();
-        setFormOpen(false);
-        try {
-          localStorage.setItem("mydates_form_open", "false");
-        } catch {}
-        await fetchDates();
-      } else {
-        setError(data.error ?? "Помилка додавання");
-      }
+      resetForm();
+      setFormOpen(false);
+      try {
+        localStorage.setItem("mydates_form_open", "false");
+      } catch {}
+      await fetchDates();
     } catch (e) {
-      setError(`Помилка мережі: ${String(e).slice(0, 100)}`);
+      setError(`Помилка: ${String(e).slice(0, 100)}`);
     } finally {
       setSubmitting(false);
     }
   };
 
-  // Save from modal (create or edit)
+  // Save from modal
   const handleModalSave = async (data: Partial<MyDate>) => {
-    if (!userId) return;
-    const isCreate = modalMode === "create";
-    const res = await fetch("/api/my-dates", {
-      method: isCreate ? "POST" : "PUT",
-      headers: { "Content-Type": "application/json", "X-Telegram-User-Id": String(userId) },
-      body: JSON.stringify(data),
-    });
-    const result = await res.json();
-    if (result.ok) {
+    try {
+      await saveMyDate(data);
       setModalMode(null);
       setModalDate(null);
       await fetchDates();
-    } else {
-      setError(result.error ?? "Помилка збереження");
+    } catch (e) {
+      setError(`Помилка: ${String(e).slice(0, 100)}`);
     }
   };
 
   // Delete single
   const handleDelete = async (id: string) => {
-    if (!userId) return;
-    const res = await fetch(`/api/my-dates?id=${id}`, {
-      method: "DELETE",
-      headers: { "X-Telegram-User-Id": String(userId) },
-    });
-    const data = await res.json();
-    if (data.ok) {
+    try {
+      await deleteMyDate(id);
       setModalMode(null);
       setModalDate(null);
       await fetchDates();
-    } else {
-      setError(data.error ?? "Помилка видалення");
+    } catch (e) {
+      setError(`Помилка: ${String(e).slice(0, 100)}`);
     }
   };
 
@@ -627,18 +553,12 @@ export function MyDatesPage({ onScenarioName }: { onScenarioName: (name: string 
   const handleBulkDelete = async () => {
     if (selectedIds.size === 0) return;
     if (!confirm(`Видалити ${selectedIds.size} дат(у)?`)) return;
-    if (!userId) return;
-    const ids = [...selectedIds].join(",");
-    const res = await fetch(`/api/my-dates?ids=${ids}`, {
-      method: "DELETE",
-      headers: { "X-Telegram-User-Id": String(userId) },
-    });
-    const data = await res.json();
-    if (data.ok) {
+    try {
+      await deleteMyDates([...selectedIds]);
       setSelectedIds(new Set());
       await fetchDates();
-    } else {
-      setError(data.error ?? "Помилка видалення");
+    } catch (e) {
+      setError(`Помилка: ${String(e).slice(0, 100)}`);
     }
   };
 
@@ -658,9 +578,7 @@ export function MyDatesPage({ onScenarioName }: { onScenarioName: (name: string 
   const handleHeaderMenuFilterToggle = (field: SortField, value: string) => {
     setColumnFilters((prev) => {
       const current = prev[field] || [];
-      const next = current.includes(value)
-        ? current.filter((v) => v !== value)
-        : [...current, value];
+      const next = current.includes(value) ? current.filter((v) => v !== value) : [...current, value];
       return { ...prev, [field]: next };
     });
   };
@@ -759,11 +677,11 @@ export function MyDatesPage({ onScenarioName }: { onScenarioName: (name: string 
                           type="button"
                           className={`type-chip ${formType === t ? "active" : ""}`}
                           style={{
-                          borderColor: formType === t ? cfg.color : "var(--border)",
-                          background: formType === t ? cfg.bg : "var(--bg-1)",
-                          color: formType === t ? cfg.color : "var(--text-muted)",
-                        }}
-                        onClick={() => setFormType(t)}
+                            borderColor: formType === t ? cfg.color : "var(--border)",
+                            background: formType === t ? cfg.bg : "var(--bg-1)",
+                            color: formType === t ? cfg.color : "var(--text-muted)",
+                          }}
+                          onClick={() => setFormType(t)}
                         >
                           {cfg.emoji} {t === "person" ? "Людина" : t === "event" ? "Подія" : "Інше"}
                         </button>
@@ -963,7 +881,9 @@ export function MyDatesPage({ onScenarioName }: { onScenarioName: (name: string 
                           >
                             {label}{" "}
                             {sortField === field && (
-                              <span className="sort-arrow">{sortOrder === "asc" ? "▲" : "▼"}</span>
+                              <span className="sort-arrow">
+                                {sortOrder === "asc" ? "▲" : "▼"}
+                              </span>
                             )}
                           </div>
                         </th>
@@ -1001,7 +921,7 @@ export function MyDatesPage({ onScenarioName }: { onScenarioName: (name: string 
                           />
                         </td>
                         <td className="sticky-col-name name-cell">{d.name || "—"}</td>
-                        <td className="date-cell">{formatDateShort(d.date)}</td>
+                        <td className="date-cell">{formatDate(d.date)}</td>
                         <td className="tags-cell">
                           {(d.tags || []).length > 0 ? (
                             <div className="tags-inline">
@@ -1151,7 +1071,9 @@ export function MyDatesPage({ onScenarioName }: { onScenarioName: (name: string 
                       (v) =>
                         !headerFilterText ||
                         v.toLowerCase().includes(headerFilterText.toLowerCase()),
-                    ).length === 0 && <div className="header-modal-empty">Нічого не знайдено</div>}
+                    ).length === 0 && (
+                      <div className="header-modal-empty">Нічого не знайдено</div>
+                    )}
                   </div>
                   {(columnFilters[headerMenu.field]?.length || 0) > 0 && (
                     <button

@@ -1,22 +1,13 @@
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
+import { useAppStore } from "@/stores/app.store";
+import { fetchSystems, type SystemCard } from "@/shared/api/mydate.api";
 
-interface SystemDef {
-  id: string;
-  name: string;
-  description: string;
-  implemented: boolean;
-  parameters: { key: string; label: string }[];
-}
-
-export function CompareSystemsPage({
-  onScenarioName,
-}: {
-  onScenarioName: (name: string | null) => void;
-}) {
+export function CompareSystemsPage() {
+  const setScenarioName = useAppStore((s) => s.setScenarioName);
   const [search] = useSearchParams();
   const navigate = useNavigate();
-  const [systems, setSystems] = useState<SystemDef[]>([]);
+  const [systems, setSystems] = useState<SystemCard[]>([]);
   const [selected, setSelected] = useState<Record<string, Record<string, boolean>>>({});
 
   const dates = useMemo(
@@ -25,21 +16,18 @@ export function CompareSystemsPage({
   );
 
   useEffect(() => {
-    onScenarioName("MyDate");
-    fetch("/api/mydate/systems")
-      .then((r) => r.json())
-      .then((data) => {
-        const list: SystemDef[] = data?.ok ? data.systems : [];
-        setSystems(list);
-        const init: Record<string, Record<string, boolean>> = {};
-        for (const s of list) {
-          if (!s.implemented) continue;
-          init[s.id] = {};
-          for (const p of s.parameters ?? []) init[s.id][p.key] = true;
-        }
-        setSelected(init);
-      });
-  }, [onScenarioName]);
+    setScenarioName("MyDate");
+    fetchSystems().then((list) => {
+      setSystems(list);
+      const init: Record<string, Record<string, boolean>> = {};
+      for (const s of list) {
+        if (!s.implemented) continue;
+        init[s.id] = {};
+        for (const p of s.parameters ?? []) init[s.id][p.key] = true;
+      }
+      setSelected(init);
+    });
+  }, [setScenarioName]);
 
   const isSystemSelected = (id: string) => Object.values(selected[id] ?? {}).some(Boolean);
 
@@ -76,7 +64,7 @@ export function CompareSystemsPage({
     return (
       <main>
         <section className="hero">
-          <p style={{ fontSize: "18px", color: "#4a4a4a" }}>Не знайдено дат для аналізу.</p>
+          <p className="hero-text">Не знайдено дат для аналізу.</p>
           <a className="btn" href="/mydate/compare">
             Назад до введення дат
           </a>

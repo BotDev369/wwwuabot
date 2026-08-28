@@ -1,12 +1,7 @@
 import { Fragment, useEffect, useMemo, useState } from "react";
 import { useParams, useSearchParams } from "react-router-dom";
-
-interface SystemDef {
-  id: string;
-  name: string;
-  implemented: boolean;
-  parameters: { key: string; label: string }[];
-}
+import { useAppStore } from "@/stores/app.store";
+import { fetchSystems, compareDates, type SystemCard } from "@/shared/api/mydate.api";
 
 function formatDate(raw: string): string {
   const parts = raw.split("-");
@@ -14,14 +9,11 @@ function formatDate(raw: string): string {
   return `${parts[2]}.${parts[1]}.${parts[0]}`;
 }
 
-export function CompareTablePage({
-  onScenarioName,
-}: {
-  onScenarioName: (name: string | null) => void;
-}) {
+export function CompareTablePage() {
+  const setScenarioName = useAppStore((s) => s.setScenarioName);
   const { date: dateParam } = useParams<{ date: string }>();
   const [search] = useSearchParams();
-  const [systems, setSystems] = useState<SystemDef[]>([]);
+  const [systems, setSystems] = useState<SystemCard[]>([]);
   const [matrix, setMatrix] = useState<Record<string, Record<string, Record<string, string>>>>({});
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -41,35 +33,27 @@ export function CompareTablePage({
   );
 
   useEffect(() => {
-    onScenarioName("MyDate");
+    setScenarioName("MyDate");
     if (dates.length === 0) {
       setLoading(false);
       return;
     }
+
     let cancelled = false;
     setLoading(true);
     setError(null);
-    fetch("/api/mydate/systems")
-      .then((r) => r.json())
-      .then((data) => {
-        if (!cancelled && data?.ok) setSystems(data.systems);
+
+    fetchSystems()
+      .then((sys) => {
+        if (!cancelled) setSystems(sys);
+        return compareDates(
+          dates,
+          selectedSystems.length ? selectedSystems : undefined,
+          selectedParams.length ? selectedParams : undefined,
+        );
       })
-      .then(() =>
-        fetch("/api/mydate/compare", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            dates,
-            systemIds: selectedSystems.length ? selectedSystems : undefined,
-            parameterKeys: selectedParams.length ? selectedParams : undefined,
-          }),
-        }),
-      )
-      .then((r) => r.json())
-      .then((data) => {
-        if (cancelled) return;
-        if (data?.ok) setMatrix(data.matrix);
-        else setError(data?.error ?? "Помилка співставлення");
+      .then((m) => {
+        if (!cancelled) setMatrix(m);
       })
       .catch(() => {
         if (!cancelled) setError("Помилка мережі");
@@ -77,10 +61,11 @@ export function CompareTablePage({
       .finally(() => {
         if (!cancelled) setLoading(false);
       });
+
     return () => {
       cancelled = true;
     };
-  }, [dates, selectedSystems, selectedParams, onScenarioName]);
+  }, [dates, selectedSystems, selectedParams, setScenarioName]);
 
   const rows = useMemo(() => {
     const systemIds = selectedSystems.length

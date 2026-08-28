@@ -1,7 +1,7 @@
-import React from "react";
-import ReactDOM from "react-dom/client";
-import { App } from "./App";
-import "./styles.css";
+import { StrictMode } from "react";
+import { createRoot } from "react-dom/client";
+import "./index.css";
+import App from "./App.tsx";
 
 // Apply stored theme before first render to avoid flash
 try {
@@ -12,8 +12,8 @@ try {
   document.documentElement.setAttribute("data-theme", resolved);
 } catch { /* ignore */ }
 
-ReactDOM.createRoot(document.getElementById("root")!).render(
-  <React.StrictMode>
+createRoot(document.getElementById("root")!).render(
+  <StrictMode>
     <App />
-  </React.StrictMode>,
+  </StrictMode>,
 );

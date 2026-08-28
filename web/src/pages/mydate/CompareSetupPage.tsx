@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { useAppStore } from "@/stores/app.store";
 
 function formatDate(raw: string): string {
   const parts = raw.split("-");
@@ -7,18 +8,15 @@ function formatDate(raw: string): string {
   return `${parts[2]}.${parts[1]}.${parts[0]}`;
 }
 
-export function CompareSetupPage({
-  onScenarioName,
-}: {
-  onScenarioName: (name: string | null) => void;
-}) {
+export function CompareSetupPage() {
+  const setScenarioName = useAppStore((s) => s.setScenarioName);
   const [input, setInput] = useState("");
   const [dates, setDates] = useState<string[]>([]);
   const navigate = useNavigate();
 
   useEffect(() => {
-    onScenarioName("MyDate");
-  }, [onScenarioName]);
+    setScenarioName("MyDate");
+  }, [setScenarioName]);
 
   const addDate = () => {
     if (!input) return;
