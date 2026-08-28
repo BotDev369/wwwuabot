@@ -96,6 +96,7 @@ jobs:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
           workingDirectory: web
+          wranglerVersion: '4.126.0'
           command: deploy --env dev
 
   deploy-web-admin:
