@@ -1,4 +1,3 @@
-import { ThemeToggle } from "@wwwuabot/shared";
 import { useAppStore } from "@/stores/app.store";
 
 export function Header() {
@@ -20,7 +19,6 @@ export function Header() {
       </button>
       <span className="brand">WWWUABot</span>
       {scenarioName && <span className="header-sub scenario">{scenarioName}</span>}
-      <ThemeToggle compact />
       {showContextualMenu && (
         <button
           className="hamburger brand-color"

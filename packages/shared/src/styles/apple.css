@@ -1078,3 +1078,394 @@
   font-size: 13px;
   padding: 7px 10px;
 }
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   APPLE STYLE — High-specificity overrides (beats Tailwind utilities)
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+html[data-style="apple"] body {
+  font-size: 17px !important;
+  font-family: var(--font-ui) !important;
+  letter-spacing: -0.022em !important;
+  line-height: 1.47 !important;
+}
+
+/* Buttons: pill shape, bigger, Apple Blue */
+html[data-style="apple"] .btn,
+html[data-style="apple"] .wb-btn {
+  border-radius: 9999px !important;
+  font-size: 16px !important;
+  font-weight: 600 !important;
+  padding: 12px 24px !important;
+  letter-spacing: -0.01em !important;
+  min-height: 48px !important;
+}
+
+html[data-style="apple"] .btn:active,
+html[data-style="apple"] .wb-btn:active {
+  transform: scale(0.97) !important;
+}
+
+html[data-style="apple"] .btn-primary,
+html[data-style="apple"] .btn--primary,
+html[data-style="apple"] .wb-btn-primary {
+  background: #007aff !important;
+  border-color: #007aff !important;
+  box-shadow: 0 2px 10px rgba(0, 122, 255, 0.35) !important;
+}
+
+html[data-style="apple"] .btn-primary:hover,
+html[data-style="apple"] .btn--primary:hover,
+html[data-style="apple"] .wb-btn-primary:hover {
+  background: #0063d1 !important;
+  box-shadow: 0 4px 18px rgba(0, 122, 255, 0.45) !important;
+  transform: translateY(-1px) !important;
+}
+
+html[data-style="apple"] .btn-secondary,
+html[data-style="apple"] .btn--secondary {
+  background: var(--bg-2) !important;
+  border: 1px solid var(--border) !important;
+  color: var(--text-primary) !important;
+}
+
+/* Nav items in sidebar: pill shape, filled active */
+html[data-style="apple"] .sidebar nav a {
+  border-radius: 10px !important;
+  font-size: 16px !important;
+  font-weight: 500 !important;
+  padding: 11px 14px !important;
+  min-height: 44px !important;
+  letter-spacing: -0.015em !important;
+}
+
+html[data-style="apple"] .sidebar nav a.active {
+  background: #007aff !important;
+  color: #ffffff !important;
+  font-weight: 600 !important;
+  box-shadow: 0 2px 10px rgba(0, 122, 255, 0.35) !important;
+}
+
+/* Admin nav items */
+html[data-style="apple"] .sidebar-nav-item {
+  border-radius: 10px !important;
+  font-size: 16px !important;
+  font-weight: 500 !important;
+  padding: 10px 12px !important;
+  min-height: 44px !important;
+}
+
+html[data-style="apple"] .sidebar-nav-item--active {
+  background: #007aff !important;
+  color: #ffffff !important;
+  font-weight: 600 !important;
+  box-shadow: 0 2px 10px rgba(0, 122, 255, 0.35) !important;
+}
+
+html[data-style="apple"][data-theme="dark"] .sidebar-nav-item--active {
+  box-shadow: 0 2px 10px rgba(10, 132, 255, 0.35) !important;
+}
+
+/* Sidebar glass effect */
+html[data-style="apple"] .sidebar {
+  background: rgba(242, 242, 247, 0.88) !important;
+  backdrop-filter: saturate(180%) blur(20px) !important;
+  -webkit-backdrop-filter: saturate(180%) blur(20px) !important;
+  border-right: 0.5px solid var(--border) !important;
+}
+
+html[data-style="apple"][data-theme="dark"] .sidebar {
+  background: rgba(28, 28, 30, 0.82) !important;
+}
+
+/* Header: frosted glass */
+html[data-style="apple"] .header,
+html[data-style="apple"] .topbar {
+  background: rgba(255, 255, 255, 0.82) !important;
+  backdrop-filter: saturate(180%) blur(20px) !important;
+  -webkit-backdrop-filter: saturate(180%) blur(20px) !important;
+  border-bottom: 0.5px solid var(--border) !important;
+}
+
+html[data-style="apple"][data-theme="dark"] .header,
+html[data-style="apple"][data-theme="dark"] .topbar {
+  background: rgba(28, 28, 30, 0.82) !important;
+}
+
+html[data-style="apple"] .brand {
+  font-size: 18px !important;
+  font-weight: 800 !important;
+  letter-spacing: -0.02em !important;
+}
+
+/* Cards: no border, glass */
+html[data-style="apple"] .card,
+html[data-style="apple"] .wb-card {
+  border: none !important;
+  border-radius: 16px !important;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.06), 0 4px 16px rgba(0, 0, 0, 0.04) !important;
+}
+
+html[data-style="apple"] .card h3 {
+  font-size: 20px !important;
+  font-weight: 600 !important;
+  letter-spacing: -0.02em !important;
+}
+
+html[data-style="apple"] .card p {
+  font-size: 16px !important;
+  line-height: 1.5 !important;
+}
+
+/* Hero text */
+html[data-style="apple"] .hero h1 {
+  font-size: 36px !important;
+  font-weight: 700 !important;
+  letter-spacing: -0.04em !important;
+}
+
+html[data-style="apple"] .hero-text {
+  font-size: 18px !important;
+  line-height: 1.5 !important;
+}
+
+/* Tables: borderless, spacious */
+html[data-style="apple"] .dates-table th,
+html[data-style="apple"] .dates-table td,
+html[data-style="apple"] .scn-table th,
+html[data-style="apple"] .scn-table td,
+html[data-style="apple"] .usr-table th,
+html[data-style="apple"] .usr-table td {
+  padding: 14px 16px !important;
+  font-size: 15px !important;
+  border-bottom: 0.5px solid var(--border-subtle) !important;
+}
+
+html[data-style="apple"] .dates-table thead th,
+html[data-style="apple"] .scn-table thead th,
+html[data-style="apple"] .usr-table thead th {
+  font-size: 11px !important;
+  text-transform: uppercase !important;
+  letter-spacing: 0.06em !important;
+  color: var(--text-muted) !important;
+}
+
+/* Date inputs: rounded, larger */
+html[data-style="apple"] .date-input,
+html[data-style="apple"] .text-input,
+html[data-style="apple"] .filter-search {
+  border-radius: 10px !important;
+  border: 0.5px solid var(--border) !important;
+  font-size: 16px !important;
+  padding: 12px 16px !important;
+}
+
+html[data-style="apple"] .text-input:focus,
+html[data-style="apple"] .filter-search:focus {
+  border-color: #007aff !important;
+  box-shadow: 0 0 0 4px rgba(0, 122, 255, 0.08) !important;
+}
+
+/* Modal: glass overlay */
+html[data-style="apple"] .modal-overlay,
+html[data-style="apple"] .wb-modal-overlay {
+  backdrop-filter: blur(8px) saturate(150%) !important;
+  -webkit-backdrop-filter: blur(8px) saturate(150%) !important;
+  background: rgba(0, 0, 0, 0.35) !important;
+}
+
+html[data-style="apple"] .modal,
+html[data-style="apple"] .wb-modal {
+  border: none !important;
+  border-radius: 20px !important;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.15) !important;
+}
+
+html[data-style="apple"] .modal-header h3,
+html[data-style="apple"] .wb-modal-title {
+  font-size: 20px !important;
+  font-weight: 700 !important;
+  letter-spacing: -0.03em !important;
+}
+
+/* Chips: pill */
+html[data-style="apple"] .type-chip {
+  border-radius: 9999px !important;
+  border: 1.5px solid var(--border) !important;
+  font-size: 14px !important;
+  font-weight: 500 !important;
+  padding: 7px 16px !important;
+}
+
+html[data-style="apple"] .type-chip.active {
+  background: #007aff !important;
+  color: #fff !important;
+  border-color: #007aff !important;
+  box-shadow: 0 2px 8px rgba(0, 122, 255, 0.30) !important;
+}
+
+/* Tags */
+html[data-style="apple"] .tag-chip {
+  border-radius: 9999px !important;
+  font-size: 13px !important;
+  font-weight: 500 !important;
+}
+
+/* Accordion */
+html[data-style="apple"] .accordion {
+  border: none !important;
+  border-radius: 14px !important;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.06) !important;
+}
+
+html[data-style="apple"] .accordion-toggle {
+  font-size: 16px !important;
+  font-weight: 600 !important;
+  letter-spacing: -0.01em !important;
+  padding: 16px 20px !important;
+}
+
+/* System selection cards */
+html[data-style="apple"] .sys-group {
+  border: none !important;
+  border-radius: 14px !important;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.06) !important;
+  padding: 18px 20px !important;
+}
+
+html[data-style="apple"] .sys-title {
+  font-size: 17px !important;
+  font-weight: 500 !important;
+}
+
+/* Param rows */
+html[data-style="apple"] .param-row {
+  font-size: 16px !important;
+  padding: 8px 0 !important;
+  border-bottom: 0.5px solid var(--border-subtle) !important;
+}
+
+/* Bulk bar */
+html[data-style="apple"] .bulk-bar {
+  border-radius: 14px !important;
+  border: none !important;
+  background: rgba(0, 122, 255, 0.08) !important;
+  padding: 12px 20px !important;
+}
+
+html[data-style="apple"] .bulk-count {
+  font-size: 14px !important;
+  font-weight: 700 !important;
+}
+
+/* Scrollbar */
+html[data-style="apple"] ::-webkit-scrollbar {
+  width: 6px !important;
+  height: 6px !important;
+}
+
+html[data-style="apple"] ::-webkit-scrollbar-track {
+  background: transparent !important;
+}
+
+html[data-style="apple"] ::-webkit-scrollbar-thumb {
+  background: rgba(0, 0, 0, 0.15) !important;
+  border-radius: 10px !important;
+}
+
+html[data-style="apple"][data-theme="dark"] ::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.15) !important;
+}
+
+/* Selection */
+html[data-style="apple"] ::selection {
+  background: rgba(0, 122, 255, 0.25) !important;
+}
+
+/* Hamburger icon */
+html[data-style="apple"] .hamburger span {
+  height: 2.5px !important;
+  border-radius: 2px !important;
+}
+
+/* Login card */
+html[data-style="apple"] .login-card {
+  border: none !important;
+  border-radius: 24px !important;
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.12) !important;
+}
+
+html[data-style="apple"] .login-btn {
+  border-radius: 9999px !important;
+  font-size: 17px !important;
+  font-weight: 600 !important;
+  padding: 14px 20px !important;
+  box-shadow: 0 2px 10px rgba(0, 122, 255, 0.35) !important;
+}
+
+/* Table wrap */
+html[data-style="apple"] .table-wrap,
+html[data-style="apple"] .compare-wrap {
+  border: none !important;
+  border-radius: 14px !important;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.06) !important;
+}
+
+/* Status badge */
+html[data-style="apple"] .status-badge,
+html[data-style="apple"] .scn-count,
+html[data-style="apple"] .scn-badge,
+html[data-style="apple"] .usr-badge {
+  border-radius: 9999px !important;
+  font-weight: 600 !important;
+}
+
+/* Icon buttons */
+html[data-style="apple"] .icon-btn {
+  border-radius: 10px !important;
+  border: 0.5px solid var(--border) !important;
+}
+
+html[data-style="apple"] .icon-btn:hover {
+  background: var(--surface-hover) !important;
+}
+
+/* Modal actions */
+html[data-style="apple"] .modal-actions .btn {
+  border-radius: 9999px !important;
+}
+
+/* Date count */
+html[data-style="apple"] .date-count {
+  font-size: 15px !important;
+}
+
+/* Page header */
+html[data-style="apple"] .page-header {
+  gap: 16px !important;
+}
+
+/* Tags wrapper */
+html[data-style="apple"] .tags-input-wrapper {
+  border-radius: 10px !important;
+  border: 0.5px solid var(--border) !important;
+  padding: 10px 12px !important;
+}
+
+/* Hint text */
+html[data-style="apple"] .hint {
+  font-size: 15px !important;
+  line-height: 1.5 !important;
+}
+
+/* Form labels */
+html[data-style="apple"] .form-label {
+  font-size: 14px !important;
+  font-weight: 500 !important;
+}
+
+/* Footer */
+html[data-style="apple"] footer {
+  font-size: 14px !important;
+  padding: 20px 16px !important;
+}
