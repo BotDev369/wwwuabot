@@ -17,3 +17,7 @@ service = "wwwuabot-api-dev"
 
 [env.production]
 name = "wwwuabot-web-prod"
+
+[[env.production.services]]
+binding = "API"
+service = "wwwuabot-api-prod"
