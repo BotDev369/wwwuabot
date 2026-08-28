@@ -1,19 +1,30 @@
 import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react";
 
-/** Remove crossorigin attributes — Cloudflare CDN doesn't send CORS headers. */
-function stripCrossorigin() {
+import { createHash } from "crypto";
+
+/** Post-process HTML to remove crossorigin and add build hash for cache busting. */
+function fixHtml() {
+  const buildHash = createHash("md5")
+    .update(Date.now().toString())
+    .digest("hex")
+    .slice(0, 8);
   return {
-    name: "strip-crossorigin",
+    name: "fix-html",
     enforce: "post",
     transformIndexHtml(html: string) {
-      return html.replace(/\s+crossorigin/g, "");
+      return html
+        .replace(/\s+crossorigin/g, "")
+        .replace(
+          /<title>([^<]*)<\/title>/,
+          `<title>$1</title><meta name="x-build" content="${buildHash}">`,
+        );
     },
   };
 }
 
 export default defineConfig({
-  plugins: [react(), stripCrossorigin()],
+  plugins: [react(), fixHtml()],
   server: {
     allowedHosts: [".monkeycode-ai.live"],
     proxy: {

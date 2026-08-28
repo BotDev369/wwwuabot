@@ -66,10 +66,16 @@ function json(data: unknown, status = 200): Response {
   });
 }
 
-/** Add CORS headers so <script type="module" crossorigin> works in all browsers. */
-function withCors(res: Response): Response {
+/** Ensure asset responses work correctly in all browsers:
+ *  1. CORS header for <script type="module" crossorigin> (fallback)
+ *  2. no-store for HTML to prevent stale cached versions */
+function fixAssetHeaders(res: Response): Response {
   const headers = new Headers(res.headers);
   headers.set("Access-Control-Allow-Origin", "*");
+  const ct = headers.get("content-type") || "";
+  if (ct.includes("text/html")) {
+    headers.set("Cache-Control", "no-store, no-cache, must-revalidate");
+  }
   return new Response(res.body, {
     status: res.status,
     statusText: res.statusText,
@@ -147,7 +153,7 @@ export default {
       if (url.pathname.startsWith("/api/")) {
         return json({ error: "Unauthorized" }, 401);
       }
-      return withCors(
+      return fixAssetHeaders(
         await env.ASSETS.fetch(new Request(new URL("/", url).toString(), request))
       );
     }
@@ -540,10 +546,10 @@ export default {
     // щоб F5 і прямі посилання працювали. Ассети з розширенням → чесний 404.
     const assetRes = await env.ASSETS.fetch(request);
     if (assetRes.status === 404 && !url.pathname.includes(".")) {
-      return withCors(
+      return fixAssetHeaders(
         await env.ASSETS.fetch(new Request(new URL("/", url).toString(), request))
       );
     }
-    return withCors(assetRes);
+    return fixAssetHeaders(assetRes);
   },
 };

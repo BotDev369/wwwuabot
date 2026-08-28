@@ -4,10 +4,14 @@ export interface Env {
   API: { fetch: (request: Request) => Promise<Response> };
 }
 
-/** Add CORS headers so <script type="module" crossorigin> works in all browsers. */
-function withCors(res: Response): Response {
+/** Ensure asset responses work correctly in all browsers. */
+function fixAssetHeaders(res: Response): Response {
   const headers = new Headers(res.headers);
   headers.set("Access-Control-Allow-Origin", "*");
+  const ct = headers.get("content-type") || "";
+  if (ct.includes("text/html")) {
+    headers.set("Cache-Control", "no-store, no-cache, must-revalidate");
+  }
   return new Response(res.body, {
     status: res.status,
     statusText: res.statusText,
@@ -21,6 +25,6 @@ export default {
     if (url.pathname.startsWith("/api/")) {
       return env.API.fetch(request);
     }
-    return withCors(await env.ASSETS.fetch(request));
+    return fixAssetHeaders(await env.ASSETS.fetch(request));
   },
 };

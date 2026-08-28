@@ -1,4 +1,4 @@
-import { ThemeToggle } from "@wwwuabot/shared/components/ThemeToggle";
+import { ThemeToggle } from "@wwwuabot/shared";
 
 interface AppHeaderProps {
   onMenuClick: () => void;

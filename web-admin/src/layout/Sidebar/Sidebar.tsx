@@ -1,7 +1,7 @@
 import { useSidebar } from "./useSidebar";
 import { SidebarNav } from "./SidebarNav";
 import { logout } from "../../shared/api/auth.api";
-import { ThemeToggle } from "@wwwuabot/shared/components/ThemeToggle";
+import { ThemeToggle } from "@wwwuabot/shared";
 
 export function Sidebar() {
   const collapsed = useSidebar((s) => s.collapsed);
