@@ -36,3 +36,4 @@ ENVIRONMENT = "prod"
 binding = "DB"
 database_name = "wwwuabot-db-prod"
 database_id = "6e690692-7671-4598-826c-c2db591399a2"
+
