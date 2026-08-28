@@ -1,6 +1,9 @@
 @import url("https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&display=swap");
 @import "@wwwuabot/shared/styles/index.css";
 @import "tailwindcss";
+/* NOTE: Tailwind MUST come AFTER shared styles. Our tokens.css uses :root
+   (unlayered) which beats Tailwind's @layer theme. This ensures our design
+   tokens (--bg-0, --accent, etc.) take precedence over Tailwind defaults. */
 
 /* ─── Reset ──────────────────────────────────────────────────────────────────── */
 *,

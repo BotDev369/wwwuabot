@@ -33,11 +33,43 @@ function getStoredTheme(): Theme {
 
 function applyStyle(id: StyleId) {
   document.documentElement.setAttribute("data-style", id);
+  // Apply CSS variables from the registry to :root
+  const def = STYLES.find((s) => s.id === id);
+  if (!def) return;
+  const isDark = document.documentElement.getAttribute("data-theme") === "dark";
+  const vars = isDark && Object.keys(def.darkVars).length ? def.darkVars : def.lightVars;
+  // Clear previous style overrides
+  document.documentElement.style.removeProperty("--accent");
+  document.documentElement.style.removeProperty("--bg-0");
+  document.documentElement.style.removeProperty("--bg-1");
+  document.documentElement.style.removeProperty("--border");
+  document.documentElement.style.removeProperty("--text-primary");
+  document.documentElement.style.removeProperty("--text-secondary");
+  document.documentElement.style.removeProperty("--surface");
+  if (id === "basic") return; // basic uses CSS defaults
+  for (const [prop, val] of Object.entries(vars)) {
+    document.documentElement.style.setProperty(prop, val);
+  }
+  // Also override Tailwind's color tokens so utility classes respond
+  if (vars["--accent"]) {
+    document.documentElement.style.setProperty("--color-accent", vars["--accent"]);
+    document.documentElement.style.setProperty("--color-primary", vars["--accent"]);
+  }
+  if (vars["--bg-1"]) {
+    document.documentElement.style.setProperty("--color-surface", vars["--bg-1"]);
+    document.documentElement.style.setProperty("--color-background", vars["--bg-0"] || vars["--bg-1"]);
+  }
+  if (vars["--text-primary"]) {
+    document.documentElement.style.setProperty("--color-foreground", vars["--text-primary"]);
+  }
 }
 
 function applyTheme(theme: Theme) {
   const resolved = theme === "system" ? getSystemTheme() : theme;
   document.documentElement.setAttribute("data-theme", resolved);
+  // Re-apply current style variables for the new theme
+  const currentStyle = (document.documentElement.getAttribute("data-style") as StyleId) || "basic";
+  applyStyle(currentStyle);
 }
 
 /**

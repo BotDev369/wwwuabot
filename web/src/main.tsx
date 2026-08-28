@@ -13,6 +13,19 @@ try {
 
   const s = localStorage.getItem("wwwuabot-style") || "basic";
   document.documentElement.setAttribute("data-style", s);
+
+  // Apply style CSS variables from registry
+  if (s !== "basic") {
+    import("@wwwuabot/shared").then(({ STYLES }) => {
+      const def = STYLES.find((st) => st.id === s);
+      if (!def) return;
+      const isDark = resolved === "dark";
+      const vars = isDark && Object.keys(def.darkVars).length ? def.darkVars : def.lightVars;
+      for (const [prop, val] of Object.entries(vars)) {
+        document.documentElement.style.setProperty(prop, val as string);
+      }
+    });
+  }
 } catch { /* ignore */ }
 
 createRoot(document.getElementById("root")!).render(

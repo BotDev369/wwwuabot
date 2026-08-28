@@ -20,7 +20,17 @@
  *   <html data-style="basic|apple">    — visual style
  */
 
-/* ── Open Props: 400+ design tokens (colors, shadows, easings, sizes) ── */
+/* ═══════════════════════════════════════════════════════════════════════════
+ * IMPORT ORDER MATTERS:
+ * 1. Open Props tokens (via :where(html) — zero specificity)
+ * 2. Our design tokens + themes (via :root — override Tailwind's @layer theme)
+ * 3. Apple/style CSS (via [data-style] — highest specificity)
+ *
+ * IMPORTANT: Tailwind MUST be imported AFTER this file in each app's
+ * index.css, so that our @layer theme variables override Tailwind's.
+ * ═══════════════════════════════════════════════════════════════════════════ */
+
+/* ── Open Props: 400+ design tokens ── */
 @import "open-props/src/props.media.css";
 @import "open-props/src/props.fonts.css";
 @import "open-props/src/props.sizes.css";
@@ -34,7 +44,7 @@
 @import "open-props/src/props.borders.css";
 @import "open-props/src/props.palette.css";
 
-/* ── Our design system (overrides Open Props where needed) ── */
+/* ── Our design tokens + themes ── */
 @import "./tokens.css";
 @import "./themes.css";
 @import "./apple.css";

@@ -1,5 +1,7 @@
-@import "tailwindcss";
 @import "@wwwuabot/shared/styles/index.css";
+@import "tailwindcss";
+/* NOTE: Tailwind MUST come AFTER shared styles. Our tokens.css uses :root
+   (unlayered) which beats Tailwind's @layer theme. */
 
 /* ═══════════════════════════════════════════════════════════════════════════════
    WWWUABot Web — Custom Styles
@@ -36,7 +38,6 @@
   flex-direction: column;
   gap: 4px;
   padding: 16px 10px;
-  flex: 1;
 }
 
 .sidebar nav a {
