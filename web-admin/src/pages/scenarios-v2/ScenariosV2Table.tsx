@@ -28,7 +28,6 @@ export function ScenariosV2Table() {
   const [cardCodeword, setCardCodeword] = useState<string | null>(null);
   const [editCodeword, setEditCodeword] = useState<string | null>(null);
   const [confirmDelete, setConfirmDelete] = useState<string | null>(null);
-
   const closeAll = useCallback(() => {
     setMenuCodeword(null);
     setCardCodeword(null);
@@ -94,6 +93,11 @@ export function ScenariosV2Table() {
 
   const menuScenario = menuCodeword ? items.find((s) => s.codeword === menuCodeword) : null;
 
+  // Navigate to page builder
+  const navigateToPageBuilder = (cw: string) => {
+    window.location.href = `/page-builder/${cw}`;
+  };
+
   return (
     <>
       <div className="usr-table-wrap">
@@ -155,6 +159,11 @@ export function ScenariosV2Table() {
                       <span className={`scn-badge${isRich ? " scn-badge--rich" : ""}`}>
                         {isRich ? "Rich" : "Photo"}
                       </span>
+                      {s.page_data && (
+                        <span className="scn-badge" style={{ marginLeft: 4, background: "var(--color-info, #3b82f6)", color: "white" }}>
+                          Page
+                        </span>
+                      )}
                     </td>
                     <td className="usr-td-date" title={s.updated_at}>
                       {relativeTime(s.updated_at)}
@@ -189,6 +198,12 @@ export function ScenariosV2Table() {
                 onClick={() => { setMenuCodeword(null); setEditCodeword(menuScenario.codeword); }}
               >
                 ✏️ Змінити
+              </button>
+              <button
+                className="usr-modal-menu-item"
+                onClick={() => { setMenuCodeword(null); navigateToPageBuilder(menuScenario.codeword); }}
+              >
+                🏗️ Page Builder
               </button>
               <div className="usr-modal-divider" />
               <button
@@ -255,6 +270,7 @@ export function ScenariosV2Table() {
           onSaved={() => void useScenariosStore.getState().load(true)}
         />
       )}
+
     </>
   );
 }

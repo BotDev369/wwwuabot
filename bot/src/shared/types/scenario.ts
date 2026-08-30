@@ -16,6 +16,7 @@ export interface ScenarioRow {
   notify_template: string | null;
   rich_message: string | null; // ← NEW: "true"/"false" або 1/0
   rich_data: string | null; // ← NEW: JSON-рядок з масивом блоків
+  page_data: string | null; // ← NEW: JSON-рядок конфігурації веб-сторінки (Page Builder)
   created_at: string;
   updated_at: string;
 }
@@ -44,4 +45,5 @@ export interface Scenario {
   notify_template: string | null;
   rich_message: boolean; // ← NEW
   rich_data: any[] | null; // ← NEW: масив блоків
+  page_data: Record<string, unknown> | null; // ← NEW: конфігурація веб-сторінки (Page Builder)
 }

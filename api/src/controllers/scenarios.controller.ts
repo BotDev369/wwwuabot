@@ -38,6 +38,7 @@ async function ensureBase(db: D1Database): Promise<void> {
         notify_template TEXT,
         rich_message TEXT,
         rich_data TEXT,
+        page_data TEXT DEFAULT NULL,
         web_config TEXT DEFAULT NULL,
         web_slug TEXT DEFAULT NULL,
         is_active INTEGER DEFAULT 1
@@ -63,7 +64,7 @@ async function resolveScenario(db: D1Database, slug: string) {
   if (slug && slug !== "__base__") {
     row = await db
       .prepare(
-        `SELECT codeword, web_slug, web_config FROM scenarios
+        `SELECT codeword, web_slug, web_config, page_data FROM scenarios
          WHERE (web_slug = ? OR codeword = ?) AND is_active = 1
          LIMIT 1`,
       )
@@ -73,18 +74,36 @@ async function resolveScenario(db: D1Database, slug: string) {
 
   if (!row) {
     row = await db
-      .prepare(`SELECT codeword, web_slug, web_config FROM scenarios WHERE codeword = '__base__'`)
+      .prepare(`SELECT codeword, web_slug, web_config, page_data FROM scenarios WHERE codeword = '__base__'`)
       .first();
   }
 
+  // page_data (new Page Builder format) має пріоритет над web_config
   let config = BASE_CONFIG;
+  let pageData: Record<string, unknown> | null = null;
+
+  // Спочатку перевіряємо page_data (новий формат)
   try {
-    if (row?.web_config) {
-      const parsed = JSON.parse(row.web_config);
-      if (parsed?.v === 1) config = parsed;
+    if (row?.page_data) {
+      const parsed = JSON.parse(row.page_data);
+      if (parsed?.zones && parsed?.version) {
+        pageData = parsed;
+      }
     }
   } catch (e) {
-    apiLog.error("Invalid web_config JSON for " + slug, e);
+    apiLog.error("Invalid page_data JSON for " + slug, e);
+  }
+
+  // Якщо page_data немає — використовуємо web_config (старий формат)
+  if (!pageData) {
+    try {
+      if (row?.web_config) {
+        const parsed = JSON.parse(row.web_config);
+        if (parsed?.v === 1) config = parsed;
+      }
+    } catch (e) {
+      apiLog.error("Invalid web_config JSON for " + slug, e);
+    }
   }
 
   return {
@@ -93,6 +112,7 @@ async function resolveScenario(db: D1Database, slug: string) {
       web_slug: row?.web_slug ?? "/",
     },
     config,
+    pageData,
   };
 }
 
@@ -104,11 +124,12 @@ export async function handleScenario(
   slug: string,
 ): Promise<Response> {
   try {
-    const { scenario, config } = await resolveScenario(env.DB, slug);
+    const { scenario, config, pageData } = await resolveScenario(env.DB, slug);
     return json({
       ok: true,
       scenario,
       config,
+      pageData,
       userContext: { authenticated: false, roles: [], flags: [] },
     });
   } catch (e: any) {

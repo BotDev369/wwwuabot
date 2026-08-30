@@ -2531,3 +2531,139 @@ body {
     width: 100%;
   }
 }
+
+/* ═══════════════════════════════════════════════════════════════════════════════
+   SCENARIO EDIT MODAL — 4 Tabs (Shared, Bot, Bot Rich, Web)
+   ═══════════════════════════════════════════════════════════════════════════════ */
+
+/* Tabs bar */
+.scn-tabs {
+  display: flex;
+  gap: 2px;
+  padding: 0 12px;
+  border-bottom: 1px solid var(--border);
+  background: var(--bg-2);
+}
+
+.scn-tab {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 10px 16px;
+  border: none;
+  background: none;
+  color: var(--text-secondary);
+  font-size: 13px;
+  font-weight: 500;
+  font-family: var(--font-ui);
+  cursor: pointer;
+  border-bottom: 2px solid transparent;
+  transition:
+    color 0.12s,
+    border-color 0.12s;
+  margin-bottom: -1px;
+}
+
+.scn-tab:hover {
+  color: var(--text-primary);
+}
+
+.scn-tab--active {
+  color: var(--accent);
+  border-bottom-color: var(--accent);
+}
+
+.scn-tab span:first-child {
+  font-size: 14px;
+}
+
+/* Tab toolbar */
+.scn-tab-toolbar {
+  display: flex;
+  gap: 6px;
+  padding: 8px 12px;
+  border-bottom: 1px solid var(--border-subtle);
+  background: var(--bg-1);
+}
+
+/* Tab content area */
+.scn-tab-content {
+  flex: 1;
+  padding: 16px;
+  overflow-y: auto;
+}
+
+/* Tab preview */
+.scn-tab-preview {
+  border-top: 1px solid var(--border);
+  background: var(--bg-2);
+  max-height: 45%;
+  overflow-y: auto;
+}
+
+.scn-tab-preview-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 6px 12px;
+  border-bottom: 1px solid var(--border-subtle);
+  background: var(--bg-1);
+}
+
+.scn-tab-preview-label {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  color: var(--text-muted);
+  text-transform: uppercase;
+}
+
+.scn-tab-preview-body {
+  padding: 12px;
+  display: flex;
+  justify-content: center;
+}
+
+/* Fields grid */
+.scn-fields-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+@media (max-width: 640px) {
+  .scn-fields-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .scn-tab {
+    padding: 8px 10px;
+    font-size: 12px;
+  }
+}
+
+.scn-field {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.scn-field--full {
+  grid-column: 1 / -1;
+}
+
+.scn-field-label {
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  font-family: var(--font-mono);
+}
+
+/* Disabled input */
+.usr-edit-input--disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  background: var(--bg-2);
+}

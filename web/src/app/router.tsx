@@ -6,6 +6,7 @@ import { MydateResultPage } from "@/pages/mydate/MydateResultPage";
 import { CompareSetupPage } from "@/pages/mydate/CompareSetupPage";
 import { CompareSystemsPage } from "@/pages/mydate/CompareSystemsPage";
 import { AboutPage } from "@/pages/mydate/AboutPage";
+import { DynamicPage } from "@/pages/DynamicPage";
 
 export const router = createBrowserRouter([
   {
@@ -17,6 +18,7 @@ export const router = createBrowserRouter([
       { path: "mydate/compare", element: <CompareSetupPage /> },
       { path: "mydate/about", element: <AboutPage /> },
       { path: "mydate/:date", element: <MydateResultPage /> },
+      { path: ":codeword", element: <DynamicPage /> },
     ],
   },
 ]);

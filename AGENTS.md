@@ -17,16 +17,14 @@ Buffy чи інший), що вперше заходить у проєкт. Ме
 
 ## 1. Що це за проєкт
 
-Монорепо (npm workspaces) з чотирма незалежними Cloudflare Workers:
-
-```
-wwwuabot/
+Монорепо (npm workspaces) з чотирма незалежними Cloudflare Workers:```wwwuabot/
 ├── bot/            # Telegram-бот: grammY + D1 (SQLite) + Cloudflare Queues + Cloudinary
 ├── api/            # REST API: калькулятори, CRUD, аналітика (D1 + KV-кеш)
 ├── web/            # Telegram Mini App: React 19, Vite 8, Tailwind 4, Zustand, React Router 7
 ├── web-admin/      # Адмін-панель: React 19, Vite 8, Tailwind 4, Zustand, React Router 7
 ├── packages/       # Спільний код (npm workspace package)
-│   └── shared/     # Утиліти, типи, константи для всіх воркерів
+│   ├── shared/     # Утиліти, типи, константи для всіх воркерів
+│   └── ui/         # Спільні React-компоненти Page Builder (web + web-admin)
 └── public docs/    # AUDIT.md, PROJECT_PLAN.md, SCORECARD.md — читати першими
 ```
 
@@ -64,7 +62,18 @@ wwwuabot/
 - **Rich Message** — блоковий формат повідомлень (`rich_data` —
   масив блоків, `rich_message` — булевий прапорець "чи саме такий
   формат використовувати"). Редагується через RichMessage Editor у
-  `web-admin`.
+  `web-admin`. **Не плутати з page_data** — це окрема колонка.
+
+- **Page Builder** — блочна система сторінок для веб-додатків.
+  Сторінка = запис scenarios з колонкою `page_data` (JSON, окрема від
+  `rich_data`). Кожна сторінка має 4 зони (sidebar, header, main,
+  footer), кожна зона містить автономні блоки (модулі). Блоки
+  рекурсивні (можуть мати вкладені блоки). Типи блоків:
+  `packages/shared/src/types/page-config.ts`. Реєстр MVP-блоків:
+  `packages/shared/src/constants/block-definitions.ts`. React-компоненти
+  блоків та рендерер: `packages/ui/`. Page-level Zustand store:
+  `packages/ui/src/store.ts`. JSON-редактор у web-admin:
+  `web-admin/src/features/page-builder/`.
 
 - **Forum Topics** — нотифікації в Telegram-групах з розділенням по
   темах (topics). Логіка створення/пошуку топіка —
@@ -93,10 +102,15 @@ wwwuabot/
   об'єднано в одну константу на рівні модуля (задача P1-4).
 
 **Що НЕ виносити в shared:**
-- Компоненти React (web / web-admin) — різні фреймворки/версії.
 - Серверна логіка воркера (роутинг, мідлвари) — специфічна
   для кожного сервісу.
 - Конфігурація `wrangler.toml` — окрема для кожного воркера.
+
+**Виняток: `packages/ui/`** — спільний React-пакет для Page Builder.
+Оскільки `web/` та `web-admin/` мають ідентичний стек (React 19,
+Vite 8, Tailwind 4, Zustand 5), реакт-компоненти блоків та рендерер
+знаходяться в `packages/ui/`. Обидва воркери імпортують одні й ті
+самі компоненти.
 
 ### 3.2. Єдиний API-шлюз через `api/`
 
@@ -124,22 +138,63 @@ wwwuabot/
 додавай його в `api/src/index.ts` (або після P1-1 — в
 `api/src/router.ts` + відповідний controller).
 
-### 3.3. Структура `packages/shared`
+### 3.3. Структура `packages/`
 
 ```
-packages/shared/
-├── src/
-│   ├── utils/          # Чисті функції (datetime.ts, family-box.ts)
-│   ├── types/          # Спільні TypeScript-типи
-│   ├── database/       # Авто-міграція D1 (auto-migrate.ts)
-│   └── constants/      # Константи (VALID_TYPES тощо)
-├── package.json        # npm workspace package: @wwwuabot/shared
-└── tsconfig.json
+packages/
+├── shared/
+│   ├── src/
+│   │   ├── utils/          # Чисті функції (datetime.ts, family-box.ts)
+│   │   ├── types/          # Спільні TypeScript-типи (включно з page-config.ts)
+│   │   ├── database/       # Авто-міграція D1 (auto-migrate.ts)
+│   │   └── constants/      # Константи (VALID_TYPES, block-definitions.ts)
+│   ├── package.json        # npm workspace package: @wwwuabot/shared
+│   └── tsconfig.json
+└── ui/
+    ├── src/
+    │   ├── index.ts        # Barrel export
+    │   ├── registry.tsx     # Реєстр type → React-компонент
+    │   ├── PageRenderer.tsx  # Головний рендерер (zones → blocks)
+    │   ├── ZoneRenderer.tsx  # Рендер зони з рекурсією
+    │   ├── store.ts          # Page-level Zustand store
+    │   └── blocks/           # MVP React-компоненти блоків
+    │       ├── index.ts      # Barrel export + registerAllBlocks()
+    │       ├── TextBlock.tsx
+    │       ├── ImageBlock.tsx
+    │       ├── ButtonsBlock.tsx
+    │       ├── ListBlock.tsx
+    │       └── DividerBlock.tsx
+    ├── package.json        # npm workspace package: @wwwuabot/ui
+    └── tsconfig.json
 ```
 
 Доступ з воркерів: `import { formatSqliteDatetime } from "@wwwuabot/shared"`.
 
-### 3.4. Додавання нового спільного коду (чек-ліст)
+### 3.4. Page Builder: архітектура блоків
+
+> **Сторінка = запис scenarios з колонкою `page_data`.**
+> **Блок = автономний модуль, який може робити будь-що.**
+> **Зони = sidebar, header, main, footer (розділяють екран).**
+
+Ключові правила:
+1. **`page_data` окрема від `rich_data`** — rich_data для Telegram,
+   page_data для веб. Не змішувати.
+2. **Блоки рекурсивні** — кожен блок може мати `children` з інших
+   блоків (необмежена глибина).
+3. **Блоки автономні** — кожен блок керує власним станом та
+   логікою. Вся логіка сторінки = в блоках.
+4. **Жодного хардкоду** — маршрути генеруються з scenarios
+   (catch-all `/:codeword`). Блоки реєструються через реєстр.
+5. **Новий блок = новий файл + запис у реєстрі + запис у
+   BLOCK_DEFINITIONS.**
+
+Додавання нового блоку:
+1. Створити компонент у `packages/ui/src/blocks/NewBlock.tsx`
+2. Додати запис у `BLOCK_DEFINITIONS` (`packages/shared/src/constants/block-definitions.ts`)
+3. Зареєструвати в `registerAllBlocks()` (`packages/ui/src/blocks/index.ts`)
+4. Веб-редактор автоматично покаже новий тип у JSON-редакторі
+
+### 3.5. Додавання нового спільного коду (чек-ліст)
 
 1. **Чи ця функція/константа/тип вже існує в іншому воркері?**
    Якщо так — використовуй її, не копіюй.
@@ -288,8 +343,9 @@ src/
 
 ## 8. Як розширювати цей файл
 
-Це версія 1.1 — оновлена з додаванням розділу 3 (архітектура API
-та спільний код). Коли з'являться нові стабільні конвенції або
+Це версія 1.3 — оновлена з додаванням розділу 3.4 (Page Builder)
+та `packages/ui/`. Коли з'являться нові стабільні конвенції або
+будуть закриті задачі, що на них впливають, Коли з'являться нові стабільні конвенції або
 будуть закриті задачі, що на них впливають (наприклад, P1-1 —
 розбиття `api/` на router+controllers, або P2-3 — повний збір
 `packages/shared/`), онови відповідні розділи тут і познач
@@ -304,3 +360,4 @@ src/
 | 27.08.2026 | 1.0 | Початкова версія |
 | 27.08.2026 | 1.1 | Додано розділ 3: архітектура API та спільний код, правило «двічі — в спільне», єдиний API-шлюз через `api/`, структура `packages/shared`, чек-ліст нового shared-коду |
 | 28.08.2026 | 1.2 | Оновлено web/web-admin: React 19, Vite 8, Tailwind 4, Zustand, createBrowserRouter, feature-based structure. Додано секцію 4 з однаковою архітектурою src/. Оновлено CI: npx wrangler для всіх 4 воркерів. Додано api/ до workspaces. Вирівняно compatibility_date та prod bindings. |
+| 30.08.2026 | 1.3 | Додано Page Builder: `packages/ui/` (спільний React-пакет), типи `page-config.ts`, реєстр блоків, рендерери, Zustand store, MVP-блоки (text, image, buttons, list, divider). Додано колонку `page_data` до scenarios. Оновлено розділ 3.3 (структура packages/) та додано 3.4 (архітектура блоків). |

@@ -989,6 +989,108 @@ main {
 }
 
 /* ═══════════════════════════════════════════════════════════════════════════════
+   PAGE BUILDER — Layout для динамічних сторінок
+   ═══════════════════════════════════════════════════════════════════════════════ */
+
+.page-layout {
+  display: flex;
+  min-height: 100vh;
+  width: 100%;
+}
+
+.page-zone {
+  padding: 16px;
+}
+
+.page-zone--sidebar {
+  width: 260px;
+  flex-shrink: 0;
+  background: var(--bg-2);
+  border-right: 1px solid var(--border);
+}
+
+.page-zone-group {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.page-zone--header {
+  padding: 16px 24px;
+  border-bottom: 1px solid var(--border);
+  background: var(--bg-1);
+}
+
+.page-zone--main {
+  flex: 1;
+  padding: 24px;
+  background: var(--bg-0);
+}
+
+.page-zone--footer {
+  padding: 16px 24px;
+  border-top: 1px solid var(--border);
+  background: var(--bg-2);
+  font-size: 13px;
+  color: var(--text-muted);
+}
+
+/* Loading / Error / 404 */
+.page-loading,
+.page-not-found,
+.page-error {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 60vh;
+  text-align: center;
+  padding: 40px 20px;
+}
+
+.page-loading-spinner {
+  width: 32px;
+  height: 32px;
+  border: 3px solid var(--border);
+  border-top-color: var(--accent);
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+  margin-bottom: 16px;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+.page-not-found h1,
+.page-error h1 {
+  font-size: 48px;
+  font-weight: 800;
+  color: var(--text-muted);
+  margin: 0 0 8px;
+}
+
+.page-not-found p,
+.page-error p {
+  font-size: 16px;
+  color: var(--text-secondary);
+  margin: 0;
+}
+
+/* Мобільний: sidebar стає повноширинним */
+@media (max-width: 768px) {
+  .page-layout {
+    flex-direction: column;
+  }
+  .page-zone--sidebar {
+    width: 100%;
+    border-right: none;
+    border-bottom: 1px solid var(--border);
+  }
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════════
    MOBILE RESPONSIVE
    ═══════════════════════════════════════════════════════════════════════════════ */
 @media (max-width: 768px) {

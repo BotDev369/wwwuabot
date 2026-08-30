@@ -24,6 +24,12 @@ export const navSections: NavSection[] = [
     ],
   },
   {
+    title: "Page Builder",
+    items: [
+      { to: "/scenarios-v2", label: "Конструктор сторінок", icon: "🏗️" },
+    ],
+  },
+  {
     title: "Адміністрування",
     items: [{ to: "/users", label: "Користувачі", icon: "👥" }],
   },

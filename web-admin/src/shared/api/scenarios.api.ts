@@ -2,6 +2,7 @@ import { apiFetch } from "./client";
 
 export interface ScenarioRow {
   codeword: string;
+  title: string | null;
   rich_message: string | null;
   rich_data: string | null;
   caption_top: string | null;
@@ -9,6 +10,7 @@ export interface ScenarioRow {
   caption_bot: string | null;
   photo_url: string | null;
   buttons: string | null;
+  page_data: string | null;
   updated_at: string;
 }
 

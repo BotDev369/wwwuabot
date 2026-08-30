@@ -195,6 +195,89 @@ React 19, Vite 8, TypeScript 6, Tailwind CSS 4, Zustand 5, React Router 7,
 
 ---
 
+### Позапланові задачі — Page Builder: Блочна система сторінок
+
+> Задачі додано 30.08.2026. Мета — замінити жорстко закодовані сторінки
+> на блочний конструктор. Сторінка = запис scenarios з колонкою `page_data`.
+> Блоки = автономні модулі в 4 зонах (sidebar, header, main, footer).
+> Реалізація в `packages/ui/` (спільний React-пакет для web + web-admin).
+
+- [x] ✅ **PB-1** — Створити типи: `packages/shared/src/types/page-config.ts`
+  (BlockZone, PageBlock, PageConfig, BlockContext, BlockDefinition, BlockComponentProps)
+  **Пріоритет:** Високий · **Критерій:** #1 Архітектура
+
+- [x] ✅ **PB-2** — Створити константи: `packages/shared/src/constants/block-definitions.ts`
+  (MVP модулі: text, image, buttons, list, divider з JSON Schema)
+  **Пріоритет:** Високий · **Критерій:** #1 Архітектура
+
+- [x] ✅ **PB-3** — Створити `packages/ui/` (package.json, tsconfig.json, index.ts)
+  Спільний React-пакет для web та web-admin.
+  **Пріоритет:** Високий · **Критерій:** #1 Архітектура
+
+- [x] ✅ **PB-4** — Створити реєстр блоків: `packages/ui/src/registry.tsx`
+  (registerBlock, getBlockComponent, isBlockRegistered)
+  **Пріоритет:** Високий · **Критерій:** #1 Архітектура
+
+- [x] ✅ **PB-5** — Створити PageRenderer та ZoneRenderer
+  (`packages/ui/src/PageRenderer.tsx`, `ZoneRenderer.tsx`)
+  Головний рендерер zones → blocks з рекурсією.
+  **Пріоритет:** Високий · **Критерій:** #1 Архітектура
+
+- [x] ✅ **PB-6** — Створити Page-level Zustand store: `packages/ui/src/store.ts`
+  (addBlock, removeBlock, moveBlock, updateBlockProps, reorderBlocks,
+  addChildBlock, removeChildBlock, serialize, loadFromJson)
+  **Пріоритет:** Високий · **Критерій:** #1 Архітектура
+
+- [x] ✅ **PB-7** — Створити MVP-блоки: TextBlock, ImageBlock, ButtonsBlock,
+  ListBlock, DividerBlock (`packages/ui/src/blocks/`)
+  **Пріоритет:** Високий · **Критерій:** #2 Консистентність
+
+- [ ] ⬜ **PB-8** — Додати колонку `page_data` до таблиці scenarios (D1)
+  Через `withAutoMigrate` з `packages/shared/`.
+  **DoD:** міграція виконана, `page_data` доступна для читання/запису
+  **Пріоритет:** Високий · **Критерій:** #1 Архітектура
+
+- [ ] ⬜ **PB-9** — Оновити API scenarios (`web-admin/worker.ts`)
+  щоб `POST /api/scenarios/read-all` та `POST /api/scenarios/update`
+  працювали з `page_data` (JSON → текст при збереженні).
+  **DoD:** page_data зберігається та читається коректно
+  **Пріоритет:** Високий · **Критерій:** #1 Архітектура
+
+- [ ] ⬜ **PB-10** — Створити JSON-редактор сторінок у web-admin:
+  `web-admin/src/features/page-builder/`
+  (PageBuilderPage, ZoneEditor, BlockEditor, JsonSchemaForm,
+  ValidationPanel, usePageConfig)
+  **DoD:** можна створювати/редагувати сторінку з блоками через UI
+  **Пріоритет:** Високий · **Критерій:** #2 Консистентність
+
+- [ ] ⬜ **PB-11** — Оновити `web/src/app/router.tsx`: додати catch-all
+  маршрут `/:codeword` → DynamicPage (завантажує scenario → рендерить PageRenderer)
+  **DoD:** сторінки з page_data відкриваються за URL
+  **Пріоритет:** Високий · **Критерій:** #1 Архітектура
+
+- [ ] ⬜ **PB-12** — Створити DynamicPage: `web/src/pages/DynamicPage.tsx`
+  (завантаження scenario, парсинг page_data, рендер PageRenderer,
+  обробка помилок та завантаження)
+  **DoD:** сторінка рендерить блоки з page_data
+  **Пріоритет:** Високий · **Критерій:** #1 Архітектура
+
+- [ ] ⬜ **PB-13** — Оновити AGENTS.md v1.3 з описом Page Builder
+  та `packages/ui/`
+  **Пріоритет:** Середній · **Критерій:** #6 Документація
+
+- [ ] ⬜ **PB-14** — Додати CSS-базу для layout сторінки:
+  `page-layout`, `page-zone`, `page-zone--sidebar/header/main/footer`
+  (в index.css web та web-admin)
+  **DoD:** layout рендериться з 4 зонами, порожні зони не займають місце
+  **Пріоритет:** Середній · **Критерій:** #2 Консистентність
+
+- [ ] ⬜ **PB-15** — Тестування: створити тестовий сценарій з page_data
+  (5-10 блоків різних типів, включно з вкладеними)
+  **DoD:** сторінка рендериться коректно, блоки працюють
+  **Пріоритет:** Середній · **Критерій:** #5 Тестування
+
+---
+
 ### Позапланові задачі — CI/CD: Виправлення пайплайну
 
 - [x] ✅ **CI-FIX** — Замінити `wrangler-action` на `npx wrangler` для всіх 4 воркерів
