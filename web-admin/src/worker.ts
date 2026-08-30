@@ -9,6 +9,54 @@ export interface Env {
   BOT_TOKEN?: string;
 }
 
+/**
+ * Надсилає повідомлення про блокування/розблокування користувача.
+ */
+async function notifyBlockChange(env: Env, userId: number, isNowBlocked: boolean): Promise<void> {
+  if (!env.BOT_TOKEN) return;
+  const codeword = isNowBlocked ? "blocked" : "unblocked";
+  const fallbackText = isNowBlocked ? "⚠️ Ваш акаунт заблоковано." : "✅ Ваш акаунт розблоковано.";
+  let captionText = fallbackText;
+  let buttons: any[][] = [];
+  let photoUrl = "";
+  try {
+    const row = await env.DB.prepare("SELECT * FROM scenarios WHERE codeword = ?").bind(codeword).first();
+    if (row) {
+      const r = row as any;
+      const parts = [r.caption_top, r.caption_mid, r.caption_bot].filter((p: string) => p && p.trim() !== "");
+      captionText = parts.join("\n───────\n") || fallbackText;
+      try { buttons = JSON.parse(r.buttons || "[]"); } catch { buttons = []; }
+      photoUrl = r.photo_url || "";
+    }
+  } catch {}
+  // Reset active_scenario for unblocked users
+  if (!isNowBlocked) {
+    try { await env.DB.prepare("UPDATE users SET active_scenario = NULL WHERE user_id = ?").bind(userId).run(); } catch {}
+  }
+  try {
+    if (photoUrl) {
+      const res = await fetch(`https://api.telegram.org/bot${env.BOT_TOKEN}/sendPhoto`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ chat_id: userId, photo: photoUrl, caption: captionText, parse_mode: "HTML", reply_markup: buttons.length > 0 ? { inline_keyboard: buttons } : undefined }),
+      });
+      if (!res.ok) {
+        await fetch(`https://api.telegram.org/bot${env.BOT_TOKEN}/sendMessage`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ chat_id: userId, text: captionText }),
+        });
+      }
+    } else {
+      await fetch(`https://api.telegram.org/bot${env.BOT_TOKEN}/sendMessage`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ chat_id: userId, text: captionText }),
+      });
+    }
+  } catch {}
+}
+
 const COOKIE_NAME = "admin_session";
 const COOKIE_MAX_AGE = 60 * 60 * 8;
 
@@ -450,9 +498,16 @@ export default {
         if (!body.user_id) return json({ error: "user_id required" }, 400);
         try {
           const blocked = body.blocked !== false ? 1 : 0;
+          // Check current state before update
+          const current = await env.DB.prepare("SELECT is_blocked FROM users WHERE user_id = ?").bind(body.user_id).first<{ is_blocked: number }>();
+          const wasBlocked = current?.is_blocked === 1;
           await env.DB.prepare("UPDATE users SET is_blocked = ? WHERE user_id = ?")
             .bind(blocked, body.user_id)
             .run();
+          // Send Telegram notification if state changed
+          if (wasBlocked !== (blocked === 1)) {
+            await notifyBlockChange(env, body.user_id, blocked === 1);
+          }
           return json({ success: true });
         } catch (e: any) {
           const msg = e?.message || String(e);
@@ -462,6 +517,7 @@ export default {
             await env.DB.prepare("UPDATE users SET is_blocked = ? WHERE user_id = ?")
               .bind(blocked, body.user_id)
               .run();
+            await notifyBlockChange(env, body.user_id, blocked === 1);
             return json({ success: true });
           }
           return json({ error: msg }, 500);
@@ -489,6 +545,15 @@ export default {
             processed = result.meta?.changes ?? 0;
           } else if (action === "block" || action === "unblock") {
             const val = action === "block" ? 1 : 0;
+            const isNowBlocked = action === "block";
+            // Send notifications for each user
+            for (const userId of ids) {
+              const current = await env.DB.prepare("SELECT is_blocked FROM users WHERE user_id = ?").bind(userId).first<{ is_blocked: number }>();
+              const wasBlocked = current?.is_blocked === 1;
+              if (wasBlocked !== isNowBlocked) {
+                await notifyBlockChange(env, userId, isNowBlocked);
+              }
+            }
             const placeholders = ids.map(() => "?").join(",");
             const result = await env.DB.prepare(`UPDATE users SET is_blocked = ? WHERE user_id IN (${placeholders})`)
               .bind(val, ...ids)
