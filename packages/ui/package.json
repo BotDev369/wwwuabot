@@ -15,7 +15,7 @@
     "lint:fix": "eslint src/ --fix"
   },
   "dependencies": {
-    "@wwwuabot/shared": "workspace:*"
+    "@wwwuabot/shared": "*"
   },
   "peerDependencies": {
     "react": "^19.0.0",
