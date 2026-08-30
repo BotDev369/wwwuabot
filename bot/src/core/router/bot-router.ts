@@ -2,22 +2,17 @@ import type { AppContext } from "../../shared/types/env";
 import type { Scenario } from "../../shared/types/scenario";
 import { ScenarioRepository } from "../../repositories/scenario.repository";
 import { log } from "../../shared/utils/debug";
-import { handleRestart } from "./restart";
-import { isRestartCommand } from "./command";
 import { handleTextInput } from "./text-input";
-import { getFamilyBox, setByPath, saveFamilyBox } from "../../shared/utils/family-box";
-import { dispatchAction } from "./actions";
-import { validateCodeword, escapeHtml } from "../../modules/security/input-validation";
+import { validateCodeword, escapeHtml } from "../../modules/security/input-validation"; // escapeHtml для sendNotFound
 
 /**
  * Головний роутер бота.
  * Бот — pure renderer: бере контент із таблиці scenarios і показує.
- * Жодної хардкод-логіки для контенту.
  *
  * Потоки:
  * 1. /start?<codeword>  → deep link: завантажуємо сценарій → рендер
  * 2. /start             → завантажуємо "main" сценарій → рендер
- * 3. callback_data      → якщо @... → action, інакше codeword → рендер
+ * 3. callback_data      → codeword → рендер
  * 4. текст              → ТІЛЬКИ якщо awaits_input, інакше видаляємо
  */
 export async function botRouter(ctx: AppContext): Promise<void> {
@@ -35,13 +30,7 @@ export async function botRouter(ctx: AppContext): Promise<void> {
     return;
   }
 
-  // ── 1. Сервісна команда /restart ────────────────────────────
-  if (isCommand && isRestartCommand(text!)) {
-    await handleRestart(ctx);
-    return;
-  }
-
-  // ── 2. /start (з deep link або без) ──────────────────────────
+  // ── 1. /start (з deep link або без) ──────────────────────────
   if (isCommand) {
     const command = text!.split(" ")[0].split("@")[0];
     if (command === "/start") {
@@ -64,27 +53,9 @@ export async function botRouter(ctx: AppContext): Promise<void> {
     }
   }
 
-  // ── 3. Callback ──────────────────────────────────────────────
+  // ── 2. Callback ──────────────────────────────────────────────
   if (isCallback) {
     const data = ctx.callbackQuery!.data;
-
-    if (data && data.startsWith("@")) {
-      // Action callback: @action:target:param → виконуємо дію
-      // Спочатку встановлюємо ctx.screen з поточного сценарію,
-      // потім dispatchAction працює з ним
-      const currentCodeword = ctx.user.active_scenario || "main";
-      await loadScenarioToScreen(ctx, repo, currentCodeword);
-
-      if (ctx.screen) {
-        const handled = await dispatchAction(ctx, data);
-        if (!handled) {
-          log("ROUTER", "action not handled, ignoring", { data });
-          return;
-        }
-        log("ROUTER", "action handled, re-rendering", { data });
-      }
-      return;
-    }
 
     // Navigation callback: callback_data = codeword
     let pureCodeword = data || "";
@@ -103,34 +74,22 @@ export async function botRouter(ctx: AppContext): Promise<void> {
     return;
   }
 
-  // ── 4. Текстове повідомлення ────────────────────────────────
+  // ── 3. Текстове повідомлення ────────────────────────────────
   if (isPlainText) {
     const currentScenario = await repo.getScenario(ctx.user.active_scenario || "main");
 
-    // Обробляємо текст ТІЛЬКИ якщо сценарій очікує ввід
-    if (currentScenario?.awaits_input === "text" && currentScenario.input_path) {
-      const textResult = handleTextInput(ctx, text!, currentScenario);
-
-      if (textResult.type === "record") {
-        const family = textResult.family!;
-        const box = getFamilyBox(ctx.user, family);
-        setByPath(box, textResult.inputPath!, textResult.value);
-        saveFamilyBox(ctx.user, family, box);
-        ctx.userDirty = true;
-
-        log("ROUTER", "text input recorded", {
-          family,
-          path: textResult.inputPath,
-          value: textResult.value,
-        });
-
-        // Переходимо на наступний сценарій після запису
-        await loadAndRenderScenario(ctx, repo, textResult.codeword!);
+    if (currentScenario?.awaits_input === "text") {
+      // Текст прийнято (сценарій очікує ввід) — просто логуємо
+      const result = handleTextInput(text!, currentScenario);
+      if (result.type === "accept") {
+        log("ROUTER", "text input accepted", { value: result.value });
+        // Показуємо той самий сценарій
+        await loadAndRenderScenario(ctx, repo, ctx.user.active_scenario || "main");
         return;
       }
     }
 
-    // Текст НЕ обробляється як навігація — видаляємо, але логуємо
+    // Текст НЕ обробляється — видаляємо, але логуємо
     log("ROUTER", "text input ignored | no awaits_input", {
       text: text!.substring(0, 50),
       active_scenario: ctx.user.active_scenario,
@@ -146,7 +105,6 @@ export async function botRouter(ctx: AppContext): Promise<void> {
 
 /**
  * Завантажує сценарій з БД, ставить ctx.screen і оновлює active_scenario.
- * Після цього postMiddleware відрендерить через sendOrEditLiveMessage.
  */
 async function loadAndRenderScenario(
   ctx: AppContext,
@@ -165,24 +123,7 @@ async function loadAndRenderScenario(
 }
 
 /**
- * Завантажує сценарій в ctx.screen БЕЗ встановлення active_scenario.
- * Використовується для action callbacks, де поточний екран не змінюється.
- */
-async function loadScenarioToScreen(
-  ctx: AppContext,
-  repo: ScenarioRepository,
-  codeword: string,
-): Promise<void> {
-  const scenario = await repo.getScenario(codeword);
-  if (!scenario) {
-    log("ROUTER", "scenario not found for screen", { codeword });
-    return;
-  }
-  setScenarioScreen(ctx, scenario);
-}
-
-/**
- * Встановлює ctx.screen з сценарію. Pure function — тільки записує в контекст.
+ * Встановлює ctx.screen з сценарію.
  */
 function setScenarioScreen(ctx: AppContext, scenario: Scenario): void {
   log("ROUTER", "scenario loaded", {
@@ -193,7 +134,6 @@ function setScenarioScreen(ctx: AppContext, scenario: Scenario): void {
     rich_message: scenario.rich_message,
   });
 
-  // Оновлюємо активний сценарій
   if (ctx.user && ctx.user.active_scenario !== scenario.codeword) {
     ctx.user.active_scenario = scenario.codeword;
     ctx.userDirty = true;
@@ -247,7 +187,7 @@ async function sendNotFound(ctx: AppContext, requestedCodeword: string): Promise
 }
 
 /**
- * Видаляє повідомлення користувача (текст, який не був оброблений).
+ * Видаляє повідомлення користувача.
  */
 async function deleteUserMessage(ctx: AppContext): Promise<void> {
   if (!ctx.message?.message_id || !ctx.chat?.id) return;
@@ -256,9 +196,6 @@ async function deleteUserMessage(ctx: AppContext): Promise<void> {
     await ctx.api.deleteMessage(ctx.chat.id, ctx.message.message_id);
     log("ROUTER", "deleted unprocessed user message", { message_id: ctx.message.message_id });
   } catch {
-    // Можливо, повідомлення вже видалене або бот не має прав
     log("ROUTER", "failed to delete user message (non-critical)");
   }
 }
-
-// escapeHtml імпортовано з ../../modules/security/input-validation

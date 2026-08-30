@@ -2,7 +2,6 @@ import { handleStatus } from "./controllers/status.controller";
 import { handleSetupWebhook, handleWebhookInfo } from "./controllers/webhook.controller";
 import { handleTelegramWebhook } from "./controllers/telegram.controller";
 import { handleDbProxy } from "./controllers/db-proxy.controller";
-import { handleMyDates } from "./controllers/my-dates.controller";
 import { handleAuthCheck } from "./controllers/auth-check.controller";
 import type { Env } from "../shared/types/env";
 import { checkAdminAuth, unauthorizedResponse } from "../modules/security/admin-auth";
@@ -35,14 +34,6 @@ export async function handleRequest(
   // ── DB Proxy (ADMIN_SECRET) ──
   if (request.method === "POST" && url.pathname === "/db-proxy") {
     return handleDbProxy(request, env);
-  }
-
-  // ── My Dates (ADMIN_SECRET) ──
-  if (url.pathname === "/my-dates" || url.pathname === "/api/my-dates") {
-    if (!checkAdminAuth(request, env)) {
-      return unauthorizedResponse();
-    }
-    return handleMyDates(request, env);
   }
 
   // ── Auth Check (ADMIN_SECRET) ──
