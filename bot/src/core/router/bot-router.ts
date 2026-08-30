@@ -3,7 +3,7 @@ import type { Scenario } from "../../shared/types/scenario";
 import { ScenarioRepository } from "../../repositories/scenario.repository";
 import { log } from "../../shared/utils/debug";
 import { handleTextInput } from "./text-input";
-import { validateCodeword, escapeHtml } from "../../modules/security/input-validation"; // escapeHtml для sendNotFound
+import { validateCodeword } from "../../modules/security/input-validation";
 
 /**
  * Головний роутер бота.
@@ -115,7 +115,7 @@ async function loadAndRenderScenario(
 
   if (!scenario) {
     log("ROUTER", "scenario not found", { codeword });
-    await sendNotFound(ctx, codeword);
+    // Тихо ігноруємо — ніякого повідомлення, Telegram вже отримав answerCallbackQuery
     return;
   }
 
@@ -158,33 +158,7 @@ function setScenarioScreen(ctx: AppContext, scenario: Scenario): void {
   };
 }
 
-/**
- * Відправляє повідомлення "не знайдено" з кнопкою на main.
- */
-async function sendNotFound(ctx: AppContext, requestedCodeword: string): Promise<void> {
-  const chatId = ctx.chat?.id;
-  if (!chatId) return;
 
-  try {
-    const sent = await ctx.api.sendMessage(
-      chatId,
-      `<b>Сторінку не знайдено</b>\n\nКодове слово <code>${escapeHtml(requestedCodeword)}</code> відсутнє в базі.`,
-      {
-        parse_mode: "HTML",
-        reply_markup: {
-          inline_keyboard: [[{ text: "🏠 Головна", callback_data: "main" }]],
-        },
-      },
-    );
-
-    if (ctx.user) {
-      ctx.user.message_id = sent.message_id;
-      ctx.userDirty = true;
-    }
-  } catch (err) {
-    log("ROUTER", "failed to send not-found message", { error: String(err) });
-  }
-}
 
 /**
  * Видаляє повідомлення користувача.
