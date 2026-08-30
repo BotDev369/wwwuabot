@@ -18,8 +18,7 @@ import type {
   BlockZone,
   BlockContext,
 } from "@wwwuabot/shared/types/page-config";
-import { generateBlockId } from "@wwwuabot/shared/types/page-config";
-import { ZoneRenderer } from "@wwwuabot/ui/ZoneRenderer";
+
 
 interface BlockEditorProps {
   /** Блок для редагування. */
@@ -93,7 +92,7 @@ export function BlockEditor({
     onUpdateProps(block.id, { ...block.props, [key]: value });
   };
 
-  const handleAddChild = () {
+  const handleAddChild = () => {
     // Додаємо текстовий блок за замовчуванням
     onAddChild(block.id, "text");
   }

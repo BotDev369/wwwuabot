@@ -126,7 +126,6 @@ export function ScenarioEditModal({ codeword, onClose, onSaved }: Props) {
 
   // ── Get fields for current tab ──
   const tabDef = TABS.find((t) => t.key === activeTab)!;
-  const tabFields = tabDef.fields.filter((f) => f in allFields || activeTab !== "shared");
   const tabData: Record<string, unknown> = {};
   for (const f of tabDef.fields) {
     if (f in allFields) {
@@ -572,7 +571,7 @@ function BotPreview({ fields }: { fields: Record<string, unknown> }) {
   const captionBot = String(fields.caption_bot || "");
   const caption = [captionTop, captionMid, captionBot].filter(Boolean).join("\n───────\n");
 
-  let buttons: string[][] = [];
+  let buttons: unknown[][] = [];
   try {
     const raw = fields.buttons;
     buttons = typeof raw === "string" ? JSON.parse(raw) : Array.isArray(raw) ? raw : [];
@@ -603,7 +602,7 @@ function BotPreview({ fields }: { fields: Record<string, unknown> }) {
             <div key={i} className="tg-btn-row">
               {row.map((btn, j) => (
                 <span key={j} className="tg-btn">
-                  {typeof btn === "string" ? btn : btn.text || "?"}
+                  {typeof btn === "string" ? btn : (btn as { text?: string }).text || "?"}
                 </span>
               ))}
             </div>
@@ -779,7 +778,7 @@ function JsonTabModal({
   jsonText: string;
   jsonError: string | null;
   copied: boolean;
-  textareaRef: React.RefObject<HTMLTextAreaElement>;
+  textareaRef: React.RefObject<HTMLTextAreaElement | null>;
   onChange: (v: string) => void;
   onCopy: () => void;
   onPaste: () => void;

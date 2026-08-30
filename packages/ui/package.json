@@ -7,6 +7,11 @@
   "types": "./src/index.ts",
   "exports": {
     ".": "./src/index.ts",
+    "./PageRenderer": "./src/PageRenderer.tsx",
+    "./ZoneRenderer": "./src/ZoneRenderer.tsx",
+    "./store": "./src/store.ts",
+    "./registry": "./src/registry.tsx",
+    "./blocks": "./src/blocks/index.ts",
     "./blocks/*": "./src/blocks/*.tsx"
   },
   "scripts": {

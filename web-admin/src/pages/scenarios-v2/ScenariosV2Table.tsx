@@ -159,7 +159,7 @@ export function ScenariosV2Table() {
                       <span className={`scn-badge${isRich ? " scn-badge--rich" : ""}`}>
                         {isRich ? "Rich" : "Photo"}
                       </span>
-                      {s.page_data && (
+                      {Boolean(s.page_data) && (
                         <span className="scn-badge" style={{ marginLeft: 4, background: "var(--color-info, #3b82f6)", color: "white" }}>
                           Page
                         </span>

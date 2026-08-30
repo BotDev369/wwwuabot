@@ -12,7 +12,6 @@ import type {
   PageConfig,
   BlockContext,
 } from "@wwwuabot/shared/types/page-config";
-import { parsePageConfig } from "@wwwuabot/shared/types/page-config";
 import { PageRenderer } from "@wwwuabot/ui/PageRenderer";
 
 import { registerAllBlocks } from "@wwwuabot/ui/blocks";
@@ -67,7 +66,7 @@ export function DynamicPage() {
         // Парсимо page_data (пріоритет) або web_config (fallback)
         let pageConfig: PageConfig | null = null;
         if (data.pageData) {
-          pageConfig = data.pageData as PageConfig;
+          pageConfig = data.pageData as unknown as PageConfig;
         } else if (data.config && typeof data.config === "object") {
           // Fallback: старий web_config
           pageConfig = data.config as PageConfig;

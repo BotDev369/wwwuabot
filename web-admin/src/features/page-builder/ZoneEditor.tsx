@@ -15,7 +15,6 @@ import type {
 } from "@wwwuabot/shared/types/page-config";
 import { generateBlockId } from "@wwwuabot/shared/types/page-config";
 import {
-  BLOCK_DEFINITIONS,
   getBlocksForZone,
   getDefaultProps,
 } from "@wwwuabot/shared/constants/block-definitions";
