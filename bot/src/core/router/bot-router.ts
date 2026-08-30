@@ -115,7 +115,8 @@ async function loadAndRenderScenario(
 
   if (!scenario) {
     log("ROUTER", "scenario not found", { codeword });
-    // Тихо ігноруємо — ніякого повідомлення, Telegram вже отримав answerCallbackQuery
+    // Видаляємо вхідне повідомлення (наприклад /start?codeword)
+    await deleteUserMessage(ctx);
     return;
   }
 
