@@ -81,23 +81,18 @@ preMiddleware.use(async (ctx, next) => {
   await next();
 });
 
-// ── 4. SEC-2: Блокування — показуємо "blocked" сценарій ОДИН РАЗ, потім тихо ──
+// ── 4a. SEC-2: Розблокування — якщо був заблокований, але тепер ні → показуємо "unblocked" ОДИН РАЗ ──
 preMiddleware.use(async (ctx, next) => {
-  if (!isUserBlocked(ctx)) {
-    await next();
-    return;
-  }
+  const wasBlocked = ctx.user?.active_scenario === "blocked";
+  const isNowBlocked = isUserBlocked(ctx);
 
-  // Якщо вже показали "blocked" — ігноруємо повністю
-  if (ctx.user && ctx.user.active_scenario === "blocked") {
-    log("SEC:blocked", "already shown, ignoring", { user_id: ctx.user.user_id });
-    return;
-  }
+  if (wasBlocked && !isNowBlocked) {
+    // Адмін розблокував — показуємо "unblocked" сценарій ОДИН РАЗ
+    log("SEC:blocked", "user unblocked, showing unblocked message", { user_id: ctx.user?.user_id });
 
-  // Показуємо "blocked" сценарій ОДИН РАЗ
-  if (ctx.user) {
     const repo = new ScenarioRepository(ctx.env);
-    const scenario = await repo.getScenario("blocked");
+    const scenario = await repo.getScenario("unblocked");
+
     if (scenario) {
       ctx.screen = {
         codeword: scenario.codeword,
@@ -116,25 +111,103 @@ preMiddleware.use(async (ctx, next) => {
         rich_message: scenario.rich_message,
         rich_data: scenario.rich_data,
       };
-      ctx.user.active_scenario = "blocked";
-      ctx.userDirty = true;
-      log("SEC:blocked", "showing blocked scenario", { user_id: ctx.user.user_id });
+    } else {
+      // Fallback якщо сценарій "unblocked" не створено в БД
+      ctx.screen = {
+        codeword: "unblocked",
+        caption: { mid: "✅ Ваш акаунт розблоковано." },
+        buttons: [],
+      };
+    }
 
-      // Рендеримо напряму — postMiddleware не запуститься (немає next())
-      await sendOrEditLiveMessage(ctx);
+    ctx.user!.active_scenario = scenario?.codeword ?? "unblocked";
+    ctx.userDirty = true;
 
-      // Зберігаємо стан (active_scenario = "blocked")
-      if (ctx.userDirty && ctx.from) {
-        const updates: Record<string, any> = {};
-        for (const [key, value] of Object.entries(ctx.user)) {
-          if (key !== "user_id") {
-            updates[key] = typeof value === "object" && value !== null ? JSON.stringify(value) : value;
-          }
+    // Рендеримо напряму
+    await sendOrEditLiveMessage(ctx);
+
+    // Зберігаємо стан
+    if (ctx.userDirty && ctx.from) {
+      const updates: Record<string, any> = {};
+      for (const [key, value] of Object.entries(ctx.user!)) {
+        if (key !== "user_id") {
+          updates[key] = typeof value === "object" && value !== null ? JSON.stringify(value) : value;
         }
-        const userRepo = new UserRepository(ctx.env);
-        await userRepo.updateUser(ctx.from.id, updates);
-        log("SEC:blocked", "saved blocked state to DB", { user_id: ctx.user.user_id });
       }
+      const userRepo = new UserRepository(ctx.env);
+      await userRepo.updateUser(ctx.from.id, updates);
+      log("SEC:blocked", "saved unblocked state to DB", { user_id: ctx.user?.user_id });
+    }
+
+    return;
+  }
+
+  await next();
+});
+
+// ── 4b. SEC-2: Блокування — показуємо "blocked" сценарій ОДИН РАЗ, потім тихо ──
+preMiddleware.use(async (ctx, next) => {
+  if (!isUserBlocked(ctx)) {
+    await next();
+    return;
+  }
+
+  // Якщо вже показали "blocked" — ігноруємо повністю
+  if (ctx.user && ctx.user.active_scenario === "blocked") {
+    log("SEC:blocked", "already shown, ignoring", { user_id: ctx.user.user_id });
+    return;
+  }
+
+  // Показуємо "blocked" сценарій ОДИН РАЗ
+  if (ctx.user) {
+    const repo = new ScenarioRepository(ctx.env);
+    const scenario = await repo.getScenario("blocked");
+
+    if (scenario) {
+      ctx.screen = {
+        codeword: scenario.codeword,
+        title: scenario.title,
+        photo_url: scenario.photo_url,
+        caption: {
+          top: scenario.caption_top ?? undefined,
+          mid: scenario.caption_mid ?? undefined,
+          bot: scenario.caption_bot ?? undefined,
+        },
+        buttons: scenario.buttons,
+        qty_options: scenario.qty_options,
+        price: scenario.price,
+        notify_groups: scenario.notify_groups,
+        notify_template: scenario.notify_template,
+        rich_message: scenario.rich_message,
+        rich_data: scenario.rich_data,
+      };
+    } else {
+      // Fallback якщо сценарій "blocked" не створено в БД
+      ctx.screen = {
+        codeword: "blocked",
+        caption: { mid: "⚠️ Ваш акаунт заблоковано." },
+        buttons: [],
+      };
+    }
+
+    ctx.user.active_scenario = "blocked";
+    ctx.userDirty = true;
+    log("SEC:blocked", "showing blocked scenario", { user_id: ctx.user.user_id });
+
+    // Рендеримо напряму — postMiddleware не запуститься (немає next())
+    await sendOrEditLiveMessage(ctx);
+
+    // Зберігаємо стан (active_scenario = "blocked")
+    if (ctx.userDirty && ctx.from) {
+      const updates: Record<string, any> = {};
+      for (const [key, value] of Object.entries(ctx.user)) {
+        if (key !== "user_id") {
+          updates[key] = typeof value === "object" && value !== null ? JSON.stringify(value) : value;
+        }
+      }
+      const userRepo = new UserRepository(ctx.env);
+      await userRepo.updateUser(ctx.from.id, updates);
+      log("SEC:blocked", "saved blocked state to DB", { user_id: ctx.user.user_id });
     }
   }
   return;
