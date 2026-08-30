@@ -1,13 +1,14 @@
 import { Composer } from "grammy";
 import type { AppContext } from "../../../shared/types/env";
 import { filterUpdates } from "./filter-updates";
-import { rateLimit } from "./rate-limit";
 import { UserRepository } from "../../../modules/users/user.repository";
+import { isUserBlocked } from "../../../modules/security/blocked-users";
+import { checkRateLimit } from "../../../modules/security/rate-limiter";
 import { log } from "../../../shared/utils/debug";
 
 export const preMiddleware = new Composer<AppContext>();
 
-// ← ДОДАТИ ЦЕЙ БЛОК: Миттєва відповідь на callback_query
+// ── 1. Миттєва відповідь на callback_query (Telegram вимагає протягом 30с) ──
 preMiddleware.use(async (ctx, next) => {
   if (ctx.callbackQuery) {
     try {
@@ -19,11 +20,11 @@ preMiddleware.use(async (ctx, next) => {
   }
   await next();
 });
-// --------------------------------------------
 
+// ── 2. Фільтрація непотрібних апдейтів (edited_message, channel_post) ──
 preMiddleware.use(filterUpdates);
-preMiddleware.use(rateLimit);
 
+// ── 3. Завантаження/створення користувача ──
 preMiddleware.use(async (ctx, next) => {
   if (!ctx.from) {
     log("PRE:user", "skipped | reason: no ctx.from");
@@ -74,5 +75,21 @@ preMiddleware.use(async (ctx, next) => {
   ctx.user = user;
   ctx.userDirty = ctx.userDirty || false;
 
+  await next();
+});
+
+// ── 4. SEC-2: Перевірка блокування ──
+preMiddleware.use(async (ctx, next) => {
+  if (isUserBlocked(ctx)) {
+    return; // Тихо ігноруємо — не повідомляємо користувача
+  }
+  await next();
+});
+
+// ── 5. SEC-1: Rate limiting ──
+preMiddleware.use(async (ctx, next) => {
+  if (!checkRateLimit(ctx)) {
+    return; // Тихо ігноруємо — перевищено ліміт
+  }
   await next();
 });

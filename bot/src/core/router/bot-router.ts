@@ -7,6 +7,7 @@ import { isRestartCommand } from "./command";
 import { handleTextInput } from "./text-input";
 import { getFamilyBox, setByPath, saveFamilyBox } from "../../shared/utils/family-box";
 import { dispatchAction } from "./actions";
+import { validateCodeword, escapeHtml } from "../../modules/security/input-validation";
 
 /**
  * Головний роутер бота.
@@ -46,9 +47,15 @@ export async function botRouter(ctx: AppContext): Promise<void> {
     if (command === "/start") {
       const param = text!.split(" ")[1]?.trim();
       if (param) {
-        // Deep link: /start?galyashop_astragal
-        log("ROUTER", "deep link", { codeword: param, user_id: ctx.from?.id });
-        await loadAndRenderScenario(ctx, repo, param);
+        // SEC-3: Валідуємо codeword з deep link
+        const validatedCodeword = validateCodeword(param);
+        if (!validatedCodeword) {
+          log("ROUTER", "deep link rejected | invalid codeword", { param });
+          await deleteUserMessage(ctx);
+          return;
+        }
+        log("ROUTER", "deep link", { codeword: validatedCodeword, user_id: ctx.from?.id });
+        await loadAndRenderScenario(ctx, repo, validatedCodeword);
         return;
       }
       // /start без параметра → показуємо "main"
@@ -85,9 +92,13 @@ export async function botRouter(ctx: AppContext): Promise<void> {
       pureCodeword = pureCodeword.split("#")[0];
     }
 
-    if (pureCodeword) {
-      log("ROUTER", "callback navigation", { codeword: pureCodeword });
-      await loadAndRenderScenario(ctx, repo, pureCodeword);
+    // SEC-3: Валідуємо codeword з callback
+    const validatedCallbackCodeword = validateCodeword(pureCodeword);
+    if (validatedCallbackCodeword) {
+      log("ROUTER", "callback navigation", { codeword: validatedCallbackCodeword });
+      await loadAndRenderScenario(ctx, repo, validatedCallbackCodeword);
+    } else {
+      log("ROUTER", "callback rejected | invalid codeword", { data });
     }
     return;
   }
@@ -250,12 +261,4 @@ async function deleteUserMessage(ctx: AppContext): Promise<void> {
   }
 }
 
-/**
- * Escape HTML-символи для безпечної вставки в Telegram HTML.
- */
-function escapeHtml(text: string): string {
-  return text
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;");
-}
+// escapeHtml імпортовано з ../../modules/security/input-validation

@@ -1,5 +1,6 @@
 import type { Scenario } from "../../shared/types/scenario";
 import { log } from "../../shared/utils/debug";
+import { validateUserText } from "../../modules/security/input-validation";
 
 export interface TextInputResult {
   type: "record" | "ignore";
@@ -13,7 +14,7 @@ export interface TextInputResult {
  * Обробляє вільний текст від користувача.
  *
  * Логіка:
- * - Якщо поточний сценарій має awaits_input = "text" → запис за input_path
+ * - Якщо поточний сценарій має awaits_input = "text" → валідуємо + записуємо за input_path
  * - Інакше → ignore (повідомлення буде видалене в bot-router)
  *
  * Бот НЕ реагує на текст як на навігацію — тільки зчитування вводу.
@@ -28,7 +29,15 @@ export function handleTextInput(
   text: string,
   currentScenario: Scenario,
 ): TextInputResult {
-  const trimmedText = text.trim();
+  // SEC-3: Валідуємо текст перед обробкою
+  const validatedText = validateUserText(text);
+  if (validatedText === null) {
+    log("TEXT_INPUT", "rejected | invalid input", {
+      text: text.substring(0, 30),
+      active_scenario: currentScenario.codeword,
+    });
+    return { type: "ignore" };
+  }
 
   // Перевіряємо awaits_input — тільки це визначає, чи обробляємо текст
   if (currentScenario.awaits_input === "text" && currentScenario.input_path) {
@@ -38,7 +47,7 @@ export function handleTextInput(
     log("TEXT_INPUT", "awaits_input detected", {
       family,
       input_path: currentScenario.input_path,
-      value: trimmedText,
+      value: validatedText,
       next: nextCodeword,
     });
 
@@ -46,14 +55,14 @@ export function handleTextInput(
       type: "record",
       family,
       inputPath: currentScenario.input_path,
-      value: trimmedText,
+      value: validatedText,
       codeword: nextCodeword,
     };
   }
 
   // Текст НЕ обробляється — бот не реагує на довільний текст
   log("TEXT_INPUT", "ignored | no awaits_input", {
-    text: trimmedText.substring(0, 50),
+    text: validatedText.substring(0, 50),
     active_scenario: currentScenario.codeword,
   });
 
