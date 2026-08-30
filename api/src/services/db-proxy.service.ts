@@ -1,6 +1,4 @@
-import { withAutoMigrate } from "../../core/database/auto-migrate";
-import type { Env } from "../../shared/types/env";
-import { formatSqliteDatetime } from "../../shared/utils/datetime";
+import type { Env } from "../shared/types";
 
 const SAFE_COLUMN_NAME_RE = /^[a-zA-Z_][a-zA-Z0-9_]*$/;
 
@@ -21,7 +19,7 @@ export class DbProxyService {
   }
 
   async write(codeword: string, data: Record<string, any>): Promise<DbProxyResult> {
-    const now = formatSqliteDatetime();
+    const now = new Date().toISOString().replace("T", " ").slice(0, 19);
 
     const fields: Record<string, any> = {};
     for (const [key, value] of Object.entries(data)) {
@@ -33,8 +31,8 @@ export class DbProxyService {
     if (!("photo_url" in fields)) fields.photo_url = "";
     if (!("keyboard_type" in fields)) fields.keyboard_type = "static";
     if (!("buttons" in fields)) fields.buttons = "[]";
-    if (!("rich_message" in fields)) fields.rich_message = "false"; // ← NEW
-    if (!("rich_data" in fields)) fields.rich_data = ""; // ← NEW
+    if (!("rich_message" in fields)) fields.rich_message = "false";
+    if (!("rich_data" in fields)) fields.rich_data = "";
 
     const keys = Object.keys(fields);
     const columns = ["codeword", ...keys, "created_at", "updated_at"];
@@ -53,18 +51,11 @@ export class DbProxyService {
     values.push(now);
 
     try {
-      await withAutoMigrate(
-        this.env.DB,
-        async () => {
-          await this.env.DB.prepare(
-            `INSERT OR REPLACE INTO scenarios (${columns.join(", ")}) VALUES (${placeholders})`,
-          )
-            .bind(...values)
-            .run();
-        },
-        fields,
-        "scenarios",
-      );
+      await this.env.DB.prepare(
+        `INSERT OR REPLACE INTO scenarios (${columns.join(", ")}) VALUES (${placeholders})`,
+      )
+        .bind(...values)
+        .run();
       return { success: true, codeword, updated_at: now };
     } catch (err) {
       return { success: false, error: String(err) };
@@ -86,57 +77,35 @@ export class DbProxyService {
 
   async updateUsers(users: any[]): Promise<DbProxyResult> {
     const results: any[] = [];
-
     for (const u of users) {
       const userId = u?.user_id;
       const rawFields = u?.fields;
-
       if (!userId || !rawFields || typeof rawFields !== "object") {
-        results.push({
-          user_id: userId ?? null,
-          success: false,
-          error: "user_id і fields обов'язкові",
-        });
+        results.push({ user_id: userId ?? null, success: false, error: "user_id and fields required" });
         continue;
       }
-
       const fields: Record<string, any> = {};
       for (const [key, value] of Object.entries(rawFields)) {
         if (key === "user_id") continue;
         if (!SAFE_COLUMN_NAME_RE.test(key)) continue;
         fields[key] = value;
       }
-
       const keys = Object.keys(fields);
       if (keys.length === 0) {
-        results.push({
-          user_id: userId,
-          success: false,
-          error: "немає валідних полів для оновлення",
-        });
+        results.push({ user_id: userId, success: false, error: "no valid fields" });
         continue;
       }
-
       try {
         const setClause = keys.map((k) => `${k} = ?`).join(", ");
         const values = keys.map((k) => fields[k]);
-
-        await withAutoMigrate(
-          this.env.DB,
-          async () => {
-            await this.env.DB.prepare(`UPDATE users SET ${setClause} WHERE user_id = ?`)
-              .bind(...values, userId)
-              .run();
-          },
-          fields,
-          "users",
-        );
+        await this.env.DB.prepare(`UPDATE users SET ${setClause} WHERE user_id = ?`)
+          .bind(...values, userId)
+          .run();
         results.push({ user_id: userId, success: true });
       } catch (err) {
         results.push({ user_id: userId, success: false, error: String(err) });
       }
     }
-
     return { success: true, results };
   }
 
@@ -144,11 +113,7 @@ export class DbProxyService {
     const tableExists = await this.env.DB.prepare(
       `SELECT name FROM sqlite_master WHERE type='table' AND name='settings'`,
     ).first();
-
-    if (!tableExists) {
-      return { success: true, data: null };
-    }
-
+    if (!tableExists) return { success: true, data: null };
     const row = await this.env.DB.prepare(`SELECT * FROM settings LIMIT 1`).first();
     return { success: true, data: row ?? null };
   }
@@ -159,40 +124,24 @@ export class DbProxyService {
       if (!SAFE_COLUMN_NAME_RE.test(key)) continue;
       fields[key] = value === "" ? null : value;
     }
-
     const keys = Object.keys(fields);
-    if (keys.length === 0) {
-      return { success: false, error: "немає валідних полів" };
-    }
-
+    if (keys.length === 0) return { success: false, error: "no valid fields" };
     try {
       const tableExists = await this.env.DB.prepare(
         `SELECT name FROM sqlite_master WHERE type='table' AND name='settings'`,
       ).first();
-
       if (!tableExists) {
         await this.env.DB.prepare(`CREATE TABLE settings (id INTEGER PRIMARY KEY DEFAULT 1)`).run();
       }
-
       const rowExists = await this.env.DB.prepare(`SELECT id FROM settings LIMIT 1`).first();
       if (!rowExists) {
         await this.env.DB.prepare(`INSERT INTO settings (id) VALUES (1)`).run();
       }
-
       const setClause = keys.map((k) => `${k} = ?`).join(", ");
       const values = keys.map((k) => fields[k]);
-
-      await withAutoMigrate(
-        this.env.DB,
-        async () => {
-          await this.env.DB.prepare(`UPDATE settings SET ${setClause} WHERE id = 1`)
-            .bind(...values)
-            .run();
-        },
-        fields,
-        "settings",
-      );
-
+      await this.env.DB.prepare(`UPDATE settings SET ${setClause} WHERE id = 1`)
+        .bind(...values)
+        .run();
       return { success: true };
     } catch (err) {
       return { success: false, error: String(err) };

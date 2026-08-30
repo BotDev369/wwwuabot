@@ -1,6 +1,11 @@
-import type { Env } from "../../shared/types/env";
+import type { Env } from "../shared/types";
+import { checkAdminAuth, unauthorizedResponse } from "../modules/security/admin-auth";
 
 export async function handleAuthCheck(request: Request, env: Env): Promise<Response> {
+  if (!checkAdminAuth(request, env)) {
+    return unauthorizedResponse();
+  }
+
   const url = new URL(request.url);
   const userIdStr = url.searchParams.get("user_id");
 
@@ -23,7 +28,6 @@ export async function handleAuthCheck(request: Request, env: Env): Promise<Respo
     const row = await env.DB.prepare("SELECT user_id FROM users WHERE user_id = ?")
       .bind(userId)
       .first();
-
     return new Response(JSON.stringify({ exists: !!row }), {
       status: 200,
       headers: { "Content-Type": "application/json" },

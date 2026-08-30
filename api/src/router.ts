@@ -3,6 +3,9 @@ import { handleHealth } from "./controllers/health.controller";
 import { handleAnalyze, handleAnalysisRead, handleSystems, handleCompare } from "./controllers/astrology.controller";
 import { handleScenario } from "./controllers/scenarios.controller";
 import { handleMyDates } from "./controllers/my-dates.controller";
+import { handleSetupWebhook, handleWebhookInfo } from "./controllers/webhook.controller";
+import { handleDbProxy } from "./controllers/db-proxy.controller";
+import { handleAuthCheck } from "./controllers/auth-check.controller";
 
 /**
  * Central router for the API worker.
@@ -18,6 +21,24 @@ export async function handleRequest(
   // ── Health ──────────────────────────────────────────────────────
   if (pathname === "/health") {
     return handleHealth();
+  }
+
+  // ── Admin: Telegram webhook management ──────────────────────────
+  if (request.method === "GET" && pathname === "/setup-webhook") {
+    return handleSetupWebhook(request, env);
+  }
+  if (request.method === "GET" && pathname === "/webhook-info") {
+    return handleWebhookInfo(request, env);
+  }
+
+  // ── Admin: DB Proxy ────────────────────────────────────────────
+  if (request.method === "POST" && pathname === "/db-proxy") {
+    return handleDbProxy(request, env);
+  }
+
+  // ── Admin: Auth Check ──────────────────────────────────────────
+  if (request.method === "GET" && (pathname === "/auth/check" || pathname === "/api/auth/check")) {
+    return handleAuthCheck(request, env);
   }
 
   // ── MyDate: analysis by date ────────────────────────────────────
