@@ -7,6 +7,7 @@ import { ScenarioRepository } from "../../../repositories/scenario.repository";
 import { isUserBlocked } from "../../../modules/security/blocked-users";
 import { checkRateLimit } from "../../../modules/security/rate-limiter";
 import { log } from "../../../shared/utils/debug";
+import { sendOrEditLiveMessage } from "../../../shared/utils/screen";
 
 export const preMiddleware = new Composer<AppContext>();
 
@@ -118,6 +119,22 @@ preMiddleware.use(async (ctx, next) => {
       ctx.user.active_scenario = "blocked";
       ctx.userDirty = true;
       log("SEC:blocked", "showing blocked scenario", { user_id: ctx.user.user_id });
+
+      // Рендеримо напряму — postMiddleware не запуститься (немає next())
+      await sendOrEditLiveMessage(ctx);
+
+      // Зберігаємо стан (active_scenario = "blocked")
+      if (ctx.userDirty && ctx.from) {
+        const updates: Record<string, any> = {};
+        for (const [key, value] of Object.entries(ctx.user)) {
+          if (key !== "user_id") {
+            updates[key] = typeof value === "object" && value !== null ? JSON.stringify(value) : value;
+          }
+        }
+        const userRepo = new UserRepository(ctx.env);
+        await userRepo.updateUser(ctx.from.id, updates);
+        log("SEC:blocked", "saved blocked state to DB", { user_id: ctx.user.user_id });
+      }
     }
   }
   return;
