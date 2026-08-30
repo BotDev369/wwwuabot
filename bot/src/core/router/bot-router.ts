@@ -1,16 +1,24 @@
 import type { AppContext } from "../../shared/types/env";
+import type { Scenario } from "../../shared/types/scenario";
 import { ScenarioRepository } from "../../repositories/scenario.repository";
 import { log } from "../../shared/utils/debug";
 import { handleRestart } from "./restart";
 import { isRestartCommand } from "./command";
-import { handleCommand } from "./command";
-import { handleCallback } from "./callback";
 import { handleTextInput } from "./text-input";
 import { getFamilyBox, setByPath, saveFamilyBox } from "../../shared/utils/family-box";
 import { dispatchAction } from "./actions";
-import { getErrorMessage } from "../../core/errors";
-import { UserRepository } from "../../modules/users/user.repository";
 
+/**
+ * Головний роутер бота.
+ * Бот — pure renderer: бере контент із таблиці scenarios і показує.
+ * Жодної хардкод-логіки для контенту.
+ *
+ * Потоки:
+ * 1. /start?<codeword>  → deep link: завантажуємо сценарій → рендер
+ * 2. /start             → завантажуємо "main" сценарій → рендер
+ * 3. callback_data      → якщо @... → action, інакше codeword → рендер
+ * 4. текст              → ТІЛЬКИ якщо awaits_input, інакше видаляємо
+ */
 export async function botRouter(ctx: AppContext): Promise<void> {
   if (!ctx.user) return;
 
@@ -26,65 +34,70 @@ export async function botRouter(ctx: AppContext): Promise<void> {
     return;
   }
 
-  // 1. Обробка сервісної команди /restart (пріоритет)
+  // ── 1. Сервісна команда /restart ────────────────────────────
   if (isCommand && isRestartCommand(text!)) {
     await handleRestart(ctx);
     return;
   }
 
-  // 1.5. Спеціальна обробка deep link (будь-який slug)
+  // ── 2. /start (з deep link або без) ──────────────────────────
   if (isCommand) {
     const command = text!.split(" ")[0].split("@")[0];
     if (command === "/start") {
       const param = text!.split(" ")[1]?.trim();
-      if (param && param !== "main") {
-        log("ROUTER", `deep link: ${param}`, { user_id: ctx.from?.id });
-        await handleDeepLink(ctx, param);
+      if (param) {
+        // Deep link: /start?galyashop_astragal
+        log("ROUTER", "deep link", { codeword: param, user_id: ctx.from?.id });
+        await loadAndRenderScenario(ctx, repo, param);
         return;
       }
-      // /start без параметра — хардкод вітання
-      await handleStart(ctx);
+      // /start без параметра → показуємо "main"
+      await loadAndRenderScenario(ctx, repo, "main");
       return;
     }
   }
 
-  let codeword: string = ctx.user.active_scenario || "main";
-  let actionData: string | null = null; // ← ЗМІНА: Зберігаємо дані дії, але не виконуємо її ще
-
-  // 2. Callback-кнопка
+  // ── 3. Callback ──────────────────────────────────────────────
   if (isCallback) {
     const data = ctx.callbackQuery!.data;
 
     if (data && data.startsWith("@")) {
-      // Це ДІЯ. Зберігаємо дані і встановлюємо codeword на поточний екран
-      actionData = data;
-      codeword = ctx.user.active_scenario || "main";
-      log("ROUTER", "type: action callback (deferred)", { data, codeword });
-    } else {
-      // Звичайна навігація. Відсікаємо метадані після '#'
-      let pureCodeword = data || "";
-      if (pureCodeword.includes("#")) {
-        pureCodeword = pureCodeword.split("#")[0];
+      // Action callback: @action:target:param → виконуємо дію
+      // Спочатку встановлюємо ctx.screen з поточного сценарію,
+      // потім dispatchAction працює з ним
+      const currentCodeword = ctx.user.active_scenario || "main";
+      await loadScenarioToScreen(ctx, repo, currentCodeword);
+
+      if (ctx.screen) {
+        const handled = await dispatchAction(ctx, data);
+        if (!handled) {
+          log("ROUTER", "action not handled, ignoring", { data });
+          return;
+        }
+        log("ROUTER", "action handled, re-rendering", { data });
       }
-
-      if (pureCodeword) codeword = pureCodeword;
-      log("ROUTER", "type: navigation callback", { codeword, original_data: data });
+      return;
     }
+
+    // Navigation callback: callback_data = codeword
+    let pureCodeword = data || "";
+    if (pureCodeword.includes("#")) {
+      pureCodeword = pureCodeword.split("#")[0];
+    }
+
+    if (pureCodeword) {
+      log("ROUTER", "callback navigation", { codeword: pureCodeword });
+      await loadAndRenderScenario(ctx, repo, pureCodeword);
+    }
+    return;
   }
 
-  // 3. Команда /start
-  if (isCommand) {
-    const commandCodeword = handleCommand(ctx, text!);
-    if (commandCodeword) {
-      codeword = commandCodeword;
-    }
-  }
-
-  // 3. Текстове повідомлення
+  // ── 4. Текстове повідомлення ────────────────────────────────
   if (isPlainText) {
     const currentScenario = await repo.getScenario(ctx.user.active_scenario || "main");
 
-    if (currentScenario) {
+    // Обробляємо текст ТІЛЬКИ якщо сценарій очікує ввід
+    if (currentScenario?.awaits_input === "text" && currentScenario.input_path) {
       const textResult = handleTextInput(ctx, text!, currentScenario);
 
       if (textResult.type === "record") {
@@ -94,63 +107,87 @@ export async function botRouter(ctx: AppContext): Promise<void> {
         saveFamilyBox(ctx.user, family, box);
         ctx.userDirty = true;
 
-        log("ROUTER", "text input saved to family box", {
+        log("ROUTER", "text input recorded", {
           family,
           path: textResult.inputPath,
           value: textResult.value,
         });
 
-        codeword = textResult.codeword!;
-      } else if (textResult.type === "navigate") {
-        const found = await repo.getScenario(textResult.codeword!);
-        if (found) {
-          codeword = textResult.codeword!;
-          log("ROUTER", "plain text matched codeword", { codeword });
-        } else {
-          log("ROUTER", "plain text ignored | no matching scenario", { text: textResult.codeword });
-          return;
-        }
+        // Переходимо на наступний сценарій після запису
+        await loadAndRenderScenario(ctx, repo, textResult.codeword!);
+        return;
       }
     }
+
+    // Текст НЕ обробляється як навігація — видаляємо, але логуємо
+    log("ROUTER", "text input ignored | no awaits_input", {
+      text: text!.substring(0, 50),
+      active_scenario: ctx.user.active_scenario,
+    });
+    await deleteUserMessage(ctx);
+    return;
   }
+}
 
-  // 4. Читаємо сценарій з БД
-  log("ROUTER", "loading scenario from DB", { codeword });
-  let scenario = await repo.getScenario(codeword);
+// ═══════════════════════════════════════════════════════════════
+// Допоміжні функції
+// ═══════════════════════════════════════════════════════════════
 
-  // 5. Fallback на "main"
+/**
+ * Завантажує сценарій з БД, ставить ctx.screen і оновлює active_scenario.
+ * Після цього postMiddleware відрендерить через sendOrEditLiveMessage.
+ */
+async function loadAndRenderScenario(
+  ctx: AppContext,
+  repo: ScenarioRepository,
+  codeword: string,
+): Promise<void> {
+  const scenario = await repo.getScenario(codeword);
+
   if (!scenario) {
-    log("ROUTER", "scenario not found, fallback to main", { requested: codeword });
-    console.warn(`[BotRouter] Scenario not found: "${codeword}", fallback to "main"`);
-    scenario = await repo.getScenario("main");
-  }
-
-  if (!scenario) {
-    log("ROUTER", "CRITICAL: main scenario not found in DB");
-    console.error(`[BotRouter] Critical: "main" scenario not found in DB`);
+    log("ROUTER", "scenario not found", { codeword });
+    await sendNotFound(ctx, codeword);
     return;
   }
 
+  setScenarioScreen(ctx, scenario);
+}
+
+/**
+ * Завантажує сценарій в ctx.screen БЕЗ встановлення active_scenario.
+ * Використовується для action callbacks, де поточний екран не змінюється.
+ */
+async function loadScenarioToScreen(
+  ctx: AppContext,
+  repo: ScenarioRepository,
+  codeword: string,
+): Promise<void> {
+  const scenario = await repo.getScenario(codeword);
+  if (!scenario) {
+    log("ROUTER", "scenario not found for screen", { codeword });
+    return;
+  }
+  setScenarioScreen(ctx, scenario);
+}
+
+/**
+ * Встановлює ctx.screen з сценарію. Pure function — тільки записує в контекст.
+ */
+function setScenarioScreen(ctx: AppContext, scenario: Scenario): void {
   log("ROUTER", "scenario loaded", {
     codeword: scenario.codeword,
     keyboard_type: scenario.keyboard_type,
     buttons_rows: scenario.buttons.length,
     awaits_input: scenario.awaits_input,
-    input_path: scenario.input_path,
-    input_next: scenario.input_next,
-    price: scenario.price,
-    qty_options: scenario.qty_options,
-    notify_groups: scenario.notify_groups,
-    notify_template: scenario.notify_template,
+    rich_message: scenario.rich_message,
   });
 
-  // 6. Зберігаємо активний сценарій юзера
-  if (ctx.user.active_scenario !== scenario.codeword) {
+  // Оновлюємо активний сценарій
+  if (ctx.user && ctx.user.active_scenario !== scenario.codeword) {
     ctx.user.active_scenario = scenario.codeword;
     ctx.userDirty = true;
   }
 
-  // 7. Передаємо сценарій у ctx.screen
   ctx.screen = {
     codeword: scenario.codeword,
     title: scenario.title,
@@ -165,166 +202,60 @@ export async function botRouter(ctx: AppContext): Promise<void> {
     price: scenario.price,
     notify_groups: scenario.notify_groups,
     notify_template: scenario.notify_template,
-    rich_message: scenario.rich_message, // ← NEW
-    rich_data: scenario.rich_data, // ← NEW
+    rich_message: scenario.rich_message,
+    rich_data: scenario.rich_data,
   };
-
-  // 8. ← НОВИЙ КРОК: Виконуємо відкладену дію ПІСЛЯ того, як ctx.screen заповнений
-  if (actionData) {
-    const handled = await dispatchAction(ctx, actionData);
-
-    if (!handled) {
-      log("ROUTER", "action not handled, ignoring callback");
-      return;
-    }
-
-    log("ROUTER", "action handled, will re-render current screen", { codeword });
-  }
 }
 
 /**
- * Обробка /start без параметра — хардкод вітання.
+ * Відправляє повідомлення "не знайдено" з кнопкою на main.
  */
-async function handleStart(ctx: AppContext): Promise<void> {
+async function sendNotFound(ctx: AppContext, requestedCodeword: string): Promise<void> {
   const chatId = ctx.chat?.id;
   if (!chatId) return;
 
-  const userRepo = new UserRepository(ctx.env);
-  const from = ctx.from;
-  const userId = from?.id;
-
-  let isNewUser = false;
-  if (userId) {
-    const existing = await userRepo.getUser(userId);
-    if (!existing) {
-      isNewUser = true;
-      await userRepo.createUser({
-        user_id: userId,
-        first_name: from?.first_name ?? "",
-        last_name: from?.last_name ?? "",
-        username: from?.username ?? "",
-        language: from?.language_code ?? "",
-      });
-      log("ROUTER:start", "new user created", { user_id: userId });
-    }
-  }
-
-  const v = Date.now();
-  const baseUrl =
-    ctx.env.ENVIRONMENT === "prod"
-      ? "https://wwwuabot-web-prod.diskomate.workers.dev"
-      : "https://wwwuabot-web-dev.diskomate.workers.dev";
-
-  let message: string;
-  if (isNewUser) {
-    const name = from?.first_name ? `, ${from.first_name}` : "";
-    message =
-      `<b>Привіт${name}! 👋</b>\n\n` +
-      `Ласкаво просимо до <b>WWWUABot</b> — твого простору в Telegram.\n\n` +
-      `Тут ти знайдеш корисні інструменти, розваги та можливості для розвитку.\n\n` +
-      `Натисни кнопку нижче, щоб почати 👇`;
-  } else {
-    message =
-      `<b>WWWUABot</b> — сайти в Телеграмі. Своє для своїх. 🇺🇦`;
-  }
-
-  const webAppUrl = `${baseUrl}/?v=${v}`;
-
   try {
-    const sent = await ctx.api.sendMessage(chatId, message, {
-      parse_mode: "HTML",
-      reply_markup: {
-        inline_keyboard: [
-          [
-            { text: "🌐 Головна", web_app: { url: webAppUrl } },
-          ],
-          [
-            { text: "🚀 Розвиток", web_app: { url: `${baseUrl}/mydate?v=${v}` } },
-          ],
-          [
-            { text: "ℹ️ Про проект", callback_data: "/about" },
-            { text: "👤 Мій акаунт", callback_data: "/myaccount" },
-          ],
-        ],
+    const sent = await ctx.api.sendMessage(
+      chatId,
+      `<b>Сторінку не знайдено</b>\n\nКодове слово <code>${escapeHtml(requestedCodeword)}</code> відсутнє в базі.`,
+      {
+        parse_mode: "HTML",
+        reply_markup: {
+          inline_keyboard: [[{ text: "🏠 Головна", callback_data: "main" }]],
+        },
       },
-    });
-
-    log("ROUTER:start", "start message sent", { chat_id: chatId, is_new: isNewUser });
+    );
 
     if (ctx.user) {
-      ctx.user.active_scenario = "main";
       ctx.user.message_id = sent.message_id;
       ctx.userDirty = true;
     }
   } catch (err) {
-    log("ROUTER:start", "failed to send start message", { error: getErrorMessage(err) });
+    log("ROUTER", "failed to send not-found message", { error: String(err) });
   }
 }
 
 /**
- * Обробка deep link (будь-який slug).
- * Створює юзера якщо потрібно і відправляє WebApp кнопку назад.
+ * Видаляє повідомлення користувача (текст, який не був оброблений).
  */
-async function handleDeepLink(ctx: AppContext, slug: string): Promise<void> {
-  const chatId = ctx.chat?.id;
-  if (!chatId) return;
-
-  const userRepo = new UserRepository(ctx.env);
-  const from = ctx.from;
-
-  // Перевіряємо чи є користувач в таблиці users
-  if (from?.id) {
-    const existing = await userRepo.getUser(from.id);
-    if (!existing) {
-      log("ROUTER:deep_link", "creating new user", { user_id: from.id, slug });
-      await userRepo.createUser({
-        user_id: from.id,
-        first_name: from.first_name ?? "",
-        last_name: from.last_name ?? "",
-        username: from.username ?? "",
-        language: from.language_code ?? "",
-      });
-    } else {
-      log("ROUTER:deep_link", "user already exists", { user_id: from.id, slug });
-    }
-  }
-
-  // Формуємо URL назад (без user_id — безпека!)
-  // v= Date.now() — cache buster for Telegram WebView
-  const v = Date.now();
-  const webAppUrl =
-    ctx.env.ENVIRONMENT === "prod"
-      ? `https://wwwuabot-web-prod.diskomate.workers.dev/${slug}?v=${v}`
-      : `https://wwwuabot-web-dev.diskomate.workers.dev/${slug}?v=${v}`;
-
-  const welcomeText =
-    `<b>Авторизацію підтверджено!</b>\n\n` +
-    `Тепер веб-платформа доступна для Вас. Натисніть кнопку нижче щоб продовжити.`;
+async function deleteUserMessage(ctx: AppContext): Promise<void> {
+  if (!ctx.message?.message_id || !ctx.chat?.id) return;
 
   try {
-    const sent = await ctx.api.sendMessage(chatId, welcomeText, {
-      parse_mode: "HTML",
-      reply_markup: {
-        inline_keyboard: [
-          [
-            {
-              text: "🌐 Відкрити веб-платформу",
-              web_app: { url: webAppUrl },
-            },
-          ],
-        ],
-      },
-    });
-
-    log("ROUTER:deep_link", "webapp sent", { chat_id: chatId, message_id: sent.message_id, slug });
-
-    // Оновлюємо активний сценарій та message_id
-    if (ctx.user) {
-      ctx.user.active_scenario = slug;
-      ctx.user.message_id = sent.message_id;
-      ctx.userDirty = true;
-    }
-  } catch (err) {
-    log("ROUTER:deep_link", "failed to send webapp", { error: getErrorMessage(err) });
+    await ctx.api.deleteMessage(ctx.chat.id, ctx.message.message_id);
+    log("ROUTER", "deleted unprocessed user message", { message_id: ctx.message.message_id });
+  } catch {
+    // Можливо, повідомлення вже видалене або бот не має прав
+    log("ROUTER", "failed to delete user message (non-critical)");
   }
+}
+
+/**
+ * Escape HTML-символи для безпечної вставки в Telegram HTML.
+ */
+function escapeHtml(text: string): string {
+  return text
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;");
 }

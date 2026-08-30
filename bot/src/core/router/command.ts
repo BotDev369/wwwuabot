@@ -1,4 +1,3 @@
-import type { AppContext } from "../../shared/types/env";
 import { log } from "../../shared/utils/debug";
 
 /**
@@ -11,21 +10,15 @@ export function isRestartCommand(text: string): boolean {
 }
 
 /**
- * Обробляє Telegram-команди (наразі тільки /start).
+ * Витягує param з команди /start.<param>.
+ * Використовується для отримання deep link codeword.
  *
- * @param ctx - Контекст бота
- * @param text - Текст повідомлення
- * @returns codeword для навігації, або null якщо це не команда
+ * @returns param після /start, або null
  */
-export function handleCommand(ctx: AppContext, text: string): string | null {
+export function extractStartParam(text: string): string | null {
   if (!text.startsWith("/")) return null;
-
-  const command = text.split(" ")[0].split("@")[0]; // /start або /start@botname
+  const command = text.split(" ")[0].split("@")[0];
   if (command !== "/start") return null;
-
-  const parts = text.split(" ");
-  const codeword = parts[1]?.trim() || "main";
-
-  log("COMMAND", "type: command /start", { codeword, has_param: !!parts[1] });
-  return codeword;
+  const param = text.split(" ")[1]?.trim();
+  return param || null;
 }

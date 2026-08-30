@@ -1,22 +1,22 @@
-import type { AppContext } from "../../shared/types/env";
 import type { Scenario } from "../../shared/types/scenario";
 import { log } from "../../shared/utils/debug";
 
 export interface TextInputResult {
-  type: "record" | "navigate" | "ignore";
-  codeword?: string;
+  type: "record" | "ignore";
   family?: string;
   inputPath?: string;
   value?: string;
+  codeword?: string;
 }
 
 /**
  * Обробляє вільний текст від користувача.
  *
  * Логіка:
- * 1. Якщо поточний сценарій має awaits_input = "text" → запис за input_path
- * 2. Якщо текст збігається з codeword → навігація
- * 3. Інакше → ігнорувати
+ * - Якщо поточний сценарій має awaits_input = "text" → запис за input_path
+ * - Інакше → ignore (повідомлення буде видалене в bot-router)
+ *
+ * Бот НЕ реагує на текст як на навігацію — тільки зчитування вводу.
  *
  * @param ctx - Контекст бота
  * @param text - Текст повідомлення
@@ -24,13 +24,13 @@ export interface TextInputResult {
  * @returns Результат обробки
  */
 export function handleTextInput(
-  ctx: AppContext,
+  ctx: { env: any },
   text: string,
   currentScenario: Scenario,
 ): TextInputResult {
   const trimmedText = text.trim();
 
-  // 1. Перевіряємо awaits_input
+  // Перевіряємо awaits_input — тільки це визначає, чи обробляємо текст
   if (currentScenario.awaits_input === "text" && currentScenario.input_path) {
     const family = currentScenario.codeword.split("_")[0];
     const nextCodeword = currentScenario.input_next || currentScenario.codeword;
@@ -51,13 +51,11 @@ export function handleTextInput(
     };
   }
 
-  // 2. Перевіряємо чи текст = codeword (навігація)
-  const candidate = trimmedText.toLowerCase();
-  log("TEXT_INPUT", "checking as codeword", { candidate });
+  // Текст НЕ обробляється — бот не реагує на довільний текст
+  log("TEXT_INPUT", "ignored | no awaits_input", {
+    text: trimmedText.substring(0, 50),
+    active_scenario: currentScenario.codeword,
+  });
 
-  // Повертаємо candidate для подальшої перевірки в bot-router
-  return {
-    type: "navigate",
-    codeword: candidate,
-  };
+  return { type: "ignore" };
 }
