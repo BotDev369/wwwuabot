@@ -8,9 +8,10 @@ export async function handleDbProxy(request: Request, env: Env): Promise<Respons
       headers: { "Content-Type": "application/json" },
     });
 
-  const secret = request.headers.get("X-Secret");
-  if (secret !== env.SECRET_TOKEN) {
-    return json({ error: "Unauthorized" }, 401);
+  // SEC-6: Використовуємо ADMIN_SECRET (окремий від SECRET_TOKEN)
+  const secret = request.headers.get("X-Admin-Secret");
+  if (!secret || secret !== env.ADMIN_SECRET) {
+    return json({ error: "Unauthorized", message: "Admin secret required" }, 401);
   }
 
   let body: any;

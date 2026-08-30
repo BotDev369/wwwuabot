@@ -3,7 +3,10 @@ import { LogMessage } from "./log";
 
 export interface Env {
   BOT_TOKEN: string;
+  /** Секрет Telegram webhook — для перевірки X-Telegram-Bot-Api-Secret-Token */
   SECRET_TOKEN: string;
+  /** Адмінський секрет — для db-proxy, setup-webhook, webhook-info. ВІДРІЗНИЙ від SECRET_TOKEN! */
+  ADMIN_SECRET: string;
   ENVIRONMENT: string;
   DB: D1Database;
   LOG_QUEUE: Queue<LogMessage>;

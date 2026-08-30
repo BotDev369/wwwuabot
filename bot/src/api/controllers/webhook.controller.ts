@@ -1,6 +1,10 @@
 import type { Env } from "../../shared/types/env";
+import { checkAdminAuth, unauthorizedResponse } from "../../modules/security/admin-auth";
 
-export async function handleSetupWebhook(env: Env): Promise<Response> {
+export async function handleSetupWebhook(request: Request, env: Env): Promise<Response> {
+  if (!checkAdminAuth(request, env)) {
+    return unauthorizedResponse();
+  }
   try {
     const webhookUrl = "https://wwwuabot-dev.diskomate.workers.dev/webhook";
 
@@ -42,7 +46,10 @@ export async function handleSetupWebhook(env: Env): Promise<Response> {
   }
 }
 
-export async function handleWebhookInfo(env: Env): Promise<Response> {
+export async function handleWebhookInfo(request: Request, env: Env): Promise<Response> {
+  if (!checkAdminAuth(request, env)) {
+    return unauthorizedResponse();
+  }
   try {
     const response = await fetch(`https://api.telegram.org/bot${env.BOT_TOKEN}/getWebhookInfo`);
     const result = await response.json();
