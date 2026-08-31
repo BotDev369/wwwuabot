@@ -16,8 +16,7 @@ id = "bda7a5fca58b4fbda87d75105d558ebf"
 name = "wwwuabot-api-dev"
 
 [env.dev.vars]
-ADMIN_SECRET = ""
-BOT_TOKEN = ""
+# ADMIN_SECRET та BOT_TOKEN — задаються через Cloudflare Dashboard (Secrets)
 
 [[env.dev.d1_databases]]
 binding = "DB"
@@ -31,8 +30,7 @@ id = "bda7a5fca58b4fbda87d75105d558ebf"
 name = "wwwuabot-api-prod"
 
 [env.production.vars]
-ADMIN_SECRET = ""
-BOT_TOKEN = ""
+# ADMIN_SECRET та BOT_TOKEN — задаються через Cloudflare Dashboard (Secrets)
 
 [[env.production.d1_databases]]
 binding = "DB"
