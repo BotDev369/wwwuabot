@@ -214,7 +214,18 @@ export function ScenarioCardModal({ codeword, table, onClose, onSaved }: Props) 
         {/* Header */}
         <div className="usr-modal-header">
           <span className="usr-modal-title">📋 {codeword}</span>
-          <button className="usr-modal-close" onClick={onClose}>✕</button>
+          <div style={{ display: "flex", gap: 6, alignItems: "center" }}>
+            <a
+              href={`/${codeword}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="btn btn--secondary"
+              style={{ fontSize: 12, padding: "4px 10px", textDecoration: "none" }}
+            >
+              🔗 Перейти
+            </a>
+            <button className="usr-modal-close" onClick={onClose}>✕</button>
+          </div>
         </div>
 
         {/* Main Tabs */}
@@ -366,9 +377,6 @@ function WebPreview({ fields, codeword }: { fields: Record<string, unknown>; cod
     );
   }
 
-  const zoneNames = ["sidebar", "header", "main", "footer"] as const;
-  const totalBlocks = zoneNames.reduce((sum, z) => sum + (config.zones[z]?.length || 0), 0);
-
   const context: BlockContext = {
     codeword,
     title: (fields.title as string) ?? null,
@@ -376,24 +384,8 @@ function WebPreview({ fields, codeword }: { fields: Record<string, unknown>; cod
   };
 
   return (
-    <div style={{ display: "flex", flexDirection: "column", height: "100%" }}>
-      {/* Info bar */}
-      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "8px 16px", borderBottom: "1px solid var(--border-subtle)", background: "var(--bg-1)", flexShrink: 0 }}>
-        <div style={{ fontSize: 13, fontWeight: 600, color: "var(--text-primary)" }}>
-          📄 /{codeword}
-        </div>
-        <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
-          <span style={{ fontSize: 11, color: "var(--text-muted)" }}>v{config.version ?? 1} • {totalBlocks} блоків</span>
-          <a href={`/page-builder/${codeword}`} target="_blank" rel="noopener noreferrer" style={{ fontSize: 11, color: "var(--accent)", textDecoration: "none" }}>
-            🏗️ Конструктор
-          </a>
-        </div>
-      </div>
-
-      {/* Rendered preview */}
-      <div style={{ flex: 1, overflow: "auto", padding: 16 }}>
-        <PageRenderer config={config} context={context} />
-      </div>
+    <div style={{ flex: 1, overflow: "auto" }}>
+      <PageRenderer config={config} context={context} />
     </div>
   );
 }
