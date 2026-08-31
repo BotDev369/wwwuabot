@@ -1,7 +1,7 @@
 /// <reference types="@cloudflare/workers-types" />
 
 /**
- * web-admin Worker — тонкий проксі.
+ * web-admin Worker — тонкий проксі до API.
  *
  * Після рефакторингу (Фаза 3) всі API-ендпоїнти знаходяться в api/.
  * Цей воркер відповідає лише за:
