@@ -199,6 +199,14 @@ export function ScenariosV2Table() {
               >
                 ✏️ Змінити
               </button>
+              {Boolean(menuScenario.page_data) && (
+                <button
+                  className="usr-modal-menu-item"
+                  onClick={() => { window.open(`/page-admin/${encodeURIComponent(menuScenario.codeword)}`, "_blank"); closeAll(); }}
+                >
+                  🌐 Прев'ю сторінки
+                </button>
+              )}
               <button
                 className="usr-modal-menu-item"
                 onClick={() => { setMenuCodeword(null); navigateToPageBuilder(menuScenario.codeword); }}
