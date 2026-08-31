@@ -14,8 +14,9 @@ export function LoginScreen() {
     try {
       await login(password);
       window.location.reload();
-    } catch {
-      setError("Невірний пароль");
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : String(err);
+      setError(msg || "Невірний пароль");
       setPassword("");
     } finally {
       setLoading(false);
