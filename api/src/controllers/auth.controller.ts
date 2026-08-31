@@ -125,14 +125,8 @@ export async function handleLogin(
     return json({ error: "Invalid JSON" }, 400);
   }
 
-  // DEBUG: показуємо довжину отриманого пароля та довжину секрету
-  const pwLen = body.password?.length ?? 0;
-  const secretLen = env.ADMIN_SECRET?.length ?? 0;
-  const match = body.password === env.ADMIN_SECRET;
-
-  if (!body.password || !match) {
-    await new Promise((r) => setTimeout(r, 500));
-    return json({ error: "Invalid password", debug: { pwLen, secretLen, match } }, 401);
+  if (!body.password || body.password !== env.ADMIN_SECRET) {
+    return json({ error: "Invalid password" }, 401);
   }
 
   const expires = Date.now() + COOKIE_MAX_AGE * 1000;

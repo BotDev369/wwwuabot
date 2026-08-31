@@ -123,8 +123,7 @@ export default {
     if (
       url.pathname === "/auth/login" ||
       url.pathname === "/auth/logout" ||
-      url.pathname === "/auth/check" ||
-      url.pathname === "/auth/debug"
+      url.pathname === "/auth/check"
     ) {
       const authed = await isAuthenticated(request, env);
       // login/logout працюють без auth (login створює, logout видаляє)

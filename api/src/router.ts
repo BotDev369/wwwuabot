@@ -5,7 +5,7 @@ import { handleScenario } from "./controllers/scenarios.controller";
 import { handleMyDates } from "./controllers/my-dates.controller";
 import { handleSetupWebhook, handleWebhookInfo } from "./controllers/webhook.controller";
 import { handleDbProxy } from "./controllers/db-proxy.controller";
-import { handleAuthCheck } from "./controllers/auth-check.controller";
+// auth-check.controller — видалено ( замінено на cookie-based auth.controller)
 import { handleLogin, handleLogout, handleAuthCheck as handleCookieAuthCheck, handleDebug } from "./controllers/auth.controller";
 import {
   handleRead as handleScenarioAdminRead,
@@ -54,10 +54,7 @@ export async function handleRequest(
     return handleDbProxy(request, env);
   }
 
-  // ── Admin: Auth Check ──────────────────────────────────────────
-  if (request.method === "GET" && (pathname === "/auth/check" || pathname === "/api/auth/check")) {
-    return handleAuthCheck(request, env);
-  }
+  // /auth/check — обробляється нижче (cookie-based)
 
   // ── MyDate: analysis by date ────────────────────────────────────
   if (pathname.startsWith("/api/mydate/analysis/")) {
