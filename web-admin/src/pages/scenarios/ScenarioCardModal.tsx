@@ -13,6 +13,13 @@ import {
   updateScenarioFields,
   type ScenarioTable,
 } from "../../shared/api/scenarios.api";
+import { PageRenderer } from "@wwwuabot/ui";
+import type { PageConfig, BlockContext } from "@wwwuabot/shared/types/page-config";
+import { parsePageConfig } from "@wwwuabot/shared/types/page-config";
+import { registerAllBlocks } from "@wwwuabot/ui/blocks";
+
+// Реєструємо блоки один раз при завантаженні модуля
+registerAllBlocks();
 
 // ─── Types ────────────────────────────────────────────────────────
 
@@ -336,44 +343,56 @@ function TabPreview({
 // ─── Web Preview ──────────────────────────────────────────────────
 
 function WebPreview({ fields, codeword }: { fields: Record<string, unknown>; codeword: string }) {
-  let pageData: Record<string, unknown> | null = null;
+  let config: PageConfig | null = null;
   try {
     const raw = fields.page_data;
-    pageData = typeof raw === "string" ? JSON.parse(raw) : typeof raw === "object" && raw !== null ? raw as Record<string, unknown> : null;
+    config = typeof raw === "string"
+      ? parsePageConfig(raw)
+      : typeof raw === "object" && raw !== null
+        ? raw as PageConfig
+        : null;
   } catch { /* ignore */ }
 
-  if (!pageData) {
-    return <div style={{ padding: 20, textAlign: "center", color: "var(--text-muted)" }}>page_data порожній або невалідний</div>;
+  if (!config) {
+    return (
+      <div style={{ padding: 20, textAlign: "center", color: "var(--text-muted)" }}>
+        page_data порожній або невалідний
+        <div style={{ marginTop: 12 }}>
+          <a href={`/page-builder/${codeword}`} target="_blank" rel="noopener noreferrer" style={{ fontSize: 12, color: "var(--accent)" }}>
+            🏗️ Відкрити конструктор →
+          </a>
+        </div>
+      </div>
+    );
   }
 
-  const zones = (pageData as { zones?: Record<string, unknown[]> }).zones || {};
-  const zoneNames = ["sidebar", "header", "main", "footer"];
-  const totalBlocks = zoneNames.reduce((sum, z) => sum + ((zones as Record<string, unknown[]>)[z]?.length || 0), 0);
+  const zoneNames = ["sidebar", "header", "main", "footer"] as const;
+  const totalBlocks = zoneNames.reduce((sum, z) => sum + (config.zones[z]?.length || 0), 0);
+
+  const context: BlockContext = {
+    codeword,
+    title: (fields.title as string) ?? null,
+    photoUrl: (fields.photo_url as string) ?? null,
+  };
 
   return (
-    <div style={{ padding: 16 }}>
-      <div style={{ marginBottom: 12, fontWeight: 600, fontSize: 14 }}>📄 Сторінка: /{codeword}</div>
-      <div style={{ fontSize: 12, color: "var(--text-secondary)", marginBottom: 12 }}>
-        Версія: {(pageData as { version?: number }).version ?? "?"} • Блоків: {totalBlocks}
+    <div style={{ display: "flex", flexDirection: "column", height: "100%" }}>
+      {/* Info bar */}
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "8px 16px", borderBottom: "1px solid var(--border-subtle)", background: "var(--bg-1)", flexShrink: 0 }}>
+        <div style={{ fontSize: 13, fontWeight: 600, color: "var(--text-primary)" }}>
+          📄 /{codeword}
+        </div>
+        <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
+          <span style={{ fontSize: 11, color: "var(--text-muted)" }}>v{config.version ?? 1} • {totalBlocks} блоків</span>
+          <a href={`/page-builder/${codeword}`} target="_blank" rel="noopener noreferrer" style={{ fontSize: 11, color: "var(--accent)", textDecoration: "none" }}>
+            🏗️ Конструктор
+          </a>
+        </div>
       </div>
-      {zoneNames.map((z) => {
-        const blocks = (zones as Record<string, unknown[]>)[z] || [];
-        if (blocks.length === 0) return null;
-        return (
-          <div key={z} style={{ marginBottom: 8, padding: "8px 12px", background: "var(--bg-2)", borderRadius: 6 }}>
-            <div style={{ fontSize: 11, fontWeight: 600, color: "var(--text-muted)", textTransform: "uppercase", marginBottom: 4 }}>{z}</div>
-            <div style={{ fontSize: 12, display: "flex", gap: 6, flexWrap: "wrap" }}>
-              {blocks.map((b, i) => (
-                <span key={i} className="scn-badge">{(b as Record<string, unknown>).type as string}</span>
-              ))}
-            </div>
-          </div>
-        );
-      })}
-      <div style={{ marginTop: 16 }}>
-        <a href={`/page-builder/${codeword}`} target="_blank" rel="noopener noreferrer" style={{ fontSize: 12, color: "var(--accent)" }}>
-          🏗️ Відкрити конструктор →
-        </a>
+
+      {/* Rendered preview */}
+      <div style={{ flex: 1, overflow: "auto", padding: 16 }}>
+        <PageRenderer config={config} context={context} />
       </div>
     </div>
   );
