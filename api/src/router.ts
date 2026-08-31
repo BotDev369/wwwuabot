@@ -6,7 +6,7 @@ import { handleMyDates } from "./controllers/my-dates.controller";
 import { handleSetupWebhook, handleWebhookInfo } from "./controllers/webhook.controller";
 import { handleDbProxy } from "./controllers/db-proxy.controller";
 import { handleAuthCheck } from "./controllers/auth-check.controller";
-import { handleLogin, handleLogout, handleAuthCheck as handleCookieAuthCheck } from "./controllers/auth.controller";
+import { handleLogin, handleLogout, handleAuthCheck as handleCookieAuthCheck, handleDebug } from "./controllers/auth.controller";
 import {
   handleRead as handleScenarioAdminRead,
   handleWrite as handleScenarioAdminWrite,
@@ -89,6 +89,11 @@ export async function handleRequest(
   // ── My-Dates CRUD ───────────────────────────────────────────────
   if (pathname === "/api/my-dates") {
     return handleMyDates(request, env);
+  }
+
+  // ── Admin: Debug ────────────────────────────────────────────────
+  if (pathname === "/auth/debug") {
+    return handleDebug(env);
   }
 
   // ── Admin: Cookie Auth ─────────────────────────────────────────
