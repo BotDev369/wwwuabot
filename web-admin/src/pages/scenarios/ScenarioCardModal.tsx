@@ -224,9 +224,9 @@ export function ScenarioCardModal({ codeword, table, onClose, onSaved }: Props) 
               key={tab.key}
               className={`scn-tab${mainTab === tab.key ? " scn-tab--active" : ""}`}
               onClick={() => { setMainTab(tab.key); setSubTab("preview"); }}
+              title={tab.label}
             >
               <span>{tab.icon}</span>
-              <span>{tab.label}</span>
             </button>
           ))}
         </div>
@@ -246,9 +246,9 @@ export function ScenarioCardModal({ codeword, table, onClose, onSaved }: Props) 
                   setSubTab(st.key);
                 }
               }}
+            title={st.label}
             >
               <span>{st.icon}</span>
-              <span>{st.label}</span>
             </button>
           ))}
         </div>
