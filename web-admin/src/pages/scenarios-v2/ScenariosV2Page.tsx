@@ -1,5 +1,4 @@
 import { useEffect, useCallback } from "react";
-import { useNavigate } from "react-router-dom";
 import { useScenariosStore } from "../../features/scenarios/store";
 import { saveScenarioFields } from "../../shared/api/scenarios.api";
 import { PageTopbar } from "../../layout/PageTopbar";
@@ -16,11 +15,6 @@ export function ScenariosV2Page() {
     setTable("portal");
     void load();
   }, [setTable, load]);
-  const navigate = useNavigate();
-
-  useEffect(() => {
-    void load();
-  }, [load]);
 
   const handleCreate = useCallback(async () => {
     const codeword = window.prompt("Введіть codeword для нового сценарію:");
@@ -35,11 +29,10 @@ export function ScenariosV2Page() {
         }),
       });
       await load(true);
-      navigate(`/page-admin/${encodeURIComponent(cw)}`);
     } catch (e) {
       alert(`Помилка створення: ${(e as Error).message}`);
     }
-  }, [load, navigate]);
+  }, [load]);
 
   return (
     <>
