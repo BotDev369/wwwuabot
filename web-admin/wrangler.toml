@@ -25,6 +25,10 @@ binding = "DB"
 database_name = "wwwuabot-db-dev"
 database_id = "9fc03f61-d497-4d92-bae4-c92b02c2d1c5"
 
+[[env.dev.services]]
+binding = "API"
+service = "wwwuabot-api-dev"
+
 # Production середовище
 [env.production]
 name = "wwwuabot-web-admin-prod"
@@ -36,4 +40,8 @@ ENVIRONMENT = "prod"
 binding = "DB"
 database_name = "wwwuabot-db-prod"
 database_id = "6e690692-7671-4598-826c-c2db591399a2"
+
+[[env.production.services]]
+binding = "API"
+service = "wwwuabot-api-prod"
 

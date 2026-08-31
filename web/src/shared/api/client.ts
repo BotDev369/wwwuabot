@@ -1,25 +1,16 @@
 /**
- * Web API client — lightweight fetch wrapper.
- * In TWA, all /api/* requests are proxied to the api/ worker
- * via the Cloudflare Worker service binding.
+ * web (TWA) API client.
+ * Обгортка над shared apiFetch для Telegram WebApp контексту.
+ * Cookie-based auth не потрібен (auth через Telegram WebApp SDK headers).
  */
+
+import { apiFetch as sharedApiFetch } from "@wwwuabot/shared";
 
 export async function apiFetch<T = unknown>(
   endpoint: string,
   options: RequestInit = {},
 ): Promise<T> {
-  const response = await fetch(endpoint, {
-    ...options,
-    headers: {
-      "Content-Type": "application/json",
-      ...options.headers,
-    },
+  return sharedApiFetch<T>(endpoint, {
+    fetchOptions: options,
   });
-
-  if (!response.ok) {
-    const err = await response.json().catch(() => ({ error: `HTTP ${response.status}` }));
-    throw new Error((err as { error?: string }).error ?? `HTTP ${response.status}`);
-  }
-
-  return response.json() as Promise<T>;
 }

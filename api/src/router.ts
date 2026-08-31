@@ -6,6 +6,24 @@ import { handleMyDates } from "./controllers/my-dates.controller";
 import { handleSetupWebhook, handleWebhookInfo } from "./controllers/webhook.controller";
 import { handleDbProxy } from "./controllers/db-proxy.controller";
 import { handleAuthCheck } from "./controllers/auth-check.controller";
+import { handleLogin, handleLogout, handleAuthCheck as handleCookieAuthCheck } from "./controllers/auth.controller";
+import {
+  handleRead as handleScenarioAdminRead,
+  handleWrite as handleScenarioAdminWrite,
+  handleList as handleScenarioAdminList,
+  handleReadAll as handleScenarioAdminReadAll,
+  handleUpdate as handleScenarioAdminUpdate,
+  handleDelete as handleScenarioAdminDelete,
+} from "./controllers/scenarios-admin.controller";
+import {
+  handleListUsers,
+  handleReadUser,
+  handleUpdateUser,
+  handleDeleteUser,
+  handleBlockUser,
+  handleBulkUsers,
+  handleUserMessage,
+} from "./controllers/users.controller";
 
 /**
  * Central router for the API worker.
@@ -71,6 +89,60 @@ export async function handleRequest(
   // ── My-Dates CRUD ───────────────────────────────────────────────
   if (pathname === "/api/my-dates") {
     return handleMyDates(request, env);
+  }
+
+  // ── Admin: Cookie Auth ─────────────────────────────────────────
+  if (pathname === "/auth/login" && request.method === "POST") {
+    return handleLogin(request, env);
+  }
+  if (pathname === "/auth/logout" && request.method === "POST") {
+    return handleLogout();
+  }
+  if (pathname === "/auth/check") {
+    return handleCookieAuthCheck(request, env);
+  }
+
+  // ── Admin: Scenarios-Admin CRUD ────────────────────────────────
+  if (pathname === "/api/admin/scenarios/read" && request.method === "POST") {
+    return handleScenarioAdminRead(request, env);
+  }
+  if (pathname === "/api/admin/scenarios/write" && request.method === "POST") {
+    return handleScenarioAdminWrite(request, env);
+  }
+  if (pathname === "/api/admin/scenarios/list" && request.method === "GET") {
+    return handleScenarioAdminList(request, env);
+  }
+  if (pathname === "/api/admin/scenarios/read-all" && request.method === "POST") {
+    return handleScenarioAdminReadAll(request, env);
+  }
+  if (pathname === "/api/admin/scenarios/update" && request.method === "POST") {
+    return handleScenarioAdminUpdate(request, env);
+  }
+  if (pathname === "/api/admin/scenarios/delete" && request.method === "POST") {
+    return handleScenarioAdminDelete(request, env);
+  }
+
+  // ── Admin: Users CRUD ──────────────────────────────────────────
+  if (pathname === "/api/admin/users/list" && request.method === "GET") {
+    return handleListUsers(request, env);
+  }
+  if (pathname === "/api/admin/users/read" && request.method === "POST") {
+    return handleReadUser(request, env);
+  }
+  if (pathname === "/api/admin/users/update" && request.method === "POST") {
+    return handleUpdateUser(request, env);
+  }
+  if (pathname === "/api/admin/users/delete" && request.method === "POST") {
+    return handleDeleteUser(request, env);
+  }
+  if (pathname === "/api/admin/users/block" && request.method === "POST") {
+    return handleBlockUser(request, env);
+  }
+  if (pathname === "/api/admin/users/bulk" && request.method === "POST") {
+    return handleBulkUsers(request, env);
+  }
+  if (pathname === "/api/admin/users/message" && request.method === "POST") {
+    return handleUserMessage(request, env);
   }
 
   // ── 404 ─────────────────────────────────────────────────────────

@@ -13,17 +13,23 @@
     "./styles/apple.css": "./src/styles/apple.css",
     "./styles/reset.css": "./src/styles/reset.css",
     "./styles/components.css": "./src/styles/components.css",
-    "./components/StyleToggle": "./src/components/StyleToggle.tsx"
+    "./components/StyleToggle": "./src/components/StyleToggle.tsx",
+    "./app/initTheme": "./src/app/initTheme.ts",
+    "./api/client": "./src/api/client.ts",
+    "./layout/Footer": "./src/layout/Footer.tsx",
+    "./stores/app.store": "./src/stores/app.store.ts",
+    "./utils/datetime": "./src/utils/datetime.ts"
+  },
+  "dependencies": {
+    "open-props": "^1.7.23"
+  },
+  "peerDependencies": {
+    "react": ">=18.0.0",
+    "zustand": ">=5.0.0"
   },
   "devDependencies": {
     "@types/react": "^19.0.0",
     "react": "^19.0.0",
     "typescript": "^6.0.0"
-  },
-  "peerDependencies": {
-    "react": ">=18.0.0"
-  },
-  "dependencies": {
-    "open-props": "^1.7.23"
   }
 }

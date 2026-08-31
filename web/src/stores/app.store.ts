@@ -1,40 +1,7 @@
-import { create } from "zustand";
+/**
+ * web app store — re-export shared store.
+ * Зберігаємо зворотну сумісність з імпортами `@/stores/app.store`.
+ */
 
-interface AppState {
-  /** Left sidebar open state */
-  sidebarOpen: boolean;
-  setSidebarOpen: (open: boolean | ((prev: boolean) => boolean)) => void;
-
-  /** Contextual (right) sidebar */
-  contextualSidebarOpen: boolean;
-  setContextualSidebarOpen: (open: boolean | ((prev: boolean) => boolean)) => void;
-
-  /** Current scenario name displayed in header */
-  scenarioName: string | null;
-  setScenarioName: (name: string | null) => void;
-
-  /** Whether to show contextual menu button */
-  showContextualMenu: boolean;
-  setShowContextualMenu: (show: boolean) => void;
-}
-
-export const useAppStore = create<AppState>((set) => ({
-  sidebarOpen: typeof window !== "undefined" && window.matchMedia("(min-width: 769px)").matches,
-  setSidebarOpen: (open) =>
-    set((state) => ({
-      sidebarOpen: typeof open === "function" ? open(state.sidebarOpen) : open,
-    })),
-
-  contextualSidebarOpen: false,
-  setContextualSidebarOpen: (open) =>
-    set((state) => ({
-      contextualSidebarOpen:
-        typeof open === "function" ? open(state.contextualSidebarOpen) : open,
-    })),
-
-  scenarioName: null,
-  setScenarioName: (name) => set({ scenarioName: name }),
-
-  showContextualMenu: false,
-  setShowContextualMenu: (show) => set({ showContextualMenu: show }),
-}));
+export { useAppStore } from "@wwwuabot/shared";
+export type { AppState } from "@wwwuabot/shared";

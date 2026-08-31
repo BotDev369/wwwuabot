@@ -16,7 +16,7 @@ export interface ScenarioRow {
 
 export async function readScenario(codeword: string): Promise<ScenarioRow | null> {
   const res = await apiFetch<{ success: boolean; data: ScenarioRow | null }>(
-    "/api/scenarios/read",
+    "/api/admin/scenarios/read",
     { method: "POST", body: JSON.stringify({ codeword }) },
   );
   return res.data;
@@ -27,7 +27,7 @@ export async function writeScenario(
   richData: string,
   richMessage: boolean,
 ): Promise<void> {
-  await apiFetch("/api/scenarios/write", {
+  await apiFetch("/api/admin/scenarios/write", {
     method: "POST",
     body: JSON.stringify({
       codeword,
@@ -54,7 +54,7 @@ export async function listScenarios(etag: string | null): Promise<ListScenariosR
   const headers: Record<string, string> = {};
   if (etag) headers["If-None-Match"] = etag;
 
-  const response = await fetch("/api/scenarios/list", {
+  const response = await fetch("/api/admin/scenarios/list", {
     credentials: "same-origin",
     headers,
   });
@@ -81,7 +81,7 @@ export async function saveScenarioFields(
   codeword: string,
   fields: Record<string, unknown>,
 ): Promise<void> {
-  await apiFetch("/api/scenarios/write", {
+  await apiFetch("/api/admin/scenarios/write", {
     method: "POST",
     body: JSON.stringify({ codeword, ...fields }),
   });
@@ -89,7 +89,7 @@ export async function saveScenarioFields(
 
 export async function readScenarioAll(codeword: string): Promise<Record<string, unknown> | null> {
   const res = await apiFetch<{ success: boolean; data: Record<string, unknown> | null }>(
-    "/api/scenarios/read-all",
+    "/api/admin/scenarios/read-all",
     { method: "POST", body: JSON.stringify({ codeword }) },
   );
   return res.data;
@@ -99,7 +99,7 @@ export async function updateScenarioFields(
   codeword: string,
   fields: Record<string, unknown>,
 ): Promise<{ updated_at?: string }> {
-  const res = await apiFetch<{ success: boolean; updated_at?: string }>("/api/scenarios/update", {
+  const res = await apiFetch<{ success: boolean; updated_at?: string }>("/api/admin/scenarios/update", {
     method: "POST",
     body: JSON.stringify({ codeword, ...fields }),
   });
@@ -107,7 +107,7 @@ export async function updateScenarioFields(
 }
 
 export async function deleteScenario(codeword: string): Promise<{ deleted: boolean }> {
-  const res = await apiFetch<{ success: boolean; deleted: boolean }>("/api/scenarios/delete", {
+  const res = await apiFetch<{ success: boolean; deleted: boolean }>("/api/admin/scenarios/delete", {
     method: "POST",
     body: JSON.stringify({ codeword }),
   });

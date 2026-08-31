@@ -1,10 +1,6 @@
-export function Footer() {
-  return (
-    <footer>
-      © 2026 WWWUABot ·{" "}
-      <a href="/privacy.html" target="_blank" rel="noopener noreferrer">
-        Політика приватності
-      </a>
-    </footer>
-  );
-}
+/**
+ * web Footer — re-export shared Footer.
+ * Зберігаємо зворотну сумісність з імпортами `./Footer`.
+ */
+
+export { Footer } from "@wwwuabot/shared";

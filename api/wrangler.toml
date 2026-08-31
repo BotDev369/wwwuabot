@@ -14,6 +14,11 @@ id = "bda7a5fca58b4fbda87d75105d558ebf"
 
 [env.dev]
 name = "wwwuabot-api-dev"
+
+[env.dev.vars]
+ADMIN_SECRET = ""
+BOT_TOKEN = ""
+
 [[env.dev.d1_databases]]
 binding = "DB"
 database_name = "wwwuabot-db-dev"
@@ -24,6 +29,11 @@ id = "bda7a5fca58b4fbda87d75105d558ebf"
 
 [env.production]
 name = "wwwuabot-api-prod"
+
+[env.production.vars]
+ADMIN_SECRET = ""
+BOT_TOKEN = ""
+
 [[env.production.d1_databases]]
 binding = "DB"
 database_name = "wwwuabot-db-prod"
