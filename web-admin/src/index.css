@@ -2716,3 +2716,46 @@ body {
   cursor: not-allowed;
   background: var(--bg-2);
 }
+
+/* ═══════════════════════════════════════════════════════════════════════════════
+   SUB-TABS — підвкладки у ScenarioCardModal
+   ═══════════════════════════════════════════════════════════════════════════════ */
+.scn-subtabs {
+  display: flex;
+  gap: 2px;
+  padding: 0 12px;
+  border-bottom: 1px solid var(--border-subtle);
+  background: var(--bg-1);
+}
+
+.scn-subtab {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  padding: 7px 14px;
+  border: none;
+  background: none;
+  color: var(--text-muted);
+  font-size: 12px;
+  font-weight: 500;
+  font-family: var(--font-ui);
+  cursor: pointer;
+  border-bottom: 2px solid transparent;
+  transition:
+    color 0.12s,
+    border-color 0.12s;
+  margin-bottom: -1px;
+}
+
+.scn-subtab:hover {
+  color: var(--text-secondary);
+}
+
+.scn-subtab--active {
+  color: var(--accent);
+  border-bottom-color: var(--accent);
+}
+
+.scn-subtab span:first-child {
+  font-size: 12px;
+}

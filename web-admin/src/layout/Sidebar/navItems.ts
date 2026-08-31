@@ -18,15 +18,8 @@ export const navSections: NavSection[] = [
   {
     title: "Сценарії",
     items: [
-      { to: "/editor", label: "Редактор", icon: "✏️" },
-      { to: "/scenarios", label: "Сценарії", icon: "📋" },
-      { to: "/scenarios-v2", label: "Сценарії v.2", icon: "📋" },
-    ],
-  },
-  {
-    title: "Page Builder",
-    items: [
-      { to: "/scenarios-v2", label: "Конструктор сторінок", icon: "🏗️" },
+      { to: "/scenarios", label: "Сценарії — портал", icon: "📋" },
+      { to: "/scenarios-admin", label: "Сценарії — адмін", icon: "⚙️" },
     ],
   },
   {

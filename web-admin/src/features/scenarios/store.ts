@@ -1,5 +1,5 @@
 import { create } from "zustand";
-import { listScenarios, type ScenarioListRow } from "../../shared/api/scenarios.api";
+import { listScenarios, type ScenarioListRow, type ScenarioTable } from "../../shared/api/scenarios.api";
 
 export type ScenariosStatus = "idle" | "loading" | "refreshing" | "error";
 export type ScenariosSortField = "codeword" | "rich_message" | "updated_at";
@@ -12,6 +12,9 @@ interface ScenariosStore {
   errorMsg: string | null;
   sortField: ScenariosSortField;
   sortDir: SortDir;
+  /** Тип таблиці: "admin" = scenarios-admin, "portal" = scenarios */
+  table: ScenarioTable;
+  setTable: (table: ScenarioTable) => void;
   setSort: (field: ScenariosSortField) => void;
   load: (force?: boolean) => Promise<void>;
 }
@@ -23,6 +26,11 @@ export const useScenariosStore = create<ScenariosStore>((set, get) => ({
   errorMsg: null,
   sortField: "codeword",
   sortDir: "asc",
+  table: "admin",
+
+  setTable: (table) => {
+    set({ table, items: [], etag: null });
+  },
 
   setSort: (field) => {
     const { sortField, sortDir } = get();
@@ -34,13 +42,12 @@ export const useScenariosStore = create<ScenariosStore>((set, get) => ({
   },
 
   load: async (force = false) => {
-    const { items, etag } = get();
+    const { items, etag, table } = get();
     const hasCache = items.length > 0;
-    // Є кеш і не force → миттєво показуємо кеш і фоново дотягуємо з ETag.
     const useEtag = !force && hasCache ? etag : null;
     set({ status: hasCache && !force ? "refreshing" : "loading", errorMsg: null });
     try {
-      const res = await listScenarios(useEtag);
+      const res = await listScenarios(useEtag, table);
       if (res.notModified) {
         set({ status: "idle" });
         return;

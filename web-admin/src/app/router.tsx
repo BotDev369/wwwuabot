@@ -1,29 +1,25 @@
 import { createBrowserRouter } from "react-router-dom";
 import { AppShell } from "../layout/AppShell";
 import { HomePage } from "../pages/home/HomePage";
-import { EditorPage } from "../pages/editor/EditorPage";
-import { ScenariosPage } from "../pages/scenarios/ScenariosPage";
-import { ScenarioPreviewPage } from "../pages/scenarios/ScenarioPreviewPage";
-import { ScenarioFormPage } from "../pages/scenarios/ScenarioFormPage";
+import { ScenariosAdminPage } from "../pages/scenarios/ScenariosAdminPage";
 import { UsersPage } from "../pages/users/UsersPage";
 import { ScenariosV2Page } from "../pages/scenarios-v2/ScenariosV2Page";
-import { PageBuilderPage } from "../features/page-builder/PageBuilderPage";
-import { DynamicAdminPage } from "../pages/dynamic/DynamicAdminPage";
 
+/**
+ * Маршрути web-admin.
+ *
+ * /scenarios-admin — Сценарії-портал (таблиця scenarios-admin)
+ * /scenarios       — Сценарії-адмін (таблиця scenarios)
+ * /users           — Користувачі
+ */
 export const router = createBrowserRouter([
   {
     element: <AppShell />,
     children: [
       { index: true, element: <HomePage /> },
-      { path: "editor", element: <EditorPage /> },
-      { path: "scenarios", element: <ScenariosPage /> },
-      { path: "scenarios/new", element: <ScenarioFormPage /> },
-      { path: "scenarios/:codeword", element: <ScenarioPreviewPage /> },
-      { path: "scenarios/:codeword/edit", element: <ScenarioFormPage /> },
-      { path: "page-builder/:codeword", element: <PageBuilderPage /> },
-      { path: "page-admin/:codeword", element: <DynamicAdminPage /> },
+      { path: "scenarios", element: <ScenariosV2Page /> },
+      { path: "scenarios-admin", element: <ScenariosAdminPage /> },
       { path: "users", element: <UsersPage /> },
-      { path: "scenarios-v2", element: <ScenariosV2Page /> },
     ],
   },
 ]);

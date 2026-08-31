@@ -1,7 +1,6 @@
 import { useMemo, useState, useEffect, useCallback } from "react";
 import { useScenariosStore, type ScenariosSortField } from "../../features/scenarios/store";
 import { ScenarioCardModal } from "../scenarios/ScenarioCardModal";
-import { ScenarioEditModal } from "../scenarios/ScenarioEditModal";
 import { deleteScenario } from "../../shared/api/scenarios.api";
 
 function relativeTime(value: string | null): string {
@@ -26,12 +25,10 @@ export function ScenariosV2Table() {
   const [menuCodeword, setMenuCodeword] = useState<string | null>(null);
   const [selectedRow, setSelectedRow] = useState<string | null>(null);
   const [cardCodeword, setCardCodeword] = useState<string | null>(null);
-  const [editCodeword, setEditCodeword] = useState<string | null>(null);
   const [confirmDelete, setConfirmDelete] = useState<string | null>(null);
   const closeAll = useCallback(() => {
     setMenuCodeword(null);
     setCardCodeword(null);
-    setEditCodeword(null);
     setConfirmDelete(null);
   }, []);
 
@@ -40,11 +37,11 @@ export function ScenariosV2Table() {
     function handleKey(e: KeyboardEvent) {
       if (e.key === "Escape") closeAll();
     }
-    if (menuCodeword || cardCodeword || editCodeword || confirmDelete) {
+    if (menuCodeword || cardCodeword || confirmDelete) {
       document.addEventListener("keydown", handleKey);
       return () => document.removeEventListener("keydown", handleKey);
     }
-  }, [menuCodeword, cardCodeword, editCodeword, confirmDelete, closeAll]);
+  }, [menuCodeword, cardCodeword, confirmDelete, closeAll]);
 
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase();
@@ -92,11 +89,6 @@ export function ScenariosV2Table() {
   }
 
   const menuScenario = menuCodeword ? items.find((s) => s.codeword === menuCodeword) : null;
-
-  // Navigate to page builder
-  const navigateToPageBuilder = (cw: string) => {
-    window.location.href = `/page-builder/${cw}`;
-  };
 
   return (
     <>
@@ -177,7 +169,7 @@ export function ScenariosV2Table() {
       </div>
 
       {/* Action modal menu */}
-      {menuScenario && !cardCodeword && !editCodeword && !confirmDelete && (
+      {menuScenario && !cardCodeword && !confirmDelete && (
         <div className="usr-modal-overlay" onClick={closeAll}>
           <div className="usr-modal" onClick={(e) => e.stopPropagation()}>
             <div className="usr-modal-header">
@@ -191,27 +183,7 @@ export function ScenariosV2Table() {
                 className="usr-modal-menu-item"
                 onClick={() => { setMenuCodeword(null); setCardCodeword(menuScenario.codeword); }}
               >
-                👁️ Переглянути
-              </button>
-              <button
-                className="usr-modal-menu-item"
-                onClick={() => { setMenuCodeword(null); setEditCodeword(menuScenario.codeword); }}
-              >
-                ✏️ Змінити
-              </button>
-              {Boolean(menuScenario.page_data) && (
-                <button
-                  className="usr-modal-menu-item"
-                  onClick={() => { window.open(`/page-admin/${encodeURIComponent(menuScenario.codeword)}`, "_blank"); closeAll(); }}
-                >
-                  🌐 Прев'ю сторінки
-                </button>
-              )}
-              <button
-                className="usr-modal-menu-item"
-                onClick={() => { setMenuCodeword(null); navigateToPageBuilder(menuScenario.codeword); }}
-              >
-                🏗️ Page Builder
+                📋 Картка сценарію
               </button>
               <div className="usr-modal-divider" />
               <button
@@ -261,19 +233,11 @@ export function ScenariosV2Table() {
         </div>
       )}
 
-      {/* Scenario card (view) */}
+      {/* Scenario card (unified modal) */}
       {cardCodeword !== null && (
         <ScenarioCardModal
           codeword={cardCodeword}
-          onClose={closeAll}
-          onEdit={(cw) => { setCardCodeword(null); setEditCodeword(cw ?? null); }}
-        />
-      )}
-
-      {/* Scenario edit */}
-      {editCodeword !== null && (
-        <ScenarioEditModal
-          codeword={editCodeword}
+          table={useScenariosStore.getState().table}
           onClose={closeAll}
           onSaved={() => void useScenariosStore.getState().load(true)}
         />
