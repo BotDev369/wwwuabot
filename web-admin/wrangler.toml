@@ -7,6 +7,11 @@ compatibility_date = "2026-08-21"
 directory = "./dist/client"
 binding = "ASSETS"
 
+# Default API service binding (for top-level deploy without --env)
+[[services]]
+binding = "API"
+service = "wwwuabot-api-dev"
+
 # Default D1 binding (for top-level deploy without --env)
 [[d1_databases]]
 binding = "DB"
