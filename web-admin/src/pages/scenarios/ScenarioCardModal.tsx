@@ -394,18 +394,79 @@ function BotRichPreview({ fields }: { fields: Record<string, unknown> }) {
 
   return (
     <div className="tg-message" style={{ maxWidth: 380, margin: "0 auto" }}>
-      {richData.map((block, i) => {
-        const b = block as Record<string, unknown>;
-        const type = String(b.type || "");
-        if (type === "heading") {
-          const level = Number(b.level) || 2;
-          return <div key={i} className={`tg-heading tg-heading--h${level}`}>{String(b.text || "")}</div>;
-        }
-        if (type === "paragraph") return <div key={i} className="tg-paragraph">{String(b.text || "")}</div>;
-        if (type === "divider") return <hr key={i} className="tg-divider" />;
-        if (type === "photo") return <img key={i} src={String(b.url || b.photo_url || "")} alt="" className="tg-photo" onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }} />;
-        return <div key={i} className="tg-unknown">[{type || "unknown"}]</div>;
-      })}
+      {richData.map((block, i) => <RichBlock key={i} block={block as Record<string, unknown>} />)}
+    </div>
+  );
+}
+
+// ─── Rich Block Renderer ──────────────────────────────────────────
+
+function RichBlock({ block }: { block: Record<string, unknown> }) {
+  const type = String(block.type || "");
+
+  if (type === "heading") {
+    const level = Number(block.level) || 2;
+    return <div className={`tg-heading tg-heading--h${level}`}>{String(block.text || "")}</div>;
+  }
+  if (type === "paragraph") {
+    return <div className="tg-paragraph">{String(block.text || "")}</div>;
+  }
+  if (type === "divider") {
+    return <hr className="tg-divider" />;
+  }
+  if (type === "photo") {
+    return <img src={String(block.url || block.photo_url || "")} alt="" className="tg-photo" onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }} />;
+  }
+  if (type === "list") {
+    const items = Array.isArray(block.items) ? block.items : [];
+    return (
+      <ul className="tg-list">
+        {items.map((item: unknown, i: number) => (
+          <li key={i}>{typeof item === "string" ? item : JSON.stringify(item)}</li>
+        ))}
+      </ul>
+    );
+  }
+  if (type === "blockquote") {
+    const text = String(block.text || "");
+    const children = Array.isArray(block.children) ? block.children : [];
+    return (
+      <div className="tg-blockquote">
+        {text && <div className="tg-paragraph">{text}</div>}
+        {children.map((child: unknown, i: number) => (
+          <div key={i} style={{ marginTop: 4, fontSize: 13, color: "var(--text-muted)" }}>{typeof child === "string" ? child : JSON.stringify(child)}</div>
+        ))}
+      </div>
+    );
+  }
+  if (type === "details") {
+    const summary = String(block.summary || "Деталі");
+    const children = Array.isArray(block.children) ? block.children : [];
+    return (
+      <div className="tg-details">
+        <div className="tg-details-summary">{summary}</div>
+        <div className="tg-details-body">
+          {children.map((child: unknown, i: number) => (
+            <div key={i} style={{ marginTop: 4, fontSize: 13 }}>{typeof child === "string" ? child : JSON.stringify(child)}</div>
+          ))}
+        </div>
+      </div>
+    );
+  }
+  if (type === "footer") {
+    return <div className="tg-footer">{String(block.text || "")}</div>;
+  }
+  if (type === "slideshow") {
+    return (
+      <div style={{ padding: "6px 10px", background: "var(--bg-2)", borderRadius: 6, fontSize: 12, color: "var(--text-muted)", border: "1px dashed var(--border)", textAlign: "center" }}>
+        📸 Слайдшоу
+      </div>
+    );
+  }
+  // Unknown — show type name
+  return (
+    <div className="tg-unknown">
+      [{type || "unknown"}]
     </div>
   );
 }
