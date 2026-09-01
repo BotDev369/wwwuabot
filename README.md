@@ -156,3 +156,7 @@ cd api && npm run deploy:dev
 ## 📞 Контакти
 
 Репозиторій: https://github.com/BotDev369/wwwuabot
+
+
+## 🤖 AI Agent Integration
+*01.09.2026 — Qwen AI Agent successfully connected and tested direct push to `main`.*

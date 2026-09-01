@@ -361,3 +361,7 @@ src/
 | 27.08.2026 | 1.1 | Додано розділ 3: архітектура API та спільний код, правило «двічі — в спільне», єдиний API-шлюз через `api/`, структура `packages/shared`, чек-ліст нового shared-коду |
 | 28.08.2026 | 1.2 | Оновлено web/web-admin: React 19, Vite 8, Tailwind 4, Zustand, createBrowserRouter, feature-based structure. Додано секцію 4 з однаковою архітектурою src/. Оновлено CI: npx wrangler для всіх 4 воркерів. Додано api/ до workspaces. Вирівняно compatibility_date та prod bindings. |
 | 30.08.2026 | 1.3 | Додано Page Builder: `packages/ui/` (спільний React-пакет), типи `page-config.ts`, реєстр блоків, рендерери, Zustand store, MVP-блоки (text, image, buttons, list, divider). Додано колонку `page_data` до scenarios. Оновлено розділ 3.3 (структура packages/) та додано 3.4 (архітектура блоків). |
+
+
+---
+*01.09.2026 — Qwen AI integration verified: direct push to main successful.*
