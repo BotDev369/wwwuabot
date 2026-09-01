@@ -7,8 +7,6 @@ interface WebhookInfo {
   pending_update_count: number;
   last_error_date?: number;
   last_error_message?: string;
-  max_connections?: number;
-  allowed_updates?: string[];
 }
 
 interface BotInfo {
@@ -18,16 +16,12 @@ interface BotInfo {
     is_bot: boolean;
     first_name: string;
     username: string;
-    can_join_groups: boolean;
-    can_read_all_group_messages: boolean;
-    supports_inline_queries: boolean;
   };
 }
 
 interface ApiResponse {
   ok: boolean;
   result?: WebhookInfo;
-  description?: string;
 }
 
 export function BotSettingsPage() {
@@ -44,63 +38,50 @@ export function BotSettingsPage() {
         apiFetch<ApiResponse>("/api/bot/webhook-info"),
         apiFetch<BotInfo>("/api/bot/info"),
       ]);
-      if (webhook.ok && webhook.result) {
-        setWebhookInfo(webhook.result);
-      }
-      if (bot.ok) {
-        setBotInfo(bot);
-      }
+      if (webhook.ok && webhook.result) setWebhookInfo(webhook.result);
+      if (bot.ok) setBotInfo(bot);
     } catch (err) {
-      setMessage({ type: "error", text: `Помилка завантаження: ${err}` });
+      setMessage({ type: "error", text: `Помилка: ${err}` });
     } finally {
       setLoading(false);
     }
   };
 
-  useEffect(() => {
-    fetchData();
-  }, []);
+  useEffect(() => { fetchData(); }, []);
 
   const setupWebhook = async () => {
     setActionLoading(true);
     setMessage(null);
     try {
-      const result = await apiFetch<{ success: boolean; webhook_url: string; result: ApiResponse }>(
+      const result = await apiFetch<{ success: boolean; webhook_url: string }>(
         "/api/bot/setup-webhook",
         { method: "POST" },
       );
       if (result.success) {
-        setMessage({ type: "success", text: `Вебхук встановлено: ${result.webhook_url}` });
+        setMessage({ type: "success", text: `✅ Вебхук встановлено!` });
         await fetchData();
       } else {
-        setMessage({ type: "error", text: "Помилка встановлення вебхука" });
+        setMessage({ type: "error", text: "❌ Помилка встановлення" });
       }
     } catch (err) {
-      setMessage({ type: "error", text: `Помилка: ${err}` });
+      setMessage({ type: "error", text: `❌ ${err}` });
     } finally {
       setActionLoading(false);
     }
   };
 
   const deleteWebhook = async () => {
-    if (!confirm("Ви впевнені що хочете видалити вебхук? Бот перестане отримувати оновлення.")) {
-      return;
-    }
+    if (!confirm("Видалити вебхук? Бот перестане працювати.")) return;
     setActionLoading(true);
     setMessage(null);
     try {
-      const result = await apiFetch<{ success: boolean; result: ApiResponse }>(
-        "/api/bot/delete-webhook",
-        { method: "POST" },
-      );
+      const result = await apiFetch<{ success: boolean }>("/api/bot/delete-webhook", { method: "POST" });
       if (result.success) {
-        setMessage({ type: "success", text: "Вебхук видалено" });
+        setMessage({ type: "success", text: "🗑️ Вебхук видалено" });
         await fetchData();
-      } else {
-        setMessage({ type: "error", text: "Помилка видалення вебхука" });
       }
     } catch (err) {
-      setMessage({ type: "error", text: `Помилка: ${err}` });
+      setMessage({ type: "error", text: `❌ ${err}` });
     } finally {
       setActionLoading(false);
     }
@@ -108,126 +89,110 @@ export function BotSettingsPage() {
 
   if (loading) {
     return (
-      <div className="p-6">
-        <h1 className="text-2xl font-bold mb-4">Налаштування бота</h1>
+      <div className="p-4">
+        <h1 className="text-xl font-bold mb-4">🤖 Налаштування бота</h1>
         <div className="text-gray-500">Завантаження...</div>
       </div>
     );
   }
 
-  return (
-    <div className="p-6 max-w-4xl">
-      <h1 className="text-2xl font-bold mb-6">🤖 Налаштування бота</h1>
+  const isWebhookOk = webhookInfo?.url?.includes("bot-dev");
 
+  return (
+    <div className="p-4 space-y-4">
+      <h1 className="text-xl font-bold">🤖 Налаштування бота</h1>
+
+      {/* Повідомлення */}
       {message && (
-        <div
-          className={`p-4 rounded-lg mb-6 ${
-            message.type === "success"
-              ? "bg-green-100 text-green-800 border border-green-200"
-              : "bg-red-100 text-red-800 border border-red-200"
-          }`}
-        >
+        <div className={`p-3 rounded-lg text-sm ${
+          message.type === "success"
+            ? "bg-green-900/50 text-green-300 border border-green-700"
+            : "bg-red-900/50 text-red-300 border border-red-700"
+        }`}>
           {message.text}
         </div>
       )}
 
-      {/* Інформація про бота */}
+      {/* Бот */}
       {botInfo?.result && (
-        <div className="bg-white rounded-lg shadow-md p-6 mb-6">
-          <h2 className="text-lg font-semibold mb-4">Інформація про бота</h2>
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <span className="text-gray-500 text-sm">ID:</span>
-              <div className="font-mono">{botInfo.result.id}</div>
+        <div className="bg-gray-800 rounded-lg p-4">
+          <div className="flex items-center gap-3 mb-3">
+            <div className="w-10 h-10 bg-blue-600 rounded-full flex items-center justify-center text-white font-bold">
+              {botInfo.result.first_name.charAt(0)}
             </div>
-            <div>
-              <span className="text-gray-500 text-sm">Username:</span>
-              <div className="font-mono">@{botInfo.result.username}</div>
+            <div className="flex-1 min-w-0">
+              <div className="font-medium truncate">@{botInfo.result.username}</div>
+              <div className="text-xs text-gray-400">ID: {botInfo.result.id}</div>
             </div>
-            <div>
-              <span className="text-gray-500 text-sm">Ім'я:</span>
-              <div>{botInfo.result.first_name}</div>
-            </div>
-            <div>
-              <span className="text-gray-500 text-sm">Статус:</span>
-              <div className="text-green-600 font-medium">✅ Активний</div>
-            </div>
+            <span className="text-green-400 text-sm">✅</span>
           </div>
         </div>
       )}
 
-      {/* Управління вебхуком */}
-      <div className="bg-white rounded-lg shadow-md p-6 mb-6">
-        <h2 className="text-lg font-semibold mb-4">Webhook</h2>
+      {/* Вебхук */}
+      <div className="bg-gray-800 rounded-lg p-4">
+        <div className="flex items-center justify-between mb-3">
+          <h2 className="font-medium">Webhook</h2>
+          {isWebhookOk ? (
+            <span className="text-green-400 text-xs bg-green-900/50 px-2 py-1 rounded">OK</span>
+          ) : (
+            <span className="text-yellow-400 text-xs bg-yellow-900/50 px-2 py-1 rounded">⚠️</span>
+          )}
+        </div>
 
-        {webhookInfo ? (
-          <div className="space-y-4">
-            <div>
-              <span className="text-gray-500 text-sm">Поточна URL:</span>
-              <div className="font-mono text-sm bg-gray-100 p-2 rounded break-all">
-                {webhookInfo.url || "Не встановлено"}
-              </div>
-            </div>
-
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <span className="text-gray-500 text-sm">Очікуючі оновлення:</span>
-                <div>{webhookInfo.pending_update_count}</div>
-              </div>
-              <div>
-                <span className="text-gray-500 text-sm">SSL сертифікат:</span>
-                <div>{webhookInfo.has_custom_certificate ? "✅ Є" : "❌ Немає"}</div>
-              </div>
-            </div>
-
-            {webhookInfo.last_error_message && (
-              <div className="bg-red-50 border border-red-200 rounded p-3">
-                <span className="text-red-600 text-sm font-medium">Остання помилка:</span>
-                <div className="text-red-700 text-sm mt-1">{webhookInfo.last_error_message}</div>
-                {webhookInfo.last_error_date && (
-                  <div className="text-red-500 text-xs mt-1">
-                    {new Date(webhookInfo.last_error_date * 1000).toLocaleString("uk-UA")}
-                  </div>
-                )}
-              </div>
-            )}
+        {/* URL */}
+        <div className="mb-3">
+          <div className="text-xs text-gray-400 mb-1">URL:</div>
+          <div className="text-xs font-mono bg-gray-900 p-2 rounded break-all text-gray-300">
+            {webhookInfo?.url || "Не встановлено"}
           </div>
-        ) : (
-          <div className="text-gray-500 mb-4">Інформація про вебхук недоступна</div>
+        </div>
+
+        {/* Статистика */}
+        <div className="flex gap-4 text-sm mb-4">
+          <div>
+            <span className="text-gray-400">Очікуючі: </span>
+            <span>{webhookInfo?.pending_update_count ?? 0}</span>
+          </div>
+          <div>
+            <span className="text-gray-400">SSL: </span>
+            <span>{webhookInfo?.has_custom_certificate ? "✅" : "❌"}</span>
+          </div>
+        </div>
+
+        {/* Помилка */}
+        {webhookInfo?.last_error_message && (
+          <div className="bg-red-900/30 border border-red-800 rounded p-2 mb-4">
+            <div className="text-xs text-red-400">⚠️ Остання помилка:</div>
+            <div className="text-xs text-red-300 mt-1 break-words">{webhookInfo.last_error_message}</div>
+          </div>
         )}
 
-        <div className="flex gap-3 mt-6">
+        {/* Кнопки */}
+        <div className="flex flex-col gap-2">
           <button
             onClick={setupWebhook}
             disabled={actionLoading}
-            className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
+            className="w-full py-2.5 bg-blue-600 text-white rounded-lg font-medium active:bg-blue-700 disabled:opacity-50"
           >
-            {actionLoading ? "Зачекайте..." : "🔄 Встановити вебхук"}
+            {actionLoading ? "⏳ Зачекайте..." : "🔄 Встановити вебхук"}
           </button>
-          <button
-            onClick={deleteWebhook}
-            disabled={actionLoading}
-            className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-            {actionLoading ? "Зачекайте..." : "🗑️ Видалити вебхук"}
-          </button>
-          <button
-            onClick={fetchData}
-            disabled={loading}
-            className="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 disabled:opacity-50"
-          >
-            🔄 Оновити
-          </button>
-        </div>
-      </div>
-
-      {/* Швидкі дії */}
-      <div className="bg-white rounded-lg shadow-md p-6">
-        <h2 className="text-lg font-semibold mb-4">Швидкі дії</h2>
-        <div className="space-y-2 text-sm text-gray-600">
-          <p>• <strong>Встановити вебхук</strong> — оновлює URL вебхука на bot-dev</p>
-          <p>• <strong>Видалити вебхук</strong> — бот перестане отримувати оновлення від Telegram</p>
-          <p>• <strong>Оновити</strong> — завантажує актуальну інформацію з Telegram API</p>
+          <div className="flex gap-2">
+            <button
+              onClick={deleteWebhook}
+              disabled={actionLoading}
+              className="flex-1 py-2 bg-red-600/20 text-red-400 border border-red-600/50 rounded-lg text-sm active:bg-red-600/30 disabled:opacity-50"
+            >
+              🗑️ Видалити
+            </button>
+            <button
+              onClick={fetchData}
+              disabled={loading}
+              className="flex-1 py-2 bg-gray-700 text-gray-300 rounded-lg text-sm active:bg-gray-600 disabled:opacity-50"
+            >
+              🔄 Оновити
+            </button>
+          </div>
         </div>
       </div>
     </div>
