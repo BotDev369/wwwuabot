@@ -256,17 +256,22 @@ function convertOldFormat(old: Record<string, unknown>): PageConfig {
 
     const type = typeMap[component] ?? 'text';
 
-    // Конвертуємо props
-    const convertedProps: Record<string, unknown> = { ...props };
-    if (component === 'Heading' && props.text) {
-      convertedProps.heading = props.text;
-    }
-    if (component === 'Text' && props.text) {
-      convertedProps.text = props.text;
-    }
-    if (component === 'Button') {
-      convertedProps.text = props.label ?? props.text ?? '';
-      convertedProps.url = props.href ?? props.url ?? '';
+    // Конвертуємо props під формат нових блоків
+    const convertedProps: Record<string, unknown> = {};
+    if (component === 'Heading') {
+      convertedProps.title = props.text ?? props.title ?? '';
+      convertedProps.level = props.level ?? 'h2';
+    } else if (component === 'Text') {
+      convertedProps.content = props.text ?? props.content ?? '';
+    } else if (component === 'Button') {
+      convertedProps.items = [{
+        text: String(props.label ?? props.text ?? ''),
+        url: String(props.href ?? props.url ?? ''),
+      }];
+      convertedProps.layout = 'row';
+    } else {
+      // Інші компоненти — копіюємо props як є
+      Object.assign(convertedProps, props);
     }
 
     return {
