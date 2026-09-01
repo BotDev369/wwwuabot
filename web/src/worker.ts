@@ -30,3 +30,5 @@ export default {
     return fixAssetHeaders(await env.ASSETS.fetch(request));
   },
 };
+
+// 🤖 Qwen AI Agent Test: Direct push to main verified on 01.09.2026
