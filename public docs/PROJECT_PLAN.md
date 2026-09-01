@@ -351,6 +351,13 @@ React 19, Vite 8, TypeScript 6, Tailwind CSS 4, Zustand 5, React Router 7,
 **Проблема:** Без `--env` воркери не мали біндингів, `env.DB = undefined`.
 **Статус:** ✅ Виправлено (CI-FIX3)
 
+### 01.09.2026 — 🔴 Критично: `/api/admin/*` та `/api/portal/*` в `api/` не перевіряють авторизацію
+**Проблема:** `web-admin/src/worker.ts` перевіряє cookie-сесію (`isAuthenticated`) перед проксюванням до `api/` через service binding — але `api/` воркер має власний публічний URL (`wwwuabot-api-dev.diskomate.workers.dev`) і викликає `users.controller.ts`, `scenarios-admin.controller.ts`, `scenarios-portal.controller.ts` без жодної перевірки. Будь-хто, хто знає URL, може напряму викликати `GET /api/admin/users/list` (злити всіх користувачів), `POST /api/admin/users/delete`, `POST /api/admin/users/block`, `POST /api/admin/users/message` (спам через бот-токен на довільний telegram user_id), а також редагувати контент через `/api/admin/scenarios/*` і `/api/portal/scenarios/*` — все без пароля.
+Супутнє: `GET /auth/debug` без авторизації показує, чи заданий `ADMIN_SECRET` і його довжину.
+**Пріоритет:** 🔴 Критично · **Критерій:** #3 Безпека
+**Запропоноване рішення:** єдина перевірка `isAuthenticated(request, env)` в `api/src/router.ts` для всіх шляхів `/api/admin/*` і `/api/portal/*` (після блоку `/auth/*`, до диспетчеризації на контролери); видалити або захистити `/auth/debug`.
+**Статус:** ⬜ Заплановано (виявлено Claude в чаті під час аудиту 01.09.2026)
+
 ---
 
 ## 📌 Наступний перегляд оцінки
