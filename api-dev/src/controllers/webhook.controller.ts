@@ -12,7 +12,7 @@ export async function handleSetupWebhook(request: Request, env: Env): Promise<Re
     });
   }
   try {
-    const webhookUrl = "https://wwwuabot-dev.diskomate.workers.dev/webhook";
+    const webhookUrl = "https://bot-dev.diskomate.workers.dev/webhook";
 
     const deleteResponse = await fetch(
       `https://api.telegram.org/bot${env.BOT_TOKEN}/deleteWebhook`,
