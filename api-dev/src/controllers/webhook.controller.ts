@@ -1,9 +1,24 @@
 import type { Env } from "../shared/types";
-import { checkAdminAuth, unauthorizedResponse } from "../modules/security/admin-auth";
+
+/**
+ * Перевіряє що запит містить BOT_TOKEN в заголовку X-Bot-Token.
+ * Використовується для setup-webhook та webhook-info ендпоїнтів,
+ * щоб не використовувати ADMIN_SECRET (пароль адмінки).
+ */
+function checkBotToken(request: Request, env: Env): boolean {
+  const token = request.headers.get("X-Bot-Token");
+  if (!token || token !== env.BOT_TOKEN) {
+    return false;
+  }
+  return true;
+}
 
 export async function handleSetupWebhook(request: Request, env: Env): Promise<Response> {
-  if (!checkAdminAuth(request, env)) {
-    return unauthorizedResponse();
+  if (!checkBotToken(request, env)) {
+    return new Response(
+      JSON.stringify({ error: "Unauthorized", message: "BOT_TOKEN required in X-Bot-Token header" }),
+      { status: 401, headers: { "Content-Type": "application/json" } },
+    );
   }
   if (!env.BOT_TOKEN) {
     return new Response(JSON.stringify({ error: "BOT_TOKEN not configured" }), {
@@ -42,8 +57,11 @@ export async function handleSetupWebhook(request: Request, env: Env): Promise<Re
 }
 
 export async function handleWebhookInfo(request: Request, env: Env): Promise<Response> {
-  if (!checkAdminAuth(request, env)) {
-    return unauthorizedResponse();
+  if (!checkBotToken(request, env)) {
+    return new Response(
+      JSON.stringify({ error: "Unauthorized", message: "BOT_TOKEN required in X-Bot-Token header" }),
+      { status: 401, headers: { "Content-Type": "application/json" } },
+    );
   }
   if (!env.BOT_TOKEN) {
     return new Response(JSON.stringify({ error: "BOT_TOKEN not configured" }), {
