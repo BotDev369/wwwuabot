@@ -1,12 +1,12 @@
-# web-admin-dev
+# api-dev
 
-Cloudflare Worker: Адмін-панель для wwwuabot
+Cloudflare Worker: REST API для wwwuabot
 
 ## Налаштування
 
 - **D1:** `wwwuabot-db-dev`
-- **Service:** `api-dev`
-- **Секрети:** `ADMIN_SECRET`
+- **KV:** `CONTENT_KV`
+- **Секрети:** `BOT_TOKEN`, `SECRET_TOKEN`, `ADMIN_SECRET`
 
 ---
 

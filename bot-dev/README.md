@@ -1,12 +1,12 @@
-# web-admin-dev
+# bot-dev
 
-Cloudflare Worker: Адмін-панель для wwwuabot
+Cloudflare Worker: Telegram-бот для wwwuabot
 
 ## Налаштування
 
 - **D1:** `wwwuabot-db-dev`
-- **Service:** `api-dev`
-- **Секрети:** `ADMIN_SECRET`
+- **Queue:** `wwwuabot-logs`
+- **Секрети:** `BOT_TOKEN`, `CLOUDINARY_API_SECRET`
 
 ---
 
