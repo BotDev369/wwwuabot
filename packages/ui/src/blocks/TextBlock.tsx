@@ -16,18 +16,18 @@ interface TextBlockProps {
   align?: 'left' | 'center' | 'right';
 }
 
-const headingClasses: Record<string, string> = {
-  h1: 'text-3xl font-bold tracking-tight',
-  h2: 'text-2xl font-semibold',
-  h3: 'text-xl font-semibold',
-  h4: 'text-lg font-medium',
-  body: 'text-base',
+const headingStyles: Record<string, React.CSSProperties> = {
+  h1: { fontSize: '1.875rem', fontWeight: 700, letterSpacing: '-0.025em', marginBottom: '0.25rem' },
+  h2: { fontSize: '1.5rem', fontWeight: 600, marginBottom: '0.25rem' },
+  h3: { fontSize: '1.25rem', fontWeight: 600, marginBottom: '0.25rem' },
+  h4: { fontSize: '1.125rem', fontWeight: 500, marginBottom: '0.25rem' },
+  body: { fontSize: '1rem' },
 };
 
-const alignClasses: Record<string, string> = {
-  left: 'text-left',
-  center: 'text-center',
-  right: 'text-right',
+const alignStyles: Record<string, React.CSSProperties> = {
+  left: { textAlign: 'left' },
+  center: { textAlign: 'center' },
+  right: { textAlign: 'right' },
 };
 
 export function TextBlock({ block, children }: BlockComponentProps) {
@@ -37,17 +37,15 @@ export function TextBlock({ block, children }: BlockComponentProps) {
   const HeadingTag = level !== 'body' ? level : 'p';
 
   return (
-    <div className={`py-2 ${alignClasses[align] ?? ''}`}>
+    <div style={{ padding: '8px 0', ...alignStyles[align] }}>
       {title ? (
-        <HeadingTag
-          className={`mb-1 ${headingClasses[level] ?? headingClasses.body}`}
-        >
+        <HeadingTag style={headingStyles[level] ?? headingStyles.body}>
           {title}
         </HeadingTag>
       ) : null}
 
       {content ? (
-        <div className="text-sm leading-relaxed text-muted-foreground whitespace-pre-wrap">
+        <div style={{ fontSize: '0.875rem', lineHeight: 1.6, color: 'var(--text-secondary, #6b7280)', whiteSpace: 'pre-wrap' }}>
           {content}
         </div>
       ) : null}

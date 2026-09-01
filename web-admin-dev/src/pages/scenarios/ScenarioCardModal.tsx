@@ -814,7 +814,7 @@ function WebPreview({ fields, codeword }: { fields: Record<string, unknown>; cod
 
   return (
     <div style={{ flex: 1, overflow: "auto" }}>
-      <PageRenderer config={config} context={context} />
+      <PageRenderer config={config} context={context} showZoneLabels />
     </div>
   );
 }

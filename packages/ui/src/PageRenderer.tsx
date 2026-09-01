@@ -31,6 +31,9 @@ interface PageRendererProps {
    * Дозволяє обернути зони в додаткову структуру.
    */
   zoneClassName?: Partial<Record<keyof PageConfig['zones'], string>>;
+
+  /** Показувати мітки зон (sidebar, header, main, footer). */
+  showZoneLabels?: boolean;
 }
 
 /**
@@ -49,11 +52,19 @@ interface PageRendererProps {
  *
  * Якщо зона порожня — вона не рендериться (немає пустих контейнерів).
  */
+const ZONE_LABELS: Record<string, string> = {
+  sidebar: '📎 Sidebar',
+  header: '📌 Header',
+  main: '📄 Main',
+  footer: '📎 Footer',
+};
+
 export function PageRenderer({
   config,
   context,
   className = 'page-layout',
   zoneClassName,
+  showZoneLabels = false,
 }: PageRendererProps) {
   const { zones } = config;
 
@@ -62,6 +73,9 @@ export function PageRenderer({
   const hasMain = zones.main.length > 0;
   const hasFooter = zones.footer.length > 0;
 
+  const renderZoneLabel = (zone: string) =>
+    showZoneLabels ? <div className="page-zone-label">{ZONE_LABELS[zone]}</div> : null;
+
   return (
     <div className={className}>
       {hasSidebar && (
@@ -69,6 +83,7 @@ export function PageRenderer({
           className={zoneClassName?.sidebar ?? 'page-zone page-zone--sidebar'}
           data-zone="sidebar"
         >
+          {renderZoneLabel('sidebar')}
           <ZoneRenderer
             blocks={zones.sidebar}
             zone="sidebar"
@@ -83,6 +98,7 @@ export function PageRenderer({
             className={zoneClassName?.header ?? 'page-zone page-zone--header'}
             data-zone="header"
           >
+            {renderZoneLabel('header')}
             <ZoneRenderer
               blocks={zones.header}
               zone="header"
@@ -96,6 +112,7 @@ export function PageRenderer({
             className={zoneClassName?.main ?? 'page-zone page-zone--main'}
             data-zone="main"
           >
+            {renderZoneLabel('main')}
             <ZoneRenderer
               blocks={zones.main}
               zone="main"
@@ -109,6 +126,7 @@ export function PageRenderer({
             className={zoneClassName?.footer ?? 'page-zone page-zone--footer'}
             data-zone="footer"
           >
+            {renderZoneLabel('footer')}
             <ZoneRenderer
               blocks={zones.footer}
               zone="footer"
