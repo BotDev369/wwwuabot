@@ -1,5 +1,4 @@
 import type { Env } from "../shared/types";
-import { BASE_CONFIG } from "../shared/constants";
 import { apiLog } from "../shared/logger";
 
 function json(body: unknown, status = 200): Response {
@@ -48,10 +47,9 @@ async function ensureBase(db: D1Database): Promise<void> {
 
   await db
     .prepare(
-      `INSERT OR IGNORE INTO scenarios (codeword, web_slug, web_config, is_active)
-       VALUES ('__base__', '/', ?, 1)`,
+      `INSERT OR IGNORE INTO scenarios (codeword, web_slug, is_active)
+       VALUES ('__base__', '/', 1)`,
     )
-    .bind(JSON.stringify(BASE_CONFIG))
     .run();
 }
 
@@ -64,7 +62,7 @@ async function resolveScenario(db: D1Database, slug: string) {
   if (slug && slug !== "__base__") {
     row = await db
       .prepare(
-        `SELECT codeword, web_slug, web_config, page_data FROM scenarios
+        `SELECT codeword, web_slug, page_data FROM scenarios
          WHERE (web_slug = ? OR codeword = ?) AND is_active = 1
          LIMIT 1`,
       )
@@ -74,36 +72,17 @@ async function resolveScenario(db: D1Database, slug: string) {
 
   if (!row) {
     row = await db
-      .prepare(`SELECT codeword, web_slug, web_config, page_data FROM scenarios WHERE codeword = '__base__'`)
+      .prepare(`SELECT codeword, web_slug, page_data FROM scenarios WHERE codeword = '__base__'`)
       .first();
   }
 
-  // page_data (new Page Builder format) має пріоритет над web_config
-  let config = BASE_CONFIG;
   let pageData: Record<string, unknown> | null = null;
-
-  // Спочатку перевіряємо page_data (новий формат)
   try {
     if (row?.page_data) {
-      const parsed = JSON.parse(row.page_data);
-      if (parsed?.zones && parsed?.version) {
-        pageData = parsed;
-      }
+      pageData = JSON.parse(row.page_data);
     }
   } catch (e) {
     apiLog.error("Invalid page_data JSON for " + slug, e);
-  }
-
-  // Якщо page_data немає — використовуємо web_config (старий формат)
-  if (!pageData) {
-    try {
-      if (row?.web_config) {
-        const parsed = JSON.parse(row.web_config);
-        if (parsed?.v === 1) config = parsed;
-      }
-    } catch (e) {
-      apiLog.error("Invalid web_config JSON for " + slug, e);
-    }
   }
 
   return {
@@ -111,7 +90,6 @@ async function resolveScenario(db: D1Database, slug: string) {
       codeword: row?.codeword ?? "__base__",
       web_slug: row?.web_slug ?? "/",
     },
-    config,
     pageData,
   };
 }
@@ -124,11 +102,10 @@ export async function handleScenario(
   slug: string,
 ): Promise<Response> {
   try {
-    const { scenario, config, pageData } = await resolveScenario(env.DB, slug);
+    const { scenario, pageData } = await resolveScenario(env.DB, slug);
     return json({
       ok: true,
       scenario,
-      config,
       pageData,
       userContext: { authenticated: false, roles: [], flags: [] },
     });
