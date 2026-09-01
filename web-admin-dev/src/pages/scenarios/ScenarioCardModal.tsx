@@ -2,9 +2,11 @@
  * ScenarioCardModal — єдиний модальний блок редагування сценарію.
  *
  * Головні вкладки:  Веб (замовч.), Бот-Річ+Кнопки, Бот+Кнопки, Спільне
- * Підвкладки:       Прев'ю (замовч.), JSON вкладки, Конструктор
+ * Підвкладки:       Прев'ю (замовч.), JSON, Конструктор
  *
- * Працює з будь-якою таблицею (admin / portal) через ScenarioTable.
+ * Конструктор для Бот+Кнопки — вбудований ButtonsField (візуальний редактор кнопок)
+ * Конструктор для Бот-Річ — вбудований rich blocks editor
+ * Конструктор для Веб — посилання на Page Builder (окрема сторінка)
  */
 
 import { useEffect, useState, useCallback, useRef } from "react";
@@ -17,6 +19,7 @@ import { PageRenderer } from "@wwwuabot/ui";
 import type { PageConfig, BlockContext } from "@wwwuabot/shared/types/page-config";
 import { parsePageConfig } from "@wwwuabot/shared/types/page-config";
 import { registerAllBlocks } from "@wwwuabot/ui/blocks";
+import { ButtonsField } from "../../features/scenarios/keyboard/ButtonsField";
 
 // Реєструємо блоки один раз при завантаженні модуля
 registerAllBlocks();
@@ -103,6 +106,11 @@ export function ScenarioCardModal({ codeword, table, onClose, onSaved }: Props) 
     return () => window.removeEventListener("keydown", handler);
   }, [onClose]);
 
+  // ── Update a single field ──
+  const updateField = useCallback((key: string, value: unknown) => {
+    setAllFields((prev) => ({ ...prev, [key]: value }));
+  }, []);
+
   // ── Save ──
   const handleSave = useCallback(async () => {
     setSaving(true);
@@ -130,7 +138,6 @@ export function ScenarioCardModal({ codeword, table, onClose, onSaved }: Props) 
 
   // ── JSON helpers ──
   const openJsonTab = useCallback(() => {
-    // Export current tab's fields as JSON
     const tabFields = getFieldsForTab(mainTab, allFields);
     setJsonText(JSON.stringify(tabFields, null, 2));
     setJsonError(null);
@@ -163,7 +170,6 @@ export function ScenarioCardModal({ codeword, table, onClose, onSaved }: Props) 
         setJsonError("JSON має бути об'єктом");
         return;
       }
-      // Merge only fields that belong to the current tab
       const tabFields = getFieldsForTab(mainTab, allFields);
       const updated = { ...allFields };
       for (const key of Object.keys(tabFields)) {
@@ -187,11 +193,6 @@ export function ScenarioCardModal({ codeword, table, onClose, onSaved }: Props) 
       setJsonError("Невалідний JSON");
     }
   }, []);
-
-  // ── Open Page Builder / Constructor ──
-  const handleOpenConstructor = useCallback(() => {
-    window.open(`/page-builder/${codeword}`, "_blank");
-  }, [codeword]);
 
   // ── When switching to JSON sub-tab, auto-populate ──
   useEffect(() => {
@@ -251,13 +252,11 @@ export function ScenarioCardModal({ codeword, table, onClose, onSaved }: Props) 
               onClick={() => {
                 if (st.key === "json") {
                   openJsonTab();
-                } else if (st.key === "constructor") {
-                  handleOpenConstructor();
                 } else {
                   setSubTab(st.key);
                 }
               }}
-            title={st.label}
+              title={st.label}
             >
               <span>{st.icon}</span>
             </button>
@@ -282,6 +281,13 @@ export function ScenarioCardModal({ codeword, table, onClose, onSaved }: Props) 
               onCopy={handleJsonCopy}
               onFormat={handleJsonFormat}
               onApply={handleJsonApply}
+            />
+          ) : subTab === "constructor" ? (
+            <TabConstructor
+              mainTab={mainTab}
+              fields={allFields}
+              updateField={updateField}
+              codeword={codeword}
             />
           ) : null}
 
@@ -332,6 +338,406 @@ function getFieldsForTab(tab: MainTab, allFields: Record<string, unknown>): Reco
     if (key in allFields) result[key] = allFields[key];
   }
   return result;
+}
+
+// ─── Constructor per Tab ─────────────────────────────────────────
+
+function TabConstructor({
+  mainTab,
+  fields,
+  updateField,
+  codeword,
+}: {
+  mainTab: MainTab;
+  fields: Record<string, unknown>;
+  updateField: (key: string, value: unknown) => void;
+  codeword: string;
+}) {
+  if (mainTab === "bot") return <BotConstructor fields={fields} updateField={updateField} />;
+  if (mainTab === "bot_rich") return <BotRichConstructor fields={fields} updateField={updateField} />;
+  if (mainTab === "web") return <WebConstructor codeword={codeword} />;
+  return <div style={{ padding: 16, color: "var(--text-muted)", textAlign: "center" }}>Немає конструктора для цієї вкладки</div>;
+}
+
+// ─── Bot Constructor (buttons + captions) ─────────────────────────
+
+function BotConstructor({
+  fields,
+  updateField,
+}: {
+  fields: Record<string, unknown>;
+  updateField: (key: string, value: unknown) => void;
+}) {
+  const buttonsValue = typeof fields.buttons === "string" ? fields.buttons : "";
+
+  return (
+    <div style={{ display: "flex", flexDirection: "column", gap: 16, padding: 16 }}>
+      {/* Caption fields */}
+      <div className="block-card">
+        <div className="block-card-header">
+          <span className="block-card-title">📝 Підписи</span>
+        </div>
+        <div style={{ display: "flex", flexDirection: "column", gap: 8, padding: 12 }}>
+          <label className="block-label">
+            Caption Top
+            <textarea
+              className="block-textarea"
+              rows={2}
+              value={String(fields.caption_top ?? "")}
+              onChange={(e) => updateField("caption_top", e.target.value)}
+              placeholder="Верхній підпис..."
+            />
+          </label>
+          <label className="block-label">
+            Caption Mid
+            <textarea
+              className="block-textarea"
+              rows={2}
+              value={String(fields.caption_mid ?? "")}
+              onChange={(e) => updateField("caption_mid", e.target.value)}
+              placeholder="Середній підпис..."
+            />
+          </label>
+          <label className="block-label">
+            Caption Bot
+            <textarea
+              className="block-textarea"
+              rows={2}
+              value={String(fields.caption_bot ?? "")}
+              onChange={(e) => updateField("caption_bot", e.target.value)}
+              placeholder="Нижній підпис..."
+            />
+          </label>
+        </div>
+      </div>
+
+      {/* Photo URL */}
+      <div className="block-card">
+        <div className="block-card-header">
+          <span className="block-card-title">🖼️ Фото</span>
+        </div>
+        <div style={{ padding: 12 }}>
+          <label className="block-label">
+            URL фото
+            <input
+              className="block-input"
+              value={String(fields.photo_url ?? "")}
+              onChange={(e) => updateField("photo_url", e.target.value)}
+              placeholder="https://..."
+            />
+          </label>
+          {Boolean(fields.photo_url) && (
+            <img
+              src={String(fields.photo_url)}
+              alt=""
+              style={{ maxWidth: "100%", maxHeight: 200, borderRadius: 8, marginTop: 8 }}
+              onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }}
+            />
+          )}
+        </div>
+      </div>
+
+      {/* Keyboard / Buttons */}
+      <div className="block-card">
+        <div className="block-card-header">
+          <span className="block-card-title">⌨️ Клавіатура (кнопки)</span>
+        </div>
+        <div style={{ padding: 12 }}>
+          <ButtonsField
+            value={buttonsValue}
+            onChange={(v) => updateField("buttons", v)}
+          />
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ─── Bot Rich Constructor (rich_data blocks) ──────────────────────
+
+function BotRichConstructor({
+  fields,
+  updateField,
+}: {
+  fields: Record<string, unknown>;
+  updateField: (key: string, value: unknown) => void;
+}) {
+  // For rich blocks, we import the rich blocks editor inline
+  // We use a lazy approach — import the editor components
+  return (
+    <div style={{ display: "flex", flexDirection: "column", gap: 16, padding: 16 }}>
+      {/* Rich message toggle */}
+      <div className="block-card">
+        <div className="block-card-header">
+          <span className="block-card-title">✨ Річ-повідомлення</span>
+          <label style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 12, cursor: "pointer" }}>
+            <input
+              type="checkbox"
+              checked={fields.rich_message === "true" || fields.rich_message === "1"}
+              onChange={(e) => updateField("rich_message", e.target.checked ? "true" : "false")}
+            />
+            Увімкнути Rich Message
+          </label>
+        </div>
+      </div>
+
+      {/* Rich text fields for caption using RichTextField */}
+      <RichTextSection fields={fields} updateField={updateField} />
+
+      {/* Rich data blocks */}
+      <div className="block-card">
+        <div className="block-card-header">
+          <span className="block-card-title">🧱 Блоки повідомлення (rich_data)</span>
+        </div>
+        <div style={{ padding: 12 }}>
+          <RichDataEditor
+            value={String(fields.rich_data ?? "")}
+            onChange={(v) => updateField("rich_data", v)}
+          />
+        </div>
+      </div>
+
+      {/* Keyboard / Buttons for rich messages */}
+      <div className="block-card">
+        <div className="block-card-header">
+          <span className="block-card-title">⌨️ Клавіатура (кнопки)</span>
+        </div>
+        <div style={{ padding: 12 }}>
+          <ButtonsField
+            value={String(fields.buttons ?? "")}
+            onChange={(v) => updateField("buttons", v)}
+          />
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ─── Rich Text Section (caption fields with formatting) ───────────
+
+function RichTextSection({
+  fields,
+  updateField,
+}: {
+  fields: Record<string, unknown>;
+  updateField: (key: string, value: unknown) => void;
+}) {
+  // Lazy load RichTextField to avoid circular deps
+  const [RichTextField, setRichTextField] = useState<React.ComponentType<{
+    value: unknown;
+    onChange: (next: unknown) => void;
+    multiline?: boolean;
+    placeholder?: string;
+    showPreview?: boolean;
+  }> | null>(null);
+
+  useEffect(() => {
+    import("../../features/editor/richtext/RichTextField").then((mod) => {
+      setRichTextField(() => mod.RichTextField);
+    });
+  }, []);
+
+  if (!RichTextField) return <div style={{ padding: 12, color: "var(--text-muted)" }}>Завантаження редактора...</div>;
+
+  return (
+    <>
+      <div className="block-card">
+        <div className="block-card-header">
+          <span className="block-card-title">📝 Caption Top (форматований)</span>
+        </div>
+        <div style={{ padding: 12 }}>
+          <RichTextField
+            value={fields.caption_top ?? ""}
+            onChange={(v) => updateField("caption_top", v)}
+            multiline
+            placeholder="Верхній підпис..."
+          />
+        </div>
+      </div>
+      <div className="block-card">
+        <div className="block-card-header">
+          <span className="block-card-title">📝 Caption Mid (форматований)</span>
+        </div>
+        <div style={{ padding: 12 }}>
+          <RichTextField
+            value={fields.caption_mid ?? ""}
+            onChange={(v) => updateField("caption_mid", v)}
+            multiline
+            placeholder="Середній підпис..."
+          />
+        </div>
+      </div>
+      <div className="block-card">
+        <div className="block-card-header">
+          <span className="block-card-title">📝 Caption Bot (форматований)</span>
+        </div>
+        <div style={{ padding: 12 }}>
+          <RichTextField
+            value={fields.caption_bot ?? ""}
+            onChange={(v) => updateField("caption_bot", v)}
+            multiline
+            placeholder="Нижній підпис..."
+          />
+        </div>
+      </div>
+    </>
+  );
+}
+
+// ─── Rich Data Editor (block-based JSON editor) ───────────────────
+
+function RichDataEditor({
+  value,
+  onChange,
+}: {
+  value: string;
+  onChange: (v: string) => void;
+}) {
+  const [mode, setMode] = useState<"visual" | "json">("visual");
+  const [jsonText, setJsonText] = useState(value);
+  const [jsonError, setJsonError] = useState<string | null>(null);
+  const lastEmitted = useRef(value);
+
+  // Sync from external changes
+  useEffect(() => {
+    if (value !== lastEmitted.current) {
+      lastEmitted.current = value;
+      setJsonText(value);
+    }
+  }, [value]);
+
+  function emit(next: string) {
+    lastEmitted.current = next;
+    onChange(next);
+  }
+
+  // Try to parse rich_data as blocks for visual display
+  let blocks: unknown[] = [];
+  try {
+    const parsed = JSON.parse(value);
+    blocks = Array.isArray(parsed) ? parsed : [];
+  } catch {
+    blocks = [];
+  }
+
+  return (
+    <>
+      <div className="kb-toggle">
+        <button
+          type="button"
+          className={`kb-toggle-btn${mode === "visual" ? " kb-toggle-btn--active" : ""}`}
+          onClick={() => {
+            setMode("visual");
+            // Re-emit current value to sync
+            emit(jsonText);
+          }}
+        >
+          Візуально
+        </button>
+        <button
+          type="button"
+          className={`kb-toggle-btn${mode === "json" ? " kb-toggle-btn--active" : ""}`}
+          onClick={() => {
+            setMode("json");
+            setJsonText(JSON.stringify(blocks, null, 2));
+            setJsonError(null);
+          }}
+        >
+          JSON
+        </button>
+      </div>
+
+      {mode === "visual" ? (
+        <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+          {blocks.length === 0 ? (
+            <div style={{ padding: 16, textAlign: "center", color: "var(--text-muted)", fontSize: 13 }}>
+              Блоків немає. Перейдіть в JSON щоб додати блоки.
+            </div>
+          ) : (
+            blocks.map((block, i) => {
+              const b = block as Record<string, unknown>;
+              const type = String(b.type || "unknown");
+              return (
+                <div
+                  key={i}
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    gap: 8,
+                    padding: "8px 12px",
+                    background: "var(--bg-secondary)",
+                    borderRadius: 6,
+                    border: "1px solid var(--border)",
+                    fontSize: 13,
+                  }}
+                >
+                  <span style={{ fontWeight: 600, minWidth: 80 }}>{type}</span>
+                  <span style={{ flex: 1, color: "var(--text-secondary)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                    {String(b.text ?? b.summary ?? b.url ?? "").slice(0, 80)}
+                  </span>
+                </div>
+              );
+            })
+          )}
+          <div style={{ fontSize: 12, color: "var(--text-muted)", textAlign: "center" }}>
+            Для додавання/редагування блоків використовуйте JSON-режим
+          </div>
+        </div>
+      ) : (
+        <>
+          <textarea
+            className="block-textarea"
+            rows={12}
+            value={jsonText}
+            onChange={(e) => {
+              setJsonText(e.target.value);
+              setJsonError(null);
+              try {
+                const parsed = JSON.parse(e.target.value);
+                if (Array.isArray(parsed)) {
+                  emit(e.target.value);
+                }
+              } catch {
+                // Don't emit invalid JSON
+              }
+            }}
+            style={{ fontFamily: "monospace", fontSize: 12, tabSize: 2 }}
+          />
+          {jsonError && (
+            <p style={{ color: "var(--color-error, #ef4444)", fontSize: 12, marginTop: 4 }}>
+              ⚠️ {jsonError}
+            </p>
+          )}
+        </>
+      )}
+    </>
+  );
+}
+
+// ─── Web Constructor (link to Page Builder) ───────────────────────
+
+function WebConstructor({ codeword }: { codeword: string }) {
+  return (
+    <div style={{ padding: 20, textAlign: "center" }}>
+      <div style={{ fontSize: 48, marginBottom: 12 }}>🏗️</div>
+      <div style={{ fontSize: 16, fontWeight: 600, marginBottom: 8 }}>
+        Конструктор веб-сторінки
+      </div>
+      <div style={{ color: "var(--text-secondary)", fontSize: 13, marginBottom: 16 }}>
+        Веб-сторінка складається з зон (sidebar, header, main, footer) та блоків.
+        <br />Відкрийте конструктор для повного редагування.
+      </div>
+      <a
+        href={`/page-builder/${codeword}`}
+        target="_blank"
+        rel="noopener noreferrer"
+        className="btn btn--primary"
+        style={{ textDecoration: "none", display: "inline-flex", alignItems: "center", gap: 6 }}
+      >
+        🏗️ Відкрити конструктор
+      </a>
+    </div>
+  );
 }
 
 // ─── Preview per Tab ──────────────────────────────────────────────
