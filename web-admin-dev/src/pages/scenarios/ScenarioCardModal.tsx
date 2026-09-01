@@ -813,8 +813,12 @@ function WebPreview({ fields, codeword }: { fields: Record<string, unknown>; cod
   };
 
   return (
-    <div style={{ flex: 1, overflow: "auto" }} className="page-preview-clean">
-      <PageRenderer config={config} context={context} />
+    <div style={{ flex: 1, overflow: "auto", padding: 16 }}>
+      <div className="phone-frame">
+        <div className="phone-frame-body">
+          <PageRenderer config={config} context={context} />
+        </div>
+      </div>
     </div>
   );
 }
