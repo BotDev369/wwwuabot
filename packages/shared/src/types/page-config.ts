@@ -202,24 +202,90 @@ export function createEmptyPageConfig(): PageConfig {
 
 /**
  * Безпечний парсинг page_data з БД.
- * Повертає порожню конфігурацію при битих даних або null.
+ * Підтримує два формати:
+ * 1. Новий: { version: 1, zones: { sidebar, header, main, footer } }
+ * 2. Старий: { v: 1, slots: { main: [...] } }
+ * Повертає null при битих даних.
  */
 export function parsePageConfig(raw: string | null): PageConfig | null {
   if (!raw) return null;
   try {
     const parsed = JSON.parse(raw);
-    if (
-      parsed &&
-      typeof parsed === 'object' &&
-      'version' in parsed &&
-      'zones' in parsed
-    ) {
+    if (!parsed || typeof parsed !== 'object') return null;
+
+    // Новий формат (Page Builder)
+    if ('version' in parsed && 'zones' in parsed) {
       return parsed as PageConfig;
     }
+
+    // Старий формат (web_config / slots) — конвертуємо
+    if ('v' in parsed && 'slots' in parsed) {
+      return convertOldFormat(parsed);
+    }
+
     return null;
   } catch {
     return null;
   }
+}
+
+/**
+ * Конвертує старий формат web_config у новий PageConfig.
+ *
+ * Старий: { v: 1, slots: { main: [{ component, props }] } }
+ * Новий: { version: 1, zones: { sidebar: [], header: [], main: [...], footer: [] } }
+ */
+function convertOldFormat(old: Record<string, unknown>): PageConfig {
+  const slots = (old.slots as Record<string, unknown[]>) ?? {};
+  const mainItems = Array.isArray(slots.main) ? slots.main : [];
+
+  const mainBlocks: PageBlock[] = mainItems.map((item, i) => {
+    const entry = item as Record<string, unknown>;
+    const component = String(entry.component ?? 'text');
+    const props = (entry.props as Record<string, unknown>) ?? {};
+
+    // Маппинг старих компонентів на нові типи блоків
+    const typeMap: Record<string, string> = {
+      Heading: 'text',
+      Text: 'text',
+      Button: 'buttons',
+      Image: 'image',
+      List: 'list',
+      Divider: 'divider',
+    };
+
+    const type = typeMap[component] ?? 'text';
+
+    // Конвертуємо props
+    const convertedProps: Record<string, unknown> = { ...props };
+    if (component === 'Heading' && props.text) {
+      convertedProps.heading = props.text;
+    }
+    if (component === 'Text' && props.text) {
+      convertedProps.text = props.text;
+    }
+    if (component === 'Button') {
+      convertedProps.text = props.label ?? props.text ?? '';
+      convertedProps.url = props.href ?? props.url ?? '';
+    }
+
+    return {
+      id: generateBlockId(),
+      type,
+      order: i,
+      props: convertedProps,
+    };
+  });
+
+  return {
+    version: 1,
+    zones: {
+      sidebar: [],
+      header: [],
+      main: mainBlocks,
+      footer: [],
+    },
+  };
 }
 
 /**

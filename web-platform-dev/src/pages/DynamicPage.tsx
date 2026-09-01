@@ -12,6 +12,7 @@ import type {
   PageConfig,
   BlockContext,
 } from "@wwwuabot/shared/types/page-config";
+import { parsePageConfig } from "@wwwuabot/shared/types/page-config";
 import { PageRenderer } from "@wwwuabot/ui/PageRenderer";
 
 import { registerAllBlocks } from "@wwwuabot/ui/blocks";
@@ -63,13 +64,20 @@ export function DynamicPage() {
           return;
         }
 
-        // Парсимо page_data (пріоритет) або web_config (fallback)
+        // Парсимо page_data (пріоритет) або config (fallback)
+        // parsePageConfig підтримує обидва формати: новий (zones) та старий (slots)
         let pageConfig: PageConfig | null = null;
         if (data.pageData) {
+          // Новий формат вже отримано з API
           pageConfig = data.pageData as unknown as PageConfig;
-        } else if (data.config && typeof data.config === "object") {
-          // Fallback: старий web_config
-          pageConfig = data.config as PageConfig;
+        }
+        if (!pageConfig && data.config) {
+          // Fallback: конвертуємо старий формат через parsePageConfig
+          pageConfig = parsePageConfig(JSON.stringify(data.config));
+        }
+        if (!pageConfig && data.pageData) {
+          // Спроба через parsePageConfig якщо прямий cast не спрацював
+          pageConfig = parsePageConfig(JSON.stringify(data.pageData));
         }
 
         if (!pageConfig) {
