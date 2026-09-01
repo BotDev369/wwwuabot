@@ -813,8 +813,8 @@ function WebPreview({ fields, codeword }: { fields: Record<string, unknown>; cod
   };
 
   return (
-    <div style={{ flex: 1, overflow: "auto" }}>
-      <PageRenderer config={config} context={context} showZoneLabels />
+    <div style={{ flex: 1, overflow: "auto" }} className="page-preview-clean">
+      <PageRenderer config={config} context={context} />
     </div>
   );
 }

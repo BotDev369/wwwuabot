@@ -2911,3 +2911,29 @@ body {
   color: var(--text-muted, #9ca3af);
   margin-bottom: 8px;
 }
+
+/* Preview — clean render, no debug borders */
+.page-preview-clean .page-layout {
+  padding: 0;
+  gap: 0;
+}
+.page-preview-clean .page-zone {
+  border: none;
+  border-radius: 0;
+  background: transparent;
+  padding: 0;
+  min-height: auto;
+}
+.page-preview-clean .page-zone--sidebar,
+.page-preview-clean .page-zone--header,
+.page-preview-clean .page-zone--main,
+.page-preview-clean .page-zone--footer {
+  border-color: transparent;
+  background: transparent;
+}
+.page-preview-clean .page-zone-label {
+  display: none;
+}
+.page-preview-clean .page-zone-group {
+  gap: 0;
+}
