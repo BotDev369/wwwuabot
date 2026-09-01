@@ -8,6 +8,8 @@ interface WebhookInfo {
   pending_update_count: number;
   last_error_date?: number;
   last_error_message?: string;
+  max_connections?: number;
+  allowed_updates?: string[];
 }
 
 interface BotInfo {
@@ -23,6 +25,13 @@ interface BotInfo {
 interface ApiResponse {
   ok: boolean;
   result?: WebhookInfo;
+  description?: string;
+}
+
+interface ActionResponse {
+  success: boolean;
+  webhook_url?: string;
+  result?: ApiResponse;
 }
 
 export function BotSettingsPage() {
@@ -31,6 +40,7 @@ export function BotSettingsPage() {
   const [loading, setLoading] = useState(true);
   const [actionLoading, setActionLoading] = useState(false);
   const [message, setMessage] = useState<{ type: "success" | "error"; text: string } | null>(null);
+  const [lastResponse, setLastResponse] = useState<unknown>(null);
 
   const fetchData = async () => {
     setLoading(true);
@@ -41,6 +51,7 @@ export function BotSettingsPage() {
       ]);
       if (webhook.ok && webhook.result) setWebhookInfo(webhook.result);
       if (bot.ok) setBotInfo(bot);
+      setLastResponse({ webhook, bot });
     } catch (err) {
       setMessage({ type: "error", text: `Помилка: ${err}` });
     } finally {
@@ -54,10 +65,8 @@ export function BotSettingsPage() {
     setActionLoading(true);
     setMessage(null);
     try {
-      const result = await apiFetch<{ success: boolean; webhook_url: string }>(
-        "/api/bot/setup-webhook",
-        { method: "POST" },
-      );
+      const result = await apiFetch<ActionResponse>("/api/bot/setup-webhook", { method: "POST" });
+      setLastResponse(result);
       if (result.success) {
         setMessage({ type: "success", text: "Вебхук встановлено!" });
         await fetchData();
@@ -76,7 +85,8 @@ export function BotSettingsPage() {
     setActionLoading(true);
     setMessage(null);
     try {
-      const result = await apiFetch<{ success: boolean }>("/api/bot/delete-webhook", { method: "POST" });
+      const result = await apiFetch<ActionResponse>("/api/bot/delete-webhook", { method: "POST" });
+      setLastResponse(result);
       if (result.success) {
         setMessage({ type: "success", text: "Вебхук видалено" });
         await fetchData();
@@ -209,18 +219,33 @@ export function BotSettingsPage() {
               </div>
             </div>
 
-            {/* Довідка */}
-            <div className="block-card">
-              <div className="block-card-header">
-                <span className="block-type-badge">ℹ️</span>
-                <span className="block-type-label">Довідка</span>
+            {/* Відповідь від Telegram */}
+            {lastResponse && (
+              <div className="block-card">
+                <div className="block-card-header">
+                  <span className="block-type-badge">📤</span>
+                  <span className="block-type-label">Відповідь від Telegram API</span>
+                </div>
+                <div className="block-card-body">
+                  <pre style={{
+                    fontFamily: "var(--font-mono)",
+                    fontSize: 11,
+                    background: "var(--bg-2)",
+                    border: "1px solid var(--border)",
+                    borderRadius: "var(--radius-sm)",
+                    padding: "10px",
+                    overflow: "auto",
+                    maxHeight: 300,
+                    color: "var(--text-primary)",
+                    whiteSpace: "pre-wrap",
+                    wordBreak: "break-word",
+                    margin: 0,
+                  }}>
+                    {JSON.stringify(lastResponse, null, 2)}
+                  </pre>
+                </div>
               </div>
-              <div className="block-card-body" style={{ fontSize: 12, color: "var(--text-secondary)", lineHeight: 1.7 }}>
-                <p><strong>Встановити вебхук</strong> — оновлює URL вебхука на bot-dev</p>
-                <p><strong>Видалити вебхук</strong> — бот перестане отримувати оновлення</p>
-                <p><strong>Оновити</strong> — завантажує актуальну інформацію з Telegram API</p>
-              </div>
-            </div>
+            )}
           </div>
         )}
       </section>
