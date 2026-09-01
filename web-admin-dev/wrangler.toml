@@ -1,4 +1,4 @@
-name = "wwwuabot-web-admin-dev"
+name = "web-admin-dev"
 main = "src/worker.ts"
 compatibility_date = "2026-08-21"
 # Unified stack with web (React 19, Vite 8, Tailwind 4, Zustand)
@@ -10,7 +10,7 @@ binding = "ASSETS"
 # API service binding
 [[services]]
 binding = "API"
-service = "wwwuabot-api-dev"
+service = "api-dev"
 
 # D1 binding
 [[d1_databases]]
