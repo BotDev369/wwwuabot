@@ -8,8 +8,6 @@ interface WebhookInfo {
   pending_update_count: number;
   last_error_date?: number;
   last_error_message?: string;
-  max_connections?: number;
-  allowed_updates?: string[];
 }
 
 interface BotInfo {
@@ -22,16 +20,10 @@ interface BotInfo {
   };
 }
 
-interface ApiResponse {
+interface TelegramResponse {
   ok: boolean;
-  result?: WebhookInfo;
+  result?: unknown;
   description?: string;
-}
-
-interface ActionResponse {
-  success: boolean;
-  webhook_url?: string;
-  result?: ApiResponse;
 }
 
 export function BotSettingsPage() {
@@ -40,19 +32,18 @@ export function BotSettingsPage() {
   const [loading, setLoading] = useState(true);
   const [actionLoading, setActionLoading] = useState(false);
   const [message, setMessage] = useState<{ type: "success" | "error"; text: string } | null>(null);
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const [lastResponse, setLastResponse] = useState<any>(null);
+  const [telegramResponse, setTelegramResponse] = useState<TelegramResponse | null>(null);
 
   const fetchData = async () => {
     setLoading(true);
     try {
       const [webhook, bot] = await Promise.all([
-        apiFetch<ApiResponse>("/api/bot/webhook-info"),
+        apiFetch<{ ok: boolean; result?: WebhookInfo }>("/api/bot/webhook-info"),
         apiFetch<BotInfo>("/api/bot/info"),
       ]);
       if (webhook.ok && webhook.result) setWebhookInfo(webhook.result);
       if (bot.ok) setBotInfo(bot);
-      setLastResponse({ webhook, bot });
+      setTelegramResponse(webhook);
     } catch (err) {
       setMessage({ type: "error", text: `Помилка: ${err}` });
     } finally {
@@ -66,11 +57,17 @@ export function BotSettingsPage() {
     setActionLoading(true);
     setMessage(null);
     try {
-      const result = await apiFetch<ActionResponse>("/api/bot/setup-webhook", { method: "POST" });
-      setLastResponse(result);
+      const result = await apiFetch<{ success: boolean; result: TelegramResponse }>(
+        "/api/bot/setup-webhook",
+        { method: "POST" },
+      );
+      setTelegramResponse(result.result);
       if (result.success) {
         setMessage({ type: "success", text: "Вебхук встановлено!" });
-        await fetchData();
+        // Оновлюємо webhook info після встановлення
+        const webhook = await apiFetch<{ ok: boolean; result?: WebhookInfo }>("/api/bot/webhook-info");
+        if (webhook.ok && webhook.result) setWebhookInfo(webhook.result);
+        setTelegramResponse(webhook);
       } else {
         setMessage({ type: "error", text: "Помилка встановлення" });
       }
@@ -86,11 +83,20 @@ export function BotSettingsPage() {
     setActionLoading(true);
     setMessage(null);
     try {
-      const result = await apiFetch<ActionResponse>("/api/bot/delete-webhook", { method: "POST" });
-      setLastResponse(result);
+      const result = await apiFetch<{ success: boolean; result: TelegramResponse }>(
+        "/api/bot/delete-webhook",
+        { method: "POST" },
+      );
+      setTelegramResponse(result.result);
       if (result.success) {
         setMessage({ type: "success", text: "Вебхук видалено" });
-        await fetchData();
+        // Оновлюємо webhook info після видалення
+        const webhook = await apiFetch<{ ok: boolean; result?: WebhookInfo }>("/api/bot/webhook-info");
+        if (webhook.ok) {
+          // Якщо webhook видалено, result буде пустим об'єктом
+          setWebhookInfo(webhook.result || { url: "", has_custom_certificate: false, pending_update_count: 0 });
+        }
+        setTelegramResponse(webhook);
       }
     } catch (err) {
       setMessage({ type: "error", text: `Помилка: ${err}` });
@@ -156,6 +162,8 @@ export function BotSettingsPage() {
                 <span className="block-type-label">Webhook</span>
                 {isWebhookOk ? (
                   <span className="status-badge status-badge--saved">OK</span>
+                ) : webhookInfo?.url ? (
+                  <span className="status-badge status-badge--error">Не правильна URL</span>
                 ) : (
                   <span className="status-badge status-badge--error">Не налаштовано</span>
                 )}
@@ -220,12 +228,17 @@ export function BotSettingsPage() {
               </div>
             </div>
 
-            {/* Відповідь від Telegram */}
-            {lastResponse && (
+            {/* Реальна відповідь від Telegram */}
+            {telegramResponse && (
               <div className="block-card">
                 <div className="block-card-header">
                   <span className="block-type-badge">📤</span>
                   <span className="block-type-label">Відповідь від Telegram API</span>
+                  {telegramResponse.ok ? (
+                    <span className="status-badge status-badge--saved">OK</span>
+                  ) : (
+                    <span className="status-badge status-badge--error">Помилка</span>
+                  )}
                 </div>
                 <div className="block-card-body">
                   <pre style={{
@@ -242,7 +255,7 @@ export function BotSettingsPage() {
                     wordBreak: "break-word",
                     margin: 0,
                   }}>
-                    {JSON.stringify(lastResponse, null, 2)}
+                    {JSON.stringify(telegramResponse, null, 2)}
                   </pre>
                 </div>
               </div>
