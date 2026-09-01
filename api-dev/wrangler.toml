@@ -1,0 +1,16 @@
+name = "wwwuabot-api-dev"
+main = "src/index.ts"
+compatibility_date = "2026-08-21"
+
+# Default D1 binding (for local dev without --env)
+[[d1_databases]]
+binding = "DB"
+database_name = "wwwuabot-db-dev"
+database_id = "9fc03f61-d497-4d92-bae4-c92b02c2d1c5"
+
+[[kv_namespaces]]
+binding = "CONTENT_KV"
+id = "bda7a5fca58b4fbda87d75105d558ebf"
+
+[vars]
+# ADMIN_SECRET та BOT_TOKEN — задаються через Cloudflare Dashboard (Secrets)

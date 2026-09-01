@@ -1,0 +1,26 @@
+name = "wwwuabot-dev"
+main = "src/index.ts"
+compatibility_date = "2026-08-21"
+
+# Default D1 binding (for local dev without --env)
+[[d1_databases]]
+binding = "DB"
+database_name = "wwwuabot-db-dev"
+database_id = "9fc03f61-d497-4d92-bae4-c92b02c2d1c5"
+
+[vars]
+ENVIRONMENT = "dev"
+CLOUDINARY_CLOUD_NAME = "ddoumoe5n"
+
+[[queues.producers]]
+binding = "LOG_QUEUE"
+queue = "wwwuabot-logs"
+
+[[queues.consumers]]
+queue = "wwwuabot-logs"
+max_batch_size = 100
+max_batch_timeout = 30
+
+[observability.logs]
+enabled = true
+invocation_logs = false

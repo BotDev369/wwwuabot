@@ -1,8 +1,8 @@
-name = "wwwuabot-web"
+name = "wwwuabot-web-platform-dev"
 main = "src/worker.ts"
 compatibility_date = "2026-08-21"
 # Unified stack with web-admin (React 19, Vite 8, Tailwind 4)
-# Deploy: npx wrangler deploy --env dev
+# Deploy: npx wrangler deploy
 # All 4 workers use unified CI pipeline
 
 [assets]
@@ -11,16 +11,6 @@ binding = "ASSETS"
 html_handling = "auto-trailing-slash"
 not_found_handling = "single-page-application"
 
-[env.dev]
-name = "wwwuabot-web-dev"
-
-[[env.dev.services]]
+[[services]]
 binding = "API"
 service = "wwwuabot-api-dev"
-
-[env.production]
-name = "wwwuabot-web-prod"
-
-[[env.production.services]]
-binding = "API"
-service = "wwwuabot-api-prod"

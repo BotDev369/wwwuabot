@@ -26,16 +26,16 @@ jobs:
         with:
           filters: |
             bot:
-              - 'bot/**'
+              - 'bot-dev/**'
               - 'packages/shared/**'
             api:
-              - 'api/**'
+              - 'api-dev/**'
               - 'packages/shared/**'
             web:
-              - 'web/**'
+              - 'web-platform-dev/**'
               - 'packages/shared/**'
             web-admin:
-              - 'web-admin/**'
+              - 'web-admin-dev/**'
               - 'packages/shared/**'
 
   audit:
@@ -59,7 +59,7 @@ jobs:
         with:
           node-version: 22
       - run: npm install
-      - run: cd bot && npx wrangler deploy --env dev
+      - run: cd bot-dev && npx wrangler deploy
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
@@ -74,7 +74,7 @@ jobs:
         with:
           node-version: 22
       - run: npm install
-      - run: cd api && npx wrangler deploy --env dev
+      - run: cd api-dev && npx wrangler deploy
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
@@ -89,8 +89,8 @@ jobs:
         with:
           node-version: 22
       - run: npm install
-      - run: cd web && npm run build
-      - run: cd web && npx wrangler deploy --env dev
+      - run: cd web-platform-dev && npm run build
+      - run: cd web-platform-dev && npx wrangler deploy
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
@@ -105,8 +105,8 @@ jobs:
         with:
           node-version: 22
       - run: npm install
-      - run: cd web-admin && npm run build
-      - run: cd web-admin && npx wrangler deploy --env dev && npx wrangler deploy
+      - run: cd web-admin-dev && npm run build
+      - run: cd web-admin-dev && npx wrangler deploy
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}

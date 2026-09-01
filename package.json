@@ -3,10 +3,10 @@
   "private": true,
   "workspaces": [
     "packages/*",
-    "bot",
-    "api",
-    "web",
-    "web-admin"
+    "bot-dev",
+    "api-dev",
+    "web-platform-dev",
+    "web-admin-dev"
   ],
   "devDependencies": {
     "@eslint/js": "^10.0.1",

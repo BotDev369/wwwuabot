@@ -1,24 +1,20 @@
 {
-  "name": "admin",
+  "name": "wwwuabot-web",
   "private": true,
-  "version": "0.0.0",
+  "version": "1.0.0",
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "local": "wrangler dev --remote",
     "build": "tsc -b && vite build",
+    "preview": "vite preview",
     "deploy": "npm run build && wrangler deploy",
-    "deploy:dev": "npm run build && wrangler deploy --env dev",
-    "deploy:prod": "npm run build && wrangler deploy --env production",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
     "format": "prettier --write .",
-    "format:check": "prettier --check .",
-    "preview": "vite preview"
+    "format:check": "prettier --check ."
   },
   "dependencies": {
     "@wwwuabot/shared": "*",
-    "@wwwuabot/ui": "*",
     "react": "^19.2.7",
     "react-dom": "^19.2.7",
     "react-router-dom": "^7.18.2",
