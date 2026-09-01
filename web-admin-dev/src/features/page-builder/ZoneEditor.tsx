@@ -180,7 +180,7 @@ export function ZoneEditor({
           display: "flex",
           alignItems: "center",
           justifyContent: "space-between",
-          padding: "10px 14px",
+          padding: "8px 12px",
           background: "var(--bg-secondary, #f1f5f9)",
           cursor: "pointer",
           userSelect: "none",

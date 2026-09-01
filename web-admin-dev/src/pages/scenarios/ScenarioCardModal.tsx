@@ -374,7 +374,7 @@ function BotConstructor({
   const buttonsValue = typeof fields.buttons === "string" ? fields.buttons : "";
 
   return (
-    <div style={{ display: "flex", flexDirection: "column", gap: 16, padding: 16 }}>
+    <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
       {/* Caption fields */}
       <div className="block-card">
         <div className="block-card-header">
@@ -468,7 +468,7 @@ function BotRichConstructor({
   // For rich blocks, we import the rich blocks editor inline
   // We use a lazy approach — import the editor components
   return (
-    <div style={{ display: "flex", flexDirection: "column", gap: 16, padding: 16 }}>
+    <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
       {/* Rich message toggle */}
       <div className="block-card">
         <div className="block-card-header">
@@ -747,14 +747,12 @@ function WebConstructor({
   }, [updateField]);
 
   return (
-    <div style={{ padding: 16 }}>
-      <div className="block-card" style={{ marginBottom: 12 }}>
-        <div className="block-card-header">
-          <span className="block-card-title">🏗️ Конструктор сторінки</span>
-          <span style={{ fontSize: 12, color: "var(--text-muted)" }}>
-            Зони: sidebar, header, main, footer
-          </span>
-        </div>
+    <div style={{ padding: "0 0 16px" }}>
+      <div className="block-card-header" style={{ marginBottom: 12, padding: "12px 0" }}>
+        <span className="block-card-title">🏗️ Конструктор сторінки</span>
+        <span style={{ fontSize: 12, color: "var(--text-muted)" }}>
+          Зони: sidebar, header, main, footer
+        </span>
       </div>
       <PageBuilderInline
         config={config}
