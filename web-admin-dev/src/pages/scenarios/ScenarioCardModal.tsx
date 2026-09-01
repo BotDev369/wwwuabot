@@ -787,18 +787,29 @@ function TabPreview({
 function WebPreview({ fields, codeword }: { fields: Record<string, unknown>; codeword: string }) {
   let config: PageConfig | null = null;
   try {
+    // Спочатку пробуємо page_data (новий формат)
     const raw = fields.page_data;
     config = typeof raw === "string"
       ? parsePageConfig(raw)
       : typeof raw === "object" && raw !== null
         ? raw as PageConfig
         : null;
+
+    // Якщо page_data порожній — пробуємо web_config (старий формат)
+    if (!config) {
+      const webConfig = fields.web_config;
+      config = typeof webConfig === "string"
+        ? parsePageConfig(webConfig)
+        : typeof webConfig === "object" && webConfig !== null
+          ? parsePageConfig(JSON.stringify(webConfig))
+          : null;
+    }
   } catch { /* ignore */ }
 
   if (!config) {
     return (
       <div style={{ padding: 20, textAlign: "center", color: "var(--text-muted)" }}>
-        page_data порожній або невалідний
+        Сторінка порожня
         <div style={{ marginTop: 12, fontSize: 12 }}>
           Перейдіть на вкладку «Конструктор» щоб створити сторінку
         </div>
