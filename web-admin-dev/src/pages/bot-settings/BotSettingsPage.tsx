@@ -40,7 +40,8 @@ export function BotSettingsPage() {
   const [loading, setLoading] = useState(true);
   const [actionLoading, setActionLoading] = useState(false);
   const [message, setMessage] = useState<{ type: "success" | "error"; text: string } | null>(null);
-  const [lastResponse, setLastResponse] = useState<unknown>(null);
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const [lastResponse, setLastResponse] = useState<any>(null);
 
   const fetchData = async () => {
     setLoading(true);
@@ -141,7 +142,7 @@ export function BotSettingsPage() {
                     </div>
                     <div style={{ flex: 1 }}>
                       <div style={{ fontSize: 11, color: "var(--text-muted)", marginBottom: 2 }}>ID</div>
-                      <div style={{ fontFamily: "var(--font-mono)", fontSize: 13 }}>{botInfo.result.id}</div>
+                      <div style={{ fontFamily: "var(--font-mono)", fontSize: 13 }}>{String(botInfo.result.id)}</div>
                     </div>
                   </div>
                 </div>
