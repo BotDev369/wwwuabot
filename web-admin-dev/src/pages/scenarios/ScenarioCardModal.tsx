@@ -20,6 +20,9 @@ import type { PageConfig, BlockContext } from "@wwwuabot/shared/types/page-confi
 import { parsePageConfig } from "@wwwuabot/shared/types/page-config";
 import { registerAllBlocks } from "@wwwuabot/ui/blocks";
 import { ButtonsField } from "../../features/scenarios/keyboard/ButtonsField";
+import { PageBuilderInline } from "../../features/page-builder/PageBuilderInline";
+import type { PageConfig as PageConfigType } from "@wwwuabot/shared/types/page-config";
+import { createEmptyPageConfig } from "@wwwuabot/shared/types/page-config";
 
 // Реєструємо блоки один раз при завантаженні модуля
 registerAllBlocks();
@@ -355,7 +358,7 @@ function TabConstructor({
 }) {
   if (mainTab === "bot") return <BotConstructor fields={fields} updateField={updateField} />;
   if (mainTab === "bot_rich") return <BotRichConstructor fields={fields} updateField={updateField} />;
-  if (mainTab === "web") return <WebConstructor codeword={codeword} />;
+  if (mainTab === "web") return <WebConstructor fields={fields} updateField={updateField} codeword={codeword} />;
   return <div style={{ padding: 16, color: "var(--text-muted)", textAlign: "center" }}>Немає конструктора для цієї вкладки</div>;
 }
 
@@ -714,28 +717,52 @@ function RichDataEditor({
   );
 }
 
-// ─── Web Constructor (link to Page Builder) ───────────────────────
+// ─── Web Constructor (inline Page Builder) ──────────────────────
 
-function WebConstructor({ codeword }: { codeword: string }) {
+function WebConstructor({
+  fields,
+  updateField,
+  codeword,
+}: {
+  fields: Record<string, unknown>;
+  updateField: (key: string, value: unknown) => void;
+  codeword: string;
+}) {
+  // Parse page_data into PageConfig
+  let config: PageConfigType = createEmptyPageConfig();
+  try {
+    const raw = fields.page_data;
+    const parsed = typeof raw === "string"
+      ? parsePageConfig(raw)
+      : typeof raw === "object" && raw !== null
+        ? (raw as PageConfigType)
+        : null;
+    if (parsed) config = parsed;
+  } catch {
+    config = createEmptyPageConfig();
+  }
+
+  const handleChange = useCallback((newConfig: PageConfigType) => {
+    updateField("page_data", JSON.stringify(newConfig));
+  }, [updateField]);
+
   return (
-    <div style={{ padding: 20, textAlign: "center" }}>
-      <div style={{ fontSize: 48, marginBottom: 12 }}>🏗️</div>
-      <div style={{ fontSize: 16, fontWeight: 600, marginBottom: 8 }}>
-        Конструктор веб-сторінки
+    <div style={{ padding: 16 }}>
+      <div className="block-card" style={{ marginBottom: 12 }}>
+        <div className="block-card-header">
+          <span className="block-card-title">🏗️ Конструктор сторінки</span>
+          <span style={{ fontSize: 12, color: "var(--text-muted)" }}>
+            Зони: sidebar, header, main, footer
+          </span>
+        </div>
       </div>
-      <div style={{ color: "var(--text-secondary)", fontSize: 13, marginBottom: 16 }}>
-        Веб-сторінка складається з зон (sidebar, header, main, footer) та блоків.
-        <br />Відкрийте конструктор для повного редагування.
-      </div>
-      <a
-        href={`/page-builder/${codeword}`}
-        target="_blank"
-        rel="noopener noreferrer"
-        className="btn btn--primary"
-        style={{ textDecoration: "none", display: "inline-flex", alignItems: "center", gap: 6 }}
-      >
-        🏗️ Відкрити конструктор
-      </a>
+      <PageBuilderInline
+        config={config}
+        onChange={handleChange}
+        codeword={codeword}
+        title={String(fields.title ?? "")}
+        photoUrl={String(fields.photo_url ?? "")}
+      />
     </div>
   );
 }
@@ -774,10 +801,8 @@ function WebPreview({ fields, codeword }: { fields: Record<string, unknown>; cod
     return (
       <div style={{ padding: 20, textAlign: "center", color: "var(--text-muted)" }}>
         page_data порожній або невалідний
-        <div style={{ marginTop: 12 }}>
-          <a href={`/page-builder/${codeword}`} target="_blank" rel="noopener noreferrer" style={{ fontSize: 12, color: "var(--accent)" }}>
-            🏗️ Відкрити конструктор →
-          </a>
+        <div style={{ marginTop: 12, fontSize: 12 }}>
+          Перейдіть на вкладку «Конструктор» щоб створити сторінку
         </div>
       </div>
     );
