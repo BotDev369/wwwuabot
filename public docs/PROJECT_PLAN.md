@@ -323,6 +323,8 @@ React 19, Vite 8, TypeScript 6, Tailwind CSS 4, Zustand 5, React Router 7,
 | 28.08.2026 | CI-FIX2..5 | Додано api/ до workspaces, top-level bindings, prod service binding, prod KV | Buffy | `5d3ca96` |
 | 28.08.2026 | P3-2 | Вирівняно compatibility_date (всі 4 = 2026-08-21) | Buffy | `5d3ca96` |
 | 28.08.2026 | P3-3 | Вирівняно React/Vite/TS між web і web-admin | Buffy | `30bfda2` |
+| 01.09.2026 | — | Знайдено та задокументовано критичну auth-діру: /api/admin/* і /api/portal/* без авторизації | Claude (в чаті) | `c636f63` |
+| 01.09.2026 | — | Виправлено: admin-гейт у router.ts (isAuthenticated), видалено /auth/debug | Claude (в чаті) | `e3b6b6a` |
 
 ---
 
@@ -356,7 +358,7 @@ React 19, Vite 8, TypeScript 6, Tailwind CSS 4, Zustand 5, React Router 7,
 Супутнє: `GET /auth/debug` без авторизації показує, чи заданий `ADMIN_SECRET` і його довжину.
 **Пріоритет:** 🔴 Критично · **Критерій:** #3 Безпека
 **Запропоноване рішення:** єдина перевірка `isAuthenticated(request, env)` в `api/src/router.ts` для всіх шляхів `/api/admin/*` і `/api/portal/*` (після блоку `/auth/*`, до диспетчеризації на контролери); видалити або захистити `/auth/debug`.
-**Статус:** ⬜ Заплановано (виявлено Claude в чаті під час аудиту 01.09.2026)
+**Статус:** ✅ Виправлено (`e3b6b6a`, 01.09.2026) — гейт додано в `router.ts`, `/auth/debug` видалено з `auth.controller.ts`. Перевірено локально `eslint`+`tsc --noEmit`, 0 помилок. **Ще потребує перевірки:** ручний smoke-тест на dev/prod URL після деплою CI (див. секцію нижче).
 
 ---
 
