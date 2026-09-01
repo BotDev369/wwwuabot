@@ -6,7 +6,7 @@ import { handleMyDates } from "./controllers/my-dates.controller";
 import { handleSetupWebhook, handleWebhookInfo } from "./controllers/webhook.controller";
 import { handleDbProxy } from "./controllers/db-proxy.controller";
 // auth-check.controller — видалено ( замінено на cookie-based auth.controller)
-import { handleLogin, handleLogout, handleAuthCheck as handleCookieAuthCheck, handleDebug } from "./controllers/auth.controller";
+import { handleLogin, handleLogout, handleAuthCheck as handleCookieAuthCheck, isAuthenticated } from "./controllers/auth.controller";
 import {
   handleRead as handleScenarioAdminRead,
   handleWrite as handleScenarioAdminWrite,
@@ -96,11 +96,6 @@ export async function handleRequest(
     return handleMyDates(request, env);
   }
 
-  // ── Admin: Debug ────────────────────────────────────────────────
-  if (pathname === "/auth/debug") {
-    return handleDebug(env);
-  }
-
   // ── Admin: Cookie Auth ─────────────────────────────────────────
   if (pathname === "/auth/login" && request.method === "POST") {
     return handleLogin(request, env);
@@ -110,6 +105,22 @@ export async function handleRequest(
   }
   if (pathname === "/auth/check") {
     return handleCookieAuthCheck(request, env);
+  }
+
+  // ── Admin-гейт ────────────────────────────────────────────────
+  // Все під /api/admin/ і /api/portal/ вимагає валідної cookie-сесії
+  // (тієї самої, що web-admin/worker.ts перевіряє перед проксюванням).
+  // Потрібно, бо api/ має власний публічний URL і доступний напряму,
+  // в обхід web-admin. Знайдено при аудиті 01.09.2026 (PROJECT_PLAN.md
+  // → "Нові знахідки").
+  if (pathname.startsWith("/api/admin/") || pathname.startsWith("/api/portal/")) {
+    const authed = await isAuthenticated(request, env);
+    if (!authed) {
+      return new Response(JSON.stringify({ error: "Unauthorized" }), {
+        status: 401,
+        headers: { "Content-Type": "application/json" },
+      });
+    }
   }
 
   // ── Admin: Scenarios-Admin CRUD ────────────────────────────────

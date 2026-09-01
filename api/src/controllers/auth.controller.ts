@@ -102,13 +102,6 @@ export async function isAuthenticated(
 
 // ── Handlers ──────────────────────────────────────────────────────
 
-/** GET /auth/debug — тимчасовий debug: чи є ADMIN_SECRET (без розкриття значення). */
-export async function handleDebug(env: Env): Promise<Response> {
-  const hasSecret = !!env.ADMIN_SECRET;
-  const secretLength = env.ADMIN_SECRET?.length ?? 0;
-  return json({ hasSecret, secretLength });
-}
-
 /** POST /auth/login — створення сесії через пароль. */
 export async function handleLogin(
   request: Request,
