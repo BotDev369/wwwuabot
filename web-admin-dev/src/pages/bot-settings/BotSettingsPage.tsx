@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { PageTopbar } from "../../layout/PageTopbar";
 import { apiFetch } from "../../shared/api/client";
 
 interface WebhookInfo {
@@ -58,13 +59,13 @@ export function BotSettingsPage() {
         { method: "POST" },
       );
       if (result.success) {
-        setMessage({ type: "success", text: `✅ Вебхук встановлено!` });
+        setMessage({ type: "success", text: "Вебхук встановлено!" });
         await fetchData();
       } else {
-        setMessage({ type: "error", text: "❌ Помилка встановлення" });
+        setMessage({ type: "error", text: "Помилка встановлення" });
       }
     } catch (err) {
-      setMessage({ type: "error", text: `❌ ${err}` });
+      setMessage({ type: "error", text: `Помилка: ${err}` });
     } finally {
       setActionLoading(false);
     }
@@ -77,124 +78,152 @@ export function BotSettingsPage() {
     try {
       const result = await apiFetch<{ success: boolean }>("/api/bot/delete-webhook", { method: "POST" });
       if (result.success) {
-        setMessage({ type: "success", text: "🗑️ Вебхук видалено" });
+        setMessage({ type: "success", text: "Вебхук видалено" });
         await fetchData();
       }
     } catch (err) {
-      setMessage({ type: "error", text: `❌ ${err}` });
+      setMessage({ type: "error", text: `Помилка: ${err}` });
     } finally {
       setActionLoading(false);
     }
   };
 
-  if (loading) {
-    return (
-      <div className="p-4">
-        <h1 className="text-xl font-bold mb-4">🤖 Налаштування бота</h1>
-        <div className="text-gray-500">Завантаження...</div>
-      </div>
-    );
-  }
-
   const isWebhookOk = webhookInfo?.url?.includes("bot-dev");
 
   return (
-    <div className="p-4 space-y-4">
-      <h1 className="text-xl font-bold">🤖 Налаштування бота</h1>
-
-      {/* Повідомлення */}
-      {message && (
-        <div className={`p-3 rounded-lg text-sm ${
-          message.type === "success"
-            ? "bg-green-900/50 text-green-300 border border-green-700"
-            : "bg-red-900/50 text-red-300 border border-red-700"
-        }`}>
-          {message.text}
+    <>
+      <PageTopbar>
+        <h1 className="topbar-title">Налаштування бота</h1>
+        <div className="topbar-right">
+          <button className="btn btn--secondary" onClick={fetchData} disabled={loading}>
+            Оновити
+          </button>
         </div>
-      )}
+      </PageTopbar>
 
-      {/* Бот */}
-      {botInfo?.result && (
-        <div className="bg-gray-800 rounded-lg p-4">
-          <div className="flex items-center gap-3 mb-3">
-            <div className="w-10 h-10 bg-blue-600 rounded-full flex items-center justify-center text-white font-bold">
-              {botInfo.result.first_name.charAt(0)}
+      <section style={{ flex: 1, overflow: "auto", padding: 20 }}>
+        {loading ? (
+          <div className="empty-state">
+            <span className="empty-state-text">Завантаження...</span>
+          </div>
+        ) : (
+          <div style={{ maxWidth: 640, display: "flex", flexDirection: "column", gap: 16 }}>
+            {/* Повідомлення */}
+            {message && (
+              <div className={`status-badge status-badge--${message.type === "success" ? "saved" : "error"}`}>
+                {message.text}
+              </div>
+            )}
+
+            {/* Бот */}
+            {botInfo?.result && (
+              <div className="block-card">
+                <div className="block-card-header">
+                  <span className="block-type-badge">🤖</span>
+                  <span className="block-type-label">Бот</span>
+                  <span className="status-badge status-badge--saved">Активний</span>
+                </div>
+                <div className="block-card-body">
+                  <div className="block-row" style={{ gap: 12 }}>
+                    <div style={{ flex: 1 }}>
+                      <div style={{ fontSize: 11, color: "var(--text-muted)", marginBottom: 2 }}>Username</div>
+                      <div style={{ fontFamily: "var(--font-mono)", fontSize: 13 }}>@{botInfo.result.username}</div>
+                    </div>
+                    <div style={{ flex: 1 }}>
+                      <div style={{ fontSize: 11, color: "var(--text-muted)", marginBottom: 2 }}>ID</div>
+                      <div style={{ fontFamily: "var(--font-mono)", fontSize: 13 }}>{botInfo.result.id}</div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Webhook */}
+            <div className="block-card">
+              <div className="block-card-header">
+                <span className="block-type-badge">🔗</span>
+                <span className="block-type-label">Webhook</span>
+                {isWebhookOk ? (
+                  <span className="status-badge status-badge--saved">OK</span>
+                ) : (
+                  <span className="status-badge status-badge--error">Не налаштовано</span>
+                )}
+              </div>
+              <div className="block-card-body">
+                <div style={{ marginBottom: 12 }}>
+                  <div style={{ fontSize: 11, color: "var(--text-muted)", marginBottom: 2 }}>URL</div>
+                  <div style={{
+                    fontFamily: "var(--font-mono)",
+                    fontSize: 12,
+                    background: "var(--bg-2)",
+                    border: "1px solid var(--border)",
+                    borderRadius: "var(--radius-sm)",
+                    padding: "6px 10px",
+                    wordBreak: "break-all",
+                    color: webhookInfo?.url ? "var(--text-primary)" : "var(--text-muted)",
+                  }}>
+                    {webhookInfo?.url || "Не встановлено"}
+                  </div>
+                </div>
+
+                <div className="block-row" style={{ gap: 16, marginBottom: 12 }}>
+                  <div>
+                    <span style={{ fontSize: 11, color: "var(--text-muted)" }}>Очікуючі: </span>
+                    <span style={{ fontSize: 13 }}>{webhookInfo?.pending_update_count ?? 0}</span>
+                  </div>
+                  <div>
+                    <span style={{ fontSize: 11, color: "var(--text-muted)" }}>SSL: </span>
+                    <span style={{ fontSize: 13 }}>{webhookInfo?.has_custom_certificate ? "✅" : "❌"}</span>
+                  </div>
+                </div>
+
+                {webhookInfo?.last_error_message && (
+                  <div style={{
+                    background: "var(--red-dim)",
+                    border: "1px solid var(--red)",
+                    borderRadius: "var(--radius-sm)",
+                    padding: "8px 10px",
+                    marginBottom: 12,
+                  }}>
+                    <div style={{ fontSize: 11, color: "var(--red)", fontWeight: 600, marginBottom: 2 }}>Остання помилка:</div>
+                    <div style={{ fontSize: 12, color: "var(--text-secondary)" }}>{webhookInfo.last_error_message}</div>
+                  </div>
+                )}
+
+                <div className="block-row" style={{ gap: 8 }}>
+                  <button
+                    className="btn btn--primary"
+                    onClick={setupWebhook}
+                    disabled={actionLoading}
+                  >
+                    {actionLoading ? "Зачекайте..." : "Встановити вебхук"}
+                  </button>
+                  <button
+                    className="btn btn--danger"
+                    onClick={deleteWebhook}
+                    disabled={actionLoading}
+                  >
+                    Видалити
+                  </button>
+                </div>
+              </div>
             </div>
-            <div className="flex-1 min-w-0">
-              <div className="font-medium truncate">@{botInfo.result.username}</div>
-              <div className="text-xs text-gray-400">ID: {botInfo.result.id}</div>
+
+            {/* Довідка */}
+            <div className="block-card">
+              <div className="block-card-header">
+                <span className="block-type-badge">ℹ️</span>
+                <span className="block-type-label">Довідка</span>
+              </div>
+              <div className="block-card-body" style={{ fontSize: 12, color: "var(--text-secondary)", lineHeight: 1.7 }}>
+                <p><strong>Встановити вебхук</strong> — оновлює URL вебхука на bot-dev</p>
+                <p><strong>Видалити вебхук</strong> — бот перестане отримувати оновлення</p>
+                <p><strong>Оновити</strong> — завантажує актуальну інформацію з Telegram API</p>
+              </div>
             </div>
-            <span className="text-green-400 text-sm">✅</span>
-          </div>
-        </div>
-      )}
-
-      {/* Вебхук */}
-      <div className="bg-gray-800 rounded-lg p-4">
-        <div className="flex items-center justify-between mb-3">
-          <h2 className="font-medium">Webhook</h2>
-          {isWebhookOk ? (
-            <span className="text-green-400 text-xs bg-green-900/50 px-2 py-1 rounded">OK</span>
-          ) : (
-            <span className="text-yellow-400 text-xs bg-yellow-900/50 px-2 py-1 rounded">⚠️</span>
-          )}
-        </div>
-
-        {/* URL */}
-        <div className="mb-3">
-          <div className="text-xs text-gray-400 mb-1">URL:</div>
-          <div className="text-xs font-mono bg-gray-900 p-2 rounded break-all text-gray-300">
-            {webhookInfo?.url || "Не встановлено"}
-          </div>
-        </div>
-
-        {/* Статистика */}
-        <div className="flex gap-4 text-sm mb-4">
-          <div>
-            <span className="text-gray-400">Очікуючі: </span>
-            <span>{webhookInfo?.pending_update_count ?? 0}</span>
-          </div>
-          <div>
-            <span className="text-gray-400">SSL: </span>
-            <span>{webhookInfo?.has_custom_certificate ? "✅" : "❌"}</span>
-          </div>
-        </div>
-
-        {/* Помилка */}
-        {webhookInfo?.last_error_message && (
-          <div className="bg-red-900/30 border border-red-800 rounded p-2 mb-4">
-            <div className="text-xs text-red-400">⚠️ Остання помилка:</div>
-            <div className="text-xs text-red-300 mt-1 break-words">{webhookInfo.last_error_message}</div>
           </div>
         )}
-
-        {/* Кнопки */}
-        <div className="flex flex-col gap-2">
-          <button
-            onClick={setupWebhook}
-            disabled={actionLoading}
-            className="w-full py-2.5 bg-blue-600 text-white rounded-lg font-medium active:bg-blue-700 disabled:opacity-50"
-          >
-            {actionLoading ? "⏳ Зачекайте..." : "🔄 Встановити вебхук"}
-          </button>
-          <div className="flex gap-2">
-            <button
-              onClick={deleteWebhook}
-              disabled={actionLoading}
-              className="flex-1 py-2 bg-red-600/20 text-red-400 border border-red-600/50 rounded-lg text-sm active:bg-red-600/30 disabled:opacity-50"
-            >
-              🗑️ Видалити
-            </button>
-            <button
-              onClick={fetchData}
-              disabled={loading}
-              className="flex-1 py-2 bg-gray-700 text-gray-300 rounded-lg text-sm active:bg-gray-600 disabled:opacity-50"
-            >
-              🔄 Оновити
-            </button>
-          </div>
-        </div>
-      </div>
-    </div>
+      </section>
+    </>
   );
 }
