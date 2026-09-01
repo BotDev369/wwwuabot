@@ -5,6 +5,7 @@ import { ScenariosAdminPage } from "../pages/scenarios/ScenariosAdminPage";
 import { UsersPage } from "../pages/users/UsersPage";
 import { ScenariosV2Page } from "../pages/scenarios-v2/ScenariosV2Page";
 import { PageBuilderPage } from "../features/page-builder/PageBuilderPage";
+import { BotSettingsPage } from "../pages/bot-settings/BotSettingsPage";
 
 /**
  * Маршрути web-admin.
@@ -23,6 +24,7 @@ export const router = createBrowserRouter([
       { path: "scenarios-admin", element: <ScenariosAdminPage /> },
       { path: "page-builder/:codeword", element: <PageBuilderPage /> },
       { path: "users", element: <UsersPage /> },
+      { path: "bot-settings", element: <BotSettingsPage /> },
     ],
   },
 ]);

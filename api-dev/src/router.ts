@@ -5,6 +5,7 @@ import { handleScenario } from "./controllers/scenarios.controller";
 import { handleMyDates } from "./controllers/my-dates.controller";
 import { handleSetupWebhook, handleWebhookInfo } from "./controllers/webhook.controller";
 import { handleDbProxy } from "./controllers/db-proxy.controller";
+import { handleWebhookInfo as handleBotWebhookInfo, handleSetupWebhook as handleBotSetupWebhook, handleDeleteWebhook, handleBotInfo } from "./controllers/bot-settings.controller";
 // auth-check.controller — видалено ( замінено на cookie-based auth.controller)
 import { handleLogin, handleLogout, handleAuthCheck as handleCookieAuthCheck, isAuthenticated } from "./controllers/auth.controller";
 import {
@@ -49,12 +50,26 @@ export async function handleRequest(
     return handleHealth();
   }
 
-  // ── Admin: Telegram webhook management ──────────────────────────
+  // ── Admin: Telegram webhook management (legacy) ─────────────────
   if (request.method === "GET" && pathname === "/setup-webhook") {
     return handleSetupWebhook(request, env);
   }
   if (request.method === "GET" && pathname === "/webhook-info") {
     return handleWebhookInfo(request, env);
+  }
+
+  // ── Bot Settings API (нові ендпоїнти) ────────────────────────────
+  if (pathname === "/api/bot/webhook-info" && request.method === "GET") {
+    return handleBotWebhookInfo(request, env);
+  }
+  if (pathname === "/api/bot/setup-webhook" && request.method === "POST") {
+    return handleBotSetupWebhook(request, env);
+  }
+  if (pathname === "/api/bot/delete-webhook" && request.method === "POST") {
+    return handleDeleteWebhook(request, env);
+  }
+  if (pathname === "/api/bot/info" && request.method === "GET") {
+    return handleBotInfo(request, env);
   }
 
   // ── Admin: DB Proxy ────────────────────────────────────────────
