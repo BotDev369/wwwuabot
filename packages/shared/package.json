@@ -19,7 +19,8 @@
     "./api/client": "./src/api/client.ts",
     "./layout/Footer": "./src/layout/Footer.tsx",
     "./stores/app.store": "./src/stores/app.store.ts",
-    "./utils/datetime": "./src/utils/datetime.ts"
+    "./utils/datetime": "./src/utils/datetime.ts",
+    "./utils/condition-evaluator": "./src/utils/condition-evaluator.ts"
   },
   "dependencies": {
     "open-props": "^1.7.23"

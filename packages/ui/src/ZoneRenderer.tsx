@@ -9,6 +9,7 @@
 
 import type { BlockZone, PageBlock, BlockContext } from '@wwwuabot/shared/types/page-config';
 import { getBlockComponent } from './registry';
+import { evaluateConditions } from '@wwwuabot/shared/utils/condition-evaluator';
 
 interface ZoneRendererProps {
   /** Блоки для рендеру. */
@@ -47,6 +48,33 @@ export function ZoneRenderer({
   return (
     <div className={className} data-zone={zone}>
       {sorted.map((block) => {
+        // ── Conditional rendering ──
+        // Перевіряємо умови показу блоку
+        const conditionsMatch = evaluateConditions(
+          block.conditions,
+          context.user,
+        );
+
+        if (!conditionsMatch) {
+          // Умови не виконались — показуємо fallback якщо є
+          const fallback = block.conditions?.fallback;
+          if (fallback) {
+            const FallbackComponent = getBlockComponent(fallback.type);
+            if (FallbackComponent) {
+              return (
+                <FallbackComponent
+                  key={block.id}
+                  block={fallback as PageBlock}
+                  context={context}
+                  zone={zone}
+                />
+              );
+            }
+          }
+          // Ні збігу, ні fallback — пропускаємо
+          return null;
+        }
+
         const Component = getBlockComponent(block.type);
 
         if (!Component) {

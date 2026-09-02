@@ -27,3 +27,14 @@ export type { AppState } from "./stores/app.store";
 
 // ── Utils ────────────────────────────────────────────────────────────
 export { formatSqliteDatetime } from "./utils/datetime";
+export { evaluateConditions, resolveBlock, getAvailableConditionFields } from "./utils/condition-evaluator";
+
+// ── Page Config Types ────────────────────────────────────────────────
+export type {
+  BlockConditions,
+  UserProfile,
+  PageBlock,
+  PageConfig,
+  BlockContext,
+  BlockZone,
+} from "./types/page-config";
