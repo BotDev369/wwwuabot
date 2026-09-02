@@ -1,0 +1,84 @@
+/* ═══ Profile Card styles (shared with web-platform) ══════════════════ */
+.card {
+  background: var(--bg-1, #fff);
+  border: 1px solid var(--border, #e5e7eb);
+  border-radius: 8px;
+  padding: 18px;
+  margin-bottom: 16px;
+}
+
+.card h3 {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0 0 12px;
+  font-size: 16px;
+  font-weight: 600;
+}
+
+.hero {
+  max-width: 640px;
+  text-align: center;
+  width: 100%;
+  margin: 0 auto;
+}
+
+.hero h1 {
+  color: var(--text-primary, #1a1a2e);
+  font-size: 34px;
+  font-weight: 800;
+  line-height: 1.25;
+}
+
+.page-header {
+  display: flex;
+  align-items: baseline;
+  gap: 12px;
+  justify-content: center;
+}
+
+.profile-fields {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+.profile-field {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 0;
+  border-bottom: 1px solid var(--border-subtle, rgba(0,0,0,0.06));
+}
+
+.profile-field:last-child {
+  border-bottom: none;
+}
+
+.profile-field-label {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--text-muted, #888);
+  font-size: 14px;
+}
+
+.profile-field-value {
+  font-size: 14px;
+  font-weight: 500;
+  text-align: right;
+  max-width: 55%;
+  word-break: break-word;
+}
+
+@media (max-width: 480px) {
+  .profile-field {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 4px;
+  }
+  .profile-field-value {
+    max-width: 100%;
+    text-align: left;
+  }
+}
