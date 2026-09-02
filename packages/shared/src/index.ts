@@ -21,6 +21,10 @@ export type { ApiClientOptions } from "./api/client";
 // ── Layout ───────────────────────────────────────────────────────────
 export { Footer } from "./layout/Footer";
 
+// ── Components ─────────────────────────────────────────────────────
+export { UserProfileCard } from "./components/UserProfileCard";
+export type { UserProfileData, UserProfileCardProps } from "./components/UserProfileCard";
+
 // ── Stores ───────────────────────────────────────────────────────────
 export { useAppStore } from "./stores/app.store";
 export type { AppState } from "./stores/app.store";
