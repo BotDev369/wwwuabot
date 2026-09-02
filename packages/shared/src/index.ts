@@ -1,20 +1,23 @@
+// ── Theme / Brand System ─────────────────────────────────────────────
 export { ThemeToggle, StylePicker, useStyleTheme } from "./components/StyleToggle";
+export { BRANDS, getBrand, getBrandIds, resolveLegacyStyle, LEGACY_STYLE_MAP } from "./styles/registry";
+export type { Brand, Scheme, Theme, BrandDefinition, StyleId } from "./styles/registry";
+// Legacy re-exports (deprecated — use BRANDS/getBrand instead)
 export { STYLES, getStyle, getStyleIds } from "./styles/registry";
-export type { StyleId, StyleDefinition } from "./styles/registry";
 
-// App
+// ── App ──────────────────────────────────────────────────────────────
 export { initTheme } from "./app/initTheme";
 
-// API
+// ── API ──────────────────────────────────────────────────────────────
 export { apiFetch } from "./api/client";
 export type { ApiClientOptions } from "./api/client";
 
-// Layout
+// ── Layout ───────────────────────────────────────────────────────────
 export { Footer } from "./layout/Footer";
 
-// Stores
+// ── Stores ───────────────────────────────────────────────────────────
 export { useAppStore } from "./stores/app.store";
 export type { AppState } from "./stores/app.store";
 
-// Utils
+// ── Utils ────────────────────────────────────────────────────────────
 export { formatSqliteDatetime } from "./utils/datetime";

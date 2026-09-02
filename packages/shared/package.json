@@ -11,6 +11,7 @@
     "./styles/tokens.css": "./src/styles/tokens.css",
     "./styles/themes.css": "./src/styles/themes.css",
     "./styles/apple.css": "./src/styles/apple.css",
+    "./styles/android.css": "./src/styles/android.css",
     "./styles/reset.css": "./src/styles/reset.css",
     "./styles/components.css": "./src/styles/components.css",
     "./components/StyleToggle": "./src/components/StyleToggle.tsx",

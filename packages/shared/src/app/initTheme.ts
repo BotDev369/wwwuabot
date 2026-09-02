@@ -1,43 +1,52 @@
 /**
- * Застосовує збережений theme та style перед першим рендером,
- * щоб уникнути "flash" (мерехтіння) при завантаженні.
+ * Applies saved brand & scheme before the first render to prevent flash.
  *
- * Викликається в main.tsx кожного воркера ДО createRoot().render().
- * Використовує localStorage та CSS-змінні — працює без React.
+ * Called in main.tsx of each worker BEFORE createRoot().render().
+ * Uses localStorage + CSS attributes only — works without React.
+ *
+ * Attribute format:
+ *   <html data-brand="apple|android" data-theme="light|dark">
+ *
+ * Legacy migration:
+ *   Old format was data-style="basic|apple|..." — we map those to
+ *   the new 2-brand system on first read.
  */
+import { resolveLegacyStyle, type Brand, type Theme } from "./registry";
+
+const BRAND_KEY = "wwwuabot-brand";
+const LEGACY_STYLE_KEY = "wwwuabot-style";
+const THEME_KEY = "wwwuabot-theme";
+
+function resolveSystemTheme(): "light" | "dark" {
+  return window.matchMedia("(prefers-color-scheme: dark)").matches
+    ? "dark"
+    : "light";
+}
+
 export function initTheme(): void {
   try {
-    const t = localStorage.getItem("wwwuabot-theme") || "system";
-    const resolved =
-      t === "system"
-        ? window.matchMedia("(prefers-color-scheme: dark)").matches
-          ? "dark"
-          : "light"
-        : t;
-    document.documentElement.setAttribute("data-theme", resolved);
-
-    const s = localStorage.getItem("wwwuabot-style") || "basic";
-    document.documentElement.setAttribute("data-style", s);
-
-    // Застосовуємо CSS-змінні стилю з реєстру
-    if (s !== "basic") {
-      import("@wwwuabot/shared").then(({ STYLES }) => {
-        const def = STYLES.find((st) => st.id === s);
-        if (!def) return;
-        const isDark = resolved === "dark";
-        const vars =
-          isDark && Object.keys(def.darkVars).length
-            ? def.darkVars
-            : def.lightVars;
-        for (const [prop, val] of Object.entries(vars)) {
-          document.documentElement.style.setProperty(
-            prop,
-            val as string,
-          );
-        }
-      });
+    // ── Resolve brand ────────────────────────────────────────────────
+    let brand: Brand = "apple";
+    const storedBrand = localStorage.getItem(BRAND_KEY) as Brand | null;
+    if (storedBrand && (storedBrand === "apple" || storedBrand === "android")) {
+      brand = storedBrand;
+    } else {
+      // Migrate from legacy data-style format
+      const legacyStyle = localStorage.getItem(LEGACY_STYLE_KEY);
+      if (legacyStyle) {
+        brand = resolveLegacyStyle(legacyStyle);
+        localStorage.setItem(BRAND_KEY, brand);
+        localStorage.removeItem(LEGACY_STYLE_KEY);
+      }
     }
+    document.documentElement.setAttribute("data-brand", brand);
+
+    // ── Resolve theme (light/dark/system) ────────────────────────────
+    const rawTheme = localStorage.getItem(THEME_KEY) || "system";
+    const resolved: "light" | "dark" =
+      rawTheme === "system" ? resolveSystemTheme() : (rawTheme as "light" | "dark");
+    document.documentElement.setAttribute("data-theme", resolved);
   } catch {
-    /* ignore — localStorage може бути недоступний */
+    /* ignore — localStorage may be unavailable */
   }
 }

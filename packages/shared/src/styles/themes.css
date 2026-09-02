@@ -1,13 +1,23 @@
 /*
  * ═══════════════════════════════════════════════════════════════════════════
- * THEMES — Light & Dark
+ * THEMES — Light & Dark (baseline fallback)
  * ═══════════════════════════════════════════════════════════════════════════
  *
- * Import tokens.css before this file.
- * Apply via: <html data-theme="dark"> or class="dark"
+ * This file provides a neutral light/dark baseline.
+ * Brand-specific themes (apple.css, android.css) override these
+ * via higher-specificity [data-brand] selectors.
+ *
+ * Import order in index.css:
+ *   1. Open Props tokens
+ *   2. tokens.css (base variables)
+ *   3. themes.css (light/dark baseline)
+ *   4. apple.css (brand overrides)
+ *   5. android.css (brand overrides)
+ *   6. reset.css
+ *   7. components.css
  */
 
-/* ── Light theme (default) ───────────────────────────────────────────────── */
+/* ── Light theme (default) ───────────────────────────────────────────── */
 :root,
 [data-theme="light"] {
   --bg-0: #f0f2f5;
@@ -49,7 +59,7 @@
   color-scheme: light;
 }
 
-/* ── Dark theme ──────────────────────────────────────────────────────────── */
+/* ── Dark theme ──────────────────────────────────────────────────────── */
 [data-theme="dark"] {
   --bg-0: #0f1117;
   --bg-1: #1a1d27;
@@ -90,7 +100,7 @@
   color-scheme: dark;
 }
 
-/* ── Auto theme (follows OS preference) ──────────────────────────────────── */
+/* ── Auto theme (follows OS preference, fallback when no data-theme set) */
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme="light"]) {
     --bg-0: #0f1117;

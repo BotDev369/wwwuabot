@@ -1,25 +1,31 @@
 import { useState, useEffect, useCallback, useRef } from "react";
-import {
-  STYLES,
-  type StyleId,
-} from "../styles/registry";
+import { BRANDS, type Brand, type Theme } from "../styles/registry";
 
-type Theme = "light" | "dark" | "system";
-
-const STYLE_KEY = "wwwuabot-style";
+const BRAND_KEY = "wwwuabot-brand";
+const LEGACY_STYLE_KEY = "wwwuabot-style";
 const THEME_KEY = "wwwuabot-theme";
 
-function getSystemTheme(): "light" | "dark" {
+function getSystemScheme(): "light" | "dark" {
   return window.matchMedia("(prefers-color-scheme: dark)").matches
     ? "dark"
     : "light";
 }
 
-function getStoredStyle(): StyleId {
+function getStoredBrand(): Brand {
   try {
-    return (localStorage.getItem(STYLE_KEY) as StyleId) || "basic";
+    const stored = localStorage.getItem(BRAND_KEY) as Brand | null;
+    if (stored && (stored === "apple" || stored === "android")) return stored;
+    // Legacy migration
+    const legacy = localStorage.getItem(LEGACY_STYLE_KEY);
+    if (legacy) {
+      const brand: Brand = legacy === "android" ? "android" : "apple";
+      localStorage.setItem(BRAND_KEY, brand);
+      localStorage.removeItem(LEGACY_STYLE_KEY);
+      return brand;
+    }
+    return "apple";
   } catch {
-    return "basic";
+    return "apple";
   }
 }
 
@@ -31,65 +37,42 @@ function getStoredTheme(): Theme {
   }
 }
 
-function applyStyle(id: StyleId) {
-  document.documentElement.setAttribute("data-style", id);
-  // Apply CSS variables from the registry to :root
-  const def = STYLES.find((s) => s.id === id);
-  if (!def) return;
-  const isDark = document.documentElement.getAttribute("data-theme") === "dark";
-  const vars = isDark && Object.keys(def.darkVars).length ? def.darkVars : def.lightVars;
-  // Clear previous style overrides
-  document.documentElement.style.removeProperty("--accent");
-  document.documentElement.style.removeProperty("--bg-0");
-  document.documentElement.style.removeProperty("--bg-1");
-  document.documentElement.style.removeProperty("--border");
-  document.documentElement.style.removeProperty("--text-primary");
-  document.documentElement.style.removeProperty("--text-secondary");
-  document.documentElement.style.removeProperty("--surface");
-  if (id === "basic") return; // basic uses CSS defaults
-  for (const [prop, val] of Object.entries(vars)) {
-    document.documentElement.style.setProperty(prop, val);
-  }
-  // Also override Tailwind's color tokens so utility classes respond
-  if (vars["--accent"]) {
-    document.documentElement.style.setProperty("--color-accent", vars["--accent"]);
-    document.documentElement.style.setProperty("--color-primary", vars["--accent"]);
-  }
-  if (vars["--bg-1"]) {
-    document.documentElement.style.setProperty("--color-surface", vars["--bg-1"]);
-    document.documentElement.style.setProperty("--color-background", vars["--bg-0"] || vars["--bg-1"]);
-  }
-  if (vars["--text-primary"]) {
-    document.documentElement.style.setProperty("--color-foreground", vars["--text-primary"]);
+function applyBrand(brand: Brand) {
+  document.documentElement.setAttribute("data-brand", brand);
+  // Update Tailwind color tokens to match brand accent
+  const brandDef = BRANDS.find((b) => b.id === brand);
+  if (brandDef) {
+    const isDark =
+      document.documentElement.getAttribute("data-theme") === "dark";
+    const accentColor = isDark ? "#ffffff" : "#000000";
+    document.documentElement.style.setProperty("--color-accent", accentColor);
+    document.documentElement.style.setProperty("--color-primary", accentColor);
   }
 }
 
 function applyTheme(theme: Theme) {
-  const resolved = theme === "system" ? getSystemTheme() : theme;
+  const resolved = theme === "system" ? getSystemScheme() : theme;
   document.documentElement.setAttribute("data-theme", resolved);
-  // Re-apply current style variables for the new theme
-  const currentStyle = (document.documentElement.getAttribute("data-style") as StyleId) || "basic";
-  applyStyle(currentStyle);
 }
 
 /**
- * Combined style + theme hook.
+ * Combined brand + theme hook.
  * Manages:
- * - Style: any StyleId from the registry
+ * - Brand: "apple" | "android"
  * - Theme: "light" | "dark" | "system"
  */
 export function useStyleTheme() {
-  const [style, setStyleState] = useState<StyleId>(getStoredStyle);
+  const [brand, setBrandState] = useState<Brand>(getStoredBrand);
   const [theme, setThemeState] = useState<Theme>(getStoredTheme);
 
-  const setStyle = useCallback((s: StyleId) => {
-    setStyleState(s);
+  const setBrand = useCallback((b: Brand) => {
+    setBrandState(b);
     try {
-      localStorage.setItem(STYLE_KEY, s);
+      localStorage.setItem(BRAND_KEY, b);
     } catch {
       /* ignore */
     }
-    applyStyle(s);
+    applyBrand(b);
   }, []);
 
   const setTheme = useCallback((t: Theme) => {
@@ -110,9 +93,9 @@ export function useStyleTheme() {
 
   // Apply on mount
   useEffect(() => {
-    applyStyle(style);
+    applyBrand(brand);
     applyTheme(theme);
-  }, [style, theme]);
+  }, [brand, theme]);
 
   // Listen for OS changes when theme is "system"
   useEffect(() => {
@@ -124,15 +107,15 @@ export function useStyleTheme() {
   }, [theme]);
 
   return {
-    style,
+    brand,
     theme,
-    setStyle,
+    setBrand,
     setTheme,
     cycleTheme,
   };
 }
 
-/* ─── Style Picker Dropdown ──────────────────────────────────────────── */
+/* ─── Shared button styles ──────────────────────────────────────────── */
 
 const btnBase: React.CSSProperties = {
   display: "flex",
@@ -154,57 +137,18 @@ const btnBase: React.CSSProperties = {
   position: "relative" as const,
 };
 
-const dropdownStyle: React.CSSProperties = {
-  position: "absolute",
-  bottom: "100%",
-  left: 0,
-  right: 0,
-  marginBottom: 6,
-  background: "var(--bg-1)",
-  border: "1px solid var(--border)",
-  borderRadius: "var(--radius)",
-  boxShadow: "var(--shadow-lg)",
-  zIndex: 200,
-  maxHeight: 320,
-  overflowY: "auto",
-  padding: 4,
-};
-
-const itemStyle: React.CSSProperties = {
-  display: "flex",
-  alignItems: "center",
-  gap: 8,
-  padding: "7px 10px",
-  borderRadius: "var(--radius-sm)",
-  cursor: "pointer",
-  fontSize: 13,
-  fontFamily: "var(--font-ui)",
-  fontWeight: 500,
-  color: "var(--text-primary)",
-  transition: "background 0.1s",
-  border: "none",
-  background: "none",
-  width: "100%",
-  textAlign: "left",
-};
-
-const itemActiveStyle: React.CSSProperties = {
-  ...itemStyle,
-  background: "var(--accent-dim)",
-  color: "var(--accent)",
-  fontWeight: 600,
-};
+/* ─── Brand Picker (Apple / Android) ───────────────────────────────── */
 
 /**
- * Style picker dropdown — shows all available styles from registry.
- * Click opens a dropdown list above the button.
+ * Brand picker — shows 2 options (Apple, Material).
+ * Click opens a small dropdown above the button.
  */
 export function StylePicker({ compact = false }: { compact?: boolean }) {
-  const { style, setStyle } = useStyleTheme();
+  const { brand, setBrand } = useStyleTheme();
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
 
-  const current = STYLES.find((s) => s.id === style) ?? STYLES[0];
+  const current = BRANDS.find((b) => b.id === brand) ?? BRANDS[0];
 
   // Close on outside click
   useEffect(() => {
@@ -218,8 +162,8 @@ export function StylePicker({ compact = false }: { compact?: boolean }) {
     return () => document.removeEventListener("mousedown", handler);
   }, [open]);
 
-  const handleSelect = (id: StyleId) => {
-    setStyle(id);
+  const handleSelect = (id: Brand) => {
+    setBrand(id);
     setOpen(false);
   };
 
@@ -228,34 +172,78 @@ export function StylePicker({ compact = false }: { compact?: boolean }) {
       <button
         type="button"
         onClick={() => setOpen((v) => !v)}
-        title={`Style: ${current.labelUk}`}
-        aria-label={`Обрати стиль (зараз: ${current.labelUk})`}
+        title={`Бренд: ${current.labelUk}`}
+        aria-label={`Обрати бренд (зараз: ${current.labelUk})`}
         aria-expanded={open}
-        style={compact ? { ...btnBase, justifyContent: "center", padding: 8, width: "auto" } : btnBase}
+        style={
+          compact
+            ? { ...btnBase, justifyContent: "center", padding: 8, width: "auto" }
+            : btnBase
+        }
       >
         <span style={{ fontSize: 16, flexShrink: 0 }}>{current.icon}</span>
         {!compact && <span>{current.labelUk}</span>}
       </button>
 
       {open && (
-        <div style={dropdownStyle}>
-          {STYLES.map((s) => (
+        <div
+          style={{
+            position: "absolute",
+            bottom: "100%",
+            left: 0,
+            right: 0,
+            marginBottom: 6,
+            background: "var(--bg-1)",
+            border: "1px solid var(--border)",
+            borderRadius: "var(--radius)",
+            boxShadow: "var(--shadow-lg)",
+            zIndex: 200,
+            padding: 4,
+          }}
+        >
+          {BRANDS.map((b) => (
             <button
-              key={s.id}
+              key={b.id}
               type="button"
-              style={s.id === style ? itemActiveStyle : itemStyle}
-              onClick={() => handleSelect(s.id)}
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: 8,
+                padding: "7px 10px",
+                borderRadius: "var(--radius-sm)",
+                cursor: "pointer",
+                fontSize: 13,
+                fontFamily: "var(--font-ui)",
+                fontWeight: b.id === brand ? 600 : 500,
+                color:
+                  b.id === brand ? "var(--accent)" : "var(--text-primary)",
+                background:
+                  b.id === brand ? "var(--accent-dim)" : "transparent",
+                transition: "background 0.1s",
+                border: "none",
+                width: "100%",
+                textAlign: "left",
+              }}
+              onClick={() => handleSelect(b.id)}
               onMouseEnter={(e) => {
-                if (s.id !== style) e.currentTarget.style.background = "var(--surface-hover)";
+                if (b.id !== brand)
+                  e.currentTarget.style.background = "var(--surface-hover)";
               }}
               onMouseLeave={(e) => {
-                if (s.id !== style) e.currentTarget.style.background = "none";
+                if (b.id !== brand) e.currentTarget.style.background = "transparent";
               }}
             >
-              <span style={{ fontSize: 15, flexShrink: 0, width: 22, textAlign: "center" }}>
-                {s.id === style ? "✓" : s.icon}
+              <span
+                style={{
+                  fontSize: 15,
+                  flexShrink: 0,
+                  width: 22,
+                  textAlign: "center",
+                }}
+              >
+                {b.id === brand ? "✓" : b.icon}
               </span>
-              <span>{s.labelUk}</span>
+              <span>{b.labelUk}</span>
             </button>
           ))}
         </div>
@@ -263,6 +251,8 @@ export function StylePicker({ compact = false }: { compact?: boolean }) {
     </div>
   );
 }
+
+/* ─── Theme Toggle (Light / Dark / System) ──────────────────────────── */
 
 /**
  * Theme toggle: light ↔ dark ↔ system.
@@ -288,7 +278,11 @@ export function ThemeToggle({ compact = false }: { compact?: boolean }) {
       onClick={cycleTheme}
       title={`Тема: ${labels[theme]}`}
       aria-label={`Перемкнути тему (зараз: ${labels[theme]})`}
-      style={compact ? { ...btnBase, justifyContent: "center", padding: 8, width: "auto" } : btnBase}
+      style={
+        compact
+          ? { ...btnBase, justifyContent: "center", padding: 8, width: "auto" }
+          : btnBase
+      }
     >
       <span style={{ fontSize: 16, flexShrink: 0 }}>{icons[theme]}</span>
       {!compact && <span>{labels[theme]}</span>}

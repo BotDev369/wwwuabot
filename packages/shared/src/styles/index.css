@@ -8,23 +8,20 @@
  * Usage in any worker:
  *   import "@wwwuabot/shared/styles/index.css";
  *
- * Styles:
- *   tokens.css        — CSS variable definitions (spacing, typography, etc.)
- *   themes.css        — Light & dark theme values
- *   apple.css         — Apple-style theme (data-style="apple")
- *   reset.css         — Minimal reset
- *   components.css    — Reusable .wb-* component classes
+ * Brands:
+ *   apple.css         — iOS 18 HIG (data-brand="apple")
+ *   android.css       — Material Design 3 (data-brand="android")
  *
  * Apply via HTML attributes:
+ *   <html data-brand="apple|android">  — visual brand
  *   <html data-theme="light|dark">     — color scheme
- *   <html data-style="basic|apple">    — visual style
  */
 
 /* ═══════════════════════════════════════════════════════════════════════════
  * IMPORT ORDER MATTERS:
  * 1. Open Props tokens (via :where(html) — zero specificity)
  * 2. Our design tokens + themes (via :root — override Tailwind's @layer theme)
- * 3. Apple/style CSS (via [data-style] — highest specificity)
+ * 3. Brand CSS (via [data-brand] — highest specificity, overrides everything)
  *
  * IMPORTANT: Tailwind MUST be imported AFTER this file in each app's
  * index.css, so that our @layer theme variables override Tailwind's.
@@ -47,6 +44,11 @@
 /* ── Our design tokens + themes ── */
 @import "./tokens.css";
 @import "./themes.css";
+
+/* ── Brand themes (each uses [data-brand] selectors) ── */
 @import "./apple.css";
+@import "./android.css";
+
+/* ── Reset + component classes ── */
 @import "./reset.css";
 @import "./components.css";
