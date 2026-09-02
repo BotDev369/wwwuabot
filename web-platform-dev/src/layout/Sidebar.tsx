@@ -1,12 +1,13 @@
-import { Link } from "react-router-dom";
+import { NavLink } from "react-router-dom";
 import { useAppStore } from "@/stores/app.store";
-import { ThemeButton } from "@wwwuabot/shared";
+import { ThemeButton, icons } from "@wwwuabot/shared";
+import type { IconName } from "@wwwuabot/shared";
 
-const NAV_ITEMS = [
-  { to: "/", label: "Головна", icon: "🏠" },
-  { to: "/mydate/my-dates", label: "Мої дати", icon: "📅" },
-  { to: "/mydate/compare", label: "Співставлення", icon: "🔄" },
-  { to: "/mydate/about", label: "Про системи", icon: "ℹ️" },
+const NAV_ITEMS: { to: string; label: string; icon: IconName }[] = [
+  { to: "/", label: "Головна", icon: "home" },
+  { to: "/mydate/my-dates", label: "Мої дати", icon: "my-dates" },
+  { to: "/mydate/compare", label: "Співставлення", icon: "compare" },
+  { to: "/mydate/about", label: "Про системи", icon: "info" },
 ];
 
 export function Sidebar() {
@@ -37,13 +38,20 @@ export function Sidebar() {
 
         <nav>
           {NAV_ITEMS.map((item) => (
-            <Link
+            <NavLink
               key={item.to}
               to={item.to}
+              end={item.to === "/"}
+              className={({ isActive }) =>
+                `sidebar-nav-item${isActive ? " sidebar-nav-item--active" : ""}`
+              }
               onClick={() => setSidebarOpen(false)}
             >
-              {item.label}
-            </Link>
+              <span className="sidebar-nav-icon">
+                {icons[item.icon]}
+              </span>
+              <span className="sidebar-nav-label">{item.label}</span>
+            </NavLink>
           ))}
         </nav>
       </aside>
