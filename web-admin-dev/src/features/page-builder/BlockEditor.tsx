@@ -6,9 +6,10 @@
  * - Редагувати props (генерується форма з JSON Schema)
  * - Додавати/видаляти вкладені блоки
  * - Переміщати блок між зонами
+ * - Встановлювати умови показу (role, tariff, status, discount, permissions)
  */
 
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import {
   BLOCK_DEFINITIONS,
   getBlockDefinition,
@@ -17,8 +18,20 @@ import type {
   PageBlock,
   BlockZone,
   BlockContext,
+  BlockConditions,
 } from "@wwwuabot/shared/types/page-config";
+import { icons } from "@wwwuabot/shared";
 
+const ico = (name: keyof typeof icons, size = 14) => (
+  <span style={{ display: "inline-flex", alignItems: "center", width: size, height: size, flexShrink: 0 }}>
+    {icons[name]}
+  </span>
+);
+
+const AVAILABLE_ROLES = ["user", "moderator", "admin", "vip"];
+const AVAILABLE_TARIFFS = ["free", "basic", "pro", "enterprise"];
+const AVAILABLE_STATUSES = ["active", "pending", "suspended"];
+const AVAILABLE_PERMISSIONS = ["analytics", "export", "messaging", "settings", "users", "billing"];
 
 interface BlockEditorProps {
   /** Блок для редагування. */
@@ -32,6 +45,9 @@ interface BlockEditorProps {
 
   /** Callback: оновити props блоку. */
   onUpdateProps: (blockId: string, props: Record<string, unknown>) => void;
+
+  /** Callback: оновити умови блоку. */
+  onUpdateConditions: (blockId: string, conditions: BlockConditions | undefined) => void;
 
   /** Callback: видалити блок. */
   onRemove: (blockId: string) => void;
@@ -52,6 +68,13 @@ interface BlockEditorProps {
     props: Record<string, unknown>,
   ) => void;
 
+  /** Callback: оновити умови дочірнього блоку. */
+  onUpdateChildConditions: (
+    parentId: string,
+    childId: string,
+    conditions: BlockConditions | undefined,
+  ) => void;
+
   /** Рівень вкладеності (для візуального відступу). */
   depth?: number;
 }
@@ -61,13 +84,16 @@ export function BlockEditor({
   zone,
   context,
   onUpdateProps,
+  onUpdateConditions,
   onRemove,
   onChangeType,
   onAddChild,
   onRemoveChild,
   onUpdateChildProps,
+  onUpdateChildConditions,
   depth = 0,
 }: BlockEditorProps) {
+  const [showConditions, setShowConditions] = useState(false);
   const definition = useMemo(
     () => getBlockDefinition(block.type),
     [block.type],
@@ -93,15 +119,45 @@ export function BlockEditor({
   };
 
   const handleAddChild = () => {
-    // Додаємо текстовий блок за замовчуванням
     onAddChild(block.id, "text");
+  };
+
+  // ── Conditions helpers ──
+  const conditions = block.conditions;
+  const hasConditions = !!conditions && (
+    (conditions.role && conditions.role.length > 0) ||
+    (conditions.tariff && conditions.tariff.length > 0) ||
+    (conditions.status && conditions.status.length > 0) ||
+    conditions.minDiscount !== undefined ||
+    (conditions.permissions && conditions.permissions.length > 0)
+  );
+
+  function updateConditions(patch: Partial<BlockConditions>) {
+    const current = block.conditions ?? {};
+    const next = { ...current, ...patch };
+
+    // Clean up empty arrays
+    if (next.role && next.role.length === 0) delete next.role;
+    if (next.tariff && next.tariff.length === 0) delete next.tariff;
+    if (next.status && next.status.length === 0) delete next.status;
+    if (next.minDiscount === undefined || next.minDiscount === 0) delete next.minDiscount;
+    if (next.permissions && next.permissions.length === 0) delete next.permissions;
+
+    const isEmpty = !next.role && !next.tariff && !next.status && !next.minDiscount && !next.permissions;
+    onUpdateConditions(block.id, isEmpty ? undefined : next);
+  }
+
+  function toggleArrayValue(field: "role" | "tariff" | "status" | "permissions", value: string) {
+    const arr = (conditions?.[field] as string[] | undefined) ?? [];
+    const next = arr.includes(value) ? arr.filter((v) => v !== value) : [...arr, value];
+    updateConditions({ [field]: next });
   }
 
   return (
     <div
       className="pb-block-editor"
       style={{
-        border: "1px solid var(--border)",
+        border: hasConditions ? "1px solid var(--accent, #6366f1)" : "1px solid var(--border)",
         borderRadius: 6,
         padding: 12,
         marginBottom: 8,
@@ -139,15 +195,44 @@ export function BlockEditor({
           <span style={{ fontSize: 11, color: "var(--text-secondary)" }}>
             id: {block.id.slice(0, 8)}
           </span>
+          {hasConditions && (
+            <span style={{
+              fontSize: 10,
+              padding: "1px 6px",
+              borderRadius: 4,
+              background: "var(--accent, #6366f1)",
+              color: "#fff",
+              fontWeight: 600,
+            }}>
+              CONDITIONS
+            </span>
+          )}
         </div>
-        <button
-          className="btn btn--danger"
-          onClick={() => onRemove(block.id)}
-          style={{ fontSize: 12, padding: "2px 8px" }}
-          title="Видалити блок"
-        >
-          🗑️
-        </button>
+        <div style={{ display: "flex", gap: 4 }}>
+          <button
+            onClick={() => setShowConditions(!showConditions)}
+            style={{
+              fontSize: 11,
+              padding: "2px 8px",
+              borderRadius: 4,
+              border: `1px solid ${showConditions ? "var(--accent, #6366f1)" : "var(--border)"}`,
+              background: showConditions ? "var(--accent, #6366f1)" : "transparent",
+              color: showConditions ? "#fff" : "var(--text-secondary)",
+              cursor: "pointer",
+            }}
+            title="Умови показу"
+          >
+            {ico("eye", 12)} Умови
+          </button>
+          <button
+            className="btn btn--danger"
+            onClick={() => onRemove(block.id)}
+            style={{ fontSize: 12, padding: "2px 8px" }}
+            title="Видалити блок"
+          >
+            {ico("trash", 12)}
+          </button>
+        </div>
       </div>
 
       {/* Опис блоку */}
@@ -161,6 +246,147 @@ export function BlockEditor({
           }}
         >
           {definition.description}
+        </div>
+      )}
+
+      {/* ═══ CONDITIONS PANEL ═══ */}
+      {showConditions && (
+        <div style={{
+          marginBottom: 12,
+          padding: 10,
+          border: "1px solid var(--border)",
+          borderRadius: 6,
+          background: "var(--bg-secondary, #f9fafb)",
+        }}>
+          <div style={{ fontSize: 12, fontWeight: 600, marginBottom: 8, display: "flex", alignItems: "center", gap: 4 }}>
+            {ico("eye")} Умови показу блоку
+          </div>
+          <div style={{ fontSize: 11, color: "var(--text-secondary)", marginBottom: 8 }}>
+            Блок показується тільки якщо ВСІ умови виконуються. Якщо жодна не вказана — блок показується завжди.
+          </div>
+
+          {/* Role */}
+          <div style={{ marginBottom: 8 }}>
+            <label style={{ fontSize: 11, fontWeight: 600, display: "block", marginBottom: 4 }}>Роль</label>
+            <div style={{ display: "flex", flexWrap: "wrap", gap: 4 }}>
+              {AVAILABLE_ROLES.map((r) => (
+                <button
+                  key={r}
+                  type="button"
+                  onClick={() => toggleArrayValue("role", r)}
+                  style={{
+                    fontSize: 11,
+                    padding: "2px 8px",
+                    borderRadius: 4,
+                    border: `1px solid ${(conditions?.role ?? []).includes(r) ? "var(--accent, #6366f1)" : "var(--border)"}`,
+                    background: (conditions?.role ?? []).includes(r) ? "var(--accent, #6366f1)" : "transparent",
+                    color: (conditions?.role ?? []).includes(r) ? "#fff" : "var(--text-secondary)",
+                    cursor: "pointer",
+                  }}
+                >
+                  {r}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Tariff */}
+          <div style={{ marginBottom: 8 }}>
+            <label style={{ fontSize: 11, fontWeight: 600, display: "block", marginBottom: 4 }}>Тариф</label>
+            <div style={{ display: "flex", flexWrap: "wrap", gap: 4 }}>
+              {AVAILABLE_TARIFFS.map((t) => (
+                <button
+                  key={t}
+                  type="button"
+                  onClick={() => toggleArrayValue("tariff", t)}
+                  style={{
+                    fontSize: 11,
+                    padding: "2px 8px",
+                    borderRadius: 4,
+                    border: `1px solid ${(conditions?.tariff ?? []).includes(t) ? "var(--accent, #6366f1)" : "var(--border)"}`,
+                    background: (conditions?.tariff ?? []).includes(t) ? "var(--accent, #6366f1)" : "transparent",
+                    color: (conditions?.tariff ?? []).includes(t) ? "#fff" : "var(--text-secondary)",
+                    cursor: "pointer",
+                  }}
+                >
+                  {t}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Status */}
+          <div style={{ marginBottom: 8 }}>
+            <label style={{ fontSize: 11, fontWeight: 600, display: "block", marginBottom: 4 }}>Статус</label>
+            <div style={{ display: "flex", flexWrap: "wrap", gap: 4 }}>
+              {AVAILABLE_STATUSES.map((s) => (
+                <button
+                  key={s}
+                  type="button"
+                  onClick={() => toggleArrayValue("status", s)}
+                  style={{
+                    fontSize: 11,
+                    padding: "2px 8px",
+                    borderRadius: 4,
+                    border: `1px solid ${(conditions?.status ?? []).includes(s) ? "var(--accent, #6366f1)" : "var(--border)"}`,
+                    background: (conditions?.status ?? []).includes(s) ? "var(--accent, #6366f1)" : "transparent",
+                    color: (conditions?.status ?? []).includes(s) ? "#fff" : "var(--text-secondary)",
+                    cursor: "pointer",
+                  }}
+                >
+                  {s}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Min Discount */}
+          <div style={{ marginBottom: 8, display: "flex", alignItems: "center", gap: 8 }}>
+            <label style={{ fontSize: 11, fontWeight: 600, minWidth: 80 }}>Мін. знижка (%)</label>
+            <input
+              type="number"
+              min={0}
+              max={100}
+              value={conditions?.minDiscount ?? ""}
+              placeholder="0"
+              onChange={(e) => {
+                const v = Number(e.target.value);
+                updateConditions({ minDiscount: v > 0 ? v : undefined });
+              }}
+              style={{
+                width: 60,
+                fontSize: 12,
+                padding: "2px 6px",
+                border: "1px solid var(--border)",
+                borderRadius: 4,
+              }}
+            />
+          </div>
+
+          {/* Permissions */}
+          <div>
+            <label style={{ fontSize: 11, fontWeight: 600, display: "block", marginBottom: 4 }}>Дозволи</label>
+            <div style={{ display: "flex", flexWrap: "wrap", gap: 4 }}>
+              {AVAILABLE_PERMISSIONS.map((p) => (
+                <button
+                  key={p}
+                  type="button"
+                  onClick={() => toggleArrayValue("permissions", p)}
+                  style={{
+                    fontSize: 11,
+                    padding: "2px 8px",
+                    borderRadius: 4,
+                    border: `1px solid ${(conditions?.permissions ?? []).includes(p) ? "var(--accent, #6366f1)" : "var(--border)"}`,
+                    background: (conditions?.permissions ?? []).includes(p) ? "var(--accent, #6366f1)" : "transparent",
+                    color: (conditions?.permissions ?? []).includes(p) ? "#fff" : "var(--text-secondary)",
+                    cursor: "pointer",
+                  }}
+                >
+                  {p}
+                </button>
+              ))}
+            </div>
+          </div>
         </div>
       )}
 
@@ -205,9 +431,11 @@ export function BlockEditor({
                     onUpdateProps={(childId, props) =>
                       onUpdateChildProps(block.id, childId, props)
                     }
+                    onUpdateConditions={(childId, conditions) =>
+                      onUpdateChildConditions(block.id, childId, conditions)
+                    }
                     onRemove={(childId) => onRemoveChild(block.id, childId)}
                     onChangeType={(_, newType) => {
-                      // Зміна типу дочірнього блоку
                       onUpdateChildProps(block.id, child.id, {
                         ...child.props,
                         _newType: newType,
@@ -219,6 +447,9 @@ export function BlockEditor({
                     }
                     onUpdateChildProps={(childId, grandChildId, props) =>
                       onUpdateChildProps(childId, grandChildId, props)
+                    }
+                    onUpdateChildConditions={(childId, grandChildId, conditions) =>
+                      onUpdateChildConditions(childId, grandChildId, conditions)
                     }
                     depth={depth + 1}
                   />
@@ -240,7 +471,6 @@ function renderPropsFields(
   onChange: (key: string, value: unknown) => void,
 ): React.ReactNode {
   if (!schema || typeof schema !== "object" || !schema.properties) {
-    // Fallback: простий список key=value
     return Object.entries(props).map(([key, value]) => (
       <div key={key} style={{ display: "flex", gap: 8, alignItems: "center" }}>
         <label style={{ fontSize: 12, minWidth: 100, color: "var(--text-secondary)" }}>
@@ -251,7 +481,6 @@ function renderPropsFields(
           value={typeof value === "string" ? value : JSON.stringify(value ?? "")}
           onChange={(e) => {
             const val = e.target.value;
-            // Спробуємо розпARSити JSON
             try {
               onChange(key, JSON.parse(val));
             } catch {
@@ -319,7 +548,6 @@ function renderPropsFields(
     }
 
     if (type === "array") {
-      // Для масивів — JSON textarea
       return (
         <div key={key} style={{ display: "flex", gap: 8, flexDirection: "column" }}>
           <label style={{ fontSize: 12, color: "var(--text-secondary)" }}>
@@ -351,7 +579,6 @@ function renderPropsFields(
       );
     }
 
-    // Default: text input
     return (
       <div key={key} style={{ display: "flex", gap: 8, alignItems: "center" }}>
         <label style={{ fontSize: 12, minWidth: 100, color: "var(--text-secondary)" }}>

@@ -12,6 +12,7 @@ import type {
   BlockZone,
   PageBlock,
   BlockContext,
+  BlockConditions,
 } from "@wwwuabot/shared/types/page-config";
 import { generateBlockId } from "@wwwuabot/shared/types/page-config";
 import {
@@ -106,6 +107,32 @@ export function ZoneEditor({
     const updated = blocks.map((b) =>
       b.id === blockId ? { ...b, props } : b,
     );
+    onUpdateBlocks(zone, updated);
+  };
+
+  // Оновити умови блоку
+  const handleUpdateConditions = (blockId: string, conditions: BlockConditions | undefined) => {
+    const updated = blocks.map((b) =>
+      b.id === blockId ? { ...b, conditions } : b,
+    );
+    onUpdateBlocks(zone, updated);
+  };
+
+  // Оновити умови дочірнього блоку (рекурсивно)
+  const handleUpdateChildConditions = (
+    parentId: string,
+    childId: string,
+    conditions: BlockConditions | undefined,
+  ) => {
+    const updated = blocks.map((b) => {
+      if (b.id !== parentId) return b;
+      return {
+        ...b,
+        children: (b.children ?? []).map((c) =>
+          c.id === childId ? { ...c, conditions } : c,
+        ),
+      };
+    });
     onUpdateBlocks(zone, updated);
   };
 
@@ -273,11 +300,13 @@ export function ZoneEditor({
                       zone={zone}
                       context={context}
                       onUpdateProps={handleUpdateProps}
+                      onUpdateConditions={handleUpdateConditions}
                       onRemove={handleRemoveBlock}
                       onChangeType={handleChangeType}
                       onAddChild={handleAddChild}
                       onRemoveChild={handleRemoveChild}
                       onUpdateChildProps={handleUpdateChildProps}
+                      onUpdateChildConditions={handleUpdateChildConditions}
                     />
                   </div>
                 </div>
