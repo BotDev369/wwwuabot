@@ -93,12 +93,19 @@ export function KeyboardEditor({ rows, onChange }: Props) {
                 >
                   <option value="callback">callback_data</option>
                   <option value="url">url</option>
+                  <option value="web_app">вебапп</option>
                   <option value="none">без дії</option>
                 </select>
                 {b.kind !== "none" && (
                   <input
                     className="block-input"
-                    placeholder={b.kind === "url" ? "https://…" : "codeword / @дія:ціль"}
+                    placeholder={
+                      b.kind === "url"
+                        ? "https://…"
+                        : b.kind === "web_app"
+                          ? "https://example.com/app"
+                          : "codeword / @дія:ціль"
+                    }
                     value={b.value}
                     onChange={(e) => updateButton(row.id, b.id, { value: e.target.value })}
                   />

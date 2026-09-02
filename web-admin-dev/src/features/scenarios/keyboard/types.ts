@@ -1,4 +1,4 @@
-export type ButtonKind = "callback" | "url" | "none";
+export type ButtonKind = "callback" | "url" | "web_app" | "none";
 
 export interface KeyboardButtonModel {
   id: string;

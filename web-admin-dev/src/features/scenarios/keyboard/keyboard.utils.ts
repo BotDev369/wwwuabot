@@ -5,8 +5,8 @@ export function genId(): string {
   return `kb_${Date.now()}_${++_id}`;
 }
 
-export function newButton(): KeyboardButtonModel {
-  return { id: genId(), text: "", kind: "callback", value: "" };
+export function newButton(kind: ButtonKind = "callback"): KeyboardButtonModel {
+  return { id: genId(), text: "", kind, value: "" };
 }
 
 // UI → Telegram
@@ -14,19 +14,30 @@ export function toTelegramButton(b: KeyboardButtonModel): Record<string, unknown
   const out: Record<string, unknown> = { ...(b.extra ?? {}), text: b.text };
   if (b.kind === "callback") out.callback_data = b.value;
   else if (b.kind === "url") out.url = b.value;
+  else if (b.kind === "web_app") out.web_app = { url: b.value };
   return out;
 }
 
 // Telegram → UI
 export function fromTelegramButton(btn: Record<string, unknown>): KeyboardButtonModel {
-  const { text, callback_data, url, ...rest } = btn;
+  const { text, callback_data, url, web_app, ...rest } = btn;
   const kind: ButtonKind =
-    url !== undefined && url !== null
-      ? "url"
-      : callback_data !== undefined && callback_data !== null
-        ? "callback"
-        : "none";
-  const value = kind === "url" ? String(url) : kind === "callback" ? String(callback_data) : "";
+    web_app !== undefined && web_app !== null
+      ? "web_app"
+      : url !== undefined && url !== null
+        ? "url"
+        : callback_data !== undefined && callback_data !== null
+          ? "callback"
+          : "none";
+  let value = "";
+  if (kind === "web_app") {
+    const wa = web_app as Record<string, unknown>;
+    value = typeof wa?.url === "string" ? wa.url : "";
+  } else if (kind === "url") {
+    value = String(url);
+  } else if (kind === "callback") {
+    value = String(callback_data);
+  }
   return {
     id: genId(),
     text: typeof text === "string" ? text : String(text ?? ""),
@@ -108,6 +119,12 @@ export function validateButtons(json: string): string | null {
       }
       if ("url" in b && String(b.url ?? "").trim() === "") {
         return `рядок ${i + 1}: кнопка «${text}» без url — заповни значення`;
+      }
+      if ("web_app" in b) {
+        const wa = b.web_app as Record<string, unknown> | undefined;
+        if (!wa || typeof wa.url !== "string" || wa.url.trim() === "") {
+          return `рядок ${i + 1}: кнопка «${text}» web_app без url — заповни URL веб-додатка`;
+        }
       }
     }
   }
