@@ -8,6 +8,7 @@ const NAV_ITEMS: { to: string; label: string; icon: IconName }[] = [
   { to: "/mydate/my-dates", label: "Мої дати", icon: "my-dates" },
   { to: "/mydate/compare", label: "Співставлення", icon: "compare" },
   { to: "/mydate/about", label: "Про системи", icon: "info" },
+  { to: "/profile", label: "Профіль", icon: "users" },
 ];
 
 export function Sidebar() {
