@@ -8,6 +8,13 @@ import {
   deleteMyDates,
   type MyDate,
 } from "@/shared/api/mydate.api";
+import { icons, type IconName } from "@wwwuabot/shared";
+
+const ico = (name: IconName, size = 16) => (
+  <span style={{ display: "inline-flex", alignItems: "center", width: size, height: size, flexShrink: 0 }}>
+    {icons[name]}
+  </span>
+);
 
 /* ═══════════════════════════════════════════════
    TYPES & CONSTANTS
@@ -17,10 +24,10 @@ type SortField = "date" | "type" | "name" | "tags" | "notes" | "created_at";
 type SortOrder = "asc" | "desc";
 type ModalMode = "create" | "edit" | "view";
 
-const TYPE_CONFIG: Record<string, { emoji: string; color: string; bg: string }> = {
-  person: { emoji: "👤", color: "#2563eb", bg: "#eff6ff" },
-  event: { emoji: "🎉", color: "#059669", bg: "#ecfdf5" },
-  other: { emoji: "📌", color: "#7c3aed", bg: "#f5f3ff" },
+const TYPE_CONFIG: Record<string, { icon: IconName; color: string; bg: string }> = {
+  person: { icon: "users", color: "#2563eb", bg: "#eff6ff" },
+  event: { icon: "my-dates", color: "#059669", bg: "#ecfdf5" },
+  other: { icon: "info", color: "#7c3aed", bg: "#f5f3ff" },
 };
 
 const TAG_COLORS = [
@@ -186,7 +193,7 @@ function DateModal({
                     onClick={() => !isReadOnly && setFormType(t)}
                     disabled={isReadOnly}
                   >
-                    {cfg.emoji} {t === "person" ? "Людина" : t === "event" ? "Подія" : "Інше"}
+                    {ico(cfg.icon)} {t === "person" ? "Людина" : t === "event" ? "Подія" : "Інше"}
                   </button>
                 );
               })}
@@ -277,13 +284,13 @@ function DateModal({
                 to={`/mydate/${date?.date}`}
                 onClick={onClose}
               >
-                📊 Аналіз
+                {ico("compare")} Аналіз
               </Link>
               <button className="btn btn-secondary btn-sm" onClick={onSwitchToEdit}>
-                ✏️ Редагувати
+                {ico("edit")} Редагувати
               </button>
               <button className="btn btn-danger btn-sm" onClick={handleDelete}>
-                🗑 Видалити
+                {ico("trash")} Видалити
               </button>
             </>
           ) : (
@@ -683,7 +690,7 @@ export function MyDatesPage() {
                           }}
                           onClick={() => setFormType(t)}
                         >
-                          {cfg.emoji} {t === "person" ? "Людина" : t === "event" ? "Подія" : "Інше"}
+                          {ico(cfg.icon)} {t === "person" ? "Людина" : t === "event" ? "Подія" : "Інше"}
                         </button>
                       );
                     })}
@@ -782,7 +789,7 @@ export function MyDatesPage() {
                 type="text"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder="🔍 Пошук..."
+                placeholder="Пошук..."
                 className="filter-search"
               />
               {Object.entries(columnFilters)
@@ -828,10 +835,10 @@ export function MyDatesPage() {
                   onClick={handleBulkCompare}
                   disabled={selectedIds.size < 2}
                 >
-                  📊 Співставити ({selectedIds.size})
+                  {ico("compare")} Співставити ({selectedIds.size})
                 </button>
                 <button className="btn btn-sm btn-danger" onClick={handleBulkDelete}>
-                  🗑 Видалити ({selectedIds.size})
+                  {ico("trash")} Видалити ({selectedIds.size})
                 </button>
                 <button
                   className="btn btn-sm btn-secondary"
@@ -944,7 +951,7 @@ export function MyDatesPage() {
                             className="type-badge"
                             style={{ color: cfg.color, background: cfg.bg }}
                           >
-                            {cfg.emoji} {typeLabel}
+                            {ico(cfg.icon)} {typeLabel}
                           </span>
                         </td>
                         <td className="notes-cell" title={d.notes || ""}>
@@ -1020,7 +1027,7 @@ export function MyDatesPage() {
                     className="header-modal-btn"
                     onClick={() => setHeaderMenu({ field: headerMenu.field, mode: "filter" })}
                   >
-                    🔍 Фільтр...
+                    {ico("eye")} Фільтр...
                   </button>
                   {(columnFilters[headerMenu.field]?.length > 0 ||
                     sortField === headerMenu.field) && (
@@ -1030,7 +1037,7 @@ export function MyDatesPage() {
                         className="header-modal-btn header-modal-btn--danger"
                         onClick={() => handleHeaderMenuClear(headerMenu.field)}
                       >
-                        🧹 Очистити
+                        {ico("close")} Очистити
                       </button>
                     </>
                   )}
@@ -1109,7 +1116,7 @@ export function MyDatesPage() {
                   to={`/mydate/${rowActionDate.date}`}
                   onClick={() => setRowActionDate(null)}
                 >
-                  📊 Аналіз
+                  {ico("compare")} Аналіз
                 </Link>
                 <button
                   className="header-modal-btn"
@@ -1119,7 +1126,7 @@ export function MyDatesPage() {
                     setRowActionDate(null);
                   }}
                 >
-                  👁 Переглянути
+                  {ico("eye")} Переглянути
                 </button>
                 <button
                   className="header-modal-btn"
@@ -1129,7 +1136,7 @@ export function MyDatesPage() {
                     setRowActionDate(null);
                   }}
                 >
-                  ✏️ Редагувати
+                  {ico("edit")} Редагувати
                 </button>
                 <div className="header-modal-divider" />
                 <button
@@ -1139,7 +1146,7 @@ export function MyDatesPage() {
                     setRowActionDate(null);
                   }}
                 >
-                  🗑 Видалити
+                  {ico("trash")} Видалити
                 </button>
               </div>
             </div>

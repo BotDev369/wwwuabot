@@ -1,5 +1,12 @@
 import { useEffect } from "react";
 import { useAppStore } from "@/stores/app.store";
+import { icons, type IconName } from "@wwwuabot/shared";
+
+const ico = (name: IconName, size = 20) => (
+  <span style={{ display: "inline-flex", alignItems: "center", width: size, height: size, flexShrink: 0 }}>
+    {icons[name]}
+  </span>
+);
 
 export function AboutPage() {
   const setScenarioName = useAppStore((s) => s.setScenarioName);
@@ -43,7 +50,7 @@ export function AboutPage() {
           </div>
 
           <div className="card">
-            <h3>📊 Статистика</h3>
+            <h3>{ico("compare")} Статистика</h3>
             <p>
               Порівняння дат за різними параметрами: день тижня,季节,
               циклічність та інші статистичні показники.
