@@ -126,10 +126,26 @@ export function ProfilePage() {
     setTgUser(user);
 
     if (user?.id) {
-      apiFetch<{ ok: boolean; data: DbProfile }>(`/api/user/profile?user_id=${user.id}`)
+      apiFetch<{ ok: boolean; user?: { id: number; firstName?: string; lastName?: string; username?: string; language?: string; role?: string; tariff?: string; status?: string; discount?: number; permissions?: string[] } }>(`/api/user/profile?user_id=${user.id}`)
         .then((res) => {
-          if (res.ok && res.data) {
-            setDbProfile(res.data);
+          if (res.ok && res.user) {
+            // Map API response (camelCase) to DbProfile (snake_case)
+            const u = res.user;
+            setDbProfile({
+              user_id: u.id,
+              first_name: u.firstName,
+              last_name: u.lastName,
+              username: u.username,
+              language: u.language,
+              role: u.role,
+              tariff: u.tariff,
+              status: u.status,
+              discount: u.discount,
+              permissions: u.permissions,
+              is_blocked: 0,
+              created_at: "",
+              updated_at: "",
+            });
           }
         })
         .catch((e) => setError(`Помилка завантаження профілю: ${String(e).slice(0, 100)}`))
