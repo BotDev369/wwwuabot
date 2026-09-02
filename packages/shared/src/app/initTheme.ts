@@ -11,7 +11,7 @@
  *   Old format was data-style="basic|apple|..." — we map those to
  *   the new 2-brand system on first read.
  */
-import { resolveLegacyStyle, type Brand, type Theme } from "./registry";
+import { resolveLegacyStyle, type Brand } from "../styles/registry";
 
 const BRAND_KEY = "wwwuabot-brand";
 const LEGACY_STYLE_KEY = "wwwuabot-style";
