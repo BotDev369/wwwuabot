@@ -1,5 +1,12 @@
 import { useEffect, useState } from "react";
 import { readUser, type UserRow } from "../../shared/api/users.api";
+import { icons } from "@wwwuabot/shared";
+
+const ico = (name: keyof typeof icons, size = 16) => (
+  <span style={{ display: "inline-flex", alignItems: "center", width: size, height: size, flexShrink: 0 }}>
+    {icons[name]}
+  </span>
+);
 
 interface Props {
   userId: number;
@@ -167,10 +174,10 @@ export function UserCardModal({ userId, onClose, onEdit, onMessage }: Props) {
 
         <div className="usr-modal-footer">
           <button className="btn btn--secondary btn--sm" onClick={() => { onClose(); onMessage(userId); }}>
-            ✉️ Написати
+            {ico("mail")} Написати
           </button>
           <button className="btn btn--primary btn--sm" onClick={() => { onClose(); onEdit(userId); }}>
-            ✏️ Змінити
+            {ico("edit")} Змінити
           </button>
         </div>
       </div>

@@ -2,6 +2,13 @@ import { useMemo, useState, useEffect, useCallback } from "react";
 import { useScenariosStore, type ScenariosSortField } from "../../features/scenarios/store";
 import { ScenarioCardModal } from "../scenarios/ScenarioCardModal";
 import { deleteScenario } from "../../shared/api/scenarios.api";
+import { icons } from "@wwwuabot/shared";
+
+const ico = (name: keyof typeof icons) => (
+  <span style={{ display: "inline-flex", alignItems: "center", width: 18, height: 18, flexShrink: 0 }}>
+    {icons[name]}
+  </span>
+);
 
 function relativeTime(value: string | null): string {
   if (!value) return "—";
@@ -174,7 +181,7 @@ export function ScenariosV2Table() {
           <div className="usr-modal" onClick={(e) => e.stopPropagation()}>
             <div className="usr-modal-header">
               <span className="usr-modal-title">
-                📋 {menuScenario.codeword}
+                {ico("clipboard")} {menuScenario.codeword}
               </span>
               <button className="usr-modal-close" onClick={closeAll}>✕</button>
             </div>
@@ -183,14 +190,14 @@ export function ScenariosV2Table() {
                 className="usr-modal-menu-item"
                 onClick={() => { setMenuCodeword(null); setCardCodeword(menuScenario.codeword); }}
               >
-                📋 Картка сценарію
+                {ico("clipboard")} Картка сценарію
               </button>
               <div className="usr-modal-divider" />
               <button
                 className="usr-modal-menu-item usr-modal-menu-item--danger"
                 onClick={() => { setMenuCodeword(null); setConfirmDelete(menuScenario.codeword); }}
               >
-                🗑️ Видалити
+                {ico("trash")} Видалити
               </button>
             </div>
           </div>
@@ -202,7 +209,7 @@ export function ScenariosV2Table() {
         <div className="usr-modal-overlay" onClick={closeAll}>
           <div className="usr-modal" onClick={(e) => e.stopPropagation()}>
             <div className="usr-modal-header">
-              <span className="usr-modal-title">⚠️ Видалити сценарій?</span>
+              <span className="usr-modal-title">{ico("warning")} Видалити сценарій?</span>
               <button className="usr-modal-close" onClick={closeAll}>✕</button>
             </div>
             <div className="usr-modal-body">
@@ -223,10 +230,10 @@ export function ScenariosV2Table() {
                   }
                 }}
               >
-                🗑️ Так, видалити
+                {ico("trash")} Так, видалити
               </button>
               <button className="usr-modal-menu-item" onClick={closeAll}>
-                ✕ Скасувати
+                {ico("close")} Скасувати
               </button>
             </div>
           </div>

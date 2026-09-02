@@ -3,6 +3,13 @@ import { useUsersStore, type SortField } from "../../features/users/store";
 import type { UserRow } from "../../shared/api/users.api";
 import { UserCardModal } from "./UserCardModal";
 import { UserEditModal } from "./UserEditModal";
+import { icons } from "@wwwuabot/shared";
+
+const ico = (name: keyof typeof icons, extraStyle?: React.CSSProperties) => (
+  <span style={{ display: "inline-flex", alignItems: "center", width: 18, height: 18, flexShrink: 0, ...extraStyle }}>
+    {icons[name]}
+  </span>
+);
 
 function formatName(u: UserRow): string {
   const parts = [u.first_name, u.last_name].filter(Boolean);
@@ -209,20 +216,20 @@ export function UsersTable({ onMessage }: Props) {
                 className="usr-modal-menu-item"
                 onClick={() => { setMenuOpen(null); setCardUserId(menuUser.user_id); }}
               >
-                👁️ Переглянути
+                {ico("eye")}{" "}Переглянути
               </button>
               <button
                 className="usr-modal-menu-item"
                 onClick={() => { setMenuOpen(null); setEditUserId(menuUser.user_id); }}
               >
-                ✏️ Змінити
+                {ico("edit")}{" "}Змінити
               </button>
               <div className="usr-modal-divider" />
               <button
                 className="usr-modal-menu-item"
                 onClick={() => { setMenuOpen(null); onMessage(menuUser.user_id); }}
               >
-                ✉️ Написати повідомлення
+                {ico("mail")}{" "}Написати повідомлення
               </button>
               <button
                 className="usr-modal-menu-item"
@@ -232,7 +239,7 @@ export function UsersTable({ onMessage }: Props) {
                   setMenuOpen(null);
                 }}
               >
-                {menuUser.is_blocked === 1 ? "🔓 Розблокувати" : "🔒 Заблокувати"}
+                {menuUser.is_blocked === 1 ? <>{ico("unlock")}{" "}Розблокувати</> : <>{ico("lock")}{" "}Заблокувати</>}
               </button>
               <div className="usr-modal-divider" />
               <button
@@ -244,7 +251,7 @@ export function UsersTable({ onMessage }: Props) {
                   closeAll();
                 }}
               >
-                🗑️ Видалити
+                {ico("trash")}{" "}Видалити
               </button>
             </div>
           </div>
