@@ -7,21 +7,13 @@
  * Attribute format:
  *   <html data-brand="apple|android" data-theme="light|dark">
  *
- * Legacy migration:
- *   Old format was data-style="basic|apple|..." — we map those to
- *   the new 2-brand system on first read.
+ * No "system" mode — defaults to "dark" if nothing stored.
  */
 import { resolveLegacyStyle, type Brand } from "../styles/registry";
 
 const BRAND_KEY = "wwwuabot-brand";
 const LEGACY_STYLE_KEY = "wwwuabot-style";
 const THEME_KEY = "wwwuabot-theme";
-
-function resolveSystemTheme(): "light" | "dark" {
-  return window.matchMedia("(prefers-color-scheme: dark)").matches
-    ? "dark"
-    : "light";
-}
 
 export function initTheme(): void {
   try {
@@ -31,7 +23,6 @@ export function initTheme(): void {
     if (storedBrand && (storedBrand === "apple" || storedBrand === "android")) {
       brand = storedBrand;
     } else {
-      // Migrate from legacy data-style format
       const legacyStyle = localStorage.getItem(LEGACY_STYLE_KEY);
       if (legacyStyle) {
         brand = resolveLegacyStyle(legacyStyle);
@@ -41,11 +32,11 @@ export function initTheme(): void {
     }
     document.documentElement.setAttribute("data-brand", brand);
 
-    // ── Resolve theme (light/dark/system) ────────────────────────────
-    const rawTheme = localStorage.getItem(THEME_KEY) || "system";
-    const resolved: "light" | "dark" =
-      rawTheme === "system" ? resolveSystemTheme() : (rawTheme as "light" | "dark");
-    document.documentElement.setAttribute("data-theme", resolved);
+    // ── Resolve scheme (light/dark only, no system) ──────────────────
+    const raw = localStorage.getItem(THEME_KEY);
+    const scheme: "light" | "dark" =
+      raw === "light" || raw === "dark" ? raw : "dark";
+    document.documentElement.setAttribute("data-theme", scheme);
   } catch {
     /* ignore — localStorage may be unavailable */
   }

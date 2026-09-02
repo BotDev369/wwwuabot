@@ -12,7 +12,7 @@
 
 export type Brand = "apple" | "android";
 export type Scheme = "light" | "dark";
-export type Theme = "system" | Scheme;
+export type Theme = Scheme;
 
 export interface BrandDefinition {
   id: Brand;

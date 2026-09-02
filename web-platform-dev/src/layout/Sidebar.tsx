@@ -1,6 +1,6 @@
 import { Link } from "react-router-dom";
 import { useAppStore } from "@/stores/app.store";
-import { StylePicker, ThemeToggle } from "@wwwuabot/shared";
+import { ThemeButton } from "@wwwuabot/shared";
 
 const NAV_ITEMS = [
   { to: "/", label: "Головна", icon: "🏠" },
@@ -29,6 +29,12 @@ export function Sidebar() {
             <span>×</span>
           </button>
         </div>
+
+        {/* Theme button — top of nav, above Головна */}
+        <div style={{ padding: "8px 8px 0" }}>
+          <ThemeButton compact />
+        </div>
+
         <nav>
           {NAV_ITEMS.map((item) => (
             <Link
@@ -40,13 +46,6 @@ export function Sidebar() {
             </Link>
           ))}
         </nav>
-
-        {/* Settings section — inside nav flow */}
-        <div className="sidebar-settings">
-          <div className="sidebar-settings-label">Налаштування</div>
-          <StylePicker compact />
-          <ThemeToggle compact />
-        </div>
       </aside>
     </>
   );

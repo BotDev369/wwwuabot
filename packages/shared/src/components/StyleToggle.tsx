@@ -1,21 +1,14 @@
 import { useState, useEffect, useCallback, useRef } from "react";
-import { BRANDS, type Brand, type Theme } from "../styles/registry";
+import { BRANDS, type Brand, type Scheme } from "../styles/registry";
 
 const BRAND_KEY = "wwwuabot-brand";
 const LEGACY_STYLE_KEY = "wwwuabot-style";
 const THEME_KEY = "wwwuabot-theme";
 
-function getSystemScheme(): "light" | "dark" {
-  return window.matchMedia("(prefers-color-scheme: dark)").matches
-    ? "dark"
-    : "light";
-}
-
 function getStoredBrand(): Brand {
   try {
     const stored = localStorage.getItem(BRAND_KEY) as Brand | null;
     if (stored && (stored === "apple" || stored === "android")) return stored;
-    // Legacy migration
     const legacy = localStorage.getItem(LEGACY_STYLE_KEY);
     if (legacy) {
       const brand: Brand = legacy === "android" ? "android" : "apple";
@@ -29,93 +22,57 @@ function getStoredBrand(): Brand {
   }
 }
 
-function getStoredTheme(): Theme {
+function getStoredScheme(): Scheme {
   try {
-    return (localStorage.getItem(THEME_KEY) as Theme) || "system";
+    const raw = localStorage.getItem(THEME_KEY);
+    if (raw === "light" || raw === "dark") return raw;
+    return "dark";
   } catch {
-    return "system";
+    return "dark";
   }
 }
 
 function applyBrand(brand: Brand) {
   document.documentElement.setAttribute("data-brand", brand);
-  // Update Tailwind color tokens to match brand accent
-  const brandDef = BRANDS.find((b) => b.id === brand);
-  if (brandDef) {
-    const isDark =
-      document.documentElement.getAttribute("data-theme") === "dark";
-    const accentColor = isDark ? "#ffffff" : "#000000";
-    document.documentElement.style.setProperty("--color-accent", accentColor);
-    document.documentElement.style.setProperty("--color-primary", accentColor);
-  }
 }
 
-function applyTheme(theme: Theme) {
-  const resolved = theme === "system" ? getSystemScheme() : theme;
-  document.documentElement.setAttribute("data-theme", resolved);
+function applyScheme(scheme: Scheme) {
+  document.documentElement.setAttribute("data-theme", scheme);
 }
 
 /**
- * Combined brand + theme hook.
- * Manages:
- * - Brand: "apple" | "android"
- * - Theme: "light" | "dark" | "system"
+ * Combined brand + scheme hook.
+ * No "system" mode — only explicit light/dark.
  */
 export function useStyleTheme() {
   const [brand, setBrandState] = useState<Brand>(getStoredBrand);
-  const [theme, setThemeState] = useState<Theme>(getStoredTheme);
+  const [scheme, setSchemeState] = useState<Scheme>(getStoredScheme);
 
   const setBrand = useCallback((b: Brand) => {
     setBrandState(b);
-    try {
-      localStorage.setItem(BRAND_KEY, b);
-    } catch {
-      /* ignore */
-    }
+    try { localStorage.setItem(BRAND_KEY, b); } catch { /* ignore */ }
     applyBrand(b);
   }, []);
 
-  const setTheme = useCallback((t: Theme) => {
-    setThemeState(t);
-    try {
-      localStorage.setItem(THEME_KEY, t);
-    } catch {
-      /* ignore */
-    }
-    applyTheme(t);
+  const setScheme = useCallback((s: Scheme) => {
+    setSchemeState(s);
+    try { localStorage.setItem(THEME_KEY, s); } catch { /* ignore */ }
+    applyScheme(s);
   }, []);
 
-  const cycleTheme = useCallback(() => {
-    const order: Theme[] = ["light", "dark", "system"];
-    const idx = order.indexOf(theme);
-    setTheme(order[(idx + 1) % order.length]);
-  }, [theme, setTheme]);
+  const toggleScheme = useCallback(() => {
+    setScheme(scheme === "dark" ? "light" : "dark");
+  }, [scheme, setScheme]);
 
-  // Apply on mount
   useEffect(() => {
     applyBrand(brand);
-    applyTheme(theme);
-  }, [brand, theme]);
+    applyScheme(scheme);
+  }, [brand, scheme]);
 
-  // Listen for OS changes when theme is "system"
-  useEffect(() => {
-    if (theme !== "system") return;
-    const mq = window.matchMedia("(prefers-color-scheme: dark)");
-    const handler = () => applyTheme("system");
-    mq.addEventListener("change", handler);
-    return () => mq.removeEventListener("change", handler);
-  }, [theme]);
-
-  return {
-    brand,
-    theme,
-    setBrand,
-    setTheme,
-    cycleTheme,
-  };
+  return { brand, scheme, setBrand, setScheme, toggleScheme };
 }
 
-/* ─── Shared button styles ──────────────────────────────────────────── */
+/* ─── Button base styles ──────────────────────────────────────────────── */
 
 const btnBase: React.CSSProperties = {
   display: "flex",
@@ -137,43 +94,37 @@ const btnBase: React.CSSProperties = {
   position: "relative" as const,
 };
 
-/* ─── Brand Picker (Apple / Android) ───────────────────────────────── */
-
 /**
- * Brand picker — shows 2 options (Apple, Material).
- * Click opens a small dropdown above the button.
+ * Unified Theme button for the sidebar.
+ * Shows brand icon + "Тема". Click opens dropdown with:
+ * - Brand radio selector (Apple / Material)
+ * - Dark / Light toggle switch
  */
-export function StylePicker({ compact = false }: { compact?: boolean }) {
-  const { brand, setBrand } = useStyleTheme();
+export function ThemeButton({ compact = false }: { compact?: boolean }) {
+  const { brand, scheme, setBrand, toggleScheme } = useStyleTheme();
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
 
-  const current = BRANDS.find((b) => b.id === brand) ?? BRANDS[0];
+  const isDark = scheme === "dark";
 
   // Close on outside click
   useEffect(() => {
     if (!open) return;
     const handler = (e: MouseEvent) => {
-      if (ref.current && !ref.current.contains(e.target as Node)) {
-        setOpen(false);
-      }
+      if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false);
     };
     document.addEventListener("mousedown", handler);
     return () => document.removeEventListener("mousedown", handler);
   }, [open]);
 
-  const handleSelect = (id: Brand) => {
-    setBrand(id);
-    setOpen(false);
-  };
-
   return (
     <div ref={ref} style={{ position: "relative" }}>
+      {/* ── Button ── */}
       <button
         type="button"
         onClick={() => setOpen((v) => !v)}
-        title={`Бренд: ${current.labelUk}`}
-        aria-label={`Обрати бренд (зараз: ${current.labelUk})`}
+        title="Тема"
+        aria-label="Налаштування теми"
         aria-expanded={open}
         style={
           compact
@@ -181,10 +132,13 @@ export function StylePicker({ compact = false }: { compact?: boolean }) {
             : btnBase
         }
       >
-        <span style={{ fontSize: 16, flexShrink: 0 }}>{current.icon}</span>
-        {!compact && <span>{current.labelUk}</span>}
+        <span style={{ fontSize: 16, flexShrink: 0 }}>
+          {isDark ? "\uD83C\uDF19" : "\u2600\uFE0F"}
+        </span>
+        {!compact && <span>Тема</span>}
       </button>
 
+      {/* ── Dropdown ── */}
       {open && (
         <div
           style={{
@@ -198,94 +152,121 @@ export function StylePicker({ compact = false }: { compact?: boolean }) {
             borderRadius: "var(--radius)",
             boxShadow: "var(--shadow-lg)",
             zIndex: 200,
-            padding: 4,
+            padding: 8,
+            minWidth: 180,
           }}
         >
-          {BRANDS.map((b) => (
-            <button
-              key={b.id}
-              type="button"
+          {/* Brand selector */}
+          <div style={{ marginBottom: 10 }}>
+            <div
               style={{
-                display: "flex",
-                alignItems: "center",
-                gap: 8,
-                padding: "7px 10px",
-                borderRadius: "var(--radius-sm)",
-                cursor: "pointer",
-                fontSize: 13,
-                fontFamily: "var(--font-ui)",
-                fontWeight: b.id === brand ? 600 : 500,
-                color:
-                  b.id === brand ? "var(--accent)" : "var(--text-primary)",
-                background:
-                  b.id === brand ? "var(--accent-dim)" : "transparent",
-                transition: "background 0.1s",
+                fontSize: 11,
+                fontWeight: 600,
+                letterSpacing: "0.06em",
+                textTransform: "uppercase",
+                color: "var(--text-muted)",
+                padding: "0 4px 6px",
+              }}
+            >
+              Бренд
+            </div>
+            {BRANDS.map((b) => (
+              <button
+                key={b.id}
+                type="button"
+                onClick={() => setBrand(b.id)}
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 8,
+                  padding: "7px 10px",
+                  borderRadius: "var(--radius-sm)",
+                  cursor: "pointer",
+                  fontSize: 13,
+                  fontFamily: "var(--font-ui)",
+                  fontWeight: b.id === brand ? 600 : 500,
+                  color: b.id === brand ? "var(--accent)" : "var(--text-primary)",
+                  background: b.id === brand ? "var(--accent-dim)" : "transparent",
+                  border: "none",
+                  width: "100%",
+                  textAlign: "left",
+                  transition: "background 0.1s",
+                }}
+                onMouseEnter={(e) => {
+                  if (b.id !== brand) e.currentTarget.style.background = "var(--surface-hover)";
+                }}
+                onMouseLeave={(e) => {
+                  if (b.id !== brand) e.currentTarget.style.background = "transparent";
+                }}
+              >
+                <span style={{ fontSize: 14, width: 20, textAlign: "center", flexShrink: 0 }}>
+                  {b.id === brand ? "✓" : b.icon || "○"}
+                </span>
+                <span>{b.labelUk}</span>
+              </button>
+            ))}
+          </div>
+
+          {/* Divider */}
+          <div style={{ height: 1, background: "var(--border)", margin: "0 4px 8px" }} />
+
+          {/* Dark / Light toggle */}
+          <div
+            style={{
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "space-between",
+              padding: "4px 4px 0",
+            }}
+          >
+            <span style={{ fontSize: 13, fontWeight: 500, color: "var(--text-primary)" }}>
+              Темна тема
+            </span>
+            <button
+              type="button"
+              onClick={toggleScheme}
+              aria-label={`Перемкнути на ${isDark ? "світлу" : "темну"} тему`}
+              style={{
+                width: 44,
+                height: 24,
+                borderRadius: 12,
                 border: "none",
-                width: "100%",
-                textAlign: "left",
-              }}
-              onClick={() => handleSelect(b.id)}
-              onMouseEnter={(e) => {
-                if (b.id !== brand)
-                  e.currentTarget.style.background = "var(--surface-hover)";
-              }}
-              onMouseLeave={(e) => {
-                if (b.id !== brand) e.currentTarget.style.background = "transparent";
+                cursor: "pointer",
+                position: "relative",
+                background: isDark ? "var(--accent)" : "var(--bg-4)",
+                transition: "background 0.2s",
+                flexShrink: 0,
               }}
             >
               <span
                 style={{
-                  fontSize: 15,
-                  flexShrink: 0,
-                  width: 22,
-                  textAlign: "center",
+                  position: "absolute",
+                  top: 2,
+                  left: isDark ? 22 : 2,
+                  width: 20,
+                  height: 20,
+                  borderRadius: "50%",
+                  background: "#fff",
+                  transition: "left 0.2s",
+                  boxShadow: "0 1px 3px rgba(0,0,0,0.2)",
                 }}
-              >
-                {b.id === brand ? "✓" : b.icon}
-              </span>
-              <span>{b.labelUk}</span>
+              />
             </button>
-          ))}
+          </div>
         </div>
       )}
     </div>
   );
 }
 
-/* ─── Theme Toggle (Light / Dark / System) ──────────────────────────── */
+/* ─── Legacy exports (deprecated) ──────────────────────────────────────── */
 
-/**
- * Theme toggle: light ↔ dark ↔ system.
- */
-export function ThemeToggle({ compact = false }: { compact?: boolean }) {
-  const { theme, cycleTheme } = useStyleTheme();
+/** @deprecated Use ThemeButton instead */
+export function StylePicker(_props?: { compact?: boolean }) {
+  return null;
+}
 
-  const icons: Record<Theme, string> = {
-    light: "\u2600\uFE0F",
-    dark: "\uD83C\uDF19",
-    system: "\uD83D\uDCBB",
-  };
-
-  const labels: Record<Theme, string> = {
-    light: "Світла",
-    dark: "Темна",
-    system: "Система",
-  };
-
-  return (
-    <button
-      type="button"
-      onClick={cycleTheme}
-      title={`Тема: ${labels[theme]}`}
-      aria-label={`Перемкнути тему (зараз: ${labels[theme]})`}
-      style={
-        compact
-          ? { ...btnBase, justifyContent: "center", padding: 8, width: "auto" }
-          : btnBase
-      }
-    >
-      <span style={{ fontSize: 16, flexShrink: 0 }}>{icons[theme]}</span>
-      {!compact && <span>{labels[theme]}</span>}
-    </button>
-  );
+/** @deprecated Use ThemeButton instead */
+export function ThemeToggle(_props?: { compact?: boolean }) {
+  return null;
 }
