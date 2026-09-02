@@ -1,6 +1,7 @@
 import { NavLink } from "react-router-dom";
 import { navSections } from "./navItems";
 import { useSidebar } from "./useSidebar";
+import { icons } from "@wwwuabot/shared";
 
 export function SidebarNav() {
   const collapsed = useSidebar((s) => s.collapsed);
@@ -22,7 +23,9 @@ export function SidebarNav() {
                 `sidebar-nav-item${isActive ? " sidebar-nav-item--active" : ""}`
               }
             >
-              <span className="sidebar-nav-icon">{item.icon}</span>
+              <span className="sidebar-nav-icon">
+                {icons[item.icon]}
+              </span>
               {!collapsed && <span className="sidebar-nav-label">{item.label}</span>}
             </NavLink>
           ))}

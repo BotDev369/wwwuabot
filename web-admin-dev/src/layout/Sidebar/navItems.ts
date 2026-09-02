@@ -1,7 +1,9 @@
+import type { IconName } from "@wwwuabot/shared";
+
 export interface NavItem {
   to: string;
   label: string;
-  icon: string;
+  icon: IconName;
 }
 
 export interface NavSection {
@@ -13,20 +15,20 @@ export interface NavSection {
 export const navSections: NavSection[] = [
   {
     title: null,
-    items: [{ to: "/", label: "Головна", icon: "🏠" }],
+    items: [{ to: "/", label: "Головна", icon: "home" }],
   },
   {
     title: "Сценарії",
     items: [
-      { to: "/scenarios", label: "Сценарії — портал", icon: "📋" },
-      { to: "/scenarios-admin", label: "Сценарії — адмін", icon: "⚙️" },
+      { to: "/scenarios", label: "Сценарії — портал", icon: "scenarios" },
+      { to: "/scenarios-admin", label: "Сценарії — адмін", icon: "scenarios-admin" },
     ],
   },
   {
     title: "Адміністрування",
     items: [
-      { to: "/users", label: "Користувачі", icon: "👥" },
-      { to: "/bot-settings", label: "Налаштування бота", icon: "🤖" },
+      { to: "/users", label: "Користувачі", icon: "users" },
+      { to: "/bot-settings", label: "Налаштування бота", icon: "bot" },
     ],
   },
 ];

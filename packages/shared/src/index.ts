@@ -2,6 +2,10 @@
 export { ThemeButton, useStyleTheme } from "./components/StyleToggle";
 // Legacy — deprecated
 export { StylePicker, ThemeToggle } from "./components/StyleToggle";
+
+// ── Icons ─────────────────────────────────────────────────────────────
+export { icons } from "./components/icons";
+export type { IconName } from "./components/icons";
 export { BRANDS, getBrand, getBrandIds, resolveLegacyStyle, LEGACY_STYLE_MAP } from "./styles/registry";
 export type { Brand, Scheme, Theme, BrandDefinition, StyleId } from "./styles/registry";
 // Legacy re-exports (deprecated — use BRANDS/getBrand instead)
