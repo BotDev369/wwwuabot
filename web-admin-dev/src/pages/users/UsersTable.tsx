@@ -191,6 +191,16 @@ export function UsersTable({ onMessage }: Props) {
                       ) : (
                         <span className="usr-badge usr-badge--active">Активний</span>
                       )}
+                      {u.role && u.role !== "user" && (
+                        <span className="usr-badge" style={{ marginLeft: 4, background: u.role === "admin" ? "#fef3c7" : u.role === "vip" ? "#ede9fe" : "#e0e7ff", color: u.role === "admin" ? "#92400e" : u.role === "vip" ? "#5b21b6" : "#3730a3" }}>
+                          {u.role}
+                        </span>
+                      )}
+                      {u.tariff && u.tariff !== "free" && (
+                        <span className="usr-badge" style={{ marginLeft: 4, background: "#dcfce7", color: "#166534" }}>
+                          {u.tariff}
+                        </span>
+                      )}
                     </td>
                   </tr>
                 );

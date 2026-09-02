@@ -11,6 +11,7 @@ import { useParams } from "react-router-dom";
 import type {
   PageConfig,
   BlockContext,
+  UserProfile,
 } from "@wwwuabot/shared/types/page-config";
 import { parsePageConfig } from "@wwwuabot/shared/types/page-config";
 import { PageRenderer } from "@wwwuabot/ui/PageRenderer";
@@ -35,6 +36,7 @@ export function DynamicPage() {
   const [scenario, setScenario] = useState<ScenarioData | null>(null);
   const [status, setStatus] = useState<PageStatus>("loading");
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
+  const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
 
   useEffect(() => {
     if (!codeword) return;
@@ -97,14 +99,37 @@ export function DynamicPage() {
     };
   }, [codeword]);
 
+  // Завантаження профілю користувача (для conditional rendering)
+  useEffect(() => {
+    // Отримуємо user_id з Telegram WebApp SDK
+    const tg = typeof window !== "undefined" ? (window as any).Telegram?.WebApp : null;
+    const tgUser = tg?.initDataUnsafe?.user;
+    const userId = tgUser?.id;
+
+    if (!userId) return;
+
+    let cancelled = false;
+    fetch(`/api/user/profile?user_id=${userId}`)
+      .then((res) => res.json())
+      .then((data: any) => {
+        if (!cancelled && data?.ok && data.user) {
+          setUserProfile(data.user);
+        }
+      })
+      .catch(() => {}); // мовчки ігноруємо помилки
+
+    return () => { cancelled = true; };
+  }, []);
+
   // Контекст для блоків
   const context: BlockContext = useMemo(
     () => ({
       codeword: scenario?.codeword ?? codeword ?? "",
       title: scenario?.title ?? null,
       photoUrl: scenario?.photo_url ?? null,
+      user: userProfile ?? undefined,
     }),
-    [scenario, codeword],
+    [scenario, codeword, userProfile],
   );
 
   // Стани

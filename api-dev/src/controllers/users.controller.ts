@@ -453,3 +453,69 @@ export async function handleUserMessage(
     return json({ error: msg }, 500);
   }
 }
+
+/**
+ * GET /api/user/profile — публічний ендпоінт для отримання профілю користувача.
+ * Приймає user_id як query parameter.
+ * Повертає role, tariff, status, discount, permissions для conditional rendering.
+ */
+export async function handleUserProfile(
+  request: Request,
+  env: Env,
+): Promise<Response> {
+  const url = new URL(request.url);
+  const userIdStr = url.searchParams.get("user_id");
+
+  if (!userIdStr) {
+    return json({ error: "user_id required" }, 400);
+  }
+
+  const userId = Number(userIdStr);
+  if (isNaN(userId)) {
+    return json({ error: "invalid user_id" }, 400);
+  }
+
+  try {
+    const row = await env.DB.prepare(
+      `SELECT user_id, first_name, last_name, username, language,
+              role, tariff, status, discount, permissions
+       FROM users WHERE user_id = ?`
+    )
+      .bind(userId)
+      .first<Record<string, unknown>>();
+
+    if (!row) {
+      return json({ error: "User not found" }, 404);
+    }
+
+    // Parse permissions from JSON string
+    let permissions: string[] = [];
+    if (typeof row.permissions === "string" && row.permissions) {
+      try {
+        const parsed = JSON.parse(row.permissions);
+        if (Array.isArray(parsed)) permissions = parsed;
+      } catch {
+        permissions = row.permissions.split(",").map((s: string) => s.trim()).filter(Boolean);
+      }
+    }
+
+    return json({
+      ok: true,
+      user: {
+        id: row.user_id,
+        firstName: row.first_name,
+        lastName: row.last_name,
+        username: row.username,
+        language: row.language,
+        role: row.role ?? "user",
+        tariff: row.tariff ?? "free",
+        status: row.status ?? "active",
+        discount: Number(row.discount ?? 0),
+        permissions,
+      },
+    });
+  } catch (e: unknown) {
+    const msg = e instanceof Error ? e.message : "Failed to fetch user profile";
+    return json({ error: msg }, 500);
+  }
+}

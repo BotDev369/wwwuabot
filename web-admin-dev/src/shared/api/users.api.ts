@@ -8,6 +8,19 @@ export interface UserRow {
   language: string | null;
   created_at: string | null;
   is_blocked: number | null;
+
+  // ── Permission / profile fields (auto-migrated by D1) ──
+  /** Роль користувача (user, moderator, admin, vip) */
+  role: string | null;
+  /** Тариф (free, basic, pro, enterprise) */
+  tariff: string | null;
+  /** Статус (active, pending, suspended) */
+  status: string | null;
+  /** Знижка у відсотках (0–100) */
+  discount: number | null;
+  /** Дозволи — JSON-масив рядків */
+  permissions: string | null;
+
   [key: string]: unknown;
 }
 

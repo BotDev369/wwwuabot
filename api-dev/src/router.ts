@@ -27,6 +27,7 @@ import {
 import {
   handleListUsers,
   handleReadUser,
+  handleUserProfile,
   handleUpdateUser,
   handleDeleteUser,
   handleBlockUser,
@@ -199,6 +200,11 @@ export async function handleRequest(
   }
   if (pathname === "/api/admin/users/message" && request.method === "POST") {
     return handleUserMessage(request, env);
+  }
+
+  // ── Public: User Profile (for web-platform conditional rendering) ──
+  if (pathname === "/api/user/profile" && request.method === "GET") {
+    return handleUserProfile(request, env);
   }
 
   // ── 404 ─────────────────────────────────────────────────────────
