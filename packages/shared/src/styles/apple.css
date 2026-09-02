@@ -1,15 +1,19 @@
 /*
  * ═══════════════════════════════════════════════════════════════════════════
- * APPLE THEME — iOS 18 Human Interface Guidelines
+ * APPLE THEME — iOS 18 Human Interface Guidelines — Enhanced Distinctiveness
  * ═══════════════════════════════════════════════════════════════════════════
  *
  * Applied when: <html data-brand="apple" data-theme="light|dark">
  *
- * Monochrome: accent = pure black (#000) in light, pure white (#FFF) in dark.
- * Shape: large radii (14-20px cards, pill buttons), continuous corners.
- * Typography: SF Pro Text/Display (fallback: system-ui), 17px base body.
- * Motion: spring easing, subtle backdrop blur on bars.
- * Elevation: layered surfaces with thin hairline borders (0.5px).
+ * Key visual differences from Material:
+ * - Sidebar/header: frosted glass with backdrop-filter blur
+ * - Buttons: pill-shaped (9999px radius), scale on press
+ * - Cards: no border, elevated with shadow
+ * - Typography: SF Pro, 17px base, tight letter-spacing
+ * - Borders: 0.5px hairlines (ultra-thin)
+ * - Dark mode: true OLED black (#000000)
+ * - Spring animation on interactions
+ * - More generous spacing rhythm
  */
 
 /* ═══════════════════════════════════════════════════════════════════════════
@@ -25,7 +29,7 @@
   --bg-3: #ffffff;
   --bg-4: #e5e5ea;           /* systemFill */
 
-  /* ── Borders: Apple separator (0.5px hairline) ─────────────────────── */
+  /* ── Borders: Apple hairline — ultra-thin ─────────────────────────────── */
   --border: #c6c6c8;
   --border-subtle: #d1d1d6;
 
@@ -35,13 +39,13 @@
   --text-muted: #8e8e93;
   --text-inverse: #ffffff;
 
-  /* ── Accent: monochrome black ─────────────────────────────────────────── */
+  /* ── Accent: pure black ───────────────────────────────────────────────── */
   --accent: #000000;
   --accent-dim: rgba(0, 0, 0, 0.06);
   --accent-hover: #1c1c1e;
   --accent-soft: rgba(0, 0, 0, 0.08);
 
-  /* ── Semantic colors (monochrome grays) ──────────────────────────────── */
+  /* ── Semantic colors ──────────────────────────────────────────────────── */
   --green: #34c759;
   --green-dim: rgba(52, 199, 89, 0.12);
   --red: #ff3b30;
@@ -55,14 +59,14 @@
   --surface-active: #e5e5ea;
   --surface-overlay: rgba(0, 0, 0, 0.4);
 
-  /* ── Typography: SF Pro ─────────────────────────────────────────────── */
+  /* ── Typography: SF Pro — large, tight tracking ───────────────────────── */
   --font-ui: -apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Display",
     "Helvetica Neue", system-ui, sans-serif;
   --font-mono: "SF Mono", "Menlo", "Monaco", ui-monospace, monospace;
   --font-display: -apple-system, BlinkMacSystemFont, "SF Pro Display",
     "Helvetica Neue", system-ui, sans-serif;
 
-  /* ── Text sizes: Apple HIG body is 17px ──────────────────────────────── */
+  /* ── Text sizes: Apple HIG — 17px base body ───────────────────────────── */
   --text-xs: 0.6875rem;     /* 11px */
   --text-sm: 0.8125rem;     /* 13px */
   --text-base: 1.0625rem;   /* 17px */
@@ -79,7 +83,7 @@
   --sp-0: 0;
   --sp-1: 4px;
   --sp-2: 8px;
-  --sp-3: 16px;               /* bigger than generic 12px */
+  --sp-3: 16px;
   --sp-4: 20px;
   --sp-5: 24px;
   --sp-6: 28px;
@@ -104,7 +108,6 @@
   --shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.12);
   --shadow-xl: 0 16px 48px rgba(0, 0, 0, 0.16);
 
-  /* ── Elevation levels (Apple layered UI) ──────────────────────────────── */
   --elevation-0: none;
   --elevation-1: 0 1px 3px rgba(0, 0, 0, 0.06);
   --elevation-2: 0 4px 12px rgba(0, 0, 0, 0.08);
@@ -119,7 +122,7 @@
   --ease-out: cubic-bezier(0, 0, 0.58, 1);
   --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
 
-  /* ── Layout ───────────────────────────────────────────────────────────── */
+  /* ── Layout — wider sidebar than Material ─────────────────────────────── */
   --sidebar-w: 260px;
   --sidebar-w-collapsed: 72px;
   --topbar-h: 54px;
@@ -132,11 +135,11 @@
 }
 
 /* ═══════════════════════════════════════════════════════════════════════════
-   APPLE DARK
+   APPLE DARK — True OLED black
    ═══════════════════════════════════════════════════════════════════════════ */
 
 [data-brand="apple"][data-theme="dark"] {
-  /* ── Backgrounds: True black like iOS ─────────────────────────────────── */
+  /* ── Backgrounds: True OLED black ─────────────────────────────────────── */
   --bg-0: #000000;
   --bg-1: #1c1c1e;
   --bg-2: #2c2c2e;
@@ -153,7 +156,7 @@
   --text-muted: #8e8e93;
   --text-inverse: #000000;
 
-  /* ── Accent: monochrome white ────────────────────────────────────────── */
+  /* ── Accent: pure white ───────────────────────────────────────────────── */
   --accent: #ffffff;
   --accent-dim: rgba(255, 255, 255, 0.1);
   --accent-hover: #e5e5ea;
@@ -173,7 +176,7 @@
   --surface-active: #3a3a3c;
   --surface-overlay: rgba(0, 0, 0, 0.6);
 
-  /* ── Elevation: deeper for dark ─────────────────────────────────────── */
+  /* ── Elevation ──────────────────────────────────────────────────────── */
   --shadow-xs: 0 1px 2px rgba(0, 0, 0, 0.3);
   --shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.4);
   --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.5);
@@ -188,47 +191,6 @@
   color-scheme: dark;
 }
 
-/* ── Auto (follows OS preference when no explicit data-theme) ──────────── */
-@media (prefers-color-scheme: dark) {
-  [data-brand="apple"]:root:not([data-theme="light"]) {
-    --bg-0: #000000;
-    --bg-1: #1c1c1e;
-    --bg-2: #2c2c2e;
-    --bg-3: #1c1c1e;
-    --bg-4: #3a3a3c;
-    --border: #38383a;
-    --border-subtle: #2c2c2e;
-    --text-primary: #ffffff;
-    --text-secondary: #ebebf5;
-    --text-muted: #8e8e93;
-    --text-inverse: #000000;
-    --accent: #ffffff;
-    --accent-dim: rgba(255, 255, 255, 0.1);
-    --accent-hover: #e5e5ea;
-    --accent-soft: rgba(255, 255, 255, 0.08);
-    --green: #30d158;
-    --green-dim: rgba(48, 209, 88, 0.18);
-    --red: #ff453a;
-    --red-dim: rgba(255, 69, 58, 0.18);
-    --yellow: #ffd60a;
-    --yellow-dim: rgba(255, 214, 10, 0.18);
-    --surface: #1c1c1e;
-    --surface-hover: #2c2c2e;
-    --surface-active: #3a3a3c;
-    --surface-overlay: rgba(0, 0, 0, 0.6);
-    --shadow-xs: 0 1px 2px rgba(0, 0, 0, 0.3);
-    --shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.4);
-    --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.5);
-    --shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.6);
-    --shadow-xl: 0 16px 48px rgba(0, 0, 0, 0.7);
-    --elevation-0: none;
-    --elevation-1: 0 1px 3px rgba(0, 0, 0, 0.3);
-    --elevation-2: 0 4px 12px rgba(0, 0, 0, 0.4);
-    --elevation-3: 0 8px 24px rgba(0, 0, 0, 0.5);
-    color-scheme: dark;
-  }
-}
-
 /* ═══════════════════════════════════════════════════════════════════════════
    APPLE COMPONENT OVERRIDES — iOS-native feel
    ═══════════════════════════════════════════════════════════════════════════ */
@@ -241,7 +203,7 @@ html[data-brand="apple"] body {
   line-height: 1.47 !important;
 }
 
-/* ── Typography ────────────────────────────────────────────────────────── */
+/* ── Typography: Apple HIG — large, bold, tight tracking ───────────────── */
 html[data-brand="apple"] h1 {
   font-size: 34px !important;
   font-weight: 700 !important;
@@ -274,7 +236,7 @@ html[data-brand="apple"][data-theme="dark"] ::selection {
   background: rgba(255, 255, 255, 0.2) !important;
 }
 
-/* ── Buttons: pill shape ───────────────────────────────────────────────── */
+/* ── Buttons: pill shape — Apple's signature ────────────────────────────── */
 html[data-brand="apple"] .btn,
 html[data-brand="apple"] .wb-btn {
   border-radius: 9999px !important;
@@ -283,6 +245,7 @@ html[data-brand="apple"] .wb-btn {
   padding: 12px 24px !important;
   letter-spacing: -0.01em !important;
   min-height: 48px !important;
+  box-shadow: none !important;
 }
 
 html[data-brand="apple"] .btn:active,
@@ -304,28 +267,32 @@ html[data-brand="apple"] .btn--primary:hover,
 html[data-brand="apple"] .wb-btn-primary:hover {
   background: var(--accent-hover) !important;
   transform: translateY(-1px) !important;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1) !important;
 }
 
 html[data-brand="apple"] .btn-secondary,
 html[data-brand="apple"] .btn--secondary {
   background: var(--bg-2) !important;
-  border: 1px solid var(--border) !important;
+  border: 0.5px solid var(--border) !important;
   color: var(--text-primary) !important;
+  box-shadow: none !important;
 }
 
-/* ── Sidebar: frosted glass ────────────────────────────────────────────── */
+/* ── Sidebar: FROSTED GLASS — Apple's signature effect ─────────────────── */
 html[data-brand="apple"] .sidebar {
-  background: rgba(242, 242, 247, 0.88) !important;
-  backdrop-filter: saturate(180%) blur(20px) !important;
-  -webkit-backdrop-filter: saturate(180%) blur(20px) !important;
-  border-right: 0.5px solid var(--border) !important;
+  background: rgba(242, 242, 247, 0.85) !important;
+  backdrop-filter: saturate(180%) blur(24px) !important;
+  -webkit-backdrop-filter: saturate(180%) blur(24px) !important;
+  border-right: 0.5px solid rgba(198, 198, 200, 0.5) !important;
+  box-shadow: none !important;
 }
 
 html[data-brand="apple"][data-theme="dark"] .sidebar {
-  background: rgba(28, 28, 30, 0.82) !important;
+  background: rgba(28, 28, 30, 0.8) !important;
+  border-right: 0.5px solid rgba(56, 56, 58, 0.5) !important;
 }
 
-/* Nav items: pill shape, filled active */
+/* Nav items: pill shape, filled active — Apple style */
 html[data-brand="apple"] .sidebar nav a {
   border-radius: 10px !important;
   font-size: 16px !important;
@@ -358,7 +325,7 @@ html[data-brand="apple"] .sidebar-nav-item--active {
 
 /* Sidebar header / settings */
 html[data-brand="apple"] .sidebar-header {
-  border-bottom: 0.5px solid var(--border) !important;
+  border-bottom: 0.5px solid rgba(198, 198, 200, 0.5) !important;
 }
 
 html[data-brand="apple"] .sidebar-title {
@@ -368,7 +335,7 @@ html[data-brand="apple"] .sidebar-title {
 }
 
 html[data-brand="apple"] .sidebar-settings {
-  border-top: 0.5px solid var(--border) !important;
+  border-top: 0.5px solid rgba(198, 198, 200, 0.5) !important;
 }
 
 html[data-brand="apple"] .sidebar-settings-label {
@@ -379,7 +346,7 @@ html[data-brand="apple"] .sidebar-settings-label {
 }
 
 html[data-brand="apple"] .sidebar-footer {
-  border-top: 0.5px solid var(--border) !important;
+  border-top: 0.5px solid rgba(198, 198, 200, 0.5) !important;
 }
 
 html[data-brand="apple"] .logout-btn {
@@ -395,18 +362,20 @@ html[data-brand="apple"] .logout-btn:hover {
   background: var(--red-dim) !important;
 }
 
-/* ── Header / Topbar: frosted glass ────────────────────────────────────── */
+/* ── Header / Topbar: frosted glass — matches sidebar ──────────────────── */
 html[data-brand="apple"] .header,
 html[data-brand="apple"] .topbar {
   background: rgba(255, 255, 255, 0.82) !important;
-  backdrop-filter: saturate(180%) blur(20px) !important;
-  -webkit-backdrop-filter: saturate(180%) blur(20px) !important;
-  border-bottom: 0.5px solid var(--border) !important;
+  backdrop-filter: saturate(180%) blur(24px) !important;
+  -webkit-backdrop-filter: saturate(180%) blur(24px) !important;
+  border-bottom: 0.5px solid rgba(198, 198, 200, 0.5) !important;
+  box-shadow: none !important;
 }
 
 html[data-brand="apple"][data-theme="dark"] .header,
 html[data-brand="apple"][data-theme="dark"] .topbar {
-  background: rgba(28, 28, 30, 0.82) !important;
+  background: rgba(28, 28, 30, 0.8) !important;
+  border-bottom: 0.5px solid rgba(56, 56, 58, 0.5) !important;
 }
 
 html[data-brand="apple"] .brand {
@@ -421,7 +390,7 @@ html[data-brand="apple"] .topbar-title {
   letter-spacing: -0.02em !important;
 }
 
-/* ── Cards: no border, elevated ────────────────────────────────────────── */
+/* ── Cards: no border, elevated with shadow — Apple card style ──────────── */
 html[data-brand="apple"] .card,
 html[data-brand="apple"] .wb-card {
   border: none !important;
@@ -465,7 +434,7 @@ html[data-brand="apple"] .home-date {
   letter-spacing: 0.12em !important;
 }
 
-/* ── Tables: borderless, spacious ──────────────────────────────────────── */
+/* ── Tables: borderless, spacious — Apple list style ────────────────────── */
 html[data-brand="apple"] .scn-table,
 html[data-brand="apple"] .usr-table,
 html[data-brand="apple"] .wb-data-table,
@@ -494,7 +463,7 @@ html[data-brand="apple"] .wb-data-table tbody tr:hover {
   background: var(--surface-hover) !important;
 }
 
-/* ── Inputs ────────────────────────────────────────────────────────────── */
+/* ── Inputs: rounded, 0.5px border — Apple text field ──────────────────── */
 html[data-brand="apple"] .date-input,
 html[data-brand="apple"] .text-input,
 html[data-brand="apple"] .filter-search,
@@ -514,7 +483,7 @@ html[data-brand="apple"] .scn-search:focus {
   box-shadow: 0 0 0 4px var(--accent-soft) !important;
 }
 
-/* ── Modal: glass overlay ──────────────────────────────────────────────── */
+/* ── Modal: glass overlay — Apple sheet style ───────────────────────────── */
 html[data-brand="apple"] .modal-overlay,
 html[data-brand="apple"] .wb-modal-overlay {
   backdrop-filter: blur(8px) saturate(150%) !important;
@@ -536,7 +505,7 @@ html[data-brand="apple"] .wb-modal-title {
   letter-spacing: -0.03em !important;
 }
 
-/* ── Chips: pill ───────────────────────────────────────────────────────── */
+/* ── Chips: pill — Apple segmented style ────────────────────────────────── */
 html[data-brand="apple"] .type-chip {
   border-radius: 9999px !important;
   border: 1.5px solid var(--border) !important;
@@ -648,7 +617,7 @@ html[data-brand="apple"] .kb-toggle-btn--active {
   color: var(--text-inverse) !important;
 }
 
-/* ── Scrollbar ─────────────────────────────────────────────────────────── */
+/* ── Scrollbar — hidden by default like iOS ────────────────────────────── */
 html[data-brand="apple"] ::-webkit-scrollbar {
   width: 6px !important;
   height: 6px !important;

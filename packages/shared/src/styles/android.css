@@ -1,15 +1,18 @@
 /*
  * ═══════════════════════════════════════════════════════════════════════════
- * ANDROID / MATERIAL DESIGN 3 THEME
+ * ANDROID / MATERIAL DESIGN 3 THEME — Enhanced Distinctiveness
  * ═══════════════════════════════════════════════════════════════════════════
  *
  * Applied when: <html data-brand="android" data-theme="light|dark">
  *
- * Neutral tonal palette — no colored seed, all grays.
- * Asymmetric radii M3 (16-28px cards/FAB, smaller chips).
- * Typography: Roboto / Google Sans (fallback: system-ui).
- * Elevation via surface tint (layered grays), not just shadows.
- * Ripple effect on tap, pill indicator on NavigationBar.
+ * Key visual differences from Apple:
+ * - Sidebar: solid surface color, NO blur, with elevation shadow
+ * - Buttons: filled tonal with shadow, 20px radius (not pill)
+ * - Cards: surface-container background, visible border
+ * - Typography: Roboto, 14px base, regular weight headings
+ * - Spacing: tighter rhythm
+ * - Borders: 1px solid (not hairline)
+ * - Active nav: elevated surface with tint
  */
 
 /* ═══════════════════════════════════════════════════════════════════════════
@@ -18,49 +21,49 @@
 
 [data-brand="android"][data-theme="light"],
 [data-brand="android"]:root {
-  /* ── Backgrounds: M3 surface containers ──────────────────────────────── */
-  --bg-0: #f3f3f3;           /* surface-container-lowest */
+  /* ── Backgrounds: M3 surface containers — more stepped than Apple ─────── */
+  --bg-0: #f0f0f4;           /* surface-container-lowest — slight cool tint */
   --bg-1: #ffffff;            /* surface */
-  --bg-2: #f3f3f3;           /* surface-container-low */
-  --bg-3: #ededed;            /* surface-container */
-  --bg-4: #e4e4e4;           /* surface-container-high */
+  --bg-2: #ededf0;           /* surface-container-low */
+  --bg-3: #e4e4e8;           /* surface-container */
+  --bg-4: #dcdce0;           /* surface-container-high */
 
-  /* ── Borders ──────────────────────────────────────────────────────────── */
-  --border: #c4c4c4;
-  --border-subtle: #dadada;
+  /* ── Borders: thicker, more visible than Apple ─────────────────────────── */
+  --border: #b0b0b8;
+  --border-subtle: #c8c8d0;
 
   /* ── Text: M3 type roles ──────────────────────────────────────────────── */
-  --text-primary: #1d1d1d;       /* on-surface */
-  --text-secondary: #444746;     /* on-surface-variant */
-  --text-muted: #747775;         /* outline */
+  --text-primary: #1c1b1f;       /* on-surface */
+  --text-secondary: #44464f;     /* on-surface-variant */
+  --text-muted: #74777f;         /* outline */
   --text-inverse: #ffffff;       /* on-surface (inverted) */
 
-  /* ── Accent: monochrome black ─────────────────────────────────────────── */
-  --accent: #1d1d1d;
-  --accent-dim: rgba(29, 29, 29, 0.08);
+  /* ── Accent: slightly warm gray, not pure black ────────────────────────── */
+  --accent: #1c1b1f;
+  --accent-dim: rgba(28, 27, 31, 0.08);
   --accent-hover: #000000;
-  --accent-soft: rgba(29, 29, 29, 0.06);
+  --accent-soft: rgba(28, 27, 31, 0.06);
 
-  /* ── Semantic ─────────────────────────────────────────────────────────── */
-  --green: #146a2e;
-  --green-dim: rgba(20, 106, 46, 0.1);
+  /* ── Semantic — M3 tonal colors ───────────────────────────────────────── */
+  --green: #0a6e2a;
+  --green-dim: rgba(10, 110, 42, 0.08);
   --red: #ba1a1a;
-  --red-dim: rgba(186, 26, 26, 0.1);
-  --yellow: #7c5800;
-  --yellow-dim: rgba(124, 88, 0, 0.1);
+  --red-dim: rgba(186, 26, 26, 0.08);
+  --yellow: #6d5700;
+  --yellow-dim: rgba(109, 87, 0, 0.08);
 
-  /* ── Surfaces ─────────────────────────────────────────────────────────── */
+  /* ── Surfaces — M3 surface tint approach ───────────────────────────────── */
   --surface: #ffffff;
-  --surface-hover: #f3f3f3;
-  --surface-active: #ededed;
+  --surface-hover: #ededf0;
+  --surface-active: #e4e4e8;
   --surface-overlay: rgba(0, 0, 0, 0.4);
 
-  /* ── Typography: Roboto ──────────────────────────────────────────────── */
+  /* ── Typography: Roboto — tighter than Apple ──────────────────────────── */
   --font-ui: "Roboto", "Google Sans", system-ui, -apple-system, sans-serif;
   --font-mono: "Roboto Mono", "Google Sans Mono", "Courier New", ui-monospace, monospace;
   --font-display: "Roboto", "Google Sans", system-ui, -apple-system, sans-serif;
 
-  /* ── Text sizes: M3 type scale (smaller base than Apple) ──────────────── */
+  /* ── Text sizes: M3 type scale — smaller base than Apple ───────────────── */
   --text-xs: 0.6875rem;     /* 11px — M3 label small */
   --text-sm: 0.8125rem;     /* 13px — M3 label medium */
   --text-base: 0.875rem;    /* 14px — M3 body medium */
@@ -73,7 +76,7 @@
   --leading-normal: 1.5;
   --leading-relaxed: 1.625;
 
-  /* ── Spacing ──────────────────────────────────────────────────────────── */
+  /* ── Spacing: tighter than Apple ──────────────────────────────────────── */
   --sp-0: 0;
   --sp-1: 4px;
   --sp-2: 8px;
@@ -87,37 +90,36 @@
   --sp-16: 64px;
 
   /* ── Border radius: asymmetric M3 shapes ──────────────────────────────── */
-  --radius-xs: 4px;          /* M3 extra-small */
-  --radius-sm: 8px;          /* M3 small */
-  --radius: 12px;            /* M3 medium */
-  --radius-md: 16px;         /* M3 large — cards */
-  --radius-lg: 24px;         /* M3 extra-large — FAB */
-  --radius-xl: 28px;         /* M3 full — large FAB */
-  --radius-full: 9999px;     /* pill */
+  --radius-xs: 4px;
+  --radius-sm: 8px;
+  --radius: 12px;
+  --radius-md: 16px;
+  --radius-lg: 24px;
+  --radius-xl: 28px;
+  --radius-full: 9999px;
 
-  /* ── Elevation: M3 surface tint approach ──────────────────────────────── */
-  --shadow-xs: 0 1px 2px rgba(0, 0, 0, 0.12);
-  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.15), 0 1px 2px rgba(0, 0, 0, 0.12);
-  --shadow-md: 0 2px 6px rgba(0, 0, 0, 0.15), 0 1px 2px rgba(0, 0, 0, 0.12);
-  --shadow-lg: 0 4px 8px rgba(0, 0, 0, 0.15), 0 2px 4px rgba(0, 0, 0, 0.12);
-  --shadow-xl: 0 6px 10px rgba(0, 0, 0, 0.15), 0 2px 3px rgba(0, 0, 0, 0.12);
+  /* ── Elevation: M3 surface tint — more pronounced than Apple ──────────── */
+  --shadow-xs: 0 1px 2px rgba(0, 0, 0, 0.15);
+  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.18), 0 1px 2px rgba(0, 0, 0, 0.12);
+  --shadow-md: 0 2px 6px rgba(0, 0, 0, 0.18), 0 1px 2px rgba(0, 0, 0, 0.12);
+  --shadow-lg: 0 4px 8px rgba(0, 0, 0, 0.18), 0 2px 4px rgba(0, 0, 0, 0.12);
+  --shadow-xl: 0 6px 10px rgba(0, 0, 0, 0.18), 0 2px 3px rgba(0, 0, 0, 0.12);
 
-  /* ── Elevation levels (M3 tonal — mixed accent into bg) ───────────────── */
   --elevation-0: none;
-  --elevation-1: 0 1px 3px rgba(0, 0, 0, 0.1);
-  --elevation-2: 0 2px 6px rgba(0, 0, 0, 0.12);
-  --elevation-3: 0 4px 8px rgba(0, 0, 0, 0.15);
+  --elevation-1: 0 1px 3px rgba(0, 0, 0, 0.12);
+  --elevation-2: 0 2px 6px rgba(0, 0, 0, 0.15);
+  --elevation-3: 0 4px 8px rgba(0, 0, 0, 0.18);
 
   /* ── Transitions: M3 emphasized easing ────────────────────────────────── */
   --duration-fast: 100ms;
   --duration: 200ms;
   --duration-slow: 400ms;
-  --ease: cubic-bezier(0.2, 0, 0, 1);          /* M3 standard */
-  --ease-in: cubic-bezier(0.2, 0, 1, 1);       /* M3 standard decelerate */
-  --ease-out: cubic-bezier(0, 0, 0, 1);         /* M3 emphasized */
-  --ease-spring: cubic-bezier(0.2, 0, 0, 1);    /* M3 emphasized */
+  --ease: cubic-bezier(0.2, 0, 0, 1);
+  --ease-in: cubic-bezier(0.2, 0, 1, 1);
+  --ease-out: cubic-bezier(0, 0, 0, 1);
+  --ease-spring: cubic-bezier(0.2, 0, 0, 1);
 
-  /* ── Layout ───────────────────────────────────────────────────────────── */
+  /* ── Layout — slightly narrower sidebar than Apple ────────────────────── */
   --sidebar-w: 240px;
   --sidebar-w-collapsed: 64px;
   --topbar-h: 56px;
@@ -135,44 +137,44 @@
 
 [data-brand="android"][data-theme="dark"] {
   /* ── Backgrounds: M3 dark surface containers ─────────────────────────── */
-  --bg-0: #111318;           /* surface-container-lowest */
+  --bg-0: #0f1013;           /* surface-container-lowest */
   --bg-1: #1b1b1f;           /* surface */
-  --bg-2: #1f2024;           /* surface-container-low */
-  --bg-3: #27292c;           /* surface-container */
-  --bg-4: #323538;           /* surface-container-high */
+  --bg-2: #202024;           /* surface-container-low */
+  --bg-3: #2a2a2e;           /* surface-container */
+  --bg-4: #353538;           /* surface-container-high */
 
   /* ── Borders ──────────────────────────────────────────────────────────── */
-  --border: #41484d;
-  --border-subtle: #36393d;
+  --border: #44464f;
+  --border-subtle: #38383d;
 
   /* ── Text ─────────────────────────────────────────────────────────────── */
-  --text-primary: #e2e2e6;       /* on-surface */
-  --text-secondary: #c5c6ca;     /* on-surface-variant */
-  --text-muted: #8f9093;         /* outline */
+  --text-primary: #e3e2e6;
+  --text-secondary: #c7c5d0;
+  --text-muted: #90909a;
   --text-inverse: #1b1b1f;
 
-  /* ── Accent: monochrome white ────────────────────────────────────────── */
-  --accent: #e2e2e6;
-  --accent-dim: rgba(226, 226, 230, 0.1);
+  /* ── Accent ───────────────────────────────────────────────────────────── */
+  --accent: #e3e2e6;
+  --accent-dim: rgba(227, 226, 230, 0.1);
   --accent-hover: #ffffff;
-  --accent-soft: rgba(226, 226, 230, 0.08);
+  --accent-soft: rgba(227, 226, 230, 0.08);
 
   /* ── Semantic ─────────────────────────────────────────────────────────── */
-  --green: #80d994;
-  --green-dim: rgba(128, 217, 148, 0.15);
+  --green: #7bda90;
+  --green-dim: rgba(123, 218, 144, 0.12);
   --red: #ffb4ab;
-  --red-dim: rgba(255, 180, 171, 0.15);
-  --yellow: #e0bf5a;
-  --yellow-dim: rgba(224, 191, 90, 0.15);
+  --red-dim: rgba(255, 180, 171, 0.12);
+  --yellow: #ddb948;
+  --yellow-dim: rgba(221, 185, 72, 0.12);
 
   /* ── Surfaces ─────────────────────────────────────────────────────────── */
   --surface: #1b1b1f;
-  --surface-hover: #27292c;
-  --surface-active: #323538;
+  --surface-hover: #2a2a2e;
+  --surface-active: #353538;
   --surface-overlay: rgba(0, 0, 0, 0.6);
 
   /* ── Elevation: deeper for dark ─────────────────────────────────────── */
-  --shadow-xs: 0 1px 2px rgba(0, 0, 0, 0.4);
+  --shadow-xs: 0 1px 2px rgba(0, 0, 0, 0.45);
   --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.5), 0 1px 2px rgba(0, 0, 0, 0.4);
   --shadow-md: 0 2px 6px rgba(0, 0, 0, 0.5), 0 1px 2px rgba(0, 0, 0, 0.4);
   --shadow-lg: 0 4px 8px rgba(0, 0, 0, 0.5), 0 2px 4px rgba(0, 0, 0, 0.4);
@@ -186,47 +188,6 @@
   color-scheme: dark;
 }
 
-/* ── Auto (follows OS preference when no explicit data-theme) ──────────── */
-@media (prefers-color-scheme: dark) {
-  [data-brand="android"]:root:not([data-theme="light"]) {
-    --bg-0: #111318;
-    --bg-1: #1b1b1f;
-    --bg-2: #1f2024;
-    --bg-3: #27292c;
-    --bg-4: #323538;
-    --border: #41484d;
-    --border-subtle: #36393d;
-    --text-primary: #e2e2e6;
-    --text-secondary: #c5c6ca;
-    --text-muted: #8f9093;
-    --text-inverse: #1b1b1f;
-    --accent: #e2e2e6;
-    --accent-dim: rgba(226, 226, 230, 0.1);
-    --accent-hover: #ffffff;
-    --accent-soft: rgba(226, 226, 230, 0.08);
-    --green: #80d994;
-    --green-dim: rgba(128, 217, 148, 0.15);
-    --red: #ffb4ab;
-    --red-dim: rgba(255, 180, 171, 0.15);
-    --yellow: #e0bf5a;
-    --yellow-dim: rgba(224, 191, 90, 0.15);
-    --surface: #1b1b1f;
-    --surface-hover: #27292c;
-    --surface-active: #323538;
-    --surface-overlay: rgba(0, 0, 0, 0.6);
-    --shadow-xs: 0 1px 2px rgba(0, 0, 0, 0.4);
-    --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.5), 0 1px 2px rgba(0, 0, 0, 0.4);
-    --shadow-md: 0 2px 6px rgba(0, 0, 0, 0.5), 0 1px 2px rgba(0, 0, 0, 0.4);
-    --shadow-lg: 0 4px 8px rgba(0, 0, 0, 0.5), 0 2px 4px rgba(0, 0, 0, 0.4);
-    --shadow-xl: 0 6px 10px rgba(0, 0, 0, 0.5), 0 2px 3px rgba(0, 0, 0, 0.4);
-    --elevation-0: none;
-    --elevation-1: 0 1px 3px rgba(0, 0, 0, 0.4);
-    --elevation-2: 0 2px 6px rgba(0, 0, 0, 0.5);
-    --elevation-3: 0 4px 8px rgba(0, 0, 0, 0.5);
-    color-scheme: dark;
-  }
-}
-
 /* ═══════════════════════════════════════════════════════════════════════════
    ANDROID COMPONENT OVERRIDES — Material Design 3 feel
    ═══════════════════════════════════════════════════════════════════════════ */
@@ -235,14 +196,14 @@
 html[data-brand="android"] body {
   font-size: 14px !important;
   font-family: var(--font-ui) !important;
-  letter-spacing: 0 !important;
+  letter-spacing: 0.015em !important;
   line-height: 1.5 !important;
 }
 
-/* ── Typography ────────────────────────────────────────────────────────── */
+/* ── Typography: M3 — lighter weight headings ──────────────────────────── */
 html[data-brand="android"] h1 {
   font-size: 28px !important;
-  font-weight: 400 !important;   /* M3 display-medium is regular */
+  font-weight: 400 !important;
   letter-spacing: 0 !important;
   line-height: 1.25 !important;
 }
@@ -265,14 +226,14 @@ html[data-brand="android"] p {
 }
 
 html[data-brand="android"] ::selection {
-  background: rgba(29, 29, 29, 0.12) !important;
+  background: rgba(28, 27, 31, 0.14) !important;
 }
 
 html[data-brand="android"][data-theme="dark"] ::selection {
-  background: rgba(226, 226, 230, 0.18) !important;
+  background: rgba(227, 226, 230, 0.2) !important;
 }
 
-/* ── Buttons: M3 filled tonal, rounded ─────────────────────────────────── */
+/* ── Buttons: M3 filled tonal with shadow — NOT pill ───────────────────── */
 html[data-brand="android"] .btn,
 html[data-brand="android"] .wb-btn {
   border-radius: 20px !important;
@@ -281,11 +242,13 @@ html[data-brand="android"] .wb-btn {
   letter-spacing: 0.01em !important;
   padding: 10px 24px !important;
   min-height: 40px !important;
+  box-shadow: var(--shadow-xs) !important;
 }
 
 html[data-brand="android"] .btn:active,
 html[data-brand="android"] .wb-btn:active {
   transform: scale(0.98) !important;
+  box-shadow: none !important;
 }
 
 html[data-brand="android"] .btn-primary,
@@ -294,14 +257,14 @@ html[data-brand="android"] .wb-btn-primary {
   background: var(--accent) !important;
   border-color: var(--accent) !important;
   color: var(--text-inverse) !important;
-  box-shadow: var(--shadow-xs) !important;
+  box-shadow: var(--shadow-sm) !important;
 }
 
 html[data-brand="android"] .btn-primary:hover,
 html[data-brand="android"] .btn--primary:hover,
 html[data-brand="android"] .wb-btn-primary:hover {
   background: var(--accent-hover) !important;
-  box-shadow: var(--shadow-sm) !important;
+  box-shadow: var(--shadow-md) !important;
 }
 
 html[data-brand="android"] .btn-secondary,
@@ -311,13 +274,18 @@ html[data-brand="android"] .btn--secondary {
   color: var(--text-primary) !important;
 }
 
-/* ── Sidebar: M3 surface-container ─────────────────────────────────────── */
+/* ── Sidebar: solid surface — NO blur, with elevation ──────────────────── */
 html[data-brand="android"] .sidebar {
   background: var(--bg-3) !important;
   border-right: 1px solid var(--border-subtle) !important;
+  box-shadow: 2px 0 8px rgba(0, 0, 0, 0.06) !important;
 }
 
-/* Nav items: large rounded, filled active */
+html[data-brand="android"][data-theme="dark"] .sidebar {
+  box-shadow: 2px 0 12px rgba(0, 0, 0, 0.3) !important;
+}
+
+/* Nav items: M3 large rounded, elevated active state */
 html[data-brand="android"] .sidebar nav a {
   border-radius: 28px !important;
   font-size: 14px !important;
@@ -331,6 +299,7 @@ html[data-brand="android"] .sidebar nav a.active {
   background: var(--accent) !important;
   color: var(--text-inverse) !important;
   font-weight: 500 !important;
+  box-shadow: var(--shadow-xs) !important;
 }
 
 /* Admin nav items */
@@ -346,6 +315,7 @@ html[data-brand="android"] .sidebar-nav-item--active {
   background: var(--accent) !important;
   color: var(--text-inverse) !important;
   font-weight: 500 !important;
+  box-shadow: var(--shadow-xs) !important;
 }
 
 html[data-brand="android"] .sidebar-header {
@@ -386,12 +356,17 @@ html[data-brand="android"] .logout-btn:hover {
   background: var(--red-dim) !important;
 }
 
-/* ── Header / Topbar ───────────────────────────────────────────────────── */
+/* ── Header / Topbar: solid, with subtle elevation ─────────────────────── */
 html[data-brand="android"] .header,
 html[data-brand="android"] .topbar {
   background: var(--bg-1) !important;
   border-bottom: 1px solid var(--border-subtle) !important;
-  box-shadow: none !important;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06) !important;
+}
+
+html[data-brand="android"][data-theme="dark"] .header,
+html[data-brand="android"][data-theme="dark"] .topbar {
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3) !important;
 }
 
 html[data-brand="android"] .brand {
@@ -406,13 +381,13 @@ html[data-brand="android"] .topbar-title {
   letter-spacing: 0.01em !important;
 }
 
-/* ── Cards: M3 filled card ─────────────────────────────────────────────── */
+/* ── Cards: M3 filled card with visible surface ────────────────────────── */
 html[data-brand="android"] .card,
 html[data-brand="android"] .wb-card {
-  border: none !important;
+  border: 1px solid var(--border-subtle) !important;
   border-radius: 16px !important;
   box-shadow: var(--shadow-xs) !important;
-  background: var(--bg-3) !important;
+  background: var(--bg-2) !important;
 }
 
 html[data-brand="android"] .card h3,
@@ -430,19 +405,19 @@ html[data-brand="android"] .hero h1 {
 }
 
 html[data-brand="android"] .hero-text {
-  font-size: 18px !important;
+  font-size: 16px !important;
   line-height: 1.5 !important;
 }
 
 html[data-brand="android"] .home-greeting {
   font-family: var(--font-display) !important;
   font-weight: 400 !important;
-  font-size: clamp(40px, 7vw, 80px) !important;
+  font-size: clamp(36px, 7vw, 76px) !important;
   letter-spacing: 0 !important;
 }
 
 html[data-brand="android"] .home-text {
-  font-size: 18px !important;
+  font-size: 16px !important;
   line-height: 1.5 !important;
 }
 
@@ -480,7 +455,7 @@ html[data-brand="android"] .wb-data-table tbody tr:hover {
   background: var(--surface-hover) !important;
 }
 
-/* ── Inputs ────────────────────────────────────────────────────────────── */
+/* ── Inputs: M3 outlined text field ────────────────────────────────────── */
 html[data-brand="android"] .date-input,
 html[data-brand="android"] .text-input,
 html[data-brand="android"] .filter-search,
@@ -501,11 +476,12 @@ html[data-brand="android"] .scn-search:focus {
   box-shadow: none !important;
 }
 
-/* ── Modal: M3 dialog ──────────────────────────────────────────────────── */
+/* ── Modal: M3 dialog — large radius, no blur ──────────────────────────── */
 html[data-brand="android"] .modal-overlay,
 html[data-brand="android"] .wb-modal-overlay {
   background: rgba(0, 0, 0, 0.5) !important;
   backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
 }
 
 html[data-brand="android"] .modal,
@@ -522,7 +498,7 @@ html[data-brand="android"] .wb-modal-title {
   letter-spacing: 0 !important;
 }
 
-/* ── Chips: M3 assist/filter chips ─────────────────────────────────────── */
+/* ── Chips: M3 filter chips — square corners ───────────────────────────── */
 html[data-brand="android"] .type-chip {
   border-radius: 8px !important;
   border: 1px solid var(--border) !important;
@@ -635,7 +611,7 @@ html[data-brand="android"] .kb-toggle-btn--active {
   color: var(--text-inverse) !important;
 }
 
-/* ── Scrollbar ─────────────────────────────────────────────────────────── */
+/* ── Scrollbar — thin ──────────────────────────────────────────────────── */
 html[data-brand="android"] ::-webkit-scrollbar {
   width: 4px !important;
   height: 4px !important;
@@ -652,8 +628,8 @@ html[data-brand="android"] ::-webkit-scrollbar-thumb {
 
 /* ── Footer ────────────────────────────────────────────────────────────── */
 html[data-brand="android"] footer {
-  font-size: 14px !important;
-  padding: 16px 16px !important;
+  font-size: 13px !important;
+  padding: 14px 16px !important;
 }
 
 /* ── Icon buttons ──────────────────────────────────────────────────────── */
