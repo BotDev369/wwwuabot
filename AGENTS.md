@@ -1,7 +1,7 @@
 # AGENTS.md — Інструкція для AI-агентів у проєкті wwwuabot
 
-> **Версія:** 1.2
-> **Останнє оновлення:** 28.08.2026
+> **Версія:** 1.4
+> **Останнє оновлення:** 02.09.2026
 > **Статус:** містить перевірені факти та архітектурні рішення.
 
 Цей файл — стислий орієнтир для будь-якого AI-агента (Claude, GPT,
@@ -82,6 +82,29 @@ Buffy чи інший), що вперше заходить у проєкт. Ме
   `"{user_id} - {first_name} {last_name} - @{username}"`, обрізається
   до 128 символів (ліміт Telegram API), id топіків зберігаються в
   JSON-полі `topics` користувача.
+
+- **Design System (Apple / Material)** — подвійна тема, що керується
+  через компонент `ThemeButton` у `packages/shared/src/components/StyleToggle.tsx`.
+  Два бренди: **Apple** (скляний blur, pill-кнопки, SF Pro, 0.5px hairlines,
+  OLED #000 чорний) та **Material** (суцільні surface з тінню, Roboto,
+  1px borders, приглушений #0f1013 чорний). CSS-токени: `apple.css` та
+  `android.css` у `packages/shared/src/styles/`. Тип `Brand = "apple" | "material"`.
+  Темна/світла тема через атрибут `data-theme` на `<html>`. Системний
+  режим (follow OS) прибрано — тільки ручний toggle.
+
+- **SVG Icons** — єдина бібліотека іконок у `packages/shared/src/components/icons.tsx`.
+  ~30 stroke-based SVG-іконок (24×24, inherit currentColor). Тип `IconName`.
+  Використання: `import { icons, type IconName } from "@wwwuabot/shared";`
+  `{icons["home"]}`. Емоджі в UI **заборонені** — використовувати тільки SVG.
+
+- **Conditional Rendering** — система умовного показу блоків на сторінках.
+  Тип `BlockConditions` у `packages/shared/src/types/page-config.ts` підтримує:
+  `role[]`, `tariff[]`, `status[]`, `minDiscount`, `permissions[]`,
+  `fieldMatch{}`, `fallback` (JSON-блок заміни). ConditionEvaluator у
+  `packages/shared/src/utils/condition-evaluator.ts` — чиста функція
+  `evaluateConditions(conditions, user) → boolean`. ZoneRenderer перевіряє
+  умови перед рендером кожного блоку. UserProfile передається з
+  `GET /api/user/profile?user_id=X` (api/src/controllers/users.controller.ts).
 
 ---
 
@@ -175,6 +198,7 @@ packages/
 > **Сторінка = запис scenarios з колонкою `page_data`.**
 > **Блок = автономний модуль, який може робити будь-що.**
 > **Зони = sidebar, header, main, footer (розділяють екран).**
+> **Кожен блок може мати `conditions` — правила показу за атрибутами користувача.**
 
 Ключові правила:
 1. **`page_data` окрема від `rich_data`** — rich_data для Telegram,
@@ -187,6 +211,8 @@ packages/
    (catch-all `/:codeword`). Блоки реєструються через реєстр.
 5. **Новий блок = новий файл + запис у реєстрі + запис у
    BLOCK_DEFINITIONS.**
+6. **Кожен блок може мати `conditions`** — JSON-об'єкт з правилами
+   показу. Адмін налаштовує через UI редактор блоків у web-admin.
 
 Додавання нового блоку:
 1. Створити компонент у `packages/ui/src/blocks/NewBlock.tsx`
@@ -194,7 +220,22 @@ packages/
 3. Зареєструвати в `registerAllBlocks()` (`packages/ui/src/blocks/index.ts`)
 4. Веб-редактор автоматично покаже новий тип у JSON-редакторі
 
-### 3.5. Додавання нового спільного коду (чек-ліст)
+### 3.5. Дизайн-система та іконки
+
+> **Емоджі в UI ЗАБОРОНЕНІ. Використовувати тільки SVG-іконки.**
+> **Дропдауни ЗАБОРОНЕНІ. Використовувати тільки модалки на все вікно.**
+
+- `packages/shared/src/styles/apple.css` — CSS-токени для Apple бренду
+- `packages/shared/src/styles/android.css` — CSS-токени для Material бренду
+- `packages/shared/src/styles/registry.tsx` — тип `Brand`, функція `applyBrandTheme()`
+- `packages/shared/src/components/StyleToggle.tsx` — `ThemeButton` компонент
+- `packages/shared/src/components/icons.tsx` — SVG-іконки, тип `IconName`
+- `packages/shared/src/app/initTheme.ts` — ініціалізація теми при завантаженні
+
+Правила модалок: `<div className="modal-overlay">` → `<div className="modal">` →
+`modal-header` + `modal-body` + `modal-actions`. Класи в `index.css` обох воркерів.
+
+### 3.6. Додавання нового спільного коду (чек-ліст)
 
 1. **Чи ця функція/константа/тип вже існує в іншому воркері?**
    Якщо так — використовуй її, не копіюй.
@@ -205,6 +246,19 @@ packages/
 4. **Додай типи та JSDoc** — shared-код використовується без
    контексту, тому документація обов'язкова.
 5. **Онови цей файл** (AGENTS.md) — якщо з'явилась нова конвенція.
+
+### 3.7. Додавання нового типу кнопки в клавіатурі
+
+> Модуль кнопок (`web-admin/src/features/scenarios/keyboard/`) спільний
+> для "бот-звичайні повідомлення" та "бот-річ" ("кнопки-бот").
+> У web є окремий модуль "кнопки-веб".
+
+Поточні типи кнопок: `callback_data`, `url`, `web_app`, `text`.
+Додавання нового типу:
+1. Додати до `ButtonKind` у `types.ts`
+2. Оновити `toTelegramButton()` та `fromTelegramButton()` у `keyboard.utils.ts`
+3. Додати опцію в випадаючий список у `KeyboardEditor.tsx`
+4. Оновити `validateButtons()` у `keyboard.utils.ts`
 
 ---
 
@@ -259,7 +313,25 @@ src/
 
 ---
 
-## 5. Конвенції коду
+## 5. Користувачі: ролі, тарифи, дозволи
+
+Кожен користувач має атрибути для умовного рендерингу:
+
+| Поле | Тип | Можливі значення |
+|---|---|---|
+| `role` | string | `user`, `moderator`, `admin`, `vip` |
+| `tariff` | string | `free`, `basic`, `pro`, `enterprise` |
+| `status` | string | `active`, `pending`, `suspended` |
+| `discount` | number | 0–100 (відсотки) |
+| `permissions` | string[] | `analytics`, `export`, `messaging`, `settings`, `users`, `billing` |
+
+Ці поля редагуються в web-admin (UserEditModal) та зберігаються в D1
+(авто-міграція через `withAutoMigrate`). `GET /api/user/profile?user_id=X`
+повертає UserProfile для conditional rendering на платформі.
+
+---
+
+## 6. Конвенції коду
 
 - **TypeScript** скрізь, `strict`-орієнтовано, хоча повне усунення
   `any` ще не завершене (задача P2-1 у плані, зараз ~101 випадок,
@@ -287,7 +359,7 @@ src/
 
 ---
 
-## 6. Чого точно НЕ робити (реальні прецеденти з цього репо)
+## 7. Чого точно НЕ робити (реальні прецеденти з цього репо)
 
 - **Не пиши власну версію авто-міграції колонок D1.** `api/` колись
   завела власну спрощену версію (`ensureMyDatesColumn`) замість
@@ -326,7 +398,7 @@ src/
 
 ---
 
-## 7. Поточні обмеження проєкту (щоб не дивуватись)
+## 8. Поточні обмеження проєкту (щоб не дивуватись)
 
 - **Тестів немає взагалі** — жодного `*.test.ts`/`*.spec.ts`, жодного
   test-фреймворку в жодному з 4 `package.json`. Якщо задача передбачає
@@ -341,17 +413,15 @@ src/
 
 ---
 
-## 8. Як розширювати цей файл
+## 9. Як розширювати цей файл
 
-Це версія 1.3 — оновлена з додаванням розділу 3.4 (Page Builder)
-та `packages/ui/`. Коли з'являться нові стабільні конвенції або
-будуть закриті задачі, що на них впливають, Коли з'являться нові стабільні конвенції або
-будуть закриті задачі, що на них впливають (наприклад, P1-1 —
-розбиття `api/` на router+controllers, або P2-3 — повний збір
-`packages/shared/`), онови відповідні розділи тут і познач
-задачу `S-8` у `PROJECT_PLAN.md`. Не видаляй попередні розділи
-"мовчки" — якщо конвенція змінилась, познач це явно (стара
-версія → нова, дата).
+Це версія 1.4 — оновлена з додаванням дизайн-системи (Apple/Material теми),
+SVG-іконок, conditional rendering (умовний показ блоків), та модуля
+клавіатури (web_app кнопка). Коли з'являться нові стабільні конвенції
+або будуть закриті задачі, що на них впливають, онови відповідні
+розділи тут і познач задачу `S-8` у `PROJECT_PLAN.md`.
+Не видаляй попередні розділи "мовчки" — якщо конвенція змінилась,
+познач це явно (стара версія → нова, дата).
 
 ### Журнал змін
 
@@ -361,6 +431,7 @@ src/
 | 27.08.2026 | 1.1 | Додано розділ 3: архітектура API та спільний код, правило «двічі — в спільне», єдиний API-шлюз через `api/`, структура `packages/shared`, чек-ліст нового shared-коду |
 | 28.08.2026 | 1.2 | Оновлено web/web-admin: React 19, Vite 8, Tailwind 4, Zustand, createBrowserRouter, feature-based structure. Додано секцію 4 з однаковою архітектурою src/. Оновлено CI: npx wrangler для всіх 4 воркерів. Додано api/ до workspaces. Вирівняно compatibility_date та prod bindings. |
 | 30.08.2026 | 1.3 | Додано Page Builder: `packages/ui/` (спільний React-пакет), типи `page-config.ts`, реєстр блоків, рендерери, Zustand store, MVP-блоки (text, image, buttons, list, divider). Додано колонку `page_data` до scenarios. Оновлено розділ 3.3 (структура packages/) та додано 3.4 (архітектура блоків). |
+| 02.09.2026 | 1.4 | Додано дизайн-систему (Apple/Material теми, ThemeButton з модалкою), SVG-іконки (~30, замість емоджі), conditional rendering (BlockConditions, ConditionEvaluator, UserProfile), `web_app` тип кнопки, розширені поля користувача (role/tariff/status/discount/permissions). Додано розділи 3.5 (дизайн-система), 3.6 (чек-ліст), 3.7 (кнопки), 5 (користувачі). |
 
 
 ---
