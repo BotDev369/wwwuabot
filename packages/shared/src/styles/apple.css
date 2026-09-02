@@ -292,20 +292,27 @@ html[data-brand="apple"][data-theme="dark"] .sidebar {
   border-right: 0.5px solid rgba(56, 56, 58, 0.5) !important;
 }
 
-/* Nav items: pill shape, filled active — Apple style */
+/* Nav items: pill shape, FILLED active — Apple signature */
 html[data-brand="apple"] .sidebar nav a {
   border-radius: 10px !important;
   font-size: 16px !important;
   font-weight: 500 !important;
-  padding: 11px 14px !important;
+  padding: 12px 14px !important;
   min-height: 44px !important;
   letter-spacing: -0.015em !important;
+  background: transparent !important;
+  color: var(--text-secondary) !important;
 }
 
 html[data-brand="apple"] .sidebar nav a.active {
-  background: var(--accent) !important;
-  color: var(--text-inverse) !important;
+  background: #000000 !important;
+  color: #ffffff !important;
   font-weight: 600 !important;
+}
+
+html[data-brand="apple"][data-theme="dark"] .sidebar nav a.active {
+  background: #ffffff !important;
+  color: #000000 !important;
 }
 
 /* Admin nav items */
@@ -313,14 +320,21 @@ html[data-brand="apple"] .sidebar-nav-item {
   border-radius: 10px !important;
   font-size: 16px !important;
   font-weight: 500 !important;
-  padding: 10px 12px !important;
+  padding: 12px 14px !important;
   min-height: 44px !important;
+  background: transparent !important;
+  color: var(--text-secondary) !important;
 }
 
 html[data-brand="apple"] .sidebar-nav-item--active {
-  background: var(--accent) !important;
-  color: var(--text-inverse) !important;
+  background: #000000 !important;
+  color: #ffffff !important;
   font-weight: 600 !important;
+}
+
+html[data-brand="apple"][data-theme="dark"] .sidebar-nav-item--active {
+  background: #ffffff !important;
+  color: #000000 !important;
 }
 
 /* Sidebar header / settings */
