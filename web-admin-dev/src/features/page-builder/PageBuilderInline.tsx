@@ -110,11 +110,6 @@ export function PageBuilderInline({
   const activeZones = useMemo(() => getActiveZones(config), [config]);
 
   // Зони, які ще не додані (для модалки)
-  const inactiveZones = useMemo(
-    () => ALL_ZONES.filter((z) => !activeZones.includes(z)),
-    [activeZones],
-  );
-
   const handleUpdateZoneBlocks = useCallback(
     (zone: BlockZone, blocks: PageBlock[]) => {
       onChange({
@@ -238,7 +233,7 @@ export function PageBuilderInline({
               onClick={() => setShowBlockModal(true)}
               style={{ fontSize: 14, padding: "10px 20px", display: "flex", alignItems: "center", gap: 8 }}
             >
-              {ico("plus", 18)} Додати блок
+              {ico("blocks", 18)} Додати блок
             </button>
           </div>
         </div>
@@ -423,7 +418,7 @@ function AddBlockModal({ onSelect, onClose }: AddBlockModalProps) {
       >
         <div className="wb-modal-header">
           <span className="wb-modal-title">
-            {ico("plus")} Додати блок
+            {ico("blocks")} Додати блок
           </span>
           <button className="wb-close-btn" onClick={onClose}>
             {icons["close"]}
@@ -508,7 +503,7 @@ function AddBlockModal({ onSelect, onClose }: AddBlockModalProps) {
                   }}
                 >
                   <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
-                    {def.icon ? ico(def.icon as IconName, 16) : ico("plus", 16)}
+                    {def.icon ? ico(def.icon as IconName, 16) : ico("blocks", 16)}
                     <span style={{ fontWeight: 600, fontSize: 13 }}>{def.label}</span>
                   </div>
                   {def.description && (
