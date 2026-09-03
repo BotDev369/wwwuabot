@@ -160,10 +160,15 @@ export function ThemeButton({ compact = false }: { compact?: boolean }) {
             if (e.target === e.currentTarget) setOpen(false);
           }}
         >
-          <div className="wb-modal" onClick={(e) => e.stopPropagation()}>
+          <div className="wb-modal" onClick={(e) => e.stopPropagation()} style={{ maxWidth: 380 }}>
             {/* Header */}
             <div className="wb-modal-header">
-              <span className="wb-modal-title">Тема</span>
+              <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                <span style={{ color: "var(--accent)", display: "flex" }}>
+                  {isDark ? icons["moon"] : icons["sun"]}
+                </span>
+                <span className="wb-modal-title">Налаштування теми</span>
+              </div>
               <button
                 type="button"
                 onClick={() => setOpen(false)}
@@ -175,38 +180,77 @@ export function ThemeButton({ compact = false }: { compact?: boolean }) {
             </div>
 
             {/* Body */}
-            <div className="wb-modal-body">
+            <div className="wb-modal-body" style={{ padding: "16px 20px 20px" }}>
               {/* Brand selector */}
-              <div style={{ marginBottom: 20 }}>
-                <div className="wb-label" style={{ marginBottom: 10 }}>
-                  Бренд
+              <div style={{ marginBottom: 24 }}>
+                <div
+                  style={{
+                    fontSize: 11,
+                    fontWeight: 600,
+                    letterSpacing: "0.08em",
+                    textTransform: "uppercase",
+                    color: "var(--text-muted)",
+                    marginBottom: 12,
+                  }}
+                >
+                  Дизайн-система
                 </div>
-                <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
-                  {BRANDS.map((b) => (
-                    <button
-                      key={b.id}
-                      type="button"
-                      onClick={() => setBrand(b.id)}
-                      className={`wb-btn wb-btn-ghost${b.id === brand ? " wb-btn-primary" : ""}`}
-                      style={{
-                        justifyContent: "flex-start",
-                        gap: 12,
-                        padding: "12px 14px",
-                        fontSize: 15,
-                        fontWeight: b.id === brand ? 600 : 500,
-                      }}
-                    >
-                      <span style={{ width: 24, textAlign: "center", flexShrink: 0 }}>
-                        {b.id === brand ? icons["check"] : (b.icon ? <span style={{ fontSize: 18 }}>{b.icon}</span> : <span style={{ fontSize: 18, opacity: 0.4 }}>○</span>)}
-                      </span>
-                      <span>{b.labelUk}</span>
-                    </button>
-                  ))}
+                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
+                  {BRANDS.map((b) => {
+                    const active = b.id === brand;
+                    return (
+                      <button
+                        key={b.id}
+                        type="button"
+                        onClick={() => setBrand(b.id)}
+                        style={{
+                          display: "flex",
+                          flexDirection: "column",
+                          alignItems: "center",
+                          justifyContent: "center",
+                          gap: 8,
+                          padding: "16px 12px",
+                          borderRadius: "var(--radius-lg)",
+                          cursor: "pointer",
+                          border: active ? "2px solid var(--accent)" : "2px solid var(--border-subtle)",
+                          background: active ? "var(--accent-dim, rgba(99,102,241,0.08))" : "var(--bg-2)",
+                          transition: "all 0.15s",
+                          width: "100%",
+                        }}
+                      >
+                        <span
+                          style={{
+                            width: 40,
+                            height: 40,
+                            borderRadius: "var(--radius-full)",
+                            display: "flex",
+                            alignItems: "center",
+                            justifyContent: "center",
+                            fontSize: 20,
+                            background: active ? "var(--accent)" : "var(--bg-4)",
+                            color: active ? "var(--text-inverse, #fff)" : "var(--text-secondary)",
+                            transition: "all 0.15s",
+                          }}
+                        >
+                          {active ? icons["check"] : (b.icon ? <span>{b.icon}</span> : <span style={{ opacity: 0.5 }}>○</span>)}
+                        </span>
+                        <span
+                          style={{
+                            fontSize: 13,
+                            fontWeight: active ? 600 : 500,
+                            color: active ? "var(--accent)" : "var(--text-primary)",
+                          }}
+                        >
+                          {b.labelUk}
+                        </span>
+                      </button>
+                    );
+                  })}
                 </div>
               </div>
 
               {/* Divider */}
-              <div className="wb-modal-divider" />
+              <div style={{ height: 1, background: "var(--border-subtle, var(--border))", margin: "0 0 20px" }} />
 
               {/* Dark / Light toggle */}
               <div
@@ -214,14 +258,20 @@ export function ThemeButton({ compact = false }: { compact?: boolean }) {
                   display: "flex",
                   alignItems: "center",
                   justifyContent: "space-between",
+                  padding: "4px 0",
                 }}
               >
-                <div>
-                  <div style={{ fontSize: 15, fontWeight: 500, color: "var(--text-primary)" }}>
-                    Темна тема
-                  </div>
-                  <div style={{ fontSize: 12, color: "var(--text-muted)", marginTop: 2 }}>
-                    {isDark ? "Увімкнено" : "Вимкнено"}
+                <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+                  <span style={{ color: "var(--text-secondary)", display: "flex" }}>
+                    {isDark ? icons["moon"] : icons["sun"]}
+                  </span>
+                  <div>
+                    <div style={{ fontSize: 14, fontWeight: 500, color: "var(--text-primary)" }}>
+                      {isDark ? "Темна тема" : "Світла тема"}
+                    </div>
+                    <div style={{ fontSize: 12, color: "var(--text-muted)", marginTop: 1 }}>
+                      Натисніть для перемикання
+                    </div>
                   </div>
                 </div>
                 <button
