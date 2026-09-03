@@ -100,6 +100,7 @@ export function PageBuilderInline({
 }: Props) {
   const [showZoneModal, setShowZoneModal] = useState(false);
   const [showBlockModal, setShowBlockModal] = useState(false);
+  const [targetZone, setTargetZone] = useState<BlockZone | null>(null);
 
   const context: BlockContext = useMemo(
     () => ({
@@ -142,36 +143,42 @@ export function PageBuilderInline({
     [config, onChange],
   );
 
+  // ── Відкрити модалку блоку для зони ──
+  const openBlockModal = useCallback((zone: BlockZone) => {
+    setTargetZone(zone);
+    setShowBlockModal(true);
+  }, []);
+
   // ── Додати блок ──
   const handleAddBlock = useCallback(
     (type: string) => {
-      const targetZone: BlockZone = "main";
+      const zone = targetZone ?? "main";
 
       const newBlock: PageBlock = {
         id: generateBlockId(),
         type,
-        order: (config.zones[targetZone]?.length ?? 0),
+        order: (config.zones[zone]?.length ?? 0),
         props: getDefaultProps(type),
       };
 
-      // Також додаємо main до visibleZones якщо її там немає
       const currentVisible = getActiveZones(config);
-      const updatedVisible = currentVisible.includes(targetZone)
+      const updatedVisible = currentVisible.includes(zone)
         ? currentVisible
-        : [...currentVisible, targetZone];
+        : [...currentVisible, zone];
 
       onChange({
         ...config,
         visibleZones: updatedVisible,
         zones: {
           ...config.zones,
-          [targetZone]: [...(config.zones[targetZone] ?? []), newBlock],
+          [zone]: [...(config.zones[zone] ?? []), newBlock],
         },
       });
 
       setShowBlockModal(false);
+      setTargetZone(null);
     },
-    [config, onChange],
+    [config, onChange, targetZone],
   );
 
   return (
@@ -234,7 +241,7 @@ export function PageBuilderInline({
             </button>
             <button
               className="wb-btn wb-btn-primary"
-              onClick={() => setShowBlockModal(true)}
+              onClick={() => openBlockModal("main")}
               style={{ fontSize: 13, padding: "10px 18px", display: "flex", alignItems: "center", gap: 8 }}
             >
               {ico("blocks", 18)} Додати блок
@@ -252,6 +259,7 @@ export function PageBuilderInline({
             blocks={config.zones[zone]}
             context={context}
             onUpdateBlocks={handleUpdateZoneBlocks}
+            onAddBlock={openBlockModal}
           />
         ))}
 
@@ -276,7 +284,7 @@ export function PageBuilderInline({
             </div>
             <button
               className="wb-btn wb-btn-secondary"
-              onClick={() => setShowBlockModal(true)}
+              onClick={() => openBlockModal(zone)}
               style={{ fontSize: 12, padding: "4px 12px" }}
             >
               + Додати блок
@@ -362,7 +370,8 @@ export function PageBuilderInline({
       {showBlockModal && (
         <AddBlockModal
           onSelect={handleAddBlock}
-          onClose={() => setShowBlockModal(false)}
+          onClose={() => { setShowBlockModal(false); setTargetZone(null); }}
+          targetZone={targetZone}
         />
       )}
     </div>
@@ -374,21 +383,39 @@ export function PageBuilderInline({
 interface AddBlockModalProps {
   onSelect: (type: string) => void;
   onClose: () => void;
+  /** Зона, в яку додається блок — фільтрує сумісні типи */
+  targetZone?: BlockZone | null;
 }
 
-function AddBlockModal({ onSelect, onClose }: AddBlockModalProps) {
+const ZONE_MODAL_LABELS: Record<BlockZone, string> = {
+  header: "Header",
+  sidebar: "Sidebar",
+  main: "Main",
+  footer: "Footer",
+};
+
+function AddBlockModal({ onSelect, onClose, targetZone }: AddBlockModalProps) {
   const [query, setQuery] = useState("");
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
 
   // Collect categories
   const categories = useMemo(() => {
     const cats = new Set<string>();
-    BLOCK_DEFINITIONS.forEach((d) => cats.add(d.category));
+    const zoneBlocks = targetZone
+      ? BLOCK_DEFINITIONS.filter(
+          (d) => d.compatibleZones.length === 0 || d.compatibleZones.includes(targetZone),
+        )
+      : BLOCK_DEFINITIONS;
+    zoneBlocks.forEach((d) => cats.add(d.category));
     return Array.from(cats);
-  }, []);
+  }, [targetZone]);
 
   const filtered = useMemo(() => {
-    let list = BLOCK_DEFINITIONS;
+    let list = targetZone
+      ? BLOCK_DEFINITIONS.filter(
+          (d) => d.compatibleZones.length === 0 || d.compatibleZones.includes(targetZone),
+        )
+      : BLOCK_DEFINITIONS;
     if (selectedCategory) {
       list = list.filter((d) => d.category === selectedCategory);
     }
@@ -402,7 +429,7 @@ function AddBlockModal({ onSelect, onClose }: AddBlockModalProps) {
       );
     }
     return list;
-  }, [query, selectedCategory]);
+  }, [query, selectedCategory, targetZone]);
 
   // Close on Escape
   useEffect(() => {
@@ -422,7 +449,7 @@ function AddBlockModal({ onSelect, onClose }: AddBlockModalProps) {
       >
         <div className="wb-modal-header">
           <span className="wb-modal-title">
-            {ico("blocks")} Додати блок
+            {ico("blocks")} Додати блок{targetZone ? ` → ${ZONE_MODAL_LABELS[targetZone]}` : ""}
           </span>
           <button className="wb-close-btn" onClick={onClose}>
             {icons["close"]}

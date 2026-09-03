@@ -40,6 +40,9 @@ interface ZoneEditorProps {
 
   /** Callback: оновити весь список блоків зони. */
   onUpdateBlocks: (zone: BlockZone, blocks: PageBlock[]) => void;
+
+  /** Callback: відкрити модалку додавання блоку для цієї зони. */
+  onAddBlock?: (zone: BlockZone) => void;
 }
 
 export function ZoneEditor({
@@ -47,6 +50,7 @@ export function ZoneEditor({
   blocks,
   context,
   onUpdateBlocks,
+  onAddBlock,
 }: ZoneEditorProps) {
   const [collapsed, setCollapsed] = useState(false);
 
@@ -314,28 +318,39 @@ export function ZoneEditor({
             </div>
           )}
 
-          {/* Кнопки додавання блоків */}
+          {/* Кнопка додавання блоку */}
           <div
             style={{
-              display: "flex",
-              gap: 6,
-              flexWrap: "wrap",
               marginTop: 8,
               paddingTop: 8,
               borderTop: "1px dashed var(--border)",
+              display: "flex",
+              justifyContent: "center",
             }}
           >
-            {availableTypes.map((def) => (
+            {onAddBlock ? (
               <button
-                key={def.type}
                 className="wb-btn wb-btn-secondary"
-                onClick={() => handleAddBlock(def.type)}
-                style={{ fontSize: 12, padding: "4px 10px" }}
-                title={def.description}
+                onClick={() => onAddBlock(zone)}
+                style={{ fontSize: 12, padding: "6px 16px" }}
               >
-                + {def.label}
+                + Додати блок
               </button>
-            ))}
+            ) : (
+              <div style={{ display: "flex", gap: 6, flexWrap: "wrap", justifyContent: "center" }}>
+                {availableTypes.map((def) => (
+                  <button
+                    key={def.type}
+                    className="wb-btn wb-btn-secondary"
+                    onClick={() => handleAddBlock(def.type)}
+                    style={{ fontSize: 12, padding: "4px 10px" }}
+                    title={def.description}
+                  >
+                    + {def.label}
+                  </button>
+                ))}
+              </div>
+            )}
           </div>
         </div>
       )}
