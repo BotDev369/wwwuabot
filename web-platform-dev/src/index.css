@@ -1070,15 +1070,13 @@ main {
   margin: 0;
 }
 
-/* Мобільний: sidebar стає повноширинним */
+/* Мобільний: sidebar прихований, показується тільки на десктопі */
 @media (max-width: 768px) {
   .page-layout {
     flex-direction: column;
   }
   .page-zone--sidebar {
-    width: 100%;
-    border-right: none;
-    border-bottom: 1px solid var(--border);
+    display: none;
   }
 }
 

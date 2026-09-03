@@ -2873,6 +2873,7 @@ body {
 .phone-frame-body .page-zone--sidebar {
   background: #f0f0f5;
   border-bottom: 1px solid #e0e0e8;
+  display: none;
 }
 .phone-frame-body .page-zone-group {
   display: flex;
