@@ -184,12 +184,7 @@ function DateModal({
                   <button
                     key={t}
                     type="button"
-                    className={`type-chip ${formType === t ? "active" : ""}`}
-                    style={{
-                      borderColor: formType === t ? cfg.color : "var(--border)",
-                      background: formType === t ? cfg.bg : "var(--bg-1)",
-                      color: formType === t ? cfg.color : "var(--text-muted)",
-                    }}
+                    className={`wb-btn wb-btn-sm ${formType === t ? "wb-btn-primary" : "wb-btn-secondary"}`}
                     onClick={() => !isReadOnly && setFormType(t)}
                     disabled={isReadOnly}
                   >
@@ -682,12 +677,7 @@ export function MyDatesPage() {
                         <button
                           key={t}
                           type="button"
-                          className={`type-chip ${formType === t ? "active" : ""}`}
-                          style={{
-                            borderColor: formType === t ? cfg.color : "var(--border)",
-                            background: formType === t ? cfg.bg : "var(--bg-1)",
-                            color: formType === t ? cfg.color : "var(--text-muted)",
-                          }}
+                          className={`wb-btn wb-btn-sm ${formType === t ? "wb-btn-primary" : "wb-btn-secondary"}`}
                           onClick={() => setFormType(t)}
                         >
                           {ico(cfg.icon)} {t === "person" ? "Людина" : t === "event" ? "Подія" : "Інше"}
@@ -1011,20 +1001,20 @@ export function MyDatesPage() {
               {headerMenu.mode === "menu" && (
                 <div className="header-modal-body">
                   <button
-                    className={`header-modal-btn ${sortOrder === "asc" && sortField === headerMenu.field ? "active" : ""}`}
+                    className={`wb-btn wb-btn-ghost ${sortOrder === "asc" && sortField === headerMenu.field ? "wb-btn-primary" : ""}`}
                     onClick={() => handleHeaderMenuSort(headerMenu.field, "asc")}
                   >
                     ▲ А → Я
                   </button>
                   <button
-                    className={`header-modal-btn ${sortOrder === "desc" && sortField === headerMenu.field ? "active" : ""}`}
+                    className={`wb-btn wb-btn-ghost ${sortOrder === "desc" && sortField === headerMenu.field ? "wb-btn-primary" : ""}`}
                     onClick={() => handleHeaderMenuSort(headerMenu.field, "desc")}
                   >
                     ▼ Я → А
                   </button>
                   <div className="header-modal-divider" />
                   <button
-                    className="header-modal-btn"
+                    className="wb-btn wb-btn-ghost"
                     onClick={() => setHeaderMenu({ field: headerMenu.field, mode: "filter" })}
                   >
                     {ico("eye")} Фільтр...
@@ -1034,7 +1024,7 @@ export function MyDatesPage() {
                     <>
                       <div className="header-modal-divider" />
                       <button
-                        className="header-modal-btn header-modal-btn--danger"
+                        className="wb-btn wb-btn-danger"
                         onClick={() => handleHeaderMenuClear(headerMenu.field)}
                       >
                         {ico("close")} Очистити
@@ -1084,7 +1074,7 @@ export function MyDatesPage() {
                   </div>
                   {(columnFilters[headerMenu.field]?.length || 0) > 0 && (
                     <button
-                      className="header-modal-btn header-modal-btn--clear"
+                      className="wb-btn wb-btn-secondary"
                       onClick={() =>
                         setColumnFilters((prev) => ({ ...prev, [headerMenu.field]: [] }))
                       }
@@ -1112,14 +1102,14 @@ export function MyDatesPage() {
               </div>
               <div className="header-modal-body">
                 <Link
-                  className="header-modal-btn"
+                  className="wb-btn wb-btn-ghost"
                   to={`/mydate/${rowActionDate.date}`}
                   onClick={() => setRowActionDate(null)}
                 >
                   {ico("compare")} Аналіз
                 </Link>
                 <button
-                  className="header-modal-btn"
+                  className="wb-btn wb-btn-ghost"
                   onClick={() => {
                     setModalMode("view");
                     setModalDate(rowActionDate);
@@ -1129,7 +1119,7 @@ export function MyDatesPage() {
                   {ico("eye")} Переглянути
                 </button>
                 <button
-                  className="header-modal-btn"
+                  className="wb-btn wb-btn-ghost"
                   onClick={() => {
                     setModalMode("edit");
                     setModalDate(rowActionDate);
@@ -1140,7 +1130,7 @@ export function MyDatesPage() {
                 </button>
                 <div className="header-modal-divider" />
                 <button
-                  className="header-modal-btn header-modal-btn--danger"
+                  className="wb-btn wb-btn-danger"
                   onClick={() => {
                     handleDelete(rowActionDate.id);
                     setRowActionDate(null);
