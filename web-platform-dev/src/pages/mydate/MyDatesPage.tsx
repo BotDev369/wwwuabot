@@ -280,26 +280,26 @@ function DateModal({
           {mode === "view" ? (
             <>
               <Link
-                className="btn btn-sm btn-analyze"
+                className="wb-btn wb-btn-sm wb-btn-analyze"
                 to={`/mydate/${date?.date}`}
                 onClick={onClose}
               >
                 {ico("compare")} Аналіз
               </Link>
-              <button className="btn btn-secondary btn-sm" onClick={onSwitchToEdit}>
+              <button className="wb-btn wb-btn-secondary wb-btn-sm" onClick={onSwitchToEdit}>
                 {ico("edit")} Редагувати
               </button>
-              <button className="btn btn-danger btn-sm" onClick={handleDelete}>
+              <button className="wb-btn wb-btn-danger wb-btn-sm" onClick={handleDelete}>
                 {ico("trash")} Видалити
               </button>
             </>
           ) : (
             <>
-              <button className="btn btn-secondary btn-sm" onClick={onClose} disabled={submitting}>
+              <button className="wb-btn wb-btn-secondary wb-btn-sm" onClick={onClose} disabled={submitting}>
                 Скасувати
               </button>
               <button
-                className="btn btn-sm"
+                className="wb-btn wb-btn-sm"
                 onClick={handleSave}
                 disabled={!formDate || submitting}
               >
@@ -768,7 +768,7 @@ export function MyDatesPage() {
                 </div>
               </div>
               <button
-                className="btn btn-sm"
+                className="wb-btn wb-btn-sm"
                 onClick={handleAccordionAdd}
                 disabled={!formDate || submitting}
               >
@@ -831,17 +831,17 @@ export function MyDatesPage() {
               <div className="bulk-bar">
                 <span className="bulk-count">Обрано: {selectedIds.size}</span>
                 <button
-                  className="btn btn-sm btn-compare"
+                  className="wb-btn wb-btn-sm wb-btn-compare"
                   onClick={handleBulkCompare}
                   disabled={selectedIds.size < 2}
                 >
                   {ico("compare")} Співставити ({selectedIds.size})
                 </button>
-                <button className="btn btn-sm btn-danger" onClick={handleBulkDelete}>
+                <button className="wb-btn wb-btn-sm wb-btn-danger" onClick={handleBulkDelete}>
                   {ico("trash")} Видалити ({selectedIds.size})
                 </button>
                 <button
-                  className="btn btn-sm btn-secondary"
+                  className="wb-btn wb-btn-sm wb-btn-secondary"
                   onClick={() => setSelectedIds(new Set())}
                 >
                   Скасувати вибір
@@ -977,7 +977,7 @@ export function MyDatesPage() {
         {/* Кнопка "Нова дата" внизу */}
         {dates.length > 0 && !formOpen && (
           <button
-            className="btn btn-add-bottom"
+            className="wb-btn wb-btn-add-bottom"
             onClick={() => {
               setModalMode("create");
               setModalDate(null);

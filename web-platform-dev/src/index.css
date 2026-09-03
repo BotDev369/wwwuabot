@@ -1,3 +1,4 @@
+@import url("https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&display=swap");
 @import "@wwwuabot/shared/styles/index.css";
 @import "tailwindcss";
 /* NOTE: Tailwind MUST come AFTER shared styles. Our tokens.css uses :root
@@ -245,84 +246,7 @@ main {
 }
 
 /* ─── Buttons ────────────────────────────────────────────────────────────── */
-.btn {
-  display: inline-block;
-  background: var(--accent);
-  color: var(--text-inverse);
-  font-weight: 700;
-  font-size: 15px;
-  padding: 13px 28px;
-  border-radius: 8px;
-  text-decoration: none;
-  margin-top: 24px;
-  transition: background 0.15s ease;
-  min-height: 44px;
-}
-
-.btn:hover {
-  background: var(--accent-hover);
-  text-decoration: none;
-}
-
-.btn-sm {
-  padding: 8px 16px;
-  font-size: 13px;
-  margin-top: 0;
-}
-
-.btn-secondary {
-  background: var(--bg-2);
-  color: var(--text-primary);
-  border: 1px solid var(--border);
-}
-
-.btn-secondary:hover {
-  background: var(--bg-4);
-}
-
-.btn-danger {
-  background: var(--bg-1);
-  color: var(--red);
-  border: 1px solid var(--red-dim);
-}
-
-.btn-danger:hover {
-  background: var(--red-dim);
-  border-color: var(--red);
-}
-
-.btn-analyze {
-  background: var(--accent);
-}
-
-.btn-analyze:hover {
-  background: var(--accent-hover);
-}
-
-.btn-compare {
-  background: var(--bg-4);
-  color: var(--text-primary);
-}
-
-.btn-compare:hover {
-  background: var(--accent);
-  color: var(--text-inverse);
-}
-
-.btn-inline {
-  margin-top: 0;
-  padding: 10px 20px;
-  font-size: 14px;
-}
-
-.btn-telegram {
-  background: var(--accent);
-  display: inline-block;
-}
-
-.btn-telegram:hover {
-  background: var(--accent-hover);
-}
+/* Local button styles moved to packages/shared/src/styles/components.css (.wb-*) */
 
 /* ─── Date Input ─────────────────────────────────────────────────────────── */
 .date-input-block {
@@ -347,7 +271,7 @@ main {
 .date-input {
   padding: 10px 14px;
   font-size: 15px;
-  border-radius: 6px;
+  border-radius: var(--radius);
   border: 1px solid var(--border);
   background: var(--bg-1);
   color: var(--text-primary);
@@ -364,7 +288,7 @@ main {
 .card {
   background: var(--bg-1);
   border: 1px solid var(--border);
-  border-radius: 8px;
+  border-radius: var(--radius-md);
   padding: 18px;
 }
 
@@ -424,7 +348,7 @@ main {
 
 .sys-group {
   border: 1px solid var(--border);
-  border-radius: 8px;
+  border-radius: var(--radius-md);
   padding: 14px 16px;
   background: var(--bg-1);
 }
@@ -484,7 +408,7 @@ main {
 /* ─── Accordion ──────────────────────────────────────────────────────────── */
 .accordion {
   border: 1px solid var(--border);
-  border-radius: 10px;
+  border-radius: var(--radius-lg);
   margin: 20px 0;
 }
 
@@ -548,7 +472,7 @@ main {
 .text-input {
   padding: 10px 14px;
   font-size: 15px;
-  border-radius: 8px;
+  border-radius: var(--radius-md);
   border: 1.5px solid var(--border);
   width: 100%;
   transition: border-color 0.15s;
@@ -613,7 +537,7 @@ main {
   align-items: center;
   padding: 8px 10px;
   border: 1px solid var(--border);
-  border-radius: 6px;
+  border-radius: var(--radius);
   min-height: 40px;
   background: var(--bg-1);
 }
@@ -666,7 +590,7 @@ main {
 /* ─── Table ──────────────────────────────────────────────────────────────── */
 .table-wrap {
   border: 1px solid var(--border);
-  border-radius: 10px;
+  border-radius: var(--radius-lg);
   margin-top: 16px;
   overflow: auto;
   max-height: calc(100vh - 280px);
@@ -729,7 +653,7 @@ main {
 .modal {
   background: var(--bg-1);
   border: 1px solid var(--border);
-  border-radius: 12px;
+  border-radius: var(--radius-lg);
   max-width: 480px;
   width: 100%;
   max-height: 90vh;
@@ -834,7 +758,7 @@ main {
   max-height: 80vh;
   background: var(--bg-1);
   border: 1px solid var(--border);
-  border-radius: 14px;
+  border-radius: var(--radius-xl);
   box-shadow: var(--shadow-xl);
   z-index: 2000;
   display: flex;
@@ -856,7 +780,7 @@ main {
   font-size: 14px;
   background: none;
   border: none;
-  border-radius: 8px;
+  border-radius: var(--radius-md);
   cursor: pointer;
   color: var(--text-primary);
   transition: background 0.1s;
@@ -884,7 +808,7 @@ main {
 .filter-search {
   padding: 8px 12px;
   font-size: 13px;
-  border-radius: 6px;
+  border-radius: var(--radius);
   border: 1px solid var(--border);
   width: 200px;
   background: var(--bg-1);
@@ -905,7 +829,7 @@ main {
   padding: 10px 16px;
   background: var(--accent-dim);
   border: 1px solid var(--accent);
-  border-radius: 10px;
+  border-radius: var(--radius-lg);
   flex-wrap: wrap;
 }
 
@@ -919,7 +843,7 @@ main {
 .icon-btn {
   width: 32px;
   height: 32px;
-  border-radius: 6px;
+  border-radius: var(--radius);
   border: 1px solid var(--border);
   background: var(--bg-1);
   cursor: pointer;
@@ -947,7 +871,7 @@ main {
 .row-dropdown-toggle {
   width: 28px;
   height: 28px;
-  border-radius: 6px;
+  border-radius: var(--radius);
   border: 1px solid var(--border);
   background: var(--bg-1);
   cursor: pointer;
@@ -1347,9 +1271,9 @@ main {
 /* ═══ Profile Page ══════════════════════════════════════════════════════ */
 
 .profile-card {
-  background: var(--bg-1, #f8f9fa);
-  border: 1px solid var(--border, #e9ecef);
-  border-radius: 12px;
+  background: var(--bg-1);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
   padding: 20px;
 }
 

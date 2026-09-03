@@ -39,7 +39,7 @@ export function AuthGate({ children }: AuthGateProps) {
         <p className="text-secondary">Відкрийте веб-платформу через Telegram бот.</p>
         <a
           href={`https://t.me/${BOT_USERNAME}`}
-          className="btn btn-telegram"
+          className="wb-btn wb-btn-telegram"
         >
           ✈️ Відкрити в Telegram
         </a>

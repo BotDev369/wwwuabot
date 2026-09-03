@@ -123,14 +123,14 @@ export function EditorPage() {
             />
           </div>
           <button
-            className="btn btn--secondary"
+            className="wb-btn wb-btn-secondary"
             onClick={load}
             disabled={!codeword.trim() || status === "loading"}
           >
             Завантажити
           </button>
           <button
-            className={`btn btn--primary${isDirty ? " btn--dirty" : ""}`}
+            className={`wb-btn wb-btn-primary${isDirty ? " wb-btn-dirty" : ""}`}
             onClick={save}
             disabled={!codeword.trim() || status === "saving"}
           >

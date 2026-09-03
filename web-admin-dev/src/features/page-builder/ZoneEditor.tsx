@@ -328,7 +328,7 @@ export function ZoneEditor({
             {availableTypes.map((def) => (
               <button
                 key={def.type}
-                className="btn btn--secondary"
+                className="wb-btn wb-btn-secondary"
                 onClick={() => handleAddBlock(def.type)}
                 style={{ fontSize: 12, padding: "4px 10px" }}
                 title={def.description}

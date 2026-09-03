@@ -225,7 +225,7 @@ export function BlockEditor({
             {ico("eye", 12)} Умови
           </button>
           <button
-            className="btn btn--danger"
+            className="wb-btn wb-btn-danger"
             onClick={() => onRemove(block.id)}
             style={{ fontSize: 12, padding: "2px 8px" }}
             title="Видалити блок"
@@ -410,7 +410,7 @@ export function BlockEditor({
               Вкладені блоки ({block.children?.length ?? 0})
             </span>
             <button
-              className="btn btn--secondary"
+              className="wb-btn wb-btn-secondary"
               onClick={handleAddChild}
               style={{ fontSize: 11, padding: "2px 8px" }}
             >

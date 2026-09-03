@@ -83,6 +83,61 @@
   font-size: var(--text-md);
 }
 
+/* Analyze — accent variant (same as primary, explicit alias) */
+.wb-btn-analyze {
+  background: var(--accent);
+  color: var(--text-inverse);
+  border-color: var(--accent);
+}
+.wb-btn-analyze:hover {
+  background: var(--accent-hover);
+  border-color: var(--accent-hover);
+}
+
+/* Compare — surface variant that inverts on hover */
+.wb-btn-compare {
+  background: var(--surface-active);
+  color: var(--text-primary);
+  border-color: var(--border);
+}
+.wb-btn-compare:hover {
+  background: var(--accent);
+  color: var(--text-inverse);
+  border-color: var(--accent);
+}
+
+/* Inline — for inline date-input rows */
+.wb-btn-inline {
+  margin-top: 0;
+  padding: 10px 20px;
+  font-size: 14px;
+}
+
+/* Telegram — accent brand color */
+.wb-btn-telegram {
+  background: var(--accent);
+  display: inline-block;
+}
+.wb-btn-telegram:hover {
+  background: var(--accent-hover);
+}
+
+/* Dirty indicator — yellow dot for unsaved changes */
+.wb-btn-dirty {
+  position: relative;
+}
+.wb-btn-dirty::after {
+  content: "";
+  position: absolute;
+  top: 5px;
+  right: 5px;
+  width: 6px;
+  height: 6px;
+  background: var(--yellow);
+  border-radius: 50%;
+  border: 1.5px solid var(--accent);
+}
+
 /* ── Input / Select / Textarea ───────────────────────────────────────────── */
 
 .wb-input,

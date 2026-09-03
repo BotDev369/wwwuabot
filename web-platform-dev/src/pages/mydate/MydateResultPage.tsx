@@ -65,7 +65,7 @@ function SystemCardView({
         <>
           <p>{system.description}</p>
           {system.implemented && (
-            <button className="btn" onClick={handleAnalyze} disabled={loading}>
+            <button className="wb-btn" onClick={handleAnalyze} disabled={loading}>
               {loading ? "Аналізуємо..." : "Проаналізувати"}
             </button>
           )}
@@ -99,7 +99,7 @@ export function MydateResultPage() {
       <main>
         <section className="hero">
           <p className="hero-text">Невірний формат дати.</p>
-          <a className="btn" href="/mydate">
+          <a className="wb-btn" href="/mydate">
             Спробувати ще раз
           </a>
         </section>

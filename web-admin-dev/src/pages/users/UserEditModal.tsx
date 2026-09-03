@@ -277,10 +277,10 @@ export function UserEditModal({ userId, onClose, onSaved }: Props) {
         </div>
 
         <div className="usr-modal-footer">
-          <button className="btn btn--secondary btn--sm" onClick={onClose} disabled={saving}>
+          <button className="wb-btn wb-btn-secondary wb-btn-sm" onClick={onClose} disabled={saving}>
             Скасувати
           </button>
-          <button className="btn btn--primary btn--sm" onClick={handleSave} disabled={saving || loading}>
+          <button className="wb-btn wb-btn-primary wb-btn-sm" onClick={handleSave} disabled={saving || loading}>
             {saving ? "Збереження…" : <>{ico("save")} Зберегти</>}
           </button>
         </div>

@@ -68,7 +68,7 @@ body {
   width: 360px;
   background: var(--bg-1);
   border: 1px solid var(--border);
-  border-radius: 12px;
+  border-radius: var(--radius-lg);
   padding: 40px 36px;
   display: flex;
   flex-direction: column;
@@ -101,7 +101,7 @@ body {
   letter-spacing: 0.1em;
   text-transform: uppercase;
   border: 1px solid var(--border);
-  border-radius: 3px;
+  border-radius: var(--radius-xs);
   padding: 1px 6px;
 }
 
@@ -410,38 +410,7 @@ body {
 }
 
 /* ─── Buttons ────────────────────────────────────────────────────────────────── */
-.btn {
-  padding: 7px 14px;
-  border-radius: var(--radius);
-  font-size: 13px;
-  font-weight: 500;
-  cursor: pointer;
-  border: none;
-  transition:
-    background 0.15s,
-    opacity 0.15s;
-  white-space: nowrap;
-}
-
-.btn--primary {
-  background: var(--accent);
-  color: var(--text-inverse);
-}
-
-.btn--primary:hover {
-  background: var(--accent-hover);
-}
-
-.btn--secondary {
-  background: var(--bg-2);
-  color: var(--text-secondary);
-  border: 1px solid var(--border);
-}
-
-.btn--secondary:hover {
-  background: var(--bg-4);
-  color: var(--text-primary);
-}
+/* Local button styles moved to packages/shared/src/styles/components.css (.wb-*) */
 
 /* ─── Workspace ──────────────────────────────────────────────────────────────── */
 .workspace {
@@ -521,7 +490,7 @@ body {
   color: var(--text-muted);
   background: var(--bg-2);
   border: 1px solid var(--border);
-  border-radius: 3px;
+  border-radius: var(--radius-xs);
   padding: 2px 7px;
 }
 
@@ -534,7 +503,7 @@ body {
   flex-direction: column;
   align-items: flex-start;
   gap: 8px;
-  background: #e5ddd5;
+  background: var(--bg-4);
 }
 
 .tg-message {
@@ -629,16 +598,9 @@ body {
 }
 
 /* ─── Dirty button indicator ─────────────────────────────────────────────────── */
-.btn--dirty {
-  position: relative;
-}
+/* Moved to packages/shared/src/styles/components.css (.wb-btn-dirty) */
 
-.btn--dirty::after {
-  content: "";
-  position: absolute;
-  top: 5px;
-  right: 5px;
-  width: 6px;
+/*
   height: 6px;
   background: var(--yellow);
   border-radius: 50%;
@@ -685,7 +647,7 @@ body {
 .block-type-badge {
   width: 20px;
   height: 20px;
-  border-radius: 3px;
+  border-radius: var(--radius-xs);
   background: var(--accent-dim);
   color: var(--accent);
   font-size: 11px;
@@ -719,7 +681,7 @@ body {
 .block-action-btn {
   width: 22px;
   height: 22px;
-  border-radius: 3px;
+  border-radius: var(--radius-xs);
   border: none;
   background: none;
   color: var(--text-muted);
@@ -1384,16 +1346,7 @@ body {
 }
 
 /* ═══ Scenario form (CRUD) ═══ */
-.btn--danger {
-  background: var(--red-dim);
-  color: var(--red);
-  border: 1px solid transparent;
-}
-
-.btn--danger:hover:not(:disabled) {
-  background: var(--red);
-  color: var(--text-inverse);
-}
+/* .btn--danger moved to packages/shared/src/styles/components.css (.wb-btn-danger) */
 
 .scn-form {
   flex: 1;
@@ -1560,7 +1513,7 @@ body {
 
 .tg-table--bordered th,
 .tg-table--bordered td {
-  border-color: #ccc;
+  border-color: var(--border);
 }
 
 .tg-table--striped tbody tr:nth-child(even) td {
@@ -2088,7 +2041,7 @@ body {
   font-weight: 600;
   letter-spacing: 0.04em;
   padding: 1px 6px;
-  border-radius: 20px;
+  border-radius: var(--radius-full);
 }
 
 .usr-badge--active {
@@ -2100,6 +2053,8 @@ body {
   background: var(--red-dim);
   color: var(--red);
 }
+
+/* Note: .usr-badge uses border-radius: 20px (var(--radius-full)) */
 
 /* ─── Row menu ─────────────────────────────────────────────────────────────── */
 
@@ -2149,7 +2104,7 @@ body {
 .usr-modal {
   background: var(--bg-1);
   border: 1px solid var(--border);
-  border-radius: 10px;
+  border-radius: var(--radius-lg);
   width: 100%;
   max-width: 340px;
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.18);
@@ -2261,10 +2216,7 @@ body {
   margin-right: 4px;
 }
 
-.btn--sm {
-  padding: 4px 10px;
-  font-size: 12px;
-}
+/* .btn--sm moved to packages/shared/src/styles/components.css (.wb-btn-sm) */
 
 /* ─── Modal ────────────────────────────────────────────────────────────────── */
 

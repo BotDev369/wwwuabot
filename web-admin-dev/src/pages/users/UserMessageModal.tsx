@@ -55,11 +55,11 @@ export function UserMessageModal({ userId, onClose }: Props) {
         </div>
         {!sent && (
           <div className="usr-modal-footer">
-            <button className="btn btn--secondary" onClick={onClose} disabled={sending}>
+            <button className="wb-btn wb-btn-secondary" onClick={onClose} disabled={sending}>
               Скасувати
             </button>
             <button
-              className="btn btn--primary"
+              className="wb-btn wb-btn-primary"
               onClick={() => void handleSend()}
               disabled={sending || !text.trim()}
             >

@@ -148,7 +148,7 @@ export function PageBuilderPage() {
     return (
       <div style={{ padding: 20 }}>
         <p>Codeword не вказано</p>
-        <button className="btn btn--secondary" onClick={handleBack}>
+        <button className="wb-btn wb-btn-secondary" onClick={handleBack}>
           Назад
         </button>
       </div>
@@ -181,28 +181,28 @@ export function PageBuilderPage() {
         </div>
         <div style={{ display: "flex", gap: 8 }}>
           <button
-            className="btn btn--secondary"
+            className="wb-btn wb-btn-secondary"
             onClick={handleBack}
             style={{ fontSize: 13 }}
           >
             ← Назад
           </button>
           <button
-            className="btn btn--secondary"
+            className="wb-btn wb-btn-secondary"
             onClick={() => setJsonMode(!jsonMode)}
             style={{ fontSize: 13 }}
           >
             {jsonMode ? "🏗️ Конструктор" : "🔧 JSON"}
           </button>
           <button
-            className="btn btn--secondary"
+            className="wb-btn wb-btn-secondary"
             onClick={handleExport}
             style={{ fontSize: 13 }}
           >
             📋 Експорт
           </button>
           <button
-            className="btn btn--primary"
+            className="wb-btn wb-btn-primary"
             onClick={handleSave}
             disabled={saveStatus === "saving"}
             style={{ fontSize: 13 }}
@@ -251,7 +251,7 @@ export function PageBuilderPage() {
             }}
           >
             <button
-              className="btn btn--secondary"
+              className="wb-btn wb-btn-secondary"
               onClick={() => {
                 setJsonText(JSON.stringify(config, null, 2));
                 setJsonError(null);
@@ -261,7 +261,7 @@ export function PageBuilderPage() {
               🔄 Оновити з конструктора
             </button>
             <button
-              className="btn btn--primary"
+              className="wb-btn wb-btn-primary"
               onClick={handleImport}
               style={{ fontSize: 12 }}
             >

@@ -55,11 +55,11 @@ function FieldRow({ label, value, icon }: { label: string; value: React.ReactNod
 
 function StatusBadge({ value }: { value: string }) {
   const colors: Record<string, { bg: string; color: string }> = {
-    active: { bg: "#ecfdf5", color: "#059669" },
-    pending: { bg: "#fef3c7", color: "#d97706" },
-    suspended: { bg: "#fee2e2", color: "#dc2626" },
+    active: { bg: "var(--green-dim)", color: "var(--green)" },
+    pending: { bg: "var(--yellow-dim)", color: "var(--yellow)" },
+    suspended: { bg: "var(--red-dim)", color: "var(--red)" },
   };
-  const c = colors[value] || { bg: "#f3f4f6", color: "#6b7280" };
+  const c = colors[value] || { bg: "var(--surface-active)", color: "var(--text-secondary)" };
   return (
     <span style={{ background: c.bg, color: c.color, padding: "2px 10px", borderRadius: 9999, fontSize: 13, fontWeight: 600 }}>
       {value}
@@ -69,10 +69,10 @@ function StatusBadge({ value }: { value: string }) {
 
 function RoleBadge({ value }: { value: string }) {
   const colors: Record<string, { bg: string; color: string }> = {
-    admin: { bg: "#fef3c7", color: "#d97706" },
-    vip: { bg: "#f5f3ff", color: "#7c3aed" },
-    moderator: { bg: "#dbeafe", color: "#2563eb" },
-    user: { bg: "#f3f4f6", color: "#6b7280" },
+    admin: { bg: "var(--yellow-dim)", color: "var(--yellow)" },
+    vip: { bg: "var(--accent-dim)", color: "var(--accent)" },
+    moderator: { bg: "var(--accent-dim)", color: "var(--accent)" },
+    user: { bg: "var(--surface-active)", color: "var(--text-secondary)" },
   };
   const c = colors[value] || colors.user;
   return (
@@ -245,12 +245,12 @@ export function UserProfileCard({ user, variant = "platform", loading, error, on
       {variant === "admin" && (onEdit || onMessage) && (
         <div style={{ display: "flex", gap: 8, justifyContent: "flex-end", marginTop: 16, paddingTop: 12, borderTop: "1px solid var(--border, #e5e7eb)" }}>
           {onMessage && (
-            <button className="btn btn--secondary btn--sm" onClick={() => onMessage(user.id)}>
+            <button className="wb-btn wb-btn-secondary wb-btn-sm" onClick={() => onMessage(user.id)}>
               {ico("mail")} Написати
             </button>
           )}
           {onEdit && (
-            <button className="btn btn--primary btn--sm" onClick={() => onEdit(user.id)}>
+            <button className="wb-btn wb-btn-primary wb-btn-sm" onClick={() => onEdit(user.id)}>
               {ico("edit")} Змінити
             </button>
           )}

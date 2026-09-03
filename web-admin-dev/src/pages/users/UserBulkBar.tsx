@@ -18,21 +18,21 @@ export function UserBulkBar() {
       <span className="usr-bulk-count">
         Вибрано: {count}
       </span>
-      <button className="btn btn--secondary btn--sm" onClick={() => void bulk("block")}>
+      <button className="wb-btn wb-btn-secondary wb-btn-sm" onClick={() => void bulk("block")}>
         {ico("lock")} Заблокувати
       </button>
-      <button className="btn btn--secondary btn--sm" onClick={() => void bulk("unblock")}>
+      <button className="wb-btn wb-btn-secondary wb-btn-sm" onClick={() => void bulk("unblock")}>
         {ico("unlock")} Розблокувати
       </button>
       <button
-        className="btn btn--danger btn--sm"
+        className="wb-btn wb-btn-danger wb-btn-sm"
         onClick={() => {
           if (confirm(`Видалити ${count} користувачів?`)) void bulk("delete");
         }}
       >
         {ico("trash")} Видалити
       </button>
-      <button className="btn btn--secondary btn--sm" onClick={clearSelection}>
+      <button className="wb-btn wb-btn-secondary wb-btn-sm" onClick={clearSelection}>
         ✕ Скасувати
       </button>
     </div>

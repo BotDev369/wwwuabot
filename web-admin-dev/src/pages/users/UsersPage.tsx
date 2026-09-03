@@ -44,7 +44,7 @@ export function UsersPage() {
         ) : status === "error" ? (
           <div className="empty-state">
             <p className="empty-state-text">Не вдалося завантажити: {errorMsg}</p>
-            <button className="btn btn--secondary" onClick={() => void load()}>
+            <button className="wb-btn wb-btn-secondary" onClick={() => void load()}>
               Спробувати ще
             </button>
           </div>

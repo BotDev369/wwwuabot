@@ -87,7 +87,7 @@ export function CompareTablePage() {
       <main>
         <section className="hero">
           <p className="hero-text">Невірний формат дат у посиланні.</p>
-          <a className="btn" href="/mydate/compare">
+          <a className="wb-btn" href="/mydate/compare">
             Співставити дати
           </a>
         </section>

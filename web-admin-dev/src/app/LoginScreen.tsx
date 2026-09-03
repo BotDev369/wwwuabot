@@ -48,7 +48,7 @@ export function LoginScreen() {
             />
             {error && <p className="login-error">{error}</p>}
           </div>
-          <button type="submit" className="login-btn" disabled={loading || !password.trim()}>
+          <button type="submit" className="wb-btn wb-btn-primary login-btn" disabled={loading || !password.trim()}>
             {loading ? "Вхід..." : "Увійти"}
           </button>
         </form>

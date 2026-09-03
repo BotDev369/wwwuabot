@@ -112,7 +112,7 @@ export function BotSettingsPage() {
       <PageTopbar>
         <h1 className="topbar-title">Налаштування бота</h1>
         <div className="topbar-right">
-          <button className="btn btn--secondary" onClick={fetchData} disabled={loading}>
+          <button className="wb-btn wb-btn-secondary" onClick={fetchData} disabled={loading}>
             Оновити
           </button>
         </div>
@@ -211,14 +211,14 @@ export function BotSettingsPage() {
 
                 <div className="block-row" style={{ gap: 8 }}>
                   <button
-                    className="btn btn--primary"
+                    className="wb-btn wb-btn-primary"
                     onClick={setupWebhook}
                     disabled={actionLoading}
                   >
                     {actionLoading ? "Зачекайте..." : "Встановити вебхук"}
                   </button>
                   <button
-                    className="btn btn--danger"
+                    className="wb-btn wb-btn-danger"
                     onClick={deleteWebhook}
                     disabled={actionLoading}
                   >

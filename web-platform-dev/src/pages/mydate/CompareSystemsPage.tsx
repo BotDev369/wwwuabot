@@ -65,7 +65,7 @@ export function CompareSystemsPage() {
       <main>
         <section className="hero">
           <p className="hero-text">Не знайдено дат для аналізу.</p>
-          <a className="btn" href="/mydate/compare">
+          <a className="wb-btn" href="/mydate/compare">
             Назад до введення дат
           </a>
         </section>
@@ -111,7 +111,7 @@ export function CompareSystemsPage() {
         </div>
 
         <button
-          className="btn"
+          className="wb-btn"
           onClick={compare}
           disabled={!systems.some((s) => s.implemented && isSystemSelected(s.id))}
         >

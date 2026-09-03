@@ -57,7 +57,7 @@ export function CompareSetupPage() {
             onChange={(e) => setInput(e.target.value)}
             className="date-input"
           />
-          <button className="btn btn-inline" onClick={addDate} disabled={!input}>
+          <button className="wb-btn wb-btn-inline" onClick={addDate} disabled={!input}>
             Додати дату
           </button>
         </div>
@@ -69,7 +69,7 @@ export function CompareSetupPage() {
                 <span className="date-item-label">{formatDate(d)}</span>
                 <span className="date-item-actions">
                   <button
-                    className="icon-btn"
+                    className="wb-btn-icon"
                     onClick={() => move(i, -1)}
                     disabled={i === 0}
                     aria-label="Вгору"
@@ -77,7 +77,7 @@ export function CompareSetupPage() {
                     ↑
                   </button>
                   <button
-                    className="icon-btn"
+                    className="wb-btn-icon"
                     onClick={() => move(i, 1)}
                     disabled={i === dates.length - 1}
                     aria-label="Вниз"
@@ -85,7 +85,7 @@ export function CompareSetupPage() {
                     ↓
                   </button>
                   <button
-                    className="icon-btn danger"
+                    className="wb-btn-icon wb-btn-danger"
                     onClick={() => remove(i)}
                     aria-label="Видалити"
                   >
@@ -97,7 +97,7 @@ export function CompareSetupPage() {
           </ul>
         )}
 
-        <button className="btn" onClick={goSelect} disabled={dates.length === 0}>
+        <button className="wb-btn" onClick={goSelect} disabled={dates.length === 0}>
           {dates.length === 0 ? "Додайте хоча б одну дату" : "Обрати системи для співставлення"}
         </button>
       </section>

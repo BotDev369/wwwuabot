@@ -51,7 +51,7 @@ export function ScenariosAdminPage() {
           )}
         </div>
         <div className="topbar-right">
-          <button className="btn btn--primary" onClick={handleCreate}>
+          <button className="wb-btn wb-btn-primary" onClick={handleCreate}>
             + Новий
           </button>
         </div>
@@ -65,7 +65,7 @@ export function ScenariosAdminPage() {
         ) : status === "error" ? (
           <div className="empty-state">
             <p className="empty-state-text">Не вдалося завантажити: {errorMsg}</p>
-            <button className="btn btn--secondary" onClick={() => void load(true)}>
+            <button className="wb-btn wb-btn-secondary" onClick={() => void load(true)}>
               Спробувати ще
             </button>
           </div>

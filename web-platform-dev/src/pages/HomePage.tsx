@@ -39,7 +39,7 @@ function DateInputBlock({
           onChange={(e) => setValue(e.target.value)}
           className="date-input"
         />
-        <button className="btn btn-inline" onClick={handleSubmit}>
+        <button className="wb-btn wb-btn-inline" onClick={handleSubmit}>
           {buttonLabel}
         </button>
       </div>
@@ -77,7 +77,7 @@ export function HomePage() {
               <p className="hero-text">{block.props.text as string}</p>
             )}
             {block.component === "Button" && (
-              <a className="btn" href={block.props.href as string}>
+              <a className="wb-btn" href={block.props.href as string}>
                 {block.props.label as string}
               </a>
             )}
