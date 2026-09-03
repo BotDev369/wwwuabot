@@ -249,7 +249,7 @@ export function ScenarioCardModal({ codeword, table, onClose, onSaved }: Props) 
             >
               {ico("link")} Перейти
             </a>
-            <button className="wb-modal-close" onClick={onClose}>✕</button>
+            <button className="wb-close-btn" onClick={onClose}>{icons["close"]}</button>
           </div>
         </div>
 

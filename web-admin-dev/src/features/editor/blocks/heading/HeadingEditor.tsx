@@ -1,5 +1,6 @@
 import type { BaseBlock } from "../types";
 import { useEditorStore } from "../../store";
+import { icons } from "@wwwuabot/shared";
 import { RichTextField } from "../../richtext/RichTextField";
 
 export type HeadingLevel = "h1" | "h2" | "h3" | "h4" | "h5" | "h6";
@@ -56,7 +57,7 @@ export function HeadingEditor({ block, idx, total }: Props) {
             onClick={() => removeBlock(block.id)}
             title="Видалити"
           >
-            ✕
+            {icons["close"]}
           </button>
         </div>
       </div>

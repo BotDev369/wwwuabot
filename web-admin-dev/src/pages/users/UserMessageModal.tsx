@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { sendMessage } from "../../shared/api/users.api";
+import { icons } from "@wwwuabot/shared";
 
 interface Props {
   userId: number;
@@ -33,7 +34,7 @@ export function UserMessageModal({ userId, onClose }: Props) {
         <div className="wb-modal-header">
           <h3 className="wb-modal-title">Написати користувачеві #{userId}</h3>
           <button className="wb-modal-close" onClick={onClose}>
-            ✕
+            {icons["close"]}
           </button>
         </div>
         <div className="wb-modal-body">

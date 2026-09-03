@@ -128,7 +128,7 @@ export function UserEditModal({ userId, onClose, onSaved }: Props) {
             {ico("edit")} {loading ? "Завантаження…" : `Редагувати #${userId}`}
             {user?.username ? `  @${user.username}` : ""}
           </span>
-          <button className="wb-modal-close" onClick={onClose}>✕</button>
+          <button className="wb-close-btn" onClick={onClose}>{icons["close"]}</button>
         </div>
 
         <div className="wb-modal-body" style={{ overflow: "auto", flex: 1 }}>

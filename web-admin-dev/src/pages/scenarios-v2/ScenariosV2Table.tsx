@@ -183,7 +183,7 @@ export function ScenariosV2Table() {
               <span className="wb-modal-title">
                 {ico("clipboard")} {menuScenario.codeword}
               </span>
-              <button className="wb-modal-close" onClick={closeAll}>✕</button>
+              <button className="wb-close-btn" onClick={closeAll}>{icons["close"]}</button>
             </div>
             <div className="wb-modal-body wb-modal-menu">
               <button
@@ -210,7 +210,7 @@ export function ScenariosV2Table() {
           <div className="wb-modal" onClick={(e) => e.stopPropagation()}>
             <div className="wb-modal-header">
               <span className="wb-modal-title">{ico("warning")} Видалити сценарій?</span>
-              <button className="wb-modal-close" onClick={closeAll}>✕</button>
+              <button className="wb-close-btn" onClick={closeAll}>{icons["close"]}</button>
             </div>
             <div className="wb-modal-body">
               <p style={{ color: "var(--text-secondary)", fontSize: 13, margin: 0 }}>

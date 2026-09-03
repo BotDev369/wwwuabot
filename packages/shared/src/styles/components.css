@@ -282,6 +282,87 @@
   color: var(--text-primary);
 }
 
+/* ── Close Button (circular, themed) ───────────────────────────────────── */
+
+.wb-close-btn {
+  width: 36px;
+  height: 36px;
+  min-width: 36px;
+  min-height: 36px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--radius-full);
+  background: var(--bg-2);
+  color: var(--text-secondary);
+  border: 1px solid var(--border-subtle);
+  cursor: pointer;
+  transition: all var(--duration-fast) var(--ease);
+  flex-shrink: 0;
+  padding: 0;
+  font-size: 0;
+  line-height: 1;
+}
+.wb-close-btn svg {
+  width: 18px;
+  height: 18px;
+}
+.wb-close-btn:hover {
+  background: var(--surface-hover);
+  color: var(--text-primary);
+  border-color: var(--border);
+}
+.wb-close-btn:active {
+  transform: scale(0.92);
+}
+
+/* ── Move Buttons (for drag-reorder lists) ─────────────────────────────── */
+
+.wb-move-btn {
+  width: 36px;
+  height: 36px;
+  min-width: 36px;
+  min-height: 36px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--radius-sm);
+  background: var(--bg-2);
+  color: var(--text-secondary);
+  border: 1px solid var(--border-subtle);
+  cursor: pointer;
+  transition: all var(--duration-fast) var(--ease);
+  flex-shrink: 0;
+  padding: 0;
+  font-size: 0;
+  line-height: 1;
+}
+.wb-move-btn svg {
+  width: 18px;
+  height: 18px;
+}
+.wb-move-btn:hover:not(:disabled) {
+  background: var(--surface-hover);
+  color: var(--text-primary);
+  border-color: var(--border);
+}
+.wb-move-btn:disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
+}
+.wb-move-btn:active:not(:disabled) {
+  transform: scale(0.92);
+}
+
+/* ── Date Item Actions (for list reorder) ──────────────────────────────── */
+
+.wb-date-actions {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sp-2);
+  flex-shrink: 0;
+}
+
 .wb-modal-body {
   padding: var(--sp-5);
   overflow-y: auto;

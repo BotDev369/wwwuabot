@@ -1,5 +1,6 @@
 import type { BaseBlock } from "../types";
 import { useEditorStore } from "../../store";
+import { icons } from "@wwwuabot/shared";
 import { PhotoPicker, type PhotoConfig } from "../media/PhotoPicker";
 
 export interface InternalPhotoBlock extends BaseBlock {
@@ -45,7 +46,7 @@ export function PhotoEditor({ block, idx, total }: Props) {
             onClick={() => removeBlock(block.id)}
             title="Видалити"
           >
-            ✕
+            {icons["close"]}
           </button>
         </div>
       </div>

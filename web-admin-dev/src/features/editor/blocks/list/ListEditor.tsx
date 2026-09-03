@@ -1,5 +1,6 @@
 import type { BaseBlock } from "../types";
 import { useEditorStore } from "../../store";
+import { icons } from "@wwwuabot/shared";
 import { RichTextField } from "../../richtext/RichTextField";
 
 export type ListStyle = "bullet" | "ordered" | "checkbox";
@@ -95,7 +96,7 @@ export function ListEditor({ block, idx, total }: Props) {
             onClick={() => removeBlock(block.id)}
             title="Видалити"
           >
-            ✕
+            {icons["close"]}
           </button>
         </div>
       </div>
@@ -118,7 +119,7 @@ export function ListEditor({ block, idx, total }: Props) {
                   onClick={() => removeItem(item.id)}
                   title="Видалити пункт"
                 >
-                  ✕
+                  {icons["close"]}
                 </button>
               </div>
             ) : (

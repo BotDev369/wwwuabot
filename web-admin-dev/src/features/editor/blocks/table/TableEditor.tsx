@@ -1,5 +1,6 @@
 import type { BaseBlock } from "../types";
 import { useEditorStore } from "../../store";
+import { icons } from "@wwwuabot/shared";
 import { RichTextField } from "../../richtext/RichTextField";
 
 export interface InternalTableCell {
@@ -82,7 +83,7 @@ export function TableEditor({ block, idx, total }: Props) {
             onClick={() => removeBlock(block.id)}
             title="Видалити"
           >
-            ✕
+            {icons["close"]}
           </button>
         </div>
       </div>
@@ -133,8 +134,8 @@ export function TableEditor({ block, idx, total }: Props) {
                 onClick={() => removeRow(r)}
                 title="Видалити рядок"
               >
-                ✕
-              </button>
+              {icons["close"]}
+            </button>
             </div>
           ))}
         </div>

@@ -1,5 +1,6 @@
 import type { BaseBlock } from "../types";
 import type { InternalParagraphBlock } from "../paragraph/ParagraphEditor";
+import { icons } from "@wwwuabot/shared";
 import { useEditorStore } from "../../store";
 import { RichTextField } from "../../richtext/RichTextField";
 
@@ -62,7 +63,7 @@ export function BlockquoteEditor({ block, idx, total }: Props) {
             onClick={() => removeBlock(block.id)}
             title="Видалити"
           >
-            ✕
+            {icons["close"]}
           </button>
         </div>
       </div>
@@ -83,7 +84,7 @@ export function BlockquoteEditor({ block, idx, total }: Props) {
                   onClick={() => removeChild(child.id)}
                   title="Видалити абзац"
                 >
-                  ✕
+                  {icons["close"]}
                 </button>
               </div>
             ) : (

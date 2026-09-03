@@ -809,7 +809,7 @@ export function MyDatesPage() {
                           }))
                         }
                       >
-                        {v} ✕
+                        {v} {icons["close"]}
                       </span>
                     ))}
                   </div>
@@ -993,8 +993,8 @@ export function MyDatesPage() {
                           ? "Тип"
                           : "Примітки"}
                 </span>
-                <button className="header-modal-close" onClick={() => setHeaderMenu(null)}>
-                  ✕
+                <button className="wb-close-btn" onClick={() => setHeaderMenu(null)}>
+                  {icons["close"]}
                 </button>
               </div>
 
@@ -1096,8 +1096,8 @@ export function MyDatesPage() {
                 <span className="header-modal-title">
                   {rowActionDate.name || rowActionDate.date}
                 </span>
-                <button className="header-modal-close" onClick={() => setRowActionDate(null)}>
-                  ✕
+                <button className="wb-close-btn" onClick={() => setRowActionDate(null)}>
+                  {icons["close"]}
                 </button>
               </div>
               <div className="header-modal-body">

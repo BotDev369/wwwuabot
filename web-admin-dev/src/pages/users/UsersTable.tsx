@@ -219,7 +219,7 @@ export function UsersTable({ onMessage }: Props) {
                 {formatName(menuUser)}
                 {menuUser.username ? `  @${menuUser.username}` : ""}
               </span>
-              <button className="wb-modal-close" onClick={closeAll}>✕</button>
+              <button className="wb-close-btn" onClick={closeAll}>{icons["close"]}</button>
             </div>
             <div className="wb-modal-body wb-modal-menu">
               <button

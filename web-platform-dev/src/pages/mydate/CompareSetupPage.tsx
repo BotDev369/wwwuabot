@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAppStore } from "@/stores/app.store";
+import { icons } from "@wwwuabot/shared";
 
 function formatDate(raw: string): string {
   const parts = raw.split("-");
@@ -67,29 +68,29 @@ export function CompareSetupPage() {
             {dates.map((d, i) => (
               <li key={`${d}-${i}`} className="date-item">
                 <span className="date-item-label">{formatDate(d)}</span>
-                <span className="date-item-actions">
+                <span className="wb-date-actions">
                   <button
-                    className="wb-btn-icon"
+                    className="wb-move-btn"
                     onClick={() => move(i, -1)}
                     disabled={i === 0}
                     aria-label="Вгору"
                   >
-                    ↑
+                    {icons["arrow-up"]}
                   </button>
                   <button
-                    className="wb-btn-icon"
+                    className="wb-move-btn"
                     onClick={() => move(i, 1)}
                     disabled={i === dates.length - 1}
                     aria-label="Вниз"
                   >
-                    ↓
+                    {icons["arrow-down"]}
                   </button>
                   <button
-                    className="wb-btn-icon wb-btn-danger"
+                    className="wb-close-btn"
                     onClick={() => remove(i)}
                     aria-label="Видалити"
                   >
-                    ✕
+                    {icons["close"]}
                   </button>
                 </span>
               </li>

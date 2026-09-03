@@ -43,7 +43,9 @@ export type IconName =
   | "link"
   | "copy"
   | "check"
-  | "close";
+  | "close"
+  | "arrow-up"
+  | "arrow-down";
 
 const svgAttrs = {
   width: 24,
@@ -275,5 +277,15 @@ export const icons: Record<IconName, ReactElement> = {
   close: icon([
     l(18, 6, 6, 18),
     l(6, 6, 18, 18),
+  ]),
+
+  "arrow-up": icon([
+    p("M12 19V5"),
+    p("M5 12l7-7 7 7"),
+  ]),
+
+  "arrow-down": icon([
+    p("M12 5v14"),
+    p("M19 12l-7 7-7-7"),
   ]),
 };

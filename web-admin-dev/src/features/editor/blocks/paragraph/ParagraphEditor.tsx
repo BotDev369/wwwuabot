@@ -1,5 +1,6 @@
 import type { BaseBlock } from "../types";
 import { useEditorStore } from "../../store";
+import { icons } from "@wwwuabot/shared";
 import { RichTextField } from "../../richtext/RichTextField";
 
 export interface InternalParagraphBlock extends BaseBlock {
@@ -42,7 +43,7 @@ export function ParagraphEditor({ block, idx, total }: Props) {
             onClick={() => removeBlock(block.id)}
             title="Видалити"
           >
-            ✕
+            {icons["close"]}
           </button>
         </div>
       </div>

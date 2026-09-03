@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { readUser, type UserRow } from "../../shared/api/users.api";
-import { UserProfileCard, type UserProfileData } from "@wwwuabot/shared";
+import { UserProfileCard, type UserProfileData, icons } from "@wwwuabot/shared";
 
 interface Props {
   userId: number;
@@ -88,7 +88,7 @@ export function UserCardModal({ userId, onClose, onEdit, onMessage }: Props) {
           <span className="wb-modal-title">
             {loading ? "Завантаження…" : error ? "Помилка" : `#${userId}`}
           </span>
-          <button className="wb-modal-close" onClick={onClose}>✕</button>
+          <button className="wb-close-btn" onClick={onClose}>{icons["close"]}</button>
         </div>
 
         <div className="wb-modal-body">

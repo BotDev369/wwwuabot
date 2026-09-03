@@ -1,5 +1,6 @@
 import { useState } from "react";
 import type { BaseBlock } from "../types";
+import { icons } from "@wwwuabot/shared";
 import { blockRegistry } from "../registry";
 import { useEditorStore } from "../../store";
 import { RichTextField } from "../../richtext/RichTextField";
@@ -61,7 +62,7 @@ export function DetailsEditor({ block, idx, total }: Props) {
             onClick={() => removeBlock(block.id)}
             title="Видалити"
           >
-            ✕
+            {icons["close"]}
           </button>
         </div>
       </div>

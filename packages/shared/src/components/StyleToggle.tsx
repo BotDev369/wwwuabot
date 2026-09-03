@@ -196,17 +196,8 @@ export function ThemeButton({ compact = false }: { compact?: boolean }) {
               <button
                 type="button"
                 onClick={() => setOpen(false)}
-                className="modal-close"
+                className="wb-close-btn"
                 aria-label="Закрити"
-                style={{
-                  background: "none",
-                  border: "none",
-                  fontSize: 24,
-                  color: "var(--text-muted)",
-                  cursor: "pointer",
-                  padding: "4px 8px",
-                  lineHeight: 1,
-                }}
               >
                 ×
               </button>

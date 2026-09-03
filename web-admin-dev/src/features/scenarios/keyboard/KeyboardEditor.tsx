@@ -1,5 +1,6 @@
 import type { KeyboardButtonModel, KeyboardRowModel } from "./types";
 import { genId, newButton } from "./keyboard.utils";
+import { icons } from "@wwwuabot/shared";
 
 interface Props {
   rows: KeyboardRowModel[];
@@ -69,7 +70,7 @@ export function KeyboardEditor({ rows, onChange }: Props) {
                 onClick={() => removeRow(row.id)}
                 title="Видалити рядок"
               >
-                ✕
+                {icons["close"]}
               </button>
             </div>
           </div>
@@ -116,7 +117,7 @@ export function KeyboardEditor({ rows, onChange }: Props) {
                   onClick={() => removeButton(row.id, b.id)}
                   title="Видалити кнопку"
                 >
-                  ✕
+                  {icons["close"]}
                 </button>
               </div>
             ))}

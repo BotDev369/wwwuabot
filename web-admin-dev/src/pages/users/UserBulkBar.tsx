@@ -33,7 +33,7 @@ export function UserBulkBar() {
         {ico("trash")} Видалити
       </button>
       <button className="wb-btn wb-btn-secondary wb-btn-sm" onClick={clearSelection}>
-        ✕ Скасувати
+        {icons["close"]} Скасувати
       </button>
     </div>
   );
