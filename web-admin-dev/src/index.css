@@ -2908,6 +2908,11 @@ body {
     max-height: 100vh !important;
     border-radius: 0 !important;
     margin: 0 !important;
+    overflow: hidden !important;
+  }
+
+  .wb-modal-overlay:has(.scn-modal) {
+    padding: 0 !important;
   }
 
   .scn-modal .wb-modal-header {

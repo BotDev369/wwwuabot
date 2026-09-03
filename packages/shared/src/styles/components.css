@@ -260,6 +260,7 @@
   max-height: 85vh;
   display: flex;
   flex-direction: column;
+  overflow: hidden;
   animation: wb-slide-up var(--duration-slow) var(--ease-spring);
 }
 
@@ -383,7 +384,9 @@
 .wb-modal-body {
   padding: var(--sp-5);
   overflow-y: auto;
+  overflow-x: hidden;
   flex: 1;
+  min-width: 0;
 }
 
 .wb-modal-footer {
