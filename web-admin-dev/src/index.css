@@ -3015,6 +3015,45 @@ body {
   }
 }
 
+
+/* ═══ Mobile modal: grid layout to pin footer ══════════════════════════════════ */
+@media (max-width: 640px) {
+  .scn-modal {
+    display: grid !important;
+    grid-template-rows: auto auto auto 1fr auto !important;
+    grid-template-columns: 1fr !important;
+    height: 100dvh !important;
+    max-height: 100dvh !important;
+  }
+
+  .scn-modal .wb-modal-header { grid-row: 1; }
+  .scn-modal .scn-tabs { grid-row: 2; }
+  .scn-modal .scn-subtabs { grid-row: 3; }
+
+  .scn-modal .wb-modal-body {
+    grid-row: 4;
+    overflow-y: auto !important;
+    -webkit-overflow-scrolling: touch !important;
+    min-height: 0 !important;
+  }
+
+  .scn-modal .wb-modal-footer {
+    grid-row: 5;
+    flex-shrink: 0 !important;
+    padding: 8px 12px !important;
+    border-top: 1px solid var(--border) !important;
+    background: var(--surface, #ffffff) !important;
+    display: flex !important;
+    gap: 8px !important;
+    z-index: 10 !important;
+  }
+
+  .scn-modal .wb-modal-footer .wb-btn {
+    flex: 1 !important;
+    min-width: 0 !important;
+  }
+}
+
 /* ═══ Fullscreen Page Builder overlay ═════════════════════════════════════════ */
 .scn-fullscreen-builder {
   animation: scn-fade-in 0.15s ease-out;
