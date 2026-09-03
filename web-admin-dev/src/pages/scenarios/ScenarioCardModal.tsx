@@ -91,6 +91,7 @@ export function ScenarioCardModal({ codeword, table, onClose, onSaved }: Props) 
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
+  const [fullscreenBuilder, setFullscreenBuilder] = useState(false);
 
   // JSON editor state
   const [jsonText, setJsonText] = useState("");
@@ -232,9 +233,9 @@ export function ScenarioCardModal({ codeword, table, onClose, onSaved }: Props) 
   return (
     <div className="wb-modal-overlay" onClick={onClose}>
       <div
-        className="wb-modal"
+        className="wb-modal scn-modal"
         onClick={(e) => e.stopPropagation()}
-        style={{ maxWidth: 900, height: "90vh", display: "flex", flexDirection: "column" }}
+        style={{ maxWidth: 900, width: "100%", height: "90vh", display: "flex", flexDirection: "column" }}
       >
         {/* Header */}
         <div className="wb-modal-header">
@@ -312,6 +313,7 @@ export function ScenarioCardModal({ codeword, table, onClose, onSaved }: Props) 
               fields={allFields}
               updateField={updateField}
               codeword={codeword}
+              onFullscreen={() => setFullscreenBuilder(true)}
             />
           ) : null}
 
@@ -319,6 +321,65 @@ export function ScenarioCardModal({ codeword, table, onClose, onSaved }: Props) 
             <div className="wb-modal-error" style={{ marginTop: 8 }}>{error}</div>
           )}
         </div>
+
+        {/* Fullscreen Page Builder overlay */}
+        {fullscreenBuilder && (
+          <div
+            className="scn-fullscreen-builder"
+            style={{
+              position: "fixed",
+              inset: 0,
+              zIndex: 9999,
+              background: "var(--bg-1)",
+              display: "flex",
+              flexDirection: "column",
+            }}
+          >
+            <div
+              style={{
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "space-between",
+                padding: "8px 12px",
+                borderBottom: "1px solid var(--border)",
+                background: "var(--bg-2)",
+                flexShrink: 0,
+              }}
+            >
+              <span style={{ fontWeight: 600, fontSize: 14 }}>
+                {ico("construction")} Конструктор: {codeword}
+              </span>
+              <button
+                className="wb-btn wb-btn-secondary"
+                onClick={() => setFullscreenBuilder(false)}
+                style={{ fontSize: 12, padding: "4px 10px" }}
+              >
+                {ico("close")} Закрити
+              </button>
+            </div>
+            <div style={{ flex: 1, overflow: "auto", padding: 8 }}>
+              <PageBuilderInline
+                config={(() => {
+                  let cfg = createEmptyPageConfig();
+                  try {
+                    const raw = allFields.page_data;
+                    const parsed = typeof raw === "string"
+                      ? parsePageConfig(raw)
+                      : typeof raw === "object" && raw !== null
+                        ? (raw as PageConfigType)
+                        : null;
+                    if (parsed) cfg = parsed;
+                  } catch { /* ignore */ }
+                  return cfg;
+                })()}
+                onChange={(newCfg) => updateField("page_data", JSON.stringify(newCfg))}
+                codeword={codeword}
+                title={String(allFields.title ?? "")}
+                photoUrl={String(allFields.photo_url ?? "")}
+              />
+            </div>
+          </div>
+        )}
 
         {/* Footer */}
         <div className="wb-modal-footer">
@@ -371,15 +432,17 @@ function TabConstructor({
   fields,
   updateField,
   codeword,
+  onFullscreen,
 }: {
   mainTab: MainTab;
   fields: Record<string, unknown>;
   updateField: (key: string, value: unknown) => void;
   codeword: string;
+  onFullscreen?: () => void;
 }) {
   if (mainTab === "bot") return <BotConstructor fields={fields} updateField={updateField} />;
   if (mainTab === "bot_rich") return <BotRichConstructor fields={fields} updateField={updateField} />;
-  if (mainTab === "web") return <WebConstructor fields={fields} updateField={updateField} codeword={codeword} />;
+  if (mainTab === "web") return <WebConstructor fields={fields} updateField={updateField} codeword={codeword} onFullscreen={onFullscreen} />;
   return <div style={{ padding: 16, color: "var(--text-muted)", textAlign: "center" }}>Немає конструктора для цієї вкладки</div>;
 }
 
@@ -744,10 +807,12 @@ function WebConstructor({
   fields,
   updateField,
   codeword,
+  onFullscreen,
 }: {
   fields: Record<string, unknown>;
   updateField: (key: string, value: unknown) => void;
   codeword: string;
+  onFullscreen?: () => void;
 }) {
   // Parse page_data into PageConfig
   let config: PageConfigType = createEmptyPageConfig();
@@ -769,11 +834,23 @@ function WebConstructor({
 
   return (
     <div style={{ padding: "0 0 16px" }}>
-      <div className="block-card-header" style={{ marginBottom: 12, padding: "12px 0" }}>
+      <div className="block-card-header" style={{ marginBottom: 12, padding: "12px 0", display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: 8 }}>
         <span className="wb-card-title">{ico("construction")} Конструктор сторінки</span>
-        <span style={{ fontSize: 12, color: "var(--text-muted)" }}>
-          Зони: sidebar, header, main, footer
-        </span>
+        <div style={{ display: "flex", gap: 6, alignItems: "center" }}>
+          <span style={{ fontSize: 12, color: "var(--text-muted)", display: "none" }} className="scn-hide-mobile">
+            Зони: sidebar, header, main, footer
+          </span>
+          {onFullscreen && (
+            <button
+              className="wb-btn wb-btn-secondary"
+              onClick={onFullscreen}
+              style={{ fontSize: 12, padding: "4px 10px" }}
+              title="Відкрити конструктор на весь екран"
+            >
+              {ico("eye")} На весь екран
+            </button>
+          )}
+        </div>
       </div>
       <PageBuilderInline
         config={config}
