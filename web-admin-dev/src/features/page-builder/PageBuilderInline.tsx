@@ -292,6 +292,19 @@ export function PageBuilderInline({
           </div>
         ))}
 
+      {/* Add Zone button — always visible when page has zones */}
+      {!empty && activeZones.length > 0 && (
+        <div style={{ display: "flex", justifyContent: "center", marginTop: 8, paddingTop: 8, borderTop: "1px dashed var(--border)" }}>
+          <button
+            className="wb-btn wb-btn-secondary"
+            onClick={() => setShowZoneModal(true)}
+            style={{ fontSize: 12, padding: "6px 16px" }}
+          >
+            + Додати зону
+          </button>
+        </div>
+      )}
+
       {/* ── Add Zone Modal ── */}
       {showZoneModal && (
         <div
