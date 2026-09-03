@@ -25,7 +25,7 @@ export interface ScenarioRow {
 
 export async function readScenario(
   codeword: string,
-  table: ScenarioTable = "admin",
+  table: ScenarioTable,
 ): Promise<ScenarioRow | null> {
   const prefix = API_PREFIX[table];
   const res = await apiFetch<{ success: boolean; data: ScenarioRow | null }>(
@@ -39,7 +39,7 @@ export async function writeScenario(
   codeword: string,
   richData: string,
   richMessage: boolean,
-  table: ScenarioTable = "admin",
+  table: ScenarioTable,
 ): Promise<void> {
   const prefix = API_PREFIX[table];
   await apiFetch(`${prefix}/write`, {
@@ -67,7 +67,7 @@ export interface ListScenariosResult {
 
 export async function listScenarios(
   etag: string | null,
-  table: ScenarioTable = "admin",
+  table: ScenarioTable,
 ): Promise<ListScenariosResult> {
   const prefix = API_PREFIX[table];
   const headers: Record<string, string> = {};
@@ -97,7 +97,7 @@ export async function listScenarios(
 export async function saveScenarioFields(
   codeword: string,
   fields: Record<string, unknown>,
-  table: ScenarioTable = "admin",
+  table: ScenarioTable,
 ): Promise<void> {
   const prefix = API_PREFIX[table];
   await apiFetch(`${prefix}/write`, {
@@ -108,7 +108,7 @@ export async function saveScenarioFields(
 
 export async function readScenarioAll(
   codeword: string,
-  table: ScenarioTable = "admin",
+  table: ScenarioTable,
 ): Promise<Record<string, unknown> | null> {
   const prefix = API_PREFIX[table];
   const res = await apiFetch<{ success: boolean; data: Record<string, unknown> | null }>(
@@ -121,7 +121,7 @@ export async function readScenarioAll(
 export async function updateScenarioFields(
   codeword: string,
   fields: Record<string, unknown>,
-  table: ScenarioTable = "admin",
+  table: ScenarioTable,
 ): Promise<{ updated_at?: string }> {
   const prefix = API_PREFIX[table];
   const res = await apiFetch<{ success: boolean; updated_at?: string }>(`${prefix}/update`, {
@@ -133,7 +133,7 @@ export async function updateScenarioFields(
 
 export async function deleteScenario(
   codeword: string,
-  table: ScenarioTable = "admin",
+  table: ScenarioTable,
 ): Promise<{ deleted: boolean }> {
   const prefix = API_PREFIX[table];
   const res = await apiFetch<{ success: boolean; deleted: boolean }>(`${prefix}/delete`, {

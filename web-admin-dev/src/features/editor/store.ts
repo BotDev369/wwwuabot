@@ -19,12 +19,15 @@ export type EditorStatus = "idle" | "loading" | "saving" | "saved" | "error";
 
 export interface EditorStore {
   codeword: string;
+  /** Тип таблиці: "admin" = scenarios-admin, "portal" = scenarios */
+  table: "admin" | "portal";
   blocks: BaseBlock[]; // ← УНІВЕРСАЛЬНИЙ ТИП
   status: EditorStatus;
   errorMsg: string | null;
   isDirty: boolean;
 
   setCodeword: (cw: string) => void;
+  setTable: (table: "admin" | "portal") => void;
   addBlock: (type: string) => void; // ← Приймає просто рядок (тип)
   removeBlock: (id: string) => void;
   updateBlock: (id: string, patch: Partial<Record<string, any>>) => void;
@@ -79,12 +82,14 @@ function moveDeep(blocks: BaseBlock[], id: string, dir: "up" | "down"): BaseBloc
 
 export const useEditorStore = create<EditorStore>((set, get) => ({
   codeword: "",
+  table: "admin" as "admin" | "portal",
   blocks: [],
   status: "idle",
   errorMsg: null,
   isDirty: false,
 
   setCodeword: (cw) => set({ codeword: cw }),
+  setTable: (table) => set({ table }),
 
   addBlock: (type) => {
     const config = blockRegistry.getByInternalType(type);
@@ -114,7 +119,7 @@ export const useEditorStore = create<EditorStore>((set, get) => ({
     if (!cw) return;
     _setStatus("loading");
     try {
-      const data = await readScenario(cw);
+      const data = await readScenario(cw, get().table);
 
       if (!data) {
         _setStatus("error", `Сценарій "${cw}" не знайдено в базі.`);
@@ -154,7 +159,7 @@ export const useEditorStore = create<EditorStore>((set, get) => ({
       const serializedBlocks = blockRegistry.serialize(blocks);
       const richData = JSON.stringify(serializedBlocks, null, 2);
 
-      await writeScenario(cw, richData, true);
+      await writeScenario(cw, richData, true, get().table);
 
       _setStatus("saved");
       set({ isDirty: false });

@@ -36,7 +36,7 @@ export function ScenariosV2Page() {
           zones: { sidebar: [], header: [], main: [], footer: [] },
           visibleZones: [],
         }),
-      });
+      }, "portal");
       // Відкриваємо картку сценарію з конструктором одразу
       setOpenedCodeword(cw);
     } catch (e) {

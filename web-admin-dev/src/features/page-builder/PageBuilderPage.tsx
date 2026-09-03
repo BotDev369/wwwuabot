@@ -54,7 +54,7 @@ export function PageBuilderPage() {
     let cancelled = false;
     (async () => {
       try {
-        const row = await readScenarioAll(codeword);
+        const row = await readScenarioAll(codeword, "portal");
         if (cancelled) return;
         if (!row) {
           setError("Сценарій не знайдено");
@@ -94,7 +94,7 @@ export function PageBuilderPage() {
     if (!codeword) return;
     setSaveStatus("saving");
     try {
-      await updateScenarioFields(codeword, { page_data: JSON.stringify(config) });
+      await updateScenarioFields(codeword, { page_data: JSON.stringify(config) }, "portal");
       setSaveStatus("saved");
       setTimeout(() => setSaveStatus("idle"), 2000);
     } catch (e) {

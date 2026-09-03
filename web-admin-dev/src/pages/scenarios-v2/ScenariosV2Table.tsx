@@ -381,7 +381,7 @@ export function ScenariosV2Table() {
                 className="wb-modal-menu-item wb-modal-menu-item--danger"
                 onClick={async () => {
                   try {
-                    await deleteScenario(confirmDelete);
+                    await deleteScenario(confirmDelete, useScenariosStore.getState().table);
                     closeAll();
                     await useScenariosStore.getState().load(true);
                   } catch (e) {
