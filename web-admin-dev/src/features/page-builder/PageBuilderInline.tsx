@@ -184,15 +184,15 @@ export function PageBuilderInline({
             flexDirection: "column",
             alignItems: "center",
             justifyContent: "center",
-            padding: "48px 24px",
+            padding: "32px 16px",
             textAlign: "center",
           }}
         >
           <div
             style={{
-              width: 64,
-              height: 64,
-              borderRadius: 16,
+              width: 56,
+              height: 56,
+              borderRadius: 14,
               background: "var(--bg-secondary, #f1f5f9)",
               display: "flex",
               alignItems: "center",
@@ -205,10 +205,10 @@ export function PageBuilderInline({
           <h3
             style={{
               margin: 0,
-              fontSize: 18,
+              fontSize: 16,
               fontWeight: 600,
               color: "var(--text-primary)",
-              marginBottom: 8,
+              marginBottom: 6,
             }}
           >
             Сторінка порожня
@@ -216,10 +216,10 @@ export function PageBuilderInline({
           <p
             style={{
               margin: 0,
-              fontSize: 14,
+              fontSize: 13,
               color: "var(--text-secondary)",
-              marginBottom: 24,
-              maxWidth: 360,
+              marginBottom: 20,
+              maxWidth: 320,
             }}
           >
             Додайте зону або блок, щоб почати конструювання сторінки
@@ -228,14 +228,14 @@ export function PageBuilderInline({
             <button
               className="wb-btn wb-btn-secondary"
               onClick={() => setShowZoneModal(true)}
-              style={{ fontSize: 14, padding: "10px 20px", display: "flex", alignItems: "center", gap: 8 }}
+              style={{ fontSize: 13, padding: "10px 18px", display: "flex", alignItems: "center", gap: 8 }}
             >
               {ico("layout", 18)} Додати зону
             </button>
             <button
               className="wb-btn wb-btn-primary"
               onClick={() => setShowBlockModal(true)}
-              style={{ fontSize: 14, padding: "10px 20px", display: "flex", alignItems: "center", gap: 8 }}
+              style={{ fontSize: 13, padding: "10px 18px", display: "flex", alignItems: "center", gap: 8 }}
             >
               {ico("blocks", 18)} Додати блок
             </button>
@@ -263,21 +263,21 @@ export function PageBuilderInline({
             style={{
               border: "1px dashed var(--border)",
               borderRadius: 8,
-              marginBottom: 12,
-              padding: "16px 12px",
+              marginBottom: 10,
+              padding: "12px 10px",
               textAlign: "center",
             }}
           >
-            <div style={{ fontWeight: 600, fontSize: 14, marginBottom: 4 }}>
+            <div style={{ fontWeight: 600, fontSize: 13, marginBottom: 2 }}>
               {ZONE_LABELS[zone]}
             </div>
-            <div style={{ fontSize: 12, color: "var(--text-secondary)", marginBottom: 8 }}>
+            <div style={{ fontSize: 11, color: "var(--text-secondary)", marginBottom: 6 }}>
               Зона додана, але порожня
             </div>
             <button
               className="wb-btn wb-btn-secondary"
               onClick={() => setShowBlockModal(true)}
-              style={{ fontSize: 12 }}
+              style={{ fontSize: 12, padding: "4px 12px" }}
             >
               + Додати блок
             </button>
@@ -479,7 +479,7 @@ function AddBlockModal({ onSelect, onClose }: AddBlockModalProps) {
               Нічого не знайдено
             </div>
           ) : (
-            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(200px, 1fr))", gap: 8 }}>
+            <div style={{ display: "grid",              gridTemplateColumns: "repeat(auto-fill, minmax(150px, 1fr))", gap: 8 }}>
               {filtered.map((def) => (
                 <button
                   key={def.type}

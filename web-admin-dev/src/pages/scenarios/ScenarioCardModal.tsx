@@ -836,23 +836,20 @@ function WebConstructor({
 
   return (
     <div style={{ padding: "0 0 16px" }}>
-      <div className="block-card-header" style={{ marginBottom: 12, padding: "12px 0", display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: 8 }}>
-        <span className="wb-card-title">{ico("construction")} Конструктор сторінки</span>
-        <div style={{ display: "flex", gap: 6, alignItems: "center" }}>
-          <span style={{ fontSize: 12, color: "var(--text-muted)", display: "none" }} className="scn-hide-mobile">
-            Зони: sidebar, header, main, footer
-          </span>
-          {onFullscreen && (
-            <button
-              className="wb-btn wb-btn-secondary"
-              onClick={onFullscreen}
-              style={{ fontSize: 12, padding: "4px 10px" }}
-              title="Відкрити конструктор на весь екран"
-            >
-              {ico("eye")} На весь екран
-            </button>
-          )}
-        </div>
+      <div style={{ marginBottom: 8, padding: 0, display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: 6 }}>
+        <span style={{ fontSize: 13, fontWeight: 600, color: "var(--text-primary)", display: "flex", alignItems: "center", gap: 6 }}>
+          {ico("construction", 14)} Конструктор
+        </span>
+        {onFullscreen && (
+          <button
+            className="wb-btn wb-btn-secondary"
+            onClick={onFullscreen}
+            style={{ fontSize: 11, padding: "3px 8px" }}
+            title="Відкрити конструктор на весь екран"
+          >
+            {ico("eye", 14)} <span className="scn-hide-mobile">На весь екран</span>
+          </button>
+        )}
       </div>
       <PageBuilderInline
         config={config}
