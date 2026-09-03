@@ -2873,7 +2873,6 @@ body {
 .phone-frame-body .page-zone--sidebar {
   background: #f0f0f5;
   border-bottom: 1px solid #e0e0e8;
-  display: none;
 }
 .phone-frame-body .page-zone-group {
   display: flex;
@@ -2899,6 +2898,37 @@ body {
   color: #888;
 }
 .phone-frame-body .page-zone-label { display: none; }
+/* Phone frame: hamburger + drawer for sidebar */
+.phone-frame-body .page-hamburger {
+  display: none;
+}
+.phone-frame-body .page-sidebar-overlay {
+  display: none;
+}
+
+@media (max-width: 640px) {
+  .phone-frame-body .page-hamburger {
+    display: flex;
+    position: absolute;
+    top: 8px;
+    left: 8px;
+    z-index: 10;
+    width: 28px;
+    height: 28px;
+    border-radius: 6px;
+    border: 1px solid #e0e0e8;
+    background: #fff;
+    color: #1a1a2e;
+    cursor: pointer;
+    align-items: center;
+    justify-content: center;
+    font-size: 14px;
+  }
+  .phone-frame-body .page-zone--sidebar {
+    display: none;
+  }
+}
+
 
 @media (max-width: 640px) {
   .phone-frame {

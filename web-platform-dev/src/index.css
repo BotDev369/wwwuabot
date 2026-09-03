@@ -1070,13 +1070,69 @@ main {
   margin: 0;
 }
 
-/* Мобільний: sidebar прихований, показується тільки на десктопі */
+/* Hamburger button — hidden on desktop */
+.page-hamburger {
+  display: none;
+}
+
+/* Sidebar overlay */
+.page-sidebar-overlay {
+  display: none;
+}
+
+/* Мобільний: sidebar стає drawer'ом */
 @media (max-width: 768px) {
   .page-layout {
     flex-direction: column;
+    position: relative;
   }
+
+  .page-hamburger {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: fixed;
+    top: 12px;
+    left: 12px;
+    z-index: 1001;
+    width: 40px;
+    height: 40px;
+    border-radius: 10px;
+    border: 1px solid var(--border);
+    background: var(--bg-1);
+    color: var(--text);
+    cursor: pointer;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+  }
+
+  .page-sidebar-overlay {
+    display: block;
+    position: fixed;
+    inset: 0;
+    z-index: 999;
+    background: rgba(0,0,0,0.4);
+  }
+
   .page-zone--sidebar {
-    display: none;
+    position: fixed;
+    top: 0;
+    left: -280px;
+    width: 280px;
+    height: 100vh;
+    z-index: 1000;
+    background: var(--bg-1);
+    border-right: 1px solid var(--border);
+    overflow-y: auto;
+    transition: left 0.25s ease;
+    padding-top: 60px;
+  }
+
+  .page-zone--sidebar.page-zone--sidebar--open {
+    left: 0;
+  }
+
+  .page-zone-group {
+    padding-top: 0;
   }
 }
 

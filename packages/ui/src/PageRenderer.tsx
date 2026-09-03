@@ -7,6 +7,7 @@
  * @module packages/ui/src/PageRenderer
  */
 
+import { useState, useCallback } from 'react';
 import type {
   PageConfig,
   BlockContext,
@@ -67,20 +68,45 @@ export function PageRenderer({
   showZoneLabels = false,
 }: PageRendererProps) {
   const { zones } = config;
+  const [sidebarOpen, setSidebarOpen] = useState(false);
 
   const hasSidebar = zones.sidebar.length > 0;
   const hasHeader = zones.header.length > 0;
   const hasMain = zones.main.length > 0;
   const hasFooter = zones.footer.length > 0;
 
+  const toggleSidebar = useCallback(() => setSidebarOpen((p) => !p), []);
+  const closeSidebar = useCallback(() => setSidebarOpen(false), []);
+
   const renderZoneLabel = (zone: string) =>
     showZoneLabels ? <div className="page-zone-label">{ZONE_LABELS[zone]}</div> : null;
 
   return (
     <div className={className}>
+      {/* Hamburger button — visible on mobile when sidebar has content */}
+      {hasSidebar && (
+        <button
+          className="page-hamburger"
+          onClick={toggleSidebar}
+          aria-label="Відкрити меню"
+        >
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <line x1="3" y1="6" x2="21" y2="6" />
+            <line x1="3" y1="12" x2="21" y2="12" />
+            <line x1="3" y1="18" x2="21" y2="18" />
+          </svg>
+        </button>
+      )}
+
+      {/* Sidebar overlay (mobile) */}
+      {hasSidebar && sidebarOpen && (
+        <div className="page-sidebar-overlay" onClick={closeSidebar} />
+      )}
+
+      {/* Sidebar */}
       {hasSidebar && (
         <aside
-          className={zoneClassName?.sidebar ?? 'page-zone page-zone--sidebar'}
+          className={`${zoneClassName?.sidebar ?? 'page-zone page-zone--sidebar'}${sidebarOpen ? ' page-zone--sidebar--open' : ''}`}
           data-zone="sidebar"
         >
           {renderZoneLabel('sidebar')}
