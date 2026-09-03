@@ -237,7 +237,7 @@ export function ScenarioCardModal({ codeword, table, onClose, onSaved, initialSu
       <div
         className="wb-modal scn-modal"
         onClick={(e) => e.stopPropagation()}
-        style={{ maxWidth: 900, width: "100%", height: "min(90vh, 100dvh)", display: "flex", flexDirection: "column", overflow: "hidden" }}
+        style={{ maxWidth: 900, width: "100%", height: "90dvh", display: "flex", flexDirection: "column", overflow: "hidden" }}
       >
         {/* Header */}
         <div className="wb-modal-header">

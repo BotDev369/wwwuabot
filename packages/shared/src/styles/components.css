@@ -257,8 +257,8 @@
   box-shadow: var(--shadow-xl);
   width: 100%;
   max-width: 560px;
-  height: 90vh;
-  max-height: 90vh;
+  height: 90dvh;
+  max-height: 90dvh;
   display: flex;
   flex-direction: column;
   overflow: hidden;
