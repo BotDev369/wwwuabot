@@ -212,37 +212,37 @@ export function UsersTable({ onMessage }: Props) {
 
       {/* Action modal menu */}
       {menuUser && !cardUserId && !editUserId && (
-        <div className="usr-modal-overlay" onClick={closeAll}>
-          <div className="usr-modal" onClick={(e) => e.stopPropagation()}>
-            <div className="usr-modal-header">
-              <span className="usr-modal-title">
+        <div className="wb-modal-overlay" onClick={closeAll}>
+          <div className="wb-modal" onClick={(e) => e.stopPropagation()}>
+            <div className="wb-modal-header">
+              <span className="wb-modal-title">
                 {formatName(menuUser)}
                 {menuUser.username ? `  @${menuUser.username}` : ""}
               </span>
-              <button className="usr-modal-close" onClick={closeAll}>✕</button>
+              <button className="wb-modal-close" onClick={closeAll}>✕</button>
             </div>
-            <div className="usr-modal-body usr-modal-menu">
+            <div className="wb-modal-body wb-modal-menu">
               <button
-                className="usr-modal-menu-item"
+                className="wb-modal-menu-item"
                 onClick={() => { setMenuOpen(null); setCardUserId(menuUser.user_id); }}
               >
                 {ico("eye")}{" "}Переглянути
               </button>
               <button
-                className="usr-modal-menu-item"
+                className="wb-modal-menu-item"
                 onClick={() => { setMenuOpen(null); setEditUserId(menuUser.user_id); }}
               >
                 {ico("edit")}{" "}Змінити
               </button>
-              <div className="usr-modal-divider" />
+              <div className="wb-modal-divider" />
               <button
-                className="usr-modal-menu-item"
+                className="wb-modal-menu-item"
                 onClick={() => { setMenuOpen(null); onMessage(menuUser.user_id); }}
               >
                 {ico("mail")}{" "}Написати повідомлення
               </button>
               <button
-                className="usr-modal-menu-item"
+                className="wb-modal-menu-item"
                 onClick={async () => {
                   const { blockOne } = useUsersStore.getState();
                   await blockOne(menuUser.user_id, menuUser.is_blocked !== 1);
@@ -251,9 +251,9 @@ export function UsersTable({ onMessage }: Props) {
               >
                 {menuUser.is_blocked === 1 ? <>{ico("unlock")}{" "}Розблокувати</> : <>{ico("lock")}{" "}Заблокувати</>}
               </button>
-              <div className="usr-modal-divider" />
+              <div className="wb-modal-divider" />
               <button
-                className="usr-modal-menu-item usr-modal-menu-item--danger"
+                className="wb-modal-menu-item wb-modal-menu-item--danger"
                 onClick={async () => {
                   if (!confirm(`Видалити користувача ${menuUser.user_id}?`)) return;
                   const { deleteOne } = useUsersStore.getState();

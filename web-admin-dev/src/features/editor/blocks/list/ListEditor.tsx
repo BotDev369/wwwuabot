@@ -59,8 +59,8 @@ export function ListEditor({ block, idx, total }: Props) {
   }
 
   return (
-    <div className="block-card">
-      <div className="block-card-header">
+    <div className="wb-card">
+      <div className="wb-card-header">
         <span className="block-type-badge">•</span>
         <span className="block-type-label">Список</span>
         <select
@@ -99,7 +99,7 @@ export function ListEditor({ block, idx, total }: Props) {
           </button>
         </div>
       </div>
-      <div className="block-card-body">
+      <div className="wb-card-body">
         <div className="bq-children">
           {block.items.map((item, n) =>
             item.kind === "simple" ? (

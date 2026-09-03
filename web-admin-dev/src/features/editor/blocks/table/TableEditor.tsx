@@ -56,8 +56,8 @@ export function TableEditor({ block, idx, total }: Props) {
   }
 
   return (
-    <div className="block-card">
-      <div className="block-card-header">
+    <div className="wb-card">
+      <div className="wb-card-header">
         <span className="block-type-badge">T</span>
         <span className="block-type-label">Таблиця</span>
         <div className="block-actions">
@@ -86,7 +86,7 @@ export function TableEditor({ block, idx, total }: Props) {
           </button>
         </div>
       </div>
-      <div className="block-card-body">
+      <div className="wb-card-body">
         <div className="table-options">
           <label className="table-option">
             <input

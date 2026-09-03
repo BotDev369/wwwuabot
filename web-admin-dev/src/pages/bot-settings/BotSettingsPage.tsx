@@ -127,20 +127,20 @@ export function BotSettingsPage() {
           <div style={{ maxWidth: 640, display: "flex", flexDirection: "column", gap: 16 }}>
             {/* Повідомлення */}
             {message && (
-              <div className={`status-badge status-badge--${message.type === "success" ? "saved" : "error"}`}>
+              <div className={`wb-badge ${message.type === "success" ? "wb-badge-green" : "wb-badge-red"}`}>
                 {message.text}
               </div>
             )}
 
             {/* Бот */}
             {botInfo?.result && (
-              <div className="block-card">
-                <div className="block-card-header">
+              <div className="wb-card">
+                <div className="wb-card-header">
                   <span className="block-type-badge">🤖</span>
                   <span className="block-type-label">Бот</span>
-                  <span className="status-badge status-badge--saved">Активний</span>
+                  <span className="wb-badge wb-badge-green">Активний</span>
                 </div>
-                <div className="block-card-body">
+                <div className="wb-card-body">
                   <div className="block-row" style={{ gap: 12 }}>
                     <div style={{ flex: 1 }}>
                       <div style={{ fontSize: 11, color: "var(--text-muted)", marginBottom: 2 }}>Username</div>
@@ -156,19 +156,19 @@ export function BotSettingsPage() {
             )}
 
             {/* Webhook */}
-            <div className="block-card">
-              <div className="block-card-header">
+            <div className="wb-card">
+              <div className="wb-card-header">
                 <span className="block-type-badge">🔗</span>
                 <span className="block-type-label">Webhook</span>
                 {isWebhookOk ? (
-                  <span className="status-badge status-badge--saved">OK</span>
+                  <span className="wb-badge wb-badge-green">OK</span>
                 ) : webhookInfo?.url ? (
-                  <span className="status-badge status-badge--error">Не правильна URL</span>
+                  <span className="wb-badge wb-badge-red">Не правильна URL</span>
                 ) : (
-                  <span className="status-badge status-badge--error">Не налаштовано</span>
+                  <span className="wb-badge wb-badge-red">Не налаштовано</span>
                 )}
               </div>
-              <div className="block-card-body">
+              <div className="wb-card-body">
                 <div style={{ marginBottom: 12 }}>
                   <div style={{ fontSize: 11, color: "var(--text-muted)", marginBottom: 2 }}>URL</div>
                   <div style={{
@@ -230,17 +230,17 @@ export function BotSettingsPage() {
 
             {/* Реальна відповідь від Telegram */}
             {telegramResponse && (
-              <div className="block-card">
-                <div className="block-card-header">
+              <div className="wb-card">
+                <div className="wb-card-header">
                   <span className="block-type-badge">📤</span>
                   <span className="block-type-label">Відповідь від Telegram API</span>
                   {telegramResponse.ok ? (
-                    <span className="status-badge status-badge--saved">OK</span>
+                    <span className="wb-badge wb-badge-green">OK</span>
                   ) : (
-                    <span className="status-badge status-badge--error">Помилка</span>
+                    <span className="wb-badge wb-badge-red">Помилка</span>
                   )}
                 </div>
-                <div className="block-card-body">
+                <div className="wb-card-body">
                   <pre style={{
                     fontFamily: "var(--font-mono)",
                     fontSize: 11,

@@ -45,7 +45,7 @@ function SystemCardView({
   };
 
   return (
-    <div className="card">
+    <div className="wb-card">
       <h3>{system.name}</h3>
       {result ? (
         <>
@@ -111,7 +111,7 @@ export function MydateResultPage() {
     <main>
       <section className="hero">
         <p className="hero-text">Ви вказували дату: {formatDate(date)}</p>
-        <div className="cards-grid">
+        <div className="wb-cards-grid">
           {(systems ?? []).map((s) => (
             <SystemCardView
               system={s}

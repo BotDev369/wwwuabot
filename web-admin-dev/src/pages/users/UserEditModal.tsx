@@ -121,17 +121,17 @@ export function UserEditModal({ userId, onClose, onSaved }: Props) {
   }
 
   return (
-    <div className="usr-modal-overlay" onClick={onClose}>
-      <div className="usr-modal usr-modal--wide" onClick={(e) => e.stopPropagation()}>
-        <div className="usr-modal-header">
-          <span className="usr-modal-title">
+    <div className="wb-modal-overlay" onClick={onClose}>
+      <div className="wb-modal wb-modal-lg" onClick={(e) => e.stopPropagation()}>
+        <div className="wb-modal-header">
+          <span className="wb-modal-title">
             {ico("edit")} {loading ? "Завантаження…" : `Редагувати #${userId}`}
             {user?.username ? `  @${user.username}` : ""}
           </span>
-          <button className="usr-modal-close" onClick={onClose}>✕</button>
+          <button className="wb-modal-close" onClick={onClose}>✕</button>
         </div>
 
-        <div className="usr-modal-body" style={{ overflow: "auto", flex: 1 }}>
+        <div className="wb-modal-body" style={{ overflow: "auto", flex: 1 }}>
           {loading ? (
             <div style={{ padding: 20, textAlign: "center", color: "var(--text-muted)" }}>Завантаження…</div>
           ) : error && !user ? (
@@ -140,9 +140,9 @@ export function UserEditModal({ userId, onClose, onSaved }: Props) {
             <div style={{ display: "flex", flexDirection: "column", gap: 16, padding: "0 4px" }}>
 
               {/* ═══ PERMISSION FIELDS ═══ */}
-              <div className="block-card">
-                <div className="block-card-header">
-                  <span className="block-card-title">{ico("settings")} Профіль та права</span>
+              <div className="wb-card">
+                <div className="wb-card-header">
+                  <span className="wb-card-title">{ico("settings")} Профіль та права</span>
                 </div>
                 <div style={{ padding: 12, display: "flex", flexDirection: "column", gap: 12 }}>
 
@@ -235,9 +235,9 @@ export function UserEditModal({ userId, onClose, onSaved }: Props) {
               </div>
 
               {/* ═══ USER INFO (read-only) ═══ */}
-              <div className="block-card">
-                <div className="block-card-header">
-                  <span className="block-card-title">{ico("users")} Інформація</span>
+              <div className="wb-card">
+                <div className="wb-card-header">
+                  <span className="wb-card-title">{ico("users")} Інформація</span>
                 </div>
                 <div style={{ padding: 12, display: "flex", flexDirection: "column", gap: 8, fontSize: 13 }}>
                   <div><strong>ID:</strong> {user?.user_id}</div>
@@ -250,9 +250,9 @@ export function UserEditModal({ userId, onClose, onSaved }: Props) {
 
               {/* ═══ EXTRA FIELDS (JSON) ═══ */}
               {Object.keys(extraFields).length > 0 && (
-                <div className="block-card">
-                  <div className="block-card-header">
-                    <span className="block-card-title">{ico("wrench")} Додаткові поля</span>
+                <div className="wb-card">
+                  <div className="wb-card-header">
+                    <span className="wb-card-title">{ico("wrench")} Додаткові поля</span>
                   </div>
                   <div style={{ padding: 12, display: "flex", flexDirection: "column", gap: 8 }}>
                     {Object.entries(extraFields).map(([key, val]) => (
@@ -276,7 +276,7 @@ export function UserEditModal({ userId, onClose, onSaved }: Props) {
           {error && <div style={{ padding: "8px 12px", color: "var(--color-error, #ef4444)", fontSize: 13 }}>{error}</div>}
         </div>
 
-        <div className="usr-modal-footer">
+        <div className="wb-modal-footer">
           <button className="wb-btn wb-btn-secondary wb-btn-sm" onClick={onClose} disabled={saving}>
             Скасувати
           </button>

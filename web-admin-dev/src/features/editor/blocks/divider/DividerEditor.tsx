@@ -15,8 +15,8 @@ export function DividerEditor({ block, idx, total }: Props) {
   const { removeBlock, moveBlock } = useEditorStore();
 
   return (
-    <div className="block-card block-card--divider">
-      <div className="block-card-header">
+    <div className="wb-card">
+      <div className="wb-card-header">
         <span className="block-type-badge">—</span>
         <span className="block-type-label">Розділювач</span>
         <div className="block-actions">
@@ -45,7 +45,7 @@ export function DividerEditor({ block, idx, total }: Props) {
           </button>
         </div>
       </div>
-      <div className="block-card-body">
+      <div className="wb-card-body">
         <div className="divider-preview-line" />
       </div>
     </div>

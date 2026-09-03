@@ -19,8 +19,8 @@ interface Props {
 export function HeadingEditor({ block, idx, total }: Props) {
   const { updateBlock, removeBlock, moveBlock } = useEditorStore();
   return (
-    <div className="block-card">
-      <div className="block-card-header">
+    <div className="wb-card">
+      <div className="wb-card-header">
         <span className="block-type-badge">H</span>
         <select
           className="block-select"
@@ -60,7 +60,7 @@ export function HeadingEditor({ block, idx, total }: Props) {
           </button>
         </div>
       </div>
-      <div className="block-card-body">
+      <div className="wb-card-body">
         <RichTextField
           value={block.text}
           onChange={(v) => updateBlock(block.id, { text: v })}

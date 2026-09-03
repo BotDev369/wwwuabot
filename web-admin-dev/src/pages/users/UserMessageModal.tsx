@@ -28,33 +28,33 @@ export function UserMessageModal({ userId, onClose }: Props) {
   }
 
   return (
-    <div className="usr-modal-overlay" onClick={onClose}>
-      <div className="usr-modal" onClick={(e) => e.stopPropagation()}>
-        <div className="usr-modal-header">
-          <h3 className="usr-modal-title">Написати користувачеві #{userId}</h3>
-          <button className="usr-modal-close" onClick={onClose}>
+    <div className="wb-modal-overlay" onClick={onClose}>
+      <div className="wb-modal" onClick={(e) => e.stopPropagation()}>
+        <div className="wb-modal-header">
+          <h3 className="wb-modal-title">Написати користувачеві #{userId}</h3>
+          <button className="wb-modal-close" onClick={onClose}>
             ✕
           </button>
         </div>
-        <div className="usr-modal-body">
+        <div className="wb-modal-body">
           {sent ? (
-            <div className="usr-modal-success">✅ Повідомлення надіслано!</div>
+            <div className="wb-badge wb-badge-green">✅ Повідомлення надіслано!</div>
           ) : (
             <>
               <textarea
-                className="usr-modal-textarea"
+                className="wb-textarea"
                 placeholder="Текст повідомлення…"
                 rows={5}
                 value={text}
                 onChange={(e) => setText(e.target.value)}
                 disabled={sending}
               />
-              {error && <div className="usr-modal-error">{error}</div>}
+              {error && <div className="wb-modal-error">{error}</div>}
             </>
           )}
         </div>
         {!sent && (
-          <div className="usr-modal-footer">
+          <div className="wb-modal-footer">
             <button className="wb-btn wb-btn-secondary" onClick={onClose} disabled={sending}>
               Скасувати
             </button>

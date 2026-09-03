@@ -69,14 +69,14 @@ function StatusBadge() {
   const { status, errorMsg } = useEditorStore();
   if (status === "idle") return null;
   if (status === "loading")
-    return <span className="status-badge status-badge--loading">Завантаження…</span>;
+    return <span className="wb-badge wb-badge-neutral">Завантаження…</span>;
   if (status === "saving")
-    return <span className="status-badge status-badge--saving">Збереження…</span>;
+    return <span className="wb-badge wb-badge-accent">Збереження…</span>;
   if (status === "saved")
-    return <span className="status-badge status-badge--saved">✓ Збережено</span>;
+    return <span className="wb-badge wb-badge-green">✓ Збережено</span>;
   if (status === "error")
     return (
-      <span className="status-badge status-badge--error" title={errorMsg ?? ""}>
+      <span className="wb-badge wb-badge-red" title={errorMsg ?? ""}>
         Помилка
       </span>
     );

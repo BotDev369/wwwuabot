@@ -24,8 +24,8 @@ export function AboutPage() {
           унікальний підхід до розрахунків та інтерпретації результатів.
         </p>
 
-        <div className="cards-grid">
-          <div className="card">
+        <div className="wb-cards-grid">
+          <div className="wb-card">
             <h3>🔮 Нумерологія</h3>
             <p>
               Аналіз на основі числових вібрацій дати. Кожна цифра має
@@ -33,7 +33,7 @@ export function AboutPage() {
             </p>
           </div>
 
-          <div className="card">
+          <div className="wb-card">
             <h3>⭐ Астрологія</h3>
             <p>
               Визначення зодіакального знаку, планетарного впливу та
@@ -41,7 +41,7 @@ export function AboutPage() {
             </p>
           </div>
 
-          <div className="card">
+          <div className="wb-card">
             <h3>🌍 Таро</h3>
             <p>
               Створення розкладу на основі дати. Визначення карти дня,
@@ -49,7 +49,7 @@ export function AboutPage() {
             </p>
           </div>
 
-          <div className="card">
+          <div className="wb-card">
             <h3>{ico("compare")} Статистика</h3>
             <p>
               Порівняння дат за різними параметрами: день тижня,季节,

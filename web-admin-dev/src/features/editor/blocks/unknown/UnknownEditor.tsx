@@ -16,8 +16,8 @@ interface Props {
 export function UnknownEditor({ block, idx, total }: Props) {
   const { removeBlock, moveBlock } = useEditorStore();
   return (
-    <div className="block-card block-card--unknown">
-      <div className="block-card-header">
+    <div className="wb-card">
+      <div className="wb-card-header">
         <span className="block-type-badge">?</span>
         <span className="block-type-label">Блок «{block.tgType}» — поки не редагується</span>
         <div className="block-actions">
@@ -46,7 +46,7 @@ export function UnknownEditor({ block, idx, total }: Props) {
           </button>
         </div>
       </div>
-      <div className="block-card-body">
+      <div className="wb-card-body">
         <p className="unknown-hint">
           Цей блок пройде крізь редактор без змін і залишиться у повідомленні.
         </p>

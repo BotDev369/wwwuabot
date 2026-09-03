@@ -19,8 +19,8 @@ interface Props {
 export function PhotoEditor({ block, idx, total }: Props) {
   const { updateBlock, removeBlock, moveBlock } = useEditorStore();
   return (
-    <div className="block-card">
-      <div className="block-card-header">
+    <div className="wb-card">
+      <div className="wb-card-header">
         <span className="block-type-badge">🖼</span>
         <span className="block-type-label">Фото</span>
         <div className="block-actions">
@@ -49,7 +49,7 @@ export function PhotoEditor({ block, idx, total }: Props) {
           </button>
         </div>
       </div>
-      <div className="block-card-body">
+      <div className="wb-card-body">
         <PhotoPicker
           media={block.media}
           config={block.config ?? null}

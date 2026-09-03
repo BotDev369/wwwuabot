@@ -177,24 +177,24 @@ export function ScenariosV2Table() {
 
       {/* Action modal menu */}
       {menuScenario && !cardCodeword && !confirmDelete && (
-        <div className="usr-modal-overlay" onClick={closeAll}>
-          <div className="usr-modal" onClick={(e) => e.stopPropagation()}>
-            <div className="usr-modal-header">
-              <span className="usr-modal-title">
+        <div className="wb-modal-overlay" onClick={closeAll}>
+          <div className="wb-modal" onClick={(e) => e.stopPropagation()}>
+            <div className="wb-modal-header">
+              <span className="wb-modal-title">
                 {ico("clipboard")} {menuScenario.codeword}
               </span>
-              <button className="usr-modal-close" onClick={closeAll}>✕</button>
+              <button className="wb-modal-close" onClick={closeAll}>✕</button>
             </div>
-            <div className="usr-modal-body usr-modal-menu">
+            <div className="wb-modal-body wb-modal-menu">
               <button
-                className="usr-modal-menu-item"
+                className="wb-modal-menu-item"
                 onClick={() => { setMenuCodeword(null); setCardCodeword(menuScenario.codeword); }}
               >
                 {ico("clipboard")} Картка сценарію
               </button>
-              <div className="usr-modal-divider" />
+              <div className="wb-modal-divider" />
               <button
-                className="usr-modal-menu-item usr-modal-menu-item--danger"
+                className="wb-modal-menu-item wb-modal-menu-item--danger"
                 onClick={() => { setMenuCodeword(null); setConfirmDelete(menuScenario.codeword); }}
               >
                 {ico("trash")} Видалити
@@ -206,20 +206,20 @@ export function ScenariosV2Table() {
 
       {/* Delete confirmation */}
       {confirmDelete && (
-        <div className="usr-modal-overlay" onClick={closeAll}>
-          <div className="usr-modal" onClick={(e) => e.stopPropagation()}>
-            <div className="usr-modal-header">
-              <span className="usr-modal-title">{ico("warning")} Видалити сценарій?</span>
-              <button className="usr-modal-close" onClick={closeAll}>✕</button>
+        <div className="wb-modal-overlay" onClick={closeAll}>
+          <div className="wb-modal" onClick={(e) => e.stopPropagation()}>
+            <div className="wb-modal-header">
+              <span className="wb-modal-title">{ico("warning")} Видалити сценарій?</span>
+              <button className="wb-modal-close" onClick={closeAll}>✕</button>
             </div>
-            <div className="usr-modal-body">
+            <div className="wb-modal-body">
               <p style={{ color: "var(--text-secondary)", fontSize: 13, margin: 0 }}>
                 Видалити «{confirmDelete}»? Цю дію неможливо скасувати.
               </p>
             </div>
-            <div className="usr-modal-body usr-modal-menu" style={{ paddingTop: 8 }}>
+            <div className="wb-modal-body wb-modal-menu" style={{ paddingTop: 8 }}>
               <button
-                className="usr-modal-menu-item usr-modal-menu-item--danger"
+                className="wb-modal-menu-item wb-modal-menu-item--danger"
                 onClick={async () => {
                   try {
                     await deleteScenario(confirmDelete);
@@ -232,7 +232,7 @@ export function ScenariosV2Table() {
               >
                 {ico("trash")} Так, видалити
               </button>
-              <button className="usr-modal-menu-item" onClick={closeAll}>
+              <button className="wb-modal-menu-item" onClick={closeAll}>
                 {ico("close")} Скасувати
               </button>
             </div>

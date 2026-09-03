@@ -35,8 +35,8 @@ export function DetailsEditor({ block, idx, total }: Props) {
   }
 
   return (
-    <div className="block-card">
-      <div className="block-card-header">
+    <div className="wb-card">
+      <div className="wb-card-header">
         <span className="block-type-badge">▸</span>
         <span className="block-type-label">Details (розгортаюча секція)</span>
         <div className="block-actions">
@@ -65,7 +65,7 @@ export function DetailsEditor({ block, idx, total }: Props) {
           </button>
         </div>
       </div>
-      <div className="block-card-body">
+      <div className="wb-card-body">
         <RichTextField
           value={block.summary}
           onChange={(v) => updateBlock(block.id, { summary: v })}

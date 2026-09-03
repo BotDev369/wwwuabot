@@ -150,20 +150,20 @@ function DateModal({
   const isReadOnly = mode === "view";
 
   return (
-    <div className="modal-overlay" onClick={onClose}>
-      <div className="modal" onClick={(e) => e.stopPropagation()}>
-        <div className="modal-header">
+    <div className="wb-modal-overlay" onClick={onClose}>
+      <div className="wb-modal" onClick={(e) => e.stopPropagation()}>
+        <div className="wb-modal-header">
           <h3>
             {mode === "create" && "Нова дата"}
             {mode === "edit" && "Редагувати дату"}
             {mode === "view" && (date?.name || formatDate(date?.date || ""))}
           </h3>
-          <button className="modal-close" onClick={onClose}>
+          <button className="wb-modal-close" onClick={onClose}>
             ×
           </button>
         </div>
 
-        <div className="modal-body">
+        <div className="wb-modal-body">
           <div className="form-field">
             <label className="form-label">Дата *</label>
             <input
@@ -276,7 +276,7 @@ function DateModal({
           </div>
         </div>
 
-        <div className="modal-actions">
+        <div className="wb-modal-footer">
           {mode === "view" ? (
             <>
               <Link
@@ -948,7 +948,7 @@ export function MyDatesPage() {
                         </td>
                         <td className="type-cell">
                           <span
-                            className="type-badge"
+                            className="wb-badge wb-badge-accent"
                             style={{ color: cfg.color, background: cfg.bg }}
                           >
                             {ico(cfg.icon)} {typeLabel}
@@ -989,7 +989,7 @@ export function MyDatesPage() {
 
         {/* ═══ HEADER MENU MODAL ═══ */}
         {headerMenu && (
-          <div className="modal-overlay" onClick={() => setHeaderMenu(null)}>
+          <div className="wb-modal-overlay" onClick={() => setHeaderMenu(null)}>
             <div className="header-modal" onClick={(e) => e.stopPropagation()}>
               <div className="header-modal-header">
                 <span className="header-modal-title">
@@ -1100,7 +1100,7 @@ export function MyDatesPage() {
 
         {/* ═══ ROW ACTION MODAL ═══ */}
         {rowActionDate && (
-          <div className="modal-overlay" onClick={() => setRowActionDate(null)}>
+          <div className="wb-modal-overlay" onClick={() => setRowActionDate(null)}>
             <div className="header-modal row-action-modal" onClick={(e) => e.stopPropagation()}>
               <div className="header-modal-header">
                 <span className="header-modal-title">

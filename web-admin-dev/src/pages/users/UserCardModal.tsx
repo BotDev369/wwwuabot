@@ -82,16 +82,16 @@ export function UserCardModal({ userId, onClose, onEdit, onMessage }: Props) {
   }, [userId]);
 
   return (
-    <div className="usr-modal-overlay" onClick={onClose}>
-      <div className="usr-modal usr-modal--wide" onClick={(e) => e.stopPropagation()}>
-        <div className="usr-modal-header">
-          <span className="usr-modal-title">
+    <div className="wb-modal-overlay" onClick={onClose}>
+      <div className="wb-modal wb-modal-lg" onClick={(e) => e.stopPropagation()}>
+        <div className="wb-modal-header">
+          <span className="wb-modal-title">
             {loading ? "Завантаження…" : error ? "Помилка" : `#${userId}`}
           </span>
-          <button className="usr-modal-close" onClick={onClose}>✕</button>
+          <button className="wb-modal-close" onClick={onClose}>✕</button>
         </div>
 
-        <div className="usr-modal-body">
+        <div className="wb-modal-body">
           <UserProfileCard
             user={profile!}
             variant="admin"

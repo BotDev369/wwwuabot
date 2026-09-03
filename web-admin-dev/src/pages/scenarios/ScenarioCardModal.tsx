@@ -230,15 +230,15 @@ export function ScenarioCardModal({ codeword, table, onClose, onSaved }: Props) 
   // ═══ RENDER ════════════════════════════════════════════════════════
 
   return (
-    <div className="usr-modal-overlay" onClick={onClose}>
+    <div className="wb-modal-overlay" onClick={onClose}>
       <div
-        className="usr-modal"
+        className="wb-modal"
         onClick={(e) => e.stopPropagation()}
         style={{ maxWidth: 900, height: "90vh", display: "flex", flexDirection: "column" }}
       >
         {/* Header */}
-        <div className="usr-modal-header">
-          <span className="usr-modal-title">{ico("clipboard")} {codeword}</span>
+        <div className="wb-modal-header">
+          <span className="wb-modal-title">{ico("clipboard")} {codeword}</span>
           <div style={{ display: "flex", gap: 6, alignItems: "center" }}>
             <a
               href={`/${codeword}`}
@@ -249,7 +249,7 @@ export function ScenarioCardModal({ codeword, table, onClose, onSaved }: Props) 
             >
               {ico("link")} Перейти
             </a>
-            <button className="usr-modal-close" onClick={onClose}>✕</button>
+            <button className="wb-modal-close" onClick={onClose}>✕</button>
           </div>
         </div>
 
@@ -288,11 +288,11 @@ export function ScenarioCardModal({ codeword, table, onClose, onSaved }: Props) 
         </div>
 
         {/* Body */}
-        <div className="usr-modal-body" style={{ flex: 1, overflow: "auto" }}>
+        <div className="wb-modal-body" style={{ flex: 1, overflow: "auto" }}>
           {loading ? (
-            <div className="usr-modal-loading">Завантаження…</div>
+            <div className="wb-modal-loading">Завантаження…</div>
           ) : error && Object.keys(allFields).length === 0 ? (
-            <div className="usr-modal-error">{error}</div>
+            <div className="wb-modal-error">{error}</div>
           ) : subTab === "preview" ? (
             <TabPreview mainTab={mainTab} fields={allFields} codeword={codeword} />
           ) : subTab === "json" ? (
@@ -316,12 +316,12 @@ export function ScenarioCardModal({ codeword, table, onClose, onSaved }: Props) 
           ) : null}
 
           {error && Object.keys(allFields).length > 0 && (
-            <div className="usr-modal-error" style={{ marginTop: 8 }}>{error}</div>
+            <div className="wb-modal-error" style={{ marginTop: 8 }}>{error}</div>
           )}
         </div>
 
         {/* Footer */}
-        <div className="usr-modal-footer">
+        <div className="wb-modal-footer">
           {success ? (
             <span className="usr-edit-success">✓ Збережено</span>
           ) : (
@@ -397,9 +397,9 @@ function BotConstructor({
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
       {/* Caption fields */}
-      <div className="block-card">
-        <div className="block-card-header">
-          <span className="block-card-title">{ico("edit")} Підписи</span>
+      <div className="wb-card">
+        <div className="wb-card-header">
+          <span className="wb-card-title">{ico("edit")} Підписи</span>
         </div>
         <div style={{ display: "flex", flexDirection: "column", gap: 8, padding: 12 }}>
           <label className="block-label">
@@ -436,9 +436,9 @@ function BotConstructor({
       </div>
 
       {/* Photo URL */}
-      <div className="block-card">
-        <div className="block-card-header">
-          <span className="block-card-title">{ico("image")} Фото</span>
+      <div className="wb-card">
+        <div className="wb-card-header">
+          <span className="wb-card-title">{ico("image")} Фото</span>
         </div>
         <div style={{ padding: 12 }}>
           <label className="block-label">
@@ -462,9 +462,9 @@ function BotConstructor({
       </div>
 
       {/* Keyboard / Buttons */}
-      <div className="block-card">
-        <div className="block-card-header">
-          <span className="block-card-title">{ico("keyboard")} Клавіатура (кнопки)</span>
+      <div className="wb-card">
+        <div className="wb-card-header">
+          <span className="wb-card-title">{ico("keyboard")} Клавіатура (кнопки)</span>
         </div>
         <div style={{ padding: 12 }}>
           <ButtonsField
@@ -491,9 +491,9 @@ function BotRichConstructor({
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
       {/* Rich message toggle */}
-      <div className="block-card">
-        <div className="block-card-header">
-          <span className="block-card-title">{ico("sparkles")} Річ-повідомлення</span>
+      <div className="wb-card">
+        <div className="wb-card-header">
+          <span className="wb-card-title">{ico("sparkles")} Річ-повідомлення</span>
           <label style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 12, cursor: "pointer" }}>
             <input
               type="checkbox"
@@ -509,9 +509,9 @@ function BotRichConstructor({
       <RichTextSection fields={fields} updateField={updateField} />
 
       {/* Rich data blocks */}
-      <div className="block-card">
-        <div className="block-card-header">
-          <span className="block-card-title">{ico("blocks")} Блоки повідомлення (rich_data)</span>
+      <div className="wb-card">
+        <div className="wb-card-header">
+          <span className="wb-card-title">{ico("blocks")} Блоки повідомлення (rich_data)</span>
         </div>
         <div style={{ padding: 12 }}>
           <RichDataEditor
@@ -522,9 +522,9 @@ function BotRichConstructor({
       </div>
 
       {/* Keyboard / Buttons for rich messages */}
-      <div className="block-card">
-        <div className="block-card-header">
-          <span className="block-card-title">{ico("keyboard")} Клавіатура (кнопки)</span>
+      <div className="wb-card">
+        <div className="wb-card-header">
+          <span className="wb-card-title">{ico("keyboard")} Клавіатура (кнопки)</span>
         </div>
         <div style={{ padding: 12 }}>
           <ButtonsField
@@ -565,9 +565,9 @@ function RichTextSection({
 
   return (
     <>
-      <div className="block-card">
-        <div className="block-card-header">
-          <span className="block-card-title">{ico("edit")} Caption Top (форматований)</span>
+      <div className="wb-card">
+        <div className="wb-card-header">
+          <span className="wb-card-title">{ico("edit")} Caption Top (форматований)</span>
         </div>
         <div style={{ padding: 12 }}>
           <RichTextField
@@ -578,9 +578,9 @@ function RichTextSection({
           />
         </div>
       </div>
-      <div className="block-card">
-        <div className="block-card-header">
-          <span className="block-card-title">{ico("edit")} Caption Mid (форматований)</span>
+      <div className="wb-card">
+        <div className="wb-card-header">
+          <span className="wb-card-title">{ico("edit")} Caption Mid (форматований)</span>
         </div>
         <div style={{ padding: 12 }}>
           <RichTextField
@@ -591,9 +591,9 @@ function RichTextSection({
           />
         </div>
       </div>
-      <div className="block-card">
-        <div className="block-card-header">
-          <span className="block-card-title">{ico("edit")} Caption Bot (форматований)</span>
+      <div className="wb-card">
+        <div className="wb-card-header">
+          <span className="wb-card-title">{ico("edit")} Caption Bot (форматований)</span>
         </div>
         <div style={{ padding: 12 }}>
           <RichTextField
@@ -770,7 +770,7 @@ function WebConstructor({
   return (
     <div style={{ padding: "0 0 16px" }}>
       <div className="block-card-header" style={{ marginBottom: 12, padding: "12px 0" }}>
-        <span className="block-card-title">{ico("construction")} Конструктор сторінки</span>
+        <span className="wb-card-title">{ico("construction")} Конструктор сторінки</span>
         <span style={{ fontSize: 12, color: "var(--text-muted)" }}>
           Зони: sidebar, header, main, footer
         </span>

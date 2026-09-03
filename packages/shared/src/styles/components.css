@@ -194,6 +194,17 @@
   padding: var(--sp-4) var(--sp-5);
   border-bottom: 1px solid var(--border-subtle);
   font-weight: var(--weight-semibold);
+  display: flex;
+  align-items: center;
+  gap: var(--sp-3);
+}
+
+.wb-card-title {
+  font-size: var(--text-sm);
+  font-weight: var(--weight-semibold);
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sp-2);
 }
 
 .wb-card-body {
@@ -285,6 +296,62 @@
   justify-content: flex-end;
   gap: var(--sp-2);
   flex-shrink: 0;
+}
+
+/* Modal extras */
+.wb-modal-error {
+  padding: var(--sp-3) var(--sp-4);
+  background: var(--red-dim);
+  color: var(--red);
+  border-radius: var(--radius-sm);
+  font-size: var(--text-sm);
+}
+
+.wb-modal-loading {
+  padding: var(--sp-6);
+  text-align: center;
+  color: var(--text-muted);
+}
+
+.wb-modal-menu {
+  padding: var(--sp-2) 0;
+}
+
+.wb-modal-menu-item {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-3);
+  width: 100%;
+  padding: var(--sp-3) var(--sp-5);
+  font-size: var(--text-sm);
+  color: var(--text-primary);
+  background: none;
+  border: none;
+  cursor: pointer;
+  text-align: left;
+  transition: background var(--duration-fast) var(--ease);
+}
+.wb-modal-menu-item:hover {
+  background: var(--surface-hover);
+}
+.wb-modal-menu-item--danger {
+  color: var(--red);
+}
+.wb-modal-menu-item--danger:hover {
+  background: var(--red-dim);
+}
+
+.wb-modal-divider {
+  height: 1px;
+  background: var(--border-subtle);
+  margin: var(--sp-2) 0;
+}
+
+/* Cards grid */
+.wb-cards-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: var(--sp-4);
 }
 
 @keyframes wb-fade-in {
