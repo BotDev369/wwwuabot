@@ -2831,7 +2831,7 @@ body {
 
 /* ═══ Phone-frame preview ══════════════════════════════════════════════ */
 .phone-frame {
-  max-width: 375px;
+  max-width: min(375px, 100%);
   margin: 0 auto;
   border: 8px solid #1a1a2e;
   border-radius: 24px;
@@ -2849,8 +2849,8 @@ body {
   margin: 6px auto 4px;
 }
 .phone-frame-body {
-  min-height: 400px;
-  max-height: 500px;
+  min-height: 200px;
+  max-height: 400px;
   overflow-y: auto;
   background: #ffffff;
   color: #1a1a2e;
@@ -2898,6 +2898,17 @@ body {
   color: #888;
 }
 .phone-frame-body .page-zone-label { display: none; }
+
+@media (max-width: 640px) {
+  .phone-frame {
+    max-width: 100%;
+    border-width: 4px;
+    border-radius: 16px;
+  }
+  .phone-frame-body {
+    max-height: 300px;
+  }
+}
 
 /* ═══ ScenarioCardModal — mobile responsive ══════════════════════════════════ */
 @media (max-width: 640px) {
@@ -2981,6 +2992,31 @@ body {
 }
 
 /* ═══ BlockEditor — mobile responsive ══════════════════════════════════════════ */
+@media (max-width: 640px) {
+  .pb-block-editor {
+    padding: 8px !important;
+  }
+
+  .pb-be-header {
+    flex-direction: column;
+    align-items: flex-start !important;
+  }
+
+  .pb-be-field {
+    flex-direction: column;
+    align-items: flex-start !important;
+    gap: 4px !important;
+  }
+
+  .pb-be-field-label {
+    min-width: 0 !important;
+  }
+
+  .pb-be-field-input {
+    width: 100% !important;
+  }
+}
+ ══════════════════════════════════════════ */
 @media (max-width: 640px) {
   /* Header: type dropdown + id + buttons wrap nicely */
   .pb-be-header {

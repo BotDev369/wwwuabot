@@ -1116,16 +1116,17 @@ function JsonEditor({
         style={{
           flex: 1,
           width: "100%",
-          minHeight: 300,
+          minHeight: 200,
           padding: "12px 16px",
-          border: "none",
+          border: "1px solid var(--border)",
+          borderRadius: 6,
           outline: "none",
-          resize: "none",
+          resize: "vertical",
           fontFamily: "monospace",
-          fontSize: 13,
+          fontSize: 12,
           lineHeight: 1.5,
-          background: "var(--bg-secondary, #1e1e1e)",
-          color: "var(--text-primary, #d4d4d4)",
+          background: "var(--bg-primary, #fff)",
+          color: "var(--text-primary, #1a1a2e)",
           tabSize: 2,
         }}
       />
