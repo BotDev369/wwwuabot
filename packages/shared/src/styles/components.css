@@ -109,8 +109,24 @@
 /* Inline — for inline date-input rows */
 .wb-btn-inline {
   margin-top: 0;
-  padding: 10px 20px;
-  font-size: 14px;
+  padding: 14px 28px;
+  font-size: 15px;
+  font-weight: var(--weight-semibold);
+  border-radius: var(--radius);
+  border: 1px solid var(--border);
+  background: var(--bg-2);
+  color: var(--text-primary);
+  cursor: pointer;
+  transition: all var(--duration-fast) var(--ease);
+  white-space: nowrap;
+}
+.wb-btn-inline:hover:not(:disabled) {
+  background: var(--surface-hover);
+  border-color: var(--accent);
+  color: var(--accent);
+}
+.wb-btn-inline:active:not(:disabled) {
+  transform: scale(0.97);
 }
 
 /* Telegram — accent brand color */

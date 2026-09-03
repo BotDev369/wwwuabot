@@ -263,18 +263,21 @@ main {
 .date-input-row {
   display: flex;
   flex-wrap: wrap;
-  gap: 8px;
+  gap: 12px;
   justify-content: center;
   align-items: center;
 }
 
 .date-input {
-  padding: 10px 14px;
-  font-size: 15px;
+  padding: 14px 18px;
+  font-size: 17px;
   border-radius: var(--radius);
   border: 1px solid var(--border);
   background: var(--bg-1);
   color: var(--text-primary);
+  width: 100%;
+  max-width: 320px;
+  text-align: center;
 }
 
 /* ─── Cards Grid ─────────────────────────────────────────────────────────── */
@@ -1104,8 +1107,9 @@ main {
 
   .date-input {
     width: 100%;
-    padding: 12px 14px;
-    font-size: 16px;
+    max-width: none;
+    padding: 14px 18px;
+    font-size: 17px;
   }
 
   /* Cards */
