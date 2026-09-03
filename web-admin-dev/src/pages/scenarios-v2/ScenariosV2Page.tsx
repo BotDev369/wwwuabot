@@ -1,4 +1,5 @@
-import { useEffect, useCallback } from "react";
+import { useEffect, useCallback, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { useScenariosStore } from "../../features/scenarios/store";
 import { saveScenarioFields } from "../../shared/api/scenarios.api";
 import { PageTopbar } from "../../layout/PageTopbar";
@@ -7,9 +8,14 @@ import { ScenariosV2Table } from "./ScenariosV2Table";
 /**
  * Сторінка «Сценарії — портал».
  * Працює з таблицею `scenarios` (портальні сценарії для web).
+ *
+ * Новий підхід створення: після введення codeword
+ * одразу відкривається конструктор сторінки (порожня сторінка).
  */
 export function ScenariosV2Page() {
   const { items, status, errorMsg, load, setTable } = useScenariosStore();
+  const navigate = useNavigate();
+  const [creating, setCreating] = useState(false);
 
   useEffect(() => {
     setTable("portal");
@@ -17,9 +23,11 @@ export function ScenariosV2Page() {
   }, [setTable, load]);
 
   const handleCreate = useCallback(async () => {
-    const codeword = window.prompt("Введіть codeword для нового сценарію:");
+    const codeword = window.prompt("Вкажіть кодове слово:");
     if (!codeword || !codeword.trim()) return;
     const cw = codeword.trim().toLowerCase().replace(/[^a-z0-9_-]/g, "-");
+
+    setCreating(true);
     try {
       await saveScenarioFields(cw, {
         title: cw,
@@ -28,11 +36,13 @@ export function ScenariosV2Page() {
           zones: { sidebar: [], header: [], main: [], footer: [] },
         }),
       });
-      await load(true);
+      // Відкриваємо конструктор сторінки одразу
+      navigate(`/page-builder/${cw}`);
     } catch (e) {
       alert(`Помилка створення: ${(e as Error).message}`);
+      setCreating(false);
     }
-  }, [load]);
+  }, [navigate]);
 
   return (
     <>
@@ -44,8 +54,12 @@ export function ScenariosV2Page() {
           )}
         </div>
         <div className="topbar-right">
-          <button className="wb-btn wb-btn-primary" onClick={handleCreate}>
-            + Новий
+          <button
+            className="wb-btn wb-btn-primary"
+            onClick={handleCreate}
+            disabled={creating}
+          >
+            {creating ? "Створення…" : "+ Новий"}
           </button>
         </div>
       </PageTopbar>

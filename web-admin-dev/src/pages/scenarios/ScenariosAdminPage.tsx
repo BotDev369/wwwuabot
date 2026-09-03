@@ -3,9 +3,13 @@
  *
  * Використовує той самий ScenariosV2Table та ScenarioCardModal,
  * але з параметром table="admin" для API-викликів.
+ *
+ * Новий підхід створення: після введення codeword
+ * одразу відкривається конструктор сторінки (порожня сторінка).
  */
 
-import { useEffect, useCallback } from "react";
+import { useEffect, useCallback, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { useScenariosStore } from "../../features/scenarios/store";
 import { saveScenarioFields } from "../../shared/api/scenarios.api";
 import { PageTopbar } from "../../layout/PageTopbar";
@@ -13,6 +17,8 @@ import { ScenariosV2Table } from "../scenarios-v2/ScenariosV2Table";
 
 export function ScenariosAdminPage() {
   const { items, status, errorMsg, load, setTable } = useScenariosStore();
+  const navigate = useNavigate();
+  const [creating, setCreating] = useState(false);
 
   useEffect(() => {
     setTable("admin");
@@ -20,9 +26,11 @@ export function ScenariosAdminPage() {
   }, [setTable, load]);
 
   const handleCreate = useCallback(async () => {
-    const codeword = window.prompt("Введіть codeword для нового сценарію:");
+    const codeword = window.prompt("Вкажіть кодове слово:");
     if (!codeword || !codeword.trim()) return;
     const cw = codeword.trim().toLowerCase().replace(/[^a-z0-9_-]/g, "-");
+
+    setCreating(true);
     try {
       await saveScenarioFields(
         cw,
@@ -35,11 +43,13 @@ export function ScenariosAdminPage() {
         },
         "admin",
       );
-      await load(true);
+      // Відкриваємо конструктор сторінки одразу
+      navigate(`/page-builder/${cw}`);
     } catch (e) {
       alert(`Помилка створення: ${(e as Error).message}`);
+      setCreating(false);
     }
-  }, [load]);
+  }, [navigate]);
 
   return (
     <>
@@ -51,8 +61,12 @@ export function ScenariosAdminPage() {
           )}
         </div>
         <div className="topbar-right">
-          <button className="wb-btn wb-btn-primary" onClick={handleCreate}>
-            + Новий
+          <button
+            className="wb-btn wb-btn-primary"
+            onClick={handleCreate}
+            disabled={creating}
+          >
+            {creating ? "Створення…" : "+ Новий"}
           </button>
         </div>
       </PageTopbar>
