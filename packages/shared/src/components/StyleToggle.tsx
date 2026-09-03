@@ -135,6 +135,7 @@ export function ThemeButton({ compact = false }: { compact?: boolean }) {
           <span className="sidebar-nav-icon">
             {isDark ? icons["moon"] : icons["sun"]}
           </span>
+          <span className="sidebar-nav-label">Тема</span>
         </button>
       ) : (
         <button

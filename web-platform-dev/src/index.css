@@ -86,7 +86,7 @@
 .sidebar-theme-btn {
   display: flex;
   align-items: center;
-  justify-content: center;
+  gap: 10px;
   width: 100%;
   padding: 8px 10px;
   min-height: 40px;
@@ -95,15 +95,31 @@
   border: none;
   cursor: pointer;
   color: var(--text-secondary);
+  font-size: 13px;
+  font-weight: 500;
   transition: background 0.1s, color 0.1s;
+  text-align: left;
 }
 .sidebar-theme-btn:hover {
   background: var(--bg-4);
   color: var(--text-primary);
 }
 .sidebar-theme-btn .sidebar-nav-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
   width: 20px;
   height: 20px;
+  flex-shrink: 0;
+}
+.sidebar-theme-btn .sidebar-nav-icon svg {
+  width: 20px;
+  height: 20px;
+}
+.sidebar-theme-btn .sidebar-nav-label {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .sidebar-nav-label {

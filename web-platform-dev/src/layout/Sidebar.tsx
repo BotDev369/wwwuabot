@@ -32,12 +32,10 @@ export function Sidebar() {
           </button>
         </div>
 
-        {/* Theme button — top of nav, above Головна */}
-        <div style={{ padding: "8px 8px 0" }}>
-          <ThemeButton compact />
-        </div>
-
         <nav>
+          {/* Theme — first nav item */}
+          <ThemeButton compact />
+
           {NAV_ITEMS.map((item) => (
             <NavLink
               key={item.to}
