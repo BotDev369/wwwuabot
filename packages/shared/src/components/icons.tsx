@@ -45,7 +45,9 @@ export type IconName =
   | "check"
   | "close"
   | "arrow-up"
-  | "arrow-down";
+  | "arrow-down"
+  | "sun"
+  | "moon";
 
 const svgAttrs = {
   width: 24,
@@ -287,5 +289,21 @@ export const icons: Record<IconName, ReactElement> = {
   "arrow-down": icon([
     p("M12 5v14"),
     p("M19 12l-7 7-7-7"),
+  ]),
+
+  sun: icon([
+    p("M12 17a5 5 0 1 0 0-10 5 5 0 0 0 0 10z"),
+    p("M12 1v2"),
+    p("M12 21v2"),
+    p("M4.22 4.22l1.42 1.42"),
+    p("M18.36 18.36l1.42 1.42"),
+    p("M1 12h2"),
+    p("M21 12h2"),
+    p("M4.22 19.78l1.42-1.42"),
+    p("M18.36 5.64l1.42-1.42"),
+  ]),
+
+  moon: icon([
+    p("M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"),
   ]),
 };

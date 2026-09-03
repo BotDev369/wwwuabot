@@ -28,7 +28,7 @@ export function Sidebar() {
             onClick={() => setSidebarOpen(false)}
             aria-label="Закрити"
           >
-            <span>×</span>
+            {icons["close"]}
           </button>
         </div>
 

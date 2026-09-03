@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from "react";
 import { BRANDS, type Brand, type Scheme } from "../styles/registry";
+import { icons } from "./icons";
 
 const BRAND_KEY = "wwwuabot-brand";
 const LEGACY_STYLE_KEY = "wwwuabot-style";
@@ -123,100 +124,60 @@ export function ThemeButton({ compact = false }: { compact?: boolean }) {
   return (
     <>
       {/* ── Trigger Button ── */}
-      <button
-        type="button"
-        onClick={() => setOpen(true)}
-        title="Тема"
-        aria-label="Налаштування теми"
-        style={
-          compact
-            ? { ...btnBase, justifyContent: "center", padding: 8, width: "auto" }
-            : btnBase
-        }
-      >
-        <span style={{ fontSize: 16, flexShrink: 0 }}>
-          {isDark ? "\uD83C\uDF19" : "\u2600\uFE0F"}
-        </span>
-        {!compact && <span>Тема</span>}
-      </button>
+      {compact ? (
+        <button
+          type="button"
+          onClick={() => setOpen(true)}
+          title="Тема"
+          aria-label="Налаштування теми"
+          className="sidebar-theme-btn"
+        >
+          <span className="sidebar-nav-icon">
+            {isDark ? icons["moon"] : icons["sun"]}
+          </span>
+        </button>
+      ) : (
+        <button
+          type="button"
+          onClick={() => setOpen(true)}
+          title="Тема"
+          aria-label="Налаштування теми"
+          style={btnBase}
+        >
+          <span style={{ flexShrink: 0 }}>
+            {isDark ? icons["moon"] : icons["sun"]}
+          </span>
+          <span>Тема</span>
+        </button>
+      )}
 
-      {/* ── Full-screen Modal ── */}
+      {/* ── Modal ── */}
       {open && (
         <div
-          className="modal-overlay"
+          className="wb-modal-overlay"
           onClick={(e) => {
             if (e.target === e.currentTarget) setOpen(false);
           }}
-          style={{
-            position: "fixed",
-            inset: 0,
-            background: "var(--surface-overlay, rgba(0,0,0,0.5))",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            zIndex: 1000,
-            padding: 20,
-          }}
         >
-          <div
-            className="modal"
-            style={{
-              background: "var(--bg-1)",
-              border: "1px solid var(--border)",
-              borderRadius: "var(--radius-lg, 16px)",
-              maxWidth: 400,
-              width: "100%",
-              maxHeight: "90vh",
-              overflowY: "auto",
-              boxShadow: "var(--shadow-xl)",
-              display: "flex",
-              flexDirection: "column",
-            }}
-            onClick={(e) => e.stopPropagation()}
-          >
-            {/* ── Header ── */}
-            <div
-              style={{
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "space-between",
-                padding: "18px 20px 0",
-              }}
-            >
-              <h3
-                style={{
-                  margin: 0,
-                  fontSize: 18,
-                  fontWeight: 700,
-                  color: "var(--text-primary)",
-                }}
-              >
-                Тема
-              </h3>
+          <div className="wb-modal" onClick={(e) => e.stopPropagation()}>
+            {/* Header */}
+            <div className="wb-modal-header">
+              <span className="wb-modal-title">Тема</span>
               <button
                 type="button"
                 onClick={() => setOpen(false)}
                 className="wb-close-btn"
                 aria-label="Закрити"
               >
-                ×
+                {icons["close"]}
               </button>
             </div>
 
-            {/* ── Body ── */}
-            <div style={{ padding: "16px 20px 20px" }}>
+            {/* Body */}
+            <div className="wb-modal-body">
               {/* Brand selector */}
               <div style={{ marginBottom: 20 }}>
-                <div
-                  style={{
-                    fontSize: 12,
-                    fontWeight: 600,
-                    letterSpacing: "0.06em",
-                    textTransform: "uppercase",
-                    color: "var(--text-muted)",
-                    marginBottom: 10,
-                  }}
-                >
+                <div className="wb-label" style={{ marginBottom: 10 }}>
                   Бренд
                 </div>
                 <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
@@ -225,26 +186,17 @@ export function ThemeButton({ compact = false }: { compact?: boolean }) {
                       key={b.id}
                       type="button"
                       onClick={() => setBrand(b.id)}
+                      className={`wb-btn wb-btn-ghost${b.id === brand ? " wb-btn-primary" : ""}`}
                       style={{
-                        display: "flex",
-                        alignItems: "center",
+                        justifyContent: "flex-start",
                         gap: 12,
                         padding: "12px 14px",
-                        borderRadius: "var(--radius)",
-                        cursor: "pointer",
                         fontSize: 15,
-                        fontFamily: "var(--font-ui)",
                         fontWeight: b.id === brand ? 600 : 500,
-                        color: b.id === brand ? "var(--accent)" : "var(--text-primary)",
-                        background: b.id === brand ? "var(--accent-dim)" : "var(--bg-2)",
-                        border: b.id === brand ? "2px solid var(--accent)" : "2px solid transparent",
-                        width: "100%",
-                        textAlign: "left",
-                        transition: "background 0.15s, border-color 0.15s",
                       }}
                     >
-                      <span style={{ fontSize: 18, width: 24, textAlign: "center", flexShrink: 0 }}>
-                        {b.id === brand ? "✓" : b.icon || "○"}
+                      <span style={{ width: 24, textAlign: "center", flexShrink: 0 }}>
+                        {b.id === brand ? icons["check"] : (b.icon ? <span style={{ fontSize: 18 }}>{b.icon}</span> : <span style={{ fontSize: 18, opacity: 0.4 }}>○</span>)}
                       </span>
                       <span>{b.labelUk}</span>
                     </button>
@@ -253,7 +205,7 @@ export function ThemeButton({ compact = false }: { compact?: boolean }) {
               </div>
 
               {/* Divider */}
-              <div style={{ height: 1, background: "var(--border)", margin: "0 0 20px" }} />
+              <div className="wb-modal-divider" />
 
               {/* Dark / Light toggle */}
               <div

@@ -1,5 +1,6 @@
 import { Link } from "react-router-dom";
 import { useAppStore } from "@/stores/app.store";
+import { icons } from "@wwwuabot/shared";
 
 const CONTEXTUAL_ITEMS = [
   { label: "Мої дати", path: "/mydate/my-dates" },
@@ -24,7 +25,7 @@ export function ContextualSidebar() {
             onClick={() => onClose(false)}
             aria-label="Закрити"
           >
-            <span>×</span>
+            {icons["close"]}
           </button>
         </div>
         <nav>
