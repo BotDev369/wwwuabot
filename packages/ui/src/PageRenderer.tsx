@@ -83,21 +83,6 @@ export function PageRenderer({
 
   return (
     <div className={className}>
-      {/* Hamburger button — visible on mobile when sidebar has content */}
-      {hasSidebar && (
-        <button
-          className="page-hamburger"
-          onClick={toggleSidebar}
-          aria-label="Відкрити меню"
-        >
-          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-            <line x1="3" y1="6" x2="21" y2="6" />
-            <line x1="3" y1="12" x2="21" y2="12" />
-            <line x1="3" y1="18" x2="21" y2="18" />
-          </svg>
-        </button>
-      )}
-
       {/* Sidebar overlay (mobile) */}
       {hasSidebar && sidebarOpen && (
         <div className="page-sidebar-overlay" onClick={closeSidebar} />
@@ -109,6 +94,16 @@ export function PageRenderer({
           className={`${zoneClassName?.sidebar ?? 'page-zone page-zone--sidebar'}${sidebarOpen ? ' page-zone--sidebar--open' : ''}`}
           data-zone="sidebar"
         >
+          <button
+            className="page-sidebar-close"
+            onClick={closeSidebar}
+            aria-label="Закрити меню"
+          >
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <line x1="18" y1="6" x2="6" y2="18" />
+              <line x1="6" y1="6" x2="18" y2="18" />
+            </svg>
+          </button>
           {renderZoneLabel('sidebar')}
           <ZoneRenderer
             blocks={zones.sidebar}
@@ -124,6 +119,20 @@ export function PageRenderer({
             className={zoneClassName?.header ?? 'page-zone page-zone--header'}
             data-zone="header"
           >
+            {/* Hamburger inside header — visible on mobile when sidebar has content */}
+            {hasSidebar && (
+              <button
+                className="page-hamburger"
+                onClick={toggleSidebar}
+                aria-label="Меню сторінки"
+              >
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <line x1="3" y1="6" x2="21" y2="6" />
+                  <line x1="3" y1="12" x2="21" y2="12" />
+                  <line x1="3" y1="18" x2="21" y2="18" />
+                </svg>
+              </button>
+            )}
             {renderZoneLabel('header')}
             <ZoneRenderer
               blocks={zones.header}

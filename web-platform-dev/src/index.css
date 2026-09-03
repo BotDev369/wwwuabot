@@ -1075,6 +1075,11 @@ main {
   display: none;
 }
 
+/* Sidebar close button — inside drawer */
+.page-sidebar-close {
+  display: none;
+}
+
 /* Sidebar overlay */
 .page-sidebar-overlay {
   display: none;
@@ -1087,22 +1092,34 @@ main {
     position: relative;
   }
 
+  /* Hamburger inside header */
   .page-hamburger {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    border-radius: 8px;
+    border: 1px solid var(--border);
+    background: transparent;
+    color: var(--text);
+    cursor: pointer;
+    flex-shrink: 0;
+  }
+
+  /* Close button inside sidebar */
+  .page-sidebar-close {
     display: flex;
     align-items: center;
     justify-content: center;
-    position: fixed;
-    top: 12px;
-    left: 12px;
-    z-index: 1001;
-    width: 40px;
-    height: 40px;
-    border-radius: 10px;
+    width: 32px;
+    height: 32px;
+    border-radius: 8px;
     border: 1px solid var(--border);
-    background: var(--bg-1);
+    background: transparent;
     color: var(--text);
     cursor: pointer;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+    margin-bottom: 12px;
   }
 
   .page-sidebar-overlay {
@@ -1124,11 +1141,18 @@ main {
     border-right: 1px solid var(--border);
     overflow-y: auto;
     transition: left 0.25s ease;
-    padding-top: 60px;
+    padding: 16px;
   }
 
   .page-zone--sidebar.page-zone--sidebar--open {
     left: 0;
+  }
+
+  /* Header with hamburger */
+  .page-zone--header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
   }
 
   .page-zone-group {
