@@ -1,59 +1,60 @@
 /**
- * Block: Зображення
+ * Page Builder — Image Block.
  *
- * Фото або графіка з підписом.
- * Підтримує різну ширину та заокруглені кути.
+ * Displays an image with optional caption, width constraint, and rounded corners.
  *
  * @module packages/ui/src/blocks/ImageBlock
  */
 
 import type { BlockComponentProps } from '@wwwuabot/shared/types/page-config';
 
-interface ImageBlockProps {
-  src: string;
-  alt?: string;
-  caption?: string;
-  width?: 'full' | '3/4' | '1/2' | '1/3' | 'auto';
-  rounded?: boolean;
-}
-
-const widthClasses: Record<string, string> = {
-  full: 'w-full',
-  '3/4': 'w-3/4 mx-auto',
-  '1/2': 'w-1/2 mx-auto',
-  '1/3': 'w-1/3 mx-auto',
-  auto: 'w-auto',
+const WIDTH_MAP: Record<string, string> = {
+  full: '100%',
+  '3/4': '75%',
+  '1/2': '50%',
+  '1/3': '33.333%',
+  auto: 'auto',
 };
 
-export function ImageBlock({ block, children }: BlockComponentProps) {
-  const { src, alt = '', caption, width = 'full', rounded = false } =
-    block.props as unknown as ImageBlockProps;
+export function ImageBlock({ block }: BlockComponentProps) {
+  const {
+    src = '',
+    alt = '',
+    caption = '',
+    width = 'full',
+    rounded = false,
+  } = block.props as {
+    src?: string;
+    alt?: string;
+    caption?: string;
+    width?: string;
+    rounded?: boolean;
+  };
 
-  if (!src) {
-    return (
-      <div className="py-4 text-center text-sm text-muted-foreground italic">
-        [Зображення не завантажено]
-        {children}
-      </div>
-    );
-  }
+  if (!src) return null;
 
   return (
-    <figure className={`py-2 ${widthClasses[width] ?? widthClasses.full}`}>
+    <figure
+      className="wb-block-image"
+      style={{ maxWidth: WIDTH_MAP[width] ?? '100%' }}
+    >
       <img
         src={src}
         alt={alt}
-        className={`w-full object-cover ${
-          rounded ? 'rounded-lg' : ''
-        }`}
+        className="wb-block-image__img"
+        style={{
+          width: '100%',
+          height: 'auto',
+          borderRadius: rounded ? 'var(--radius-lg)' : undefined,
+          objectFit: 'cover',
+        }}
         loading="lazy"
       />
-      {caption ? (
-        <figcaption className="mt-1 text-xs text-center text-muted-foreground">
+      {caption && (
+        <figcaption className="wb-block-image__caption wb-text-sm wb-text-muted wb-mt-2">
           {caption}
         </figcaption>
-      ) : null}
-      {children}
+      )}
     </figure>
   );
 }

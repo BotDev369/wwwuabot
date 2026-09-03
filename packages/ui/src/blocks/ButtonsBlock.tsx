@@ -1,8 +1,7 @@
 /**
- * Block: Кнопки
+ * Page Builder — Buttons Block.
  *
- * Група кнопок (посилання або дії).
- * Підтримує різні стилі та розташування.
+ * Displays a group of action buttons (links or actions) with configurable layout.
  *
  * @module packages/ui/src/blocks/ButtonsBlock
  */
@@ -13,77 +12,69 @@ interface ButtonItem {
   text: string;
   url?: string;
   action?: string;
-  variant?: 'primary' | 'secondary' | 'outline' | 'ghost';
+  variant?: string;
+  icon?: string;
 }
 
-interface ButtonsBlockProps {
-  items: ButtonItem[];
-  layout?: 'row' | 'column' | 'grid';
-}
-
-const variantClasses: Record<string, string> = {
-  primary:
-    'bg-primary text-primary-foreground hover:bg-primary/90 px-4 py-2 rounded-md font-medium text-sm transition-colors',
-  secondary:
-    'bg-secondary text-secondary-foreground hover:bg-secondary/80 px-4 py-2 rounded-md font-medium text-sm transition-colors',
-  outline:
-    'border border-input bg-background hover:bg-accent hover:text-accent-foreground px-4 py-2 rounded-md font-medium text-sm transition-colors',
-  ghost:
-    'hover:bg-accent hover:text-accent-foreground px-4 py-2 rounded-md font-medium text-sm transition-colors',
+const VARIANT_CLASS: Record<string, string> = {
+  primary: 'wb-btn wb-btn-primary',
+  secondary: 'wb-btn wb-btn-secondary',
+  outline: 'wb-btn',
+  ghost: 'wb-btn wb-btn-ghost',
 };
 
-const layoutClasses: Record<string, string> = {
-  row: 'flex flex-wrap gap-2',
-  column: 'flex flex-col gap-2',
-  grid: 'grid grid-cols-2 gap-2',
-};
+export function ButtonsBlock({ block }: BlockComponentProps) {
+  const { items = [], layout = 'row' } = block.props as {
+    items?: ButtonItem[];
+    layout?: string;
+  };
 
-export function ButtonsBlock({ block, children }: BlockComponentProps) {
-  const { items = [], layout = 'row' } =
-    block.props as unknown as ButtonsBlockProps;
-
-  if (items.length === 0) {
-    return (
-      <div className="py-2 text-sm text-muted-foreground italic">
-        [Кнопки не додано]
-        {children}
-      </div>
-    );
-  }
+  if (!items || items.length === 0) return null;
 
   return (
-    <div className="py-2">
-      <div className={layoutClasses[layout] ?? layoutClasses.row}>
-        {items.map((item, index) => {
-          const classes = variantClasses[item.variant ?? 'primary'];
+    <div
+      className="wb-block-buttons"
+      style={{
+        display: 'flex',
+        flexDirection: layout === 'column' ? 'column' : 'row',
+        flexWrap: layout === 'row' ? 'wrap' : undefined,
+        gap: 'var(--sp-2)',
+        justifyContent: layout === 'grid' ? 'center' : undefined,
+      }}
+    >
+      {items.map((btn, i) => {
+        const className = VARIANT_CLASS[btn.variant ?? 'primary'] ?? 'wb-btn wb-btn-primary';
+        const style = layout === 'grid'
+          ? { flex: '1 1 0', justifyContent: 'center' }
+          : {};
 
-          if (item.url) {
-            return (
-              <a
-                key={index}
-                href={item.url}
-                target="_blank"
-                rel="noopener noreferrer"
-                className={classes}
-              >
-                {item.text}
-              </a>
-            );
-          }
-
+        if (btn.url) {
           return (
-            <button
-              key={index}
-              type="button"
-              className={classes}
-              data-action={item.action}
+            <a
+              key={i}
+              href={btn.url}
+              className={className}
+              style={style}
+              target="_blank"
+              rel="noopener noreferrer"
             >
-              {item.text}
-            </button>
+              {btn.text}
+            </a>
           );
-        })}
-      </div>
-      {children}
+        }
+
+        return (
+          <button
+            key={i}
+            type="button"
+            className={className}
+            style={style}
+            data-action={btn.action}
+          >
+            {btn.text}
+          </button>
+        );
+      })}
     </div>
   );
 }

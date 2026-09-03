@@ -1,45 +1,47 @@
 /**
- * Block: Розділювач
+ * Page Builder — Divider Block.
  *
- * Горизонтальна лінія-розділювач між блоками.
- * Підтримує різні стилі лінії та відступи.
+ * Displays a horizontal divider line with configurable style and spacing.
  *
  * @module packages/ui/src/blocks/DividerBlock
  */
 
 import type { BlockComponentProps } from '@wwwuabot/shared/types/page-config';
 
-interface DividerBlockProps {
-  style?: 'solid' | 'dashed' | 'dotted' | 'gradient';
-  spacing?: 'none' | 'sm' | 'md' | 'lg';
-}
-
-const styleMap: Record<string, string> = {
-  solid: 'border-solid border-border',
-  dashed: 'border-dashed border-border',
-  dotted: 'border-dotted border-border',
-  gradient:
-    'border-none h-px bg-gradient-to-r from-transparent via-border to-transparent',
+const SPACING_MAP: Record<string, string> = {
+  none: '0',
+  sm: 'var(--sp-2)',
+  md: 'var(--sp-4)',
+  lg: 'var(--sp-8)',
 };
 
-const spacingMap: Record<string, string> = {
-  none: 'my-0',
-  sm: 'my-2',
-  md: 'my-4',
-  lg: 'my-8',
+const STYLE_MAP: Record<string, string> = {
+  solid: '1px solid var(--border-subtle)',
+  dashed: '1px dashed var(--border-subtle)',
+  dotted: '1px dotted var(--border-subtle)',
+  gradient: '1px solid transparent',
 };
 
-export function DividerBlock({ block, children }: BlockComponentProps) {
-  const { style = 'solid', spacing = 'md' } =
-    block.props as unknown as DividerBlockProps;
+export function DividerBlock({ block }: BlockComponentProps) {
+  const { style = 'solid', spacing = 'md' } = block.props as {
+    style?: string;
+    spacing?: string;
+  };
 
   return (
-    <div className={spacingMap[spacing] ?? spacingMap.md}>
+    <div style={{ padding: `${SPACING_MAP[spacing] ?? SPACING_MAP.md} 0` }}>
       <hr
-        className={`border-t ${styleMap[style] ?? styleMap.solid}`}
-        role="separator"
+        className="wb-block-divider"
+        style={{
+          border: 'none',
+          height: style === 'gradient' ? '1px' : undefined,
+          background: style === 'gradient'
+            ? 'linear-gradient(90deg, transparent, var(--border-subtle), transparent)'
+            : undefined,
+          borderTop: style !== 'gradient' ? STYLE_MAP[style] : undefined,
+          margin: 0,
+        }}
       />
-      {children}
     </div>
   );
 }

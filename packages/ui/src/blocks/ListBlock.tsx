@@ -1,8 +1,7 @@
 /**
- * Block: Список
+ * Page Builder — List Block.
  *
- * Нумерований або маркірований список елементів.
- * Кожен елемент може мати іконку та опис.
+ * Displays an ordered or unordered list of items with optional icons and descriptions.
  *
  * @module packages/ui/src/blocks/ListBlock
  */
@@ -15,49 +14,37 @@ interface ListItem {
   description?: string;
 }
 
-interface ListBlockProps {
-  items: ListItem[];
-  ordered?: boolean;
-}
+export function ListBlock({ block }: BlockComponentProps) {
+  const { items = [], ordered = false } = block.props as {
+    items?: ListItem[];
+    ordered?: boolean;
+  };
 
-export function ListBlock({ block, children }: BlockComponentProps) {
-  const { items = [], ordered = false } =
-    block.props as unknown as ListBlockProps;
-
-  if (items.length === 0) {
-    return (
-      <div className="py-2 text-sm text-muted-foreground italic">
-        [Список порожній]
-        {children}
-      </div>
-    );
-  }
+  if (!items || items.length === 0) return null;
 
   const Tag = ordered ? 'ol' : 'ul';
-  const listStyle = ordered ? 'list-decimal' : 'list-disc';
 
   return (
-    <Tag className={`py-2 pl-5 space-y-1 ${listStyle}`}>
-      {items.map((item, index) => (
-        <li key={index} className="text-sm leading-relaxed">
-          <div className="flex items-start gap-2">
-            {item.icon && (
-              <span className="mt-0.5 text-base" aria-hidden="true">
-                {item.icon}
-              </span>
-            )}
-            <div>
-              <span>{item.text}</span>
-              {item.description ? (
-                <p className="text-xs text-muted-foreground mt-0.5">
-                  {item.description}
-                </p>
-              ) : null}
-            </div>
-          </div>
+    <Tag
+      className="wb-block-list"
+      style={{
+        listStyle: ordered ? 'decimal' : 'disc',
+        paddingLeft: 'var(--sp-5)',
+        display: 'flex',
+        flexDirection: 'column',
+        gap: 'var(--sp-2)',
+      }}
+    >
+      {items.map((item, i) => (
+        <li key={i} className="wb-block-list__item">
+          <span className="wb-block-list__text wb-text-primary">{item.text}</span>
+          {item.description && (
+            <span className="wb-block-list__desc wb-text-sm wb-text-secondary">
+              {' — '}{item.description}
+            </span>
+          )}
         </li>
       ))}
-      {children}
     </Tag>
   );
 }

@@ -211,6 +211,18 @@ export interface BlockContext {
 // Визначення типу блоку (метадані для реєстру)
 // ---------------------------------------------------------------------------
 
+/** Категорії блоків для галереї модулів. */
+export type BlockCategory =
+  | 'content'
+  | 'layout'
+  | 'navigation'
+  | 'data'
+  | 'commerce'
+  | 'forms'
+  | 'bot-domain'
+  | 'analytics'
+  | 'raw';
+
 /**
  * Метадані одного типу блоку.
  *
@@ -218,6 +230,7 @@ export interface BlockContext {
  * - Реєстрації блоків (який компонент рендерити)
  * - JSON-редактора у web-admin (яку форму генерувати)
  * - Валідації (JSON Schema)
+ * - Галереї модулів (категоризація)
  */
 export interface BlockDefinition {
   /** Унікальний ключ типу (відповідає PageBlock.type). */
@@ -229,8 +242,11 @@ export interface BlockDefinition {
   /** Короткий опис модуля. */
   description?: string;
 
-  /** Іконка (назва іконки або SVG-шлях). */
+  /** Іконка (назва іконки з реєстру icons.tsx). */
   icon?: string;
+
+  /** Категорія для групування в галереї модулів. */
+  category: BlockCategory;
 
   /**
    * Зони, в яких цей блок може використовуватись.

@@ -1,56 +1,50 @@
 /**
- * Block: Текст
+ * Page Builder — Text Block.
  *
- * Базовий текстовий блок з заголовком та/або вмістом.
- * Підтримує рівні заголовків (h1-h4, body) та вирівнювання.
+ * Displays a title and/or text content with configurable heading level and alignment.
  *
  * @module packages/ui/src/blocks/TextBlock
  */
 
 import type { BlockComponentProps } from '@wwwuabot/shared/types/page-config';
 
-interface TextBlockProps {
-  title?: string;
-  content: string;
-  level?: 'h1' | 'h2' | 'h3' | 'h4' | 'body';
-  align?: 'left' | 'center' | 'right';
-}
-
-const headingStyles: Record<string, React.CSSProperties> = {
-  h1: { fontSize: '1.875rem', fontWeight: 700, letterSpacing: '-0.025em', marginBottom: '0.25rem' },
-  h2: { fontSize: '1.5rem', fontWeight: 600, marginBottom: '0.25rem' },
-  h3: { fontSize: '1.25rem', fontWeight: 600, marginBottom: '0.25rem' },
-  h4: { fontSize: '1.125rem', fontWeight: 500, marginBottom: '0.25rem' },
-  body: { fontSize: '1rem' },
+const LEVEL_CLASSES: Record<string, string> = {
+  h1: 'wb-text-3xl wb-font-bold',
+  h2: 'wb-text-2xl wb-font-bold',
+  h3: 'wb-text-xl wb-font-semibold',
+  h4: 'wb-text-lg wb-font-semibold',
+  body: 'wb-text-base',
 };
 
-const alignStyles: Record<string, React.CSSProperties> = {
-  left: { textAlign: 'left' },
-  center: { textAlign: 'center' },
-  right: { textAlign: 'right' },
+const ALIGN_CLASSES: Record<string, string> = {
+  left: 'wb-text-left',
+  center: 'wb-text-center',
+  right: 'wb-text-right',
 };
 
-export function TextBlock({ block, children }: BlockComponentProps) {
-  const { title, content, level = 'body', align = 'left' } =
-    block.props as unknown as TextBlockProps;
-
-  const HeadingTag = level !== 'body' ? level : 'p';
+export function TextBlock({ block }: BlockComponentProps) {
+  const { title = '', content = '', level = 'body', align = 'left' } = block.props as {
+    title?: string;
+    content?: string;
+    level?: string;
+    align?: string;
+  };
 
   return (
-    <div style={{ padding: '8px 0', ...alignStyles[align] }}>
-      {title ? (
-        <HeadingTag style={headingStyles[level] ?? headingStyles.body}>
+    <div className={`wb-block-text ${ALIGN_CLASSES[align] ?? ''}`}>
+      {title && (
+        <h3 className={`wb-block-text__title ${LEVEL_CLASSES[level] ?? ''} wb-mb-2`}>
           {title}
-        </HeadingTag>
-      ) : null}
-
-      {content ? (
-        <div style={{ fontSize: '0.875rem', lineHeight: 1.6, color: 'var(--text-secondary, #6b7280)', whiteSpace: 'pre-wrap' }}>
+        </h3>
+      )}
+      {content && (
+        <div
+          className="wb-block-text__content wb-text-secondary"
+          style={{ whiteSpace: 'pre-wrap' }}
+        >
           {content}
         </div>
-      ) : null}
-
-      {children}
+      )}
     </div>
   );
 }

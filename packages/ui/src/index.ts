@@ -15,11 +15,12 @@ export type {
   BlockContext,
   BlockDefinition,
   BlockComponentProps,
+  BlockCategory,
 } from '@wwwuabot/shared/types/page-config';
 
 export { ALL_ZONES, createEmptyPageConfig, parsePageConfig, generateBlockId } from '@wwwuabot/shared/types/page-config';
 
-export { BLOCK_DEFINITIONS, getBlockDefinition, getBlocksForZone, getDefaultProps } from '@wwwuabot/shared/constants/block-definitions';
+export { BLOCK_DEFINITIONS, getBlockDefinition, getBlocksForZone, getBlocksByCategory, getAllCategories, getDefaultProps } from '@wwwuabot/shared/constants/block-definitions';
 
 // --- Реєстр ---
 export {
