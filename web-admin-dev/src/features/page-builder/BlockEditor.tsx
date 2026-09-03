@@ -167,11 +167,14 @@ export function BlockEditor({
     >
       {/* Заголовок блоку */}
       <div
+        className="pb-be-header"
         style={{
           display: "flex",
           alignItems: "center",
           justifyContent: "space-between",
           marginBottom: 8,
+          flexWrap: "wrap",
+          gap: 6,
         }}
       >
         <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
@@ -208,9 +211,10 @@ export function BlockEditor({
             </span>
           )}
         </div>
-        <div style={{ display: "flex", gap: 4 }}>
+        <div className="pb-be-actions" style={{ display: "flex", gap: 4, flexShrink: 0 }}>
           <button
             onClick={() => setShowConditions(!showConditions)}
+            className="pb-be-cond-btn"
             style={{
               fontSize: 11,
               padding: "2px 8px",
@@ -219,13 +223,14 @@ export function BlockEditor({
               background: showConditions ? "var(--accent, #6366f1)" : "transparent",
               color: showConditions ? "#fff" : "var(--text-secondary)",
               cursor: "pointer",
+              whiteSpace: "nowrap",
             }}
             title="Умови показу"
           >
             {ico("eye", 12)} Умови
           </button>
           <button
-            className="wb-btn wb-btn-danger"
+            className="wb-btn wb-btn-danger pb-be-del-btn"
             onClick={() => onRemove(block.id)}
             style={{ fontSize: 12, padding: "2px 8px" }}
             title="Видалити блок"
@@ -391,7 +396,7 @@ export function BlockEditor({
       )}
 
       {/* Props */}
-      <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+      <div className="pb-be-props" style={{ display: "flex", flexDirection: "column", gap: 6 }}>
         {renderPropsFields(block.props, definition?.schema, handlePropChange)}
       </div>
 
@@ -399,20 +404,23 @@ export function BlockEditor({
       {definition?.type !== "divider" && (
         <div style={{ marginTop: 12 }}>
           <div
+            className="pb-be-children-header"
             style={{
               display: "flex",
               alignItems: "center",
               justifyContent: "space-between",
               marginBottom: 6,
+              flexWrap: "wrap",
+              gap: 6,
             }}
           >
             <span style={{ fontSize: 12, fontWeight: 500 }}>
               Вкладені блоки ({block.children?.length ?? 0})
             </span>
             <button
-              className="wb-btn wb-btn-secondary"
+              className="wb-btn wb-btn-secondary pb-be-add-btn"
               onClick={handleAddChild}
-              style={{ fontSize: 11, padding: "2px 8px" }}
+              style={{ fontSize: 11, padding: "4px 10px", whiteSpace: "nowrap" }}
             >
               + Додати
             </button>
@@ -472,12 +480,13 @@ function renderPropsFields(
 ): React.ReactNode {
   if (!schema || typeof schema !== "object" || !schema.properties) {
     return Object.entries(props).map(([key, value]) => (
-      <div key={key} style={{ display: "flex", gap: 8, alignItems: "center" }}>
-        <label style={{ fontSize: 12, minWidth: 100, color: "var(--text-secondary)" }}>
+      <div key={key} className="pb-be-field" style={{ display: "flex", gap: 8, alignItems: "center" }}>
+        <label className="pb-be-field-label" style={{ fontSize: 12, minWidth: 100, color: "var(--text-secondary)" }}>
           {key}
         </label>
         <input
           type="text"
+          className="pb-be-field-input"
           value={typeof value === "string" ? value : JSON.stringify(value ?? "")}
           onChange={(e) => {
             const val = e.target.value;
@@ -508,8 +517,8 @@ function renderPropsFields(
 
     if (type === "boolean") {
       return (
-        <div key={key} style={{ display: "flex", gap: 8, alignItems: "center" }}>
-          <label style={{ fontSize: 12, minWidth: 100, color: "var(--text-secondary)" }}>
+        <div key={key} className="pb-be-field" style={{ display: "flex", gap: 8, alignItems: "center" }}>
+          <label className="pb-be-field-label" style={{ fontSize: 12, minWidth: 100, color: "var(--text-secondary)" }}>
             {title}
           </label>
           <input
@@ -523,11 +532,12 @@ function renderPropsFields(
 
     if (type === "string" && Array.isArray(propSchema.enum)) {
       return (
-        <div key={key} style={{ display: "flex", gap: 8, alignItems: "center" }}>
-          <label style={{ fontSize: 12, minWidth: 100, color: "var(--text-secondary)" }}>
+        <div key={key} className="pb-be-field" style={{ display: "flex", gap: 8, alignItems: "center" }}>
+          <label className="pb-be-field-label" style={{ fontSize: 12, minWidth: 100, color: "var(--text-secondary)" }}>
             {title}
           </label>
           <select
+            className="pb-be-field-input"
             value={String(currentValue ?? propSchema.default ?? "")}
             onChange={(e) => onChange(key, e.target.value)}
             style={{
@@ -580,12 +590,13 @@ function renderPropsFields(
     }
 
     return (
-      <div key={key} style={{ display: "flex", gap: 8, alignItems: "center" }}>
-        <label style={{ fontSize: 12, minWidth: 100, color: "var(--text-secondary)" }}>
+      <div key={key} className="pb-be-field" style={{ display: "flex", gap: 8, alignItems: "center" }}>
+        <label className="pb-be-field-label" style={{ fontSize: 12, minWidth: 100, color: "var(--text-secondary)" }}>
           {title}
         </label>
         <input
           type="text"
+          className="pb-be-field-input"
           value={
             typeof currentValue === "string"
               ? currentValue
