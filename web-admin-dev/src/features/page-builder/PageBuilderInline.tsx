@@ -68,11 +68,15 @@ function isPageEmpty(config: PageConfig): boolean {
  */
 function getActiveZones(config: PageConfig): BlockZone[] {
   // Якщо є явний список visibleZones — використовуємо його
-  if (Array.isArray(config.visibleZones) && config.visibleZones.length > 0) {
+  if (Array.isArray(config.visibleZones)) {
     return config.visibleZones.filter((z): z is BlockZone => ALL_ZONES.includes(z as BlockZone));
   }
-  // Fallback: main завжди активна
-  return ["main"];
+  // Fallback для старих сторінок без visibleZones: якщо є блоки — показуємо main
+  if (config.zones.main && config.zones.main.length > 0) {
+    return ["main"];
+  }
+  // Порожня нова сторінка — нічого не показуємо
+  return [];
 }
 
 // ─── Props ──────────────────────────────────────────────────────────

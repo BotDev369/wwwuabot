@@ -79,13 +79,15 @@ interface Props {
   table: ScenarioTable;
   onClose: () => void;
   onSaved: () => void;
+  /** Початкова підвкладка (наприклад, 'constructor' для відкриття конструктора одразу) */
+  initialSubTab?: SubTab;
 }
 
 // ─── Main Component ───────────────────────────────────────────────
 
-export function ScenarioCardModal({ codeword, table, onClose, onSaved }: Props) {
+export function ScenarioCardModal({ codeword, table, onClose, onSaved, initialSubTab }: Props) {
   const [mainTab, setMainTab] = useState<MainTab>("web");
-  const [subTab, setSubTab] = useState<SubTab>("preview");
+  const [subTab, setSubTab] = useState<SubTab>(initialSubTab ?? "preview");
   const [allFields, setAllFields] = useState<Record<string, unknown>>({});
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);

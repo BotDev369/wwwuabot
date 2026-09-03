@@ -1,9 +1,9 @@
 import { useEffect, useCallback, useState } from "react";
-import { useNavigate } from "react-router-dom";
 import { useScenariosStore } from "../../features/scenarios/store";
 import { saveScenarioFields } from "../../shared/api/scenarios.api";
 import { PageTopbar } from "../../layout/PageTopbar";
 import { ScenariosV2Table } from "./ScenariosV2Table";
+import { ScenarioCardModal } from "../scenarios/ScenarioCardModal";
 
 /**
  * Сторінка «Сценарії — портал».
@@ -14,8 +14,8 @@ import { ScenariosV2Table } from "./ScenariosV2Table";
  */
 export function ScenariosV2Page() {
   const { items, status, errorMsg, load, setTable } = useScenariosStore();
-  const navigate = useNavigate();
   const [creating, setCreating] = useState(false);
+  const [openedCodeword, setOpenedCodeword] = useState<string | null>(null);
 
   useEffect(() => {
     setTable("portal");
@@ -34,15 +34,17 @@ export function ScenariosV2Page() {
         page_data: JSON.stringify({
           version: 1,
           zones: { sidebar: [], header: [], main: [], footer: [] },
+          visibleZones: [],
         }),
       });
-      // Відкриваємо конструктор сторінки одразу
-      navigate(`/page-builder/${cw}`);
+      // Відкриваємо картку сценарію з конструктором одразу
+      setOpenedCodeword(cw);
     } catch (e) {
       alert(`Помилка створення: ${(e as Error).message}`);
+    } finally {
       setCreating(false);
     }
-  }, [navigate]);
+  }, []);
 
   return (
     <>
@@ -80,6 +82,17 @@ export function ScenariosV2Page() {
           <ScenariosV2Table />
         )}
       </div>
+
+      {/* Модалка картки сценарію — відкривається одразу після створення */}
+      {openedCodeword && (
+        <ScenarioCardModal
+          codeword={openedCodeword}
+          table="portal"
+          initialSubTab="constructor"
+          onClose={() => setOpenedCodeword(null)}
+          onSaved={() => void load(true)}
+        />
+      )}
     </>
   );
 }
