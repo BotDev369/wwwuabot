@@ -2971,6 +2971,35 @@ body {
   }
 }
 
+
+/* ═══ JSON textarea — ensure visibility on all themes ══════════════════════════ */
+.scn-modal textarea.wb-textarea,
+.scn-modal textarea[style*="monospace"] {
+  background: var(--bg-primary, #ffffff) !important;
+  color: var(--text-primary, #1a1a2e) !important;
+  border: 1px solid var(--border) !important;
+  caret-color: var(--text-primary, #1a1a2e) !important;
+}
+
+/* Ensure modal body doesn't push footer off-screen */
+.scn-modal .wb-modal-body {
+  min-height: 0 !important;
+  flex: 1 1 0% !important;
+  overflow-y: auto !important;
+}
+
+/* Mobile: full height modal */
+@media (max-width: 640px) {
+  .scn-modal {
+    height: 100vh !important;
+    max-height: 100vh !important;
+  }
+  
+  .scn-modal .wb-modal-footer {
+    flex-shrink: 0;
+  }
+}
+
 /* ═══ Fullscreen Page Builder overlay ═════════════════════════════════════════ */
 .scn-fullscreen-builder {
   animation: scn-fade-in 0.15s ease-out;

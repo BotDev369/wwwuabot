@@ -257,7 +257,8 @@
   box-shadow: var(--shadow-xl);
   width: 100%;
   max-width: 560px;
-  max-height: 85vh;
+  height: 90vh;
+  max-height: 90vh;
   display: flex;
   flex-direction: column;
   overflow: hidden;
@@ -385,7 +386,8 @@
   padding: var(--sp-5);
   overflow-y: auto;
   overflow-x: hidden;
-  flex: 1;
+  flex: 1 1 0%;
+  min-height: 0;
   min-width: 0;
 }
 

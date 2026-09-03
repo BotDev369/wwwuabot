@@ -237,7 +237,7 @@ export function ScenarioCardModal({ codeword, table, onClose, onSaved, initialSu
       <div
         className="wb-modal scn-modal"
         onClick={(e) => e.stopPropagation()}
-        style={{ maxWidth: 900, width: "100%", height: "90vh", display: "flex", flexDirection: "column" }}
+        style={{ maxWidth: 900, width: "100%", height: "min(90vh, 100dvh)", display: "flex", flexDirection: "column", overflow: "hidden" }}
       >
         {/* Header */}
         <div className="wb-modal-header">
@@ -1114,9 +1114,9 @@ function JsonEditor({
         onChange={(e) => onChange(e.target.value)}
         spellCheck={false}
         style={{
-          flex: 1,
           width: "100%",
-          minHeight: 200,
+          height: 250,
+          minHeight: 150,
           padding: "12px 16px",
           border: "1px solid var(--border)",
           borderRadius: 6,
@@ -1125,8 +1125,9 @@ function JsonEditor({
           fontFamily: "monospace",
           fontSize: 12,
           lineHeight: 1.5,
-          background: "var(--bg-primary, #fff)",
+          background: "var(--bg-primary, #ffffff)",
           color: "var(--text-primary, #1a1a2e)",
+          caretColor: "var(--text-primary, #1a1a2e)",
           tabSize: 2,
         }}
       />
