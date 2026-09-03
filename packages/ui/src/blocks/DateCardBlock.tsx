@@ -84,10 +84,10 @@ export function DateCardBlock({ block, context }: BlockComponentProps) {
   if (layout === 'minimal') {
     return (
       <div className="wb-block-date-card" style={{ display: 'flex', alignItems: 'center', gap: 'var(--sp-3)' }}>
-        <span style={{ fontSize: 'var(--text-3xl)' }}>{zodiac.symbol}</span>
+        {showZodiac && <span style={{ fontSize: 'var(--text-3xl)' }}>{zodiac.symbol}</span>}
         <div>
-          <div className="wb-font-semibold">{zodiac.name}</div>
-          <div className="wb-text-xs wb-text-secondary">{zodiac.dates}</div>
+          {showZodiac && <div className="wb-font-semibold">{zodiac.name}</div>}
+          {showZodiac && <div className="wb-text-xs wb-text-secondary">{zodiac.dates}</div>}
         </div>
       </div>
     );
@@ -128,13 +128,15 @@ export function DateCardBlock({ block, context }: BlockComponentProps) {
         textAlign: 'center',
       }}
     >
-      <div style={{ fontSize: '48px', lineHeight: 1 }}>{zodiac.symbol}</div>
+      {showZodiac && <div style={{ fontSize: '48px', lineHeight: 1 }}>{zodiac.symbol}</div>}
 
-      <div style={{ fontWeight: 'var(--weight-bold)', fontSize: 'var(--text-lg)' }}>
-        {zodiac.name}
-      </div>
+      {showZodiac && (
+        <div style={{ fontWeight: 'var(--weight-bold)', fontSize: 'var(--text-lg)' }}>
+          {zodiac.name}
+        </div>
+      )}
 
-      <div className="wb-text-sm wb-text-secondary">{zodiac.dates}</div>
+      {showZodiac && <div className="wb-text-sm wb-text-secondary">{zodiac.dates}</div>}
 
       <div className="wb-text-sm" style={{ color: 'var(--text-muted)' }}>
         {date.toLocaleDateString('uk-UA', { day: 'numeric', month: 'long', year: 'numeric' })}
