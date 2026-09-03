@@ -152,7 +152,7 @@ export function UserEditModal({ userId, onClose, onSaved }: Props) {
                     <select
                       value={role}
                       onChange={(e) => setRole(e.target.value)}
-                      className="block-input"
+                      className="wb-input"
                       style={{ flex: 1 }}
                     >
                       {ROLES.map((r) => (
@@ -167,7 +167,7 @@ export function UserEditModal({ userId, onClose, onSaved }: Props) {
                     <select
                       value={tariff}
                       onChange={(e) => setTariff(e.target.value)}
-                      className="block-input"
+                      className="wb-input"
                       style={{ flex: 1 }}
                     >
                       {TARIFFS.map((t) => (
@@ -182,7 +182,7 @@ export function UserEditModal({ userId, onClose, onSaved }: Props) {
                     <select
                       value={status}
                       onChange={(e) => setStatus(e.target.value)}
-                      className="block-input"
+                      className="wb-input"
                       style={{ flex: 1 }}
                     >
                       {STATUSES.map((s) => (
@@ -200,7 +200,7 @@ export function UserEditModal({ userId, onClose, onSaved }: Props) {
                       max={100}
                       value={discount}
                       onChange={(e) => setDiscount(Number(e.target.value))}
-                      className="block-input"
+                      className="wb-input"
                       style={{ flex: 1 }}
                     />
                   </div>
@@ -259,7 +259,7 @@ export function UserEditModal({ userId, onClose, onSaved }: Props) {
                       <div key={key}>
                         <label style={{ display: "block", fontSize: 12, fontWeight: 600, marginBottom: 2, color: "var(--text-secondary)" }}>{key}</label>
                         <textarea
-                          className="block-textarea"
+                          className="wb-textarea"
                           rows={key.includes("data") || key.includes("json") || key.includes("topics") || key.includes("galyashop") || key.includes("ttt") ? 4 : 1}
                           value={val}
                           onChange={(e) => setExtraFields((prev) => ({ ...prev, [key]: e.target.value }))}

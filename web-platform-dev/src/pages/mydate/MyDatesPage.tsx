@@ -170,7 +170,7 @@ function DateModal({
               type="date"
               value={formDate}
               onChange={(e) => setFormDate(e.target.value)}
-              className="date-input"
+              className="wb-input"
               disabled={isReadOnly}
             />
           </div>
@@ -207,7 +207,7 @@ function DateModal({
               value={formName}
               onChange={(e) => setFormName(e.target.value)}
               placeholder="напр. Олексій, Новий рік..."
-              className="text-input"
+              className="wb-input"
               disabled={isReadOnly}
             />
           </div>
@@ -239,7 +239,7 @@ function DateModal({
                     onBlur={() => setTimeout(() => setShowTagSuggestions(false), 150)}
                     onKeyDown={handleTagKeyDown}
                     placeholder={formTags.length === 0 ? "Додайте теги..." : ""}
-                    className="tag-input"
+                    className="wb-input"
                   />
                   {showTagSuggestions && tagSuggestions.length > 0 && (
                     <div className="tag-suggestions">
@@ -269,7 +269,7 @@ function DateModal({
               value={formNotes}
               onChange={(e) => setFormNotes(e.target.value)}
               placeholder="Додаткова інформація..."
-              className="text-input textarea"
+              className="wb-textarea"
               rows={3}
               disabled={isReadOnly}
             />
@@ -670,7 +670,7 @@ export function MyDatesPage() {
                     type="date"
                     value={formDate}
                     onChange={(e) => setFormDate(e.target.value)}
-                    className="date-input"
+                    className="wb-input"
                   />
                 </div>
                 <div className="form-field">
@@ -703,7 +703,7 @@ export function MyDatesPage() {
                     value={formName}
                     onChange={(e) => setFormName(e.target.value)}
                     placeholder="напр. Олексій..."
-                    className="text-input"
+                    className="wb-input"
                   />
                 </div>
                 <div className="form-field full-width">
@@ -734,7 +734,7 @@ export function MyDatesPage() {
                         onBlur={() => setTimeout(() => setShowTagSuggestions(false), 150)}
                         onKeyDown={handleFormTagKeyDown}
                         placeholder={formTags.length === 0 ? "Додайте теги..." : ""}
-                        className="tag-input"
+                        className="wb-input"
                       />
                       {showTagSuggestions && formTagSuggestions.length > 0 && (
                         <div className="tag-suggestions">
@@ -762,7 +762,7 @@ export function MyDatesPage() {
                     value={formNotes}
                     onChange={(e) => setFormNotes(e.target.value)}
                     placeholder="Додаткова інформація..."
-                    className="text-input textarea"
+                    className="wb-textarea"
                     rows={2}
                   />
                 </div>
@@ -790,7 +790,7 @@ export function MyDatesPage() {
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 placeholder="Пошук..."
-                className="filter-search"
+                className="wb-input"
               />
               {Object.entries(columnFilters)
                 .filter(([, v]) => v.length > 0)
@@ -1047,7 +1047,7 @@ export function MyDatesPage() {
               {headerMenu.mode === "filter" && (
                 <div className="header-modal-body">
                   <input
-                    className="header-modal-filter-input"
+                    className="wb-input"
                     type="text"
                     placeholder="Пошук у списках..."
                     value={headerFilterText}

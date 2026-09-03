@@ -123,9 +123,9 @@ export function RichTextField({
   return (
     <div className="rt-field">
       {multiline ? (
-        <textarea {...fieldProps} className="block-textarea" rows={3} />
+        <textarea {...fieldProps} className="wb-textarea" rows={3} />
       ) : (
-        <input {...fieldProps} className="block-input" />
+        <input {...fieldProps} className="wb-input" />
       )}
       <div className="rt-toolbar">
         {TOKENS.map((t) => (

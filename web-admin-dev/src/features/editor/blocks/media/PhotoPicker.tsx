@@ -57,7 +57,7 @@ export function PhotoPicker({ media, config, onChange }: Props) {
       {tab === "cloudinary" ? (
         <div className="photo-fields">
           <textarea
-            className="block-textarea"
+            className="wb-textarea"
             rows={3}
             value={text}
             placeholder={"Текст банера...\n(кожен рядок — з нового рядка)"}
@@ -66,14 +66,14 @@ export function PhotoPicker({ media, config, onChange }: Props) {
           <div className="photo-row">
             <label>Розмір</label>
             <input
-              className="block-input"
+              className="wb-input"
               type="number"
               value={width}
               onChange={(e) => setWidth(parseInt(e.target.value, 10) || 0)}
             />
             <span>×</span>
             <input
-              className="block-input"
+              className="wb-input"
               type="number"
               value={height}
               onChange={(e) => setHeight(parseInt(e.target.value, 10) || 0)}
@@ -88,7 +88,7 @@ export function PhotoPicker({ media, config, onChange }: Props) {
             />
             <label>Вирівнювання</label>
             <select
-              className="block-select"
+              className="wb-select"
               value={align}
               onChange={(e) => setAlign(e.target.value as "left" | "center" | "right")}
             >
@@ -104,7 +104,7 @@ export function PhotoPicker({ media, config, onChange }: Props) {
       ) : (
         <div className="photo-fields">
           <input
-            className="block-input"
+            className="wb-input"
             value={url}
             placeholder="https://… (публічний URL з R2 або інший)"
             onChange={(e) => handleUrlChange(e.target.value)}

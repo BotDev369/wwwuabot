@@ -55,7 +55,7 @@ export function CompareSetupPage() {
             type="date"
             value={input}
             onChange={(e) => setInput(e.target.value)}
-            className="date-input"
+            className="wb-input"
           />
           <button className="wb-btn wb-btn-inline" onClick={addDate} disabled={!input}>
             Додати дату

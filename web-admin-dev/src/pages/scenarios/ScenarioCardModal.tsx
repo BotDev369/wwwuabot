@@ -405,7 +405,7 @@ function BotConstructor({
           <label className="block-label">
             Caption Top
             <textarea
-              className="block-textarea"
+              className="wb-textarea"
               rows={2}
               value={String(fields.caption_top ?? "")}
               onChange={(e) => updateField("caption_top", e.target.value)}
@@ -415,7 +415,7 @@ function BotConstructor({
           <label className="block-label">
             Caption Mid
             <textarea
-              className="block-textarea"
+              className="wb-textarea"
               rows={2}
               value={String(fields.caption_mid ?? "")}
               onChange={(e) => updateField("caption_mid", e.target.value)}
@@ -425,7 +425,7 @@ function BotConstructor({
           <label className="block-label">
             Caption Bot
             <textarea
-              className="block-textarea"
+              className="wb-textarea"
               rows={2}
               value={String(fields.caption_bot ?? "")}
               onChange={(e) => updateField("caption_bot", e.target.value)}
@@ -444,7 +444,7 @@ function BotConstructor({
           <label className="block-label">
             URL фото
             <input
-              className="block-input"
+              className="wb-input"
               value={String(fields.photo_url ?? "")}
               onChange={(e) => updateField("photo_url", e.target.value)}
               placeholder="https://..."
@@ -710,7 +710,7 @@ function RichDataEditor({
       ) : (
         <>
           <textarea
-            className="block-textarea"
+            className="wb-textarea"
             rows={12}
             value={jsonText}
             onChange={(e) => {

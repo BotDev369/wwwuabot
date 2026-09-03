@@ -31,13 +31,13 @@ function DateInputBlock({
 
   return (
     <div className="date-input-block">
-      <label className="date-input-label">{label}</label>
+      <label className="wb-label">{label}</label>
       <div className="date-input-row">
         <input
           type="date"
           value={value}
           onChange={(e) => setValue(e.target.value)}
-          className="date-input"
+          className="wb-input"
         />
         <button className="wb-btn wb-btn-inline" onClick={handleSubmit}>
           {buttonLabel}

@@ -64,7 +64,7 @@ export function ListEditor({ block, idx, total }: Props) {
         <span className="block-type-badge">•</span>
         <span className="block-type-label">Список</span>
         <select
-          className="block-select"
+          className="wb-select"
           value={style}
           title="Тип списку"
           onChange={(e) => updateBlock(block.id, { style: e.target.value as ListStyle })}

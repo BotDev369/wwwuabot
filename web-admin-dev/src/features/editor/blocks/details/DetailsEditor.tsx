@@ -98,7 +98,7 @@ export function DetailsEditor({ block, idx, total }: Props) {
         </div>
         <div className="details-add">
           <select
-            className="block-select"
+            className="wb-select"
             value={pickType}
             onChange={(e) => setPickType(e.target.value)}
           >

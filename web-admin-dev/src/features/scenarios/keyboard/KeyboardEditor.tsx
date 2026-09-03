@@ -77,13 +77,13 @@ export function KeyboardEditor({ rows, onChange }: Props) {
             {row.buttons.map((b) => (
               <div className="kb-btn" key={b.id}>
                 <input
-                  className="block-input"
+                  className="wb-input"
                   placeholder="Текст кнопки"
                   value={b.text}
                   onChange={(e) => updateButton(row.id, b.id, { text: e.target.value })}
                 />
                 <select
-                  className="block-select"
+                  className="wb-select"
                   value={b.kind}
                   onChange={(e) =>
                     updateButton(row.id, b.id, {
@@ -98,7 +98,7 @@ export function KeyboardEditor({ rows, onChange }: Props) {
                 </select>
                 {b.kind !== "none" && (
                   <input
-                    className="block-input"
+                    className="wb-input"
                     placeholder={
                       b.kind === "url"
                         ? "https://…"

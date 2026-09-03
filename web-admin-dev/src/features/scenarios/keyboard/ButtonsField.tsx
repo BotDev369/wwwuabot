@@ -82,7 +82,7 @@ export function ButtonsField({ value, onChange }: Props) {
       ) : (
         <>
           <textarea
-            className="block-textarea"
+            className="wb-textarea"
             rows={6}
             value={jsonText}
             onChange={(e) => handleJsonChange(e.target.value)}

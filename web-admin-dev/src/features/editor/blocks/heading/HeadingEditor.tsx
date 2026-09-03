@@ -23,7 +23,7 @@ export function HeadingEditor({ block, idx, total }: Props) {
       <div className="wb-card-header">
         <span className="block-type-badge">H</span>
         <select
-          className="block-select"
+          className="wb-select"
           value={block.level}
           onChange={(e) => updateBlock(block.id, { level: e.target.value })}
         >
