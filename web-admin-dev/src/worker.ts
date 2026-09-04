@@ -36,6 +36,17 @@ async function getKey(secret: string): Promise<CryptoKey> {
   );
 }
 
+/** Парсить hex-рядок у байти; повертає null, якщо рядок не hex. */
+function hexToBytes(hex: string): Uint8Array | null {
+  if (hex.length === 0 || hex.length % 2 !== 0) return null;
+  if (!/^[0-9a-fA-F]+$/.test(hex)) return null;
+  const bytes = new Uint8Array(hex.length / 2);
+  for (let i = 0; i < bytes.length; i++) {
+    bytes[i] = parseInt(hex.slice(i * 2, i * 2 + 2), 16);
+  }
+  return bytes;
+}
+
 async function verifyToken(
   token: string,
   secret: string,
@@ -43,12 +54,10 @@ async function verifyToken(
   const lastDot = token.lastIndexOf(".");
   if (lastDot === -1) return false;
   const payload = token.slice(0, lastDot);
-  const sigHex = token.slice(lastDot + 1);
+  const sigBytes = hexToBytes(token.slice(lastDot + 1));
+  if (!sigBytes) return false;
   const key = await getKey(secret);
   const enc = new TextEncoder();
-  const sigBytes = new Uint8Array(
-    sigHex.match(/.{2}/g)!.map((h) => parseInt(h, 16)),
-  );
   const valid = await crypto.subtle.verify(
     "HMAC",
     key,
@@ -58,7 +67,7 @@ async function verifyToken(
   if (!valid) return false;
   const [, expiresStr] = payload.split(":");
   const expires = parseInt(expiresStr, 10);
-  if (Date.now() > expires) return false;
+  if (!Number.isFinite(expires) || Date.now() > expires) return false;
   return true;
 }
 
