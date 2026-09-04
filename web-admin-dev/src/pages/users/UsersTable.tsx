@@ -70,8 +70,8 @@ export function UsersTable({ onMessage }: Props) {
       });
     }
     list = [...list].sort((a, b) => {
-      let va: string | number = "";
-      let vb: string | number = "";
+      let va: string | number;
+      let vb: string | number;
       if (sortField === "first_name") {
         va = formatName(a);
         vb = formatName(b);

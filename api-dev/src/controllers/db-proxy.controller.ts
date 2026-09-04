@@ -39,7 +39,12 @@ async function notifyBlockChange(
       photoUrl = r.photo_url || "";
       richMessage = r.rich_message === "true" || r.rich_message === "1";
       if (r.rich_data && r.rich_data.trim()) {
-        try { const p = JSON.parse(r.rich_data); if (Array.isArray(p)) richData = p; } catch {}
+        try {
+          const p = JSON.parse(r.rich_data);
+          if (Array.isArray(p)) richData = p;
+        } catch {
+          // Биті rich_data — надсилаємо звичайний текст
+        }
       }
     }
   } catch {
@@ -52,7 +57,9 @@ async function notifyBlockChange(
       await env.DB.prepare(`UPDATE users SET active_scenario = NULL WHERE user_id = ?`)
         .bind(userId)
         .run();
-    } catch {}
+    } catch {
+      // Скидання сценарію не критичне — повідомлення все одно надсилаємо
+    }
   }
 
   // Надсилаємо повідомлення

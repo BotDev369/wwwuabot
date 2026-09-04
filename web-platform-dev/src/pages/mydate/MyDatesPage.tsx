@@ -70,7 +70,9 @@ export function MyDatesPage() {
     setFormOpen(next);
     try {
       localStorage.setItem('mydates_form_open', String(next));
-    } catch {}
+    } catch {
+      // localStorage недоступний (private mode) — стан просто не зберігається
+    }
   }, [formOpen]);
 
   const handleAccordionSubmit = useCallback(async (data: Omit<MyDate, 'id' | 'created_at' | 'user_id' | 'updated_at'>) => {
@@ -78,7 +80,9 @@ export function MyDatesPage() {
     setFormOpen(false);
     try {
       localStorage.setItem('mydates_form_open', 'false');
-    } catch {}
+    } catch {
+      // localStorage недоступний (private mode) — стан просто не зберігається
+    }
     await hook.refreshDates();
   }, [hook]);
 

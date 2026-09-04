@@ -89,12 +89,16 @@ preMiddleware.use(async (ctx, next) => {
   if (ctx.message?.message_id && ctx.chat) {
     try {
       await ctx.api.deleteMessage(ctx.chat.id, ctx.message.message_id);
-    } catch {}
+    } catch {
+      // Повідомлення вже видалене або застаре для видалення
+    }
   }
   if (ctx.callbackQuery?.message?.message_id && ctx.chat) {
     try {
       await ctx.api.deleteMessage(ctx.chat.id, ctx.callbackQuery.message.message_id);
-    } catch {}
+    } catch {
+      // Повідомлення вже видалене або застаре для видалення
+    }
   }
 
   log("SEC:blocked", "blocked user, message deleted", { user_id: ctx.user?.user_id });
