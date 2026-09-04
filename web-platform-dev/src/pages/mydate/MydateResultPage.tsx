@@ -81,11 +81,6 @@ export function MydateResultPage() {
   const [systems, setSystems] = useState<SystemCard[] | null>(null);
   const [analysis, setAnalysis] = useState<Record<string, SystemResult>>({});
 
-  // If URL contains +, it's a comparison
-  if (date && date.includes("+")) {
-    return <CompareTablePage />;
-  }
-
   useEffect(() => {
     if (!date || !isValidDate(date)) return;
     setScenarioName("MyDate");
@@ -93,6 +88,11 @@ export function MydateResultPage() {
     fetchSystems().then((sys) => setSystems(sys));
     fetchAnalysis(date).then((a) => setAnalysis(a));
   }, [date, setScenarioName]);
+
+  // If URL contains +, it's a comparison
+  if (date && date.includes("+")) {
+    return <CompareTablePage />;
+  }
 
   if (!date || !isValidDate(date)) {
     return (
