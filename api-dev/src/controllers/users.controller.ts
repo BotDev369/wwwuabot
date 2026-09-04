@@ -14,6 +14,7 @@
  */
 
 import type { Env } from "../shared/types";
+import { withAutoMigrate } from "../shared/auto-migrate";
 
 // ── Helpers ───────────────────────────────────────────────────────
 
@@ -475,28 +476,22 @@ export async function handleUserProfile(
     return json({ error: "invalid user_id" }, 400);
   }
 
-  // Auto-migrate new columns if they don't exist yet
-  const newCols = [
-    { name: "role", type: "TEXT", def: "'user'" },
-    { name: "tariff", type: "TEXT", def: "'free'" },
-    { name: "status", type: "TEXT", def: "'active'" },
-    { name: "discount", type: "INTEGER", def: "0" },
-    { name: "permissions", type: "TEXT", def: "'[]'" },
-  ];
-  for (const col of newCols) {
-    await env.DB.prepare(
-      `ALTER TABLE users ADD COLUMN ${col.name} ${col.type} DEFAULT ${col.def}`
-    ).run().catch(() => {});
-  }
-
   try {
-    const row = await env.DB.prepare(
-      `SELECT user_id, first_name, last_name, username, language,
+    // Колонки профілю додаються лише тоді, коли запит справді впав
+    // через їх відсутність; значення за замовчуванням підставляє код нижче.
+    const row = await withAutoMigrate(
+      env.DB,
+      () =>
+        env.DB.prepare(
+          `SELECT user_id, first_name, last_name, username, language,
               role, tariff, status, discount, permissions
        FROM users WHERE user_id = ?`
-    )
-      .bind(userId)
-      .first<Record<string, unknown>>();
+        )
+          .bind(userId)
+          .first<Record<string, unknown>>(),
+      { role: "user", tariff: "free", status: "active", discount: 0, permissions: "[]" },
+      "users",
+    );
 
     if (!row) {
       return json({ error: "User not found" }, 404);
