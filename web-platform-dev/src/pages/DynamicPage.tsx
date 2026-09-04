@@ -21,6 +21,34 @@ import { registerAllBlocks } from "@wwwuabot/ui/blocks";
 // Реєструємо блоки один раз при завантаженні модуля
 registerAllBlocks();
 
+const FALLBACK_PAGE_CONFIG: PageConfig = {
+  version: 1,
+  zones: {
+    sidebar: [],
+    header: [],
+    main: [
+      {
+        id: "fallback-main",
+        type: "text",
+        order: 0,
+        props: {
+          title: "WWWUABot",
+          content: "Сторінка тимчасово недоступна. Спробуйте ще раз пізніше.",
+          level: "h1",
+          align: "center",
+        },
+      },
+    ],
+    footer: [],
+  },
+  visibleZones: ["main"],
+};
+
+interface DynamicPageProps {
+  /** Used by the root route to resolve the base platform scenario. */
+  baseCodeword?: string;
+}
+
 interface ScenarioData {
   codeword: string;
   title?: string;
@@ -31,21 +59,21 @@ interface ScenarioData {
 
 type PageStatus = "loading" | "ready" | "not-found" | "error";
 
-export function DynamicPage() {
+export function DynamicPage({ baseCodeword }: DynamicPageProps = {}) {
   const { codeword } = useParams<{ codeword: string }>();
+  const requestedCodeword = baseCodeword ?? codeword;
   const [scenario, setScenario] = useState<ScenarioData | null>(null);
   const [status, setStatus] = useState<PageStatus>("loading");
-  const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
 
   useEffect(() => {
-    if (!codeword) return;
+    if (!requestedCodeword) return;
 
     let cancelled = false;
     (async () => {
       try {
         setStatus("loading");
-        const res = await fetch(`/api/scenario/${encodeURIComponent(codeword)}`);
+        const res = await fetch(`/api/scenario/${encodeURIComponent(requestedCodeword)}`);
         if (cancelled) return;
 
         if (!res.ok) {
@@ -88,7 +116,6 @@ export function DynamicPage() {
         }
       } catch (e) {
         if (!cancelled) {
-          setErrorMsg((e as Error).message);
           setStatus("error");
         }
       }
@@ -97,7 +124,7 @@ export function DynamicPage() {
     return () => {
       cancelled = true;
     };
-  }, [codeword]);
+  }, [requestedCodeword]);
 
   // Завантаження профілю користувача (для conditional rendering)
   useEffect(() => {
@@ -129,7 +156,7 @@ export function DynamicPage() {
       photoUrl: scenario?.photo_url ?? null,
       user: userProfile ?? undefined,
     }),
-    [scenario, codeword, userProfile],
+    [scenario, requestedCodeword, userProfile],
   );
 
   // Стани
@@ -143,6 +170,10 @@ export function DynamicPage() {
   }
 
   if (status === "not-found") {
+    if (baseCodeword) {
+      return <PageRenderer config={FALLBACK_PAGE_CONFIG} context={context} className="page-layout" />;
+    }
+
     return (
       <div className="page-not-found">
         <h1>404</h1>
@@ -156,14 +187,19 @@ export function DynamicPage() {
 
   if (status === "error") {
     return (
-      <div className="page-error">
-        <h1>Помилка</h1>
-        <p>{errorMsg}</p>
-      </div>
+      <PageRenderer
+        config={FALLBACK_PAGE_CONFIG}
+        context={context}
+        className="page-layout"
+      />
     );
   }
 
   if (!scenario?.pageData) {
+    if (baseCodeword) {
+      return <PageRenderer config={FALLBACK_PAGE_CONFIG} context={context} className="page-layout" />;
+    }
+
     return (
       <div className="page-not-found">
         <h1>404</h1>
