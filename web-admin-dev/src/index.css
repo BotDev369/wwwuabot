@@ -3130,7 +3130,8 @@ body {
     width: 100% !important;
   }
 }
- ══════════════════════════════════════════ */
+
+/* ═══ BlockEditor — mobile layout details ══════════════════════════════════════ */
 @media (max-width: 640px) {
   /* Header: type dropdown + id + buttons wrap nicely */
   .pb-be-header {
