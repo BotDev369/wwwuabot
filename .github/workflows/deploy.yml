@@ -51,8 +51,19 @@ jobs:
       - run: npm install
       - run: npm audit --audit-level=critical
 
+  checks:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: npm install
+      - run: npm run lint
+      - run: npm run typecheck
+
   deploy-bot:
-    needs: [changes, audit]
+    needs: [changes, audit, checks]
     if: needs.changes.outputs.bot == 'true' || github.event.inputs.deploy_all == 'true'
     runs-on: ubuntu-latest
     steps:
@@ -67,7 +78,7 @@ jobs:
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
 
   deploy-api:
-    needs: [changes, audit]
+    needs: [changes, audit, checks]
     if: needs.changes.outputs.api == 'true' || github.event.inputs.deploy_all == 'true'
     runs-on: ubuntu-latest
     steps:
@@ -82,7 +93,7 @@ jobs:
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
 
   deploy-web:
-    needs: [changes, audit]
+    needs: [changes, audit, checks]
     if: needs.changes.outputs.web == 'true' || github.event.inputs.deploy_all == 'true'
     runs-on: ubuntu-latest
     steps:
@@ -98,7 +109,7 @@ jobs:
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
 
   deploy-web-admin:
-    needs: [changes, audit]
+    needs: [changes, audit, checks]
     if: needs.changes.outputs.web-admin == 'true' || github.event.inputs.deploy_all == 'true'
     runs-on: ubuntu-latest
     steps:

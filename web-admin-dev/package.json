@@ -7,6 +7,7 @@
     "dev": "vite",
     "local": "wrangler dev --remote",
     "build": "tsc -b && vite build",
+    "typecheck": "tsc -b",
     "deploy": "npm run build && wrangler deploy",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
