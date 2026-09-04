@@ -14,6 +14,10 @@ import type { Env } from "../shared/types";
 const COOKIE_NAME = "admin_session";
 const COOKIE_MAX_AGE = 60 * 60 * 8; // 8 годин
 
+/** Ліміт невдалих спроб входу з однієї IP за вікно LOGIN_WINDOW_SECONDS. */
+const LOGIN_MAX_ATTEMPTS = 10;
+const LOGIN_WINDOW_SECONDS = 15 * 60;
+
 // ── Helpers ───────────────────────────────────────────────────────
 
 function json(data: unknown, status = 200): Response {
@@ -111,6 +115,12 @@ export async function isAuthenticated(
 
 // ── Handlers ──────────────────────────────────────────────────────
 
+/** Кількість невдалих спроб входу з цієї IP у поточному вікні. */
+async function failedAttempts(env: Env, key: string): Promise<number> {
+  const stored = await env.CONTENT_KV.get(key);
+  return stored ? Number(stored) || 0 : 0;
+}
+
 /** POST /auth/login — створення сесії через пароль. */
 export async function handleLogin(
   request: Request,
@@ -118,6 +128,13 @@ export async function handleLogin(
 ): Promise<Response> {
   if (request.method !== "POST") {
     return json({ error: "Method not allowed" }, 405);
+  }
+
+  const ip = request.headers.get("CF-Connecting-IP") ?? "unknown";
+  const rateKey = `login-attempts:${ip}`;
+  const attempts = await failedAttempts(env, rateKey);
+  if (attempts >= LOGIN_MAX_ATTEMPTS) {
+    return json({ error: "Too many attempts, try again later" }, 429);
   }
 
   let body: { password?: string };
@@ -128,8 +145,13 @@ export async function handleLogin(
   }
 
   if (!body.password || body.password !== env.ADMIN_SECRET) {
+    await env.CONTENT_KV.put(rateKey, String(attempts + 1), {
+      expirationTtl: LOGIN_WINDOW_SECONDS,
+    });
     return json({ error: "Invalid password" }, 401);
   }
+
+  await env.CONTENT_KV.delete(rateKey);
 
   const expires = Date.now() + COOKIE_MAX_AGE * 1000;
   const payload = `admin:${expires}`;
