@@ -1,6 +1,4 @@
 import { createBrowserRouter } from "react-router-dom";
-import { AppShell } from "@/layout/AppShell";
-import { HomePage } from "@/pages/HomePage";
 import { MyDatesPage } from "@/pages/mydate/MyDatesPage";
 import { MydateResultPage } from "@/pages/mydate/MydateResultPage";
 import { CompareSetupPage } from "@/pages/mydate/CompareSetupPage";
@@ -10,17 +8,17 @@ import { DynamicPage } from "@/pages/DynamicPage";
 import { ProfilePage } from "@/pages/profile/ProfilePage";
 
 export const router = createBrowserRouter([
-  {
-    element: <AppShell />,
-    children: [
-      { index: true, element: <HomePage /> },
-      { path: "mydate/my-dates", element: <MyDatesPage /> },
-      { path: "mydate/compare/systems", element: <CompareSystemsPage /> },
-      { path: "mydate/compare", element: <CompareSetupPage /> },
-      { path: "mydate/about", element: <AboutPage /> },
-      { path: "profile", element: <ProfilePage /> },
-      { path: "mydate/:date", element: <MydateResultPage /> },
-      { path: ":codeword", element: <DynamicPage /> },
-    ],
-  },
+  // The base page is a normal platform scenario (__base__), not a hardcoded HomePage.
+  { path: "/", element: <DynamicPage baseCodeword="__base__" /> },
+
+  // Legacy prototype routes stay temporarily available while their UI is migrated to blocks.
+  { path: "mydate/my-dates", element: <MyDatesPage /> },
+  { path: "mydate/compare/systems", element: <CompareSystemsPage /> },
+  { path: "mydate/compare", element: <CompareSetupPage /> },
+  { path: "mydate/about", element: <AboutPage /> },
+  { path: "profile", element: <ProfilePage /> },
+  { path: "mydate/:date", element: <MydateResultPage /> },
+
+  // Scenario-driven pages.
+  { path: ":codeword", element: <DynamicPage /> },
 ]);
