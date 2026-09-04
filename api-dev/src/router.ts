@@ -51,6 +51,25 @@ export async function handleRequest(
     return handleHealth();
   }
 
+  // ── Admin-гейт ────────────────────────────────────────────────
+  // Все під /api/admin/, /api/portal/ і /api/bot/ вимагає валідної
+  // cookie-сесії (тієї самої, що web-admin/worker.ts перевіряє перед
+  // проксюванням). Потрібно, бо api/ має власний публічний URL і
+  // доступний напряму, в обхід web-admin.
+  if (
+    pathname.startsWith("/api/admin/") ||
+    pathname.startsWith("/api/portal/") ||
+    pathname.startsWith("/api/bot/")
+  ) {
+    const authed = await isAuthenticated(request, env);
+    if (!authed) {
+      return new Response(JSON.stringify({ error: "Unauthorized" }), {
+        status: 401,
+        headers: { "Content-Type": "application/json" },
+      });
+    }
+  }
+
   // ── Admin: Telegram webhook management (legacy) ─────────────────
   if (request.method === "GET" && pathname === "/setup-webhook") {
     return handleSetupWebhook(request, env);
@@ -121,22 +140,6 @@ export async function handleRequest(
   }
   if (pathname === "/auth/check") {
     return handleCookieAuthCheck(request, env);
-  }
-
-  // ── Admin-гейт ────────────────────────────────────────────────
-  // Все під /api/admin/ і /api/portal/ вимагає валідної cookie-сесії
-  // (тієї самої, що web-admin/worker.ts перевіряє перед проксюванням).
-  // Потрібно, бо api/ має власний публічний URL і доступний напряму,
-  // в обхід web-admin. Знайдено при аудиті 01.09.2026 (PROJECT_PLAN.md
-  // → "Нові знахідки").
-  if (pathname.startsWith("/api/admin/") || pathname.startsWith("/api/portal/")) {
-    const authed = await isAuthenticated(request, env);
-    if (!authed) {
-      return new Response(JSON.stringify({ error: "Unauthorized" }), {
-        status: 401,
-        headers: { "Content-Type": "application/json" },
-      });
-    }
   }
 
   // ── Admin: Scenarios-Admin CRUD ────────────────────────────────
