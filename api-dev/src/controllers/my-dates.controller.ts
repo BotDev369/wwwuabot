@@ -3,6 +3,7 @@ import { VALID_TYPES } from "../shared/constants";
 import { formatSqliteDatetime } from "../shared/datetime";
 import { withAutoMigrate } from "../shared/auto-migrate";
 import { apiLog } from "../shared/logger";
+import { verifyInitData } from "../shared/telegram-auth";
 
 function json(body: unknown, status = 200): Response {
   return new Response(JSON.stringify(body), {
@@ -87,17 +88,36 @@ async function saveUserDates(
     .run();
 }
 
-// ── Extract user_id from header ─────────────────────────────────────
+// ── Identify the Telegram user ──────────────────────────────────────
 
-function extractUserId(request: Request): { ok: true; userId: number } | { ok: false; response: Response } {
+/**
+ * Бере user_id з підписаного `X-Telegram-Init-Data`, якщо клієнт його
+ * надіслав і в воркері є BOT_TOKEN. Старий непідписаний
+ * `X-Telegram-User-Id` поки лишається як перехідний варіант для
+ * закешованих клієнтів Mini App.
+ */
+async function extractUserId(
+  request: Request,
+  env: Env,
+): Promise<{ ok: true; userId: number } | { ok: false; response: Response }> {
+  const initData = request.headers.get("X-Telegram-Init-Data");
+  if (initData && env.BOT_TOKEN) {
+    const userId = await verifyInitData(initData, env.BOT_TOKEN);
+    if (userId === null) {
+      return { ok: false, response: json({ ok: false, error: "Invalid initData" }, 401) };
+    }
+    return { ok: true, userId };
+  }
+
   const userIdStr = request.headers.get("X-Telegram-User-Id");
   if (!userIdStr) {
-    return { ok: false, response: json({ ok: false, error: "X-Telegram-User-Id header required" }, 401) };
+    return { ok: false, response: json({ ok: false, error: "X-Telegram-Init-Data header required" }, 401) };
   }
   const userId = parseInt(userIdStr, 10);
   if (isNaN(userId)) {
     return { ok: false, response: json({ ok: false, error: "Invalid user_id" }, 401) };
   }
+  apiLog.info("my-dates: unsigned X-Telegram-User-Id accepted", { user_id: userId });
   return { ok: true, userId };
 }
 
@@ -118,7 +138,7 @@ export async function handleMyDates(
       "users",
     );
 
-    const userResult = extractUserId(request);
+    const userResult = await extractUserId(request, env);
     if (!userResult.ok) return userResult.response;
     const { userId } = userResult;
 

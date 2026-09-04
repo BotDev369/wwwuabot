@@ -39,6 +39,17 @@ export function getTelegramUserId(): number | null {
 }
 
 /**
+ * Signed Telegram initData — the API verifies its HMAC and takes user.id
+ * from there; the plain user id header is only a transitional fallback.
+ */
+function authHeaders(userId: number): Record<string, string> {
+  const headers: Record<string, string> = { "X-Telegram-User-Id": String(userId) };
+  const initData = (window as any).Telegram?.WebApp?.initData;
+  if (initData) headers["X-Telegram-Init-Data"] = initData;
+  return headers;
+}
+
+/**
  * Fetch all dates for the current user.
  */
 export async function fetchMyDates(): Promise<MyDate[]> {
@@ -46,7 +57,7 @@ export async function fetchMyDates(): Promise<MyDate[]> {
   if (!userId) return [];
 
   const res = await fetch("/api/my-dates", {
-    headers: { "X-Telegram-User-Id": String(userId) },
+    headers: authHeaders(userId),
   });
   if (!res.ok) throw new Error(`HTTP ${res.status}`);
   const data = await res.json();
@@ -64,7 +75,7 @@ export async function saveMyDate(dateData: Partial<MyDate>): Promise<void> {
   const isCreate = !dateData.id;
   const res = await fetch("/api/my-dates", {
     method: isCreate ? "POST" : "PUT",
-    headers: { "Content-Type": "application/json", "X-Telegram-User-Id": String(userId) },
+    headers: { "Content-Type": "application/json", ...authHeaders(userId) },
     body: JSON.stringify(dateData),
   });
   const data = await res.json();
@@ -80,7 +91,7 @@ export async function deleteMyDate(id: string): Promise<void> {
 
   const res = await fetch(`/api/my-dates?id=${id}`, {
     method: "DELETE",
-    headers: { "X-Telegram-User-Id": String(userId) },
+    headers: authHeaders(userId),
   });
   const data = await res.json();
   if (!data.ok) throw new Error(data.error ?? "Помилка видалення");
@@ -95,7 +106,7 @@ export async function deleteMyDates(ids: string[]): Promise<void> {
 
   const res = await fetch(`/api/my-dates?ids=${ids.join(",")}`, {
     method: "DELETE",
-    headers: { "X-Telegram-User-Id": String(userId) },
+    headers: authHeaders(userId),
   });
   const data = await res.json();
   if (!data.ok) throw new Error(data.error ?? "Помилка видалення");
