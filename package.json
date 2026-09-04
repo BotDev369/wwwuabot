@@ -16,8 +16,9 @@
     "globals": "^17.7.0"
   },
   "scripts": {
-    "lint": "eslint .",
-    "lint:fix": "eslint . --fix",
+    "lint": "eslint . && npm run lint --workspaces --if-present",
+    "lint:fix": "eslint . --fix && npm run lint:fix --workspaces --if-present",
+    "typecheck": "npm run typecheck --workspaces --if-present",
     "format": "prettier --write .",
     "format:check": "prettier --check ."
   }
