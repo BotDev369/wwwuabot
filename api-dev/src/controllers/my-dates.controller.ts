@@ -56,7 +56,10 @@ async function readUserDates(
   db: D1Database,
   userId: number,
 ): Promise<{ dates: any[]; needsMigration: boolean }> {
-  const user = await db.prepare("SELECT * FROM users WHERE user_id = ?").bind(userId).first();
+  const user = await db
+    .prepare("SELECT my_dates FROM users WHERE user_id = ?")
+    .bind(userId)
+    .first();
   if (!user) return { dates: [], needsMigration: false };
 
   let dates: any[] = [];
