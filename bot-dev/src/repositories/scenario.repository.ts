@@ -57,6 +57,17 @@ export class ScenarioRepository extends DatabaseRepository {
       notify_template: row.notify_template,
       rich_message: richMessage,
       rich_data: richData,
+      page_data: this.parseJsonField(row.page_data),
     };
+  }
+
+  private parseJsonField(raw: string | null): Record<string, unknown> | null {
+    if (!raw || raw.trim() === "") return null;
+    try {
+      const parsed = JSON.parse(raw);
+      return typeof parsed === "object" && parsed !== null ? parsed : null;
+    } catch {
+      return null;
+    }
   }
 }

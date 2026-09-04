@@ -79,11 +79,6 @@ export function ZoneRenderer({
 
         if (!Component) {
           // Блок не зареєстрований — пропускаємо
-          if (import.meta.env.DEV) {
-            console.warn(
-              `[PageBuilder] Block type "${block.type}" is not registered. Skipping.`,
-            );
-          }
           return null;
         }
 
