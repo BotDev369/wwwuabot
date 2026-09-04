@@ -6,7 +6,7 @@
   "exports": {
     ".": "./src/index.ts",
     "./types/page-config": "./src/types/page-config.ts",
-    "./constants/block-definitions": "./src/constants/block-definitions.ts",
+    "./constants/block-definitions": "./src/constants/block-definitions/index.ts",
     "./styles/index.css": "./src/styles/index.css",
     "./styles/tokens.css": "./src/styles/tokens.css",
     "./styles/themes.css": "./src/styles/themes.css",
