@@ -11,15 +11,18 @@
   "devDependencies": {
     "@eslint/js": "^10.0.1",
     "eslint": "^10.6.0",
+    "globals": "^17.7.0",
     "prettier": "^3.5.0",
     "typescript-eslint": "^8.62.0",
-    "globals": "^17.7.0"
+    "vitest": "^3.0.7"
   },
   "scripts": {
     "lint": "eslint . && npm run lint --workspaces --if-present",
     "lint:fix": "eslint . --fix && npm run lint:fix --workspaces --if-present",
     "typecheck": "npm run typecheck --workspaces --if-present",
     "format": "prettier --write .",
-    "format:check": "prettier --check ."
+    "format:check": "prettier --check .",
+    "test": "vitest run",
+    "test:watch": "vitest"
   }
 }
