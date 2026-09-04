@@ -1,12 +1,20 @@
 # Dependencies
 node_modules/
 
+# Lockfiles in sub-packages (enforce single root package-lock.json in monorepo)
+packages/*/*lock*
+*-dev/*lock*
+*.lock
+!package-lock.json
+
 # Environment files
 .env
 .env.local
 *.env.*
 
 # Build/dist directories
+*-dev/dist/
+packages/*/dist/
 bot/dist/
 api/dist/
 web/dist/
