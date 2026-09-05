@@ -2,7 +2,7 @@ import { describe, it, expect, vi } from "vitest";
 import { UsersService } from "./users.service";
 import type { Env } from "../shared/types";
 
-function createMockEnv(overrides?: Partial<Env>): { env: Env; mockDb: ReturnType<typeof vi.fn> & { prepare: ReturnType<typeof vi.fn> } } {
+function createMockEnv(overrides?: Partial<Env>): { env: Env; mockDb: { prepare: ReturnType<typeof vi.fn> } } {
   const mockDb = {
     prepare: vi.fn(),
   };

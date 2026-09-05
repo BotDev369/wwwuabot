@@ -36,7 +36,7 @@ export async function getOrCreateTopic(
 
   // Парсимо topics з JSON
   let topics: Record<string, number> = {};
-  if (user.topics) {
+  if (typeof user.topics === "string" && user.topics) {
     try {
       topics = JSON.parse(user.topics);
     } catch (err) {

@@ -1,7 +1,7 @@
 import type { AppContext } from "../types/env";
 import { getPhoto } from "./photo";
 import { log } from "./debug";
-import type { InputRichMessage } from "grammy/types";
+import type { InputRichMessage, InlineKeyboardButton } from "grammy/types";
 
 export interface CaptionBlocks {
   top?: string;
@@ -36,12 +36,12 @@ export async function sendOrEditLiveMessage(ctx: AppContext): Promise<boolean> {
   ) {
     log("SCREEN:rich", "rendering rich message", { codeword, chat_id: chatId });
     const richMessage: InputRichMessage = {
-      blocks: ctx.screen.rich_data as InputRichMessage['blocks'],
+      blocks: ctx.screen.rich_data as unknown as InputRichMessage['blocks'],
     };
 
     try {
       const sent = await ctx.api.sendRichMessage(chatId, richMessage, {
-        reply_markup: { inline_keyboard: buttons },
+        reply_markup: { inline_keyboard: buttons as unknown as InlineKeyboardButton[][] },
       });
       log("SCREEN:rich", "send success", { new_message_id: sent.message_id });
 
@@ -68,7 +68,7 @@ export async function sendOrEditLiveMessage(ctx: AppContext): Promise<boolean> {
   try {
     const sent = await ctx.api.sendPhoto(chatId, photoUrl, {
       caption: captionText,
-      reply_markup: { inline_keyboard: buttons },
+      reply_markup: { inline_keyboard: buttons as unknown as InlineKeyboardButton[][] },
       parse_mode: "HTML",
     });
     log("SCREEN", "send success", { new_message_id: sent.message_id });

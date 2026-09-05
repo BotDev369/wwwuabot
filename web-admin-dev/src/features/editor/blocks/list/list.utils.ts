@@ -52,15 +52,18 @@ export function fromTelegram(tgBlock: TgListBlock, index: number): InternalListB
   const items: InternalListItem[] = tgItems.map((item, i) => {
     const extraKeys = Object.keys(item).filter((k) => k !== "blocks");
     const blocks = Array.isArray(item.blocks) ? item.blocks : [];
+    const firstBlock = blocks[0];
+    const isParagraphBlock =
+      typeof firstBlock === "object" &&
+      firstBlock !== null &&
+      (firstBlock as { type?: unknown }).type === "paragraph";
     const simpleOk =
       blocks.length === 1 &&
-      !!blocks[0] &&
-      typeof blocks[0] === "object" &&
-      blocks[0].type === "paragraph" &&
+      isParagraphBlock &&
       extraKeys.every((k) => SIMPLE_ALLOWED_EXTRA.includes(k));
     const id = `li_${Date.now()}_${index}_${i}`;
     return simpleOk
-      ? { id, kind: "simple", text: blocks[0].text }
+      ? { id, kind: "simple", text: (firstBlock as { text?: unknown }).text }
       : { id, kind: "complex", raw: item };
   });
   return {

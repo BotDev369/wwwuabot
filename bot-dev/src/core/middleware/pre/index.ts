@@ -35,8 +35,7 @@ preMiddleware.use(async (ctx, next) => {
   let user = await repo.getUser(ctx.from.id);
 
   if (!user) {
-    await repo.createUser({
-      user_id: ctx.from.id,
+    await repo.createUser(ctx.from.id, {
       first_name: ctx.from.first_name || "...",
       last_name: ctx.from.last_name || "...",
       username: ctx.from.username || "...",
@@ -72,7 +71,7 @@ preMiddleware.use(async (ctx, next) => {
     }
   }
 
-  ctx.user = user;
+  ctx.user = user ?? undefined;
   ctx.userDirty = ctx.userDirty || false;
 
   await next();
