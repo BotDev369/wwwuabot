@@ -1,5 +1,5 @@
 import { DatabaseRepository } from "../core/database.repository";
-import { withAutoMigrate } from "../core/database/auto-migrate";
+import { withAutoMigrate } from "@wwwuabot/shared/database/auto-migrate";
 import { log } from "../shared/utils/debug";
 
 export class SettingsRepository extends DatabaseRepository {

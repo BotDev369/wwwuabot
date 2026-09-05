@@ -1,7 +1,7 @@
 import type { Env } from "../shared/types";
 import { VALID_TYPES } from "../shared/constants";
-import { formatSqliteDatetime } from "../shared/datetime";
-import { withAutoMigrate } from "../shared/auto-migrate";
+import { formatSqliteDatetime } from "@wwwuabot/shared/utils/datetime";
+import { withAutoMigrate } from "@wwwuabot/shared/database/auto-migrate";
 import { apiLog } from "../shared/logger";
 import { verifyInitData } from "../shared/telegram-auth";
 

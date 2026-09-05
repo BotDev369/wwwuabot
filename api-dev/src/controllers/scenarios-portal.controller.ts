@@ -13,7 +13,7 @@
  */
 
 import type { Env } from "../shared/types";
-import { formatSqliteDatetime } from "../shared/datetime";
+import { formatSqliteDatetime } from "@wwwuabot/shared/utils/datetime";
 
 /** Назва таблиці для портал-сценаріїв. */
 const TABLE = "scenarios";

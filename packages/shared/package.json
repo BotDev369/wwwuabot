@@ -20,7 +20,8 @@
     "./layout/Footer": "./src/layout/Footer.tsx",
     "./stores/app.store": "./src/stores/app.store.ts",
     "./utils/datetime": "./src/utils/datetime.ts",
-    "./utils/condition-evaluator": "./src/utils/condition-evaluator.ts"
+    "./utils/condition-evaluator": "./src/utils/condition-evaluator.ts",
+    "./database/auto-migrate": "./src/database/auto-migrate.ts"
   },
   "dependencies": {
     "open-props": "^1.7.23"
@@ -31,6 +32,7 @@
   },
   "devDependencies": {
     "@types/react": "^19.0.0",
+    "@cloudflare/workers-types": "^5.20260825.1",
     "react": "^19.0.0",
     "typescript": "^6.0.0"
   },

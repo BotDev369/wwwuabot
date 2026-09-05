@@ -1,5 +1,5 @@
 import type { Env } from "../shared/types";
-import { withAutoMigrate } from "../shared/auto-migrate";
+import { withAutoMigrate } from "@wwwuabot/shared/database/auto-migrate";
 
 export interface UserProfileDto {
   id: number;

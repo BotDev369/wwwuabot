@@ -14,7 +14,7 @@
  */
 
 import type { Env } from "../shared/types";
-import { formatSqliteDatetime } from "../shared/datetime";
+import { formatSqliteDatetime } from "@wwwuabot/shared/utils/datetime";
 
 /** Назва таблиці для admin-сценаріїв. */
 const TABLE = "scenarios-admin";

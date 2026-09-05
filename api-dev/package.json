@@ -3,6 +3,9 @@
   "version": "1.0.0",
   "private": true,
   "type": "module",
+  "dependencies": {
+    "@wwwuabot/shared": "*"
+  },
   "scripts": {
     "dev": "wrangler dev",
     "typecheck": "tsc --noEmit",
