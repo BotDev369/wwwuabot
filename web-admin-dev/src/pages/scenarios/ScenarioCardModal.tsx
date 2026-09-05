@@ -5,6 +5,7 @@
  * Підвкладки:       Прев'ю (замовч.), JSON, Конструктор
  *
  * Рефакторинг: компоненти винесені в окремі файли.
+ * FIX: JSON-редактор тепер працює з десеріалізованими об'єктами для page_data/rich_data.
  */
 
 import { useEffect, useState, useCallback, useRef } from 'react';
@@ -38,6 +39,47 @@ const ico = (name: IconName, size = 16) => (
     {icons[name]}
   </span>
 );
+
+// ── JSON серіалізація/десеріалізація ──────────────────────────────
+
+/** Поля, які зберігаються як JSON-строки в БД, але редагуються як об'єкти. */
+const JSON_STRING_FIELDS = ['page_data', 'rich_data', 'buttons'];
+
+/**
+ * Десеріалізує JSON-строки у об'єкти для зручного редагування.
+ */
+function deserializeJsonFields(fields: Record<string, unknown>): Record<string, unknown> {
+  const result = { ...fields };
+  for (const key of JSON_STRING_FIELDS) {
+    const value = result[key];
+    if (typeof value === 'string' && value.trim()) {
+      try {
+        result[key] = JSON.parse(value);
+      } catch {
+        // Якщо не парситься — залишаємо як є
+      }
+    }
+  }
+  return result;
+}
+
+/**
+ * Серіалізує об'єкти у JSON-строки для збереження в БД.
+ */
+function serializeJsonFields(fields: Record<string, unknown>): Record<string, unknown> {
+  const result = { ...fields };
+  for (const key of JSON_STRING_FIELDS) {
+    const value = result[key];
+    if (value !== null && value !== undefined && typeof value === 'object') {
+      try {
+        result[key] = JSON.stringify(value);
+      } catch {
+        // Якщо не серіалізується — залишаємо як є
+      }
+    }
+  }
+  return result;
+}
 
 // Register blocks once on module load
 registerAllBlocks();
@@ -107,7 +149,7 @@ export function ScenarioCardModal({ codeword, table, onClose, onSaved, initialSu
     setAllFields((prev) => ({ ...prev, [key]: value }));
   }, []);
 
-  // ── Save ──
+  // ── Save (FIX: serialize JSON fields before sending) ──
   const handleSave = useCallback(async () => {
     setSaving(true);
     setError(null);
@@ -119,7 +161,9 @@ export function ScenarioCardModal({ codeword, table, onClose, onSaved, initialSu
         if (key === 'updated_at') continue;
         payload[key] = value;
       }
-      await updateScenarioFields(codeword, payload, table);
+      // FIX: Серіалізуємо об'єкти у строки перед відправкою
+      const serializedPayload = serializeJsonFields(payload);
+      await updateScenarioFields(codeword, serializedPayload, table);
       setSuccess(true);
       setTimeout(() => {
         onSaved();
@@ -132,10 +176,12 @@ export function ScenarioCardModal({ codeword, table, onClose, onSaved, initialSu
     }
   }, [codeword, allFields, table, onSaved, onClose]);
 
-  // ── JSON helpers ──
+  // ── JSON helpers (FIX: deserialize for display, serialize on apply) ──
   const openJsonTab = useCallback(() => {
     const tabFields = getFieldsForTab(mainTab, allFields);
-    setJsonText(JSON.stringify(tabFields, null, 2));
+    // FIX: Десеріалізуємо JSON-строки у об'єкти для зручного редагування
+    const deserializedTabFields = deserializeJsonFields(tabFields);
+    setJsonText(JSON.stringify(deserializedTabFields, null, 2));
     setJsonError(null);
     setCopied(false);
     setSubTab('json');
@@ -190,11 +236,12 @@ export function ScenarioCardModal({ codeword, table, onClose, onSaved, initialSu
     }
   }, []);
 
-  // ── When switching to JSON sub-tab, auto-populate ──
+  // ── When switching to JSON sub-tab, auto-populate (FIX: deserialize) ──
   useEffect(() => {
     if (subTab === 'json') {
       const tabFields = getFieldsForTab(mainTab, allFields);
-      setJsonText(JSON.stringify(tabFields, null, 2));
+      const deserializedTabFields = deserializeJsonFields(tabFields);
+      setJsonText(JSON.stringify(deserializedTabFields, null, 2));
       setJsonError(null);
     }
   }, [subTab, mainTab, allFields]);
@@ -327,4 +374,4 @@ export function ScenarioCardModal({ codeword, table, onClose, onSaved, initialSu
       </div>
     </div>
   );
-}
+                               }
