@@ -7,10 +7,16 @@ function createMockEnv(overrides?: Partial<Env>): { env: Env; mockDb: ReturnType
     prepare: vi.fn(),
   };
 
+  const mockKv = {
+    get: vi.fn(),
+    put: vi.fn(),
+    delete: vi.fn(),
+    list: vi.fn(),
+  };
   const env: Env = {
     DB: mockDb as unknown as D1Database,
-    ADMIN_PASSWORD: "test",
-    JWT_SECRET: "secret",
+    CONTENT_KV: mockKv as unknown as KVNamespace,
+    ADMIN_SECRET: "test-secret",
     ...overrides,
   };
 
