@@ -39,9 +39,9 @@ export function checkRateLimit(ctx: AppContext): boolean {
   // Парсимо існуючі дані
   let data: RateLimitData = { window: [0, 0], violations: [] };
   try {
-    const raw = (ctx.user as any).rate_limit_json;
+    const raw = ctx.user.rate_limit_json;
     if (raw) {
-      data = typeof raw === "string" ? JSON.parse(raw) : raw;
+      data = typeof raw === "string" ? JSON.parse(raw) : (raw as unknown as RateLimitData);
     }
   } catch {
     // Битий JSON — починаємо з нуля
@@ -60,7 +60,6 @@ export function checkRateLimit(ctx: AppContext): boolean {
   // Перевіряємо ліміт
   if (data.window[1] > LIMIT_PER_MINUTE) {
     data.violations.push(now);
-
     log("SEC:rate_limit", "EXCEEDED", {
       user_id: ctx.user.user_id,
       count: data.window[1],
@@ -69,7 +68,7 @@ export function checkRateLimit(ctx: AppContext): boolean {
     });
 
     // Записуємо назад
-    (ctx.user as any).rate_limit_json = JSON.stringify(data);
+    ctx.user.rate_limit_json = JSON.stringify(data);
     ctx.userDirty = true;
 
     // Автоблокування при систематичних порушеннях
@@ -78,7 +77,7 @@ export function checkRateLimit(ctx: AppContext): boolean {
         user_id: ctx.user.user_id,
         violations: data.violations.length,
       });
-      (ctx.user as any).is_blocked = 1;
+      ctx.user.is_blocked = 1;
       ctx.userDirty = true;
     }
 
@@ -86,7 +85,7 @@ export function checkRateLimit(ctx: AppContext): boolean {
   }
 
   // Записуємо оновлені дані
-  (ctx.user as any).rate_limit_json = JSON.stringify(data);
+  ctx.user.rate_limit_json = JSON.stringify(data);
   ctx.userDirty = true;
 
   return true; // ДОЗВОЛЕНО

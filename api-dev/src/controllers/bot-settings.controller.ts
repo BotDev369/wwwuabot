@@ -13,12 +13,12 @@ export async function handleWebhookInfo(request: Request, env: Env): Promise<Res
 
   try {
     const response = await fetch(`https://api.telegram.org/bot${env.BOT_TOKEN}/getWebhookInfo`);
-    const result = (await response.json()) as any;
+    const result: unknown = await response.json();
     return new Response(JSON.stringify(result, null, 2), {
       headers: { "Content-Type": "application/json" },
     });
   } catch (error) {
-    return new Response(JSON.stringify({ success: false, error: String(error) }), {
+    return new Response(JSON.stringify({ success: false, error: error instanceof Error ? error.message : String(error) }), {
       status: 500,
       headers: { "Content-Type": "application/json" },
     });
@@ -53,14 +53,14 @@ export async function handleSetupWebhook(request: Request, env: Env): Promise<Re
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(body),
     });
-    const result = (await response.json()) as any;
+    const result: unknown = await response.json();
 
     return new Response(
       JSON.stringify({ success: true, webhook_url: webhookUrl, result }, null, 2),
       { headers: { "Content-Type": "application/json" } },
     );
   } catch (error) {
-    return new Response(JSON.stringify({ success: false, error: String(error) }), {
+    return new Response(JSON.stringify({ success: false, error: error instanceof Error ? error.message : String(error) }), {
       status: 500,
       headers: { "Content-Type": "application/json" },
     });
@@ -80,12 +80,12 @@ export async function handleDeleteWebhook(request: Request, env: Env): Promise<R
 
   try {
     const response = await fetch(`https://api.telegram.org/bot${env.BOT_TOKEN}/deleteWebhook`);
-    const result = (await response.json()) as any;
+    const result: unknown = await response.json();
     return new Response(JSON.stringify({ success: true, result }, null, 2), {
       headers: { "Content-Type": "application/json" },
     });
   } catch (error) {
-    return new Response(JSON.stringify({ success: false, error: String(error) }), {
+    return new Response(JSON.stringify({ success: false, error: error instanceof Error ? error.message : String(error) }), {
       status: 500,
       headers: { "Content-Type": "application/json" },
     });
@@ -105,12 +105,12 @@ export async function handleBotInfo(request: Request, env: Env): Promise<Respons
 
   try {
     const response = await fetch(`https://api.telegram.org/bot${env.BOT_TOKEN}/getMe`);
-    const result = (await response.json()) as any;
+    const result: unknown = await response.json();
     return new Response(JSON.stringify(result, null, 2), {
       headers: { "Content-Type": "application/json" },
     });
   } catch (error) {
-    return new Response(JSON.stringify({ success: false, error: String(error) }), {
+    return new Response(JSON.stringify({ success: false, error: error instanceof Error ? error.message : String(error) }), {
       status: 500,
       headers: { "Content-Type": "application/json" },
     });

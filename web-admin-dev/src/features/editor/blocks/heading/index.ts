@@ -14,8 +14,8 @@ export const headingConfig = {
     text: "",
     level: "h2",
   }),
-  Editor: HeadingEditor as any,
-  Preview: HeadingPreview as any,
+  Editor: HeadingEditor,
+  Preview: HeadingPreview,
   toTelegram: utils.toTelegram,
   fromTelegram: utils.fromTelegram,
 };

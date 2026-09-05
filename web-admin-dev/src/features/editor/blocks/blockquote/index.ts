@@ -13,8 +13,8 @@ export const blockquoteConfig = {
     type: "blockquote",
     children: [],
   }),
-  Editor: BlockquoteEditor as any,
-  Preview: BlockquotePreview as any,
+  Editor: BlockquoteEditor,
+  Preview: BlockquotePreview,
   toTelegram: utils.toTelegram,
   fromTelegram: utils.fromTelegram,
 };

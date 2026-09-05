@@ -35,7 +35,7 @@ export const postMiddleware: MiddlewareFn<AppContext> = async (ctx) => {
 
   // 4. Збереження стану в БД
   if (ctx.userDirty && ctx.user && ctx.from) {
-    const updates: Record<string, any> = {};
+    const updates: Record<string, unknown> = {};
     for (const [key, value] of Object.entries(ctx.user)) {
       if (key !== "user_id") {
         updates[key] = typeof value === "object" && value !== null ? JSON.stringify(value) : value;

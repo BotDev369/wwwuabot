@@ -2,8 +2,21 @@ import { SIGN_ORDER, SIGN_CUTOFFS, SIGN_META, DEFAULT_MYDATE_SYSTEMS } from "./c
 import type { Env } from "./types";
 import { apiLog } from "./logger";
 
-// ── Astrology math ─────────────────────────────────────────────────
+export interface MyDateSystem {
+  id: string;
+  name: string;
+  description: string;
+  implemented: boolean;
+  parameters: Array<{ key: string; label: string }>;
+}
 
+export interface SystemAnalysisResult {
+  parameters?: Array<{ key: string; label?: string; value: unknown }>;
+  comingSoon?: string[];
+  [key: string]: unknown;
+}
+
+// ── Astrology math ─────────────────────────────────────────────────
 function getSunSign(month: number, day: number): string {
   const md = month * 100 + day;
   for (const c of SIGN_CUTOFFS) {
@@ -32,7 +45,7 @@ function getCuspInfo(sign: string, dayOffset: number): string {
   return "Ні";
 }
 
-export function calculateWesternAstrology(day: number, month: number) {
+export function calculateWesternAstrology(day: number, month: number): SystemAnalysisResult {
   const sign = getSunSign(month, day);
   const meta = SIGN_META[sign];
   const dayOffset = daysSinceSignStart(meta.startMonth, meta.startDay, month, day);
@@ -70,33 +83,34 @@ export function calculateWesternAstrology(day: number, month: number) {
 }
 
 // ── Registry ───────────────────────────────────────────────────────
-
-export async function getSystemsRegistry(env: Env): Promise<any[]> {
+export async function getSystemsRegistry(env: Env): Promise<MyDateSystem[]> {
   const raw = await env.CONTENT_KV.get("mydate:systems");
-  const kvSystems: any[] = raw ? JSON.parse(raw) : [];
-  const kvById = new Map(kvSystems.map((s: any) => [s.id, s]));
-  const merged: any[] = DEFAULT_MYDATE_SYSTEMS.map((def) => {
+  const kvSystems: MyDateSystem[] = raw ? JSON.parse(raw) : [];
+  const kvById = new Map(kvSystems.map((s) => [s.id, s]));
+
+  const merged: MyDateSystem[] = DEFAULT_MYDATE_SYSTEMS.map((def) => {
     const kv = kvById.get(def.id);
     if (!kv) return def;
     const params =
       Array.isArray(kv.parameters) && kv.parameters.length ? kv.parameters : def.parameters;
     return { ...def, ...kv, parameters: params };
   });
+
   for (const s of kvSystems) {
     if (!DEFAULT_MYDATE_SYSTEMS.some((d) => d.id === s.id)) {
       merged.push({ ...s, parameters: Array.isArray(s.parameters) ? s.parameters : [] });
     }
   }
+
   return merged;
 }
 
 // ── Analysis D1 + KV cache ─────────────────────────────────────────
-
 export async function getAnalysis(
   db: D1Database,
   kv: KVNamespace,
   date: string,
-): Promise<Record<string, any>> {
+): Promise<Record<string, SystemAnalysisResult>> {
   const kvKey = `mydate:analysis:${date}`;
   const cached = await kv.get(kvKey);
   if (cached) {
@@ -106,19 +120,22 @@ export async function getAnalysis(
       // fall through to D1
     }
   }
+
   const row = await db
     .prepare(`SELECT systems_data FROM mydate_analysis WHERE date = ?`)
     .bind(date)
-    .first();
+    .first<{ systems_data: string }>();
+
   if (row?.systems_data) {
     try {
-      const parsed = JSON.parse(row.systems_data as string);
+      const parsed = JSON.parse(row.systems_data);
       await kv.put(kvKey, JSON.stringify(parsed));
       return parsed;
     } catch {
       return {};
     }
   }
+
   return {};
 }
 
@@ -127,11 +144,12 @@ export async function saveAnalysis(
   kv: KVNamespace,
   date: string,
   systemId: string,
-  result: any,
-): Promise<Record<string, any>> {
+  result: SystemAnalysisResult,
+): Promise<Record<string, SystemAnalysisResult>> {
   const existing = await getAnalysis(db, kv, date);
   const updated = { ...existing, [systemId]: result };
   const json = JSON.stringify(updated);
+
   await db
     .prepare(
       `INSERT INTO mydate_analysis (date, systems_data, updated_at)
@@ -140,12 +158,13 @@ export async function saveAnalysis(
     )
     .bind(date, json)
     .run();
+
   await kv.put(`mydate:analysis:${date}`, json);
   return updated;
 }
 
 /** Map of systemId → calculator function. */
-export const SYSTEM_CALCULATORS: Record<string, (date: string) => any> = {
+export const SYSTEM_CALCULATORS: Record<string, (date: string) => SystemAnalysisResult> = {
   western: (date: string) => {
     const [, month, day] = date.split("-").map((n) => parseInt(n, 10));
     return calculateWesternAstrology(day, month);

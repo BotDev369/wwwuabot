@@ -17,7 +17,6 @@ function json(body: unknown, status = 200): Response {
 }
 
 // ── GET /api/mydate/analysis/:date ──────────────────────────────────
-
 export async function handleAnalysisRead(
   request: Request,
   env: Env,
@@ -29,58 +28,69 @@ export async function handleAnalysisRead(
   try {
     const systems = await getAnalysis(env.DB, env.CONTENT_KV, date);
     return json({ ok: true, date, systems });
-  } catch (e: any) {
+  } catch (e: unknown) {
     apiLog.error("Analysis read error", e);
-    return json({ ok: false, error: e?.message ?? "Unknown error" }, 500);
+    const msg = e instanceof Error ? e.message : "Unknown error";
+    return json({ ok: false, error: msg }, 500);
   }
 }
 
 // ── POST /api/mydate/analyze ────────────────────────────────────────
-
 export async function handleAnalyze(
   request: Request,
   env: Env,
 ): Promise<Response> {
   try {
-    const body: any = await request.json();
+    const body = (await request.json()) as { date?: string; systemId?: string };
     const date = body?.date;
     const systemId = body?.systemId;
+
     if (!date || !DATE_RE.test(date)) {
       return json({ ok: false, error: "Invalid or missing date" }, 400);
     }
+    if (!systemId) {
+      return json({ ok: false, error: "Missing systemId" }, 400);
+    }
+
     const calculator = SYSTEM_CALCULATORS[systemId];
     if (!calculator) {
       return json({ ok: false, error: `System "${systemId}" is not implemented yet` }, 400);
     }
+
     const result = calculator(date);
     const allSystems = await saveAnalysis(env.DB, env.CONTENT_KV, date, systemId, result);
+
     return json({ ok: true, date, systemId, result, systems: allSystems });
-  } catch (e: any) {
+  } catch (e: unknown) {
     apiLog.error("Analyze error", e);
-    return json({ ok: false, error: e?.message ?? "Unknown error" }, 500);
+    const msg = e instanceof Error ? e.message : "Unknown error";
+    return json({ ok: false, error: msg }, 500);
   }
 }
 
 // ── GET /api/mydate/systems ─────────────────────────────────────────
-
 export async function handleSystems(env: Env): Promise<Response> {
   try {
     const systems = await getSystemsRegistry(env);
     return json({ ok: true, systems });
-  } catch (e: any) {
+  } catch (e: unknown) {
     apiLog.error("KV systems error", e);
-    return json({ ok: false, error: e?.message ?? "Unknown error" }, 500);
+    const msg = e instanceof Error ? e.message : "Unknown error";
+    return json({ ok: false, error: msg }, 500);
   }
 }
 
 // ── POST /api/mydate/compare ────────────────────────────────────────
-
 export async function handleCompare(
   request: Request,
   env: Env,
 ): Promise<Response> {
   try {
-    const body: any = await request.json();
+    const body = (await request.json()) as {
+      dates?: string[];
+      systemIds?: string[];
+      parameterKeys?: string[];
+    };
     const dates: string[] = Array.isArray(body?.dates) ? body.dates : [];
     const systemIds: string[] | undefined =
       Array.isArray(body?.systemIds) && body.systemIds.length ? body.systemIds : undefined;
@@ -102,10 +112,12 @@ export async function handleCompare(
       ? registry.filter((s) => systemIds.includes(s.id) && s.implemented)
       : registry.filter((s) => s.implemented);
 
-    const matrix: Record<string, any> = {};
+    const matrix: Record<string, Record<string, Record<string, unknown>>> = {};
+
     for (const date of validDates) {
       const analysis = await getAnalysis(env.DB, env.CONTENT_KV, date);
-      const perSystem: Record<string, any> = {};
+      const perSystem: Record<string, Record<string, unknown>> = {};
+
       for (const sys of targetSystems) {
         let result = analysis[sys.id];
         if (!result) {
@@ -114,11 +126,15 @@ export async function handleCompare(
           result = calculator(date);
           await saveAnalysis(env.DB, env.CONTENT_KV, date, sys.id, result);
         }
+        const params = Array.isArray(result?.parameters)
+          ? (result.parameters as Array<{ key: string; value: unknown }>)
+          : [];
         const selected = parameterKeys
-          ? (result.parameters ?? []).filter((p: any) => parameterKeys.includes(p.key))
-          : (result.parameters ?? []);
-        perSystem[sys.id] = Object.fromEntries(selected.map((p: any) => [p.key, p.value]));
+          ? params.filter((p) => parameterKeys.includes(p.key))
+          : params;
+        perSystem[sys.id] = Object.fromEntries(selected.map((p) => [p.key, p.value]));
       }
+
       matrix[date] = perSystem;
     }
 
@@ -128,8 +144,9 @@ export async function handleCompare(
       systems: targetSystems.map((s) => s.id),
       matrix,
     });
-  } catch (e: any) {
+  } catch (e: unknown) {
     apiLog.error("Compare error", e);
-    return json({ ok: false, error: e?.message ?? "Unknown error" }, 500);
+    const msg = e instanceof Error ? e.message : "Unknown error";
+    return json({ ok: false, error: msg }, 500);
   }
 }

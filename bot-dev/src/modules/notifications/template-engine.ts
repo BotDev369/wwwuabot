@@ -9,7 +9,7 @@ export interface TemplateContext {
   cart_items?: string;
   cart_total?: number;
   order_id?: number;
-  [key: string]: any;
+  [key: string]: unknown;
 }
 
 /**
@@ -17,7 +17,7 @@ export interface TemplateContext {
  */
 export function buildTemplateContext(
   ctx: AppContext,
-  extraData?: Record<string, any>,
+  extraData?: Record<string, unknown>,
 ): TemplateContext {
   const user = ctx.from;
   const firstName = user?.first_name || "...";

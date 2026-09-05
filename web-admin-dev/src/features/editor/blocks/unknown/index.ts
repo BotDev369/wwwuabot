@@ -15,8 +15,8 @@ export const unknownConfig = {
     tgType: "unknown",
     raw: { type: "unknown" },
   }),
-  Editor: UnknownEditor as any,
-  Preview: UnknownPreview as any,
+  Editor: UnknownEditor,
+  Preview: UnknownPreview,
   toTelegram: utils.toTelegram,
   fromTelegram: utils.fromTelegram,
 };

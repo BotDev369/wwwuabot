@@ -14,8 +14,8 @@ export const listConfig = {
     style: "bullet",
     items: [{ id: `${id}_li0`, kind: "simple", text: "" }],
   }),
-  Editor: ListEditor as any,
-  Preview: ListPreview as any,
+  Editor: ListEditor,
+  Preview: ListPreview,
   toTelegram: utils.toTelegram,
   fromTelegram: utils.fromTelegram,
 };

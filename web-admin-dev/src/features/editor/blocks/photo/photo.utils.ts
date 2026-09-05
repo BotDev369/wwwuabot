@@ -18,8 +18,8 @@ export function fromTelegram(tg: TgPhotoBlock, index: number): InternalPhotoBloc
   const media =
     typeof tg.photo === "string"
       ? tg.photo
-      : tg.photo && typeof tg.photo === "object" && "media" in (tg.photo as any)
-        ? String((tg.photo as any).media)
+      : tg.photo && typeof tg.photo === "object" && "media" in (tg.photo as Record<string, unknown>)
+        ? String((tg.photo as Record<string, unknown>).media)
         : "";
   return {
     id: `block_${Date.now()}_${index}`,

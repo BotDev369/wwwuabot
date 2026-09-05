@@ -12,7 +12,7 @@ import { SettingsRepository } from "../../repositories/settings.repository";
  */
 export async function dispatchNotification(
   ctx: AppContext,
-  data: Record<string, any>,
+  data: Record<string, unknown>,
 ): Promise<void> {
   const screen = ctx.screen;
   if (!screen) {
@@ -60,7 +60,7 @@ export async function dispatchNotification(
         throw new Error(`failed to send message to ${groupKey}`);
       }
     }
-  } catch (err: any) {
+  } catch (err: unknown) {
     const errMsg = err instanceof Error ? err.message : String(err);
     log("DISPATCHER", "fatal error, ignoring groups and sending to admin", { error: errMsg });
 

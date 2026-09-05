@@ -15,8 +15,8 @@ export const detailsConfig = {
     isOpen: false,
     children: [],
   }),
-  Editor: DetailsEditor as any,
-  Preview: DetailsPreview as any,
+  Editor: DetailsEditor,
+  Preview: DetailsPreview,
   toTelegram: utils.toTelegram,
   fromTelegram: utils.fromTelegram,
 };

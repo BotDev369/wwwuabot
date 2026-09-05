@@ -94,7 +94,7 @@ describe("evaluateConditions", () => {
 
   describe("fieldMatch checks", () => {
     it("matches nested fields via dot-notation", () => {
-      const complexUser: any = {
+      const complexUser: Record<string, unknown> = {
         id: 5,
         metadata: {
           verified: true,
@@ -110,7 +110,7 @@ describe("evaluateConditions", () => {
     });
 
     it("fails when nested field value does not match", () => {
-      const complexUser: any = {
+      const complexUser: Record<string, unknown> = {
         id: 5,
         metadata: {
           country: "PL",

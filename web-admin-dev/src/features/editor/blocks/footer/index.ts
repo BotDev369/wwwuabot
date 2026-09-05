@@ -9,8 +9,8 @@ export const footerConfig = {
   label: "Футер",
   icon: "⌞",
   createDefault: (id: string): InternalFooterBlock => ({ id, type: "footer", text: "" }),
-  Editor: FooterEditor as any,
-  Preview: FooterPreview as any,
+  Editor: FooterEditor,
+  Preview: FooterPreview,
   toTelegram: utils.toTelegram,
   fromTelegram: utils.fromTelegram,
 };

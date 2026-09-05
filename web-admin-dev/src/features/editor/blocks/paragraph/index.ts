@@ -13,8 +13,8 @@ export const paragraphConfig = {
     type: "paragraph",
     text: "",
   }),
-  Editor: ParagraphEditor as any,
-  Preview: ParagraphPreview as any,
+  Editor: ParagraphEditor,
+  Preview: ParagraphPreview,
   toTelegram: utils.toTelegram,
   fromTelegram: utils.fromTelegram,
 };

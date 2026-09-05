@@ -9,15 +9,13 @@ import { log } from "../../shared/utils/debug";
  */
 export function isUserBlocked(ctx: AppContext): boolean {
   if (!ctx.user) return false;
-
-  const blocked = (ctx.user as any).is_blocked;
+  const blocked = ctx.user.is_blocked;
   if (blocked === 1 || blocked === true) {
     log("SEC:blocked", "BLOCKED user, ignoring update", {
       user_id: ctx.user.user_id,
     });
     return true;
   }
-
   return false;
 }
 
@@ -26,7 +24,7 @@ export function isUserBlocked(ctx: AppContext): boolean {
  */
 export function blockUser(ctx: AppContext): void {
   if (!ctx.user) return;
-  (ctx.user as any).is_blocked = 1;
+  ctx.user.is_blocked = 1;
   ctx.userDirty = true;
   log("SEC:blocked", "user blocked", { user_id: ctx.user.user_id });
 }
@@ -36,7 +34,7 @@ export function blockUser(ctx: AppContext): void {
  */
 export function unblockUser(ctx: AppContext): void {
   if (!ctx.user) return;
-  (ctx.user as any).is_blocked = 0;
+  ctx.user.is_blocked = 0;
   ctx.userDirty = true;
   log("SEC:blocked", "user unblocked", { user_id: ctx.user.user_id });
 }

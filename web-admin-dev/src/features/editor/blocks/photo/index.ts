@@ -14,8 +14,8 @@ export const photoConfig = {
     media: "",
     config: null,
   }),
-  Editor: PhotoEditor as any,
-  Preview: PhotoPreview as any,
+  Editor: PhotoEditor,
+  Preview: PhotoPreview,
   toTelegram: utils.toTelegram,
   fromTelegram: utils.fromTelegram,
 };

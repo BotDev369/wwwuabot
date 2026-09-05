@@ -32,7 +32,7 @@ export interface SystemResult {
  */
 export function getTelegramUserId(): number | null {
   try {
-    return (window as any).Telegram?.WebApp?.initDataUnsafe?.user?.id ?? null;
+    return window.Telegram?.WebApp?.initDataUnsafe?.user?.id ?? null;
   } catch {
     return null;
   }
@@ -44,7 +44,7 @@ export function getTelegramUserId(): number | null {
  */
 function authHeaders(userId: number): Record<string, string> {
   const headers: Record<string, string> = { "X-Telegram-User-Id": String(userId) };
-  const initData = (window as any).Telegram?.WebApp?.initData;
+  const initData = window.Telegram?.WebApp?.initData;
   if (initData) headers["X-Telegram-Init-Data"] = initData;
   return headers;
 }

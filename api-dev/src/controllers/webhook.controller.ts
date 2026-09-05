@@ -20,37 +20,40 @@ export async function handleSetupWebhook(request: Request, env: Env): Promise<Re
       { status: 401, headers: { "Content-Type": "application/json" } },
     );
   }
+
   if (!env.BOT_TOKEN) {
     return new Response(JSON.stringify({ error: "BOT_TOKEN not configured" }), {
       status: 500,
       headers: { "Content-Type": "application/json" },
     });
   }
+
   try {
     const webhookUrl = "https://bot-dev.diskomate.workers.dev/webhook";
-
     const deleteResponse = await fetch(
       `https://api.telegram.org/bot${env.BOT_TOKEN}/deleteWebhook`,
     );
-    const deleteResult = (await deleteResponse.json()) as any;
+    const deleteResult: unknown = await deleteResponse.json();
 
     const body: Record<string, unknown> = { url: webhookUrl };
     if (env.SECRET_TOKEN) {
       body.secret_token = env.SECRET_TOKEN;
     }
+
     const setResponse = await fetch(`https://api.telegram.org/bot${env.BOT_TOKEN}/setWebhook`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(body),
     });
-    const setResult = (await setResponse.json()) as any;
+    const setResult: unknown = await setResponse.json();
 
     return new Response(
       JSON.stringify({ success: true, webhook_url: webhookUrl, delete_result: deleteResult, set_result: setResult }, null, 2),
       { headers: { "Content-Type": "application/json" } },
     );
   } catch (error) {
-    return new Response(JSON.stringify({ success: false, error: String(error) }, null, 2), {
+    return new Response(JSON.stringify({ success: false, error: error instanceof Error ? error.message : String(error) }), {
+      status: 500,
       headers: { "Content-Type": "application/json" },
     });
   }
@@ -63,20 +66,23 @@ export async function handleWebhookInfo(request: Request, env: Env): Promise<Res
       { status: 401, headers: { "Content-Type": "application/json" } },
     );
   }
+
   if (!env.BOT_TOKEN) {
     return new Response(JSON.stringify({ error: "BOT_TOKEN not configured" }), {
       status: 500,
       headers: { "Content-Type": "application/json" },
     });
   }
+
   try {
     const response = await fetch(`https://api.telegram.org/bot${env.BOT_TOKEN}/getWebhookInfo`);
-    const result = await response.json();
+    const result: unknown = await response.json();
     return new Response(JSON.stringify(result, null, 2), {
       headers: { "Content-Type": "application/json" },
     });
   } catch (error) {
-    return new Response(JSON.stringify({ success: false, error: String(error) }, null, 2), {
+    return new Response(JSON.stringify({ success: false, error: error instanceof Error ? error.message : String(error) }), {
+      status: 500,
       headers: { "Content-Type": "application/json" },
     });
   }

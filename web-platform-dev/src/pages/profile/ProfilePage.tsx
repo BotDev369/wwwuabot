@@ -5,7 +5,7 @@ import { UserProfileCard, type UserProfileData } from "@wwwuabot/shared";
 
 function getTgUser() {
   try {
-    const tg = (window as any).Telegram?.WebApp;
+    const tg = window.Telegram?.WebApp;
     return tg?.initDataUnsafe?.user ?? null;
   } catch {
     return null;

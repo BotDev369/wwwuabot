@@ -26,7 +26,7 @@ export function RichTextField({
   showPreview = true,
 }: Props) {
   const [markup, setMarkup] = useState(() => runsToMarkup(richToRuns(value)));
-  const ref = useRef<any>(null);
+  const ref = useRef<HTMLTextAreaElement & HTMLInputElement>(null);
   const selRef = useRef<{ s: number; e: number } | null>(null);
 
   function rememberSelection() {
@@ -110,7 +110,7 @@ export function RichTextField({
     ref,
     value: markup,
     placeholder,
-    onChange: (e: any) => {
+    onChange: (e: React.ChangeEvent<HTMLTextAreaElement | HTMLInputElement>) => {
       emit(e.target.value);
       rememberSelection();
     },

@@ -5,6 +5,20 @@ import { withAutoMigrate } from "../shared/auto-migrate";
 import { apiLog } from "../shared/logger";
 import { verifyInitData } from "../shared/telegram-auth";
 
+export interface MyDateItem {
+  id: string;
+  user_id: number;
+  date: string;
+  type: string;
+  name: string;
+  tags: string[];
+  notes: string;
+  created_at: string;
+  updated_at: string;
+  alias?: string;
+  category?: string;
+}
+
 function json(body: unknown, status = 200): Response {
   return new Response(JSON.stringify(body), {
     status,
@@ -13,11 +27,10 @@ function json(body: unknown, status = 200): Response {
 }
 
 // ── Migrate old date formats ────────────────────────────────────────
-
-function migrateDates(dates: any[]): { dates: any[]; needsMigration: boolean } {
+function migrateDates(dates: MyDateItem[]): { dates: MyDateItem[]; needsMigration: boolean } {
   let needsMigration = false;
 
-  const migrated = dates.map((d: any) => {
+  const migrated = dates.map((d) => {
     // alias/category → name/type/tags
     if (d.name === undefined && (d.alias || d.category)) {
       needsMigration = true;
@@ -25,16 +38,18 @@ function migrateDates(dates: any[]): { dates: any[]; needsMigration: boolean } {
         ...d,
         type: (VALID_TYPES as readonly string[]).includes(d.type) ? d.type : "other",
         name: d.name || d.alias || "",
-        tags: Array.isArray(d.tags) ? (d.tags as string[]) : d.category ? [d.category] : [],
+        tags: Array.isArray(d.tags) ? d.tags : d.category ? [d.category] : [],
         created_at: d.created_at || formatSqliteDatetime(),
         updated_at: d.updated_at || d.created_at || formatSqliteDatetime(),
       };
     }
+
     // Invalid type → "other"
     if (d.name !== undefined && !(VALID_TYPES as readonly string[]).includes(d.type)) {
       needsMigration = true;
       return { ...d, type: "other" };
     }
+
     // Empty tags → restore from category
     if (
       d.name !== undefined &&
@@ -44,6 +59,7 @@ function migrateDates(dates: any[]): { dates: any[]; needsMigration: boolean } {
       needsMigration = true;
       return { ...d, tags: [d.category] };
     }
+
     return d;
   });
 
@@ -51,25 +67,25 @@ function migrateDates(dates: any[]): { dates: any[]; needsMigration: boolean } {
 }
 
 // ── Read user's dates ───────────────────────────────────────────────
-
 async function readUserDates(
   db: D1Database,
   userId: number,
-): Promise<{ dates: any[]; needsMigration: boolean }> {
+): Promise<{ dates: MyDateItem[]; needsMigration: boolean }> {
   const user = await db
     .prepare("SELECT my_dates FROM users WHERE user_id = ?")
     .bind(userId)
-    .first();
+    .first<{ my_dates: string | { items?: MyDateItem[] } | null }>();
+
   if (!user) return { dates: [], needsMigration: false };
 
-  let dates: any[] = [];
+  let dates: MyDateItem[] = [];
   try {
-    const raw = (user as any).my_dates;
+    const raw = user.my_dates;
     if (raw && typeof raw === "string") {
       const parsed = JSON.parse(raw);
-      dates = Array.isArray(parsed.items) ? parsed.items : [];
-    } else if (raw && typeof raw === "object" && Array.isArray((raw as any).items)) {
-      dates = (raw as any).items;
+      dates = Array.isArray(parsed?.items) ? parsed.items : [];
+    } else if (raw && typeof raw === "object" && Array.isArray(raw.items)) {
+      dates = raw.items;
     }
   } catch {
     dates = [];
@@ -79,11 +95,10 @@ async function readUserDates(
 }
 
 // ── Save dates back to user ─────────────────────────────────────────
-
 async function saveUserDates(
   db: D1Database,
   userId: number,
-  dates: any[],
+  dates: MyDateItem[],
 ): Promise<void> {
   await db
     .prepare("UPDATE users SET my_dates = ? WHERE user_id = ?")
@@ -92,13 +107,6 @@ async function saveUserDates(
 }
 
 // ── Identify the Telegram user ──────────────────────────────────────
-
-/**
- * Бере user_id з підписаного `X-Telegram-Init-Data`, якщо клієнт його
- * надіслав і в воркері є BOT_TOKEN. Старий непідписаний
- * `X-Telegram-User-Id` поки лишається як перехідний варіант для
- * закешованих клієнтів Mini App.
- */
 async function extractUserId(
   request: Request,
   env: Env,
@@ -116,16 +124,17 @@ async function extractUserId(
   if (!userIdStr) {
     return { ok: false, response: json({ ok: false, error: "X-Telegram-Init-Data header required" }, 401) };
   }
+
   const userId = parseInt(userIdStr, 10);
   if (isNaN(userId)) {
     return { ok: false, response: json({ ok: false, error: "Invalid user_id" }, 401) };
   }
+
   apiLog.info("my-dates: unsigned X-Telegram-User-Id accepted", { user_id: userId });
   return { ok: true, userId };
 }
 
 // ── Main handler ────────────────────────────────────────────────────
-
 export async function handleMyDates(
   request: Request,
   env: Env,
@@ -172,17 +181,18 @@ export async function handleMyDates(
 
     // ── POST (add) ──
     if (request.method === "POST") {
-      let body: any;
+      let body: Partial<MyDateItem>;
       try {
-        body = await request.json();
+        body = (await request.json()) as Partial<MyDateItem>;
       } catch {
         return json({ ok: false, error: "Invalid JSON" }, 400);
       }
-      const { date, type, name, tags, notes, alias, category } = body;
+
+      const { date, type = "other", name, tags, notes, alias, category } = body;
       if (!date) return json({ ok: false, error: "date is required" }, 400);
 
       const now = formatSqliteDatetime();
-      const newDate = {
+      const newDate: MyDateItem = {
         id: Date.now().toString(36) + Math.random().toString(36).slice(2, 6),
         user_id: userId,
         date,
@@ -193,25 +203,26 @@ export async function handleMyDates(
         created_at: now,
         updated_at: now,
       };
-      dates.push(newDate);
 
+      dates.push(newDate);
       await saveUserDates(env.DB, userId, dates);
       return json({ ok: true, id: newDate.id });
     }
 
     // ── PUT (update) ──
     if (request.method === "PUT") {
-      let body: any;
+      let body: Partial<MyDateItem>;
       try {
-        body = await request.json();
+        body = (await request.json()) as Partial<MyDateItem>;
       } catch {
         return json({ ok: false, error: "Invalid JSON" }, 400);
       }
+
       const { id, date, type, name, tags, notes, alias, category } = body;
       if (!id) return json({ ok: false, error: "id is required" }, 400);
       if (!date) return json({ ok: false, error: "date is required" }, 400);
 
-      const idx = dates.findIndex((d: any) => d.id === id);
+      const idx = dates.findIndex((d) => d.id === id);
       if (idx === -1) return json({ ok: false, error: "Not found" }, 404);
 
       const existingTags = dates[idx].tags || [];
@@ -226,7 +237,7 @@ export async function handleMyDates(
       dates[idx] = {
         ...dates[idx],
         date,
-        type: (VALID_TYPES as readonly string[]).includes(type) ? type : dates[idx].type || "other",
+        type: type && (VALID_TYPES as readonly string[]).includes(type) ? type : dates[idx].type || "other",
         name: name || alias || dates[idx].name || "",
         tags: finalTags,
         notes: notes || "",
@@ -242,10 +253,12 @@ export async function handleMyDates(
       const url = new URL(request.url);
       const id = url.searchParams.get("id");
       const ids = url.searchParams.get("ids");
+
       if (!id && !ids) return json({ ok: false, error: "id or ids required" }, 400);
 
       const toDelete = ids ? ids.split(",").filter(Boolean) : [id!];
-      const filtered = dates.filter((d: any) => !toDelete.includes(d.id));
+      const filtered = dates.filter((d) => !toDelete.includes(d.id));
+
       if (filtered.length === dates.length) return json({ ok: false, error: "Not found" }, 404);
 
       await saveUserDates(env.DB, userId, filtered);
@@ -253,8 +266,9 @@ export async function handleMyDates(
     }
 
     return json({ ok: false, error: "Method not allowed" }, 405);
-  } catch (e: any) {
+  } catch (e: unknown) {
     apiLog.error("My-dates error", e);
-    return json({ ok: false, error: e?.message ?? "Unknown error" }, 500);
+    const msg = e instanceof Error ? e.message : "Unknown error";
+    return json({ ok: false, error: msg }, 500);
   }
 }

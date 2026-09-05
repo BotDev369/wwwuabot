@@ -1,13 +1,13 @@
 import type { InternalListBlock, InternalListItem, ListStyle } from "./ListEditor";
 
 interface TgListItem {
-  blocks?: any[];
+  blocks?: unknown[];
   has_checkbox?: boolean;
   is_checked?: boolean;
   type?: string;
   value?: number;
   label?: string;
-  [key: string]: any;
+  [key: string]: unknown;
 }
 interface TgListBlock {
   type: "list";

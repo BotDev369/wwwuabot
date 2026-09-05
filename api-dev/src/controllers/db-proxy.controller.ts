@@ -20,27 +20,31 @@ async function notifyBlockChange(
 
   // Шукаємо сценарій в БД
   let captionText = fallbackText;
-  let buttons: any[][] = [];
+  let buttons: unknown[][] = [];
   let photoUrl = "";
   let richMessage = false;
-  let richData: any[] | null = null;
+  let richData: unknown[] | null = null;
 
   try {
     const row = await env.DB.prepare(`SELECT * FROM scenarios WHERE codeword = ?`)
       .bind(codeword)
-      .first();
+      .first<Record<string, unknown>>();
+
     if (row) {
-      const r = row as any;
-      const parts = [r.caption_top, r.caption_mid, r.caption_bot].filter(
-        (p: string) => p && p.trim() !== "",
-      );
+      const parts = [row.caption_top, row.caption_mid, row.caption_bot]
+        .filter((p): p is string => typeof p === "string" && p.trim() !== "");
       captionText = parts.join("\n───────\n") || fallbackText;
-      try { buttons = JSON.parse(r.buttons || "[]"); } catch { buttons = []; }
-      photoUrl = r.photo_url || "";
-      richMessage = r.rich_message === "true" || r.rich_message === "1";
-      if (r.rich_data && r.rich_data.trim()) {
+      try {
+        buttons = JSON.parse(typeof row.buttons === "string" ? row.buttons : "[]");
+      } catch {
+        buttons = [];
+      }
+      photoUrl = typeof row.photo_url === "string" ? row.photo_url : "";
+      richMessage = row.rich_message === "true" || row.rich_message === "1" || row.rich_message === 1;
+
+      if (typeof row.rich_data === "string" && row.rich_data.trim()) {
         try {
-          const p = JSON.parse(r.rich_data);
+          const p = JSON.parse(row.rich_data);
           if (Array.isArray(p)) richData = p;
         } catch {
           // Биті rich_data — надсилаємо звичайний текст
@@ -64,7 +68,7 @@ async function notifyBlockChange(
 
   // Надсилаємо повідомлення
   try {
-    const payload: any = {
+    const payload: Record<string, unknown> = {
       chat_id: userId,
       text: captionText,
     };
@@ -106,7 +110,7 @@ async function notifyBlockChange(
 }
 
 export async function handleDbProxy(request: Request, env: Env): Promise<Response> {
-  const json = (data: any, status = 200) =>
+  const json = (data: unknown, status = 200) =>
     new Response(JSON.stringify(data), {
       status,
       headers: { "Content-Type": "application/json" },
@@ -116,9 +120,13 @@ export async function handleDbProxy(request: Request, env: Env): Promise<Respons
     return unauthorizedResponse();
   }
 
-  let body: any;
+  let body: {
+    action?: string;
+    codeword?: string;
+    data?: unknown;
+  };
   try {
-    body = await request.json();
+    body = (await request.json()) as typeof body;
   } catch {
     return json({ error: "Invalid JSON" }, 400);
   }
@@ -130,14 +138,20 @@ export async function handleDbProxy(request: Request, env: Env): Promise<Respons
     case "read":
       if (!codeword) return json({ error: "codeword required" }, 400);
       return json(await service.read(codeword));
+
     case "write":
-      if (!codeword || !data) return json({ error: "codeword and data required" }, 400);
-      return json(await service.write(codeword, data));
+      if (!codeword || !data || typeof data !== "object") {
+        return json({ error: "codeword and data required" }, 400);
+      }
+      return json(await service.write(codeword, data as Record<string, unknown>));
+
     case "delete":
       if (!codeword) return json({ error: "codeword required" }, 400);
       return json(await service.delete(codeword));
+
     case "list_users":
       return json(await service.listUsers());
+
     case "update_users":
       if (!Array.isArray(data) || data.length === 0) {
         return json({ error: "data (array of users) required" }, 400);
@@ -162,13 +176,16 @@ export async function handleDbProxy(request: Request, env: Env): Promise<Respons
         }
       }
       return json(await service.updateUsers(data));
+
     case "read_settings":
       return json(await service.readSettings());
+
     case "update_settings":
       if (!data || typeof data !== "object") {
         return json({ error: "data (object) required" }, 400);
       }
-      return json(await service.updateSettings(data));
+      return json(await service.updateSettings(data as Record<string, unknown>));
+
     default:
       return json({ error: `Unknown action: ${action}` }, 400);
   }

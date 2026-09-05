@@ -9,7 +9,6 @@ function json(body: unknown, status = 200): Response {
 }
 
 // ── ensureBase ──────────────────────────────────────────────────────
-
 async function ensureBase(db: D1Database): Promise<void> {
   const tableCheck = await db
     .prepare("SELECT name FROM sqlite_master WHERE type='table' AND name='scenarios'")
@@ -54,11 +53,17 @@ async function ensureBase(db: D1Database): Promise<void> {
 }
 
 // ── resolveScenario ─────────────────────────────────────────────────
+interface ScenarioDbRow {
+  codeword?: string;
+  web_slug?: string;
+  page_data?: string | null;
+  [key: string]: unknown;
+}
 
 async function resolveScenario(db: D1Database, slug: string) {
   await ensureBase(db);
 
-  let row: any = null;
+  let row: ScenarioDbRow | null = null;
   if (slug && slug !== "__base__") {
     row = await db
       .prepare(
@@ -67,13 +72,13 @@ async function resolveScenario(db: D1Database, slug: string) {
          LIMIT 1`,
       )
       .bind(slug, slug)
-      .first();
+      .first<ScenarioDbRow>();
   }
 
   if (!row) {
     row = await db
       .prepare(`SELECT codeword, web_slug, page_data FROM scenarios WHERE codeword = '__base__'`)
-      .first();
+      .first<ScenarioDbRow>();
   }
 
   let pageData: Record<string, unknown> | null = null;
@@ -95,7 +100,6 @@ async function resolveScenario(db: D1Database, slug: string) {
 }
 
 // ── GET /api/scenario/:slug ─────────────────────────────────────────
-
 export async function handleScenario(
   request: Request,
   env: Env,
@@ -109,8 +113,9 @@ export async function handleScenario(
       pageData,
       userContext: { authenticated: false, roles: [], flags: [] },
     });
-  } catch (e: any) {
+  } catch (e: unknown) {
     apiLog.error("Scenario error", e);
-    return json({ ok: false, error: e?.message ?? "Unknown error" }, 500);
+    const msg = e instanceof Error ? e.message : String(e);
+    return json({ ok: false, error: msg }, 500);
   }
 }

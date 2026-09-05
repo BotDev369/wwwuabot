@@ -42,3 +42,8 @@ export type {
   BlockContext,
   BlockZone,
 } from "./types/page-config";
+
+// ── Domain & API Types ───────────────────────────────────────────────
+export type { MyDate, MyDateSystem, SystemAnalysisResult } from "./types/mydate";
+export type { TelegramApiResponse, TelegramUser, TelegramWebhookInfo, TelegramInlineKeyboardButton } from "./types/telegram";
+export type { BotUser } from "./types/user";

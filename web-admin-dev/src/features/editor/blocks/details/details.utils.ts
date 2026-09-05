@@ -4,7 +4,7 @@ import type { InternalDetailsBlock } from "./DetailsEditor";
 interface TgDetailsBlock {
   type: "details";
   summary?: unknown;
-  blocks?: any[];
+  blocks?: unknown[];
   is_open?: boolean;
 }
 

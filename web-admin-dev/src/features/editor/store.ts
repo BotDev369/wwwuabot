@@ -30,7 +30,7 @@ export interface EditorStore {
   setTable: (table: "admin" | "portal") => void;
   addBlock: (type: string) => void; // ← Приймає просто рядок (тип)
   removeBlock: (id: string) => void;
-  updateBlock: (id: string, patch: Partial<Record<string, any>>) => void;
+  updateBlock: (id: string, patch: Partial<Record<string, unknown>>) => void;
   moveBlock: (id: string, direction: "up" | "down") => void;
   load: () => Promise<void>;
   save: () => Promise<void>;
@@ -48,7 +48,7 @@ function genId(): string {
 function mapDeep(blocks: BaseBlock[], id: string, fn: (b: BaseBlock) => BaseBlock): BaseBlock[] {
   return blocks.map((b) => {
     if (b.id === id) return fn(b);
-    const kids = (b as any).children;
+    const kids = (b as unknown as { children?: BaseBlock[] }).children;
     if (Array.isArray(kids)) return { ...b, children: mapDeep(kids, id, fn) };
     return b;
   });
@@ -58,7 +58,7 @@ function removeDeep(blocks: BaseBlock[], id: string): BaseBlock[] {
   return blocks
     .filter((b) => b.id !== id)
     .map((b) => {
-      const kids = (b as any).children;
+      const kids = (b as unknown as { children?: BaseBlock[] }).children;
       if (Array.isArray(kids)) return { ...b, children: removeDeep(kids, id) };
       return b;
     });
@@ -74,7 +74,7 @@ function moveDeep(blocks: BaseBlock[], id: string, dir: "up" | "down"): BaseBloc
     return next;
   }
   return blocks.map((b) => {
-    const kids = (b as any).children;
+    const kids = (b as unknown as { children?: BaseBlock[] }).children;
     if (Array.isArray(kids)) return { ...b, children: moveDeep(kids, id, dir) };
     return b;
   });
@@ -134,7 +134,7 @@ export const useEditorStore = create<EditorStore>((set, get) => ({
       }
 
       // Парсимо JSON і віддаємо Реєстру для десеріалізації
-      let tgBlocks: any[] = [];
+      let tgBlocks: unknown[] = [];
       try {
         tgBlocks = JSON.parse(data.rich_data);
       } catch {

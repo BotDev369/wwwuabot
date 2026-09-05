@@ -1,58 +1,75 @@
 import { DatabaseRepository } from "../../core/database.repository";
 import { withAutoMigrate } from "../../core/database/auto-migrate";
+import type { BotUser } from "../../shared/types/env";
+import { log } from "../../shared/utils/debug";
 
 export class UserRepository extends DatabaseRepository {
   /**
-   * Читаємо юзера. SELECT * повертає ВСІ існуючі колонки.
+   * Отримує користувача з БД.
+   * Використовує withAutoMigrate для безпечного додавання нових колонок.
    */
-  async getUser(userId: number): Promise<any> {
-    return await this.db.prepare(`SELECT * FROM users WHERE user_id = ?`).bind(userId).first<any>();
+  async getUser(userId: number): Promise<BotUser | null> {
+    try {
+      const user = await withAutoMigrate(
+        this.db,
+        async () => {
+          return await this.db
+            .prepare(`SELECT * FROM users WHERE user_id = ?`)
+            .bind(userId)
+            .first<BotUser>();
+        },
+        {
+          is_blocked: 0,
+          rate_limit_json: "",
+        },
+        "users",
+      );
+      return user;
+    } catch (err) {
+      log("USER:repo", "failed to get user", {
+        user_id: userId,
+        error: String(err),
+      });
+      return null;
+    }
   }
 
   /**
-   * Створюємо новий рядок (тільки базові поля з 0001_init.sql).
+   * Створює нового користувача.
    */
-  async createUser(user: {
-    user_id: number;
-    first_name: string;
-    last_name: string;
-    username: string;
-    language: string;
-  }): Promise<void> {
-    const now = new Date().toISOString();
+  async createUser(userId: number, data: Partial<BotUser> = {}): Promise<void> {
+    const fields = ["user_id", ...Object.keys(data)];
+    const placeholders = fields.map(() => "?").join(", ");
+    const values = [userId, ...Object.values(data)];
 
     await this.db
-      .prepare(
-        `
-        INSERT INTO users (user_id, first_name, last_name, username, language, created_at)
-        VALUES (?, ?, ?, ?, ?, ?)
-      `,
-      )
-      .bind(user.user_id, user.first_name, user.last_name, user.username, user.language, now)
+      .prepare(`INSERT INTO users (${fields.join(", ")}) VALUES (${placeholders})`)
+      .bind(...values)
       .run();
   }
 
   /**
-   * Оновлюємо ВСІ поля з ctx.user (крім user_id).
-   * Автоматично створює відсутні колонки!
+   * Оновлює поля користувача.
+   * Використовує withAutoMigrate — якщо колонки немає, вона буде створена.
    */
-  async updateUser(userId: number, updates: Record<string, any>): Promise<void> {
-    const keys = Object.keys(updates);
-    if (keys.length === 0) return;
-
-    const setClause = keys.map((k) => `${k} = ?`).join(", ");
-    const values = keys.map((k) => updates[k]);
+  async updateUser(userId: number, updates: Record<string, unknown>): Promise<void> {
+    if (Object.keys(updates).length === 0) return;
 
     await withAutoMigrate(
       this.db,
       async () => {
+        const setClause = Object.keys(updates)
+          .map((k) => `${k} = ?`)
+          .join(", ");
+        const values = Object.values(updates);
+
         await this.db
           .prepare(`UPDATE users SET ${setClause} WHERE user_id = ?`)
           .bind(...values, userId)
           .run();
       },
       updates,
-      "users", // ← ЯВНО вказуємо таблицю
+      "users",
     );
   }
 }

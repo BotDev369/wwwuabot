@@ -23,7 +23,7 @@ export class ScenarioRepository extends DatabaseRepository {
     const richMessage = row.rich_message === "true" || row.rich_message === "1";
 
     // Парсимо rich_data
-    let richData: any[] | null = null;
+    let richData: Record<string, unknown>[] | null = null;
     if (row.rich_data && row.rich_data.trim() !== "") {
       try {
         const parsed = JSON.parse(row.rich_data);

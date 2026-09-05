@@ -2,13 +2,13 @@ import { describe, it, expect, vi } from "vitest";
 import { UsersService } from "./users.service";
 import type { Env } from "../shared/types";
 
-function createMockEnv(overrides?: Partial<Env>): { env: Env; mockDb: any } {
+function createMockEnv(overrides?: Partial<Env>): { env: Env; mockDb: ReturnType<typeof vi.fn> & { prepare: ReturnType<typeof vi.fn> } } {
   const mockDb = {
     prepare: vi.fn(),
   };
 
   const env: Env = {
-    DB: mockDb as any,
+    DB: mockDb as unknown as D1Database,
     ADMIN_PASSWORD: "test",
     JWT_SECRET: "secret",
     ...overrides,

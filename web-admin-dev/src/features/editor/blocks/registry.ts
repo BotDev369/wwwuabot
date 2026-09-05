@@ -1,52 +1,30 @@
 import type { BlockConfig, BaseBlock } from "./types";
 
-/**
- * Центральний Реєстр блоків.
- * Зберігає всі налаштування для кожного типу блоку і дозволяє
- * миттєво конвертувати дані між UI-станом та форматом Telegram API.
- */
 class BlockRegistry {
-  // Мапа для пошуку за внутрішнім типом (UI -> TG)
-  private internalMap = new Map<string, BlockConfig<any, any>>();
-  // Мапа для пошуку за типом Telegram (TG -> UI)
-  private tgTypeMap = new Map<string, BlockConfig<any, any>>();
+  private internalMap = new Map<string, BlockConfig<BaseBlock, unknown>>();
+  private tgTypeMap = new Map<string, BlockConfig<BaseBlock, unknown>>();
 
-  /**
-   * Реєструє новий тип блоку в системі.
-   */
   register<T extends BaseBlock, TG>(config: BlockConfig<T, TG>) {
     if (this.internalMap.has(config.type)) {
       console.warn(`[Registry] Block type "${config.type}" is already registered. Overwriting.`);
     }
-    this.internalMap.set(config.type, config);
-    this.tgTypeMap.set(config.tgType, config);
+    this.internalMap.set(config.type, config as unknown as BlockConfig<BaseBlock, unknown>);
+    this.tgTypeMap.set(config.tgType, config as unknown as BlockConfig<BaseBlock, unknown>);
   }
 
-  /**
-   * Повертає конфіг за внутрішнім типом (наприклад, "heading").
-   */
-  getByInternalType(type: string): BlockConfig<any, any> | undefined {
+  getByInternalType(type: string): BlockConfig<BaseBlock, unknown> | undefined {
     return this.internalMap.get(type);
   }
 
-  /**
-   * Повертає конфіг за типом Telegram API (наприклад, "paragraph").
-   */
-  getByTgType(tgType: string): BlockConfig<any, any> | undefined {
+  getByTgType(tgType: string): BlockConfig<BaseBlock, unknown> | undefined {
     return this.tgTypeMap.get(tgType);
   }
 
-  /**
-   * Повертає список усіх зареєстрованих блоків (для BlockPicker в UI).
-   */
-  getAllConfigs(): BlockConfig<any, any>[] {
+  getAllConfigs(): BlockConfig<BaseBlock, unknown>[] {
     return Array.from(this.internalMap.values()).filter((c) => !c.hidden);
   }
 
-  /**
-   * Конвертує масив внутрішніх блоків у JSON для Telegram API.
-   */
-  serialize(blocks: BaseBlock[]): any[] {
+  serialize(blocks: BaseBlock[]): unknown[] {
     return blocks
       .map((block) => {
         const config = this.getByInternalType(block.type);
@@ -59,17 +37,14 @@ class BlockRegistry {
       .filter(Boolean);
   }
 
-  /**
-   * Конвертує JSON від Telegram API назад у масив внутрішніх блоків для UI.
-   */
-  deserialize(tgBlocks: any[]): BaseBlock[] {
+  deserialize(tgBlocks: unknown[]): BaseBlock[] {
     return tgBlocks
       .map((tgBlock, index) => {
         if (!tgBlock || typeof tgBlock !== "object") {
           console.warn(`[Registry] Skipping non-object TG block`, tgBlock);
           return null;
         }
-        const tgType = tgBlock.type;
+        const tgType = (tgBlock as { type: string }).type;
         const config = this.getByTgType(tgType);
         if (!config) {
           console.warn(`[Registry] No config for TG type: ${tgType} — keeping as passthrough`);
@@ -78,9 +53,8 @@ class BlockRegistry {
         }
         return config.fromTelegram(tgBlock, index);
       })
-      .filter(Boolean);
+      .filter(Boolean) as BaseBlock[];
   }
 }
 
-// Експортуємо єдиний інстанс реєстру на весь проєкт
 export const blockRegistry = new BlockRegistry();

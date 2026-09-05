@@ -15,7 +15,7 @@ export class SettingsRepository extends DatabaseRepository {
       const row = await withAutoMigrate(
         this.db,
         async () => {
-          return await this.db.prepare(`SELECT ${key} FROM settings LIMIT 1`).first<any>();
+          return await this.db.prepare(`SELECT ${key} FROM settings LIMIT 1`).first<Record<string, unknown>>();
         },
         { [key]: "" }, // Зразок для визначення типу (TEXT)
         "settings",

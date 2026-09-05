@@ -3,7 +3,7 @@ import type { InternalBlockquoteBlock } from "./BlockquoteEditor";
 
 interface TgBlockquoteBlock {
   type: "blockquote";
-  blocks?: any[];
+  blocks?: unknown[];
 }
 
 export function toTelegram(block: InternalBlockquoteBlock): TgBlockquoteBlock {

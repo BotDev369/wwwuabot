@@ -5,7 +5,12 @@ const SAFE_COLUMN_NAME_RE = /^[a-zA-Z_][a-zA-Z0-9_]*$/;
 export interface DbProxyResult {
   success: boolean;
   error?: string;
-  [key: string]: any;
+  data?: unknown;
+  deleted?: boolean;
+  codeword?: string;
+  updated_at?: string;
+  results?: Array<{ user_id: number | null; success: boolean; error?: string }>;
+  [key: string]: unknown;
 }
 
 export class DbProxyService {
@@ -18,10 +23,10 @@ export class DbProxyService {
     return { success: true, data: row ?? null };
   }
 
-  async write(codeword: string, data: Record<string, any>): Promise<DbProxyResult> {
+  async write(codeword: string, data: Record<string, unknown>): Promise<DbProxyResult> {
     const now = new Date().toISOString().replace("T", " ").slice(0, 19);
 
-    const fields: Record<string, any> = {};
+    const fields: Record<string, unknown> = {};
     for (const [key, value] of Object.entries(data)) {
       if (key === "codeword" || key === "created_at" || key === "updated_at") continue;
       if (!SAFE_COLUMN_NAME_RE.test(key)) continue;
@@ -36,6 +41,7 @@ export class DbProxyService {
 
     const keys = Object.keys(fields);
     const columns = ["codeword", ...keys, "created_at", "updated_at"];
+
     const placeholders = columns
       .map((col) =>
         col === "created_at"
@@ -44,7 +50,7 @@ export class DbProxyService {
       )
       .join(", ");
 
-    const values: any[] = [codeword];
+    const values: unknown[] = [codeword];
     for (const k of keys) values.push(fields[k]);
     values.push(codeword);
     values.push(now);
@@ -58,7 +64,7 @@ export class DbProxyService {
         .run();
       return { success: true, codeword, updated_at: now };
     } catch (err) {
-      return { success: false, error: String(err) };
+      return { success: false, error: err instanceof Error ? err.message : String(err) };
     }
   }
 
@@ -75,37 +81,50 @@ export class DbProxyService {
     return { success: true, data: result.results ?? [] };
   }
 
-  async updateUsers(users: any[]): Promise<DbProxyResult> {
-    const results: any[] = [];
+  async updateUsers(
+    users: Array<{ user_id?: number; fields?: Record<string, unknown> }>,
+  ): Promise<DbProxyResult> {
+    const results: Array<{ user_id: number | null; success: boolean; error?: string }> = [];
+
     for (const u of users) {
       const userId = u?.user_id;
       const rawFields = u?.fields;
+
       if (!userId || !rawFields || typeof rawFields !== "object") {
         results.push({ user_id: userId ?? null, success: false, error: "user_id and fields required" });
         continue;
       }
-      const fields: Record<string, any> = {};
+
+      const fields: Record<string, unknown> = {};
       for (const [key, value] of Object.entries(rawFields)) {
         if (key === "user_id") continue;
         if (!SAFE_COLUMN_NAME_RE.test(key)) continue;
         fields[key] = value;
       }
+
       const keys = Object.keys(fields);
       if (keys.length === 0) {
         results.push({ user_id: userId, success: false, error: "no valid fields" });
         continue;
       }
+
       try {
         const setClause = keys.map((k) => `${k} = ?`).join(", ");
         const values = keys.map((k) => fields[k]);
+
         await this.env.DB.prepare(`UPDATE users SET ${setClause} WHERE user_id = ?`)
           .bind(...values, userId)
           .run();
         results.push({ user_id: userId, success: true });
       } catch (err) {
-        results.push({ user_id: userId, success: false, error: String(err) });
+        results.push({
+          user_id: userId,
+          success: false,
+          error: err instanceof Error ? err.message : String(err),
+        });
       }
     }
+
     return { success: true, results };
   }
 
@@ -114,18 +133,21 @@ export class DbProxyService {
       `SELECT name FROM sqlite_master WHERE type='table' AND name='settings'`,
     ).first();
     if (!tableExists) return { success: true, data: null };
+
     const row = await this.env.DB.prepare(`SELECT * FROM settings LIMIT 1`).first();
     return { success: true, data: row ?? null };
   }
 
-  async updateSettings(data: Record<string, any>): Promise<DbProxyResult> {
-    const fields: Record<string, any> = {};
+  async updateSettings(data: Record<string, unknown>): Promise<DbProxyResult> {
+    const fields: Record<string, unknown> = {};
     for (const [key, value] of Object.entries(data)) {
       if (!SAFE_COLUMN_NAME_RE.test(key)) continue;
       fields[key] = value === "" ? null : value;
     }
+
     const keys = Object.keys(fields);
     if (keys.length === 0) return { success: false, error: "no valid fields" };
+
     try {
       const tableExists = await this.env.DB.prepare(
         `SELECT name FROM sqlite_master WHERE type='table' AND name='settings'`,
@@ -133,18 +155,21 @@ export class DbProxyService {
       if (!tableExists) {
         await this.env.DB.prepare(`CREATE TABLE settings (id INTEGER PRIMARY KEY DEFAULT 1)`).run();
       }
+
       const rowExists = await this.env.DB.prepare(`SELECT id FROM settings LIMIT 1`).first();
       if (!rowExists) {
         await this.env.DB.prepare(`INSERT INTO settings (id) VALUES (1)`).run();
       }
+
       const setClause = keys.map((k) => `${k} = ?`).join(", ");
       const values = keys.map((k) => fields[k]);
+
       await this.env.DB.prepare(`UPDATE settings SET ${setClause} WHERE id = 1`)
         .bind(...values)
         .run();
       return { success: true };
     } catch (err) {
-      return { success: false, error: String(err) };
+      return { success: false, error: err instanceof Error ? err.message : String(err) };
     }
   }
 }

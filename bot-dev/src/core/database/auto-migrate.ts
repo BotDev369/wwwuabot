@@ -1,7 +1,7 @@
 /**
  * Визначає тип SQLite колонки на основі значення JavaScript.
  */
-function inferSqliteType(value: any): "INTEGER" | "REAL" | "TEXT" {
+function inferSqliteType(value: unknown): "INTEGER" | "REAL" | "TEXT" {
   if (value === null || value === undefined) {
     return "TEXT"; // NULL значення → TEXT
   }
@@ -25,36 +25,33 @@ function inferSqliteType(value: any): "INTEGER" | "REAL" | "TEXT" {
 export async function withAutoMigrate<T>(
   db: D1Database,
   fn: () => Promise<T>,
-  fieldsToCreate: Record<string, any>,
+  fieldsToCreate: Record<string, unknown>,
   tableName: string,
 ): Promise<T> {
-  let lastError: any;
+  let lastError: unknown;
   let attempts = 0;
   const maxAttempts = Object.keys(fieldsToCreate).length + 1;
 
   while (attempts < maxAttempts) {
     try {
       return await fn();
-    } catch (error: any) {
+    } catch (error: unknown) {
       lastError = error;
-      const msg = error?.message || String(error);
+      const msg = error instanceof Error ? error.message : String(error);
 
       // Шукаємо назву відсутньої колонки в помилці SQLite
       const match = msg.match(/no such column: (\w+)|has no column named (\w+)/);
       if (match) {
         const missingField = match[1] || match[2];
         const sampleValue = fieldsToCreate[missingField];
-
         if (sampleValue !== undefined) {
           const type = inferSqliteType(sampleValue);
           console.log(
             `[Auto-Migrate] Creating column: ${tableName}.${missingField} ${type} DEFAULT NULL`,
           );
-
           await db
             .prepare(`ALTER TABLE ${tableName} ADD COLUMN ${missingField} ${type} DEFAULT NULL`)
             .run();
-
           attempts++;
           continue; // Повторюємо спробу
         }

@@ -129,7 +129,7 @@ export function DynamicPage({ baseCodeword }: DynamicPageProps = {}) {
   // Завантаження профілю користувача (для conditional rendering)
   useEffect(() => {
     // Отримуємо user_id з Telegram WebApp SDK
-    const tg = typeof window !== "undefined" ? (window as any).Telegram?.WebApp : null;
+    const tg = typeof window !== "undefined" ? window.Telegram?.WebApp : null;
     const tgUser = tg?.initDataUnsafe?.user;
     const userId = tgUser?.id;
 
@@ -138,7 +138,7 @@ export function DynamicPage({ baseCodeword }: DynamicPageProps = {}) {
     let cancelled = false;
     fetch(`/api/user/profile?user_id=${userId}`)
       .then((res) => res.json())
-      .then((data: any) => {
+      .then((data: { ok?: boolean; user?: UserProfile }) => {
         if (!cancelled && data?.ok && data.user) {
           setUserProfile(data.user);
         }

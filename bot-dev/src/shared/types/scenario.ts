@@ -44,6 +44,6 @@ export interface Scenario {
   notify_groups: string | null;
   notify_template: string | null;
   rich_message: boolean; // ← NEW
-  rich_data: any[] | null; // ← NEW: масив блоків
+  rich_data: Record<string, unknown>[] | null; // ← NEW: масив блоків
   page_data: Record<string, unknown> | null; // ← NEW: конфігурація веб-сторінки (Page Builder)
 }

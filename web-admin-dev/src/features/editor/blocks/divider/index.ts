@@ -12,8 +12,8 @@ export const dividerConfig = {
     id,
     type: "divider",
   }),
-  Editor: DividerEditor as any,
-  Preview: DividerPreview as any,
+  Editor: DividerEditor,
+  Preview: DividerPreview,
   toTelegram: utils.toTelegram,
   fromTelegram: utils.fromTelegram,
 };

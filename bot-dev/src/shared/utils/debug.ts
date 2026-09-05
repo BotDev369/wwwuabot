@@ -4,10 +4,10 @@
 
 export const DEBUG = true;
 
-export function log(checkpoint: string, message: string, data?: Record<string, any>): void {
+export function log(checkpoint: string, message: string, data?: Record<string, unknown>): void {
   if (!DEBUG) return;
 
-  const entry: Record<string, any> = {
+  const entry: Record<string, unknown> = {
     checkpoint,
     msg: message,
   };

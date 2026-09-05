@@ -1,5 +1,22 @@
 import { Context } from "grammy";
 import { LogMessage } from "./log";
+import type { ScenarioButton } from "./scenario";
+
+export interface BotUser {
+  user_id: number;
+  first_name?: string;
+  last_name?: string;
+  username?: string;
+  language?: string;
+  is_blocked?: number | boolean;
+  rate_limit_json?: string;
+  active_scenario?: string | null;
+  message_id?: number;
+  my_dates?: string;
+  created_at?: string;
+  updated_at?: string;
+  [key: string]: unknown;
+}
 
 export interface Env {
   BOT_TOKEN: string;
@@ -23,28 +40,28 @@ export interface ScreenState {
     mid?: string;
     bot?: string;
   };
-  buttons: any[][];
+  buttons: ScenarioButton[][];
   qty_options?: string | null;
   price?: number | null;
   notify_groups?: string | null;
   notify_template?: string | null;
-  rich_message?: boolean; // ← NEW
-  rich_data?: any[] | null; // ← NEW
+  rich_message?: boolean;
+  rich_data?: Record<string, unknown>[] | null;
 }
 
 export type AppContext = Context & {
   env: Env;
-  user?: Record<string, any>;
+  user?: BotUser;
   userDirty?: boolean;
   menuDirty?: boolean;
   screen?: ScreenState;
   liveMessageSent?: boolean;
   pickTarget?: string;
-  pendingNotification?: { data: Record<string, any> }; // ← ДОДАЄМО ЦЕ ПОЛЕ
+  pendingNotification?: { data: Record<string, unknown> };
 };
 
 export interface Settings {
   bot_active: number;
   group_admin: string;
-  [key: string]: any;
+  [key: string]: unknown;
 }

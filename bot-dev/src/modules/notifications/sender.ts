@@ -12,7 +12,7 @@ export async function sendNotification(
   topicId?: number,
 ): Promise<boolean> {
   try {
-    const options: any = { parse_mode: "HTML" };
+    const options: { parse_mode: "HTML"; message_thread_id?: number } = { parse_mode: "HTML" };
     if (topicId) {
       options.message_thread_id = topicId;
     }

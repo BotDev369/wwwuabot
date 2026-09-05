@@ -8,7 +8,7 @@ interface AuthGateProps {
 
 function isTelegramWebApp(): boolean {
   try {
-    const tg = (window as any).Telegram?.WebApp;
+    const tg = window.Telegram?.WebApp;
     // SDK creates empty object even outside Telegram.
     // Real Telegram has initDataUnsafe.user with id.
     return !!tg?.initDataUnsafe?.user?.id;

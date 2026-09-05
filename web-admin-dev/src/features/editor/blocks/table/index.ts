@@ -20,8 +20,8 @@ export const tableConfig = {
     isBordered: true,
     isStriped: false,
   }),
-  Editor: TableEditor as any,
-  Preview: TablePreview as any,
+  Editor: TableEditor,
+  Preview: TablePreview,
   toTelegram: utils.toTelegram,
   fromTelegram: utils.fromTelegram,
 };
