@@ -27,7 +27,9 @@ export function FeatureCardBlock({ block }: BlockComponentProps) {
       className="wb-block-features"
       style={{
         display: 'grid',
-        gridTemplateColumns: `repeat(${columns}, 1fr)`,
+        // minmax(0, 1fr) — без цього колонка не стискається менше за
+        // min-content вмісту картки і розпирає сторінку на мобільних.
+        gridTemplateColumns: `repeat(${columns}, minmax(0, 1fr))`,
         gap: 'var(--sp-4)',
       }}
     >

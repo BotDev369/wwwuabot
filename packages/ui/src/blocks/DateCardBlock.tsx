@@ -24,9 +24,12 @@ const ZODIAC_SIGNS = [
   { name: 'Стрілець', symbol: '♐', dates: '22.11 – 21.12', element: 'Вогонь' },
 ];
 
-function getZodiacSign(month: number, day: number): typeof ZODIAC_SIGNS[0] {
+export function getZodiacSign(month: number, day: number): typeof ZODIAC_SIGNS[0] {
   const cutoffs = [20, 19, 20, 20, 21, 21, 22, 22, 22, 23, 22, 21];
-  const idx = day > cutoffs[month - 1] ? month : (month + 10) % 12;
+  // day > cutoff: новий знак почався в ЦЬОМУ місяці -> індекс = month % 12
+  //   (для грудня, month=12, це коректно wrap-иться в 0 = Козеріг).
+  // day <= cutoff: діє знак, що почався в ПОПЕРЕДНЬОМУ місяці -> індекс = month - 1.
+  const idx = day > cutoffs[month - 1] ? month % 12 : month - 1;
   return ZODIAC_SIGNS[idx];
 }
 

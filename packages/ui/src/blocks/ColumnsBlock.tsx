@@ -31,16 +31,19 @@ export function ColumnsBlock({ block, children }: BlockComponentProps) {
     lg: 'var(--sp-6)',
   };
 
+  // minmax(0, Nfr) замість Nfr: без явного мінімуму 0 колонка не
+  // стискається менше за min-content вмісту, що розпирає сітку (і сторінку)
+  // за межі екрана на вузьких мобільних viewport'ах.
   const widthMap: Record<string, string> = {
-    auto: '1fr',
-    '1/3': '1fr',
-    '1/2': '1fr',
-    '2/3': '2fr',
+    auto: 'minmax(0, 1fr)',
+    '1/3': 'minmax(0, 1fr)',
+    '1/2': 'minmax(0, 1fr)',
+    '2/3': 'minmax(0, 2fr)',
   };
 
   const gridCols = columns.length > 0
-    ? columns.map((col) => widthMap[col.width ?? 'auto'] ?? '1fr').join(' ')
-    : `repeat(${count}, 1fr)`;
+    ? columns.map((col) => widthMap[col.width ?? 'auto'] ?? 'minmax(0, 1fr)').join(' ')
+    : `repeat(${count}, minmax(0, 1fr))`;
 
   return (
     <div

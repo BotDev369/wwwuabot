@@ -988,6 +988,11 @@ main {
   display: flex;
   min-height: 100vh;
   width: 100%;
+  /* Запобіжник: .layout (шел застосунку) вже мав overflow-x:hidden,
+     а .page-layout (рендер контенту Page Builder) — ні. Будь-який блок,
+     що розпирає ширину (грід без minmax(0,...), довгий рядок тощо),
+     тягнув за собою всю сторінку вбік на мобільних. */
+  overflow-x: hidden;
 }
 
 .page-zone {
@@ -1006,6 +1011,7 @@ main {
   display: flex;
   flex-direction: column;
   min-width: 0;
+  overflow-x: hidden;
 }
 
 .page-zone--header {
@@ -1016,8 +1022,10 @@ main {
 
 .page-zone--main {
   flex: 1;
+  min-width: 0;
   padding: 24px;
   background: var(--bg-0);
+  overflow-x: hidden;
 }
 
 .page-zone--footer {
@@ -1148,11 +1156,20 @@ main {
     left: 0;
   }
 
-  /* Header with hamburger */
+  /* Header with hamburger.
+     БУЛО: display:flex; align-items:center — це ставило бургер і ВЕСЬ
+     вміст header-зони (hero/badge/stat/...) в один нерозривний рядок
+     без flex-wrap, що розпирало сторінку вбік на мобільних.
+     Тепер бургер — окремий рядок зверху, а контент зони йде звичайним
+     блочним потоком під ним і може вільно переноситись/стискатись. */
   .page-zone--header {
     display: flex;
-    align-items: center;
+    flex-direction: column;
     gap: 8px;
+  }
+
+  .page-zone--header .page-hamburger {
+    align-self: flex-start;
   }
 
   .page-zone-group {
