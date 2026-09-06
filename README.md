@@ -1,162 +1,122 @@
-# WWWUABOT [v:1.1]
+# 🌟 WWWUABOT Platform
 
-Багатофункціональний проект: Telegram-бот + веб-платформа з модульною архітектурою.
+> **Модульна екосистема Telegram-платформи: бот-шлюз + повноцінний Web Mini App + блоковий конструктор персональних і публічних сайтів + сервіси життя, бізнесу та спільноти.**  
+> *(Проєкт знаходиться в процесі підготовки до теплого, людяного ребрендингу — див. [docs/PRODUCT_VISION.md](docs/PRODUCT_VISION.md))*
 
-## 📁 Структура проекту (Monorepo — 4 Cloudflare Workers)
+[![CI / CD Deploy](https://github.com/BotDev369/wwwuabot/actions/workflows/deploy.yml/badge.svg)](https://github.com/BotDev369/wwwuabot/actions/workflows/deploy.yml)
+[![Tests: Vitest](https://img.shields.io/badge/tests-34%20passing-success.svg)](vitest.config.ts)
+[![TypeScript: Strict](https://img.shields.io/badge/typescript-0%20any-blue.svg)](packages/shared/)
+[![Cloudflare Workers](https://img.shields.io/badge/edge-Cloudflare%20Workers-orange.svg)](https://workers.cloudflare.com/)
+[![License: AGPL v3](https://img.shields.io/badge/license-AGPL%20v3-blue.svg)](LICENSE)
+
+---
+
+## 🧭 Про що цей проєкт?
+
+**WWWUABOT** — це не просто чат-бот, це масштабована веб-платформа нового покоління всередині Telegram, розроблена для людей, бізнесу та спільнот.
 
 ```
-wwwuabot/
-├── bot/            # 🤖 Telegram-бот (grammY + D1 + Queues + Cloudinary)
-│   ├── src/        #   код бота (middleware, router, actions, modules)
-│   ├── wrangler.toml
-│   ├── package.json
-│   └── tsconfig.json
-│
-├── api/            # 📡 REST API Worker (калькулятори, CRUD, аналітика)
-│   ├── src/        #   router.ts + controllers/ + shared/
-│   ├── wrangler.toml
-│   ├── package.json
-│   └── tsconfig.json
-│
-├── web/            # 🌐 Telegram Mini App (React 19 + Vite 8 + Tailwind 4)
-│   ├── src/        #   app/ layout/ pages/ shared/ stores/
-│   ├── wrangler.toml
-│   └── package.json
-│
-├── web-admin/      # 🖥️ Адмін-панель (React 19 + Vite 8 + Tailwind 4 + Zustand)
-│   ├── src/        #   app/ layout/ pages/ features/ shared/
-│   ├── wrangler.toml
-│   └── package.json
-│
-├── packages/       # Спільний код (npm workspace)
-│   └── shared/     # Дизайн-система, утиліти, типи
-│
-└── public docs/    # AUDIT.md, PROJECT_PLAN.md, SCORECARD.md
+┌─────────────────────────────────────────────────────────────┐
+│                 🚪 Telegram-бот (Шлюз)                      │
+│        Швидкий старт, сповіщення, контекстні дії            │
+└──────────────────────────────┬──────────────────────────────┘
+                               │ 
+                               ▼
+┌─────────────────────────────────────────────────────────────┐
+│          🌐 Веб-платформа в Telegram (Mini App)             │
+│  ┌───────────────────────┬───────────────────────────────┐  │
+│  │ 👥 Соцмережа          │ 🛍️ Купи-Продай                │  │
+│  │    та спільнота       │    комерція та бізнес         │  │
+│  ├───────────────────────┼───────────────────────────────┤  │
+│  │ 🎁 Обмін              │ 🧘 Відпочинок, розваги,       │  │
+│  │    та благодійність   │    розвиток і навчання        │  │
+│  ├───────────────────────┴───────────────────────────────┤  │
+│  │ 🧱 Конструктор сайтів (Page Builder)                  │  │
+│  │    • Приватні сторінки (особисті щоденники, трекери)  │  │
+│  │    • Публічні сторінки (портфоліо, візитки, магазини) │  │
+│  ├───────────────────────────────────────────────────────┤  │
+│  │ 🧩 Екосистема корисних мікросервісів                  │  │
+│  │    Органічний трафік • Взаємне ненав’язливе промо     │  │
+│  └───────────────────────────────────────────────────────┘  │
+└─────────────────────────────────────────────────────────────┘
 ```
 
-## 🚀 Технології
+### Ключові можливості:
+1. **🚪 Telegram-бот як «вхідні двері»:** миттєвий вхід без паролів, push-сповіщення, інтерактивні сценарії та миттєвий перехід на веб-платформу.
+2. **🧱 Конструктор сайтів (Page Builder):**
+   - **Приватні сторінки:** збереження особистих даних, списків, дат, планів виключно для себе.
+   - **Публічні сайти:** створення візиток, магазинів, сторінок послуг і публікація в загальний каталог платформи.
+   - **Модульність:** багата бібліотека готових блоків із можливістю замовлення індивідуального дизайну.
+3. **🤝 Сфери життя та комерції:**
+   - **Соціальна взаємодія:** нетворкінг, знайомства, групи за інтересами.
+   - **Маркетплейс:** розділи «Купи-продай», прямий зв’язок клієнта з продавцем.
+   - **Взаємодопомога:** секція обміну речами та благодійності («Дарую»).
+   - **Відпочинок і розвиток:** інтерактивні ігри, планувальники подій, корисні калькулятори.
+4. **🚀 Віральний Smart-Sharing:** автогенерація естетичних карток із фото та описом для шерінгу окремих сторінок чи конкретних блоків у чати й соцмережі.
+5. **🪻 Ініціатива ребрендингу:** поточна робоча назва змінюється на простішу, теплішу та людянішу назву (детальніше в [docs/PRODUCT_VISION.md](docs/PRODUCT_VISION.md)).
 
-| Компонент | Стек |
-|-----------|------|
-| **Bot** | TypeScript, grammY, Cloudflare Workers, D1 (SQLite), Cloudflare Queues, Cloudinary |
-| **API** | TypeScript, Cloudflare Workers, D1, KV (кеш), router + controllers |
-| **Web (TWA)** | React 19, TypeScript 6, Vite 8, Tailwind CSS 4, Zustand 5, React Router 7 |
-| **Web Admin** | React 19, TypeScript 6, Vite 8, Tailwind CSS 4, Zustand 5, React Router 7 |
-| **Shared** | CSS design tokens, light/dark themes, ThemeToggle component |
+---
 
-### Єдиний стек web/web-admin (оновлено 28.08.2026)
+## 🏗️ Архітектура монорепозиторію
 
-web і web-admin мають **100% ідентичний стек** та архітектуру src/:
+Проєкт побудований як **npm workspaces** монорепо на базі Edge-інфраструктури Cloudflare:
 
-| Параметр | Версія |
-|---|---|
-| React | 19.2 |
-| Vite | 8.1 |
-| TypeScript | 6.0 |
-| Tailwind CSS | 4.3 |
-| Zustand | 5.0 |
-| React Router | 7.18 (`createBrowserRouter`) |
-| `@cloudflare/vite-plugin` | 1.45 |
-| ESLint | flat config |
+| Сервіс | Каталог | Стек | Роль |
+|---|---|---|---|
+| **Bot** | `bot-dev/` | grammY, Cloudflare Workers, D1 (SQLite), Queues, Cloudinary | Telegram-бот, сценарії, фонове логування |
+| **API** | `api-dev/` | Cloudflare Workers, D1, KV, Hono-like router, UsersService | REST API для TWA, бізнес-логіка, калькулятори |
+| **Web Mini App** | `web-platform-dev/` | React 19, Vite 8, Tailwind CSS 4, Zustand 5, React Router 7 | Головний клієнтський додаток платформи |
+| **Admin Panel** | `web-admin-dev/` | React 19, Vite 8, Tailwind CSS 4, Zustand 5, Page Builder | Панель адміністратора та візуальний конструктор |
+| **Shared Core** | `packages/shared/` | TypeScript, Open-Props, Vitest | Спільні типи, утиліти дат, міграції, дизайн-токени |
+| **Shared UI** | `packages/ui/` | React 19, Tailwind CSS 4 | Бібліотека візуальних блоків і компонентів |
 
-## 🏗️ Архітектура
+---
 
-Кожен компонент — окремий Cloudflare Worker зі своїм `wrangler.toml` та `package.json`.
+## 📚 Документація
 
-### Зв'язки між воркерами:
-```
-Telegram Bot API
-      │
-      ▼
-   ┌──────┐     webhook      ┌──────────┐
-   │ Bot  │ ◄──────────────── │ Telegram │
-   │      │                   └──────────┘
-   └──┬───┘
-      │ D1 (users, scenarios, settings)
-      │
-      ▼
-   ┌──────┐     D1 + KV      ┌──────────┐
-   │ API  │ ◄──────────────── │   Web    │
-   │      │   (service bind)  │  (TWA)   │
-   └──────┘                   └──────────┘
-      ▲
-      │ D1 + KV
-   ┌──────────┐
-   │Web Admin │
-   │ (CMS)    │
-   └──────────┘
-```
+Вся офіційна документація проєкту стандартизована у папці `docs/`:
 
-### Архітектура src/ (web та web-admin):
-```
-src/
-├── App.tsx              # RouterProvider wrapper
-├── main.tsx             # Entry point (StrictMode + theme init)
-├── index.css            # Tailwind + shared design system
-├── worker.ts            # Cloudflare Worker
-├── app/                 # AuthGate + router
-├── layout/              # AppShell, Sidebar, Header, Footer
-├── pages/               # Page components
-├── shared/api/          # Typed API functions
-├── stores/              # Zustand stores
-└── features/            # (web-admin) Domain features
-```
+- **[docs/PRODUCT_VISION.md](docs/PRODUCT_VISION.md)** — повна візія платформи, філософія, мікросервіси та ребрендинг.
+- **[docs/REFACTORING_ROADMAP.md](docs/REFACTORING_ROADMAP.md)** — Топ-9 системних кроків до «кришталевого коду».
+- **[docs/SCORECARD.md](docs/SCORECARD.md)** — об’єктивна система оцінки якості та поточний бал (7.4 / 9).
+- **[docs/AUDIT.md](docs/AUDIT.md)** — технічний аудит і журнал вирішення технічного боргу.
+- **[CONTRIBUTING.md](CONTRIBUTING.md)** — обов’язковий регламент перевірок і правил для розробників та AI-агентів.
+- **[AGENTS.md](AGENTS.md)** — архітектурна довідка та правила контексту для AI-помічників.
+- **[packages/shared/DESIGN_SYSTEM.md](packages/shared/DESIGN_SYSTEM.md)** — дизайн-система токенів і кольорових палітр.
 
-### Ключові концепції:
-- **Scenario** — контентна одиниця (екран бота з кнопками, підписом, фото)
-- **Family Box** — JSON-стан користувача в колонках D1 (кошик, дати, ігри)
-- **Rich Message** — block-based повідомлення через Telegram Bot API
-- **Forum Topics** — нотифікації в Telegram Groups з розділенням по темах
+---
 
-## 🏗️ Запуск локально
+## 💻 Швидкий старт локально
 
 ```bash
-# Встановлення залежностей
+# 1. Клонування репозиторію
+git clone https://github.com/BotDev369/wwwuabot.git
+cd wwwuabot
+
+# 2. Встановлення всіх залежностей (виключно з кореня)
 npm install
 
-# Bot
-cd bot && npm run dev
+# 3. Запуск перевірок якості
+npm test               # Запуск 34 unit-тестів (Vitest)
+npm run typecheck      # Перевірка строгої типізації TypeScript
+npm run lint           # Перевірка стилю коду (ESLint)
 
-# API
-cd api && npm run dev
-
-# Web (TWA)
-cd web && npm run dev
-
-# Web Admin
-cd web-admin && npm run dev
+# 4. Локальний запуск сервісів
+npm run dev --workspace=bot-dev             # Запуск бота
+npm run dev --workspace=api-dev             # Запуск API
+npm run dev --workspace=web-platform-dev    # Запуск Web Mini App
+npm run dev --workspace=web-admin-dev       # Запуск Admin CMS
 ```
 
-### Змінні оточення (назви, не значення):
+---
 
-| Змінна | Де використовується | Призначення |
-|---|---|---|
-| `CLOUDFLARE_API_TOKEN` | CI/CD | Токен API Cloudflare для деплою |
-| `CLOUDFLARE_ACCOUNT_ID` | CI/CD | ID акаунту Cloudflare |
-| `ADMIN_SECRET` | web-admin | Пароль для входу в адмінку |
-| `BOT_TOKEN` | web-admin | Telegram Bot API token (для відправки повідомлень) |
+## 🚀 Деплой та CI/CD
 
-## 🚀 Деплой
+Деплой відбувається повністю автоматично через **GitHub Actions** при пуші у гілку `main`.
+Завдяки path-filtering Cloudflare деплоїть лише той воркер, у якому відбулися зміни.
 
-Деплой відбувається автоматично через GitHub Actions при пуші в `main`.
-Деплоїться лише змінений воркер (path filtering).
-
-```bash
-# Деплой конкретного воркера на dev
-cd web && npm run deploy:dev
-cd web-admin && npm run deploy:dev
-cd bot && npm run deploy:dev
-cd api && npm run deploy:dev
-```
+---
 
 ## 📄 Ліцензія
 
-Проєкт ліцензовано за [GNU AGPL v3](LICENSE). Будь-які похідні проєкти зобов'язані залишатись відкритими під тією ж ліцензією.
-
-## 📞 Контакти
-
-Репозиторій: https://github.com/BotDev369/wwwuabot
-
-
-## 🤖 AI Agent Integration
-*01.09.2026 — Qwen AI Agent successfully connected and tested direct push to `main`.*
+Проєкт розповсюджується за відкритою ліцензією **[GNU AGPL v3](LICENSE)**. Будь-які похідні роботи зобов’язані залишатися відкритими під цією ж ліцензією.

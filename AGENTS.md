@@ -1,7 +1,7 @@
 # AGENTS.md — Інструкція для AI-агентів у проєкті wwwuabot
 
 > **Версія:** 1.4
-> **Останнє оновлення:** 02.09.2026
+> **Останнє оновлення:** 06.09.2026 (Синхронізовано з Product Vision та новою структурою docs/)
 > **Статус:** містить перевірені факти та архітектурні рішення.
 
 Цей файл — стислий орієнтир для будь-якого AI-агента (Claude, GPT,
@@ -9,23 +9,23 @@ Buffy чи інший), що вперше заходить у проєкт. Ме
 агента вгадувати структуру й конвенції заново щоразу.
 
 **Перед будь-якою задачею з робочого плану** — обов'язково прочитай
-також `public docs/PROJECT_PLAN.md` (там окрема секція "Інструкція
+також `docs/PRODUCT_VISION.md та docs/REFACTORING_ROADMAP.md` (там окрема секція "Інструкція
 для AI-агентів" з протоколом статусів задач) і, за потреби,
-`public docs/AUDIT.md` та `public docs/SCORECARD.md`.
+`docs/AUDIT.md` та `docs/SCORECARD.md`.
 
 ---
 
 ## 1. Що це за проєкт
 
 Монорепо (npm workspaces) з чотирма незалежними Cloudflare Workers:```wwwuabot/
-├── bot/            # Telegram-бот: grammY + D1 (SQLite) + Cloudflare Queues + Cloudinary
-├── api/            # REST API: калькулятори, CRUD, аналітика (D1 + KV-кеш)
-├── web/            # Telegram Mini App: React 19, Vite 8, Tailwind 4, Zustand, React Router 7
-├── web-admin/      # Адмін-панель: React 19, Vite 8, Tailwind 4, Zustand, React Router 7
+├── bot-dev/            # Telegram-бот: grammY + D1 (SQLite) + Cloudflare Queues + Cloudinary
+├── api-dev/            # REST API: калькулятори, CRUD, аналітика (D1 + KV-кеш)
+├── web-platform-dev/            # Telegram Mini App: React 19, Vite 8, Tailwind 4, Zustand, React Router 7
+├── web-admin-dev/      # Адмін-панель: React 19, Vite 8, Tailwind 4, Zustand, React Router 7
 ├── packages/       # Спільний код (npm workspace package)
 │   ├── shared/     # Утиліти, типи, константи для всіх воркерів
 │   └── ui/         # Спільні React-компоненти Page Builder (web + web-admin)
-└── public docs/    # AUDIT.md, PROJECT_PLAN.md, SCORECARD.md — читати першими
+└── docs/    # AUDIT.md, PROJECT_PLAN.md, SCORECARD.md — читати першими
 ```
 
 Кожен воркер має власний `wrangler.toml` і `package.json` та
@@ -408,8 +408,8 @@ src/
   сервісу** (`bot/`, `api/`, `web/` — крім `web-admin/README.md`,
   який уже існує).
 - Повна методика оцінки стану проєкту і поточні бали за 10
-  критеріями — `public docs/SCORECARD.md`. Актуальний план задач із
-  пріоритетами і статусами — `public docs/PROJECT_PLAN.md`.
+  критеріями — `docs/SCORECARD.md`. Актуальний план задач із
+  пріоритетами і статусами — `docs/PRODUCT_VISION.md та docs/REFACTORING_ROADMAP.md`.
 
 ---
 

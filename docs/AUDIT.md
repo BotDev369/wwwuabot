@@ -1,10 +1,10 @@
 # Аудит проєкту wwwuabot — детальний розбір і план стандартизації
 
 **Дата аудиту:** 25.08.2026
-**Останнє оновлення:** 28.08.2026
+**Останнє оновлення:** 06.09.2026 (Синхронізовано з актуальним кодом)
 **Що перевірено:** структура 4 Cloudflare Workers (`bot/`, `api/`, `web/`, `web-admin/`), конфіги (`wrangler.toml`, `package.json`), ключові файли роутингу/логіки, стилі, наскрізні патерни.
 
-**Загальний висновок (оновлено 28.08.2026):** архітектура `bot/` залишається еталонною. `api/` розбитий на router+controllers. `web/` і `web-admin/` тепер мають **100% ідентичний стек** (React 19, Vite 8, Tailwind 4, Zustand, createBrowserRouter, feature-based structure). Основні проблеми, що залишились: MyDatesPage потребує розбиття на features (P2-2), web-admin worker.ts містить API-маршрути (тимчасовий виняток), тестів досі немає.
+**Загальний висновок (оновлено 28.08.2026):** архітектура `bot/` залишається еталонною. `api/` розбитий на router+controllers. `web/` і `web-admin/` тепер мають **100% ідентичний стек** (React 19, Vite 8, Tailwind 4, Zustand, createBrowserRouter, feature-based structure). Основні проблеми, що залишились: MyDatesPage потребує розбиття на features (P2-2), web-admin worker.ts містить API-маршрути (тимчасовий виняток), тести впроваджено на базі Vitest (34 unit-тести у packages/shared та api-dev).
 
 ## Статус задач (оновлено 28.08.2026)
 
@@ -16,8 +16,8 @@
 | P1-2 | ✅ Виконано | `withAutoMigrate` скопійовано в `api/src/shared/` |
 | P1-3 | ✅ Виконано | `formatSqliteDatetime()` в `packages/shared/` |
 | P1-4 | ✅ Виконано | `VALID_TYPES` об'єднано в одну константу |
-| P2-1 | ⬜ Заплановано | 101 використання `any` |
-| P2-2 | ⬜ Заплановано | `MyDatesPage.tsx` — 1167 рядків, потребує розбиття на `features/my-dates/` |
+| P2-1 | ✅ Виконано | Повна ліквідація 100+ `any`, 0 `any` у монорепо (коміт `0d30bfb`) |
+| P2-2 | 🔄 В роботі | `MyDatesPage.tsx` скорочено до 413 рядків, заплановано кастомний хук `useMyDates` (Задача #4) |
 | P2-3 | ✅ Виконано | npm workspaces + `packages/shared/` існують та використовуються |
 | P2-4 | ✅ Виконано | Логер `apiLog` в `api/`, `console.log` прибрано |
 | P3-1 | ⬜ Заплановано | Змішані стилі в `web-admin` (CSS + Tailwind) |
