@@ -40,7 +40,8 @@ export function GalleryBlock({ block }: BlockComponentProps) {
       className="wb-block-gallery"
       style={{
         display: 'grid',
-        gridTemplateColumns: `repeat(${columns}, 1fr)`,
+        // minmax(0, 1fr) запобігає розпиранню сітки за межі екрана на мобільних
+        gridTemplateColumns: `repeat(${columns}, minmax(0, 1fr))`,
         gap: gapMap[gap] ?? gapMap.md,
       }}
     >

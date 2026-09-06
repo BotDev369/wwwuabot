@@ -26,9 +26,12 @@ export function PricingBlock({ block }: BlockComponentProps) {
 
   if (plans.length === 0) return null;
 
+  // minmax(0, 1fr) замість 1fr: 1fr == minmax(auto, 1fr), і без явного
+  // мінімуму 0 колонка не стискається менше за min-content вмісту картки,
+  // що штовхає всю сітку (і сторінку) за межі екрана на мобільних.
   const gridCols = columns === 'auto'
-    ? `repeat(${Math.min(plans.length, 3)}, 1fr)`
-    : `repeat(${columns}, 1fr)`;
+    ? `repeat(${Math.min(plans.length, 3)}, minmax(0, 1fr))`
+    : `repeat(${columns}, minmax(0, 1fr))`;
 
   return (
     <div
