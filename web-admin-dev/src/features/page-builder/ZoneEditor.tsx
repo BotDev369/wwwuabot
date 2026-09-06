@@ -43,6 +43,12 @@ interface ZoneEditorProps {
 
   /** Callback: відкрити модалку додавання блоку для цієї зони. */
   onAddBlock?: (zone: BlockZone) => void;
+
+  /** Чи згорнута зона (акордеон закритий). Якщо не передано — використовується внутрішній стан. */
+  collapsed?: boolean;
+
+  /** Callback перемикання акордеона. */
+  onToggleCollapse?: () => void;
 }
 
 export function ZoneEditor({
@@ -51,8 +57,22 @@ export function ZoneEditor({
   context,
   onUpdateBlocks,
   onAddBlock,
+  collapsed: controlledCollapsed,
+  onToggleCollapse,
 }: ZoneEditorProps) {
-  const [collapsed, setCollapsed] = useState(false);
+  // За замовчуванням всі акордеони закриті (collapsed = true)
+  const [localCollapsed, setLocalCollapsed] = useState(true);
+
+  const isControlled = typeof controlledCollapsed === "boolean";
+  const collapsed = isControlled ? controlledCollapsed : localCollapsed;
+
+  const handleToggle = () => {
+    if (onToggleCollapse) {
+      onToggleCollapse();
+    } else {
+      setLocalCollapsed((prev) => !prev);
+    }
+  };
 
   // Доступні типи блоків для цієї зони
   const availableTypes = useMemo(() => getBlocksForZone(zone), [zone]);
@@ -216,7 +236,7 @@ export function ZoneEditor({
           cursor: "pointer",
           userSelect: "none",
         }}
-        onClick={() => setCollapsed(!collapsed)}
+        onClick={handleToggle}
       >
         <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
           <span style={{ fontSize: 14 }}>

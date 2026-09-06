@@ -114,6 +114,39 @@ export function PageBuilderInline({
   const empty = useMemo(() => isPageEmpty(config), [config]);
   const activeZones = useMemo(() => getActiveZones(config), [config]);
 
+  // Множина розгорнутих зон. За замовчуванням порожня (всі акордеони закриті).
+  const [expandedZones, setExpandedZones] = useState<Set<BlockZone>>(() => new Set());
+
+  const handleToggleZone = useCallback((zone: BlockZone) => {
+    setExpandedZones((prev) => {
+      const next = new Set(prev);
+      if (next.has(zone)) {
+        next.delete(zone);
+      } else {
+        next.add(zone);
+      }
+      return next;
+    });
+  }, []);
+
+  const allExpanded = useMemo(
+    () => activeZones.length > 0 && activeZones.every((z) => expandedZones.has(z)),
+    [activeZones, expandedZones],
+  );
+
+  const allCollapsed = useMemo(
+    () => activeZones.every((z) => !expandedZones.has(z)),
+    [activeZones, expandedZones],
+  );
+
+  const handleExpandAll = useCallback(() => {
+    setExpandedZones(new Set(activeZones));
+  }, [activeZones]);
+
+  const handleCollapseAll = useCallback(() => {
+    setExpandedZones(new Set());
+  }, []);
+
   // Зони, які ще не додані (для модалки)
   const handleUpdateZoneBlocks = useCallback(
     (zone: BlockZone, blocks: PageBlock[]) => {
@@ -138,6 +171,8 @@ export function PageBuilderInline({
         ...config,
         visibleZones: [...currentVisible, zone],
       });
+      // Розгортаємо новододану зону
+      setExpandedZones((prev) => new Set([...prev, zone]));
       setShowZoneModal(false);
     },
     [config, onChange],
@@ -175,6 +210,8 @@ export function PageBuilderInline({
         },
       });
 
+      // Розгортаємо зону, в яку додано блок
+      setExpandedZones((prev) => new Set([...prev, zone]));
       setShowBlockModal(false);
       setTargetZone(null);
     },
@@ -250,6 +287,88 @@ export function PageBuilderInline({
         </div>
       )}
 
+      {/* Zone header toolbar with accordion switcher */}
+      {!empty && activeZones.length > 0 && (
+        <div
+          style={{
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+            marginBottom: 8,
+            gap: 8,
+            flexWrap: "wrap",
+          }}
+        >
+          <span
+            style={{
+              fontSize: 12,
+              color: "var(--text-secondary)",
+              fontWeight: 500,
+            }}
+          >
+            Зони ({activeZones.length})
+          </span>
+
+          {/* Перемикач: всі відкрито / всі закрито */}
+          <div
+            role="group"
+            aria-label="Перемикач акордеонів"
+            style={{
+              display: "inline-flex",
+              alignItems: "center",
+              background: "var(--bg-secondary, #f1f5f9)",
+              borderRadius: 6,
+              padding: 2,
+              gap: 2,
+              border: "1px solid var(--border)",
+            }}
+          >
+            <button
+              type="button"
+              onClick={handleExpandAll}
+              style={{
+                padding: "3px 8px",
+                fontSize: 11,
+                fontWeight: allExpanded ? 600 : 400,
+                borderRadius: 4,
+                border: "none",
+                background: allExpanded ? "var(--accent, #6366f1)" : "transparent",
+                color: allExpanded ? "#fff" : "var(--text-secondary)",
+                cursor: "pointer",
+                display: "inline-flex",
+                alignItems: "center",
+                gap: 4,
+                transition: "all 0.15s ease",
+              }}
+              title="Розгорнути всі акордеони"
+            >
+              ▾ Всі відкрито
+            </button>
+            <button
+              type="button"
+              onClick={handleCollapseAll}
+              style={{
+                padding: "3px 8px",
+                fontSize: 11,
+                fontWeight: allCollapsed ? 600 : 400,
+                borderRadius: 4,
+                border: "none",
+                background: allCollapsed ? "var(--accent, #6366f1)" : "transparent",
+                color: allCollapsed ? "#fff" : "var(--text-secondary)",
+                cursor: "pointer",
+                display: "inline-flex",
+                alignItems: "center",
+                gap: 4,
+                transition: "all 0.15s ease",
+              }}
+              title="Згорнути всі акордеони"
+            >
+              ▸ Всі закрито
+            </button>
+          </div>
+        </div>
+      )}
+
       {/* Zone editors — visible zones + empty active zones */}
       {!empty &&
         activeZones.map((zone) => (
@@ -260,6 +379,8 @@ export function PageBuilderInline({
             context={context}
             onUpdateBlocks={handleUpdateZoneBlocks}
             onAddBlock={openBlockModal}
+            collapsed={!expandedZones.has(zone)}
+            onToggleCollapse={() => handleToggleZone(zone)}
           />
         ))}
 

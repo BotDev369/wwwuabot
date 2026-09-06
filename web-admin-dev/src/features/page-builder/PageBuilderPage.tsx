@@ -39,6 +39,39 @@ export function PageBuilderPage() {
   const [jsonError, setJsonError] = useState<string | null>(null);
 
   // Контекст для блоків
+  // Множина розгорнутих зон. За замовчуванням порожня (всі акордеони закриті).
+  const [expandedZones, setExpandedZones] = useState<Set<BlockZone>>(() => new Set());
+
+  const handleToggleZone = useCallback((zone: BlockZone) => {
+    setExpandedZones((prev) => {
+      const next = new Set(prev);
+      if (next.has(zone)) {
+        next.delete(zone);
+      } else {
+        next.add(zone);
+      }
+      return next;
+    });
+  }, []);
+
+  const allExpanded = useMemo(
+    () => ALL_ZONES.length > 0 && ALL_ZONES.every((z) => expandedZones.has(z)),
+    [expandedZones],
+  );
+
+  const allCollapsed = useMemo(
+    () => ALL_ZONES.every((z) => !expandedZones.has(z)),
+    [expandedZones],
+  );
+
+  const handleExpandAll = useCallback(() => {
+    setExpandedZones(new Set(ALL_ZONES));
+  }, []);
+
+  const handleCollapseAll = useCallback(() => {
+    setExpandedZones(new Set());
+  }, []);
+
   const context: BlockContext = useMemo(
     () => ({
       codeword: codeword ?? "",
@@ -301,6 +334,80 @@ export function PageBuilderPage() {
       {/* Конструктор */}
       {!jsonMode && !loading && (
         <div>
+          {/* Toolbar with accordion switcher */}
+          <div
+            style={{
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "space-between",
+              marginBottom: 8,
+              gap: 8,
+              flexWrap: "wrap",
+            }}
+          >
+            <span style={{ fontSize: 12, color: "var(--text-secondary)", fontWeight: 500 }}>
+              Зони ({ALL_ZONES.length})
+            </span>
+
+            {/* Перемикач: всі відкрито / всі закрито */}
+            <div
+              role="group"
+              aria-label="Перемикач акордеонів"
+              style={{
+                display: "inline-flex",
+                alignItems: "center",
+                background: "var(--bg-secondary, #f1f5f9)",
+                borderRadius: 6,
+                padding: 2,
+                gap: 2,
+                border: "1px solid var(--border)",
+              }}
+            >
+              <button
+                type="button"
+                onClick={handleExpandAll}
+                style={{
+                  padding: "3px 8px",
+                  fontSize: 11,
+                  fontWeight: allExpanded ? 600 : 400,
+                  borderRadius: 4,
+                  border: "none",
+                  background: allExpanded ? "var(--accent, #6366f1)" : "transparent",
+                  color: allExpanded ? "#fff" : "var(--text-secondary)",
+                  cursor: "pointer",
+                  display: "inline-flex",
+                  alignItems: "center",
+                  gap: 4,
+                  transition: "all 0.15s ease",
+                }}
+                title="Розгорнути всі акордеони"
+              >
+                ▾ Всі відкрито
+              </button>
+              <button
+                type="button"
+                onClick={handleCollapseAll}
+                style={{
+                  padding: "3px 8px",
+                  fontSize: 11,
+                  fontWeight: allCollapsed ? 600 : 400,
+                  borderRadius: 4,
+                  border: "none",
+                  background: allCollapsed ? "var(--accent, #6366f1)" : "transparent",
+                  color: allCollapsed ? "#fff" : "var(--text-secondary)",
+                  cursor: "pointer",
+                  display: "inline-flex",
+                  alignItems: "center",
+                  gap: 4,
+                  transition: "all 0.15s ease",
+                }}
+                title="Згорнути всі акордеони"
+              >
+                ▸ Всі закрито
+              </button>
+            </div>
+          </div>
+
           {ALL_ZONES.map((zone) => (
             <ZoneEditor
               key={zone}
@@ -308,6 +415,8 @@ export function PageBuilderPage() {
               blocks={config.zones[zone]}
               context={context}
               onUpdateBlocks={handleUpdateZoneBlocks}
+              collapsed={!expandedZones.has(zone)}
+              onToggleCollapse={() => handleToggleZone(zone)}
             />
           ))}
         </div>
