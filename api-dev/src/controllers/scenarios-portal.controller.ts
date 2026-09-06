@@ -37,7 +37,13 @@ function filterFields(
   for (const [key, value] of Object.entries(body)) {
     if (PROTECTED.has(key)) continue;
     if (!SAFE_RE.test(key)) continue;
-    fields[key] = value === "" ? null : value;
+    if (value === "") {
+      fields[key] = null;
+    } else if (value !== null && typeof value === "object") {
+      fields[key] = JSON.stringify(value);
+    } else {
+      fields[key] = value;
+    }
   }
   return fields;
 }
