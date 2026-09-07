@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { readUser, updateUser, type UserRow } from "../../shared/api/users.api";
-import { icons } from "@wwwuabot/shared";
+import { icons, SaveActionButtons, type SavingActionType } from "@wwwuabot/shared";
 
 const ico = (name: keyof typeof icons, size = 16) => (
   <span style={{ display: "inline-flex", alignItems: "center", width: size, height: size, flexShrink: 0 }}>
@@ -24,6 +24,9 @@ export function UserEditModal({ userId, onClose, onSaved }: Props) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
+  const [savingAction, setSavingAction] = useState<SavingActionType>(null);
+  const [justSaved, setJustSaved] = useState(false);
+  const [success, setSuccess] = useState(false);
 
   // ── Typed fields ──
   const [role, setRole] = useState("user");
@@ -88,9 +91,11 @@ export function UserEditModal({ userId, onClose, onSaved }: Props) {
     );
   }
 
-  async function handleSave() {
+  async function handleSave(shouldClose: boolean = false) {
     setSaving(true);
+    setSavingAction(shouldClose ? "saveAndClose" : "save");
     setError(null);
+    setJustSaved(false);
     try {
       const patch: Record<string, unknown> = {
         role,
@@ -99,7 +104,6 @@ export function UserEditModal({ userId, onClose, onSaved }: Props) {
         discount,
         permissions: JSON.stringify(permissions),
       };
-
       // Include extra fields
       for (const [k, v] of Object.entries(extraFields)) {
         if (v.startsWith("{") || v.startsWith("[")) {
@@ -110,13 +114,22 @@ export function UserEditModal({ userId, onClose, onSaved }: Props) {
           patch[k] = v;
         }
       }
-
       await updateUser(userId, patch);
       onSaved();
+      if (shouldClose) {
+        setSuccess(true);
+        setTimeout(() => {
+          onClose();
+        }, 500);
+      } else {
+        setJustSaved(true);
+        setTimeout(() => setJustSaved(false), 2000);
+      }
     } catch (e) {
       setError((e as Error).message);
     } finally {
       setSaving(false);
+      setSavingAction(null);
     }
   }
 
@@ -277,12 +290,17 @@ export function UserEditModal({ userId, onClose, onSaved }: Props) {
         </div>
 
         <div className="wb-modal-footer">
-          <button className="wb-btn wb-btn-secondary wb-btn-sm" onClick={onClose} disabled={saving}>
-            Скасувати
-          </button>
-          <button className="wb-btn wb-btn-primary wb-btn-sm" onClick={handleSave} disabled={saving || loading}>
-            {saving ? "Збереження…" : <>{ico("save")} Зберегти</>}
-          </button>
+          <SaveActionButtons
+            onSaveAndClose={() => handleSave(true)}
+            onSave={() => handleSave(false)}
+            onClose={onClose}
+            saving={saving}
+            savingAction={savingAction}
+            loading={loading}
+            saved={justSaved}
+            success={success}
+            size="sm"
+          />
         </div>
       </div>
     </div>

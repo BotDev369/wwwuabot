@@ -3179,3 +3179,11 @@ body {
     text-align: center;
   }
 }
+
+
+/* ── Save / Close Action Bar Integration ── */
+.wb-modal-footer > .wb-save-actions,
+.scn-modal .wb-modal-footer > .wb-save-actions {
+  flex: 1 1 100% !important;
+  width: 100% !important;
+}

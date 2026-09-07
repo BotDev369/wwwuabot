@@ -36,6 +36,7 @@ import { WebConstructor } from './WebConstructor';
 import { TabPreview } from './ScenarioPreview';
 import { ScenarioJsonEditor } from './ScenarioJsonEditor';
 import { FullscreenBuilder } from './FullscreenBuilder';
+import { SaveActionButtons, type SavingActionType } from '@wwwuabot/shared';
 
 // ── Icon helper ───────────────────────────────────────────────────
 
@@ -66,6 +67,8 @@ export function ScenarioCardModal({ codeword, table, onClose, onSaved, initialSu
   const [allFields, setAllFields] = useState<Record<string, unknown>>({});
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [savingAction, setSavingAction] = useState<SavingActionType>(null);
+  const [justSaved, setJustSaved] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
   const [fullscreenBuilder, setFullscreenBuilder] = useState(false);
@@ -110,9 +113,11 @@ export function ScenarioCardModal({ codeword, table, onClose, onSaved, initialSu
   }, []);
 
   // ── Save handler (processes jsonText if currently on json subtab) ──
-  const handleSave = useCallback(async () => {
+  const handleSave = useCallback(async (shouldClose: boolean = false) => {
     setSaving(true);
+    setSavingAction(shouldClose ? "saveAndClose" : "save");
     setError(null);
+    setJustSaved(false);
     try {
       let fieldsToSave = { ...allFields };
 
@@ -175,7 +180,7 @@ export function ScenarioCardModal({ codeword, table, onClose, onSaved, initialSu
       } else if ((e.ctrlKey || e.metaKey) && e.key === 's') {
         e.preventDefault();
         if (!saving && !loading) {
-          void handleSave();
+          void handleSave(false);
         }
       }
     };
@@ -372,27 +377,25 @@ export function ScenarioCardModal({ codeword, table, onClose, onSaved, initialSu
             allFields={allFields}
             updateField={updateField}
             onClose={() => setFullscreenBuilder(false)}
+            onSave={(shouldClose) => handleSave(shouldClose)}
+            saving={saving}
+            savingAction={savingAction}
+            saved={justSaved}
           />
         )}
 
-        {/* Footer */}
+        {/* Footer — єдиний модуль дій збереження та закриття */}
         <div className="wb-modal-footer">
-          {success ? (
-            <span className="usr-edit-success">✓ Збережено</span>
-          ) : (
-            <>
-              <button
-                className="wb-btn wb-btn-primary"
-                onClick={handleSave}
-                disabled={saving || loading}
-              >
-                {saving ? 'Збереження…' : <>{ico('save')} Зберегти</>}
-              </button>
-              <button className="wb-btn wb-btn-secondary" onClick={onClose}>
-                Скасувати
-              </button>
-            </>
-          )}
+          <SaveActionButtons
+            onSaveAndClose={() => handleSave(true)}
+            onSave={() => handleSave(false)}
+            onClose={onClose}
+            saving={saving}
+            savingAction={savingAction}
+            loading={loading}
+            saved={justSaved}
+            success={success}
+          />
         </div>
       </div>
     </div>

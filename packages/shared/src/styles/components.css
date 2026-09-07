@@ -878,3 +878,115 @@
 .wb-text-green { color: var(--green); }
 .wb-font-mono { font-family: var(--font-mono); }
 .wb-truncate { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+
+/* ── Save / Close Action Bar ─────────────────────────────────────────── */
+.wb-save-actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: var(--sp-2, 8px);
+  width: 100%;
+}
+
+.wb-save-actions--success {
+  justify-content: center;
+  padding: var(--sp-2, 8px) 0;
+}
+
+.wb-save-actions-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  min-height: 38px;
+  padding: 8px 14px;
+  font-size: var(--text-sm, 14px);
+  font-weight: 500;
+  border-radius: var(--radius, 8px);
+  cursor: pointer;
+  white-space: nowrap;
+  user-select: none;
+  transition: background var(--duration-fast, 0.15s) ease,
+              border-color var(--duration-fast, 0.15s) ease,
+              color var(--duration-fast, 0.15s) ease,
+              transform var(--duration-fast, 0.1s) ease;
+}
+
+.wb-save-actions-btn:active {
+  transform: scale(0.98);
+}
+
+.wb-save-actions-btn.wb-btn-sm {
+  min-height: 30px;
+  padding: 4px 10px;
+  font-size: var(--text-xs, 12px);
+}
+
+.wb-save-actions-btn:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
+.wb-save-actions-btn--primary {
+  background: var(--accent, #000);
+  color: var(--text-inverse, #fff);
+  border: 1px solid var(--accent, #000);
+}
+
+.wb-save-actions-btn--primary:hover:not(:disabled) {
+  background: var(--accent-hover, #222);
+  border-color: var(--accent-hover, #222);
+}
+
+.wb-save-actions-btn--secondary {
+  background: var(--surface, #fff);
+  color: var(--text-primary, #111827);
+  border: 1px solid var(--border, #e5e7eb);
+}
+
+.wb-save-actions-btn--secondary:hover:not(:disabled) {
+  background: var(--surface-hover, #f3f4f6);
+  border-color: var(--border-hover, #d1d5db);
+}
+
+.wb-save-actions-btn--close {
+  background: transparent;
+  color: var(--text-secondary, #4b5563);
+  border: 1px solid var(--border, #e5e7eb);
+}
+
+.wb-save-actions-btn--close:hover:not(:disabled) {
+  background: var(--surface-hover, #f3f4f6);
+  color: var(--text-primary, #111827);
+}
+
+.wb-save-actions-btn--saved {
+  background: var(--green-dim, #ecfdf5) !important;
+  color: var(--green, #059669) !important;
+  border-color: var(--green, #10b981) !important;
+}
+
+/* Mobile responsive layout (max-width: 520px) */
+@media (max-width: 520px) {
+  .wb-save-actions {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+    width: 100%;
+  }
+
+  .wb-save-actions .wb-save-actions-btn--primary {
+    grid-column: span 2;
+    order: -1;
+  }
+
+  .wb-save-actions .wb-save-actions-btn {
+    width: 100%;
+    min-width: 0;
+    padding: 8px 6px;
+    font-size: 13px;
+    justify-content: center;
+  }
+}

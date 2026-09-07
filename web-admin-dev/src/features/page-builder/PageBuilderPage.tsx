@@ -20,6 +20,7 @@ import type {
 import { createEmptyPageConfig } from "@wwwuabot/shared/types/page-config";
 import { parsePageConfig } from "@wwwuabot/shared/types/page-config";
 import { ALL_ZONES } from "@wwwuabot/shared/types/page-config";
+import { SaveActionButtons, type SavingActionType } from "@wwwuabot/shared";
 import { ZoneEditor } from "./ZoneEditor";
 
 type SaveStatus = "idle" | "saving" | "saved" | "error";
@@ -33,6 +34,7 @@ export function PageBuilderPage() {
   const [scenarioPhoto, setScenarioPhoto] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [saveStatus, setSaveStatus] = useState<SaveStatus>("idle");
+  const [savingAction, setSavingAction] = useState<SavingActionType>(null);
   const [error, setError] = useState<string | null>(null);
   const [jsonMode, setJsonMode] = useState(false);
   const [jsonText, setJsonText] = useState("");
@@ -123,18 +125,25 @@ export function PageBuilderPage() {
   }, [codeword]);
 
   // Збереження
-  const handleSave = useCallback(async () => {
+  const handleSave = useCallback(async (shouldClose: boolean = false) => {
     if (!codeword) return;
     setSaveStatus("saving");
+    setSavingAction(shouldClose ? "saveAndClose" : "save");
     try {
       await updateScenarioFields(codeword, { page_data: JSON.stringify(config) }, "portal");
       setSaveStatus("saved");
-      setTimeout(() => setSaveStatus("idle"), 2000);
+      if (shouldClose) {
+        setTimeout(() => navigate("/scenarios-v2"), 500);
+      } else {
+        setTimeout(() => setSaveStatus("idle"), 2000);
+      }
     } catch (e) {
       setSaveStatus("error");
       setError((e as Error).message);
+    } finally {
+      setSavingAction(null);
     }
-  }, [codeword, config]);
+  }, [codeword, config, navigate]);
 
   // Оновлення блоків у зоні
   const handleUpdateZoneBlocks = useCallback(
@@ -234,18 +243,15 @@ export function PageBuilderPage() {
           >
             📋 Експорт
           </button>
-          <button
-            className="wb-btn wb-btn-primary"
-            onClick={handleSave}
-            disabled={saveStatus === "saving"}
-            style={{ fontSize: 13 }}
-          >
-            {saveStatus === "saving"
-              ? "Збереження…"
-              : saveStatus === "saved"
-                ? "✓ Збережено"
-                : "💾 Зберегти"}
-          </button>
+          <SaveActionButtons
+            size="sm"
+            onSaveAndClose={() => handleSave(true)}
+            onSave={() => handleSave(false)}
+            onClose={handleBack}
+            saving={saveStatus === "saving"}
+            savingAction={savingAction}
+            saved={saveStatus === "saved"}
+          />
         </div>
       </div>
 

@@ -283,7 +283,7 @@ export function UsersTable({ onMessage }: Props) {
         <UserEditModal
           userId={editUserId}
           onClose={closeAll}
-          onSaved={closeAll}
+          onSaved={() => { void useUsersStore.getState().refresh(); }}
         />
       )}
     </>

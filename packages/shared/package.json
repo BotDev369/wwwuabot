@@ -21,7 +21,8 @@
     "./stores/app.store": "./src/stores/app.store.ts",
     "./utils/datetime": "./src/utils/datetime.ts",
     "./utils/condition-evaluator": "./src/utils/condition-evaluator.ts",
-    "./database/auto-migrate": "./src/database/auto-migrate.ts"
+    "./database/auto-migrate": "./src/database/auto-migrate.ts",
+    "./components/SaveActionButtons": "./src/components/SaveActionButtons.tsx"
   },
   "dependencies": {
     "open-props": "^1.7.23"

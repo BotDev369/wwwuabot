@@ -24,6 +24,9 @@ export { Footer } from "./layout/Footer";
 // ── Components ─────────────────────────────────────────────────────
 export { UserProfileCard } from "./components/UserProfileCard";
 export type { UserProfileData, UserProfileCardProps } from "./components/UserProfileCard";
+// ── Save Actions Module ──────────────────────────────────────────────
+export { SaveActionButtons } from "./components/SaveActionButtons";
+export type { SaveActionButtonsProps, SavingActionType } from "./components/SaveActionButtons";
 
 // ── Stores ───────────────────────────────────────────────────────────
 export { useAppStore } from "./stores/app.store";
