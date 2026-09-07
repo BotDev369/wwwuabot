@@ -141,6 +141,14 @@ export function ZoneEditor({
     onUpdateBlocks(zone, updated);
   };
 
+  // Оновити назву блоку
+  const handleUpdateName = (blockId: string, name: string) => {
+    const updated = blocks.map((b) =>
+      b.id === blockId ? { ...b, name } : b,
+    );
+    onUpdateBlocks(zone, updated);
+  };
+
   // Оновити умови блоку
   const handleUpdateConditions = (blockId: string, conditions: BlockConditions | undefined) => {
     const updated = blocks.map((b) =>
@@ -216,6 +224,22 @@ export function ZoneEditor({
       if (b.id !== parentId) return b;
       const children = (b.children ?? []).map((c) =>
         c.id === childId ? { ...c, props } : c,
+      );
+      return { ...b, children };
+    });
+    onUpdateBlocks(zone, updated);
+  };
+
+  // Оновити назву дочірнього блоку
+  const handleUpdateChildName = (
+    parentId: string,
+    childId: string,
+    name: string,
+  ) => {
+    const updated = blocks.map((b) => {
+      if (b.id !== parentId) return b;
+      const children = (b.children ?? []).map((c) =>
+        c.id === childId ? { ...c, name } : c,
       );
       return { ...b, children };
     });
@@ -477,12 +501,14 @@ export function ZoneEditor({
                       zone={zone}
                       context={context}
                       onUpdateProps={handleUpdateProps}
+                      onUpdateName={handleUpdateName}
                       onUpdateConditions={handleUpdateConditions}
                       onRemove={handleRemoveBlock}
                       onChangeType={handleChangeType}
                       onAddChild={handleAddChild}
                       onRemoveChild={handleRemoveChild}
                       onUpdateChildProps={handleUpdateChildProps}
+                      onUpdateChildName={handleUpdateChildName}
                       onUpdateChildConditions={handleUpdateChildConditions}
                     />
                   </div>
