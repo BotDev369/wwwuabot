@@ -117,9 +117,7 @@ export function BlockEditor({
         alignItems: "center",
         gap: 6,
         padding: "6px 10px",
-        background: collapsed
-          ? "var(--bg-secondary, #f1f5f9)"
-          : "var(--bg-tertiary, #f0f2f5)",
+        background: collapsed ? "var(--bg-2)" : "var(--bg-3)",
         cursor: "pointer",
         userSelect: "none",
         minHeight: 36,
@@ -170,9 +168,9 @@ export function BlockEditor({
             fontSize: 13,
             fontWeight: 600,
             padding: "1px 6px",
-            border: "1px solid var(--accent, #6366f1)",
+            border: "1px solid var(--accent)",
             borderRadius: 4,
-            background: "var(--bg-primary)",
+            background: "var(--bg-1)",
             color: "var(--text-primary)",
             outline: "none",
           }}
@@ -205,7 +203,7 @@ export function BlockEditor({
           fontSize: 10,
           padding: "1px 6px",
           borderRadius: 4,
-          background: "var(--bg-tertiary, #e2e8f0)",
+          background: "var(--bg-4)",
           color: "var(--text-secondary)",
           fontWeight: 500,
           whiteSpace: "nowrap",
@@ -222,7 +220,7 @@ export function BlockEditor({
             fontSize: 9,
             padding: "1px 5px",
             borderRadius: 4,
-            background: "var(--accent, #6366f1)",
+            background: "var(--accent)",
             color: "#fff",
             fontWeight: 600,
             flexShrink: 0,
@@ -239,12 +237,12 @@ export function BlockEditor({
             fontSize: 10,
             padding: "1px 5px",
             borderRadius: 4,
-            background: "var(--bg-tertiary, #e2e8f0)",
-            color: "var(--text-secondary)",
-            flexShrink: 0,
-          }}
-        >
-          {block.children.length}
+          background: "var(--bg-4)",
+          color: "var(--text-secondary)",
+          flexShrink: 0,
+        }}
+      >
+        {block.children.length}
         </span>
       )}
 
@@ -261,8 +259,8 @@ export function BlockEditor({
             fontSize: 10,
             padding: "2px 6px",
             borderRadius: 4,
-            border: `1px solid ${showConditions ? "var(--accent, #6366f1)" : "var(--border)"}`,
-            background: showConditions ? "var(--accent, #6366f1)" : "transparent",
+            border: `1px solid ${showConditions ? "var(--accent)" : "var(--border)"}`,
+            background: showConditions ? "var(--accent)" : "transparent",
             color: showConditions ? "#fff" : "var(--text-secondary)",
             cursor: "pointer",
             whiteSpace: "nowrap",
@@ -289,9 +287,9 @@ export function BlockEditor({
             alignItems: "center",
           }}
           onMouseEnter={(e) => {
-            e.currentTarget.style.borderColor = "#ef4444";
-            e.currentTarget.style.color = "#ef4444";
-            e.currentTarget.style.background = "#fef2f2";
+            e.currentTarget.style.borderColor = "var(--red)";
+            e.currentTarget.style.color = "var(--red)";
+            e.currentTarget.style.background = "var(--red-dim)";
           }}
           onMouseLeave={(e) => {
             e.currentTarget.style.borderColor = "var(--border)";
@@ -326,7 +324,7 @@ export function BlockEditor({
             padding: "4px 8px",
             border: "1px solid var(--border)",
             borderRadius: 4,
-            background: "var(--bg-primary)",
+            background: "var(--bg-1)",
           }}
         >
           {availableTypes.map((def) => (

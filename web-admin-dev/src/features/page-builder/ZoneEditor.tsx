@@ -265,7 +265,7 @@ export function ZoneEditor({
           alignItems: "center",
           justifyContent: "space-between",
           padding: "8px 12px",
-          background: "var(--bg-secondary, #f1f5f9)",
+          background: "var(--bg-2)",
           cursor: "pointer",
           userSelect: "none",
         }}
@@ -282,7 +282,7 @@ export function ZoneEditor({
             style={{
               fontSize: 12,
               color: "var(--text-secondary)",
-              background: "var(--bg-tertiary)",
+              background: "var(--bg-3)",
               padding: "1px 6px",
               borderRadius: 10,
             }}
@@ -301,7 +301,7 @@ export function ZoneEditor({
               className="pb-sidebar-settings"
               style={{
                 padding: "10px 14px",
-                background: "var(--bg-secondary, rgba(0,0,0,0.02))",
+                background: "var(--bg-2)",
                 border: "1px solid var(--border)",
                 borderRadius: 8,
                 marginBottom: 12,
@@ -395,7 +395,7 @@ export function ZoneEditor({
                       padding: "5px 8px",
                       borderRadius: 6,
                       border: "1px solid var(--border)",
-                      background: "var(--bg-primary)",
+                      background: "var(--bg-1)",
                       color: "var(--text-primary)",
                     }}
                   >
@@ -426,7 +426,7 @@ export function ZoneEditor({
                       padding: "5px 8px",
                       borderRadius: 6,
                       border: "1px solid var(--border)",
-                      background: "var(--bg-primary)",
+                      background: "var(--bg-1)",
                       color: "var(--text-primary)",
                     }}
                   >
