@@ -265,7 +265,7 @@ export function ZoneEditor({
           alignItems: "center",
           justifyContent: "space-between",
           padding: "8px 12px",
-          background: "var(--bg-2)",
+          background: "var(--bg-3)",
           cursor: "pointer",
           userSelect: "none",
         }}
@@ -282,7 +282,7 @@ export function ZoneEditor({
             style={{
               fontSize: 12,
               color: "var(--text-secondary)",
-              background: "var(--bg-3)",
+              background: "var(--bg-4)",
               padding: "1px 6px",
               borderRadius: 10,
             }}

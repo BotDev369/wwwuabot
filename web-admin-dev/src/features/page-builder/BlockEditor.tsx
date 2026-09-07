@@ -117,7 +117,7 @@ export function BlockEditor({
         alignItems: "center",
         gap: 6,
         padding: "6px 10px",
-        background: collapsed ? "var(--bg-2)" : "var(--bg-3)",
+        background: collapsed ? "var(--bg-3)" : "var(--bg-4)",
         cursor: "pointer",
         userSelect: "none",
         minHeight: 36,

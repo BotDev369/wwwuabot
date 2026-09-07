@@ -237,7 +237,7 @@ export function PageBuilderInline({
               width: 56,
               height: 56,
               borderRadius: 14,
-              background: "var(--bg-secondary, #f1f5f9)",
+              background: "var(--bg-3)",
               display: "flex",
               alignItems: "center",
               justifyContent: "center",
@@ -316,7 +316,7 @@ export function PageBuilderInline({
             style={{
               display: "inline-flex",
               alignItems: "center",
-              background: "var(--bg-secondary, #f1f5f9)",
+              background: "var(--bg-3)",
               borderRadius: 6,
               padding: 2,
               gap: 2,
@@ -477,7 +477,7 @@ export function PageBuilderInline({
                         textAlign: "left",
                         border: "1px solid var(--border)",
                         borderRadius: 8,
-                        background: isActive ? "var(--bg-secondary)" : "var(--bg-primary)",
+                        background: isActive ? "var(--bg-3)" : "var(--bg-1)",
                         cursor: isActive ? "default" : "pointer",
                         opacity: isActive ? 0.5 : 1,
                       }}
@@ -660,18 +660,18 @@ function AddBlockModal({ onSelect, onClose, targetZone }: AddBlockModalProps) {
                     padding: "12px 14px",
                     border: "1px solid var(--border)",
                     borderRadius: 8,
-                    background: "var(--bg-primary)",
+                    background: "var(--bg-1)",
                     cursor: "pointer",
                     textAlign: "left",
                     transition: "border-color 0.15s, background 0.15s",
                   }}
                   onMouseEnter={(e) => {
                     e.currentTarget.style.borderColor = "var(--accent, #6366f1)";
-                    e.currentTarget.style.background = "var(--bg-secondary, #f1f5f9)";
+                    e.currentTarget.style.background = "var(--bg-3)";
                   }}
                   onMouseLeave={(e) => {
                     e.currentTarget.style.borderColor = "var(--border)";
-                    e.currentTarget.style.background = "var(--bg-primary)";
+                    e.currentTarget.style.background = "var(--bg-1)";
                   }}
                 >
                   <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
