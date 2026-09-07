@@ -107,6 +107,15 @@ export interface UserProfile {
  *
  * Зберігається в колонці `page_data` таблиці `scenarios`.
  */
+export interface SidebarSettings {
+  /** Позиція кнопки закриття: 'left' (зліва) або 'right' (справа) */
+  closeButtonPosition?: "left" | "right";
+  /** Розмір тексту для пунктів меню в сайдбарі */
+  fontSize?: string;
+  /** Відступ між пунктами меню в сайдбарі */
+  itemSpacing?: string;
+}
+
 export interface PageConfig {
   /** Версія формату (для майбутніх міграцій). */
   version: number;
@@ -116,6 +125,9 @@ export interface PageConfig {
 
   /** Зони, які користувач явно додав (видимі в конструкторі). */
   visibleZones?: BlockZone[];
+
+  /** Налаштування для зони сайдбару. */
+  sidebarSettings?: SidebarSettings;
 }
 
 // ── Контекст блоку ────────────────────────────────────────────────
@@ -138,6 +150,8 @@ export interface BlockContext {
 
   /** Додаткові дані, що передаються зі сторінки. */
   extra?: Record<string, unknown>;
+  /** Налаштування для зони сайдбару. */
+  sidebarSettings?: SidebarSettings;
 }
 
 // ── Визначення типу блоку ─────────────────────────────────────────

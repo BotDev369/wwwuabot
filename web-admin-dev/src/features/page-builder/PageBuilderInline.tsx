@@ -381,6 +381,13 @@ export function PageBuilderInline({
             onAddBlock={openBlockModal}
             collapsed={!expandedZones.has(zone)}
             onToggleCollapse={() => handleToggleZone(zone)}
+            sidebarSettings={config.sidebarSettings}
+            onUpdateSidebarSettings={(newSettings) => {
+              onChange({
+                ...config,
+                sidebarSettings: newSettings,
+              });
+            }}
           />
         ))}
 

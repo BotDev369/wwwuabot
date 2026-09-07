@@ -6,11 +6,13 @@
  *
  * @module packages/ui/src/PageRenderer
  */
-import { useState, useCallback, useEffect } from "react";
+
+import { useState, useCallback, useEffect, useMemo } from "react";
 import type {
   PageConfig,
   BlockContext,
 } from "@wwwuabot/shared/types/page-config";
+import { icons } from "@wwwuabot/shared";
 import { ZoneRenderer } from "./ZoneRenderer";
 
 interface PageRendererProps {
@@ -32,22 +34,6 @@ interface PageRendererProps {
   showZoneLabels?: boolean;
 }
 
-/**
- * Головний рендерер сторінки.
- *
- * Будує layout з 4 зон:
- * ```
- * ┌──────────┬──────────────────┐
- * │ SIDEBAR  │     HEADER       │
- * │          ├──────────────────┤
- * │          │      MAIN        │
- * │          ├──────────────────┤
- * │          │     FOOTER       │
- * └──────────┴──────────────────┘
- * ```
- *
- * Якщо зона порожня — вона не рендериться (немає пустих контейнерів).
- */
 const ZONE_LABELS: Record<string, string> = {
   sidebar: "📎 Sidebar",
   header: "📌 Header",
@@ -63,7 +49,19 @@ export function PageRenderer({
   showZoneLabels = false,
 }: PageRendererProps) {
   const zones = config?.zones ?? { sidebar: [], header: [], main: [], footer: [] };
+  const sidebarSettings = config?.sidebarSettings;
+  const closeButtonPosition = sidebarSettings?.closeButtonPosition ?? "left";
+
+  const enrichedContext: BlockContext = useMemo(
+    () => ({
+      ...context,
+      sidebarSettings,
+    }),
+    [context, sidebarSettings],
+  );
+
   const [sidebarOpen, setSidebarOpen] = useState(false);
+
   const hasSidebar = Boolean(zones.sidebar && zones.sidebar.length > 0);
   const hasHeader = Boolean(zones.header && zones.header.length > 0);
   const hasMain = Boolean(zones.main && zones.main.length > 0);
@@ -100,16 +98,14 @@ export function PageRenderer({
       {/* Floating hamburger when hasSidebar && !hasHeader (accessible on mobile) */}
       {hasSidebar && !hasHeader && (
         <button
-          className="page-hamburger page-hamburger--floating"
+          className="hamburger page-hamburger page-hamburger--floating"
           onClick={toggleSidebar}
           aria-label="Меню сторінки"
           type="button"
         >
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-            <line x1="3" y1="6" x2="21" y2="6" />
-            <line x1="3" y1="12" x2="21" y2="12" />
-            <line x1="3" y1="18" x2="21" y2="18" />
-          </svg>
+          <span />
+          <span />
+          <span />
         </button>
       )}
 
@@ -125,22 +121,21 @@ export function PageRenderer({
           data-zone="sidebar"
           onClick={handleSidebarClick}
         >
-          <button
-            className="page-sidebar-close"
-            onClick={closeSidebar}
-            aria-label="Закрити меню"
-            type="button"
-          >
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <line x1="18" y1="6" x2="6" y2="18" />
-              <line x1="6" y1="6" x2="18" y2="18" />
-            </svg>
-          </button>
+          <div className={`page-sidebar-header page-sidebar-header--${closeButtonPosition}`}>
+            <button
+              className="wb-close-btn page-sidebar-close"
+              onClick={closeSidebar}
+              aria-label="Закрити меню"
+              type="button"
+            >
+              {icons["close"]}
+            </button>
+          </div>
           {renderZoneLabel("sidebar")}
           <ZoneRenderer
             blocks={zones.sidebar}
             zone="sidebar"
-            context={context}
+            context={enrichedContext}
           />
         </aside>
       )}
@@ -154,23 +149,21 @@ export function PageRenderer({
             {/* Hamburger inside header — visible on mobile when sidebar has content */}
             {hasSidebar && (
               <button
-                className="page-hamburger"
+                className="hamburger page-hamburger"
                 onClick={toggleSidebar}
                 aria-label="Меню сторінки"
                 type="button"
               >
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                  <line x1="3" y1="6" x2="21" y2="6" />
-                  <line x1="3" y1="12" x2="21" y2="12" />
-                  <line x1="3" y1="18" x2="21" y2="18" />
-                </svg>
+                <span />
+                <span />
+                <span />
               </button>
             )}
             {renderZoneLabel("header")}
             <ZoneRenderer
               blocks={zones.header}
               zone="header"
-              context={context}
+              context={enrichedContext}
             />
           </header>
         )}
@@ -184,7 +177,7 @@ export function PageRenderer({
             <ZoneRenderer
               blocks={zones.main}
               zone="main"
-              context={context}
+              context={enrichedContext}
             />
           </main>
         )}
@@ -198,7 +191,7 @@ export function PageRenderer({
             <ZoneRenderer
               blocks={zones.footer}
               zone="footer"
-              context={context}
+              context={enrichedContext}
             />
           </footer>
         )}

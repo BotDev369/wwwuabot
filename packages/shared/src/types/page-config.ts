@@ -14,6 +14,7 @@ export type {
   BlockConditions,
   UserProfile,
   PageConfig,
+  SidebarSettings,
   BlockContext,
   BlockCategory,
   BlockDefinition,

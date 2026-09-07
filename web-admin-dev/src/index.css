@@ -2901,6 +2901,7 @@ body {
 /* Phone frame: sidebar displays in-flow without hiding */
 .phone-frame-body .page-hamburger,
 .phone-frame-body .page-hamburger--floating,
+.phone-frame-body .page-sidebar-header,
 .phone-frame-body .page-sidebar-close,
 .phone-frame-body .page-sidebar-overlay {
   display: none !important;

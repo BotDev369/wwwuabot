@@ -1079,7 +1079,8 @@ main {
   display: none;
 }
 
-/* Sidebar close button — inside drawer */
+/* Sidebar header & close button — hidden on desktop */
+.page-sidebar-header,
 .page-sidebar-close {
   display: none;
 }
@@ -1096,17 +1097,11 @@ main {
     position: relative;
   }
 
-  /* Hamburger inside header */
+  /* Hamburger inside header (matches project .hamburger) */
   .page-hamburger {
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    width: 36px;
-    height: 36px;
-    border-radius: 8px;
-    border: 1px solid var(--border);
-    background: var(--bg-1, #fff);
-    color: var(--text);
     cursor: pointer;
     flex-shrink: 0;
     transition: background 0.15s ease, transform 0.1s ease;
@@ -1123,22 +1118,30 @@ main {
     top: 12px;
     left: 12px;
     z-index: 998;
+    background: var(--bg-1, #ffffff);
+    border: 1px solid var(--border-subtle, var(--border));
+    border-radius: var(--radius-full, 9999px);
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
   }
 
-  /* Close button inside sidebar */
-  .page-sidebar-close {
+  /* Sidebar header & close button alignment */
+  .page-sidebar-header {
     display: flex;
     align-items: center;
-    justify-content: center;
-    width: 32px;
-    height: 32px;
-    border-radius: 8px;
-    border: 1px solid var(--border);
-    background: transparent;
-    color: var(--text);
-    cursor: pointer;
+    width: 100%;
     margin-bottom: 12px;
+  }
+
+  .page-sidebar-header--left {
+    justify-content: flex-start;
+  }
+
+  .page-sidebar-header--right {
+    justify-content: flex-end;
+  }
+
+  .page-sidebar-close {
+    display: inline-flex !important;
   }
 
   .page-sidebar-overlay {

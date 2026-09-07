@@ -13,6 +13,7 @@ import type {
   PageBlock,
   BlockContext,
   BlockConditions,
+  SidebarSettings,
 } from "@wwwuabot/shared/types/page-config";
 import { generateBlockId } from "@wwwuabot/shared/types/page-config";
 import {
@@ -49,6 +50,10 @@ interface ZoneEditorProps {
 
   /** Callback перемикання акордеона. */
   onToggleCollapse?: () => void;
+  /** Налаштування для сайдбару (якщо zone === "sidebar"). */
+  sidebarSettings?: SidebarSettings;
+  /** Callback: змінити налаштування сайдбару. */
+  onUpdateSidebarSettings?: (settings: SidebarSettings) => void;
 }
 
 export function ZoneEditor({
@@ -59,6 +64,8 @@ export function ZoneEditor({
   onAddBlock,
   collapsed: controlledCollapsed,
   onToggleCollapse,
+  sidebarSettings,
+  onUpdateSidebarSettings,
 }: ZoneEditorProps) {
   // За замовчуванням всі акордеони закриті (collapsed = true)
   const [localCollapsed, setLocalCollapsed] = useState(true);
@@ -262,6 +269,152 @@ export function ZoneEditor({
       {/* Вміст зони */}
       {!collapsed && (
         <div style={{ padding: 12 }}>
+          {/* Налаштування зони Сайдбар */}
+          {zone === "sidebar" && (
+            <div
+              className="pb-sidebar-settings"
+              style={{
+                padding: "10px 14px",
+                background: "var(--bg-secondary, rgba(0,0,0,0.02))",
+                border: "1px solid var(--border)",
+                borderRadius: 8,
+                marginBottom: 12,
+                display: "flex",
+                flexDirection: "column",
+                gap: 10,
+              }}
+            >
+              <div
+                style={{
+                  fontSize: 13,
+                  fontWeight: 600,
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 6,
+                  color: "var(--text-primary)",
+                }}
+              >
+                <span>⚙️</span>
+                <span>Налаштування сайдбару</span>
+              </div>
+
+              <div
+                style={{
+                  display: "grid",
+                  gridTemplateColumns: "repeat(auto-fit, minmax(170px, 1fr))",
+                  gap: 12,
+                }}
+              >
+                {/* Позиція кнопки закриття: Зліва / Справа */}
+                <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+                  <label style={{ fontSize: 12, fontWeight: 500, color: "var(--text-secondary)" }}>
+                    Кнопка "закрити"
+                  </label>
+                  <div style={{ display: "flex", gap: 6 }}>
+                    <button
+                      type="button"
+                      className={`kb-toggle-btn${(sidebarSettings?.closeButtonPosition ?? "left") === "left" ? " kb-toggle-btn--active" : ""}`}
+                      onClick={() =>
+                        onUpdateSidebarSettings?.({
+                          ...sidebarSettings,
+                          closeButtonPosition: "left",
+                        })
+                      }
+                      style={{
+                        fontSize: 12,
+                        padding: "4px 12px",
+                        borderRadius: 6,
+                        cursor: "pointer",
+                      }}
+                    >
+                      Зліва
+                    </button>
+                    <button
+                      type="button"
+                      className={`kb-toggle-btn${sidebarSettings?.closeButtonPosition === "right" ? " kb-toggle-btn--active" : ""}`}
+                      onClick={() =>
+                        onUpdateSidebarSettings?.({
+                          ...sidebarSettings,
+                          closeButtonPosition: "right",
+                        })
+                      }
+                      style={{
+                        fontSize: 12,
+                        padding: "4px 12px",
+                        borderRadius: 6,
+                        cursor: "pointer",
+                      }}
+                    >
+                      Справа
+                    </button>
+                  </div>
+                </div>
+
+                {/* Розмір тексту пунктів меню */}
+                <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+                  <label style={{ fontSize: 12, fontWeight: 500, color: "var(--text-secondary)" }}>
+                    Розмір тексту (пункти меню)
+                  </label>
+                  <select
+                    className="wb-input"
+                    value={sidebarSettings?.fontSize ?? "sm"}
+                    onChange={(e) =>
+                      onUpdateSidebarSettings?.({
+                        ...sidebarSettings,
+                        fontSize: e.target.value,
+                      })
+                    }
+                    style={{
+                      fontSize: 12,
+                      padding: "5px 8px",
+                      borderRadius: 6,
+                      border: "1px solid var(--border)",
+                      background: "var(--bg-primary)",
+                      color: "var(--text-primary)",
+                    }}
+                  >
+                    <option value="xs">12px (XS — Дрібний)</option>
+                    <option value="sm">14px (S — Звичайний)</option>
+                    <option value="base">16px (M — Середній)</option>
+                    <option value="lg">18px (L — Великий)</option>
+                    <option value="xl">20px (XL — Дуже великий)</option>
+                  </select>
+                </div>
+
+                {/* Відступи між пунктами */}
+                <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+                  <label style={{ fontSize: 12, fontWeight: 500, color: "var(--text-secondary)" }}>
+                    Відступи між пунктами
+                  </label>
+                  <select
+                    className="wb-input"
+                    value={sidebarSettings?.itemSpacing ?? "sm"}
+                    onChange={(e) =>
+                      onUpdateSidebarSettings?.({
+                        ...sidebarSettings,
+                        itemSpacing: e.target.value,
+                      })
+                    }
+                    style={{
+                      fontSize: 12,
+                      padding: "5px 8px",
+                      borderRadius: 6,
+                      border: "1px solid var(--border)",
+                      background: "var(--bg-primary)",
+                      color: "var(--text-primary)",
+                    }}
+                  >
+                    <option value="none">0px (Без відступу)</option>
+                    <option value="xs">4px (Компактний)</option>
+                    <option value="sm">8px (Стандартний)</option>
+                    <option value="md">12px (Середній)</option>
+                    <option value="lg">16px (Просторий)</option>
+                    <option value="xl">24px (Широкий)</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+          )}
           {sortedBlocks.length === 0 ? (
             <div
               style={{

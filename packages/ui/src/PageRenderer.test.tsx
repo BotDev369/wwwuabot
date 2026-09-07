@@ -1,3 +1,5 @@
+import { registerAllBlocks } from "./blocks";
+registerAllBlocks();
 import { describe, it, expect } from "vitest";
 import { renderToStaticMarkup } from "react-dom/server";
 import { PageRenderer } from "./PageRenderer";
@@ -20,14 +22,35 @@ describe("PageRenderer", () => {
         footer: [],
       },
     };
-
     const html = renderToStaticMarkup(
       <PageRenderer config={config} context={dummyContext} />
     );
-
     expect(html).toContain("page-hamburger--floating");
+    expect(html).toContain("hamburger");
     expect(html).toContain("page-zone--sidebar");
     expect(html).toContain("page-sidebar-close");
+    expect(html).toContain("wb-close-btn");
+    expect(html).toContain("page-sidebar-header--left");
+  });
+
+  it("renders close button on the right when configured", () => {
+    const config: PageConfig = {
+      version: 1,
+      zones: {
+        sidebar: [{ id: "b1", type: "nav", order: 0, props: { items: [{ text: "Link 1" }] } }],
+        header: [],
+        main: [],
+        footer: [],
+      },
+      sidebarSettings: {
+        closeButtonPosition: "right",
+      },
+    };
+    const html = renderToStaticMarkup(
+      <PageRenderer config={config} context={dummyContext} />
+    );
+    expect(html).toContain("page-sidebar-header--right");
+    expect(html).toContain("wb-close-btn");
   });
 
   it("renders hamburger inside header when both header and sidebar have blocks", () => {
@@ -40,13 +63,12 @@ describe("PageRenderer", () => {
         footer: [],
       },
     };
-
     const html = renderToStaticMarkup(
       <PageRenderer config={config} context={dummyContext} />
     );
-
     expect(html).not.toContain("page-hamburger--floating");
     expect(html).toContain("page-hamburger");
+    expect(html).toContain("hamburger");
     expect(html).toContain("page-zone--header");
     expect(html).toContain("page-zone--sidebar");
   });
@@ -61,13 +83,33 @@ describe("PageRenderer", () => {
         footer: [],
       },
     };
-
     const html = renderToStaticMarkup(
       <PageRenderer config={config} context={dummyContext} />
     );
-
     expect(html).not.toContain("page-hamburger");
     expect(html).not.toContain("page-zone--sidebar");
+  });
+
+  it("applies sidebarSettings fontSize and spacing to nav menu inside sidebar", () => {
+    const config: PageConfig = {
+      version: 1,
+      zones: {
+        sidebar: [{ id: "b1", type: "nav", order: 0, props: { items: [{ text: "Nav Item 1" }] } }],
+        header: [],
+        main: [],
+        footer: [],
+      },
+      sidebarSettings: {
+        fontSize: "lg",
+        itemSpacing: "md",
+      },
+    };
+    const html = renderToStaticMarkup(
+      <PageRenderer config={config} context={dummyContext} />
+    );
+    expect(html).toContain("font-size:18px");
+    expect(html).toContain("gap:12px");
+    expect(html).toContain("Nav Item 1");
   });
 
   it("safely handles undefined zones in partial PageConfig", () => {
@@ -75,11 +117,9 @@ describe("PageRenderer", () => {
       version: 1,
       zones: {},
     } as unknown as PageConfig;
-
     const html = renderToStaticMarkup(
       <PageRenderer config={config} context={dummyContext} />
     );
-
     expect(html).not.toContain("page-hamburger");
     expect(html).not.toContain("page-zone--sidebar");
   });
