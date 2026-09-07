@@ -1,5 +1,5 @@
 /**
- * Page Builder — barrel export для всіх блоків (29 модулів, 9 категорій).
+ * Page Builder — barrel export для всіх блоків (35 модулів, 9 категорій).
  *
  * Імпортуйте цей файл для реєстрації всіх блоків:
  * ```ts
@@ -55,15 +55,23 @@ export { InputBlock } from './InputBlock';
 export { TextareaBlock } from './TextareaBlock';
 export { SelectBlock } from './SelectBlock';
 
-// --- Bot-domain (2) ---
+// --- Bot-domain (7) ---
 export { UserProfileBlock } from './UserProfileBlock';
 export { DateCardBlock } from './DateCardBlock';
+export { MyDatesTableBlock } from './MyDatesTableBlock';
+export { CompareSetupBlock } from './CompareSetupBlock';
+export { CompareSystemsBlock } from './CompareSystemsBlock';
+export { CompareTableBlock } from './CompareTableBlock';
+export { DateAnalysisBlock } from './DateAnalysisBlock';
 
 // --- Analytics (1) ---
 export { ChartBlock } from './ChartBlock';
 
 // --- Raw (1) ---
 export { HtmlBlock } from './HtmlBlock';
+
+// --- Platform (1) ---
+export { ThemeToggleBlock } from './ThemeToggleBlock';
 
 // --- Реєстрація ---
 import { registerBlock } from '../registry';
@@ -116,6 +124,11 @@ import { SelectBlock } from './SelectBlock';
 // Bot-domain
 import { UserProfileBlock } from './UserProfileBlock';
 import { DateCardBlock } from './DateCardBlock';
+import { MyDatesTableBlock } from './MyDatesTableBlock';
+import { CompareSetupBlock } from './CompareSetupBlock';
+import { CompareSystemsBlock } from './CompareSystemsBlock';
+import { CompareTableBlock } from './CompareTableBlock';
+import { DateAnalysisBlock } from './DateAnalysisBlock';
 
 // Analytics
 import { ChartBlock } from './ChartBlock';
@@ -123,8 +136,11 @@ import { ChartBlock } from './ChartBlock';
 // Raw
 import { HtmlBlock } from './HtmlBlock';
 
+// Platform
+import { ThemeToggleBlock } from './ThemeToggleBlock';
+
 /**
- * Зареєструвати всі блоки в реєстрі (29 модулів).
+ * Зареєструвати всі блоки в реєстрі (35 модулів).
  *
  * Викликається один раз при ініціалізації додатку:
  * ```ts
@@ -185,10 +201,18 @@ export function registerAllBlocks(): void {
   // Bot-domain
   registerBlock('user-profile', UserProfileBlock);
   registerBlock('date-card', DateCardBlock);
+  registerBlock('my-dates-table', MyDatesTableBlock);
+  registerBlock('compare-setup', CompareSetupBlock);
+  registerBlock('compare-systems', CompareSystemsBlock);
+  registerBlock('compare-table', CompareTableBlock);
+  registerBlock('date-analysis', DateAnalysisBlock);
 
   // Analytics
   registerBlock('chart', ChartBlock);
 
   // Raw
   registerBlock('html', HtmlBlock);
+
+  // Platform
+  registerBlock('theme-toggle', ThemeToggleBlock);
 }
