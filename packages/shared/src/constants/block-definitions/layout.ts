@@ -8,12 +8,72 @@ import type { BlockDefinition } from '../../types/page-config';
 
 export const layoutBlocks: BlockDefinition[] = [
   {
+    type: "link-button",
+    label: "Кнопка посилання",
+    description: "Кнопка з переходом за посиланням (URL)",
+    icon: "link",
+    category: "layout",
+    compatibleZones: ["header", "sidebar", "main", "footer"],
+    schema: {
+      type: "object",
+      properties: {
+        text: {
+          type: "string",
+          title: "Текст кнопки",
+        },
+        url: {
+          type: "string",
+          title: "Посилання (URL)",
+          format: "uri",
+        },
+        target: {
+          type: "string",
+          title: "Відкривати в",
+          enum: ["_blank", "_self"],
+          default: "_blank",
+        },
+        variant: {
+          type: "string",
+          title: "Стиль кнопки",
+          enum: ["primary", "secondary", "outline", "ghost"],
+          default: "primary",
+        },
+        size: {
+          type: "string",
+          title: "Розмір",
+          enum: ["sm", "md", "lg"],
+          default: "md",
+        },
+        align: {
+          type: "string",
+          title: "Вирівнювання",
+          enum: ["left", "center", "right", "full"],
+          default: "left",
+        },
+        icon: {
+          type: "string",
+          title: "Іконка (опціонально)",
+        },
+      },
+      required: ["text", "url"],
+    },
+    defaultProps: {
+      text: "Перейти за посиланням",
+      url: "https://",
+      target: "_blank",
+      variant: "primary",
+      size: "md",
+      align: "left",
+    },
+  },
+
+  {
     type: 'buttons',
     label: 'Кнопки',
     description: 'Група кнопок (посилання або дії)',
     icon: 'buttons',
     category: 'layout',
-    compatibleZones: ['main', 'footer'],
+    compatibleZones: ['header', 'sidebar', 'main', 'footer'],
     schema: {
       type: 'object',
       properties: {
@@ -48,8 +108,10 @@ export const layoutBlocks: BlockDefinition[] = [
       required: ['items'],
     },
     defaultProps: {
-      items: [],
-      layout: 'row',
+      items: [
+        { text: "Кнопка", url: "#", variant: "primary" },
+      ],
+      layout: "row",
     },
   },
 

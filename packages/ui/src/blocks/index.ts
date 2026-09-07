@@ -35,6 +35,8 @@ export { HeroBlock } from './HeroBlock';
 export { TabsBlock } from './TabsBlock';
 export { AccordionBlock } from './AccordionBlock';
 export { NavBlock } from './NavBlock';
+export { LinkButtonBlock } from './LinkButtonBlock';
+export { ThemeBlock } from './ThemeBlock';
 
 // --- Data (4) ---
 export { StatBlock } from './StatBlock';
@@ -91,6 +93,8 @@ import { HeroBlock } from './HeroBlock';
 import { TabsBlock } from './TabsBlock';
 import { AccordionBlock } from './AccordionBlock';
 import { NavBlock } from './NavBlock';
+import { LinkButtonBlock } from './LinkButtonBlock';
+import { ThemeBlock } from './ThemeBlock';
 
 // Data
 import { StatBlock } from './StatBlock';
@@ -154,6 +158,12 @@ export function registerAllBlocks(): void {
   registerBlock('tabs', TabsBlock);
   registerBlock('accordion', AccordionBlock);
   registerBlock('nav', NavBlock);
+  registerBlock('menu', NavBlock);
+  registerBlock('link-button', LinkButtonBlock);
+  registerBlock('button', LinkButtonBlock);
+  registerBlock('link', LinkButtonBlock);
+  registerBlock('theme', ThemeBlock);
+  registerBlock('theme-toggle', ThemeBlock);
 
   // Data
   registerBlock('stat', StatBlock);
