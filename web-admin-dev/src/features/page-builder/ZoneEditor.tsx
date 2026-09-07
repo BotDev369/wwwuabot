@@ -20,14 +20,16 @@ import {
   getBlocksForZone,
   getDefaultProps,
 } from "@wwwuabot/shared/constants/block-definitions";
+import { icons } from "@wwwuabot/shared";
 import { BlockEditor } from "./BlockEditor";
 
 const ZONE_LABELS: Record<BlockZone, string> = {
-  sidebar: "📎 Sidebar",
-  header: "📌 Header",
-  main: "📄 Main",
-  footer: "📎 Footer",
+  sidebar: "Sidebar",
+  header: "Header",
+  main: "Main",
+  footer: "Footer",
 };
+
 
 interface ZoneEditorProps {
   /** Зона. */
@@ -318,7 +320,7 @@ export function ZoneEditor({
                   color: "var(--text-primary)",
                 }}
               >
-                <span>⚙️</span>
+                <span style={{ display: "inline-flex", alignItems: "center", width: 14, height: 14, flexShrink: 0, color: "var(--text-secondary)" }}>{icons["home"]}</span>
                 <span>Налаштування сайдбару</span>
               </div>
 

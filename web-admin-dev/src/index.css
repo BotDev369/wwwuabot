@@ -3091,80 +3091,42 @@ body {
   }
 }
 
-/* ═══ BlockEditor — mobile responsive ══════════════════════════════════════════ */
+/* ═══ BlockEditor — compact accordion headers ════════════════════════════════ */
 @media (max-width: 640px) {
-  .pb-block-editor {
-    padding: 8px !important;
-  }
-
+  /* Header: single compact row, never wrap */
   .pb-be-header {
-    flex-direction: column;
-    align-items: flex-start !important;
-  }
-
-  .pb-be-field {
-    flex-direction: column;
-    align-items: flex-start !important;
-    gap: 4px !important;
-  }
-
-  .pb-be-field-label {
-    min-width: 0 !important;
-  }
-
-  .pb-be-field-input {
-    width: 100% !important;
-  }
-}
-
-/* ═══ BlockEditor — mobile layout details ══════════════════════════════════════ */
-@media (max-width: 640px) {
-  /* Header: type dropdown + id + buttons wrap nicely */
-  .pb-be-header {
-    flex-direction: column;
-    align-items: flex-start;
-  }
-
-  .pb-be-header > div:first-child {
-    flex-wrap: wrap;
+    flex-wrap: nowrap;
+    align-items: center;
+    overflow: hidden;
     gap: 4px;
+    padding: 5px 8px;
   }
 
+  /* Actions: shrink, never expand */
   .pb-be-actions {
-    width: 100%;
-    justify-content: flex-end;
+    flex-shrink: 0 !important;
   }
 
-  /* Condensed "Умови" text on mobile */
+  /* Condensed buttons on mobile */
   .pb-be-cond-btn {
-    font-size: 10px !important;
-    padding: 2px 6px !important;
+    padding: 2px 4px !important;
   }
-
-  /* Delete button: icon only on mobile */
   .pb-be-del-btn {
-    font-size: 11px !important;
-    padding: 2px 6px !important;
+    padding: 2px 4px !important;
   }
 
   /* Props fields: stack vertically */
   .pb-be-field {
-    flex-direction: column !important;
+    flex-direction: column;
     align-items: flex-start !important;
     gap: 2px !important;
   }
-
   .pb-be-field-label {
     min-width: 0 !important;
     font-size: 11px !important;
   }
-
-  .pb-be-field-input,
-  .pb-be-field input[type="text"],
-  .pb-be-field select,
-  .pb-be-field textarea {
+  .pb-be-field-input {
     width: 100% !important;
-    box-sizing: border-box;
   }
 
   /* Children header: wrap */
@@ -3172,14 +3134,11 @@ body {
     flex-direction: column;
     align-items: flex-start;
   }
-
-  /* Add button: full width on mobile */
   .pb-be-add-btn {
     width: 100%;
     text-align: center;
   }
 }
-
 
 /* ── Save / Close Action Bar Integration ── */
 .wb-modal-footer > .wb-save-actions,
