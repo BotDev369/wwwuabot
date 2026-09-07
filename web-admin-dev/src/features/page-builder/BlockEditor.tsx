@@ -273,15 +273,30 @@ export function BlockEditor({
           {ico("eye", 11)}
         </button>
         <button
-          className="wb-btn wb-btn-danger pb-be-del-btn"
+          className="pb-be-del-btn"
           onClick={() => onRemove(block.id)}
           style={{
             fontSize: 10,
             padding: "2px 6px",
             borderRadius: 4,
+            border: "1px solid var(--border)",
+            background: "transparent",
+            color: "var(--text-secondary)",
+            cursor: "pointer",
+            whiteSpace: "nowrap",
             lineHeight: "16px",
             display: "inline-flex",
             alignItems: "center",
+          }}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.borderColor = "#ef4444";
+            e.currentTarget.style.color = "#ef4444";
+            e.currentTarget.style.background = "#fef2f2";
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.borderColor = "var(--border)";
+            e.currentTarget.style.color = "var(--text-secondary)";
+            e.currentTarget.style.background = "transparent";
           }}
           title="Видалити блок"
         >
