@@ -23,12 +23,11 @@ interface TableTab {
   key: ScenarioTable;
   label: string;
   icon: IconName;
-  description: string;
 }
 
 const TABLE_TABS: TableTab[] = [
-  { key: "portal", label: "Портал", icon: "globe", description: "Веб-сторінки для користувачів" },
-  { key: "admin", label: "Адмін", icon: "scenarios-admin", description: "Сценарії для бота та адмінки" },
+  { key: "portal", label: "Портал", icon: "globe" },
+  { key: "admin", label: "Адмін", icon: "scenarios-admin" },
 ];
 
 export function ScenariosPage() {
@@ -76,8 +75,6 @@ export function ScenariosPage() {
     }
   }, [table]);
 
-  const activeTab = TABLE_TABS.find((t) => t.key === table) ?? TABLE_TABS[0];
-
   return (
     <>
       <PageTopbar>
@@ -100,59 +97,59 @@ export function ScenariosPage() {
 
       {/* Table toggle — Portal / Admin */}
       <div style={{
-        display: "flex",
-        gap: 4,
         padding: "0 16px",
         marginBottom: 12,
       }}>
-        {TABLE_TABS.map((tab) => {
-          const isActive = table === tab.key;
-          const count = tab.key === "portal"
-            ? items.length // Will be accurate after load
-            : items.length;
-          return (
-            <button
-              key={tab.key}
-              onClick={() => handleTabSwitch(tab.key)}
-              style={{
-                display: "flex",
-                alignItems: "center",
-                gap: 6,
-                padding: "8px 16px",
-                fontSize: 13,
-                fontWeight: isActive ? 600 : 400,
-                borderRadius: 8,
-                border: `1px solid ${isActive ? "var(--accent, #6366f1)" : "var(--border)"}`,
-                background: isActive ? "var(--accent, #6366f1)" : "transparent",
-                color: isActive ? "#fff" : "var(--text-secondary)",
-                cursor: "pointer",
-                transition: "all 0.15s",
-              }}
-            >
-              {ico(tab.icon, 16)}
-              {tab.label}
-              {isActive && status !== "loading" && (
-                <span style={{
-                  fontSize: 11,
-                  opacity: 0.8,
-                  background: "rgba(255,255,255,0.2)",
-                  padding: "1px 6px",
-                  borderRadius: 10,
-                }}>
-                  {count}
-                </span>
-              )}
-            </button>
-          );
-        })}
-        <span style={{
-          fontSize: 12,
-          color: "var(--text-muted)",
-          alignSelf: "center",
-          marginLeft: 8,
+        <div style={{
+          display: "inline-flex",
+          gap: 0,
+          background: "var(--bg-1, #f1f5f9)",
+          borderRadius: 10,
+          padding: 3,
+          border: "1px solid var(--border)",
         }}>
-          {activeTab.description}
-        </span>
+          {TABLE_TABS.map((tab) => {
+            const isActive = table === tab.key;
+            const count = items.length;
+            return (
+              <button
+                key={tab.key}
+                onClick={() => handleTabSwitch(tab.key)}
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 6,
+                  padding: "8px 16px",
+                  fontSize: 13,
+                  fontWeight: isActive ? 600 : 400,
+                  borderRadius: 7,
+                  border: "none",
+                  background: isActive ? "var(--bg-0, #fff)" : "transparent",
+                  color: isActive ? "var(--text-primary)" : "var(--text-muted)",
+                  boxShadow: isActive ? "0 1px 3px rgba(0,0,0,0.1)" : "none",
+                  cursor: "pointer",
+                  transition: "all 0.15s",
+                  whiteSpace: "nowrap",
+                }}
+              >
+                {ico(tab.icon, 15)}
+                {tab.label}
+                {isActive && status !== "loading" && (
+                  <span style={{
+                    fontSize: 11,
+                    background: "var(--accent, #6366f1)",
+                    color: "#fff",
+                    padding: "1px 6px",
+                    borderRadius: 8,
+                    fontWeight: 600,
+                  }}>
+                    {count}
+                  </span>
+                )}
+              </button>
+            );
+          })}
+        </div>
       </div>
 
       <div className="scn-body">
