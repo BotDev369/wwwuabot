@@ -1075,8 +1075,7 @@ main {
     width: 100%;
     text-align: center;
   }
-
-
+}
 
 /* Very small screens (< 360px) */
 @media (max-width: 360px) {
