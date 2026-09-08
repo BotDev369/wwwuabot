@@ -50,8 +50,7 @@ const DEFAULT_SECTIONS: AdminNavSection[] = [
   {
     title: "Сценарії",
     items: [
-      { to: "/scenarios", label: "Сценарії — портал", icon: "scenarios" },
-      { to: "/scenarios-admin", label: "Сценарії — адмін", icon: "scenarios-admin" },
+      { to: "/scenarios", label: "Сценарії", icon: "scenarios" },
     ],
   },
   {

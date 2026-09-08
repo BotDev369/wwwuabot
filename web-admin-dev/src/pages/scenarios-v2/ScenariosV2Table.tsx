@@ -6,7 +6,7 @@ import {
   type ScenarioGroupMode,
 } from "../../features/scenarios/store";
 import { ScenarioCardModal } from "../scenarios/ScenarioCardModal";
-import { deleteScenario } from "../../shared/api/scenarios.api";
+
 import { icons, type IconName } from "@wwwuabot/shared";
 
 const ico = (name: IconName, size = 18) => (
@@ -35,6 +35,19 @@ function scenarioType(s: { rich_message: string | null; page_data?: string | nul
   if (Boolean(s.page_data) && s.page_data !== "null") return "page";
   if (s.rich_message === "true" || s.rich_message === "1") return "rich";
   return "photo";
+}
+
+/** Отримати єдиний бейдж для типу сценарію. */
+function getTypeBadge(s: { rich_message: string | null; page_data?: string | null }): { label: string; icon: IconName; color: string } {
+  const type = scenarioType(s);
+  if (type === "page") return { label: "Page", icon: "globe", color: "var(--color-info, #3b82f6)" };
+  if (type === "rich") return { label: "Rich", icon: "sparkles", color: "var(--accent, #6366f1)" };
+  return { label: "Photo", icon: "image", color: "var(--text-muted)" };
+}
+
+/** Отримати title з рядка (може бути в полі title або codeword). */
+function getTitle(s: Record<string, unknown>): string {
+  return (s.title as string) || (s.codeword as string);
 }
 
 /** Витягти префікс з codeword (все до першого `_` або весь рядок). */
@@ -78,14 +91,10 @@ export function ScenariosV2Table() {
   const { items, sortField, sortDir, setSort, filter, setFilter, groupBy, setGroupBy } = useScenariosStore();
 
   const [query, setQuery] = useState("");
-  const [menuCodeword, setMenuCodeword] = useState<string | null>(null);
   const [selectedRow, setSelectedRow] = useState<string | null>(null);
   const [cardCodeword, setCardCodeword] = useState<string | null>(null);
-  const [confirmDelete, setConfirmDelete] = useState<string | null>(null);
   const closeAll = useCallback(() => {
-    setMenuCodeword(null);
     setCardCodeword(null);
-    setConfirmDelete(null);
   }, []);
 
   // Close modal on Escape
@@ -93,11 +102,11 @@ export function ScenariosV2Table() {
     function handleKey(e: KeyboardEvent) {
       if (e.key === "Escape") closeAll();
     }
-    if (menuCodeword || cardCodeword || confirmDelete) {
+    if (cardCodeword) {
       document.addEventListener("keydown", handleKey);
       return () => document.removeEventListener("keydown", handleKey);
     }
-  }, [menuCodeword, cardCodeword, confirmDelete, closeAll]);
+  }, [cardCodeword, closeAll]);
 
   // ── Apply filter + search + sort ──
   const filtered = useMemo(() => {
@@ -109,9 +118,12 @@ export function ScenariosV2Table() {
       list = list.filter((s) => scenarioType(s) === filter);
     }
 
-    // Search by codeword
+    // Search by codeword or title
     if (q) {
-      list = list.filter((s) => s.codeword.toLowerCase().includes(q));
+      list = list.filter((s) =>
+        s.codeword.toLowerCase().includes(q) ||
+        ((s.title as string) ?? "").toLowerCase().includes(q)
+      );
     }
 
     // Sort
@@ -182,8 +194,6 @@ export function ScenariosV2Table() {
     );
   }
 
-  const menuScenario = menuCodeword ? items.find((s) => s.codeword === menuCodeword) : null;
-
   return (
     <>
       <div className="usr-table-wrap">
@@ -194,7 +204,7 @@ export function ScenariosV2Table() {
             <input
               type="text"
               className="scn-search"
-              placeholder="Пошук за codeword…"
+              placeholder="Пошук за codeword або назвою…"
               value={query}
               onChange={(e) => setQuery(e.target.value)}
               style={{ flex: 1, minWidth: 180 }}
@@ -290,10 +300,10 @@ export function ScenariosV2Table() {
         <table className="usr-table">
           <thead>
             <tr>
-              <th className="usr-th-menu usr-th-sticky"></th>
-              {thSort("codeword", "Codeword", 0)}
+              {thSort("codeword", "Назва", 0)}
               {thSort("rich_message", "Тип")}
               {thSort("updated_at", "Оновлено")}
+              <th style={{ width: 80 }}>Дії</th>
             </tr>
           </thead>
           <tbody>
@@ -315,7 +325,8 @@ export function ScenariosV2Table() {
                   items={groupItems}
                   selectedRow={selectedRow}
                   onSelect={setSelectedRow}
-                  onMenu={setMenuCodeword}
+                  onOpen={setCardCodeword}
+
                 />
               ))
             ) : (
@@ -326,78 +337,13 @@ export function ScenariosV2Table() {
                   scenario={s}
                   isSelected={selectedRow === s.codeword}
                   onSelect={() => setSelectedRow(selectedRow === s.codeword ? null : s.codeword)}
-                  onMenu={() => setMenuCodeword(s.codeword)}
+                  onOpen={() => setCardCodeword(s.codeword)}
                 />
               ))
             )}
           </tbody>
         </table>
       </div>
-
-      {/* Action modal menu */}
-      {menuScenario && !cardCodeword && !confirmDelete && (
-        <div className="wb-modal-overlay" onClick={closeAll}>
-          <div className="wb-modal" onClick={(e) => e.stopPropagation()}>
-            <div className="wb-modal-header">
-              <span className="wb-modal-title">
-                {ico("clipboard")} {menuScenario.codeword}
-              </span>
-              <button className="wb-close-btn" onClick={closeAll}>{icons["close"]}</button>
-            </div>
-            <div className="wb-modal-body wb-modal-menu">
-              <button
-                className="wb-modal-menu-item"
-                onClick={() => { setMenuCodeword(null); setCardCodeword(menuScenario.codeword); }}
-              >
-                {ico("clipboard")} Картка сценарію
-              </button>
-              <div className="wb-modal-divider" />
-              <button
-                className="wb-modal-menu-item wb-modal-menu-item--danger"
-                onClick={() => { setMenuCodeword(null); setConfirmDelete(menuScenario.codeword); }}
-              >
-                {ico("trash")} Видалити
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Delete confirmation */}
-      {confirmDelete && (
-        <div className="wb-modal-overlay" onClick={closeAll}>
-          <div className="wb-modal" onClick={(e) => e.stopPropagation()}>
-            <div className="wb-modal-header">
-              <span className="wb-modal-title">{ico("warning")} Видалити сценарій?</span>
-              <button className="wb-close-btn" onClick={closeAll}>{icons["close"]}</button>
-            </div>
-            <div className="wb-modal-body">
-              <p style={{ color: "var(--text-secondary)", fontSize: 13, margin: 0 }}>
-                Видалити «{confirmDelete}»? Цю дію неможливо скасувати.
-              </p>
-            </div>
-            <div className="wb-modal-body wb-modal-menu" style={{ paddingTop: 8 }}>
-              <button
-                className="wb-modal-menu-item wb-modal-menu-item--danger"
-                onClick={async () => {
-                  try {
-                    await deleteScenario(confirmDelete, useScenariosStore.getState().table);
-                    closeAll();
-                    await useScenariosStore.getState().load(true);
-                  } catch (e) {
-                    alert((e as Error).message);
-                  }
-                }}
-              >
-                {ico("trash")} Так, видалити
-              </button>
-              <button className="wb-modal-menu-item" onClick={closeAll}>
-                {ico("close")} Скасувати
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
 
       {/* Scenario card (unified modal) */}
       {cardCodeword !== null && (
@@ -420,10 +366,10 @@ interface GroupSectionProps {
   items: Array<{ codeword: string; rich_message: string | null; page_data?: string | null; updated_at: string }>;
   selectedRow: string | null;
   onSelect: (codeword: string) => void;
-  onMenu: (codeword: string) => void;
+  onOpen: (codeword: string) => void;
 }
 
-function GroupSection({ groupKey, groupMode, items, selectedRow, onSelect, onMenu }: GroupSectionProps) {
+function GroupSection({ groupKey, groupMode, items, selectedRow, onSelect, onOpen }: GroupSectionProps) {
   const [collapsed, setCollapsed] = useState(false);
 
   const label = groupMode === "type"
@@ -477,25 +423,27 @@ function GroupSection({ groupKey, groupMode, items, selectedRow, onSelect, onMen
           scenario={s}
           isSelected={selectedRow === s.codeword}
           onSelect={() => onSelect(s.codeword)}
-          onMenu={() => onMenu(s.codeword)}
+          onOpen={() => onOpen(s.codeword)}
+
         />
       ))}
     </>
   );
 }
 
-// ─── Scenario Row (extracted for reuse) ─────────────────────────────
+// ─── Scenario Row (improved) ────────────────────────────────────────
 
 interface ScenarioRowProps {
-  scenario: { codeword: string; rich_message: string | null; page_data?: string | null; updated_at: string };
+  scenario: { codeword: string; rich_message: string | null; page_data?: string | null; updated_at: string; title?: string | null };
   isSelected: boolean;
   onSelect: () => void;
-  onMenu: () => void;
+  onOpen: () => void;
 }
 
-function ScenarioRow({ scenario, isSelected, onSelect, onMenu }: ScenarioRowProps) {
-  const isRich = scenario.rich_message === "true" || scenario.rich_message === "1";
-  const hasPage = Boolean(scenario.page_data) && scenario.page_data !== "null";
+function ScenarioRow({ scenario, isSelected, onSelect, onOpen }: ScenarioRowProps) {
+  const badge = getTypeBadge(scenario);
+  const title = getTitle(scenario as Record<string, unknown>);
+  const hasTitle = title !== scenario.codeword;
 
   return (
     <tr
@@ -503,30 +451,58 @@ function ScenarioRow({ scenario, isSelected, onSelect, onMenu }: ScenarioRowProp
       onClick={onSelect}
       style={{ cursor: "pointer" }}
     >
-      <td className="usr-td-menu usr-td-sticky" style={{ left: 0 }}>
-        <button
-          className="usr-menu-btn"
-          onClick={(e) => { e.stopPropagation(); onMenu(); }}
-          title="Дії"
-        >
-          ☰
-        </button>
+      {/* Codeword + Title */}
+      <td className="usr-td-name">
+        <div style={{ display: "flex", flexDirection: "column", gap: 2 }}>
+          <span style={{ fontWeight: 500 }}>{scenario.codeword}</span>
+          {hasTitle && (
+            <span style={{
+              fontSize: 12,
+              color: "var(--text-secondary)",
+              overflow: "hidden",
+              textOverflow: "ellipsis",
+              whiteSpace: "nowrap",
+              maxWidth: 200,
+            }}>
+              {title}
+            </span>
+          )}
+        </div>
       </td>
-      <td className="usr-td-name usr-td-sticky" style={{ left: 0 }}>
-        {scenario.codeword}
-      </td>
+
+      {/* Type badge — single, not double */}
       <td>
-        <span className={`scn-badge${isRich ? " scn-badge--rich" : ""}`}>
-          {isRich ? "Rich" : "Photo"}
+        <span style={{
+          display: "inline-flex",
+          alignItems: "center",
+          gap: 4,
+          padding: "2px 8px",
+          fontSize: 11,
+          fontWeight: 500,
+          borderRadius: 10,
+          background: badge.color,
+          color: "#fff",
+        }}>
+          {ico(badge.icon, 12)}
+          {badge.label}
         </span>
-        {hasPage && (
-          <span className="scn-badge" style={{ marginLeft: 4, background: "var(--color-info, #3b82f6)", color: "white" }}>
-            Page
-          </span>
-        )}
       </td>
+
+      {/* Updated */}
       <td className="usr-td-date" title={scenario.updated_at}>
         {relativeTime(scenario.updated_at)}
+      </td>
+
+      {/* Actions — Open button */}
+      <td>
+        <button
+          className="wb-btn wb-btn-secondary"
+          onClick={(e) => { e.stopPropagation(); onOpen(); }}
+          style={{ fontSize: 12, padding: "4px 10px" }}
+          title="Відкрити сценарій"
+        >
+          {ico("link", 14)} Відкрити
+        </button>
       </td>
     </tr>
   );
