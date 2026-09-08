@@ -1,0 +1,176 @@
+{
+  "page_data": {
+    "version": 1,
+    "zones": {
+      "sidebar": [],
+      "header": [],
+      "main": [
+        {
+          "id": "3db436d4-8ab1-4661-8298-c7bfe0bc1d3e",
+          "type": "hero",
+          "order": 0,
+          "props": {
+            "title": "Твій простір у Telegram",
+            "subtitle": "Платформа для життя, бізнесу та спілкування. Створюй сторінки, ділись думками, знаходь однодумців — все в одному місці.",
+            "backgroundImage": "",
+            "buttons": [
+              {
+                "text": "Відкрити в Telegram",
+                "url": "https://t.me/WWWUABot",
+                "variant": "primary"
+              }
+            ],
+            "align": "center"
+          }
+        },
+        {
+          "id": "a1b2c3d4-1111-2222-3333-444455556666",
+          "type": "divider",
+          "order": 1,
+          "props": {
+            "style": "gradient",
+            "spacing": "lg"
+          }
+        },
+        {
+          "id": "b2c3d4e5-2222-3333-4444-555566667777",
+          "type": "feature-card",
+          "order": 2,
+          "props": {
+            "items": [
+              {
+                "icon": "home",
+                "title": "Конструктор сторінок",
+                "description": "Створюй свій сайт за допомогою готових блоків"
+              },
+              {
+                "icon": "shopping-cart",
+                "title": "Купи-Продай",
+                "description": "Вітрини товарів та послуг"
+              },
+              {
+                "icon": "gift",
+                "title": "Дарую",
+                "description": "Обмін речами та благодійність"
+              },
+              {
+                "icon": "calendar",
+                "title": "Сервіси",
+                "description": "Дати, ігри, калькулятори"
+              }
+            ],
+            "columns": "2"
+          }
+        },
+        {
+          "id": "c3d4e5f6-3333-4444-5555-666677778888",
+          "type": "divider",
+          "order": 3,
+          "props": {
+            "style": "gradient",
+            "spacing": "lg"
+          }
+        },
+        {
+          "id": "d4e5f6a7-4444-5555-6666-777788889999",
+          "type": "text",
+          "order": 4,
+          "props": {
+            "title": "Як це працює",
+            "content": "",
+            "level": "h2",
+            "align": "left"
+          }
+        },
+        {
+          "id": "e5f6a7b8-5555-6666-7777-888899990000",
+          "type": "list",
+          "order": 5,
+          "props": {
+            "items": [
+              {
+                "text": "Відкрий бота в Telegram",
+                "description": "один клік — і ти всередині"
+              },
+              {
+                "text": "Створи свою сторінку",
+                "description": "конструктор блоків зручний для кожного"
+              },
+              {
+                "text": "Поділись з друзями",
+                "description": "посилання відкривається в месенджері"
+              }
+            ],
+            "ordered": true
+          }
+        },
+        {
+          "id": "f6a7b8c9-6666-7777-8888-999900001111",
+          "type": "spacer",
+          "order": 6,
+          "props": {
+            "height": "lg"
+          }
+        },
+        {
+          "id": "a7b8c9d0-7777-8888-9999-000011112222",
+          "type": "faq",
+          "order": 7,
+          "props": {
+            "title": "Часті питання",
+            "items": [
+              {
+                "question": "Чи це безкоштовно?",
+                "answer": "Так, базові можливості платформи абсолютно безкоштовні."
+              },
+              {
+                "question": "Потрібен окремий додаток?",
+                "answer": "Ні, все працює всередині Telegram. Досить відкрити бота."
+              },
+              {
+                "question": "Як створити свою сторінку?",
+                "answer": "Натисни «Відкрити в Telegram», обери шаблон або створи з нуля за допомогою конструктора блоків."
+              }
+            ]
+          }
+        },
+        {
+          "id": "b8c9d0e1-8888-9999-0000-111122223333",
+          "type": "divider",
+          "order": 8,
+          "props": {
+            "style": "gradient",
+            "spacing": "lg"
+          }
+        },
+        {
+          "id": "c9d0e1f2-9999-0000-1111-222233334444",
+          "type": "link-button",
+          "order": 9,
+          "props": {
+            "text": "Почати зараз",
+            "url": "https://t.me/WWWUABot",
+            "target": "_blank",
+            "variant": "primary",
+            "size": "lg",
+            "align": "center"
+          }
+        }
+      ],
+      "footer": [
+        {
+          "id": "d0e1f2a3-0000-1111-2222-333344445555",
+          "type": "text",
+          "order": 0,
+          "props": {
+            "title": "",
+            "content": "Платформа для людей. Безкоштовно.",
+            "level": "body",
+            "align": "center"
+          }
+        }
+      ]
+    },
+    "visibleZones": ["main", "footer"]
+  }
+}
