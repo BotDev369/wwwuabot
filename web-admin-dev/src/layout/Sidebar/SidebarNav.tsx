@@ -1,14 +1,15 @@
 import { NavLink } from "react-router-dom";
-import { navSections } from "./navItems";
+import { useAdminNav } from "./adminNav.store";
 import { useSidebar } from "./useSidebar";
 import { icons } from "@wwwuabot/shared";
 
 export function SidebarNav() {
   const collapsed = useSidebar((s) => s.collapsed);
+  const sections = useAdminNav((s) => s.sections);
 
   return (
     <nav className="sidebar-nav">
-      {navSections.map((section, sIdx) => (
+      {sections.map((section, sIdx) => (
         <div className="sidebar-section" key={section.title ?? `section-${sIdx}`}>
           {section.title && !collapsed && (
             <div className="sidebar-section-title">{section.title}</div>
