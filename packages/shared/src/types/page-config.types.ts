@@ -55,6 +55,15 @@ export interface PageBlock {
    * Якщо вказано — блок показується тільки коли ВСІ умови виконуються.
    */
   conditions?: BlockConditions;
+
+  /** Чи показувати тільки адміністраторам. */
+  adminOnly?: boolean;
+
+  /** Чи показувати тільки власнику. */
+  ownerOnly?: boolean;
+
+  /** Обовʼязковий дозвіл для перегляду блоку. */
+  requiredCapability?: string;
 }
 
 // ── Умови показу блоку ────────────────────────────────────────────
@@ -154,6 +163,9 @@ export interface BlockContext {
 
   /** Дані користувача (якщо доступні). */
   user?: UserProfile;
+
+  /** Чи є поточний користувач власником сторінки. */
+  isOwner?: boolean;
 
   /** Додаткові дані, що передаються зі сторінки. */
   extra?: Record<string, unknown>;

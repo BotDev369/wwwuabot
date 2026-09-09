@@ -123,4 +123,75 @@ describe("PageRenderer", () => {
     expect(html).not.toContain("page-hamburger");
     expect(html).not.toContain("page-zone--sidebar");
   });
+
+  it("filters out adminOnly blocks when user is not an admin", () => {
+    const config: PageConfig = {
+      version: 1,
+      zones: {
+        sidebar: [],
+        header: [],
+        main: [
+          {
+            id: "admin-block",
+            type: "text",
+            order: 0,
+            adminOnly: true,
+            props: { content: "Secret Admin Settings" },
+          },
+          {
+            id: "public-block",
+            type: "text",
+            order: 1,
+            props: { content: "Public Content" },
+          },
+        ],
+        footer: [],
+      },
+    };
+
+    const userContext: BlockContext = {
+      codeword: "test",
+      title: "Test Page",
+      photoUrl: null,
+      user: { id: 10, role: "user" },
+    };
+
+    const html = renderToStaticMarkup(
+      <PageRenderer config={config} context={userContext} />
+    );
+    expect(html).not.toContain("Secret Admin Settings");
+    expect(html).toContain("Public Content");
+  });
+
+  it("renders adminOnly blocks when user is an admin", () => {
+    const config: PageConfig = {
+      version: 1,
+      zones: {
+        sidebar: [],
+        header: [],
+        main: [
+          {
+            id: "admin-block",
+            type: "text",
+            order: 0,
+            adminOnly: true,
+            props: { content: "Secret Admin Settings" },
+          },
+        ],
+        footer: [],
+      },
+    };
+
+    const adminContext: BlockContext = {
+      codeword: "test",
+      title: "Test Page",
+      photoUrl: null,
+      user: { id: 1, role: "admin" },
+    };
+
+    const html = renderToStaticMarkup(
+      <PageRenderer config={config} context={adminContext} />
+    );
+    expect(html).toContain("Secret Admin Settings");
+  });
 });

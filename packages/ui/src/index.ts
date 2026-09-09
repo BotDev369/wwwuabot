@@ -2,7 +2,7 @@
  * @wwwuabot/ui — спільний React-пакет для Page Builder.
  *
  * Використовується і `web/`, і `web-admin/`.
- * Містить реєстр блоків (29 модулів), рендерери та store.
+ * Містить реєстр блоків (29 модулів), рендерери, контроль доступу та store.
  *
  * @module @wwwuabot/ui
  */
@@ -17,9 +17,7 @@ export type {
   BlockComponentProps,
   BlockCategory,
 } from '@wwwuabot/shared/types/page-config';
-
 export { ALL_ZONES, createEmptyPageConfig, parsePageConfig, generateBlockId } from '@wwwuabot/shared/types/page-config';
-
 export { BLOCK_DEFINITIONS, getBlockDefinition, getBlocksForZone, getBlocksByCategory, getAllCategories, getDefaultProps } from '@wwwuabot/shared/constants/block-definitions';
 
 // --- Реєстр ---
@@ -35,9 +33,11 @@ export type { BlockComponent } from './registry';
 export { createPageStore } from './store';
 export type { PageStore } from './store';
 
-// --- Рендерери ---
+// --- Рендерери та захист ---
 export { PageRenderer } from './PageRenderer';
 export { ZoneRenderer } from './ZoneRenderer';
+export { PermissionGate } from './PermissionGate';
+export type { PermissionGateProps } from './PermissionGate';
 
 // --- Блоки (окремий імпорт через @wwwuabot/ui/blocks) ---
 // Для реєстрації: import { registerAllBlocks } from '@wwwuabot/ui/blocks';

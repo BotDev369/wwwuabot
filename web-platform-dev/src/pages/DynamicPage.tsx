@@ -155,6 +155,7 @@ export function DynamicPage({ baseCodeword }: DynamicPageProps = {}) {
       title: scenario?.title ?? null,
       photoUrl: scenario?.photo_url ?? null,
       user: userProfile ?? undefined,
+      isOwner: userProfile?.role === "owner" || userProfile?.role === "admin",
     }),
     [scenario, requestedCodeword, userProfile],
   );

@@ -1,8 +1,8 @@
 /**
- * Page Builder — рендерер зони.
+ * Page Builder — рендерер зони з декларативним контролем доступу.
  *
  * Рендерить відсортований список блоків у межах однієї зони.
- * Підтримує рекурсивну вкладеність блоків.
+ * Підтримує рекурсивну вкладеність блоків та декларативний захист PermissionGate.
  *
  * @module packages/ui/src/ZoneRenderer
  */
@@ -10,29 +10,21 @@
 import type { BlockZone, PageBlock, BlockContext } from '@wwwuabot/shared/types/page-config';
 import { getBlockComponent } from './registry';
 import { evaluateConditions } from '@wwwuabot/shared/utils/condition-evaluator';
+import { PermissionGate } from './PermissionGate';
 
 interface ZoneRendererProps {
   /** Блоки для рендеру. */
   blocks: PageBlock[];
-
   /** Зона, в якій знаходяться блоки. */
   zone: BlockZone;
-
   /** Контекст сторінки. */
   context: BlockContext;
-
   /** CSS-клас для контейнера зони. */
   className?: string;
 }
 
 /**
- * Рендерер зони — відсортований список блоків з рекурсією.
- *
- * Кожен блок:
- * 1. Шукається в реєстрі по `type`
- * 2. Якщо знайдений — рендериться з пропсами `block`, `context`, `zone`
- * 3. Якщо блок має `children` — вони рендеряться як вкладені блоки
- * 4. Якщо тип не зареєстрований — блок пропускається (не рендериться)
+ * Рендерер зони — відсортований список блоків з рекурсією та контролем доступу.
  */
 export function ZoneRenderer({
   blocks,
@@ -40,23 +32,19 @@ export function ZoneRenderer({
   context,
   className,
 }: ZoneRendererProps) {
-  // Сортуємо за order
   const sorted = [...blocks].sort((a, b) => a.order - b.order);
-
   if (sorted.length === 0) return null;
 
   return (
     <div className={className} data-zone={zone}>
       {sorted.map((block) => {
-        // ── Conditional rendering ──
-        // Перевіряємо умови показу блоку
+        // 1. Перевірка базових умов (conditional rendering)
         const conditionsMatch = evaluateConditions(
           block.conditions,
           context.user,
         );
 
         if (!conditionsMatch) {
-          // Умови не виконались — показуємо fallback якщо є
           const fallback = block.conditions?.fallback;
           if (fallback) {
             const FallbackComponent = getBlockComponent(fallback.type);
@@ -71,18 +59,12 @@ export function ZoneRenderer({
               );
             }
           }
-          // Ні збігу, ні fallback — пропускаємо
           return null;
         }
 
         const Component = getBlockComponent(block.type);
+        if (!Component) return null;
 
-        if (!Component) {
-          // Блок не зареєстрований — пропускаємо
-          return null;
-        }
-
-        // Рендеримо вкладені блоки, якщо є
         const childContent =
           block.children && block.children.length > 0 ? (
             <ZoneRenderer
@@ -92,15 +74,28 @@ export function ZoneRenderer({
             />
           ) : null;
 
+        const props = (block.props ?? {}) as Record<string, unknown>;
+        const adminOnly = Boolean(block.adminOnly || props.adminOnly);
+        const ownerOnly = Boolean(block.ownerOnly || props.ownerOnly);
+        const requiredCapability = (block.requiredCapability || props.requiredCapability) as string | undefined;
+
         return (
-          <Component
+          <PermissionGate
             key={block.id}
-            block={block}
-            context={context}
-            zone={zone}
+            user={context.user}
+            adminOnly={adminOnly}
+            ownerOnly={ownerOnly}
+            isOwner={Boolean(context.isOwner)}
+            requiredCapability={requiredCapability}
           >
-            {childContent}
-          </Component>
+            <Component
+              block={block}
+              context={context}
+              zone={zone}
+            >
+              {childContent}
+            </Component>
+          </PermissionGate>
         );
       })}
     </div>

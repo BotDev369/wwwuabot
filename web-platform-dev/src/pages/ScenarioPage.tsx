@@ -190,6 +190,7 @@ export function ScenarioPage() {
       title: scenarioTitle,
       photoUrl: scenarioPhoto,
       user: userProfile ?? undefined,
+      isOwner: userProfile?.role === "owner" || userProfile?.role === "admin",
     }),
     [codeword, scenarioTitle, scenarioPhoto, userProfile],
   );

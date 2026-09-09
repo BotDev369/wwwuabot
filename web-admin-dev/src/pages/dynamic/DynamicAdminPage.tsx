@@ -113,6 +113,12 @@ export function DynamicAdminPage() {
       codeword: scenario?.codeword ?? codeword ?? "",
       title: scenario?.title ?? null,
       photoUrl: scenario?.photo_url ?? null,
+      user: {
+        id: 0,
+        role: "admin",
+        permissions: ["can_moderate", "can_edit", "can_delete"],
+      },
+      isOwner: true,
     }),
     [scenario, codeword],
   );
