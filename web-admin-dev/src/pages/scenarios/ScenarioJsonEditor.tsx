@@ -115,7 +115,7 @@ export function ScenarioJsonEditor({
           fontFamily: 'monospace',
           fontSize: 12,
           lineHeight: 1.5,
-          background: 'var(--bg-primary, #ffffff)',
+          background: 'var(--bg-primary, var(--bg-0))',
           color: 'var(--text-primary, #1a1a2e)',
           caretColor: 'var(--text-primary, #1a1a2e)',
           tabSize: 2,

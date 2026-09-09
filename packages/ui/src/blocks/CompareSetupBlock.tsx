@@ -108,7 +108,7 @@ export function CompareSetupBlock({ block }: BlockComponentProps) {
                 alignItems: "center",
                 gap: "var(--sp-3)",
                 padding: "var(--sp-3)",
-                background: "var(--bg-1, #fff)",
+                background: "var(--bg-1, var(--bg-home, #f0f2f5))",
                 border: "1px solid var(--border-subtle, #e2e8f0)",
                 borderRadius: "var(--radius-md)",
               }}

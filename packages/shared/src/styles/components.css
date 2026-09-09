@@ -941,7 +941,7 @@
 }
 
 .wb-save-actions-btn--secondary {
-  background: var(--surface, #fff);
+  background: var(--surface, var(--bg-home, #f0f2f5));
   color: var(--text-primary, #111827);
   border: 1px solid var(--border, #e5e7eb);
 }

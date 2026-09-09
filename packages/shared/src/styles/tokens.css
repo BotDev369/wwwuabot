@@ -14,10 +14,11 @@
 
 :root {
   /* ── Color palette (overridden by brand themes) ──────────────────────── */
+  --bg-home: radial-gradient(120% 90% at 12% 0%, #ffffff 0%, var(--bg-2) 55%, var(--bg-0) 100%);
   --bg-0: #f0f2f5;
-  --bg-1: #ffffff;
+  --bg-1: var(--bg-home, #f0f2f5);
   --bg-2: #f8f9fa;
-  --bg-3: #ffffff;
+  --bg-3: #e8ecf2;
   --bg-4: #f0f2f5;
 
   --border: #dde1e7;
@@ -40,9 +41,9 @@
   --yellow: #ca8a04;
   --yellow-dim: #fef9c3;
 
-  --surface: #ffffff;
-  --surface-hover: #f9fafb;
-  --surface-active: #f3f4f6;
+  --surface: var(--bg-home, #f0f2f5);
+  --surface-hover: #eaecef;
+  --surface-active: #dde1e7;
   --surface-overlay: rgba(0, 0, 0, 0.4);
 
   /* ── Typography ────────────────────────────────────────────────────────── */

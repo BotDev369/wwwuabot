@@ -65,7 +65,7 @@ export function ArrayFieldEditor({ fieldKey, title, propSchema, currentValue, on
           value={typeof currentValue === "string" ? currentValue : JSON.stringify(currentValue ?? [], null, 2)}
           onChange={(e) => { try { onChange(fieldKey, JSON.parse(e.target.value)); } catch { onChange(fieldKey, e.target.value); } }}
           rows={4}
-          style={{ fontSize: 12, fontFamily: "monospace", padding: "6px 8px", border: "1px solid var(--border)", borderRadius: 4, background: "var(--bg-primary, #fff)", color: "var(--text-primary)" }}
+          style={{ fontSize: 12, fontFamily: "monospace", padding: "6px 8px", border: "1px solid var(--border)", borderRadius: 4, background: "var(--bg-primary, var(--bg-0))", color: "var(--text-primary)" }}
         />
       </div>
     );
@@ -98,7 +98,7 @@ export function ArrayFieldEditor({ fieldKey, title, propSchema, currentValue, on
                     <select key={propName} value={String(pVal || propDef.default || "")}
                       onChange={(e) => handleItemChange(index, propName, e.target.value)}
                       title={pTitle}
-                      style={{ fontSize: 12, padding: "4px 6px", border: "1px solid var(--border)", borderRadius: 4, background: "var(--bg-primary, #fff)", color: "var(--text-primary)" }}
+                      style={{ fontSize: 12, padding: "4px 6px", border: "1px solid var(--border)", borderRadius: 4, background: "var(--bg-primary, var(--bg-0))", color: "var(--text-primary)" }}
                     >
                       {(propDef.enum as string[]).map((opt) => <option key={opt} value={opt}>{opt}</option>)}
                     </select>
@@ -108,7 +108,7 @@ export function ArrayFieldEditor({ fieldKey, title, propSchema, currentValue, on
                 return (
                   <input key={propName} type="text" placeholder={pTitle} title={pTitle}
                     value={String(pVal)} onChange={(e) => handleItemChange(index, propName, e.target.value)}
-                    style={{ flex: propName === "url" ? 2 : 1, minWidth: 80, fontSize: 12, padding: "4px 6px", border: "1px solid var(--border)", borderRadius: 4, background: "var(--bg-primary, #fff)", color: "var(--text-primary)" }}
+                    style={{ flex: propName === "url" ? 2 : 1, minWidth: 80, fontSize: 12, padding: "4px 6px", border: "1px solid var(--border)", borderRadius: 4, background: "var(--bg-primary, var(--bg-0))", color: "var(--text-primary)" }}
                   />
                 );
               })}

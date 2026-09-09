@@ -1,6 +1,6 @@
 /* ═══ Profile Card styles (shared with web-platform) ══════════════════ */
 .card {
-  background: var(--bg-1, #fff);
+  background: var(--bg-home, var(--bg-1));
   border: 1px solid var(--border, #e5e7eb);
   border-radius: 8px;
   padding: 18px;

@@ -12,7 +12,7 @@
 /* ─── Main ───────────────────────────────────────────────────────────────── */
 main {
   flex: 1;
-  background: var(--bg-0);
+  background: var(--bg-home, var(--bg-0));
   display: flex;
   justify-content: center;
   padding: 48px 20px;
@@ -751,7 +751,7 @@ main {
 .page-zone--main {
   flex: 1;
   padding: 24px;
-  background: var(--bg-0);
+  background: var(--bg-home, var(--bg-0));
 }
 
 .page-zone--footer {
@@ -852,7 +852,7 @@ main {
     top: 12px;
     left: 12px;
     z-index: 998;
-    background: var(--bg-1, #ffffff);
+    background: var(--bg-1, var(--bg-home, #f0f2f5));
     border: 1px solid var(--border-subtle, var(--border));
     border-radius: var(--radius-full, 9999px);
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);

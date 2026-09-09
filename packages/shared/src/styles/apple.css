@@ -23,10 +23,11 @@
 [data-brand="apple"][data-theme="light"],
 [data-brand="apple"]:root {
   /* ── Backgrounds: Apple's system grouped layout ───────────────────────── */
+  --bg-home: radial-gradient(120% 90% at 12% 0%, #ffffff 0%, var(--bg-2) 55%, var(--bg-0) 100%);
   --bg-0: #f2f2f7;           /* systemGroupedBackground */
-  --bg-1: #ffffff;           /* secondarySystemGroupedBackground (card) */
+  --bg-1: var(--bg-home, #f2f2f7);           /* secondarySystemGroupedBackground (card) */
   --bg-2: #f2f2f7;           /* tertiarySystemGroupedBackground */
-  --bg-3: #ffffff;
+  --bg-3: #e5e5ea;
   --bg-4: #e5e5ea;           /* systemFill */
 
   /* ── Borders: Apple hairline — ultra-thin ─────────────────────────────── */
@@ -54,9 +55,9 @@
   --yellow-dim: rgba(255, 149, 0, 0.12);
 
   /* ── Surfaces ─────────────────────────────────────────────────────────── */
-  --surface: #ffffff;
-  --surface-hover: #f2f2f7;
-  --surface-active: #e5e5ea;
+  --surface: var(--bg-home, #f2f2f7);
+  --surface-hover: #e5e5ea;
+  --surface-active: #d1d1d6;
   --surface-overlay: rgba(0, 0, 0, 0.4);
 
   /* ── Typography: SF Pro — large, tight tracking ───────────────────────── */
@@ -140,6 +141,7 @@
 
 [data-brand="apple"][data-theme="dark"] {
   /* ── Backgrounds: True OLED black ─────────────────────────────────────── */
+  --bg-home: radial-gradient(120% 90% at 12% 0%, var(--surface) 0%, var(--bg-2) 55%, var(--bg-0) 100%);
   --bg-0: #000000;
   --bg-1: #1c1c1e;
   --bg-2: #2c2c2e;

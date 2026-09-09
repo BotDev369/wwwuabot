@@ -124,7 +124,7 @@ export function ScenariosPage() {
                   fontWeight: isActive ? 600 : 400,
                   borderRadius: 7,
                   border: "none",
-                  background: isActive ? "var(--bg-0, #fff)" : "transparent",
+                  background: isActive ? "var(--bg-home, var(--bg-0))" : "transparent",
                   color: isActive ? "var(--text-primary)" : "var(--text-muted)",
                   boxShadow: isActive ? "0 1px 3px rgba(0,0,0,0.1)" : "none",
                   cursor: "pointer",

@@ -22,8 +22,9 @@
 [data-brand="android"][data-theme="light"],
 [data-brand="android"]:root {
   /* ── Backgrounds: M3 surface containers — more stepped than Apple ─────── */
+  --bg-home: radial-gradient(120% 90% at 12% 0%, #ffffff 0%, var(--bg-2) 55%, var(--bg-0) 100%);
   --bg-0: #f0f0f4;           /* surface-container-lowest — slight cool tint */
-  --bg-1: #ffffff;            /* surface */
+  --bg-1: var(--bg-home, #f0f0f4);            /* surface */
   --bg-2: #ededf0;           /* surface-container-low */
   --bg-3: #e4e4e8;           /* surface-container */
   --bg-4: #dcdce0;           /* surface-container-high */
@@ -53,7 +54,7 @@
   --yellow-dim: rgba(109, 87, 0, 0.08);
 
   /* ── Surfaces — M3 surface tint approach ───────────────────────────────── */
-  --surface: #ffffff;
+  --surface: var(--bg-home, #f0f0f4);
   --surface-hover: #ededf0;
   --surface-active: #e4e4e8;
   --surface-overlay: rgba(0, 0, 0, 0.4);
@@ -137,6 +138,7 @@
 
 [data-brand="android"][data-theme="dark"] {
   /* ── Backgrounds: M3 dark surface containers ─────────────────────────── */
+  --bg-home: radial-gradient(120% 90% at 12% 0%, var(--surface) 0%, var(--bg-2) 55%, var(--bg-0) 100%);
   --bg-0: #0f1013;           /* surface-container-lowest */
   --bg-1: #1b1b1f;           /* surface */
   --bg-2: #202024;           /* surface-container-low */
