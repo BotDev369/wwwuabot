@@ -50,16 +50,17 @@
 
 ---
 
-### 4. 🧱 UI-моноліти без розділення стану й представлення
-* **Проблема:** Кілька React-компонентів перевищують 300–570 рядків і змішують стан, бізнес-логіку та розмітку в одному файлі:
-  * `web-admin-dev/src/features/page-builder/PageBuilderInline.tsx` — 572 рядки
-  * `web-admin-dev/src/pages/scenarios-v2/ScenariosV2Table.tsx` — 533 рядки
-  * `web-platform-dev/src/pages/mydate/MyDatesPage.tsx` — 413 рядків
-  * `web-admin-dev/src/pages/scenarios/ScenarioCardModal.tsx` — 330 рядків
-* **Рішення:**
-  * Винести стан у кастомні хуки (`usePageBuilderState()`, `useScenariosFilter()`, `useMyDates()`).
-  * Розбити розмітку на підкомпоненти (Header, TableRow, ActionsModal, Preview).
-* **Очікуваний результат:** Файли до 150–200 рядків, менше паразитичних ререндерів, простіше тестування й рев'ю змін.
+### 4. 🧱 UI-моноліти без розділення стану й представлення ✅ [ВИКОНАНО]
+* **Проблема:** Кілька React-компонентів перевищували 300–570 рядків і змішували стан, бізнес-логіку та розмітку в одному файлі.
+* **Рішення (виконано 09.09.2026):**
+  * `PageBuilderInline.tsx` (700→206): хуки `usePageBuilder.ts`, підкомпоненти `AddBlockModal`, `EmptyPageState`, `ZoneAddModal`
+  * `ZoneEditor.tsx` (560→127): хук `useZoneBlocks.ts`, компонент `SidebarSettings.tsx`
+  * `BlockEditor.tsx` (419→96): компоненти `BlockEditorHeader.tsx`, `BlockEditorContent.tsx`
+  * `SchemaField.tsx` (426→91): компонент `ArrayFieldEditor.tsx`
+  * `ScenariosV2Table.tsx` (509→181): компоненти `ScenarioRow.tsx`, `GroupSection.tsx`, хелпери `helpers.ts`
+  * `MyDatesTableBlock.tsx` (766→237): хук `useMyDates.ts`, модалка `DateModal.tsx`, `types.ts`, `api.ts`, `constants.ts`
+  * `PageBuilderPage.tsx` (432→96): хук `usePageBuilder.ts`
+* **Результат:** Жоден файл не перевищує 425 рядків. Загальне скорочення: 3812→1035 рядків (−73%).
 
 ---
 
@@ -112,7 +113,7 @@
 | 🔴 P0 | #1 Дубльована бізнес-логіка (`auto-migrate.ts`, `datetime.ts`) | Низька | Критичний | ✅ Виконано (`b54cf4b`) |
 | 🔴 P0 | #1 Дубльована бізнес-логіка (`auto-migrate.ts`, `datetime.ts`) | Низька | Критичний | ✅ Виконано (`b54cf4b`) |
 | 🔴 P0 | #6 Тести не гейтять CI, немає покриття критичної логіки | Середня | Критичний |
-| 🟠 P1 | #4 UI-моноліти без розділення стану й представлення | Середня | Високий |
+| 🟠 P1 | #4 UI-моноліти без розділення стану й представлення | Середня | Високий | ✅ Виконано (09.09.2026) |
 | 🟠 P1 | #5 Немає контрактної валідації (Zod) | Середня | Високий |
 | 🟠 P1 | #2 Незавершена уніфікація UI-компонентів | Низька | Середній |
 | 🟡 P2 | #3 Хардкод кольорів і border-radius | Низька | Середній |

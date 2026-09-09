@@ -148,11 +148,31 @@ All component styles are in `packages/shared/src/styles/components.css`.
 
 ---
 
+## Icons: `<Icon />` Component
+
+The `<Icon />` component from `@wwwuabot/shared` replaces the duplicated `const ico` helper that existed in 28+ files.
+
+```tsx
+import { Icon } from '@wwwuabot/shared';
+
+// Basic usage
+<Icon name="home" size={16} />
+
+// With custom size
+<Icon name="edit" size={20} />
+```
+
+**Available icon names:** `home`, `edit`, `trash`, `eye`, `close`, `settings`, `user`, `users`, `calendar`, `search`, `plus`, `minus`, `check`, `x`, `chevron-down`, `chevron-right`, `chevron-left`, `chevron-up`, `star`, `heart`, `bookmark`, `share`, `download`, `upload`, `filter`, `refresh`, `copy`, `external-link`, `menu`, `arrow-left`, `arrow-right`, `text`, `image`, `list`, `divider`, `button`, `layout`, `grid`, `layers`, `sliders`, `code`, `link`.
+
+**Rules:**
+- Always use `<Icon />` in new code — never create local `const ico` helpers.
+- Never use emoji in UI — use `<Icon />` instead.
+
 ## Rules for New Code
 
 1. **Always use `.wb-*` classes** — never define local `.btn`, `.modal`, `.card` classes.
 2. **Always use CSS tokens** — never hardcode hex colors or pixel values for border-radius.
-3. **Emoji in UI are forbidden** — use SVG icons from `@wwwuabot/shared` (`icons` object).
+3. **Emoji in UI are forbidden** — use `<Icon />` from `@wwwuabot/shared`.
 4. **Dropdowns are forbidden** — use full-screen modals for all selection UI.
 5. **Brand themes** (Apple / Material) are toggled via `data-brand` attribute on `<html>`.
 6. **Dark/Light themes** are toggled via `data-theme` attribute on `<html>`.
@@ -172,4 +192,4 @@ All component styles are in `packages/shared/src/styles/components.css`.
 
 ---
 
-*Last updated: 03.09.2026*
+*Last updated: 09.09.2026*

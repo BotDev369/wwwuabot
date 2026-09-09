@@ -1,7 +1,7 @@
 # AGENTS.md — Інструкція для AI-агентів у проєкті wwwuabot
 
-> **Версія:** 1.4
-> **Останнє оновлення:** 06.09.2026 (Синхронізовано з Product Vision та новою структурою docs/)
+> **Версія:** 1.5
+> **Останнє оновлення:** 09.09.2026 (Кришталевий код: Icon, block helpers, правило мінімалізму)
 > **Статус:** містить перевірені факти та архітектурні рішення.
 
 Цей файл — стислий орієнтир для будь-якого AI-агента (Claude, GPT,
@@ -224,12 +224,14 @@ packages/
 
 > **Емоджі в UI ЗАБОРОНЕНІ. Використовувати тільки SVG-іконки.**
 > **Дропдауни ЗАБОРОНЕНІ. Використовувати тільки модалки на все вікно.**
+> **Нові файли МАЮТЬ використовувати `<Icon />` замість локального `const ico`.**
 
+- `packages/shared/src/components/icons.tsx` — SVG-іконки, тип `IconName`
+- `packages/shared/src/components/Icon.tsx` — **універсальний компонент `<Icon name="home" size={16} />`**
+  Замінює дубльований `const ico` хелпер у 28+ файлах. Нові файли обов'язково використовують `<Icon />`.
+- `packages/shared/src/components/StyleToggle.tsx` — `ThemeButton` компонент
 - `packages/shared/src/styles/apple.css` — CSS-токени для Apple бренду
 - `packages/shared/src/styles/android.css` — CSS-токени для Material бренду
-- `packages/shared/src/styles/registry.tsx` — тип `Brand`, функція `applyBrandTheme()`
-- `packages/shared/src/components/StyleToggle.tsx` — `ThemeButton` компонент
-- `packages/shared/src/components/icons.tsx` — SVG-іконки, тип `IconName`
 - `packages/shared/src/app/initTheme.ts` — ініціалізація теми при завантаженні
 
 Правила модалок: `<div className="modal-overlay">` → `<div className="modal">` →
@@ -259,6 +261,52 @@ packages/
 2. Оновити `toTelegramButton()` та `fromTelegramButton()` у `keyboard.utils.ts`
 3. Додати опцію в випадаючий список у `KeyboardEditor.tsx`
 4. Оновити `validateButtons()` у `keyboard.utils.ts`
+
+---
+
+### 3.8. Блок-дефінції: компактний запис
+
+> **Не пиши розгорнуті JSON-схеми для блоків Page Builder.**
+> **Використовуй хелпери з `packages/shared/src/constants/block-definitions/helpers.ts`.**
+
+Хелпери: `s()` (string), `n()` (number), `b()` (boolean), `e()` (enum), `sa()` (string array), `oa()` (object array), `block()` (визначення блоку).
+
+```typescript
+// БУЛО (30+ рядків):
+{ type: "text", label: "Текст", schema: { type: "object", properties: {
+  title: { type: "string", title: "Заголовок" }, content: { type: "string", title: "Текст" },
+  level: { type: "string", title: "Рівень", enum: ["h1","h2","body"], default: "body" },
+}}}
+
+// СТАЛО (7 рядків):
+block({ type: "text", label: "Текст", icon: "text", category: "content",
+  props: { title: s("Заголовок"), content: s("Текст"),
+    level: e("Рівень", ["h1","h2","body"], { default: "body" }) },
+  required: ["content"], defaultProps: { title: "", content: "", level: "body" } })
+```
+
+### 3.9. Правило кришталевої ясності
+
+> **АБСОЛЮТНЕ ПРАВИЛО: ніколи не пиши «простині» (моноліти).**
+> **Кожен файл — один модуль, одна відповідальність, < 200 рядків (ідеал).**
+
+1. **Файл > 200 рядків** — це червоний прапець. Розбивай на хуки, підкомпоненти, хелпери.
+2. **Файл > 400 рядків** — це критично. Зупинись і рефактори НЕГАЙНО.
+3. **Компонент** — тільки рендеринг. Логіка — в хуках (`use*.ts`).
+4. **Хук** — тільки стан та бізнес-логіка. Жодного JSX.
+5. **Хелпери/константи** — тільки чисті функції та дані. Жодного стану.
+6. **Не копіюй** — якщо код повторюється двічі, винось в shared.
+7. **Не хардкодь** — стилі, кольори, розміри через CSS-токени та `<Icon />`.
+
+Приклад правильної структури:
+```
+MyFeaturePage.tsx      (80 рядків)  — рендеринг сторінки
+useMyFeature.ts        (120 рядків) — хук стану
+MyFeatureTable.tsx     (80 рядків)  — підкомпонент таблиці
+MyFeatureModal.tsx     (60 рядків)  — підкомпонент модалки
+helpers.ts             (40 рядків)  — чисті функції
+types.ts               (20 рядків)  — типи
+```
 
 ---
 
@@ -400,24 +448,23 @@ src/
 
 ## 8. Поточні обмеження проєкту (щоб не дивуватись)
 
-- **Тестів немає взагалі** — жодного `*.test.ts`/`*.spec.ts`, жодного
-  test-фреймворку в жодному з 4 `package.json`. Якщо задача передбачає
-  зміну критичної логіки (розрахунки, валідація), тестами вона поки
-  не підстрахована — будь обережним і перевіряй вручну.
-- **Немає CONTRIBUTING.md, CHANGELOG.md, README всередині кожного
-  сервісу** (`bot/`, `api/`, `web/` — крім `web-admin/README.md`,
-  який уже існує).
+- **Тести є** (Vitest, 34+ unit-тестів) але **не гейтять CI** —
+  команда `npm run test` не входить в обов'язкову CI job `checks`.
+  Див. REFACTORING_ROADMAP #6.
+- **Немає CHANGELOG.md** та README всередині кожного
+  сервісу (`bot/`, `api/`, `web/` — крім `web-admin/README.md`).
+- **Зовнішній моніторинг (Sentry)** не підключений.
 - Повна методика оцінки стану проєкту і поточні бали за 10
   критеріями — `docs/SCORECARD.md`. Актуальний план задач із
-  пріоритетами і статусами — `docs/PRODUCT_VISION.md та docs/REFACTORING_ROADMAP.md`.
+  пріоритетами і статусами — `docs/PRODUCT_VISION.md` та `docs/REFACTORING_ROADMAP.md`.
 
 ---
 
 ## 9. Як розширювати цей файл
 
-Це версія 1.4 — оновлена з додаванням дизайн-системи (Apple/Material теми),
-SVG-іконок, conditional rendering (умовний показ блоків), та модуля
-клавіатури (web_app кнопка). Коли з'являться нові стабільні конвенції
+Це версія 1.5 — оновлена з додаванням правила кришталевої ясності,
+`<Icon />` компонента, компактних хелперів блок-дефініцій.
+Коли з'являться нові стабільні конвенції
 або будуть закриті задачі, що на них впливають, онови відповідні
 розділи тут і познач задачу `S-8` у `PROJECT_PLAN.md`.
 Не видаляй попередні розділи "мовчки" — якщо конвенція змінилась,
@@ -432,6 +479,7 @@ SVG-іконок, conditional rendering (умовний показ блоків)
 | 28.08.2026 | 1.2 | Оновлено web/web-admin: React 19, Vite 8, Tailwind 4, Zustand, createBrowserRouter, feature-based structure. Додано секцію 4 з однаковою архітектурою src/. Оновлено CI: npx wrangler для всіх 4 воркерів. Додано api/ до workspaces. Вирівняно compatibility_date та prod bindings. |
 | 30.08.2026 | 1.3 | Додано Page Builder: `packages/ui/` (спільний React-пакет), типи `page-config.ts`, реєстр блоків, рендерери, Zustand store, MVP-блоки (text, image, buttons, list, divider). Додано колонку `page_data` до scenarios. Оновлено розділ 3.3 (структура packages/) та додано 3.4 (архітектура блоків). |
 | 02.09.2026 | 1.4 | Додано дизайн-систему (Apple/Material теми, ThemeButton з модалкою), SVG-іконки (~30, замість емоджі), conditional rendering (BlockConditions, ConditionEvaluator, UserProfile), `web_app` тип кнопки, розширені поля користувача (role/tariff/status/discount/permissions). Додано розділи 3.5 (дизайн-система), 3.6 (чек-ліст), 3.7 (кнопки), 5 (користувачі). |
+| 09.09.2026 | 1.5 | Кришталевий код: `<Icon />` компонент у shared (замість 28 дублів `const ico`), компактні хелпери для блок-дефініцій (`block()`, `s()`, `n()`, `b()`, `e()` — 1957→733 рядків, −63%), правило кришталевої ясності (файл <200 рядків, моноліти = червоний прапець). Додано розділи 3.8 (блок-дефінції), 3.9 (правило кришталевості). Оновлено розділ 3.5 (Icon). |
 
 
 ---
