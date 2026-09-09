@@ -69,7 +69,7 @@ export function BlockEditor({
       <BlockEditorHeader
         collapsed={collapsed} displayName={displayName} blockType={block.type}
         definitionLabel={definition?.label} definitionIcon={definition?.icon}
-        hasConditions={hasConditions} showConditions={showConditions}
+        hasConditions={!!hasConditions} showConditions={showConditions}
         childrenCount={block.children?.length ?? 0}
         editingName={editingName} nameDraft={nameDraft}
         onToggle={() => setCollapsed((prev) => !prev)}

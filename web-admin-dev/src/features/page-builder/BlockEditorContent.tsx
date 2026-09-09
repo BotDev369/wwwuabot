@@ -2,7 +2,6 @@
  * BlockEditorContent — вміст акордеона блоку (опис, умови, props, дочірні блоки).
  */
 
-import { BLOCK_DEFINITIONS } from "@wwwuabot/shared/constants/block-definitions";
 import type { PageBlock, BlockZone, BlockContext, BlockConditions } from "@wwwuabot/shared/types/page-config";
 import { ConditionsPanel } from "./ConditionsPanel";
 import { SchemaField } from "./SchemaField";
