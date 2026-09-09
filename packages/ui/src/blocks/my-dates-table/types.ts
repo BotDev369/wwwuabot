@@ -1,19 +1,11 @@
 /**
- * Types for MyDatesTable block.
+ * Types for MyDatesTable block — re-exports from shared + block-specific types.
  */
 
-export interface MyDate {
-  id: string;
-  user_id: number;
-  date: string;
-  type: string;
-  name: string;
-  tags: string[];
-  notes: string;
-  created_at: string;
-  updated_at: string;
-}
+import type { MyDate as SharedMyDate } from "@wwwuabot/shared/types/mydate";
+import type { SortField as SharedSortField } from "@wwwuabot/shared/utils/mydate-helpers";
 
-export type SortField = "date" | "type" | "name" | "tags" | "notes" | "created_at";
+export type MyDate = SharedMyDate;
+export type SortField = SharedSortField;
 export type SortOrder = "asc" | "desc";
 export type ModalMode = "create" | "edit" | "view";

@@ -1,5 +1,6 @@
 export { DateModal } from "./DateModal";
 export { useMyDates } from "./useMyDates";
-export * from "./types";
+export type { MyDate, SortOrder, ModalMode } from "./types";
+export type { SortField } from "./types";
 export * from "./api";
-export * from "./constants";
+export { TAG_COLORS, TYPE_CONFIG, BUILTIN_TYPES, getTagColor, getTypeConfig, formatDate } from "./constants";

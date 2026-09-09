@@ -15,7 +15,7 @@ import { DateModal } from './DateModal';
 import { DateAccordionForm } from './DateAccordionForm';
 import { HeaderContextMenu } from './HeaderContextMenu';
 import { RowActionMenu } from './RowActionMenu';
-import { getTypeConfig, formatDate, type SortField, type ModalMode } from './mydate-types';
+import { getTypeConfig, formatDate, getTagColor, type SortField, type ModalMode } from './mydate-types';
 
 // ── Icon helper ───────────────────────────────────────────────────
 
@@ -293,7 +293,7 @@ export function MyDatesPage() {
                                 <span
                                   key={tag}
                                   className="tag-chip tag-chip--sm"
-                                  style={getTagColorLocal(tag)}
+                                  style={getTagColor(tag)}
                                 >
                                   {tag}
                                 </span>
@@ -393,21 +393,4 @@ export function MyDatesPage() {
   );
 }
 
-// ── Local helpers ─────────────────────────────────────────────────
 
-const TAG_COLORS = [
-  { color: '#b45309', bg: '#fef3c7' },
-  { color: '#0e7490', bg: '#ecfeff' },
-  { color: '#be185d', bg: '#fdf2f8' },
-  { color: '#4338ca', bg: '#eef2ff' },
-  { color: '#047857', bg: '#ecfdf5' },
-  { color: '#c2410c', bg: '#fff7ed' },
-  { color: '#7c3aed', bg: '#f5f3ff' },
-  { color: '#0369a1', bg: '#f0f9ff' },
-];
-
-function getTagColorLocal(tag: string) {
-  let hash = 0;
-  for (let i = 0; i < tag.length; i++) hash = tag.charCodeAt(i) + ((hash << 5) - hash);
-  return TAG_COLORS[Math.abs(hash) % TAG_COLORS.length];
-}

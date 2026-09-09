@@ -1,36 +1,34 @@
 /**
- * Constants for MyDatesTable block.
+ * Constants for MyDatesTable block — re-exports from shared + block-specific extensions.
  */
 
+import {
+  TAG_COLORS as SHARED_TAG_COLORS,
+  getTagColor as getTagColorBase,
+  BASE_TYPE_CONFIG,
+  BUILTIN_TYPES,
+  formatDate as sharedFormatDate,
+  type SortField,
+} from "@wwwuabot/shared/utils/mydate-helpers";
+
+// Re-export shared
+export { BUILTIN_TYPES, sharedFormatDate as formatDate };
+export type { SortField };
+
+export const TAG_COLORS = SHARED_TAG_COLORS;
+
+// ── Block-specific type config (додає label для UI) ──
+
 export const TYPE_CONFIG: Record<string, { label: string; color: string; bg: string }> = {
-  person: { label: "Людина", color: "#2563eb", bg: "#eff6ff" },
-  event: { label: "Подія", color: "#059669", bg: "#ecfdf5" },
-  other: { label: "Інше", color: "#7c3aed", bg: "#f5f3ff" },
+  person: { label: "Людина", ...BASE_TYPE_CONFIG.person },
+  event: { label: "Подія", ...BASE_TYPE_CONFIG.event },
+  other: { label: "Інше", ...BASE_TYPE_CONFIG.other },
 };
 
-export const TAG_COLORS = [
-  { color: "#b45309", bg: "#fef3c7" },
-  { color: "#0e7490", bg: "#ecfeff" },
-  { color: "#be185d", bg: "#fdf2f8" },
-  { color: "#4338ca", bg: "#eef2ff" },
-  { color: "#047857", bg: "#ecfdf5" },
-  { color: "#c2410c", bg: "#fff7ed" },
-  { color: "#7c3aed", bg: "#f5f3ff" },
-  { color: "#0369a1", bg: "#f0f9ff" },
-];
-
 export function getTagColor(tag: string): { color: string; bg: string } {
-  let hash = 0;
-  for (let i = 0; i < tag.length; i++) hash = tag.charCodeAt(i) + ((hash << 5) - hash);
-  return TAG_COLORS[Math.abs(hash) % TAG_COLORS.length];
+  return getTagColorBase(tag);
 }
 
 export function getTypeConfig(type: string): { label: string; color: string; bg: string } {
   return TYPE_CONFIG[type] ?? TYPE_CONFIG.other;
-}
-
-export function formatDate(raw: string): string {
-  const parts = raw.split("-");
-  if (parts.length !== 3) return raw;
-  return `${parts[2]}.${parts[1]}.${parts[0]}`;
 }

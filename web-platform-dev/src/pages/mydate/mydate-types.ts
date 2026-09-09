@@ -1,72 +1,43 @@
 /**
- * MyDate — спільні типи, константи та допоміжні функції.
+ * MyDate — типи та константи для "Моїх дат".
+ * Базові хелпери імпортуються з packages/shared.
  */
 
 import type { IconName } from '@wwwuabot/shared';
-import type { MyDate } from '@/shared/api/mydate.api';
+import type { MyDate } from '@wwwuabot/shared/types/mydate';
+import {
+  getTagColor as getTagColorBase,
+  BASE_TYPE_CONFIG,
+  formatDate as sharedFormatDate,
+  getCustomTypes,
+  getAllTypes as sharedGetAllTypes,
+  getFieldLabel as sharedGetFieldLabel,
+  type SortField,
+} from '@wwwuabot/shared/utils/mydate-helpers';
 
-// ── Types ─────────────────────────────────────────────────────────
-
-export type SortField = 'date' | 'type' | 'name' | 'tags' | 'notes' | 'created_at';
-export type SortOrder = 'asc' | 'desc';
+// Re-export shared types
+export type { SortField };
 export type ModalMode = 'create' | 'edit' | 'view';
+export type SortOrder = 'asc' | 'desc';
 
-// ── Constants ─────────────────────────────────────────────────────
+// Re-export shared helpers
+export const formatDate = sharedFormatDate;
+export const getTagColor = getTagColorBase;
+export const getFieldLabel = sharedGetFieldLabel;
+export { getCustomTypes };
+
+// ── Web-platform specific: TYPE_CONFIG with icon ──
 
 export const TYPE_CONFIG: Record<string, { icon: IconName; color: string; bg: string }> = {
-  person: { icon: 'users', color: '#2563eb', bg: '#eff6ff' },
-  event: { icon: 'my-dates', color: '#059669', bg: '#ecfdf5' },
-  other: { icon: 'info', color: '#7c3aed', bg: '#f5f3ff' },
+  person: { icon: 'users', ...BASE_TYPE_CONFIG.person },
+  event: { icon: 'my-dates', ...BASE_TYPE_CONFIG.event },
+  other: { icon: 'info', ...BASE_TYPE_CONFIG.other },
 };
-
-const TAG_COLORS = [
-  { color: '#b45309', bg: '#fef3c7' },
-  { color: '#0e7490', bg: '#ecfeff' },
-  { color: '#be185d', bg: '#fdf2f8' },
-  { color: '#4338ca', bg: '#eef2ff' },
-  { color: '#047857', bg: '#ecfdf5' },
-  { color: '#c2410c', bg: '#fff7ed' },
-  { color: '#7c3aed', bg: '#f5f3ff' },
-  { color: '#0369a1', bg: '#f0f9ff' },
-];
-
-const BUILTIN_TYPES = ['person', 'event', 'other'];
-
-// ── Helpers ───────────────────────────────────────────────────────
-
-export function getTagColor(tag: string) {
-  let hash = 0;
-  for (let i = 0; i < tag.length; i++) hash = tag.charCodeAt(i) + ((hash << 5) - hash);
-  return TAG_COLORS[Math.abs(hash) % TAG_COLORS.length];
-}
 
 export function getTypeConfig(type: string) {
   return TYPE_CONFIG[type] || TYPE_CONFIG.other;
 }
 
-export function formatDate(raw: string): string {
-  const parts = raw.split('-');
-  if (parts.length !== 3) return raw;
-  return `${parts[2]}.${parts[1]}.${parts[0]}`;
-}
-
-export function getCustomTypes(dates: MyDate[]): string[] {
-  const custom = dates.map((d) => d.type).filter((t) => t && !BUILTIN_TYPES.includes(t));
-  return [...new Set(custom)];
-}
-
 export function getAllTypes(dates: MyDate[]): string[] {
-  return [...BUILTIN_TYPES, ...getCustomTypes(dates)];
-}
-
-export function getFieldLabel(field: SortField): string {
-  switch (field) {
-    case 'name': return 'Назва';
-    case 'date': return 'Дата';
-    case 'tags': return 'Теги';
-    case 'type': return 'Тип';
-    case 'notes': return 'Примітки';
-    case 'created_at': return 'Створено';
-    default: return field;
-  }
+  return sharedGetAllTypes(dates);
 }
