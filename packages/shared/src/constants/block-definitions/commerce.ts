@@ -1,174 +1,54 @@
 /**
- * COMMERCE — комерційні блоки
- *
- * Ціни, відгуки, фічі, FAQ.
+ * COMMERCE — комерційні блоки (ціни, відгуки, фічі, FAQ).
  */
 
 import type { BlockDefinition } from '../../types/page-config';
+import { block, s, n, b, e, sa, oa } from './helpers';
 
 export const commerceBlocks: BlockDefinition[] = [
-  {
-    type: 'pricing',
-    label: 'Ціни',
-    description: 'Картка з ціною та переліком можливостей',
-    icon: 'tag',
-    category: 'commerce',
-    compatibleZones: ['main'],
-    schema: {
-      type: 'object',
-      properties: {
-        plans: {
-          type: 'array',
-          title: 'Тарифні плани',
-          items: {
-            type: 'object',
-            properties: {
-              name: { type: 'string', title: 'Назва' },
-              price: { type: 'string', title: 'Ціна' },
-              period: { type: 'string', title: 'Період', default: '/міс' },
-              features: {
-                type: 'array',
-                title: 'Можливості',
-                items: { type: 'string' },
-              },
-              highlighted: { type: 'boolean', title: 'Виділений', default: false },
-              ctaText: { type: 'string', title: 'Текст кнопки', default: 'Обрати' },
-            },
-            required: ['name', 'price'],
-          },
-          minItems: 1,
-        },
-        columns: {
-          type: 'string',
-          title: 'Кількість колонок',
-          enum: ['auto', '2', '3'],
-          default: 'auto',
-        },
-      },
-      required: ['plans'],
+  block({
+    type: "pricing", label: "Ціни", icon: "tag", category: "commerce",
+    description: "Картка з ціною та переліком можливостей",
+    props: {
+      plans: oa("Тарифні плани", {
+        name: s("Назва"), price: s("Ціна"), period: s("Період", { default: "/міс" }),
+        features: sa("Можливості"), highlighted: b("Виділений"), ctaText: s("Текст кнопки", { default: "Обрати" }),
+      }, ["name", "price"]),
+      columns: e("Кількість колонок", ["auto", "2", "3"], { default: "auto" }),
     },
-    defaultProps: {
-      plans: [],
-      columns: 'auto',
+    required: ["plans"],
+    defaultProps: { plans: [], columns: "auto" },
+  }),
+  block({
+    type: "testimonial", label: "Відгук", icon: "message-square", category: "commerce",
+    description: "Відгук клієнта з фото та підписом",
+    compatibleZones: ["main", "sidebar"],
+    props: {
+      text: s("Текст відгуку"), author: s("Автор"), role: s("Посада"),
+      avatar: s("URL аватара", { format: "uri" }), rating: n("Рейтинг (0-5)"),
     },
-  },
-
-  {
-    type: 'testimonial',
-    label: 'Відгук',
-    description: 'Відгук клієнта з фото та підписом',
-    icon: 'message-square',
-    category: 'commerce',
-    compatibleZones: ['main', 'sidebar'],
-    schema: {
-      type: 'object',
-      properties: {
-        text: {
-          type: 'string',
-          title: 'Текст відгуку',
-        },
-        author: {
-          type: 'string',
-          title: 'Автор',
-        },
-        role: {
-          type: 'string',
-          title: 'Посада',
-        },
-        avatar: {
-          type: 'string',
-          title: 'URL аватара',
-          format: 'uri',
-        },
-        rating: {
-          type: 'number',
-          title: 'Рейтинг (0-5)',
-        },
-      },
-      required: ['text', 'author'],
+    required: ["text", "author"],
+    defaultProps: { text: "", author: "", role: "", avatar: "", rating: 0 },
+  }),
+  block({
+    type: "feature-card", label: "Фіча", icon: "sparkles", category: "commerce",
+    description: "Карточка з іконкою, заголовком та описом",
+    props: {
+      items: oa("Фічі", { icon: s("Іконка"), title: s("Заголовок"), description: s("Опис") }, ["title"]),
+      columns: e("Кількість колонок", ["2", "3"], { default: "2" }),
     },
-    defaultProps: {
-      text: '',
-      author: '',
-      role: '',
-      avatar: '',
-      rating: 0,
+    required: ["items"],
+    defaultProps: { items: [], columns: "2" },
+  }),
+  block({
+    type: "faq", label: "FAQ", icon: "search", category: "commerce",
+    description: "Часто задавані питання (акордеон)",
+    compatibleZones: ["main", "sidebar"],
+    props: {
+      items: oa("Питання", { question: s("Питання"), answer: s("Відповідь") }, ["question", "answer"]),
+      title: s("Заголовок секції", { default: "Часті питання" }),
     },
-  },
-
-  {
-    type: 'feature-card',
-    label: 'Фіча',
-    description: 'Карточка з іконкою, заголовком та описом',
-    icon: 'sparkles',
-    category: 'commerce',
-    compatibleZones: ['main'],
-    schema: {
-      type: 'object',
-      properties: {
-        items: {
-          type: 'array',
-          title: 'Фічі',
-          items: {
-            type: 'object',
-            properties: {
-              icon: { type: 'string', title: 'Іконка (SVG або назва)' },
-              title: { type: 'string', title: 'Заголовок' },
-              description: { type: 'string', title: 'Опис' },
-            },
-            required: ['title'],
-          },
-          minItems: 1,
-        },
-        columns: {
-          type: 'string',
-          title: 'Кількість колонок',
-          enum: ['2', '3'],
-          default: '2',
-        },
-      },
-      required: ['items'],
-    },
-    defaultProps: {
-      items: [],
-      columns: '2',
-    },
-  },
-
-  {
-    type: 'faq',
-    label: 'FAQ',
-    description: 'Часто задавані питання (акордеон)',
-    icon: 'search',
-    category: 'commerce',
-    compatibleZones: ['main', 'sidebar'],
-    schema: {
-      type: 'object',
-      properties: {
-        items: {
-          type: 'array',
-          title: 'Питання',
-          items: {
-            type: 'object',
-            properties: {
-              question: { type: 'string', title: 'Питання' },
-              answer: { type: 'string', title: 'Відповідь' },
-            },
-            required: ['question', 'answer'],
-          },
-          minItems: 1,
-        },
-        title: {
-          type: 'string',
-          title: 'Заголовок секції',
-          default: 'Часті питання',
-        },
-      },
-      required: ['items'],
-    },
-    defaultProps: {
-      items: [],
-      title: 'Часті питання',
-    },
-  },
+    required: ["items"],
+    defaultProps: { items: [], title: "Часті питання" },
+  }),
 ];

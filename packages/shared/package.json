@@ -24,6 +24,7 @@
     "./utils/condition-evaluator": "./src/utils/condition-evaluator.ts",
     "./types/mydate": "./src/types/mydate.ts",
     "./database/auto-migrate": "./src/database/auto-migrate.ts",
+    "./components/Icon": "./src/components/Icon.tsx",
     "./components/SaveActionButtons": "./src/components/SaveActionButtons.tsx"
   },
   "dependencies": {

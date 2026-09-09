@@ -1,37 +1,19 @@
 /**
- * RAW — необроблений вміст
- *
- * HTML-код (тільки для адміністраторів).
+ * RAW — необроблений HTML-код (тільки для адміністраторів).
  */
 
 import type { BlockDefinition } from '../../types/page-config';
+import { block, s, b } from './helpers';
 
 export const rawBlocks: BlockDefinition[] = [
-  {
-    type: 'html',
-    label: 'HTML',
-    description: 'Необроблений HTML-код (тільки для адміністраторів)',
-    icon: 'code',
-    category: 'raw',
-    compatibleZones: ['main', 'sidebar', 'header', 'footer'],
-    schema: {
-      type: 'object',
-      properties: {
-        code: {
-          type: 'string',
-          title: 'HTML-код',
-        },
-        sandbox: {
-          type: 'boolean',
-          title: 'Пісочниця (обмежений CSS)',
-          default: true,
-        },
-      },
-      required: ['code'],
+  block({
+    type: "html", label: "HTML", icon: "code", category: "raw",
+    description: "Необроблений HTML-код (тільки для адміністраторів)",
+    props: {
+      code: s("HTML-код"),
+      sandbox: b("Пісочниця (обмежений CSS)", { default: true }),
     },
-    defaultProps: {
-      code: '<div class="wb-empty">HTML-вміст</div>',
-      sandbox: true,
-    },
-  },
+    required: ["code"],
+    defaultProps: { code: '<div class="wb-empty">HTML-вміст</div>', sandbox: true },
+  }),
 ];
