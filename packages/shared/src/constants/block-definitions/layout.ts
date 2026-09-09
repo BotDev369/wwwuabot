@@ -1,367 +1,98 @@
 /**
- * LAYOUT — структурні блоки
- *
- * Кнопки, списки, розділювачі, відступи, колонки, картки, hero.
+ * LAYOUT — структурні блоки (кнопки, списки, розділювачі, відступи, колонки, картки, hero).
  */
 
 import type { BlockDefinition } from '../../types/page-config';
+import { block, s, b, e, oa } from './helpers';
 
 export const layoutBlocks: BlockDefinition[] = [
-  {
-    type: "link-button",
-    label: "Кнопка посилання",
+  block({
+    type: "link-button", label: "Кнопка посилання", icon: "link", category: "layout",
     description: "Кнопка з переходом за посиланням (URL)",
-    icon: "link",
-    category: "layout",
-    compatibleZones: ["header", "sidebar", "main", "footer"],
-    schema: {
-      type: "object",
-      properties: {
-        text: {
-          type: "string",
-          title: "Текст кнопки",
-        },
-        url: {
-          type: "string",
-          title: "Посилання (URL)",
-          format: "uri",
-        },
-        target: {
-          type: "string",
-          title: "Відкривати в",
-          enum: ["_blank", "_self"],
-          default: "_blank",
-        },
-        variant: {
-          type: "string",
-          title: "Стиль кнопки",
-          enum: ["primary", "secondary", "outline", "ghost"],
-          default: "primary",
-        },
-        size: {
-          type: "string",
-          title: "Розмір",
-          enum: ["sm", "md", "lg"],
-          default: "md",
-        },
-        align: {
-          type: "string",
-          title: "Вирівнювання",
-          enum: ["left", "center", "right", "full"],
-          default: "left",
-        },
-        icon: {
-          type: "string",
-          title: "Іконка (опціонально)",
-        },
-      },
-      required: ["text", "url"],
+    props: {
+      text: s("Текст кнопки"), url: s("Посилання (URL)", { format: "uri" }),
+      target: e("Відкривати в", ["_blank", "_self"], { default: "_blank" }),
+      variant: e("Стиль кнопки", ["primary", "secondary", "outline", "ghost"], { default: "primary" }),
+      size: e("Розмір", ["sm", "md", "lg"], { default: "md" }),
+      align: e("Вирівнювання", ["left", "center", "right", "full"], { default: "left" }),
+      icon: s("Іконка (опціонально)"),
     },
-    defaultProps: {
-      text: "Перейти за посиланням",
-      url: "https://",
-      target: "_blank",
-      variant: "primary",
-      size: "md",
-      align: "left",
+    required: ["text", "url"],
+    defaultProps: { text: "Перейти за посиланням", url: "https://", target: "_blank", variant: "primary", size: "md", align: "left" },
+  }),
+  block({
+    type: "buttons", label: "Кнопки", icon: "buttons", category: "layout",
+    description: "Група кнопок (посилання або дії)",
+    props: {
+      items: oa("Кнопки", {
+        text: s("Текст кнопки"), url: s("Посилання", { format: "uri" }), action: s("Дія"),
+        variant: e("Стиль", ["primary", "secondary", "outline", "ghost"], { default: "primary" }),
+        icon: s("Іконка"),
+      }, ["text"]),
+      layout: e("Розташування", ["row", "column", "grid"], { default: "row" }),
     },
-  },
-
-  {
-    type: 'buttons',
-    label: 'Кнопки',
-    description: 'Група кнопок (посилання або дії)',
-    icon: 'buttons',
-    category: 'layout',
-    compatibleZones: ['header', 'sidebar', 'main', 'footer'],
-    schema: {
-      type: 'object',
-      properties: {
-        items: {
-          type: 'array',
-          title: 'Кнопки',
-          items: {
-            type: 'object',
-            properties: {
-              text: { type: 'string', title: 'Текст кнопки' },
-              url: { type: 'string', title: 'Посилання (опціонально)', format: 'uri' },
-              action: { type: 'string', title: 'Дія (опціонально)' },
-              variant: {
-                type: 'string',
-                title: 'Стиль',
-                enum: ['primary', 'secondary', 'outline', 'ghost'],
-                default: 'primary',
-              },
-              icon: { type: 'string', title: 'Іконка (опціонально)' },
-            },
-            required: ['text'],
-          },
-          minItems: 1,
-        },
-        layout: {
-          type: 'string',
-          title: 'Розташування',
-          enum: ['row', 'column', 'grid'],
-          default: 'row',
-        },
-      },
-      required: ['items'],
+    required: ["items"],
+    defaultProps: { items: [{ text: "Кнопка", url: "#", variant: "primary" }], layout: "row" },
+  }),
+  block({
+    type: "list", label: "Список", icon: "list", category: "layout",
+    description: "Нумерований або маркірований список елементів",
+    compatibleZones: ["main", "sidebar"],
+    props: {
+      items: oa("Елементи", { text: s("Текст елемента"), icon: s("Іконка"), description: s("Опис") }, ["text"]),
+      ordered: b("Нумерований"),
     },
-    defaultProps: {
-      items: [
-        { text: "Кнопка", url: "#", variant: "primary" },
-      ],
-      layout: "row",
+    required: ["items"],
+    defaultProps: { items: [], ordered: false },
+  }),
+  block({
+    type: "divider", label: "Розділювач", icon: "divider", category: "layout",
+    description: "Горизонтальна лінія-розділювач",
+    props: {
+      style: e("Стиль лінії", ["solid", "dashed", "dotted", "gradient"], { default: "solid" }),
+      spacing: e("Відступи", ["none", "sm", "md", "lg"], { default: "md" }),
     },
-  },
-
-  {
-    type: 'list',
-    label: 'Список',
-    description: 'Нумерований або маркірований список елементів',
-    icon: 'list',
-    category: 'layout',
-    compatibleZones: ['main', 'sidebar'],
-    schema: {
-      type: 'object',
-      properties: {
-        items: {
-          type: 'array',
-          title: 'Елементи',
-          items: {
-            type: 'object',
-            properties: {
-              text: { type: 'string', title: 'Текст елемента' },
-              icon: { type: 'string', title: 'Іконка (опціонально)' },
-              description: { type: 'string', title: 'Опис (опціонально)' },
-            },
-            required: ['text'],
-          },
-          minItems: 1,
-        },
-        ordered: {
-          type: 'boolean',
-          title: 'Нумерований',
-          default: false,
-        },
-      },
-      required: ['items'],
+    defaultProps: { style: "solid", spacing: "md" },
+  }),
+  block({
+    type: "spacer", label: "Відступ", icon: "construction", category: "layout",
+    description: "Вертикальний відступ між блоками",
+    props: { height: e("Висота", ["xs", "sm", "md", "lg", "xl", "2xl"], { default: "md" }) },
+    defaultProps: { height: "md" },
+  }),
+  block({
+    type: "columns", label: "Колонки", icon: "layout", category: "layout",
+    description: "Контейнер з 2 або 3 колонками (діти блоки в кожній)",
+    props: {
+      count: e("Кількість стовпців", ["2", "3"], { default: "2" }),
+      gap: e("Відстань", ["sm", "md", "lg"], { default: "md" }),
+      columns: oa("Колонки", { width: e("Ширина", ["auto", "1/3", "1/2", "2/3"], { default: "auto" }) }),
     },
-    defaultProps: {
-      items: [],
-      ordered: false,
+    required: ["columns"],
+    defaultProps: { count: "2", gap: "md", columns: [{ width: "auto" }, { width: "auto" }] },
+  }),
+  block({
+    type: "card", label: "Картка", icon: "card", category: "layout",
+    description: "Контейнер з фоном, рамкою та заголовком",
+    compatibleZones: ["main", "sidebar"],
+    props: {
+      title: s("Заголовок"), description: s("Опис"),
+      padding: e("Внутрішній відступ", ["sm", "md", "lg"], { default: "md" }),
+      bordered: b("З рамкою", { default: true }), elevated: b("З тінню"),
     },
-  },
-
-  {
-    type: 'divider',
-    label: 'Розділювач',
-    description: 'Горизонтальна лінія-розділювач',
-    icon: 'divider',
-    category: 'layout',
-    compatibleZones: ['main', 'sidebar', 'header', 'footer'],
-    schema: {
-      type: 'object',
-      properties: {
-        style: {
-          type: 'string',
-          title: 'Стиль лінії',
-          enum: ['solid', 'dashed', 'dotted', 'gradient'],
-          default: 'solid',
-        },
-        spacing: {
-          type: 'string',
-          title: 'Відступи',
-          enum: ['none', 'sm', 'md', 'lg'],
-          default: 'md',
-        },
-      },
+    defaultProps: { title: "", description: "", padding: "md", bordered: true, elevated: false },
+  }),
+  block({
+    type: "hero", label: "Hero", icon: "sparkles", category: "layout",
+    description: "Великий блок із заголовком, підзаголовком та CTA-кнопками",
+    compatibleZones: ["main", "header"],
+    props: {
+      title: s("Головний заголовок"), subtitle: s("Підзаголовок"),
+      backgroundImage: s("Фонове зображення", { format: "uri" }),
+      buttons: oa("Кнопки CTA", { text: s("Текст"), url: s("Посилання"), variant: e("Стиль", ["primary", "secondary"], { default: "primary" }) }, ["text"]),
+      align: e("Вирівнювання", ["left", "center", "right"], { default: "center" }),
     },
-    defaultProps: {
-      style: 'solid',
-      spacing: 'md',
-    },
-  },
-
-  {
-    type: 'spacer',
-    label: 'Відступ',
-    description: 'Вертикальний відступ між блоками',
-    icon: 'construction',
-    category: 'layout',
-    compatibleZones: ['main', 'sidebar', 'header', 'footer'],
-    schema: {
-      type: 'object',
-      properties: {
-        height: {
-          type: 'string',
-          title: 'Висота',
-          enum: ['xs', 'sm', 'md', 'lg', 'xl', '2xl'],
-          default: 'md',
-        },
-      },
-    },
-    defaultProps: {
-      height: 'md',
-    },
-  },
-
-  {
-    type: 'columns',
-    label: 'Колонки',
-    description: 'Контейнер з 2 або 3 колонками (діти блоки в кожній)',
-    icon: 'layout',
-    category: 'layout',
-    compatibleZones: ['main'],
-    schema: {
-      type: 'object',
-      properties: {
-        count: {
-          type: 'string',
-          title: 'Кількість стовпців',
-          enum: ['2', '3'],
-          default: '2',
-        },
-        gap: {
-          type: 'string',
-          title: 'Відстань',
-          enum: ['sm', 'md', 'lg'],
-          default: 'md',
-        },
-        columns: {
-          type: 'array',
-          title: 'Колонки',
-          description: 'Кожна колонка містить вкладені блоки',
-          items: {
-            type: 'object',
-            properties: {
-              width: {
-                type: 'string',
-                title: 'Ширина',
-                enum: ['auto', '1/3', '1/2', '2/3'],
-                default: 'auto',
-              },
-              children: {
-                type: 'array',
-                title: 'Блоки колонки',
-              },
-            },
-          },
-          minItems: 2,
-        },
-      },
-      required: ['columns'],
-    },
-    defaultProps: {
-      count: '2',
-      gap: 'md',
-      columns: [
-        { width: 'auto', children: [] },
-        { width: 'auto', children: [] },
-      ],
-    },
-  },
-
-  {
-    type: 'card',
-    label: 'Картка',
-    description: 'Контейнер з фоном, рамкою та заголовком',
-    icon: 'card',
-    category: 'layout',
-    compatibleZones: ['main', 'sidebar'],
-    schema: {
-      type: 'object',
-      properties: {
-        title: {
-          type: 'string',
-          title: 'Заголовок',
-        },
-        description: {
-          type: 'string',
-          title: 'Опис',
-        },
-        padding: {
-          type: 'string',
-          title: 'Внутрішній відступ',
-          enum: ['sm', 'md', 'lg'],
-          default: 'md',
-        },
-        bordered: {
-          type: 'boolean',
-          title: 'З рамкою',
-          default: true,
-        },
-        elevated: {
-          type: 'boolean',
-          title: 'З тінню',
-          default: false,
-        },
-      },
-    },
-    defaultProps: {
-      title: '',
-      description: '',
-      padding: 'md',
-      bordered: true,
-      elevated: false,
-    },
-  },
-
-  {
-    type: 'hero',
-    label: 'Hero',
-    description: 'Великий блок із заголовком, підзаголовком та CTA-кнопками',
-    icon: 'sparkles',
-    category: 'layout',
-    compatibleZones: ['main', 'header'],
-    schema: {
-      type: 'object',
-      properties: {
-        title: {
-          type: 'string',
-          title: 'Головний заголовок',
-        },
-        subtitle: {
-          type: 'string',
-          title: 'Підзаголовок',
-        },
-        backgroundImage: {
-          type: 'string',
-          title: 'Фонове зображення',
-          format: 'uri',
-        },
-        buttons: {
-          type: 'array',
-          title: 'Кнопки CTA',
-          items: {
-            type: 'object',
-            properties: {
-              text: { type: 'string', title: 'Текст' },
-              url: { type: 'string', title: 'Посилання' },
-              variant: {
-                type: 'string',
-                enum: ['primary', 'secondary'],
-                default: 'primary',
-              },
-            },
-            required: ['text'],
-          },
-        },
-        align: {
-          type: 'string',
-          title: 'Вирівнювання',
-          enum: ['left', 'center', 'right'],
-          default: 'center',
-        },
-      },
-      required: ['title'],
-    },
-    defaultProps: {
-      title: '',
-      subtitle: '',
-      backgroundImage: '',
-      buttons: [],
-      align: 'center',
-    },
-  },
+    required: ["title"],
+    defaultProps: { title: "", subtitle: "", backgroundImage: "", buttons: [], align: "center" },
+  }),
 ];
