@@ -45,6 +45,7 @@ npm run dev --workspace=web-admin-dev    # Адмін-панель
 - [AGENTS.md](AGENTS.md) — архітектура, доменні терміни, правила для AI-агентів
 - [CONTRIBUTING.md](CONTRIBUTING.md) — правила розробки, quality gates, конвенції
 - [docs/DESIGN_SYSTEM.md](docs/DESIGN_SYSTEM.md) — CSS-токени, компоненти, `<Icon />`
+- [docs/PAGE_ENGINE_ARCHITECTURE.md](docs/PAGE_ENGINE_ARCHITECTURE.md) — архітектурне рішення: єдиний Page Engine & безпека воркерів
 
 ---
 
