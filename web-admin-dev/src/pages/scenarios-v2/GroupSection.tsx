@@ -5,7 +5,6 @@
 import { useState } from "react";
 import type { IconName } from "@wwwuabot/shared";
 import { icons } from "@wwwuabot/shared";
-import { scenarioType } from "./helpers";
 import { ScenarioRow } from "./ScenarioRow";
 import type { ScenarioGroupMode } from "../../features/scenarios/store";
 
