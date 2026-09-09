@@ -1,122 +1,59 @@
-# 🌟 WWWUABOT Platform
+# WWWUABOT
 
-> **Модульна екосистема Telegram-платформи: бот-шлюз + повноцінний Web Mini App + блоковий конструктор персональних і публічних сайтів + сервіси життя, бізнесу та спільноти.**  
-> *(Проєкт знаходиться в процесі підготовки до теплого, людяного ребрендингу — див. [docs/PRODUCT_VISION.md](docs/PRODUCT_VISION.md))*
+> Модульна Telegram-платформа: бот + Web Mini App + конструктор сайтів (Page Builder).
 
-[![CI / CD Deploy](https://github.com/BotDev369/wwwuabot/actions/workflows/deploy.yml/badge.svg)](https://github.com/BotDev369/wwwuabot/actions/workflows/deploy.yml)
-[![Tests: Vitest](https://img.shields.io/badge/tests-34%20passing-success.svg)](vitest.config.ts)
-[![TypeScript: Strict](https://img.shields.io/badge/typescript-0%20any-blue.svg)](packages/shared/)
-[![Cloudflare Workers](https://img.shields.io/badge/edge-Cloudflare%20Workers-orange.svg)](https://workers.cloudflare.com/)
-[![License: AGPL v3](https://img.shields.io/badge/license-AGPL%20v3-blue.svg)](LICENSE)
+[![CI/CD](https://github.com/BotDev369/wwwuabot/actions/workflows/deploy.yml/badge.svg)](https://github.com/BotDev369/wwwuabot/actions/workflows/deploy.yml)
+[![Tests](https://img.shields.io/badge/tests-44%20passing-success.svg)](vitest.config.ts)
+[![TypeScript](https://img.shields.io/badge/typescript-0%20any-blue.svg)](packages/shared/)
+[![License](https://img.shields.io/badge/license-AGPL%20v3-blue.svg)](LICENSE)
 
 ---
 
-## 🧭 Про що цей проєкт?
+## Архітектура
 
-**WWWUABOT** — це не просто чат-бот, це масштабована веб-платформа нового покоління всередині Telegram, розроблена для людей, бізнесу та спільнот.
+npm workspaces монорепо з 4 Cloudflare Workers:
 
-```
-┌─────────────────────────────────────────────────────────────┐
-│                 🚪 Telegram-бот (Шлюз)                      │
-│        Швидкий старт, сповіщення, контекстні дії            │
-└──────────────────────────────┬──────────────────────────────┘
-                               │ 
-                               ▼
-┌─────────────────────────────────────────────────────────────┐
-│          🌐 Веб-платформа в Telegram (Mini App)             │
-│  ┌───────────────────────┬───────────────────────────────┐  │
-│  │ 👥 Соцмережа          │ 🛍️ Купи-Продай                │  │
-│  │    та спільнота       │    комерція та бізнес         │  │
-│  ├───────────────────────┼───────────────────────────────┤  │
-│  │ 🎁 Обмін              │ 🧘 Відпочинок, розваги,       │  │
-│  │    та благодійність   │    розвиток і навчання        │  │
-│  ├───────────────────────┴───────────────────────────────┤  │
-│  │ 🧱 Конструктор сайтів (Page Builder)                  │  │
-│  │    • Приватні сторінки (особисті щоденники, трекери)  │  │
-│  │    • Публічні сторінки (портфоліо, візитки, магазини) │  │
-│  ├───────────────────────────────────────────────────────┤  │
-│  │ 🧩 Екосистема корисних мікросервісів                  │  │
-│  │    Органічний трафік • Взаємне ненав’язливе промо     │  │
-│  └───────────────────────────────────────────────────────┘  │
-└─────────────────────────────────────────────────────────────┘
-```
-
-### Ключові можливості:
-1. **🚪 Telegram-бот як «вхідні двері»:** миттєвий вхід без паролів, push-сповіщення, інтерактивні сценарії та миттєвий перехід на веб-платформу.
-2. **🧱 Конструктор сайтів (Page Builder):**
-   - **Приватні сторінки:** збереження особистих даних, списків, дат, планів виключно для себе.
-   - **Публічні сайти:** створення візиток, магазинів, сторінок послуг і публікація в загальний каталог платформи.
-   - **Модульність:** багата бібліотека готових блоків із можливістю замовлення індивідуального дизайну.
-3. **🤝 Сфери життя та комерції:**
-   - **Соціальна взаємодія:** нетворкінг, знайомства, групи за інтересами.
-   - **Маркетплейс:** розділи «Купи-продай», прямий зв’язок клієнта з продавцем.
-   - **Взаємодопомога:** секція обміну речами та благодійності («Дарую»).
-   - **Відпочинок і розвиток:** інтерактивні ігри, планувальники подій, корисні калькулятори.
-4. **🚀 Віральний Smart-Sharing:** автогенерація естетичних карток із фото та описом для шерінгу окремих сторінок чи конкретних блоків у чати й соцмережі.
-5. **🪻 Ініціатива ребрендингу:** поточна робоча назва змінюється на простішу, теплішу та людянішу назву (детальніше в [docs/PRODUCT_VISION.md](docs/PRODUCT_VISION.md)).
+| Сервіс | Стек | Роль |
+|---|---|---|
+| `bot-dev/` | grammY, D1, Queues | Telegram-бот, сценарії |
+| `api-dev/` | D1, KV, Hono-like router | REST API, бізнес-логіка |
+| `web-platform-dev/` | React 19, Vite 8, Tailwind 4 | Telegram Mini App |
+| `web-admin-dev/` | React 19, Vite 8, Page Builder | Адмін-панель |
+| `packages/shared/` | TypeScript | Спільні типи, утиліти |
+| `packages/ui/` | React 19 | Бібліотека блоків Page Builder |
 
 ---
 
-## 🏗️ Архітектура монорепозиторію
-
-Проєкт побудований як **npm workspaces** монорепо на базі Edge-інфраструктури Cloudflare:
-
-| Сервіс | Каталог | Стек | Роль |
-|---|---|---|---|
-| **Bot** | `bot-dev/` | grammY, Cloudflare Workers, D1 (SQLite), Queues, Cloudinary | Telegram-бот, сценарії, фонове логування |
-| **API** | `api-dev/` | Cloudflare Workers, D1, KV, Hono-like router, UsersService | REST API для TWA, бізнес-логіка, калькулятори |
-| **Web Mini App** | `web-platform-dev/` | React 19, Vite 8, Tailwind CSS 4, Zustand 5, React Router 7 | Головний клієнтський додаток платформи |
-| **Admin Panel** | `web-admin-dev/` | React 19, Vite 8, Tailwind CSS 4, Zustand 5, Page Builder | Панель адміністратора та візуальний конструктор |
-| **Shared Core** | `packages/shared/` | TypeScript, Open-Props, Vitest | Спільні типи, утиліти дат, міграції, дизайн-токени |
-| **Shared UI** | `packages/ui/` | React 19, Tailwind CSS 4 | Бібліотека візуальних блоків і компонентів |
-
----
-
-## 📚 Документація
-
-Вся офіційна документація проєкту стандартизована у папці `docs/`:
-
-- **[docs/PRODUCT_VISION.md](docs/PRODUCT_VISION.md)** — повна візія платформи, філософія, мікросервіси та ребрендинг.
-- **[docs/REFACTORING_ROADMAP.md](docs/REFACTORING_ROADMAP.md)** — Топ-9 системних кроків до «кришталевого коду».
-- **[docs/SCORECARD.md](docs/SCORECARD.md)** — об’єктивна система оцінки якості та поточний бал (7.4 / 9).
-- **[docs/AUDIT.md](docs/AUDIT.md)** — технічний аудит і журнал вирішення технічного боргу.
-- **[CONTRIBUTING.md](CONTRIBUTING.md)** — обов’язковий регламент перевірок і правил для розробників та AI-агентів.
-- **[AGENTS.md](AGENTS.md)** — архітектурна довідка та правила контексту для AI-помічників.
-- **[packages/shared/DESIGN_SYSTEM.md](packages/shared/DESIGN_SYSTEM.md)** — дизайн-система токенів і кольорових палітр.
-
----
-
-## 💻 Швидкий старт локально
+## Швидкий старт
 
 ```bash
-# 1. Клонування репозиторію
-git clone https://github.com/BotDev369/wwwuabot.git
-cd wwwuabot
-
-# 2. Встановлення всіх залежностей (виключно з кореня)
+git clone https://github.com/BotDev369/wwwuabot.git && cd wwwuabot
 npm install
-
-# 3. Запуск перевірок якості
-npm test               # Запуск 34 unit-тестів (Vitest)
-npm run typecheck      # Перевірка строгої типізації TypeScript
-npm run lint           # Перевірка стилю коду (ESLint)
-
-# 4. Локальний запуск сервісів
-npm run dev --workspace=bot-dev             # Запуск бота
-npm run dev --workspace=api-dev             # Запуск API
-npm run dev --workspace=web-platform-dev    # Запуск Web Mini App
-npm run dev --workspace=web-admin-dev       # Запуск Admin CMS
+npm test                  # 44 unit-тестів
+npm run typecheck         # TypeScript strict
+npm run lint              # ESLint
+npm run dev --workspace=bot-dev          # Запуск бота
+npm run dev --workspace=api-dev          # Запуск API
+npm run dev --workspace=web-platform-dev # Web Mini App
+npm run dev --workspace=web-admin-dev    # Адмін-панель
 ```
 
 ---
 
-## 🚀 Деплой та CI/CD
+## Документація
 
-Деплой відбувається повністю автоматично через **GitHub Actions** при пуші у гілку `main`.
-Завдяки path-filtering Cloudflare деплоїть лише той воркер, у якому відбулися зміни.
+- [AGENTS.md](AGENTS.md) — архітектура, доменні терміни, правила для AI-агентів
+- [CONTRIBUTING.md](CONTRIBUTING.md) — правила розробки, quality gates, конвенції
+- [docs/DESIGN_SYSTEM.md](docs/DESIGN_SYSTEM.md) — CSS-токени, компоненти, `<Icon />`
 
 ---
 
-## 📄 Ліцензія
+## CI/CD
 
-Проєкт розповсюджується за відкритою ліцензією **[GNU AGPL v3](LICENSE)**. Будь-які похідні роботи зобов’язані залишатися відкритими під цією ж ліцензією.
+Деплой автоматичний при пуші в `main` через GitHub Actions з path filtering — деплоїться лише змінений воркер.
+
+---
+
+## Ліцензія
+
+[GNU AGPL v3](LICENSE) — похідні проекти зобов'язані залишатись open source.
