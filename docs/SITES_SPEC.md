@@ -1,0 +1,725 @@
+# SPEC: Sites — Конструктор сайтів
+
+> **Версія:** 1.0 | **Дата:** 10.09.2026 | **Статус:** Draft → In Progress
+
+---
+
+## 1. Мета
+
+Розширити платформу WWWUABot можливістю створення **багатосторінкових сайтів** з шаблонами, навігацією та модерацією публікації.
+
+### Необхідні можливості
+
+| Можливість | Опис |
+|---|---|
+| **Сайти** | Колекція сторінок з навігацією (як звичайний конструктор сайтів) |
+| **Сторінки** | Окремі сторінки з Page Builder |
+| **Шаблони** | Вбудовані + користувацькі шаблони |
+| **Модерація** | Адмін схвалює публікацію |
+| **Каталог** | Публічний каталог опублікованих сайтів |
+| **Slug** | Домен сайту = codeword = slug |
+
+---
+
+## 2. Архітектура
+
+### 2.1. Розділення зон відповідальності
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│                    Scenarios (BOT)                          │
+│  ТІЛЬКИ бот-поля: buttons, keyboard_type, caption         │
+│  page_data: null (або мінімальний для rich message)       │
+└─────────────────────────────────────────────────────────────┘
+                          ▲
+                          │ НЕ змішуємо!
+                          ▼
+┌─────────────────────────────────────────────────────────────┐
+│                     Sites (WEB)                             │
+│  slug, title, settings, navigation                         │
+│  SitePages: slug, page_data, meta                          │
+└─────────────────────────────────────────────────────────────┘
+
+Спільне: packages/ui (PageRenderer, блоки, PageBuilder)
+```
+
+### 2.2. Збереження даних
+
+| Таблиця | Воркер | Призначення |
+|---|---|---|
+| `scenarios` | bot-dev | Бот-сценарії (НЕ ЧІПАЄМО) |
+| `scenarios-admin` | api-dev | Старі адмін-сторінки (НЕ ЧІПАЄМО) |
+| `scenarios-portal` | api-dev | Старі юзерівські сторінки (НЕ ЧІПАЄМО) |
+| `sites` | api-dev | **НОВЕ** — сайти |
+| `site_pages` | api-dev | **НОВЕ** — сторінки сайтів |
+| `templates` | api-dev | **НОВЕ** — шаблони |
+
+---
+
+## 3. Схема D1
+
+### 3.1. Таблиця `sites`
+
+```sql
+CREATE TABLE IF NOT EXISTS sites (
+  id            TEXT PRIMARY KEY,           -- UUID v4
+  slug          TEXT UNIQUE NOT NULL,       -- codeword = домен сайту
+  title         TEXT NOT NULL,
+  description   TEXT,                       -- короткий опис для каталогу
+  owner_id      INTEGER NOT NULL,           -- user_id з Telegram
+  status        TEXT DEFAULT 'draft',       -- draft | pending | published | rejected
+  template_id   TEXT,                       -- з якого шаблону створено (null = з нуля)
+  settings      TEXT DEFAULT '{}',          -- JSON: навігація, тема, logo...
+  is_public     INTEGER DEFAULT 0,          -- 1 = додано в публічний каталог
+  thumbnail     TEXT,                       -- URL превʼю для каталогу
+  reject_reason TEXT,                       -- причина відхилення
+  created_at    TEXT,
+  updated_at    TEXT,
+  published_at  TEXT
+);
+
+-- Індекси
+CREATE INDEX IF NOT EXISTS idx_sites_owner ON sites(owner_id);
+CREATE INDEX IF NOT EXISTS idx_sites_status ON sites(status);
+CREATE INDEX IF NOT EXISTS idx_sites_public ON sites(is_public, status);
+CREATE UNIQUE INDEX IF NOT EXISTS idx_sites_slug ON sites(slug);
+```
+
+### 3.2. Таблиця `site_pages`
+
+```sql
+CREATE TABLE IF NOT EXISTS site_pages (
+  id            TEXT PRIMARY KEY,           -- UUID v4
+  site_id       TEXT NOT NULL,              -- FK → sites.id
+  slug          TEXT NOT NULL,              -- slug сторінки ('home' = head)
+  title         TEXT NOT NULL,
+  page_data     TEXT DEFAULT '{}',          -- JSON PageConfig
+  order_index   INTEGER DEFAULT 0,          -- порядок в навігації
+  status        TEXT DEFAULT 'draft',       -- draft | published
+  meta          TEXT DEFAULT '{}',          -- JSON: SEO, og:image...
+  created_at    TEXT,
+  updated_at    TEXT,
+  published_at  TEXT,
+  FOREIGN KEY (site_id) REFERENCES sites(id) ON DELETE CASCADE
+);
+
+-- Унікальний slug в межах сайту
+CREATE UNIQUE INDEX IF NOT EXISTS idx_pages_slug ON site_pages(site_id, slug);
+CREATE INDEX IF NOT EXISTS idx_pages_site ON site_pages(site_id);
+```
+
+### 3.3. Таблиця `templates`
+
+```sql
+CREATE TABLE IF NOT EXISTS templates (
+  id            TEXT PRIMARY KEY,           -- UUID v4
+  name          TEXT NOT NULL,
+  description   TEXT,
+  type          TEXT NOT NULL,              -- 'site' | 'page'
+  thumbnail     TEXT,                       -- URL превʼю
+  config        TEXT NOT NULL,              -- JSON: структура шаблону
+  is_system     INTEGER DEFAULT 0,          -- 1 = вбудований (не видалити)
+  owner_id      INTEGER,                   -- null = system, user_id = user-created
+  tags          TEXT DEFAULT '[]',          -- JSON array тегів для фільтрації
+  created_at    TEXT
+);
+
+CREATE INDEX IF NOT EXISTS idx_templates_type ON templates(type, is_system);
+CREATE INDEX IF NOT EXISTS idx_templates_owner ON templates(owner_id);
+```
+
+---
+
+## 4. Типи (packages/shared)
+
+### 4.1. `packages/shared/src/types/site.types.ts`
+
+```typescript
+// ── Статуси ──────────────────────────────────────────────────
+
+export type SiteStatus = 'draft' | 'pending' | 'published' | 'rejected';
+export type PageStatus = 'draft' | 'published';
+export type TemplateType = 'site' | 'page';
+
+// ── Сайт ─────────────────────────────────────────────────────
+
+export interface Site {
+  id: string;
+  slug: string;                    // codeword = домен
+  title: string;
+  description?: string;
+  ownerId: number;                 // Telegram user_id
+  status: SiteStatus;
+  templateId?: string;
+  settings: SiteSettings;
+  isPublic: boolean;               // додано в каталог?
+  thumbnail?: string;
+  rejectReason?: string;
+  createdAt: string;
+  updatedAt: string;
+  publishedAt?: string;
+}
+
+export interface SiteSettings {
+  navigation?: NavigationItem[];   // пункт меню
+  theme?: 'light' | 'dark' | 'auto';
+  logo?: string;
+  primaryColor?: string;
+  customCss?: string;
+}
+
+export interface NavigationItem {
+  label: string;
+  pageSlug: string;
+  icon?: string;
+  order: number;
+}
+
+// ── Сторінка сайту ───────────────────────────────────────────
+
+export interface SitePage {
+  id: string;
+  siteId: string;
+  slug: string;                    // slug в межах сайту
+  title: string;
+  pageData: PageConfig;            // вже існуючий тип
+  orderIndex: number;
+  status: PageStatus;
+  meta?: PageMeta;
+  createdAt: string;
+  updatedAt: string;
+  publishedAt?: string;
+}
+
+export interface PageMeta {
+  title?: string;                  // SEO title
+  description?: string;            // SEO description
+  ogImage?: string;                // OG image URL
+}
+
+// ── Шаблон ───────────────────────────────────────────────────
+
+export interface Template {
+  id: string;
+  name: string;
+  description?: string;
+  type: TemplateType;
+  thumbnail?: string;
+  config: SiteTemplateConfig | PageTemplateConfig;
+  isSystem: boolean;
+  ownerId?: number;                // undefined = system
+  tags: string[];
+  createdAt: string;
+}
+
+export interface SiteTemplateConfig {
+  pages: Array<{
+    slug: string;
+    title: string;
+    pageData: PageConfig;
+  }>;
+  settings: SiteSettings;
+}
+
+export interface PageTemplateConfig {
+  pageData: PageConfig;
+}
+
+// ── Каталог ──────────────────────────────────────────────────
+
+export interface CatalogSite {
+  slug: string;
+  title: string;
+  description?: string;
+  thumbnail?: string;
+  ownerName?: string;
+  tags?: string[];
+  publishedAt: string;
+}
+
+// ── D1 rows (для маппінгу) ──────────────────────────────────
+
+export interface SiteRow {
+  id: string;
+  slug: string;
+  title: string;
+  description: string | null;
+  owner_id: number;
+  status: string;
+  template_id: string | null;
+  settings: string;                // JSON
+  is_public: number;               // 0 | 1
+  thumbnail: string | null;
+  reject_reason: string | null;
+  created_at: string;
+  updated_at: string;
+  published_at: string | null;
+}
+
+export interface SitePageRow {
+  id: string;
+  site_id: string;
+  slug: string;
+  title: string;
+  page_data: string;               // JSON
+  order_index: number;
+  status: string;
+  meta: string;                    // JSON
+  created_at: string;
+  updated_at: string;
+  published_at: string | null;
+}
+
+export interface TemplateRow {
+  id: string;
+  name: string;
+  description: string | null;
+  type: string;
+  thumbnail: string | null;
+  config: string;                  // JSON
+  is_system: number;               // 0 | 1
+  owner_id: number | null;
+  tags: string;                    // JSON array
+  created_at: string;
+}
+```
+
+### 4.2. Експорт в `packages/shared/src/types/index.ts`
+
+Додати:
+```typescript
+export type {
+  Site,
+  SiteStatus,
+  SiteSettings,
+  NavigationItem,
+  SitePage,
+  PageStatus,
+  PageMeta,
+  Template,
+  TemplateType,
+  SiteTemplateConfig,
+  PageTemplateConfig,
+  CatalogSite,
+  SiteRow,
+  SitePageRow,
+  TemplateRow,
+} from './site.types';
+```
+
+---
+
+## 5. API ендпоїнти (api-dev)
+
+### 5.1. Sites (користувач)
+
+| Метод | Маршрут | Опис |
+|---|---|---|
+| `POST` | `/api/sites` | Створити сайт (повертає id) |
+| `GET` | `/api/sites` | Мої сайти (owner_id з auth) |
+| `GET` | `/api/sites/:slug` | Отримати сайт |
+| `PUT` | `/api/sites/:slug` | Оновити (title, settings, is_public) |
+| `DELETE` | `/api/sites/:slug` | Видалити сайт |
+| `POST` | `/api/sites/:slug/publish` | Подати на модерацію (status → pending) |
+| `POST` | `/api/sites/:slug/unpublish` | Зняти з публікації (→ draft) |
+
+### 5.2. Site Pages
+
+| Метод | Маршрут | Опис |
+|---|---|---|
+| `POST` | `/api/sites/:slug/pages` | Створити сторінку |
+| `GET` | `/api/sites/:slug/pages` | Всі сторінки сайту |
+| `PUT` | `/api/sites/:slug/pages/:pid` | Оновити сторінку |
+| `DELETE` | `/api/sites/:slug/pages/:pid` | Видалити сторінку |
+| `POST` | `/api/sites/:slug/pages/:pid/publish` | Опублікувати сторінку |
+
+### 5.3. Templates
+
+| Метод | Маршрут | Опис |
+|---|---|---|
+| `GET` | `/api/templates` | Список (system + мої) |
+| `GET` | `/api/templates/:id` | Отримати шаблон |
+| `POST` | `/api/templates` | Створити шаблон (user) |
+| `PUT` | `/api/templates/:id` | Оновити (тільки свої) |
+| `DELETE` | `/api/templates/:id` | Видалити (тільки свої, не system) |
+
+### 5.4. Catalog (публічний)
+
+| Метод | Маршрут | Опис |
+|---|---|---|
+| `GET` | `/api/catalog` | Опубліковані сайти (pagination) |
+| `GET` | `/api/catalog/:slug` | Сайт з каталогу |
+
+### 5.5. Admin Moderation
+
+| Метод | Маршрут | Опис |
+|---|---|---|
+| `GET` | `/api/admin/sites/pending` | Черга модерації |
+| `GET` | `/api/admin/sites` | Всі сайти (з фільтрами) |
+| `POST` | `/api/admin/sites/:slug/approve` | Схвалити публікацію |
+| `POST` | `/api/admin/sites/:slug/reject` | Відхилити (з причиною) |
+| `POST` | `/api/admin/templates` | Створити system шаблон |
+| `DELETE` | `/api/admin/templates/:id` | Видалити шаблон |
+
+---
+
+## 6. Статуси публікації
+
+```
+┌─────────────┐     ┌─────────────┐     ┌─────────────┐
+│   DRAFT     │────►│   PENDING   │────►│  PUBLISHED  │
+│  (created)  │     │  (submit)   │     │  (approved) │
+└─────────────┘     └─────────────┘     └─────────────┘
+                           │
+                           ▼
+                    ┌─────────────┐
+                    │  REJECTED   │────► (back to DRAFT)
+                    │  (denied)   │
+                    └─────────────┘
+```
+
+| Статус | Хто бачить | Що можна |
+|---|---|---|
+| `draft` | Owner + Admin | Редагувати, видаляти, подавати на модерацію |
+| `pending` | Owner + Admin | Чекати, зняти з модерації |
+| `published` | Всі | Переглядати (public access) |
+| `rejected` | Owner + Admin | Редагувати, подавати знову |
+
+---
+
+## 7. Маршрутизація
+
+### 7.1. web-platform-dev (користувач)
+
+```
+/                           — каталог публічних сайтів (опціонально)
+/my-sites                   — мої сайти (авторизовані)
+/site/new                   — створити сайт (вибір шаблону)
+/site/:slug                 — редактор сайту (тільки owner)
+/site/:slug/:pageSlug       — редагування сторінки
+/site/:slug/preview         — попередній перегляд (owner + admin)
+/view/:slug                 — публічний перегляд (published only)
+/view/:slug/:pageSlug       — публічна сторінка
+/catalog                    — публічний каталог
+```
+
+### 7.2. web-admin-dev (адмін)
+
+```
+/sites                      — всі сайти
+/sites/pending              — черга модерації
+/sites/:slug                — перегляд сайту
+/templates                  — управління шаблонами
+```
+
+---
+
+## 8. Структура файлів
+
+### 8.1. packages/shared
+
+```
+src/types/
+  ├── page-config.ts            # PageConfig (ВЖЕ Є)
+  ├── site.types.ts             # Site, SitePage, Template (НОВЕ)
+  └── index.ts                  # Re-exports (ОНОВИТИ)
+
+src/constants/
+  ├── site-defaults.ts          # Дефолтні налаштування (НОВЕ)
+  └── site-templates.ts         # Вбудовані шаблони (НОВЕ)
+```
+
+### 8.2. packages/ui
+
+```
+src/
+  ├── PageRenderer.tsx          # Рендер сторінки (ВЖЕ Є)
+  ├── SiteRenderer.tsx          # Рендер сайту з навігацією (НОВЕ)
+  └── blocks/                   # Блоки (ВЖЕ Є)
+```
+
+### 8.3. api-dev
+
+```
+src/controllers/
+  ├── sites.controller.ts           # CRUD сайтів (НОВЕ)
+  ├── site-pages.controller.ts      # CRUD сторінок сайтів (НОВЕ)
+  ├── templates.controller.ts       # CRUD шаблонів (НОВЕ)
+  ├── catalog.controller.ts         # Публічний каталог (НОВЕ)
+  └── sites-admin.controller.ts     # Адмін модерація (НОВЕ)
+
+src/services/
+  └── sites.service.ts              # Бізнес-логіка (НОВЕ)
+
+src/router.ts                       # Додати маршрути (ОНОВИТИ)
+```
+
+### 8.4. web-platform-dev
+
+```
+src/pages/
+  ├── MySitesPage.tsx               # Мої сайти (НОВЕ)
+  ├── SiteEditorPage.tsx            # Редактор сайту (НОВЕ)
+  ├── SitePreviewPage.tsx           # Попередній перегляд (НОВЕ)
+  ├── PublicCatalogPage.tsx         # Публічний каталог (НОВЕ)
+  └── SiteViewPage.tsx              # Публічний перегляд (НОВЕ)
+
+src/features/site-builder/
+  ├── SiteBuilder.tsx               # Головний компонент (НОВЕ)
+  ├── PageList.tsx                  # Список сторінок (НОВЕ)
+  ├── NavigationEditor.tsx          # Редактор навігації (НОВЕ)
+  ├── TemplatePicker.tsx            # Вибір шаблону (НОВЕ)
+  ├── SiteSettingsPanel.tsx         # Налаштування сайту (НОВЕ)
+  ├── useSiteBuilder.ts            # Хук (НОВЕ)
+  ├── useSiteApi.ts                # API-запити (НОВЕ)
+  └── types.ts                     # Локальні типи (НОВЕ)
+
+src/app/router.tsx                  # Додати маршрути (ОНОВИТИ)
+```
+
+### 8.5. web-admin-dev
+
+```
+src/pages/
+  ├── SitesPage.tsx                 # Список сайтів (НОВЕ)
+  ├── SitesModerationPage.tsx       # Модерація (НОВЕ)
+  └── TemplatesPage.tsx             # Шаблони (НОВЕ)
+
+src/features/moderation/
+  ├── ModerationQueue.tsx           # Черга модерації (НОВЕ)
+  ├── SiteReviewCard.tsx            # Картка для перегляду (НОВЕ)
+  ├── useModeration.ts             # Хук (НОВЕ)
+  └── types.ts                      # Локальні типи (НОВЕ)
+
+src/features/template-manager/
+  ├── TemplateManager.tsx           # Менеджер шаблонів (НОВЕ)
+  ├── useTemplates.ts              # Хук (НОВЕ)
+  └── types.ts                      # Локальні типи (НОВЕ)
+
+src/app/router.tsx                  # Додати маршрути (ОНОВИТИ)
+```
+
+---
+
+## 9. Вбудовані шаблони
+
+### 9.1. Site Templates
+
+| ID | Назва | Опис | Сторінки |
+|---|---|---|---|
+| `blank-site` | Порожній сайт | Мінімальний сайт | home |
+| `portfolio` | Портфоліо | Сайт-портфоліо | home, projects, contacts |
+| `blog` | Блог | Простий блог | home, posts, about |
+| `business` | Бізнес-сайт | Корпоративний сайт | home, services, about, contacts |
+
+### 9.2. Page Templates
+
+| ID | Назва | Опис |
+|---|---|---|
+| `landing-page` | Лендінг | Hero + features + CTA |
+| `business-card` | Візитка | Контакти + посилання |
+| `event-page` | Сторінка події | Дата + опис + реєстрація |
+| `blank-page` | Порожня сторінка | Чистий аркуш |
+
+---
+
+## 10. UI компоненти
+
+### 10.1. SiteRenderer (packages/ui)
+
+Рендерить багатосторінковий сайт з навігацією:
+
+```tsx
+<SiteRenderer
+  site={site}              // Site конфігурація
+  pages={pages}            // SitePage[]
+  currentSlug="home"       // поточна сторінка
+  context={context}        // BlockContext
+  mode="preview"           // preview | public
+/>
+```
+
+### 10.2. SiteBuilder (web-platform)
+
+Інтерфейс створення/редагування сайту:
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│  SiteBuilder                                                │
+├─────────────────────────────────────────────────────────────┤
+│  ┌──────────┐  ┌────────────────────────────────────────┐  │
+│  │ PageList │  │  PageEditor (PageBuilder)              │  │
+│  │          │  │                                        │  │
+│  │ • home   │  │  [Zone: main]                         │  │
+│  │ • about  │  │  ┌────────────────────────────────┐   │  │
+│  │ • contacts│ │  │ HeroBlock                      │   │  │
+│  │          │  │  │ Title: "Welcome"               │   │  │
+│  │ [+ Add]  │  │  └────────────────────────────────┘   │  │
+│  └──────────┘  │  ┌────────────────────────────────┐   │  │
+│                │  │ TextBlock                      │   │  │
+│                │  │ Content: "About us..."         │   │  │
+│                │  └────────────────────────────────┘   │  │
+│                │  [+ Add Block]                        │  │
+│                └────────────────────────────────────────┘  │
+│  [Settings] [Preview] [Publish]                           │
+└─────────────────────────────────────────────────────────────┘
+```
+
+---
+
+## 11. Workflow
+
+### 11.1. Створення сайту
+
+1. Користувач натискає "Створити сайт"
+2. Обирає шаблон (або blank)
+3. Вводить slug (= домен сайту)
+4. Створюється Site + перша SitePage (home)
+5. Відкривається SiteBuilder
+
+### 11.2. Редагування
+
+1. Додає/видаляє сторінки
+2. Редагує контент через PageBuilder
+3. Налаштовує навігацію
+4. Зберігає (status = draft)
+
+### 11.3. Публікація
+
+1. Натискає "Опублікувати"
+2. Status → pending
+3. Адмін бачить в модерації
+4. Схвалює → status → published
+5. Сайт з'являється в каталозі (якщо is_public = 1)
+
+### 11.4. Відхилення
+
+1. Адмін відхиляє з причиною
+2. Status → rejected
+3. Користувач бачить причину
+4. Виправляє і подає знову
+
+---
+
+## 12. Правила
+
+### 12.1. Crystal Clarity Rule
+
+- Файли < 200 рядків
+- Компонент = рендеринг
+- Хук = логіка
+- Хелпер = чисті функції
+
+### 12.2. Дизайн-система
+
+- CSS-токени (не хардкодити кольори)
+- `<Icon />` (не емоджі)
+- Модалки (не дропдауни)
+- `.wb-*` класи
+
+### 12.3. API
+
+- Всі ендпоїнти в api-dev
+- Cookie-based auth
+- JSON відповіді
+
+---
+
+## 13. Тести
+
+### 13.1. Unit тести
+
+- `packages/shared/src/types/site.types.ts` — валідація типів
+- `api-dev/src/services/sites.service.ts` — бізнес-логіка
+- `packages/ui/src/SiteRenderer.tsx` — рендер
+
+### 13.2. Інтеграційні тести
+
+- API endpoints (POST/GET/PUT/DELETE)
+- Workflow публікації
+- Модерація
+
+---
+
+## 14. Чек-ліст реалізації
+
+### Фаза 1: Типи
+- [ ] `packages/shared/src/types/site.types.ts`
+- [ ] `packages/shared/src/constants/site-defaults.ts`
+- [ ] `packages/shared/src/constants/site-templates.ts`
+- [ ] Оновити `packages/shared/src/types/index.ts`
+- [ ] Оновити `packages/shared/package.json` (exports)
+
+### Фаза 2: API
+- [ ] `api-dev/src/services/sites.service.ts`
+- [ ] `api-dev/src/controllers/sites.controller.ts`
+- [ ] `api-dev/src/controllers/site-pages.controller.ts`
+- [ ] `api-dev/src/controllers/templates.controller.ts`
+- [ ] `api-dev/src/controllers/catalog.controller.ts`
+- [ ] `api-dev/src/controllers/sites-admin.controller.ts`
+- [ ] Оновити `api-dev/src/router.ts`
+
+### Фаза 3: D1 міграція
+- [ ] Додати міграцію в `api-dev/src/services/sites.service.ts` (withAutoMigrate)
+
+### Фаза 4: UI — packages/ui
+- [ ] `packages/ui/src/SiteRenderer.tsx`
+- [ ] Оновити `packages/ui/src/blocks/index.ts`
+- [ ] Оновити `packages/ui/package.json` (exports)
+
+### Фаза 5: UI — web-platform
+- [ ] `src/pages/MySitesPage.tsx`
+- [ ] `src/pages/SiteEditorPage.tsx`
+- [ ] `src/pages/SitePreviewPage.tsx`
+- [ ] `src/pages/PublicCatalogPage.tsx`
+- [ ] `src/pages/SiteViewPage.tsx`
+- [ ] `src/features/site-builder/*` (всі компоненти)
+- [ ] Оновити `src/app/router.tsx`
+
+### Фаза 6: UI — web-admin
+- [ ] `src/pages/SitesPage.tsx`
+- [ ] `src/pages/SitesModerationPage.tsx`
+- [ ] `src/pages/TemplatesPage.tsx`
+- [ ] `src/features/moderation/*`
+- [ ] `src/features/template-manager/*`
+- [ ] Оновити `src/app/router.tsx`
+
+### Фаза 7: Шаблони
+- [ ] Вбудовані site-шаблони (blank, portfolio, blog, business)
+- [ ] Вбудовані page-шаблони (landing, business-card, event, blank)
+
+### Фаза 8: Тести
+- [ ] Unit тести сервісів
+- [ ] Unit тести UI компонентів
+- [ ] Typecheck: `npm run typecheck`
+- [ ] Lint: `npm run lint`
+
+---
+
+## 15. Ризики
+
+| Ризик | Вплив | Мітігатор |
+|---|---|---|
+| Конфлікт slug з існуючими scenarios | Середній | Унікальний індекс + валідація |
+| Складність SiteRenderer | Середній | MVP: проста навігація, потім розширюємо |
+| Шаблони можуть застаріти | Низький | System templates + user templates |
+| Модерація уповільнить публікацію | Низький | Admin can auto-approve自己 |
+
+---
+
+## 16. Success Criteria
+
+- [ ] Користувач може створити сайт з шаблону
+- [ ] Користувач може додавати/видаляти сторінки
+- [ ] Кожна сторінка редагується через PageBuilder
+- [ ] Навігація працює між сторінками
+- [ ] Публікація потребує модерації
+- [ ] Адмін може схвалити/відхилити
+- [ ] Публічний каталог показує опубліковані сайти
+- [ ] Slug = домен сайту
+- [ ] Typecheck проходить без помилок
+- [ ] Lint проходить без помилок
+
+---
+
+*Документ створено для відстеження прогресу та відновлення контексту при перервах.*
