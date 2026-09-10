@@ -1,6 +1,6 @@
 # SPEC: Sites — Конструктор сайтів
 
-> **Версія:** 1.0 | **Дата:** 10.09.2026 | **Статус:** Draft → In Progress
+> **Версія:** 1.1 | **Дата:** 10.09.2026 | **Статус:** In Progress → MVP Ready
 
 ---
 
@@ -392,15 +392,13 @@ export type {
 ### 7.1. web-platform-dev (користувач)
 
 ```
-/                           — каталог публічних сайтів (опціонально)
-/my-sites                   — мої сайти (авторизовані)
-/site/new                   — створити сайт (вибір шаблону)
-/site/:slug                 — редактор сайту (тільки owner)
-/site/:slug/:pageSlug       — редагування сторінки
-/site/:slug/preview         — попередній перегляд (owner + admin)
-/view/:slug                 — публічний перегляд (published only)
-/view/:slug/:pageSlug       — публічна сторінка
+/                           — головна (сценарій __base__)
+/sites                      — мої сайти (авторизовані)
+/sites/new                  — створити сайт (вибір шаблону)
+/sites/:slug                — редактор сайту (тільки owner)
 /catalog                    — публічний каталог
+/view/:slug                 — публічний перегляд (published only)
+*                           — catch-all: сценарії за slug
 ```
 
 ### 7.2. web-admin-dev (адмін)
@@ -643,55 +641,56 @@ src/app/router.tsx                  # Додати маршрути (ОНОВИ�
 
 ## 14. Чек-ліст реалізації
 
-### Фаза 1: Типи
-- [ ] `packages/shared/src/types/site.types.ts`
-- [ ] `packages/shared/src/constants/site-defaults.ts`
-- [ ] `packages/shared/src/constants/site-templates.ts`
-- [ ] Оновити `packages/shared/src/types/index.ts`
-- [ ] Оновити `packages/shared/package.json` (exports)
+### Фаза 1: Типи ✅
+- [x] `packages/shared/src/types/site.types.ts`
+- [x] `packages/shared/src/constants/site-defaults.ts`
+- [x] `packages/shared/src/constants/site-templates.ts`
+- [x] Оновити `packages/shared/src/index.ts` (exports)
+- [x] Оновити `packages/shared/package.json` (exports)
 
-### Фаза 2: API
-- [ ] `api-dev/src/services/sites.service.ts`
-- [ ] `api-dev/src/controllers/sites.controller.ts`
-- [ ] `api-dev/src/controllers/site-pages.controller.ts`
-- [ ] `api-dev/src/controllers/templates.controller.ts`
-- [ ] `api-dev/src/controllers/catalog.controller.ts`
-- [ ] `api-dev/src/controllers/sites-admin.controller.ts`
-- [ ] Оновити `api-dev/src/router.ts`
+### Фаза 2: API ✅
+- [x] `api-dev/src/services/sites.service.ts`
+- [x] `api-dev/src/controllers/sites.controller.ts`
+- [x] `api-dev/src/controllers/site-pages.controller.ts`
+- [x] `api-dev/src/controllers/templates.controller.ts`
+- [x] `api-dev/src/controllers/catalog.controller.ts`
+- [x] `api-dev/src/controllers/sites-admin.controller.ts`
+- [x] Оновити `api-dev/src/router.ts`
 
-### Фаза 3: D1 міграція
-- [ ] Додати міграцію в `api-dev/src/services/sites.service.ts` (withAutoMigrate)
+### Фаза 3: D1 міграція ✅
+- [x] `ensureSitesTables()` в `sites.service.ts` (CREATE TABLE IF NOT EXISTS)
 
-### Фаза 4: UI — packages/ui
-- [ ] `packages/ui/src/SiteRenderer.tsx`
-- [ ] Оновити `packages/ui/src/blocks/index.ts`
-- [ ] Оновити `packages/ui/package.json` (exports)
+### Фаза 4: UI — packages/ui ✅
+- [x] `packages/ui/src/SiteRenderer.tsx`
+- [x] Оновити `packages/ui/package.json` (exports)
 
-### Фаза 5: UI — web-platform
-- [ ] `src/pages/MySitesPage.tsx`
-- [ ] `src/pages/SiteEditorPage.tsx`
-- [ ] `src/pages/SitePreviewPage.tsx`
-- [ ] `src/pages/PublicCatalogPage.tsx`
-- [ ] `src/pages/SiteViewPage.tsx`
-- [ ] `src/features/site-builder/*` (всі компоненти)
-- [ ] Оновити `src/app/router.tsx`
+### Фаза 5: UI — web-platform ✅
+- [x] `src/pages/MySitesPage.tsx`
+- [x] `src/pages/SiteEditorPage.tsx` (з навігацією, налаштуваннями, превʼю)
+- [x] `src/pages/SiteNewPage.tsx` (вибір шаблону + створення)
+- [x] `src/pages/PublicCatalogPage.tsx`
+- [x] `src/pages/SiteViewPage.tsx`
+- [x] `src/features/site-builder/useSiteApi.ts` (хук API-запитів)
+- [x] `src/features/site-builder/TemplatePicker.tsx` (візуальний вибір)
+- [x] Оновити `src/app/router.tsx`
 
-### Фаза 6: UI — web-admin
-- [ ] `src/pages/SitesPage.tsx`
-- [ ] `src/pages/SitesModerationPage.tsx`
-- [ ] `src/pages/TemplatesPage.tsx`
-- [ ] `src/features/moderation/*`
-- [ ] `src/features/template-manager/*`
-- [ ] Оновити `src/app/router.tsx`
+### Фаза 6: UI — web-admin ✅
+- [x] `src/pages/sites/SitesPage.tsx`
+- [x] `src/pages/sites/SitesModerationPage.tsx`
+- [x] `src/pages/sites/TemplatesPage.tsx`
+- [x] `src/features/moderation/useModeration.ts`
+- [x] Оновити `adminNav.store.ts` (секція Сайти)
+- [x] Оновити `src/app/router.tsx`
 
-### Фаза 7: Шаблони
-- [ ] Вбудовані site-шаблони (blank, portfolio, blog, business)
-- [ ] Вбудовані page-шаблони (landing, business-card, event, blank)
+### Фаза 7: Шаблони ✅
+- [x] Вбудовані site-шаблони (blank, portfolio, blog, business)
+- [x] Вбудовані page-шаблони (landing, business-card, event, blank)
+- [x] Застосування шаблону при створенні (SiteNewPage → applyTemplate)
 
-### Фаза 8: Тести
+### Фаза 8: Тести ❌ (наступна)
 - [ ] Unit тести сервісів
 - [ ] Unit тести UI компонентів
-- [ ] Typecheck: `npm run typecheck`
+- [ ] Typecheck: `npm run typecheck` ✅
 - [ ] Lint: `npm run lint`
 
 ---

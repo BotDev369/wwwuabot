@@ -46,8 +46,29 @@ export type IconName =
   | "close"
   | "arrow-up"
   | "arrow-down"
+  | "arrow-left"
+  | "arrow-right"
+  | "chevron-down"
+  | "chevron-right"
+  | "chevron-left"
+  | "chevron-up"
   | "sun"
   | "moon"
+  | "x"
+  | "layers"
+  | "plus"
+  | "minus"
+  | "heart"
+  | "download"
+  | "upload"
+  | "refresh"
+  | "external-link"
+  | "menu"
+  | "text"
+  | "list"
+  | "divider"
+  | "button"
+  | "sliders"
   // --- Page Builder block icons ---
   | "video"
   | "grid"
@@ -421,5 +442,118 @@ export const icons: Record<IconName, ReactElement> = {
 
   play: icon([
     p("M5 3l14 9-14 9V3z"),
+  ]),
+
+  // --- Navigation icons ---
+  "arrow-left": icon([
+    p("M19 12H5"),
+    p("M12 19l-7-7 7-7"),
+  ]),
+
+  "arrow-right": icon([
+    p("M5 12h14"),
+    p("M12 5l7 7-7 7"),
+  ]),
+
+  "chevron-down": icon([
+    pl("6 9 12 15 18 9"),
+  ]),
+
+  "chevron-right": icon([
+    pl("9 18 15 12 9 6"),
+  ]),
+
+  "chevron-left": icon([
+    pl("15 18 9 12 15 6"),
+  ]),
+
+  "chevron-up": icon([
+    pl("18 15 12 9 6 15"),
+  ]),
+
+  x: icon([
+    l(18, 6, 6, 18),
+    l(6, 6, 18, 18),
+  ]),
+
+  layers: icon([
+    p("M12 2l10 6.5-10 6.5L2 8.5z"),
+    p("M2 15.5l10 6.5 10-6.5"),
+    p("M2 12l10 6.5L22 12"),
+  ]),
+
+  plus: icon([
+    l(12, 5, 12, 19),
+    l(5, 12, 19, 12),
+  ]),
+
+  minus: icon([
+    l(5, 12, 19, 12),
+  ]),
+
+  heart: icon([
+    p("M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"),
+  ]),
+
+  download: icon([
+    p("M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"),
+    pl("7 10 12 15 17 10"),
+    l(12, 15, 12, 3),
+  ]),
+
+  upload: icon([
+    p("M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"),
+    pl("17 8 12 3 12-5"),
+    l(12, 3, 12, 21),
+  ]),
+
+  refresh: icon([
+    p("M23 4v6h-6"),
+    p("M1 20v-6h6"),
+    p("M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"),
+  ]),
+
+  "external-link": icon([
+    p("M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"),
+    pl("15 3 21 3 21 9"),
+    l(10, 14, 21, 3),
+  ]),
+
+  menu: icon([
+    p("M3 12h18"),
+    p("M3 6h18"),
+    p("M3 18h18"),
+  ]),
+
+  text: icon([
+    p("M4 7V4h16v3"),
+    p("M9 20h6"),
+    p("M12 4v16"),
+  ]),
+
+  list: icon([
+    p("M8 6h13"),
+    p("M8 12h13"),
+    p("M8 18h13"),
+    l(3, 6, 3, 6),
+    l(3, 6, 3, 6),
+  ]),
+
+  divider: icon([
+    l(3, 12, 21, 12),
+  ]),
+
+  button: icon([
+    r(4, 8, 16, 8, 4),
+    l(10, 12, 14, 12),
+  ]),
+
+  sliders: icon([
+    l(4, 21, 4, 14),
+    l(12, 21, 12, 3),
+    l(20, 21, 20, 10),
+    l(4, 14, 4, 14),
+    l(12, 3, 12, 3),
+    l(20, 10, 20, 10),
   ]),
 };

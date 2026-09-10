@@ -54,10 +54,18 @@ const DEFAULT_SECTIONS: AdminNavSection[] = [
     ],
   },
   {
+    title: "Сайти",
+    items: [
+      { to: "/sites", label: "Всі сайти", icon: "layout" },
+      { to: "/sites/moderation", label: "Модерація", icon: "eye" },
+      { to: "/templates", label: "Шаблони", icon: "layers" },
+    ],
+  },
+  {
     title: "Адміністрування",
     items: [
       { to: "/users", label: "Користувачі", icon: "users" },
-      { to: "/bot-settings", label: "Налаштування бота", icon: "bot" },
+      { to: "/bot-settings", label: "Налаштування бота", icon: "settings" },
     ],
   },
 ];

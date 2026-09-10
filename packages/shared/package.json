@@ -23,6 +23,9 @@
     "./utils/mydate-helpers": "./src/utils/mydate-helpers.ts",
     "./utils/condition-evaluator": "./src/utils/condition-evaluator.ts",
     "./types/mydate": "./src/types/mydate.ts",
+    "./types/site": "./src/types/site.types.ts",
+    "./constants/site-defaults": "./src/constants/site-defaults.ts",
+    "./constants/site-templates": "./src/constants/site-templates.ts",
     "./database/auto-migrate": "./src/database/auto-migrate.ts",
     "./components/Icon": "./src/components/Icon.tsx",
     "./components/SaveActionButtons": "./src/components/SaveActionButtons.tsx"

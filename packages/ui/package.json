@@ -8,6 +8,7 @@
   "exports": {
     ".": "./src/index.ts",
     "./PageRenderer": "./src/PageRenderer.tsx",
+    "./SiteRenderer": "./src/SiteRenderer.tsx",
     "./ZoneRenderer": "./src/ZoneRenderer.tsx",
     "./store": "./src/store.ts",
     "./registry": "./src/registry.tsx",

@@ -5,13 +5,19 @@ import { ScenariosPage } from "../pages/scenarios/ScenariosPage";
 import { UsersPage } from "../pages/users/UsersPage";
 import { PageBuilderPage } from "../features/page-builder/PageBuilderPage";
 import { BotSettingsPage } from "../pages/bot-settings/BotSettingsPage";
+import { SitesPage } from "../pages/sites/SitesPage";
+import { SitesModerationPage } from "../pages/sites/SitesModerationPage";
+import { TemplatesPage } from "../pages/sites/TemplatesPage";
 
 /**
  * Маршрути web-admin.
  *
- * /scenarios          — Сценарії (єдина сторінка з перемикачем Portal/Admin)
+ * /scenarios          — Сценарії
  * /page-builder/:cw   — Конструктор сторінок
  * /users              — Користувачі
+ * /sites              — Всі сайти
+ * /sites/moderation   — Модерація
+ * /templates          — Шаблони
  */
 export const router = createBrowserRouter([
   {
@@ -22,6 +28,9 @@ export const router = createBrowserRouter([
       { path: "page-builder/:codeword", element: <PageBuilderPage /> },
       { path: "users", element: <UsersPage /> },
       { path: "bot-settings", element: <BotSettingsPage /> },
+      { path: "sites", element: <SitesPage /> },
+      { path: "sites/moderation", element: <SitesModerationPage /> },
+      { path: "templates", element: <TemplatesPage /> },
     ],
   },
 ]);

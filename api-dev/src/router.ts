@@ -34,6 +34,41 @@ import {
   handleBulkUsers,
   handleUserMessage,
 } from "./controllers/users.controller";
+import {
+  handleCreateSite,
+  handleListSites,
+  handleGetSite,
+  handleUpdateSite,
+  handleDeleteSite,
+  handlePublishSite,
+  handleUnpublishSite,
+} from "./controllers/sites.controller";
+import {
+  handleCreatePage,
+  handleListPages,
+  handleUpdatePage,
+  handleDeletePage,
+  handlePublishPage,
+} from "./controllers/site-pages.controller";
+import {
+  handleListTemplates,
+  handleGetTemplate,
+  handleCreateTemplate,
+  handleUpdateTemplate,
+  handleDeleteTemplate,
+} from "./controllers/templates.controller";
+import {
+  handleCatalogList,
+  handleCatalogSite,
+} from "./controllers/catalog.controller";
+import {
+  handlePendingSites,
+  handleAllSites,
+  handleApproveSite,
+  handleRejectSite,
+  handleCreateSystemTemplate,
+  handleDeleteSystemTemplate,
+} from "./controllers/sites-admin.controller";
 
 /**
  * Central router for the API worker.
@@ -208,6 +243,114 @@ export async function handleRequest(
   // ── Public: User Profile (for web-platform conditional rendering) ──
   if (pathname === "/api/user/profile" && request.method === "GET") {
     return handleUserProfile(request, env);
+  }
+
+  // ── Sites: User CRUD ──────────────────────────────────────────
+  if (pathname === "/api/sites" && request.method === "POST") {
+    return handleCreateSite(request, env);
+  }
+  if (pathname === "/api/sites" && request.method === "GET") {
+    return handleListSites(request, env);
+  }
+
+  // ── Sites: /api/sites/:slug/publish & unpublish ────────────────
+  if (pathname.match(/^\/api\/sites\/[^/]+\/publish$/) && request.method === "POST") {
+    const slug = pathname.split("/")[3];
+    return handlePublishSite(request, env, slug);
+  }
+  if (pathname.match(/^\/api\/sites\/[^/]+\/unpublish$/) && request.method === "POST") {
+    const slug = pathname.split("/")[3];
+    return handleUnpublishSite(request, env, slug);
+  }
+
+  // ── Sites: /api/sites/:slug/pages CRUD ─────────────────────────
+  if (pathname.match(/^\/api\/sites\/[^/]+\/pages$/) && request.method === "POST") {
+    const slug = pathname.split("/")[3];
+    return handleCreatePage(request, env, slug);
+  }
+  if (pathname.match(/^\/api\/sites\/[^/]+\/pages$/) && request.method === "GET") {
+    const slug = pathname.split("/")[3];
+    return handleListPages(request, env, slug);
+  }
+  if (pathname.match(/^\/api\/sites\/[^/]+\/pages\/[^/]+$/) && request.method === "PUT") {
+    const parts = pathname.split("/");
+    return handleUpdatePage(request, env, parts[3], parts[5]);
+  }
+  if (pathname.match(/^\/api\/sites\/[^/]+\/pages\/[^/]+$/) && request.method === "DELETE") {
+    const parts = pathname.split("/");
+    return handleDeletePage(request, env, parts[3], parts[5]);
+  }
+  if (pathname.match(/^\/api\/sites\/[^/]+\/pages\/[^/]+\/publish$/) && request.method === "POST") {
+    const parts = pathname.split("/");
+    return handlePublishPage(request, env, parts[3], parts[5]);
+  }
+
+  // ── Sites: /api/sites/:slug (GET, PUT, DELETE) ─────────────────
+  if (pathname.match(/^\/api\/sites\/[^/]+$/) && request.method === "GET") {
+    const slug = pathname.split("/")[3];
+    return handleGetSite(request, env, slug);
+  }
+  if (pathname.match(/^\/api\/sites\/[^/]+$/) && request.method === "PUT") {
+    const slug = pathname.split("/")[3];
+    return handleUpdateSite(request, env, slug);
+  }
+  if (pathname.match(/^\/api\/sites\/[^/]+$/) && request.method === "DELETE") {
+    const slug = pathname.split("/")[3];
+    return handleDeleteSite(request, env, slug);
+  }
+
+  // ── Templates: /api/templates ──────────────────────────────────
+  if (pathname === "/api/templates" && request.method === "GET") {
+    return handleListTemplates(request, env);
+  }
+  if (pathname === "/api/templates" && request.method === "POST") {
+    return handleCreateTemplate(request, env);
+  }
+  if (pathname.match(/^\/api\/templates\/[^/]+$/) && request.method === "GET") {
+    const id = pathname.split("/")[3];
+    return handleGetTemplate(request, env, id);
+  }
+  if (pathname.match(/^\/api\/templates\/[^/]+$/) && request.method === "PUT") {
+    const id = pathname.split("/")[3];
+    return handleUpdateTemplate(request, env, id);
+  }
+  if (pathname.match(/^\/api\/templates\/[^/]+$/) && request.method === "DELETE") {
+    const id = pathname.split("/")[3];
+    return handleDeleteTemplate(request, env, id);
+  }
+
+  // ── Catalog: /api/catalog ──────────────────────────────────────
+  if (pathname === "/api/catalog" && request.method === "GET") {
+    return handleCatalogList(request, env);
+  }
+  if (pathname.match(/^\/api\/catalog\/[^/]+$/) && request.method === "GET") {
+    const slug = pathname.split("/")[3];
+    return handleCatalogSite(request, env, slug);
+  }
+
+  // ── Admin: Sites Moderation ────────────────────────────────────
+  if (pathname === "/api/admin/sites/pending" && request.method === "GET") {
+    return handlePendingSites(request, env);
+  }
+  if (pathname === "/api/admin/sites" && request.method === "GET") {
+    return handleAllSites(request, env);
+  }
+  if (pathname.match(/^\/api\/admin\/sites\/[^/]+\/approve$/) && request.method === "POST") {
+    const slug = pathname.split("/")[4];
+    return handleApproveSite(request, env, slug);
+  }
+  if (pathname.match(/^\/api\/admin\/sites\/[^/]+\/reject$/) && request.method === "POST") {
+    const slug = pathname.split("/")[4];
+    return handleRejectSite(request, env, slug);
+  }
+
+  // ── Admin: System Templates ────────────────────────────────────
+  if (pathname === "/api/admin/templates" && request.method === "POST") {
+    return handleCreateSystemTemplate(request, env);
+  }
+  if (pathname.match(/^\/api\/admin\/templates\/[^/]+$/) && request.method === "DELETE") {
+    const id = pathname.split("/")[4];
+    return handleDeleteSystemTemplate(request, env, id);
   }
 
   // ── 404 ─────────────────────────────────────────────────────────

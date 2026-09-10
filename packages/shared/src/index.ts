@@ -47,6 +47,47 @@ export type {
   BlockZone,
 } from "./types/page-config";
 
+// ── Site Types ─────────────────────────────────────────────────────
+export type {
+  Site,
+  SiteStatus,
+  SiteSettings,
+  NavigationItem,
+  SitePage,
+  PageStatus,
+  PageMeta,
+  Template,
+  TemplateType,
+  SiteTemplateConfig,
+  PageTemplateConfig,
+  CatalogSite,
+  SiteRow,
+  SitePageRow,
+  TemplateRow,
+} from "./types/site.types";
+export { toSite, toSitePage, toTemplate } from "./types/site.types";
+
+// ── Site Defaults & Templates ──────────────────────────────────────
+export {
+  DEFAULT_SITE_SETTINGS,
+  DEFAULT_HOMENavItem,
+  EMPTY_PAGE_META,
+  HOME_SLUG,
+  isValidSlug,
+  generateSlug,
+  SITE_STATUS_LABELS,
+  PAGE_STATUS_LABELS,
+  SITE_STATUS_BADGE_CLASS,
+  createNavItem,
+} from "./constants/site-defaults";
+export {
+  ALL_SYSTEM_TEMPLATES,
+  SYSTEM_PAGE_TEMPLATES,
+  SYSTEM_SITE_TEMPLATES,
+  getSystemTemplate,
+  getSystemTemplatesByType,
+} from "./constants/site-templates";
+
 // ── Domain & API Types ───────────────────────────────────────────────
 export type { MyDate, MyDateSystem, SystemAnalysisResult } from "./types/mydate";
 export type { TelegramApiResponse, TelegramUser, TelegramWebhookInfo, TelegramInlineKeyboardButton } from "./types/telegram";
