@@ -19,7 +19,7 @@ packages/shared/  Типи, утиліти, дизайн-токени, ікон�
 packages/ui/      Спільні React-компоненти Page Builder (@wwwuabot/ui)
 ```
 
-Зв'язки: `bot` і `web-admin` пишуть у D1 напряму. `web` ходить через `api` (service binding). Деплой — автоматичний при пуші в `main` (GitHub Actions, path filtering).
+Зв'язки: `bot` пише в D1 напряму (власний біндинг `DB`). `web` і `web-admin` — тонкі оболонки: усі дані йдуть через `api-dev` (service binding), жоден із них не має прямого доступу до D1. Деплой — автоматичний при пуші в `main` (GitHub Actions, path filtering).
 
 **Ліцензія:** AGPL-3.0 — похідні проекти зобов'язані залишатись open source.
 
@@ -48,6 +48,21 @@ packages/ui/      Спільні React-компоненти Page Builder (@wwwua
 > Всі зовнішні REST-ендпоїнти — в `api-dev/`. Не створюй нові API в `bot/`, `web/`, `web-admin/`.
 
 Винятки: webhook'и в `bot/`, тимчасові admin-ендпоїнти в `web-admin/`.
+
+### Межа між `web` і `web-admin` (тонкі оболонки)
+> Обидва — оболонки навколо спільного ядра. Ділити можна *логіку*, не *рішення*.
+
+| Шар | Спільний? | Куди |
+|---|---|---|
+| Типи, утиліти, токени, CSS | ✅ | `packages/shared` |
+| Рендеринг блоків і сторінок (`PageRenderer`) | ✅ | `packages/ui` |
+| Транспорт API (`apiFetch`) | ✅ | `packages/shared` |
+| Перевірка сесії (HMAC, cookie, `initData`) — **чиста функція** | ✅ | `packages/shared/src/security/` |
+| `AuthGate` (що робити при провалі) | ❌ | окремо в кожному застосунку |
+| Роутер, `worker.ts`, `wrangler.toml` | ❌ | окремо |
+
+**Ключове:** перевірка — спільна; реакція на провал — своя (TWA показує «відкрийте
+в Telegram», адмінка — `LoginScreen`). Повний план і журнал — `docs/CONSOLIDATION_PLAN.md`.
 
 ### Кристалева ясність (Crystal Clarity Rule)
 > **АБСОЛЮТНЕ ПРАВИЛО: ніколи не пиши «простині» (моноліти).**
@@ -118,6 +133,17 @@ import { Icon } from "@wwwuabot/shared";
 | Логування | `src/modules/logging/` |
 | Конфіг / тексти | `src/shared/config/texts.ts` |
 
+### Ідентичність і безпека
+
+| Що | Де |
+|---|---|
+| Перевірка підпису Telegram `initData` | `packages/shared/src/security/telegram.ts` |
+| Адмінська cookie-сесія (`signSessionToken`, `hasValidSession`) | `packages/shared/src/security/session.ts` |
+| `user_id` для хендлера API | `api-dev/src/shared/identity.ts` — `resolveUserId()` (обов'язково) або `tryResolveUserId()` (для публічних) |
+
+Обидва модулі в `security/` — **чисті функції**: секрет передається аргументом, рішення
+«що робити при провалі» приймає виклик. Не дублюй HMAC-логіку в воркерах.
+
 ### web / web-admin (однакова архітектура)
 
 ```
@@ -153,6 +179,7 @@ src/
 - Не забувай `[[d1_databases]]` на top-level `wrangler.toml`.
 - Не змішуй prod/dev бази — різні `database_id`.
 - Не створюй API-ендпоїнти поза `api-dev/`.
+- Не довіряй `X-Telegram-User-Id`, cookie `user_id` чи `?user_id=` — ідентичність береться ТІЛЬКИ з підписаного `initData` (`api-dev/src/shared/identity.ts`).
 - Не пиши моноліти (>200 рядків) — див. правило кристалевості.
 - Не хардкодь стилі/кольори — використовуй CSS-токени та `<Icon />`.
 
@@ -161,7 +188,8 @@ src/
 ## 8. Статус проєкту
 
 - **Типізація:** 0 `any`, `tsc --noEmit` чистий на всіх 6 воркерах.
-- **Тести:** Vitest, 44 unit-тести (але не гейтять CI — S-6 відкрита).
+- **Тести:** Vitest, 106 unit-тестів (але не гейтять CI — S-6 відкрита).
+- **Ідентичність користувача:** єдине джерело — підписаний Telegram `initData` (`api-dev/src/shared/identity.ts`). Заборонено приймати `X-Telegram-User-Id` або `user_id` з cookie/query.
 - **Моніторинг:** Sentry не підключений.
 - **Документація:** CHANGELOG відсутній.
 

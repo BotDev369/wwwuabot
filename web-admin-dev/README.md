@@ -4,7 +4,7 @@ Cloudflare Worker: Адмін-панель для wwwuabot
 
 ## Налаштування
 
-- **D1:** `wwwuabot-db-dev`
+- **D1:** немає (усі дані через `api-dev`, див. `docs/CONSOLIDATION_PLAN.md` §5.2)
 - **Service:** `api-dev`
 - **Секрети:** `ADMIN_SECRET`
 

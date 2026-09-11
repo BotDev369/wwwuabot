@@ -7,7 +7,7 @@ Rules for developers, contributors, and AI agents.
 ## Quality Gates (обов'язково перед кожним пушем)
 
 ```bash
-npm test            # 44 unit-тестів (Vitest)
+npm test            # 106 unit-тестів (Vitest)
 npm run typecheck   # TypeScript strict — 0 any
 npm run lint        # ESLint + Prettier
 ```
@@ -96,4 +96,6 @@ npm run lint        # ESLint + Prettier
 | `AGENTS.md` | AI-агенти: архітектура, терміни, правила |
 | `CONTRIBUTING.md` | Розробники: процес, quality gates, конвенції |
 | `docs/DESIGN_SYSTEM.md` | UI: токени, компоненти, `<Icon />` |
+| `docs/PAGE_ENGINE_ARCHITECTURE.md` | Архітектурне рішення: Page Engine, межі воркерів |
+| `docs/CONSOLIDATION_PLAN.md` | Рефакторинг-план: дедуплікація оболонок, ризики, журнал |
 | `README.md` | Загальний опис + швидкий старт |

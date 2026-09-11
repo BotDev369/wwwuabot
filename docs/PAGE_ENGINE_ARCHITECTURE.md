@@ -30,7 +30,13 @@
 3. **Cloudflare Zero-Trust Edge Wall:**
    Воркер `web-admin` закривається політикою **Cloudflare Access** (Google Workspace, One-Time PIN, білий список IP). Сторонній запит блокується ще на серверах Cloudflare і навіть не досягає воркера.
 4. **Least Privilege (Принцип найменших привілеїв):**
-   `web-admin` має спеціальні Service Bindings до D1 з правами на системні таблиці, тоді як `web-platform` має суворо обмежені публічні роути.
+   `web-admin` має доступ лише до адмінських роутів `api-dev`, тоді як `web-platform` бачить тільки публічні роути.
+
+> **УТОЧНЕНО 11.09.2026.** Раніше цей пункт казав, що `web-admin` має «спеціальні Service Bindings
+> до D1». Це було неточно: адмінка проксює **всі** запити через Service Binding на `api-dev`
+> (`/api/*`), а прямий D1-біндинг у `wrangler.toml` існував, але не використовувався й був
+> прибраний. Обидві оболонки тонкі: різниця не в доступі до БД, а в тому, які роути `api-dev`
+> за ними закріплені. Деталі — [CONSOLIDATION_PLAN.md](./CONSOLIDATION_PLAN.md) §5.2.
 
 ---
 
@@ -54,7 +60,7 @@
 │ • ~25 рядків коду в DynamicPage   │   │ • ~35 рядків коду в Inspector     │
 │ • Авторизація через Telegram HMAC │   │ • Cloudflare Access Zero Trust    │
 │ • Ролі: guest, user, owner        │   │ • Ролі: admin, superadmin         │
-│ • Нуль адмінського коду в JS      │   │ • Прямі Service Bindings до D1/KV │
+│ • Нуль адмінського коду в JS      │   │ • Service Binding → api-dev       │
 └───────────────────────────────────┘   └───────────────────────────────────┘
 ```
 
