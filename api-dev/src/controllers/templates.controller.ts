@@ -20,6 +20,7 @@ import {
   deleteTemplate,
 } from "../services/sites.service";
 import { resolveUserId, tryResolveUserId } from "../shared/identity";
+import type { Template } from "@wwwuabot/shared/types/site";
 
 // ── Helpers ──────────────────────────────────────────────────
 
@@ -28,6 +29,23 @@ function json(data: unknown, status = 200): Response {
     status,
     headers: { "Content-Type": "application/json" },
   });
+}
+
+/**
+ * Хто має право читати шаблон.
+ *
+ * Системні шаблони публічні (з них збирається каталог для всіх).
+ * Приватний шаблон бачить ТІЛЬКИ власник — інакше це IDOR: конфігурація
+ * чужого сайту читається за одним UUID, без жодного способу її відкликати.
+ *
+ * Чиста функція: ні БД, ні запиту — тільки рішення. Покрита тестом.
+ */
+export function canReadTemplate(
+  template: Pick<Template, "isSystem" | "ownerId">,
+  userId: number | null,
+): boolean {
+  if (template.isSystem) return true;
+  return userId !== null && template.ownerId === userId;
 }
 
 // ── Handlers ─────────────────────────────────────────────────
@@ -55,9 +73,12 @@ export async function handleGetTemplate(
   env: Env,
   templateId: string,
 ): Promise<Response> {
+  const userId = await tryResolveUserId(request, env);
+
   try {
     const template = await getTemplateById(env.DB, templateId);
     if (!template) return json({ error: "Template not found" }, 404);
+    if (!canReadTemplate(template, userId)) return json({ error: "Forbidden" }, 403);
 
     return json({ success: true, template });
   } catch (e: unknown) {
