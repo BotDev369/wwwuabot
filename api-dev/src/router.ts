@@ -1,5 +1,5 @@
 import type { Env } from "./shared/types";
-import { handleHealth } from "./controllers/health.controller";
+import { handleHealth, handleDeepHealth } from "./controllers/health.controller";
 import { handleAnalyze, handleAnalysisRead, handleSystems, handleCompare } from "./controllers/astrology.controller";
 import { handleScenario } from "./controllers/scenarios.controller";
 import { handleMyDates } from "./controllers/my-dates.controller";
@@ -93,8 +93,13 @@ export async function handleRequest(
   const { pathname } = url;
 
   // ── Health ──────────────────────────────────────────────────────
-  if (pathname === "/health") {
+  // `/health` — живий воркер (без БД). `/health/deep` — живі залежності;
+  // саме його має опитувати зовнішній монітор (див. health.controller.ts).
+  if (pathname === "/health" || pathname === "/health/") {
     return handleHealth();
+  }
+  if (pathname === "/health/deep") {
+    return handleDeepHealth(env);
   }
 
   // ── Єдиний адмін-гейт ─────────────────────────────────────────

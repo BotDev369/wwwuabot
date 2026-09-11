@@ -3,7 +3,7 @@
 > Модульна Telegram-платформа: бот + Web Mini App + конструктор сайтів (Page Builder).
 
 [![CI/CD](https://github.com/BotDev369/wwwuabot/actions/workflows/deploy.yml/badge.svg)](https://github.com/BotDev369/wwwuabot/actions/workflows/deploy.yml)
-[![Tests](https://img.shields.io/badge/tests-126%20passing-success.svg)](vitest.config.ts)
+[![Tests](https://img.shields.io/badge/tests-133%20passing-success.svg)](vitest.config.ts)
 [![TypeScript](https://img.shields.io/badge/typescript-0%20any-blue.svg)](packages/shared/)
 [![License](https://img.shields.io/badge/license-AGPL%20v3-blue.svg)](LICENSE)
 
@@ -29,7 +29,7 @@ npm workspaces монорепо з 4 Cloudflare Workers:
 ```bash
 git clone https://github.com/BotDev369/wwwuabot.git && cd wwwuabot
 npm install
-npm test                  # 126 unit-тестів
+npm test                  # 133 unit-тести
 npm run typecheck         # TypeScript strict
 npm run lint              # ESLint
 npm run dev --workspace=bot-dev          # Запуск бота
@@ -47,6 +47,7 @@ npm run dev --workspace=web-admin-dev    # Адмін-панель
 - [docs/DESIGN_SYSTEM.md](docs/DESIGN_SYSTEM.md) — CSS-токени, компоненти, `<Icon />`
 - [docs/PAGE_ENGINE_ARCHITECTURE.md](docs/PAGE_ENGINE_ARCHITECTURE.md) — архітектурне рішення: єдиний Page Engine & безпека воркерів
 - [docs/CONSOLIDATION_PLAN.md](docs/CONSOLIDATION_PLAN.md) — план і журнал консолідації: дедуплікація, знайдені ризики
+- [docs/MONITORING.md](docs/MONITORING.md) — health-ендпоїнти, UptimeRobot, що робити при падінні
 
 ---
 
@@ -62,7 +63,7 @@ npm run dev --workspace=web-admin-dev    # Адмін-панель
 | `npm audit --audit-level=critical` | критичні CVE у залежностях |
 | `npm run lint` | помилки ESLint |
 | `npm run typecheck` | помилки типів (CI раніше блокувався 11 з них) |
-| `npm test` | 126 unit-тестів |
+| `npm test` | 133 unit-тести |
 
 Ті самі гейти виконуються на кожен pull request. Деплої воркерів не перекриваються: `concurrency` ставить їх у чергу, щоб старіший коміт не ліг поверх новішого.
 

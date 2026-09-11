@@ -14,3 +14,11 @@ not_found_handling = "single-page-application"
 [[services]]
 binding = "API"
 service = "api-dev"
+
+# Workers Logs — див. коментар в api-dev/wrangler.toml.
+[observability]
+enabled = true
+
+[observability.logs]
+enabled = true
+invocation_logs = false

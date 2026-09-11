@@ -21,6 +21,9 @@ queue = "wwwuabot-logs"
 max_batch_size = 100
 max_batch_timeout = 30
 
+[observability]
+enabled = true
+
 [observability.logs]
 enabled = true
 invocation_logs = false

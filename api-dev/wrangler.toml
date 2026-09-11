@@ -14,3 +14,15 @@ id = "bda7a5fca58b4fbda87d75105d558ebf"
 
 [vars]
 # ADMIN_SECRET та BOT_TOKEN — задаються через Cloudflare Dashboard (Secrets)
+
+# Workers Logs: логи, помилки й необроблені винятки видно в панелі Cloudflare.
+# invocation_logs = false — вимикає лише службовий лог кожного запиту
+# (найбільший обсяг і найменша користь), а власні console.* та винятки
+# лишаються. Саме тому безкоштовного ліміту (200 000 подій/добу, 3 дні)
+# вистачає з запасом. Див. docs/CONSOLIDATION_PLAN.md §5.8.
+[observability]
+enabled = true
+
+[observability.logs]
+enabled = true
+invocation_logs = false
