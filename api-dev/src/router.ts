@@ -3,10 +3,7 @@ import { handleHealth } from "./controllers/health.controller";
 import { handleAnalyze, handleAnalysisRead, handleSystems, handleCompare } from "./controllers/astrology.controller";
 import { handleScenario } from "./controllers/scenarios.controller";
 import { handleMyDates } from "./controllers/my-dates.controller";
-import { handleSetupWebhook, handleWebhookInfo } from "./controllers/webhook.controller";
-import { handleDbProxy } from "./controllers/db-proxy.controller";
 import { handleWebhookInfo as handleBotWebhookInfo, handleSetupWebhook as handleBotSetupWebhook, handleDeleteWebhook, handleBotInfo } from "./controllers/bot-settings.controller";
-// auth-check.controller — видалено ( замінено на cookie-based auth.controller)
 import { handleLogin, handleLogout, handleAuthCheck as handleCookieAuthCheck, isAuthenticated } from "./controllers/auth.controller";
 import {
   handleRead as handleScenarioAdminRead,
@@ -86,11 +83,15 @@ export async function handleRequest(
     return handleHealth();
   }
 
-  // ── Admin-гейт ────────────────────────────────────────────────
+  // ── Єдиний адмін-гейт ─────────────────────────────────────────
   // Все під /api/admin/, /api/portal/ і /api/bot/ вимагає валідної
   // cookie-сесії (тієї самої, що web-admin/worker.ts перевіряє перед
   // проксюванням). Потрібно, бо api/ має власний публічний URL і
   // доступний напряму, в обхід web-admin.
+  //
+  // Це ЄДИНИЙ спосіб авторизувати адмін-дію. Секрети в заголовках
+  // (X-Admin-Secret, X-Bot-Token) видалені — див.
+  // docs/CONSOLIDATION_PLAN.md §5.4.
   if (
     pathname.startsWith("/api/admin/") ||
     pathname.startsWith("/api/portal/") ||
@@ -105,15 +106,7 @@ export async function handleRequest(
     }
   }
 
-  // ── Admin: Telegram webhook management (legacy) ─────────────────
-  if (request.method === "GET" && pathname === "/setup-webhook") {
-    return handleSetupWebhook(request, env);
-  }
-  if (request.method === "GET" && pathname === "/webhook-info") {
-    return handleWebhookInfo(request, env);
-  }
-
-  // ── Bot Settings API (нові ендпоїнти) ────────────────────────────
+  // ── Bot Settings API ─────────────────────────────────────────────
   if (pathname === "/api/bot/webhook-info" && request.method === "GET") {
     return handleBotWebhookInfo(request, env);
   }
@@ -126,13 +119,6 @@ export async function handleRequest(
   if (pathname === "/api/bot/info" && request.method === "GET") {
     return handleBotInfo(request, env);
   }
-
-  // ── Admin: DB Proxy ────────────────────────────────────────────
-  if (request.method === "POST" && pathname === "/db-proxy") {
-    return handleDbProxy(request, env);
-  }
-
-  // /auth/check — обробляється нижче (cookie-based)
 
   // ── MyDate: analysis by date ────────────────────────────────────
   if (pathname.startsWith("/api/mydate/analysis/")) {
