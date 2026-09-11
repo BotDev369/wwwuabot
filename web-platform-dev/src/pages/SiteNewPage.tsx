@@ -10,6 +10,7 @@ import type { Template, SiteTemplateConfig, PageTemplateConfig } from "@wwwuabot
 import { isValidSlug, generateSlug } from "@wwwuabot/shared/constants/site-defaults";
 import { Icon } from "@wwwuabot/shared";
 import { TemplatePicker } from "@/features/site-builder/TemplatePicker";
+import { apiFetchRaw } from "@/shared/api/client";
 
 // ── Component ────────────────────────────────────────────────
 
@@ -50,7 +51,7 @@ export function SiteNewPage() {
     setSaving(true);
     setError(null);
     try {
-      const res = await fetch("/api/sites", {
+      const res = await apiFetchRaw("/api/sites", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -89,7 +90,7 @@ export function SiteNewPage() {
       const siteConfig = config as SiteTemplateConfig;
 
       // Оновлюємо налаштування (навігація, тема)
-      await fetch(`/api/sites/${siteSlug}`, {
+      await apiFetchRaw(`/api/sites/${siteSlug}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -99,7 +100,7 @@ export function SiteNewPage() {
 
       // Створюємо сторінки з шаблону
       for (const pageConfig of siteConfig.pages) {
-        await fetch(`/api/sites/${siteSlug}/pages`, {
+        await apiFetchRaw(`/api/sites/${siteSlug}/pages`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
@@ -114,12 +115,12 @@ export function SiteNewPage() {
       const pageConfig = config as PageTemplateConfig;
 
       // Отримуємо сторінки сайту, щоб знайти home
-      const pagesRes = await fetch(`/api/sites/${siteSlug}/pages`);
+      const pagesRes = await apiFetchRaw(`/api/sites/${siteSlug}/pages`);
       const pagesData = await pagesRes.json();
       const homePage = pagesData.pages?.[0];
 
       if (homePage) {
-        await fetch(`/api/sites/${siteSlug}/pages/${homePage.id}`, {
+        await apiFetchRaw(`/api/sites/${siteSlug}/pages/${homePage.id}`, {
           method: "PUT",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({

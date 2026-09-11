@@ -11,7 +11,7 @@
  */
 
 export interface ApiClientOptions {
-  /** Додаткові заголовки (напр. X-Telegram-User-Id) */
+  /** Додаткові заголовки (напр. `X-Telegram-Init-Data` з `telegramAuthHeaders()`). */
   headers?: Record<string, string>;
   /** Fetch options (method, body, credentials тощо) */
   fetchOptions?: RequestInit;

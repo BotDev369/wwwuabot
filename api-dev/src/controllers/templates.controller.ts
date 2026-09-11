@@ -19,6 +19,7 @@ import {
   updateTemplate,
   deleteTemplate,
 } from "../services/sites.service";
+import { resolveUserId, tryResolveUserId } from "../shared/identity";
 
 // ── Helpers ──────────────────────────────────────────────────
 
@@ -29,13 +30,6 @@ function json(data: unknown, status = 200): Response {
   });
 }
 
-function getUserIdFromRequest(request: Request): number | null {
-  const cookie = request.headers.get("Cookie") ?? "";
-  const match = cookie.match(/user_id=(\d+)/);
-  if (match) return parseInt(match[1], 10);
-  return null;
-}
-
 // ── Handlers ─────────────────────────────────────────────────
 
 /** GET /api/templates — список шаблонів. */
@@ -43,7 +37,8 @@ export async function handleListTemplates(
   request: Request,
   env: Env,
 ): Promise<Response> {
-  const userId = getUserIdFromRequest(request);
+  // Публічний список: без ідентичності віддаємо лише системні шаблони.
+  const userId = await tryResolveUserId(request, env);
 
   try {
     const templates = await getTemplates(env.DB, userId ?? undefined);
@@ -76,8 +71,9 @@ export async function handleCreateTemplate(
   request: Request,
   env: Env,
 ): Promise<Response> {
-  const userId = getUserIdFromRequest(request);
-  if (!userId) return json({ error: "Unauthorized" }, 401);
+  const identity = await resolveUserId(request, env);
+  if (!identity.ok) return identity.response;
+  const userId = identity.userId;
 
   let body: {
     name?: string;
@@ -123,8 +119,9 @@ export async function handleUpdateTemplate(
   env: Env,
   templateId: string,
 ): Promise<Response> {
-  const userId = getUserIdFromRequest(request);
-  if (!userId) return json({ error: "Unauthorized" }, 401);
+  const identity = await resolveUserId(request, env);
+  if (!identity.ok) return identity.response;
+  const userId = identity.userId;
 
   const existing = await getTemplateById(env.DB, templateId);
   if (!existing) return json({ error: "Template not found" }, 404);
@@ -160,8 +157,9 @@ export async function handleDeleteTemplate(
   env: Env,
   templateId: string,
 ): Promise<Response> {
-  const userId = getUserIdFromRequest(request);
-  if (!userId) return json({ error: "Unauthorized" }, 401);
+  const identity = await resolveUserId(request, env);
+  if (!identity.ok) return identity.response;
+  const userId = identity.userId;
 
   const existing = await getTemplateById(env.DB, templateId);
   if (!existing) return json({ error: "Template not found" }, 404);

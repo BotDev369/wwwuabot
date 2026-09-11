@@ -9,6 +9,7 @@ import { useNavigate } from "react-router-dom";
 import type { Site } from "@wwwuabot/shared/types/site";
 import { SITE_STATUS_LABELS, SITE_STATUS_BADGE_CLASS } from "@wwwuabot/shared/constants/site-defaults";
 import { Icon } from "@wwwuabot/shared";
+import { apiFetchRaw } from "@/shared/api/client";
 
 export function MySitesPage() {
   const navigate = useNavigate();
@@ -21,7 +22,7 @@ export function MySitesPage() {
     let cancelled = false;
     (async () => {
       try {
-        const res = await fetch("/api/sites");
+        const res = await apiFetchRaw("/api/sites");
         if (!res.ok) throw new Error("Failed to load sites");
         const data = await res.json();
         if (!cancelled && data.success) {

@@ -25,6 +25,7 @@ import {
   ensureSitesTables,
 } from "../services/sites.service";
 import { isValidSlug, generateSlug } from "@wwwuabot/shared/constants/site-defaults";
+import { resolveUserId } from "../shared/identity";
 
 // ── Helpers ──────────────────────────────────────────────────
 
@@ -35,14 +36,6 @@ function json(data: unknown, status = 200): Response {
   });
 }
 
-/** Витягує userId з cookie (HMAC auth). */
-function getUserIdFromRequest(request: Request): number | null {
-  const cookie = request.headers.get("Cookie") ?? "";
-  const match = cookie.match(/user_id=(\d+)/);
-  if (match) return parseInt(match[1], 10);
-  return null;
-}
-
 // ── Handlers ─────────────────────────────────────────────────
 
 /** POST /api/sites — створити сайт. */
@@ -50,8 +43,9 @@ export async function handleCreateSite(
   request: Request,
   env: Env,
 ): Promise<Response> {
-  const userId = getUserIdFromRequest(request);
-  if (!userId) return json({ error: "Unauthorized" }, 401);
+  const identity = await resolveUserId(request, env);
+  if (!identity.ok) return identity.response;
+  const userId = identity.userId;
 
   let body: {
     slug?: string;
@@ -102,8 +96,9 @@ export async function handleListSites(
   request: Request,
   env: Env,
 ): Promise<Response> {
-  const userId = getUserIdFromRequest(request);
-  if (!userId) return json({ error: "Unauthorized" }, 401);
+  const identity = await resolveUserId(request, env);
+  if (!identity.ok) return identity.response;
+  const userId = identity.userId;
 
   try {
     const sites = await getSitesByOwner(env.DB, userId);
@@ -120,8 +115,9 @@ export async function handleGetSite(
   env: Env,
   slug: string,
 ): Promise<Response> {
-  const userId = getUserIdFromRequest(request);
-  if (!userId) return json({ error: "Unauthorized" }, 401);
+  const identity = await resolveUserId(request, env);
+  if (!identity.ok) return identity.response;
+  const userId = identity.userId;
 
   try {
     const site = await getSiteBySlug(env.DB, slug);
@@ -141,8 +137,9 @@ export async function handleUpdateSite(
   env: Env,
   slug: string,
 ): Promise<Response> {
-  const userId = getUserIdFromRequest(request);
-  if (!userId) return json({ error: "Unauthorized" }, 401);
+  const identity = await resolveUserId(request, env);
+  if (!identity.ok) return identity.response;
+  const userId = identity.userId;
 
   let body: Record<string, unknown>;
   try {
@@ -177,8 +174,9 @@ export async function handleDeleteSite(
   env: Env,
   slug: string,
 ): Promise<Response> {
-  const userId = getUserIdFromRequest(request);
-  if (!userId) return json({ error: "Unauthorized" }, 401);
+  const identity = await resolveUserId(request, env);
+  if (!identity.ok) return identity.response;
+  const userId = identity.userId;
 
   try {
     const existing = await getSiteBySlug(env.DB, slug);
@@ -199,8 +197,9 @@ export async function handlePublishSite(
   env: Env,
   slug: string,
 ): Promise<Response> {
-  const userId = getUserIdFromRequest(request);
-  if (!userId) return json({ error: "Unauthorized" }, 401);
+  const identity = await resolveUserId(request, env);
+  if (!identity.ok) return identity.response;
+  const userId = identity.userId;
 
   try {
     const existing = await getSiteBySlug(env.DB, slug);
@@ -225,8 +224,9 @@ export async function handleUnpublishSite(
   env: Env,
   slug: string,
 ): Promise<Response> {
-  const userId = getUserIdFromRequest(request);
-  if (!userId) return json({ error: "Unauthorized" }, 401);
+  const identity = await resolveUserId(request, env);
+  if (!identity.ok) return identity.response;
+  const userId = identity.userId;
 
   try {
     const existing = await getSiteBySlug(env.DB, slug);

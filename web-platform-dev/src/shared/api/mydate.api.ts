@@ -1,4 +1,15 @@
+/**
+ * API дат («Мої дати»).
+ *
+ * Ідентичність бере api-dev із підписаного Telegram `initData`, який додає
+ * `apiFetchRaw`. Раніше тут передавався голий `X-Telegram-User-Id`, і сервер
+ * його приймав — тобто будь-хто міг читати чужі дати (див.
+ * docs/CONSOLIDATION_PLAN.md §5.3в).
+ *
+ * @module web-platform-dev/src/shared/api/mydate.api
+ */
 
+import { apiFetchRaw } from "./client";
 
 export interface MyDate {
   id: string;
@@ -27,108 +38,56 @@ export interface SystemResult {
   comingSoon: string[];
 }
 
-/**
- * Get Telegram user ID from TWA SDK.
- */
-export function getTelegramUserId(): number | null {
-  try {
-    return window.Telegram?.WebApp?.initDataUnsafe?.user?.id ?? null;
-  } catch {
-    return null;
-  }
-}
-
-/**
- * Signed Telegram initData — the API verifies its HMAC and takes user.id
- * from there; the plain user id header is only a transitional fallback.
- */
-function authHeaders(userId: number): Record<string, string> {
-  const headers: Record<string, string> = { "X-Telegram-User-Id": String(userId) };
-  const initData = window.Telegram?.WebApp?.initData;
-  if (initData) headers["X-Telegram-Init-Data"] = initData;
-  return headers;
-}
-
-/**
- * Fetch all dates for the current user.
- */
+/** Усі дати поточного користувача. */
 export async function fetchMyDates(): Promise<MyDate[]> {
-  const userId = getTelegramUserId();
-  if (!userId) return [];
-
-  const res = await fetch("/api/my-dates", {
-    headers: authHeaders(userId),
-  });
+  const res = await apiFetchRaw("/api/my-dates");
   if (!res.ok) throw new Error(`HTTP ${res.status}`);
   const data = await res.json();
   if (!data.ok) throw new Error(data.error ?? "Помилка завантаження");
   return data.dates;
 }
 
-/**
- * Create or update a date.
- */
+/** Створити або оновити дату. */
 export async function saveMyDate(dateData: Partial<MyDate>): Promise<void> {
-  const userId = getTelegramUserId();
-  if (!userId) throw new Error("Not authenticated");
-
   const isCreate = !dateData.id;
-  const res = await fetch("/api/my-dates", {
+  const res = await apiFetchRaw("/api/my-dates", {
     method: isCreate ? "POST" : "PUT",
-    headers: { "Content-Type": "application/json", ...authHeaders(userId) },
+    headers: { "Content-Type": "application/json" },
     body: JSON.stringify(dateData),
   });
   const data = await res.json();
   if (!data.ok) throw new Error(data.error ?? "Помилка збереження");
 }
 
-/**
- * Delete a single date.
- */
+/** Видалити одну дату. */
 export async function deleteMyDate(id: string): Promise<void> {
-  const userId = getTelegramUserId();
-  if (!userId) throw new Error("Not authenticated");
-
-  const res = await fetch(`/api/my-dates?id=${id}`, {
-    method: "DELETE",
-    headers: authHeaders(userId),
-  });
+  const res = await apiFetchRaw(`/api/my-dates?id=${id}`, { method: "DELETE" });
   const data = await res.json();
   if (!data.ok) throw new Error(data.error ?? "Помилка видалення");
 }
 
-/**
- * Delete multiple dates.
- */
+/** Видалити кілька дат. */
 export async function deleteMyDates(ids: string[]): Promise<void> {
-  const userId = getTelegramUserId();
-  if (!userId) throw new Error("Not authenticated");
-
-  const res = await fetch(`/api/my-dates?ids=${ids.join(",")}`, {
+  const res = await apiFetchRaw(`/api/my-dates?ids=${ids.join(",")}`, {
     method: "DELETE",
-    headers: authHeaders(userId),
   });
   const data = await res.json();
   if (!data.ok) throw new Error(data.error ?? "Помилка видалення");
 }
 
-/**
- * Fetch available analysis systems.
- */
+/** Доступні системи аналізу. */
 export async function fetchSystems(): Promise<SystemCard[]> {
-  const res = await fetch("/api/mydate/systems");
+  const res = await apiFetchRaw("/api/mydate/systems");
   const data = await res.json();
   return data?.ok ? data.systems : [];
 }
 
-/**
- * Analyze a single date with a specific system.
- */
+/** Аналіз однієї дати конкретною системою. */
 export async function analyzeDate(
   date: string,
   systemId: string,
 ): Promise<SystemResult> {
-  const res = await fetch("/api/mydate/analyze", {
+  const res = await apiFetchRaw("/api/mydate/analyze", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ date, systemId }),
@@ -138,26 +97,22 @@ export async function analyzeDate(
   return data.result;
 }
 
-/**
- * Fetch analysis for a specific date (all systems).
- */
+/** Аналіз дати за всіма системами. */
 export async function fetchAnalysis(
   date: string,
 ): Promise<Record<string, SystemResult>> {
-  const res = await fetch(`/api/mydate/analysis/${date}`);
+  const res = await apiFetchRaw(`/api/mydate/analysis/${date}`);
   const data = await res.json();
   return data?.ok ? data.systems : {};
 }
 
-/**
- * Compare multiple dates across systems.
- */
+/** Співставлення кількох дат за системами. */
 export async function compareDates(
   dates: string[],
   systemIds?: string[],
   parameterKeys?: string[],
 ): Promise<Record<string, Record<string, Record<string, string>>>> {
-  const res = await fetch("/api/mydate/compare", {
+  const res = await apiFetchRaw("/api/mydate/compare", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ dates, systemIds, parameterKeys }),

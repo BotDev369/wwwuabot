@@ -16,6 +16,7 @@
  */
 import type { Env } from "../shared/types";
 import { UsersService } from "../services/users.service";
+import { resolveUserId } from "../shared/identity";
 
 // ── Helpers ───────────────────────────────────────────────────────
 function json(data: unknown, status = 200): Response {
@@ -216,25 +217,19 @@ export async function handleUserMessage(
 }
 
 /**
- * GET /api/user/profile — публічний ендпоінт для отримання профілю користувача.
- * Приймає user_id як query parameter.
+ * GET /api/user/profile — профіль ПОТОЧНОГО користувача.
+ *
+ * Ідентичність береться з підписаного Telegram `initData`, а не з query-параметра:
+ * інакше будь-хто читав би роль, тариф і права будь-якого користувача.
  * Повертає role, tariff, status, discount, permissions для conditional rendering.
  */
 export async function handleUserProfile(
   request: Request,
   env: Env,
 ): Promise<Response> {
-  const url = new URL(request.url);
-  const userIdStr = url.searchParams.get("user_id");
-
-  if (!userIdStr) {
-    return json({ error: "user_id required" }, 400);
-  }
-
-  const userId = Number(userIdStr);
-  if (isNaN(userId)) {
-    return json({ error: "invalid user_id" }, 400);
-  }
+  const identity = await resolveUserId(request, env);
+  if (!identity.ok) return identity.response;
+  const userId = identity.userId;
 
   try {
     const service = new UsersService(env);

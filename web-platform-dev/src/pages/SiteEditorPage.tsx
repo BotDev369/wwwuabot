@@ -14,6 +14,7 @@ import {
 } from "@wwwuabot/shared/constants/site-defaults";
 import { Icon } from "@wwwuabot/shared";
 import { SiteRenderer } from "@wwwuabot/ui/SiteRenderer";
+import { apiFetchRaw } from "@/shared/api/client";
 
 // ── Types ────────────────────────────────────────────────────
 
@@ -47,7 +48,7 @@ export function SiteEditorPage() {
   const loadSite = useCallback(async () => {
     if (!slug) return;
     try {
-      const res = await fetch(`/api/sites/${slug}`);
+      const res = await apiFetchRaw(`/api/sites/${slug}`);
       if (!res.ok) throw new Error("Site not found");
       const data = await res.json();
       if (data.success) {
@@ -68,7 +69,7 @@ export function SiteEditorPage() {
   const loadPages = useCallback(async () => {
     if (!slug) return;
     try {
-      const res = await fetch(`/api/sites/${slug}/pages`);
+      const res = await apiFetchRaw(`/api/sites/${slug}/pages`);
       if (!res.ok) throw new Error("Failed to load pages");
       const data = await res.json();
       if (data.success) {
@@ -111,7 +112,7 @@ export function SiteEditorPage() {
 
     setSaving(true);
     try {
-      const res = await fetch(`/api/sites/${slug}/pages`, {
+      const res = await apiFetchRaw(`/api/sites/${slug}/pages`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ slug: pageSlug, title: title.trim() }),
@@ -136,7 +137,7 @@ export function SiteEditorPage() {
     if (!confirm(`Видалити сторінку "${pageSlug}"?`)) return;
 
     try {
-      const res = await fetch(`/api/sites/${slug}/pages/${pageId}`, {
+      const res = await apiFetchRaw(`/api/sites/${slug}/pages/${pageId}`, {
         method: "DELETE",
       });
       if (!res.ok) throw new Error("Failed to delete page");
@@ -154,7 +155,7 @@ export function SiteEditorPage() {
   const handleSaveSettings = async () => {
     setSaving(true);
     try {
-      const res = await fetch(`/api/sites/${slug}`, {
+      const res = await apiFetchRaw(`/api/sites/${slug}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -217,7 +218,7 @@ export function SiteEditorPage() {
 
     setSaving(true);
     try {
-      const res = await fetch(`/api/sites/${slug}/publish`, {
+      const res = await apiFetchRaw(`/api/sites/${slug}/publish`, {
         method: "POST",
       });
       if (!res.ok) {
@@ -553,12 +554,13 @@ export function SiteEditorPage() {
 /**
  * Тимчасовий компонент для редагування блоків сторінки.
  * Буде замінений на повноцінний PageBuilder з packages/ui.
+ *
+ * `siteSlug` та `onSaved` поки не потрібні, але лишаються в контракті:
+ * їх передає виклик, і вони знадобляться повноцінному редакторові.
  */
 function PageBuilderPlaceholder({
-  siteSlug,
   pageSlug,
   pages,
-  onSaved,
 }: {
   siteSlug: string;
   pageSlug: string;
@@ -566,13 +568,10 @@ function PageBuilderPlaceholder({
   onSaved: () => void;
 }) {
   const page = pages.find((p) => p.slug === pageSlug);
-  const [editing, setEditing] = useState(false);
-  const [title, setTitle] = useState(page?.title ?? "");
   const [blockCount, setBlockCount] = useState(0);
 
   useEffect(() => {
     if (!page) return;
-    setTitle(page.title);
     // Count blocks across all zones
     const pd = page.pageData;
     if (pd?.zones) {
@@ -636,7 +635,7 @@ function PageBuilderPlaceholder({
                     <span className="wb-text-sm" style={{ fontWeight: 500 }}>
                       {block.type}
                     </span>
-                    {block.props?.title && (
+                    {typeof block.props?.title === "string" && (
                       <span className="wb-text-xs wb-text-muted" style={{ marginLeft: "var(--sp-2)" }}>
                         {String(block.props.title).slice(0, 40)}
                       </span>

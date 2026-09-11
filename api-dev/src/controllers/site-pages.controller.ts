@@ -21,6 +21,7 @@ import {
   deleteSitePage,
 } from "../services/sites.service";
 import { isValidSlug, HOME_SLUG } from "@wwwuabot/shared/constants/site-defaults";
+import { resolveUserId } from "../shared/identity";
 
 // ── Helpers ──────────────────────────────────────────────────
 
@@ -31,13 +32,6 @@ function json(data: unknown, status = 200): Response {
   });
 }
 
-function getUserIdFromRequest(request: Request): number | null {
-  const cookie = request.headers.get("Cookie") ?? "";
-  const match = cookie.match(/user_id=(\d+)/);
-  if (match) return parseInt(match[1], 10);
-  return null;
-}
-
 // ── Handlers ─────────────────────────────────────────────────
 
 /** POST /api/sites/:slug/pages — створити сторінку. */
@@ -46,8 +40,9 @@ export async function handleCreatePage(
   env: Env,
   siteSlug: string,
 ): Promise<Response> {
-  const userId = getUserIdFromRequest(request);
-  if (!userId) return json({ error: "Unauthorized" }, 401);
+  const identity = await resolveUserId(request, env);
+  if (!identity.ok) return identity.response;
+  const userId = identity.userId;
 
   const site = await getSiteBySlug(env.DB, siteSlug);
   if (!site) return json({ error: "Site not found" }, 404);
@@ -98,8 +93,9 @@ export async function handleListPages(
   env: Env,
   siteSlug: string,
 ): Promise<Response> {
-  const userId = getUserIdFromRequest(request);
-  if (!userId) return json({ error: "Unauthorized" }, 401);
+  const identity = await resolveUserId(request, env);
+  if (!identity.ok) return identity.response;
+  const userId = identity.userId;
 
   const site = await getSiteBySlug(env.DB, siteSlug);
   if (!site) return json({ error: "Site not found" }, 404);
@@ -121,8 +117,9 @@ export async function handleUpdatePage(
   _siteSlug: string,
   pageId: string,
 ): Promise<Response> {
-  const userId = getUserIdFromRequest(request);
-  if (!userId) return json({ error: "Unauthorized" }, 401);
+  const identity = await resolveUserId(request, env);
+  if (!identity.ok) return identity.response;
+  const userId = identity.userId;
 
   const page = await getSitePageById(env.DB, pageId);
   if (!page) return json({ error: "Page not found" }, 404);
@@ -161,8 +158,9 @@ export async function handleDeletePage(
   _siteSlug: string,
   pageId: string,
 ): Promise<Response> {
-  const userId = getUserIdFromRequest(request);
-  if (!userId) return json({ error: "Unauthorized" }, 401);
+  const identity = await resolveUserId(request, env);
+  if (!identity.ok) return identity.response;
+  const userId = identity.userId;
 
   const page = await getSitePageById(env.DB, pageId);
   if (!page) return json({ error: "Page not found" }, 404);
@@ -192,8 +190,9 @@ export async function handlePublishPage(
   _siteSlug: string,
   pageId: string,
 ): Promise<Response> {
-  const userId = getUserIdFromRequest(request);
-  if (!userId) return json({ error: "Unauthorized" }, 401);
+  const identity = await resolveUserId(request, env);
+  if (!identity.ok) return identity.response;
+  const userId = identity.userId;
 
   const page = await getSitePageById(env.DB, pageId);
   if (!page) return json({ error: "Page not found" }, 404);

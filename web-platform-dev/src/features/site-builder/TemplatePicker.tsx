@@ -9,6 +9,7 @@
 import { useState, useEffect } from "react";
 import type { Template, TemplateType } from "@wwwuabot/shared";
 import { Icon } from "@wwwuabot/shared";
+import { apiFetchRaw } from "@/shared/api/client";
 
 // ── Types ────────────────────────────────────────────────────
 
@@ -38,7 +39,7 @@ export function TemplatePicker({
     let cancelled = false;
     (async () => {
       try {
-        const res = await fetch("/api/templates");
+        const res = await apiFetchRaw("/api/templates");
         if (!res.ok) throw new Error("Failed to load templates");
         const data = await res.json();
         if (!cancelled) {

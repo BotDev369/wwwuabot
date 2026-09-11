@@ -8,6 +8,7 @@ import { useState, useEffect } from "react";
 import { useParams } from "react-router-dom";
 import type { Site, SitePage } from "@wwwuabot/shared/types/site";
 import { SiteRenderer } from "@wwwuabot/ui/SiteRenderer";
+import { apiFetchRaw } from "@/shared/api/client";
 import { Icon } from "@wwwuabot/shared";
 
 export function SiteViewPage() {
@@ -21,7 +22,7 @@ export function SiteViewPage() {
     let cancelled = false;
     (async () => {
       try {
-        const res = await fetch(`/api/catalog/${slug}`);
+        const res = await apiFetchRaw(`/api/catalog/${slug}`);
         if (!res.ok) throw new Error("Site not found");
         const data = await res.json();
         if (!cancelled && data.success) {

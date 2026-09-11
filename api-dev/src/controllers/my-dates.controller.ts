@@ -3,7 +3,7 @@ import { VALID_TYPES } from "../shared/constants";
 import { formatSqliteDatetime } from "@wwwuabot/shared/utils/datetime";
 import { withAutoMigrate } from "@wwwuabot/shared/database/auto-migrate";
 import { apiLog } from "../shared/logger";
-import { verifyInitData } from "../shared/telegram-auth";
+import { resolveUserId } from "../shared/identity";
 
 export interface MyDateItem {
   id: string;
@@ -106,34 +106,6 @@ async function saveUserDates(
     .run();
 }
 
-// ── Identify the Telegram user ──────────────────────────────────────
-async function extractUserId(
-  request: Request,
-  env: Env,
-): Promise<{ ok: true; userId: number } | { ok: false; response: Response }> {
-  const initData = request.headers.get("X-Telegram-Init-Data");
-  if (initData && env.BOT_TOKEN) {
-    const userId = await verifyInitData(initData, env.BOT_TOKEN);
-    if (userId === null) {
-      return { ok: false, response: json({ ok: false, error: "Invalid initData" }, 401) };
-    }
-    return { ok: true, userId };
-  }
-
-  const userIdStr = request.headers.get("X-Telegram-User-Id");
-  if (!userIdStr) {
-    return { ok: false, response: json({ ok: false, error: "X-Telegram-Init-Data header required" }, 401) };
-  }
-
-  const userId = parseInt(userIdStr, 10);
-  if (isNaN(userId)) {
-    return { ok: false, response: json({ ok: false, error: "Invalid user_id" }, 401) };
-  }
-
-  apiLog.info("my-dates: unsigned X-Telegram-User-Id accepted", { user_id: userId });
-  return { ok: true, userId };
-}
-
 // ── Main handler ────────────────────────────────────────────────────
 export async function handleMyDates(
   request: Request,
@@ -150,9 +122,9 @@ export async function handleMyDates(
       "users",
     );
 
-    const userResult = await extractUserId(request, env);
-    if (!userResult.ok) return userResult.response;
-    const { userId } = userResult;
+    const identity = await resolveUserId(request, env);
+    if (!identity.ok) return identity.response;
+    const { userId } = identity;
 
     // Read + migrate
     const { dates, needsMigration } = await readUserDates(env.DB, userId);

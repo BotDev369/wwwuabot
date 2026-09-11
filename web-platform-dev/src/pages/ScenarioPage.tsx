@@ -18,6 +18,7 @@ import type {
 } from "@wwwuabot/shared/types/page-config";
 import { parsePageConfig } from "@wwwuabot/shared/types/page-config";
 import { PageRenderer } from "@wwwuabot/ui/PageRenderer";
+import { apiFetchRaw } from "@/shared/api/client";
 import { registerAllBlocks } from "@wwwuabot/ui/blocks";
 
 registerAllBlocks();
@@ -94,18 +95,10 @@ export function ScenarioPage() {
   const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
 
   // ── Завантаження профілю користувача (для conditional rendering) ──
+  // Ідентичність api-dev бере з підписаного initData — query-параметр не потрібен.
   useEffect(() => {
-    const tg =
-      typeof window !== "undefined"
-        ? (window as unknown as {
-            Telegram?: { WebApp?: { initDataUnsafe?: { user?: { id?: number } } } };
-          }).Telegram
-        : undefined;
-    const userId = tg?.WebApp?.initDataUnsafe?.user?.id;
-    if (!userId) return;
-
     let cancelled = false;
-    fetch(`/api/user/profile?user_id=${userId}`)
+    apiFetchRaw("/api/user/profile")
       .then((res) => res.json())
       .then((data: { ok?: boolean; user?: UserProfile }) => {
         if (!cancelled && data?.ok && data.user) setUserProfile(data.user);
@@ -125,7 +118,7 @@ export function ScenarioPage() {
       setStatus("loading");
       setErrorMsg(null);
       try {
-        const res = await fetch(
+        const res = await apiFetchRaw(
           `/api/scenario/${encodeURIComponent(scenarioSlug)}`,
         );
         if (cancelled) return;

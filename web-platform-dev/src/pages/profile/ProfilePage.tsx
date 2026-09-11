@@ -39,7 +39,7 @@ export function ProfilePage() {
     };
 
     if (tgUser?.id) {
-      apiFetch<{ ok: boolean; user?: Record<string, unknown> }>(`/api/user/profile?user_id=${tgUser.id}`)
+      apiFetch<{ ok: boolean; user?: Record<string, unknown> }>("/api/user/profile")
         .then((res) => {
           if (res.ok && res.user) {
             const u = res.user;

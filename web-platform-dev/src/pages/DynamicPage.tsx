@@ -17,6 +17,7 @@ import { parsePageConfig } from "@wwwuabot/shared/types/page-config";
 import { PageRenderer } from "@wwwuabot/ui/PageRenderer";
 
 import { registerAllBlocks } from "@wwwuabot/ui/blocks";
+import { apiFetchRaw } from "@/shared/api/client";
 
 // Реєструємо блоки один раз при завантаженні модуля
 registerAllBlocks();
@@ -73,7 +74,7 @@ export function DynamicPage({ baseCodeword }: DynamicPageProps = {}) {
     (async () => {
       try {
         setStatus("loading");
-        const res = await fetch(`/api/scenario/${encodeURIComponent(requestedCodeword)}`);
+        const res = await apiFetchRaw(`/api/scenario/${encodeURIComponent(requestedCodeword)}`);
         if (cancelled) return;
 
         if (!res.ok) {
@@ -126,17 +127,11 @@ export function DynamicPage({ baseCodeword }: DynamicPageProps = {}) {
     };
   }, [requestedCodeword]);
 
-  // Завантаження профілю користувача (для conditional rendering)
+  // Завантаження профілю користувача (для conditional rendering).
+  // Ідентичність api-dev бере з підписаного initData — query-параметр не потрібен.
   useEffect(() => {
-    // Отримуємо user_id з Telegram WebApp SDK
-    const tg = typeof window !== "undefined" ? window.Telegram?.WebApp : null;
-    const tgUser = tg?.initDataUnsafe?.user;
-    const userId = tgUser?.id;
-
-    if (!userId) return;
-
     let cancelled = false;
-    fetch(`/api/user/profile?user_id=${userId}`)
+    apiFetchRaw("/api/user/profile")
       .then((res) => res.json())
       .then((data: { ok?: boolean; user?: UserProfile }) => {
         if (!cancelled && data?.ok && data.user) {

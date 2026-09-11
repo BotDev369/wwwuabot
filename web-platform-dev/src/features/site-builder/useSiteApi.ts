@@ -8,14 +8,9 @@
 
 import { useState, useCallback } from "react";
 import type { Site, SitePage, CatalogSite, Template } from "@wwwuabot/shared";
+import { apiFetchRaw } from "@/shared/api/client";
 
 // ── Types ────────────────────────────────────────────────────
-
-interface ApiResult<T> {
-  data: T | null;
-  error: string | null;
-  loading: boolean;
-}
 
 interface CreateSiteInput {
   slug: string;
@@ -59,7 +54,7 @@ export function useSiteApi() {
     setLoading(true);
     setError(null);
     try {
-      const res = await fetch("/api/sites");
+      const res = await apiFetchRaw("/api/sites");
       if (!res.ok) throw new Error("Failed to load sites");
       const data = await res.json();
       return data.sites ?? [];
@@ -76,7 +71,7 @@ export function useSiteApi() {
     setLoading(true);
     setError(null);
     try {
-      const res = await fetch(`/api/sites/${slug}`);
+      const res = await apiFetchRaw(`/api/sites/${slug}`);
       if (!res.ok) throw new Error("Site not found");
       const data = await res.json();
       return data.site ?? null;
@@ -92,7 +87,7 @@ export function useSiteApi() {
     setLoading(true);
     setError(null);
     try {
-      const res = await fetch("/api/sites", {
+      const res = await apiFetchRaw("/api/sites", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(input),
@@ -115,7 +110,7 @@ export function useSiteApi() {
     setLoading(true);
     setError(null);
     try {
-      const res = await fetch(`/api/sites/${slug}`, {
+      const res = await apiFetchRaw(`/api/sites/${slug}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(input),
@@ -135,7 +130,7 @@ export function useSiteApi() {
     setLoading(true);
     setError(null);
     try {
-      const res = await fetch(`/api/sites/${slug}`, { method: "DELETE" });
+      const res = await apiFetchRaw(`/api/sites/${slug}`, { method: "DELETE" });
       if (!res.ok) throw new Error("Failed to delete site");
       return true;
     } catch (e) {
@@ -150,7 +145,7 @@ export function useSiteApi() {
     setLoading(true);
     setError(null);
     try {
-      const res = await fetch(`/api/sites/${slug}/publish`, { method: "POST" });
+      const res = await apiFetchRaw(`/api/sites/${slug}/publish`, { method: "POST" });
       if (!res.ok) {
         const data = await res.json();
         throw new Error(data.error || "Failed to publish");
@@ -170,7 +165,7 @@ export function useSiteApi() {
     setLoading(true);
     setError(null);
     try {
-      const res = await fetch(`/api/sites/${siteSlug}/pages`);
+      const res = await apiFetchRaw(`/api/sites/${siteSlug}/pages`);
       if (!res.ok) throw new Error("Failed to load pages");
       const data = await res.json();
       return data.pages ?? [];
@@ -186,7 +181,7 @@ export function useSiteApi() {
     setLoading(true);
     setError(null);
     try {
-      const res = await fetch(`/api/sites/${siteSlug}/pages`, {
+      const res = await apiFetchRaw(`/api/sites/${siteSlug}/pages`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(input),
@@ -209,7 +204,7 @@ export function useSiteApi() {
     setLoading(true);
     setError(null);
     try {
-      const res = await fetch(`/api/sites/${siteSlug}/pages/${pageId}`, {
+      const res = await apiFetchRaw(`/api/sites/${siteSlug}/pages/${pageId}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(input),
@@ -229,7 +224,7 @@ export function useSiteApi() {
     setLoading(true);
     setError(null);
     try {
-      const res = await fetch(`/api/sites/${siteSlug}/pages/${pageId}`, {
+      const res = await apiFetchRaw(`/api/sites/${siteSlug}/pages/${pageId}`, {
         method: "DELETE",
       });
       if (!res.ok) throw new Error("Failed to delete page");
@@ -248,7 +243,7 @@ export function useSiteApi() {
     setLoading(true);
     setError(null);
     try {
-      const res = await fetch("/api/templates");
+      const res = await apiFetchRaw("/api/templates");
       if (!res.ok) throw new Error("Failed to load templates");
       const data = await res.json();
       return data.templates ?? [];
@@ -266,7 +261,7 @@ export function useSiteApi() {
     setLoading(true);
     setError(null);
     try {
-      const res = await fetch(`/api/catalog?page=${page}&limit=${limit}`);
+      const res = await apiFetchRaw(`/api/catalog?page=${page}&limit=${limit}`);
       if (!res.ok) throw new Error("Failed to load catalog");
       const data = await res.json();
       return { sites: data.sites ?? [], total: data.total ?? 0 };

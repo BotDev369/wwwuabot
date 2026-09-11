@@ -8,6 +8,7 @@ import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import type { CatalogSite } from "@wwwuabot/shared/types/site";
 import { Icon } from "@wwwuabot/shared";
+import { apiFetchRaw } from "@/shared/api/client";
 
 export function PublicCatalogPage() {
   const navigate = useNavigate();
@@ -23,7 +24,7 @@ export function PublicCatalogPage() {
     let cancelled = false;
     (async () => {
       try {
-        const res = await fetch(`/api/catalog?page=${page}&limit=${limit}`);
+        const res = await apiFetchRaw(`/api/catalog?page=${page}&limit=${limit}`);
         if (!res.ok) throw new Error("Failed to load catalog");
         const data = await res.json();
         if (!cancelled && data.success) {
