@@ -12,11 +12,5 @@ binding = "ASSETS"
 binding = "API"
 service = "api-dev"
 
-# D1 binding
-[[d1_databases]]
-binding = "DB"
-database_name = "wwwuabot-db-dev"
-database_id = "9fc03f61-d497-4d92-bae4-c92b02c2d1c5"
-
 [vars]
 ENVIRONMENT = "dev"

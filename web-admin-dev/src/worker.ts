@@ -1,116 +1,33 @@
 /// <reference types="@cloudflare/workers-types" />
 
 /**
- * web-admin Worker — тонкий проксі до API.
+ * web-admin Worker — тонка оболонка над API.
  *
- * Після рефакторингу (Фаза 3) всі API-ендпоїнти знаходяться в api/.
- * Цей воркер відповідає лише за:
- * 1. Перевірку cookie-авторизації
- * 2. Проксювання /api/* та /auth/* запитів до api/ воркера (через service binding)
- * 3. SPA fallback (віддача index.html для не-asset маршрутів)
+ * Обов'язки:
+ * 1. Перевірка cookie-сесії — спільна логіка з api-dev
+ *    (`@wwwuabot/shared/security/session`), щоб формат токена не міг
+ *    розійтися між двома воркерами.
+ * 2. Проксювання `/api/*` та `/auth/*` до `api-dev` через service binding.
+ * 3. SPA fallback: віддача index.html для не-asset маршрутів.
  *
- * Структура src/ (React-додаток) залишається незмінною —
- * він імпортує з @wwwuabot/shared та використовує ті самі компоненти.
+ * React-додаток у `src/` лишається незмінним.
+ *
+ * @module web-admin-dev/src/worker
  */
+
+import { hasValidSession } from "@wwwuabot/shared/security/session";
 
 export interface Env {
   ASSETS: Fetcher;
   API: Fetcher;
-  DB: D1Database;
   ADMIN_SECRET: string;
   BOT_TOKEN?: string;
 }
 
-// ── Auth helpers (cookie-based) ───────────────────────────────────
+/** Шляхи авторизації, які не потребують попередньої сесії. */
+const AUTH_PATHS = new Set(["/auth/login", "/auth/logout", "/auth/check"]);
 
-const COOKIE_NAME = "admin_session";
-
-async function getKey(secret: string): Promise<CryptoKey> {
-  const enc = new TextEncoder();
-  return crypto.subtle.importKey(
-    "raw",
-    enc.encode(secret),
-    { name: "HMAC", hash: "SHA-256" },
-    false,
-    ["sign", "verify"],
-  );
-}
-
-/** Парсить hex-рядок у байти; повертає null, якщо рядок не hex. */
-function hexToBytes(hex: string): Uint8Array | null {
-  if (hex.length === 0 || hex.length % 2 !== 0) return null;
-  if (!/^[0-9a-fA-F]+$/.test(hex)) return null;
-  const bytes = new Uint8Array(hex.length / 2);
-  for (let i = 0; i < bytes.length; i++) {
-    bytes[i] = parseInt(hex.slice(i * 2, i * 2 + 2), 16);
-  }
-  return bytes;
-}
-
-async function verifyToken(
-  token: string,
-  secret: string,
-): Promise<boolean> {
-  const lastDot = token.lastIndexOf(".");
-  if (lastDot === -1) return false;
-  const payload = token.slice(0, lastDot);
-  const sigBytes = hexToBytes(token.slice(lastDot + 1));
-  if (!sigBytes) return false;
-  const key = await getKey(secret);
-  const enc = new TextEncoder();
-  const valid = await crypto.subtle.verify(
-    "HMAC",
-    key,
-    sigBytes,
-    enc.encode(payload),
-  );
-  if (!valid) return false;
-  const [, expiresStr] = payload.split(":");
-  const expires = parseInt(expiresStr, 10);
-  if (!Number.isFinite(expires) || Date.now() > expires) return false;
-  return true;
-}
-
-function parseCookies(
-  header: string | null,
-): Record<string, string> {
-  if (!header) return {};
-  return Object.fromEntries(
-    header.split(";").map((c) => {
-      const [k, ...v] = c.trim().split("=");
-      return [k.trim(), v.join("=")];
-    }),
-  );
-}
-
-async function isAuthenticated(
-  request: Request,
-  env: Env,
-): Promise<boolean> {
-  const cookies = parseCookies(request.headers.get("Cookie"));
-  const token = cookies[COOKIE_NAME];
-  if (!token || !env.ADMIN_SECRET) return false;
-  return verifyToken(token, env.ADMIN_SECRET);
-}
-
-// ── Asset helpers ─────────────────────────────────────────────────
-
-function fixAssetHeaders(res: Response): Response {
-  const headers = new Headers(res.headers);
-  headers.set("Access-Control-Allow-Origin", "*");
-  const ct = headers.get("content-type") || "";
-  if (ct.includes("text/html")) {
-    headers.set(
-      "Cache-Control",
-      "no-store, no-cache, must-revalidate",
-    );
-  }
-  return new Response(res.body, {
-    status: res.status,
-    statusText: res.statusText,
-    headers,
-  });
-}
+// ── Helpers ───────────────────────────────────────────────────────
 
 function json(data: unknown, status = 200): Response {
   return new Response(JSON.stringify(data), {
@@ -119,69 +36,58 @@ function json(data: unknown, status = 200): Response {
   });
 }
 
+function fixAssetHeaders(res: Response): Response {
+  const headers = new Headers(res.headers);
+  headers.set("Access-Control-Allow-Origin", "*");
+  if ((headers.get("content-type") || "").includes("text/html")) {
+    headers.set("Cache-Control", "no-store, no-cache, must-revalidate");
+  }
+  return new Response(res.body, {
+    status: res.status,
+    statusText: res.statusText,
+    headers,
+  });
+}
+
+/** Віддає index.html як SPA-фолбек. */
+async function serveSpa(url: URL, request: Request, env: Env): Promise<Response> {
+  return fixAssetHeaders(
+    await env.ASSETS.fetch(new Request(new URL("/", url).toString(), request)),
+  );
+}
+
 // ── Main handler ──────────────────────────────────────────────────
 
 export default {
-  async fetch(
-    request: Request,
-    env: Env,
-  ): Promise<Response> {
+  async fetch(request: Request, env: Env): Promise<Response> {
     const url = new URL(request.url);
+    const authed = await hasValidSession(request, env.ADMIN_SECRET);
 
-    // Auth endpoints — проксюємо до api/ (там обробляються cookie)
-    if (
-      url.pathname === "/auth/login" ||
-      url.pathname === "/auth/logout" ||
-      url.pathname === "/auth/check"
-    ) {
-      const authed = await isAuthenticated(request, env);
-      // login/logout працюють без auth (login створює, logout видаляє)
-      if (url.pathname === "/auth/check") {
-        if (!authed) return json({ authenticated: false });
-        return env.API.fetch(request);
+    // /auth/check сам звітує про стан сесії, решта auth-шляхів проходять як є.
+    if (AUTH_PATHS.has(url.pathname)) {
+      if (url.pathname === "/auth/check" && !authed) {
+        return json({ authenticated: false });
       }
       return env.API.fetch(request);
     }
 
-    // Перевірка авторизації для всіх інших запитів
-    const authed = await isAuthenticated(request, env);
     if (!authed) {
       if (url.pathname.startsWith("/api/")) {
         return json({ error: "Unauthorized" }, 401);
       }
-      // Неавторизовані — віддаємо SPA (React покаже LoginScreen)
-      return fixAssetHeaders(
-        await env.ASSETS.fetch(
-          new Request(
-            new URL("/", url).toString(),
-            request,
-          ),
-        ),
-      );
+      // Неавторизовані отримують SPA — React покаже LoginScreen.
+      return serveSpa(url, request, env);
     }
 
-    // API запити — проксюємо до api/ воркера
     if (url.pathname.startsWith("/api/")) {
       return env.API.fetch(request);
     }
 
     // SPA fallback: маршрути без розширення → index.html
     const assetRes = await env.ASSETS.fetch(request);
-    if (
-      assetRes.status === 404 &&
-      !url.pathname.includes(".")
-    ) {
-      return fixAssetHeaders(
-        await env.ASSETS.fetch(
-          new Request(
-            new URL("/", url).toString(),
-            request,
-          ),
-        ),
-      );
+    if (assetRes.status === 404 && !url.pathname.includes(".")) {
+      return serveSpa(url, request, env);
     }
     return fixAssetHeaders(assetRes);
   },
 };
-
-// 🤖 Qwen AI Agent Test: Direct push to main verified on 01.09.2026
