@@ -1,16 +1,17 @@
 /**
  * MyDatesPage — основна сторінка "Мої дати".
  *
- * Рефакторинг: логіка винесена в хук useMyDates(),
- * компоненти — в DateModal, DateAccordionForm,
- * HeaderContextMenu, RowActionMenu.
+ * Логіка живе в єдиному спільному хуку `useMyDates` з `@wwwuabot/ui` — тому
+ * фікс робиться один раз і для сторінки, і для Page Builder-блока
+ * (docs/CONSOLIDATION_PLAN.md §3.3). Компоненти локальні: DateModal,
+ * DateAccordionForm, HeaderContextMenu, RowActionMenu.
  */
 
 import { useEffect, useState, useCallback } from 'react';
 import { useAppStore } from '@/stores/app.store';
 import { icons } from '@wwwuabot/shared';
 import type { MyDate } from '@/shared/api/mydate.api';
-import { useMyDates } from './useMyDates';
+import { useMyDates } from '@wwwuabot/ui/blocks/my-dates-table';
 import { DateModal } from './DateModal';
 import { DateAccordionForm } from './DateAccordionForm';
 import { HeaderContextMenu } from './HeaderContextMenu';
@@ -58,10 +59,7 @@ export function MyDatesPage() {
     setScenarioName('MyDate');
   }, [setScenarioName]);
 
-  useEffect(() => {
-    hook.refreshDates();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  // Список вантажить сам хук (`autoFetch`), тому окремого ефекту не потрібно.
 
   // ── Handlers ────────────────────────────────────────────────────
 
@@ -75,6 +73,9 @@ export function MyDatesPage() {
     }
   }, [formOpen]);
 
+  // `handleSave`/`handleDelete` самі перезавантажують список —
+  // тут лишається тільки закрити форму/модалку.
+
   const handleAccordionSubmit = useCallback(async (data: Omit<MyDate, 'id' | 'created_at' | 'user_id' | 'updated_at'>) => {
     await hook.handleSave(data);
     setFormOpen(false);
@@ -83,21 +84,18 @@ export function MyDatesPage() {
     } catch {
       // localStorage недоступний (private mode) — стан просто не зберігається
     }
-    await hook.refreshDates();
   }, [hook]);
 
   const handleModalSave = useCallback(async (data: Partial<MyDate>) => {
     await hook.handleSave(data);
     setModalMode(null);
     setModalDate(null);
-    await hook.refreshDates();
   }, [hook]);
 
   const handleModalDelete = useCallback(async (id: string) => {
     await hook.handleDelete(id);
     setModalMode(null);
     setModalDate(null);
-    await hook.refreshDates();
   }, [hook]);
 
   const handleRowAction = useCallback((mode: ModalMode, date: MyDate) => {
@@ -107,25 +105,17 @@ export function MyDatesPage() {
   }, []);
 
   const handleHeaderMenuSort = useCallback((field: SortField, order: 'asc' | 'desc') => {
-    hook.setSortField(field);
-    hook.setSortOrder(order);
+    hook.setSort(field, order);
     setHeaderMenu(null);
   }, [hook]);
 
   const handleHeaderMenuFilterToggle = useCallback((field: SortField, value: string) => {
-    hook.setColumnFilters((prev) => {
-      const current = prev[field] || [];
-      const next = current.includes(value) ? current.filter((v) => v !== value) : [...current, value];
-      return { ...prev, [field]: next };
-    });
+    hook.toggleColumnFilter(field, value);
   }, [hook]);
 
   const handleHeaderMenuClear = useCallback((field: SortField) => {
-    hook.setColumnFilters((prev) => ({ ...prev, [field]: [] }));
-    if (hook.sortField === field) {
-      hook.setSortField('name');
-      hook.setSortOrder('asc');
-    }
+    hook.clearColumnFilter(field);
+    if (hook.sortField === field) hook.setSort('name', 'asc');
     setHeaderMenu(null);
     setHeaderFilterText('');
   }, [hook]);
@@ -183,12 +173,7 @@ export function MyDatesPage() {
                       <span
                         key={v}
                         className="active-filter-chip"
-                        onClick={() =>
-                          hook.setColumnFilters((prev) => ({
-                            ...prev,
-                            [field]: prev[field].filter((x) => x !== v),
-                          }))
-                        }
+                        onClick={() => hook.toggleColumnFilter(field, v)}
                       >
                         {v} {icons['close']}
                       </span>
@@ -213,7 +198,7 @@ export function MyDatesPage() {
                 </button>
                 <button
                   className="wb-btn wb-btn-sm wb-btn-secondary"
-                  onClick={() => hook.setSelectedIds(new Set())}
+                  onClick={hook.clearSelection}
                 >
                   Скасувати вибір
                 </button>

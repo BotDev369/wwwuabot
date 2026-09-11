@@ -13,6 +13,7 @@
     "./store": "./src/store.ts",
     "./registry": "./src/registry.tsx",
     "./blocks": "./src/blocks/index.ts",
+    "./blocks/my-dates-table": "./src/blocks/my-dates-table/index.ts",
     "./blocks/*": "./src/blocks/*.tsx"
   },
   "scripts": {

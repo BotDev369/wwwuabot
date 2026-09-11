@@ -32,7 +32,7 @@ export function MyDatesTableBlock({ block }: BlockComponentProps) {
     selectedIds, toggleAll, toggleSelect, clearSelection,
     modalMode, modalDate, openCreate, openEdit, closeModal,
     handleSave, handleDelete, handleBulkDelete, handleBulkCompare,
-  } = useMyDates({ showSearch, showTypeFilter, showBulkActions, showCreateButton });
+  } = useMyDates();
 
   const columns: { key: "name" | "date" | "tags" | "type" | "notes"; label: string }[] = [
     { key: "name", label: "Назва" },
