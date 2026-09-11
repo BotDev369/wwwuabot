@@ -7,7 +7,7 @@ Rules for developers, contributors, and AI agents.
 ## Quality Gates (обов'язково перед кожним пушем)
 
 ```bash
-npm test            # 106 unit-тестів (Vitest)
+npm test            # 111 unit-тестів (Vitest)
 npm run typecheck   # TypeScript strict — 0 any
 npm run lint        # ESLint + Prettier
 ```

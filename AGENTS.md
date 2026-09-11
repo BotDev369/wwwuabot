@@ -140,9 +140,23 @@ import { Icon } from "@wwwuabot/shared";
 | Перевірка підпису Telegram `initData` | `packages/shared/src/security/telegram.ts` |
 | Адмінська cookie-сесія (`signSessionToken`, `hasValidSession`) | `packages/shared/src/security/session.ts` |
 | `user_id` для хендлера API | `api-dev/src/shared/identity.ts` — `resolveUserId()` (обов'язково) або `tryResolveUserId()` (для публічних) |
+| Адмін-гейт (єдина точка входу) | `api-dev/src/router.ts` — блок `pathname.startsWith("/api/admin/")` |
 
 Обидва модулі в `security/` — **чисті функції**: секрет передається аргументом, рішення
 «що робити при провалі» приймає виклик. Не дублюй HMAC-логіку в воркерах.
+
+**Три групи доступу — третя не має винятків:**
+
+| Група | Префікс | Авторизація |
+|---|---|---|
+| Публічне | `/api/catalog*`, `/api/scenario/`, `/api/mydate/`, `/health` | немає |
+| Користувач | `/api/sites`, `/api/my-dates`, `/api/user/profile` | підписаний `initData` + перевірка власника |
+| Адмін | `/api/admin/`, `/api/portal/`, `/api/bot/` | cookie `admin_session` |
+
+Адмін-авторизація існує в **двох місцях навмисно**: `web-admin/worker.ts` (до проксі)
+і адмін-гейт в `api-dev/router.ts` (після). У `api-dev` є власний публічний URL, тому він
+не має покладатися на те, що перед ним стояв проксі. Два рівні однієї перевірки — це не
+дублювання, а недовіра до периметра.
 
 ### web / web-admin (однакова архітектура)
 
@@ -180,6 +194,8 @@ src/
 - Не змішуй prod/dev бази — різні `database_id`.
 - Не створюй API-ендпоїнти поза `api-dev/`.
 - Не довіряй `X-Telegram-User-Id`, cookie `user_id` чи `?user_id=` — ідентичність береться ТІЛЬКИ з підписаного `initData` (`api-dev/src/shared/identity.ts`).
+- Не авторизуй адмін-дію секретом у заголовку (`X-Admin-Secret`, `X-Bot-Token`, `?secret=`) — тільки cookie `admin_session`. Секрет у заголовку = секрет, який тече через логи, ретраї та проксі, і який неможливо відкликати окремо від пароля.
+- Не виноси адмін-ендпоїнт за префікс `/api/admin/`, `/api/portal/` чи `/api/bot/` — інакше він пройде **повз** адмін-гейт.
 - Не пиши моноліти (>200 рядків) — див. правило кристалевості.
 - Не хардкодь стилі/кольори — використовуй CSS-токени та `<Icon />`.
 
@@ -188,8 +204,9 @@ src/
 ## 8. Статус проєкту
 
 - **Типізація:** 0 `any`, `tsc --noEmit` чистий на всіх 6 воркерах.
-- **Тести:** Vitest, 106 unit-тестів (але не гейтять CI — S-6 відкрита).
+- **Тести:** Vitest, 111 unit-тестів (але не гейтять CI — S-6 відкрита).
 - **Ідентичність користувача:** єдине джерело — підписаний Telegram `initData` (`api-dev/src/shared/identity.ts`). Заборонено приймати `X-Telegram-User-Id` або `user_id` з cookie/query.
+- **Адмін-авторизація:** єдина — cookie `admin_session` (HMAC-SHA256, `packages/shared/src/security/session.ts`). Секретів у заголовках немає: `X-Admin-Secret`, `X-Bot-Token`, `/db-proxy` і легасі `/setup-webhook` видалено 11.09.2026 (`docs/CONSOLIDATION_PLAN.md` §5.4).
 - **Моніторинг:** Sentry не підключений.
 - **Документація:** CHANGELOG відсутній.
 
