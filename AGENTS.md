@@ -204,7 +204,7 @@ src/
 ## 8. Статус проєкту
 
 - **Типізація:** 0 `any`, `tsc --noEmit` чистий на всіх 6 воркерах.
-- **Тести:** Vitest, 111 unit-тестів. **Гейтять CI** (S-6 закрито 11.09.2026) — червоний тест блокує деплой.
+- **Тести:** Vitest, 126 unit-тестів. **Гейтять CI** (S-6 закрито 11.09.2026) — червоний тест блокує деплой.
 - **Ідентичність користувача:** єдине джерело — підписаний Telegram `initData` (`api-dev/src/shared/identity.ts`). Заборонено приймати `X-Telegram-User-Id` або `user_id` з cookie/query.
 - **Адмін-авторизація:** єдина — cookie `admin_session` (HMAC-SHA256, `packages/shared/src/security/session.ts`). Секретів у заголовках немає: `X-Admin-Secret`, `X-Bot-Token`, `/db-proxy` і легасі `/setup-webhook` видалено 11.09.2026 (`docs/CONSOLIDATION_PLAN.md` §5.4).
 - **Моніторинг:** Sentry не підключений.

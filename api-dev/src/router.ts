@@ -68,6 +68,20 @@ import {
 } from "./controllers/sites-admin.controller";
 
 /**
+ * Префікси шляхів, доступ до яких вимагає адмінської cookie-сесії.
+ *
+ * Це ЄДИНЕ місце, де визначено межу адмін-доступу. Новий адмін-ендпоїнт
+ * мусить бути під одним із цих префіксів — інакше він пройде **повз** гейт
+ * і стане публічним мовчки (див. AGENTS.md §7). Межу перевіряє
+ * `router.test.ts`.
+ */
+export const ADMIN_PATH_PREFIXES = [
+  "/api/admin/",
+  "/api/portal/",
+  "/api/bot/",
+] as const;
+
+/**
  * Central router for the API worker.
  * Maps incoming requests to the appropriate controller.
  */
@@ -84,19 +98,14 @@ export async function handleRequest(
   }
 
   // ── Єдиний адмін-гейт ─────────────────────────────────────────
-  // Все під /api/admin/, /api/portal/ і /api/bot/ вимагає валідної
-  // cookie-сесії (тієї самої, що web-admin/worker.ts перевіряє перед
-  // проксюванням). Потрібно, бо api/ має власний публічний URL і
-  // доступний напряму, в обхід web-admin.
+  // Все під ADMIN_PATH_PREFIXES вимагає валідної cookie-сесії (тієї самої,
+  // що web-admin/worker.ts перевіряє перед проксюванням). Потрібно, бо
+  // api/ має власний публічний URL і доступний напряму, в обхід web-admin.
   //
   // Це ЄДИНИЙ спосіб авторизувати адмін-дію. Секрети в заголовках
   // (X-Admin-Secret, X-Bot-Token) видалені — див.
   // docs/CONSOLIDATION_PLAN.md §5.4.
-  if (
-    pathname.startsWith("/api/admin/") ||
-    pathname.startsWith("/api/portal/") ||
-    pathname.startsWith("/api/bot/")
-  ) {
+  if (ADMIN_PATH_PREFIXES.some((prefix) => pathname.startsWith(prefix))) {
     const authed = await isAuthenticated(request, env);
     if (!authed) {
       return new Response(JSON.stringify({ error: "Unauthorized" }), {
