@@ -27,6 +27,8 @@
     "./constants/site-defaults": "./src/constants/site-defaults.ts",
     "./constants/site-templates": "./src/constants/site-templates.ts",
     "./database/auto-migrate": "./src/database/auto-migrate.ts",
+    "./security/session": "./src/security/session.ts",
+    "./security/telegram": "./src/security/telegram.ts",
     "./components/Icon": "./src/components/Icon.tsx",
     "./components/SaveActionButtons": "./src/components/SaveActionButtons.tsx"
   },
@@ -44,6 +46,7 @@
     "typescript": "^6.0.0"
   },
   "scripts": {
-    "test": "vitest run"
+    "test": "vitest run",
+    "typecheck": "tsc --noEmit"
   }
 }

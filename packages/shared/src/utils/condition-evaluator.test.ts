@@ -4,7 +4,7 @@ import {
   resolveBlock,
   getAvailableConditionFields,
 } from "./condition-evaluator";
-import type { UserProfile, BlockConditions } from "../types/page-config";
+import type { UserProfile, BlockConditions, PageBlock } from "../types/page-config";
 
 describe("evaluateConditions", () => {
   const baseUser: UserProfile = {
@@ -94,7 +94,8 @@ describe("evaluateConditions", () => {
 
   describe("fieldMatch checks", () => {
     it("matches nested fields via dot-notation", () => {
-      const complexUser: Record<string, unknown> = {
+      // UserProfile має index signature, тому довільні вкладені поля дозволені.
+      const complexUser: UserProfile = {
         id: 5,
         metadata: {
           verified: true,
@@ -110,7 +111,7 @@ describe("evaluateConditions", () => {
     });
 
     it("fails when nested field value does not match", () => {
-      const complexUser: Record<string, unknown> = {
+      const complexUser: UserProfile = {
         id: 5,
         metadata: {
           country: "PL",
@@ -135,8 +136,15 @@ describe("resolveBlock", () => {
   });
 
   it("returns fallback when conditions fail and fallback is present", () => {
+    // fallback — це вкладений блок (PageBlock), а не прапорець.
+    const fallbackBlock: PageBlock = {
+      id: "fallback",
+      type: "text",
+      order: 0,
+      props: {},
+    };
     const block = {
-      conditions: { role: ["moderator"], fallback: true } as BlockConditions,
+      conditions: { role: ["moderator"], fallback: fallbackBlock },
     };
     expect(resolveBlock(block, user)).toEqual({ show: true, useFallback: true });
   });

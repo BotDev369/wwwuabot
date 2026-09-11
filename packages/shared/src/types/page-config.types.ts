@@ -7,6 +7,10 @@
  * @module packages/shared/src/types/page-config.types
  */
 
+// Явний імпорт: файл компілюється і воркерами без React-типів, тому
+// глобальний простір імен `React` тут недоступний.
+import type { ReactNode } from "react";
+
 // ── Зони сторінки ─────────────────────────────────────────────────
 
 /** Структурні регіони сторінки. */
@@ -232,5 +236,5 @@ export interface BlockComponentProps {
   zone: BlockZone;
 
   /** Вкладені блоки (якщо є). */
-  children?: React.ReactNode;
+  children?: ReactNode;
 }

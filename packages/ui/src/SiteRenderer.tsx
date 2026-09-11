@@ -8,17 +8,8 @@
  */
 
 import { useState, useCallback, useMemo } from "react";
-import type {
-  Site,
-  SitePage,
-  SiteSettings,
-  NavigationItem,
-} from "@wwwuabot/shared/types/site";
-import type {
-  PageConfig,
-  BlockContext,
-  UserProfile,
-} from "@wwwuabot/shared/types/page-config";
+import type { Site, SitePage } from "@wwwuabot/shared/types/site";
+import type { BlockContext } from "@wwwuabot/shared/types/page-config";
 import { icons } from "@wwwuabot/shared";
 import { PageRenderer } from "./PageRenderer";
 
