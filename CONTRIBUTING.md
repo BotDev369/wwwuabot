@@ -9,10 +9,29 @@ Rules for developers, contributors, and AI agents.
 ```bash
 npm test            # 111 unit-тестів (Vitest)
 npm run typecheck   # TypeScript strict — 0 any
-npm run lint        # ESLint + Prettier
+npm run lint        # ESLint
+npm run format:check # Prettier (поки що не в CI — див. нижче)
 ```
 
 Якщо хоча б одна команда падає — код не пушиться в `main`.
+
+### Що саме перевіряє CI
+
+З 11.09.2026 пуш у `main` **заблоковано**, поки не пройдуть усі гейти. Вони
+виконуються в одній джобі `checks` перед будь-яким деплоєм:
+
+| Гейт | Команда | Блокує деплой? |
+|---|---|---|
+| Залежності | `npm ci` | так (lockfile розійшовся — збірка не відтворювана) |
+| CVE | `npm audit --audit-level=critical` | так (раніше стояв `continue-on-error: true`, тобто не блокував нічого) |
+| Лінт | `npm run lint` | так |
+| Типізація | `npm run typecheck` | так |
+| Тести | `npm test` | так (S-6 закрито) |
+| Форматування | `npm run format:check` | **ні** — у репо 199 невідформатованих файлів; увімкнути після `npm run format` |
+
+Гейти запускаються і на кожен pull request (деплой на PR неможливий).
+Деплої одного воркера не перекриваються: `concurrency` ставить їх у чергу,
+щоб старіший коміт не ліг поверх новішого.
 
 ---
 

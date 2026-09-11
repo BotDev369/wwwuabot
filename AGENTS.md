@@ -181,7 +181,7 @@ src/
 - **ESLint + Prettier** у всіх 4 сервісах. Команди: `npm run lint`, `npm run typecheck`.
 - **Логування:** `bot/` — модуль `modules/logging/` (Queue). `api/` — `apiLog` з префіксом `[api]`. Не використовувати `console.log` у продакшн-коді.
 - **Дата/час у D1:** `formatSqliteDatetime()` з `packages/shared/src/utils/datetime.ts`.
-- **CI/CD:** GitHub Actions + path filtering. Lint перед деплоєм. Dependabot увімкнений.
+- **CI/CD:** GitHub Actions + path filtering. Перед деплоєм в одній джобі `checks` виконуються `npm ci`, `npm audit --audit-level=critical`, `npm run lint`, `npm run typecheck`, `npm test` — будь-який збій блокує деплой усіх воркерів. Деплої воркерів стоять у черзі (`concurrency`), щоб старіший коміт не ліг поверх новішого. `pull_request` запускає лише гейти — деплой з PR неможливий. `GITHUB_TOKEN` має `contents: read`. Dependabot увімкнений.
 
 ---
 
@@ -204,7 +204,7 @@ src/
 ## 8. Статус проєкту
 
 - **Типізація:** 0 `any`, `tsc --noEmit` чистий на всіх 6 воркерах.
-- **Тести:** Vitest, 111 unit-тестів (але не гейтять CI — S-6 відкрита).
+- **Тести:** Vitest, 111 unit-тестів. **Гейтять CI** (S-6 закрито 11.09.2026) — червоний тест блокує деплой.
 - **Ідентичність користувача:** єдине джерело — підписаний Telegram `initData` (`api-dev/src/shared/identity.ts`). Заборонено приймати `X-Telegram-User-Id` або `user_id` з cookie/query.
 - **Адмін-авторизація:** єдина — cookie `admin_session` (HMAC-SHA256, `packages/shared/src/security/session.ts`). Секретів у заголовках немає: `X-Admin-Secret`, `X-Bot-Token`, `/db-proxy` і легасі `/setup-webhook` видалено 11.09.2026 (`docs/CONSOLIDATION_PLAN.md` §5.4).
 - **Моніторинг:** Sentry не підключений.

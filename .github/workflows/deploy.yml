@@ -1,8 +1,12 @@
 name: Deploy
 
+# Два режими роботи однієї пайплайни:
+#   • pull_request — тільки гейти (`checks`). Деплой неможливий.
+#   • push у main / workflow_dispatch — гейти, потім деплой змінених воркерів.
 on:
   push:
     branches: [main]
+  pull_request:
   workflow_dispatch:
     inputs:
       deploy_all:
@@ -10,6 +14,19 @@ on:
         required: false
         default: 'false'
         type: boolean
+
+# Мінімальні права GITHUB_TOKEN: деплою він не потрібен зовсім, а дефолтний
+# токен у багатьох репозиторіях має write-доступ. Менше прав — менше наслідків,
+# якщо токен колись потече через дію зі стороннього екшену.
+permissions:
+  contents: read
+
+# Не давати двом пушам деплоїти одночасно: Cloudflare — last-write-wins, тож
+# паралельні деплої можуть відкотити новіший код старішим. Черга (не
+# скасування!) гарантує, що останнім на прод потрапляє найновіший коміт.
+concurrency:
+  group: deploy-${{ github.ref }}
+  cancel-in-progress: false
 
 jobs:
   changes:
@@ -40,68 +57,74 @@ jobs:
               - 'packages/shared/**'
               - 'packages/ui/**'
 
-  audit:
-    runs-on: ubuntu-latest
-    continue-on-error: true
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
-        with:
-          node-version: 22
-      - run: npm install
-      - run: npm audit --audit-level=critical
-
+  # Єдиний гейт перед деплоєм. Раніше тут не було тестів (S-6) і `npm audit`
+  # стояв із `continue-on-error: true`, тобто не блокував нічого. Тепер:
+  # критична вразливість або червоний тест = жоден воркер не поїде на прод.
   checks:
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
           node-version: 22
-      - run: npm install
+          cache: npm
+      # `ci`, не `install`: збірка мусить бути відтворюваною з lockfile,
+      # інакше патч транзитивної залежності тихо змінює прод.
+      - run: npm ci
+      - name: Security audit (critical)
+        run: npm audit --audit-level=critical
       - run: npm run lint
       - run: npm run typecheck
+      - name: Unit tests
+        run: npm test
 
   deploy-bot:
-    needs: [changes, audit, checks]
-    if: needs.changes.outputs.bot == 'true' || github.event.inputs.deploy_all == 'true'
+    needs: [changes, checks]
+    if: github.event_name != 'pull_request' && (needs.changes.outputs.bot == 'true' || github.event.inputs.deploy_all == 'true')
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
           node-version: 22
-      - run: npm install
+          cache: npm
+      - run: npm ci
       - run: cd bot-dev && npx wrangler deploy
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
 
   deploy-api:
-    needs: [changes, audit, checks]
-    if: needs.changes.outputs.api == 'true' || github.event.inputs.deploy_all == 'true'
+    needs: [changes, checks]
+    if: github.event_name != 'pull_request' && (needs.changes.outputs.api == 'true' || github.event.inputs.deploy_all == 'true')
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
           node-version: 22
-      - run: npm install
+          cache: npm
+      - run: npm ci
       - run: cd api-dev && npx wrangler deploy
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
 
   deploy-web:
-    needs: [changes, audit, checks]
-    if: needs.changes.outputs.web == 'true' || github.event.inputs.deploy_all == 'true'
+    needs: [changes, checks]
+    if: github.event_name != 'pull_request' && (needs.changes.outputs.web == 'true' || github.event.inputs.deploy_all == 'true')
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
           node-version: 22
-      - run: npm install
+          cache: npm
+      - run: npm ci
       - run: cd web-platform-dev && npm run build
       - run: cd web-platform-dev && npx wrangler deploy
         env:
@@ -109,15 +132,17 @@ jobs:
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
 
   deploy-web-admin:
-    needs: [changes, audit, checks]
-    if: needs.changes.outputs.web-admin == 'true' || github.event.inputs.deploy_all == 'true'
+    needs: [changes, checks]
+    if: github.event_name != 'pull_request' && (needs.changes.outputs.web-admin == 'true' || github.event.inputs.deploy_all == 'true')
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
           node-version: 22
-      - run: npm install
+          cache: npm
+      - run: npm ci
       - run: cd web-admin-dev && npm run build
       - run: cd web-admin-dev && npx wrangler deploy
         env:
