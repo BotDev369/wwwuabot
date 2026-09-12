@@ -56,9 +56,9 @@ packages/ui/      Спільні React-компоненти Page Builder (@wwwua
 - Не внось конфігурацію `wrangler.toml`.
 
 ### Єдиний API-шлюз
-> Всі зовнішні REST-ендпоїнти — в `api-dev/`. Не створюй нові API в `bot/`, `web/`, `web-admin/`.
+> Всі зовнішні REST-ендпоїнти — в `api-dev/`. Не створюй нові API в `bot-dev/`, `web-platform-dev/`, `web-admin-dev/`.
 
-Винятки: webhook'и в `bot/`, тимчасові admin-ендпоїнти в `web-admin/`.
+Винятки: webhook'и в `bot-dev/`, тимчасові admin-ендпоїнти в `web-admin-dev/`.
 
 ### Межа між `web` і `web-admin` (тонкі оболонки)
 > Обидва — оболонки навколо спільного ядра. Ділити можна *логіку*, не *рішення*.
@@ -190,7 +190,7 @@ src/
 
 - **TypeScript strict**, 0 `any` (ESLint: `no-explicit-any` = `warn` → план `error`).
 - **ESLint + Prettier** у всіх 4 сервісах. Команди: `npm run lint`, `npm run typecheck`.
-- **Логування:** `bot/` — модуль `modules/logging/` (Queue). `api/` — `apiLog` з префіксом `[api]`. Не використовувати `console.log` у продакшн-коді.
+- **Логування:** `bot-dev/` — модуль `modules/logging/` (Queue). `api-dev/` — `apiLog` з префіксом `[api]`. Не використовувати `console.log` у продакшн-коді.
 - **Дата/час у D1:** `formatSqliteDatetime()` з `packages/shared/src/utils/datetime.ts`.
 - **CI/CD:** GitHub Actions + path filtering. Перед деплоєм в одній джобі `checks` виконуються `npm ci`, `npm audit --audit-level=critical`, `npm run lint`, `npm run typecheck`, `npm test` — будь-який збій блокує деплой усіх воркерів. Деплої воркерів стоять у черзі (`concurrency`), щоб старіший коміт не ліг поверх новішого. `pull_request` запускає лише гейти — деплой з PR неможливий. `GITHUB_TOKEN` має `contents: read`. Dependabot увімкнений.
 
