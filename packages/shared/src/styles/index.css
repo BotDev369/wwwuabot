@@ -52,3 +52,7 @@
 /* ── Reset + component classes ── */
 @import "./reset.css";
 @import "./components.css";
+
+/* ── Каркас сторінок спільного PageRenderer (page-layout/page-zone/drawer) ──
+   Імпортується зі shared, бо ці класи рендерить @wwwuabot/ui, а не оболонка. */
+@import "./page-layout.css";
