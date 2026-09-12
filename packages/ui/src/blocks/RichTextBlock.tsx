@@ -7,10 +7,10 @@
  * @module packages/ui/src/blocks/RichTextBlock
  */
 
-import type { BlockComponentProps } from '@wwwuabot/shared/types/page-config';
+import type { BlockComponentProps } from "@wwwuabot/shared/types/page-config";
 
 export function RichTextBlock({ block }: BlockComponentProps) {
-  const { html = '' } = block.props as { html?: string };
+  const { html = "" } = block.props as { html?: string };
 
   if (!html) return null;
 
@@ -18,8 +18,8 @@ export function RichTextBlock({ block }: BlockComponentProps) {
     <div
       className="wb-block-richtext wb-text-primary"
       style={{
-        lineHeight: 'var(--font-lineheight-3)',
-        wordBreak: 'break-word',
+        lineHeight: "var(--font-lineheight-3)",
+        wordBreak: "break-word",
       }}
       dangerouslySetInnerHTML={{ __html: html }}
     />

@@ -85,11 +85,7 @@ export function CompareSetupPage() {
                   >
                     {icons["arrow-down"]}
                   </button>
-                  <button
-                    className="wb-close-btn"
-                    onClick={() => remove(i)}
-                    aria-label="Видалити"
-                  >
+                  <button className="wb-close-btn" onClick={() => remove(i)} aria-label="Видалити">
                     {icons["close"]}
                   </button>
                 </span>

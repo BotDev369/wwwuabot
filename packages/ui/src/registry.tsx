@@ -7,8 +7,8 @@
  * @module packages/ui/src/registry
  */
 
-import type { ComponentType } from 'react';
-import type { BlockComponentProps } from '@wwwuabot/shared/types/page-config';
+import type { ComponentType } from "react";
+import type { BlockComponentProps } from "@wwwuabot/shared/types/page-config";
 
 // Тип компонента блоку
 export type BlockComponent = ComponentType<BlockComponentProps>;

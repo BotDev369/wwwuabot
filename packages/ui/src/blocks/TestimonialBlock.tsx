@@ -6,14 +6,14 @@
  * @module packages/ui/src/blocks/TestimonialBlock
  */
 
-import type { BlockComponentProps } from '@wwwuabot/shared/types/page-config';
+import type { BlockComponentProps } from "@wwwuabot/shared/types/page-config";
 
 export function TestimonialBlock({ block }: BlockComponentProps) {
   const {
-    text = '',
-    author = '',
-    role = '',
-    avatar = '',
+    text = "",
+    author = "",
+    role = "",
+    avatar = "",
     rating = 0,
   } = block.props as {
     text?: string;
@@ -27,24 +27,24 @@ export function TestimonialBlock({ block }: BlockComponentProps) {
     <div
       className="wb-block-testimonial"
       style={{
-        padding: 'var(--sp-5)',
-        background: 'var(--bg-1)',
-        border: '1px solid var(--border-subtle)',
-        borderRadius: 'var(--radius-lg)',
-        display: 'flex',
-        flexDirection: 'column',
-        gap: 'var(--sp-3)',
+        padding: "var(--sp-5)",
+        background: "var(--bg-1)",
+        border: "1px solid var(--border-subtle)",
+        borderRadius: "var(--radius-lg)",
+        display: "flex",
+        flexDirection: "column",
+        gap: "var(--sp-3)",
       }}
     >
       {/* Stars */}
       {rating > 0 && (
-        <div style={{ display: 'flex', gap: '2px' }}>
+        <div style={{ display: "flex", gap: "2px" }}>
           {Array.from({ length: 5 }, (_, i) => (
             <span
               key={i}
               style={{
-                color: i < Math.round(rating) ? 'var(--yellow)' : 'var(--border-subtle)',
-                fontSize: 'var(--text-lg)',
+                color: i < Math.round(rating) ? "var(--yellow)" : "var(--border-subtle)",
+                fontSize: "var(--text-lg)",
                 lineHeight: 1,
               }}
             >
@@ -58,8 +58,8 @@ export function TestimonialBlock({ block }: BlockComponentProps) {
       <p
         className="wb-text-primary"
         style={{
-          fontStyle: 'italic',
-          lineHeight: 'var(--font-lineheight-3)',
+          fontStyle: "italic",
+          lineHeight: "var(--font-lineheight-3)",
           margin: 0,
         }}
       >
@@ -67,26 +67,24 @@ export function TestimonialBlock({ block }: BlockComponentProps) {
       </p>
 
       {/* Author */}
-      <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--sp-3)' }}>
+      <div style={{ display: "flex", alignItems: "center", gap: "var(--sp-3)" }}>
         {avatar && (
           <img
             src={avatar}
             alt={author}
             style={{
-              width: '40px',
-              height: '40px',
-              borderRadius: 'var(--radius-full)',
-              objectFit: 'cover',
+              width: "40px",
+              height: "40px",
+              borderRadius: "var(--radius-full)",
+              objectFit: "cover",
             }}
           />
         )}
         <div>
-          <div className="wb-text-sm" style={{ fontWeight: 'var(--weight-semibold)' }}>
+          <div className="wb-text-sm" style={{ fontWeight: "var(--weight-semibold)" }}>
             {author}
           </div>
-          {role && (
-            <div className="wb-text-xs wb-text-secondary">{role}</div>
-          )}
+          {role && <div className="wb-text-xs wb-text-secondary">{role}</div>}
         </div>
       </div>
     </div>

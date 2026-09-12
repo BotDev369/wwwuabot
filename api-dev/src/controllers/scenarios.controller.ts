@@ -100,11 +100,7 @@ async function resolveScenario(db: D1Database, slug: string) {
 }
 
 // ── GET /api/scenario/:slug ─────────────────────────────────────────
-export async function handleScenario(
-  request: Request,
-  env: Env,
-  slug: string,
-): Promise<Response> {
+export async function handleScenario(request: Request, env: Env, slug: string): Promise<Response> {
   try {
     const { scenario, pageData } = await resolveScenario(env.DB, slug);
     return json({

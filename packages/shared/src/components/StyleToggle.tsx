@@ -50,13 +50,21 @@ export function useStyleTheme() {
 
   const setBrand = useCallback((b: Brand) => {
     setBrandState(b);
-    try { localStorage.setItem(BRAND_KEY, b); } catch { /* ignore */ }
+    try {
+      localStorage.setItem(BRAND_KEY, b);
+    } catch {
+      /* ignore */
+    }
     applyBrand(b);
   }, []);
 
   const setScheme = useCallback((s: Scheme) => {
     setSchemeState(s);
-    try { localStorage.setItem(THEME_KEY, s); } catch { /* ignore */ }
+    try {
+      localStorage.setItem(THEME_KEY, s);
+    } catch {
+      /* ignore */
+    }
     applyScheme(s);
   }, []);
 
@@ -118,7 +126,9 @@ export function ThemeButton({ compact = false }: { compact?: boolean }) {
     if (!open) return;
     const prev = document.body.style.overflow;
     document.body.style.overflow = "hidden";
-    return () => { document.body.style.overflow = prev; };
+    return () => {
+      document.body.style.overflow = prev;
+    };
   }, [open]);
 
   return (
@@ -132,9 +142,7 @@ export function ThemeButton({ compact = false }: { compact?: boolean }) {
           aria-label="Налаштування теми"
           className="sidebar-theme-btn"
         >
-          <span className="sidebar-nav-icon">
-            {isDark ? icons["moon"] : icons["sun"]}
-          </span>
+          <span className="sidebar-nav-icon">{isDark ? icons["moon"] : icons["sun"]}</span>
           <span className="sidebar-nav-label">Тема</span>
         </button>
       ) : (
@@ -145,9 +153,7 @@ export function ThemeButton({ compact = false }: { compact?: boolean }) {
           aria-label="Налаштування теми"
           style={btnBase}
         >
-          <span style={{ flexShrink: 0 }}>
-            {isDark ? icons["moon"] : icons["sun"]}
-          </span>
+          <span style={{ flexShrink: 0 }}>{isDark ? icons["moon"] : icons["sun"]}</span>
           <span>Тема</span>
         </button>
       )}
@@ -212,8 +218,12 @@ export function ThemeButton({ compact = false }: { compact?: boolean }) {
                           padding: "16px 12px",
                           borderRadius: "var(--radius-lg)",
                           cursor: "pointer",
-                          border: active ? "2px solid var(--accent)" : "2px solid var(--border-subtle)",
-                          background: active ? "var(--accent-dim, rgba(99,102,241,0.08))" : "var(--bg-2)",
+                          border: active
+                            ? "2px solid var(--accent)"
+                            : "2px solid var(--border-subtle)",
+                          background: active
+                            ? "var(--accent-dim, rgba(99,102,241,0.08))"
+                            : "var(--bg-2)",
                           transition: "all 0.15s",
                           width: "100%",
                         }}
@@ -232,7 +242,13 @@ export function ThemeButton({ compact = false }: { compact?: boolean }) {
                             transition: "all 0.15s",
                           }}
                         >
-                          {active ? icons["check"] : (b.icon ? <span>{b.icon}</span> : <span style={{ opacity: 0.5 }}>○</span>)}
+                          {active ? (
+                            icons["check"]
+                          ) : b.icon ? (
+                            <span>{b.icon}</span>
+                          ) : (
+                            <span style={{ opacity: 0.5 }}>○</span>
+                          )}
                         </span>
                         <span
                           style={{
@@ -250,7 +266,13 @@ export function ThemeButton({ compact = false }: { compact?: boolean }) {
               </div>
 
               {/* Divider */}
-              <div style={{ height: 1, background: "var(--border-subtle, var(--border))", margin: "0 0 20px" }} />
+              <div
+                style={{
+                  height: 1,
+                  background: "var(--border-subtle, var(--border))",
+                  margin: "0 0 20px",
+                }}
+              />
 
               {/* Dark / Light toggle */}
               <div

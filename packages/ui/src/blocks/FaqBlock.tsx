@@ -7,8 +7,8 @@
  * @module packages/ui/src/blocks/FaqBlock
  */
 
-import { useState, useCallback } from 'react';
-import type { BlockComponentProps } from '@wwwuabot/shared/types/page-config';
+import { useState, useCallback } from "react";
+import type { BlockComponentProps } from "@wwwuabot/shared/types/page-config";
 
 interface FaqItem {
   question: string;
@@ -16,10 +16,7 @@ interface FaqItem {
 }
 
 export function FaqBlock({ block }: BlockComponentProps) {
-  const {
-    items = [],
-    title = 'Часті питання',
-  } = block.props as {
+  const { items = [], title = "Часті питання" } = block.props as {
     items?: FaqItem[];
     title?: string;
   };
@@ -43,7 +40,10 @@ export function FaqBlock({ block }: BlockComponentProps) {
   return (
     <div className="wb-block-faq">
       {title && (
-        <h3 className="wb-block-faq__title wb-font-bold wb-mb-4" style={{ fontSize: 'var(--text-xl)' }}>
+        <h3
+          className="wb-block-faq__title wb-font-bold wb-mb-4"
+          style={{ fontSize: "var(--text-xl)" }}
+        >
           {title}
         </h3>
       )}
@@ -56,7 +56,7 @@ export function FaqBlock({ block }: BlockComponentProps) {
             key={i}
             className="wb-block-faq__item"
             style={{
-              borderBottom: '1px solid var(--border-subtle)',
+              borderBottom: "1px solid var(--border-subtle)",
             }}
           >
             <button
@@ -64,27 +64,27 @@ export function FaqBlock({ block }: BlockComponentProps) {
               onClick={() => toggle(i)}
               className="wb-block-faq__question"
               style={{
-                width: '100%',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'space-between',
-                padding: 'var(--sp-4) 0',
-                background: 'transparent',
-                border: 'none',
-                cursor: 'pointer',
-                textAlign: 'left',
-                fontWeight: 'var(--weight-semibold)',
-                fontSize: 'var(--text-base)',
-                color: 'var(--text-primary)',
-                gap: 'var(--sp-3)',
+                width: "100%",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "space-between",
+                padding: "var(--sp-4) 0",
+                background: "transparent",
+                border: "none",
+                cursor: "pointer",
+                textAlign: "left",
+                fontWeight: "var(--weight-semibold)",
+                fontSize: "var(--text-base)",
+                color: "var(--text-primary)",
+                gap: "var(--sp-3)",
               }}
             >
               <span>{item.question}</span>
               <span
                 style={{
-                  transition: 'transform var(--duration-fast) var(--ease)',
-                  transform: isOpen ? 'rotate(180deg)' : 'rotate(0)',
-                  color: 'var(--text-secondary)',
+                  transition: "transform var(--duration-fast) var(--ease)",
+                  transform: isOpen ? "rotate(180deg)" : "rotate(0)",
+                  color: "var(--text-secondary)",
                   flexShrink: 0,
                 }}
               >
@@ -96,9 +96,9 @@ export function FaqBlock({ block }: BlockComponentProps) {
               <div
                 className="wb-block-faq__answer wb-text-secondary"
                 style={{
-                  padding: '0 0 var(--sp-4) 0',
-                  fontSize: 'var(--text-sm)',
-                  lineHeight: 'var(--font-lineheight-3)',
+                  padding: "0 0 var(--sp-4) 0",
+                  fontSize: "var(--text-sm)",
+                  lineHeight: "var(--font-lineheight-3)",
                 }}
               >
                 {item.answer}

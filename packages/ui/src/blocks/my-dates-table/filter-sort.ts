@@ -99,11 +99,7 @@ function compareValues(a: string | number, b: string | number): number {
 }
 
 /** Сортування копії масиву за полем і напрямом. */
-export function sortDates(
-  dates: MyDate[],
-  sortField: SortField,
-  sortOrder: SortOrder,
-): MyDate[] {
+export function sortDates(dates: MyDate[], sortField: SortField, sortOrder: SortOrder): MyDate[] {
   const direction = sortOrder === "asc" ? 1 : -1;
   return [...dates].sort(
     (a, b) => compareValues(sortValue(a, sortField), sortValue(b, sortField)) * direction,

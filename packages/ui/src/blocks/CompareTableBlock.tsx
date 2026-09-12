@@ -135,7 +135,9 @@ export function CompareTableBlock({ block }: BlockComponentProps) {
         if (!cancelled) setLoading(false);
       });
 
-    return () => { cancelled = true; };
+    return () => {
+      cancelled = true;
+    };
   }, [dates, selectedSystems, selectedParams]);
 
   // Build rows
@@ -175,7 +177,11 @@ export function CompareTableBlock({ block }: BlockComponentProps) {
       </p>
 
       {loading && <p className="wb-text-sm wb-text-muted">Аналізуємо...</p>}
-      {error && <p className="wb-text-sm" style={{ color: "var(--color-danger, #ef4444)" }}>{error}</p>}
+      {error && (
+        <p className="wb-text-sm" style={{ color: "var(--color-danger, #ef4444)" }}>
+          {error}
+        </p>
+      )}
 
       {!loading && !error && (
         <div style={{ overflowX: "auto" }}>
@@ -221,7 +227,11 @@ export function CompareTableBlock({ block }: BlockComponentProps) {
               })}
               {rows.length === 0 && (
                 <tr>
-                  <td colSpan={dates.length + 1} className="wb-text-sm wb-text-muted" style={{ textAlign: "center", padding: "var(--sp-4)" }}>
+                  <td
+                    colSpan={dates.length + 1}
+                    className="wb-text-sm wb-text-muted"
+                    style={{ textAlign: "center", padding: "var(--sp-4)" }}
+                  >
                     Немає даних для відображення
                   </td>
                 </tr>
@@ -233,5 +243,3 @@ export function CompareTableBlock({ block }: BlockComponentProps) {
     </div>
   );
 }
-
-

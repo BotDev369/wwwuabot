@@ -8,7 +8,15 @@ import { PageBuilderInline } from "../../features/page-builder/PageBuilderInline
 
 // ── Icon helper ───────────────────────────────────────────────────
 const ico = (name: IconName, size = 16) => (
-  <span style={{ display: "inline-flex", alignItems: "center", width: size, height: size, flexShrink: 0 }}>
+  <span
+    style={{
+      display: "inline-flex",
+      alignItems: "center",
+      width: size,
+      height: size,
+      flexShrink: 0,
+    }}
+  >
     {icons[name]}
   </span>
 );
@@ -39,13 +47,16 @@ export function FullscreenBuilder({
   let cfg = createEmptyPageConfig();
   try {
     const raw = allFields.page_data;
-    const parsed = typeof raw === "string"
-      ? parsePageConfig(raw)
-      : typeof raw === "object" && raw !== null
-        ? (raw as PageConfig)
-        : null;
+    const parsed =
+      typeof raw === "string"
+        ? parsePageConfig(raw)
+        : typeof raw === "object" && raw !== null
+          ? (raw as PageConfig)
+          : null;
     if (parsed) cfg = parsed;
-  } catch { /* ignore */ }
+  } catch {
+    /* ignore */
+  }
 
   return (
     <div

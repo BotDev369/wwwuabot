@@ -10,10 +10,7 @@ import { createHash } from "crypto";
  *  1. Remove crossorigin attrs (CDN doesn't send CORS headers)
  *  2. Inject build hash so browsers never serve stale HTML */
 function fixHtml() {
-  const buildHash = createHash("md5")
-    .update(Date.now().toString())
-    .digest("hex")
-    .slice(0, 8);
+  const buildHash = createHash("md5").update(Date.now().toString()).digest("hex").slice(0, 8);
   return {
     name: "fix-html",
     enforce: "post",

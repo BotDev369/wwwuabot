@@ -74,9 +74,7 @@ const landingPage: PageTemplateConfig = {
             title: "Ваш заголовок",
             subtitle: "Опис вашої пропозиції",
             backgroundImage: "",
-            buttons: [
-              { text: "Дізнатися більше", url: "#features", variant: "primary" },
-            ],
+            buttons: [{ text: "Дізнатися більше", url: "#features", variant: "primary" }],
             align: "center",
           },
         },
@@ -237,9 +235,7 @@ const eventPage: PageTemplateConfig = {
 // ── Site Templates ───────────────────────────────────────────
 
 const blankSite: SiteTemplateConfig = {
-  pages: [
-    { slug: "home", title: "Головна", pageData: blankPage.pageData },
-  ],
+  pages: [{ slug: "home", title: "Головна", pageData: blankPage.pageData }],
   settings: { ...DEFAULT_SITE_SETTINGS },
 };
 
@@ -441,9 +437,7 @@ const businessSite: SiteTemplateConfig = {
                 title: "Назва Компанії",
                 subtitle: "Що ми робимо найкраще",
                 backgroundImage: "",
-                buttons: [
-                  { text: "Наші послуги", url: "#services", variant: "primary" },
-                ],
+                buttons: [{ text: "Наші послуги", url: "#services", variant: "primary" }],
                 align: "center",
               },
             },
@@ -566,18 +560,50 @@ const businessSite: SiteTemplateConfig = {
 
 /** Вбудовані page-шаблони. */
 export const SYSTEM_PAGE_TEMPLATES: Template[] = [
-  template("blank-page", "Порожня сторінка", "Чистий аркуш для творчості", "page", blankPage, ["blank"]),
-  template("landing-page", "Лендінг", "Hero + features + CTA", "page", landingPage, ["landing", "marketing"]),
-  template("business-card", "Візитка", "Контакти та посилання", "page", businessCardPage, ["contacts", "personal"]),
-  template("event-page", "Сторінка події", "Дата + опис + FAQ", "page", eventPage, ["event", "registration"]),
+  template("blank-page", "Порожня сторінка", "Чистий аркуш для творчості", "page", blankPage, [
+    "blank",
+  ]),
+  template("landing-page", "Лендінг", "Hero + features + CTA", "page", landingPage, [
+    "landing",
+    "marketing",
+  ]),
+  template("business-card", "Візитка", "Контакти та посилання", "page", businessCardPage, [
+    "contacts",
+    "personal",
+  ]),
+  template("event-page", "Сторінка події", "Дата + опис + FAQ", "page", eventPage, [
+    "event",
+    "registration",
+  ]),
 ];
 
 /** Вбудовані site-шаблони. */
 export const SYSTEM_SITE_TEMPLATES: Template[] = [
-  template("blank-site", "Порожній сайт", "Мінімальний сайт з однією сторінкою", "site", blankSite, ["blank", "starter"]),
-  template("portfolio", "Портфоліо", "Сайт-портфоліо: home + about + contacts", "site", portfolioSite, ["portfolio", "creative"]),
+  template(
+    "blank-site",
+    "Порожній сайт",
+    "Мінімальний сайт з однією сторінкою",
+    "site",
+    blankSite,
+    ["blank", "starter"],
+  ),
+  template(
+    "portfolio",
+    "Портфоліо",
+    "Сайт-портфоліо: home + about + contacts",
+    "site",
+    portfolioSite,
+    ["portfolio", "creative"],
+  ),
   template("blog", "Блог", "Простий блог: home + about", "site", blogSite, ["blog", "writing"]),
-  template("business", "Бізнес-сайт", "Корпоративний сайт: home + services + about + contacts", "site", businessSite, ["business", "corporate"]),
+  template(
+    "business",
+    "Бізнес-сайт",
+    "Корпоративний сайт: home + services + about + contacts",
+    "site",
+    businessSite,
+    ["business", "corporate"],
+  ),
 ];
 
 /** Всі вбудовані шаблони. */

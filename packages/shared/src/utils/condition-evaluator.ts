@@ -7,10 +7,7 @@
  * @module packages/shared/src/utils/condition-evaluator
  */
 
-import type {
-  BlockConditions,
-  UserProfile,
-} from '../types/page-config';
+import type { BlockConditions, UserProfile } from "../types/page-config";
 
 // ---------------------------------------------------------------------------
 // Основна функція
@@ -49,19 +46,19 @@ export function evaluateConditions(
 
   // Роль
   if (conditions.role && conditions.role.length > 0) {
-    const userRole = user.role ?? '';
+    const userRole = user.role ?? "";
     if (!conditions.role.includes(userRole)) return false;
   }
 
   // Тариф
   if (conditions.tariff && conditions.tariff.length > 0) {
-    const userTariff = user.tariff ?? '';
+    const userTariff = user.tariff ?? "";
     if (!conditions.tariff.includes(userTariff)) return false;
   }
 
   // Статус
   if (conditions.status && conditions.status.length > 0) {
-    const userStatus = user.status ?? '';
+    const userStatus = user.status ?? "";
     if (!conditions.status.includes(userStatus)) return false;
   }
 
@@ -99,12 +96,12 @@ export function evaluateConditions(
  * Наприклад: getByPath({ a: { b: 42 } }, "a.b") => 42
  */
 function getByPath(obj: Record<string, unknown>, path: string): unknown {
-  const parts = path.split('.');
+  const parts = path.split(".");
   let current: unknown = obj;
 
   for (const part of parts) {
     if (current === null || current === undefined) return undefined;
-    if (typeof current !== 'object') return undefined;
+    if (typeof current !== "object") return undefined;
     current = (current as Record<string, unknown>)[part];
   }
 
@@ -148,14 +145,24 @@ export function resolveBlock(
 export function getAvailableConditionFields(): {
   key: string;
   label: string;
-  type: 'select' | 'number' | 'permissions';
+  type: "select" | "number" | "permissions";
   options?: string[];
 }[] {
   return [
-    { key: 'role', label: 'Роль', type: 'select', options: ['user', 'moderator', 'admin', 'vip'] },
-    { key: 'tariff', label: 'Тариф', type: 'select', options: ['free', 'basic', 'pro', 'enterprise'] },
-    { key: 'status', label: 'Статус', type: 'select', options: ['active', 'pending', 'suspended'] },
-    { key: 'minDiscount', label: 'Мін. знижка (%)', type: 'number' },
-    { key: 'permissions', label: 'Дозволи', type: 'permissions', options: ['analytics', 'export', 'messaging', 'settings', 'users', 'billing'] },
+    { key: "role", label: "Роль", type: "select", options: ["user", "moderator", "admin", "vip"] },
+    {
+      key: "tariff",
+      label: "Тариф",
+      type: "select",
+      options: ["free", "basic", "pro", "enterprise"],
+    },
+    { key: "status", label: "Статус", type: "select", options: ["active", "pending", "suspended"] },
+    { key: "minDiscount", label: "Мін. знижка (%)", type: "number" },
+    {
+      key: "permissions",
+      label: "Дозволи",
+      type: "permissions",
+      options: ["analytics", "export", "messaging", "settings", "users", "billing"],
+    },
   ];
 }

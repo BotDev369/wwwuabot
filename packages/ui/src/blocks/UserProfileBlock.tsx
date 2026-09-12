@@ -7,7 +7,7 @@
  * @module packages/ui/src/blocks/UserProfileBlock
  */
 
-import type { BlockComponentProps } from '@wwwuabot/shared/types/page-config';
+import type { BlockComponentProps } from "@wwwuabot/shared/types/page-config";
 
 export function UserProfileBlock({ block, context }: BlockComponentProps) {
   const {
@@ -15,7 +15,7 @@ export function UserProfileBlock({ block, context }: BlockComponentProps) {
     showName = true,
     showUsername = true,
     showId = false,
-    layout = 'card',
+    layout = "card",
   } = block.props as {
     showAvatar?: boolean;
     showName?: boolean;
@@ -34,25 +34,28 @@ export function UserProfileBlock({ block, context }: BlockComponentProps) {
     );
   }
 
-  const displayName = [user.firstName, user.lastName].filter(Boolean).join(' ') || '—';
-  const avatarUrl = `https://t.me/i/userpic/320/${user.username || ''}`;
+  const displayName = [user.firstName, user.lastName].filter(Boolean).join(" ") || "—";
+  const avatarUrl = `https://t.me/i/userpic/320/${user.username || ""}`;
 
-  if (layout === 'compact') {
+  if (layout === "compact") {
     return (
-      <div className="wb-block-user-profile" style={{ display: 'flex', alignItems: 'center', gap: 'var(--sp-2)' }}>
+      <div
+        className="wb-block-user-profile"
+        style={{ display: "flex", alignItems: "center", gap: "var(--sp-2)" }}
+      >
         {showAvatar && user.username && (
           <img
             src={avatarUrl}
             alt=""
             style={{
-              width: '28px',
-              height: '28px',
-              borderRadius: 'var(--radius-full)',
-              objectFit: 'cover',
+              width: "28px",
+              height: "28px",
+              borderRadius: "var(--radius-full)",
+              objectFit: "cover",
             }}
           />
         )}
-        <span className="wb-text-sm" style={{ fontWeight: 'var(--weight-semibold)' }}>
+        <span className="wb-text-sm" style={{ fontWeight: "var(--weight-semibold)" }}>
           {showName && displayName}
         </span>
         {showUsername && user.username && (
@@ -62,29 +65,34 @@ export function UserProfileBlock({ block, context }: BlockComponentProps) {
     );
   }
 
-  if (layout === 'inline') {
+  if (layout === "inline") {
     return (
-      <div className="wb-block-user-profile" style={{ display: 'flex', alignItems: 'center', gap: 'var(--sp-3)' }}>
+      <div
+        className="wb-block-user-profile"
+        style={{ display: "flex", alignItems: "center", gap: "var(--sp-3)" }}
+      >
         {showAvatar && user.username && (
           <img
             src={avatarUrl}
             alt=""
             style={{
-              width: '40px',
-              height: '40px',
-              borderRadius: 'var(--radius-full)',
-              objectFit: 'cover',
+              width: "40px",
+              height: "40px",
+              borderRadius: "var(--radius-full)",
+              objectFit: "cover",
             }}
           />
         )}
         <div>
-          {showName && <div className="wb-text-sm" style={{ fontWeight: 'var(--weight-semibold)' }}>{displayName}</div>}
+          {showName && (
+            <div className="wb-text-sm" style={{ fontWeight: "var(--weight-semibold)" }}>
+              {displayName}
+            </div>
+          )}
           {showUsername && user.username && (
             <div className="wb-text-xs wb-text-secondary">@{user.username}</div>
           )}
-          {showId && (
-            <div className="wb-text-xs wb-text-muted">ID: {user.id}</div>
-          )}
+          {showId && <div className="wb-text-xs wb-text-muted">ID: {user.id}</div>}
         </div>
       </div>
     );
@@ -95,15 +103,15 @@ export function UserProfileBlock({ block, context }: BlockComponentProps) {
     <div
       className="wb-block-user-profile"
       style={{
-        padding: 'var(--sp-4)',
-        background: 'var(--bg-1)',
-        border: '1px solid var(--border-subtle)',
-        borderRadius: 'var(--radius-lg)',
-        display: 'flex',
-        flexDirection: 'column',
-        alignItems: 'center',
-        gap: 'var(--sp-3)',
-        textAlign: 'center',
+        padding: "var(--sp-4)",
+        background: "var(--bg-1)",
+        border: "1px solid var(--border-subtle)",
+        borderRadius: "var(--radius-lg)",
+        display: "flex",
+        flexDirection: "column",
+        alignItems: "center",
+        gap: "var(--sp-3)",
+        textAlign: "center",
       }}
     >
       {showAvatar && user.username && (
@@ -111,24 +119,22 @@ export function UserProfileBlock({ block, context }: BlockComponentProps) {
           src={avatarUrl}
           alt=""
           style={{
-            width: '64px',
-            height: '64px',
-            borderRadius: 'var(--radius-full)',
-            objectFit: 'cover',
+            width: "64px",
+            height: "64px",
+            borderRadius: "var(--radius-full)",
+            objectFit: "cover",
           }}
         />
       )}
       {showName && (
-        <div style={{ fontWeight: 'var(--weight-bold)', fontSize: 'var(--text-lg)' }}>
+        <div style={{ fontWeight: "var(--weight-bold)", fontSize: "var(--text-lg)" }}>
           {displayName}
         </div>
       )}
       {showUsername && user.username && (
         <div className="wb-text-sm wb-text-secondary">@{user.username}</div>
       )}
-      {showId && (
-        <div className="wb-text-xs wb-text-muted">ID: {user.id}</div>
-      )}
+      {showId && <div className="wb-text-xs wb-text-muted">ID: {user.id}</div>}
     </div>
   );
 }

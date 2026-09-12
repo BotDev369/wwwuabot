@@ -2,16 +2,24 @@
  * DateModal — модальне вікно для створення/редагування/перегляду дати.
  */
 
-import { useState, useMemo, useRef } from 'react';
-import { Link } from 'react-router-dom';
-import { icons, type IconName } from '@wwwuabot/shared';
-import type { MyDate } from '@/shared/api/mydate.api';
-import { type ModalMode, getTagColor, getTypeConfig, formatDate } from './mydate-types';
+import { useState, useMemo, useRef } from "react";
+import { Link } from "react-router-dom";
+import { icons, type IconName } from "@wwwuabot/shared";
+import type { MyDate } from "@/shared/api/mydate.api";
+import { type ModalMode, getTagColor, getTypeConfig, formatDate } from "./mydate-types";
 
 // ── Icon helper ───────────────────────────────────────────────────
 
 const ico = (name: IconName, size = 16) => (
-  <span style={{ display: 'inline-flex', alignItems: 'center', width: size, height: size, flexShrink: 0 }}>
+  <span
+    style={{
+      display: "inline-flex",
+      alignItems: "center",
+      width: size,
+      height: size,
+      flexShrink: 0,
+    }}
+  >
     {icons[name]}
   </span>
 );
@@ -39,12 +47,12 @@ export function DateModal({
   onDelete,
   onSwitchToEdit,
 }: DateModalProps) {
-  const [formDate, setFormDate] = useState(date?.date || '');
-  const [formType, setFormType] = useState(date?.type || 'person');
-  const [formName, setFormName] = useState(date?.name || '');
+  const [formDate, setFormDate] = useState(date?.date || "");
+  const [formType, setFormType] = useState(date?.type || "person");
+  const [formName, setFormName] = useState(date?.name || "");
   const [formTags, setFormTags] = useState<string[]>(date?.tags || []);
-  const [formNotes, setFormNotes] = useState(date?.notes || '');
-  const [tagInput, setTagInput] = useState('');
+  const [formNotes, setFormNotes] = useState(date?.notes || "");
+  const [tagInput, setTagInput] = useState("");
   const [showTagSuggestions, setShowTagSuggestions] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const tagInputRef = useRef<HTMLInputElement>(null);
@@ -62,7 +70,7 @@ export function DateModal({
     if (trimmed && !formTags.includes(trimmed)) {
       setFormTags([...formTags, trimmed]);
     }
-    setTagInput('');
+    setTagInput("");
     setShowTagSuggestions(false);
     tagInputRef.current?.focus();
   };
@@ -72,10 +80,10 @@ export function DateModal({
   };
 
   const handleTagKeyDown = (e: React.KeyboardEvent) => {
-    if (e.key === 'Enter') {
+    if (e.key === "Enter") {
       e.preventDefault();
       if (tagInput.trim()) addTag(tagInput);
-    } else if (e.key === 'Backspace' && !tagInput && formTags.length > 0) {
+    } else if (e.key === "Backspace" && !tagInput && formTags.length > 0) {
       setFormTags(formTags.slice(0, -1));
     }
   };
@@ -98,20 +106,20 @@ export function DateModal({
 
   const handleDelete = async () => {
     if (!date?.id) return;
-    if (!confirm('Видалити цю дату?')) return;
+    if (!confirm("Видалити цю дату?")) return;
     await onDelete(date.id);
   };
 
-  const isReadOnly = mode === 'view';
+  const isReadOnly = mode === "view";
 
   return (
     <div className="wb-modal-overlay" onClick={onClose}>
       <div className="wb-modal" onClick={(e) => e.stopPropagation()}>
         <div className="wb-modal-header">
           <h3>
-            {mode === 'create' && 'Нова дата'}
-            {mode === 'edit' && 'Редагувати дату'}
-            {mode === 'view' && (date?.name || formatDate(date?.date || ''))}
+            {mode === "create" && "Нова дата"}
+            {mode === "edit" && "Редагувати дату"}
+            {mode === "view" && (date?.name || formatDate(date?.date || ""))}
           </h3>
           <button className="wb-modal-close" onClick={onClose}>
             ×
@@ -133,17 +141,17 @@ export function DateModal({
           <div className="form-field">
             <label className="form-label">Тип</label>
             <div className="type-selector">
-              {['person', 'event', 'other'].map((t) => {
+              {["person", "event", "other"].map((t) => {
                 const cfg = getTypeConfig(t);
                 return (
                   <button
                     key={t}
                     type="button"
-                    className={`wb-btn wb-btn-sm ${formType === t ? 'wb-btn-primary' : 'wb-btn-secondary'}`}
+                    className={`wb-btn wb-btn-sm ${formType === t ? "wb-btn-primary" : "wb-btn-secondary"}`}
                     onClick={() => !isReadOnly && setFormType(t)}
                     disabled={isReadOnly}
                   >
-                    {ico(cfg.icon)} {t === 'person' ? 'Людина' : t === 'event' ? 'Подія' : 'Інше'}
+                    {ico(cfg.icon)} {t === "person" ? "Людина" : t === "event" ? "Подія" : "Інше"}
                   </button>
                 );
               })}
@@ -188,7 +196,7 @@ export function DateModal({
                     onFocus={() => setShowTagSuggestions(true)}
                     onBlur={() => setTimeout(() => setShowTagSuggestions(false), 150)}
                     onKeyDown={handleTagKeyDown}
-                    placeholder={formTags.length === 0 ? 'Додайте теги...' : ''}
+                    placeholder={formTags.length === 0 ? "Додайте теги..." : ""}
                     className="wb-input"
                   />
                   {showTagSuggestions && tagSuggestions.length > 0 && (
@@ -227,25 +235,29 @@ export function DateModal({
         </div>
 
         <div className="wb-modal-footer">
-          {mode === 'view' ? (
+          {mode === "view" ? (
             <>
               <Link
                 className="wb-btn wb-btn-sm wb-btn-analyze"
                 to={`/mydate/${date?.date}`}
                 onClick={onClose}
               >
-                {ico('compare')} Аналіз
+                {ico("compare")} Аналіз
               </Link>
               <button className="wb-btn wb-btn-secondary wb-btn-sm" onClick={onSwitchToEdit}>
-                {ico('edit')} Редагувати
+                {ico("edit")} Редагувати
               </button>
               <button className="wb-btn wb-btn-danger wb-btn-sm" onClick={handleDelete}>
-                {ico('trash')} Видалити
+                {ico("trash")} Видалити
               </button>
             </>
           ) : (
             <>
-              <button className="wb-btn wb-btn-secondary wb-btn-sm" onClick={onClose} disabled={submitting}>
+              <button
+                className="wb-btn wb-btn-secondary wb-btn-sm"
+                onClick={onClose}
+                disabled={submitting}
+              >
                 Скасувати
               </button>
               <button
@@ -253,7 +265,7 @@ export function DateModal({
                 onClick={handleSave}
                 disabled={!formDate || submitting}
               >
-                {submitting ? 'Зберігаємо...' : mode === 'create' ? 'Додати' : 'Зберегти'}
+                {submitting ? "Зберігаємо..." : mode === "create" ? "Додати" : "Зберегти"}
               </button>
             </>
           )}

@@ -329,7 +329,9 @@ body {
   color: var(--text-muted);
   font-size: 12px;
   cursor: pointer;
-  transition: background 0.1s, color 0.1s;
+  transition:
+    background 0.1s,
+    color 0.1s;
 }
 
 .main-header-logout:hover {
@@ -1020,7 +1022,12 @@ body {
   justify-content: center;
   gap: 22px;
   padding: clamp(32px, 7vh, 72px) clamp(28px, 6vw, 96px);
-  background: radial-gradient(120% 90% at 12% 0%, var(--surface) 0%, var(--bg-2) 55%, var(--bg-0) 100%);
+  background: radial-gradient(
+    120% 90% at 12% 0%,
+    var(--surface) 0%,
+    var(--bg-2) 55%,
+    var(--bg-0) 100%
+  );
 }
 
 /* Тематичний водяний знак — мій знак ✦, ледь помітний, без жодного руху */
@@ -2074,7 +2081,9 @@ body {
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: background 0.1s, color 0.1s;
+  transition:
+    background 0.1s,
+    color 0.1s;
 }
 
 .usr-menu-btn:hover {
@@ -2097,8 +2106,12 @@ body {
 }
 
 @keyframes usr-fade-in {
-  from { opacity: 0; }
-  to { opacity: 1; }
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
 }
 
 .usr-modal {
@@ -2113,8 +2126,14 @@ body {
 }
 
 @keyframes usr-slide-up {
-  from { transform: translateY(16px); opacity: 0; }
-  to { transform: none; opacity: 1; }
+  from {
+    transform: translateY(16px);
+    opacity: 0;
+  }
+  to {
+    transform: none;
+    opacity: 1;
+  }
 }
 
 .usr-modal-header {
@@ -2837,10 +2856,10 @@ body {
   border-radius: 24px;
   overflow: hidden;
   background: #0f0f23;
-  box-shadow: 0 4px 24px rgba(0,0,0,0.3);
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.3);
 }
 .phone-frame::before {
-  content: '';
+  content: "";
   display: block;
   width: 80px;
   height: 6px;
@@ -2897,7 +2916,9 @@ body {
   font-size: 12px;
   color: #888;
 }
-.phone-frame-body .page-zone-label { display: none; }
+.phone-frame-body .page-zone-label {
+  display: none;
+}
 /* Phone frame: sidebar displays in-flow without hiding */
 .phone-frame-body .page-hamburger,
 .phone-frame-body .page-hamburger--floating,
@@ -3003,7 +3024,6 @@ body {
   }
 }
 
-
 /* ═══ JSON textarea — ensure visibility on all themes ══════════════════════════ */
 .scn-modal textarea.wb-textarea,
 .scn-modal textarea[style*="monospace"] {
@@ -3026,12 +3046,11 @@ body {
     height: 100vh !important;
     max-height: 100vh !important;
   }
-  
+
   .scn-modal .wb-modal-footer {
     flex-shrink: 0;
   }
 }
-
 
 /* ═══ Mobile modal: grid layout to pin footer ══════════════════════════════════ */
 @media (max-width: 640px) {
@@ -3043,9 +3062,15 @@ body {
     max-height: 100dvh !important;
   }
 
-  .scn-modal .wb-modal-header { grid-row: 1; }
-  .scn-modal .scn-tabs { grid-row: 2; }
-  .scn-modal .scn-subtabs { grid-row: 3; }
+  .scn-modal .wb-modal-header {
+    grid-row: 1;
+  }
+  .scn-modal .scn-tabs {
+    grid-row: 2;
+  }
+  .scn-modal .scn-subtabs {
+    grid-row: 3;
+  }
 
   .scn-modal .wb-modal-body {
     grid-row: 4;
@@ -3077,8 +3102,12 @@ body {
 }
 
 @keyframes scn-fade-in {
-  from { opacity: 0; }
-  to { opacity: 1; }
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
 }
 
 .scn-fullscreen-builder .pb-zone-editor {

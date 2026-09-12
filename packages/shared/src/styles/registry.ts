@@ -43,10 +43,8 @@ export const BRANDS: BrandDefinition[] = [
     labelUk: "Material",
     icon: "",
     fontUi: '"Roboto", "Google Sans", system-ui, -apple-system, sans-serif',
-    fontDisplay:
-      '"Roboto", "Google Sans", system-ui, -apple-system, sans-serif',
-    fontMono:
-      '"Roboto Mono", "Google Sans Mono", "Courier New", ui-monospace, monospace',
+    fontDisplay: '"Roboto", "Google Sans", system-ui, -apple-system, sans-serif',
+    fontMono: '"Roboto Mono", "Google Sans Mono", "Courier New", ui-monospace, monospace',
   },
 ];
 

@@ -120,11 +120,11 @@ export function SaveActionButtons({
   // Якщо весь блок у стані фінального успіху
   if (success) {
     return (
-      <div
-        className={`wb-save-actions wb-save-actions--success ${className}`.trim()}
-        style={style}
-      >
-        <span className="usr-edit-success" style={{ fontWeight: 600, color: "var(--color-success, #22c55e)" }}>
+      <div className={`wb-save-actions wb-save-actions--success ${className}`.trim()} style={style}>
+        <span
+          className="usr-edit-success"
+          style={{ fontWeight: 600, color: "var(--color-success, #22c55e)" }}
+        >
           {successMessage}
         </span>
       </div>

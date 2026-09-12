@@ -683,8 +683,6 @@ main {
   background: var(--bg-4);
 }
 
-
-
 /* ─── Status ─────────────────────────────────────────────────────────────── */
 .status-text {
   margin-top: 24px;
@@ -786,7 +784,9 @@ main {
 }
 
 @keyframes spin {
-  to { transform: rotate(360deg); }
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 .page-not-found h1,
@@ -838,7 +838,9 @@ main {
     justify-content: center;
     cursor: pointer;
     flex-shrink: 0;
-    transition: background 0.15s ease, transform 0.1s ease;
+    transition:
+      background 0.15s ease,
+      transform 0.1s ease;
   }
 
   .page-hamburger:active {
@@ -1108,7 +1110,7 @@ main {
   justify-content: space-between;
   align-items: center;
   padding: 10px 0;
-  border-bottom: 1px solid var(--border-subtle, rgba(0,0,0,0.06));
+  border-bottom: 1px solid var(--border-subtle, rgba(0, 0, 0, 0.06));
 }
 
 .profile-field:last-child {

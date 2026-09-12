@@ -34,8 +34,7 @@ export function initTheme(): void {
 
     // ── Resolve scheme (light/dark only, no system) ──────────────────
     const raw = localStorage.getItem(THEME_KEY);
-    const scheme: "light" | "dark" =
-      raw === "light" || raw === "dark" ? raw : "dark";
+    const scheme: "light" | "dark" = raw === "light" || raw === "dark" ? raw : "dark";
     document.documentElement.setAttribute("data-theme", scheme);
   } catch {
     /* ignore — localStorage may be unavailable */

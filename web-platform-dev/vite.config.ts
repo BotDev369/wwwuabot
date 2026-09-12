@@ -8,10 +8,7 @@ import { createHash } from "crypto";
 
 /** Post-process HTML to remove crossorigin and add build hash for cache busting. */
 function fixHtml() {
-  const buildHash = createHash("md5")
-    .update(Date.now().toString())
-    .digest("hex")
-    .slice(0, 8);
+  const buildHash = createHash("md5").update(Date.now().toString()).digest("hex").slice(0, 8);
   return {
     name: "fix-html",
     enforce: "post",

@@ -6,7 +6,7 @@
  * @module packages/ui/src/blocks/FeatureCardBlock
  */
 
-import type { BlockComponentProps } from '@wwwuabot/shared/types/page-config';
+import type { BlockComponentProps } from "@wwwuabot/shared/types/page-config";
 
 interface FeatureItem {
   icon?: string;
@@ -15,7 +15,7 @@ interface FeatureItem {
 }
 
 export function FeatureCardBlock({ block }: BlockComponentProps) {
-  const { items = [], columns = '2' } = block.props as {
+  const { items = [], columns = "2" } = block.props as {
     items?: FeatureItem[];
     columns?: string;
   };
@@ -26,9 +26,9 @@ export function FeatureCardBlock({ block }: BlockComponentProps) {
     <div
       className="wb-block-features"
       style={{
-        display: 'grid',
+        display: "grid",
         gridTemplateColumns: `repeat(${columns}, 1fr)`,
-        gap: 'var(--sp-4)',
+        gap: "var(--sp-4)",
       }}
     >
       {items.map((item, i) => (
@@ -36,28 +36,28 @@ export function FeatureCardBlock({ block }: BlockComponentProps) {
           key={i}
           className="wb-block-features__card"
           style={{
-            padding: 'var(--sp-4)',
-            background: 'var(--bg-1)',
-            border: '1px solid var(--border-subtle)',
-            borderRadius: 'var(--radius-md)',
-            display: 'flex',
-            flexDirection: 'column',
-            gap: 'var(--sp-2)',
+            padding: "var(--sp-4)",
+            background: "var(--bg-1)",
+            border: "1px solid var(--border-subtle)",
+            borderRadius: "var(--radius-md)",
+            display: "flex",
+            flexDirection: "column",
+            gap: "var(--sp-2)",
           }}
         >
           {item.icon && (
             <span
               className="wb-block-features__icon"
               style={{
-                width: '40px',
-                height: '40px',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                borderRadius: 'var(--radius-md)',
-                background: 'var(--accent-dim)',
-                color: 'var(--accent)',
-                fontSize: 'var(--text-lg)',
+                width: "40px",
+                height: "40px",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                borderRadius: "var(--radius-md)",
+                background: "var(--accent-dim)",
+                color: "var(--accent)",
+                fontSize: "var(--text-lg)",
               }}
             >
               {item.icon}
@@ -67,7 +67,10 @@ export function FeatureCardBlock({ block }: BlockComponentProps) {
             {item.title}
           </h4>
           {item.description && (
-            <p className="wb-text-sm wb-text-secondary" style={{ margin: 0, lineHeight: 'var(--font-lineheight-3)' }}>
+            <p
+              className="wb-text-sm wb-text-secondary"
+              style={{ margin: 0, lineHeight: "var(--font-lineheight-3)" }}
+            >
               {item.description}
             </p>
           )}

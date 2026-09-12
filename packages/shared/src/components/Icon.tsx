@@ -21,7 +21,13 @@ export function Icon({ name, size = 16, className }: IconProps) {
   return (
     <span
       className={className}
-      style={{ display: "inline-flex", alignItems: "center", width: size, height: size, flexShrink: 0 }}
+      style={{
+        display: "inline-flex",
+        alignItems: "center",
+        width: size,
+        height: size,
+        flexShrink: 0,
+      }}
     >
       {icons[name]}
     </span>

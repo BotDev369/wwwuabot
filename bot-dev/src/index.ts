@@ -19,10 +19,7 @@ export default Sentry.withSentry<Env, LogMessage>(
   {
     fetch: handleRequest,
 
-    async queue(
-      batch: MessageBatch<LogMessage>,
-      env: Env,
-    ): Promise<void> {
+    async queue(batch: MessageBatch<LogMessage>, env: Env): Promise<void> {
       await handleQueue(batch, env);
     },
   },

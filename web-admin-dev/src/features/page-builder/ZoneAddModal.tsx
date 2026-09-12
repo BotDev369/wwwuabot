@@ -9,7 +9,15 @@ import { icons, type IconName } from "@wwwuabot/shared";
 // ── Icon helper ───────────────────────────────────────────────────
 
 const ico = (name: IconName, size = 16) => (
-  <span style={{ display: "inline-flex", alignItems: "center", width: size, height: size, flexShrink: 0 }}>
+  <span
+    style={{
+      display: "inline-flex",
+      alignItems: "center",
+      width: size,
+      height: size,
+      flexShrink: 0,
+    }}
+  >
     {icons[name]}
   </span>
 );
@@ -55,9 +63,7 @@ export function ZoneAddModal({ activeZones, onSelect, onClose }: ZoneAddModalPro
         style={{ maxWidth: 400, width: "100%" }}
       >
         <div className="wb-modal-header">
-          <span className="wb-modal-title">
-            {ico("layout")} Додати зону
-          </span>
+          <span className="wb-modal-title">{ico("layout")} Додати зону</span>
           <button className="wb-close-btn" onClick={onClose}>
             {icons["close"]}
           </button>
@@ -76,10 +82,16 @@ export function ZoneAddModal({ activeZones, onSelect, onClose }: ZoneAddModalPro
                   onClick={() => onSelect(zone)}
                   disabled={isActive}
                   style={{
-                    display: "flex", alignItems: "center", gap: 10, padding: "12px 16px",
-                    textAlign: "left", border: "1px solid var(--border)", borderRadius: 8,
+                    display: "flex",
+                    alignItems: "center",
+                    gap: 10,
+                    padding: "12px 16px",
+                    textAlign: "left",
+                    border: "1px solid var(--border)",
+                    borderRadius: 8,
                     background: isActive ? "var(--bg-secondary)" : "var(--bg-primary)",
-                    cursor: isActive ? "default" : "pointer", opacity: isActive ? 0.5 : 1,
+                    cursor: isActive ? "default" : "pointer",
+                    opacity: isActive ? 0.5 : 1,
                   }}
                 >
                   {ico(ZONE_ICONS[zone], 20)}

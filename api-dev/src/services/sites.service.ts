@@ -25,11 +25,7 @@ import type {
   PageMeta,
   CatalogSite,
 } from "@wwwuabot/shared/types/site";
-import {
-  toSite,
-  toSitePage,
-  toTemplate,
-} from "@wwwuabot/shared/types/site";
+import { toSite, toSitePage, toTemplate } from "@wwwuabot/shared/types/site";
 import {
   HOME_SLUG,
   DEFAULT_SITE_SETTINGS,
@@ -63,23 +59,17 @@ export async function ensureSitesTables(db: D1Database): Promise<void> {
     .catch(() => {});
 
   await db
-    .prepare(
-      `CREATE INDEX IF NOT EXISTS idx_sites_owner ON sites(owner_id)`,
-    )
+    .prepare(`CREATE INDEX IF NOT EXISTS idx_sites_owner ON sites(owner_id)`)
     .run()
     .catch(() => {});
 
   await db
-    .prepare(
-      `CREATE INDEX IF NOT EXISTS idx_sites_status ON sites(status)`,
-    )
+    .prepare(`CREATE INDEX IF NOT EXISTS idx_sites_status ON sites(status)`)
     .run()
     .catch(() => {});
 
   await db
-    .prepare(
-      `CREATE INDEX IF NOT EXISTS idx_sites_public ON sites(is_public, status)`,
-    )
+    .prepare(`CREATE INDEX IF NOT EXISTS idx_sites_public ON sites(is_public, status)`)
     .run()
     .catch(() => {});
 
@@ -104,16 +94,12 @@ export async function ensureSitesTables(db: D1Database): Promise<void> {
     .catch(() => {});
 
   await db
-    .prepare(
-      `CREATE UNIQUE INDEX IF NOT EXISTS idx_pages_slug ON site_pages(site_id, slug)`,
-    )
+    .prepare(`CREATE UNIQUE INDEX IF NOT EXISTS idx_pages_slug ON site_pages(site_id, slug)`)
     .run()
     .catch(() => {});
 
   await db
-    .prepare(
-      `CREATE INDEX IF NOT EXISTS idx_pages_site ON site_pages(site_id)`,
-    )
+    .prepare(`CREATE INDEX IF NOT EXISTS idx_pages_site ON site_pages(site_id)`)
     .run()
     .catch(() => {});
 
@@ -136,16 +122,12 @@ export async function ensureSitesTables(db: D1Database): Promise<void> {
     .catch(() => {});
 
   await db
-    .prepare(
-      `CREATE INDEX IF NOT EXISTS idx_templates_type ON templates(type, is_system)`,
-    )
+    .prepare(`CREATE INDEX IF NOT EXISTS idx_templates_type ON templates(type, is_system)`)
     .run()
     .catch(() => {});
 
   await db
-    .prepare(
-      `CREATE INDEX IF NOT EXISTS idx_templates_owner ON templates(owner_id)`,
-    )
+    .prepare(`CREATE INDEX IF NOT EXISTS idx_templates_owner ON templates(owner_id)`)
     .run()
     .catch(() => {});
 }
@@ -216,40 +198,25 @@ export async function createSite(
 }
 
 /** Отримує сайт за slug. */
-export async function getSiteBySlug(
-  db: D1Database,
-  slug: string,
-): Promise<Site | null> {
+export async function getSiteBySlug(db: D1Database, slug: string): Promise<Site | null> {
   await ensureSitesTables(db);
 
-  const row = await db
-    .prepare("SELECT * FROM sites WHERE slug = ?")
-    .bind(slug)
-    .first<SiteRow>();
+  const row = await db.prepare("SELECT * FROM sites WHERE slug = ?").bind(slug).first<SiteRow>();
 
   return row ? toSite(row) : null;
 }
 
 /** Отримує сайт за ID. */
-export async function getSiteById(
-  db: D1Database,
-  id: string,
-): Promise<Site | null> {
+export async function getSiteById(db: D1Database, id: string): Promise<Site | null> {
   await ensureSitesTables(db);
 
-  const row = await db
-    .prepare("SELECT * FROM sites WHERE id = ?")
-    .bind(id)
-    .first<SiteRow>();
+  const row = await db.prepare("SELECT * FROM sites WHERE id = ?").bind(id).first<SiteRow>();
 
   return row ? toSite(row) : null;
 }
 
 /** Отримує всі сайти власника. */
-export async function getSitesByOwner(
-  db: D1Database,
-  ownerId: number,
-): Promise<Site[]> {
+export async function getSitesByOwner(db: D1Database, ownerId: number): Promise<Site[]> {
   await ensureSitesTables(db);
 
   const result = await db
@@ -302,9 +269,7 @@ export async function updateSite(
   values.push(now);
 
   await db
-    .prepare(
-      `UPDATE sites SET ${updates.join(", ")} WHERE slug = ?`,
-    )
+    .prepare(`UPDATE sites SET ${updates.join(", ")} WHERE slug = ?`)
     .bind(...values, slug)
     .run();
 
@@ -312,26 +277,17 @@ export async function updateSite(
 }
 
 /** Видаляє сайт та всі його сторінки. */
-export async function deleteSite(
-  db: D1Database,
-  slug: string,
-): Promise<boolean> {
+export async function deleteSite(db: D1Database, slug: string): Promise<boolean> {
   await ensureSitesTables(db);
 
   const site = await getSiteBySlug(db, slug);
   if (!site) return false;
 
   // Видаляємо сторінки
-  await db
-    .prepare("DELETE FROM site_pages WHERE site_id = ?")
-    .bind(site.id)
-    .run();
+  await db.prepare("DELETE FROM site_pages WHERE site_id = ?").bind(site.id).run();
 
   // Видаляємо сайт
-  const result = await db
-    .prepare("DELETE FROM sites WHERE slug = ?")
-    .bind(slug)
-    .run();
+  const result = await db.prepare("DELETE FROM sites WHERE slug = ?").bind(slug).run();
 
   return (result.meta?.changes ?? 0) > 0;
 }
@@ -365,7 +321,9 @@ export async function createSitePage(
       siteId,
       data.slug,
       data.title,
-      JSON.stringify(data.pageData ?? { version: 1, zones: { sidebar: [], header: [], main: [], footer: [] } }),
+      JSON.stringify(
+        data.pageData ?? { version: 1, zones: { sidebar: [], header: [], main: [], footer: [] } },
+      ),
       data.orderIndex ?? 0,
       JSON.stringify(data.meta ?? {}),
       now,
@@ -378,7 +336,10 @@ export async function createSitePage(
     siteId,
     slug: data.slug,
     title: data.title,
-    pageData: (data.pageData ?? { version: 1, zones: { sidebar: [], header: [], main: [], footer: [] } }) as unknown as SitePage["pageData"],
+    pageData: (data.pageData ?? {
+      version: 1,
+      zones: { sidebar: [], header: [], main: [], footer: [] },
+    }) as unknown as SitePage["pageData"],
     orderIndex: data.orderIndex ?? 0,
     status: "draft",
     meta: data.meta,
@@ -404,10 +365,7 @@ export async function getSitePage(
 }
 
 /** Отримує сторінку за ID. */
-export async function getSitePageById(
-  db: D1Database,
-  pageId: string,
-): Promise<SitePage | null> {
+export async function getSitePageById(db: D1Database, pageId: string): Promise<SitePage | null> {
   await ensureSitesTables(db);
 
   const row = await db
@@ -419,10 +377,7 @@ export async function getSitePageById(
 }
 
 /** Отримує всі сторінки сайту. */
-export async function getSitePages(
-  db: D1Database,
-  siteId: string,
-): Promise<SitePage[]> {
+export async function getSitePages(db: D1Database, siteId: string): Promise<SitePage[]> {
   await ensureSitesTables(db);
 
   const result = await db
@@ -483,9 +438,7 @@ export async function updateSitePage(
   values.push(now);
 
   await db
-    .prepare(
-      `UPDATE site_pages SET ${updates.join(", ")} WHERE id = ?`,
-    )
+    .prepare(`UPDATE site_pages SET ${updates.join(", ")} WHERE id = ?`)
     .bind(...values, pageId)
     .run();
 
@@ -493,16 +446,10 @@ export async function updateSitePage(
 }
 
 /** Видаляє сторінку. */
-export async function deleteSitePage(
-  db: D1Database,
-  pageId: string,
-): Promise<boolean> {
+export async function deleteSitePage(db: D1Database, pageId: string): Promise<boolean> {
   await ensureSitesTables(db);
 
-  const result = await db
-    .prepare("DELETE FROM site_pages WHERE id = ?")
-    .bind(pageId)
-    .run();
+  const result = await db.prepare("DELETE FROM site_pages WHERE id = ?").bind(pageId).run();
 
   return (result.meta?.changes ?? 0) > 0;
 }
@@ -560,10 +507,7 @@ export async function createTemplate(
 }
 
 /** Отримує шаблон за ID. */
-export async function getTemplateById(
-  db: D1Database,
-  id: string,
-): Promise<Template | null> {
+export async function getTemplateById(db: D1Database, id: string): Promise<Template | null> {
   await ensureSitesTables(db);
 
   const row = await db
@@ -575,10 +519,7 @@ export async function getTemplateById(
 }
 
 /** Отримує всі шаблони (system + user). */
-export async function getTemplates(
-  db: D1Database,
-  userId?: number,
-): Promise<Template[]> {
+export async function getTemplates(db: D1Database, userId?: number): Promise<Template[]> {
   await ensureSitesTables(db);
 
   let result;
@@ -591,9 +532,7 @@ export async function getTemplates(
       .all<TemplateRow>();
   } else {
     result = await db
-      .prepare(
-        "SELECT * FROM templates WHERE is_system = 1 ORDER BY created_at DESC",
-      )
+      .prepare("SELECT * FROM templates WHERE is_system = 1 ORDER BY created_at DESC")
       .all<TemplateRow>();
   }
 
@@ -638,9 +577,7 @@ export async function updateTemplate(
   if (updates.length === 0) return template;
 
   await db
-    .prepare(
-      `UPDATE templates SET ${updates.join(", ")} WHERE id = ?`,
-    )
+    .prepare(`UPDATE templates SET ${updates.join(", ")} WHERE id = ?`)
     .bind(...values, id)
     .run();
 
@@ -648,19 +585,13 @@ export async function updateTemplate(
 }
 
 /** Видаляє шаблон (тільки свої, не system). */
-export async function deleteTemplate(
-  db: D1Database,
-  id: string,
-): Promise<boolean> {
+export async function deleteTemplate(db: D1Database, id: string): Promise<boolean> {
   await ensureSitesTables(db);
 
   const template = await getTemplateById(db, id);
   if (!template || template.isSystem) return false;
 
-  const result = await db
-    .prepare("DELETE FROM templates WHERE id = ?")
-    .bind(id)
-    .run();
+  const result = await db.prepare("DELETE FROM templates WHERE id = ?").bind(id).run();
 
   return (result.meta?.changes ?? 0) > 0;
 }
@@ -668,14 +599,11 @@ export async function deleteTemplate(
 // ── Moderation ───────────────────────────────────────────────
 
 /** Подати сайт на модерацію. */
-export async function submitSiteForModeration(
-  db: D1Database,
-  slug: string,
-): Promise<Site | null> {
+export async function submitSiteForModeration(db: D1Database, slug: string): Promise<Site | null> {
   await ensureSitesTables(db);
 
   const site = await getSiteBySlug(db, slug);
-  if (!site || site.status !== "draft" && site.status !== "rejected") return null;
+  if (!site || (site.status !== "draft" && site.status !== "rejected")) return null;
 
   const now = formatSqliteDatetime();
   await db
@@ -689,10 +617,7 @@ export async function submitSiteForModeration(
 }
 
 /** Зняти сайт з модерації (повернути в draft). */
-export async function unpublishSite(
-  db: D1Database,
-  slug: string,
-): Promise<Site | null> {
+export async function unpublishSite(db: D1Database, slug: string): Promise<Site | null> {
   await ensureSitesTables(db);
 
   const site = await getSiteBySlug(db, slug);
@@ -700,9 +625,7 @@ export async function unpublishSite(
 
   const now = formatSqliteDatetime();
   await db
-    .prepare(
-      "UPDATE sites SET status = 'draft', updated_at = ? WHERE slug = ?",
-    )
+    .prepare("UPDATE sites SET status = 'draft', updated_at = ? WHERE slug = ?")
     .bind(now, slug)
     .run();
 
@@ -710,10 +633,7 @@ export async function unpublishSite(
 }
 
 /** Схвалити публікацію (admin). */
-export async function approveSite(
-  db: D1Database,
-  slug: string,
-): Promise<Site | null> {
+export async function approveSite(db: D1Database, slug: string): Promise<Site | null> {
   await ensureSitesTables(db);
 
   const site = await getSiteBySlug(db, slug);
@@ -759,9 +679,7 @@ export async function rejectSite(
 }
 
 /** Отримує всі сайти на модерації (admin). */
-export async function getPendingSites(
-  db: D1Database,
-): Promise<Site[]> {
+export async function getPendingSites(db: D1Database): Promise<Site[]> {
   await ensureSitesTables(db);
 
   const result = await db
@@ -820,9 +738,7 @@ export async function getCatalogSites(
 
   // Отримуємо загальну кількість
   const countResult = await db
-    .prepare(
-      "SELECT COUNT(*) as c FROM sites WHERE status = 'published' AND is_public = 1",
-    )
+    .prepare("SELECT COUNT(*) as c FROM sites WHERE status = 'published' AND is_public = 1")
     .first<{ c: number }>();
   const total = countResult?.c ?? 0;
 
@@ -853,9 +769,7 @@ export async function getCatalogSiteBySlug(
   await ensureSitesTables(db);
 
   const row = await db
-    .prepare(
-      "SELECT * FROM sites WHERE slug = ? AND status = 'published' AND is_public = 1",
-    )
+    .prepare("SELECT * FROM sites WHERE slug = ? AND status = 'published' AND is_public = 1")
     .bind(slug)
     .first<SiteRow>();
 

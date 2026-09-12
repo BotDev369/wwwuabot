@@ -23,21 +23,21 @@
 [data-brand="android"]:root {
   /* ── Backgrounds: M3 surface containers — more stepped than Apple ─────── */
   --bg-home: radial-gradient(120% 90% at 12% 0%, #ffffff 0%, var(--bg-2) 55%, var(--bg-0) 100%);
-  --bg-0: #f0f0f4;           /* surface-container-lowest — slight cool tint */
-  --bg-1: var(--bg-home, #f0f0f4);            /* surface */
-  --bg-2: #ededf0;           /* surface-container-low */
-  --bg-3: #e4e4e8;           /* surface-container */
-  --bg-4: #dcdce0;           /* surface-container-high */
+  --bg-0: #f0f0f4; /* surface-container-lowest — slight cool tint */
+  --bg-1: var(--bg-home, #f0f0f4); /* surface */
+  --bg-2: #ededf0; /* surface-container-low */
+  --bg-3: #e4e4e8; /* surface-container */
+  --bg-4: #dcdce0; /* surface-container-high */
 
   /* ── Borders: thicker, more visible than Apple ─────────────────────────── */
   --border: #b0b0b8;
   --border-subtle: #c8c8d0;
 
   /* ── Text: M3 type roles ──────────────────────────────────────────────── */
-  --text-primary: #1c1b1f;       /* on-surface */
-  --text-secondary: #44464f;     /* on-surface-variant */
-  --text-muted: #74777f;         /* outline */
-  --text-inverse: #ffffff;       /* on-surface (inverted) */
+  --text-primary: #1c1b1f; /* on-surface */
+  --text-secondary: #44464f; /* on-surface-variant */
+  --text-muted: #74777f; /* outline */
+  --text-inverse: #ffffff; /* on-surface (inverted) */
 
   /* ── Accent: slightly warm gray, not pure black ────────────────────────── */
   --accent: #1c1b1f;
@@ -65,13 +65,13 @@
   --font-display: "Roboto", "Google Sans", system-ui, -apple-system, sans-serif;
 
   /* ── Text sizes: M3 type scale — smaller base than Apple ───────────────── */
-  --text-xs: 0.6875rem;     /* 11px — M3 label small */
-  --text-sm: 0.8125rem;     /* 13px — M3 label medium */
-  --text-base: 0.875rem;    /* 14px — M3 body medium */
-  --text-md: 1rem;          /* 16px — M3 body large */
-  --text-lg: 1.125rem;      /* 18px — M3 title medium */
-  --text-xl: 1.375rem;      /* 22px — M3 title large */
-  --text-2xl: 1.75rem;      /* 28px — M3 headline medium */
+  --text-xs: 0.6875rem; /* 11px — M3 label small */
+  --text-sm: 0.8125rem; /* 13px — M3 label medium */
+  --text-base: 0.875rem; /* 14px — M3 body medium */
+  --text-md: 1rem; /* 16px — M3 body large */
+  --text-lg: 1.125rem; /* 18px — M3 title medium */
+  --text-xl: 1.375rem; /* 22px — M3 title large */
+  --text-2xl: 1.75rem; /* 28px — M3 headline medium */
 
   --leading-tight: 1.25;
   --leading-normal: 1.5;
@@ -138,12 +138,17 @@
 
 [data-brand="android"][data-theme="dark"] {
   /* ── Backgrounds: M3 dark surface containers ─────────────────────────── */
-  --bg-home: radial-gradient(120% 90% at 12% 0%, var(--surface) 0%, var(--bg-2) 55%, var(--bg-0) 100%);
-  --bg-0: #0f1013;           /* surface-container-lowest */
-  --bg-1: #1b1b1f;           /* surface */
-  --bg-2: #202024;           /* surface-container-low */
-  --bg-3: #2a2a2e;           /* surface-container */
-  --bg-4: #353538;           /* surface-container-high */
+  --bg-home: radial-gradient(
+    120% 90% at 12% 0%,
+    var(--surface) 0%,
+    var(--bg-2) 55%,
+    var(--bg-0) 100%
+  );
+  --bg-0: #0f1013; /* surface-container-lowest */
+  --bg-1: #1b1b1f; /* surface */
+  --bg-2: #202024; /* surface-container-low */
+  --bg-3: #2a2a2e; /* surface-container */
+  --bg-4: #353538; /* surface-container-high */
 
   /* ── Borders ──────────────────────────────────────────────────────────── */
   --border: #44464f;

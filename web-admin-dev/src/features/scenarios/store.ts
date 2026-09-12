@@ -1,5 +1,9 @@
 import { create } from "zustand";
-import { listScenarios, type ScenarioListRow, type ScenarioTable } from "../../shared/api/scenarios.api";
+import {
+  listScenarios,
+  type ScenarioListRow,
+  type ScenarioTable,
+} from "../../shared/api/scenarios.api";
 
 export type ScenariosStatus = "idle" | "loading" | "refreshing" | "error";
 export type ScenariosSortField = "codeword" | "rich_message" | "updated_at";

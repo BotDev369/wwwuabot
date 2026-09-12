@@ -28,10 +28,10 @@ export async function readScenario(
   table: ScenarioTable,
 ): Promise<ScenarioRow | null> {
   const prefix = API_PREFIX[table];
-  const res = await apiFetch<{ success: boolean; data: ScenarioRow | null }>(
-    `${prefix}/read`,
-    { method: "POST", body: JSON.stringify({ codeword }) },
-  );
+  const res = await apiFetch<{ success: boolean; data: ScenarioRow | null }>(`${prefix}/read`, {
+    method: "POST",
+    body: JSON.stringify({ codeword }),
+  });
   return res.data;
 }
 

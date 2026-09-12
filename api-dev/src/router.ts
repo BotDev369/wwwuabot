@@ -1,11 +1,26 @@
 import type { Env } from "./shared/types";
 import { decodePathSegment } from "./shared/url";
 import { handleHealth, handleDeepHealth } from "./controllers/health.controller";
-import { handleAnalyze, handleAnalysisRead, handleSystems, handleCompare } from "./controllers/astrology.controller";
+import {
+  handleAnalyze,
+  handleAnalysisRead,
+  handleSystems,
+  handleCompare,
+} from "./controllers/astrology.controller";
 import { handleScenario } from "./controllers/scenarios.controller";
 import { handleMyDates } from "./controllers/my-dates.controller";
-import { handleWebhookInfo as handleBotWebhookInfo, handleSetupWebhook as handleBotSetupWebhook, handleDeleteWebhook, handleBotInfo } from "./controllers/bot-settings.controller";
-import { handleLogin, handleLogout, handleAuthCheck as handleCookieAuthCheck, isAuthenticated } from "./controllers/auth.controller";
+import {
+  handleWebhookInfo as handleBotWebhookInfo,
+  handleSetupWebhook as handleBotSetupWebhook,
+  handleDeleteWebhook,
+  handleBotInfo,
+} from "./controllers/bot-settings.controller";
+import {
+  handleLogin,
+  handleLogout,
+  handleAuthCheck as handleCookieAuthCheck,
+  isAuthenticated,
+} from "./controllers/auth.controller";
 import {
   handleRead as handleScenarioAdminRead,
   handleWrite as handleScenarioAdminWrite,
@@ -55,10 +70,7 @@ import {
   handleUpdateTemplate,
   handleDeleteTemplate,
 } from "./controllers/templates.controller";
-import {
-  handleCatalogList,
-  handleCatalogSite,
-} from "./controllers/catalog.controller";
+import { handleCatalogList, handleCatalogSite } from "./controllers/catalog.controller";
 import {
   handlePendingSites,
   handleAllSites,
@@ -76,20 +88,13 @@ import {
  * і стане публічним мовчки (див. AGENTS.md §7). Межу перевіряє
  * `router.test.ts`.
  */
-export const ADMIN_PATH_PREFIXES = [
-  "/api/admin/",
-  "/api/portal/",
-  "/api/bot/",
-] as const;
+export const ADMIN_PATH_PREFIXES = ["/api/admin/", "/api/portal/", "/api/bot/"] as const;
 
 /**
  * Central router for the API worker.
  * Maps incoming requests to the appropriate controller.
  */
-export async function handleRequest(
-  request: Request,
-  env: Env,
-): Promise<Response> {
+export async function handleRequest(request: Request, env: Env): Promise<Response> {
   const url = new URL(request.url);
   const { pathname } = url;
 

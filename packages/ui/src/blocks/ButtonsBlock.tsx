@@ -6,7 +6,7 @@
  * @module packages/ui/src/blocks/ButtonsBlock
  */
 
-import type { BlockComponentProps } from '@wwwuabot/shared/types/page-config';
+import type { BlockComponentProps } from "@wwwuabot/shared/types/page-config";
 
 interface ButtonItem {
   text: string;
@@ -17,14 +17,14 @@ interface ButtonItem {
 }
 
 const VARIANT_CLASS: Record<string, string> = {
-  primary: 'wb-btn wb-btn-primary',
-  secondary: 'wb-btn wb-btn-secondary',
-  outline: 'wb-btn',
-  ghost: 'wb-btn wb-btn-ghost',
+  primary: "wb-btn wb-btn-primary",
+  secondary: "wb-btn wb-btn-secondary",
+  outline: "wb-btn",
+  ghost: "wb-btn wb-btn-ghost",
 };
 
 export function ButtonsBlock({ block }: BlockComponentProps) {
-  const { items = [], layout = 'row' } = block.props as {
+  const { items = [], layout = "row" } = block.props as {
     items?: ButtonItem[];
     layout?: string;
   };
@@ -35,18 +35,16 @@ export function ButtonsBlock({ block }: BlockComponentProps) {
     <div
       className="wb-block-buttons"
       style={{
-        display: 'flex',
-        flexDirection: layout === 'column' ? 'column' : 'row',
-        flexWrap: layout === 'row' ? 'wrap' : undefined,
-        gap: 'var(--sp-2)',
-        justifyContent: layout === 'grid' ? 'center' : undefined,
+        display: "flex",
+        flexDirection: layout === "column" ? "column" : "row",
+        flexWrap: layout === "row" ? "wrap" : undefined,
+        gap: "var(--sp-2)",
+        justifyContent: layout === "grid" ? "center" : undefined,
       }}
     >
       {items.map((btn, i) => {
-        const className = VARIANT_CLASS[btn.variant ?? 'primary'] ?? 'wb-btn wb-btn-primary';
-        const style = layout === 'grid'
-          ? { flex: '1 1 0', justifyContent: 'center' }
-          : {};
+        const className = VARIANT_CLASS[btn.variant ?? "primary"] ?? "wb-btn wb-btn-primary";
+        const style = layout === "grid" ? { flex: "1 1 0", justifyContent: "center" } : {};
 
         if (btn.url) {
           return (

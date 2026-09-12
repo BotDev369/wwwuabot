@@ -6,7 +6,7 @@
  * @module packages/ui/src/blocks/SelectBlock
  */
 
-import type { BlockComponentProps } from '@wwwuabot/shared/types/page-config';
+import type { BlockComponentProps } from "@wwwuabot/shared/types/page-config";
 
 interface SelectOption {
   value: string;
@@ -15,11 +15,11 @@ interface SelectOption {
 
 export function SelectBlock({ block }: BlockComponentProps) {
   const {
-    label = '',
+    label = "",
     options = [],
-    placeholder = 'Оберіть...',
+    placeholder = "Оберіть...",
     required = false,
-    name = '',
+    name = "",
   } = block.props as {
     label?: string;
     options?: SelectOption[];
@@ -29,11 +29,14 @@ export function SelectBlock({ block }: BlockComponentProps) {
   };
 
   return (
-    <div className="wb-block-select" style={{ display: 'flex', flexDirection: 'column', gap: 'var(--sp-1)' }}>
+    <div
+      className="wb-block-select"
+      style={{ display: "flex", flexDirection: "column", gap: "var(--sp-1)" }}
+    >
       {label && (
         <label className="wb-label" htmlFor={name || undefined}>
           {label}
-          {required && <span style={{ color: 'var(--red)', marginLeft: '2px' }}>*</span>}
+          {required && <span style={{ color: "var(--red)", marginLeft: "2px" }}>*</span>}
         </label>
       )}
       <select
@@ -42,7 +45,7 @@ export function SelectBlock({ block }: BlockComponentProps) {
         name={name || undefined}
         id={name || undefined}
         data-block-field={name || undefined}
-        style={{ width: '100%' }}
+        style={{ width: "100%" }}
       >
         <option value="" disabled>
           {placeholder}

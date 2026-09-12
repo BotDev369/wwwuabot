@@ -38,10 +38,7 @@ function json(data: unknown, status = 200): Response {
 // ── Handlers ─────────────────────────────────────────────────
 
 /** GET /api/admin/sites/pending — черга модерації. */
-export async function handlePendingSites(
-  request: Request,
-  env: Env,
-): Promise<Response> {
+export async function handlePendingSites(request: Request, env: Env): Promise<Response> {
   try {
     const sites = await getPendingSites(env.DB);
     return json({ success: true, sites });
@@ -52,10 +49,7 @@ export async function handlePendingSites(
 }
 
 /** GET /api/admin/sites — всі сайти (з фільтрами). */
-export async function handleAllSites(
-  request: Request,
-  env: Env,
-): Promise<Response> {
+export async function handleAllSites(request: Request, env: Env): Promise<Response> {
   const url = new URL(request.url);
   const status = url.searchParams.get("status") as SiteStatus | null;
   const ownerId = url.searchParams.get("owner_id");
@@ -118,10 +112,7 @@ export async function handleRejectSite(
 }
 
 /** POST /api/admin/templates — створити system шаблон. */
-export async function handleCreateSystemTemplate(
-  request: Request,
-  env: Env,
-): Promise<Response> {
+export async function handleCreateSystemTemplate(request: Request, env: Env): Promise<Response> {
   let body: {
     name?: string;
     description?: string;
@@ -153,11 +144,7 @@ export async function handleCreateSystemTemplate(
     });
 
     // Позначаємо як system
-    await env.DB.prepare(
-      "UPDATE templates SET is_system = 1 WHERE id = ?",
-    )
-      .bind(template.id)
-      .run();
+    await env.DB.prepare("UPDATE templates SET is_system = 1 WHERE id = ?").bind(template.id).run();
 
     return json({ success: true, template: { ...template, isSystem: true } }, 201);
   } catch (e: unknown) {

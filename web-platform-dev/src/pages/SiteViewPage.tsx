@@ -37,7 +37,9 @@ export function SiteViewPage() {
         if (!cancelled) setLoading(false);
       }
     })();
-    return () => { cancelled = true; };
+    return () => {
+      cancelled = true;
+    };
   }, [slug]);
 
   if (loading) {
@@ -59,11 +61,5 @@ export function SiteViewPage() {
     );
   }
 
-  return (
-    <SiteRenderer
-      site={site}
-      pages={pages}
-      mode="public"
-    />
-  );
+  return <SiteRenderer site={site} pages={pages} mode="public" />;
 }

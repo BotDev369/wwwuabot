@@ -233,9 +233,7 @@ export function DateAnalysisBlock({ block }: BlockComponentProps) {
         ))}
       </div>
 
-      {systems === null && (
-        <p className="wb-text-sm wb-text-muted">Завантажуємо системи...</p>
-      )}
+      {systems === null && <p className="wb-text-sm wb-text-muted">Завантажуємо системи...</p>}
     </div>
   );
 }

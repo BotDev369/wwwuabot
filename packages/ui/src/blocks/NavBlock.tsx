@@ -36,11 +36,7 @@ const SPACING_MAP: Record<string, number> = {
   xl: 24,
 };
 
-function parseValue(
-  val: unknown,
-  map: Record<string, number>,
-  fallback: number,
-): number {
+function parseValue(val: unknown, map: Record<string, number>, fallback: number): number {
   if (typeof val === "number") return val;
   if (typeof val === "string") {
     if (val in map) return map[val];
@@ -202,9 +198,7 @@ export function NavBlock({ block, zone, context }: BlockComponentProps) {
                 {icons[iconKey]}
               </span>
             ) : item.icon ? (
-              <span style={{ fontSize: resolvedFontSize, flexShrink: 0 }}>
-                {item.icon}
-              </span>
+              <span style={{ fontSize: resolvedFontSize, flexShrink: 0 }}>{item.icon}</span>
             ) : null}
             <span>{item.text}</span>
           </>
@@ -212,12 +206,7 @@ export function NavBlock({ block, zone, context }: BlockComponentProps) {
 
         if (item.url) {
           return (
-            <a
-              key={i}
-              href={item.url}
-              className="wb-block-nav__link"
-              style={itemStyle}
-            >
+            <a key={i} href={item.url} className="wb-block-nav__link" style={itemStyle}>
               {content}
             </a>
           );

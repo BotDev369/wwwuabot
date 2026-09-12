@@ -24,16 +24,10 @@ interface TemplatePickerProps {
 
 // ── Component ────────────────────────────────────────────────
 
-export function TemplatePicker({
-  selected,
-  onSelect,
-  typeFilter,
-}: TemplatePickerProps) {
+export function TemplatePicker({ selected, onSelect, typeFilter }: TemplatePickerProps) {
   const [templates, setTemplates] = useState<Template[]>([]);
   const [loading, setLoading] = useState(true);
-  const [activeType, setActiveType] = useState<TemplateType | "all">(
-    typeFilter ?? "all",
-  );
+  const [activeType, setActiveType] = useState<TemplateType | "all">(typeFilter ?? "all");
 
   useEffect(() => {
     let cancelled = false;
@@ -51,12 +45,12 @@ export function TemplatePicker({
         if (!cancelled) setLoading(false);
       }
     })();
-    return () => { cancelled = true; };
+    return () => {
+      cancelled = true;
+    };
   }, []);
 
-  const filtered = templates.filter(
-    (t) => activeType === "all" || t.type === activeType,
-  );
+  const filtered = templates.filter((t) => activeType === "all" || t.type === activeType);
 
   return (
     <div className="template-picker">
@@ -71,9 +65,7 @@ export function TemplatePicker({
           {(["all", "site", "page"] as const).map((t) => (
             <button
               key={t}
-              className={`wb-btn wb-btn-sm ${
-                activeType === t ? "wb-btn-primary" : "wb-btn-ghost"
-              }`}
+              className={`wb-btn wb-btn-sm ${activeType === t ? "wb-btn-primary" : "wb-btn-ghost"}`}
               onClick={() => setActiveType(t)}
             >
               {t === "all" ? "Всі" : t === "site" ? "Сайти" : "Сторінки"}
@@ -84,12 +76,23 @@ export function TemplatePicker({
 
       {/* Завантаження */}
       {loading && (
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(200px, 1fr))", gap: "var(--sp-3)" }}>
+        <div
+          style={{
+            display: "grid",
+            gridTemplateColumns: "repeat(auto-fill, minmax(200px, 1fr))",
+            gap: "var(--sp-3)",
+          }}
+        >
           {[1, 2, 3, 4].map((i) => (
             <div
               key={i}
               className="wb-card"
-              style={{ height: 160, display: "flex", alignItems: "center", justifyContent: "center" }}
+              style={{
+                height: 160,
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+              }}
             >
               <div className="wb-skeleton" style={{ width: 80, height: 20 }} />
             </div>
@@ -195,7 +198,9 @@ function TemplateCard({
             {isBlank ? "З нуля" : template.name}
           </span>
           {!isBlank && (
-            <span className={`wb-badge ${template.type === "site" ? "wb-badge-green" : "wb-badge-neutral"}`}>
+            <span
+              className={`wb-badge ${template.type === "site" ? "wb-badge-green" : "wb-badge-neutral"}`}
+            >
               {template.type === "site" ? "Сайт" : "Сторінка"}
             </span>
           )}
@@ -208,7 +213,14 @@ function TemplateCard({
         )}
 
         {!isBlank && template.tags.length > 0 && (
-          <div style={{ display: "flex", gap: "var(--sp-1)", marginTop: "var(--sp-2)", flexWrap: "wrap" }}>
+          <div
+            style={{
+              display: "flex",
+              gap: "var(--sp-1)",
+              marginTop: "var(--sp-2)",
+              flexWrap: "wrap",
+            }}
+          >
             {template.tags.slice(0, 3).map((tag) => (
               <span key={tag} className="wb-badge wb-badge-neutral wb-text-xs">
                 {tag}

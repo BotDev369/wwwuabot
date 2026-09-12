@@ -17,11 +17,5 @@
 
 import { createScenariosController } from "./scenarios.controller.factory";
 
-export const {
-  handleRead,
-  handleWrite,
-  handleList,
-  handleReadAll,
-  handleUpdate,
-  handleDelete,
-} = createScenariosController({ table: "scenarios" });
+export const { handleRead, handleWrite, handleList, handleReadAll, handleUpdate, handleDelete } =
+  createScenariosController({ table: "scenarios" });

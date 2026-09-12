@@ -33,9 +33,7 @@ export function TemplatesPage() {
       if (data.success) {
         // Merge system + server templates (deduplicate by id)
         const systemIds = new Set(ALL_SYSTEM_TEMPLATES.map((t) => t.id));
-        const serverOnly = (data.templates ?? []).filter(
-          (t: Template) => !systemIds.has(t.id),
-        );
+        const serverOnly = (data.templates ?? []).filter((t: Template) => !systemIds.has(t.id));
         setTemplates([...ALL_SYSTEM_TEMPLATES, ...serverOnly]);
       }
     } catch (e) {
@@ -90,9 +88,7 @@ export function TemplatesPage() {
     }
   };
 
-  const filtered = typeFilter
-    ? templates.filter((t) => t.type === typeFilter)
-    : templates;
+  const filtered = typeFilter ? templates.filter((t) => t.type === typeFilter) : templates;
 
   return (
     <>
@@ -105,7 +101,14 @@ export function TemplatesPage() {
 
       <div style={{ padding: "var(--sp-5)", maxWidth: 1200, margin: "0 auto" }}>
         {/* Фільтри та створення */}
-        <div style={{ display: "flex", gap: "var(--sp-2)", marginBottom: "var(--sp-4)", alignItems: "center" }}>
+        <div
+          style={{
+            display: "flex",
+            gap: "var(--sp-2)",
+            marginBottom: "var(--sp-4)",
+            alignItems: "center",
+          }}
+        >
           {(["", "site", "page"] as TypeFilter[]).map((t) => (
             <button
               key={t || "all"}
@@ -135,7 +138,10 @@ export function TemplatesPage() {
             <div className="wb-card-header">
               <h3 className="wb-card-title">Новий шаблон</h3>
             </div>
-            <div className="wb-card-body" style={{ display: "flex", flexDirection: "column", gap: "var(--sp-3)" }}>
+            <div
+              className="wb-card-body"
+              style={{ display: "flex", flexDirection: "column", gap: "var(--sp-3)" }}
+            >
               <div>
                 <label className="wb-label">Назва</label>
                 <input
@@ -182,10 +188,7 @@ export function TemplatesPage() {
                   <Icon name="check" size={14} />
                   Створити
                 </button>
-                <button
-                  className="wb-btn wb-btn-ghost"
-                  onClick={() => setCreating(false)}
-                >
+                <button className="wb-btn wb-btn-ghost" onClick={() => setCreating(false)}>
                   Скасувати
                 </button>
               </div>
@@ -218,29 +221,36 @@ export function TemplatesPage() {
             {filtered.map((tpl) => (
               <div key={tpl.id} className="wb-card">
                 {tpl.thumbnail && (
-                  <div style={{
-                    height: 120,
-                    background: `url(${tpl.thumbnail}) center/cover`,
-                    borderRadius: "var(--radius-md) var(--radius-md) 0 0",
-                  }} />
+                  <div
+                    style={{
+                      height: 120,
+                      background: `url(${tpl.thumbnail}) center/cover`,
+                      borderRadius: "var(--radius-md) var(--radius-md) 0 0",
+                    }}
+                  />
                 )}
                 <div className="wb-card-header">
                   <span className="wb-card-title">{tpl.name}</span>
                   <div style={{ display: "flex", gap: "var(--sp-1)" }}>
-                    <span className={`wb-badge ${tpl.type === "site" ? "wb-badge-green" : "wb-badge-neutral"}`}>
+                    <span
+                      className={`wb-badge ${tpl.type === "site" ? "wb-badge-green" : "wb-badge-neutral"}`}
+                    >
                       {tpl.type === "site" ? "Сайт" : "Сторінка"}
                     </span>
-                    {tpl.isSystem && (
-                      <span className="wb-badge wb-badge-yellow">System</span>
-                    )}
+                    {tpl.isSystem && <span className="wb-badge wb-badge-yellow">System</span>}
                   </div>
                 </div>
                 <div className="wb-card-body">
-                  <p className="wb-text-sm wb-text-muted">
-                    {tpl.description || "Без опису"}
-                  </p>
+                  <p className="wb-text-sm wb-text-muted">{tpl.description || "Без опису"}</p>
                   {tpl.tags.length > 0 && (
-                    <div style={{ display: "flex", gap: "var(--sp-1)", marginTop: "var(--sp-2)", flexWrap: "wrap" }}>
+                    <div
+                      style={{
+                        display: "flex",
+                        gap: "var(--sp-1)",
+                        marginTop: "var(--sp-2)",
+                        flexWrap: "wrap",
+                      }}
+                    >
                       {tpl.tags.map((tag) => (
                         <span key={tag} className="wb-badge wb-badge-neutral wb-text-xs">
                           {tag}
@@ -249,7 +259,10 @@ export function TemplatesPage() {
                     </div>
                   )}
                 </div>
-                <div className="wb-card-footer" style={{ display: "flex", justifyContent: "flex-end" }}>
+                <div
+                  className="wb-card-footer"
+                  style={{ display: "flex", justifyContent: "flex-end" }}
+                >
                   {!tpl.isSystem && (
                     <button
                       className="wb-btn wb-btn-sm wb-btn-danger"

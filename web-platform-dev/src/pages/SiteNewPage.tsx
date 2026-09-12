@@ -150,16 +150,10 @@ export function SiteNewPage() {
           Створити новий сайт
         </h1>
 
-        <TemplatePicker
-          selected={selectedTemplate}
-          onSelect={setSelectedTemplate}
-        />
+        <TemplatePicker selected={selectedTemplate} onSelect={setSelectedTemplate} />
 
         <div style={{ display: "flex", justifyContent: "flex-end", marginTop: "var(--sp-4)" }}>
-          <button
-            className="wb-btn wb-btn-primary"
-            onClick={handleTemplateNext}
-          >
+          <button className="wb-btn wb-btn-primary" onClick={handleTemplateNext}>
             Далі
             <Icon name="chevron-right" size={14} />
           </button>
@@ -194,10 +188,7 @@ export function SiteNewPage() {
               <span className="wb-text-sm" style={{ fontWeight: 600 }}>
                 {selectedTemplate.name}
               </span>
-              <button
-                className="wb-btn wb-btn-ghost wb-btn-sm"
-                onClick={() => setStep("template")}
-              >
+              <button className="wb-btn wb-btn-ghost wb-btn-sm" onClick={() => setStep("template")}>
                 Змінити
               </button>
             </div>
@@ -217,10 +208,7 @@ export function SiteNewPage() {
               <span className="wb-text-sm" style={{ fontWeight: 600 }}>
                 З нуля (без шаблону)
               </span>
-              <button
-                className="wb-btn wb-btn-ghost wb-btn-sm"
-                onClick={() => setStep("template")}
-              >
+              <button className="wb-btn wb-btn-ghost wb-btn-sm" onClick={() => setStep("template")}>
                 Змінити
               </button>
             </div>
@@ -230,15 +218,17 @@ export function SiteNewPage() {
 
       {/* Помилка */}
       {error && (
-        <div style={{
-          padding: "var(--sp-3)",
-          background: "var(--red-dim)",
-          borderRadius: "var(--radius-md)",
-          marginBottom: "var(--sp-4)",
-          display: "flex",
-          alignItems: "center",
-          gap: "var(--sp-2)",
-        }}>
+        <div
+          style={{
+            padding: "var(--sp-3)",
+            background: "var(--red-dim)",
+            borderRadius: "var(--radius-md)",
+            marginBottom: "var(--sp-4)",
+            display: "flex",
+            alignItems: "center",
+            gap: "var(--sp-2)",
+          }}
+        >
           <Icon name="x" size={16} />
           <span className="wb-text-sm">{error}</span>
         </div>

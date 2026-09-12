@@ -30,8 +30,7 @@ export async function listUsers(): Promise<UserRow[]> {
 }
 
 export async function readUser(userId: number): Promise<UserRow | null> {
-  const res = await apiFetch<{ success: boolean; data: UserRow | null }>(    "/api/admin/users/read",
- {
+  const res = await apiFetch<{ success: boolean; data: UserRow | null }>("/api/admin/users/read", {
     method: "POST",
     body: JSON.stringify({ user_id: userId }),
   });

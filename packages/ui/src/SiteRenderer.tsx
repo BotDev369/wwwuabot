@@ -62,9 +62,7 @@ export function SiteRenderer({
   }, [currentSlug, pages]);
 
   // Локальний стан для навігації
-  const [activeSlug, setActiveSlug] = useState<string>(
-    currentPage?.slug ?? "home",
-  );
+  const [activeSlug, setActiveSlug] = useState<string>(currentPage?.slug ?? "home");
 
   const effectiveSlug = currentSlug ?? activeSlug;
   const activePage = pages.find((p) => p.slug === effectiveSlug) ?? pages[0];
@@ -127,13 +125,7 @@ export function SiteRenderer({
 
     return (
       <div className="site-header">
-        {settings.logo && (
-          <img
-            src={settings.logo}
-            alt={site.title}
-            className="site-logo"
-          />
-        )}
+        {settings.logo && <img src={settings.logo} alt={site.title} className="site-logo" />}
         <h1 className="site-title">{site.title}</h1>
       </div>
     );
@@ -142,9 +134,7 @@ export function SiteRenderer({
   // Рендер кастомного CSS
   const renderCustomCss = () => {
     if (!settings.customCss) return null;
-    return (
-      <style dangerouslySetInnerHTML={{ __html: settings.customCss }} />
-    );
+    return <style dangerouslySetInnerHTML={{ __html: settings.customCss }} />;
   };
 
   return (
@@ -159,11 +149,7 @@ export function SiteRenderer({
 
       <div className="site-content">
         {activePage ? (
-          <PageRenderer
-            config={activePage.pageData}
-            context={blockContext}
-            className="site-page"
-          />
+          <PageRenderer config={activePage.pageData} context={blockContext} className="site-page" />
         ) : (
           <div className="site-empty">
             <p>Сторінка не знайдена</p>
@@ -172,11 +158,7 @@ export function SiteRenderer({
       </div>
 
       {/* Попередній перегляд: індикатор */}
-      {mode === "preview" && (
-        <div className="site-preview-badge">
-          Попередній перегляд
-        </div>
-      )}
+      {mode === "preview" && <div className="site-preview-badge">Попередній перегляд</div>}
     </div>
   );
 }

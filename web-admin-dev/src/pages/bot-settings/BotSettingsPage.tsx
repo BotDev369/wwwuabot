@@ -51,7 +51,9 @@ export function BotSettingsPage() {
     }
   };
 
-  useEffect(() => { fetchData(); }, []);
+  useEffect(() => {
+    fetchData();
+  }, []);
 
   const setupWebhook = async () => {
     setActionLoading(true);
@@ -65,7 +67,9 @@ export function BotSettingsPage() {
       if (result.success) {
         setMessage({ type: "success", text: "Вебхук встановлено!" });
         // Оновлюємо webhook info після встановлення
-        const webhook = await apiFetch<{ ok: boolean; result?: WebhookInfo }>("/api/bot/webhook-info");
+        const webhook = await apiFetch<{ ok: boolean; result?: WebhookInfo }>(
+          "/api/bot/webhook-info",
+        );
         if (webhook.ok && webhook.result) setWebhookInfo(webhook.result);
         setTelegramResponse(webhook);
       } else {
@@ -91,10 +95,14 @@ export function BotSettingsPage() {
       if (result.success) {
         setMessage({ type: "success", text: "Вебхук видалено" });
         // Оновлюємо webhook info після видалення
-        const webhook = await apiFetch<{ ok: boolean; result?: WebhookInfo }>("/api/bot/webhook-info");
+        const webhook = await apiFetch<{ ok: boolean; result?: WebhookInfo }>(
+          "/api/bot/webhook-info",
+        );
         if (webhook.ok) {
           // Якщо webhook видалено, result буде пустим об'єктом
-          setWebhookInfo(webhook.result || { url: "", has_custom_certificate: false, pending_update_count: 0 });
+          setWebhookInfo(
+            webhook.result || { url: "", has_custom_certificate: false, pending_update_count: 0 },
+          );
         }
         setTelegramResponse(webhook);
       }
@@ -127,7 +135,9 @@ export function BotSettingsPage() {
           <div style={{ maxWidth: 640, display: "flex", flexDirection: "column", gap: 16 }}>
             {/* Повідомлення */}
             {message && (
-              <div className={`wb-badge ${message.type === "success" ? "wb-badge-green" : "wb-badge-red"}`}>
+              <div
+                className={`wb-badge ${message.type === "success" ? "wb-badge-green" : "wb-badge-red"}`}
+              >
                 {message.text}
               </div>
             )}
@@ -143,12 +153,20 @@ export function BotSettingsPage() {
                 <div className="wb-card-body">
                   <div className="block-row" style={{ gap: 12 }}>
                     <div style={{ flex: 1 }}>
-                      <div style={{ fontSize: 11, color: "var(--text-muted)", marginBottom: 2 }}>Username</div>
-                      <div style={{ fontFamily: "var(--font-mono)", fontSize: 13 }}>@{botInfo.result.username}</div>
+                      <div style={{ fontSize: 11, color: "var(--text-muted)", marginBottom: 2 }}>
+                        Username
+                      </div>
+                      <div style={{ fontFamily: "var(--font-mono)", fontSize: 13 }}>
+                        @{botInfo.result.username}
+                      </div>
                     </div>
                     <div style={{ flex: 1 }}>
-                      <div style={{ fontSize: 11, color: "var(--text-muted)", marginBottom: 2 }}>ID</div>
-                      <div style={{ fontFamily: "var(--font-mono)", fontSize: 13 }}>{String(botInfo.result.id)}</div>
+                      <div style={{ fontSize: 11, color: "var(--text-muted)", marginBottom: 2 }}>
+                        ID
+                      </div>
+                      <div style={{ fontFamily: "var(--font-mono)", fontSize: 13 }}>
+                        {String(botInfo.result.id)}
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -170,17 +188,21 @@ export function BotSettingsPage() {
               </div>
               <div className="wb-card-body">
                 <div style={{ marginBottom: 12 }}>
-                  <div style={{ fontSize: 11, color: "var(--text-muted)", marginBottom: 2 }}>URL</div>
-                  <div style={{
-                    fontFamily: "var(--font-mono)",
-                    fontSize: 12,
-                    background: "var(--bg-2)",
-                    border: "1px solid var(--border)",
-                    borderRadius: "var(--radius-sm)",
-                    padding: "6px 10px",
-                    wordBreak: "break-all",
-                    color: webhookInfo?.url ? "var(--text-primary)" : "var(--text-muted)",
-                  }}>
+                  <div style={{ fontSize: 11, color: "var(--text-muted)", marginBottom: 2 }}>
+                    URL
+                  </div>
+                  <div
+                    style={{
+                      fontFamily: "var(--font-mono)",
+                      fontSize: 12,
+                      background: "var(--bg-2)",
+                      border: "1px solid var(--border)",
+                      borderRadius: "var(--radius-sm)",
+                      padding: "6px 10px",
+                      wordBreak: "break-all",
+                      color: webhookInfo?.url ? "var(--text-primary)" : "var(--text-muted)",
+                    }}
+                  >
                     {webhookInfo?.url || "Не встановлено"}
                   </div>
                 </div>
@@ -192,20 +214,35 @@ export function BotSettingsPage() {
                   </div>
                   <div>
                     <span style={{ fontSize: 11, color: "var(--text-muted)" }}>SSL: </span>
-                    <span style={{ fontSize: 13 }}>{webhookInfo?.has_custom_certificate ? "✅" : "❌"}</span>
+                    <span style={{ fontSize: 13 }}>
+                      {webhookInfo?.has_custom_certificate ? "✅" : "❌"}
+                    </span>
                   </div>
                 </div>
 
                 {webhookInfo?.last_error_message && (
-                  <div style={{
-                    background: "var(--red-dim)",
-                    border: "1px solid var(--red)",
-                    borderRadius: "var(--radius-sm)",
-                    padding: "8px 10px",
-                    marginBottom: 12,
-                  }}>
-                    <div style={{ fontSize: 11, color: "var(--red)", fontWeight: 600, marginBottom: 2 }}>Остання помилка:</div>
-                    <div style={{ fontSize: 12, color: "var(--text-secondary)" }}>{webhookInfo.last_error_message}</div>
+                  <div
+                    style={{
+                      background: "var(--red-dim)",
+                      border: "1px solid var(--red)",
+                      borderRadius: "var(--radius-sm)",
+                      padding: "8px 10px",
+                      marginBottom: 12,
+                    }}
+                  >
+                    <div
+                      style={{
+                        fontSize: 11,
+                        color: "var(--red)",
+                        fontWeight: 600,
+                        marginBottom: 2,
+                      }}
+                    >
+                      Остання помилка:
+                    </div>
+                    <div style={{ fontSize: 12, color: "var(--text-secondary)" }}>
+                      {webhookInfo.last_error_message}
+                    </div>
                   </div>
                 )}
 
@@ -241,20 +278,22 @@ export function BotSettingsPage() {
                   )}
                 </div>
                 <div className="wb-card-body">
-                  <pre style={{
-                    fontFamily: "var(--font-mono)",
-                    fontSize: 11,
-                    background: "var(--bg-2)",
-                    border: "1px solid var(--border)",
-                    borderRadius: "var(--radius-sm)",
-                    padding: "10px",
-                    overflow: "auto",
-                    maxHeight: 300,
-                    color: "var(--text-primary)",
-                    whiteSpace: "pre-wrap",
-                    wordBreak: "break-word",
-                    margin: 0,
-                  }}>
+                  <pre
+                    style={{
+                      fontFamily: "var(--font-mono)",
+                      fontSize: 11,
+                      background: "var(--bg-2)",
+                      border: "1px solid var(--border)",
+                      borderRadius: "var(--radius-sm)",
+                      padding: "10px",
+                      overflow: "auto",
+                      maxHeight: 300,
+                      color: "var(--text-primary)",
+                      whiteSpace: "pre-wrap",
+                      wordBreak: "break-word",
+                      margin: 0,
+                    }}
+                  >
                     {JSON.stringify(telegramResponse, null, 2)}
                   </pre>
                 </div>

@@ -51,7 +51,9 @@ export function DateModal({ mode, date, allTags, onClose, onSave, onDelete }: Da
             {mode === "edit" && "Редагувати дату"}
             {mode === "view" && "Перегляд дати"}
           </h3>
-          <button className="modal-close" onClick={onClose}>✕</button>
+          <button className="modal-close" onClick={onClose}>
+            ✕
+          </button>
         </div>
         <div className="modal-body">
           <div className="form-group">
@@ -95,7 +97,10 @@ export function DateModal({ mode, date, allTags, onClose, onSave, onDelete }: Da
                 <span key={t} className="tag-chip" style={getTagColor(t)}>
                   {t}
                   {!isReadonly && (
-                    <button className="tag-remove" onClick={() => setTags((prev) => prev.filter((x) => x !== t))}>
+                    <button
+                      className="tag-remove"
+                      onClick={() => setTags((prev) => prev.filter((x) => x !== t))}
+                    >
                       ✕
                     </button>
                   )}
@@ -108,7 +113,10 @@ export function DateModal({ mode, date, allTags, onClose, onSave, onDelete }: Da
                   onChange={(e) => setTagInput(e.target.value)}
                   placeholder="Додати тег..."
                   onKeyDown={(e) => {
-                    if (e.key === "Enter") { e.preventDefault(); addTag(tagInput); }
+                    if (e.key === "Enter") {
+                      e.preventDefault();
+                      addTag(tagInput);
+                    }
                   }}
                   onBlur={() => tagInput && addTag(tagInput)}
                 />
@@ -116,11 +124,19 @@ export function DateModal({ mode, date, allTags, onClose, onSave, onDelete }: Da
             </div>
             {!isReadonly && allTags.length > 0 && (
               <div className="tag-suggestions">
-                {allTags.filter((t) => !tags.includes(t)).slice(0, 8).map((t) => (
-                  <button key={t} className="tag-chip tag-chip--sm" style={getTagColor(t)} onClick={() => addTag(t)}>
-                    + {t}
-                  </button>
-                ))}
+                {allTags
+                  .filter((t) => !tags.includes(t))
+                  .slice(0, 8)
+                  .map((t) => (
+                    <button
+                      key={t}
+                      className="tag-chip tag-chip--sm"
+                      style={getTagColor(t)}
+                      onClick={() => addTag(t)}
+                    >
+                      + {t}
+                    </button>
+                  ))}
               </div>
             )}
           </div>
@@ -139,7 +155,9 @@ export function DateModal({ mode, date, allTags, onClose, onSave, onDelete }: Da
           {mode === "edit" && date && onDelete && (
             <button
               className="wb-btn wb-btn-danger"
-              onClick={() => { if (confirm("Видалити цю дату?")) onDelete(date.id); }}
+              onClick={() => {
+                if (confirm("Видалити цю дату?")) onDelete(date.id);
+              }}
             >
               Видалити
             </button>
@@ -149,7 +167,11 @@ export function DateModal({ mode, date, allTags, onClose, onSave, onDelete }: Da
             {isReadonly ? "Закрити" : "Скасувати"}
           </button>
           {!isReadonly && (
-            <button className="wb-btn wb-btn-primary" onClick={handleSave} disabled={saving || !dateVal}>
+            <button
+              className="wb-btn wb-btn-primary"
+              onClick={handleSave}
+              disabled={saving || !dateVal}
+            >
               {saving ? "Зберігаємо..." : "Зберегти"}
             </button>
           )}

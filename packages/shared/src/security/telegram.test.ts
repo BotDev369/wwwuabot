@@ -25,10 +25,7 @@ function toHex(buffer: ArrayBuffer): string {
  * Це регресійний тест: він фіксує контракт, а не доводить коректність
  * алгоритму (для цього потрібен офіційний тест-вектор Telegram).
  */
-async function makeInitData(
-  fields: Record<string, string>,
-  botToken = BOT_TOKEN,
-): Promise<string> {
+async function makeInitData(fields: Record<string, string>, botToken = BOT_TOKEN): Promise<string> {
   const params = new URLSearchParams(fields);
   const checkString = [...params.entries()]
     .map(([k, v]) => `${k}=${v}`)

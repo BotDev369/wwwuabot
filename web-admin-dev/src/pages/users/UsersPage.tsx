@@ -19,9 +19,7 @@ export function UsersPage() {
       <PageTopbar>
         <div className="topbar-left">
           <h1 className="topbar-title">Користувачі</h1>
-          {items.length > 0 && (
-            <span className="scn-count">{items.length}</span>
-          )}
+          {items.length > 0 && <span className="scn-count">{items.length}</span>}
         </div>
         <div className="topbar-right">
           <input

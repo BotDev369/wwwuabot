@@ -13,15 +13,10 @@
  */
 
 import type { Env } from "./types";
-import {
-  INIT_DATA_HEADER,
-  verifyInitData,
-} from "@wwwuabot/shared/security/telegram";
+import { INIT_DATA_HEADER, verifyInitData } from "@wwwuabot/shared/security/telegram";
 
 /** Результат визначення ідентичності. */
-export type Identity =
-  | { ok: true; userId: number }
-  | { ok: false; response: Response };
+export type Identity = { ok: true; userId: number } | { ok: false; response: Response };
 
 function json(data: unknown, status = 200): Response {
   return new Response(JSON.stringify(data), {

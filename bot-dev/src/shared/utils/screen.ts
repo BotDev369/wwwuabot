@@ -36,7 +36,7 @@ export async function sendOrEditLiveMessage(ctx: AppContext): Promise<boolean> {
   ) {
     log("SCREEN:rich", "rendering rich message", { codeword, chat_id: chatId });
     const richMessage: InputRichMessage = {
-      blocks: ctx.screen.rich_data as unknown as InputRichMessage['blocks'],
+      blocks: ctx.screen.rich_data as unknown as InputRichMessage["blocks"],
     };
 
     try {
@@ -110,7 +110,13 @@ async function deleteOldMessages(
   if (idsToDelete.length === 0) return;
 
   try {
-    await (ctx.api as unknown as { raw: { deleteMessages: (params: { chat_id: number; message_ids: number[] }) => Promise<unknown> } }).raw.deleteMessages({
+    await (
+      ctx.api as unknown as {
+        raw: {
+          deleteMessages: (params: { chat_id: number; message_ids: number[] }) => Promise<unknown>;
+        };
+      }
+    ).raw.deleteMessages({
       chat_id: chatId,
       message_ids: idsToDelete,
     });

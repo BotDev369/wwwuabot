@@ -2,15 +2,23 @@
  * DateAccordionForm — акордеон-форма для швидкого додавання нової дати.
  */
 
-import { useState, useMemo, useRef } from 'react';
-import { icons, type IconName } from '@wwwuabot/shared';
-import type { MyDate } from '@/shared/api/mydate.api';
-import { getTypeConfig, getTagColor } from './mydate-types';
+import { useState, useMemo, useRef } from "react";
+import { icons, type IconName } from "@wwwuabot/shared";
+import type { MyDate } from "@/shared/api/mydate.api";
+import { getTypeConfig, getTagColor } from "./mydate-types";
 
 // ── Icon helper ───────────────────────────────────────────────────
 
 const ico = (name: IconName, size = 16) => (
-  <span style={{ display: 'inline-flex', alignItems: 'center', width: size, height: size, flexShrink: 0 }}>
+  <span
+    style={{
+      display: "inline-flex",
+      alignItems: "center",
+      width: size,
+      height: size,
+      flexShrink: 0,
+    }}
+  >
     {icons[name]}
   </span>
 );
@@ -21,18 +29,18 @@ interface DateAccordionFormProps {
   isOpen: boolean;
   onToggle: () => void;
   allTags: string[];
-  onSubmit: (data: Omit<MyDate, 'id' | 'created_at' | 'user_id' | 'updated_at'>) => Promise<void>;
+  onSubmit: (data: Omit<MyDate, "id" | "created_at" | "user_id" | "updated_at">) => Promise<void>;
 }
 
 // ── Component ─────────────────────────────────────────────────────
 
 export function DateAccordionForm({ isOpen, onToggle, allTags, onSubmit }: DateAccordionFormProps) {
-  const [formDate, setFormDate] = useState('');
-  const [formType, setFormType] = useState('person');
-  const [formName, setFormName] = useState('');
+  const [formDate, setFormDate] = useState("");
+  const [formType, setFormType] = useState("person");
+  const [formName, setFormName] = useState("");
   const [formTags, setFormTags] = useState<string[]>([]);
-  const [formNotes, setFormNotes] = useState('');
-  const [tagInput, setTagInput] = useState('');
+  const [formNotes, setFormNotes] = useState("");
+  const [tagInput, setTagInput] = useState("");
   const [showTagSuggestions, setShowTagSuggestions] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const tagInputRef = useRef<HTMLInputElement>(null);
@@ -48,7 +56,7 @@ export function DateAccordionForm({ isOpen, onToggle, allTags, onSubmit }: DateA
   const addFormTag = (tag: string) => {
     const trimmed = tag.trim();
     if (trimmed && !formTags.includes(trimmed)) setFormTags([...formTags, trimmed]);
-    setTagInput('');
+    setTagInput("");
     setShowTagSuggestions(false);
     tagInputRef.current?.focus();
   };
@@ -56,20 +64,20 @@ export function DateAccordionForm({ isOpen, onToggle, allTags, onSubmit }: DateA
   const removeFormTag = (tag: string) => setFormTags(formTags.filter((t) => t !== tag));
 
   const handleFormTagKeyDown = (e: React.KeyboardEvent) => {
-    if (e.key === 'Enter') {
+    if (e.key === "Enter") {
       e.preventDefault();
       if (tagInput.trim()) addFormTag(tagInput);
-    } else if (e.key === 'Backspace' && !tagInput && formTags.length > 0)
+    } else if (e.key === "Backspace" && !tagInput && formTags.length > 0)
       setFormTags(formTags.slice(0, -1));
   };
 
   const resetForm = () => {
-    setFormDate('');
-    setFormType('person');
-    setFormName('');
+    setFormDate("");
+    setFormType("person");
+    setFormName("");
     setFormTags([]);
-    setFormNotes('');
-    setTagInput('');
+    setFormNotes("");
+    setTagInput("");
   };
 
   const handleSubmit = async () => {
@@ -90,10 +98,10 @@ export function DateAccordionForm({ isOpen, onToggle, allTags, onSubmit }: DateA
   };
 
   return (
-    <div className={`accordion ${isOpen ? 'open' : ''}`}>
+    <div className={`accordion ${isOpen ? "open" : ""}`}>
       <button className="accordion-toggle" onClick={onToggle}>
-        <span className={`accordion-icon ${isOpen ? 'rotated' : ''}`}>▶</span>
-        {isOpen ? 'Додати нову дату' : '＋ Додати дату'}
+        <span className={`accordion-icon ${isOpen ? "rotated" : ""}`}>▶</span>
+        {isOpen ? "Додати нову дату" : "＋ Додати дату"}
       </button>
       {isOpen && (
         <div className="accordion-content">
@@ -110,16 +118,16 @@ export function DateAccordionForm({ isOpen, onToggle, allTags, onSubmit }: DateA
             <div className="form-field">
               <label className="form-label">Тип</label>
               <div className="type-selector">
-                {['person', 'event', 'other'].map((t) => {
+                {["person", "event", "other"].map((t) => {
                   const cfg = getTypeConfig(t);
                   return (
                     <button
                       key={t}
                       type="button"
-                      className={`wb-btn wb-btn-sm ${formType === t ? 'wb-btn-primary' : 'wb-btn-secondary'}`}
+                      className={`wb-btn wb-btn-sm ${formType === t ? "wb-btn-primary" : "wb-btn-secondary"}`}
                       onClick={() => setFormType(t)}
                     >
-                      {ico(cfg.icon)} {t === 'person' ? 'Людина' : t === 'event' ? 'Подія' : 'Інше'}
+                      {ico(cfg.icon)} {t === "person" ? "Людина" : t === "event" ? "Подія" : "Інше"}
                     </button>
                   );
                 })}
@@ -141,11 +149,7 @@ export function DateAccordionForm({ isOpen, onToggle, allTags, onSubmit }: DateA
                 {formTags.map((tag) => (
                   <span key={tag} className="tag-chip" style={getTagColor(tag)}>
                     {tag}
-                    <button
-                      type="button"
-                      className="tag-remove"
-                      onClick={() => removeFormTag(tag)}
-                    >
+                    <button type="button" className="tag-remove" onClick={() => removeFormTag(tag)}>
                       ×
                     </button>
                   </span>
@@ -162,7 +166,7 @@ export function DateAccordionForm({ isOpen, onToggle, allTags, onSubmit }: DateA
                     onFocus={() => setShowTagSuggestions(true)}
                     onBlur={() => setTimeout(() => setShowTagSuggestions(false), 150)}
                     onKeyDown={handleFormTagKeyDown}
-                    placeholder={formTags.length === 0 ? 'Додайте теги...' : ''}
+                    placeholder={formTags.length === 0 ? "Додайте теги..." : ""}
                     className="wb-input"
                   />
                   {showTagSuggestions && formTagSuggestions.length > 0 && (
@@ -201,7 +205,7 @@ export function DateAccordionForm({ isOpen, onToggle, allTags, onSubmit }: DateA
             onClick={handleSubmit}
             disabled={!formDate || submitting}
           >
-            {submitting ? 'Додаємо...' : 'Додати дату'}
+            {submitting ? "Додаємо..." : "Додати дату"}
           </button>
         </div>
       )}

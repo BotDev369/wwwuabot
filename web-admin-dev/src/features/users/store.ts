@@ -93,7 +93,11 @@ export const useUsersStore = create<UsersStore>((set, get) => ({
     await apiDeleteUser(id);
     set((s) => ({
       items: s.items.filter((u) => u.user_id !== id),
-      selectedIds: (() => { const n = new Set(s.selectedIds); n.delete(id); return n; })(),
+      selectedIds: (() => {
+        const n = new Set(s.selectedIds);
+        n.delete(id);
+        return n;
+      })(),
     }));
   },
 

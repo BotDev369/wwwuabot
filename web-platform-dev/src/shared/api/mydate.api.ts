@@ -83,10 +83,7 @@ export async function fetchSystems(): Promise<SystemCard[]> {
 }
 
 /** Аналіз однієї дати конкретною системою. */
-export async function analyzeDate(
-  date: string,
-  systemId: string,
-): Promise<SystemResult> {
+export async function analyzeDate(date: string, systemId: string): Promise<SystemResult> {
   const res = await apiFetchRaw("/api/mydate/analyze", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
@@ -98,9 +95,7 @@ export async function analyzeDate(
 }
 
 /** Аналіз дати за всіма системами. */
-export async function fetchAnalysis(
-  date: string,
-): Promise<Record<string, SystemResult>> {
+export async function fetchAnalysis(date: string): Promise<Record<string, SystemResult>> {
   const res = await apiFetchRaw(`/api/mydate/analysis/${date}`);
   const data = await res.json();
   return data?.ok ? data.systems : {};

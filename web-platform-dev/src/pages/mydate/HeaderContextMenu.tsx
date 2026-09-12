@@ -2,14 +2,22 @@
  * HeaderContextMenu — контекстне меню заголовка таблиці (сортування/фільтр).
  */
 
-import { icons } from '@wwwuabot/shared';
-import type { SortField, SortOrder } from './mydate-types';
-import { getFieldLabel } from './mydate-types';
+import { icons } from "@wwwuabot/shared";
+import type { SortField, SortOrder } from "./mydate-types";
+import { getFieldLabel } from "./mydate-types";
 
 // ── Icon helper ───────────────────────────────────────────────────
 
 const ico = (name: string, size = 16) => (
-  <span style={{ display: 'inline-flex', alignItems: 'center', width: size, height: size, flexShrink: 0 }}>
+  <span
+    style={{
+      display: "inline-flex",
+      alignItems: "center",
+      width: size,
+      height: size,
+      flexShrink: 0,
+    }}
+  >
     {icons[name as keyof typeof icons]}
   </span>
 );
@@ -18,7 +26,7 @@ const ico = (name: string, size = 16) => (
 
 interface HeaderContextMenuProps {
   field: SortField;
-  mode: 'menu' | 'filter';
+  mode: "menu" | "filter";
   sortField: SortField;
   sortOrder: SortOrder;
   columnFilters: Record<string, string[]>;
@@ -57,46 +65,40 @@ export function HeaderContextMenu({
         <div className="header-modal-header">
           <span className="header-modal-title">{fieldLabel}</span>
           <button className="wb-close-btn" onClick={onClose}>
-            {icons['close']}
+            {icons["close"]}
           </button>
         </div>
 
-        {mode === 'menu' && (
+        {mode === "menu" && (
           <div className="header-modal-body">
             <button
-              className={`wb-btn wb-btn-ghost ${sortOrder === 'asc' && sortField === field ? 'wb-btn-primary' : ''}`}
-              onClick={() => onSort(field, 'asc')}
+              className={`wb-btn wb-btn-ghost ${sortOrder === "asc" && sortField === field ? "wb-btn-primary" : ""}`}
+              onClick={() => onSort(field, "asc")}
             >
               ▲ А → Я
             </button>
             <button
-              className={`wb-btn wb-btn-ghost ${sortOrder === 'desc' && sortField === field ? 'wb-btn-primary' : ''}`}
-              onClick={() => onSort(field, 'desc')}
+              className={`wb-btn wb-btn-ghost ${sortOrder === "desc" && sortField === field ? "wb-btn-primary" : ""}`}
+              onClick={() => onSort(field, "desc")}
             >
               ▼ Я → А
             </button>
             <div className="header-modal-divider" />
-            <button
-              className="wb-btn wb-btn-ghost"
-              onClick={() => onSwitchToFilter(field)}
-            >
-              {ico('eye')} Фільтр...
+            <button className="wb-btn wb-btn-ghost" onClick={() => onSwitchToFilter(field)}>
+              {ico("eye")} Фільтр...
             </button>
             {(columnFilters[field]?.length > 0 || sortField === field) && (
               <>
                 <div className="header-modal-divider" />
-                <button
-                  className="wb-btn wb-btn-danger"
-                  onClick={() => onClear(field)}
-                >
-                  {ico('close')} Очистити
+                <button className="wb-btn wb-btn-danger" onClick={() => onClear(field)}>
+                  {ico("close")} Очистити
                 </button>
               </>
             )}
           </div>
         )}
 
-        {mode === 'filter' && (
+        {mode === "filter" && (
           <div className="header-modal-body">
             <input
               className="wb-input"
@@ -108,11 +110,7 @@ export function HeaderContextMenu({
             />
             <div className="header-modal-filter-list">
               {uniqueValues
-                .filter(
-                  (v) =>
-                    !filterText ||
-                    v.toLowerCase().includes(filterText.toLowerCase()),
-                )
+                .filter((v) => !filterText || v.toLowerCase().includes(filterText.toLowerCase()))
                 .map((v) => {
                   const isSelected = (columnFilters[field] || []).includes(v);
                   return (
@@ -127,18 +125,11 @@ export function HeaderContextMenu({
                   );
                 })}
               {uniqueValues.filter(
-                (v) =>
-                  !filterText ||
-                  v.toLowerCase().includes(filterText.toLowerCase()),
-              ).length === 0 && (
-                <div className="header-modal-empty">Нічого не знайдено</div>
-              )}
+                (v) => !filterText || v.toLowerCase().includes(filterText.toLowerCase()),
+              ).length === 0 && <div className="header-modal-empty">Нічого не знайдено</div>}
             </div>
             {(columnFilters[field]?.length || 0) > 0 && (
-              <button
-                className="wb-btn wb-btn-secondary"
-                onClick={() => onClear(field)}
-              >
+              <button className="wb-btn wb-btn-secondary" onClick={() => onClear(field)}>
                 Скинути вибір
               </button>
             )}

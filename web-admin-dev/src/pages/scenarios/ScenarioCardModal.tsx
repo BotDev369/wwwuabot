@@ -8,14 +8,14 @@
  * FIX: Надійна підтримка редагування та збереження JSON (як прямого PageConfig, так і { page_data: ... }).
  */
 
-import { useEffect, useState, useCallback, useRef } from 'react';
+import { useEffect, useState, useCallback, useRef } from "react";
 import {
   readScenarioAll,
   updateScenarioFields,
   type ScenarioTable,
-} from '../../shared/api/scenarios.api';
-import { registerAllBlocks } from '@wwwuabot/ui/blocks';
-import { icons, type IconName } from '@wwwuabot/shared';
+} from "../../shared/api/scenarios.api";
+import { registerAllBlocks } from "@wwwuabot/ui/blocks";
+import { icons, type IconName } from "@wwwuabot/shared";
 import {
   type MainTab,
   type SubTab,
@@ -24,24 +24,32 @@ import {
   SUB_TABS,
   SUB_TAB_ICONS,
   getFieldsForTab,
-} from './scenario-modal-types';
+} from "./scenario-modal-types";
 import {
   deserializeJsonFields,
   serializeJsonFields,
   extractFieldsFromJson,
-} from './scenario-json-helpers';
-import { BotConstructor } from './BotConstructor';
-import { BotRichConstructor } from './BotRichConstructor';
-import { WebConstructor } from './WebConstructor';
-import { TabPreview } from './ScenarioPreview';
-import { ScenarioJsonEditor } from './ScenarioJsonEditor';
-import { FullscreenBuilder } from './FullscreenBuilder';
-import { SaveActionButtons, type SavingActionType } from '@wwwuabot/shared';
+} from "./scenario-json-helpers";
+import { BotConstructor } from "./BotConstructor";
+import { BotRichConstructor } from "./BotRichConstructor";
+import { WebConstructor } from "./WebConstructor";
+import { TabPreview } from "./ScenarioPreview";
+import { ScenarioJsonEditor } from "./ScenarioJsonEditor";
+import { FullscreenBuilder } from "./FullscreenBuilder";
+import { SaveActionButtons, type SavingActionType } from "@wwwuabot/shared";
 
 // ── Icon helper ───────────────────────────────────────────────────
 
 const ico = (name: IconName, size = 16) => (
-  <span style={{ display: 'inline-flex', alignItems: 'center', width: size, height: size, flexShrink: 0 }}>
+  <span
+    style={{
+      display: "inline-flex",
+      alignItems: "center",
+      width: size,
+      height: size,
+      flexShrink: 0,
+    }}
+  >
     {icons[name]}
   </span>
 );
@@ -62,8 +70,8 @@ interface Props {
 // ── Component ─────────────────────────────────────────────────────
 
 export function ScenarioCardModal({ codeword, table, onClose, onSaved, initialSubTab }: Props) {
-  const [mainTab, setMainTab] = useState<MainTab>('web');
-  const [subTab, setSubTab] = useState<SubTab>(initialSubTab ?? 'preview');
+  const [mainTab, setMainTab] = useState<MainTab>("web");
+  const [subTab, setSubTab] = useState<SubTab>(initialSubTab ?? "preview");
   const [allFields, setAllFields] = useState<Record<string, unknown>>({});
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -74,7 +82,7 @@ export function ScenarioCardModal({ codeword, table, onClose, onSaved, initialSu
   const [fullscreenBuilder, setFullscreenBuilder] = useState(false);
 
   // JSON editor state
-  const [jsonText, setJsonText] = useState('');
+  const [jsonText, setJsonText] = useState("");
   const [jsonError, setJsonError] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
   const [applied, setApplied] = useState(false);
@@ -94,7 +102,7 @@ export function ScenarioCardModal({ codeword, table, onClose, onSaved, initialSu
           setAllFields(row);
           setLoading(false);
         } else if (!cancelled) {
-          setError('Сценарій не знайдено');
+          setError("Сценарій не знайдено");
           setLoading(false);
         }
       } catch (e) {
@@ -104,7 +112,9 @@ export function ScenarioCardModal({ codeword, table, onClose, onSaved, initialSu
         }
       }
     })();
-    return () => { cancelled = true; };
+    return () => {
+      cancelled = true;
+    };
   }, [codeword, table]);
 
   // ── Update a single field ──
@@ -113,79 +123,82 @@ export function ScenarioCardModal({ codeword, table, onClose, onSaved, initialSu
   }, []);
 
   // ── Save handler (processes jsonText if currently on json subtab) ──
-  const handleSave = useCallback(async (shouldClose: boolean = false) => {
-    setSaving(true);
-    setSavingAction(shouldClose ? "saveAndClose" : "save");
-    setError(null);
-    setJustSaved(false);
-    try {
-      let fieldsToSave = { ...allFields };
+  const handleSave = useCallback(
+    async (shouldClose: boolean = false) => {
+      setSaving(true);
+      setSavingAction(shouldClose ? "saveAndClose" : "save");
+      setError(null);
+      setJustSaved(false);
+      try {
+        let fieldsToSave = { ...allFields };
 
-      // Якщо користувач знаходиться на підвкладці JSON,
-      // обов'язково валідуємо та застосовуємо поточний текст редактора!
-      if (subTab === 'json') {
-        const trimmed = jsonText.trim();
-        if (!trimmed) {
-          throw new Error('JSON редактор порожній');
-        }
-        let parsed: unknown;
-        try {
-          parsed = JSON.parse(trimmed);
-        } catch {
-          setJsonError('Невалідний JSON');
-          throw new Error('Неможливо зберегти: невалідний JSON у редакторі');
-        }
-        if (typeof parsed !== 'object' || parsed === null || Array.isArray(parsed)) {
-          setJsonError('JSON має бути об\'єктом');
-          throw new Error('Неможливо зберегти: JSON має бути об\'єктом');
+        // Якщо користувач знаходиться на підвкладці JSON,
+        // обов'язково валідуємо та застосовуємо поточний текст редактора!
+        if (subTab === "json") {
+          const trimmed = jsonText.trim();
+          if (!trimmed) {
+            throw new Error("JSON редактор порожній");
+          }
+          let parsed: unknown;
+          try {
+            parsed = JSON.parse(trimmed);
+          } catch {
+            setJsonError("Невалідний JSON");
+            throw new Error("Неможливо зберегти: невалідний JSON у редакторі");
+          }
+          if (typeof parsed !== "object" || parsed === null || Array.isArray(parsed)) {
+            setJsonError("JSON має бути об'єктом");
+            throw new Error("Неможливо зберегти: JSON має бути об'єктом");
+          }
+
+          fieldsToSave = extractFieldsFromJson(
+            parsed as Record<string, unknown>,
+            mainTab,
+            fieldsToSave,
+          );
+          setAllFields(fieldsToSave);
         }
 
-        fieldsToSave = extractFieldsFromJson(
-          parsed as Record<string, unknown>,
-          mainTab,
-          fieldsToSave,
-        );
-        setAllFields(fieldsToSave);
+        const PROTECTED = new Set(["codeword", "created_at"]);
+        const payload: Record<string, unknown> = {};
+        for (const [key, value] of Object.entries(fieldsToSave)) {
+          if (PROTECTED.has(key)) continue;
+          if (key === "updated_at") continue;
+          payload[key] = value;
+        }
+
+        // Серіалізуємо об'єкти у строки перед відправкою до D1 SQLite
+        const serializedPayload = serializeJsonFields(payload);
+        await updateScenarioFields(codeword, serializedPayload, table);
+
+        setSuccess(true);
+        setTimeout(() => {
+          onSaved();
+          onClose();
+        }, 800);
+      } catch (e) {
+        setError((e as Error).message);
+      } finally {
+        setSaving(false);
       }
-
-      const PROTECTED = new Set(['codeword', 'created_at']);
-      const payload: Record<string, unknown> = {};
-      for (const [key, value] of Object.entries(fieldsToSave)) {
-        if (PROTECTED.has(key)) continue;
-        if (key === 'updated_at') continue;
-        payload[key] = value;
-      }
-
-      // Серіалізуємо об'єкти у строки перед відправкою до D1 SQLite
-      const serializedPayload = serializeJsonFields(payload);
-      await updateScenarioFields(codeword, serializedPayload, table);
-
-      setSuccess(true);
-      setTimeout(() => {
-        onSaved();
-        onClose();
-      }, 800);
-    } catch (e) {
-      setError((e as Error).message);
-    } finally {
-      setSaving(false);
-    }
-  }, [codeword, allFields, table, onSaved, onClose, subTab, jsonText, mainTab]);
+    },
+    [codeword, allFields, table, onSaved, onClose, subTab, jsonText, mainTab],
+  );
 
   // ── Keyboard shortcuts (Escape to close, Ctrl+S / Cmd+S to save) ──
   useEffect(() => {
     const handler = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') {
+      if (e.key === "Escape") {
         onClose();
-      } else if ((e.ctrlKey || e.metaKey) && e.key === 's') {
+      } else if ((e.ctrlKey || e.metaKey) && e.key === "s") {
         e.preventDefault();
         if (!saving && !loading) {
           void handleSave(false);
         }
       }
     };
-    window.addEventListener('keydown', handler);
-    return () => window.removeEventListener('keydown', handler);
+    window.addEventListener("keydown", handler);
+    return () => window.removeEventListener("keydown", handler);
   }, [onClose, handleSave, saving, loading]);
 
   // ── JSON helpers ──
@@ -196,7 +209,7 @@ export function ScenarioCardModal({ codeword, table, onClose, onSaved, initialSu
     setJsonError(null);
     setCopied(false);
     setApplied(false);
-    setSubTab('json');
+    setSubTab("json");
   }, [mainTab, allFields]);
 
   const handleJsonCopy = useCallback(async () => {
@@ -214,32 +227,30 @@ export function ScenarioCardModal({ codeword, table, onClose, onSaved, initialSu
       const parsed = JSON.parse(jsonText);
       setJsonText(JSON.stringify(parsed, null, 2));
       setJsonError(null);
-    } catch { /* ignore */ }
+    } catch {
+      /* ignore */
+    }
   }, [jsonText]);
 
   const handleJsonApply = useCallback(() => {
     try {
       const trimmed = jsonText.trim();
       if (!trimmed) {
-        setJsonError('JSON редактор порожній');
+        setJsonError("JSON редактор порожній");
         return;
       }
       const parsed = JSON.parse(trimmed);
-      if (typeof parsed !== 'object' || parsed === null || Array.isArray(parsed)) {
-        setJsonError('JSON має бути об\'єктом');
+      if (typeof parsed !== "object" || parsed === null || Array.isArray(parsed)) {
+        setJsonError("JSON має бути об'єктом");
         return;
       }
-      const updated = extractFieldsFromJson(
-        parsed as Record<string, unknown>,
-        mainTab,
-        allFields,
-      );
+      const updated = extractFieldsFromJson(parsed as Record<string, unknown>, mainTab, allFields);
       setAllFields(updated);
       setJsonError(null);
       setApplied(true);
       setTimeout(() => setApplied(false), 2000);
     } catch {
-      setJsonError('Невалідний JSON');
+      setJsonError("Невалідний JSON");
     }
   }, [jsonText, mainTab, allFields]);
 
@@ -250,14 +261,14 @@ export function ScenarioCardModal({ codeword, table, onClose, onSaved, initialSu
     try {
       JSON.parse(value);
     } catch {
-      setJsonError('Невалідний JSON');
+      setJsonError("Невалідний JSON");
     }
   }, []);
 
   // ── Auto-populate JSON text when switching into json tab or changing main tab ──
   useEffect(() => {
-    const justOpenedJson = subTab === 'json' && prevSubTabRef.current !== 'json';
-    const mainTabChangedInJson = subTab === 'json' && prevMainTabRef.current !== mainTab;
+    const justOpenedJson = subTab === "json" && prevSubTabRef.current !== "json";
+    const mainTabChangedInJson = subTab === "json" && prevMainTabRef.current !== mainTab;
 
     if (justOpenedJson || mainTabChangedInJson) {
       const tabFields = getFieldsForTab(mainTab, allFields);
@@ -273,10 +284,23 @@ export function ScenarioCardModal({ codeword, table, onClose, onSaved, initialSu
 
   // ── Render constructor per tab ──
   const renderConstructor = () => {
-    if (mainTab === 'bot') return <BotConstructor fields={allFields} updateField={updateField} />;
-    if (mainTab === 'bot_rich') return <BotRichConstructor fields={allFields} updateField={updateField} />;
-    if (mainTab === 'web') return <WebConstructor fields={allFields} updateField={updateField} codeword={codeword} onFullscreen={() => setFullscreenBuilder(true)} />;
-    return <div style={{ padding: 16, color: 'var(--text-muted)', textAlign: 'center' }}>Немає конструктора для цієї вкладки</div>;
+    if (mainTab === "bot") return <BotConstructor fields={allFields} updateField={updateField} />;
+    if (mainTab === "bot_rich")
+      return <BotRichConstructor fields={allFields} updateField={updateField} />;
+    if (mainTab === "web")
+      return (
+        <WebConstructor
+          fields={allFields}
+          updateField={updateField}
+          codeword={codeword}
+          onFullscreen={() => setFullscreenBuilder(true)}
+        />
+      );
+    return (
+      <div style={{ padding: 16, color: "var(--text-muted)", textAlign: "center" }}>
+        Немає конструктора для цієї вкладки
+      </div>
+    );
   };
 
   // ═══ RENDER ════════════════════════════════════════════════════════
@@ -286,22 +310,33 @@ export function ScenarioCardModal({ codeword, table, onClose, onSaved, initialSu
       <div
         className="wb-modal scn-modal"
         onClick={(e) => e.stopPropagation()}
-        style={{ maxWidth: 900, width: '100%', height: '90dvh', display: 'flex', flexDirection: 'column', overflow: 'hidden' }}
+        style={{
+          maxWidth: 900,
+          width: "100%",
+          height: "90dvh",
+          display: "flex",
+          flexDirection: "column",
+          overflow: "hidden",
+        }}
       >
         {/* Header */}
         <div className="wb-modal-header">
-          <span className="wb-modal-title">{ico('clipboard')} {codeword}</span>
-          <div style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
+          <span className="wb-modal-title">
+            {ico("clipboard")} {codeword}
+          </span>
+          <div style={{ display: "flex", gap: 6, alignItems: "center" }}>
             <a
               href={`/${codeword}`}
               target="_blank"
               rel="noopener noreferrer"
               className="wb-btn wb-btn-secondary"
-              style={{ fontSize: 12, padding: '4px 10px', textDecoration: 'none' }}
+              style={{ fontSize: 12, padding: "4px 10px", textDecoration: "none" }}
             >
-              {ico('link')} Перейти
+              {ico("link")} Перейти
             </a>
-            <button className="wb-close-btn" onClick={onClose}>{icons['close']}</button>
+            <button className="wb-close-btn" onClick={onClose}>
+              {icons["close"]}
+            </button>
           </div>
         </div>
 
@@ -310,8 +345,11 @@ export function ScenarioCardModal({ codeword, table, onClose, onSaved, initialSu
           {MAIN_TABS.map((tab) => (
             <button
               key={tab.key}
-              className={`scn-tab${mainTab === tab.key ? ' scn-tab--active' : ''}`}
-              onClick={() => { setMainTab(tab.key); setSubTab('preview'); }}
+              className={`scn-tab${mainTab === tab.key ? " scn-tab--active" : ""}`}
+              onClick={() => {
+                setMainTab(tab.key);
+                setSubTab("preview");
+              }}
               title={tab.label}
             >
               {ico(MAIN_TAB_ICONS[tab.key], 20)}
@@ -324,9 +362,9 @@ export function ScenarioCardModal({ codeword, table, onClose, onSaved, initialSu
           {SUB_TABS.map((st) => (
             <button
               key={st.key}
-              className={`scn-subtab${subTab === st.key ? ' scn-subtab--active' : ''}`}
+              className={`scn-subtab${subTab === st.key ? " scn-subtab--active" : ""}`}
               onClick={() => {
-                if (st.key === 'json') {
+                if (st.key === "json") {
                   openJsonTab();
                 } else {
                   setSubTab(st.key);
@@ -340,14 +378,14 @@ export function ScenarioCardModal({ codeword, table, onClose, onSaved, initialSu
         </div>
 
         {/* Body */}
-        <div className="wb-modal-body" style={{ flex: 1, overflow: 'auto' }}>
+        <div className="wb-modal-body" style={{ flex: 1, overflow: "auto" }}>
           {loading ? (
             <div className="wb-modal-loading">Завантаження…</div>
           ) : error && Object.keys(allFields).length === 0 ? (
             <div className="wb-modal-error">{error}</div>
-          ) : subTab === 'preview' ? (
+          ) : subTab === "preview" ? (
             <TabPreview mainTab={mainTab} fields={allFields} codeword={codeword} />
-          ) : subTab === 'json' ? (
+          ) : subTab === "json" ? (
             <ScenarioJsonEditor
               jsonText={jsonText}
               jsonError={jsonError}
@@ -361,12 +399,14 @@ export function ScenarioCardModal({ codeword, table, onClose, onSaved, initialSu
               onApply={handleJsonApply}
               onSave={handleSave}
             />
-          ) : subTab === 'constructor' ? (
+          ) : subTab === "constructor" ? (
             renderConstructor()
           ) : null}
 
           {error && Object.keys(allFields).length > 0 && (
-            <div className="wb-modal-error" style={{ marginTop: 8 }}>{error}</div>
+            <div className="wb-modal-error" style={{ marginTop: 8 }}>
+              {error}
+            </div>
           )}
         </div>
 

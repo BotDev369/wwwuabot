@@ -11,11 +11,7 @@
  */
 
 import type { Env } from "../shared/types";
-import {
-  getCatalogSites,
-  getCatalogSiteBySlug,
-  getSitePages,
-} from "../services/sites.service";
+import { getCatalogSites, getCatalogSiteBySlug, getSitePages } from "../services/sites.service";
 
 // ── Helpers ──────────────────────────────────────────────────
 
@@ -29,10 +25,7 @@ function json(data: unknown, status = 200): Response {
 // ── Handlers ─────────────────────────────────────────────────
 
 /** GET /api/catalog — публічний каталог сайтів. */
-export async function handleCatalogList(
-  request: Request,
-  env: Env,
-): Promise<Response> {
+export async function handleCatalogList(request: Request, env: Env): Promise<Response> {
   const url = new URL(request.url);
   const page = parseInt(url.searchParams.get("page") ?? "1", 10);
   const limit = parseInt(url.searchParams.get("limit") ?? "20", 10);

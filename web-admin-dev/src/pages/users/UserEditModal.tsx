@@ -3,7 +3,15 @@ import { readUser, updateUser, type UserRow } from "../../shared/api/users.api";
 import { icons, SaveActionButtons, type SavingActionType } from "@wwwuabot/shared";
 
 const ico = (name: keyof typeof icons, size = 16) => (
-  <span style={{ display: "inline-flex", alignItems: "center", width: size, height: size, flexShrink: 0 }}>
+  <span
+    style={{
+      display: "inline-flex",
+      alignItems: "center",
+      width: size,
+      height: size,
+      flexShrink: 0,
+    }}
+  >
     {icons[name]}
   </span>
 );
@@ -56,13 +64,29 @@ export function UserEditModal({ userId, onClose, onSaved }: Props) {
               const parsed = JSON.parse(data.permissions);
               perms = Array.isArray(parsed) ? parsed : [];
             } catch {
-              perms = data.permissions.split(",").map((s: string) => s.trim()).filter(Boolean);
+              perms = data.permissions
+                .split(",")
+                .map((s: string) => s.trim())
+                .filter(Boolean);
             }
           }
           setPermissions(perms);
 
           // Extra fields (everything except the known typed fields and user_id)
-          const SKIP = new Set(["user_id", "first_name", "last_name", "username", "language", "created_at", "is_blocked", "role", "tariff", "status", "discount", "permissions"]);
+          const SKIP = new Set([
+            "user_id",
+            "first_name",
+            "last_name",
+            "username",
+            "language",
+            "created_at",
+            "is_blocked",
+            "role",
+            "tariff",
+            "status",
+            "discount",
+            "permissions",
+          ]);
           const extra: Record<string, string> = {};
           for (const [k, v] of Object.entries(data)) {
             if (SKIP.has(k)) continue;
@@ -82,12 +106,14 @@ export function UserEditModal({ userId, onClose, onSaved }: Props) {
           setLoading(false);
         }
       });
-    return () => { cancelled = true; };
+    return () => {
+      cancelled = true;
+    };
   }, [userId]);
 
   function togglePermission(perm: string) {
     setPermissions((prev) =>
-      prev.includes(perm) ? prev.filter((p) => p !== perm) : [...prev, perm]
+      prev.includes(perm) ? prev.filter((p) => p !== perm) : [...prev, perm],
     );
   }
 
@@ -107,7 +133,11 @@ export function UserEditModal({ userId, onClose, onSaved }: Props) {
       // Include extra fields
       for (const [k, v] of Object.entries(extraFields)) {
         if (v.startsWith("{") || v.startsWith("[")) {
-          try { patch[k] = JSON.parse(v); } catch { patch[k] = v; }
+          try {
+            patch[k] = JSON.parse(v);
+          } catch {
+            patch[k] = v;
+          }
         } else if (v === "") {
           patch[k] = null;
         } else {
@@ -141,24 +171,28 @@ export function UserEditModal({ userId, onClose, onSaved }: Props) {
             {ico("edit")} {loading ? "Завантаження…" : `Редагувати #${userId}`}
             {user?.username ? `  @${user.username}` : ""}
           </span>
-          <button className="wb-close-btn" onClick={onClose}>{icons["close"]}</button>
+          <button className="wb-close-btn" onClick={onClose}>
+            {icons["close"]}
+          </button>
         </div>
 
         <div className="wb-modal-body" style={{ overflow: "auto", flex: 1 }}>
           {loading ? (
-            <div style={{ padding: 20, textAlign: "center", color: "var(--text-muted)" }}>Завантаження…</div>
+            <div style={{ padding: 20, textAlign: "center", color: "var(--text-muted)" }}>
+              Завантаження…
+            </div>
           ) : error && !user ? (
-            <div style={{ padding: 20, textAlign: "center", color: "var(--color-error, #ef4444)" }}>Помилка: {error}</div>
+            <div style={{ padding: 20, textAlign: "center", color: "var(--color-error, #ef4444)" }}>
+              Помилка: {error}
+            </div>
           ) : (
             <div style={{ display: "flex", flexDirection: "column", gap: 16, padding: "0 4px" }}>
-
               {/* ═══ PERMISSION FIELDS ═══ */}
               <div className="wb-card">
                 <div className="wb-card-header">
                   <span className="wb-card-title">{ico("settings")} Профіль та права</span>
                 </div>
                 <div style={{ padding: 12, display: "flex", flexDirection: "column", gap: 12 }}>
-
                   {/* Role */}
                   <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
                     <label style={{ minWidth: 100, fontSize: 13, fontWeight: 600 }}>Роль</label>
@@ -169,7 +203,9 @@ export function UserEditModal({ userId, onClose, onSaved }: Props) {
                       style={{ flex: 1 }}
                     >
                       {ROLES.map((r) => (
-                        <option key={r} value={r}>{r}</option>
+                        <option key={r} value={r}>
+                          {r}
+                        </option>
                       ))}
                     </select>
                   </div>
@@ -184,7 +220,9 @@ export function UserEditModal({ userId, onClose, onSaved }: Props) {
                       style={{ flex: 1 }}
                     >
                       {TARIFFS.map((t) => (
-                        <option key={t} value={t}>{t}</option>
+                        <option key={t} value={t}>
+                          {t}
+                        </option>
                       ))}
                     </select>
                   </div>
@@ -199,14 +237,18 @@ export function UserEditModal({ userId, onClose, onSaved }: Props) {
                       style={{ flex: 1 }}
                     >
                       {STATUSES.map((s) => (
-                        <option key={s} value={s}>{s}</option>
+                        <option key={s} value={s}>
+                          {s}
+                        </option>
                       ))}
                     </select>
                   </div>
 
                   {/* Discount */}
                   <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                    <label style={{ minWidth: 100, fontSize: 13, fontWeight: 600 }}>Знижка (%)</label>
+                    <label style={{ minWidth: 100, fontSize: 13, fontWeight: 600 }}>
+                      Знижка (%)
+                    </label>
                     <input
                       type="number"
                       min={0}
@@ -220,7 +262,11 @@ export function UserEditModal({ userId, onClose, onSaved }: Props) {
 
                   {/* Permissions */}
                   <div>
-                    <label style={{ display: "block", fontSize: 13, fontWeight: 600, marginBottom: 6 }}>Дозволи</label>
+                    <label
+                      style={{ display: "block", fontSize: 13, fontWeight: 600, marginBottom: 6 }}
+                    >
+                      Дозволи
+                    </label>
                     <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
                       {PERMISSIONS.map((perm) => (
                         <button
@@ -232,8 +278,12 @@ export function UserEditModal({ userId, onClose, onSaved }: Props) {
                             fontSize: 12,
                             borderRadius: 6,
                             border: `1px solid ${permissions.includes(perm) ? "var(--accent, #6366f1)" : "var(--border, #e5e7eb)"}`,
-                            background: permissions.includes(perm) ? "var(--accent, #6366f1)" : "var(--bg-secondary, #f9fafb)",
-                            color: permissions.includes(perm) ? "#fff" : "var(--text-primary, #111827)",
+                            background: permissions.includes(perm)
+                              ? "var(--accent, #6366f1)"
+                              : "var(--bg-secondary, #f9fafb)",
+                            color: permissions.includes(perm)
+                              ? "#fff"
+                              : "var(--text-primary, #111827)",
                             cursor: "pointer",
                             transition: "all 0.15s",
                           }}
@@ -243,7 +293,6 @@ export function UserEditModal({ userId, onClose, onSaved }: Props) {
                       ))}
                     </div>
                   </div>
-
                 </div>
               </div>
 
@@ -252,12 +301,30 @@ export function UserEditModal({ userId, onClose, onSaved }: Props) {
                 <div className="wb-card-header">
                   <span className="wb-card-title">{ico("users")} Інформація</span>
                 </div>
-                <div style={{ padding: 12, display: "flex", flexDirection: "column", gap: 8, fontSize: 13 }}>
-                  <div><strong>ID:</strong> {user?.user_id}</div>
-                  <div><strong>Ім'я:</strong> {user?.first_name ?? "—"}</div>
-                  <div><strong>Username:</strong> {user?.username ? `@${user.username}` : "—"}</div>
-                  <div><strong>Мова:</strong> {user?.language ?? "—"}</div>
-                  <div><strong>Створено:</strong> {user?.created_at ?? "—"}</div>
+                <div
+                  style={{
+                    padding: 12,
+                    display: "flex",
+                    flexDirection: "column",
+                    gap: 8,
+                    fontSize: 13,
+                  }}
+                >
+                  <div>
+                    <strong>ID:</strong> {user?.user_id}
+                  </div>
+                  <div>
+                    <strong>Ім'я:</strong> {user?.first_name ?? "—"}
+                  </div>
+                  <div>
+                    <strong>Username:</strong> {user?.username ? `@${user.username}` : "—"}
+                  </div>
+                  <div>
+                    <strong>Мова:</strong> {user?.language ?? "—"}
+                  </div>
+                  <div>
+                    <strong>Створено:</strong> {user?.created_at ?? "—"}
+                  </div>
                 </div>
               </div>
 
@@ -270,12 +337,32 @@ export function UserEditModal({ userId, onClose, onSaved }: Props) {
                   <div style={{ padding: 12, display: "flex", flexDirection: "column", gap: 8 }}>
                     {Object.entries(extraFields).map(([key, val]) => (
                       <div key={key}>
-                        <label style={{ display: "block", fontSize: 12, fontWeight: 600, marginBottom: 2, color: "var(--text-secondary)" }}>{key}</label>
+                        <label
+                          style={{
+                            display: "block",
+                            fontSize: 12,
+                            fontWeight: 600,
+                            marginBottom: 2,
+                            color: "var(--text-secondary)",
+                          }}
+                        >
+                          {key}
+                        </label>
                         <textarea
                           className="wb-textarea"
-                          rows={key.includes("data") || key.includes("json") || key.includes("topics") || key.includes("galyashop") || key.includes("ttt") ? 4 : 1}
+                          rows={
+                            key.includes("data") ||
+                            key.includes("json") ||
+                            key.includes("topics") ||
+                            key.includes("galyashop") ||
+                            key.includes("ttt")
+                              ? 4
+                              : 1
+                          }
                           value={val}
-                          onChange={(e) => setExtraFields((prev) => ({ ...prev, [key]: e.target.value }))}
+                          onChange={(e) =>
+                            setExtraFields((prev) => ({ ...prev, [key]: e.target.value }))
+                          }
                           style={{ fontFamily: "var(--font-mono, monospace)", fontSize: 12 }}
                         />
                       </div>
@@ -283,10 +370,15 @@ export function UserEditModal({ userId, onClose, onSaved }: Props) {
                   </div>
                 </div>
               )}
-
             </div>
           )}
-          {error && <div style={{ padding: "8px 12px", color: "var(--color-error, #ef4444)", fontSize: 13 }}>{error}</div>}
+          {error && (
+            <div
+              style={{ padding: "8px 12px", color: "var(--color-error, #ef4444)", fontSize: 13 }}
+            >
+              {error}
+            </div>
+          )}
         </div>
 
         <div className="wb-modal-footer">

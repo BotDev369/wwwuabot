@@ -38,9 +38,7 @@ function json(data: unknown, status = 200): Response {
 }
 
 /** Відкидає службові/небезпечні ключі та серіалізує об'єкти. */
-function filterFields(
-  body: Record<string, unknown>,
-): Record<string, unknown> {
+function filterFields(body: Record<string, unknown>): Record<string, unknown> {
   const fields: Record<string, unknown> = {};
   for (const [key, value] of Object.entries(body)) {
     if (PROTECTED.has(key)) continue;
@@ -57,10 +55,7 @@ function filterFields(
 }
 
 /** SQL створення таблиці зі схемою сценарію. */
-export function ensureScenariosTable(
-  db: D1Database,
-  table: string,
-): Promise<void> {
+export function ensureScenariosTable(db: D1Database, table: string): Promise<void> {
   return db
     .prepare(
       `CREATE TABLE IF NOT EXISTS "${table}" (
@@ -89,10 +84,7 @@ export function ensureScenariosTable(
  *
  * Повертає ті самі шість функцій, які раніше експортував кожен контролер.
  */
-export function createScenariosController({
-  table,
-  ensureTable,
-}: ScenariosControllerOptions) {
+export function createScenariosController({ table, ensureTable }: ScenariosControllerOptions) {
   const ensure = ensureTable ?? (async () => {});
 
   /** POST …/read — прочитати один запис. */
@@ -106,9 +98,7 @@ export function createScenariosController({
     if (!body.codeword) return json({ error: "codeword required" }, 400);
 
     await ensure(env.DB);
-    const row = await env.DB.prepare(
-      `SELECT * FROM "${table}" WHERE codeword = ?`,
-    )
+    const row = await env.DB.prepare(`SELECT * FROM "${table}" WHERE codeword = ?`)
       .bind(body.codeword)
       .first();
     return json({ success: true, data: row ?? null });
@@ -122,8 +112,7 @@ export function createScenariosController({
     } catch {
       return json({ error: "Invalid JSON" }, 400);
     }
-    const codeword =
-      typeof body.codeword === "string" ? body.codeword.trim() : "";
+    const codeword = typeof body.codeword === "string" ? body.codeword.trim() : "";
     if (!codeword) return json({ error: "codeword required" }, 400);
 
     const now = formatSqliteDatetime();
@@ -162,17 +151,13 @@ export function createScenariosController({
       return new Response(null, { status: 304, headers: { ETag: etag } });
     }
 
-    const result = await env.DB.prepare(
-      `SELECT * FROM "${table}" ORDER BY codeword ASC`,
-    ).all();
-    const items = (result.results ?? []).map(
-      (row: Record<string, unknown>) => {
-        const copy = { ...row };
-        delete copy.buttons;
-        delete copy.rich_data;
-        return copy;
-      },
-    );
+    const result = await env.DB.prepare(`SELECT * FROM "${table}" ORDER BY codeword ASC`).all();
+    const items = (result.results ?? []).map((row: Record<string, unknown>) => {
+      const copy = { ...row };
+      delete copy.buttons;
+      delete copy.rich_data;
+      return copy;
+    });
 
     return new Response(JSON.stringify({ success: true, items }), {
       status: 200,
@@ -181,10 +166,7 @@ export function createScenariosController({
   }
 
   /** POST …/read-all — прочитати всі поля за codeword. */
-  async function handleReadAll(
-    request: Request,
-    env: Env,
-  ): Promise<Response> {
+  async function handleReadAll(request: Request, env: Env): Promise<Response> {
     let body: { codeword?: string };
     try {
       body = await request.json();
@@ -195,9 +177,7 @@ export function createScenariosController({
 
     try {
       await ensure(env.DB);
-      const row = await env.DB.prepare(
-        `SELECT * FROM "${table}" WHERE codeword = ?`,
-      )
+      const row = await env.DB.prepare(`SELECT * FROM "${table}" WHERE codeword = ?`)
         .bind(body.codeword)
         .first();
       return json({ success: true, data: row ?? null });
@@ -215,8 +195,7 @@ export function createScenariosController({
     } catch {
       return json({ error: "Invalid JSON" }, 400);
     }
-    const codeword =
-      typeof body.codeword === "string" ? body.codeword.trim() : "";
+    const codeword = typeof body.codeword === "string" ? body.codeword.trim() : "";
     if (!codeword) return json({ error: "codeword required" }, 400);
 
     const fields: Record<string, unknown> = {};
@@ -232,13 +211,9 @@ export function createScenariosController({
     try {
       await ensure(env.DB);
       const now = formatSqliteDatetime();
-      const setClause = [...keys.map((k) => `${k} = ?`), "updated_at = ?"].join(
-        ", ",
-      );
+      const setClause = [...keys.map((k) => `${k} = ?`), "updated_at = ?"].join(", ");
       const values = [...keys.map((k) => fields[k]), now];
-      await env.DB.prepare(
-        `UPDATE "${table}" SET ${setClause} WHERE codeword = ?`,
-      )
+      await env.DB.prepare(`UPDATE "${table}" SET ${setClause} WHERE codeword = ?`)
         .bind(...(values as (string | number | boolean | null)[]), codeword)
         .run();
       return json({ success: true, updated_at: now });
@@ -248,24 +223,15 @@ export function createScenariosController({
         const match = msg.match(/no such column: (\w+)/);
         if (match && fields[match[1]] !== undefined) {
           const colName = match[1];
-          const type =
-            typeof fields[colName] === "number" ? "INTEGER" : "TEXT";
+          const type = typeof fields[colName] === "number" ? "INTEGER" : "TEXT";
           await env.DB.prepare(
             `ALTER TABLE "${table}" ADD COLUMN ${colName} ${type} DEFAULT NULL`,
           ).run();
           const now2 = formatSqliteDatetime();
-          const setClause2 = [
-            ...keys.map((k) => `${k} = ?`),
-            "updated_at = ?",
-          ].join(", ");
+          const setClause2 = [...keys.map((k) => `${k} = ?`), "updated_at = ?"].join(", ");
           const values2 = [...keys.map((k) => fields[k]), now2];
-          await env.DB.prepare(
-            `UPDATE "${table}" SET ${setClause2} WHERE codeword = ?`,
-          )
-            .bind(
-              ...(values2 as (string | number | boolean | null)[]),
-              codeword,
-            )
+          await env.DB.prepare(`UPDATE "${table}" SET ${setClause2} WHERE codeword = ?`)
+            .bind(...(values2 as (string | number | boolean | null)[]), codeword)
             .run();
           return json({ success: true, updated_at: now2 });
         }
@@ -282,13 +248,10 @@ export function createScenariosController({
     } catch {
       return json({ error: "Invalid JSON" }, 400);
     }
-    const codeword =
-      typeof body.codeword === "string" ? body.codeword.trim() : "";
+    const codeword = typeof body.codeword === "string" ? body.codeword.trim() : "";
     if (!codeword) return json({ error: "codeword required" }, 400);
 
-    const result = await env.DB.prepare(
-      `DELETE FROM "${table}" WHERE codeword = ?`,
-    )
+    const result = await env.DB.prepare(`DELETE FROM "${table}" WHERE codeword = ?`)
       .bind(codeword)
       .run();
     const deleted = (result.meta?.changes ?? 0) > 0;

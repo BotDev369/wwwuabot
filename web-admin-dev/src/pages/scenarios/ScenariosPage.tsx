@@ -14,7 +14,15 @@ import { ScenarioCardModal } from "./ScenarioCardModal";
 import { icons, type IconName } from "@wwwuabot/shared";
 
 const ico = (name: IconName, size = 16) => (
-  <span style={{ display: "inline-flex", alignItems: "center", width: size, height: size, flexShrink: 0 }}>
+  <span
+    style={{
+      display: "inline-flex",
+      alignItems: "center",
+      width: size,
+      height: size,
+      flexShrink: 0,
+    }}
+  >
     {icons[name]}
   </span>
 );
@@ -41,16 +49,22 @@ export function ScenariosPage() {
     void load();
   }, [setTable, load]);
 
-  const handleTabSwitch = useCallback((newTable: ScenarioTable) => {
-    if (newTable === table) return;
-    setTable(newTable);
-    void load(true);
-  }, [table, setTable, load]);
+  const handleTabSwitch = useCallback(
+    (newTable: ScenarioTable) => {
+      if (newTable === table) return;
+      setTable(newTable);
+      void load(true);
+    },
+    [table, setTable, load],
+  );
 
   const handleCreate = useCallback(async () => {
     const codeword = window.prompt("Вкажіть кодове слово:");
     if (!codeword || !codeword.trim()) return;
-    const cw = codeword.trim().toLowerCase().replace(/[^a-z0-9_-]/g, "-");
+    const cw = codeword
+      .trim()
+      .toLowerCase()
+      .replace(/[^a-z0-9_-]/g, "-");
 
     setCreating(true);
     try {
@@ -80,34 +94,32 @@ export function ScenariosPage() {
       <PageTopbar>
         <div className="topbar-left">
           <h1 className="topbar-title">Сценарії</h1>
-          {items.length > 0 && (
-            <span className="scn-count">{items.length}</span>
-          )}
+          {items.length > 0 && <span className="scn-count">{items.length}</span>}
         </div>
         <div className="topbar-right">
-          <button
-            className="wb-btn wb-btn-primary"
-            onClick={handleCreate}
-            disabled={creating}
-          >
+          <button className="wb-btn wb-btn-primary" onClick={handleCreate} disabled={creating}>
             {creating ? "Створення…" : "+ Новий"}
           </button>
         </div>
       </PageTopbar>
 
       {/* Table toggle — Portal / Admin */}
-      <div style={{
-        padding: "0 16px",
-        marginBottom: 12,
-      }}>
-        <div style={{
-          display: "inline-flex",
-          gap: 0,
-          background: "var(--bg-1, #f1f5f9)",
-          borderRadius: 10,
-          padding: 3,
-          border: "1px solid var(--border)",
-        }}>
+      <div
+        style={{
+          padding: "0 16px",
+          marginBottom: 12,
+        }}
+      >
+        <div
+          style={{
+            display: "inline-flex",
+            gap: 0,
+            background: "var(--bg-1, #f1f5f9)",
+            borderRadius: 10,
+            padding: 3,
+            border: "1px solid var(--border)",
+          }}
+        >
           {TABLE_TABS.map((tab) => {
             const isActive = table === tab.key;
             const count = items.length;
@@ -135,14 +147,16 @@ export function ScenariosPage() {
                 {ico(tab.icon, 15)}
                 {tab.label}
                 {isActive && status !== "loading" && (
-                  <span style={{
-                    fontSize: 11,
-                    background: "var(--accent, #6366f1)",
-                    color: "#fff",
-                    padding: "1px 6px",
-                    borderRadius: 8,
-                    fontWeight: 600,
-                  }}>
+                  <span
+                    style={{
+                      fontSize: 11,
+                      background: "var(--accent, #6366f1)",
+                      color: "#fff",
+                      padding: "1px 6px",
+                      borderRadius: 8,
+                      fontWeight: 600,
+                    }}
+                  >
                     {count}
                   </span>
                 )}

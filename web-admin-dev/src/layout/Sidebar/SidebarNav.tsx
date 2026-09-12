@@ -24,9 +24,7 @@ export function SidebarNav() {
                 `sidebar-nav-item${isActive ? " sidebar-nav-item--active" : ""}`
               }
             >
-              <span className="sidebar-nav-icon">
-                {icons[item.icon]}
-              </span>
+              <span className="sidebar-nav-icon">{icons[item.icon]}</span>
               {!collapsed && <span className="sidebar-nav-label">{item.label}</span>}
             </NavLink>
           ))}

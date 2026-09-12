@@ -106,25 +106,28 @@ export function useSiteApi() {
     }
   }, []);
 
-  const updateSite = useCallback(async (slug: string, input: UpdateSiteInput): Promise<Site | null> => {
-    setLoading(true);
-    setError(null);
-    try {
-      const res = await apiFetchRaw(`/api/sites/${slug}`, {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(input),
-      });
-      if (!res.ok) throw new Error("Failed to update site");
-      const data = await res.json();
-      return data.site ?? null;
-    } catch (e) {
-      setError(e instanceof Error ? e.message : "Помилка оновлення");
-      return null;
-    } finally {
-      setLoading(false);
-    }
-  }, []);
+  const updateSite = useCallback(
+    async (slug: string, input: UpdateSiteInput): Promise<Site | null> => {
+      setLoading(true);
+      setError(null);
+      try {
+        const res = await apiFetchRaw(`/api/sites/${slug}`, {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(input),
+        });
+        if (!res.ok) throw new Error("Failed to update site");
+        const data = await res.json();
+        return data.site ?? null;
+      } catch (e) {
+        setError(e instanceof Error ? e.message : "Помилка оновлення");
+        return null;
+      } finally {
+        setLoading(false);
+      }
+    },
+    [],
+  );
 
   const deleteSite = useCallback(async (slug: string): Promise<boolean> => {
     setLoading(true);
@@ -177,48 +180,54 @@ export function useSiteApi() {
     }
   }, []);
 
-  const createPage = useCallback(async (siteSlug: string, input: CreatePageInput): Promise<SitePage | null> => {
-    setLoading(true);
-    setError(null);
-    try {
-      const res = await apiFetchRaw(`/api/sites/${siteSlug}/pages`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(input),
-      });
-      if (!res.ok) {
+  const createPage = useCallback(
+    async (siteSlug: string, input: CreatePageInput): Promise<SitePage | null> => {
+      setLoading(true);
+      setError(null);
+      try {
+        const res = await apiFetchRaw(`/api/sites/${siteSlug}/pages`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(input),
+        });
+        if (!res.ok) {
+          const data = await res.json();
+          throw new Error(data.error || "Failed to create page");
+        }
         const data = await res.json();
-        throw new Error(data.error || "Failed to create page");
+        return data.page ?? null;
+      } catch (e) {
+        setError(e instanceof Error ? e.message : "Помилка створення сторінки");
+        return null;
+      } finally {
+        setLoading(false);
       }
-      const data = await res.json();
-      return data.page ?? null;
-    } catch (e) {
-      setError(e instanceof Error ? e.message : "Помилка створення сторінки");
-      return null;
-    } finally {
-      setLoading(false);
-    }
-  }, []);
+    },
+    [],
+  );
 
-  const updatePage = useCallback(async (siteSlug: string, pageId: string, input: UpdatePageInput): Promise<SitePage | null> => {
-    setLoading(true);
-    setError(null);
-    try {
-      const res = await apiFetchRaw(`/api/sites/${siteSlug}/pages/${pageId}`, {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(input),
-      });
-      if (!res.ok) throw new Error("Failed to update page");
-      const data = await res.json();
-      return data.page ?? null;
-    } catch (e) {
-      setError(e instanceof Error ? e.message : "Помилка оновлення сторінки");
-      return null;
-    } finally {
-      setLoading(false);
-    }
-  }, []);
+  const updatePage = useCallback(
+    async (siteSlug: string, pageId: string, input: UpdatePageInput): Promise<SitePage | null> => {
+      setLoading(true);
+      setError(null);
+      try {
+        const res = await apiFetchRaw(`/api/sites/${siteSlug}/pages/${pageId}`, {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(input),
+        });
+        if (!res.ok) throw new Error("Failed to update page");
+        const data = await res.json();
+        return data.page ?? null;
+      } catch (e) {
+        setError(e instanceof Error ? e.message : "Помилка оновлення сторінки");
+        return null;
+      } finally {
+        setLoading(false);
+      }
+    },
+    [],
+  );
 
   const deletePage = useCallback(async (siteSlug: string, pageId: string): Promise<boolean> => {
     setLoading(true);
@@ -257,21 +266,24 @@ export function useSiteApi() {
 
   // ── Catalog ─────────────────────────────────────────────
 
-  const fetchCatalog = useCallback(async (page = 1, limit = 20): Promise<{ sites: CatalogSite[]; total: number }> => {
-    setLoading(true);
-    setError(null);
-    try {
-      const res = await apiFetchRaw(`/api/catalog?page=${page}&limit=${limit}`);
-      if (!res.ok) throw new Error("Failed to load catalog");
-      const data = await res.json();
-      return { sites: data.sites ?? [], total: data.total ?? 0 };
-    } catch (e) {
-      setError(e instanceof Error ? e.message : "Помилка завантаження каталогу");
-      return { sites: [], total: 0 };
-    } finally {
-      setLoading(false);
-    }
-  }, []);
+  const fetchCatalog = useCallback(
+    async (page = 1, limit = 20): Promise<{ sites: CatalogSite[]; total: number }> => {
+      setLoading(true);
+      setError(null);
+      try {
+        const res = await apiFetchRaw(`/api/catalog?page=${page}&limit=${limit}`);
+        if (!res.ok) throw new Error("Failed to load catalog");
+        const data = await res.json();
+        return { sites: data.sites ?? [], total: data.total ?? 0 };
+      } catch (e) {
+        setError(e instanceof Error ? e.message : "Помилка завантаження каталогу");
+        return { sites: [], total: 0 };
+      } finally {
+        setLoading(false);
+      }
+    },
+    [],
+  );
 
   return {
     loading,

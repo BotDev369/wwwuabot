@@ -6,22 +6,22 @@
  * @module packages/ui/src/blocks/ProgressBlock
  */
 
-import type { BlockComponentProps } from '@wwwuabot/shared/types/page-config';
+import type { BlockComponentProps } from "@wwwuabot/shared/types/page-config";
 
 const COLOR_MAP: Record<string, string> = {
-  accent: 'var(--accent)',
-  green: 'var(--green)',
-  yellow: 'var(--yellow)',
-  red: 'var(--red)',
+  accent: "var(--accent)",
+  green: "var(--green)",
+  yellow: "var(--yellow)",
+  red: "var(--red)",
 };
 
 export function ProgressBlock({ block }: BlockComponentProps) {
   const {
     value = 0,
     max = 100,
-    label = '',
+    label = "",
     showPercent = true,
-    color = 'accent',
+    color = "accent",
   } = block.props as {
     value?: number;
     max?: number;
@@ -38,9 +38,9 @@ export function ProgressBlock({ block }: BlockComponentProps) {
         <div
           className="wb-block-progress__header"
           style={{
-            display: 'flex',
-            justifyContent: 'space-between',
-            marginBottom: 'var(--sp-2)',
+            display: "flex",
+            justifyContent: "space-between",
+            marginBottom: "var(--sp-2)",
           }}
         >
           {label && <span className="wb-text-sm wb-text-primary">{label}</span>}
@@ -53,20 +53,20 @@ export function ProgressBlock({ block }: BlockComponentProps) {
       <div
         className="wb-block-progress__track"
         style={{
-          height: '8px',
-          background: 'var(--bg-3)',
-          borderRadius: 'var(--radius-full)',
-          overflow: 'hidden',
+          height: "8px",
+          background: "var(--bg-3)",
+          borderRadius: "var(--radius-full)",
+          overflow: "hidden",
         }}
       >
         <div
           className="wb-block-progress__fill"
           style={{
-            height: '100%',
+            height: "100%",
             width: `${percent}%`,
             background: COLOR_MAP[color] ?? COLOR_MAP.accent,
-            borderRadius: 'var(--radius-full)',
-            transition: 'width var(--duration-normal) var(--ease)',
+            borderRadius: "var(--radius-full)",
+            transition: "width var(--duration-normal) var(--ease)",
           }}
         />
       </div>

@@ -159,8 +159,6 @@ function setScenarioScreen(ctx: AppContext, scenario: Scenario): void {
   };
 }
 
-
-
 /**
  * Видаляє повідомлення користувача.
  */

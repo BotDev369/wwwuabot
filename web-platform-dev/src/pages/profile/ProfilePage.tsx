@@ -73,12 +73,7 @@ export function ProfilePage() {
           <h1>Профіль</h1>
         </div>
 
-        <UserProfileCard
-          user={profile!}
-          variant="platform"
-          loading={loading}
-          error={error}
-        />
+        <UserProfileCard user={profile!} variant="platform" loading={loading} error={error} />
       </section>
     </main>
   );

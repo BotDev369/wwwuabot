@@ -29,10 +29,7 @@ function json(data: unknown, status = 200): Response {
 // ── Handlers ──────────────────────────────────────────────────────
 
 /** GET /api/admin/users/list — список користувачів. */
-export async function handleListUsers(
-  _request: Request,
-  env: Env,
-): Promise<Response> {
+export async function handleListUsers(_request: Request, env: Env): Promise<Response> {
   try {
     const service = new UsersService(env);
     const items = await service.listUsers();
@@ -44,10 +41,7 @@ export async function handleListUsers(
 }
 
 /** POST /api/admin/users/read — прочитати користувача. */
-export async function handleReadUser(
-  request: Request,
-  env: Env,
-): Promise<Response> {
+export async function handleReadUser(request: Request, env: Env): Promise<Response> {
   let body: { user_id?: number };
   try {
     body = await request.json();
@@ -70,10 +64,7 @@ export async function handleReadUser(
 }
 
 /** POST /api/admin/users/update — оновити поля користувача. */
-export async function handleUpdateUser(
-  request: Request,
-  env: Env,
-): Promise<Response> {
+export async function handleUpdateUser(request: Request, env: Env): Promise<Response> {
   let body: Record<string, unknown>;
   try {
     body = await request.json();
@@ -82,9 +73,7 @@ export async function handleUpdateUser(
   }
 
   const userId =
-    typeof body.user_id === "number"
-      ? body.user_id
-      : parseInt(String(body.user_id), 10);
+    typeof body.user_id === "number" ? body.user_id : parseInt(String(body.user_id), 10);
 
   if (!userId || isNaN(userId)) {
     return json({ error: "user_id required" }, 400);
@@ -102,10 +91,7 @@ export async function handleUpdateUser(
 }
 
 /** POST /api/admin/users/delete — видалити користувача. */
-export async function handleDeleteUser(
-  request: Request,
-  env: Env,
-): Promise<Response> {
+export async function handleDeleteUser(request: Request, env: Env): Promise<Response> {
   let body: { user_id?: number };
   try {
     body = await request.json();
@@ -128,10 +114,7 @@ export async function handleDeleteUser(
 }
 
 /** POST /api/admin/users/block — заблокувати/розблокувати. */
-export async function handleBlockUser(
-  request: Request,
-  env: Env,
-): Promise<Response> {
+export async function handleBlockUser(request: Request, env: Env): Promise<Response> {
   let body: { user_id?: number; blocked?: boolean };
   try {
     body = await request.json();
@@ -154,10 +137,7 @@ export async function handleBlockUser(
 }
 
 /** POST /api/admin/users/bulk — bulk delete/block/unblock. */
-export async function handleBulkUsers(
-  request: Request,
-  env: Env,
-): Promise<Response> {
+export async function handleBulkUsers(request: Request, env: Env): Promise<Response> {
   let body: { action?: string; ids?: number[] };
   try {
     body = await request.json();
@@ -187,10 +167,7 @@ export async function handleBulkUsers(
 }
 
 /** POST /api/admin/users/message — надіслати повідомлення через Telegram. */
-export async function handleUserMessage(
-  request: Request,
-  env: Env,
-): Promise<Response> {
+export async function handleUserMessage(request: Request, env: Env): Promise<Response> {
   if (!env.BOT_TOKEN) {
     return json({ error: "BOT_TOKEN not configured" }, 500);
   }
@@ -223,10 +200,7 @@ export async function handleUserMessage(
  * інакше будь-хто читав би роль, тариф і права будь-якого користувача.
  * Повертає role, tariff, status, discount, permissions для conditional rendering.
  */
-export async function handleUserProfile(
-  request: Request,
-  env: Env,
-): Promise<Response> {
+export async function handleUserProfile(request: Request, env: Env): Promise<Response> {
   const identity = await resolveUserId(request, env);
   if (!identity.ok) return identity.response;
   const userId = identity.userId;

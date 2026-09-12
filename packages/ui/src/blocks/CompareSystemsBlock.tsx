@@ -82,14 +82,17 @@ export function CompareSystemsBlock({ block }: BlockComponentProps) {
     [selected],
   );
 
-  const toggleSystem = useCallback((id: string, value: boolean) => {
-    setSelected((prev) => {
-      const next = { ...prev, [id]: { ...(prev[id] ?? {}) } };
-      const sys = systems.find((s) => s.id === id);
-      for (const p of sys?.parameters ?? []) next[id][p.key] = value;
-      return next;
-    });
-  }, [systems]);
+  const toggleSystem = useCallback(
+    (id: string, value: boolean) => {
+      setSelected((prev) => {
+        const next = { ...prev, [id]: { ...(prev[id] ?? {}) } };
+        const sys = systems.find((s) => s.id === id);
+        for (const p of sys?.parameters ?? []) next[id][p.key] = value;
+        return next;
+      });
+    },
+    [systems],
+  );
 
   const toggleParam = useCallback((id: string, key: string, value: boolean) => {
     setSelected((prev) => ({
@@ -100,15 +103,11 @@ export function CompareSystemsBlock({ block }: BlockComponentProps) {
 
   const compare = useCallback(() => {
     if (dates.length === 0) return;
-    const sys = systems
-      .filter((s) => s.implemented && isSystemSelected(s.id))
-      .map((s) => s.id);
+    const sys = systems.filter((s) => s.implemented && isSystemSelected(s.id)).map((s) => s.id);
     const prm = Array.from(
       new Set(
         systems.flatMap((s) =>
-          (s.parameters ?? [])
-            .filter((p) => selected[s.id]?.[p.key])
-            .map((p) => p.key),
+          (s.parameters ?? []).filter((p) => selected[s.id]?.[p.key]).map((p) => p.key),
         ),
       ),
     );
@@ -139,7 +138,14 @@ export function CompareSystemsBlock({ block }: BlockComponentProps) {
       </p>
 
       {/* System selection */}
-      <div style={{ display: "flex", flexDirection: "column", gap: "var(--sp-4)", marginBottom: "var(--sp-4)" }}>
+      <div
+        style={{
+          display: "flex",
+          flexDirection: "column",
+          gap: "var(--sp-4)",
+          marginBottom: "var(--sp-4)",
+        }}
+      >
         {systems.map((s) => (
           <div
             key={s.id}
@@ -150,7 +156,14 @@ export function CompareSystemsBlock({ block }: BlockComponentProps) {
               borderRadius: "var(--radius-md)",
             }}
           >
-            <label style={{ display: "flex", alignItems: "center", gap: "var(--sp-2)", cursor: "pointer" }}>
+            <label
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: "var(--sp-2)",
+                cursor: "pointer",
+              }}
+            >
               <input
                 type="checkbox"
                 checked={s.implemented && isSystemSelected(s.id)}

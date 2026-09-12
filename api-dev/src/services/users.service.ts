@@ -22,8 +22,7 @@ export class UsersService {
 
   /** Гарантує наявність колонки is_blocked. */
   async ensureIsBlocked(): Promise<void> {
-    await this.env.DB
-      .prepare("ALTER TABLE users ADD COLUMN is_blocked INTEGER DEFAULT 0")
+    await this.env.DB.prepare("ALTER TABLE users ADD COLUMN is_blocked INTEGER DEFAULT 0")
       .run()
       .catch(() => {});
   }
@@ -91,9 +90,7 @@ export class UsersService {
           ).run();
           const setClause2 = keys.map((k) => `${k} = ?`).join(", ");
           const values2 = keys.map((k) => fields[k]);
-          await this.env.DB.prepare(
-            `UPDATE users SET ${setClause2} WHERE user_id = ?`,
-          )
+          await this.env.DB.prepare(`UPDATE users SET ${setClause2} WHERE user_id = ?`)
             .bind(...values2, userId)
             .run();
           return;
@@ -116,9 +113,7 @@ export class UsersService {
     await this.ensureIsBlocked();
     const blockedVal = blocked ? 1 : 0;
     try {
-      const current = await this.env.DB.prepare(
-        "SELECT is_blocked FROM users WHERE user_id = ?",
-      )
+      const current = await this.env.DB.prepare("SELECT is_blocked FROM users WHERE user_id = ?")
         .bind(userId)
         .first<{ is_blocked: number }>();
       const wasBlocked = current?.is_blocked === 1;
@@ -215,17 +210,14 @@ export class UsersService {
       throw new Error("BOT_TOKEN not configured");
     }
 
-    const tgRes = await fetch(
-      `https://api.telegram.org/bot${this.env.BOT_TOKEN}/sendMessage`,
-      {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          chat_id: userId,
-          text,
-        }),
-      },
-    );
+    const tgRes = await fetch(`https://api.telegram.org/bot${this.env.BOT_TOKEN}/sendMessage`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        chat_id: userId,
+        text,
+      }),
+    });
 
     const tgData = (await tgRes.json()) as { ok?: boolean; description?: string };
     if (!tgData.ok) {
@@ -292,9 +284,7 @@ export class UsersService {
     let photoUrl = "";
 
     try {
-      const row = await this.env.DB.prepare(
-        "SELECT * FROM scenarios WHERE codeword = ?",
-      )
+      const row = await this.env.DB.prepare("SELECT * FROM scenarios WHERE codeword = ?")
         .bind(codeword)
         .first();
 
@@ -317,9 +307,7 @@ export class UsersService {
 
     if (!isNowBlocked) {
       try {
-        await this.env.DB.prepare(
-          "UPDATE users SET active_scenario = NULL WHERE user_id = ?",
-        )
+        await this.env.DB.prepare("UPDATE users SET active_scenario = NULL WHERE user_id = ?")
           .bind(userId)
           .run();
       } catch {
@@ -329,40 +317,30 @@ export class UsersService {
 
     try {
       if (photoUrl) {
-        const res = await fetch(
-          `https://api.telegram.org/bot${this.env.BOT_TOKEN}/sendPhoto`,
-          {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-              chat_id: userId,
-              photo: photoUrl,
-              caption: captionText,
-              parse_mode: "HTML",
-              reply_markup:
-                buttons.length > 0 ? { inline_keyboard: buttons } : undefined,
-            }),
-          },
-        );
+        const res = await fetch(`https://api.telegram.org/bot${this.env.BOT_TOKEN}/sendPhoto`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            chat_id: userId,
+            photo: photoUrl,
+            caption: captionText,
+            parse_mode: "HTML",
+            reply_markup: buttons.length > 0 ? { inline_keyboard: buttons } : undefined,
+          }),
+        });
         if (!res.ok) {
-          await fetch(
-            `https://api.telegram.org/bot${this.env.BOT_TOKEN}/sendMessage`,
-            {
-              method: "POST",
-              headers: { "Content-Type": "application/json" },
-              body: JSON.stringify({ chat_id: userId, text: captionText }),
-            },
-          );
-        }
-      } else {
-        await fetch(
-          `https://api.telegram.org/bot${this.env.BOT_TOKEN}/sendMessage`,
-          {
+          await fetch(`https://api.telegram.org/bot${this.env.BOT_TOKEN}/sendMessage`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ chat_id: userId, text: captionText }),
-          },
-        );
+          });
+        }
+      } else {
+        await fetch(`https://api.telegram.org/bot${this.env.BOT_TOKEN}/sendMessage`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ chat_id: userId, text: captionText }),
+        });
       }
     } catch {
       // Telegram API недоступний — ігноруємо

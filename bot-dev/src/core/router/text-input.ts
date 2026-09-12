@@ -18,10 +18,7 @@ export interface TextInputResult {
  * @param currentScenario - Поточний активний сценарій
  * @returns Результат обробки
  */
-export function handleTextInput(
-  text: string,
-  currentScenario: Scenario,
-): TextInputResult {
+export function handleTextInput(text: string, currentScenario: Scenario): TextInputResult {
   // SEC-3: Валідуємо текст перед обробкою
   const validatedText = validateUserText(text);
   if (validatedText === null) {

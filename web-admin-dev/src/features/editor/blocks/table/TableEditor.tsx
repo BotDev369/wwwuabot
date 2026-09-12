@@ -134,8 +134,8 @@ export function TableEditor({ block, idx, total }: Props) {
                 onClick={() => removeRow(r)}
                 title="Видалити рядок"
               >
-              {icons["close"]}
-            </button>
+                {icons["close"]}
+              </button>
             </div>
           ))}
         </div>

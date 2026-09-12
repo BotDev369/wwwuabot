@@ -12,7 +12,10 @@ import type { BlockDefinition, BlockZone, BlockCategory } from "../../types/page
 // ── Field shorthands ────────────────────────────────────────────────
 
 /** Текстове поле. */
-export function s(title: string, opts?: { default?: string; format?: string }): Record<string, unknown> {
+export function s(
+  title: string,
+  opts?: { default?: string; format?: string },
+): Record<string, unknown> {
   const field: Record<string, unknown> = { type: "string", title };
   if (opts?.default !== undefined) field.default = opts.default;
   if (opts?.format) field.format = opts.format;
@@ -34,7 +37,11 @@ export function b(title: string, opts?: { default?: boolean }): Record<string, u
 }
 
 /** Enum поле (випадаючий список). */
-export function e(title: string, values: string[], opts?: { default?: string }): Record<string, unknown> {
+export function e(
+  title: string,
+  values: string[],
+  opts?: { default?: string },
+): Record<string, unknown> {
   const field: Record<string, unknown> = { type: "string", title, enum: values };
   if (opts?.default !== undefined) field.default = opts.default;
   return field;
@@ -46,7 +53,11 @@ export function sa(title: string): Record<string, unknown> {
 }
 
 /** Масив об'єктів з визначеними полями. */
-export function oa(title: string, itemProps: Record<string, Record<string, unknown>>, required?: string[]): Record<string, unknown> {
+export function oa(
+  title: string,
+  itemProps: Record<string, Record<string, unknown>>,
+  required?: string[],
+): Record<string, unknown> {
   return {
     type: "array",
     title,

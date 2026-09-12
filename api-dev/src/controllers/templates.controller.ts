@@ -51,10 +51,7 @@ export function canReadTemplate(
 // ── Handlers ─────────────────────────────────────────────────
 
 /** GET /api/templates — список шаблонів. */
-export async function handleListTemplates(
-  request: Request,
-  env: Env,
-): Promise<Response> {
+export async function handleListTemplates(request: Request, env: Env): Promise<Response> {
   // Публічний список: без ідентичності віддаємо лише системні шаблони.
   const userId = await tryResolveUserId(request, env);
 
@@ -88,10 +85,7 @@ export async function handleGetTemplate(
 }
 
 /** POST /api/templates — створити шаблон. */
-export async function handleCreateTemplate(
-  request: Request,
-  env: Env,
-): Promise<Response> {
+export async function handleCreateTemplate(request: Request, env: Env): Promise<Response> {
   const identity = await resolveUserId(request, env);
   if (!identity.ok) return identity.response;
   const userId = identity.userId;
@@ -161,7 +155,10 @@ export async function handleUpdateTemplate(
       name: typeof body.name === "string" ? body.name : undefined,
       description: typeof body.description === "string" ? body.description : undefined,
       thumbnail: typeof body.thumbnail === "string" ? body.thumbnail : undefined,
-      config: body.config as unknown as import("@wwwuabot/shared/types/site").SiteTemplateConfig | import("@wwwuabot/shared/types/site").PageTemplateConfig | undefined,
+      config: body.config as unknown as
+        | import("@wwwuabot/shared/types/site").SiteTemplateConfig
+        | import("@wwwuabot/shared/types/site").PageTemplateConfig
+        | undefined,
       tags: Array.isArray(body.tags) ? body.tags : undefined,
     });
 

@@ -5,11 +5,7 @@ import { SaveActionButtons } from "./SaveActionButtons";
 describe("SaveActionButtons (єдиний модуль дій збереження та закриття)", () => {
   it("renders all 3 actions with default labels and correct structure", () => {
     const html = renderToStaticMarkup(
-      <SaveActionButtons
-        onSaveAndClose={() => {}}
-        onSave={() => {}}
-        onClose={() => {}}
-      />
+      <SaveActionButtons onSaveAndClose={() => {}} onSave={() => {}} onClose={() => {}} />,
     );
 
     // Module container
@@ -37,7 +33,7 @@ describe("SaveActionButtons (єдиний модуль дій збереженн
         saveAndCloseLabel="Застосувати і вийти"
         saveLabel="Тільки зберегти"
         closeLabel="Скасувати"
-      />
+      />,
     );
 
     expect(html).toContain("Застосувати і вийти");
@@ -53,7 +49,7 @@ describe("SaveActionButtons (єдиний модуль дій збереженн
         onClose={() => {}}
         saving={true}
         savingAction="saveAndClose"
-      />
+      />,
     );
 
     expect(html).toContain("Збереження…");
@@ -69,7 +65,7 @@ describe("SaveActionButtons (єдиний модуль дій збереженн
         onClose={() => {}}
         saving={true}
         savingAction="save"
-      />
+      />,
     );
 
     expect(html).toContain("Збереження…");
@@ -84,7 +80,7 @@ describe("SaveActionButtons (єдиний модуль дій збереженн
         onClose={() => {}}
         saved={true}
         savedMessage="Збережено!"
-      />
+      />,
     );
 
     expect(html).toContain("Збережено!");
@@ -99,7 +95,7 @@ describe("SaveActionButtons (єдиний модуль дій збереженн
         onClose={() => {}}
         success={true}
         successMessage="✓ Успішно збережено"
-      />
+      />,
     );
 
     expect(html).toContain("wb-save-actions--success");
@@ -114,7 +110,7 @@ describe("SaveActionButtons (єдиний модуль дій збереженн
         onSave={() => {}}
         onClose={() => {}}
         size="sm"
-      />
+      />,
     );
 
     expect(html).toContain("wb-btn-sm");

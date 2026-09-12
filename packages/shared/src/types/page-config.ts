@@ -19,7 +19,7 @@ export type {
   BlockCategory,
   BlockDefinition,
   BlockComponentProps,
-} from './page-config.types';
+} from "./page-config.types";
 
 // ── Re-export utils ───────────────────────────────────────────────
 export {
@@ -27,4 +27,4 @@ export {
   createEmptyPageConfig,
   parsePageConfig,
   generateBlockId,
-} from './page-config.utils';
+} from "./page-config.utils";

@@ -36,10 +36,7 @@ export async function handleAnalysisRead(
 }
 
 // ── POST /api/mydate/analyze ────────────────────────────────────────
-export async function handleAnalyze(
-  request: Request,
-  env: Env,
-): Promise<Response> {
+export async function handleAnalyze(request: Request, env: Env): Promise<Response> {
   try {
     const body = (await request.json()) as { date?: string; systemId?: string };
     const date = body?.date;
@@ -81,10 +78,7 @@ export async function handleSystems(env: Env): Promise<Response> {
 }
 
 // ── POST /api/mydate/compare ────────────────────────────────────────
-export async function handleCompare(
-  request: Request,
-  env: Env,
-): Promise<Response> {
+export async function handleCompare(request: Request, env: Env): Promise<Response> {
   try {
     const body = (await request.json()) as {
       dates?: string[];

@@ -7,8 +7,8 @@
  * @module packages/ui/src/blocks/VideoBlock
  */
 
-import { useMemo } from 'react';
-import type { BlockComponentProps } from '@wwwuabot/shared/types/page-config';
+import { useMemo } from "react";
+import type { BlockComponentProps } from "@wwwuabot/shared/types/page-config";
 
 /** Extract YouTube video ID from various URL formats. */
 function getYouTubeId(url: string): string | null {
@@ -26,9 +26,9 @@ function getVimeoId(url: string): string | null {
 
 export function VideoBlock({ block }: BlockComponentProps) {
   const {
-    url = '',
-    title = '',
-    caption = '',
+    url = "",
+    title = "",
+    caption = "",
     autoplay = false,
     loop = false,
   } = block.props as {
@@ -45,10 +45,10 @@ export function VideoBlock({ block }: BlockComponentProps) {
     const ytId = getYouTubeId(url);
     if (ytId) {
       const params = new URLSearchParams({
-        rel: '0',
-        modestbranding: '1',
-        ...(autoplay ? { autoplay: '1' } : {}),
-        ...(loop ? { loop: '1', playlist: ytId } : {}),
+        rel: "0",
+        modestbranding: "1",
+        ...(autoplay ? { autoplay: "1" } : {}),
+        ...(loop ? { loop: "1", playlist: ytId } : {}),
       });
       return `https://www.youtube.com/embed/${ytId}?${params}`;
     }
@@ -56,8 +56,8 @@ export function VideoBlock({ block }: BlockComponentProps) {
     const vimeoId = getVimeoId(url);
     if (vimeoId) {
       const params = new URLSearchParams({
-        ...(autoplay ? { autoplay: '1' } : {}),
-        ...(loop ? { loop: '1' } : {}),
+        ...(autoplay ? { autoplay: "1" } : {}),
+        ...(loop ? { loop: "1" } : {}),
       });
       return `https://player.vimeo.com/video/${vimeoId}?${params}`;
     }
@@ -72,18 +72,16 @@ export function VideoBlock({ block }: BlockComponentProps) {
 
   return (
     <figure className="wb-block-video">
-      {title && (
-        <h4 className="wb-block-video__title wb-font-semibold wb-mb-2">{title}</h4>
-      )}
+      {title && <h4 className="wb-block-video__title wb-font-semibold wb-mb-2">{title}</h4>}
       <div
         className="wb-block-video__wrapper"
         style={{
-          position: 'relative',
-          paddingBottom: isDirect ? 0 : '56.25%', // 16:9
-          height: isDirect ? 'auto' : 0,
-          overflow: 'hidden',
-          borderRadius: 'var(--radius-md)',
-          background: 'var(--bg-2)',
+          position: "relative",
+          paddingBottom: isDirect ? 0 : "56.25%", // 16:9
+          height: isDirect ? "auto" : 0,
+          overflow: "hidden",
+          borderRadius: "var(--radius-md)",
+          background: "var(--bg-2)",
         }}
       >
         {isDirect ? (
@@ -92,21 +90,21 @@ export function VideoBlock({ block }: BlockComponentProps) {
             controls
             autoPlay={autoplay}
             loop={loop}
-            style={{ width: '100%', borderRadius: 'var(--radius-md)' }}
+            style={{ width: "100%", borderRadius: "var(--radius-md)" }}
           />
         ) : (
           <iframe
             src={embedUrl}
-            title={title || 'Video'}
+            title={title || "Video"}
             allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
             allowFullScreen
             style={{
-              position: 'absolute',
+              position: "absolute",
               top: 0,
               left: 0,
-              width: '100%',
-              height: '100%',
-              border: 'none',
+              width: "100%",
+              height: "100%",
+              border: "none",
             }}
           />
         )}

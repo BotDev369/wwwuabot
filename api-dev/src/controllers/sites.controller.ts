@@ -39,10 +39,7 @@ function json(data: unknown, status = 200): Response {
 // ── Handlers ─────────────────────────────────────────────────
 
 /** POST /api/sites — створити сайт. */
-export async function handleCreateSite(
-  request: Request,
-  env: Env,
-): Promise<Response> {
+export async function handleCreateSite(request: Request, env: Env): Promise<Response> {
   const identity = await resolveUserId(request, env);
   if (!identity.ok) return identity.response;
   const userId = identity.userId;
@@ -92,10 +89,7 @@ export async function handleCreateSite(
 }
 
 /** GET /api/sites — мої сайти. */
-export async function handleListSites(
-  request: Request,
-  env: Env,
-): Promise<Response> {
+export async function handleListSites(request: Request, env: Env): Promise<Response> {
   const identity = await resolveUserId(request, env);
   if (!identity.ok) return identity.response;
   const userId = identity.userId;
@@ -110,11 +104,7 @@ export async function handleListSites(
 }
 
 /** GET /api/sites/:slug — отримати сайт. */
-export async function handleGetSite(
-  request: Request,
-  env: Env,
-  slug: string,
-): Promise<Response> {
+export async function handleGetSite(request: Request, env: Env, slug: string): Promise<Response> {
   const identity = await resolveUserId(request, env);
   if (!identity.ok) return identity.response;
   const userId = identity.userId;

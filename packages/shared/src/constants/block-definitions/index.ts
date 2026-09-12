@@ -18,18 +18,18 @@
  * @module packages/shared/src/constants/block-definitions
  */
 
-import type { BlockDefinition } from '../../types/page-config';
+import type { BlockDefinition } from "../../types/page-config";
 
 // ── Категорії блоків ──────────────────────────────────────────────
-import { contentBlocks } from './content';
-import { layoutBlocks } from './layout';
-import { navigationBlocks } from './navigation';
-import { dataBlocks } from './data';
-import { commerceBlocks } from './commerce';
-import { formsBlocks } from './forms';
-import { botDomainBlocks } from './bot-domain';
-import { analyticsBlocks } from './analytics';
-import { rawBlocks } from './raw';
+import { contentBlocks } from "./content";
+import { layoutBlocks } from "./layout";
+import { navigationBlocks } from "./navigation";
+import { dataBlocks } from "./data";
+import { commerceBlocks } from "./commerce";
+import { formsBlocks } from "./forms";
+import { botDomainBlocks } from "./bot-domain";
+import { analyticsBlocks } from "./analytics";
+import { rawBlocks } from "./raw";
 
 // ── Повний реєстр блоків — 29 типів, 9 категорій ──────────────────
 export const BLOCK_DEFINITIONS: BlockDefinition[] = [
@@ -50,31 +50,23 @@ export const BLOCK_DEFINITIONS: BlockDefinition[] = [
  * Отримати визначення блоку за типом.
  * Повертає undefined якщо тип не знайдено.
  */
-export function getBlockDefinition(
-  type: string,
-): BlockDefinition | undefined {
+export function getBlockDefinition(type: string): BlockDefinition | undefined {
   return BLOCK_DEFINITIONS.find((def) => def.type === type);
 }
 
 /**
  * Отримати всі блоки, сумісні з певною зоною.
  */
-export function getBlocksForZone(
-  zone: string,
-): BlockDefinition[] {
+export function getBlocksForZone(zone: string): BlockDefinition[] {
   return BLOCK_DEFINITIONS.filter(
-    (def) =>
-      def.compatibleZones.length === 0 ||
-      def.compatibleZones.includes(zone as never),
+    (def) => def.compatibleZones.length === 0 || def.compatibleZones.includes(zone as never),
   );
 }
 
 /**
  * Отримати блоки за категорією.
  */
-export function getBlocksByCategory(
-  category: string,
-): BlockDefinition[] {
+export function getBlocksByCategory(category: string): BlockDefinition[] {
   return BLOCK_DEFINITIONS.filter((def) => def.category === category);
 }
 

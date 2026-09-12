@@ -11,11 +11,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { useParams } from "react-router-dom";
-import type {
-  PageConfig,
-  BlockContext,
-  UserProfile,
-} from "@wwwuabot/shared/types/page-config";
+import type { PageConfig, BlockContext, UserProfile } from "@wwwuabot/shared/types/page-config";
 import { parsePageConfig } from "@wwwuabot/shared/types/page-config";
 import { PageRenderer } from "@wwwuabot/ui/PageRenderer";
 import { apiFetchRaw } from "@/shared/api/client";
@@ -51,8 +47,7 @@ const FALLBACK_PAGE: PageConfig = {
         order: 0,
         props: {
           title: "Сторінка тимчасово недоступна",
-          content:
-            "Не вдалося завантажити вміст зі сценарію. Спробуйте оновити сторінку пізніше.",
+          content: "Не вдалося завантажити вміст зі сценарію. Спробуйте оновити сторінку пізніше.",
           level: "body",
           align: "center",
         },
@@ -118,9 +113,7 @@ export function ScenarioPage() {
       setStatus("loading");
       setErrorMsg(null);
       try {
-        const res = await apiFetchRaw(
-          `/api/scenario/${encodeURIComponent(scenarioSlug)}`,
-        );
+        const res = await apiFetchRaw(`/api/scenario/${encodeURIComponent(scenarioSlug)}`);
         if (cancelled) return;
 
         if (!res.ok) {
@@ -144,9 +137,7 @@ export function ScenarioPage() {
         let config: PageConfig | null = null;
         if (data.pageData) {
           config = parsePageConfig(
-            typeof data.pageData === "string"
-              ? data.pageData
-              : JSON.stringify(data.pageData),
+            typeof data.pageData === "string" ? data.pageData : JSON.stringify(data.pageData),
           );
         }
 
@@ -198,9 +189,7 @@ export function ScenarioPage() {
     <PageRenderer
       config={activeConfig}
       context={
-        status === "fallback"
-          ? { codeword: "__base__", title: null, photoUrl: null }
-          : context
+        status === "fallback" ? { codeword: "__base__", title: null, photoUrl: null } : context
       }
       className="page-layout"
     />

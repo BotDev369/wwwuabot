@@ -15,22 +15,13 @@
  * @module api-dev/src/controllers/scenarios-admin.controller
  */
 
-import {
-  createScenariosController,
-  ensureScenariosTable,
-} from "./scenarios.controller.factory";
+import { createScenariosController, ensureScenariosTable } from "./scenarios.controller.factory";
 
 /** Назва таблиці для admin-сценаріїв. */
 const TABLE = "scenarios-admin";
 
-export const {
-  handleRead,
-  handleWrite,
-  handleList,
-  handleReadAll,
-  handleUpdate,
-  handleDelete,
-} = createScenariosController({
-  table: TABLE,
-  ensureTable: (db) => ensureScenariosTable(db, TABLE),
-});
+export const { handleRead, handleWrite, handleList, handleReadAll, handleUpdate, handleDelete } =
+  createScenariosController({
+    table: TABLE,
+    ensureTable: (db) => ensureScenariosTable(db, TABLE),
+  });

@@ -67,7 +67,8 @@ export function PageBuilderInline({ config, onChange, codeword, title, photoUrl 
   const handleToggleZone = useCallback((zone: BlockZone) => {
     setExpandedZones((prev) => {
       const next = new Set(prev);
-      if (next.has(zone)) next.delete(zone); else next.add(zone);
+      if (next.has(zone)) next.delete(zone);
+      else next.add(zone);
       return next;
     });
   }, []);
@@ -82,8 +83,12 @@ export function PageBuilderInline({ config, onChange, codeword, title, photoUrl 
     [activeZones, expandedZones],
   );
 
-  const handleExpandAll = useCallback(() => { setExpandedZones(new Set(activeZones)); }, [activeZones]);
-  const handleCollapseAll = useCallback(() => { setExpandedZones(new Set()); }, []);
+  const handleExpandAll = useCallback(() => {
+    setExpandedZones(new Set(activeZones));
+  }, [activeZones]);
+  const handleCollapseAll = useCallback(() => {
+    setExpandedZones(new Set());
+  }, []);
 
   const handleUpdateZoneBlocks = useCallback(
     (zone: BlockZone, blocks: PageBlock[]) => {
@@ -95,7 +100,10 @@ export function PageBuilderInline({ config, onChange, codeword, title, photoUrl 
   const handleAddZone = useCallback(
     (zone: BlockZone) => {
       const currentVisible = getActiveZones(config);
-      if (currentVisible.includes(zone)) { setShowZoneModal(false); return; }
+      if (currentVisible.includes(zone)) {
+        setShowZoneModal(false);
+        return;
+      }
       onChange({ ...config, visibleZones: [...currentVisible, zone] });
       setExpandedZones((prev) => new Set([...prev, zone]));
       setShowZoneModal(false);
@@ -114,11 +122,13 @@ export function PageBuilderInline({ config, onChange, codeword, title, photoUrl 
       const newBlock: PageBlock = {
         id: generateBlockId(),
         type,
-        order: (config.zones[zone]?.length ?? 0),
+        order: config.zones[zone]?.length ?? 0,
         props: getDefaultProps(type),
       };
       const currentVisible = getActiveZones(config);
-      const updatedVisible = currentVisible.includes(zone) ? currentVisible : [...currentVisible, zone];
+      const updatedVisible = currentVisible.includes(zone)
+        ? currentVisible
+        : [...currentVisible, zone];
       onChange({
         ...config,
         visibleZones: updatedVisible,
@@ -131,7 +141,10 @@ export function PageBuilderInline({ config, onChange, codeword, title, photoUrl 
     [config, onChange, targetZone],
   );
 
-  const handleOpenBlockModalForZone = useCallback((zone: BlockZone) => openBlockModal(zone), [openBlockModal]);
+  const handleOpenBlockModalForZone = useCallback(
+    (zone: BlockZone) => openBlockModal(zone),
+    [openBlockModal],
+  );
 
   return (
     <div>
@@ -145,61 +158,161 @@ export function PageBuilderInline({ config, onChange, codeword, title, photoUrl 
 
       {/* Zone header toolbar */}
       {!empty && activeZones.length > 0 && (
-        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 8, gap: 8, flexWrap: "wrap" }}>
+        <div
+          style={{
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+            marginBottom: 8,
+            gap: 8,
+            flexWrap: "wrap",
+          }}
+        >
           <span style={{ fontSize: 12, color: "var(--text-secondary)", fontWeight: 500 }}>
             Зони ({activeZones.length})
           </span>
-          <div role="group" style={{ display: "inline-flex", alignItems: "center", background: "var(--bg-3)", borderRadius: 6, padding: 2, gap: 2, border: "1px solid var(--border)" }}>
-            <button type="button" onClick={handleExpandAll}
-              style={{ padding: "3px 8px", fontSize: 11, fontWeight: allExpanded ? 600 : 400, borderRadius: 4, border: "none", background: allExpanded ? "var(--accent, #6366f1)" : "transparent", color: allExpanded ? "#fff" : "var(--text-secondary)", cursor: "pointer", display: "inline-flex", alignItems: "center", gap: 4, transition: "all 0.15s ease" }}
+          <div
+            role="group"
+            style={{
+              display: "inline-flex",
+              alignItems: "center",
+              background: "var(--bg-3)",
+              borderRadius: 6,
+              padding: 2,
+              gap: 2,
+              border: "1px solid var(--border)",
+            }}
+          >
+            <button
+              type="button"
+              onClick={handleExpandAll}
+              style={{
+                padding: "3px 8px",
+                fontSize: 11,
+                fontWeight: allExpanded ? 600 : 400,
+                borderRadius: 4,
+                border: "none",
+                background: allExpanded ? "var(--accent, #6366f1)" : "transparent",
+                color: allExpanded ? "#fff" : "var(--text-secondary)",
+                cursor: "pointer",
+                display: "inline-flex",
+                alignItems: "center",
+                gap: 4,
+                transition: "all 0.15s ease",
+              }}
               title="Розгорнути всі акордеони"
-            >▾ Всі відкрито</button>
-            <button type="button" onClick={handleCollapseAll}
-              style={{ padding: "3px 8px", fontSize: 11, fontWeight: allCollapsed ? 600 : 400, borderRadius: 4, border: "none", background: allCollapsed ? "var(--accent, #6366f1)" : "transparent", color: allCollapsed ? "#fff" : "var(--text-secondary)", cursor: "pointer", display: "inline-flex", alignItems: "center", gap: 4, transition: "all 0.15s ease" }}
+            >
+              ▾ Всі відкрито
+            </button>
+            <button
+              type="button"
+              onClick={handleCollapseAll}
+              style={{
+                padding: "3px 8px",
+                fontSize: 11,
+                fontWeight: allCollapsed ? 600 : 400,
+                borderRadius: 4,
+                border: "none",
+                background: allCollapsed ? "var(--accent, #6366f1)" : "transparent",
+                color: allCollapsed ? "#fff" : "var(--text-secondary)",
+                cursor: "pointer",
+                display: "inline-flex",
+                alignItems: "center",
+                gap: 4,
+                transition: "all 0.15s ease",
+              }}
               title="Згорнути всі акордеони"
-            >▸ Всі закрито</button>
+            >
+              ▸ Всі закрито
+            </button>
           </div>
         </div>
       )}
 
       {/* Zone editors */}
-      {!empty && activeZones.map((zone) => (
-        <ZoneEditor
-          key={zone}
-          zone={zone}
-          blocks={config.zones[zone]}
-          context={context}
-          onUpdateBlocks={handleUpdateZoneBlocks}
-          onAddBlock={handleOpenBlockModalForZone}
-          collapsed={!expandedZones.has(zone)}
-          onToggleCollapse={() => handleToggleZone(zone)}
-          sidebarSettings={config.sidebarSettings}
-          onUpdateSidebarSettings={(newSettings) => { onChange({ ...config, sidebarSettings: newSettings }); }}
-        />
-      ))}
+      {!empty &&
+        activeZones.map((zone) => (
+          <ZoneEditor
+            key={zone}
+            zone={zone}
+            blocks={config.zones[zone]}
+            context={context}
+            onUpdateBlocks={handleUpdateZoneBlocks}
+            onAddBlock={handleOpenBlockModalForZone}
+            collapsed={!expandedZones.has(zone)}
+            onToggleCollapse={() => handleToggleZone(zone)}
+            sidebarSettings={config.sidebarSettings}
+            onUpdateSidebarSettings={(newSettings) => {
+              onChange({ ...config, sidebarSettings: newSettings });
+            }}
+          />
+        ))}
 
       {/* Empty active zones */}
-      {empty && activeZones.map((zone) => (
-        <div key={zone} style={{ border: "1px dashed var(--border)", borderRadius: 8, marginBottom: 10, padding: "12px 10px", textAlign: "center" }}>
-          <div style={{ fontWeight: 600, fontSize: 13, marginBottom: 2 }}>{zone}</div>
-          <div style={{ fontSize: 11, color: "var(--text-secondary)", marginBottom: 6 }}>Зона додана, але порожня</div>
-          <button className="wb-btn wb-btn-secondary" onClick={() => openBlockModal(zone)} style={{ fontSize: 12, padding: "4px 12px" }}>+ Додати блок</button>
-        </div>
-      ))}
+      {empty &&
+        activeZones.map((zone) => (
+          <div
+            key={zone}
+            style={{
+              border: "1px dashed var(--border)",
+              borderRadius: 8,
+              marginBottom: 10,
+              padding: "12px 10px",
+              textAlign: "center",
+            }}
+          >
+            <div style={{ fontWeight: 600, fontSize: 13, marginBottom: 2 }}>{zone}</div>
+            <div style={{ fontSize: 11, color: "var(--text-secondary)", marginBottom: 6 }}>
+              Зона додана, але порожня
+            </div>
+            <button
+              className="wb-btn wb-btn-secondary"
+              onClick={() => openBlockModal(zone)}
+              style={{ fontSize: 12, padding: "4px 12px" }}
+            >
+              + Додати блок
+            </button>
+          </div>
+        ))}
 
       {/* Add Zone button */}
       {!empty && activeZones.length > 0 && (
-        <div style={{ display: "flex", justifyContent: "center", marginTop: 8, paddingTop: 8, borderTop: "1px dashed var(--border)" }}>
-          <button className="wb-btn wb-btn-secondary" onClick={() => setShowZoneModal(true)} style={{ fontSize: 12, padding: "6px 16px" }}>+ Додати зону</button>
+        <div
+          style={{
+            display: "flex",
+            justifyContent: "center",
+            marginTop: 8,
+            paddingTop: 8,
+            borderTop: "1px dashed var(--border)",
+          }}
+        >
+          <button
+            className="wb-btn wb-btn-secondary"
+            onClick={() => setShowZoneModal(true)}
+            style={{ fontSize: 12, padding: "6px 16px" }}
+          >
+            + Додати зону
+          </button>
         </div>
       )}
 
       {/* Modals */}
       {showZoneModal && (
-        <ZoneAddModal activeZones={activeZones} onSelect={handleAddZone} onClose={() => setShowZoneModal(false)} />
+        <ZoneAddModal
+          activeZones={activeZones}
+          onSelect={handleAddZone}
+          onClose={() => setShowZoneModal(false)}
+        />
       )}
       {showBlockModal && (
-        <AddBlockModal onSelect={handleAddBlock} onClose={() => { setShowBlockModal(false); setTargetZone(null); }} targetZone={targetZone} />
+        <AddBlockModal
+          onSelect={handleAddBlock}
+          onClose={() => {
+            setShowBlockModal(false);
+            setTargetZone(null);
+          }}
+          targetZone={targetZone}
+        />
       )}
     </div>
   );

@@ -139,7 +139,8 @@ export async function handleUpdatePage(
     const updated = await updateSitePage(env.DB, pageId, {
       slug: typeof body.slug === "string" ? body.slug : undefined,
       title: typeof body.title === "string" ? body.title : undefined,
-      pageData: body.pageData as unknown as import("@wwwuabot/shared/types/page-config").PageConfig | undefined,
+      pageData: body.pageData as unknown as
+        import("@wwwuabot/shared/types/page-config").PageConfig | undefined,
       orderIndex: typeof body.orderIndex === "number" ? body.orderIndex : undefined,
       meta: body.meta as Record<string, unknown> | undefined,
     });

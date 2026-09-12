@@ -6,28 +6,28 @@
  * @module packages/ui/src/blocks/StatBlock
  */
 
-import type { BlockComponentProps } from '@wwwuabot/shared/types/page-config';
+import type { BlockComponentProps } from "@wwwuabot/shared/types/page-config";
 
 const TREND_COLORS: Record<string, string> = {
-  up: 'var(--green)',
-  down: 'var(--red)',
-  neutral: 'var(--text-secondary)',
+  up: "var(--green)",
+  down: "var(--red)",
+  neutral: "var(--text-secondary)",
 };
 
 const TREND_ARROWS: Record<string, string> = {
-  up: '↑',
-  down: '↓',
-  neutral: '—',
+  up: "↑",
+  down: "↓",
+  neutral: "—",
 };
 
 export function StatBlock({ block }: BlockComponentProps) {
   const {
-    value = '0',
-    label = '',
-    description = '',
-    icon = '',
-    trend = 'neutral',
-    trendValue = '',
+    value = "0",
+    label = "",
+    description = "",
+    icon = "",
+    trend = "neutral",
+    trendValue = "",
   } = block.props as {
     value?: string;
     label?: string;
@@ -41,33 +41,33 @@ export function StatBlock({ block }: BlockComponentProps) {
     <div
       className="wb-block-stat"
       style={{
-        padding: 'var(--sp-4)',
-        background: 'var(--bg-1)',
-        border: '1px solid var(--border-subtle)',
-        borderRadius: 'var(--radius-md)',
-        display: 'flex',
-        flexDirection: 'column',
-        gap: 'var(--sp-1)',
+        padding: "var(--sp-4)",
+        background: "var(--bg-1)",
+        border: "1px solid var(--border-subtle)",
+        borderRadius: "var(--radius-md)",
+        display: "flex",
+        flexDirection: "column",
+        gap: "var(--sp-1)",
       }}
     >
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
         <span
           className="wb-block-stat__label wb-text-xs wb-text-secondary"
-          style={{ textTransform: 'uppercase', letterSpacing: '0.05em' }}
+          style={{ textTransform: "uppercase", letterSpacing: "0.05em" }}
         >
           {label}
         </span>
         {icon && <span className="wb-block-stat__icon">{icon}</span>}
       </div>
 
-      <div style={{ display: 'flex', alignItems: 'baseline', gap: 'var(--sp-2)' }}>
+      <div style={{ display: "flex", alignItems: "baseline", gap: "var(--sp-2)" }}>
         <span
           className="wb-block-stat__value"
           style={{
-            fontSize: 'var(--text-3)',
-            fontWeight: 'var(--weight-bold)',
-            color: 'var(--text-primary)',
-            fontFamily: 'var(--font-display)',
+            fontSize: "var(--text-3)",
+            fontWeight: "var(--weight-bold)",
+            color: "var(--text-primary)",
+            fontFamily: "var(--font-display)",
           }}
         >
           {value}
@@ -78,15 +78,13 @@ export function StatBlock({ block }: BlockComponentProps) {
             className="wb-block-stat__trend wb-text-xs"
             style={{ color: TREND_COLORS[trend] ?? TREND_COLORS.neutral }}
           >
-            {TREND_ARROWS[trend] ?? ''} {trendValue}
+            {TREND_ARROWS[trend] ?? ""} {trendValue}
           </span>
         )}
       </div>
 
       {description && (
-        <span className="wb-block-stat__desc wb-text-xs wb-text-muted">
-          {description}
-        </span>
+        <span className="wb-block-stat__desc wb-text-xs wb-text-muted">{description}</span>
       )}
     </div>
   );

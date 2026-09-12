@@ -16,9 +16,21 @@ export type {
   BlockDefinition,
   BlockComponentProps,
   BlockCategory,
-} from '@wwwuabot/shared/types/page-config';
-export { ALL_ZONES, createEmptyPageConfig, parsePageConfig, generateBlockId } from '@wwwuabot/shared/types/page-config';
-export { BLOCK_DEFINITIONS, getBlockDefinition, getBlocksForZone, getBlocksByCategory, getAllCategories, getDefaultProps } from '@wwwuabot/shared/constants/block-definitions';
+} from "@wwwuabot/shared/types/page-config";
+export {
+  ALL_ZONES,
+  createEmptyPageConfig,
+  parsePageConfig,
+  generateBlockId,
+} from "@wwwuabot/shared/types/page-config";
+export {
+  BLOCK_DEFINITIONS,
+  getBlockDefinition,
+  getBlocksForZone,
+  getBlocksByCategory,
+  getAllCategories,
+  getDefaultProps,
+} from "@wwwuabot/shared/constants/block-definitions";
 
 // --- Реєстр ---
 export {
@@ -26,18 +38,18 @@ export {
   getBlockComponent,
   getRegisteredTypes,
   isBlockRegistered,
-} from './registry';
-export type { BlockComponent } from './registry';
+} from "./registry";
+export type { BlockComponent } from "./registry";
 
 // --- Store ---
-export { createPageStore } from './store';
-export type { PageStore } from './store';
+export { createPageStore } from "./store";
+export type { PageStore } from "./store";
 
 // --- Рендерери та захист ---
-export { PageRenderer } from './PageRenderer';
-export { ZoneRenderer } from './ZoneRenderer';
-export { PermissionGate } from './PermissionGate';
-export type { PermissionGateProps } from './PermissionGate';
+export { PageRenderer } from "./PageRenderer";
+export { ZoneRenderer } from "./ZoneRenderer";
+export { PermissionGate } from "./PermissionGate";
+export type { PermissionGateProps } from "./PermissionGate";
 
 // --- Блоки (окремий імпорт через @wwwuabot/ui/blocks) ---
 // Для реєстрації: import { registerAllBlocks } from '@wwwuabot/ui/blocks';

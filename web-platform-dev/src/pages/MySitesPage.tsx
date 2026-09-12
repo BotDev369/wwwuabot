@@ -7,7 +7,10 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import type { Site } from "@wwwuabot/shared/types/site";
-import { SITE_STATUS_LABELS, SITE_STATUS_BADGE_CLASS } from "@wwwuabot/shared/constants/site-defaults";
+import {
+  SITE_STATUS_LABELS,
+  SITE_STATUS_BADGE_CLASS,
+} from "@wwwuabot/shared/constants/site-defaults";
 import { Icon } from "@wwwuabot/shared";
 import { apiFetchRaw } from "@/shared/api/client";
 
@@ -36,7 +39,9 @@ export function MySitesPage() {
         if (!cancelled) setLoading(false);
       }
     })();
-    return () => { cancelled = true; };
+    return () => {
+      cancelled = true;
+    };
   }, []);
 
   // Створення нового сайту
@@ -80,10 +85,7 @@ export function MySitesPage() {
           <span className="wb-badge wb-badge-neutral">{sites.length}</span>
         </div>
         <div style={{ display: "flex", gap: "var(--sp-2)" }}>
-          <button
-            className="wb-btn wb-btn-secondary"
-            onClick={() => navigate("/catalog")}
-          >
+          <button className="wb-btn wb-btn-secondary" onClick={() => navigate("/catalog")}>
             <Icon name="eye" size={14} />
             Каталог
           </button>
@@ -105,27 +107,37 @@ export function MySitesPage() {
       ) : (
         <div className="wb-cards-grid">
           {sites.map((site) => (
-            <div key={site.id} className="wb-card" style={{ cursor: "pointer" }} onClick={() => handleEditSite(site.slug)}>
+            <div
+              key={site.id}
+              className="wb-card"
+              style={{ cursor: "pointer" }}
+              onClick={() => handleEditSite(site.slug)}
+            >
               <div className="wb-card-header">
                 <span className="wb-card-title">{site.title}</span>
-                <span className={SITE_STATUS_BADGE_CLASS[site.status] ?? "wb-badge wb-badge-neutral"}>
+                <span
+                  className={SITE_STATUS_BADGE_CLASS[site.status] ?? "wb-badge wb-badge-neutral"}
+                >
                   {SITE_STATUS_LABELS[site.status] ?? site.status}
                 </span>
               </div>
               <div className="wb-card-body">
-                <p className="wb-text-muted wb-text-sm">
-                  {site.description || "Без опису"}
-                </p>
-                <p className="wb-text-xs" style={{ marginTop: "var(--sp-2)", color: "var(--text-muted)" }}>
+                <p className="wb-text-muted wb-text-sm">{site.description || "Без опису"}</p>
+                <p
+                  className="wb-text-xs"
+                  style={{ marginTop: "var(--sp-2)", color: "var(--text-muted)" }}
+                >
                   /{site.slug}
                 </p>
                 {site.status === "rejected" && site.rejectReason && (
-                  <div style={{
-                    marginTop: "var(--sp-2)",
-                    padding: "var(--sp-2)",
-                    background: "var(--red-dim)",
-                    borderRadius: "var(--radius-sm)",
-                  }}>
+                  <div
+                    style={{
+                      marginTop: "var(--sp-2)",
+                      padding: "var(--sp-2)",
+                      background: "var(--red-dim)",
+                      borderRadius: "var(--radius-sm)",
+                    }}
+                  >
                     <p className="wb-text-xs wb-text-red" style={{ margin: 0 }}>
                       {site.rejectReason}
                     </p>

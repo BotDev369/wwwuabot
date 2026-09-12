@@ -47,11 +47,15 @@ describe("sentryOptions", () => {
   });
 
   it("не вмикає перформанс — квота лишається під помилки", () => {
-    expect(sentryOptions({ SENTRY_DSN: "https://key@o1.ingest.sentry.io/2" })?.tracesSampleRate).toBe(0);
+    expect(
+      sentryOptions({ SENTRY_DSN: "https://key@o1.ingest.sentry.io/2" })?.tracesSampleRate,
+    ).toBe(0);
   });
 
   it("вимикає збір даних користувача", () => {
-    const dataCollection = sentryOptions({ SENTRY_DSN: "https://key@o1.ingest.sentry.io/2" })?.dataCollection;
+    const dataCollection = sentryOptions({
+      SENTRY_DSN: "https://key@o1.ingest.sentry.io/2",
+    })?.dataCollection;
 
     expect(dataCollection?.userInfo).toBe(false);
     expect(dataCollection?.cookies).toBe(false);

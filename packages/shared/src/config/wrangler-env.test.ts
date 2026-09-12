@@ -80,7 +80,7 @@ describe("конфіги воркерів", () => {
   });
 
   it.each(workers)("$dir: ім'я не суперечить ENVIRONMENT", (worker) => {
-      const expected = worker.name.endsWith("-dev") ? ENV_DEV : ENV_PRODUCTION;
+    const expected = worker.name.endsWith("-dev") ? ENV_DEV : ENV_PRODUCTION;
 
     expect(
       worker.environment,

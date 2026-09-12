@@ -7,7 +7,13 @@ export { StylePicker, ThemeToggle } from "./components/StyleToggle";
 export { icons } from "./components/icons";
 export type { IconName } from "./components/icons";
 export { Icon } from "./components/Icon";
-export { BRANDS, getBrand, getBrandIds, resolveLegacyStyle, LEGACY_STYLE_MAP } from "./styles/registry";
+export {
+  BRANDS,
+  getBrand,
+  getBrandIds,
+  resolveLegacyStyle,
+  LEGACY_STYLE_MAP,
+} from "./styles/registry";
 export type { Brand, Scheme, Theme, BrandDefinition, StyleId } from "./styles/registry";
 // Legacy re-exports (deprecated — use BRANDS/getBrand instead)
 export { STYLES, getStyle, getStyleIds } from "./styles/registry";
@@ -35,7 +41,11 @@ export type { AppState } from "./stores/app.store";
 
 // ── Utils ────────────────────────────────────────────────────────────
 export { formatSqliteDatetime } from "./utils/datetime";
-export { evaluateConditions, resolveBlock, getAvailableConditionFields } from "./utils/condition-evaluator";
+export {
+  evaluateConditions,
+  resolveBlock,
+  getAvailableConditionFields,
+} from "./utils/condition-evaluator";
 
 // ── Page Config Types ────────────────────────────────────────────────
 export type {
@@ -90,5 +100,10 @@ export {
 
 // ── Domain & API Types ───────────────────────────────────────────────
 export type { MyDate, MyDateSystem, SystemAnalysisResult } from "./types/mydate";
-export type { TelegramApiResponse, TelegramUser, TelegramWebhookInfo, TelegramInlineKeyboardButton } from "./types/telegram";
+export type {
+  TelegramApiResponse,
+  TelegramUser,
+  TelegramWebhookInfo,
+  TelegramInlineKeyboardButton,
+} from "./types/telegram";
 export type { BotUser } from "./types/user";

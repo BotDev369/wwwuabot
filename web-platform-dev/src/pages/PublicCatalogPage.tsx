@@ -39,7 +39,9 @@ export function PublicCatalogPage() {
         if (!cancelled) setLoading(false);
       }
     })();
-    return () => { cancelled = true; };
+    return () => {
+      cancelled = true;
+    };
   }, [page]);
 
   // Перегляд сайту
@@ -69,8 +71,17 @@ export function PublicCatalogPage() {
   }
 
   return (
-    <div className="catalog-page" style={{ padding: "var(--sp-5)", maxWidth: 1200, margin: "0 auto" }}>
-      <h1 style={{ fontSize: "var(--text-xl)", fontWeight: "var(--weight-bold)", marginBottom: "var(--sp-5)" }}>
+    <div
+      className="catalog-page"
+      style={{ padding: "var(--sp-5)", maxWidth: 1200, margin: "0 auto" }}
+    >
+      <h1
+        style={{
+          fontSize: "var(--text-xl)",
+          fontWeight: "var(--weight-bold)",
+          marginBottom: "var(--sp-5)",
+        }}
+      >
         Публічний каталог
       </h1>
 
@@ -90,19 +101,19 @@ export function PublicCatalogPage() {
                 onClick={() => handleViewSite(site.slug)}
               >
                 {site.thumbnail && (
-                  <div style={{
-                    height: 160,
-                    background: `url(${site.thumbnail}) center/cover`,
-                    borderRadius: "var(--radius-md) var(--radius-md) 0 0",
-                  }} />
+                  <div
+                    style={{
+                      height: 160,
+                      background: `url(${site.thumbnail}) center/cover`,
+                      borderRadius: "var(--radius-md) var(--radius-md) 0 0",
+                    }}
+                  />
                 )}
                 <div className="wb-card-header">
                   <span className="wb-card-title">{site.title}</span>
                 </div>
                 <div className="wb-card-body">
-                  <p className="wb-text-muted wb-text-sm">
-                    {site.description || "Без опису"}
-                  </p>
+                  <p className="wb-text-muted wb-text-sm">{site.description || "Без опису"}</p>
                 </div>
                 <div className="wb-card-footer">
                   <span className="wb-text-xs wb-text-muted">
@@ -115,7 +126,10 @@ export function PublicCatalogPage() {
 
           {/* Пагінація */}
           {total > limit && (
-            <div className="wb-flex-center" style={{ marginTop: "var(--sp-5)", gap: "var(--sp-2)" }}>
+            <div
+              className="wb-flex-center"
+              style={{ marginTop: "var(--sp-5)", gap: "var(--sp-2)" }}
+            >
               <button
                 className="wb-btn wb-btn-secondary wb-btn-sm"
                 onClick={() => setPage((p) => Math.max(1, p - 1))}

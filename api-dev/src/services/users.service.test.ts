@@ -2,7 +2,10 @@ import { describe, it, expect, vi } from "vitest";
 import { UsersService } from "./users.service";
 import type { Env } from "../shared/types";
 
-function createMockEnv(overrides?: Partial<Env>): { env: Env; mockDb: { prepare: ReturnType<typeof vi.fn> } } {
+function createMockEnv(overrides?: Partial<Env>): {
+  env: Env;
+  mockDb: { prepare: ReturnType<typeof vi.fn> };
+} {
   const mockDb = {
     prepare: vi.fn(),
   };
@@ -101,7 +104,9 @@ describe("UsersService", () => {
       const service = new UsersService(env);
 
       await expect(service.updateUser(123, {})).rejects.toThrow("no fields to update");
-      await expect(service.updateUser(123, { user_id: 999 })).rejects.toThrow("no fields to update");
+      await expect(service.updateUser(123, { user_id: 999 })).rejects.toThrow(
+        "no fields to update",
+      );
     });
 
     it("updates allowed fields and ignores unsafe keys", async () => {
@@ -120,7 +125,7 @@ describe("UsersService", () => {
       });
 
       expect(mockDb.prepare).toHaveBeenCalledWith(
-        expect.stringContaining("UPDATE users SET first_name = ? WHERE user_id = ?")
+        expect.stringContaining("UPDATE users SET first_name = ? WHERE user_id = ?"),
       );
       expect(updateStmt.bind).toHaveBeenCalledWith("Alice", 123);
     });
@@ -144,9 +149,7 @@ describe("UsersService", () => {
       const count = await service.bulkUsers("delete", [1, 2, 3]);
 
       expect(count).toBe(3);
-      expect(mockDb.prepare).toHaveBeenCalledWith(
-        "DELETE FROM users WHERE user_id IN (?,?,?)"
-      );
+      expect(mockDb.prepare).toHaveBeenCalledWith("DELETE FROM users WHERE user_id IN (?,?,?)");
       expect(bulkDeleteStmt.bind).toHaveBeenCalledWith(1, 2, 3);
     });
   });
@@ -156,7 +159,9 @@ describe("UsersService", () => {
       const { env } = createMockEnv({ BOT_TOKEN: undefined });
       const service = new UsersService(env);
 
-      await expect(service.sendUserMessage(123, "Hello")).rejects.toThrow("BOT_TOKEN not configured");
+      await expect(service.sendUserMessage(123, "Hello")).rejects.toThrow(
+        "BOT_TOKEN not configured",
+      );
     });
   });
 });

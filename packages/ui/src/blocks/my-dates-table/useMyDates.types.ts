@@ -20,9 +20,7 @@ export interface UseMyDatesOptions {
 }
 
 export interface UseMyDatesReturn
-  extends UseDateFiltersReturn,
-    UseDateSelectionReturn,
-    UseDateModalReturn {
+  extends UseDateFiltersReturn, UseDateSelectionReturn, UseDateModalReturn {
   /** Усі дати, як прийшли з API (до фільтрів). */
   dates: MyDate[];
   /** `true` лише до першої відповіді API. */

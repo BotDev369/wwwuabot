@@ -6,7 +6,16 @@ import { UserEditModal } from "./UserEditModal";
 import { icons } from "@wwwuabot/shared";
 
 const ico = (name: keyof typeof icons, extraStyle?: React.CSSProperties) => (
-  <span style={{ display: "inline-flex", alignItems: "center", width: 18, height: 18, flexShrink: 0, ...extraStyle }}>
+  <span
+    style={{
+      display: "inline-flex",
+      alignItems: "center",
+      width: 18,
+      height: 18,
+      flexShrink: 0,
+      ...extraStyle,
+    }}
+  >
     {icons[name]}
   </span>
 );
@@ -28,7 +37,11 @@ function relativeTime(value: string | null): string {
   const days = Math.floor(hours / 24);
   if (days === 1) return "вчора";
   if (days < 7) return `${days} дн тому`;
-  return new Intl.DateTimeFormat("uk-UA", { day: "numeric", month: "short", year: "numeric" }).format(date);
+  return new Intl.DateTimeFormat("uk-UA", {
+    day: "numeric",
+    month: "short",
+    year: "numeric",
+  }).format(date);
 }
 
 interface Props {
@@ -44,8 +57,16 @@ export function UsersTable({ onMessage }: Props) {
   const [cardUserId, setCardUserId] = useState<number | null>(null);
   const [editUserId, setEditUserId] = useState<number | null>(null);
 
-  const openMenu = useCallback((id: number) => { setMenuOpen(id); setCardUserId(null); setEditUserId(null); }, []);
-  const closeAll = useCallback(() => { setMenuOpen(null); setCardUserId(null); setEditUserId(null); }, []);
+  const openMenu = useCallback((id: number) => {
+    setMenuOpen(id);
+    setCardUserId(null);
+    setEditUserId(null);
+  }, []);
+  const closeAll = useCallback(() => {
+    setMenuOpen(null);
+    setCardUserId(null);
+    setEditUserId(null);
+  }, []);
 
   // Close modal on Escape
   useEffect(() => {
@@ -178,9 +199,7 @@ export function UsersTable({ onMessage }: Props) {
                     <td className="usr-td-name usr-td-sticky" style={{ left: 72 }}>
                       {formatName(u)}
                     </td>
-                    <td className="usr-td-username">
-                      {u.username ? `@${u.username}` : "—"}
-                    </td>
+                    <td className="usr-td-username">{u.username ? `@${u.username}` : "—"}</td>
                     <td className="usr-td-id">{u.user_id}</td>
                     <td className="usr-td-date" title={u.created_at ?? ""}>
                       {relativeTime(u.created_at)}
@@ -192,12 +211,32 @@ export function UsersTable({ onMessage }: Props) {
                         <span className="usr-badge usr-badge--active">Активний</span>
                       )}
                       {u.role && u.role !== "user" && (
-                        <span className="usr-badge" style={{ marginLeft: 4, background: u.role === "admin" ? "#fef3c7" : u.role === "vip" ? "#ede9fe" : "#e0e7ff", color: u.role === "admin" ? "#92400e" : u.role === "vip" ? "#5b21b6" : "#3730a3" }}>
+                        <span
+                          className="usr-badge"
+                          style={{
+                            marginLeft: 4,
+                            background:
+                              u.role === "admin"
+                                ? "#fef3c7"
+                                : u.role === "vip"
+                                  ? "#ede9fe"
+                                  : "#e0e7ff",
+                            color:
+                              u.role === "admin"
+                                ? "#92400e"
+                                : u.role === "vip"
+                                  ? "#5b21b6"
+                                  : "#3730a3",
+                          }}
+                        >
                           {u.role}
                         </span>
                       )}
                       {u.tariff && u.tariff !== "free" && (
-                        <span className="usr-badge" style={{ marginLeft: 4, background: "#dcfce7", color: "#166534" }}>
+                        <span
+                          className="usr-badge"
+                          style={{ marginLeft: 4, background: "#dcfce7", color: "#166534" }}
+                        >
                           {u.tariff}
                         </span>
                       )}
@@ -219,27 +258,38 @@ export function UsersTable({ onMessage }: Props) {
                 {formatName(menuUser)}
                 {menuUser.username ? `  @${menuUser.username}` : ""}
               </span>
-              <button className="wb-close-btn" onClick={closeAll}>{icons["close"]}</button>
+              <button className="wb-close-btn" onClick={closeAll}>
+                {icons["close"]}
+              </button>
             </div>
             <div className="wb-modal-body wb-modal-menu">
               <button
                 className="wb-modal-menu-item"
-                onClick={() => { setMenuOpen(null); setCardUserId(menuUser.user_id); }}
+                onClick={() => {
+                  setMenuOpen(null);
+                  setCardUserId(menuUser.user_id);
+                }}
               >
-                {ico("eye")}{" "}Переглянути
+                {ico("eye")} Переглянути
               </button>
               <button
                 className="wb-modal-menu-item"
-                onClick={() => { setMenuOpen(null); setEditUserId(menuUser.user_id); }}
+                onClick={() => {
+                  setMenuOpen(null);
+                  setEditUserId(menuUser.user_id);
+                }}
               >
-                {ico("edit")}{" "}Змінити
+                {ico("edit")} Змінити
               </button>
               <div className="wb-modal-divider" />
               <button
                 className="wb-modal-menu-item"
-                onClick={() => { setMenuOpen(null); onMessage(menuUser.user_id); }}
+                onClick={() => {
+                  setMenuOpen(null);
+                  onMessage(menuUser.user_id);
+                }}
               >
-                {ico("mail")}{" "}Написати повідомлення
+                {ico("mail")} Написати повідомлення
               </button>
               <button
                 className="wb-modal-menu-item"
@@ -249,7 +299,11 @@ export function UsersTable({ onMessage }: Props) {
                   setMenuOpen(null);
                 }}
               >
-                {menuUser.is_blocked === 1 ? <>{ico("unlock")}{" "}Розблокувати</> : <>{ico("lock")}{" "}Заблокувати</>}
+                {menuUser.is_blocked === 1 ? (
+                  <>{ico("unlock")} Розблокувати</>
+                ) : (
+                  <>{ico("lock")} Заблокувати</>
+                )}
               </button>
               <div className="wb-modal-divider" />
               <button
@@ -261,7 +315,7 @@ export function UsersTable({ onMessage }: Props) {
                   closeAll();
                 }}
               >
-                {ico("trash")}{" "}Видалити
+                {ico("trash")} Видалити
               </button>
             </div>
           </div>
@@ -273,8 +327,14 @@ export function UsersTable({ onMessage }: Props) {
         <UserCardModal
           userId={cardUserId}
           onClose={closeAll}
-          onEdit={(id) => { setCardUserId(null); setEditUserId(id); }}
-          onMessage={(id) => { closeAll(); onMessage(id); }}
+          onEdit={(id) => {
+            setCardUserId(null);
+            setEditUserId(id);
+          }}
+          onMessage={(id) => {
+            closeAll();
+            onMessage(id);
+          }}
         />
       )}
 
@@ -283,7 +343,9 @@ export function UsersTable({ onMessage }: Props) {
         <UserEditModal
           userId={editUserId}
           onClose={closeAll}
-          onSaved={() => { void useUsersStore.getState().refresh(); }}
+          onSaved={() => {
+            void useUsersStore.getState().refresh();
+          }}
         />
       )}
     </>

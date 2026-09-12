@@ -7,21 +7,35 @@
  * DateAccordionForm, HeaderContextMenu, RowActionMenu.
  */
 
-import { useEffect, useState, useCallback } from 'react';
-import { useAppStore } from '@/stores/app.store';
-import { icons } from '@wwwuabot/shared';
-import type { MyDate } from '@/shared/api/mydate.api';
-import { useMyDates } from '@wwwuabot/ui/blocks/my-dates-table';
-import { DateModal } from './DateModal';
-import { DateAccordionForm } from './DateAccordionForm';
-import { HeaderContextMenu } from './HeaderContextMenu';
-import { RowActionMenu } from './RowActionMenu';
-import { getTypeConfig, formatDate, getTagColor, type SortField, type ModalMode } from './mydate-types';
+import { useEffect, useState, useCallback } from "react";
+import { useAppStore } from "@/stores/app.store";
+import { icons } from "@wwwuabot/shared";
+import type { MyDate } from "@/shared/api/mydate.api";
+import { useMyDates } from "@wwwuabot/ui/blocks/my-dates-table";
+import { DateModal } from "./DateModal";
+import { DateAccordionForm } from "./DateAccordionForm";
+import { HeaderContextMenu } from "./HeaderContextMenu";
+import { RowActionMenu } from "./RowActionMenu";
+import {
+  getTypeConfig,
+  formatDate,
+  getTagColor,
+  type SortField,
+  type ModalMode,
+} from "./mydate-types";
 
 // ── Icon helper ───────────────────────────────────────────────────
 
 const ico = (name: string, size = 16) => (
-  <span style={{ display: 'inline-flex', alignItems: 'center', width: size, height: size, flexShrink: 0 }}>
+  <span
+    style={{
+      display: "inline-flex",
+      alignItems: "center",
+      width: size,
+      height: size,
+      flexShrink: 0,
+    }}
+  >
     {icons[name as keyof typeof icons]}
   </span>
 );
@@ -35,7 +49,7 @@ export function MyDatesPage() {
   // Accordion
   const [formOpen, setFormOpen] = useState(() => {
     try {
-      return localStorage.getItem('mydates_form_open') === 'true';
+      return localStorage.getItem("mydates_form_open") === "true";
     } catch {
       return false;
     }
@@ -49,14 +63,14 @@ export function MyDatesPage() {
   // Header context menu
   const [headerMenu, setHeaderMenu] = useState<{
     field: SortField;
-    mode: 'menu' | 'filter';
+    mode: "menu" | "filter";
   } | null>(null);
-  const [headerFilterText, setHeaderFilterText] = useState('');
+  const [headerFilterText, setHeaderFilterText] = useState("");
 
   // ── Effects ─────────────────────────────────────────────────────
 
   useEffect(() => {
-    setScenarioName('MyDate');
+    setScenarioName("MyDate");
   }, [setScenarioName]);
 
   // Список вантажить сам хук (`autoFetch`), тому окремого ефекту не потрібно.
@@ -67,7 +81,7 @@ export function MyDatesPage() {
     const next = !formOpen;
     setFormOpen(next);
     try {
-      localStorage.setItem('mydates_form_open', String(next));
+      localStorage.setItem("mydates_form_open", String(next));
     } catch {
       // localStorage недоступний (private mode) — стан просто не зберігається
     }
@@ -76,27 +90,36 @@ export function MyDatesPage() {
   // `handleSave`/`handleDelete` самі перезавантажують список —
   // тут лишається тільки закрити форму/модалку.
 
-  const handleAccordionSubmit = useCallback(async (data: Omit<MyDate, 'id' | 'created_at' | 'user_id' | 'updated_at'>) => {
-    await hook.handleSave(data);
-    setFormOpen(false);
-    try {
-      localStorage.setItem('mydates_form_open', 'false');
-    } catch {
-      // localStorage недоступний (private mode) — стан просто не зберігається
-    }
-  }, [hook]);
+  const handleAccordionSubmit = useCallback(
+    async (data: Omit<MyDate, "id" | "created_at" | "user_id" | "updated_at">) => {
+      await hook.handleSave(data);
+      setFormOpen(false);
+      try {
+        localStorage.setItem("mydates_form_open", "false");
+      } catch {
+        // localStorage недоступний (private mode) — стан просто не зберігається
+      }
+    },
+    [hook],
+  );
 
-  const handleModalSave = useCallback(async (data: Partial<MyDate>) => {
-    await hook.handleSave(data);
-    setModalMode(null);
-    setModalDate(null);
-  }, [hook]);
+  const handleModalSave = useCallback(
+    async (data: Partial<MyDate>) => {
+      await hook.handleSave(data);
+      setModalMode(null);
+      setModalDate(null);
+    },
+    [hook],
+  );
 
-  const handleModalDelete = useCallback(async (id: string) => {
-    await hook.handleDelete(id);
-    setModalMode(null);
-    setModalDate(null);
-  }, [hook]);
+  const handleModalDelete = useCallback(
+    async (id: string) => {
+      await hook.handleDelete(id);
+      setModalMode(null);
+      setModalDate(null);
+    },
+    [hook],
+  );
 
   const handleRowAction = useCallback((mode: ModalMode, date: MyDate) => {
     setModalMode(mode);
@@ -104,29 +127,43 @@ export function MyDatesPage() {
     setRowActionDate(null);
   }, []);
 
-  const handleHeaderMenuSort = useCallback((field: SortField, order: 'asc' | 'desc') => {
-    hook.setSort(field, order);
-    setHeaderMenu(null);
-  }, [hook]);
+  const handleHeaderMenuSort = useCallback(
+    (field: SortField, order: "asc" | "desc") => {
+      hook.setSort(field, order);
+      setHeaderMenu(null);
+    },
+    [hook],
+  );
 
-  const handleHeaderMenuFilterToggle = useCallback((field: SortField, value: string) => {
-    hook.toggleColumnFilter(field, value);
-  }, [hook]);
+  const handleHeaderMenuFilterToggle = useCallback(
+    (field: SortField, value: string) => {
+      hook.toggleColumnFilter(field, value);
+    },
+    [hook],
+  );
 
-  const handleHeaderMenuClear = useCallback((field: SortField) => {
-    hook.clearColumnFilter(field);
-    if (hook.sortField === field) hook.setSort('name', 'asc');
-    setHeaderMenu(null);
-    setHeaderFilterText('');
-  }, [hook]);
+  const handleHeaderMenuClear = useCallback(
+    (field: SortField) => {
+      hook.clearColumnFilter(field);
+      if (hook.sortField === field) hook.setSort("name", "asc");
+      setHeaderMenu(null);
+      setHeaderFilterText("");
+    },
+    [hook],
+  );
 
-  const getUniqueValues = useCallback((field: SortField): string[] => {
-    if (field === 'type') return hook.allTypes;
-    if (field === 'tags') return hook.allTags;
-    if (field === 'name') return [...new Set(hook.dates.map((d) => d.name).filter(Boolean))].sort();
-    if (field === 'notes') return [...new Set(hook.dates.map((d) => d.notes).filter(Boolean))].sort();
-    return [];
-  }, [hook.dates, hook.allTypes, hook.allTags]);
+  const getUniqueValues = useCallback(
+    (field: SortField): string[] => {
+      if (field === "type") return hook.allTypes;
+      if (field === "tags") return hook.allTags;
+      if (field === "name")
+        return [...new Set(hook.dates.map((d) => d.name).filter(Boolean))].sort();
+      if (field === "notes")
+        return [...new Set(hook.dates.map((d) => d.notes).filter(Boolean))].sort();
+      return [];
+    },
+    [hook.dates, hook.allTypes, hook.allTags],
+  );
 
   // ── Render ──────────────────────────────────────────────────────
 
@@ -167,7 +204,16 @@ export function MyDatesPage() {
                 .map(([field, values]) => (
                   <div key={field} className="active-filter-chips">
                     <span className="active-filter-label">
-                      {field === 'type' ? 'Тип' : field === 'tags' ? 'Теги' : field === 'name' ? 'Назва' : field === 'notes' ? 'Примітки' : 'Дата'}:
+                      {field === "type"
+                        ? "Тип"
+                        : field === "tags"
+                          ? "Теги"
+                          : field === "name"
+                            ? "Назва"
+                            : field === "notes"
+                              ? "Примітки"
+                              : "Дата"}
+                      :
                     </span>
                     {values.map((v) => (
                       <span
@@ -175,7 +221,7 @@ export function MyDatesPage() {
                         className="active-filter-chip"
                         onClick={() => hook.toggleColumnFilter(field, v)}
                       >
-                        {v} {icons['close']}
+                        {v} {icons["close"]}
                       </span>
                     ))}
                   </div>
@@ -191,15 +237,12 @@ export function MyDatesPage() {
                   onClick={hook.handleBulkCompare}
                   disabled={hook.selectedIds.size < 2}
                 >
-                  {ico('compare')} Співставити ({hook.selectedIds.size})
+                  {ico("compare")} Співставити ({hook.selectedIds.size})
                 </button>
                 <button className="wb-btn wb-btn-sm wb-btn-danger" onClick={hook.handleBulkDelete}>
-                  {ico('trash')} Видалити ({hook.selectedIds.size})
+                  {ico("trash")} Видалити ({hook.selectedIds.size})
                 </button>
-                <button
-                  className="wb-btn wb-btn-sm wb-btn-secondary"
-                  onClick={hook.clearSelection}
-                >
+                <button className="wb-btn wb-btn-sm wb-btn-secondary" onClick={hook.clearSelection}>
                   Скасувати вибір
                 </button>
               </div>
@@ -215,29 +258,38 @@ export function MyDatesPage() {
                       <input
                         type="checkbox"
                         checked={
-                          hook.processedDates.length > 0 && hook.selectedIds.size === hook.processedDates.length
+                          hook.processedDates.length > 0 &&
+                          hook.selectedIds.size === hook.processedDates.length
                         }
                         onChange={hook.toggleAll}
                         className="row-checkbox"
                       />
                     </th>
-                    {(['name', 'date', 'tags', 'type', 'notes'] as SortField[]).map((field) => {
+                    {(["name", "date", "tags", "type", "notes"] as SortField[]).map((field) => {
                       const label =
-                        field === 'name' ? 'Назва' : field === 'date' ? 'Дата' : field === 'tags' ? 'Теги' : field === 'type' ? 'Тип' : 'Примітки';
-                      const isSticky = field === 'name';
+                        field === "name"
+                          ? "Назва"
+                          : field === "date"
+                            ? "Дата"
+                            : field === "tags"
+                              ? "Теги"
+                              : field === "type"
+                                ? "Тип"
+                                : "Примітки";
+                      const isSticky = field === "name";
                       return (
-                        <th key={field} className={isSticky ? 'sticky-col-name' : ''}>
+                        <th key={field} className={isSticky ? "sticky-col-name" : ""}>
                           <div
                             className="th-content"
                             onClick={() => {
-                              setHeaderMenu({ field, mode: 'menu' });
-                              setHeaderFilterText('');
+                              setHeaderMenu({ field, mode: "menu" });
+                              setHeaderFilterText("");
                             }}
                           >
-                            {label}{' '}
+                            {label}{" "}
                             {hook.sortField === field && (
                               <span className="sort-arrow">
-                                {hook.sortOrder === 'asc' ? '▲' : '▼'}
+                                {hook.sortOrder === "asc" ? "▲" : "▼"}
                               </span>
                             )}
                           </div>
@@ -250,9 +302,15 @@ export function MyDatesPage() {
                   {hook.processedDates.map((d) => {
                     const cfg = getTypeConfig(d.type);
                     const typeLabel =
-                      d.type === 'person' ? 'Людина' : d.type === 'event' ? 'Подія' : d.type === 'other' ? 'Інше' : d.type;
+                      d.type === "person"
+                        ? "Людина"
+                        : d.type === "event"
+                          ? "Подія"
+                          : d.type === "other"
+                            ? "Інше"
+                            : d.type;
                     return (
-                      <tr key={d.id} className={hook.selectedIds.has(d.id) ? 'selected' : ''}>
+                      <tr key={d.id} className={hook.selectedIds.has(d.id) ? "selected" : ""}>
                         <td className="sticky-col-menu">
                           <button
                             className="row-dropdown-toggle"
@@ -269,7 +327,7 @@ export function MyDatesPage() {
                             className="row-checkbox"
                           />
                         </td>
-                        <td className="sticky-col-name name-cell">{d.name || '—'}</td>
+                        <td className="sticky-col-name name-cell">{d.name || "—"}</td>
                         <td className="date-cell">{formatDate(d.date)}</td>
                         <td className="tags-cell">
                           {(d.tags || []).length > 0 ? (
@@ -296,8 +354,8 @@ export function MyDatesPage() {
                             {ico(cfg.icon)} {typeLabel}
                           </span>
                         </td>
-                        <td className="notes-cell" title={d.notes || ''}>
-                          {d.notes || '—'}
+                        <td className="notes-cell" title={d.notes || ""}>
+                          {d.notes || "—"}
                         </td>
                       </tr>
                     );
@@ -321,7 +379,7 @@ export function MyDatesPage() {
           <button
             className="wb-btn wb-btn-add-bottom"
             onClick={() => {
-              setModalMode('create');
+              setModalMode("create");
               setModalDate(null);
             }}
           >
@@ -342,7 +400,7 @@ export function MyDatesPage() {
             onSort={handleHeaderMenuSort}
             onFilterToggle={handleHeaderMenuFilterToggle}
             onClear={handleHeaderMenuClear}
-            onSwitchToFilter={(field) => setHeaderMenu({ field, mode: 'filter' })}
+            onSwitchToFilter={(field) => setHeaderMenu({ field, mode: "filter" })}
             onFilterTextChange={setHeaderFilterText}
             onClose={() => setHeaderMenu(null)}
           />
@@ -370,12 +428,10 @@ export function MyDatesPage() {
             }}
             onSave={handleModalSave}
             onDelete={handleModalDelete}
-            onSwitchToEdit={() => setModalMode('edit')}
+            onSwitchToEdit={() => setModalMode("edit")}
           />
         )}
       </section>
     </main>
   );
 }
-
-

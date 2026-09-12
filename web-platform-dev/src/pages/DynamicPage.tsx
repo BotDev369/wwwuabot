@@ -8,11 +8,7 @@
 
 import { useEffect, useState, useMemo } from "react";
 import { useParams } from "react-router-dom";
-import type {
-  PageConfig,
-  BlockContext,
-  UserProfile,
-} from "@wwwuabot/shared/types/page-config";
+import type { PageConfig, BlockContext, UserProfile } from "@wwwuabot/shared/types/page-config";
 import { parsePageConfig } from "@wwwuabot/shared/types/page-config";
 import { PageRenderer } from "@wwwuabot/ui/PageRenderer";
 
@@ -82,7 +78,7 @@ export function DynamicPage({ baseCodeword }: DynamicPageProps = {}) {
           return;
         }
 
-        const data = await res.json() as {
+        const data = (await res.json()) as {
           ok: boolean;
           scenario?: { codeword: string; web_slug?: string };
           pageData?: Record<string, unknown>;
@@ -140,7 +136,9 @@ export function DynamicPage({ baseCodeword }: DynamicPageProps = {}) {
       })
       .catch(() => {}); // мовчки ігноруємо помилки
 
-    return () => { cancelled = true; };
+    return () => {
+      cancelled = true;
+    };
   }, []);
 
   // Контекст для блоків
@@ -167,33 +165,29 @@ export function DynamicPage({ baseCodeword }: DynamicPageProps = {}) {
 
   if (status === "not-found") {
     if (baseCodeword) {
-      return <PageRenderer config={FALLBACK_PAGE_CONFIG} context={context} className="page-layout" />;
+      return (
+        <PageRenderer config={FALLBACK_PAGE_CONFIG} context={context} className="page-layout" />
+      );
     }
 
     return (
       <div className="page-not-found">
         <h1>404</h1>
         <p>Сторінку не знайдено</p>
-        <p className="text-sm text-muted-foreground">
-          Codeword: {codeword}
-        </p>
+        <p className="text-sm text-muted-foreground">Codeword: {codeword}</p>
       </div>
     );
   }
 
   if (status === "error") {
-    return (
-      <PageRenderer
-        config={FALLBACK_PAGE_CONFIG}
-        context={context}
-        className="page-layout"
-      />
-    );
+    return <PageRenderer config={FALLBACK_PAGE_CONFIG} context={context} className="page-layout" />;
   }
 
   if (!scenario?.pageData) {
     if (baseCodeword) {
-      return <PageRenderer config={FALLBACK_PAGE_CONFIG} context={context} className="page-layout" />;
+      return (
+        <PageRenderer config={FALLBACK_PAGE_CONFIG} context={context} className="page-layout" />
+      );
     }
 
     return (
@@ -205,11 +199,5 @@ export function DynamicPage({ baseCodeword }: DynamicPageProps = {}) {
   }
 
   // Рендеримо сторінку через PageRenderer
-  return (
-    <PageRenderer
-      config={scenario.pageData}
-      context={context}
-      className="page-layout"
-    />
-  );
+  return <PageRenderer config={scenario.pageData} context={context} className="page-layout" />;
 }

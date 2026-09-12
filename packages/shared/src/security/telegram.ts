@@ -39,10 +39,7 @@ function toHex(buffer: ArrayBuffer): string {
  * Повертає Telegram `user_id`, якщо підпис initData валідний і не протух.
  * Інакше — `null`. Ніколи не кидає виняток.
  */
-export async function verifyInitData(
-  initData: string,
-  botToken: string,
-): Promise<number | null> {
+export async function verifyInitData(initData: string, botToken: string): Promise<number | null> {
   if (!initData || !botToken) return null;
 
   const params = new URLSearchParams(initData);

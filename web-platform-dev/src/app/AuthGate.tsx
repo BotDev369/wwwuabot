@@ -42,10 +42,7 @@ export function AuthGate({ children }: AuthGateProps) {
       <div className="flex items-center justify-center h-screen flex-col gap-4 p-6 text-center">
         <h2>WWWUABot</h2>
         <p className="text-secondary">Відкрийте веб-платформу через Telegram бот.</p>
-        <a
-          href={`https://t.me/${BOT_USERNAME}`}
-          className="wb-btn wb-btn-telegram"
-        >
+        <a href={`https://t.me/${BOT_USERNAME}`} className="wb-btn wb-btn-telegram">
           <Icon name="external-link" size={16} />
           Відкрити в Telegram
         </a>

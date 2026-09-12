@@ -11,133 +11,133 @@
  */
 
 // --- MVP (5) ---
-export { TextBlock } from './TextBlock';
-export { ImageBlock } from './ImageBlock';
-export { ButtonsBlock } from './ButtonsBlock';
-export { ListBlock } from './ListBlock';
-export { DividerBlock } from './DividerBlock';
+export { TextBlock } from "./TextBlock";
+export { ImageBlock } from "./ImageBlock";
+export { ButtonsBlock } from "./ButtonsBlock";
+export { ListBlock } from "./ListBlock";
+export { DividerBlock } from "./DividerBlock";
 
 // --- Content (8) ---
-export { RichTextBlock } from './RichTextBlock';
-export { VideoBlock } from './VideoBlock';
-export { GalleryBlock } from './GalleryBlock';
-export { QuoteBlock } from './QuoteBlock';
-export { CodeBlock } from './CodeBlock';
-export { BadgeBlock } from './BadgeBlock';
+export { RichTextBlock } from "./RichTextBlock";
+export { VideoBlock } from "./VideoBlock";
+export { GalleryBlock } from "./GalleryBlock";
+export { QuoteBlock } from "./QuoteBlock";
+export { CodeBlock } from "./CodeBlock";
+export { BadgeBlock } from "./BadgeBlock";
 
 // --- Layout (4) ---
-export { SpacerBlock } from './SpacerBlock';
-export { ColumnsBlock } from './ColumnsBlock';
-export { CardBlock } from './CardBlock';
-export { HeroBlock } from './HeroBlock';
+export { SpacerBlock } from "./SpacerBlock";
+export { ColumnsBlock } from "./ColumnsBlock";
+export { CardBlock } from "./CardBlock";
+export { HeroBlock } from "./HeroBlock";
 
 // --- Navigation (3) ---
-export { TabsBlock } from './TabsBlock';
-export { AccordionBlock } from './AccordionBlock';
-export { NavBlock } from './NavBlock';
-export { LinkButtonBlock } from './LinkButtonBlock';
-export { ThemeBlock } from './ThemeBlock';
+export { TabsBlock } from "./TabsBlock";
+export { AccordionBlock } from "./AccordionBlock";
+export { NavBlock } from "./NavBlock";
+export { LinkButtonBlock } from "./LinkButtonBlock";
+export { ThemeBlock } from "./ThemeBlock";
 
 // --- Data (4) ---
-export { StatBlock } from './StatBlock';
-export { ProgressBlock } from './ProgressBlock';
-export { TableBlock } from './TableBlock';
-export { RatingBlock } from './RatingBlock';
+export { StatBlock } from "./StatBlock";
+export { ProgressBlock } from "./ProgressBlock";
+export { TableBlock } from "./TableBlock";
+export { RatingBlock } from "./RatingBlock";
 
 // --- Commerce (4) ---
-export { PricingBlock } from './PricingBlock';
-export { TestimonialBlock } from './TestimonialBlock';
-export { FeatureCardBlock } from './FeatureCardBlock';
-export { FaqBlock } from './FaqBlock';
+export { PricingBlock } from "./PricingBlock";
+export { TestimonialBlock } from "./TestimonialBlock";
+export { FeatureCardBlock } from "./FeatureCardBlock";
+export { FaqBlock } from "./FaqBlock";
 
 // --- Forms (3) ---
-export { InputBlock } from './InputBlock';
-export { TextareaBlock } from './TextareaBlock';
-export { SelectBlock } from './SelectBlock';
+export { InputBlock } from "./InputBlock";
+export { TextareaBlock } from "./TextareaBlock";
+export { SelectBlock } from "./SelectBlock";
 
 // --- Bot-domain (7) ---
-export { UserProfileBlock } from './UserProfileBlock';
-export { DateCardBlock } from './DateCardBlock';
-export { MyDatesTableBlock } from './MyDatesTableBlock';
-export { CompareSetupBlock } from './CompareSetupBlock';
-export { CompareSystemsBlock } from './CompareSystemsBlock';
-export { CompareTableBlock } from './CompareTableBlock';
-export { DateAnalysisBlock } from './DateAnalysisBlock';
+export { UserProfileBlock } from "./UserProfileBlock";
+export { DateCardBlock } from "./DateCardBlock";
+export { MyDatesTableBlock } from "./MyDatesTableBlock";
+export { CompareSetupBlock } from "./CompareSetupBlock";
+export { CompareSystemsBlock } from "./CompareSystemsBlock";
+export { CompareTableBlock } from "./CompareTableBlock";
+export { DateAnalysisBlock } from "./DateAnalysisBlock";
 
 // --- Analytics (1) ---
-export { ChartBlock } from './ChartBlock';
+export { ChartBlock } from "./ChartBlock";
 
 // --- Raw (1) ---
-export { HtmlBlock } from './HtmlBlock';
+export { HtmlBlock } from "./HtmlBlock";
 
 // --- Platform (1) ---
-export { ThemeToggleBlock } from './ThemeToggleBlock';
+export { ThemeToggleBlock } from "./ThemeToggleBlock";
 
 // --- Реєстрація ---
-import { registerBlock } from '../registry';
+import { registerBlock } from "../registry";
 
 // MVP
-import { TextBlock } from './TextBlock';
-import { ImageBlock } from './ImageBlock';
-import { ButtonsBlock } from './ButtonsBlock';
-import { ListBlock } from './ListBlock';
-import { DividerBlock } from './DividerBlock';
+import { TextBlock } from "./TextBlock";
+import { ImageBlock } from "./ImageBlock";
+import { ButtonsBlock } from "./ButtonsBlock";
+import { ListBlock } from "./ListBlock";
+import { DividerBlock } from "./DividerBlock";
 
 // Content
-import { RichTextBlock } from './RichTextBlock';
-import { VideoBlock } from './VideoBlock';
-import { GalleryBlock } from './GalleryBlock';
-import { QuoteBlock } from './QuoteBlock';
-import { CodeBlock } from './CodeBlock';
-import { BadgeBlock } from './BadgeBlock';
+import { RichTextBlock } from "./RichTextBlock";
+import { VideoBlock } from "./VideoBlock";
+import { GalleryBlock } from "./GalleryBlock";
+import { QuoteBlock } from "./QuoteBlock";
+import { CodeBlock } from "./CodeBlock";
+import { BadgeBlock } from "./BadgeBlock";
 
 // Layout
-import { SpacerBlock } from './SpacerBlock';
-import { ColumnsBlock } from './ColumnsBlock';
-import { CardBlock } from './CardBlock';
-import { HeroBlock } from './HeroBlock';
+import { SpacerBlock } from "./SpacerBlock";
+import { ColumnsBlock } from "./ColumnsBlock";
+import { CardBlock } from "./CardBlock";
+import { HeroBlock } from "./HeroBlock";
 
 // Navigation
-import { TabsBlock } from './TabsBlock';
-import { AccordionBlock } from './AccordionBlock';
-import { NavBlock } from './NavBlock';
-import { LinkButtonBlock } from './LinkButtonBlock';
-import { ThemeBlock } from './ThemeBlock';
+import { TabsBlock } from "./TabsBlock";
+import { AccordionBlock } from "./AccordionBlock";
+import { NavBlock } from "./NavBlock";
+import { LinkButtonBlock } from "./LinkButtonBlock";
+import { ThemeBlock } from "./ThemeBlock";
 
 // Data
-import { StatBlock } from './StatBlock';
-import { ProgressBlock } from './ProgressBlock';
-import { TableBlock } from './TableBlock';
-import { RatingBlock } from './RatingBlock';
+import { StatBlock } from "./StatBlock";
+import { ProgressBlock } from "./ProgressBlock";
+import { TableBlock } from "./TableBlock";
+import { RatingBlock } from "./RatingBlock";
 
 // Commerce
-import { PricingBlock } from './PricingBlock';
-import { TestimonialBlock } from './TestimonialBlock';
-import { FeatureCardBlock } from './FeatureCardBlock';
-import { FaqBlock } from './FaqBlock';
+import { PricingBlock } from "./PricingBlock";
+import { TestimonialBlock } from "./TestimonialBlock";
+import { FeatureCardBlock } from "./FeatureCardBlock";
+import { FaqBlock } from "./FaqBlock";
 
 // Forms
-import { InputBlock } from './InputBlock';
-import { TextareaBlock } from './TextareaBlock';
-import { SelectBlock } from './SelectBlock';
+import { InputBlock } from "./InputBlock";
+import { TextareaBlock } from "./TextareaBlock";
+import { SelectBlock } from "./SelectBlock";
 
 // Bot-domain
-import { UserProfileBlock } from './UserProfileBlock';
-import { DateCardBlock } from './DateCardBlock';
-import { MyDatesTableBlock } from './MyDatesTableBlock';
-import { CompareSetupBlock } from './CompareSetupBlock';
-import { CompareSystemsBlock } from './CompareSystemsBlock';
-import { CompareTableBlock } from './CompareTableBlock';
-import { DateAnalysisBlock } from './DateAnalysisBlock';
+import { UserProfileBlock } from "./UserProfileBlock";
+import { DateCardBlock } from "./DateCardBlock";
+import { MyDatesTableBlock } from "./MyDatesTableBlock";
+import { CompareSetupBlock } from "./CompareSetupBlock";
+import { CompareSystemsBlock } from "./CompareSystemsBlock";
+import { CompareTableBlock } from "./CompareTableBlock";
+import { DateAnalysisBlock } from "./DateAnalysisBlock";
 
 // Analytics
-import { ChartBlock } from './ChartBlock';
+import { ChartBlock } from "./ChartBlock";
 
 // Raw
-import { HtmlBlock } from './HtmlBlock';
+import { HtmlBlock } from "./HtmlBlock";
 
 // Platform
-import { ThemeToggleBlock } from './ThemeToggleBlock';
+import { ThemeToggleBlock } from "./ThemeToggleBlock";
 
 /**
  * Зареєструвати всі блоки в реєстрі (35 модулів).
@@ -150,69 +150,69 @@ import { ThemeToggleBlock } from './ThemeToggleBlock';
  */
 export function registerAllBlocks(): void {
   // MVP
-  registerBlock('text', TextBlock);
-  registerBlock('image', ImageBlock);
-  registerBlock('buttons', ButtonsBlock);
-  registerBlock('list', ListBlock);
-  registerBlock('divider', DividerBlock);
+  registerBlock("text", TextBlock);
+  registerBlock("image", ImageBlock);
+  registerBlock("buttons", ButtonsBlock);
+  registerBlock("list", ListBlock);
+  registerBlock("divider", DividerBlock);
 
   // Content
-  registerBlock('richtext', RichTextBlock);
-  registerBlock('video', VideoBlock);
-  registerBlock('gallery', GalleryBlock);
-  registerBlock('quote', QuoteBlock);
-  registerBlock('code', CodeBlock);
-  registerBlock('badge', BadgeBlock);
+  registerBlock("richtext", RichTextBlock);
+  registerBlock("video", VideoBlock);
+  registerBlock("gallery", GalleryBlock);
+  registerBlock("quote", QuoteBlock);
+  registerBlock("code", CodeBlock);
+  registerBlock("badge", BadgeBlock);
 
   // Layout
-  registerBlock('spacer', SpacerBlock);
-  registerBlock('columns', ColumnsBlock);
-  registerBlock('card', CardBlock);
-  registerBlock('hero', HeroBlock);
+  registerBlock("spacer", SpacerBlock);
+  registerBlock("columns", ColumnsBlock);
+  registerBlock("card", CardBlock);
+  registerBlock("hero", HeroBlock);
 
   // Navigation
-  registerBlock('tabs', TabsBlock);
-  registerBlock('accordion', AccordionBlock);
-  registerBlock('nav', NavBlock);
-  registerBlock('menu', NavBlock);
-  registerBlock('link-button', LinkButtonBlock);
-  registerBlock('button', LinkButtonBlock);
-  registerBlock('link', LinkButtonBlock);
-  registerBlock('theme', ThemeBlock);
-  registerBlock('theme-toggle', ThemeBlock);
+  registerBlock("tabs", TabsBlock);
+  registerBlock("accordion", AccordionBlock);
+  registerBlock("nav", NavBlock);
+  registerBlock("menu", NavBlock);
+  registerBlock("link-button", LinkButtonBlock);
+  registerBlock("button", LinkButtonBlock);
+  registerBlock("link", LinkButtonBlock);
+  registerBlock("theme", ThemeBlock);
+  registerBlock("theme-toggle", ThemeBlock);
 
   // Data
-  registerBlock('stat', StatBlock);
-  registerBlock('progress', ProgressBlock);
-  registerBlock('table', TableBlock);
-  registerBlock('rating', RatingBlock);
+  registerBlock("stat", StatBlock);
+  registerBlock("progress", ProgressBlock);
+  registerBlock("table", TableBlock);
+  registerBlock("rating", RatingBlock);
 
   // Commerce
-  registerBlock('pricing', PricingBlock);
-  registerBlock('testimonial', TestimonialBlock);
-  registerBlock('feature-card', FeatureCardBlock);
-  registerBlock('faq', FaqBlock);
+  registerBlock("pricing", PricingBlock);
+  registerBlock("testimonial", TestimonialBlock);
+  registerBlock("feature-card", FeatureCardBlock);
+  registerBlock("faq", FaqBlock);
 
   // Forms
-  registerBlock('input', InputBlock);
-  registerBlock('textarea', TextareaBlock);
-  registerBlock('select', SelectBlock);
+  registerBlock("input", InputBlock);
+  registerBlock("textarea", TextareaBlock);
+  registerBlock("select", SelectBlock);
 
   // Bot-domain
-  registerBlock('user-profile', UserProfileBlock);
-  registerBlock('date-card', DateCardBlock);
-  registerBlock('my-dates-table', MyDatesTableBlock);
-  registerBlock('compare-setup', CompareSetupBlock);
-  registerBlock('compare-systems', CompareSystemsBlock);
-  registerBlock('compare-table', CompareTableBlock);
-  registerBlock('date-analysis', DateAnalysisBlock);
+  registerBlock("user-profile", UserProfileBlock);
+  registerBlock("date-card", DateCardBlock);
+  registerBlock("my-dates-table", MyDatesTableBlock);
+  registerBlock("compare-setup", CompareSetupBlock);
+  registerBlock("compare-systems", CompareSystemsBlock);
+  registerBlock("compare-table", CompareTableBlock);
+  registerBlock("date-analysis", DateAnalysisBlock);
 
   // Analytics
-  registerBlock('chart', ChartBlock);
+  registerBlock("chart", ChartBlock);
 
   // Raw
-  registerBlock('html', HtmlBlock);
+  registerBlock("html", HtmlBlock);
 
   // Platform
-  registerBlock('theme-toggle', ThemeToggleBlock);
+  registerBlock("theme-toggle", ThemeToggleBlock);
 }

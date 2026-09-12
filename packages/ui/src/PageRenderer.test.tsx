@@ -22,9 +22,7 @@ describe("PageRenderer", () => {
         footer: [],
       },
     };
-    const html = renderToStaticMarkup(
-      <PageRenderer config={config} context={dummyContext} />
-    );
+    const html = renderToStaticMarkup(<PageRenderer config={config} context={dummyContext} />);
     expect(html).toContain("page-hamburger--floating");
     expect(html).toContain("hamburger");
     expect(html).toContain("page-zone--sidebar");
@@ -46,9 +44,7 @@ describe("PageRenderer", () => {
         closeButtonPosition: "right",
       },
     };
-    const html = renderToStaticMarkup(
-      <PageRenderer config={config} context={dummyContext} />
-    );
+    const html = renderToStaticMarkup(<PageRenderer config={config} context={dummyContext} />);
     expect(html).toContain("page-sidebar-header--right");
     expect(html).toContain("wb-close-btn");
   });
@@ -63,9 +59,7 @@ describe("PageRenderer", () => {
         footer: [],
       },
     };
-    const html = renderToStaticMarkup(
-      <PageRenderer config={config} context={dummyContext} />
-    );
+    const html = renderToStaticMarkup(<PageRenderer config={config} context={dummyContext} />);
     expect(html).not.toContain("page-hamburger--floating");
     expect(html).toContain("page-hamburger");
     expect(html).toContain("hamburger");
@@ -83,9 +77,7 @@ describe("PageRenderer", () => {
         footer: [],
       },
     };
-    const html = renderToStaticMarkup(
-      <PageRenderer config={config} context={dummyContext} />
-    );
+    const html = renderToStaticMarkup(<PageRenderer config={config} context={dummyContext} />);
     expect(html).not.toContain("page-hamburger");
     expect(html).not.toContain("page-zone--sidebar");
   });
@@ -104,9 +96,7 @@ describe("PageRenderer", () => {
         itemSpacing: "md",
       },
     };
-    const html = renderToStaticMarkup(
-      <PageRenderer config={config} context={dummyContext} />
-    );
+    const html = renderToStaticMarkup(<PageRenderer config={config} context={dummyContext} />);
     expect(html).toContain("font-size:18px");
     expect(html).toContain("gap:12px");
     expect(html).toContain("Nav Item 1");
@@ -117,9 +107,7 @@ describe("PageRenderer", () => {
       version: 1,
       zones: {},
     } as unknown as PageConfig;
-    const html = renderToStaticMarkup(
-      <PageRenderer config={config} context={dummyContext} />
-    );
+    const html = renderToStaticMarkup(<PageRenderer config={config} context={dummyContext} />);
     expect(html).not.toContain("page-hamburger");
     expect(html).not.toContain("page-zone--sidebar");
   });
@@ -156,9 +144,7 @@ describe("PageRenderer", () => {
       user: { id: 10, role: "user" },
     };
 
-    const html = renderToStaticMarkup(
-      <PageRenderer config={config} context={userContext} />
-    );
+    const html = renderToStaticMarkup(<PageRenderer config={config} context={userContext} />);
     expect(html).not.toContain("Secret Admin Settings");
     expect(html).toContain("Public Content");
   });
@@ -189,9 +175,7 @@ describe("PageRenderer", () => {
       user: { id: 1, role: "admin" },
     };
 
-    const html = renderToStaticMarkup(
-      <PageRenderer config={config} context={adminContext} />
-    );
+    const html = renderToStaticMarkup(<PageRenderer config={config} context={adminContext} />);
     expect(html).toContain("Secret Admin Settings");
   });
 });

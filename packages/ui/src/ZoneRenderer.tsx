@@ -7,10 +7,10 @@
  * @module packages/ui/src/ZoneRenderer
  */
 
-import type { BlockZone, PageBlock, BlockContext } from '@wwwuabot/shared/types/page-config';
-import { getBlockComponent } from './registry';
-import { evaluateConditions } from '@wwwuabot/shared/utils/condition-evaluator';
-import { PermissionGate } from './PermissionGate';
+import type { BlockZone, PageBlock, BlockContext } from "@wwwuabot/shared/types/page-config";
+import { getBlockComponent } from "./registry";
+import { evaluateConditions } from "@wwwuabot/shared/utils/condition-evaluator";
+import { PermissionGate } from "./PermissionGate";
 
 interface ZoneRendererProps {
   /** Блоки для рендеру. */
@@ -26,12 +26,7 @@ interface ZoneRendererProps {
 /**
  * Рендерер зони — відсортований список блоків з рекурсією та контролем доступу.
  */
-export function ZoneRenderer({
-  blocks,
-  zone,
-  context,
-  className,
-}: ZoneRendererProps) {
+export function ZoneRenderer({ blocks, zone, context, className }: ZoneRendererProps) {
   const sorted = [...blocks].sort((a, b) => a.order - b.order);
   if (sorted.length === 0) return null;
 
@@ -39,10 +34,7 @@ export function ZoneRenderer({
     <div className={className} data-zone={zone}>
       {sorted.map((block) => {
         // 1. Перевірка базових умов (conditional rendering)
-        const conditionsMatch = evaluateConditions(
-          block.conditions,
-          context.user,
-        );
+        const conditionsMatch = evaluateConditions(block.conditions, context.user);
 
         if (!conditionsMatch) {
           const fallback = block.conditions?.fallback;
@@ -67,17 +59,14 @@ export function ZoneRenderer({
 
         const childContent =
           block.children && block.children.length > 0 ? (
-            <ZoneRenderer
-              blocks={block.children}
-              zone={zone}
-              context={context}
-            />
+            <ZoneRenderer blocks={block.children} zone={zone} context={context} />
           ) : null;
 
         const props = (block.props ?? {}) as Record<string, unknown>;
         const adminOnly = Boolean(block.adminOnly || props.adminOnly);
         const ownerOnly = Boolean(block.ownerOnly || props.ownerOnly);
-        const requiredCapability = (block.requiredCapability || props.requiredCapability) as string | undefined;
+        const requiredCapability = (block.requiredCapability || props.requiredCapability) as
+          string | undefined;
 
         return (
           <PermissionGate
@@ -88,11 +77,7 @@ export function ZoneRenderer({
             isOwner={Boolean(context.isOwner)}
             requiredCapability={requiredCapability}
           >
-            <Component
-              block={block}
-              context={context}
-              zone={zone}
-            >
+            <Component block={block} context={context} zone={zone}>
               {childContent}
             </Component>
           </PermissionGate>

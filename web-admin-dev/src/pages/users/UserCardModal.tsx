@@ -21,15 +21,28 @@ function rowToProfile(row: UserRow): UserProfileData {
       const parsed = JSON.parse(permsRaw);
       if (Array.isArray(parsed)) permissions = parsed;
     } catch {
-      permissions = permsRaw.split(",").map((s) => s.trim()).filter(Boolean);
+      permissions = permsRaw
+        .split(",")
+        .map((s) => s.trim())
+        .filter(Boolean);
     }
   }
 
   // Collect raw admin-only fields
   const SKIP_FIELDS = new Set([
-    "user_id", "first_name", "last_name", "username", "language",
-    "role", "tariff", "status", "discount", "permissions",
-    "is_blocked", "created_at", "updated_at",
+    "user_id",
+    "first_name",
+    "last_name",
+    "username",
+    "language",
+    "role",
+    "tariff",
+    "status",
+    "discount",
+    "permissions",
+    "is_blocked",
+    "created_at",
+    "updated_at",
   ]);
   const rawFields: Record<string, unknown> = {};
   for (const [key, val] of Object.entries(r)) {
@@ -78,7 +91,9 @@ export function UserCardModal({ userId, onClose, onEdit, onMessage }: Props) {
           setLoading(false);
         }
       });
-    return () => { cancelled = true; };
+    return () => {
+      cancelled = true;
+    };
   }, [userId]);
 
   return (
@@ -88,7 +103,9 @@ export function UserCardModal({ userId, onClose, onEdit, onMessage }: Props) {
           <span className="wb-modal-title">
             {loading ? "Завантаження…" : error ? "Помилка" : `#${userId}`}
           </span>
-          <button className="wb-close-btn" onClick={onClose}>{icons["close"]}</button>
+          <button className="wb-close-btn" onClick={onClose}>
+            {icons["close"]}
+          </button>
         </div>
 
         <div className="wb-modal-body">

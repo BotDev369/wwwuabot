@@ -105,8 +105,8 @@ describe("evaluateConditions", () => {
       expect(
         evaluateConditions(
           { fieldMatch: { "metadata.verified": true, "metadata.country": "UA" } },
-          complexUser
-        )
+          complexUser,
+        ),
       ).toBe(true);
     });
 
@@ -117,9 +117,9 @@ describe("evaluateConditions", () => {
           country: "PL",
         },
       };
-      expect(
-        evaluateConditions({ fieldMatch: { "metadata.country": "UA" } }, complexUser)
-      ).toBe(false);
+      expect(evaluateConditions({ fieldMatch: { "metadata.country": "UA" } }, complexUser)).toBe(
+        false,
+      );
     });
   });
 });

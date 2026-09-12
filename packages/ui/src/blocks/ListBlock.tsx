@@ -6,7 +6,7 @@
  * @module packages/ui/src/blocks/ListBlock
  */
 
-import type { BlockComponentProps } from '@wwwuabot/shared/types/page-config';
+import type { BlockComponentProps } from "@wwwuabot/shared/types/page-config";
 
 interface ListItem {
   text: string;
@@ -22,17 +22,17 @@ export function ListBlock({ block }: BlockComponentProps) {
 
   if (!items || items.length === 0) return null;
 
-  const Tag = ordered ? 'ol' : 'ul';
+  const Tag = ordered ? "ol" : "ul";
 
   return (
     <Tag
       className="wb-block-list"
       style={{
-        listStyle: ordered ? 'decimal' : 'disc',
-        paddingLeft: 'var(--sp-5)',
-        display: 'flex',
-        flexDirection: 'column',
-        gap: 'var(--sp-2)',
+        listStyle: ordered ? "decimal" : "disc",
+        paddingLeft: "var(--sp-5)",
+        display: "flex",
+        flexDirection: "column",
+        gap: "var(--sp-2)",
       }}
     >
       {items.map((item, i) => (
@@ -40,7 +40,8 @@ export function ListBlock({ block }: BlockComponentProps) {
           <span className="wb-block-list__text wb-text-primary">{item.text}</span>
           {item.description && (
             <span className="wb-block-list__desc wb-text-sm wb-text-secondary">
-              {' — '}{item.description}
+              {" — "}
+              {item.description}
             </span>
           )}
         </li>

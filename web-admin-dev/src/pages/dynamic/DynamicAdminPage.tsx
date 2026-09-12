@@ -7,10 +7,7 @@
 
 import { useEffect, useState, useMemo } from "react";
 import { useParams } from "react-router-dom";
-import type {
-  PageConfig,
-  BlockContext,
-} from "@wwwuabot/shared/types/page-config";
+import type { PageConfig, BlockContext } from "@wwwuabot/shared/types/page-config";
 import { PageRenderer } from "@wwwuabot/ui/PageRenderer";
 import { registerAllBlocks } from "@wwwuabot/ui/blocks";
 
@@ -160,11 +157,5 @@ export function DynamicAdminPage() {
     );
   }
 
-  return (
-    <PageRenderer
-      config={scenario.pageData}
-      context={context}
-      className="page-layout"
-    />
-  );
+  return <PageRenderer config={scenario.pageData} context={context} className="page-layout" />;
 }

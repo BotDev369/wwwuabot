@@ -7,8 +7,8 @@
  * @module @wwwuabot/ui/PermissionGate
  */
 
-import type { ReactNode } from 'react';
-import type { UserProfile } from '@wwwuabot/shared/types/page-config';
+import type { ReactNode } from "react";
+import type { UserProfile } from "@wwwuabot/shared/types/page-config";
 
 export interface PermissionGateProps {
   /** Профіль користувача. */
@@ -47,8 +47,8 @@ export function PermissionGate({
 }: PermissionGateProps) {
   // 1. Перевірка adminOnly
   if (adminOnly) {
-    const role = (user?.role ?? '').toLowerCase();
-    const isAdmin = role === 'admin' || role === 'superadmin';
+    const role = (user?.role ?? "").toLowerCase();
+    const isAdmin = role === "admin" || role === "superadmin";
     if (!isAdmin) return <>{fallback}</>;
   }
 
@@ -59,7 +59,7 @@ export function PermissionGate({
 
   // 3. Перевірка ролей
   if (requiredRole && requiredRole.length > 0) {
-    const userRole = (user?.role ?? '').toLowerCase();
+    const userRole = (user?.role ?? "").toLowerCase();
     const allowed = requiredRole.some((r) => r.toLowerCase() === userRole);
     if (!allowed) return <>{fallback}</>;
   }

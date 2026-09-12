@@ -2,7 +2,15 @@ import { useState } from "react";
 import { icons, type IconName } from "./icons";
 
 const ico = (name: IconName, size = 16) => (
-  <span style={{ display: "inline-flex", alignItems: "center", width: size, height: size, flexShrink: 0 }}>
+  <span
+    style={{
+      display: "inline-flex",
+      alignItems: "center",
+      width: size,
+      height: size,
+      flexShrink: 0,
+    }}
+  >
     {icons[name]}
   </span>
 );
@@ -41,7 +49,15 @@ export interface UserProfileCardProps {
   onClose?: () => void;
 }
 
-function FieldRow({ label, value, icon }: { label: string; value: React.ReactNode; icon?: IconName }) {
+function FieldRow({
+  label,
+  value,
+  icon,
+}: {
+  label: string;
+  value: React.ReactNode;
+  icon?: IconName;
+}) {
   return (
     <div className="profile-field">
       <div className="profile-field-label">
@@ -61,7 +77,16 @@ function StatusBadge({ value }: { value: string }) {
   };
   const c = colors[value] || { bg: "var(--surface-active)", color: "var(--text-secondary)" };
   return (
-    <span style={{ background: c.bg, color: c.color, padding: "2px 10px", borderRadius: 9999, fontSize: 13, fontWeight: 600 }}>
+    <span
+      style={{
+        background: c.bg,
+        color: c.color,
+        padding: "2px 10px",
+        borderRadius: 9999,
+        fontSize: 13,
+        fontWeight: 600,
+      }}
+    >
       {value}
     </span>
   );
@@ -76,7 +101,16 @@ function RoleBadge({ value }: { value: string }) {
   };
   const c = colors[value] || colors.user;
   return (
-    <span style={{ background: c.bg, color: c.color, padding: "2px 10px", borderRadius: 9999, fontSize: 13, fontWeight: 600 }}>
+    <span
+      style={{
+        background: c.bg,
+        color: c.color,
+        padding: "2px 10px",
+        borderRadius: 9999,
+        fontSize: 13,
+        fontWeight: 600,
+      }}
+    >
       {value}
     </span>
   );
@@ -101,8 +135,11 @@ function JsonBlock({ label, value }: { label: string; value: unknown }) {
   try {
     const parsed = typeof value === "string" ? JSON.parse(value) : value;
     if (Array.isArray(parsed)) summary = `Масив [${parsed.length}]`;
-    else if (typeof parsed === "object" && parsed !== null) summary = `Об'єкт {${Object.keys(parsed).length}}`;
-  } catch { summary = str.length > 60 ? str.slice(0, 60) + "…" : str; }
+    else if (typeof parsed === "object" && parsed !== null)
+      summary = `Об'єкт {${Object.keys(parsed).length}}`;
+  } catch {
+    summary = str.length > 60 ? str.slice(0, 60) + "…" : str;
+  }
 
   return (
     <div style={{ marginBottom: 8 }}>
@@ -110,7 +147,14 @@ function JsonBlock({ label, value }: { label: string; value: unknown }) {
       {!expanded ? (
         <button
           onClick={() => setExpanded(true)}
-          style={{ background: "none", border: "none", cursor: "pointer", color: "var(--accent, #6c5ce7)", fontSize: 13, padding: 0 }}
+          style={{
+            background: "none",
+            border: "none",
+            cursor: "pointer",
+            color: "var(--accent, #6c5ce7)",
+            fontSize: 13,
+            padding: 0,
+          }}
         >
           ▸ {summary}
         </button>
@@ -118,11 +162,29 @@ function JsonBlock({ label, value }: { label: string; value: unknown }) {
         <div>
           <button
             onClick={() => setExpanded(false)}
-            style={{ background: "none", border: "none", cursor: "pointer", color: "var(--accent, #6c5ce7)", fontSize: 13, padding: 0, marginBottom: 4 }}
+            style={{
+              background: "none",
+              border: "none",
+              cursor: "pointer",
+              color: "var(--accent, #6c5ce7)",
+              fontSize: 13,
+              padding: 0,
+              marginBottom: 4,
+            }}
           >
             ▾ {summary}
           </button>
-          <pre style={{ background: "var(--bg-2, #1a1a2e)", padding: 8, borderRadius: 6, fontSize: 11, overflow: "auto", margin: 0, whiteSpace: "pre-wrap" }}>
+          <pre
+            style={{
+              background: "var(--bg-2, #1a1a2e)",
+              padding: 8,
+              borderRadius: 6,
+              fontSize: 11,
+              overflow: "auto",
+              margin: 0,
+              whiteSpace: "pre-wrap",
+            }}
+          >
             {str}
           </pre>
         </div>
@@ -131,15 +193,32 @@ function JsonBlock({ label, value }: { label: string; value: unknown }) {
   );
 }
 
-export function UserProfileCard({ user, variant = "platform", loading, error, onEdit, onMessage }: UserProfileCardProps) {
+export function UserProfileCard({
+  user,
+  variant = "platform",
+  loading,
+  error,
+  onEdit,
+  onMessage,
+}: UserProfileCardProps) {
   if (loading) {
-    return <div style={{ padding: 24, textAlign: "center", color: "var(--text-muted, #888)" }}>Завантаження даних…</div>;
+    return (
+      <div style={{ padding: 24, textAlign: "center", color: "var(--text-muted, #888)" }}>
+        Завантаження даних…
+      </div>
+    );
   }
   if (error) {
-    return <div style={{ padding: 24, textAlign: "center", color: "#dc2626" }}>Помилка: {error}</div>;
+    return (
+      <div style={{ padding: 24, textAlign: "center", color: "#dc2626" }}>Помилка: {error}</div>
+    );
   }
   if (!user) {
-    return <div style={{ padding: 24, textAlign: "center", color: "var(--text-muted, #888)" }}>Користувача не знайдено</div>;
+    return (
+      <div style={{ padding: 24, textAlign: "center", color: "var(--text-muted, #888)" }}>
+        Користувача не знайдено
+      </div>
+    );
   }
 
   const fullName = [user.firstName, user.lastName].filter(Boolean).join(" ") || "—";
@@ -149,22 +228,39 @@ export function UserProfileCard({ user, variant = "platform", loading, error, on
       {/* ═══ Avatar + Name ═══ */}
       <div style={{ display: "flex", alignItems: "center", gap: 16, marginBottom: 20 }}>
         {user.photoUrl ? (
-          <img src={user.photoUrl} alt="Avatar" style={{ width: 64, height: 64, borderRadius: "50%", objectFit: "cover" }} />
+          <img
+            src={user.photoUrl}
+            alt="Avatar"
+            style={{ width: 64, height: 64, borderRadius: "50%", objectFit: "cover" }}
+          />
         ) : (
-          <div style={{
-            width: 64, height: 64, borderRadius: "50%",
-            background: "var(--accent, #6c5ce7)",
-            display: "flex", alignItems: "center", justifyContent: "center",
-            color: "#fff", fontSize: 28, fontWeight: 700, flexShrink: 0,
-          }}>
+          <div
+            style={{
+              width: 64,
+              height: 64,
+              borderRadius: "50%",
+              background: "var(--accent, #6c5ce7)",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              color: "#fff",
+              fontSize: 28,
+              fontWeight: 700,
+              flexShrink: 0,
+            }}
+          >
             {(user.firstName || "?")[0]?.toUpperCase()}
           </div>
         )}
         <div>
           <div style={{ fontSize: 20, fontWeight: 700 }}>{fullName}</div>
-          {user.username && <div style={{ color: "var(--text-muted, #888)", fontSize: 14 }}>@{user.username}</div>}
+          {user.username && (
+            <div style={{ color: "var(--text-muted, #888)", fontSize: 14 }}>@{user.username}</div>
+          )}
           {variant === "admin" && (
-            <div style={{ fontSize: 13, color: "var(--text-muted, #888)", marginTop: 2 }}>ID: {user.id}</div>
+            <div style={{ fontSize: 13, color: "var(--text-muted, #888)", marginTop: 2 }}>
+              ID: {user.id}
+            </div>
           )}
         </div>
       </div>
@@ -177,11 +273,27 @@ export function UserProfileCard({ user, variant = "platform", loading, error, on
             <FieldRow label="User ID" value={user.id} icon="info" />
             <FieldRow label="Ім'я" value={user.firstName} icon="edit" />
             <FieldRow label="Прізвище" value={user.lastName} icon="edit" />
-            <FieldRow label="Username" value={user.username ? `@${user.username}` : null} icon="globe" />
+            <FieldRow
+              label="Username"
+              value={user.username ? `@${user.username}` : null}
+              icon="globe"
+            />
             <FieldRow label="Мова" value={user.language} icon="globe" />
-            <FieldRow label="Premium" value={user.isPremium === true ? "Так" : user.isPremium === false ? "Ні" : "—"} icon="sparkles" />
-            <FieldRow label="Бот" value={user.isBot === true ? "Так" : user.isBot === false ? "Ні" : "—"} icon="bot" />
-            <FieldRow label="Додано в меню" value={user.addedToMenu === true ? "Так" : user.addedToMenu === false ? "Ні" : "—"} icon="settings" />
+            <FieldRow
+              label="Premium"
+              value={user.isPremium === true ? "Так" : user.isPremium === false ? "Ні" : "—"}
+              icon="sparkles"
+            />
+            <FieldRow
+              label="Бот"
+              value={user.isBot === true ? "Так" : user.isBot === false ? "Ні" : "—"}
+              icon="bot"
+            />
+            <FieldRow
+              label="Додано в меню"
+              value={user.addedToMenu === true ? "Так" : user.addedToMenu === false ? "Ні" : "—"}
+              icon="settings"
+            />
           </div>
         </div>
       )}
@@ -190,22 +302,38 @@ export function UserProfileCard({ user, variant = "platform", loading, error, on
       <div className="card" style={{ marginBottom: 16 }}>
         <h3 style={{ marginBottom: 12 }}>{ico("clipboard")} Дані з бази</h3>
         <div className="profile-fields">
-          {variant === "admin" && (
-            <FieldRow label="ID" value={user.id} icon="info" />
-          )}
+          {variant === "admin" && <FieldRow label="ID" value={user.id} icon="info" />}
           {variant === "admin" && (
             <>
               <FieldRow label="Ім'я" value={user.firstName} icon="edit" />
               <FieldRow label="Прізвище" value={user.lastName} icon="edit" />
-              <FieldRow label="Username" value={user.username ? `@${user.username}` : null} icon="globe" />
+              <FieldRow
+                label="Username"
+                value={user.username ? `@${user.username}` : null}
+                icon="globe"
+              />
               <FieldRow label="Мова" value={user.language} icon="globe" />
             </>
           )}
-          <FieldRow label="Роль" value={user.role ? <RoleBadge value={user.role} /> : null} icon="users" />
+          <FieldRow
+            label="Роль"
+            value={user.role ? <RoleBadge value={user.role} /> : null}
+            icon="users"
+          />
           <FieldRow label="Тариф" value={user.tariff} icon="sparkles" />
-          <FieldRow label="Статус" value={user.status ? <StatusBadge value={user.status} /> : null} icon="check" />
+          <FieldRow
+            label="Статус"
+            value={user.status ? <StatusBadge value={user.status} /> : null}
+            icon="check"
+          />
           <FieldRow label="Знижка" value={user.discount ? `${user.discount}%` : null} icon="info" />
-          <FieldRow label="Дозволи" value={user.permissions && user.permissions.length > 0 ? user.permissions.join(", ") : null} icon="lock" />
+          <FieldRow
+            label="Дозволи"
+            value={
+              user.permissions && user.permissions.length > 0 ? user.permissions.join(", ") : null
+            }
+            icon="lock"
+          />
           <FieldRow label="Заблоковано" value={user.isBlocked ? "Так" : "Ні"} icon="lock" />
           {user.createdAt && <FieldRow label="Створено" value={user.createdAt} icon="info" />}
           {user.updatedAt && <FieldRow label="Оновлено" value={user.updatedAt} icon="info" />}
@@ -220,7 +348,10 @@ export function UserProfileCard({ user, variant = "platform", loading, error, on
             {Object.entries(user.rawFields).map(([key, val]) => {
               if (val === null || val === undefined || val === "") return null;
               const label = RAW_FIELD_LABELS[key] || key;
-              if (typeof val === "object" || (typeof val === "string" && (val.startsWith("{") || val.startsWith("[")))) {
+              if (
+                typeof val === "object" ||
+                (typeof val === "string" && (val.startsWith("{") || val.startsWith("[")))
+              ) {
                 return <JsonBlock key={key} label={label} value={val} />;
               }
               return <FieldRow key={key} label={label} value={String(val)} icon="info" />;
@@ -235,7 +366,17 @@ export function UserProfileCard({ user, variant = "platform", loading, error, on
           <summary style={{ cursor: "pointer", color: "var(--text-muted, #888)", fontSize: 13 }}>
             Показати сирий JSON
           </summary>
-          <pre style={{ background: "var(--bg-2, #1a1a2e)", padding: 12, borderRadius: 8, fontSize: 12, overflow: "auto", marginTop: 8, whiteSpace: "pre-wrap" }}>
+          <pre
+            style={{
+              background: "var(--bg-2, #1a1a2e)",
+              padding: 12,
+              borderRadius: 8,
+              fontSize: 12,
+              overflow: "auto",
+              marginTop: 8,
+              whiteSpace: "pre-wrap",
+            }}
+          >
             {JSON.stringify(user, null, 2)}
           </pre>
         </details>
@@ -243,9 +384,21 @@ export function UserProfileCard({ user, variant = "platform", loading, error, on
 
       {/* ═══ Actions (admin only) ═══ */}
       {variant === "admin" && (onEdit || onMessage) && (
-        <div style={{ display: "flex", gap: 8, justifyContent: "flex-end", marginTop: 16, paddingTop: 12, borderTop: "1px solid var(--border, #e5e7eb)" }}>
+        <div
+          style={{
+            display: "flex",
+            gap: 8,
+            justifyContent: "flex-end",
+            marginTop: 16,
+            paddingTop: 12,
+            borderTop: "1px solid var(--border, #e5e7eb)",
+          }}
+        >
           {onMessage && (
-            <button className="wb-btn wb-btn-secondary wb-btn-sm" onClick={() => onMessage(user.id)}>
+            <button
+              className="wb-btn wb-btn-secondary wb-btn-sm"
+              onClick={() => onMessage(user.id)}
+            >
               {ico("mail")} Написати
             </button>
           )}

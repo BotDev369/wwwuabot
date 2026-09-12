@@ -5,8 +5,17 @@
 import { useEffect, useState, useCallback, useMemo } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { readScenarioAll, updateScenarioFields } from "../../shared/api/scenarios.api";
-import type { PageConfig, PageBlock, BlockZone, BlockContext } from "@wwwuabot/shared/types/page-config";
-import { createEmptyPageConfig, parsePageConfig, ALL_ZONES } from "@wwwuabot/shared/types/page-config";
+import type {
+  PageConfig,
+  PageBlock,
+  BlockZone,
+  BlockContext,
+} from "@wwwuabot/shared/types/page-config";
+import {
+  createEmptyPageConfig,
+  parsePageConfig,
+  ALL_ZONES,
+} from "@wwwuabot/shared/types/page-config";
 import type { SavingActionType } from "@wwwuabot/shared";
 
 type SaveStatus = "idle" | "saving" | "saved" | "error";
@@ -31,15 +40,26 @@ export function usePageBuilder() {
   const handleToggleZone = useCallback((zone: BlockZone) => {
     setExpandedZones((prev) => {
       const next = new Set(prev);
-      if (next.has(zone)) next.delete(zone); else next.add(zone);
+      if (next.has(zone)) next.delete(zone);
+      else next.add(zone);
       return next;
     });
   }, []);
 
-  const allExpanded = useMemo(() => ALL_ZONES.length > 0 && ALL_ZONES.every((z) => expandedZones.has(z)), [expandedZones]);
-  const allCollapsed = useMemo(() => ALL_ZONES.every((z) => !expandedZones.has(z)), [expandedZones]);
-  const handleExpandAll = useCallback(() => { setExpandedZones(new Set(ALL_ZONES)); }, []);
-  const handleCollapseAll = useCallback(() => { setExpandedZones(new Set()); }, []);
+  const allExpanded = useMemo(
+    () => ALL_ZONES.length > 0 && ALL_ZONES.every((z) => expandedZones.has(z)),
+    [expandedZones],
+  );
+  const allCollapsed = useMemo(
+    () => ALL_ZONES.every((z) => !expandedZones.has(z)),
+    [expandedZones],
+  );
+  const handleExpandAll = useCallback(() => {
+    setExpandedZones(new Set(ALL_ZONES));
+  }, []);
+  const handleCollapseAll = useCallback(() => {
+    setExpandedZones(new Set());
+  }, []);
 
   const context: BlockContext = useMemo(
     () => ({ codeword: codeword ?? "", title: scenarioTitle, photoUrl: scenarioPhoto }),
@@ -54,37 +74,54 @@ export function usePageBuilder() {
       try {
         const row = await readScenarioAll(codeword, "portal");
         if (cancelled) return;
-        if (!row) { setError("Сценарій не знайдено"); setLoading(false); return; }
-        setScenarioTitle((row as Record<string, unknown>).title as string ?? null);
-        setScenarioPhoto((row as Record<string, unknown>).photo_url as string ?? null);
+        if (!row) {
+          setError("Сценарій не знайдено");
+          setLoading(false);
+          return;
+        }
+        setScenarioTitle(((row as Record<string, unknown>).title as string) ?? null);
+        setScenarioPhoto(((row as Record<string, unknown>).photo_url as string) ?? null);
         const raw = (row as Record<string, unknown>).page_data;
-        const parsed = typeof raw === "string" ? parsePageConfig(raw) : typeof raw === "object" && raw !== null ? (raw as PageConfig) : null;
+        const parsed =
+          typeof raw === "string"
+            ? parsePageConfig(raw)
+            : typeof raw === "object" && raw !== null
+              ? (raw as PageConfig)
+              : null;
         if (parsed) setConfig(parsed);
         setLoading(false);
       } catch (e) {
-        if (!cancelled) { setError((e as Error).message); setLoading(false); }
+        if (!cancelled) {
+          setError((e as Error).message);
+          setLoading(false);
+        }
       }
     })();
-    return () => { cancelled = true; };
+    return () => {
+      cancelled = true;
+    };
   }, [codeword]);
 
   // Save
-  const handleSave = useCallback(async (shouldClose: boolean = false) => {
-    if (!codeword) return;
-    setSaveStatus("saving");
-    setSavingAction(shouldClose ? "saveAndClose" : "save");
-    try {
-      await updateScenarioFields(codeword, { page_data: JSON.stringify(config) }, "portal");
-      setSaveStatus("saved");
-      if (shouldClose) setTimeout(() => navigate("/scenarios-v2"), 500);
-      else setTimeout(() => setSaveStatus("idle"), 2000);
-    } catch (e) {
-      setSaveStatus("error");
-      setError((e as Error).message);
-    } finally {
-      setSavingAction(null);
-    }
-  }, [codeword, config, navigate]);
+  const handleSave = useCallback(
+    async (shouldClose: boolean = false) => {
+      if (!codeword) return;
+      setSaveStatus("saving");
+      setSavingAction(shouldClose ? "saveAndClose" : "save");
+      try {
+        await updateScenarioFields(codeword, { page_data: JSON.stringify(config) }, "portal");
+        setSaveStatus("saved");
+        if (shouldClose) setTimeout(() => navigate("/scenarios-v2"), 500);
+        else setTimeout(() => setSaveStatus("idle"), 2000);
+      } catch (e) {
+        setSaveStatus("error");
+        setError((e as Error).message);
+      } finally {
+        setSavingAction(null);
+      }
+    },
+    [codeword, config, navigate],
+  );
 
   // Update zone blocks
   const handleUpdateZoneBlocks = useCallback((zone: BlockZone, blocks: PageBlock[]) => {
@@ -114,13 +151,36 @@ export function usePageBuilder() {
     }
   }, [jsonText]);
 
-  const handleBack = useCallback(() => { navigate("/scenarios-v2"); }, [navigate]);
+  const handleBack = useCallback(() => {
+    navigate("/scenarios-v2");
+  }, [navigate]);
 
   return {
-    codeword, config, scenarioTitle, loading, saveStatus, savingAction, error, jsonMode, jsonText, jsonError,
-    expandedZones, allExpanded, allCollapsed, context,
-    setJsonMode, setJsonText, setJsonError, setError,
-    handleToggleZone, handleExpandAll, handleCollapseAll,
-    handleSave, handleUpdateZoneBlocks, handleExport, handleImport, handleBack,
+    codeword,
+    config,
+    scenarioTitle,
+    loading,
+    saveStatus,
+    savingAction,
+    error,
+    jsonMode,
+    jsonText,
+    jsonError,
+    expandedZones,
+    allExpanded,
+    allCollapsed,
+    context,
+    setJsonMode,
+    setJsonText,
+    setJsonError,
+    setError,
+    handleToggleZone,
+    handleExpandAll,
+    handleCollapseAll,
+    handleSave,
+    handleUpdateZoneBlocks,
+    handleExport,
+    handleImport,
+    handleBack,
   };
 }

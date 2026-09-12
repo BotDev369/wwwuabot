@@ -285,8 +285,8 @@ export interface SiteRow {
   owner_id: number;
   status: string;
   template_id: string | null;
-  settings: string;               // JSON
-  is_public: number;              // 0 | 1
+  settings: string; // JSON
+  is_public: number; // 0 | 1
   thumbnail: string | null;
   reject_reason: string | null;
   created_at: string;
@@ -302,10 +302,10 @@ export interface SitePageRow {
   site_id: string;
   slug: string;
   title: string;
-  page_data: string;              // JSON
+  page_data: string; // JSON
   order_index: number;
   status: string;
-  meta: string;                   // JSON
+  meta: string; // JSON
   created_at: string;
   updated_at: string;
   published_at: string | null;
@@ -320,10 +320,10 @@ export interface TemplateRow {
   description: string | null;
   type: string;
   thumbnail: string | null;
-  config: string;                 // JSON
-  is_system: number;              // 0 | 1
+  config: string; // JSON
+  is_system: number; // 0 | 1
   owner_id: number | null;
-  tags: string;                   // JSON array
+  tags: string; // JSON array
   created_at: string;
 }
 
@@ -371,10 +371,9 @@ export function toSitePage(row: SitePageRow): SitePage {
 
 /** Перетворює TemplateRow на Template. */
 export function toTemplate(row: TemplateRow): Template {
-  const config = safeParseJson<SiteTemplateConfig | PageTemplateConfig>(
-    row.config,
-    { pageData: { version: 1, zones: { sidebar: [], header: [], main: [], footer: [] } } } as unknown as PageTemplateConfig,
-  );
+  const config = safeParseJson<SiteTemplateConfig | PageTemplateConfig>(row.config, {
+    pageData: { version: 1, zones: { sidebar: [], header: [], main: [], footer: [] } },
+  } as unknown as PageTemplateConfig);
 
   return {
     id: row.id,

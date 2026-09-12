@@ -68,12 +68,9 @@ function TgPreview({ blocks }: { blocks: BaseBlock[] }) {
 function StatusBadge() {
   const { status, errorMsg } = useEditorStore();
   if (status === "idle") return null;
-  if (status === "loading")
-    return <span className="wb-badge wb-badge-neutral">Завантаження…</span>;
-  if (status === "saving")
-    return <span className="wb-badge wb-badge-accent">Збереження…</span>;
-  if (status === "saved")
-    return <span className="wb-badge wb-badge-green">✓ Збережено</span>;
+  if (status === "loading") return <span className="wb-badge wb-badge-neutral">Завантаження…</span>;
+  if (status === "saving") return <span className="wb-badge wb-badge-accent">Збереження…</span>;
+  if (status === "saved") return <span className="wb-badge wb-badge-green">✓ Збережено</span>;
   if (status === "error")
     return (
       <span className="wb-badge wb-badge-red" title={errorMsg ?? ""}>

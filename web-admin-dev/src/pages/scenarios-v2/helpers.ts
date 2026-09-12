@@ -16,16 +16,27 @@ export function relativeTime(value: string | null): string {
   const days = Math.floor(hours / 24);
   if (days === 1) return "вчора";
   if (days < 7) return `${days} дн тому`;
-  return new Intl.DateTimeFormat("uk-UA", { day: "numeric", month: "short", year: "numeric" }).format(date);
+  return new Intl.DateTimeFormat("uk-UA", {
+    day: "numeric",
+    month: "short",
+    year: "numeric",
+  }).format(date);
 }
 
-export function scenarioType(s: { rich_message: string | null; page_data?: string | null }): "photo" | "rich" | "page" {
+export function scenarioType(s: {
+  rich_message: string | null;
+  page_data?: string | null;
+}): "photo" | "rich" | "page" {
   if (Boolean(s.page_data) && s.page_data !== "null") return "page";
   if (s.rich_message === "true" || s.rich_message === "1") return "rich";
   return "photo";
 }
 
-export function getTypeBadge(s: { rich_message: string | null; page_data?: string | null }): { label: string; icon: IconName; color: string } {
+export function getTypeBadge(s: { rich_message: string | null; page_data?: string | null }): {
+  label: string;
+  icon: IconName;
+  color: string;
+} {
   const type = scenarioType(s);
   if (type === "page") return { label: "Page", icon: "globe", color: "var(--color-info, #3b82f6)" };
   if (type === "rich") return { label: "Rich", icon: "sparkles", color: "var(--accent, #6366f1)" };

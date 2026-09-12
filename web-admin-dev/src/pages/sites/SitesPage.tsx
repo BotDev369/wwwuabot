@@ -6,10 +6,7 @@
 
 import { useState, useEffect, useCallback } from "react";
 import type { Site } from "@wwwuabot/shared";
-import {
-  SITE_STATUS_LABELS,
-  SITE_STATUS_BADGE_CLASS,
-} from "@wwwuabot/shared";
+import { SITE_STATUS_LABELS, SITE_STATUS_BADGE_CLASS } from "@wwwuabot/shared";
 import { Icon } from "@wwwuabot/shared";
 
 type StatusFilter = "" | "draft" | "pending" | "published" | "rejected";
@@ -130,10 +127,7 @@ export function SitesPage() {
                 </thead>
                 <tbody>
                   {sites.map((site) => (
-                    <tr
-                      key={site.id}
-                      style={{ borderBottom: "1px solid var(--border-subtle)" }}
-                    >
+                    <tr key={site.id} style={{ borderBottom: "1px solid var(--border-subtle)" }}>
                       <td style={tdStyle}>
                         <span style={{ fontWeight: 500 }}>{site.title}</span>
                         {site.description && (
@@ -146,7 +140,11 @@ export function SitesPage() {
                         <code className="wb-text-sm">/{site.slug}</code>
                       </td>
                       <td style={tdStyle}>
-                        <span className={SITE_STATUS_BADGE_CLASS[site.status] ?? "wb-badge wb-badge-neutral"}>
+                        <span
+                          className={
+                            SITE_STATUS_BADGE_CLASS[site.status] ?? "wb-badge wb-badge-neutral"
+                          }
+                        >
                           {SITE_STATUS_LABELS[site.status] ?? site.status}
                         </span>
                       </td>

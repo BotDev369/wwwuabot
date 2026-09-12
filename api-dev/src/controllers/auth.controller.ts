@@ -35,10 +35,7 @@ function json(data: unknown, status = 200): Response {
 }
 
 /** Перевіряє наявність валідного admin cookie. */
-export async function isAuthenticated(
-  request: Request,
-  env: Env,
-): Promise<boolean> {
+export async function isAuthenticated(request: Request, env: Env): Promise<boolean> {
   return hasValidSession(request, env.ADMIN_SECRET);
 }
 
@@ -51,10 +48,7 @@ async function failedAttempts(env: Env, key: string): Promise<number> {
 // ── Handlers ──────────────────────────────────────────────────────
 
 /** POST /auth/login — створення сесії через пароль. */
-export async function handleLogin(
-  request: Request,
-  env: Env,
-): Promise<Response> {
+export async function handleLogin(request: Request, env: Env): Promise<Response> {
   if (request.method !== "POST") {
     return json({ error: "Method not allowed" }, 405);
   }
@@ -87,10 +81,7 @@ export async function handleLogin(
 
   await env.CONTENT_KV.delete(rateKey);
 
-  const token = await signSessionToken(
-    `admin:${sessionExpiresAt()}`,
-    secret,
-  );
+  const token = await signSessionToken(`admin:${sessionExpiresAt()}`, secret);
 
   return new Response(JSON.stringify({ ok: true }), {
     status: 200,
@@ -113,10 +104,7 @@ export async function handleLogout(): Promise<Response> {
 }
 
 /** GET /auth/check — перевірка стану авторизації. */
-export async function handleAuthCheck(
-  request: Request,
-  env: Env,
-): Promise<Response> {
+export async function handleAuthCheck(request: Request, env: Env): Promise<Response> {
   const token = parseCookies(request.headers.get("Cookie"))[ADMIN_COOKIE_NAME];
   if (!token || !env.ADMIN_SECRET) {
     return json({ authenticated: false });

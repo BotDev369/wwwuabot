@@ -6,7 +6,7 @@
  * @module packages/ui/src/blocks/GalleryBlock
  */
 
-import type { BlockComponentProps } from '@wwwuabot/shared/types/page-config';
+import type { BlockComponentProps } from "@wwwuabot/shared/types/page-config";
 
 interface GalleryImage {
   src: string;
@@ -17,9 +17,9 @@ interface GalleryImage {
 export function GalleryBlock({ block }: BlockComponentProps) {
   const {
     images = [],
-    columns = '2',
+    columns = "2",
     rounded = true,
-    gap = 'md',
+    gap = "md",
   } = block.props as {
     images?: GalleryImage[];
     columns?: string;
@@ -30,42 +30,36 @@ export function GalleryBlock({ block }: BlockComponentProps) {
   if (!images || images.length === 0) return null;
 
   const gapMap: Record<string, string> = {
-    sm: 'var(--sp-2)',
-    md: 'var(--sp-3)',
-    lg: 'var(--sp-5)',
+    sm: "var(--sp-2)",
+    md: "var(--sp-3)",
+    lg: "var(--sp-5)",
   };
 
   return (
     <div
       className="wb-block-gallery"
       style={{
-        display: 'grid',
+        display: "grid",
         gridTemplateColumns: `repeat(${columns}, 1fr)`,
         gap: gapMap[gap] ?? gapMap.md,
       }}
     >
       {images.map((img, i) => (
-        <figure
-          key={i}
-          className="wb-block-gallery__item"
-          style={{ margin: 0 }}
-        >
+        <figure key={i} className="wb-block-gallery__item" style={{ margin: 0 }}>
           <img
             src={img.src}
-            alt={img.alt || ''}
+            alt={img.alt || ""}
             loading="lazy"
             style={{
-              width: '100%',
-              height: '200px',
-              objectFit: 'cover',
-              borderRadius: rounded ? 'var(--radius-md)' : undefined,
-              display: 'block',
+              width: "100%",
+              height: "200px",
+              objectFit: "cover",
+              borderRadius: rounded ? "var(--radius-md)" : undefined,
+              display: "block",
             }}
           />
           {img.caption && (
-            <figcaption className="wb-text-xs wb-text-muted wb-mt-1">
-              {img.caption}
-            </figcaption>
+            <figcaption className="wb-text-xs wb-text-muted wb-mt-1">{img.caption}</figcaption>
           )}
         </figure>
       ))}

@@ -76,12 +76,19 @@ export type SortField = "date" | "type" | "name" | "tags" | "notes" | "created_a
 
 export function getFieldLabel(field: SortField): string {
   switch (field) {
-    case "name": return "Назва";
-    case "date": return "Дата";
-    case "tags": return "Теги";
-    case "type": return "Тип";
-    case "notes": return "Примітки";
-    case "created_at": return "Створено";
-    default: return field;
+    case "name":
+      return "Назва";
+    case "date":
+      return "Дата";
+    case "tags":
+      return "Теги";
+    case "type":
+      return "Тип";
+    case "notes":
+      return "Примітки";
+    case "created_at":
+      return "Створено";
+    default:
+      return field;
   }
 }

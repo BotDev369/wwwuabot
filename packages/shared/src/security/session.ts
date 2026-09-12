@@ -65,16 +65,9 @@ export function sessionExpiresAt(ttlSeconds = ADMIN_SESSION_TTL_SECONDS): number
 }
 
 /** Підписує payload: повертає `<payload>.<hex-підпис>`. */
-export async function signSessionToken(
-  payload: string,
-  secret: string,
-): Promise<string> {
+export async function signSessionToken(payload: string, secret: string): Promise<string> {
   const key = await importHmacKey(secret);
-  const sig = await crypto.subtle.sign(
-    "HMAC",
-    key,
-    new TextEncoder().encode(payload),
-  );
+  const sig = await crypto.subtle.sign("HMAC", key, new TextEncoder().encode(payload));
   const hex = Array.from(new Uint8Array(sig))
     .map((b) => b.toString(16).padStart(2, "0"))
     .join("");
@@ -82,10 +75,7 @@ export async function signSessionToken(
 }
 
 /** Перевіряє підпис токена і термін його дії. */
-export async function verifySessionToken(
-  token: string,
-  secret: string,
-): Promise<boolean> {
+export async function verifySessionToken(token: string, secret: string): Promise<boolean> {
   const lastDot = token.lastIndexOf(".");
   if (lastDot === -1) return false;
 
@@ -120,10 +110,7 @@ export async function hasValidSession(
 }
 
 /** Значення заголовка `Set-Cookie` для видачі сесії. */
-export function buildSessionCookie(
-  token: string,
-  ttlSeconds = ADMIN_SESSION_TTL_SECONDS,
-): string {
+export function buildSessionCookie(token: string, ttlSeconds = ADMIN_SESSION_TTL_SECONDS): string {
   return [
     `${ADMIN_COOKIE_NAME}=${token}`,
     "HttpOnly",

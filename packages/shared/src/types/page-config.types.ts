@@ -14,7 +14,7 @@ import type { ReactNode } from "react";
 // ── Зони сторінки ─────────────────────────────────────────────────
 
 /** Структурні регіони сторінки. */
-export type BlockZone = 'sidebar' | 'header' | 'main' | 'footer';
+export type BlockZone = "sidebar" | "header" | "main" | "footer";
 
 // ── Блок (рекурсивний) ────────────────────────────────────────────
 
@@ -181,15 +181,15 @@ export interface BlockContext {
 
 /** Категорії блоків для галереї модулів. */
 export type BlockCategory =
-  | 'content'
-  | 'layout'
-  | 'navigation'
-  | 'data'
-  | 'commerce'
-  | 'forms'
-  | 'bot-domain'
-  | 'analytics'
-  | 'raw';
+  | "content"
+  | "layout"
+  | "navigation"
+  | "data"
+  | "commerce"
+  | "forms"
+  | "bot-domain"
+  | "analytics"
+  | "raw";
 
 /**
  * Метадані одного типу блоку.

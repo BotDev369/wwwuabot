@@ -94,12 +94,14 @@ export function SitesModerationPage() {
 
       <div style={{ display: "flex", height: "calc(100vh - 56px)" }}>
         {/* Черга */}
-        <div style={{
-          width: 360,
-          borderRight: "1px solid var(--border-subtle)",
-          overflowY: "auto",
-          padding: "var(--sp-4)",
-        }}>
+        <div
+          style={{
+            width: 360,
+            borderRight: "1px solid var(--border-subtle)",
+            overflowY: "auto",
+            padding: "var(--sp-4)",
+          }}
+        >
           {loading && (
             <div className="wb-empty">
               <div className="wb-skeleton" style={{ width: 200, height: 24 }} />
@@ -124,38 +126,43 @@ export function SitesModerationPage() {
             </div>
           )}
 
-          {!loading && !error && pending.map((site) => (
-            <div
-              key={site.id}
-              className="wb-card"
-              style={{
-                cursor: "pointer",
-                marginBottom: "var(--sp-2)",
-                borderColor: selected?.id === site.id ? "var(--accent)" : undefined,
-              }}
-              onClick={() => handleSelectSite(site)}
-            >
-              <div className="wb-card-body" style={{ padding: "var(--sp-3)" }}>
-                <div className="wb-flex-between">
-                  <span className="wb-text-sm" style={{ fontWeight: 600 }}>
-                    {site.title}
-                  </span>
-                  <span className="wb-badge wb-badge-yellow">pending</span>
-                </div>
-                <p className="wb-text-xs wb-text-muted" style={{ marginTop: "var(--sp-1)" }}>
-                  /{site.slug} · #{site.ownerId}
-                </p>
-                {site.description && (
-                  <p className="wb-text-xs wb-text-secondary" style={{ marginTop: "var(--sp-1)" }}>
-                    {site.description.slice(0, 80)}
+          {!loading &&
+            !error &&
+            pending.map((site) => (
+              <div
+                key={site.id}
+                className="wb-card"
+                style={{
+                  cursor: "pointer",
+                  marginBottom: "var(--sp-2)",
+                  borderColor: selected?.id === site.id ? "var(--accent)" : undefined,
+                }}
+                onClick={() => handleSelectSite(site)}
+              >
+                <div className="wb-card-body" style={{ padding: "var(--sp-3)" }}>
+                  <div className="wb-flex-between">
+                    <span className="wb-text-sm" style={{ fontWeight: 600 }}>
+                      {site.title}
+                    </span>
+                    <span className="wb-badge wb-badge-yellow">pending</span>
+                  </div>
+                  <p className="wb-text-xs wb-text-muted" style={{ marginTop: "var(--sp-1)" }}>
+                    /{site.slug} · #{site.ownerId}
                   </p>
-                )}
-                <p className="wb-text-xs wb-text-muted" style={{ marginTop: "var(--sp-1)" }}>
-                  Оновлено: {new Date(site.updatedAt).toLocaleDateString("uk-UA")}
-                </p>
+                  {site.description && (
+                    <p
+                      className="wb-text-xs wb-text-secondary"
+                      style={{ marginTop: "var(--sp-1)" }}
+                    >
+                      {site.description.slice(0, 80)}
+                    </p>
+                  )}
+                  <p className="wb-text-xs wb-text-muted" style={{ marginTop: "var(--sp-1)" }}>
+                    Оновлено: {new Date(site.updatedAt).toLocaleDateString("uk-UA")}
+                  </p>
+                </div>
               </div>
-            </div>
-          ))}
+            ))}
         </div>
 
         {/* Деталі */}
@@ -185,9 +192,7 @@ export function SitesModerationPage() {
               </div>
 
               {/* Сторінки */}
-              <h3 style={{ marginBottom: "var(--sp-2)" }}>
-                Сторінки ({selectedPages.length})
-              </h3>
+              <h3 style={{ marginBottom: "var(--sp-2)" }}>Сторінки ({selectedPages.length})</h3>
               <div style={{ display: "flex", gap: "var(--sp-2)", marginBottom: "var(--sp-4)" }}>
                 {selectedPages.map((page) => (
                   <span key={page.id} className="wb-badge wb-badge-neutral">

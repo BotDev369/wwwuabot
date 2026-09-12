@@ -20,7 +20,7 @@ describe("PermissionGate", () => {
     const html = renderToStaticMarkup(
       <PermissionGate>
         <div>Open Content</div>
-      </PermissionGate>
+      </PermissionGate>,
     );
     expect(html).toContain("Open Content");
   });
@@ -29,7 +29,7 @@ describe("PermissionGate", () => {
     const html = renderToStaticMarkup(
       <PermissionGate user={regularUser} adminOnly={true}>
         <div>Admin Secret</div>
-      </PermissionGate>
+      </PermissionGate>,
     );
     expect(html).not.toContain("Admin Secret");
     expect(html).toBe("");
@@ -37,13 +37,9 @@ describe("PermissionGate", () => {
 
   it("renders fallback when access is denied and fallback is provided", () => {
     const html = renderToStaticMarkup(
-      <PermissionGate 
-        user={regularUser} 
-        adminOnly={true} 
-        fallback={<div>Access Denied</div>}
-      >
+      <PermissionGate user={regularUser} adminOnly={true} fallback={<div>Access Denied</div>}>
         <div>Admin Secret</div>
-      </PermissionGate>
+      </PermissionGate>,
     );
     expect(html).not.toContain("Admin Secret");
     expect(html).toContain("Access Denied");
@@ -53,7 +49,7 @@ describe("PermissionGate", () => {
     const html = renderToStaticMarkup(
       <PermissionGate user={adminUser} adminOnly={true}>
         <div>Admin Secret</div>
-      </PermissionGate>
+      </PermissionGate>,
     );
     expect(html).toContain("Admin Secret");
   });
@@ -63,7 +59,7 @@ describe("PermissionGate", () => {
     const html = renderToStaticMarkup(
       <PermissionGate user={superAdmin} adminOnly={true}>
         <div>Admin Secret</div>
-      </PermissionGate>
+      </PermissionGate>,
     );
     expect(html).toContain("Admin Secret");
   });
@@ -72,7 +68,7 @@ describe("PermissionGate", () => {
     const html = renderToStaticMarkup(
       <PermissionGate user={regularUser} ownerOnly={true} isOwner={false}>
         <div>Owner Panel</div>
-      </PermissionGate>
+      </PermissionGate>,
     );
     expect(html).not.toContain("Owner Panel");
   });
@@ -81,7 +77,7 @@ describe("PermissionGate", () => {
     const html = renderToStaticMarkup(
       <PermissionGate user={regularUser} ownerOnly={true} isOwner={true}>
         <div>Owner Panel</div>
-      </PermissionGate>
+      </PermissionGate>,
     );
     expect(html).toContain("Owner Panel");
   });
@@ -90,7 +86,7 @@ describe("PermissionGate", () => {
     const html = renderToStaticMarkup(
       <PermissionGate user={regularUser} requiredRole={["moderator", "admin"]}>
         <div>Mod Tools</div>
-      </PermissionGate>
+      </PermissionGate>,
     );
     expect(html).not.toContain("Mod Tools");
 
@@ -98,7 +94,7 @@ describe("PermissionGate", () => {
     const modHtml = renderToStaticMarkup(
       <PermissionGate user={modUser} requiredRole={["moderator", "admin"]}>
         <div>Mod Tools</div>
-      </PermissionGate>
+      </PermissionGate>,
     );
     expect(modHtml).toContain("Mod Tools");
   });
@@ -107,14 +103,14 @@ describe("PermissionGate", () => {
     const html = renderToStaticMarkup(
       <PermissionGate user={adminUser} requiredCapability="can_moderate">
         <div>Moderation View</div>
-      </PermissionGate>
+      </PermissionGate>,
     );
     expect(html).toContain("Moderation View");
 
     const blockedHtml = renderToStaticMarkup(
       <PermissionGate user={regularUser} requiredCapability="can_moderate">
         <div>Moderation View</div>
-      </PermissionGate>
+      </PermissionGate>,
     );
     expect(blockedHtml).not.toContain("Moderation View");
   });

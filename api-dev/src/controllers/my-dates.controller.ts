@@ -51,11 +51,7 @@ function migrateDates(dates: MyDateItem[]): { dates: MyDateItem[]; needsMigratio
     }
 
     // Empty tags → restore from category
-    if (
-      d.name !== undefined &&
-      (!Array.isArray(d.tags) || d.tags.length === 0) &&
-      d.category
-    ) {
+    if (d.name !== undefined && (!Array.isArray(d.tags) || d.tags.length === 0) && d.category) {
       needsMigration = true;
       return { ...d, tags: [d.category] };
     }
@@ -95,11 +91,7 @@ async function readUserDates(
 }
 
 // ── Save dates back to user ─────────────────────────────────────────
-async function saveUserDates(
-  db: D1Database,
-  userId: number,
-  dates: MyDateItem[],
-): Promise<void> {
+async function saveUserDates(db: D1Database, userId: number, dates: MyDateItem[]): Promise<void> {
   await db
     .prepare("UPDATE users SET my_dates = ? WHERE user_id = ?")
     .bind(JSON.stringify({ items: dates }), userId)
@@ -107,10 +99,7 @@ async function saveUserDates(
 }
 
 // ── Main handler ────────────────────────────────────────────────────
-export async function handleMyDates(
-  request: Request,
-  env: Env,
-): Promise<Response> {
+export async function handleMyDates(request: Request, env: Env): Promise<Response> {
   try {
     // Guarantee my_dates column exists
     await withAutoMigrate(
@@ -131,7 +120,9 @@ export async function handleMyDates(
 
     // Auto-create user if missing
     if (dates.length === 0 && needsMigration === false) {
-      const exists = await env.DB.prepare("SELECT 1 FROM users WHERE user_id = ?").bind(userId).first();
+      const exists = await env.DB.prepare("SELECT 1 FROM users WHERE user_id = ?")
+        .bind(userId)
+        .first();
       if (!exists) {
         await env.DB.prepare(
           "INSERT INTO users (user_id, first_name, last_name, username, language) VALUES (?, '...', '...', '...', '...')",
@@ -209,7 +200,10 @@ export async function handleMyDates(
       dates[idx] = {
         ...dates[idx],
         date,
-        type: type && (VALID_TYPES as readonly string[]).includes(type) ? type : dates[idx].type || "other",
+        type:
+          type && (VALID_TYPES as readonly string[]).includes(type)
+            ? type
+            : dates[idx].type || "other",
         name: name || alias || dates[idx].name || "",
         tags: finalTags,
         notes: notes || "",

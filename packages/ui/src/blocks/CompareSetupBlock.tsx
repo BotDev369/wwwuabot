@@ -99,7 +99,14 @@ export function CompareSetupBlock({ block }: BlockComponentProps) {
 
       {/* Date list */}
       {dates.length > 0 && (
-        <div style={{ display: "flex", flexDirection: "column", gap: "var(--sp-2)", marginBottom: "var(--sp-4)" }}>
+        <div
+          style={{
+            display: "flex",
+            flexDirection: "column",
+            gap: "var(--sp-2)",
+            marginBottom: "var(--sp-4)",
+          }}
+        >
           {dates.map((d, i) => (
             <div
               key={`${d}-${i}`}

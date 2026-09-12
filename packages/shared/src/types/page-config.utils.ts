@@ -4,17 +4,12 @@
  * @module packages/shared/src/types/page-config.utils
  */
 
-import type { BlockZone, PageBlock, PageConfig } from './page-config.types';
+import type { BlockZone, PageBlock, PageConfig } from "./page-config.types";
 
 // ── Константи ─────────────────────────────────────────────────────
 
 /** Усі зони як масив (для ітерації). */
-export const ALL_ZONES: readonly BlockZone[] = [
-  'sidebar',
-  'header',
-  'main',
-  'footer',
-] as const;
+export const ALL_ZONES: readonly BlockZone[] = ["sidebar", "header", "main", "footer"] as const;
 
 // ── Функції ───────────────────────────────────────────────────────
 
@@ -43,15 +38,15 @@ export function parsePageConfig(raw: string | null): PageConfig | null {
   if (!raw) return null;
   try {
     const parsed = JSON.parse(raw);
-    if (!parsed || typeof parsed !== 'object') return null;
+    if (!parsed || typeof parsed !== "object") return null;
 
     // Новий формат (Page Builder)
-    if ('version' in parsed && 'zones' in parsed) {
+    if ("version" in parsed && "zones" in parsed) {
       return parsed as PageConfig;
     }
 
     // Старий формат (web_config / slots) — конвертуємо
-    if ('v' in parsed && 'slots' in parsed) {
+    if ("v" in parsed && "slots" in parsed) {
       return convertOldFormat(parsed);
     }
 
@@ -70,34 +65,36 @@ function convertOldFormat(old: Record<string, unknown>): PageConfig {
 
   const mainBlocks: PageBlock[] = mainItems.map((item, i) => {
     const entry = item as Record<string, unknown>;
-    const component = String(entry.component ?? 'text');
+    const component = String(entry.component ?? "text");
     const props = (entry.props as Record<string, unknown>) ?? {};
 
     // Маппинг старих компонентів на нові типи блоків
     const typeMap: Record<string, string> = {
-      Heading: 'text',
-      Text: 'text',
-      Button: 'buttons',
-      Image: 'image',
-      List: 'list',
-      Divider: 'divider',
+      Heading: "text",
+      Text: "text",
+      Button: "buttons",
+      Image: "image",
+      List: "list",
+      Divider: "divider",
     };
 
-    const type = typeMap[component] ?? 'text';
+    const type = typeMap[component] ?? "text";
 
     // Конвертуємо props під формат нових блоків
     const convertedProps: Record<string, unknown> = {};
-    if (component === 'Heading') {
-      convertedProps.title = props.text ?? props.title ?? '';
-      convertedProps.level = props.level ?? 'h2';
-    } else if (component === 'Text') {
-      convertedProps.content = props.text ?? props.content ?? '';
-    } else if (component === 'Button') {
-      convertedProps.items = [{
-        text: String(props.label ?? props.text ?? ''),
-        url: String(props.href ?? props.url ?? ''),
-      }];
-      convertedProps.layout = 'row';
+    if (component === "Heading") {
+      convertedProps.title = props.text ?? props.title ?? "";
+      convertedProps.level = props.level ?? "h2";
+    } else if (component === "Text") {
+      convertedProps.content = props.text ?? props.content ?? "";
+    } else if (component === "Button") {
+      convertedProps.items = [
+        {
+          text: String(props.label ?? props.text ?? ""),
+          url: String(props.href ?? props.url ?? ""),
+        },
+      ];
+      convertedProps.layout = "row";
     } else {
       Object.assign(convertedProps, props);
     }
@@ -125,9 +122,9 @@ function convertOldFormat(old: Record<string, unknown>): PageConfig {
  * Генерація UUID v4 (для id блоків).
  */
 export function generateBlockId(): string {
-  return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, (c) => {
+  return "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(/[xy]/g, (c) => {
     const r = (Math.random() * 16) | 0;
-    const v = c === 'x' ? r : (r & 0x3) | 0x8;
+    const v = c === "x" ? r : (r & 0x3) | 0x8;
     return v.toString(16);
   });
 }

@@ -26,12 +26,33 @@ export function MyDatesTableBlock({ block }: BlockComponentProps) {
   };
 
   const {
-    dates, loading, error, processedDates, allTags, allTypes,
-    sortField, sortOrder, toggleSort,
-    searchQuery, setSearchQuery, columnFilters, toggleColumnFilter, clearColumnFilter,
-    selectedIds, toggleAll, toggleSelect, clearSelection,
-    modalMode, modalDate, openCreate, openEdit, closeModal,
-    handleSave, handleDelete, handleBulkDelete, handleBulkCompare,
+    dates,
+    loading,
+    error,
+    processedDates,
+    allTags,
+    allTypes,
+    sortField,
+    sortOrder,
+    toggleSort,
+    searchQuery,
+    setSearchQuery,
+    columnFilters,
+    toggleColumnFilter,
+    clearColumnFilter,
+    selectedIds,
+    toggleAll,
+    toggleSelect,
+    clearSelection,
+    modalMode,
+    modalDate,
+    openCreate,
+    openEdit,
+    closeModal,
+    handleSave,
+    handleDelete,
+    handleBulkDelete,
+    handleBulkCompare,
   } = useMyDates();
 
   const columns: { key: "name" | "date" | "tags" | "type" | "notes"; label: string }[] = [
@@ -45,7 +66,14 @@ export function MyDatesTableBlock({ block }: BlockComponentProps) {
   return (
     <div className="wb-block-mydates-table">
       {/* Header */}
-      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "var(--sp-4)" }}>
+      <div
+        style={{
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "space-between",
+          marginBottom: "var(--sp-4)",
+        }}
+      >
         <div style={{ display: "flex", alignItems: "center", gap: "var(--sp-3)" }}>
           <h2 style={{ margin: 0 }}>Мої дати</h2>
           <span className="wb-text-sm wb-text-muted">
@@ -60,7 +88,11 @@ export function MyDatesTableBlock({ block }: BlockComponentProps) {
       </div>
 
       {/* Error */}
-      {error && <p className="wb-text-sm" style={{ color: "var(--color-danger, #ef4444)" }}>{error}</p>}
+      {error && (
+        <p className="wb-text-sm" style={{ color: "var(--color-danger, #ef4444)" }}>
+          {error}
+        </p>
+      )}
 
       {/* Search */}
       {showSearch && (
@@ -80,7 +112,15 @@ export function MyDatesTableBlock({ block }: BlockComponentProps) {
       {Object.entries(columnFilters)
         .filter(([, v]) => v.length > 0)
         .map(([field, values]) => (
-          <div key={field} style={{ display: "flex", alignItems: "center", gap: "var(--sp-2)", marginBottom: "var(--sp-2)" }}>
+          <div
+            key={field}
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: "var(--sp-2)",
+              marginBottom: "var(--sp-2)",
+            }}
+          >
             <span className="wb-text-sm wb-text-muted">{field}:</span>
             {values.map((v) => (
               <button
@@ -102,8 +142,13 @@ export function MyDatesTableBlock({ block }: BlockComponentProps) {
       {showBulkActions && selectedIds.size > 0 && (
         <div
           style={{
-            display: "flex", alignItems: "center", gap: "var(--sp-3)", padding: "var(--sp-3)",
-            background: "var(--bg-2, #f8fafc)", borderRadius: "var(--radius-md)", marginBottom: "var(--sp-3)",
+            display: "flex",
+            alignItems: "center",
+            gap: "var(--sp-3)",
+            padding: "var(--sp-3)",
+            background: "var(--bg-2, #f8fafc)",
+            borderRadius: "var(--radius-md)",
+            marginBottom: "var(--sp-3)",
           }}
         >
           <span className="wb-text-sm">Обрано: {selectedIds.size}</span>
@@ -138,14 +183,22 @@ export function MyDatesTableBlock({ block }: BlockComponentProps) {
                 <th style={{ width: 40 }}>
                   <input
                     type="checkbox"
-                    checked={processedDates.length > 0 && selectedIds.size === processedDates.length}
+                    checked={
+                      processedDates.length > 0 && selectedIds.size === processedDates.length
+                    }
                     onChange={toggleAll}
                   />
                 </th>
                 {columns.map((col) => (
                   <th key={col.key}>
                     <div
-                      style={{ cursor: "pointer", userSelect: "none", display: "flex", alignItems: "center", gap: 4 }}
+                      style={{
+                        cursor: "pointer",
+                        userSelect: "none",
+                        display: "flex",
+                        alignItems: "center",
+                        gap: 4,
+                      }}
                       onClick={() => toggleSort(col.key)}
                     >
                       {col.label}
@@ -162,7 +215,9 @@ export function MyDatesTableBlock({ block }: BlockComponentProps) {
                         >
                           <option value="">+ фільтр</option>
                           {allTypes.map((t) => (
-                            <option key={t} value={t}>{getTypeConfig(t).label}</option>
+                            <option key={t} value={t}>
+                              {getTypeConfig(t).label}
+                            </option>
                           ))}
                         </select>
                       )}
@@ -177,7 +232,9 @@ export function MyDatesTableBlock({ block }: BlockComponentProps) {
                 return (
                   <tr
                     key={d.id}
-                    style={selectedIds.has(d.id) ? { background: "var(--bg-2, #f8fafc)" } : undefined}
+                    style={
+                      selectedIds.has(d.id) ? { background: "var(--bg-2, #f8fafc)" } : undefined
+                    }
                     onDoubleClick={() => openEdit(d)}
                   >
                     <td>
@@ -193,19 +250,32 @@ export function MyDatesTableBlock({ block }: BlockComponentProps) {
                       {(d.tags || []).length > 0 ? (
                         <div style={{ display: "flex", flexWrap: "wrap", gap: 4 }}>
                           {d.tags.map((tag) => (
-                            <span key={tag} className="tag-chip tag-chip--sm" style={getTagColor(tag)}>
+                            <span
+                              key={tag}
+                              className="tag-chip tag-chip--sm"
+                              style={getTagColor(tag)}
+                            >
                               {tag}
                             </span>
                           ))}
                         </div>
-                      ) : "—"}
+                      ) : (
+                        "—"
+                      )}
                     </td>
                     <td>
                       <span className="wb-badge" style={{ color: cfg.color, background: cfg.bg }}>
                         {cfg.label}
                       </span>
                     </td>
-                    <td style={{ maxWidth: 200, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                    <td
+                      style={{
+                        maxWidth: 200,
+                        overflow: "hidden",
+                        textOverflow: "ellipsis",
+                        whiteSpace: "nowrap",
+                      }}
+                    >
                       {d.notes || "—"}
                     </td>
                   </tr>

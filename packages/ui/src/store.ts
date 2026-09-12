@@ -7,14 +7,10 @@
  * @module packages/ui/src/store
  */
 
-import { create } from 'zustand';
-import type {
-  BlockZone,
-  PageBlock,
-  PageConfig,
-} from '@wwwuabot/shared/types/page-config';
-import { createEmptyPageConfig, generateBlockId } from '@wwwuabot/shared/types/page-config';
-import { getDefaultProps } from '@wwwuabot/shared/constants/block-definitions';
+import { create } from "zustand";
+import type { BlockZone, PageBlock, PageConfig } from "@wwwuabot/shared/types/page-config";
+import { createEmptyPageConfig, generateBlockId } from "@wwwuabot/shared/types/page-config";
+import { getDefaultProps } from "@wwwuabot/shared/constants/block-definitions";
 
 // ---------------------------------------------------------------------------
 // Стан store
@@ -51,19 +47,10 @@ interface PageStoreActions {
   removeBlock: (zone: BlockZone, blockId: string) => void;
 
   /** Перемістити блок між зонами. */
-  moveBlock: (
-    fromZone: BlockZone,
-    toZone: BlockZone,
-    blockId: string,
-    toIndex?: number,
-  ) => void;
+  moveBlock: (fromZone: BlockZone, toZone: BlockZone, blockId: string, toIndex?: number) => void;
 
   /** Оновити props блоку. */
-  updateBlockProps: (
-    zone: BlockZone,
-    blockId: string,
-    props: Record<string, unknown>,
-  ) => void;
+  updateBlockProps: (zone: BlockZone, blockId: string, props: Record<string, unknown>) => void;
 
   /** Змінити порядок блоків у зоні. */
   reorderBlocks: (zone: BlockZone, fromIndex: number, toIndex: number) => void;
@@ -79,11 +66,7 @@ interface PageStoreActions {
   ) => string;
 
   /** Видалити вкладений блок. */
-  removeChildBlock: (
-    parentZone: BlockZone,
-    parentId: string,
-    childId: string,
-  ) => void;
+  removeChildBlock: (parentZone: BlockZone, parentId: string, childId: string) => void;
 
   /** Оновити props вкладеного блоку. */
   updateChildBlockProps: (
@@ -124,10 +107,7 @@ function findBlockInZone(
 }
 
 /** Знайти батьківський блок (щоб працювати з його children). */
-function findParentBlock(
-  blocks: PageBlock[],
-  parentId: string,
-): PageBlock | null {
+function findParentBlock(blocks: PageBlock[], parentId: string): PageBlock | null {
   for (const block of blocks) {
     if (block.id === parentId) return block;
     if (block.children) {
@@ -142,9 +122,7 @@ function findParentBlock(
 // Глибоке клонування зони (імутабельність)
 // ---------------------------------------------------------------------------
 
-function cloneZones(
-  zones: Record<BlockZone, PageBlock[]>,
-): Record<BlockZone, PageBlock[]> {
+function cloneZones(zones: Record<BlockZone, PageBlock[]>): Record<BlockZone, PageBlock[]> {
   return {
     sidebar: JSON.parse(JSON.stringify(zones.sidebar)),
     header: JSON.parse(JSON.stringify(zones.header)),

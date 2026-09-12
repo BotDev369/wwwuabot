@@ -3,7 +3,9 @@ import { useUsersStore } from "../../features/users/store";
 import { icons } from "@wwwuabot/shared";
 
 const ico = (name: keyof typeof icons) => (
-  <span style={{ display: "inline-flex", alignItems: "center", width: 18, height: 18, flexShrink: 0 }}>
+  <span
+    style={{ display: "inline-flex", alignItems: "center", width: 18, height: 18, flexShrink: 0 }}
+  >
     {icons[name]}
   </span>
 );

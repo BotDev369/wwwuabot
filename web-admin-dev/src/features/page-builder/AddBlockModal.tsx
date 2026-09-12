@@ -12,7 +12,15 @@ import { icons, type IconName } from "@wwwuabot/shared";
 // ── Icon helper ───────────────────────────────────────────────────
 
 const ico = (name: IconName, size = 16) => (
-  <span style={{ display: "inline-flex", alignItems: "center", width: size, height: size, flexShrink: 0 }}>
+  <span
+    style={{
+      display: "inline-flex",
+      alignItems: "center",
+      width: size,
+      height: size,
+      flexShrink: 0,
+    }}
+  >
     {icons[name]}
   </span>
 );
@@ -84,7 +92,13 @@ export function AddBlockModal({ onSelect, onClose, targetZone }: AddBlockModalPr
       <div
         className="wb-modal"
         onClick={(e) => e.stopPropagation()}
-        style={{ maxWidth: 520, width: "100%", maxHeight: "80vh", display: "flex", flexDirection: "column" }}
+        style={{
+          maxWidth: 520,
+          width: "100%",
+          maxHeight: "80vh",
+          display: "flex",
+          flexDirection: "column",
+        }}
       >
         <div className="wb-modal-header">
           <span className="wb-modal-title">
@@ -111,8 +125,12 @@ export function AddBlockModal({ onSelect, onClose, targetZone }: AddBlockModalPr
         {/* Category pills */}
         <div
           style={{
-            display: "flex", gap: 6, padding: "8px 16px",
-            borderBottom: "1px solid var(--border)", overflowX: "auto", flexShrink: 0,
+            display: "flex",
+            gap: 6,
+            padding: "8px 16px",
+            borderBottom: "1px solid var(--border)",
+            overflowX: "auto",
+            flexShrink: 0,
           }}
         >
           <button
@@ -137,19 +155,39 @@ export function AddBlockModal({ onSelect, onClose, targetZone }: AddBlockModalPr
         {/* Block list */}
         <div className="wb-modal-body" style={{ flex: 1, overflow: "auto", padding: "8px 16px" }}>
           {filtered.length === 0 ? (
-            <div style={{ textAlign: "center", padding: 24, color: "var(--text-secondary)", fontSize: 13 }}>
+            <div
+              style={{
+                textAlign: "center",
+                padding: 24,
+                color: "var(--text-secondary)",
+                fontSize: 13,
+              }}
+            >
               Нічого не знайдено
             </div>
           ) : (
-            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(150px, 1fr))", gap: 8 }}>
+            <div
+              style={{
+                display: "grid",
+                gridTemplateColumns: "repeat(auto-fill, minmax(150px, 1fr))",
+                gap: 8,
+              }}
+            >
               {filtered.map((def) => (
                 <button
                   key={def.type}
                   onClick={() => onSelect(def.type)}
                   style={{
-                    display: "flex", flexDirection: "column", alignItems: "flex-start", gap: 4,
-                    padding: "12px 14px", border: "1px solid var(--border)", borderRadius: 8,
-                    background: "var(--bg-primary)", cursor: "pointer", textAlign: "left",
+                    display: "flex",
+                    flexDirection: "column",
+                    alignItems: "flex-start",
+                    gap: 4,
+                    padding: "12px 14px",
+                    border: "1px solid var(--border)",
+                    borderRadius: 8,
+                    background: "var(--bg-primary)",
+                    cursor: "pointer",
+                    textAlign: "left",
                     transition: "border-color 0.15s, background 0.15s",
                   }}
                   onMouseEnter={(e) => {

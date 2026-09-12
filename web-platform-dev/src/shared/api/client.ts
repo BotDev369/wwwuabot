@@ -13,10 +13,7 @@ import { apiFetch as sharedApiFetch } from "@wwwuabot/shared";
 import { telegramAuthHeaders } from "@wwwuabot/shared/security/telegram";
 
 /** fetch до api-dev із заголовками ідентичності. Повертає сиру відповідь. */
-export function apiFetchRaw(
-  path: string,
-  init: RequestInit = {},
-): Promise<Response> {
+export function apiFetchRaw(path: string, init: RequestInit = {}): Promise<Response> {
   return fetch(path, {
     ...init,
     headers: {

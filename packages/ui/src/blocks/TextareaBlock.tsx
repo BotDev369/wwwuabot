@@ -6,15 +6,15 @@
  * @module packages/ui/src/blocks/TextareaBlock
  */
 
-import type { BlockComponentProps } from '@wwwuabot/shared/types/page-config';
+import type { BlockComponentProps } from "@wwwuabot/shared/types/page-config";
 
 export function TextareaBlock({ block }: BlockComponentProps) {
   const {
-    label = '',
-    placeholder = '',
+    label = "",
+    placeholder = "",
     rows = 4,
     required = false,
-    name = '',
+    name = "",
   } = block.props as {
     label?: string;
     placeholder?: string;
@@ -24,11 +24,14 @@ export function TextareaBlock({ block }: BlockComponentProps) {
   };
 
   return (
-    <div className="wb-block-textarea" style={{ display: 'flex', flexDirection: 'column', gap: 'var(--sp-1)' }}>
+    <div
+      className="wb-block-textarea"
+      style={{ display: "flex", flexDirection: "column", gap: "var(--sp-1)" }}
+    >
       {label && (
         <label className="wb-label" htmlFor={name || undefined}>
           {label}
-          {required && <span style={{ color: 'var(--red)', marginLeft: '2px' }}>*</span>}
+          {required && <span style={{ color: "var(--red)", marginLeft: "2px" }}>*</span>}
         </label>
       )}
       <textarea
@@ -39,7 +42,7 @@ export function TextareaBlock({ block }: BlockComponentProps) {
         name={name || undefined}
         id={name || undefined}
         data-block-field={name || undefined}
-        style={{ width: '100%', resize: 'vertical' }}
+        style={{ width: "100%", resize: "vertical" }}
       />
     </div>
   );

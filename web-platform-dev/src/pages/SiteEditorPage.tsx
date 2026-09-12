@@ -87,7 +87,9 @@ export function SiteEditorPage() {
       await Promise.all([loadSite(), loadPages()]);
       if (!cancelled) setLoading(false);
     })();
-    return () => { cancelled = true; };
+    return () => {
+      cancelled = true;
+    };
   }, [loadSite, loadPages]);
 
   // ── Page actions ────────────────────────────────────────
@@ -262,14 +264,16 @@ export function SiteEditorPage() {
   return (
     <div className="site-editor-page" style={{ display: "flex", height: "100vh" }}>
       {/* Бічна панель */}
-      <div style={{
-        width: 320,
-        borderRight: "1px solid var(--border-subtle)",
-        background: "var(--surface)",
-        display: "flex",
-        flexDirection: "column",
-        flexShrink: 0,
-      }}>
+      <div
+        style={{
+          width: 320,
+          borderRight: "1px solid var(--border-subtle)",
+          background: "var(--surface)",
+          display: "flex",
+          flexDirection: "column",
+          flexShrink: 0,
+        }}
+      >
         {/* Заголовок */}
         <div style={{ padding: "var(--sp-4)", borderBottom: "1px solid var(--border-subtle)" }}>
           <div className="wb-flex-between" style={{ marginBottom: "var(--sp-2)" }}>
@@ -289,7 +293,13 @@ export function SiteEditorPage() {
             <button
               key={tab}
               className={`wb-btn wb-btn-ghost ${activeTab === tab ? "wb-btn-primary" : ""}`}
-              style={{ flex: 1, borderRadius: 0, borderBottom: activeTab === tab ? "2px solid var(--accent)" : "2px solid transparent", fontSize: "var(--text-xs)" }}
+              style={{
+                flex: 1,
+                borderRadius: 0,
+                borderBottom:
+                  activeTab === tab ? "2px solid var(--accent)" : "2px solid transparent",
+                fontSize: "var(--text-xs)",
+              }}
               onClick={() => setActiveTab(tab)}
             >
               {tab === "pages" && "Сторінки"}
@@ -358,11 +368,10 @@ export function SiteEditorPage() {
           {activeTab === "navigation" && (
             <div>
               <div className="wb-flex-between" style={{ marginBottom: "var(--sp-3)" }}>
-                <span className="wb-text-sm wb-text-secondary">Пункти меню ({navItems.length})</span>
-                <button
-                  className="wb-btn wb-btn-sm wb-btn-primary"
-                  onClick={handleAddNavItem}
-                >
+                <span className="wb-text-sm wb-text-secondary">
+                  Пункти меню ({navItems.length})
+                </span>
+                <button className="wb-btn wb-btn-sm wb-btn-primary" onClick={handleAddNavItem}>
                   <Icon name="plus" size={14} />
                   Додати
                 </button>
@@ -373,7 +382,15 @@ export function SiteEditorPage() {
                   .sort((a, b) => a.order - b.order)
                   .map((item, idx) => (
                     <div key={item.pageSlug} className="wb-card">
-                      <div className="wb-card-body" style={{ padding: "var(--sp-3)", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                      <div
+                        className="wb-card-body"
+                        style={{
+                          padding: "var(--sp-3)",
+                          display: "flex",
+                          justifyContent: "space-between",
+                          alignItems: "center",
+                        }}
+                      >
                         <div>
                           <span className="wb-text-sm" style={{ fontWeight: 500 }}>
                             {item.label}
@@ -393,7 +410,9 @@ export function SiteEditorPage() {
                     </div>
                   ))}
                 {navItems.length === 0 && (
-                  <p className="wb-text-sm wb-text-muted">Додайте пункти меню для навігації між сторінками</p>
+                  <p className="wb-text-sm wb-text-muted">
+                    Додайте пункти меню для навігації між сторінками
+                  </p>
                 )}
               </div>
             </div>
@@ -452,7 +471,14 @@ export function SiteEditorPage() {
                 />
               </div>
               <div>
-                <label style={{ display: "flex", alignItems: "center", gap: "var(--sp-2)", cursor: "pointer" }}>
+                <label
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    gap: "var(--sp-2)",
+                    cursor: "pointer",
+                  }}
+                >
                   <input
                     type="checkbox"
                     checked={settingsIsPublic}
@@ -476,12 +502,7 @@ export function SiteEditorPage() {
           {activeTab === "preview" && (
             <div>
               {pages.length > 0 ? (
-                <SiteRenderer
-                  site={site}
-                  pages={pages}
-                  mode="preview"
-                  className="site-preview"
-                />
+                <SiteRenderer site={site} pages={pages} mode="preview" className="site-preview" />
               ) : (
                 <p className="wb-text-muted">Спочатку додайте сторінки</p>
               )}
@@ -507,7 +528,12 @@ export function SiteEditorPage() {
         {editingPageSlug ? (
           <div style={{ flex: 1, display: "flex", flexDirection: "column" }}>
             {/* Заголовок сторінки */}
-            <div style={{ padding: "var(--sp-3) var(--sp-4)", borderBottom: "1px solid var(--border-subtle)" }}>
+            <div
+              style={{
+                padding: "var(--sp-3) var(--sp-4)",
+                borderBottom: "1px solid var(--border-subtle)",
+              }}
+            >
               <div className="wb-flex-between">
                 <span className="wb-text-sm">
                   Редагування: <strong>/{editingPageSlug}</strong>
@@ -598,9 +624,7 @@ function PageBuilderPlaceholder({
       <div className="wb-card">
         <div className="wb-card-body" style={{ padding: "var(--sp-4)" }}>
           <div className="wb-flex-between" style={{ marginBottom: "var(--sp-2)" }}>
-            <h3 style={{ margin: 0, fontSize: "var(--text-md)" }}>
-              {page.title}
-            </h3>
+            <h3 style={{ margin: 0, fontSize: "var(--text-md)" }}>{page.title}</h3>
             <span className="wb-badge wb-badge-neutral">
               {blockCount} блок{blockCount === 1 ? "" : blockCount < 5 ? "и" : "ів"}
             </span>
@@ -636,14 +660,15 @@ function PageBuilderPlaceholder({
                       {block.type}
                     </span>
                     {typeof block.props?.title === "string" && (
-                      <span className="wb-text-xs wb-text-muted" style={{ marginLeft: "var(--sp-2)" }}>
+                      <span
+                        className="wb-text-xs wb-text-muted"
+                        style={{ marginLeft: "var(--sp-2)" }}
+                      >
                         {String(block.props.title).slice(0, 40)}
                       </span>
                     )}
                   </div>
-                  <span className="wb-text-xs wb-text-muted">
-                    #{block.id.slice(0, 8)}
-                  </span>
+                  <span className="wb-text-xs wb-text-muted">#{block.id.slice(0, 8)}</span>
                 </div>
               ))}
             </div>
@@ -668,7 +693,8 @@ function PageBuilderPlaceholder({
       </div>
 
       <p className="wb-text-xs wb-text-muted" style={{ textAlign: "center" }}>
-        Повноцінний PageBuilder буде додано в наступних фазах ( packages/ui → SiteRenderer інтеграція )
+        Повноцінний PageBuilder буде додано в наступних фазах ( packages/ui → SiteRenderer
+        інтеграція )
       </p>
     </div>
   );

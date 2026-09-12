@@ -8,10 +8,7 @@
  */
 
 import { useState, useCallback, useEffect, useMemo } from "react";
-import type {
-  PageConfig,
-  BlockContext,
-} from "@wwwuabot/shared/types/page-config";
+import type { PageConfig, BlockContext } from "@wwwuabot/shared/types/page-config";
 import { icons } from "@wwwuabot/shared";
 import { ZoneRenderer } from "./ZoneRenderer";
 
@@ -110,9 +107,7 @@ export function PageRenderer({
       )}
 
       {/* Sidebar overlay (mobile) */}
-      {hasSidebar && sidebarOpen && (
-        <div className="page-sidebar-overlay" onClick={closeSidebar} />
-      )}
+      {hasSidebar && sidebarOpen && <div className="page-sidebar-overlay" onClick={closeSidebar} />}
 
       {/* Sidebar */}
       {hasSidebar && (
@@ -132,11 +127,7 @@ export function PageRenderer({
             </button>
           </div>
           {renderZoneLabel("sidebar")}
-          <ZoneRenderer
-            blocks={zones.sidebar}
-            zone="sidebar"
-            context={enrichedContext}
-          />
+          <ZoneRenderer blocks={zones.sidebar} zone="sidebar" context={enrichedContext} />
         </aside>
       )}
 
@@ -160,25 +151,14 @@ export function PageRenderer({
               </button>
             )}
             {renderZoneLabel("header")}
-            <ZoneRenderer
-              blocks={zones.header}
-              zone="header"
-              context={enrichedContext}
-            />
+            <ZoneRenderer blocks={zones.header} zone="header" context={enrichedContext} />
           </header>
         )}
 
         {hasMain && (
-          <main
-            className={zoneClassName?.main ?? "page-zone page-zone--main"}
-            data-zone="main"
-          >
+          <main className={zoneClassName?.main ?? "page-zone page-zone--main"} data-zone="main">
             {renderZoneLabel("main")}
-            <ZoneRenderer
-              blocks={zones.main}
-              zone="main"
-              context={enrichedContext}
-            />
+            <ZoneRenderer blocks={zones.main} zone="main" context={enrichedContext} />
           </main>
         )}
 
@@ -188,11 +168,7 @@ export function PageRenderer({
             data-zone="footer"
           >
             {renderZoneLabel("footer")}
-            <ZoneRenderer
-              blocks={zones.footer}
-              zone="footer"
-              context={enrichedContext}
-            />
+            <ZoneRenderer blocks={zones.footer} zone="footer" context={enrichedContext} />
           </footer>
         )}
       </div>

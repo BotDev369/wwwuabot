@@ -6,8 +6,8 @@
  * @module packages/ui/src/blocks/TabsBlock
  */
 
-import { useState } from 'react';
-import type { BlockComponentProps } from '@wwwuabot/shared/types/page-config';
+import { useState } from "react";
+import type { BlockComponentProps } from "@wwwuabot/shared/types/page-config";
 
 interface TabItem {
   label: string;
@@ -16,10 +16,7 @@ interface TabItem {
 }
 
 export function TabsBlock({ block }: BlockComponentProps) {
-  const {
-    tabs = [],
-    style = 'underline',
-  } = block.props as {
+  const { tabs = [], style = "underline" } = block.props as {
     tabs?: TabItem[];
     style?: string;
   };
@@ -29,23 +26,24 @@ export function TabsBlock({ block }: BlockComponentProps) {
   if (tabs.length === 0) return null;
 
   const getTabStyle = (isActive: boolean): React.CSSProperties => {
-    let bgColor = 'transparent';
-    if (style === 'pills' && isActive) bgColor = 'var(--accent-dim)';
-    else if (style === 'enclosed' && isActive) bgColor = 'var(--bg-1)';
+    let bgColor = "transparent";
+    if (style === "pills" && isActive) bgColor = "var(--accent-dim)";
+    else if (style === "enclosed" && isActive) bgColor = "var(--bg-1)";
 
     return {
-      padding: 'var(--sp-2) var(--sp-3)',
-      cursor: 'pointer',
-      border: 'none',
+      padding: "var(--sp-2) var(--sp-3)",
+      cursor: "pointer",
+      border: "none",
       background: bgColor,
-      fontSize: 'var(--text-sm)',
-      fontWeight: isActive ? 'var(--weight-semibold)' : 'var(--weight-normal)',
-      color: isActive ? 'var(--accent)' : 'var(--text-secondary)',
-      transition: 'color var(--duration-fast) var(--ease)',
-      borderBottom: style === 'underline'
-        ? `2px solid ${isActive ? 'var(--accent)' : 'transparent'}`
-        : undefined,
-      borderRadius: style === 'pills' ? 'var(--radius-full)' : undefined,
+      fontSize: "var(--text-sm)",
+      fontWeight: isActive ? "var(--weight-semibold)" : "var(--weight-normal)",
+      color: isActive ? "var(--accent)" : "var(--text-secondary)",
+      transition: "color var(--duration-fast) var(--ease)",
+      borderBottom:
+        style === "underline"
+          ? `2px solid ${isActive ? "var(--accent)" : "transparent"}`
+          : undefined,
+      borderRadius: style === "pills" ? "var(--radius-full)" : undefined,
     };
   };
 
@@ -56,11 +54,11 @@ export function TabsBlock({ block }: BlockComponentProps) {
       <div
         className="wb-block-tabs__header"
         style={{
-          display: 'flex',
-          gap: style === 'pills' ? 'var(--sp-1)' : undefined,
-          borderBottom: style === 'underline' ? '1px solid var(--border-subtle)' : undefined,
-          marginBottom: 'var(--sp-3)',
-          overflowX: 'auto',
+          display: "flex",
+          gap: style === "pills" ? "var(--sp-1)" : undefined,
+          borderBottom: style === "underline" ? "1px solid var(--border-subtle)" : undefined,
+          marginBottom: "var(--sp-3)",
+          overflowX: "auto",
         }}
         role="tablist"
       >
@@ -73,7 +71,7 @@ export function TabsBlock({ block }: BlockComponentProps) {
             style={getTabStyle(i === activeIndex)}
             onClick={() => setActiveIndex(i)}
           >
-            {tab.icon && <span style={{ marginRight: 'var(--sp-1)' }}>{tab.icon}</span>}
+            {tab.icon && <span style={{ marginRight: "var(--sp-1)" }}>{tab.icon}</span>}
             {tab.label}
           </button>
         ))}
@@ -82,9 +80,9 @@ export function TabsBlock({ block }: BlockComponentProps) {
       <div
         className="wb-block-tabs__content wb-text-primary"
         role="tabpanel"
-        style={{ fontSize: 'var(--text-sm)', lineHeight: 'var(--font-lineheight-3)' }}
+        style={{ fontSize: "var(--text-sm)", lineHeight: "var(--font-lineheight-3)" }}
       >
-        {activeTab?.content || ''}
+        {activeTab?.content || ""}
       </div>
     </div>
   );
