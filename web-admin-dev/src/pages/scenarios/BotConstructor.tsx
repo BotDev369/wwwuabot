@@ -43,7 +43,7 @@ export function BotConstructor({ fields, updateField }: BotConstructorProps) {
           <span className="wb-card-title">{ico("edit")} Підписи</span>
         </div>
         <div style={{ display: "flex", flexDirection: "column", gap: 8, padding: 12 }}>
-          <label className="block-label">
+          <label className="wb-field">
             Caption Top
             <textarea
               className="wb-textarea"
@@ -53,7 +53,7 @@ export function BotConstructor({ fields, updateField }: BotConstructorProps) {
               placeholder="Верхній підпис..."
             />
           </label>
-          <label className="block-label">
+          <label className="wb-field">
             Caption Mid
             <textarea
               className="wb-textarea"
@@ -63,7 +63,7 @@ export function BotConstructor({ fields, updateField }: BotConstructorProps) {
               placeholder="Середній підпис..."
             />
           </label>
-          <label className="block-label">
+          <label className="wb-field">
             Caption Bot
             <textarea
               className="wb-textarea"
@@ -82,7 +82,7 @@ export function BotConstructor({ fields, updateField }: BotConstructorProps) {
           <span className="wb-card-title">{ico("image")} Фото</span>
         </div>
         <div style={{ padding: 12 }}>
-          <label className="block-label">
+          <label className="wb-field">
             URL фото
             <input
               className="wb-input"

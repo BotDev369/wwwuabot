@@ -199,6 +199,20 @@
   margin-bottom: var(--sp-1);
 }
 
+/* Поле форми: підпис + контрол один під одним. Саме цей клас мають уживати
+   спільні блоки — раніше тут стояв `.form-group`, якого не було ніде. */
+.wb-field {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-1);
+  margin-bottom: var(--sp-4);
+  min-width: 0;
+}
+
+.wb-field > .wb-label {
+  margin-bottom: 0;
+}
+
 /* ── Card ────────────────────────────────────────────────────────────────── */
 
 .wb-card {
@@ -505,6 +519,23 @@
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
   gap: var(--sp-4);
+}
+
+/* ── Spinner ─────────────────────────────────────────────────────────────────
+   Розмір задає місце виклику (inline `width`/`height`), бо той самий індикатор
+   стоїть і в кнопці на 14px, і по центру сторінки. */
+.wb-spinner {
+  display: inline-block;
+  border: 2px solid var(--border);
+  border-top-color: var(--accent);
+  border-radius: var(--radius-full);
+  animation: wb-spin 0.7s linear infinite;
+}
+
+@keyframes wb-spin {
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 @keyframes wb-fade-in {
@@ -842,10 +873,62 @@
   gap: var(--sp-1);
   padding: var(--sp-1) var(--sp-3);
   font-size: var(--text-xs);
+  font-family: inherit;
   background: var(--surface-active);
   color: var(--text-secondary);
   border-radius: var(--radius-full);
   border: 1px solid var(--border-subtle);
+}
+
+button.wb-chip {
+  cursor: pointer;
+}
+
+.wb-chip-sm {
+  padding: 0 var(--sp-2);
+  font-size: 11px;
+}
+
+/* ── Tags input ──────────────────────────────────────────────────────────────
+   Вживає спільна модалка дат (`packages/ui/.../my-dates-table/DateModal`).
+   Раніше ці класи лежали лише в CSS платформи під іншими іменами, тому в
+   адмінці поле тегів випадало з верстки. */
+
+.wb-tags-input {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--sp-1);
+}
+
+.wb-tags-input .wb-input {
+  flex: 1 1 90px;
+  min-width: 0;
+}
+
+.wb-tag-remove {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0 2px;
+  font-size: var(--text-xs);
+  line-height: 1;
+  color: inherit;
+  opacity: 0.6;
+}
+
+.wb-tag-remove:hover {
+  opacity: 1;
+}
+
+.wb-tag-suggestions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--sp-1);
+  margin-top: var(--sp-2);
 }
 
 /* ── Toast / Alert ───────────────────────────────────────────────────────── */
@@ -950,6 +1033,35 @@
   gap: var(--sp-4);
 }
 
+/* ── Spacing utilities ─────────────────────────────────────────────────────
+   Цю родину вживають спільні блоки (`packages/ui/src/blocks/*`). Без неї
+   клас у розмітці є, а правила — немає, тому відступ просто не з'являвся. */
+
+.wb-mt-1 {
+  margin-top: var(--sp-1);
+}
+.wb-mt-2 {
+  margin-top: var(--sp-2);
+}
+.wb-mt-3 {
+  margin-top: var(--sp-3);
+}
+.wb-mt-4 {
+  margin-top: var(--sp-4);
+}
+.wb-mb-1 {
+  margin-bottom: var(--sp-1);
+}
+.wb-mb-2 {
+  margin-bottom: var(--sp-2);
+}
+.wb-mb-3 {
+  margin-bottom: var(--sp-3);
+}
+.wb-mb-4 {
+  margin-bottom: var(--sp-4);
+}
+
 /* ── Text utilities ──────────────────────────────────────────────────────── */
 
 .wb-text-xs {
@@ -963,6 +1075,9 @@
 }
 .wb-text-md {
   font-size: var(--text-md);
+}
+.wb-text-primary {
+  color: var(--text-primary);
 }
 .wb-text-muted {
   color: var(--text-muted);
@@ -981,6 +1096,12 @@
 }
 .wb-font-mono {
   font-family: var(--font-mono);
+}
+.wb-font-semibold {
+  font-weight: var(--weight-semibold);
+}
+.wb-font-bold {
+  font-weight: var(--weight-bold);
 }
 .wb-truncate {
   overflow: hidden;

@@ -104,6 +104,30 @@ Defined in `packages/shared/src/styles/components.css`.
 <select class="wb-select">...</select>
 <textarea class="wb-textarea"></textarea>
 
+<!-- Поле: підпис і контрол один під одним -->
+<div class="wb-field">
+  <label class="wb-label">Назва</label>
+  <input class="wb-input" />
+</div>
+
+<!-- Теги -->
+<div class="wb-tags-input">
+  <span class="wb-chip">тег <button class="wb-tag-remove">…</button></span>
+  <input class="wb-input" />
+</div>
+<div class="wb-tag-suggestions">
+  <button class="wb-chip wb-chip-sm">+ тег</button>
+</div>
+
+<!-- Індикатор завантаження: розмір задає місце виклику -->
+<div class="wb-spinner" style="width: 16px; height: 16px"></div>
+
+<!-- Утиліти: flex/gap, відступи, вага, колір -->
+<div class="wb-flex wb-gap-2 wb-mb-3">
+  <h4 class="wb-font-semibold wb-text-primary">Заголовок</h4>
+  <p class="wb-text-sm wb-text-muted wb-mt-1">Опис</p>
+</div>
+
 <!-- Badges -->
 <span class="wb-badge wb-badge-green">Active</span>
 <span class="wb-badge wb-badge-red">Blocked</span>
@@ -192,6 +216,14 @@ import { Icon } from "@wwwuabot/shared";
    `size`, aren't read by screen readers, and look different across fonts.
 10. If shared code (`packages/ui`) renders a class, its styles live in
     `packages/shared/src/styles/` — not in one shell's `index.css`.
+11. **A class without a rule is a bug, not a style.** `class="wb-mt-3"` in the markup
+    with no `.wb-mt-3` anywhere renders nothing and fails silently: the spacing simply
+    never appears, and no test catches it. Before adding a class to markup, add it to
+    `components.css` — or use one that already exists.
+12. Shared blocks (`packages/ui/src/blocks/*`) are still styled with inline
+    `style={{ … }}` (192 objects, 30 hardcoded hex values), so `data-brand` and
+    `data-theme` don't reach them. Moving those styles into `.wb-block-*` rules in
+    `components.css` is open work — `docs/CONSOLIDATION_PLAN.md` §6.
 
 ---
 

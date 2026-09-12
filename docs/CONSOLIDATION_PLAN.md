@@ -392,9 +392,12 @@ Mini App, тобто телефони), а `web-platform-dev` і `web-admin-dev`
 | `web-platform-dev/src/main.tsx`, `web-admin-dev/src/main.tsx` | `DialogProvider` біля кореня |
 
 **Замінено 33 виклики:** платформа — `site-editor/*` (14), `mydate/DateModal`, спільні
-блоки `my-dates-table` (2); адмінка — 17 у 8 файлах (`BotSettingsPage`, `ScenariosPage`,
-`SitesPage`, `SitesModerationPage`, `TemplatesPage`, `UserBulkBar`, `UserRowMenu`,
-`UsersTable`).
+блоки `my-dates-table` (2); адмінка — 17 у 7 файлах (`BotSettingsPage`, `ScenariosPage`,
+`SitesPage`, `SitesModerationPage`, `TemplatesPage`, `UserBulkBar`, `UsersTable`).
+
+> Був і восьмий файл — `pages/users/UserRowMenu.tsx`. Його видалено 12.09.2026 як мертвий
+> дубль: він не імпортувався ніде, а `UsersTable` має власне меню на спільних
+> `.wb-modal-menu*` (див. §4.5).
 
 Побічно виправлено логіку: скасування `prompt` при відхиленні сайту більше не означає
 «відхилити без причини».
@@ -402,6 +405,63 @@ Mini App, тобто телефони), а `web-platform-dev` і `web-admin-dev`
 **Перевірка:** `npm run typecheck` — чисто ✅ · `npm run lint` — 0 errors, 0 warnings ✅ ·
 `npx prettier --check .` ✅ · `npm test` — 182/182 ✅ · збірки обох застосунків ✅,
 `.wb-dialog` є в обох зібраних CSS ✅.
+
+---
+
+### 4.5. «Клас без стилю»: мертві `wb-*`, спільна модалка на приватному CSS (12.09.2026)
+
+**Питання, яке це відкрило:** «чому в коді досі є власні CSS, якщо стилі ми імпортуємо зі
+спільного?» Відповідь виміряна, і вона не про дублювання:
+
+| Шар | Рядків CSS | Що в ньому |
+|---|---|---|
+| `packages/shared/src/styles/` (9 файлів) | 3 353 | токени, теми, два бренди, reset, `.wb-*`-примітиви, `page-layout`, `drawer` |
+| `web-platform-dev/src/index.css` | 1 223 | власні сторінки платформи (мʼякі дати, порівняння, картки) |
+| `web-admin-dev/src/index.css` + `profile.css` | 2 408 + 84 | каркас адмінки, таблиці, редактор блоків, login |
+
+`@import` спільного стоїть **в обох** `index.css` — це правда. Але спільне — це базовий шар,
+а не «всі стилі»: композиції рівня сторінки (sidebar, topbar, login, редактори, таблиці)
+ніколи не переїжджали. Реального дублювання між оболонками майже немає (перетин — **один**
+клас, `wb-btn`): вони не дублюють, а **розійшлися** (адмінка тримає `.usr-*`/`.scn-*` там,
+де платформа має власні класи).
+
+**Що знайдено (усе — пошуком і заміром, не на око):**
+
+- **107 класів, які рендерить `packages/ui`, не мали жодного правила CSS** у репозиторії.
+  92 з них — `wb-block-*`: блоки стилізовані inline (`style={{ … }}` — 192 обʼєкти,
+  30 хардкод-`hex`, 8 `rgba()`), тому `data-brand` і `data-theme` до них **не доходять**.
+- **10 утиліт існували лише в розмітці:** `.wb-mt-1..4`, `.wb-mb-2..4`, `.wb-font-bold`,
+  `.wb-font-semibold`, `.wb-text-primary` — 17 вживань у спільних блоках. Відступи, вага
+  й колір просто не зʼявлялись. Родину вже було частково описано (`.wb-flex*`, `.wb-gap-*`,
+  `.wb-text-sm`) — її **доповнено**, а не створено заново.
+- **Спільна `my-dates-table/DateModal.tsx` трималась на приватному CSS платформи:**
+  `.modal-overlay/.modal/.modal-header/.modal-close/.modal-body/.modal-actions` — лише
+  `web-platform-dev/src/index.css`; а `.form-group`, `.tags-input`, `.tag-input`,
+  `.tag-suggestions` не існували **взагалі ніде**. Переведено на спільний `.wb-modal-*`
+  (той самий, що в діалогах §4.4) і нові `.wb-field`, `.wb-tags-input`, `.wb-chip-sm`,
+  `.wb-tag-remove`, `.wb-tag-suggestions`; глифи `✕` → `<Icon name="close" />` (правило 9).
+- **`.wb-spinner`** викликався в `SiteNewPage`, правил не було → індикатор не крутився.
+  Додано разом із `@keyframes wb-spin`.
+- **Адмінка:** `.page-topbar` стояв у розмітці трьох сторінок (Sites / Templates /
+  Moderation) без жодного правила — шапка не мала ні відступів, ні лінії; `.block-label`
+  (4 місця) замінено на спільний `.wb-field`; сторінка модерації мала inline-`calc(100vh -
+  56px)` і фіксовані 360px черги → класи `.sites-split*` з `dvh` (із `vh`-фолбеком)
+  і складанням у стовпчик на ≤768px, без inline-стилів.
+- **`pages/users/UserRowMenu.tsx` — мертвий файл:** не імпортувався ніде, а його класи
+  `.usr-menu*` і були тим «CSS без правил». Те саме меню `UsersTable` уже малює на спільних
+  `.wb-modal-menu*`. Видалено (54 рядки).
+
+**Перевірка:** `npm run lint` — 0 errors, 0 warnings ✅ · `npm run typecheck` — чисто на
+6 воркспейсах ✅ · `npx prettier --check .` ✅ · `npm test` — 182/182 ✅ · збірки
+`web-platform-dev` і `web-admin-dev` ✅.
+
+⚠️ **Візуально не перевірено** — превʼю воркерів у цьому середовищі немає. Найперше варто
+глянути на телефоні модалку дати (тепер `.wb-modal`: `max-width` 480 → 560, висота до
+`90dvh`) і сторінку модерації сайтів.
+
+**Що лишається з цього напрямку:** прибрати тепер мертві `.modal-*`/`.tags-*` з платформи
+(там ще власні сторінки), і порціями переносити inline-стилі `wb-block-*` у `components.css`
+— це пункт 3 у §6.
 
 ---
 
@@ -701,6 +761,7 @@ Cloudflare для `api-dev` і `bot-dev` — інструкція в `docs/MONIT
 | Один дизайн | §4.3 крок 1–2: `viewport-fit`, safe-area, `dvh`, drawer адмінки, спільні `page-layout.css` і `drawer.css` | 12.09 |
 | Діалоги | §4.4: 33 нативні `alert/confirm/prompt` → `@wwwuabot/ui/dialog` | 12.09 |
 | Кристалевість | `SiteEditorPage` 686 → 48 рядків (+11 файлів `site-editor/`) | 12.09 |
+| Клас без стилю | §4.5: мертві `wb-*`-утиліти, спільна модалка з приватного CSS платформи, `.page-topbar` | 12.09 |
 
 **Відкрите свідомо:** §5.6 (`/api/mydate/*` — публічний запис у D1/KV; чекає реального
 трафіку), §8.3 (дві таблиці сценаріїв).
@@ -718,11 +779,17 @@ Cloudflare для `api-dev` і `bot-dev` — інструкція в `docs/MONIT
 `publish` / `catalog`. Писати тести (пункт 1) треба після цього — по одному домену на файл.
 
 **3. Крок 3 «одного дизайну» (§4.3).**
-- **Спільні блоки `packages/ui` стилізовані лише в платформі.**
-  `my-dates-table/DateModal.tsx` використовує `.modal-overlay`, `.modal`, `.modal-actions`,
-  `.form-group`, `.tags-input` — усі визначені **тільки** в `web-platform-dev/src/index.css`.
-  В адмінці ця модалка рендериться без оверлея й позиціонування. **Дія:** на `.wb-modal-*`,
-  потім прибрати мертві `.modal-*` з платформи.
+- ~~**Спільні блоки `packages/ui` стилізовані лише в платформі.**~
+  **ЗАКРИТО 12.09.2026 (§4.5):** `DateModal` і `MyDatesTableBlock` переведено на `.wb-modal-*`
+  і `.wb-chip`; нові примітиви `.wb-field`, `.wb-tags-input`, `.wb-chip-sm`,
+  `.wb-tag-remove`, `.wb-tag-suggestions` живуть у `components.css`. Лишилось: прибрати
+  тепер мертві `.modal-*` / `.tags-*` з `web-platform-dev/src/index.css` (після візуальної
+  перевірки — там ще власні сторінки платформи).
+- **92 класи `wb-block-*` не мають жодного правила** — блоки стилізовані inline
+  (`style={{ … }}`: 192 об'єкти, 30 хардкод-hex, 8 `rgba()`). Через це `data-brand`
+  і `data-theme` до блоків **не доходять**, а `index.css` оболонок на них не впливає.
+  **Дія:** порціями по 5–8 блоків переносити inline → `.wb-block-*` у `components.css`,
+  починаючи з тих, де є хардкод-кольори.
 - **Дві реалізації тієї самої модалки дати** (`packages/ui/.../DateModal.tsx` і
   `web-platform-dev/src/pages/mydate/DateModal.tsx`) — різні класи, різні пропси → одна.
 - **`↑ ↓ ✕` текстом** замість `<Icon />` у 5+ редакторах блоків адмінки — порушує власне

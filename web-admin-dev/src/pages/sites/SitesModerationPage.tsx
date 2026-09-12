@@ -96,16 +96,9 @@ export function SitesModerationPage() {
         <span className="wb-badge wb-badge-yellow">{pending.length} очікують</span>
       </div>
 
-      <div style={{ display: "flex", height: "calc(100vh - 56px)" }}>
+      <div className="sites-split">
         {/* Черга */}
-        <div
-          style={{
-            width: 360,
-            borderRight: "1px solid var(--border-subtle)",
-            overflowY: "auto",
-            padding: "var(--sp-4)",
-          }}
-        >
+        <div className="sites-split-queue">
           {loading && (
             <div className="wb-empty">
               <div className="wb-skeleton" style={{ width: 200, height: 24 }} />
@@ -170,7 +163,7 @@ export function SitesModerationPage() {
         </div>
 
         {/* Деталі */}
-        <div style={{ flex: 1, overflowY: "auto", padding: "var(--sp-5)" }}>
+        <div className="sites-split-detail">
           {!selected ? (
             <div className="wb-empty">
               <Icon name="eye" size={48} />

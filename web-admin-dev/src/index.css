@@ -2406,3 +2406,68 @@ body {
     opacity: 1;
   }
 }
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   PAGE TOPBAR — заголовок сторінки (Sites / Templates / Moderation)
+   Клас стояв у розмітці трьох сторінок, але правил до нього не існувало
+   взагалі — тож шапка не мала ні відступів, ні лінії під собою.
+   ═══════════════════════════════════════════════════════════════════════════ */
+.page-topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--sp-3);
+  flex-wrap: wrap;
+  min-height: var(--topbar-h);
+  padding: var(--sp-3) var(--sp-5);
+  border-bottom: 1px solid var(--border);
+  background: var(--bg-1);
+  flex-shrink: 0;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   SPLIT VIEW — черга + деталі (модерація сайтів)
+   Було inline: фіксовані 360px черги та `calc(100vh - 56px)`. На телефоні
+   360px — це весь екран, тому на вузькому екрані черга й деталі стоять одне
+   над одним, а висота береться з dvh (з vh як фолбеком): адресний рядок
+   ховається і висота «стрибає».
+   ═══════════════════════════════════════════════════════════════════════════ */
+.sites-split {
+  display: flex;
+  height: calc(100vh - var(--topbar-h));
+  height: calc(100dvh - var(--topbar-h));
+  min-height: 0;
+}
+
+.sites-split-queue {
+  width: 360px;
+  flex-shrink: 0;
+  overflow-y: auto;
+  padding: var(--sp-4);
+  border-right: 1px solid var(--border-subtle);
+}
+
+.sites-split-detail {
+  flex: 1;
+  min-width: 0;
+  overflow-y: auto;
+  padding: var(--sp-5);
+}
+
+@media (max-width: 768px) {
+  .sites-split {
+    flex-direction: column;
+    height: auto;
+  }
+
+  .sites-split-queue {
+    width: 100%;
+    max-height: 45dvh;
+    border-right: none;
+    border-bottom: 1px solid var(--border-subtle);
+  }
+
+  .sites-split-detail {
+    padding: var(--sp-4);
+  }
+}

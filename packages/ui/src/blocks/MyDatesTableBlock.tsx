@@ -125,7 +125,7 @@ export function MyDatesTableBlock({ block }: BlockComponentProps) {
             {values.map((v) => (
               <button
                 key={v}
-                className="tag-chip tag-chip--sm"
+                className="wb-chip wb-chip-sm"
                 onClick={() => toggleColumnFilter(field, v)}
                 style={{ cursor: "pointer" }}
               >
@@ -250,11 +250,7 @@ export function MyDatesTableBlock({ block }: BlockComponentProps) {
                       {(d.tags || []).length > 0 ? (
                         <div style={{ display: "flex", flexWrap: "wrap", gap: 4 }}>
                           {d.tags.map((tag) => (
-                            <span
-                              key={tag}
-                              className="tag-chip tag-chip--sm"
-                              style={getTagColor(tag)}
-                            >
+                            <span key={tag} className="wb-chip wb-chip-sm" style={getTagColor(tag)}>
                               {tag}
                             </span>
                           ))}

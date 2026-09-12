@@ -3,6 +3,7 @@
  */
 
 import { useState } from "react";
+import { Icon } from "@wwwuabot/shared";
 import { useDialog } from "../../dialog";
 import type { MyDate, ModalMode } from "./types";
 import { getTagColor } from "./constants";
@@ -45,21 +46,26 @@ export function DateModal({ mode, date, allTags, onClose, onSave, onDelete }: Da
   };
 
   return (
-    <div className="modal-overlay" onClick={onClose}>
-      <div className="modal" onClick={(e) => e.stopPropagation()}>
-        <div className="modal-header">
-          <h3>
+    <div className="wb-modal-overlay" onClick={onClose}>
+      <div
+        className="wb-modal"
+        role="dialog"
+        aria-modal="true"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <div className="wb-modal-header">
+          <h3 className="wb-modal-title">
             {mode === "create" && "Нова дата"}
             {mode === "edit" && "Редагувати дату"}
             {mode === "view" && "Перегляд дати"}
           </h3>
-          <button className="modal-close" onClick={onClose}>
-            ✕
+          <button className="wb-modal-close" aria-label="Закрити" onClick={onClose}>
+            <Icon name="close" size={16} />
           </button>
         </div>
-        <div className="modal-body">
-          <div className="form-group">
-            <label>Назва</label>
+        <div className="wb-modal-body">
+          <div className="wb-field">
+            <label className="wb-label">Назва</label>
             <input
               className="wb-input"
               value={name}
@@ -68,8 +74,8 @@ export function DateModal({ mode, date, allTags, onClose, onSave, onDelete }: Da
               disabled={isReadonly}
             />
           </div>
-          <div className="form-group">
-            <label>Дата *</label>
+          <div className="wb-field">
+            <label className="wb-label">Дата *</label>
             <input
               type="date"
               className="wb-input"
@@ -79,8 +85,8 @@ export function DateModal({ mode, date, allTags, onClose, onSave, onDelete }: Da
               required
             />
           </div>
-          <div className="form-group">
-            <label>Тип</label>
+          <div className="wb-field">
+            <label className="wb-label">Тип</label>
             <select
               className="wb-input"
               value={type}
@@ -92,25 +98,26 @@ export function DateModal({ mode, date, allTags, onClose, onSave, onDelete }: Da
               <option value="other">Інше</option>
             </select>
           </div>
-          <div className="form-group">
-            <label>Теги</label>
-            <div className="tags-input">
+          <div className="wb-field">
+            <label className="wb-label">Теги</label>
+            <div className="wb-tags-input">
               {tags.map((t) => (
-                <span key={t} className="tag-chip" style={getTagColor(t)}>
+                <span key={t} className="wb-chip" style={getTagColor(t)}>
                   {t}
                   {!isReadonly && (
                     <button
-                      className="tag-remove"
+                      className="wb-tag-remove"
+                      aria-label={`Прибрати тег ${t}`}
                       onClick={() => setTags((prev) => prev.filter((x) => x !== t))}
                     >
-                      ✕
+                      <Icon name="close" size={12} />
                     </button>
                   )}
                 </span>
               ))}
               {!isReadonly && (
                 <input
-                  className="wb-input tag-input"
+                  className="wb-input"
                   value={tagInput}
                   onChange={(e) => setTagInput(e.target.value)}
                   placeholder="Додати тег..."
@@ -125,14 +132,14 @@ export function DateModal({ mode, date, allTags, onClose, onSave, onDelete }: Da
               )}
             </div>
             {!isReadonly && allTags.length > 0 && (
-              <div className="tag-suggestions">
+              <div className="wb-tag-suggestions">
                 {allTags
                   .filter((t) => !tags.includes(t))
                   .slice(0, 8)
                   .map((t) => (
                     <button
                       key={t}
-                      className="tag-chip tag-chip--sm"
+                      className="wb-chip wb-chip-sm"
                       style={getTagColor(t)}
                       onClick={() => addTag(t)}
                     >
@@ -142,8 +149,8 @@ export function DateModal({ mode, date, allTags, onClose, onSave, onDelete }: Da
               </div>
             )}
           </div>
-          <div className="form-group">
-            <label>Примітки</label>
+          <div className="wb-field">
+            <label className="wb-label">Примітки</label>
             <textarea
               className="wb-input"
               value={notes}
@@ -153,7 +160,7 @@ export function DateModal({ mode, date, allTags, onClose, onSave, onDelete }: Da
             />
           </div>
         </div>
-        <div className="modal-actions">
+        <div className="wb-modal-footer">
           {mode === "edit" && date && onDelete && (
             <button
               className="wb-btn wb-btn-danger"
