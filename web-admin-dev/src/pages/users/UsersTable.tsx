@@ -4,6 +4,7 @@ import type { UserRow } from "../../shared/api/users.api";
 import { UserCardModal } from "./UserCardModal";
 import { UserEditModal } from "./UserEditModal";
 import { icons } from "@wwwuabot/shared";
+import { useDialog } from "@wwwuabot/ui/dialog";
 
 const ico = (name: keyof typeof icons, extraStyle?: React.CSSProperties) => (
   <span
@@ -49,6 +50,7 @@ interface Props {
 }
 
 export function UsersTable({ onMessage }: Props) {
+  const dialog = useDialog();
   const { items, sortField, sortDir, search, setSort, selectedIds, toggleSelect, selectAll } =
     useUsersStore();
 
@@ -309,7 +311,11 @@ export function UsersTable({ onMessage }: Props) {
               <button
                 className="wb-modal-menu-item wb-modal-menu-item--danger"
                 onClick={async () => {
-                  if (!confirm(`Видалити користувача ${menuUser.user_id}?`)) return;
+                  const ok = await dialog.confirm(`Видалити користувача ${menuUser.user_id}?`, {
+                    tone: "danger",
+                    confirmText: "Видалити",
+                  });
+                  if (!ok) return;
                   const { deleteOne } = useUsersStore.getState();
                   await deleteOne(menuUser.user_id);
                   closeAll();

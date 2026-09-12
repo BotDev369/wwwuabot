@@ -14,6 +14,7 @@
  */
 
 import { useCallback, useEffect, useState } from "react";
+import { useDialog } from "../../dialog";
 import type { MyDate } from "./types";
 import { deleteMyDate, deleteMyDates, fetchMyDates, saveMyDate } from "./api";
 import { useDateFilters } from "./useDateFilters";
@@ -27,6 +28,7 @@ const errorText = (e: unknown) => `Помилка: ${String(e).slice(0, 100)}`;
 
 export function useMyDates(options: UseMyDatesOptions = {}): UseMyDatesReturn {
   const { autoFetch = true, refreshAfterMutation = true } = options;
+  const dialog = useDialog();
 
   const [dates, setDates] = useState<MyDate[]>([]);
   // `loading` не смикається назад у `true`: інакше таблиця зникала б на кожному
@@ -86,7 +88,11 @@ export function useMyDates(options: UseMyDatesOptions = {}): UseMyDatesReturn {
   const handleBulkDelete = useCallback(async () => {
     const ids = [...selection.selectedIds];
     if (ids.length === 0) return;
-    if (!confirm(`Видалити ${ids.length} дат(у)?`)) return;
+    const ok = await dialog.confirm(`Видалити ${ids.length} дат(у)?`, {
+      tone: "danger",
+      confirmText: "Видалити",
+    });
+    if (!ok) return;
     try {
       await deleteMyDates(ids);
       selection.clearSelection();
@@ -94,7 +100,7 @@ export function useMyDates(options: UseMyDatesOptions = {}): UseMyDatesReturn {
     } catch (e) {
       setError(errorText(e));
     }
-  }, [afterMutation, selection]);
+  }, [afterMutation, dialog, selection]);
 
   const handleBulkCompare = useCallback(() => {
     const selected = filters.processedDates.filter((d) => selection.selectedIds.has(d.id));

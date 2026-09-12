@@ -727,10 +727,166 @@ main {
 .site-editor-panel {
   width: 320px;
   flex-shrink: 0;
+  min-height: 0;
   display: flex;
   flex-direction: column;
   border-right: 1px solid var(--border-subtle);
   background: var(--surface);
+}
+
+.site-editor-panel-head {
+  padding: var(--sp-4);
+  border-bottom: 1px solid var(--border-subtle);
+}
+
+.site-editor-title {
+  margin: 0;
+  font-size: var(--text-md);
+  font-weight: var(--weight-bold);
+  /* Назва сайту приходить від користувача: довге слово мусить переноситись,
+     а не розтягувати панель */
+  overflow-wrap: anywhere;
+}
+
+/* Таби — сітка з чотирьох рівних колонок: на 320px панелі вони всі
+   вміщаються, і жоден підпис не обрізається. */
+.site-editor-tabs {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  border-bottom: 1px solid var(--border-subtle);
+}
+
+.site-editor-tab-btn {
+  min-height: 44px; /* мінімальний тап-таргет для пальця */
+  padding: var(--sp-2) var(--sp-1);
+  font-size: var(--text-xs);
+  color: var(--text-secondary);
+  background: none;
+  border: none;
+  border-bottom: 2px solid transparent;
+  cursor: pointer;
+  transition:
+    color var(--duration-fast) var(--ease),
+    border-color var(--duration-fast) var(--ease);
+}
+
+.site-editor-tab-btn:hover {
+  color: var(--text-primary);
+}
+
+.site-editor-tab-btn--active {
+  color: var(--accent);
+  border-bottom-color: var(--accent);
+  font-weight: var(--weight-semibold);
+}
+
+.site-editor-tab-content {
+  flex: 1;
+  min-height: 0;
+  overflow: auto;
+  padding: var(--sp-4);
+  -webkit-overflow-scrolling: touch;
+}
+
+.site-editor-panel-foot {
+  padding: var(--sp-4);
+  /* + safe-area: кнопка публікації стоїть у самому низу екрана */
+  padding-bottom: calc(var(--sp-4) + var(--safe-bottom));
+  border-top: 1px solid var(--border-subtle);
+}
+
+.site-editor-panel-foot .wb-btn {
+  width: 100%;
+}
+
+.site-editor-tab {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-3);
+}
+
+.site-editor-tab-head {
+  gap: var(--sp-2);
+}
+
+.site-editor-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-2);
+}
+
+.site-editor-item {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-1);
+  padding-right: var(--sp-1);
+  overflow: hidden;
+}
+
+.site-editor-item--active {
+  border-color: var(--accent);
+}
+
+.site-editor-item-main {
+  flex: 1;
+  min-width: 0;
+  min-height: 44px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 2px;
+  padding: var(--sp-3);
+  text-align: left;
+  color: var(--text-primary);
+  background: none;
+  border: none;
+  cursor: pointer;
+}
+
+.site-editor-item-main--static {
+  cursor: default;
+}
+
+.site-editor-item-title {
+  font-size: var(--text-sm);
+  font-weight: var(--weight-medium);
+  overflow-wrap: anywhere;
+}
+
+.site-editor-icon-btn {
+  width: 44px;
+  height: 44px;
+  min-width: 44px;
+  padding: 0;
+}
+
+.site-editor-form {
+  gap: var(--sp-3);
+}
+
+.site-editor-field {
+  display: flex;
+  flex-direction: column;
+}
+
+.site-editor-theme {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--sp-2);
+}
+
+/* Чекбокс на всю ширину рядка: на телефоні тапати треба по підпису */
+.site-editor-check {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-3);
+  min-height: 44px;
+  cursor: pointer;
+}
+
+.site-editor-check input {
+  width: 18px;
+  height: 18px;
 }
 
 /* Полотно: те, що показує вміст сторінки (скролять його власні нащадки) */
@@ -743,6 +899,80 @@ main {
   overflow: hidden;
 }
 
+.site-editor-canvas-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--sp-2);
+  padding: var(--sp-3) var(--sp-4);
+  border-bottom: 1px solid var(--border-subtle);
+}
+
+.site-editor-canvas-body {
+  flex: 1;
+  min-height: 0;
+  overflow: auto;
+  padding: var(--sp-4);
+  -webkit-overflow-scrolling: touch;
+}
+
+/* Підказка «оберіть сторінку» мусить центруватися по висоті полотна,
+   а не тулитися під заголовком */
+.site-editor-canvas > .wb-empty {
+  flex: 1;
+}
+
+.site-editor-placeholder {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-4);
+}
+
+.site-editor-placeholder-title {
+  margin: 0;
+  font-size: var(--text-md);
+}
+
+.site-editor-placeholder-subtitle {
+  margin: 0;
+  font-size: var(--text-sm);
+}
+
+.site-editor-placeholder-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--sp-2);
+}
+
+.site-editor-placeholder-actions .wb-btn {
+  flex: 1 1 160px;
+}
+
+.site-editor-placeholder-note {
+  text-align: center;
+}
+
+.site-editor-blocks {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-2);
+}
+
+.site-editor-block {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: var(--sp-2);
+  padding: var(--sp-3);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+}
+
+.site-editor-skeleton {
+  width: min(200px, 60vw);
+  height: 24px;
+}
+
 @media (max-width: 768px) {
   /* На телефоні панель і полотно стоять одне над одним: фіксовані 320px
      лишали б полотну 40-100px ширини. */
@@ -752,7 +982,7 @@ main {
 
   .site-editor-panel {
     width: 100%;
-    max-height: 50dvh;
+    max-height: 55dvh;
     border-right: none;
     border-bottom: 1px solid var(--border-subtle);
   }

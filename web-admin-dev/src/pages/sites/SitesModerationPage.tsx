@@ -7,8 +7,10 @@
 import { useState, useEffect, useCallback } from "react";
 import type { Site, SitePage } from "@wwwuabot/shared";
 import { Icon } from "@wwwuabot/shared";
+import { useDialog } from "@wwwuabot/ui/dialog";
 
 export function SitesModerationPage() {
+  const dialog = useDialog();
   const [pending, setPending] = useState<Site[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -54,7 +56,8 @@ export function SitesModerationPage() {
   };
 
   const handleApprove = async (slug: string) => {
-    if (!confirm(`Схвалити публікацію "${slug}"?`)) return;
+    const ok = await dialog.confirm(`Схвалити публікацію «${slug}»?`, { confirmText: "Схвалити" });
+    if (!ok) return;
     try {
       const res = await fetch(`/api/admin/sites/${slug}/approve`, {
         method: "POST",
@@ -63,7 +66,7 @@ export function SitesModerationPage() {
       setSelected(null);
       loadPending();
     } catch (e) {
-      alert(e instanceof Error ? e.message : "Помилка");
+      await dialog.alert(e instanceof Error ? e.message : "Помилка", { tone: "danger" });
     }
   };
 
@@ -79,7 +82,7 @@ export function SitesModerationPage() {
       setRejectReason("");
       loadPending();
     } catch (e) {
-      alert(e instanceof Error ? e.message : "Помилка");
+      await dialog.alert(e instanceof Error ? e.message : "Помилка", { tone: "danger" });
     }
   };
 

@@ -452,6 +452,54 @@
   margin: var(--sp-2) 0;
 }
 
+/* ── Dialog (alert / confirm / prompt) ───────────────────────────────────
+   Той самий `.wb-modal`, але зі своїми розмірами: короткий текст не мусить
+   розтягуватись на 90dvh, як повноцінна форма з полями. */
+
+.wb-dialog {
+  max-width: 420px;
+  height: auto;
+  max-height: 85dvh;
+}
+
+.wb-dialog-body {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-3);
+}
+
+.wb-dialog-message {
+  margin: 0;
+  font-size: var(--text-sm);
+  color: var(--text-secondary);
+  /* Довгі шляхи й slug-и переносяться, а не вилазять за модалку */
+  overflow-wrap: anywhere;
+  white-space: pre-line;
+}
+
+.wb-dialog-error {
+  margin: 0;
+  font-size: var(--text-xs);
+  color: var(--red);
+}
+
+/* Кнопки на всю ширину: на телефоні це найбільший тап-таргет, а 44px —
+   мінімум, який і Apple, і Material вважають придатним для пальця. */
+.wb-dialog-footer {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+}
+
+.wb-dialog-btn {
+  width: 100%;
+  min-height: 44px;
+}
+
+/* В alert кнопка одна — хай займає весь рядок */
+.wb-dialog-btn:only-child {
+  grid-column: span 2;
+}
+
 /* Cards grid */
 .wb-cards-grid {
   display: grid;

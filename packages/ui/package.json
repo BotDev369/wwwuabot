@@ -10,6 +10,7 @@
     "./PageRenderer": "./src/PageRenderer.tsx",
     "./SiteRenderer": "./src/SiteRenderer.tsx",
     "./ZoneRenderer": "./src/ZoneRenderer.tsx",
+    "./dialog": "./src/dialog/index.ts",
     "./store": "./src/store.ts",
     "./registry": "./src/registry.tsx",
     "./blocks": "./src/blocks/index.ts",

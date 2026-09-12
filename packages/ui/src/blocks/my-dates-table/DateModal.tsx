@@ -3,6 +3,7 @@
  */
 
 import { useState } from "react";
+import { useDialog } from "../../dialog";
 import type { MyDate, ModalMode } from "./types";
 import { getTagColor } from "./constants";
 
@@ -23,6 +24,7 @@ export function DateModal({ mode, date, allTags, onClose, onSave, onDelete }: Da
   const [notes, setNotes] = useState(date?.notes ?? "");
   const [tagInput, setTagInput] = useState("");
   const [saving, setSaving] = useState(false);
+  const dialog = useDialog();
 
   const isReadonly = mode === "view";
 
@@ -156,7 +158,9 @@ export function DateModal({ mode, date, allTags, onClose, onSave, onDelete }: Da
             <button
               className="wb-btn wb-btn-danger"
               onClick={() => {
-                if (confirm("Видалити цю дату?")) onDelete(date.id);
+                void dialog
+                  .confirm("Видалити цю дату?", { tone: "danger", confirmText: "Видалити" })
+                  .then((ok) => ok && onDelete(date.id));
               }}
             >
               Видалити

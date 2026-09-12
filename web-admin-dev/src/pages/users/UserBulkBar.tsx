@@ -1,5 +1,6 @@
 import { useUsersStore } from "../../features/users/store";
 import { icons } from "@wwwuabot/shared";
+import { useDialog } from "@wwwuabot/ui/dialog";
 
 const ico = (name: keyof typeof icons) => (
   <span
@@ -10,6 +11,7 @@ const ico = (name: keyof typeof icons) => (
 );
 
 export function UserBulkBar() {
+  const dialog = useDialog();
   const { selectedIds, clearSelection, bulk } = useUsersStore();
   const count = selectedIds.size;
 
@@ -27,7 +29,11 @@ export function UserBulkBar() {
       <button
         className="wb-btn wb-btn-danger wb-btn-sm"
         onClick={() => {
-          if (confirm(`Видалити ${count} користувачів?`)) void bulk("delete");
+          void dialog
+            .confirm(`Видалити ${count} користувачів?`, { tone: "danger", confirmText: "Видалити" })
+            .then((ok) => {
+              if (ok) void bulk("delete");
+            });
         }}
       >
         {ico("trash")} Видалити

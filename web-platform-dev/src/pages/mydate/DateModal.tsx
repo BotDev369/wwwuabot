@@ -5,6 +5,7 @@
 import { useState, useMemo, useRef } from "react";
 import { Link } from "react-router-dom";
 import { icons, type IconName } from "@wwwuabot/shared";
+import { useDialog } from "@wwwuabot/ui/dialog";
 import type { MyDate } from "@/shared/api/mydate.api";
 import { type ModalMode, getTagColor, getTypeConfig, formatDate } from "./mydate-types";
 
@@ -56,6 +57,7 @@ export function DateModal({
   const [showTagSuggestions, setShowTagSuggestions] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const tagInputRef = useRef<HTMLInputElement>(null);
+  const dialog = useDialog();
 
   const tagSuggestions = useMemo(() => {
     if (!tagInput.trim()) return allTags.filter((t) => !formTags.includes(t)).slice(0, 8);
@@ -106,7 +108,13 @@ export function DateModal({
 
   const handleDelete = async () => {
     if (!date?.id) return;
-    if (!confirm("Видалити цю дату?")) return;
+    // Спільний діалог, а не `confirm`: у Telegram Mini App на iOS нативні
+    // діалоги не показуються, і видалення просто не відбувалося б.
+    const ok = await dialog.confirm("Видалити цю дату?", {
+      tone: "danger",
+      confirmText: "Видалити",
+    });
+    if (!ok) return;
     await onDelete(date.id);
   };
 

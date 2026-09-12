@@ -142,6 +142,24 @@ block({ type: "text", label: "Текст", icon: "text", category: "content",
 
 > **Емоджі в UI ЗАБОРОНЕНІ. Використовувати `<Icon />` з shared.**
 > **Дропдауни ЗАБОРОНЕНІ. Використовувати модалки на все вікно.**
+> **Нативні `alert` / `confirm` / `prompt` ЗАБОРОНЕНІ. Використовувати `useDialog()`.**
+
+Причина останнього не стилістична: у Telegram Mini App на iOS WebView не має в'юхи для
+нативних діалогів — `prompt` повертає `null`, `confirm` — `false`, `alert` не показується
+взагалі. Кнопка «Додати сторінку» й підтвердження видалення на телефоні просто нічого не
+робили, причому тихо. Спільний діалог малюється тими самими `.wb-modal-*`, тож вигляд
+однаковий в обох оболонках, і він єдиний для обох — окремих діалогів у застосунках немає.
+
+```tsx
+import { useDialog } from "@wwwuabot/ui/dialog";
+
+const dialog = useDialog();
+await dialog.alert("Щось зламалось", { tone: "danger" });
+if (!(await dialog.confirm("Видалити?", { tone: "danger", confirmText: "Видалити" }))) return;
+const name = await dialog.prompt("Назва:", { validate: (v) => (v.trim() ? null : "Порожньо") });
+```
+
+`DialogProvider` стоїть біля кореня `main.tsx` в обох оболонках — там же, де `initTheme()`.
 
 ```tsx
 import { Icon } from "@wwwuabot/shared";
@@ -173,6 +191,7 @@ import { Icon } from "@wwwuabot/shared";
 | Перевірка підпису Telegram `initData` | `packages/shared/src/security/telegram.ts` |
 | Адмінська cookie-сесія (`signSessionToken`, `hasValidSession`) | `packages/shared/src/security/session.ts` |
 | `user_id` для хендлера API | `api-dev/src/shared/identity.ts` — `resolveUserId()` (обов'язково) або `tryResolveUserId()` (для публічних) |
+| Діалоги (alert / confirm / prompt) | `packages/ui/src/dialog` — `DialogProvider` + `useDialog()` |
 | Адмін-гейт (єдина точка входу) | `api-dev/src/router.ts` — блок `pathname.startsWith("/api/admin/")` |
 
 Обидва модулі в `security/` — **чисті функції**: секрет передається аргументом, рішення

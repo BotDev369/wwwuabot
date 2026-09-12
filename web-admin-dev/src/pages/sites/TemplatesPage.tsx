@@ -8,10 +8,12 @@ import { useState, useEffect, useCallback } from "react";
 import type { Template, TemplateType } from "@wwwuabot/shared";
 import { ALL_SYSTEM_TEMPLATES } from "@wwwuabot/shared";
 import { Icon } from "@wwwuabot/shared";
+import { useDialog } from "@wwwuabot/ui/dialog";
 
 type TypeFilter = "" | "site" | "page";
 
 export function TemplatesPage() {
+  const dialog = useDialog();
   const [templates, setTemplates] = useState<Template[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -67,17 +69,21 @@ export function TemplatesPage() {
       setCreating(false);
       loadTemplates();
     } catch (e) {
-      alert(e instanceof Error ? e.message : "Помилка");
+      await dialog.alert(e instanceof Error ? e.message : "Помилка", { tone: "danger" });
       setCreating(false);
     }
   };
 
   const handleDelete = async (id: string, name: string, isSystem: boolean) => {
     if (isSystem) {
-      alert("Неможливо видалити системний шаблон");
+      await dialog.alert("Неможливо видалити системний шаблон", { tone: "danger" });
       return;
     }
-    if (!confirm(`Видалити шаблон "${name}"?`)) return;
+    const ok = await dialog.confirm(`Видалити шаблон «${name}»?`, {
+      tone: "danger",
+      confirmText: "Видалити",
+    });
+    if (!ok) return;
     try {
       const res = await fetch(`/api/admin/templates/${id}`, {
         method: "DELETE",
@@ -85,7 +91,7 @@ export function TemplatesPage() {
       if (!res.ok) throw new Error("Failed to delete template");
       loadTemplates();
     } catch (e) {
-      alert(e instanceof Error ? e.message : "Помилка");
+      await dialog.alert(e instanceof Error ? e.message : "Помилка", { tone: "danger" });
     }
   };
 

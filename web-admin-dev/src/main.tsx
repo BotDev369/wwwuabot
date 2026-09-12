@@ -1,6 +1,7 @@
 import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 import { initTheme } from "@wwwuabot/shared";
+import { DialogProvider } from "@wwwuabot/ui/dialog";
 import "./index.css";
 import "./profile.css";
 import App from "./App.tsx";
@@ -10,6 +11,9 @@ initTheme();
 
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
-    <App />
+    {/* Спільний діалог: той самий вигляд, що в TWA (@wwwuabot/ui/dialog) */}
+    <DialogProvider>
+      <App />
+    </DialogProvider>
   </StrictMode>,
 );

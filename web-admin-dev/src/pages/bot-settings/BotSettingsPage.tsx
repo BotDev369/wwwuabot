@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { PageTopbar } from "../../layout/PageTopbar";
 import { apiFetch } from "../../shared/api/client";
+import { useDialog } from "@wwwuabot/ui/dialog";
 
 interface WebhookInfo {
   url: string;
@@ -27,6 +28,7 @@ interface TelegramResponse {
 }
 
 export function BotSettingsPage() {
+  const dialog = useDialog();
   const [webhookInfo, setWebhookInfo] = useState<WebhookInfo | null>(null);
   const [botInfo, setBotInfo] = useState<BotInfo | null>(null);
   const [loading, setLoading] = useState(true);
@@ -84,7 +86,12 @@ export function BotSettingsPage() {
   };
 
   const deleteWebhook = async () => {
-    if (!confirm("Видалити вебхук? Бот перестане працювати.")) return;
+    // Спільний діалог, а не `confirm`: той самий вигляд, що в TWA
+    const ok = await dialog.confirm("Видалити вебхук? Бот перестане працювати.", {
+      tone: "danger",
+      confirmText: "Видалити",
+    });
+    if (!ok) return;
     setActionLoading(true);
     setMessage(null);
     try {

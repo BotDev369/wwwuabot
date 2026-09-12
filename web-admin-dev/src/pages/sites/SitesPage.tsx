@@ -8,10 +8,12 @@ import { useState, useEffect, useCallback } from "react";
 import type { Site } from "@wwwuabot/shared";
 import { SITE_STATUS_LABELS, SITE_STATUS_BADGE_CLASS } from "@wwwuabot/shared";
 import { Icon } from "@wwwuabot/shared";
+import { useDialog } from "@wwwuabot/ui/dialog";
 
 type StatusFilter = "" | "draft" | "pending" | "published" | "rejected";
 
 export function SitesPage() {
+  const dialog = useDialog();
   const [sites, setSites] = useState<Site[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -42,7 +44,8 @@ export function SitesPage() {
   }, [loadSites]);
 
   const handleApprove = async (slug: string) => {
-    if (!confirm(`Схвалити сайт "${slug}"?`)) return;
+    const ok = await dialog.confirm(`Схвалити сайт «${slug}»?`, { confirmText: "Схвалити" });
+    if (!ok) return;
     try {
       const res = await fetch(`/api/admin/sites/${slug}/approve`, {
         method: "POST",
@@ -50,12 +53,17 @@ export function SitesPage() {
       if (!res.ok) throw new Error("Failed to approve");
       loadSites();
     } catch (e) {
-      alert(e instanceof Error ? e.message : "Помилка");
+      await dialog.alert(e instanceof Error ? e.message : "Помилка", { tone: "danger" });
     }
   };
 
   const handleReject = async (slug: string) => {
-    const reason = prompt("Причина відхилення (необов'язково):");
+    const reason = await dialog.prompt("Причина відхилення (необов'язково):", {
+      title: "Відхилення",
+      confirmText: "Відхилити",
+      tone: "danger",
+    });
+    if (reason === null) return;
     try {
       const res = await fetch(`/api/admin/sites/${slug}/reject`, {
         method: "POST",
@@ -65,7 +73,7 @@ export function SitesPage() {
       if (!res.ok) throw new Error("Failed to reject");
       loadSites();
     } catch (e) {
-      alert(e instanceof Error ? e.message : "Помилка");
+      await dialog.alert(e instanceof Error ? e.message : "Помилка", { tone: "danger" });
     }
   };
 

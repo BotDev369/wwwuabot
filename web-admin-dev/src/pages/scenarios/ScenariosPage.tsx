@@ -12,6 +12,7 @@ import { PageTopbar } from "../../layout/PageTopbar";
 import { ScenariosV2Table } from "../scenarios-v2/ScenariosV2Table";
 import { ScenarioCardModal } from "./ScenarioCardModal";
 import { icons, type IconName } from "@wwwuabot/shared";
+import { useDialog } from "@wwwuabot/ui/dialog";
 
 const ico = (name: IconName, size = 16) => (
   <span
@@ -58,8 +59,10 @@ export function ScenariosPage() {
     [table, setTable, load],
   );
 
+  const dialog = useDialog();
+
   const handleCreate = useCallback(async () => {
-    const codeword = window.prompt("Вкажіть кодове слово:");
+    const codeword = await dialog.prompt("Вкажіть кодове слово:", { title: "Новий сценарій" });
     if (!codeword || !codeword.trim()) return;
     const cw = codeword
       .trim()
@@ -83,11 +86,11 @@ export function ScenariosPage() {
       // Open the scenario card with constructor immediately
       setOpenedCodeword(cw);
     } catch (e) {
-      alert(`Помилка створення: ${(e as Error).message}`);
+      await dialog.alert(`Помилка створення: ${(e as Error).message}`, { tone: "danger" });
     } finally {
       setCreating(false);
     }
-  }, [table]);
+  }, [dialog, table]);
 
   return (
     <>
