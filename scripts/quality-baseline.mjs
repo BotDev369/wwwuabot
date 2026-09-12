@@ -12,10 +12,9 @@ export const QUALITY_BASELINE = {
   /**
    * Логіка понад `CRITICAL_LINES` (400) — «критично» за `AGENTS.md` §3.
    * Кожен рядок — відкритий пункт плану; після поділу файл прибирається звідси.
-   */
-  oversizedFiles: {
-    "api-dev/src/services/sites.service.ts":
-      "план §3.2 — поділ на crud / pages / publish / catalog",
+   */ oversizedFiles: {
+    // `api-dev/src/services/sites.service.ts` (777) — ЗАКРИТО 12.09.2026: поділено на
+    // `services/sites/{schema,crud,pages,templates,moderation,catalog}.ts` (усі < 180).
     "web-admin-dev/src/pages/scenarios/ScenarioCardModal.tsx":
       "план §3.5 — поділ на хук + підкомпоненти",
     "packages/shared/src/components/UserProfileCard.tsx":

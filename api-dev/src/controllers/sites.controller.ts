@@ -20,9 +20,8 @@ import {
   getSitesByOwner,
   updateSite,
   deleteSite,
-  submitSiteForModeration,
-  unpublishSite,
-} from "../services/sites.service";
+} from "../services/sites/crud";
+import { submitSiteForModeration, unpublishSite } from "../services/sites/moderation";
 import { isValidSlug, generateSlug } from "@wwwuabot/shared/constants/site-defaults";
 import { resolveUserId } from "../shared/identity";
 

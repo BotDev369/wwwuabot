@@ -18,10 +18,8 @@ import {
   getAllSites,
   approveSite,
   rejectSite,
-  createTemplate,
-  getTemplateById,
-  deleteTemplate,
-} from "../services/sites.service";
+} from "../services/sites/moderation";
+import { createTemplate, getTemplateById, deleteTemplate } from "../services/sites/templates";
 import type { SiteStatus } from "@wwwuabot/shared/types/site";
 
 // ── Helpers ──────────────────────────────────────────────────

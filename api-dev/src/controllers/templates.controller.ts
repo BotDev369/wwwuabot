@@ -18,7 +18,7 @@ import {
   createTemplate,
   updateTemplate,
   deleteTemplate,
-} from "../services/sites.service";
+} from "../services/sites/templates";
 import { resolveUserId, tryResolveUserId } from "../shared/identity";
 import type { Template } from "@wwwuabot/shared/types/site";
 

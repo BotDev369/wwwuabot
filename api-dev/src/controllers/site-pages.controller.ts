@@ -12,14 +12,14 @@
  */
 
 import type { Env } from "../shared/types";
+import { getSiteBySlug } from "../services/sites/crud";
 import {
-  getSiteBySlug,
   createSitePage,
   getSitePages,
   getSitePageById,
   updateSitePage,
   deleteSitePage,
-} from "../services/sites.service";
+} from "../services/sites/pages";
 import { isValidSlug, HOME_SLUG } from "@wwwuabot/shared/constants/site-defaults";
 import { resolveUserId } from "../shared/identity";
 

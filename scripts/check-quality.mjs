@@ -176,7 +176,7 @@ if (errors.length) {
   if (debt.size || data.size) {
     console.log(
       `  У відомому боргу (scripts/quality-baseline.mjs): ${debt.size} файлів > ${CRITICAL_LINES} ` +
-        `(план §3.2 і §3.5) + ${data.size} файлів-даних, ліміт на них не діє.`,
+        `(план §3.5) + ${data.size} файлів-даних, ліміт на них не діє.`,
     );
   }
 }
