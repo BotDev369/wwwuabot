@@ -1,6 +1,12 @@
 # AGENTS.md
 
-> **Версія:** 2.3 | **Останнє оновлення:** 12.09.2026
+> **Версія:** 2.4 | **Останнє оновлення:** 12.09.2026
+>
+> **Зміна 2.4:** видалено **74 недосяжні файли (5 238 рядків, 15% коду)** — легасі-острів
+> `pages/mydate/` платформи, легасі-редактор блоків адмінки, чотири сторінки-сироти й шими
+> (перевірено графом імпортів, а не оком). Масштаб у §8 переміряно: **253 файли,
+> 29 960 рядків** (було 349 і ≈ 37 200). Додано `docs/CODE_QUALITY_AUDIT.md` —
+> оцінка за 10 критеріями з доказами; поточний бал **58%**, стеля плану ~90%.
 >
 > **Зміна 2.3:** план і журнал розділено. Актуальні числа й план робіт —
 > `docs/CONSOLIDATION_PLAN.md`; хронологія, деталі аудиту та журнал —
@@ -238,9 +244,10 @@ src/
 └── features/     Доменні модулі
 ```
 
-Відмінності: `web` — auth через TWA SDK, API через service binding; стан — у
-`src/stores/app.store.ts` (єдиний Zustand-стор). `web-admin` — auth через cookie + HMAC;
-**окремого `src/stores/` немає**: прикладні стори живуть у своїх фічах
+Відмінності: `web` — auth через TWA SDK, API через service binding. **Власного `src/stores/`
+у платформи немає**: стан живе в хуках сторінок і фіч (`pages/site-editor/use*.ts`), а
+спільний Zustand-стор — у `@wwwuabot/shared` (`useAppStore`), якщо він колись знадобиться.
+`web-admin` — auth через cookie + HMAC; прикладні стори живуть у своїх фічах
 (`features/scenarios/store`, `features/users/store`), а навігація — в
 `layout/Sidebar/adminNav.store.ts`.
 
@@ -277,14 +284,15 @@ src/
 
 ## 8. Статус проєкту
 
-- **Масштаб (виміряно 12.09.2026):** 349 файлів `.ts`/`.tsx` у `src/` шести воркспейсів, ≈37 200 рядків (разом із тестами, за `wc -l`). Найбільші: `api-dev/src/services/sites.service.ts` (777), `packages/shared/src/constants/site-templates.ts` (623), `web-admin-dev/src/pages/scenarios/ScenarioCardModal.tsx` (443), `web-platform-dev/src/pages/mydate/MyDatesPage.tsx` (437). Для довідки: CSS-файлів — 12, разом 7 254 рядки (з них `packages/shared/src/styles/` — 3 474).
+- **Масштаб (виміряно 12.09.2026, після чистки):** **253 файли `.ts`/`.tsx` у `src/` шести воркспейсів, 29 960 рядків** без тестів (було 327 і 35 198 — видалено 74 недосяжні файли). Разом із тестами — 275 файлів. Найбільші: `api-dev/src/services/sites.service.ts` (777), `packages/shared/src/constants/site-templates.ts` (623), `web-admin-dev/src/pages/scenarios/ScenarioCardModal.tsx` (443), `packages/shared/src/components/icons.tsx` (423). Понад 200 рядків — 44 файли, понад 400 — 7 (з них 3 — дані, не логіка). Для довідки: CSS-файлів — 12, разом 7 256 рядків (з них `packages/shared/src/styles/` — 3 474).
+- **Якість:** аудит за 10 критеріями (ISO/IEC 25010, CISQ, WCAG) — **58%**; сильне: типи, процес, документація; слабке: вимірюваність у CI, тести критичних шляхів, дизайн-система всередині блоків, мобільна доступність. Деталі й ціна кожного кроку — `docs/CODE_QUALITY_AUDIT.md`.
 - **Типізація:** 0 `any`, `tsc` чистий на всіх **6 воркспейсах** (4 воркери + `packages/shared` + `packages/ui`).
 - **Тести:** Vitest, **182 unit-тести у 22 файлах**. **Гейтять CI** (S-6 закрито 11.09.2026) — червоний тест блокує деплой. Покриті: `security/`, `config/`, `condition-evaluator`, `datetime`, `PageRenderer`, `PermissionGate`, роутинг і identity `api-dev`, `users.service`, `templates.controller`. Не покриті: `sites.service` (777 рядків), жодна сторінка оболонок, жоден екран бота.
 - **Форматування:** Prettier у гейті CI (`npx prettier --check .`) — код, який не відповідає стилю, не доїде до деплою.
 - **Ідентичність користувача:** єдине джерело — підписаний Telegram `initData` (`api-dev/src/shared/identity.ts`). Заборонено приймати `X-Telegram-User-Id` або `user_id` з cookie/query.
 - **Адмін-авторизація:** єдина — cookie `admin_session` (HMAC-SHA256, `packages/shared/src/security/session.ts`). Секретів у заголовках немає: `X-Admin-Secret`, `X-Bot-Token`, `/db-proxy` і легасі `/setup-webhook` видалено 11.09.2026 (`docs/CONSOLIDATION_LOG.md` §5.4).
 - **Моніторинг:** Workers Logs увімкнено в усіх 4 воркерах. `api-dev` має два ендпоїнти здоров'я: `GET /health` (liveness, без залежностей) і `GET /health/deep` (D1 + KV; **503** при деградації) — саме його має опитувати зовнішній монітор. UptimeRobot і секрет `SENTRY_DSN` задає власник акаунта. Усі воркери — дев (`ENVIRONMENT = "dev"`). Sentry під'єднано в `api-dev` і `bot-dev` — персональні дані вирізаються, без секрету `SENTRY_DSN` він у no-op; браузерні застосунки — окремий крок (`docs/CONSOLIDATION_LOG.md` §5.8).
-- **Документація:** CHANGELOG немає — історія змін живе в `git log` і в журналі `docs/CONSOLIDATION_LOG.md` (§9 — «Журнал виконаного»). Актуальний стан і план робіт — `docs/CONSOLIDATION_PLAN.md` (§0 — виміри, §3 — план). Станом на 12.09.2026 усі 8 документів звірено з кодом заново.
+- **Документація:** CHANGELOG немає — історія змін живе в `git log` і в журналі `docs/CONSOLIDATION_LOG.md` (§9 — «Журнал виконаного»). Актуальний стан і план робіт — `docs/CONSOLIDATION_PLAN.md` (§0 — виміри, §3 — план). Станом на 12.09.2026 усі 9 документів звірено з кодом; оцінка якості — `docs/CODE_QUALITY_AUDIT.md`.
 
 ---
 

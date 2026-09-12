@@ -493,10 +493,12 @@ src/features/site-builder/
   ├── PageList.tsx                  # Список сторінок (НОВЕ)
   ├── NavigationEditor.tsx          # Редактор навігації (НОВЕ)
   ├── TemplatePicker.tsx            # Вибір шаблону (НОВЕ)
-  ├── SiteSettingsPanel.tsx         # Налаштування сайту (НОВЕ)
-  ├── useSiteBuilder.ts            # Хук (НОВЕ)
-  ├── useSiteApi.ts                # API-запити (НОВЕ)
   └── types.ts                     # Локальні типи (НОВЕ)
+
+# ⚠️ 12.09.2026: `SiteBuilder.tsx`, `PageList.tsx`, `NavigationEditor.tsx`,
+# `SiteSettingsPanel.tsx`, `useSiteBuilder.ts` і `useSiteApi.ts` тут не з'явились —
+# їх замінив `pages/site-editor/*` (11 файлів). `useSiteApi.ts` був недосяжним і його
+# видалено разом із 74 мертвими файлами (`docs/CODE_QUALITY_AUDIT.md` §4.1).
 
 src/app/router.tsx                  # Додати маршрути (ОНОВИТИ)
 ```
@@ -509,11 +511,8 @@ src/pages/
   ├── SitesModerationPage.tsx       # Модерація (НОВЕ)
   └── TemplatesPage.tsx             # Шаблони (НОВЕ)
 
-src/features/moderation/
-  ├── ModerationQueue.tsx           # Черга модерації (НОВЕ)
-  ├── SiteReviewCard.tsx            # Картка для перегляду (НОВЕ)
-  ├── useModeration.ts             # Хук (НОВЕ)
-  └── types.ts                      # Локальні типи (НОВЕ)
+src/features/moderation/            # ⚠️ не існує: легасі-хук видалено 12.09.2026
+                                    # (модерація живе в `pages/sites/SitesModerationPage.tsx`)
 
 src/features/template-manager/
   ├── TemplateManager.tsx           # Менеджер шаблонів (НОВЕ)
@@ -707,15 +706,17 @@ src/app/router.tsx                  # Додати маршрути (ОНОВИ�
 - [x] `src/pages/SiteNewPage.tsx` (вибір шаблону + створення)
 - [x] `src/pages/PublicCatalogPage.tsx`
 - [x] `src/pages/SiteViewPage.tsx`
-- [x] `src/features/site-builder/useSiteApi.ts` (хук API-запитів)
 - [x] `src/features/site-builder/TemplatePicker.tsx` (візуальний вибір)
 - [x] Оновити `src/app/router.tsx`
+
+> **Звірено 12.09.2026:** `useSiteApi.ts` тут був позначений як ✅, але жоден живий файл
+> його не імпортував — його видалено. Редактор сайту — `src/pages/site-editor/` (11 файлів).
 
 ### Фаза 6: UI — web-admin ✅
 - [x] `src/pages/sites/SitesPage.tsx`
 - [x] `src/pages/sites/SitesModerationPage.tsx`
 - [x] `src/pages/sites/TemplatesPage.tsx`
-- [x] `src/features/moderation/useModeration.ts`
+- ~~`src/features/moderation/useModeration.ts`~~ — легасі, видалено 12.09.2026 (не імпортувався)
 - [x] Оновити `adminNav.store.ts` (секція Сайти)
 - [x] Оновити `src/app/router.tsx`
 

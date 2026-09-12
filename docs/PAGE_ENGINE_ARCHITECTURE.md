@@ -37,9 +37,13 @@
 - Монолітні компоненти (09.09.2026 → 12.09.2026):
   - `PageBuilderInline.tsx` — 572 → **319**
   - `ScenariosV2Table.tsx` — 533 → **292**
-  - `MyDatesPage.tsx` — 413 → **437** (зросла: додано можливості)
   - `ZoneEditor.tsx` — 360 → **225**
   - CSS мобільної навігації було описано двічі — тепер один `drawer.css`
+- **12.09.2026: старий шлях прибрано повністю.** Легасі-острів `pages/mydate/` платформи
+  (`MyDatesPage.tsx` 437, `DateModal.tsx` 285, `DateAccordionForm.tsx` 215 …) і легасі-редактор
+  блоків адмінки (`features/editor/blocks/**`) видалено — разом **74 недосяжні файли,
+  5 238 рядків**. Усе, що вони робили, тепер роблять сценарії з `page_data` і спільні
+  блоки `packages/ui`. Деталі — `docs/CODE_QUALITY_AUDIT.md` §4.1.
 - Лідер за розміром сьогодні — `api-dev/src/services/sites.service.ts` (777 рядків) та
   `packages/shared/src/constants/site-templates.ts` (623): це наступні кандидати.
 - Лишається справжнє дублювання верстки поміж оболонок — див. §4.3 крок 3 у
@@ -86,7 +90,7 @@
 │     Worker: web-platform-dev      │   │      Worker: web-admin-dev        │
 │   (Публічний / Telegram WebApp)   │   │     (Захищена панель модерації)   │
 ├───────────────────────────────────┤   ├───────────────────────────────────┤
-│ • ~25 рядків коду в DynamicPage   │   │ • ~35 рядків коду в Inspector     │
+│ • Увесь UI — зі сценаріїв (`ScenarioPage`)│   │ • Сторінки сайтів + page builder   │
 │ • Авторизація через Telegram HMAC │   │ • Cloudflare Access Zero Trust    │
 │ • Ролі: guest, user, owner        │   │ • Ролі: admin, superadmin         │
 │ • Нуль адмінського коду в JS      │   │ • Service Binding → api-dev       │
@@ -160,16 +164,16 @@ interface PageConfig {
      без втрати функцій не вийшло — редактор складається з 14 підкомпонентів);
    - `ScenariosV2Table.tsx` — 533 → **292**;
    - `ZoneEditor.tsx` — 360 → **225**;
-   - `MyDatesPage.tsx` — **437** (зросла: додано фільтри й вибір рядків; `<100` рядків
-     тут не мета — сторінка тримає власний UI поверх спільного хука `useMyDates`);
-   - `SiteEditorPage.tsx` (Sites) — 686 → **48** рядків + 11 файлів `pages/site-editor/`.
+   - `SiteEditorPage.tsx` (Sites) — 686 → **48** рядків + 11 файлів `pages/site-editor/`;
+   - `MyDatesPage.tsx` (437) — **видалена 12.09.2026**: її замінив спільний блок
+     `packages/ui/src/blocks/MyDatesTableBlock.tsx` у Page Builder.
 2. **Відповідність "Crystal Clarity Rule":**
    - Ліміт **< 200 рядків** тримають лише нові файли. Мета — не поточний факт: на 12.09.2026
-     у `src/` шістьох воркспейсів **49 файлів** понад 200 рядків, з них **8** — понад 400
+     у `src/` шістьох воркспейсів **44 файли** понад 200 рядків, з них **7** — понад 400
      (`sites.service.ts` 777, `site-templates.ts` 623, `ScenarioCardModal.tsx` 443,
-     `MyDatesPage.tsx` 437, `icons.tsx` 423, `UserProfileCard.tsx` 414, `site.types.ts` 402,
-     `UserEditModal.tsx` 401; двоє останніх — дані, а не логіка). Перелік робіт —
-     `docs/CONSOLIDATION_PLAN.md` §3.
+     `icons.tsx` 423, `UserProfileCard.tsx` 414, `site.types.ts` 402,
+     `UserEditModal.tsx` 401; три з них — дані, а не логіка). Перелік робіт —
+     `docs/CONSOLIDATION_PLAN.md` §3, ціна в балах — `docs/CODE_QUALITY_AUDIT.md` §6.
 3. **Швидкість розробки:**
    - Створення нового екрану або сценарію займає 5 хвилин без дублювання верстки.
 4. **Залізна безпека:**
