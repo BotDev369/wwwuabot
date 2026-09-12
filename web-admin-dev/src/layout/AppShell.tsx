@@ -1,8 +1,14 @@
 import { Outlet } from "react-router-dom";
+import { icons } from "@wwwuabot/shared";
 import { Sidebar } from "./Sidebar/Sidebar";
+import { useIsMobile } from "./useIsMobile";
+import { useMobileNav } from "./useMobileNav";
 import { logout } from "../shared/api/auth.api";
 
 export function AppShell() {
+  const isMobile = useIsMobile();
+  const { open, toggle, close } = useMobileNav();
+
   async function handleLogout() {
     await logout();
     window.location.reload();
@@ -10,9 +16,19 @@ export function AppShell() {
 
   return (
     <div className="app-root">
-      <Sidebar />
+      {isMobile && open && <div className="sidebar-overlay" onClick={close} />}
+      <Sidebar open={isMobile && open} onNavigate={close} />
       <div className="main-wrapper">
         <header className="main-header">
+          <button
+            type="button"
+            className="main-header-hamburger"
+            onClick={toggle}
+            aria-label={open ? "Закрити меню" : "Відкрити меню"}
+            aria-expanded={open}
+          >
+            {icons["menu"]}
+          </button>
           <span className="main-header-title">WWWUABOT Admin</span>
           <button
             type="button"

@@ -125,7 +125,17 @@
   --topbar-h: 56px;
   --nav-bar-h: 49px; /* bottom tab bar (Apple-style) */
   --tab-bar-h: 80px; /* tab bar with safe area */
-  --safe-top: env(safe-area-inset-top, 0px);
-  --safe-bottom: env(safe-area-inset-bottom, 0px);
+  /* Мобільні вставки. Telegram WebApp (Bot API 8+) віддає власні змінні
+     --tg-safe-area-inset-*; у звичайному браузері їх немає, і працює
+     env(safe-area-inset-*), але лише за наявності viewport-fit=cover. */
+  --safe-top: max(env(safe-area-inset-top, 0px), var(--tg-safe-area-inset-top, 0px));
+  --safe-bottom: max(env(safe-area-inset-bottom, 0px), var(--tg-safe-area-inset-bottom, 0px));
   --max-content: 1200px;
+
+  /* ── Мобільна навігація ────────────────────────────────────────────────────
+     Обидві оболонки (адмінка й платформа) мають ту саму мобільну навігацію:
+     бічна панель виїжджає зліва поверх контенту, контент затемнюється скримом.
+     Значення — тут, а не в кожному застосунку окремо. */
+  --drawer-w: 280px;
+  --scrim: rgba(0, 0, 0, 0.45);
 }

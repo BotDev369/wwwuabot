@@ -1,11 +1,15 @@
 import { NavLink } from "react-router-dom";
 import { useAdminNav } from "./adminNav.store";
-import { useSidebar } from "./useSidebar";
 import { icons } from "@wwwuabot/shared";
 
-export function SidebarNav() {
-  const collapsed = useSidebar((s) => s.collapsed);
-  const sections = useAdminNav((s) => s.sections);
+interface SidebarNavProps {
+  collapsed: boolean;
+  /** Клік по пункту меню: на мобільному закриває drawer. */
+  onNavigate?: () => void;
+}
+
+export function SidebarNav({ collapsed, onNavigate }: SidebarNavProps) {
+  const sections = useAdminNav((state) => state.sections);
 
   return (
     <nav className="sidebar-nav">
@@ -20,6 +24,7 @@ export function SidebarNav() {
               to={item.to}
               end={item.to === "/"}
               title={collapsed ? item.label : undefined}
+              onClick={onNavigate}
               className={({ isActive }) =>
                 `sidebar-nav-item${isActive ? " sidebar-nav-item--active" : ""}`
               }

@@ -130,8 +130,8 @@
   --topbar-h: 54px;
   --nav-bar-h: 49px;
   --tab-bar-h: 83px;
-  --safe-top: env(safe-area-inset-top, 0px);
-  --safe-bottom: env(safe-area-inset-bottom, 0px);
+  --safe-top: max(env(safe-area-inset-top, 0px), var(--tg-safe-area-inset-top, 0px));
+  --safe-bottom: max(env(safe-area-inset-bottom, 0px), var(--tg-safe-area-inset-bottom, 0px));
 
   color-scheme: light;
 }

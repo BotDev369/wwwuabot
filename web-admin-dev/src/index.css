@@ -24,6 +24,7 @@ body {
 /* ─── Splash ─────────────────────────────────────────────────────────────────── */
 .splash {
   height: 100vh;
+  height: 100dvh;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -49,6 +50,7 @@ body {
 /* ─── Login ──────────────────────────────────────────────────────────────────── */
 .login-root {
   height: 100vh;
+  height: 100dvh;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -168,6 +170,7 @@ body {
 /* ─── App layout ─────────────────────────────────────────────────────────────── */
 .app-root {
   height: 100vh;
+  height: 100dvh;
   display: flex;
   overflow: hidden;
 }
@@ -2345,4 +2348,93 @@ body {
 .scn-modal .wb-modal-footer > .wb-save-actions {
   flex: 1 1 100% !important;
   width: 100% !important;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════════
+   МОБІЛЬНА ОБОЛОНКА — бічна панель стає drawer'ом
+   Той самий патерн і ті самі токени, що в `page-zone--sidebar` у платформі
+   (--drawer-w, --scrim, --duration-slow, --ease): на мобільному обидві оболонки
+   мають однакову навігацію, різниця лише в тому, які пункти в меню.
+   ═══════════════════════════════════════════════════════════════════════════════ */
+
+.main-header-hamburger {
+  display: none;
+}
+
+@media (max-width: 768px) {
+  .sidebar {
+    position: fixed;
+    top: 0;
+    left: calc(-1 * var(--drawer-w));
+    width: var(--drawer-w);
+    min-width: var(--drawer-w);
+    height: 100vh;
+    height: 100dvh;
+    z-index: 1000;
+    transition: left var(--duration-slow) var(--ease);
+    /* safe-area: drawer стоїть у самих краях екрана */
+    padding-top: var(--safe-top);
+    padding-bottom: var(--safe-bottom);
+  }
+
+  .sidebar--open {
+    left: 0;
+    box-shadow: var(--shadow-lg);
+  }
+
+  .sidebar-overlay {
+    display: block;
+    position: fixed;
+    inset: 0;
+    z-index: 999;
+    background: var(--scrim);
+    backdrop-filter: blur(2px);
+    -webkit-backdrop-filter: blur(2px);
+  }
+
+  /* Десктопна кнопка згортання на мобільному не потрібна: drawer закривають
+     скрим, пункт меню або Escape — як у drawer'і платформи. */
+  .sidebar-toggle {
+    display: none;
+  }
+
+  .main-header {
+    height: calc(var(--topbar-h) + var(--safe-top));
+    padding-top: var(--safe-top);
+  }
+
+  /* space-between з трьома елементами центрував би заголовок */
+  .main-header-title {
+    margin-right: auto;
+  }
+
+  .main-header-hamburger {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 36px;
+    height: 36px;
+    margin-right: 4px;
+    border: none;
+    border-radius: var(--radius-sm);
+    background: none;
+    color: var(--text-secondary);
+    cursor: pointer;
+    flex-shrink: 0;
+  }
+
+  .main-header-hamburger:active {
+    background: var(--bg-4);
+    color: var(--text-primary);
+  }
+}
+
+/* ── Тач: афорданси, які на десктопі живуть на :hover ─────────────────────────
+   На екрані без hover (телефон, планшет) :hover не настає ніколи, тож
+   елементи керування, приховані до нього, стають недосяжними назовсім.
+   Найпомітніший випадок — кнопки ↑ ↓ ✕ у редакторі блоків (.block-actions). */
+@media (hover: none) {
+  .block-actions {
+    opacity: 1;
+  }
 }

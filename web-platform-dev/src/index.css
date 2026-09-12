@@ -390,6 +390,7 @@ main {
   margin-top: 16px;
   overflow: auto;
   max-height: calc(100vh - 280px);
+  max-height: calc(100dvh - 280px);
   -webkit-overflow-scrolling: touch;
 }
 
@@ -719,6 +720,7 @@ main {
 .page-layout {
   display: flex;
   min-height: 100vh;
+  min-height: 100dvh;
   width: 100%;
 }
 
@@ -754,6 +756,7 @@ main {
 
 .page-zone--footer {
   padding: 16px 24px;
+  padding-bottom: calc(16px + var(--safe-bottom));
   border-top: 1px solid var(--border);
   background: var(--bg-2);
   font-size: 13px;
@@ -851,7 +854,7 @@ main {
   .page-hamburger--floating {
     display: inline-flex;
     position: fixed;
-    top: 12px;
+    top: calc(12px + var(--safe-top));
     left: 12px;
     z-index: 998;
     background: var(--bg-1, var(--bg-home, #f0f2f5));
@@ -885,7 +888,7 @@ main {
     position: fixed;
     inset: 0;
     z-index: 999;
-    background: rgba(0, 0, 0, 0.45);
+    background: var(--scrim);
     backdrop-filter: blur(2px);
     -webkit-backdrop-filter: blur(2px);
   }
@@ -893,15 +896,17 @@ main {
   .page-zone--sidebar {
     position: fixed;
     top: 0;
-    left: -280px;
-    width: 280px;
+    left: calc(-1 * var(--drawer-w));
+    width: var(--drawer-w);
     height: 100vh;
+    height: 100dvh;
     z-index: 1000;
     background: var(--bg-1);
     border-right: 1px solid var(--border);
     overflow-y: auto;
-    transition: left 0.25s cubic-bezier(0.4, 0, 0.2, 1);
-    padding: 16px;
+    transition: left var(--duration-slow) var(--ease);
+    /* safe-area: drawer стоїть у самих краях екрана, під вирізом і смужкою */
+    padding: calc(16px + var(--safe-top)) 16px calc(16px + var(--safe-bottom));
   }
 
   .page-zone--sidebar.page-zone--sidebar--open {
@@ -926,7 +931,8 @@ main {
    ═══════════════════════════════════════════════════════════════════════════════ */
 @media (max-width: 768px) {
   main {
-    padding: 24px 16px;
+    /* + safe-area: останній рядок контенту не має ховатися під індикатором дому */
+    padding: 24px 16px calc(24px + var(--safe-bottom));
   }
 
   .hero {
@@ -1008,7 +1014,7 @@ main {
 
   /* Footer */
   footer {
-    padding: 16px 12px;
+    padding: 16px 12px calc(16px + var(--safe-bottom));
     font-size: 12px;
   }
 

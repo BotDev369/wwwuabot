@@ -1,11 +1,19 @@
+import { useCollapsedNav } from "./useCollapsedNav";
 import { useSidebar } from "./useSidebar";
 import { SidebarNav } from "./SidebarNav";
 import { logout } from "../../shared/api/auth.api";
 import { ThemeButton } from "@wwwuabot/shared";
 
-export function Sidebar() {
-  const collapsed = useSidebar((s) => s.collapsed);
-  const toggle = useSidebar((s) => s.toggle);
+interface SidebarProps {
+  /** Drawer відкрито — тільки на мобільному (`useIsMobile` у AppShell). */
+  open?: boolean;
+  /** Клік по пункту меню: на мобільному закриває drawer. */
+  onNavigate?: () => void;
+}
+
+export function Sidebar({ open = false, onNavigate }: SidebarProps) {
+  const collapsed = useCollapsedNav();
+  const toggle = useSidebar((state) => state.toggle);
 
   async function handleLogout() {
     await logout();
@@ -13,7 +21,9 @@ export function Sidebar() {
   }
 
   return (
-    <aside className={`sidebar${collapsed ? " sidebar--collapsed" : ""}`}>
+    <aside
+      className={`sidebar${collapsed ? " sidebar--collapsed" : ""}${open ? " sidebar--open" : ""}`}
+    >
       <div className="sidebar-header">
         {!collapsed && (
           <>
@@ -49,7 +59,7 @@ export function Sidebar() {
         <ThemeButton compact={collapsed} />
       </div>
 
-      <SidebarNav />
+      <SidebarNav collapsed={collapsed} onNavigate={onNavigate} />
 
       <div className="sidebar-footer">
         <button type="button" className="logout-btn" onClick={handleLogout} title="Вийти">
