@@ -31,7 +31,7 @@ import { botDomainBlocks } from "./bot-domain";
 import { analyticsBlocks } from "./analytics";
 import { rawBlocks } from "./raw";
 
-// ── Повний реєстр блоків — 29 типів, 9 категорій ──────────────────
+// ── Повний реєстр блоків — 40 типів, 9 категорій (переміряно 12.09.2026) ──
 export const BLOCK_DEFINITIONS: BlockDefinition[] = [
   ...contentBlocks,
   ...layoutBlocks,

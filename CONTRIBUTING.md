@@ -67,6 +67,7 @@ npm run format:check # Prettier — теж гейт CI
 11. **Нативні `alert` / `confirm` / `prompt` заборонені** — у Telegram Mini App на iOS вони не працюють. Використовуй `useDialog()` з `@wwwuabot/ui/dialog` (`AGENTS.md` §4).
 12. **Спільний код => спільний CSS.** Якщо клас рендерить `packages/ui`, його стилі живуть у `packages/shared/src/styles/`, а не в `index.css` однієї з оболонок — інакше в другій оболонці він буде без стилів.
 13. **Мобільний — перший.** Перевіряй на 360px до десктопа: резинова верстка, `100dvh`, `var(--safe-*)`, тап-таргети ≥44px, афорданси без `:hover` (`AGENTS.md` §3).
+14. **Клас без правила — це помилка, а не стиль.** Якщо клас потрібен у розмітці — спочатку додай правило в `packages/shared/src/styles/components.css`. `class="wb-mt-3"` без `.wb-mt-3` не ламає ні збірку, ні тести: відступ просто не з'явиться (так знайдено 44 класи `wb-block-*` без стилів).
 
 ---
 
@@ -119,7 +120,8 @@ npm run format:check # Prettier — теж гейт CI
 | `CONTRIBUTING.md` | Розробники: процес, quality gates, конвенції |
 | `docs/DESIGN_SYSTEM.md` | UI: токени, компоненти, `<Icon />` |
 | `docs/PAGE_ENGINE_ARCHITECTURE.md` | Архітектурне рішення: Page Engine, межі воркерів |
-| `docs/CONSOLIDATION_PLAN.md` | Рефакторинг-план: актуальний план (§9), журнал (§10), ризики (§5) |
+| `docs/CONSOLIDATION_PLAN.md` | Поточний стан (§0), правила (§1), план робіт (§3), відкриті рішення (§4) |
+| `docs/CONSOLIDATION_LOG.md` | Хронологія й деталі закритих робіт (§1–§5) + журнал (§9) |
 | `docs/SITES_SPEC.md` | Специфікація конструктора сайтів |
 | `docs/MONITORING.md` | Моніторинг: health, UptimeRobot, Sentry |
 | `README.md` | Загальний опис + швидкий старт |

@@ -6,7 +6,7 @@ import { canReadTemplate } from "./templates.controller";
  *
  * Регресія: `GET /api/templates/:id` довгий час не перевіряв власника
  * взагалі — конфігурацію чужого шаблону можна було прочитати за UUID.
- * Див. docs/CONSOLIDATION_PLAN.md §5.4.
+ * Див. docs/CONSOLIDATION_LOG.md §5.4.
  */
 describe("canReadTemplate", () => {
   it("системний шаблон читає будь-хто, навіть без ідентичності", () => {

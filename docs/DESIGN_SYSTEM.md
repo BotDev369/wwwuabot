@@ -221,9 +221,9 @@ import { Icon } from "@wwwuabot/shared";
     never appears, and no test catches it. Before adding a class to markup, add it to
     `components.css` — or use one that already exists.
 12. Shared blocks (`packages/ui/src/blocks/*`) are still styled with inline
-    `style={{ … }}` (192 objects, 30 hardcoded hex values), so `data-brand` and
-    `data-theme` don't reach them. Moving those styles into `.wb-block-*` rules in
-    `components.css` is open work — `docs/CONSOLIDATION_PLAN.md` §6.
+    `style={{ … }}` (192 objects, 30 hardcoded hex values), and **44 `wb-block-*`
+    classes have no CSS rule at all**, so `data-brand` and `data-theme` don't reach them. Moving those styles into `.wb-block-*` rules in
+    `components.css` is open work — `docs/CONSOLIDATION_PLAN.md` §3 (пункт 3).
 
 ---
 

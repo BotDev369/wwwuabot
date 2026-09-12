@@ -11,15 +11,16 @@
 |---|---|
 | Таблиці `sites`, `site_pages`, `templates` | ✅ є, створюються `ensureSitesTables()` |
 | Таблиця `scenarios-portal` | ❌ **не існує** — портал працює з `scenarios`, адмінка з `scenarios-admin` |
-| 7 ендпоїнтів `/api/sites*` | ✅ 21 маршрут у `api-dev/src/router.ts` (CRUD, pages, publish, catalog, admin) |
+| 7 ендпоїнтів `/api/sites*` | ✅ **25** маршрутів у `api-dev/src/router.ts` — 12 сайтів, 5 шаблонів, 2 каталог, 6 адмін-модерація (переміряно 12.09.2026) |
 | Роути `/sites`, `/sites/new`, `/sites/:slug`, `/catalog`, `/view/:slug` | ✅ усі в `web-platform-dev/src/app/router.tsx` |
 | Роути адмінки | ⚠️ `/sites/pending` **немає** — черга на `/sites/moderation`; `/sites/:slug` (перегляд) не реалізовано |
 | Редагування сторінки через PageBuilder у TWA | ❌ **заглушка** (`PageBuilderPlaceholder`); повний редактор — в адмінці (`/page-builder/:codeword`) |
-| Вбудовані шаблони (4 site + 4 page) | ✅ `blank`, `portfolio`, `blog`, `business`, `landing`, `business-card`, `event` |
+| Вбудовані шаблони (4 site + 4 page) | ✅ site: `blank-site`, `portfolio`, `blog`, `business`; page: `blank-page`, `landing-page`, `business-card`, `event-page` (`packages/shared/src/constants/site-templates.ts`) |
 | Unit-тести сервісів і UI `sites` | ❌ немає: жоден файл не покриває `sites.service.ts` (777 рядків), `SiteRenderer` чи сторінки-оболонки |
 | Typecheck / Lint / Prettier / 182 тести | ✅ гейти CI зелені |
 
-Куди дивитись по деталі: `docs/CONSOLIDATION_PLAN.md` §9 (актуальний план робіт).
+Куди дивитись по деталі: `docs/CONSOLIDATION_PLAN.md` §3 (актуальний план робіт) і
+`docs/CONSOLIDATION_LOG.md` §4 (як робився крок 1–2 «одного дизайну»).
 
 ---
 
@@ -671,7 +672,7 @@ src/app/router.tsx                  # Додати маршрути (ОНОВИ�
 - Сторінки-оболонки (`MySitesPage`, `SiteEditorPage`, `SitesPage`, `SitesModerationPage`).
 - Workflow публікації як послідовність (draft → pending → published → rejected).
 
-Це пункт 1 у плані робіт: `docs/CONSOLIDATION_PLAN.md` §9.
+Це пункт 1 у плані робіт: `docs/CONSOLIDATION_PLAN.md` §3.
 
 ---
 

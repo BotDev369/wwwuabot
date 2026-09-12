@@ -11,7 +11,7 @@ Cloudflare Worker: єдиний REST API для wwwuabot (D1 + KV).
 
 `ADMIN_SECRET` — пароль входу в адмінку й ключ підпису cookie `admin_session`.
 Усі адмін-маршрути (`/api/admin/*`, `/api/portal/*`, `/api/bot/*`) авторизуються
-виключно цією cookie — секретів у заголовках немає (`docs/CONSOLIDATION_PLAN.md` §5.4).
+виключно цією cookie — секретів у заголовках немає (`docs/CONSOLIDATION_LOG.md` §5.4).
 
 Ідентичність користувача береться **тільки** з підписаного Telegram `initData`
 (`src/shared/identity.ts`): `resolveUserId()` — обовʼязкова, `tryResolveUserId()` — для
@@ -32,7 +32,7 @@ Cloudflare Worker: єдиний REST API для wwwuabot (D1 + KV).
 Зовнішній монітор мусить опитувати саме `/health/deep` — він падає, коли лежить
 база, а `/health` на цю роль не годиться (давав би «все добре» при мертвій D1).
 Тексти помилок назовні не віддаються, лише `checks: { db, kv }`
-(`docs/CONSOLIDATION_PLAN.md` §5.8).
+(`docs/CONSOLIDATION_LOG.md` §5.8).
 
 ---
 

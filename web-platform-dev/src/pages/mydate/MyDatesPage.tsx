@@ -3,7 +3,7 @@
  *
  * Логіка живе в єдиному спільному хуку `useMyDates` з `@wwwuabot/ui` — тому
  * фікс робиться один раз і для сторінки, і для Page Builder-блока
- * (docs/CONSOLIDATION_PLAN.md §3.3). Компоненти локальні: DateModal,
+ * (docs/CONSOLIDATION_LOG.md §3.3). Компоненти локальні: DateModal,
  * DateAccordionForm, HeaderContextMenu, RowActionMenu.
  */
 

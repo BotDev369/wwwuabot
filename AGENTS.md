@@ -1,10 +1,16 @@
 # AGENTS.md
 
-> **Версія:** 2.2 | **Останнє оновлення:** 12.09.2026
+> **Версія:** 2.3 | **Останнє оновлення:** 12.09.2026
 >
-> **Зміна 2.2:** §7 отримав правило «клас без правила — це помилка» (знайдено 107 таких
-> класів у `packages/ui`; деталі — `docs/CONSOLIDATION_PLAN.md` §4.5). Виправлено хибне
-> посилання на «§10» у §8 — журнал плану це §9.
+> **Зміна 2.3:** план і журнал розділено. Актуальні числа й план робіт —
+> `docs/CONSOLIDATION_PLAN.md`; хронологія, деталі аудиту та журнал —
+> `docs/CONSOLIDATION_LOG.md` (нумерація §1–§5, §7–§9 збережена — на неї є посилання
+> з коду). У §7 виправлено число: класів `wb-block-*` без правил не 107, а 44
+> (переміряно 12.09.2026).
+>
+> **Зміна 2.2:** §7 отримав правило «клас без правила — це помилка» (деталі —
+> `docs/CONSOLIDATION_LOG.md` §4.5). Виправлено хибне посилання на «§10» у §8 —
+> журнал плану це §9.
 >
 > **Зміна 2.1:** прибрано неіснуючий «Family Box» з §2 (перевірено пошуком по всьому
 > репозиторію — ані файлу, ані згадок), уточнено реальні шляхи в §5, §8 переписано
@@ -82,7 +88,8 @@ packages/ui/      Спільні React-компоненти Page Builder (@wwwua
 | Роутер, `worker.ts`, `wrangler.toml` | ❌ | окремо |
 
 **Ключове:** перевірка — спільна; реакція на провал — своя (TWA показує «відкрийте
-в Telegram», адмінка — `LoginScreen`). Повний план і журнал — `docs/CONSOLIDATION_PLAN.md`.
+в Telegram», адмінка — `LoginScreen`). План робіт — `docs/CONSOLIDATION_PLAN.md`, деталі й
+журнал — `docs/CONSOLIDATION_LOG.md`.
 
 ### Єдиний дизайн і мобільний пріоритет (встановлено 12.09.2026)
 
@@ -270,14 +277,14 @@ src/
 
 ## 8. Статус проєкту
 
-- **Масштаб (виміряно 12.09.2026):** 350 файлів `.ts`/`.tsx` у `src/` шести воркспейсів, ≈37 300 рядків. Найбільші: `api-dev/src/services/sites.service.ts` (777), `packages/shared/src/constants/site-templates.ts` (623), `web-admin-dev/src/pages/scenarios/ScenarioCardModal.tsx` (443), `web-platform-dev/src/pages/mydate/MyDatesPage.tsx` (437).
+- **Масштаб (виміряно 12.09.2026):** 349 файлів `.ts`/`.tsx` у `src/` шести воркспейсів, ≈37 200 рядків (разом із тестами, за `wc -l`). Найбільші: `api-dev/src/services/sites.service.ts` (777), `packages/shared/src/constants/site-templates.ts` (623), `web-admin-dev/src/pages/scenarios/ScenarioCardModal.tsx` (443), `web-platform-dev/src/pages/mydate/MyDatesPage.tsx` (437). Для довідки: CSS-файлів — 12, разом 7 254 рядки (з них `packages/shared/src/styles/` — 3 474).
 - **Типізація:** 0 `any`, `tsc` чистий на всіх **6 воркспейсах** (4 воркери + `packages/shared` + `packages/ui`).
 - **Тести:** Vitest, **182 unit-тести у 22 файлах**. **Гейтять CI** (S-6 закрито 11.09.2026) — червоний тест блокує деплой. Покриті: `security/`, `config/`, `condition-evaluator`, `datetime`, `PageRenderer`, `PermissionGate`, роутинг і identity `api-dev`, `users.service`, `templates.controller`. Не покриті: `sites.service` (777 рядків), жодна сторінка оболонок, жоден екран бота.
 - **Форматування:** Prettier у гейті CI (`npx prettier --check .`) — код, який не відповідає стилю, не доїде до деплою.
 - **Ідентичність користувача:** єдине джерело — підписаний Telegram `initData` (`api-dev/src/shared/identity.ts`). Заборонено приймати `X-Telegram-User-Id` або `user_id` з cookie/query.
-- **Адмін-авторизація:** єдина — cookie `admin_session` (HMAC-SHA256, `packages/shared/src/security/session.ts`). Секретів у заголовках немає: `X-Admin-Secret`, `X-Bot-Token`, `/db-proxy` і легасі `/setup-webhook` видалено 11.09.2026 (`docs/CONSOLIDATION_PLAN.md` §5.4).
-- **Моніторинг:** Workers Logs увімкнено в усіх 4 воркерах. `api-dev` має два ендпоїнти здоров'я: `GET /health` (liveness, без залежностей) і `GET /health/deep` (D1 + KV; **503** при деградації) — саме його має опитувати зовнішній монітор. UptimeRobot і секрет `SENTRY_DSN` задає власник акаунта. Усі воркери — дев (`ENVIRONMENT = "dev"`). Sentry під'єднано в `api-dev` і `bot-dev` — персональні дані вирізаються, без секрету `SENTRY_DSN` він у no-op; браузерні застосунки — окремий крок (`docs/CONSOLIDATION_PLAN.md` §5.8).
-- **Документація:** CHANGELOG немає — історія змін живе в `git log` і в журналі `docs/CONSOLIDATION_PLAN.md` **§9**. Станом на 12.09.2026 усі документи звірено з кодом (§4.5 і §6 того ж файлу — останні звірені розділи).
+- **Адмін-авторизація:** єдина — cookie `admin_session` (HMAC-SHA256, `packages/shared/src/security/session.ts`). Секретів у заголовках немає: `X-Admin-Secret`, `X-Bot-Token`, `/db-proxy` і легасі `/setup-webhook` видалено 11.09.2026 (`docs/CONSOLIDATION_LOG.md` §5.4).
+- **Моніторинг:** Workers Logs увімкнено в усіх 4 воркерах. `api-dev` має два ендпоїнти здоров'я: `GET /health` (liveness, без залежностей) і `GET /health/deep` (D1 + KV; **503** при деградації) — саме його має опитувати зовнішній монітор. UptimeRobot і секрет `SENTRY_DSN` задає власник акаунта. Усі воркери — дев (`ENVIRONMENT = "dev"`). Sentry під'єднано в `api-dev` і `bot-dev` — персональні дані вирізаються, без секрету `SENTRY_DSN` він у no-op; браузерні застосунки — окремий крок (`docs/CONSOLIDATION_LOG.md` §5.8).
+- **Документація:** CHANGELOG немає — історія змін живе в `git log` і в журналі `docs/CONSOLIDATION_LOG.md` (§9 — «Журнал виконаного»). Актуальний стан і план робіт — `docs/CONSOLIDATION_PLAN.md` (§0 — виміри, §3 — план). Станом на 12.09.2026 усі 8 документів звірено з кодом заново.
 
 ---
 

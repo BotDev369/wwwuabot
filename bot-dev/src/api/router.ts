@@ -5,7 +5,7 @@ import type { Env } from "../shared/types/env";
  * Bot HTTP router — only the Telegram webhook endpoint.
  *
  * Усі адмін-ендпоїнти живуть в `api-dev` за cookie-сесією
- * (`/api/bot/*`) — див. docs/CONSOLIDATION_PLAN.md §5.4.
+ * (`/api/bot/*`) — див. docs/CONSOLIDATION_LOG.md §5.4.
  */
 export async function handleRequest(
   request: Request,

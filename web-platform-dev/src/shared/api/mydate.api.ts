@@ -4,7 +4,7 @@
  * Ідентичність бере api-dev із підписаного Telegram `initData`, який додає
  * `apiFetchRaw`. Раніше тут передавався голий `X-Telegram-User-Id`, і сервер
  * його приймав — тобто будь-хто міг читати чужі дати (див.
- * docs/CONSOLIDATION_PLAN.md §5.3в).
+ * docs/CONSOLIDATION_LOG.md §5.3в).
  *
  * @module web-platform-dev/src/shared/api/mydate.api
  */

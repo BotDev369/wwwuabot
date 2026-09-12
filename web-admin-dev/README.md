@@ -4,7 +4,7 @@ Cloudflare Worker: адмін-панель wwwuabot (React 19 + Vite 8 + Page Bu
 
 ## Налаштування
 
-- **D1:** немає (прямий біндинг прибрано 11.09.2026, див. `docs/CONSOLIDATION_PLAN.md` §5.2)
+- **D1:** немає (прямий біндинг прибрано 11.09.2026, див. `docs/CONSOLIDATION_LOG.md` §5.2)
 - **Service binding:** `API` → `api-dev`
 - **Секрети:** `ADMIN_SECRET` — пароль входу і ключ підпису cookie `admin_session`
 - **Середовище:** `ENVIRONMENT = "dev"` — задеплоєний лише дев-воркер, прода немає

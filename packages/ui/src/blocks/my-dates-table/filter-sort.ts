@@ -3,7 +3,7 @@
  *
  * Тут немає жодного стану й жодного React — тільки перетворення масиву дат.
  * Виділено з хука, щоб його можна було тестувати без рендера
- * (docs/CONSOLIDATION_PLAN.md §3.3).
+ * (docs/CONSOLIDATION_LOG.md §3.3).
  *
  * @module packages/ui/src/blocks/my-dates-table/filter-sort
  */

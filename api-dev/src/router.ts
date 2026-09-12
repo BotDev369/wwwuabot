@@ -115,7 +115,7 @@ export async function handleRequest(request: Request, env: Env): Promise<Respons
   //
   // Це ЄДИНИЙ спосіб авторизувати адмін-дію. Секрети в заголовках
   // (X-Admin-Secret, X-Bot-Token) видалені — див.
-  // docs/CONSOLIDATION_PLAN.md §5.4.
+  // docs/CONSOLIDATION_LOG.md §5.4.
   if (ADMIN_PATH_PREFIXES.some((prefix) => pathname.startsWith(prefix))) {
     const authed = await isAuthenticated(request, env);
     if (!authed) {
