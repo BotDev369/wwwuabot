@@ -42,7 +42,7 @@
     "zustand": ">=5.0.0"
   },
   "devDependencies": {
-    "@cloudflare/workers-types": "^5.20260825.1",
+    "@cloudflare/workers-types": "^5.20260908.1",
     "@types/node": "^24.13.4",
     "@types/react": "^19.0.0",
     "react": "^19.0.0",
