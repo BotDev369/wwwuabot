@@ -111,7 +111,7 @@ export function DynamicPage({ baseCodeword }: DynamicPageProps = {}) {
           });
           setStatus("ready");
         }
-      } catch (e) {
+      } catch {
         if (!cancelled) {
           setStatus("error");
         }
@@ -150,7 +150,7 @@ export function DynamicPage({ baseCodeword }: DynamicPageProps = {}) {
       user: userProfile ?? undefined,
       isOwner: userProfile?.role === "owner" || userProfile?.role === "admin",
     }),
-    [scenario, requestedCodeword, userProfile],
+    [scenario, codeword, userProfile],
   );
 
   // Стани

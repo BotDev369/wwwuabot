@@ -44,6 +44,7 @@ export function TemplatesPage() {
   }, [typeFilter]);
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- async data-fetching: setState in loadTemplates()
     loadTemplates();
   }, [loadTemplates]);
 

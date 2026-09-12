@@ -48,6 +48,7 @@ export function UserEditModal({ userId, onClose, onSaved }: Props) {
 
   useEffect(() => {
     let cancelled = false;
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- async data-fetching: setState in readUser().then/.catch
     setLoading(true);
     readUser(userId)
       .then((data) => {

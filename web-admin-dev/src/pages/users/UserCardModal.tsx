@@ -76,6 +76,7 @@ export function UserCardModal({ userId, onClose, onEdit, onMessage }: Props) {
 
   useEffect(() => {
     let cancelled = false;
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- async data-fetching: setState in readUser().then/.catch
     setLoading(true);
     setError(null);
     readUser(userId)

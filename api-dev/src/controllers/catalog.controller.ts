@@ -11,7 +11,7 @@
  */
 
 import type { Env } from "../shared/types";
-import { getCatalogSites, getCatalogSiteBySlug, getSitePages } from "../services/sites.service";
+import { getCatalogSites, getCatalogSiteBySlug } from "../services/sites.service";
 
 // ── Helpers ──────────────────────────────────────────────────
 

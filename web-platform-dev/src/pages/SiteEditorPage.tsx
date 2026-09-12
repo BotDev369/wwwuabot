@@ -4,7 +4,7 @@
  * @module web-platform-dev/src/pages/SiteEditorPage
  */
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useMemo } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import type { Site, SitePage, NavigationItem } from "@wwwuabot/shared/types/site";
 import {
@@ -594,19 +594,13 @@ function PageBuilderPlaceholder({
   onSaved: () => void;
 }) {
   const page = pages.find((p) => p.slug === pageSlug);
-  const [blockCount, setBlockCount] = useState(0);
-
-  useEffect(() => {
-    if (!page) return;
-    // Count blocks across all zones
-    const pd = page.pageData;
-    if (pd?.zones) {
-      const count = Object.values(pd.zones).reduce(
-        (sum, zone) => sum + (Array.isArray(zone) ? zone.length : 0),
-        0,
-      );
-      setBlockCount(count);
-    }
+  const blockCount = useMemo(() => {
+    const pd = page?.pageData;
+    if (!pd?.zones) return 0;
+    return Object.values(pd.zones).reduce(
+      (sum, zone) => sum + (Array.isArray(zone) ? zone.length : 0),
+      0,
+    );
   }, [page]);
 
   if (!page) {

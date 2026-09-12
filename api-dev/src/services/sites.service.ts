@@ -20,17 +20,12 @@ import type {
   SitePageRow,
   TemplateRow,
   SiteStatus,
-  PageStatus,
   SiteSettings,
   PageMeta,
   CatalogSite,
 } from "@wwwuabot/shared/types/site";
 import { toSite, toSitePage, toTemplate } from "@wwwuabot/shared/types/site";
-import {
-  HOME_SLUG,
-  DEFAULT_SITE_SETTINGS,
-  DEFAULT_HOMENavItem,
-} from "@wwwuabot/shared/constants/site-defaults";
+import { DEFAULT_SITE_SETTINGS } from "@wwwuabot/shared/constants/site-defaults";
 
 // ── Table Creation ───────────────────────────────────────────
 

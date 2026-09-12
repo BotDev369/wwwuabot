@@ -22,7 +22,6 @@ import {
   deleteSite,
   submitSiteForModeration,
   unpublishSite,
-  ensureSitesTables,
 } from "../services/sites.service";
 import { isValidSlug, generateSlug } from "@wwwuabot/shared/constants/site-defaults";
 import { resolveUserId } from "../shared/identity";

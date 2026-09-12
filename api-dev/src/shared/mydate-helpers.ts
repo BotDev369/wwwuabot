@@ -1,6 +1,5 @@
 import { SIGN_ORDER, SIGN_CUTOFFS, SIGN_META, DEFAULT_MYDATE_SYSTEMS } from "./constants";
 import type { Env } from "./types";
-import { apiLog } from "./logger";
 
 export interface MyDateSystem {
   id: string;

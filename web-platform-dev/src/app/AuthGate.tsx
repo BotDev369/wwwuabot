@@ -1,4 +1,4 @@
-import { type ReactNode, useState, useEffect } from "react";
+import { type ReactNode } from "react";
 import { Icon } from "@wwwuabot/shared";
 
 const BOT_USERNAME = "botdev_test_001_bot";
@@ -23,21 +23,9 @@ function hasTelegramSession(): boolean {
 }
 
 export function AuthGate({ children }: AuthGateProps) {
-  const [authorized, setAuthorized] = useState<boolean | null>(null);
-
-  useEffect(() => {
-    setAuthorized(hasTelegramSession());
-  }, []);
-
-  if (authorized === null) {
-    return (
-      <div className="flex items-center justify-center h-screen flex-col gap-4 p-6 text-center">
-        <p>Завантаження...</p>
-      </div>
-    );
-  }
-
-  if (!authorized) {
+  // Перевірка синхронна й без стану: `initData` доступний одразу після
+  // завантаження SDK, тож проміжного екрана «Завантаження...» не потрібно.
+  if (!hasTelegramSession()) {
     return (
       <div className="flex items-center justify-center h-screen flex-col gap-4 p-6 text-center">
         <h2>WWWUABot</h2>

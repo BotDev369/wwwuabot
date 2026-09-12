@@ -10,7 +10,7 @@ import type { Env } from "../shared/types/env";
 export async function handleRequest(
   request: Request,
   env: Env,
-  ctx: ExecutionContext,
+  _ctx: ExecutionContext,
 ): Promise<Response> {
   const url = new URL(request.url);
 

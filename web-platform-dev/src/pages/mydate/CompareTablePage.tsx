@@ -35,6 +35,7 @@ export function CompareTablePage() {
   useEffect(() => {
     setScenarioName("MyDate");
     if (dates.length === 0) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- sync setState: early return path
       setLoading(false);
       return;
     }

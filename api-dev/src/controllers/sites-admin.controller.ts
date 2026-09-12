@@ -18,11 +18,9 @@ import {
   getAllSites,
   approveSite,
   rejectSite,
-  getSiteBySlug,
   createTemplate,
   getTemplateById,
   deleteTemplate,
-  ensureSitesTables,
 } from "../services/sites.service";
 import type { SiteStatus } from "@wwwuabot/shared/types/site";
 

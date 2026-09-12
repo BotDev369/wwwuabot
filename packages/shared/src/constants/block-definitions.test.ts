@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { BLOCK_DEFINITIONS, getBlockDefinition, getBlocksForZone } from "./block-definitions";
+import { getBlockDefinition, getBlocksForZone } from "./block-definitions";
 import { ALL_ZONES } from "../types/page-config";
 
 describe("Page Builder New Blocks", () => {

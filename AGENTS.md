@@ -192,7 +192,7 @@ src/
 - **ESLint + Prettier** у всіх 4 сервісах. Команди: `npm run lint`, `npm run typecheck`.
 - **Логування:** `bot-dev/` — модуль `modules/logging/` (Queue). `api-dev/` — `apiLog` з префіксом `[api]`. Не використовувати `console.log` у продакшн-коді.
 - **Дата/час у D1:** `formatSqliteDatetime()` з `packages/shared/src/utils/datetime.ts`.
-- **CI/CD:** GitHub Actions + path filtering. Перед деплоєм в одній джобі `checks` виконуються `npm ci`, `npm audit --audit-level=critical`, `npm run lint`, `npm run typecheck`, `npm test` — будь-який збій блокує деплой усіх воркерів. Деплої воркерів стоять у черзі (`concurrency`), щоб старіший коміт не ліг поверх новішого. `pull_request` запускає лише гейти — деплой з PR неможливий. `GITHUB_TOKEN` має `contents: read`. Dependabot увімкнений.
+- **CI/CD:** GitHub Actions + path filtering. Перед деплоєм в одній джобі `checks` виконуються `npm ci`, `npm audit --audit-level=critical`, `npm run lint`, `npm run typecheck`, `npm run format:check`, `npm test` — будь-який збій блокує деплой усіх воркерів. Деплої воркерів стоять у черзі (`concurrency`), щоб старіший коміт не ліг поверх новішого. `pull_request` запускає лише гейти — деплой з PR неможливий. `GITHUB_TOKEN` має `contents: read`. Dependabot увімкнений.
 
 ---
 

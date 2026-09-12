@@ -61,6 +61,7 @@ export function ProfilePage() {
         })
         .finally(() => setLoading(false));
     } else {
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- sync setState is intentional: no-fetch path initializes profile synchronously
       setProfile(baseProfile);
       setLoading(false);
     }
