@@ -58,12 +58,8 @@ npm run dev --workspace=web-admin-dev    # Адмін-панель
 
 - [AGENTS.md](AGENTS.md) — архітектура, доменні терміни, правила для AI-агентів
 - [CONTRIBUTING.md](CONTRIBUTING.md) — правила розробки, quality gates, конвенції
-- [docs/DESIGN_SYSTEM.md](docs/DESIGN_SYSTEM.md) — CSS-токени, компоненти, `<Icon />`
-- [docs/PAGE_ENGINE_ARCHITECTURE.md](docs/PAGE_ENGINE_ARCHITECTURE.md) — архітектурне рішення: єдиний Page Engine & безпека воркерів
-- [docs/CONSOLIDATION_PLAN.md](docs/CONSOLIDATION_PLAN.md) — поточний стан, виміряні числа, план робіт (§3)
-- [docs/CONSOLIDATION_LOG.md](docs/CONSOLIDATION_LOG.md) — хронологія: деталі закритих робіт, аудит ризиків (§5), журнал виконаного (§9)
-- [docs/SITES_SPEC.md](docs/SITES_SPEC.md) — специфікація конструктора сайтів: D1, API, роути, чек-ліст фаз
-- [docs/MONITORING.md](docs/MONITORING.md) — health-ендпоїнти, UptimeRobot, Sentry, що робити при падінні
+- **[docs/README.md](docs/README.md)** — **покажчик усієї документації**: один документ = одна тема = один власник факту, + таблиця «куди писати нове»
+- [docs/CONSOLIDATION_PLAN.md](docs/CONSOLIDATION_PLAN.md) — поточний стан і виміряні числа (§0), план робіт (§3)
 
 ---
 
