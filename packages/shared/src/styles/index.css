@@ -53,6 +53,12 @@
 @import "./reset.css";
 @import "./components.css";
 
-/* ── Каркас сторінок спільного PageRenderer (page-layout/page-zone/drawer) ──
+/* ── Мобільна навігація: гамбургер + виїзний drawer (обидві оболонки) ──
+   Імпортується ПЕРЕД каркасом сторінок: `page-layout.css` перекриває
+   видимість гамбургера (`.page-hamburger` — прихований на десктопі), а
+   рівні за специфічністю правила виграє той, хто йде пізніше. */
+@import "./drawer.css";
+
+/* ── Каркас сторінок спільного PageRenderer (page-layout/page-zone) ──
    Імпортується зі shared, бо ці класи рендерить @wwwuabot/ui, а не оболонка. */
 @import "./page-layout.css";

@@ -1,5 +1,4 @@
 import { Outlet } from "react-router-dom";
-import { icons } from "@wwwuabot/shared";
 import { Sidebar } from "./Sidebar/Sidebar";
 import { useIsMobile } from "./useIsMobile";
 import { useMobileNav } from "./useMobileNav";
@@ -16,18 +15,22 @@ export function AppShell() {
 
   return (
     <div className="app-root">
-      {isMobile && open && <div className="sidebar-overlay" onClick={close} />}
+      {isMobile && open && <div className="app-drawer-overlay" onClick={close} />}
       <Sidebar open={isMobile && open} onNavigate={close} />
       <div className="main-wrapper">
         <header className="main-header">
+          {/* Той самий клас і та сама розмітка, що в гамбургері PageRenderer:
+              на мобільному обидві оболонки мають однакову кнопку меню. */}
           <button
             type="button"
-            className="main-header-hamburger"
+            className="hamburger main-header-hamburger"
             onClick={toggle}
             aria-label={open ? "Закрити меню" : "Відкрити меню"}
             aria-expanded={open}
           >
-            {icons["menu"]}
+            <span />
+            <span />
+            <span />
           </button>
           <span className="main-header-title">WWWUABOT Admin</span>
           <button

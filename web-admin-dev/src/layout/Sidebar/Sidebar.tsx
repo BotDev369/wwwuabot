@@ -22,7 +22,7 @@ export function Sidebar({ open = false, onNavigate }: SidebarProps) {
 
   return (
     <aside
-      className={`sidebar${collapsed ? " sidebar--collapsed" : ""}${open ? " sidebar--open" : ""}`}
+      className={`sidebar app-drawer${collapsed ? " sidebar--collapsed" : ""}${open ? " app-drawer--open" : ""}`}
     >
       <div className="sidebar-header">
         {!collapsed && (

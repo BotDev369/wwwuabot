@@ -13,12 +13,15 @@
  * Що тут:
  *   • 4 зони сторінки (sidebar / header / main / footer) + група;
  *   • стани завантаження / 404 / помилки;
- *   • мобільна поведінка: sidebar стає виїзним drawer'ом (`--drawer-w`,
- *     `--scrim`, `--duration-slow`, `--ease`, `--safe-*`).
+ *   • видимість і позиція гамбургера (сам вигляд кнопки — у `drawer.css`).
+ *
+ * Чого тут більше немає:
+ *   геометрія виїзного drawer'а (`.page-zone--sidebar` fixed / `--open` /
+ *   скрим) переїхала в `drawer.css` — рівно та сама на мобільному потрібна
+ *   і адмінці, а не лише цій оболонці.
  *
  * Превью в рамці телефона (адмінка) перекриває ці правила власними
- * `.phone-frame-body .page-*` — саме тому мобільні правила тут не мають
- * жодного `!important`, щоб їх можна було перекрити.
+ * `.phone-frame-body .page-*` — саме тому тут немає жодного `!important`.
  */
 
 .page-layout {
@@ -111,11 +114,9 @@
   margin: 0;
 }
 
-/* Hamburger button — hidden on desktop */
-.page-hamburger {
-  display: none;
-}
-
+/* Гамбургер: на десктопі його не існує (sidebar завжди на видноті),
+   на мобільному `.drawer.css` робить із зони бічної панелі виїзний drawer. */
+.page-hamburger,
 .page-hamburger--floating {
   display: none;
 }
@@ -126,32 +127,23 @@
   display: none;
 }
 
-/* Sidebar overlay */
-.page-sidebar-overlay {
-  display: none;
-}
-
-/* Мобільний: sidebar стає drawer'ом */
+/* Мобільний: sidebar стає drawer'ом (геометрія — у `drawer.css`) */
 @media (max-width: 768px) {
   .page-layout {
     flex-direction: column;
     position: relative;
   }
 
-  /* Hamburger inside header (matches project .hamburger) */
-  .page-hamburger {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    cursor: pointer;
-    flex-shrink: 0;
-    transition:
-      background 0.15s ease,
-      transform 0.1s ease;
+  /* Горизонтальні відступи вмісту drawer'а: у адмінці вони свої, тож
+     вертикальні (safe-area + 16px) живуть у спільному `drawer.css`. */
+  .page-zone--sidebar {
+    padding-left: 16px;
+    padding-right: 16px;
   }
 
-  .page-hamburger:active {
-    transform: scale(0.95);
+  /* Hamburger inside header (visible on mobile when sidebar has content) */
+  .page-hamburger {
+    display: inline-flex;
   }
 
   /* Floating hamburger button when no header */
@@ -185,37 +177,6 @@
 
   .page-sidebar-close {
     display: inline-flex !important;
-  }
-
-  .page-sidebar-overlay {
-    display: block;
-    position: fixed;
-    inset: 0;
-    z-index: 999;
-    background: var(--scrim);
-    backdrop-filter: blur(2px);
-    -webkit-backdrop-filter: blur(2px);
-  }
-
-  .page-zone--sidebar {
-    position: fixed;
-    top: 0;
-    left: calc(-1 * var(--drawer-w));
-    width: var(--drawer-w);
-    height: 100vh;
-    height: 100dvh;
-    z-index: 1000;
-    background: var(--bg-1);
-    border-right: 1px solid var(--border);
-    overflow-y: auto;
-    transition: left var(--duration-slow) var(--ease);
-    /* safe-area: drawer стоїть у самих краях екрана, під вирізом і смужкою */
-    padding: calc(16px + var(--safe-top)) 16px calc(16px + var(--safe-bottom));
-  }
-
-  .page-zone--sidebar.page-zone--sidebar--open {
-    left: 0;
-    box-shadow: 4px 0 24px rgba(0, 0, 0, 0.2);
   }
 
   /* Header with hamburger */

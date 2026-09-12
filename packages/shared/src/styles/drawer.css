@@ -1,0 +1,113 @@
+/*
+ * ═══════════════════════════════════════════════════════════════════════════
+ * DRAWER — спільна мобільна навігація обох оболонок
+ * ═══════════════════════════════════════════════════════════════════════════
+ *
+ * На мобільному і `web-platform-dev`, і `web-admin-dev` ховають бічну
+ * навігацію за гамбургером, а саму навігацію показують виїзним drawer'ом зі
+ * скримом. Різниця між оболонками — лише в тому, ЯКІ пункти в меню, а не в
+ * тому, як воно поводиться. Тому геометрія описана тут один раз:
+ *
+ *   • контейнер — `aside.app-drawer` (+ `--open`)
+ *   • скрим     — `.app-drawer-overlay`
+ *   • гамбургер — `.hamburger`
+ *
+ * Селектор `aside.app-drawer`, а не просто `.app-drawer`: елемент підвищує
+ * специфічність вище за `.sidebar--collapsed` і `.sidebar` у адмінці, тому
+ * мобільні правила перемагають десктопні без `!important`. Це важливо:
+ * `!important` тут зламав би прев'ю в рамці телефона, яке перекриває ті самі
+ * класи через `.phone-frame-body`.
+ *
+ * Брейкпоінт 768px — той самий, що в `useIsMobile` (адмінка) і в
+ * `page-zone--sidebar` (платформа), щоб CSS і JS перемикалися разом.
+ *
+ * Вертикальні відступи = safe-area + 16px: на мобільному обидва drawer'и
+ * стоять у самих краях екрана, тобто під вирізом і під смужкою «додому».
+ * Горизонтальні відступи лишаються за оболонкою (у платформи вміст drawer'а
+ * має власні 16px, у адмінки — свої).
+ */
+
+/* ── Гамбургер ─────────────────────────────────────────────────────────────
+   Клас `.hamburger` рендерить спільний `PageRenderer` (три смужки <span/>),
+   і той самий клас використовує адмінка в хедері. Базових стилів не існувало
+   зовсім — були лише брендові `html[data-brand] .hamburger span` зміни
+   висоти. Через це смужки мали нульову ширину й кнопка не мала жодного
+   видимого знака. */
+.hamburger {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  width: 36px;
+  height: 36px;
+  padding: 0;
+  border: none;
+  border-radius: var(--radius-sm);
+  background: none;
+  color: var(--text-secondary);
+  cursor: pointer;
+  flex-shrink: 0;
+  transition:
+    background 0.15s ease,
+    color 0.15s ease,
+    transform 0.1s ease;
+}
+
+.hamburger span {
+  display: block;
+  width: 18px;
+  height: 2px;
+  border-radius: 1px;
+  background: currentColor;
+}
+
+.hamburger:hover {
+  background: var(--bg-4);
+  color: var(--text-primary);
+}
+
+.hamburger:active {
+  transform: scale(0.95);
+}
+
+/* ── Скрим ─────────────────────────────────────────────────────────────── */
+.app-drawer-overlay {
+  display: none;
+}
+
+/* ── Мобільний drawer ──────────────────────────────────────────────────── */
+@media (max-width: 768px) {
+  aside.app-drawer {
+    position: fixed;
+    top: 0;
+    left: calc(-1 * var(--drawer-w));
+    width: var(--drawer-w);
+    min-width: var(--drawer-w);
+    height: 100vh;
+    height: 100dvh;
+    z-index: 1000;
+    background: var(--bg-1);
+    border-right: 1px solid var(--border);
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    transition: left var(--duration-slow) var(--ease);
+    padding-top: calc(16px + var(--safe-top));
+    padding-bottom: calc(16px + var(--safe-bottom));
+  }
+
+  aside.app-drawer--open {
+    left: 0;
+    box-shadow: 4px 0 24px rgba(0, 0, 0, 0.2);
+  }
+
+  .app-drawer-overlay {
+    display: block;
+    position: fixed;
+    inset: 0;
+    z-index: 999;
+    background: var(--scrim);
+    backdrop-filter: blur(2px);
+    -webkit-backdrop-filter: blur(2px);
+  }
+}

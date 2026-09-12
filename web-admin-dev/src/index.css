@@ -2109,8 +2109,17 @@ body {
 .phone-frame-body .page-zone--sidebar {
   display: block !important;
   position: static !important;
+  /* Прев'ю мусить бути однаковим за будь-якого вьюпорта: на телефоні
+     (≤768px) спільний `drawer.css` інакше зробив би цю зону виїзним
+     drawer'ом і зсунув би її за екран. */
+  inset: auto !important;
+  min-width: 0 !important;
   width: 100% !important;
   height: auto !important;
+  z-index: auto !important;
+  overflow: visible !important;
+  box-shadow: none !important;
+  transition: none !important;
   background: #f0f0f5;
   border-bottom: 1px solid #e0e0e8;
   padding: 12px 16px;
@@ -2353,10 +2362,12 @@ body {
 }
 
 /* ═══════════════════════════════════════════════════════════════════════════════
-   МОБІЛЬНА ОБОЛОНКА — бічна панель стає drawer'ом
-   Той самий патерн і ті самі токени, що в `page-zone--sidebar` у платформі
-   (--drawer-w, --scrim, --duration-slow, --ease): на мобільному обидві оболонки
-   мають однакову навігацію, різниця лише в тому, які пункти в меню.
+   МОБІЛЬНА ОБОЛОНКА
+   Геометрія виїзного drawer'а (`.sidebar` + `.app-drawer`, скрим
+   `.app-drawer-overlay`) і вигляд гамбургера (`.hamburger`) живуть у
+   `packages/shared/src/styles/drawer.css` — ті самі, що в платформі. Тут
+   лишається тільки те, чим оболонки справді відрізняються: склад меню,
+   хедер і десктопна кнопка згортання.
    ═══════════════════════════════════════════════════════════════════════════════ */
 
 .main-header-hamburger {
@@ -2364,36 +2375,6 @@ body {
 }
 
 @media (max-width: 768px) {
-  .sidebar {
-    position: fixed;
-    top: 0;
-    left: calc(-1 * var(--drawer-w));
-    width: var(--drawer-w);
-    min-width: var(--drawer-w);
-    height: 100vh;
-    height: 100dvh;
-    z-index: 1000;
-    transition: left var(--duration-slow) var(--ease);
-    /* safe-area: drawer стоїть у самих краях екрана */
-    padding-top: var(--safe-top);
-    padding-bottom: var(--safe-bottom);
-  }
-
-  .sidebar--open {
-    left: 0;
-    box-shadow: var(--shadow-lg);
-  }
-
-  .sidebar-overlay {
-    display: block;
-    position: fixed;
-    inset: 0;
-    z-index: 999;
-    background: var(--scrim);
-    backdrop-filter: blur(2px);
-    -webkit-backdrop-filter: blur(2px);
-  }
-
   /* Десктопна кнопка згортання на мобільному не потрібна: drawer закривають
      скрим, пункт меню або Escape — як у drawer'і платформи. */
   .sidebar-toggle {
@@ -2412,22 +2393,7 @@ body {
 
   .main-header-hamburger {
     display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    width: 36px;
-    height: 36px;
     margin-right: 4px;
-    border: none;
-    border-radius: var(--radius-sm);
-    background: none;
-    color: var(--text-secondary);
-    cursor: pointer;
-    flex-shrink: 0;
-  }
-
-  .main-header-hamburger:active {
-    background: var(--bg-4);
-    color: var(--text-primary);
   }
 }
 

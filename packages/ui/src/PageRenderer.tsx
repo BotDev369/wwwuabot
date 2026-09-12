@@ -107,12 +107,14 @@ export function PageRenderer({
       )}
 
       {/* Sidebar overlay (mobile) */}
-      {hasSidebar && sidebarOpen && <div className="page-sidebar-overlay" onClick={closeSidebar} />}
+      {hasSidebar && sidebarOpen && (
+        <div className="app-drawer-overlay page-sidebar-overlay" onClick={closeSidebar} />
+      )}
 
       {/* Sidebar */}
       {hasSidebar && (
         <aside
-          className={`${zoneClassName?.sidebar ?? "page-zone page-zone--sidebar"}${sidebarOpen ? " page-zone--sidebar--open" : ""}`}
+          className={`${zoneClassName?.sidebar ?? "page-zone page-zone--sidebar"} app-drawer${sidebarOpen ? " app-drawer--open page-zone--sidebar--open" : ""}`}
           data-zone="sidebar"
           onClick={handleSidebarClick}
         >
