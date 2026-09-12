@@ -2223,7 +2223,9 @@ body {
 @media (max-width: 640px) {
   .scn-modal {
     height: 100vh !important;
+    height: 100dvh !important;
     max-height: 100vh !important;
+    max-height: 100dvh !important;
   }
 
   .scn-modal .wb-modal-footer {

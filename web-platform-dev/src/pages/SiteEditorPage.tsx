@@ -262,18 +262,9 @@ export function SiteEditorPage() {
   // ── Render ──────────────────────────────────────────────
 
   return (
-    <div className="site-editor-page" style={{ display: "flex", height: "100vh" }}>
+    <div className="site-editor-page">
       {/* Бічна панель */}
-      <div
-        style={{
-          width: 320,
-          borderRight: "1px solid var(--border-subtle)",
-          background: "var(--surface)",
-          display: "flex",
-          flexDirection: "column",
-          flexShrink: 0,
-        }}
-      >
+      <div className="site-editor-panel">
         {/* Заголовок */}
         <div style={{ padding: "var(--sp-4)", borderBottom: "1px solid var(--border-subtle)" }}>
           <div className="wb-flex-between" style={{ marginBottom: "var(--sp-2)" }}>
@@ -524,7 +515,7 @@ export function SiteEditorPage() {
       </div>
 
       {/* Основна область */}
-      <div style={{ flex: 1, display: "flex", flexDirection: "column", overflow: "hidden" }}>
+      <div className="site-editor-canvas">
         {editingPageSlug ? (
           <div style={{ flex: 1, display: "flex", flexDirection: "column" }}>
             {/* Заголовок сторінки */}
