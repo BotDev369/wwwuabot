@@ -1,16 +1,26 @@
 # api-dev
 
-Cloudflare Worker: REST API для wwwuabot
+Cloudflare Worker: єдиний REST API для wwwuabot (D1 + KV).
 
 ## Налаштування
 
-- **D1:** `wwwuabot-db-dev`
+- **D1:** `wwwuabot-db-dev` (біндинг `DB`)
 - **KV:** `CONTENT_KV`
-- **Секрети:** `BOT_TOKEN`, `SECRET_TOKEN`, `ADMIN_SECRET`
+- **Секрети:** `BOT_TOKEN`, `SECRET_TOKEN`, `ADMIN_SECRET`, `SENTRY_DSN` (необовʼязковий)
+- **Середовище:** `ENVIRONMENT = "dev"` — задеплоєний лише дев-воркер, прода немає
 
 `ADMIN_SECRET` — пароль входу в адмінку й ключ підпису cookie `admin_session`.
 Усі адмін-маршрути (`/api/admin/*`, `/api/portal/*`, `/api/bot/*`) авторизуються
 виключно цією cookie — секретів у заголовках немає (`docs/CONSOLIDATION_PLAN.md` §5.4).
+
+Ідентичність користувача береться **тільки** з підписаного Telegram `initData`
+(`src/shared/identity.ts`): `resolveUserId()` — обовʼязкова, `tryResolveUserId()` — для
+публічних ендпоїнтів. `X-Telegram-User-Id`, cookie `user_id` і `?user_id=` не приймаються.
+
+## Фреймворку немає
+
+Маршрутизація — розбір `pathname` у `src/router.ts` (376 рядків) + контролери в
+`src/controllers/`. Сервіси з бізнес-логікою — в `src/services/`.
 
 ## Ендпоїнти здоров'я
 
@@ -26,5 +36,4 @@ Cloudflare Worker: REST API для wwwuabot
 
 ---
 
-**Останнє оновлення:** 2026-09-01 11:19 UTC
-**Автор:** Buffy (Codebuff)
+**Останнє оновлення:** 2026-09-12

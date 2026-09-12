@@ -1,6 +1,25 @@
 # SPEC: Sites — Конструктор сайтів
 
-> **Версія:** 1.1 | **Дата:** 10.09.2026 | **Статус:** In Progress → MVP Ready
+> **Версія:** 1.2 | **Дата:** 10.09.2026 · **звірено з кодом:** 12.09.2026 | **Статус:** MVP в деві
+
+## 0. Стан на 12.09.2026 (звірено з кодом)
+
+Документ описував майбутнє — тепер це переважно зроблене. Що перевірено пошуком по
+коду й запуском гейтів:
+
+| Твердження спеки | Факт |
+|---|---|
+| Таблиці `sites`, `site_pages`, `templates` | ✅ є, створюються `ensureSitesTables()` |
+| Таблиця `scenarios-portal` | ❌ **не існує** — портал працює з `scenarios`, адмінка з `scenarios-admin` |
+| 7 ендпоїнтів `/api/sites*` | ✅ 21 маршрут у `api-dev/src/router.ts` (CRUD, pages, publish, catalog, admin) |
+| Роути `/sites`, `/sites/new`, `/sites/:slug`, `/catalog`, `/view/:slug` | ✅ усі в `web-platform-dev/src/app/router.tsx` |
+| Роути адмінки | ⚠️ `/sites/pending` **немає** — черга на `/sites/moderation`; `/sites/:slug` (перегляд) не реалізовано |
+| Редагування сторінки через PageBuilder у TWA | ❌ **заглушка** (`PageBuilderPlaceholder`); повний редактор — в адмінці (`/page-builder/:codeword`) |
+| Вбудовані шаблони (4 site + 4 page) | ✅ `blank`, `portfolio`, `blog`, `business`, `landing`, `business-card`, `event` |
+| Unit-тести сервісів і UI `sites` | ❌ немає: жоден файл не покриває `sites.service.ts` (777 рядків), `SiteRenderer` чи сторінки-оболонки |
+| Typecheck / Lint / Prettier / 182 тести | ✅ гейти CI зелені |
+
+Куди дивитись по деталі: `docs/CONSOLIDATION_PLAN.md` §9 (актуальний план робіт).
 
 ---
 
@@ -47,9 +66,8 @@
 
 | Таблиця | Воркер | Призначення |
 |---|---|---|
-| `scenarios` | bot-dev | Бот-сценарії (НЕ ЧІПАЄМО) |
-| `scenarios-admin` | api-dev | Старі адмін-сторінки (НЕ ЧІПАЄМО) |
-| `scenarios-portal` | api-dev | Старі юзерівські сторінки (НЕ ЧІПАЄМО) |
+| `scenarios` | bot-dev + api-dev | Бот-сценарії; з цієї ж таблиці читає портал (`/api/portal/scenarios/*`) |
+| `scenarios-admin` | api-dev | Адмінські сторінки тих самих сценаріїв (`/api/admin/scenarios/*`) |
 | `sites` | api-dev | **НОВЕ** — сайти |
 | `site_pages` | api-dev | **НОВЕ** — сторінки сайтів |
 | `templates` | api-dev | **НОВЕ** — шаблони |
@@ -404,11 +422,18 @@ export type {
 ### 7.2. web-admin-dev (адмін)
 
 ```
-/sites                      — всі сайти
-/sites/pending              — черга модерації
-/sites/:slug                — перегляд сайту
-/templates                  — управління шаблонами
+/                  — головна
+/scenarios         — сценарії (portal + admin в одній сторінці з табами)
+/page-builder/:codeword — конструктор сторінок
+/users             — користувачі
+/bot-settings      — налаштування бота
+/sites             — всі сайти
+/sites/moderation  — черга модерації
+/templates         — управління шаблонами
 ```
+
+Спец у версії 1.1 писала `/sites/pending` і `/sites/:slug` — таких роутів немає
+(`web-admin-dev/src/app/router.tsx`).
 
 ---
 
@@ -625,17 +650,28 @@ src/app/router.tsx                  # Додати маршрути (ОНОВИ�
 
 ## 13. Тести
 
-### 13.1. Unit тести
+### 13.1. Що покрито зараз (виміряно 12.09.2026)
 
-- `packages/shared/src/types/site.types.ts` — валідація типів
-- `api-dev/src/services/sites.service.ts` — бізнес-логіка
-- `packages/ui/src/SiteRenderer.tsx` — рендер
+Усього **182 тести в 22 файлах**, і жоден із них не про sites. Покриті сусідні шари:
 
-### 13.2. Інтеграційні тести
+| Файл | Що перевіряє |
+|---|---|
+| `api-dev/src/router.test.ts`, `router-input.test.ts` | маршрутизація, валідація входу, 404/500 без деталей назовні |
+| `api-dev/src/controllers/templates.controller.test.ts` | шаблони (5 тестів) |
+| `api-dev/src/controllers/health.controller.test.ts` | `/health`, `/health/deep` |
+| `api-dev/src/services/users.service.test.ts` | користувачі |
+| `packages/ui/src/PageRenderer.test.tsx`, `PermissionGate.test.tsx` | рендер сторінки й доступ — те, чим рендеряться сайти |
+| `packages/shared/src/constants/block-definitions.test.ts` | цілісність реєстру блоків |
 
-- API endpoints (POST/GET/PUT/DELETE)
-- Workflow публікації
-- Модерація
+### 13.2. Чого немає (і це найбільша діра)
+
+- `api-dev/src/services/sites.service.ts` (777 рядків) — нуль тестів: публікація, модерація,
+  права власника й каталог перевіряються тільки вручну.
+- `packages/ui/src/SiteRenderer.tsx` — рендер сайту з `page_data`.
+- Сторінки-оболонки (`MySitesPage`, `SiteEditorPage`, `SitesPage`, `SitesModerationPage`).
+- Workflow публікації як послідовність (draft → pending → published → rejected).
+
+Це пункт 1 у плані робіт: `docs/CONSOLIDATION_PLAN.md` §9.
 
 ---
 
@@ -688,10 +724,12 @@ src/app/router.tsx                  # Додати маршрути (ОНОВИ�
 - [x] Застосування шаблону при створенні (SiteNewPage → applyTemplate)
 
 ### Фаза 8: Тести ❌ (наступна)
-- [ ] Unit тести сервісів
-- [ ] Unit тести UI компонентів
-- [ ] Typecheck: `npm run typecheck` ✅
-- [ ] Lint: `npm run lint`
+- [ ] Unit тести сервісів (`sites.service.ts` — 777 рядків без покриття)
+- [ ] Unit тести UI компонентів (`SiteRenderer`, сторінки-оболонки)
+- [x] Typecheck: `npm run typecheck` — чисто на 6 воркспейсах
+- [x] Lint: `npm run lint` — 0 errors, 0 warnings
+- [x] Prettier: `npx prettier --check .` — гейт CI
+- [ ] Повний PageBuilder у TWA (зараз `PageBuilderPlaceholder`)
 
 ---
 
@@ -702,22 +740,23 @@ src/app/router.tsx                  # Додати маршрути (ОНОВИ�
 | Конфлікт slug з існуючими scenarios | Середній | Унікальний індекс + валідація |
 | Складність SiteRenderer | Середній | MVP: проста навігація, потім розширюємо |
 | Шаблони можуть застаріти | Низький | System templates + user templates |
-| Модерація уповільнить публікацію | Низький | Admin can auto-approve自己 |
+| Модерація уповільнить публікацію | Низький | Адмін схвалює в один клік у черзі `/sites/moderation` |
 
 ---
 
-## 16. Success Criteria
+## 16. Success Criteria (звірено 12.09.2026)
 
-- [ ] Користувач може створити сайт з шаблону
-- [ ] Користувач може додавати/видаляти сторінки
-- [ ] Кожна сторінка редагується через PageBuilder
-- [ ] Навігація працює між сторінками
-- [ ] Публікація потребує модерації
-- [ ] Адмін може схвалити/відхилити
-- [ ] Публічний каталог показує опубліковані сайти
-- [ ] Slug = домен сайту
-- [ ] Typecheck проходить без помилок
-- [ ] Lint проходить без помилок
+- [x] Користувач може створити сайт з шаблону (`/sites/new` → `TemplatePicker`)
+- [x] Користувач може додавати/видаляти сторінки (вкладка «Сторінки», спільний діалог замість `prompt`)
+- [ ] Кожна сторінка редагується через PageBuilder — **лише в адмінці**; у TWA заглушка
+- [x] Навігація працює між сторінками (`SiteRenderer` + вкладка «Меню»)
+- [x] Публікація потребує модерації (status → `pending`)
+- [x] Адмін може схвалити/відхилити (`/sites/moderation`, причина відхилення)
+- [x] Публічний каталог показує опубліковані сайти (`/catalog`)
+- [x] Slug = домен сайту (`sites.slug`, унікальний індекс)
+- [x] Typecheck проходить без помилок
+- [x] Lint проходить без помилок
+- [ ] Типи `Site`, `SitePage`, `Template` покриті тестами — див. §13
 
 ---
 

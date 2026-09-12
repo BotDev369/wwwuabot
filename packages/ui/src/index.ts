@@ -2,7 +2,9 @@
  * @wwwuabot/ui — спільний React-пакет для Page Builder.
  *
  * Використовується і `web/`, і `web-admin/`.
- * Містить реєстр блоків (29 модулів), рендерери, контроль доступу та store.
+ * Містить реєстр блоків, рендерери, контроль доступу, діалоги та store.
+ * Кількість блоків тут не дублюємо: джерело правди — `BLOCK_DEFINITIONS`
+ * (`packages/shared/src/constants/block-definitions/`).
  *
  * @module @wwwuabot/ui
  */

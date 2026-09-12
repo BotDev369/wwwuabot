@@ -1,6 +1,10 @@
 # AGENTS.md
 
-> **Версія:** 2.0 | **Останнє оновлення:** 09.09.2026
+> **Версія:** 2.1 | **Останнє оновлення:** 12.09.2026
+>
+> **Зміна 2.1:** прибрано неіснуючий «Family Box» з §2 (перевірено пошуком по всьому
+> репозиторію — ані файлу, ані згадок), уточнено реальні шляхи в §5, §8 переписано
+> за вимірюваннями, а не за оцінками.
 
 Інструкція для AI-агентів (Claude, GPT, Buffy тощо). Перед початком роботи прочитай цей файл повністю.
 
@@ -39,7 +43,8 @@ packages/ui/      Спільні React-компоненти Page Builder (@wwwua
 ## 2. Доменні терміни
 
 - **Scenario** — контентна одиниця: екран бота з кнопками, підписом, фото. Типи: `bot-dev/src/shared/types/scenario.ts`. Поля: `codeword`, `photo_url`, `caption_top/mid/bot`, `keyboard_type`, `buttons`, `rich_message`/`rich_data`, `page_data`.
-- **Family Box** — JSON-стан користувача в D1 (кошик, дати, стан гри). Утиліти: `packages/shared/src/utils/family-box.ts`. Безпечний парсинг (`{}` при битих даних). Не викликає запис у БД сам — прапор `userDirty` в `bot-router.ts`.
+- **Стан користувача** — рядок таблиці `users` у D1 (репозиторій: `bot-dev/src/modules/users/user.repository.ts`). Схема «м'яка»: колонки додає `withAutoMigrate` з `@wwwuabot/shared/database/auto-migrate` на першому записі (`is_blocked`, `rate_limit_json`, …), тому фіксованого списку полів немає. Читання БД не пише: зміни позначає прапор `ctx.userDirty`, а запис робить post-middleware (`bot-dev/src/core/middleware/post/index.ts`), який викликає `botRouter` з `src/core/router/bot-router.ts`.
+  > **Було до 12.09.2026:** тут описувались «Family Box» і `packages/shared/src/utils/family-box.ts`. Такого файлу й такої назви в коді **немає** — це була документація до скасованої ідеї, і вона вводила в оману при пошуку утиліт.
 - **Page Builder** — блочна система сторінок. Сторінка = scenarios з `page_data`. 4 зони: sidebar, header, main, footer. Блоки рекурсивні, автономні. Типи: `packages/shared/src/types/page-config.ts`. Реєстр: `packages/shared/src/constants/block-definitions/`. React-компоненти: `packages/ui/src/blocks/`.
 - **Conditional Rendering** — умовний показ блоків за role/tariff/status/permissions користувача. `packages/shared/src/utils/condition-evaluator.ts`.
 - **Design System** — подвійна тема Apple/Material через `data-brand` на `<html>`. CSS-токени: `packages/shared/src/styles/`. Темна/світла: `data-theme`.
@@ -179,7 +184,7 @@ import { Icon } from "@wwwuabot/shared";
 | HTTP-роутинг | `src/api/router.ts` + `src/api/controllers/` |
 | Telegram-команди | `src/core/router/` |
 | Middleware | `src/core/middleware/{pre,post,intercept}/` |
-| Доступ до БД | `src/repositories/` або `src/modules/<domain>/*.repository.ts` |
+| Доступ до БД | `src/repositories/` (сценарії, налаштування) або `src/modules/<domain>/*.repository.ts` (користувачі) |
 | Доменна логіка | `src/modules/<domain>/` |
 | Логування | `src/modules/logging/` |
 | Конфіг / тексти | `src/shared/config/texts.ts` |
@@ -216,14 +221,17 @@ import { Icon } from "@wwwuabot/shared";
 src/
 ├── App.tsx, main.tsx, index.css, worker.ts
 ├── app/          AuthGate.tsx, router.tsx
-├── layout/       AppShell.tsx, Sidebar.tsx, Header.tsx, Footer.tsx
+├── layout/       AppShell.tsx, Sidebar/, Header, Footer, PageTopbar
 ├── pages/        Сторінки
 ├── shared/api/   Typed API-функції
-├── stores/       Zustand stores
-└── features/     (web-admin) Доменні модулі: editor, scenarios, users
+└── features/     Доменні модулі
 ```
 
-Відмінності: `web` — auth через TWA SDK, API через service binding. `web-admin` — auth через cookie + HMAC.
+Відмінності: `web` — auth через TWA SDK, API через service binding; стан — у
+`src/stores/app.store.ts` (єдиний Zustand-стор). `web-admin` — auth через cookie + HMAC;
+**окремого `src/stores/` немає**: прикладні стори живуть у своїх фічах
+(`features/scenarios/store`, `features/users/store`), а навігація — в
+`layout/Sidebar/adminNav.store.ts`.
 
 ---
 
@@ -250,17 +258,21 @@ src/
 - Не виноси адмін-ендпоїнт за префікс `/api/admin/`, `/api/portal/` чи `/api/bot/` — інакше він пройде **повз** адмін-гейт.
 - Не пиши моноліти (>200 рядків) — див. правило кристалевості.
 - Не хардкодь стилі/кольори — використовуй CSS-токени та `<Icon />`.
+- Не клич `alert` / `confirm` / `prompt` — у Telegram Mini App на iOS вони не працюють; тільки `useDialog()` (§4).
+- Не стилізуй клас, який рендерить спільний код (`packages/ui`), у `index.css` однієї з оболонок — так він буде стилізований лише там; місце такого CSS — `packages/shared/src/styles/`.
 
 ---
 
 ## 8. Статус проєкту
 
-- **Типізація:** 0 `any`, `tsc --noEmit` чистий на всіх 6 воркерах.
-- **Тести:** Vitest, 182 unit-тести. **Гейтять CI** (S-6 закрито 11.09.2026) — червоний тест блокує деплой.
+- **Масштаб (виміряно 12.09.2026):** 350 файлів `.ts`/`.tsx` у `src/` шести воркспейсів, ≈37 300 рядків. Найбільші: `api-dev/src/services/sites.service.ts` (777), `packages/shared/src/constants/site-templates.ts` (623), `web-admin-dev/src/pages/scenarios/ScenarioCardModal.tsx` (443), `web-platform-dev/src/pages/mydate/MyDatesPage.tsx` (437).
+- **Типізація:** 0 `any`, `tsc` чистий на всіх **6 воркспейсах** (4 воркери + `packages/shared` + `packages/ui`).
+- **Тести:** Vitest, **182 unit-тести у 22 файлах**. **Гейтять CI** (S-6 закрито 11.09.2026) — червоний тест блокує деплой. Покриті: `security/`, `config/`, `condition-evaluator`, `datetime`, `PageRenderer`, `PermissionGate`, роутинг і identity `api-dev`, `users.service`, `templates.controller`. Не покриті: `sites.service` (777 рядків), жодна сторінка оболонок, жоден екран бота.
+- **Форматування:** Prettier у гейті CI (`npx prettier --check .`) — код, який не відповідає стилю, не доїде до деплою.
 - **Ідентичність користувача:** єдине джерело — підписаний Telegram `initData` (`api-dev/src/shared/identity.ts`). Заборонено приймати `X-Telegram-User-Id` або `user_id` з cookie/query.
 - **Адмін-авторизація:** єдина — cookie `admin_session` (HMAC-SHA256, `packages/shared/src/security/session.ts`). Секретів у заголовках немає: `X-Admin-Secret`, `X-Bot-Token`, `/db-proxy` і легасі `/setup-webhook` видалено 11.09.2026 (`docs/CONSOLIDATION_PLAN.md` §5.4).
 - **Моніторинг:** Workers Logs увімкнено в усіх 4 воркерах. `api-dev` має два ендпоїнти здоров'я: `GET /health` (liveness, без залежностей) і `GET /health/deep` (D1 + KV; **503** при деградації) — саме його має опитувати зовнішній монітор. UptimeRobot і секрет `SENTRY_DSN` задає власник акаунта. Усі воркери — дев (`ENVIRONMENT = "dev"`). Sentry під'єднано в `api-dev` і `bot-dev` — персональні дані вирізаються, без секрету `SENTRY_DSN` він у no-op; браузерні застосунки — окремий крок (`docs/CONSOLIDATION_PLAN.md` §5.8).
-- **Документація:** CHANGELOG відсутній.
+- **Документація:** CHANGELOG немає — історія змін живе в `git log` і в журналі `docs/CONSOLIDATION_PLAN.md` §10. Станом на 12.09.2026 усі документи звірено з кодом (див. §9 того ж файлу).
 
 ---
 

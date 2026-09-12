@@ -7,10 +7,10 @@ Rules for developers, contributors, and AI agents.
 ## Quality Gates (обов'язково перед кожним пушем)
 
 ```bash
-npm test            # 182 unit-тести (Vitest)
-npm run typecheck   # TypeScript strict — 0 any
-npm run lint        # ESLint
-npm run format:check # Prettier (поки що не в CI — див. нижче)
+npm test            # 182 unit-тести (Vitest), 22 файли
+npm run typecheck   # TypeScript strict — 0 any, 6 воркспейсів
+npm run lint        # ESLint — 0 errors, 0 warnings
+npm run format:check # Prettier — теж гейт CI
 ```
 
 Якщо хоча б одна команда падає — код не пушиться в `main`.
@@ -27,7 +27,7 @@ npm run format:check # Prettier (поки що не в CI — див. нижче
 | Лінт | `npm run lint` | так |
 | Типізація | `npm run typecheck` | так |
 | Тести | `npm test` (182) | так (S-6 закрито) |
-| Форматування | `npm run format:check` | **ні** — у репо 199 невідформатованих файлів; увімкнути після `npm run format` |
+| Форматування | `npx prettier --check .` | так — 201 файл відформатовано 12.09.2026, гейт увімкнено |
 
 Гейти запускаються і на кожен pull request (деплой на PR неможливий).
 Деплої одного воркера не перекриваються: `concurrency` ставить їх у чергу,
@@ -64,6 +64,9 @@ npm run format:check # Prettier (поки що не в CI — див. нижче
 8. **Блок-дефінції** — компактний запис через хелпери (`block()`, `s()`, `n()`, `b()`, `e()`), не JSON-схеми.
 9. **Не роби `SELECT *`** на таблицях з важкими JSON-колонками.
 10. **Не змішуй prod/dev** — різні `database_id` в `wrangler.toml`.
+11. **Нативні `alert` / `confirm` / `prompt` заборонені** — у Telegram Mini App на iOS вони не працюють. Використовуй `useDialog()` з `@wwwuabot/ui/dialog` (`AGENTS.md` §4).
+12. **Спільний код => спільний CSS.** Якщо клас рендерить `packages/ui`, його стилі живуть у `packages/shared/src/styles/`, а не в `index.css` однієї з оболонок — інакше в другій оболонці він буде без стилів.
+13. **Мобільний — перший.** Перевіряй на 360px до десктопа: резинова верстка, `100dvh`, `var(--safe-*)`, тап-таргети ≥44px, афорданси без `:hover` (`AGENTS.md` §3).
 
 ---
 
@@ -72,7 +75,7 @@ npm run format:check # Prettier (поки що не в CI — див. нижче
 | Папка | Призначення | Стек |
 |---|---|---|
 | `bot-dev/` | Telegram-бот | grammY, D1, Queues |
-| `api-dev/` | REST API | D1, KV, Hono-like router |
+| `api-dev/` | REST API | D1, KV, власний router (`src/router.ts`) |
 | `web-platform-dev/` | Telegram Mini App | React 19, Vite 8, Tailwind 4 |
 | `web-admin-dev/` | Адмін-панель | React 19, Vite 8, Page Builder |
 | `packages/shared/` | Спільні типи/утиліти | TypeScript |
@@ -116,5 +119,7 @@ npm run format:check # Prettier (поки що не в CI — див. нижче
 | `CONTRIBUTING.md` | Розробники: процес, quality gates, конвенції |
 | `docs/DESIGN_SYSTEM.md` | UI: токени, компоненти, `<Icon />` |
 | `docs/PAGE_ENGINE_ARCHITECTURE.md` | Архітектурне рішення: Page Engine, межі воркерів |
-| `docs/CONSOLIDATION_PLAN.md` | Рефакторинг-план: дедуплікація оболонок, ризики, журнал |
+| `docs/CONSOLIDATION_PLAN.md` | Рефакторинг-план: актуальний план (§9), журнал (§10), ризики (§5) |
+| `docs/SITES_SPEC.md` | Специфікація конструктора сайтів |
+| `docs/MONITORING.md` | Моніторинг: health, UptimeRobot, Sentry |
 | `README.md` | Загальний опис + швидкий старт |

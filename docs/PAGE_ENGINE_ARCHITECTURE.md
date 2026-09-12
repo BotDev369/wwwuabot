@@ -1,21 +1,49 @@
 # Архітектурне рішення: Єдиний Page Engine ("Серце та Скелет") для WWWUABOT
 
-**Дата:** 09.09.2026  
+**Дата:** 09.09.2026 · **звірено з кодом:** 12.09.2026  
 **Проєкт:** `BotDev369/wwwuabot`  
 **Питання:** Чи варто створити новий єдиний код "двигун, серце, скелет" будь-яких сторінок, залишивши воркери окремими задля безпеки?  
 **Рішення:** **ТАК (Схвалено). Патерн: Thin Shells + Shared Page Engine Core (`@wwwuabot/ui` + `@wwwuabot/shared`).**
 
 ---
 
+## 0. Стан на 12.09.2026 — що з цього вже правда
+
+Рішення виконується поетапно, тому документ ділиться на «зроблено» і «задум».
+Цей розділ — про реальність, нижче — про задум.
+
+| Пункт рішення | Стан |
+|---|---|
+| Тонкі оболонки: `web-platform-dev` і `web-admin-dev` без прямого доступу до D1 | ✅ зроблено (обидва ходять через service binding → `api-dev`) |
+| Спільне ядро `@wwwuabot/ui` + `@wwwuabot/shared` | ✅ зроблено (`PageRenderer`, `ZoneRenderer`, `PermissionGate`, 40 блоків у реєстрі, токени) |
+| Декларативний доступ через `<PermissionGate />` | ✅ зроблено |
+| CSS спільного рендерера в shared | ✅ зроблено 12.09.2026 (`page-layout.css`, `drawer.css`) |
+| **Cloudflare Access** на адмінці | ❌ **немає**. Воркери живуть на `*.workers.dev`, політики Zero Trust не налаштовано. Захист адмінки зараз — тільки cookie `admin_session` + адмін-гейт в `api-dev` |
+| **Окремі домени** `admin.wwwuabot.com` / `app.wwwuabot.com` | ❌ **немає**. Є `*.workers.dev`; Same-Origin розділення реальне (різні хости), але доменів немає |
+| «Нуль адмінського коду в публічному бандлі» | ✅ зроблено (окремі воркери й окремі бандли) |
+| Прод | ❌ не деплоївся; усі 4 воркери — дев (`docs/CONSOLIDATION_PLAN.md` §1) |
+
+Два пункти з розділу 2 (Access і домени) досі **задум**, а не факт. Тримати їх у тексті
+як наявне означає планувати роботу, виходячи з неіснуючого захисту.
+
+---
+
 ## 1. Контекст та Проблема
-У поточному репозиторії `wwwuabot`:
-- `web-platform-dev` (Telegram Mini App) та `web-admin-dev` (Панель керування) мають власні дубльовані версії сторінок, редакторів і компонентів.
-- Монолітні компоненти розрослися до сотень рядків:
-  - `web-admin-dev/src/features/page-builder/PageBuilderInline.tsx` — 572 рядки
-  - `web-admin-dev/src/pages/scenarios-v2/ScenariosV2Table.tsx` — 533 рядки
-  - `web-platform-dev/src/pages/mydate/MyDatesPage.tsx` — 413 рядків
-  - `web-admin-dev/src/features/page-builder/ZoneEditor.tsx` — 360 рядків
-- Будь-яка зміна верстки вимагає синхронного редагування двох різних застосунків.
+
+Той стан, з якого рішення починалось (цифри — на 09.09.2026), щоб було видно прогрес:
+
+- `web-platform-dev` (Telegram Mini App) та `web-admin-dev` (Панель керування) мали власні
+  дубльовані версії сторінок, редакторів і компонентів, а верстку доводилось правити двічі.
+- Монолітні компоненти (09.09.2026 → 12.09.2026):
+  - `PageBuilderInline.tsx` — 572 → **319**
+  - `ScenariosV2Table.tsx` — 533 → **292**
+  - `MyDatesPage.tsx` — 413 → **437** (зросла: додано можливості)
+  - `ZoneEditor.tsx` — 360 → **225**
+  - CSS мобільної навігації було описано двічі — тепер один `drawer.css`
+- Лідер за розміром сьогодні — `api-dev/src/services/sites.service.ts` (777 рядків) та
+  `packages/shared/src/constants/site-templates.ts` (623): це наступні кандидати.
+- Лишається справжнє дублювання верстки поміж оболонок — див. §4.3 крок 3 у
+  `docs/CONSOLIDATION_PLAN.md`.
 
 ---
 
@@ -66,31 +94,41 @@
 
 ---
 
-## 4. Схема сторінки (PageSchema / PageConfig)
+## 4. Схема сторінки (PageConfig / PageBlock)
 
-Сторінка більше не верстається вручну монолітом. Вона описується JSON-схемою та рендериться ядром:
+Сторінка не верстається вручну монолітом. Вона описується JSON-конфігом і рендериться ядром.
+
+> **Уточнено 12.09.2026.** У цьому розділі раніше був `PageSchema` з `blocks: BlockConfig[]`.
+> У коді таких типів немає: реальна форма — `PageConfig` з чотирма зонами
+> (`packages/shared/src/types/page-config.ts`). Найближчий до «PageSchema» носій —
+> `SitePage` (`page_data` у D1), а до «BlockConfig» — `PageBlock`.
 
 ```typescript
-export interface PageSchema {
+// packages/shared/src/types/page-config.types.ts — справжнє джерело правди
+// (page-config.ts поруч лише ре-експортує)
+type BlockZone = "sidebar" | "header" | "main" | "footer";
+
+interface PageBlock {
   id: string;
-  slug: string;
-  title: string;
-  ownerId: string;
-  status: 'active' | 'pending' | 'restricted';
-  layout?: 'feed' | 'dashboard' | 'compact';
-  blocks: BlockConfig[];
+  type: string; // ключ у BLOCK_DEFINITIONS
+  name?: string; // заголовок акордеона в редакторі
+  order: number;
+  props: Record<string, unknown>;
+  children?: PageBlock[]; // блоки рекурсивні
+  conditions?: BlockConditions; // role / tariff / status / permissions
 }
 
-export interface BlockConfig {
-  id: string;
-  type: 'header' | 'stats' | 'content' | 'actions' | 'custom_form' | 'moderation';
-  title?: string;
-  data: Record<string, unknown>;
-  requiredCapability?: 'can_edit' | 'can_delete' | 'can_moderate';
-  adminOnly?: boolean;
-  ownerOnly?: boolean;
+interface PageConfig {
+  version: number; // для майбутніх міграцій формату
+  zones: Record<BlockZone, PageBlock[]>;
+  visibleZones?: BlockZone[];
+  sidebarSettings?: SidebarSettings; // closeButtonPosition, fontSize, itemSpacing
 }
 ```
+
+У реєстрі `BLOCK_DEFINITIONS` — **40 блоків** (11 файлів у
+`packages/shared/src/constants/block-definitions/`), компоненти —
+`packages/ui/src/blocks/`.
 
 ---
 
@@ -115,9 +153,15 @@ export interface BlockConfig {
 
 ## 6. Очікуваний ефект та відповідність правилам проєкту
 
-1. **Скорочення коду на 70-75%:**
-   - `PageBuilderInline.tsx` (572 рядки) скорочується до ~120 рядків конфігурацій.
-   - `MyDatesPage.tsx` (413 рядків) скорочується до <100 рядків виклику `PageRenderer`.
+1. **Скорочення окремих файлів** (перевірено 12.09.2026 — оцінка «70–75%» стосується
+   файлів, не репозиторію):
+   - `PageBuilderInline.tsx` — 572 → **319** рядків (було обіцяно ~120; реалістично
+     без втрати функцій не вийшло — редактор складається з 14 підкомпонентів);
+   - `ScenariosV2Table.tsx` — 533 → **292**;
+   - `ZoneEditor.tsx` — 360 → **225**;
+   - `MyDatesPage.tsx` — **437** (зросла: додано фільтри й вибір рядків; `<100` рядків
+     тут не мета — сторінка тримає власний UI поверх спільного хука `useMyDates`);
+   - `SiteEditorPage.tsx` (Sites) — 686 → **48** рядків + 11 файлів `pages/site-editor/`.
 2. **Відповідність "Crystal Clarity Rule":**
    - Усі компоненти та сторінки вкладаються в ліміт **< 200 рядків**.
 3. **Швидкість розробки:**
