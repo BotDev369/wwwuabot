@@ -6,28 +6,19 @@
    tokens (--bg-0, --accent, etc.) take precedence over Tailwind defaults. */
 
 /* ─── Reset ──────────────────────────────────────────────────────────────────── */
-*,
-*::before,
-*::after {
-  box-sizing: border-box;
-  margin: 0;
-  padding: 0;
-}
+/* box-sizing, обнулення відступів, типографіка body і height: 100% уже є в
+   спільному reset.css (@wwwuabot/shared/styles). Тут лишається тільки те, що
+   справді відрізняє адмінку: документ не прокручується (скролять панелі), а фон
+   береться з --bg-home (радіальний градієнт) замість плаского --bg-0. */
 
 html,
 body,
 #root {
-  height: 100%;
   overflow: hidden;
 }
 
 body {
   background: var(--bg-home, var(--bg-0));
-  color: var(--text-primary);
-  font-family: var(--font-ui);
-  font-size: 14px;
-  line-height: 1.5;
-  -webkit-font-smoothing: antialiased;
 }
 
 /* ─── Splash ─────────────────────────────────────────────────────────────────── */
@@ -540,15 +531,7 @@ body {
 }
 
 /* ─── Scrollbar ──────────────────────────────────────────────────────────────── */
-::-webkit-scrollbar {
-  width: 6px;
-  height: 6px;
-}
-
-::-webkit-scrollbar-track {
-  background: transparent;
-}
-
+/* Розмір і прозорий трек — у спільному reset.css; тут лише кольори адмінки. */
 ::-webkit-scrollbar-thumb {
   background: var(--border);
   border-radius: 3px;
@@ -569,46 +552,6 @@ body {
   gap: 12px;
 }
 
-/* ─── Status badges ──────────────────────────────────────────────────────────── */
-.status-badge {
-  font-size: 11px;
-  font-weight: 500;
-  padding: 3px 9px;
-  border-radius: 20px;
-  letter-spacing: 0.02em;
-}
-
-.status-badge--loading {
-  background: var(--accent-dim);
-  color: var(--accent);
-}
-
-.status-badge--saving {
-  background: var(--yellow-dim);
-  color: var(--yellow);
-}
-
-.status-badge--saved {
-  background: var(--green-dim);
-  color: var(--green);
-}
-
-.status-badge--error {
-  background: var(--red-dim);
-  color: var(--red);
-  cursor: help;
-}
-
-/* ─── Dirty button indicator ─────────────────────────────────────────────────── */
-/* Moved to packages/shared/src/styles/components.css (.wb-btn-dirty) */
-
-/*
-  height: 6px;
-  background: var(--yellow);
-  border-radius: 50%;
-  border: 1.5px solid var(--accent);
-}
-
 /* ─── Blocks stack ───────────────────────────────────────────────────────────── */
 .blocks-stack {
   display: flex;
@@ -616,36 +559,10 @@ body {
   gap: 8px;
 }
 
-/* ─── Block card ─────────────────────────────────────────────────────────────── */
-.block-card {
-  background: var(--bg-1);
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
-  overflow: hidden;
-  transition:
-    box-shadow 0.15s,
-    border-color 0.15s;
-}
-
-.block-card:hover {
-  border-color: var(--border);
-  box-shadow: var(--shadow-sm);
-}
-
-.block-card--divider .block-card-body {
-  padding: 10px 12px;
-}
-
 /* ─── Block card header ──────────────────────────────────────────────────────── */
-.block-card-header {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 7px 10px;
-  background: var(--bg-2);
-  border-bottom: 1px solid var(--border-subtle);
-}
-
+/* Картка блока — це спільні .wb-card / .wb-card-header / .wb-card-body
+   (packages/shared/src/styles/components.css). Локальні .block-card* лишились
+   від старого інлайн-білдера, у розмітці їх немає — прибрані. */
 .block-type-badge {
   width: 20px;
   height: 20px;
@@ -676,7 +593,12 @@ body {
   transition: opacity 0.15s;
 }
 
-.block-card:hover .block-actions {
+/* Розкриття кнопок блока. Доти тут стояв `.block-card` — клас, якого в розмітці
+   вже немає (картка — спільний .wb-card), тож правило не спрацьовувало ніколи,
+   а .block-actions лишалися з opacity: 0: кнопки ↑ ↓ ✕ у редакторі блоків були
+   невидимі. :focus-within повертає їх і для клавіатури. */
+.wb-card:hover .block-actions,
+.wb-card:focus-within .block-actions {
   opacity: 1;
 }
 
@@ -712,72 +634,10 @@ body {
   color: var(--red);
 }
 
-/* ─── Block card body ────────────────────────────────────────────────────────── */
-.block-card-body {
-  padding: 10px 12px;
-}
-
 .block-row {
   display: flex;
   gap: 8px;
   align-items: center;
-}
-
-.block-input {
-  flex: 1;
-  background: var(--bg-2);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-sm);
-  padding: 7px 10px;
-  font-size: 13px;
-  font-family: var(--font-ui);
-  color: var(--text-primary);
-  outline: none;
-  transition: border-color 0.15s;
-  min-width: 0;
-}
-
-.block-input:focus {
-  border-color: var(--accent);
-  background: var(--bg-1);
-}
-
-.block-textarea {
-  width: 100%;
-  background: var(--bg-2);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-sm);
-  padding: 7px 10px;
-  font-size: 13px;
-  font-family: var(--font-ui);
-  color: var(--text-primary);
-  outline: none;
-  resize: vertical;
-  transition: border-color 0.15s;
-  line-height: 1.5;
-}
-
-.block-textarea:focus {
-  border-color: var(--accent);
-  background: var(--bg-1);
-}
-
-.block-select {
-  background: var(--bg-2);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-sm);
-  padding: 7px 8px;
-  font-size: 12px;
-  font-family: var(--font-mono);
-  color: var(--text-primary);
-  outline: none;
-  cursor: pointer;
-  transition: border-color 0.15s;
-  flex-shrink: 0;
-}
-
-.block-select:focus {
-  border-color: var(--accent);
 }
 
 /* Divider preview line */
@@ -984,32 +844,6 @@ body {
   padding: 8px 0;
 }
 
-/* ─── Sidebar settings section ───────────────────────────────────────────── */
-.sidebar-settings {
-  border-top: 1px solid var(--border);
-  padding: 8px;
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-}
-
-.sidebar-settings-label {
-  padding: 6px 10px 4px;
-  font-size: 10px;
-  font-weight: 600;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  color: var(--text-muted);
-}
-
-.sidebar--collapsed .sidebar-settings {
-  padding: 6px;
-}
-
-.sidebar--collapsed .sidebar-settings-label {
-  display: none;
-}
-
 /* ═══════════════════════════════════════════════════════════════════════════════
    HOME — привітальна (Група 6)
    ═══════════════════════════════════════════════════════════════════════════════ */
@@ -1171,113 +1005,6 @@ body {
   background: var(--bg-2);
 }
 
-.scn-table-wrap {
-  flex: 1;
-  overflow: auto;
-  padding: 16px 20px 24px;
-  position: relative;
-}
-
-.scn-table {
-  width: 100%;
-  border-collapse: separate;
-  border-spacing: 0;
-  background: var(--bg-1);
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
-  overflow: hidden;
-  font-size: 13px;
-}
-
-.scn-table thead th {
-  position: sticky;
-  top: 0;
-  z-index: 2;
-  background: var(--bg-1);
-  border-bottom: 1px solid var(--border);
-  font-size: 11px;
-  font-weight: 600;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-  color: var(--text-muted);
-  text-align: left;
-  padding: 10px 16px;
-}
-
-.scn-th-cw {
-  width: 45%;
-}
-
-.scn-table tbody tr td {
-  padding: 9px 16px;
-  border-top: 1px solid var(--border-subtle);
-}
-
-.scn-table tbody tr:first-child td {
-  border-top: none;
-}
-
-.scn-row {
-  cursor: pointer;
-  transition: background 0.12s;
-}
-
-.scn-row:hover {
-  background: var(--bg-4);
-}
-
-.scn-row:hover td:first-child {
-  box-shadow: inset 2px 0 0 var(--accent);
-}
-
-.scn-cw {
-  font-family: var(--font-mono);
-  font-size: 12.5px;
-  color: var(--text-primary);
-}
-
-.scn-badge {
-  display: inline-block;
-  font-size: 10px;
-  font-weight: 600;
-  letter-spacing: 0.04em;
-  padding: 2px 8px;
-  border-radius: 20px;
-  background: var(--bg-4);
-  color: var(--text-secondary);
-  border: 1px solid var(--border);
-}
-
-.scn-badge--rich {
-  background: var(--accent-dim);
-  color: var(--accent);
-  border-color: transparent;
-}
-
-.scn-updated {
-  color: var(--text-muted);
-  font-size: 12px;
-  white-space: nowrap;
-}
-
-.scn-refreshing {
-  position: absolute;
-  top: 8px;
-  right: 24px;
-  font-size: 11px;
-  color: var(--text-muted);
-}
-
-/* ═══ Unknown (passthrough) block ═══ */
-.block-card--unknown {
-  border-style: dashed;
-}
-
-.block-card--unknown .block-type-badge {
-  background: var(--bg-4);
-  color: var(--text-muted);
-}
-
 .unknown-hint {
   font-size: 12px;
   color: var(--text-muted);
@@ -1292,21 +1019,6 @@ body {
   border-radius: 6px;
   padding: 6px 10px;
   font-style: italic;
-}
-
-/* ═══ Scenario preview ═══ */
-.scn-preview-title {
-  font-family: var(--font-mono);
-  font-size: 13px;
-}
-
-.scn-preview-body {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  overflow: hidden;
-  min-height: 0;
-  background: var(--bg-2);
 }
 
 .tg-photo {
@@ -1350,48 +1062,6 @@ body {
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-}
-
-/* ═══ Scenario form (CRUD) ═══ */
-/* .btn--danger moved to packages/shared/src/styles/components.css (.wb-btn-danger) */
-
-.scn-form {
-  flex: 1;
-  overflow: auto;
-  padding: 20px;
-  background: var(--bg-2);
-}
-
-.scn-form-inner {
-  max-width: 880px;
-  display: flex;
-  flex-direction: column;
-  gap: 14px;
-}
-
-.scn-form-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 12px;
-}
-
-.scn-field {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-}
-
-.scn-field--full {
-  grid-column: 1 / -1;
-}
-
-.scn-field-label {
-  font-size: 11px;
-  font-weight: 600;
-  letter-spacing: 0.04em;
-  color: var(--text-muted);
-  text-transform: uppercase;
-  font-family: var(--font-mono);
 }
 
 /* ═══ Keyboard constructor ═══ */
@@ -2065,10 +1735,6 @@ body {
 
 /* ─── Row menu ─────────────────────────────────────────────────────────────── */
 
-.usr-menu-anchor {
-  position: relative;
-}
-
 .usr-menu-btn {
   width: 24px;
   height: 24px;
@@ -2091,131 +1757,6 @@ body {
   color: var(--text-primary);
 }
 
-/* ─── Modal menu (for row actions) ──────────────────────────────────────── */
-
-.usr-modal-overlay {
-  position: fixed;
-  inset: 0;
-  z-index: 1000;
-  background: rgba(0, 0, 0, 0.35);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 20px;
-  animation: usr-fade-in 0.15s ease;
-}
-
-@keyframes usr-fade-in {
-  from {
-    opacity: 0;
-  }
-  to {
-    opacity: 1;
-  }
-}
-
-.usr-modal {
-  background: var(--bg-1);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-lg);
-  width: 100%;
-  max-width: 340px;
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.18);
-  overflow: hidden;
-  animation: usr-slide-up 0.2s cubic-bezier(0.2, 0.8, 0.2, 1);
-}
-
-@keyframes usr-slide-up {
-  from {
-    transform: translateY(16px);
-    opacity: 0;
-  }
-  to {
-    transform: none;
-    opacity: 1;
-  }
-}
-
-.usr-modal-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 12px 14px;
-  border-bottom: 1px solid var(--border);
-}
-
-.usr-modal-title {
-  font-size: 13px;
-  font-weight: 600;
-  color: var(--text-primary);
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.usr-modal-close {
-  width: 26px;
-  height: 26px;
-  border: none;
-  background: none;
-  border-radius: var(--radius-sm);
-  color: var(--text-muted);
-  font-size: 13px;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: background 0.1s;
-  flex-shrink: 0;
-}
-
-.usr-modal-close:hover {
-  background: var(--bg-4);
-  color: var(--text-primary);
-}
-
-.usr-modal-menu {
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-  padding: 6px;
-}
-
-.usr-modal-menu-item {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  width: 100%;
-  padding: 9px 10px;
-  border: none;
-  background: none;
-  border-radius: var(--radius-sm);
-  color: var(--text-primary);
-  font-size: 13px;
-  font-family: var(--font-ui);
-  cursor: pointer;
-  text-align: left;
-  transition: background 0.1s;
-}
-
-.usr-modal-menu-item:hover {
-  background: var(--bg-2);
-}
-
-.usr-modal-menu-item--danger {
-  color: var(--red);
-}
-
-.usr-modal-menu-item--danger:hover {
-  background: var(--red-dim);
-}
-
-.usr-modal-divider {
-  height: 1px;
-  background: var(--border);
-  margin: 4px 0;
-}
-
 /* ─── Bulk bar ─────────────────────────────────────────────────────────────── */
 
 .usr-bulk-bar {
@@ -2236,132 +1777,6 @@ body {
 }
 
 /* .btn--sm moved to packages/shared/src/styles/components.css (.wb-btn-sm) */
-
-/* ─── Modal ────────────────────────────────────────────────────────────────── */
-
-.usr-modal-overlay {
-  position: fixed;
-  inset: 0;
-  z-index: 1000;
-  background: rgba(0, 0, 0, 0.4);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 20px;
-}
-
-.usr-modal {
-  background: var(--bg-1);
-  border: 1px solid var(--border);
-  border-radius: 10px;
-  width: 100%;
-  max-width: 420px;
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15);
-  overflow: hidden;
-}
-
-.usr-modal-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 14px 16px;
-  border-bottom: 1px solid var(--border);
-}
-
-.usr-modal-title {
-  font-size: 14px;
-  font-weight: 600;
-  color: var(--text-primary);
-}
-
-.usr-modal-close {
-  width: 28px;
-  height: 28px;
-  border: none;
-  background: none;
-  border-radius: var(--radius-sm);
-  color: var(--text-muted);
-  font-size: 14px;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: background 0.1s;
-}
-
-.usr-modal-close:hover {
-  background: var(--bg-4);
-  color: var(--text-primary);
-}
-
-.usr-modal-body {
-  padding: 16px;
-}
-
-.usr-modal-textarea {
-  width: 100%;
-  background: var(--bg-2);
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
-  padding: 10px 12px;
-  font-size: 13px;
-  font-family: var(--font-ui);
-  color: var(--text-primary);
-  outline: none;
-  resize: vertical;
-  transition: border-color 0.15s;
-  line-height: 1.5;
-}
-
-.usr-modal-textarea:focus {
-  border-color: var(--accent);
-  background: var(--bg-1);
-}
-
-.usr-modal-error {
-  margin-top: 8px;
-  font-size: 12px;
-  color: var(--red);
-}
-
-.usr-modal-success {
-  text-align: center;
-  padding: 20px 0;
-  font-size: 15px;
-  color: var(--green);
-}
-
-.usr-modal-footer {
-  display: flex;
-  justify-content: flex-end;
-  gap: 8px;
-  padding: 12px 16px;
-  border-top: 1px solid var(--border);
-}
-
-/* ─── Wide modal (card / edit) ──────────────────────────────────────────── */
-
-.usr-modal--wide {
-  max-width: 560px;
-}
-
-.usr-card-body {
-  max-height: 60vh;
-  overflow-y: auto;
-  padding: 0;
-}
-
-.usr-card-loading,
-.usr-card-error {
-  padding: 24px 16px;
-  text-align: center;
-  font-size: 13px;
-  color: var(--text-muted);
-}
-
-.usr-card-error {
-  color: var(--red);
-}
 
 /* ─── Card table ─────────────────────────────────────────────────────────── */
 
@@ -2412,113 +1827,6 @@ body {
 .usr-card-table tbody tr:first-child .usr-card-td-field,
 .usr-card-table tbody tr:first-child .usr-card-td-value {
   border-top: none;
-}
-
-.usr-card-text {
-  font-size: 12px;
-  color: var(--text-primary);
-}
-
-.usr-card-null {
-  font-size: 12px;
-  color: var(--text-muted);
-  font-style: italic;
-}
-
-/* JSON collapsible */
-
-.usr-card-json {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-}
-
-.usr-card-json-toggle {
-  background: none;
-  border: none;
-  font-size: 11px;
-  font-weight: 600;
-  color: var(--accent);
-  cursor: pointer;
-  text-align: left;
-  padding: 0;
-  font-family: var(--font-mono);
-}
-
-.usr-card-json-toggle:hover {
-  text-decoration: underline;
-}
-
-.usr-card-json-peek {
-  font-size: 10px;
-  color: var(--text-muted);
-  font-family: var(--font-mono);
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-  max-width: 360px;
-}
-
-.usr-card-json-full {
-  font-size: 11px;
-  font-family: var(--font-mono);
-  background: var(--bg-2);
-  border: 1px solid var(--border-subtle);
-  border-radius: var(--radius-sm);
-  padding: 8px 10px;
-  margin: 0;
-  overflow-x: auto;
-  white-space: pre;
-  max-height: 300px;
-  overflow-y: auto;
-}
-
-/* ─── Edit form ─────────────────────────────────────────────────────────── */
-
-.usr-edit-fields {
-  display: flex;
-  flex-direction: column;
-}
-
-.usr-edit-row {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 5px 12px;
-  border-top: 1px solid var(--border-subtle);
-}
-
-.usr-edit-row:first-child {
-  border-top: none;
-}
-
-.usr-edit-label {
-  font-size: 11px;
-  font-weight: 500;
-  color: var(--text-secondary);
-  font-family: var(--font-mono);
-  width: 140px;
-  min-width: 120px;
-  flex-shrink: 0;
-}
-
-.usr-edit-input {
-  flex: 1;
-  background: var(--bg-2);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-sm);
-  padding: 5px 8px;
-  font-size: 12px;
-  font-family: var(--font-mono);
-  color: var(--text-primary);
-  outline: none;
-  min-width: 0;
-  transition: border-color 0.15s;
-}
-
-.usr-edit-input:focus {
-  border-color: var(--accent);
-  background: var(--bg-1);
 }
 
 /* ═══ Mobile adaptation ═══ */
@@ -2606,95 +1914,11 @@ body {
   font-size: 14px;
 }
 
-/* Tab toolbar */
-.scn-tab-toolbar {
-  display: flex;
-  gap: 6px;
-  padding: 8px 12px;
-  border-bottom: 1px solid var(--border-subtle);
-  background: var(--bg-1);
-}
-
-/* Tab content area */
-.scn-tab-content {
-  flex: 1;
-  padding: 16px;
-  overflow-y: auto;
-}
-
-/* Tab preview */
-.scn-tab-preview {
-  border-top: 1px solid var(--border);
-  background: var(--bg-2);
-  max-height: 45%;
-  overflow-y: auto;
-}
-
-.scn-tab-preview-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 6px 12px;
-  border-bottom: 1px solid var(--border-subtle);
-  background: var(--bg-1);
-}
-
-.scn-tab-preview-label {
-  font-size: 11px;
-  font-weight: 600;
-  letter-spacing: 0.04em;
-  color: var(--text-muted);
-  text-transform: uppercase;
-}
-
-.scn-tab-preview-body {
-  padding: 12px;
-  display: flex;
-  justify-content: center;
-}
-
-/* Fields grid */
-.scn-fields-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 12px;
-}
-
 @media (max-width: 640px) {
-  .scn-fields-grid {
-    grid-template-columns: 1fr;
-  }
-
   .scn-tab {
     padding: 8px 10px;
     font-size: 12px;
   }
-}
-
-.scn-field {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-}
-
-.scn-field--full {
-  grid-column: 1 / -1;
-}
-
-.scn-field-label {
-  font-size: 10px;
-  font-weight: 600;
-  letter-spacing: 0.04em;
-  color: var(--text-muted);
-  text-transform: uppercase;
-  font-family: var(--font-mono);
-}
-
-/* Disabled input */
-.usr-edit-input--disabled {
-  opacity: 0.6;
-  cursor: not-allowed;
-  background: var(--bg-2);
 }
 
 /* ═══════════════════════════════════════════════════════════════════════════════
@@ -2745,41 +1969,6 @@ body {
    ═══════════════════════════════════════════════════════════════════════════════ */
 
 @media (max-width: 768px) {
-  .usr-modal-overlay {
-    padding: 0 !important;
-    align-items: stretch !important;
-    justify-content: stretch !important;
-  }
-
-  .usr-modal {
-    max-width: none !important;
-    width: 100% !important;
-    height: 100% !important;
-    max-height: none !important;
-    border-radius: 0 !important;
-    border: none !important;
-    display: flex !important;
-    flex-direction: column !important;
-  }
-
-  .usr-modal-header {
-    padding: 10px 12px !important;
-    flex-shrink: 0;
-  }
-
-  .usr-modal-body {
-    flex: 1;
-    overflow-y: auto !important;
-    -webkit-overflow-scrolling: touch;
-    padding: 8px 0 !important;
-  }
-
-  .usr-modal-footer {
-    padding: 10px 12px !important;
-    flex-shrink: 0;
-    padding-bottom: calc(10px + env(safe-area-inset-bottom, 0px)) !important;
-  }
-
   /* Tabs — horizontal scroll on mobile */
   .scn-tabs {
     overflow-x: auto;
@@ -2818,23 +2007,10 @@ body {
     border-right: none !important;
   }
 
-  /* Inputs — prevent iOS zoom */
-  .block-input,
-  .block-textarea,
-  .block-select {
-    font-size: 16px !important;
-    padding: 10px 12px !important;
-  }
-
   /* Keyboard buttons — stacked on mobile */
   .kb-btn {
     flex-direction: column;
     gap: 4px;
-  }
-
-  .kb-btn .block-input,
-  .kb-btn .block-select {
-    width: 100%;
   }
 
   .kb-row-buttons {
@@ -3158,11 +2334,6 @@ body {
     width: 100% !important;
   }
 
-  /* Children header: wrap */
-  .pb-be-children-header {
-    flex-direction: column;
-    align-items: flex-start;
-  }
   .pb-be-add-btn {
     width: 100%;
     text-align: center;
