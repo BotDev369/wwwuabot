@@ -2,6 +2,10 @@ name = "bot-dev"
 main = "src/index.ts"
 compatibility_date = "2026-08-21"
 
+# Sentry SDK для Workers вимагає AsyncLocalStorage, тобто `nodejs_compat`
+# (див. коментар у api-dev/wrangler.toml).
+compatibility_flags = ["nodejs_compat"]
+
 # Default D1 binding (for local dev without --env)
 [[d1_databases]]
 binding = "DB"
@@ -9,7 +13,11 @@ database_name = "wwwuabot-db-dev"
 database_id = "9fc03f61-d497-4d92-bae4-c92b02c2d1c5"
 
 [vars]
-ENVIRONMENT = "dev"
+# Прод-значення — рівно `production` (як в api-dev). Це не косметика: від
+# нього залежить і текст помилки для користувача (`TEXTS.error`), і мітка
+# `environment` у Sentry. Раніше тут стояло `dev`, і користувачі в проді
+# бачили «Сталася помилка (Dev mode)».
+ENVIRONMENT = "production"
 CLOUDINARY_CLOUD_NAME = "ddoumoe5n"
 
 [[queues.producers]]
@@ -27,3 +35,7 @@ enabled = true
 [observability.logs]
 enabled = true
 invocation_logs = false
+
+# Дає SDK `id` версії — у Sentry видно, який саме деплой зламався.
+[version_metadata]
+binding = "CF_VERSION_METADATA"

@@ -18,4 +18,14 @@ export interface Env {
    * йдуть виключно через cookie-сесію (див. `router.ts`, адмін-гейт).
    */
   ADMIN_SECRET?: string;
+  /**
+   * DSN із Sentry. Задається як Cloudflare Secret (`wrangler secret put` або
+   * Dashboard). Без нього Sentry вимкнено — воркер працює як звичайно.
+   * Див. `@wwwuabot/shared/observability/sentry`.
+   */
+  SENTRY_DSN?: string;
+  /** Середовище для подій Sentry (`dev` / `production`). */
+  ENVIRONMENT?: string;
+  /** Binding Cloudflare `CF_VERSION_METADATA` — дає `id` релізу для Sentry. */
+  CF_VERSION_METADATA?: { id?: string };
 }

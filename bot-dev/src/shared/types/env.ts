@@ -27,6 +27,13 @@ export interface Env {
   LOG_QUEUE: Queue<LogMessage>;
   GAS_LOG_WEBHOOK_URL: string;
   CLOUDINARY_CLOUD_NAME: string;
+  /**
+   * DSN із Sentry. Задається як Cloudflare Secret. Без нього Sentry вимкнено
+   * — бот працює як звичайно.
+   */
+  SENTRY_DSN?: string;
+  /** Binding Cloudflare `CF_VERSION_METADATA` — дає `id` релізу для Sentry. */
+  CF_VERSION_METADATA?: { id?: string };
 }
 
 export interface ScreenState {

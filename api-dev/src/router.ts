@@ -1,4 +1,5 @@
 import type { Env } from "./shared/types";
+import { decodePathSegment } from "./shared/url";
 import { handleHealth, handleDeepHealth } from "./controllers/health.controller";
 import { handleAnalyze, handleAnalysisRead, handleSystems, handleCompare } from "./controllers/astrology.controller";
 import { handleScenario } from "./controllers/scenarios.controller";
@@ -136,7 +137,8 @@ export async function handleRequest(
 
   // ── MyDate: analysis by date ────────────────────────────────────
   if (pathname.startsWith("/api/mydate/analysis/")) {
-    const date = decodeURIComponent(pathname.replace("/api/mydate/analysis/", ""));
+    const date = decodePathSegment(pathname.replace("/api/mydate/analysis/", ""));
+    if (date === null) return badRequest();
     return handleAnalysisRead(request, env, date);
   }
 
@@ -157,7 +159,8 @@ export async function handleRequest(
 
   // ── Scenario by slug ────────────────────────────────────────────
   if (pathname.startsWith("/api/scenario/")) {
-    const slug = decodeURIComponent(pathname.replace("/api/scenario/", ""));
+    const slug = decodePathSegment(pathname.replace("/api/scenario/", ""));
+    if (slug === null) return badRequest();
     return handleScenario(request, env, slug);
   }
 
@@ -355,4 +358,14 @@ export async function handleRequest(
 
   // ── 404 ─────────────────────────────────────────────────────────
   return new Response("Not Found", { status: 404 });
+}
+
+/**
+ * 400 для некоректного кодування в шляху (див. `decodePathSegment`).
+ *
+ * Навмисно без деталей: кодують шлях клієнти, а не користувач, тож
+ * підказувати нічого — досить того, що це помилка клієнта, а не збій.
+ */
+function badRequest(): Response {
+  return new Response("Bad Request", { status: 400 });
 }

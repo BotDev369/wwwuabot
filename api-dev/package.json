@@ -4,6 +4,7 @@
   "private": true,
   "type": "module",
   "dependencies": {
+    "@sentry/cloudflare": "^10.74.0",
     "@wwwuabot/shared": "*"
   },
   "scripts": {

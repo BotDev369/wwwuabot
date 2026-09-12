@@ -7,7 +7,7 @@ Rules for developers, contributors, and AI agents.
 ## Quality Gates (обов'язково перед кожним пушем)
 
 ```bash
-npm test            # 141 unit-тести (Vitest)
+npm test            # 162 unit-тести (Vitest)
 npm run typecheck   # TypeScript strict — 0 any
 npm run lint        # ESLint
 npm run format:check # Prettier (поки що не в CI — див. нижче)
@@ -26,7 +26,7 @@ npm run format:check # Prettier (поки що не в CI — див. нижче
 | CVE | `npm audit --audit-level=critical` | так (раніше стояв `continue-on-error: true`, тобто не блокував нічого) |
 | Лінт | `npm run lint` | так |
 | Типізація | `npm run typecheck` | так |
-| Тести | `npm test` (141) | так (S-6 закрито) |
+| Тести | `npm test` (162) | так (S-6 закрито) |
 | Форматування | `npm run format:check` | **ні** — у репо 199 невідформатованих файлів; увімкнути після `npm run format` |
 
 Гейти запускаються і на кожен pull request (деплой на PR неможливий).

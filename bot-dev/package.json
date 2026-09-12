@@ -25,8 +25,9 @@
   "license": "ISC",
   "type": "module",
   "dependencies": {
-    "grammy": "^1.45.1",
-    "@wwwuabot/shared": "*"
+    "@sentry/cloudflare": "^10.74.0",
+    "@wwwuabot/shared": "*",
+    "grammy": "^1.45.1"
   },
   "devDependencies": {
     "@cloudflare/workers-types": "^5.20260714.1",

@@ -1,3 +1,4 @@
+import * as Sentry from "@sentry/cloudflare";
 import { Bot, BotError } from "grammy";
 import type { Env, AppContext } from "../shared/types/env";
 import { TEXTS } from "../shared/config/texts";
@@ -25,6 +26,10 @@ export function createBot(env: Env): Bot<AppContext> {
   bot.catch(async (err: BotError<AppContext>) => {
     const ctx = err.ctx;
     const error = err.error;
+    // Помилки, які grammY ловить сам, не долітають до `withSentry` — звітуємо
+    // явно. Контекст Telegram (текст повідомлення, initData) НЕ передаємо:
+    // у Sentry має їхати тільки сам виняток.
+    Sentry.captureException(error);
     const log = buildLogMessage(ctx, "error", error);
     log.action_type = `bot_${ctx.update?.message ? "message" : "callback_query"}`;
     await LogQueueService.push(env, log);

@@ -2,6 +2,11 @@ name = "api-dev"
 main = "src/index.ts"
 compatibility_date = "2026-08-21"
 
+# Sentry SDK для Workers вимагає AsyncLocalStorage, тобто `nodejs_compat`
+# і дату сумісності ≥ 2024-09-23. DSN живе не тут, а в Cloudflare Secrets
+# (`SENTRY_DSN`) — без нього Sentry просто вимкнено.
+compatibility_flags = ["nodejs_compat"]
+
 # Default D1 binding (for local dev without --env)
 [[d1_databases]]
 binding = "DB"
@@ -13,7 +18,9 @@ binding = "CONTENT_KV"
 id = "bda7a5fca58b4fbda87d75105d558ebf"
 
 [vars]
-# ADMIN_SECRET та BOT_TOKEN — задаються через Cloudflare Dashboard (Secrets)
+# ADMIN_SECRET, BOT_TOKEN і SENTRY_DSN — задаються через Cloudflare Dashboard (Secrets)
+# ENVIRONMENT потрапляє лише в події Sentry (`environment`).
+ENVIRONMENT = "production"
 
 # Workers Logs: логи, помилки й необроблені винятки видно в панелі Cloudflare.
 # invocation_logs = false — вимикає лише службовий лог кожного запиту
@@ -26,3 +33,7 @@ enabled = true
 [observability.logs]
 enabled = true
 invocation_logs = false
+
+# Дає SDK `id` версії — у Sentry видно, який саме деплой зламався.
+[version_metadata]
+binding = "CF_VERSION_METADATA"

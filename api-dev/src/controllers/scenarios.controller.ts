@@ -114,8 +114,11 @@ export async function handleScenario(
       userContext: { authenticated: false, roles: [], flags: [] },
     });
   } catch (e: unknown) {
+    // Це **публічний** ендпоїнт (без авторизації), тому текст винятку
+    // назовні не йде: у ньому бувають назви таблиць і значення з D1.
+    // Клієнту достатньо `ok: false` — він і так показує фолбек-сторінку;
+    // деталі йдуть у Workers Logs і Sentry.
     apiLog.error("Scenario error", e);
-    const msg = e instanceof Error ? e.message : String(e);
-    return json({ ok: false, error: msg }, 500);
+    return json({ ok: false, error: "Internal error" }, 500);
   }
 }
