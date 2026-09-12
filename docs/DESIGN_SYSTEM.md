@@ -173,6 +173,48 @@ const name = await dialog.prompt("Назва:");
 </div>
 ```
 
+### Каркас оболонки: кирпичики (`app-chrome.css`)
+
+`web-platform-dev` і `web-admin-dev` — дві оболонки **одного** продукту: різниця лише
+в логіці, правах і даних. Каркас (меню, шапка, сторінка, екран входу) описаний один
+раз у `packages/shared/src/styles/app-chrome.css`; оболонка лише складає його.
+
+| Кирпичик | Призначення |
+|---|---|
+| `.wb-app` / `.wb-app-main` / `.wb-app-body` | корінь застосунку: меню ліворуч, контент праворуч (`100dvh`) |
+| `.wb-app-header` / `.wb-app-title` / `.wb-app-hamburger` / `.wb-app-logout` | верхня смуга: гамбургер, назва, вихід |
+| `.wb-nav` (+ `--collapsed`) | бічне меню; на мобільному стає drawer'ом через `.app-drawer` |
+| `.wb-nav-header` / `.wb-nav-logo` / `.wb-nav-title` / `.wb-nav-toggle` | шапка меню |
+| `.wb-nav-menu` / `.wb-nav-section` / `.wb-nav-section-title` | прокручуваний список і групи пунктів |
+| `.wb-nav-item` (+ `--active`) / `.wb-nav-icon` / `.wb-nav-label` | пункт меню — і посилання, і кнопка (напр. перемикач теми) |
+| `.wb-nav-footer` | низ меню (вихід) |
+| `.wb-topbar` / `.wb-topbar-left` / `.wb-topbar-title` / `.wb-topbar-right` | шапка сторінки з діями |
+| `.wb-page` / `.wb-page-head` / `.wb-page-title` / `.wb-page-actions` | контент сторінки з заголовком і кнопками |
+| `.wb-splash` / `.wb-splash-icon` | перший кадр, поки невідомо, хто користувач |
+| `.wb-auth` / `-card` / `-logo` / `-form` / `-field` / `-label` / `-input` / `-error` / `-message` / `-submit` | екран входу й «відкрийте в Telegram» |
+| `.wb-profile` / `-title` / `-fields` / `-field` / `-label` / `-value` | картка користувача (рендерить спільний `UserProfileCard`) |
+
+```html
+<!-- Адмінка: меню + контент -->
+<div class="wb-app">
+  <aside class="wb-nav app-drawer">
+    <div class="wb-nav-header">…</div>
+    <nav class="wb-nav-menu">
+      <a class="wb-nav-item wb-nav-item--active">…</a>
+    </nav>
+  </aside>
+  <div class="wb-app-main">
+    <header class="wb-app-header">…</header>
+    <main class="wb-app-body">…</main>
+  </div>
+</div>
+```
+
+Правило межі: **оболонка не малює новий каркас**. Якщо елемент потрібен обом — він
+кирпичик у shared; якщо справді лише одній — клас цієї оболонки і лише *всередині*
+її власного `index.css`. Брендові теми (`apple.css` / `android.css`) стилізують саме
+кирпичики, тому `data-brand` доходить до обох оболонок однаково.
+
 ---
 
 ## Icons: `<Icon />`
@@ -219,8 +261,15 @@ import { Icon } from "@wwwuabot/shared";
 11. **A class without a rule is a bug, not a style.** `class="wb-mt-3"` in the markup
     with no `.wb-mt-3` anywhere renders nothing and fails silently: the spacing simply
     never appears, and no test catches it. Before adding a class to markup, add it to
-    `components.css` — or use one that already exists.
-12. Shared blocks (`packages/ui/src/blocks/*`) are still styled with inline
+    `components.css` — or use one that already exists. Enforced automatically:
+    `npm run check:css` (the same gate in CI) fails when markup uses a class with no
+    rule, or when shared code is styled in only one shell. Known debt lives in
+    `scripts/css-baseline.mjs` and must shrink, never grow.
+12. **Compose from bricks — don't draw your own chrome.** A shell's chrome is
+    `.wb-app*`, `.wb-nav*`, `.wb-topbar*`, `.wb-page*`, `.wb-auth*`, `.wb-splash`,
+    `.wb-profile*` (`app-chrome.css`). The same detail in both shells → a brick in
+    shared; a new private class for the same thing is a defect, not "the shell's style".
+13. Shared blocks (`packages/ui/src/blocks/*`) are still styled with inline
     `style={{ … }}` (192 objects, 30 hardcoded hex values), and **44 `wb-block-*`
     classes have no CSS rule at all**, so `data-brand` and `data-theme` don't reach them. Moving those styles into `.wb-block-*` rules in
     `components.css` is open work — `docs/CONSOLIDATION_PLAN.md` §3 (пункт 3).
@@ -235,8 +284,11 @@ import { Icon } from "@wwwuabot/shared";
 | `packages/shared/src/styles/apple.css` | Apple brand overrides |
 | `packages/shared/src/styles/android.css` | Material brand overrides |
 | `packages/shared/src/styles/components.css` | `.wb-*` component styles (включно з `.wb-dialog*`) |
+| `packages/shared/src/styles/app-chrome.css` | кирпичики каркаса оболонки: app / nav / topbar / page / auth / splash / profile |
 | `packages/shared/src/styles/page-layout.css` | каркас сторінки для `PageRenderer` |
 | `packages/shared/src/styles/drawer.css` | виїзне меню й гамбургер (обидві оболонки) |
+| `scripts/check-css-classes.mjs` | перевірка «клас у розмітці ↔ правило в CSS» (гейт CI) |
+| `scripts/css-baseline.mjs` | задокументований борг для цієї перевірки (тільки зменшувати) |
 | `packages/ui/src/dialog/` | `DialogProvider` + `useDialog()` |
 | `packages/shared/src/components/icons.tsx` | SVG icon definitions |
 | `packages/shared/src/components/Icon.tsx` | `<Icon />` component |

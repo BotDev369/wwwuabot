@@ -121,12 +121,7 @@ export function SaveActionButtons({
   if (success) {
     return (
       <div className={`wb-save-actions wb-save-actions--success ${className}`.trim()} style={style}>
-        <span
-          className="usr-edit-success"
-          style={{ fontWeight: 600, color: "var(--color-success, #22c55e)" }}
-        >
-          {successMessage}
-        </span>
+        <span className="wb-text-green wb-font-semibold">{successMessage}</span>
       </div>
     );
   }

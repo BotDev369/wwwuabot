@@ -62,3 +62,7 @@
 /* ── Каркас сторінок спільного PageRenderer (page-layout/page-zone) ──
    Імпортується зі shared, бо ці класи рендерить @wwwuabot/ui, а не оболонка. */
 @import "./page-layout.css";
+
+/* ── Кирпичики каркаса оболонки (app/nav/topbar/page/splash/auth/profile) ──
+   Обидві оболонки складаються з них, а не малюють кожна своє. */
+@import "./app-chrome.css";

@@ -15,8 +15,8 @@ export function AuthGate({ children }: { children: ReactNode }) {
 
   if (authState === "loading") {
     return (
-      <div className="splash">
-        <span className="splash-icon">✦</span>
+      <div className="wb-splash">
+        <span className="wb-splash-icon">✦</span>
       </div>
     );
   }

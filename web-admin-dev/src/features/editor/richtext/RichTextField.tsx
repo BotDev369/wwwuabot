@@ -1,4 +1,5 @@
 import { useRef, useState } from "react";
+import { Icon } from "@wwwuabot/shared";
 import { markupToRuns, richToRuns, runsToMarkup, runsToRich } from "./richtext.model";
 import { RichPreview } from "./RichPreview";
 
@@ -140,7 +141,7 @@ export function RichTextField({
           </button>
         ))}
         <button type="button" className="rt-btn" title="Посилання" onClick={addLink}>
-          🔗
+          <Icon name="link" size={14} />
         </button>
       </div>
       {showPreview && (

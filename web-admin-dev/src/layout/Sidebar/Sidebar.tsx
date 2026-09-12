@@ -1,8 +1,8 @@
+import { Icon, ThemeButton } from "@wwwuabot/shared";
 import { useCollapsedNav } from "./useCollapsedNav";
 import { useSidebar } from "./useSidebar";
 import { SidebarNav } from "./SidebarNav";
 import { logout } from "../../shared/api/auth.api";
-import { ThemeButton } from "@wwwuabot/shared";
 
 interface SidebarProps {
   /** Drawer відкрито — тільки на мобільному (`useIsMobile` у AppShell). */
@@ -11,6 +11,13 @@ interface SidebarProps {
   onNavigate?: () => void;
 }
 
+/**
+ * Бічне меню адмінки.
+ *
+ * Розмітка — спільні кирпичики `.wb-nav*` із `@wwwuabot/shared/styles`
+ * (вигляд, згорнутий стан, мобільний drawer). Тут лишається рівно те, чим
+ * адмінка відрізняється від платформи: лого, склад пунктів і кнопка виходу.
+ */
 export function Sidebar({ open = false, onNavigate }: SidebarProps) {
   const collapsed = useCollapsedNav();
   const toggle = useSidebar((state) => state.toggle);
@@ -22,61 +29,36 @@ export function Sidebar({ open = false, onNavigate }: SidebarProps) {
 
   return (
     <aside
-      className={`sidebar app-drawer${collapsed ? " sidebar--collapsed" : ""}${open ? " app-drawer--open" : ""}`}
+      className={`wb-nav app-drawer${collapsed ? " wb-nav--collapsed" : ""}${open ? " app-drawer--open" : ""}`}
     >
-      <div className="sidebar-header">
+      <div className="wb-nav-header">
         {!collapsed && (
           <>
-            <span className="sidebar-logo">✦</span>
-            <span className="sidebar-title">WWWUABOT</span>
+            <span className="wb-nav-logo">✦</span>
+            <span className="wb-nav-title">WWWUABOT</span>
           </>
         )}
         <button
           type="button"
-          className="sidebar-toggle"
+          className="wb-nav-toggle"
           onClick={toggle}
           title={collapsed ? "Розгорнути" : "Згорнути"}
           aria-label={collapsed ? "Розгорнути бічне меню" : "Згорнути бічне меню"}
         >
-          <svg
-            width="18"
-            height="18"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-          >
-            <rect x="3" y="3" width="18" height="18" rx="2" />
-            <line x1="9" y1="3" x2="9" y2="21" />
-          </svg>
+          <Icon name="sidebar-toggle" size={18} />
         </button>
       </div>
 
       {/* Theme button — top of nav, above Головна */}
-      <div style={{ padding: "8px 8px 0" }}>
+      <div className="wb-nav-extra">
         <ThemeButton compact={collapsed} />
       </div>
 
       <SidebarNav collapsed={collapsed} onNavigate={onNavigate} />
 
-      <div className="sidebar-footer">
-        <button type="button" className="logout-btn" onClick={handleLogout} title="Вийти">
-          <svg
-            width="16"
-            height="16"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-          >
-            <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
-            <polyline points="16 17 21 12 16 7" />
-            <line x1="21" y1="12" x2="9" y2="12" />
-          </svg>
+      <div className="wb-nav-footer">
+        <button type="button" className="wb-app-logout" onClick={handleLogout} title="Вийти">
+          <Icon name="logout" size={16} />
           {!collapsed && <span>Вийти</span>}
         </button>
       </div>

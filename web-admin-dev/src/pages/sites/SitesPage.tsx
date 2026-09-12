@@ -9,6 +9,7 @@ import type { Site } from "@wwwuabot/shared";
 import { SITE_STATUS_LABELS, SITE_STATUS_BADGE_CLASS } from "@wwwuabot/shared";
 import { Icon } from "@wwwuabot/shared";
 import { useDialog } from "@wwwuabot/ui/dialog";
+import { PageTopbar } from "../../layout/PageTopbar";
 
 type StatusFilter = "" | "draft" | "pending" | "published" | "rejected";
 
@@ -79,12 +80,12 @@ export function SitesPage() {
 
   return (
     <>
-      <div className="page-topbar">
-        <h1 className="topbar-title">
+      <PageTopbar>
+        <h1 className="wb-topbar-title">
           <Icon name="layout" size={20} />
           Сайти
         </h1>
-      </div>
+      </PageTopbar>
 
       <div style={{ padding: "var(--sp-5)" }}>
         {/* Фільтри */}

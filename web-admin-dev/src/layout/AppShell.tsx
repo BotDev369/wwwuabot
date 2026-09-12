@@ -1,4 +1,5 @@
 import { Outlet } from "react-router-dom";
+import { Icon } from "@wwwuabot/shared";
 import { Sidebar } from "./Sidebar/Sidebar";
 import { useIsMobile } from "./useIsMobile";
 import { useMobileNav } from "./useMobileNav";
@@ -14,16 +15,16 @@ export function AppShell() {
   }
 
   return (
-    <div className="app-root">
+    <div className="wb-app">
       {isMobile && open && <div className="app-drawer-overlay" onClick={close} />}
       <Sidebar open={isMobile && open} onNavigate={close} />
-      <div className="main-wrapper">
-        <header className="main-header">
+      <div className="wb-app-main">
+        <header className="wb-app-header">
           {/* Той самий клас і та сама розмітка, що в гамбургері PageRenderer:
               на мобільному обидві оболонки мають однакову кнопку меню. */}
           <button
             type="button"
-            className="hamburger main-header-hamburger"
+            className="hamburger wb-app-hamburger"
             onClick={toggle}
             aria-label={open ? "Закрити меню" : "Відкрити меню"}
             aria-expanded={open}
@@ -32,31 +33,13 @@ export function AppShell() {
             <span />
             <span />
           </button>
-          <span className="main-header-title">WWWUABOT Admin</span>
-          <button
-            type="button"
-            className="main-header-logout"
-            onClick={handleLogout}
-            title="Вийти з адмінки"
-          >
-            <svg
-              width="16"
-              height="16"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            >
-              <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
-              <polyline points="16 17 21 12 16 7" />
-              <line x1="21" y1="12" x2="9" y2="12" />
-            </svg>
+          <span className="wb-app-title">WWWUABOT Admin</span>
+          <button type="button" className="wb-app-logout" onClick={handleLogout}>
+            <Icon name="logout" size={16} />
             <span>Вийти</span>
           </button>
         </header>
-        <main className="main">
+        <main className="wb-app-body">
           <Outlet />
         </main>
       </div>

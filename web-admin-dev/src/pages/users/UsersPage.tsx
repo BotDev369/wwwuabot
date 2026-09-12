@@ -17,11 +17,11 @@ export function UsersPage() {
   return (
     <>
       <PageTopbar>
-        <div className="topbar-left">
-          <h1 className="topbar-title">Користувачі</h1>
+        <div className="wb-topbar-left">
+          <h1 className="wb-topbar-title">Користувачі</h1>
           {items.length > 0 && <span className="scn-count">{items.length}</span>}
         </div>
-        <div className="topbar-right">
+        <div className="wb-topbar-right">
           <input
             type="text"
             className="scn-search"

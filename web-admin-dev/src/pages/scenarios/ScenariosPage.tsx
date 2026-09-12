@@ -95,11 +95,11 @@ export function ScenariosPage() {
   return (
     <>
       <PageTopbar>
-        <div className="topbar-left">
-          <h1 className="topbar-title">Сценарії</h1>
+        <div className="wb-topbar-left">
+          <h1 className="wb-topbar-title">Сценарії</h1>
           {items.length > 0 && <span className="scn-count">{items.length}</span>}
         </div>
-        <div className="topbar-right">
+        <div className="wb-topbar-right">
           <button className="wb-btn wb-btn-primary" onClick={handleCreate} disabled={creating}>
             {creating ? "Створення…" : "+ Новий"}
           </button>

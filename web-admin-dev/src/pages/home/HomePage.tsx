@@ -25,7 +25,7 @@ export function HomePage() {
   return (
     <>
       <PageTopbar>
-        <h1 className="topbar-title">Головна</h1>
+        <h1 className="wb-topbar-title">Головна</h1>
       </PageTopbar>
 
       <section className="home" onMouseMove={handleMove}>

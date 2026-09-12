@@ -245,7 +245,6 @@ html[data-brand="apple"][data-theme="dark"] ::selection {
 }
 
 /* ── Buttons: pill shape — Apple's signature ────────────────────────────── */
-html[data-brand="apple"] .btn,
 html[data-brand="apple"] .wb-btn {
   border-radius: 9999px !important;
   font-size: 16px !important;
@@ -256,13 +255,10 @@ html[data-brand="apple"] .wb-btn {
   box-shadow: none !important;
 }
 
-html[data-brand="apple"] .btn:active,
 html[data-brand="apple"] .wb-btn:active {
   transform: scale(0.97) !important;
 }
 
-html[data-brand="apple"] .btn-primary,
-html[data-brand="apple"] .btn--primary,
 html[data-brand="apple"] .wb-btn-primary {
   background: var(--accent) !important;
   border-color: var(--accent) !important;
@@ -270,24 +266,25 @@ html[data-brand="apple"] .wb-btn-primary {
   box-shadow: none !important;
 }
 
-html[data-brand="apple"] .btn-primary:hover,
-html[data-brand="apple"] .btn--primary:hover,
 html[data-brand="apple"] .wb-btn-primary:hover {
   background: var(--accent-hover) !important;
   transform: translateY(-1px) !important;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1) !important;
 }
 
-html[data-brand="apple"] .btn-secondary,
-html[data-brand="apple"] .btn--secondary {
+html[data-brand="apple"] .wb-btn-secondary {
   background: var(--bg-2) !important;
   border: 0.5px solid var(--border) !important;
   color: var(--text-primary) !important;
   box-shadow: none !important;
 }
 
-/* ── Sidebar: FROSTED GLASS — Apple's signature effect ─────────────────── */
-html[data-brand="apple"] .sidebar {
+/* ── Sidebar: FROSTED GLASS — Apple's signature effect ───────────────────
+   Клас рендерить і адмінка (`.wb-nav`), і спільний `PageRenderer`
+   (`.page-zone--sidebar`) — бренд мусить діяти на обидва, інакше оболонки
+   виглядають по-різному при однаковій темі. */
+html[data-brand="apple"] .wb-nav,
+html[data-brand="apple"] .page-zone--sidebar {
   background: rgba(242, 242, 247, 0.85) !important;
   backdrop-filter: saturate(180%) blur(24px) !important;
   -webkit-backdrop-filter: saturate(180%) blur(24px) !important;
@@ -295,13 +292,17 @@ html[data-brand="apple"] .sidebar {
   box-shadow: none !important;
 }
 
-html[data-brand="apple"][data-theme="dark"] .sidebar {
+html[data-brand="apple"][data-theme="dark"] .wb-nav,
+html[data-brand="apple"][data-theme="dark"] .page-zone--sidebar {
   background: rgba(28, 28, 30, 0.8) !important;
   border-right: 0.5px solid rgba(56, 56, 58, 0.5) !important;
 }
 
-/* Nav items: pill shape, FILLED active — Apple signature */
-html[data-brand="apple"] .sidebar nav a {
+/* Nav items: pill shape, FILLED active — Apple signature.
+   Селектори — спільні кирпичики `.wb-nav*`: раніше тут стояли приватні
+   `.sidebar*` / `.logout-btn` адмінки, тож платформа (у неї ті самі меню
+   з `page-zone--sidebar`) брендових правил не отримувала взагалі. */
+html[data-brand="apple"] .wb-nav-item {
   border-radius: 10px !important;
   font-size: 16px !important;
   font-weight: 500 !important;
@@ -312,66 +313,33 @@ html[data-brand="apple"] .sidebar nav a {
   color: var(--text-secondary) !important;
 }
 
-html[data-brand="apple"] .sidebar nav a.active {
+html[data-brand="apple"] .wb-nav-item--active {
   background: #000000 !important;
   color: #ffffff !important;
   font-weight: 600 !important;
 }
 
-html[data-brand="apple"][data-theme="dark"] .sidebar nav a.active {
+html[data-brand="apple"][data-theme="dark"] .wb-nav-item--active {
   background: #ffffff !important;
   color: #000000 !important;
 }
 
-/* Admin nav items */
-html[data-brand="apple"] .sidebar-nav-item {
-  border-radius: 10px !important;
-  font-size: 16px !important;
-  font-weight: 500 !important;
-  padding: 12px 14px !important;
-  min-height: 44px !important;
-  background: transparent !important;
-  color: var(--text-secondary) !important;
-}
-
-html[data-brand="apple"] .sidebar-nav-item--active {
-  background: #000000 !important;
-  color: #ffffff !important;
-  font-weight: 600 !important;
-}
-
-html[data-brand="apple"][data-theme="dark"] .sidebar-nav-item--active {
-  background: #ffffff !important;
-  color: #000000 !important;
-}
-
-/* Sidebar header / settings */
-html[data-brand="apple"] .sidebar-header {
+/* Sidebar header / footer */
+html[data-brand="apple"] .wb-nav-header {
   border-bottom: 0.5px solid rgba(198, 198, 200, 0.5) !important;
 }
 
-html[data-brand="apple"] .sidebar-title {
+html[data-brand="apple"] .wb-nav-title {
   font-size: 14px !important;
   font-weight: 700 !important;
   letter-spacing: 0.04em !important;
 }
 
-html[data-brand="apple"] .sidebar-settings {
+html[data-brand="apple"] .wb-nav-footer {
   border-top: 0.5px solid rgba(198, 198, 200, 0.5) !important;
 }
 
-html[data-brand="apple"] .sidebar-settings-label {
-  font-size: 11px !important;
-  font-weight: 600 !important;
-  text-transform: uppercase !important;
-  letter-spacing: 0.06em !important;
-}
-
-html[data-brand="apple"] .sidebar-footer {
-  border-top: 0.5px solid rgba(198, 198, 200, 0.5) !important;
-}
-
-html[data-brand="apple"] .logout-btn {
+html[data-brand="apple"] .wb-app-logout {
   border-radius: 10px !important;
   font-size: 15px !important;
   font-weight: 500 !important;
@@ -380,13 +348,13 @@ html[data-brand="apple"] .logout-btn {
   color: var(--red) !important;
 }
 
-html[data-brand="apple"] .logout-btn:hover {
+html[data-brand="apple"] .wb-app-logout:hover {
   background: var(--red-dim) !important;
 }
 
 /* ── Header / Topbar: frosted glass — matches sidebar ──────────────────── */
-html[data-brand="apple"] .header,
-html[data-brand="apple"] .topbar {
+html[data-brand="apple"] .wb-app-header,
+html[data-brand="apple"] .wb-topbar {
   background: rgba(255, 255, 255, 0.82) !important;
   backdrop-filter: saturate(180%) blur(24px) !important;
   -webkit-backdrop-filter: saturate(180%) blur(24px) !important;
@@ -394,8 +362,8 @@ html[data-brand="apple"] .topbar {
   box-shadow: none !important;
 }
 
-html[data-brand="apple"][data-theme="dark"] .header,
-html[data-brand="apple"][data-theme="dark"] .topbar {
+html[data-brand="apple"][data-theme="dark"] .wb-app-header,
+html[data-brand="apple"][data-theme="dark"] .wb-topbar {
   background: rgba(28, 28, 30, 0.8) !important;
   border-bottom: 0.5px solid rgba(56, 56, 58, 0.5) !important;
 }
@@ -406,37 +374,24 @@ html[data-brand="apple"] .brand {
   letter-spacing: -0.02em !important;
 }
 
-html[data-brand="apple"] .topbar-title {
+html[data-brand="apple"] .wb-topbar-title {
   font-size: 17px !important;
   font-weight: 600 !important;
   letter-spacing: -0.02em !important;
 }
 
 /* ── Cards: no border, elevated with shadow — Apple card style ──────────── */
-html[data-brand="apple"] .card,
 html[data-brand="apple"] .wb-card {
   border: none !important;
   border-radius: 16px !important;
   box-shadow: var(--shadow-sm) !important;
 }
 
-html[data-brand="apple"] .card h3,
+html[data-brand="apple"] .wb-profile-title,
 html[data-brand="apple"] .wb-card-header {
   font-size: 20px !important;
   font-weight: 600 !important;
   letter-spacing: -0.02em !important;
-}
-
-/* ── Hero ──────────────────────────────────────────────────────────────── */
-html[data-brand="apple"] .hero h1 {
-  font-size: 36px !important;
-  font-weight: 700 !important;
-  letter-spacing: -0.04em !important;
-}
-
-html[data-brand="apple"] .hero-text {
-  font-size: 18px !important;
-  line-height: 1.5 !important;
 }
 
 html[data-brand="apple"] .home-greeting {
@@ -459,8 +414,7 @@ html[data-brand="apple"] .home-date {
 /* ── Tables: borderless, spacious — Apple list style ────────────────────── */
 html[data-brand="apple"] .scn-table,
 html[data-brand="apple"] .usr-table,
-html[data-brand="apple"] .wb-data-table,
-html[data-brand="apple"] .dates-table {
+html[data-brand="apple"] .wb-data-table {
   border: none !important;
   border-radius: 16px !important;
   overflow: hidden !important;
@@ -486,41 +440,37 @@ html[data-brand="apple"] .wb-data-table tbody tr:hover {
 }
 
 /* ── Inputs: rounded, 0.5px border — Apple text field ──────────────────── */
-html[data-brand="apple"] .date-input,
-html[data-brand="apple"] .text-input,
-html[data-brand="apple"] .filter-search,
+html[data-brand="apple"] .wb-input,
+html[data-brand="apple"] .wb-textarea,
+html[data-brand="apple"] .wb-select,
 html[data-brand="apple"] .scn-search,
 html[data-brand="apple"] .block-input,
-html[data-brand="apple"] .block-textarea,
-html[data-brand="apple"] .codeword-input {
+html[data-brand="apple"] .block-textarea {
   border-radius: 10px !important;
   border: 0.5px solid var(--border) !important;
   font-size: 16px !important;
   padding: 12px 16px !important;
 }
 
-html[data-brand="apple"] .text-input:focus,
-html[data-brand="apple"] .filter-search:focus,
+html[data-brand="apple"] .wb-input:focus,
+html[data-brand="apple"] .wb-textarea:focus,
 html[data-brand="apple"] .scn-search:focus {
   box-shadow: 0 0 0 4px var(--accent-soft) !important;
 }
 
 /* ── Modal: glass overlay — Apple sheet style ───────────────────────────── */
-html[data-brand="apple"] .modal-overlay,
 html[data-brand="apple"] .wb-modal-overlay {
   backdrop-filter: blur(8px) saturate(150%) !important;
   -webkit-backdrop-filter: blur(8px) saturate(150%) !important;
   background: rgba(0, 0, 0, 0.35) !important;
 }
 
-html[data-brand="apple"] .modal,
 html[data-brand="apple"] .wb-modal {
   border: none !important;
   border-radius: 20px !important;
   box-shadow: var(--shadow-xl) !important;
 }
 
-html[data-brand="apple"] .modal-header h3,
 html[data-brand="apple"] .wb-modal-title {
   font-size: 20px !important;
   font-weight: 700 !important;
@@ -528,7 +478,7 @@ html[data-brand="apple"] .wb-modal-title {
 }
 
 /* ── Chips: pill — Apple segmented style ────────────────────────────────── */
-html[data-brand="apple"] .type-chip {
+html[data-brand="apple"] .wb-chip {
   border-radius: 9999px !important;
   border: 1.5px solid var(--border) !important;
   font-size: 14px !important;
@@ -536,15 +486,8 @@ html[data-brand="apple"] .type-chip {
   padding: 7px 16px !important;
 }
 
-html[data-brand="apple"] .type-chip.active {
-  background: var(--accent) !important;
-  color: var(--text-inverse) !important;
-  border-color: var(--accent) !important;
-}
-
 html[data-brand="apple"] .scn-badge,
 html[data-brand="apple"] .usr-badge,
-html[data-brand="apple"] .status-badge,
 html[data-brand="apple"] .scn-count {
   border-radius: 9999px !important;
   font-weight: 600 !important;
@@ -552,28 +495,28 @@ html[data-brand="apple"] .scn-count {
 }
 
 /* ── Table wrap ────────────────────────────────────────────────────────── */
-html[data-brand="apple"] .table-wrap,
-html[data-brand="apple"] .compare-wrap {
+html[data-brand="apple"] .wb-table-wrap,
+html[data-brand="apple"] .wb-compare-wrap {
   border: none !important;
   border-radius: 14px !important;
   box-shadow: var(--shadow-xs) !important;
 }
 
-/* ── Login ─────────────────────────────────────────────────────────────── */
-html[data-brand="apple"] .login-card {
+/* ── Auth (спільний екран входу обох оболонок) ─────────────────────────── */
+html[data-brand="apple"] .wb-auth-card {
   border: none !important;
   border-radius: 24px !important;
   box-shadow: var(--shadow-lg) !important;
 }
 
-html[data-brand="apple"] .login-btn {
+html[data-brand="apple"] .wb-auth-submit {
   border-radius: 9999px !important;
   font-size: 17px !important;
   font-weight: 600 !important;
   padding: 14px 20px !important;
 }
 
-html[data-brand="apple"] .login-input {
+html[data-brand="apple"] .wb-auth-input {
   border-radius: 10px !important;
   border: 0.5px solid var(--border) !important;
   font-size: 16px !important;

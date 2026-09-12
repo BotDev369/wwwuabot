@@ -161,7 +161,9 @@ export function ScenarioJsonEditor({
       >
         <div>
           {jsonError ? (
-            <span style={{ color: "var(--color-error, #ef4444)" }}>⚠️ {jsonError}</span>
+            <span style={{ color: "var(--color-error, #ef4444)" }}>
+              {ico("warning", 12)} {jsonError}
+            </span>
           ) : jsonText.trim() ? (
             <span style={{ color: "var(--color-success, #22c55e)" }}>✓ Валідний JSON</span>
           ) : null}

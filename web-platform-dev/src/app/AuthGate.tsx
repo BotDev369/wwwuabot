@@ -22,18 +22,32 @@ function hasTelegramSession(): boolean {
   }
 }
 
+/**
+ * Гейт TWA.
+ *
+ * Сам екран — спільні кирпичики `.wb-auth*` (ті самі, що в `LoginScreen`
+ * адмінки): однаковий вигляд, різна логіка. Перевірка синхронна й без стану:
+ * `initData` доступний одразу після завантаження SDK, тож проміжного екрана
+ * «Завантаження...» не потрібно.
+ */
 export function AuthGate({ children }: AuthGateProps) {
-  // Перевірка синхронна й без стану: `initData` доступний одразу після
-  // завантаження SDK, тож проміжного екрана «Завантаження...» не потрібно.
   if (!hasTelegramSession()) {
     return (
-      <div className="flex items-center justify-center h-screen flex-col gap-4 p-6 text-center">
-        <h2>WWWUABot</h2>
-        <p className="text-secondary">Відкрийте веб-платформу через Telegram бот.</p>
-        <a href={`https://t.me/${BOT_USERNAME}`} className="wb-btn wb-btn-telegram">
-          <Icon name="external-link" size={16} />
-          Відкрити в Telegram
-        </a>
+      <div className="wb-auth">
+        <div className="wb-auth-card">
+          <div className="wb-auth-logo">
+            <span className="wb-auth-logo-icon">✦</span>
+            <span className="wb-auth-logo-text">WWWUABOT</span>
+          </div>
+          <p className="wb-auth-message">Відкрийте веб-платформу через Telegram бот.</p>
+          <a
+            href={`https://t.me/${BOT_USERNAME}`}
+            className="wb-btn wb-btn-telegram wb-auth-submit"
+          >
+            <Icon name="external-link" size={16} />
+            Відкрити в Telegram
+          </a>
+        </div>
       </div>
     );
   }

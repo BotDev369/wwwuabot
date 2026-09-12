@@ -59,12 +59,12 @@ function FieldRow({
   icon?: IconName;
 }) {
   return (
-    <div className="profile-field">
-      <div className="profile-field-label">
+    <div className="wb-profile-field">
+      <div className="wb-profile-label">
         {icon && ico(icon, 14)}
         <span>{label}</span>
       </div>
-      <div className="profile-field-value">{value || "—"}</div>
+      <div className="wb-profile-value">{value || "—"}</div>
     </div>
   );
 }
@@ -203,20 +203,23 @@ export function UserProfileCard({
 }: UserProfileCardProps) {
   if (loading) {
     return (
-      <div style={{ padding: 24, textAlign: "center", color: "var(--text-muted, #888)" }}>
-        Завантаження даних…
+      <div className="wb-empty">
+        <div className="wb-skeleton" style={{ width: 160, height: 20 }} />
+        <p className="wb-text-muted">Завантаження даних…</p>
       </div>
     );
   }
   if (error) {
     return (
-      <div style={{ padding: 24, textAlign: "center", color: "#dc2626" }}>Помилка: {error}</div>
+      <div className="wb-empty">
+        <p className="wb-text-red">Помилка: {error}</p>
+      </div>
     );
   }
   if (!user) {
     return (
-      <div style={{ padding: 24, textAlign: "center", color: "var(--text-muted, #888)" }}>
-        Користувача не знайдено
+      <div className="wb-empty">
+        <p className="wb-text-muted">Користувача не знайдено</p>
       </div>
     );
   }
@@ -267,9 +270,9 @@ export function UserProfileCard({
 
       {/* ═══ Telegram дані ═══ */}
       {variant === "platform" && (
-        <div className="card" style={{ marginBottom: 16 }}>
-          <h3 style={{ marginBottom: 12 }}>{ico("bot")} Telegram дані</h3>
-          <div className="profile-fields">
+        <div className="wb-profile">
+          <h3 className="wb-profile-title">{ico("bot")} Telegram дані</h3>
+          <div className="wb-profile-fields">
             <FieldRow label="User ID" value={user.id} icon="info" />
             <FieldRow label="Ім'я" value={user.firstName} icon="edit" />
             <FieldRow label="Прізвище" value={user.lastName} icon="edit" />
@@ -299,9 +302,9 @@ export function UserProfileCard({
       )}
 
       {/* ═══ Дані з бази ═══ */}
-      <div className="card" style={{ marginBottom: 16 }}>
-        <h3 style={{ marginBottom: 12 }}>{ico("clipboard")} Дані з бази</h3>
-        <div className="profile-fields">
+      <div className="wb-profile">
+        <h3 className="wb-profile-title">{ico("clipboard")} Дані з бази</h3>
+        <div className="wb-profile-fields">
           {variant === "admin" && <FieldRow label="ID" value={user.id} icon="info" />}
           {variant === "admin" && (
             <>
@@ -342,9 +345,9 @@ export function UserProfileCard({
 
       {/* ═══ Admin-only: raw DB fields ═══ */}
       {variant === "admin" && user.rawFields && (
-        <div className="card" style={{ marginBottom: 16 }}>
-          <h3 style={{ marginBottom: 12 }}>{ico("settings")} Додаткові дані</h3>
-          <div className="profile-fields">
+        <div className="wb-profile">
+          <h3 className="wb-profile-title">{ico("settings")} Додаткові дані</h3>
+          <div className="wb-profile-fields">
             {Object.entries(user.rawFields).map(([key, val]) => {
               if (val === null || val === undefined || val === "") return null;
               const label = RAW_FIELD_LABELS[key] || key;

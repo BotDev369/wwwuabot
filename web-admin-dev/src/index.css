@@ -21,393 +21,6 @@ body {
   background: var(--bg-home, var(--bg-0));
 }
 
-/* ─── Splash ─────────────────────────────────────────────────────────────────── */
-.splash {
-  height: 100vh;
-  height: 100dvh;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.splash-icon {
-  font-size: 32px;
-  color: var(--accent);
-  animation: pulse 1.2s ease-in-out infinite;
-}
-
-@keyframes pulse {
-  0%,
-  100% {
-    opacity: 0.3;
-  }
-
-  50% {
-    opacity: 1;
-  }
-}
-
-/* ─── Login ──────────────────────────────────────────────────────────────────── */
-.login-root {
-  height: 100vh;
-  height: 100dvh;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: var(--bg-0);
-}
-
-.login-card {
-  width: 360px;
-  background: var(--bg-1);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-lg);
-  padding: 40px 36px;
-  display: flex;
-  flex-direction: column;
-  gap: 32px;
-  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
-}
-
-.login-logo {
-  display: flex;
-  align-items: baseline;
-  gap: 8px;
-}
-
-.login-logo-icon {
-  font-size: 20px;
-  color: var(--accent);
-}
-
-.login-logo-text {
-  font-size: 16px;
-  font-weight: 700;
-  letter-spacing: 0.08em;
-  color: var(--text-primary);
-}
-
-.login-logo-sub {
-  font-size: 11px;
-  font-weight: 500;
-  color: var(--text-muted);
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-  border: 1px solid var(--border);
-  border-radius: var(--radius-xs);
-  padding: 1px 6px;
-}
-
-.login-form {
-  display: flex;
-  flex-direction: column;
-  gap: 20px;
-}
-
-.login-field {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-
-.login-label {
-  font-size: 12px;
-  font-weight: 500;
-  color: var(--text-secondary);
-  letter-spacing: 0.04em;
-}
-
-.login-input {
-  background: var(--bg-2);
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
-  padding: 10px 12px;
-  font-size: 14px;
-  font-family: var(--font-mono);
-  color: var(--text-primary);
-  outline: none;
-  transition: border-color 0.15s;
-  letter-spacing: 0.1em;
-}
-
-.login-input:focus {
-  border-color: var(--accent);
-  background: var(--bg-1);
-}
-
-.login-input--error {
-  border-color: var(--red);
-}
-
-.login-error {
-  font-size: 12px;
-  color: var(--red);
-}
-
-.login-btn {
-  background: var(--accent);
-  color: var(--text-inverse);
-  border: none;
-  border-radius: var(--radius);
-  padding: 11px 16px;
-  font-size: 14px;
-  font-weight: 600;
-  cursor: pointer;
-  transition:
-    background 0.15s,
-    opacity 0.15s;
-}
-
-.login-btn:hover:not(:disabled) {
-  background: var(--accent-hover);
-}
-
-.login-btn:disabled {
-  opacity: 0.4;
-  cursor: not-allowed;
-}
-
-/* ─── App layout ─────────────────────────────────────────────────────────────── */
-.app-root {
-  height: 100vh;
-  height: 100dvh;
-  display: flex;
-  overflow: hidden;
-}
-
-/* ─── Sidebar ────────────────────────────────────────────────────────────────── */
-.sidebar {
-  width: var(--sidebar-w);
-  min-width: var(--sidebar-w);
-  background: var(--bg-1);
-  border-right: 1px solid var(--border);
-  display: flex;
-  flex-direction: column;
-  overflow: hidden;
-}
-
-.sidebar-header {
-  height: var(--topbar-h);
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  padding: 0 18px;
-  border-bottom: 1px solid var(--border);
-}
-
-.sidebar-logo {
-  font-size: 16px;
-  color: var(--accent);
-}
-
-.sidebar-title {
-  font-size: 13px;
-  font-weight: 700;
-  letter-spacing: 0.06em;
-  color: var(--text-primary);
-}
-
-.sidebar-nav {
-  padding: 12px 8px;
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-  flex: 1;
-  overflow-y: auto;
-  min-height: 0;
-}
-
-.sidebar-nav-item {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  padding: 8px 10px;
-  border-radius: var(--radius);
-  color: var(--text-secondary);
-  text-decoration: none;
-  font-size: 13px;
-  font-weight: 500;
-  transition:
-    background 0.1s,
-    color 0.1s;
-}
-
-.sidebar-nav-item:hover {
-  background: var(--bg-4);
-  color: var(--text-primary);
-}
-
-.sidebar-nav-item--active {
-  background: var(--accent-dim);
-  color: var(--accent);
-}
-
-.sidebar-nav-icon {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 20px;
-  height: 20px;
-  flex-shrink: 0;
-}
-
-.sidebar-nav-icon svg {
-  width: 20px;
-  height: 20px;
-  flex-shrink: 0;
-}
-
-.sidebar-footer {
-  margin-top: auto;
-  padding: 12px 8px;
-  border-top: 1px solid var(--border);
-}
-
-.logout-btn {
-  width: 100%;
-  padding: 8px 10px;
-  background: none;
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
-  color: var(--text-muted);
-  font-size: 13px;
-  cursor: pointer;
-  text-align: left;
-  transition:
-    background 0.1s,
-    color 0.1s,
-    border-color 0.1s;
-}
-
-.logout-btn:hover {
-  background: var(--red-dim);
-  color: var(--red);
-  border-color: var(--red);
-}
-
-/* ─── Main area ──────────────────────────────────────────────────────────────── */
-.main-wrapper {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  min-width: 0;
-  overflow: hidden;
-}
-
-.main-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  height: var(--topbar-h);
-  padding: 0 16px;
-  border-bottom: 1px solid var(--border);
-  background: var(--bg-1);
-  flex-shrink: 0;
-}
-
-.main-header-title {
-  font-size: 13px;
-  font-weight: 600;
-  color: var(--text-muted);
-  letter-spacing: 0.04em;
-}
-
-.main-header-logout {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  padding: 6px 12px;
-  background: none;
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
-  color: var(--text-muted);
-  font-size: 12px;
-  cursor: pointer;
-  transition:
-    background 0.1s,
-    color 0.1s;
-}
-
-.main-header-logout:hover {
-  background: var(--red-dim);
-  color: var(--red);
-  border-color: var(--red);
-}
-
-.main {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  overflow: hidden;
-  min-width: 0;
-}
-
-/* ─── Topbar ─────────────────────────────────────────────────────────────────── */
-.topbar {
-  height: var(--topbar-h);
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 0 20px;
-  border-bottom: 1px solid var(--border);
-  background: var(--bg-1);
-  gap: 16px;
-  flex-shrink: 0;
-}
-
-.topbar-title {
-  font-size: 14px;
-  font-weight: 600;
-  color: var(--text-primary);
-}
-
-.topbar-right {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-}
-
-.codeword-input-wrap {
-  display: flex;
-  align-items: center;
-  background: var(--bg-2);
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
-  overflow: hidden;
-  transition: border-color 0.15s;
-}
-
-.codeword-input-wrap:focus-within {
-  border-color: var(--accent);
-  background: var(--bg-1);
-}
-
-.codeword-prefix {
-  padding: 0 8px 0 10px;
-  font-size: 14px;
-  color: var(--text-muted);
-  font-family: var(--font-mono);
-  user-select: none;
-}
-
-.codeword-input {
-  background: none;
-  border: none;
-  outline: none;
-  padding: 7px 10px 7px 0;
-  font-size: 13px;
-  font-family: var(--font-mono);
-  color: var(--text-primary);
-  width: 160px;
-}
-
-.codeword-input::placeholder {
-  color: var(--text-muted);
-}
-
-/* ─── Buttons ────────────────────────────────────────────────────────────────── */
-/* Local button styles moved to packages/shared/src/styles/components.css (.wb-*) */
-
 /* ─── Workspace ──────────────────────────────────────────────────────────────── */
 .workspace {
   flex: 1;
@@ -460,6 +73,27 @@ body {
 .add-block-btn:hover {
   border-color: var(--accent);
   color: var(--accent);
+}
+
+/* ─── Page Builder: класи, які рендерила розмітка без правил ────────────────
+   `.pb-be-props` (поля блока) і `.pb-sidebar-settings` (налаштування зони)
+   стояли в розмітці, але правил не існувало — увесь вигляд тримався на
+   інлайн-стилях. Тепер це звичайні класи. */
+.pb-be-props {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.pb-sidebar-settings {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 10px 14px;
+  margin-bottom: 12px;
+  background: var(--bg-2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
 }
 
 .blocks-list {
@@ -547,13 +181,6 @@ body {
 /* ═══════════════════════════════════════════════════════════════════════════════
    ДОДАТИ В КІНЕЦЬ admin/src/index.css
    ═══════════════════════════════════════════════════════════════════════════════ */
-
-/* ─── Topbar left ────────────────────────────────────────────────────────────── */
-.topbar-left {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-}
 
 /* ─── Blocks stack ───────────────────────────────────────────────────────────── */
 .blocks-stack {
@@ -765,89 +392,6 @@ body {
 }
 
 /* ═══════════════════════════════════════════════════════════════════════════════
-   SIDEBAR — стани згорнутості, секції, тоггл (Група 6)
-   ═══════════════════════════════════════════════════════════════════════════════ */
-.sidebar {
-  transition:
-    width 0.22s cubic-bezier(0.4, 0, 0.2, 1),
-    min-width 0.22s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-.sidebar-toggle {
-  margin-left: auto;
-  width: 30px;
-  height: 30px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
-  border: none;
-  background: none;
-  border-radius: var(--radius-sm);
-  color: var(--text-muted);
-  cursor: pointer;
-  transition:
-    background 0.12s,
-    color 0.12s;
-}
-
-.sidebar-toggle:hover {
-  background: var(--bg-4);
-  color: var(--text-primary);
-}
-
-.sidebar-section {
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-  margin-bottom: 6px;
-}
-
-.sidebar-section-title {
-  padding: 10px 10px 4px;
-  font-size: 10px;
-  font-weight: 600;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  color: var(--text-muted);
-}
-
-.sidebar-nav-label {
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-/* Згорнутий стан: вузька смужка з іконками по центру */
-.sidebar--collapsed {
-  width: var(--sidebar-w-collapsed);
-  min-width: var(--sidebar-w-collapsed);
-}
-
-.sidebar--collapsed .sidebar-header {
-  justify-content: center;
-  padding: 0;
-}
-
-.sidebar--collapsed .sidebar-toggle {
-  margin-left: 0;
-}
-
-.sidebar--collapsed .sidebar-nav-item {
-  justify-content: center;
-  padding: 9px 0;
-}
-
-.sidebar--collapsed .sidebar-footer {
-  padding: 12px 6px;
-}
-
-.sidebar--collapsed .logout-btn {
-  text-align: center;
-  padding: 8px 0;
-}
-
-/* ═══════════════════════════════════════════════════════════════════════════════
    HOME — привітальна (Група 6)
    ═══════════════════════════════════════════════════════════════════════════════ */
 .home {
@@ -960,9 +504,9 @@ body {
 /* ═══════════════════════════════════════════════════════════════════════════════
    DISPLAY-ШРИФТ — застосування до заголовків/лого (Група 6)
    ═══════════════════════════════════════════════════════════════════════════════ */
-.sidebar-title,
-.login-logo-text,
-.topbar-title {
+.wb-nav-title,
+.wb-auth-logo-text,
+.wb-topbar-title {
   font-family: var(--font-display);
   letter-spacing: 0.01em;
 }
@@ -1827,6 +1371,25 @@ body {
   max-width: 400px;
 }
 
+/* Заголовки таблиць: класи стояли в розмітці без правил. `-field` мусить
+   «їхати» разом зі своїм `td` (той самий sticky-left), інакше перша колонка
+   відклеюється від заголовка при горизонтальному скролі. */
+.usr-card-th-field {
+  position: sticky;
+  left: 0;
+  z-index: 2;
+  width: 140px;
+  min-width: 120px;
+}
+
+.usr-card-th-value {
+  min-width: 160px;
+}
+
+.usr-th-status {
+  min-width: 90px;
+}
+
 .usr-card-table tbody tr:first-child .usr-card-td-field,
 .usr-card-table tbody tr:first-child .usr-card-td-value {
   border-top: none;
@@ -2103,7 +1666,7 @@ body {
 .phone-frame-body .page-hamburger--floating,
 .phone-frame-body .page-sidebar-header,
 .phone-frame-body .page-sidebar-close,
-.phone-frame-body .page-sidebar-overlay {
+.phone-frame-body .app-drawer-overlay {
   display: none !important;
 }
 .phone-frame-body .page-zone--sidebar {
@@ -2363,39 +1926,11 @@ body {
 
 /* ═══════════════════════════════════════════════════════════════════════════════
    МОБІЛЬНА ОБОЛОНКА
-   Геометрія виїзного drawer'а (`.sidebar` + `.app-drawer`, скрим
-   `.app-drawer-overlay`) і вигляд гамбургера (`.hamburger`) живуть у
-   `packages/shared/src/styles/drawer.css` — ті самі, що в платформі. Тут
-   лишається тільки те, чим оболонки справді відрізняються: склад меню,
-   хедер і десктопна кнопка згортання.
+   Геометрія виїзного drawer'а (`.app-drawer`, скрим `.app-drawer-overlay`),
+   вигляд гамбургера (`.hamburger`) і мобільний хедер (`.wb-app-*`) живуть у
+   `packages/shared/src/styles/` — ті самі, що в платформі. Тут лишається
+   тільки те, чим оболонки справді відрізняються: склад меню й дані.
    ═══════════════════════════════════════════════════════════════════════════════ */
-
-.main-header-hamburger {
-  display: none;
-}
-
-@media (max-width: 768px) {
-  /* Десктопна кнопка згортання на мобільному не потрібна: drawer закривають
-     скрим, пункт меню або Escape — як у drawer'і платформи. */
-  .sidebar-toggle {
-    display: none;
-  }
-
-  .main-header {
-    height: calc(var(--topbar-h) + var(--safe-top));
-    padding-top: var(--safe-top);
-  }
-
-  /* space-between з трьома елементами центрував би заголовок */
-  .main-header-title {
-    margin-right: auto;
-  }
-
-  .main-header-hamburger {
-    display: inline-flex;
-    margin-right: 4px;
-  }
-}
 
 /* ── Тач: афорданси, які на десктопі живуть на :hover ─────────────────────────
    На екрані без hover (телефон, планшет) :hover не настає ніколи, тож
@@ -2408,23 +1943,10 @@ body {
 }
 
 /* ═══════════════════════════════════════════════════════════════════════════
-   PAGE TOPBAR — заголовок сторінки (Sites / Templates / Moderation)
-   Клас стояв у розмітці трьох сторінок, але правил до нього не існувало
-   взагалі — тож шапка не мала ні відступів, ні лінії під собою.
+   PAGE TOPBAR — шапка сторінок (Sites / Templates / Moderation).
+   Ці сторінки тепер рендерять спільний компонент <PageTopbar> і кирпичик
+   `.wb-topbar` з `app-chrome.css`; локальних правил тут більше немає.
    ═══════════════════════════════════════════════════════════════════════════ */
-.page-topbar {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: var(--sp-3);
-  flex-wrap: wrap;
-  min-height: var(--topbar-h);
-  padding: var(--sp-3) var(--sp-5);
-  border-bottom: 1px solid var(--border);
-  background: var(--bg-1);
-  flex-shrink: 0;
-}
-
 /* ═══════════════════════════════════════════════════════════════════════════
    SPLIT VIEW — черга + деталі (модерація сайтів)
    Було inline: фіксовані 360px черги та `calc(100vh - 56px)`. На телефоні

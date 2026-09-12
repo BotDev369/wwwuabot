@@ -199,6 +199,14 @@
   margin-bottom: var(--sp-1);
 }
 
+/* Невалідний контрол. Раніше клас `wb-input-error` стояв у розмітці
+   редактора сайту, але правила не було — некоректний slug не підсвічувався. */
+.wb-input-error,
+.wb-input-error:focus {
+  border-color: var(--red);
+  box-shadow: 0 0 0 3px var(--red-dim);
+}
+
 /* Поле форми: підпис + контрол один під одним. Саме цей клас мають уживати
    спільні блоки — раніше тут стояв `.form-group`, якого не було ніде. */
 .wb-field {
@@ -1307,6 +1315,15 @@ button.wb-chip {
   height: 16px;
 }
 
+/* Підпис пункту меню сайту. Клас рендерив спільний `SiteRenderer`, а правила
+   для нього не існувало — довгий підпис ламав висоту смуги навігації. */
+.site-nav-label {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sp-1);
+  white-space: nowrap;
+}
+
 .site-content {
   flex: 1;
   display: flex;
@@ -1338,6 +1355,20 @@ button.wb-chip {
   border-radius: var(--radius-full);
   border: 1px solid var(--yellow);
   z-index: 100;
+}
+
+/* Прев'ю сайту в редакторі (`.site-preview` передає `SiteEditorPanel` у
+   `SiteRenderer`). Клас стояв у розмітці, але правила не існувало — прев'ю
+   було голе. Тут — саме рамка й прокрутка; `site-layout` сюди не беремо,
+   бо його `min-height: 100dvh` усередині панелі редактора не потрібен. */
+.site-preview {
+  display: flex;
+  flex-direction: column;
+  min-height: 100%;
+  background: var(--bg-0);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  overflow: hidden;
 }
 
 /* Mobile responsive */

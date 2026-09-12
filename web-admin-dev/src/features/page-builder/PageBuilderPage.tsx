@@ -3,7 +3,7 @@
  */
 
 import { ALL_ZONES } from "@wwwuabot/shared/types/page-config";
-import { SaveActionButtons } from "@wwwuabot/shared";
+import { Icon, SaveActionButtons } from "@wwwuabot/shared";
 import { ZoneEditor } from "./ZoneEditor";
 import { usePageBuilder } from "./usePageBuilder";
 
@@ -62,7 +62,9 @@ export function PageBuilderPage() {
         }}
       >
         <div>
-          <h2 style={{ margin: 0, fontSize: 18 }}>🏗️ Page Builder: {codeword}</h2>
+          <h2 style={{ margin: 0, fontSize: 18 }}>
+            <Icon name="blocks" size={18} /> Page Builder: {codeword}
+          </h2>
           {scenarioTitle && (
             <div style={{ fontSize: 13, color: "var(--text-secondary)", marginTop: 2 }}>
               {scenarioTitle}
@@ -78,14 +80,22 @@ export function PageBuilderPage() {
             onClick={() => setJsonMode(!jsonMode)}
             style={{ fontSize: 13 }}
           >
-            {jsonMode ? "🏗️ Конструктор" : "🔧 JSON"}
+            {jsonMode ? (
+              <>
+                <Icon name="blocks" size={14} /> Конструктор
+              </>
+            ) : (
+              <>
+                <Icon name="wrench" size={14} /> JSON
+              </>
+            )}
           </button>
           <button
             className="wb-btn wb-btn-secondary"
             onClick={handleExport}
             style={{ fontSize: 13 }}
           >
-            📋 Експорт
+            <Icon name="clipboard" size={14} /> Експорт
           </button>
           <SaveActionButtons
             size="sm"
@@ -135,14 +145,14 @@ export function PageBuilderPage() {
               }}
               style={{ fontSize: 12 }}
             >
-              🔄 Оновити з конструктора
+              <Icon name="refresh" size={14} /> Оновити з конструктора
             </button>
             <button
               className="wb-btn wb-btn-primary"
               onClick={handleImport}
               style={{ fontSize: 12 }}
             >
-              📥 Застосувати JSON
+              <Icon name="download" size={14} /> Застосувати JSON
             </button>
           </div>
           {jsonError && (

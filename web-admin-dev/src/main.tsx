@@ -3,7 +3,6 @@ import { createRoot } from "react-dom/client";
 import { initTheme } from "@wwwuabot/shared";
 import { DialogProvider } from "@wwwuabot/ui/dialog";
 import "./index.css";
-import "./profile.css";
 import App from "./App.tsx";
 
 // Застосовуємо theme/style перед першим рендером (унікальний код)

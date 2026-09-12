@@ -76,15 +76,13 @@ export function MySitesPage() {
   }
 
   return (
-    <div className="my-sites-page" style={{ padding: "var(--sp-5)" }}>
-      <div className="wb-flex-between" style={{ marginBottom: "var(--sp-5)" }}>
-        <div style={{ display: "flex", alignItems: "center", gap: "var(--sp-3)" }}>
-          <h1 style={{ margin: 0, fontSize: "var(--text-xl)", fontWeight: "var(--weight-bold)" }}>
-            Мої сайти
-          </h1>
+    <div className="wb-page">
+      <div className="wb-page-head">
+        <h1 className="wb-page-title">
+          Мої сайти
           <span className="wb-badge wb-badge-neutral">{sites.length}</span>
-        </div>
-        <div style={{ display: "flex", gap: "var(--sp-2)" }}>
+        </h1>
+        <div className="wb-page-actions">
           <button className="wb-btn wb-btn-secondary" onClick={() => navigate("/catalog")}>
             <Icon name="eye" size={14} />
             Каталог

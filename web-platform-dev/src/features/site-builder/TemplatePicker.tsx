@@ -53,15 +53,13 @@ export function TemplatePicker({ selected, onSelect, typeFilter }: TemplatePicke
   const filtered = templates.filter((t) => activeType === "all" || t.type === activeType);
 
   return (
-    <div className="template-picker">
+    <div className="wb-flex-col wb-gap-3">
       {/* Заголовок */}
-      <h3 style={{ margin: 0, marginBottom: "var(--sp-3)", fontSize: "var(--text-md)" }}>
-        Оберіть шаблон
-      </h3>
+      <h3 className="wb-text-md">Оберіть шаблон</h3>
 
       {/* Фільтр типів */}
       {typeFilter === undefined && (
-        <div style={{ display: "flex", gap: "var(--sp-2)", marginBottom: "var(--sp-4)" }}>
+        <div className="wb-flex wb-gap-2 wb-mb-3">
           {(["all", "site", "page"] as const).map((t) => (
             <button
               key={t}

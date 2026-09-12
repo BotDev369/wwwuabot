@@ -35,6 +35,18 @@
   padding: 16px;
 }
 
+/* Мітка зони — діагностичний режим PageRenderer (`showZoneLabels`).
+   Клас рендерився завжди, коли режим увімкнено, але правила не було —
+   мітки виглядали як звичайний текст усередині вмісту. */
+.page-zone-label {
+  font-size: 10px;
+  font-weight: var(--weight-semibold);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  margin-bottom: var(--sp-2);
+}
+
 .page-zone--sidebar {
   width: 260px;
   flex-shrink: 0;

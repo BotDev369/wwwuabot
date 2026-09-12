@@ -1,6 +1,6 @@
 import { NavLink } from "react-router-dom";
-import { useAdminNav } from "./adminNav.store";
 import { icons } from "@wwwuabot/shared";
+import { useAdminNav } from "./adminNav.store";
 
 interface SidebarNavProps {
   collapsed: boolean;
@@ -12,11 +12,11 @@ export function SidebarNav({ collapsed, onNavigate }: SidebarNavProps) {
   const sections = useAdminNav((state) => state.sections);
 
   return (
-    <nav className="sidebar-nav">
+    <nav className="wb-nav-menu">
       {sections.map((section, sIdx) => (
-        <div className="sidebar-section" key={section.title ?? `section-${sIdx}`}>
+        <div className="wb-nav-section" key={section.title ?? `section-${sIdx}`}>
           {section.title && !collapsed && (
-            <div className="sidebar-section-title">{section.title}</div>
+            <div className="wb-nav-section-title">{section.title}</div>
           )}
           {section.items.map((item) => (
             <NavLink
@@ -25,12 +25,10 @@ export function SidebarNav({ collapsed, onNavigate }: SidebarNavProps) {
               end={item.to === "/"}
               title={collapsed ? item.label : undefined}
               onClick={onNavigate}
-              className={({ isActive }) =>
-                `sidebar-nav-item${isActive ? " sidebar-nav-item--active" : ""}`
-              }
+              className={({ isActive }) => `wb-nav-item${isActive ? " wb-nav-item--active" : ""}`}
             >
-              <span className="sidebar-nav-icon">{icons[item.icon]}</span>
-              {!collapsed && <span className="sidebar-nav-label">{item.label}</span>}
+              <span className="wb-nav-icon">{icons[item.icon]}</span>
+              {!collapsed && <span className="wb-nav-label">{item.label}</span>}
             </NavLink>
           ))}
         </div>

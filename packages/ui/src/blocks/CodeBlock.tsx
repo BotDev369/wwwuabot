@@ -8,6 +8,7 @@
  */
 
 import { useCallback, useState } from "react";
+import { Icon } from "@wwwuabot/shared";
 import type { BlockComponentProps } from "@wwwuabot/shared/types/page-config";
 
 export function CodeBlock({ block }: BlockComponentProps) {
@@ -71,7 +72,13 @@ export function CodeBlock({ block }: BlockComponentProps) {
               className="wb-btn wb-btn-ghost"
               style={{ padding: "2px var(--sp-2)", fontSize: "var(--text-xs)" }}
             >
-              {copied ? "✓ Скопійовано" : "📋 Копіювати"}
+              {copied ? (
+                "✓ Скопійовано"
+              ) : (
+                <>
+                  <Icon name="copy" size={12} /> Копіювати
+                </>
+              )}
             </button>
           )}
         </div>

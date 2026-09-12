@@ -71,19 +71,10 @@ export function PublicCatalogPage() {
   }
 
   return (
-    <div
-      className="catalog-page"
-      style={{ padding: "var(--sp-5)", maxWidth: 1200, margin: "0 auto" }}
-    >
-      <h1
-        style={{
-          fontSize: "var(--text-xl)",
-          fontWeight: "var(--weight-bold)",
-          marginBottom: "var(--sp-5)",
-        }}
-      >
-        Публічний каталог
-      </h1>
+    <div className="wb-page">
+      <div className="wb-page-head">
+        <h1 className="wb-page-title">Публічний каталог</h1>
+      </div>
 
       {sites.length === 0 ? (
         <div className="wb-empty">

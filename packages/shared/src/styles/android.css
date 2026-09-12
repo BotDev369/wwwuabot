@@ -241,7 +241,6 @@ html[data-brand="android"][data-theme="dark"] ::selection {
 }
 
 /* ── Buttons: M3 filled tonal with shadow — NOT pill ───────────────────── */
-html[data-brand="android"] .btn,
 html[data-brand="android"] .wb-btn {
   border-radius: 20px !important;
   font-size: 14px !important;
@@ -252,14 +251,11 @@ html[data-brand="android"] .wb-btn {
   box-shadow: var(--shadow-xs) !important;
 }
 
-html[data-brand="android"] .btn:active,
 html[data-brand="android"] .wb-btn:active {
   transform: scale(0.98) !important;
   box-shadow: none !important;
 }
 
-html[data-brand="android"] .btn-primary,
-html[data-brand="android"] .btn--primary,
 html[data-brand="android"] .wb-btn-primary {
   background: var(--accent) !important;
   border-color: var(--accent) !important;
@@ -267,22 +263,22 @@ html[data-brand="android"] .wb-btn-primary {
   box-shadow: var(--shadow-sm) !important;
 }
 
-html[data-brand="android"] .btn-primary:hover,
-html[data-brand="android"] .btn--primary:hover,
 html[data-brand="android"] .wb-btn-primary:hover {
   background: var(--accent-hover) !important;
   box-shadow: var(--shadow-md) !important;
 }
 
-html[data-brand="android"] .btn-secondary,
-html[data-brand="android"] .btn--secondary {
+html[data-brand="android"] .wb-btn-secondary {
   background: var(--bg-3) !important;
   border: 1px solid var(--border) !important;
   color: var(--text-primary) !important;
 }
 
-/* ── Sidebar: solid surface with strong elevation — VERY different from Apple */
-html[data-brand="android"] .sidebar {
+/* ── Sidebar: solid surface with strong elevation — VERY different from Apple
+   Клас рендерить і адмінка (`.wb-nav`), і спільний `PageRenderer`
+   (`.page-zone--sidebar`) — бренд мусить діяти на обидва. */
+html[data-brand="android"] .wb-nav,
+html[data-brand="android"] .page-zone--sidebar {
   background: #e8e8ec !important;
   border-right: 1px solid var(--border) !important;
   box-shadow: 4px 0 16px rgba(0, 0, 0, 0.08) !important;
@@ -290,14 +286,15 @@ html[data-brand="android"] .sidebar {
   -webkit-backdrop-filter: none !important;
 }
 
-html[data-brand="android"][data-theme="dark"] .sidebar {
+html[data-brand="android"][data-theme="dark"] .wb-nav,
+html[data-brand="android"][data-theme="dark"] .page-zone--sidebar {
   background: #16161a !important;
   border-right: 1px solid var(--border) !important;
   box-shadow: 4px 0 16px rgba(0, 0, 0, 0.4) !important;
 }
 
 /* Nav items: M3 large rounded, OUTLINED active — not filled like Apple */
-html[data-brand="android"] .sidebar nav a {
+html[data-brand="android"] .wb-nav-item {
   border-radius: 28px !important;
   font-size: 14px !important;
   font-weight: 500 !important;
@@ -308,57 +305,28 @@ html[data-brand="android"] .sidebar nav a {
   color: var(--text-secondary) !important;
 }
 
-html[data-brand="android"] .sidebar nav a.active {
+html[data-brand="android"] .wb-nav-item--active {
   background: var(--accent-dim) !important;
   color: var(--text-primary) !important;
   font-weight: 600 !important;
   box-shadow: inset 0 0 0 2px var(--accent) !important;
 }
 
-/* Admin nav items */
-html[data-brand="android"] .sidebar-nav-item {
-  border-radius: 28px !important;
-  font-size: 14px !important;
-  font-weight: 500 !important;
-  padding: 12px 16px !important;
-  min-height: 48px !important;
-  background: transparent !important;
-  color: var(--text-secondary) !important;
-}
-
-html[data-brand="android"] .sidebar-nav-item--active {
-  background: var(--accent-dim) !important;
-  color: var(--text-primary) !important;
-  font-weight: 600 !important;
-  box-shadow: inset 0 0 0 2px var(--accent) !important;
-}
-
-html[data-brand="android"] .sidebar-header {
+html[data-brand="android"] .wb-nav-header {
   border-bottom: 1px solid var(--border-subtle) !important;
 }
 
-html[data-brand="android"] .sidebar-title {
+html[data-brand="android"] .wb-nav-title {
   font-size: 14px !important;
   font-weight: 500 !important;
   letter-spacing: 0.01em !important;
 }
 
-html[data-brand="android"] .sidebar-settings {
+html[data-brand="android"] .wb-nav-footer {
   border-top: 1px solid var(--border-subtle) !important;
 }
 
-html[data-brand="android"] .sidebar-settings-label {
-  font-size: 11px !important;
-  font-weight: 500 !important;
-  text-transform: uppercase !important;
-  letter-spacing: 0.06em !important;
-}
-
-html[data-brand="android"] .sidebar-footer {
-  border-top: 1px solid var(--border-subtle) !important;
-}
-
-html[data-brand="android"] .logout-btn {
+html[data-brand="android"] .wb-app-logout {
   border-radius: 20px !important;
   font-size: 14px !important;
   font-weight: 500 !important;
@@ -367,13 +335,13 @@ html[data-brand="android"] .logout-btn {
   color: var(--red) !important;
 }
 
-html[data-brand="android"] .logout-btn:hover {
+html[data-brand="android"] .wb-app-logout:hover {
   background: var(--red-dim) !important;
 }
 
 /* ── Header / Topbar: solid with visible elevation — NOT frosted glass ── */
-html[data-brand="android"] .header,
-html[data-brand="android"] .topbar {
+html[data-brand="android"] .wb-app-header,
+html[data-brand="android"] .wb-topbar {
   background: #f5f5f5 !important;
   border-bottom: 1px solid var(--border) !important;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.08) !important;
@@ -381,8 +349,8 @@ html[data-brand="android"] .topbar {
   -webkit-backdrop-filter: none !important;
 }
 
-html[data-brand="android"][data-theme="dark"] .header,
-html[data-brand="android"][data-theme="dark"] .topbar {
+html[data-brand="android"][data-theme="dark"] .wb-app-header,
+html[data-brand="android"][data-theme="dark"] .wb-topbar {
   background: #1e1e22 !important;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4) !important;
 }
@@ -393,14 +361,13 @@ html[data-brand="android"] .brand {
   letter-spacing: 0.01em !important;
 }
 
-html[data-brand="android"] .topbar-title {
+html[data-brand="android"] .wb-topbar-title {
   font-size: 16px !important;
   font-weight: 500 !important;
   letter-spacing: 0.01em !important;
 }
 
 /* ── Cards: M3 filled card — solid surface, visible border ─────────────── */
-html[data-brand="android"] .card,
 html[data-brand="android"] .wb-card {
   border: 1px solid var(--border) !important;
   border-radius: 16px !important;
@@ -408,29 +375,16 @@ html[data-brand="android"] .wb-card {
   background: #ecedf0 !important;
 }
 
-html[data-brand="android"][data-theme="dark"] .card,
 html[data-brand="android"][data-theme="dark"] .wb-card {
   background: #26262a !important;
   border: 1px solid var(--border) !important;
 }
 
-html[data-brand="android"] .card h3,
+html[data-brand="android"] .wb-profile-title,
 html[data-brand="android"] .wb-card-header {
   font-size: 18px !important;
   font-weight: 500 !important;
   letter-spacing: 0.01em !important;
-}
-
-/* ── Hero ──────────────────────────────────────────────────────────────── */
-html[data-brand="android"] .hero h1 {
-  font-size: 28px !important;
-  font-weight: 400 !important;
-  letter-spacing: 0 !important;
-}
-
-html[data-brand="android"] .hero-text {
-  font-size: 16px !important;
-  line-height: 1.5 !important;
 }
 
 html[data-brand="android"] .home-greeting {
@@ -453,8 +407,7 @@ html[data-brand="android"] .home-date {
 /* ── Tables: M3 filled surface ─────────────────────────────────────────── */
 html[data-brand="android"] .scn-table,
 html[data-brand="android"] .usr-table,
-html[data-brand="android"] .wb-data-table,
-html[data-brand="android"] .dates-table {
+html[data-brand="android"] .wb-data-table {
   border: none !important;
   border-radius: 16px !important;
   overflow: hidden !important;
@@ -480,42 +433,38 @@ html[data-brand="android"] .wb-data-table tbody tr:hover {
 }
 
 /* ── Inputs: M3 outlined text field ────────────────────────────────────── */
-html[data-brand="android"] .date-input,
-html[data-brand="android"] .text-input,
-html[data-brand="android"] .filter-search,
+html[data-brand="android"] .wb-input,
+html[data-brand="android"] .wb-textarea,
+html[data-brand="android"] .wb-select,
 html[data-brand="android"] .scn-search,
 html[data-brand="android"] .block-input,
-html[data-brand="android"] .block-textarea,
-html[data-brand="android"] .codeword-input {
+html[data-brand="android"] .block-textarea {
   border-radius: 12px !important;
   border: 1px solid var(--border) !important;
   font-size: 14px !important;
   padding: 12px 16px !important;
 }
 
-html[data-brand="android"] .text-input:focus,
-html[data-brand="android"] .filter-search:focus,
+html[data-brand="android"] .wb-input:focus,
+html[data-brand="android"] .wb-textarea:focus,
 html[data-brand="android"] .scn-search:focus {
   border-width: 2px !important;
   box-shadow: none !important;
 }
 
 /* ── Modal: M3 dialog — large radius, no blur ──────────────────────────── */
-html[data-brand="android"] .modal-overlay,
 html[data-brand="android"] .wb-modal-overlay {
   background: rgba(0, 0, 0, 0.5) !important;
   backdrop-filter: none !important;
   -webkit-backdrop-filter: none !important;
 }
 
-html[data-brand="android"] .modal,
 html[data-brand="android"] .wb-modal {
   border: none !important;
   border-radius: 28px !important;
   box-shadow: var(--shadow-xl) !important;
 }
 
-html[data-brand="android"] .modal-header h3,
 html[data-brand="android"] .wb-modal-title {
   font-size: 22px !important;
   font-weight: 500 !important;
@@ -523,7 +472,7 @@ html[data-brand="android"] .wb-modal-title {
 }
 
 /* ── Chips: M3 filter chips — square corners ───────────────────────────── */
-html[data-brand="android"] .type-chip {
+html[data-brand="android"] .wb-chip {
   border-radius: 8px !important;
   border: 1px solid var(--border) !important;
   font-size: 14px !important;
@@ -531,15 +480,8 @@ html[data-brand="android"] .type-chip {
   padding: 6px 16px !important;
 }
 
-html[data-brand="android"] .type-chip.active {
-  background: var(--accent) !important;
-  color: var(--text-inverse) !important;
-  border-color: var(--accent) !important;
-}
-
 html[data-brand="android"] .scn-badge,
 html[data-brand="android"] .usr-badge,
-html[data-brand="android"] .status-badge,
 html[data-brand="android"] .scn-count {
   border-radius: 8px !important;
   font-weight: 500 !important;
@@ -547,34 +489,34 @@ html[data-brand="android"] .scn-count {
 }
 
 /* ── Table wrap ────────────────────────────────────────────────────────── */
-html[data-brand="android"] .table-wrap,
-html[data-brand="android"] .compare-wrap {
+html[data-brand="android"] .wb-table-wrap,
+html[data-brand="android"] .wb-compare-wrap {
   border: none !important;
   border-radius: 16px !important;
   box-shadow: var(--shadow-xs) !important;
 }
 
 /* ── Login ─────────────────────────────────────────────────────────────── */
-html[data-brand="android"] .login-card {
+html[data-brand="android"] .wb-auth-card {
   border: none !important;
   border-radius: 28px !important;
   box-shadow: var(--shadow-lg) !important;
 }
 
-html[data-brand="android"] .login-btn {
+html[data-brand="android"] .wb-auth-submit {
   border-radius: 20px !important;
   font-size: 14px !important;
   font-weight: 500 !important;
   padding: 12px 24px !important;
 }
 
-html[data-brand="android"] .login-input {
+html[data-brand="android"] .wb-auth-input {
   border-radius: 12px !important;
   border: 1px solid var(--border) !important;
   font-size: 14px !important;
 }
 
-html[data-brand="android"] .login-input:focus {
+html[data-brand="android"] .wb-auth-input:focus {
   border-width: 2px !important;
   box-shadow: none !important;
 }

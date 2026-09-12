@@ -9,6 +9,7 @@ import type { Template, TemplateType } from "@wwwuabot/shared";
 import { ALL_SYSTEM_TEMPLATES } from "@wwwuabot/shared";
 import { Icon } from "@wwwuabot/shared";
 import { useDialog } from "@wwwuabot/ui/dialog";
+import { PageTopbar } from "../../layout/PageTopbar";
 
 type TypeFilter = "" | "site" | "page";
 
@@ -99,12 +100,12 @@ export function TemplatesPage() {
 
   return (
     <>
-      <div className="page-topbar">
-        <h1 className="topbar-title">
+      <PageTopbar>
+        <h1 className="wb-topbar-title">
           <Icon name="layers" size={20} />
           Шаблони
         </h1>
-      </div>
+      </PageTopbar>
 
       <div style={{ padding: "var(--sp-5)", maxWidth: 1200, margin: "0 auto" }}>
         {/* Фільтри та створення */}

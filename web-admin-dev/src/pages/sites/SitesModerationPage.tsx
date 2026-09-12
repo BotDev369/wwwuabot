@@ -8,6 +8,7 @@ import { useState, useEffect, useCallback } from "react";
 import type { Site, SitePage } from "@wwwuabot/shared";
 import { Icon } from "@wwwuabot/shared";
 import { useDialog } from "@wwwuabot/ui/dialog";
+import { PageTopbar } from "../../layout/PageTopbar";
 
 export function SitesModerationPage() {
   const dialog = useDialog();
@@ -88,13 +89,13 @@ export function SitesModerationPage() {
 
   return (
     <>
-      <div className="page-topbar">
-        <h1 className="topbar-title">
+      <PageTopbar>
+        <h1 className="wb-topbar-title">
           <Icon name="eye" size={20} />
           Модерація сайтів
         </h1>
         <span className="wb-badge wb-badge-yellow">{pending.length} очікують</span>
-      </div>
+      </PageTopbar>
 
       <div className="sites-split">
         {/* Черга */}

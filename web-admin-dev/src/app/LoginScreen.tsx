@@ -1,6 +1,12 @@
 import { useState } from "react";
 import { login } from "../shared/api/auth.api";
 
+/**
+ * Вхід в адмінку.
+ *
+ * Розмітка — спільні кирпичики `.wb-auth*`; різниця з платформою не у вигляді,
+ * а в тому, що тут пароль і `POST /auth`, а в TWA — `initData` від Telegram.
+ */
 export function LoginScreen() {
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
@@ -24,16 +30,16 @@ export function LoginScreen() {
   }
 
   return (
-    <div className="login-root">
-      <div className="login-card">
-        <div className="login-logo">
-          <span className="login-logo-icon">✦</span>
-          <span className="login-logo-text">WWWUABOT</span>
-          <span className="login-logo-sub">Admin</span>
+    <div className="wb-auth">
+      <div className="wb-auth-card">
+        <div className="wb-auth-logo">
+          <span className="wb-auth-logo-icon">✦</span>
+          <span className="wb-auth-logo-text">WWWUABOT</span>
+          <span className="wb-auth-sub">Admin</span>
         </div>
-        <form onSubmit={handleSubmit} className="login-form">
-          <div className="login-field">
-            <label htmlFor="password" className="login-label">
+        <form onSubmit={handleSubmit} className="wb-auth-form">
+          <div className="wb-auth-field">
+            <label htmlFor="password" className="wb-auth-label">
               Пароль
             </label>
             <input
@@ -41,16 +47,16 @@ export function LoginScreen() {
               type="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              className={`login-input${error ? " login-input--error" : ""}`}
+              className={`wb-input wb-auth-input${error ? " wb-auth-input--error" : ""}`}
               placeholder="••••••••"
               autoFocus
               autoComplete="current-password"
             />
-            {error && <p className="login-error">{error}</p>}
+            {error && <p className="wb-auth-error">{error}</p>}
           </div>
           <button
             type="submit"
-            className="wb-btn wb-btn-primary login-btn"
+            className="wb-btn wb-btn-primary wb-auth-submit"
             disabled={loading || !password.trim()}
           >
             {loading ? "Вхід..." : "Увійти"}

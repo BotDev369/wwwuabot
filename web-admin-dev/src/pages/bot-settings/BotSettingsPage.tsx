@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { PageTopbar } from "../../layout/PageTopbar";
 import { apiFetch } from "../../shared/api/client";
+import { Icon } from "@wwwuabot/shared";
 import { useDialog } from "@wwwuabot/ui/dialog";
 
 interface WebhookInfo {
@@ -126,8 +127,8 @@ export function BotSettingsPage() {
   return (
     <>
       <PageTopbar>
-        <h1 className="topbar-title">Налаштування бота</h1>
-        <div className="topbar-right">
+        <h1 className="wb-topbar-title">Налаштування бота</h1>
+        <div className="wb-topbar-right">
           <button className="wb-btn wb-btn-secondary" onClick={fetchData} disabled={loading}>
             Оновити
           </button>
@@ -154,7 +155,9 @@ export function BotSettingsPage() {
             {botInfo?.result && (
               <div className="wb-card">
                 <div className="wb-card-header">
-                  <span className="block-type-badge">🤖</span>
+                  <span className="block-type-badge">
+                    <Icon name="bot" size={14} />
+                  </span>
                   <span className="block-type-label">Бот</span>
                   <span className="wb-badge wb-badge-green">Активний</span>
                 </div>
@@ -184,7 +187,9 @@ export function BotSettingsPage() {
             {/* Webhook */}
             <div className="wb-card">
               <div className="wb-card-header">
-                <span className="block-type-badge">🔗</span>
+                <span className="block-type-badge">
+                  <Icon name="link" size={14} />
+                </span>
                 <span className="block-type-label">Webhook</span>
                 {isWebhookOk ? (
                   <span className="wb-badge wb-badge-green">OK</span>
@@ -277,7 +282,9 @@ export function BotSettingsPage() {
             {telegramResponse && (
               <div className="wb-card">
                 <div className="wb-card-header">
-                  <span className="block-type-badge">📤</span>
+                  <span className="block-type-badge">
+                    <Icon name="upload" size={14} />
+                  </span>
                   <span className="block-type-label">Відповідь від Telegram API</span>
                   {telegramResponse.ok ? (
                     <span className="wb-badge wb-badge-green">OK</span>

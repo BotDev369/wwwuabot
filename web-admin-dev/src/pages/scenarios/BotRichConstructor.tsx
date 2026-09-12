@@ -293,7 +293,7 @@ function RichDataEditor({ value, onChange }: { value: string; onChange: (v: stri
           />
           {jsonError && (
             <p style={{ color: "var(--color-error, #ef4444)", fontSize: 12, marginTop: 4 }}>
-              ⚠️ {jsonError}
+              {ico("warning", 12)} {jsonError}
             </p>
           )}
         </>

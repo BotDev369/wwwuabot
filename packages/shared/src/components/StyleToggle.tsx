@@ -82,24 +82,12 @@ export function useStyleTheme() {
 
 /* ─── Button base styles ──────────────────────────────────────────────── */
 
-const btnBase: React.CSSProperties = {
-  display: "flex",
-  alignItems: "center",
-  gap: 8,
-  padding: "8px 12px",
-  background: "var(--bg-2)",
-  border: "1px solid var(--border)",
-  borderRadius: "var(--radius)",
-  color: "var(--text-secondary)",
-  cursor: "pointer",
-  fontSize: 13,
-  fontFamily: "var(--font-ui)",
-  fontWeight: 500,
-  transition: "background 0.15s, color 0.15s",
-  lineHeight: 1,
-  width: "100%",
-  textAlign: "left" as const,
-};
+/**
+ * Кнопка теми в меню — той самий кирпичик `.wb-nav-item`, що й пункти
+ * навігації, тож вона не потребує власних інлайн-стилів. Раніше тут жило
+ * 30 рядків `style={{…}}`, а в адмінці `collapsed`-стан узагалі малювався
+ * класом `.sidebar-theme-btn`, для якого не існувало жодного правила.
+ */
 
 /**
  * Unified Theme button for the sidebar.
@@ -134,29 +122,16 @@ export function ThemeButton({ compact = false }: { compact?: boolean }) {
   return (
     <>
       {/* ── Trigger Button ── */}
-      {compact ? (
-        <button
-          type="button"
-          onClick={() => setOpen(true)}
-          title="Тема"
-          aria-label="Налаштування теми"
-          className="sidebar-theme-btn"
-        >
-          <span className="sidebar-nav-icon">{isDark ? icons["moon"] : icons["sun"]}</span>
-          <span className="sidebar-nav-label">Тема</span>
-        </button>
-      ) : (
-        <button
-          type="button"
-          onClick={() => setOpen(true)}
-          title="Тема"
-          aria-label="Налаштування теми"
-          style={btnBase}
-        >
-          <span style={{ flexShrink: 0 }}>{isDark ? icons["moon"] : icons["sun"]}</span>
-          <span>Тема</span>
-        </button>
-      )}
+      <button
+        type="button"
+        onClick={() => setOpen(true)}
+        title="Тема"
+        aria-label="Налаштування теми"
+        className="wb-nav-item"
+      >
+        <span className="wb-nav-icon">{isDark ? icons["moon"] : icons["sun"]}</span>
+        {!compact && <span className="wb-nav-label">Тема</span>}
+      </button>
 
       {/* ── Modal ── */}
       {open && (

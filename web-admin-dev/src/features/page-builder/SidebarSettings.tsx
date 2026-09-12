@@ -12,19 +12,7 @@ interface SidebarSettingsProps {
 
 export function SidebarSettingsPanel({ settings, onUpdate }: SidebarSettingsProps) {
   return (
-    <div
-      className="pb-sidebar-settings"
-      style={{
-        padding: "10px 14px",
-        background: "var(--bg-2)",
-        border: "1px solid var(--border)",
-        borderRadius: 8,
-        marginBottom: 12,
-        display: "flex",
-        flexDirection: "column",
-        gap: 10,
-      }}
-    >
+    <div className="pb-sidebar-settings">
       <div
         style={{
           fontSize: 13,

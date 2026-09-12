@@ -9,7 +9,7 @@
 
 import { useState, useCallback, useEffect, useMemo } from "react";
 import type { PageConfig, BlockContext } from "@wwwuabot/shared/types/page-config";
-import { icons } from "@wwwuabot/shared";
+import { Icon, icons, type IconName } from "@wwwuabot/shared";
 import { ZoneRenderer } from "./ZoneRenderer";
 
 interface PageRendererProps {
@@ -31,11 +31,12 @@ interface PageRendererProps {
   showZoneLabels?: boolean;
 }
 
-const ZONE_LABELS: Record<string, string> = {
-  sidebar: "📎 Sidebar",
-  header: "📌 Header",
-  main: "📄 Main",
-  footer: "📎 Footer",
+/** Мітки зон редактора: іконка зі спільного набору, а не емодзі (`AGENTS.md` §4). */
+const ZONE_LABELS: Record<string, { icon: IconName; label: string }> = {
+  sidebar: { icon: "layout", label: "Sidebar" },
+  header: { icon: "tabs", label: "Header" },
+  main: { icon: "text", label: "Main" },
+  footer: { icon: "divider", label: "Footer" },
 };
 
 export function PageRenderer({
@@ -87,8 +88,15 @@ export function PageRenderer({
     }
   }, []);
 
-  const renderZoneLabel = (zone: string) =>
-    showZoneLabels ? <div className="page-zone-label">{ZONE_LABELS[zone]}</div> : null;
+  const renderZoneLabel = (zone: string) => {
+    const label = ZONE_LABELS[zone];
+    if (!showZoneLabels || !label) return null;
+    return (
+      <div className="page-zone-label">
+        <Icon name={label.icon} size={12} /> {label.label}
+      </div>
+    );
+  };
 
   return (
     <div className={className}>
@@ -107,14 +115,12 @@ export function PageRenderer({
       )}
 
       {/* Sidebar overlay (mobile) */}
-      {hasSidebar && sidebarOpen && (
-        <div className="app-drawer-overlay page-sidebar-overlay" onClick={closeSidebar} />
-      )}
+      {hasSidebar && sidebarOpen && <div className="app-drawer-overlay" onClick={closeSidebar} />}
 
       {/* Sidebar */}
       {hasSidebar && (
         <aside
-          className={`${zoneClassName?.sidebar ?? "page-zone page-zone--sidebar"} app-drawer${sidebarOpen ? " app-drawer--open page-zone--sidebar--open" : ""}`}
+          className={`${zoneClassName?.sidebar ?? "page-zone page-zone--sidebar"} app-drawer${sidebarOpen ? " app-drawer--open" : ""}`}
           data-zone="sidebar"
           onClick={handleSidebarClick}
         >

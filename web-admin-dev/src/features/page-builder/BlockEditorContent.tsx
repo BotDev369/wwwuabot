@@ -123,7 +123,7 @@ export function BlockEditorContent({
         />
       )}
 
-      <div className="pb-be-props" style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+      <div className="pb-be-props">
         <SchemaField props={block.props} schema={definition?.schema} onChange={handlePropChange} />
       </div>
 

@@ -78,6 +78,16 @@ jobs:
       - run: npm run typecheck
       - name: Format check
         run: npx prettier --check .
+      # «Клас без правила» не ламає ні збірку, ні тести — він просто нічого не
+      # робить. Саме тому 44 класи `wb-block-*`, `.sidebar-theme-btn` і
+      # `.site-preview` прожили місяці. Гейт ловить їх статично.
+      - name: CSS classes
+        run: npm run check:css
+      # Планка: ліміт рядків файлу, «100vh без dvh-фолбеку», нативні
+      # alert/confirm/prompt і емодзі в UI. Усе це — правила, які доти існували
+      # лише в тексті: файли по 777 рядків і 🔗 у кнопках ніщо не зупиняло.
+      - name: Quality bar
+        run: npm run check:quality
       - name: Unit tests
         run: npm test
 
