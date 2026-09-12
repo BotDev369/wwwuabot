@@ -15,6 +15,12 @@ not_found_handling = "single-page-application"
 binding = "API"
 service = "api-dev"
 
+[vars]
+# Воркер називається `web-platform-dev`, тому `dev` (див. api-dev/wrangler.toml).
+# Зараз код це значення не читає — воно тут, щоб середовище було оголошене
+# однаково в усіх чотирьох воркерах і це перевіряв `wrangler-env.test.ts`.
+ENVIRONMENT = "dev"
+
 # Workers Logs — див. коментар в api-dev/wrangler.toml.
 [observability]
 enabled = true

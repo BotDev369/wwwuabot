@@ -8,7 +8,7 @@
 §3.3 (`useMyDates`) закрито 11.09.2026.
 Моніторинг (§5.8): код готовий — `/health/deep` + Workers Logs; UptimeRobot підключає власник.
 
-**Остання перевірка (12.09.2026):** `npm test` — 162/162 ✅ · `npm run typecheck` — чисто на
+**Остання перевірка (12.09.2026):** `npm test` — 182/182 ✅ · `npm run typecheck` — чисто на
 всіх 6 воркспейсах ✅ · `npm run lint` — 0 errors ✅ · CI run `34662385702` — усі 6 джобів ✅.
 Живе: `/api/scenario/%` віддає **400** (було 500), адмін-префікси — 401, публічні — 200.
 Секрет `SENTRY_DSN` додано в `api-dev` і `bot-dev` власником акаунта. Деталі — §9.
@@ -752,7 +752,7 @@ _На момент цього кроку тестів було 133; наступ
 | Публічний ендпоїнт більше не віддає текст винятку з D1 | `api-dev/src/controllers/scenarios.controller.ts` |
 | Тести | `api-dev/src/router-input.test.ts` (5), `api-dev/src/index.test.ts` (1) |
 
-**Перевірка:** `npm test` — 162/162 ✅ · `npm run typecheck` — чисто ✅ · `npm run lint` — 0 errors ✅
+**Перевірка:** `npm test` — 182/182 ✅ · `npm run typecheck` — чисто ✅ · `npm run lint` — 0 errors ✅
 
 **Чому це не косметика:** `/api/scenario/:slug` — **публічний** ендпоїнт (без авторизації),
 а його обробник доти віддавав клієнту `e.message` з D1. Тобто назви таблиць і значення

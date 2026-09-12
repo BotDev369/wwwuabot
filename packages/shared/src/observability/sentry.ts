@@ -7,6 +7,11 @@
  * `packages/shared` лишається без залежностей і не тягне серверний SDK у
  * браузерні бандли.
  *
+ * Середовище: `environment` береться з `ENVIRONMENT` воркера. Якщо його не
+ * задано — підставляється `dev`, а не `production` (як робить SDK за
+ * замовчуванням): інакше події з дев-воркерів змішуються з продовими.
+ * Деталі — `@wwwuabot/shared/config/environment`.
+ *
  * Політика даних: у Sentry не йде нічого, що може ідентифікувати користувача
  * або дати доступ до акаунта — ані `initData` (підпис дозволяє видавати себе
  * за користувача, поки не спливе), ані cookie `admin_session`, ані тіла
@@ -16,11 +21,13 @@
  * @module packages/shared/src/observability/sentry
  */
 
+import { ENV_DEV } from "../config/environment";
+
 /** Те, що воркер має з оточення Cloudflare. */
 export interface SentryEnv {
   /** DSN із Sentry. Немає або порожній → Sentry вимкнено, воркер працює як звичайно. */
   SENTRY_DSN?: string;
-  /** Середовище для подій (`dev`, `production`). */
+  /** Середовище для подій — `dev` або `production` (див. `config/environment`). */
   ENVIRONMENT?: string;
   /** Binding Cloudflare `CF_VERSION_METADATA` — дає `id` релізу. */
   CF_VERSION_METADATA?: { id?: string };
@@ -84,7 +91,11 @@ export function sentryOptions(env: SentryEnv): SentryOptionsLike | undefined {
 
   return {
     dsn,
-    environment: env.ENVIRONMENT,
+    // Значення передається як є (щоб одруківка була видна в Sentry окремим
+    // середовищем, а не злилась непомітно), але за відсутності — `dev`.
+    // SDK узяв би `"production"` за замовчуванням, і дев-події виглядали б
+    // як продові.
+    environment: env.ENVIRONMENT?.trim() || ENV_DEV,
     release: env.CF_VERSION_METADATA?.id,
     // 0 = перформанс вимкнено. Безкоштовний план — 5 000 помилок/місяць,
     // тож трейси лише зʼїдали б квоту, не даючи користі на цьому етапі.

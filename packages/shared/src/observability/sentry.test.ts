@@ -29,6 +29,23 @@ describe("sentryOptions", () => {
     expect(options?.release).toBe("v42");
   });
 
+  it("без ENVIRONMENT підставляє `dev`, а не `production`", () => {
+    // SDK за замовчуванням узяв би `"production"` — і всі події з дев-воркерів
+    // виглядали б як продові. Свідомо перекриваємо це.
+    const options = sentryOptions({ SENTRY_DSN: "https://key@o1.ingest.sentry.io/2" });
+
+    expect(options?.environment).toBe("dev");
+  });
+
+  it("зберігає нетипове значення, щоб одруківка була видна в Sentry", () => {
+    const options = sentryOptions({
+      SENTRY_DSN: "https://key@o1.ingest.sentry.io/2",
+      ENVIRONMENT: "prod",
+    });
+
+    expect(options?.environment).toBe("prod");
+  });
+
   it("не вмикає перформанс — квота лишається під помилки", () => {
     expect(sentryOptions({ SENTRY_DSN: "https://key@o1.ingest.sentry.io/2" })?.tracesSampleRate).toBe(0);
   });

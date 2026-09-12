@@ -18,9 +18,13 @@ binding = "CONTENT_KV"
 id = "bda7a5fca58b4fbda87d75105d558ebf"
 
 [vars]
-# ADMIN_SECRET, BOT_TOKEN і SENTRY_DSN — задаються через Cloudflare Dashboard (Secrets)
-# ENVIRONMENT потрапляє лише в події Sentry (`environment`).
-ENVIRONMENT = "production"
+# ADMIN_SECRET, BOT_TOKEN, SECRET_TOKEN і SENTRY_DSN — задаються через Cloudflare
+# Dashboard (Secrets).
+#
+# Воркер називається `api-dev`, тому `dev`: у Sentry мітка `environment` має
+# відповідати тому, де код насправді працює. Прод — окремий воркер із
+# `production`, а не правка цього рядка (`wrangler-env.test.ts` це перевіряє).
+ENVIRONMENT = "dev"
 
 # Workers Logs: логи, помилки й необроблені винятки видно в панелі Cloudflare.
 # invocation_logs = false — вимикає лише службовий лог кожного запиту
