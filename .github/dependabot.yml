@@ -1,5 +1,26 @@
+# Dependabot: оновлення залежностей.
+#
+# **Чому тут лише два записи.** Репозиторій — це npm-воркспейси з одним
+# `package-lock.json` у корені. Запис із `directory: "/"` працює не лише з
+# кореневим манифестом, а й з усіма воркспейсами: він оновлює `api-dev`,
+# `bot-dev`, `web-platform-dev`, `web-admin-dev`, `packages/shared` і
+# `packages/ui` одним PR (приклад — PR #45 на `wrangler`, який правив чотири
+# воркерські манифести).
+#
+# Доти тут стояли ще чотири записи — `/bot`, `/web`, `/api`, `/web-admin`.
+# Таких тек у репозиторії **немає**: воркспейси звуться `*-dev`, і після переходу
+# на монорепо (липень 2026) ці записи лишились від старої структури. Dependabot
+# недосяжну теку просто пропускає, тому шкоди вони не робили — але читались як
+# покриття, якого немає: оновлення `wrangler` у воркерах виглядали «не описані
+# ніде», хоч насправді ними керує кореневий запис.
+#
+# Якщо воркспейс колись отримає **власний lockfile** — йому знадобиться окремий
+# запис із `directory: "/<тека>"`. Поки локи один, окремі записи дали б дублікати
+# PR на ту саму залежність.
+
 version: 2
 updates:
+  # Усі npm-залежності репозиторію (корінь + воркспейси).
   - package-ecosystem: "npm"
     directory: "/"
     schedule:
@@ -9,33 +30,8 @@ updates:
       - "dependencies"
       - "security"
 
-  - package-ecosystem: "npm"
-    directory: "/bot"
-    schedule:
-      interval: "weekly"
-    open-pull-requests-limit: 5
-    labels:
-      - "dependencies"
-      - "bot"
-
-  - package-ecosystem: "npm"
-    directory: "/web"
-    schedule:
-      interval: "weekly"
-    open-pull-requests-limit: 5
-    labels:
-      - "dependencies"
-      - "web"
-
-  - package-ecosystem: "npm"
-    directory: "/web-admin"
-    schedule:
-      interval: "weekly"
-    open-pull-requests-limit: 5
-    labels:
-      - "dependencies"
-      - "web-admin"
-
+  # Версії GitHub Actions у `.github/workflows/*` — вони старіють так само, як
+  # пакети, і застарілий раннер ламає CI без жодної зміни в коді (Node 20 → 24).
   - package-ecosystem: "github-actions"
     directory: "/"
     schedule:
