@@ -8,6 +8,14 @@
  *   DELETE /api/sites/:slug/pages/:pid     — видалити сторінку
  *   POST /api/sites/:slug/pages/:pid/publish — опублікувати сторінку
  *
+ * **Межа власності тут складніша, ніж здається:** `:slug` і `:pid` — два
+ * незалежні сегменти URL. Перевірки «сайт належить мені» недостатньо: свій slug
+ * плюс чужий `pageId` проходив її, і запис лягав у чужу сторінку. Тому кожна дія
+ * над сторінкою перевіряє ще й те, що `page.siteId === site.id`.
+ *
+ * Порядок перевірок теж не випадковий: спершу власник сайту, і лише потім
+ * існування сторінки — інакше код відповіді стає підказкою про чужі об'єкти.
+ *
  * @module api-dev/src/controllers/site-pages.controller
  */
 
@@ -21,6 +29,7 @@ import {
   deleteSitePage,
 } from "../services/sites/pages";
 import { isValidSlug, HOME_SLUG } from "@wwwuabot/shared/constants/site-defaults";
+import type { Site } from "@wwwuabot/shared/types/site";
 import { resolveUserId } from "../shared/identity";
 
 // ── Helpers ──────────────────────────────────────────────────
@@ -30,6 +39,25 @@ function json(data: unknown, status = 200): Response {
     status,
     headers: { "Content-Type": "application/json" },
   });
+}
+
+/**
+ * Сайт із URL, який належить саме цьому користувачу.
+ *
+ * Один вхід для всіх трьох дій над сторінкою: інакше порядок перевірок
+ * розповзався б по хендлерах, а разом із ним — і поведінка при відмові.
+ * `:slug` — це адреса сайту, а не секрет: чужий slug віддає 403, невідомий — 404,
+ * і жоден із цих кодів не розповідає нічого про чужі сторінки.
+ */
+async function requireOwnSite(
+  db: D1Database,
+  slug: string,
+  userId: number,
+): Promise<{ ok: true; site: Site } | { ok: false; response: Response }> {
+  const site = await getSiteBySlug(db, slug);
+  if (!site) return { ok: false, response: json({ error: "Site not found" }, 404) };
+  if (site.ownerId !== userId) return { ok: false, response: json({ error: "Forbidden" }, 403) };
+  return { ok: true, site };
 }
 
 // ── Handlers ─────────────────────────────────────────────────
@@ -114,19 +142,18 @@ export async function handleListPages(
 export async function handleUpdatePage(
   request: Request,
   env: Env,
-  _siteSlug: string,
+  siteSlug: string,
   pageId: string,
 ): Promise<Response> {
   const identity = await resolveUserId(request, env);
   if (!identity.ok) return identity.response;
   const userId = identity.userId;
 
-  const page = await getSitePageById(env.DB, pageId);
-  if (!page) return json({ error: "Page not found" }, 404);
+  const site = await requireOwnSite(env.DB, siteSlug, userId);
+  if (!site.ok) return site.response;
 
-  // Перевіряємо що сайт належить користувачу
-  const site = await getSiteBySlug(env.DB, _siteSlug);
-  if (!site || site.ownerId !== userId) return json({ error: "Forbidden" }, 403);
+  const page = await getSitePageById(env.DB, pageId);
+  if (!page || page.siteId !== site.site.id) return json({ error: "Page not found" }, 404);
 
   let body: Record<string, unknown>;
   try {
@@ -156,24 +183,23 @@ export async function handleUpdatePage(
 export async function handleDeletePage(
   request: Request,
   env: Env,
-  _siteSlug: string,
+  siteSlug: string,
   pageId: string,
 ): Promise<Response> {
   const identity = await resolveUserId(request, env);
   if (!identity.ok) return identity.response;
   const userId = identity.userId;
 
-  const page = await getSitePageById(env.DB, pageId);
-  if (!page) return json({ error: "Page not found" }, 404);
+  const site = await requireOwnSite(env.DB, siteSlug, userId);
+  if (!site.ok) return site.response;
 
-  // Не дозволяємо видаляти home
+  const page = await getSitePageById(env.DB, pageId);
+  if (!page || page.siteId !== site.site.id) return json({ error: "Page not found" }, 404);
+
+  // Головну сторінку видаляти не можна: без неї сайт не відкривається.
   if (page.slug === HOME_SLUG) {
     return json({ error: "Cannot delete home page" }, 400);
   }
-
-  // Перевіряємо що сайт належить користувачу
-  const site = await getSiteBySlug(env.DB, _siteSlug);
-  if (!site || site.ownerId !== userId) return json({ error: "Forbidden" }, 403);
 
   try {
     const deleted = await deleteSitePage(env.DB, pageId);
@@ -188,19 +214,18 @@ export async function handleDeletePage(
 export async function handlePublishPage(
   request: Request,
   env: Env,
-  _siteSlug: string,
+  siteSlug: string,
   pageId: string,
 ): Promise<Response> {
   const identity = await resolveUserId(request, env);
   if (!identity.ok) return identity.response;
   const userId = identity.userId;
 
-  const page = await getSitePageById(env.DB, pageId);
-  if (!page) return json({ error: "Page not found" }, 404);
+  const site = await requireOwnSite(env.DB, siteSlug, userId);
+  if (!site.ok) return site.response;
 
-  // Перевіряємо що сайт належить користувачу
-  const site = await getSiteBySlug(env.DB, _siteSlug);
-  if (!site || site.ownerId !== userId) return json({ error: "Forbidden" }, 403);
+  const page = await getSitePageById(env.DB, pageId);
+  if (!page || page.siteId !== site.site.id) return json({ error: "Page not found" }, 404);
 
   try {
     const updated = await updateSitePage(env.DB, pageId, { status: "published" });
