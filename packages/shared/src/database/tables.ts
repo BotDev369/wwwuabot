@@ -11,8 +11,8 @@
  * **Правило.** Таблиця описується тут один раз: ім'я, власник, призначення, DDL.
  * Створювати таблицю повз цей файл заборонено — стереже `npm run check:db`.
  * Колонки не оголошуються окремим списком: вони **виводяться з самого DDL**,
- * бо два списки (DDL і «колонки») неминуче розійдуться — саме так
- * `scenarios` і `scenarios-admin` отримали різні схеми.
+ * бо два списки (DDL і «колонки») неминуче розійдуться — саме так дві копії
+ * таблиці сценаріїв колись отримали різні схеми.
  *
  * **Це файл даних.** Тут немає логіки: ані `ensureTables`, ані розбору колонок.
  * Код, який застосовує ці оголошення, живе в
@@ -124,36 +124,6 @@ export const TABLES = {
       )`,
   },
 
-  "scenarios-admin": {
-    name: "scenarios-admin",
-    owner: "api-dev",
-    purpose: "Той самий сценарій, але окремий контент-набір адмінки (/api/admin/scenarios/*).",
-    create: `CREATE TABLE IF NOT EXISTS "scenarios-admin" (
-        codeword TEXT PRIMARY KEY,
-        photo_url TEXT,
-        caption_top TEXT,
-        caption_mid TEXT,
-        caption_bot TEXT,
-        keyboard_type TEXT NOT NULL DEFAULT 'static',
-        buttons TEXT NOT NULL DEFAULT '[]',
-        created_at TEXT NOT NULL DEFAULT (datetime('now')),
-        updated_at TEXT NOT NULL DEFAULT (datetime('now')),
-        price TEXT,
-        qty_options TEXT,
-        awaits_input TEXT,
-        input_path TEXT,
-        input_next TEXT,
-        title TEXT,
-        notify_groups TEXT,
-        notify_template TEXT,
-        rich_message TEXT,
-        rich_data TEXT,
-        page_data TEXT DEFAULT NULL,
-        web_slug TEXT DEFAULT NULL,
-        is_active INTEGER DEFAULT 1
-      )`,
-  },
-
   sites: {
     name: "sites",
     owner: "api-dev",
@@ -206,8 +176,10 @@ export const TABLES = {
   },
 
   /**
-   * Єдине сховище контенту. Замінює чотири таблиці (`scenarios`,
-   * `scenarios-admin`, `sites`, `site_pages`), які описували те саме:
+   * Єдине сховище контенту. Замінює три таблиці (`scenarios`, `sites`,
+   * `site_pages`), які описували те саме. Четверта, `scenarios-admin`, була
+   * тестовою копією `scenarios` без жодного читача поза адмінкою — її видалено
+   * 13.09.2026 разом з адмін-маршрутами, тому переносити з неї нічого:
    * `blocks` — сторінка вебу (колишній `page_data`), `bot` — подання тієї ж
    * сторінки в Telegram, `kind = 'collection'` — група сторінок (колишній
    * сайт). Навігація більше не зберігається: нею стають самі сторінки з

@@ -1,63 +1,28 @@
 /**
- * ScenariosPage — єдина сторінка сценаріїв з перемикачем Portal/Admin.
+ * ScenariosPage — список сценаріїв (єдина таблиця `scenarios`).
  *
- * Замінює два окремих маршрути (/scenarios та /scenarios-admin)
- * на один з табами зверху.
+ * Доти тут був перемикач Portal/Admin: адмінка мала дві таблиці, і кожна
+ * вкладка читала свою. `scenarios-admin` виявилась тестовою копією — контент із
+ * неї не показувався **нікому** поза самою адмінкою, — тож вкладку разом із
+ * таблицею видалено 13.09.2026, і сторінка лишилась одна.
  */
 
 import { useEffect, useCallback, useState } from "react";
 import { useScenariosStore } from "../../features/scenarios/store";
-import { saveScenarioFields, type ScenarioTable } from "../../shared/api/scenarios.api";
+import { saveScenarioFields } from "../../shared/api/scenarios.api";
 import { PageTopbar } from "../../layout/PageTopbar";
 import { ScenariosV2Table } from "../scenarios-v2/ScenariosV2Table";
 import { ScenarioCardModal } from "./ScenarioCardModal";
-import { icons, type IconName } from "@wwwuabot/shared";
 import { useDialog } from "@wwwuabot/ui/dialog";
 
-const ico = (name: IconName, size = 16) => (
-  <span
-    style={{
-      display: "inline-flex",
-      alignItems: "center",
-      width: size,
-      height: size,
-      flexShrink: 0,
-    }}
-  >
-    {icons[name]}
-  </span>
-);
-
-interface TableTab {
-  key: ScenarioTable;
-  label: string;
-  icon: IconName;
-}
-
-const TABLE_TABS: TableTab[] = [
-  { key: "portal", label: "Портал", icon: "globe" },
-  { key: "admin", label: "Адмін", icon: "scenarios-admin" },
-];
-
 export function ScenariosPage() {
-  const { items, status, errorMsg, load, setTable, table } = useScenariosStore();
+  const { items, status, errorMsg, load } = useScenariosStore();
   const [creating, setCreating] = useState(false);
   const [openedCodeword, setOpenedCodeword] = useState<string | null>(null);
 
-  // Initialize to portal on first mount
   useEffect(() => {
-    setTable("portal");
     void load();
-  }, [setTable, load]);
-
-  const handleTabSwitch = useCallback(
-    (newTable: ScenarioTable) => {
-      if (newTable === table) return;
-      setTable(newTable);
-      void load(true);
-    },
-    [table, setTable, load],
-  );
+  }, [load]);
 
   const dialog = useDialog();
 
@@ -71,18 +36,14 @@ export function ScenariosPage() {
 
     setCreating(true);
     try {
-      await saveScenarioFields(
-        cw,
-        {
-          title: cw,
-          page_data: JSON.stringify({
-            version: 1,
-            zones: { sidebar: [], header: [], main: [], footer: [] },
-            visibleZones: [],
-          }),
-        },
-        table,
-      );
+      await saveScenarioFields(cw, {
+        title: cw,
+        page_data: JSON.stringify({
+          version: 1,
+          zones: { sidebar: [], header: [], main: [], footer: [] },
+          visibleZones: [],
+        }),
+      });
       // Open the scenario card with constructor immediately
       setOpenedCodeword(cw);
     } catch (e) {
@@ -90,7 +51,7 @@ export function ScenariosPage() {
     } finally {
       setCreating(false);
     }
-  }, [dialog, table]);
+  }, [dialog]);
 
   return (
     <>
@@ -105,69 +66,6 @@ export function ScenariosPage() {
           </button>
         </div>
       </PageTopbar>
-
-      {/* Table toggle — Portal / Admin */}
-      <div
-        style={{
-          padding: "0 16px",
-          marginBottom: 12,
-        }}
-      >
-        <div
-          style={{
-            display: "inline-flex",
-            gap: 0,
-            background: "var(--bg-1, #f1f5f9)",
-            borderRadius: 10,
-            padding: 3,
-            border: "1px solid var(--border)",
-          }}
-        >
-          {TABLE_TABS.map((tab) => {
-            const isActive = table === tab.key;
-            const count = items.length;
-            return (
-              <button
-                key={tab.key}
-                onClick={() => handleTabSwitch(tab.key)}
-                style={{
-                  display: "flex",
-                  alignItems: "center",
-                  gap: 6,
-                  padding: "8px 16px",
-                  fontSize: 13,
-                  fontWeight: isActive ? 600 : 400,
-                  borderRadius: 7,
-                  border: "none",
-                  background: isActive ? "var(--bg-home, var(--bg-0))" : "transparent",
-                  color: isActive ? "var(--text-primary)" : "var(--text-muted)",
-                  boxShadow: isActive ? "0 1px 3px rgba(0,0,0,0.1)" : "none",
-                  cursor: "pointer",
-                  transition: "all 0.15s",
-                  whiteSpace: "nowrap",
-                }}
-              >
-                {ico(tab.icon, 15)}
-                {tab.label}
-                {isActive && status !== "loading" && (
-                  <span
-                    style={{
-                      fontSize: 11,
-                      background: "var(--accent, #6366f1)",
-                      color: "#fff",
-                      padding: "1px 6px",
-                      borderRadius: 8,
-                      fontWeight: 600,
-                    }}
-                  >
-                    {count}
-                  </span>
-                )}
-              </button>
-            );
-          })}
-        </div>
-      </div>
 
       <div className="scn-body">
         {status === "loading" ? (
@@ -190,7 +88,6 @@ export function ScenariosPage() {
       {openedCodeword && (
         <ScenarioCardModal
           codeword={openedCodeword}
-          table={table}
           initialSubTab="constructor"
           onClose={() => setOpenedCodeword(null)}
           onSaved={() => void load(true)}

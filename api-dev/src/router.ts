@@ -22,14 +22,6 @@ import {
   isAuthenticated,
 } from "./controllers/auth.controller";
 import {
-  handleRead as handleScenarioAdminRead,
-  handleWrite as handleScenarioAdminWrite,
-  handleList as handleScenarioAdminList,
-  handleReadAll as handleScenarioAdminReadAll,
-  handleUpdate as handleScenarioAdminUpdate,
-  handleDelete as handleScenarioAdminDelete,
-} from "./controllers/scenarios-admin.controller";
-import {
   handleRead as handlePortalRead,
   handleWrite as handlePortalWrite,
   handleList as handlePortalList,
@@ -185,27 +177,7 @@ export async function handleRequest(request: Request, env: Env): Promise<Respons
     return handleCookieAuthCheck(request, env);
   }
 
-  // ── Admin: Scenarios-Admin CRUD ────────────────────────────────
-  if (pathname === "/api/admin/scenarios/read" && request.method === "POST") {
-    return handleScenarioAdminRead(request, env);
-  }
-  if (pathname === "/api/admin/scenarios/write" && request.method === "POST") {
-    return handleScenarioAdminWrite(request, env);
-  }
-  if (pathname === "/api/admin/scenarios/list" && request.method === "GET") {
-    return handleScenarioAdminList(request, env);
-  }
-  if (pathname === "/api/admin/scenarios/read-all" && request.method === "POST") {
-    return handleScenarioAdminReadAll(request, env);
-  }
-  if (pathname === "/api/admin/scenarios/update" && request.method === "POST") {
-    return handleScenarioAdminUpdate(request, env);
-  }
-  if (pathname === "/api/admin/scenarios/delete" && request.method === "POST") {
-    return handleScenarioAdminDelete(request, env);
-  }
-
-  // ── Portal: Scenarios CRUD (таблиця scenarios) ─────────────────
+  // ── Portal: Scenarios CRUD (єдина таблиця scenarios) ───────────
   if (pathname === "/api/portal/scenarios/read" && request.method === "POST") {
     return handlePortalRead(request, env);
   }

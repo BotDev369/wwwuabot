@@ -72,7 +72,7 @@ export function usePageBuilder() {
     let cancelled = false;
     (async () => {
       try {
-        const row = await readScenarioAll(codeword, "portal");
+        const row = await readScenarioAll(codeword);
         if (cancelled) return;
         if (!row) {
           setError("Сценарій не знайдено");
@@ -109,7 +109,7 @@ export function usePageBuilder() {
       setSaveStatus("saving");
       setSavingAction(shouldClose ? "saveAndClose" : "save");
       try {
-        await updateScenarioFields(codeword, { page_data: JSON.stringify(config) }, "portal");
+        await updateScenarioFields(codeword, { page_data: JSON.stringify(config) });
         setSaveStatus("saved");
         // Маршрут мусить існувати в роутері: `/scenarios-v2` тут стояв за назвою
         // компонента, а не за шляхом, і після збереження давав порожній екран.

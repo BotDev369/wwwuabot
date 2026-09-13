@@ -131,10 +131,6 @@ describe("колонки виводяться з DDL", () => {
     // `web_config` оголошувався в старому DDL, але його не вживає ніхто.
     expect(scenarioColumns).not.toContain("web_config");
   });
-
-  it("дві таблиці сценаріїв мають однаковий набір колонок", () => {
-    expect(declaredColumns(TABLES["scenarios-admin"]).map((c) => c.name)).toEqual(scenarioColumns);
-  });
 });
 
 describe("ensureTables", () => {

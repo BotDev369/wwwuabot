@@ -1,11 +1,13 @@
 -- ─────────────────────────────────────────────────────────────────────────────
--- Контент в одну таблицю: scenarios + scenarios-admin + sites + site_pages → pages
+-- Контент в одну таблицю: scenarios + sites + site_pages → pages
 --
--- **Навіщо.** Чотири таблиці описували те саме: сторінку контенту. `scenarios`
--- читали бот і платформа, `scenarios-admin` — ніхто (запис у нікуди),
--- `sites` + `site_pages` — друга реалізація того самого для вебу. Навігація
--- сайту при цьому жила ще й третім списком — `sites.settings.navigation`
--- дублював назви сторінок, які вже існували рядками в `site_pages`.
+-- **Навіщо.** Три таблиці описували те саме: сторінку контенту. `scenarios`
+-- читали бот і платформа, `sites` + `site_pages` — друга реалізація того самого
+-- для вебу. Навігація сайту при цьому жила ще й третім списком —
+-- `sites.settings.navigation` дублював назви сторінок, які вже існували рядками
+-- в `site_pages`. (Четверта, `scenarios-admin`, була тестовою копією `scenarios`
+-- і не мала жодного читача поза адмінкою — її видалено 13.09.2026, тому
+-- переносити з неї нічого.)
 --
 -- **Адреса тепер одна.** Легасі-рядок має дві назви того самого: `web_slug`
 -- (шлях вебу) і `codeword` (ключ діплінка бота). У `pages` є одна колонка
@@ -23,7 +25,7 @@
 -- **Правила цього файлу.**
 --   1. Він **тільки додає**. Жодного `DELETE`, `DROP` чи `UPDATE`: легасі-таблиці
 --      лишаються недоторканими, тож відкат — це видалення рядків `pages`.
---   2. Він **ідемпотентний**: `id` детермінований (`sc:` / `sa:` / `site:` / `sp:`
+--   2. Він **ідемпотентний**: `id` детермінований (`sc:` / `site:` / `sp:`
 --      + старий ключ), тому повторний запуск не створює дублів.
 --   3. Він **не мовчить про конфлікти**. Рядок, який не пройшов перевірку,
 --      лишається в легасі-таблиці, а `migrate-content.mjs` друкує його на ім'я
@@ -53,12 +55,12 @@
 -- **Порядок інструкцій = пріоритет.** Адреса унікальна в усій таблиці, а
 -- джерела історично незалежні, тож збіг між ними можливий (напр. сценарій
 -- `about` і сторінка сайту `about`). Між інструкціями `NOT EXISTS` бачить уже
--- вставлені рядки — тому перемагає джерело, яке стоїть вище: портальні
--- сценарії → адмін-сценарії → сайти → сторінки сайтів. Решта потрапляє у звіт,
--- і рішення «кого перейменувати» — за власником.
+-- вставлені рядки — тому перемагає джерело, яке стоїть вище: сценарії → сайти →
+-- сторінки сайтів. Решта потрапляє у звіт, і рішення «кого перейменувати» — за
+-- власником.
 -- ─────────────────────────────────────────────────────────────────────────────
 
--- ── 1. Портальні сценарії: те, що справді читають бот і платформа ────────────
+-- ── 1. Сценарії: те, що справді читають бот і платформа ─────────────────────
 INSERT INTO pages (
   id, slug, title, blocks, bot, kind, parent_id, position, owner_id,
   status, visibility, photo_url, template_id, reject_reason, meta, created_at, updated_at, published_at
@@ -129,80 +131,7 @@ WHERE r.pick = 1
   AND NOT EXISTS (SELECT 1 FROM pages p WHERE p.id = r.id)
   AND NOT EXISTS (SELECT 1 FROM pages p WHERE p.slug = r.slug);
 
--- ── 2. Вкладка «Адмін»: контент, який не читав ніхто ────────────────────────
--- Переносимо, бо це чиясь робота, але з `status = 'draft'` і
--- `visibility = 'private'`: назовні такий рядок не потрапляє, доки власник не
--- вирішить інакше.
-INSERT INTO pages (
-  id, slug, title, blocks, bot, kind, parent_id, position, owner_id,
-  status, visibility, photo_url, template_id, reject_reason, meta, created_at, updated_at, published_at
-)
-WITH src AS (
-  SELECT
-    'sa:' || a.codeword AS id,
-    CASE
-      WHEN COALESCE(a.codeword, '') = '__base__' THEN ''
-      ELSE replace(
-        lower(
-          replace(
-            replace(
-              TRIM(COALESCE(NULLIF(TRIM(COALESCE(a.web_slug, ''), '/'), ''), a.codeword), '/'),
-              '//', '/'
-            ),
-            '//', '/'
-          )
-        ),
-        '_', '-'
-      )
-    END AS slug,
-    COALESCE(a.codeword, '') AS legacy_key,
-    a.title, a.page_data, a.photo_url,
-    a.caption_top, a.caption_mid, a.caption_bot, a.keyboard_type, a.buttons,
-    a.rich_message, a.rich_data, a.awaits_input, a.input_path, a.input_next,
-    a.price, a.qty_options, a.notify_groups, a.notify_template,
-    a.created_at, a.updated_at
-  FROM "scenarios-admin" a
-),
-ranked AS (
-  SELECT src.*, ROW_NUMBER() OVER (
-    PARTITION BY slug ORDER BY (slug = legacy_key) DESC, legacy_key
-  ) AS pick
-  FROM src
-)
-SELECT
-  r.id, r.slug, r.title,
-  COALESCE(NULLIF(TRIM(COALESCE(r.page_data, '')), ''), '{}'),
-  json_object(
-    'caption_top', r.caption_top,
-    'caption_mid', r.caption_mid,
-    'caption_bot', r.caption_bot,
-    'keyboard_type', r.keyboard_type,
-    'buttons', CASE WHEN json_valid(COALESCE(r.buttons, '')) THEN json(r.buttons) ELSE json('[]') END,
-    'rich_message', CASE WHEN r.rich_message IN ('true', '1') THEN json('true') ELSE json('false') END,
-    'rich_data', CASE
-      WHEN json_valid(COALESCE(r.rich_data, '')) AND json_type(r.rich_data) = 'array' THEN json(r.rich_data)
-      ELSE NULL
-    END,
-    'awaits_input', r.awaits_input,
-    'input_path', r.input_path,
-    'input_next', r.input_next,
-    'price', r.price,
-    'qty_options', r.qty_options,
-    'notify_groups', r.notify_groups,
-    'notify_template', r.notify_template
-  ),
-  'page', '', 0, NULL, 'draft', 'private', r.photo_url, NULL, NULL,
-  json_object('legacy_source', 'scenarios-admin', 'legacy_key', r.legacy_key),
-  r.created_at, r.updated_at, NULL
-FROM ranked r
-WHERE r.pick = 1
-  AND (r.slug = '' OR r.slug GLOB '[a-z0-9]*')
-  AND NOT (r.slug GLOB '*[^a-z0-9/-]*')
-  AND r.slug NOT LIKE '%//%'
-  AND NOT EXISTS (SELECT 1 FROM pages p WHERE p.id = r.id)
-  AND NOT EXISTS (SELECT 1 FROM pages p WHERE p.slug = r.slug);
-
--- ── 3. Сайти → групи сторінок (`kind = 'collection'`) ───────────────────────
+-- ── 2. Сайти → групи сторінок (`kind = 'collection'`) ───────────────────────
 -- `settings.navigation` переносимо як є в `meta`: у новій моделі навігація
 -- обчислюється з дочірніх сторінок, але старий список лишається поруч — щоб
 -- було з чим звірити, а не «мабуть, воно те саме».
@@ -253,7 +182,7 @@ WHERE r.pick = 1
   AND NOT EXISTS (SELECT 1 FROM pages p WHERE p.id = r.id)
   AND NOT EXISTS (SELECT 1 FROM pages p WHERE p.slug = r.slug);
 
--- ── 4. Сторінки сайтів → сторінки всередині групи ───────────────────────────
+-- ── 3. Сторінки сайтів → сторінки всередині групи ───────────────────────────
 -- `JOIN sites`, а не `LEFT JOIN`: сторінка без сайту недосяжна (на неї немає
 -- маршруту), тож переносити її означає створити сироту вже в новій таблиці.
 -- У D1 зовнішні ключі ввімкнені, тому таких рядків у живій базі бути не може —

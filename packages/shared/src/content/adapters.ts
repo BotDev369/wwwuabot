@@ -16,7 +16,7 @@
 import { parsePageConfig } from "../types/page-config.utils";
 import type { SitePage } from "../types/site.types";
 import { normalizeSlug } from "./resolve";
-import type { ContentPage, ContentSource, ScenarioContentRow } from "./types";
+import type { ContentPage, ScenarioContentRow } from "./types";
 
 /** `is_active` приходить із D1 як число, рядок або `null`. */
 function isActiveFlag(value: number | string | null | undefined): boolean {
@@ -24,10 +24,7 @@ function isActiveFlag(value: number | string | null | undefined): boolean {
 }
 
 /**
- * Нормалізує рядок сценарію (`scenarios` або `scenarios-admin`).
- *
- * `source` передається явно: обидві таблиці мають ідентичну схему, тож
- * відрізнити їх може лише той, хто зробив запит.
+ * Нормалізує рядок сценарію (таблиця `scenarios`).
  *
  * **Дві назви адреси зводяться в одну — і це останнє місце, де вони живуть.**
  * Легасі-рядок має `web_slug` (адреса вебу) і `codeword` (ключ діплінка), хоч
@@ -36,10 +33,7 @@ function isActiveFlag(value: number | string | null | undefined): boolean {
  * Коли `web_slug` порожній (у більшості сценаріїв його немає) — адресою стає
  * `codeword`, тобто те саме «codeword і slug — це одне».
  */
-export function contentPageFromScenario(
-  row: ScenarioContentRow,
-  source: ContentSource = "scenarios",
-): ContentPage {
+export function contentPageFromScenario(row: ScenarioContentRow): ContentPage {
   const fromWeb = normalizeSlug(row.web_slug ?? "");
   const fromKey = normalizeSlug(row.codeword);
 
@@ -49,7 +43,7 @@ export function contentPageFromScenario(
     title: row.title ?? null,
     photoUrl: row.photo_url ?? null,
     content: parsePageConfig(row.page_data ?? null),
-    source,
+    source: "scenarios",
     // Те саме, що робить SQL-фільтр `is_active = 1`: рядок без прапорця
     // назовні недоступний. `DEFAULT 1` у реєстрі гарантує, що такого не буває
     // у нових записів, але старі рядки могли лишитись із `NULL`.

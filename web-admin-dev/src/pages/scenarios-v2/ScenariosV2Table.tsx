@@ -282,7 +282,6 @@ export function ScenariosV2Table() {
       {cardCodeword !== null && (
         <ScenarioCardModal
           codeword={cardCodeword}
-          table={useScenariosStore.getState().table}
           onClose={closeAll}
           onSaved={() => void useScenariosStore.getState().load(true)}
         />

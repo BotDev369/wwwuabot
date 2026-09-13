@@ -1,13 +1,14 @@
 import { apiFetch } from "./client";
 
-/** Тип таблиці сценаріїв. */
-export type ScenarioTable = "admin" | "portal";
-
-/** Префікс API-маршруту для кожної таблиці. */
-const API_PREFIX: Record<ScenarioTable, string> = {
-  admin: "/api/admin/scenarios",
-  portal: "/api/portal/scenarios",
-};
+/**
+ * API сценаріїв — **одна таблиця** `scenarios` (маршрут `/api/portal/scenarios`).
+ *
+ * Доти тут був словник `API_PREFIX: Record<ScenarioTable, string>` і `table`
+ * у кожній функції: адмінка мала дві вкладки й дві таблиці (`scenarios` і
+ * `scenarios-admin`). Адмін-копію видалено 13.09.2026 — її не читав ніхто поза
+ * адмінкою, — тож зникли і тип `ScenarioTable`, і параметр `table`: префікс один.
+ */
+const PREFIX = "/api/portal/scenarios";
 
 export interface ScenarioRow {
   codeword: string;
@@ -23,12 +24,8 @@ export interface ScenarioRow {
   updated_at: string;
 }
 
-export async function readScenario(
-  codeword: string,
-  table: ScenarioTable,
-): Promise<ScenarioRow | null> {
-  const prefix = API_PREFIX[table];
-  const res = await apiFetch<{ success: boolean; data: ScenarioRow | null }>(`${prefix}/read`, {
+export async function readScenario(codeword: string): Promise<ScenarioRow | null> {
+  const res = await apiFetch<{ success: boolean; data: ScenarioRow | null }>(`${PREFIX}/read`, {
     method: "POST",
     body: JSON.stringify({ codeword }),
   });
@@ -39,10 +36,8 @@ export async function writeScenario(
   codeword: string,
   richData: string,
   richMessage: boolean,
-  table: ScenarioTable,
 ): Promise<void> {
-  const prefix = API_PREFIX[table];
-  await apiFetch(`${prefix}/write`, {
+  await apiFetch(`${PREFIX}/write`, {
     method: "POST",
     body: JSON.stringify({
       codeword,
@@ -65,15 +60,11 @@ export interface ListScenariosResult {
   etag: string | null;
 }
 
-export async function listScenarios(
-  etag: string | null,
-  table: ScenarioTable,
-): Promise<ListScenariosResult> {
-  const prefix = API_PREFIX[table];
+export async function listScenarios(etag: string | null): Promise<ListScenariosResult> {
   const headers: Record<string, string> = {};
   if (etag) headers["If-None-Match"] = etag;
 
-  const response = await fetch(`${prefix}/list`, {
+  const response = await fetch(`${PREFIX}/list`, {
     credentials: "same-origin",
     headers,
   });
@@ -97,22 +88,16 @@ export async function listScenarios(
 export async function saveScenarioFields(
   codeword: string,
   fields: Record<string, unknown>,
-  table: ScenarioTable,
 ): Promise<void> {
-  const prefix = API_PREFIX[table];
-  await apiFetch(`${prefix}/write`, {
+  await apiFetch(`${PREFIX}/write`, {
     method: "POST",
     body: JSON.stringify({ codeword, ...fields }),
   });
 }
 
-export async function readScenarioAll(
-  codeword: string,
-  table: ScenarioTable,
-): Promise<Record<string, unknown> | null> {
-  const prefix = API_PREFIX[table];
+export async function readScenarioAll(codeword: string): Promise<Record<string, unknown> | null> {
   const res = await apiFetch<{ success: boolean; data: Record<string, unknown> | null }>(
-    `${prefix}/read-all`,
+    `${PREFIX}/read-all`,
     { method: "POST", body: JSON.stringify({ codeword }) },
   );
   return res.data;
@@ -121,22 +106,16 @@ export async function readScenarioAll(
 export async function updateScenarioFields(
   codeword: string,
   fields: Record<string, unknown>,
-  table: ScenarioTable,
 ): Promise<{ updated_at?: string }> {
-  const prefix = API_PREFIX[table];
-  const res = await apiFetch<{ success: boolean; updated_at?: string }>(`${prefix}/update`, {
+  const res = await apiFetch<{ success: boolean; updated_at?: string }>(`${PREFIX}/update`, {
     method: "POST",
     body: JSON.stringify({ codeword, ...fields }),
   });
   return { updated_at: res.updated_at };
 }
 
-export async function deleteScenario(
-  codeword: string,
-  table: ScenarioTable,
-): Promise<{ deleted: boolean }> {
-  const prefix = API_PREFIX[table];
-  const res = await apiFetch<{ success: boolean; deleted: boolean }>(`${prefix}/delete`, {
+export async function deleteScenario(codeword: string): Promise<{ deleted: boolean }> {
+  const res = await apiFetch<{ success: boolean; deleted: boolean }>(`${PREFIX}/delete`, {
     method: "POST",
     body: JSON.stringify({ codeword }),
   });

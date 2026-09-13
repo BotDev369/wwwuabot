@@ -82,7 +82,7 @@ async function resolveScenario(db: D1Database, ref: string) {
 
   // Розбір `page_data` — спільний із ботом і обома оболонками
   // (`@wwwuabot/shared/content`), включно з легасі-форматом `slots`.
-  const page = row ? contentPageFromScenario(row, "scenarios") : null;
+  const page = row ? contentPageFromScenario(row) : null;
   if (row?.page_data && !page?.content) {
     // Друге поле — той самий «error»-аргумент логера; тут це ключ сторінки, бо
     // винятку немає: парсер ковтає битий JSON навмисно.

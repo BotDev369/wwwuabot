@@ -119,10 +119,8 @@ describe("contentPageFromScenario", () => {
     expect(contentPageFromScenario({ codeword: "c", is_active: 0 }).published).toBe(false);
   });
 
-  it("позначає джерело: сценарії адмінки — окреме сховище", () => {
-    const page = contentPageFromScenario({ codeword: "admin-only" }, "scenarios-admin");
-
-    expect(page.source).toBe("scenarios-admin");
+  it("позначає джерело: сценарій приходить із таблиці `scenarios`", () => {
+    expect(contentPageFromScenario({ codeword: "about" }).source).toBe("scenarios");
   });
 });
 

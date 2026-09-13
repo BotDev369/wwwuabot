@@ -9,11 +9,7 @@
  */
 
 import { useEffect, useState, useCallback, useRef } from "react";
-import {
-  readScenarioAll,
-  updateScenarioFields,
-  type ScenarioTable,
-} from "../../shared/api/scenarios.api";
+import { readScenarioAll, updateScenarioFields } from "../../shared/api/scenarios.api";
 import { registerAllBlocks } from "@wwwuabot/ui/blocks";
 import { icons, type IconName } from "@wwwuabot/shared";
 import {
@@ -62,7 +58,6 @@ registerAllBlocks();
 
 interface Props {
   codeword: string;
-  table: ScenarioTable;
   onClose: () => void;
   onSaved: () => void;
   initialSubTab?: SubTab;
@@ -70,7 +65,7 @@ interface Props {
 
 // ── Component ─────────────────────────────────────────────────────
 
-export function ScenarioCardModal({ codeword, table, onClose, onSaved, initialSubTab }: Props) {
+export function ScenarioCardModal({ codeword, onClose, onSaved, initialSubTab }: Props) {
   const [mainTab, setMainTab] = useState<MainTab>("web");
   const [subTab, setSubTab] = useState<SubTab>(initialSubTab ?? "preview");
   const [allFields, setAllFields] = useState<Record<string, unknown>>({});
@@ -98,7 +93,7 @@ export function ScenarioCardModal({ codeword, table, onClose, onSaved, initialSu
     let cancelled = false;
     (async () => {
       try {
-        const row = await readScenarioAll(codeword, table);
+        const row = await readScenarioAll(codeword);
         if (!cancelled && row) {
           setAllFields(row);
           setLoading(false);
@@ -116,7 +111,7 @@ export function ScenarioCardModal({ codeword, table, onClose, onSaved, initialSu
     return () => {
       cancelled = true;
     };
-  }, [codeword, table]);
+  }, [codeword]);
 
   // ── Update a single field ──
   const updateField = useCallback((key: string, value: unknown) => {
@@ -170,7 +165,7 @@ export function ScenarioCardModal({ codeword, table, onClose, onSaved, initialSu
 
         // Серіалізуємо об'єкти у строки перед відправкою до D1 SQLite
         const serializedPayload = serializeJsonFields(payload);
-        await updateScenarioFields(codeword, serializedPayload, table);
+        await updateScenarioFields(codeword, serializedPayload);
 
         setSuccess(true);
         setTimeout(() => {
@@ -183,7 +178,7 @@ export function ScenarioCardModal({ codeword, table, onClose, onSaved, initialSu
         setSaving(false);
       }
     },
-    [codeword, allFields, table, onSaved, onClose, subTab, jsonText, mainTab],
+    [codeword, allFields, onSaved, onClose, subTab, jsonText, mainTab],
   );
 
   // ── Keyboard shortcuts (Escape to close, Ctrl+S / Cmd+S to save) ──

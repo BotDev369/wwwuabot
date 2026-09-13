@@ -1,7 +1,8 @@
 #!/usr/bin/env node
 /**
- * Міграція контенту в одну таблицю: `scenarios` + `scenarios-admin` + `sites` +
- * `site_pages` → `pages`.
+ * Міграція контенту в одну таблицю: `scenarios` + `sites` + `site_pages` →
+ * `pages`. (`scenarios-admin` тут немає: це була тестова копія без читачів
+ * поза адмінкою — таблицю й маршрути видалено 13.09.2026, переносити нічого.)
  *
  * **Навіщо окремий скрипт, а не код воркера.** DDL не дублюється: схему скрипт
  * бере з реєстру (`packages/shared/src/database/tables.ts`) — тим самим
@@ -303,8 +304,6 @@ console.log(`✓ Схема повна: ${expectedNames.length} об'єктів 
 const TOTALS = `SELECT
   (SELECT COUNT(*) FROM scenarios) AS scenarios_total,
   (SELECT COUNT(*) FROM pages WHERE id LIKE 'sc:%') AS scenarios_migrated,
-  (SELECT COUNT(*) FROM "scenarios-admin") AS admin_total,
-  (SELECT COUNT(*) FROM pages WHERE id LIKE 'sa:%') AS admin_migrated,
   (SELECT COUNT(*) FROM sites) AS sites_total,
   (SELECT COUNT(*) FROM pages WHERE id LIKE 'site:%') AS sites_migrated,
   (SELECT COUNT(*) FROM site_pages) AS site_pages_total,
@@ -323,10 +322,6 @@ const SKIPPED = `SELECT 'scenarios' AS source, COALESCE(codeword, '') AS key,
          COALESCE(web_slug, '') AS web_slug FROM scenarios
   WHERE NOT EXISTS (SELECT 1 FROM pages p WHERE p.id = 'sc:' || scenarios.codeword)
 UNION ALL
-SELECT 'scenarios-admin', COALESCE(codeword, ''), COALESCE(web_slug, '')
-  FROM "scenarios-admin"
-  WHERE NOT EXISTS (SELECT 1 FROM pages p WHERE p.id = 'sa:' || "scenarios-admin".codeword)
-UNION ALL
 SELECT 'sites', COALESCE(slug, ''), '' FROM sites
   WHERE NOT EXISTS (SELECT 1 FROM pages p WHERE p.id = 'site:' || sites.id)
 UNION ALL
@@ -344,12 +339,7 @@ SELECT 'site_pages', sp.slug, '' FROM site_pages sp
 const DEEPLINK_CHANGED = `SELECT 'scenarios' AS source, s.codeword AS legacy_key, p.slug AS new_slug
   FROM scenarios s
   JOIN pages p ON p.id = 'sc:' || s.codeword
-  WHERE COALESCE(s.codeword, '') NOT IN ('', '__base__') AND p.slug <> '' AND s.codeword <> p.slug
-UNION ALL
-SELECT 'scenarios-admin', a.codeword, p.slug
-  FROM "scenarios-admin" a
-  JOIN pages p ON p.id = 'sa:' || a.codeword
-  WHERE COALESCE(a.codeword, '') NOT IN ('', '__base__') AND p.slug <> '' AND a.codeword <> p.slug`;
+  WHERE COALESCE(s.codeword, '') NOT IN ('', '__base__') AND p.slug <> '' AND s.codeword <> p.slug`;
 
 const totals = query(TOTALS)[0] ?? {};
 const groups = query(
@@ -362,7 +352,6 @@ const changed = query(DEEPLINK_CHANGED);
 console.log("— Скільки доїхало —");
 const pairs = [
   ["scenarios", "scenarios_total", "scenarios_migrated"],
-  ["scenarios-admin", "admin_total", "admin_migrated"],
   ["sites", "sites_total", "sites_migrated"],
   ["site_pages", "site_pages_total", "site_pages_migrated"],
 ];
