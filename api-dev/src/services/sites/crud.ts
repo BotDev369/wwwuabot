@@ -91,15 +91,6 @@ export async function getSiteBySlug(db: D1Database, slug: string): Promise<Site 
   return row ? toSite(row) : null;
 }
 
-/** Отримує сайт за ID. */
-export async function getSiteById(db: D1Database, id: string): Promise<Site | null> {
-  await ensureSitesTables(db);
-
-  const row = await db.prepare("SELECT * FROM sites WHERE id = ?").bind(id).first<SiteRow>();
-
-  return row ? toSite(row) : null;
-}
-
 /** Отримує всі сайти власника. */
 export async function getSitesByOwner(db: D1Database, ownerId: number): Promise<Site[]> {
   await ensureSitesTables(db);

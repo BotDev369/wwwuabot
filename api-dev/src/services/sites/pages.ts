@@ -70,22 +70,6 @@ export async function createSitePage(
   };
 }
 
-/** Отримує сторінку за siteId + slug. */
-export async function getSitePage(
-  db: D1Database,
-  siteId: string,
-  pageSlug: string,
-): Promise<SitePage | null> {
-  await ensureSitesTables(db);
-
-  const row = await db
-    .prepare("SELECT * FROM site_pages WHERE site_id = ? AND slug = ?")
-    .bind(siteId, pageSlug)
-    .first<SitePageRow>();
-
-  return row ? toSitePage(row) : null;
-}
-
 /** Отримує сторінку за ID. */
 export async function getSitePageById(db: D1Database, pageId: string): Promise<SitePage | null> {
   await ensureSitesTables(db);
