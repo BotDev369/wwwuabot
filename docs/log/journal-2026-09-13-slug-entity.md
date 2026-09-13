@@ -1,7 +1,11 @@
 # Адреса — одна сутність: `codeword` і `slug` злито
 
 **Дата:** 13.09.2026 · **джерело правди:** `packages/shared/src/content/resolve.ts` ·
-**цільова модель:** [`../CONTENT_MODEL.md`](../CONTENT_MODEL.md) · **схема:** `packages/shared/src/database/tables.ts`
+**модель контенту:** [`../CONTENT_MODEL.md`](../CONTENT_MODEL.md) · **схема:** `packages/shared/src/database/tables.ts`
+
+> ⚠️ **Де згадується таблиця `pages`** — вона скасована 13.09.2026
+> ([`journal-2026-09-13-drop-pages-table.md`](./journal-2026-09-13-drop-pages-table.md)):
+> сховище одне — `scenarios`. Правила адреси з цього запису чинні без змін.
 
 ## Що сказав власник
 

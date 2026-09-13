@@ -26,10 +26,12 @@
 
 | Дата | Запис | Файл |
 |---|---|---|
+| 13.09.2026 | Таблицю `pages` і міграцію скасовано: сховище одне — `scenarios` | [`log/journal-2026-09-13-drop-pages-table.md`](./log/journal-2026-09-13-drop-pages-table.md) |
+| 13.09.2026 | Домен «сайтів» видалено повністю (таблиці + код + специфікація) | [`log/journal-2026-09-13-drop-sites-domain.md`](./log/journal-2026-09-13-drop-sites-domain.md) |
 | 13.09.2026 | `scenarios-admin`: тестову копію видалено повністю | [`log/journal-2026-09-13-drop-admin-table.md`](./log/journal-2026-09-13-drop-admin-table.md) |
 | 13.09.2026 | «Поділитись»: діплінк як третє подання адреси | [`log/journal-2026-09-13-share-deeplink.md`](./log/journal-2026-09-13-share-deeplink.md) |
 | 13.09.2026 | Адреса — одна сутність: `codeword` + `slug` злито | [`log/journal-2026-09-13-slug-entity.md`](./log/journal-2026-09-13-slug-entity.md) |
-| 13.09.2026 | Контент в одній таблиці: `pages` + міграція | [`log/journal-2026-09-13-pages-table.md`](./log/journal-2026-09-13-pages-table.md) |
+| 13.09.2026 | Контент в одній таблиці: `pages` + міграція (**скасовано** того ж дня) | [`log/journal-2026-09-13-pages-table.md`](./log/journal-2026-09-13-pages-table.md) |
 | 13.09.2026 | Контент сторінок: три сховища → спільна модель | [`log/journal-2026-09-13-content-model.md`](./log/journal-2026-09-13-content-model.md) |
 | 13.09.2026 | Схема D1: реєстр таблиць і гейт `check:db` | [`log/journal-2026-09-13-d1-schema-registry.md`](./log/journal-2026-09-13-d1-schema-registry.md) |
 | 13.09.2026 | `dependabot.yml`: теки-привиди і групування оновлень | [`log/journal-2026-09-13-dependabot-config.md`](./log/journal-2026-09-13-dependabot-config.md) |

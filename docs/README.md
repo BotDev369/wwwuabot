@@ -15,11 +15,10 @@
 | [`CODE_QUALITY_FINDINGS.md`](./CODE_QUALITY_FINDINGS.md) | докази: адреси в коді, ціна кожного кроку, межі оцінки | власнику |
 | [`QUALITY_GATE.md`](./QUALITY_GATE.md) | планка в CI: чотири правила, леджер боргу | розробникам |
 | [`DATA_MODEL.md`](./DATA_MODEL.md) | таблиці D1: власник, хто створює, хто читає; гейт `check:db` | тому, хто чіпає базу |
-| [`CONTENT_MODEL.md`](./CONTENT_MODEL.md) | контент сторінок: три сховища → один функціонал, адреса — одна сутність `slug`, цільова модель, фази | тому, хто чіпає сценарії, сайти чи рендер |
+| [`CONTENT_MODEL.md`](./CONTENT_MODEL.md) | контент сторінок: одне сховище (`scenarios`), адреса — одна сутність `slug` | тому, хто чіпає сценарії чи рендер |
 | [`DESIGN_SYSTEM.md`](./DESIGN_SYSTEM.md) | токени, правила UI, де що лежить | фронтенду |
 | [`DESIGN_SYSTEM_COMPONENTS.md`](./DESIGN_SYSTEM_COMPONENTS.md) | класи `.wb-*`, діалог, іконки | фронтенду |
 | [`PAGE_ENGINE_ARCHITECTURE.md`](./PAGE_ENGINE_ARCHITECTURE.md) | архітектурне рішення: чому воркери окремі | архітектору |
-| [`SITES_SPEC.md`](./SITES_SPEC.md) + [`sites/`](./sites/) | специфікація конструктора сайтів (9 частин) | тому, хто чіпає `sites` |
 | [`MONITORING.md`](./MONITORING.md) | health, UptimeRobot, Sentry; що робити при падінні | власнику |
 | [`CONSOLIDATION_LOG.md`](./CONSOLIDATION_LOG.md) + [`log/`](./log/) | **архів**: як ухвалювались рішення, хронологія | для історії |
 
@@ -36,7 +35,7 @@
 | Новий токен, клас, іконка | `DESIGN_SYSTEM.md` / `DESIGN_SYSTEM_COMPONENTS.md` |
 | Нова таблиця або колонка D1 | реєстр `packages/shared/src/database/tables.ts` + рядок у `DATA_MODEL.md` |
 | Правило адреси, діплінка чи параметрів URL | `CONTENT_MODEL.md` (§2) + код `packages/shared/src/content/resolve.ts` |
-| Новий ендпоїнт, роут | відповідна частина в `sites/` |
+| Новий ендпоїнт, роут | `AGENTS.md` §5 (карта доступу) + контролер у `api-dev/src/controllers/` |
 
 ## Чому документи маленькі
 

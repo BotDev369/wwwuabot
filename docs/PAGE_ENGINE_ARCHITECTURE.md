@@ -44,8 +44,10 @@
   блоків адмінки (`features/editor/blocks/**`) видалено — разом **74 недосяжні файли,
   5 238 рядків**. Усе, що вони робили, тепер роблять сценарії з `page_data` і спільні
   блоки `packages/ui`. Деталі — `docs/CODE_QUALITY_AUDIT.md` §4.1.
-- Лідер за розміром сьогодні — `api-dev/src/services/sites.service.ts` (777 рядків) та
-  `packages/shared/src/constants/site-templates.ts` (623): це наступні кандидати.
+- Лідер за розміром сьогодні — `web-admin-dev/src/pages/scenarios/ScenarioCardModal.tsx` (443) і
+  `packages/shared/src/components/UserProfileCard.tsx` (418): це наступні кандидати. Колишні
+  лідери — `sites.service.ts` (777) і `site-templates.ts` (623) — більше не існують: перший
+  поділено 12.09.2026, а 13.09.2026 весь домен `sites` видалено разом із таблицями.
 - Лишається справжнє дублювання верстки поміж оболонок — див. §4.3 крок 3 у
   `docs/CONSOLIDATION_LOG.md` і пункт 3 плану в `docs/CONSOLIDATION_PLAN.md`.
 

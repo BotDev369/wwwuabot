@@ -20,9 +20,13 @@
 
 **На дев-базі її ще немає** — на скріні Cloudflare видно `mydate_analysis`, `scenarios`,
 `scenarios-admin`, `settings`, `site_pages`, `sites`, `templates`, `users`. Це не розбіжність
-коду й бази, а стан міграції: `npm run migrate:content -- --remote` вимагає токена Cloudflare,
-якого в середовищі немає. Легасі-таблиці лишаються до фази 4 (тихий період після переїзду
-читачів) — і це навмисно: вони страховка для відкату.
+коду й бази, а стан міграції: `npm run migrate:content -- --remote` вимагав токена Cloudflare,
+якого в середовищі немає.
+
+> ⚠️ **Далі цей шлях скасовано.** Таблицю `pages` і міграцію до неї прибрано 13.09.2026 —
+> `scenarios-admin`, `sites`, `site_pages`, `templates` власник видалив, а сховищем лишилась
+> `scenarios` ([`journal-2026-09-13-drop-pages-table.md`](./journal-2026-09-13-drop-pages-table.md)).
+> Чинна тут лише частина про адресу й кнопку «Поділитись».
 
 ## Що зроблено
 

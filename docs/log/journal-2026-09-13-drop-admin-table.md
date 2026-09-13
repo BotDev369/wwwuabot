@@ -78,5 +78,6 @@ npx wrangler d1 execute DB --config api-dev/wrangler.toml --remote --yes \
   --command 'DROP TABLE "scenarios-admin";'
 ```
 
-Порядок із міграцією значення не має: `npm run migrate:content` цієї таблиці вже не торкається —
-ні на читання, ні у звіті.
+Порядок із міграцією значення не має: на той момент `npm run migrate:content` цієї таблиці вже
+не торкався — ні на читання, ні у звіті. (Самого скрипта міграції більше немає: разом із
+таблицею `pages` його скасовано 13.09.2026 — див. `journal-2026-09-13-drop-pages-table.md`.)
