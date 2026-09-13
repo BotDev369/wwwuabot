@@ -26,6 +26,7 @@
 
 | Дата | Запис | Файл |
 |---|---|---|
+| 13.09.2026 | Контент в одній таблиці: `pages` + міграція | [`log/journal-2026-09-13-pages-table.md`](./log/journal-2026-09-13-pages-table.md) |
 | 13.09.2026 | Контент сторінок: три сховища → спільна модель | [`log/journal-2026-09-13-content-model.md`](./log/journal-2026-09-13-content-model.md) |
 | 13.09.2026 | Схема D1: реєстр таблиць і гейт `check:db` | [`log/journal-2026-09-13-d1-schema-registry.md`](./log/journal-2026-09-13-d1-schema-registry.md) |
 | 13.09.2026 | `dependabot.yml`: теки-привиди і групування оновлень | [`log/journal-2026-09-13-dependabot-config.md`](./log/journal-2026-09-13-dependabot-config.md) |
