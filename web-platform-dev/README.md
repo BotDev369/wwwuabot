@@ -26,11 +26,23 @@ Cloudflare Worker: Telegram Mini App для wwwuabot (React 19 + Vite 8 + Tailwi
 
 | Шлях | Що це |
 |---|---|
-| `/` | головна — сценарій `__base__` |
-| `/sites`, `/sites/new`, `/sites/:slug` | мої сайти, створення, редактор |
-| `/catalog`, `/view/:slug` | публічний каталог і перегляд сайту |
-| `*` | catch-all: сценарій за `web_slug` / codeword |
+| `*` | catch-all: сторінка за її адресою (`slug`) — рендерить `pages/ScenarioPage.tsx` |
+
+Маршрут рівно один, і це не спрощення: `/sites`, `/sites/new`, `/sites/:slug`,
+`/catalog` і `/view/:slug` були **другою навігацією** по тому самому контенту —
+окремою ієрархією «сайтів» зі своїми таблицями (`sites`, `site_pages`,
+`templates`). Таблиці видалено 13.09.2026, бо контент один: адреса сегментами —
+це адреса рядка `scenarios`, а хвіст адреси — його параметри.
+
+| Адреса вебу | Та сама сторінка в боті |
+|---|---|
+| `/` | `t.me/<bot>` (головна) |
+| `/mydate/19800303/today` | `t.me/<bot>?start=mydate_19800303_today` |
+
+Подання адреси будує `packages/shared/src/content/resolve.ts`
+(`toWebPath` / `toBotPayload`), готове посилання для «Поділитись» —
+`buildShareLinks()`. Деталі — `docs/CONTENT_MODEL.md`.
 
 ---
 
-**Останнє оновлення:** 2026-09-12
+**Останнє оновлення:** 2026-09-13
