@@ -13,6 +13,7 @@ import { useEffect, useMemo, useState } from "react";
 import { useParams } from "react-router-dom";
 import type { PageConfig, BlockContext, UserProfile } from "@wwwuabot/shared/types/page-config";
 import { parsePageConfig } from "@wwwuabot/shared/types/page-config";
+import { HOME_SLUG, LEGACY_HOME_KEY } from "@wwwuabot/shared/content";
 import { PageRenderer } from "@wwwuabot/ui/PageRenderer";
 import { apiFetchRaw } from "@/shared/api/client";
 import { registerAllBlocks } from "@wwwuabot/ui/blocks";
@@ -77,14 +78,16 @@ function ErrorScreen({ message }: { message: string }) {
 }
 
 export function ScenarioPage() {
-  // `*`-сплэт дає всі сегменти шляху; `__base__` — головна.
+  // `*`-сплэт дає всю адресу; порожній шлях — головна. Сегмент URL не буває
+  // порожнім, тому головну просимо легасі-ключем, а відповідь уже містить
+  // справжню адресу (`HOME_SLUG`, тобто `''`).
   const { ["*"]: splat } = useParams<{ "*": string }>();
-  const scenarioSlug = splat && splat.length > 0 ? splat : "__base__";
+  const scenarioSlug = splat && splat.length > 0 ? splat : LEGACY_HOME_KEY;
 
   const [pageConfig, setPageConfig] = useState<PageConfig | null>(null);
   const [scenarioTitle, setScenarioTitle] = useState<string | null>(null);
   const [scenarioPhoto, setScenarioPhoto] = useState<string | null>(null);
-  const [codeword, setCodeword] = useState<string>("__base__");
+  const [pageSlug, setPageSlug] = useState<string>(HOME_SLUG);
   const [status, setStatus] = useState<PageStatus>("loading");
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
@@ -124,7 +127,7 @@ export function ScenarioPage() {
 
         const data = (await res.json()) as {
           ok?: boolean;
-          scenario?: { codeword?: string; title?: string; photo_url?: string };
+          scenario?: { slug?: string; title?: string; photo_url?: string };
           pageData?: unknown;
         };
 
@@ -146,7 +149,7 @@ export function ScenarioPage() {
             setPageConfig(config);
             setScenarioTitle(data.scenario.title ?? null);
             setScenarioPhoto(data.scenario.photo_url ?? null);
-            setCodeword(data.scenario.codeword ?? scenarioSlug);
+            setPageSlug(data.scenario.slug ?? scenarioSlug);
             setStatus("ready");
           } else {
             // Сценарій існує, але page_data порожня — теж фолбек.
@@ -168,15 +171,18 @@ export function ScenarioPage() {
   }, [scenarioSlug]);
 
   // ── Контекст для блоків ──────────────────────────────────────────
+  // Поле `codeword` у `BlockContext` зберігає стару назву (перейменування чіпає
+  // понад сотню місць у блоках і редакторі — окрема механічна робота), але несе
+  // вже **єдину адресу** сторінки.
   const context: BlockContext = useMemo(
     () => ({
-      codeword,
+      codeword: pageSlug,
       title: scenarioTitle,
       photoUrl: scenarioPhoto,
       user: userProfile ?? undefined,
       isOwner: userProfile?.role === "owner" || userProfile?.role === "admin",
     }),
-    [codeword, scenarioTitle, scenarioPhoto, userProfile],
+    [pageSlug, scenarioTitle, scenarioPhoto, userProfile],
   );
 
   if (status === "loading") return <LoadingScreen />;
@@ -189,7 +195,7 @@ export function ScenarioPage() {
     <PageRenderer
       config={activeConfig}
       context={
-        status === "fallback" ? { codeword: "__base__", title: null, photoUrl: null } : context
+        status === "fallback" ? { codeword: HOME_SLUG, title: null, photoUrl: null } : context
       }
       className="page-layout"
     />

@@ -15,6 +15,7 @@
 
 import { parsePageConfig } from "../types/page-config.utils";
 import type { SitePage } from "../types/site.types";
+import { normalizeSlug } from "./resolve";
 import type { ContentPage, ContentSource, ScenarioContentRow } from "./types";
 
 /** `is_active` приходить із D1 як число, рядок або `null`. */
@@ -27,15 +28,24 @@ function isActiveFlag(value: number | string | null | undefined): boolean {
  *
  * `source` передається явно: обидві таблиці мають ідентичну схему, тож
  * відрізнити їх може лише той, хто зробив запит.
+ *
+ * **Дві назви адреси зводяться в одну — і це останнє місце, де вони живуть.**
+ * Легасі-рядок має `web_slug` (адреса вебу) і `codeword` (ключ діплінка), хоч
+ * це той самий рядок. Перевага віддається `web_slug`: адреса — те, що людина
+ * бачить у рядку браузера, а діплінк будується **з** адреси, не навпаки.
+ * Коли `web_slug` порожній (у більшості сценаріїв його немає) — адресою стає
+ * `codeword`, тобто те саме «codeword і slug — це одне».
  */
 export function contentPageFromScenario(
   row: ScenarioContentRow,
   source: ContentSource = "scenarios",
 ): ContentPage {
+  const fromWeb = normalizeSlug(row.web_slug ?? "");
+  const fromKey = normalizeSlug(row.codeword);
+
   return {
     id: row.codeword,
-    key: row.codeword,
-    webSlug: row.web_slug ?? null,
+    slug: fromWeb === "" ? fromKey : fromWeb,
     title: row.title ?? null,
     photoUrl: row.photo_url ?? null,
     content: parsePageConfig(row.page_data ?? null),
@@ -57,8 +67,7 @@ export function contentPageFromScenario(
 export function contentPageFromSitePage(page: SitePage): ContentPage {
   return {
     id: page.id,
-    key: page.slug,
-    webSlug: null,
+    slug: normalizeSlug(page.slug),
     title: page.title ?? null,
     // Фото належить сайту (`sites.thumbnail`), а не сторінці — колонки немає.
     photoUrl: null,

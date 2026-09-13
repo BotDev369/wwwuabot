@@ -13,10 +13,16 @@
  * CI, і її SQL корисніше бачити очима. Тому SQL живе окремим файлом
  * (`migrate-content.sql`), а цей скрипт його збирає, застосовує й звітує.
  *
+ * **Звіт читає результат, а не повторює правило.** Жоден запит звіту не
+ * обчислює адресу вдруге: скільки рядків доїхало — за префіксом `id`, а зміну
+ * діплінка видно з `JOIN pages` (легасі-ключ поруч зі збереженою адресою). Це
+ * навмисно: правило нормалізації живе в SQL-файлі, і його копія в JS
+ * розійшлася б із ним на першій же правці.
+ *
  * Запуск:
  *   node scripts/migrate-content.mjs --dry-run          # показати SQL, нічого не робити
  *   node scripts/migrate-content.mjs                    # локальна база (wrangler --local)
- *   node scripts/migrate-content.mjs --remote           # дев-база (потрібні CF_API_TOKEN)
+ *   node scripts/migrate-content.mjs --remote           # дев-база (потрібен CLOUDFLARE_API_TOKEN)
  *
  * @module scripts/migrate-content
  */
@@ -31,6 +37,19 @@ const REGISTRY = join("packages", "shared", "src", "database", "tables.ts");
 
 /** Файл із самим переносом рядків. */
 const MIGRATION = join("scripts", "migrate-content.sql");
+
+/**
+ * Колонки, яких у `pages` бути не може, — разом із причиною.
+ *
+ * `ensureTables` уміє лише **додавати** колонки (це навмисно: жива база не
+ * має втрачати дані від правки схеми). Тому таблиця, створена давнішою
+ * версією реєстру, лишається зі своєю історією — і саме так у ній виживає
+ * `codeword`, якого в моделі вже немає. Мовчазна зайва колонка — це та сама
+ * «схема, що росте від того, що надіслав клієнт», тільки в інший бік.
+ */
+const FORBIDDEN_COLUMNS = {
+  codeword: "адреса тепер одна — `slug`; дві колонки з тим самим рядком прибрані",
+};
 
 /** ── Аргументи ─────────────────────────────────────────────────────────── */
 
@@ -186,56 +205,44 @@ function query(sql) {
   return parsed[parsed.length - 1]?.results ?? [];
 }
 
-/** ── Звіт ──────────────────────────────────────────────────────────────── */
-
-/** Скільки рядків у легасі-таблицях і скільки з них доїхало. */
-const TOTALS = `SELECT
-  (SELECT COUNT(*) FROM scenarios) AS scenarios_total,
-  (SELECT COUNT(*) FROM pages WHERE id LIKE 'sc:%') AS scenarios_migrated,
-  (SELECT COUNT(*) FROM "scenarios-admin") AS admin_total,
-  (SELECT COUNT(*) FROM pages WHERE id LIKE 'sa:%') AS admin_migrated,
-  (SELECT COUNT(*) FROM sites) AS sites_total,
-  (SELECT COUNT(*) FROM pages WHERE id LIKE 'site:%') AS sites_migrated,
-  (SELECT COUNT(*) FROM site_pages) AS site_pages_total,
-  (SELECT COUNT(*) FROM pages WHERE id LIKE 'sp:%') AS site_pages_migrated`;
+/** ── Перевірка схеми ДО міграції ───────────────────────────────────────── */
 
 /**
- * Рядки, які **не** перенеслись: конфлікт адреси чи `codeword`, або сирота.
+ * Чи не лишилось у `pages` колонок, яких уже немає в моделі.
  *
- * Друкуємо на ім'я, бо рішення тут — не за скриптом: два рядки можуть мати
- * той самий `codeword`, і вибрати за власника «правильний» означало б тихо
- * втратити чужий контент.
+ * Перевірка **перед** вставкою, бо зайва колонка не ламає вставку — вона
+ * ламає *розуміння*: `codeword` у таблиці означав би, що адреса досі двійна,
+ * і жоден гейт цього не побачив би. Ремонт — не `ALTER TABLE … DROP COLUMN`
+ * (він тягне за собою перебудову таблиці на живій базі), а повне
+ * перестворення: `pages` поки що ніким не читається, а джерела даних —
+ * легасі-таблиці, тож нічого не втрачається.
  */
-/**
- * Адреси, які **всередині однієї легасі-таблиці** належать кільком рядкам.
- *
- * Це найчастіша причина пропуску: `web_slug` у сценаріїв не був унікальним,
- * тож дві сторінки могли претендувати на одну адресу. Показуємо обидва
- * `codeword`-и — рішення «яка з них головна» за власником, не за скриптом.
- */
-const DUPLICATE_ADDRESSES = `SELECT 'scenarios' AS source, codeword FROM scenarios
-  WHERE (CASE WHEN codeword = '__base__' THEN ''
-              ELSE COALESCE(NULLIF(TRIM(COALESCE(web_slug, ''), '/'), ''), codeword) END)
-    IN (SELECT COALESCE(NULLIF(TRIM(COALESCE(web_slug, ''), '/'), ''), codeword) AS slug
-        FROM scenarios GROUP BY slug HAVING COUNT(*) > 1)
-UNION ALL
-SELECT 'scenarios-admin', codeword FROM "scenarios-admin"
-  WHERE (CASE WHEN codeword = '__base__' THEN ''
-              ELSE COALESCE(NULLIF(TRIM(COALESCE(web_slug, ''), '/'), ''), codeword) END)
-    IN (SELECT COALESCE(NULLIF(TRIM(COALESCE(web_slug, ''), '/'), ''), codeword) AS slug
-        FROM "scenarios-admin" GROUP BY slug HAVING COUNT(*) > 1)`;
+function existingColumns(table) {
+  return query(`PRAGMA table_info(${table})`).map((row) => row.name);
+}
 
-const SKIPPED = `SELECT 'scenarios' AS source, COALESCE(codeword, '') AS key FROM scenarios
-  WHERE NOT EXISTS (SELECT 1 FROM pages p WHERE p.id = 'sc:' || scenarios.codeword)
-UNION ALL
-SELECT 'scenarios-admin', COALESCE(codeword, '') FROM "scenarios-admin"
-  WHERE NOT EXISTS (SELECT 1 FROM pages p WHERE p.id = 'sa:' || "scenarios-admin".codeword)
-UNION ALL
-SELECT 'sites', slug FROM sites
-  WHERE NOT EXISTS (SELECT 1 FROM pages p WHERE p.id = 'site:' || sites.id)
-UNION ALL
-SELECT 'site_pages', sp.id FROM site_pages sp
-  WHERE NOT EXISTS (SELECT 1 FROM pages p WHERE p.id = 'sp:' || sp.id)`;
+const pagesExists = query(
+  `SELECT name FROM sqlite_master WHERE type = 'table' AND name = 'pages'`,
+).length;
+
+if (pagesExists) {
+  const columns = existingColumns("pages");
+  const stale = Object.entries(FORBIDDEN_COLUMNS).filter(([column]) => columns.includes(column));
+  if (stale.length) {
+    console.error("✗ Таблиця `pages` створена давнішою версією схеми:");
+    for (const [column, why] of stale) console.error(`    ${column} — ${why}`);
+    console.error("\n  Перествори її (даних у ній ще немає — її ніхто не читає),");
+    console.error("  джерела в легасі-таблицях недоторкані:\n");
+    console.error("    npx wrangler d1 execute DB --config api-dev/wrangler.toml \\");
+    console.error(
+      `      ${target === "remote" ? "--remote" : "--local"} --yes --command 'DROP TABLE pages;'`,
+    );
+    console.error("\n  і запусти міграцію знову.");
+    process.exit(1);
+  }
+}
+
+/** ── Застосування ──────────────────────────────────────────────────────── */
 
 console.log(`▶ Застосовую міграцію (${target === "remote" ? "ВІДДАЛЕНА база" : "локальна база"})…`);
 
@@ -290,7 +297,59 @@ if (wrongOwner.length) {
 
 console.log(`✓ Схема повна: ${expectedNames.length} об'єктів із реєстру на місці.\n`);
 
-// ── Звіт ──────────────────────────────────────────────────────────────────
+/** ── Звіт ──────────────────────────────────────────────────────────────── */
+
+/** Скільки рядків у легасі-таблицях і скільки з них доїхало. */
+const TOTALS = `SELECT
+  (SELECT COUNT(*) FROM scenarios) AS scenarios_total,
+  (SELECT COUNT(*) FROM pages WHERE id LIKE 'sc:%') AS scenarios_migrated,
+  (SELECT COUNT(*) FROM "scenarios-admin") AS admin_total,
+  (SELECT COUNT(*) FROM pages WHERE id LIKE 'sa:%') AS admin_migrated,
+  (SELECT COUNT(*) FROM sites) AS sites_total,
+  (SELECT COUNT(*) FROM pages WHERE id LIKE 'site:%') AS sites_migrated,
+  (SELECT COUNT(*) FROM site_pages) AS site_pages_total,
+  (SELECT COUNT(*) FROM pages WHERE id LIKE 'sp:%') AS site_pages_migrated`;
+
+/**
+ * Рядки, які **не** доїхали, — з їхніми легасі-полями, без здогадів про причину.
+ *
+ * Причина майже завжди одна з двох: адресу вже зайняв інший рядок (у межах
+ * джерела або з іншої легасі-таблиці — адреса тепер одна на всю `pages`), або
+ * адреса не пройшла перевірку. Порівнявши `web_slug`/`codeword` у цьому
+ * списку з адресами, рішення ухвалює власник — скрипт не має права тихо
+ * перейменувати чужу сторінку.
+ */
+const SKIPPED = `SELECT 'scenarios' AS source, COALESCE(codeword, '') AS key,
+         COALESCE(web_slug, '') AS web_slug FROM scenarios
+  WHERE NOT EXISTS (SELECT 1 FROM pages p WHERE p.id = 'sc:' || scenarios.codeword)
+UNION ALL
+SELECT 'scenarios-admin', COALESCE(codeword, ''), COALESCE(web_slug, '')
+  FROM "scenarios-admin"
+  WHERE NOT EXISTS (SELECT 1 FROM pages p WHERE p.id = 'sa:' || "scenarios-admin".codeword)
+UNION ALL
+SELECT 'sites', COALESCE(slug, ''), '' FROM sites
+  WHERE NOT EXISTS (SELECT 1 FROM pages p WHERE p.id = 'site:' || sites.id)
+UNION ALL
+SELECT 'site_pages', sp.slug, '' FROM site_pages sp
+  WHERE NOT EXISTS (SELECT 1 FROM pages p WHERE p.id = 'sp:' || sp.id)`;
+
+/**
+ * Рядки, у яких **змінилась діплінк-адреса**.
+ *
+ * Діплінк бота більше не береться з `codeword`: він будується з адреси
+ * (`toBotPayload`). Там, де легасі-ключ відрізнявся від адреси сторінки,
+ * старе посилання після фази 3 перестане вести на цю сторінку. Запит читає
+ * **результат** (`pages.slug`), а не обчислює правило вдруге.
+ */
+const DEEPLINK_CHANGED = `SELECT 'scenarios' AS source, s.codeword AS legacy_key, p.slug AS new_slug
+  FROM scenarios s
+  JOIN pages p ON p.id = 'sc:' || s.codeword
+  WHERE COALESCE(s.codeword, '') NOT IN ('', '__base__') AND p.slug <> '' AND s.codeword <> p.slug
+UNION ALL
+SELECT 'scenarios-admin', a.codeword, p.slug
+  FROM "scenarios-admin" a
+  JOIN pages p ON p.id = 'sa:' || a.codeword
+  WHERE COALESCE(a.codeword, '') NOT IN ('', '__base__') AND p.slug <> '' AND a.codeword <> p.slug`;
 
 const totals = query(TOTALS)[0] ?? {};
 const groups = query(
@@ -298,7 +357,7 @@ const groups = query(
           kind, COUNT(*) AS n FROM pages GROUP BY 1, 2 ORDER BY 1, 2`,
 );
 const skipped = query(SKIPPED);
-const duplicates = query(DUPLICATE_ADDRESSES);
+const changed = query(DEEPLINK_CHANGED);
 
 console.log("— Скільки доїхало —");
 const pairs = [
@@ -319,21 +378,26 @@ for (const row of groups) {
   console.log(`  ${String(row.source).padEnd(18)} ${String(row.kind).padEnd(11)} ${row.n}`);
 }
 
-if (duplicates.length) {
-  console.log("\n— Одна адреса, кілька рядків у легасі-таблиці —");
-  for (const row of duplicates) {
-    console.log(`  ${String(row.source).padEnd(16)} ${row.codeword}`);
+if (changed.length) {
+  console.log(`\n! Діплінк змінюється у ${changed.length} рядків — старий ключ ≠ нова адреса:`);
+  for (const row of changed.slice(0, 20)) {
+    console.log(`    ${String(row.source).padEnd(16)} ${row.legacy_key} → ${row.new_slug}`);
   }
-  console.log("  Перенесено одного представника адреси — того, чий codeword і є адресою.");
+  if (changed.length > 20) console.log(`    … і ще ${changed.length - 20}`);
+  console.log("  Старе посилання можна лишити живим псевдонімом — але це рішення власника.");
 }
 
 if (skipped.length === 0) {
   console.log("\n✓ Пропущених рядків немає.");
 } else {
-  console.log(`\n! Не перенесено рядків: ${skipped.length} — потрібне рішення власника,`);
-  console.log("  бо в них конфлікт адреси чи codeword, або вони сироти:");
+  console.log(`\n! Не перенесено рядків: ${skipped.length} — потрібне рішення власника.`);
+  console.log("  Причина: адресу вже зайняв інший рядок (адреса одна на всю `pages`)");
+  console.log("  або вона не пройшла перевірку. Порівняй легасі-поля:");
   for (const row of skipped.slice(0, 20)) {
-    console.log(`    ${String(row.source).padEnd(16)} ${row.key}`);
+    const web = row.web_slug === "" ? "—" : row.web_slug;
+    console.log(
+      `    ${String(row.source).padEnd(16)} ${String(row.key).padEnd(24)} web_slug=${web}`,
+    );
   }
   if (skipped.length > 20) console.log(`    … і ще ${skipped.length - 20}`);
 }

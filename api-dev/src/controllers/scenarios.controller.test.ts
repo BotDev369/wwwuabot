@@ -1,4 +1,5 @@
 import { describe, it, expect } from "vitest";
+import { HOME_SLUG } from "@wwwuabot/shared/content";
 import { handleScenario } from "./scenarios.controller";
 import type { Env } from "../shared/types";
 
@@ -41,7 +42,9 @@ function fakeD1(state: FakeState) {
           ? { results: columns.map((name) => ({ name })) }
           : { results: [] },
       first: async () => {
-        if (sql.includes("web_slug = ? OR codeword = ?")) return state.bySlug ?? null;
+        // Пошук за адресою: слеші в `web_slug` зрізаються на читанні, бо
+        // легасі-дані зберігали адресу і як `/pro-nas`, і як `pro-nas`.
+        if (sql.includes("TRIM(COALESCE(web_slug")) return state.bySlug ?? null;
         if (sql.includes("WHERE codeword = ?")) return state.base ?? null;
         throw new Error(`Двійник D1 не знає запиту: ${sql}`);
       },
@@ -70,8 +73,8 @@ const pageData = (title: string) =>
 interface ScenarioResponse {
   ok: boolean;
   scenario: {
-    codeword: string;
-    web_slug: string;
+    /** Одна адреса: і шлях вебу, і основа діплінка. */
+    slug: string;
     title: string | null;
     photo_url: string | null;
   };
@@ -108,7 +111,8 @@ describe("GET /api/scenario/:slug", () => {
     const body = await bodyOf(await call(env, "pro-nas"));
 
     expect(body.ok).toBe(true);
-    expect(body.scenario.codeword).toBe("about");
+    // Адреса = `web_slug`; `codeword` ("about") лишається лише легасі-ключем.
+    expect(body.scenario.slug).toBe("pro-nas");
     expect(body.pageData?.zones.main[0]?.props.title).toBe("Про нас");
     // Регресія: `title` і `photo_url` не вибирались із бази, хоч клієнт їх
     // читав — у блоках ці поля завжди були порожні, і ніщо про це не казало.
@@ -129,8 +133,27 @@ describe("GET /api/scenario/:slug", () => {
 
     const body = await bodyOf(await call(env, "нема-такої"));
 
-    expect(body.scenario.codeword).toBe("__base__");
+    // У базі головна має порожній `slug`; `__base__` — це ключ маршруту.
+    expect(body.scenario.slug).toBe(HOME_SLUG);
     expect(body.pageData?.zones.main[0]?.props.title).toBe("Головна");
+  });
+
+  it("легасі-ключ діплінка знаходить сторінку, але віддає її адресу", async () => {
+    const env = envWith({
+      bySlug: {
+        codeword: "about",
+        web_slug: "/pro-nas",
+        title: "Про нас",
+        page_data: pageData("Про нас"),
+        is_active: 1,
+      },
+    });
+
+    // Старе посилання `?start=about` мусить працювати далі, але відповідь уже
+    // говорить мовою однієї адреси — інакше два імені жили б у клієнтах.
+    const body = await bodyOf(await call(env, "about"));
+
+    expect(body.scenario.slug).toBe("pro-nas");
   });
 
   it("битий page_data не пробиває помилку назовні", async () => {

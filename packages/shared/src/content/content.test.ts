@@ -1,6 +1,6 @@
 import { describe, it, expect } from "vitest";
 import { contentPageFromScenario, contentPageFromSitePage } from "./adapters";
-import { HOME_KEY, contentKeyFromPath, pickContentPage } from "./resolve";
+import { HOME_SLUG, pickContentPage } from "./resolve";
 import type { SitePage } from "../types/site.types";
 
 // ── Хелпери ──────────────────────────────────────────────────────
@@ -40,13 +40,32 @@ describe("contentPageFromScenario", () => {
       is_active: 1,
     });
 
-    expect(page.key).toBe("about");
     expect(page.id).toBe("about");
-    expect(page.webSlug).toBe("/pro-nas");
     expect(page.title).toBe("Про нас");
     expect(page.source).toBe("scenarios");
     expect(page.published).toBe(true);
     expect(page.content?.zones.main).toHaveLength(1);
+  });
+
+  /**
+   * Легасі-рядок має дві назви адреси — `web_slug` і `codeword`. У моделі
+   * лишається одна, і перемагає `web_slug`: адреса — те, що людина бачить у
+   * рядку браузера, а діплінк будується **з** адреси, не навпаки.
+   */
+  it("адресою стає web_slug, коли він є", () => {
+    const page = contentPageFromScenario({ codeword: "contacts", web_slug: "/kontakty" });
+
+    expect(page.slug).toBe("kontakty");
+  });
+
+  it("без web_slug адресою стає codeword — те саме «codeword і slug»", () => {
+    expect(contentPageFromScenario({ codeword: "about" }).slug).toBe("about");
+    // Порожній web_slug (а не відсутній) — теж випадок на користь codeword.
+    expect(contentPageFromScenario({ codeword: "about", web_slug: "" }).slug).toBe("about");
+  });
+
+  it("легасі-ключ головної __base__ дає порожню адресу", () => {
+    expect(contentPageFromScenario({ codeword: "__base__", web_slug: "/" }).slug).toBe(HOME_SLUG);
   });
 
   it("конвертує легасі-формат slots, а не повертає null", () => {
@@ -69,7 +88,6 @@ describe("contentPageFromScenario", () => {
     const page = contentPageFromScenario({ codeword: "new" });
 
     expect(page.content).toBeNull();
-    expect(page.webSlug).toBeNull();
     expect(page.title).toBeNull();
     expect(page.photoUrl).toBeNull();
   });
@@ -94,13 +112,8 @@ describe("contentPageFromScenario", () => {
     expect(page.content).toBeNull();
   });
 
-  it("is_active = NULL читається як «не опубліковано» — так само, як SQL-фільтр", () => {
-    const page = contentPageFromScenario({ codeword: "old", is_active: null });
-
-    expect(page.published).toBe(false);
-  });
-
-  it("is_active з D1 може прийти рядком", () => {
+  it("is_active читається як NULL, число або рядок — так само, як SQL-фільтр", () => {
+    expect(contentPageFromScenario({ codeword: "old", is_active: null }).published).toBe(false);
     expect(contentPageFromScenario({ codeword: "a", is_active: "1" }).published).toBe(true);
     expect(contentPageFromScenario({ codeword: "b", is_active: "0" }).published).toBe(false);
     expect(contentPageFromScenario({ codeword: "c", is_active: 0 }).published).toBe(false);
@@ -120,46 +133,23 @@ describe("contentPageFromSitePage", () => {
     const page = contentPageFromSitePage(sitePage({ slug: "contacts", orderIndex: 3 }));
 
     expect(page.id).toBe("page-1");
-    expect(page.key).toBe("contacts");
+    expect(page.slug).toBe("contacts");
     expect(page.order).toBe(3);
     expect(page.source).toBe("site_pages");
-    expect(page.webSlug).toBeNull();
   });
 
   it("публічність береться зі status, а не з наявності контенту", () => {
     expect(contentPageFromSitePage(sitePage({ status: "published" })).published).toBe(true);
     expect(contentPageFromSitePage(sitePage({ status: "draft" })).published).toBe(false);
-  });
-
-  it("контент не парситься вдруге — береться готовий pageData", () => {
-    const page = contentPageFromSitePage(sitePage());
-
-    expect(page.content?.zones.main[0]?.props.title).toBe("Привіт");
+    // Контент не парситься вдруге — береться готовий `pageData`.
+    expect(contentPageFromSitePage(sitePage()).content?.zones.main[0]?.props.title).toBe("Привіт");
   });
 });
 
-// ── Правило «яка сторінка для цього URL» ────────────────────────
-
-describe("contentKeyFromPath", () => {
-  it("порожній шлях — це головна сторінка", () => {
-    expect(contentKeyFromPath("")).toBe(HOME_KEY);
-    expect(contentKeyFromPath(undefined)).toBe(HOME_KEY);
-    expect(contentKeyFromPath(null)).toBe(HOME_KEY);
-    expect(contentKeyFromPath("   ")).toBe(HOME_KEY);
-  });
-
-  it("зрізає провідні слеші — web_slug у базі зберігається без них", () => {
-    expect(contentKeyFromPath("/pro-nas")).toBe("pro-nas");
-    expect(contentKeyFromPath("pro-nas")).toBe("pro-nas");
-  });
-
-  it("не чіпає службовий ключ головної", () => {
-    expect(contentKeyFromPath(HOME_KEY)).toBe(HOME_KEY);
-  });
-});
+// ── Вибір сторінки (з відкатом на головну) ───────────────────────
 
 describe("pickContentPage", () => {
-  const home = contentPageFromScenario({ codeword: HOME_KEY, is_active: 1 });
+  const home = contentPageFromScenario({ codeword: "__base__", is_active: 1 });
   const about = contentPageFromScenario({ codeword: "about", is_active: 1 });
   const byWebSlug = contentPageFromScenario({
     codeword: "contacts",
@@ -167,21 +157,30 @@ describe("pickContentPage", () => {
     is_active: 1,
   });
 
-  it("знаходить сторінку за ключем", () => {
-    expect(pickContentPage([home, about], "about")?.key).toBe("about");
+  it("знаходить сторінку за адресою", () => {
+    expect(pickContentPage([home, about], "about")?.slug).toBe("about");
   });
 
-  it("знаходить сторінку за web_slug — ключ при цьому інший", () => {
-    expect(pickContentPage([home, byWebSlug], "kontakty")?.key).toBe("contacts");
+  it("авторить адресу, а не легасі-ключ діплінка", () => {
+    // `contacts` був `codeword`; адреса сторінки — `kontakty`. Правило тепер
+    // одне, тож другої назви, за якою можна знайти сторінку, не існує.
+    expect(pickContentPage([home, byWebSlug], "kontakty")?.slug).toBe("kontakty");
+    expect(pickContentPage([home, byWebSlug], "contacts")?.slug).toBe(HOME_SLUG);
   });
 
   it("порожній шлях віддає головну", () => {
-    expect(pickContentPage([about, home], "")?.key).toBe(HOME_KEY);
+    expect(pickContentPage([about, home], "")?.slug).toBe(HOME_SLUG);
   });
 
   it("невідомий шлях віддає головну, а не першу-ліпшу сторінку", () => {
     // Мовчазний відкат на `pages[0]` показував би чужий контент замість 404.
-    expect(pickContentPage([about, home], "не-існує")?.key).toBe(HOME_KEY);
+    expect(pickContentPage([about, home], "не-існує")?.slug).toBe(HOME_SLUG);
+  });
+
+  it("хвіст адреси — це параметри тієї самої сторінки, а не інша сторінка", () => {
+    // `/about/more` — сторінка `about` із параметром `more`: саме так
+    // `/mydate/1980-03-03/today` лишається сторінкою `mydate`.
+    expect(pickContentPage([home, about], "about/more")?.slug).toBe("about");
   });
 
   it("без головної в наборі повертає null, а не вигадує сторінку", () => {

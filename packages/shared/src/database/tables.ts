@@ -212,6 +212,13 @@ export const TABLES = {
    * сторінки в Telegram, `kind = 'collection'` — група сторінок (колишній
    * сайт). Навігація більше не зберігається: нею стають самі сторінки з
    * `parent_id` і `position`. Перенос даних — `scripts/migrate-content.sql`.
+   *
+   * **Одна адреса, не дві.** Колонка `slug` — єдина ідентичність рядка: і шлях
+   * вебу (`/mydate/1980-03-03/today`), і основа діплінка бота
+   * (`?start=mydate_1980-03-03_today`). Окремої колонки `codeword` немає:
+   * це був той самий рядок у другій колонці, і саме через це правило «яка
+   * сторінка для цієї адреси» існувало в чотирьох різних реалізаціях.
+   * Подання будує `@wwwuabot/shared/content` (`toWebPath` / `toBotPayload`).
    */
   pages: {
     name: "pages",
@@ -220,7 +227,6 @@ export const TABLES = {
     create: `CREATE TABLE IF NOT EXISTS pages (
         id TEXT PRIMARY KEY,
         slug TEXT NOT NULL DEFAULT '',
-        codeword TEXT NOT NULL DEFAULT '',
         title TEXT,
         blocks TEXT NOT NULL DEFAULT '{}',
         bot TEXT,
@@ -243,12 +249,12 @@ export const TABLES = {
     // однойменний `CREATE UNIQUE INDEX IF NOT EXISTS` на `pages` просто нічого
     // не робить — таблиця лишається без унікальності адреси.
     indexes: [
-      // Унікальність адреси — у межах групи **і** типу: `/view/:slug` (collection)
-      // і `/:slug` (page) — різні простори адрес, тож збіг між ними не конфлікт.
-      `CREATE UNIQUE INDEX IF NOT EXISTS idx_content_slug ON pages(kind, parent_id, slug)`,
-      // `codeword` унікальний лише коли заданий: у сторінки без бот-посилання
-      // його немає, і порожні значення не мусять конфліктувати між собою.
-      `CREATE UNIQUE INDEX IF NOT EXISTS idx_content_codeword ON pages(codeword) WHERE codeword <> ''`,
+      // Адреса унікальна **в усій таблиці**, а не в межах групи: один і той
+      // самий `slug` — це і шлях вебу, і `?start=` у боті, тож два рядки з
+      // однаковою адресою зробили б діплінк неоднозначним. `kind` і
+      // `parent_id` на унікальність не впливають: вони описують, де сторінка
+      // лежить, а не як її знайти.
+      `CREATE UNIQUE INDEX IF NOT EXISTS idx_content_slug ON pages(slug)`,
       `CREATE INDEX IF NOT EXISTS idx_content_parent ON pages(parent_id, position)`,
       `CREATE INDEX IF NOT EXISTS idx_content_visibility ON pages(status, visibility)`,
       `CREATE INDEX IF NOT EXISTS idx_content_owner ON pages(owner_id)`,
