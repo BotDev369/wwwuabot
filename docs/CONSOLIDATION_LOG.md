@@ -27,6 +27,8 @@
 | Дата | Запис | Файл |
 |---|---|---|
 | 13.09.2026 | Адреса — одна сутність: `codeword` + `slug` злито | [`log/journal-2026-09-13-slug-entity.md`](./log/journal-2026-09-13-slug-entity.md) |
+| 13.09.2026 | «Поділитись»: діплінк як третє подання адреси | [`log/journal-2026-09-13-share-deeplink.md`](./log/journal-2026-09-13-share-deeplink.md) |
+| 13.09.2026 | Адреса сторінки — одна сутність `slug` (два подання) | [`log/journal-2026-09-13-slug-entity.md`](./log/journal-2026-09-13-slug-entity.md) |
 | 13.09.2026 | Контент в одній таблиці: `pages` + міграція | [`log/journal-2026-09-13-pages-table.md`](./log/journal-2026-09-13-pages-table.md) |
 | 13.09.2026 | Контент сторінок: три сховища → спільна модель | [`log/journal-2026-09-13-content-model.md`](./log/journal-2026-09-13-content-model.md) |
 | 13.09.2026 | Схема D1: реєстр таблиць і гейт `check:db` | [`log/journal-2026-09-13-d1-schema-registry.md`](./log/journal-2026-09-13-d1-schema-registry.md) |
