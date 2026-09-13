@@ -26,6 +26,7 @@
 
 | Дата | Запис | Файл |
 |---|---|---|
+| 13.09.2026 | `@types/node` у `packages/shared`: транзитивний тип — не контракт | [`log/journal-2026-09-13-node-types-in-tests.md`](./log/journal-2026-09-13-node-types-in-tests.md) |
 | 12.09.2026 | Поділ `sites.service.ts`: 777 → 6 модулів | [`log/journal-2026-09-12-sites-split.md`](./log/journal-2026-09-12-sites-split.md) |
 | 12.09.2026 | Планка якості в CI (`check:quality`) | [`log/journal-2026-09-12-quality-gate.md`](./log/journal-2026-09-12-quality-gate.md) |
 | 12.09.2026 | Рефакторинг документації: моноліти → покажчики й частини | [`log/journal-2026-09-12-docs-refactor.md`](./log/journal-2026-09-12-docs-refactor.md) |
