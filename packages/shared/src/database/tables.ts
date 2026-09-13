@@ -14,11 +14,21 @@
  * бо два списки (DDL і «колонки») неминуче розійдуться — саме так
  * `scenarios` і `scenarios-admin` отримали різні схеми.
  *
+ * **Це файл даних.** Тут немає логіки: ані `ensureTables`, ані розбору колонок.
+ * Код, який застосовує ці оголошення, живе в
+ * `packages/shared/src/database/ensure-tables.ts` — інакше реєстр переростає
+ * 400 рядків (помилка `check:quality`) і його неможливо правити впевнено.
+ *
  * **Жива база.** `ensureTables()` тільки **додає**: `CREATE TABLE IF NOT EXISTS`
  * і `ALTER TABLE … ADD COLUMN` для тих колонок, яких у наявній таблиці немає.
  * Він нічого не видаляє, не перейменовує і не змінює типів, тому його безпечно
  * викликати на базі з даними. Порядок і типи колонок у наявній таблиці мають
  * значення лише для читання — саме тому другорядні колонки оголошені з `DEFAULT`.
+ *
+ * **Імена індексів глобальні** для бази, а не для таблиці: `idx_pages_slug`,
+ * зайнятий `site_pages`, робить `CREATE UNIQUE INDEX IF NOT EXISTS idx_pages_slug`
+ * на `pages` **порожньою дією**, без жодної помилки. Тому індекси `pages`
+ * звуться `idx_content_*`, а збіги стереже `tables.test.ts`.
  *
  * @module @wwwuabot/shared/database/tables
  */
@@ -195,6 +205,56 @@ export const TABLES = {
     ],
   },
 
+  /**
+   * Єдине сховище контенту. Замінює чотири таблиці (`scenarios`,
+   * `scenarios-admin`, `sites`, `site_pages`), які описували те саме:
+   * `blocks` — сторінка вебу (колишній `page_data`), `bot` — подання тієї ж
+   * сторінки в Telegram, `kind = 'collection'` — група сторінок (колишній
+   * сайт). Навігація більше не зберігається: нею стають самі сторінки з
+   * `parent_id` і `position`. Перенос даних — `scripts/migrate-content.sql`.
+   */
+  pages: {
+    name: "pages",
+    owner: "api-dev",
+    purpose: "Рядок = сторінка вебу + її подання в боті; `kind = 'collection'` — група сторінок.",
+    create: `CREATE TABLE IF NOT EXISTS pages (
+        id TEXT PRIMARY KEY,
+        slug TEXT NOT NULL DEFAULT '',
+        codeword TEXT NOT NULL DEFAULT '',
+        title TEXT,
+        blocks TEXT NOT NULL DEFAULT '{}',
+        bot TEXT,
+        kind TEXT NOT NULL DEFAULT 'page',
+        parent_id TEXT NOT NULL DEFAULT '',
+        position INTEGER NOT NULL DEFAULT 0,
+        owner_id INTEGER,
+        status TEXT NOT NULL DEFAULT 'draft',
+        visibility TEXT NOT NULL DEFAULT 'private',
+        photo_url TEXT,
+        template_id TEXT,
+        reject_reason TEXT,
+        meta TEXT NOT NULL DEFAULT '{}',
+        created_at TEXT,
+        updated_at TEXT,
+        published_at TEXT
+      )`,
+    // Імена індексів — `idx_content_*`, **не** `idx_pages_*`: `idx_pages_slug`
+    // уже зайнятий індексом `site_pages` (глобальне ім'я в SQLite), і
+    // однойменний `CREATE UNIQUE INDEX IF NOT EXISTS` на `pages` просто нічого
+    // не робить — таблиця лишається без унікальності адреси.
+    indexes: [
+      // Унікальність адреси — у межах групи **і** типу: `/view/:slug` (collection)
+      // і `/:slug` (page) — різні простори адрес, тож збіг між ними не конфлікт.
+      `CREATE UNIQUE INDEX IF NOT EXISTS idx_content_slug ON pages(kind, parent_id, slug)`,
+      // `codeword` унікальний лише коли заданий: у сторінки без бот-посилання
+      // його немає, і порожні значення не мусять конфліктувати між собою.
+      `CREATE UNIQUE INDEX IF NOT EXISTS idx_content_codeword ON pages(codeword) WHERE codeword <> ''`,
+      `CREATE INDEX IF NOT EXISTS idx_content_parent ON pages(parent_id, position)`,
+      `CREATE INDEX IF NOT EXISTS idx_content_visibility ON pages(status, visibility)`,
+      `CREATE INDEX IF NOT EXISTS idx_content_owner ON pages(owner_id)`,
+    ],
+  },
+
   templates: {
     name: "templates",
     owner: "api-dev",
@@ -238,132 +298,4 @@ export const TABLE_NAMES = Object.keys(TABLES) as TableName[];
 /** Опис таблиці за іменем або `undefined`, якщо її не оголошено. */
 export function tableDefinition(name: string): TableDefinition | undefined {
   return (TABLES as Record<string, TableDefinition>)[name];
-}
-
-// ── Колонки з DDL ────────────────────────────────────────────────────────
-
-/** Колонка, виведена з `create`. */
-export interface DeclaredColumn {
-  name: string;
-  type: string;
-}
-
-/** `PRIMARY KEY`, `FOREIGN KEY`, `UNIQUE`, `CHECK`, `CONSTRAINT` — не колонки. */
-const TABLE_CONSTRAINT_RE = /^(PRIMARY|FOREIGN|UNIQUE|CHECK|CONSTRAINT)\b/i;
-
-const COLUMN_RE = /^["`[]?([A-Za-z_][A-Za-z0-9_]*)["`\]]?\s+([A-Za-z]+)/;
-
-/** Розбиває тіло `CREATE TABLE` по комах верхнього рівня (дужки — не роздільник). */
-function splitTopLevel(body: string): string[] {
-  const parts: string[] = [];
-  let depth = 0;
-  let current = "";
-  for (const ch of body) {
-    if (ch === "(") depth++;
-    else if (ch === ")") depth--;
-    if (ch === "," && depth === 0) {
-      parts.push(current);
-      current = "";
-      continue;
-    }
-    current += ch;
-  }
-  if (current.trim()) parts.push(current);
-  return parts;
-}
-
-/**
- * Колонки, оголошені в `create`, у порядку оголошення.
- *
- * Виводити їх із DDL, а не тримати окремим списком — свідомо: два списки
- * неминуче розходяться, і саме тому `scenarios-admin` колись «доростав»
- * колонками з помилки SQLite, а не з оголошення.
- */
-export function declaredColumns(def: TableDefinition): DeclaredColumn[] {
-  const open = def.create.indexOf("(");
-  const close = def.create.lastIndexOf(")");
-  if (open === -1 || close <= open) return [];
-
-  const columns: DeclaredColumn[] = [];
-  for (const chunk of splitTopLevel(def.create.slice(open + 1, close))) {
-    const line = chunk.trim();
-    if (!line || TABLE_CONSTRAINT_RE.test(line)) continue;
-    const match = COLUMN_RE.exec(line);
-    if (match) columns.push({ name: match[1], type: match[2].toUpperCase() });
-  }
-  return columns;
-}
-
-// ── Створення таблиць ────────────────────────────────────────────────────
-
-/** Ім'я таблиці, яке можна підставити в SQL без ризику (реєстр — не ввід). */
-const SAFE_NAME_RE = /^[A-Za-z_][A-Za-z0-9_-]*$/;
-
-/** Таблиці, для яких `ensureTables` уже відпрацював у цьому інстансі воркера. */
-const ensured = new WeakMap<D1Database, Set<string>>();
-
-/**
- * Гарантує наявність таблиць (і їхніх колонок).
- *
- * Ідемпотентна й безпечна на живій базі: тільки `CREATE TABLE IF NOT EXISTS` і
- * добір відсутніх колонок через `ALTER TABLE … ADD COLUMN`. Існуючі дані не
- * чіпаються, зайві колонки не видаляються, типи не змінюються.
- *
- * Повторні виклики в межах одного інстансу воркера нічого не коштують —
- * результат запам'ятовується на об'єкті `db`.
- */
-export async function ensureTables(db: D1Database, names: readonly TableName[]): Promise<void> {
-  let done = ensured.get(db);
-  if (!done) {
-    done = new Set<string>();
-    ensured.set(db, done);
-  }
-
-  for (const name of names) {
-    if (done.has(name)) continue;
-
-    const def = tableDefinition(name);
-    if (!def) {
-      throw new Error(
-        `D1: таблиця «${name}» не оголошена. Додай її в packages/shared/src/database/tables.ts.`,
-      );
-    }
-    if (!SAFE_NAME_RE.test(def.name)) {
-      throw new Error(`D1: ім'я таблиці «${def.name}» непридатне для SQL.`);
-    }
-
-    await db.prepare(def.create).run();
-    for (const column of await missingColumns(db, def)) {
-      await db
-        .prepare(`ALTER TABLE "${def.name}" ADD COLUMN ${column.name} ${column.type} DEFAULT NULL`)
-        .run();
-    }
-    for (const index of def.indexes ?? []) {
-      await db.prepare(index).run();
-    }
-
-    done.add(name);
-  }
-}
-
-/**
- * Колонки, яких у наявній таблиці немає.
- *
- * Спершу питаємо саму базу (`PRAGMA table_info`), бо `ALTER TABLE` на кожну
- * оголошену колонку — це N запитів, які щоразу падають із «duplicate column».
- * Якщо прагма недоступна — пробуємо всі: зайвий `ALTER` відсіється нижче.
- */
-async function missingColumns(db: D1Database, def: TableDefinition): Promise<DeclaredColumn[]> {
-  const declared = declaredColumns(def);
-
-  let existing = new Set<string>();
-  try {
-    const result = await db.prepare(`PRAGMA table_info("${def.name}")`).all<{ name: string }>();
-    existing = new Set((result.results ?? []).map((row) => row.name));
-  } catch {
-    return declared; // прагму не підтримано — хай вирішує сам ALTER
-  }
-
-  if (existing.size === 0) return declared; // таблиця щойно створена або прагма мовчить
-  return declared.filter((column) => !existing.has(column.name));
 }

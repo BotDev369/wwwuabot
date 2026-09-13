@@ -1,4 +1,4 @@
-import { ensureTables } from "@wwwuabot/shared/database/tables";
+import { ensureTables } from "@wwwuabot/shared/database/ensure-tables";
 import { SIGN_ORDER, SIGN_CUTOFFS, SIGN_META, DEFAULT_MYDATE_SYSTEMS } from "./constants";
 import type { Env } from "./types";
 

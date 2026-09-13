@@ -1,4 +1,4 @@
-import { ensureTables } from "@wwwuabot/shared/database/tables";
+import { ensureTables } from "@wwwuabot/shared/database/ensure-tables";
 import {
   HOME_KEY,
   contentPageFromScenario,

@@ -14,14 +14,8 @@
  */
 
 import { describe, expect, it } from "vitest";
-import {
-  TABLES,
-  TABLE_NAMES,
-  declaredColumns,
-  ensureTables,
-  tableDefinition,
-  type TableName,
-} from "./tables";
+import { declaredColumns, ensureTables } from "./ensure-tables";
+import { TABLES, TABLE_NAMES, tableDefinition, type TableName } from "./tables";
 
 /** Двійник D1: журнал SQL і список «наявних» колонок для `PRAGMA table_info`. */
 function fakeDb(columns: string[]) {
@@ -67,6 +61,28 @@ describe("реєстр таблиць: інваріанти", () => {
       for (const index of tableDefinition(key)?.indexes ?? []) {
         expect(index).toMatch(/^CREATE (UNIQUE )?INDEX IF NOT EXISTS /);
         expect(index).toContain(key);
+      }
+    }
+  });
+
+  /**
+   * Імена індексів у SQLite — **глобальні для бази**, не для таблиці. Тому
+   * `CREATE UNIQUE INDEX IF NOT EXISTS idx_pages_slug ON pages(…)` — це не
+   * помилка, а **нічого**: індекс із таким іменем уже створив `site_pages`.
+   * Саме так `pages` залишилась без унікальності адреси, і два рядки дістали
+   * той самий `slug` — а ні компілятор, ні `check:db`, ні сам SQL не сказали
+   * про це жодного слова.
+   */
+  it("імена індексів не повторюються між таблицями", () => {
+    const seen = new Map<string, string>();
+    for (const key of TABLE_NAMES) {
+      for (const index of tableDefinition(key)?.indexes ?? []) {
+        const name = /^CREATE (?:UNIQUE )?INDEX IF NOT EXISTS\s+"?([A-Za-z_][A-Za-z0-9_-]*)"?/.exec(
+          index,
+        )?.[1];
+        expect(name).toBeDefined();
+        expect(seen.get(name as string)).toBeUndefined();
+        seen.set(name as string, key);
       }
     }
   });

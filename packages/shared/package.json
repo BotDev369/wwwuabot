@@ -29,6 +29,7 @@
     "./constants/site-templates": "./src/constants/site-templates.ts",
     "./database/auto-migrate": "./src/database/auto-migrate.ts",
     "./database/tables": "./src/database/tables.ts",
+    "./database/ensure-tables": "./src/database/ensure-tables.ts",
     "./config/environment": "./src/config/environment.ts",
     "./observability/sentry": "./src/observability/sentry.ts",
     "./security/session": "./src/security/session.ts",

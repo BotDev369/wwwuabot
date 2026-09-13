@@ -13,7 +13,7 @@
  * @module api-dev/src/services/sites/schema
  */
 
-import { ensureTables } from "@wwwuabot/shared/database/tables";
+import { ensureTables } from "@wwwuabot/shared/database/ensure-tables";
 
 /** Гарантує наявність всіх таблиць домену Sites. Ідемпотентна. */
 export async function ensureSitesTables(db: D1Database): Promise<void> {

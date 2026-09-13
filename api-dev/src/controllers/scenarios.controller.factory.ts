@@ -14,7 +14,7 @@
  * @module api-dev/src/controllers/scenarios.controller.factory
  */
 
-import { ensureTables } from "@wwwuabot/shared/database/tables";
+import { ensureTables } from "@wwwuabot/shared/database/ensure-tables";
 import type { Env } from "../shared/types";
 import { formatSqliteDatetime } from "@wwwuabot/shared/utils/datetime";
 

@@ -1,6 +1,6 @@
 import { DatabaseRepository } from "../../core/database.repository";
 import { withAutoMigrate } from "@wwwuabot/shared/database/auto-migrate";
-import { ensureTables } from "@wwwuabot/shared/database/tables";
+import { ensureTables } from "@wwwuabot/shared/database/ensure-tables";
 import type { BotUser } from "../../shared/types/env";
 import { log } from "../../shared/utils/debug";
 
