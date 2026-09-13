@@ -6,7 +6,7 @@ import type { IconName } from "@wwwuabot/shared";
 
 // ── Types ─────────────────────────────────────────────────────────
 
-export type MainTab = "web" | "bot_rich" | "bot" | "shared";
+export type MainTab = "web" | "bot_rich" | "bot" | "shared" | "share";
 export type SubTab = "preview" | "json" | "constructor";
 
 // ── Constants ─────────────────────────────────────────────────────
@@ -16,6 +16,7 @@ export const MAIN_TAB_ICONS: Record<MainTab, IconName> = {
   bot_rich: "sparkles",
   bot: "bot",
   shared: "settings",
+  share: "link",
 };
 
 export const SUB_TAB_ICONS: Record<SubTab, IconName> = {
@@ -25,10 +26,11 @@ export const SUB_TAB_ICONS: Record<SubTab, IconName> = {
 };
 
 export const MAIN_TABS: { key: MainTab; label: string }[] = [
-  { key: "web", label: "Веб" },
+  { key: "web", label: "Сторінка" },
   { key: "bot_rich", label: "Бот-Річ + Кнопки" },
   { key: "bot", label: "Бот + Кнопки" },
   { key: "shared", label: "Спільне" },
+  { key: "share", label: "Поділитись" },
 ];
 
 export const SUB_TABS: { key: SubTab; label: string }[] = [
@@ -56,6 +58,8 @@ const FIELD_MAP: Record<MainTab, string[]> = {
     "qty_options",
   ],
   shared: ["codeword", "title", "created_at", "updated_at"],
+  // Вкладка нічого не редагує: вона показує посилання на те, що вже збережено.
+  share: [],
 };
 
 export function getFieldsForTab(

@@ -11,6 +11,15 @@
 export type { ContentPage, ContentSource, ScenarioContentRow } from "./types";
 export { contentPageFromScenario, contentPageFromSitePage } from "./adapters";
 export {
+  TELEGRAM_ORIGIN,
+  buildShareLinks,
+  isValidBotUsername,
+  normalizeBotUsername,
+  type ShareLinkReason,
+  type ShareLinks,
+  type ShareLinksInput,
+} from "./link";
+export {
   BOT_SEPARATOR,
   HOME_SLUG,
   LEGACY_HOME_KEY,

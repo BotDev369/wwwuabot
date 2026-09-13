@@ -1,7 +1,7 @@
 /**
  * ScenarioCardModal — єдиний модальний блок редагування сценарію.
  *
- * Головні вкладки:  Веб (замовч.), Бот-Річ+Кнопки, Бот+Кнопки, Спільне
+ * Головні вкладки:  Сторінка (замовч.), Бот-Річ+Кнопки, Бот+Кнопки, Спільне, Поділитись
  * Підвкладки:       Прев'ю (замовч.), JSON, Конструктор
  *
  * Рефакторинг: компоненти винесені в окремі файли.
@@ -35,6 +35,7 @@ import { BotRichConstructor } from "./BotRichConstructor";
 import { WebConstructor } from "./WebConstructor";
 import { TabPreview } from "./ScenarioPreview";
 import { ScenarioJsonEditor } from "./ScenarioJsonEditor";
+import { ShareTab } from "./ShareTab";
 import { FullscreenBuilder } from "./FullscreenBuilder";
 import { SaveActionButtons, type SavingActionType } from "@wwwuabot/shared";
 
@@ -357,25 +358,27 @@ export function ScenarioCardModal({ codeword, table, onClose, onSaved, initialSu
           ))}
         </div>
 
-        {/* Sub-tabs */}
-        <div className="scn-subtabs">
-          {SUB_TABS.map((st) => (
-            <button
-              key={st.key}
-              className={`scn-subtab${subTab === st.key ? " scn-subtab--active" : ""}`}
-              onClick={() => {
-                if (st.key === "json") {
-                  openJsonTab();
-                } else {
-                  setSubTab(st.key);
-                }
-              }}
-              title={st.label}
-            >
-              {ico(SUB_TAB_ICONS[st.key], 18)}
-            </button>
-          ))}
-        </div>
+        {/* Sub-tabs — у «Поділитись» немає ні прев'ю, ні JSON, ні конструктора */}
+        {mainTab !== "share" && (
+          <div className="scn-subtabs">
+            {SUB_TABS.map((st) => (
+              <button
+                key={st.key}
+                className={`scn-subtab${subTab === st.key ? " scn-subtab--active" : ""}`}
+                onClick={() => {
+                  if (st.key === "json") {
+                    openJsonTab();
+                  } else {
+                    setSubTab(st.key);
+                  }
+                }}
+                title={st.label}
+              >
+                {ico(SUB_TAB_ICONS[st.key], 18)}
+              </button>
+            ))}
+          </div>
+        )}
 
         {/* Body */}
         <div className="wb-modal-body" style={{ flex: 1, overflow: "auto" }}>
@@ -383,6 +386,8 @@ export function ScenarioCardModal({ codeword, table, onClose, onSaved, initialSu
             <div className="wb-modal-loading">Завантаження…</div>
           ) : error && Object.keys(allFields).length === 0 ? (
             <div className="wb-modal-error">{error}</div>
+          ) : mainTab === "share" ? (
+            <ShareTab codeword={codeword} fields={allFields} />
           ) : subTab === "preview" ? (
             <TabPreview mainTab={mainTab} fields={allFields} codeword={codeword} />
           ) : subTab === "json" ? (

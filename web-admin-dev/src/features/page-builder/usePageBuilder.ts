@@ -111,7 +111,9 @@ export function usePageBuilder() {
       try {
         await updateScenarioFields(codeword, { page_data: JSON.stringify(config) }, "portal");
         setSaveStatus("saved");
-        if (shouldClose) setTimeout(() => navigate("/scenarios-v2"), 500);
+        // Маршрут мусить існувати в роутері: `/scenarios-v2` тут стояв за назвою
+        // компонента, а не за шляхом, і після збереження давав порожній екран.
+        if (shouldClose) setTimeout(() => navigate("/scenarios"), 500);
         else setTimeout(() => setSaveStatus("idle"), 2000);
       } catch (e) {
         setSaveStatus("error");
@@ -152,7 +154,7 @@ export function usePageBuilder() {
   }, [jsonText]);
 
   const handleBack = useCallback(() => {
-    navigate("/scenarios-v2");
+    navigate("/scenarios");
   }, [navigate]);
 
   return {
