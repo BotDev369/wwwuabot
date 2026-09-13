@@ -15,6 +15,7 @@
 | [`CODE_QUALITY_FINDINGS.md`](./CODE_QUALITY_FINDINGS.md) | докази: адреси в коді, ціна кожного кроку, межі оцінки | власнику |
 | [`QUALITY_GATE.md`](./QUALITY_GATE.md) | планка в CI: чотири правила, леджер боргу | розробникам |
 | [`DATA_MODEL.md`](./DATA_MODEL.md) | таблиці D1: власник, хто створює, хто читає; гейт `check:db` | тому, хто чіпає базу |
+| [`CONTENT_MODEL.md`](./CONTENT_MODEL.md) | контент сторінок: три сховища → один функціонал, цільова модель, фази | тому, хто чіпає сценарії, сайти чи рендер |
 | [`DESIGN_SYSTEM.md`](./DESIGN_SYSTEM.md) | токени, правила UI, де що лежить | фронтенду |
 | [`DESIGN_SYSTEM_COMPONENTS.md`](./DESIGN_SYSTEM_COMPONENTS.md) | класи `.wb-*`, діалог, іконки | фронтенду |
 | [`PAGE_ENGINE_ARCHITECTURE.md`](./PAGE_ENGINE_ARCHITECTURE.md) | архітектурне рішення: чому воркери окремі | архітектору |
