@@ -59,7 +59,7 @@ jobs:
 
   # Єдиний гейт перед деплоєм. Раніше тут не було тестів (S-6) і `npm audit`
   # стояв із `continue-on-error: true`, тобто не блокував нічого. Тепер:
-  # критична вразливість або червоний тест = жоден воркер не поїде на прод.
+  # вразливість `high` або червоний тест = жоден воркер не поїде на прод.
   checks:
     runs-on: ubuntu-latest
     timeout-minutes: 15
@@ -72,8 +72,13 @@ jobs:
       # `ci`, не `install`: збірка мусить бути відтворюваною з lockfile,
       # інакше патч транзитивної залежності тихо змінює прод.
       - run: npm ci
-      - name: Security audit (critical)
-        run: npm audit --audit-level=critical
+      # Поріг піднято з `critical` до `high` 13.09.2026: після оновлення
+      # `wrangler`/`miniflare` (sharp) і `vitest` у репозиторії **нуль**
+      # уразливостей, а `high` — саме той рівень, який раніше проходив повз гейт.
+      # `moderate` лишається попередженням, бо виправити його часто нічим:
+      # це транзитивні залежності інструментів розробки.
+      - name: Security audit (high)
+        run: npm audit --audit-level=high
       - run: npm run lint
       - run: npm run typecheck
       - name: Format check
