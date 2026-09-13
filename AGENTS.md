@@ -1,6 +1,16 @@
 # AGENTS.md
 
-> **Версія:** 2.8 | **Останнє оновлення:** 13.09.2026
+> **Версія:** 2.9 | **Останнє оновлення:** 13.09.2026
+>
+> **Зміна 2.9:** каша з таблицями впорядкована: схема D1 описана **один раз** — у реєстрі
+> `packages/shared/src/database/tables.ts` (ім'я, власник, `CREATE TABLE`, індекси). Раніше
+> DDL був розсипаний по чотирьох файлах, `scenarios` створювалась без `IF NOT EXISTS`, а
+> `scenarios-admin` додавав собі колонки, ловлячи `no such column` з SQLite — тобто схема
+> росла від того, що надіслав інтерфейс. `users` і `mydate_analysis` не створював **ніхто**:
+> вони існували лише тому, що їх колись завели руками в дашборді, — на чистій базі перший же
+> користувач і `/api/mydate/analysis/*` падали б. Тепер це стереже `npm run check:db` (§6),
+> карта таблиць — `docs/DATA_MODEL.md`, правила — §5 і §7. Деталі —
+> `docs/log/journal-2026-09-13-d1-schema-registry.md`.
 >
 > **Зміна 2.8:** домен `services/sites` покрито тестами (68 тестів, 7 нових файлів), і вони
 > одразу знайшли справжній дефект: у `/api/sites/:slug/pages/:pid` власник перевірявся лише за
@@ -233,6 +243,14 @@ import { Icon } from "@wwwuabot/shared";
 
 ## 5. Де що шукати
 
+### Дані
+
+| Що | Де |
+|---|---|
+| Схема таблиць D1 — реєстр: ім'я, власник, призначення, DDL | `packages/shared/src/database/tables.ts` (створення — `ensureTables`) |
+| Карта таблиць: хто власник, хто створює, хто читає | `docs/DATA_MODEL.md` |
+| Авто-добір колонок до наявної таблиці | `packages/shared/src/database/auto-migrate.ts` — `withAutoMigrate` |
+
 ### bot-dev (еталонна структура)
 
 | Що | Де |
@@ -304,7 +322,7 @@ service binding. **Власного `src/stores/` у платформи нема
 - **ESLint + Prettier** у всіх 4 сервісах. Команди: `npm run lint`, `npm run typecheck`.
 - **Логування:** `bot-dev/` — модуль `modules/logging/` (Queue). `api-dev/` — `apiLog` з префіксом `[api]`. Не використовувати `console.log` у продакшн-коді.
 - **Дата/час у D1:** `formatSqliteDatetime()` з `packages/shared/src/utils/datetime.ts`.
-- **CI/CD:** GitHub Actions + path filtering. Перед деплоєм в одній джобі `checks` виконуються `npm ci`, `npm audit --audit-level=critical`, `npm run lint`, `npm run typecheck`, `npm run format:check`, `npm run check:css`, `npm run check:quality`, `npm test` — будь-який збій блокує деплой усіх воркерів. Деплої воркерів стоять у черзі (`concurrency`), щоб старіший коміт не ліг поверх новішого. `pull_request` запускає лише гейти — деплой з PR неможливий. `GITHUB_TOKEN` має `contents: read`. Dependabot увімкнений.
+- **CI/CD:** GitHub Actions + path filtering. Перед деплоєм в одній джобі `checks` виконуються `npm ci`, `npm audit --audit-level=high`, `npm run lint`, `npm run typecheck`, `npm run format:check`, `npm run check:css`, `npm run check:quality`, `npm run check:docs`, `npm run check:db`, `npm test` — будь-який збій блокує деплой усіх воркерів. Деплої воркерів стоять у черзі (`concurrency`), щоб старіший коміт не ліг поверх новішого. `pull_request` запускає лише гейти — деплой з PR неможливий. `GITHUB_TOKEN` має `contents: read`. Dependabot увімкнений.
 
 ---
 
@@ -312,6 +330,9 @@ service binding. **Власного `src/stores/` у платформи нема
 
 - Не пиши власну авто-міграцію D1 — використовуй `withAutoMigrate` з shared.
 - Не дублюй код між воркерами — клади в `packages/shared/`.
+- Не створюй таблицю D1 повз реєстр `packages/shared/src/database/tables.ts` і не пиши свій `CREATE TABLE`. Нова таблиця = оголошення в реєстрі + `ensureTables(db, ["ім'я"])` у воркері-власнику. Стереже `npm run check:db`.
+- Не додавай колонку, реагуючи на помилку SQLite (`no such column` → `ALTER TABLE`). Так схема таблиці починає залежати від того, що надіслав клієнт: саме через це `scenarios` і `scenarios-admin` мали 23 і 13 колонок. Колонка додається рядком у реєстрі.
+- SQL у коді пиши **великими літерами** (`SELECT … FROM users`), інакше `check:db` не відрізнить таблицю від `from "react"`.
 - Не роби `SELECT *` на таблицях з важкими JSON-колонками (users).
 - Не забувай `[[d1_databases]]` на top-level `wrangler.toml`.
 - Не змішуй prod/dev бази — різні `database_id`.
@@ -339,7 +360,7 @@ service binding. **Власного `src/stores/` у платформи нема
 - **CSS:** 12 файлів, 6 330 рядків (було 7 366 до «одного дизайну»); розбір по теках — `docs/CONSOLIDATION_PLAN.md` §0, правила й кирпичики — `docs/DESIGN_SYSTEM.md`.
 - **Якість:** аудит за 10 критеріями (ISO/IEC 25010, CISQ, WCAG) — **58%**; оцінку від появи планки не перераховували: планка дає не бали, а неможливість відкотитись назад. Сильне: типи, процес, документація; слабке: тести критичних шляхів, дизайн-система всередині блоків, мобільна доступність (тап-таргети й `@media (hover: none)`). Деталі й ціна кожного кроку — `docs/CODE_QUALITY_AUDIT.md`.
 - **Типізація:** 0 `any`, `tsc` чистий на всіх **6 воркспейсах** (4 воркери + `packages/shared` + `packages/ui`).
-- **Тести:** Vitest, **250 unit-тестів у 28 файлах**. **Гейтять CI** (S-6 закрито 11.09.2026) — червоний тест блокує деплой. Покриті: `security/`, `config/`, `condition-evaluator`, `datetime`, `PageRenderer`, `PermissionGate`, роутинг і identity `api-dev`, `users.service`, `templates.controller`, увесь домен `api-dev/src/services/sites/*` (CRUD, сторінки, модерація, каталог, шаблони — 58 тестів) і права власника сторінок у `site-pages.controller` (10). Не покриті: жодна сторінка оболонок, жоден екран бота, контролери `api-dev` поза `templates` і `site-pages`.
+- **Тести:** Vitest, **264 unit-тести в 29 файлах**. **Гейтять CI** (S-6 закрито 11.09.2026) — червоний тест блокує деплой. Покриті: `security/`, `config/`, `condition-evaluator`, `datetime`, `PageRenderer`, `PermissionGate`, роутинг і identity `api-dev`, `users.service`, `templates.controller`, реєстр таблиць D1, увесь домен `api-dev/src/services/sites/*` (CRUD, сторінки, модерація, каталог, шаблони — 58 тестів) і права власника сторінок у `site-pages.controller` (10). Не покриті: жодна сторінка оболонок, жоден екран бота, контролери `api-dev` поза `templates` і `site-pages`.
 - **Форматування:** Prettier у гейті CI (`npx prettier --check .`) — код, який не відповідає стилю, не доїде до деплою.
 - **Дизайн-система як кирпичики:** каркас обох оболонок — спільні `.wb-*` (`app-chrome.css`, §3). Перевірка `npm run check:css` (гейт CI) тримає дві межі: клас, який рендерить спільний код, стилізований у shared; клас у розмітці оболонки має правило. Поточно: 189 класів у спільному коді + 289 у оболонках, усі мають правила (415 у 12 CSS-файлах). Відомий борг — `scripts/css-baseline.mjs` (тільки зменшувати).
 - **Планка в CI:** `npm run check:quality` (окремий крок у тій же джобі `checks`) тримає
@@ -350,6 +371,7 @@ service binding. **Власного `src/stores/` у платформи нема
   Деталі й причини кожного правила — `docs/QUALITY_GATE.md`.
 - **Ідентичність користувача:** єдине джерело — підписаний Telegram `initData` (`api-dev/src/shared/identity.ts`). Заборонено приймати `X-Telegram-User-Id` або `user_id` з cookie/query.
 - **Адмін-авторизація:** єдина — cookie `admin_session` (HMAC-SHA256, `packages/shared/src/security/session.ts`). Секретів у заголовках немає: `X-Admin-Secret`, `X-Bot-Token`, `/db-proxy` і легасі `/setup-webhook` видалено 11.09.2026 (`docs/CONSOLIDATION_LOG.md` §5.4).
+- **Схема D1:** **8 таблиць** в одному реєстрі (`packages/shared/src/database/tables.ts`), який дає і `CREATE TABLE`, і добір відсутніх колонок. Поза реєстром таблиць немає: `npm run check:db` (крок `D1 schema` у тій же джобі `checks`) ловить `CREATE TABLE`, ім'я таблиці й `ALTER TABLE`, яких немає в оголошенні. Карта таблиць і відкрите рішення про об'єднання `scenarios` + `scenarios-admin` — `docs/DATA_MODEL.md`.
 - **Моніторинг:** Workers Logs увімкнено в усіх 4 воркерах. `api-dev` має два ендпоїнти здоров'я: `GET /health` (liveness, без залежностей) і `GET /health/deep` (D1 + KV; **503** при деградації) — саме його має опитувати зовнішній монітор. UptimeRobot і секрет `SENTRY_DSN` задає власник акаунта. Усі воркери — дев (`ENVIRONMENT = "dev"`). Sentry під'єднано в `api-dev` і `bot-dev` — персональні дані вирізаються, без секрету `SENTRY_DSN` він у no-op; браузерні застосунки — окремий крок (`docs/CONSOLIDATION_LOG.md` §5.8).
 - **Документація:** єдиний покажчик — `docs/README.md` (один документ = одна тема = один власник факту; там же таблиця «куди писати нове»). Стан і план — `docs/CONSOLIDATION_PLAN.md` (§0 виміри, §3 план); історія — `git log` і `docs/log/` (покажчик — `docs/CONSOLIDATION_LOG.md`). Розмір, мертві посилання й § з коду стереже `npm run check:docs`. **AGENTS.md — єдиний документ понад 200 рядків, і він навмисне не ділиться:** агент мусить прочитати його повністю одним файлом.
 

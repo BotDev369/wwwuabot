@@ -76,5 +76,8 @@
 | `site_pages` | api-dev | **НОВЕ** — сторінки сайтів |
 | `templates` | api-dev | **НОВЕ** — шаблони |
 
+Повна карта (власник, хто створює, хто читає) — [`docs/DATA_MODEL.md`](../DATA_MODEL.md);
+схема живе в одному реєстрі — `packages/shared/src/database/tables.ts`.
+
 ---
 
