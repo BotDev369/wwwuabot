@@ -43,7 +43,7 @@ async function makeInitData(userId: number, botToken = BOT_TOKEN): Promise<strin
 }
 
 function request(headers: Record<string, string> = {}): Request {
-  return new Request("https://api.example.com/api/sites", {
+  return new Request("https://api.example.com/api/my-dates", {
     headers: new Headers(headers),
   });
 }

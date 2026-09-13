@@ -23,7 +23,6 @@ const page = (slug: string): ContentPage => ({
   title: null,
   photoUrl: null,
   content: null,
-  source: "site_pages",
   published: true,
   order: 0,
 });

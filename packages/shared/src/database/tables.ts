@@ -25,10 +25,10 @@
  * викликати на базі з даними. Порядок і типи колонок у наявній таблиці мають
  * значення лише для читання — саме тому другорядні колонки оголошені з `DEFAULT`.
  *
- * **Імена індексів глобальні** для бази, а не для таблиці: `idx_pages_slug`,
- * зайнятий `site_pages`, робить `CREATE UNIQUE INDEX IF NOT EXISTS idx_pages_slug`
- * на `pages` **порожньою дією**, без жодної помилки. Тому індекси `pages`
- * звуться `idx_content_*`, а збіги стереже `tables.test.ts`.
+ * **Імена індексів глобальні** для бази, а не для таблиці: однойменний
+ * `CREATE UNIQUE INDEX IF NOT EXISTS` на другій таблиці — не помилка, а
+ * **порожня дія**, і таблиця лишається без унікальності (так `idx_pages_slug`
+ * колись зайняла `site_pages`). Збіги імен стереже `tables.test.ts`.
  *
  * @module @wwwuabot/shared/database/tables
  */
@@ -94,10 +94,33 @@ export const TABLES = {
 
   // ── api-dev ────────────────────────────────────────────────────────────
 
+  /**
+   * **Єдине місце, де живе контент.** Рядок = сторінка вебу (`page_data`, який
+   * рендерить `PageRenderer`) **разом із поданням у боті** (`caption_*`,
+   * `buttons`, `rich_message`): саме так це описав власник — «два інтерфейси,
+   * бот і веб; кожен рядок — одна сторінка + бот».
+   *
+   * Три сусідні сховища того самого — `sites` + `site_pages` (друга реалізація
+   * для вебу) і `scenarios-admin` (тестова копія без читача) — видалено
+   * 13.09.2026 разом із таблицями, маршрутами й сторінками: вони **дублювали**
+   * цю таблицю, а не доповнювали її.
+   *
+   * Таблиця `pages`, яку 13.09.2026 додали в реєстр як «цільову», того ж дня
+   * видалена: на дев-базі вона не існувала, нічого не читала й нічого не
+   * зберігала — тобто була п'ятим сховищем замість одного. Журнал —
+   * `docs/log/journal-2026-09-13-drop-pages-table.md`.
+   *
+   * **Адреса.** Ідентичність рядка в моделі одна — `slug`. У цій таблиці її
+   * подають дві легасі-колонки: `web_slug` (адреса вебу) і `codeword` (ключ
+   * діплінка, він же `PRIMARY KEY`). Зводить їх до одного `slug` адаптер
+   * `@wwwuabot/shared/content`, а подання адреси (`/mydate/…` і
+   * `?start=mydate_…`) будує `resolve.ts`.
+   */
   scenarios: {
     name: "scenarios",
     owner: "api-dev",
-    purpose: "Контент бота й порталу; читає bot-dev, редагує адмінка (/api/portal/scenarios/*).",
+    purpose:
+      "Єдине сховище контенту: рядок = сторінка вебу (`page_data`) + її подання в боті. Читає bot-dev, редагує адмінка (/api/portal/scenarios/*).",
     create: `CREATE TABLE IF NOT EXISTS "scenarios" (
         codeword TEXT PRIMARY KEY,
         photo_url TEXT,
@@ -122,137 +145,6 @@ export const TABLES = {
         web_slug TEXT DEFAULT NULL,
         is_active INTEGER DEFAULT 1
       )`,
-  },
-
-  sites: {
-    name: "sites",
-    owner: "api-dev",
-    purpose: "Сайт користувача: slug, статус модерації, публічність, шаблон.",
-    create: `CREATE TABLE IF NOT EXISTS sites (
-        id TEXT PRIMARY KEY,
-        slug TEXT UNIQUE NOT NULL,
-        title TEXT NOT NULL,
-        description TEXT,
-        owner_id INTEGER NOT NULL,
-        status TEXT DEFAULT 'draft',
-        template_id TEXT,
-        settings TEXT DEFAULT '{}',
-        is_public INTEGER DEFAULT 0,
-        thumbnail TEXT,
-        reject_reason TEXT,
-        created_at TEXT,
-        updated_at TEXT,
-        published_at TEXT
-      )`,
-    indexes: [
-      `CREATE INDEX IF NOT EXISTS idx_sites_owner ON sites(owner_id)`,
-      `CREATE INDEX IF NOT EXISTS idx_sites_status ON sites(status)`,
-      `CREATE INDEX IF NOT EXISTS idx_sites_public ON sites(is_public, status)`,
-    ],
-  },
-
-  site_pages: {
-    name: "site_pages",
-    owner: "api-dev",
-    purpose: "Сторінка сайту: Page Builder-конфіг, статус публікації, порядок.",
-    create: `CREATE TABLE IF NOT EXISTS site_pages (
-        id TEXT PRIMARY KEY,
-        site_id TEXT NOT NULL,
-        slug TEXT NOT NULL,
-        title TEXT NOT NULL,
-        page_data TEXT DEFAULT '{}',
-        order_index INTEGER DEFAULT 0,
-        status TEXT DEFAULT 'draft',
-        meta TEXT DEFAULT '{}',
-        created_at TEXT,
-        updated_at TEXT,
-        published_at TEXT,
-        FOREIGN KEY (site_id) REFERENCES sites(id) ON DELETE CASCADE
-      )`,
-    indexes: [
-      `CREATE UNIQUE INDEX IF NOT EXISTS idx_pages_slug ON site_pages(site_id, slug)`,
-      `CREATE INDEX IF NOT EXISTS idx_pages_site ON site_pages(site_id)`,
-    ],
-  },
-
-  /**
-   * Єдине сховище контенту. Замінює три таблиці (`scenarios`, `sites`,
-   * `site_pages`), які описували те саме. Четверта, `scenarios-admin`, була
-   * тестовою копією `scenarios` без жодного читача поза адмінкою — її видалено
-   * 13.09.2026 разом з адмін-маршрутами, тому переносити з неї нічого:
-   * `blocks` — сторінка вебу (колишній `page_data`), `bot` — подання тієї ж
-   * сторінки в Telegram, `kind = 'collection'` — група сторінок (колишній
-   * сайт). Навігація більше не зберігається: нею стають самі сторінки з
-   * `parent_id` і `position`. Перенос даних — `scripts/migrate-content.sql`.
-   *
-   * **Одна адреса, не дві.** Колонка `slug` — єдина ідентичність рядка: і шлях
-   * вебу (`/mydate/1980-03-03/today`), і основа діплінка бота
-   * (`?start=mydate_1980-03-03_today`). Окремої колонки `codeword` немає:
-   * це був той самий рядок у другій колонці, і саме через це правило «яка
-   * сторінка для цієї адреси» існувало в чотирьох різних реалізаціях.
-   * Подання будує `@wwwuabot/shared/content` (`toWebPath` / `toBotPayload`).
-   */
-  pages: {
-    name: "pages",
-    owner: "api-dev",
-    purpose: "Рядок = сторінка вебу + її подання в боті; `kind = 'collection'` — група сторінок.",
-    create: `CREATE TABLE IF NOT EXISTS pages (
-        id TEXT PRIMARY KEY,
-        slug TEXT NOT NULL DEFAULT '',
-        title TEXT,
-        blocks TEXT NOT NULL DEFAULT '{}',
-        bot TEXT,
-        kind TEXT NOT NULL DEFAULT 'page',
-        parent_id TEXT NOT NULL DEFAULT '',
-        position INTEGER NOT NULL DEFAULT 0,
-        owner_id INTEGER,
-        status TEXT NOT NULL DEFAULT 'draft',
-        visibility TEXT NOT NULL DEFAULT 'private',
-        photo_url TEXT,
-        template_id TEXT,
-        reject_reason TEXT,
-        meta TEXT NOT NULL DEFAULT '{}',
-        created_at TEXT,
-        updated_at TEXT,
-        published_at TEXT
-      )`,
-    // Імена індексів — `idx_content_*`, **не** `idx_pages_*`: `idx_pages_slug`
-    // уже зайнятий індексом `site_pages` (глобальне ім'я в SQLite), і
-    // однойменний `CREATE UNIQUE INDEX IF NOT EXISTS` на `pages` просто нічого
-    // не робить — таблиця лишається без унікальності адреси.
-    indexes: [
-      // Адреса унікальна **в усій таблиці**, а не в межах групи: один і той
-      // самий `slug` — це і шлях вебу, і `?start=` у боті, тож два рядки з
-      // однаковою адресою зробили б діплінк неоднозначним. `kind` і
-      // `parent_id` на унікальність не впливають: вони описують, де сторінка
-      // лежить, а не як її знайти.
-      `CREATE UNIQUE INDEX IF NOT EXISTS idx_content_slug ON pages(slug)`,
-      `CREATE INDEX IF NOT EXISTS idx_content_parent ON pages(parent_id, position)`,
-      `CREATE INDEX IF NOT EXISTS idx_content_visibility ON pages(status, visibility)`,
-      `CREATE INDEX IF NOT EXISTS idx_content_owner ON pages(owner_id)`,
-    ],
-  },
-
-  templates: {
-    name: "templates",
-    owner: "api-dev",
-    purpose: "Шаблон сторінки або сайту: системний (`is_system`) або приватний користувача.",
-    create: `CREATE TABLE IF NOT EXISTS templates (
-        id TEXT PRIMARY KEY,
-        name TEXT NOT NULL,
-        description TEXT,
-        type TEXT NOT NULL,
-        thumbnail TEXT,
-        config TEXT NOT NULL,
-        is_system INTEGER DEFAULT 0,
-        owner_id INTEGER,
-        tags TEXT DEFAULT '[]',
-        created_at TEXT
-      )`,
-    indexes: [
-      `CREATE INDEX IF NOT EXISTS idx_templates_type ON templates(type, is_system)`,
-      `CREATE INDEX IF NOT EXISTS idx_templates_owner ON templates(owner_id)`,
-    ],
   },
 
   mydate_analysis: {

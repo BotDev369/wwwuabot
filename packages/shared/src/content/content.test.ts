@@ -1,7 +1,6 @@
 import { describe, it, expect } from "vitest";
-import { contentPageFromScenario, contentPageFromSitePage } from "./adapters";
+import { contentPageFromScenario } from "./adapters";
 import { HOME_SLUG, pickContentPage } from "./resolve";
-import type { SitePage } from "../types/site.types";
 
 // ── Хелпери ──────────────────────────────────────────────────────
 
@@ -13,19 +12,6 @@ const pageConfig = (title: string) => ({
     main: [{ id: "b1", type: "text", order: 0, props: { title } }],
     footer: [],
   },
-});
-
-const sitePage = (over: Partial<SitePage> = {}): SitePage => ({
-  id: "page-1",
-  siteId: "site-1",
-  slug: "home",
-  title: "Головна",
-  pageData: pageConfig("Привіт"),
-  orderIndex: 0,
-  status: "published",
-  createdAt: "2026-09-13 10:00:00",
-  updatedAt: "2026-09-13 10:00:00",
-  ...over,
 });
 
 // ── Адаптер сценарію ─────────────────────────────────────────────
@@ -42,7 +28,6 @@ describe("contentPageFromScenario", () => {
 
     expect(page.id).toBe("about");
     expect(page.title).toBe("Про нас");
-    expect(page.source).toBe("scenarios");
     expect(page.published).toBe(true);
     expect(page.content?.zones.main).toHaveLength(1);
   });
@@ -118,31 +103,9 @@ describe("contentPageFromScenario", () => {
     expect(contentPageFromScenario({ codeword: "b", is_active: "0" }).published).toBe(false);
     expect(contentPageFromScenario({ codeword: "c", is_active: 0 }).published).toBe(false);
   });
-
-  it("позначає джерело: сценарій приходить із таблиці `scenarios`", () => {
-    expect(contentPageFromScenario({ codeword: "about" }).source).toBe("scenarios");
-  });
 });
 
 // ── Адаптер сторінки сайту ───────────────────────────────────────
-
-describe("contentPageFromSitePage", () => {
-  it("нормалізує сторінку сайту разом із порядком", () => {
-    const page = contentPageFromSitePage(sitePage({ slug: "contacts", orderIndex: 3 }));
-
-    expect(page.id).toBe("page-1");
-    expect(page.slug).toBe("contacts");
-    expect(page.order).toBe(3);
-    expect(page.source).toBe("site_pages");
-  });
-
-  it("публічність береться зі status, а не з наявності контенту", () => {
-    expect(contentPageFromSitePage(sitePage({ status: "published" })).published).toBe(true);
-    expect(contentPageFromSitePage(sitePage({ status: "draft" })).published).toBe(false);
-    // Контент не парситься вдруге — береться готовий `pageData`.
-    expect(contentPageFromSitePage(sitePage()).content?.zones.main[0]?.props.title).toBe("Привіт");
-  });
-});
 
 // ── Вибір сторінки (з відкатом на головну) ───────────────────────
 
@@ -171,7 +134,7 @@ describe("pickContentPage", () => {
   });
 
   it("невідомий шлях віддає головну, а не першу-ліпшу сторінку", () => {
-    // Мовчазний відкат на `pages[0]` показував би чужий контент замість 404.
+    // Мовчазний відкат на першу-ліпшу сторінку показував би чужий контент замість 404.
     expect(pickContentPage([about, home], "не-існує")?.slug).toBe(HOME_SLUG);
   });
 

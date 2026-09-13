@@ -27,7 +27,7 @@ function json(data: unknown, status = 200): Response {
 
 /**
  * Ідентичність, якщо запит її має. Для публічних ендпоїнтів, які лише
- * збагачують відповідь для власника (напр. `GET /api/templates`).
+ * збагачують відповідь для власника (напр. `GET /api/scenario/:slug`).
  */
 export async function tryResolveUserId(
   request: Request,

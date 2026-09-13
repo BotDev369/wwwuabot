@@ -13,8 +13,9 @@ export const QUALITY_BASELINE = {
    * Логіка понад `CRITICAL_LINES` (400) — «критично» за `AGENTS.md` §3.
    * Кожен рядок — відкритий пункт плану; після поділу файл прибирається звідси.
    */ oversizedFiles: {
-    // `api-dev/src/services/sites.service.ts` (777) — ЗАКРИТО 12.09.2026: поділено на
-    // `services/sites/{schema,crud,pages,templates,moderation,catalog}.ts` (усі < 180).
+    // Два колишні записи зникли разом із доменом `sites`: `sites.service.ts`
+    // (777) поділили 12.09.2026 на `services/sites/*`, а 13.09.2026 цей домен
+    // видалено повністю — разом із таблицями `sites`, `site_pages`, `templates`.
     "web-admin-dev/src/pages/scenarios/ScenarioCardModal.tsx":
       "план §3.5 — поділ на хук + підкомпоненти",
     "packages/shared/src/components/UserProfileCard.tsx":
@@ -26,11 +27,7 @@ export const QUALITY_BASELINE = {
    * Дані, а не логіка: довгі таблиці констант. Ліміт рядків про них не
    * (дробити `icons.tsx` навпіл — шкодити, а не рефакторити).
    */
-  dataOnlyFiles: [
-    "packages/shared/src/constants/site-templates.ts",
-    "packages/shared/src/components/icons.tsx",
-    "packages/shared/src/types/site.types.ts",
-  ],
+  dataOnlyFiles: ["packages/shared/src/components/icons.tsx"],
 
   /**
    * Емодзі в UI (`AGENTS.md` §4). Список порожній: усі знайдені випадки

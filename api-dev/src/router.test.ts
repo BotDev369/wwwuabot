@@ -19,7 +19,7 @@ const ADMIN_SECRET = "test-admin-secret";
 
 /** Реальний маршрут під кожним адмін-префіксом. */
 const ADMIN_ROUTES: Record<(typeof ADMIN_PATH_PREFIXES)[number], string> = {
-  "/api/admin/": "/api/admin/sites",
+  "/api/admin/": "/api/admin/users/list",
   "/api/portal/": "/api/portal/scenarios/list",
   "/api/bot/": "/api/bot/webhook-info",
 };
@@ -100,24 +100,24 @@ describe("адмін-гейт", () => {
 
   it("⛔ НЕ пропускає протерміновану cookie", async () => {
     const expired = await signSessionToken("admin:1", ADMIN_SECRET);
-    const res = await call("GET", "/api/admin/sites", makeEnv(), cookieHeader(expired));
+    const res = await call("GET", "/api/admin/users/list", makeEnv(), cookieHeader(expired));
     expect(res.status).toBe(401);
   });
 
   it("⛔ НЕ пропускає сміттєвий токен", async () => {
     // Саме ASCII: HTTP-заголовки — ByteString, кирилиця там неможлива.
-    const res = await call("GET", "/api/admin/sites", makeEnv(), cookieHeader("garbage"));
+    const res = await call("GET", "/api/admin/users/list", makeEnv(), cookieHeader("garbage"));
     expect(res.status).toBe(401);
   });
 
   it("⛔ закритий, а не відкритий, якщо ADMIN_SECRET не налаштований", async () => {
     const env = makeEnv({ ADMIN_SECRET: undefined });
-    const res = await call("GET", "/api/admin/sites", env, cookieHeader(await validToken()));
+    const res = await call("GET", "/api/admin/users/list", env, cookieHeader(await validToken()));
     expect(res.status).toBe(401);
   });
 
   it("⛔ НЕ приймає секрет у заголовку (регресія §5.4)", async () => {
-    const res = await call("GET", "/api/admin/sites", makeEnv(), {
+    const res = await call("GET", "/api/admin/users/list", makeEnv(), {
       "X-Admin-Secret": ADMIN_SECRET,
       "X-Bot-Token": "anything",
     });
@@ -125,7 +125,12 @@ describe("адмін-гейт", () => {
   });
 
   it("пропускає далі з валідною cookie", async () => {
-    const res = await call("GET", "/api/admin/sites", makeEnv(), cookieHeader(await validToken()));
+    const res = await call(
+      "GET",
+      "/api/admin/users/list",
+      makeEnv(),
+      cookieHeader(await validToken()),
+    );
     expect(res.status).not.toBe(401);
   });
 });
@@ -159,16 +164,12 @@ describe("публічні маршрути не зачеплені гейтом
     expect((await call("GET", "/health")).status).toBe(200);
   });
 
-  it("GET /api/catalog відкритий", async () => {
-    expect((await call("GET", "/api/catalog")).status).not.toBe(401);
+  it("GET /api/mydate/systems відкритий", async () => {
+    expect((await call("GET", "/api/mydate/systems")).status).not.toBe(401);
   });
 });
 
 describe("користувацькі маршрути вимагають initData", () => {
-  it("⛔ GET /api/sites — 401 без підписаного initData", async () => {
-    expect((await call("GET", "/api/sites")).status).toBe(401);
-  });
-
   it("⛔ GET /api/my-dates — 401 без підписаного initData", async () => {
     expect((await call("GET", "/api/my-dates")).status).toBe(401);
   });

@@ -1,15 +1,15 @@
 /**
  * Контент сторінок — один вхід для всіх, хто його читає.
  *
- * Модель, адаптери зі сховищ і правило «яка сторінка відповідає цій адресі».
+ * Модель, адаптер зі сховища і правило «яка сторінка відповідає цій адресі».
  * Деталі кожного файла — у його власному заголовку; чому це взагалі
  * з'явилось — у `docs/CONTENT_MODEL.md`.
  *
  * @module @wwwuabot/shared/content
  */
 
-export type { ContentPage, ContentSource, ScenarioContentRow } from "./types";
-export { contentPageFromScenario, contentPageFromSitePage } from "./adapters";
+export type { ContentPage, ScenarioContentRow } from "./types";
+export { contentPageFromScenario } from "./adapters";
 export {
   TELEGRAM_ORIGIN,
   buildShareLinks,

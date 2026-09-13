@@ -15,7 +15,13 @@
 
 import { describe, expect, it } from "vitest";
 import { declaredColumns, ensureTables } from "./ensure-tables";
-import { TABLES, TABLE_NAMES, tableDefinition, type TableName } from "./tables";
+import {
+  TABLES,
+  TABLE_NAMES,
+  tableDefinition,
+  type TableDefinition,
+  type TableName,
+} from "./tables";
 
 /** Двійник D1: журнал SQL і список «наявних» колонок для `PRAGMA table_info`. */
 function fakeDb(columns: string[]) {
@@ -67,11 +73,12 @@ describe("реєстр таблиць: інваріанти", () => {
 
   /**
    * Імена індексів у SQLite — **глобальні для бази**, не для таблиці. Тому
-   * `CREATE UNIQUE INDEX IF NOT EXISTS idx_pages_slug ON pages(…)` — це не
-   * помилка, а **нічого**: індекс із таким іменем уже створив `site_pages`.
-   * Саме так `pages` залишилась без унікальності адреси, і два рядки дістали
-   * той самий `slug` — а ні компілятор, ні `check:db`, ні сам SQL не сказали
-   * про це жодного слова.
+   * однойменний `CREATE UNIQUE INDEX IF NOT EXISTS` на другій таблиці — це не
+   * помилка, а **нічого**: ім'я вже зайняте, і таблиця лишається без
+   * унікальності, причому ні компілятор, ні `check:db`, ні сам SQL про це не
+   * скажуть (так колись сталося з `idx_pages_slug`, який зайняла `site_pages`).
+   * Сьогодні жодна таблиця реєстру індексів не оголошує, але перевірка
+   * лишається: правило — про будь-які дві таблиці з однаковим ім'ям індексу.
    */
   it("імена індексів не повторюються між таблицями", () => {
     const seen = new Map<string, string>();
@@ -110,9 +117,21 @@ describe("колонки виводяться з DDL", () => {
   });
 
   it("не вважає `FOREIGN KEY` колонкою", () => {
-    const names = declaredColumns(TABLES.site_pages).map((c) => c.name);
-    expect(names).toContain("site_id");
-    expect(names).not.toContain("FOREIGN");
+    // Єдині таблиці із зовнішнім ключем (`sites`, `site_pages`) видалено
+    // 13.09.2026, а разом із ними з реєстру пішла й `pages`. Тому перевіряємо
+    // правило на власному DDL: обмеження таблиці не мусять потрапляти
+    // в список колонок.
+    const synthetic: TableDefinition = {
+      name: "demo",
+      owner: "api-dev",
+      purpose: "Синтетична таблиця: перевірка розбору DDL, у базі не існує.",
+      create: `CREATE TABLE IF NOT EXISTS demo (
+        id TEXT PRIMARY KEY,
+        parent_id TEXT NOT NULL DEFAULT '',
+        FOREIGN KEY (parent_id) REFERENCES other(id)
+      )`,
+    };
+    expect(declaredColumns(synthetic).map((c) => c.name)).toEqual(["id", "parent_id"]);
   });
 
   it("немає дублікатів колонок і непридатних імен", () => {
@@ -152,11 +171,16 @@ describe("ensureTables", () => {
   });
 
   it("створює і самі таблиці, а не тільки колонки", async () => {
-    const { db, statements } = fakeDb(sitePageColumns());
-    await ensureTables(db, ["sites", "site_pages", "templates"]);
+    const { db, statements } = fakeDb([]);
+    await ensureTables(db, ["settings", "scenarios"]);
 
-    expect(statements.filter((s) => s.startsWith("CREATE TABLE"))).toHaveLength(3);
-    expect(statements.some((s) => s.startsWith("CREATE INDEX"))).toBe(true);
+    expect(statements.filter((s) => s.startsWith("CREATE TABLE"))).toHaveLength(2);
+    // Індекси: зараз їх не оголошує жодна таблиця, тож перевірка не вакуумна
+    // за наміром — вона стежить, щоб оголошені індекси справді виконувались.
+    const declaredIndexes = TABLE_NAMES.flatMap((name) => TABLES[name].indexes ?? []);
+    expect(statements.filter((s) => s.startsWith("CREATE INDEX"))).toHaveLength(
+      declaredIndexes.length,
+    );
   });
 
   it("повторний виклик нічого не додає (пам'ять на об'єкті db)", async () => {
@@ -168,8 +192,3 @@ describe("ensureTables", () => {
     expect(statements.length).toBe(afterFirst);
   });
 });
-
-/** Колонки таблиці `site_pages` — щоб у тесті вище таблиця була «вже наявна». */
-function sitePageColumns(): string[] {
-  return declaredColumns(TABLES.site_pages).map((c) => c.name);
-}

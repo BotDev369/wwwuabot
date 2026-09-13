@@ -26,8 +26,9 @@ function json(body: unknown, status = 200): Response {
  * перевіркою `sqlite_master` — тобто двоє одночасних запитів на чистій базі
  * могли отримати помилку «table already exists».
  *
- * `web_slug` тут лишається легасі-значенням: у новій моделі адреса головної —
- * порожній `slug`, а `__base__` — це ключ діплінка, тобто `LEGACY_HOME_KEY`.
+ * `web_slug` тут лишається легасі-значенням: у моделі контенту адреса
+ * головної — порожній `slug`, а `__base__` — це ключ діплінка,
+ * тобто `LEGACY_HOME_KEY`.
  */
 async function ensureBase(db: D1Database): Promise<void> {
   await ensureTables(db, ["scenarios"]);
@@ -47,9 +48,10 @@ async function ensureBase(db: D1Database): Promise<void> {
  * `context.title` і `context.photoUrl` завжди були `null`. Виявити це було ні
  * чим — обидві сторони мовчали.
  *
- * `web_slug` і `codeword` — **легасі-колонки**: доки читач ходить у `scenarios`
- * (фаза 3 переведе його на `pages`), з них зводиться одна адреса. Див.
- * `contentPageFromScenario`.
+ * `web_slug` і `codeword` — дві колонки, у яких історично лежить **та сама
+ * адреса**; з них зводиться одна — `slug` у моделі. Див.
+ * `contentPageFromScenario`. Іншого сховища контенту немає: таблиця одна —
+ * `scenarios` (її ж читає бот), тож читач нікуди не «переїжджає».
  */
 const PAGE_COLUMNS = "codeword, web_slug, title, photo_url, page_data, is_active";
 

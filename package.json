@@ -26,7 +26,6 @@
     "check:docs": "node scripts/check-docs.mjs",
     "check:db": "node scripts/check-db.mjs",
     "check:quality": "node scripts/check-quality.mjs",
-    "migrate:content": "node scripts/migrate-content.mjs",
     "test": "vitest run",
     "test:watch": "vitest"
   }

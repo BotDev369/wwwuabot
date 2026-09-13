@@ -52,14 +52,6 @@ const DEFAULT_SECTIONS: AdminNavSection[] = [
     items: [{ to: "/scenarios", label: "Сценарії", icon: "scenarios" }],
   },
   {
-    title: "Сайти",
-    items: [
-      { to: "/sites", label: "Всі сайти", icon: "layout" },
-      { to: "/sites/moderation", label: "Модерація", icon: "eye" },
-      { to: "/templates", label: "Шаблони", icon: "layers" },
-    ],
-  },
-  {
     title: "Адміністрування",
     items: [
       { to: "/users", label: "Користувачі", icon: "users" },

@@ -54,7 +54,6 @@ export type IconName =
   | "sun"
   | "moon"
   | "x"
-  | "layers"
   | "plus"
   | "minus"
   | "heart"
@@ -353,12 +352,6 @@ export const icons: Record<IconName, ReactElement> = {
   "chevron-up": icon([pl("18 15 12 9 6 15")]),
 
   x: icon([l(18, 6, 6, 18), l(6, 6, 18, 18)]),
-
-  layers: icon([
-    p("M12 2l10 6.5-10 6.5L2 8.5z"),
-    p("M2 15.5l10 6.5 10-6.5"),
-    p("M2 12l10 6.5L22 12"),
-  ]),
 
   plus: icon([l(12, 5, 12, 19), l(5, 12, 19, 12)]),
 

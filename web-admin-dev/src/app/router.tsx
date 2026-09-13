@@ -5,9 +5,6 @@ import { ScenariosPage } from "../pages/scenarios/ScenariosPage";
 import { UsersPage } from "../pages/users/UsersPage";
 import { PageBuilderPage } from "../features/page-builder/PageBuilderPage";
 import { BotSettingsPage } from "../pages/bot-settings/BotSettingsPage";
-import { SitesPage } from "../pages/sites/SitesPage";
-import { SitesModerationPage } from "../pages/sites/SitesModerationPage";
-import { TemplatesPage } from "../pages/sites/TemplatesPage";
 
 /**
  * Маршрути web-admin.
@@ -15,9 +12,12 @@ import { TemplatesPage } from "../pages/sites/TemplatesPage";
  * /scenarios          — Сценарії
  * /page-builder/:cw   — Конструктор сторінок
  * /users              — Користувачі
- * /sites              — Всі сайти
- * /sites/moderation   — Модерація
- * /templates          — Шаблони
+ * /bot-settings       — Налаштування бота
+ *
+ * Маршрутів «сайтів» (`/sites`, `/sites/moderation`) і «шаблонів» тут більше
+ * немає: таблиці `sites`, `site_pages`, `templates` видалено 13.09.2026, бо
+ * вони дублювали `scenarios`. Контент живе в одному рядку `scenarios` —
+ * сторінка вебу разом із її поданням у боті.
  */
 export const router = createBrowserRouter([
   {
@@ -28,9 +28,6 @@ export const router = createBrowserRouter([
       { path: "page-builder/:codeword", element: <PageBuilderPage /> },
       { path: "users", element: <UsersPage /> },
       { path: "bot-settings", element: <BotSettingsPage /> },
-      { path: "sites", element: <SitesPage /> },
-      { path: "sites/moderation", element: <SitesModerationPage /> },
-      { path: "templates", element: <TemplatesPage /> },
     ],
   },
 ]);
