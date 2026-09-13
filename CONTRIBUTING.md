@@ -7,7 +7,7 @@ Rules for developers, contributors, and AI agents.
 ## Quality Gates (обов'язково перед кожним пушем)
 
 ```bash
-npm test            # 182 unit-тести (Vitest), 22 файли
+npm test            # 241 unit-тест (Vitest), 26 файлів
 npm run typecheck   # TypeScript strict — 0 any, 6 воркспейсів
 npm run lint        # ESLint — 0 errors, 0 warnings
 npm run format:check # Prettier — теж гейт CI
@@ -23,11 +23,15 @@ npm run format:check # Prettier — теж гейт CI
 | Гейт | Команда | Блокує деплой? |
 |---|---|---|
 | Залежності | `npm ci` | так (lockfile розійшовся — збірка не відтворювана) |
-| CVE | `npm audit --audit-level=critical` | так (раніше стояв `continue-on-error: true`, тобто не блокував нічого) |
+| CVE | `npm audit --audit-level=high` | так (раніше стояв `continue-on-error: true`, тобто не блокував нічого) |
 | Лінт | `npm run lint` | так |
 | Типізація | `npm run typecheck` | так |
-| Тести | `npm test` (182) | так (S-6 закрито) |
-| Форматування | `npx prettier --check .` | так — 201 файл відформатовано 12.09.2026, гейт увімкнено |
+| Тести | `npm test` (241) | так |
+| Форматування | `npx prettier --check .` | так — гейт увімкнено 12.09.2026 |
+| Класи й CSS | `npm run check:css` | так — клас у розмітці мусить мати правило |
+| Планка правил | `npm run check:quality` | так — ліміт рядків, діалоги, `100vh`, емодзі (`QUALITY_GATE.md`) |
+| Документація | `npm run check:docs` | так — розмір, мертві посилання, § з коду |
+| Схема D1 | `npm run check:db` | так — таблиця поє реєстр заборонена (`DATA_MODEL.md`) |
 
 Гейти запускаються і на кожен pull request (деплой на PR неможливий).
 Деплої одного воркера не перекриваються: `concurrency` ставить їх у чергу,
@@ -67,7 +71,8 @@ npm run format:check # Prettier — теж гейт CI
 11. **Нативні `alert` / `confirm` / `prompt` заборонені** — у Telegram Mini App на iOS вони не працюють. Використовуй `useDialog()` з `@wwwuabot/ui/dialog` (`AGENTS.md` §4).
 12. **Спільний код => спільний CSS.** Якщо клас рендерить `packages/ui`, його стилі живуть у `packages/shared/src/styles/`, а не в `index.css` однієї з оболонок — інакше в другій оболонці він буде без стилів.
 13. **Мобільний — перший.** Перевіряй на 360px до десктопа: резинова верстка, `100dvh`, `var(--safe-*)`, тап-таргети ≥44px, афорданси без `:hover` (`AGENTS.md` §3).
-14. **Клас без правила — це помилка, а не стиль.** Якщо клас потрібен у розмітці — спочатку додай правило в `packages/shared/src/styles/components.css`. `class="wb-mt-3"` без `.wb-mt-3` не ламає ні збірку, ні тести: відступ просто не з'явиться (так знайдено 44 класи `wb-block-*` без стилів).
+14. **Клас без правила — це помилка, а не стиль.** Якщо клас потрібен у розмітці — спочатку додай правило в `packages/shared/src/styles/components.css`. `class="wb-mt-3"` без `.wb-mt-3` не ламає ні збірку, ні тести: відступ просто не з'явиться (так знайдено 45 класів `wb-block-*` без стилів).
+15. **Історію не розводь по файлах.** Закрита робота = рядок у `docs/HISTORY.md` §9 (з номером коміту); нове правило — у `AGENTS.md`. Окремих журналів на кожну роботу більше немає.
 
 ---
 
@@ -121,5 +126,5 @@ npm run format:check # Prettier — теж гейт CI
 | **`docs/README.md`** | **покажчик усієї документації — почни звідси** |
 | `docs/CONSOLIDATION_PLAN.md` | Поточний стан (§0), правила (§1), план робіт (§3), відкриті рішення (§4) |
 | `docs/QUALITY_GATE.md` | Планка в CI: чотири правила, леджер боргу |
-| `docs/log/` | Архів: як ухвалювались рішення (покажчик — `docs/CONSOLIDATION_LOG.md`) |
-| `CHANGELOG.md` | немає — історія в `git log` і `docs/log/` |
+| `docs/HISTORY.md` | Архів: леджер рішень §0–§8 і хронологія §9 (нових файлів не заводимо) |
+| `CHANGELOG.md` | немає — історія в `git log` і `docs/HISTORY.md` |

@@ -3,8 +3,7 @@
 **Створено:** 13.09.2026 · **оновлено:** 13.09.2026 (зведено до однієї реальної таблиці) ·
 **джерело правди про код:** `packages/shared/src/content/` і
 `packages/shared/src/database/tables.ts` · **схема таблиць:** [`DATA_MODEL.md`](./DATA_MODEL.md)
-· **історія:** [`log/journal-2026-09-13-pages-table.md`](./log/journal-2026-09-13-pages-table.md)
-(крок, який скасовано) і [`log/journal-2026-09-13-drop-pages-table.md`](./log/journal-2026-09-13-drop-pages-table.md)
+· **історія:** [`HISTORY.md`](./HISTORY.md) §9 (записи `13.09.2026` — спроба `pages` і її скасування)
 
 > **Рішення власника (13.09.2026).** «Одне місце, де живуть сценарії-сайти.» Рядок таблиці —
 > це сторінка вебу **разом із її поданням у боті**. Бот показує або повідомлення з кнопками
@@ -55,7 +54,7 @@
 
 Разом із нею видалено все, що існувало тільки заради переїзду: `scripts/migrate-content.sql`,
 раннер `npm run migrate:content`, тест міграції і 4 індекси. Журнал —
-[`log/journal-2026-09-13-drop-pages-table.md`](./log/journal-2026-09-13-drop-pages-table.md).
+[`HISTORY.md`](./HISTORY.md) §9.
 
 ## 3. Адреса — одна сутність, два подання
 

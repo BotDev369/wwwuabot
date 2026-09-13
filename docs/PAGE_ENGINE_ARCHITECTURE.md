@@ -21,7 +21,7 @@
 | **Cloudflare Access** на адмінці | ❌ **немає**. Воркери живуть на `*.workers.dev`, політики Zero Trust не налаштовано. Захист адмінки зараз — тільки cookie `admin_session` + адмін-гейт в `api-dev` |
 | **Окремі домени** `admin.wwwuabot.com` / `app.wwwuabot.com` | ❌ **немає**. Є `*.workers.dev`; Same-Origin розділення реальне (різні хости), але доменів немає |
 | «Нуль адмінського коду в публічному бандлі» | ✅ зроблено (окремі воркери й окремі бандли) |
-| Прод | ❌ не деплоївся; усі 4 воркери — дев (`docs/CONSOLIDATION_LOG.md` §1) |
+| Прод | ❌ не деплоївся; усі 4 воркери — дев (`docs/HISTORY.md` §1) |
 
 Два пункти з розділу 2 (Access і домени) досі **задум**, а не факт. Тримати їх у тексті
 як наявне означає планувати роботу, виходячи з неіснуючого захисту.
@@ -43,13 +43,13 @@
   (`MyDatesPage.tsx` 437, `DateModal.tsx` 285, `DateAccordionForm.tsx` 215 …) і легасі-редактор
   блоків адмінки (`features/editor/blocks/**`) видалено — разом **74 недосяжні файли,
   5 238 рядків**. Усе, що вони робили, тепер роблять сценарії з `page_data` і спільні
-  блоки `packages/ui`. Деталі — `docs/CODE_QUALITY_AUDIT.md` §4.1.
-- Лідер за розміром сьогодні — `web-admin-dev/src/pages/scenarios/ScenarioCardModal.tsx` (443) і
-  `packages/shared/src/components/UserProfileCard.tsx` (418): це наступні кандидати. Колишні
+  блоки `packages/ui`. Деталі — `docs/HISTORY.md` §9.
+- Лідер за розміром сьогодні (вимір 13.09.2026) — `ScenarioCardModal.tsx` (443) і
+  `packages/shared/src/components/UserProfileCard.tsx` (417): це наступні кандидати. Колишні
   лідери — `sites.service.ts` (777) і `site-templates.ts` (623) — більше не існують: перший
   поділено 12.09.2026, а 13.09.2026 весь домен `sites` видалено разом із таблицями.
 - Лишається справжнє дублювання верстки поміж оболонок — див. §4.3 крок 3 у
-  `docs/CONSOLIDATION_LOG.md` і пункт 3 плану в `docs/CONSOLIDATION_PLAN.md`.
+  `docs/HISTORY.md` і пункт 3 плану в `docs/CONSOLIDATION_PLAN.md`.
 
 ---
 
@@ -71,7 +71,7 @@
 > до D1». Це було неточно: адмінка проксює **всі** запити через Service Binding на `api-dev`
 > (`/api/*`), а прямий D1-біндинг у `wrangler.toml` існував, але не використовувався й був
 > прибраний. Обидві оболонки тонкі: різниця не в доступі до БД, а в тому, які роути `api-dev`
-> за ними закріплені. Деталі — [CONSOLIDATION_LOG.md](./CONSOLIDATION_LOG.md) §5.2.
+> за ними закріплені. Деталі — [HISTORY.md](./HISTORY.md) §5.2.
 
 ---
 
@@ -170,12 +170,11 @@ interface PageConfig {
    - `MyDatesPage.tsx` (437) — **видалена 12.09.2026**: її замінив спільний блок
      `packages/ui/src/blocks/MyDatesTableBlock.tsx` у Page Builder.
 2. **Відповідність "Crystal Clarity Rule":**
-   - Ліміт **< 200 рядків** тримають лише нові файли. Мета — не поточний факт: на 12.09.2026
-     у `src/` шістьох воркспейсів **44 файли** понад 200 рядків, з них **7** — понад 400
-     (`sites.service.ts` 777, `site-templates.ts` 623, `ScenarioCardModal.tsx` 443,
-     `icons.tsx` 423, `UserProfileCard.tsx` 414, `site.types.ts` 402,
-     `UserEditModal.tsx` 401; три з них — дані, а не логіка). Перелік робіт —
-     `docs/CONSOLIDATION_PLAN.md` §3, ціна в балах — `docs/CODE_QUALITY_AUDIT.md` §6.
+   - Ліміт **< 200 рядків** тримають лише нові файли. Мета — не поточний факт: на 13.09.2026
+     у `src/` шістьох воркспейсів **34 файли** понад 200 рядків, з них **4** — понад 400
+     (`ScenarioCardModal.tsx` 443, `UserProfileCard.tsx` 417, `icons.tsx` 408 — дані,
+     `UserEditModal.tsx` 401). Перелік робіт — `docs/CONSOLIDATION_PLAN.md` §3, ціна в балах —
+     `docs/CODE_QUALITY.md` §5.
 3. **Швидкість розробки:**
    - Створення нового екрану або сценарію займає 5 хвилин без дублювання верстки.
 4. **Залізна безпека:**

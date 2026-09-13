@@ -99,8 +99,9 @@ Defined in `packages/shared/src/styles/tokens.css`, overridden per brand in `app
     `.wb-profile*` (`app-chrome.css`). The same detail in both shells → a brick in
     shared; a new private class for the same thing is a defect, not "the shell's style".
 13. Shared blocks (`packages/ui/src/blocks/*`) are still styled with inline
-    `style={{ … }}` (192 objects, 30 hardcoded hex values), and **44 `wb-block-*`
-    classes have no CSS rule at all**, so `data-brand` and `data-theme` don't reach them. Moving those styles into `.wb-block-*` rules in
+    `style={{ … }}` (192 objects there, 556 in live `src` overall; 97 hardcoded `#hex`),
+    and **45 `wb-block-*` classes have no CSS rule at all**, so `data-brand` and
+    `data-theme` don't reach them (вимір 13.09.2026). Moving those styles into `.wb-block-*` rules in
     `components.css` is open work — `docs/CONSOLIDATION_PLAN.md` §3 (пункт 3).
 
 ---

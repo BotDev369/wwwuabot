@@ -153,16 +153,16 @@ import { Icon } from "@wwwuabot/shared";
 <Icon name="home" size={16} />
 ```
 
-Іконок **75** (станом на 12.09.2026). Єдиний перелік — тип `IconName` у
+Іконок **73** (вимір 13.09.2026). Єдиний перелік — тип `IconName` у
 `packages/shared/src/components/icons.tsx`; окремого списку в документації немає
 навмисно, бо він дрейфує.
 
-Групи (не всі імена): навігація — `home`, `scenarios`, `scenarios-admin`, `users`,
+Групи (не всі імена): навігація — `home`, `scenarios`, `users`,
 `bot`, `my-dates`, `settings`, `logout`, `menu`, `sidebar-toggle`; дії — `edit`,
 `trash`, `save`, `copy`, `link`, `mail`, `lock`, `unlock`, `search`, `filter`,
 `refresh`, `download`, `upload`; стан — `check`, `close`, `x`, `info`, `warning`,
 `construction`, `sparkles`; медіа й контент — `image`, `video`, `camera`, `keyboard`,
-`text`, `code`, `quote`, `list`, `divider`, `button`, `layout`, `grid`, `layers`,
+`text`, `code`, `quote`, `list`, `divider`, `button`, `layout`, `grid`,
 `card`, `tabs`, `star`, `bar-chart`, `hash`, `percent`; стрілки — `arrow-left`,
 `arrow-right`, `arrow-up`, `arrow-down`, `chevron-left`, `chevron-right`,
 `chevron-down`, `chevron-up`, `external-link`.
