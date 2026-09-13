@@ -99,6 +99,11 @@ jobs:
       # на які посилається код.
       - name: Docs
         run: npm run check:docs
+      # Схема D1: ім'я таблиці або `CREATE TABLE` поза реєстром не ламає ні
+      # збірку, ні тести — так і з'явились дві таблиці сценаріїв із різними
+      # схемами й `users`, який не створював ніхто.
+      - name: D1 schema
+        run: npm run check:db
       - name: Unit tests
         run: npm test
 

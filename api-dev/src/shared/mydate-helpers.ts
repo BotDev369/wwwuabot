@@ -1,3 +1,4 @@
+import { ensureTables } from "@wwwuabot/shared/database/tables";
 import { SIGN_ORDER, SIGN_CUTOFFS, SIGN_META, DEFAULT_MYDATE_SYSTEMS } from "./constants";
 import type { Env } from "./types";
 
@@ -110,6 +111,9 @@ export async function getAnalysis(
   kv: KVNamespace,
   date: string,
 ): Promise<Record<string, SystemAnalysisResult>> {
+  // Таблицю не створював ніхто: на чистій базі читання падало з `no such table`.
+  await ensureTables(db, ["mydate_analysis"]);
+
   const kvKey = `mydate:analysis:${date}`;
   const cached = await kv.get(kvKey);
   if (cached) {
@@ -149,6 +153,7 @@ export async function saveAnalysis(
   const updated = { ...existing, [systemId]: result };
   const json = JSON.stringify(updated);
 
+  await ensureTables(db, ["mydate_analysis"]);
   await db
     .prepare(
       `INSERT INTO mydate_analysis (date, systems_data, updated_at)

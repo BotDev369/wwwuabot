@@ -1,5 +1,6 @@
 import { DatabaseRepository } from "../core/database.repository";
 import { withAutoMigrate } from "@wwwuabot/shared/database/auto-migrate";
+import { ensureTables } from "@wwwuabot/shared/database/tables";
 import { log } from "../shared/utils/debug";
 
 export class SettingsRepository extends DatabaseRepository {
@@ -51,15 +52,10 @@ export class SettingsRepository extends DatabaseRepository {
    */
   async initialize(): Promise<void> {
     try {
-      // Перевіряємо чи таблиця існує
-      const testQuery = await this.db
-        .prepare(`SELECT name FROM sqlite_master WHERE type='table' AND name='settings'`)
-        .first();
-
-      if (!testQuery) {
-        log("SETTINGS", "creating settings table");
-        await this.db.prepare(`CREATE TABLE settings (id INTEGER PRIMARY KEY DEFAULT 1)`).run();
-      }
+      // Таблиця оголошена в реєстрі (`@wwwuabot/shared/database/tables`) — тут
+      // лишається тільки гарантія, що вона існує. Раніше цей репозиторій
+      // створював `settings` сам, за неатомною перевіркою `sqlite_master`.
+      await ensureTables(this.db, ["settings"]);
 
       // Забезпечуємо наявність базових колонок
       await withAutoMigrate(

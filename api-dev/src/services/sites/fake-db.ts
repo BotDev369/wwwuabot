@@ -12,8 +12,10 @@
  *   був `UPDATE` (напр. «не можна опублікувати повз чергу» = жодного запису).
  *
  * Запити зберігаються розділеними: `reads` (SELECT), `writes` (INSERT/UPDATE/DELETE)
- * і `schema` (CREATE/DROP/ALTER). Без цього поділу `ensureSitesTables` забивав би
- * журнал записів десятьма `CREATE`-ами, і перевірка «жодного запису» стала б брехнею.
+ * і `schema` (CREATE/DROP/ALTER і `PRAGMA table_info`). Без цього поділу
+ * `ensureSitesTables` забивав би журнал записів десятьма `CREATE`-ами, а
+ * перевірка «жодного запису» стала б брехнею. Прагма теж стосується схеми, а не
+ * даних: вона лише питає, які колонки вже є, — тому в журналі `reads` її немає.
  *
  * @module api-dev/src/services/sites/fake-db
  */
@@ -35,15 +37,15 @@ export interface FakeDb {
   reads: FakeQuery[];
   /** Виконані зміни даних (`INSERT` / `UPDATE` / `DELETE`). */
   writes: FakeQuery[];
-  /** `CREATE` / `DROP` / `ALTER` — схема, а не робота з даними. */
+  /** `CREATE` / `DROP` / `ALTER` / `PRAGMA` — схема, а не робота з даними. */
   schema: string[];
   /** Скільки разів виконано зміну, чий SQL містить `part`. */
   countWrites: (part: string) => number;
 }
 
 function kindOf(sql: string): "read" | "schema" | "write" {
-  if (/^(SELECT|PRAGMA)/i.test(sql)) return "read";
-  if (/^(CREATE|DROP|ALTER)/i.test(sql)) return "schema";
+  if (/^SELECT/i.test(sql)) return "read";
+  if (/^(CREATE|DROP|ALTER|PRAGMA)/i.test(sql)) return "schema";
   return "write";
 }
 

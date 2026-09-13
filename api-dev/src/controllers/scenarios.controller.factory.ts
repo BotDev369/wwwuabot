@@ -4,24 +4,27 @@
  * `scenarios` (портал) і `scenarios-admin` мають ідентичну схему й ідентичну
  * логіку — раніше це були два файли по ~300 рядків, які відрізнялися лише
  * константою `TABLE`. Будь-який фікс доводилось робити двічі, і вони вже
- * встигли розійтися (admin створює таблицю, портал — ні).
+ * встигли розійтися (admin створював таблицю, портал — ні).
  *
- * Тепер логіка одна; таблиця передається аргументом. Маршрути не змінюються —
- * тонкі обгортки `scenarios-admin.controller.ts` / `scenarios-portal.controller.ts`
- * лишаються точками входу для роутера.
+ * Тепер логіка одна; таблиця передається аргументом і мусить бути оголошена в
+ * реєстрі (`@wwwuabot/shared/database/tables`) — звідти ж береться DDL. Маршрути
+ * не змінюються: тонкі обгортки `scenarios-admin.controller.ts` /
+ * `scenarios-portal.controller.ts` лишаються точками входу для роутера.
  *
  * @module api-dev/src/controllers/scenarios.controller.factory
  */
 
+import { ensureTables } from "@wwwuabot/shared/database/tables";
 import type { Env } from "../shared/types";
 import { formatSqliteDatetime } from "@wwwuabot/shared/utils/datetime";
 
+/** Таблиці сценаріїв: контент порталу і окремий набір адмінки. */
+export type ScenarioTableName = "scenarios" | "scenarios-admin";
+
 /** Опції фабрики контролера сценаріїв. */
 export interface ScenariosControllerOptions {
-  /** Назва таблиці (вставляється в SQL у лапках). */
-  table: string;
-  /** Створює таблицю, якщо її немає. Для портальної таблиці не потрібно. */
-  ensureTable?: (db: D1Database) => Promise<void>;
+  /** Назва таблиці — мусить бути оголошена в реєстрі таблиць. */
+  table: ScenarioTableName;
 }
 
 /** Колонки, які ніколи не приймаються ззовні. */
@@ -54,38 +57,14 @@ function filterFields(body: Record<string, unknown>): Record<string, unknown> {
   return fields;
 }
 
-/** SQL створення таблиці зі схемою сценарію. */
-export function ensureScenariosTable(db: D1Database, table: string): Promise<void> {
-  return db
-    .prepare(
-      `CREATE TABLE IF NOT EXISTS "${table}" (
-        codeword TEXT PRIMARY KEY,
-        title TEXT,
-        rich_message TEXT,
-        rich_data TEXT,
-        caption_top TEXT,
-        caption_mid TEXT,
-        caption_bot TEXT,
-        photo_url TEXT,
-        buttons TEXT,
-        page_data TEXT,
-        keyboard_type TEXT,
-        created_at TEXT,
-        updated_at TEXT
-      )`,
-    )
-    .run()
-    .then(() => undefined)
-    .catch(() => undefined);
-}
-
 /**
  * Створює набір хендлерів для однієї таблиці сценаріїв.
  *
  * Повертає ті самі шість функцій, які раніше експортував кожен контролер.
  */
-export function createScenariosController({ table, ensureTable }: ScenariosControllerOptions) {
-  const ensure = ensureTable ?? (async () => {});
+export function createScenariosController({ table }: ScenariosControllerOptions) {
+  /** Схему (таблицю і колонки) дає реєстр; тут лишається тільки виклик. */
+  const ensure = (db: D1Database) => ensureTables(db, [table]);
 
   /** POST …/read — прочитати один запис. */
   async function handleRead(request: Request, env: Env): Promise<Response> {
@@ -218,25 +197,9 @@ export function createScenariosController({ table, ensureTable }: ScenariosContr
         .run();
       return json({ success: true, updated_at: now });
     } catch (e: unknown) {
-      const msg = e instanceof Error ? e.message : String(e);
-      if (msg.includes("no such column")) {
-        const match = msg.match(/no such column: (\w+)/);
-        if (match && fields[match[1]] !== undefined) {
-          const colName = match[1];
-          const type = typeof fields[colName] === "number" ? "INTEGER" : "TEXT";
-          await env.DB.prepare(
-            `ALTER TABLE "${table}" ADD COLUMN ${colName} ${type} DEFAULT NULL`,
-          ).run();
-          const now2 = formatSqliteDatetime();
-          const setClause2 = [...keys.map((k) => `${k} = ?`), "updated_at = ?"].join(", ");
-          const values2 = [...keys.map((k) => fields[k]), now2];
-          await env.DB.prepare(`UPDATE "${table}" SET ${setClause2} WHERE codeword = ?`)
-            .bind(...(values2 as (string | number | boolean | null)[]), codeword)
-            .run();
-          return json({ success: true, updated_at: now2 });
-        }
-      }
-      return json({ error: msg }, 500);
+      // Колонку, якої немає, більше **не створюємо на льоту**: схема оголошена
+      // в реєстрі. Інакше база «доростала» б колонками з помилки SQLite.
+      return json({ error: e instanceof Error ? e.message : String(e) }, 500);
     }
   }
 

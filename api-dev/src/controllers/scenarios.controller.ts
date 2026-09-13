@@ -1,3 +1,4 @@
+import { ensureTables } from "@wwwuabot/shared/database/tables";
 import type { Env } from "../shared/types";
 import { apiLog } from "../shared/logger";
 
@@ -9,40 +10,17 @@ function json(body: unknown, status = 200): Response {
 }
 
 // ── ensureBase ──────────────────────────────────────────────────────
+/**
+ * Гарантує наявність таблиці `scenarios` і базового сценарію `__base__`.
+ *
+ * DDL більше не живе тут: схема оголошена в реєстрі
+ * (`@wwwuabot/shared/database/tables`), як і всі інші таблиці. Раніше цей
+ * контролер створював `scenarios` **без** `IF NOT EXISTS` і за неатомною
+ * перевіркою `sqlite_master` — тобто двоє одночасних запитів на чистій базі
+ * могли отримати помилку «table already exists».
+ */
 async function ensureBase(db: D1Database): Promise<void> {
-  const tableCheck = await db
-    .prepare("SELECT name FROM sqlite_master WHERE type='table' AND name='scenarios'")
-    .first();
-
-  if (!tableCheck) {
-    await db.exec(`
-      CREATE TABLE scenarios (
-        codeword TEXT PRIMARY KEY,
-        photo_url TEXT,
-        caption_top TEXT,
-        caption_mid TEXT,
-        caption_bot TEXT,
-        keyboard_type TEXT NOT NULL DEFAULT 'static',
-        buttons TEXT NOT NULL DEFAULT '[]',
-        created_at TEXT NOT NULL DEFAULT (datetime('now')),
-        updated_at TEXT NOT NULL DEFAULT (datetime('now')),
-        price TEXT,
-        qty_options TEXT,
-        awaits_input TEXT,
-        input_path TEXT,
-        input_next TEXT,
-        title TEXT,
-        notify_groups TEXT,
-        notify_template TEXT,
-        rich_message TEXT,
-        rich_data TEXT,
-        page_data TEXT DEFAULT NULL,
-        web_config TEXT DEFAULT NULL,
-        web_slug TEXT DEFAULT NULL,
-        is_active INTEGER DEFAULT 1
-      );
-    `);
-  }
+  await ensureTables(db, ["scenarios"]);
 
   await db
     .prepare(

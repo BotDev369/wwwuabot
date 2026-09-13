@@ -1,8 +1,9 @@
 /**
  * Контролер CRUD для таблиці `scenarios` (портальні сценарії).
  *
- * Логіка живе в `scenarios.controller.factory.ts`. Портал не створює таблицю —
- * її ведуть міграції bot-dev / api-dev.
+ * Логіка живе в `scenarios.controller.factory.ts`, схема — у реєстрі
+ * (`@wwwuabot/shared/database/tables`). Це та сама таблиця, з якої читає
+ * bot-dev, тому правки тут видно і в боті, і на порталі — навмисно.
  *
  * Ендпоїнти:
  *   POST /api/portal/scenarios/read       — прочитати за codeword
@@ -15,7 +16,10 @@
  * @module api-dev/src/controllers/scenarios-portal.controller
  */
 
-import { createScenariosController } from "./scenarios.controller.factory";
+import { createScenariosController, type ScenarioTableName } from "./scenarios.controller.factory";
+
+/** Назва таблиці для портальних сценаріїв. */
+const TABLE: ScenarioTableName = "scenarios";
 
 export const { handleRead, handleWrite, handleList, handleReadAll, handleUpdate, handleDelete } =
-  createScenariosController({ table: "scenarios" });
+  createScenariosController({ table: TABLE });

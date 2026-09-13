@@ -1,5 +1,6 @@
 import { DatabaseRepository } from "../../core/database.repository";
 import { withAutoMigrate } from "@wwwuabot/shared/database/auto-migrate";
+import { ensureTables } from "@wwwuabot/shared/database/tables";
 import type { BotUser } from "../../shared/types/env";
 import { log } from "../../shared/utils/debug";
 
@@ -38,6 +39,12 @@ export class UserRepository extends DatabaseRepository {
    * Створює нового користувача.
    */
   async createUser(userId: number, data: Partial<BotUser> = {}): Promise<void> {
+    // Таблицю `users` раніше не створював **ніхто** — вона існувала лише тому,
+    // що її колись завели руками в дашборді. На чистій базі перший же новий
+    // користувач падав з `no such table`. `INSERT` не обгорнутий
+    // `withAutoMigrate`, тож гарантія потрібна саме тут.
+    await ensureTables(this.db, ["users"]);
+
     const fields = ["user_id", ...Object.keys(data)];
     const placeholders = fields.map(() => "?").join(", ");
     const values = [userId, ...Object.values(data)];
