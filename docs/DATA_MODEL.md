@@ -16,8 +16,7 @@ DDL більше не живе в контролерах і репозиторі
 |---|---|---|---|---|
 | `users` | `bot-dev` | bot-dev, `createUser` | bot-dev (стан, профіль, блокування); api-dev (адмін-CRUD, `/api/user/profile`, колонка `my_dates`) | стан користувача Telegram |
 | `settings` | `bot-dev` | bot-dev, `SettingsRepository.initialize` | bot-dev | один рядок (`id = 1`): `chat_id` груп, прапорець активності |
-| `scenarios` | `api-dev` | api-dev (`ensureBase`, портал) | **bot-dev читає**; api-dev редагує (`/api/portal/scenarios/*`); платформа рендерить (`/api/scenario/:slug`) | контент бота й платформи |
-| `scenarios-admin` | `api-dev` | api-dev (фабрика, адмінка) | api-dev (`/api/admin/scenarios/*`) — **поза адмінкою не читає ніхто** | окремий контент-набір адмінки (вкладка «Адмін») |
+| `scenarios` | `api-dev` | api-dev (`ensureBase`, `scenarios-portal.controller`) | **bot-dev читає**; api-dev редагує (`/api/portal/scenarios/*`); платформа рендерить (`/api/scenario/:slug`) | контент бота й платформи |
 | `pages` | `api-dev` | api-dev, `ensureTables(db, ["pages"])` | **поки що ніхто** — читачі переїжджають у фазі 3 ([`CONTENT_MODEL.md`](./CONTENT_MODEL.md) §4) | **єдине сховище контенту:** рядок = сторінка вебу (`blocks`) + подання в боті (`bot`); `kind = 'collection'` — група сторінок. Адреса — одна колонка `slug` (унікальна на всю таблицю); `codeword` і `web_slug` тут немає |
 | `sites` | `api-dev` | api-dev, `ensureSitesTables` | api-dev (CRUD, модерація, каталог) | сайт користувача: slug, статус, публічність |
 | `site_pages` | `api-dev` | api-dev, `ensureSitesTables` | api-dev | сторінка сайту: Page Builder, статус, порядок |
@@ -33,7 +32,7 @@ DDL більше не живе в контролерах і репозиторі
 |---|---|
 | `users` і `mydate_analysis` не створював **ніхто** | `CREATE TABLE users` — 0 збігів у коді; обидві таблиці існували лише тому, що їх колись завели руками в дашборді Cloudflare |
 | `scenarios` створювалась без `IF NOT EXISTS` | контролер спершу питав `sqlite_master`, тож двоє одночасних запитів на чистій базі могли отримати «table already exists» |
-| `scenarios` і `scenarios-admin` мали **різні** схеми | 23 колонки проти 13; відсутні `scenarios-admin` додавав сам, ловлячи `no such column` з SQLite під час запису |
+| дві копії таблиці сценаріїв мали **різні** схеми | 23 колонки проти 13; колонки, яких не було, друга копія додавала сама, ловлячи `no such column` з SQLite під час запису (цю копію, `scenarios-admin`, видалено 13.09.2026 — її не читав ніхто поза адмінкою) |
 | `web_config` — колонка, якої ніхто не вживав | оголошена в старому DDL, 0 звернень у коді |
 
 Наслідок був не косметичний: **на чистій базі перший же новий користувач і `/api/mydate/*`
@@ -59,9 +58,12 @@ DDL більше не живе в контролерах і репозиторі
 
 ## Одну таблицю контенту вже створено: `pages`
 
-Рішення власника (13.09.2026): чотири таблиці одного контенту — `scenarios`,
-`scenarios-admin`, `sites`, `site_pages` — зводяться до однієї `pages`. Цільова модель і
-фази — [`CONTENT_MODEL.md`](./CONTENT_MODEL.md); історія кроку —
+Рішення власника (13.09.2026): таблиці одного контенту — `scenarios`, `sites`,
+`site_pages` — зводяться до однієї `pages`. Четверта, `scenarios-admin`, була тестовою копією
+`scenarios`: її контент не показувався нікому поза самою адмінкою, тож таблицю, маршрути
+`/api/admin/scenarios/*` і вкладку «Адмін» **видалено** (не перенесено) — див.
+[`log/journal-2026-09-13-drop-admin-table.md`](./log/journal-2026-09-13-drop-admin-table.md).
+Цільова модель і фази — [`CONTENT_MODEL.md`](./CONTENT_MODEL.md); історія кроку —
 [`log/journal-2026-09-13-pages-table.md`](./log/journal-2026-09-13-pages-table.md).
 
 Станом на 13.09.2026 зроблено **першу половину**: таблиця оголошена в реєстрі й наповнюється
@@ -92,3 +94,18 @@ DDL більше не живе в контролерах і репозиторі
 
 Локальна перевірка (флаг `--persist <тека>`) не потребує ні токена, ні логіну: саме на ній
 міграція й була перевірена на справжньому SQLite.
+
+### Прибрати таблицю `scenarios-admin` на дев-базі
+
+З реєстру таблицю прибрано, тож `ensureTables` її більше не створює — але на вже заведеній
+базі вона лишається, бо ніщо в коді не робить `DROP`. Це і навмисно: видалення таблиці — не
+те, що має статись від першого запиту воркера. Прибрати її — одна команда:
+
+```bash
+npx wrangler d1 execute DB --config api-dev/wrangler.toml --remote --yes \
+  --command 'DROP TABLE "scenarios-admin";'
+```
+
+Втрачати нічого: це була тестова копія, її не читав ніхто поза адмінкою. Сама міграція
+контенту (`npm run migrate:content`) цієї таблиці вже не торкається — ні на читання, ні у
+звіті — тому порядок команд не має значення.
