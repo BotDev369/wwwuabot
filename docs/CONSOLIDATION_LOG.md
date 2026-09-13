@@ -26,6 +26,7 @@
 
 | Дата | Запис | Файл |
 |---|---|---|
+| 13.09.2026 | Залежності воркерів і поріг аудиту: `critical` → `high` | [`log/journal-2026-09-13-deps-audit-threshold.md`](./log/journal-2026-09-13-deps-audit-threshold.md) |
 | 13.09.2026 | `baseUrl` прибрано: готовність до TypeScript 7 | [`log/journal-2026-09-13-typescript-7.md`](./log/journal-2026-09-13-typescript-7.md) |
 | 13.09.2026 | `@types/node` у `packages/shared`: транзитивний тип — не контракт | [`log/journal-2026-09-13-node-types-in-tests.md`](./log/journal-2026-09-13-node-types-in-tests.md) |
 | 12.09.2026 | Поділ `sites.service.ts`: 777 → 6 модулів | [`log/journal-2026-09-12-sites-split.md`](./log/journal-2026-09-12-sites-split.md) |
