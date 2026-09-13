@@ -177,7 +177,7 @@ describe("ensureTables", () => {
     expect(statements.filter((s) => s.startsWith("CREATE TABLE"))).toHaveLength(2);
     // Індекси: зараз їх не оголошує жодна таблиця, тож перевірка не вакуумна
     // за наміром — вона стежить, щоб оголошені індекси справді виконувались.
-    const declaredIndexes = TABLE_NAMES.flatMap((name) => TABLES[name].indexes ?? []);
+    const declaredIndexes = TABLE_NAMES.flatMap((name) => tableDefinition(name)?.indexes ?? []);
     expect(statements.filter((s) => s.startsWith("CREATE INDEX"))).toHaveLength(
       declaredIndexes.length,
     );
