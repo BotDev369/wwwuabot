@@ -118,10 +118,8 @@ npm run format:check # Prettier — теж гейт CI
 |---|---|
 | `AGENTS.md` | AI-агенти: архітектура, терміни, правила |
 | `CONTRIBUTING.md` | Розробники: процес, quality gates, конвенції |
-| `docs/DESIGN_SYSTEM.md` | UI: токени, компоненти, `<Icon />` |
-| `docs/PAGE_ENGINE_ARCHITECTURE.md` | Архітектурне рішення: Page Engine, межі воркерів |
+| **`docs/README.md`** | **покажчик усієї документації — почни звідси** |
 | `docs/CONSOLIDATION_PLAN.md` | Поточний стан (§0), правила (§1), план робіт (§3), відкриті рішення (§4) |
-| `docs/CONSOLIDATION_LOG.md` | Хронологія й деталі закритих робіт (§1–§5) + журнал (§9) |
-| `docs/SITES_SPEC.md` | Специфікація конструктора сайтів |
-| `docs/MONITORING.md` | Моніторинг: health, UptimeRobot, Sentry |
-| `README.md` | Загальний опис + швидкий старт |
+| `docs/QUALITY_GATE.md` | Планка в CI: чотири правила, леджер боргу |
+| `docs/log/` | Архів: як ухвалювались рішення (покажчик — `docs/CONSOLIDATION_LOG.md`) |
+| `CHANGELOG.md` | немає — історія в `git log` і `docs/log/` |

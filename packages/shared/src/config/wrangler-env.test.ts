@@ -20,6 +20,16 @@
  * @module packages/shared/src/config/wrangler-env.test
  */
 
+/// <reference types="node" />
+/**
+ * Типи для `node:*` підключаємо **явно**, бо `tsconfig` пакета навмисно
+ * дозволяє лише `@cloudflare/workers-types` (код `packages/shared` іде у
+ * воркери й браузер). Без цього рядка типи для `node:*` потрапляли в
+ * програму випадково — «в подарунок» від чужої залежності. Так 12.09.2026
+ * ламався PR на `vitest 5`: транзитивний `@types/node` зникав разом із
+ * `vitest 3`, і файл переставав компілюватись.
+ */
+
 import { existsSync, readFileSync, readdirSync } from "node:fs";
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
