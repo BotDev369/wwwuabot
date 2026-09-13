@@ -10,6 +10,8 @@
 import { useState, useCallback, useMemo } from "react";
 import type { Site, SitePage } from "@wwwuabot/shared/types/site";
 import type { BlockContext } from "@wwwuabot/shared/types/page-config";
+import { createEmptyPageConfig } from "@wwwuabot/shared/types/page-config";
+import { contentPageFromSitePage, pickContentPage } from "@wwwuabot/shared/content";
 import { icons } from "@wwwuabot/shared";
 import { PageRenderer } from "./PageRenderer";
 
@@ -53,19 +55,18 @@ export function SiteRenderer({
   const navigation = settings.navigation ?? [];
   const theme = settings.theme ?? "auto";
 
-  // Знаходимо поточну сторінку
-  const currentPage = useMemo(() => {
-    if (currentSlug) {
-      return pages.find((p) => p.slug === currentSlug) ?? pages[0];
-    }
-    return pages[0]; // home за замовчуванням
-  }, [currentSlug, pages]);
+  // Сторінки сайту → спільна модель контенту. Правило «яка сторінка
+  // відповідає цьому посиланню» більше не має тут власної копії
+  // (`@wwwuabot/shared/content`).
+  const contentPages = useMemo(() => pages.map(contentPageFromSitePage), [pages]);
 
   // Локальний стан для навігації
-  const [activeSlug, setActiveSlug] = useState<string>(currentPage?.slug ?? "home");
+  const [activeSlug, setActiveSlug] = useState<string>(() => currentSlug ?? pages[0]?.slug ?? "");
 
   const effectiveSlug = currentSlug ?? activeSlug;
-  const activePage = pages.find((p) => p.slug === effectiveSlug) ?? pages[0];
+  // Останній відкат — на першу сторінку: у сайту може не бути `home`
+  // (напр. дані до появи `crud.ts`, який її створює).
+  const activePage = pickContentPage(contentPages, effectiveSlug) ?? contentPages[0] ?? null;
 
   // Обробник навігації
   const handleNavigate = useCallback(
@@ -149,7 +150,11 @@ export function SiteRenderer({
 
       <div className="site-content">
         {activePage ? (
-          <PageRenderer config={activePage.pageData} context={blockContext} className="site-page" />
+          <PageRenderer
+            config={activePage.content ?? createEmptyPageConfig()}
+            context={blockContext}
+            className="site-page"
+          />
         ) : (
           <div className="site-empty">
             <p>Сторінка не знайдена</p>

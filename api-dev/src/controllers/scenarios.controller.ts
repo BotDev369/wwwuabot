@@ -1,4 +1,9 @@
 import { ensureTables } from "@wwwuabot/shared/database/tables";
+import {
+  HOME_KEY,
+  contentPageFromScenario,
+  type ScenarioContentRow,
+} from "@wwwuabot/shared/content";
 import type { Env } from "../shared/types";
 import { apiLog } from "../shared/logger";
 
@@ -30,50 +35,55 @@ async function ensureBase(db: D1Database): Promise<void> {
     .run();
 }
 
-// ── resolveScenario ─────────────────────────────────────────────────
-interface ScenarioDbRow {
-  codeword?: string;
-  web_slug?: string;
-  page_data?: string | null;
-  [key: string]: unknown;
-}
+/**
+ * Колонки, потрібні, щоб віддати сторінку: контент **і його метадані**.
+ *
+ * `title` і `photo_url` раніше не вибирались, хоч клієнт їх читав: у блоках
+ * `context.title` і `context.photoUrl` завжди були `null`. Виявити це було ні
+ * чим — обидві сторони мовчали.
+ */
+const PAGE_COLUMNS = "codeword, web_slug, title, photo_url, page_data, is_active";
 
+// ── resolveScenario ─────────────────────────────────────────────────
 async function resolveScenario(db: D1Database, slug: string) {
   await ensureBase(db);
 
-  let row: ScenarioDbRow | null = null;
-  if (slug && slug !== "__base__") {
+  let row: ScenarioContentRow | null = null;
+  if (slug && slug !== HOME_KEY) {
     row = await db
       .prepare(
-        `SELECT codeword, web_slug, page_data FROM scenarios
+        `SELECT ${PAGE_COLUMNS} FROM scenarios
          WHERE (web_slug = ? OR codeword = ?) AND is_active = 1
          LIMIT 1`,
       )
       .bind(slug, slug)
-      .first<ScenarioDbRow>();
+      .first<ScenarioContentRow>();
   }
 
   if (!row) {
     row = await db
-      .prepare(`SELECT codeword, web_slug, page_data FROM scenarios WHERE codeword = '__base__'`)
-      .first<ScenarioDbRow>();
+      .prepare(`SELECT ${PAGE_COLUMNS} FROM scenarios WHERE codeword = ?`)
+      .bind(HOME_KEY)
+      .first<ScenarioContentRow>();
   }
 
-  let pageData: Record<string, unknown> | null = null;
-  try {
-    if (row?.page_data) {
-      pageData = JSON.parse(row.page_data);
-    }
-  } catch (e) {
-    apiLog.error("Invalid page_data JSON for " + slug, e);
+  // Розбір `page_data` — спільний із ботом і обома оболонками
+  // (`@wwwuabot/shared/content`), включно з легасі-форматом `slots`.
+  const page = row ? contentPageFromScenario(row, "scenarios") : null;
+  if (row?.page_data && !page?.content) {
+    // Друге поле — той самий «error»-аргумент логера; тут це кодовий ключ
+    // сторінки, бо винятку немає: парсер ковтає битий JSON навмисно.
+    apiLog.error("scenarios: page_data не є конфігурацією сторінки", row.codeword);
   }
 
   return {
     scenario: {
-      codeword: row?.codeword ?? "__base__",
-      web_slug: row?.web_slug ?? "/",
+      codeword: page?.key ?? HOME_KEY,
+      web_slug: page?.webSlug ?? "/",
+      title: page?.title ?? null,
+      photo_url: page?.photoUrl ?? null,
     },
-    pageData,
+    pageData: page?.content ?? null,
   };
 }
 
