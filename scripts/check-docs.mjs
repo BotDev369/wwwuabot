@@ -11,9 +11,9 @@
  *      (правило кристалевості, `AGENTS.md` §3, тепер і для документів).
  *   2. Мертві відносні посилання: `[текст](./шлях.md)` мусить існувати.
  *      Досить було поділити документ на частини, щоб лінки почали бити в нікуди.
- *   3. Живі посилання § з коду: коментарі посилаються на «LOG §5.4». Після поділу
- *      ці номери живуть у покажчику, тож перевіряється, що кожен § справді
- *      згаданий у `docs/CONSOLIDATION_LOG.md` або як заголовок у `docs/log/`.
+ *   3. Живі посилання § з коду: коментарі посилаються на «LOG §5.4». Ці номери
+ *      живуть в архіві `docs/HISTORY.md`, тож перевіряється, що кожен § справді
+ *      там є — як згадка «§5.4» або як заголовок «### 5.4. …».
  *
  * Запуск: `npm run check:docs` (той самий крок у CI).
  */
@@ -25,9 +25,14 @@ import { ROOT, read, readLines, walk, WORKSPACES } from "./lib/files.mjs";
 const MAX_LINES = 200;
 const CRITICAL_LINES = 400;
 
-/** Джерело правди про документацію — індекс і журнал. */
-const INDEX = "docs/CONSOLIDATION_LOG.md";
-const LOG_DIR = "docs/log";
+/**
+ * Джерело правди про § — архів рішень.
+ *
+ * Один файл, а не тека: до 13.09.2026 історія жила у 30 файлах (полотно + журнали на
+ * кожну роботу), і знайти «чому саме так» було неможливо. Повний текст видалених
+ * записів лишається в git — див. шапку `docs/HISTORY.md`.
+ */
+const INDEX = "docs/HISTORY.md";
 
 /** Кореневі документи, які теж мусять бути читабельними. */
 const ROOT_DOCS = ["AGENTS.md", "README.md", "CONTRIBUTING.md"];
@@ -94,14 +99,13 @@ for (const m of read(INDEX).matchAll(
   if (m[2]) for (const mid of expand(from, m[2])) addressed.add(mid);
 }
 
-for (const part of walk(LOG_DIR, (p) => p.endsWith(".md"))) {
-  for (const line of readLines(part)) {
-    const m = /^#{1,3}\s+§?\s*([\d]+(?:\.[\d]+)*)\./.exec(line);
-    if (m) addressed.add(m[1]);
-  }
+/** Заголовки архіву: `### 5.4. Діалоги…` — теж адреса §. */
+for (const line of readLines(INDEX)) {
+  const m = /^#{1,3}\s+§?\s*([\d]+(?:\.[\d]+)*)\./.exec(line);
+  if (m) addressed.add(m[1]);
 }
 
-/** § в коді: `docs/CONSOLIDATION_LOG.md §5.4`, `LOG §3.3`. */
+/** § в коді: `docs/HISTORY.md §5.4`, `LOG §3.3`. */
 const codeFiles = [
   ...WORKSPACES.flatMap((w) => walk(join(w, "src"), (p) => /\.tsx?$/.test(p))),
   ...walk("scripts", (p) => p.endsWith(".mjs")),
@@ -110,7 +114,7 @@ const codeFiles = [
 for (const file of codeFiles) {
   const lines = readLines(file);
   lines.forEach((line, i) => {
-    const m = /CONSOLIDATION_LOG\.md`?\s*§\s*([\d]+(?:\.[\d]+)*)/.exec(line);
+    const m = /HISTORY\.md`?\s*§\s*([\d]+(?:\.[\d]+)*)/.exec(line);
     if (!m) return;
     if (!covered(m[1], addressed)) {
       errors.push(
@@ -126,8 +130,8 @@ if (errors.length) {
   console.error("✗ Документація не пройшла перевірку:\n");
   for (const e of errors) console.error(`  ${e}`);
   console.error(
-    "\nВиправлення: поділи документ на частини й додай рядок у покажчик `docs/CONSOLIDATION_LOG.md`;\n" +
-      "куди саме писати нове — `docs/README.md`.\n",
+    "\nВиправлення: завеликий документ — поділи на теми й додай рядок у покажчик `docs/README.md`;\n" +
+      "§ з коду мусить бути в архіві `docs/HISTORY.md`.\n",
   );
   process.exitCode = 1;
 } else {
