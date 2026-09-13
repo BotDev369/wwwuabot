@@ -26,6 +26,7 @@
 
 | Дата | Запис | Файл |
 |---|---|---|
+| 13.09.2026 | `dependabot.yml`: теки-привиди і групування оновлень | [`log/journal-2026-09-13-dependabot-config.md`](./log/journal-2026-09-13-dependabot-config.md) |
 | 13.09.2026 | Тести домену `sites` (68) і IDOR, який вони знайшли | [`log/journal-2026-09-13-sites-tests.md`](./log/journal-2026-09-13-sites-tests.md) |
 | 13.09.2026 | Залежності воркерів і поріг аудиту: `critical` → `high` | [`log/journal-2026-09-13-deps-audit-threshold.md`](./log/journal-2026-09-13-deps-audit-threshold.md) |
 | 13.09.2026 | `baseUrl` прибрано: готовність до TypeScript 7 | [`log/journal-2026-09-13-typescript-7.md`](./log/journal-2026-09-13-typescript-7.md) |
