@@ -24,7 +24,7 @@ interface PageStoreState {
   isDirty: boolean;
 
   /** Codeword поточної сторінки. */
-  codeword: string | null;
+  slug: string | null;
 }
 
 // ---------------------------------------------------------------------------
@@ -33,7 +33,7 @@ interface PageStoreState {
 
 interface PageStoreActions {
   /** Завантажити конфігурацію з БД. */
-  loadConfig: (codeword: string, config: PageConfig) => void;
+  loadConfig: (slug: string, config: PageConfig) => void;
 
   /** Скинути store до порожнього стану. */
   reset: () => void;
@@ -82,7 +82,7 @@ interface PageStoreActions {
   serialize: () => string;
 
   /** Завантажити конфігурацію з JSON-рядка. */
-  loadFromJson: (codeword: string, json: string) => void;
+  loadFromJson: (slug: string, json: string) => void;
 }
 
 // ---------------------------------------------------------------------------
@@ -141,12 +141,12 @@ export const createPageStore = create<PageStore>((set, get) => ({
   // --- Стан ---
   config: createEmptyPageConfig(),
   isDirty: false,
-  codeword: null,
+  slug: null,
 
   // --- Завантаження ---
-  loadConfig: (codeword, config) => {
+  loadConfig: (slug, config) => {
     set({
-      codeword,
+      slug,
       config: cloneZones(config.zones)
         ? { version: config.version, zones: cloneZones(config.zones) }
         : createEmptyPageConfig(),
@@ -158,7 +158,7 @@ export const createPageStore = create<PageStore>((set, get) => ({
     set({
       config: createEmptyPageConfig(),
       isDirty: false,
-      codeword: null,
+      slug: null,
     });
   },
 
@@ -346,11 +346,11 @@ export const createPageStore = create<PageStore>((set, get) => ({
     return JSON.stringify(config);
   },
 
-  loadFromJson: (codeword, json) => {
+  loadFromJson: (slug, json) => {
     try {
       const parsed = JSON.parse(json) as PageConfig;
       set({
-        codeword,
+        slug,
         config: cloneZones(parsed.zones)
           ? { version: parsed.version, zones: cloneZones(parsed.zones) }
           : createEmptyPageConfig(),
@@ -358,7 +358,7 @@ export const createPageStore = create<PageStore>((set, get) => ({
       });
     } catch {
       set({
-        codeword,
+        slug,
         config: createEmptyPageConfig(),
         isDirty: false,
       });

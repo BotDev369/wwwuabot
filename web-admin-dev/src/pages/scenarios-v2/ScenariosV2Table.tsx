@@ -86,15 +86,14 @@ export function ScenariosV2Table() {
     if (q)
       list = list.filter(
         (s) =>
-          s.codeword.toLowerCase().includes(q) ||
-          ((s.title as string) ?? "").toLowerCase().includes(q),
+          s.slug.toLowerCase().includes(q) || ((s.title as string) ?? "").toLowerCase().includes(q),
       );
     list = [...list].sort((a, b) => {
       let va = "",
         vb = "";
-      if (sortField === "codeword") {
-        va = a.codeword;
-        vb = b.codeword;
+      if (sortField === "slug") {
+        va = a.slug;
+        vb = b.slug;
       } else if (sortField === "rich_message") {
         va = a.rich_message ?? "";
         vb = b.rich_message ?? "";
@@ -115,7 +114,7 @@ export function ScenariosV2Table() {
     if (groupBy === "none") return null;
     const map = new Map<string, typeof filtered>();
     for (const s of filtered) {
-      const key = groupBy === "type" ? scenarioType(s) : extractPrefix(s.codeword);
+      const key = groupBy === "type" ? scenarioType(s) : extractPrefix(s.slug);
       const arr = map.get(key) ?? [];
       arr.push(s);
       map.set(key, arr);
@@ -154,7 +153,7 @@ export function ScenariosV2Table() {
             <input
               type="text"
               className="scn-search"
-              placeholder="Пошук за codeword або назвою…"
+              placeholder="Пошук за slug або назвою…"
               value={query}
               onChange={(e) => setQuery(e.target.value)}
               style={{ flex: 1, minWidth: 180 }}
@@ -237,7 +236,7 @@ export function ScenariosV2Table() {
         <table className="usr-table">
           <thead>
             <tr>
-              {thSort("codeword", "Назва")}
+              {thSort("slug", "Назва")}
               {thSort("rich_message", "Тип")}
               {thSort("updated_at", "Оновлено")}
               <th style={{ width: 80 }}>Дії</th>
@@ -267,11 +266,11 @@ export function ScenariosV2Table() {
             ) : (
               filtered.map((s) => (
                 <ScenarioRow
-                  key={s.codeword}
+                  key={s.slug}
                   scenario={s}
-                  isSelected={selectedRow === s.codeword}
-                  onSelect={() => setSelectedRow(selectedRow === s.codeword ? null : s.codeword)}
-                  onOpen={() => setCardCodeword(s.codeword)}
+                  isSelected={selectedRow === s.slug}
+                  onSelect={() => setSelectedRow(selectedRow === s.slug ? null : s.slug)}
+                  onOpen={() => setCardCodeword(s.slug)}
                 />
               ))
             )}
@@ -281,7 +280,7 @@ export function ScenariosV2Table() {
 
       {cardCodeword !== null && (
         <ScenarioCardModal
-          codeword={cardCodeword}
+          slug={cardCodeword}
           onClose={closeAll}
           onSaved={() => void useScenariosStore.getState().load(true)}
         />

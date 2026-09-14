@@ -34,11 +34,11 @@ const ico = (name: IconName, size = 16) => (
 interface TabPreviewProps {
   mainTab: MainTab;
   fields: Record<string, unknown>;
-  codeword: string;
+  slug: string;
 }
 
-export function TabPreview({ mainTab, fields, codeword }: TabPreviewProps) {
-  if (mainTab === "web") return <WebPreview fields={fields} codeword={codeword} />;
+export function TabPreview({ mainTab, fields, slug }: TabPreviewProps) {
+  if (mainTab === "web") return <WebPreview fields={fields} slug={slug} />;
   if (mainTab === "bot_rich") return <BotRichPreview fields={fields} />;
   if (mainTab === "bot") return <BotPreview fields={fields} />;
   return <SharedPreview fields={fields} />;
@@ -46,7 +46,7 @@ export function TabPreview({ mainTab, fields, codeword }: TabPreviewProps) {
 
 // ── Web Preview ───────────────────────────────────────────────────
 
-function WebPreview({ fields, codeword }: { fields: Record<string, unknown>; codeword: string }) {
+function WebPreview({ fields, slug }: { fields: Record<string, unknown>; slug: string }) {
   let config: PageConfig | null = null;
   try {
     const raw = fields.page_data;
@@ -72,7 +72,7 @@ function WebPreview({ fields, codeword }: { fields: Record<string, unknown>; cod
   }
 
   const context: BlockContext = {
-    codeword,
+    slug,
     title: (fields.title as string) ?? null,
     photoUrl: (fields.photo_url as string) ?? null,
   };
@@ -269,7 +269,7 @@ function SharedPreview({ fields }: { fields: Record<string, unknown> }) {
           </tr>
         </thead>
         <tbody>
-          {["codeword", "title", "created_at", "updated_at"].map((key) => (
+          {["slug", "title", "created_at", "updated_at"].map((key) => (
             <tr key={key}>
               <td className="usr-card-td-field">{key}</td>
               <td

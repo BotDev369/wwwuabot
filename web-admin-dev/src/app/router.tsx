@@ -25,7 +25,7 @@ export const router = createBrowserRouter([
     children: [
       { index: true, element: <HomePage /> },
       { path: "scenarios", element: <ScenariosPage /> },
-      { path: "page-builder/:codeword", element: <PageBuilderPage /> },
+      { path: "page-builder/:slug", element: <PageBuilderPage /> },
       { path: "users", element: <UsersPage /> },
       { path: "bot-settings", element: <BotSettingsPage /> },
     ],

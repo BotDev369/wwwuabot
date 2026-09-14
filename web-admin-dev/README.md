@@ -18,12 +18,12 @@ Cloudflare Worker: адмін-панель wwwuabot (React 19 + Vite 8 + Page Bu
 
 ## Роути
 
-`/` · `/scenarios` · `/page-builder/:codeword` · `/users` · `/bot-settings`
+`/` · `/scenarios` · `/page-builder/:slug` · `/users` · `/bot-settings`
 
 Маршрутів «сайтів» (`/sites`, `/sites/moderation`) і «шаблонів» тут більше немає:
 таблиці `sites`, `site_pages`, `templates` видалено 13.09.2026, бо вони дублювали
 `scenarios`. Контент редагується там, де він живе — сторінка `/scenarios`, а
-блоковий конструктор `page_data` відкривається на `/page-builder/:codeword`.
+блоковий конструктор `page_data` відкривається на `/page-builder/:slug`.
 
 ## Мобільний
 

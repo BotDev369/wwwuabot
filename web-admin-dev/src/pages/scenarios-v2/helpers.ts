@@ -44,10 +44,10 @@ export function getTypeBadge(s: { rich_message: string | null; page_data?: strin
 }
 
 export function getTitle(s: Record<string, unknown>): string {
-  return (s.title as string) || (s.codeword as string);
+  return (s.title as string) || (s.slug as string);
 }
 
-export function extractPrefix(codeword: string): string {
-  const idx = codeword.indexOf("_");
-  return idx > 0 ? codeword.slice(0, idx) : codeword;
+export function extractPrefix(slug: string): string {
+  const idx = slug.indexOf("_");
+  return idx > 0 ? slug.slice(0, idx) : slug;
 }

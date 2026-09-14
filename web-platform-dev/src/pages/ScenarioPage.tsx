@@ -13,7 +13,7 @@ import { useEffect, useMemo, useState } from "react";
 import { useParams } from "react-router-dom";
 import type { PageConfig, BlockContext, UserProfile } from "@wwwuabot/shared/types/page-config";
 import { parsePageConfig } from "@wwwuabot/shared/types/page-config";
-import { HOME_SLUG, LEGACY_HOME_KEY } from "@wwwuabot/shared/content";
+import { HOME_SLUG } from "@wwwuabot/shared/content";
 import { PageRenderer } from "@wwwuabot/ui/PageRenderer";
 import { apiFetchRaw } from "@/shared/api/client";
 import { registerAllBlocks } from "@wwwuabot/ui/blocks";
@@ -78,11 +78,9 @@ function ErrorScreen({ message }: { message: string }) {
 }
 
 export function ScenarioPage() {
-  // `*`-сплэт дає всю адресу; порожній шлях — головна. Сегмент URL не буває
-  // порожнім, тому головну просимо легасі-ключем, а відповідь уже містить
-  // справжню адресу (`HOME_SLUG`, тобто `''`).
+  // `*`-сплэт дає всю адресу; порожній шлях — головна.
   const { ["*"]: splat } = useParams<{ "*": string }>();
-  const scenarioSlug = splat && splat.length > 0 ? splat : LEGACY_HOME_KEY;
+  const scenarioSlug = splat ?? HOME_SLUG;
 
   const [pageConfig, setPageConfig] = useState<PageConfig | null>(null);
   const [scenarioTitle, setScenarioTitle] = useState<string | null>(null);
@@ -170,13 +168,10 @@ export function ScenarioPage() {
     };
   }, [scenarioSlug]);
 
-  // ── Контекст для блоків ──────────────────────────────────────────
-  // Поле `codeword` у `BlockContext` зберігає стару назву (перейменування чіпає
-  // понад сотню місць у блоках і редакторі — окрема механічна робота), але несе
-  // вже **єдину адресу** сторінки.
+  // Контекст блоків використовує ту саму адресу сторінки, що й API та resolver.
   const context: BlockContext = useMemo(
     () => ({
-      codeword: pageSlug,
+      slug: pageSlug,
       title: scenarioTitle,
       photoUrl: scenarioPhoto,
       user: userProfile ?? undefined,
@@ -194,9 +189,7 @@ export function ScenarioPage() {
   return (
     <PageRenderer
       config={activeConfig}
-      context={
-        status === "fallback" ? { codeword: HOME_SLUG, title: null, photoUrl: null } : context
-      }
+      context={status === "fallback" ? { slug: HOME_SLUG, title: null, photoUrl: null } : context}
       className="page-layout"
     />
   );

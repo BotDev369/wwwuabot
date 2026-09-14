@@ -22,11 +22,11 @@ export {
 export {
   BOT_SEPARATOR,
   HOME_SLUG,
-  LEGACY_HOME_KEY,
   MAX_BOT_PAYLOAD,
   WEB_SEPARATOR,
   botPayloadSegments,
   isDeepLinkable,
+  isValidBotPayload,
   isValidSlug,
   normalizeSlug,
   pickContentPage,

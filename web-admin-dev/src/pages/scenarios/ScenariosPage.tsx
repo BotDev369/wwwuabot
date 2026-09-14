@@ -27,9 +27,9 @@ export function ScenariosPage() {
   const dialog = useDialog();
 
   const handleCreate = useCallback(async () => {
-    const codeword = await dialog.prompt("Вкажіть кодове слово:", { title: "Новий сценарій" });
-    if (!codeword || !codeword.trim()) return;
-    const cw = codeword
+    const slug = await dialog.prompt("Вкажіть Слаг:", { title: "Новий сценарій" });
+    if (!slug || !slug.trim()) return;
+    const cw = slug
       .trim()
       .toLowerCase()
       .replace(/[^a-z0-9_-]/g, "-");
@@ -87,7 +87,7 @@ export function ScenariosPage() {
       {/* Scenario card modal — opens after creation */}
       {openedCodeword && (
         <ScenarioCardModal
-          codeword={openedCodeword}
+          slug={openedCodeword}
           initialSubTab="constructor"
           onClose={() => setOpenedCodeword(null)}
           onSaved={() => void load(true)}

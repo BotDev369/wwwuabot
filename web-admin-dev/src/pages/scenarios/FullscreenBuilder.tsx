@@ -23,7 +23,7 @@ const ico = (name: IconName, size = 16) => (
 
 // ── Props ─────────────────────────────────────────────────────────
 interface FullscreenBuilderProps {
-  codeword: string;
+  slug: string;
   allFields: Record<string, unknown>;
   updateField: (key: string, value: unknown) => void;
   onClose: () => void;
@@ -35,7 +35,7 @@ interface FullscreenBuilderProps {
 
 // ── Component ─────────────────────────────────────────────────────
 export function FullscreenBuilder({
-  codeword,
+  slug,
   allFields,
   updateField,
   onClose,
@@ -83,7 +83,7 @@ export function FullscreenBuilder({
         }}
       >
         <span style={{ fontWeight: 600, fontSize: 14 }}>
-          {ico("construction")} Конструктор: {codeword}
+          {ico("construction")} Конструктор: {slug}
         </span>
         <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
           {onSave ? (
@@ -115,7 +115,7 @@ export function FullscreenBuilder({
         <PageBuilderInline
           config={cfg}
           onChange={(newCfg) => updateField("page_data", JSON.stringify(newCfg))}
-          codeword={codeword}
+          slug={slug}
           title={String(allFields.title ?? "")}
           photoUrl={String(allFields.photo_url ?? "")}
         />

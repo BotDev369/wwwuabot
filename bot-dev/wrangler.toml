@@ -22,6 +22,9 @@ database_id = "9fc03f61-d497-4d92-bae4-c92b02c2d1c5"
 # тому її перевіряє тест `wrangler-env.test.ts`.
 ENVIRONMENT = "dev"
 CLOUDINARY_CLOUD_NAME = "ddoumoe5n"
+# Публічна адреса web-platform для автоматичної кнопки web_app.
+# Заповнюється перед деплоєм; без неї збережені кнопки працюють як раніше.
+WEB_PLATFORM_URL = "https://web-platform-dev.diskomate.workers.dev"
 
 [[queues.producers]]
 binding = "LOG_QUEUE"

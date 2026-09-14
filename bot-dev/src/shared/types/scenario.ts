@@ -1,5 +1,5 @@
 export interface ScenarioRow {
-  codeword: string;
+  slug: string;
   title: string | null;
   photo_url: string;
   caption_top: string | null;
@@ -25,10 +25,11 @@ export interface ScenarioButton {
   text: string;
   callback_data?: string;
   url?: string;
+  web_app?: { url: string };
 }
 
 export interface Scenario {
-  codeword: string;
+  slug: string;
   title: string | null;
   photo_url: string;
   caption_top: string | null;
@@ -46,4 +47,6 @@ export interface Scenario {
   rich_message: boolean; // ← NEW
   rich_data: Record<string, unknown>[] | null; // ← NEW: масив блоків
   page_data: Record<string, unknown> | null; // ← NEW: конфігурація веб-сторінки (Page Builder)
+  /** Повний шлях поточного маршруту; заповнюється для Telegram deep link. */
+  web_path?: string;
 }

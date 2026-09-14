@@ -5,7 +5,7 @@ export interface TemplateContext {
   user_name?: string;
   user_username?: string;
   datetime?: string;
-  codeword?: string;
+  slug?: string;
   cart_items?: string;
   cart_total?: number;
   order_id?: number;
@@ -38,7 +38,7 @@ export function buildTemplateContext(
     user_name: userName,
     user_username: userUsername,
     datetime,
-    codeword: ctx.screen?.codeword,
+    slug: ctx.screen?.slug,
     ...extraData,
   };
 

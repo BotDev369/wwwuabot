@@ -105,7 +105,7 @@ export function KeyboardEditor({ rows, onChange }: Props) {
                         ? "https://…"
                         : b.kind === "web_app"
                           ? "https://example.com/app"
-                          : "codeword / @дія:ціль"
+                          : "slug / @дія:ціль"
                     }
                     value={b.value}
                     onChange={(e) => updateButton(row.id, b.id, { value: e.target.value })}

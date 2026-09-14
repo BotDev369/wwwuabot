@@ -42,21 +42,21 @@ function getActiveZones(config: PageConfig): BlockZone[] {
 interface Props {
   config: PageConfig;
   onChange: (config: PageConfig) => void;
-  codeword: string;
+  slug: string;
   title?: string | null;
   photoUrl?: string | null;
 }
 
 // ─── Main Component ─────────────────────────────────────────────────
 
-export function PageBuilderInline({ config, onChange, codeword, title, photoUrl }: Props) {
+export function PageBuilderInline({ config, onChange, slug, title, photoUrl }: Props) {
   const [showZoneModal, setShowZoneModal] = useState(false);
   const [showBlockModal, setShowBlockModal] = useState(false);
   const [targetZone, setTargetZone] = useState<BlockZone | null>(null);
 
   const context: BlockContext = useMemo(
-    () => ({ codeword, title: title ?? null, photoUrl: photoUrl ?? null }),
-    [codeword, title, photoUrl],
+    () => ({ slug, title: title ?? null, photoUrl: photoUrl ?? null }),
+    [slug, title, photoUrl],
   );
 
   const empty = useMemo(() => isPageEmpty(config), [config]);

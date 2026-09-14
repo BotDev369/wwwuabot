@@ -57,7 +57,7 @@ const FIELD_MAP: Record<MainTab, string[]> = {
     "price",
     "qty_options",
   ],
-  shared: ["codeword", "title", "created_at", "updated_at"],
+  shared: ["slug", "title", "created_at", "updated_at"],
   // Вкладка нічого не редагує: вона показує посилання на те, що вже збережено.
   share: [],
 };

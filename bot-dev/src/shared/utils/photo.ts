@@ -7,12 +7,12 @@ function encodeText(text: string): string {
 /**
  * Генерує Cloudinary-банер (синій фон + білий текст) для випадків,
  * коли в сценарію ще не вказано готове photo_url.
- * Текстом на банері тепер виступає сам codeword (наприклад "main",
+ * Текстом на банері тепер виступає сам slug (наприклад "main",
  * "galyashop"), а не окреме поле photo_title — його більше нема в БД.
  */
-async function generateFallbackPhoto(codeword: string, env: Env): Promise<string> {
+async function generateFallbackPhoto(slug: string, env: Env): Promise<string> {
   const cloud = env.CLOUDINARY_CLOUD_NAME;
-  const encodedTitle = encodeText(codeword);
+  const encodedTitle = encodeText(slug);
 
   const url =
     `https://res.cloudinary.com/${cloud}/image/upload/` +
@@ -21,7 +21,7 @@ async function generateFallbackPhoto(codeword: string, env: Env): Promise<string
     `fl_layer_apply,g_center/` +
     `placeholder.png`;
 
-  console.log(`[Photo] Generated fallback Cloudinary URL for "${codeword}":`, url);
+  console.log(`[Photo] Generated fallback Cloudinary URL for "${slug}":`, url);
 
   // Перевіряємо чи доступний URL (опціонально)
   try {
@@ -30,7 +30,7 @@ async function generateFallbackPhoto(codeword: string, env: Env): Promise<string
       console.error(`[Photo] Cloudinary URL not accessible: ${testResponse.status}`);
     }
   } catch (error) {
-    console.error(`[Photo] Error checking fallback photo for "${codeword}":`, error);
+    console.error(`[Photo] Error checking fallback photo for "${slug}":`, error);
   }
 
   return url;
@@ -43,10 +43,10 @@ async function generateFallbackPhoto(codeword: string, env: Env): Promise<string
  * 1. Якщо photoUrl з БД заданий (не порожній) — повертаємо його як є.
  *    Це готове посилання, вказане вручну в Google-таблиці сценаріїв.
  * 2. Якщо photoUrl порожній/відсутній — fallback: генеруємо банер
- *    через Cloudinary, де текстом на картинці є сам codeword.
+ *    через Cloudinary, де текстом на картинці є сам slug.
  */
 export async function getPhoto(
-  codeword: string,
+  slug: string,
   photoUrl: string | null | undefined,
   env: Env,
 ): Promise<string> {
@@ -54,6 +54,6 @@ export async function getPhoto(
     return photoUrl.trim();
   }
 
-  console.log(`[Photo] photo_url is empty for "${codeword}", falling back to generated banner`);
-  return generateFallbackPhoto(codeword, env);
+  console.log(`[Photo] photo_url is empty for "${slug}", falling back to generated banner`);
+  return generateFallbackPhoto(slug, env);
 }

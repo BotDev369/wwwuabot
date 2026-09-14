@@ -24,8 +24,8 @@ import { MAX_BOT_PAYLOAD, buildShareLinks, type ShareLinkReason } from "@wwwuabo
 import { useBotUsername } from "../../shared/hooks/useBotUsername";
 
 interface Props {
-  /** Легасі-ключ рядка: у таблицях `scenarios*` адреса ще жила в `codeword`. */
-  codeword: string;
+  /** Легасі-ключ рядка: у таблицях `scenarios*` адреса ще жила в `slug`. */
+  slug: string;
   /** Усі поля рядка — потрібні, щоб побачити, чи є що показувати в боті. */
   fields: Record<string, unknown>;
 }
@@ -66,9 +66,9 @@ const labelStyle = {
 /** Які поля роблять повідомлення бота непорожнім. */
 const BOT_MESSAGE_FIELDS = ["caption_top", "caption_mid", "caption_bot", "rich_message"];
 
-export function ShareTab({ codeword, fields }: Props) {
+export function ShareTab({ slug, fields }: Props) {
   const botUsername = useBotUsername();
-  const links = buildShareLinks({ slug: codeword, botUsername });
+  const links = buildShareLinks({ slug: slug, botUsername });
   const [copied, setCopied] = useState<string | null>(null);
 
   const copy = useCallback(async (value: string, key: string) => {

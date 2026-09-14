@@ -110,11 +110,9 @@ export const TABLES = {
    * зберігала — тобто була п'ятим сховищем замість одного. Деталі —
    * `docs/HISTORY.md` §9.
    *
-   * **Адреса.** Ідентичність рядка в моделі одна — `slug`. У цій таблиці її
-   * подають дві легасі-колонки: `web_slug` (адреса вебу) і `codeword` (ключ
-   * діплінка, він же `PRIMARY KEY`). Зводить їх до одного `slug` адаптер
-   * `@wwwuabot/shared/content`, а подання адреси (`/mydate/…` і
-   * `?start=mydate_…`) будує `resolve.ts`.
+   * **Адреса.** Ідентичність рядка в моделі одна — `slug`; саме її використовують
+   * веб-шлях і payload діплінка. Подання адреси (`/mydate/…` і
+   * `?start=mydate_…`) будує `@wwwuabot/shared/content`.
    */
   scenarios: {
     name: "scenarios",
@@ -122,7 +120,7 @@ export const TABLES = {
     purpose:
       "Єдине сховище контенту: рядок = сторінка вебу (`page_data`) + її подання в боті. Читає bot-dev, редагує адмінка (/api/portal/scenarios/*).",
     create: `CREATE TABLE IF NOT EXISTS "scenarios" (
-        codeword TEXT PRIMARY KEY,
+        slug TEXT PRIMARY KEY,
         photo_url TEXT,
         caption_top TEXT,
         caption_mid TEXT,
@@ -142,7 +140,6 @@ export const TABLES = {
         rich_message TEXT,
         rich_data TEXT,
         page_data TEXT DEFAULT NULL,
-        web_slug TEXT DEFAULT NULL,
         is_active INTEGER DEFAULT 1
       )`,
   },

@@ -24,7 +24,7 @@ export function handleTextInput(text: string, currentScenario: Scenario): TextIn
   if (validatedText === null) {
     log("TEXT_INPUT", "rejected | invalid input", {
       text: text.substring(0, 30),
-      active_scenario: currentScenario.codeword,
+      active_scenario: currentScenario.slug,
     });
     return { type: "ignore" };
   }
@@ -45,7 +45,7 @@ export function handleTextInput(text: string, currentScenario: Scenario): TextIn
   // Текст НЕ обробляється — бот не реагує на довільний текст
   log("TEXT_INPUT", "ignored | no awaits_input", {
     text: validatedText.substring(0, 50),
-    active_scenario: currentScenario.codeword,
+    active_scenario: currentScenario.slug,
   });
 
   return { type: "ignore" };

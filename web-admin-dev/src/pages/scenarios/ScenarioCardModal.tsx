@@ -57,7 +57,7 @@ registerAllBlocks();
 // ── Props ─────────────────────────────────────────────────────────
 
 interface Props {
-  codeword: string;
+  slug: string;
   onClose: () => void;
   onSaved: () => void;
   initialSubTab?: SubTab;
@@ -65,7 +65,7 @@ interface Props {
 
 // ── Component ─────────────────────────────────────────────────────
 
-export function ScenarioCardModal({ codeword, onClose, onSaved, initialSubTab }: Props) {
+export function ScenarioCardModal({ slug, onClose, onSaved, initialSubTab }: Props) {
   const [mainTab, setMainTab] = useState<MainTab>("web");
   const [subTab, setSubTab] = useState<SubTab>(initialSubTab ?? "preview");
   const [allFields, setAllFields] = useState<Record<string, unknown>>({});
@@ -93,7 +93,7 @@ export function ScenarioCardModal({ codeword, onClose, onSaved, initialSubTab }:
     let cancelled = false;
     (async () => {
       try {
-        const row = await readScenarioAll(codeword);
+        const row = await readScenarioAll(slug);
         if (!cancelled && row) {
           setAllFields(row);
           setLoading(false);
@@ -111,7 +111,7 @@ export function ScenarioCardModal({ codeword, onClose, onSaved, initialSubTab }:
     return () => {
       cancelled = true;
     };
-  }, [codeword]);
+  }, [slug]);
 
   // ── Update a single field ──
   const updateField = useCallback((key: string, value: unknown) => {
@@ -155,7 +155,7 @@ export function ScenarioCardModal({ codeword, onClose, onSaved, initialSubTab }:
           setAllFields(fieldsToSave);
         }
 
-        const PROTECTED = new Set(["codeword", "created_at"]);
+        const PROTECTED = new Set(["slug", "created_at"]);
         const payload: Record<string, unknown> = {};
         for (const [key, value] of Object.entries(fieldsToSave)) {
           if (PROTECTED.has(key)) continue;
@@ -165,7 +165,7 @@ export function ScenarioCardModal({ codeword, onClose, onSaved, initialSubTab }:
 
         // Серіалізуємо об'єкти у строки перед відправкою до D1 SQLite
         const serializedPayload = serializeJsonFields(payload);
-        await updateScenarioFields(codeword, serializedPayload);
+        await updateScenarioFields(slug, serializedPayload);
 
         setSuccess(true);
         setTimeout(() => {
@@ -178,7 +178,7 @@ export function ScenarioCardModal({ codeword, onClose, onSaved, initialSubTab }:
         setSaving(false);
       }
     },
-    [codeword, allFields, onSaved, onClose, subTab, jsonText, mainTab],
+    [slug, allFields, onSaved, onClose, subTab, jsonText, mainTab],
   );
 
   // ── Keyboard shortcuts (Escape to close, Ctrl+S / Cmd+S to save) ──
@@ -288,7 +288,7 @@ export function ScenarioCardModal({ codeword, onClose, onSaved, initialSubTab }:
         <WebConstructor
           fields={allFields}
           updateField={updateField}
-          codeword={codeword}
+          slug={slug}
           onFullscreen={() => setFullscreenBuilder(true)}
         />
       );
@@ -318,11 +318,11 @@ export function ScenarioCardModal({ codeword, onClose, onSaved, initialSubTab }:
         {/* Header */}
         <div className="wb-modal-header">
           <span className="wb-modal-title">
-            {ico("clipboard")} {codeword}
+            {ico("clipboard")} {slug}
           </span>
           <div style={{ display: "flex", gap: 6, alignItems: "center" }}>
             <a
-              href={`/${codeword}`}
+              href={`/${slug}`}
               target="_blank"
               rel="noopener noreferrer"
               className="wb-btn wb-btn-secondary"
@@ -382,9 +382,9 @@ export function ScenarioCardModal({ codeword, onClose, onSaved, initialSubTab }:
           ) : error && Object.keys(allFields).length === 0 ? (
             <div className="wb-modal-error">{error}</div>
           ) : mainTab === "share" ? (
-            <ShareTab codeword={codeword} fields={allFields} />
+            <ShareTab slug={slug} fields={allFields} />
           ) : subTab === "preview" ? (
-            <TabPreview mainTab={mainTab} fields={allFields} codeword={codeword} />
+            <TabPreview mainTab={mainTab} fields={allFields} slug={slug} />
           ) : subTab === "json" ? (
             <ScenarioJsonEditor
               jsonText={jsonText}
@@ -413,7 +413,7 @@ export function ScenarioCardModal({ codeword, onClose, onSaved, initialSubTab }:
         {/* Fullscreen Page Builder overlay */}
         {fullscreenBuilder && (
           <FullscreenBuilder
-            codeword={codeword}
+            slug={slug}
             allFields={allFields}
             updateField={updateField}
             onClose={() => setFullscreenBuilder(false)}

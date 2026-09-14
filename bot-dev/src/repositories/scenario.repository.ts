@@ -1,47 +1,76 @@
 import { DatabaseRepository } from "../core/database.repository";
+import {
+  contentPageFromScenario,
+  resolveBotPayload,
+  toWebPath,
+  type ScenarioContentRow,
+} from "@wwwuabot/shared/content";
 import type { Scenario, ScenarioRow } from "../shared/types/scenario";
 
 export class ScenarioRepository extends DatabaseRepository {
-  async getScenario(codeword: string): Promise<Scenario | null> {
+  async getScenario(slug: string): Promise<Scenario | null> {
     const row = await this.db
-      .prepare(`SELECT * FROM scenarios WHERE codeword = ?`)
-      .bind(codeword)
+      .prepare(`SELECT * FROM scenarios WHERE slug = ?`)
+      .bind(slug)
       .first<ScenarioRow>();
-    if (!row) return null;
-    return this.parse(row);
+    return row ? this.parse(row) : null;
+  }
+
+  async getScenarioByBotPayload(payload: string): Promise<Scenario | null> {
+    const result = await this.db
+      .prepare(
+        `SELECT slug, title, photo_url, page_data, is_active
+         FROM scenarios
+         WHERE is_active = 1`,
+      )
+      .all<ScenarioContentRow>();
+    const pages = (result.results ?? []).map(contentPageFromScenario);
+    const route = resolveBotPayload(pages, payload);
+    if (!route) return null;
+
+    const scenario = await this.getScenario(route.page.slug);
+    if (scenario) {
+      scenario.web_path = toWebPath(route.page.slug, route.params);
+    }
+    return scenario;
   }
 
   private parse(row: ScenarioRow): Scenario {
     let buttons: Scenario["buttons"] = [];
     try {
-      buttons = JSON.parse(row.buttons);
+      const parsed: unknown = JSON.parse(row.buttons);
+      if (Array.isArray(parsed)) buttons = parsed as Scenario["buttons"];
     } catch {
-      console.error(`[ScenarioRepository] Invalid buttons JSON for codeword="${row.codeword}"`);
+      console.error(`[ScenarioRepository] Invalid buttons JSON for slug="${row.slug}"`);
     }
 
-    // Парсимо rich_message
     const richMessage = row.rich_message === "true" || row.rich_message === "1";
 
-    // Парсимо rich_data
     let richData: Record<string, unknown>[] | null = null;
     if (row.rich_data && row.rich_data.trim() !== "") {
       try {
-        const parsed = JSON.parse(row.rich_data);
+        const parsed: unknown = JSON.parse(row.rich_data);
         if (Array.isArray(parsed)) {
-          richData = parsed;
+          richData = parsed as Record<string, unknown>[];
         } else {
-          console.error(
-            `[ScenarioRepository] rich_data is not an array for codeword="${row.codeword}"`,
-          );
+          console.error(`[ScenarioRepository] rich_data is not an array for slug="${row.slug}"`);
         }
       } catch {
-        console.error(`[ScenarioRepository] Invalid rich_data JSON for codeword="${row.codeword}"`);
+        console.error(`[ScenarioRepository] Invalid rich_data JSON for slug="${row.slug}"`);
       }
     }
 
+    const page = contentPageFromScenario({
+      slug: row.slug,
+      title: row.title,
+      photo_url: row.photo_url,
+      page_data: row.page_data,
+      is_active: 1,
+    } satisfies ScenarioContentRow);
+
     return {
-      codeword: row.codeword,
-      title: row.title ?? null,
+      slug: page.slug,
+      title: page.title,
       photo_url: row.photo_url,
       caption_top: row.caption_top,
       caption_mid: row.caption_mid,
@@ -57,17 +86,7 @@ export class ScenarioRepository extends DatabaseRepository {
       notify_template: row.notify_template,
       rich_message: richMessage,
       rich_data: richData,
-      page_data: this.parseJsonField(row.page_data),
+      page_data: page.content as Record<string, unknown> | null,
     };
-  }
-
-  private parseJsonField(raw: string | null): Record<string, unknown> | null {
-    if (!raw || raw.trim() === "") return null;
-    try {
-      const parsed = JSON.parse(raw);
-      return typeof parsed === "object" && parsed !== null ? parsed : null;
-    } catch {
-      return null;
-    }
   }
 }

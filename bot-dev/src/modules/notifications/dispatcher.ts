@@ -69,7 +69,7 @@ export async function dispatchNotification(
       const adminChatId = await settingsRepo.getChatId("group_admin");
       if (adminChatId) {
         const adminTopicId = await getOrCreateTopic(ctx, "group_admin", adminChatId);
-        const errorText = `⚠️ Помилка нотифікації для сценарію ${screen.codeword}:\n${errMsg}`;
+        const errorText = `Помилка нотифікації для сценарію ${screen.slug}:\n${errMsg}`;
         await sendNotification(ctx, adminChatId, errorText, adminTopicId || undefined);
       } else {
         log("DISPATCHER", "CRITICAL: group_admin not found in settings");

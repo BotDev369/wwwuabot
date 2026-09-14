@@ -31,18 +31,13 @@ const ico = (name: IconName, size = 16) => (
 interface WebConstructorProps {
   fields: Record<string, unknown>;
   updateField: (key: string, value: unknown) => void;
-  codeword: string;
+  slug: string;
   onFullscreen?: () => void;
 }
 
 // ── Component ─────────────────────────────────────────────────────
 
-export function WebConstructor({
-  fields,
-  updateField,
-  codeword,
-  onFullscreen,
-}: WebConstructorProps) {
+export function WebConstructor({ fields, updateField, slug, onFullscreen }: WebConstructorProps) {
   let config: PageConfig = createEmptyPageConfig();
   try {
     const raw = fields.page_data;
@@ -103,7 +98,7 @@ export function WebConstructor({
       <PageBuilderInline
         config={config}
         onChange={handleChange}
-        codeword={codeword}
+        slug={slug}
         title={String(fields.title ?? "")}
         photoUrl={String(fields.photo_url ?? "")}
       />

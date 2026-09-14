@@ -1,142 +1,78 @@
 /**
  * Адреса сторінки: одна сутність `slug` і два її подання.
  *
- * **Навіщо це переписано.** До 13.09.2026 адреса існувала двічі: `web_slug`
- * (адреса вебу) і `codeword` (ключ діплінка бота). Це той самий рядок у двох
- * колонках, і саме тому правило «яка сторінка відповідає цьому URL» доводилось
- * писати чотири рази по-різному: SQL `web_slug = ? OR codeword = ?` в API,
- * `splat || "__base__"` у платформі, `find(…) ?? [0]` у рендері сторінок сайту
- * (код видалено 13.09.2026), `getScenario` у боті.
- *
- * Тепер адреса одна — рядок `slug`:
- *
- * | Подання | Вигляд | Хто будує |
- * |---|---|---|
- * | веб | `/mydate/1980-03-03/today` | `toWebPath()` |
- * | бот | `?start=mydate_1980-03-03_today` | `toBotPayload()` |
- *
- * **Чому саме `_` у боті, і чому сегмент не може містити `_`.** Алфавіт
- * параметра `?start=` задає Telegram: `A-Za-z0-9_-`, не більше 64 символів.
- * Слеш туди не влізе, тому розділювачем стає `_` — а отже `_` **всередині**
- * сегмента зробив би зворотне перетворення неоднозначним. Це не примха, а
- * вимога, і саме тому вона перевіряється (`isValidSlug`), а не «мається на
- * увазі».
- *
- * **Функції чисті:** вони не ходять у базу. Які сторінки взагалі доступні,
- * вирішує сховище (SQL-фільтр або список у пам'яті) — бо в редакторі чернетка
- * мусить бути видимою, а назовні ні.
+ * Веб використовує `/` між сегментами, Telegram payload — `_`. У сховищі
+ * зберігається тільки канонічний `slug`; параметри після slug не є рядками БД.
  *
  * @module @wwwuabot/shared/content/resolve
  */
 
 import type { ContentPage } from "./types";
 
-/** Порожній `slug` — головна сторінка. */
+/** Порожній slug — головна сторінка. */
 export const HOME_SLUG = "";
-
-/**
- * Легасі-ключ головної сторінки в таблиці `scenarios` (`codeword = __base__`).
- *
- * Він лишається в маршруті `GET /api/scenario/:slug`, бо сегмент URL не буває
- * порожнім, а сама адреса головної — порожня. Це домовленість **транспорту**,
- * не моделі: у базі головна має `slug = ''`.
- */
-export const LEGACY_HOME_KEY = "__base__";
-
 /** Розділювач сегментів у веб-адресі. */
 export const WEB_SEPARATOR = "/";
-
-/** Розділювач сегментів у `?start=` — його вимагає алфавіт Telegram. */
+/** Розділювач сегментів у Telegram `?start=`. */
 export const BOT_SEPARATOR = "_";
-
-/** Максимум символів у параметрі `?start=`. Довший Telegram обрізає. */
+/** Telegram обрізає payload, довший за 64 символи. */
 export const MAX_BOT_PAYLOAD = 64;
 
-/**
- * Сегмент slug: маленькі латинські літери, цифри й `-` між ними.
- *
- * Ані `_` (розділювач у боті), ані `/` (розділювач у вебі), ані крапки.
- */
 const SEGMENT_RE = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
 
-/**
- * Канонічний вигляд адреси: без слешів по краях, без подвоєних, без query й
- * хеша. Головна — `''`. Регістр не змінюється: це перевірка, а не переписування
- * чужих даних (хто хоче інший регістр — побачить це в `isValidSlug`).
- */
+/** Канонізує зовнішнє подання slug, не переписуючи дані в сховищі. */
 export function normalizeSlug(ref?: string | null): string {
   const withoutQuery = (ref ?? "").trim().split(/[?#]/)[0] ?? "";
-  if (withoutQuery === LEGACY_HOME_KEY) return HOME_SLUG;
-
-  const trimmed = withoutQuery.replace(/^\/+|\/+$/g, "").replace(/\/{2,}/g, "/");
-  return trimmed;
+  return withoutQuery.replace(/^\/+|\/+$/g, "").replace(/\/{2,}/g, "/");
 }
 
-/** Сегменти адреси: `'a/b'` → `['a','b']`, головна → `[]`. */
+/** Розкладає slug на сегменти; головна сторінка має порожній список. */
 export function slugSegments(ref?: string | null): string[] {
-  const normalized = normalizeSlug(ref);
-  return normalized === HOME_SLUG ? [] : normalized.split(WEB_SEPARATOR);
+  const slug = normalizeSlug(ref);
+  return slug === HOME_SLUG ? [] : slug.split(WEB_SEPARATOR);
 }
 
-/** Чи адреса канонічна — тобто чи можна її без втрат показати і в боті, і у вебі. */
+/** Чи можна slug без втрат подати і у вебі, і в Telegram payload. */
 export function isValidSlug(ref: string): boolean {
-  const segments = slugSegments(ref);
-  // Порожній список — це головна сторінка: адреса порожня, і це законно.
-  return segments.every((segment) => SEGMENT_RE.test(segment));
+  return slugSegments(ref).every((segment) => SEGMENT_RE.test(segment));
 }
 
-/**
- * Веб-адреса сторінки: `toWebPath('mydate', ['1980-03-03', 'today'])` →
- * `'/mydate/1980-03-03/today'`, для головної — `'/'`.
- */
+/** Будує веб-шлях із slug і його параметрів. */
 export function toWebPath(ref: string, params: readonly string[] = []): string {
   const segments = [...slugSegments(ref), ...params.map((param) => normalizeSlug(param))];
   return segments.length === 0 ? WEB_SEPARATOR : WEB_SEPARATOR + segments.join(WEB_SEPARATOR);
 }
 
-/**
- * Параметр діплінка: `toBotPayload('mydate', ['1980-03-03', 'today'])` →
- * `'mydate_1980-03-03_today'`, для головної — `''` (тобто `/start` без
- * параметра).
- */
+/** Будує Telegram payload із тих самих сегментів. */
 export function toBotPayload(ref: string, params: readonly string[] = []): string {
   return [...slugSegments(ref), ...params.map((param) => normalizeSlug(param))].join(BOT_SEPARATOR);
 }
 
-/**
- * Чи згенерований діплінк дійде до сторінки.
- *
- * Перевіряти треба **під час побудови посилання**: задовгий параметр Telegram
- * мовчки обрізає, і дізнатись про це вже неможливо.
- */
+/** Чи не буде Telegram мовчки обрізати згенерований payload. */
 export function isDeepLinkable(ref: string, params: readonly string[] = []): boolean {
-  const payload = toBotPayload(ref, params);
-  return payload.length <= MAX_BOT_PAYLOAD;
+  return toBotPayload(ref, params).length <= MAX_BOT_PAYLOAD;
 }
 
-/** Сегменти з параметра `?start=`: `'a_b'` → `['a','b']`, порожній → `[]`. */
+/** Розбирає Telegram payload на сегменти. */
 export function botPayloadSegments(payload?: string | null): string[] {
-  const trimmed = (payload ?? "").trim();
-  return trimmed === "" ? [] : trimmed.split(BOT_SEPARATOR);
+  const value = (payload ?? "").trim();
+  return value === "" ? [] : value.split(BOT_SEPARATOR);
 }
 
-/** Сторінка плюс те, що в адресі стоїть **після** неї (дата, вигляд, фільтр). */
+/** Перевіряє Telegram payload до звернення до сховища. */
+export function isValidBotPayload(payload?: string | null): boolean {
+  const value = (payload ?? "").trim();
+  return (
+    value.length <= MAX_BOT_PAYLOAD && isValidSlug(botPayloadSegments(value).join(WEB_SEPARATOR))
+  );
+}
+
+/** Відповідна сторінка та дані після її slug. */
 export interface ContentRoute {
   page: ContentPage;
-  /**
-   * Сегменти після адреси сторінки: `'/mydate/1980-03-03/today'` для сторінки
-   * `mydate` дає `['1980-03-03', 'today']`. Дані, а не адреса: рядків у таблиці
-   * для кожної дати не існує і не мусить існувати.
-   */
   params: string[];
 }
 
-/**
- * Знаходить сторінку за сегментами. **Найдовший збіг перемагає** — це єдине
- * місце, де вирішується неоднозначність: якщо є і `mydate`, і `mydate/x`, то
- * `/mydate/x/y` належить `mydate/x` з параметром `y`. Без цього правила той
- * самий URL вів би до різних сторінок залежно від порядку в масиві.
- */
 function matchRoute(
   pages: readonly ContentPage[],
   segments: readonly string[],
@@ -149,25 +85,18 @@ function matchRoute(
   let best: ContentPage | null = null;
   let bestLength = -1;
   for (const page of pages) {
-    const pageSegments = slugSegments(page.slug);
-    if (pageSegments.length === 0 || pageSegments.length > segments.length) continue;
-    if (!pageSegments.every((segment, index) => segment === segments[index])) continue;
-    if (pageSegments.length > bestLength) {
+    const candidate = slugSegments(page.slug);
+    if (candidate.length === 0 || candidate.length > segments.length) continue;
+    if (!candidate.every((part, index) => part === segments[index])) continue;
+    if (candidate.length > bestLength) {
       best = page;
-      bestLength = pageSegments.length;
+      bestLength = candidate.length;
     }
   }
-
   return best ? { page: best, params: segments.slice(bestLength) } : null;
 }
 
-/**
- * Веб-адреса → сторінка й параметри. Строга: невідома адреса дає `null`.
- *
- * Відкат на головну тут **навмисно відсутній** — це рішення виклику.
- * «Показати головну» і «показати 404» — різні продукти, а не різні реалізації
- * одного правила; хто хоче відкат, бере `pickContentPage`.
- */
+/** Визначає сторінку за веб-шляхом без fallback. */
 export function resolveContentRoute(
   pages: readonly ContentPage[],
   ref?: string | null,
@@ -175,7 +104,7 @@ export function resolveContentRoute(
   return matchRoute(pages, slugSegments(ref));
 }
 
-/** Те саме для параметра `?start=` із бота: `'mydate_1980-03-03_today'`. */
+/** Визначає сторінку за Telegram payload без fallback. */
 export function resolveBotPayload(
   pages: readonly ContentPage[],
   payload?: string | null,
@@ -183,16 +112,14 @@ export function resolveBotPayload(
   return matchRoute(pages, botPayloadSegments(payload));
 }
 
-/**
- * Вибирає сторінку з відкатом на головну (як було історично): найдовший збіг
- * адреси, далі головна (`HOME_SLUG`), далі `null` — хай виклик вирішує сам.
- * Тонка обгортка над `resolveContentRoute`.
- */
+/** Визначає сторінку з fallback на головну, якщо вона є. */
 export function pickContentPage(
   pages: readonly ContentPage[],
   ref?: string | null,
 ): ContentPage | null {
-  const route = resolveContentRoute(pages, ref);
-  if (route) return route.page;
-  return pages.find((page) => normalizeSlug(page.slug) === HOME_SLUG) ?? null;
+  return (
+    resolveContentRoute(pages, ref)?.page ??
+    pages.find((page) => normalizeSlug(page.slug) === HOME_SLUG) ??
+    null
+  );
 }

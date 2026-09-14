@@ -26,14 +26,14 @@ interface GroupSectionProps {
   groupKey: string;
   groupMode: ScenarioGroupMode;
   items: Array<{
-    codeword: string;
+    slug: string;
     rich_message: string | null;
     page_data?: string | null;
     updated_at: string;
   }>;
   selectedRow: string | null;
-  onSelect: (codeword: string) => void;
-  onOpen: (codeword: string) => void;
+  onSelect: (slug: string) => void;
+  onOpen: (slug: string) => void;
 }
 
 export function GroupSection({
@@ -101,11 +101,11 @@ export function GroupSection({
       {!collapsed &&
         items.map((s) => (
           <ScenarioRow
-            key={s.codeword}
+            key={s.slug}
             scenario={s}
-            isSelected={selectedRow === s.codeword}
-            onSelect={() => onSelect(s.codeword)}
-            onOpen={() => onOpen(s.codeword)}
+            isSelected={selectedRow === s.slug}
+            onSelect={() => onSelect(s.slug)}
+            onOpen={() => onOpen(s.slug)}
           />
         ))}
     </>

@@ -22,7 +22,7 @@ const ico = (name: IconName, size = 18) => (
 
 interface ScenarioRowProps {
   scenario: {
-    codeword: string;
+    slug: string;
     rich_message: string | null;
     page_data?: string | null;
     updated_at: string;
@@ -36,7 +36,7 @@ interface ScenarioRowProps {
 export function ScenarioRow({ scenario, isSelected, onSelect, onOpen }: ScenarioRowProps) {
   const badge = getTypeBadge(scenario);
   const title = getTitle(scenario as Record<string, unknown>);
-  const hasTitle = title !== scenario.codeword;
+  const hasTitle = title !== scenario.slug;
 
   return (
     <tr
@@ -46,7 +46,7 @@ export function ScenarioRow({ scenario, isSelected, onSelect, onOpen }: Scenario
     >
       <td className="usr-td-name">
         <div style={{ display: "flex", flexDirection: "column", gap: 2 }}>
-          <span style={{ fontWeight: 500 }}>{scenario.codeword}</span>
+          <span style={{ fontWeight: 500 }}>{scenario.slug}</span>
           {hasTitle && (
             <span
               style={{

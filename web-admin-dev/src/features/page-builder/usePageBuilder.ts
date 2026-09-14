@@ -21,7 +21,7 @@ import type { SavingActionType } from "@wwwuabot/shared";
 type SaveStatus = "idle" | "saving" | "saved" | "error";
 
 export function usePageBuilder() {
-  const { codeword } = useParams<{ codeword: string }>();
+  const { slug } = useParams<{ slug: string }>();
   const navigate = useNavigate();
 
   const [config, setConfig] = useState<PageConfig>(createEmptyPageConfig());
@@ -62,17 +62,17 @@ export function usePageBuilder() {
   }, []);
 
   const context: BlockContext = useMemo(
-    () => ({ codeword: codeword ?? "", title: scenarioTitle, photoUrl: scenarioPhoto }),
-    [codeword, scenarioTitle, scenarioPhoto],
+    () => ({ slug: slug ?? "", title: scenarioTitle, photoUrl: scenarioPhoto }),
+    [slug, scenarioTitle, scenarioPhoto],
   );
 
   // Load scenario
   useEffect(() => {
-    if (!codeword) return;
+    if (!slug) return;
     let cancelled = false;
     (async () => {
       try {
-        const row = await readScenarioAll(codeword);
+        const row = await readScenarioAll(slug);
         if (cancelled) return;
         if (!row) {
           setError("Сценарій не знайдено");
@@ -100,16 +100,16 @@ export function usePageBuilder() {
     return () => {
       cancelled = true;
     };
-  }, [codeword]);
+  }, [slug]);
 
   // Save
   const handleSave = useCallback(
     async (shouldClose: boolean = false) => {
-      if (!codeword) return;
+      if (!slug) return;
       setSaveStatus("saving");
       setSavingAction(shouldClose ? "saveAndClose" : "save");
       try {
-        await updateScenarioFields(codeword, { page_data: JSON.stringify(config) });
+        await updateScenarioFields(slug, { page_data: JSON.stringify(config) });
         setSaveStatus("saved");
         // Маршрут мусить існувати в роутері: `/scenarios-v2` тут стояв за назвою
         // компонента, а не за шляхом, і після збереження давав порожній екран.
@@ -122,7 +122,7 @@ export function usePageBuilder() {
         setSavingAction(null);
       }
     },
-    [codeword, config, navigate],
+    [slug, config, navigate],
   );
 
   // Update zone blocks
@@ -158,7 +158,7 @@ export function usePageBuilder() {
   }, [navigate]);
 
   return {
-    codeword,
+    slug,
     config,
     scenarioTitle,
     loading,

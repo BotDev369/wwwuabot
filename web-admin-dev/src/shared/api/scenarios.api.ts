@@ -1,17 +1,10 @@
 import { apiFetch } from "./client";
 
-/**
- * API сценаріїв — **одна таблиця** `scenarios` (маршрут `/api/portal/scenarios`).
- *
- * Доти тут був словник `API_PREFIX: Record<ScenarioTable, string>` і `table`
- * у кожній функції: адмінка мала дві вкладки й дві таблиці (`scenarios` і
- * `scenarios-admin`). Адмін-копію видалено 13.09.2026 — її не читав ніхто поза
- * адмінкою, — тож зникли і тип `ScenarioTable`, і параметр `table`: префікс один.
- */
+/** API сценаріїв — єдина таблиця `scenarios`, адреса запису — `slug`. */
 const PREFIX = "/api/portal/scenarios";
 
 export interface ScenarioRow {
-  codeword: string;
+  slug: string;
   title: string | null;
   rich_message: string | null;
   rich_data: string | null;
@@ -24,23 +17,23 @@ export interface ScenarioRow {
   updated_at: string;
 }
 
-export async function readScenario(codeword: string): Promise<ScenarioRow | null> {
+export async function readScenario(slug: string): Promise<ScenarioRow | null> {
   const res = await apiFetch<{ success: boolean; data: ScenarioRow | null }>(`${PREFIX}/read`, {
     method: "POST",
-    body: JSON.stringify({ codeword }),
+    body: JSON.stringify({ slug }),
   });
   return res.data;
 }
 
 export async function writeScenario(
-  codeword: string,
+  slug: string,
   richData: string,
   richMessage: boolean,
 ): Promise<void> {
   await apiFetch(`${PREFIX}/write`, {
     method: "POST",
     body: JSON.stringify({
-      codeword,
+      slug,
       rich_data: richData,
       rich_message: richMessage ? "true" : "false",
     }),
@@ -48,7 +41,7 @@ export async function writeScenario(
 }
 
 export interface ScenarioListRow {
-  codeword: string;
+  slug: string;
   rich_message: string | null;
   updated_at: string;
   [key: string]: unknown;
@@ -76,9 +69,7 @@ export async function listScenarios(etag: string | null): Promise<ListScenariosR
   if (response.status === 304) {
     return { notModified: true, items: [], etag };
   }
-  if (!response.ok) {
-    throw new Error(`HTTP ${response.status}`);
-  }
+  if (!response.ok) throw new Error(`HTTP ${response.status}`);
 
   const newEtag = response.headers.get("ETag");
   const body = (await response.json()) as { success: boolean; items: ScenarioListRow[] };
@@ -86,38 +77,38 @@ export async function listScenarios(etag: string | null): Promise<ListScenariosR
 }
 
 export async function saveScenarioFields(
-  codeword: string,
+  slug: string,
   fields: Record<string, unknown>,
 ): Promise<void> {
   await apiFetch(`${PREFIX}/write`, {
     method: "POST",
-    body: JSON.stringify({ codeword, ...fields }),
+    body: JSON.stringify({ slug, ...fields }),
   });
 }
 
-export async function readScenarioAll(codeword: string): Promise<Record<string, unknown> | null> {
+export async function readScenarioAll(slug: string): Promise<Record<string, unknown> | null> {
   const res = await apiFetch<{ success: boolean; data: Record<string, unknown> | null }>(
     `${PREFIX}/read-all`,
-    { method: "POST", body: JSON.stringify({ codeword }) },
+    { method: "POST", body: JSON.stringify({ slug }) },
   );
   return res.data;
 }
 
 export async function updateScenarioFields(
-  codeword: string,
+  slug: string,
   fields: Record<string, unknown>,
 ): Promise<{ updated_at?: string }> {
   const res = await apiFetch<{ success: boolean; updated_at?: string }>(`${PREFIX}/update`, {
     method: "POST",
-    body: JSON.stringify({ codeword, ...fields }),
+    body: JSON.stringify({ slug, ...fields }),
   });
   return { updated_at: res.updated_at };
 }
 
-export async function deleteScenario(codeword: string): Promise<{ deleted: boolean }> {
+export async function deleteScenario(slug: string): Promise<{ deleted: boolean }> {
   const res = await apiFetch<{ success: boolean; deleted: boolean }>(`${PREFIX}/delete`, {
     method: "POST",
-    body: JSON.stringify({ codeword }),
+    body: JSON.stringify({ slug }),
   });
   return { deleted: res.deleted };
 }

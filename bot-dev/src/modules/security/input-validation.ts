@@ -6,15 +6,15 @@ import { log } from "../../shared/utils/debug";
  * Межі (налаштовувані):
  * - TEXT_MAX_LENGTH: 1000 символів для вільного тексту
  * - TEXT_HARD_LIMIT: 4000 символів (обмеження Telegram caption)
- * - CODEWORD_MAX_LENGTH: 64 символи
+ * - SLUG_MAX_LENGTH: 64 символи
  */
 
 const TEXT_MAX_LENGTH = 1000;
 const TEXT_HARD_LIMIT = 4000;
-const CODEWORD_MAX_LENGTH = 64;
+const SLUG_MAX_LENGTH = 64;
 
-/** Допустимі символи для codeword (letter, digit, underscore, hyphen) */
-const CODEWORD_RE = /^[a-zA-Z0-9_-]+$/;
+/** Допустимі символи для slug (lowercase letters, digits, hyphen) */
+const SLUG_RE = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
 
 /**
  * Валідує та обрізає текст користувача.
@@ -50,20 +50,20 @@ export function validateUserText(text: string): string | null {
 }
 
 /**
- * Валідує codeword (з deep link або callback_data).
+ * Валідує slug (з deep link або callback_data).
  * Повертає `null` якщо невалідний.
  */
-export function validateCodeword(codeword: string): string | null {
-  const trimmed = codeword.trim();
+export function validateSlug(slug: string): string | null {
+  const trimmed = slug.trim();
 
-  if (trimmed.length === 0 || trimmed.length > CODEWORD_MAX_LENGTH) {
-    log("SEC:validation", "codeword invalid length", { length: trimmed.length });
+  if (trimmed.length === 0 || trimmed.length > SLUG_MAX_LENGTH) {
+    log("SEC:validation", "slug invalid length", { length: trimmed.length });
     return null;
   }
 
-  if (!CODEWORD_RE.test(trimmed)) {
-    log("SEC:validation", "codeword invalid characters", {
-      codeword: trimmed.substring(0, 20),
+  if (!SLUG_RE.test(trimmed)) {
+    log("SEC:validation", "slug invalid characters", {
+      slug: trimmed.substring(0, 20),
     });
     return null;
   }

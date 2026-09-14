@@ -3,60 +3,35 @@ import { HOME_SLUG } from "@wwwuabot/shared/content";
 import { handleScenario } from "./scenarios.controller";
 import type { Env } from "../shared/types";
 
-/** Рядок сценарію у двійнику — ті колонки, які справді читає ендпоїнт. */
 type ScenarioRow = Record<string, unknown>;
-
 interface FakeState {
-  /** Рядок, знайдений за `web_slug` або `codeword` (фільтр `is_active = 1`). */
-  bySlug?: ScenarioRow | null;
-  /** Рядок головної сторінки — відкат, коли за слагами нічого немає. */
-  base?: ScenarioRow;
+  rows: ScenarioRow[];
 }
-
 interface FakeStatement {
   bind: (...args: unknown[]) => FakeStatement;
   run: () => Promise<{ meta: { changes: number } }>;
-  all: () => Promise<{ results: { name: string }[] }>;
-  first: () => Promise<ScenarioRow | null>;
+  all: () => Promise<{ results: ScenarioRow[] }>;
 }
 
-/**
- * Двійник D1 для одного ендпоїнта.
- *
- * Свідомо **не** мовчить: невідомий запит не повертає `null` тихо, а падає —
- * інакше тест проходив би з неправильної причини (саме так колись повівся
- * власний двійник нижче).
- *
- * `PRAGMA table_info` віддає повний список колонок, щоб `ensureTables` не
- * виконував `ALTER` на кожну оголошену колонку.
- */
-function fakeD1(state: FakeState) {
-  const columns = ["codeword", "web_slug", "title", "photo_url", "page_data", "is_active"];
-
-  function builder(sql: string): FakeStatement {
-    return {
-      bind: () => builder(sql),
-      run: async () => ({ meta: { changes: 1 } }),
-      all: async () =>
-        sql.startsWith("PRAGMA table_info")
-          ? { results: columns.map((name) => ({ name })) }
-          : { results: [] },
-      first: async () => {
-        // Пошук за адресою: слеші в `web_slug` зрізаються на читанні, бо
-        // легасі-дані зберігали адресу і як `/pro-nas`, і як `pro-nas`.
-        if (sql.includes("TRIM(COALESCE(web_slug")) return state.bySlug ?? null;
-        if (sql.includes("WHERE codeword = ?")) return state.base ?? null;
-        throw new Error(`Двійник D1 не знає запиту: ${sql}`);
-      },
-    };
-  }
-
-  return {
-    prepare: (sql: string): FakeStatement => builder(sql.replace(/\s+/g, " ").trim()),
+function fakeD1(state: FakeState): D1Database {
+  const columns = ["slug", "title", "photo_url", "page_data", "is_active"];
+  const db = {
+    prepare(sql: string) {
+      const statement: FakeStatement = {
+        bind: () => statement,
+        run: async () => ({ meta: { changes: 1 } }),
+        all: async () =>
+          sql.startsWith("PRAGMA table_info")
+            ? { results: columns.map((name) => ({ name })) }
+            : { results: state.rows },
+      };
+      return statement;
+    },
   };
+  return db as unknown as D1Database;
 }
 
-const envWith = (state: FakeState): Env => ({ DB: fakeD1(state) }) as unknown as Env;
+const envWith = (rows: ScenarioRow[]): Env => ({ DB: fakeD1({ rows }) }) as unknown as Env;
 
 const pageData = (title: string) =>
   JSON.stringify({
@@ -69,99 +44,80 @@ const pageData = (title: string) =>
     },
   });
 
-/** Форма відповіді ендпоїнта — саме те, що читає платформа. */
 interface ScenarioResponse {
   ok: boolean;
-  scenario: {
-    /** Одна адреса: і шлях вебу, і основа діплінка. */
-    slug: string;
-    title: string | null;
-    photo_url: string | null;
-  };
+  scenario: { slug: string; title: string | null; photo_url: string | null };
   pageData: {
-    version: number;
-    zones: Record<
-      string,
-      { id: string; type: string; order: number; props: Record<string, unknown> }[]
-    >;
+    zones: Record<string, Array<{ type: string; props: Record<string, unknown> }>>;
   } | null;
+}
+
+async function bodyOf(response: Response): Promise<ScenarioResponse> {
+  return (await response.json()) as ScenarioResponse;
 }
 
 const call = (env: Env, slug: string) =>
   handleScenario(new Request(`https://api.example.com/api/scenario/${slug}`), env, slug);
 
-/** `res.json()` у TypeScript має тип `unknown` — звужуємо до контракту ендпоїнта. */
-async function bodyOf(res: Response): Promise<ScenarioResponse> {
-  return (await res.json()) as ScenarioResponse;
-}
-
 describe("GET /api/scenario/:slug", () => {
-  it("віддає сторінку за слагами разом із метаданими", async () => {
-    const env = envWith({
-      bySlug: {
-        codeword: "about",
-        web_slug: "pro-nas",
-        title: "Про нас",
-        photo_url: "https://example.com/a.jpg",
-        page_data: pageData("Про нас"),
-        is_active: 1,
-      },
-    });
-
-    const body = await bodyOf(await call(env, "pro-nas"));
+  it("віддає сторінку за canonical slug разом із метаданими", async () => {
+    const body = await bodyOf(
+      await call(
+        envWith([
+          {
+            slug: "pro-nas",
+            title: "Про нас",
+            photo_url: "https://example.com/a.jpg",
+            page_data: pageData("Про нас"),
+            is_active: 1,
+          },
+        ]),
+        "pro-nas",
+      ),
+    );
 
     expect(body.ok).toBe(true);
-    // Адреса = `web_slug`; `codeword` ("about") лишається лише легасі-ключем.
     expect(body.scenario.slug).toBe("pro-nas");
-    expect(body.pageData?.zones.main[0]?.props.title).toBe("Про нас");
-    // Регресія: `title` і `photo_url` не вибирались із бази, хоч клієнт їх
-    // читав — у блоках ці поля завжди були порожні, і ніщо про це не казало.
     expect(body.scenario.title).toBe("Про нас");
     expect(body.scenario.photo_url).toBe("https://example.com/a.jpg");
+    expect(body.pageData?.zones.main[0]?.props.title).toBe("Про нас");
   });
 
-  it("невідомий шлях відкриває головну сторінку", async () => {
-    const env = envWith({
-      bySlug: null,
-      base: {
-        codeword: "__base__",
-        web_slug: "/",
-        title: "Головна",
-        page_data: pageData("Головна"),
-      },
-    });
+  it("невідомий шлях відкатується на домашню сторінку", async () => {
+    const body = await bodyOf(
+      await call(
+        envWith([
+          { slug: "", title: "Головна", page_data: pageData("Головна"), is_active: 1 },
+          { slug: "about", title: "Про нас", page_data: pageData("Про нас"), is_active: 1 },
+        ]),
+        "нема-такої",
+      ),
+    );
 
-    const body = await bodyOf(await call(env, "нема-такої"));
-
-    // У базі головна має порожній `slug`; `__base__` — це ключ маршруту.
     expect(body.scenario.slug).toBe(HOME_SLUG);
     expect(body.pageData?.zones.main[0]?.props.title).toBe("Головна");
   });
 
-  it("легасі-ключ діплінка знаходить сторінку, але віддає її адресу", async () => {
-    const env = envWith({
-      bySlug: {
-        codeword: "about",
-        web_slug: "/pro-nas",
-        title: "Про нас",
-        page_data: pageData("Про нас"),
-        is_active: 1,
-      },
-    });
+  it("підтримує найдовший збіг slug для параметрів URL", async () => {
+    const body = await bodyOf(
+      await call(
+        envWith([
+          { slug: "mydate", page_data: pageData("Дата"), is_active: 1 },
+          { slug: "mydate/today", page_data: pageData("Сьогодні"), is_active: 1 },
+        ]),
+        "mydate/today/details",
+      ),
+    );
 
-    // Старе посилання `?start=about` мусить працювати далі, але відповідь уже
-    // говорить мовою однієї адреси — інакше два імені жили б у клієнтах.
-    const body = await bodyOf(await call(env, "about"));
-
-    expect(body.scenario.slug).toBe("pro-nas");
+    expect(body.scenario.slug).toBe("mydate/today");
+    expect(body.pageData?.zones.main[0]?.props.title).toBe("Сьогодні");
   });
 
   it("битий page_data не пробиває помилку назовні", async () => {
-    const env = envWith({
-      bySlug: { codeword: "broken", web_slug: "broken", page_data: "{це не json", is_active: 1 },
-    });
-
-    const res = await call(env, "broken");
+    const res = await call(
+      envWith([{ slug: "broken", page_data: "{це не json", is_active: 1 }]),
+      "broken",
+    );
     const body = await bodyOf(res);
 
     expect(res.status).toBe(200);
@@ -169,20 +125,22 @@ describe("GET /api/scenario/:slug", () => {
     expect(body.pageData).toBeNull();
   });
 
-  it("розбирає легасі-формат slots — той самий код, що в бота й оболонок", async () => {
-    const env = envWith({
-      bySlug: {
-        codeword: "legacy",
-        web_slug: "legacy",
-        page_data: JSON.stringify({
-          v: 1,
-          slots: { main: [{ component: "Heading", props: { text: "Стара" } }] },
-        }),
-        is_active: 1,
-      },
-    });
-
-    const body = await bodyOf(await call(env, "legacy"));
+  it("розбирає legacy slots тим самим shared-адаптером", async () => {
+    const body = await bodyOf(
+      await call(
+        envWith([
+          {
+            slug: "legacy",
+            page_data: JSON.stringify({
+              v: 1,
+              slots: { main: [{ component: "Heading", props: { text: "Стара" } }] },
+            }),
+            is_active: 1,
+          },
+        ]),
+        "legacy",
+      ),
+    );
 
     expect(body.pageData?.zones.main[0]?.type).toBe("text");
     expect(body.pageData?.zones.main[0]?.props.title).toBe("Стара");

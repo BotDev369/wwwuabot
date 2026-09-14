@@ -2,7 +2,7 @@ import { create } from "zustand";
 import { listScenarios, type ScenarioListRow } from "../../shared/api/scenarios.api";
 
 export type ScenariosStatus = "idle" | "loading" | "refreshing" | "error";
-export type ScenariosSortField = "codeword" | "rich_message" | "updated_at";
+export type ScenariosSortField = "slug" | "rich_message" | "updated_at";
 export type SortDir = "asc" | "desc";
 
 /** Тип фільтрації за типом сценарію. */
@@ -33,7 +33,7 @@ export const useScenariosStore = create<ScenariosStore>((set, get) => ({
   etag: null,
   status: "idle",
   errorMsg: null,
-  sortField: "codeword",
+  sortField: "slug",
   sortDir: "asc",
   filter: "all",
   groupBy: "none",

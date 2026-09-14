@@ -6,7 +6,7 @@ import { PageRenderer } from "./PageRenderer";
 import type { PageConfig, BlockContext } from "@wwwuabot/shared/types/page-config";
 
 const dummyContext: BlockContext = {
-  codeword: "test",
+  slug: "test",
   title: "Test Page",
   photoUrl: null,
 };
@@ -138,7 +138,7 @@ describe("PageRenderer", () => {
     };
 
     const userContext: BlockContext = {
-      codeword: "test",
+      slug: "test",
       title: "Test Page",
       photoUrl: null,
       user: { id: 10, role: "user" },
@@ -169,7 +169,7 @@ describe("PageRenderer", () => {
     };
 
     const adminContext: BlockContext = {
-      codeword: "test",
+      slug: "test",
       title: "Test Page",
       photoUrl: null,
       user: { id: 1, role: "admin" },

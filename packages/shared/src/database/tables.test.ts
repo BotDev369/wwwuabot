@@ -143,8 +143,8 @@ describe("колонки виводяться з DDL", () => {
   });
 
   it("сценарії мають саме ті колонки, яких потребує код", () => {
-    // resolveScenario фільтрує за is_active і web_slug; bot-dev читає решту.
-    for (const column of ["web_slug", "is_active", "page_data", "qty_options", "notify_groups"]) {
+    // API і bot читають canonical slug; web/app поля лишаються в одному рядку.
+    for (const column of ["slug", "is_active", "page_data", "qty_options", "notify_groups"]) {
       expect(scenarioColumns).toContain(column);
     }
     // `web_config` оголошувався в старому DDL, але його не вживає ніхто.
@@ -162,12 +162,12 @@ describe("ensureTables", () => {
   });
 
   it("додає рівно ті колонки, яких немає", async () => {
-    const without = scenarioColumns.filter((name) => name !== "web_slug");
+    const without = scenarioColumns.filter((name) => name !== "slug");
     const { db, statements } = fakeDb(without);
     await ensureTables(db, ["scenarios"]);
 
     const alters = statements.filter((s) => s.startsWith("ALTER TABLE"));
-    expect(alters).toEqual(['ALTER TABLE "scenarios" ADD COLUMN web_slug TEXT DEFAULT NULL']);
+    expect(alters).toEqual(['ALTER TABLE "scenarios" ADD COLUMN slug TEXT DEFAULT NULL']);
   });
 
   it("створює і самі таблиці, а не тільки колонки", async () => {

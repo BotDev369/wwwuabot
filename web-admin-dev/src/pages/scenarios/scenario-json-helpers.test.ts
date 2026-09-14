@@ -19,7 +19,7 @@ describe("scenario-json-helpers", () => {
         visibleZones: ["main"],
       };
 
-      const current = { codeword: "test", title: "Test", page_data: null };
+      const current = { slug: "test", title: "Test", page_data: null };
       const updated = extractFieldsFromJson(pageConfig, "web", current);
 
       expect(typeof updated.page_data).toBe("string");
@@ -33,7 +33,7 @@ describe("scenario-json-helpers", () => {
         visibleZones: [],
       };
 
-      const current = { codeword: "test", page_data: null };
+      const current = { slug: "test", page_data: null };
       const updated = extractFieldsFromJson({ page_data: pageConfig }, "web", current);
 
       expect(typeof updated.page_data).toBe("string");
@@ -46,7 +46,7 @@ describe("scenario-json-helpers", () => {
         zones: { sidebar: [], header: [], main: [], footer: [] },
         visibleZones: [],
       });
-      const current = { codeword: "test", page_data: null };
+      const current = { slug: "test", page_data: null };
       const updated = extractFieldsFromJson({ page_data: str }, "web", current);
 
       expect(updated.page_data).toBe(str);

@@ -21,20 +21,13 @@ function isActiveFlag(value: number | string | null | undefined): boolean {
 /**
  * Нормалізує рядок сценарію (таблиця `scenarios`).
  *
- * **Дві назви адреси зводяться в одну — і це останнє місце, де вони живуть.**
- * Легасі-рядок має `web_slug` (адреса вебу) і `codeword` (ключ діплінка), хоч
- * це той самий рядок. Перевага віддається `web_slug`: адреса — те, що людина
- * бачить у рядку браузера, а діплінк будується **з** адреси, не навпаки.
- * Коли `web_slug` порожній (у більшості сценаріїв його немає) — адресою стає
- * `codeword`, тобто те саме «codeword і slug — це одне».
+ * Адреса вже зберігається один раз у `slug`; adapter не обирає між двома
+ * історичними назвами й не створює прихованих alias-ів.
  */
 export function contentPageFromScenario(row: ScenarioContentRow): ContentPage {
-  const fromWeb = normalizeSlug(row.web_slug ?? "");
-  const fromKey = normalizeSlug(row.codeword);
-
   return {
-    id: row.codeword,
-    slug: fromWeb === "" ? fromKey : fromWeb,
+    id: row.slug,
+    slug: normalizeSlug(row.slug),
     title: row.title ?? null,
     photoUrl: row.photo_url ?? null,
     content: parsePageConfig(row.page_data ?? null),

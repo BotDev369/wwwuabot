@@ -274,7 +274,7 @@ export class UsersService {
   private async notifyBlockChange(userId: number, isNowBlocked: boolean): Promise<void> {
     if (!this.env.BOT_TOKEN) return;
 
-    const codeword = isNowBlocked ? "blocked" : "unblocked";
+    const slug = isNowBlocked ? "blocked" : "unblocked";
     const fallbackText = isNowBlocked
       ? "⚠️ Ваш акаунт заблоковано."
       : "✅ Ваш акаунт розблоковано.";
@@ -284,8 +284,8 @@ export class UsersService {
     let photoUrl = "";
 
     try {
-      const row = await this.env.DB.prepare("SELECT * FROM scenarios WHERE codeword = ?")
-        .bind(codeword)
+      const row = await this.env.DB.prepare("SELECT * FROM scenarios WHERE slug = ?")
+        .bind(slug)
         .first();
 
       if (row) {

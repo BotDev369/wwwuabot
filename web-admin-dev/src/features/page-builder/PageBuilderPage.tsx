@@ -9,7 +9,7 @@ import { usePageBuilder } from "./usePageBuilder";
 
 export function PageBuilderPage() {
   const {
-    codeword,
+    slug,
     config,
     scenarioTitle,
     loading,
@@ -36,7 +36,7 @@ export function PageBuilderPage() {
     handleBack,
   } = usePageBuilder();
 
-  if (!codeword) {
+  if (!slug) {
     return (
       <div style={{ padding: 20 }}>
         <p>Codeword не вказано</p>
@@ -63,7 +63,7 @@ export function PageBuilderPage() {
       >
         <div>
           <h2 style={{ margin: 0, fontSize: 18 }}>
-            <Icon name="blocks" size={18} /> Page Builder: {codeword}
+            <Icon name="blocks" size={18} /> Page Builder: {slug}
           </h2>
           {scenarioTitle && (
             <div style={{ fontSize: 13, color: "var(--text-secondary)", marginTop: 2 }}>

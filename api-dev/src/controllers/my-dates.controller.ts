@@ -118,19 +118,12 @@ export async function handleMyDates(request: Request, env: Env): Promise<Respons
     // Read + migrate
     const { dates, needsMigration } = await readUserDates(env.DB, userId);
 
-    // Auto-create user if missing
-    if (dates.length === 0 && needsMigration === false) {
-      const exists = await env.DB.prepare("SELECT 1 FROM users WHERE user_id = ?")
-        .bind(userId)
-        .first();
-      if (!exists) {
-        await env.DB.prepare(
-          "INSERT INTO users (user_id, first_name, last_name, username, language) VALUES (?, '...', '...', '...', '...')",
-        )
-          .bind(userId)
-          .run();
-      }
-    }
+    // Користувачів створює bot-dev, власник таблиці `users`. API лише читає
+    // або оновлює вже існуючий рядок; вигадані профільні дані тут не пишемо.
+    const exists = await env.DB.prepare("SELECT 1 FROM users WHERE user_id = ?")
+      .bind(userId)
+      .first();
+    if (!exists) return json({ ok: true, dates: [] });
 
     // Persist migrated data
     if (needsMigration && dates.length > 0) {

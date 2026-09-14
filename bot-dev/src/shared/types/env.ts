@@ -27,6 +27,8 @@ export interface Env {
   LOG_QUEUE: Queue<LogMessage>;
   GAS_LOG_WEBHOOK_URL: string;
   CLOUDINARY_CLOUD_NAME: string;
+  /** Публічна база Mini App; без неї бот не додає автоматичну web_app-кнопку. */
+  WEB_PLATFORM_URL?: string;
   /**
    * DSN із Sentry. Задається як Cloudflare Secret. Без нього Sentry вимкнено
    * — бот працює як звичайно.
@@ -37,7 +39,7 @@ export interface Env {
 }
 
 export interface ScreenState {
-  codeword: string;
+  slug: string;
   title?: string | null;
   photo_url: string;
   caption: {
@@ -52,6 +54,8 @@ export interface ScreenState {
   notify_template?: string | null;
   rich_message?: boolean;
   rich_data?: Record<string, unknown>[] | null;
+  /** Повний шлях поточного маршруту; заповнюється для Telegram deep link. */
+  web_path?: string;
 }
 
 export type AppContext = Context & {

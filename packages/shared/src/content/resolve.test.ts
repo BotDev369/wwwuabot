@@ -2,7 +2,6 @@ import { describe, it, expect } from "vitest";
 import {
   BOT_SEPARATOR,
   HOME_SLUG,
-  LEGACY_HOME_KEY,
   MAX_BOT_PAYLOAD,
   botPayloadSegments,
   isDeepLinkable,
@@ -34,7 +33,6 @@ describe("normalizeSlug", () => {
     expect(normalizeSlug(null)).toBe(HOME_SLUG);
     expect(normalizeSlug("   ")).toBe(HOME_SLUG);
     expect(normalizeSlug("/")).toBe(HOME_SLUG);
-    expect(normalizeSlug(LEGACY_HOME_KEY)).toBe(HOME_SLUG);
   });
 
   it("зрізає провідні й кінцеві слеші та подвоєні", () => {

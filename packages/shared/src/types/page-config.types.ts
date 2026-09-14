@@ -156,8 +156,8 @@ export interface PageConfig {
  * Контекст, що передається в кожен блок при рендері.
  */
 export interface BlockContext {
-  /** Codeword поточної сторінки (slug для URL). */
-  codeword: string;
+  /** Канонічний slug поточної сторінки. */
+  slug: string;
 
   /** Назва сторінки. */
   title: string | null;
