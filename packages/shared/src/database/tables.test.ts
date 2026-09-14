@@ -144,11 +144,25 @@ describe("колонки виводяться з DDL", () => {
 
   it("сценарії мають саме ті колонки, яких потребує код", () => {
     // API і bot читають canonical slug; web/app поля лишаються в одному рядку.
-    for (const column of ["slug", "is_active", "page_data", "qty_options", "notify_groups"]) {
+    for (const column of ["id", "slug", "is_active", "page_data", "qty_options", "notify_groups"]) {
       expect(scenarioColumns).toContain(column);
     }
-    // `web_config` оголошувався в старому DDL, але його не вживає ніхто.
-    expect(scenarioColumns).not.toContain("web_config");
+    // `web_config` оголошувався в старому DDL, але його не вживає ніхто;
+    // `codeword`/`web_slug` були другою колонкою тієї самої адреси.
+    for (const gone of ["web_config", "codeword", "web_slug"]) {
+      expect(scenarioColumns).not.toContain(gone);
+    }
+  });
+
+  /**
+   * Ідентичність рядка — номер, адреса — `slug`. Це не косметика: `ON
+   * CONFLICT(slug)` в адмінському UPSERT працює **тільки** за наявності
+   * `UNIQUE`, а без нього падає з «does not match any PRIMARY KEY or UNIQUE
+   * constraint» — причому лише на шляху запису.
+   */
+  it("номер рядка — PRIMARY KEY, адреса — UNIQUE", () => {
+    expect(TABLES.scenarios.create).toMatch(/id INTEGER PRIMARY KEY AUTOINCREMENT/);
+    expect(TABLES.scenarios.create).toMatch(/slug TEXT NOT NULL UNIQUE/);
   });
 });
 

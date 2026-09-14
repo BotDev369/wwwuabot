@@ -19,7 +19,7 @@ function json(body: unknown, status = 200): Response {
 
 // ── ensureBase ──────────────────────────────────────────────────────
 /**
- * Гарантує наявність таблиці `scenarios` і базового сценарію `__base__`.
+ * Гарантує наявність таблиці `scenarios` і домашньої сторінки (порожній `slug`).
  *
  * DDL більше не живе тут: схема оголошена в реєстрі
  * (`@wwwuabot/shared/database/tables`), як і всі інші таблиці. Раніше цей
@@ -27,8 +27,8 @@ function json(body: unknown, status = 200): Response {
  * перевіркою `sqlite_master` — тобто двоє одночасних запитів на чистій базі
  * могли отримати помилку «table already exists».
  *
- * `slug` тут є єдиною адресою сторінки; веб і бот отримують її подання
- * через `@wwwuabot/shared/content`.
+ * `slug` — єдина адреса сторінки: за нею рядок шукають, її ж віддаємо
+ * клієнту. `id` — номер рядка: адресу редагують, а номер лишається тим самим.
  */
 async function ensureBase(db: D1Database): Promise<void> {
   await ensureTables(db, ["scenarios"]);
@@ -48,9 +48,10 @@ async function ensureBase(db: D1Database): Promise<void> {
  * `context.title` і `context.photoUrl` завжди були `null`. Виявити це було ні
  * чим — обидві сторони мовчали.
  *
- * `slug` — єдина адреса сторінки, яку повертаємо клієнту.
+ * `slug` — єдина адреса сторінки, яку повертаємо клієнту; `id` — номер рядка,
+ * за яким адресу можна відрізнити після редагування.
  */
-const PAGE_COLUMNS = "slug, title, photo_url, page_data, is_active";
+const PAGE_COLUMNS = "id, slug, title, photo_url, page_data, is_active";
 
 // ── resolveScenario ─────────────────────────────────────────────────
 async function resolveScenario(db: D1Database, ref: string) {

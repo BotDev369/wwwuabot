@@ -19,7 +19,7 @@ export class ScenarioRepository extends DatabaseRepository {
   async getScenarioByBotPayload(payload: string): Promise<Scenario | null> {
     const result = await this.db
       .prepare(
-        `SELECT slug, title, photo_url, page_data, is_active
+        `SELECT id, slug, title, photo_url, page_data, is_active
          FROM scenarios
          WHERE is_active = 1`,
       )
@@ -61,6 +61,7 @@ export class ScenarioRepository extends DatabaseRepository {
     }
 
     const page = contentPageFromScenario({
+      id: row.id ?? null,
       slug: row.slug,
       title: row.title,
       photo_url: row.photo_url,
@@ -69,6 +70,7 @@ export class ScenarioRepository extends DatabaseRepository {
     } satisfies ScenarioContentRow);
 
     return {
+      id: row.id ?? null,
       slug: page.slug,
       title: page.title,
       photo_url: row.photo_url,

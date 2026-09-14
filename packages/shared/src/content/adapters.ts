@@ -23,11 +23,17 @@ function isActiveFlag(value: number | string | null | undefined): boolean {
  *
  * Адреса вже зберігається один раз у `slug`; adapter не обирає між двома
  * історичними назвами й не створює прихованих alias-ів.
+ *
+ * Ідентичність — `id` рядка, а не адреса: адресу редагують (саме для цього
+ * номер і з'явився), і сторінка не мусить через це ставати іншою. Рядок без
+ * `id` (читач, що не вибрав цю колонку) описується своєю **нормалізованою**
+ * адресою — тією самою, за якою його шукають.
  */
 export function contentPageFromScenario(row: ScenarioContentRow): ContentPage {
+  const slug = normalizeSlug(row.slug);
   return {
-    id: row.slug,
-    slug: normalizeSlug(row.slug),
+    id: row.id != null ? String(row.id) : slug,
+    slug,
     title: row.title ?? null,
     photoUrl: row.photo_url ?? null,
     content: parsePageConfig(row.page_data ?? null),

@@ -110,9 +110,24 @@ export const TABLES = {
    * зберігала — тобто була п'ятим сховищем замість одного. Деталі —
    * `docs/HISTORY.md` §9.
    *
-   * **Адреса.** Ідентичність рядка в моделі одна — `slug`; саме її використовують
-   * веб-шлях і payload діплінка. Подання адреси (`/mydate/…` і
-   * `?start=mydate_…`) будує `@wwwuabot/shared/content`.
+   * **Адреса.** Адреса рядка одна — `slug`; саме її використовують веб-шлях і
+   * payload діплінка. Подання адреси (`/mydate/…` і `?start=mydate_…`) будує
+   * `@wwwuabot/shared/content`.
+   *
+   * **Номер рядка — `id`.** Адреса жива: її редагують, і сторінка від цього не
+   * мусить ставати іншою. Тому ідентичність — номер (`INTEGER PRIMARY KEY
+   * AUTOINCREMENT`), а `slug` лишається **адресою** з `UNIQUE`: саме на неї
+   * спирається `ON CONFLICT(slug)` в адмінському UPSERT.
+   *
+   * **Чому `UNIQUE` у DDL, а не окремим індексом.** Імена індексів у SQLite
+   * глобальні для бази (див. вище): іменований `idx_scenarios_slug` міг би
+   * виявитись зайнятим індексом **іншої** таблиці, і тоді `CREATE UNIQUE INDEX
+   * IF NOT EXISTS` не створив би нічого, а таблиця лишилася б без
+   * унікальності — без помилки. Обмеження в `CREATE TABLE` цієї пастки не має.
+   *
+   * **14.09.2026 на дев-базі:** таблицю перебудовано (номер + `UNIQUE`-адреса),
+   * легасі-колонки `codeword`/`web_slug` прибрано, стару таблицю лишено як
+   * `scenarios_legacy_20260914` — скрипт і звіт у `scripts/migrations/`.
    */
   scenarios: {
     name: "scenarios",
@@ -120,7 +135,8 @@ export const TABLES = {
     purpose:
       "Єдине сховище контенту: рядок = сторінка вебу (`page_data`) + її подання в боті. Читає bot-dev, редагує адмінка (/api/portal/scenarios/*).",
     create: `CREATE TABLE IF NOT EXISTS "scenarios" (
-        slug TEXT PRIMARY KEY,
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        slug TEXT NOT NULL UNIQUE,
         photo_url TEXT,
         caption_top TEXT,
         caption_mid TEXT,

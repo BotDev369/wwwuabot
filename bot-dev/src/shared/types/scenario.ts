@@ -1,4 +1,6 @@
 export interface ScenarioRow {
+  /** Номер рядка в `scenarios`: адресу редагують, номер — ні. */
+  id?: number | null;
   slug: string;
   title: string | null;
   photo_url: string;
@@ -29,6 +31,8 @@ export interface ScenarioButton {
 }
 
 export interface Scenario {
+  /** Номер рядка в `scenarios`; `null`, якщо читач його не вибрав. */
+  id: number | null;
   slug: string;
   title: string | null;
   photo_url: string;

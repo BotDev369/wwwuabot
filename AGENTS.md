@@ -91,7 +91,7 @@ packages/ui/      Спільні React-компоненти Page Builder (@wwwua
 
 ## 2. Доменні терміни
 
-- **Scenario** — контентна одиниця: екран бота з кнопками, підписом, фото. Типи: `bot-dev/src/shared/types/scenario.ts`. Поля: `codeword`, `photo_url`, `caption_top/mid/bot`, `keyboard_type`, `buttons`, `rich_message`/`rich_data`, `page_data`.
+- **Scenario** — контентна одиниця: екран бота з кнопками, підписом, фото. Типи: `bot-dev/src/shared/types/scenario.ts`. Поля: `id` (номер рядка), `slug` (адреса), `photo_url`, `caption_top/mid/bot`, `keyboard_type`, `buttons`, `rich_message`/`rich_data`, `page_data`.
 - **Стан користувача** — рядок таблиці `users` у D1 (репозиторій: `bot-dev/src/modules/users/user.repository.ts`). Схема «м'яка»: колонки додає `withAutoMigrate` з `@wwwuabot/shared/database/auto-migrate` на першому записі (`is_blocked`, `rate_limit_json`, …), тому фіксованого списку полів немає. Читання БД не пише: зміни позначає прапор `ctx.userDirty`, а запис робить post-middleware (`bot-dev/src/core/middleware/post/index.ts`), який викликає `botRouter` з `src/core/router/bot-router.ts`.
   > **Було до 12.09.2026:** тут описувались «Family Box» і `packages/shared/src/utils/family-box.ts`. Такого файлу й такої назви в коді **немає** — це була документація до скасованої ідеї, і вона вводила в оману при пошуку утиліт.
 - **Page Builder** — блочна система сторінок. Сторінка = рядок `scenarios` (колонка `page_data`). 4 зони: sidebar, header, main, footer. Блоки рекурсивні, автономні. Типи: `packages/shared/src/types/page-config.ts`. Реєстр: `packages/shared/src/constants/block-definitions/`. React-компоненти: `packages/ui/src/blocks/`.
@@ -263,9 +263,8 @@ import { Icon } from "@wwwuabot/shared";
 | Схема таблиць D1 — реєстр: ім'я, власник, призначення, DDL | `packages/shared/src/database/tables.ts` — **дані**; створення — `packages/shared/src/database/ensure-tables.ts` |
 | Контент сторінки: одна модель, адреса, діплінк | `packages/shared/src/content/` — `ContentPage`, `pickContentPage`, `toWebPath` / `toBotPayload` / `buildShareLinks` |
 | Карта таблиць: хто власник, хто створює, хто читає | `docs/DATA_MODEL.md` |
-| Контент сторінки — єдина модель, адаптери, вибір сторінки за URL | `packages/shared/src/content/` (`ContentPage`, `pickContentPage`) |
 | Адреса сторінки: одна сутність `slug`, два подання (веб / бот) | `packages/shared/src/content/resolve.ts` (`toWebPath`, `toBotPayload`, `isValidSlug`) |
-| Авто-добір колонок до наявної таблиці | `packages/shared/src/database/auto-migrate.ts` — `withAutoMigrate` |
+| Авто-добір колонок (`withAutoMigrate`); перебудова таблиці — те, чого `ensureTables` не вміє | `packages/shared/src/database/auto-migrate.ts`; `scripts/migrations/*.sql` (2 кроки: копія + заміна з бекофісною) |
 
 ### bot-dev (еталонна структура)
 
@@ -389,7 +388,7 @@ service binding. **Власного `src/stores/` у платформи нема
   емодзі в UI. Деталі — `docs/QUALITY_GATE.md`; борг — `scripts/quality-baseline.mjs`.
 - **Ідентичність користувача:** єдине джерело — підписаний Telegram `initData` (`api-dev/src/shared/identity.ts`). Заборонено приймати `X-Telegram-User-Id` або `user_id` з cookie/query.
 - **Адмін-авторизація:** єдина — cookie `admin_session` (HMAC-SHA256, `packages/shared/src/security/session.ts`). Секретів у заголовках немає: `X-Admin-Secret`, `X-Bot-Token`, `/db-proxy` і легасі `/setup-webhook` видалено 11.09.2026 (`docs/HISTORY.md` §5.4).
-- **Схема D1:** усі таблиці — в одному реєстрі (`packages/shared/src/database/tables.ts`: дані; створення — `ensure-tables.ts`), їх **4**: `users`, `settings`, `scenarios`, `mydate_analysis` — рівно як на дев-базі. Поза реєстром таблиць немає: `npm run check:db` (крок `D1 schema`) ловить `CREATE TABLE`, ім'я таблиці й `ALTER TABLE`, яких немає в оголошенні. Контент живе в одній таблиці `scenarios` — карта в `docs/DATA_MODEL.md`, модель і адреса — `docs/CONTENT_MODEL.md`.
+- **Схема D1:** усі таблиці — в одному реєстрі (`packages/shared/src/database/tables.ts`: дані; створення — `ensure-tables.ts`), їх **4**: `users`, `settings`, `scenarios`, `mydate_analysis` — рівно як на дев-базі. Поза реєстром таблиць немає: `npm run check:db` (крок `D1 schema`) ловить `CREATE TABLE`, ім'я таблиці й `ALTER TABLE`, яких немає в оголошенні. Контент живе в одній таблиці `scenarios`: `id` — номер рядка (`PRIMARY KEY`), `slug` — адреса (`NOT NULL UNIQUE`), тому адресу можна редагувати, не втрачаючи ідентичність. Карта — `docs/DATA_MODEL.md` (він же — звіт про перебудову 14.09.2026 і доля `scenarios_legacy_20260914`), модель і адреса — `docs/CONTENT_MODEL.md`.
 - **Моніторинг:** Workers Logs увімкнено в усіх 4 воркерах. `api-dev` має два ендпоїнти здоров'я: `GET /health` (liveness, без залежностей) і `GET /health/deep` (D1 + KV; **503** при деградації) — саме його має опитувати зовнішній монітор. UptimeRobot і секрет `SENTRY_DSN` задає власник акаунта. Усі воркери — дев (`ENVIRONMENT = "dev"`). Sentry під'єднано в `api-dev` і `bot-dev` — персональні дані вирізаються, без секрету `SENTRY_DSN` він у no-op; браузерні застосунки — окремий крок (`docs/HISTORY.md` §5.8).
 - **Документація:** покажчик — `docs/README.md` (один документ = одна тема = один власник факту; там же таблиця «куди писати нове»). Стан і план — `docs/CONSOLIDATION_PLAN.md` (§0 виміри, §3 план); історія — `git log` і `docs/HISTORY.md` (леджер рішень §0–§8 + хронологія §9: **новий запис = рядок у §9, а не новий файл** — окремих журналів більше немає). Розмір, мертві посилання й § з коду стереже `npm run check:docs`. **AGENTS.md — єдиний документ понад 200 рядків, і він навмисне не ділиться:** агент мусить прочитати його повністю одним файлом.
 

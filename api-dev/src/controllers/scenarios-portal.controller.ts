@@ -10,7 +10,14 @@ import type { Env } from "../shared/types";
 import { formatSqliteDatetime } from "@wwwuabot/shared/utils/datetime";
 
 const TABLE = "scenarios";
-const PROTECTED = new Set(["slug", "created_at", "updated_at"]);
+/**
+ * Поля, які клієнт не пише.
+ *
+ * `id` — номер рядка (його видає база, і саме він лишається незмінним, коли
+ * адресу редагують); `created_at`/`updated_at` ставить сервер. `slug` — стара
+ * адреса, за якою UPSERT шукає рядок, тому в наборі полів їй місця немає.
+ */
+const PROTECTED = new Set(["id", "slug", "created_at", "updated_at"]);
 const SAFE_RE = /^[a-zA-Z_][a-zA-Z0-9_]*$/;
 
 function json(data: unknown, status = 200): Response {

@@ -16,7 +16,8 @@
 |---|---|
 | сторінка вебу | `page_data` — `PageConfig`, який рендерить `PageRenderer` |
 | її подання в боті | `caption_top/mid/bot`, `buttons`, `keyboard_type`, `rich_message`, `rich_data`, `price`, … |
-| адреса | `slug` — єдиний `PRIMARY KEY`; веб і бот будують із нього свої подання |
+| номер рядка | `id` — `PRIMARY KEY`: ідентичність, яка **не** змінюється |
+| адреса | `slug` — `NOT NULL UNIQUE`; веб і бот будують із нього свої подання, і його можна редагувати |
 | метадані | `title`, `photo_url`, `is_active` |
 
 Читають і пишуть усі — одну таблицю: **bot-dev** читає сценарій і показує його в Telegram;
@@ -66,6 +67,9 @@
 |---|---|---|
 | веб | `/mydate/1980-03-03/today` | `toWebPath(slug, params)` |
 | бот | `?start=mydate_1980-03-03_today` | `toBotPayload(slug, params)` |
+
+Адреса жива: її редагують, і сторінка від цього не мусить ставати іншою. Тому в рядка є
+окремий номер (`id`), а `ContentPage.id` — саме він; `slug` — тільки адреса.
 
 Три правила, які з цього випливають — усі перевіряються `resolve.test.ts`:
 

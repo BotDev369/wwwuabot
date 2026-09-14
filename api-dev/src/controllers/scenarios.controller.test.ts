@@ -14,7 +14,7 @@ interface FakeStatement {
 }
 
 function fakeD1(state: FakeState): D1Database {
-  const columns = ["slug", "title", "photo_url", "page_data", "is_active"];
+  const columns = ["id", "slug", "title", "photo_url", "page_data", "is_active"];
   const db = {
     prepare(sql: string) {
       const statement: FakeStatement = {

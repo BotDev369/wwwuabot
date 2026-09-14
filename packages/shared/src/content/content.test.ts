@@ -22,7 +22,8 @@ describe("contentPageFromScenario", () => {
       is_active: 1,
     });
 
-    expect(page.id).toBe("/pro-nas/");
+    // Без колонки `id` ідентичність — нормалізована адреса, а не сирий рядок.
+    expect(page.id).toBe("pro-nas");
     expect(page.slug).toBe("pro-nas");
     expect(page.title).toBe("Про нас");
     expect(page.photoUrl).toBe("https://example.com/a.jpg");
@@ -32,6 +33,15 @@ describe("contentPageFromScenario", () => {
 
   it("maps the empty slug to the home page", () => {
     expect(contentPageFromScenario({ slug: "", is_active: 1 }).slug).toBe(HOME_SLUG);
+  });
+
+  it("uses the row number as identity, so a renamed slug keeps the page", () => {
+    const before = contentPageFromScenario({ id: 7, slug: "mydate", is_active: 1 });
+    const after = contentPageFromScenario({ id: 7, slug: "my-date", is_active: 1 });
+
+    expect(before.id).toBe("7");
+    expect(after.id).toBe("7");
+    expect(after.slug).toBe("my-date");
   });
 
   it("converts the legacy slots page format", () => {
