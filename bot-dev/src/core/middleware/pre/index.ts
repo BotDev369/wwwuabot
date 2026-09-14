@@ -34,12 +34,18 @@ preMiddleware.use(async (ctx, next) => {
   const repo = new UserRepository(ctx.env);
   let user = await repo.getUser(ctx.from.id);
 
+  // Усе, що Telegram віддав про людину, зберігаємо як є: профіль показує саме
+  // це, тож нові поля Telegram (`is_premium`, `allows_write_to_pm`, …)
+  // з'являються в ньому без правки коду.
+  const telegramJson = JSON.stringify(ctx.from);
+
   if (!user) {
     await repo.createUser(ctx.from.id, {
       first_name: ctx.from.first_name || "...",
       last_name: ctx.from.last_name || "...",
       username: ctx.from.username || "...",
       language: ctx.from.language_code || "...",
+      telegram_json: telegramJson,
     });
     user = await repo.getUser(ctx.from.id);
     log("PRE:user", "created new user", { user_id: ctx.from.id });
@@ -54,12 +60,14 @@ preMiddleware.use(async (ctx, next) => {
     if (user.last_name !== newLast) changed.push("last_name");
     if (user.username !== newUser) changed.push("username");
     if (user.language !== newLang) changed.push("language");
+    if (user.telegram_json !== telegramJson) changed.push("telegram_json");
 
     if (changed.length > 0) {
       user.first_name = newFirst;
       user.last_name = newLast;
       user.username = newUser;
       user.language = newLang;
+      user.telegram_json = telegramJson;
       ctx.userDirty = true;
       log("PRE:user", "loaded | profile updated", { user_id: ctx.from.id, changed });
     } else {

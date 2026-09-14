@@ -39,6 +39,23 @@ export type { SaveActionButtonsProps, SavingActionType } from "./components/Save
 export { useAppStore } from "./stores/app.store";
 export type { AppState } from "./stores/app.store";
 
+// ── Ім'я на платформі (wwwuabot) — не Telegram username ──────────────
+export {
+  PLATFORM_USERNAME_MAX,
+  PLATFORM_USERNAME_MIN,
+  PLATFORM_USERNAME_MESSAGES,
+  PLATFORM_USERNAME_RULES,
+  RESERVED_PLATFORM_USERNAMES,
+  formatPlatformUsername,
+  normalizePlatformUsername,
+  validatePlatformUsername,
+} from "./user/platform-username";
+export type {
+  PlatformUsernameError,
+  PlatformUsernameResult,
+  PlatformUsernameRules,
+} from "./user/platform-username";
+
 // ── Utils ────────────────────────────────────────────────────────────
 export { formatSqliteDatetime } from "./utils/datetime";
 export {

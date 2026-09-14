@@ -13,10 +13,19 @@
  */
 
 import type { Env } from "./types";
-import { INIT_DATA_HEADER, verifyInitData } from "@wwwuabot/shared/security/telegram";
+import {
+  INIT_DATA_HEADER,
+  verifyInitData,
+  verifyInitDataPayload,
+  type InitDataPayload,
+} from "@wwwuabot/shared/security/telegram";
 
 /** Результат визначення ідентичності. */
 export type Identity = { ok: true; userId: number } | { ok: false; response: Response };
+
+/** Ідентичність разом із перевіреним вмістом `initData`. */
+export type IdentityWithPayload =
+  { ok: true; userId: number; payload: InitDataPayload } | { ok: false; response: Response };
 
 function json(data: unknown, status = 200): Response {
   return new Response(JSON.stringify(data), {
@@ -39,13 +48,16 @@ export async function tryResolveUserId(
 }
 
 /**
- * Ідентичність, обов'язкова для виконання дії.
- * Повертає готову відповідь 401/503, якщо її немає.
+ * Ідентичність разом з **усім** перевіреним `initData`.
+ *
+ * Потрібна там, де показуємо дані Telegram як є (профіль): брати їх із
+ * `initDataUnsafe` у браузері не можна — саме тому перевірений рядок їде на
+ * сервер, а не навпаки.
  */
-export async function resolveUserId(
+export async function resolveInitDataIdentity(
   request: Request,
   env: Pick<Env, "BOT_TOKEN">,
-): Promise<Identity> {
+): Promise<IdentityWithPayload> {
   if (!env.BOT_TOKEN) {
     return {
       ok: false,
@@ -58,10 +70,26 @@ export async function resolveUserId(
     return { ok: false, response: json({ error: "Unauthorized" }, 401) };
   }
 
-  const userId = await verifyInitData(initData, env.BOT_TOKEN);
-  if (userId === null) {
+  const payload = await verifyInitDataPayload(initData, env.BOT_TOKEN);
+  if (payload === null) {
     return { ok: false, response: json({ error: "Invalid initData" }, 401) };
   }
 
-  return { ok: true, userId };
+  return { ok: true, userId: payload.userId, payload };
+}
+
+/**
+ * Ідентичність, обов'язкова для виконання дії.
+ * Повертає готову відповідь 401/503, якщо її немає.
+ *
+ * Тонка обгортка над `resolveInitDataIdentity`: перевірка існує в одному місці,
+ * відрізняється лише те, скільки даних потрібно виклику.
+ */
+export async function resolveUserId(
+  request: Request,
+  env: Pick<Env, "BOT_TOKEN">,
+): Promise<Identity> {
+  const result = await resolveInitDataIdentity(request, env);
+  if (!result.ok) return result;
+  return { ok: true, userId: result.userId };
 }

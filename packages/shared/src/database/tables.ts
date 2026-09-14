@@ -56,10 +56,25 @@ export interface TableDefinition {
 export const TABLES = {
   // ── bot-dev ────────────────────────────────────────────────────────────
 
+  /**
+   * Стан користувача Telegram. Господар — `bot-dev` (він пише першим),
+   * читають обидві оболонки через `api-dev`.
+   *
+   * **Дві різні «імена» — навмисно, і це не дубль.** `username` — те, що Telegram
+   * віддав у `initData` (`@handle` людини в Telegram, ми його не обираємо);
+   * `platform_username` — те, що людина обрала **на нашій платформі**, і саме воно
+   * є її іменем у продукті (профіль, майбутні підписи, пошук). Друге — не копія
+   * першого: у Telegram handle може бути відсутнім або змінитись, а ім'я в нас — ні.
+   *
+   * `telegram_json` — усе, що Telegram віддав про користувача (`ctx.from` як є),
+   * щоб профіль показував **справжні** дані, а не перелічені нами поля. Пише його
+   * `bot-dev` під час звернення до бота; `api-dev` цю колонку не заповнює.
+   */
   users: {
     name: "users",
     owner: "bot-dev",
-    purpose: "Стан користувача Telegram: профіль, роль, тариф, блокування, збережені дати.",
+    purpose:
+      "Стан користувача Telegram: профіль, роль, тариф, блокування, ім'я на платформі, збережені дати.",
     create: `CREATE TABLE IF NOT EXISTS users (
         user_id INTEGER PRIMARY KEY,
         first_name TEXT,
@@ -76,6 +91,8 @@ export const TABLES = {
         active_scenario TEXT,
         message_id INTEGER,
         my_dates TEXT,
+        telegram_json TEXT,
+        platform_username TEXT,
         created_at TEXT,
         updated_at TEXT
       )`,

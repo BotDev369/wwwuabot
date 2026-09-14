@@ -1,6 +1,10 @@
 # AGENTS.md
 
-> **Версія:** 2.19 | **Останнє оновлення:** 14.09.2026
+> **Версія:** 2.20 | **Останнє оновлення:** 14.09.2026
+>
+> **Зміна 2.20:** профіль — **один** екран для обох оболонок, і в ньому є **ім'я на платформі**
+> (`platform_username`): його обирає сам користувач, і саме воно — його ім'я в продукті, а не
+> Telegram-хендл. Платформа показує **всі** дані Telegram як є (`telegram_json` у рядку + живий підписаний `initData`).
 >
 > **Зміна 2.19:** нижній футер: вибраний розділ виділяє **залита іконка** (solid-пара до контурної,
 > як у YouTube / Instagram / TikTok) і чорний підпис — фонового кола під іконкою немає. «+» по
@@ -11,14 +15,9 @@
 >
 > **Зміна 2.17:** історія — **один** архів `docs/HISTORY.md` (було 30 файлів): запис — рядок у §9.
 >
-> **Зміна 2.16:** таблицю `pages` і міграцію до неї **скасовано**: на дев-базі її не існувало,
-> читача вона не мала. Сховище одне: **`scenarios`**; у реєстрі **4** таблиці — як у базі.
->
-> **Зміна 2.15:** домен «сайтів» (`sites`, `site_pages`, `templates`) прибрано повністю —
-> разом із кодом, маршрутами й документами.
->
-> **Зміна 2.14:** тестову копію сценаріїв (`scenarios-admin`) прибрано повністю — разом із
-> маршрутами, вкладкою «Адмін» і гілкою в моделі контенту. Переносити нічого.
+> **Зміни 2.14–2.16:** прибрано тестову копію сценаріїв (`scenarios-admin`), домен «сайтів»
+> (`sites`, `site_pages`, `templates`) і таблицю `pages` разом із міграцією до неї. Сховище
+> одне — **`scenarios`**; у реєстрі **4** таблиці, як у базі. Переносити нічого.
 >
 > **Зміна 2.13:** «Поділитись» — третє подання адреси (`buildShareLinks()`), повертає
 > **причину** відмови: Telegram мовчки обрізає задовгий параметр і приймає `@bot`.
@@ -88,7 +87,8 @@ packages/ui/      Спільні React-компоненти Page Builder (@wwwua
 
 - **Scenario** — контентна одиниця: екран бота з кнопками, підписом, фото. Типи: `bot-dev/src/shared/types/scenario.ts`. Поля: `id` (номер рядка), `slug` (адреса), `photo_url`, `caption_top/mid/bot`, `keyboard_type`, `buttons`, `rich_message`/`rich_data`, `page_data`.
 - **Стан користувача** — рядок таблиці `users` у D1 (репозиторій: `bot-dev/src/modules/users/user.repository.ts`). Схема «м'яка»: колонки додає `withAutoMigrate` з `@wwwuabot/shared/database/auto-migrate` на першому записі (`is_blocked`, `rate_limit_json`, …), тому фіксованого списку полів немає. Читання БД не пише: зміни позначає прапор `ctx.userDirty`, а запис робить post-middleware (`bot-dev/src/core/middleware/post/index.ts`), який викликає `botRouter` з `src/core/router/bot-router.ts`.
-  > **Було до 12.09.2026:** тут описувались «Family Box» і `packages/shared/src/utils/family-box.ts`. Такого файлу й такої назви в коді **немає** — це була документація до скасованої ідеї, і вона вводила в оману при пошуку утиліт.
+- **Ім'я на платформі** (`users.platform_username`) — **не** Telegram `username`: це ім'я, яке користувач обирає собі сам на wwwuabot, і саме воно є його іменем у продукті (`packages/shared/src/user/platform-username.ts` — єдині правила для TWA, адмінки й бота). Telegram `username` лишається даними Telegram; `telegram_json` — усе, що Telegram віддав про людину, як є. Плутати їх не можна: друге ми не обираємо і воно може зникнути.
+  > **Було до 12.09.2026:** тут описувались «Family Box» і `packages/shared/src/utils/family-box.ts` — документація до скасованої ідеї (файлів у коді немає), вона вводила в оману при пошуку утиліт.
 - **Page Builder** — блочна система сторінок. Сторінка = рядок `scenarios` (колонка `page_data`). 4 зони: sidebar, header, main, footer. Блоки рекурсивні, автономні. Типи: `packages/shared/src/types/page-config.ts`. Реєстр: `packages/shared/src/constants/block-definitions/`. React-компоненти: `packages/ui/src/blocks/`.
 - **Conditional Rendering** — умовний показ блоків за role/tariff/status/permissions користувача. `packages/shared/src/utils/condition-evaluator.ts`.
 - **Design System** — подвійна тема Apple/Material через `data-brand` на `<html>`. CSS-токени: `packages/shared/src/styles/`. Темна/світла: `data-theme`.

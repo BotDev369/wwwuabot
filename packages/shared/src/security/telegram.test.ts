@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { verifyInitData, INIT_DATA_MAX_AGE_SECONDS } from "./telegram";
+import { verifyInitData, verifyInitDataPayload, INIT_DATA_MAX_AGE_SECONDS } from "./telegram";
 
 const BOT_TOKEN = "123456:TEST-BOT-TOKEN";
 
@@ -99,5 +99,65 @@ describe("verifyInitData", () => {
 
   it("не кидає виняток на смітті", async () => {
     await expect(verifyInitData("!!!!", BOT_TOKEN)).resolves.toBeNull();
+  });
+});
+
+/**
+ * Профіль показує «всі дані, які Telegram віддає про людину». Щоб це не
+ * перетворилось на перелічені нами поля, картка бере payload цілком — і ці
+ * тести фіксують, що з перевіреного рядка справді приходить **усе**
+ * (`is_premium`, `allows_write_to_pm`, `photo_url`, `chat_type`), а не лише те,
+ * що ми звикли зберігати в колонки.
+ */
+describe("verifyInitDataPayload", () => {
+  const FULL_USER = {
+    id: 777,
+    first_name: "Тест",
+    last_name: "Тестовий",
+    username: "test_user",
+    language_code: "uk",
+    is_premium: true,
+    added_to_menu: true,
+    allows_write_to_pm: true,
+    photo_url: "https://example.com/photo.jpg",
+  };
+
+  it("віддає об'єкт `user` цілком і всі решта параметрів", async () => {
+    const initData = await makeInitData(
+      validFields({
+        user: JSON.stringify(FULL_USER),
+        chat_type: "private",
+        chat_instance: "-123456",
+        start_param: "mydate_19800303_today",
+      }),
+    );
+
+    const payload = await verifyInitDataPayload(initData, BOT_TOKEN);
+    expect(payload).not.toBeNull();
+    if (!payload) return;
+
+    expect(payload.userId).toBe(777);
+    expect(payload.user).toMatchObject(FULL_USER);
+    expect(payload.params.chat_type).toBe("private");
+    expect(payload.params.start_param).toBe("mydate_19800303_today");
+    expect(payload.authDate).toBeGreaterThan(0);
+  });
+
+  it("⛔ не віддає `hash` у параметрах (це підпис, а не дані)", async () => {
+    const initData = await makeInitData(validFields());
+    const payload = await verifyInitDataPayload(initData, BOT_TOKEN);
+    expect(payload?.params.hash).toBeUndefined();
+  });
+
+  it("відхиляє підпис іншим токеном так само, як verifyInitData", async () => {
+    const initData = await makeInitData(validFields(), "999:ІНШИЙ-ТОКЕН");
+    await expect(verifyInitDataPayload(initData, BOT_TOKEN)).resolves.toBeNull();
+  });
+
+  it("відхиляє підмінений `user` (підпис розходиться)", async () => {
+    const initData = await makeInitData(validFields());
+    const params = new URLSearchParams(initData);
+    params.set("user", JSON.stringify({ ...FULL_USER, is_premium: false }));
+    await expect(verifyInitDataPayload(params.toString(), BOT_TOKEN)).resolves.toBeNull();
   });
 });

@@ -9,6 +9,23 @@ interface Props {
   onMessage: (userId: number) => void;
 }
 
+/**
+ * `telegram_json` з рядка `users` → об'єкт. Пише його `bot-dev` (усе, що
+ * Telegram віддав про людину), читає — ця картка, і саме тому адмінка бачить
+ * ті самі поля, що й користувач у TWA, навіть якщо в браузері `initData` немає.
+ */
+function parseTelegramJson(raw: unknown): Record<string, unknown> | null {
+  if (typeof raw !== "string" || !raw.trim()) return null;
+  try {
+    const parsed = JSON.parse(raw);
+    return parsed && typeof parsed === "object" && !Array.isArray(parsed)
+      ? (parsed as Record<string, unknown>)
+      : null;
+  } catch {
+    return null;
+  }
+}
+
 /** Convert raw DB row to normalized UserProfileData */
 function rowToProfile(row: UserRow): UserProfileData {
   const r = row as Record<string, unknown>;
@@ -29,6 +46,9 @@ function rowToProfile(row: UserRow): UserProfileData {
   }
 
   // Collect raw admin-only fields
+  // `platform_username` і `telegram_json` тут не «додаткові»: перше має власний
+  // блок угорі картки, друге — розділ «Дані від Telegram», тому в сирому
+  // переліку вони були б третім і четвертим показом того самого.
   const SKIP_FIELDS = new Set([
     "user_id",
     "first_name",
@@ -41,6 +61,8 @@ function rowToProfile(row: UserRow): UserProfileData {
     "discount",
     "permissions",
     "is_blocked",
+    "platform_username",
+    "telegram_json",
     "created_at",
     "updated_at",
   ]);
@@ -56,7 +78,9 @@ function rowToProfile(row: UserRow): UserProfileData {
     firstName: r.first_name as string | null,
     lastName: r.last_name as string | null,
     username: r.username as string | null,
+    platformUsername: (r.platform_username as string | null) ?? null,
     language: r.language as string | null,
+    telegram: parseTelegramJson(r.telegram_json),
     role: r.role as string | null,
     tariff: r.tariff as string | null,
     status: r.status as string | null,

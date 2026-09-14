@@ -33,7 +33,7 @@ npx wrangler d1 execute wwwuabot-db-dev --remote \
 
 | Таблиця | Власник | Хто створює | Хто читає / пише | Призначення |
 |---|---|---|---|---|
-| `users` | `bot-dev` | bot-dev, `createUser` | bot-dev (стан, профіль, блокування); api-dev (адмін-CRUD, `/api/user/profile`, колонка `my_dates`) | стан користувача Telegram |
+| `users` | `bot-dev` | bot-dev, `createUser` | bot-dev (стан, профіль, блокування, `telegram_json`); api-dev (адмін-CRUD, `/api/user/profile`, `platform_username`, колонка `my_dates`) | стан користувача Telegram: профіль, роль, тариф, блокування, **ім'я на платформі** |
 | `settings` | `bot-dev` | bot-dev, `SettingsRepository.initialize` | bot-dev | один рядок (`id = 1`): `chat_id` груп, прапорець активності |
 | `scenarios` | `api-dev` | api-dev (`ensureBase`, `scenarios-portal.controller`) | **bot-dev читає**; api-dev редагує (`/api/portal/scenarios/*`); платформа рендерить (`/api/scenario/:slug`) | **єдине сховище контенту:** рядок = сторінка вебу (`page_data`) + її подання в боті (`caption_*`, `buttons`, `rich_*`). Деталі — [`CONTENT_MODEL.md`](./CONTENT_MODEL.md) |
 
@@ -51,6 +51,18 @@ npx wrangler d1 execute wwwuabot-db-dev --remote \
 `CREATE TABLE`, а не іменований індекс. Це не дрібниця — імена індексів у SQLite глобальні для
 бази, тому однойменний `CREATE UNIQUE INDEX IF NOT EXISTS` міг би виявитись **порожньою дією**,
 і таблиця лишилась би без унікальності, не сказавши про це нікому.
+
+## Дві різні «імена» в `users` (14.09.2026)
+
+| Колонка | Хто пише | Що це |
+|---|---|---|
+| `username` | бот (`ctx.from`) | Telegram-хендл людини: ми його **не обираємо**, він може бути відсутнім або змінитись |
+| `platform_username` | сам користувач (TWA → `/api/user/username`) | ім'я на wwwuabot — головне ім'я в продукті; правила одні на всі поверхні (`packages/shared/src/user/platform-username.ts`), зайняте → **409** |
+| `telegram_json` | бот (`ctx.from` як JSON) | усе, що Telegram віддав про людину, **як є** — щоб профіль показував справжні дані, а не перелік, який ми самі склали |
+
+Унікальність `platform_username` тримає сам запит (`SELECT … WHERE platform_username = ?` перед
+записом), а не іменований `UNIQUE`-індекс: імена індексів у SQLite **глобальні для бази**, тож
+однойменний на іншій таблиці був би порожньою дією без помилки — та сама паста, що й зі `slug`.
 
 ## Що тут було не так (до 13.09.2026)
 

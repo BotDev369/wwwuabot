@@ -33,6 +33,7 @@ import {
   handleListUsers,
   handleReadUser,
   handleUserProfile,
+  handleSetPlatformUsername,
   handleUpdateUser,
   handleDeleteUser,
   handleBlockUser,
@@ -189,8 +190,13 @@ export async function handleRequest(request: Request, env: Env): Promise<Respons
   }
 
   // ── Public: User Profile (for web-platform conditional rendering) ──
+  // Ідентичність — з підписаного `initData`, тож префікс не потребує
+  // адмін-гейта. `/api/user/username` — дія користувача над **своїм** ім'ям.
   if (pathname === "/api/user/profile" && request.method === "GET") {
     return handleUserProfile(request, env);
+  }
+  if (pathname === "/api/user/username" && request.method === "POST") {
+    return handleSetPlatformUsername(request, env);
   }
 
   // ── 404 ─────────────────────────────────────────────────────────

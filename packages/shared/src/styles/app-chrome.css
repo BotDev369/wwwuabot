@@ -700,6 +700,140 @@
   }
 }
 
+/* Ім'я на платформі — перший блок профілю: той самий вигляд в обох оболонках,
+   різниця лише в тому, чи є обробник збереження (адмінка показує без правки). */
+.wb-profile--handle {
+  background: var(--surface);
+}
+
+.wb-handle-head {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-3);
+}
+
+.wb-handle-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  flex-shrink: 0;
+  border-radius: 50%;
+  background: var(--accent-dim);
+  color: var(--accent);
+}
+
+.wb-handle-info {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.wb-handle-label {
+  color: var(--text-muted);
+  font-size: var(--text-sm);
+}
+
+.wb-handle-name {
+  font-size: var(--text-lg);
+  font-weight: var(--weight-bold);
+  word-break: break-all;
+}
+
+.wb-handle-name--empty {
+  color: var(--text-muted);
+  font-weight: var(--weight-medium);
+}
+
+.wb-handle-hint {
+  margin: var(--sp-3) 0 0;
+  color: var(--text-muted);
+  font-size: var(--text-sm);
+  line-height: 1.5;
+}
+
+.wb-handle-form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-2);
+  margin-top: var(--sp-3);
+}
+
+.wb-handle-input-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 0 var(--sp-3);
+  min-height: 44px;
+  background: var(--bg-1);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+}
+
+.wb-handle-at {
+  color: var(--text-muted);
+  font-size: var(--text-md);
+}
+
+.wb-handle-input {
+  flex: 1 1 auto;
+  min-width: 0;
+  border: none;
+  background: transparent;
+  color: var(--text-primary);
+  font: inherit;
+  font-size: var(--text-md);
+  padding: 10px 0;
+}
+
+.wb-handle-input:focus {
+  outline: none;
+}
+
+.wb-handle-input-row:focus-within {
+  border-color: var(--accent);
+}
+
+.wb-handle-error {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--red);
+  font-size: var(--text-sm);
+}
+
+.wb-handle-actions {
+  display: flex;
+  gap: var(--sp-2);
+}
+
+/* Пояснення під заголовком розділу профілю */
+.wb-profile-note {
+  margin: 0 0 var(--sp-3);
+  color: var(--text-muted);
+  font-size: var(--text-sm);
+  line-height: 1.5;
+}
+
+.wb-profile-details {
+  margin-top: var(--sp-3);
+  border-top: 1px solid var(--border-subtle);
+  padding-top: var(--sp-3);
+}
+
+.wb-profile-summary {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  cursor: pointer;
+  color: var(--text-muted);
+  font-size: var(--text-sm);
+}
+
+.wb-profile-subfields {
+  margin-top: var(--sp-2);
+}
+
 /* ═══ Мобільна адаптація каркаса ════════════════════════════════════════════ */
 
 @media (max-width: 768px) {

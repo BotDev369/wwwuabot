@@ -97,8 +97,13 @@ Defined in `packages/shared/src/styles/tokens.css`, overridden per brand in `app
     `scripts/css-baseline.mjs` and must shrink, never grow.
 12. **Compose from bricks — don't draw your own chrome.** A shell's chrome is
     `.wb-app*`, `.wb-nav*`, `.wb-tabbar*`, `.wb-topbar*`, `.wb-page*`, `.wb-auth*`, `.wb-splash`,
-    `.wb-profile*` (`app-chrome.css`). The same detail in both shells → a brick in
+    `.wb-profile*`, `.wb-handle*` (`app-chrome.css`). The same detail in both shells → a brick in
     shared; a new private class for the same thing is a defect, not "the shell's style".
+    The profile's first block is the platform username: `.wb-handle*` (`-head`, `-badge`,
+    `-info`, `-label`, `-name` (+`--empty`), `-hint`, `-form`, `-input-row`, `-at`, `-input`,
+    `-error`, `-actions`) with `.wb-profile-note` / `-details` / `-summary` / `-subfields`
+    for the rest. Whether the name can be edited is decided by one thing only — the presence
+    of a save handler — so the visual stays identical in both shells.
     The global bottom footer (`.wb-tabbar`, `TabBar` from `@wwwuabot/ui/nav`) is one of those
     bricks: equal slots, the action `+` in the middle, profile at the far right. The active
     section is highlighted **by its own glyph, not by a background**: the shell hands over a

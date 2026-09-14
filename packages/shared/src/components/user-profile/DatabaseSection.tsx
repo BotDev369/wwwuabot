@@ -2,7 +2,14 @@ import { FieldRow } from "./FieldRow";
 import { RoleBadge, StatusBadge, ico } from "./badges";
 import type { UserProfileData } from "./types";
 
-/** Поля рядка `users`. Адмінка показує ще й Telegram-дані, бо рядок повний. */
+/**
+ * Дані, які ставить **система або адмін**: роль, тариф, статус, знижка,
+ * права, блокування. Людина має бачити їх про себе — інакше «чому мені щось
+ * недоступно» лишається здогадом.
+ *
+ * Адмінка показує тут ще й Telegram-дані, бо читає повний рядок `users`
+ * (окремої колонки «Telegram» у неї немає).
+ */
 export function DatabaseSection({
   user,
   showTelegramFields,
@@ -12,7 +19,7 @@ export function DatabaseSection({
 }) {
   return (
     <div className="wb-profile">
-      <h3 className="wb-profile-title">{ico("clipboard")} Дані з бази</h3>
+      <h3 className="wb-profile-title">{ico("clipboard")} Дані системи</h3>
       <div className="wb-profile-fields">
         {showTelegramFields && (
           <>
@@ -20,7 +27,7 @@ export function DatabaseSection({
             <FieldRow label="Ім'я" value={user.firstName} icon="edit" />
             <FieldRow label="Прізвище" value={user.lastName} icon="edit" />
             <FieldRow
-              label="Username"
+              label="Telegram-хендл"
               value={user.username ? `@${user.username}` : null}
               icon="globe"
             />
@@ -38,7 +45,11 @@ export function DatabaseSection({
           value={user.status ? <StatusBadge value={user.status} /> : null}
           icon="check"
         />
-        <FieldRow label="Знижка" value={user.discount ? `${user.discount}%` : null} icon="info" />
+        <FieldRow
+          label="Знижка"
+          value={user.discount ? `${user.discount}%` : null}
+          icon="percent"
+        />
         <FieldRow
           label="Дозволи"
           value={

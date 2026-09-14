@@ -34,6 +34,7 @@
     "./observability/sentry": "./src/observability/sentry.ts",
     "./security/session": "./src/security/session.ts",
     "./security/telegram": "./src/security/telegram.ts",
+    "./user/platform-username": "./src/user/platform-username.ts",
     "./components/Icon": "./src/components/Icon.tsx",
     "./components/SaveActionButtons": "./src/components/SaveActionButtons.tsx"
   },

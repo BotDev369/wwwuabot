@@ -20,6 +20,13 @@ import type { ShellTab } from "@wwwuabot/ui/nav";
 export interface PlatformTab extends Omit<ShellTab, "href"> {
   /** Адреса сторінки — `slug` рядка `scenarios`. Немає — заглушка. */
   slug?: string;
+  /**
+   * Маршрут, який **не** є рядком контенту (профіль). Окреме поле, а не
+   * `slug`, бо тут адреса не береться з бази: вигадати `slug` під екран, у
+   * якого немає `page_data`, означало б завести друге правило «яка адреса
+   * відповідає цьому екрану» (AGENTS.md §7).
+   */
+  to?: string;
 }
 
 export const PLATFORM_TABS: readonly PlatformTab[] = [
@@ -39,13 +46,13 @@ export const PLATFORM_TABS: readonly PlatformTab[] = [
     iconActive: "shop-solid",
     slug: "galyashop",
   },
-  { key: "profile", label: "Профіль", icon: "user", iconActive: "user-solid" },
+  { key: "profile", label: "Профіль", icon: "user", iconActive: "user-solid", to: "/profile" },
 ];
 
 /** Той самий склад, але з готовими адресами — як очікує спільний `TabBar`. */
 export function toShellTabs(tabs: readonly PlatformTab[] = PLATFORM_TABS): ShellTab[] {
-  return tabs.map(({ slug, ...tab }) => ({
+  return tabs.map(({ slug, to, ...tab }) => ({
     ...tab,
-    href: slug === undefined ? undefined : toWebPath(slug),
+    href: to ?? (slug === undefined ? undefined : toWebPath(slug)),
   }));
 }

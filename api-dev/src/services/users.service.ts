@@ -1,18 +1,4 @@
 import type { Env } from "../shared/types";
-import { withAutoMigrate } from "@wwwuabot/shared/database/auto-migrate";
-
-export interface UserProfileDto {
-  id: number;
-  firstName?: string | null;
-  lastName?: string | null;
-  username?: string | null;
-  language?: string | null;
-  role: string;
-  tariff: string;
-  status: string;
-  discount: number;
-  permissions: string[];
-}
 
 const SAFE_RE = /^[a-zA-Z_][a-zA-Z0-9_]*$/;
 const PROTECTED_USERS = new Set(["user_id"]);
@@ -223,51 +209,6 @@ export class UsersService {
     if (!tgData.ok) {
       throw new Error(tgData.description ?? "Telegram API error");
     }
-  }
-
-  /** Отримати профіль користувача для conditional rendering. */
-  async getUserProfile(userId: number): Promise<UserProfileDto | null> {
-    const row = await withAutoMigrate(
-      this.env.DB,
-      () =>
-        this.env.DB.prepare(
-          `SELECT user_id, first_name, last_name, username, language,
-                  role, tariff, status, discount, permissions
-           FROM users WHERE user_id = ?`,
-        )
-          .bind(userId)
-          .first<Record<string, unknown>>(),
-      { role: "user", tariff: "free", status: "active", discount: 0, permissions: "[]" },
-      "users",
-    );
-
-    if (!row) return null;
-
-    let permissions: string[] = [];
-    if (typeof row.permissions === "string" && row.permissions) {
-      try {
-        const parsed = JSON.parse(row.permissions);
-        if (Array.isArray(parsed)) permissions = parsed;
-      } catch {
-        permissions = row.permissions
-          .split(",")
-          .map((s: string) => s.trim())
-          .filter(Boolean);
-      }
-    }
-
-    return {
-      id: Number(row.user_id),
-      firstName: (row.first_name as string) ?? null,
-      lastName: (row.last_name as string) ?? null,
-      username: (row.username as string) ?? null,
-      language: (row.language as string) ?? null,
-      role: (row.role as string) ?? "user",
-      tariff: (row.tariff as string) ?? "free",
-      status: (row.status as string) ?? "active",
-      discount: Number(row.discount ?? 0),
-      permissions,
-    };
   }
 
   /** Сповіщення про блокування або розблокування акаунту через сценарій або fallback. */

@@ -8,6 +8,13 @@ export interface BotUser {
   last_name?: string;
   username?: string;
   language?: string;
+  /**
+   * Усе, що Telegram віддав про користувача (`ctx.from` як JSON) — щоб
+   * профіль показував справжні дані, а не перелік, який ми самі склали.
+   */
+  telegram_json?: string;
+  /** Ім'я на платформі (wwwuabot) — його обирає сам користувач, не Telegram. */
+  platform_username?: string;
   is_blocked?: number | boolean;
   rate_limit_json?: string;
   active_scenario?: string | null;

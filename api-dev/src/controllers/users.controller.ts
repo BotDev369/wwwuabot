@@ -13,10 +13,12 @@
  *   POST /api/admin/users/bulk        — bulk delete/block/unblock
  *   POST /api/admin/users/message     — надіслати повідомлення через Telegram
  *   GET  /api/user/profile            — профіль для conditional rendering
+ *   POST /api/user/username           — задати ім'я на платформі (сам користувач)
  */
 import type { Env } from "../shared/types";
 import { UsersService } from "../services/users.service";
-import { resolveUserId } from "../shared/identity";
+import { UserProfileService } from "../services/user-profile.service";
+import { resolveInitDataIdentity, resolveUserId } from "../shared/identity";
 
 // ── Helpers ───────────────────────────────────────────────────────
 function json(data: unknown, status = 200): Response {
@@ -198,22 +200,73 @@ export async function handleUserMessage(request: Request, env: Env): Promise<Res
  *
  * Ідентичність береться з підписаного Telegram `initData`, а не з query-параметра:
  * інакше будь-хто читав би роль, тариф і права будь-якого користувача.
- * Повертає role, tariff, status, discount, permissions для conditional rendering.
+ *
+ * **Два джерела — навмисно.** З бази приходять роль, тариф, статус, знижка,
+ * права й **ім'я на платформі** (їх ставить система чи адмін); з підписаного
+ * `initData` — усе, що Telegram віддав тут і зараз, **як є** (у т. ч.
+ * `is_premium`, `allows_write_to_pm`, `photo_url`). Живе значення має
+ * перевагу над збереженим: показати людині застаріле преміум-прапорце
+ * було б брехнею, а `initDataUnsafe` у браузері — дані, яким не можна вірити.
  */
 export async function handleUserProfile(request: Request, env: Env): Promise<Response> {
-  const identity = await resolveUserId(request, env);
+  const identity = await resolveInitDataIdentity(request, env);
   if (!identity.ok) return identity.response;
-  const userId = identity.userId;
 
   try {
-    const service = new UsersService(env);
-    const user = await service.getUserProfile(userId);
+    const user = await new UserProfileService(env).read(identity.userId);
     if (!user) {
       return json({ error: "User not found" }, 404);
     }
-    return json({ ok: true, user });
+
+    return json({
+      ok: true,
+      user: {
+        ...user,
+        telegram: identity.payload.user,
+        telegramSession: identity.payload.params,
+        telegramAuthDate: identity.payload.authDate,
+      },
+    });
   } catch (e: unknown) {
     const msg = e instanceof Error ? e.message : "Failed to fetch user profile";
+    return json({ error: msg }, 500);
+  }
+}
+
+/**
+ * POST /api/user/username — задати ім'я на платформі.
+ *
+ * Це **дія самого користувача**, тому й маршрут під `/api/user/`, а не під
+ * адмін-префіксами: адмін-гейт тут не потрібен, бо `userId` узятий із підпису,
+ * а не з тіла запиту — підмінити його неможливо. Тіло несе лише кандидата.
+ */
+export async function handleSetPlatformUsername(request: Request, env: Env): Promise<Response> {
+  const identity = await resolveUserId(request, env);
+  if (!identity.ok) return identity.response;
+
+  let body: { username?: unknown };
+  try {
+    body = await request.json();
+  } catch {
+    return json({ error: "Invalid JSON" }, 400);
+  }
+
+  const candidate = typeof body.username === "string" ? body.username : "";
+
+  try {
+    const result = await new UserProfileService(env).setPlatformUsername(
+      identity.userId,
+      candidate,
+    );
+    if (result.ok) {
+      return json({ ok: true, platformUsername: result.platformUsername });
+    }
+
+    // 409 — не «помилка запиту», а чесний стан: ім'я зайняте кимось іншим.
+    const status = result.code === "invalid" ? 400 : result.code === "taken" ? 409 : 500;
+    return json({ error: result.message, code: result.code }, status);
+  } catch (e: unknown) {
+    const msg = e instanceof Error ? e.message : "Failed to save username";
     return json({ error: msg }, 500);
   }
 }
