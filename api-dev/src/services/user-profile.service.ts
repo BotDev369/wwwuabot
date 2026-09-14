@@ -145,9 +145,9 @@ export class UserProfileService {
       return { ok: false, code: "invalid", message: validated.message };
     }
 
-    await this.ensureSchema();
-
     try {
+      await this.ensureSchema();
+
       const taken = await this.env.DB.prepare(
         "SELECT user_id FROM users WHERE platform_username = ?",
       )
