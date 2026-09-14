@@ -62,7 +62,7 @@ Defined in `packages/shared/src/styles/tokens.css`, overridden per brand in `app
 | `var(--sidebar-w)` / `--sidebar-w-collapsed` | Ширина бічної панелі на десктопі |
 | `var(--drawer-w)` | Ширина виїзного меню на мобільному (те саме значення в обох оболонках) |
 | `var(--scrim)` | Затемнення під drawer/модалкою |
-| `var(--topbar-h)` / `--nav-bar-h` | Висоти хедерів і нижньої смуги (бренд: 49px Apple HIG, 56px Material) |
+| `var(--topbar-h)` / `--nav-bar-h` | Висоти хедерів і нижньої смуги (бренд: 56px Apple HIG, 60px Material — планка бренду плюс місце під залите коло активного розділу) |
 | `var(--tab-bar-h)` | Повна висота нижнього футера = `--nav-bar-h` + `--safe-bottom` (не перевизначати третім числом) |
 | `var(--safe-top)` / `var(--safe-bottom)` | Краї екрана: `env(safe-area-inset-*)` + `--tg-safe-area-inset-*` від Telegram |
 | `var(--max-content)` | Максимальна ширина контенту |
@@ -100,8 +100,10 @@ Defined in `packages/shared/src/styles/tokens.css`, overridden per brand in `app
     `.wb-profile*` (`app-chrome.css`). The same detail in both shells → a brick in
     shared; a new private class for the same thing is a defect, not "the shell's style".
     The global bottom footer (`.wb-tabbar`, `TabBar` from `@wwwuabot/ui/nav`) is one of those
-    bricks: 5 slots, `+` in the middle, profile at the far right. It is `position: fixed`,
-    so the content needs room under it (`.wb-tabbar-layout` / `.wb-app-body--tabbar`).
+    bricks: equal slots, profile at the far right, and the **active section highlighted by a
+    filled circle under its icon** (`.wb-tabbar-item--active .wb-tabbar-icon`) — never by a
+    bigger button, so no slot stands out. It is `position: fixed`, so the content needs room
+    under it (`.wb-tabbar-layout` / `.wb-app-body--tabbar`).
 13. Shared blocks (`packages/ui/src/blocks/*`) are still styled with inline
     `style={{ … }}` (192 objects there, 556 in live `src` overall; 97 hardcoded `#hex`),
     and **45 `wb-block-*` classes have no CSS rule at all**, so `data-brand` and

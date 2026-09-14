@@ -19,19 +19,12 @@ interface TabBarProps {
 
 function itemClassName(item: TabBarItem): string {
   let className = "wb-tabbar-item";
-  if (item.primary) className += " wb-tabbar-item--primary";
   if (item.active) className += " wb-tabbar-item--active";
   return className;
 }
 
 function TabBarButton({ item }: { item: TabBarItem }): ReactElement {
-  // «+» — це лише кругла кнопка; підпис у неї не показується, тож він іде
-  // в aria-label: інакше слот був би безіменною кнопкою.
-  const content = item.primary ? (
-    <span className="wb-tabbar-plus">
-      <Icon name={item.icon} size={22} />
-    </span>
-  ) : (
+  const content = (
     <>
       <span className="wb-tabbar-icon">
         <Icon name={item.icon} size={24} />

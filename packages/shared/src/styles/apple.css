@@ -128,7 +128,8 @@
   --sidebar-w: 260px;
   --sidebar-w-collapsed: 72px;
   --topbar-h: 54px;
-  --nav-bar-h: 49px;
+  /* 49px — планка HIG; +7 — залите коло активного розділу під іконкою */
+  --nav-bar-h: 56px;
   /* `--tab-bar-h` не перевизначаємо: він = --nav-bar-h + --safe-bottom */
   --safe-top: max(env(safe-area-inset-top, 0px), var(--tg-safe-area-inset-top, 0px));
   --safe-bottom: max(env(safe-area-inset-bottom, 0px), var(--tg-safe-area-inset-bottom, 0px));

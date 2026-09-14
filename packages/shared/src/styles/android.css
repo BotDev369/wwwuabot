@@ -124,7 +124,8 @@
   --sidebar-w: 240px;
   --sidebar-w-collapsed: 64px;
   --topbar-h: 56px;
-  --nav-bar-h: 56px;
+  /* 56px — планка Material; +4 — залите коло активного розділу під іконкою */
+  --nav-bar-h: 60px;
   /* `--tab-bar-h` не перевизначаємо: він = --nav-bar-h + --safe-bottom */
   --safe-top: max(env(safe-area-inset-top, 0px), var(--tg-safe-area-inset-top, 0px));
   --safe-bottom: max(env(safe-area-inset-bottom, 0px), var(--tg-safe-area-inset-bottom, 0px));

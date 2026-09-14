@@ -15,7 +15,7 @@
  *
  *   Каркас:      .wb-app .wb-app-main .wb-app-header .wb-app-body
  *   Меню:        .wb-nav .wb-nav-header .wb-nav-menu .wb-nav-item …
- *   Футер:       .wb-tabbar .wb-tabbar-inner .wb-tabbar-item (+ --primary) …
+ *   Футер:       .wb-tabbar .wb-tabbar-inner .wb-tabbar-item (+ --active) …
  *   Шапка:       .wb-topbar .wb-topbar-title .wb-topbar-right
  *   Сторінка:    .wb-page .wb-page-head .wb-page-title .wb-page-actions
  *   Екрани:      .wb-splash (+ іконка) · .wb-auth (+ картка, поле, помилка)
@@ -288,8 +288,9 @@
 
 /* ═══ Глобальний нижній футер (tab bar) ═════════════════════════════════════
    Той самий патерн, що в YouTube / Facebook / TikTok / Instagram / Новій
-   пошті: смуга поверх усього внизу екрана, 5 слотів, у центрі — «+»,
-   крайній справа — профіль.
+   пошті: смуга поверх усього внизу екрана, рівні слоти, крайній справа —
+   профіль. Активний розділ підсвічує СВОЮ ІКОНКУ залитим колом — окремої
+   кнопки «+» немає, тож жоден слот не вибивається розміром.
 
    Смуга ФІКСОВАНА, тож контент мусить мати місце під нею — інакше останній
    рядок назавжди лишається під нею:
@@ -333,7 +334,8 @@
 }
 
 /* Пункт: іконка + підпис. flex-basis 0 — усі слоти рівні, незалежно від
-   довжини підпису («МоїДати» і «Профіль» не роз'їжджаються). */
+   довжини підпису («МоїДати» і «Профіль» не роз'їжджаються). Активний
+   пункт відрізняється кольором і колом під іконкою, а не розміром. */
 .wb-tabbar-item {
   flex: 1 1 0;
   min-width: 0;
@@ -343,12 +345,15 @@
   align-items: center;
   justify-content: center;
   gap: 2px;
-  padding: 6px 2px;
+  /* 4px + коло 32 + проміжок 2 + підпис 12 + 4px = 54 — рівно під `--nav-bar-h`,
+     бо смуга має ФІКСОВАНУ висоту, а не росте від вмісту. */
+  padding: 4px 2px;
   border: none;
   background: none;
   color: var(--text-muted);
   font-family: inherit;
   font-size: 10px;
+  line-height: 1.2;
   font-weight: var(--weight-medium);
   text-decoration: none;
   cursor: pointer;
@@ -366,12 +371,22 @@
   color: var(--accent);
 }
 
+/* Іконка сидить у круглій «таблетці» однакового розміру в обох станах:
+   у неактивного пункту вона прозора, у активного — залита акцентом.
+   Якби коло додавало розмір, смуга «сіпалась» б при переході. */
 .wb-tabbar-icon {
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 24px;
-  height: 24px;
+  width: 32px;
+  height: 32px;
+  border-radius: var(--radius-full);
+  transition: background var(--duration-fast) var(--ease);
+}
+
+.wb-tabbar-item--active .wb-tabbar-icon {
+  background: var(--accent);
+  color: var(--text-inverse);
 }
 
 .wb-tabbar-icon svg {
@@ -385,29 +400,6 @@
   overflow: hidden;
   white-space: nowrap;
   text-overflow: ellipsis;
-}
-
-/* Центральний «+»: піднята кругла кнопка без підпису — як у TikTok */
-.wb-tabbar-item--primary {
-  flex: 0 0 auto;
-  padding: 0 12px;
-}
-
-.wb-tabbar-plus {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 44px;
-  height: 44px;
-  border-radius: var(--radius-full);
-  background: var(--accent);
-  color: var(--text-inverse);
-  box-shadow: var(--shadow-md);
-}
-
-.wb-tabbar-plus svg {
-  width: 22px;
-  height: 22px;
 }
 
 /* ═══ Шапка сторінки (topbar) ═══════════════════════════════════════════════ */
