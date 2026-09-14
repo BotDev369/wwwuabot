@@ -6,6 +6,7 @@ import {
   hasValidSession,
   parseCookies,
   sessionExpiresAt,
+  sessionTokenExpiresAt,
   signSessionToken,
   verifySessionToken,
 } from "./session";
@@ -105,6 +106,28 @@ describe("hasValidSession", () => {
     await expect(
       hasValidSession(requestWithCookie(`other_session=${token}`), SECRET),
     ).resolves.toBe(false);
+  });
+});
+
+describe("sessionTokenExpiresAt", () => {
+  it("читає термін із підписаного токена", async () => {
+    const expires = sessionExpiresAt();
+    const token = await signSessionToken(`admin:${expires}`, SECRET);
+    expect(sessionTokenExpiresAt(token)).toBe(expires);
+  });
+
+  it("без крапки або без числа — null", () => {
+    expect(sessionTokenExpiresAt("admin:123")).toBeNull();
+    expect(sessionTokenExpiresAt("admin:.abcdef")).toBeNull();
+    expect(sessionTokenExpiresAt("")).toBeNull();
+  });
+
+  it("не перевіряє підпис — це показ, а не авторизація", async () => {
+    // Той самий payload із чужим підписом: число читається, але сесія недійсна.
+    const expires = sessionExpiresAt();
+    const token = `admin:${expires}.deadbeef`;
+    expect(sessionTokenExpiresAt(token)).toBe(expires);
+    await expect(verifySessionToken(token, SECRET)).resolves.toBe(false);
   });
 });
 

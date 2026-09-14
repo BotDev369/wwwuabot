@@ -5,6 +5,7 @@ import { ScenariosPage } from "../pages/scenarios/ScenariosPage";
 import { UsersPage } from "../pages/users/UsersPage";
 import { PageBuilderPage } from "../features/page-builder/PageBuilderPage";
 import { BotSettingsPage } from "../pages/bot-settings/BotSettingsPage";
+import { ProfilePage } from "../pages/profile/ProfilePage";
 
 /**
  * Маршрути web-admin.
@@ -13,6 +14,9 @@ import { BotSettingsPage } from "../pages/bot-settings/BotSettingsPage";
  * /page-builder/:cw   — Конструктор сторінок
  * /users              — Користувачі
  * /bot-settings       — Налаштування бота
+ * /profile            — Профіль (акаунт панелі + профіль людини) — той самий
+ *                       екран, що й у платформі, зі спільного `UserProfileCard`;
+ *                       не рядок контенту, тому не `/:slug`.
  *
  * Маршрутів «сайтів» (`/sites`, `/sites/moderation`) і «шаблонів» тут більше
  * немає: таблиці `sites`, `site_pages`, `templates` видалено 13.09.2026, бо
@@ -28,6 +32,7 @@ export const router = createBrowserRouter([
       { path: "page-builder/:slug", element: <PageBuilderPage /> },
       { path: "users", element: <UsersPage /> },
       { path: "bot-settings", element: <BotSettingsPage /> },
+      { path: "profile", element: <ProfilePage /> },
     ],
   },
 ]);

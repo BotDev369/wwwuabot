@@ -97,7 +97,9 @@ Defined in `packages/shared/src/styles/tokens.css`, overridden per brand in `app
     `scripts/css-baseline.mjs` and must shrink, never grow.
 12. **Compose from bricks — don't draw your own chrome.** A shell's chrome is
     `.wb-app*`, `.wb-nav*`, `.wb-tabbar*`, `.wb-topbar*`, `.wb-page*`, `.wb-auth*`, `.wb-splash`,
-    `.wb-profile*`, `.wb-handle*` (`app-chrome.css`). The same detail in both shells → a brick in
+    `.wb-profile*`, `.wb-profile-lookup`, `.wb-handle*` (`app-chrome.css`). A page that must scroll
+    inside the panel adds `.wb-page-scroll`: the panel chrome keeps `overflow: hidden`, so the page
+    has to bring its own scrolling. The same detail in both shells → a brick in
     shared; a new private class for the same thing is a defect, not "the shell's style".
     The profile's first block is the platform username: `.wb-handle*` (`-head`, `-badge`,
     `-info`, `-label`, `-name` (+`--empty`), `-hint`, `-form`, `-input-row`, `-at`, `-input`,

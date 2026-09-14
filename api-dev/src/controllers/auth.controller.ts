@@ -17,6 +17,7 @@ import {
   hasValidSession,
   parseCookies,
   sessionExpiresAt,
+  sessionTokenExpiresAt,
   signSessionToken,
   verifySessionToken,
 } from "@wwwuabot/shared/security/session";
@@ -103,12 +104,21 @@ export async function handleLogout(): Promise<Response> {
   });
 }
 
-/** GET /auth/check — перевірка стану авторизації. */
+/**
+ * GET /auth/check — перевірка стану авторизації.
+ *
+ * Разом зі станом віддає `expiresAt`: це той самий факт про **власну** сесію
+ * запитувача, тож показувати його в профілі панелі можна, не розкриваючи
+ * нічого зайвого. Термін береться лише з перевіреного токена.
+ */
 export async function handleAuthCheck(request: Request, env: Env): Promise<Response> {
   const token = parseCookies(request.headers.get("Cookie"))[ADMIN_COOKIE_NAME];
   if (!token || !env.ADMIN_SECRET) {
-    return json({ authenticated: false });
+    return json({ authenticated: false, expiresAt: null });
   }
   const valid = await verifySessionToken(token, env.ADMIN_SECRET);
-  return json({ authenticated: valid });
+  return json({
+    authenticated: valid,
+    expiresAt: valid ? sessionTokenExpiresAt(token) : null,
+  });
 }

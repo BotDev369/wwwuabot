@@ -31,6 +31,8 @@ export { Footer } from "./layout/Footer";
 // ── Components ─────────────────────────────────────────────────────
 export { UserProfileCard } from "./components/UserProfileCard";
 export type { UserProfileData, UserProfileCardProps } from "./components/UserProfileCard";
+/** Рядок «підпис → значення» картки профілю — щоб оболонки не малювали свій. */
+export { FieldRow as UserProfileField } from "./components/user-profile/FieldRow";
 // ── Save Actions Module ──────────────────────────────────────────────
 export { SaveActionButtons } from "./components/SaveActionButtons";
 export type { SaveActionButtonsProps, SavingActionType } from "./components/SaveActionButtons";

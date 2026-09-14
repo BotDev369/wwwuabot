@@ -1,4 +1,6 @@
+import type { UserProfileData } from "@wwwuabot/shared";
 import { apiFetch } from "./client";
+import { rowToProfile } from "./user-profile-row";
 
 export interface UserRow {
   user_id: number;
@@ -35,6 +37,15 @@ export async function readUser(userId: number): Promise<UserRow | null> {
     body: JSON.stringify({ user_id: userId }),
   });
   return res.data;
+}
+
+/**
+ * Той самий рядок, але вже у спільному вигляді профілю — саме його рендерить
+ * `UserProfileCard` з `@wwwuabot/shared` в обох оболонках.
+ */
+export async function readUserProfile(userId: number): Promise<UserProfileData | null> {
+  const row = await readUser(userId);
+  return row ? rowToProfile(row) : null;
 }
 
 export async function updateUser(userId: number, fields: Record<string, unknown>): Promise<void> {

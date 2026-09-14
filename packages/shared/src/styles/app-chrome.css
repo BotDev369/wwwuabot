@@ -307,6 +307,16 @@
   padding-bottom: var(--tab-bar-h);
 }
 
+/* Сторінка, що скролиться сама. Платформа крутить документ, а панель тримає
+   `overflow: hidden` на каркасі — тому сторінка панелі мусить дати прокрутку
+   собі, інакше довгий вміст просто обріжеться. */
+.wb-page-scroll {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
 .wb-app-body--tabbar {
   padding-bottom: var(--tab-bar-h);
 }
@@ -805,6 +815,21 @@
 .wb-handle-actions {
   display: flex;
   gap: var(--sp-2);
+}
+
+/* Рядок вибору в картці профілю (поле + кнопка): вузький екран переносить
+   кнопку під поле, а не стискає обидва до нечитабельності. */
+.wb-profile-lookup {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+  flex-wrap: wrap;
+  margin-bottom: var(--sp-3);
+}
+
+.wb-profile-lookup .wb-input {
+  flex: 1 1 12rem;
+  min-width: 0;
 }
 
 /* Пояснення під заголовком розділу профілю */

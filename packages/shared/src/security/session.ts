@@ -74,6 +74,23 @@ export async function signSessionToken(payload: string, secret: string): Promise
   return `${payload}.${hex}`;
 }
 
+/**
+ * Коли спливає сесія цього токена (мс від епохи), або `null`, якщо payload
+ * не має числа.
+ *
+ * Читає payload, **не перевіряючи підпис**: це не авторизація, а показ
+ * («сесія діє до 21:36»), і викликати його можна лише після
+ * `verifySessionToken` — інакше підпис не значив би нічого.
+ */
+export function sessionTokenExpiresAt(token: string): number | null {
+  const lastDot = token.lastIndexOf(".");
+  if (lastDot === -1) return null;
+
+  const [, expiresStr] = token.slice(0, lastDot).split(":");
+  const expires = parseInt(expiresStr, 10);
+  return Number.isFinite(expires) ? expires : null;
+}
+
 /** Перевіряє підпис токена і термін його дії. */
 export async function verifySessionToken(token: string, secret: string): Promise<boolean> {
   const lastDot = token.lastIndexOf(".");
@@ -92,9 +109,8 @@ export async function verifySessionToken(token: string, secret: string): Promise
   );
   if (!valid) return false;
 
-  const [, expiresStr] = payload.split(":");
-  const expires = parseInt(expiresStr, 10);
-  if (!Number.isFinite(expires) || Date.now() > expires) return false;
+  const expires = sessionTokenExpiresAt(token);
+  if (expires === null || Date.now() > expires) return false;
   return true;
 }
 

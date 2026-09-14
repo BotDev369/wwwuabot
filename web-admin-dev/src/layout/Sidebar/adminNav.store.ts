@@ -56,6 +56,9 @@ const DEFAULT_SECTIONS: AdminNavSection[] = [
     items: [
       { to: "/users", label: "Користувачі", icon: "users" },
       { to: "/bot-settings", label: "Налаштування бота", icon: "settings" },
+      // Профіль — на мобільному в нижньому футері, на десктопі в меню: футер
+      // існує лише на мобільному, а екран мусить бути досяжним всюди.
+      { to: "/profile", label: "Профіль", icon: "user" },
     ],
   },
 ];

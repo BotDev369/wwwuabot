@@ -31,5 +31,11 @@ export const ADMIN_TABS: readonly ShellTab[] = [
     iconActive: "users-solid",
     href: "/users",
   },
-  { key: "profile", label: "Профіль", icon: "user", iconActive: "user-solid" },
+  {
+    key: "profile",
+    label: "Профіль",
+    icon: "user",
+    iconActive: "user-solid",
+    href: "/profile",
+  },
 ];
