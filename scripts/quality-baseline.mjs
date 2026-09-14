@@ -12,16 +12,12 @@ export const QUALITY_BASELINE = {
   /**
    * Логіка понад `CRITICAL_LINES` (400) — «критично» за `AGENTS.md` §3.
    * Кожен рядок — відкритий пункт плану; після поділу файл прибирається звідси.
-   */ oversizedFiles: {
-    // Два колишні записи зникли разом із доменом `sites`: `sites.service.ts`
-    // (777) поділили 12.09.2026 на `services/sites/*`, а 13.09.2026 цей домен
-    // видалено повністю — разом із таблицями `sites`, `site_pages`, `templates`.
-    "web-admin-dev/src/pages/scenarios/ScenarioCardModal.tsx":
-      "план §3.5 — поділ на хук + підкомпоненти",
-    "packages/shared/src/components/UserProfileCard.tsx":
-      "план §3.5 — поділ на хук + підкомпоненти",
-    "web-admin-dev/src/pages/users/UserEditModal.tsx": "план §3.5 — поділ на хук + підкомпоненти",
-  },
+   *
+   * Порожньо з 14.09.2026: усі файли понад 400 рядків поділено —
+   * `ScenarioCardModal.tsx` (435) і `UserEditModal.tsx` (401) на хуки й
+   * підкомпоненти, `UserProfileCard.tsx` (417) — на `components/user-profile/*`.
+   * Гейт падає, якщо сюди повернеться вже поділений файл, тож список чесний.
+   */ oversizedFiles: {},
 
   /**
    * Дані, а не логіка: довгі таблиці констант. Ліміт рядків про них не
