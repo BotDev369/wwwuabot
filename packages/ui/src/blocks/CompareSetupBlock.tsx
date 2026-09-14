@@ -10,6 +10,7 @@
  */
 
 import { useState, useCallback } from "react";
+import { icons } from "@wwwuabot/shared";
 import type { BlockComponentProps } from "@wwwuabot/shared/types/page-config";
 
 // ── Helpers ───────────────────────────────────────────────────────
@@ -122,27 +123,30 @@ export function CompareSetupBlock({ block }: BlockComponentProps) {
             >
               <span style={{ flex: 1, fontWeight: 500 }}>{formatDate(d)}</span>
               <button
-                className="wb-btn wb-btn-sm wb-btn-secondary"
+                type="button"
+                className="wb-move-btn"
                 onClick={() => move(i, -1)}
                 disabled={i === 0}
                 title="Вгору"
               >
-                ↑
+                {icons["chevron-up"]}
               </button>
               <button
-                className="wb-btn wb-btn-sm wb-btn-secondary"
+                type="button"
+                className="wb-move-btn"
                 onClick={() => move(i, 1)}
                 disabled={i === dates.length - 1}
                 title="Вниз"
               >
-                ↓
+                {icons["chevron-down"]}
               </button>
               <button
-                className="wb-btn wb-btn-sm wb-btn-danger"
+                type="button"
+                className="wb-close-btn"
                 onClick={() => remove(i)}
                 title="Видалити"
               >
-                ✕
+                {icons["close"]}
               </button>
             </div>
           ))}

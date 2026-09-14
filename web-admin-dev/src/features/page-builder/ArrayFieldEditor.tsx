@@ -5,6 +5,7 @@
  */
 
 import { useState } from "react";
+import { icons } from "@wwwuabot/shared";
 
 interface ArrayFieldEditorProps {
   fieldKey: string;
@@ -223,12 +224,12 @@ export function ArrayFieldEditor({
                   color: "var(--danger, #ef4444)",
                   cursor: "pointer",
                   padding: "2px 6px",
-                  fontSize: 14,
+                  fontSize: 0,
                   lineHeight: 1,
                 }}
                 title="Видалити пункт"
               >
-                ✕
+                {icons["close"]}
               </button>
             </div>
           );

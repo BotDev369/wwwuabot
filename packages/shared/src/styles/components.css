@@ -875,6 +875,10 @@
 
 /* ── Chip / Tag ──────────────────────────────────────────────────────────── */
 
+.wb-chip svg {
+  width: 12px;
+  height: 12px;
+}
 .wb-chip {
   display: inline-flex;
   align-items: center;

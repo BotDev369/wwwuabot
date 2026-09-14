@@ -53,7 +53,7 @@ export function KeyboardEditor({ rows, onChange }: Props) {
                 disabled={rIdx === 0}
                 title="Вгору"
               >
-                ↑
+                {icons["chevron-up"]}
               </button>
               <button
                 type="button"
@@ -62,7 +62,7 @@ export function KeyboardEditor({ rows, onChange }: Props) {
                 disabled={rIdx === rows.length - 1}
                 title="Вниз"
               >
-                ↓
+                {icons["chevron-down"]}
               </button>
               <button
                 type="button"

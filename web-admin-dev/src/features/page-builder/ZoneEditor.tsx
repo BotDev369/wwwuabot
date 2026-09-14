@@ -10,6 +10,7 @@ import type {
   SidebarSettings,
 } from "@wwwuabot/shared/types/page-config";
 import { getBlocksForZone } from "@wwwuabot/shared/constants/block-definitions";
+import { icons } from "@wwwuabot/shared";
 import { BlockEditor } from "./BlockEditor";
 import { useZoneBlocks } from "./useZoneBlocks";
 import { SidebarSettingsPanel } from "./SidebarSettings";
@@ -134,32 +135,24 @@ export function ZoneEditor({
             <div style={{ display: "flex", flexDirection: "column" }}>
               {sortedBlocks.map((block, index) => (
                 <div key={block.id} style={{ display: "flex", gap: 4 }}>
-                  <div style={{ display: "flex", flexDirection: "column", gap: 2, paddingTop: 12 }}>
+                  <div className="pb-block-move">
                     <button
+                      type="button"
+                      className="wb-move-btn"
                       onClick={() => handleMoveUp(block.id)}
                       disabled={index === 0}
-                      style={{
-                        fontSize: 10,
-                        padding: "2px 4px",
-                        cursor: index === 0 ? "default" : "pointer",
-                        opacity: index === 0 ? 0.3 : 1,
-                      }}
                       title="Вгору"
                     >
-                      ▲
+                      {icons["chevron-up"]}
                     </button>
                     <button
+                      type="button"
+                      className="wb-move-btn"
                       onClick={() => handleMoveDown(block.id)}
                       disabled={index === sortedBlocks.length - 1}
-                      style={{
-                        fontSize: 10,
-                        padding: "2px 4px",
-                        cursor: index === sortedBlocks.length - 1 ? "default" : "pointer",
-                        opacity: index === sortedBlocks.length - 1 ? 0.3 : 1,
-                      }}
                       title="Вниз"
                     >
-                      ▼
+                      {icons["chevron-down"]}
                     </button>
                   </div>
                   <div style={{ flex: 1 }}>

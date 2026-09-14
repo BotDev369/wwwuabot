@@ -7,6 +7,7 @@
  * @module packages/ui/src/blocks/MyDatesTableBlock
  */
 
+import { icons } from "@wwwuabot/shared";
 import type { BlockComponentProps } from "@wwwuabot/shared/types/page-config";
 import { useMyDates } from "./my-dates-table/useMyDates";
 import { DateModal } from "./my-dates-table/DateModal";
@@ -129,7 +130,7 @@ export function MyDatesTableBlock({ block }: BlockComponentProps) {
                 onClick={() => toggleColumnFilter(field, v)}
                 style={{ cursor: "pointer" }}
               >
-                {v} ✕
+                {v} {icons["close"]}
               </button>
             ))}
             <button className="wb-text-xs wb-text-muted" onClick={() => clearColumnFilter(field)}>

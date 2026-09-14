@@ -9,13 +9,22 @@ DDL більше не живе в контролерах і репозиторі
 реєстрі `packages/shared/src/database/tables.ts` — ім'я, власник, призначення, `CREATE TABLE`.
 Створити таблицю повз нього не дасть гейт.
 
-**Як SQL доходить до дев-бази.** Локально: `cd bot-dev && npx wrangler d1 execute
-wwwuabot-db-dev --remote --command "SELECT …"` — і **обов'язково** з `CLOUDFLARE_API_TOKEN`
-у середовищі, інакше wrangler у non-interactive env відмовляється працювати взагалі. Якщо
-токена під рукою немає, є ручний воркфлоу `.github/workflows/d1.yml` (Actions → «D1 (dev) →
-Run workflow», або `gh workflow run "D1 (dev)" -f sql="…"`): він читає токен із секретів
-репозиторію. Вхід `file` приймає **тільки** `scripts/migrations/*.sql` — довільний шлях до
-`.sql` означав би «виконай будь-що від імені CI».
+**Як SQL доходить до дев-бази.** Токен лежить у кореневому `.env` (поза git), і wrangler
+бачить його **лише коли запущений із кореня** репозиторію:
+
+```bash
+npx wrangler d1 execute wwwuabot-db-dev --remote \
+  --config bot-dev/wrangler.toml --command "SELECT id, slug FROM scenarios ORDER BY id"
+```
+
+Запуск із середини воркера (`cd bot-dev && npx wrangler …`) у non-interactive env падає з
+«it's necessary to set a CLOUDFLARE_API_TOKEN» **навіть коли токен є**: wrangler шукає `.env`
+у теці запуску, а не в корені. Саме тому команду варто брати звідси, а не збирати наново.
+Якщо токена під рукою немає взагалі, є ручний воркфлоу `.github/workflows/d1.yml` (Actions →
+«D1 (dev) → Run workflow»): він читає токен із секретів репозиторію, але **запустити його може
+лише людина** — у GitHub-інтеграції агента немає `actions: write` (`gh workflow run` → 403).
+Вхід `file` приймає **тільки** `scripts/migrations/*.sql`: довільний шлях до `.sql` означав би
+«виконай будь-що від імені CI».
 
 **Власник** — воркер, який створює таблицю і відповідає за її дані. Інші можуть читати, але не
 вигадують схему: колонка додається одним рядком у реєстрі, а не `ALTER`-ом із обробника помилки.
