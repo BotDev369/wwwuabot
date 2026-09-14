@@ -1,9 +1,22 @@
 import { apiFetch } from "./client";
 
-/** API сценаріїв — єдина таблиця `scenarios`, адреса запису — `slug`. */
+/**
+ * API сценаріїв — єдина таблиця `scenarios`.
+ *
+ * Рядок має дві назви: номер (`id`) і адресу (`slug`). Для читання й видалення
+ * годяться обидві, для оновлення потрібен **номер** — інакше перейменування
+ * неможливе (див. `api-dev/src/shared/scenarios-address.ts`).
+ */
 const PREFIX = "/api/portal/scenarios";
 
+/** Посилання на рядок: номер, а якщо його немає — адреса. */
+export interface ScenarioRef {
+  id?: number | null;
+  slug: string;
+}
+
 export interface ScenarioRow {
+  id: number;
   slug: string;
   title: string | null;
   rich_message: string | null;
@@ -94,21 +107,38 @@ export async function readScenarioAll(slug: string): Promise<Record<string, unkn
   return res.data;
 }
 
-export async function updateScenarioFields(
-  slug: string,
-  fields: Record<string, unknown>,
-): Promise<{ updated_at?: string }> {
-  const res = await apiFetch<{ success: boolean; updated_at?: string }>(`${PREFIX}/update`, {
-    method: "POST",
-    body: JSON.stringify({ slug, ...fields }),
-  });
-  return { updated_at: res.updated_at };
+export interface UpdateScenarioResult {
+  id: number | null;
+  slug: string | null;
+  updated_at?: string;
 }
 
-export async function deleteScenario(slug: string): Promise<{ deleted: boolean }> {
+/**
+ * Оновлює рядок за номером.
+ *
+ * `fields.slug`, якщо передано, — **нову** адресу: саме так рядок
+ * перейменовують. `ref.slug` потрібен лише як адреса за замовчуванням.
+ */
+export async function updateScenarioFields(
+  ref: ScenarioRef,
+  fields: Record<string, unknown>,
+): Promise<UpdateScenarioResult> {
+  const res = await apiFetch<{
+    success: boolean;
+    id?: number | null;
+    slug?: string | null;
+    updated_at?: string;
+  }>(`${PREFIX}/update`, {
+    method: "POST",
+    body: JSON.stringify({ id: ref.id ?? undefined, slug: ref.slug, ...fields }),
+  });
+  return { id: res.id ?? null, slug: res.slug ?? null, updated_at: res.updated_at };
+}
+
+export async function deleteScenario(ref: ScenarioRef): Promise<{ deleted: boolean }> {
   const res = await apiFetch<{ success: boolean; deleted: boolean }>(`${PREFIX}/delete`, {
     method: "POST",
-    body: JSON.stringify({ slug }),
+    body: JSON.stringify({ id: ref.id ?? undefined, slug: ref.slug }),
   });
   return { deleted: res.deleted };
 }

@@ -9,7 +9,8 @@
 
 import { useEffect, useCallback, useState } from "react";
 import { useScenariosStore } from "../../features/scenarios/store";
-import { saveScenarioFields } from "../../shared/api/scenarios.api";
+import { readScenario, saveScenarioFields } from "../../shared/api/scenarios.api";
+import { isValidSlug, normalizeSlug } from "@wwwuabot/shared/content";
 import { PageTopbar } from "../../layout/PageTopbar";
 import { ScenariosV2Table } from "../scenarios-v2/ScenariosV2Table";
 import { ScenarioCardModal } from "./ScenarioCardModal";
@@ -18,7 +19,7 @@ import { useDialog } from "@wwwuabot/ui/dialog";
 export function ScenariosPage() {
   const { items, status, errorMsg, load } = useScenariosStore();
   const [creating, setCreating] = useState(false);
-  const [openedCodeword, setOpenedCodeword] = useState<string | null>(null);
+  const [openedSlug, setOpenedSlug] = useState<string | null>(null);
 
   useEffect(() => {
     void load();
@@ -27,17 +28,38 @@ export function ScenariosPage() {
   const dialog = useDialog();
 
   const handleCreate = useCallback(async () => {
-    const slug = await dialog.prompt("Вкажіть Слаг:", { title: "Новий сценарій" });
-    if (!slug || !slug.trim()) return;
-    const cw = slug
-      .trim()
-      .toLowerCase()
-      .replace(/[^a-z0-9_-]/g, "-");
+    // Перевірка — у самому діалозі, а не після нього: адреса, яка не стане
+    // діплінком, не має доходити до бази, бо зламане посилання помітно аж у
+    // Telegram і виглядає як "бот не відповідає".
+    const raw = await dialog.prompt("Адреса нової сторінки (slug):", {
+      title: "Новий сценарій",
+      placeholder: "mydate або galyashop/cart",
+      validate: (value) => {
+        const candidate = normalizeSlug(value.trim().toLowerCase());
+        if (candidate === "") return "Порожня адреса — це головна сторінка, вона вже існує";
+        return isValidSlug(candidate)
+          ? null
+          : "Сегменти — малі латинські літери, цифри й дефіс; «_» заборонений (розділювач діплінка)";
+      },
+    });
+    if (!raw || !raw.trim()) return;
+    const slug = normalizeSlug(raw.trim().toLowerCase());
 
     setCreating(true);
     try {
-      await saveScenarioFields(cw, {
-        title: cw,
+      // `write` — UPSERT, тому на наявну адресу він би **перезаписав** чужу
+      // сторінку порожньою. Порожня сторінка замість готової — саме той збиток,
+      // який не видно до відкриття.
+      const existing = await readScenario(slug);
+      if (existing) {
+        await dialog.alert(`Адреса «${slug}» вже зайнята — відкрийте цей рядок у списку.`, {
+          tone: "danger",
+        });
+        return;
+      }
+
+      await saveScenarioFields(slug, {
+        title: slug,
         page_data: JSON.stringify({
           version: 1,
           zones: { sidebar: [], header: [], main: [], footer: [] },
@@ -45,7 +67,7 @@ export function ScenariosPage() {
         }),
       });
       // Open the scenario card with constructor immediately
-      setOpenedCodeword(cw);
+      setOpenedSlug(slug);
     } catch (e) {
       await dialog.alert(`Помилка створення: ${(e as Error).message}`, { tone: "danger" });
     } finally {
@@ -85,11 +107,11 @@ export function ScenariosPage() {
       </div>
 
       {/* Scenario card modal — opens after creation */}
-      {openedCodeword && (
+      {openedSlug && (
         <ScenarioCardModal
-          slug={openedCodeword}
+          slug={openedSlug}
           initialSubTab="constructor"
-          onClose={() => setOpenedCodeword(null)}
+          onClose={() => setOpenedSlug(null)}
           onSaved={() => void load(true)}
         />
       )}

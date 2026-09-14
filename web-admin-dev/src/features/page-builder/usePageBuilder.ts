@@ -25,6 +25,8 @@ export function usePageBuilder() {
   const navigate = useNavigate();
 
   const [config, setConfig] = useState<PageConfig>(createEmptyPageConfig());
+  // Номер рядка — те, чим оновлення адресує запис; адреса (`slug`) лише читається.
+  const [scenarioId, setScenarioId] = useState<number | null>(null);
   const [scenarioTitle, setScenarioTitle] = useState<string | null>(null);
   const [scenarioPhoto, setScenarioPhoto] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
@@ -79,6 +81,7 @@ export function usePageBuilder() {
           setLoading(false);
           return;
         }
+        setScenarioId((row as Record<string, unknown>).id as number);
         setScenarioTitle(((row as Record<string, unknown>).title as string) ?? null);
         setScenarioPhoto(((row as Record<string, unknown>).photo_url as string) ?? null);
         const raw = (row as Record<string, unknown>).page_data;
@@ -109,7 +112,7 @@ export function usePageBuilder() {
       setSaveStatus("saving");
       setSavingAction(shouldClose ? "saveAndClose" : "save");
       try {
-        await updateScenarioFields(slug, { page_data: JSON.stringify(config) });
+        await updateScenarioFields({ id: scenarioId, slug }, { page_data: JSON.stringify(config) });
         setSaveStatus("saved");
         // Маршрут мусить існувати в роутері: `/scenarios-v2` тут стояв за назвою
         // компонента, а не за шляхом, і після збереження давав порожній екран.
@@ -122,7 +125,7 @@ export function usePageBuilder() {
         setSavingAction(null);
       }
     },
-    [slug, config, navigate],
+    [slug, scenarioId, config, navigate],
   );
 
   // Update zone blocks

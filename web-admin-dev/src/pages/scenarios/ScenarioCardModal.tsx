@@ -11,7 +11,7 @@
 import { useEffect, useState, useCallback, useRef } from "react";
 import { readScenarioAll, updateScenarioFields } from "../../shared/api/scenarios.api";
 import { registerAllBlocks } from "@wwwuabot/ui/blocks";
-import { icons, type IconName } from "@wwwuabot/shared";
+import { Icon } from "@wwwuabot/shared";
 import {
   type MainTab,
   type SubTab,
@@ -32,24 +32,9 @@ import { WebConstructor } from "./WebConstructor";
 import { TabPreview } from "./ScenarioPreview";
 import { ScenarioJsonEditor } from "./ScenarioJsonEditor";
 import { ShareTab } from "./ShareTab";
+import { SharedFieldsEditor } from "./SharedFieldsEditor";
 import { FullscreenBuilder } from "./FullscreenBuilder";
 import { SaveActionButtons, type SavingActionType } from "@wwwuabot/shared";
-
-// ── Icon helper ───────────────────────────────────────────────────
-
-const ico = (name: IconName, size = 16) => (
-  <span
-    style={{
-      display: "inline-flex",
-      alignItems: "center",
-      width: size,
-      height: size,
-      flexShrink: 0,
-    }}
-  >
-    {icons[name]}
-  </span>
-);
 
 // Register blocks once on module load
 registerAllBlocks();
@@ -155,17 +140,22 @@ export function ScenarioCardModal({ slug, onClose, onSaved, initialSubTab }: Pro
           setAllFields(fieldsToSave);
         }
 
-        const PROTECTED = new Set(["slug", "created_at"]);
+        // `slug` тут НЕ викидається: це звичайне поле, яке редагують у вкладці
+        // «Спільне». Службові поля пише база — їх у тілі бути не мусить.
+        const SERVER_FIELDS = new Set(["id", "created_at", "updated_at"]);
         const payload: Record<string, unknown> = {};
         for (const [key, value] of Object.entries(fieldsToSave)) {
-          if (PROTECTED.has(key)) continue;
-          if (key === "updated_at") continue;
+          if (SERVER_FIELDS.has(key)) continue;
           payload[key] = value;
         }
 
         // Серіалізуємо об'єкти у строки перед відправкою до D1 SQLite
         const serializedPayload = serializeJsonFields(payload);
-        await updateScenarioFields(slug, serializedPayload);
+        // Рядок адресуємо номером: адреса в тілі — нове значення, а не ключ.
+        await updateScenarioFields(
+          { id: typeof allFields.id === "number" ? allFields.id : null, slug },
+          serializedPayload,
+        );
 
         setSuccess(true);
         setTimeout(() => {
@@ -280,6 +270,8 @@ export function ScenarioCardModal({ slug, onClose, onSaved, initialSubTab }: Pro
 
   // ── Render constructor per tab ──
   const renderConstructor = () => {
+    if (mainTab === "shared")
+      return <SharedFieldsEditor fields={allFields} updateField={updateField} />;
     if (mainTab === "bot") return <BotConstructor fields={allFields} updateField={updateField} />;
     if (mainTab === "bot_rich")
       return <BotRichConstructor fields={allFields} updateField={updateField} />;
@@ -318,7 +310,7 @@ export function ScenarioCardModal({ slug, onClose, onSaved, initialSubTab }: Pro
         {/* Header */}
         <div className="wb-modal-header">
           <span className="wb-modal-title">
-            {ico("clipboard")} {slug}
+            <Icon name="clipboard" /> {allFields.id == null ? slug : `#${allFields.id} ${slug}`}
           </span>
           <div style={{ display: "flex", gap: 6, alignItems: "center" }}>
             <a
@@ -328,10 +320,10 @@ export function ScenarioCardModal({ slug, onClose, onSaved, initialSubTab }: Pro
               className="wb-btn wb-btn-secondary"
               style={{ fontSize: 12, padding: "4px 10px", textDecoration: "none" }}
             >
-              {ico("link")} Перейти
+              <Icon name="link" /> Перейти
             </a>
             <button className="wb-close-btn" onClick={onClose}>
-              {icons["close"]}
+              <Icon name="close" />
             </button>
           </div>
         </div>
@@ -348,7 +340,7 @@ export function ScenarioCardModal({ slug, onClose, onSaved, initialSubTab }: Pro
               }}
               title={tab.label}
             >
-              {ico(MAIN_TAB_ICONS[tab.key], 20)}
+              <Icon name={MAIN_TAB_ICONS[tab.key]} size={20} />
             </button>
           ))}
         </div>
@@ -369,7 +361,7 @@ export function ScenarioCardModal({ slug, onClose, onSaved, initialSubTab }: Pro
                 }}
                 title={st.label}
               >
-                {ico(SUB_TAB_ICONS[st.key], 18)}
+                <Icon name={SUB_TAB_ICONS[st.key]} size={18} />
               </button>
             ))}
           </div>
