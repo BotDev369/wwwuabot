@@ -19,17 +19,22 @@ interface TabBarProps {
 
 function itemClassName(item: TabBarItem): string {
   let className = "wb-tabbar-item";
+  if (item.primary) className += " wb-tabbar-item--primary";
   if (item.active) className += " wb-tabbar-item--active";
   return className;
 }
 
 function TabBarButton({ item }: { item: TabBarItem }): ReactElement {
+  // Вибраний розділ показує ЗАЛИТИЙ варіант іконки, якщо оболонка його дала:
+  // це той самий знак, тож смуга не «сіпається» при переході.
+  const icon = item.active && item.iconActive ? item.iconActive : item.icon;
+  // «+» — центральний слот дії: підпису не має, тож він іде в aria-label.
   const content = (
     <>
       <span className="wb-tabbar-icon">
-        <Icon name={item.icon} size={24} />
+        <Icon name={icon} size={24} />
       </span>
-      <span className="wb-tabbar-label">{item.label}</span>
+      {item.primary ? null : <span className="wb-tabbar-label">{item.label}</span>}
     </>
   );
 

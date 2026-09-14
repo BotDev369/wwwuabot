@@ -85,7 +85,15 @@ export type IconName =
   | "filter"
   | "calendar"
   | "user"
-  | "play";
+  | "play"
+  // --- Нижній футер: залиті пари до контурних гліфів ---
+  | "home-solid"
+  | "my-dates-solid"
+  | "scenarios-solid"
+  | "users-solid"
+  | "user-solid"
+  | "shop"
+  | "shop-solid";
 
 const svgAttrs = {
   width: 24,
@@ -120,6 +128,37 @@ function c(cx: number, cy: number, cr: number): ReactElement {
 
 function l(x1: number, y1: number, x2: number, y2: number): ReactElement {
   return createElement("line", { x1, y1, x2, y2 });
+}
+
+/**
+ * Залитий (solid) варіант контурної іконки.
+ *
+ * Нижній футер працює як у топових застосунків (YouTube, Instagram, TikTok):
+ * неактивний розділ — контурний гліф, активний — той самий гліф ЗАЛИТИЙ.
+ * Це читається як «вибрано» кольором і товщиною самого знака, без фонового
+ * кола під іконкою, яке ріже око.
+ */
+const solidAttrs = { ...svgAttrs, fill: "currentColor", stroke: "none" };
+
+function solid(children: ReactNode[]): ReactElement {
+  return createElement("svg", solidAttrs, ...children);
+}
+
+/** Контур із «вирізаними» ділянками: вкладені subpath-и віднімаються (evenodd). */
+function eo(d: string): ReactElement {
+  return createElement("path", { d, fillRule: "evenodd" as const, clipRule: "evenodd" as const });
+}
+
+/** Обводка всередині залитої іконки (ручка торби): малюється тим самим кольором. */
+function st(d: string): ReactElement {
+  return createElement("path", {
+    d,
+    fill: "none",
+    stroke: "currentColor",
+    strokeWidth: 2,
+    strokeLinecap: "round" as const,
+    strokeLinejoin: "round" as const,
+  });
 }
 
 export const icons: Record<IconName, ReactElement> = {
@@ -405,4 +444,53 @@ export const icons: Record<IconName, ReactElement> = {
     l(12, 3, 12, 3),
     l(20, 10, 20, 10),
   ]),
+
+  // --- Нижній футер: залиті варіанти ------------------------------------
+  //  Той самий знак, що й контурний вище, але фарбою: активний розділ у
+  //  футері має читатись сам, без фонового кола під іконкою.
+
+  "home-solid": solid([
+    p(
+      "M12 2.8 3.2 9.6V19.4A1.6 1.6 0 0 0 4.8 21H9V14.2a1.6 1.6 0 0 1 1.6-1.6h2.8a1.6 1.6 0 0 1 1.6 1.6V21h4.2a1.6 1.6 0 0 0 1.6-1.6V9.6L12 2.8Z",
+    ),
+  ]),
+
+  "my-dates-solid": solid([
+    r(7, 2.6, 1.7, 3.6, 0.85),
+    r(15.3, 2.6, 1.7, 3.6, 0.85),
+    eo(
+      "M6.5 5h11a2.5 2.5 0 0 1 2.5 2.5v10a2.5 2.5 0 0 1-2.5 2.5h-11a2.5 2.5 0 0 1-2.5-2.5v-10A2.5 2.5 0 0 1 6.5 5Z" +
+        "M6.6 9.4h2.6v2.5H6.6Z M10.7 9.4h2.6v2.5h-2.6Z M14.8 9.4h2.6v2.5h-2.6Z" +
+        "M6.6 14h2.6v2.5H6.6Z M10.7 14h2.6v2.5h-2.6Z M14.8 14h2.6v2.5h-2.6Z",
+    ),
+  ]),
+
+  "scenarios-solid": solid([
+    r(3, 3, 7.5, 7.5, 2),
+    r(13.5, 3, 7.5, 7.5, 2),
+    r(3, 13.5, 7.5, 7.5, 2),
+    r(13.5, 13.5, 7.5, 7.5, 2),
+  ]),
+
+  "users-solid": solid([
+    c(7, 8.4, 2.4),
+    c(17, 8.4, 2.4),
+    c(12, 7.6, 3.2),
+    p(
+      "M4 20.4c0-2.6 2.3-4.7 5.2-4.7h5.6c2.9 0 5.2 2.1 5.2 4.7 0 .9-.7 1.6-1.6 1.6H5.6c-.9 0-1.6-.7-1.6-1.6Z",
+    ),
+  ]),
+
+  "user-solid": solid([
+    c(12, 7.6, 4.1),
+    p(
+      "M12 13.4c-4.1 0-7.4 2.4-7.4 5.4 0 1.2.95 2.1 2.15 2.1h10.5c1.2 0 2.15-.9 2.15-2.1 0-3-3.3-5.4-7.4-5.4Z",
+    ),
+  ]),
+
+  // Торба, а не цінник («tag» — банальний і не про магазин): тіло + округла
+  // ручка, яка сідає РІВНО на верхній край, тому в контурі обводка не ріже рамку.
+  shop: icon([r(4, 7.5, 16, 13, 3), p("M8.5 7.5V6.5a3.5 3.5 0 0 1 7 0V7.5")]),
+
+  "shop-solid": solid([r(3.5, 7.5, 17, 13, 3.5), st("M8.5 7.5V6.5a3.5 3.5 0 0 1 7 0V7.5")]),
 };
