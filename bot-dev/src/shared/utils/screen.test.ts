@@ -14,6 +14,12 @@ describe("buildWebAppUrl", () => {
     expect(buildWebAppUrl(undefined, "/about")).toBeNull();
     expect(buildWebAppUrl("", "/about")).toBeNull();
   });
+
+  it("points the home page at the platform root", () => {
+    // `/start` без параметра веде на головну (`slug = ""`), а її веб-шлях — `/`.
+    expect(buildWebAppUrl("https://app.example.com", "/")).toBe("https://app.example.com/");
+    expect(buildWebAppUrl("https://app.example.com/", "/")).toBe("https://app.example.com/");
+  });
 });
 
 describe("buildScreenButtons", () => {
@@ -51,5 +57,21 @@ describe("buildScreenButtons", () => {
     expect(buttons).toEqual(screen.buttons);
     expect(buttons).not.toBe(screen.buttons);
     expect(buttons[0]).not.toBe(screen.buttons[0]);
+  });
+
+  it("adds one button on the home page without dropping saved ones", () => {
+    const buttons = buildScreenButtons(
+      { buttons: [[{ text: "МоїДати", callback_data: "mydate" }]], web_path: "/" },
+      "https://web-platform-dev.diskomate.workers.dev",
+    );
+
+    expect(buttons).toHaveLength(2);
+    expect(buttons[0]).toEqual([{ text: "МоїДати", callback_data: "mydate" }]);
+    expect(buttons[1]).toEqual([
+      {
+        text: "Відкрити сторінку",
+        web_app: { url: "https://web-platform-dev.diskomate.workers.dev/" },
+      },
+    ]);
   });
 });
