@@ -1,0 +1,87 @@
+name: D1 (dev)
+
+# Ручний SQL до дев-бази — єдина дорога, яка не вимагає тримати ключ Cloudflare
+# в себе: токен лежить у секретах репозиторію, і саме тому тут його й читаємо.
+#
+# Навіщо окремий воркфлоу: `wrangler d1 execute --remote` без
+# `CLOUDFLARE_API_TOKEN` у середовищі не працює взагалі (перевірка в
+# non-interactive env). Доти контент у базу можна було покласти лише з машини,
+# де цей токен є руками.
+#
+# Запуск: Actions → D1 (dev) → Run workflow, або
+#   gh workflow run "D1 (dev)" -f sql="SELECT id, slug FROM scenarios"
+#   gh workflow run "D1 (dev)" -f file=scripts/migrations/<назва>.sql
+#
+# Дозволено **тільки** файли з `scripts/migrations/` (перевіряється нижче):
+# довільний шлях до `.sql` — це спосіб виконати будь-що від імені CI.
+
+on:
+  workflow_dispatch:
+    inputs:
+      sql:
+        description: "SQL для wwwuabot-db-dev (напр. SELECT …)"
+        required: false
+        type: string
+      file:
+        description: "Шлях до .sql у scripts/migrations/ (замість sql)"
+        required: false
+        type: string
+
+permissions:
+  contents: read
+
+concurrency:
+  group: d1-dev
+  cancel-in-progress: false
+
+jobs:
+  execute:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 22
+          cache: npm
+
+      # `ci`, не `install`: той самий lockfile, що й у деплої, — інакше
+      # `wrangler` у CI може відрізнятися від того, яким деплоять.
+      - run: npm ci
+
+      - name: Перевірити вхід
+        env:
+          SQL_INPUT: ${{ inputs.sql }}
+          FILE_INPUT: ${{ inputs.file }}
+        run: |
+          if [ -z "$SQL_INPUT" ] && [ -z "$FILE_INPUT" ]; then
+            echo "Потрібен або 'sql', або 'file'." >&2
+            exit 1
+          fi
+          if [ -n "$FILE_INPUT" ]; then
+            case "$FILE_INPUT" in
+              scripts/migrations/*.sql) ;;
+              *)
+                echo "Дозволено лише scripts/migrations/*.sql (отримано: $FILE_INPUT)." >&2
+                exit 1
+                ;;
+            esac
+            if [ ! -f "$FILE_INPUT" ]; then
+              echo "Немає такого файлу: $FILE_INPUT" >&2
+              exit 1
+            fi
+          fi
+
+      - name: Виконати SQL
+        working-directory: bot-dev
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          SQL_INPUT: ${{ inputs.sql }}
+          FILE_INPUT: ${{ inputs.file }}
+        run: |
+          if [ -n "$FILE_INPUT" ]; then
+            npx wrangler d1 execute wwwuabot-db-dev --remote --file "../$FILE_INPUT"
+          else
+            npx wrangler d1 execute wwwuabot-db-dev --remote --command "$SQL_INPUT"
+          fi
