@@ -7,12 +7,22 @@
  * (`sites`, `site_pages`, `templates`). Таблиці видалено 13.09.2026, бо
  * сторінка одна: `/:path` — адреса рядка контенту, а хвіст адреси — його
  * параметри (`/mydate/1980-03-03/today` → сторінка `mydate`).
+ *
+ * Сторінка завернута в `PlatformShell`: каркас (глобальний нижній футер) не
+ * належить жодній сторінці, тож він стоїть на рівні маршруту, а не всередині
+ * `ScenarioPage`.
  */
 
 import { createBrowserRouter } from "react-router-dom";
+import { PlatformShell } from "@/layout/PlatformShell";
 import { ScenarioPage } from "@/pages/ScenarioPage";
 
 export const router = createBrowserRouter([
-  // Catch-all: сторінка за її адресою
-  { path: "*", element: <ScenarioPage /> },
+  {
+    element: <PlatformShell />,
+    children: [
+      // Catch-all: сторінка за її адресою
+      { path: "*", element: <ScenarioPage /> },
+    ],
+  },
 ]);

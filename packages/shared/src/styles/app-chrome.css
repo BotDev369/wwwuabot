@@ -15,6 +15,7 @@
  *
  *   Каркас:      .wb-app .wb-app-main .wb-app-header .wb-app-body
  *   Меню:        .wb-nav .wb-nav-header .wb-nav-menu .wb-nav-item …
+ *   Футер:       .wb-tabbar .wb-tabbar-inner .wb-tabbar-item (+ --primary) …
  *   Шапка:       .wb-topbar .wb-topbar-title .wb-topbar-right
  *   Сторінка:    .wb-page .wb-page-head .wb-page-title .wb-page-actions
  *   Екрани:      .wb-splash (+ іконка) · .wb-auth (+ картка, поле, помилка)
@@ -283,6 +284,130 @@
 .wb-nav--collapsed .wb-app-logout {
   justify-content: center;
   padding: 8px 0;
+}
+
+/* ═══ Глобальний нижній футер (tab bar) ═════════════════════════════════════
+   Той самий патерн, що в YouTube / Facebook / TikTok / Instagram / Новій
+   пошті: смуга поверх усього внизу екрана, 5 слотів, у центрі — «+»,
+   крайній справа — профіль.
+
+   Смуга ФІКСОВАНА, тож контент мусить мати місце під нею — інакше останній
+   рядок назавжди лишається під нею:
+     • платформа (потік сторінки) — `.wb-tabbar-layout`;
+     • адмінка (скролить панель) — `.wb-app-body--tabbar`.
+
+   Висота — одна: `--tab-bar-h` (`--nav-bar-h` бренду + safe-area, tokens.css).
+   Розмітку рендерить спільний `TabBar` з `@wwwuabot/ui/nav`, тому правила
+   живуть тут: оболонка додає лише свій склад пунктів. */
+
+.wb-tabbar-layout {
+  padding-bottom: var(--tab-bar-h);
+}
+
+.wb-app-body--tabbar {
+  padding-bottom: var(--tab-bar-h);
+}
+
+.wb-tabbar {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  /* меню-драйвер і модалки — вище: 1000 і 400 проти 200 */
+  z-index: var(--z-sticky);
+  height: var(--tab-bar-h);
+  padding-bottom: var(--safe-bottom);
+  display: flex;
+  justify-content: center;
+  background: var(--bg-1);
+  border-top: 1px solid var(--border);
+  box-shadow: 0 -2px 12px rgba(0, 0, 0, 0.06);
+}
+
+/* На десктопі смуга не розповзається на всю ширину вікна */
+.wb-tabbar-inner {
+  width: 100%;
+  max-width: 560px;
+  display: flex;
+  align-items: stretch;
+}
+
+/* Пункт: іконка + підпис. flex-basis 0 — усі слоти рівні, незалежно від
+   довжини підпису («МоїДати» і «Профіль» не роз'їжджаються). */
+.wb-tabbar-item {
+  flex: 1 1 0;
+  min-width: 0;
+  min-height: 44px; /* мінімальний тап-таргет для пальця */
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  padding: 6px 2px;
+  border: none;
+  background: none;
+  color: var(--text-muted);
+  font-family: inherit;
+  font-size: 10px;
+  font-weight: var(--weight-medium);
+  text-decoration: none;
+  cursor: pointer;
+  transition:
+    color var(--duration-fast) var(--ease),
+    transform var(--duration-fast) var(--ease);
+}
+
+/* Відгук на дотик: на телефоні hover немає, тож «натиснуто» — це :active */
+.wb-tabbar-item:active {
+  transform: scale(0.94);
+}
+
+.wb-tabbar-item--active {
+  color: var(--accent);
+}
+
+.wb-tabbar-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+}
+
+.wb-tabbar-icon svg {
+  width: 24px;
+  height: 24px;
+  flex-shrink: 0;
+}
+
+.wb-tabbar-label {
+  max-width: 100%;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+/* Центральний «+»: піднята кругла кнопка без підпису — як у TikTok */
+.wb-tabbar-item--primary {
+  flex: 0 0 auto;
+  padding: 0 12px;
+}
+
+.wb-tabbar-plus {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  border-radius: var(--radius-full);
+  background: var(--accent);
+  color: var(--text-inverse);
+  box-shadow: var(--shadow-md);
+}
+
+.wb-tabbar-plus svg {
+  width: 22px;
+  height: 22px;
 }
 
 /* ═══ Шапка сторінки (topbar) ═══════════════════════════════════════════════ */

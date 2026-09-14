@@ -125,7 +125,7 @@
   --sidebar-w-collapsed: 64px;
   --topbar-h: 56px;
   --nav-bar-h: 56px;
-  --tab-bar-h: 80px;
+  /* `--tab-bar-h` не перевизначаємо: він = --nav-bar-h + --safe-bottom */
   --safe-top: max(env(safe-area-inset-top, 0px), var(--tg-safe-area-inset-top, 0px));
   --safe-bottom: max(env(safe-area-inset-bottom, 0px), var(--tg-safe-area-inset-bottom, 0px));
 

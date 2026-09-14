@@ -62,7 +62,8 @@ Defined in `packages/shared/src/styles/tokens.css`, overridden per brand in `app
 | `var(--sidebar-w)` / `--sidebar-w-collapsed` | Ширина бічної панелі на десктопі |
 | `var(--drawer-w)` | Ширина виїзного меню на мобільному (те саме значення в обох оболонках) |
 | `var(--scrim)` | Затемнення під drawer/модалкою |
-| `var(--topbar-h)` / `--nav-bar-h` / `--tab-bar-h` | Висоти хедерів |
+| `var(--topbar-h)` / `--nav-bar-h` | Висоти хедерів і нижньої смуги (бренд: 49px Apple HIG, 56px Material) |
+| `var(--tab-bar-h)` | Повна висота нижнього футера = `--nav-bar-h` + `--safe-bottom` (не перевизначати третім числом) |
 | `var(--safe-top)` / `var(--safe-bottom)` | Краї екрана: `env(safe-area-inset-*)` + `--tg-safe-area-inset-*` від Telegram |
 | `var(--max-content)` | Максимальна ширина контенту |
 
@@ -95,9 +96,12 @@ Defined in `packages/shared/src/styles/tokens.css`, overridden per brand in `app
     rule, or when shared code is styled in only one shell. Known debt lives in
     `scripts/css-baseline.mjs` and must shrink, never grow.
 12. **Compose from bricks — don't draw your own chrome.** A shell's chrome is
-    `.wb-app*`, `.wb-nav*`, `.wb-topbar*`, `.wb-page*`, `.wb-auth*`, `.wb-splash`,
+    `.wb-app*`, `.wb-nav*`, `.wb-tabbar*`, `.wb-topbar*`, `.wb-page*`, `.wb-auth*`, `.wb-splash`,
     `.wb-profile*` (`app-chrome.css`). The same detail in both shells → a brick in
     shared; a new private class for the same thing is a defect, not "the shell's style".
+    The global bottom footer (`.wb-tabbar`, `TabBar` from `@wwwuabot/ui/nav`) is one of those
+    bricks: 5 slots, `+` in the middle, profile at the far right. It is `position: fixed`,
+    so the content needs room under it (`.wb-tabbar-layout` / `.wb-app-body--tabbar`).
 13. Shared blocks (`packages/ui/src/blocks/*`) are still styled with inline
     `style={{ … }}` (192 objects there, 556 in live `src` overall; 97 hardcoded `#hex`),
     and **45 `wb-block-*` classes have no CSS rule at all**, so `data-brand` and
@@ -114,12 +118,13 @@ Defined in `packages/shared/src/styles/tokens.css`, overridden per brand in `app
 | `packages/shared/src/styles/apple.css` | Apple brand overrides |
 | `packages/shared/src/styles/android.css` | Material brand overrides |
 | `packages/shared/src/styles/components.css` | `.wb-*` component styles (включно з `.wb-dialog*`) |
-| `packages/shared/src/styles/app-chrome.css` | кирпичики каркаса оболонки: app / nav / topbar / page / auth / splash / profile |
+| `packages/shared/src/styles/app-chrome.css` | кирпичики каркаса оболонки: app / nav / **tabbar (нижній футер)** / topbar / page / auth / splash / profile |
 | `packages/shared/src/styles/page-layout.css` | каркас сторінки для `PageRenderer` |
 | `packages/shared/src/styles/drawer.css` | виїзне меню й гамбургер (обидві оболонки) |
 | `scripts/check-css-classes.mjs` | перевірка «клас у розмітці ↔ правило в CSS» (гейт CI) |
 | `scripts/css-baseline.mjs` | задокументований борг для цієї перевірки (тільки зменшувати) |
 | `packages/ui/src/dialog/` | `DialogProvider` + `useDialog()` |
+| `packages/ui/src/nav/` | `TabBar` — глобальний нижній футер (розмітка спільна, пункти — з оболонки) |
 | `packages/shared/src/components/icons.tsx` | SVG icon definitions |
 | `packages/shared/src/components/Icon.tsx` | `<Icon />` component |
 | `packages/shared/src/components/StyleToggle.tsx` | `ThemeButton` component |
