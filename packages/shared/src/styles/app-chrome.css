@@ -48,6 +48,19 @@
   overflow: hidden;
 }
 
+/* Шапка, топбар і футер — це ХРОМ: вони мусять бути того самого плоского
+   кольору, що й нативна шапка/низ клієнта Telegram (`--chrome-*`, синхронізує
+   `shared/app/telegram-chrome.ts`). Градієнт `--bg-1` — тло контенту, не хрому:
+   плоский колір клієнта ніколи не дорівняє градієнту — був би помітний шов. */
+.wb-app-header,
+.wb-topbar {
+  background: var(--chrome-header-bg) !important;
+}
+
+.wb-tabbar {
+  background: var(--chrome-bottom-bg) !important;
+}
+
 .wb-app-header {
   display: flex;
   align-items: center;
@@ -55,7 +68,6 @@
   gap: var(--sp-3);
   height: var(--topbar-h);
   padding: 0 var(--sp-4);
-  background: var(--bg-1);
   border-bottom: 1px solid var(--border);
   flex-shrink: 0;
 }
@@ -332,7 +344,6 @@
   padding-bottom: var(--safe-bottom);
   display: flex;
   justify-content: center;
-  background: var(--bg-1);
   border-top: 1px solid var(--border);
   box-shadow: 0 -2px 12px rgba(0, 0, 0, 0.06);
 }
@@ -434,7 +445,6 @@
   flex-wrap: wrap;
   min-height: var(--topbar-h);
   padding: var(--sp-3) var(--sp-5);
-  background: var(--bg-1);
   border-bottom: 1px solid var(--border);
   flex-shrink: 0;
 }
