@@ -60,6 +60,11 @@
   --surface-active: #d1d1d6;
   --surface-overlay: rgba(0, 0, 0, 0.4);
 
+  /* Нативний хром Telegram — плоска форма --bg-1 (secondarySystemGroupedBackground):
+     шапка клієнта і смуга під футером того самого кольору, що наш хром. */
+  --chrome-header-bg: #f2f2f7;
+  --chrome-bottom-bg: #f2f2f7;
+
   /* ── Typography: SF Pro — large, tight tracking ───────────────────────── */
   --font-ui:
     -apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Display", "Helvetica Neue", system-ui,
@@ -184,6 +189,11 @@
   --surface-hover: #2c2c2e;
   --surface-active: #3a3a3c;
   --surface-overlay: rgba(0, 0, 0, 0.6);
+
+  /* Нативний хром Telegram — плоска форма --bg-1: шапка клієнта і смуга
+     під футером зливаються з нашою шапкою й футером без шва. */
+  --chrome-header-bg: #1c1c1e;
+  --chrome-bottom-bg: #1c1c1e;
 
   /* ── Elevation ──────────────────────────────────────────────────────── */
   --shadow-xs: 0 1px 2px rgba(0, 0, 0, 0.3);

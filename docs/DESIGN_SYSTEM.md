@@ -20,6 +20,7 @@ Defined in `packages/shared/src/styles/tokens.css`, overridden per brand in `app
 | `var(--accent)` / `--accent-hover` / `--accent-dim` / `--accent-soft` | Акцент: база / hover / плашка / підкладка під фокус |
 | `var(--border)` / `var(--border-subtle)` | Межі: помітна / ледь видима |
 | `var(--surface)` / `--surface-hover` / `--surface-active` / `--surface-overlay` | Поверхні карток, стани й скрим |
+| `var(--chrome-header-bg)` / `var(--chrome-bottom-bg)` | Нативний хром Telegram: шапка клієнта і смуга під футером; синхронізує `shared/app/telegram-chrome.ts` |
 | `var(--green)` / `var(--green-dim)` | Успіх |
 | `var(--red)` / `var(--red-dim)` | Небезпека |
 | `var(--yellow)` / `var(--yellow-dim)` | Попередження |

@@ -46,6 +46,16 @@
   --surface-active: #dde1e7;
   --surface-overlay: rgba(0, 0, 0, 0.4);
 
+  /* ── Нативний хром Telegram ──────────────────────────────────────────────
+     Шапка Telegram і смуга під футером фарбуються темою клієнта, а не нашою —
+     на одному екрані зустрічаються два різні кольори. Ці ТОКЕНИ синхронізує
+     з клієнтом `shared/app/telegram-chrome.ts` (setHeaderColor /
+     setBackgroundColor / setBottomBarColor). Значення — саме ПЛОСКІ hex:
+     градієнт (яким обчислюється --bg-1) Telegram прийняти не може, тож
+     плоскі форми --bg-1 живуть тут окремими токенами, а не `var(--bg-1)`. */
+  --chrome-header-bg: #f0f2f5;
+  --chrome-bottom-bg: #f0f2f5;
+
   /* ── Typography ────────────────────────────────────────────────────────── */
   --font-ui: "Inter", system-ui, -apple-system, "Segoe UI", sans-serif;
   --font-mono: "JetBrains Mono", "Fira Code", ui-monospace, monospace;

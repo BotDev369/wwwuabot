@@ -17,6 +17,8 @@
     "./styles/components.css": "./src/styles/components.css",
     "./components/StyleToggle": "./src/components/StyleToggle.tsx",
     "./app/initTheme": "./src/app/initTheme.ts",
+    "./app/telegram-chrome": "./src/app/telegram-chrome.ts",
+    "./types/telegram": "./src/types/telegram.ts",
     "./api/client": "./src/api/client.ts",
     "./layout/Footer": "./src/layout/Footer.tsx",
     "./stores/app.store": "./src/stores/app.store.ts",

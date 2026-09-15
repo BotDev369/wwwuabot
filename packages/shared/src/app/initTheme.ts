@@ -10,6 +10,7 @@
  * No "system" mode — defaults to "dark" if nothing stored.
  */
 import { resolveLegacyStyle, type Brand } from "../styles/registry";
+import { initTelegramChrome } from "./telegram-chrome";
 
 const BRAND_KEY = "wwwuabot-brand";
 const LEGACY_STYLE_KEY = "wwwuabot-style";
@@ -39,4 +40,8 @@ export function initTheme(): void {
   } catch {
     /* ignore — localStorage may be unavailable */
   }
+
+  // Нативний хром Telegram (шапка/низ клієнта) — у кольорах цієї теми.
+  // Поза Telegram — no-op. Див. `./telegram-chrome`.
+  initTelegramChrome();
 }

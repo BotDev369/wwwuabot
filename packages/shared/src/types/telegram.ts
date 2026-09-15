@@ -10,6 +10,12 @@ export interface TelegramWebAppUser {
   added_to_attachment_menu?: boolean;
 }
 
+/**
+ * Кольори, які Telegram приймає на `setHeaderColor` / `setBackgroundColor` /
+ * `setBottomBarColor`: лише плоскі `#rrggbb` — градієнти клієнт мовчки відхиляє.
+ */
+export type TelegramChromeColor = `#${string}`;
+
 export interface TelegramWebApp {
   initData?: string;
   initDataUnsafe?: {
@@ -20,6 +26,17 @@ export interface TelegramWebApp {
   };
   close?: () => void;
   expand?: () => void;
+  /** Mini App готовий — приховує сплеш Telegram (Bot API 6.1+). */
+  ready?: () => void;
+  /** Колір нативної шапки над Mini App (Bot API 6.1+). */
+  setHeaderColor?: (color: TelegramChromeColor) => void;
+  /** Колір фону Mini App (Bot API 6.1+). */
+  setBackgroundColor?: (color: TelegramChromeColor) => void;
+  /** Колір смуги під Mini App (Bot API 7.10+) — те саме місце, що й наш нижній футер. */
+  setBottomBarColor?: (color: TelegramChromeColor) => void;
+  /** Підписка на події клієнта — використовує `shared/app/telegram-chrome.ts`. */
+  onEvent?: (event: string, handler: () => void) => void;
+  offEvent?: (event: string, handler: () => void) => void;
 }
 
 declare global {

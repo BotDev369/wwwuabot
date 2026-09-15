@@ -59,6 +59,11 @@
   --surface-active: #e4e4e8;
   --surface-overlay: rgba(0, 0, 0, 0.4);
 
+  /* Нативний хром Telegram — плоска форма --bg-1 (surface): шапка клієнта
+     і смуга під футером того самого кольору, що наш хром. */
+  --chrome-header-bg: #f0f0f4;
+  --chrome-bottom-bg: #f0f0f4;
+
   /* ── Typography: Roboto — tighter than Apple ──────────────────────────── */
   --font-ui: "Roboto", "Google Sans", system-ui, -apple-system, sans-serif;
   --font-mono: "Roboto Mono", "Google Sans Mono", "Courier New", ui-monospace, monospace;
@@ -180,6 +185,11 @@
   --surface-hover: #2a2a2e;
   --surface-active: #353538;
   --surface-overlay: rgba(0, 0, 0, 0.6);
+
+  /* Нативний хром Telegram — плоска форма --bg-1: шапка клієнта і смуга
+     під футером зливаються з нашою шапкою й футером без шва. */
+  --chrome-header-bg: #1b1b1f;
+  --chrome-bottom-bg: #1b1b1f;
 
   /* ── Elevation: deeper for dark ─────────────────────────────────────── */
   --shadow-xs: 0 1px 2px rgba(0, 0, 0, 0.45);

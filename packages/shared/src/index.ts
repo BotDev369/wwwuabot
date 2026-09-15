@@ -20,6 +20,14 @@ export { STYLES, getStyle, getStyleIds } from "./styles/registry";
 
 // ── App ──────────────────────────────────────────────────────────────
 export { initTheme } from "./app/initTheme";
+export {
+  applyChromeColors,
+  initTelegramChrome,
+  isTelegramWebApp,
+  normalizeChromeColor,
+  readChromeColor,
+  readChromeColors,
+} from "./app/telegram-chrome";
 
 // ── API ──────────────────────────────────────────────────────────────
 export { apiFetch } from "./api/client";
