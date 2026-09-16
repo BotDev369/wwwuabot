@@ -186,12 +186,15 @@ describe("ensureTables", () => {
 
   it("створює і самі таблиці, а не тільки колонки", async () => {
     const { db, statements } = fakeDb([]);
-    await ensureTables(db, ["settings", "scenarios"]);
+    // Усі оголошені таблиці, а не дві: інакше індекси тих, яких у списку немає,
+    // не створились би — і перевірка нижче стала б вакуумною саме для них.
+    await ensureTables(db, TABLE_NAMES);
 
-    expect(statements.filter((s) => s.startsWith("CREATE TABLE"))).toHaveLength(2);
-    // Індекси: зараз їх не оголошує жодна таблиця, тож перевірка не вакуумна
-    // за наміром — вона стежить, щоб оголошені індекси справді виконувались.
+    expect(statements.filter((s) => s.startsWith("CREATE TABLE"))).toHaveLength(TABLE_NAMES.length);
+    // Індекс оголошує не кожна таблиця, тож рахуємо саме оголошені (сьогодні це
+    // `notes`): перевірка стежить, щоб вони справді виконувались.
     const declaredIndexes = TABLE_NAMES.flatMap((name) => tableDefinition(name)?.indexes ?? []);
+    expect(declaredIndexes.length).toBeGreaterThan(0);
     expect(statements.filter((s) => s.startsWith("CREATE INDEX"))).toHaveLength(
       declaredIndexes.length,
     );

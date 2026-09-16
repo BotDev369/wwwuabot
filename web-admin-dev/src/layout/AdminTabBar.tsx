@@ -19,6 +19,7 @@ import { useLocation, useNavigate } from "react-router-dom";
 import { ComposerModal } from "@wwwuabot/ui/composer";
 import { useDialog } from "@wwwuabot/ui/dialog";
 import { TabBar, buildTabBarItems, withPrimaryAction } from "@wwwuabot/ui/nav";
+import { notesApi } from "../shared/api/notes.api";
 import { ADMIN_TABS } from "./admin-tabs";
 
 export function AdminTabBar(): ReactElement {
@@ -43,7 +44,14 @@ export function AdminTabBar(): ReactElement {
   return (
     <>
       <TabBar items={items} label="Навігація адмінки" />
-      {composerOpen && <ComposerModal onClose={() => setComposerOpen(false)} />}
+      {composerOpen && (
+        <ComposerModal
+          onClose={() => setComposerOpen(false)}
+          onSaveNote={async (draft) => {
+            await notesApi.save(draft);
+          }}
+        />
+      )}
     </>
   );
 }

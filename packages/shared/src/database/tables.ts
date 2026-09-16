@@ -177,6 +177,45 @@ export const TABLES = {
       )`,
   },
 
+  /**
+   * Нотатки — чернетки, а не контент: `text` і `tags` людини в платформі
+   * (`scope = 'user'`) та нотатки про проєкт з адмінки (`scope = 'admin'`).
+   *
+   * **Чому не `scenarios`.** Там `slug` — `NOT NULL UNIQUE`, тобто рядка без
+   * адреси не існує, і це *опублікований* контент (видимість — `is_active`).
+   * Нотатку не бачить ніхто, крім власника; поклавши її туди, ми мали б у
+   * одній таблиці другий фільтр видимості («моє» проти «опублікованого») — та
+   * сама паста, що колись дала дві копії сценаріїв (AGENTS.md §7).
+   *
+   * **Власник — дві колонки, а не одна з префіксом.** `scope` каже, чия
+   * ідентичність має значення, `owner_id` — хто саме: Telegram-id із
+   * **підписаного `initData`** (жодних заголовків, AGENTS.md §7) або акаунт
+   * cookie-сесії панелі. Тому `owner_id` — `TEXT`: id людини і акаунт сесії
+   * мають різну природу, і зводити їх до числа не можна.
+   *
+   * `tags` — JSON-масив, як `buttons` чи `page_data`: правила, за якими він
+   * складається, живуть у `@wwwuabot/shared/notes` і однакові для браузера й
+   * сервера. Колонки `attachments` тут поки немає навмисно — додавання фото й
+   * відео окрема тема; `ensureTables` додасть її одним рядком у цьому
+   * оголошенні, без міграції й без правок у логіці.
+   */
+  notes: {
+    name: "notes",
+    owner: "api-dev",
+    purpose:
+      "Нотатки: чернетки людини в платформі (`scope = 'user'`) і нотатки про проєкт з адмінки (`scope = 'admin'`).",
+    create: `CREATE TABLE IF NOT EXISTS notes (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        scope TEXT NOT NULL DEFAULT 'user',
+        owner_id TEXT NOT NULL,
+        text TEXT NOT NULL DEFAULT '',
+        tags TEXT NOT NULL DEFAULT '[]',
+        created_at TEXT NOT NULL DEFAULT (datetime('now')),
+        updated_at TEXT NOT NULL DEFAULT (datetime('now'))
+      )`,
+    indexes: ["CREATE INDEX IF NOT EXISTS idx_notes_scope_owner ON notes(scope, owner_id)"],
+  },
+
   mydate_analysis: {
     name: "mydate_analysis",
     owner: "api-dev",

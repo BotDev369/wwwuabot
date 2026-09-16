@@ -40,6 +40,7 @@ import {
   handleBulkUsers,
   handleUserMessage,
 } from "./controllers/users.controller";
+import { handleNotes, handleAdminNotes } from "./controllers/notes.controller";
 
 /**
  * Префікси шляхів, доступ до яких вимагає адмінської cookie-сесії.
@@ -135,6 +136,11 @@ export async function handleRequest(request: Request, env: Env): Promise<Respons
     return handleMyDates(request, env);
   }
 
+  // ── Notes: нотатки людини (ідентичність із підписаного initData) ─
+  if (pathname === "/api/notes") {
+    return handleNotes(request, env);
+  }
+
   // ── Admin: Cookie Auth ─────────────────────────────────────────
   if (pathname === "/auth/login" && request.method === "POST") {
     return handleLogin(request, env);
@@ -187,6 +193,11 @@ export async function handleRequest(request: Request, env: Env): Promise<Respons
   }
   if (pathname === "/api/admin/users/message" && request.method === "POST") {
     return handleUserMessage(request, env);
+  }
+
+  // ── Admin: Notes (нотатки про проєкт; власник — акаунт сесії) ───
+  if (pathname === "/api/admin/notes") {
+    return handleAdminNotes(request, env);
   }
 
   // ── Public: User Profile (for web-platform conditional rendering) ──

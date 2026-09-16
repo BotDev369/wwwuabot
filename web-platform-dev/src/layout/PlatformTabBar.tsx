@@ -19,6 +19,7 @@ import { useLocation, useNavigate } from "react-router-dom";
 import { ComposerModal } from "@wwwuabot/ui/composer";
 import { useDialog } from "@wwwuabot/ui/dialog";
 import { TabBar, buildTabBarItems, withPrimaryAction } from "@wwwuabot/ui/nav";
+import { notesApi } from "../shared/api/notes.api";
 import { PLATFORM_TABS, toShellTabs } from "./platform-tabs";
 
 export function PlatformTabBar(): ReactElement {
@@ -43,7 +44,14 @@ export function PlatformTabBar(): ReactElement {
   return (
     <>
       <TabBar items={items} label="Навігація платформи" />
-      {composerOpen && <ComposerModal onClose={() => setComposerOpen(false)} />}
+      {composerOpen && (
+        <ComposerModal
+          onClose={() => setComposerOpen(false)}
+          onSaveNote={async (draft) => {
+            await notesApi.save(draft);
+          }}
+        />
+      )}
     </>
   );
 }

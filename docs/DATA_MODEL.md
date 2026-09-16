@@ -1,6 +1,6 @@
 # Модель даних D1: одна таблиця — один власник
 
-**Створено:** 13.09.2026 · **оновлено:** 14.09.2026 (номер рядка + адреса з `UNIQUE`) ·
+**Створено:** 13.09.2026 · **оновлено:** 16.09.2026 (нотатки: таблиця `notes`) ·
 **джерело правди про схему:** `packages/shared/src/database/tables.ts` · **гейт:**
 `npm run check:db` (крок `D1 schema` у джобі `checks`) · **міграції:** `scripts/migrations/` ·
 **модель контенту:** [`CONTENT_MODEL.md`](./CONTENT_MODEL.md)
@@ -37,17 +37,20 @@ npx wrangler d1 execute wwwuabot-db-dev --remote \
 | `settings` | `bot-dev` | bot-dev, `SettingsRepository.initialize` | bot-dev | один рядок (`id = 1`): `chat_id` груп, прапорець активності |
 | `scenarios` | `api-dev` | api-dev (`ensureBase`, `scenarios-portal.controller`) | **bot-dev читає**; api-dev редагує (`/api/portal/scenarios/*`); платформа рендерить (`/api/scenario/:slug`) | **єдине сховище контенту:** рядок = сторінка вебу (`page_data`) + її подання в боті (`caption_*`, `buttons`, `rich_*`). Деталі — [`CONTENT_MODEL.md`](./CONTENT_MODEL.md) |
 
+| `notes` | `api-dev` | api-dev (`ensureTables` у `notes.controller`) | api-dev: платформа — `/api/notes`, панель — `/api/admin/notes` | нотатки: чернетки людини (`scope = 'user'`, власник — Telegram-id із **підписаного `initData`**) і нотатки про проєкт з панелі (`scope = 'admin'`, власник — акаунт cookie-сесії). `tags` — JSON-масив |
+| `mydate_analysis` | `api-dev` | api-dev, `getAnalysis` | api-dev | кеш астрологічного аналізу на дату (KV — швидкий шар) |
+
 У `scenarios` дві різні речі, і плутати їх більше не можна: **`id`** — номер рядка
 (`PRIMARY KEY`), тобто ідентичність, яка не змінюється ніколи; **`slug`** — адреса
 (`NOT NULL UNIQUE`), яку редагують вільно.
-| `mydate_analysis` | `api-dev` | api-dev, `getAnalysis` | api-dev | кеш астрологічного аналізу на дату (KV — швидкий шар) |
 
 **Це рівно те, що стоїть на дев-базі** — і це не збіг, а вимога: `npm run check:db` друкує
 той самий список, що видно в дашборді Cloudflare. Якщо числа розійшлись, причина в тому, що
 таблицю створили повз реєстр.
 
 Індекси (`indexes` в оголошенні) живуть поруч із таблицею, щоб не «загубились» окремо від неї.
-Сьогодні їх не оголошує жодна таблиця: унікальність `scenarios.slug` тримає `UNIQUE` у самому
+Сьогодні індекс оголошує одна таблиця — `notes` (`idx_notes_scope_owner`, список власних
+нотаток за `(scope, owner_id)`). Унікальність `scenarios.slug` тримає `UNIQUE` у самому
 `CREATE TABLE`, а не іменований індекс. Це не дрібниця — імена індексів у SQLite глобальні для
 бази, тому однойменний `CREATE UNIQUE INDEX IF NOT EXISTS` міг би виявитись **порожньою дією**,
 і таблиця лишилась би без унікальності, не сказавши про це нікому.

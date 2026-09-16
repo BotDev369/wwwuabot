@@ -15,7 +15,10 @@ import { ComposerModal } from "./ComposerModal";
 import { ComposerPlaceholderTab } from "./ComposerPlaceholderTab";
 import { COMPOSER_TABS, findComposerTab } from "./tabs";
 
-const html = renderToStaticMarkup(<ComposerModal onClose={() => {}} />);
+/** Збереження тут не доходить до API: композер лише віддає чернетку оболонці. */
+const noop = async (): Promise<void> => {};
+
+const html = renderToStaticMarkup(<ComposerModal onClose={() => {}} onSaveNote={noop} />);
 
 describe("ComposerModal", () => {
   it("відкривається на «Нотатці»: поле вводу, вставка й кнопки дії", () => {
@@ -62,6 +65,12 @@ describe("ComposerModal", () => {
   it("дія збереження є лише там, де інтерфейс уже працює", () => {
     // «Нотатка» — готова вкладка, тож кнопка збереження є
     expect(html).toContain("wb-btn-primary");
+  });
+
+  it("порожню нотатку зберегти неможливо — кнопка вимкнена", () => {
+    // Рядок без тексту й без хештегів — не чернетка, а випадковий дотик;
+    // краще вимкнена кнопка, ніж 400 від сервера.
+    expect(html).toMatch(/wb-btn-primary" disabled/);
   });
 
   it("вкладки стоять стовпчиком і лишаються підписаними для скрінрідера", () => {

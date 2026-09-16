@@ -28,9 +28,14 @@ const ATTACHMENT_TITLES: Record<AttachmentKind, string> = {
   file: "Файли",
 };
 
-export function ComposerModal({ onClose }: ComposerModalProps): ReactElement {
+export function ComposerModal({ onClose, onSaveNote }: ComposerModalProps): ReactElement {
   const dialog = useDialog();
-  const { tab, selectTab, note, setNote, tags, addTags, removeTag, paste, error } = useComposer();
+  const { tab, selectTab, note, setNote, tags, addTags, removeTag, paste, error, saving, save } =
+    useComposer({ onSaveNote });
+
+  // Порожню нотатку зберігати нема чого: рядок без тексту й без хештегів — це
+  // не чернетка, а випадковий дотик. Тому кнопка вимкнена, а не «падає» 400-ю.
+  const empty = note.trim() === "" && tags.length === 0;
 
   // Заглушка — це діалог, а не нативне вікно: у Telegram на iOS `alert`
   // не показується взагалі (§4), тож кнопка просто нічого б не робила.
@@ -114,10 +119,17 @@ export function ComposerModal({ onClose }: ComposerModalProps): ReactElement {
             <button
               type="button"
               className="wb-btn wb-btn-primary"
-              onClick={() => soon("Збереження нотатки", "Нотатка")}
+              disabled={saving || empty}
+              onClick={() => {
+                // Закриваємо лише тоді, коли справді збереглось: інакше
+                // людина втратила б написане, навіть не побачивши причини.
+                void save().then((saved) => {
+                  if (saved) onClose();
+                });
+              }}
             >
               <Icon name="save" size={16} />
-              Зберегти
+              {saving ? "Зберігаю…" : "Зберегти"}
             </button>
           )}
         </div>

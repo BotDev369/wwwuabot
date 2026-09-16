@@ -10,6 +10,7 @@
  */
 
 import type { IconName } from "@wwwuabot/shared";
+import type { NoteDraft } from "@wwwuabot/shared/notes";
 
 /**
  * Вкладка композера.
@@ -36,6 +37,13 @@ export interface ComposerTab {
 export interface ComposerModalProps {
   /** Закрити композер. Відкриває й закриває його оболонка. */
   onClose: () => void;
+  /**
+   * Зберегти нотатку. Куди саме — знає **оболонка**, і це не дрібниця: у
+   * платформі нотатка належить людині (ідентичність із підписаного `initData`),
+   * у панелі — проєкту (акаунт cookie-сесії). Композер спільний, тож адреси
+   * API в ньому немає; він віддає чернетку й чекає на помилку-кидок.
+   */
+  onSaveNote: (draft: NoteDraft) => Promise<void>;
 }
 
 /** Види вкладень, місце під які вже позначене. */

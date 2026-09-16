@@ -19,6 +19,7 @@
 
 import type { ReactElement } from "react";
 import { Icon } from "@wwwuabot/shared";
+import { MAX_NOTE_LENGTH } from "@wwwuabot/shared/notes";
 import { ComposerTags, TAG_INPUT_ID } from "./ComposerTags";
 import type { AttachmentKind, ComposerNoteTabProps } from "./types";
 import { useAutoGrowField } from "./useAutoGrowField";
@@ -90,6 +91,9 @@ export function ComposerNoteTab({
           value={note}
           onChange={(event) => onNoteChange(event.target.value)}
           placeholder="Почніть писати…"
+          // Стеля — зі спільного правила, яким api-dev перевіряє запис: поле
+          // мусить не дати набрати те, що сервер потім обріже мовчки.
+          maxLength={MAX_NOTE_LENGTH}
         />
       </div>
 
