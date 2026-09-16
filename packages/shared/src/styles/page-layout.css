@@ -51,7 +51,6 @@
   width: 260px;
   flex-shrink: 0;
   background: var(--bg-2);
-  border-right: 1px solid var(--border);
 }
 
 .page-zone-group {
@@ -166,11 +165,20 @@
     position: fixed;
     top: calc(12px + var(--safe-top));
     left: 12px;
-    z-index: 998;
+    /* Шар НИЖЧЕ за модалки (`--z-modal` = 400) і нижче за футер: інакше
+       плаваюча кнопка меню лягала просто на заголовок композера. Коли
+       модалка відкрита, вона взагалі зникає: під нею вона не потрібна. */
+    z-index: var(--z-sticky);
     background: var(--bg-1, var(--bg-home, #f0f2f5));
-    border: 1px solid var(--border-subtle, var(--border));
     border-radius: var(--radius-full, 9999px);
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+  }
+
+  /* Модалка на екрані — плаваючу кнопку меню ховаємо: вона б перекривала
+     заголовок, а під модалкою все одно нею не користуються. `:has()` питає
+     документ, бо модалки рендеряться поза оболонкою (§3). */
+  html:has(.wb-modal-overlay) .page-hamburger--floating {
+    display: none;
   }
 
   /* Sidebar header & close button alignment */

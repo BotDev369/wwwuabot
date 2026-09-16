@@ -281,7 +281,6 @@ html[data-brand="android"] .wb-btn-primary:hover {
 
 html[data-brand="android"] .wb-btn-secondary {
   background: var(--bg-3) !important;
-  border: 1px solid var(--border) !important;
   color: var(--text-primary) !important;
 }
 
@@ -291,7 +290,6 @@ html[data-brand="android"] .wb-btn-secondary {
 html[data-brand="android"] .wb-nav,
 html[data-brand="android"] .page-zone--sidebar {
   background: #e8e8ec !important;
-  border-right: 1px solid var(--border) !important;
   box-shadow: 4px 0 16px rgba(0, 0, 0, 0.08) !important;
   backdrop-filter: none !important;
   -webkit-backdrop-filter: none !important;
@@ -300,7 +298,6 @@ html[data-brand="android"] .page-zone--sidebar {
 html[data-brand="android"][data-theme="dark"] .wb-nav,
 html[data-brand="android"][data-theme="dark"] .page-zone--sidebar {
   background: #16161a !important;
-  border-right: 1px solid var(--border) !important;
   box-shadow: 4px 0 16px rgba(0, 0, 0, 0.4) !important;
 }
 
@@ -323,18 +320,10 @@ html[data-brand="android"] .wb-nav-item--active {
   box-shadow: inset 0 0 0 2px var(--accent) !important;
 }
 
-html[data-brand="android"] .wb-nav-header {
-  border-bottom: 1px solid var(--border-subtle) !important;
-}
-
 html[data-brand="android"] .wb-nav-title {
   font-size: 14px !important;
   font-weight: 500 !important;
   letter-spacing: 0.01em !important;
-}
-
-html[data-brand="android"] .wb-nav-footer {
-  border-top: 1px solid var(--border-subtle) !important;
 }
 
 html[data-brand="android"] .wb-app-logout {
@@ -375,9 +364,8 @@ html[data-brand="android"] .wb-topbar-title {
   letter-spacing: 0.01em !important;
 }
 
-/* ── Cards: M3 filled card — solid surface, visible border ─────────────── */
+/* ── Cards: M3 filled card — solid surface, no outline ─────────────────── */
 html[data-brand="android"] .wb-card {
-  border: 1px solid var(--border) !important;
   border-radius: 16px !important;
   box-shadow: none !important;
   background: #ecedf0 !important;
@@ -385,7 +373,6 @@ html[data-brand="android"] .wb-card {
 
 html[data-brand="android"][data-theme="dark"] .wb-card {
   background: #26262a !important;
-  border: 1px solid var(--border) !important;
 }
 
 html[data-brand="android"] .wb-profile-title,
@@ -431,7 +418,6 @@ html[data-brand="android"] .wb-data-table th,
 html[data-brand="android"] .wb-data-table td {
   padding: 12px 16px !important;
   font-size: 14px !important;
-  border-bottom: 1px solid var(--border-subtle) !important;
 }
 
 html[data-brand="android"] .scn-row:hover,
@@ -447,16 +433,17 @@ html[data-brand="android"] .wb-input,
 html[data-brand="android"] .wb-textarea,
 html[data-brand="android"] .wb-select {
   border-radius: 12px !important;
-  font-size: 14px !important;
+  /* 16px, а не M3-шні 14px: менший шрифт змушує iOS сам збільшувати сторінку
+     на фокусі — і все «пливе» (див. `components.css`, кирпичик поля). */
+  font-size: 16px !important;
   padding: 12px 16px !important;
 }
 
-html[data-brand="android"] .scn-search,
-html[data-brand="android"] .block-input,
-html[data-brand="android"] .block-textarea {
+html[data-brand="android"] .scn-search {
   border-radius: 12px !important;
-  border: 1px solid var(--border) !important;
-  font-size: 14px !important;
+  /* 16px, а не M3-шні 14px: менший шрифт змушує iOS сам збільшувати сторінку
+     на фокусі — і все «пливе» (див. `components.css`, кирпичик поля). */
+  font-size: 16px !important;
   padding: 12px 16px !important;
 }
 
@@ -490,7 +477,6 @@ html[data-brand="android"] .wb-modal-title {
 /* ── Chips: M3 filter chips — square corners ───────────────────────────── */
 html[data-brand="android"] .wb-chip {
   border-radius: 8px !important;
-  border: 1px solid var(--border) !important;
   font-size: 14px !important;
   font-weight: 500 !important;
   padding: 6px 16px !important;
@@ -528,8 +514,7 @@ html[data-brand="android"] .wb-auth-submit {
 
 html[data-brand="android"] .wb-auth-input {
   border-radius: 12px !important;
-  border: 1px solid var(--border) !important;
-  font-size: 14px !important;
+  font-size: 16px !important;
 }
 
 html[data-brand="android"] .wb-auth-input:focus {

@@ -525,23 +525,26 @@ body {
   padding: 2px 10px;
 }
 
+/* Пошук — той самий кирпичик поля, що й решта полів продукту (`--field-bg`
+   + `--field-ring` у shared): у нього немає рамки, тож і тут її не малюємо —
+   інакше адмінка виглядала б інакше за платформу. */
 .scn-search {
-  background: var(--bg-2);
-  border: 1px solid var(--border);
+  background: var(--field-bg);
+  box-shadow: var(--field-ring);
+  border: 0;
   border-radius: var(--radius);
   padding: 7px 12px;
   font-size: 13px;
   color: var(--text-primary);
   outline: none;
   width: 220px;
-  transition:
-    border-color 0.15s,
-    background 0.15s;
+  transition: box-shadow 0.15s;
 }
 
 .scn-search:focus {
-  border-color: var(--accent);
-  background: var(--bg-1);
+  box-shadow:
+    var(--field-ring),
+    0 0 0 3px var(--accent-soft);
 }
 
 .scn-body {

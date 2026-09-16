@@ -42,15 +42,13 @@
   border-color: var(--accent-hover);
 }
 
-/* Secondary */
+/* Secondary — залита поверхня, без контуру: її видно тлом (правило 15) */
 .wb-btn-secondary {
-  background: var(--surface);
+  background: var(--surface-hover);
   color: var(--text-primary);
-  border-color: var(--border);
 }
 .wb-btn-secondary:hover {
-  background: var(--surface-hover);
-  border-color: var(--text-muted);
+  background: var(--surface-active);
 }
 
 /* Ghost */
@@ -113,16 +111,14 @@
   font-size: 15px;
   font-weight: var(--weight-semibold);
   border-radius: var(--radius);
-  border: 1px solid var(--border);
-  background: var(--bg-2);
+  background: var(--bg-3);
   color: var(--text-primary);
   cursor: pointer;
   transition: all var(--duration-fast) var(--ease);
   white-space: nowrap;
 }
 .wb-btn-inline:hover:not(:disabled) {
-  background: var(--surface-hover);
-  border-color: var(--accent);
+  background: var(--surface-active);
   color: var(--accent);
 }
 .wb-btn-inline:active:not(:disabled) {
@@ -229,16 +225,16 @@
 
 /* ── Card ────────────────────────────────────────────────────────────────── */
 
+/* Картка — поверхня, а не рамка: її видно тлом і тінню (правило 15). Це
+   стосується й меж усередині: шапку і футер відділяє простір, не лінія. */
 .wb-card {
   background: var(--surface);
-  border: 1px solid var(--border-subtle);
   border-radius: var(--radius-md);
   box-shadow: var(--shadow-xs);
 }
 
 .wb-card-header {
   padding: var(--sp-4) var(--sp-5);
-  border-bottom: 1px solid var(--border-subtle);
   font-weight: var(--weight-semibold);
   display: flex;
   align-items: center;
@@ -259,7 +255,6 @@
 
 .wb-card-footer {
   padding: var(--sp-3) var(--sp-5);
-  border-top: 1px solid var(--border-subtle);
   display: flex;
   align-items: center;
   justify-content: flex-end;
@@ -282,7 +277,6 @@
 
 .wb-modal {
   background: var(--surface);
-  border: 1px solid var(--border);
   border-radius: var(--radius-lg);
   box-shadow: var(--shadow-xl);
   width: 100%;
@@ -301,7 +295,6 @@
 
 .wb-modal-header {
   padding: var(--sp-4) var(--sp-5);
-  border-bottom: 1px solid var(--border-subtle);
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -343,7 +336,6 @@
   border-radius: var(--radius-full);
   background: var(--bg-2);
   color: var(--text-secondary);
-  border: 1px solid var(--border-subtle);
   cursor: pointer;
   transition: all var(--duration-fast) var(--ease);
   flex-shrink: 0;
@@ -377,7 +369,6 @@
   border-radius: var(--radius-sm);
   background: var(--bg-2);
   color: var(--text-secondary);
-  border: 1px solid var(--border-subtle);
   cursor: pointer;
   transition: all var(--duration-fast) var(--ease);
   flex-shrink: 0;
@@ -423,7 +414,6 @@
 
 .wb-modal-footer {
   padding: var(--sp-3) var(--sp-5);
-  border-top: 1px solid var(--border-subtle);
   display: flex;
   align-items: center;
   justify-content: flex-end;
@@ -566,12 +556,15 @@ html:has(.wb-tabbar) .wb-modal {
   padding: var(--sp-2);
 }
 
+/* Майже весь екран. Висоту беремо ВІД ОВЕРЛЕЯ (`100%`), а не з `dvh`:
+   оверлей — `position: fixed; inset: 0`, тобто його висота і є видима площа.
+   На iOS `dvh` у WebView не дорівнює їй (наприклад, коли відкрита клавіатура),
+   і модалка, вища за екран, змушувала WebKit прокручувати сторінку — саме це
+   виглядало як «усе попливло» на iPhone й не повторювалося на Android. */
 .wb-modal--full {
   max-width: 720px;
-  /* майже весь екран: 100vh — фолбек для рушіїв без dvh */
-  height: calc(100vh - 2 * var(--sp-2));
-  height: calc(100dvh - 2 * var(--sp-2));
-  max-height: calc(100dvh - 2 * var(--sp-2));
+  height: 100%;
+  max-height: 100%;
 }
 
 /* На телефоні композер — майже сам екран: закруглення тут зайве, воно лише
@@ -801,6 +794,24 @@ html:has(.wb-tabbar) .wb-modal {
   box-shadow: var(--field-ring);
 }
 
+/* Нижня межа шрифту в полів — не смак, а вимога iOS: WebKit (і Telegram у ньому)
+   **сам збільшує сторінку**, коли фокус потрапляє в поле зі шрифтом, меншим за
+   16px. Збільшена сторінка вже не влазить в екран — саме це виглядає як
+   «все попливло»: заголовок обрізаний, стовпчик вкладок за краєм. Android
+   того не робить взагалі, тому й здається, що там усе гаразд.
+
+   `max(16px, 1em)` — це «не менше 16px, але не дрібніше за тему»: `1em` у
+   `font-size` — розмір батька, тож бренд із більшим шрифтом (Apple — 17px)
+   зберігає свій розмір. Бренд може задати й своє значення — але не менше 16px:
+   саме тому в `android.css` ті самі поля теж 16px, а не 14px. */
+.wb-input,
+.wb-select,
+.wb-textarea,
+.wb-composer-input,
+.wb-composer-tag-input {
+  font-size: max(16px, 1em);
+}
+
 .wb-composer-tag {
   display: inline-flex;
   align-items: center;
@@ -978,11 +989,12 @@ html:has(.wb-tabbar) .wb-modal {
   }
 }
 
-/* ── Table ───────────────────────────────────────────────────────────────── */
+/* ── Table ─────────────────────────────────────────────────────────────────
+   Рядки не розділяє лінія: рядки читаються смугою (парні — інша поверхня),
+   а шапку — її тло. Так таблиця тримає структуру без жодного штриха. */
 
 .wb-table-wrap {
   overflow-x: auto;
-  border: 1px solid var(--border-subtle);
   border-radius: var(--radius-md);
 }
 
@@ -998,15 +1010,18 @@ html:has(.wb-tabbar) .wb-modal {
   font-size: var(--text-xs);
   color: var(--text-secondary);
   background: var(--bg-2);
-  border-bottom: 1px solid var(--border);
   white-space: nowrap;
   user-select: none;
 }
 
 .wb-table td {
   padding: var(--sp-2) var(--sp-3);
-  border-bottom: 1px solid var(--border-subtle);
   vertical-align: middle;
+}
+
+/* Смуга замість лінії: розділювач — поверхня */
+.wb-table tbody tr:nth-child(even) td {
+  background: var(--bg-2);
 }
 
 .wb-table tr:last-child td {
@@ -1034,7 +1049,6 @@ html:has(.wb-tabbar) .wb-modal {
 .wb-data-table-wrap {
   flex: 1;
   overflow: auto;
-  border: 1px solid var(--border-subtle);
   border-radius: var(--radius-md);
   -webkit-overflow-scrolling: touch;
 }
@@ -1057,7 +1071,6 @@ html:has(.wb-tabbar) .wb-modal {
   font-size: var(--text-xs);
   color: var(--text-secondary);
   background: var(--bg-2);
-  border-bottom: 1px solid var(--border);
   white-space: nowrap;
   user-select: none;
 }
@@ -1073,10 +1086,14 @@ html:has(.wb-tabbar) .wb-modal {
 
 .wb-data-table td {
   padding: var(--sp-2) var(--sp-3);
-  border-bottom: 1px solid var(--border-subtle);
   vertical-align: middle;
   background: var(--bg-1);
   color: var(--text-primary);
+}
+
+/* Смуга замість лінії під рядком */
+.wb-data-table tbody tr:nth-child(even) td {
+  background: var(--bg-2);
 }
 
 .wb-data-table tr:last-child td {
@@ -1106,19 +1123,20 @@ html:has(.wb-tabbar) .wb-modal {
   text-align: center;
 }
 
+/* Закріплені колонки: під час прокрутки край задає м'яка тінь, а не штрих. */
 .wb-data-table th.col-menu {
   position: sticky;
   left: 0;
   z-index: 3;
   background: var(--bg-2);
-  border-right: 1px solid var(--border);
+  box-shadow: 2px 0 4px rgba(15, 23, 42, 0.06);
 }
 
 .wb-data-table td.col-menu {
   position: sticky;
   left: 0;
   z-index: 1;
-  border-right: 1px solid var(--border-subtle);
+  box-shadow: 2px 0 4px rgba(15, 23, 42, 0.06);
 }
 
 /* Sticky checkbox column */
@@ -1133,14 +1151,14 @@ html:has(.wb-tabbar) .wb-modal {
   left: 41px;
   z-index: 3;
   background: var(--bg-2);
-  border-right: 1px solid var(--border);
+  box-shadow: 2px 0 4px rgba(15, 23, 42, 0.06);
 }
 
 .wb-data-table td.col-check {
   position: sticky;
   left: 41px;
   z-index: 1;
-  border-right: 1px solid var(--border-subtle);
+  box-shadow: 2px 0 4px rgba(15, 23, 42, 0.06);
 }
 
 /* Sticky name column */
@@ -1154,14 +1172,14 @@ html:has(.wb-tabbar) .wb-modal {
   left: 82px;
   z-index: 3;
   background: var(--bg-2);
-  border-right: 1px solid var(--border);
+  box-shadow: 2px 0 4px rgba(15, 23, 42, 0.06);
 }
 
 .wb-data-table td.col-name {
   position: sticky;
   left: 82px;
   z-index: 1;
-  border-right: 1px solid var(--border-subtle);
+  box-shadow: 2px 0 4px rgba(15, 23, 42, 0.06);
 }
 
 /* Selected state for sticky cells */
@@ -1182,7 +1200,6 @@ html:has(.wb-tabbar) .wb-modal {
 
 .wb-compare-wrap {
   overflow-x: auto;
-  border: 1px solid var(--border-subtle);
   border-radius: var(--radius-md);
 }
 
@@ -1201,8 +1218,11 @@ html:has(.wb-tabbar) .wb-modal {
   white-space: nowrap;
   background: var(--bg-1);
   color: var(--text-primary);
-  border-bottom: 1px solid var(--border-subtle);
-  border-right: 1px solid var(--border-subtle);
+}
+
+/* Смуга замість лінії — і по рядку, і між колонками */
+.wb-compare-table tbody tr:nth-child(even) td {
+  background: var(--bg-2);
 }
 
 .wb-compare-table thead th {
@@ -1291,6 +1311,7 @@ html:has(.wb-tabbar) .wb-modal {
   width: 12px;
   height: 12px;
 }
+/* Чип — залита пілюля без рамки: колір і так каже, що це контрол (правило 15). */
 .wb-chip {
   display: inline-flex;
   align-items: center;
@@ -1301,7 +1322,6 @@ html:has(.wb-tabbar) .wb-modal {
   background: var(--surface-active);
   color: var(--text-secondary);
   border-radius: var(--radius-full);
-  border: 1px solid var(--border-subtle);
 }
 
 button.wb-chip {
@@ -1661,7 +1681,6 @@ button.wb-chip {
   gap: var(--sp-3);
   padding: var(--sp-4) var(--sp-5);
   background: var(--surface);
-  border-bottom: 1px solid var(--border-subtle);
 }
 
 .site-logo {
@@ -1680,7 +1699,6 @@ button.wb-chip {
 
 .site-nav {
   background: var(--surface);
-  border-bottom: 1px solid var(--border-subtle);
   padding: 0 var(--sp-4);
   overflow-x: auto;
   -webkit-overflow-scrolling: touch;
@@ -1781,8 +1799,7 @@ button.wb-chip {
   display: flex;
   flex-direction: column;
   min-height: 100%;
-  background: var(--bg-0);
-  border: 1px solid var(--border-subtle);
+  background: var(--bg-3);
   border-radius: var(--radius-md);
   overflow: hidden;
 }

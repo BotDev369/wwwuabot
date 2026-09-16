@@ -285,7 +285,6 @@ html[data-brand="apple"] .wb-btn-primary:hover {
 
 html[data-brand="apple"] .wb-btn-secondary {
   background: var(--bg-2) !important;
-  border: 0.5px solid var(--border) !important;
   color: var(--text-primary) !important;
   box-shadow: none !important;
 }
@@ -299,14 +298,12 @@ html[data-brand="apple"] .page-zone--sidebar {
   background: rgba(242, 242, 247, 0.85) !important;
   backdrop-filter: saturate(180%) blur(24px) !important;
   -webkit-backdrop-filter: saturate(180%) blur(24px) !important;
-  border-right: 0.5px solid rgba(198, 198, 200, 0.5) !important;
   box-shadow: none !important;
 }
 
 html[data-brand="apple"][data-theme="dark"] .wb-nav,
 html[data-brand="apple"][data-theme="dark"] .page-zone--sidebar {
   background: rgba(28, 28, 30, 0.8) !important;
-  border-right: 0.5px solid rgba(56, 56, 58, 0.5) !important;
 }
 
 /* Nav items: pill shape, FILLED active — Apple signature.
@@ -335,19 +332,12 @@ html[data-brand="apple"][data-theme="dark"] .wb-nav-item--active {
   color: #000000 !important;
 }
 
-/* Sidebar header / footer */
-html[data-brand="apple"] .wb-nav-header {
-  border-bottom: 0.5px solid rgba(198, 198, 200, 0.5) !important;
-}
-
+/* Sidebar header / footer — ліній тут немає: шапку й футер меню бренд
+   відділяє так само, як усе інше (правило 15). */
 html[data-brand="apple"] .wb-nav-title {
   font-size: 14px !important;
   font-weight: 700 !important;
   letter-spacing: 0.04em !important;
-}
-
-html[data-brand="apple"] .wb-nav-footer {
-  border-top: 0.5px solid rgba(198, 198, 200, 0.5) !important;
 }
 
 html[data-brand="apple"] .wb-app-logout {
@@ -438,7 +428,6 @@ html[data-brand="apple"] .wb-data-table th,
 html[data-brand="apple"] .wb-data-table td {
   padding: 14px 16px !important;
   font-size: 15px !important;
-  border-bottom: 0.5px solid var(--border-subtle) !important;
 }
 
 html[data-brand="apple"] .scn-row:hover,
@@ -460,11 +449,8 @@ html[data-brand="apple"] .wb-select {
 
 /* Приватні поля адмінки (пошук, редактор блоків) — не кирпичик, тож їм
    лишаємо те, що в них було, і не міняємо їхній вигляд. */
-html[data-brand="apple"] .scn-search,
-html[data-brand="apple"] .block-input,
-html[data-brand="apple"] .block-textarea {
+html[data-brand="apple"] .scn-search {
   border-radius: 10px !important;
-  border: 0.5px solid var(--border) !important;
   font-size: 16px !important;
   padding: 12px 16px !important;
 }
@@ -499,7 +485,6 @@ html[data-brand="apple"] .wb-modal-title {
 /* ── Chips: pill — Apple segmented style ────────────────────────────────── */
 html[data-brand="apple"] .wb-chip {
   border-radius: 9999px !important;
-  border: 1.5px solid var(--border) !important;
   font-size: 14px !important;
   font-weight: 500 !important;
   padding: 7px 16px !important;
@@ -537,7 +522,6 @@ html[data-brand="apple"] .wb-auth-submit {
 
 html[data-brand="apple"] .wb-auth-input {
   border-radius: 10px !important;
-  border: 0.5px solid var(--border) !important;
   font-size: 16px !important;
 }
 
