@@ -631,8 +631,12 @@
   letter-spacing: 0.1em;
 }
 
+/* Помилка — кільце, а не рамка: у полів її немає (кирпичик «поле вводу»
+   в `components.css`), тож `border-color` не показав би нічого. */
 .wb-auth-input--error {
-  border-color: var(--red);
+  box-shadow:
+    var(--field-ring),
+    0 0 0 3px var(--red-dim);
 }
 
 .wb-auth-error {

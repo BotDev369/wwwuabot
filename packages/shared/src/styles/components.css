@@ -156,27 +156,30 @@
 
 /* ── Input / Select / Textarea ───────────────────────────────────────────── */
 
+/* Кола фону й межі полів задає кирпичик «поле вводу» нижче — тут лишаються
+   мірки самого контрола, щоб колір поля не був написаний двічі. */
 .wb-input,
 .wb-select,
 .wb-textarea {
   width: 100%;
   padding: var(--sp-2) var(--sp-3);
   font-size: var(--text-sm);
-  background: var(--surface);
   color: var(--text-primary);
-  border: 1px solid var(--border);
   border-radius: var(--radius);
   outline: none;
   transition:
-    border-color var(--duration) var(--ease),
+    background-color var(--duration) var(--ease),
     box-shadow var(--duration) var(--ease);
 }
 
+/* Фокус — те саме кільце, що й у композері: до нього додаємо м'які краї,
+   а не замінюємо їх, інакше поле на фокусі «схлопувалося» б до кільця. */
 .wb-input:focus,
 .wb-select:focus,
 .wb-textarea:focus {
-  border-color: var(--accent);
-  box-shadow: 0 0 0 3px var(--accent-soft);
+  box-shadow:
+    var(--field-ring),
+    0 0 0 3px var(--accent-soft);
 }
 
 .wb-input::placeholder,
@@ -200,11 +203,14 @@
 }
 
 /* Невалідний контрол. Раніше клас `wb-input-error` стояв у розмітці
-   редактора сайту, але правила не було — некоректний slug не підсвічувався. */
+   редактора сайту, але правила не було — некоректний slug не підсвічувався.
+   Тепер помилка — теж кільце (рамки в полів немає, тож `border-color` нічого
+   б не показав). */
 .wb-input-error,
 .wb-input-error:focus {
-  border-color: var(--red);
-  box-shadow: 0 0 0 3px var(--red-dim);
+  box-shadow:
+    var(--field-ring),
+    0 0 0 3px var(--red-dim);
 }
 
 /* Поле форми: підпис + контрол один під одним. Саме цей клас мають уживати
@@ -730,8 +736,6 @@ html:has(.wb-tabbar) .wb-modal {
   min-height: calc(1.5em + 2 * var(--sp-2));
   max-height: 60dvh;
   padding: var(--sp-2) var(--sp-3);
-  border: none;
-  background: none;
   border-radius: var(--radius-md);
   color: var(--text-primary);
   font: inherit;
@@ -751,7 +755,9 @@ html:has(.wb-tabbar) .wb-modal {
 .wb-composer-input:focus,
 .wb-composer-input:focus-visible {
   outline: none;
-  box-shadow: 0 0 0 3px var(--accent-soft);
+  box-shadow:
+    var(--field-ring),
+    0 0 0 3px var(--accent-soft);
 }
 
 /* Хештеги: чипи й вузьке поле вводу в одному рядку — тег дописується там, де
@@ -763,13 +769,36 @@ html:has(.wb-tabbar) .wb-modal {
   gap: var(--sp-1);
   min-height: calc(1.5em + 2 * var(--sp-2));
   padding: var(--sp-1) var(--sp-3);
-  border: none;
-  background: none;
   border-radius: var(--radius-md);
 }
 
 .wb-composer-tags:focus-within {
-  box-shadow: 0 0 0 3px var(--accent-soft);
+  box-shadow:
+    var(--field-ring),
+    0 0 0 3px var(--accent-soft);
+}
+
+/* ── Кирпичик «поле вводу» ──────────────────────────────────────────────────
+   Поле видно, бо його колір трохи відрізняється від тла поверхні, а краї
+   окреслює м'яке розмиття — не лінія. Правило ОДНЕ на всі поля продукту:
+   спільні контроли (`.wb-input`, `.wb-select`, `.wb-textarea`) і власні поля
+   композера (`.wb-composer-input`, `.wb-composer-tags`), тому поле виглядає
+   однаково всюди, а не «схоже».
+
+   Чому `border: 0` тут узагалі згадано: раніше колір поля задавався в
+   кожного свого класу окремо, а брендові теми додавали рамку через
+   `!important` — тож поле було або з лінією, або невидиме. Тепер рамки немає
+   ніде, а значення кольору — у токенах `--field-bg` / `--field-ring`
+   (схема світла/темна — `themes.css`), які бренд може перекрити лише
+   свідомо, а не випадково (див. `DESIGN_SYSTEM.md`, правило 13). */
+.wb-input,
+.wb-select,
+.wb-textarea,
+.wb-composer-input,
+.wb-composer-tags {
+  background: var(--field-bg);
+  border: 0;
+  box-shadow: var(--field-ring);
 }
 
 .wb-composer-tag {

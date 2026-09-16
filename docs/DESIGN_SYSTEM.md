@@ -21,6 +21,7 @@ Defined in `packages/shared/src/styles/tokens.css`, overridden per brand in `app
 | `var(--accent)` / `--accent-hover` / `--accent-dim` / `--accent-soft` | Акцент: база / hover / плашка / підкладка під фокус |
 | `var(--border)` / `var(--border-subtle)` | Межі: помітна / ледь видима |
 | `var(--surface)` / `--surface-hover` / `--surface-active` / `--surface-overlay` | Поверхні карток, стани й скрим |
+| `var(--field-bg)` / `var(--field-ring)` | **Поле вводу**: колір поля (трохи інший за тло поверхні) і м'яка тінь по краях. Межу поля малює саме вони, а не лінія — одне правило на всі поля продукту (`.wb-input`, `.wb-select`, `.wb-textarea` і власні поля композера). Схема світла/темна — у `themes.css` |
 | `var(--chrome-header-bg)` / `var(--chrome-bottom-bg)` | Нативний хром Telegram: шапка клієнта і смуга під футером; синхронізує `shared/app/telegram-chrome.ts`. Наші смуги (`.wb-app-header`, `.wb-topbar`, `.wb-tabbar`) малюються тими самими токенами на 91% (прозорі на 9%) і **без** ліній та тіней |
 | `var(--green)` / `var(--green-dim)` | Успіх |
 | `var(--red)` / `var(--red-dim)` | Небезпека |
@@ -139,12 +140,15 @@ Defined in `packages/shared/src/styles/tokens.css`, overridden per brand in `app
     none beside the tab column, none around a field — space does the separating. There is no
     instructional paragraph under the fields either: the label and the button already say what they
     do, and such a paragraph only eats room.
-    Its fields are their **own brick** (`.wb-composer-field` / `-input` / `-tags`), not
-    `.wb-textarea` / `.wb-input`, and that is not a matter of taste: the brand themes force a border,
-    a radius and padding onto those classes with `!important`, so beating them from `components.css`
-    would take an `!important` of our own. The composer's flat fields are the decision, so they are
-    a separate brick — and each one has a **label above it** (`.wb-label`), which is what says where
-    things are in a modal with no borders. The note field is three rows tall, scrolls beyond that,
+    Its fields keep their own layout classes (`.wb-composer-field` / `-input` / `-tags`) — the text
+    field is three rows tall with its own size rules and the hashtag row is a box for chips — but
+    the **surface** comes from the shared field brick: one rule lists `.wb-input`, `.wb-select`,
+    `.wb-textarea` and both composer fields, and paints them with `--field-bg` plus a soft
+    `--field-ring`. A field is therefore visible everywhere by **colour and blurred edges**, not by
+    a line, and the brand themes no longer force a border onto those classes with `!important`
+    (Apple and Android only add radius and metrics now, so they cannot make one shell's fields look
+    different from the other's). Each field also has a **label above it** (`.wb-label`), which is
+    what says where things are in a modal without borders. The note field is three rows tall, scrolls beyond that,
     and grows two ways: `resize: vertical` on desktop and with the text (`useAutoGrowField`, capped,
     and it never shrinks what a hand has dragged) on touch, where no WebView renders the handle.
     Hashtags are chips plus an inline input in the same row (`.wb-composer-tag*`): a tag ends on a

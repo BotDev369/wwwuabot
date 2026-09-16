@@ -52,6 +52,15 @@
   --surface-active: #dde1e7;
   --surface-overlay: rgba(0, 0, 0, 0.4);
 
+  /* ── Поле вводу ──────────────────────────────────────────────────────────
+     Межі поля малює не лінія, а сам колір і м'яка тінь по краях: `--field-bg`
+     трохи відрізняється від тла поверхні (у світлій схемі — темніший,
+     у темній — світліший), `--field-ring` окреслює краї розмиттям.
+     Це ОДИН кирпичик на всі поля продукту — правило — у `components.css`,
+     у блоці «поле вводу». */
+  --field-bg: var(--bg-3);
+  --field-ring: 0 1px 2px rgba(15, 23, 42, 0.05), 0 2px 6px rgba(15, 23, 42, 0.04);
+
   --shadow-xs: 0 1px 2px rgba(0, 0, 0, 0.05);
   --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.1), 0 1px 2px rgba(0, 0, 0, 0.06);
   --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.1);
@@ -99,6 +108,11 @@
   --surface-active: #282c35;
   --surface-overlay: rgba(0, 0, 0, 0.6);
 
+  /* Поле — світліше за поверхню (у темній схемі тінь країв не видно, тож
+     межі тримає сам колір, а тінь дає об'єм). */
+  --field-bg: var(--bg-4);
+  --field-ring: 0 1px 2px rgba(0, 0, 0, 0.45), 0 2px 6px rgba(0, 0, 0, 0.3);
+
   --shadow-xs: 0 1px 2px rgba(0, 0, 0, 0.2);
   --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.3), 0 1px 2px rgba(0, 0, 0, 0.2);
   --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.3), 0 2px 4px -2px rgba(0, 0, 0, 0.2);
@@ -140,6 +154,9 @@
     --surface-hover: #22262f;
     --surface-active: #282c35;
     --surface-overlay: rgba(0, 0, 0, 0.6);
+
+    --field-bg: var(--bg-4);
+    --field-ring: 0 1px 2px rgba(0, 0, 0, 0.45), 0 2px 6px rgba(0, 0, 0, 0.3);
 
     --shadow-xs: 0 1px 2px rgba(0, 0, 0, 0.2);
     --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.3), 0 1px 2px rgba(0, 0, 0, 0.2);
