@@ -559,12 +559,25 @@
   padding-top: calc(var(--sp-3) + var(--safe-top));
 }
 
+/* Вкладки — стовпчик СКРАЮ, а не смуга зверху: у шапки й футера своя висота,
+   а полю вводу дістається вся решта вікна. Стовпчик вузький і прокручується,
+   якщо вкладок стане більше, ніж влазить. */
+.wb-composer-main {
+  display: flex;
+  flex: 1 1 auto;
+  min-height: 0;
+  min-width: 0;
+}
+
 .wb-composer-tabs {
   display: flex;
+  flex-direction: column;
   gap: var(--sp-1);
-  padding: var(--sp-2) var(--sp-3) 0;
   flex-shrink: 0;
-  overflow-x: auto;
+  width: 72px;
+  padding: var(--sp-2) var(--sp-1) var(--sp-3);
+  overflow-y: auto;
+  border-right: 1px solid var(--border-subtle);
   scrollbar-width: none;
 }
 
@@ -573,18 +586,19 @@
 }
 
 .wb-composer-tab {
-  display: inline-flex;
+  display: flex;
+  flex-direction: column;
   align-items: center;
-  gap: 6px;
-  flex-shrink: 0;
-  min-height: 44px; /* мінімальний тап-таргет для пальця */
-  padding: 0 var(--sp-3);
+  justify-content: center;
+  gap: 4px;
+  width: 100%;
+  min-height: 52px;
+  padding: var(--sp-1) 2px;
   border: none;
   background: none;
-  border-radius: var(--radius-full);
+  border-radius: var(--radius-md);
   color: var(--text-secondary);
   font: inherit;
-  font-size: var(--text-base);
   font-weight: var(--weight-medium);
   cursor: pointer;
   transition:
@@ -603,12 +617,29 @@
 }
 
 .wb-composer-tab-label {
-  white-space: nowrap;
+  font-size: 10px;
+  line-height: 1.15;
+  text-align: center;
+  overflow-wrap: anywhere;
+}
+
+/* Вузький екран: підпис не влазить у стовпчик (і з'їдає ширину поля), тому
+   лишається сам знак — ім'я вкладки при цьому не губиться, воно в `aria-label`. */
+@media (max-width: 400px) {
+  .wb-composer-tabs {
+    width: 56px;
+  }
+
+  .wb-composer-tab-label {
+    display: none;
+  }
 }
 
 .wb-composer-body {
   display: flex;
   flex-direction: column;
+  flex: 1 1 auto;
+  min-width: 0;
   padding: var(--sp-3) var(--sp-3) var(--sp-4);
 }
 
@@ -634,6 +665,26 @@
   display: flex;
   flex-wrap: wrap;
   gap: var(--sp-2);
+}
+
+/* Кнопки вкладень — самі іконки: квадрат під палець (44px), без підпису.
+   Ім'я дії живе в `aria-label`/`title`, тож для скрінрідера кнопка підписана. */
+.wb-composer-tool {
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  min-width: 44px;
+  padding: 0;
+  color: var(--text-secondary);
+}
+
+.wb-composer-tool svg {
+  width: 18px;
+  height: 18px;
+}
+
+.wb-composer-tool:hover {
+  color: var(--text-primary);
 }
 
 .wb-composer-error {

@@ -62,39 +62,45 @@ export function ComposerModal({ onClose }: ComposerModalProps): ReactElement {
           </button>
         </div>
 
-        {/* Вкладки — горизонтальна смуга: на вузькому екрані вона прокручується,
-            а не стискає підписи до нечитабельності. */}
-        <div className="wb-composer-tabs" role="tablist" aria-label="Що створити">
-          {COMPOSER_TABS.map((item) => {
-            const active = item.key === tab.key;
-            return (
-              <button
-                key={item.key}
-                type="button"
-                role="tab"
-                aria-selected={active}
-                className={`wb-composer-tab${active ? " wb-composer-tab--active" : ""}`}
-                onClick={() => selectTab(item.key)}
-              >
-                <Icon name={item.icon} size={16} />
-                <span className="wb-composer-tab-label">{item.label}</span>
-              </button>
-            );
-          })}
-        </div>
+        {/* Вкладки — вертикальний стовпчик зліва: на телефоні він забирає
+            вузьку смугу, а полю вводу лишає всю висоту вікна. Підпис на
+            вузькому екрані ховається (лишається іконка), тому ім'я вкладки
+            завжди є в `aria-label` — інакше кнопка стала б безіменною. */}
+        <div className="wb-composer-main">
+          <div className="wb-composer-tabs" role="tablist" aria-label="Що створити">
+            {COMPOSER_TABS.map((item) => {
+              const active = item.key === tab.key;
+              return (
+                <button
+                  key={item.key}
+                  type="button"
+                  role="tab"
+                  aria-selected={active}
+                  aria-label={item.label}
+                  title={item.label}
+                  className={`wb-composer-tab${active ? " wb-composer-tab--active" : ""}`}
+                  onClick={() => selectTab(item.key)}
+                >
+                  <Icon name={item.icon} size={18} />
+                  <span className="wb-composer-tab-label">{item.label}</span>
+                </button>
+              );
+            })}
+          </div>
 
-        <div className="wb-modal-body wb-composer-body">
-          {tab.status === "ready" ? (
-            <ComposerNoteTab
-              note={note}
-              onNoteChange={setNote}
-              onPaste={() => void paste()}
-              onAttach={(kind) => soon(`Додавання: ${ATTACHMENT_TITLES[kind]}`)}
-              error={error}
-            />
-          ) : (
-            <ComposerPlaceholderTab tab={tab} />
-          )}
+          <div className="wb-modal-body wb-composer-body">
+            {tab.status === "ready" ? (
+              <ComposerNoteTab
+                note={note}
+                onNoteChange={setNote}
+                onPaste={() => void paste()}
+                onAttach={(kind) => soon(`Додавання: ${ATTACHMENT_TITLES[kind]}`)}
+                error={error}
+              />
+            ) : (
+              <ComposerPlaceholderTab tab={tab} />
+            )}
+          </div>
         </div>
 
         <div className="wb-modal-footer wb-composer-foot">

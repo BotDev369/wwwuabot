@@ -48,6 +48,22 @@ describe("ComposerModal", () => {
     expect(html).toContain("wb-btn-primary");
   });
 
+  it("вкладки стоять стовпчиком і лишаються підписаними для скрінрідера", () => {
+    // Підпис вкладки на вузькому екрані ховається (CSS), тож ім'я мусить бути
+    // в `aria-label` — інакше кнопка стала б безіменною.
+    expect(html).toContain("wb-composer-tabs");
+    for (const tab of COMPOSER_TABS) expect(html).toContain(`aria-label="${tab.label}"`);
+  });
+
+  it("кнопки вкладень — самі іконки, ім'я дії в aria-label", () => {
+    // Вставити + Фото + Відео + Файл (лапка потрібна: `wb-composer-tools` — це
+    // обгортка, її ім'я містить ім'я кнопки як підрядок)
+    expect(html.match(/wb-composer-tool"/g)).toHaveLength(4);
+    for (const label of ["Вставити", "Фото", "Відео", "Файл"]) {
+      expect(html).toContain(`aria-label="${label}"`);
+    }
+  });
+
   it("вкладки без інтерфейсу описані як заглушка, а не як порожній екран", () => {
     const page = findComposerTab("page");
 

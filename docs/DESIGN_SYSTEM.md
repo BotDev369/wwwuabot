@@ -117,7 +117,10 @@ Defined in `packages/shared/src/styles/tokens.css`, overridden per brand in `app
     so the content needs room under it (`.wb-tabbar-layout` / `.wb-app-body--tabbar`).
 13. **The composer (`+` in the footer) is one shared modal, not a per-shell screen.**
     `ComposerModal` (`@wwwuabot/ui/composer`) opens in both shells; its markup uses the same
-    `.wb-modal*` bricks as `useDialog()` plus `.wb-composer*` (tab strip, note pane, stub pane).
+    `.wb-modal*` bricks as `useDialog()` plus `.wb-composer*` (tabs as a compact column on the left —
+    `.wb-composer-tabs` / `-tab` / `-tab-label`, note pane, stub pane, `.wb-composer-tool` for the
+    icon-only attachment buttons). Labels vanish on narrow screens, so every tab and every icon-only
+    button carries its name in `aria-label`.
     Tabs are data (`tabs.ts`): a new tab is a line in the list, not new markup. A tab whose
     interface does not exist yet renders a statement of what will be there, and every unwired
     action answers with `useDialog()` ("that is a separate topic") instead of doing nothing

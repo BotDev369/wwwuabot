@@ -40,21 +40,29 @@ export function ComposerNoteTab({
         aria-label="Текст нотатки"
       />
 
+      {/* Підписам тут тісно: поле вводу — головне, тож кнопки лишаються самими
+          іконками, а ім'я дії їде в `aria-label` і `title`. */}
       <div className="wb-composer-tools">
         {/* Вставка — єдина дія, яка вже працює: решта вкладень окремою темою */}
-        <button type="button" className="wb-chip wb-chip-sm" onClick={onPaste}>
-          <Icon name="clipboard" size={12} />
-          Вставити
+        <button
+          type="button"
+          className="wb-chip wb-composer-tool"
+          aria-label="Вставити"
+          title="Вставити"
+          onClick={onPaste}
+        >
+          <Icon name="clipboard" size={18} />
         </button>
         {ATTACHMENTS.map((item) => (
           <button
             key={item.kind}
             type="button"
-            className="wb-chip wb-chip-sm"
+            className="wb-chip wb-composer-tool"
+            aria-label={item.label}
+            title={item.label}
             onClick={() => onAttach(item.kind)}
           >
-            <Icon name={item.icon} size={12} />
-            {item.label}
+            <Icon name={item.icon} size={18} />
           </button>
         ))}
       </div>
