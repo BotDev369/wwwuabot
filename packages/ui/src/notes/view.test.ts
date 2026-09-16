@@ -11,7 +11,16 @@ import { describe, expect, it } from "vitest";
 import type { NoteRow } from "@wwwuabot/shared/notes";
 import { formatNoteStamp, noteTimestamp } from "./format";
 import { DEFAULT_NOTES_VIEW, type NotesView } from "./types";
-import { buildGroups, collectTags, filterNotes, queryWords, viewChips } from "./view";
+import {
+  buildGroups,
+  collectTags,
+  filterNotes,
+  queryWords,
+  selectedTags,
+  tagFilterLabel,
+  toggleTagFilter,
+  viewChips,
+} from "./view";
 
 /** Нотатка-фікстура: усе, крім переданого, має осмислений типовий вигляд. */
 function note(id: number, over: Partial<NoteRow> = {}): NoteRow {
@@ -87,8 +96,20 @@ describe("фільтр за хештегами", () => {
   });
 
   it("конкретний тег лишає тільки його", () => {
-    const kept = filterNotes(notes, view({ tags: { kind: "tag", tag: "київ" } }));
+    const kept = filterNotes(notes, view({ tags: { kind: "tags", tags: ["київ"] } }));
     expect(kept.map((n) => n.id).sort()).toEqual([1, 3]);
+  });
+
+  it("кілька тегів вимагають УСІ, а не хоч один", () => {
+    // Фільтр звужує список: нотатка 3 має і «київ», і «лал», тож вона єдина.
+    const both = view({ tags: { kind: "tags", tags: ["київ", "лал"] } });
+    expect(filterNotes(notes, both).map((n) => n.id)).toEqual([3]);
+    // А «або» дало б [1, 3] — саме цю різницю й тримає тест.
+    expect(selectedTags(both.tags)).toEqual(["київ", "лал"]);
+  });
+
+  it("порожній список тегів нічого не відсіює", () => {
+    expect(filterNotes(notes, view({ tags: { kind: "tags", tags: [] } }))).toHaveLength(3);
   });
 
   it("«без хештегів» — це окремий фільтр, а не порожній тег", () => {
@@ -97,6 +118,47 @@ describe("фільтр за хештегами", () => {
 
   it("збирає теги за абеткою й без повторів", () => {
     expect(collectTags(notes)).toEqual(["київ", "лал"]);
+  });
+});
+
+describe("перемикання тегів (мультивибір)", () => {
+  it("додає тег до вибраних, не чіпаючи решти", () => {
+    const once = toggleTagFilter({ kind: "all" }, "київ");
+    expect(toggleTagFilter(once, "лал")).toEqual({ kind: "tags", tags: ["київ", "лал"] });
+  });
+
+  it("повторний дотик прибирає РІВНО цей тег", () => {
+    const both = toggleTagFilter(toggleTagFilter({ kind: "all" }, "київ"), "лал");
+    expect(toggleTagFilter(both, "київ")).toEqual({ kind: "tags", tags: ["лал"] });
+  });
+
+  it("прибраний останній тег — це «усі», а не порожній вибір", () => {
+    // Порожній список тегів виглядав би як вибір, який нічого не фільтрує.
+    expect(toggleTagFilter({ kind: "tags", tags: ["київ"] }, "київ")).toEqual({ kind: "all" });
+  });
+
+  it("дотик по тегу забирає з «без хештегів»", () => {
+    expect(toggleTagFilter({ kind: "untagged" }, "київ")).toEqual({
+      kind: "tags",
+      tags: ["київ"],
+    });
+  });
+
+  it("порядок тегів сталий — за абеткою, а не за порядком дотиків", () => {
+    const lalFirst = toggleTagFilter(toggleTagFilter({ kind: "all" }, "лал"), "київ");
+    expect(selectedTags(lalFirst)).toEqual(["київ", "лал"]);
+  });
+
+  it("не чіпає вихідний фільтр", () => {
+    const filter = { kind: "tags", tags: ["київ"] } as const;
+    toggleTagFilter(filter, "лал");
+    expect(filter.tags).toEqual(["київ"]);
+  });
+
+  it("називає фільтр словами — їх читає скрінрідер у клітинці без підпису", () => {
+    expect(tagFilterLabel({ kind: "all" })).toBe("Усі теги");
+    expect(tagFilterLabel({ kind: "untagged" })).toBe("Без хештегів");
+    expect(tagFilterLabel({ kind: "tags", tags: ["київ", "лал"] })).toBe("#київ, #лал");
   });
 });
 
@@ -187,13 +249,13 @@ describe("чипи вибраного", () => {
     const chips = viewChips(
       view({
         query: "київ",
-        tags: { kind: "tag", tag: "київ" },
+        tags: { kind: "tags", tags: ["київ"] },
         sort: "created-desc",
         groupBy: "none",
       }),
     );
 
-    expect(chips.map((chip) => chip.key)).toEqual(["query", "tags", "sort", "group"]);
+    expect(chips.map((chip) => chip.key)).toEqual(["query", "tag:київ", "sort", "group"]);
     expect(chips.map((chip) => chip.label)).toEqual(["«київ»", "#київ", "Нові", "Без груп"]);
     // Скидання чипа чіпає РІВНО один вибір — решта мусить лишитись як була.
     expect(chips.map((chip) => Object.keys(chip.reset))).toEqual([
@@ -202,6 +264,22 @@ describe("чипи вибраного", () => {
       ["sort"],
       ["groupBy"],
     ]);
+  });
+
+  it("кожен вибраний тег — свій чип, і зняття одного не втрачає решти", () => {
+    // Це і є мультивибір у смузі: два теги — два чипи зі своїми діями.
+    const tags = { kind: "tags", tags: ["київ", "лал"] } as const;
+    const chips = viewChips(view({ tags }));
+
+    expect(chips.map((chip) => chip.key)).toEqual(["tag:київ", "tag:лал"]);
+    expect(chips.map((chip) => chip.action)).toEqual([
+      "Прибрати фільтр за хештегом #київ",
+      "Прибрати фільтр за хештегом #лал",
+    ]);
+    // Кожен чип знімає рівно СВІЙ тег: після першого лишається «лал», після
+    // другого — «київ». Це і є різниця між мультивибором і одноразовим вибором.
+    expect(chips[0].reset).toEqual({ tags: { kind: "tags", tags: ["лал"] } });
+    expect(chips[1].reset).toEqual({ tags: { kind: "tags", tags: ["київ"] } });
   });
 
   it("скидання чипа вертає типовий вибір, а не порожнечу", () => {

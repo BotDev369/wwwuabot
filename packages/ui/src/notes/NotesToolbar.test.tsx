@@ -37,6 +37,13 @@ function toolIcons(html: string): string[] {
   );
 }
 
+/** Підписи чипів: ними й перевіряємо, що кожен вибір знімається окремо. */
+function chipLabels(html: string): string[] {
+  return [...html.matchAll(/<span class="wb-note-chip-label">(.*?)<\/span>/g)].map(
+    (match) => match[1],
+  );
+}
+
 describe("NotesToolbar", () => {
   it("три вибори стоять клітинками без підпису — ім'я лишається в aria-label", () => {
     const html = render();
@@ -74,13 +81,27 @@ describe("NotesToolbar", () => {
   });
 
   it("вибране стоїть поруч знімним чипом із назвою дії", () => {
-    const html = render({ sort: "created-desc", tags: { kind: "tag", tag: "київ" } });
+    const html = render({ sort: "created-desc", tags: { kind: "tags", tags: ["київ"] } });
 
     expect(html).toContain("wb-note-chip");
     expect(html).toContain(">Нові<");
     expect(html).toContain(">#київ<");
     expect(html).toContain("Прибрати фільтр за хештегом #київ");
     expect(html).toContain("Повернути типовий порядок");
+  });
+
+  it("кожен вибраний тег — окремий чип, і клітинка називає їх усі", () => {
+    // Мультивибір у смузі читається саме так: два теги — два чипи, кожен
+    // знімається окремо, а клітинка без підпису перелічує вибране в aria-label.
+    const html = render({ tags: { kind: "tags", tags: ["київ", "лал"] } });
+
+    expect(chipLabels(html)).toEqual(["#київ", "#лал"]);
+    expect(html).toContain('aria-label="Хештеги: #київ, #лал"');
+    expect(html).toContain("Прибрати фільтр за хештегом #лал");
+  });
+
+  it("без вибраних тегів клітинка каже «Усі теги»", () => {
+    expect(render()).toContain('aria-label="Хештеги: Усі теги"');
   });
 
   it("«без хештегів» теж показано чипом", () => {

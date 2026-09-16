@@ -73,7 +73,40 @@ function matchesQuery(note: NoteRow, words: readonly string[]): boolean {
 function matchesTagFilter(note: NoteRow, filter: NotesTagFilter): boolean {
   if (filter.kind === "all") return true;
   if (filter.kind === "untagged") return note.tags.length === 0;
-  return note.tags.includes(filter.tag);
+  // Вибрані теги з'єднуються через «і», як і слова пошуку: фільтр звужує
+  // список, а не збирає все, де є хоч один із них.
+  return filter.tags.every((tag) => note.tags.includes(tag));
+}
+
+/** Теги, вибрані зараз. «Усі» й «без хештегів» — не теги, тож список порожній. */
+export function selectedTags(filter: NotesTagFilter): string[] {
+  return filter.kind === "tags" ? [...filter.tags] : [];
+}
+
+/**
+ * Перемикає **один** тег: дотик додає його або прибирає, решти не чіпаючи.
+ *
+ * Саме на цьому тримається мультивибір: без «прибрати один, не втративши
+ * решти» вибір був би одноразовим. Коли прибрано останній тег — фільтр
+ * вертається до «усі», а не лишається порожнім списком: порожній вибір і «усі»
+ * виглядали б однаково, але поводились би по-різному (порожній чип без підпису,
+ * клітинка без стану).
+ *
+ * Порядок — за абеткою, той самий, у якому теги стоять у пікері: інакше чипи
+ * переставлялись би місцями від самого лише порядку дотиків.
+ */
+export function toggleTagFilter(filter: NotesTagFilter, tag: string): NotesTagFilter {
+  const current = selectedTags(filter);
+  const next = current.includes(tag) ? current.filter((item) => item !== tag) : [...current, tag];
+  if (next.length === 0) return { kind: "all" };
+  return { kind: "tags", tags: next.sort((a, b) => a.localeCompare(b, "uk")) };
+}
+
+/** Фільтр словами: те, що читає скрінрідер у клітинці, де видно лише знак. */
+export function tagFilterLabel(filter: NotesTagFilter): string {
+  if (filter.kind === "all") return "Усі теги";
+  if (filter.kind === "untagged") return UNTAGGED_LABEL;
+  return filter.tags.map((tag) => `#${tag}`).join(", ");
 }
 
 /** Слова запиту: нижній регістр, `#` не має значення (у базі тегів він і так немає). */
@@ -123,6 +156,9 @@ function optionShort<T extends string>(
  * чип. Типове значення чипа не має: інакше «Змінені» й «За днями» висіли б
  * постійно, займали місце й повідомляли те, що й так видно зі списку.
  *
+ * Вибраних тегів може бути кілька, тож чип має **кожен окремо**: інакше
+ * прибрати один тег без втрати решти було б нічим.
+ *
  * Порядок стали́й і відповідає тому, як список читають: спершу те, чим його
  * звузили (пошук, хештеги), далі те, як його склали (порядок, групи).
  */
@@ -139,20 +175,22 @@ export function viewChips(view: NotesView): NotesChip[] {
     });
   }
 
-  if (view.tags.kind === "tag") {
-    chips.push({
-      key: "tags",
-      label: `#${view.tags.tag}`,
-      action: `Прибрати фільтр за хештегом #${view.tags.tag}`,
-      reset: { tags: DEFAULT_NOTES_VIEW.tags },
-    });
-  } else if (view.tags.kind === "untagged") {
+  if (view.tags.kind === "untagged") {
     chips.push({
       key: "tags",
       label: UNTAGGED_LABEL,
       action: "Показати й нотатки з хештегами",
       reset: { tags: DEFAULT_NOTES_VIEW.tags },
     });
+  } else if (view.tags.kind === "tags") {
+    for (const tag of view.tags.tags) {
+      chips.push({
+        key: `tag:${tag}`,
+        label: `#${tag}`,
+        action: `Прибрати фільтр за хештегом #${tag}`,
+        reset: { tags: toggleTagFilter(view.tags, tag) },
+      });
+    }
   }
 
   if (view.sort !== DEFAULT_NOTES_VIEW.sort) {

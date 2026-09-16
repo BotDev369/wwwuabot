@@ -12,14 +12,26 @@
  * його видно очима, і дотик прибирає вибір (правила вибору — `viewChips` у
  * `view.ts`, чисті й перевірені тестом).
  *
+ * Хештегів можна вибрати кілька: у пікері дотик перемикає один тег і не
+ * закриває список (`toggleTagFilter`), а в смузі кожен вибраний тег стоїть
+ * своїм чипом, щоб зняти один, не втративши решти.
+ *
  * @module @wwwuabot/ui/notes
  */
 
 import { useState, type ReactElement } from "react";
 import { Icon, type IconName } from "@wwwuabot/shared";
 import { MenuModal, type MenuItem } from "../menu";
-import type { NotesGroupBy, NotesSort, NotesTagFilter, NotesView } from "./types";
-import { GROUP_OPTIONS, SORT_OPTIONS, UNTAGGED_LABEL, viewChips } from "./view";
+import type { NotesGroupBy, NotesSort, NotesView } from "./types";
+import {
+  GROUP_OPTIONS,
+  SORT_OPTIONS,
+  UNTAGGED_LABEL,
+  selectedTags,
+  tagFilterLabel,
+  toggleTagFilter,
+  viewChips,
+} from "./view";
 
 type Picker = "sort" | "group" | "tags";
 
@@ -58,19 +70,14 @@ export function NotesToolbar({
   const sortOption = SORT_OPTIONS.find((option) => option.value === view.sort) ?? SORT_OPTIONS[0];
   const groupOption =
     GROUP_OPTIONS.find((option) => option.value === view.groupBy) ?? GROUP_OPTIONS[0];
-  const tagLabel =
-    view.tags.kind === "all"
-      ? "Усі теги"
-      : view.tags.kind === "untagged"
-        ? UNTAGGED_LABEL
-        : `#${view.tags.tag}`;
+  const chosenTags = selectedTags(view.tags);
 
   /** Що зараз вибрано — словами: у клітинці лише знак, тож ім'я й стан читає
       `aria-label`, а не око. Вибране видно поруч, чипом. */
   const chosen: Record<Picker, string> = {
     sort: sortOption.label,
     group: groupOption.label,
-    tags: tagLabel,
+    tags: tagFilterLabel(view.tags),
   };
 
   /** Пункти пікера: вибраний позначений галочкою (`selected`). */
@@ -99,23 +106,32 @@ export function NotesToolbar({
         label: "Усі нотатки",
         icon: "list",
         selected: view.tags.kind === "all",
-        onSelect: () => changeTags({ kind: "all" }),
+        onSelect: () => {
+          onChange({ tags: { kind: "all" } });
+          setPicker(null);
+        },
       },
       {
         key: "untagged",
         label: UNTAGGED_LABEL,
         icon: "minus",
         selected: view.tags.kind === "untagged",
-        onSelect: () => changeTags({ kind: "untagged" }),
+        onSelect: () => {
+          onChange({ tags: { kind: "untagged" } });
+          setPicker(null);
+        },
       },
     ];
+    // Теги — множинний вибір, тож дотик у списку його **не** закриває: інакше
+    // після кожного тега поверхню довелось би відкривати заново. Закриває її
+    // ✕ у шапці (або Escape) — коли вибір скінчено.
     for (const tag of tags) {
       items.push({
         key: `tag:${tag}`,
         label: `#${tag}`,
         icon: "hash",
-        selected: view.tags.kind === "tag" && view.tags.tag === tag,
-        onSelect: () => changeTags({ kind: "tag", tag }),
+        selected: chosenTags.includes(tag),
+        onSelect: () => onChange({ tags: toggleTagFilter(view.tags, tag) }),
       });
     }
     return items;
@@ -129,10 +145,6 @@ export function NotesToolbar({
   };
   const changeGroup = (groupBy: NotesGroupBy) => {
     onChange({ groupBy });
-    setPicker(null);
-  };
-  const changeTags = (next: NotesTagFilter) => {
-    onChange({ tags: next });
     setPicker(null);
   };
 
@@ -200,6 +212,13 @@ export function NotesToolbar({
         <MenuModal
           title={PICKERS.find((item) => item.key === picker)?.label ?? ""}
           items={pickerItems()}
+          // Множинний вибір без рядка-пояснення читався б як одноразовий: не
+          // видно, що теги з'єднуються через «і», а не «або».
+          header={
+            picker === "tags" ? (
+              <p className="wb-menu-hint">Можна вибрати кілька — нотатка мусить мати всі</p>
+            ) : undefined
+          }
           onClose={() => setPicker(null)}
         />
       )}
