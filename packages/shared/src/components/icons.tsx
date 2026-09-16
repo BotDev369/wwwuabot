@@ -83,6 +83,8 @@ export type IconName =
   | "percent"
   | "search"
   | "filter"
+  | "sort"
+  | "layers"
   | "calendar"
   | "user"
   | "play"
@@ -370,6 +372,16 @@ export const icons: Record<IconName, ReactElement> = {
   search: icon([c(11, 11, 8), l(21, 21, 16, 16)]),
 
   filter: icon([p("M22 3H2l8 9.46V19l4 2v-8.54L22 3z")]),
+
+  // Порядок — дві стрілки в різні боки: «вгору» й «вниз» разом.
+  sort: icon([p("M7 20V4"), p("M3 8l4-4 4 4"), p("M17 4v16"), p("M21 16l-4 4-4-4")]),
+
+  // Групування — стос шарів: те саме «скласти в купки», лише знаком.
+  layers: icon([
+    p("M12 3 3 7.5l9 4.5 9-4.5L12 3z"),
+    p("M3 12.5 12 17l9-4.5"),
+    p("M3 17 12 21.5 21 17"),
+  ]),
 
   calendar: icon([r(3, 4, 18, 18, 2), l(16, 2, 16, 6), l(8, 2, 8, 6), l(3, 10, 21, 10)]),
 

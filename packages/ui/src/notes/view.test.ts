@@ -11,7 +11,7 @@ import { describe, expect, it } from "vitest";
 import type { NoteRow } from "@wwwuabot/shared/notes";
 import { formatNoteStamp, noteTimestamp } from "./format";
 import { DEFAULT_NOTES_VIEW, type NotesView } from "./types";
-import { buildGroups, collectTags, filterNotes, isDefaultView, queryWords } from "./view";
+import { buildGroups, collectTags, filterNotes, queryWords, viewChips } from "./view";
 
 /** Нотатка-фікстура: усе, крім переданого, має осмислений типовий вигляд. */
 function note(id: number, over: Partial<NoteRow> = {}): NoteRow {
@@ -176,11 +176,44 @@ describe("групування", () => {
     expect(groups).toHaveLength(1);
     expect(groups[0].label).toBe("Давніше");
   });
+});
 
-  it("«скинути» показуємо лише тоді, коли щось справді змінено", () => {
-    expect(isDefaultView(view())).toBe(true);
-    expect(isDefaultView(view({ query: "київ" }))).toBe(false);
-    expect(isDefaultView(view({ groupBy: "none" }))).toBe(false);
+describe("чипи вибраного", () => {
+  it("типовий вигляд — жодного чипа: постійні чипи це ті самі «овали», що ми прибрали", () => {
+    expect(viewChips(view())).toEqual([]);
+  });
+
+  it("кожен вибір — свій чип із тим, що саме він вертає", () => {
+    const chips = viewChips(
+      view({
+        query: "київ",
+        tags: { kind: "tag", tag: "київ" },
+        sort: "created-desc",
+        groupBy: "none",
+      }),
+    );
+
+    expect(chips.map((chip) => chip.key)).toEqual(["query", "tags", "sort", "group"]);
+    expect(chips.map((chip) => chip.label)).toEqual(["«київ»", "#київ", "Нові", "Без груп"]);
+    // Скидання чипа чіпає РІВНО один вибір — решта мусить лишитись як була.
+    expect(chips.map((chip) => Object.keys(chip.reset))).toEqual([
+      ["query"],
+      ["tags"],
+      ["sort"],
+      ["groupBy"],
+    ]);
+  });
+
+  it("скидання чипа вертає типовий вибір, а не порожнечу", () => {
+    const [sortChip] = viewChips(view({ sort: "created-desc" }));
+    const [tagChip] = viewChips(view({ tags: { kind: "untagged" } }));
+
+    expect({ ...view(), ...sortChip.reset }).toEqual(DEFAULT_NOTES_VIEW);
+    expect({ ...view(), ...tagChip.reset }).toEqual(DEFAULT_NOTES_VIEW);
+  });
+
+  it("порожній пошук чипа не має: пробіл — це не запит", () => {
+    expect(viewChips(view({ query: "   " }))).toEqual([]);
   });
 });
 

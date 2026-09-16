@@ -643,12 +643,13 @@ html:has(.wb-tabbar) .wb-modal {
   display: none;
 }
 
-/* Вкладка й кнопка вкладення — ОДНА клітинка: без рамки й тла, із закругленням,
-   сірий знак за замовчуванням, підсвічення лише на дотик. Однакова деталь у
-   двох місцях — одне правило (§3), інакше «зробити як вкладки» довелося б
-   повторювати й воно б розійшлося. */
+/* Вкладка, кнопка вкладення й клітинка смуги вибору нотаток — ОДНА клітинка:
+   без рамки й тла, із закругленням, сірий знак за замовчуванням, підсвічення
+   лише на дотик. Однакова деталь у трьох місцях — одне правило (§3), інакше
+   «зробити як вкладки» довелося б повторювати, і воно б розійшлося. */
 .wb-composer-tab,
-.wb-composer-tool {
+.wb-composer-tool,
+.wb-note-tool {
   display: flex;
   align-items: center;
   justify-content: center;
@@ -666,7 +667,8 @@ html:has(.wb-tabbar) .wb-modal {
 }
 
 .wb-composer-tab:hover,
-.wb-composer-tool:hover {
+.wb-composer-tool:hover,
+.wb-note-tool:hover {
   background: var(--surface-hover);
   color: var(--text-primary);
 }
@@ -1174,16 +1176,65 @@ html:has(.wb-tabbar) .wb-modal {
   color: var(--text-muted);
 }
 
+/* Смуга вибору — ОДИН ряд: три клітинки-знаки й, поруч, чипи вибраного. Ні
+   підпису, ні заливки в клітинці немає (вони — та сама клітинка, що у вкладок
+   композера), бо «що вибрано» показує чип, а не сама кнопка. */
 .wb-note-controls {
   display: flex;
+  align-items: center;
   flex-wrap: wrap;
-  gap: var(--sp-2);
+  gap: var(--sp-1) var(--sp-2);
+  /* Мірка клітинки — та сама планка для пальця, що й у композера. */
+  --note-cell: 44px;
+}
+
+.wb-note-tool {
+  width: var(--note-cell);
+  height: var(--note-cell);
+  min-width: var(--note-cell);
+  padding: 0;
+}
+
+.wb-note-tool svg {
+  width: 18px;
+  height: 18px;
+}
+
+.wb-note-chips {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--sp-1);
+  min-width: 0;
+}
+
+/* Чип тут — ЗНІМНИЙ вибір, тому це кнопка (`button.wb-chip` уже має
+   `cursor: pointer`), а не підпис. Мірки ширші за звичайний чип: у списку
+   нотаток чип нічого не робить, а тут на нього треба влучити пальцем.
+   Колір — основний, бо чип повідомляє СТАН, а не другорядну примітку. */
+.wb-chip.wb-note-chip {
+  min-height: 36px;
+  max-width: 100%;
+  padding: 0 var(--sp-2);
+  font-size: var(--text-sm);
+  color: var(--text-primary);
+}
+
+.wb-chip.wb-note-chip:hover {
+  background: var(--surface-hover);
+}
+
+/* Довгий пошуковий запит не розтягує смугу: чип показує початок, а повний
+   текст лишається в `aria-label`. */
+.wb-note-chip-label {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .wb-note-summary {
   display: flex;
   align-items: center;
-  justify-content: space-between;
   gap: var(--sp-3);
   font-size: var(--text-xs);
 }

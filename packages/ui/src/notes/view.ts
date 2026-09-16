@@ -16,7 +16,15 @@
 
 import type { NoteRow } from "@wwwuabot/shared/notes";
 import { noteTimestamp } from "./format";
-import type { NotesGroup, NotesGroupBy, NotesSort, NotesTagFilter, NotesView } from "./types";
+import { DEFAULT_NOTES_VIEW } from "./types";
+import type {
+  NotesChip,
+  NotesGroup,
+  NotesGroupBy,
+  NotesSort,
+  NotesTagFilter,
+  NotesView,
+} from "./types";
 
 /**
  * Варіанти сортування — дані для пікера, а не розмітка.
@@ -29,7 +37,7 @@ export const SORT_OPTIONS: readonly { value: NotesSort; label: string; short: st
   { value: "updated-asc", label: "Спочатку давно змінені", short: "Давні" },
   { value: "created-desc", label: "Спочатку нові", short: "Нові" },
   { value: "created-asc", label: "Спочатку найстаріші", short: "Найстаріші" },
-  { value: "alpha", label: "За текстом (А→Я)", short: "А→Я" },
+  { value: "alpha", label: "За текстом, за абеткою", short: "За абеткою" },
 ];
 
 /** Варіанти групування — теж дані. */
@@ -100,14 +108,72 @@ export function filterNotes(notes: readonly NoteRow[], view: NotesView): NoteRow
   return sortNotes(kept, view.sort);
 }
 
-/** Чи щось узагалі вибрано: за цим показуємо «скинути». */
-export function isDefaultView(view: NotesView): boolean {
-  return (
-    view.query.trim() === "" &&
-    view.tags.kind === "all" &&
-    view.sort === "updated-desc" &&
-    view.groupBy === "day"
-  );
+/** Підпис варіанта — те саме, що стоїть у списку вибору. */
+function optionShort<T extends string>(
+  options: readonly { value: T; short: string }[],
+  value: T,
+): string {
+  return options.find((option) => option.value === value)?.short ?? value;
+}
+
+/**
+ * Чипи смуги керування — вибране, яке видно й прибирається дотиком.
+ *
+ * Клітинка-іконка про вибір не каже нічого (у ній сам знак), тож стан показує
+ * чип. Типове значення чипа не має: інакше «Змінені» й «За днями» висіли б
+ * постійно, займали місце й повідомляли те, що й так видно зі списку.
+ *
+ * Порядок стали́й і відповідає тому, як список читають: спершу те, чим його
+ * звузили (пошук, хештеги), далі те, як його склали (порядок, групи).
+ */
+export function viewChips(view: NotesView): NotesChip[] {
+  const chips: NotesChip[] = [];
+  const query = view.query.trim();
+
+  if (query) {
+    chips.push({
+      key: "query",
+      label: `«${query}»`,
+      action: `Прибрати пошук «${query}»`,
+      reset: { query: "" },
+    });
+  }
+
+  if (view.tags.kind === "tag") {
+    chips.push({
+      key: "tags",
+      label: `#${view.tags.tag}`,
+      action: `Прибрати фільтр за хештегом #${view.tags.tag}`,
+      reset: { tags: DEFAULT_NOTES_VIEW.tags },
+    });
+  } else if (view.tags.kind === "untagged") {
+    chips.push({
+      key: "tags",
+      label: UNTAGGED_LABEL,
+      action: "Показати й нотатки з хештегами",
+      reset: { tags: DEFAULT_NOTES_VIEW.tags },
+    });
+  }
+
+  if (view.sort !== DEFAULT_NOTES_VIEW.sort) {
+    chips.push({
+      key: "sort",
+      label: optionShort(SORT_OPTIONS, view.sort),
+      action: `Повернути типовий порядок (${optionShort(SORT_OPTIONS, DEFAULT_NOTES_VIEW.sort)})`,
+      reset: { sort: DEFAULT_NOTES_VIEW.sort },
+    });
+  }
+
+  if (view.groupBy !== DEFAULT_NOTES_VIEW.groupBy) {
+    chips.push({
+      key: "group",
+      label: optionShort(GROUP_OPTIONS, view.groupBy),
+      action: `Повернути типові групи (${optionShort(GROUP_OPTIONS, DEFAULT_NOTES_VIEW.groupBy)})`,
+      reset: { groupBy: DEFAULT_NOTES_VIEW.groupBy },
+    });
+  }
+
+  return chips;
 }
 
 const DAY_MS = 86_400_000;

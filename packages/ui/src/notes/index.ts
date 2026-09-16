@@ -20,12 +20,19 @@ export {
   buildGroups,
   collectTags,
   filterNotes,
-  isDefaultView,
   queryWords,
   sortNotes,
+  viewChips,
   GROUP_OPTIONS,
   SORT_OPTIONS,
   UNTAGGED_LABEL,
 } from "./view";
 export { DEFAULT_NOTES_VIEW } from "./types";
-export type { NotesGroup, NotesGroupBy, NotesSort, NotesTagFilter, NotesView } from "./types";
+export type {
+  NotesChip,
+  NotesGroup,
+  NotesGroupBy,
+  NotesSort,
+  NotesTagFilter,
+  NotesView,
+} from "./types";
