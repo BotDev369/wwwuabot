@@ -8,8 +8,12 @@
  * не було: смуга вкладок і майже повноекранний розмір (`.wb-composer`).
  *
  * Кнопок дії в прибитому футері немає: вони — останній рядок тіла вкладки
- * (`.wb-composer-actions`). Фіксована смуга забирає місце в полів, а кнопок
+ * (`.wb-sheet-actions`). Фіксована смуга забирає місце в полів, а кнопок
  * буде більше, ніж дві.
+ *
+ * **Той самий композер редагує нотатку** — коли оболонка передає `initial` із
+ * `id` (це робить екран «МоїНотатки»). Окремий редактор мусив би повторити
+ * хештеги, ріст поля й стелю довжини — і розійшовся б із першою формою.
  *
  * Незроблені дії не мовчать: вони кажуть, що це окрема тема. Так само
  * поводиться пункт футера без адреси — краще чесна відмова, ніж тиша (§7).
@@ -32,10 +36,14 @@ const ATTACHMENT_TITLES: Record<AttachmentKind, string> = {
   file: "Файли",
 };
 
-export function ComposerModal({ onClose, onSaveNote }: ComposerModalProps): ReactElement {
+export function ComposerModal({ onClose, onSaveNote, initial }: ComposerModalProps): ReactElement {
   const dialog = useDialog();
   const { tab, selectTab, note, setNote, tags, addTags, removeTag, paste, error, saving, save } =
-    useComposer({ onSaveNote });
+    useComposer({ onSaveNote, initial });
+
+  // Той самий композер і створює, і редагує: різниця лише в заголовку й у
+  // тому, чи поїде `id` зі збереженням (це вирішує хук).
+  const title = initial?.id ? "Редагувати" : "Створити";
 
   // Порожню нотатку зберігати нема чого: рядок без тексту й без хештегів — це
   // не чернетка, а випадковий дотик. Тому кнопка вимкнена, а не «падає» 400-ю.
@@ -70,7 +78,7 @@ export function ComposerModal({ onClose, onSaveNote }: ComposerModalProps): Reac
           }}
         >
           <Icon name="save" size={16} />
-          {saving ? "Зберігаю…" : "Зберегти"}
+          {saving ? "Зберігаю…" : initial?.id ? "Зберегти зміни" : "Зберегти"}
         </button>
       </>
     ) : undefined;
@@ -88,12 +96,12 @@ export function ComposerModal({ onClose, onSaveNote }: ComposerModalProps): Reac
         className="wb-modal wb-modal--full wb-sheet wb-composer"
         role="dialog"
         aria-modal="true"
-        aria-label="Створити"
+        aria-label={title}
         onClick={(event) => event.stopPropagation()}
         onKeyDown={handleKeyDown}
       >
         <div className="wb-modal-header wb-sheet-head">
-          <h2 className="wb-modal-title">Створити</h2>
+          <h2 className="wb-modal-title">{title}</h2>
           <button type="button" className="wb-close-btn" onClick={onClose} aria-label="Закрити">
             <Icon name="close" size={18} />
           </button>

@@ -2,10 +2,10 @@
  * Межа нотаток: **чиї вони й кому належать**.
  *
  * Головне, що тут фіксується: власник береться завжди — із підписаного
- * `initData` у платформі та з акаунта сесії в панелі, — а оновлення рядка
- * можливе лише тоді, коли його номер належить саме цьому власнику. Це той
- * самий IDOR, який колись знайшли тести домену «сайтів» (AGENTS.md §7):
- * «контейнер мій» не означає «вкладений об'єкт мій».
+ * `initData` у платформі та з акаунта сесії в панелі, — а оновлення **й
+ * видалення** рядка можливе лише тоді, коли його номер належить саме цьому
+ * власнику. Це той самий IDOR, який колись знайшли тести домену «сайтів»
+ * (AGENTS.md §7): «контейнер мій» не означає «вкладений об'єкт мій».
  *
  * @module api-dev/src/controllers/notes.controller.test
  */
@@ -93,7 +93,10 @@ function makeDb(options: { changes?: number; rows?: unknown[]; row?: unknown } =
 }
 
 /** Запит до даних нотаток (DDL від `ensureTables` не рахуємо). */
-function dataStatement(db: { statements: Captured[] }, keyword: "INSERT" | "UPDATE" | "SELECT") {
+function dataStatement(
+  db: { statements: Captured[] },
+  keyword: "INSERT" | "UPDATE" | "SELECT" | "DELETE",
+) {
   const match = [...db.statements]
     .reverse()
     .find((s) => s.sql.trimStart().toUpperCase().startsWith(keyword));
@@ -228,6 +231,55 @@ describe("запис нотатки", () => {
     );
 
     expect(dataStatement(db, "INSERT").binds[3]).toBe('["київ","свято"]');
+  });
+});
+
+// ── Видалення ─────────────────────────────────────────────────────
+
+describe("видалення нотатки", () => {
+  it("прибирає рядок лише свого простору й власника", async () => {
+    const db = makeDb();
+    const res = await handleNotes(
+      request("/api/notes?id=5", { method: "DELETE", initData: await signedInitData() }),
+      db.env,
+    );
+
+    expect(res.status).toBe(200);
+    const remove = dataStatement(db, "DELETE");
+    expect(remove.sql).toMatch(/DELETE FROM notes WHERE id = \? AND scope = \? AND owner_id = \?/);
+    expect(remove.binds).toEqual([5, "user", String(USER_ID)]);
+  });
+
+  it("⛔ чужий або неіснуючий номер — та сама 404", async () => {
+    const db = makeDb({ changes: 0 });
+    const res = await handleNotes(
+      request("/api/notes?id=42", { method: "DELETE", initData: await signedInitData() }),
+      db.env,
+    );
+
+    expect(res.status).toBe(404);
+    // Власник усе одно стоїть у запиті: саме він і зробив видалення нічим.
+    expect(dataStatement(db, "DELETE").binds).toContain(String(USER_ID));
+  });
+
+  it("⛔ без підписаного initData не видаляється нічого", async () => {
+    const db = makeDb();
+    const res = await handleNotes(request("/api/notes?id=5", { method: "DELETE" }), db.env);
+
+    expect(res.status).toBe(401);
+    expect(db.statements).toHaveLength(0);
+  });
+
+  it("без `id` — 400, а не «видалено все»", async () => {
+    // `Number(null)` — це 0, а `DELETE` без умови зніс би всі нотатки.
+    const db = makeDb();
+    const res = await handleNotes(
+      request("/api/notes", { method: "DELETE", initData: await signedInitData() }),
+      db.env,
+    );
+
+    expect(res.status).toBe(400);
+    expect(db.statements.some((s) => /^DELETE/i.test(s.sql.trimStart()))).toBe(false);
   });
 });
 

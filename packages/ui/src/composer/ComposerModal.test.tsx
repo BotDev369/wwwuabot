@@ -56,9 +56,35 @@ describe("ComposerModal", () => {
     // Сторож: рядок дій мусить бути ВСЕРЕДИНІ тіла й після полів.
     expect(html).not.toContain("wb-modal-footer");
     expect(html).not.toContain("wb-composer-foot");
-    expect(html).toContain("wb-composer-actions");
-    expect(html.indexOf("wb-composer-body")).toBeLessThan(html.indexOf("wb-composer-actions"));
-    expect(html.indexOf("wb-composer-input")).toBeLessThan(html.indexOf("wb-composer-actions"));
+    expect(html).toContain("wb-sheet-actions");
+    expect(html.indexOf("wb-composer-body")).toBeLessThan(html.indexOf("wb-sheet-actions"));
+    expect(html.indexOf("wb-composer-input")).toBeLessThan(html.indexOf("wb-sheet-actions"));
+  });
+
+  it("той самий композер редагує нотатку — коли оболонка дала `initial` з `id`", () => {
+    // Окремий редактор мусив би повторити хештеги, ріст поля й стелю довжини —
+    // і розійшовся б із формою створення. Різниця тут рівно в заголовку й у
+    // тому, що поїде зі збереженням (це вирішує хук).
+    const editing = renderToStaticMarkup(
+      <ComposerModal
+        onClose={() => {}}
+        onSaveNote={noop}
+        initial={{ id: 7, text: "щось", tags: ["київ"] }}
+      />,
+    );
+
+    expect(editing).toContain("Редагувати");
+    expect(editing).not.toContain(">Створити<");
+    expect(editing).toContain("Зберегти зміни");
+    // Поля відкриваються з чернеткою, а не порожні — інакше "редагування"
+    // затирало б нотатку з першого ж дотику.
+    expect(editing).toContain("щось");
+    expect(editing).toContain("київ");
+  });
+
+  it("створення нового лишається створенням", () => {
+    expect(html).toContain("Створити");
+    expect(html).toContain(">Зберегти<");
   });
 
   it("активна вкладка — рівно одна, і це типова", () => {

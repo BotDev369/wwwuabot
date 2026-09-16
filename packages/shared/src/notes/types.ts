@@ -62,3 +62,10 @@ export interface NoteSaveResponse {
   ok: boolean;
   note: NoteRow | null;
 }
+
+/** Відповідь `DELETE`: чи справді рядок зник (чужого номера тут не буває). */
+export interface NoteDeleteResponse {
+  ok: boolean;
+  /** Причина, коли `ok` — `false`. */
+  error?: string;
+}

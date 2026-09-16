@@ -23,6 +23,14 @@ import type { ComposerTab } from "./types";
 export interface UseComposerOptions {
   /** Зберегти нотатку. Помилку хук показує так само, як помилку вставки. */
   onSaveNote: (draft: NoteDraft) => Promise<void>;
+  /**
+   * Чернетка, з якої почати: є `id` — це редагування існуючої нотатки.
+   *
+   * Початковий стан береться з неї **один раз**, у `useState`: композер —
+   * чернетка, яку людина вже почала правити, і повторне підставляння ззовні
+   * затерло б її на кожен перемальовування батька.
+   */
+  initial?: NoteDraft;
 }
 
 export interface ComposerState {
@@ -44,12 +52,14 @@ export interface ComposerState {
   saving: boolean;
   /** Зберегти; `true` — вдалось (композер тоді закривається). */
   save: () => Promise<boolean>;
+  /** Номер нотатки, яку редагують; `undefined` — створюємо нову. */
+  editingId: number | undefined;
 }
 
-export function useComposer({ onSaveNote }: UseComposerOptions): ComposerState {
+export function useComposer({ onSaveNote, initial }: UseComposerOptions): ComposerState {
   const [key, setKey] = useState(DEFAULT_COMPOSER_TAB);
-  const [note, setNote] = useState("");
-  const [tags, setTags] = useState<readonly string[]>([]);
+  const [note, setNote] = useState(initial?.text ?? "");
+  const [tags, setTags] = useState<readonly string[]>(initial?.tags ?? []);
   const [error, setError] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
 
@@ -71,7 +81,13 @@ export function useComposer({ onSaveNote }: UseComposerOptions): ComposerState {
   const save = useCallback(async (): Promise<boolean> => {
     setSaving(true);
     try {
-      await onSaveNote({ text: note, tags: [...tags] });
+      // `id` додаємо лише при редагуванні: новий запис без нього — це те, як
+      // сервер відрізняє створення від правки.
+      await onSaveNote({
+        ...(initial?.id ? { id: initial.id } : {}),
+        text: note,
+        tags: [...tags],
+      });
       setError(null);
       return true;
     } catch (e: unknown) {
@@ -82,7 +98,7 @@ export function useComposer({ onSaveNote }: UseComposerOptions): ComposerState {
     } finally {
       setSaving(false);
     }
-  }, [onSaveNote, note, tags]);
+  }, [onSaveNote, note, tags, initial?.id]);
 
   return {
     tab: findComposerTab(key),
@@ -98,5 +114,6 @@ export function useComposer({ onSaveNote }: UseComposerOptions): ComposerState {
     error,
     saving,
     save,
+    editingId: initial?.id,
   };
 }

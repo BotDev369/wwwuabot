@@ -144,7 +144,8 @@ Defined in `packages/shared/src/styles/tokens.css`, overridden per brand in `app
     none around a field, none above the action row — space does the separating. There is no
     instructional paragraph under the fields either: the label and the button already say what they
     do, and such a paragraph only eats room. The actions ("Закрити" / "Зберегти", and more to come)
-    are **the last row of the tab's body** (`.wb-composer-actions`), not a pinned footer: the modal
+    are **the last row of the tab's body** (`.wb-sheet-actions` — the same brick the note view uses,
+    rule 18), not a pinned footer: the modal
     grows with its content, so a fixed bar would eat the fields' room; `margin-top: auto` holds them
     at the bottom while there is room and lets them scroll with the body when there is not.
     Its fields keep their own layout classes (`.wb-composer-field` / `-input` / `-tags`) — the text
@@ -215,6 +216,23 @@ Defined in `packages/shared/src/styles/tokens.css`, overridden per brand in `app
     fails on a `.wb-btn` padding that isn't the token pair, on a brand `min-height` above 44px, and on a
     pad token above 20×12px.
 
+18. **Нотатки — один спільний екран, і його вигляд — чисті функції.** Список, смуга
+    керування й перегляд живуть у `@wwwuabot/ui/notes` (кирпичики `.wb-note*`), а оболонка
+    лише вирішує, **чиї** нотатки та куди їх писати (`createNotesApi` зі своїм транспортом).
+    Пошук, фільтр, сортування й групування — один виклик `buildGroups(notes, view, now)` без
+    React: тут помилка виглядає як «нічого не знайдено», а не як зламаний код. Тому: пошук
+    вимагає **всі** слова запиту (теги в базі — без `#` і в нижньому регістрі), фільтр має
+    три стани («усі» / «без хештегів» / конкретний тег — не рядок-сентевел), а групи «за
+    днями» рахуються від **локальної** опівночі, і `now` приходить аргументом — інакше
+    «Сьогодні» залежало б від моменту виклику і тестом це не перевірити.
+    Вибори не випадають списком (правило 4): кожен відкриває ту саму поверхню `MenuModal`,
+    а вибране позначене галочкою — це стан, а не перехід. Картка — **кнопка на всю ширину**
+    (палець дістає будь-де), а її текст обрізається по висоті, не `line-clamp`: переноси —
+    це те, як нотатку написали. Редагує **той самий** композер (`initial` із `id`), а
+    перегляд — окрема поверхня: у композері текст набраний, а не показаний, і другого
+    редактора для того самого поля не заводять. Кнопки дій будь-якої повноекранної поверхні
+    — `.wb-sheet-actions` (композер і перегляд — одна деталь, а не «схожа»).
+
 ---
 
 ## File Locations
@@ -234,6 +252,7 @@ Defined in `packages/shared/src/styles/tokens.css`, overridden per brand in `app
 | `packages/ui/src/nav/` | `TabBar` — глобальний нижній футер (розмітка й активи спільні, пункти — з оболонки) |
 | `packages/ui/src/composer/` | `ComposerModal` — модалка швидкого створення (відкриває «+» футера) |
 | `packages/ui/src/menu/` | `MenuModal` + `buildMenuItems` — повноекранна поверхня зі списком пунктів (відкриває «Профіль» футера; склад — з оболонки) |
+| `packages/ui/src/notes/` | `NotesList`, `NotesToolbar`, `NoteSheet` + чисті `view.ts` — список нотаток: пошук, фільтр, сортування, групування (екран платформи `/notes`) |
 | `packages/shared/src/components/icons.tsx` | SVG icon definitions |
 | `packages/shared/src/components/Icon.tsx` | `<Icon />` component |
 | `packages/shared/src/components/StyleToggle.tsx` | `ThemeButton` component |

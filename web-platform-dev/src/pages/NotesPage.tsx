@@ -1,76 +1,115 @@
 /**
- * «МоїНотатки» — екран, де видно те, що зберіг композер.
+ * «МоїНотатки» — робочий екран нотаток: створити, знайти, переглянути,
+ * відредагувати, прибрати.
  *
- * Нотатки не мали екрана: композер їх зберігав, і після закриття модалки вони
- * зникали з очей. Це і є той екран — список своїх нотаток, найсвіжіші згори.
+ * Екран лише **зводить** те, що вже є: список, смугу керування й перегляд дає
+ * спільний `@wwwuabot/ui/notes`, редактор — спільний композер (він же створює
+ * нотатку з «+» у футері), а адреса й власник — ця оболонка. Тому тут немає
+ * ні розмітки картки, ні правил пошуку: усе це перевіряється тестами в
+ * спільному модулі, незалежно від платформи.
  *
  * Шлях власний (`/notes`), а не `slug` рядка `scenarios`: список складається з
- * даних людини (таблиця `notes`), а не з `page_data` (AGENTS.md §7). Тому ж
- * правилу підлягає й профіль.
- *
- * Розмітка — самі спільні кирпичики (`.wb-page*`, `.wb-card*`, `.wb-chip`,
- * `.wb-empty`): своїх класів тут рівно стільки, скільки треба для тексту
- * нотатки, — решта вже описана в дизайн-системі.
+ * даних людини (таблиця `notes`), а не з `page_data` (AGENTS.md §7).
  *
  * @module web-platform-dev/src/pages/NotesPage
  */
 
-import type { ReactElement } from "react";
+import { useState, type ReactElement } from "react";
 import { Icon } from "@wwwuabot/shared";
-import type { NoteRow } from "@wwwuabot/shared/notes";
+import type { NoteDraft, NoteRow } from "@wwwuabot/shared/notes";
+import { ComposerModal } from "@wwwuabot/ui/composer";
+import { useDialog } from "@wwwuabot/ui/dialog";
+import {
+  DEFAULT_NOTES_VIEW,
+  NoteSheet,
+  NotesList,
+  NotesToolbar,
+  buildGroups,
+  collectTags,
+  filterNotes,
+  type NotesView,
+} from "@wwwuabot/ui/notes";
+import { notesApi } from "@/shared/api/notes.api";
 import { useNotes } from "./useNotes";
 
-/**
- * Дата нотатки у вигляді, зрозумілому людині: «16.09.2026, 14:08».
- *
- * Час у `notes` лежить як UTC без позначки зони (`YYYY-MM-DD HH:MM:SS` —
- * формат `formatSqliteDatetime`). Тому пробіл замінюємо на `T`, а `Z`
- * дописуємо: без цього рушій віддав би дату як локальну й показав би зсув на
- * кілька годин, а частина рушіїв — узагалі `Invalid Date`.
- */
-function formatStamp(value: string): string {
-  const date = new Date(`${value.replace(" ", "T")}Z`);
-  if (Number.isNaN(date.getTime())) return value;
-  return date.toLocaleString("uk-UA", {
-    day: "2-digit",
-    month: "2-digit",
-    year: "numeric",
-    hour: "2-digit",
-    minute: "2-digit",
-  });
+/** Чернетка, з якою відкривають композер: без `initial` — нова нотатка. */
+interface EditorState {
+  open: boolean;
+  initial?: NoteDraft;
 }
 
-function NoteCard({ note }: { note: NoteRow }): ReactElement {
-  return (
-    <li className="wb-card">
-      <div className="wb-card-body">
-        {/* Порожній текст можливий: нотатка з самих хештегів — теж нотатка,
-            і «порожній абзац» на її місці був би зайвою порожнечею. */}
-        {note.text && <p className="note-text">{note.text}</p>}
-        {note.tags.length > 0 && (
-          <div className="note-tags">
-            {note.tags.map((tag) => (
-              <span key={tag} className="wb-chip wb-chip-sm">
-                {/* `#` дописуємо при показі: у базі тег лежить без нього —
-                    так його порівнює пошук (`tags.ts`). */}
-                #{tag}
-              </span>
-            ))}
-          </div>
-        )}
-        <p className="note-stamp wb-text-muted">{formatStamp(note.updated_at)}</p>
-      </div>
-    </li>
-  );
+/** Перші слова нотатки — щоб у діалозі видалення було видно, ЩО видаляють. */
+function preview(note: NoteRow): string {
+  const text = note.text.trim().replace(/\s+/g, " ");
+  if (text) return text.length > 40 ? `${text.slice(0, 40)}…` : text;
+  return note.tags.map((tag) => `#${tag}`).join(" ") || "без тексту";
 }
 
 export function NotesPage(): ReactElement {
-  const { notes, loading, error } = useNotes();
+  const { notes, loading, error, upsert, remove } = useNotes();
+  const dialog = useDialog();
+  const [view, setView] = useState<NotesView>(DEFAULT_NOTES_VIEW);
+  const [openNote, setOpenNote] = useState<NoteRow | null>(null);
+  const [editor, setEditor] = useState<EditorState>({ open: false });
+
+  const visible = filterNotes(notes, view);
+  const groups = buildGroups(notes, view);
+
+  /**
+   * Збереження нотатки — і нової, і відредагованої (це вирішує `draft.id`).
+   * Сервер віддає збережений рядок, тож список оновлюємо ним, а не перезапитом.
+   */
+  async function saveDraft(draft: NoteDraft): Promise<void> {
+    const saved = await notesApi.save(draft);
+    if (!saved) throw new Error("Сервер не підтвердив збереження — спробуйте ще раз.");
+    upsert(saved);
+  }
+
+  async function deleteNote(note: NoteRow): Promise<void> {
+    const confirmed = await dialog.confirm(`Видалити нотатку «${preview(note)}»?`, {
+      title: "Видалення",
+      tone: "danger",
+      confirmText: "Видалити",
+    });
+    if (!confirmed) return;
+
+    try {
+      await notesApi.remove(note.id);
+      remove(note.id);
+      setOpenNote(null);
+    } catch (e: unknown) {
+      // Причина як є: «не вдалося» без нічого — та сама тиша, від якої ми
+      // тікали, коли відмовлялись від нативних діалогів (§4).
+      await dialog.alert(e instanceof Error ? e.message : "Не вдалося видалити нотатку", {
+        title: "Помилка",
+      });
+    }
+  }
+
+  function edit(note: NoteRow): void {
+    // Перегляд закриваємо: композер і він — різні поверхні, і лишати одну під
+    // одною без причини не можна.
+    setOpenNote(null);
+    setEditor({ open: true, initial: { id: note.id, text: note.text, tags: [...note.tags] } });
+  }
 
   return (
     <div className="wb-page">
       <div className="wb-page-head">
         <h1 className="wb-page-title">МоїНотатки</h1>
+        <div className="wb-page-actions">
+          {/* Створення є й у футері («+»), але на екрані нотаток кнопка мусить
+              бути тут: людина вже стоїть у списку, і вертати її до футера —
+              зайвий крок. Обробник той самий — композер. */}
+          <button
+            type="button"
+            className="wb-btn wb-btn-primary"
+            onClick={() => setEditor({ open: true })}
+          >
+            <Icon name="plus" size={16} />
+            Створити
+          </button>
+        </div>
       </div>
 
       {loading && (
@@ -95,20 +134,62 @@ export function NotesPage(): ReactElement {
             <Icon name="text" size={32} />
           </span>
           <p className="wb-empty-text">Ще немає жодної нотатки.</p>
-          {/* Кажемо, де саме створити: без цього порожній екран — це глухий
-              кут, а кнопка «+» стоїть у футері під ним. */}
+          {/* Кажемо, як створити: без цього порожній екран — це глухий кут. */}
           <p className="wb-empty-text">
-            Натисніть «+» у нижньому футері — нотатка з хештегами з'явиться тут.
+            Натисніть «Створити» вгорі або «+» у нижньому футері — нотатка з хештегами з'явиться
+            тут.
           </p>
         </div>
       )}
 
       {!loading && !error && notes.length > 0 && (
-        <ul className="note-list">
-          {notes.map((note) => (
-            <NoteCard key={note.id} note={note} />
-          ))}
-        </ul>
+        <>
+          <NotesToolbar
+            view={view}
+            onChange={(patch) => setView((prev) => ({ ...prev, ...patch }))}
+            tags={collectTags(notes)}
+            shown={visible.length}
+            total={notes.length}
+          />
+
+          {groups.length > 0 ? (
+            <NotesList groups={groups} onOpen={setOpenNote} />
+          ) : (
+            <div className="wb-empty">
+              <span className="wb-empty-icon">
+                <Icon name="search" size={32} />
+              </span>
+              <p className="wb-empty-text">Нічого не знайдено за цим запитом.</p>
+              <button
+                type="button"
+                className="wb-btn wb-btn-secondary"
+                onClick={() => setView(DEFAULT_NOTES_VIEW)}
+              >
+                <Icon name="close" size={16} />
+                Скинути пошук і фільтри
+              </button>
+            </div>
+          )}
+        </>
+      )}
+
+      {openNote && (
+        <NoteSheet
+          note={openNote}
+          onClose={() => setOpenNote(null)}
+          onEdit={edit}
+          onDelete={(note) => void deleteNote(note)}
+        />
+      )}
+
+      {editor.open && (
+        <ComposerModal
+          // Композер або закритий, або відкритий для однієї конкретної
+          // нотатки — тож `initial` він читає рівно один раз, при появі.
+          initial={editor.initial}
+          onClose={() => setEditor({ open: false })}
+          onSaveNote={saveDraft}
+        />
       )}
     </div>
   );

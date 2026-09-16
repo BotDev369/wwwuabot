@@ -140,7 +140,34 @@ async function saveNote(
   return json({ ok: true, note: await readNote(db, newId, scope, ownerId) });
 }
 
-/** Спільний обробник: дозволені лише `GET` (список) і `POST` (запис). */
+/**
+ * Видалення своєї нотатки — за номером із `?id=`.
+ *
+ * Власник стоїть **у самому `WHERE`**, тим самим правилом, що й у правці:
+ * окремої перевірки «а це моє?» немає, бо її легко забути на новому шляху.
+ * Нічого не видалено — 404, і та сама 404 на чужий номер: неіснуюча й чужа
+ * нотатка відповідають однаково, бо код відповіді теж витік (AGENTS.md §7).
+ */
+async function deleteNote(
+  request: Request,
+  db: D1Database,
+  scope: NoteScope,
+  ownerId: string,
+): Promise<Response> {
+  const id = Number(new URL(request.url).searchParams.get("id"));
+  if (!Number.isInteger(id) || id <= 0) {
+    return json({ ok: false, error: "Missing id" }, 400);
+  }
+
+  const result = await db
+    .prepare("DELETE FROM notes WHERE id = ? AND scope = ? AND owner_id = ?")
+    .bind(id, scope, ownerId)
+    .run();
+  if ((result.meta?.changes ?? 0) === 0) return json({ ok: false, error: "Not found" }, 404);
+  return json({ ok: true, id });
+}
+
+/** Спільний обробник: дозволені `GET` (список), `POST` (запис), `DELETE`. */
 async function handle(
   request: Request,
   env: Env,
@@ -156,6 +183,9 @@ async function handle(
     if (request.method === "POST") {
       return await saveNote(request, env.DB, scope, ownerId);
     }
+    if (request.method === "DELETE") {
+      return await deleteNote(request, env.DB, scope, ownerId);
+    }
     return json({ ok: false, error: "Method not allowed" }, 405);
   } catch (e: unknown) {
     apiLog.error("Notes error", e);
@@ -164,7 +194,7 @@ async function handle(
 }
 
 /**
- * `GET` / `POST /api/notes` — нотатки людини.
+ * `GET` / `POST` / `DELETE /api/notes` — нотатки людини.
  *
  * Ідентичність — тільки з підписаного `initData`: жоден заголовок чи параметр
  * не називає власника (AGENTS.md §7).
@@ -176,7 +206,7 @@ export async function handleNotes(request: Request, env: Env): Promise<Response>
 }
 
 /**
- * `GET` / `POST /api/admin/notes` — нотатки про проєкт із панелі.
+ * `GET` / `POST` / `DELETE /api/admin/notes` — нотатки про проєкт із панелі.
  *
  * Особи в cookie-сесії поки немає (вхід — один пароль), тож власник спільний.
  * Коли з'являться особисті входи, тут стане id людини — і більше нічого

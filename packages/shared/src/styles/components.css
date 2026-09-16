@@ -964,12 +964,15 @@ html:has(.wb-tabbar) .wb-modal {
   color: var(--text-muted);
 }
 
-/* Кнопки дії — ОСТАННІЙ РЯДОК ТІЛА вкладки, а не прибитий футер: у модалці,
-   яка росте під вміст, фіксована смуга забирала б місце в полів, а кнопок
+/* Кнопки дії — ОСТАННІЙ РЯДОК ТІЛА поверхні, а не прибитий футер: у модалці,
+   яка росте під вміст, фіксована смуга забирала б місце у вмісту, а кнопок
    буде більше, ніж дві. `margin-top: auto` тримає їх біля нижнього краю,
    поки місця досить, і відпускає вгору, коли вміст вищий за екран — тобто
-   кнопки прокручуються РАЗОМ із тілом, а не висять над ним. */
-.wb-composer-actions {
+   кнопки прокручуються РАЗОМ із тілом, а не висять над ним.
+
+   Спільний для КОЖНОЇ повноекранної поверхні (`.wb-sheet`): композер і
+   перегляд нотатки — та сама деталь, а не «схожа» (правило 12). */
+.wb-sheet-actions {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
@@ -1137,6 +1140,169 @@ html:has(.wb-tabbar) .wb-modal {
 .wb-menu-ident-handle {
   font-size: var(--text-xs);
   color: var(--text-muted);
+}
+
+/* ── Нотатки (список, перегляд) ─────────────────────────────────────────────
+   Смуга керування, групи й картки. Розмітку рендерить СПІЛЬНИЙ модуль
+   `@wwwuabot/ui/notes`, тому правила живуть тут: сьогодні його вживає
+   платформа, завтра — панель (правило 10). */
+.wb-note-tools {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-3);
+  margin-bottom: var(--sp-4);
+}
+
+/* Поле пошуку з іконкою всередині: сама іконка — оздоба, а виділене місце під
+   неї тримає відступ, а не `position: absolute` на око. */
+.wb-note-search {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+  padding-left: var(--sp-3);
+  border-radius: var(--radius-md);
+  background: var(--field-bg);
+}
+
+.wb-note-search .wb-input {
+  background: none;
+  box-shadow: none;
+  padding-left: 0;
+}
+
+.wb-note-search-icon {
+  color: var(--text-muted);
+}
+
+.wb-note-controls {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--sp-2);
+}
+
+.wb-note-summary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--sp-3);
+  font-size: var(--text-xs);
+}
+
+.wb-note-group {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-2);
+  margin-bottom: var(--sp-5);
+}
+
+/* Заголовок групи — маленький і не голосний: він стоїть між рядами, а не над
+   сторінкою. Кількість поруч — щоб «тут 12» не рахувати очима. */
+.wb-note-group-title {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+  margin: 0;
+  font-size: var(--text-xs);
+  font-weight: var(--weight-semibold);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+
+.wb-note-group-count {
+  color: var(--text-secondary);
+}
+
+.wb-note-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-2);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+/* Картка — кнопка на всю ширину: палець дістає будь-де, а тлом вона тримає
+   межу замість рамки (правило 15). */
+.wb-note-card {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-2);
+  width: 100%;
+  padding: var(--sp-3);
+  border: none;
+  border-radius: var(--radius-md);
+  background: var(--field-bg);
+  color: var(--text-primary);
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+  transition: background var(--duration-fast) var(--ease);
+}
+
+.wb-note-card:hover {
+  background: var(--surface-active);
+}
+
+/* У списку текст обрізається ПО ВИСОТІ, а не рядком із трикрапкою: переноси —
+   це те, як нотатку написали, і `line-clamp` їх знищив би. */
+.wb-note-card-text {
+  display: block;
+  max-height: calc(4 * 1.5em);
+  overflow: hidden;
+  font-size: var(--text-base);
+  line-height: 1.5;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+.wb-note-card-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--sp-1);
+}
+
+.wb-note-card-stamp {
+  font-size: var(--text-xs);
+}
+
+/* Перегляд однієї нотатки: той самий схил, що у композера й меню. */
+.wb-note-view {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-3);
+  padding: var(--sp-2) var(--sp-3) var(--sp-3);
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+.wb-note-text {
+  margin: 0;
+  font-size: var(--text-base);
+  line-height: var(--leading-normal);
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+.wb-note-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--sp-1);
+}
+
+/* Дати — пари «підпис → значення», а не рядок через кому: питань «це
+   створено чи змінено» тоді не виникає. */
+.wb-note-dates {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: var(--sp-1) var(--sp-3);
+  margin: 0;
+  font-size: var(--text-xs);
+}
+
+.wb-note-dates dd {
+  margin: 0;
+  color: var(--text-secondary);
 }
 
 /* Cards grid */
