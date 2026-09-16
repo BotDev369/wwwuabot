@@ -698,30 +698,126 @@ html:has(.wb-tabbar) .wb-modal {
 .wb-composer-pane {
   display: flex;
   flex-direction: column;
-  gap: var(--sp-2);
+  gap: var(--sp-3);
   flex: 1 1 auto;
   min-height: 0;
 }
 
-/* Поле нотатки — не смужка на 80px, як типова `.wb-textarea`, і не вся
-   висота вікна: йому лишається половина (15dvh), а як треба більше — поле
-   тягнуть за правий нижній кут (`resize: vertical`). Рамки немає: поле
-   читається тлом і плейсхолдером, бо лінії в цій модалці прибрані. */
+/* ── Поля композера ─────────────────────────────────────────────────────────
+   Це ВЛАСНІ поля, а не `.wb-input`/`.wb-textarea`. Причина не в смаку: у
+   брендових темах (`apple.css` / `android.css`) ті класи примусово отримують
+   рамку, радіус і відступи через `!important`, тож перебити їх з `components.css`
+   можна було б лише власним `!important` — а воєн на `!important` тут немає.
+   У композері поля пласкі за рішенням (див. `DESIGN_SYSTEM.md`, правило 13),
+   і саме тому вони — окремий кирпичик.
+
+   Підпис над полем тримає `.wb-label` (спільний кирпичик): у модалці без рамок
+   саме він каже, де що. */
+.wb-composer-field {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-1);
+  min-width: 0;
+}
+
+/* Текст нотатки: типова висота — три рядки, далі прокрутка. Вище — можна:
+   тягнеш за правий нижній кут (`resize: vertical`), а на телефоні поле росте
+   за текстом (`useAutoGrowField`), бо ручки перетягування там не існує. */
 .wb-composer-input {
+  width: 100%;
   flex: 0 0 auto;
-  height: 15dvh;
-  min-height: 12dvh;
-  max-height: 70dvh;
-  resize: vertical;
-  border-color: transparent;
+  height: calc(3 * 1.5em + 2 * var(--sp-2));
+  min-height: calc(1.5em + 2 * var(--sp-2));
+  max-height: 60dvh;
+  padding: var(--sp-2) var(--sp-3);
+  border: none;
+  background: none;
+  border-radius: var(--radius-md);
+  color: var(--text-primary);
+  font: inherit;
   font-size: var(--text-base);
   line-height: var(--leading-normal);
+  resize: vertical;
+  overflow-y: auto;
+}
+
+.wb-composer-input::placeholder,
+.wb-composer-tag-input::placeholder {
+  color: var(--text-muted);
 }
 
 /* Фокус лишається видимим — але м'яким кільцем, а не рамкою: інакше в
    пласкій модалці почала б малюватися лінія, яку ми тільки що прибрали. */
-.wb-composer-input:focus {
-  border-color: transparent;
+.wb-composer-input:focus,
+.wb-composer-input:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 3px var(--accent-soft);
+}
+
+/* Хештеги: чипи й вузьке поле вводу в одному рядку — тег дописується там, де
+   він і з'явиться, а не в окремому вікні. */
+.wb-composer-tags {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--sp-1);
+  min-height: calc(1.5em + 2 * var(--sp-2));
+  padding: var(--sp-1) var(--sp-3);
+  border: none;
+  background: none;
+  border-radius: var(--radius-md);
+}
+
+.wb-composer-tags:focus-within {
+  box-shadow: 0 0 0 3px var(--accent-soft);
+}
+
+.wb-composer-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  padding: 2px var(--sp-1) 2px var(--sp-2);
+  border-radius: var(--radius-full);
+  background: var(--accent-dim);
+  color: var(--accent);
+  font-size: var(--text-xs);
+  font-weight: var(--weight-medium);
+}
+
+/* Хрестик усередині чипа: сам чип не кнопка, тож ціль — окрема й достатня
+   для пальця (24px), хоч знак і 12px. */
+.wb-composer-tag-remove {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  padding: 0;
+  border: none;
+  background: none;
+  color: inherit;
+  cursor: pointer;
+  border-radius: var(--radius-full);
+}
+
+.wb-composer-tag-remove:hover {
+  background: var(--accent-soft);
+}
+
+.wb-composer-tag-input {
+  flex: 1 1 6em;
+  min-width: 6em;
+  padding: 2px 0;
+  border: none;
+  background: none;
+  color: var(--text-primary);
+  font: inherit;
+  font-size: var(--text-sm);
+  line-height: var(--leading-normal);
+}
+
+.wb-composer-tag-input:focus {
+  outline: none;
 }
 
 /* Смуга дій над полем: ТА САМА клітинка, що у вкладки (`--composer-cell`),

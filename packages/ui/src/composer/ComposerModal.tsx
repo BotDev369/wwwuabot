@@ -30,7 +30,7 @@ const ATTACHMENT_TITLES: Record<AttachmentKind, string> = {
 
 export function ComposerModal({ onClose }: ComposerModalProps): ReactElement {
   const dialog = useDialog();
-  const { tab, selectTab, note, setNote, paste, error } = useComposer();
+  const { tab, selectTab, note, setNote, tags, addTags, removeTag, paste, error } = useComposer();
 
   // Заглушка — це діалог, а не нативне вікно: у Telegram на iOS `alert`
   // не показується взагалі (§4), тож кнопка просто нічого б не робила.
@@ -93,6 +93,9 @@ export function ComposerModal({ onClose }: ComposerModalProps): ReactElement {
               <ComposerNoteTab
                 note={note}
                 onNoteChange={setNote}
+                tags={tags}
+                onAddTag={addTags}
+                onRemoveTag={removeTag}
                 onPaste={() => void paste()}
                 onAttach={(kind) => soon(`Додавання: ${ATTACHMENT_TITLES[kind]}`)}
                 error={error}

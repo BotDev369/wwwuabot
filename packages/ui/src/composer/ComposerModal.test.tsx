@@ -19,11 +19,27 @@ const html = renderToStaticMarkup(<ComposerModal onClose={() => {}} />);
 
 describe("ComposerModal", () => {
   it("відкривається на «Нотатці»: поле вводу, вставка й кнопки дії", () => {
-    expect(html).toContain('aria-label="Текст нотатки"');
     expect(html).toContain("wb-composer-input");
     expect(html).toContain("Вставити");
     expect(html).toContain("Зберегти");
     expect(html).toContain("Закрити");
+  });
+
+  it("у кожного поля є підпис — у пласкій модалці саме він каже, де що", () => {
+    // React віддає `htmlFor` як `for` — у статичній розмітці видно саме його.
+    expect(html).toContain('for="wb-composer-note-input"');
+    expect(html).toContain('for="wb-composer-tag-input"');
+    expect(html).toContain(">Нотатка<");
+    expect(html).toContain(">Хештеги<");
+  });
+
+  it("поля композера — власні кирпичики, а не .wb-textarea/.wb-input", () => {
+    // Це не стилістична примха: у брендових темах ті класи отримують рамку
+    // через `!important`, а рамок у композері немає за рішенням.
+    expect(html).not.toContain("wb-textarea");
+    expect(html).not.toContain("wb-input");
+    expect(html).toContain("wb-composer-tags");
+    expect(html).toContain('aria-label="Додати хештег"');
   });
 
   it("стоїть майже на весь екран і складається зі спільних кирпичиків модалки", () => {

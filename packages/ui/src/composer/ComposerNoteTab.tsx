@@ -1,20 +1,30 @@
 /**
  * Вкладка «Нотатка» — типова вкладка композера.
  *
- * Поле вводу, вставка з буфера й місце під вкладення. Саме додавання фото,
- * відео й файлів — окрема тема: тут лише кнопки, які чесно кажуть, що вона
- * ще не зроблена (заглушку показує композер через `useDialog`).
+ * Два поля, і в кожного свій підпис: «Нотатка» (текст) і «Хештеги» (мітки).
+ * Підпис — не прикраса: у композері немає рамок, і саме він каже, де що.
  *
- * Пояснювального тексту під полем немає навмисно: усе, що потрібно знати про
- * вкладення, сказано самою кнопкою, а абзац-інструкція лише з'їдав місце.
+ * Саме додавання фото, відео й файлів — окрема тема: тут лише кнопки, які
+ * чесно кажуть, що вона ще не зроблена (заглушку показує композер через
+ * `useDialog`). Пояснювального абзацу під полями немає навмисно: усе, що
+ * потрібно знати, сказано підписом і самою кнопкою, а абзац лише з'їдав місце.
+ *
+ * Поля — власні кирпичики композера (`.wb-composer-input`, `.wb-composer-tags`),
+ * а не `.wb-textarea`/`.wb-input`: у брендових темах ті класи **примусово**
+ * отримують рамку й відступи (`!important`), а в композері рамок немає за
+ * рішенням — див. `docs/DESIGN_SYSTEM.md`, правило 13.
  *
  * @module @wwwuabot/ui/composer
  */
 
 import type { ReactElement } from "react";
 import { Icon } from "@wwwuabot/shared";
+import { ComposerTags, TAG_INPUT_ID } from "./ComposerTags";
 import type { AttachmentKind, ComposerNoteTabProps } from "./types";
 import { useAutoGrowField } from "./useAutoGrowField";
+
+/** Ідентифікатор поля тексту: на нього вказує підпис. */
+const NOTE_INPUT_ID = "wb-composer-note-input";
 
 /** Кнопки-вкладення: іконка, підпис і вид, який вони обіцяють. */
 const ATTACHMENTS: readonly {
@@ -30,6 +40,9 @@ const ATTACHMENTS: readonly {
 export function ComposerNoteTab({
   note,
   onNoteChange,
+  tags,
+  onAddTag,
+  onRemoveTag,
   onPaste,
   onAttach,
   error,
@@ -38,7 +51,7 @@ export function ComposerNoteTab({
 
   return (
     <div className="wb-composer-pane">
-      {/* Дії — НАД полем: спершу те, чим нотатку наповнюють, далі саме поле.
+      {/* Дії — НАД полями: спершу те, чим нотатку наповнюють, далі сам текст.
           Кнопки — ті самі клітинки, що й вкладки зліва: без рамки й тла, самі
           іконки, а ім'я дії їде в `aria-label` і `title`. */}
       <div className="wb-composer-tools">
@@ -66,14 +79,26 @@ export function ComposerNoteTab({
         ))}
       </div>
 
-      <textarea
-        ref={inputRef}
-        className="wb-textarea wb-composer-input"
-        value={note}
-        onChange={(event) => onNoteChange(event.target.value)}
-        placeholder="Почніть писати…"
-        aria-label="Текст нотатки"
-      />
+      <div className="wb-composer-field">
+        <label className="wb-label" htmlFor={NOTE_INPUT_ID}>
+          Нотатка
+        </label>
+        <textarea
+          id={NOTE_INPUT_ID}
+          ref={inputRef}
+          className="wb-composer-input"
+          value={note}
+          onChange={(event) => onNoteChange(event.target.value)}
+          placeholder="Почніть писати…"
+        />
+      </div>
+
+      <div className="wb-composer-field">
+        <label className="wb-label" htmlFor={TAG_INPUT_ID}>
+          Хештеги
+        </label>
+        <ComposerTags tags={tags} onAdd={onAddTag} onRemove={onRemoveTag} />
+      </div>
 
       {error && (
         <p className="wb-composer-error" role="alert">

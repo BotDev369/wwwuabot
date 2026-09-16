@@ -136,11 +136,21 @@ Defined in `packages/shared/src/styles/tokens.css`, overridden per brand in `app
     horizontal inset is `--sp-3`, which is what keeps the field off the column and off the edge. The attachment row sits **above** the note field as the
     continuation of the tab column, so it is a row of cells, not of chips.
     The composer carries **no separator lines**: no rule under the title, none above the footer,
-    none beside the tab column, none around the note field — space does the separating. Its field is
-    half the old size (15dvh) and stretches two ways: `resize: vertical` on desktop, and the field
-    grows with the text (`useAutoGrowField`) because no mobile WebView renders the resize handle.
-    There is no instructional paragraph under the field either: the button already says what it
-    does, and such a paragraph only eats room.
+    none beside the tab column, none around a field — space does the separating. There is no
+    instructional paragraph under the fields either: the label and the button already say what they
+    do, and such a paragraph only eats room.
+    Its fields are their **own brick** (`.wb-composer-field` / `-input` / `-tags`), not
+    `.wb-textarea` / `.wb-input`, and that is not a matter of taste: the brand themes force a border,
+    a radius and padding onto those classes with `!important`, so beating them from `components.css`
+    would take an `!important` of our own. The composer's flat fields are the decision, so they are
+    a separate brick — and each one has a **label above it** (`.wb-label`), which is what says where
+    things are in a modal with no borders. The note field is three rows tall, scrolls beyond that,
+    and grows two ways: `resize: vertical` on desktop and with the text (`useAutoGrowField`, capped,
+    and it never shrinks what a hand has dragged) on touch, where no WebView renders the handle.
+    Hashtags are chips plus an inline input in the same row (`.wb-composer-tag*`): a tag ends on a
+    space, a comma or Enter, and Backspace on an empty input drops the last one. Their rules are
+    pure functions in `tags.ts`, since what counts as a tag decides whether the note is found
+    later.
     Tabs are data (`tabs.ts`): a new tab is a line in the list, not new markup. A tab whose
     interface does not exist yet renders a statement of what will be there, and every unwired
     action answers with `useDialog()` ("that is a separate topic") instead of doing nothing

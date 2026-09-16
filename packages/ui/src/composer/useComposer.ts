@@ -1,5 +1,5 @@
 /**
- * Стан композера: активна вкладка й чернетка нотатки.
+ * Стан композера: активна вкладка, чернетка нотатки й її хештеги.
  *
  * Хук без JSX (правило кристалевості): компонент лише малює те, що тут
  * лежить. Вставка з буфера теж тут, бо це логіка з помилкою, а не розмітка:
@@ -11,6 +11,7 @@
 
 import { useCallback, useState } from "react";
 import { findComposerTab, DEFAULT_COMPOSER_TAB } from "./tabs";
+import { addTags, removeTag } from "./tags";
 import type { ComposerTab } from "./types";
 
 export interface ComposerState {
@@ -20,6 +21,10 @@ export interface ComposerState {
   /** Текст нотатки. */
   note: string;
   setNote: (value: string) => void;
+  /** Хештеги нотатки — те, за чим її потім знайдуть. */
+  tags: readonly string[];
+  addTags: (raw: string) => void;
+  removeTag: (tag: string) => void;
   /** Дописати текст із буфера обміну в кінець нотатки. */
   paste: () => Promise<void>;
   /** Причина, чому вставка не вдалась. */
@@ -29,6 +34,7 @@ export interface ComposerState {
 export function useComposer(): ComposerState {
   const [key, setKey] = useState(DEFAULT_COMPOSER_TAB);
   const [note, setNote] = useState("");
+  const [tags, setTags] = useState<readonly string[]>([]);
   const [error, setError] = useState<string | null>(null);
 
   const paste = useCallback(async () => {
@@ -51,6 +57,11 @@ export function useComposer(): ComposerState {
     selectTab: setKey,
     note,
     setNote,
+    tags,
+    // Повертаємо той самий масив, якщо нічого не змінилось, — зайвих
+    // перемальовувань на кожен пробіл не буде (див. `tags.ts`).
+    addTags: (raw: string) => setTags((prev) => addTags(prev, raw)),
+    removeTag: (tag: string) => setTags((prev) => removeTag(prev, tag)),
     paste,
     error,
   };

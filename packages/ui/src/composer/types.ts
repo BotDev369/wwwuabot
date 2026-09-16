@@ -41,10 +41,18 @@ export interface ComposerModalProps {
 /** Види вкладень, місце під які вже позначене. */
 export type AttachmentKind = "photo" | "video" | "file";
 
-/** Те, з чим працює вкладка «Нотатка»: текст, вставка й вкладення. */
+/** Те, з чим працює вкладка «Нотатка»: текст, хештеги, вставка й вкладення. */
 export interface ComposerNoteTabProps {
   note: string;
   onNoteChange: (value: string) => void;
+  /**
+   * Хештеги нотатки. Другий бік нотатки поруч із текстом: саме за ними її
+   * потім знайдуть, тож вони зберігаються разом із текстом, а не окремо.
+   */
+  tags: readonly string[];
+  /** Додати хештеги з довільного рядка (розбір і стелі — у `tags.ts`). */
+  onAddTag: (raw: string) => void;
+  onRemoveTag: (tag: string) => void;
   /** Вставити текст із буфера обміну. */
   onPaste: () => void;
   /** Додати вкладення — окрема тема, поки лише заглушка. */
