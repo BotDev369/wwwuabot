@@ -22,7 +22,10 @@
    TWA центрує в ньому сценарні екрани, тому правило тут, а не в shared. */
 main {
   flex: 1;
-  background: var(--bg-home, var(--bg-0));
+  /* Тло екрана — той самий плоский колір, що йде нативній шапці Telegram
+     (`--bg-page` = `--chrome-header-bg`): градієнт `--bg-home` лишався б
+     видимим швом під шапкою клієнта. */
+  background: var(--bg-page, var(--bg-0));
   display: flex;
   justify-content: center;
   padding: 48px 20px;

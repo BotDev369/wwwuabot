@@ -8,8 +8,10 @@
 /* ─── Reset ──────────────────────────────────────────────────────────────────── */
 /* box-sizing, обнулення відступів, типографіка body і height: 100% уже є в
    спільному reset.css (@wwwuabot/shared/styles). Тут лишається тільки те, що
-   справді відрізняє адмінку: документ не прокручується (скролять панелі), а фон
-   береться з --bg-home (радіальний градієнт) замість плаского --bg-0. */
+   справді відрізняє адмінку: документ не прокручується (скролять панелі).
+   Фон — спільний плоский `--bg-page` (= `--chrome-header-bg`, той самий колір,
+   що йде нативній шапці Telegram): градієнт лишався б видимим швом під
+   шапкою, а адмінка й платформа мусять виглядати однаково (AGENTS.md §3). */
 
 html,
 body,
@@ -18,7 +20,7 @@ body,
 }
 
 body {
-  background: var(--bg-home, var(--bg-0));
+  background: var(--bg-page, var(--bg-0));
 }
 
 /* ─── Workspace ──────────────────────────────────────────────────────────────── */
@@ -109,7 +111,7 @@ body {
   max-width: 420px;
   display: flex;
   flex-direction: column;
-  background: var(--bg-home, var(--bg-0));
+  background: var(--bg-page, var(--bg-0));
 }
 
 .preview-badge {
@@ -405,12 +407,9 @@ body {
   justify-content: center;
   gap: 22px;
   padding: clamp(32px, 7vh, 72px) clamp(28px, 6vw, 96px);
-  background: radial-gradient(
-    120% 90% at 12% 0%,
-    var(--surface) 0%,
-    var(--bg-2) 55%,
-    var(--bg-0) 100%
-  );
+  /* Тло — плоский `--bg-page`: над цією сторінкою смуга хрому того самого
+     кольору, тож власний radial-gradient давав би шов по лінії зони. */
+  background: var(--bg-page, var(--bg-0));
 }
 
 /* Тематичний водяний знак — мій знак ✦, ледь помітний, без жодного руху */
@@ -1611,11 +1610,14 @@ body {
   border-radius: 3px;
   margin: 6px auto 4px;
 }
+/* Макет у рамці телефона мусить показувати те, що буде на екрані насправді:
+   плоске тло хрому і жодних обвідок у зонах (див. `app-chrome.css`,
+   `page-layout.css`). Інакше прев'ю «красивіше» за продукт і бреше. */
 .phone-frame-body {
   min-height: 200px;
   max-height: 400px;
   overflow-y: auto;
-  background: var(--bg-home, var(--bg-0));
+  background: var(--bg-page, var(--bg-0));
   color: #1a1a2e;
   -webkit-overflow-scrolling: touch;
 }
@@ -1645,18 +1647,18 @@ body {
 }
 .phone-frame-body .page-zone--header {
   padding: 12px 16px;
-  border-bottom: 1px solid #e0e0e8;
-  background: var(--bg-home, var(--bg-1));
+  border: none;
+  background: transparent;
 }
 .phone-frame-body .page-zone--main {
   flex: 1;
   padding: 16px;
-  background: var(--bg-home, var(--bg-0));
+  background: var(--bg-page, var(--bg-0));
 }
 .phone-frame-body .page-zone--footer {
   padding: 12px 16px;
-  border-top: 1px solid #e0e0e8;
-  background: #f0f0f5;
+  border: none;
+  background: transparent;
   font-size: 12px;
   color: #888;
 }

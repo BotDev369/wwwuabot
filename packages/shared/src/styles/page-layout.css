@@ -61,23 +61,25 @@
   min-width: 0;
 }
 
+/* Зони шапки/футера сторінки — це теж хром: свого тла вони НЕ малюють (тло
+   екрана — `--bg-page`, той самий плоский колір, що йде нативній шапці
+   Telegram), а лінії-контури з них прибрано: обвідка робила шов помітним
+   навіть тоді, коли кольори збігаються. */
 .page-zone--header {
   padding: 16px 24px;
-  border-bottom: 1px solid var(--border);
-  background: var(--bg-1);
+  background: transparent;
 }
 
 .page-zone--main {
   flex: 1;
   padding: 24px;
-  background: var(--bg-home, var(--bg-0));
+  background: var(--bg-page, var(--bg-0));
 }
 
 .page-zone--footer {
   padding: 16px 24px;
   padding-bottom: calc(16px + var(--safe-bottom));
-  border-top: 1px solid var(--border);
-  background: var(--bg-2);
+  background: transparent;
   font-size: 13px;
   color: var(--text-muted);
 }

@@ -38,6 +38,8 @@
   height: 100dvh;
   display: flex;
   overflow: hidden;
+  /* Фон екрана: плоский колір хрому Telegram — див. `--bg-page` у tokens.css */
+  background: var(--bg-page, var(--bg-0));
 }
 
 .wb-app-main {
@@ -48,17 +50,24 @@
   overflow: hidden;
 }
 
-/* Шапка, топбар і футер — це ХРОМ: вони мусять бути того самого плоского
-   кольору, що й нативна шапка/низ клієнта Telegram (`--chrome-*`, синхронізує
-   `shared/app/telegram-chrome.ts`). Градієнт `--bg-1` — тло контенту, не хрому:
-   плоский колір клієнта ніколи не дорівняє градієнту — був би помітний шов. */
+/* Шапка, топбар і футер — це ХРОМ: той самий ПЛОСКИЙ колір, що йде нативній
+   шапці/низу Telegram (`--chrome-*`, синхронізує `shared/app/telegram-chrome.ts`)
+   і на який малюється вся площина екрана (`--bg-page`). Градієнт `--bg-home` —
+   тло поверхонь, не хрому: плоский колір клієнта ніколи не дорівняє градієнту.
+
+   Ліній і тіней тут немає НАВМИСНО: контур робить шов помітним навіть тоді,
+   коли кольори вже збігаються. Прозорість — 9% (`color-mix(… 91%, transparent)`):
+   вона нічого не затемнює, бо смуга лежить поверх тла ТОГО САМОГО кольору. */
 .wb-app-header,
 .wb-topbar {
+  /* фолбек для рушіїв без `color-mix()` — той самий колір, лише непрозорий */
   background: var(--chrome-header-bg) !important;
+  background: color-mix(in srgb, var(--chrome-header-bg) 91%, transparent) !important;
 }
 
 .wb-tabbar {
   background: var(--chrome-bottom-bg) !important;
+  background: color-mix(in srgb, var(--chrome-bottom-bg) 91%, transparent) !important;
 }
 
 .wb-app-header {
@@ -68,7 +77,6 @@
   gap: var(--sp-3);
   height: var(--topbar-h);
   padding: 0 var(--sp-4);
-  border-bottom: 1px solid var(--border);
   flex-shrink: 0;
 }
 
@@ -344,8 +352,6 @@
   padding-bottom: var(--safe-bottom);
   display: flex;
   justify-content: center;
-  border-top: 1px solid var(--border);
-  box-shadow: 0 -2px 12px rgba(0, 0, 0, 0.06);
 }
 
 /* На десктопі смуга не розповзається на всю ширину вікна */
@@ -445,7 +451,6 @@
   flex-wrap: wrap;
   min-height: var(--topbar-h);
   padding: var(--sp-3) var(--sp-5);
-  border-bottom: 1px solid var(--border);
   flex-shrink: 0;
 }
 
@@ -518,7 +523,9 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  background: var(--bg-0);
+  /* Екран цілком — той самий плоский колір, що в нативної шапки Telegram
+     (`--bg-0` у темній схемі інший: #000 проти #1c1c1e — був би шов) */
+  background: var(--bg-page, var(--bg-0));
 }
 
 .wb-splash-icon {
@@ -548,7 +555,8 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  background: var(--bg-0);
+  /* Цілий екран — плоский колір хрому (`--bg-0` у темній схемі інший) */
+  background: var(--bg-page, var(--bg-0));
   padding: var(--sp-4);
   /* + safe-area: картка не має залазити під індикатор дому */
   padding-bottom: calc(var(--sp-4) + var(--safe-bottom));

@@ -363,23 +363,17 @@ html[data-brand="apple"] .wb-app-logout:hover {
   background: var(--red-dim) !important;
 }
 
-/* ── Header / Topbar: колір — кирпичик хрому (`--chrome-*`, той самий, що
-   йде клієнту Telegram), бренд додає лише сітку-скло й товщину лінії. Доти
-   тут стояв напівпрозорий frosted glass: клієнту Telegram іде плоский колір,
-   і «скло» над ним давало саме той шов, який прибираємо. */
+/* ── Header / Topbar: тло — кирпичик хрому (`--chrome-*` + 9% прозорості з
+   `app-chrome.css`), тож бренд свого кольору тут НЕ задає: інакше він
+   перекрив би прозорість і лінію було б видно знову. Лишається тільки
+   скло — фірмова риса Apple. Обвідку й тінь прибрано: контур сам по собі
+   малює шов між шапкою Telegram і нашою. */
 html[data-brand="apple"] .wb-app-header,
 html[data-brand="apple"] .wb-topbar {
-  background: var(--chrome-header-bg) !important;
   backdrop-filter: saturate(180%) blur(24px) !important;
   -webkit-backdrop-filter: saturate(180%) blur(24px) !important;
-  border-bottom: 0.5px solid rgba(198, 198, 200, 0.5) !important;
+  border-bottom: none !important;
   box-shadow: none !important;
-}
-
-html[data-brand="apple"][data-theme="dark"] .wb-app-header,
-html[data-brand="apple"][data-theme="dark"] .wb-topbar {
-  background: var(--chrome-header-bg) !important;
-  border-bottom: 0.5px solid rgba(56, 56, 58, 0.5) !important;
 }
 
 html[data-brand="apple"] .brand {

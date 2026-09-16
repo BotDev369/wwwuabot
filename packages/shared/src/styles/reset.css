@@ -25,7 +25,10 @@ body,
 }
 
 body {
-  background: var(--bg-0);
+  /* Фон екрана — плоский `--bg-page` (= `--chrome-header-bg`, той самий колір,
+     що йде нативній шапці Telegram), а не градієнт: інакше під шапкою клієнта
+     видно шов. Картки й панелі беруть своє тло з `--surface` / `--bg-1`. */
+  background: var(--bg-page, var(--bg-0));
   color: var(--text-primary);
   font-family: var(--font-ui);
   font-size: var(--text-base);

@@ -13,14 +13,15 @@ Defined in `packages/shared/src/styles/tokens.css`, overridden per brand in `app
 
 | Token | Usage |
 |---|---|
-| `var(--bg-home)` | Фон-підкладка сторінки (найтемніший/найсвітліший рівень) |
+| `var(--bg-page)` | Фон **екрана**: плоский колір, той самий, що йде нативному хрому Telegram (`= var(--chrome-header-bg)`). Ним малюються `body`, `.wb-app`, `main`, зони `.page-zone*`, `.wb-splash`, `.wb-auth` |
+| `var(--bg-home)` | Градієнт-підкладка **поверхонь** (картки, панелі). Площину екрана ним НЕ малюємо: плоский колір клієнта не дорівняє градієнту — був би шов |
 | `var(--bg-0)` … `var(--bg-4)` | Поверхні від підкладки до hover |
 | `var(--text-primary)` / `--text-secondary` / `--text-muted` | Текст: основний / другорядний / підказка |
 | `var(--text-inverse)` | Текст на акцентній плашці |
 | `var(--accent)` / `--accent-hover` / `--accent-dim` / `--accent-soft` | Акцент: база / hover / плашка / підкладка під фокус |
 | `var(--border)` / `var(--border-subtle)` | Межі: помітна / ледь видима |
 | `var(--surface)` / `--surface-hover` / `--surface-active` / `--surface-overlay` | Поверхні карток, стани й скрим |
-| `var(--chrome-header-bg)` / `var(--chrome-bottom-bg)` | Нативний хром Telegram: шапка клієнта і смуга під футером; синхронізує `shared/app/telegram-chrome.ts` |
+| `var(--chrome-header-bg)` / `var(--chrome-bottom-bg)` | Нативний хром Telegram: шапка клієнта і смуга під футером; синхронізує `shared/app/telegram-chrome.ts`. Наші смуги (`.wb-app-header`, `.wb-topbar`, `.wb-tabbar`) малюються тими самими токенами на 91% (прозорі на 9%) і **без** ліній та тіней |
 | `var(--green)` / `var(--green-dim)` | Успіх |
 | `var(--red)` / `var(--red-dim)` | Небезпека |
 | `var(--yellow)` / `var(--yellow-dim)` | Попередження |
