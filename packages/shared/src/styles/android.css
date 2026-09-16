@@ -252,12 +252,18 @@ html[data-brand="android"][data-theme="dark"] ::selection {
 }
 
 /* ── Buttons: M3 filled tonal with shadow — NOT pill ───────────────────── */
+/* Мірки кнопки — токенами (як і в Apple): M3 щільніший за iOS, але це
+   характер бренду, а не привід переписати `padding` через `!important`. */
+html[data-brand="android"] {
+  --btn-pad-y: 8px;
+  --btn-pad-x: 16px;
+}
+
 html[data-brand="android"] .wb-btn {
   border-radius: 20px !important;
   font-size: 14px !important;
   font-weight: 500 !important;
   letter-spacing: 0.01em !important;
-  padding: 10px 24px !important;
   min-height: 40px !important;
   box-shadow: var(--shadow-xs) !important;
 }

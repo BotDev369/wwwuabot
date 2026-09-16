@@ -11,12 +11,15 @@
 
 /* ── Button ──────────────────────────────────────────────────────────────── */
 
+/* Мірки кнопки — токени (`--btn-pad-y` / `--btn-pad-x`), бо це те саме
+   значення, яке задає бренд: Apple і Android роблять кнопку своєю шириною
+   і щільністю, а не переписують правило. */
 .wb-btn {
   display: inline-flex;
   align-items: center;
   justify-content: center;
   gap: var(--sp-2);
-  padding: var(--sp-2) var(--sp-4);
+  padding: var(--btn-pad-y) var(--btn-pad-x);
   font-size: var(--text-sm);
   font-weight: var(--weight-medium);
   line-height: 1;
@@ -73,11 +76,11 @@
 
 /* Sizes */
 .wb-btn-sm {
-  padding: var(--sp-1) var(--sp-3);
+  padding: var(--sp-1) var(--sp-2);
   font-size: var(--text-xs);
 }
 .wb-btn-lg {
-  padding: var(--sp-3) var(--sp-6);
+  padding: var(--sp-3) var(--sp-5);
   font-size: var(--text-md);
 }
 
@@ -107,7 +110,7 @@
 /* Inline — for inline date-input rows */
 .wb-btn-inline {
   margin-top: 0;
-  padding: 14px 28px;
+  padding: var(--sp-3) var(--sp-5);
   font-size: 15px;
   font-weight: var(--weight-semibold);
   border-radius: var(--radius);
@@ -954,16 +957,18 @@ html:has(.wb-tabbar) .wb-modal {
   color: var(--text-muted);
 }
 
-/* Кнопки — під пальцем. Safe-area тут НЕ додаємо: над модалкою стоїть футер
-   застосунку, а він уже тримає місце під індикатором дому (`--tab-bar-h`). */
-.wb-composer-foot {
+/* Кнопки дії — ОСТАННІЙ РЯДОК ТІЛА вкладки, а не прибитий футер: у модалці,
+   яка росте під вміст, фіксована смуга забирала б місце в полів, а кнопок
+   буде більше, ніж дві. `margin-top: auto` тримає їх біля нижнього краю,
+   поки місця досить, і відпускає вгору, коли вміст вищий за екран — тобто
+   кнопки прокручуються РАЗОМ із тілом, а не висять над ним. */
+.wb-composer-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: flex-end;
   gap: var(--sp-2);
-  padding-bottom: var(--sp-3);
-  border-top: none;
-}
-
-.wb-composer-foot .wb-btn {
-  min-height: 44px;
+  margin-top: auto;
 }
 
 /* Cards grid */

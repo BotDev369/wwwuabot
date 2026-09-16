@@ -7,6 +7,10 @@
  * тому вигляд однаковий в обох оболонках; своє тут лише те, чого в модалки
  * не було: смуга вкладок і майже повноекранний розмір (`.wb-composer`).
  *
+ * Кнопок дії в прибитому футері немає: вони — останній рядок тіла вкладки
+ * (`.wb-composer-actions`). Фіксована смуга забирає місце в полів, а кнопок
+ * буде більше, ніж дві.
+ *
  * Незроблені дії не мовчать: вони кажуть, що це окрема тема. Так само
  * поводиться пункт футера без адреси — краще чесна відмова, ніж тиша (§7).
  *
@@ -42,6 +46,34 @@ export function ComposerModal({ onClose, onSaveNote }: ComposerModalProps): Reac
   const soon = (what: string, title = "Скоро") => {
     void dialog.alert(`${what} — окрема тема, ще не зроблено.`, { title });
   };
+
+  // Кнопки дії — у тілі вкладки, а не в прибитому футері: у модалці, яка
+  // росте під вміст, фіксована смуга забирала б місце в полів, а кнопок буде
+  // більше, ніж дві. Хто вони — знає композер (він тримає `save` і стан),
+  // а куди їх поставити — вкладка.
+  const actions =
+    tab.status === "ready" ? (
+      <>
+        <button type="button" className="wb-btn wb-btn-secondary" onClick={onClose}>
+          Закрити
+        </button>
+        <button
+          type="button"
+          className="wb-btn wb-btn-primary"
+          disabled={saving || empty}
+          onClick={() => {
+            // Закриваємо лише тоді, коли справді збереглось: інакше
+            // людина втратила б написане, навіть не побачивши причини.
+            void save().then((saved) => {
+              if (saved) onClose();
+            });
+          }}
+        >
+          <Icon name="save" size={16} />
+          {saving ? "Зберігаю…" : "Зберегти"}
+        </button>
+      </>
+    ) : undefined;
 
   function handleKeyDown(event: KeyboardEvent<HTMLDivElement>) {
     if (event.key === "Escape") {
@@ -104,34 +136,12 @@ export function ComposerModal({ onClose, onSaveNote }: ComposerModalProps): Reac
                 onPaste={() => void paste()}
                 onAttach={(kind) => soon(`Додавання: ${ATTACHMENT_TITLES[kind]}`)}
                 error={error}
+                actions={actions}
               />
             ) : (
               <ComposerPlaceholderTab tab={tab} />
             )}
           </div>
-        </div>
-
-        <div className="wb-modal-footer wb-composer-foot">
-          <button type="button" className="wb-btn wb-btn-secondary" onClick={onClose}>
-            Закрити
-          </button>
-          {tab.status === "ready" && (
-            <button
-              type="button"
-              className="wb-btn wb-btn-primary"
-              disabled={saving || empty}
-              onClick={() => {
-                // Закриваємо лише тоді, коли справді збереглось: інакше
-                // людина втратила б написане, навіть не побачивши причини.
-                void save().then((saved) => {
-                  if (saved) onClose();
-                });
-              }}
-            >
-              <Icon name="save" size={16} />
-              {saving ? "Зберігаю…" : "Зберегти"}
-            </button>
-          )}
         </div>
       </div>
     </div>

@@ -49,7 +49,16 @@ describe("ComposerModal", () => {
     expect(html).toContain("wb-modal-overlay");
     expect(html).toContain("wb-modal--full");
     expect(html).toContain("wb-modal-body");
-    expect(html).toContain("wb-modal-footer");
+  });
+
+  it("кнопки дії стоять у ТІЛІ вкладки, а не в прибитому футері", () => {
+    // Фіксована смуга забирає місце в полів, а кнопок буде більше, ніж дві.
+    // Сторож: рядок дій мусить бути ВСЕРЕДИНІ тіла й після полів.
+    expect(html).not.toContain("wb-modal-footer");
+    expect(html).not.toContain("wb-composer-foot");
+    expect(html).toContain("wb-composer-actions");
+    expect(html.indexOf("wb-composer-body")).toBeLessThan(html.indexOf("wb-composer-actions"));
+    expect(html.indexOf("wb-composer-input")).toBeLessThan(html.indexOf("wb-composer-actions"));
   });
 
   it("активна вкладка — рівно одна, і це типова", () => {

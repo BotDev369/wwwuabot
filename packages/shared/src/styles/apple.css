@@ -255,14 +255,22 @@ html[data-brand="apple"][data-theme="dark"] ::selection {
   background: rgba(255, 255, 255, 0.2) !important;
 }
 
-/* ── Buttons: pill shape — Apple's signature ────────────────────────────── */
+/* ── Buttons: pill shape — Apple's signature ──────────────────────────────
+   Мірки кнопки бренд задає ТОКЕНАМИ, а не `padding` у `.wb-btn`: інакше
+   `!important` вертав би кнопкам 12×24 і 48px висоти, і «зменшити кнопки»
+   в спільному шарі не діяло б узагалі. Характер (форма-пілюля, шрифт,
+   вага, літери) лишається тут — це і є Apple. */
+html[data-brand="apple"] {
+  --btn-pad-y: 10px;
+  --btn-pad-x: 18px;
+}
+
 html[data-brand="apple"] .wb-btn {
   border-radius: 9999px !important;
   font-size: 16px !important;
   font-weight: 600 !important;
-  padding: 12px 24px !important;
   letter-spacing: -0.01em !important;
-  min-height: 48px !important;
+  min-height: 44px !important;
   box-shadow: none !important;
 }
 

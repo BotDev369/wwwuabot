@@ -9,6 +9,7 @@
  * @module @wwwuabot/ui/composer
  */
 
+import type { ReactNode } from "react";
 import type { IconName } from "@wwwuabot/shared";
 import type { NoteDraft } from "@wwwuabot/shared/notes";
 
@@ -67,4 +68,11 @@ export interface ComposerNoteTabProps {
   onAttach: (kind: AttachmentKind) => void;
   /** Помилка вставки (буфер недоступний). */
   error: string | null;
+  /**
+   * Кнопки дії вкладки. Вони живуть у **тілі** (останній рядок панелі), а не
+   * в прибитому футері: кнопок буде більше, ніж дві, а фіксована смуга
+   * забирала б місце в полів. Хто саме ці кнопки — знає композер (він тримає
+   * `save` і стан збереження); вкладка лише ставить їх у свій розклад.
+   */
+  actions?: ReactNode;
 }

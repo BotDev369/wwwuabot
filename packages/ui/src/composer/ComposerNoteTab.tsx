@@ -9,6 +9,11 @@
  * `useDialog`). Пояснювального абзацу під полями немає навмисно: усе, що
  * потрібно знати, сказано підписом і самою кнопкою, а абзац лише з'їдав місце.
  *
+ * Кнопки дії приходять ззовні (`actions`) і стоять **у тілі** панелі —
+ * останнім рядком (`.wb-composer-actions`), а не в прибитому футері: кнопок
+ * буде більше, ніж «Закрити» й «Зберегти», і фіксована смуга з'їдала б місце
+ * в полів. Вкладка лише ставить їх у розклад: про збереження вона не знає.
+ *
  * Поля — власні кирпичики композера (`.wb-composer-input`, `.wb-composer-tags`),
  * а не `.wb-textarea`/`.wb-input`: у брендових темах ті класи **примусово**
  * отримують рамку й відступи (`!important`), а в композері рамок немає за
@@ -47,6 +52,7 @@ export function ComposerNoteTab({
   onPaste,
   onAttach,
   error,
+  actions,
 }: ComposerNoteTabProps): ReactElement {
   const inputRef = useAutoGrowField(note);
 
@@ -109,6 +115,10 @@ export function ComposerNoteTab({
           {error}
         </p>
       )}
+
+      {/* Останній рядок тіла — дії вкладки: вони прокручуються разом із
+          полями, а не висять над ними (див. `.wb-composer-actions`). */}
+      {actions && <div className="wb-composer-actions">{actions}</div>}
     </div>
   );
 }

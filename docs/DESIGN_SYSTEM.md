@@ -52,6 +52,7 @@ Defined in `packages/shared/src/styles/tokens.css`, overridden per brand in `app
 | Група | Токени |
 |---|---|
 | Відступи | `--sp-0` … `--sp-16` (4px-крок) |
+| Мірки кнопки | `--btn-pad-y`, `--btn-pad-x` (задає і спільний шар, і бренд — `padding` у `.wb-btn` пише лише базове правило) |
 | Тіні | `--shadow-xs` … `--shadow-xl`, `--elevation-0` … `--elevation-3` |
 | Анімація | `--duration-fast`, `--duration`, `--duration-slow`, `--ease`, `--ease-in`, `--ease-out`, `--ease-spring` |
 | Шари | `--z-dropdown` < `--z-sticky` < `--z-overlay` < `--z-modal` (400) < `--z-tabbar` (**1100** — футер завжди видно: він вище за модалки й виїзне меню) < `--z-toast` (1200) |
@@ -139,10 +140,13 @@ Defined in `packages/shared/src/styles/tokens.css`, overridden per brand in `app
     line — a label that wraps mid-word ("Сторінк / а") is a layout defect, not a hyphenation, so the
     label is `nowrap` + ellipsis and never rides onto the field. The attachment row sits **above** the note field as the
     continuation of the tab column, so it is a row of cells, not of chips.
-    The composer carries **no separator lines**: no rule under the title, none above the footer,
-    none beside the tab column, none around a field — space does the separating. There is no
+    The composer carries **no separator lines**: no rule under the title, none beside the tab column,
+    none around a field, none above the action row — space does the separating. There is no
     instructional paragraph under the fields either: the label and the button already say what they
-    do, and such a paragraph only eats room.
+    do, and such a paragraph only eats room. The actions ("Закрити" / "Зберегти", and more to come)
+    are **the last row of the tab's body** (`.wb-composer-actions`), not a pinned footer: the modal
+    grows with its content, so a fixed bar would eat the fields' room; `margin-top: auto` holds them
+    at the bottom while there is room and lets them scroll with the body when there is not.
     Its fields keep their own layout classes (`.wb-composer-field` / `-input` / `-tags`) — the text
     field is three rows tall with its own size rules and the hashtag row is a box for chips — but
     the **surface** comes from the shared field brick: one rule lists `.wb-input`, `.wb-select`,
@@ -186,6 +190,14 @@ Defined in `packages/shared/src/styles/tokens.css`, overridden per brand in `app
     і бренди. Саме тому бренди більше не додають `border-bottom` рядкам
     таблиць, `border-right` меню чи `border` карткам: бренд — це характер
     (радіус, мірки, скло), а не повернення ліній, яких у продукті немає.
+
+16. **Button metrics are tokens, not a brand's private `padding`.** How big a button is, is decided by
+    `--btn-pad-y` / `--btn-pad-x`, and only the base `.wb-btn` rule writes `padding` — from those tokens.
+    Apple and Android own the character (pill vs 20px radius, font, weight) and set the tokens; they no
+    longer write `padding: 12px 24px !important` on `.wb-btn`, which made any reduction in the shared layer
+    invisible — the same trap as the field border (rule 13). `packages/shared/src/styles/buttons.test.ts`
+    fails on a `.wb-btn` padding that isn't the token pair, on a brand `min-height` above 44px, and on a
+    pad token above 20×12px.
 
 ---
 
