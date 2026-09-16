@@ -4,22 +4,27 @@
  * Тут лише те, чим платформа відрізняється від адмінки: її пункти, її роутер
  * і її реакція на пункт-заглушку. Сама смуга — спільний `TabBar`.
  *
+ * Центральний «+» відкриває спільний композер: «створити» — це дія, а не
+ * розділ, і адреси під нею немає.
+ *
  * @module web-platform-dev/src/layout/PlatformTabBar
  */
 
-import type { ReactElement } from "react";
+import { useState, type ReactElement } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
+import { ComposerModal } from "@wwwuabot/ui/composer";
 import { useDialog } from "@wwwuabot/ui/dialog";
-import { TabBar, buildTabBarItems } from "@wwwuabot/ui/nav";
+import { TabBar, buildTabBarItems, withPrimaryAction } from "@wwwuabot/ui/nav";
 import { PLATFORM_TABS, toShellTabs } from "./platform-tabs";
 
 export function PlatformTabBar(): ReactElement {
   const navigate = useNavigate();
   const { pathname } = useLocation();
   const dialog = useDialog();
+  const [composerOpen, setComposerOpen] = useState(false);
 
   const items = buildTabBarItems({
-    tabs: toShellTabs(PLATFORM_TABS),
+    tabs: withPrimaryAction(toShellTabs(PLATFORM_TABS), () => setComposerOpen(true)),
     pathname,
     navigate,
     onPlaceholder: (tab) => {
@@ -27,5 +32,10 @@ export function PlatformTabBar(): ReactElement {
     },
   });
 
-  return <TabBar items={items} label="Навігація платформи" />;
+  return (
+    <>
+      <TabBar items={items} label="Навігація платформи" />
+      {composerOpen && <ComposerModal onClose={() => setComposerOpen(false)} />}
+    </>
+  );
 }

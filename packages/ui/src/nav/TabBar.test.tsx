@@ -10,7 +10,7 @@
 import { describe, it, expect, vi } from "vitest";
 import { renderToStaticMarkup } from "react-dom/server";
 import { TabBar } from "./TabBar";
-import { buildTabBarItems, isTabActive } from "./build-items";
+import { buildTabBarItems, isTabActive, withPrimaryAction } from "./build-items";
 import type { ShellTab } from "./types";
 
 const TABS: readonly ShellTab[] = [
@@ -107,6 +107,25 @@ describe("buildTabBarItems", () => {
     expect(navigate).toHaveBeenCalledWith("/mydate");
     expect(onPlaceholder).not.toHaveBeenCalled();
 
+    items[4].onSelect?.();
+    expect(onPlaceholder).toHaveBeenCalledWith(TABS[4]);
+  });
+
+  it("своя дія пункту перекриває заглушку: центральний «+» відкриває композер", () => {
+    const openComposer = vi.fn();
+    const onPlaceholder = vi.fn();
+    const items = buildTabBarItems({
+      tabs: withPrimaryAction(TABS, openComposer),
+      pathname: "/",
+      navigate: vi.fn(),
+      onPlaceholder,
+    });
+
+    items[2].onSelect?.();
+    expect(openComposer).toHaveBeenCalledTimes(1);
+    expect(onPlaceholder).not.toHaveBeenCalled();
+
+    // Пункт-заглушка без своєї дії поводиться як раніше
     items[4].onSelect?.();
     expect(onPlaceholder).toHaveBeenCalledWith(TABS[4]);
   });

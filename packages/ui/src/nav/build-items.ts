@@ -38,10 +38,23 @@ export function buildTabBarItems({
 }: BuildTabBarItemsOptions): TabBarItem[] {
   return tabs.map((tab) => {
     const href = tab.href;
+    // Своя дія має пріоритет: центральний «+» — не адреса, а дія.
+    const onSelect = tab.onSelect ?? (href ? () => navigate(href) : () => onPlaceholder(tab));
     return {
       ...tab,
       active: href ? isTabActive(pathname, href) : false,
-      onSelect: href ? () => navigate(href) : () => onPlaceholder(tab),
+      onSelect,
     };
   });
+}
+
+/**
+ * Центральний слот дії відкриває свою річ замість навігації.
+ *
+ * Склад пунктів — свій у кожної оболонки, а «+» — спільний слот дії, і дія в
+ * нього теж одна: композер. Тому правило «котрий пункт діє» живе тут, а не
+ * двома копіями в оболонках.
+ */
+export function withPrimaryAction(tabs: readonly ShellTab[], onSelect: () => void): ShellTab[] {
+  return tabs.map((tab) => (tab.primary ? { ...tab, onSelect } : tab));
 }

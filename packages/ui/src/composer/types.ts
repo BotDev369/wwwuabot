@@ -1,0 +1,54 @@
+/**
+ * Типи композера — модалки швидкого створення, яку відкриває «+» у футері.
+ *
+ * Композер спільний для обох оболонок: це та сама деталь продукту, тож і
+ * розмітка, і стилі живуть у спільному коді (`packages/ui` + `.wb-composer*`
+ * у `packages/shared/src/styles/components.css`). Оболонка лише відкриває
+ * його — див. `withPrimaryAction` у `@wwwuabot/ui/nav`.
+ *
+ * @module @wwwuabot/ui/composer
+ */
+
+import type { IconName } from "@wwwuabot/shared";
+
+/**
+ * Вкладка композера.
+ *
+ * `status` — це чесність, а не оформлення: `soon` означає, що під вкладкою
+ * ще немає інтерфейсу, і вона показує, що там буде. Так само чесно поводиться
+ * пункт футера без адреси (§7): краще сказати, ніж мовчки нічого не робити.
+ */
+export interface ComposerTab {
+  /** Стабільний ключ React-списку й перемикання вкладок. */
+  key: string;
+  /** Підпис на вкладці. */
+  label: string;
+  /** Іконка з реєстру `@wwwuabot/shared`. */
+  icon: IconName;
+  /** `ready` — інтерфейс працює; `soon` — заглушка. */
+  status: "ready" | "soon";
+  /** Що саме тут буде — текст заглушки. */
+  hint?: string;
+  /** Пункти, які вкладка матиме: заглушка показує їх списком. */
+  planned?: readonly string[];
+}
+
+export interface ComposerModalProps {
+  /** Закрити композер. Відкриває й закриває його оболонка. */
+  onClose: () => void;
+}
+
+/** Види вкладень, місце під які вже позначене. */
+export type AttachmentKind = "photo" | "video" | "file";
+
+/** Те, з чим працює вкладка «Нотатка»: текст, вставка й вкладення. */
+export interface ComposerNoteTabProps {
+  note: string;
+  onNoteChange: (value: string) => void;
+  /** Вставити текст із буфера обміну. */
+  onPaste: () => void;
+  /** Додати вкладення — окрема тема, поки лише заглушка. */
+  onAttach: (kind: AttachmentKind) => void;
+  /** Помилка вставки (буфер недоступний). */
+  error: string | null;
+}

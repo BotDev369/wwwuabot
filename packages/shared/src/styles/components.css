@@ -522,6 +522,187 @@
   grid-column: span 2;
 }
 
+/* ── Composer (швидке створення з «+» у футері) ──────────────────────────
+   Модалка майже на весь екран: від країв лишається тільки `--sp-2`, бо це не
+   форма на три поля, а робоча поверхня з вкладками. Вкладки — горизонтальна
+   смуга, яку на телефоні прокручують пальцем: підписів п'ять, і стискати їх
+   до нечитабельності не можна.
+
+   Розмітку рендерить СПІЛЬНИЙ `ComposerModal` (`@wwwuabot/ui/composer`),
+   тому правила живуть тут, а не в CSS однієї з оболонок (§3, §7). */
+
+.wb-modal-overlay--tight {
+  padding: var(--sp-2);
+}
+
+.wb-modal--full {
+  max-width: 720px;
+  /* майже весь екран: 100vh — фолбек для рушіїв без dvh */
+  height: calc(100vh - 2 * var(--sp-2));
+  height: calc(100dvh - 2 * var(--sp-2));
+  max-height: calc(100dvh - 2 * var(--sp-2));
+}
+
+/* На телефоні композер — майже сам екран: закруглення й рамка тут зайві,
+   вони лише з'їдають місце, якого на 360px і без них мало. */
+@media (max-width: 480px) {
+  .wb-composer {
+    border-radius: var(--radius-md);
+    border-color: transparent;
+  }
+}
+
+/* Шапка впритул до краю екрана, тож додає safe-area — інакше заголовок
+   і «закрити» стоять під вирізом. */
+.wb-composer-head {
+  gap: var(--sp-3);
+  padding-top: calc(var(--sp-3) + var(--safe-top));
+}
+
+.wb-composer-tabs {
+  display: flex;
+  gap: var(--sp-1);
+  padding: var(--sp-2) var(--sp-3) 0;
+  flex-shrink: 0;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+
+.wb-composer-tabs::-webkit-scrollbar {
+  display: none;
+}
+
+.wb-composer-tab {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  flex-shrink: 0;
+  min-height: 44px; /* мінімальний тап-таргет для пальця */
+  padding: 0 var(--sp-3);
+  border: none;
+  background: none;
+  border-radius: var(--radius-full);
+  color: var(--text-secondary);
+  font: inherit;
+  font-size: var(--text-base);
+  font-weight: var(--weight-medium);
+  cursor: pointer;
+  transition:
+    background var(--duration-fast) var(--ease),
+    color var(--duration-fast) var(--ease);
+}
+
+.wb-composer-tab:hover {
+  background: var(--surface-hover);
+  color: var(--text-primary);
+}
+
+.wb-composer-tab--active {
+  background: var(--accent-dim);
+  color: var(--accent);
+}
+
+.wb-composer-tab-label {
+  white-space: nowrap;
+}
+
+.wb-composer-body {
+  display: flex;
+  flex-direction: column;
+  padding: var(--sp-3) var(--sp-3) var(--sp-4);
+}
+
+.wb-composer-pane {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-3);
+  flex: 1 1 auto;
+  min-height: 0;
+}
+
+/* Поле нотатки — основне місце роботи, а не смужка на 80px, як типова
+   `.wb-textarea`: воно розтягується на всю вільну висоту модалки. */
+.wb-composer-input {
+  flex: 1 1 auto;
+  min-height: 30dvh;
+  resize: none;
+  font-size: var(--text-base);
+  line-height: var(--leading-normal);
+}
+
+.wb-composer-tools {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--sp-2);
+}
+
+.wb-composer-error {
+  margin: 0;
+  color: var(--red);
+  font-size: var(--text-sm);
+}
+
+.wb-composer-hint {
+  margin: 0;
+  color: var(--text-muted);
+  font-size: var(--text-xs);
+  line-height: var(--leading-normal);
+}
+
+/* Заглушка вкладки: той самий `.wb-empty`, лише на всю площу й зі списком
+   запланованого — «тут буде ось що», а не порожній екран. */
+.wb-composer-soon {
+  flex: 1 1 auto;
+  padding: var(--sp-8) var(--sp-4);
+}
+
+.wb-composer-soon-title {
+  margin: 0;
+  font-size: var(--text-md);
+  font-weight: var(--weight-semibold);
+  color: var(--text-primary);
+}
+
+.wb-composer-soon-text {
+  margin: 0;
+  max-width: 46ch;
+  font-size: var(--text-sm);
+  line-height: var(--leading-normal);
+}
+
+.wb-composer-plan {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  text-align: left;
+}
+
+.wb-composer-plan-item {
+  display: flex;
+  align-items: baseline;
+  gap: var(--sp-2);
+  font-size: var(--text-sm);
+  color: var(--text-secondary);
+}
+
+.wb-composer-plan-item::before {
+  content: "—";
+  color: var(--text-muted);
+}
+
+/* Кнопки — під пальцем, а не під індикатором дому: модалка впритул до низу. */
+.wb-composer-foot {
+  gap: var(--sp-2);
+  padding-bottom: calc(var(--sp-3) + var(--safe-bottom));
+}
+
+.wb-composer-foot .wb-btn {
+  min-height: 44px;
+}
+
 /* Cards grid */
 .wb-cards-grid {
   display: grid;

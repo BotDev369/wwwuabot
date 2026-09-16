@@ -115,7 +115,16 @@ Defined in `packages/shared/src/styles/tokens.css`, overridden per brand in `app
     YouTube / Instagram / TikTok do it. A filled circle under the icon was tried on 14.09 and
     rejected — it shouts louder than the label it is meant to support. It is `position: fixed`,
     so the content needs room under it (`.wb-tabbar-layout` / `.wb-app-body--tabbar`).
-13. Shared blocks (`packages/ui/src/blocks/*`) are still styled with inline
+13. **The composer (`+` in the footer) is one shared modal, not a per-shell screen.**
+    `ComposerModal` (`@wwwuabot/ui/composer`) opens in both shells; its markup uses the same
+    `.wb-modal*` bricks as `useDialog()` plus `.wb-composer*` (tab strip, note pane, stub pane).
+    Tabs are data (`tabs.ts`): a new tab is a line in the list, not new markup. A tab whose
+    interface does not exist yet renders a statement of what will be there, and every unwired
+    action answers with `useDialog()` ("that is a separate topic") instead of doing nothing
+    silently on a phone. The footer's action slot carries its own `onSelect`
+    (`ShellTab.onSelect` + `withPrimaryAction`): "create" is an action, not a route, so it has
+    no `href` to invent.
+14. Shared blocks (`packages/ui/src/blocks/*`) are still styled with inline
     `style={{ … }}` (192 objects there, 556 in live `src` overall; 97 hardcoded `#hex`),
     and **45 `wb-block-*` classes have no CSS rule at all**, so `data-brand` and
     `data-theme` don't reach them (вимір 13.09.2026). Moving those styles into `.wb-block-*` rules in
@@ -137,7 +146,8 @@ Defined in `packages/shared/src/styles/tokens.css`, overridden per brand in `app
 | `scripts/check-css-classes.mjs` | перевірка «клас у розмітці ↔ правило в CSS» (гейт CI) |
 | `scripts/css-baseline.mjs` | задокументований борг для цієї перевірки (тільки зменшувати) |
 | `packages/ui/src/dialog/` | `DialogProvider` + `useDialog()` |
-| `packages/ui/src/nav/` | `TabBar` — глобальний нижній футер (розмітка спільна, пункти — з оболонки) |
+| `packages/ui/src/nav/` | `TabBar` — глобальний нижній футер (розмітка й активи спільні, пункти — з оболонки) |
+| `packages/ui/src/composer/` | `ComposerModal` — модалка швидкого створення (відкриває «+» футера) |
 | `packages/shared/src/components/icons.tsx` | SVG icon definitions |
 | `packages/shared/src/components/Icon.tsx` | `<Icon />` component |
 | `packages/shared/src/components/StyleToggle.tsx` | `ThemeButton` component |
