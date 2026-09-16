@@ -4,12 +4,15 @@
  * Тут лише те, чим платформа відрізняється від адмінки: її пункти, її роутер
  * і її реакція на пункт-заглушку. Сама смуга — спільний `TabBar`.
  *
- * Центральний «+» відкриває спільний композер: «створити» — це дія, а не
- * розділ, і адреси під нею немає.
+ * Два пункти не ведуть на адресу, а відкривають поверхню: центральний «+» —
+ * композер, «Профіль» — меню профілю (`@wwwuabot/ui/composer` і
+ * `@wwwuabot/ui/menu`). «Створити» — це дія, а сторінки під нею немає, а
+ * профіль — меню розділів, а не екран: і те, і те відкривається поверх
+ * поточного місця, не змушуючи йти з нього.
  *
  * Смуга лишається видимою й робочою навіть з відкритою модалкою (футер — хром,
- * `--z-tabbar`), тому перехід на інший розділ закриває композер: інакше модалка
- * «Створити» висіла б над зовсім іншою сторінкою.
+ * `--z-tabbar`), тому перехід на інший розділ закриває обидві поверхні: інакше
+ * модалка «Створити» висіла б над зовсім іншою сторінкою.
  *
  * @module web-platform-dev/src/layout/PlatformTabBar
  */
@@ -18,28 +21,44 @@ import { useState, type ReactElement } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { ComposerModal } from "@wwwuabot/ui/composer";
 import { useDialog } from "@wwwuabot/ui/dialog";
-import { TabBar, buildTabBarItems, withPrimaryAction } from "@wwwuabot/ui/nav";
+import { TabBar, buildTabBarItems, withAction, withPrimaryAction } from "@wwwuabot/ui/nav";
 import { notesApi } from "../shared/api/notes.api";
-import { PLATFORM_TABS, toShellTabs } from "./platform-tabs";
+import { ProfileMenu } from "./ProfileMenu";
+import { PLATFORM_TABS, PROFILE_TAB_KEY, toShellTabs } from "./platform-tabs";
 
 export function PlatformTabBar(): ReactElement {
   const navigate = useNavigate();
   const { pathname } = useLocation();
   const dialog = useDialog();
   const [composerOpen, setComposerOpen] = useState(false);
+  const [profileOpen, setProfileOpen] = useState(false);
+
+  /** Будь-який перехід закриває обидві поверхні: вони належать футеру, а не екрану. */
+  const go = (href: string) => {
+    setComposerOpen(false);
+    setProfileOpen(false);
+    navigate(href);
+  };
 
   const items = buildTabBarItems({
-    // «+» — перемикач: той самий слот закриває композер, якщо він уже відкритий
-    tabs: withPrimaryAction(toShellTabs(PLATFORM_TABS), () => setComposerOpen((open) => !open)),
+    tabs: withPrimaryAction(
+      // «Профіль» — перемикач, як і «+»: той самий пункт закриває меню.
+      withAction(toShellTabs(PLATFORM_TABS), PROFILE_TAB_KEY, () =>
+        setProfileOpen((open) => !open),
+      ),
+      () => setComposerOpen((open) => !open),
+    ),
     pathname,
-    navigate: (href) => {
-      setComposerOpen(false);
-      navigate(href);
-    },
+    navigate: go,
     onPlaceholder: (tab) => {
       void dialog.alert(`Розділ «${tab.label}» ще в розробці.`, { title: "Скоро" });
     },
-  });
+  }).map((item) =>
+    // Активний стан профілю рахуємо від меню, а не від адреси: у пункту її
+    // немає (він не веде нікуди), але «я тут» показати треба — інакше смуга
+    // мовчить про те, що поверх відкрита саме з неї.
+    item.key === PROFILE_TAB_KEY ? { ...item, active: profileOpen } : item,
+  );
 
   return (
     <>
@@ -52,6 +71,7 @@ export function PlatformTabBar(): ReactElement {
           }}
         />
       )}
+      {profileOpen && <ProfileMenu onClose={() => setProfileOpen(false)} />}
     </>
   );
 }

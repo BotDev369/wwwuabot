@@ -85,14 +85,14 @@ export function ComposerModal({ onClose, onSaveNote }: ComposerModalProps): Reac
   return (
     <div className="wb-modal-overlay wb-modal-overlay--tight" onClick={onClose}>
       <div
-        className="wb-modal wb-modal--full wb-composer"
+        className="wb-modal wb-modal--full wb-sheet wb-composer"
         role="dialog"
         aria-modal="true"
         aria-label="Створити"
         onClick={(event) => event.stopPropagation()}
         onKeyDown={handleKeyDown}
       >
-        <div className="wb-modal-header wb-composer-head">
+        <div className="wb-modal-header wb-sheet-head">
           <h2 className="wb-modal-title">Створити</h2>
           <button type="button" className="wb-close-btn" onClick={onClose} aria-label="Закрити">
             <Icon name="close" size={18} />

@@ -58,3 +58,24 @@ export function buildTabBarItems({
 export function withPrimaryAction(tabs: readonly ShellTab[], onSelect: () => void): ShellTab[] {
   return tabs.map((tab) => (tab.primary ? { ...tab, onSelect } : tab));
 }
+
+/**
+ * Пункт зі своєю дією замість навігації — за його ключем.
+ *
+ * Знадобилось профілю: дотик відкриває меню (`@wwwuabot/ui/menu`), а не веде
+ * на адресу. Винести це в спільне — те саме рішення, що й для центрального
+ * «+»: оболонка не має тримати власну копію правила «котрий пункт діє».
+ *
+ * Власна дія має **пріоритет** над `href`, тож пункт із нею перестає бути
+ * посиланням: інакше довелося б гасити браузерну навігацію на кожен дотик.
+ */
+export function withAction(
+  tabs: readonly ShellTab[],
+  key: string,
+  onSelect: () => void,
+): ShellTab[] {
+  // `href: undefined` навмисно: пункт зі своєю дією більше не адреса, тож і
+  // ссилкою в розмітці не рендериться (інакше браузерна навігація йшла б
+  // паралельно з нашою).
+  return tabs.map((tab) => (tab.key === key ? { ...tab, href: undefined, onSelect } : tab));
+}

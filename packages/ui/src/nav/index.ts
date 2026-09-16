@@ -9,6 +9,6 @@
  */
 
 export { TabBar } from "./TabBar";
-export { buildTabBarItems, isTabActive, withPrimaryAction } from "./build-items";
+export { buildTabBarItems, isTabActive, withAction, withPrimaryAction } from "./build-items";
 export type { BuildTabBarItemsOptions } from "./build-items";
 export type { ShellTab, TabBarItem } from "./types";

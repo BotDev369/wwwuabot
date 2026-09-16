@@ -29,6 +29,18 @@ export interface PlatformTab extends Omit<ShellTab, "href"> {
   to?: string;
 }
 
+/**
+ * Адреса профілю — єдиний екран платформи, який не є рядком контенту.
+ *
+ * Константа, а не рядок на місці: на цей шлях ведуть двоє — пункт футера
+ * (коли меню профілю не було) і картка «хто ти» в самому меню. Два літерали
+ * розійшлися б тихо, і один із них вів би на 404.
+ */
+export const PROFILE_PATH = "/profile";
+
+/** Ключ пункту профілю: футер вішає на нього меню замість навігації. */
+export const PROFILE_TAB_KEY = "profile";
+
 export const PLATFORM_TABS: readonly PlatformTab[] = [
   { key: "home", label: "Головна", icon: "home", iconActive: "home-solid", slug: HOME_SLUG },
   {
@@ -46,7 +58,13 @@ export const PLATFORM_TABS: readonly PlatformTab[] = [
     iconActive: "shop-solid",
     slug: "galyashop",
   },
-  { key: "profile", label: "Профіль", icon: "user", iconActive: "user-solid", to: "/profile" },
+  {
+    key: "profile",
+    label: "Профіль",
+    icon: "user",
+    iconActive: "user-solid",
+    to: PROFILE_PATH,
+  },
 ];
 
 /** Той самий склад, але з готовими адресами — як очікує спільний `TabBar`. */

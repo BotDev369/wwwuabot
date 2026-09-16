@@ -571,10 +571,18 @@ html:has(.wb-tabbar) .wb-modal {
   max-height: 100%;
 }
 
-/* На телефоні композер — майже сам екран: закруглення тут зайве, воно лише
-   з'їдає місце, якого на 360px і без нього мало. */
+/* Поверхня повноекранної модалки — СПІЛЬНА для композера й меню (`MenuModal`):
+   обидві займають майже весь екран, і межу їм малює тінь, а не рамка. Саме
+   тому це окремий кирпичик: два майже однакові правила розійшлися б.
+
+   На телефоні закруглення зайве — воно лише з'їдає місце, якого на 360px і
+   без нього мало. */
+.wb-sheet {
+  border-color: transparent;
+}
+
 @media (max-width: 480px) {
-  .wb-composer {
+  .wb-sheet {
     border-radius: var(--radius-md);
   }
 }
@@ -595,13 +603,12 @@ html:has(.wb-tabbar) .wb-modal {
      найдовше ім'я вкладки («Сторінка») влізло в ОДИН рядок: інакше воно
      рветься посередині слова («Сторінк / а»). */
   --composer-col: 68px;
-  border-color: transparent;
 }
 
-/* Шапка впритул до краю екрана, тож додає safe-area — інакше заголовок
-   і «закрити» стоять під вирізом. Ліній у композері немає зовсім: шапку,
-   стовпчик і футер відділяє сам простір, а не рамка. */
-.wb-composer-head {
+/* Шапка повноекранної модалки стоїть упрітул до краю екрана, тож додає
+   safe-area — інакше заголовок і «закрити» опиняються під вирізом. Ліній
+   тут немає: шапку й тіло відділяє сам простір, а не рамка (правило 15). */
+.wb-sheet-head {
   gap: var(--sp-3);
   padding-top: calc(var(--sp-3) + var(--safe-top));
   border-bottom: none;
@@ -969,6 +976,167 @@ html:has(.wb-tabbar) .wb-modal {
   justify-content: flex-end;
   gap: var(--sp-2);
   margin-top: auto;
+}
+
+/* ── Меню (профіль): поверхня зі списком пунктів ───────────────────────────
+   Та сама повноекранна поверхня, що й композер (`.wb-sheet`), лише замість
+   вкладок — вертикальний список. Розмітку рендерить СПІЛЬНИЙ `MenuModal`
+   (`@wwwuabot/ui/menu`), тому правила живуть тут, а не в CSS однієї з
+   оболонок (§3, §7).
+
+   Ліній немає й тут: пункт видно тлом (`--field-bg` — той самий кирпичик, що
+   у видимого поля) і підсвіченням на дотик (правило 15). */
+.wb-menu-body {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-2);
+  padding: var(--sp-1) var(--sp-3) var(--sp-3);
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+.wb-menu-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-1);
+}
+
+/* Пункт — рядок НА ВСЮ ШИРИНУ: палець має діставати будь-де, а не лише по
+   іконці. Висота 52px — більша за мінімум для пальця (44), бо рядок несе
+   ще й пояснення в пунктів, яких ще немає. */
+.wb-menu-item {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-3);
+  width: 100%;
+  min-height: 52px;
+  padding: var(--sp-2) var(--sp-3);
+  border: none;
+  border-radius: var(--radius-md);
+  background: var(--field-bg);
+  color: var(--text-primary);
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+  transition:
+    background var(--duration-fast) var(--ease),
+    color var(--duration-fast) var(--ease);
+}
+
+.wb-menu-item:hover {
+  background: var(--surface-active);
+}
+
+.wb-menu-item-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  color: var(--text-secondary);
+}
+
+.wb-menu-item:hover .wb-menu-item-icon {
+  color: var(--text-primary);
+}
+
+.wb-menu-item-text {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.wb-menu-item-label {
+  font-size: var(--text-base);
+  font-weight: var(--weight-medium);
+  overflow-wrap: anywhere;
+}
+
+/* Пояснення під підписом — тільки в пункту, якого ще немає: що саме там
+   буде. У готового пункту його роботу видно за назвою. */
+.wb-menu-item-hint {
+  font-size: var(--text-xs);
+  color: var(--text-muted);
+}
+
+/* Пункт без екрана: підпис приглушений — на відміну від готового розділу,
+   він не веде на екран. Дотик при цьому чесно каже, що той у роботі. */
+.wb-menu-item--soon .wb-menu-item-label {
+  color: var(--text-secondary);
+}
+
+/* Вибраний пункт (панель теми) — галочка: це вибір, а не перехід. */
+.wb-menu-item-check {
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
+  color: var(--accent);
+}
+
+/* Картка «хто ти» над списком — та сама поверхня, що у пункту, лише веде не
+   до розділу, а до профілю: ім'я, хендл і аватар видно ще до вибору пункту. */
+.wb-menu-ident {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-3);
+  width: 100%;
+  min-height: 64px;
+  padding: var(--sp-2) var(--sp-3);
+  border: none;
+  border-radius: var(--radius-md);
+  background: var(--field-bg);
+  color: var(--text-primary);
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+  transition: background var(--duration-fast) var(--ease);
+}
+
+.wb-menu-ident:hover {
+  background: var(--surface-active);
+}
+
+.wb-menu-ident-avatar {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  flex-shrink: 0;
+  overflow: hidden;
+  border-radius: var(--radius-full);
+  background: var(--accent);
+  color: var(--text-inverse, #fff);
+  font-weight: var(--weight-semibold);
+}
+
+.wb-menu-ident-avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.wb-menu-ident-initial {
+  font-size: var(--text-md);
+}
+
+.wb-menu-ident-text {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.wb-menu-ident-name {
+  font-size: var(--text-base);
+  font-weight: var(--weight-semibold);
+  overflow-wrap: anywhere;
+}
+
+.wb-menu-ident-handle {
+  font-size: var(--text-xs);
+  color: var(--text-muted);
 }
 
 /* Cards grid */

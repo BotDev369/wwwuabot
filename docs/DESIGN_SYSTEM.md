@@ -191,6 +191,22 @@ Defined in `packages/shared/src/styles/tokens.css`, overridden per brand in `app
     таблиць, `border-right` меню чи `border` карткам: бренд — це характер
     (радіус, мірки, скло), а не повернення ліній, яких у продукті немає.
 
+17. **A full-screen sheet is one brick, and the profile menu is its second user.** The
+    surface is `.wb-sheet` / `.wb-sheet-head` (shadow instead of a border, safe-area padding,
+    the phone radius) — it started as `.wb-composer` and was named after its first caller,
+    which would have made the menu a second, near-identical copy of it. The composer still
+    owns its layout tokens (`--composer-*`). The menu itself (`.wb-menu-body`,
+    `.wb-menu-list`, `.wb-menu-item` (+ `--soon`), `.wb-menu-item-icon` / `-text` / `-label` /
+    `-hint` / `-check`, `.wb-menu-ident*`) is rendered by the shared `MenuModal`
+    (`@wwwuabot/ui/menu`), so a shell only supplies the list of items. A row is a
+    **full-width tappable surface** (`--field-bg`, no border): a tap must land anywhere on the
+    row, not just on the icon. A row whose screen does not exist yet says so **before the tap**
+    (`status: "soon"` + a hint line under the label) and answers with `useDialog()` — an item
+    that does nothing silently is the same defect as an unlabelled icon. `selected` draws a
+    check, because the theme panel is a choice, not a transition. Both the profile and the
+    theme panel are views of **one** modal (a "back" button appears only where there is
+    something to return to), never a modal above a modal.
+
 16. **Button metrics are tokens, not a brand's private `padding`.** How big a button is, is decided by
     `--btn-pad-y` / `--btn-pad-x`, and only the base `.wb-btn` rule writes `padding` — from those tokens.
     Apple and Android own the character (pill vs 20px radius, font, weight) and set the tokens; they no
@@ -217,6 +233,7 @@ Defined in `packages/shared/src/styles/tokens.css`, overridden per brand in `app
 | `packages/ui/src/dialog/` | `DialogProvider` + `useDialog()` |
 | `packages/ui/src/nav/` | `TabBar` — глобальний нижній футер (розмітка й активи спільні, пункти — з оболонки) |
 | `packages/ui/src/composer/` | `ComposerModal` — модалка швидкого створення (відкриває «+» футера) |
+| `packages/ui/src/menu/` | `MenuModal` + `buildMenuItems` — повноекранна поверхня зі списком пунктів (відкриває «Профіль» футера; склад — з оболонки) |
 | `packages/shared/src/components/icons.tsx` | SVG icon definitions |
 | `packages/shared/src/components/Icon.tsx` | `<Icon />` component |
 | `packages/shared/src/components/StyleToggle.tsx` | `ThemeButton` component |

@@ -12,13 +12,16 @@
  * належить жодній сторінці, тож він стоїть на рівні маршруту, а не всередині
  * `ScenarioPage`.
  *
- * `/profile` стоїть **перед** catch-all навмисно: це єдиний екран, який не є
- * рядком контенту (`slug`) — профіль складається з даних користувача, а не зі
- * `page_data`. Тому він і має власний маршрут, а не адресу-заглушку в базі.
+ * `/profile` і `/notes` стоять **перед** catch-all навмисно: це єдині екрани,
+ * які не є рядком контенту (`slug`) — профіль складається з даних
+ * користувача, а список нотаток — із таблиці `notes`, а не зі `page_data`.
+ * Тому в них власні маршрути, а не адреси-заглушки в базі.
  */
 
 import { createBrowserRouter } from "react-router-dom";
 import { PlatformShell } from "@/layout/PlatformShell";
+import { NOTES_ROUTE } from "@/layout/profile-menu";
+import { NotesPage } from "@/pages/NotesPage";
 import { ProfilePage } from "@/pages/ProfilePage";
 import { ScenarioPage } from "@/pages/ScenarioPage";
 
@@ -28,6 +31,8 @@ export const router = createBrowserRouter([
     children: [
       // Профіль — не контент, а дані користувача
       { path: "profile", element: <ProfilePage /> },
+      // Нотатки — власні дані людини (таблиця `notes`), не рядок `scenarios`
+      { path: NOTES_ROUTE, element: <NotesPage /> },
       // Catch-all: сторінка за її адресою
       { path: "*", element: <ScenarioPage /> },
     ],

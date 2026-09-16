@@ -12,6 +12,7 @@
     "./ZoneRenderer": "./src/ZoneRenderer.tsx",
     "./composer": "./src/composer/index.ts",
     "./dialog": "./src/dialog/index.ts",
+    "./menu": "./src/menu/index.ts",
     "./nav": "./src/nav/index.ts",
     "./store": "./src/store.ts",
     "./registry": "./src/registry.tsx",
