@@ -32,21 +32,14 @@ export function ComposerNoteTab({
 }: ComposerNoteTabProps): ReactElement {
   return (
     <div className="wb-composer-pane">
-      <textarea
-        className="wb-textarea wb-composer-input"
-        value={note}
-        onChange={(event) => onNoteChange(event.target.value)}
-        placeholder="Почніть писати…"
-        aria-label="Текст нотатки"
-      />
-
-      {/* Підписам тут тісно: поле вводу — головне, тож кнопки лишаються самими
-          іконками, а ім'я дії їде в `aria-label` і `title`. */}
+      {/* Дії — НАД полем: спершу те, чим нотатку наповнюють, далі саме поле.
+          Кнопки — ті самі клітинки, що й вкладки зліва: без рамки й тла, самі
+          іконки, а ім'я дії їде в `aria-label` і `title`. */}
       <div className="wb-composer-tools">
         {/* Вставка — єдина дія, яка вже працює: решта вкладень окремою темою */}
         <button
           type="button"
-          className="wb-chip wb-composer-tool"
+          className="wb-composer-tool"
           aria-label="Вставити"
           title="Вставити"
           onClick={onPaste}
@@ -57,7 +50,7 @@ export function ComposerNoteTab({
           <button
             key={item.kind}
             type="button"
-            className="wb-chip wb-composer-tool"
+            className="wb-composer-tool"
             aria-label={item.label}
             title={item.label}
             onClick={() => onAttach(item.kind)}
@@ -66,6 +59,14 @@ export function ComposerNoteTab({
           </button>
         ))}
       </div>
+
+      <textarea
+        className="wb-textarea wb-composer-input"
+        value={note}
+        onChange={(event) => onNoteChange(event.target.value)}
+        placeholder="Почніть писати…"
+        aria-label="Текст нотатки"
+      />
 
       {error && (
         <p className="wb-composer-error" role="alert">

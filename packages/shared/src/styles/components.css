@@ -610,15 +610,16 @@ html:has(.wb-tabbar) .wb-modal {
   display: none;
 }
 
-.wb-composer-tab {
+/* Вкладка й кнопка вкладення — ОДНА клітинка: без рамки й тла, із закругленням,
+   сірий знак за замовчуванням, підсвічення лише на дотик. Однакова деталь у
+   двох місцях — одне правило (§3), інакше «зробити як вкладки» довелося б
+   повторювати й воно б розійшлося. */
+.wb-composer-tab,
+.wb-composer-tool {
   display: flex;
-  flex-direction: column;
   align-items: center;
   justify-content: center;
   gap: 4px;
-  width: 100%;
-  min-height: 52px;
-  padding: var(--sp-1) 2px;
   border: none;
   background: none;
   border-radius: var(--radius-md);
@@ -631,9 +632,17 @@ html:has(.wb-tabbar) .wb-modal {
     color var(--duration-fast) var(--ease);
 }
 
-.wb-composer-tab:hover {
+.wb-composer-tab:hover,
+.wb-composer-tool:hover {
   background: var(--surface-hover);
   color: var(--text-primary);
+}
+
+.wb-composer-tab {
+  flex-direction: column;
+  width: 100%;
+  min-height: 52px;
+  padding: var(--sp-1) 2px;
 }
 
 .wb-composer-tab--active {
@@ -686,30 +695,27 @@ html:has(.wb-tabbar) .wb-modal {
   line-height: var(--leading-normal);
 }
 
+/* Смуга дій над полем: клітинки того самого розміру, що й вкладки (52px),
+   тому ряд читається як продовження стовпчика, а не як окремі чипи. */
 .wb-composer-tools {
   display: flex;
   flex-wrap: wrap;
-  gap: var(--sp-2);
+  flex-shrink: 0;
+  gap: var(--sp-1);
 }
 
-/* Кнопки вкладень — самі іконки: квадрат під палець (44px), без підпису.
-   Ім'я дії живе в `aria-label`/`title`, тож для скрінрідера кнопка підписана. */
+/* Кнопки вкладень — самі іконки: квадрат під палець, без підпису. Ім'я дії
+   живе в `aria-label`/`title`, тож для скрінрідера кнопка підписана. */
 .wb-composer-tool {
-  justify-content: center;
-  width: 44px;
-  height: 44px;
-  min-width: 44px;
+  width: 52px;
+  height: 52px;
+  min-width: 52px;
   padding: 0;
-  color: var(--text-secondary);
 }
 
 .wb-composer-tool svg {
   width: 18px;
   height: 18px;
-}
-
-.wb-composer-tool:hover {
-  color: var(--text-primary);
 }
 
 .wb-composer-error {

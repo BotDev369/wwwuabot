@@ -64,6 +64,12 @@ describe("ComposerModal", () => {
     }
   });
 
+  it("дії стоять НАД полем, а не під ним", () => {
+    // Порядок у розмітці — те, що легко пересунути випадково: спершу те, чим
+    // нотатку наповнюють, далі саме поле.
+    expect(html.indexOf("wb-composer-tools")).toBeLessThan(html.indexOf("wb-composer-input"));
+  });
+
   it("вкладки без інтерфейсу описані як заглушка, а не як порожній екран", () => {
     const page = findComposerTab("page");
 
