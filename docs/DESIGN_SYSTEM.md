@@ -127,9 +127,12 @@ Defined in `packages/shared/src/styles/tokens.css`, overridden per brand in `app
     icon-only attachment buttons). Labels vanish on narrow screens, so every tab and every icon-only
     button carries its name in `aria-label`.
     A tab and an attachment button are the **same cell** — one rule styles both (`.wb-composer-tab,
-    .wb-composer-tool`): no border, no fill, radius, hover highlight, 52px cell. The attachment row
-    sits **above** the note field as the continuation of the tab column, so it is a row of cells,
-    not of chips.
+    .wb-composer-tool`): no border, no fill, radius, hover highlight. The cell size, the gap and the
+    inset from the edge are **local variables on `.wb-composer`** (`--composer-cell` 46px,
+    `--composer-gap`, `--composer-pad`), and the tab column and the attachment row both measure
+    themselves with them — that is why the attachment row lands exactly on the first tab's level
+    instead of drifting a few pixels. The attachment row sits **above** the note field as the
+    continuation of the tab column, so it is a row of cells, not of chips.
     Tabs are data (`tabs.ts`): a new tab is a line in the list, not new markup. A tab whose
     interface does not exist yet renders a statement of what will be there, and every unwired
     action answers with `useDialog()` ("that is a separate topic") instead of doing nothing

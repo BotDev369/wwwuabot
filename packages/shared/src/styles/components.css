@@ -577,6 +577,16 @@ html:has(.wb-tabbar) .wb-modal {
   }
 }
 
+/* Мірки композера — в одному місці. І стовпчик вкладок, і смуга вкладень
+   міряються ними, тому смуги не можуть розійтися по висоті: ряд вкладень
+   стоїть рівно з першою вкладкою, бо в обох та сама клітинка й той самий
+   відступ від краю. Клітинка 46px — більша за мінімум для пальця (44). */
+.wb-composer {
+  --composer-pad: 6px;
+  --composer-gap: 2px;
+  --composer-cell: 46px;
+}
+
 /* Шапка впритул до краю екрана, тож додає safe-area — інакше заголовок
    і «закрити» стоять під вирізом. */
 .wb-composer-head {
@@ -597,10 +607,10 @@ html:has(.wb-tabbar) .wb-modal {
 .wb-composer-tabs {
   display: flex;
   flex-direction: column;
-  gap: var(--sp-1);
+  gap: var(--composer-gap);
   flex-shrink: 0;
-  width: 72px;
-  padding: var(--sp-2) var(--sp-1) var(--sp-3);
+  width: 62px;
+  padding: var(--composer-pad) 4px;
   overflow-y: auto;
   border-right: 1px solid var(--border-subtle);
   scrollbar-width: none;
@@ -641,8 +651,8 @@ html:has(.wb-tabbar) .wb-modal {
 .wb-composer-tab {
   flex-direction: column;
   width: 100%;
-  min-height: 52px;
-  padding: var(--sp-1) 2px;
+  min-height: var(--composer-cell);
+  padding: 2px;
 }
 
 .wb-composer-tab--active {
@@ -661,7 +671,8 @@ html:has(.wb-tabbar) .wb-modal {
    лишається сам знак — ім'я вкладки при цьому не губиться, воно в `aria-label`. */
 @media (max-width: 400px) {
   .wb-composer-tabs {
-    width: 56px;
+    width: 50px;
+    padding: var(--composer-pad) 2px;
   }
 
   .wb-composer-tab-label {
@@ -674,13 +685,15 @@ html:has(.wb-tabbar) .wb-modal {
   flex-direction: column;
   flex: 1 1 auto;
   min-width: 0;
-  padding: var(--sp-3) var(--sp-3) var(--sp-4);
+  /* Той самий верхній відступ, що у стовпчика вкладок: саме тому перша
+     вкладка і смуга вкладень стоять на одному рівні. */
+  padding: var(--composer-pad) var(--composer-pad) var(--sp-3);
 }
 
 .wb-composer-pane {
   display: flex;
   flex-direction: column;
-  gap: var(--sp-3);
+  gap: var(--sp-2);
   flex: 1 1 auto;
   min-height: 0;
 }
@@ -695,21 +708,21 @@ html:has(.wb-tabbar) .wb-modal {
   line-height: var(--leading-normal);
 }
 
-/* Смуга дій над полем: клітинки того самого розміру, що й вкладки (52px),
+/* Смуга дій над полем: ТА САМА клітинка, що у вкладки (`--composer-cell`),
    тому ряд читається як продовження стовпчика, а не як окремі чипи. */
 .wb-composer-tools {
   display: flex;
   flex-wrap: wrap;
   flex-shrink: 0;
-  gap: var(--sp-1);
+  gap: var(--composer-gap);
 }
 
 /* Кнопки вкладень — самі іконки: квадрат під палець, без підпису. Ім'я дії
    живе в `aria-label`/`title`, тож для скрінрідера кнопка підписана. */
 .wb-composer-tool {
-  width: 52px;
-  height: 52px;
-  min-width: 52px;
+  width: var(--composer-cell);
+  height: var(--composer-cell);
+  min-width: var(--composer-cell);
   padding: 0;
 }
 
