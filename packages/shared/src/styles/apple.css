@@ -525,8 +525,13 @@ html[data-brand="apple"] .wb-auth-input {
   font-size: 16px !important;
 }
 
-html[data-brand="apple"] .login-input:focus {
-  box-shadow: 0 0 0 4px var(--accent-soft) !important;
+/* Було `.login-input` — класу, якого в розмітці немає ніде (тут жила
+   «мертва» ознака фокуса): поле пароля насправді має класи
+   `.wb-input .wb-auth-input`. */
+html[data-brand="apple"] .wb-auth-input:focus {
+  box-shadow:
+    var(--field-ring),
+    0 0 0 4px var(--accent-soft) !important;
 }
 
 /* ── Block cards ───────────────────────────────────────────────────────── */

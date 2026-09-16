@@ -159,7 +159,8 @@
 .wb-textarea {
   width: 100%;
   padding: var(--sp-2) var(--sp-3);
-  font-size: var(--text-sm);
+  /* Шрифт тут удвічі не оголошуємо: його ставить нижня межа 16px — одне
+     значення на всі поля, а не два, які потім розходяться. */
   color: var(--text-primary);
   border-radius: var(--radius);
   outline: none;
@@ -586,6 +587,11 @@ html:has(.wb-tabbar) .wb-modal {
   --composer-pad: 6px;
   --composer-gap: 2px;
   --composer-cell: 46px;
+  /* Ширина стовпчика вкладок — теж мірка, а не магія на місці. Вона така,
+     щоб після бокових відступів (8px) і внутрішнього відступу клітинки
+     найдовше ім'я вкладки («Сторінка») влізло в ОДИН рядок: інакше воно
+     рветься посередині слова («Сторінк / а»). */
+  --composer-col: 68px;
   border-color: transparent;
 }
 
@@ -614,9 +620,10 @@ html:has(.wb-tabbar) .wb-modal {
   gap: var(--composer-gap);
   flex-shrink: 0;
   /* Ширина така, щоб після бокових відступів (8px) клітинка лишалась 46px —
-     тобто палець дістає і вкладку, і її підсвічення. Заодно іконка відходить
-     від краю модалки, а між стовпчиком і полем з'являється просвіт. */
-  width: 62px;
+     тобто палець дістає і вкладку, і її підсвічення — і щоб підпис вкладки
+     влазив одним рядком (`--composer-col`). Заодно іконка відходить від краю
+     модалки, а між стовпчиком і полем з'являється просвіт. */
+  width: var(--composer-col);
   padding: var(--composer-pad) var(--sp-2);
   overflow-y: auto;
   scrollbar-width: none;
@@ -667,10 +674,17 @@ html:has(.wb-tabbar) .wb-modal {
 }
 
 .wb-composer-tab-label {
+  max-width: 100%;
   font-size: 10px;
   line-height: 1.15;
   text-align: center;
-  overflow-wrap: anywhere;
+  /* Підпис — одним рядком і без розриву посередині слова: «Сторінк / а» —
+     це не перенос, а поламана розкладка. Якщо ім'я вкладки колись стане
+     довшим за стовпчик, воно обріжеться трикрапкою (`aria-label` при цьому
+     зберігає повне ім'я), а не полізе на поле. */
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 /* Вузький екран: підпис не влазить у стовпчик (і з'їдає ширину поля), тому
@@ -732,7 +746,8 @@ html:has(.wb-tabbar) .wb-modal {
   border-radius: var(--radius-md);
   color: var(--text-primary);
   font: inherit;
-  font-size: var(--text-base);
+  /* Не менше 16px — інакше iOS сам збільшує сторінку на фокусі (див. «поле вводу»). */
+  font-size: max(16px, 1em);
   line-height: var(--leading-normal);
   resize: vertical;
   overflow-y: auto;
@@ -803,12 +818,16 @@ html:has(.wb-tabbar) .wb-modal {
    `max(16px, 1em)` — це «не менше 16px, але не дрібніше за тему»: `1em` у
    `font-size` — розмір батька, тож бренд із більшим шрифтом (Apple — 17px)
    зберігає свій розмір. Бренд може задати й своє значення — але не менше 16px:
-   саме тому в `android.css` ті самі поля теж 16px, а не 14px. */
+   саме тому в `android.css` ті самі поля теж 16px, а не 14px.
+
+   Межа стоїть саме ТУТ, а не одним списком на всі поля: власні поля композера
+   задають свій `font-size` у своїх правилах — і коли ті правила стояли нижче
+   за цю межу, `13px` поля хештегів перебивав її мовчки, а iOS продовжував
+   збільшувати сторінку. Тепер межа — у кожного контрола в його власному
+   правилі, де її не може перекрити ніщо наступне. */
 .wb-input,
 .wb-select,
-.wb-textarea,
-.wb-composer-input,
-.wb-composer-tag-input {
+.wb-textarea {
   font-size: max(16px, 1em);
 }
 
@@ -852,7 +871,9 @@ html:has(.wb-tabbar) .wb-modal {
   background: none;
   color: var(--text-primary);
   font: inherit;
-  font-size: var(--text-sm);
+  /* Було `--text-sm` (13px) — і саме це поле змушувало iPhone збільшувати
+     сторінку: воно єдине лишалось дрібним після межи 16px. */
+  font-size: max(16px, 1em);
   line-height: var(--leading-normal);
 }
 

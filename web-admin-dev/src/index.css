@@ -534,7 +534,11 @@ body {
   border: 0;
   border-radius: var(--radius);
   padding: 7px 12px;
-  font-size: 13px;
+  /* Не менше 16px: менший шрифт змушує iOS сам збільшувати сторінку на фокусі
+     (див. кирпичик «поле вводу» в `components.css`). Бренди ставлять свої
+     16px `!important`, але базове правило мусить тримати ту саму межу —
+     інакше поле лишається єдиним винятком у продукті. */
+  font-size: max(16px, 1em);
   color: var(--text-primary);
   outline: none;
   width: 220px;

@@ -517,9 +517,14 @@ html[data-brand="android"] .wb-auth-input {
   font-size: 16px !important;
 }
 
+/* Фокус поля пароля — те саме кільце, що й у решти полів (M3 нижче на 2px):
+   раніше тут стояло `border-width: 2px` + `box-shadow: none`, тобто бренд
+   повертав рамку й гасив кільце — а без рамки (правило 15) фокус не було
+   видно взагалі. */
 html[data-brand="android"] .wb-auth-input:focus {
-  border-width: 2px !important;
-  box-shadow: none !important;
+  box-shadow:
+    var(--field-ring),
+    0 0 0 2px var(--accent-soft) !important;
 }
 
 /* ── Block cards ───────────────────────────────────────────────────────── */

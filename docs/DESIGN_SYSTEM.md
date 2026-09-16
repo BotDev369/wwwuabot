@@ -132,9 +132,12 @@ Defined in `packages/shared/src/styles/tokens.css`, overridden per brand in `app
     inset from the edge are **local variables on `.wb-composer`** (`--composer-cell` 46px,
     `--composer-gap`, `--composer-pad`), and the tab column and the attachment row both measure
     themselves with them — that is why the attachment row lands exactly on the first tab's level
-    instead of drifting a few pixels. The tab column keeps its 62px at **every** width (8px side
-    padding, so the cell inside stays 46px and the phone does not lose its tap target); the body's
-    horizontal inset is `--sp-3`, which is what keeps the field off the column and off the edge. The attachment row sits **above** the note field as the
+    instead of drifting a few pixels. The tab column keeps its `--composer-col` (68px) at **every** width (8px side
+    padding, so the cell inside stays ≥ 46px and the phone does not lose its tap target); the body's
+    horizontal inset is `--sp-3`, which is what keeps the field off the column and off the edge. The
+    width is a measure, not a taste: it is what lets the longest tab name ("Сторінка") sit on **one**
+    line — a label that wraps mid-word ("Сторінк / а") is a layout defect, not a hyphenation, so the
+    label is `nowrap` + ellipsis and never rides onto the field. The attachment row sits **above** the note field as the
     continuation of the tab column, so it is a row of cells, not of chips.
     The composer carries **no separator lines**: no rule under the title, none above the footer,
     none beside the tab column, none around a field — space does the separating. There is no
@@ -148,7 +151,12 @@ Defined in `packages/shared/src/styles/tokens.css`, overridden per brand in `app
     a line, and the brand themes no longer force a border onto those classes with `!important`
     (Apple and Android only add radius and metrics now, so they cannot make one shell's fields look
     different from the other's). Each field also has a **label above it** (`.wb-label`), which is
-    what says where things are in a modal without borders. The note field is three rows tall, scrolls beyond that,
+    what says where things are in a modal without borders. Every field pins a **font floor of 16px**
+    (`max(16px, 1em)`) **in its own rule**, not in a shared list: iOS WebKit enlarges the whole page
+    when focus lands in a field with a smaller font (Android never does — hence "it only breaks on
+    iPhone"), and a later rule of one field quietly overriding the shared floor is exactly how that
+    bug came back twice. `packages/shared/src/styles/fields.test.ts` reads the CSS of the whole
+    product and fails on any field below that floor. The note field is three rows tall, scrolls beyond that,
     and grows two ways: `resize: vertical` on desktop and with the text (`useAutoGrowField`, capped,
     and it never shrinks what a hand has dragged) on touch, where no WebView renders the handle.
     Hashtags are chips plus an inline input in the same row (`.wb-composer-tag*`): a tag ends on a
