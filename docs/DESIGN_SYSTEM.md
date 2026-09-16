@@ -133,6 +133,12 @@ Defined in `packages/shared/src/styles/tokens.css`, overridden per brand in `app
     themselves with them — that is why the attachment row lands exactly on the first tab's level
     instead of drifting a few pixels. The attachment row sits **above** the note field as the
     continuation of the tab column, so it is a row of cells, not of chips.
+    The composer carries **no separator lines**: no rule under the title, none above the footer,
+    none beside the tab column, none around the note field — space does the separating. Its field is
+    half the old size (15dvh) and stretches two ways: `resize: vertical` on desktop, and the field
+    grows with the text (`useAutoGrowField`) because no mobile WebView renders the resize handle.
+    There is no instructional paragraph under the field either: the button already says what it
+    does, and such a paragraph only eats room.
     Tabs are data (`tabs.ts`): a new tab is a line in the list, not new markup. A tab whose
     interface does not exist yet renders a statement of what will be there, and every unwired
     action answers with `useDialog()` ("that is a separate topic") instead of doing nothing

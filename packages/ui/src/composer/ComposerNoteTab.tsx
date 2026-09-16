@@ -5,12 +5,16 @@
  * відео й файлів — окрема тема: тут лише кнопки, які чесно кажуть, що вона
  * ще не зроблена (заглушку показує композер через `useDialog`).
  *
+ * Пояснювального тексту під полем немає навмисно: усе, що потрібно знати про
+ * вкладення, сказано самою кнопкою, а абзац-інструкція лише з'їдав місце.
+ *
  * @module @wwwuabot/ui/composer
  */
 
 import type { ReactElement } from "react";
 import { Icon } from "@wwwuabot/shared";
 import type { AttachmentKind, ComposerNoteTabProps } from "./types";
+import { useAutoGrowField } from "./useAutoGrowField";
 
 /** Кнопки-вкладення: іконка, підпис і вид, який вони обіцяють. */
 const ATTACHMENTS: readonly {
@@ -30,6 +34,8 @@ export function ComposerNoteTab({
   onAttach,
   error,
 }: ComposerNoteTabProps): ReactElement {
+  const inputRef = useAutoGrowField(note);
+
   return (
     <div className="wb-composer-pane">
       {/* Дії — НАД полем: спершу те, чим нотатку наповнюють, далі саме поле.
@@ -61,6 +67,7 @@ export function ComposerNoteTab({
       </div>
 
       <textarea
+        ref={inputRef}
         className="wb-textarea wb-composer-input"
         value={note}
         onChange={(event) => onNoteChange(event.target.value)}
@@ -73,11 +80,6 @@ export function ComposerNoteTab({
           {error}
         </p>
       )}
-
-      <p className="wb-composer-hint">
-        До нотатки можна буде додати фото, відео й будь-що інше — це окрема тема, поки лише поле для
-        тексту.
-      </p>
     </div>
   );
 }

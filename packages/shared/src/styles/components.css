@@ -568,30 +568,35 @@ html:has(.wb-tabbar) .wb-modal {
   max-height: calc(100dvh - 2 * var(--sp-2));
 }
 
-/* На телефоні композер — майже сам екран: закруглення й рамка тут зайві,
-   вони лише з'їдають місце, якого на 360px і без них мало. */
+/* На телефоні композер — майже сам екран: закруглення тут зайве, воно лише
+   з'їдає місце, якого на 360px і без нього мало. */
 @media (max-width: 480px) {
   .wb-composer {
     border-radius: var(--radius-md);
-    border-color: transparent;
   }
 }
 
 /* Мірки композера — в одному місці. І стовпчик вкладок, і смуга вкладень
    міряються ними, тому смуги не можуть розійтися по висоті: ряд вкладень
    стоїть рівно з першою вкладкою, бо в обох та сама клітинка й той самий
-   відступ від краю. Клітинка 46px — більша за мінімум для пальця (44). */
+   відступ від краю. Клітинка 46px — більша за мінімум для пальця (44).
+
+   Ліній у композері немає жодної — ні всередині, ні на контурі: модалку
+   тримає тінь (`--shadow-xl`), а не рамка. */
 .wb-composer {
   --composer-pad: 6px;
   --composer-gap: 2px;
   --composer-cell: 46px;
+  border-color: transparent;
 }
 
 /* Шапка впритул до краю екрана, тож додає safe-area — інакше заголовок
-   і «закрити» стоять під вирізом. */
+   і «закрити» стоять під вирізом. Ліній у композері немає зовсім: шапку,
+   стовпчик і футер відділяє сам простір, а не рамка. */
 .wb-composer-head {
   gap: var(--sp-3);
   padding-top: calc(var(--sp-3) + var(--safe-top));
+  border-bottom: none;
 }
 
 /* Вкладки — стовпчик СКРАЮ, а не смуга зверху: у шапки й футера своя висота,
@@ -612,7 +617,6 @@ html:has(.wb-tabbar) .wb-modal {
   width: 62px;
   padding: var(--composer-pad) 4px;
   overflow-y: auto;
-  border-right: 1px solid var(--border-subtle);
   scrollbar-width: none;
 }
 
@@ -698,14 +702,25 @@ html:has(.wb-tabbar) .wb-modal {
   min-height: 0;
 }
 
-/* Поле нотатки — основне місце роботи, а не смужка на 80px, як типова
-   `.wb-textarea`: воно розтягується на всю вільну висоту модалки. */
+/* Поле нотатки — не смужка на 80px, як типова `.wb-textarea`, і не вся
+   висота вікна: йому лишається половина (15dvh), а як треба більше — поле
+   тягнуть за правий нижній кут (`resize: vertical`). Рамки немає: поле
+   читається тлом і плейсхолдером, бо лінії в цій модалці прибрані. */
 .wb-composer-input {
-  flex: 1 1 auto;
-  min-height: 30dvh;
-  resize: none;
+  flex: 0 0 auto;
+  height: 15dvh;
+  min-height: 12dvh;
+  max-height: 70dvh;
+  resize: vertical;
+  border-color: transparent;
   font-size: var(--text-base);
   line-height: var(--leading-normal);
+}
+
+/* Фокус лишається видимим — але м'яким кільцем, а не рамкою: інакше в
+   пласкій модалці почала б малюватися лінія, яку ми тільки що прибрали. */
+.wb-composer-input:focus {
+  border-color: transparent;
 }
 
 /* Смуга дій над полем: ТА САМА клітинка, що у вкладки (`--composer-cell`),
@@ -735,13 +750,6 @@ html:has(.wb-tabbar) .wb-modal {
   margin: 0;
   color: var(--red);
   font-size: var(--text-sm);
-}
-
-.wb-composer-hint {
-  margin: 0;
-  color: var(--text-muted);
-  font-size: var(--text-xs);
-  line-height: var(--leading-normal);
 }
 
 /* Заглушка вкладки: той самий `.wb-empty`, лише на всю площу й зі списком
@@ -793,6 +801,7 @@ html:has(.wb-tabbar) .wb-modal {
 .wb-composer-foot {
   gap: var(--sp-2);
   padding-bottom: var(--sp-3);
+  border-top: none;
 }
 
 .wb-composer-foot .wb-btn {
