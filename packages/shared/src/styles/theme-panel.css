@@ -1,0 +1,268 @@
+/*
+ * ═══════════════════════════════════════════════════════════════════════════
+ * THEME PANEL — панель «Тема»: три кольори користувача
+ * ═══════════════════════════════════════════════════════════════════════════
+ *
+ * Розмітку рендерить СПІЛЬНИЙ `ThemeColorPanel` + `ColorSlotRow` +
+ * `ColorEditor` (`@wwwuabot/shared/components/theme`), тому правила живуть
+ * тут: у оболонках їх немає жодного (§3, «однакова деталь — це кирпичик»).
+ *
+ * Окремий файл, а не хвіст `components.css`: панель — цілісна деталь зі своїми
+ * класами (як `drawer.css` чи `app-chrome.css`), і тримати її разом дешевше,
+ * ніж шукати між картками й таблицями.
+ *
+ * Ліній тут немає (правило 15). Структуру тримають: зразок кольору, залитий
+ * рядок (`--field-bg`, той самий кирпичик, що у видимого поля) і **пунктир
+ * порожнього слота** — він не прикраса, а зміст: «тут нічого не вибрано».
+ * Акцент у повзунка — той самий, що в кнопок: це одне й те саме «вибране».
+ */
+
+/* ── Панель і секції ────────────────────────────────────────────────────── */
+.wb-theme-panel {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-5);
+}
+
+.wb-theme-section {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-2);
+}
+
+.wb-theme-section-title {
+  margin: 0;
+  padding: 0 var(--sp-1);
+  font-size: var(--text-xs);
+  font-weight: var(--weight-semibold);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+
+/* Підказка — пояснення, а не заклик: тим самим рядком панель каже, чого
+   бракує й чому кнопка збереження чекає. */
+.wb-theme-hint {
+  margin: 0;
+  padding: 0 var(--sp-1);
+  font-size: var(--text-xs);
+  line-height: 1.5;
+  color: var(--text-muted);
+}
+
+.wb-theme-hint--warn {
+  color: var(--yellow);
+}
+
+/* ── Готові палітри ─────────────────────────────────────────────────────── */
+.wb-theme-presets {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(96px, 1fr));
+  gap: var(--sp-2);
+}
+
+.wb-theme-preset {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--sp-2);
+  min-height: 64px;
+  padding: var(--sp-2) var(--sp-3);
+  border: none;
+  border-radius: var(--radius-md);
+  background: var(--field-bg);
+  color: var(--text-primary);
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+  transition:
+    background var(--duration-fast) var(--ease),
+    color var(--duration-fast) var(--ease);
+}
+
+.wb-theme-preset:hover {
+  background: var(--surface-active);
+}
+
+/* Вибрана палітра — та сама поверхня, лише підсвічена акцентом: це вибір, а не
+   перехід, тож галочки не треба — вибір видно з трьох зразків. */
+.wb-theme-preset--active {
+  background: var(--accent-dim);
+  color: var(--accent);
+}
+
+.wb-theme-preset-dots {
+  display: flex;
+  gap: 2px;
+}
+
+.wb-theme-dot {
+  width: 14px;
+  height: 14px;
+  border-radius: var(--radius-full);
+}
+
+/* Зразки накладаються: три окремі кола читаються як три різні кольори, а не як
+   одна палітра. */
+.wb-theme-dot + .wb-theme-dot {
+  margin-left: -5px;
+}
+
+.wb-theme-preset-label {
+  font-size: var(--text-xs);
+  font-weight: var(--weight-medium);
+  overflow-wrap: anywhere;
+}
+
+/* ── Три кольори ────────────────────────────────────────────────────────── */
+.wb-theme-rows {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-1);
+}
+
+.wb-theme-row {
+  border-radius: var(--radius-md);
+  background: var(--field-bg);
+}
+
+.wb-theme-row--open {
+  background: var(--surface-active);
+}
+
+/* Рядок — кнопка на всю ширину: палець мусить діставати будь-де, а не лише по
+   зразку кольору. */
+.wb-theme-row-head {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-3);
+  width: 100%;
+  min-height: 52px;
+  padding: var(--sp-2) var(--sp-3);
+  border: none;
+  border-radius: var(--radius-md);
+  background: none;
+  color: var(--text-primary);
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.wb-theme-row-swatch {
+  width: 32px;
+  height: 32px;
+  flex-shrink: 0;
+  border-radius: var(--radius-full);
+  background: var(--bg-0);
+}
+
+/* Порожній слот — пунктир: «тут нічого не вибрано», і це видно ДО дотику. */
+.wb-theme-row-swatch--empty {
+  background: none;
+  border: 1px dashed var(--border);
+}
+
+.wb-theme-row-text {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.wb-theme-row-label {
+  font-size: var(--text-base);
+  font-weight: var(--weight-medium);
+}
+
+.wb-theme-row-hint {
+  font-size: var(--text-xs);
+  overflow-wrap: anywhere;
+  color: var(--text-muted);
+}
+
+.wb-theme-row-caret {
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
+  color: var(--text-muted);
+}
+
+/* ── Повзунки ───────────────────────────────────────────────────────────── */
+.wb-theme-editor {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-2);
+  padding: 0 var(--sp-3) var(--sp-3);
+}
+
+.wb-theme-slider-row {
+  display: grid;
+  grid-template-columns: 76px 1fr 42px;
+  align-items: center;
+  gap: var(--sp-2);
+  min-height: 32px;
+}
+
+.wb-theme-slider-label {
+  font-size: var(--text-xs);
+  color: var(--text-secondary);
+}
+
+.wb-theme-slider-value {
+  font-size: var(--text-xs);
+  font-family: var(--font-mono);
+  color: var(--text-muted);
+  text-align: right;
+}
+
+/* Бігунок малюємо самі: на Android і iOS рідний виглядає по-різному, а місце
+   йому тримає акцент — той самий колір, що у вибраного й у кнопок. */
+.wb-theme-slider {
+  width: 100%;
+  height: 6px;
+  border-radius: var(--radius-full);
+  background: var(--bg-4);
+  appearance: none;
+  cursor: pointer;
+}
+
+.wb-theme-slider::-webkit-slider-thumb {
+  appearance: none;
+  width: 20px;
+  height: 20px;
+  border-radius: var(--radius-full);
+  background: var(--accent);
+  box-shadow: var(--shadow-sm);
+}
+
+.wb-theme-slider::-moz-range-thumb {
+  width: 20px;
+  height: 20px;
+  border: none;
+  border-radius: var(--radius-full);
+  background: var(--accent);
+}
+
+.wb-theme-editor-foot {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+}
+
+/* Поле коду — той самий кирпичик поля, що й решта продукту: межу малює колір
+   (`--field-bg`), а не лінія. Тло тут — плоске тло екрана: код не поверхня, а
+   значення. Шрифт не менший за 16px тримає саме правило `.wb-input`. */
+.wb-theme-code {
+  flex: 1 1 auto;
+  min-width: 0;
+  font-family: var(--font-mono);
+  background: var(--bg-0);
+}
+
+/* ── Характер (Apple / Android) ─────────────────────────────────────────── */
+.wb-theme-brands {
+  display: flex;
+  gap: var(--sp-2);
+  padding: 0 var(--sp-1);
+}

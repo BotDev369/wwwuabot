@@ -7,22 +7,22 @@
  * пункт-заглушку.
  *
  * Панель теми — той самий вид, а не друга модалка: «назад» у шапці вертає до
- * списку, і жодна поверхня не висіла над іншою. Стан теми — спільний
- * (`useStyleTheme` з `@wwwuabot/shared`), той самий, яким користується
- * адмінка, тож вибір тут і там — це один факт.
+ * списку, і жодна поверхня не висіла над іншою. Сама панель — теж спільна
+ * (`ThemeColorPanel` з `@wwwuabot/shared`), той самий вибір трьох кольорів, що
+ * й у кнопці «Тема» в адмінці, тож факт один.
  *
  * @module web-platform-dev/src/layout/ProfileMenu
  */
 
 import { useState, type ReactElement } from "react";
 import { useNavigate } from "react-router-dom";
-import { useStyleTheme } from "@wwwuabot/shared";
+import { ThemeColorPanel } from "@wwwuabot/shared";
 import { useDialog } from "@wwwuabot/ui/dialog";
 import { MenuModal, buildMenuItems } from "@wwwuabot/ui/menu";
 import { useProfile } from "@/pages/useProfile";
 import { ProfileIdentityRow } from "./ProfileIdentityRow";
 import { PROFILE_PATH } from "./platform-tabs";
-import { buildProfileItems, buildThemeItems, type ProfileMenuView } from "./profile-menu";
+import { buildProfileItems, type ProfileMenuView } from "./profile-menu";
 
 interface ProfileMenuProps {
   /** Закрити меню. Відкриває й закриває його футер. */
@@ -37,15 +37,11 @@ const TITLES: Record<ProfileMenuView, string> = {
 export function ProfileMenu({ onClose }: ProfileMenuProps): ReactElement {
   const navigate = useNavigate();
   const dialog = useDialog();
-  const theme = useStyleTheme();
   const { profile, loading } = useProfile();
   const [view, setView] = useState<ProfileMenuView>("list");
 
   const items = buildMenuItems({
-    items:
-      view === "theme"
-        ? buildThemeItems(theme)
-        : buildProfileItems({ onOpenTheme: () => setView("theme") }),
+    items: buildProfileItems({ onOpenTheme: () => setView("theme") }),
     // Перехід закриває меню: воно належить футеру, а не екрану, на який веде
     // — інакше модалка лишилась би висіти над зовсім іншою сторінкою.
     navigate: (href) => {
@@ -62,7 +58,10 @@ export function ProfileMenu({ onClose }: ProfileMenuProps): ReactElement {
   return (
     <MenuModal
       title={TITLES[view]}
-      items={items}
+      items={view === "theme" ? [] : items}
+      // Панель теми замінює список: це та сама поверхня, лише зі своїм вмістом
+      // (світлої / темної більше немає, а три кольори — не пункт меню).
+      content={view === "theme" ? <ThemeColorPanel /> : undefined}
       onClose={onClose}
       // «Назад» є лише там, звідки є куди вертатись: у списку розділів його
       // немає, бо це корінь меню.

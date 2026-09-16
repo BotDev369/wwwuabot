@@ -34,8 +34,13 @@ import type { TelegramChromeColor, TelegramWebApp } from "../types/telegram";
 /** Подія клієнта, яку Telegram шле при зміні теми в налаштуваннях. */
 const THEME_CHANGED_EVENT = "themeChanged";
 
-/** DOM-атрибут, за яким ми стежимо — його ставить `initTheme()` / `useStyleTheme()`. */
-const OBSERVED_ATTRS = ["data-brand", "data-theme"] as const;
+/**
+ * DOM-атрибути, за якими ми стежимо — їх ставлять `initTheme()` / `useStyleTheme()`
+ * і вибір трьох кольорів (`applyColors`: `data-colors` / `data-colors-mode`).
+ * Без останніх двох хром не перефарбувався б, доки людина рухає повзунок у
+ * панелі теми — а саме тоді це видніше за все.
+ */
+const OBSERVED_ATTRS = ["data-brand", "data-theme", "data-colors", "data-colors-mode"] as const;
 
 /**
  * Зчитує плоский колір з CSS-змінної на `<html>`.

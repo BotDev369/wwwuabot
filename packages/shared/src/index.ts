@@ -3,6 +3,41 @@ export { ThemeButton, useStyleTheme } from "./components/StyleToggle";
 // Legacy — deprecated
 export { StylePicker, ThemeToggle } from "./components/StyleToggle";
 
+// ── Три кольори користувача (фон / основний / акцент) ────────────────
+export { ThemeColorPanel, useUserColors } from "./components/theme";
+export type { ThemeColorPanelProps, UseUserColorsResult } from "./components/theme";
+export { COLOR_PRESETS, isPresetActive } from "./styles/color-presets";
+export type { ColorPreset } from "./styles/color-presets";
+export {
+  COLOR_SLOTS,
+  COLORS_ATTR,
+  COLORS_MODE_ATTR,
+  USER_COLORS_KEY,
+  applyColors,
+  clearStoredColors,
+  colorsMode,
+  contrastWarning,
+  displayColor,
+  isCompleteColors,
+  isSameColors,
+  missingLabels,
+  missingSlots,
+  onAccentColor,
+  parseStoredColors,
+  readStoredColors,
+  saveStoredColors,
+  seedVariable,
+} from "./styles/user-colors";
+export type {
+  ColorDraft,
+  ColorSlot,
+  ColorSlotDefinition,
+  ColorsMode,
+  UserColors,
+} from "./styles/user-colors";
+export { contrastRatio, hexToHsl, hexToRgb, hslToHex, rgbToHex } from "./styles/color";
+export type { Hsl, Rgb } from "./styles/color";
+
 // ── Icons ─────────────────────────────────────────────────────────────
 export { icons } from "./components/icons";
 export type { IconName } from "./components/icons";

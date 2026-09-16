@@ -19,10 +19,13 @@ Defined in `packages/shared/src/styles/tokens.css`, overridden per brand in `app
 | `var(--text-primary)` / `--text-secondary` / `--text-muted` | Текст: основний / другорядний / підказка |
 | `var(--text-inverse)` | Текст на акцентній плашці |
 | `var(--accent)` / `--accent-hover` / `--accent-dim` / `--accent-soft` | Акцент: база / hover / плашка / підкладка під фокус |
+| `var(--user-bg)` / `var(--user-text)` / `var(--user-accent)` | **Три кольори користувача**: фон / основний / акцент. Ставить `applyColors()` інлайном на `<html>` разом із `data-colors`; читає `user-colors.css`. Це **єдина** палітра продукту: усе вище (поверхні, текст, акцент, межі, статусні підкладки, хром) виведено з цих трьох через `color-mix()`, а не задано другим списком |
+| `var(--user-on-accent)` | Підпис на акцентній плашці (`= var(--text-inverse)`): той із фону / основного, хто далі від акценту (`onAccentColor()`) |
+| `data-colors-mode` (на `<html>`) | Схема, **виведена з фону** (`colorsMode()`): вибирає тіні, скрим, `color-scheme` і світлі варіанти статусних кольорів. Світлої / темної як вибору більше немає |
 | `var(--border)` / `var(--border-subtle)` | Межі: помітна / ледь видима |
 | `var(--surface)` / `--surface-hover` / `--surface-active` / `--surface-overlay` | Поверхні карток, стани й скрим |
 | `var(--field-bg)` / `var(--field-ring)` | **Поле вводу**: колір поля (трохи інший за тло поверхні) і м'яка тінь по краях. Межу поля малює саме вони, а не лінія — одне правило на всі поля продукту (`.wb-input`, `.wb-select`, `.wb-textarea` і власні поля композера). Схема світла/темна — у `themes.css` |
-| `var(--chrome-header-bg)` / `var(--chrome-bottom-bg)` | Нативний хром Telegram: шапка клієнта і смуга під футером; синхронізує `shared/app/telegram-chrome.ts`. Наші смуги (`.wb-app-header`, `.wb-topbar`, `.wb-tabbar`) малюються тими самими токенами на 91% (прозорі на 9%) і **без** ліній та тіней |
+| `var(--chrome-header-bg)` / `var(--chrome-bottom-bg)` | Нативний хром Telegram: шапка клієнта і смуга під футером; синхронізує `shared/app/telegram-chrome.ts`. З трьома кольорами користувача це рівно `--user-bg` (плоский hex — саме тому він іде клієнту як є). Наші смуги (`.wb-app-header`, `.wb-topbar`, `.wb-tabbar`) малюються тими самими токенами на 91% (прозорі на 9%) і **без** ліній та тіней |
 | `var(--green)` / `var(--green-dim)` | Успіх |
 | `var(--red)` / `var(--red-dim)` | Небезпека |
 | `var(--yellow)` / `var(--yellow-dim)` | Попередження |
@@ -84,7 +87,7 @@ Defined in `packages/shared/src/styles/tokens.css`, overridden per brand in `app
 3. **Emoji in UI are forbidden** — use `<Icon />`.
 4. **Dropdowns are forbidden** — use full-screen modals.
 5. Brand themes: `data-brand` attribute on `<html>` (Apple / Material).
-6. Dark/Light: `data-theme` attribute on `<html>`.
+6. Колір — **три кольори користувача** (`data-colors` + `data-colors-mode` на `<html>`): фон / основний / акцент, усі обов'язкові. Світла чи темна — не вибір, а наслідок світлоти фону. Палітра з них виводиться в `user-colors.css`; другої таблиці «слот → токен» у TS немає.
 7. New files MUST use `<Icon />` — never create local `const ico` helpers.
 8. **Native `alert` / `confirm` / `prompt` are forbidden** — on iOS the Telegram WebView
    does not render them, so the button silently does nothing. Use `useDialog()`.
@@ -204,7 +207,8 @@ Defined in `packages/shared/src/styles/tokens.css`, overridden per brand in `app
     row, not just on the icon. A row whose screen does not exist yet says so **before the tap**
     (`status: "soon"` + a hint line under the label) and answers with `useDialog()` — an item
     that does nothing silently is the same defect as an unlabelled icon. `selected` draws a
-    check, because the theme panel is a choice, not a transition. Both the profile and the
+    check, because a chosen row is a state, not a transition (the theme panel now
+    arrives through `content` instead of the list). Both the profile and the
     theme panel are views of **one** modal (a "back" button appears only where there is
     something to return to), never a modal above a modal.
 
@@ -248,6 +252,17 @@ Defined in `packages/shared/src/styles/tokens.css`, overridden per brand in `app
     редактора для того самого поля не заводять. Кнопки дій будь-якої повноекранної поверхні
     — `.wb-sheet-actions` (композер і перегляд — одна деталь, а не «схожа»).
 
+19. **Колір задає людина трьома кольорами — і ніяк інакше.** Три обов'язкові слоти
+    (фон / основний / акцент) живуть у `localStorage` (`wwwuabot-colors`) і на `<html>`
+    як `--user-*`; панель — спільна `ThemeColorPanel` (`@wwwuabot/shared/components/theme`),
+    яку обидві оболонки показують в одній і тій самій поверхні (`.wb-sheet`: платформа —
+    вмістом меню профілю, адмінка — кнопкою «Тема»). Правило «порожніх не буває» — це
+    функція (`isCompleteColors`), а не намір: без усіх трьох вибір не зберігається й не
+    застосовується. Готові палітри — `color-presets.ts` (від чорного до білого), розширений
+    вибір — повзунки H/S/L плюс код кольору (`ColorEditor`); порожній слот малюється
+    пунктиром, бо «не вибрано» — це стан, який видно до дотику. Кольори
+    **застосовуються живцем** (неповний вибір — ні), а «Скинути» вертає брендову палітру.
+
 ---
 
 ## File Locations
@@ -255,6 +270,9 @@ Defined in `packages/shared/src/styles/tokens.css`, overridden per brand in `app
 | File | Purpose |
 |---|---|
 | `packages/shared/src/styles/tokens.css` | CSS custom properties |
+| `packages/shared/src/styles/user-colors.css` | Палітра, виведена з трьох кольорів користувача (`color-mix`) |
+| `packages/shared/src/styles/theme-panel.css` | Кирпичики панелі «Тема» (`.wb-theme-*`) |
+| `packages/shared/src/components/theme/` | `ThemeColorPanel` + `color-presets.ts` / `user-colors.ts` / `useUserColors` — вибір трьох кольорів |
 | `packages/shared/src/styles/apple.css` | Apple brand overrides |
 | `packages/shared/src/styles/android.css` | Material brand overrides |
 | `packages/shared/src/styles/components.css` | `.wb-*` component styles (включно з `.wb-dialog*`) |
@@ -266,7 +284,7 @@ Defined in `packages/shared/src/styles/tokens.css`, overridden per brand in `app
 | `packages/ui/src/dialog/` | `DialogProvider` + `useDialog()` |
 | `packages/ui/src/nav/` | `TabBar` — глобальний нижній футер (розмітка й активи спільні, пункти — з оболонки) |
 | `packages/ui/src/composer/` | `ComposerModal` — модалка швидкого створення (відкриває «+» футера) |
-| `packages/ui/src/menu/` | `MenuModal` + `buildMenuItems` — повноекранна поверхня зі списком пунктів (відкриває «Профіль» футера; склад — з оболонки) |
+| `packages/ui/src/menu/` | `MenuModal` + `buildMenuItems` — повноекранна поверхня зі списком пунктів (відкриває «Профіль» футера; склад — з оболонки; слот `content` показує свій вміст замість списку — так приходить панель теми) |
 | `packages/ui/src/notes/` | `NotesList`, `NotesToolbar`, `NoteSheet` + чисті `view.ts` — список нотаток: пошук, фільтр, сортування, групування (екран платформи `/notes`) |
 | `packages/shared/src/components/icons.tsx` | SVG icon definitions |
 | `packages/shared/src/components/Icon.tsx` | `<Icon />` component |

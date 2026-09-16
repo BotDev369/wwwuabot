@@ -49,9 +49,22 @@
 @import "./apple.css";
 @import "./android.css";
 
+/* ── Три кольори користувача ──────────────────────────────────────────────
+   Палітра, виведена з `--user-bg` / `--user-text` / `--user-accent`, які
+   ставить `applyColors()` (`styles/user-colors.ts`). Імпорт ПІСЛЯ брендів:
+   селектор тут — `html[data-colors][data-colors-mode=…]`, тож бренд і схема
+   його не перекривають (див. шапку файлу). */
+@import "./user-colors.css";
+
 /* ── Reset + component classes ── */
 @import "./reset.css";
 @import "./components.css";
+
+/* ── Панель «Тема» (три кольори користувача) ────────────────────────────────
+   Класи рендерить спільний `ThemeColorPanel`, тож вони тут, а не в CSS однієї
+   з оболонок. У `components.css` не покладені, бо це цілісна деталь зі своїми
+   класами — як `drawer.css`. */
+@import "./theme-panel.css";
 
 /* ── Мобільна навігація: гамбургер + виїзний drawer (обидві оболонки) ──
    Імпортується ПЕРЕД каркасом сторінок: `page-layout.css` перекриває

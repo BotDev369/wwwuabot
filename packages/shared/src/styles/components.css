@@ -1081,7 +1081,7 @@ html:has(.wb-tabbar) .wb-modal {
   color: var(--text-secondary);
 }
 
-/* Вибраний пункт (панель теми) — галочка: це вибір, а не перехід. */
+/* Вибраний пункт — галочка: вибір це стан, а не перехід. */
 .wb-menu-item-check {
   display: flex;
   align-items: center;

@@ -1,15 +1,22 @@
 /**
- * Applies saved brand & scheme before the first render to prevent flash.
+ * Applies the saved brand, scheme **and the user's three colors** before the
+ * first render to prevent flash.
  *
  * Called in main.tsx of each worker BEFORE createRoot().render().
  * Uses localStorage + CSS attributes only — works without React.
  *
  * Attribute format:
- *   <html data-brand="apple|android" data-theme="light|dark">
+ *   <html data-brand="apple|android" data-theme="light|dark"
+ *         data-colors="custom" data-colors-mode="light|dark">
+ *
+ * `data-colors*` появляється лише тоді, коли людина зберегла всі три кольори
+ * («порожніх не буває» — див. `../styles/user-colors`): без атрибута працює
+ * брендова палітра, а з ним її перекриває `user-colors.css`.
  *
  * No "system" mode — defaults to "dark" if nothing stored.
  */
 import { resolveLegacyStyle, type Brand } from "../styles/registry";
+import { applyColors, readStoredColors } from "../styles/user-colors";
 import { initTelegramChrome } from "./telegram-chrome";
 
 const BRAND_KEY = "wwwuabot-brand";
@@ -40,6 +47,12 @@ export function initTheme(): void {
   } catch {
     /* ignore — localStorage may be unavailable */
   }
+
+  // ── Три кольори користувача ──────────────────────────────────────
+  // Тут, а не в React: палітра мусить стояти на `<html>` ДО першого рендера,
+  // інакше екран мигне базовою темою. Немає вибору — немає атрибута, і працює
+  // брендова палітра (див. `../styles/user-colors`).
+  applyColors(readStoredColors());
 
   // Нативний хром Telegram (шапка/низ клієнта) — у кольорах цієї теми.
   // Поза Telegram — no-op. Див. `./telegram-chrome`.

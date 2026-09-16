@@ -1,0 +1,117 @@
+/*
+ * ═══════════════════════════════════════════════════════════════════════════
+ * USER COLORS — уся палітра з трьох кольорів користувача
+ * ═══════════════════════════════════════════════════════════════════════════
+ *
+ * Людина задає три кольори (`--user-bg`, `--user-text`, `--user-accent` на
+ * `<html>`, ставить їх `applyColors()` з `styles/user-colors.ts`), а решту
+ * токенів продукт виводить сам. Другої таблиці «слот → токен» у TS немає
+ * навмисно: вона розійшлася б із цим файлом на першій же правці.
+ *
+ * **Чому `color-mix()`, а не обчислення в JS.** Мішати вміє сам CSS: поверхня,
+ * межа й приглушений текст — це той самий фон, підмішаний основним кольором.
+ * Напрямок мішанини виходить сам: у світлого фону основний колір темний (тло
+ * темнішає), у темного — світлий (тло світлішає). Одна формула на обидві схеми.
+ *
+ * **Чому селектор такий довгий.** Бренд (`apple.css` / `android.css`) оголошує
+ * токени на `[data-brand][data-theme]` — це специфічність (0,2,0). Щоб вибір
+ * людини переміг, потрібні два атрибути й корінь: `html[data-colors][data-
+ * colors-mode=…]` = (0,2,1). Один `[data-colors]` тут не спрацював би —
+ * бренд перекрив би його мовчки.
+ *
+ * **Що лишається схемі.** Тіні, скрим і `color-scheme` залежать не від
+ * характеру, а від **світлоти фону** — тож схему (світла / темна) рахує
+ * `colorsMode()` з фону, і саме вона вибирає ці значення. Світла/темна більше
+ * не перемикається руками: вона — наслідок вибору, як і все інше тут.
+ *
+ * Цей файл імпортується ПІСЛЯ брендів (`styles/index.css`) — на випадок, коли
+ * бренд колись перепише ці токени на своєму рівні специфічності.
+ */
+
+/* ── Спільна частина: кольори, виведені з трьох сідових ──────────────────── */
+html[data-colors][data-colors-mode="light"],
+html[data-colors][data-colors-mode="dark"] {
+  /* Екран — ОДИН плоский колір, і він же йде нативному хрому Telegram
+     (плоский hex: градієнт клієнт прийняти не може). */
+  --bg-page: var(--user-bg);
+  --chrome-header-bg: var(--user-bg);
+  --chrome-bottom-bg: var(--user-bg);
+
+  /* Поверхні: фон, підмішаний основним кольором (чужого кольору в палітрі
+     немає — тому три кольори й дають цілу систему, а не три плями). */
+  --bg-0: var(--user-bg);
+  --bg-2: color-mix(in srgb, var(--user-bg) 95%, var(--user-text));
+  --bg-3: color-mix(in srgb, var(--user-bg) 90%, var(--user-text));
+  --bg-4: color-mix(in srgb, var(--user-bg) 86%, var(--user-text));
+  --bg-home: radial-gradient(120% 90% at 12% 0%, var(--bg-3) 0%, var(--bg-2) 55%, var(--bg-0) 100%);
+  --bg-1: var(--bg-home);
+  --surface: var(--bg-1);
+  --surface-hover: var(--bg-3);
+  --surface-active: var(--bg-4);
+
+  /* Текст — три рівні одного кольору. `--text-inverse` рахує JS: він мусить
+     читатися на акцентній плашці, а вона будь-якого кольору. */
+  --text-primary: var(--user-text);
+  --text-secondary: color-mix(in srgb, var(--user-text) 70%, var(--user-bg));
+  --text-muted: color-mix(in srgb, var(--user-text) 48%, var(--user-bg));
+  --text-inverse: var(--user-on-accent);
+
+  --accent: var(--user-accent);
+  --accent-hover: color-mix(in srgb, var(--user-accent) 78%, var(--user-text));
+  --accent-dim: color-mix(in srgb, var(--user-accent) 18%, var(--user-bg));
+  --accent-soft: color-mix(in srgb, var(--user-accent) 12%, transparent);
+
+  --border: color-mix(in srgb, var(--user-text) 20%, var(--user-bg));
+  --border-subtle: color-mix(in srgb, var(--user-text) 10%, var(--user-bg));
+
+  /* Поле вводу — той самий кирпичик, що й у брендів: колір трохи інший за
+     поверхню, а межу тримає м'яка тінь (див. схеми нижче). */
+  --field-bg: var(--bg-3);
+
+  /* Статуси: смисл (зелений / червоний / жовтий) лишається спільним, а
+     підкладка під них береться з фону — інакше плашка «успіх» на чужому тлі
+     виглядала б як приклеєна. */
+  --green-dim: color-mix(in srgb, var(--green) 18%, var(--user-bg));
+  --red-dim: color-mix(in srgb, var(--red) 18%, var(--user-bg));
+  --yellow-dim: color-mix(in srgb, var(--yellow) 20%, var(--user-bg));
+}
+
+/* ── Світлий фон: схема світла ───────────────────────────────────────────── */
+html[data-colors][data-colors-mode="light"] {
+  color-scheme: light;
+
+  --green: #16a34a;
+  --red: #dc2626;
+  --yellow: #ca8a04;
+
+  --surface-overlay: rgb(0 0 0 / 40%);
+  --scrim: rgb(0 0 0 / 45%);
+
+  --field-ring: 0 1px 2px rgb(0 0 0 / 5%), 0 2px 6px rgb(0 0 0 / 4%);
+
+  --shadow-xs: 0 1px 2px rgb(0 0 0 / 5%);
+  --shadow-sm: 0 1px 3px rgb(0 0 0 / 10%), 0 1px 2px rgb(0 0 0 / 6%);
+  --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 10%), 0 2px 4px -2px rgb(0 0 0 / 10%);
+  --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 10%), 0 4px 6px -4px rgb(0 0 0 / 10%);
+  --shadow-xl: 0 20px 25px -5px rgb(0 0 0 / 10%), 0 8px 10px -6px rgb(0 0 0 / 10%);
+}
+
+/* ── Темний фон: схема темна (тіні видно лише глибші, а статуси — світліші) */
+html[data-colors][data-colors-mode="dark"] {
+  color-scheme: dark;
+
+  --green: #4ade80;
+  --red: #f87171;
+  --yellow: #facc15;
+
+  --surface-overlay: rgb(0 0 0 / 60%);
+  --scrim: rgb(0 0 0 / 60%);
+
+  --field-ring: 0 1px 2px rgb(0 0 0 / 45%), 0 2px 6px rgb(0 0 0 / 30%);
+
+  --shadow-xs: 0 1px 2px rgb(0 0 0 / 20%);
+  --shadow-sm: 0 1px 3px rgb(0 0 0 / 30%), 0 1px 2px rgb(0 0 0 / 20%);
+  --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 30%), 0 2px 4px -2px rgb(0 0 0 / 20%);
+  --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 30%), 0 4px 6px -4px rgb(0 0 0 / 20%);
+  --shadow-xl: 0 20px 25px -5px rgb(0 0 0 / 30%), 0 8px 10px -6px rgb(0 0 0 / 20%);
+}

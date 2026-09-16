@@ -8,7 +8,7 @@
  */
 
 import { describe, expect, it, vi } from "vitest";
-import { buildProfileItems, buildThemeItems, NOTES_PATH } from "./profile-menu";
+import { buildProfileItems, NOTES_PATH } from "./profile-menu";
 
 const onOpenTheme = vi.fn();
 
@@ -56,39 +56,8 @@ describe("меню профілю", () => {
   });
 });
 
-describe("панель теми", () => {
-  const choice = {
-    brand: "apple" as const,
-    scheme: "dark" as const,
-    setBrand: vi.fn(),
-    setScheme: vi.fn(),
-  };
-
-  it("показує обидві дизайн-системи й обидві схеми", () => {
-    expect(buildThemeItems(choice).map((item) => item.key)).toEqual([
-      "brand-apple",
-      "brand-android",
-      "scheme-light",
-      "scheme-dark",
-    ]);
-  });
-
-  it("вибране позначає галочкою — те саме, що стоїть у темі", () => {
-    const selected = buildThemeItems(choice)
-      .filter((item) => item.selected)
-      .map((item) => item.key);
-    expect(selected).toEqual(["brand-apple", "scheme-dark"]);
-  });
-
-  it("дотик змінює саме ту вісь, якої стосується пункт", () => {
-    const setBrand = vi.fn();
-    const setScheme = vi.fn();
-    const items = buildThemeItems({ ...choice, setBrand, setScheme });
-
-    items.find((item) => item.key === "brand-android")?.onSelect?.();
-    items.find((item) => item.key === "scheme-light")?.onSelect?.();
-
-    expect(setBrand).toHaveBeenCalledWith("android");
-    expect(setScheme).toHaveBeenCalledWith("light");
-  });
-});
+/* Панель теми описана не тут: вона більше не список пунктів, а спільна
+   `ThemeColorPanel` (`@wwwuabot/shared`), і її правила — три обов'язкові
+   кольори, виведена схема, читабельність — читає `user-colors.test.ts` у
+   тому ж пакеті, де вони живуть. Думати про них удвох означало б мати дві
+   правди про один вибір. */

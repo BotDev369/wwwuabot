@@ -2,13 +2,14 @@
  * MenuModal — повноекранна модалка зі списком пунктів.
  *
  * Це та сама поверхня, що й композер (`.wb-modal--full .wb-sheet`), лише
- * замість вкладок — вертикальний список: пункт на всю ширину, іконка, підпис,
- * а для пункту, якого ще немає, — рядок-пояснення, що там буде.
+ * замість вкладок — вертикальний список (або свій вміст: панель теми приходить
+ * сюди слотом `content`): пункт на всю ширину, іконка, підпис, а для пункту,
+ * якого ще немає, — рядок-пояснення, що там буде.
  *
  * Ліній тут немає жодної: пункт видно тлом (`--field-bg`, той самий кирпичик,
  * що у видимого поля) і підсвіченням на дотик, а не рамкою (`DESIGN_SYSTEM.md`,
- * правило 15). Вибраний пункт (панель теми) позначається галочкою, бо це вибір,
- * а не перехід.
+ * правило 15). Вибраний пункт позначається галочкою (`selected`), бо вибір — це
+ * стан, а не перехід.
  *
  * @module @wwwuabot/ui/menu
  */
@@ -47,7 +48,14 @@ function MenuRow({ item }: { item: MenuItem }): ReactElement {
   );
 }
 
-export function MenuModal({ title, items, header, onClose, onBack }: MenuModalProps): ReactElement {
+export function MenuModal({
+  title,
+  items,
+  content,
+  header,
+  onClose,
+  onBack,
+}: MenuModalProps): ReactElement {
   function handleKeyDown(event: KeyboardEvent<HTMLDivElement>) {
     if (event.key === "Escape") {
       event.stopPropagation();
@@ -81,11 +89,15 @@ export function MenuModal({ title, items, header, onClose, onBack }: MenuModalPr
           {/* Блок над списком — не пункт, тож і не всередині `role="menu"`:
               він описує меню, а не діє замість нього. */}
           {header}
-          <div className="wb-menu-list">
-            {items.map((item) => (
-              <MenuRow key={item.key} item={item} />
-            ))}
-          </div>
+          {/* Панель і список — один слот: панель теми замінює список, а не
+              стає ще одним над ним. */}
+          {content ?? (
+            <div className="wb-menu-list">
+              {(items ?? []).map((item) => (
+                <MenuRow key={item.key} item={item} />
+              ))}
+            </div>
+          )}
         </div>
       </div>
     </div>

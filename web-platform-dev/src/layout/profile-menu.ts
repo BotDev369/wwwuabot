@@ -18,7 +18,6 @@
  */
 
 import { toWebPath } from "@wwwuabot/shared/content";
-import type { IconName } from "@wwwuabot/shared";
 import type { ShellMenuItem } from "@wwwuabot/ui/menu";
 
 /**
@@ -40,14 +39,6 @@ export type ProfileMenuView = "list" | "theme";
 export interface BuildProfileItemsOptions {
   /** Відкрити панель теми: вона живе в тій самій поверхні, окремим видом. */
   onOpenTheme: () => void;
-}
-
-/** Стани теми, потрібні панелі: що вибрано й чим вибирають. */
-export interface ThemeChoice {
-  brand: "apple" | "android";
-  scheme: "light" | "dark";
-  setBrand: (brand: "apple" | "android") => void;
-  setScheme: (scheme: "light" | "dark") => void;
 }
 
 export function buildProfileItems({ onOpenTheme }: BuildProfileItemsOptions): ShellMenuItem[] {
@@ -80,34 +71,14 @@ export function buildProfileItems({ onOpenTheme }: BuildProfileItemsOptions): Sh
 }
 
 /**
- * Панель теми — той самий список, лише з вибором.
+ * Панель теми в цьому меню більше не список.
  *
- * Вибір показує галочка (`selected`), а не перехід: це не навігація, а стан,
- * який видно на власні очі. Обидва перемикачі тут, а не в окремій модалці,
- * бо тема — це одна річ, і тримати її в двох поверхнях означало б два місця
- * для одного факту.
+ * Світла й темна зникли зовсім: світлоту виводить сам продукт із **фону**, який
+ * задала людина, а кольорів тепер три й усі обов'язкові. Це не пункти списку, а
+ * панель (`ThemeColorPanel` з `@wwwuabot/shared`), і поверхня показує її замість
+ * списку (`MenuModal` → `content`) — тобто тема лишається однією поверхнею й не
+ * стає модалкою над модалкою.
+ *
+ * Тому тут лишається тільки склад пунктів списку: усе, що стосується вибору
+ * кольору, живе в одному спільному місці — і адмінка показує те саме.
  */
-export function buildThemeItems(choice: ThemeChoice): ShellMenuItem[] {
-  const brand = (value: "apple" | "android", label: string, icon: IconName): ShellMenuItem => ({
-    key: `brand-${value}`,
-    label,
-    icon,
-    selected: choice.brand === value,
-    onSelect: () => choice.setBrand(value),
-  });
-
-  const scheme = (value: "light" | "dark", label: string, icon: IconName): ShellMenuItem => ({
-    key: `scheme-${value}`,
-    label,
-    icon,
-    selected: choice.scheme === value,
-    onSelect: () => choice.setScheme(value),
-  });
-
-  return [
-    brand("apple", "Apple", "grid"),
-    brand("android", "Android", "blocks"),
-    scheme("light", "Світла", "sun"),
-    scheme("dark", "Темна", "moon"),
-  ];
-}
