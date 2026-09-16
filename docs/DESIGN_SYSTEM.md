@@ -131,7 +131,9 @@ Defined in `packages/shared/src/styles/tokens.css`, overridden per brand in `app
     inset from the edge are **local variables on `.wb-composer`** (`--composer-cell` 46px,
     `--composer-gap`, `--composer-pad`), and the tab column and the attachment row both measure
     themselves with them — that is why the attachment row lands exactly on the first tab's level
-    instead of drifting a few pixels. The attachment row sits **above** the note field as the
+    instead of drifting a few pixels. The tab column keeps its 62px at **every** width (8px side
+    padding, so the cell inside stays 46px and the phone does not lose its tap target); the body's
+    horizontal inset is `--sp-3`, which is what keeps the field off the column and off the edge. The attachment row sits **above** the note field as the
     continuation of the tab column, so it is a row of cells, not of chips.
     The composer carries **no separator lines**: no rule under the title, none above the footer,
     none beside the tab column, none around the note field — space does the separating. Its field is

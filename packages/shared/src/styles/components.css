@@ -614,8 +614,11 @@ html:has(.wb-tabbar) .wb-modal {
   flex-direction: column;
   gap: var(--composer-gap);
   flex-shrink: 0;
+  /* Ширина така, щоб після бокових відступів (8px) клітинка лишалась 46px —
+     тобто палець дістає і вкладку, і її підсвічення. Заодно іконка відходить
+     від краю модалки, а між стовпчиком і полем з'являється просвіт. */
   width: 62px;
-  padding: var(--composer-pad) 4px;
+  padding: var(--composer-pad) var(--sp-2);
   overflow-y: auto;
   scrollbar-width: none;
 }
@@ -672,13 +675,10 @@ html:has(.wb-tabbar) .wb-modal {
 }
 
 /* Вузький екран: підпис не влазить у стовпчик (і з'їдає ширину поля), тому
-   лишається сам знак — ім'я вкладки при цьому не губиться, воно в `aria-label`. */
+   лишається сам знак — ім'я вкладки при цьому не губиться, воно в `aria-label`.
+   Ширину стовпчика тут НЕ міняємо: інакше бокові відступи з'їли б клітинку, і
+   вкладка на телефоні стала б меншою за палець. */
 @media (max-width: 400px) {
-  .wb-composer-tabs {
-    width: 50px;
-    padding: var(--composer-pad) 2px;
-  }
-
   .wb-composer-tab-label {
     display: none;
   }
@@ -690,8 +690,9 @@ html:has(.wb-tabbar) .wb-modal {
   flex: 1 1 auto;
   min-width: 0;
   /* Той самий верхній відступ, що у стовпчика вкладок: саме тому перша
-     вкладка і смуга вкладень стоять на одному рівні. */
-  padding: var(--composer-pad) var(--composer-pad) var(--sp-3);
+     вкладка і смуга вкладень стоять на одному рівні. Боковий ширший за
+     верхній (`--sp-3`): поле не тулиться ані до стовпчика, ані до краю. */
+  padding: var(--composer-pad) var(--sp-3) var(--sp-3);
 }
 
 .wb-composer-pane {
