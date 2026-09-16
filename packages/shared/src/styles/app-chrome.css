@@ -346,8 +346,9 @@
   left: 0;
   right: 0;
   bottom: 0;
-  /* меню-драйвер і модалки — вище: 1000 і 400 проти 200 */
-  z-index: var(--z-sticky);
+  /* НАД модалками (400) і над виїзним меню (1000): футер — хром застосунку,
+     тож модалка його не перекриває ніколи (див. `--z-tabbar`) */
+  z-index: var(--z-tabbar);
   height: var(--tab-bar-h);
   padding-bottom: var(--safe-bottom);
   display: flex;

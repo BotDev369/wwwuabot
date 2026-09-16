@@ -53,7 +53,7 @@ Defined in `packages/shared/src/styles/tokens.css`, overridden per brand in `app
 | Відступи | `--sp-0` … `--sp-16` (4px-крок) |
 | Тіні | `--shadow-xs` … `--shadow-xl`, `--elevation-0` … `--elevation-3` |
 | Анімація | `--duration-fast`, `--duration`, `--duration-slow`, `--ease`, `--ease-in`, `--ease-out`, `--ease-spring` |
-| Шари | `--z-dropdown`, `--z-sticky`, `--z-overlay`, `--z-modal`, `--z-toast` |
+| Шари | `--z-dropdown` < `--z-sticky` < `--z-overlay` < `--z-modal` (400) < `--z-tabbar` (**1100** — футер завжди видно: він вище за модалки й виїзне меню) < `--z-toast` (1200) |
 
 ### Layout і мобільні
 
@@ -113,8 +113,13 @@ Defined in `packages/shared/src/styles/tokens.css`, overridden per brand in `app
     section is highlighted **by its own glyph, not by a background**: the shell hands over a
     solid twin of the outline icon (`iconActive`, e.g. `home` → `home-solid`), exactly like
     YouTube / Instagram / TikTok do it. A filled circle under the icon was tried on 14.09 and
-    rejected — it shouts louder than the label it is meant to support. It is `position: fixed`,
+    rejected — it shouts louder than the label it is meant to support.    It is `position: fixed`,
     so the content needs room under it (`.wb-tabbar-layout` / `.wb-app-body--tabbar`).
+    The footer is **chrome**: no modal may cover it. It sits above modals and the drawer
+    (`--z-tabbar` = 1100 > `--z-modal` = 400), and every modal leaves room for it —
+    `html:has(.wb-tabbar) .wb-modal-overlay { padding-bottom: … + var(--tab-bar-h) }` — because
+    the shared dialog renders at the app root, outside the shell. Selecting another section
+    closes the composer (the shell owns that state), and the `+` toggles it.
 13. **The composer (`+` in the footer) is one shared modal, not a per-shell screen.**
     `ComposerModal` (`@wwwuabot/ui/composer`) opens in both shells; its markup uses the same
     `.wb-modal*` bricks as `useDialog()` plus `.wb-composer*` (tabs as a compact column on the left —

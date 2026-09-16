@@ -7,6 +7,10 @@
  * Центральний «+» відкриває спільний композер: «створити» — це дія, а не
  * розділ, і адреси під нею немає.
  *
+ * Смуга лишається видимою й робочою навіть з відкритою модалкою (футер — хром,
+ * `--z-tabbar`), тому перехід на інший розділ закриває композер: інакше модалка
+ * «Створити» висіла б над зовсім іншою сторінкою.
+ *
  * @module web-admin-dev/src/layout/AdminTabBar
  */
 
@@ -24,9 +28,13 @@ export function AdminTabBar(): ReactElement {
   const [composerOpen, setComposerOpen] = useState(false);
 
   const items = buildTabBarItems({
-    tabs: withPrimaryAction(ADMIN_TABS, () => setComposerOpen(true)),
+    // «+» — перемикач: той самий слот закриває композер, якщо він уже відкритий
+    tabs: withPrimaryAction(ADMIN_TABS, () => setComposerOpen((open) => !open)),
     pathname,
-    navigate,
+    navigate: (href) => {
+      setComposerOpen(false);
+      navigate(href);
+    },
     onPlaceholder: (tab) => {
       void dialog.alert(`Розділ «${tab.label}» ще в розробці.`, { title: "Скоро" });
     },
