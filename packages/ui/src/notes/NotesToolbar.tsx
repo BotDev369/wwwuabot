@@ -3,9 +3,21 @@
  * фільтр за хештегами) і знімні чипи вибраного.
  *
  * Порядок у ряду — пошук ліворуч, три клітинки поруч праворуч. Поле пошуку в
- * спокої завширшки з власний підпис («Пошук») і **розкривається** на всю смугу,
- * щойно в нього пишуть: порожнє поле на всю ширину забирало місце саме в тих
- * трьох клітинок, за якими людина приходить (правило 18).
+ * спокої завширшки з власний підпис («Пошук») і **розкривається** на фокус або
+ * запит: порожнє поле на всю ширину забирало місце саме в тих трьох клітинок,
+ * за якими людина приходить (правило 18).
+ *
+ * Ряд **не переноситься**: розкрите поле забирає лише вільний простір, а три
+ * клітинки лишаються на своєму місці — інакше на фокусі вони стрибали на
+ * другий рядок, і смуга «переїжджала» саме тоді, коли людина зібралась
+ * друкувати. Чипи вибраного — окремий ряд **під** смугою: вони не клітинки
+ * керування, а те, що ці клітинки змінили.
+ *
+ * Поле пошуку — **один** контрол: кільце фокуса малює оболонка
+ * (`.wb-note-search:focus-within`), а внутрішній `.wb-input` не несе ні мірок,
+ * ні заливки, ні свого кільця. Інакше в розкритому полі було видно «поле в
+ * полі». ✕ у полі — свій, а не нативний: нативний у WebView малюється окремою
+ * коробкою і не піддається стилю.
  *
  * Вибори **не** випадають списком (правило 4): кожен відкриває ту саму
  * повноекранну поверхню, що й меню профілю (`MenuModal`), і вибраний варіант
@@ -161,8 +173,7 @@ export function NotesToolbar({
 
   return (
     <div className="wb-note-tools">
-      {/* Один ряд: пошук і три клітинки вибору — поруч. Чипи вибраного
-          лишаються в тій самій смузі, бо вони й є те, що ці клітинки міняють. */}
+      {/* Один ряд: пошук і три клітинки вибору — поруч. */}
       <div className="wb-note-bar">
         <div className={`wb-note-search${searchOpen ? " wb-note-search--open" : ""}`}>
           <Icon name="search" size={18} className="wb-note-search-icon" />
@@ -176,6 +187,20 @@ export function NotesToolbar({
             placeholder="Пошук"
             aria-label="Пошук за текстом або хештегом"
           />
+
+          {/* Прибрати запит можна й чипом, але той стоїть аж у другому рядку,
+              тож у полі лишається своя ✕ — там, де її шукає рука. */}
+          {view.query.length > 0 && (
+            <button
+              type="button"
+              className="wb-note-search-clear"
+              aria-label="Прибрати пошук"
+              title="Прибрати пошук"
+              onClick={() => onChange({ query: "" })}
+            >
+              <Icon name="close" size={14} />
+            </button>
+          )}
         </div>
 
         <div className="wb-note-controls">
@@ -191,26 +216,28 @@ export function NotesToolbar({
               <Icon name={icon} size={18} />
             </button>
           ))}
-
-          {chips.length > 0 && (
-            <div className="wb-note-chips">
-              {chips.map((chip) => (
-                <button
-                  key={chip.key}
-                  type="button"
-                  className="wb-chip wb-note-chip"
-                  aria-label={chip.action}
-                  title={chip.action}
-                  onClick={() => onChange(chip.reset)}
-                >
-                  <span className="wb-note-chip-label">{chip.label}</span>
-                  <Icon name="close" size={12} />
-                </button>
-              ))}
-            </div>
-          )}
         </div>
       </div>
+
+      {/* Чипи вибраного — своїм рядом під смугою: у ній місця немає (там
+          пошук і три клітинки), а знімати вибір треба там, де його видно. */}
+      {chips.length > 0 && (
+        <div className="wb-note-chips">
+          {chips.map((chip) => (
+            <button
+              key={chip.key}
+              type="button"
+              className="wb-chip wb-note-chip"
+              aria-label={chip.action}
+              title={chip.action}
+              onClick={() => onChange(chip.reset)}
+            >
+              <span className="wb-note-chip-label">{chip.label}</span>
+              <Icon name="close" size={12} />
+            </button>
+          ))}
+        </div>
+      )}
 
       {/* Рядок підказки з'являється лише тоді, коли є що сказати: скільки
           лишилось після пошуку й фільтрів. */}

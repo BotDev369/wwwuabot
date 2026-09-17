@@ -471,6 +471,19 @@ html[data-brand="apple"] .scn-search:focus {
     0 0 0 4px var(--accent-soft) !important;
 }
 
+/* Пошук нотаток — контрол тут оболонка з іконкою (див. `components.css`),
+   тож бренд дає їй ті самі мірки й те саме кільце, що й будь-якому полю. */
+html[data-brand="apple"] .wb-note-search {
+  border-radius: 10px !important;
+  padding: 12px 16px !important;
+}
+
+html[data-brand="apple"] .wb-note-search:focus-within {
+  box-shadow:
+    var(--field-ring),
+    0 0 0 4px var(--accent-soft) !important;
+}
+
 /* ── Modal: glass overlay — Apple sheet style ───────────────────────────── */
 html[data-brand="apple"] .wb-modal-overlay {
   backdrop-filter: blur(8px) saturate(150%) !important;

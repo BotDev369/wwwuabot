@@ -8,14 +8,42 @@
  * тікали, — і що пошук у спокої стоїть **вузьким**, бо широке порожнє поле
  * забирало місце саме в тих трьох клітинок.
  *
+ * Дві речі тут перевіряються **разом із CSS**: що смуга не переноситься на
+ * другий рядок (інакше розкрите поле скидало клітинки вниз — рівно коли
+ * людина зібралась друкувати) і що кільце фокуса малює оболонка поля, а не
+ * внутрішній `.wb-input` (інакше в розкритому полі видно «поле в полі»).
+ * Так само зроблено в `styles/fields.test.ts` — властивість, яку легко
+ * зламати мовчки, тримає тест, а не коментар.
+ *
  * Середовище тестів — `node` (без DOM), тож перевіряємо розмітку, яку рендерить
- * React, а не дотики: так само зроблено в `composer/ComposerModal.test.tsx`.
+ * React, і правила CSS, а не дотики: так само зроблено в
+ * `composer/ComposerModal.test.tsx`.
  */
 
+/// <reference types="node" />
+
+import { readFileSync } from "node:fs";
+import { join } from "node:path";
+import { fileURLToPath } from "node:url";
 import { describe, expect, it } from "vitest";
 import { renderToStaticMarkup } from "react-dom/server";
 import { NotesToolbar } from "./NotesToolbar";
 import { DEFAULT_NOTES_VIEW, type NotesView } from "./types";
+
+/** Спільні стилі: розмітку смуги рендерить спільний модуль, тож і правила там. */
+const CSS = readFileSync(
+  join(
+    fileURLToPath(new URL("../../../../", import.meta.url)),
+    "packages/shared/src/styles/components.css",
+  ),
+  "utf8",
+).replace(/\/\*[\s\S]*?\*\//g, "");
+
+/** Тіло правила за селектором — щоб перевіряти саме його, а не файл цілком. */
+function rule(selector: string): string {
+  const escaped = selector.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+  return CSS.match(new RegExp(`${escaped}\\s*\\{([^}]*)\\}`))?.[1] ?? "";
+}
 
 const view = (over: Partial<NotesView> = {}): NotesView => ({ ...DEFAULT_NOTES_VIEW, ...over });
 
@@ -143,18 +171,58 @@ describe("NotesToolbar", () => {
     expect(html.indexOf("wb-note-search")).toBeLessThan(html.indexOf("wb-note-controls"));
   });
 
-  it("клітинки й чипи стоять в ОДНІЙ смузі, а не в окремих рядах", () => {
+  it("клітинки стоять у смузі з пошуком, а чипи — своїм рядом під нею", () => {
+    // Чипи — не клітинки керування, а те, що ці клітинки змінили, тож у смузі
+    // їм місця немає: там пошук і три клітинки.
     const html = render({ sort: "alpha", groupBy: "none" }, { shown: 1, total: 3 });
 
-    const start = html.indexOf('class="wb-note-controls"');
-    const end = html.indexOf("wb-note-summary");
-    expect(start).toBeGreaterThan(-1);
-    expect(end).toBeGreaterThan(start);
+    const bar = html.indexOf('class="wb-note-bar"');
+    const controls = html.indexOf('class="wb-note-controls"');
+    const chips = html.indexOf('class="wb-note-chips"');
+    expect(bar).toBeGreaterThan(-1);
+    expect(controls).toBeGreaterThan(bar);
+    expect(chips).toBeGreaterThan(controls);
 
-    const row = html.slice(start, end);
-    expect(toolIcons(row)).toHaveLength(3);
-    expect(row).toContain("wb-note-chips");
-    expect(row).toContain("За абеткою");
+    // У смузі — рівно три клітинки й нічого більше: від клітинок до чипів
+    // закриваються рівно дві обгортки (самі клітинки й смуга), тобто чипи
+    // стоять ПІСЛЯ смуги, а не всередині неї.
+    expect(toolIcons(html.slice(bar, chips))).toHaveLength(3);
+    expect((html.slice(controls, chips).match(/<\/div>/g) ?? []).length).toBe(2);
+
+    // Чипи — після смуги, і підпис вибраного в них.
+    expect(html.slice(chips)).toContain("За абеткою");
+  });
+
+  it("запит прибирається ✕ у полі, а не лише чипом", () => {
+    const html = render({ query: "риба" });
+
+    expect(html).toContain("wb-note-search-clear");
+    expect(html).toContain('aria-label="Прибрати пошук"');
+    // Порожнє поле цієї кнопки не має: прибирати нема чого.
+    expect(render()).not.toContain("wb-note-search-clear");
+  });
+
+  it("смуга не переноситься — клітинки не стрибають на другий рядок", () => {
+    const bar = rule(".wb-note-bar");
+
+    expect(bar).toContain("display: flex");
+    expect(bar).not.toContain("wrap");
+    expect(rule(".wb-note-controls")).not.toContain("wrap");
+    // Розкрите поле забирає лише вільне місце, а не рядок цілком.
+    expect(rule(".wb-note-search--open")).toContain("flex: 1 1 auto");
+  });
+
+  it("кільце фокуса малює оболонка поля, а не внутрішнє поле", () => {
+    // Інакше в розкритому полі видно «поле в полі»: заливку й кільце несе
+    // оболонка з іконкою, а не `.wb-input` усередині неї.
+    expect(rule(".wb-note-search")).toContain("background: var(--field-bg)");
+    expect(rule(".wb-note-search:focus-within")).toContain("var(--accent-soft)");
+
+    const inner = rule(".wb-note-search .wb-input");
+    expect(inner).toContain("box-shadow: none");
+    expect(inner).toContain("background: none");
+    expect(inner).toContain("padding: 0");
+    expect(rule(".wb-note-search--open .wb-input")).toContain("width: 100%");
   });
 
   it("кількість показаних нотаток видно лише тоді, коли вона менша за всі", () => {

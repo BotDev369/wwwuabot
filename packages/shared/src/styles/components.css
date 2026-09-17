@@ -1165,61 +1165,102 @@ html:has(.wb-tabbar) .wb-modal {
   margin-bottom: var(--sp-4);
 }
 
-/* Смуга керування — ОДИН ряд: пошук і три клітинки вибору поруч. */
+/* Смуга керування — ОДИН ряд, і він **не переноситься**: розкрите поле забирає
+   лише вільний простір, а три клітинки лишаються на своєму місці. Із переносом
+   вони стрибали на другий рядок рівно тоді, коли людина зібралась друкувати. */
 .wb-note-bar {
   display: flex;
-  flex-wrap: wrap;
   align-items: center;
   gap: var(--sp-2);
 }
 
-/* Поле пошуку з іконкою всередині: сама іконка — оздоба, а виділене місце під
-   неї тримає відступ, а не `position: absolute` на око. У спокої поле
-   завширшки зі свій підпис («Пошук»): порожнє поле на всю ширину забирало б
-   місце саме у трьох клітинок, за якими людина приходить. */
+/* Поле пошуку з іконкою — ОДИН контрол, і контрол тут **оболонка**: вона тримає
+   заливку, мірки й кільце фокуса (`:focus-within`), бо іконка живе в ній.
+   Внутрішній `.wb-input` тому не несе нічого свого — інакше в розкритому полі
+   видно «поле в полі». У спокої оболонка завширшки зі свій підпис («Пошук»):
+   порожнє поле на всю ширину забирало б місце саме у трьох клітинок. */
 .wb-note-search {
   display: flex;
-  flex: 0 0 auto;
+  flex: 0 1 auto;
   align-items: center;
   gap: var(--sp-2);
-  padding-left: var(--sp-3);
+  min-width: 0;
+  padding: var(--sp-2) var(--sp-3);
   border-radius: var(--radius-md);
   background: var(--field-bg);
-  --note-search-w: 4.5rem;
+  --note-search-w: 5rem;
 }
 
-/* Розкрите поле забирає вільне місце в ряду, відсуваючи клітинки праворуч:
-   широка смуга потрібна тоді, коли в ній є запит, а не коли вона порожня. */
+/* Фокус — те саме кільце, що й у будь-якого поля: шукають його на контролі, а
+   контрол тут оболонка. */
+.wb-note-search:focus-within {
+  box-shadow:
+    var(--field-ring),
+    0 0 0 3px var(--accent-soft);
+}
+
+/* Розкрите поле забирає вільне місце в ряду: широка смуга потрібна тоді, коли
+   в ній пишуть, а не коли вона порожня. */
 .wb-note-search--open {
-  flex: 1 1 0;
-  min-width: 0;
+  flex: 1 1 auto;
 }
 
+/* Поле всередині — частина оболонки, а не друге поле: ні мірок, ні заливки, ні
+   свого кільця. `!important` саме тут — бо брендові теми задають ці ж
+   властивості полю з `!important` (`apple.css` / `android.css`), і без нього в
+   Apple та Material усередині з'являлося б друге поле. */
 .wb-note-search .wb-input {
   width: var(--note-search-w);
   min-width: 0;
+  padding: 0 !important;
   background: none;
-  box-shadow: none;
-  padding-left: 0;
+  box-shadow: none !important;
 }
 
 .wb-note-search--open .wb-input {
   width: 100%;
 }
 
+/* ✕ у полі — СВІЙ, а не нативний: нативний у WebView малюється окремою
+   коробкою зі своїм тлом і не піддається стилю. */
+.wb-note-search input::-webkit-search-cancel-button,
+.wb-note-search input::-webkit-search-decoration {
+  -webkit-appearance: none;
+  appearance: none;
+}
+
+.wb-note-search-clear {
+  display: flex;
+  flex: 0 0 auto;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  padding: 0;
+  border: none;
+  border-radius: var(--radius-full);
+  background: none;
+  color: var(--text-muted);
+  cursor: pointer;
+}
+
+.wb-note-search-clear:hover {
+  background: var(--surface-hover);
+  color: var(--text-primary);
+}
+
 .wb-note-search-icon {
+  flex: 0 0 auto;
   color: var(--text-muted);
 }
 
-/* Смуга вибору — ОДИН ряд: три клітинки-знаки й, поруч, чипи вибраного. Ні
-   підпису, ні заливки в клітинці немає (вони — та сама клітинка, що у вкладок
-   композера), бо «що вибрано» показує чип, а не сама кнопка. */
+/* Три клітинки-знаки — ОДИН ряд, і вони з ряду не випадають. Ні підпису, ні
+   заливки в клітинці немає (вони — та сама клітинка, що у вкладок композера),
+   бо «що вибрано» показує чип, а не сама кнопка. */
 .wb-note-controls {
   display: flex;
-  flex: 0 1 auto;
+  flex: 0 0 auto;
   align-items: center;
-  flex-wrap: wrap;
-  min-width: 0;
   gap: var(--sp-1) var(--sp-2);
   /* Мірка клітинки — та сама планка для пальця, що й у композера. */
   --note-cell: 44px;
@@ -1237,6 +1278,8 @@ html:has(.wb-tabbar) .wb-modal {
   height: 18px;
 }
 
+/* Чипи вибраного — **окремий ряд під смугою**: у самій смузі місця немає (там
+   пошук і три клітинки), а знімати вибір треба там, де його видно. */
 .wb-note-chips {
   display: flex;
   flex-wrap: wrap;
