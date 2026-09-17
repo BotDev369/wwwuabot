@@ -121,9 +121,21 @@ describe("NotesList", () => {
     // `!important` — хештеги розповзались, а рядок робився вдвічі вищим за
     // текст. Тепер мірок навколо хештега немає взагалі.
     expect(rule(".wb-note-tag")).not.toContain("padding");
-    expect(rule(".wb-note-tag")).toContain("color: var(--text-muted)");
+    expect(rule(".wb-note-tag")).toContain("font-size: var(--text-sm)");
+    expect(rule(".wb-note-tag")).toContain("color: var(--text-secondary)");
     // Між хештегами — тільки проміжок: мірок, які треба розсувати, немає.
     expect(rule(".wb-note-card-tags")).toContain("gap: var(--sp-1) var(--sp-2)");
+  });
+
+  it("підписи картки читабельні, але тихіші за текст", () => {
+    // `--text-xs` (12px) на телефоні не читався, а різний кегль у двох підписів
+    // одного рядка виглядав як недогляд: обидва — `--text-sm`, а різниця лише
+    // в кольорі.
+    for (const selector of [".wb-note-tag", ".wb-note-card-stamp"]) {
+      expect(rule(selector)).toContain("font-size: var(--text-sm)");
+    }
+    expect(rule(".wb-note-card-stamp")).toContain("color: var(--text-muted)");
+    expect(rule(".wb-note-card-stamp")).not.toContain("var(--text-primary)");
   });
 
   it("картка низька: найменший проміжок між двома рядками інфо", () => {
