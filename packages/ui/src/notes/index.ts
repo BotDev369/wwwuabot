@@ -21,6 +21,7 @@ export {
   buildGroups,
   collectTags,
   filterNotes,
+  foundTags,
   queryWords,
   selectedTags,
   sortNotes,

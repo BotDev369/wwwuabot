@@ -30,6 +30,7 @@ import {
   buildGroups,
   collectTags,
   filterNotes,
+  foundTags,
   type NotesView,
 } from "@wwwuabot/ui/notes";
 import { notesApi } from "@/shared/api/notes.api";
@@ -56,6 +57,9 @@ export function NotesPage(): ReactElement {
 
   const visible = filterNotes(notes, view);
   const groups = buildGroups(notes, view);
+  // Які теги знайшов поточний пошук чи фільтр — їх картка виділяє акцентом.
+  // Рахує оболонка, а не картка: правило пошуку одне на екран (`view.ts`).
+  const found = foundTags(collectTags(notes), view);
 
   /**
    * Збереження нотатки — і нової, і відредагованої (це вирішує `draft.id`).
@@ -151,7 +155,12 @@ export function NotesPage(): ReactElement {
           />
 
           {groups.length > 0 ? (
-            <NotesList groups={groups} onEdit={edit} onDelete={(note) => void deleteNote(note)} />
+            <NotesList
+              groups={groups}
+              found={found}
+              onEdit={edit}
+              onDelete={(note) => void deleteNote(note)}
+            />
           ) : (
             <div className="wb-empty">
               <span className="wb-empty-icon">

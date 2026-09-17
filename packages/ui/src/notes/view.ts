@@ -114,6 +114,28 @@ export function queryWords(query: string): string[] {
   return query.toLocaleLowerCase("uk-UA").replace(/#/g, " ").split(/\s+/).filter(Boolean);
 }
 
+/**
+ * Хештеги, які **знайшли** поточний пошук або фільтр.
+ *
+ * Це різниця між «тег є в нотатці» і «тег і є тим, що шукали»: у стовпчику
+ * однакових приглушених підписів око не бачить, за що зачепився пошук, і
+ * нотатка, яку знайшли саме за тегом, виглядає так само, як будь-яка інша.
+ * Тому картка й виділяє знайдене акцентом — і коли тег знайшов пошук (слово
+ * запиту в ньому), і коли він вибраний у фільтрі.
+ *
+ * Нічого не шукали — нічого й не знайдено: **порожній список**. Акцентувати
+ * всі теги, коли пошуку немає, означало б акцентувати ніщо: акцент каже про
+ * дію, а не про наявність (правило 19).
+ *
+ * Порівняння ті самі, що в пошуку: нижній регістр і входження підрядка — тег
+ * `#liber` мусить знайтись на запит «liber», як і текст.
+ */
+export function foundTags(tags: readonly string[], view: NotesView): string[] {
+  const words = queryWords(view.query);
+  const chosen = selectedTags(view.tags);
+  return tags.filter((tag) => chosen.includes(tag) || words.some((word) => tag.includes(word)));
+}
+
 /** Сортує нотатки за вибраним порядком. Повертає **новий** масив. */
 export function sortNotes(notes: readonly NoteRow[], sort: NotesSort): NoteRow[] {
   const sorted = [...notes];

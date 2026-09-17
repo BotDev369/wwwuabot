@@ -17,6 +17,11 @@
  * чипа бренди задають свої мірки з `!important`, і рядок хештегів виходив
  * удвічі вищим за рядок із текстом.
  *
+ * А **знайдений** хештег (який знайшов пошук або фільтр — `foundTags`) стоїть
+ * акцентним кольором: у стовпчику однакових підписів око не бачить, за що
+ * зачепився пошук. Знайдені теги рахує оболонка одним чистим викликом, а
+ * список лише малює — правил пошуку в розмітці немає.
+ *
  * Голова картки — **кнопка на всю ширину** (палець мусить діставати будь-де),
  * а тіло з'являється під нею вже зі своїми кнопками: тіло вкладене в кнопку
  * дало б кнопки в кнопці, чого розмітка не дозволяє.
@@ -35,6 +40,11 @@ import type { NotesGroup } from "./types";
 
 interface NotesListProps {
   groups: readonly NotesGroup[];
+  /**
+   * Хештеги, які знайшов поточний пошук чи фільтр (`foundTags`) — картка
+   * виділяє їх акцентом. Порожній список — не помилка, а «нічого не шукали».
+   */
+  found?: readonly string[];
   /** Відкрити редактор — композер із цією нотаткою. */
   onEdit: (note: NoteRow) => void;
   /** Прибрати нотатку — оболонка питає підтвердження сама. */
@@ -52,10 +62,12 @@ function previewLine(text: string): string {
 
 function NoteCard({
   note,
+  found,
   onEdit,
   onDelete,
 }: {
   note: NoteRow;
+  found: ReadonlySet<string>;
   onEdit: (note: NoteRow) => void;
   onDelete: (note: NoteRow) => void;
 }): ReactElement {
@@ -90,7 +102,7 @@ function NoteCard({
                 бренди роздувають своїми мірками з `!important`, і хештеги
                 розповзались на пів екрана. */}
             {note.tags.map((tag) => (
-              <span key={tag} className="wb-note-tag">
+              <span key={tag} className={`wb-note-tag${found.has(tag) ? " wb-note-tag--hit" : ""}`}>
                 #{tag}
               </span>
             ))}
@@ -132,7 +144,11 @@ function NoteCard({
   );
 }
 
-export function NotesList({ groups, onEdit, onDelete }: NotesListProps): ReactElement {
+export function NotesList({ groups, found, onEdit, onDelete }: NotesListProps): ReactElement {
+  // Знімок для швидкого пошуку — той самий на весь список: хештег у базі один
+  // на всі нотатки, тож «знайдений» він скрізь однаково.
+  const hits = new Set(found ?? []);
+
   return (
     <>
       {groups.map((group) => (
@@ -145,7 +161,13 @@ export function NotesList({ groups, onEdit, onDelete }: NotesListProps): ReactEl
           </h2>
           <ul className="wb-note-list">
             {group.notes.map((note) => (
-              <NoteCard key={note.id} note={note} onEdit={onEdit} onDelete={onDelete} />
+              <NoteCard
+                key={note.id}
+                note={note}
+                found={hits}
+                onEdit={onEdit}
+                onDelete={onDelete}
+              />
             ))}
           </ul>
         </section>

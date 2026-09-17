@@ -15,6 +15,7 @@ import {
   buildGroups,
   collectTags,
   filterNotes,
+  foundTags,
   queryWords,
   selectedTags,
   tagFilterLabel,
@@ -81,6 +82,40 @@ describe("пошук", () => {
   it("порожній запит нічого не відсіює", () => {
     const notes = [note(1), note(2)];
     expect(filterNotes(notes, view({ query: "  " }))).toHaveLength(2);
+  });
+});
+
+describe("знайдені теги", () => {
+  const tags = ["київ", "карас", "нотатки"];
+
+  it("називає ті теги, які знайшов пошук", () => {
+    // Це різниця між «тег є в нотатці» і «тег і є тим, що шукали».
+    expect(foundTags(tags, view({ query: "карас" }))).toEqual(["карас"]);
+    // Порівняння ті самі, що в пошуку: регістр і `#` не мають значення.
+    expect(foundTags(tags, view({ query: "#КАРАС" }))).toEqual(["карас"]);
+  });
+
+  it("знаходить тег за частиною слова — як і текст", () => {
+    expect(foundTags(tags, view({ query: "киї" }))).toEqual(["київ"]);
+  });
+
+  it("вибраний у фільтрі тег — теж знайдений", () => {
+    expect(foundTags(tags, view({ tags: { kind: "tags", tags: ["нотатки"] } }))).toEqual([
+      "нотатки",
+    ]);
+  });
+
+  it("нічого не шукали — нічого й не знайдено", () => {
+    // Акцентувати всі теги, коли пошуку немає, означало б акцентувати ніщо.
+    expect(foundTags(tags, view())).toEqual([]);
+    expect(foundTags(tags, view({ query: "   " }))).toEqual([]);
+    // «Без хештегів» — не тег, тож і не знайдений.
+    expect(foundTags(tags, view({ tags: { kind: "untagged" } }))).toEqual([]);
+  });
+
+  it("пошук за текстом не робить знайденими всі теги нотатки", () => {
+    // Інакше «знайденим» виглядало б усе, що стоїть у рядку поруч.
+    expect(foundTags(tags, view({ query: "хліб" }))).toEqual([]);
   });
 });
 

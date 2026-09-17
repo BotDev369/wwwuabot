@@ -60,9 +60,11 @@ function note(id: number, over: Partial<NoteRow> = {}): NoteRow {
   };
 }
 
-function render(notes: NoteRow[]): string {
+function render(notes: NoteRow[], found: string[] = []): string {
   const groups: NotesGroup[] = [{ key: "all", label: "Усі нотатки", notes }];
-  return renderToStaticMarkup(<NotesList groups={groups} onEdit={() => {}} onDelete={() => {}} />);
+  return renderToStaticMarkup(
+    <NotesList groups={groups} found={found} onEdit={() => {}} onDelete={() => {}} />,
+  );
 }
 
 describe("NotesList", () => {
@@ -136,6 +138,24 @@ describe("NotesList", () => {
     }
     expect(rule(".wb-note-card-stamp")).toContain("color: var(--text-muted)");
     expect(rule(".wb-note-card-stamp")).not.toContain("var(--text-primary)");
+  });
+
+  it("знайдений тег виділений акцентом, а решта — ні", () => {
+    const html = render([note(1, { tags: ["карас", "нотатки"] })], ["карас"]);
+    const rendered = [...html.matchAll(/<span class="([^"]*)">#([^<]+)<\/span>/g)].map((match) => ({
+      classes: match[1],
+      tag: match[2],
+    }));
+
+    expect(rendered).toEqual([
+      { classes: "wb-note-tag wb-note-tag--hit", tag: "карас" },
+      { classes: "wb-note-tag", tag: "нотатки" },
+    ]);
+  });
+
+  it("акцент виділяє знайдене кольором, а вагу підпису не чіпає", () => {
+    expect(rule(".wb-note-tag--hit")).toContain("color: var(--accent)");
+    expect(rule(".wb-note-tag--hit")).not.toContain("font-weight");
   });
 
   it("картка низька: найменший проміжок між двома рядками інфо", () => {
