@@ -85,7 +85,7 @@ export function ThemeButton({ compact = false }: { compact?: boolean }): ReactEl
               </button>
             </div>
             <div className="wb-modal-body wb-menu-body">
-              <ThemeColorPanel onSaved={() => setOpen(false)} />
+              <ThemeColorPanel onClose={close} />
             </div>
           </div>
         </div>

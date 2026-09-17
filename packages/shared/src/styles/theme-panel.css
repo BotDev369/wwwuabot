@@ -97,6 +97,35 @@
   color: var(--yellow);
 }
 
+/* Стан збереження. Це рядок, а не колір кнопки: кнопка, що просто сіріє, читається як «не спрацювала», і людина не знає, чи вибір лишився. Колір тут
+   статусний (`--green`), а не акцентний: акцент — це дія, а «збережено» — стан. */
+.wb-theme-status {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+  margin: 0;
+  padding: 0 var(--sp-1);
+  font-size: var(--text-xs);
+  color: var(--text-muted);
+}
+
+.wb-theme-status--saved {
+  color: var(--green);
+}
+
+/* Три кнопки в рядок не влазять (на телефоні вони розривались як завгодно),
+   тому рядок дій — дві рівні колонки: зверху «Скинути» та «Зберегти», а
+   «Зберегти і закрити» — на всю ширину під ними, як останній крок. */
+.wb-theme-actions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  align-items: center;
+}
+
+.wb-theme-actions > .wb-btn:last-child {
+  grid-column: 1 / -1;
+}
+
 /* ── Готові палітри ─────────────────────────────────────────────────────── */
 .wb-theme-presets {
   display: grid;

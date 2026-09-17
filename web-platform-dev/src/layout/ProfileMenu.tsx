@@ -61,7 +61,7 @@ export function ProfileMenu({ onClose }: ProfileMenuProps): ReactElement {
       items={view === "theme" ? [] : items}
       // Панель теми замінює список: це та сама поверхня, лише зі своїм вмістом
       // (світлої / темної більше немає, а три кольори — не пункт меню).
-      content={view === "theme" ? <ThemeColorPanel /> : undefined}
+      content={view === "theme" ? <ThemeColorPanel onClose={onClose} /> : undefined}
       onClose={onClose}
       // «Назад» є лише там, звідки є куди вертатись: у списку розділів його
       // немає, бо це корінь меню.

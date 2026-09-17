@@ -15,6 +15,13 @@
  * а не суцільний стовп. Пояснень усередині немає — підказки лишились там, де
  * вони щось міняють (порожні слоти й нечитабельний вибір).
  *
+ * **Стан збереження видно рядком** (`.wb-theme-status`): «Незбережені зміни» →
+ * «Збережено». Без нього кнопка, що просто сіріє, читається як «не спрацювала»,
+ * а людина не знає, чи вибір лишився. Заодно це причина, чому кнопок дві:
+ * **«Зберегти»** лишає панель відкритою (щоб стан було видно й можна було
+ * доправити), а **«Зберегти і закрити»** — це те саме плюс вихід: два дотики
+ * замість двох дій.
+ *
  * Червоного «не можна» тут немає: панель **називає**, якого кольору бракує, і
  * кнопка збереження просто неактивна. Порожній слот — це стан, який видно.
  *
@@ -31,19 +38,25 @@ import { useStyleTheme } from "./useStyleTheme";
 import { useUserColors } from "./useUserColors";
 
 export interface ThemeColorPanelProps {
-  /** Вибір записано в локальну пам'ять (оболонка, наприклад, закриває панель). */
-  onSaved?: () => void;
+  /**
+   * Закрити поверхню. Потрібна кнопці «Зберегти і закрити»: сама панель не знає,
+   * чим відкрита (меню профілю чи модалка адмінки), і закриває її той, хто
+   * відкрив.
+   */
+  onClose?: () => void;
 }
 
-export function ThemeColorPanel({ onSaved }: ThemeColorPanelProps): ReactElement {
+export function ThemeColorPanel({ onClose }: ThemeColorPanelProps): ReactElement {
   const colors = useUserColors();
   const { brand, setBrand, brands } = useStyleTheme();
   // Відкритих слотів немає: акордеони закриті, доки їх не розкриють.
   const [openSlot, setOpenSlot] = useState<ColorSlot | null>(null);
 
-  const handleSave = () => {
+  const handleSave = () => colors.save();
+
+  const handleSaveAndClose = () => {
     colors.save();
-    onSaved?.();
+    onClose?.();
   };
 
   return (
@@ -113,7 +126,16 @@ export function ThemeColorPanel({ onSaved }: ThemeColorPanelProps): ReactElement
       )}
       {colors.warning && <p className="wb-theme-hint wb-theme-hint--warn">{colors.warning}</p>}
 
-      <div className="wb-sheet-actions">
+      {/* Що саме станеться з натиснутою кнопкою — рядком, а не кольором кнопки:
+          «Збережено» тут означає, що вибір уже в пам'яті пристрою. */}
+      {colors.complete && (
+        <p className={`wb-theme-status${colors.dirty ? "" : " wb-theme-status--saved"}`}>
+          <Icon name={colors.dirty ? "edit" : "check"} size={16} />
+          {colors.dirty ? "Незбережені зміни" : "Збережено на цьому пристрої"}
+        </p>
+      )}
+
+      <div className="wb-sheet-actions wb-theme-actions">
         <button
           type="button"
           className="wb-btn wb-btn-secondary wb-btn-sm"
@@ -125,13 +147,24 @@ export function ThemeColorPanel({ onSaved }: ThemeColorPanelProps): ReactElement
         </button>
         <button
           type="button"
-          className="wb-btn wb-btn-primary wb-btn-sm"
+          className="wb-btn wb-btn-secondary wb-btn-sm"
           onClick={handleSave}
           disabled={!colors.complete || !colors.dirty}
         >
-          <Icon name="check" size={16} />
+          <Icon name="save" size={16} />
           Зберегти
         </button>
+        {onClose && (
+          <button
+            type="button"
+            className="wb-btn wb-btn-primary wb-btn-sm"
+            onClick={handleSaveAndClose}
+            disabled={!colors.complete}
+          >
+            <Icon name="check" size={16} />
+            Зберегти і закрити
+          </button>
+        )}
       </div>
     </div>
   );
