@@ -212,17 +212,30 @@ describe("NotesToolbar", () => {
     expect(rule(".wb-note-search--open")).toContain("flex: 1 1 auto");
   });
 
-  it("кільце фокуса малює оболонка поля, а не внутрішнє поле", () => {
-    // Інакше в розкритому полі видно «поле в полі»: заливку й кільце несе
-    // оболонка з іконкою, а не `.wb-input` усередині неї.
-    expect(rule(".wb-note-search")).toContain("background: var(--field-bg)");
-    expect(rule(".wb-note-search:focus-within")).toContain("var(--accent-soft)");
+  it("у спокої навколо поля немає нічого, а на фокусі світиться саме поле", () => {
+    // Залите поле поруч із трьома клітинками читалось як ще одна кнопка, тож
+    // заливка й розмите світло з'являються тільки на дотик — і навколо місця,
+    // де пишуть, а не навколо оболонки з іконкою.
+    const shell = rule(".wb-note-search");
+    expect(shell).not.toContain("background");
 
     const inner = rule(".wb-note-search .wb-input");
-    expect(inner).toContain("box-shadow: none");
     expect(inner).toContain("background: none");
+    expect(inner).toContain("box-shadow: none");
     expect(inner).toContain("padding: 0");
+    expect(inner).toContain("height: var(--note-row-h)");
+
+    const focus = rule(".wb-note-search .wb-input:focus");
+    expect(focus).toContain("background: var(--field-bg)");
+    expect(focus).toContain("var(--note-search-glow)");
+
     expect(rule(".wb-note-search--open .wb-input")).toContain("width: 100%");
+  });
+
+  it("ряд низький: мірка смуги вдвічі менша за планку пальця композера", () => {
+    // Високий ряд забирав у списку більше екрана, ніж сам список.
+    expect(rule(".wb-note-bar")).toContain("--note-row-h: 32px");
+    expect(rule(".wb-note-controls")).toContain("--note-cell: var(--note-row-h)");
   });
 
   it("кількість показаних нотаток видно лише тоді, коли вона менша за всі", () => {

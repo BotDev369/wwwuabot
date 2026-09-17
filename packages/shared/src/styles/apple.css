@@ -471,17 +471,20 @@ html[data-brand="apple"] .scn-search:focus {
     0 0 0 4px var(--accent-soft) !important;
 }
 
-/* Пошук нотаток — контрол тут оболонка з іконкою (див. `components.css`),
-   тож бренд дає їй ті самі мірки й те саме кільце, що й будь-якому полю. */
-html[data-brand="apple"] .wb-note-search {
-  border-radius: 10px !important;
-  padding: 12px 16px !important;
+/* Пошук нотаток — контрол тут САМЕ поле, а не оболонка з іконкою (див.
+   `components.css`), тож бренд дає йому свій радіус, але **не** мірки звичайного
+   поля: у смузі поле стоїть поруч із клітинками 32px, і мірки поле-в-поле
+   зробили б ряд учетверо вищим за них. Кільце бренду теж знято — фокус тут
+   показує м'яке світло навколо самого поля. */
+html[data-brand="apple"] .wb-note-search .wb-input {
+  height: var(--note-row-h) !important;
+  padding: 0 var(--sp-2) !important;
+  border-radius: 8px !important;
+  box-shadow: none !important;
 }
 
-html[data-brand="apple"] .wb-note-search:focus-within {
-  box-shadow:
-    var(--field-ring),
-    0 0 0 4px var(--accent-soft) !important;
+html[data-brand="apple"] .wb-note-search .wb-input:focus {
+  box-shadow: var(--note-search-glow) !important;
 }
 
 /* ── Modal: glass overlay — Apple sheet style ───────────────────────────── */
