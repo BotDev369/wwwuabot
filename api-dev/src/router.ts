@@ -41,6 +41,7 @@ import {
   handleUserMessage,
 } from "./controllers/users.controller";
 import { handleNotes, handleAdminNotes } from "./controllers/notes.controller";
+import { handleInvites } from "./controllers/invites.controller";
 
 /**
  * Префікси шляхів, доступ до яких вимагає адмінської cookie-сесії.
@@ -139,6 +140,11 @@ export async function handleRequest(request: Request, env: Env): Promise<Respons
   // ── Notes: нотатки людини (ідентичність із підписаного initData) ─
   if (pathname === "/api/notes") {
     return handleNotes(request, env);
+  }
+
+  // ── Invites: особисті лінки-запрошення («МоїКонтакти») ──────────
+  if (pathname === "/api/invites") {
+    return handleInvites(request, env);
   }
 
   // ── Admin: Cookie Auth ─────────────────────────────────────────

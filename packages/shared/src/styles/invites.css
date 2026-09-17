@@ -1,0 +1,224 @@
+/*
+ * ═══════════════════════════════════════════════════════════════════════════
+ * «МоїКонтакти» — особисті лінки-запрошення та схема залучених
+ * ═══════════════════════════════════════════════════════════════════════════
+ *
+ * Класи `.wb-invite*` рендерить спільний код (`@wwwuabot/ui/invites`), тож
+ * стилі живуть тут, а не в CSS однієї з оболонок: інакше друга оболонка
+ * виглядала б інакше (правило 10).
+ *
+ * Окремим файлом, а не в `components.css`, з тієї ж причини, що й
+ * `theme-panel.css`: це цілісна деталь зі своїми класами, і тримати її поряд із
+ * чотирма сотнями чужих правил означало б, що правку шукають навпомацки.
+ *
+ * Ліній немає жодної: картка, рядок схеми й клітинка статистики — це той самий
+ * `--field-bg`, що у картки нотатки («плитка списку»), а розділяє проміжок
+ * (DESIGN_SYSTEM.md, правило 15).
+ */
+
+/* Заголовок блоку екрана — той самий, що в «МоїНотатки» (кегль, регістр,
+   колір), і це навмисно: два екрани однієї оболонки мусять мати однакову
+   межу між блоками, інакше різниця читається як недогляд. */
+.wb-invite-section {
+  margin: var(--sp-5) 0 var(--sp-1);
+  font-size: var(--text-xs);
+  font-weight: var(--weight-semibold);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+
+.wb-invite-section-hint {
+  margin: 0 0 var(--sp-3);
+  font-size: var(--text-sm);
+  color: var(--text-secondary);
+}
+
+/* ── Список лінків ─────────────────────────────────────────────────────── */
+
+.wb-invite-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-3);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.wb-invite-item {
+  border-radius: var(--radius-md);
+  background: var(--field-bg);
+  overflow: hidden;
+}
+
+.wb-invite-card {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-2);
+  padding: var(--sp-3);
+}
+
+.wb-invite-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--sp-2);
+}
+
+.wb-invite-label {
+  font-size: var(--text-base);
+  font-weight: var(--weight-semibold);
+  color: var(--text-primary);
+  /* Підпис пише людина — довге слово мусить переноситись, а не розтягувати
+     картку за екран. */
+  overflow-wrap: anywhere;
+}
+
+/* Стан — словом, а не самим кольором: «Очікує» видно й тоді, коли відтінки не
+   розрізняються. Колір лише підсилює те, що вже сказано словом. */
+.wb-invite-state {
+  flex-shrink: 0;
+  font-size: var(--text-xs);
+  font-weight: var(--weight-semibold);
+}
+
+.wb-invite-state--waiting {
+  color: var(--text-muted);
+}
+
+.wb-invite-state--joined {
+  color: var(--green);
+}
+
+.wb-invite-contact {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+  margin: 0;
+  font-size: var(--text-sm);
+  color: var(--text-secondary);
+}
+
+.wb-invite-stamp {
+  color: var(--text-muted);
+}
+
+/* Сам лінк — код, тож моноширинним і з переносом: довгий діплінк інакше
+   розтягнув би картку за екран. */
+.wb-invite-code {
+  display: block;
+  padding: var(--sp-2);
+  border-radius: var(--radius-sm);
+  background: var(--bg-2);
+  font-size: var(--text-xs);
+  overflow-wrap: anywhere;
+}
+
+.wb-invite-actions {
+  display: flex;
+  gap: var(--sp-2);
+}
+
+.wb-invite-actions .wb-btn {
+  flex: 1;
+}
+
+/* ── Схема залучених ───────────────────────────────────────────────────── */
+
+/* Обгортка схеми: числа й гілка — один блок, і проміжок між ними задає він, а
+   не кожен із двох (інакше відступ залежав би від того, хто знизу). */
+.wb-invite-scheme {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-3);
+}
+
+/* Три числа — три різні факти. Сітка з рівних клітинок: числа порівнюють
+   очима, тож вони мусять стояти однією лінією. */
+.wb-invite-stats {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--sp-2);
+  margin: 0;
+}
+
+.wb-invite-stat {
+  padding: var(--sp-2);
+  border-radius: var(--radius-md);
+  background: var(--field-bg);
+  text-align: center;
+}
+
+.wb-invite-stat dt {
+  font-size: var(--text-xs);
+  color: var(--text-muted);
+}
+
+.wb-invite-stat dd {
+  margin: 0;
+  font-size: var(--text-lg);
+  font-weight: var(--weight-semibold);
+  color: var(--text-primary);
+}
+
+.wb-invite-nested-total {
+  margin: 0;
+  font-size: var(--text-sm);
+  color: var(--text-secondary);
+}
+
+/* Гілка схеми: корінь («Ви») і рядки під ним. Рівень показує **відступ**, а не
+   лінія-дерево: у тексті списку лінії читались би як таблиця. */
+.wb-invite-scheme-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-2);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.wb-invite-scheme-root {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+  font-size: var(--text-sm);
+  font-weight: var(--weight-semibold);
+  color: var(--text-primary);
+}
+
+.wb-invite-scheme-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: var(--sp-1) var(--sp-2);
+  margin-left: var(--sp-4);
+  padding: var(--sp-2) var(--sp-3);
+  border-radius: var(--radius-md);
+  background: var(--field-bg);
+  font-size: var(--text-sm);
+}
+
+/* Вузол схеми й ім'я контакту — різні факти: перше вписав власник, друге
+   прийшло з профілю. Тому вони й різного кольору. */
+.wb-invite-scheme-node {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-1);
+  color: var(--text-secondary);
+}
+
+.wb-invite-scheme-name {
+  color: var(--text-primary);
+}
+
+.wb-invite-scheme-nested {
+  font-size: var(--text-xs);
+  color: var(--accent);
+}
+
+/* Лінк, який ще нікого не закріпив, стоїть тихіше: він не результат, а
+   очікування. */
+.wb-invite-scheme-row--waiting .wb-invite-scheme-name {
+  color: var(--text-muted);
+}

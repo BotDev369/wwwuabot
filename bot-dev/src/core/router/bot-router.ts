@@ -2,6 +2,7 @@ import type { AppContext } from "../../shared/types/env";
 import { ScenarioRepository } from "../../repositories/scenario.repository";
 import { log } from "../../shared/utils/debug";
 import { handleTextInput } from "./text-input";
+import { applyInvitePayload } from "../../modules/invites/invite-link";
 import { isValidBotPayload, isValidSlug, toWebPath } from "@wwwuabot/shared/content";
 
 /**
@@ -9,10 +10,16 @@ import { isValidBotPayload, isValidSlug, toWebPath } from "@wwwuabot/shared/cont
  * Бот — pure renderer: бере контент із таблиці scenarios і показує.
  *
  * Потоки:
- * 1. /start <payload> → shared resolver → сторінка → рендер
+ * 1. /start <payload> → код запрошення або shared resolver → сторінка → рендер
  * 2. /start без payload → головна сторінка
  * 3. callback_data → slug → рендер
  * 4. текст → ТІЛЬКИ якщо awaits_input, інакше видаляємо
+ *
+ * **Код запрошення перевіряється першим.** Він теж проходить
+ * `isValidBotPayload` (це адреса, яку приймає Telegram), тож відрізнити його
+ * від slug можна лише запитом. Якщо колись з'явиться сторінка зі slug, що
+ * збігається з чужим кодом, переможе запрошення — код складає сервер, і
+ * людина його не обирає, а от slug людина пише сама.
  */
 export async function botRouter(ctx: AppContext): Promise<void> {
   if (!ctx.user) return;
@@ -38,6 +45,14 @@ export async function botRouter(ctx: AppContext): Promise<void> {
         return;
       }
       log("ROUTER", "deep link", { payload, user_id: ctx.from?.id });
+
+      // Особистий лінк веде на головну: екран запрошення — не сторінка
+      // контенту, і шукати сторінку з таким «slug» нема чого.
+      if (payload && (await applyInvitePayload(ctx, payload))) {
+        await loadAndRenderPayload(ctx, repo, "");
+        return;
+      }
+
       await loadAndRenderPayload(ctx, repo, payload);
       return;
     }

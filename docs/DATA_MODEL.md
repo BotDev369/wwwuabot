@@ -1,6 +1,6 @@
 # Модель даних D1: одна таблиця — один власник
 
-**Створено:** 13.09.2026 · **оновлено:** 16.09.2026 (нотатки: таблиця `notes`) ·
+**Створено:** 13.09.2026 · **оновлено:** 17.09.2026 (контакти: таблиця `invites`) ·
 **джерело правди про схему:** `packages/shared/src/database/tables.ts` · **гейт:**
 `npm run check:db` (крок `D1 schema` у джобі `checks`) · **міграції:** `scripts/migrations/` ·
 **модель контенту:** [`CONTENT_MODEL.md`](./CONTENT_MODEL.md)
@@ -38,6 +38,7 @@ npx wrangler d1 execute wwwuabot-db-dev --remote \
 | `scenarios` | `api-dev` | api-dev (`ensureBase`, `scenarios-portal.controller`) | **bot-dev читає**; api-dev редагує (`/api/portal/scenarios/*`); платформа рендерить (`/api/scenario/:slug`) | **єдине сховище контенту:** рядок = сторінка вебу (`page_data`) + її подання в боті (`caption_*`, `buttons`, `rich_*`). Деталі — [`CONTENT_MODEL.md`](./CONTENT_MODEL.md) |
 
 | `notes` | `api-dev` | api-dev (`ensureTables` у `notes.controller`) | api-dev: платформа — `/api/notes`, панель — `/api/admin/notes` | нотатки: чернетки людини (`scope = 'user'`, власник — Telegram-id із **підписаного `initData`**) і нотатки про проєкт з панелі (`scope = 'admin'`, власник — акаунт cookie-сесії). `tags` — JSON-масив |
+| `invites` | `api-dev` | api-dev (`ensureTables` у `invites.controller`) | api-dev: лінки й схема залучених — `/api/invites`; **bot-dev пише** `invited_user_id`/`invited_at`, коли людина прийшла з `?start=<код>` | особисті лінки-запрошення: **один рядок = один лінк = один контакт**. `code` (з `UNIQUE`) — це і є payload бота (`inv-8f3k2q`), `owner_id` — Telegram-id інвайтера з **підписаного `initData`** |
 | `mydate_analysis` | `api-dev` | api-dev, `getAnalysis` | api-dev | кеш астрологічного аналізу на дату (KV — швидкий шар) |
 
 У `scenarios` дві різні речі, і плутати їх більше не можна: **`id`** — номер рядка
@@ -49,11 +50,20 @@ npx wrangler d1 execute wwwuabot-db-dev --remote \
 таблицю створили повз реєстр.
 
 Індекси (`indexes` в оголошенні) живуть поруч із таблицею, щоб не «загубились» окремо від неї.
-Сьогодні індекс оголошує одна таблиця — `notes` (`idx_notes_scope_owner`, список власних
-нотаток за `(scope, owner_id)`). Унікальність `scenarios.slug` тримає `UNIQUE` у самому
+Сьогодні індекси оголошують дві таблиці — `notes` (`idx_notes_scope_owner`, список власних
+нотаток за `(scope, owner_id)`) і `invites` (`idx_invites_owner`, список лінків людини).
+Унікальність `invites.code` тримає `UNIQUE` у самому `CREATE TABLE` — з тієї ж причини, що й у
+`scenarios.slug` (імена індексів у SQLite глобальні для бази). Унікальність `scenarios.slug` тримає `UNIQUE` у самому
 `CREATE TABLE`, а не іменований індекс. Це не дрібниця — імена індексів у SQLite глобальні для
 бази, тому однойменний `CREATE UNIQUE INDEX IF NOT EXISTS` міг би виявитись **порожньою дією**,
 і таблиця лишилась би без унікальності, не сказавши про це нікому.
+
+**`invites`: чому контакт лежить у рядку лінка (17.09.2026).** Один рядок = один лінк = один
+контакт — так задумано, а не спрощено: лінк **персональний** (його створюють під конкретну
+людину, і саме він фіксує, що ця людина приєдналася), тож окремої таблиці «хто прийшов» не
+треба. Закріплення — **один раз**: `WHERE invited_user_id IS NULL` стоїть у самому `UPDATE`,
+який робить `bot-dev`, і другий, хто відкриє той самий лінк, контакту не додасть (але й не
+зламає того, що вже закріплено). Власник лінка за власним лінком контактом не стає.
 
 ## Дві різні «імена» в `users` (14.09.2026)
 

@@ -8,7 +8,7 @@
  */
 
 import { describe, expect, it, vi } from "vitest";
-import { buildProfileItems, NOTES_PATH } from "./profile-menu";
+import { buildProfileItems, CONTACTS_PATH, NOTES_PATH } from "./profile-menu";
 
 const onOpenTheme = vi.fn();
 
@@ -40,6 +40,8 @@ describe("меню профілю", () => {
   it("готові пункти ведуть на свої екрани", () => {
     const notes = items.find((item) => item.key === "notes");
     expect(notes?.href).toBe(NOTES_PATH);
+    // Контакти більше не заглушка: лінки-запрошення вже мають власний екран.
+    expect(items.find((item) => item.key === "contacts")?.href).toBe(CONTACTS_PATH);
     // МоїДати — рядок контенту, тож адреса будується зі `slug` (AGENTS.md §7),
     // а не вигадується рядком на місці.
     expect(items.find((item) => item.key === "mydate")?.href).toBe("/mydate");
@@ -47,7 +49,7 @@ describe("меню профілю", () => {
 
   it("заглушки позначені заглушками й мають пояснення", () => {
     const soon = items.filter((item) => item.status === "soon").map((item) => item.key);
-    expect(soon).toEqual(["contacts", "locations", "pages"]);
+    expect(soon).toEqual(["locations", "pages"]);
     for (const item of items.filter((entry) => entry.status === "soon")) {
       // Заглушка без пояснення — це та сама тиша, лише з іншим виглядом.
       expect(item.hint, item.key).toBeTruthy();

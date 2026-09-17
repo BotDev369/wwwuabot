@@ -347,6 +347,20 @@ Defined in `packages/shared/src/styles/tokens.css`, overridden per brand in `app
     стається до перерендера зі свіжим `saved` — і знятий зі стану знімок показав би стару тему
     до перезавантаження (саме так це й ламалось).
 
+20. **«МоїКонтакти»: контакт не заводять — його запрошують лінком.** Екран (`/contacts`) зводить
+    спільний `@wwwuabot/ui/invites` (кирпичики `.wb-invite*` у власному `invites.css` — як
+    `theme-panel.css`, бо це цілісна деталь): картки лінків, де **стан названий словом**
+    («Очікує» / «Приєднався»), а колір лише підсилює сказане (`--green` / `--text-muted`) —
+    стан, який видно лише за відтінком, не видно взагалі; і **схема залучених** — три числа
+    (лінків / приєднались / очікують) плюс гілка, у якій видно, хто з контактів залучив далі.
+    Другий рівень показується **лише коли він є**: «залучив(ла) ще 0» — рядок заради нуля.
+    Схема малюється з **тих самих лінків**, а не окремим запитом: це той самий факт під іншим
+    кутом, і друге джерело розійшлося б із першим. Числа рахуються чистою функцією
+    (`inviteStats`) — тут помилка виглядає як неправильна цифра, а не як зламаний код.
+    Картка віддає дії нагору (`onCopy` / `onDelete`): буфер обміну й підтвердження належать
+    оболонці, а не картці (та сама межа, що в нотатках). Лінк персональний — **один рядок = один
+    лінк = один контакт** — тож і сказано це до дотику рядком під заголовком.
+
 ---
 
 ## File Locations
@@ -360,6 +374,8 @@ Defined in `packages/shared/src/styles/tokens.css`, overridden per brand in `app
 | `packages/shared/src/styles/apple.css` | Apple brand overrides |
 | `packages/shared/src/styles/android.css` | Material brand overrides |
 | `packages/shared/src/styles/components.css` | `.wb-*` component styles (включно з `.wb-dialog*` і кирпичиком вигляду колекції `.wb-collection*`) |
+| `packages/shared/src/styles/invites.css` | Кирпичики «МоїКонтакти» (`.wb-invite*`): картка лінка, стан, готовий діплінк, схема залучених |
+| `packages/ui/src/invites/` | `InvitesList` (картка лінка) і `InvitesScheme` + чиста `scheme.ts` — лінки-запрошення й схема залучених (екран платформи `/contacts`) |
 | `packages/ui/src/collection/` | `CollectionViewSwitch` + модель вигляду колекції: рядки чи картки-превью й колонки (спільний кирпичик, не лише нотаток) |
 | `packages/shared/src/styles/app-chrome.css` | кирпичики каркаса оболонки: app / nav / **tabbar (нижній футер)** / topbar / page / auth / splash / profile |
 | `packages/shared/src/styles/page-layout.css` | каркас сторінки для `PageRenderer` |

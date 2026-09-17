@@ -33,6 +33,17 @@ export const NOTES_ROUTE = "notes";
 /** Адреса того ж екрана — те, на що веде пункт меню. */
 export const NOTES_PATH = `/${NOTES_ROUTE}`;
 
+/**
+ * Екран «МоїКонтакти» — теж власний маршрут.
+ *
+ * Лінки-запрошення живуть у своїй таблиці (`invites`), а не в `page_data`,
+ * тож і адреса в них своя — та сама причина, що в нотаток і профілю (§7).
+ */
+export const CONTACTS_ROUTE = "contacts";
+
+/** Адреса того ж екрана — те, на що веде пункт меню. */
+export const CONTACTS_PATH = `/${CONTACTS_ROUTE}`;
+
 /** Вид усередині меню: список розділів або панель теми. */
 export type ProfileMenuView = "list" | "theme";
 
@@ -43,13 +54,7 @@ export interface BuildProfileItemsOptions {
 
 export function buildProfileItems({ onOpenTheme }: BuildProfileItemsOptions): ShellMenuItem[] {
   return [
-    {
-      key: "contacts",
-      label: "МоїКонтакти",
-      icon: "mail",
-      status: "soon",
-      hint: "Телефони, пошти й месенджери — одним списком для бота та сторінок.",
-    },
+    { key: "contacts", label: "МоїКонтакти", icon: "mail", href: CONTACTS_PATH },
     {
       key: "locations",
       label: "МоїЛокації",

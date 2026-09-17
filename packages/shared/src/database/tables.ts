@@ -216,6 +216,44 @@ export const TABLES = {
     indexes: ["CREATE INDEX IF NOT EXISTS idx_notes_scope_owner ON notes(scope, owner_id)"],
   },
 
+  /**
+   * Особисті лінки-запрошення — те, чим людина заводить собі контакт.
+   *
+   * **Один рядок = один лінк = один контакт.** Так це й задумано: лінк не
+   * «канал набору», а персональне запрошення конкретній людині, і саме тому
+   * `invited_user_id` стоїть у тому самому рядку, а не в таблиці поруч. Коли
+   * лінк уже когось закріпив, він більше нікого не закріплює: той, хто
+   * відкриє його другим, побачить бота, але контакту не додасть — закріплення
+   * одне, і воно вже є.
+   *
+   * `code` — це те, що їде в `?start=` (`inv-8f3k2q`), тому воно `UNIQUE`
+   * (інакше двоє лінків вели б в одного власника) і мусить проходити
+   * `isValidBotPayload` — правила коду живуть у `@wwwuabot/shared/invites`, а
+   * не тут: у `NOT NULL UNIQUE` про формат payload не сказано нічого.
+   *
+   * **Господар — `api-dev`:** лінки створює й показує платформа. `bot-dev`
+   * лише закріплює факт приєднання (`invited_user_id`), коли людина приходить
+   * із діплінка, — і теж кличе `ensureTables`, бо пише **першим**: людина
+   * відкриває бота раніше, ніж платформа встигає створити таблицю.
+   */
+  invites: {
+    name: "invites",
+    owner: "api-dev",
+    purpose:
+      "Особисті лінки-запрошення: код у `?start=`, підпис і закріплений контакт (`invited_user_id`). Лінки створює платформа, факт приєднання пише bot-dev.",
+    create: `CREATE TABLE IF NOT EXISTS invites (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        owner_id INTEGER NOT NULL,
+        code TEXT NOT NULL UNIQUE,
+        label TEXT NOT NULL DEFAULT '',
+        invited_user_id INTEGER,
+        invited_at TEXT,
+        created_at TEXT NOT NULL DEFAULT (datetime('now')),
+        updated_at TEXT NOT NULL DEFAULT (datetime('now'))
+      )`,
+    indexes: ["CREATE INDEX IF NOT EXISTS idx_invites_owner ON invites(owner_id)"],
+  },
+
   mydate_analysis: {
     name: "mydate_analysis",
     owner: "api-dev",
