@@ -10,6 +10,7 @@
     "./PageRenderer": "./src/PageRenderer.tsx",
     "./SiteRenderer": "./src/SiteRenderer.tsx",
     "./ZoneRenderer": "./src/ZoneRenderer.tsx",
+    "./collection": "./src/collection/index.ts",
     "./composer": "./src/composer/index.ts",
     "./dialog": "./src/dialog/index.ts",
     "./menu": "./src/menu/index.ts",

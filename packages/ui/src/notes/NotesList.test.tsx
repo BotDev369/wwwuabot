@@ -28,6 +28,7 @@ import { fileURLToPath } from "node:url";
 import { describe, expect, it } from "vitest";
 import { renderToStaticMarkup } from "react-dom/server";
 import type { NoteRow } from "@wwwuabot/shared/notes";
+import { type CollectionView } from "../collection";
 import { NotesList } from "./NotesList";
 import type { NotesGroup } from "./types";
 
@@ -60,7 +61,12 @@ function note(id: number, over: Partial<NoteRow> = {}): NoteRow {
   };
 }
 
-function render(notes: NoteRow[], found: string[] = [], openIds: number[] = []): string {
+function render(
+  notes: NoteRow[],
+  found: string[] = [],
+  openIds: number[] = [],
+  collection: CollectionView = { layout: "rows", columns: 2 },
+): string {
   const groups: NotesGroup[] = [{ key: "all", label: "Усі нотатки", notes }];
   return renderToStaticMarkup(
     <NotesList
@@ -70,6 +76,7 @@ function render(notes: NoteRow[], found: string[] = [], openIds: number[] = []):
       onToggle={() => {}}
       onEdit={() => {}}
       onDelete={() => {}}
+      collection={collection}
     />,
   );
 }
@@ -187,5 +194,51 @@ describe("NotesList", () => {
   it("картка низька: найменший проміжок між двома рядками інфо", () => {
     expect(rule(".wb-note-card")).toContain("gap: var(--sp-1)");
     expect(rule(".wb-note-card")).toContain("padding: var(--sp-2) var(--sp-3)");
+  });
+
+  it("вигляд — це клас розкладки, а не друга розмітка", () => {
+    // Другий набір розмітки розійшовся б із першим на першій же правці, тож
+    // плитки відрізаються від рядків рівно в одному місці — у <ul>.
+    const rows = render([note(1, { tags: ["київ"] })]);
+    const cards = render([note(1, { tags: ["київ"] })], [], [], { layout: "cards", columns: 2 });
+
+    expect(rows).toContain("wb-note-list wb-collection wb-collection--rows");
+    expect(cards).toContain(
+      "wb-note-list wb-collection wb-collection--cards wb-collection--cols-2",
+    );
+    expect(cards.replace("wb-collection--cards wb-collection--cols-2", "wb-collection--rows")).toBe(
+      rows,
+    );
+  });
+
+  it("розкладку задає кирпичик, а не список: двох `display` на одному елементі немає", () => {
+    // Інакше вибір вигляду залежав би від порядку правил у файлі.
+    expect(rule(".wb-note-list")).not.toContain("display");
+    expect(rule(".wb-collection--cards")).toContain(
+      "repeat(var(--collection-cols, 2), minmax(0, 1fr))",
+    );
+  });
+
+  it("плитка читається плиткою: три рядки тексту, дата з кареткою під ним, хештеги знизу", () => {
+    // Обрізати «однією лінією» правильно в рядку (там поруч стоїть дата), а в
+    // плитці це виглядало б як обрубок; мета в плитці стоїть знизу.
+    const tile = rule(".wb-collection--cards .wb-note-card-text");
+    expect(tile).toContain("-webkit-line-clamp: 3");
+    expect(tile).toContain("grid-column: 1 / -1");
+
+    expect(rule(".wb-collection--cards .wb-note-card-line")).toContain("display: grid");
+    expect(rule(".wb-collection--cards .wb-note-card-tags")).toContain("order: 1");
+    // Плитка не коротша за найменшу мірку — інакше картка з трьома словами
+    // виглядала б як обрізана.
+    expect(rule(".wb-collection--cards .wb-note-item")).toContain("min-height");
+  });
+
+  it("розкриття лишається тим самим і в плитках", () => {
+    // Картка росте на місці: інакше «розгорнути всі» переставало б працювати
+    // від самої лише зміни вигляду.
+    const html = render([note(1), note(2)], [], [2], { layout: "cards", columns: 1 });
+
+    expect(html.match(/aria-expanded="true"/g)).toHaveLength(1);
+    expect(html.match(/wb-note-card-body/g)).toHaveLength(1);
   });
 });

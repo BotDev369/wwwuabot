@@ -299,6 +299,24 @@ Defined in `packages/shared/src/styles/tokens.css`, overridden per brand in `app
     Редагує **той самий** композер (`initial` із `id`), а підтвердження видалення дає
     оболонка: картка віддає дії нагору (`onEdit` / `onDelete`), а не робить їх сама.
     Кнопки дій будь-якої поверхні — `.wb-sheet-actions` (композер і картка — одна деталь).
+    Вигляд списку — **спільний кирпичик** `@wwwuabot/ui/collection` (`CollectionViewSwitch` плюс
+    чиста модель): рядки чи **картки-превью** й скількома колонками (1 / 2), як у товарів і новин.
+    Кирпичик саме спільний, а не «для нотаток»: той самий вибір знадобиться товарам, новинам і
+    постам, тож у ньому немає ні React-залежного стану, ні слова «нотатка». Клітинка
+    (`.wb-collection-tool`) — та сама клітинка, що у вкладок композера (вона в списку селекторів
+    тієї ж клітинки), а мірку бере від ряду (`--cell`), тому контроли смуги лишаються однієї
+    висоти. Сам вибір — вибір (правило 4): відкриває ту саму поверхню `MenuModal` із трьома
+    варіантами (**Рядки** / **Картки — 1 колонка** / **Картки — 2 колонки**) і галочкою на
+    вибраному, знак у клітинці сталий (стан читає `aria-label`), а не типовий вигляд видно знімним
+    чипом («Картки · 2»). Колонок у рядків немає — і це функція (`sameCollectionView`), а не
+    намір: інакше «рядки · 1» і «рядки · 2» були б двома станами з галочкою на двох підписах
+    одразу. Розкладку тримає **кирпичик**, а не список (`.wb-collection--rows` / `--cards` +
+    `--cols-N`): список не пише `display` — інакше вибір вигляду залежав би від порядку правил у
+    файлі. Плитки — **та сама розмітка** з іншою розкладкою: у рядку текст стоїть з датою однією
+    лінією (`--note-row-h` і обріз), у плитці — обрізається трьома рядками, а дата з кареткою
+    стають під ним, хештеги — унизу (`min-height` не дає короткій нотатці виглядати як обрубок).
+    Розкриття лишається тим самим і в плитках: картка росте на місці, тож «розгорнути всі» не
+    перестає працювати від зміни вигляду.
 
 19. **Колір задає людина трьома кольорами — і ніяк інакше.** Три обов'язкові слоти
     («Кольори теми»: фон / основний / акцент) живуть у `localStorage` (`wwwuabot-colors`) і на
@@ -341,7 +359,8 @@ Defined in `packages/shared/src/styles/tokens.css`, overridden per brand in `app
 | `packages/shared/src/components/theme/` | `ThemeColorPanel` + `color-presets.ts` / `user-colors.ts` / `useUserColors` — вибір трьох кольорів |
 | `packages/shared/src/styles/apple.css` | Apple brand overrides |
 | `packages/shared/src/styles/android.css` | Material brand overrides |
-| `packages/shared/src/styles/components.css` | `.wb-*` component styles (включно з `.wb-dialog*`) |
+| `packages/shared/src/styles/components.css` | `.wb-*` component styles (включно з `.wb-dialog*` і кирпичиком вигляду колекції `.wb-collection*`) |
+| `packages/ui/src/collection/` | `CollectionViewSwitch` + модель вигляду колекції: рядки чи картки-превью й колонки (спільний кирпичик, не лише нотаток) |
 | `packages/shared/src/styles/app-chrome.css` | кирпичики каркаса оболонки: app / nav / **tabbar (нижній футер)** / topbar / page / auth / splash / profile |
 | `packages/shared/src/styles/page-layout.css` | каркас сторінки для `PageRenderer` |
 | `packages/shared/src/styles/drawer.css` | виїзне меню й гамбургер (обидві оболонки) |

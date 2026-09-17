@@ -649,7 +649,8 @@ html:has(.wb-tabbar) .wb-modal {
    «зробити як вкладки» довелося б повторювати, і воно б розійшлося. */
 .wb-composer-tab,
 .wb-composer-tool,
-.wb-note-tool {
+.wb-note-tool,
+.wb-collection-tool {
   display: flex;
   align-items: center;
   justify-content: center;
@@ -668,7 +669,8 @@ html:has(.wb-tabbar) .wb-modal {
 
 .wb-composer-tab:hover,
 .wb-composer-tool:hover,
-.wb-note-tool:hover {
+.wb-note-tool:hover,
+.wb-collection-tool:hover {
   background: var(--surface-hover);
   color: var(--text-primary);
 }
@@ -1154,6 +1156,54 @@ html:has(.wb-tabbar) .wb-modal {
   color: var(--text-muted);
 }
 
+/* ── Вигляд колекції (спільний кирпичик) ───────────────────────────────────
+   Рядки чи картки-превью, і скількома колонками. Кирпичик **не для нотаток**:
+   той самий вибір є в товарів, новин і постів, і розкладка мусить бути вже
+   описана, а не написана вдруге в кожному списку.
+
+   Розкладку тримає САМЕ цей клас, а список лише каже, який варіант узято
+   (`collectionViewClass`). Інакше на одному елементі стояли б два `display` —
+   і перемагав би той, що нижче у файлі, тобто випадковий. */
+.wb-collection {
+  display: grid;
+  align-items: stretch;
+  gap: var(--sp-2);
+}
+
+.wb-collection--rows {
+  grid-template-columns: minmax(0, 1fr);
+}
+
+/* Плитки: колонок стільки, скільки вибрав користувач. `minmax(0, 1fr)`, а не
+   `1fr`: без нуля довгий текст у плитці розпирає сітку ширше за екран. */
+.wb-collection--cards {
+  grid-template-columns: repeat(var(--collection-cols, 2), minmax(0, 1fr));
+}
+
+.wb-collection--cols-1 {
+  --collection-cols: 1;
+}
+
+.wb-collection--cols-2 {
+  --collection-cols: 2;
+}
+
+/* Клітинка «відображення» — та сама клітинка, що у вкладок композера й смуги
+   нотаток (вона в списку селекторів вище), тож у неї ті самі знак, підсвічення
+   й натиск. Мірку дістає від ряду (`--cell`), а не носить свою: контроли
+   одного ряду мусять бути однієї висоти. */
+.wb-collection-tool {
+  width: var(--cell, 32px);
+  height: var(--cell, 32px);
+  min-width: var(--cell, 32px);
+  padding: 0;
+}
+
+.wb-collection-tool svg {
+  width: 16px;
+  height: 16px;
+}
+
 /* ── Нотатки (смуга, групи, картки-акордеони) ───────────────────────────────
    Смуга керування, групи й картки. Розмітку рендерить СПІЛЬНИЙ модуль
    `@wwwuabot/ui/notes`, тому правила живуть тут: сьогодні його вживає
@@ -1271,8 +1321,11 @@ html:has(.wb-tabbar) .wb-modal {
   flex: 0 0 auto;
   align-items: center;
   gap: var(--sp-1) var(--sp-2);
-  /* Мірка клітинки — та сама, що у всього ряду: контроли смуги однієї висоти. */
+  /* Мірка клітинки — та сама, що у всього ряду: контроли смуги однієї висоти.
+     `--cell` — та сама мірка для спільних клітинок (перемикач відображення),
+     які стоять у цьому ряду поруч. */
   --note-cell: var(--note-row-h);
+  --cell: var(--note-cell);
 }
 
 .wb-note-tool {
@@ -1377,9 +1430,9 @@ html:has(.wb-tabbar) .wb-modal {
 }
 
 .wb-note-list {
-  display: flex;
-  flex-direction: column;
-  gap: var(--sp-2);
+  /* Розкладку (рядки чи плитки) задає кирпичик `.wb-collection*`, а не список:
+     два `display` на одному елементі билися б, і вибір вигляду був би
+     випадковим. Тут лишається тільки те, що список і є список. */
   margin: 0;
   padding: 0;
   list-style: none;
@@ -1491,6 +1544,53 @@ html:has(.wb-tabbar) .wb-modal {
    лишатись підписом, а не ставати другою дією в рядку. */
 .wb-note-tag--hit {
   color: var(--accent);
+}
+
+/* ── Картки-превью: та сама розмітка, інша розкладка ───────────────────────
+   Вибір людини (`.wb-collection--cards`), а не друга картка: у плитці видно
+   рівно те саме, що в рядку — текст, хештеги й дату — лише розставлене так,
+   як у товарів і новин. Другого набору розмітки немає навмисно: розійтись їм
+   нема як (правило 3). */
+
+/* Плитка мусить читатись плиткою навіть із коротким текстом: `--sp-16` —
+   найменша висота, а не фіксована, бо довгий текст плитку росте. */
+.wb-collection--cards .wb-note-item {
+  display: flex;
+  flex-direction: column;
+  min-height: var(--sp-16);
+}
+
+.wb-collection--cards .wb-note-card {
+  flex: 1 1 auto;
+  gap: var(--sp-2);
+  padding: var(--sp-3);
+}
+
+/* Текст — три рядки замість одного: обрізати «однією лінією» правильно в рядку
+   (там поруч стоїть дата), а в плитці це виглядало б як обрубок. Сітка, а не
+   рядок: дата з кареткою стають **під** текстом, праворуч. */
+.wb-collection--cards .wb-note-card-line {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: end;
+  gap: var(--sp-2);
+}
+
+.wb-collection--cards .wb-note-card-text {
+  grid-column: 1 / -1;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 3;
+  line-clamp: 3;
+  white-space: normal;
+  overflow: hidden;
+}
+
+/* Хештеги — під датою: у плитці мета стоїть знизу, бо верх плитки читають
+   заради тексту. `order`, а не перестановка в розмітці: розмітка в обох
+   виглядах та сама. */
+.wb-collection--cards .wb-note-card-tags {
+  order: 1;
 }
 
 /* Тіло розкритої картки: текст цілком (переноси — це те, як нотатку написали)

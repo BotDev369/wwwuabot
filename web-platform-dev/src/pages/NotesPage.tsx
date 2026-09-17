@@ -190,6 +190,8 @@ export function NotesPage(): ReactElement {
               onToggle={toggleNote}
               onEdit={edit}
               onDelete={(note) => void deleteNote(note)}
+              // Вигляд — стан екрана, як і пошук: список лише малює вибране.
+              collection={{ layout: view.layout, columns: view.columns }}
             />
           ) : (
             <div className="wb-empty">

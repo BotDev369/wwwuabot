@@ -202,7 +202,7 @@ describe("NotesToolbar", () => {
 
   it("клітинки стоять у смузі з пошуком, а чипи — своїм рядом під нею", () => {
     // Чипи — не клітинки керування, а те, що ці клітинки змінили, тож у смузі
-    // їм місця немає: там пошук і три клітинки.
+    // їм місця немає: там пошук і клітинки.
     const html = render({ sort: "alpha", groupBy: "none" }, { shown: 1, total: 3 });
 
     const bar = html.indexOf('class="wb-note-bar"');
@@ -212,10 +212,12 @@ describe("NotesToolbar", () => {
     expect(controls).toBeGreaterThan(bar);
     expect(chips).toBeGreaterThan(controls);
 
-    // У смузі — рівно три клітинки й нічого більше: від клітинок до чипів
+    // У смузі — рівно п'ять клітинок і нічого більше: від клітинок до чипів
     // закриваються рівно дві обгортки (самі клітинки й смуга), тобто чипи
     // стоять ПІСЛЯ смуги, а не всередині неї.
     expect(toolIcons(html.slice(bar, chips))).toHaveLength(3);
+    expect(html.slice(bar, chips)).toContain("wb-collection-tool");
+    expect(html.slice(bar, chips)).toContain("wb-note-tool--toggle");
     expect((html.slice(controls, chips).match(/<\/div>/g) ?? []).length).toBe(2);
 
     // Чипи — після смуги, і підпис вибраного в них.
@@ -281,6 +283,45 @@ describe("NotesToolbar", () => {
     expect(expanded).toContain("wb-note-tool--on");
     // Знак теж міняється — з підписом його читає скрінрідер, без підпису око.
     expect(toggleButton(expanded)).not.toBe(toggleButton(collapsed));
+  });
+
+  it("вибір вигляду стоїть серед виборів, а перемикач — останнім", () => {
+    // Вигляд відкриває ту саму поверхню, що сортування й фільтр, тож він у
+    // їхньому ряду; перемикач «розгорнути всі» діє одразу — тому він через
+    // просвіт і останній.
+    const html = render();
+    const lastPicker = html.lastIndexOf('class="wb-note-tool"');
+    const layout = html.indexOf("wb-collection-tool");
+    const toggle = html.indexOf("wb-note-tool--toggle");
+
+    expect(lastPicker).toBeGreaterThan(-1);
+    expect(layout).toBeGreaterThan(lastPicker);
+    expect(toggle).toBeGreaterThan(layout);
+  });
+
+  it("клітинка вигляду називає поточний вибір, а не показує його знаком", () => {
+    // Знак у ній один і той самий (як і в трьох виборів поруч): стан показує
+    // чип, а ім'я — `aria-label`.
+    expect(render()).toContain('aria-label="Відображення: Рядки"');
+    expect(render({ layout: "cards", columns: 1 })).toContain(
+      'aria-label="Відображення: Картки — 1 колонка"',
+    );
+    // Клопіт смуги не росте: клітинка вигляду не додає собі підпису чи заливки.
+    expect(toolIcons(render({ layout: "cards", columns: 2 }))).toHaveLength(3);
+  });
+
+  it("плитки — це вибір, тож у списку вони стоять знімним чипом", () => {
+    // Типове (рядки) чипа не має: постійний чип «Рядки» говорив би те, що й
+    // так видно зі списку.
+    expect(chipLabels(render())).not.toContain("Рядки");
+
+    const html = render({ layout: "cards", columns: 1 });
+    expect(chipLabels(html)).toContain("Картки · 1");
+    expect(html).toContain("Повернути звичайний список (Рядки)");
+  });
+
+  it("спільна клітинка бере мірку ряду: контроли однієї висоти", () => {
+    expect(rule(".wb-note-controls")).toContain("--cell: var(--note-cell)");
   });
 
   it("стан перемикача видно заливкою, а не лише знаком", () => {

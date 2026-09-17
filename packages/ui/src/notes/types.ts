@@ -1,5 +1,6 @@
 /**
- * Стан вигляду списку нотаток: пошук, фільтр, сортування, групування.
+ * Стан вигляду списку нотаток: пошук, фільтр, сортування, групування й вигляд
+ * (рядки чи картки-превью).
  *
  * Це **не** склад екрана, а опис того, як ті самі дані показати. Тому тут
  * немає ні React, ні API: `view.ts` перетворює `NoteRow[]` + `NotesView` у
@@ -9,6 +10,7 @@
  */
 
 import type { NoteRow } from "@wwwuabot/shared/notes";
+import type { CollectionColumns, CollectionLayout } from "../collection";
 
 /** Порядок показу нотаток. */
 export type NotesSort = "updated-desc" | "updated-asc" | "created-desc" | "created-asc" | "alpha";
@@ -42,6 +44,17 @@ export interface NotesView {
   tags: NotesTagFilter;
   sort: NotesSort;
   groupBy: NotesGroupBy;
+  /**
+   * Як розставлено список — рядками чи плитками.
+   *
+   * Стан того самого екрана, а не його власність: розкладку тримає спільний
+   * кирпичик `@wwwuabot/ui/collection` (`collectionViewClass`), і той самий
+   * вибір буде в товарів, новин і постів. Типове — рядки: список читають
+   * заради тексту, і рядок віддає йому всю ширину.
+   */
+  layout: CollectionLayout;
+  /** Скільком колонками стоять плитки. У рядків значення немає. */
+  columns: CollectionColumns;
 }
 
 export const DEFAULT_NOTES_VIEW: NotesView = {
@@ -49,6 +62,8 @@ export const DEFAULT_NOTES_VIEW: NotesView = {
   tags: { kind: "all" },
   sort: "updated-desc",
   groupBy: "day",
+  layout: "rows",
+  columns: 2,
 };
 
 /**

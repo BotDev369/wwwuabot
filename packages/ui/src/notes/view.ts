@@ -15,6 +15,7 @@
  */
 
 import type { NoteRow } from "@wwwuabot/shared/notes";
+import { collectionViewShort } from "../collection";
 import { noteTimestamp } from "./format";
 import { DEFAULT_NOTES_VIEW } from "./types";
 import type {
@@ -230,6 +231,18 @@ export function viewChips(view: NotesView): NotesChip[] {
       label: optionShort(GROUP_OPTIONS, view.groupBy),
       action: `Повернути типові групи (${optionShort(GROUP_OPTIONS, DEFAULT_NOTES_VIEW.groupBy)})`,
       reset: { groupBy: DEFAULT_NOTES_VIEW.groupBy },
+    });
+  }
+
+  // Вигляд — теж вибір, тож і чип тут: плитки не типовий стан, і повернутись до
+  // рядків мусить бути чим, не відкриваючи пікер заново. Колонки в ряду з
+  // виглядом: «Картки · 2» без них казало б половину.
+  if (view.layout !== DEFAULT_NOTES_VIEW.layout) {
+    chips.push({
+      key: "layout",
+      label: collectionViewShort(view),
+      action: `Повернути звичайний список (${collectionViewShort(DEFAULT_NOTES_VIEW)})`,
+      reset: { layout: DEFAULT_NOTES_VIEW.layout, columns: DEFAULT_NOTES_VIEW.columns },
     });
   }
 

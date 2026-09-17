@@ -32,6 +32,12 @@
  * а тіло з'являється під нею вже зі своїми кнопками: тіло вкладене в кнопку
  * дало б кнопки в кнопці, чого розмітка не дозволяє.
  *
+ * Вигляд списку — ззовні (`collection`, спільний `@wwwuabot/ui/collection`):
+ * рядки чи картки-превью. Розмітка в обох **одна й та сама**, різницю несе
+ * клас розкладки — інакше другий набір розмітки розійшовся б із першим на
+ * першій же правці. Розкриття лишається тим самим і в плитках: картка росте на
+ * місці, тож «розгорнути всі» не перестає працювати від зміни вигляду.
+ *
  * Розмітка — кирпичики `.wb-note*`: їх рендерить спільний код, тож стилі
  * живуть у `packages/shared/src/styles/` (правило 10).
  *
@@ -41,6 +47,7 @@
 import { type ReactElement } from "react";
 import { Icon } from "@wwwuabot/shared";
 import type { NoteRow } from "@wwwuabot/shared/notes";
+import { collectionViewClass, type CollectionView } from "../collection";
 import { formatNoteStamp } from "./format";
 import type { NotesGroup } from "./types";
 
@@ -65,6 +72,8 @@ interface NotesListProps {
   onEdit: (note: NoteRow) => void;
   /** Прибрати нотатку — оболонка питає підтвердження сама. */
   onDelete: (note: NoteRow) => void;
+  /** Рядки чи картки-превью — стан екрана, а не списку. */
+  collection: CollectionView;
 }
 
 /**
@@ -165,6 +174,7 @@ export function NotesList({
   onToggle,
   onEdit,
   onDelete,
+  collection,
 }: NotesListProps): ReactElement {
   // Два знімки для швидкого пошуку. Хештег у базі один на всі нотатки, тож
   // «знайдений» він скрізь однаково, а розгорнутість — у кожної своя.
@@ -181,7 +191,7 @@ export function NotesList({
                 не рахуючи очима. */}
             <span className="wb-note-group-count">{group.notes.length}</span>
           </h2>
-          <ul className="wb-note-list">
+          <ul className={`wb-note-list ${collectionViewClass(collection)}`}>
             {group.notes.map((note) => (
               <NoteCard
                 key={note.id}
