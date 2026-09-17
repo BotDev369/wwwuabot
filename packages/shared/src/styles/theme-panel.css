@@ -21,23 +21,66 @@
 .wb-theme-panel {
   display: flex;
   flex-direction: column;
-  gap: var(--sp-5);
-}
-
-.wb-theme-section {
-  display: flex;
-  flex-direction: column;
   gap: var(--sp-2);
 }
 
+/* Секція — закритий акордеон: голова залита (`--field-bg`), тіло приходить
+   під нею. Той самий кирпичик, що в рядка кольору, і це навмисно: людина вже
+   знає, що залитий рядок розкривається. */
+.wb-theme-section {
+  display: flex;
+  flex-direction: column;
+  border-radius: var(--radius-md);
+  background: var(--field-bg);
+}
+
+.wb-theme-section--open {
+  background: var(--surface-active);
+}
+
+/* Голова — кнопка на всю ширину: палець мусить діставати будь-де. */
+.wb-theme-section-head {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-3);
+  width: 100%;
+  min-height: 52px;
+  padding: var(--sp-2) var(--sp-3);
+  border: none;
+  border-radius: var(--radius-md);
+  background: none;
+  color: var(--text-primary);
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.wb-theme-section-head:hover {
+  background: var(--surface-active);
+}
+
 .wb-theme-section-title {
-  margin: 0;
-  padding: 0 var(--sp-1);
+  flex: 1 1 auto;
+  min-width: 0;
   font-size: var(--text-xs);
   font-weight: var(--weight-semibold);
   letter-spacing: 0.08em;
   text-transform: uppercase;
   color: var(--text-muted);
+}
+
+.wb-theme-section-caret {
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
+  color: var(--text-muted);
+}
+
+.wb-theme-section-body {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-2);
+  padding: 0 var(--sp-3) var(--sp-3);
 }
 
 /* Підказка — пояснення, а не заклик: тим самим рядком панель каже, чого
@@ -371,9 +414,8 @@
   background: var(--bg-0);
 }
 
-/* ── Характер (Apple / Android) ─────────────────────────────────────────── */
+/* ── Стиль (Apple / Android) ────────────────────────────────────────────── */
 .wb-theme-brands {
   display: flex;
   gap: var(--sp-2);
-  padding: 0 var(--sp-1);
 }

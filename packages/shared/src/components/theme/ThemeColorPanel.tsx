@@ -5,10 +5,15 @@
  * профілю, адмінка — кнопкою в бічному меню), і саме тому вона живе в
  * `shared`: два різні «вибір кольору» розійшлися б на першій же правці.
  *
- * Порядок блоків — той, у якому людина думає: спершу **готові палітри** (одним
- * дотиком отримати робочий набір), потім **свої три кольори** з повзунками,
- * потім **дії**. Характер (Apple / Android) стоїть окремо й нижче: він не
- * колір, і змішувати його з кольорами — це знову робити «світла / темна».
+ * Порядок блоків — від загального до часткового: спершу **Стиль** (характер
+ * Apple / Material — уся оболонка на один дотик), потім **Кольори теми** (те,
+ * що людина налаштовує найчастіше), і аж унизу **Готові палітри** — вони не
+ * налаштування, а швидкий старт, і зверху вони забирали екран у того, за чим
+ * прийшли.
+ *
+ * Кожна секція — закритий акордеон (`ThemeSection`): панель показує три назви,
+ * а не суцільний стовп. Пояснень усередині немає — підказки лишились там, де
+ * вони щось міняють (порожні слоти й нечитабельний вибір).
  *
  * Червоного «не можна» тут немає: панель **називає**, якого кольору бракує, і
  * кнопка збереження просто неактивна. Порожній слот — це стан, який видно.
@@ -21,6 +26,7 @@ import { Icon } from "../Icon";
 import { COLOR_PRESETS, isPresetActive } from "../../styles/color-presets";
 import { COLOR_SLOTS, type ColorSlot } from "../../styles/user-colors";
 import { ColorSlotRow } from "./ColorSlotRow";
+import { ThemeSection } from "./ThemeSection";
 import { useStyleTheme } from "./useStyleTheme";
 import { useUserColors } from "./useUserColors";
 
@@ -32,7 +38,8 @@ export interface ThemeColorPanelProps {
 export function ThemeColorPanel({ onSaved }: ThemeColorPanelProps): ReactElement {
   const colors = useUserColors();
   const { brand, setBrand, brands } = useStyleTheme();
-  const [openSlot, setOpenSlot] = useState<ColorSlot | null>("bg");
+  // Відкритих слотів немає: акордеони закриті, доки їх не розкриють.
+  const [openSlot, setOpenSlot] = useState<ColorSlot | null>(null);
 
   const handleSave = () => {
     colors.save();
@@ -41,8 +48,41 @@ export function ThemeColorPanel({ onSaved }: ThemeColorPanelProps): ReactElement
 
   return (
     <div className="wb-theme-panel">
-      <section className="wb-theme-section">
-        <h3 className="wb-theme-section-title">Готові палітри</h3>
+      <ThemeSection title="Стиль">
+        <div className="wb-theme-brands">
+          {brands.map((definition) => {
+            const active = definition.id === brand;
+            return (
+              <button
+                key={definition.id}
+                type="button"
+                className={`wb-btn wb-btn-sm${active ? " wb-btn-primary" : " wb-btn-secondary"}`}
+                aria-pressed={active}
+                onClick={() => setBrand(definition.id)}
+              >
+                {definition.labelUk}
+              </button>
+            );
+          })}
+        </div>
+      </ThemeSection>
+
+      <ThemeSection title="Кольори теми">
+        <div className="wb-theme-rows">
+          {COLOR_SLOTS.map((slot) => (
+            <ColorSlotRow
+              key={slot.id}
+              slot={slot}
+              value={colors.draft[slot.id] ?? ""}
+              expanded={openSlot === slot.id}
+              onToggle={() => setOpenSlot(openSlot === slot.id ? null : slot.id)}
+              onChange={(value) => colors.setSlot(slot.id, value)}
+            />
+          ))}
+        </div>
+      </ThemeSection>
+
+      <ThemeSection title="Готові палітри">
         <div className="wb-theme-presets">
           {COLOR_PRESETS.map((preset) => {
             const active = isPresetActive(preset, colors.draft);
@@ -64,47 +104,7 @@ export function ThemeColorPanel({ onSaved }: ThemeColorPanelProps): ReactElement
             );
           })}
         </div>
-      </section>
-
-      <section className="wb-theme-section">
-        <h3 className="wb-theme-section-title">Твої три кольори</h3>
-        <p className="wb-theme-hint">
-          Колір береться зразком, у системній палітрі, повзунком або кодом. Коли задані всі три,
-          застосунок малюється ними одразу — і тоді ж стає доступним «Зберегти».
-        </p>
-        <div className="wb-theme-rows">
-          {COLOR_SLOTS.map((slot) => (
-            <ColorSlotRow
-              key={slot.id}
-              slot={slot}
-              value={colors.draft[slot.id] ?? ""}
-              expanded={openSlot === slot.id}
-              onToggle={() => setOpenSlot(openSlot === slot.id ? null : slot.id)}
-              onChange={(value) => colors.setSlot(slot.id, value)}
-            />
-          ))}
-        </div>
-      </section>
-
-      <section className="wb-theme-section">
-        <h3 className="wb-theme-section-title">Характер</h3>
-        <div className="wb-theme-brands">
-          {brands.map((definition) => {
-            const active = definition.id === brand;
-            return (
-              <button
-                key={definition.id}
-                type="button"
-                className={`wb-btn wb-btn-sm${active ? " wb-btn-primary" : " wb-btn-secondary"}`}
-                aria-pressed={active}
-                onClick={() => setBrand(definition.id)}
-              >
-                {definition.labelUk}
-              </button>
-            );
-          })}
-        </div>
-      </section>
+      </ThemeSection>
 
       {colors.missing.length > 0 && (
         <p className="wb-theme-hint wb-theme-hint--warn">
