@@ -51,6 +51,8 @@ export type IconName =
   | "chevron-right"
   | "chevron-left"
   | "chevron-up"
+  | "expand"
+  | "collapse"
   | "sun"
   | "moon"
   | "x"
@@ -401,6 +403,14 @@ export const icons: Record<IconName, ReactElement> = {
   "chevron-left": icon([pl("15 18 9 12 15 6")]),
 
   "chevron-up": icon([pl("18 15 12 9 6 15")]),
+
+  /** Два жала НАРУЖ — «розгорнути»: той самий знак, що в акордеонів і в
+      згорнутих карток, лише з обох боків. Одна іконка тут не годиться: стан
+      перемикача мусить бути видно без підпису (правило 9). */
+  expand: icon([pl("7 15 12 20 17 15"), pl("7 9 12 4 17 9")]),
+
+  /** Два жала ВСЕРЕДИНУ — «згорнути». */
+  collapse: icon([pl("7 20 12 15 17 20"), pl("7 4 12 9 17 4")]),
 
   x: icon([l(18, 6, 6, 18), l(6, 6, 18, 18)]),
 

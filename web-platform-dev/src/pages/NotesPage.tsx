@@ -54,12 +54,31 @@ export function NotesPage(): ReactElement {
   const dialog = useDialog();
   const [view, setView] = useState<NotesView>(DEFAULT_NOTES_VIEW);
   const [editor, setEditor] = useState<EditorState>({ open: false });
+  // Розгорнуті картки — стан екрана, а не картки: «розгорнути всі» приходить
+  // зі смуги керування, і стан мусить бути один (див. `NotesList`).
+  const [openIds, setOpenIds] = useState<ReadonlySet<number>>(() => new Set());
 
   const visible = filterNotes(notes, view);
   const groups = buildGroups(notes, view);
   // Які теги знайшов поточний пошук чи фільтр — їх картка виділяє акцентом.
   // Рахує оболонка, а не картка: правило пошуку одне на екран (`view.ts`).
   const found = foundTags(collectTags(notes), view);
+  // «Усі розгорнуті» — про те, що ВИДНО: шукати очима те, що відсіяли
+  // фільтром, немає де, а перемикач мусить казати про поточний список.
+  const allOpen = visible.length > 0 && visible.every((note) => openIds.has(note.id));
+  const hasNotes = !loading && !error && notes.length > 0;
+
+  function toggleAll(): void {
+    setOpenIds(allOpen ? new Set() : new Set(visible.map((note) => note.id)));
+  }
+
+  function toggleNote(id: number): void {
+    setOpenIds((prev) => {
+      const next = new Set(prev);
+      if (!next.delete(id)) next.add(id);
+      return next;
+    });
+  }
 
   /**
    * Збереження нотатки — і нової, і відредагованої (це вирішує `draft.id`).
@@ -97,21 +116,38 @@ export function NotesPage(): ReactElement {
 
   return (
     <div className="wb-page">
-      <div className="wb-page-head">
-        <h1 className="wb-page-title">МоїНотатки</h1>
-        <div className="wb-page-actions">
-          {/* Створення є й у футері («+»), але на екрані нотаток кнопка мусить
+      {/* Шапка й смуга керування їдуть разом і лишаються на видноті
+          (`.wb-page-sticky`): список нотаток довгий, і без цього пошук зникав
+          рівно тоді, коли знайшлось те, що шукали. */}
+      <div className="wb-page-sticky">
+        <div className="wb-page-head">
+          <h1 className="wb-page-title">МоїНотатки</h1>
+          <div className="wb-page-actions">
+            {/* Створення є й у футері («+»), але на екрані нотаток кнопка мусить
               бути тут: людина вже стоїть у списку, і вертати її до футера —
               зайвий крок. Обробник той самий — композер. */}
-          <button
-            type="button"
-            className="wb-btn wb-btn-primary"
-            onClick={() => setEditor({ open: true })}
-          >
-            <Icon name="plus" size={16} />
-            Створити
-          </button>
+            <button
+              type="button"
+              className="wb-btn wb-btn-primary"
+              onClick={() => setEditor({ open: true })}
+            >
+              <Icon name="plus" size={16} />
+              Створити
+            </button>
+          </div>
         </div>
+
+        {hasNotes && (
+          <NotesToolbar
+            view={view}
+            onChange={(patch) => setView((prev) => ({ ...prev, ...patch }))}
+            tags={collectTags(notes)}
+            shown={visible.length}
+            total={notes.length}
+            allOpen={allOpen}
+            onToggleAll={toggleAll}
+          />
+        )}
       </div>
 
       {loading && (
@@ -144,20 +180,14 @@ export function NotesPage(): ReactElement {
         </div>
       )}
 
-      {!loading && !error && notes.length > 0 && (
+      {hasNotes && (
         <>
-          <NotesToolbar
-            view={view}
-            onChange={(patch) => setView((prev) => ({ ...prev, ...patch }))}
-            tags={collectTags(notes)}
-            shown={visible.length}
-            total={notes.length}
-          />
-
           {groups.length > 0 ? (
             <NotesList
               groups={groups}
               found={found}
+              openIds={[...openIds]}
+              onToggle={toggleNote}
               onEdit={edit}
               onDelete={(note) => void deleteNote(note)}
             />

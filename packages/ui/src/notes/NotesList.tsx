@@ -5,7 +5,9 @@
  * хештеги. Усе інше — у розкритому тілі, і **закрита** кожна картка, бо список
  * читають очима згори вниз: розгорнуті тексти перетворюють його на полотно, де
  * не видно, скільки нотаток узагалі є (та сама причина, що й у акордеонів
- * панелі «Тема»).
+ * панелі «Тема»). Розгорнути одразу всі — окремий перемикач у смузі: коли
+ * нотаток багато й треба їх прочитати, тицяти кожну — це робота на порожньому
+ * місці.
  *
  * Що де стоїть — навмисно: **текст** це те, за чим нотатку впізнають, тож він
  * один у рядку з датою й дістає весь вільний простір, а **дата й хештеги**
@@ -22,6 +24,10 @@
  * зачепився пошук. Знайдені теги рахує оболонка одним чистим викликом, а
  * список лише малює — правил пошуку в розмітці немає.
  *
+ * Розгорнутість — теж стан **оболонки** (`openIds` + `onToggle`), а не картки:
+ * «розгорнути всі» приходить ззовні (кнопка в смузі), і стан мусить бути один,
+ * інакше кнопка й картки розійшлися б після першого ж дотику.
+ *
  * Голова картки — **кнопка на всю ширину** (палець мусить діставати будь-де),
  * а тіло з'являється під нею вже зі своїми кнопками: тіло вкладене в кнопку
  * дало б кнопки в кнопці, чого розмітка не дозволяє.
@@ -32,7 +38,7 @@
  * @module @wwwuabot/ui/notes
  */
 
-import { useState, type ReactElement } from "react";
+import { type ReactElement } from "react";
 import { Icon } from "@wwwuabot/shared";
 import type { NoteRow } from "@wwwuabot/shared/notes";
 import { formatNoteStamp } from "./format";
@@ -45,6 +51,16 @@ interface NotesListProps {
    * виділяє їх акцентом. Порожній список — не помилка, а «нічого не шукали».
    */
   found?: readonly string[];
+  /**
+   * Які картки розгорнуті — **стан оболонки**, а не картки.
+   *
+   * Розгорнути всі нотатки можна лише ззовні (кнопка в смузі), а стан мусить
+   * бути один: коли кожна картка пам'ятала своє, «розгорнути всі» довелось би
+   * проштовхувати в кожну окремо, і після цього вони б знову розійшлися.
+   */
+  openIds: readonly number[];
+  /** Перемкнути одну картку. */
+  onToggle: (id: number) => void;
   /** Відкрити редактор — композер із цією нотаткою. */
   onEdit: (note: NoteRow) => void;
   /** Прибрати нотатку — оболонка питає підтвердження сама. */
@@ -63,15 +79,18 @@ function previewLine(text: string): string {
 function NoteCard({
   note,
   found,
+  open,
+  onToggle,
   onEdit,
   onDelete,
 }: {
   note: NoteRow;
   found: ReadonlySet<string>;
+  open: boolean;
+  onToggle: () => void;
   onEdit: (note: NoteRow) => void;
   onDelete: (note: NoteRow) => void;
 }): ReactElement {
-  const [open, setOpen] = useState(false);
   const line = previewLine(note.text);
 
   return (
@@ -79,12 +98,7 @@ function NoteCard({
       {/* Рядок 1 — початок тексту (він і забирає вільне місце) і дата з часом;
           рядок 2 — хештеги. Обидва видно й у закритій картці: саме за ними
           люди й вибирають, що відкрити. */}
-      <button
-        type="button"
-        className="wb-note-card"
-        aria-expanded={open}
-        onClick={() => setOpen(!open)}
-      >
+      <button type="button" className="wb-note-card" aria-expanded={open} onClick={onToggle}>
         <span className="wb-note-card-line">
           {/* Порожній текст можливий: нотатка з самих хештегів — теж нотатка. */}
           <span className={`wb-note-card-text${line ? "" : " wb-text-muted"}`}>
@@ -144,10 +158,18 @@ function NoteCard({
   );
 }
 
-export function NotesList({ groups, found, onEdit, onDelete }: NotesListProps): ReactElement {
-  // Знімок для швидкого пошуку — той самий на весь список: хештег у базі один
-  // на всі нотатки, тож «знайдений» він скрізь однаково.
+export function NotesList({
+  groups,
+  found,
+  openIds,
+  onToggle,
+  onEdit,
+  onDelete,
+}: NotesListProps): ReactElement {
+  // Два знімки для швидкого пошуку. Хештег у базі один на всі нотатки, тож
+  // «знайдений» він скрізь однаково, а розгорнутість — у кожної своя.
   const hits = new Set(found ?? []);
+  const open = new Set(openIds);
 
   return (
     <>
@@ -165,6 +187,8 @@ export function NotesList({ groups, found, onEdit, onDelete }: NotesListProps): 
                 key={note.id}
                 note={note}
                 found={hits}
+                open={open.has(note.id)}
+                onToggle={() => onToggle(note.id)}
                 onEdit={onEdit}
                 onDelete={onDelete}
               />

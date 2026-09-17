@@ -60,15 +60,22 @@ function note(id: number, over: Partial<NoteRow> = {}): NoteRow {
   };
 }
 
-function render(notes: NoteRow[], found: string[] = []): string {
+function render(notes: NoteRow[], found: string[] = [], openIds: number[] = []): string {
   const groups: NotesGroup[] = [{ key: "all", label: "Усі нотатки", notes }];
   return renderToStaticMarkup(
-    <NotesList groups={groups} found={found} onEdit={() => {}} onDelete={() => {}} />,
+    <NotesList
+      groups={groups}
+      found={found}
+      openIds={openIds}
+      onToggle={() => {}}
+      onEdit={() => {}}
+      onDelete={() => {}}
+    />,
   );
 }
 
 describe("NotesList", () => {
-  it("усі картки закриті за замовчуванням", () => {
+  it("закриті картки — це порожній `openIds`, а не пам'ять картки", () => {
     const html = render([note(1), note(2)]);
 
     expect(html.match(/aria-expanded="false"/g)).toHaveLength(2);
@@ -76,6 +83,25 @@ describe("NotesList", () => {
     // Тіло розкритої картки несе кнопки дій — у закритому списку його немає.
     expect(html).not.toContain("wb-note-card-body");
     expect(html).not.toContain("Редагувати");
+  });
+
+  it("розгорнутим стає рівно той, кого назвав `openIds` — це стан екрана", () => {
+    // Саме на цьому тримається «розгорнути всі»: коли кожна картка пам'ятала
+    // своє, проштовхати в неї рішення ззовні було б нічим.
+    const html = render([note(1), note(2), note(3)], [], [2]);
+    const open = [...html.matchAll(/<li class="([^"]*)"/g)].map((match) => match[1]);
+
+    expect(open).toEqual(["wb-note-item", "wb-note-item wb-note-item--open", "wb-note-item"]);
+    // Розкрите тіло несе повний текст і дії — і тільки воно.
+    expect(html.match(/wb-note-card-body/g)).toHaveLength(1);
+    expect(html).toContain("Змінено");
+  });
+
+  it("розгорнути всі — це той самий стан: усі `openIds` одразу", () => {
+    const html = render([note(1), note(2)], [], [1, 2]);
+
+    expect(html.match(/aria-expanded="true"/g)).toHaveLength(2);
+    expect(html.match(/wb-note-item--open/g)).toHaveLength(2);
   });
 
   it("показує рівно два рядки інфо: текст із датою-часом і хештеги", () => {

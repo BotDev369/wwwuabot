@@ -39,15 +39,37 @@ const CSS = readFileSync(
   "utf8",
 ).replace(/\/\*[\s\S]*?\*\//g, "");
 
+/**
+ * Каркас сторінки: смуга їде в `wb-page-sticky` (шапка + смуга), тож шар, у
+ * якому вона стоїть, — теж частина її поведінки, а не чужі стилі.
+ */
+const CHROME_CSS = readFileSync(
+  join(
+    fileURLToPath(new URL("../../../../", import.meta.url)),
+    "packages/shared/src/styles/app-chrome.css",
+  ),
+  "utf8",
+).replace(/\/\*[\s\S]*?\*\//g, "");
+
 /** Тіло правила за селектором — щоб перевіряти саме його, а не файл цілком. */
 function rule(selector: string): string {
   const escaped = selector.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
   return CSS.match(new RegExp(`${escaped}\\s*\\{([^}]*)\\}`))?.[1] ?? "";
 }
 
+/** Те саме, але для каркаса сторінки. */
+function chrome(selector: string): string {
+  const escaped = selector.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+  return CHROME_CSS.match(new RegExp(`${escaped}\\s*\\{([^}]*)\\}`))?.[1] ?? "";
+}
+
 const view = (over: Partial<NotesView> = {}): NotesView => ({ ...DEFAULT_NOTES_VIEW, ...over });
 
-function render(over: Partial<NotesView> = {}, counts = { shown: 3, total: 3 }): string {
+function render(
+  over: Partial<NotesView> = {},
+  counts = { shown: 3, total: 3 },
+  allOpen = false,
+): string {
   return renderToStaticMarkup(
     <NotesToolbar
       view={view(over)}
@@ -55,6 +77,8 @@ function render(over: Partial<NotesView> = {}, counts = { shown: 3, total: 3 }):
       tags={["київ", "лал"]}
       shown={counts.shown}
       total={counts.total}
+      allOpen={allOpen}
+      onToggleAll={() => {}}
     />,
   );
 }
@@ -64,6 +88,11 @@ function toolIcons(html: string): string[] {
   return [...html.matchAll(/<button[^>]*class="wb-note-tool"[^>]*>(.*?)<\/button>/g)].map(
     (match) => match[1],
   );
+}
+
+/** Клітинка-перемикач цілком: у ній і стан, і знак. */
+function toggleButton(html: string): string {
+  return html.match(/<button[^>]*wb-note-tool--toggle[\s\S]*?<\/button>/)?.[0] ?? "";
 }
 
 /** Підписи чипів: ними й перевіряємо, що кожен вибір знімається окремо. */
@@ -236,6 +265,41 @@ describe("NotesToolbar", () => {
     // Високий ряд забирав у списку більше екрана, ніж сам список.
     expect(rule(".wb-note-bar")).toContain("--note-row-h: 32px");
     expect(rule(".wb-note-controls")).toContain("--note-cell: var(--note-row-h)");
+  });
+
+  it("перемикач «розгорнути / згорнути всі» стоїть у ряду й показує свій стан", () => {
+    // Це не вибір, а дія: пікери відкривають поверхню, а цей діє одразу — тож
+    // стан мусить бути видно на самій клітинці, без підпису.
+    const collapsed = render();
+    expect(collapsed).toContain('aria-pressed="false"');
+    expect(collapsed).toContain('aria-label="Розгорнути всі нотатки"');
+    expect(collapsed).not.toContain("wb-note-tool--on");
+
+    const expanded = render({}, { shown: 3, total: 3 }, true);
+    expect(expanded).toContain('aria-pressed="true"');
+    expect(expanded).toContain('aria-label="Згорнути всі нотатки"');
+    expect(expanded).toContain("wb-note-tool--on");
+    // Знак теж міняється — з підписом його читає скрінрідер, без підпису око.
+    expect(toggleButton(expanded)).not.toBe(toggleButton(collapsed));
+  });
+
+  it("стан перемикача видно заливкою, а не лише знаком", () => {
+    expect(rule(".wb-note-tool--on")).toContain("var(--accent-dim)");
+    expect(rule(".wb-note-tool--on")).toContain("color: var(--accent)");
+  });
+
+  it("шапка сторінки зі смугою лишаються на видноті при прокрутці", () => {
+    // Список нотаток довгий: без цього заголовок, пошук і кнопки зникали після
+    // першого ж екрана — тобто рівно тоді, коли вони й потрібні. Тло мусить
+    // бути непрозорим: під смугою їде вміст.
+    const sticky = chrome(".wb-page-sticky");
+
+    expect(sticky).toContain("position: sticky");
+    expect(sticky).toContain("top: 0");
+    expect(sticky).toContain("background: var(--bg-page");
+    // А проміжки смуги в цьому шарі задає сам шар, а не вони обидва
+    // (`components.css` — бо `.wb-note-tools` це кирпичик нотаток).
+    expect(rule(".wb-page-sticky .wb-note-tools")).toContain("margin-bottom: 0");
   });
 
   it("кількість показаних нотаток видно лише тоді, коли вона менша за всі", () => {
