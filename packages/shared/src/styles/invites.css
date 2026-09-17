@@ -28,13 +28,7 @@
   color: var(--text-muted);
 }
 
-.wb-invite-section-hint {
-  margin: 0 0 var(--sp-3);
-  font-size: var(--text-sm);
-  color: var(--text-secondary);
-}
-
-/* ── Список лінків ─────────────────────────────────────────────────────── */
+/* ── Список контактів ─────────────────────────────────────────────────── */
 
 .wb-invite-list {
   display: flex;

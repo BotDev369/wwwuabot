@@ -1,14 +1,19 @@
 /**
- * «МоїКонтакти» — особисті лінки й те, кого вони закріпили.
+ * «МоїКонтакти» — люди, закріплені за вами особистим посиланням.
  *
  * Екран лише **зводить** те, що вже є: картки й схему дає спільний
  * `@wwwuabot/ui/invites`, дані — `useInvites`, а адреса й власник — ця
  * оболонка. Тому тут немає ні розмітки картки, ні правила «хто приєднався»:
  * усе це перевіряється тестами в спільному модулі, незалежно від платформи.
  *
- * **Два блоки, і порядок навмисний.** «МоїЛінки-Контакти» — те, що людина
- * надсилає (дія), схема — те, що з цього вийшло (результат). Спочатку те, що
- * можна зробити зараз, потім — що вже сталось.
+ * **Одна дія й один результат.** Контакт не заводять руками — його запрошують:
+ * «Додати контакт» питає ім'я, створює посилання й **одразу кладе його в
+ * буфер**, бо це єдине, за чим людина сюди приходить («скопіював — надіслав»).
+ * Нижче — «Схема залучених»: те, що з цього вийшло.
+ *
+ * Самого посилання немає окремим блоком: воно належить **контакту**, і
+ * показується в його картці — там, де його шукають, коли треба надіслати лінк
+ * ще раз.
  *
  * Шлях власний (`/contacts`), а не `slug` рядка `scenarios`: список збирається
  * з даних людини (таблиця `invites`), а не з `page_data` (AGENTS.md §7).
@@ -38,12 +43,32 @@ export function ContactsPage(): ReactElement {
   }, [copiedId]);
 
   /**
-   * Створення лінка: підпис питаємо діалогом, бо людина має назвати контакт —
-   * без підпису список перетвориться на стовпчик однакових кодів.
+   * Покласти лінк у буфер і позначити картку.
+   *
+   * Повертає `false`, а не кидає: невдача буфера — не помилка дії, а привід
+   * показати посилання текстом, і вирішує це той, хто кликав.
    */
-  async function createLink(): Promise<void> {
-    const answer = await dialog.prompt("Як звати людину, якій ви надсилаєте лінк?", {
-      title: "Новий лінк",
+  async function copyToClipboard(link: InviteLink): Promise<boolean> {
+    if (!link.deepLink) return false;
+    try {
+      await navigator.clipboard.writeText(link.deepLink);
+      setCopiedId(link.id);
+      return true;
+    } catch {
+      // Буфер обміну закритий — показуємо лінк текстом, щоб його можна було
+      // скопіювати руками: мовчазна невдача тут гірша за будь-яке повідомлення.
+      return false;
+    }
+  }
+
+  /**
+   * Додавання контакту: ім'я питаємо діалогом (без підпису список
+   * перетвориться на стовпчик однакових кодів), а посилання одразу віддаємо
+   * в буфер — щоб «додав» і «надіслав» були однією дією, а не двома.
+   */
+  async function addContact(): Promise<void> {
+    const answer = await dialog.prompt("Як звати людину, якій ви надсилаєте посилання?", {
+      title: "Додати контакт",
       placeholder: "Ім'я контакту",
       validate: (value) =>
         sanitizeInviteLabel(value) === "" ? "Підпис не може бути порожнім" : null,
@@ -51,34 +76,39 @@ export function ContactsPage(): ReactElement {
     if (answer === null) return;
 
     try {
-      await create(sanitizeInviteLabel(answer));
-      await dialog.alert(
-        "Лінк готовий. Надішліть його в Telegram — і контакт з'явиться тут, коли людина приєднається.",
-        { title: "Готово" },
-      );
+      const created = await create(sanitizeInviteLabel(answer));
+      if (await copyToClipboard(created)) {
+        await dialog.alert(
+          "Контакт додано, посилання вже в буфері — надішліть його людині в Telegram. Коли вона приєднається, контакт закріпиться за вами.",
+          { title: "Посилання скопійовано" },
+        );
+      } else {
+        await dialog.alert(
+          created.deepLink
+            ? `Контакт додано, але скопіювати не вдалося. Ось посилання:\n${created.deepLink}`
+            : "Контакт додано, але бот ще не знає свого імені — посилання не склалося. Оновіть екран і спробуйте ще раз.",
+          { title: "Скопіюйте вручну" },
+        );
+      }
     } catch (e: unknown) {
-      await dialog.alert(e instanceof Error ? e.message : "Не вдалося створити лінк", {
+      await dialog.alert(e instanceof Error ? e.message : "Не вдалося додати контакт", {
         title: "Помилка",
       });
     }
   }
 
   async function copyLink(link: InviteLink): Promise<void> {
-    if (!link.deepLink) return;
-    try {
-      await navigator.clipboard.writeText(link.deepLink);
-      setCopiedId(link.id);
-    } catch {
-      // Буфер обміну закритий — показуємо лінк текстом, щоб його можна було
-      // скопіювати руками: мовчазна невдача тут гірша за будь-яке повідомлення.
-      await dialog.alert(`Скопіювати не вдалося. Ось лінк:\n${link.deepLink}`, {
-        title: "Скопіюйте вручну",
-      });
-    }
+    if (await copyToClipboard(link)) return;
+    await dialog.alert(
+      link.deepLink
+        ? `Скопіювати не вдалося. Ось посилання:\n${link.deepLink}`
+        : "Посилання не складено: бот ще не знає свого імені.",
+      { title: "Скопіюйте вручну" },
+    );
   }
 
   async function deleteLink(link: InviteLink): Promise<void> {
-    const confirmed = await dialog.confirm(`Прибрати лінк «${link.label}»?`, {
+    const confirmed = await dialog.confirm(`Прибрати контакт «${link.label}»?`, {
       title: "Видалення",
       tone: "danger",
       confirmText: "Прибрати",
@@ -88,7 +118,7 @@ export function ContactsPage(): ReactElement {
     try {
       await remove(link.id);
     } catch (e: unknown) {
-      await dialog.alert(e instanceof Error ? e.message : "Не вдалося прибрати лінк", {
+      await dialog.alert(e instanceof Error ? e.message : "Не вдалося прибрати контакт", {
         title: "Помилка",
       });
     }
@@ -101,9 +131,9 @@ export function ContactsPage(): ReactElement {
       <div className="wb-page-head">
         <h1 className="wb-page-title">МоїКонтакти</h1>
         <div className="wb-page-actions">
-          <button type="button" className="wb-btn wb-btn-primary" onClick={() => void createLink()}>
+          <button type="button" className="wb-btn wb-btn-primary" onClick={() => void addContact()}>
             <Icon name="plus" size={16} />
-            Створити лінк
+            Додати контакт
           </button>
         </div>
       </div>
@@ -133,18 +163,14 @@ export function ContactsPage(): ReactElement {
           {/* Кажемо, як він з'являється: контакт не заводять руками — його
               запрошують посиланням, і без цього порожній екран — глухий кут. */}
           <p className="wb-empty-text">
-            Натисніть «Створити лінк» і надішліть посилання людині в Telegram: коли вона
-            приєднається, контакт закріпиться за вами й з'явиться тут.
+            Натисніть «Додати контакт» — посилання скопіюється саме. Надішліть його людині в
+            Telegram: коли вона приєднається, контакт закріпиться за вами й з'явиться тут.
           </p>
         </div>
       )}
 
       {hasLinks && (
         <>
-          <h2 className="wb-invite-section">МоїЛінки-Контакти</h2>
-          <p className="wb-invite-section-hint">
-            Лінк персональний: хто перший за ним прийде — той і закріплений.
-          </p>
           <InvitesList
             links={links}
             copiedId={copiedId}
