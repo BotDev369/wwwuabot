@@ -258,10 +258,16 @@ Defined in `packages/shared/src/styles/tokens.css`, overridden per brand in `app
     яку обидві оболонки показують в одній і тій самій поверхні (`.wb-sheet`: платформа —
     вмістом меню профілю, адмінка — кнопкою «Тема»). Правило «порожніх не буває» — це
     функція (`isCompleteColors`), а не намір: без усіх трьох вибір не зберігається й не
-    застосовується. Готові палітри — `color-presets.ts` (від чорного до білого), розширений
-    вибір — повзунки H/S/L плюс код кольору (`ColorEditor`); порожній слот малюється
-    пунктиром, бо «не вибрано» — це стан, який видно до дотику. Кольори
-    **застосовуються живцем** (неповний вибір — ні), а «Скинути» вертає брендову палітру.
+    застосовується. Готові палітри — `color-presets.ts` (від чорного до білого), а вибір
+    окремого кольору **не вимагає знання кодів** (`ColorEditor`): спершу **зразки** — сітка
+    12 відтінків × 3 світності плюс смуга від чорного до білого (`COLOR_CHART` /
+    `COLOR_SHADES`), потім **системна палітра** (`input type="color"` — уся гама, піпетка),
+    і аж потім точність: повзунки H/S/L із намальованими доріжками (`HUE_TRACK` /
+    `channelTrack`) і код кольору. Панель відкривається **не порожньою**: поки вибору немає,
+    слоти стартують із кольорів, які вже на екрані (`activeColorsFromDom`), а порожній слот
+    (після «Прибрати») малюється пунктиром, бо «не вибрано» — це стан, який видно до дотику.
+    Кольори **застосовуються живцем** (неповний вибір — ні), а «Скинути» вертає брендову
+    палітру — і показує її в слотах, а не три пусті квадрати.
 
 ---
 
@@ -271,7 +277,7 @@ Defined in `packages/shared/src/styles/tokens.css`, overridden per brand in `app
 |---|---|
 | `packages/shared/src/styles/tokens.css` | CSS custom properties |
 | `packages/shared/src/styles/user-colors.css` | Палітра, виведена з трьох кольорів користувача (`color-mix`) |
-| `packages/shared/src/styles/theme-panel.css` | Кирпичики панелі «Тема» (`.wb-theme-*`) |
+| `packages/shared/src/styles/theme-panel.css` | Кирпичики панелі «Тема» (`.wb-theme-*`): палітри, зразки, системний вибір, повзунки |
 | `packages/shared/src/components/theme/` | `ThemeColorPanel` + `color-presets.ts` / `user-colors.ts` / `useUserColors` — вибір трьох кольорів |
 | `packages/shared/src/styles/apple.css` | Apple brand overrides |
 | `packages/shared/src/styles/android.css` | Material brand overrides |

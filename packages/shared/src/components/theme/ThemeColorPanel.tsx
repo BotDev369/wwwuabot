@@ -69,8 +69,8 @@ export function ThemeColorPanel({ onSaved }: ThemeColorPanelProps): ReactElement
       <section className="wb-theme-section">
         <h3 className="wb-theme-section-title">Твої три кольори</h3>
         <p className="wb-theme-hint">
-          Колір можна взяти з палітри, повзунком або кодом. Коли задані всі три, застосунок
-          малюється ними одразу — і тоді ж стає доступним «Зберегти».
+          Колір береться зразком, у системній палітрі, повзунком або кодом. Коли задані всі три,
+          застосунок малюється ними одразу — і тоді ж стає доступним «Зберегти».
         </p>
         <div className="wb-theme-rows">
           {COLOR_SLOTS.map((slot) => (

@@ -153,6 +153,32 @@ export function clearStoredColors(): void {
 }
 
 /**
+ * Три кольори, які діють на екрані **просто зараз**, — прочитані з токенів.
+ *
+ * Потрібні рівно для одного: щоб панель відкривалась не «по нулях». Порожні
+ * три слоти — це глухий кут: щоб побачити, що взагалі можна змінити, людина
+ * мусить спершу вибрати три кольори наосліп. Тут же стартовий стан — той, який
+ * вона бачить на екрані, і з нього вже можна тягнути будь-що.
+ *
+ * Читаються саме токени (`--bg-0`, `--text-primary`, `--accent`), а не бренд:
+ * вони є в будь-якій темі, і серед них ті самі три ролі. Значення з `color-mix()`
+ * чи градієнтом сюди не дійдуть — тоді чесніше лишити слот порожнім (`null`),
+ * ніж підсунути людині колір, якого вона не вибирала.
+ */
+export function activeColorsFromDom(): UserColors | null {
+  if (typeof document === "undefined") return null;
+  const styles = getComputedStyle(document.documentElement);
+  const read = (variable: string) => normalizeHex(styles.getPropertyValue(variable)) ?? "";
+
+  const draft: ColorDraft = {
+    bg: read("--bg-0"),
+    text: read("--text-primary"),
+    accent: read("--accent"),
+  };
+  return isCompleteColors(draft) ? draft : null;
+}
+
+/**
  * Застосувати вибір до документа (або зняти його — `null`).
  *
  * Значення летять у CSS-змінні на `<html>`, а всю решту палітри виводить

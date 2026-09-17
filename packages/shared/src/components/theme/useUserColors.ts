@@ -13,12 +13,17 @@
  * Вихід із панелі без збереження вертає збережену палітру: «подивився» і
  * «вибрав» — різні речі, і друга не має ставатися випадково.
  *
+ * Поки вибору немає зовсім, чернетка починається з **тих кольорів, які вже на
+ * екрані** (`activeColorsFromDom`). Панель з трьома порожніми слотами — це
+ * глухий кут: людина бачить не те, що має, а порожнечу.
+ *
  * @module packages/shared/src/components/theme/useUserColors
  */
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type { ColorPreset } from "../../styles/color-presets";
 import {
+  activeColorsFromDom,
   applyColors,
   clearStoredColors,
   contrastWarning,
@@ -51,9 +56,18 @@ export interface UseUserColorsResult {
   reset: () => void;
 }
 
+/**
+ * З чого панель починає: збережений вибір → кольори, які вже на екрані → нічого.
+ * Спільне для відкриття й для «Скинути»: після скидання слоти показують
+ * брендову палітру, а не порожнечу.
+ */
+function startDraft(): ColorDraft {
+  return readStoredColors() ?? activeColorsFromDom() ?? {};
+}
+
 export function useUserColors(): UseUserColorsResult {
   const [saved, setSaved] = useState<UserColors | null>(readStoredColors);
-  const [draft, setDraft] = useState<ColorDraft>(() => readStoredColors() ?? {});
+  const [draft, setDraft] = useState<ColorDraft>(startDraft);
 
   // Збережене для прибирання на виході: тому ефектові потрібне останнє
   // значення, а не те, що було на першому рендері.
@@ -90,7 +104,10 @@ export function useUserColors(): UseUserColorsResult {
   const reset = useCallback(() => {
     clearStoredColors();
     setSaved(null);
-    setDraft({});
+    // Скидання повертає брендову палітру — тож її й показуємо в слотах, а не
+    // три порожні квадрати (саме через них панель виглядала як «усе по нулях»).
+    applyColors(null);
+    setDraft(startDraft());
   }, []);
 
   return {

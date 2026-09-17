@@ -188,13 +188,117 @@
   color: var(--text-muted);
 }
 
-/* ── Повзунки ───────────────────────────────────────────────────────────── */
+/* ── Редактор кольору ──────────────────────────────────────────────────── */
 .wb-theme-editor {
   display: flex;
   flex-direction: column;
-  gap: var(--sp-2);
+  gap: var(--sp-3);
   padding: 0 var(--sp-3) var(--sp-3);
 }
+
+/* Системна палітра. Це поле, а не кнопка: клікабельний весь рядок, бо
+   `input type="color"` розтягнутий поверх нього прозорим шаром. */
+.wb-theme-picker {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: var(--sp-3);
+  min-height: 56px;
+  padding: var(--sp-2) var(--sp-3);
+  border-radius: var(--radius-md);
+  background: var(--field-bg);
+  cursor: pointer;
+  transition: background var(--duration-fast) var(--ease);
+}
+
+.wb-theme-picker:hover {
+  background: var(--surface-active);
+}
+
+.wb-theme-picker-swatch {
+  width: 36px;
+  height: 36px;
+  flex-shrink: 0;
+  border-radius: var(--radius-md);
+  box-shadow: inset 0 0 0 1px var(--border-subtle);
+}
+
+.wb-theme-picker-text {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.wb-theme-picker-label {
+  font-size: var(--text-base);
+  font-weight: var(--weight-medium);
+}
+
+.wb-theme-picker-hint {
+  font-size: var(--text-xs);
+  color: var(--text-muted);
+}
+
+/* Сам `input` не малюємо — він лише ловить дотик по всьому рядку. Ховати його
+   через `display: none` не можна: тоді системна палітра не відкриється. */
+.wb-theme-picker-input {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  padding: 0;
+  border: none;
+  opacity: 0;
+  cursor: pointer;
+}
+
+/* ── Зразки кольорів ───────────────────────────────────────────────────── */
+.wb-theme-chart {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-2);
+}
+
+.wb-theme-caption {
+  font-size: var(--text-xs);
+  color: var(--text-secondary);
+}
+
+.wb-theme-chips {
+  display: grid;
+  grid-template-columns: repeat(12, 1fr);
+  gap: var(--sp-1);
+}
+
+/* Сірих у сітці немає: смуга від чорного до білого стоїть окремим рядом, і
+   саме вона закриває випадок «треба просто темніше». */
+.wb-theme-chips--shades {
+  grid-template-columns: repeat(8, 1fr);
+}
+
+.wb-theme-chip {
+  aspect-ratio: 1;
+  padding: 0;
+  border: none;
+  border-radius: var(--radius-sm);
+  box-shadow: inset 0 0 0 1px var(--border-subtle);
+  cursor: pointer;
+  transition: transform var(--duration-fast) var(--ease);
+}
+
+.wb-theme-chip:hover {
+  transform: scale(1.12);
+}
+
+/* Вибраний зразок обводить акцент — той самий «вибране», що й у кнопок.
+   Обвід, а не галочка: галочка на кольорі й сама псує колір. */
+.wb-theme-chip--active {
+  outline: 2px solid var(--accent);
+  outline-offset: 1px;
+}
+
+/* ── Повзунки ───────────────────────────────────────────────────────────── */
 
 .wb-theme-slider-row {
   display: grid;
@@ -217,20 +321,27 @@
 }
 
 /* Бігунок малюємо самі: на Android і iOS рідний виглядає по-різному, а місце
-   йому тримає акцент — той самий колір, що у вибраного й у кнопок. */
+   йому тримає акцент — той самий колір, що у вибраного й у кнопок.
+
+   Доріжку малює розмітка (`backgroundImage`): повзунок без неї німий — число
+   «210°» нічого не каже, а веселка каже все. Тло лишається під нею на випадок
+   градієнта, якого браузер не зрозумів. */
 .wb-theme-slider {
   width: 100%;
-  height: 6px;
+  height: 8px;
   border-radius: var(--radius-full);
   background: var(--bg-4);
   appearance: none;
   cursor: pointer;
 }
 
+/* Кільце навколо бігунка — колір екрана: без нього він губиться на насиченій
+   доріжці (а на жовтому — просто зникає). */
 .wb-theme-slider::-webkit-slider-thumb {
   appearance: none;
   width: 20px;
   height: 20px;
+  border: 2px solid var(--bg-0);
   border-radius: var(--radius-full);
   background: var(--accent);
   box-shadow: var(--shadow-sm);
@@ -239,7 +350,7 @@
 .wb-theme-slider::-moz-range-thumb {
   width: 20px;
   height: 20px;
-  border: none;
+  border: 2px solid var(--bg-0);
   border-radius: var(--radius-full);
   background: var(--accent);
 }

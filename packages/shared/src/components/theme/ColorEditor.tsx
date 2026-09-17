@@ -1,10 +1,13 @@
 /**
- * `ColorEditor` — розширений вибір кольору: три повзунки й код.
+ * `ColorEditor` — вибір кольору: зразки, системна палітра, повзунки й код.
  *
- * Палітра готових трійок обмежена навмисно, і саме тому тут є **повзунки**:
- * «хочу свій» не має впиратися в чужі кольори. Відтінок / насиченість /
- * світність — це те, як про колір думає людина; код `#rrggbb` — те, як його
- * хочеться вставити з макета. Обидва входи ведуть до одного значення.
+ * Палітра готових трійок обмежена навмисно, і саме тому тут є **зразки**: людина
+ * не знає кодів кольорів, і «введи #4f7cff» — це не вибір, а диктант. Тому
+ * спершу йде те, що можна **взяти дотиком**: сітка кольорів і смуга від чорного
+ * до білого. Далі — системний вибір кольору (`input type="color"`): він дає всю
+ * гаму, піпетку й олівець там, де браузер це вміє. І аж потім — точність:
+ * повзунки H/S/L і код `#rrggbb`, бо доріжки повзунків намальовані тією ж гамою,
+ * тож і вони читаються очима, а не числом.
  *
  * Кнопка «Прибрати» лишає слот порожнім **навмисно**: саме так видно правило
  * «зберегти можна лише коли задані всі три» — кнопка збереження чекає, а
@@ -15,6 +18,7 @@
 
 import { useEffect, useState, type ReactElement } from "react";
 import { hexToHsl, hslToHex, normalizeHex, type Hsl } from "../../styles/color";
+import { COLOR_CHART, COLOR_SHADES, HUE_TRACK, channelTrack } from "../../styles/color-presets";
 
 interface ColorEditorProps {
   /** Поточний колір слота — або `""`, коли його прибрали. */
@@ -40,9 +44,12 @@ const CHANNELS: readonly ChannelDefinition[] = [
 
 export function ColorEditor({ value, onChange }: ColorEditorProps): ReactElement {
   const hsl = hexToHsl(value) ?? FALLBACK;
+  // Порожній слот усе одно має що показати: системному вибору потрібен колір,
+  // а не пустий рядок.
+  const current = normalizeHex(value) ?? hslToHex(FALLBACK);
   const [code, setCode] = useState(value);
 
-  // Зовнішня зміна (палітра, «Прибрати») мусить доїхати й до поля коду.
+  // Зовнішня зміна (зразок, «Прибрати») мусить доїхати й до поля коду.
   useEffect(() => setCode(value), [value]);
 
   const setChannel = (key: keyof Hsl, next: number) => {
@@ -55,8 +62,63 @@ export function ColorEditor({ value, onChange }: ColorEditorProps): ReactElement
     if (normalized) onChange(normalized);
   };
 
+  const track = (key: keyof Hsl) => (key === "h" ? HUE_TRACK : channelTrack(key, hsl));
+
   return (
     <div className="wb-theme-editor">
+      {/* Системна палітра: уся гама, піпетка, недавні кольори. Клікабельний
+          весь рядок — поле вводу розтягнуте поверх нього прозорим шаром. */}
+      <div className="wb-theme-picker">
+        <span
+          className="wb-theme-picker-swatch"
+          style={{ background: current }}
+          aria-hidden="true"
+        />
+        <span className="wb-theme-picker-text">
+          <span className="wb-theme-picker-label">Уся гама кольорів</span>
+          <span className="wb-theme-picker-hint">Системна палітра, піпетка й олівець</span>
+        </span>
+        <input
+          type="color"
+          className="wb-theme-picker-input"
+          value={current}
+          onChange={(event) => onChange(normalizeHex(event.target.value) ?? event.target.value)}
+          aria-label="Відкрити системну палітру"
+        />
+      </div>
+
+      <div className="wb-theme-chart">
+        <span className="wb-theme-caption">Зразки</span>
+        <div className="wb-theme-chips">
+          {COLOR_CHART.flatMap((row) =>
+            row.map((hex) => (
+              <button
+                key={hex}
+                type="button"
+                className={`wb-theme-chip${hex === current ? " wb-theme-chip--active" : ""}`}
+                style={{ background: hex }}
+                onClick={() => onChange(hex)}
+                aria-label={hex}
+                aria-pressed={hex === current}
+              />
+            )),
+          )}
+        </div>
+        <div className="wb-theme-chips wb-theme-chips--shades">
+          {COLOR_SHADES.map((hex) => (
+            <button
+              key={hex}
+              type="button"
+              className={`wb-theme-chip${hex === current ? " wb-theme-chip--active" : ""}`}
+              style={{ background: hex }}
+              onClick={() => onChange(hex)}
+              aria-label={hex}
+              aria-pressed={hex === current}
+            />
+          ))}
+        </div>
+      </div>
+
       {CHANNELS.map((channel) => (
         <label key={channel.key} className="wb-theme-slider-row">
           <span className="wb-theme-slider-label">{channel.labelUk}</span>
@@ -67,6 +129,7 @@ export function ColorEditor({ value, onChange }: ColorEditorProps): ReactElement
             max={channel.max}
             value={Math.round(hsl[channel.key])}
             onChange={(event) => setChannel(channel.key, Number(event.target.value))}
+            style={{ backgroundImage: track(channel.key) }}
             aria-label={channel.labelUk}
           />
           <span className="wb-theme-slider-value">

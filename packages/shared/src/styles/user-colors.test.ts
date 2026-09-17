@@ -24,9 +24,11 @@ import { join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { hexToHsl, hslToHex, normalizeHex } from "./color";
+import { COLOR_CHART, COLOR_SHADES, HUE_TRACK, channelTrack } from "./color-presets";
 import {
   COLORS_ATTR,
   COLORS_MODE_ATTR,
+  activeColorsFromDom,
   applyColors,
   colorsMode,
   contrastWarning,
@@ -182,6 +184,63 @@ describe("applyColors ставить три сіди на <html>", () => {
 
     expect(root.attributes.size).toBe(0);
     expect(root.props.size).toBe(0);
+  });
+});
+
+describe("зразки — це справжні кольори, а не картинка", () => {
+  it("кожен зразок читається як hex", () => {
+    for (const hex of [...COLOR_CHART.flat(), ...COLOR_SHADES]) {
+      expect(normalizeHex(hex)).toBe(hex);
+    }
+  });
+
+  it("сітка накриває дванадцять відтінків, а смуга — краї гами", () => {
+    expect(COLOR_CHART.flat()).toHaveLength(36);
+    expect(new Set(COLOR_CHART.flat().map((hex) => hexToHsl(hex)?.h)).size).toBe(12);
+    expect(COLOR_SHADES[0]).toBe("#000000");
+    expect(COLOR_SHADES[COLOR_SHADES.length - 1]).toBe("#ffffff");
+  });
+
+  it("доріжки повзунків — градієнти з реальних кольорів", () => {
+    expect(HUE_TRACK).toContain("linear-gradient");
+    expect(HUE_TRACK).toContain("#ff0000");
+    // Насиченість веде від сірого того ж світла — саме так її читає око.
+    expect(channelTrack("s", { h: 0, s: 50, l: 50 })).toContain("#808080");
+    expect(channelTrack("l", { h: 0, s: 50, l: 50 })).toContain("#000000");
+    expect(channelTrack("l", { h: 0, s: 50, l: 50 })).toContain("#ffffff");
+  });
+});
+
+describe("стартові кольори беруться з екрана, а не «по нулях»", () => {
+  const TOKENS: Record<string, string> = {
+    "--bg-0": "#101014",
+    "--text-primary": "#f4f4f6",
+    "--accent": "#7aa2ff",
+  };
+
+  const stubTokens = (tokens: Record<string, string>) => {
+    vi.stubGlobal("document", {});
+    vi.stubGlobal("getComputedStyle", () => ({
+      getPropertyValue: (name: string) => tokens[name] ?? "",
+    }));
+  };
+
+  afterEach(() => {
+    vi.unstubAllGlobals();
+  });
+
+  it("три робочі токени дають готовий вибір", () => {
+    stubTokens(TOKENS);
+    expect(activeColorsFromDom()).toEqual(COMPLETE);
+  });
+
+  it("обчислене значення (color-mix) слотом не стає", () => {
+    stubTokens({ ...TOKENS, "--accent": "color-mix(in srgb, red 50%, blue)" });
+    expect(activeColorsFromDom()).toBeNull();
+  });
+
+  it("поза браузером — нічого", () => {
+    expect(activeColorsFromDom()).toBeNull();
   });
 });
 
