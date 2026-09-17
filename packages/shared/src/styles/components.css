@@ -1154,7 +1154,7 @@ html:has(.wb-tabbar) .wb-modal {
   color: var(--text-muted);
 }
 
-/* ── Нотатки (список, перегляд) ─────────────────────────────────────────────
+/* ── Нотатки (смуга, групи, картки-акордеони) ───────────────────────────────
    Смуга керування, групи й картки. Розмітку рендерить СПІЛЬНИЙ модуль
    `@wwwuabot/ui/notes`, тому правила живуть тут: сьогодні його вживає
    платформа, завтра — панель (правило 10). */
@@ -1165,21 +1165,46 @@ html:has(.wb-tabbar) .wb-modal {
   margin-bottom: var(--sp-4);
 }
 
+/* Смуга керування — ОДИН ряд: пошук і три клітинки вибору поруч. */
+.wb-note-bar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--sp-2);
+}
+
 /* Поле пошуку з іконкою всередині: сама іконка — оздоба, а виділене місце під
-   неї тримає відступ, а не `position: absolute` на око. */
+   неї тримає відступ, а не `position: absolute` на око. У спокої поле
+   завширшки зі свій підпис («Пошук»): порожнє поле на всю ширину забирало б
+   місце саме у трьох клітинок, за якими людина приходить. */
 .wb-note-search {
   display: flex;
+  flex: 0 0 auto;
   align-items: center;
   gap: var(--sp-2);
   padding-left: var(--sp-3);
   border-radius: var(--radius-md);
   background: var(--field-bg);
+  --note-search-w: 4.5rem;
+}
+
+/* Розкрите поле забирає вільне місце в ряду, відсуваючи клітинки праворуч:
+   широка смуга потрібна тоді, коли в ній є запит, а не коли вона порожня. */
+.wb-note-search--open {
+  flex: 1 1 0;
+  min-width: 0;
 }
 
 .wb-note-search .wb-input {
+  width: var(--note-search-w);
+  min-width: 0;
   background: none;
   box-shadow: none;
   padding-left: 0;
+}
+
+.wb-note-search--open .wb-input {
+  width: 100%;
 }
 
 .wb-note-search-icon {
@@ -1191,8 +1216,10 @@ html:has(.wb-tabbar) .wb-modal {
    композера), бо «що вибрано» показує чип, а не сама кнопка. */
 .wb-note-controls {
   display: flex;
+  flex: 0 1 auto;
   align-items: center;
   flex-wrap: wrap;
+  min-width: 0;
   gap: var(--sp-1) var(--sp-2);
   /* Мірка клітинки — та сама планка для пальця, що й у композера. */
   --note-cell: 44px;
@@ -1283,8 +1310,20 @@ html:has(.wb-tabbar) .wb-modal {
   list-style: none;
 }
 
-/* Картка — кнопка на всю ширину: палець дістає будь-де, а тлом вона тримає
-   межу замість рамки (правило 15). */
+/* Картка — акордеон: закрита показує два рядки (текст із датою-часом і
+   хештеги), розкрита додає повний текст, обидві дати й дії. Межу тримає тло,
+   а не рамка (правило 15). */
+.wb-note-item {
+  border-radius: var(--radius-md);
+  background: var(--field-bg);
+  overflow: hidden;
+}
+
+.wb-note-item--open {
+  background: var(--surface-active);
+}
+
+/* Голова — кнопка на всю ширину: палець мусить діставати будь-де. */
 .wb-note-card {
   display: flex;
   flex-direction: column;
@@ -1292,8 +1331,7 @@ html:has(.wb-tabbar) .wb-modal {
   width: 100%;
   padding: var(--sp-3);
   border: none;
-  border-radius: var(--radius-md);
-  background: var(--field-bg);
+  background: none;
   color: var(--text-primary);
   font: inherit;
   text-align: left;
@@ -1302,19 +1340,43 @@ html:has(.wb-tabbar) .wb-modal {
 }
 
 .wb-note-card:hover {
-  background: var(--surface-active);
+  background: var(--surface-hover);
 }
 
-/* У списку текст обрізається ПО ВИСОТІ, а не рядком із трикрапкою: переноси —
-   це те, як нотатку написали, і `line-clamp` їх знищив би. */
+/* Рядок 1. Текст забирає вільне місце й обрізається однією лінією, а дата з
+   кареткою не стискаються: інакше дата ламалась би на два рядки — і «два
+   рядки інфо» перетворились би на три. */
+.wb-note-card-line {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-3);
+  min-width: 0;
+}
+
 .wb-note-card-text {
-  display: block;
-  max-height: calc(4 * 1.5em);
-  overflow: hidden;
+  flex: 1 1 auto;
+  min-width: 0;
   font-size: var(--text-base);
   line-height: 1.5;
-  white-space: pre-wrap;
-  overflow-wrap: anywhere;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Дата й хештеги навмисно ТИХІШІ за текст: список читають заради тексту, а
+   підписи, такі ж голосні, як він, роблять із рядків суцільну сітку, де око
+   ні за що не чіпляється. */
+.wb-note-card-stamp {
+  flex-shrink: 0;
+  font-size: var(--text-xs);
+  font-variant-numeric: tabular-nums;
+  color: var(--text-muted);
+}
+
+.wb-note-card-caret {
+  display: flex;
+  flex-shrink: 0;
+  color: var(--text-muted);
 }
 
 .wb-note-card-tags {
@@ -1323,18 +1385,21 @@ html:has(.wb-tabbar) .wb-modal {
   gap: var(--sp-1);
 }
 
-.wb-note-card-stamp {
-  font-size: var(--text-xs);
+/* Хештег тут — підпис, а не чип-кнопка: тла й мірок чипа не треба, бо з ним
+   він читався б голосніше за текст, за яким нотатку й упізнають. */
+.wb-note-card-tags .wb-chip {
+  padding: 0;
+  background: none;
+  color: var(--text-muted);
 }
 
-/* Перегляд однієї нотатки: той самий схил, що у композера й меню. */
-.wb-note-view {
+/* Тіло розкритої картки: текст цілком (переноси — це те, як нотатку написали)
+   і дії, які раніше стояли в окремій поверхні. */
+.wb-note-card-body {
   display: flex;
   flex-direction: column;
   gap: var(--sp-3);
-  padding: var(--sp-2) var(--sp-3) var(--sp-3);
-  overflow-y: auto;
-  -webkit-overflow-scrolling: touch;
+  padding: 0 var(--sp-3) var(--sp-3);
 }
 
 .wb-note-text {
@@ -1343,12 +1408,6 @@ html:has(.wb-tabbar) .wb-modal {
   line-height: var(--leading-normal);
   white-space: pre-wrap;
   overflow-wrap: anywhere;
-}
-
-.wb-note-tags {
-  display: flex;
-  flex-wrap: wrap;
-  gap: var(--sp-1);
 }
 
 /* Дати — пари «підпис → значення», а не рядок через кому: питань «це

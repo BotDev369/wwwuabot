@@ -2,11 +2,15 @@
  * «МоїНотатки» — робочий екран нотаток: створити, знайти, переглянути,
  * відредагувати, прибрати.
  *
- * Екран лише **зводить** те, що вже є: список, смугу керування й перегляд дає
+ * Екран лише **зводить** те, що вже є: список-акордеон і смугу керування дає
  * спільний `@wwwuabot/ui/notes`, редактор — спільний композер (він же створює
  * нотатку з «+» у футері), а адреса й власник — ця оболонка. Тому тут немає
  * ні розмітки картки, ні правил пошуку: усе це перевіряється тестами в
  * спільному модулі, незалежно від платформи.
+ *
+ * Підтвердження й редагування лишаються тут, бо вони не про вигляд, а про
+ * дані: композер один на створення й редагування, а видалення мусить спитати —
+ * і саме тому картка віддає дії нагору, а не робить їх сама.
  *
  * Шлях власний (`/notes`), а не `slug` рядка `scenarios`: список складається з
  * даних людини (таблиця `notes`), а не з `page_data` (AGENTS.md §7).
@@ -21,7 +25,6 @@ import { ComposerModal } from "@wwwuabot/ui/composer";
 import { useDialog } from "@wwwuabot/ui/dialog";
 import {
   DEFAULT_NOTES_VIEW,
-  NoteSheet,
   NotesList,
   NotesToolbar,
   buildGroups,
@@ -49,7 +52,6 @@ export function NotesPage(): ReactElement {
   const { notes, loading, error, upsert, remove } = useNotes();
   const dialog = useDialog();
   const [view, setView] = useState<NotesView>(DEFAULT_NOTES_VIEW);
-  const [openNote, setOpenNote] = useState<NoteRow | null>(null);
   const [editor, setEditor] = useState<EditorState>({ open: false });
 
   const visible = filterNotes(notes, view);
@@ -76,7 +78,6 @@ export function NotesPage(): ReactElement {
     try {
       await notesApi.remove(note.id);
       remove(note.id);
-      setOpenNote(null);
     } catch (e: unknown) {
       // Причина як є: «не вдалося» без нічого — та сама тиша, від якої ми
       // тікали, коли відмовлялись від нативних діалогів (§4).
@@ -87,9 +88,6 @@ export function NotesPage(): ReactElement {
   }
 
   function edit(note: NoteRow): void {
-    // Перегляд закриваємо: композер і він — різні поверхні, і лишати одну під
-    // одною без причини не можна.
-    setOpenNote(null);
     setEditor({ open: true, initial: { id: note.id, text: note.text, tags: [...note.tags] } });
   }
 
@@ -153,7 +151,7 @@ export function NotesPage(): ReactElement {
           />
 
           {groups.length > 0 ? (
-            <NotesList groups={groups} onOpen={setOpenNote} />
+            <NotesList groups={groups} onEdit={edit} onDelete={(note) => void deleteNote(note)} />
           ) : (
             <div className="wb-empty">
               <span className="wb-empty-icon">
@@ -171,15 +169,6 @@ export function NotesPage(): ReactElement {
             </div>
           )}
         </>
-      )}
-
-      {openNote && (
-        <NoteSheet
-          note={openNote}
-          onClose={() => setOpenNote(null)}
-          onEdit={edit}
-          onDelete={(note) => void deleteNote(note)}
-        />
       )}
 
       {editor.open && (

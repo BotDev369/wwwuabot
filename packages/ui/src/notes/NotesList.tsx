@@ -1,10 +1,21 @@
 /**
- * Список нотаток — групи й картки.
+ * Список нотаток — групи й картки-акордеони.
  *
- * Картка — **кнопка на всю ширину**, а не текст із значком праворуч: палець
- * мусить діставати будь-де, а відкрити нотатку можна лише одним способом — на
- * неї натиснути. Текст у списку обрізається по висоті (повний — у перегляді),
- * бо список читають очима згори вниз, а не читають цілком.
+ * Картка показує **два рядки** й більше нічого: початок тексту з датою-часом і
+ * хештеги. Усе інше — у розкритому тілі, і **закрита** кожна картка, бо список
+ * читають очима згори вниз: розгорнуті тексти перетворюють його на полотно, де
+ * не видно, скільки нотаток узагалі є (та сама причина, що й у акордеонів
+ * панелі «Тема»).
+ *
+ * Що де стоїть — навмисно: **текст** це те, за чим нотатку впізнають, тож він
+ * один у рядку з датою й дістає весь вільний простір, а **дата й хештеги**
+ * стоять приглушено (`--text-muted`, дрібніший кегль). Коли вони такі ж
+ * голосні, як текст, список читається як суцільна сітка підписів, і око не
+ * чіпляється ні за що.
+ *
+ * Голова картки — **кнопка на всю ширину** (палець мусить діставати будь-де),
+ * а тіло з'являється під нею вже зі своїми кнопками: тіло вкладене в кнопку
+ * дало б кнопки в кнопці, чого розмітка не дозволяє.
  *
  * Розмітка — кирпичики `.wb-note*`: їх рендерить спільний код, тож стилі
  * живуть у `packages/shared/src/styles/` (правило 10).
@@ -12,29 +23,63 @@
  * @module @wwwuabot/ui/notes
  */
 
-import type { ReactElement } from "react";
+import { useState, type ReactElement } from "react";
+import { Icon } from "@wwwuabot/shared";
 import type { NoteRow } from "@wwwuabot/shared/notes";
 import { formatNoteStamp } from "./format";
 import type { NotesGroup } from "./types";
 
 interface NotesListProps {
   groups: readonly NotesGroup[];
-  /** Відкрити нотатку — перегляд із діями. */
-  onOpen: (note: NoteRow) => void;
+  /** Відкрити редактор — композер із цією нотаткою. */
+  onEdit: (note: NoteRow) => void;
+  /** Прибрати нотатку — оболонка питає підтвердження сама. */
+  onDelete: (note: NoteRow) => void;
+}
+
+/**
+ * Початок тексту одним рядком: переноси згортаються в пробіли, бо рядок у
+ * картці **один** — інакше «початок» з'їдав би пів екрана, і саме те, від чого
+ * ми тікали, повернулося б.
+ */
+function previewLine(text: string): string {
+  return text.replace(/\s+/g, " ").trim();
 }
 
 function NoteCard({
   note,
-  onOpen,
+  onEdit,
+  onDelete,
 }: {
   note: NoteRow;
-  onOpen: (note: NoteRow) => void;
+  onEdit: (note: NoteRow) => void;
+  onDelete: (note: NoteRow) => void;
 }): ReactElement {
+  const [open, setOpen] = useState(false);
+  const line = previewLine(note.text);
+
   return (
-    <li>
-      <button type="button" className="wb-note-card" onClick={() => onOpen(note)}>
-        {/* Порожній текст можливий: нотатка з самих хештегів — теж нотатка. */}
-        {note.text && <span className="wb-note-card-text">{note.text}</span>}
+    <li className={`wb-note-item${open ? " wb-note-item--open" : ""}`}>
+      {/* Рядок 1 — початок тексту (він і забирає вільне місце) і дата з часом;
+          рядок 2 — хештеги. Обидва видно й у закритій картці: саме за ними
+          люди й вибирають, що відкрити. */}
+      <button
+        type="button"
+        className="wb-note-card"
+        aria-expanded={open}
+        onClick={() => setOpen(!open)}
+      >
+        <span className="wb-note-card-line">
+          {/* Порожній текст можливий: нотатка з самих хештегів — теж нотатка. */}
+          <span className={`wb-note-card-text${line ? "" : " wb-text-muted"}`}>
+            {line || "Без тексту"}
+          </span>
+          <span className="wb-note-card-stamp">{formatNoteStamp(note.updated_at)}</span>
+          <span className="wb-note-card-caret">
+            <Icon name={open ? "chevron-up" : "chevron-down"} size={16} />
+          </span>
+        </span>
+
         {note.tags.length > 0 && (
           <span className="wb-note-card-tags">
             {note.tags.map((tag) => (
@@ -44,13 +89,43 @@ function NoteCard({
             ))}
           </span>
         )}
-        <span className="wb-note-card-stamp wb-text-muted">{formatNoteStamp(note.updated_at)}</span>
       </button>
+
+      {open && (
+        <div className="wb-note-card-body">
+          {note.text.trim() && <p className="wb-note-text">{note.text}</p>}
+
+          {/* Обидві дати — парами «підпис → значення»: «коли змінив» і «коли
+              створив» — різні факти, і злитий рядок змушував би вгадувати,
+              який із них. У рядку картки стоїть лише зміна. */}
+          <dl className="wb-note-dates">
+            <dt className="wb-text-muted">Змінено</dt>
+            <dd>{formatNoteStamp(note.updated_at)}</dd>
+            <dt className="wb-text-muted">Створено</dt>
+            <dd>{formatNoteStamp(note.created_at)}</dd>
+          </dl>
+
+          <div className="wb-sheet-actions">
+            <button
+              type="button"
+              className="wb-btn wb-btn-secondary wb-btn-danger"
+              onClick={() => onDelete(note)}
+            >
+              <Icon name="trash" size={16} />
+              Видалити
+            </button>
+            <button type="button" className="wb-btn wb-btn-primary" onClick={() => onEdit(note)}>
+              <Icon name="edit" size={16} />
+              Редагувати
+            </button>
+          </div>
+        </div>
+      )}
     </li>
   );
 }
 
-export function NotesList({ groups, onOpen }: NotesListProps): ReactElement {
+export function NotesList({ groups, onEdit, onDelete }: NotesListProps): ReactElement {
   return (
     <>
       {groups.map((group) => (
@@ -63,7 +138,7 @@ export function NotesList({ groups, onOpen }: NotesListProps): ReactElement {
           </h2>
           <ul className="wb-note-list">
             {group.notes.map((note) => (
-              <NoteCard key={note.id} note={note} onOpen={onOpen} />
+              <NoteCard key={note.id} note={note} onEdit={onEdit} onDelete={onDelete} />
             ))}
           </ul>
         </section>

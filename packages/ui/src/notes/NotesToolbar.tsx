@@ -2,6 +2,11 @@
  * Смуга керування списком нотаток: пошук, три вибори (сортування, групування,
  * фільтр за хештегами) і знімні чипи вибраного.
  *
+ * Порядок у ряду — пошук ліворуч, три клітинки поруч праворуч. Поле пошуку в
+ * спокої завширшки з власний підпис («Пошук») і **розкривається** на всю смугу,
+ * щойно в нього пишуть: порожнє поле на всю ширину забирало місце саме в тих
+ * трьох клітинок, за якими людина приходить (правило 18).
+ *
  * Вибори **не** випадають списком (правило 4): кожен відкриває ту саму
  * повноекранну поверхню, що й меню профілю (`MenuModal`), і вибраний варіант
  * позначений галочкою — бо це стан, а не перехід.
@@ -66,6 +71,10 @@ export function NotesToolbar({
   total,
 }: NotesToolbarProps): ReactElement {
   const [picker, setPicker] = useState<Picker | null>(null);
+  // Розкрите поле тримає або фокус, або сам текст: згорнути запит, який уже
+  // набрано, — це втратити його з очей. Тому стан тут — тільки фокус.
+  const [focused, setFocused] = useState(false);
+  const searchOpen = focused || view.query.length > 0;
 
   const sortOption = SORT_OPTIONS.find((option) => option.value === view.sort) ?? SORT_OPTIONS[0];
   const groupOption =
@@ -152,50 +161,55 @@ export function NotesToolbar({
 
   return (
     <div className="wb-note-tools">
-      <div className="wb-note-search">
-        <Icon name="search" size={18} className="wb-note-search-icon" />
-        <input
-          type="search"
-          className="wb-input"
-          value={view.query}
-          onChange={(event) => onChange({ query: event.target.value })}
-          placeholder="Пошук за текстом або #хештегом"
-          aria-label="Пошук нотаток"
-        />
-      </div>
+      {/* Один ряд: пошук і три клітинки вибору — поруч. Чипи вибраного
+          лишаються в тій самій смузі, бо вони й є те, що ці клітинки міняють. */}
+      <div className="wb-note-bar">
+        <div className={`wb-note-search${searchOpen ? " wb-note-search--open" : ""}`}>
+          <Icon name="search" size={18} className="wb-note-search-icon" />
+          <input
+            type="search"
+            className="wb-input"
+            value={view.query}
+            onChange={(event) => onChange({ query: event.target.value })}
+            onFocus={() => setFocused(true)}
+            onBlur={() => setFocused(false)}
+            placeholder="Пошук"
+            aria-label="Пошук за текстом або хештегом"
+          />
+        </div>
 
-      {/* Один ряд: три клітинки вибору й чипи вибраного — поруч, як знімні теги. */}
-      <div className="wb-note-controls">
-        {PICKERS.map(({ key, label, icon }) => (
-          <button
-            key={key}
-            type="button"
-            className="wb-note-tool"
-            aria-label={`${label}: ${chosen[key]}`}
-            title={`${label}: ${chosen[key]}`}
-            onClick={() => setPicker(key)}
-          >
-            <Icon name={icon} size={18} />
-          </button>
-        ))}
+        <div className="wb-note-controls">
+          {PICKERS.map(({ key, label, icon }) => (
+            <button
+              key={key}
+              type="button"
+              className="wb-note-tool"
+              aria-label={`${label}: ${chosen[key]}`}
+              title={`${label}: ${chosen[key]}`}
+              onClick={() => setPicker(key)}
+            >
+              <Icon name={icon} size={18} />
+            </button>
+          ))}
 
-        {chips.length > 0 && (
-          <div className="wb-note-chips">
-            {chips.map((chip) => (
-              <button
-                key={chip.key}
-                type="button"
-                className="wb-chip wb-note-chip"
-                aria-label={chip.action}
-                title={chip.action}
-                onClick={() => onChange(chip.reset)}
-              >
-                <span className="wb-note-chip-label">{chip.label}</span>
-                <Icon name="close" size={12} />
-              </button>
-            ))}
-          </div>
-        )}
+          {chips.length > 0 && (
+            <div className="wb-note-chips">
+              {chips.map((chip) => (
+                <button
+                  key={chip.key}
+                  type="button"
+                  className="wb-chip wb-note-chip"
+                  aria-label={chip.action}
+                  title={chip.action}
+                  onClick={() => onChange(chip.reset)}
+                >
+                  <span className="wb-note-chip-label">{chip.label}</span>
+                  <Icon name="close" size={12} />
+                </button>
+              ))}
+            </div>
+          )}
+        </div>
       </div>
 
       {/* Рядок підказки з'являється лише тоді, коли є що сказати: скільки

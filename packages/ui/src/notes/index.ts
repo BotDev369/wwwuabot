@@ -3,18 +3,19 @@
  *
  * Підключення в оболонці:
  *
- *   import { NotesList, NotesToolbar, NoteSheet, buildGroups } from "@wwwuabot/ui/notes";
+ *   import { NotesList, NotesToolbar, buildGroups } from "@wwwuabot/ui/notes";
  *
  * Куди саме писати нотатки — знає **оболонка** (`createNotesApi` зі своїм
  * транспортом): у платформі нотатка належить людині, у панелі — проєкту. Тут
- * лишається те, що однакове: як їх знайти, показати й відкрити.
+ * лишається те, що однакове: як їх знайти, показати й відкрити. Читає нотатку
+ * **сама картка** (акордеон), а редагує й прибирає оболонка — через `onEdit`
+ * та `onDelete`, бо саме вона знає і композер, і правила підтвердження.
  *
  * @module @wwwuabot/ui/notes
  */
 
 export { NotesList } from "./NotesList";
 export { NotesToolbar } from "./NotesToolbar";
-export { NoteSheet } from "./NoteSheet";
 export { formatNoteStamp, noteTimestamp } from "./format";
 export {
   buildGroups,
