@@ -30,11 +30,12 @@ const CONTACT_COLUMNS = [
   "owner_id",
   "name",
   "username",
-  "telegram_user_id",
+  "joined_user_id",
   "tags",
   "notes",
   "code",
-  "joined_at",
+  "joined_bot_at",
+  "joined_platform_at",
   "created_at",
   "updated_at",
 ];
@@ -152,11 +153,12 @@ function row(over: Record<string, unknown> = {}) {
     id: 5,
     name: "Карас",
     username: null,
-    telegram_user_id: null,
     tags: "[]",
     notes: "",
     code: null,
-    joined_at: null,
+    joined_user_id: null,
+    joined_bot_at: null,
+    joined_platform_at: null,
     created_at: "2026-09-18 09:00:00",
     updated_at: "2026-09-18 09:00:00",
     ...over,
@@ -210,7 +212,12 @@ describe("створення контакту", () => {
     const res = await handleContacts(
       request("/api/contacts", {
         method: "POST",
-        body: { name: "  Карас  ", username: "@Karas_2", telegramUserId: 6281898553, tags: ["Друг"], notes: "  телефон у примітці  " },
+        body: {
+          name: "  Карас  ",
+          username: "@Karas_2",
+          tags: ["Друг"],
+          notes: "  телефон у примітці  ",
+        },
         initData: await signedInitData(),
       }),
       db.env,
@@ -224,9 +231,10 @@ describe("створення контакту", () => {
     expect(insert.binds[0]).toBe(USER_ID);
     expect(insert.binds[1]).toBe("Карас");
     expect(insert.binds[2]).toBe("karas_2");
-    expect(insert.binds[3]).toBe(6281898553);
-    expect(insert.binds[4]).toBe('["друг"]');
-    expect(insert.binds[5]).toBe("телефон у примітці");
+    expect(insert.binds[3]).toBe('["друг"]');
+    expect(insert.binds[4]).toBe("телефон у примітці");
+    // Id людини у створенні немає: його пише бот, коли вона прийде за лінком.
+    expect(insert.sql).not.toMatch(/joined_/);
   });
 
   it("⛔ порожнє ім'я контакту не створює", async () => {
@@ -255,10 +263,10 @@ describe("список контактів", () => {
           id: 1,
           name: "Карас молодший",
           username: "karas",
-          telegram_user_id: 555,
           tags: '["друг"]',
           code: "inv-8f3k2q",
-          joined_at: "2026-09-17 10:00:00",
+          joined_user_id: 555,
+          joined_bot_at: "2026-09-17 10:00:00",
         }),
       ],
       counts: [{ owner_id: 555, total: 2 }],
@@ -297,7 +305,7 @@ describe("правка контакту", () => {
     const res = await handleContacts(
       request("/api/contacts?id=5", {
         method: "PATCH",
-        body: { name: "  Карас   Новий ", username: "karas", telegramUserId: "555", tags: [], notes: "" },
+        body: { name: "  Карас   Новий ", username: "karas", tags: [], notes: "" },
         initData: await signedInitData(),
       }),
       db.env,
@@ -306,15 +314,17 @@ describe("правка контакту", () => {
     expect(res.status).toBe(200);
     const update = dataStatement(db, "UPDATE");
     expect(update.sql).toMatch(
-      /UPDATE contacts SET name = \?, username = \?, telegram_user_id = \?, tags = \?, notes = \?, updated_at = \?\s+WHERE id = \? AND owner_id = \?/,
+      /UPDATE contacts SET name = \?, username = \?, tags = \?, notes = \?, updated_at = \?\s+WHERE id = \? AND owner_id = \?/,
     );
     expect(update.binds[0]).toBe("Карас Новий");
     expect(update.binds[1]).toBe("karas");
-    expect(update.binds[2]).toBe(555);
-    expect(update.binds[6]).toBe(5);
-    expect(update.binds[7]).toBe(USER_ID);
-    // `joined_at` правкою не чіпається: факт приєднання — не поле власника.
-    expect(update.sql).not.toMatch(/joined_at = \?/);
+    expect(update.binds[5]).toBe(5);
+    expect(update.binds[6]).toBe(USER_ID);
+    // Дати приєднання правкою не чіпаються: їх ставить той, хто бачив перехід.
+    // Поки id був редагованим, власник міг стерти його й зняти заборону лінка.
+    expect(update.sql).not.toMatch(/joined_user_id = \?/);
+    expect(update.sql).not.toMatch(/joined_bot_at = \?/);
+    expect(update.sql).not.toMatch(/joined_platform_at = \?/);
   });
 
   it("⛔ чужий або неіснуючий номер — та сама 404, що й у видаленні", async () => {
@@ -367,7 +377,7 @@ describe("правка контакту", () => {
 
 describe("особистий лінк контакту", () => {
   it("складає код, який проходить payload бота", async () => {
-    const db = makeDb({ row: row({ id: 5, telegram_user_id: null }) });
+    const db = makeDb({ row: row({ id: 5, joined_bot_at: null }) });
     const res = await handleContactLink(
       request("/api/contacts/link?id=5", { method: "POST", initData: await signedInitData() }),
       db.env,
@@ -375,7 +385,9 @@ describe("особистий лінк контакту", () => {
 
     expect(res.status).toBe(200);
     const update = dataStatement(db, "UPDATE");
-    expect(update.sql).toMatch(/UPDATE contacts SET code = \?, updated_at = \? WHERE id = \? AND owner_id = \?/);
+    expect(update.sql).toMatch(
+      /UPDATE contacts SET code = \?, updated_at = \? WHERE id = \? AND owner_id = \?/,
+    );
 
     // Код — це адреса входу в бот: він мусить проходити payload бота.
     const code = String(update.binds[0]);
@@ -385,8 +397,14 @@ describe("особистий лінк контакту", () => {
     expect(update.binds[3]).toBe(USER_ID);
   });
 
-  it("⛔ приєднаному контакту лінк не видається — він нікого не закріпить", async () => {
-    const db = makeDb({ row: row({ id: 5, telegram_user_id: 6281898553, joined_at: "2026-09-17 10:00:00" }) });
+  it("⛔ тому, хто вже зайшов у бота, лінк не видається — він нікого не закріпить", async () => {
+    const db = makeDb({
+      row: row({
+        id: 5,
+        joined_user_id: 6281898553,
+        joined_bot_at: "2026-09-17 10:00:00",
+      }),
+    });
     const res = await handleContactLink(
       request("/api/contacts/link?id=5", { method: "POST", initData: await signedInitData() }),
       db.env,

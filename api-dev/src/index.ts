@@ -2,6 +2,7 @@ import * as Sentry from "@sentry/cloudflare";
 import { sentryOptions } from "@wwwuabot/shared/observability/sentry";
 import { handleRequest } from "./router";
 import { apiLog } from "./shared/logger";
+import { markEntryFromRequest } from "./shared/platform-entry";
 import type { Env } from "./shared/types";
 
 /**
@@ -16,13 +17,22 @@ import type { Env } from "./shared/types";
  * вмикатись. Без секрету `SENTRY_DSN` опції дорівнюють `undefined` — SDK
  * мовчки не робить нічого, тому деплой без секрету безпечний.
  * Деталі й політику даних див. `@wwwuabot/shared/observability/sentry`.
+ *
+ * Заразом тут фіксується **вхід на платформу** (`markEntryFromRequest`):
+ * перший запит людини з підписаним `initData` — це і є її прихід у Mini App,
+ * і ставить його саме воркер, а не контролер теми. Робиться у `waitUntil`,
+ * тож відповіді не затримує.
  */
 export default Sentry.withSentry(
   // `satisfies` ловить розходження між нашим обʼєктом (shared навмисно
   // вільний від залежностей) і реальним типом опцій SDK.
   (env: Env) => sentryOptions(env) satisfies Sentry.CloudflareOptions | undefined,
   {
-    async fetch(request: Request, env: Env): Promise<Response> {
+    async fetch(request: Request, env: Env, ctx: ExecutionContext): Promise<Response> {
+      // Не `await`: відмітка часу не входить у відповідь, але мусить пережити
+      // її відправку — інакше Cloudflare завершив би обіцянку разом із запитом.
+      ctx.waitUntil(markEntryFromRequest(request, env));
+
       try {
         return await handleRequest(request, env);
       } catch (error) {

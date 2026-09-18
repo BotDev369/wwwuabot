@@ -33,7 +33,6 @@ export {
   MAX_CONTACT_USERNAME,
   sanitizeContactNotes,
   sanitizeContactUsername,
-  sanitizeTelegramId,
 } from "./fields";
 export type {
   Contact,

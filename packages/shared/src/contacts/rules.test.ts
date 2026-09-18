@@ -6,10 +6,15 @@
  * обріже довгий параметр мовчки). Тому перевірка перетинає два модулі: це не
  * деталь лінка, а домовленість між ними.
  *
- * Поля перевіряються з того самого боку: `@username` регістронезалежний, id —
- * ціле й додатне, примітки не ростуть понад стелю. Усе, що не проходить, стає
- * **порожнім значенням**, а не помилкою: картка не мусить ламатися від того, що
- * людина вставила в поле хендла цілий абзац.
+ * Поля перевіряються з того самого боку: `@username` регістронезалежний, а
+ * примітки не ростуть понад стелю. Усе, що не проходить, стає **порожнім
+ * значенням**, а не помилкою: картка не мусить ламатися від того, що людина
+ * вставила в поле хендла цілий абзац.
+ *
+ * **Telegram-id тут немає, і це не пропущене.** Власник його не вписує —
+ * поле id зникло з правил разом із полем ув картці: id ставить бот, коли
+ * людина приходить за лінком, і вгадане число робило б контакт приєднаним без
+ * жодного переходу.
  */
 
 import { describe, expect, it } from "vitest";
@@ -24,7 +29,6 @@ import {
   sanitizeContactName,
   sanitizeContactNotes,
   sanitizeContactUsername,
-  sanitizeTelegramId,
 } from "./index";
 
 describe("код запрошення", () => {
@@ -112,25 +116,6 @@ describe("@username", () => {
 
   it("довгий хендл обрізається до стелі Telegram", () => {
     expect(sanitizeContactUsername("a".repeat(60))).toHaveLength(MAX_CONTACT_USERNAME);
-  });
-});
-
-describe("Telegram-id", () => {
-  it("приймає число й рядок із цифрами", () => {
-    expect(sanitizeTelegramId(6281898553)).toBe(6281898553);
-    expect(sanitizeTelegramId(" 6281898553 ")).toBe(6281898553);
-  });
-
-  it("⛔ дробове, нульове, від'ємне й не-число не стають id", () => {
-    expect(sanitizeTelegramId("12.5")).toBeNull();
-    expect(sanitizeTelegramId(0)).toBeNull();
-    expect(sanitizeTelegramId("-5")).toBeNull();
-    expect(sanitizeTelegramId("карас")).toBeNull();
-    expect(sanitizeTelegramId(null)).toBeNull();
-  });
-
-  it("порожнє поле не робить контакт «з id»", () => {
-    expect(sanitizeTelegramId("")).toBeNull();
   });
 });
 

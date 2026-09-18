@@ -219,6 +219,51 @@
   overflow-wrap: anywhere;
 }
 
+/* Етапи приєднання — список кроків у картці: запрошено → зайшов у бота →
+   зайшов на платформу. Показуються **усі три**, навіть непройдені: саме
+   різниця між другим і третім кроком і є те, що тут варто бачити. */
+.wb-contact-stages {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-1);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.wb-contact-stage {
+  display: flex;
+  align-items: baseline;
+  gap: var(--sp-2);
+  font-size: var(--text-sm);
+  /* Непройдений крок тихіший за пройдений — але читається: колір, а не
+     прозорість (прозорість на телефоні з'їдає підпис). */
+  color: var(--text-muted);
+}
+
+.wb-contact-stage--done {
+  color: var(--text-primary);
+}
+
+/* Підпис кроку — сталий стовпчик: дати трьох кроків мусять стояти одна під
+   одною, інакше список читається як три різні рядки, а не як лійка. */
+.wb-contact-stage-label {
+  flex: 0 0 auto;
+  min-width: 11rem;
+}
+
+.wb-contact-stage-value {
+  flex: 1 1 auto;
+  min-width: 0;
+  color: var(--text-secondary);
+  font-variant-numeric: tabular-nums;
+}
+
+.wb-contact-stage-note {
+  font-size: var(--text-xs);
+  color: var(--text-muted);
+}
+
 /* ── Схема залучених ──────────────────────────────────────────────────── */
 
 .wb-contact-scheme {
@@ -309,4 +354,18 @@
 .wb-contact-scheme-nested {
   font-size: var(--text-xs);
   color: var(--accent);
+}
+
+/* Стадія в рядку схеми — **стан, а не дія**: акцент лишається за глибиною
+   гілки (`--nested`), а тут підпис тихіший за ім'я. */
+.wb-contact-scheme-stage {
+  font-size: var(--text-xs);
+  color: var(--text-muted);
+}
+
+/* Стадія в рядку схеми — **стан, а не дія**: акцент лишається за глибиною
+   гілки (`--nested`), а тут підпис тихіший за ім'я. */
+.wb-contact-scheme-stage {
+  font-size: var(--text-xs);
+  color: var(--text-muted);
 }

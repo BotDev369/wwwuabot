@@ -38,7 +38,7 @@ npx wrangler d1 execute wwwuabot-db-dev --remote \
 | `scenarios` | `api-dev` | api-dev (`ensureBase`, `scenarios-portal.controller`) | **bot-dev читає**; api-dev редагує (`/api/portal/scenarios/*`); платформа рендерить (`/api/scenario/:slug`) | **єдине сховище контенту:** рядок = сторінка вебу (`page_data`) + її подання в боті (`caption_*`, `buttons`, `rich_*`). Деталі — [`CONTENT_MODEL.md`](./CONTENT_MODEL.md) |
 
 | `notes` | `api-dev` | api-dev (`ensureTables` у `notes.controller`) | api-dev: платформа — `/api/notes`, панель — `/api/admin/notes` | нотатки: чернетки людини (`scope = 'user'`, власник — Telegram-id із **підписаного `initData`**) і нотатки про проєкт з панелі (`scope = 'admin'`, власник — акаунт cookie-сесії). `tags` — JSON-масив |
-| `contacts` | `api-dev` | api-dev (`ensureTables` у `contacts.controller`) | api-dev: довідник і схема залучених — `/api/contacts`; **bot-dev пише** `telegram_user_id`/`joined_at`, коли людина прийшла з `?start=<код>` | контакти людини: **один рядок = один контакт**, а лінк — **одне з його полів** (`code` з `UNIQUE`, це і є payload бота `inv-8f3k2q`). `name`, `username`, `telegram_user_id`, `tags` (JSON-масив), `notes` — поля власника; `owner_id` — Telegram-id із **підписаного `initData`** |
+| `contacts` | `api-dev` | api-dev (`ensureTables` у `contacts.controller`) | api-dev: довідник і схема залучених — `/api/contacts`; **bot-dev пише вхід у бота** (`joined_user_id`, `joined_bot_at`), **api-dev — вхід на платформу** (`joined_platform_at`) | контакти людини: **один рядок = один контакт**, а лінк — **одне з його полів** (`code` з `UNIQUE`, це і є payload бота `inv-8f3k2q`). Власні поля — `name`, `username`, `tags` (JSON-масив), `notes`; `owner_id` — Telegram-id із **підписаного `initData`** |
 | `mydate_analysis` | `api-dev` | api-dev, `getAnalysis` | api-dev | кеш астрологічного аналізу на дату (KV — швидкий шар) |
 
 У `scenarios` дві різні речі, і плутати їх більше не можна: **`id`** — номер рядка
@@ -57,6 +57,25 @@ npx wrangler d1 execute wwwuabot-db-dev --remote \
 `CREATE TABLE`, а не іменований індекс. Це не дрібниця — імена індексів у SQLite глобальні для
 бази, тому однойменний `CREATE UNIQUE INDEX IF NOT EXISTS` міг би виявитись **порожньою дією**,
 і таблиця лишилась би без унікальності, не сказавши про це нікому.
+
+**`contacts`: два входи — дві дати, і жодну не пише власник (18.09.2026).** Людина може зайти
+в бота за лінком і **не відкрити платформу**: це **часткове** приєднання, і без другої дати його
+не було б видно. Тому замість однієї колонки «приєднався» — три:
+
+| Колонка | Хто пише | Що це |
+|---|---|---|
+| `joined_user_id` | бот (`ctx.from`) | **хто** прийшов — id людини, не вгаданий власником |
+| `joined_bot_at` | бот, при `?start=<код>` | вхід **у бота** (часткове приєднання) |
+| `joined_platform_at` | `api-dev`, на першому ж запиті з підписом | вхід **на платформу** (повне приєднання) |
+
+Раніше id людини був **редагованим полем** («Telegram ID» у картці), і це ламало саме правило
+закріплення: вписане число робило контакт «приєднаним», а лінк — «використаним» без жодного
+переходу, а стерте поле навпаки **знімало** заборону й дозволяло закріпити за тим самим лінком
+другу людину. Тепер правити ці колонки не може ніхто, крім того, хто бачив перехід: бот бачить
+вхід у бота, `api-dev` — вхід на платформу. Міграція `2026-09-18-contacts-join-stages.sql`
+перейменувала старі колонки (`telegram_user_id` → `joined_user_id`, `joined_at` → `joined_bot_at`)
+і додала третю; дату платформи наявним рядкам **не вигадували** — її поставить сам `api-dev`,
+коли ця людина наступного разу зайде на платформу.
 
 **`contacts`: чому лінк — поле контакту, а не окрема таблиця (18.09.2026).** До 18.09 рядок
 народжувався **разом із лінком** (`invites`), і більше нічого про людину не знав: ні телефону,

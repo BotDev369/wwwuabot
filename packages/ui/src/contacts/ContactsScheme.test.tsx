@@ -1,13 +1,11 @@
 /**
  * Схема залучених — що вона каже про гілку.
  *
- * Тут перевіряється те, чого не видно в числах: другий рівень з'являється
- * **лише тоді, коли він є**. «Залучив(ла) ще 0» — це рядок заради нуля, і саме
- * такий рядок робить список шумним.
- *
- * Друге — **стан замість порожнього імені**: контакт, який прийшов за лінком,
- * показує своє ім'я (воно приходить із профілю), а той, хто ще не прийшов, —
- * свій стан словом. Порожній рядок у схемі читався б як зламана розмітка.
+ * Тут перевіряється те, чого не видно в числах: **лійка без дірок** (той, хто
+ * зайшов на платформу, порахований і в «у боті»), **другий рівень з'являється
+ * лише тоді, коли він є** («залучив(ла) ще 0» — рядок заради нуля) і **стадія
+ * в рядку названа словом** — саме різниця між «у боті» та «приєднався» і є
+ * те, заради чого екран існує, а за кольором її не видно.
  *
  * Середовище тестів — `node` (без DOM), тож перевіряємо розмітку, яку рендерить
  * React, а не дотики.
@@ -20,18 +18,22 @@ import { renderToStaticMarkup } from "react-dom/server";
 import type { Contact } from "@wwwuabot/shared/contacts";
 import { ContactsScheme } from "./ContactsScheme";
 
-/** Контакт-фікстура: приєднаний передають через `telegramUserId` + `joinedAt`. */
+const BOT = "2026-09-18 03:45:00";
+const PLATFORM = "2026-09-18 03:50:00";
+
+/** Контакт-фікстура: усе, крім переданого, — «щойно завели». */
 function contact(over: Partial<Contact> = {}): Contact {
   return {
     id: 1,
     name: "Карас",
     username: null,
-    telegramUserId: null,
     tags: [],
     notes: "",
     code: null,
     deepLink: null,
-    joinedAt: null,
+    joinedUserId: null,
+    joinedBotAt: null,
+    joinedPlatformAt: null,
     createdAt: "2026-09-18 03:40:00",
     updatedAt: "2026-09-18 03:40:00",
     invitedCount: 0,
@@ -44,44 +46,52 @@ function render(contacts: Contact[]): string {
 }
 
 describe("ContactsScheme", () => {
-  it("показує три числа — контактів, запрошено, приєднались", () => {
+  it("показує три числа — запрошено, у боті, приєднались", () => {
     const html = render([
-      contact({ id: 1, code: "inv-000001", telegramUserId: 555, joinedAt: "2026-09-18 03:40:00" }),
-      contact({ id: 2, name: "Олег", code: "inv-000002" }),
-      contact({ id: 3, name: "Просто знайомий" }),
+      contact({
+        id: 1,
+        name: "Приєднався",
+        code: "inv-000001",
+        joinedUserId: 555,
+        joinedBotAt: BOT,
+        joinedPlatformAt: PLATFORM,
+      }),
+      contact({ id: 2, name: "У боті", code: "inv-000002", joinedUserId: 556, joinedBotAt: BOT }),
+      contact({ id: 3, name: "Олег", code: "inv-000003" }),
+      contact({ id: 4, name: "Просто знайомий" }),
     ]);
 
-    expect(html).toContain("Контактів");
     expect(html).toContain("Запрошено");
+    expect(html).toContain("У боті");
     expect(html).toContain("Приєднались");
-    // 3 контакти, 2 з лінком, 1 людина прийшла.
+    // 3 лінки, 2 зайшли в бота, 1 дійшов до платформи.
     const numbers = [...html.matchAll(/<dd>(\d+)<\/dd>/g)].map((match) => match[1]);
     expect(numbers).toEqual(["3", "2", "1"]);
   });
 
   it("гілка починається з власника, а не з першого контакту", () => {
-    const html = render([contact()]);
-
-    expect(html).toContain("wb-contact-scheme-root");
-    expect(html.trim().startsWith("<div")).toBe(true);
+    expect(render([contact()])).toContain("wb-contact-scheme-root");
   });
 
-  it("очікування назване словом, а контакт без лінка — своїм станом", () => {
+  it("стадія називається словом: часткове приєднання видно в рядку", () => {
+    const html = render([contact({ joinedUserId: 555, joinedBotAt: BOT })]);
+
+    expect(html).toContain("зайшов у бота");
+    expect(html).toContain("wb-contact-scheme-stage");
+  });
+
+  it("⛔ повному приєднанню стадію не повторюють: це шум", () => {
     const html = render([
-      contact({ id: 1, name: "Олег", code: "inv-000001" }),
-      contact({ id: 2, name: "Знайомий" }),
+      contact({ joinedUserId: 555, joinedBotAt: BOT, joinedPlatformAt: PLATFORM }),
     ]);
 
-    expect(html).toContain("лінк чекає");
-    expect(html).toContain("без лінка");
-    expect(html).not.toContain("ще не приєднався");
+    expect(html).not.toContain("wb-contact-scheme-stage");
+    expect(html).not.toContain("приєднався");
   });
 
   it("другий рівень показується лише тоді, коли він є", () => {
-    const withNested = render([
-      contact({ telegramUserId: 555, code: "inv-000001", invitedCount: 3 }),
-    ]);
-    const without = render([contact({ telegramUserId: 555, code: "inv-000001", invitedCount: 0 })]);
+    const withNested = render([contact({ joinedUserId: 555, joinedBotAt: BOT, invitedCount: 3 })]);
+    const without = render([contact({ joinedUserId: 555, joinedBotAt: BOT, invitedCount: 0 })]);
 
     expect(withNested).toContain("залучив(ла) ще 3");
     expect(withNested).toContain("Ваші контакти залучили ще 3");
@@ -90,7 +100,7 @@ describe("ContactsScheme", () => {
   });
 
   it("ім'я контакту стоїть окремо від хендла — підпис і підпис", () => {
-    const html = render([contact({ username: "karas", telegramUserId: 555 })]);
+    const html = render([contact({ username: "karas", joinedUserId: 555, joinedBotAt: BOT })]);
 
     expect(html).toContain("wb-contact-scheme-node");
     expect(html).toContain("Карас");

@@ -8,14 +8,20 @@
  * жити в одному файлі з розбором `URL`.
  *
  * **Контакт — це запис, а не лінк.** Запис заводять руками (ім'я, `@username`,
- * Telegram-id, хештеги, примітки), а лінк — **одне з його полів**: контакт може
- * жити без лінка, і лінк створюють окремою дією. Тому таблиця одна — `contacts`:
+ * хештеги, примітки), а лінк — **одне з його полів**: контакт може жити без
+ * лінка, і лінк створюють окремою дією. Тому таблиця одна — `contacts`:
  * друга (`invites`) була б другим сховищем того самого контакту (AGENTS.md §7).
  *
- * **Факт приєднання закріплює бот.** Людина приходить із `?start=<код>`, і
- * `bot-dev` пише `telegram_user_id` та `joined_at` — один раз і назавжди
- * (`WHERE telegram_user_id IS NULL`). Тут ці колонки не пишуться ніколи:
- * інакше власник міг би «приєднати» контакт, який не приєднувався.
+ * **Вхід у бота закріплює бот.** Людина приходить із `?start=<код>`, і
+ * `bot-dev` пише `joined_user_id` та `joined_bot_at` — один раз і назавжди
+ * (`WHERE joined_bot_at IS NULL`). Тут ці колонки не пишуться ніколи: інакше
+ * власник міг би «приєднати» контакт, який не приєднувався.
+ *
+ * **Вхід на платформу фіксує цей воркер** — і рівно тому, що він єдиний, хто
+ * бачить людину в Mini App: `markPlatformEntry` ставить `joined_platform_at`
+ * тому, хто приєднався за лінком (за його `joined_user_id`). Це не
+ * дублювання дати бота: зайти в бота й не відкрити платформу — це **часткове**
+ * приєднання, і без другої дати його не було б видно (див. `@wwwuabot/shared/contacts`).
  *
  * **Власник — у самому `WHERE`** кожного запиту, а не окремою перевіркою після
  * читання: так чужий номер відповідає тією ж 404, що й неіснуючий, і код
@@ -26,13 +32,13 @@
 
 import type { Env } from "../shared/types";
 import { readBotUsername } from "../shared/bot-identity";
+import { ensureTables } from "@wwwuabot/shared/database/ensure-tables";
 import {
   buildInviteLink,
   inviteCodeFromToken,
   sanitizeContactName,
   sanitizeContactNotes,
   sanitizeContactUsername,
-  sanitizeTelegramId,
   type Contact,
 } from "@wwwuabot/shared/contacts";
 import { parseTagsJson, sanitizeTags, tagsToJson } from "@wwwuabot/shared/tags";
@@ -45,19 +51,20 @@ const LIST_LIMIT = 200;
 const MAX_CODE_ATTEMPTS = 4;
 
 /** Колонки читаємо за іменами, а не `SELECT *`: так само, як в інших таблицях. */
-const COLUMNS = `id, name, username, telegram_user_id, tags, notes, code, joined_at,
-        created_at, updated_at`;
+const COLUMNS = `id, name, username, tags, notes, code, joined_user_id, joined_bot_at,
+        joined_platform_at, created_at, updated_at`;
 
 /** Рядок, як він лежить у D1. */
 interface ContactRecord {
   id: number;
   name: string | null;
   username: string | null;
-  telegram_user_id: number | null;
   tags: string | null;
   notes: string | null;
   code: string | null;
-  joined_at: string | null;
+  joined_user_id: number | null;
+  joined_bot_at: string | null;
+  joined_platform_at: string | null;
   created_at: string | null;
   updated_at: string | null;
 }
@@ -66,7 +73,6 @@ interface ContactRecord {
 export interface ContactFields {
   name: string;
   username: string | null;
-  telegramUserId: number | null;
   tags: string[];
   notes: string;
 }
@@ -96,7 +102,6 @@ export function readFields(body: { [key: string]: unknown }): ContactFields {
   return {
     name: sanitizeContactName(body.name),
     username: sanitizeContactUsername(body.username),
-    telegramUserId: sanitizeTelegramId(body.telegramUserId),
     tags: sanitizeTags(body.tags),
     notes: sanitizeContactNotes(body.notes),
   };
@@ -114,21 +119,22 @@ function toContact(
   botUsername: string | null,
   nested: Map<number, number>,
 ): Contact {
-  const telegramUserId = row.telegram_user_id ?? null;
+  const joinedUserId = row.joined_user_id ?? null;
 
   return {
     id: row.id,
     name: row.name ?? "",
     username: row.username ?? null,
-    telegramUserId,
     tags: parseTagsJson(row.tags),
     notes: row.notes ?? "",
     code: row.code ?? null,
     deepLink: row.code ? buildInviteLink(botUsername, row.code).deepLink : null,
-    joinedAt: row.joined_at ?? null,
+    joinedUserId,
+    joinedBotAt: row.joined_bot_at ?? null,
+    joinedPlatformAt: row.joined_platform_at ?? null,
     createdAt: row.created_at ?? "",
     updatedAt: row.updated_at ?? "",
-    invitedCount: telegramUserId === null ? 0 : (nested.get(telegramUserId) ?? 0),
+    invitedCount: joinedUserId === null ? 0 : (nested.get(joinedUserId) ?? 0),
   };
 }
 
@@ -137,8 +143,8 @@ function toContact(
  *
  * Одним запитом, а не по одному на контакт: схема залучених — це список, і
  * N запитів тут були б видимою паузою на кожному відкритті екрана. Рахуємо
- * лише закріплені приєднання (`telegram_user_id IS NOT NULL`) — контакт без
- * лінка нікого не залучив.
+ * лише тих, хто справді прийшов (`joined_bot_at IS NOT NULL`) — контакт без
+ * лінка нікого не залучив, а вписане руками число більше нічого не важить.
  */
 async function nestedCounts(
   db: D1Database,
@@ -151,7 +157,7 @@ async function nestedCounts(
   const result = await db
     .prepare(
       `SELECT owner_id, COUNT(*) AS total FROM contacts
-       WHERE owner_id IN (${placeholders}) AND telegram_user_id IS NOT NULL GROUP BY owner_id`,
+       WHERE owner_id IN (${placeholders}) AND joined_bot_at IS NOT NULL GROUP BY owner_id`,
     )
     .bind(...owners)
     .all<{ owner_id: number; total: number }>();
@@ -174,7 +180,7 @@ async function readContact(
 
   if (!row) return null;
 
-  const owners = row.telegram_user_id === null ? [] : [row.telegram_user_id];
+  const owners = row.joined_user_id === null ? [] : [row.joined_user_id];
   return toContact(row, botUsername, await nestedCounts(db, owners));
 }
 
@@ -190,7 +196,7 @@ export async function listContacts(env: Env, ownerId: number): Promise<Contact[]
 
   const rows = result.results ?? [];
   const owners = rows
-    .map((row) => row.telegram_user_id)
+    .map((row) => row.joined_user_id)
     .filter((id): id is number => typeof id === "number");
   const nested = await nestedCounts(env.DB, owners);
 
@@ -214,19 +220,10 @@ export async function createContact(
 
   const now = formatSqliteDatetime();
   const inserted = await env.DB.prepare(
-    `INSERT INTO contacts (owner_id, name, username, telegram_user_id, tags, notes, created_at, updated_at)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+    `INSERT INTO contacts (owner_id, name, username, tags, notes, created_at, updated_at)
+       VALUES (?, ?, ?, ?, ?, ?, ?)`,
   )
-    .bind(
-      ownerId,
-      fields.name,
-      fields.username,
-      fields.telegramUserId,
-      tagsToJson(fields.tags),
-      fields.notes,
-      now,
-      now,
-    )
+    .bind(ownerId, fields.name, fields.username, tagsToJson(fields.tags), fields.notes, now, now)
     .run();
 
   const id = inserted.meta?.last_row_id ?? 0;
@@ -235,10 +232,12 @@ export async function createContact(
 }
 
 /**
- * Правка контакту: усі поля одразу, **крім наслідкових**.
+ * Правка контакту: усі **власні** поля одразу, і жодного наслідкового.
  *
- * `telegram_user_id` тут є — але це поле власника («я знаю, хто це»), а не факт
- * приєднання: `joined_at` ставить тільки бот.
+ * `joined_user_id`, `joined_bot_at` і `joined_platform_at` у `UPDATE` немає
+ * навмисно: їх ставить той, хто бачив перехід. Поки поле id було редагованим,
+ * власник міг стерти його й **зняти** заборону лінка — а вписане число робило
+ * контакт приєднаним без жодного переходу.
  */
 export async function updateContact(
   env: Env,
@@ -250,13 +249,12 @@ export async function updateContact(
   if (fields.name === "") return { ok: false, status: 400, error: "Порожнє ім'я контакту" };
 
   const result = await env.DB.prepare(
-    `UPDATE contacts SET name = ?, username = ?, telegram_user_id = ?, tags = ?, notes = ?, updated_at = ?
+    `UPDATE contacts SET name = ?, username = ?, tags = ?, notes = ?, updated_at = ?
        WHERE id = ? AND owner_id = ?`,
   )
     .bind(
       fields.name,
       fields.username,
-      fields.telegramUserId,
       tagsToJson(fields.tags),
       fields.notes,
       formatSqliteDatetime(),
@@ -274,19 +272,22 @@ export async function updateContact(
  * Особистий лінк контакту: скласти новий або замінити старий.
  *
  * **Приєднаному контакту лінк не видається.** Закріплення стається лише раз
- * (`WHERE telegram_user_id IS NULL`), тож лінк для людини, яка вже приєдналась,
+ * (`WHERE joined_bot_at IS NULL`), тож лінк для людини, яка вже приєдналась,
  * не закріпив би нікого — а виглядав би як робочий. Це та сама чесність, що й
  * у заглушок меню: краще сказати вголос, ніж видати посилання, яке мовчки
  * нічого не робить.
+ *
+ * Другої дати (`joined_platform_at`) тут не чіпаємо: складання лінка не є
+ * входом на платформу, а сам власник не заходить за власним лінком.
  */
 export async function makeLink(env: Env, ownerId: number, id: number): Promise<ContactResult> {
   const db = env.DB;
   const current = await db
-    .prepare("SELECT id, telegram_user_id FROM contacts WHERE id = ? AND owner_id = ?")
+    .prepare("SELECT id, joined_bot_at FROM contacts WHERE id = ? AND owner_id = ?")
     .bind(id, ownerId)
-    .first<{ id: number; telegram_user_id: number | null }>();
+    .first<{ id: number; joined_bot_at: string | null }>();
   if (!current) return { ok: false, status: 404, error: "Not found" };
-  if (current.telegram_user_id !== null) {
+  if (current.joined_bot_at !== null) {
     return {
       ok: false,
       status: 400,
@@ -331,4 +332,29 @@ export async function deleteContact(
     .run();
   if ((result.meta?.changes ?? 0) === 0) return { ok: false, status: 404, error: "Not found" };
   return { ok: true };
+}
+
+/**
+ * Людина зайшла **на платформу** — тобто приєдналась повністю.
+ *
+ * Це другий крок після входу в бота, і фіксує його саме `api-dev`: лише він
+ * бачить людину в Mini App. Умова стоїть у самому `UPDATE` (`joined_user_id`
+ * збігається, дата ще порожня), тож запит ідемпотентний і безпечний при
+ * повторі — а повторів буде багато: кожен запит до платформи від цієї людини
+ * приходить сюди, поки дата не проставлена.
+ *
+ * Ставимо дату **тільки тим, хто прийшов за лінком** (`joined_user_id`), а не
+ * кожному, хто просто користується платформою: без лінка людина нічий контакт,
+ * і дата тут була б записом у чужий рядок.
+ */
+export async function markPlatformEntry(env: Env, userId: number): Promise<void> {
+  await ensureTables(env.DB, ["contacts"]);
+
+  const now = formatSqliteDatetime();
+  await env.DB.prepare(
+    `UPDATE contacts SET joined_platform_at = ?, updated_at = ?
+     WHERE joined_user_id = ? AND joined_platform_at IS NULL`,
+  )
+    .bind(now, now, userId)
+    .run();
 }
