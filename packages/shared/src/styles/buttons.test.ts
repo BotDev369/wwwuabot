@@ -134,14 +134,20 @@ describe("кнопка: мірки — токен, і жоден бренд їх
     }
   });
 
-  it("`.wb-page-cta` забирає рядок цілком — і це те, що легко загубити", () => {
-    // Головна дія сторінки стоїть **під** шапкою там, де в ній числа
-    // («МоїКонтакти»). Загубиться `width: 100%` — і дія стане півширини, тобто
-    // читатиметься як підпис; загубляться відступи — і вона тулитиметься.
-    const cta = RULES.find((rule) => rule.selector === ".wb-page-cta");
-    expect(cta, "правило .wb-page-cta мусить існувати").toBeDefined();
-    expect(cta?.body).toContain("width: 100%");
-    expect(cta?.body).toContain("margin: var(--sp-3) 0");
+  it("`.wb-page-add` лишається колом — і це те, що легко загубити", () => {
+    // Головна дія сторінки («+" у шапці списку) — **без підпису**, тож її
+    // єдині мірки й роблять її кнопкою: загубиться квадрат — і знак у рядку
+    // чисел стане безформною плямою; загубиться радіус — і зникне коло.
+    const add = RULES.find((rule) => rule.selector === ".wb-page-add");
+    expect(add, "правило .wb-page-add мусить існувати").toBeDefined();
+    expect(add?.body).toContain("width: var(--page-add-size)");
+    expect(add?.body).toContain("height: var(--page-add-size)");
+    expect(add?.body).toContain("border-radius: var(--radius-full)");
+    // Підпису немає — і внутрішні відступи не мали б лишитись від `.wb-btn`.
+    expect(add?.body).toContain("padding: 0");
+    // Мірка задана тут же, поруч із використанням: 36px — це та сама вага, що
+    // в чисел у тому ж рядку, і вона мусить читатись одним рядком із правилом.
+    expect(add?.body).toContain("--page-add-size: 36px");
   });
 
   it("мірки оголошені в обох шарах — спільному і брендовому", () => {
