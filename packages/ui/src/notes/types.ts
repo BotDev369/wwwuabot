@@ -52,11 +52,19 @@ export interface NotesView {
   columns: CollectionColumns;
 }
 
+/**
+ * Типовий вигляд списку.
+ *
+ * **Груп типово немає.** Список відкривають, щоб знайти свою нотатку, і
+ * «Сьогодні / Вчора» ріжуть його там, де людина ще не знає, що шукає; групи ж
+ * потрібні, коли список уже читають за ними. Тому групування — **вибір**, а не
+ * типовий стан, і вмикається дотиком у смузі.
+ */
 export const DEFAULT_NOTES_VIEW: NotesView = {
   query: "",
   tags: { kind: "all" },
   sort: "updated-desc",
-  groupBy: "day",
+  groupBy: "none",
   layout: "rows",
   columns: 2,
 };

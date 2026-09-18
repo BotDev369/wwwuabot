@@ -137,6 +137,15 @@ describe("ContactList — закритий рядок", () => {
     expect(html).toContain('wb-contact-group-count">2<');
   });
 
+  it("⛔ без груп титул не показується: «усі контакти» повторювало б назву екрана", () => {
+    // Типове групування — без груп, а їхнє число вже стоїть плашкою «Всього»
+    // над списком: титул тут був би третім словом про те саме.
+    const html = render([contact(1), contact(2)]);
+
+    expect(html).not.toContain("wb-contact-group-title");
+    expect(html.match(/wb-contact-item"/g)).toHaveLength(2);
+  });
+
   it("показує ім'я, дату-час зміни, хто це й стадію словом", () => {
     const html = render([contact(1, { name: "Олег", username: "oleg" })]);
 

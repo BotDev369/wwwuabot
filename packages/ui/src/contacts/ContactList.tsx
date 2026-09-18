@@ -35,6 +35,10 @@
  * Вигляд (рядки / картки 1 / картки 2) — ззовні (`@wwwuabot/ui/collection`):
  * розмітка в усіх трьох одна й та сама, різницю несе клас розкладки.
  *
+ * **Титул групи показується лише тоді, коли груп кілька.** Типове групування —
+ * «без груп», і тоді список іде суцільним полотном: титул «Усі контакти»
+ * повторював би назву екрана, а його число — плашку «Всього» над списком.
+ *
  * @module @wwwuabot/ui/contacts
  */
 
@@ -150,6 +154,10 @@ export function ContactList({
 }: ContactListProps): ReactElement {
   const hits = new Set(found ?? []);
   const open = new Set(openIds);
+  // Єдина група `all` — це «без груп»: титул такої групи повторював би назву
+  // екрана, а її число — те, що вже показано плашкою «Всього». Титул має сенс
+  // лише там, де груп справді кілька.
+  const untitled = groups.length === 1 && groups[0].key === "all";
   // Порядковий номер — у видимому порядку: у групах він продовжується, бо
   // групи ділять список, а не починають його заново.
   let number = 0;
@@ -163,12 +171,14 @@ export function ContactList({
 
         return (
           <section key={group.key} className="wb-contact-group">
-            <h2 className="wb-contact-group-title">
-              {group.label}
-              {/* Кількість у заголовку — щоб «тут 12 контактів» було видно, не
-                  рахуючи очима. */}
-              <span className="wb-contact-group-count">{group.contacts.length}</span>
-            </h2>
+            {!untitled && (
+              <h2 className="wb-contact-group-title">
+                {group.label}
+                {/* Кількість у заголовку — щоб «тут 12 контактів» було видно,
+                    не рахуючи очима. */}
+                <span className="wb-contact-group-count">{group.contacts.length}</span>
+              </h2>
+            )}
             <ul className={`wb-contact-list ${collectionViewClass(collection)}`}>
               {group.contacts.map((contact) => {
                 number += 1;

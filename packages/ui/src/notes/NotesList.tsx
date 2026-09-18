@@ -38,6 +38,11 @@
  * першій же правці. Розкриття лишається тим самим і в плитках: картка росте на
  * місці, тож «розгорнути всі» не перестає працювати від зміни вигляду.
  *
+ * **Титул групи показується лише тоді, коли груп кілька.** Типове групування —
+ * «без груп», і тоді список іде суцільним полотном: титул «Усі нотатки»
+ * повторював би назву екрана, а його число — те, що вже сказано в смузі
+ * («Знайдено N із M»).
+ *
  * Розмітка — кирпичики `.wb-note*`: їх рендерить спільний код, тож стилі
  * живуть у `packages/shared/src/styles/` (правило 10).
  *
@@ -180,17 +185,23 @@ export function NotesList({
   // «знайдений» він скрізь однаково, а розгорнутість — у кожної своя.
   const hits = new Set(found ?? []);
   const open = new Set(openIds);
+  // Єдина група `all` — це «без груп»: титул такої групи повторював би назву
+  // екрана, а її число — те саме, що вже стоїть у смузі («Знайдено N із M»).
+  // Титул має сенс лише там, де груп справді кілька.
+  const untitled = groups.length === 1 && groups[0].key === "all";
 
   return (
     <>
       {groups.map((group) => (
         <section key={group.key} className="wb-note-group">
-          <h2 className="wb-note-group-title">
-            {group.label}
-            {/* Кількість у заголовку групи — щоб «тут 12 нотаток» було видно,
-                не рахуючи очима. */}
-            <span className="wb-note-group-count">{group.notes.length}</span>
-          </h2>
+          {!untitled && (
+            <h2 className="wb-note-group-title">
+              {group.label}
+              {/* Кількість у заголовку групи — щоб «тут 12 нотаток» було видно,
+                  не рахуючи очима. */}
+              <span className="wb-note-group-count">{group.notes.length}</span>
+            </h2>
+          )}
           <ul className={`wb-note-list ${collectionViewClass(collection)}`}>
             {group.notes.map((note) => (
               <NoteCard

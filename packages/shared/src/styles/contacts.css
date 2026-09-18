@@ -23,47 +23,45 @@
 
 /* ── Підсумкові числа (у шапці, поруч із назвою) ─────────────────────── */
 
-/* Числа стоять одним рядком, а не трьома плитками: вони відповідають на одне
-   питання («що з цього вийшло»), і читають їх разом, а не по одному. */
-.wb-contact-totals {
-  display: flex;
-  flex-direction: column;
-  gap: var(--sp-1);
-}
+/* Три плашки однією лінією: числа читають, **порівнюючи** їх між собою, тож
+   клітинки рівні, а число кожного стоїть на своєму місці.
 
+   Обидва відступи — тут, а не в шарі: усередині `.wb-page-sticky` проміжки
+   задає сама дитина, і без них плашки тулились би до заголовка (він у шарі
+   без `margin-bottom`) зверху й до смуги пошуку знизу. */
 .wb-contact-stats {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: baseline;
-  gap: var(--sp-1) var(--sp-3);
-  margin: 0;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--sp-2);
+  margin: var(--sp-3) 0;
 }
 
+/* Плашка — та сама «плитка списку», що рядок контакту (`--field-bg`).
+   У розмітці перший `dt` (підпис), бо так читає скрінрідер, а на екрані число
+   стоїть **зверху**: `column-reverse` перевертає порядок, не чіпаючи розмітку. */
 .wb-contact-stat {
   display: flex;
-  align-items: baseline;
+  flex-direction: column-reverse;
   gap: var(--sp-1);
+  padding: var(--sp-2) var(--sp-3);
+  border-radius: var(--radius-md);
+  background: var(--field-bg);
+  text-align: center;
 }
 
-.wb-contact-stat dt {
-  font-size: var(--text-xs);
-  color: var(--text-muted);
-}
-
-.wb-contact-stat dd {
+.wb-contact-stat-value {
   margin: 0;
-  font-size: var(--text-sm);
+  font-size: var(--text-lg);
   font-weight: var(--weight-semibold);
   font-variant-numeric: tabular-nums;
   color: var(--text-primary);
 }
 
-/* Пояснення під числами: чому лійка менша за кількість лінків. Підпис, а не
-   попередження — тон той самий, що в примітки, без акценту. Показується лише
-   тоді, коли дублі справді є. */
-.wb-contact-twins-note {
-  margin: 0;
-  font-size: var(--text-xs);
+/* Підпис — `--text-sm`, а не найдрібніший: 12px на телефоні не читались (та
+   сама межа, що в хештегів списку), а тут підпис несе саме слово «Бот».
+   Він тихіший за число **кольором**, а не кеглем. */
+.wb-contact-stat-label {
+  font-size: var(--text-sm);
   color: var(--text-muted);
 }
 

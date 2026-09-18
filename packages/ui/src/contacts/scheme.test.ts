@@ -13,11 +13,15 @@
  * Третє, і саме воно зламалося на живому тесті: **числа рахують людей, а не
  * картки**. Два лінки на одну людину дають два записи й **одну** людину в
  * лійці — інакше «у боті» показує 2 там, де людина одна.
+ *
+ * Четверте — **«Всього» рахує записи**, а не лінки: контакт, якого лише занесли
+ * в довідник, теж контакт, і в шапці він мусить бути порахований (лійка тоді
+ * читається за спаданням без пояснень).
  */
 
 import { describe, expect, it } from "vitest";
 import type { Contact } from "@wwwuabot/shared/contacts";
-import { contactStage, contactStats, recordWord, samePersonAs } from "./scheme";
+import { contactStage, contactStats, samePersonAs } from "./scheme";
 
 /** Контакт-фікстура: усе, крім переданого, — «щойно завели». */
 function contact(over: Partial<Contact> = {}): Contact {
@@ -147,6 +151,7 @@ describe("одна людина — один рядок лійки", () => {
     ]);
 
     // Записи — власнику, людина — лійці: два лінки, одна людина.
+    expect(stats.total).toBe(2);
     expect(stats.invited).toBe(2);
     expect(stats.bot).toBe(1);
     expect(stats.duplicates).toBe(1);
@@ -221,16 +226,5 @@ describe("хто кому близнюк", () => {
     ]);
 
     expect(twins.size).toBe(0);
-  });
-});
-
-describe("слово для кількості записів", () => {
-  it("1 запис, 2 записи, 5 записів — і окремо 11–14", () => {
-    expect(recordWord(1)).toBe("1 запис");
-    expect(recordWord(3)).toBe("3 записи");
-    expect(recordWord(5)).toBe("5 записів");
-    expect(recordWord(11)).toBe("11 записів");
-    expect(recordWord(21)).toBe("21 запис");
-    expect(recordWord(22)).toBe("22 записи");
   });
 });

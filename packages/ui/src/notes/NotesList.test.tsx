@@ -66,8 +66,10 @@ function render(
   found: string[] = [],
   openIds: number[] = [],
   collection: CollectionView = { layout: "rows", columns: 2 },
+  // Типово — «без груп»: саме так будує список `buildGroups`, коли групування
+  // вимкнено, і саме цей випадок перевіряє титул групи.
+  groups: NotesGroup[] = [{ key: "all", label: "Усі нотатки", notes }],
 ): string {
-  const groups: NotesGroup[] = [{ key: "all", label: "Усі нотатки", notes }];
   return renderToStaticMarkup(
     <NotesList
       groups={groups}
@@ -141,6 +143,29 @@ describe("NotesList", () => {
 
     expect(html).toContain("Без тексту");
     expect(html).toContain("#київ");
+  });
+
+  it("⛔ без груп титул не показується: «усі нотатки» повторювало б назву екрана", () => {
+    // Типове групування — без груп, тож титул з'являється лише тоді, коли груп
+    // справді кілька. Інакше кожен екран починався б заголовком, який нічого не
+    // додає до назви сторінки й числа в смузі.
+    const html = render([note(1), note(2)]);
+
+    expect(html).not.toContain("wb-note-group-title");
+    // При цьому список на місці — це той самий `<ul>`, а не порожнеча.
+    expect(html.match(/wb-note-item"/g)).toHaveLength(2);
+  });
+
+  it("з групами титул є — без нього «сьогодні» й «вчора» злилися б", () => {
+    const groups: NotesGroup[] = [
+      { key: "day:today", label: "Сьогодні", notes: [note(1)] },
+      { key: "day:yesterday", label: "Вчора", notes: [note(2)] },
+    ];
+    const html = render([], [], [], undefined, groups);
+
+    expect(html).toContain("wb-note-group-title");
+    expect(html).toContain("Сьогодні");
+    expect(html).toContain("Вчора");
   });
 
   it("хештеги стоять приглушено — вони не голосніші за текст", () => {

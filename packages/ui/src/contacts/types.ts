@@ -50,11 +50,18 @@ export interface ContactsView {
   columns: CollectionColumns;
 }
 
+/**
+ * Типовий вигляд списку.
+ *
+ * **Груп типово немає** — як і в нотатках: довідник відкривають, щоб знайти
+ * людину, і «Сьогодні / Вчора» ріжуть його за датою **зміни**, хоч шукають за
+ * іменем. Групування лишається вибором у смузі.
+ */
 export const DEFAULT_CONTACTS_VIEW: ContactsView = {
   query: "",
   tags: { kind: "all" },
   sort: "updated-desc",
-  groupBy: "day",
+  groupBy: "none",
   layout: "rows",
   columns: 2,
 };

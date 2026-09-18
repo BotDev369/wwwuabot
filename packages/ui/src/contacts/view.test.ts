@@ -235,13 +235,25 @@ describe("чипи вибраного", () => {
 
   it("кожен вибір — свій чип із тим, що саме він вертає", () => {
     const chips = contactViewChips(
-      view({ query: "київ", tags: { kind: "tags", tags: ["друг"] }, sort: "name" }),
+      view({
+        query: "київ",
+        tags: { kind: "tags", tags: ["друг"] },
+        sort: "name",
+        // Групи — теж вибір: типово їх немає, тож чип з'являється саме тоді,
+        // коли їх увімкнули.
+        groupBy: "day",
+      }),
     );
 
-    expect(chips.map((chip) => chip.key)).toEqual(["query", "tag:друг", "sort"]);
-    expect(chips.map((chip) => chip.label)).toEqual(["«київ»", "#друг", "За іменем"]);
+    expect(chips.map((chip) => chip.key)).toEqual(["query", "tag:друг", "sort", "group"]);
+    expect(chips.map((chip) => chip.label)).toEqual(["«київ»", "#друг", "За іменем", "За днями"]);
     // Скидання чипа чіпає РІВНО один вибір — решта мусить лишитись як була.
-    expect(chips.map((chip) => Object.keys(chip.reset))).toEqual([["query"], ["tags"], ["sort"]]);
+    expect(chips.map((chip) => Object.keys(chip.reset))).toEqual([
+      ["query"],
+      ["tags"],
+      ["sort"],
+      ["groupBy"],
+    ]);
   });
 
   it("«без хештегів» каже саме про контакти, а не про нотатки", () => {

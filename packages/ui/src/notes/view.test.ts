@@ -236,12 +236,14 @@ describe("чипи вибраного", () => {
         query: "київ",
         tags: { kind: "tags", tags: ["київ"] },
         sort: "created-desc",
-        groupBy: "none",
+        // Групи — теж вибір: типово їх немає, тож чип з'являється саме тоді,
+        // коли їх увімкнули.
+        groupBy: "day",
       }),
     );
 
     expect(chips.map((chip) => chip.key)).toEqual(["query", "tag:київ", "sort", "group"]);
-    expect(chips.map((chip) => chip.label)).toEqual(["«київ»", "#київ", "Нові", "Без груп"]);
+    expect(chips.map((chip) => chip.label)).toEqual(["«київ»", "#київ", "Нові", "За днями"]);
     // Скидання чипа чіпає РІВНО один вибір — решта мусить лишитись як була.
     expect(chips.map((chip) => Object.keys(chip.reset))).toEqual([
       ["query"],
