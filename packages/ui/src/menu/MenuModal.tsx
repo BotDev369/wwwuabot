@@ -88,6 +88,7 @@ export function MenuModal({
   items,
   content,
   header,
+  footer,
   layout = "rows",
   align = "start",
   onClose,
@@ -137,6 +138,10 @@ export function MenuModal({
               ))}
             </div>
           )}
+          {/* Блок під пунктами — те, що мусить бути в зоні пальця: у меню
+              профілю це облікові картки, і вони ж ділять вільний простір
+              угорі (§7, `.wb-menu-account`). */}
+          {footer}
         </div>
       </div>
     </div>

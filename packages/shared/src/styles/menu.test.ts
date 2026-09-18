@@ -81,18 +81,21 @@ describe("меню: плитки й притискання до низу", () =>
     }
   });
 
-  it("облікові картки ділять вільний простір, а не висять у ньому", () => {
-    // Порожнеча під заголовком — найбільша пляма екрана, і закривають її саме
-    // ці дві картки: плитки фіксовані, більше рости нічому. Прибравши `flex`,
-    // меню лишається робочим — і тому ніхто не помітить, що пусте місце
-    // повернулось.
-    const grow = rule(".wb-menu-body--end > .wb-menu-account");
-    expect(grow, "картки мусять рости лише в притиснутому вмісті").toBeDefined();
-    expect(grow?.body).toContain("flex: 1");
+  it("облікові картки — у дві колонки, і ділять вільний простір", () => {
+    // Дві речі ламаються мовчки: `grid` без `repeat(2, …)` стає одним
+    // стовпчиком (картка знову смуга, як пункт), а втрачений `flex: 1`
+    // повертає порожнечу під заголовком — меню при цьому робоче, тож ніхто
+    // й не помітить.
+    const cards = rule(".wb-menu-account");
+    expect(cards, "правило .wb-menu-account мусить існувати").toBeDefined();
+    expect(cards?.body).toContain("display: grid");
+    // `minmax(0, 1fr)`, а не `1fr`: довге ім'я інакше розпирає колонку й
+    // вилазить за екран замість того, щоб перенестись.
+    expect(cards?.body).toContain("grid-template-columns: repeat(2, minmax(0, 1fr))");
 
-    const list = rule(".wb-menu-account");
-    expect(list?.body).toContain("display: flex");
-    expect(list?.body).toContain("flex-direction: column");
+    const grow = rule(".wb-menu-body--end > .wb-menu-account");
+    expect(grow, "рости картки мусять лише в притиснутому вмісті").toBeDefined();
+    expect(grow?.body).toContain("flex: 1");
   });
 
   it("облікова картка — кнопка: тло, радіус і висота не менша за палець", () => {
@@ -100,8 +103,6 @@ describe("меню: плитки й притискання до низу", () =>
     expect(card, "правило .wb-menu-account-card мусить існувати").toBeDefined();
     expect(card?.body).toContain("background: var(--field-bg)");
     expect(card?.body).toContain("border-radius: var(--radius-md)");
-    // Картки ділять простір між собою — по одному `flex: 1` на кожну.
-    expect(card?.body).toContain("flex: 1");
     const minHeight = Number(card?.body.match(/min-height:\s*(\d+)px/)?.[1]);
     expect(minHeight).toBeGreaterThanOrEqual(44);
   });

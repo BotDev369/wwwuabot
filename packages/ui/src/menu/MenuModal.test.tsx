@@ -93,9 +93,17 @@ describe("MenuModal", () => {
   });
 
   it("блок над списком стоїть до пунктів, а не замість них", () => {
-    const markup = html({ header: <span className="wb-menu-account">Хтось</span> });
+    const markup = html({ header: <span className="wb-menu-hint">Пояснення</span> });
+    expect(markup.indexOf("wb-menu-hint")).toBeGreaterThan(-1);
+    expect(markup.indexOf("wb-menu-hint")).toBeLessThan(markup.indexOf("wb-menu-list"));
+  });
+
+  it("блок під списком стоїть після пунктів", () => {
+    // Це не те саме, що `header` у кінці списку: у виборі тегів пояснення
+    // читають **до** вибору, а в профілі картки шукають рукою — **після**.
+    const markup = html({ footer: <span className="wb-menu-account">Хтось</span> });
     expect(markup.indexOf("wb-menu-account")).toBeGreaterThan(-1);
-    expect(markup.indexOf("wb-menu-account")).toBeLessThan(markup.indexOf("wb-menu-list"));
+    expect(markup.indexOf("wb-menu-account")).toBeGreaterThan(markup.indexOf("wb-menu-list"));
   });
 
   it("плитки — той самий пункт, лише інша розкладка", () => {

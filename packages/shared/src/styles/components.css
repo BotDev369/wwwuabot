@@ -1175,29 +1175,33 @@ html:has(.wb-tabbar) .wb-modal {
   color: var(--accent);
 }
 
-/* ── Облікові картки над списком ─────────────────────────────────────────
+/* ── Облікові картки під списком ─────────────────────────────────────────
    Telegram і портал — це два **різні** джерела про одну людину, тож і дві
    картки: під одним підписом «дані» вони злилися б в одне, а Telegram-хендл
    і ім'я на платформі — не те саме (AGENTS.md §2). Кирпичик той самий, що у
    пункту (`--field-bg`, радіус, підсвічення на дотик), лише веде він не до
-   розділу, а до профілю. */
+   розділу, а до профілю.
+
+   Стоять вони **під пунктами, у дві колонки**: пункти читають згори, а низ —
+   зона пальця, і саме туди рука дістає не прицілюючись. Дві колонки
+   нерозривні (`grid`, а не `flex-wrap`): картка — портрет, а не смуга, бо в
+   смузі вона читалась би як ще один пункт меню. */
 .wb-menu-account {
-  display: flex;
-  flex-direction: column;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: var(--sp-2);
   min-height: 0;
 }
 
-/* Картки **ділять вільний простір** над плитками. Росте лише притиснутий до
-   низу вміст: там порожнеча й утворюється, і в меню профілю більше нічого не
-   росте — тож «зайняти місце» означає саме ці дві картки. */
+/* Картки **ділять вільний простір** над собою: пункти мають свою висоту, і
+   рости тут більше нічому — тож порожнеча під заголовком дістається саме
+   їм. Росте лише притиснутий до низу вміст: там вона й утворюється. */
 .wb-menu-body--end > .wb-menu-account {
   flex: 1;
 }
 
 .wb-menu-account-card {
   display: flex;
-  flex: 1;
   flex-direction: column;
   align-items: center;
   justify-content: center;
@@ -1230,8 +1234,10 @@ html:has(.wb-tabbar) .wb-modal {
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 56px;
-  height: 56px;
+  /* 48, а не 56: картка — половина екрана, і велике коло з'їдало б рядки,
+     за якими її впізнають. */
+  width: 48px;
+  height: 48px;
   flex-shrink: 0;
   overflow: hidden;
   border-radius: var(--radius-full);
@@ -1251,7 +1257,7 @@ html:has(.wb-tabbar) .wb-modal {
 }
 
 .wb-menu-account-name {
-  font-size: var(--text-md);
+  font-size: var(--text-base);
   font-weight: var(--weight-semibold);
   overflow-wrap: anywhere;
 }

@@ -18,10 +18,16 @@ export function formatSqliteDatetime(date?: Date): string {
  * локальний (зсув на кілька годин), а частина — як `Invalid Date`. Друга копія
  * цього розбору десь у списку показувала б інший час, ніж сортування, яке
  * читає той самий рядок.
+ *
+ * Розбір приймає **дві** форми — `YYYY-MM-DD HH:MM:SS` і ISO з `T`/`Z`: у
+ * частині рядків (`users.created_at`, старі записи) час лежить саме як ISO, і
+ * без цієї гілки він ставав би `0` — тобто на екрані була б сира стрічка
+ * замість дати.
  */
 export function sqliteTimestamp(value: string): number {
   if (!value) return 0;
-  const date = new Date(`${value.replace(" ", "T")}Z`);
+  const iso = /[TZ]/.test(value) ? value : `${value.replace(" ", "T")}Z`;
+  const date = new Date(iso);
   return Number.isNaN(date.getTime()) ? 0 : date.getTime();
 }
 

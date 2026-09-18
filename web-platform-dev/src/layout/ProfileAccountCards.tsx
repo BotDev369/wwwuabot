@@ -81,7 +81,7 @@ export function ProfileAccountCards({
       >
         <span className="wb-menu-account-label">Портал</span>
         <span className="wb-menu-account-avatar">
-          <Icon name="user" size={26} />
+          <Icon name="user" size={22} />
         </span>
         <span className="wb-menu-account-name">
           {loading ? "Завантаження…" : (platform ?? "Ім'я не задано")}
