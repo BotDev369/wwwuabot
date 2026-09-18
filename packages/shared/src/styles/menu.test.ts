@@ -153,6 +153,16 @@ describe("меню: плитки й притискання до низу", () =>
  * тоді вона їде разом із вмістом; (3) сегмент перемикача не менший за палець.
  */
 describe("меню: поверхня на весь екран і смуга внизу", () => {
+  it("повноекранний оверлей — не скрим, а сама сторінка", () => {
+    // Крізь напівпрозорий скрим під футером просвічував контент застосунку, і
+    // поверхня розпадалась на дві частини з чорними плямами по краях. Заливка
+    // мусить бути така сама, як у самої поверхні.
+    const overlay = rule(".wb-modal-overlay--screen");
+    expect(overlay?.body).toContain("background: var(--surface)");
+    expect(overlay?.body).not.toContain("--surface-overlay");
+    expect(rule(".wb-modal")?.body).toContain("background: var(--surface)");
+  });
+
   it("закруглення знімається парою класів — інакше медіа-запит виграє за порядком", () => {
     // `.wb-sheet` на телефоні задає радіус із тією самою специфічністю (0,1,0):
     // одинак залежав би від порядку рядків у файлу, а порядок тут міняється.
@@ -196,7 +206,22 @@ describe("меню: поверхня на весь екран і смуга вн
     expect(rule(".wb-segmented-label")).toBeUndefined();
     // Решту смуги забирає вихід: перемикач стоїть за шириною вмісту.
     expect(rule(".wb-sheet-bar .wb-segmented")?.body).toContain("flex: 0 0 auto");
-    // Стан, а не перехід: вибраний сегмент видно заливкою — як активну вкладку.
-    expect(rule(".wb-segmented-btn--active")?.body).toContain("background: var(--accent-dim)");
+  });
+
+  it("у перемикача немає треку, а вибраний показує акцентний колір", () => {
+    // Трек (сіра плитка під двома знаками) читався як ще одна кнопка поруч із
+    // акцентним виходом — тож його не має бути ні заливкою, ні радіусом.
+    const track = rule(".wb-segmented");
+    expect(track, "правило .wb-segmented мусить існувати").toBeDefined();
+    expect(track?.body).not.toContain("background");
+    expect(track?.body).not.toContain("padding");
+
+    // Стан видно **кольором знака**, а не заливкою сегмента.
+    const active = rule(".wb-segmented-btn--active");
+    expect(active, "правило вибраного сегмента мусить існувати").toBeDefined();
+    expect(active?.body).toContain("color: var(--accent)");
+    expect(active?.body).not.toContain("background");
+    // І штрихом: сам лише відтінок на тонкому знаку читається слабко.
+    expect(rule(".wb-segmented-btn--active svg")?.body).toContain("stroke-width");
   });
 });
