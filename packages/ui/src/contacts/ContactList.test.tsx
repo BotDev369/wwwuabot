@@ -1,24 +1,19 @@
 /**
- * Рядок контакту — те, що мусить бути видно **до** дотику.
+ * Список контактів — акордеон: що видно **до** дотику і що з'являється після.
  *
- * Перевіряємо те, що легко зламати мовчки: номер контакту порядковий і
- * збігається з місцем у списку, **стадія названа словом** — «зайшов у бота»
- * проти «приєднався» це різні події, і за кольором їх не видно, — а дій у рядку
- * немає: вони живуть у картці, яку рядок відкриває. Хештег при цьому **підпис,
- * а не чип**: у чипа бренди задають свої мірки з `!important`, і рядок тегів
- * виходив би вдвічі вищим за рядок із текстом.
+ * Перевіряємо те, що легко зламати мовчки: номер порядковий і **продовжується в
+ * групах** (групи ділять список, а не починають його заново), закритий рядок
+ * показує два рядки інформації й **жодної дії** (дії живуть у тілі), розкритий
+ * додає етапи, лінк, дати й дії, а **стадія названа словом** — «зайшов у бота»
+ * проти «приєднався» це різні події, і за кольором їх не видно.
  *
- * Дві властивості перевіряються **разом із CSS**: звідки рядок бере тло (той
- * самий кирпичик «плитка списку», що картка нотатки) і що довгий `@username`
- * переноситься, а не розтягує список за екран.
+ * Дві речі тут перевіряються **разом із CSS**: що рядок бере тло з того самого
+ * кирпичика «плитка списку», що картка нотатки, і що знайдений хештег має
+ * власне правило (акцент), а не покладається на колір за замовчуванням.
  *
  * І ще одне, що легко не помітити: **однаковий `id` у двох рядках — не
  * помилка**. Людина, яка зайшла за двома лінками, дає дві картки, і друга
  * мусить бути підписана — інакше власник читає це як зламані дані.
- *
- * Окремо — найтонше: **плитки це той самий рядок із іншою розкладкою**, а не
- * друга розмітка. Тест звіряє, що розмітка рядків і плиток відрізняється рівно
- * класом вигляду.
  *
  * Середовище тестів — `node` (без DOM), тож перевіряємо розмітку, яку рендерить
  * React, і правила CSS, а не дотики.
@@ -33,6 +28,7 @@ import { describe, expect, it } from "vitest";
 import { renderToStaticMarkup } from "react-dom/server";
 import type { Contact } from "@wwwuabot/shared/contacts";
 import { ContactList } from "./ContactList";
+import type { ContactsGroup } from "./types";
 import type { CollectionView } from "../collection";
 
 /** Спільні стилі: розмітку рендерить спільний модуль, тож і правила там. */
@@ -89,32 +85,65 @@ function contact(id: number, over: Partial<Contact> = {}): Contact {
   };
 }
 
+/** Група — те, як список розклали: у тестах досить однієї. */
+function group(contacts: Contact[], label = "Усі контакти"): ContactsGroup {
+  return { key: "all", label, contacts };
+}
+
 const ROWS: CollectionView = { layout: "rows", columns: 2 };
 const CARDS: CollectionView = { layout: "cards", columns: 2 };
 
-function render(contacts: Contact[], collection: CollectionView = ROWS): string {
+function render(
+  contacts: Contact[],
+  over: {
+    openIds?: number[];
+    found?: string[];
+    copiedId?: number | null;
+    collection?: CollectionView;
+    groups?: ContactsGroup[];
+  } = {},
+): string {
   return renderToStaticMarkup(
-    <ContactList contacts={contacts} collection={collection} onOpen={() => {}} />,
+    <ContactList
+      groups={over.groups ?? [group(contacts)]}
+      found={over.found}
+      openIds={over.openIds ?? []}
+      onToggle={() => {}}
+      onEdit={() => {}}
+      onDelete={() => {}}
+      onMakeLink={() => {}}
+      onCopyLink={() => {}}
+      copiedId={over.copiedId ?? null}
+      collection={over.collection ?? ROWS}
+    />,
   );
 }
 
-describe("ContactList", () => {
-  it("нумерує контакти порядково — номер збігається з місцем у списку", () => {
-    const html = render([contact(7), contact(9), contact(11)]);
+describe("ContactList — закритий рядок", () => {
+  it("нумерує контакти порядково, і в групах номер продовжується", () => {
+    const first = group([contact(7), contact(9)], "Сьогодні");
+    const second: ContactsGroup = {
+      key: "day:yesterday",
+      label: "Вчора",
+      contacts: [contact(11)],
+    };
+    const html = render([], { groups: [first, second] });
     const numbers = [...html.matchAll(/wb-contact-number">(\d+)</g)].map((match) => match[1]);
 
     expect(numbers).toEqual(["1", "2", "3"]);
+    // Заголовок групи каже, скільки в ній записів: «тут 2» мусить бути видно,
+    // не рахуючи очима.
+    expect(html).toContain("Сьогодні");
+    expect(html).toContain('wb-contact-group-count">2<');
   });
 
-  it("контакт без лінка названий словом, а не порожнім рядком", () => {
-    const html = render([contact(1, { name: "Олег" })]);
+  it("показує ім'я, дату-час зміни, хто це й стадію словом", () => {
+    const html = render([contact(1, { name: "Олег", username: "oleg" })]);
 
     expect(html).toContain("Олег");
+    expect(html).toContain("@oleg");
+    expect(html).toContain("18.09.2026");
     expect(html).toContain("без лінка");
-  });
-
-  it("складений, але не використаний лінк каже «лінк чекає»", () => {
-    expect(render([contact(1, { code: "inv-8f3k2q" })])).toContain("лінк чекає");
   });
 
   it("часткове приєднання видно словом «зайшов у бота»", () => {
@@ -127,19 +156,30 @@ describe("ContactList", () => {
     expect(html).not.toContain("приєднався");
   });
 
-  it("повне приєднання каже «приєднався» і показує, хто це", () => {
+  it("повне приєднання каже «приєднався»", () => {
     const html = render([
       contact(1, {
-        username: "karas",
         joinedUserId: 555,
         joinedBotAt: "2026-09-18 03:45:00",
         joinedPlatformAt: "2026-09-18 03:50:00",
       }),
     ]);
 
-    expect(html).toContain("@karas");
     expect(html).toContain("приєднався");
     expect(html).not.toContain("зайшов у бота");
+  });
+
+  it("⛔ закритий рядок — одна кнопка й жодної дії: усе інше в тілі", () => {
+    const html = render([contact(1), contact(2)]);
+    const items = html.split("wb-contact-item").slice(1);
+
+    expect(items).toHaveLength(2);
+    for (const item of items) {
+      expect(item.match(/<button/g) ?? []).toHaveLength(1);
+      expect(item).not.toContain("Прибрати");
+      expect(item).not.toContain("Копіювати");
+    }
+    expect(html).toContain('aria-expanded="false"');
   });
 
   it("другий запис про ту саму людину підписаний — id один, людини дві немає", () => {
@@ -167,30 +207,117 @@ describe("ContactList", () => {
     expect(html).not.toContain("та сама людина");
   });
 
-  it("хештеги — підписи в рядку, а не чипи", () => {
-    const html = render([contact(1, { tags: ["друг", "київ"] })]);
+  it("хештеги — підписи в рядку, а не чипи, і знайдений стоїть акцентом", () => {
+    const html = render([contact(1, { tags: ["друг", "київ"] })], { found: ["київ"] });
 
-    expect(html).toContain("#друг");
-    expect(html).toContain("#київ");
     expect(html).toContain("wb-contact-tag");
     expect(html).not.toContain("wb-chip");
+    // Акцент — рівно на тому тезі, який знайшов пошук, а не на всьому рядку.
+    expect([...html.matchAll(/wb-contact-tag--hit/g)]).toHaveLength(1);
+    expect(rule(".wb-contact-tag--hit")).toContain("color: var(--accent)");
+  });
+});
+
+describe("ContactList — розкритий рядок", () => {
+  it("показує всі три етапи, навіть непройдені", () => {
+    const html = render([contact(1)], { openIds: [1] });
+
+    expect(html).toContain("wb-contact-body");
+    expect(html).toContain('aria-expanded="true"');
+    expect(html).toContain("Запрошено");
+    expect(html).toContain("Зайшов у бота");
+    expect(html).toContain("Зайшов на платформу");
+    expect((html.match(/ще ні/g) ?? []).length).toBe(2);
   });
 
-  it("⛔ у рядку немає жодної дії: дії живуть у картці контакту", () => {
-    const html = render([contact(1), contact(2)]);
-    const items = html.split("wb-contact-item").slice(1);
+  it("контакт без лінка пропонує його скласти", () => {
+    const html = render([contact(1)], { openIds: [1] });
 
-    expect(items).toHaveLength(2);
-    // Одна кнопка на рядок — сам рядок (він і відкриває картку).
-    for (const item of items) expect(item.match(/<button/g) ?? []).toHaveLength(1);
-    expect(html).toContain('aria-label="Відкрити контакт «Контакт 1»"');
+    expect(html).toContain("Створити лінк");
     expect(html).not.toContain("Копіювати");
-    expect(html).not.toContain("Прибрати");
   });
 
+  it("складений лінк показується готовим діплінком, який можна скопіювати", () => {
+    const html = render(
+      [contact(1, { code: "inv-8f3k2q", deepLink: "https://t.me/bot?start=inv-8f3k2q" })],
+      {
+        openIds: [1],
+      },
+    );
+
+    expect(html).toContain("https://t.me/bot?start=inv-8f3k2q");
+    expect(html).toContain("Копіювати");
+    expect(html).not.toContain("Створити лінк");
+  });
+
+  it("щойно скопійований лінк каже це словом", () => {
+    const html = render(
+      [contact(1, { code: "inv-8f3k2q", deepLink: "https://t.me/bot?start=x" })],
+      {
+        openIds: [1],
+        copiedId: 1,
+      },
+    );
+
+    expect(html).toContain("Скопійовано");
+    expect(html).not.toContain("Копіювати");
+  });
+
+  it("⛔ за використаним лінком кнопки немає: він більше нікого не закріпить", () => {
+    const html = render(
+      [
+        contact(1, {
+          code: "inv-8f3k2q",
+          deepLink: "https://t.me/bot?start=inv-8f3k2q",
+          joinedUserId: 555,
+          joinedBotAt: "2026-09-18 03:45:00",
+        }),
+      ],
+      { openIds: [1] },
+    );
+
+    expect(html).toContain("Лінк використано");
+    expect(html).not.toContain("Копіювати");
+    expect(html).not.toContain("start=inv-8f3k2q");
+  });
+
+  it("обидві дати — парами «підпис → значення», а не рядком через кому", () => {
+    const html = render([contact(1, { createdAt: "2026-09-10 10:00:00" })], { openIds: [1] });
+
+    expect(html).toContain("Створено");
+    expect(html).toContain("Змінено");
+    expect(html).toContain("10.09.2026");
+  });
+
+  it("глибину гілки видно рядком, і лише коли вона є", () => {
+    expect(render([contact(1, { invitedCount: 3 })], { openIds: [1] })).toContain(
+      "Залучив(ла) ще 3",
+    );
+    expect(render([contact(1)], { openIds: [1] })).not.toContain("Залучив(ла)");
+  });
+
+  it("примітки показуються цілком — і лише в розкритому рядку", () => {
+    expect(render([contact(1, { notes: "знайомий зі школи" })])).not.toContain("знайомий зі школи");
+    expect(render([contact(1, { notes: "знайомий зі школи" })], { openIds: [1] })).toContain(
+      "знайомий зі школи",
+    );
+  });
+
+  it("дії стоять у тілі, і видалення попереджене кольором", () => {
+    const html = render([contact(1)], { openIds: [1] });
+    const actions = html.slice(html.indexOf("wb-sheet-actions"));
+
+    expect(actions.match(/<button/g) ?? []).toHaveLength(2);
+    expect(html).toContain("Прибрати");
+    expect(html).toContain("Змінити");
+    expect(html).toContain("wb-btn-danger");
+  });
+});
+
+describe("ContactList — вигляд і стилі", () => {
   it("плитки — той самий рядок із іншою розкладкою, а не друга розмітка", () => {
     const rows = render([contact(1, { tags: ["друг"] })]);
-    const cards = render([contact(1, { tags: ["друг"] })], CARDS);
+    const cards = render([contact(1, { tags: ["друг"] })], { collection: CARDS });
 
     expect(rows).toContain("wb-collection--rows");
     expect(cards).toContain("wb-collection--cards wb-collection--cols-2");
@@ -207,14 +334,20 @@ describe("ContactList", () => {
     expect(rule(".wb-contact-item")).not.toMatch(/border\s*:/);
   });
 
+  it("розкритий рядок видно тлом, а не лише кареткою", () => {
+    expect(rule(".wb-contact-item--open")).toContain("background: var(--surface-active)");
+  });
+
   it("плитка не коротшає до обрубка на короткому імені", () => {
     const cards = rulesIn(CSS, ".wb-collection--cards .wb-contact-item");
 
     expect(cards.join(" ")).toContain("min-height: var(--sp-16)");
   });
 
-  it("довге ім'я чи хендл переносяться, а не розтягують список за екран", () => {
-    expect(rule(".wb-contact-name")).toContain("overflow-wrap: anywhere");
+  it("у рядку довге ім'я обрізається, а в плитці — переноситься", () => {
+    expect(rule(".wb-contact-name")).toContain("text-overflow: ellipsis");
+    expect(rule(".wb-collection--cards .wb-contact-name")).toContain("-webkit-line-clamp: 2");
+    // Довгий `@username` мусить переноситись: інакше розтягує список за екран.
     expect(rule(".wb-contact-who")).toContain("overflow-wrap: anywhere");
   });
 });

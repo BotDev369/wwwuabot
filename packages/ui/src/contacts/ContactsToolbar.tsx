@@ -1,23 +1,17 @@
 /**
- * Смуга керування списком нотаток — **нотаткова настройка спільної смуги**.
+ * Смуга керування списком контактів — **контактна настройка спільної смуги**.
  *
  * Саму смугу (пошук, клітинки, чипи, перемикач) рендерить спільний
  * `CollectionToolbar` із `@wwwuabot/ui/collection`; тут лишається те, чого
- * спільний кирпичик знати не може: **які саме вибори бувають у нотаток** — за
- * чим сортувати, за чим групувати, що написати в підписі чипа. Контакти роблять
+ * спільний кирпичик знати не може: **які саме вибори бувають у контактів** — за
+ * чим сортувати, за чим групувати, що написати в підписі чипа. Нотатки роблять
  * те саме зі своїми варіантами, і розмітка в них одна, а не дві.
  *
  * Хештеги — єдиний вибір, який **не закриває** поверхню: дотик перемикає один
- * тег, бо тегів можна вибрати кілька, і закривати список після кожного означало
- * б відкривати його заново. Закриває його ✕ у шапці (або Escape), коли вибір
- * скінчено.
+ * тег, бо тегів можна вибрати кілька. Сортування й групування закривають її
+ * самі: людина вже побачила, що список змінився.
  *
- * Знаки трьох виборів — дані, а не розмітка: стрілки в різні боки стоять за
- * порядок, стос шарів — за групування, решітка — за хештег. Один і той самий
- * знак на всі три (як було з `list`/`blocks`/`hash`) не сказав би нічого.
- * Самі клітинки — без підпису й без заливки: «що зараз вибрано» показує чип.
- *
- * @module @wwwuabot/ui/notes
+ * @module @wwwuabot/ui/contacts
  */
 
 import { type ReactElement } from "react";
@@ -31,33 +25,33 @@ import {
   type ToolbarPicker,
 } from "../collection";
 import type { MenuItem } from "../menu";
-import type { NotesView } from "./types";
-import { GROUP_OPTIONS, SORT_OPTIONS, viewChips } from "./view";
+import { CONTACT_GROUP_OPTIONS, CONTACT_SORT_OPTIONS, contactViewChips } from "./view";
+import type { ContactsView } from "./types";
 
 type Picker = "sort" | "group" | "tags";
 
-/** Три вибори — дані, а не розмітка: четвертий буде рядком у цьому списку. */
+/** Три вибори — дані, а не розмітка. Знаки різні, бо різні й дії. */
 const PICKERS: readonly { key: Picker; label: string; icon: IconName }[] = [
   { key: "sort", label: "Сортування", icon: "sort" },
   { key: "group", label: "Групування", icon: "layers" },
   { key: "tags", label: "Хештеги", icon: "hash" },
 ];
 
-interface NotesToolbarProps {
-  view: NotesView;
-  onChange: (patch: Partial<NotesView>) => void;
+interface ContactsToolbarProps {
+  view: ContactsView;
+  onChange: (patch: Partial<ContactsView>) => void;
   /** Усі хештеги списку — з них будується фільтр. */
   tags: readonly string[];
-  /** Скільки нотаток видно зараз і скільки всього. */
+  /** Скільки контактів видно зараз і скільки всього. */
   shown: number;
   total: number;
-  /** Видно зараз **усі** видимі нотатки розгорнутими. */
+  /** Видно зараз **усі** видимі контакти розгорнутими. */
   allOpen: boolean;
-  /** Розгорнути всі нотатки або згорнути всі — перемикач, а не вибір. */
+  /** Розгорнути всі контакти або згорнути всі — перемикач, а не вибір. */
   onToggleAll: () => void;
 }
 
-export function NotesToolbar({
+export function ContactsToolbar({
   view,
   onChange,
   tags,
@@ -65,10 +59,12 @@ export function NotesToolbar({
   total,
   allOpen,
   onToggleAll,
-}: NotesToolbarProps): ReactElement {
-  const sortOption = SORT_OPTIONS.find((option) => option.value === view.sort) ?? SORT_OPTIONS[0];
+}: ContactsToolbarProps): ReactElement {
+  const sortOption =
+    CONTACT_SORT_OPTIONS.find((option) => option.value === view.sort) ?? CONTACT_SORT_OPTIONS[0];
   const groupOption =
-    GROUP_OPTIONS.find((option) => option.value === view.groupBy) ?? GROUP_OPTIONS[0];
+    CONTACT_GROUP_OPTIONS.find((option) => option.value === view.groupBy) ??
+    CONTACT_GROUP_OPTIONS[0];
   const chosenTags = selectedTags(view.tags);
 
   /** Що зараз вибрано — словами: у клітинці лише знак, тож має бути `aria-label`. */
@@ -81,7 +77,7 @@ export function NotesToolbar({
   /** Пункти поверхні: вибраний позначений галочкою (`selected`). */
   function pickerItems(key: Picker): MenuItem[] {
     if (key === "sort") {
-      return SORT_OPTIONS.map((option) => ({
+      return CONTACT_SORT_OPTIONS.map((option) => ({
         key: option.value,
         label: option.label,
         icon: "sort" as const,
@@ -91,7 +87,7 @@ export function NotesToolbar({
     }
 
     if (key === "group") {
-      return GROUP_OPTIONS.map((option) => ({
+      return CONTACT_GROUP_OPTIONS.map((option) => ({
         key: option.value,
         label: option.label,
         icon: "layers" as const,
@@ -103,7 +99,7 @@ export function NotesToolbar({
     const items: MenuItem[] = [
       {
         key: "all",
-        label: "Усі нотатки",
+        label: "Усі контакти",
         icon: "list",
         selected: view.tags.kind === "all",
         onSelect: () => onChange({ tags: { kind: "all" } }),
@@ -134,9 +130,7 @@ export function NotesToolbar({
     icon,
     value: chosen[key],
     items: pickerItems(key),
-    // Множинний вибір без рядка-пояснення читався б як одноразовий: не видно,
-    // що теги з'єднуються через «і», а не «або».
-    hint: key === "tags" ? "Можна вибрати кілька — нотатка мусить мати всі" : undefined,
+    hint: key === "tags" ? "Можна вибрати кілька — контакт мусить мати всі" : undefined,
     closeOnSelect: key !== "tags",
   }));
 
@@ -144,12 +138,12 @@ export function NotesToolbar({
     <CollectionToolbar
       query={view.query}
       onQueryChange={(query) => onChange({ query })}
-      searchLabel="Пошук за текстом або хештегом"
+      searchLabel="Пошук за іменем, хендлом або хештегом"
       pickers={pickers}
       view={{ layout: view.layout, columns: view.columns }}
       onViewChange={(next) => onChange(next)}
-      toggleAll={{ open: allOpen, onToggle: onToggleAll, what: "нотатки" }}
-      chips={viewChips(view).map((chip) => ({
+      toggleAll={{ open: allOpen, onToggle: onToggleAll, what: "контакти" }}
+      chips={contactViewChips(view).map((chip) => ({
         key: chip.key,
         label: chip.label,
         action: chip.action,

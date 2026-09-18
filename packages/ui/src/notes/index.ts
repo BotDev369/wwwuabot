@@ -11,6 +11,10 @@
  * **сама картка** (акордеон), а редагує й прибирає оболонка — через `onEdit`
  * та `onDelete`, бо саме вона знає і композер, і правила підтвердження.
  *
+ * Спільні кирпичики списку — не тут: смуга керування, вигляд колекції, чипи й
+ * правила пошуку за хештегами живуть у `@wwwuabot/ui/collection`, бо ними
+ * користуються всі списки (нотатки, контакти, далі — товари й новини).
+ *
  * @module @wwwuabot/ui/notes
  */
 
@@ -22,15 +26,10 @@ export {
   collectTags,
   filterNotes,
   foundTags,
-  queryWords,
-  selectedTags,
   sortNotes,
-  tagFilterLabel,
-  toggleTagFilter,
   viewChips,
   GROUP_OPTIONS,
   SORT_OPTIONS,
-  UNTAGGED_LABEL,
 } from "./view";
 export { DEFAULT_NOTES_VIEW } from "./types";
 export type {

@@ -649,7 +649,7 @@ html:has(.wb-tabbar) .wb-modal {
    «зробити як вкладки» довелося б повторювати, і воно б розійшлося. */
 .wb-composer-tab,
 .wb-composer-tool,
-.wb-note-tool,
+.wb-tools-btn,
 .wb-collection-tool {
   display: flex;
   align-items: center;
@@ -669,7 +669,7 @@ html:has(.wb-tabbar) .wb-modal {
 
 .wb-composer-tab:hover,
 .wb-composer-tool:hover,
-.wb-note-tool:hover,
+.wb-tools-btn:hover,
 .wb-collection-tool:hover {
   background: var(--surface-hover);
   color: var(--text-primary);
@@ -1204,11 +1204,11 @@ html:has(.wb-tabbar) .wb-modal {
   height: 16px;
 }
 
-/* ── Нотатки (смуга, групи, картки-акордеони) ───────────────────────────────
-   Смуга керування, групи й картки. Розмітку рендерить СПІЛЬНИЙ модуль
-   `@wwwuabot/ui/notes`, тому правила живуть тут: сьогодні його вживає
-   платформа, завтра — панель (правило 10). */
-.wb-note-tools {
+/* ── Смуга керування колекцією (спільний кирпичик) ─────────────────────────
+   Смугу рендерить СПІЛЬНИЙ `@wwwuabot/ui/collection`, тож правила живуть тут:
+   його вживають і нотатки, і контакти, і — далі — товари, новини й пости
+   (правило 10). Склад виборів задає екран, а вигляд смуги один на всіх. */
+.wb-tools {
   display: flex;
   flex-direction: column;
   gap: var(--sp-3);
@@ -1219,15 +1219,15 @@ html:has(.wb-tabbar) .wb-modal {
    лише вільний простір, а три клітинки лишаються на своєму місці. Із переносом
    вони стрибали на другий рядок рівно тоді, коли людина зібралась друкувати.
 
-   Висоту ряду задає `--note-row-h`: у смузі чотири контроли в ряд, і високий
+   Висоту ряду задає `--tools-row-h`: у смузі чотири контроли в ряд, і високий
    ряд забирав у списку більше екрана, ніж сам список, до якого веде. Тому це
    32px, а не планка пальця 44px — у смузі контролів палець веде список унизу,
    а не клітинку. */
-.wb-note-bar {
+.wb-tools-bar {
   display: flex;
   align-items: center;
   gap: var(--sp-2);
-  --note-row-h: 32px;
+  --tools-row-h: 32px;
 }
 
 /* Поле пошуку — ОДИН контрол, і контрол тут **саме поле**, а не оболонка з
@@ -1236,21 +1236,21 @@ html:has(.wb-tabbar) .wb-modal {
    рамки: воно стоїть поруч із трьома клітинками, і залите поле читалось як ще
    одна кнопка. Ширина в спокої — зі свій підпис («Пошук»): порожнє поле на всю
    ширину забирало б місце саме в тих трьох клітинок. */
-.wb-note-search {
+.wb-tools-search {
   display: flex;
   flex: 0 1 auto;
   align-items: center;
   gap: var(--sp-1);
   min-width: 0;
-  --note-search-w: 5rem;
+  --tools-search-w: 5rem;
   /* М'яке світло фокуса — **без** рамки: два розмиті ореоли (щільніший ближче,
      ширший далі) дають розмитий контур замість лінії. */
-  --note-search-glow: 0 0 6px 1px var(--accent-soft), 0 0 16px 6px var(--accent-soft);
+  --tools-search-glow: 0 0 6px 1px var(--accent-soft), 0 0 16px 6px var(--accent-soft);
 }
 
 /* Розкрите поле забирає вільне місце в ряду: широка смуга потрібна тоді, коли
    в ній пишуть, а не коли вона порожня. */
-.wb-note-search--open {
+.wb-tools-search--open {
   flex: 1 1 auto;
 }
 
@@ -1259,9 +1259,9 @@ html:has(.wb-tabbar) .wb-modal {
    них. Ні заливки, ні кільця в спокої: контрол у спокої не кричить. Шрифт
    лишається 16px — менший змушує iOS сам збільшувати сторінку (див. межу
    шрифту в кирпичику поля). */
-.wb-note-search .wb-input {
-  width: var(--note-search-w);
-  height: var(--note-row-h);
+.wb-tools-search .wb-input {
+  width: var(--tools-search-w);
+  height: var(--tools-row-h);
   min-width: 0;
   padding: 0 var(--sp-2);
   border-radius: var(--radius-md);
@@ -1271,24 +1271,24 @@ html:has(.wb-tabbar) .wb-modal {
 
 /* Дотик — і навколо САМОГО поля з'являється заливка з розмитим контуром:
    підсвічується місце, де пишуть, а не оболонка з іконкою. */
-.wb-note-search .wb-input:focus {
+.wb-tools-search .wb-input:focus {
   background: var(--field-bg);
-  box-shadow: var(--note-search-glow);
+  box-shadow: var(--tools-search-glow);
 }
 
-.wb-note-search--open .wb-input {
+.wb-tools-search--open .wb-input {
   width: 100%;
 }
 
 /* ✕ у полі — СВІЙ, а не нативний: нативний у WebView малюється окремою
    коробкою зі своїм тлом і не піддається стилю. */
-.wb-note-search input::-webkit-search-cancel-button,
-.wb-note-search input::-webkit-search-decoration {
+.wb-tools-search input::-webkit-search-cancel-button,
+.wb-tools-search input::-webkit-search-decoration {
   -webkit-appearance: none;
   appearance: none;
 }
 
-.wb-note-search-clear {
+.wb-tools-search-clear {
   display: flex;
   flex: 0 0 auto;
   align-items: center;
@@ -1303,20 +1303,20 @@ html:has(.wb-tabbar) .wb-modal {
   cursor: pointer;
 }
 
-.wb-note-search-clear:hover {
+.wb-tools-search-clear:hover {
   background: var(--surface-hover);
   color: var(--text-primary);
 }
 
-.wb-note-search-icon {
+.wb-tools-search-icon {
   flex: 0 0 auto;
   color: var(--text-muted);
 }
 
-/* Три клітинки-знаки — ОДИН ряд, і вони з ряду не випадають. Ні підпису, ні
+/* Клітинки-знаки — ОДИН ряд, і вони з ряду не випадають. Ні підпису, ні
    заливки в клітинці немає (вони — та сама клітинка, що у вкладок композера),
    бо «що вибрано» показує чип, а не сама кнопка. */
-.wb-note-controls {
+.wb-tools-controls {
   display: flex;
   flex: 0 0 auto;
   align-items: center;
@@ -1324,18 +1324,18 @@ html:has(.wb-tabbar) .wb-modal {
   /* Мірка клітинки — та сама, що у всього ряду: контроли смуги однієї висоти.
      `--cell` — та сама мірка для спільних клітинок (перемикач відображення),
      які стоять у цьому ряду поруч. */
-  --note-cell: var(--note-row-h);
-  --cell: var(--note-cell);
+  --tools-cell: var(--tools-row-h);
+  --cell: var(--tools-cell);
 }
 
-.wb-note-tool {
-  width: var(--note-cell);
-  height: var(--note-cell);
-  min-width: var(--note-cell);
+.wb-tools-btn {
+  width: var(--tools-cell);
+  height: var(--tools-cell);
+  min-width: var(--tools-cell);
   padding: 0;
 }
 
-.wb-note-tool svg {
+.wb-tools-btn svg {
   width: 16px;
   height: 16px;
 }
@@ -1343,14 +1343,14 @@ html:has(.wb-tabbar) .wb-modal {
 /* Перемикач стоїть останнім у ряду, і між ним та трьома виборами є просвіт:
    вони роблять різне (вибір проти дії), і одним рядом без просвіту читались
    як чотири однакові вибори. */
-.wb-note-tool--toggle {
+.wb-tools-btn--toggle {
   margin-left: var(--sp-1);
 }
 
 /* Перемикач «розгорнути / згорнути всі» показує свій стан САМ (у клітинці лише
    знак): залита клітинка — та сама, що в активної вкладки композера, бо це та
    сама подія «зараз увімкнено». */
-.wb-note-tool--on {
+.wb-tools-btn--on {
   background: var(--accent-dim);
   color: var(--accent);
 }
@@ -1358,14 +1358,14 @@ html:has(.wb-tabbar) .wb-modal {
 /* У sticky-шарі смуга керування їде разом із шапкою сторінки
    (`.wb-page-sticky`): її нижній відступ і проміжок усередині задає сам шар —
    окремо вони давали б подвійну прогалину під шапкою. */
-.wb-page-sticky .wb-note-tools {
+.wb-page-sticky .wb-tools {
   margin-bottom: 0;
   gap: var(--sp-2);
 }
 
 /* Чипи вибраного — **окремий ряд під смугою**: у самій смузі місця немає (там
    пошук і три клітинки), а знімати вибір треба там, де його видно. */
-.wb-note-chips {
+.wb-tools-chips {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
@@ -1374,10 +1374,10 @@ html:has(.wb-tabbar) .wb-modal {
 }
 
 /* Чип тут — ЗНІМНИЙ вибір, тому це кнопка (`button.wb-chip` уже має
-   `cursor: pointer`), а не підпис. Мірки ширші за звичайний чип: у списку
-   нотаток чип нічого не робить, а тут на нього треба влучити пальцем.
+   `cursor: pointer`), а не підпис. Мірки ширші за звичайний чип: звичайний чип
+   нічого не робить, а тут на нього треба влучити пальцем.
    Колір — основний, бо чип повідомляє СТАН, а не другорядну примітку. */
-.wb-chip.wb-note-chip {
+.wb-chip.wb-tools-chip {
   min-height: 36px;
   max-width: 100%;
   padding: 0 var(--sp-2);
@@ -1385,19 +1385,19 @@ html:has(.wb-tabbar) .wb-modal {
   color: var(--text-primary);
 }
 
-.wb-chip.wb-note-chip:hover {
+.wb-chip.wb-tools-chip:hover {
   background: var(--surface-hover);
 }
 
 /* Довгий пошуковий запит не розтягує смугу: чип показує початок, а повний
    текст лишається в `aria-label`. */
-.wb-note-chip-label {
+.wb-tools-chip-label {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
-.wb-note-summary {
+.wb-tools-summary {
   display: flex;
   align-items: center;
   gap: var(--sp-3);

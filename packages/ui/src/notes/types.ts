@@ -6,11 +6,22 @@
  * немає ні React, ні API: `view.ts` перетворює `NoteRow[]` + `NotesView` у
  * групи для рендеру, і саме тому все це можна перевірити тестами без DOM.
  *
+ * Два поля тут — не нотаткові, а **спільні** (`@wwwuabot/ui/collection`):
+ * фільтр за хештегами (`NotesTagFilter` — це `CollectionTagFilter`) і вигляд
+ * розкладки. Хештеги лежать однаково в нотаток і контактів, і шукають їх
+ * однаково, тож і тип у них один — інакше два набори тихо розійшлися б
+ * (`#Київ` знайшовся б в одному списку й не знайшовся в другому).
+ *
  * @module @wwwuabot/ui/notes
  */
 
 import type { NoteRow } from "@wwwuabot/shared/notes";
-import type { CollectionColumns, CollectionLayout } from "../collection";
+import type {
+  CollectionChip,
+  CollectionColumns,
+  CollectionLayout,
+  CollectionTagFilter,
+} from "../collection";
 
 /** Порядок показу нотаток. */
 export type NotesSort = "updated-desc" | "updated-asc" | "created-desc" | "created-asc" | "alpha";
@@ -18,24 +29,8 @@ export type NotesSort = "updated-desc" | "updated-asc" | "created-desc" | "creat
 /** За чим збирати нотатки в групи. */
 export type NotesGroupBy = "none" | "day" | "tag";
 
-/**
- * Фільтр за хештегами.
- *
- * Тегів можна вибрати **кілька**, і нотатка мусить мати **кожен** із них:
- * вибір звужує список, а не розширює — так само, як пошук вимагає всі слова.
- * Порядок стали́й (за абеткою): з нього будується і чип, і підпис для
- * скрінрідера, тож він не має залежати від того, у якому порядку тицяли.
- *
- * Це не `string | null`: «усі», «без хештегів» і вибрані теги — три різні речі,
- * і рядок-сентевел для «без хештегів» рано чи пізно зіткнувся б із справжнім
- * тегом (нормалізація не забороняє майже жодного символу).
- *
- * Порожнього списку тегів тут немає навмисно: прибрати останній тег — це
- * повернутись до «усі», а не лишитись із фільтром, який нічого не фільтрує
- * (див. `toggleTagFilter`).
- */
-export type NotesTagFilter =
-  { kind: "all" } | { kind: "untagged" } | { kind: "tags"; tags: readonly string[] };
+/** Фільтр за хештегами — спільне правило: усі / без хештегів / вибрані теги. */
+export type NotesTagFilter = CollectionTagFilter;
 
 /** Те, що людина вибрала у смузі керування. */
 export interface NotesView {
@@ -69,21 +64,11 @@ export const DEFAULT_NOTES_VIEW: NotesView = {
 /**
  * Чип смуги керування — те, що людина вибрала, і як це зняти.
  *
- * Чип описує **рівно один** вибір, тому його видно очима (на відміну від
- * клітинки-іконки) і дотик повертає цей вибір до типового, не чіпаючи решти.
- * Типові значення чипа не мають: постійні «Змінені» й «За днями» займали б
- * місце й говорили б про те, що й так видно зі списку.
+ * Складає їх **спільний** `buildViewChips` із `@wwwuabot/ui/collection`: чип
+ * описує рівно один вибір, і правило «типове чипа не має» однакове для будь-якої
+ * колекції.
  */
-export interface NotesChip {
-  /** Стабільний ключ React-списку (`query`, `tags`, `sort`, `group`). */
-  key: string;
-  /** Те, що видно на чипі. */
-  label: string;
-  /** Ім'я дії для скрінрідера: «прибрати …». */
-  action: string;
-  /** Що повернути, коли чип прибирають. */
-  reset: Partial<NotesView>;
-}
+export type NotesChip = CollectionChip<NotesView>;
 
 /** Група в списку — з неї рендериться заголовок і картки. */
 export interface NotesGroup {

@@ -85,19 +85,19 @@ function render(
 
 /** Вміст клітинок-іконок: ним і перевіряємо, що знаки справді різні. */
 function toolIcons(html: string): string[] {
-  return [...html.matchAll(/<button[^>]*class="wb-note-tool"[^>]*>(.*?)<\/button>/g)].map(
+  return [...html.matchAll(/<button[^>]*class="wb-tools-btn"[^>]*>(.*?)<\/button>/g)].map(
     (match) => match[1],
   );
 }
 
 /** Клітинка-перемикач цілком: у ній і стан, і знак. */
 function toggleButton(html: string): string {
-  return html.match(/<button[^>]*wb-note-tool--toggle[\s\S]*?<\/button>/)?.[0] ?? "";
+  return html.match(/<button[^>]*wb-tools-btn--toggle[\s\S]*?<\/button>/)?.[0] ?? "";
 }
 
 /** Підписи чипів: ними й перевіряємо, що кожен вибір знімається окремо. */
 function chipLabels(html: string): string[] {
-  return [...html.matchAll(/<span class="wb-note-chip-label">(.*?)<\/span>/g)].map(
+  return [...html.matchAll(/<span class="wb-tools-chip-label">(.*?)<\/span>/g)].map(
     (match) => match[1],
   );
 }
@@ -134,14 +134,14 @@ describe("NotesToolbar", () => {
   it("типовий вибір чипа не має — інакше смуга повна завжди", () => {
     const html = render();
 
-    expect(html).not.toContain("wb-note-chip");
-    expect(html).toContain("wb-note-controls");
+    expect(html).not.toContain("wb-tools-chip");
+    expect(html).toContain("wb-tools-controls");
   });
 
   it("вибране стоїть поруч знімним чипом із назвою дії", () => {
     const html = render({ sort: "created-desc", tags: { kind: "tags", tags: ["київ"] } });
 
-    expect(html).toContain("wb-note-chip");
+    expect(html).toContain("wb-tools-chip");
     expect(html).toContain(">Нові<");
     expect(html).toContain(">#київ<");
     expect(html).toContain("Прибрати фільтр за хештегом #київ");
@@ -173,7 +173,7 @@ describe("NotesToolbar", () => {
     // Інакше «чому список короткий» доводилось би згадувати, а не бачити.
     const html = render({ query: "риба" });
 
-    expect(html).toContain("wb-note-chip");
+    expect(html).toContain("wb-tools-chip");
     expect(html).toContain("«риба»");
     expect(html).toContain("Прибрати пошук «риба»");
   });
@@ -183,21 +183,21 @@ describe("NotesToolbar", () => {
     // якими людина приходить у цю смугу.
     const collapsed = render();
     expect(collapsed).toContain('placeholder="Пошук"');
-    expect(collapsed).not.toContain("wb-note-search--open");
+    expect(collapsed).not.toContain("wb-tools-search--open");
 
     // Що є запит — поле вже розкрите: згорнути набране було б втратою з очей.
-    expect(render({ query: "риба" })).toContain("wb-note-search--open");
+    expect(render({ query: "риба" })).toContain("wb-tools-search--open");
   });
 
   it("пошук і три клітинки стоять в ОДНОМУ ряду, пошук — першим", () => {
     const html = render();
 
-    const bar = html.indexOf('class="wb-note-bar"');
+    const bar = html.indexOf('class="wb-tools-bar"');
     expect(bar).toBeGreaterThan(-1);
     // Пошук ліворуч, клітинки праворуч — і обидва в тій самій смузі, а не
     // окремими рядами.
-    expect(html.indexOf("wb-note-search")).toBeGreaterThan(bar);
-    expect(html.indexOf("wb-note-search")).toBeLessThan(html.indexOf("wb-note-controls"));
+    expect(html.indexOf("wb-tools-search")).toBeGreaterThan(bar);
+    expect(html.indexOf("wb-tools-search")).toBeLessThan(html.indexOf("wb-tools-controls"));
   });
 
   it("клітинки стоять у смузі з пошуком, а чипи — своїм рядом під нею", () => {
@@ -205,9 +205,9 @@ describe("NotesToolbar", () => {
     // їм місця немає: там пошук і клітинки.
     const html = render({ sort: "alpha", groupBy: "none" }, { shown: 1, total: 3 });
 
-    const bar = html.indexOf('class="wb-note-bar"');
-    const controls = html.indexOf('class="wb-note-controls"');
-    const chips = html.indexOf('class="wb-note-chips"');
+    const bar = html.indexOf('class="wb-tools-bar"');
+    const controls = html.indexOf('class="wb-tools-controls"');
+    const chips = html.indexOf('class="wb-tools-chips"');
     expect(bar).toBeGreaterThan(-1);
     expect(controls).toBeGreaterThan(bar);
     expect(chips).toBeGreaterThan(controls);
@@ -217,7 +217,7 @@ describe("NotesToolbar", () => {
     // стоять ПІСЛЯ смуги, а не всередині неї.
     expect(toolIcons(html.slice(bar, chips))).toHaveLength(3);
     expect(html.slice(bar, chips)).toContain("wb-collection-tool");
-    expect(html.slice(bar, chips)).toContain("wb-note-tool--toggle");
+    expect(html.slice(bar, chips)).toContain("wb-tools-btn--toggle");
     expect((html.slice(controls, chips).match(/<\/div>/g) ?? []).length).toBe(2);
 
     // Чипи — після смуги, і підпис вибраного в них.
@@ -227,46 +227,46 @@ describe("NotesToolbar", () => {
   it("запит прибирається ✕ у полі, а не лише чипом", () => {
     const html = render({ query: "риба" });
 
-    expect(html).toContain("wb-note-search-clear");
+    expect(html).toContain("wb-tools-search-clear");
     expect(html).toContain('aria-label="Прибрати пошук"');
     // Порожнє поле цієї кнопки не має: прибирати нема чого.
-    expect(render()).not.toContain("wb-note-search-clear");
+    expect(render()).not.toContain("wb-tools-search-clear");
   });
 
   it("смуга не переноситься — клітинки не стрибають на другий рядок", () => {
-    const bar = rule(".wb-note-bar");
+    const bar = rule(".wb-tools-bar");
 
     expect(bar).toContain("display: flex");
     expect(bar).not.toContain("wrap");
-    expect(rule(".wb-note-controls")).not.toContain("wrap");
+    expect(rule(".wb-tools-controls")).not.toContain("wrap");
     // Розкрите поле забирає лише вільне місце, а не рядок цілком.
-    expect(rule(".wb-note-search--open")).toContain("flex: 1 1 auto");
+    expect(rule(".wb-tools-search--open")).toContain("flex: 1 1 auto");
   });
 
   it("у спокої навколо поля немає нічого, а на фокусі світиться саме поле", () => {
     // Залите поле поруч із трьома клітинками читалось як ще одна кнопка, тож
     // заливка й розмите світло з'являються тільки на дотик — і навколо місця,
     // де пишуть, а не навколо оболонки з іконкою.
-    const shell = rule(".wb-note-search");
+    const shell = rule(".wb-tools-search");
     expect(shell).not.toContain("background");
 
-    const inner = rule(".wb-note-search .wb-input");
+    const inner = rule(".wb-tools-search .wb-input");
     expect(inner).toContain("background: none");
     expect(inner).toContain("box-shadow: none");
     expect(inner).toContain("padding: 0");
-    expect(inner).toContain("height: var(--note-row-h)");
+    expect(inner).toContain("height: var(--tools-row-h)");
 
-    const focus = rule(".wb-note-search .wb-input:focus");
+    const focus = rule(".wb-tools-search .wb-input:focus");
     expect(focus).toContain("background: var(--field-bg)");
-    expect(focus).toContain("var(--note-search-glow)");
+    expect(focus).toContain("var(--tools-search-glow)");
 
-    expect(rule(".wb-note-search--open .wb-input")).toContain("width: 100%");
+    expect(rule(".wb-tools-search--open .wb-input")).toContain("width: 100%");
   });
 
   it("ряд низький: мірка смуги вдвічі менша за планку пальця композера", () => {
     // Високий ряд забирав у списку більше екрана, ніж сам список.
-    expect(rule(".wb-note-bar")).toContain("--note-row-h: 32px");
-    expect(rule(".wb-note-controls")).toContain("--note-cell: var(--note-row-h)");
+    expect(rule(".wb-tools-bar")).toContain("--tools-row-h: 32px");
+    expect(rule(".wb-tools-controls")).toContain("--tools-cell: var(--tools-row-h)");
   });
 
   it("перемикач «розгорнути / згорнути всі» стоїть у ряду й показує свій стан", () => {
@@ -275,12 +275,12 @@ describe("NotesToolbar", () => {
     const collapsed = render();
     expect(collapsed).toContain('aria-pressed="false"');
     expect(collapsed).toContain('aria-label="Розгорнути всі нотатки"');
-    expect(collapsed).not.toContain("wb-note-tool--on");
+    expect(collapsed).not.toContain("wb-tools-btn--on");
 
     const expanded = render({}, { shown: 3, total: 3 }, true);
     expect(expanded).toContain('aria-pressed="true"');
     expect(expanded).toContain('aria-label="Згорнути всі нотатки"');
-    expect(expanded).toContain("wb-note-tool--on");
+    expect(expanded).toContain("wb-tools-btn--on");
     // Знак теж міняється — з підписом його читає скрінрідер, без підпису око.
     expect(toggleButton(expanded)).not.toBe(toggleButton(collapsed));
   });
@@ -290,9 +290,9 @@ describe("NotesToolbar", () => {
     // їхньому ряду; перемикач «розгорнути всі» діє одразу — тому він через
     // просвіт і останній.
     const html = render();
-    const lastPicker = html.lastIndexOf('class="wb-note-tool"');
+    const lastPicker = html.lastIndexOf('class="wb-tools-btn"');
     const layout = html.indexOf("wb-collection-tool");
-    const toggle = html.indexOf("wb-note-tool--toggle");
+    const toggle = html.indexOf("wb-tools-btn--toggle");
 
     expect(lastPicker).toBeGreaterThan(-1);
     expect(layout).toBeGreaterThan(lastPicker);
@@ -321,12 +321,12 @@ describe("NotesToolbar", () => {
   });
 
   it("спільна клітинка бере мірку ряду: контроли однієї висоти", () => {
-    expect(rule(".wb-note-controls")).toContain("--cell: var(--note-cell)");
+    expect(rule(".wb-tools-controls")).toContain("--cell: var(--tools-cell)");
   });
 
   it("стан перемикача видно заливкою, а не лише знаком", () => {
-    expect(rule(".wb-note-tool--on")).toContain("var(--accent-dim)");
-    expect(rule(".wb-note-tool--on")).toContain("color: var(--accent)");
+    expect(rule(".wb-tools-btn--on")).toContain("var(--accent-dim)");
+    expect(rule(".wb-tools-btn--on")).toContain("color: var(--accent)");
   });
 
   it("шапка сторінки зі смугою лишаються на видноті при прокрутці", () => {
@@ -339,12 +339,12 @@ describe("NotesToolbar", () => {
     expect(sticky).toContain("top: 0");
     expect(sticky).toContain("background: var(--bg-page");
     // А проміжки смуги в цьому шарі задає сам шар, а не вони обидва
-    // (`components.css` — бо `.wb-note-tools` це кирпичик нотаток).
-    expect(rule(".wb-page-sticky .wb-note-tools")).toContain("margin-bottom: 0");
+    // (`components.css` — бо `.wb-tools` це кирпичик нотаток).
+    expect(rule(".wb-page-sticky .wb-tools")).toContain("margin-bottom: 0");
   });
 
   it("кількість показаних нотаток видно лише тоді, коли вона менша за всі", () => {
-    expect(render()).not.toContain("wb-note-summary");
-    expect(render({ query: "риба" }, { shown: 1, total: 3 })).toContain("wb-note-summary");
+    expect(render()).not.toContain("wb-tools-summary");
+    expect(render({ query: "риба" }, { shown: 1, total: 3 })).toContain("wb-tools-summary");
   });
 });

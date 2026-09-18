@@ -461,20 +461,20 @@ html[data-brand="android"] .scn-search:focus {
     0 0 0 2px var(--accent-soft) !important;
 }
 
-/* Пошук нотаток — контрол тут САМЕ поле, а не оболонка з іконкою (див.
-   `components.css`), тож бренд дає йому свій радіус, але **не** мірки звичайного
-   поля: у смузі поле стоїть поруч із клітинками 32px, і мірки поле-в-поле
-   зробили б ряд учетверо вищим за них. Кільце бренду теж знято — фокус тут
-   показує м'яке світло навколо самого поля. */
-html[data-brand="android"] .wb-note-search .wb-input {
-  height: var(--note-row-h) !important;
+/* Пошук у смузі керування — контрол тут САМЕ поле, а не оболонка з іконкою
+   (див. `components.css`), тож бренд дає йому свій радіус, але **не** мірки
+   звичайного поля: у смузі поле стоїть поруч із клітинками 32px, і мірки
+   поле-в-поле зробили б ряд учетверо вищим за них. Кільце бренду теж знято —
+   фокус тут показує м'яке світло навколо самого поля. */
+html[data-brand="android"] .wb-tools-search .wb-input {
+  height: var(--tools-row-h) !important;
   padding: 0 var(--sp-2) !important;
   border-radius: 10px !important;
   box-shadow: none !important;
 }
 
-html[data-brand="android"] .wb-note-search .wb-input:focus {
-  box-shadow: var(--note-search-glow) !important;
+html[data-brand="android"] .wb-tools-search .wb-input:focus {
+  box-shadow: var(--tools-search-glow) !important;
 }
 
 /* ── Modal: M3 dialog — large radius, no blur ──────────────────────────── */

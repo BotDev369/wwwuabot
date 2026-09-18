@@ -1,29 +1,27 @@
 /**
  * «МоїКонтакти» — довідник людей, яких власник знає й запрошує.
  *
- * Екран лише **зводить** те, що вже є: список, картку контакту й схему дає
- * спільний `@wwwuabot/ui/contacts`, вигляд — спільний `@wwwuabot/ui/collection`,
- * дані — `useContacts`, а адреса й власник — ця оболонка. Тому тут немає ні
- * розмітки картки, ні правила «хто приєднався»: усе це перевіряється тестами в
- * спільному модулі, незалежно від платформи.
+ * Екран лише **зводить** те, що вже є: список, форму контакту й підсумкові
+ * числа дає спільний `@wwwuabot/ui/contacts`, а пошук, сортування, фільтр,
+ * групи й вигляд — спільний `@wwwuabot/ui/collection` (той самий кирпичик, що в
+ * нотатках), дані — `useContacts`, а адреса й власник — ця оболонка.
  *
- * **Контакт — це запис із полями, а лінк — одне з них.** Раніше рядок
- * народжувався разом із посиланням, і все, що про людину знали, — підпис і факт
- * приєднання. Тепер контакт можна завести без лінка, відкрити картку, дописати
- * `@username`, хештеги й примітки, а посилання скласти тоді, коли його справді
- * треба надіслати (кнопка в картці).
+ * **Контакт — це запис із полями, а лінк — одне з них.** Контакт заводять без
+ * лінка, а посилання складають тоді, коли його справді треба надіслати. Тому
+ * «Додати контакт» питає ім'я, створює запис, **одразу складає лінк, кладе його
+ * в буфер** і відкриває форму — дописати решту.
+ *
+ * **Рядок списку — акордеон**, як у нотатках: закритий показує ім'я з датою й
+ * хто це на якому кроці, розкритий — етапи приєднання, лінк, дати й дії.
+ * Правка живе у формі (`ContactSheet`), а не в рядку: поле в двох місцях
+ * неминуче редагується в одному й читається в другому.
  *
  * **Id не вписують — їх видно.** Свій Telegram-id власник не бачить ніде: його
  * бере сервер із підписаного `initData` при першому ж збереженні. Id людини
  * приходить від бота, коли вона відкрила `?start=<код>`, а другу дату
  * (платформу) ставить `api-dev`, коли вона зайшла в Mini App. Тому екран нічого
- * з цього не передає нагору — він це лише **показує**: запрошено → у боті →
- * приєднався.
- *
- * **Дотик по контакту відкриває картку** — тому в рядку списку немає ні дій, ні
- * посилання: усе, що показують двічі, редагується в одному місці й читається в
- * другому. Список каже рівно те, за чим його читають: номер, ім'я, хто це й
- * чим позначено.
+ * з цього не передає нагору — він це лише **показує**: запрошено → у боті → на
+ * платформі.
  *
  * Діалоги, буфер обміну й підтвердження живуть тут, а не в картці: це межі
  * оболонки (та сама межа, що в нотатках і панелі теми).
@@ -38,11 +36,17 @@ import { useEffect, useState, type ReactElement } from "react";
 import { Icon } from "@wwwuabot/shared";
 import { sanitizeContactName, type Contact, type ContactInput } from "@wwwuabot/shared/contacts";
 import {
-  DEFAULT_COLLECTION_VIEW,
-  CollectionViewSwitch,
-  type CollectionView,
-} from "@wwwuabot/ui/collection";
-import { ContactList, ContactSheet, ContactsScheme } from "@wwwuabot/ui/contacts";
+  ContactList,
+  ContactSheet,
+  ContactTotals,
+  ContactsToolbar,
+  DEFAULT_CONTACTS_VIEW,
+  buildContactGroups,
+  collectContactTags,
+  filterContacts,
+  foundContactTags,
+  type ContactsView,
+} from "@wwwuabot/ui/contacts";
 import { useDialog } from "@wwwuabot/ui/dialog";
 import { useContacts } from "./useContacts";
 
@@ -57,10 +61,11 @@ function newContact(name: string): ContactInput {
 export function ContactsPage(): ReactElement {
   const { contacts, loading, error, create, update, makeLink, remove } = useContacts();
   const dialog = useDialog();
-  const [view, setView] = useState<CollectionView>(DEFAULT_COLLECTION_VIEW);
-  // Відкрита картка — стан екрана, а не контакту: контакт у списку лишається
-  // тим самим рядком, а картка лише показує його поля.
-  const [openId, setOpenId] = useState<number | null>(null);
+  const [view, setView] = useState<ContactsView>(DEFAULT_CONTACTS_VIEW);
+  // Розгорнуті рядки й відкрита форма — стан **екрана**, а не контакту: контакт
+  // у списку лишається тим самим рядком, а форма лише показує його поля.
+  const [openIds, setOpenIds] = useState<ReadonlySet<number>>(() => new Set());
+  const [editingId, setEditingId] = useState<number | null>(null);
   const [copiedId, setCopiedId] = useState<number | null>(null);
 
   useEffect(() => {
@@ -69,11 +74,30 @@ export function ContactsPage(): ReactElement {
     return () => clearTimeout(timer);
   }, [copiedId]);
 
-  const open = contacts.find((contact) => contact.id === openId) ?? null;
+  const visible = filterContacts(contacts, view);
+  const groups = buildContactGroups(contacts, view);
+  // Які теги знайшов поточний пошук чи фільтр — їх рядок виділяє акцентом.
+  const found = foundContactTags(collectContactTags(contacts), view);
+  // «Усі розгорнуті» — про те, що ВИДНО: шукати очима те, що відсіяли
+  // фільтром, немає де, а перемикач мусить казати про поточний список.
+  const allOpen = visible.length > 0 && visible.every((contact) => openIds.has(contact.id));
+  const editing = contacts.find((contact) => contact.id === editingId) ?? null;
   const hasContacts = !loading && !error && contacts.length > 0;
 
+  function toggleAll(): void {
+    setOpenIds(allOpen ? new Set() : new Set(visible.map((contact) => contact.id)));
+  }
+
+  function toggleOne(id: number): void {
+    setOpenIds((prev) => {
+      const next = new Set(prev);
+      if (!next.delete(id)) next.add(id);
+      return next;
+    });
+  }
+
   /**
-   * Покласти лінк у буфер і позначити картку.
+   * Покласти лінк у буфер і позначити рядок.
    *
    * Повертає `false`, а не кидає: невдача буфера — не помилка дії, а привід
    * показати посилання текстом, і вирішує це той, хто кликав.
@@ -93,7 +117,7 @@ export function ContactsPage(): ReactElement {
   async function tellLinkFailure(contact: Contact, what: string): Promise<void> {
     await dialog.alert(
       contact.deepLink
-        ? `${what} не вдалося — візьміть посилання з картки контакту.`
+        ? `${what} не вдалося — візьміть посилання з розкритого контакту.`
         : "Бот ще не знає свого імені — посилання не склалося. Оновіть екран і спробуйте ще раз.",
       { title: "Скопіюйте вручну" },
     );
@@ -102,11 +126,11 @@ export function ContactsPage(): ReactElement {
   /**
    * Додавання контакту: ім'я питаємо діалогом (без нього список стає
    * стовпчиком безіменних карток), далі **одразу складаємо лінк і кладемо його
-   * в буфер**, бо саме за цим сюди приходять, і відкриваємо картку — дописати
+   * в буфер**, бо саме за цим сюди приходять, і відкриваємо форму — дописати
    * решту полів.
    *
    * Лінк саме **пробуємо** скласти, а не вважаємо обов'язковим: якщо ім'я бота
-   * ще невідоме, контакт лишається без лінка, і кнопка в картці складе його
+   * ще невідоме, контакт лишається без лінка, і кнопка в тілі рядка складе його
    * потім.
    */
   async function addContact(): Promise<void> {
@@ -120,7 +144,8 @@ export function ContactsPage(): ReactElement {
 
     try {
       const created = await create(newContact(sanitizeContactName(answer)));
-      setOpenId(created.id);
+      setOpenIds((prev) => new Set(prev).add(created.id));
+      setEditingId(created.id);
 
       const linked = await makeLink(created.id);
       if (!(await copyLink(linked))) await tellLinkFailure(linked, "Скопіювати");
@@ -131,11 +156,11 @@ export function ContactsPage(): ReactElement {
     }
   }
 
-  /** Збереження картки: усі поля одразу, і назад до списку — там зміну видно. */
+  /** Збереження форми: усі поля одразу, і назад до списку — там зміну видно. */
   async function saveContact(id: number, input: ContactInput): Promise<void> {
     try {
       await update(id, input);
-      setOpenId(null);
+      setEditingId(null);
     } catch (e: unknown) {
       await dialog.alert(e instanceof Error ? e.message : "Не вдалося зберегти контакт", {
         title: "Помилка",
@@ -143,7 +168,7 @@ export function ContactsPage(): ReactElement {
     }
   }
 
-  /** Скласти лінк із картки: код новий, тож старий лінк перестає працювати. */
+  /** Скласти лінк із тіла рядка: код новий, тож старий лінк перестає працювати. */
   async function createLink(id: number): Promise<void> {
     try {
       const linked = await makeLink(id);
@@ -155,7 +180,7 @@ export function ContactsPage(): ReactElement {
     }
   }
 
-  async function copyFromCard(contact: Contact): Promise<void> {
+  async function copyFromRow(contact: Contact): Promise<void> {
     if (await copyLink(contact)) return;
     await tellLinkFailure(contact, "Скопіювати");
   }
@@ -170,7 +195,14 @@ export function ContactsPage(): ReactElement {
 
     try {
       await remove(contact.id);
-      setOpenId(null);
+      setEditingId(null);
+      // Рядок прибираємо з розгорнутих: його вже немає, а id у стані лишився б
+      // і «оживив» наступний контакт із тим самим номером.
+      setOpenIds((prev) => {
+        const next = new Set(prev);
+        next.delete(contact.id);
+        return next;
+      });
     } catch (e: unknown) {
       await dialog.alert(e instanceof Error ? e.message : "Не вдалося прибрати контакт", {
         title: "Помилка",
@@ -180,16 +212,13 @@ export function ContactsPage(): ReactElement {
 
   return (
     <div className="wb-page">
-      {/* Шапка лишається на видноті (`.wb-page-sticky`) — як у нотатках:
-          довгий список ховає кнопку створення саме тоді, коли вона потрібна. */}
+      {/* Шапка, числа й смуга керування їдуть разом і лишаються на видноті
+          (`.wb-page-sticky`): список довгий, і без цього і пошук, і числа
+          зникали рівно тоді, коли вони потрібні. */}
       <div className="wb-page-sticky">
         <div className="wb-page-head">
           <h1 className="wb-page-title">МоїКонтакти</h1>
           <div className="wb-page-actions">
-            {/* Вигляд — той самий спільний кирпичик, що в нотатках: рядки чи
-                плитки 1/2. Тут він у шапці, бо окремої смуги пошуку немає, а
-                місце поруч із дією — найближче до того, що він міняє. */}
-            {hasContacts && <CollectionViewSwitch view={view} onChange={setView} />}
             <button
               type="button"
               className="wb-btn wb-btn-primary"
@@ -200,6 +229,22 @@ export function ContactsPage(): ReactElement {
             </button>
           </div>
         </div>
+
+        {/* Числа стоять поруч із назвою, а не блоком під списком: за ними
+            приходять саме тоді, коли список довгий. */}
+        {hasContacts && <ContactTotals contacts={contacts} />}
+
+        {hasContacts && (
+          <ContactsToolbar
+            view={view}
+            onChange={(patch) => setView((prev) => ({ ...prev, ...patch }))}
+            tags={collectContactTags(contacts)}
+            shown={visible.length}
+            total={contacts.length}
+            allOpen={allOpen}
+            onToggleAll={toggleAll}
+          />
+        )}
       </div>
 
       {loading && (
@@ -233,28 +278,45 @@ export function ContactsPage(): ReactElement {
         </div>
       )}
 
-      {hasContacts && (
-        <>
-          <ContactList contacts={contacts} collection={view} onOpen={(c) => setOpenId(c.id)} />
+      {hasContacts &&
+        (groups.length > 0 ? (
+          <ContactList
+            groups={groups}
+            found={found}
+            openIds={[...openIds]}
+            onToggle={toggleOne}
+            onEdit={(contact) => setEditingId(contact.id)}
+            onDelete={(contact) => void deleteContact(contact)}
+            onMakeLink={(contact) => void createLink(contact.id)}
+            onCopyLink={(contact) => void copyFromRow(contact)}
+            copiedId={copiedId}
+            collection={{ layout: view.layout, columns: view.columns }}
+          />
+        ) : (
+          <div className="wb-empty">
+            <span className="wb-empty-icon">
+              <Icon name="search" size={32} />
+            </span>
+            <p className="wb-empty-text">Нічого не знайдено за цим запитом.</p>
+            <button
+              type="button"
+              className="wb-btn wb-btn-secondary"
+              onClick={() => setView(DEFAULT_CONTACTS_VIEW)}
+            >
+              <Icon name="close" size={16} />
+              Скинути пошук і фільтри
+            </button>
+          </div>
+        ))}
 
-          <h2 className="wb-contact-section">Схема залучених</h2>
-          <ContactsScheme contacts={contacts} />
-        </>
-      )}
-
-      {open && (
+      {editing && (
         <ContactSheet
-          // Картка читає поля при появі: `key` по контакту не дає їй показати
+          // Форма читає поля при появі: `key` по контакту не дає їй показати
           // поля одного контакту, коли відкрили вже інший.
-          key={open.id}
-          contact={open}
-          index={contacts.indexOf(open)}
-          copied={copiedId === open.id}
-          onSave={(input) => void saveContact(open.id, input)}
-          onDelete={() => void deleteContact(open)}
-          onMakeLink={() => void createLink(open.id)}
-          onCopyLink={() => void copyFromCard(open)}
-          onClose={() => setOpenId(null)}
+          key={editing.id}
+          contact={editing}
+          onSave={(input) => void saveContact(editing.id, input)}
+          onClose={() => setEditingId(null)}
         />
       )}
     </div>
