@@ -7,6 +7,11 @@
  * в рядку названа словом** — саме різниця між «у боті» та «приєднався» і є
  * те, заради чого екран існує, а за кольором її не видно.
  *
+ * Окремо — **близнюки**: два записи про одну людину мусять бути підписані
+ * («та сама людина, що …») і пояснені під числами. Мовчазні близнюки — це
+ * екран, на якому «запрошено 2» стоїть над «у боті 1», і виглядає це як
+ * поламаний рахунок.
+ *
  * Середовище тестів — `node` (без DOM), тож перевіряємо розмітку, яку рендерить
  * React, а не дотики.
  */
@@ -106,5 +111,39 @@ describe("ContactsScheme", () => {
     expect(html).toContain("Карас");
     expect(html).toContain("wb-contact-scheme-name");
     expect(html).toContain("@karas");
+  });
+
+  it("другий запис про ту саму людину підписаний, а перший — ні", () => {
+    const html = render([
+      contact({ id: 1, name: "Карась 2", joinedUserId: 555, joinedBotAt: BOT }),
+      contact({ id: 2, name: "Карась молодший", joinedUserId: 555, joinedBotAt: BOT }),
+    ]);
+
+    expect(html).toContain("та сама людина, що «Карась 2»");
+    // Підпис один: перший запис людини — він сам собі не близнюк.
+    expect([...html.matchAll(/wb-contact-scheme-twin/g)]).toHaveLength(1);
+  });
+
+  it("без близнюків підпису й пояснення немає", () => {
+    const html = render([
+      contact({ id: 1, joinedUserId: 555, joinedBotAt: BOT }),
+      contact({ id: 2, joinedUserId: 556, joinedBotAt: BOT }),
+    ]);
+
+    expect(html).not.toContain("та сама людина");
+    expect(html).not.toContain("wb-contact-twins-note");
+  });
+
+  it("пояснює, чому в лійці менше, ніж запрошень", () => {
+    const html = render([
+      contact({ id: 1, code: "inv-000001", joinedUserId: 555, joinedBotAt: BOT }),
+      contact({ id: 2, code: "inv-000002", joinedUserId: 555, joinedBotAt: BOT }),
+    ]);
+
+    // Запрошено 2, у боті 1 — і різниця названа вголос, а не лишена власнику.
+    expect(html).toContain("wb-contact-twins-note");
+    expect(html).toContain("Ще 1 запис про тих самих людей");
+    const numbers = [...html.matchAll(/<dd>(\d+)<\/dd>/g)].map((match) => match[1]);
+    expect(numbers).toEqual(["2", "1", "0"]);
   });
 });

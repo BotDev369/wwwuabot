@@ -13,15 +13,26 @@
  * потрібне — числа рахуються з тих самих контактів (`contactStats`), бо це той
  * самий факт під іншим кутом.
  *
+ * **Числа — про людей, записи — про власника.** Два лінки на ту саму людину
+ * дають два записи й **одну** людину в лійці; тому рядок-близнюк підписаний
+ * (`та сама людина, що «Карась 2»`), а під числами стоїть пояснення. Без
+ * підпису «запрошено 2 → у боті 1» читалось би як діра в схемі, хоч це правда.
+ *
  * @module @wwwuabot/ui/contacts
  */
 
 import type { ReactElement } from "react";
 import { Icon } from "@wwwuabot/shared";
 import type { Contact } from "@wwwuabot/shared/contacts";
-import { CONTACT_STAGE_WORDS, contactStage, contactStats } from "./scheme";
+import {
+  CONTACT_STAGE_WORDS,
+  contactStage,
+  contactStats,
+  recordWord,
+  samePersonAs,
+} from "./scheme";
 
-function SchemeRow({ contact }: { contact: Contact }): ReactElement {
+function SchemeRow({ contact, twin }: { contact: Contact; twin?: string }): ReactElement {
   const stage = contactStage(contact);
 
   return (
@@ -44,12 +55,18 @@ function SchemeRow({ contact }: { contact: Contact }): ReactElement {
       {contact.invitedCount > 0 && (
         <span className="wb-contact-scheme-nested">залучив(ла) ще {contact.invitedCount}</span>
       )}
+      {/* Близнюк мусить бути підписаний: інакше два рядки з однаковим id
+          виглядають як два різні люди, і числа під ними здаються зламаними. */}
+      {twin !== undefined && (
+        <span className="wb-contact-scheme-twin">та сама людина, що «{twin}»</span>
+      )}
     </li>
   );
 }
 
 export function ContactsScheme({ contacts }: { contacts: readonly Contact[] }): ReactElement {
   const stats = contactStats(contacts);
+  const twins = samePersonAs(contacts);
 
   return (
     <div className="wb-contact-scheme">
@@ -70,6 +87,15 @@ export function ContactsScheme({ contacts }: { contacts: readonly Contact[] }): 
         </div>
       </dl>
 
+      {/* Чому число менше за попереднє — сказано тут, а не в голові власника:
+          дублі не помилка, вони просто не подвоюють людину. */}
+      {stats.duplicates > 0 && (
+        <p className="wb-contact-twins-note">
+          Ще {recordWord(stats.duplicates)} про тих самих людей: у числах кожна людина порахована
+          один раз.
+        </p>
+      )}
+
       {/* Другий рівень — одне речення, а не ще три числа: це підсумок того,
           що видно нижче в рядках, і повторювати його окремою сіткою означало б
           сказати те саме двічі. */}
@@ -85,7 +111,7 @@ export function ContactsScheme({ contacts }: { contacts: readonly Contact[] }): 
           Ви
         </li>
         {contacts.map((contact) => (
-          <SchemeRow key={contact.id} contact={contact} />
+          <SchemeRow key={contact.id} contact={contact} twin={twins.get(contact.id)} />
         ))}
       </ul>
     </div>

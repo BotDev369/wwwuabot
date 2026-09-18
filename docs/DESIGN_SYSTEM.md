@@ -366,8 +366,8 @@ Defined in `packages/shared/src/styles/tokens.css`, overridden per brand in `app
     **«Схема залучених»** — три числа воронки (запрошено / у боті / приєднались) плюс гілка:
     хто з контактів залучив далі; той, хто на платформі, порахований **і в «у боті»** (лійка
     без дірок), а другий рівень — **лише коли він є** («залучив(ла) ще 0» — рядок заради нуля).
-    Числа рахує `contactStats`, стадію — `contactStage` (чисті функції), а «контакт без лінка» в
-    «очікують» **не рахується**: чекати нічого. Дія екрана одна — **«Додати контакт»**: питає
+    Числа рахують **людей, а не картки** (два лінки на одну людину — два записи й одна людина в лійці):
+    дубль підписаний «та сама людина, що …» (`.wb-contact-twin` у рядку, `.wb-contact-scheme-twin` у гілці), під числами — `.wb-contact-twins-note`; «контакт без лінка» в «очікують» **не рахується**: чекати нічого. Дія екрана одна — **«Додати контакт»**: питає
     ім'я, створює запис, **одразу складає лінк і кладе його в буфер** та відкриває картку.
 
 ---
@@ -383,7 +383,7 @@ Defined in `packages/shared/src/styles/tokens.css`, overridden per brand in `app
 | `packages/shared/src/styles/apple.css` | Apple brand overrides |
 | `packages/shared/src/styles/android.css` | Material brand overrides |
 | `packages/shared/src/styles/components.css` | `.wb-*` component styles (включно з `.wb-dialog*` і кирпичиком вигляду колекції `.wb-collection*`) |
-| `packages/shared/src/styles/contacts.css` | Кирпичики «МоїКонтакти» (`.wb-contact*`): рядок контакту (і плитковий режим), картка контакту, готовий діплінк, схема залучених · `packages/ui/src/contacts/` — `ContactList` (рядки/плитки), `ContactSheet` (поля) і `ContactsScheme` + чиста `scheme.ts` |
+| `packages/shared/src/styles/contacts.css` | Кирпичики «МоїКонтакти» (`.wb-contact*`): рядок контакту (і плитковий режим), картка контакту, готовий діплінк, схема залучених (числа — про **людей**, близнюки підписані) · `packages/ui/src/contacts/` — `ContactList` (рядки/плитки), `ContactSheet` (поля) і `ContactsScheme` + чиста `scheme.ts` (`contactStage` / `contactStats` / `samePersonAs`) |
 | `packages/ui/src/collection/` | `CollectionViewSwitch` + модель вигляду колекції: рядки чи картки-превью й колонки (спільний кирпичик, не лише нотаток) |
 | `packages/shared/src/styles/app-chrome.css` | кирпичики каркаса оболонки: app / nav / **tabbar (нижній футер)** / topbar / page / auth / splash / profile |
 | `packages/shared/src/styles/page-layout.css` | каркас сторінки для `PageRenderer` |

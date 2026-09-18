@@ -9,11 +9,15 @@
  *
  * Друге тонке — **контакт без лінка не «очікує»**: він нікого не запрошував, і
  * чекати нічого.
+ *
+ * Третє, і саме воно зламалося на живому тесті: **числа рахують людей, а не
+ * картки**. Два лінки на одну людину дають два записи й **одну** людину в
+ * лійці — інакше «у боті» показує 2 там, де людина одна.
  */
 
 import { describe, expect, it } from "vitest";
 import type { Contact } from "@wwwuabot/shared/contacts";
-import { contactStage, contactStats } from "./scheme";
+import { contactStage, contactStats, recordWord, samePersonAs } from "./scheme";
 
 /** Контакт-фікстура: усе, крім переданого, — «щойно завели». */
 function contact(over: Partial<Contact> = {}): Contact {
@@ -78,6 +82,7 @@ describe("підсумки схеми", () => {
       bot: 0,
       platform: 0,
       nested: 0,
+      duplicates: 0,
     });
   });
 
@@ -119,5 +124,113 @@ describe("підсумки схеми", () => {
     ]);
 
     expect(stats.nested).toBe(5);
+  });
+});
+
+describe("одна людина — один рядок лійки", () => {
+  it("⛔ два записи про одну людину — це одна людина в «у боті»", () => {
+    const stats = contactStats([
+      contact({
+        id: 1,
+        name: "Карась 2",
+        code: "inv-000001",
+        joinedUserId: 6281898553,
+        joinedBotAt: BOT,
+      }),
+      contact({
+        id: 2,
+        name: "Карась молодший",
+        code: "inv-000002",
+        joinedUserId: 6281898553,
+        joinedBotAt: BOT,
+      }),
+    ]);
+
+    // Записи — власнику, людина — лійці: два лінки, одна людина.
+    expect(stats.invited).toBe(2);
+    expect(stats.bot).toBe(1);
+    expect(stats.duplicates).toBe(1);
+  });
+
+  it("повне приєднання одного з близнюків робить людину приєднаною", () => {
+    const stats = contactStats([
+      contact({ id: 1, joinedUserId: 555, joinedBotAt: BOT }),
+      contact({ id: 2, joinedUserId: 555, joinedBotAt: BOT, joinedPlatformAt: PLATFORM }),
+    ]);
+
+    expect(stats.bot).toBe(1);
+    expect(stats.platform).toBe(1);
+  });
+
+  it("близнюк не подвоює глибину гілки", () => {
+    const stats = contactStats([
+      contact({ id: 1, joinedUserId: 555, joinedBotAt: BOT, invitedCount: 2 }),
+      contact({ id: 2, joinedUserId: 555, joinedBotAt: BOT, invitedCount: 2 }),
+    ]);
+
+    expect(stats.nested).toBe(2);
+  });
+
+  it("застарілий рядок близнюка не зменшує глибину: беремо більший рахунок", () => {
+    const stats = contactStats([
+      contact({ id: 1, joinedUserId: 555, joinedBotAt: BOT, invitedCount: 3 }),
+      contact({ id: 2, joinedUserId: 555, joinedBotAt: BOT, invitedCount: 0 }),
+    ]);
+
+    expect(stats.nested).toBe(3);
+  });
+
+  it("різні люди з тим самим іменем — не близнюки", () => {
+    const stats = contactStats([
+      contact({ id: 1, name: "Карась", joinedUserId: 1, joinedBotAt: BOT }),
+      contact({ id: 2, name: "Карась", joinedUserId: 2, joinedBotAt: BOT }),
+    ]);
+
+    expect(stats.bot).toBe(2);
+    expect(stats.duplicates).toBe(0);
+  });
+});
+
+describe("хто кому близнюк", () => {
+  it("підписує другий запис іменем першого, а не навпаки", () => {
+    const twins = samePersonAs([
+      contact({ id: 1, name: "Карась 2", joinedUserId: 555, joinedBotAt: BOT }),
+      contact({ id: 2, name: "Карась молодший", joinedUserId: 555, joinedBotAt: BOT }),
+    ]);
+
+    expect([...twins]).toEqual([[2, "Карась 2"]]);
+  });
+
+  it("третій і четвертий записи вказують на **перший**, а не на попередній", () => {
+    const twins = samePersonAs([
+      contact({ id: 1, name: "Перший", joinedUserId: 555, joinedBotAt: BOT }),
+      contact({ id: 2, name: "Другий", joinedUserId: 555, joinedBotAt: BOT }),
+      contact({ id: 3, name: "Третій", joinedUserId: 555, joinedBotAt: BOT }),
+    ]);
+
+    expect(twins.get(2)).toBe("Перший");
+    expect(twins.get(3)).toBe("Перший");
+  });
+
+  it("⛔ контакт без Telegram-id близнюка мати не може", () => {
+    // Близнюків робить людина, а не ім'я: два записи без id — це дві картки,
+    // які нічого не кажуть одна про одну.
+    const twins = samePersonAs([
+      contact({ id: 1, name: "Олег" }),
+      contact({ id: 2, name: "Олег" }),
+    ]);
+
+    expect(twins.size).toBe(0);
+  });
+});
+
+describe("слово для кількості записів", () => {
+  it("1 запис, 2 записи, 5 записів — і окремо 11–14", () => {
+    expect(recordWord(1)).toBe("1 запис");
+    expect(recordWord(3)).toBe("3 записи");
+    expect(recordWord(5)).toBe("5 записів");
+    expect(recordWord(11)).toBe("11 записів");
+    expect(recordWord(21)).toBe("21 запис");
+    expect(recordWord(22)).toBe("22 записи");
   });
 });

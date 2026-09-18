@@ -11,6 +11,11 @@
  * Хто це (`@username`, `id`) приходить **від бота**: власник цих даних не
  * вписує, бо не знає їх (AGENTS.md §7).
  *
+ * **Два записи про одну людину — не два різні рядки.** Людина, яка зайшла за
+ * двома лінками, дає дві картки з однаковим `id`, і саме тут це видно: у
+ * другого запису стоїть підпис «та сама людина, що …». Мовчазний близнюк
+ * читався б як помилка даних, а це правда: лінків два, людини одна.
+ *
  * **Номер — порядковий**, а не колонка в базі: він каже, скільки контактів
  * узагалі є, і зникає разом із контактом, а не переписується в кожному рядку
  * при кожному видаленні.
@@ -25,7 +30,7 @@ import { type ReactElement } from "react";
 import { Icon } from "@wwwuabot/shared";
 import type { Contact } from "@wwwuabot/shared/contacts";
 import { collectionViewClass, type CollectionView } from "../collection";
-import { CONTACT_STAGE_WORDS, contactStage } from "./scheme";
+import { CONTACT_STAGE_WORDS, contactStage, samePersonAs } from "./scheme";
 
 interface ContactListProps {
   contacts: readonly Contact[];
@@ -50,10 +55,13 @@ function identity(contact: Contact): string {
 }
 
 export function ContactList({ contacts, collection, onOpen }: ContactListProps): ReactElement {
+  const twins = samePersonAs(contacts);
+
   return (
     <ul className={`wb-contact-list ${collectionViewClass(collection)}`}>
       {contacts.map((contact, index) => {
         const who = identity(contact);
+        const twin = twins.get(contact.id);
 
         return (
           <li key={contact.id} className="wb-contact-item">
@@ -80,6 +88,11 @@ export function ContactList({ contacts, collection, onOpen }: ContactListProps):
                 <span className="wb-contact-state">
                   {CONTACT_STAGE_WORDS[contactStage(contact)]}
                 </span>
+                {/* Той самий id у двох рядках — не збіг, а одна людина: тому
+                    підпис стоїть **поруч зі станом**, а не в картці. */}
+                {twin !== undefined && (
+                  <span className="wb-contact-twin">та сама людина, що «{twin}»</span>
+                )}
               </span>
 
               {contact.tags.length > 0 && (
