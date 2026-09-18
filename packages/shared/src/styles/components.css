@@ -1057,7 +1057,16 @@ html:has(.wb-tabbar) .wb-modal {
   color: var(--text-secondary);
 }
 
-.wb-menu-block:hover .wb-menu-block-icon {
+/* Іконка розділу, який уже працює, — акцентна. Уся сітка читалась однорідною
+   сірою плямою, і око не бачило різниці між «сюди можна» і «сюди ще ні»; це
+   та сама різниця станів, що й приглушений підпис заглушки. */
+.wb-menu-block:not(.wb-menu-block--soon) .wb-menu-block-icon {
+  color: var(--accent);
+}
+
+/* Тому дотик підсвічує лише заглушку: у готового пункту іконка вже акцентна,
+   і міняти її на нейтральну означало б гасити колір під пальцем. */
+.wb-menu-block--soon:hover .wb-menu-block-icon {
   color: var(--text-primary);
 }
 
@@ -1065,18 +1074,6 @@ html:has(.wb-tabbar) .wb-modal {
   font-size: var(--text-base);
   font-weight: var(--weight-medium);
   overflow-wrap: anywhere;
-}
-
-/* Пояснення заглушки в плитці — два рядки й не більше: довший текст робив би
-   плитки різної висоти, а сама заглушка мусить лишатись чесною (§7). */
-.wb-menu-block-hint {
-  display: -webkit-box;
-  -webkit-line-clamp: 2;
-  line-clamp: 2;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
-  font-size: var(--text-xs);
-  color: var(--text-muted);
 }
 
 /* Пункт без екрана: підпис приглушений — як і в рядку. */

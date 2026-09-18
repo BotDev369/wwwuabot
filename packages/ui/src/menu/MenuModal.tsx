@@ -71,9 +71,11 @@ function MenuBlock({ item }: { item: MenuItem }): ReactElement {
         <Icon name={item.icon} size={22} />
       </span>
       <span className="wb-menu-block-label">{item.label}</span>
-      {/* Пояснення лишається і в плитці: заглушка, яка мовчить, — це дефект, а
-          не компактність. Довге пояснення підрізає CSS (два рядки). */}
-      {soon && item.hint && <span className="wb-menu-block-hint">{item.hint}</span>}
+      {/* Заглушка лишається чесною (§7), але **одним словом**: абзац під
+          назвою робив плитки різної висоти й читався як текст, а не як стан.
+          Плитка бере готовий кирпичик стану (`.wb-badge`), а повне пояснення
+          нікуди не зникло — воно в підписі кнопки й у діалозі після дотику. */}
+      {soon && <span className="wb-badge wb-badge-neutral">Скоро</span>}
       {item.selected && (
         <span className="wb-menu-item-check">
           <Icon name="check" size={16} />
@@ -88,7 +90,6 @@ export function MenuModal({
   items,
   content,
   header,
-  footer,
   layout = "rows",
   align = "start",
   onClose,
@@ -138,10 +139,6 @@ export function MenuModal({
               ))}
             </div>
           )}
-          {/* Блок під пунктами — те, що мусить бути в зоні пальця: у меню
-              профілю це облікові картки, і вони ж ділять вільний простір
-              угорі (§7, `.wb-menu-account`). */}
-          {footer}
         </div>
       </div>
     </div>

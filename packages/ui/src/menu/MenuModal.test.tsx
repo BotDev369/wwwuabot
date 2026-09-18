@@ -98,14 +98,6 @@ describe("MenuModal", () => {
     expect(markup.indexOf("wb-menu-hint")).toBeLessThan(markup.indexOf("wb-menu-list"));
   });
 
-  it("блок під списком стоїть після пунктів", () => {
-    // Це не те саме, що `header` у кінці списку: у виборі тегів пояснення
-    // читають **до** вибору, а в профілі картки шукають рукою — **після**.
-    const markup = html({ footer: <span className="wb-menu-account">Хтось</span> });
-    expect(markup.indexOf("wb-menu-account")).toBeGreaterThan(-1);
-    expect(markup.indexOf("wb-menu-account")).toBeGreaterThan(markup.indexOf("wb-menu-list"));
-  });
-
   it("плитки — той самий пункт, лише інша розкладка", () => {
     const rows = html();
     const blocks = html({ layout: "blocks" });
@@ -116,8 +108,11 @@ describe("MenuModal", () => {
     expect(blocks).toContain("wb-menu-blocks");
     expect(blocks).not.toContain("wb-menu-list");
     for (const label of ["Контакти", "Нотатки", "Тема"]) expect(blocks).toContain(label);
-    // Заглушка лишається чесною і в плитці: пояснення нікуди не зникає.
-    expect(blocks).toContain("wb-menu-block-hint");
+    // Заглушка лишається чесною і в плитці: замість абзацу — кирпичик
+    // стану (`.wb-badge`), а повне пояснення лишається в підписі кнопки.
+    expect(blocks).toContain("wb-menu-block--soon");
+    expect(blocks).toContain("wb-badge");
+    expect(blocks).not.toContain("wb-menu-block-hint");
     expect(blocks).toContain('aria-label="Контакти. буде"');
     // Вибір — стан в обох розкладках.
     expect(blocks.match(/wb-menu-item-check/g)).toHaveLength(1);

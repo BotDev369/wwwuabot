@@ -61,11 +61,14 @@ describe("меню: плитки й притискання до низу", () =>
     expect(minHeight).toBeGreaterThanOrEqual(44);
   });
 
-  it("пояснення заглушки в плитці підрізається двома рядками", () => {
-    // Довше пояснення робило б плитки різної висоти — сітка ламалася б об текст.
-    const hint = rule(".wb-menu-block-hint");
-    expect(hint?.body).toContain("-webkit-line-clamp: 2");
-    expect(hint?.body).toContain("overflow: hidden");
+  it("іконка готового розділу — акцентна, заглушка лишається приглушеною", () => {
+    // Це не оформлення, а різниця станів: у сітці однакових плиток око не
+    // бачило, які з них уже працюють. Заглушка не отримує нічого — її стан
+    // уже показано кирпичиком `.wb-badge` і приглушеним підписом.
+    const accent = rule(".wb-menu-block:not(.wb-menu-block--soon) .wb-menu-block-icon");
+    expect(accent, "правило акцентної іконки мусить існувати").toBeDefined();
+    expect(accent?.body).toContain("color: var(--accent)");
+    expect(rule(".wb-menu-block--soon .wb-menu-block-icon")).toBeUndefined();
   });
 
   it("вміст притискається до низу через `margin-top: auto`, а не флексом", () => {
