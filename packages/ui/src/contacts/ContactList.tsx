@@ -4,12 +4,16 @@
  * **Дотик по контакту відкриває картку** — тому в рядку немає ні «Копіювати»,
  * ні «Прибрати»: лінк, хештеги й примітки живуть у картці, і показувати їх
  * половину в списку означало б мати два місця для одного поля. Рядок каже
- * рівно те, за чим список читають: **номер, ім'я, хто це і чим позначено**.
+ * рівно те, за чим список читають: **номер, ім'я, хто це і на якій стадії**.
+ *
+ * **Стадія названа словом** (`CONTACT_STAGE_WORDS`): «зайшов у бота» проти
+ * «приєднався» — це те, заради чого екран існує, і кольором таке не читається.
+ * Хто це (`@username`, `id`) приходить **від бота**: власник цих даних не
+ * вписує, бо не знає їх (AGENTS.md §7).
  *
  * **Номер — порядковий**, а не колонка в базі: він каже, скільки контактів
  * узагалі є, і зникає разом із контактом, а не переписується в кожному рядку
- * при кожному видаленні. Нумерація тримається на порядку показу — тому картка
- * отримує той самий номер, що видно в списку.
+ * при кожному видаленні.
  *
  * Вигляд (рядки / картки 1 / картки 2) — ззовні (`@wwwuabot/ui/collection`):
  * розмітка в усіх трьох **одна й та сама**, різницю несе клас розкладки.
@@ -20,8 +24,8 @@
 import { type ReactElement } from "react";
 import { Icon } from "@wwwuabot/shared";
 import type { Contact } from "@wwwuabot/shared/contacts";
-import { formatStamp } from "@wwwuabot/shared/utils/datetime";
 import { collectionViewClass, type CollectionView } from "../collection";
+import { CONTACT_STAGE_WORDS, contactStage } from "./scheme";
 
 interface ContactListProps {
   contacts: readonly Contact[];
@@ -34,23 +38,15 @@ interface ContactListProps {
 /**
  * Хто це — одним рядком.
  *
- * Порожньо тут не буває: контакт без хендла й без id — це контакт, якого ще не
- * запросили, і сказати про це треба **словом**. Порожній рядок у списку
- * виглядав би як зламана розмітка.
+ * Порожньо тут буває: контакт, у якого ще немає ні хендла, ні id, — це контакт,
+ * якого тільки занесли в довідник, і тоді рядок каже це **стадією**, а не
+ * порожнім місцем.
  */
 function identity(contact: Contact): string {
   const parts: string[] = [];
   if (contact.username) parts.push(`@${contact.username}`);
-  if (contact.telegramUserId !== null) parts.push(`id ${contact.telegramUserId}`);
+  if (contact.joinedUserId !== null) parts.push(`id ${contact.joinedUserId}`);
   return parts.join(" · ");
-}
-
-/** Що показує рядок, коли людини ще немає: стан лінка, а не порожнеча. */
-function state(contact: Contact): string {
-  if (contact.telegramUserId !== null) {
-    return contact.joinedAt ? `приєднався ${formatStamp(contact.joinedAt)}` : "приєднався";
-  }
-  return contact.code ? "лінк чекає" : "без лінка";
 }
 
 export function ContactList({ contacts, collection, onOpen }: ContactListProps): ReactElement {
@@ -79,9 +75,11 @@ export function ContactList({ contacts, collection, onOpen }: ContactListProps):
 
               <span className="wb-contact-line">
                 {who && <span className="wb-contact-who">{who}</span>}
-                {/* Стан і хто це — різні факти, і колір у них різний: стан
-                    тихіший, бо він про лінк, а не про людину. */}
-                <span className="wb-contact-state">{state(contact)}</span>
+                {/* Стан — слово, а не відтінок: «у боті» й «приєднався» — різні
+                    події, і за кольором їх не видно. */}
+                <span className="wb-contact-state">
+                  {CONTACT_STAGE_WORDS[contactStage(contact)]}
+                </span>
               </span>
 
               {contact.tags.length > 0 && (

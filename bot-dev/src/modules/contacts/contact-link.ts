@@ -9,6 +9,9 @@
  *   себе власним контактом;
  * - **повторний перехід нічого не змінює** — контакт закріплено раз
  *   (`contact.repository`), тож другий дотик того самого лінка безпечний;
+ * - **це часткове приєднання** — людина увійшла в бота, і це все, що бот може
+ *   підтвердити; вхід на платформу ставить `api-dev`, коли вона відкриє Mini
+ *   App (куди веде кнопка на головній);
  * - **невідомий код — не запрошення**, і тоді payload живе далі своїм життям
  *   (це може бути адреса сторінки).
  *
@@ -47,17 +50,17 @@ export async function applyContactPayload(ctx: AppContext, payload: string): Pro
     return true;
   }
 
-  if (contact.telegram_user_id !== null) {
+  if (contact.joined_user_id !== null) {
     log("CONTACT", "link already attached", {
       contact_id: contact.id,
-      attached_user_id: contact.telegram_user_id,
+      attached_user_id: contact.joined_user_id,
     });
     return true;
   }
 
   try {
     const attached = await contacts.attach(contact.id, userId, ctx.from?.username ?? null);
-    log("CONTACT", attached ? "contact attached" : "link taken meanwhile", {
+    log("CONTACT", attached ? "contact joined the bot" : "link taken meanwhile", {
       contact_id: contact.id,
       owner_id: contact.owner_id,
       user_id: userId,

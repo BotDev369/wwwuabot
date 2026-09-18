@@ -233,9 +233,18 @@ export const TABLES = {
    * дозволений і повторюваний (SQLite не вважає два `NULL` однаковими), бо
    * контактів без лінка може бути скільки завгодно.
    *
-   * **Закріплення — один раз і назавжди.** `telegram_user_id` пише `bot-dev`
-   * лише коли колонка порожня (`WHERE telegram_user_id IS NULL`): лінк
+   * **Закріплення — один раз і назавжди.** `joined_user_id` пише `bot-dev`
+   * лише коли колонка порожня (`WHERE joined_bot_at IS NULL`): лінк
    * персональний, і другий, хто за ним прийде, контакту вже не змінить.
+   *
+   * **Два входи — дві дати, і жодну з них не пише власник.** `joined_bot_at`
+   * ставить бот, коли людина відкрила `?start=<код>`; `joined_platform_at` —
+   * `api-dev`, коли та сама людина (за своїм Telegram-id) зайшла на
+   * платформу. Це не дублювання: людина може зайти в бота й не відкрити
+   * платформу, і тоді приєднання **часткове** — стан, який ніде більше не
+   * видно. Id людини при цьому один (`joined_user_id`): його дає `ctx.from`
+   * бота, а не власник — вгадане число робило б контакт приєднаним, а лінк
+   * використаним без жодного переходу.
    *
    * **Господар — `api-dev`:** контакти створює й показує платформа. `bot-dev`
    * лише закріплює факт приєднання, коли людина приходить із діплінка, — і теж
@@ -246,7 +255,7 @@ export const TABLES = {
     name: "contacts",
     owner: "api-dev",
     purpose:
-      "Контакти людини: ім'я, `@username`, Telegram-id, хештеги, примітки й особистий лінк-запрошення (`code`) як поле. Створює й показує платформа, факт приєднання за кодом пише bot-dev.",
+      "Контакти людини: ім'я, `@username`, хештеги, примітки й особистий лінк-запрошення (`code`) як поле. Створює й показує платформа; `bot-dev` пише вхід у бота (`joined_user_id`, `joined_bot_at`), `api-dev` — вхід на платформу (`joined_platform_at`).",
     create: `CREATE TABLE IF NOT EXISTS contacts (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         owner_id INTEGER NOT NULL,
@@ -256,7 +265,9 @@ export const TABLES = {
         tags TEXT NOT NULL DEFAULT '[]',
         notes TEXT NOT NULL DEFAULT '',
         code TEXT UNIQUE,
-        joined_at TEXT,
+        joined_user_id INTEGER,
+        joined_bot_at TEXT,
+        joined_platform_at TEXT,
         created_at TEXT NOT NULL DEFAULT (datetime('now')),
         updated_at TEXT NOT NULL DEFAULT (datetime('now'))
       )`,

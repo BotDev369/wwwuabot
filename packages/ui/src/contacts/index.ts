@@ -20,5 +20,5 @@
 export { ContactList } from "./ContactList";
 export { ContactSheet } from "./ContactSheet";
 export { ContactsScheme } from "./ContactsScheme";
-export { contactStats } from "./scheme";
-export type { ContactStats } from "./scheme";
+export { CONTACT_STAGE_WORDS, contactStage, contactStats } from "./scheme";
+export type { ContactStage, ContactStats } from "./scheme";
