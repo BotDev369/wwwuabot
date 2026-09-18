@@ -1,13 +1,14 @@
 /**
- * Лінки-запрошення людини — дані для екрана «МоїКонтакти».
+ * Контакти людини — дані для екрана «МоїКонтакти».
  *
  * Джерело — `GET /api/invites`: ідентичність там беруть із підписаного
  * `initData`, тож клієнт не передає жодного `user_id` і не може попросити чужі
- * лінки.
+ * контакти.
  *
  * **Оновлюємо локально, а не повторним запитом.** Сервер уже віддає створений
- * лінк і підтверджує зникнення — другий похід по весь список показав би те
- * саме з затримкою (список «блимнув» би завантаженням після кожного дотику).
+ * і змінений рядок і підтверджує зникнення — другий похід по весь список
+ * показав би те саме з затримкою (список «блимнув» би завантаженням після
+ * кожного дотику).
  *
  * @module web-platform-dev/src/pages/useInvites
  */
@@ -20,9 +21,11 @@ export interface InvitesState {
   links: InviteLink[];
   loading: boolean;
   error: string | null;
-  /** Створити лінк під контакт: повертає той рядок, який справді ліг у базу. */
+  /** Створити контакт із підписом: повертає той рядок, який справді ліг у базу. */
   create: (label: string) => Promise<InviteLink>;
-  /** Прибрати лінк зі списку після видалення. */
+  /** Перейменувати контакт: повертає рядок так, як його тепер віддає сервер. */
+  rename: (id: number, label: string) => Promise<InviteLink>;
+  /** Прибрати контакт зі списку після видалення. */
   remove: (id: number) => void;
 }
 
@@ -69,5 +72,14 @@ export function useInvites(): InvitesState {
     setLinks((prev) => prev.filter((link) => link.id !== id));
   }, []);
 
-  return { links, loading, error, create, remove };
+  const rename = useCallback(async (id: number, label: string): Promise<InviteLink> => {
+    const updated = await invitesApi.rename(id, label);
+    if (!updated) throw new Error("Сервер не підтвердив зміну — спробуйте ще раз.");
+    // Замінюємо **на місці**: правка не робить контакт свіжішим, і стрибок
+    // картки вгору списку читався б як «створився ще один».
+    setLinks((prev) => prev.map((link) => (link.id === id ? updated : link)));
+    return updated;
+  }, []);
+
+  return { links, loading, error, create, rename, remove };
 }

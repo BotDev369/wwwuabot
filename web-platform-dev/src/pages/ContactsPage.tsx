@@ -11,6 +11,12 @@
  * буфер**, бо це єдине, за чим людина сюди приходить («скопіював — надіслав»).
  * Нижче — «Схема залучених»: те, що з цього вийшло.
  *
+ * **Контакт — це запис, а не одноразовий лінк**, тож екран працює з ним усіма
+ * чотирма діями: створити («Додати контакт»), побачити (список),
+ * **перейменувати** (олівець біля імені — підпис лишається власнику, бо ім'я
+ * людини приходить із профілю) і прибрати (кнопка в картці). Правка без змін на
+ * сервер не йде: підтверджувати нічого не змінилося — це не робота, а шум.
+ *
  * Самого посилання немає окремим блоком: воно належить **контакту**, і
  * показується в його картці — там, де його шукають, коли треба надіслати лінк
  * ще раз.
@@ -32,7 +38,7 @@ import { useInvites } from "./useInvites";
 const COPIED_MS = 2000;
 
 export function ContactsPage(): ReactElement {
-  const { links, loading, error, create, remove } = useInvites();
+  const { links, loading, error, create, rename, remove } = useInvites();
   const dialog = useDialog();
   const [copiedId, setCopiedId] = useState<number | null>(null);
 
@@ -92,6 +98,33 @@ export function ContactsPage(): ReactElement {
       }
     } catch (e: unknown) {
       await dialog.alert(e instanceof Error ? e.message : "Не вдалося додати контакт", {
+        title: "Помилка",
+      });
+    }
+  }
+
+  /**
+   * Перейменування контакту: питаємо те саме ім'я, що й при створенні, і
+   * підставляємо поточне — щоб людина правила підпис, а не набирала його
+   * заново.
+   */
+  async function renameContact(link: InviteLink): Promise<void> {
+    const answer = await dialog.prompt("За яким ім'ям ви впізнаєте цей контакт?", {
+      title: "Перейменувати контакт",
+      defaultValue: link.label,
+      placeholder: "Ім'я контакту",
+      validate: (value) =>
+        sanitizeInviteLabel(value) === "" ? "Підпис не може бути порожнім" : null,
+    });
+    if (answer === null) return;
+
+    const label = sanitizeInviteLabel(answer);
+    if (label === link.label) return;
+
+    try {
+      await rename(link.id, label);
+    } catch (e: unknown) {
+      await dialog.alert(e instanceof Error ? e.message : "Не вдалося перейменувати контакт", {
         title: "Помилка",
       });
     }
@@ -175,6 +208,7 @@ export function ContactsPage(): ReactElement {
             links={links}
             copiedId={copiedId}
             onCopy={(link) => void copyLink(link)}
+            onRename={(link) => void renameContact(link)}
             onDelete={(link) => void deleteLink(link)}
           />
 

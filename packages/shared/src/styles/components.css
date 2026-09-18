@@ -650,7 +650,8 @@ html:has(.wb-tabbar) .wb-modal {
 .wb-composer-tab,
 .wb-composer-tool,
 .wb-note-tool,
-.wb-collection-tool {
+.wb-collection-tool,
+.wb-invite-edit {
   display: flex;
   align-items: center;
   justify-content: center;
@@ -670,7 +671,8 @@ html:has(.wb-tabbar) .wb-modal {
 .wb-composer-tab:hover,
 .wb-composer-tool:hover,
 .wb-note-tool:hover,
-.wb-collection-tool:hover {
+.wb-collection-tool:hover,
+.wb-invite-edit:hover {
   background: var(--surface-hover);
   color: var(--text-primary);
 }

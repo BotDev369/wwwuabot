@@ -9,6 +9,11 @@
  * це той самий кирпичик «плитка списку», що у картки нотатки, і якщо колись
  * з'явиться друга плитка зі своїм тлом, списки стануть різними на око.
  *
+ * Одна дія перевіряється окремо — **правка імені**: олівець мусить стояти біля
+ * підпису (це дія над іменем), а не в ряду `Копіювати / Прибрати` (там він
+ * читався б як третя дія над посиланням), і брати вигляд із спільного правила
+ * клітинок-знаків, а не заводити власне.
+ *
  * Середовище тестів — `node` (без DOM), тож перевіряємо розмітку, яку рендерить
  * React, і правила CSS, а не дотики.
  */
@@ -32,10 +37,43 @@ const CSS = readFileSync(
   "utf8",
 ).replace(/\/\*[\s\S]*?\*\//g, "");
 
+/** Спільні стилі: клітинка правки бере вигляд із того самого правила, що вкладки. */
+const SHARED_CSS = readFileSync(
+  join(
+    fileURLToPath(new URL("../../../../", import.meta.url)),
+    "packages/shared/src/styles/components.css",
+  ),
+  "utf8",
+).replace(/\/\*[\s\S]*?\*\//g, "");
+
+/**
+ * Тіла правил, у селекторі яких є цей клас.
+ *
+ * Саме **в селекторі**, а не «одразу перед дужкою»: клітинка правки стоїть у
+ * списку спільних клітинок-знаків, і сусід, дописаний після неї, відсунув би `{`
+ * від імені — тест падав би від чужої правки.
+ */
+function rulesIn(css: string, selector: string): string[] {
+  const bodies: string[] = [];
+  for (const [, selectors, body] of css.matchAll(/([^{}]+)\{([^{}]*)\}/g)) {
+    const has = selectors.split(",").some((part) =>
+      part
+        .trim()
+        .split(/\s+/)
+        .some((token) => token === selector || token.startsWith(`${selector}:`)),
+    );
+    if (has) bodies.push(body);
+  }
+  return bodies;
+}
+
 /** Тіло правила за селектором — щоб перевіряти саме його, а не файл цілком. */
+function ruleIn(css: string, selector: string): string {
+  return rulesIn(css, selector)[0] ?? "";
+}
+
 function rule(selector: string): string {
-  const escaped = selector.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
-  return CSS.match(new RegExp(`${escaped}\\s*\\{([^}]*)\\}`))?.[1] ?? "";
+  return ruleIn(CSS, selector);
 }
 
 /** Лінк-фікстура: усе, крім переданого, має осмислений типовий вигляд. */
@@ -53,7 +91,13 @@ function link(id: number, over: Partial<InviteLink> = {}): InviteLink {
 
 function render(links: InviteLink[], copiedId: number | null = null): string {
   return renderToStaticMarkup(
-    <InvitesList links={links} copiedId={copiedId} onCopy={() => {}} onDelete={() => {}} />,
+    <InvitesList
+      links={links}
+      copiedId={copiedId}
+      onCopy={() => {}}
+      onRename={() => {}}
+      onDelete={() => {}}
+    />,
   );
 }
 
@@ -121,5 +165,39 @@ describe("InvitesList", () => {
 
   it("довгий лінк переноситься, а не розтягує картку за екран", () => {
     expect(rule(".wb-invite-code")).toContain("overflow-wrap: anywhere");
+  });
+
+  it("правка імені стоїть біля підпису — і називає контакт, а не просто «кнопка»", () => {
+    const html = render([link(1)]);
+
+    expect(html).toContain("wb-invite-title");
+    expect(html).toContain('aria-label="Перейменувати контакт «Карас»"');
+    // Підпис — ліворуч від контрола, а стан — за ним: правка всередині групи
+    // з ім'ям, а не десь у картці.
+    expect(html.indexOf("wb-invite-label")).toBeLessThan(html.indexOf("wb-invite-edit"));
+    expect(html.indexOf("wb-invite-edit")).toBeLessThan(html.indexOf("wb-invite-state"));
+  });
+
+  it("⛔ правка не потрапляє в ряд дій: там і далі дві дії над посиланням", () => {
+    const html = render([link(1)]);
+    const actions = html.slice(html.indexOf("wb-invite-actions"));
+
+    expect(html.indexOf("wb-invite-edit")).toBeLessThan(html.indexOf("wb-invite-actions"));
+    // Третя кнопка в тому ряду на телефоні розривається (див. панель теми).
+    expect(actions.match(/<button/g) ?? []).toHaveLength(2);
+  });
+
+  it("клітинка правки бере вигляд із спільного правила, а мірку — зі своєю кегля", () => {
+    // Спільне правило клітинок-знаків: без рамки й тла, підсвічення лише на дотик.
+    // Шукаємо за вмістом: клас стоїть у списку селекторів, тож «перше тіло»
+    // залежало б від порядку в тому списку.
+    const shared =
+      rulesIn(SHARED_CSS, ".wb-invite-edit").find((body) => body.includes("display: flex")) ?? "";
+    expect(shared).toContain("border: none");
+    expect(shared).toContain("background: none");
+    expect(shared).toContain("color: var(--text-secondary)");
+    // Своя — тільки мірка: 32px, як у клітинки смуги нотаток.
+    expect(rule(".wb-invite-edit")).toContain("width: 32px");
+    expect(rule(".wb-invite-edit")).toContain("height: 32px");
   });
 });

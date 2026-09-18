@@ -1,10 +1,14 @@
 /**
- * Особисті лінки-запрошення — «МоїКонтакти».
+ * Контакти людини — особисті лінки-запрошення («МоїКонтакти»).
  *
  * Лінк створює тут платформа, а **закріплює контакт бот**: людина приходить із
  * `?start=<код>`, і `bot-dev` пише `invited_user_id`. Тому контролер читає чужий
  * запис лише тим, що той уже закріпив, і завжди **у своєму рядку**: власник
  * стоїть у самому `WHERE`, а не окремою перевіркою після читання (AGENTS.md §7).
+ *
+ * Запис один, і працюють із ним як із контактом: створити, прочитати,
+ * **перейменувати** (підпис — власника, бо ім'я людини приходить із профілю) і
+ * прибрати. Лінк при цьому не окремий ресурс, а поле контакту.
  *
  * Ідентичність — тільки з підписаного `initData` (`resolveUserId`): у запиті
  * немає жодного `user_id`, тож попросити чужі лінки нічим. Сховище — таблиця
@@ -214,6 +218,48 @@ async function createInvite(
   return json({ ok: false, error: failure }, 500);
 }
 
+/**
+ * Перейменування контакту — правка **свого підпису**, а не чужого імені.
+ *
+ * Ім'я, яке показано в картці після приєднання, приходить із профілю людини
+ * (`contactDisplayName`) і тут не змінюється: підпис — це як власник називає
+ * контакт для себе, і саме тому його можна правити в будь-який момент — і в
+ * того, хто ще чекає, і в того, хто вже приєднався.
+ *
+ * Власник стоїть **у самому `WHERE`**, тим самим правилом, що й у видаленні:
+ * окремої перевірки «а це моє?» немає, бо її легко забути на новому шляху, а
+ * чужий номер відповідає тією ж 404, що й неіснуючий (AGENTS.md §7).
+ */
+async function renameInvite(
+  request: Request,
+  db: D1Database,
+  ownerId: number,
+  botUsername: string | null,
+): Promise<Response> {
+  const id = Number(new URL(request.url).searchParams.get("id"));
+  if (!Number.isInteger(id) || id <= 0) return json({ ok: false, error: "Missing id" }, 400);
+
+  let body: { label?: unknown };
+  try {
+    body = (await request.json()) as typeof body;
+  } catch {
+    return json({ ok: false, error: "Invalid JSON" }, 400);
+  }
+
+  const label = sanitizeInviteLabel(body.label);
+  if (label === "") return json({ ok: false, error: "Порожній підпис" }, 400);
+
+  const result = await db
+    .prepare("UPDATE invites SET label = ?, updated_at = ? WHERE id = ? AND owner_id = ?")
+    .bind(label, formatSqliteDatetime(), id, ownerId)
+    .run();
+  if ((result.meta?.changes ?? 0) === 0) return json({ ok: false, error: "Not found" }, 404);
+
+  // Вертаємо свіжий рядок, а не підтвердження: клієнт малює картку з нього, і
+  // збирати її зі стану на екрані означало б мати другу копію цього правила.
+  return json({ ok: true, link: await readInvite(db, id, ownerId, botUsername) });
+}
+
 /** Видалення свого лінка за номером; чужий номер — та сама 404, що й неіснуючий. */
 async function deleteInvite(request: Request, db: D1Database, ownerId: number): Promise<Response> {
   const id = Number(new URL(request.url).searchParams.get("id"));
@@ -228,7 +274,8 @@ async function deleteInvite(request: Request, db: D1Database, ownerId: number): 
 }
 
 /**
- * `GET` / `POST` / `DELETE /api/invites` — особисті лінки людини.
+ * `GET` / `POST` / `PATCH` / `DELETE /api/invites` — контакти людини: список,
+ * створення (разом із лінком), перейменування й видалення.
  *
  * Ім'я бота беремо один раз на запит: воно однакове для всіх лінків, а
  * `readBotUsername` кешує його сам.
@@ -246,6 +293,9 @@ export async function handleInvites(request: Request, env: Env): Promise<Respons
     }
     if (request.method === "POST") {
       return await createInvite(request, env.DB, identity.userId, await readBotUsername(env));
+    }
+    if (request.method === "PATCH") {
+      return await renameInvite(request, env.DB, identity.userId, await readBotUsername(env));
     }
     if (request.method === "DELETE") {
       return await deleteInvite(request, env.DB, identity.userId);

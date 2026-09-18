@@ -3,17 +3,23 @@
  *
  * Контакт не заводять руками: він з'являється з посилання, і посилання ж
  * лишається **в самій картці** — щоб надіслати його ще раз, не шукаючи цього
- * рядка деінде. Тому картка показує рівно чотири речі: **підпис** (кому вона
- * призначена), **стан** (очікує чи вже приєднався), **саме посилання** й дві
- * дії.
+ * рядка деінде. Тому картка показує рівно чотири речі: **підпис зі своєю
+ * правкою** (кому вона призначена), **стан** (очікує чи вже приєднався),
+ * **саме посилання** й дві дії над ним.
+ *
+ * **Правка стоїть біля імені, а не в ряду дій.** Олівець стосується підпису — і
+ * стоїть там, де підпис; у ряду `Копіювати / Прибрати` він читався б як третя
+ * дія над посиланням, а третя кнопка в тому ряду на телефоні ще й розривається
+ * ([DESIGN_SYSTEM.md](../../../../docs/DESIGN_SYSTEM.md) — та сама межа, що в
+ * трьох кнопок панелі теми).
  *
  * **Стан — словом, а не самим кольором:** «Очікує»/«Приєднався» видно без
  * розрізнення відтінків, а колір лише підсилює те, що вже сказано. Це та сама
  * межа, що в тегах нотаток: приглушеність робить колір, а не розмір.
  *
- * Дії картка **не робить сама** — вона віддає лінк нагору (`onCopy`,
- * `onDelete`): підтвердження видалення й доступ до буфера обміну знає оболонка,
- * а не картка. Так само зроблено в нотатках.
+ * Дії картка **не робить сама** — вона віддає контакт нагору (`onCopy`,
+ * `onRename`, `onDelete`): підтвердження видалення, питання імені й доступ до
+ * буфера обміну знає оболонка, а не картка. Так само зроблено в нотатках.
  *
  * Розмітка — кирпичики `.wb-invite*`: їх рендерить спільний код, тож стилі
  * живуть у `packages/shared/src/styles/` (правило 10).
@@ -38,7 +44,9 @@ interface InvitesListProps {
   copiedId?: number | null;
   /** Скопіювати лінк — оболонка сама вирішує, як і що сказати при невдачі. */
   onCopy: (link: InviteLink) => void;
-  /** Прибрати лінк — оболонка питає підтвердження сама. */
+  /** Перейменувати контакт — ім'я питає оболонка (картка не має діалогу). */
+  onRename: (link: InviteLink) => void;
+  /** Прибрати контакт — оболонка питає підтвердження сама. */
   onDelete: (link: InviteLink) => void;
 }
 
@@ -51,20 +59,36 @@ function InviteCard({
   link,
   copied,
   onCopy,
+  onRename,
   onDelete,
 }: {
   link: InviteLink;
   copied: boolean;
   onCopy: (link: InviteLink) => void;
+  onRename: (link: InviteLink) => void;
   onDelete: (link: InviteLink) => void;
 }): ReactElement {
   const contact = link.contact;
+  const name = label(link);
 
   return (
     <li className="wb-invite-item">
       <div className="wb-invite-card">
         <div className="wb-invite-head">
-          <span className="wb-invite-label">{label(link)}</span>
+          <span className="wb-invite-title">
+            <span className="wb-invite-label">{name}</span>
+            {/* Клітинка без підпису, тож ім'я контакту читає `aria-label`:
+                «Перейменувати контакт «Карас»» — інакше скрінрідер сказав би
+                просто «кнопка». */}
+            <button
+              type="button"
+              className="wb-invite-edit"
+              onClick={() => onRename(link)}
+              aria-label={`Перейменувати контакт «${name}»`}
+            >
+              <Icon name="edit" size={16} />
+            </button>
+          </span>
           <span className={`wb-invite-state wb-invite-state--${contact ? "joined" : "waiting"}`}>
             {contact ? "Приєднався" : "Очікує"}
           </span>
@@ -110,7 +134,13 @@ function InviteCard({
   );
 }
 
-export function InvitesList({ links, copiedId, onCopy, onDelete }: InvitesListProps): ReactElement {
+export function InvitesList({
+  links,
+  copiedId,
+  onCopy,
+  onRename,
+  onDelete,
+}: InvitesListProps): ReactElement {
   return (
     <ul className="wb-invite-list">
       {links.map((link) => (
@@ -119,6 +149,7 @@ export function InvitesList({ links, copiedId, onCopy, onDelete }: InvitesListPr
           link={link}
           copied={copiedId === link.id}
           onCopy={onCopy}
+          onRename={onRename}
           onDelete={onDelete}
         />
       ))}

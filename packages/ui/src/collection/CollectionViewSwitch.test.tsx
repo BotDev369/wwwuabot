@@ -32,10 +32,25 @@ const CSS = readFileSync(
   "utf8",
 ).replace(/\/\*[\s\S]*?\*\//g, "");
 
-/** Усі тіла правил за селектором: той самий клас стоїть і в списку клітинок. */
+/**
+ * Тіла правил, у селекторі яких є цей клас.
+ *
+ * Саме **в селекторі**, а не «одразу перед дужкою»: цей клас стоїть у списку
+ * клітинок, і будь-який сусід, дописаний після нього, відсунув би `{` від імені
+ * — тест падав би від чужої правки, а не від своєї.
+ */
 function rules(selector: string): string[] {
-  const escaped = selector.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
-  return [...CSS.matchAll(new RegExp(`${escaped}\\s*\\{([^}]*)\\}`, "g"))].map((match) => match[1]);
+  const bodies: string[] = [];
+  for (const [, selectors, body] of CSS.matchAll(/([^{}]+)\{([^{}]*)\}/g)) {
+    const has = selectors.split(",").some((part) =>
+      part
+        .trim()
+        .split(/\s+/)
+        .some((token) => token === selector || token.startsWith(`${selector}:`)),
+    );
+    if (has) bodies.push(body);
+  }
+  return bodies;
 }
 
 /** Тіло правила за селектором — щоб перевіряти саме його, а не файл цілком. */
@@ -76,7 +91,11 @@ describe("CollectionViewSwitch", () => {
 
   it("клітинка — та сама, що у вкладок композера: одне правило на всіх", () => {
     // Інакше «зробити як вкладки» довелося б повторювати, і воно б розійшлося.
-    const base = rule(".wb-collection-tool");
+    //
+    // Спільне правило знаходимо **за вмістом**: клас стоїть у списку селекторів
+    // разом із вкладками композера й клітинками нотаток, тож «перше тіло»
+    // залежало б від порядку в тому списку.
+    const base = rules(".wb-collection-tool").find((body) => body.includes("display: flex")) ?? "";
 
     expect(base).toContain("display: flex");
     expect(base).toContain("border: none");

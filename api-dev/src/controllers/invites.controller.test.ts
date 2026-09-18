@@ -1,11 +1,15 @@
 /**
- * Межа лінків-запрошень: **чиї лінки й кого вони закріплюють**.
+ * Межа контактів: **чиї вони й кого закріплюють**.
  *
  * Лінк — це адреса входу в бот, тож тут перевіряється те, що не видно очима:
  * власник береться з підписаного `initData` (жоден заголовок його не підміняє),
- * чужий номер лінка відповідає так само, як неіснуючий, а **код**, який
+ * чужий номер контакту відповідає так само, як неіснуючий, а **код**, який
  * повертає сервер, проходить перевірку payload бота — інакше лінк вів би в
  * нікуди, і Telegram обрізав би параметр мовчки.
+ *
+ * Правка підпису перевіряється тим самим правилом, що видалення: власник
+ * стоїть у самому `WHERE`, тож окремої перевірки «а це моє?» немає за що
+ * забути (AGENTS.md §7).
  *
  * @module api-dev/src/controllers/invites.controller.test
  */
@@ -333,5 +337,92 @@ describe("видалення лінка", () => {
 
     expect(res.status).toBe(400);
     expect(db.statements.some((s) => /^DELETE/i.test(s.sql.trimStart()))).toBe(false);
+  });
+});
+
+// ── Перейменування (правка контакту) ─────────────────────────────────
+
+describe("перейменування контакту", () => {
+  const row = {
+    id: 5,
+    code: "inv-8f3k2q",
+    label: "Карас Новий",
+    invited_user_id: null,
+    invited_at: null,
+    created_at: "2026-09-17 09:00:00",
+    platform_username: null,
+    first_name: null,
+    last_name: null,
+    username: null,
+  };
+
+  it("пише новий підпис у свій рядок і вертає його таким, як він тепер у базі", async () => {
+    const db = makeDb({ row });
+    const res = await handleInvites(
+      request("/api/invites?id=5", {
+        method: "PATCH",
+        body: { label: "  Карас   Новий " },
+        initData: await signedInitData(),
+      }),
+      db.env,
+    );
+
+    expect(res.status).toBe(200);
+    const update = dataStatement(db, "UPDATE");
+    // Власник — у самому `WHERE`: правка й видалення — те саме правило.
+    expect(update.sql).toMatch(
+      /UPDATE invites SET label = \?, updated_at = \? WHERE id = \? AND owner_id = \?/,
+    );
+    expect(update.binds[0]).toBe("Карас Новий");
+    expect(update.binds[2]).toBe(5);
+    expect(update.binds[3]).toBe(USER_ID);
+
+    const body = (await res.json()) as { link: { label: string } };
+    expect(body.link.label).toBe("Карас Новий");
+  });
+
+  it("⛔ чужий або неіснуючий номер — та сама 404, що й у видаленні", async () => {
+    const db = makeDb({ changes: 0 });
+    const res = await handleInvites(
+      request("/api/invites?id=42", {
+        method: "PATCH",
+        body: { label: "Карас" },
+        initData: await signedInitData(),
+      }),
+      db.env,
+    );
+
+    expect(res.status).toBe(404);
+    expect(dataStatement(db, "UPDATE").binds).toContain(USER_ID);
+  });
+
+  it("⛔ порожній підпис правки не робить", async () => {
+    const db = makeDb();
+    const res = await handleInvites(
+      request("/api/invites?id=5", {
+        method: "PATCH",
+        body: { label: "   " },
+        initData: await signedInitData(),
+      }),
+      db.env,
+    );
+
+    expect(res.status).toBe(400);
+    expect(db.statements.some((s) => /^UPDATE/i.test(s.sql.trimStart()))).toBe(false);
+  });
+
+  it("без `id` — 400, а не «перейменовано все»", async () => {
+    const db = makeDb();
+    const res = await handleInvites(
+      request("/api/invites", {
+        method: "PATCH",
+        body: { label: "Карас" },
+        initData: await signedInitData(),
+      }),
+      db.env,
+    );
+
+    expect(res.status).toBe(400);
+    expect(db.statements.some((s) => /^UPDATE/i.test(s.sql.trimStart()))).toBe(false);
   });
 });

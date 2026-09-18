@@ -1,7 +1,9 @@
 /**
- * Клієнт лінків-запрошень — та сама пара «форма запиту ↔ транспорт», що в
- * `notes`: оболонка дає лише шлях і заголовки ідентичності, форма запиту живе
- * тут.
+ * Клієнт контактів — та сама пара «форма запиту ↔ транспорт», що в `notes`:
+ * оболонка дає лише шлях і заголовки ідентичності, форма запиту живе тут.
+ *
+ * Створення й перейменування повертають **той рядок, який ліг у базу**: картка
+ * малюється з відповіді, а не з припущення про те, що там тепер лежить.
  *
  * Власника клієнт не передає **ніколи**: на сервері його бере
  * `resolveUserId` із підписаного `initData`, тож попросити чужі лінки нічим.
@@ -26,9 +28,11 @@ export interface InvitesTransport {
 export interface InvitesApi {
   /** Особисті лінки людини (найсвіжіші згори). */
   list: () => Promise<InviteLink[]>;
-  /** Створити лінк під контакт із цим підписом. */
+  /** Створити контакт із цим підписом — разом із його лінком. */
   create: (label: string) => Promise<InviteLink | null>;
-  /** Прибрати свій лінк за номером; чужий номер віддає помилку. */
+  /** Перейменувати свій контакт: новий підпис замість старого. */
+  rename: (id: number, label: string) => Promise<InviteLink | null>;
+  /** Прибрати свій контакт за номером; чужий номер віддає помилку. */
   remove: (id: number) => Promise<void>;
 }
 
@@ -40,6 +44,13 @@ export function createInvitesApi(fetchJson: InvitesTransport, basePath: string):
       (
         await fetchJson<InviteSaveResponse>(basePath, {
           method: "POST",
+          body: JSON.stringify({ label }),
+        })
+      ).link ?? null,
+    rename: async (id, label) =>
+      (
+        await fetchJson<InviteSaveResponse>(`${basePath}?id=${id}`, {
+          method: "PATCH",
           body: JSON.stringify({ label }),
         })
       ).link ?? null,
