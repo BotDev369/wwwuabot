@@ -2,20 +2,22 @@
 /**
  * Гейт документації — те саме, що `check:css` для класів, але для документів.
  *
- * Навіщо: документи цього репозиторію розрослись в одне полотно
- * (`CONSOLIDATION_LOG.md` — 1 235 рядків / 103 KB), і правити його було неможливо:
- * довгий якір у великому файлі не зіставляється байт-у-байт, причому мовчки.
- * Далі це не повернеться, бо три речі перевіряються машинно:
+ * Документи цього репозиторію — інструкція, за якою працює агент, і вони мусять
+ * описувати **поточний стан**: файл, якого вже немає, читається як вказівка до
+ * нього. Тому перевіряються чотири речі:
  *
  *   1. Розмір: `.md` > 400 рядків — помилка, > 200 — попередження
  *      (правило кристалевості, `AGENTS.md` §3, тепер і для документів).
  *   2. Мертві відносні посилання: `[текст](./шлях.md)` мусить існувати.
- *      Досить було поділити документ на частини, щоб лінки почали бити в нікуди.
- *   3. Живі посилання § з коду: коментарі посилаються на «LOG §5.4». Ці номери
- *      живуть в архіві `docs/HISTORY.md`, тож перевіряється, що кожен § справді
- *      там є — як згадка «§5.4» або як заголовок «### 5.4. …».
+ *   3. Мертвий шлях у тексті: згадка файлу (`packages/…`, `docs/…`, `*.ts`), у
+ *      зворотних лапках, мусить існувати в чекауті. Шлях із воркспейса
+ *      (`src/api/router.ts`) теж приймається — як хвіст наявного файлу.
+ *   4. `AGENTS.md §N` з документа чи коду мусить вести в наявний § `AGENTS.md`:
+ *      розділи переписують, а номери в коментарях лишаються — і ведуть у нікуди.
  *
  * Запуск: `npm run check:docs` (той самий крок у CI).
+ *
+ * @module scripts/check-docs
  */
 
 import { statSync } from "node:fs";
@@ -25,31 +27,29 @@ import { ROOT, read, readLines, walk, WORKSPACES } from "./lib/files.mjs";
 const MAX_LINES = 200;
 const CRITICAL_LINES = 400;
 
-/**
- * Джерело правди про § — архів рішень.
- *
- * Один файл, а не тека: до 13.09.2026 історія жила у 30 файлах (полотно + журнали на
- * кожну роботу), і знайти «чому саме так» було неможливо. Повний текст видалених
- * записів лишається в git — див. шапку `docs/HISTORY.md`.
- */
-const INDEX = "docs/HISTORY.md";
-
 /** Кореневі документи, які теж мусять бути читабельними. */
 const ROOT_DOCS = ["AGENTS.md", "README.md", "CONTRIBUTING.md"];
 
 /**
- * `AGENTS.md` — єдиний файл інструкцій для агентів: його не можна поділити, бо
- * його читають повністю одним файлом. Тому поріг 400 для нього діє (помилка),
- * а попередження на 200 — ні. Це єдиний виняток, і він навмисний.
+ * Два файли, які навмисно не діляться, тож попередження на 200 рядків їх не
+ * стосується (поріг 400 — стосується):
+ *
+ *   - `AGENTS.md` — інструкція для агентів: її читають повністю одним файлом;
+ *   - `docs/DESIGN_SYSTEM.md` — **один нумерований список правил**, і на номери
+ *     посилається код у коментарях. Номер, розділений між файлами, веде в нікуди,
+ *     а правило без номера в коді не знайти.
  */
-const SIZE_EXEMPT_WARN = new Set(["AGENTS.md"]);
+const SIZE_EXEMPT_WARN = new Set(["AGENTS.md", "docs/DESIGN_SYSTEM.md"]);
+
+/** Документ, на § якого посилається код і решта документів. */
+const SECTIONS_DOC = "AGENTS.md";
 
 const errors = [];
 const warnings = [];
 
-// ── 1. Розмір документів ──────────────────────────────────────────────────
+const docs = [...walk("docs", (p) => p.endsWith(".md")), ...ROOT_DOCS.filter(statSafe)];
 
-const docs = [...walk("docs", (p) => p.endsWith(".md")), ...ROOT_DOCS.filter((f) => statSafe(f))];
+// ── 1. Розмір документів ──────────────────────────────────────────────────
 
 const sizes = docs
   .map((file) => ({ file, lines: readLines(file).length }))
@@ -70,56 +70,98 @@ for (const { file, lines } of sizes) {
 const LINK_RE = /\[[^\]]*\]\(([^)\s]+)\)/g;
 
 for (const file of docs) {
-  const text = read(file);
-  text.split("\n").forEach((line, i) => {
-    for (const m of line.matchAll(LINK_RE)) {
-      const href = m[1];
-      if (/^(https?:|mailto:|#)/.test(href)) continue;
-      const target = href.split("#")[0];
-      if (!target) continue;
-      const abs = normalize(join(ROOT, dirname(file), target));
-      if (!existsAt(abs)) {
-        errors.push(`${file}:${i + 1} — посилання «${href}» не існує (мертве).`);
+  read(file)
+    .split("\n")
+    .forEach((line, i) => {
+      for (const m of line.matchAll(LINK_RE)) {
+        const href = m[1];
+        if (/^(https?:|mailto:|#)/.test(href)) continue;
+        const target = href.split("#")[0];
+        if (!target) continue;
+        const abs = normalize(join(ROOT, dirname(file), target));
+        if (!statSafeAbs(abs)) {
+          errors.push(`${file}:${i + 1} — посилання «${href}» не існує (мертве).`);
+        }
       }
-    }
-  });
+    });
 }
 
-// ── 3. Посилання «§N» з коду мусять десь жити ──────────────────────────────
+// ── 3. Мертві шляхи в тексті документів ───────────────────────────────────
+// Шлях у зворотних лапках — це обіцянка, що файл є. Шукаємо його як **хвіст**
+// наявного шляху: документ може писати `src/api/router.ts` про воркспейс, і
+// кореневий шлях йому не потрібен.
 
-/** Усі адреси §, які мають дім: з покажчика та з заголовків частин. */
+const CODE_WORDS = /^(?:packages|docs|scripts|bot-dev|api-dev|web-platform-dev|web-admin-dev)\//;
+const CODE_EXT = /\.(?:ts|tsx|mjs|js|css|md|sql|toml|json|html|yml|yaml)$/;
+const PATH_TOKEN = /^[\w.-]+(?:\/[\w.-]+)*\/?$/;
+
+const repoFiles = [...walk(".", () => true), ...walk(".github", () => true)];
+
+/**
+ * Чи існує шлях. Приймається і **хвіст** наявного шляху: документ пише
+ * `src/api/router.ts` про `bot-dev/src/api/router.ts` — шлях від кореня йому не
+ * потрібен, а обіцянка «цей файл є» — та сама. Тека теж існує, якщо в ній є файли.
+ */
+function repoPathExists(token) {
+  const path = token.replace(/\/+$/, "");
+  // `shared/…` — скорочення для `packages/shared/src/…`, яким користуються документи.
+  const tails = path.startsWith("shared/")
+    ? [path, `packages/shared/src/${path.slice("shared/".length)}`]
+    : [path];
+  return tails.some((tail) =>
+    repoFiles.some(
+      (file) =>
+        file === tail ||
+        file.endsWith(`/${tail}`) ||
+        file.startsWith(`${tail}/`) ||
+        file.includes(`/${tail}/`),
+    ),
+  );
+}
+
+for (const file of docs) {
+  read(file)
+    .split("\n")
+    .forEach((line, i) => {
+      for (const m of line.matchAll(/`([^`\n]+)`/g)) {
+        const token = m[1];
+        if (!token.includes("/")) continue;
+        if (!PATH_TOKEN.test(token)) continue;
+        if (token.startsWith("@") || token.startsWith(".")) continue;
+        if (!CODE_WORDS.test(token) && !CODE_EXT.test(token)) continue;
+        if (!repoPathExists(token)) {
+          errors.push(`${file}:${i + 1} — шлях «${token}» не існує.`);
+        }
+      }
+    });
+}
+
+// ── 4. § документа з нумерами — мусить існувати ──────────────────────────
+
 const addressed = new Set();
-
-for (const m of read(INDEX).matchAll(
-  /§\s*([\d]+(?:\.[\d]+)*)(?:\s*[–-]\s*§?\s*([\d]+(?:\.[\d]+)*))?/g,
-)) {
-  const from = m[1];
-  addressed.add(from);
-  if (m[2]) addressed.add(m[2]);
-  if (m[2]) for (const mid of expand(from, m[2])) addressed.add(mid);
-}
-
-/** Заголовки архіву: `### 5.4. Діалоги…` — теж адреса §. */
-for (const line of readLines(INDEX)) {
-  const m = /^#{1,3}\s+§?\s*([\d]+(?:\.[\d]+)*)\./.exec(line);
+for (const line of readLines(SECTIONS_DOC)) {
+  const m = /^#{1,3}\s+(\d+(?:\.\d+)*)\./.exec(line);
   if (m) addressed.add(m[1]);
 }
 
-/** § в коді: `docs/HISTORY.md §5.4`, `LOG §3.3`. */
+/** § у тексті: `AGENTS.md §5`, `AGENTS.md §5.2`. */
+const SECTION_REF_RE = /AGENTS\.md`?\s*§\s*(\d+(?:\.\d+)*)/g;
+
 const codeFiles = [
-  ...WORKSPACES.flatMap((w) => walk(join(w, "src"), (p) => /\.tsx?$/.test(p))),
+  ...WORKSPACES.flatMap((w) => walk(join(w, "src"), (p) => /\.[cm]?[jt]sx?$/.test(p))),
   ...walk("scripts", (p) => p.endsWith(".mjs")),
+  ...walk("docs", () => true),
+  ...ROOT_DOCS.filter(statSafe),
 ];
 
 for (const file of codeFiles) {
-  const lines = readLines(file);
-  lines.forEach((line, i) => {
-    const m = /HISTORY\.md`?\s*§\s*([\d]+(?:\.[\d]+)*)/.exec(line);
-    if (!m) return;
-    if (!covered(m[1], addressed)) {
-      errors.push(
-        `${file}:${i + 1} — посилання на §${m[1]} веде в нікуди: у ${INDEX} немає ні цього §, ні його розділу.`,
-      );
+  readLines(file).forEach((line, i) => {
+    for (const m of line.matchAll(SECTION_REF_RE)) {
+      if (!covered(m[1], addressed)) {
+        errors.push(
+          `${file}:${i + 1} — посилання на §${m[1]} веде в нікуди: у ${SECTIONS_DOC} немає ні цього §, ні його розділу.`,
+        );
+      }
     }
   });
 }
@@ -131,7 +173,7 @@ if (errors.length) {
   for (const e of errors) console.error(`  ${e}`);
   console.error(
     "\nВиправлення: завеликий документ — поділи на теми й додай рядок у покажчик `docs/README.md`;\n" +
-      "§ з коду мусить бути в архіві `docs/HISTORY.md`.\n",
+      `мертвий шлях чи § — прибери згадку або онови її на чинну (${SECTIONS_DOC} — джерело правди про §).\n`,
   );
   process.exitCode = 1;
 } else {
@@ -142,38 +184,23 @@ if (errors.length) {
   }
   console.log(
     `✓ Документація: файлів ${sizes.length}, найбільший ${sizes[0].lines} рядків; ` +
-      `мертвих посилань 0, § без дому 0 (адрес у покажчику: ${addressed.size}).`,
+      `мертвих посилань 0, мертвих шляхів 0, § без дому 0 (розділів у ${SECTIONS_DOC}: ${addressed.size}).`,
   );
 }
 
 // ── дрібні хелпери ────────────────────────────────────────────────────────
 
 function statSafe(rel) {
-  try {
-    return statSync(join(ROOT, rel)).isFile();
-  } catch {
-    return false;
-  }
+  return statSafeAbs(join(ROOT, rel));
 }
 
-function existsAt(abs) {
+function statSafeAbs(abs) {
   try {
     statSync(abs);
     return true;
   } catch {
     return false;
   }
-}
-
-/** Проміжні § діапазону `§0–§2` або `§4.1–§4.3` (по останньому числу). */
-function expand(from, to) {
-  const out = [];
-  const head = from.includes(".") ? from.slice(0, from.lastIndexOf(".") + 1) : "";
-  const a = Number(from.slice(head.length));
-  const b = Number(to.slice(head.length));
-  if (!Number.isFinite(a) || !Number.isFinite(b) || b <= a) return out;
-  for (let i = a + 1; i < b; i++) out.push(head + i);
-  return out;
 }
 
 /** § вважається адресованим, якщо є він сам або його розділ (батько/нащадок). */

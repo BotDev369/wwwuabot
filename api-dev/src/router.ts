@@ -76,9 +76,8 @@ export async function handleRequest(request: Request, env: Env): Promise<Respons
   // що web-admin/worker.ts перевіряє перед проксюванням). Потрібно, бо
   // api/ має власний публічний URL і доступний напряму, в обхід web-admin.
   //
-  // Це ЄДИНИЙ спосіб авторизувати адмін-дію. Секрети в заголовках
-  // (X-Admin-Secret, X-Bot-Token) видалені — див.
-  // docs/HISTORY.md §5.4.
+  // Це ЄДИНИЙ спосіб авторизувати адмін-дію: секрети в заголовках
+  // (X-Admin-Secret, X-Bot-Token) не існують — див. AGENTS.md §5 і §7.
   if (ADMIN_PATH_PREFIXES.some((prefix) => pathname.startsWith(prefix))) {
     const authed = await isAuthenticated(request, env);
     if (!authed) {

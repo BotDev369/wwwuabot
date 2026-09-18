@@ -5,7 +5,7 @@
  * Його використовують і Page Builder-блок (`MyDatesTableBlock`), і сторінка
  * `web-platform-dev/src/pages/mydate/MyDatesPage`. Другої реалізації бути не
  * повинно: саме через неї один баг доводилось правити у двох місцях
- * (docs/HISTORY.md §3.3).
+ * (AGENTS.md §3, «двічі — в спільне»).
  *
  * Цей файл — лише композиція: стан живе у `useDateFilters`, `useDateSelection`
  * і `useDateModal`, перетворення — у `filter-sort`, запити — в `api`.

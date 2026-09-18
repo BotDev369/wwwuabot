@@ -58,14 +58,14 @@ describe("resolveUserId", () => {
     if (result.ok) expect(result.userId).toBe(42);
   });
 
-  it("⛔ НЕ приймає голий X-Telegram-User-Id (регресія: дірка з §5.3в)", async () => {
+  it("⛔ НЕ приймає голий X-Telegram-User-Id (AGENTS.md §5)", async () => {
     const req = request({ "X-Telegram-User-Id": "42" });
     const result = await resolveUserId(req, env);
     expect(result.ok).toBe(false);
     if (!result.ok) expect(result.response.status).toBe(401);
   });
 
-  it("⛔ НЕ приймає cookie user_id (регресія: дірка з §5.3а)", async () => {
+  it("⛔ НЕ приймає cookie user_id (AGENTS.md §5)", async () => {
     const req = request({ Cookie: "user_id=42" });
     const result = await resolveUserId(req, env);
     expect(result.ok).toBe(false);

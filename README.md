@@ -62,7 +62,12 @@ npm run dev --workspace=web-admin-dev    # Адмін-панель
 - [AGENTS.md](AGENTS.md) — архітектура, доменні терміни, правила для AI-агентів
 - [CONTRIBUTING.md](CONTRIBUTING.md) — правила розробки, quality gates, конвенції
 - **[docs/README.md](docs/README.md)** — **покажчик усієї документації**: один документ = одна тема = один власник факту, + таблиця «куди писати нове»
-- [docs/CONSOLIDATION_PLAN.md](docs/CONSOLIDATION_PLAN.md) — поточний стан і виміряні числа (§0), план робіт (§3)
+- [docs/DESIGN_SYSTEM.md](docs/DESIGN_SYSTEM.md) — токени й правила вигляду
+- [docs/DATA_MODEL.md](docs/DATA_MODEL.md) · [docs/CONTENT_MODEL.md](docs/CONTENT_MODEL.md) — схема D1 і модель контенту
+- [docs/QUALITY_GATE.md](docs/QUALITY_GATE.md) · [docs/MONITORING.md](docs/MONITORING.md) — планка в CI і моніторинг
+
+Виміряних чисел (файли, рядки, тести, класи) в документах немає — їх друкують самі гейти
+(`npm run check:css` / `check:docs` / `check:quality` / `npm test`) і вони старіють швидше, ніж їх перечитують.
 
 ---
 

@@ -12,8 +12,8 @@ export const BASELINE = {
    * `packages/ui/src/blocks/*`, а правил для них немає: блоки стилізовані
    * інлайном (`style={{…}}`), тому `data-brand` і `data-theme` до них не
    * доходять, а `apple.css`/`android.css` на блоки не впливають узагалі.
-   * Відкрита робота: `docs/CONSOLIDATION_PLAN.md` §3 пункт 3 — переносити
-   * порціями по 5–8 блоків.
+   * Відкрита робота (`docs/DESIGN_SYSTEM.md`, правило 14) — переносити
+   * порціями по 5–8 блоків; рядок живе тут, поки шаблонів не лишиться.
    */
   sharedUnstyledPatterns: [/^wb-block-/],
 };

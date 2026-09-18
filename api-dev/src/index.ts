@@ -8,7 +8,7 @@ import type { Env } from "./shared/types";
 /**
  * API Worker — unified REST gateway for wwwuabot.
  *
- * All external endpoints live here (see AGENTS.md §3.2).
+ * All external endpoints live here (see AGENTS.md §3, «єдиний API-шлюз»).
  * Individual controllers handle business logic; this file is
  * the single entry point that Cloudflare Workers calls.
  *

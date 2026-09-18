@@ -2,7 +2,7 @@
  * Типи хука «Моїх дат».
  *
  * Виділено з `useMyDates.ts`, щоб сам хук лишався читабельним
- * (docs/HISTORY.md §3.3).
+ * (AGENTS.md §3, кристалева ясність).
  *
  * @module packages/ui/src/blocks/my-dates-table/useMyDates.types
  */

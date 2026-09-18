@@ -378,7 +378,7 @@ if (!errors.length) {
   if (tolerated.length) {
     console.log(
       `\n  У відомому боргу (scripts/css-baseline.mjs): ${tolerated.length} класів — ` +
-        `див. план §3 пункт 3.`,
+        `відкрита робота, див. \`docs/DESIGN_SYSTEM.md\` правило 14.`,
     );
   }
 }

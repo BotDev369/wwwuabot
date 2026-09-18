@@ -3,7 +3,7 @@
  *
  * Логіка однакова і для сторінки `MyDatesPage`, і для Page Builder-блока, тому
  * саме тут ламається все, якщо хтось помилиться у фільтрі чи сортуванні
- * (docs/HISTORY.md §3.3).
+ * (AGENTS.md §3, кристалева ясність).
  */
 
 import { describe, expect, it } from "vitest";
