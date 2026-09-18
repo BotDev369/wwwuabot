@@ -135,17 +135,24 @@ describe("ContactTotals", () => {
 });
 
 describe("плашки — мірки, які легко загубити мовчки", () => {
-  it("три рівні клітинки, а не рядок підписів: числа порівнюють очима", () => {
-    expect(rule(".wb-contact-stats")).toContain("grid-template-columns: repeat(3");
-    // Обидва відступи — на самих плашках: у sticky-шарі проміжки задає дитина,
-    // і без них числа тулились би до заголовка зверху й до смуги знизу.
-    expect(rule(".wb-contact-stats")).toContain("margin: var(--sp-3) 0");
+  it("стоять у ряд із назвою: праворуч і компактно, а не сіткою на всю ширину", () => {
+    // Числа живуть у шапці (`.wb-page-head`), поруч із заголовком, тож плашки
+    // стиснуті, а `margin-left: auto` тримає їх праворуч навіть тоді, коли ряд
+    // переноситься: числа продовжують назву, а не починають новий ряд.
+    const stats = rule(".wb-contact-stats");
+    expect(stats).toContain("display: flex");
+    expect(stats).toContain("margin: 0 0 0 auto");
+    expect(stats).not.toContain("grid-template-columns");
+    expect(rule(".wb-contact-stat")).toContain("padding: var(--sp-1) var(--sp-2)");
   });
 
   it("плашка — та сама плитка списку, а число над підписом", () => {
     expect(rule(".wb-contact-stat")).toContain("background: var(--field-bg)");
     expect(rule(".wb-contact-stat")).toContain("column-reverse");
-    expect(rule(".wb-contact-stat-value")).toContain("font-size: var(--text-lg)");
+    expect(rule(".wb-contact-stat-value")).toContain("font-size: var(--text-md)");
+    // Число й підпис стоять щільно: у шапці кожен зайвий піксель — це місце в
+    // заголовка, а не в блокові, який можна розтягнути на всю ширину.
+    expect(rule(".wb-contact-stat-value")).toContain("line-height: var(--leading-tight)");
   });
 
   it("підпис читабельний: тихіший кольором, а не кеглем", () => {
