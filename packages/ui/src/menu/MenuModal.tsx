@@ -13,6 +13,11 @@
  * правило 15). Вибраний пункт позначається галочкою (`selected`), бо вибір — це
  * стан, а не перехід.
  *
+ * **Розкладок дві, розмітка одна** (`cardLayout`): портрет (дві колонки) чи
+ * рядки — це вибір людини, і міняє його клас на тілі поверхні
+ * (`--cards-rows`), а не другий набір розмітки. Правило міняє **обидві** родини
+ * карток одразу — плитки пунктів і те, що оболонка дала в `header`.
+ *
  * @module @wwwuabot/ui/menu
  */
 
@@ -92,6 +97,7 @@ export function MenuModal({
   header,
   footer,
   layout = "rows",
+  cardLayout = "portrait",
   align = "start",
   fullscreen = false,
   titleAlign = "start",
@@ -145,7 +151,11 @@ export function MenuModal({
           )}
         </div>
 
-        <div className={`wb-modal-body wb-menu-body${align === "end" ? " wb-menu-body--end" : ""}`}>
+        <div
+          className={`wb-modal-body wb-menu-body${align === "end" ? " wb-menu-body--end" : ""}${
+            cardLayout === "horizontal" ? " wb-menu-body--cards-rows" : ""
+          }`}
+        >
           {/* Блок над списком — не пункт, тож і не всередині `role="menu"`:
               він описує меню, а не діє замість нього. */}
           {header}
@@ -169,11 +179,13 @@ export function MenuModal({
             {closeAtBottom && (
               <button
                 type="button"
-                className="wb-btn wb-btn-secondary wb-sheet-bar-close"
+                className="wb-btn wb-btn-primary wb-sheet-bar-close"
                 onClick={onClose}
+                // Тут лишається тільки знак (місце в смузі ділять з перемикачем),
+                // тож ім'я для скрінрідера йде підписом кнопки, а не текстом.
+                aria-label="Закрити"
               >
-                <Icon name="close" size={16} />
-                Закрити
+                <Icon name="close" size={18} />
               </button>
             )}
           </div>

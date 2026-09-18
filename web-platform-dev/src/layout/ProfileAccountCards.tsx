@@ -11,10 +11,11 @@
  * вони заповнюють її повністю (`.wb-menu-account`).
  *
  * **Розкладок дві, тіло одне.** Портрет (дві колонки) чи рядки — це вибір
- * людини (`ProfileCardsSwitch`), і міняє його клас на тому самому вузлі
- * (`accountCardsClass`), а не другий набір розмітки: два набори розійшлися б
- * на першій же правці. Тому текст стоїть окремим блоком — у портреті він
- * центрований, у рядку притиснутий ліворуч.
+ * людини, і його тримає **клас на тілі поверхні** (`MenuModal` → `cardLayout`),
+ * а не другий набір розмітки чи модифікатор на самій картці: два місця, де
+ * вибір можна забути, — і картки розійшлися б із плитками, які перемикач
+ * переставляє тим самим дотиком. Тому текст стоїть окремим блоком — у портреті
+ * він центрований, у рядку притиснутий ліворуч.
  *
  * Дотик веде на повний екран (`/profile`) — список лишається навігацією по
  * розділах, а не місцем для форми. Дані бере той самий хук, що й сторінка
@@ -27,19 +28,16 @@
 import type { ReactElement } from "react";
 import { Icon, type UserProfileData } from "@wwwuabot/shared";
 import {
-  accountCardsClass,
   avatarInitial,
   joinedLine,
   platformHandle,
   telegramHandle,
   telegramName,
-  type AccountCardsLayout,
 } from "./profile-account";
 
 interface ProfileAccountCardsProps {
   user: UserProfileData | null;
   loading: boolean;
-  layout: AccountCardsLayout;
   /** Відкрити повний екран профілю. */
   onOpen: () => void;
 }
@@ -47,7 +45,6 @@ interface ProfileAccountCardsProps {
 export function ProfileAccountCards({
   user,
   loading,
-  layout,
   onOpen,
 }: ProfileAccountCardsProps): ReactElement {
   const name = telegramName(user);
@@ -56,7 +53,9 @@ export function ProfileAccountCards({
   const joined = joinedLine(user);
 
   return (
-    <div className={accountCardsClass(layout)}>
+    // Розкладку цієї родини карток не тримає жоден клас тут: її задає тіло
+    // поверхні (`MenuModal` → `cardLayout`), бо той самий вибір міняє й плитки.
+    <div className="wb-menu-account">
       <button
         type="button"
         className="wb-menu-account-card"

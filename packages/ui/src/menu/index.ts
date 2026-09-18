@@ -15,4 +15,4 @@
 export { MenuModal } from "./MenuModal";
 export { buildMenuItems } from "./build-items";
 export type { BuildMenuItemsOptions } from "./build-items";
-export type { MenuItem, MenuModalProps, ShellMenuItem } from "./types";
+export type { MenuCardsLayout, MenuItem, MenuModalProps, ShellMenuItem } from "./types";

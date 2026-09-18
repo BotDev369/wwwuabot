@@ -6,6 +6,10 @@
  * перевіряти без DOM. Компонент (`ProfileAccountCards`) лише рендерить те,
  * що повернули ці функції.
  *
+ * Розкладки карток тут немає навмисно: вибір «портрет / рядки» міняє всю
+ * поверхню (і ці картки, і плитки пунктів), тож він живе у спільному меню, а
+ * оболонка лише зберігає його (`profile-cards-pref`).
+ *
  * **Telegram і платформа не змішуються.** Раніше картка показувала
  * `platformUsername ?? username` одним рядком — тобто підпис «@karas» міг
  * означати і власне ім'я людини на wwwuabot, і Telegram-хендл, як завгодно
@@ -15,38 +19,8 @@
  * @module web-platform-dev/src/layout/profile-account
  */
 
-import type { UserProfileData, IconName } from "@wwwuabot/shared";
+import type { UserProfileData } from "@wwwuabot/shared";
 import { formatDay } from "@wwwuabot/shared/utils/datetime";
-
-/**
- * Як стоять облікові картки: **портрет** (дві колонки, типове) чи **рядки**.
- *
- * Це не оформлення, а **вибір людини** — і той самий вибір, що в колекціях
- * («рядок» проти «плитки»): рядком картку читають, портретом упізнають. Одна
- * розмітка, дві розкладки (`.wb-menu-account` / `--rows`), а не два набори.
- */
-export type AccountCardsLayout = "portrait" | "horizontal";
-
-/** Типове — **портрет**: так картки видно як дві окремі, а не як пункти меню. */
-export const DEFAULT_ACCOUNT_CARDS_LAYOUT: AccountCardsLayout = "portrait";
-
-/** Варіант розкладки — дані для перемикача, а не розмітка. */
-export interface AccountLayoutOption {
-  key: AccountCardsLayout;
-  /** Підпис у сегменті — короткий, бо сегмент ділить смугу з «закрити». */
-  label: string;
-  icon: IconName;
-}
-
-export const ACCOUNT_LAYOUT_OPTIONS: readonly AccountLayoutOption[] = [
-  { key: "portrait", label: "Стовпці", icon: "card" },
-  { key: "horizontal", label: "Рядки", icon: "list" },
-];
-
-/** Клас розкладки карток: розкладку тримає **клас**, а не компонент. */
-export function accountCardsClass(layout: AccountCardsLayout): string {
-  return layout === "horizontal" ? "wb-menu-account wb-menu-account--rows" : "wb-menu-account";
-}
 
 /** Ім'я з Telegram: те, що людина бачить у самому Telegram. */
 export function telegramName(user: UserProfileData | null): string | null {

@@ -19,11 +19,11 @@ import { useNavigate } from "react-router-dom";
 import { ThemeColorPanel } from "@wwwuabot/shared";
 import { useDialog } from "@wwwuabot/ui/dialog";
 import { MenuModal, buildMenuItems } from "@wwwuabot/ui/menu";
+import type { MenuCardsLayout } from "@wwwuabot/ui/menu";
 import { useProfile } from "@/pages/useProfile";
 import { ProfileAccountCards } from "./ProfileAccountCards";
 import { ProfileCardsSwitch } from "./ProfileCardsSwitch";
-import { readAccountCardsLayout, writeAccountCardsLayout } from "./profile-cards-pref";
-import type { AccountCardsLayout } from "./profile-account";
+import { readCardsLayout, writeCardsLayout } from "./profile-cards-pref";
 import { PROFILE_PATH } from "./platform-tabs";
 import { buildProfileItems, type ProfileMenuView } from "./profile-menu";
 
@@ -44,11 +44,11 @@ export function ProfileMenu({ onClose }: ProfileMenuProps): ReactElement {
   const [view, setView] = useState<ProfileMenuView>("list");
   // Розкладка карток — вибір людини, і лежить він у сховищі пристрою: меню
   // розмонтовується на кожному закритті, тож стан самого компонента скидався б.
-  const [cardsLayout, setCardsLayout] = useState<AccountCardsLayout>(readAccountCardsLayout);
+  const [cardsLayout, setCardsLayout] = useState<MenuCardsLayout>(readCardsLayout);
 
-  function changeCardsLayout(next: AccountCardsLayout): void {
+  function changeCardsLayout(next: MenuCardsLayout): void {
     setCardsLayout(next);
-    writeAccountCardsLayout(next);
+    writeCardsLayout(next);
   }
 
   const items = buildMenuItems({
@@ -74,14 +74,19 @@ export function ProfileMenu({ onClose }: ProfileMenuProps): ReactElement {
       // стосується лише списку: панель теми — форма, їй місце згори, під
       // заголовком, а не біля краю екрана.
       layout="blocks"
+      // Той самий вибір міняє **всі** картки поверхні — і ці плитки, і облікові
+      // картки (`header`): перемикач, який переставляє половину екрана, читався
+      // би як зламаний.
+      cardLayout={cardsLayout}
       align={view === "list" ? "end" : "start"}
       // На весь екран, із заголовком по центру, а вихід — унизу: це найбільша
       // поверхня продукту, і в шапці їй нема чого тримати кнопку на відшибі.
       fullscreen
       titleAlign="center"
       closePlacement="bottom"
-      // Перемикач розкладки карток стоїть **перед** «закрити» і лише там, де
-      // картки видно: у панелі теми він нічого не змінює.
+      // Перемикач розкладки карток стоїть **перед** «закрити» (той тепер без
+      // підпису — лише знак) і лише там, де картки видно: у панелі теми він
+      // нічого не змінює.
       footer={
         view === "list" ? (
           <ProfileCardsSwitch layout={cardsLayout} onChange={changeCardsLayout} />
@@ -102,7 +107,6 @@ export function ProfileMenu({ onClose }: ProfileMenuProps): ReactElement {
           <ProfileAccountCards
             user={profile}
             loading={loading}
-            layout={cardsLayout}
             onOpen={() => {
               onClose();
               navigate(PROFILE_PATH);

@@ -118,6 +118,18 @@ describe("MenuModal", () => {
     expect(blocks.match(/wb-menu-item-check/g)).toHaveLength(1);
   });
 
+  it("розкладка карток — стан поверхні, і вона одна на всі картки", () => {
+    expect(html()).not.toContain("wb-menu-body--cards-rows");
+    expect(html({ cardLayout: "horizontal" })).toContain("wb-menu-body--cards-rows");
+    // Клас стоїть на **тілі** поверхні, а не на картках: те саме правило
+    // рухає і плитки пунктів, і те, що оболонка дала в `header` (облікові
+    // картки). Два модифікатори розійшлися б на першій же правці.
+    expect(html({ cardLayout: "horizontal", layout: "blocks" })).toContain("wb-menu-blocks");
+    // Розкладка не міняє ролі пункту: плитки лишаються плитками зі своїм чипом
+    // стану, а не стають абзацом із поясненням.
+    expect(html({ cardLayout: "horizontal", layout: "blocks" })).toContain("wb-badge");
+  });
+
   it("притискання до низу — стан поверхні, а не розкладки", () => {
     expect(html()).not.toContain("wb-menu-body--end");
     expect(html({ align: "end" })).toContain("wb-menu-body--end");
@@ -150,6 +162,12 @@ describe("MenuModal", () => {
     // Два виходи з однієї поверхні — це два місця, де його шукати: один.
     expect(markup).not.toContain("wb-close-btn");
     expect(markup).toContain("wb-sheet-bar-close");
+    // Знак без підпису — на акцентному тлі: вихід у смузі головний, а місце
+    // він ділить із перемикачем. Ім'я лишається в `aria-label`, бо самий ✕
+    // скрінрідеру нічого не каже.
+    expect(markup).toContain("wb-btn-primary");
+    expect(markup).toContain('aria-label="Закрити"');
+    expect(markup).not.toContain(">Закрити<");
     // Смуга — сестра тіла, а не останній пункт у ньому: інакше вона
     // прокручувалась би разом із пунктами й зникала з очей.
     expect(markup.indexOf("wb-sheet-bar")).toBeGreaterThan(markup.indexOf("wb-modal-body"));

@@ -1,24 +1,40 @@
 /**
- * Вибір розкладки карток у сховищі пристрою.
+ * Вибір розкладки карток у сховищі пристрою — і варіанти, з яких його роблять.
  *
- * Перевіряємо дві речі, які ламаються тихо: **типове значення**, коли сховища
- * немає (у Mini App WebView воно буває заблоковане, і падіння тут зламало б
- * усе меню профілю), і те, що вибір справді вертається назад — інакше
- * перемикач показував би одне, а картки стояли б по-іншому.
+ * Перевіряємо те, що ламається тихо: **типове значення**, коли сховища немає (у
+ * Mini App WebView воно буває заблоковане, і падіння тут зламало б усе меню
+ * профілю), те, що вибір справді вертається назад (інакше перемикач показував би
+ * одне, а картки стояли б по-іншому), і те, що в перемикача рівно два варіанти з
+ * **різними** знаками та непорожніми іменами — знак без імені не сказав би, що
+ * він робить, а однакові знаки — чим варіанти різняться.
  */
 
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { readAccountCardsLayout, writeAccountCardsLayout } from "./profile-cards-pref";
+import {
+  CARDS_LAYOUT_OPTIONS,
+  DEFAULT_CARDS_LAYOUT,
+  readCardsLayout,
+  writeCardsLayout,
+} from "./profile-cards-pref";
 
 afterEach(() => {
   vi.unstubAllGlobals();
 });
 
-describe("вибір розкладки карток", () => {
+describe("розкладка карток меню профілю", () => {
+  it("рівно два варіанти, і в кожного є ім'я та свій знак", () => {
+    expect(CARDS_LAYOUT_OPTIONS.map((option) => option.key)).toEqual(["portrait", "horizontal"]);
+    expect(DEFAULT_CARDS_LAYOUT).toBe("portrait");
+
+    const icons = CARDS_LAYOUT_OPTIONS.map((option) => option.icon);
+    expect(new Set(icons).size).toBe(icons.length);
+    for (const option of CARDS_LAYOUT_OPTIONS) expect(option.label.trim(), option.key).toBeTruthy();
+  });
+
   it("без сховища — типове, а не помилка", () => {
     // `environment: node`, тож localStorage тут і справді немає.
-    expect(readAccountCardsLayout()).toBe("portrait");
-    expect(() => writeAccountCardsLayout("horizontal")).not.toThrow();
+    expect(readCardsLayout()).toBe("portrait");
+    expect(() => writeCardsLayout("horizontal")).not.toThrow();
   });
 
   it("вибір вертається назад зі сховища", () => {
@@ -28,10 +44,10 @@ describe("вибір розкладки карток", () => {
       setItem: (key: string, value: string) => void store.set(key, value),
     });
 
-    writeAccountCardsLayout("horizontal");
-    expect(readAccountCardsLayout()).toBe("horizontal");
-    writeAccountCardsLayout("portrait");
-    expect(readAccountCardsLayout()).toBe("portrait");
+    writeCardsLayout("horizontal");
+    expect(readCardsLayout()).toBe("horizontal");
+    writeCardsLayout("portrait");
+    expect(readCardsLayout()).toBe("portrait");
   });
 
   it("сміття в сховищі читається як типове", () => {
@@ -39,6 +55,6 @@ describe("вибір розкладки карток", () => {
       getItem: () => "щось інше",
       setItem: () => {},
     });
-    expect(readAccountCardsLayout()).toBe("portrait");
+    expect(readCardsLayout()).toBe("portrait");
   });
 });

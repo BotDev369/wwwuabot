@@ -14,8 +14,6 @@
 import { describe, expect, it } from "vitest";
 import type { UserProfileData } from "@wwwuabot/shared";
 import {
-  ACCOUNT_LAYOUT_OPTIONS,
-  accountCardsClass,
   avatarInitial,
   joinedLine,
   platformHandle,
@@ -79,17 +77,5 @@ describe("облікові картки профілю", () => {
     expect(telegramHandle(null)).toBeNull();
     expect(platformHandle(null)).toBeNull();
     expect(joinedLine(null)).toBeNull();
-  });
-
-  it("розкладок рівно дві, і друга — інший клас на тому самому вузлі", () => {
-    expect(ACCOUNT_LAYOUT_OPTIONS.map((option) => option.key)).toEqual(["portrait", "horizontal"]);
-    // Спільна основа — той самий кирпичик: друга розкладка додає модифікатор, а
-    // не замінює базу (інакше вона б відкріпилась від меню).
-    expect(accountCardsClass("portrait")).toBe("wb-menu-account");
-    expect(accountCardsClass("horizontal")).toBe("wb-menu-account wb-menu-account--rows");
-    // Знаки різні: однакові не сказали б, чим варіанти різняться.
-    const icons = ACCOUNT_LAYOUT_OPTIONS.map((option) => option.icon);
-    expect(new Set(icons).size).toBe(icons.length);
-    for (const option of ACCOUNT_LAYOUT_OPTIONS) expect(option.label, option.key).toBeTruthy();
   });
 });

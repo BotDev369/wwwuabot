@@ -1037,10 +1037,15 @@ html:has(.wb-tabbar) .wb-modal-overlay--screen {
   padding: var(--sp-2) var(--sp-3) calc(var(--sp-3) + var(--safe-bottom));
 }
 
-/* Мірки смуги діляться навпіл: контрол ліворуч і вихід праворуч. Кожен тоді
-   ширший за планку пальця (44px) без власної висоти. */
+/* Мірки смуги: контрол тримає ширину вмісту, а решту забирає вихід. Це не
+   «порівну»: вихід — головна ціль смуги, і широка кнопка під нього краща за
+   два вузькі пуп'янки поруч. */
 .wb-sheet-bar > * {
   flex: 1 1 0;
+}
+
+.wb-sheet-bar .wb-segmented {
+  flex: 0 0 auto;
 }
 
 /* «Закрити» в смузі — теж планка пальця: вихід, у який треба влучити з першого
@@ -1051,7 +1056,11 @@ html:has(.wb-tabbar) .wb-modal-overlay--screen {
 
 /* Перемикач із двох-трьох варіантів: видно **всі** варіанти одразу, а не той,
    що вибрано (це не список — тут їх два-три). Трек — `--field-bg`, вибраний
-   сегмент — акцентна заливка, як в активної вкладки композера. */
+   сегмент — акцентна заливка, як в активної вкладки композера.
+
+   Підписів у сегмента немає навмисно: у смузі він ділить місце з «закрити», і
+   два підписи трьома рядами з'їдали б половину екрана, а знак варіант читає
+   за формою. Ім'я при цьому не губиться — воно в `aria-label` і `title`. */
 .wb-segmented {
   display: flex;
   gap: 2px;
@@ -1065,9 +1074,9 @@ html:has(.wb-tabbar) .wb-modal-overlay--screen {
   flex: 1 1 0;
   align-items: center;
   justify-content: center;
-  gap: 4px;
   /* 44 — планка пальця в спокої: сегмент не має меншого за неї розміру. */
   min-height: 44px;
+  min-width: 44px;
   padding: 0 var(--sp-2);
   border: none;
   border-radius: var(--radius-sm);
@@ -1089,21 +1098,6 @@ html:has(.wb-tabbar) .wb-modal-overlay--screen {
 .wb-segmented-btn--active {
   background: var(--accent-dim);
   color: var(--accent);
-}
-
-.wb-segmented-label {
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-/* Вузький екран: підпис сегмента не влазить у половину смуги (сама смуга ділить
-   місце з «закрити») — лишається знак, ім'я варіанта не губиться, воно в
-   `aria-label`. Так само зроблено в підписів вкладок композера. */
-@media (max-width: 380px) {
-  .wb-segmented-label {
-    display: none;
-  }
 }
 
 /* ── Меню (профіль): поверхня зі списком пунктів ───────────────────────────
@@ -1305,8 +1299,8 @@ html:has(.wb-tabbar) .wb-modal-overlay--screen {
    нерозривні (`grid`, а не `flex-wrap`): картка — портрет, а не смуга, бо в
    смузі вона читалась би як ще один пункт меню.
 
-   Друга розкладка (`--rows`) — те саме **тіло картки**, лише рядком: це вибір
-   людини, а не другий набір розмітки. */
+   Друга розкладка (`--cards-rows` на тілі) — те саме **тіло картки**, лише
+   рядком: це вибір людини, а не другий набір розмітки. */
 .wb-menu-account {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -1399,14 +1393,36 @@ html:has(.wb-tabbar) .wb-modal-overlay--screen {
   overflow-wrap: anywhere;
 }
 
-/* Рядкова розкладка (`MenuModal` → картки рядками): один стовпчик, а картка —
-   смуга на всю ширину. Той самий вибір, що в колекції (рядок проти плитки):
-   рядком людина читає ім'я й дату, портрет — упізнає картку. */
-.wb-menu-account--rows {
+/* Рядкова розкладка карток поверхні (`MenuModal` → `cardLayout="horizontal"`).
+   Один перемикач міняє **обидві** родини карток — плитки пунктів і облікові
+   картки: якби він переставляв лише половину, а поруч лишались плитки, це
+   читалось би як зламаний перемикач, а не як вибір вигляду.
+
+   Розкладку тримає клас на **тілі** поверхні, а не модифікатор на кожній
+   картці: два модифікатори — це два місця, де вибір можна забути оновити, і
+   саме так картки розійшлися б із плитками. */
+.wb-menu-body--cards-rows .wb-menu-blocks,
+.wb-menu-body--cards-rows .wb-menu-account {
   grid-template-columns: 1fr;
 }
 
-.wb-menu-account--rows .wb-menu-account-card {
+.wb-menu-body--cards-rows .wb-menu-block {
+  flex-direction: row;
+  justify-content: flex-start;
+  gap: var(--sp-3);
+  min-height: 56px;
+  padding: var(--sp-2) var(--sp-3);
+  text-align: left;
+}
+
+/* Галочка вибору: у плитці вона в куті, у рядку — замикає рядок праворуч, як у
+   пункту списку. */
+.wb-menu-body--cards-rows .wb-menu-block .wb-menu-item-check {
+  position: static;
+  margin-left: auto;
+}
+
+.wb-menu-body--cards-rows .wb-menu-account-card {
   flex-direction: row;
   justify-content: flex-start;
   gap: var(--sp-3);
@@ -1415,7 +1431,7 @@ html:has(.wb-tabbar) .wb-modal-overlay--screen {
   text-align: left;
 }
 
-.wb-menu-account--rows .wb-menu-account-text {
+.wb-menu-body--cards-rows .wb-menu-account-text {
   align-items: flex-start;
 }
 

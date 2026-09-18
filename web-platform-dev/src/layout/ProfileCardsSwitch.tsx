@@ -1,5 +1,5 @@
 /**
- * Перемикач розкладки облікових карток — сегментована смуга з двох варіантів.
+ * Перемикач розкладки карток — сегментована смуга з двох варіантів.
  *
  * Стоїть у смузі внизу меню профілю (`MenuModal` → `footer`), ліворуч від
  * «закрити»: це вибір вигляду, тож він має бути там, де рука, і **видно** мають
@@ -7,26 +7,28 @@
  * відкривають повноекранний список (`MenuModal`). Другий варіант тут рівно
  * один, і відкривати заради нього поверхню над поверхнею було б гірше.
  *
- * Знаки різні навмисно (`card` / `list`): однакові не сказали б, чим варіанти
- * різняться. Підпис сегмента на вузькому екрані ховається (його місце ділить
- * «закрити»), тому кожен сегмент має `aria-label` і `title`.
+ * **Тільки знаки, без підписів.** У смузі сегмент ділить місце з «закрити», і
+ * два підписи трьома рядами з'їдали б половину екрана, а знак варіант читає за
+ * формою («рядки» — три риски, «стовпці» — картка). Ім'я при цьому не губиться:
+ * воно в `aria-label` і `title`, а самі варіанти приходять із `CARDS_LAYOUT_OPTIONS`.
  *
  * @module web-platform-dev/src/layout/ProfileCardsSwitch
  */
 
 import type { ReactElement } from "react";
 import { Icon } from "@wwwuabot/shared";
-import { ACCOUNT_LAYOUT_OPTIONS, type AccountCardsLayout } from "./profile-account";
+import type { MenuCardsLayout } from "@wwwuabot/ui/menu";
+import { CARDS_LAYOUT_OPTIONS } from "./profile-cards-pref";
 
 interface ProfileCardsSwitchProps {
-  layout: AccountCardsLayout;
-  onChange: (layout: AccountCardsLayout) => void;
+  layout: MenuCardsLayout;
+  onChange: (layout: MenuCardsLayout) => void;
 }
 
 export function ProfileCardsSwitch({ layout, onChange }: ProfileCardsSwitchProps): ReactElement {
   return (
     <div className="wb-segmented" role="group" aria-label="Вигляд карток">
-      {ACCOUNT_LAYOUT_OPTIONS.map((option) => {
+      {CARDS_LAYOUT_OPTIONS.map((option) => {
         const active = option.key === layout;
         return (
           <button
@@ -38,8 +40,7 @@ export function ProfileCardsSwitch({ layout, onChange }: ProfileCardsSwitchProps
             title={option.label}
             onClick={() => onChange(option.key)}
           >
-            <Icon name={option.icon} size={16} />
-            <span className="wb-segmented-label">{option.label}</span>
+            <Icon name={option.icon} size={18} />
           </button>
         );
       })}

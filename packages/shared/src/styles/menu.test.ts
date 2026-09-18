@@ -113,20 +113,33 @@ describe("меню: плитки й притискання до низу", () =>
     expect(minHeight).toBeGreaterThanOrEqual(44);
   });
 
-  it("друга розкладка карток — той самий стовпчик, лише рядком", () => {
-    // Ламається мовчки: без `grid-template-columns: 1fr` картки лишились би в
-    // дві колонки й «рядки» виглядали б як зламаний перемикач.
-    const rows = rule(".wb-menu-account--rows");
-    expect(rows, "правило .wb-menu-account--rows мусить існувати").toBeDefined();
-    expect(rows?.body).toContain("grid-template-columns: 1fr");
+  it("рядкова розкладка — одна на ВСІ картки: і облікові, і плитки", () => {
+    // Один перемикач міняє обидві родини карток. Якби рядками ставали лише
+    // облікові, поруч із ними стояли б плитки — і це читалось би як зламаний
+    // перемикач, а не як вибір вигляду.
+    const oneColumn = rule(
+      ".wb-menu-body--cards-rows .wb-menu-blocks, .wb-menu-body--cards-rows .wb-menu-account",
+    );
+    expect(oneColumn, "правило рядкової розкладки мусить існувати").toBeDefined();
+    expect(oneColumn?.body).toContain("grid-template-columns: 1fr");
 
-    // Картка стає смугою — інакше це не рядок, а та сама колонка.
-    const card = rule(".wb-menu-account--rows .wb-menu-account-card");
-    expect(card, "картка в рядку мусить лягти рядом").toBeDefined();
-    expect(card?.body).toContain("flex-direction: row");
+    // Обидві родини стають смугами — інакше це не рядок, а та сама колонка.
+    expect(rule(".wb-menu-body--cards-rows .wb-menu-block")?.body).toContain("flex-direction: row");
+    expect(rule(".wb-menu-body--cards-rows .wb-menu-account-card")?.body).toContain(
+      "flex-direction: row",
+    );
     // Текст у рядку читають зліва направо, а не по центру смуги.
-    const text = rule(".wb-menu-account--rows .wb-menu-account-text");
-    expect(text?.body).toContain("align-items: flex-start");
+    expect(rule(".wb-menu-body--cards-rows .wb-menu-account-text")?.body).toContain(
+      "align-items: flex-start",
+    );
+    // Галочка вибору в рядку замикає рядок, а не висить у куті, як у плитці.
+    expect(rule(".wb-menu-body--cards-rows .wb-menu-block .wb-menu-item-check")?.body).toContain(
+      "position: static",
+    );
+    // Розкладку тримає клас на ТІЛІ поверхні: модифікатор на самій картці — це
+    // друге місце, де вибір можна забути оновити, і саме так картки розійшлися б
+    // із плитками.
+    expect(rule(".wb-menu-account--rows")).toBeUndefined();
   });
 });
 
@@ -175,6 +188,14 @@ describe("меню: поверхня на весь екран і смуга вн
     expect(btn, "правило .wb-segmented-btn мусить існувати").toBeDefined();
     const minHeight = Number(btn?.body.match(/min-height:\s*(\d+)px/)?.[1]);
     expect(minHeight).toBeGreaterThanOrEqual(44);
+    // Знак без підпису мусить лишатись квадратом пальця: ширина — теж 44.
+    const minWidth = Number(btn?.body.match(/min-width:\s*(\d+)px/)?.[1]);
+    expect(minWidth).toBeGreaterThanOrEqual(44);
+    // Підписів у сегменті немає — інакше він з'їдав би пів смуги, яку ділить із
+    // «закрити»; ім'я варіанта живе в `aria-label`.
+    expect(rule(".wb-segmented-label")).toBeUndefined();
+    // Решту смуги забирає вихід: перемикач стоїть за шириною вмісту.
+    expect(rule(".wb-sheet-bar .wb-segmented")?.body).toContain("flex: 0 0 auto");
     // Стан, а не перехід: вибраний сегмент видно заливкою — як активну вкладку.
     expect(rule(".wb-segmented-btn--active")?.body).toContain("background: var(--accent-dim)");
   });
