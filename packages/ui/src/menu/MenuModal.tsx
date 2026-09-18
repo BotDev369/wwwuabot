@@ -179,7 +179,10 @@ export function MenuModal({
             {closeAtBottom && (
               <button
                 type="button"
-                className="wb-btn wb-btn-primary wb-sheet-bar-close"
+                // Не `.wb-btn`: бренд дає кнопці свою форму (пілюля Apple, M3
+                // 20px), а вихід — коло в КОЖНОМУ бренді. Своя форма — це свій
+                // кирпичик, а не `!important` навперебій брендовому правилу.
+                className="wb-sheet-bar-close"
                 onClick={onClose}
                 // Тут лишається тільки знак (місце в смузі ділять з перемикачем),
                 // тож ім'я для скрінрідера йде підписом кнопки, а не текстом.

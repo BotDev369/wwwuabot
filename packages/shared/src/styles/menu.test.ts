@@ -189,8 +189,9 @@ describe("меню: поверхня на весь екран і смуга вн
     expect(bar?.body).toContain("flex-shrink: 0");
     // Безпечна зона знизу — тут: смуга остання на екрані.
     expect(bar?.body).toContain("var(--safe-bottom)");
-    // Мірки смуги діляться: контрол і вихід ширші за палець без власної висоти.
-    expect(rule(".wb-sheet-bar > *")?.body).toContain("flex: 1 1 0");
+    // Мірки контролів — їхні власні: у смузі стоять коло й перемикач, а не дві
+    // половини смуги (розтягнутий вихід читався прапором на всю ширину).
+    expect(rule(".wb-sheet-bar > *")?.body).toContain("flex: 0 0 auto");
   });
 
   it("сегмент перемикача не менший за палець, і вибраний видно", () => {
@@ -204,8 +205,27 @@ describe("меню: поверхня на весь екран і смуга вн
     // Підписів у сегменті немає — інакше він з'їдав би пів смуги, яку ділить із
     // «закрити»; ім'я варіанта живе в `aria-label`.
     expect(rule(".wb-segmented-label")).toBeUndefined();
-    // Решту смуги забирає вихід: перемикач стоїть за шириною вмісту.
-    expect(rule(".wb-sheet-bar .wb-segmented")?.body).toContain("flex: 0 0 auto");
+  });
+
+  it("смуга внизу: контроли по центру, вихід — коло на акцентному тлі", () => {
+    // Розтягнута смуга робила з виходу прапор на всю ширину; тепер це два
+    // контроли за шириною вмісту, і стоять вони по центру.
+    const bar = rule(".wb-sheet-bar");
+    expect(bar?.body).toContain("justify-content: center");
+    expect(rule(".wb-sheet-bar > *")?.body).toContain("flex: 0 0 auto");
+
+    // Коло мусить лишатись колом: і квадратним (44 — планка пальця), і круглим.
+    const close = rule(".wb-sheet-bar-close");
+    expect(close, "правило виходу мусить існувати").toBeDefined();
+    expect(close?.body).toContain("border-radius: var(--radius-full)");
+    expect(close?.body).toContain("background: var(--accent)");
+    expect(close?.body).toContain("color: var(--text-inverse)");
+    const size = Number(close?.body.match(/width:\s*(\d+)px/)?.[1]);
+    expect(size).toBeGreaterThanOrEqual(44);
+    expect(close?.body).toContain(`height: ${size}px`);
+    // `padding: 0` — не косметика: це той самий бокс 44×44 без внутрішніх
+    // мірок, які зробили б із кола овал.
+    expect(close?.body).toContain("padding: 0");
   });
 
   it("у перемикача немає треку, а вибраний показує акцентний колір", () => {

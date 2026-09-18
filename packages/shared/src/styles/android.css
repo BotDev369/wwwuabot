@@ -477,14 +477,17 @@ html[data-brand="android"] .wb-tools-search .wb-input:focus {
   box-shadow: var(--tools-search-glow) !important;
 }
 
-/* ── Modal: M3 dialog — large radius, no blur ──────────────────────────── */
-html[data-brand="android"] .wb-modal-overlay {
+/* ── Modal: M3 dialog — large radius, no blur ────────────────────────────
+   Як і в Apple: темна плівка й радіус — для **плаваючого** аркуша, а не для
+   поверхні на весь екран. Без винятку `--screen` бренд показував кути в
+   сторінки і малював навколо неї плями плівки. */
+html[data-brand="android"] .wb-modal-overlay:not(.wb-modal-overlay--screen) {
   background: rgba(0, 0, 0, 0.5) !important;
   backdrop-filter: none !important;
   -webkit-backdrop-filter: none !important;
 }
 
-html[data-brand="android"] .wb-modal {
+html[data-brand="android"] .wb-modal:not(.wb-modal--screen) {
   border: none !important;
   border-radius: 28px !important;
   box-shadow: var(--shadow-xl) !important;

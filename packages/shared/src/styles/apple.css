@@ -487,14 +487,20 @@ html[data-brand="apple"] .wb-tools-search .wb-input:focus {
   box-shadow: var(--tools-search-glow) !important;
 }
 
-/* ── Modal: glass overlay — Apple sheet style ───────────────────────────── */
-html[data-brand="apple"] .wb-modal-overlay {
+/* ── Modal: glass overlay — Apple sheet style ─────────────────────────────
+   Скло, темна плівка й радіус — це про **плаваючий** аркуш, а не про поверхню
+   на весь екран. Тому обидва правила явно виключають `--screen`: там оверлей і
+   є сторінка (`components.css`), і без винятку `border-radius: 20px` показував
+   кути, яких у сторінки немає, а `rgba(0, 0, 0, .35)` разом зі склом малював
+   навколо неї чорні плями. Бренд задає **характер кирпичика**, а не переписує
+   його роль — та сама помилка, що була з мірками кнопки. */
+html[data-brand="apple"] .wb-modal-overlay:not(.wb-modal-overlay--screen) {
   backdrop-filter: blur(8px) saturate(150%) !important;
   -webkit-backdrop-filter: blur(8px) saturate(150%) !important;
   background: rgba(0, 0, 0, 0.35) !important;
 }
 
-html[data-brand="apple"] .wb-modal {
+html[data-brand="apple"] .wb-modal:not(.wb-modal--screen) {
   border: none !important;
   border-radius: 20px !important;
   box-shadow: var(--shadow-xl) !important;

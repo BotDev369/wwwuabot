@@ -1039,26 +1039,43 @@ html:has(.wb-tabbar) .wb-modal-overlay--screen {
 .wb-sheet-bar {
   display: flex;
   align-items: center;
-  gap: var(--sp-2);
+  /* По центру і за шириною вмісту: це два контроли, а не дві половини смуги.
+     Смуга, розтягнута на всю ширину, робила з виходу прапор — а він усього
+     лише закриває поверхню. */
+  justify-content: center;
+  gap: var(--sp-3);
   flex-shrink: 0;
   padding: var(--sp-2) var(--sp-3) calc(var(--sp-3) + var(--safe-bottom));
 }
 
-/* Мірки смуги: контрол тримає ширину вмісту, а решту забирає вихід. Це не
-   «порівну»: вихід — головна ціль смуги, і широка кнопка під нього краща за
-   два вузькі пуп'янки поруч. */
 .wb-sheet-bar > * {
-  flex: 1 1 0;
-}
-
-.wb-sheet-bar .wb-segmented {
   flex: 0 0 auto;
 }
 
-/* «Закрити» в смузі — теж планка пальця: вихід, у який треба влучити з першого
-   разу, не може бути нижчим за 44px, хоч кнопка й менша за неї в решті місць. */
+/* «Закрити» — КОЛО, і це окремий кирпичик, а не `.wb-btn`: форму дає бренд
+   (пілюля Apple, M3 20px), а вихід круглий у кожному бренді. Доводилось би
+   бити брендовий `!important` своїм — а бренд має задавати **характер**
+   кирпичика, не переписувати його роль. Тло акцентне: вихід — головна дія
+   смуги. 44 — планка пальця. */
 .wb-sheet-bar-close {
-  min-height: 44px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 auto;
+  width: 44px;
+  height: 44px;
+  padding: 0;
+  border: none;
+  border-radius: var(--radius-full);
+  background: var(--accent);
+  color: var(--text-inverse);
+  cursor: pointer;
+  transition: background var(--duration-fast) var(--ease);
+}
+
+.wb-sheet-bar-close:hover,
+.wb-sheet-bar-close:active {
+  background: var(--accent-hover);
 }
 
 /* Перемикач із двох-трьох варіантів: видно **всі** варіанти одразу, а не той,
