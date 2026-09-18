@@ -7,8 +7,14 @@
  * кожне поле стоїть на своїй картці, і підпис картки каже, звідки воно.
  *
  * Друга причина поділу — місце. У цьому меню картки **єдине**, що росте:
- * плитки фіксовані, тож порожнеча під заголовком дісталась саме їм, і після
- * поділу на дві вони заповнюють її повністю (`.wb-menu-account`).
+ * плитки фіксовані, тож порожнеча дісталась саме їм, і після поділу на дві
+ * вони заповнюють її повністю (`.wb-menu-account`).
+ *
+ * **Розкладок дві, тіло одне.** Портрет (дві колонки) чи рядки — це вибір
+ * людини (`ProfileCardsSwitch`), і міняє його клас на тому самому вузлі
+ * (`accountCardsClass`), а не другий набір розмітки: два набори розійшлися б
+ * на першій же правці. Тому текст стоїть окремим блоком — у портреті він
+ * центрований, у рядку притиснутий ліворуч.
  *
  * Дотик веде на повний екран (`/profile`) — список лишається навігацією по
  * розділах, а не місцем для форми. Дані бере той самий хук, що й сторінка
@@ -21,16 +27,19 @@
 import type { ReactElement } from "react";
 import { Icon, type UserProfileData } from "@wwwuabot/shared";
 import {
+  accountCardsClass,
   avatarInitial,
   joinedLine,
   platformHandle,
   telegramHandle,
   telegramName,
+  type AccountCardsLayout,
 } from "./profile-account";
 
 interface ProfileAccountCardsProps {
   user: UserProfileData | null;
   loading: boolean;
+  layout: AccountCardsLayout;
   /** Відкрити повний екран профілю. */
   onOpen: () => void;
 }
@@ -38,6 +47,7 @@ interface ProfileAccountCardsProps {
 export function ProfileAccountCards({
   user,
   loading,
+  layout,
   onOpen,
 }: ProfileAccountCardsProps): ReactElement {
   const name = telegramName(user);
@@ -46,7 +56,7 @@ export function ProfileAccountCards({
   const joined = joinedLine(user);
 
   return (
-    <div className="wb-menu-account">
+    <div className={accountCardsClass(layout)}>
       <button
         type="button"
         className="wb-menu-account-card"
@@ -55,7 +65,6 @@ export function ProfileAccountCards({
         // самий екран, тож без назви картки скрінрідер бачив би їх однаковими.
         aria-label={loading ? "Профіль" : `Профіль: ім'я в Telegram — ${name ?? "без імені"}`}
       >
-        <span className="wb-menu-account-label">Telegram</span>
         <span className="wb-menu-account-avatar">
           {user?.photoUrl ? (
             <img src={user.photoUrl} alt="" />
@@ -65,12 +74,15 @@ export function ProfileAccountCards({
             <span className="wb-menu-account-initial">{avatarInitial(user)}</span>
           )}
         </span>
-        <span className="wb-menu-account-name">
-          {loading ? "Завантаження…" : (name ?? "Імені немає")}
+        <span className="wb-menu-account-text">
+          <span className="wb-menu-account-label">Telegram</span>
+          <span className="wb-menu-account-name">
+            {loading ? "Завантаження…" : (name ?? "Імені немає")}
+          </span>
+          {/* Поки даних немає, про хендл не кажемо нічого: «без хендла» під час
+              завантаження — це вже твердження, і воно хибне. */}
+          {!loading && <span className="wb-menu-account-sub">{handle ?? "без хендла"}</span>}
         </span>
-        {/* Поки даних немає, про хендл не кажемо нічого: «без хендла» під час
-            завантаження — це вже твердження, і воно хибне. */}
-        {!loading && <span className="wb-menu-account-sub">{handle ?? "без хендла"}</span>}
       </button>
 
       <button
@@ -79,14 +91,16 @@ export function ProfileAccountCards({
         onClick={onOpen}
         aria-label={loading ? "Профіль" : `Профіль: ім'я на платформі — ${platform ?? "не задано"}`}
       >
-        <span className="wb-menu-account-label">Портал</span>
         <span className="wb-menu-account-avatar">
           <Icon name="user" size={22} />
         </span>
-        <span className="wb-menu-account-name">
-          {loading ? "Завантаження…" : (platform ?? "Ім'я не задано")}
+        <span className="wb-menu-account-text">
+          <span className="wb-menu-account-label">Портал</span>
+          <span className="wb-menu-account-name">
+            {loading ? "Завантаження…" : (platform ?? "Ім'я не задано")}
+          </span>
+          <span className="wb-menu-account-sub">{joined ?? "Натисніть, щоб змінити"}</span>
         </span>
-        <span className="wb-menu-account-sub">{joined ?? "Натисніть, щоб змінити"}</span>
       </button>
     </div>
   );

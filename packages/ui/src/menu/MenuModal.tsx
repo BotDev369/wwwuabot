@@ -90,8 +90,12 @@ export function MenuModal({
   items,
   content,
   header,
+  footer,
   layout = "rows",
   align = "start",
+  fullscreen = false,
+  titleAlign = "start",
+  closePlacement = "header",
   onClose,
   onBack,
 }: MenuModalProps): ReactElement {
@@ -103,11 +107,20 @@ export function MenuModal({
   }
 
   const Item = layout === "blocks" ? MenuBlock : MenuRow;
+  // «Закрити» внизу — це вже смуга, навіть якщо більше в ній нічого немає.
+  const closeAtBottom = closePlacement === "bottom";
 
   return (
-    <div className="wb-modal-overlay wb-modal-overlay--tight" onClick={onClose}>
+    <div
+      // Два варіанти полів — або майже весь екран, або весь: разом вони
+      // означали б одне й те саме, лише з різним порядком у файлі.
+      className={`wb-modal-overlay ${
+        fullscreen ? "wb-modal-overlay--screen" : "wb-modal-overlay--tight"
+      }`}
+      onClick={onClose}
+    >
       <div
-        className="wb-modal wb-modal--full wb-sheet"
+        className={`wb-modal wb-modal--full wb-sheet${fullscreen ? " wb-modal--screen" : ""}`}
         role="dialog"
         aria-modal="true"
         aria-label={title}
@@ -120,10 +133,16 @@ export function MenuModal({
               <Icon name="arrow-left" size={18} />
             </button>
           )}
-          <h2 className="wb-modal-title">{title}</h2>
-          <button type="button" className="wb-close-btn" onClick={onClose} aria-label="Закрити">
-            <Icon name="close" size={18} />
-          </button>
+          <h2
+            className={`wb-modal-title${titleAlign === "center" ? " wb-modal-title--center" : ""}`}
+          >
+            {title}
+          </h2>
+          {!closeAtBottom && (
+            <button type="button" className="wb-close-btn" onClick={onClose} aria-label="Закрити">
+              <Icon name="close" size={18} />
+            </button>
+          )}
         </div>
 
         <div className={`wb-modal-body wb-menu-body${align === "end" ? " wb-menu-body--end" : ""}`}>
@@ -140,6 +159,25 @@ export function MenuModal({
             </div>
           )}
         </div>
+
+        {/* Смуга внизу — окремо від тіла: тіло прокручується, а перемикач і
+            вихід мусять бути на місці завжди (інакше з прокрученого меню
+            «закрити» зникає саме тоді, коли його шукають). */}
+        {(footer !== undefined || closeAtBottom) && (
+          <div className="wb-sheet-bar">
+            {footer}
+            {closeAtBottom && (
+              <button
+                type="button"
+                className="wb-btn wb-btn-secondary wb-sheet-bar-close"
+                onClick={onClose}
+              >
+                <Icon name="close" size={16} />
+                Закрити
+              </button>
+            )}
+          </div>
+        )}
       </div>
     </div>
   );

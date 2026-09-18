@@ -311,6 +311,15 @@
   font-weight: var(--weight-semibold);
 }
 
+/* Заголовок по центру — для шапки, де поруч немає кнопок: у повноекранній
+   поверхні він тоді читається як назва екрана, а не як підпис ліворуч.
+   `flex: 1` саме тому, що поруч може стояти «назад»: тоді він центрується в
+   тому, що лишилось, а не виїжджає за край. */
+.wb-modal-title--center {
+  flex: 1 1 auto;
+  text-align: center;
+}
+
 .wb-modal-close {
   width: 28px;
   height: 28px;
@@ -585,6 +594,35 @@ html:has(.wb-tabbar) .wb-modal {
   .wb-sheet {
     border-radius: var(--radius-md);
   }
+}
+
+/* Поверхня на ВЕСЬ екран (`MenuModal` → `fullscreen`): краї без полів, без
+   закруглень і без тіні — їй нічого відділяти, вона і є екран.
+
+   Місце під футером застосунку лишається навіть тут: футер — хром, він
+   малюється НАД модалкою, і поверхня «на весь екран» без цього відступу
+   поклала б свої кнопки під нього. Виняток лише для міри: `--tab-bar-h`, а не
+   `--sp-4 + --tab-bar-h`, бо тут модалка стикається зі смугою впритул.
+
+   Специфічність пари селекторів нижче (0,3,1) вища за правило `--tight` із тим
+   самим `html:has(...)` — саме тому воно й перекриває його нижній відступ. */
+.wb-modal-overlay--screen {
+  padding: 0;
+}
+
+html:has(.wb-tabbar) .wb-modal-overlay--screen {
+  padding-bottom: var(--tab-bar-h);
+}
+
+/* Селектор — ПАРА класів, а не один `--screen`: медіа-запит вище
+   (`.wb-sheet` на телефоні) має ту саму специфічність, і одинак залежав би від
+   порядку в файлі — а порядок тут міняється. */
+.wb-modal.wb-modal--screen {
+  max-width: none;
+  height: 100%;
+  max-height: 100%;
+  border-radius: 0;
+  box-shadow: none;
 }
 
 /* Мірки композера — в одному місці. І стовпчик вкладок, і смуга вкладень
@@ -985,6 +1023,89 @@ html:has(.wb-tabbar) .wb-modal {
   margin-top: auto;
 }
 
+/* Смуга ВНИЗУ поверхні — те, що мусить бути під пальцем і на місці завжди:
+   перемикач вигляду й «закрити». Це не `.wb-sheet-actions`: ті йдуть останнім
+   рядком тіла й прокручуються разом із ним, а з прокрученого меню «закрити»
+   зникає саме тоді, коли його шукають.
+
+   Безпечна зона знизу — тут, а не в модалки: смуга остання на екрані. */
+.wb-sheet-bar {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+  flex-shrink: 0;
+  padding: var(--sp-2) var(--sp-3) calc(var(--sp-3) + var(--safe-bottom));
+}
+
+/* Мірки смуги діляться навпіл: контрол ліворуч і вихід праворуч. Кожен тоді
+   ширший за планку пальця (44px) без власної висоти. */
+.wb-sheet-bar > * {
+  flex: 1 1 0;
+}
+
+/* «Закрити» в смузі — теж планка пальця: вихід, у який треба влучити з першого
+   разу, не може бути нижчим за 44px, хоч кнопка й менша за неї в решті місць. */
+.wb-sheet-bar-close {
+  min-height: 44px;
+}
+
+/* Перемикач із двох-трьох варіантів: видно **всі** варіанти одразу, а не той,
+   що вибрано (це не список — тут їх два-три). Трек — `--field-bg`, вибраний
+   сегмент — акцентна заливка, як в активної вкладки композера. */
+.wb-segmented {
+  display: flex;
+  gap: 2px;
+  padding: 2px;
+  border-radius: var(--radius-md);
+  background: var(--field-bg);
+}
+
+.wb-segmented-btn {
+  display: flex;
+  flex: 1 1 0;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  /* 44 — планка пальця в спокої: сегмент не має меншого за неї розміру. */
+  min-height: 44px;
+  padding: 0 var(--sp-2);
+  border: none;
+  border-radius: var(--radius-sm);
+  background: none;
+  color: var(--text-secondary);
+  font: inherit;
+  font-size: var(--text-sm);
+  font-weight: var(--weight-medium);
+  cursor: pointer;
+  transition:
+    background var(--duration-fast) var(--ease),
+    color var(--duration-fast) var(--ease);
+}
+
+.wb-segmented-btn:hover {
+  color: var(--text-primary);
+}
+
+.wb-segmented-btn--active {
+  background: var(--accent-dim);
+  color: var(--accent);
+}
+
+.wb-segmented-label {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Вузький екран: підпис сегмента не влазить у половину смуги (сама смуга ділить
+   місце з «закрити») — лишається знак, ім'я варіанта не губиться, воно в
+   `aria-label`. Так само зроблено в підписів вкладок композера. */
+@media (max-width: 380px) {
+  .wb-segmented-label {
+    display: none;
+  }
+}
+
 /* ── Меню (профіль): поверхня зі списком пунктів ───────────────────────────
    Та сама повноекранна поверхня, що й композер (`.wb-sheet`), лише замість
    вкладок — вертикальний список. Розмітку рендерить СПІЛЬНИЙ `MenuModal`
@@ -1179,10 +1300,13 @@ html:has(.wb-tabbar) .wb-modal {
    пункту (`--field-bg`, радіус, підсвічення на дотик), лише веде він не до
    розділу, а до профілю.
 
-   Стоять вони **під пунктами, у дві колонки**: пункти читають згори, а низ —
+   Стоять вони **над пунктами, у дві колонки**: пункти читають згори, а низ —
    зона пальця, і саме туди рука дістає не прицілюючись. Дві колонки
    нерозривні (`grid`, а не `flex-wrap`): картка — портрет, а не смуга, бо в
-   смузі вона читалась би як ще один пункт меню. */
+   смузі вона читалась би як ще один пункт меню.
+
+   Друга розкладка (`--rows`) — те саме **тіло картки**, лише рядком: це вибір
+   людини, а не другий набір розмітки. */
 .wb-menu-account {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -1253,6 +1377,16 @@ html:has(.wb-tabbar) .wb-modal {
   font-size: var(--text-lg);
 }
 
+/* Текст картки — окремий блок: у портреті він центрований, у рядку — притиснутий
+   ліворуч. Без нього дві розкладки вимагали б ДВОХ наборів розмітки. */
+.wb-menu-account-text {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  min-width: 0;
+}
+
 .wb-menu-account-name {
   font-size: var(--text-base);
   font-weight: var(--weight-semibold);
@@ -1263,6 +1397,26 @@ html:has(.wb-tabbar) .wb-modal {
   font-size: var(--text-sm);
   color: var(--text-muted);
   overflow-wrap: anywhere;
+}
+
+/* Рядкова розкладка (`MenuModal` → картки рядками): один стовпчик, а картка —
+   смуга на всю ширину. Той самий вибір, що в колекції (рядок проти плитки):
+   рядком людина читає ім'я й дату, портрет — упізнає картку. */
+.wb-menu-account--rows {
+  grid-template-columns: 1fr;
+}
+
+.wb-menu-account--rows .wb-menu-account-card {
+  flex-direction: row;
+  justify-content: flex-start;
+  gap: var(--sp-3);
+  min-height: 64px;
+  padding: var(--sp-2) var(--sp-3);
+  text-align: left;
+}
+
+.wb-menu-account--rows .wb-menu-account-text {
+  align-items: flex-start;
 }
 
 /* ── Вигляд колекції (спільний кирпичик) ───────────────────────────────────

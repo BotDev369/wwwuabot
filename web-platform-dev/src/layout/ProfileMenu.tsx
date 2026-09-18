@@ -21,6 +21,9 @@ import { useDialog } from "@wwwuabot/ui/dialog";
 import { MenuModal, buildMenuItems } from "@wwwuabot/ui/menu";
 import { useProfile } from "@/pages/useProfile";
 import { ProfileAccountCards } from "./ProfileAccountCards";
+import { ProfileCardsSwitch } from "./ProfileCardsSwitch";
+import { readAccountCardsLayout, writeAccountCardsLayout } from "./profile-cards-pref";
+import type { AccountCardsLayout } from "./profile-account";
 import { PROFILE_PATH } from "./platform-tabs";
 import { buildProfileItems, type ProfileMenuView } from "./profile-menu";
 
@@ -39,6 +42,14 @@ export function ProfileMenu({ onClose }: ProfileMenuProps): ReactElement {
   const dialog = useDialog();
   const { profile, loading } = useProfile();
   const [view, setView] = useState<ProfileMenuView>("list");
+  // Розкладка карток — вибір людини, і лежить він у сховищі пристрою: меню
+  // розмонтовується на кожному закритті, тож стан самого компонента скидався б.
+  const [cardsLayout, setCardsLayout] = useState<AccountCardsLayout>(readAccountCardsLayout);
+
+  function changeCardsLayout(next: AccountCardsLayout): void {
+    setCardsLayout(next);
+    writeAccountCardsLayout(next);
+  }
 
   const items = buildMenuItems({
     items: buildProfileItems({ onOpenTheme: () => setView("theme") }),
@@ -64,6 +75,18 @@ export function ProfileMenu({ onClose }: ProfileMenuProps): ReactElement {
       // заголовком, а не біля краю екрана.
       layout="blocks"
       align={view === "list" ? "end" : "start"}
+      // На весь екран, із заголовком по центру, а вихід — унизу: це найбільша
+      // поверхня продукту, і в шапці їй нема чого тримати кнопку на відшибі.
+      fullscreen
+      titleAlign="center"
+      closePlacement="bottom"
+      // Перемикач розкладки карток стоїть **перед** «закрити» і лише там, де
+      // картки видно: у панелі теми він нічого не змінює.
+      footer={
+        view === "list" ? (
+          <ProfileCardsSwitch layout={cardsLayout} onChange={changeCardsLayout} />
+        ) : undefined
+      }
       // Панель теми замінює список: це та сама поверхня, лише зі своїм вмістом
       // (світлої / темної більше немає, а три кольори — не пункт меню).
       content={view === "theme" ? <ThemeColorPanel onClose={onClose} /> : undefined}
@@ -79,6 +102,7 @@ export function ProfileMenu({ onClose }: ProfileMenuProps): ReactElement {
           <ProfileAccountCards
             user={profile}
             loading={loading}
+            layout={cardsLayout}
             onOpen={() => {
               onClose();
               navigate(PROFILE_PATH);

@@ -124,4 +124,41 @@ describe("MenuModal", () => {
     // Притиснути можна й список, і плитки: це різні рішення.
     expect(html({ align: "end", layout: "blocks" })).toContain("wb-menu-blocks");
   });
+
+  it("поверхня на весь екран — той самий кирпичик, лише інші мірки", () => {
+    // Тіло, пункти й заголовок ті самі: міняються краї, а не поверхня. Саме
+    // тому це `--screen`, а не друга модалка.
+    const markup = html({ fullscreen: true, layout: "blocks" });
+    expect(markup).toContain("wb-modal-overlay--screen");
+    expect(markup).toContain("wb-modal--screen");
+    expect(markup).toContain("wb-sheet");
+    expect(markup).toContain("wb-menu-blocks");
+    // Поля — або майже весь екран, або весь: `--tight` тут зайвий.
+    expect(markup).not.toContain("wb-modal-overlay--tight");
+  });
+
+  it("заголовок по центру — теж стан поверхні", () => {
+    expect(html()).not.toContain("wb-modal-title--center");
+    expect(html({ titleAlign: "center" })).toContain("wb-modal-title--center");
+  });
+
+  it("«закрити» внизу: ✕ у шапці немає, і смуга стоїть після тіла", () => {
+    const markup = html({
+      closePlacement: "bottom",
+      footer: <span className="wb-segmented">вигляд</span>,
+    });
+    // Два виходи з однієї поверхні — це два місця, де його шукати: один.
+    expect(markup).not.toContain("wb-close-btn");
+    expect(markup).toContain("wb-sheet-bar-close");
+    // Смуга — сестра тіла, а не останній пункт у ньому: інакше вона
+    // прокручувалась би разом із пунктами й зникала з очей.
+    expect(markup.indexOf("wb-sheet-bar")).toBeGreaterThan(markup.indexOf("wb-modal-body"));
+    // Те, що поверхня дала в смугу, стоїть ПЕРЕД «закрити».
+    expect(markup.indexOf("wb-segmented")).toBeLessThan(markup.indexOf("wb-sheet-bar-close"));
+  });
+
+  it("без смуги ✕ лишається в шапці", () => {
+    expect(html()).toContain("wb-close-btn");
+    expect(html()).not.toContain("wb-sheet-bar");
+  });
 });
