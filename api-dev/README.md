@@ -19,8 +19,9 @@ Cloudflare Worker: єдиний REST API для wwwuabot (D1 + KV).
 
 ## Фреймворку немає
 
-Маршрутизація — розбір `pathname` у `src/router.ts` (376 рядків) + контролери в
-`src/controllers/`. Сервіси з бізнес-логікою — в `src/services/`.
+Маршрутизація — розбір `pathname` у `src/router.ts` + контролери в `src/controllers/`.
+Сервіси з бізнес-логікою — в `src/services/`. Увесь інвентар шляхів із групами доступу —
+`docs/API.md` (генерований, `npm run doc:api`).
 
 ## Ендпоїнти здоров'я
 
@@ -33,7 +34,3 @@ Cloudflare Worker: єдиний REST API для wwwuabot (D1 + KV).
 база, а `/health` на цю роль не годиться (давав би «все добре» при мертвій D1).
 Тексти помилок назовні не віддаються, лише `checks: { db, kv }`
 (`docs/MONITORING.md`).
-
----
-
-**Останнє оновлення:** 2026-09-12

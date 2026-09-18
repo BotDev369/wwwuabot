@@ -1,35 +1,95 @@
-# bot-dev
+# bot-dev — Telegram-бот
 
-Cloudflare Worker: Telegram-бот для wwwuabot (grammY).
+> Система, а не список файлів. Правила репозиторію — `AGENTS.md`, рецепт нового екрана —
+> `docs/RECIPES.md` §6, таблиці — `docs/DATA_MODEL.md`.
 
-## Налаштування
+**Бот — це рендерер.** Він бере контент із таблиці `scenarios` і показує його; ніякого
+«другого сховища» для екранів немає. Новий екран — це рядок у базі, і лише новий **потік**
+(інше джерело апдейтів, інший спосіб переходу) вимагає коду.
 
-- **D1:** `wwwuabot-db-dev` (біндинг `DB`) — бот пише в неї напряму, без `api-dev`
-- **Queue:** `wwwuabot-logs` (продюсер і споживач — модуль `src/modules/logging/`)
-- **Секрети:** `BOT_TOKEN`, `CLOUDINARY_API_SECRET`, `SENTRY_DSN` (необовʼязковий: без нього Sentry у no-op)
-- **Середовище:** `ENVIRONMENT = "dev"` — задеплоєний лише дев-воркер, прода немає
+## Вхід воркера
 
-## Команди
+`bot-dev/src/index.ts` — `Sentry.withSentry` обгортає обидва шляхи:
 
-```bash
-npm run dev --workspace=bot-dev      # wrangler dev
-npm run typecheck --workspace=bot-dev
-npm run lint --workspace=bot-dev
-```
+| Шлях | Що робить |
+|---|---|
+| `fetch` | `api/router.ts` — єдиний маршрут `POST /webhook`; далі `controllers/telegram.controller.ts` перевіряє `X-Telegram-Bot-Api-Secret-Token` (якщо задано `SECRET_TOKEN`) і віддає апдейт grammY |
+| `queue` | `api/queue/queue.handler.ts` — пачка логів іде на `GAS_LOG_WEBHOOK_URL`; збій кидають далі, щоб Cloudflare повторив |
 
-## Де що лежить
+## Конвеєр апдейта
+
+`core/bot.ts` складає три middleware по черзі:
+
+| Middleware | Що робить (`core/middleware/…`) |
+|---|---|
+| `pre` | відповідає на `callback_query` одразу (Telegram дає 30 с); відкидає `edited_message`, `channel_post` і не-приватні чати; завантажує або створює користувача (`telegram_json` — усе, що віддав Telegram, як є); мовчки видаляє повідомлення заблокованих; тримає rate limit |
+| `intercept` | логує апдейт (модуль `modules/logging/`) |
+| `post` | **1.** роутинг (`botRouter`) → **2.** рендер екрана, якщо `ctx.screen` → **3.** нотифікації, якщо в екрана задані `notify_groups` і `notify_template` → **4.** запис користувача, якщо `ctx.userDirty` |
+
+**Читання бази не пише.** Стан користувача змінюють через прапор `ctx.userDirty`, а сам запис
+робить `post` — тому в роутері й модулях немає жодного «зберегти зараз».
+
+## Контекст (`shared/types/env.ts`)
+
+| Поле | Призначення |
+|---|---|
+| `env` | біндинги: `DB`, `LOG_QUEUE`, `BOT_TOKEN`, `WEB_PLATFORM_URL`, `SENTRY_DSN`, Cloudinary |
+| `user` + `userDirty` | рядок `users` і прапорець «є що зберегти» |
+| `screen` | те, що треба показати: `slug`, `title`, `photo_url`, `caption.{top,mid,bot}`, `buttons`, `rich_message` / `rich_data`, `web_path` |
+| `liveMessageSent` | рендер відбувся (для звітів і логів) |
+| `pendingNotification` | дані, які dispatcher доложить у шаблон |
+
+## Роутинг (`core/router/bot-router.ts`)
+
+| Вхід | Що робить |
+|---|---|
+| `/start <payload>` | спершу **код запрошення** (`modules/contacts/contact-link.ts`), потім адреса сторінки (`getScenarioByBotPayload`) |
+| `/start` без payload | головна сторінка (порожній `slug`) |
+| `callback_data` | це `slug` (хвіст після `#` відкидається); невалідний — ігнорується |
+| звичайний текст | приймається **тільки** якщо активний сценарій має `awaits_input = "text"` (і текст проходить валідацію); інакше повідомлення видаляється |
+
+Невалідний payload діплінка (`isValidBotPayload`) і ненайдена сторінка теж ведуть до видалення
+вхідного повідомлення: у чаті не лишається нічого, крім екрана.
+
+**Код запрошення перевіряється першим** саме тому, що він теж проходить перевірку адреси: код
+складає сервер, а `slug` пише людина, тож при збігу перемагає запрошення.
+
+## Рендер (`shared/utils/screen.ts`)
+
+- **Тільки надсилання, ніколи редагування.** Нове повідомлення + видалення старого (попереднього
+  від бота й вхідного від людини) одним `raw.deleteMessages`.
+- Підпис — три блоки (`top` / `mid` / `bot`), зшиті розділювачем; порожні не потрапляють.
+- `rich_message` з `rich_data` малюється як rich message; `rich_message` без даних не рендериться
+  взагалі (краще нічого, ніж порожній екран).
+- Кнопка «Відкрити сторінку» **додається автоматично** з `WEB_PLATFORM_URL` + `web_path`, якщо
+  URL налаштовано і такої кнопки ще немає — збережені в базі кнопки при цьому не змінюються.
+- Банер: `photo_url` рядка, а якщо його немає — текст із адреси (`shared/utils/photo.ts`); у
+  головної адреса порожня, тому її банер задають явно.
+
+## Контакти: бот пише лише свій крок
+
+За особистим лінком бот робить рівно одне — закріплює, **хто** прийшов, і ставить дату входу **в
+бота** (`joined_user_id`, `joined_bot_at`). Вхід на платформу ставить `api-dev`, коли людина
+відкриє Mini App: це **два різних кроки** приєднання. Власник за власним лінком контактом не стає,
+повторний перехід нічого не змінює, а `username` пишеться лише коли його ще немає (`COALESCE`) —
+перехід не має права переписати те, що людина написала про людину.
+
+## Помилки, логи, нотифікації
+
+- `bot.catch` (`core/bot.ts`): виняток → Sentry (без контексту Telegram) + запис у чергу логів +
+  відповідь користувачу з `shared/config/texts.ts`. Помилки, які grammY ловить сам, до
+  `withSentry` не долітають — саме тому їх звітує `bot.catch`.
+- Логи: `modules/logging/` (побудова повідомлення → черга → GAS-webhook). `console.log` у коді
+  воркера не використовують.
+- Нотифікації: `modules/notifications/` (dispatcher, sender, template-engine, topic-manager)
+  спрацьовують на полях екрана — групи й шаблон задають у контенті, а не в коді.
+
+## Дані
 
 | Що | Де |
 |---|---|
-| HTTP-роутинг і webhook | `src/api/router.ts`, `src/api/controllers/` |
-| Telegram-роутинг | `src/core/router/bot-router.ts` |
-| Middleware | `src/core/middleware/{pre,post,intercept}/` |
-| Репозиторії | `src/repositories/` (сценарії, налаштування), `src/modules/users/user.repository.ts` |
-| Логування | `src/modules/logging/` |
-
-Стан користувача живе в таблиці `users` із «мʼякою» схемою: колонки додає
-`withAutoMigrate`, а запис робить post-middleware за прапором `userDirty`.
-
----
-
-**Останнє оновлення:** 2026-09-12
+| `scenarios` (читання) | `src/repositories/scenario.repository.ts` |
+| `settings` | `src/repositories/settings.repository.ts` |
+| `users` (стан, профіль, блокування) | `src/modules/users/user.repository.ts` — схема «м'яка», колонки додає `withAutoMigrate` |
+| `contacts` (вхід у бота) | `src/modules/contacts/contact.repository.ts` |
+| Спільний доступ до БД | `src/core/database.repository.ts` |

@@ -4,15 +4,19 @@
  *
  * Документи цього репозиторію — інструкція, за якою працює агент, і вони мусять
  * описувати **поточний стан**: файл, якого вже немає, читається як вказівка до
- * нього. Тому перевіряються чотири речі:
+ * нього. Тому перевіряються п'ять речей:
  *
- *   1. Розмір: `.md` > 400 рядків — помилка, > 200 — попередження
- *      (правило кристалевості, `AGENTS.md` §3, тепер і для документів).
- *   2. Мертві відносні посилання: `[текст](./шлях.md)` мусить існувати.
- *   3. Мертвий шлях у тексті: згадка файлу (`packages/…`, `docs/…`, `*.ts`), у
- *      зворотних лапках, мусить існувати в чекауті. Шлях із воркспейса
+ *   1. **Бюджет розміру** (рядки **і** вага): межа своя в кожної групи — код
+ *      має власний ліміт у `check-quality.mjs`, документ — тут. Файл, який
+ *      справді мусить бути довшим, отримує **право** в `BUDGET_RIGHTS` з
+ *      причиною; право зсуває м'яку межу (попередження), але не критичну.
+ *   2. **Мертві відносні посилання**: `[текст](./шлях.md)` мусить існувати.
+ *   3. **Мертвий шлях у тексті**: згадка файлу (`packages/…`, `docs/…`, `*.ts`)
+ *      у зворотних лапках мусить існувати в чекауті. Шлях із воркспейса
  *      (`src/api/router.ts`) теж приймається — як хвіст наявного файлу.
- *   4. `AGENTS.md §N` з документа чи коду мусить вести в наявний § `AGENTS.md`:
+ *   4. **Свіжість генерованого** (`docs/API.md`): його збирають із роутера, тож
+ *      він не може розійтися з кодом.
+ *   5. `AGENTS.md §N` з документа чи коду мусить вести в наявний § `AGENTS.md`:
  *      розділи переписують, а номери в коментарях лишаються — і ведуть у нікуди.
  *
  * Запуск: `npm run check:docs` (той самий крок у CI).
@@ -23,45 +27,68 @@
 import { statSync } from "node:fs";
 import { dirname, join, normalize } from "node:path";
 import { ROOT, read, readLines, walk, WORKSPACES } from "./lib/files.mjs";
-
-const MAX_LINES = 200;
-const CRITICAL_LINES = 400;
-
-/** Кореневі документи, які теж мусять бути читабельними. */
-const ROOT_DOCS = ["AGENTS.md", "README.md", "CONTRIBUTING.md"];
+import { API_DOC, renderApiDoc } from "./lib/api-routes.mjs";
 
 /**
- * Два файли, які навмисно не діляться, тож попередження на 200 рядків їх не
- * стосується (поріг 400 — стосується):
- *
- *   - `AGENTS.md` — інструкція для агентів: її читають повністю одним файлом;
- *   - `docs/DESIGN_SYSTEM.md` — **один нумерований список правил**, і на номери
- *     посилається код у коментарях. Номер, розділений між файлами, веде в нікуди,
- *     а правило без номера в коді не знайти.
+ * Типовий бюджет документа: червоний прапорець на 200 рядках, критично на 400
+ * (правило кристалевості з `AGENTS.md` §3 діє й на документи).
  */
-const SIZE_EXEMPT_WARN = new Set(["AGENTS.md", "docs/DESIGN_SYSTEM.md"]);
+const BUDGET = { warnLines: 200, errorLines: 400, warnKb: 24, errorKb: 64 };
 
-/** Документ, на § якого посилається код і решта документів. */
-const SECTIONS_DOC = "AGENTS.md";
+/**
+ * **Права на більше.** Документ, який не можна поділити, отримує тут зсунуту
+ * м'яку межу **разом із причиною**: без причини право через місяць «оптимізують»
+ * у типову межу, а з ним — зникає й користь.
+ *
+ * Критична межа (400) не зсувається нікому: файл, який її перейшов, не читають,
+ * а гортають.
+ */
+const BUDGET_RIGHTS = {
+  "AGENTS.md": {
+    warnLines: 300,
+    warnKb: 52,
+    reason: "єдина інструкція для агентів — читається повністю одним файлом",
+  },
+  "docs/DESIGN_SYSTEM.md": {
+    warnLines: 300,
+    warnKb: 48,
+    reason: "один нумерований список правил, на номери якого посилається код",
+  },
+};
+
+/**
+ * Генеровані файли: розмір нормує не автор, а код, зате перевіряється свіжість.
+ * Список навмисно короткий — генерований документ, якого ніхто не читає, гірший
+ * за відсутній.
+ */
+const GENERATED = { [API_DOC]: renderApiDoc };
 
 const errors = [];
 const warnings = [];
 
-const docs = [...walk("docs", (p) => p.endsWith(".md")), ...ROOT_DOCS.filter(statSafe)];
+const docs = walk(".", (p) => p.endsWith(".md"));
 
-// ── 1. Розмір документів ──────────────────────────────────────────────────
+// ── 1. Бюджет розміру ─────────────────────────────────────────────────────
 
 const sizes = docs
-  .map((file) => ({ file, lines: readLines(file).length }))
+  .filter((file) => !GENERATED[file])
+  .map((file) => ({ file, lines: readLines(file).length, kb: statSize(file) / 1024 }))
   .sort((a, b) => b.lines - a.lines);
 
-for (const { file, lines } of sizes) {
-  if (lines > CRITICAL_LINES) {
+for (const { file, lines, kb } of sizes) {
+  const right = BUDGET_RIGHTS[file];
+  const warnLines = right?.warnLines ?? BUDGET.warnLines;
+  const warnKb = right?.warnKb ?? BUDGET.warnKb;
+
+  if (lines > BUDGET.errorLines) {
     errors.push(
-      `${file} — ${lines} рядків (> ${CRITICAL_LINES}). Поділи на частини й зроби покажчик.`,
+      `${file} — ${lines} рядків (> ${BUDGET.errorLines}). Поділи на теми й додай рядок у покажчик.`,
     );
-  } else if (lines > MAX_LINES && !SIZE_EXEMPT_WARN.has(file)) {
-    warnings.push(`${file} — ${lines} рядків (> ${MAX_LINES}).`);
+  } else if (lines > warnLines || kb > warnKb) {
+    warnings.push(
+      `${file} — ${lines} рядків / ${kb.toFixed(1)} KB ` +
+        `(межа ${warnLines} / ${warnKb} KB; ${right ? `право: ${right.reason}` : "права немає"}).`,
+    );
   }
 }
 
@@ -78,8 +105,7 @@ for (const file of docs) {
         if (/^(https?:|mailto:|#)/.test(href)) continue;
         const target = href.split("#")[0];
         if (!target) continue;
-        const abs = normalize(join(ROOT, dirname(file), target));
-        if (!statSafeAbs(abs)) {
+        if (!statSafeAbs(normalize(join(ROOT, dirname(file), target)))) {
           errors.push(`${file}:${i + 1} — посилання «${href}» не існує (мертве).`);
         }
       }
@@ -91,17 +117,13 @@ for (const file of docs) {
 // наявного шляху: документ може писати `src/api/router.ts` про воркспейс, і
 // кореневий шлях йому не потрібен.
 
-const CODE_WORDS = /^(?:packages|docs|scripts|bot-dev|api-dev|web-platform-dev|web-admin-dev)\//;
+const TOOL_DIRS = /^(?:packages|docs|scripts|bot-dev|api-dev|web-platform-dev|web-admin-dev)\//;
 const CODE_EXT = /\.(?:ts|tsx|mjs|js|css|md|sql|toml|json|html|yml|yaml)$/;
 const PATH_TOKEN = /^[\w.-]+(?:\/[\w.-]+)*\/?$/;
 
 const repoFiles = [...walk(".", () => true), ...walk(".github", () => true)];
 
-/**
- * Чи існує шлях. Приймається і **хвіст** наявного шляху: документ пише
- * `src/api/router.ts` про `bot-dev/src/api/router.ts` — шлях від кореня йому не
- * потрібен, а обіцянка «цей файл є» — та сама. Тека теж існує, якщо в ній є файли.
- */
+/** Чи існує шлях — як файл, як тека з файлами або як хвіст наявного шляху. */
 function repoPathExists(token) {
   const path = token.replace(/\/+$/, "");
   // `shared/…` — скорочення для `packages/shared/src/…`, яким користуються документи.
@@ -128,30 +150,36 @@ for (const file of docs) {
         if (!token.includes("/")) continue;
         if (!PATH_TOKEN.test(token)) continue;
         if (token.startsWith("@") || token.startsWith(".")) continue;
-        if (!CODE_WORDS.test(token) && !CODE_EXT.test(token)) continue;
-        if (!repoPathExists(token)) {
-          errors.push(`${file}:${i + 1} — шлях «${token}» не існує.`);
-        }
+        if (!TOOL_DIRS.test(token) && !CODE_EXT.test(token)) continue;
+        if (!repoPathExists(token)) errors.push(`${file}:${i + 1} — шлях «${token}» не існує.`);
       }
     });
 }
 
-// ── 4. § документа з нумерами — мусить існувати ──────────────────────────
+// ── 4. Свіжість генерованих документів ────────────────────────────────────
 
+for (const [file, render] of Object.entries(GENERATED)) {
+  if (!statSafeAbs(join(ROOT, file))) {
+    errors.push(`${file} — немає в чекауті. Згенеруй: npm run doc:api.`);
+  } else if (read(file) !== render()) {
+    errors.push(`${file} — розійшовся з кодом. Перегенеруй: npm run doc:api.`);
+  }
+}
+
+// ── 5. § документа з нумерами — мусить існувати ──────────────────────────
+
+const SECTIONS_DOC = "AGENTS.md";
 const addressed = new Set();
 for (const line of readLines(SECTIONS_DOC)) {
   const m = /^#{1,3}\s+(\d+(?:\.\d+)*)\./.exec(line);
   if (m) addressed.add(m[1]);
 }
 
-/** § у тексті: `AGENTS.md §5`, `AGENTS.md §5.2`. */
 const SECTION_REF_RE = /AGENTS\.md`?\s*§\s*(\d+(?:\.\d+)*)/g;
-
 const codeFiles = [
   ...WORKSPACES.flatMap((w) => walk(join(w, "src"), (p) => /\.[cm]?[jt]sx?$/.test(p))),
   ...walk("scripts", (p) => p.endsWith(".mjs")),
-  ...walk("docs", () => true),
-  ...ROOT_DOCS.filter(statSafe),
+  ...docs,
 ];
 
 for (const file of codeFiles) {
@@ -168,12 +196,15 @@ for (const file of codeFiles) {
 
 // ── Звіт ──────────────────────────────────────────────────────────────────
 
+const weight = docs.reduce((sum, file) => sum + statSize(file), 0);
+
 if (errors.length) {
   console.error("✗ Документація не пройшла перевірку:\n");
   for (const e of errors) console.error(`  ${e}`);
   console.error(
-    "\nВиправлення: завеликий документ — поділи на теми й додай рядок у покажчик `docs/README.md`;\n" +
-      `мертвий шлях чи § — прибери згадку або онови її на чинну (${SECTIONS_DOC} — джерело правди про §).\n`,
+    "\nВиправлення: завеликий документ — поділи на теми (або, якщо поділити справді ніяк,\n" +
+      "додай йому право в BUDGET_RIGHTS із причиною); генерований — `npm run doc:api`;\n" +
+      `мертвий шлях чи § — прибери згадку або онови на чинну (${SECTIONS_DOC} — джерело правди).\n`,
   );
   process.exitCode = 1;
 } else {
@@ -183,15 +214,20 @@ if (errors.length) {
     console.log("");
   }
   console.log(
-    `✓ Документація: файлів ${sizes.length}, найбільший ${sizes[0].lines} рядків; ` +
-      `мертвих посилань 0, мертвих шляхів 0, § без дому 0 (розділів у ${SECTIONS_DOC}: ${addressed.size}).`,
+    `✓ Документація: файлів ${docs.length}, найбільший ${sizes[0].lines} рядків ` +
+      `(${sizes[0].file}); разом ${(weight / 1024).toFixed(1)} KB; мертвих посилань 0, ` +
+      `мертвих шляхів 0, застарілих генерованих 0, § без дому 0.`,
   );
 }
 
 // ── дрібні хелпери ────────────────────────────────────────────────────────
 
-function statSafe(rel) {
-  return statSafeAbs(join(ROOT, rel));
+function statSize(rel) {
+  try {
+    return statSync(join(ROOT, rel)).size;
+  } catch {
+    return 0;
+  }
 }
 
 function statSafeAbs(abs) {

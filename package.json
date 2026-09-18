@@ -25,6 +25,7 @@
     "check:css": "node scripts/check-css-classes.mjs",
     "check:docs": "node scripts/check-docs.mjs",
     "check:db": "node scripts/check-db.mjs",
+    "doc:api": "node scripts/doc-api.mjs",
     "check:quality": "node scripts/check-quality.mjs",
     "test": "vitest run",
     "test:watch": "vitest"
