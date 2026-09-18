@@ -1,0 +1,312 @@
+/*
+ * ═══════════════════════════════════════════════════════════════════════════
+ * «МоїКонтакти» — список контактів, картка контакту й схема залучених
+ * ═══════════════════════════════════════════════════════════════════════════
+ *
+ * Класи `.wb-contact*` рендерить спільний код (`@wwwuabot/ui/contacts`), тож
+ * стилі живуть тут, а не в CSS однієї з оболонок: інакше друга оболонка
+ * виглядала б інакше (правило 10).
+ *
+ * Окремим файлом, а не в `components.css`, з тієї ж причини, що й
+ * `theme-panel.css`: це цілісна деталь зі своїми класами, і тримати її поряд із
+ * півсотнею інших правил означало б, що правку шукають навпомацки.
+ *
+ * Ліній немає жодної: рядок контакту, картка, рядок схеми й клітинка
+ * статистики — це той самий `--field-bg`, що у картки нотатки («плитка
+ * списку»), а розділяє проміжок (DESIGN_SYSTEM.md, правило 15).
+ *
+ * Вигляд списку несе **спільний** кирпичик `@wwwuabot/ui/collection`
+ * (`.wb-collection--rows` / `--cards`), тому `.wb-contact-list` не задає
+ * `display` — інакше два правила билися б і перемагав би той, що нижче у файлі.
+ */
+
+/* Заголовок блоку екрана — той самий, що в «МоїНотатки» (кегль, регістр,
+   колір): два екрани однієї оболонки мусять мати однакову межу між блоками. */
+.wb-contact-section {
+  margin: var(--sp-5) 0 var(--sp-1);
+  font-size: var(--text-xs);
+  font-weight: var(--weight-semibold);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+
+/* ── Список контактів ────────────────────────────────────────────────── */
+
+.wb-contact-list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.wb-contact-item {
+  border-radius: var(--radius-md);
+  background: var(--field-bg);
+  overflow: hidden;
+}
+
+/* Рядок — **кнопка на всю ширину**: палець мусить діставати будь-де, а окремі
+   дії живуть у картці контакту. Проміжок між рядками інфо найменший (4px):
+   це один підпис під одним, а не сусідні блоки. */
+.wb-contact-card {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-1);
+  width: 100%;
+  padding: var(--sp-2) var(--sp-3);
+  border: none;
+  background: none;
+  color: var(--text-primary);
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+  transition: background var(--duration-fast) var(--ease);
+}
+
+.wb-contact-card:hover {
+  background: var(--surface-hover);
+}
+
+.wb-contact-head {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+}
+
+/* Номер — порядковий: `tabular-nums`, щоб стовпчик номерів не «дихав» від
+   1 до 10, і мінімальна ширина, щоб ім'я починалось однією лінією. */
+.wb-contact-number {
+  flex: 0 0 auto;
+  min-width: 1.5em;
+  font-size: var(--text-xs);
+  font-variant-numeric: tabular-nums;
+  color: var(--text-muted);
+}
+
+/* Ім'я забирає вільне місце: воно — те, за чим контакт упізнають. */
+.wb-contact-name {
+  flex: 1 1 auto;
+  min-width: 0;
+  font-size: var(--text-base);
+  font-weight: var(--weight-semibold);
+  /* Ім'я пише людина — довге слово мусить переноситись, а не розтягувати
+     рядок за екран. */
+  overflow-wrap: anywhere;
+}
+
+.wb-contact-open {
+  flex: 0 0 auto;
+  display: flex;
+  color: var(--text-muted);
+}
+
+/* Рядок 2: хто це й на якому кроці. Обидва — підписи, і різнить їх колір:
+   хто це (secondary) голосніше за стан лінка (muted). */
+.wb-contact-line {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: var(--sp-1) var(--sp-2);
+  font-size: var(--text-sm);
+}
+
+.wb-contact-who {
+  color: var(--text-secondary);
+  overflow-wrap: anywhere;
+}
+
+.wb-contact-state {
+  color: var(--text-muted);
+}
+
+/* Хештег — **підпис, а не чип**: у `.wb-chip` бренди задають свої мірки з
+   `!important` (Apple — `padding: 7px 16px`), і рядок тегів виходив би вдвічі
+   вищим за рядок із текстом. Тут власний кирпичик, і бренду нема за що
+   зачепитись. */
+.wb-contact-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--sp-2);
+  font-size: var(--text-sm);
+  line-height: 1.2;
+}
+
+.wb-contact-tag {
+  color: var(--text-secondary);
+}
+
+/* ── Плитки: та сама розмітка, інша розкладка ─────────────────────────── */
+
+/* Плитка мусить читатись плиткою навіть із коротким ім'ям: `--sp-16` —
+   найменша висота, а не фіксована. */
+.wb-collection--cards .wb-contact-item {
+  display: flex;
+  flex-direction: column;
+  min-height: var(--sp-16);
+}
+
+.wb-collection--cards .wb-contact-card {
+  flex: 1 1 auto;
+  gap: var(--sp-2);
+  padding: var(--sp-3);
+}
+
+/* У плитці ім'я переноситься двома рядками, а не однією лінією: обрізати
+   «однією лінією» правильно в рядку, а в плитці це виглядало б як обрубок. */
+.wb-collection--cards .wb-contact-name {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+  overflow: hidden;
+}
+
+/* Хто це й стан — **стовпчиком**: у плитці рядок вузький, і два підписи в
+   ньому ламались би посередині слова. */
+.wb-collection--cards .wb-contact-line {
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--sp-1);
+}
+
+/* Хештеги — притиснуті донизу: верх плитки читають заради імені. */
+.wb-collection--cards .wb-contact-tags {
+  margin-top: auto;
+}
+
+/* ── Картка контакту (повноекранна поверхня) ───────────────────────────── */
+
+.wb-contact-sheet {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-4);
+}
+
+/* Номер і дати — одним рядком і тихо: це паспорт запису, а не поле. */
+.wb-contact-meta {
+  margin: 0;
+  font-size: var(--text-sm);
+  color: var(--text-muted);
+}
+
+/* Приєднання — **стан, а не дія**, тож зелений статусний колір (як у стані
+   контакту в списку): акцент лишається за тим, на що можна натиснути. */
+.wb-contact-joined {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-1);
+  margin: 0;
+  font-size: var(--text-sm);
+  color: var(--green);
+}
+
+.wb-contact-link-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--sp-2);
+}
+
+/* Сам лінк — код, тож моноширинним і з переносом: довгий діплінк інакше
+   розтягнув би картку за екран. */
+.wb-contact-link {
+  flex: 1 1 12rem;
+  min-width: 0;
+  padding: var(--sp-2);
+  border-radius: var(--radius-sm);
+  background: var(--bg-2);
+  font-size: var(--text-xs);
+  overflow-wrap: anywhere;
+}
+
+/* ── Схема залучених ──────────────────────────────────────────────────── */
+
+.wb-contact-scheme {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-3);
+}
+
+/* Три числа — три кроки однієї лійки. Сітка з рівних клітинок: числа
+   порівнюють очима, тож вони мусять стояти однією лінією. */
+.wb-contact-stats {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--sp-2);
+  margin: 0;
+}
+
+.wb-contact-stat {
+  padding: var(--sp-2);
+  border-radius: var(--radius-md);
+  background: var(--field-bg);
+  text-align: center;
+}
+
+.wb-contact-stat dt {
+  font-size: var(--text-xs);
+  color: var(--text-muted);
+}
+
+.wb-contact-stat dd {
+  margin: 0;
+  font-size: var(--text-lg);
+  font-weight: var(--weight-semibold);
+  color: var(--text-primary);
+}
+
+.wb-contact-nested-total {
+  margin: 0;
+  font-size: var(--text-sm);
+  color: var(--text-secondary);
+}
+
+/* Гілка схеми: корінь («Ви») і рядки під ним. Рівень показує **відступ**, а
+   не лінія-дерево: у тексті списку лінії читались би як таблиця. */
+.wb-contact-scheme-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-2);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.wb-contact-scheme-root {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+  font-size: var(--text-sm);
+  font-weight: var(--weight-semibold);
+  color: var(--text-primary);
+}
+
+.wb-contact-scheme-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: var(--sp-1) var(--sp-2);
+  margin-left: var(--sp-4);
+  padding: var(--sp-2) var(--sp-3);
+  border-radius: var(--radius-md);
+  background: var(--field-bg);
+  font-size: var(--text-sm);
+}
+
+/* Ім'я контакту голосніше за те, що поруч: у рядку стоїть або хендл, або
+   стан — обидва підписи. */
+.wb-contact-scheme-node {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-1);
+  color: var(--text-primary);
+}
+
+.wb-contact-scheme-name {
+  color: var(--text-secondary);
+}
+
+.wb-contact-scheme-nested {
+  font-size: var(--text-xs);
+  color: var(--accent);
+}

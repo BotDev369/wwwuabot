@@ -2,7 +2,7 @@ import type { AppContext } from "../../shared/types/env";
 import { ScenarioRepository } from "../../repositories/scenario.repository";
 import { log } from "../../shared/utils/debug";
 import { handleTextInput } from "./text-input";
-import { applyInvitePayload } from "../../modules/invites/invite-link";
+import { applyContactPayload } from "../../modules/contacts/contact-link";
 import { isValidBotPayload, isValidSlug, toWebPath } from "@wwwuabot/shared/content";
 
 /**
@@ -48,7 +48,7 @@ export async function botRouter(ctx: AppContext): Promise<void> {
 
       // Особистий лінк веде на головну: екран запрошення — не сторінка
       // контенту, і шукати сторінку з таким «slug» нема чого.
-      if (payload && (await applyInvitePayload(ctx, payload))) {
+      if (payload && (await applyContactPayload(ctx, payload))) {
         await loadAndRenderPayload(ctx, repo, "");
         return;
       }

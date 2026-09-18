@@ -15,8 +15,8 @@
  * `/profile`, `/notes` і `/contacts` стоять **перед** catch-all навмисно: це
  * єдині екрани, які не є рядком контенту (`slug`) — профіль складається з
  * даних користувача, список нотаток — із таблиці `notes`, а контакти — з
- * лінків-запрошень (`invites`), а не зі `page_data`. Тому в них власні
- * маршрути, а не адреси-заглушки в базі.
+ * таблиці `contacts`, а не зі `page_data`. Тому в них власні маршрути, а не
+ * адреси-заглушки в базі.
  */
 
 import { createBrowserRouter } from "react-router-dom";
@@ -35,7 +35,7 @@ export const router = createBrowserRouter([
       { path: "profile", element: <ProfilePage /> },
       // Нотатки — власні дані людини (таблиця `notes`), не рядок `scenarios`
       { path: NOTES_ROUTE, element: <NotesPage /> },
-      // Контакти — лінки-запрошення (таблиця `invites`), теж не рядок контенту
+      // Контакти — довідник людини (таблиця `contacts`), теж не рядок контенту
       { path: CONTACTS_ROUTE, element: <ContactsPage /> },
       // Catch-all: сторінка за її адресою
       { path: "*", element: <ScenarioPage /> },

@@ -41,7 +41,7 @@ import {
   handleUserMessage,
 } from "./controllers/users.controller";
 import { handleNotes, handleAdminNotes } from "./controllers/notes.controller";
-import { handleInvites } from "./controllers/invites.controller";
+import { handleContactLink, handleContacts } from "./controllers/contacts.controller";
 
 /**
  * Префікси шляхів, доступ до яких вимагає адмінської cookie-сесії.
@@ -142,9 +142,14 @@ export async function handleRequest(request: Request, env: Env): Promise<Respons
     return handleNotes(request, env);
   }
 
-  // ── Invites: особисті лінки-запрошення («МоїКонтакти») ──────────
-  if (pathname === "/api/invites") {
-    return handleInvites(request, env);
+  // ── Contacts: контакти людини («МоїКонтакти») ──────────────────
+  if (pathname === "/api/contacts") {
+    return handleContacts(request, env);
+  }
+  // Лінк — окрема дія, а не поле форми: його складає сервер, і старий лінк
+  // перестає працювати тим самим дотиком.
+  if (pathname === "/api/contacts/link" && request.method === "POST") {
+    return handleContactLink(request, env);
   }
 
   // ── Admin: Cookie Auth ─────────────────────────────────────────

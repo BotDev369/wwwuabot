@@ -3,8 +3,11 @@
  *
  * Один домен на обидві оболонки й на сервер:
  *
- * - `tags.ts` / `text.ts` — правила, за якими введене стає даними (їх уживає і
+ * - `text.ts` — правила тексту, за якими введене стає даними (їх уживає і
  *   композер, і api-dev: дві копії тут розійшлись би тихо);
+ * - хештеги — **не тут**, а в `@wwwuabot/shared/tags`: ті самі мітки є і в
+ *   контакту, тож правила тега лежать на верхньому рівні й реекспортуються
+ *   звідси, щоб жоден наявний виклик не змінився;
  * - `types.ts` — `NoteRow`, `NoteDraft` і простори `user` / `admin`;
  * - `api.ts` — форма запиту, спільна для платформи й панелі.
  *
@@ -24,7 +27,7 @@ export {
   removeTag,
   sanitizeTags,
   tagsToJson,
-} from "./tags";
+} from "../tags";
 export { MAX_NOTE_LENGTH, sanitizeNoteText } from "./text";
 export { SHARED_ADMIN_OWNER } from "./types";
 export type { NoteDraft, NoteListResponse, NoteRow, NoteSaveResponse, NoteScope } from "./types";

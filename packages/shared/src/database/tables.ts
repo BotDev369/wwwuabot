@@ -217,41 +217,50 @@ export const TABLES = {
   },
 
   /**
-   * Особисті лінки-запрошення — те, чим людина заводить собі контакт.
+   * Контакти людини — її власний довідник, а не список лінків.
    *
-   * **Один рядок = один лінк = один контакт.** Так це й задумано: лінк не
-   * «канал набору», а персональне запрошення конкретній людині, і саме тому
-   * `invited_user_id` стоїть у тому самому рядку, а не в таблиці поруч. Коли
-   * лінк уже когось закріпив, він більше нікого не закріплює: той, хто
-   * відкриє його другим, побачить бота, але контакту не додасть — закріплення
-   * одне, і воно вже є.
+   * **Один рядок = один контакт.** Запис заводять руками (ім'я, `@username`,
+   * Telegram-id, хештеги, примітки), і **лінк — одне з його полів**
+   * (`code`), а не окрема сутність: контакт може жити без лінка, і це
+   * нормальний стан, а не «незавершене створення». Тому таблиці поруч
+   * (наприклад `invites`) немає: вона була б другим сховищем того самого
+   * контакту (AGENTS.md §7).
    *
-   * `code` — це те, що їде в `?start=` (`inv-8f3k2q`), тому воно `UNIQUE`
-   * (інакше двоє лінків вели б в одного власника) і мусить проходити
-   * `isValidBotPayload` — правила коду живуть у `@wwwuabot/shared/invites`, а
-   * не тут: у `NOT NULL UNIQUE` про формат payload не сказано нічого.
+   * `code` — те, що їде в `?start=` (`inv-8f3k2q`), тож воно `UNIQUE` (інакше
+   * два лінки вели б до одного контакту) і мусить проходити
+   * `isValidBotPayload` — правила коду живуть у `@wwwuabot/shared/contacts`, а
+   * не тут: у `UNIQUE` про формат payload не сказано нічого. `NULL` у `code`
+   * дозволений і повторюваний (SQLite не вважає два `NULL` однаковими), бо
+   * контактів без лінка може бути скільки завгодно.
    *
-   * **Господар — `api-dev`:** лінки створює й показує платформа. `bot-dev`
-   * лише закріплює факт приєднання (`invited_user_id`), коли людина приходить
-   * із діплінка, — і теж кличе `ensureTables`, бо пише **першим**: людина
-   * відкриває бота раніше, ніж платформа встигає створити таблицю.
+   * **Закріплення — один раз і назавжди.** `telegram_user_id` пише `bot-dev`
+   * лише коли колонка порожня (`WHERE telegram_user_id IS NULL`): лінк
+   * персональний, і другий, хто за ним прийде, контакту вже не змінить.
+   *
+   * **Господар — `api-dev`:** контакти створює й показує платформа. `bot-dev`
+   * лише закріплює факт приєднання, коли людина приходить із діплінка, — і теж
+   * кличе `ensureTables`, бо пише **першим**: людина відкриває бота раніше, ніж
+   * платформа встигає створити таблицю.
    */
-  invites: {
-    name: "invites",
+  contacts: {
+    name: "contacts",
     owner: "api-dev",
     purpose:
-      "Особисті лінки-запрошення: код у `?start=`, підпис і закріплений контакт (`invited_user_id`). Лінки створює платформа, факт приєднання пише bot-dev.",
-    create: `CREATE TABLE IF NOT EXISTS invites (
+      "Контакти людини: ім'я, `@username`, Telegram-id, хештеги, примітки й особистий лінк-запрошення (`code`) як поле. Створює й показує платформа, факт приєднання за кодом пише bot-dev.",
+    create: `CREATE TABLE IF NOT EXISTS contacts (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         owner_id INTEGER NOT NULL,
-        code TEXT NOT NULL UNIQUE,
-        label TEXT NOT NULL DEFAULT '',
-        invited_user_id INTEGER,
-        invited_at TEXT,
+        name TEXT NOT NULL DEFAULT '',
+        username TEXT,
+        telegram_user_id INTEGER,
+        tags TEXT NOT NULL DEFAULT '[]',
+        notes TEXT NOT NULL DEFAULT '',
+        code TEXT UNIQUE,
+        joined_at TEXT,
         created_at TEXT NOT NULL DEFAULT (datetime('now')),
         updated_at TEXT NOT NULL DEFAULT (datetime('now'))
       )`,
-    indexes: ["CREATE INDEX IF NOT EXISTS idx_invites_owner ON invites(owner_id)"],
+    indexes: ["CREATE INDEX IF NOT EXISTS idx_contacts_owner ON contacts(owner_id)"],
   },
 
   mydate_analysis: {

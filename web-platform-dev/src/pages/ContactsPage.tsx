@@ -1,45 +1,59 @@
 /**
- * «МоїКонтакти» — люди, закріплені за вами особистим посиланням.
+ * «МоїКонтакти» — довідник людей, яких власник знає й запрошує.
  *
- * Екран лише **зводить** те, що вже є: картки й схему дає спільний
- * `@wwwuabot/ui/invites`, дані — `useInvites`, а адреса й власник — ця
- * оболонка. Тому тут немає ні розмітки картки, ні правила «хто приєднався»:
- * усе це перевіряється тестами в спільному модулі, незалежно від платформи.
+ * Екран лише **зводить** те, що вже є: список, картку контакту й схему дає
+ * спільний `@wwwuabot/ui/contacts`, вигляд — спільний `@wwwuabot/ui/collection`,
+ * дані — `useContacts`, а адреса й власник — ця оболонка. Тому тут немає ні
+ * розмітки картки, ні правила «хто приєднався»: усе це перевіряється тестами в
+ * спільному модулі, незалежно від платформи.
  *
- * **Одна дія й один результат.** Контакт не заводять руками — його запрошують:
- * «Додати контакт» питає ім'я, створює посилання й **одразу кладе його в
- * буфер**, бо це єдине, за чим людина сюди приходить («скопіював — надіслав»).
- * Нижче — «Схема залучених»: те, що з цього вийшло.
+ * **Контакт — це запис із полями, а лінк — одне з них.** Раніше рядок
+ * народжувався разом із посиланням, і все, що про людину знали, — підпис і факт
+ * приєднання. Тепер контакт можна завести без лінка, відкрити картку, дописати
+ * `@username`, Telegram-id, хештеги й примітки, а посилання скласти тоді, коли
+ * його справді треба надіслати (кнопка в картці).
  *
- * **Контакт — це запис, а не одноразовий лінк**, тож екран працює з ним усіма
- * чотирма діями: створити («Додати контакт»), побачити (список),
- * **перейменувати** (олівець біля імені — підпис лишається власнику, бо ім'я
- * людини приходить із профілю) і прибрати (кнопка в картці). Правка без змін на
- * сервер не йде: підтверджувати нічого не змінилося — це не робота, а шум.
+ * **Дотик по контакту відкриває картку** — тому в рядку списку немає ні дій, ні
+ * посилання: усе, що показують двічі, редагується в одному місці й читається в
+ * другому. Список каже рівно те, за чим його читають: номер, ім'я, хто це й
+ * чим позначено.
  *
- * Самого посилання немає окремим блоком: воно належить **контакту**, і
- * показується в його картці — там, де його шукають, коли треба надіслати лінк
- * ще раз.
+ * Діалоги, буфер обміну й підтвердження живуть тут, а не в картці: це межі
+ * оболонки (та сама межа, що в нотатках і панелі теми).
  *
  * Шлях власний (`/contacts`), а не `slug` рядка `scenarios`: список збирається
- * з даних людини (таблиця `invites`), а не з `page_data` (AGENTS.md §7).
+ * з даних людини (таблиця `contacts`), а не з `page_data` (AGENTS.md §7).
  *
  * @module web-platform-dev/src/pages/ContactsPage
  */
 
 import { useEffect, useState, type ReactElement } from "react";
 import { Icon } from "@wwwuabot/shared";
-import { sanitizeInviteLabel, type InviteLink } from "@wwwuabot/shared/invites";
+import { sanitizeContactName, type Contact, type ContactInput } from "@wwwuabot/shared/contacts";
+import {
+  DEFAULT_COLLECTION_VIEW,
+  CollectionViewSwitch,
+  type CollectionView,
+} from "@wwwuabot/ui/collection";
+import { ContactList, ContactSheet, ContactsScheme } from "@wwwuabot/ui/contacts";
 import { useDialog } from "@wwwuabot/ui/dialog";
-import { InvitesList, InvitesScheme } from "@wwwuabot/ui/invites";
-import { useInvites } from "./useInvites";
+import { useContacts } from "./useContacts";
 
 /** Скільки тримається «Скопійовано» на кнопці. */
 const COPIED_MS = 2000;
 
+/** Контакт, якого тільки завели: лінка немає, поля порожні, крім імені. */
+function newContact(name: string): ContactInput {
+  return { name, username: null, telegramUserId: null, tags: [], notes: "" };
+}
+
 export function ContactsPage(): ReactElement {
-  const { links, loading, error, create, rename, remove } = useInvites();
+  const { contacts, loading, error, create, update, makeLink, remove } = useContacts();
   const dialog = useDialog();
+  const [view, setView] = useState<CollectionView>(DEFAULT_COLLECTION_VIEW);
+  // Відкрита картка — стан екрана, а не контакту: контакт у списку лишається
+  // тим самим рядком, а картка лише показує його поля.
+  const [openId, setOpenId] = useState<number | null>(null);
   const [copiedId, setCopiedId] = useState<number | null>(null);
 
   useEffect(() => {
@@ -48,54 +62,61 @@ export function ContactsPage(): ReactElement {
     return () => clearTimeout(timer);
   }, [copiedId]);
 
+  const open = contacts.find((contact) => contact.id === openId) ?? null;
+  const hasContacts = !loading && !error && contacts.length > 0;
+
   /**
    * Покласти лінк у буфер і позначити картку.
    *
    * Повертає `false`, а не кидає: невдача буфера — не помилка дії, а привід
    * показати посилання текстом, і вирішує це той, хто кликав.
    */
-  async function copyToClipboard(link: InviteLink): Promise<boolean> {
-    if (!link.deepLink) return false;
+  async function copyLink(contact: Contact): Promise<boolean> {
+    if (!contact.deepLink) return false;
     try {
-      await navigator.clipboard.writeText(link.deepLink);
-      setCopiedId(link.id);
+      await navigator.clipboard.writeText(contact.deepLink);
+      setCopiedId(contact.id);
       return true;
     } catch {
-      // Буфер обміну закритий — показуємо лінк текстом, щоб його можна було
-      // скопіювати руками: мовчазна невдача тут гірша за будь-яке повідомлення.
       return false;
     }
   }
 
+  /** Сказати вголос, чому лінка немає, — замість мовчазного «не спрацювало». */
+  async function tellLinkFailure(contact: Contact, what: string): Promise<void> {
+    await dialog.alert(
+      contact.deepLink
+        ? `${what} не вдалося — візьміть посилання з картки контакту.`
+        : "Бот ще не знає свого імені — посилання не склалося. Оновіть екран і спробуйте ще раз.",
+      { title: "Скопіюйте вручну" },
+    );
+  }
+
   /**
-   * Додавання контакту: ім'я питаємо діалогом (без підпису список
-   * перетвориться на стовпчик однакових кодів), а посилання одразу віддаємо
-   * в буфер — щоб «додав» і «надіслав» були однією дією, а не двома.
+   * Додавання контакту: ім'я питаємо діалогом (без нього список стає
+   * стовпчиком безіменних карток), далі **одразу складаємо лінк і кладемо його
+   * в буфер**, бо саме за цим сюди приходять, і відкриваємо картку — дописати
+   * решту полів.
+   *
+   * Лінк саме **пробуємо** скласти, а не вважаємо обов'язковим: якщо ім'я бота
+   * ще невідоме, контакт лишається без лінка, і кнопка в картці складе його
+   * потім.
    */
   async function addContact(): Promise<void> {
     const answer = await dialog.prompt("Як звати людину, якій ви надсилаєте посилання?", {
       title: "Додати контакт",
       placeholder: "Ім'я контакту",
       validate: (value) =>
-        sanitizeInviteLabel(value) === "" ? "Підпис не може бути порожнім" : null,
+        sanitizeContactName(value) === "" ? "Ім'я не може бути порожнім" : null,
     });
     if (answer === null) return;
 
     try {
-      const created = await create(sanitizeInviteLabel(answer));
-      if (await copyToClipboard(created)) {
-        await dialog.alert(
-          "Контакт додано, посилання вже в буфері — надішліть його людині в Telegram. Коли вона приєднається, контакт закріпиться за вами.",
-          { title: "Посилання скопійовано" },
-        );
-      } else {
-        await dialog.alert(
-          created.deepLink
-            ? `Контакт додано, але скопіювати не вдалося. Ось посилання:\n${created.deepLink}`
-            : "Контакт додано, але бот ще не знає свого імені — посилання не склалося. Оновіть екран і спробуйте ще раз.",
-          { title: "Скопіюйте вручну" },
-        );
-      }
+      const created = await create(newContact(sanitizeContactName(answer)));
+      setOpenId(created.id);
+
+      const linked = await makeLink(created.id);
+      if (!(await copyLink(linked))) await tellLinkFailure(linked, "Скопіювати");
     } catch (e: unknown) {
       await dialog.alert(e instanceof Error ? e.message : "Не вдалося додати контакт", {
         title: "Помилка",
@@ -103,45 +124,37 @@ export function ContactsPage(): ReactElement {
     }
   }
 
-  /**
-   * Перейменування контакту: питаємо те саме ім'я, що й при створенні, і
-   * підставляємо поточне — щоб людина правила підпис, а не набирала його
-   * заново.
-   */
-  async function renameContact(link: InviteLink): Promise<void> {
-    const answer = await dialog.prompt("За яким ім'ям ви впізнаєте цей контакт?", {
-      title: "Перейменувати контакт",
-      defaultValue: link.label,
-      placeholder: "Ім'я контакту",
-      validate: (value) =>
-        sanitizeInviteLabel(value) === "" ? "Підпис не може бути порожнім" : null,
-    });
-    if (answer === null) return;
-
-    const label = sanitizeInviteLabel(answer);
-    if (label === link.label) return;
-
+  /** Збереження картки: усі поля одразу, і назад до списку — там зміну видно. */
+  async function saveContact(id: number, input: ContactInput): Promise<void> {
     try {
-      await rename(link.id, label);
+      await update(id, input);
+      setOpenId(null);
     } catch (e: unknown) {
-      await dialog.alert(e instanceof Error ? e.message : "Не вдалося перейменувати контакт", {
+      await dialog.alert(e instanceof Error ? e.message : "Не вдалося зберегти контакт", {
         title: "Помилка",
       });
     }
   }
 
-  async function copyLink(link: InviteLink): Promise<void> {
-    if (await copyToClipboard(link)) return;
-    await dialog.alert(
-      link.deepLink
-        ? `Скопіювати не вдалося. Ось посилання:\n${link.deepLink}`
-        : "Посилання не складено: бот ще не знає свого імені.",
-      { title: "Скопіюйте вручну" },
-    );
+  /** Скласти лінк із картки: код новий, тож старий лінк перестає працювати. */
+  async function createLink(id: number): Promise<void> {
+    try {
+      const linked = await makeLink(id);
+      if (!(await copyLink(linked))) await tellLinkFailure(linked, "Скопіювати");
+    } catch (e: unknown) {
+      await dialog.alert(e instanceof Error ? e.message : "Не вдалося скласти лінк", {
+        title: "Помилка",
+      });
+    }
   }
 
-  async function deleteLink(link: InviteLink): Promise<void> {
-    const confirmed = await dialog.confirm(`Прибрати контакт «${link.label}»?`, {
+  async function copyFromCard(contact: Contact): Promise<void> {
+    if (await copyLink(contact)) return;
+    await tellLinkFailure(contact, "Скопіювати");
+  }
+
+  async function deleteContact(contact: Contact): Promise<void> {
+    const confirmed = await dialog.confirm(`Прибрати контакт «${contact.name}»?`, {
       title: "Видалення",
       tone: "danger",
       confirmText: "Прибрати",
@@ -149,7 +162,8 @@ export function ContactsPage(): ReactElement {
     if (!confirmed) return;
 
     try {
-      await remove(link.id);
+      await remove(contact.id);
+      setOpenId(null);
     } catch (e: unknown) {
       await dialog.alert(e instanceof Error ? e.message : "Не вдалося прибрати контакт", {
         title: "Помилка",
@@ -157,17 +171,27 @@ export function ContactsPage(): ReactElement {
     }
   }
 
-  const hasLinks = !loading && !error && links.length > 0;
-
   return (
     <div className="wb-page">
-      <div className="wb-page-head">
-        <h1 className="wb-page-title">МоїКонтакти</h1>
-        <div className="wb-page-actions">
-          <button type="button" className="wb-btn wb-btn-primary" onClick={() => void addContact()}>
-            <Icon name="plus" size={16} />
-            Додати контакт
-          </button>
+      {/* Шапка лишається на видноті (`.wb-page-sticky`) — як у нотатках:
+          довгий список ховає кнопку створення саме тоді, коли вона потрібна. */}
+      <div className="wb-page-sticky">
+        <div className="wb-page-head">
+          <h1 className="wb-page-title">МоїКонтакти</h1>
+          <div className="wb-page-actions">
+            {/* Вигляд — той самий спільний кирпичик, що в нотатках: рядки чи
+                плитки 1/2. Тут він у шапці, бо окремої смуги пошуку немає, а
+                місце поруч із дією — найближче до того, що він міняє. */}
+            {hasContacts && <CollectionViewSwitch view={view} onChange={setView} />}
+            <button
+              type="button"
+              className="wb-btn wb-btn-primary"
+              onClick={() => void addContact()}
+            >
+              <Icon name="plus" size={16} />
+              Додати контакт
+            </button>
+          </div>
         </div>
       </div>
 
@@ -187,14 +211,14 @@ export function ContactsPage(): ReactElement {
         </div>
       )}
 
-      {!loading && !error && links.length === 0 && (
+      {!loading && !error && contacts.length === 0 && (
         <div className="wb-empty">
           <span className="wb-empty-icon">
             <Icon name="mail" size={32} />
           </span>
           <p className="wb-empty-text">Ще немає жодного контакту.</p>
-          {/* Кажемо, як він з'являється: контакт не заводять руками — його
-              запрошують посиланням, і без цього порожній екран — глухий кут. */}
+          {/* Кажемо, як контакт з'являється: без цього порожній екран —
+              глухий кут. */}
           <p className="wb-empty-text">
             Натисніть «Додати контакт» — посилання скопіюється саме. Надішліть його людині в
             Telegram: коли вона приєднається, контакт закріпиться за вами й з'явиться тут.
@@ -202,19 +226,29 @@ export function ContactsPage(): ReactElement {
         </div>
       )}
 
-      {hasLinks && (
+      {hasContacts && (
         <>
-          <InvitesList
-            links={links}
-            copiedId={copiedId}
-            onCopy={(link) => void copyLink(link)}
-            onRename={(link) => void renameContact(link)}
-            onDelete={(link) => void deleteLink(link)}
-          />
+          <ContactList contacts={contacts} collection={view} onOpen={(c) => setOpenId(c.id)} />
 
-          <h2 className="wb-invite-section">Схема залучених</h2>
-          <InvitesScheme links={links} />
+          <h2 className="wb-contact-section">Схема залучених</h2>
+          <ContactsScheme contacts={contacts} />
         </>
+      )}
+
+      {open && (
+        <ContactSheet
+          // Картка читає поля при появі: `key` по контакту не дає їй показати
+          // поля одного контакту, коли відкрили вже інший.
+          key={open.id}
+          contact={open}
+          index={contacts.indexOf(open)}
+          copied={copiedId === open.id}
+          onSave={(input) => void saveContact(open.id, input)}
+          onDelete={() => void deleteContact(open)}
+          onMakeLink={() => void createLink(open.id)}
+          onCopyLink={() => void copyFromCard(open)}
+          onClose={() => setOpenId(null)}
+        />
       )}
     </div>
   );
