@@ -61,12 +61,12 @@ describe("buildScreenButtons", () => {
 
   it("adds one button on the home page without dropping saved ones", () => {
     const buttons = buildScreenButtons(
-      { buttons: [[{ text: "МоїДати", callback_data: "mydate" }]], web_path: "/" },
+      { buttons: [[{ text: "Дати", callback_data: "mydate" }]], web_path: "/" },
       "https://web-platform-dev.diskomate.workers.dev",
     );
 
     expect(buttons).toHaveLength(2);
-    expect(buttons[0]).toEqual([{ text: "МоїДати", callback_data: "mydate" }]);
+    expect(buttons[0]).toEqual([{ text: "Дати", callback_data: "mydate" }]);
     expect(buttons[1]).toEqual([
       {
         text: "Відкрити сторінку",

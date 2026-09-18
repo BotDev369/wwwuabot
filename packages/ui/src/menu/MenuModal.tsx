@@ -2,9 +2,11 @@
  * MenuModal — повноекранна модалка зі списком пунктів.
  *
  * Це та сама поверхня, що й композер (`.wb-modal--full .wb-sheet`), лише
- * замість вкладок — вертикальний список (або свій вміст: панель теми приходить
- * сюди слотом `content`): пункт на всю ширину, іконка, підпис, а для пункту,
- * якого ще немає, — рядок-пояснення, що там буде.
+ * замість вкладок — список пунктів (або свій вміст: панель теми приходить
+ * сюди слотом `content`). Вигляд пункту задає оболонка: **рядок** на всю
+ * ширину (`layout="rows"`, типове) або **плитка** по дві в ряду
+ * (`layout="blocks"`). Різниця не косметична: рядок читають (вибір одного з
+ * багатьох — вигляд колекції, теги), плитку тицяють (перехід із меню профілю).
  *
  * Ліній тут немає жодної: пункт видно тлом (`--field-bg`, той самий кирпичик,
  * що у видимого поля) і підсвіченням на дотик, а не рамкою (`DESIGN_SYSTEM.md`,
@@ -18,6 +20,12 @@ import type { KeyboardEvent, ReactElement } from "react";
 import { Icon } from "@wwwuabot/shared";
 import type { MenuItem, MenuModalProps } from "./types";
 
+/** Підпис кнопки: у заглушки до назви додається пояснення, що там буде. */
+function itemLabel(item: MenuItem): string {
+  const soon = item.status === "soon";
+  return soon && item.hint ? `${item.label}. ${item.hint}` : item.label;
+}
+
 function MenuRow({ item }: { item: MenuItem }): ReactElement {
   const soon = item.status === "soon";
   return (
@@ -27,7 +35,7 @@ function MenuRow({ item }: { item: MenuItem }): ReactElement {
       onClick={item.onSelect}
       // Заглушка не мовчить: `aria-disabled` тут не потрібен — дотик навмисно
       // щось робить (каже, що розділ у роботі), тож кнопка справді активна.
-      aria-label={soon && item.hint ? `${item.label}. ${item.hint}` : item.label}
+      aria-label={itemLabel(item)}
       aria-pressed={item.selected}
     >
       <span className="wb-menu-item-icon">
@@ -48,11 +56,40 @@ function MenuRow({ item }: { item: MenuItem }): ReactElement {
   );
 }
 
+/** Плитка: та сама кнопка, лише знак над підписом, а не збоку від нього. */
+function MenuBlock({ item }: { item: MenuItem }): ReactElement {
+  const soon = item.status === "soon";
+  return (
+    <button
+      type="button"
+      className={`wb-menu-block${soon ? " wb-menu-block--soon" : ""}`}
+      onClick={item.onSelect}
+      aria-label={itemLabel(item)}
+      aria-pressed={item.selected}
+    >
+      <span className="wb-menu-block-icon">
+        <Icon name={item.icon} size={22} />
+      </span>
+      <span className="wb-menu-block-label">{item.label}</span>
+      {/* Пояснення лишається і в плитці: заглушка, яка мовчить, — це дефект, а
+          не компактність. Довге пояснення підрізає CSS (два рядки). */}
+      {soon && item.hint && <span className="wb-menu-block-hint">{item.hint}</span>}
+      {item.selected && (
+        <span className="wb-menu-item-check">
+          <Icon name="check" size={16} />
+        </span>
+      )}
+    </button>
+  );
+}
+
 export function MenuModal({
   title,
   items,
   content,
   header,
+  layout = "rows",
+  align = "start",
   onClose,
   onBack,
 }: MenuModalProps): ReactElement {
@@ -62,6 +99,8 @@ export function MenuModal({
       onClose();
     }
   }
+
+  const Item = layout === "blocks" ? MenuBlock : MenuRow;
 
   return (
     <div className="wb-modal-overlay wb-modal-overlay--tight" onClick={onClose}>
@@ -85,16 +124,16 @@ export function MenuModal({
           </button>
         </div>
 
-        <div className="wb-modal-body wb-menu-body">
+        <div className={`wb-modal-body wb-menu-body${align === "end" ? " wb-menu-body--end" : ""}`}>
           {/* Блок над списком — не пункт, тож і не всередині `role="menu"`:
               він описує меню, а не діє замість нього. */}
           {header}
           {/* Панель і список — один слот: панель теми замінює список, а не
               стає ще одним над ним. */}
           {content ?? (
-            <div className="wb-menu-list">
+            <div className={layout === "blocks" ? "wb-menu-blocks" : "wb-menu-list"}>
               {(items ?? []).map((item) => (
-                <MenuRow key={item.key} item={item} />
+                <Item key={item.key} item={item} />
               ))}
             </div>
           )}

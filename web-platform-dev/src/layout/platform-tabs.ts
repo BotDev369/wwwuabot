@@ -45,7 +45,7 @@ export const PLATFORM_TABS: readonly PlatformTab[] = [
   { key: "home", label: "Головна", icon: "home", iconActive: "home-solid", slug: HOME_SLUG },
   {
     key: "mydate",
-    label: "МоїДати",
+    label: "Дати",
     icon: "my-dates",
     iconActive: "my-dates-solid",
     slug: "mydate",

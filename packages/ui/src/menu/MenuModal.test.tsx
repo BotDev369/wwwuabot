@@ -3,7 +3,8 @@
  *
  * Перевіряємо те, що легко зламати мовчки: що це ТА САМА поверхня, що й
  * композер, що пункт-заглушка каже про себе ще до дотику, що вибір видно
- * галочкою й що «назад» є лише там, де є куди вертатись.
+ * галочкою, що «назад» є лише там, де є куди вертатись, і що два варіанти
+ * розкладки (рядки / плитки) та притискання вмісту до низу справді різні.
  *
  * Середовище тестів — `node` (без DOM), тож перевіряємо розмітку, яку рендерить
  * React, а не дотики: так само зроблено в `composer/ComposerModal.test.tsx`.
@@ -21,8 +22,8 @@ function item(overrides: Partial<MenuItem> & { key: string }): MenuItem {
 }
 
 const ITEMS: readonly MenuItem[] = [
-  item({ key: "contacts", label: "МоїКонтакти", icon: "mail", status: "soon", hint: "буде" }),
-  item({ key: "notes", label: "МоїНотатки", icon: "text" }),
+  item({ key: "contacts", label: "Контакти", icon: "mail", status: "soon", hint: "буде" }),
+  item({ key: "notes", label: "Нотатки", icon: "text" }),
   item({ key: "theme", label: "Тема", icon: "sliders", selected: true }),
 ];
 
@@ -45,7 +46,7 @@ describe("MenuModal", () => {
 
   it("показує пункти в тому порядку, який дала оболонка", () => {
     const markup = html();
-    const order = ["МоїКонтакти", "МоїНотатки", "Тема"].map((label) => markup.indexOf(label));
+    const order = ["Контакти", "Нотатки", "Тема"].map((label) => markup.indexOf(label));
     expect(order[0]).toBeGreaterThan(-1);
     expect(order).toEqual([...order].sort((a, b) => a - b));
   });
@@ -55,14 +56,14 @@ describe("MenuModal", () => {
     expect(markup).toContain("wb-menu-item--soon");
     expect(markup).toContain("wb-menu-item-hint");
     // Ім'я пункту при цьому лишається в підписі кнопки: пояснення — не заміна.
-    expect(markup).toContain('aria-label="МоїКонтакти. буде"');
+    expect(markup).toContain('aria-label="Контакти. буде"');
   });
 
   it("у готового пункту пояснення немає", () => {
     const markup = renderToStaticMarkup(
       <MenuModal
         title="Профіль"
-        items={[item({ key: "notes", label: "МоїНотатки" })]}
+        items={[item({ key: "notes", label: "Нотатки" })]}
         onClose={noop}
       />,
     );
@@ -95,5 +96,29 @@ describe("MenuModal", () => {
     const markup = html({ header: <span className="wb-menu-ident">Хтось</span> });
     expect(markup.indexOf("wb-menu-ident")).toBeGreaterThan(-1);
     expect(markup.indexOf("wb-menu-ident")).toBeLessThan(markup.indexOf("wb-menu-list"));
+  });
+
+  it("плитки — той самий пункт, лише інша розкладка", () => {
+    const rows = html();
+    const blocks = html({ layout: "blocks" });
+
+    // Розкладка міняється, пункти — ні: інакше це були б два різні меню.
+    expect(rows).toContain("wb-menu-list");
+    expect(rows).not.toContain("wb-menu-blocks");
+    expect(blocks).toContain("wb-menu-blocks");
+    expect(blocks).not.toContain("wb-menu-list");
+    for (const label of ["Контакти", "Нотатки", "Тема"]) expect(blocks).toContain(label);
+    // Заглушка лишається чесною і в плитці: пояснення нікуди не зникає.
+    expect(blocks).toContain("wb-menu-block-hint");
+    expect(blocks).toContain('aria-label="Контакти. буде"');
+    // Вибір — стан в обох розкладках.
+    expect(blocks.match(/wb-menu-item-check/g)).toHaveLength(1);
+  });
+
+  it("притискання до низу — стан поверхні, а не розкладки", () => {
+    expect(html()).not.toContain("wb-menu-body--end");
+    expect(html({ align: "end" })).toContain("wb-menu-body--end");
+    // Притиснути можна й список, і плитки: це різні рішення.
+    expect(html({ align: "end", layout: "blocks" })).toContain("wb-menu-blocks");
   });
 });

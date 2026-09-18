@@ -59,6 +59,11 @@ export function ProfileMenu({ onClose }: ProfileMenuProps): ReactElement {
     <MenuModal
       title={TITLES[view]}
       items={view === "theme" ? [] : items}
+      // Плитки по дві в ряду — і вміст до низу (зона пальця). Притискання
+      // стосується лише списку: панель теми — форма, їй місце згори, під
+      // заголовком, а не біля краю екрана.
+      layout="blocks"
+      align={view === "list" ? "end" : "start"}
       // Панель теми замінює список: це та сама поверхня, лише зі своїм вмістом
       // (світлої / темної більше немає, а три кольори — не пункт меню).
       content={view === "theme" ? <ThemeColorPanel onClose={onClose} /> : undefined}

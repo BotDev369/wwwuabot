@@ -141,7 +141,7 @@ export async function handleRequest(request: Request, env: Env): Promise<Respons
     return handleNotes(request, env);
   }
 
-  // ── Contacts: контакти людини («МоїКонтакти») ──────────────────
+  // ── Contacts: контакти людини (екран «Контакти») ───────────────
   if (pathname === "/api/contacts") {
     return handleContacts(request, env);
   }

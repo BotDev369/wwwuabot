@@ -19,7 +19,7 @@ function build(items: ShellMenuItem[], overrides: Partial<typeof OPTS> = {}) {
 describe("buildMenuItems", () => {
   it("пункт з адресою веде на неї", () => {
     const navigate = vi.fn();
-    const [item] = build([{ key: "notes", label: "МоїНотатки", icon: "text", href: "/notes" }], {
+    const [item] = build([{ key: "notes", label: "Нотатки", icon: "text", href: "/notes" }], {
       navigate,
     });
 
@@ -44,7 +44,7 @@ describe("buildMenuItems", () => {
   it("пункт без адреси й без дії стає заглушкою, а не тишею", () => {
     const onPlaceholder = vi.fn();
     const [item] = build(
-      [{ key: "pages", label: "МоїСторінки", icon: "layout", status: "soon", hint: "буде" }],
+      [{ key: "pages", label: "Сторінки", icon: "layout", status: "soon", hint: "буде" }],
       { onPlaceholder },
     );
 
@@ -57,7 +57,7 @@ describe("buildMenuItems", () => {
   it("стан пункту не губиться: вибір і заглушка доїжджають до розмітки", () => {
     const [selected, soon] = build([
       { key: "brand-apple", label: "Apple", icon: "grid", selected: true, onSelect: vi.fn() },
-      { key: "contacts", label: "МоїКонтакти", icon: "mail", status: "soon", onSelect: vi.fn() },
+      { key: "contacts", label: "Контакти", icon: "mail", status: "soon", onSelect: vi.fn() },
     ]);
 
     expect(selected.selected).toBe(true);

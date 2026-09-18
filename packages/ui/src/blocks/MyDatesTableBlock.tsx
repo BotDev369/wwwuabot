@@ -76,7 +76,7 @@ export function MyDatesTableBlock({ block }: BlockComponentProps) {
         }}
       >
         <div style={{ display: "flex", alignItems: "center", gap: "var(--sp-3)" }}>
-          <h2 style={{ margin: 0 }}>Мої дати</h2>
+          <h2 style={{ margin: 0 }}>Дати</h2>
           <span className="wb-text-sm wb-text-muted">
             {processedDates.length} з {dates.length}
           </span>

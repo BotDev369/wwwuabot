@@ -17,7 +17,7 @@ const TABS: readonly ShellTab[] = [
   { key: "home", label: "Головна", icon: "home", iconActive: "home-solid", href: "/" },
   {
     key: "mydate",
-    label: "МоїДати",
+    label: "Дати",
     icon: "my-dates",
     iconActive: "my-dates-solid",
     href: "/mydate",
@@ -48,10 +48,10 @@ describe("TabBar", () => {
     const html = renderToStaticMarkup(<TabBar items={items} label="Навігація платформи" />);
 
     expect(html).toContain('aria-label="Навігація платформи"');
-    for (const label of ["Головна", "МоїДати", "GalyaShop", "Профіль", "Створити"]) {
+    for (const label of ["Головна", "Дати", "GalyaShop", "Профіль", "Створити"]) {
       expect(html).toContain(label);
     }
-    // Активний — рівно один, і це «МоїДати»
+    // Активний — рівно один, і це «Дати»
     expect(html.match(/wb-tabbar-item--active/g)).toHaveLength(1);
     expect(html).toContain('aria-current="page"');
   });
