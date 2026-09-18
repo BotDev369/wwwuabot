@@ -80,4 +80,29 @@ describe("меню: плитки й притискання до низу", () =>
       expect(entry.body, entry.selector).not.toContain("justify-content");
     }
   });
+
+  it("облікові картки ділять вільний простір, а не висять у ньому", () => {
+    // Порожнеча під заголовком — найбільша пляма екрана, і закривають її саме
+    // ці дві картки: плитки фіксовані, більше рости нічому. Прибравши `flex`,
+    // меню лишається робочим — і тому ніхто не помітить, що пусте місце
+    // повернулось.
+    const grow = rule(".wb-menu-body--end > .wb-menu-account");
+    expect(grow, "картки мусять рости лише в притиснутому вмісті").toBeDefined();
+    expect(grow?.body).toContain("flex: 1");
+
+    const list = rule(".wb-menu-account");
+    expect(list?.body).toContain("display: flex");
+    expect(list?.body).toContain("flex-direction: column");
+  });
+
+  it("облікова картка — кнопка: тло, радіус і висота не менша за палець", () => {
+    const card = rule(".wb-menu-account-card");
+    expect(card, "правило .wb-menu-account-card мусить існувати").toBeDefined();
+    expect(card?.body).toContain("background: var(--field-bg)");
+    expect(card?.body).toContain("border-radius: var(--radius-md)");
+    // Картки ділять простір між собою — по одному `flex: 1` на кожну.
+    expect(card?.body).toContain("flex: 1");
+    const minHeight = Number(card?.body.match(/min-height:\s*(\d+)px/)?.[1]);
+    expect(minHeight).toBeGreaterThanOrEqual(44);
+  });
 });

@@ -20,7 +20,7 @@ import { ThemeColorPanel } from "@wwwuabot/shared";
 import { useDialog } from "@wwwuabot/ui/dialog";
 import { MenuModal, buildMenuItems } from "@wwwuabot/ui/menu";
 import { useProfile } from "@/pages/useProfile";
-import { ProfileIdentityRow } from "./ProfileIdentityRow";
+import { ProfileAccountCards } from "./ProfileAccountCards";
 import { PROFILE_PATH } from "./platform-tabs";
 import { buildProfileItems, type ProfileMenuView } from "./profile-menu";
 
@@ -71,11 +71,11 @@ export function ProfileMenu({ onClose }: ProfileMenuProps): ReactElement {
       // «Назад» є лише там, звідки є куди вертатись: у списку розділів його
       // немає, бо це корінь меню.
       onBack={view === "theme" ? () => setView("list") : undefined}
-      // Картка «хто ти» — тільки в списку: у панелі теми вона займала б місце
-      // й не мала б до неї жодного стосунку.
+      // Дві картки акаунта — тільки в списку: у панелі теми вони займали б
+      // місце й не мали б до неї жодного стосунку.
       header={
         view === "list" ? (
-          <ProfileIdentityRow
+          <ProfileAccountCards
             user={profile}
             loading={loading}
             onOpen={() => {

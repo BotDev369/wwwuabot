@@ -25,6 +25,23 @@ export function sqliteTimestamp(value: string): number {
   return Number.isNaN(date.getTime()) ? 0 : date.getTime();
 }
 
+/**
+ * Дата з колонки без часу: «16.09.2026».
+ *
+ * Окремо від `formatStamp`, бо це не «коротший запис того самого»: там, де
+ * стоїть дата події назавжди («з нами з …»), час — шум, і він ще й робить
+ * рядок довшим за місце, яке йому дали (`--text-sm` в одну лінію).
+ */
+export function formatDay(value: string): string {
+  const time = sqliteTimestamp(value);
+  if (!time) return value;
+  return new Date(time).toLocaleDateString("uk-UA", {
+    day: "2-digit",
+    month: "2-digit",
+    year: "numeric",
+  });
+}
+
 /** Дата й час із колонки у вигляді, зрозумілому людині: «16.09.2026, 15:19». */
 export function formatStamp(value: string): string {
   const time = sqliteTimestamp(value);

@@ -93,9 +93,9 @@ describe("MenuModal", () => {
   });
 
   it("блок над списком стоїть до пунктів, а не замість них", () => {
-    const markup = html({ header: <span className="wb-menu-ident">Хтось</span> });
-    expect(markup.indexOf("wb-menu-ident")).toBeGreaterThan(-1);
-    expect(markup.indexOf("wb-menu-ident")).toBeLessThan(markup.indexOf("wb-menu-list"));
+    const markup = html({ header: <span className="wb-menu-account">Хтось</span> });
+    expect(markup.indexOf("wb-menu-account")).toBeGreaterThan(-1);
+    expect(markup.indexOf("wb-menu-account")).toBeLessThan(markup.indexOf("wb-menu-list"));
   });
 
   it("плитки — той самий пункт, лише інша розкладка", () => {

@@ -1175,35 +1175,63 @@ html:has(.wb-tabbar) .wb-modal {
   color: var(--accent);
 }
 
-/* Картка «хто ти» над списком — та сама поверхня, що у пункту, лише веде не
-   до розділу, а до профілю: ім'я, хендл і аватар видно ще до вибору пункту. */
-.wb-menu-ident {
+/* ── Облікові картки над списком ─────────────────────────────────────────
+   Telegram і портал — це два **різні** джерела про одну людину, тож і дві
+   картки: під одним підписом «дані» вони злилися б в одне, а Telegram-хендл
+   і ім'я на платформі — не те саме (AGENTS.md §2). Кирпичик той самий, що у
+   пункту (`--field-bg`, радіус, підсвічення на дотик), лише веде він не до
+   розділу, а до профілю. */
+.wb-menu-account {
   display: flex;
+  flex-direction: column;
+  gap: var(--sp-2);
+  min-height: 0;
+}
+
+/* Картки **ділять вільний простір** над плитками. Росте лише притиснутий до
+   низу вміст: там порожнеча й утворюється, і в меню профілю більше нічого не
+   росте — тож «зайняти місце» означає саме ці дві картки. */
+.wb-menu-body--end > .wb-menu-account {
+  flex: 1;
+}
+
+.wb-menu-account-card {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
   align-items: center;
-  gap: var(--sp-3);
+  justify-content: center;
+  gap: var(--sp-1);
   width: 100%;
-  min-height: 64px;
-  padding: var(--sp-2) var(--sp-3);
+  min-height: 96px;
+  padding: var(--sp-3);
   border: none;
   border-radius: var(--radius-md);
   background: var(--field-bg);
   color: var(--text-primary);
   font: inherit;
-  text-align: left;
+  text-align: center;
   cursor: pointer;
   transition: background var(--duration-fast) var(--ease);
 }
 
-.wb-menu-ident:hover {
+.wb-menu-account-card:hover {
   background: var(--surface-active);
 }
 
-.wb-menu-ident-avatar {
+/* Підпис картки каже **звідки** ці дані: без нього дві однакові за формою
+   картки відрізнялись би лише вмістом. */
+.wb-menu-account-label {
+  font-size: var(--text-xs);
+  color: var(--text-muted);
+}
+
+.wb-menu-account-avatar {
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 40px;
-  height: 40px;
+  width: 56px;
+  height: 56px;
   flex-shrink: 0;
   overflow: hidden;
   border-radius: var(--radius-full);
@@ -1212,32 +1240,26 @@ html:has(.wb-tabbar) .wb-modal {
   font-weight: var(--weight-semibold);
 }
 
-.wb-menu-ident-avatar img {
+.wb-menu-account-avatar img {
   width: 100%;
   height: 100%;
   object-fit: cover;
 }
 
-.wb-menu-ident-initial {
+.wb-menu-account-initial {
+  font-size: var(--text-lg);
+}
+
+.wb-menu-account-name {
   font-size: var(--text-md);
-}
-
-.wb-menu-ident-text {
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-  min-width: 0;
-}
-
-.wb-menu-ident-name {
-  font-size: var(--text-base);
   font-weight: var(--weight-semibold);
   overflow-wrap: anywhere;
 }
 
-.wb-menu-ident-handle {
-  font-size: var(--text-xs);
+.wb-menu-account-sub {
+  font-size: var(--text-sm);
   color: var(--text-muted);
+  overflow-wrap: anywhere;
 }
 
 /* ── Вигляд колекції (спільний кирпичик) ───────────────────────────────────

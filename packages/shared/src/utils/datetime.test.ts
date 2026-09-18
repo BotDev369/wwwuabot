@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { formatSqliteDatetime } from "./datetime";
+import { formatDay, formatSqliteDatetime } from "./datetime";
 
 describe("formatSqliteDatetime", () => {
   it("formats current date into SQLite timestamp when called without arguments", () => {
@@ -32,5 +32,24 @@ describe("formatSqliteDatetime", () => {
     expect(formatted).not.toContain("Z");
     expect(formatted).not.toContain(".");
     expect(formatted).toBe("2026-12-31 23:59:59");
+  });
+});
+
+describe("formatDay", () => {
+  it("показує дату без часу", () => {
+    // Час тут — шум: у рядку «з нами з …» дата події, а не сама подія.
+    expect(formatDay("2026-09-18 09:30:00")).toBe("18.09.2026");
+    expect(formatDay("2026-09-18 09:30:00")).not.toContain(":");
+  });
+
+  it("розбирає час тим самим правилом, що `formatStamp` — UTC без позначки зони", () => {
+    // Другий розбір того самого рядка показував би іншу дату: північ UTC
+    // частина рушіїв читає як попередній день.
+    expect(formatDay("2025-01-01 00:00:00")).toBe("01.01.2025");
+  });
+
+  it("невалідне значення лишає як є, а не вигадує дату", () => {
+    expect(formatDay("")).toBe("");
+    expect(formatDay("не дата")).toBe("не дата");
   });
 });
