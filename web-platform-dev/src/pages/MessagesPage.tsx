@@ -13,9 +13,12 @@
  * шукає **свої розмови**, а не людей у продукті.
  *
  * **Розмова відкривається поверхнею**, а не окремим маршрутом: футер лишається
- * хромом і видно, що ти в застосунку, а «назад» повертає до списку. Адреси в
- * розмови немає навмисно: переписка — це місце, а не сторінка, і посилання на
- * неї вело б у глибину повз список.
+ * хромом і видно, що ти в застосунку, а «назад» повертає до списку.
+ *
+ * **Адреса розмови — це вхід, а не стан.** Бот веде сюди за запрошенням
+ * (`/messages?peer=<id>`, спільний `messagesPeerPath`), і номер із адреси лише
+ * відкриває розмову один раз: далі нею керує стан екрана, тож закриття розмови
+ * не «повертає» її знову з того самого посилання.
  *
  * **Числа в шапці тут не дублюються.** Непрочитане показує бейдж у футері, і
  * він видно завжди — другий такий самий лічильник у заголовку був би тим самим
@@ -30,7 +33,9 @@
  */
 
 import { useState, type ReactElement } from "react";
+import { useSearchParams } from "react-router-dom";
 import { Icon } from "@wwwuabot/shared";
+import { MESSAGES_PEER_PARAM, readMessagesPeer } from "@wwwuabot/shared/messages";
 import {
   ConversationList,
   DEFAULT_MESSAGES_VIEW,
@@ -51,7 +56,12 @@ export function MessagesPage(): ReactElement {
   // Вигляд списку — стан **екрана**, а не даних: сервер віддає ті самі розмови,
   // а те, як їх показати, вирішує той, хто дивиться.
   const [view, setView] = useState<MessagesView>(DEFAULT_MESSAGES_VIEW);
-  const [openPeerId, setOpenPeerId] = useState<number | null>(null);
+  // Початкова розмова — з адреси, і лише початкова: `useState` бере її один
+  // раз, тож зміна адреси сама собою нічого не перевідкриває.
+  const [searchParams] = useSearchParams();
+  const [openPeerId, setOpenPeerId] = useState<number | null>(() =>
+    readMessagesPeer(searchParams.get(MESSAGES_PEER_PARAM)),
+  );
   // Чи відкрито вибір людини, якій писати («+»). Це стан **екрана**: сам вибір
   // нічого не змінює в даних, він лише веде в розмову.
   const [picking, setPicking] = useState(false);

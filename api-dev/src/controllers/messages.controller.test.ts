@@ -11,6 +11,9 @@
  * 3. **Порожнє тіло не стає повідомленням** і не створює розмову.
  * 4. **Своє не позначається прочитаним** (`sender_id <> ?`): інакше бейдж
  *    зникав би від того, що автор відкрив власну розмову.
+ * 5. **Вітання ставиться рівно раз і лише тому, хто прийшов за лінком**: воно
+ *    видно обоє, тож помилка тут — це чуже ім'я в спільному рядку або друге
+ *    вітання поверх живої переписки.
  *
  * @module api-dev/src/controllers/messages.controller.test
  */
@@ -92,6 +95,8 @@ interface DbOptions {
   /** Відповідь `first()` — SQL у аргументі, бо той самий метод обслуговує й зв'язок. */
   first?: (sql: string, binds: unknown[]) => unknown;
   all?: (sql: string) => unknown[];
+  /** Результат `run()`; типово — один змінений рядок. */
+  run?: (sql: string) => { changes: number; last_row_id: number } | undefined;
 }
 
 function makeDb(options: DbOptions = {}): { env: Env; statements: Captured[] } {
@@ -110,11 +115,15 @@ function makeDb(options: DbOptions = {}): { env: Env; statements: Captured[] } {
           if (pragma) return { results: (COLUMNS[pragma[1]] ?? []).map((name) => ({ name })) };
           return { results: options.all?.(sql) ?? [] };
         },
-        run: async () => ({ meta: { changes: 1, last_row_id: 11 } }),
+        run: async () => ({ meta: options.run?.(sql) ?? { changes: 1, last_row_id: 11 } }),
       };
       statements.push(record);
       return statement;
     },
+    // `batch` потрібен вітанню: ним воно кладе обидві позначки й останок
+    // розмови одним заходом. Запити вже зібрані в `statements`, тож методу
+    // досить існувати.
+    batch: async () => [],
   };
   return { env: { DB: db, BOT_TOKEN } as unknown as Env, statements };
 }
@@ -140,7 +149,44 @@ function request(
 }
 
 /** Людина зв'язана через контакти — те, що повертає `areLinked`. */
-const LINKED: DbOptions = { first: (sql) => (/FROM contacts/.test(sql) ? { id: 1 } : { id: 3 }) };
+const LINKED: DbOptions = {
+  first: (sql) => {
+    if (/FROM contacts/.test(sql)) return { id: 1 };
+    // Стрічка порожня: вітання має що сказати (перевірку наявних повідомлень
+    // `openThread` робить саме таким запитом).
+    if (/FROM messages/.test(sql)) return null;
+    return { id: 3 };
+  },
+};
+
+/**
+ * Мене запросили саме цією людиною — і стрічка порожня.
+ *
+ * Обидва запити до `contacts` слугують різним правилам, тож фікстура їх
+ * розрізняє: зв'язок шукає обидва напрямки (`OR`), запрошення — лише один.
+ */
+const INVITED: DbOptions = {
+  first: (sql) => {
+    // Обидва запити до `contacts` знаходять рядок: зв'язок є, і запросив саме
+    // він (`joined_user_id` — я).
+    if (/FROM contacts/.test(sql)) return { id: 1 };
+    if (/FROM messages/.test(sql)) return null;
+    return { id: 3 };
+  },
+  all: (sql) =>
+    /FROM users/.test(sql)
+      ? [
+          {
+            user_id: PEER,
+            first_name: "Сергій",
+            last_name: null,
+            username: "serg",
+            platform_username: "karas",
+            telegram_json: null,
+          },
+        ]
+      : [],
+};
 
 // ── Ідентичність ──────────────────────────────────────────────────
 
@@ -456,5 +502,97 @@ describe("список розмов", () => {
 
     expect(res.status).toBe(400);
     expect(db.statements.some((s) => /FROM contacts/.test(s.sql))).toBe(false);
+  });
+});
+
+// ── Вітання ───────────────────────────────────────────────────────
+
+describe("вітання пари", () => {
+  /** Позначки, покладені в стрічку цим відкриттям. */
+  function notes(db: { statements: Captured[] }): Captured[] {
+    return db.statements.filter((s) => /INTO messages/.test(s.sql));
+  }
+
+  it("тому, кого запросили, стрічка відкривається двома позначками платформи", async () => {
+    const db = makeDb(INVITED);
+    const res = await handleMessageThread(
+      request(`/api/messages/thread?peer=${PEER}`, { initData: await signedInitData() }),
+      db.env,
+    );
+
+    expect(res.status).toBe(200);
+    const inserted = notes(db);
+    expect(inserted).toHaveLength(2);
+    // Автор — платформа, а не людина: id у нього нульовий (`SYSTEM_SENDER_ID`).
+    expect(inserted[0].binds[1]).toBe(0);
+    expect(inserted[0].binds[2]).toContain("@karas");
+    expect(inserted[1].binds[2]).toContain("Контакт встановлено");
+    // Прочитані одразу: їх ніхто не писав, тож у бейджі їм нема чого робити.
+    expect(inserted[0].binds[3]).toBe(inserted[0].binds[4]);
+  });
+
+  it("вітання ставиться заявкою в базі — один `UPDATE` виграє один раз", async () => {
+    const db = makeDb(INVITED);
+    await handleMessageThread(
+      request(`/api/messages/thread?peer=${PEER}`, { initData: await signedInitData() }),
+      db.env,
+    );
+
+    const claim = db.statements.find((s) => /SET greeted_at/.test(s.sql));
+    expect(claim?.sql).toMatch(/greeted_at IS NULL/);
+  });
+
+  it("⛔ той, хто запросив, привітання не отримує", async () => {
+    // Зв'язок симетричний, запрошення — ні: автор лінка відкриває розмову
+    // такою ж людиною, але не «прийшов за запрошенням».
+    const db = makeDb({
+      first: (sql) => {
+        if (/FROM contacts/.test(sql)) return /OR \(owner_id/.test(sql) ? { id: 1 } : null;
+        if (/FROM messages/.test(sql)) return null;
+        return { id: 3 };
+      },
+    });
+
+    const res = await handleMessageThread(
+      request(`/api/messages/thread?peer=${PEER}`, { initData: await signedInitData() }),
+      db.env,
+    );
+
+    expect(res.status).toBe(200);
+    expect(notes(db)).toHaveLength(0);
+  });
+
+  it("⛔ у живу переписку вітання не вставляється", async () => {
+    const db = makeDb({
+      ...INVITED,
+      first: (sql) => {
+        if (/FROM contacts/.test(sql)) return { id: 1 };
+        if (/FROM messages/.test(sql)) return { id: 9 };
+        return { id: 3 };
+      },
+    });
+
+    await handleMessageThread(
+      request(`/api/messages/thread?peer=${PEER}`, { initData: await signedInitData() }),
+      db.env,
+    );
+
+    expect(notes(db)).toHaveLength(0);
+    // Заявку навіть не брали: спершу «чи є що вітати», потім «чи вітаю я».
+    expect(db.statements.some((s) => /SET greeted_at/.test(s.sql))).toBe(false);
+  });
+
+  it("⛔ коли вітання вже було, другого не буде", async () => {
+    const db = makeDb({
+      ...INVITED,
+      run: (sql) => (/SET greeted_at/.test(sql) ? { changes: 0, last_row_id: 0 } : undefined),
+    });
+
+    await handleMessageThread(
+      request(`/api/messages/thread?peer=${PEER}`, { initData: await signedInitData() }),
+      db.env,
+    );
+
+    expect(notes(db)).toHaveLength(0);
   });
 });

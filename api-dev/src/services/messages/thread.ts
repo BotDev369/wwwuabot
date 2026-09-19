@@ -20,6 +20,7 @@ import { messagePreview, sanitizeMessageBody } from "@wwwuabot/shared/messages";
 import { formatSqliteDatetime } from "@wwwuabot/shared/utils/datetime";
 import { areLinked } from "./links";
 import { ensureConversation, findConversationId } from "./conversations";
+import { ensureGreeting } from "./greeting";
 import { readPeer } from "./peers";
 
 /** Скільки повідомлень показує одна сторінка розмови. */
@@ -48,6 +49,7 @@ interface MessageRow {
   body: string | null;
   created_at: string | null;
   read_at: string | null;
+  is_system?: number | null;
 }
 
 function toMessage(row: MessageRow): Message {
@@ -57,6 +59,7 @@ function toMessage(row: MessageRow): Message {
     body: row.body ?? "",
     createdAt: row.created_at ?? "",
     readAt: row.read_at ?? null,
+    system: Number(row.is_system ?? 0) === 1,
   };
 }
 
@@ -77,14 +80,14 @@ async function readMessages(
     before === undefined
       ? await db
           .prepare(
-            `SELECT id, sender_id, body, created_at, read_at FROM messages
+            `SELECT id, sender_id, body, created_at, read_at, is_system FROM messages
                WHERE conversation_id = ? ORDER BY id DESC LIMIT ?`,
           )
           .bind(conversationId, THREAD_LIMIT)
           .all<MessageRow>()
       : await db
           .prepare(
-            `SELECT id, sender_id, body, created_at, read_at FROM messages
+            `SELECT id, sender_id, body, created_at, read_at, is_system FROM messages
                WHERE conversation_id = ? AND id < ? ORDER BY id DESC LIMIT ?`,
           )
           .bind(conversationId, before, THREAD_LIMIT)
@@ -109,6 +112,29 @@ export async function readThread(
   ]);
 
   return { ok: true, thread: { peer, messages } };
+}
+
+/**
+ * Відкрити розмову — те саме, що прочитати її, плюс одноразове вітання.
+ *
+ * Саме тут, а не в контролері: «відкриття» — це дія переписки (вітання
+ * ставиться саме при відкритті, один раз на пару), і контролер про неї знати
+ * не мусить. Читання старіших повідомлень (`before`) вітання теж лаштує —
+ * розмова вже відкрита, і другого вітання не буде: його стереже сам сервіс.
+ *
+ * **Порядок «спершу зв'язок» не порушено:** перший крок вітання — сама
+ * перевірка зв'язку (`isInvitedBy` — той самий рядок `contacts`, лише в
+ * напрямку запрошення). Для того, з ким зв'язку немає, не робиться ні запису,
+ * ні пошуку розмови, а відповідь та сама 404 (§7).
+ */
+export async function openThread(
+  env: Env,
+  me: number,
+  peerId: number,
+  before?: number,
+): Promise<ThreadResult> {
+  await ensureGreeting(env, me, peerId);
+  return readThread(env, me, peerId, before);
 }
 
 /**
@@ -154,6 +180,7 @@ export async function sendMessage(
       body,
       createdAt: now,
       readAt: null,
+      system: false,
     },
   };
 }

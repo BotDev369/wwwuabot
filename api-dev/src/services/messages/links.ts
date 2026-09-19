@@ -40,3 +40,23 @@ export async function areLinked(db: D1Database, a: number, b: number): Promise<b
 
   return row !== null;
 }
+
+/**
+ * Чи прийшов `me` саме за лінком `peer` — тоді `peer` і є той, хто запросив.
+ *
+ * Це не те саме, що `areLinked`: зв'язок симетричний (писати можуть обидва), а
+ * запрошення має **напрямок**. Вітаємо лише того, хто прийшов за лінком, і саме
+ * тому ця функція дивиться тільки в один бік — на `joined_user_id = me`.
+ * Другий бік (`owner_id = me`) тут означав би, що людина вітає саму себе за
+ * власне запрошення.
+ */
+export async function isInvitedBy(db: D1Database, me: number, peer: number): Promise<boolean> {
+  if (me === peer) return false;
+
+  const row = await db
+    .prepare("SELECT id FROM contacts WHERE owner_id = ? AND joined_user_id = ? LIMIT 1")
+    .bind(peer, me)
+    .first<{ id: number }>();
+
+  return row !== null;
+}

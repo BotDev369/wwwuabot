@@ -117,13 +117,22 @@
       stretch`): там контролів два й обидва вузькі, тут поле мусить рости. Кнопка надсилання — коло
       44px, і на порожньому полі вона **гасне**, а не зникає (§3: на телефоні `hover` не існує).
       Стежить `styles/messages.test.ts`.
+    - **Адреса розмови — це вхід, а не стан.** Бот веде в розмову кнопкою «Відкрити чат»
+      (`messagesPeerPath` → `/messages?peer=<id>`), і номер із адреси лише відкриває її один раз: далі
+      нею керує стан екрана. Адресу складає бот і читає платформа — тому вона одна, у
+      `@wwwuabot/shared/messages` (`route.ts`), а не два літерали в двох воркерах.
+    - **Позначка платформи (`system`) бульбашкою не стає.** Стрічка відкривається двома рядками
+      вітання (запрошення й встановлений контакт) — вони стоять посередині, приглушеним текстом і
+      **без тла**: тло й бік у переписці означають автора, а в позначки його немає. Перший елемент
+      стрічки притискається до низу незалежно від того, бульбашка це чи позначка.
 
 ## Файли цієї теми
 
 | Файл | Призначення |
 |---|---|
 | `packages/ui/src/composer/`, `menu/`, `dialog/`, `nav/` | `ComposerModal`, `MenuModal`, `useDialog()`, `TabBar` |
-| `packages/ui/src/messages/` | `ConversationList`, `MessagesToolbar`, `ThreadSheet`, `MessageComposer`, `view.ts` (розмова — третій користувач повноекранної поверхні, список — третій користувач колекції) |
+| `packages/ui/src/messages/` | `ConversationList`, `MessagesToolbar`, `ThreadSheet`, `MessageComposer`, `NewMessagePicker`, `view.ts` (розмова — третій користувач повноекранної поверхні, список — третій користувач колекції) |
+| `packages/shared/src/messages/route.ts` | `MESSAGES_PATH`, `messagesPeerPath`, `readMessagesPeer` — адреса розмови для бота й платформи |
 | `packages/shared/src/styles/components.css` | `.wb-sheet*`, `.wb-composer*`, `.wb-menu*`, `.wb-sheet-bar*`, `.wb-segmented*` |
 | `packages/shared/src/styles/messages.css` | `.wb-conv*`, `.wb-thread*`, `.wb-bubble*` |
 | `packages/shared/src/styles/app-chrome.css` | Футер (`.wb-tabbar*`) — хром, над яким малюється поверхня (правило 12) |

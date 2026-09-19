@@ -8,6 +8,8 @@
  * - `fields.ts` — тіло повідомлення (`sanitizeMessageBody`) і пара розмови
  *   (`conversationPair`): **єдине** місце, де задано, що розмова одна на двох;
  * - `peer.ts` — як підписаний співрозмовник (ім'я на платформі → Telegram);
+ * - `greeting.ts` — одноразове вітання пари: що саме написано в стрічці;
+ * - `route.ts` — адреса розмови, спільна для кнопки в боті й екрана;
  * - `time.ts` — час у списку розмов і в бульбашці;
  * - `api.ts` — форма запиту, спільна для всіх оболонок.
  *
@@ -27,13 +29,17 @@ export type { MessagesApi, MessagesTransport } from "./api";
 export {
   MAX_MESSAGE_BODY,
   MESSAGE_PREVIEW_LENGTH,
+  SYSTEM_SENDER_ID,
   conversationPair,
   isSendableBody,
   messagePreview,
   peerOf,
   sanitizeMessageBody,
 } from "./fields";
-export { peerInitial, peerLabel, peerSecondary } from "./peer";
+export { conversationGreeting, greetingNotes } from "./greeting";
+export type { ConversationGreeting } from "./greeting";
+export { peerInitial, peerLabel, peerPublicLabel, peerSecondary } from "./peer";
+export { MESSAGES_PATH, MESSAGES_PEER_PARAM, messagesPeerPath, readMessagesPeer } from "./route";
 export { messageClock, messageTime } from "./time";
 export type {
   Conversation,

@@ -15,6 +15,12 @@
  * своє від чужого на швидкому погляді. Тому сторона береться з `senderId`, а не
  * з порядку повідомлень.
  *
+ * **Позначка платформи (`system`) бульбашкою не стає.** Стрічка відкривається
+ * двома такими рядками (запрошення й встановлений контакт), і якби вони
+ * виглядали як чиєсь повідомлення, людина приписувала б їх співрозмовнику —
+ * а сторона бульбашки в переписці означає саме автора. Тому вони стоять
+ * посередині, приглушеним текстом: це не репліка, це стан розмови.
+ *
  * @module @wwwuabot/ui/messages
  */
 
@@ -66,6 +72,9 @@ export function ThreadSheet({
 
           {!loading && error && <p className="wb-text-red wb-thread-note">{error}</p>}
 
+          {/* Порожня стрічка означає «розмова нова, а не поламана»: тому цей рядок і
+              каже, що робити далі. У розмови, яка почалась із запрошення, він не
+              з'явиться — там уже стоять позначки платформи. */}
           {!loading && !error && messages.length === 0 && (
             <p className="wb-text-muted wb-thread-note">
               Повідомлень ще немає. Напишіть перше — співрозмовник побачить його, коли відкриє
@@ -73,15 +82,21 @@ export function ThreadSheet({
             </p>
           )}
 
-          {messages.map((message) => (
-            <div
-              key={message.id}
-              className={`wb-bubble${message.senderId === meId ? " wb-bubble--out" : " wb-bubble--in"}`}
-            >
-              <span className="wb-bubble-text">{message.body}</span>
-              <span className="wb-bubble-time">{messageClock(message.createdAt)}</span>
-            </div>
-          ))}
+          {messages.map((message) =>
+            message.system ? (
+              <p key={message.id} className="wb-thread-system">
+                {message.body}
+              </p>
+            ) : (
+              <div
+                key={message.id}
+                className={`wb-bubble${message.senderId === meId ? " wb-bubble--out" : " wb-bubble--in"}`}
+              >
+                <span className="wb-bubble-text">{message.body}</span>
+                <span className="wb-bubble-time">{messageClock(message.createdAt)}</span>
+              </div>
+            ),
+          )}
         </div>
 
         <MessageComposer sending={sending} onSend={onSend} />

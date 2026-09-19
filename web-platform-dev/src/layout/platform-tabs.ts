@@ -15,6 +15,7 @@
  */
 
 import { HOME_SLUG, toWebPath } from "@wwwuabot/shared/content";
+import { MESSAGES_PATH } from "@wwwuabot/shared/messages";
 import type { ShellTab, TabBarItem } from "@wwwuabot/ui/nav";
 
 export interface PlatformTab extends Omit<ShellTab, "href"> {
@@ -48,11 +49,11 @@ export const PROFILE_TAB_KEY = "profile";
  * `page_data`: це дані людини, і сторінкою контенту вони не бувають — та сама
  * причина, що в нотаток, контактів і профілю (AGENTS.md §7).
  *
- * Адреса тут, а не в `profile-menu.ts`, бо пункт живе **у футері**: меню
- * профілю до переписки не веде (це розділ, а не налаштування), і тримати
- * константу в його модулі означало б зв'язок ні за чим.
+ * Адресу беремо зі спільного `@wwwuabot/shared/messages`: ту саму адресу складає
+ * бот для кнопки «Відкрити чат» (`messagesPeerPath`), і два літерали `/messages`
+ * розійшлися б тихо — кнопка вела б у порожній список.
  */
-export const MESSAGES_PATH = "/messages";
+export { MESSAGES_PATH };
 
 /** Ключ пункту повідомлень: на нього чіпляється число непрочитаних. */
 export const MESSAGES_TAB_KEY = "messages";

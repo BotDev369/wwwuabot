@@ -288,6 +288,13 @@ export const TABLES = {
    * показує останній рядок кожної, і без цих колонок він читав би **всі**
    * повідомлення людини, щоб показати по одному з розмови.
    *
+   * `greeted_at` — дата **одноразового** вітання пари (людину запросили за
+   * лінком, і вона відкрила чат). Це не «лічильник повідомлень» і не копія
+   * `messages`: ознака стоїть на парі, а не на рядку переписки, і саме вона
+   * робить вітання одноразовим — заявку на нього виграє один `UPDATE`
+   * (`WHERE greeted_at IS NULL`), тому двоє одночасних відкриттів не дають
+   * двох привітань.
+   *
    * `UNIQUE` — у `CREATE TABLE`, а не окремим індексом: імена індексів у
    * SQLite глобальні для бази, і однойменний `CREATE UNIQUE INDEX IF NOT
    * EXISTS` на другій таблиці був би **порожньою дією** без помилки (див.
@@ -310,6 +317,7 @@ export const TABLES = {
         last_message_at TEXT,
         last_message_text TEXT,
         last_sender_id INTEGER,
+        greeted_at TEXT,
         created_at TEXT NOT NULL DEFAULT (datetime('now')),
         UNIQUE (peer_a, peer_b)
       )`,
@@ -328,6 +336,13 @@ export const TABLES = {
    * `sanitizeMessageBody`), без розбору розмітки: у платформі тіло — це текст,
    * а не HTML-фрагмент, і будь-яке «форматування» тут означало б другу мову
    * розмітки поруч із `page_data`.
+   *
+   * `is_system` — позначка платформи, а не людини (`SYSTEM_SENDER_ID` у
+   * `sender_id`): таких рядків у переписці рівно два, і обидва — вітання пари
+   * (`greeting.ts`). Окрема колонка, а не «нуль у `sender_id` на здогад»:
+   * сторона бульбашки береться з `sender_id`, тож магічне число без прапорця
+   * виглядало б як ще один учасник переписки. `read_at` таким рядкам ставиться
+   * одразу — вони не «непрочитані», бо їх ніхто не писав.
    */
   messages: {
     name: "messages",
@@ -340,7 +355,8 @@ export const TABLES = {
         sender_id INTEGER NOT NULL,
         body TEXT NOT NULL DEFAULT '',
         created_at TEXT NOT NULL DEFAULT (datetime('now')),
-        read_at TEXT
+        read_at TEXT,
+        is_system INTEGER NOT NULL DEFAULT 0
       )`,
     indexes: [
       "CREATE INDEX IF NOT EXISTS idx_messages_thread ON messages(conversation_id, id)",

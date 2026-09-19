@@ -110,3 +110,23 @@ describe("бульбашки", () => {
     expect(rule(MESSAGES, ".wb-bubble")?.body).toContain("max-width");
   });
 });
+
+describe("позначка платформи", () => {
+  it("не має ні боку, ні тла: бік і тло в стрічці означають автора", () => {
+    const note = rule(MESSAGES, ".wb-thread-system");
+
+    expect(note?.body).toContain("align-self: center");
+    expect(note?.body).not.toContain("background");
+    expect(note?.body).not.toContain("flex-end");
+    expect(note?.body).not.toContain("flex-start");
+  });
+
+  it("стрічка притискається до низу навіть тоді, коли починається з позначки", () => {
+    // Привітання стоїть першим, і без цього правила розмова «висіла» б у
+    // горі екрана, а поле вводу було б далеко від неї.
+    const first = MESSAGES.filter((entry) => entry.selector.includes("first-child")).at(-1);
+
+    expect(first?.selector).toContain(":not(.wb-thread-note)");
+    expect(first?.body).toContain("margin-top: auto");
+  });
+});

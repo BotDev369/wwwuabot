@@ -24,7 +24,7 @@ import { ensureTables } from "@wwwuabot/shared/database/ensure-tables";
 import { resolveUserId } from "../shared/identity";
 import { apiLog } from "../shared/logger";
 import { listConversations, unreadTotal } from "../services/messages/conversations";
-import { markRead, readThread, sendMessage } from "../services/messages/thread";
+import { markRead, openThread, sendMessage } from "../services/messages/thread";
 
 function json(body: unknown, status = 200): Response {
   return new Response(JSON.stringify(body), {
@@ -89,6 +89,10 @@ export async function handleMessages(request: Request, env: Env): Promise<Respon
  *
  * Порожня розмова — це **не помилка**: людина могла прийти з контактів і
  * написати першою, і екран мусить її пустити в порожнє поле, а не відмовити.
+ *
+ * Відкриття розмови (а не лише читання) тому йде через `openThread`: людина,
+ * яка прийшла за запрошенням, відкриває розмову **вперше** саме цим запитом, і
+ * вітання пари мусить бути в ній уже тоді, коли стрічка прийшла на екран.
  */
 export async function handleMessageThread(request: Request, env: Env): Promise<Response> {
   if (request.method !== "GET") return json({ ok: false, error: "Method not allowed" }, 405);
@@ -101,7 +105,7 @@ export async function handleMessageThread(request: Request, env: Env): Promise<R
 
   try {
     await ensureSchema(env);
-    const result = await readThread(env, identity.userId, peer, readBefore(request));
+    const result = await openThread(env, identity.userId, peer, readBefore(request));
     if (!result.ok) return json(result, result.status);
 
     return json({ ok: true, peer: result.thread.peer, messages: result.thread.messages });

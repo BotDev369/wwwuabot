@@ -3,6 +3,7 @@ import { ScenarioRepository } from "../../repositories/scenario.repository";
 import { log } from "../../shared/utils/debug";
 import { handleTextInput } from "./text-input";
 import { applyContactPayload } from "../../modules/contacts/contact-link";
+import { showInviteScreen } from "../../modules/contacts/invite-screen";
 import { isValidBotPayload, isValidSlug, toWebPath } from "@wwwuabot/shared/content";
 
 /**
@@ -10,7 +11,8 @@ import { isValidBotPayload, isValidSlug, toWebPath } from "@wwwuabot/shared/cont
  * Бот — pure renderer: бере контент із таблиці scenarios і показує.
  *
  * Потоки:
- * 1. /start <payload> → код запрошення або shared resolver → сторінка → рендер
+ * 1. /start <payload> → код запрошення (екран вітання з першого переходу) або
+ *    shared resolver → сторінка → рендер
  * 2. /start без payload → головна сторінка
  * 3. callback_data → slug → рендер
  * 4. текст → ТІЛЬКИ якщо awaits_input, інакше видаляємо
@@ -20,6 +22,10 @@ import { isValidBotPayload, isValidSlug, toWebPath } from "@wwwuabot/shared/cont
  * від slug можна лише запитом. Якщо колись з'явиться сторінка зі slug, що
  * збігається з чужим кодом, переможе запрошення — код складає сервер, і
  * людина його не обирає, а от slug людина пише сама.
+ *
+ * **Вітаємо лише з першого переходу.** Друге відкриття того самого лінка — це
+ * вже звичайний вхід у бота, і показувати на нього «вас щойно запросили» було б
+ * неправдою (розрізняє їх `applyContactPayload`).
  */
 export async function botRouter(ctx: AppContext): Promise<void> {
   if (!ctx.user) return;
@@ -46,11 +52,17 @@ export async function botRouter(ctx: AppContext): Promise<void> {
       }
       log("ROUTER", "deep link", { payload, user_id: ctx.from?.id });
 
-      // Особистий лінк веде на головну: екран запрошення — не сторінка
-      // контенту, і шукати сторінку з таким «slug» нема чого.
-      if (payload && (await applyContactPayload(ctx, payload))) {
-        await loadAndRenderPayload(ctx, repo, "");
-        return;
+      // Особистий лінк веде не на сторінку контенту: код не є адресою, і
+      // шукати сторінку з таким «slug» нема чого. Головна — для тих переходів,
+      // де вітати нічого (вдруге, свій лінк, лінк без адреси платформи).
+      if (payload) {
+        const contacted = await applyContactPayload(ctx, payload);
+        if (contacted.kind !== "unknown") {
+          if (contacted.kind !== "invited" || !(await showInviteScreen(ctx, contacted.ownerId))) {
+            await loadAndRenderPayload(ctx, repo, "");
+          }
+          return;
+        }
       }
 
       await loadAndRenderPayload(ctx, repo, payload);

@@ -218,7 +218,9 @@
   gap: var(--sp-2);
 }
 
-.wb-thread-body > .wb-bubble:first-child {
+/* Притискає до низу **перше** в стрічці, чим би воно не було: у розмови, що
+   почалась із запрошення, першими стоять позначки платформи, а не бульбашки. */
+.wb-thread-body > :first-child:not(.wb-thread-note) {
   margin-top: auto;
 }
 
@@ -245,6 +247,19 @@
   overflow: hidden;
   white-space: nowrap;
   text-overflow: ellipsis;
+}
+
+/* Позначка платформи (запрошення, встановлений контакт). Посередині й
+   приглушено — це стан розмови, а не чиясь репліка: боки бульбашок у переписці
+   означають автора, і службовий рядок не має виглядати як ще один учасник.
+   Тла в нього немає навмисно: тло в стрічці вже несе «хто це сказав». */
+.wb-thread-system {
+  align-self: center;
+  max-width: 82%;
+  color: var(--text-muted);
+  font-size: var(--text-xs);
+  line-height: var(--font-lineheight-3);
+  text-align: center;
 }
 
 .wb-bubble {

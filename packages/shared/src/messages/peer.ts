@@ -25,13 +25,17 @@ const NOBODY = "Невідомий";
  *
  * Порожніх тут немає: усе, чого людина не має, у список не потрапляє, тож
  * `undefined` на місці підпису стояти не може.
+ *
+ * `withContactName` вимикається там, де підпис потрапляє в текст, який читають
+ * **обоє** — ім'я з довідника належить тому, хто дивиться, тож у спільному
+ * рядку воно було б іменем однієї людини, показаним іншій.
  */
-function labels(peer: MessagePeer | null | undefined): string[] {
+function labels(peer: MessagePeer | null | undefined, withContactName: boolean): string[] {
   if (!peer) return [];
 
   const fullName = [peer.firstName, peer.lastName].filter(Boolean).join(" ").trim();
   const candidates = [
-    peer.contactName,
+    withContactName ? peer.contactName : null,
     peer.platformUsername ? `@${peer.platformUsername}` : null,
     peer.username ? `@${peer.username}` : null,
     fullName,
@@ -42,7 +46,19 @@ function labels(peer: MessagePeer | null | undefined): string[] {
 
 /** Головний підпис: наше ім'я → ім'я на платформі → Telegram-хендл → ім'я з Telegram. */
 export function peerLabel(peer: MessagePeer | null | undefined): string {
-  return labels(peer)[0] ?? NOBODY;
+  return labels(peer, true)[0] ?? NOBODY;
+}
+
+/**
+ * Підпис людини **без** чужого довідника: як її знає продукт, а не як її назвав
+ * хтось.
+ *
+ * Потрібен там, де текст лягає в спільний рядок і його читають обоє — вітання
+ * пари (див. `greeting.ts`): ім'я з довідника тут показало б одній людині те,
+ * як її назвав інший.
+ */
+export function peerPublicLabel(peer: MessagePeer | null | undefined): string {
+  return labels(peer, false)[0] ?? NOBODY;
 }
 
 /**
@@ -53,7 +69,7 @@ export function peerLabel(peer: MessagePeer | null | undefined): string {
  * підряд.
  */
 export function peerSecondary(peer: MessagePeer | null | undefined): string | null {
-  const all = labels(peer);
+  const all = labels(peer, true);
   return all.find((label) => label !== all[0]) ?? null;
 }
 
@@ -64,6 +80,6 @@ export function peerSecondary(peer: MessagePeer | null | undefined): string | nu
  * збігається з іменем у рядку, читалась би як чужий аватар.
  */
 export function peerInitial(peer: MessagePeer | null | undefined): string {
-  const source = labels(peer)[0]?.replace(/^@/u, "") ?? "";
+  const source = labels(peer, true)[0]?.replace(/^@/u, "") ?? "";
   return source.charAt(0).toUpperCase() || "?";
 }

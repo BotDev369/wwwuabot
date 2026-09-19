@@ -7,6 +7,8 @@
  *
  * - **себе не запрошують** — власник, який відкрив власний лінк, не робить
  *   себе власним контактом;
+ * - **вітаємо лише з першого переходу** — тому результат розрізняє `invited` і
+ *   `revisit`, а не зводиться до «перехід був»;
  * - **повторний перехід нічого не змінює** — контакт закріплено раз
  *   (`contact.repository`), тож другий дотик того самого лінка безпечний;
  * - **це часткове приєднання** — людина увійшла в бота, і це все, що бот може
@@ -15,9 +17,11 @@
  * - **невідомий код — не запрошення**, і тоді payload живе далі своїм життям
  *   (це може бути адреса сторінки).
  *
- * Повертає `true`, якщо перехід був запрошенням: роутер після цього не шукає
- * сторінку з таким «payload» — код не є адресою, і показувати на нього 404
- * було б брехнею про те, що сталося.
+ * Повертає **що саме сталося** (див. `ContactPayloadResult`): роутер після
+ * цього не шукає сторінку з таким «payload» — код не є адресою, і показувати на
+ * нього 404 було б брехнею про те, що сталося. Але й не кожен перехід —
+ * запрошення: вітаємо **лише перший** (`invited`), решта показують звичайну
+ * головну.
  *
  * @module bot-dev/src/modules/contacts
  */
@@ -27,10 +31,29 @@ import { log } from "../../shared/utils/debug";
 import { ContactRepository, type ContactRecord } from "./contact.repository";
 
 /**
- * Обробляє payload як можливий код запрошення.
- * `true` — це був код (перехід оброблено), `false` — код не наш.
+ * Що дало розпізнавання переходу.
+ *
+ * - `invited` — код наш, і **ця людина щойно закріпилась** за контактом: тільки
+ *   тут доречне вітання;
+ * - `revisit` — код наш, але закріплення вже відбулось (та сама людина вдруге
+ *   або лінк уже зайнятий кимось іншим): привітання вдруге було б брехнею;
+ * - `own` — за власним лінком прийшов сам власник: закріплювати нікого;
+ * - `unknown` — код не наш, і payload далі живе своїм життям (може, це адреса).
  */
-export async function applyContactPayload(ctx: AppContext, payload: string): Promise<boolean> {
+export type ContactPayloadResult =
+  | { kind: "unknown" }
+  | { kind: "own" }
+  | { kind: "revisit" }
+  | { kind: "invited"; ownerId: number };
+
+/**
+ * Обробляє payload як можливий код запрошення.
+ * `unknown` — це не наш код; решта — перехід оброблено.
+ */
+export async function applyContactPayload(
+  ctx: AppContext,
+  payload: string,
+): Promise<ContactPayloadResult> {
   const userId = ctx.from?.id;
 
   const contacts = new ContactRepository(ctx.env);
@@ -40,14 +63,14 @@ export async function applyContactPayload(ctx: AppContext, payload: string): Pro
   } catch (e: unknown) {
     // База недоступна — це не привід падати: людина має побачити бота.
     log("CONTACT", "lookup failed", { payload, error: String(e) });
-    return false;
+    return { kind: "unknown" };
   }
 
-  if (!contact) return false;
+  if (!contact) return { kind: "unknown" };
 
   if (!userId || userId === contact.owner_id) {
     log("CONTACT", "own or anonymous link | nothing to attach", { contact_id: contact.id });
-    return true;
+    return { kind: "own" };
   }
 
   if (contact.joined_user_id !== null) {
@@ -55,7 +78,7 @@ export async function applyContactPayload(ctx: AppContext, payload: string): Pro
       contact_id: contact.id,
       attached_user_id: contact.joined_user_id,
     });
-    return true;
+    return { kind: "revisit" };
   }
 
   try {
@@ -65,9 +88,9 @@ export async function applyContactPayload(ctx: AppContext, payload: string): Pro
       owner_id: contact.owner_id,
       user_id: userId,
     });
+    return attached ? { kind: "invited", ownerId: contact.owner_id } : { kind: "revisit" };
   } catch (e: unknown) {
     log("CONTACT", "attach failed", { contact_id: contact.id, error: String(e) });
+    return { kind: "revisit" };
   }
-
-  return true;
 }

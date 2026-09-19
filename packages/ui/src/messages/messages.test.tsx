@@ -14,7 +14,12 @@
 
 import { describe, expect, it } from "vitest";
 import { renderToStaticMarkup } from "react-dom/server";
-import type { Conversation, Message, MessagePeer } from "@wwwuabot/shared/messages";
+import {
+  SYSTEM_SENDER_ID,
+  type Conversation,
+  type Message,
+  type MessagePeer,
+} from "@wwwuabot/shared/messages";
 import { DEFAULT_COLLECTION_VIEW } from "../collection";
 import { ConversationList } from "./ConversationList";
 import { MessagesToolbar } from "./MessagesToolbar";
@@ -63,8 +68,28 @@ function list(
 }
 
 const MESSAGES: Message[] = [
-  { id: 1, senderId: PEER.id, body: "привіт", createdAt: "", readAt: null },
-  { id: 2, senderId: ME, body: "ага", createdAt: "", readAt: null },
+  { id: 1, senderId: PEER.id, body: "привіт", createdAt: "", readAt: null, system: false },
+  { id: 2, senderId: ME, body: "ага", createdAt: "", readAt: null, system: false },
+];
+
+/** Стрічка, яку відкриває запрошення: дві позначки платформи й жодної репліки. */
+const GREETED: Message[] = [
+  {
+    id: 1,
+    senderId: SYSTEM_SENDER_ID,
+    body: "@karas запрошує до конфіденційної бесіди",
+    createdAt: "",
+    readAt: "",
+    system: true,
+  },
+  {
+    id: 2,
+    senderId: SYSTEM_SENDER_ID,
+    body: "Контакт встановлено — тепер ви на зв'язку одне з одним",
+    createdAt: "",
+    readAt: "",
+    system: true,
+  },
 ];
 
 describe("conversationLine", () => {
@@ -261,5 +286,40 @@ describe("поверхня розмови", () => {
     // На телефоні hover не існує, тож дія мусить бути видимою завжди (§3).
     expect(html).toContain('aria-label="Надіслати"');
     expect(html).toContain("disabled");
+  });
+
+  it("позначка платформи — не бульбашка: у переписці бік означає автора", () => {
+    // Якби вітання виглядало як репліка, людина приписала б його співрозмовнику
+    // — а воно від платформи, і автора в нього немає.
+    const html = renderToStaticMarkup(
+      <ThreadSheet
+        peer={PEER}
+        meId={ME}
+        messages={GREETED}
+        onSend={async () => true}
+        onClose={() => {}}
+      />,
+    );
+
+    expect(html).toContain("wb-thread-system");
+    expect(html).not.toContain("wb-bubble--out");
+    expect(html).not.toContain("wb-bubble--in");
+  });
+
+  it("розмова, що почалась із запрошення, не каже «напишіть перше»", () => {
+    // Ці два стани різні: порожня стрічка — новина для людини, а стрічка з
+    // вітанням уже розповіла, хто на іншому кінці.
+    const html = renderToStaticMarkup(
+      <ThreadSheet
+        peer={PEER}
+        meId={ME}
+        messages={GREETED}
+        onSend={async () => true}
+        onClose={() => {}}
+      />,
+    );
+
+    expect(html).not.toContain("Напишіть перше");
+    expect(html).toContain("Контакт встановлено");
   });
 });
