@@ -12,7 +12,12 @@
  * **Форма нового повідомлення бере двох речей одним запитом** (`compose`): кому
  * можна писати й що вже написано, але не надіслано. Чернетка — власні дані того,
  * хто пише (співрозмовник про неї не знає), тож і лежить вона окремо від
- * переписки, і надсилання прибирає її саме на сервері.
+ * переписки.
+ *
+ * **Чернетка адресується своїм номером.** Правка наявної чернетки й створення
+ * нової — один шлях (`saveDraft`): різниця лише в `id`. Так само й надсилання
+ * каже, **з якої** чернетки людина пише (`draft`): чернеток тієї самій людині
+ * може бути кілька, і прибирати чужі було б втратою того, що вона написала.
  *
  * @module @wwwuabot/shared/messages
  */
@@ -25,6 +30,7 @@ import type {
   MessageClearResponse,
   MessageComposeResponse,
   MessageDraft,
+  MessageDraftInput,
   MessageDraftResponse,
   MessagePeer,
   MessageReadResponse,
@@ -43,8 +49,14 @@ export interface MessagesApi {
   list: () => Promise<Conversation[]>;
   /** Повідомлення розмови; `before` — підвантажити старіші за цей номер. */
   thread: (peerId: number, before?: number) => Promise<MessageThread>;
-  /** Надіслати повідомлення співрозмовнику. */
-  send: (peerId: number, body: string) => Promise<Message | null>;
+  /**
+   * Надіслати повідомлення співрозмовнику.
+   *
+   * `draftId` — чернетка, з якої надіслали: зникає **саме та**, і це єдина
+   * чернетка, яку надсилання має право прибрати (решта — те, що людина ще
+   * пише, навіть якщо адресат той самий).
+   */
+  send: (peerId: number, body: string, draftId?: number | null) => Promise<Message | null>;
   /** Позначити прочитаним усе, що написав співрозмовник; повертає число. */
   markRead: (peerId: number) => Promise<number>;
   /** Скільки повідомлень чекає на прочитання — для бейджа футера. */
@@ -55,10 +67,15 @@ export interface MessagesApi {
    */
   compose: () => Promise<{ recipients: MessagePeer[]; drafts: MessageDraft[] }>;
   /**
-   * Зберегти чернетку; порожнє тіло — **прибрати** її (див. `saveDraft` у
-   * `api-dev`). Повертає збережене або `null`, якщо чернетки більше немає.
+   * Зберегти чернетку — нову (`id: null`) або правку наявної.
+   *
+   * Порожнє тіло прибирає чернетку: чернетка без тексту нічого не несе, а рядок,
+   * що лишився, показував би в списку порожнечу. Адресат при цьому не потрібен:
+   * лист без «кому» — законний стан, і саме тому зберегти його можна.
+   *
+   * Повертає збережене або `null`, якщо чернетки більше немає.
    */
-  saveDraft: (peerId: number, body: string) => Promise<MessageDraft | null>;
+  saveDraft: (input: MessageDraftInput) => Promise<MessageDraft | null>;
   /**
    * Стерти переписку — **у обох** (розмова одна на пару).
    *
@@ -109,10 +126,10 @@ export function createMessagesApi(fetchJson: MessagesTransport, basePath: string
       return { peer: response.peer ?? null, messages: response.messages ?? [] };
     },
 
-    send: async (peerId, body) => {
+    send: async (peerId, body, draftId) => {
       const response = await fetchJson<MessageSendResponse>(`${basePath}/send`, {
         method: "POST",
-        body: JSON.stringify({ peer: peerId, body }),
+        body: JSON.stringify({ peer: peerId, body, draft: draftId ?? undefined }),
       });
       return response.message ?? null;
     },
@@ -137,10 +154,14 @@ export function createMessagesApi(fetchJson: MessagesTransport, basePath: string
       return { recipients: response.recipients ?? [], drafts: response.drafts ?? [] };
     },
 
-    saveDraft: async (peerId, body) => {
+    saveDraft: async (input) => {
       const response = await fetchJson<MessageDraftResponse>(`${basePath}/draft`, {
         method: "POST",
-        body: JSON.stringify({ peer: peerId, body }),
+        body: JSON.stringify({
+          id: input.id ?? undefined,
+          peer: input.peerId ?? undefined,
+          body: input.body,
+        }),
       });
       if (!response.ok) throw new Error(response.error ?? "Не вдалося зберегти чернетку");
       return response.draft ?? null;

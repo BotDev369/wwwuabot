@@ -148,14 +148,20 @@ export async function openThread(
  * читає саме їх, і розійтися з щойно доданим рядком вони можуть лише тоді,
  * коли про них забули — тож про них не забуває одне місце.
  *
- * **Надіслане прибирає чернетку** — свою, і саме тут, а не в клієнті: текст уже
- * в переписці, і чернетка, що лишилась, наступного разу відкрила б форму з ним же.
+ * **Надіслане прибирає чернетку** — **ту саму**, з якої надіслали (`draftId`), і
+ * саме тут, а не в клієнті: текст уже в переписці, і чернетка, що лишилась, у
+ * списку виглядала б як не надіслане. За номером, а не за адресатом: чернеток
+ * одній людині може бути кілька, і решта — це те, що людина ще пише.
+ *
+ * Надсилання з розмови (без `draftId`) не чіпає чернеток зовсім: вони не є тим
+ * листом, який у цю розмову пішов.
  */
 export async function sendMessage(
   env: Env,
   me: number,
   peerId: number,
   rawBody: unknown,
+  draftId: number | null = null,
 ): Promise<SendResult> {
   if (!(await areLinked(env.DB, me, peerId))) return noLink();
 
@@ -183,7 +189,7 @@ export async function sendMessage(
     .bind(now, messagePreview(body), me, conversationId)
     .run();
 
-  await dropDraft(env.DB, me, peerId);
+  if (draftId !== null) await dropDraft(env.DB, me, draftId);
 
   return {
     ok: true,

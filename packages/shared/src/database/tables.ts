@@ -354,14 +354,21 @@ export const TABLES = {
     name: "message_drafts",
     owner: "api-dev",
     purpose:
-      "Ненадісланий текст листа: одна чернетка на пару людей, окремо від переписки (співрозмовник її не бачить).",
+      "Ненадісланий текст листа: документ зі своїм номером і необов'язковим адресатом, окремо від переписки (співрозмовник її не бачить).",
+    // Пари «власник + адресат» тут немає навмисно: чернеток людині може бути
+    // кілька, у тому числі одній і тій самій, а `UNIQUE (owner_id, peer_id)`
+    // робив із них один слот — друга збережена чернетка тихо переписувала першу.
+    // `peer_id` без `NOT NULL` — те саме: лист буває й без адресата.
+    // Наявній у дев-базі таблиці ні те, ні те `ensureTables` дати не може (він
+    // лише додає колонки), тож перебудував окремий SQL —
+    // `scripts/migrations/2026-09-19-message-drafts-*.sql`.
     create: `CREATE TABLE IF NOT EXISTS message_drafts (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         owner_id INTEGER NOT NULL,
-        peer_id INTEGER NOT NULL,
+        peer_id INTEGER,
         body TEXT NOT NULL DEFAULT '',
-        updated_at TEXT NOT NULL DEFAULT (datetime('now')),
-        UNIQUE (owner_id, peer_id)
+        created_at TEXT NOT NULL DEFAULT (datetime('now')),
+        updated_at TEXT NOT NULL DEFAULT (datetime('now'))
       )`,
     indexes: ["CREATE INDEX IF NOT EXISTS idx_drafts_owner ON message_drafts(owner_id)"],
   },

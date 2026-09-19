@@ -73,32 +73,6 @@ describe("порядок розмов", () => {
     ]);
   });
 
-  it("чернетка піднімає розмову нагору: вона й є остання подія", () => {
-    // Без цього ненадісланий текст падав би в самий низ як «без повідомлень» —
-    // і його не знайшло б око саме тоді, коли про нього щойно й згадали.
-    const messaged = conversation({
-      peer: peer({ id: 1, contactName: "З листом" }),
-      lastMessageAt: "2026-09-19 10:00:00",
-    });
-    const drafted = conversation({
-      peer: peer({ id: 2, contactName: "З чернеткою" }),
-      lastMessageAt: null,
-      lastMessageText: null,
-      lastSenderId: null,
-      draft: { peerId: 2, body: "ще не пішло", updatedAt: "2026-09-19 12:00:00" },
-    });
-    const silent = conversation({
-      peer: peer({ id: 3, contactName: "Порожній" }),
-      lastMessageAt: null,
-      lastMessageText: null,
-      lastSenderId: null,
-    });
-
-    expect(sortConversations([messaged, drafted, silent], "recent").map((c) => c.peer.id)).toEqual([
-      2, 1, 3,
-    ]);
-  });
-
   it("«непрочитані спершу» не переставляє решту", () => {
     const read = conversation({
       peer: peer({ id: 1 }),
@@ -174,18 +148,6 @@ describe("пошук і фільтр", () => {
     expect(
       filterConversations([read, unread], view({ filter: "unread" })).map((c) => c.peer.id),
     ).toEqual([2]);
-  });
-
-  it("шукає й за ненадісланим текстом — у рядку видно саме його", () => {
-    // Не знаходити за тим, що людина бачить у рядку, — найдорожчий різновид
-    // «нічого не знайдено»: текст перед очима, а пошук каже, що його нема.
-    const drafted = conversation({
-      peer: peer({ id: 5, contactName: "Карась" }),
-      lastMessageText: null,
-      draft: { peerId: 5, body: "привіт із чернетки", updatedAt: "2026-09-19 13:00:00" },
-    });
-
-    expect(filterConversations([drafted], view({ query: "чернетки" }))).toHaveLength(1);
   });
 
   it("«без повідомлень» лишає ті, з яких ще тільки починають", () => {

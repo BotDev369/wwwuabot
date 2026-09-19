@@ -117,7 +117,7 @@ describe("createMessagesApi", () => {
 
   it("форма нового повідомлення бере отримувачів і чернетки одним запитом", async () => {
     const peer = { id: 42, platformUsername: "karas" };
-    const draft = { peerId: 42, body: "недісланий", updatedAt: "2026-09-19 12:00:00" };
+    const draft = { id: 5, peerId: 42, body: "недісланий", updatedAt: "2026-09-19 12:00:00" };
     const transport = makeTransport({ ok: true, recipients: [peer], drafts: [draft] });
     const api = createMessagesApi(transport.fetch as never, "/api/messages");
 
@@ -134,29 +134,63 @@ describe("createMessagesApi", () => {
     await expect(api.compose()).resolves.toEqual({ recipients: [], drafts: [] });
   });
 
-  it("чернетка зберігається окремим шляхом і повертає записане", async () => {
-    const draft = { peerId: 42, body: "текст", updatedAt: "2026-09-19 12:00:00" };
+  it("нова чернетка йде без номера — і **без адресата** теж", async () => {
+    // Адресат необов'язковий: лист без «кому» — це стан чернетки, а не помилка,
+    // тож поле просто не їде в запиті (сервер прочитає це як `null`).
+    const draft = { id: 5, peerId: null, body: "текст", updatedAt: "2026-09-19 12:00:00" };
     const transport = makeTransport({ ok: true, draft });
     const api = createMessagesApi(transport.fetch as never, "/api/messages");
 
-    await expect(api.saveDraft(42, "текст")).resolves.toEqual(draft);
+    await expect(api.saveDraft({ id: null, peerId: null, body: "текст" })).resolves.toEqual(draft);
 
     expect(transport.calls[0].path).toBe("/api/messages/draft");
     expect(transport.calls[0].init?.method).toBe("POST");
-    expect(JSON.parse(String(transport.calls[0].init?.body))).toEqual({ peer: 42, body: "текст" });
+    expect(JSON.parse(String(transport.calls[0].init?.body))).toEqual({ body: "текст" });
+  });
+
+  it("правка наявної чернетки несе її номер — інакше це була б ще одна", async () => {
+    const transport = makeTransport({ ok: true, draft: null });
+    const api = createMessagesApi(transport.fetch as never, "/api/messages");
+
+    await api.saveDraft({ id: 7, peerId: 42, body: "  " });
+
+    expect(JSON.parse(String(transport.calls[0].init?.body))).toEqual({
+      id: 7,
+      peer: 42,
+      body: "  ",
+    });
   });
 
   it("порожня чернетка — це `null`: вона прибрана, а не порожня", async () => {
     const transport = makeTransport({ ok: true, draft: null });
     const api = createMessagesApi(transport.fetch as never, "/api/messages");
 
-    await expect(api.saveDraft(42, "   ")).resolves.toBeNull();
+    await expect(api.saveDraft({ id: 7, peerId: 42, body: "   " })).resolves.toBeNull();
   });
 
   it("відмова збереження чернетки кидає причину — форма не закриється мовчки", async () => {
     const failed = makeTransport({ ok: false, error: "Немає зв'язку" });
     const api = createMessagesApi(failed.fetch as never, "/api/messages");
 
-    await expect(api.saveDraft(42, "текст")).rejects.toThrow("Немає зв'язку");
+    await expect(api.saveDraft({ id: null, peerId: 42, body: "текст" })).rejects.toThrow(
+      "Немає зв'язку",
+    );
+  });
+
+  it("надсилання каже, **з якої** чернетки пишуть; без неї поля немає", async () => {
+    // Чернеток одній людині може бути кілька: сервер прибирає ту, з якої
+    // надіслали, а решту лишає.
+    const transport = makeTransport({ ok: true });
+    const api = createMessagesApi(transport.fetch as never, "/api/messages");
+
+    await api.send(42, "привіт", 5);
+    expect(JSON.parse(String(transport.calls[0].init?.body))).toEqual({
+      peer: 42,
+      body: "привіт",
+      draft: 5,
+    });
+
+    await api.send(42, "привіт");
+    expect(JSON.parse(String(transport.calls[1].init?.body))).toEqual({ peer: 42, body: "привіт" });
   });
 });

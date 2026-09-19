@@ -20,7 +20,8 @@
  *
  * Сховище — таблиці `conversations`, `messages` і `message_drafts`
  * (`@wwwuabot/shared/database/tables`). Чернетка тут окрема сутність: вона
- * належить тому, хто пише, і існує **до** першого повідомлення.
+ * належить тому, хто пише, має **свій номер** і необов'язкового адресата —
+ * лист буває й без «кому», і саме тому вона не слот на пару.
  *
  * @module @wwwuabot/shared/messages
  */
@@ -49,6 +50,7 @@ export type {
   MessageBadgeResponse,
   MessageComposeResponse,
   MessageDraft,
+  MessageDraftInput,
   MessageDraftResponse,
   MessagePeer,
   MessageReadResponse,

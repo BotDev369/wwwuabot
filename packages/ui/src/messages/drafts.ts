@@ -1,46 +1,47 @@
 /**
  * Чернетки в списку — **чисті функції**, без стану.
  *
- * Форма нового повідомлення бере з них дві речі: чим відкритися (найсвіжіша
- * чернетка) і чим замінити текст, коли людину змінили на ту, у якої чернетка вже
- * є. Обидва вибори — правило, а не розмітка, тож і живуть тут: їх видно в
- * тестах, а не в рендері.
+ * Тут лишається те, що знає про чернетку: **хто її адресат** і як цей адресат
+ * називається в рядку. Підпис береться тим самим правилом, що в листуванні
+ * (`peerLabel`): інакше та сама людина в списку чернеток і в розмові звалася б
+ * по-різному, і людина знайомилася б із нею двічі.
  *
  * @module @wwwuabot/ui/messages
  */
 
-import type { MessageDraft } from "@wwwuabot/shared/messages";
+import type { MessageDraft, MessagePeer } from "@wwwuabot/shared/messages";
+import { peerLabel } from "@wwwuabot/shared/messages";
 
 /**
- * Найсвіжіша чернетка — нею відкривається форма.
+ * Підпис листа, у якого адресата ще не обрали.
  *
- * Порядок не беремо з відповіді сервера: `updatedAt` — це формат SQLite
- * (`YYYY-MM-DD HH:MM:SS`), тож порівняння рядків дає той самий порядок, а
- * покладатися на чужий `ORDER BY` означало б мати правило, яке зникає разом із
- * одним запитом.
+ * Це не помилка й не порожня клітинка: чернетку заводять **до** рішення про
+ * адресата, і в списку мусить бути видно, що місце йому ще не вибране.
  */
-export function latestDraft(drafts: readonly MessageDraft[]): MessageDraft | null {
-  return drafts.reduce<MessageDraft | null>(
-    (newest, draft) => (newest === null || draft.updatedAt > newest.updatedAt ? draft : newest),
-    null,
-  );
-}
+export const NO_RECIPIENT_LABEL = "Без отримувача";
 
-/** Чернетка саме цієї людини; `null` — їй ще не писали. */
-export function draftFor(drafts: readonly MessageDraft[], peerId: number): MessageDraft | null {
-  return drafts.find((draft) => draft.peerId === peerId) ?? null;
+/** Назва блока чернеток у списку. */
+export const DRAFTS_GROUP_LABEL = "Чернетки";
+
+/**
+ * Співрозмовник чернетки; `null` — адресата немає.
+ *
+ * Перелік `peers` — той самий, що дає сервер формі (зв'язані через контакти,
+ * разом із прибраними розмовами), а чернетку заводять лише з нього: тож адресат
+ * у ньому є, поки зв'язок існує.
+ */
+export function draftPeer(draft: MessageDraft, peers: readonly MessagePeer[]): MessagePeer | null {
+  if (draft.peerId === null) return null;
+  return peers.find((peer) => peer.id === draft.peerId) ?? null;
 }
 
 /**
- * Чим відкривається форма: чернетка **цієї людини**, а без неї — найсвіжіша.
+ * Підпис рядка чернетки — адресат або чесне «Без отримувача».
  *
- * Дві різні речі в одній функції навмисно, бо обидві відповідають на одне
- * питання форми — «що вже написано». Людину задають тоді, коли форму відкрили з
- * рядка списку (там чернетка вже адресована), і тоді чужий текст брати нічого.
+ * Другий випадок не помилка: лист без «кому» — це стан чернетки, і саме тому
+ * його можна зберегти.
  */
-export function openingDraft(
-  drafts: readonly MessageDraft[],
-  peerId: number | null,
-): MessageDraft | null {
-  return peerId === null ? latestDraft(drafts) : draftFor(drafts, peerId);
+export function draftRecipientLabel(draft: MessageDraft, peers: readonly MessagePeer[]): string {
+  const peer = draftPeer(draft, peers);
+  return peer ? peerLabel(peer) : NO_RECIPIENT_LABEL;
 }

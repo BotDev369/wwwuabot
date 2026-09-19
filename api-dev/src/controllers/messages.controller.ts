@@ -121,8 +121,12 @@ export async function handleMessageThread(request: Request, env: Env): Promise<R
  *
  * Одним запитом, бо це одна поверхня й один момент: кому можна писати
  * (`recipients` — зв'язані через контакти, разом із прибраними розмовами) і що
- * вже написано, але не надіслано (`drafts`). Два запити дали б два завантаження
- * на одну форму й кадр, у якому одне вже приїхало, а друге ще ні.
+ * вже написано, але не надіслано (`drafts` — усі чернетки людини). Два запити
+ * дали б два завантаження на одну форму й кадр, у якому одне вже приїхало, а
+ * друге ще ні.
+ *
+ * **Той самий перелік чернеток показує й список** — тому він приходить із
+ * номерами: список веде у форму саме цією чернеткою, а не «останньою».
  */
 export async function handleMessageCompose(request: Request, env: Env): Promise<Response> {
   if (request.method !== "GET") return json({ ok: false, error: "Method not allowed" }, 405);
@@ -146,6 +150,11 @@ export async function handleMessageCompose(request: Request, env: Env): Promise<
 /**
  * `POST /api/messages/draft` — зберегти чернетку; порожнє тіло — прибрати її.
  *
+ * Один шлях на створення й правку: `id` є — правимо цю чернетку, немає — нова.
+ * Другий шлях («оновити») відрізнявся б одним полем і розійшовся б із першим на
+ * першій же правці правил — а правила тут спільні: зв'язок спершу, порожнє тіло
+ * — відсутність чернетки, адресат необов'язковий.
+ *
  * `draft: null` у відповіді — не помилка, а наслідок: людина стерла текст, і
  * чернетки більше немає. Форма після цього закривається так само, як після
  * збереження: результат дії однаковий — «не надіслано, але збережено».
@@ -159,12 +168,18 @@ export async function handleMessageDraft(request: Request, env: Env): Promise<Re
   const body = await readJson(request);
   if (!body) return json({ ok: false, error: "Invalid JSON" }, 400);
 
-  const peer = readPeer(body.peer);
-  if (peer === null) return json({ ok: false, error: "Missing peer" }, 400);
+  // Номер чернетки, яку правлять; `null` — нова. `undefined` і нуль — не номер:
+  // «оновити нульову» означало б правити випадковий рядок.
+  const id = readPeer(body.id);
+  if (body.id !== undefined && id === null) return json({ ok: false, error: "Invalid id" }, 400);
 
   try {
     await ensureSchema(env);
-    const result = await saveDraft(env, identity.userId, peer, body.body);
+    const result = await saveDraft(env, identity.userId, {
+      id,
+      peerId: readPeer(body.peer),
+      body: body.body,
+    });
     if (!result.ok) return json(result, result.status);
 
     return json({ ok: true, draft: result.draft });
@@ -174,7 +189,13 @@ export async function handleMessageDraft(request: Request, env: Env): Promise<Re
   }
 }
 
-/** `POST /api/messages/send` — надіслати повідомлення співрозмовнику. */
+/**
+ * `POST /api/messages/send` — надіслати повідомлення співрозмовнику.
+ *
+ * `draft` — номер чернетки, з якої надіслали (необов'язковий): її прибирає сам
+ * сервіс, тією ж дією, що кладе повідомлення. Надсилання з розмови номера не
+ * має — і не чіпає жодної чернетки: вони не є тим листом, який туди пішов.
+ */
 export async function handleMessageSend(request: Request, env: Env): Promise<Response> {
   if (request.method !== "POST") return json({ ok: false, error: "Method not allowed" }, 405);
 
@@ -189,7 +210,7 @@ export async function handleMessageSend(request: Request, env: Env): Promise<Res
 
   try {
     await ensureSchema(env);
-    const result = await sendMessage(env, identity.userId, peer, body.body);
+    const result = await sendMessage(env, identity.userId, peer, body.body, readPeer(body.draft));
     if (!result.ok) return json(result, result.status);
 
     return json({ ok: true, message: result.message });

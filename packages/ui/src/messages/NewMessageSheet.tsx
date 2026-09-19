@@ -1,18 +1,23 @@
 /**
- * Форма нового повідомлення — **кому** і **тіло**, а не порожній аркуш.
+ * Форма нового листа — **кому** і **тіло**, з чернеткою як окремою річчю.
  *
- * Адресата обирають зі списку зв'язаних контактів (`NewMessagePicker`) — писати
- * іншим однаково не можна, і порожній аркуш обіцяв би лист будь-кому, а потім
- * відмовляв би 404. Тіло — та сама межа, що в розмові (`MAX_MESSAGE_BODY`).
+ * **Форма починається порожньою** — її відкриває «+», а це «новий лист».
+ * Підставляти в неї чужу чернетку означало б вирішувати за людину, що вона
+ * пише: чернеток може бути багато, і **кожна входить своїм рядком** у списку
+ * (`DraftList`), де вже видно і адресата, і текст.
  *
- * **Чернетка — це стан форми, а не розмови.** Форма відкривається найсвіжішою
- * чернеткою (адресат і текст), а зміна адресата підхоплює чернетку саме цієї
- * людини: у людини може бути по чернетці на кожного, і «останній відкритий»
- * текст не мусить переїхати до іншого адресата сам.
+ * **Адресат необов'язковий.** Лист без «кому» — це стан: текст написано, адресат
+ * ще не вибраний. Тому тут немає ні вимоги його вказати, ні порожнього стану
+ * замість полів: порожній лист зберігається як чернетка, а надіслати його не
+ * можна, доки адресата немає (кнопка гасне).
+ *
+ * **Чернетка без тексту не лишається.** Зберегти порожній лист можна — і це
+ * прибирає чернетку (адресат її не тримає, див. `MessageDraftInput`): так її
+ * й видаляють, стерши текст.
  *
  * **Ні надсилання, ні збереження форма не робить сама** — це справа оболонки
- * (як і в розмові): вона веде стан, показує помилку й вирішує, що відкрити
- * після відправки. Тут лишається те, що однакове: поля, межі й те, коли кнопки
+ * (як і в розмові): вона веде стан, показує помилку й вирішує, що відкрити після
+ * відправки. Тут лишається те, що однакове: поля, межі й те, коли кнопки
  * справді щось роблять.
  *
  * @module @wwwuabot/ui/messages
@@ -20,11 +25,15 @@
 
 import { useState, type ReactElement } from "react";
 import { Icon } from "@wwwuabot/shared";
-import { MAX_MESSAGE_BODY, isSendableBody, peerLabel } from "@wwwuabot/shared/messages";
+import {
+  MAX_MESSAGE_BODY,
+  isSendableBody,
+  peerLabel,
+  type MessageDraftInput,
+} from "@wwwuabot/shared/messages";
 import { MenuModal } from "../menu";
 import { NewMessagePicker } from "./NewMessagePicker";
-import { NO_PEERS_HINT, NO_PEERS_TITLE } from "./empty";
-import { draftFor, latestDraft, openingDraft } from "./drafts";
+import { NO_RECIPIENT_LABEL } from "./drafts";
 import type { NewMessageSheetProps } from "./types";
 
 /** `id` поля тіла — щоб підпис справді вказував на нього, а не стояв поруч. */
@@ -32,39 +41,32 @@ const BODY_ID = "wb-compose-body";
 
 export function NewMessageSheet({
   recipients,
-  drafts,
-  initialPeerId = null,
+  draft = null,
   onSaveDraft,
   onSend,
   onClose,
 }: NewMessageSheetProps): ReactElement {
-  // Початковий стан беремо з чернеток один раз: далі форму веде людина, і
-  // перечитування чернеток на кожному рендері затирало б набране. Адресат,
-  // яким форму відкрили зі списку, важливіший за «найсвіжішу чернетку»: текст
-  // з рядка вже адресований, і брати замість нього чужий не можна.
-  const [peerId, setPeerId] = useState<number | null>(
-    () => initialPeerId ?? latestDraft(drafts)?.peerId ?? null,
-  );
-  const [body, setBody] = useState(() => openingDraft(drafts, initialPeerId)?.body ?? "");
+  // Початковий стан — або чистий аркуш, або **та сама** чернетка, яку відкрили:
+  // далі форму веде людина, і перечитування чернеток на кожному рендері
+  // затирало б набране.
+  const [peerId, setPeerId] = useState<number | null>(draft?.peerId ?? null);
+  const [body, setBody] = useState(() => draft?.body ?? "");
   const [picking, setPicking] = useState(false);
   const [busy, setBusy] = useState(false);
 
   const chosen = peerId === null ? null : (recipients.find((peer) => peer.id === peerId) ?? null);
-  const sendable = peerId !== null && isSendableBody(body) && !busy;
-  const savable = peerId !== null && !busy;
+  const filled = isSendableBody(body);
+  const sendable = peerId !== null && filled && !busy;
+  // Зберегти можна й без тексту — але тільки в **наявної** чернетки, де ця дія
+  // означає «прибрати». Новий порожній лист зберігати нема чого.
+  const savable = !busy && (filled || draft !== null);
 
-  /** Обрали людину: беремо **її** чернетку, якщо вона вже є. */
-  function choose(id: number): void {
-    setPicking(false);
-    setPeerId(id);
-    const saved = draftFor(drafts, id);
-    if (saved) setBody(saved.body);
-  }
+  const input: MessageDraftInput = { id: draft?.id ?? null, peerId, body };
 
   async function save(): Promise<void> {
-    if (peerId === null || busy) return;
+    if (!savable) return;
     setBusy(true);
-    const ok = await onSaveDraft(peerId, body);
+    const ok = await onSaveDraft(input);
     setBusy(false);
     if (ok) onClose();
   }
@@ -72,27 +74,9 @@ export function NewMessageSheet({
   async function send(): Promise<void> {
     if (!sendable) return;
     setBusy(true);
-    const ok = await onSend(peerId!, body);
+    const ok = await onSend(input);
     setBusy(false);
     if (ok) onClose();
-  }
-
-  if (recipients.length === 0) {
-    return (
-      <MenuModal
-        title="Нове повідомлення"
-        onClose={onClose}
-        content={
-          <div className="wb-empty">
-            <span className="wb-empty-icon">
-              <Icon name="mail" size={32} />
-            </span>
-            <p className="wb-empty-text">{NO_PEERS_TITLE}</p>
-            <p className="wb-empty-text">{NO_PEERS_HINT}</p>
-          </div>
-        }
-      />
-    );
   }
 
   return (
@@ -116,7 +100,7 @@ export function NewMessageSheet({
                 <span
                   className={`wb-compose-pick-value${chosen ? "" : " wb-compose-pick-value--empty"}`}
                 >
-                  {chosen ? peerLabel(chosen) : "Оберіть контакт"}
+                  {chosen ? peerLabel(chosen) : NO_RECIPIENT_LABEL}
                 </span>
                 <Icon name="chevron-down" size={16} />
               </button>
@@ -165,7 +149,18 @@ export function NewMessageSheet({
       {picking && (
         <NewMessagePicker
           recipients={recipients}
-          onSelect={choose}
+          onSelect={(id) => {
+            setPicking(false);
+            setPeerId(id);
+          }}
+          onClear={
+            peerId === null
+              ? undefined
+              : () => {
+                  setPicking(false);
+                  setPeerId(null);
+                }
+          }
           onClose={() => setPicking(false)}
         />
       )}

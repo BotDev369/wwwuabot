@@ -22,9 +22,10 @@
  *    повідомлення, тож перевірка зв'язку тут теж перша, а «порожнє тіло» — це
  *    не порожня чернетка, а її відсутність; інакше форма відкривалась би з
  *    текстом, який уже пішов у переписку.
- * 8. **Чернетка видно в рядку списку — і це єдиний виняток із приховування.**
- *    Прибрана розмова без чернетки не вертається, а з нею — так: інакше
- *    ненадісланий текст не було б видно ніде.
+ * 8. **Чернетка — документ зі своїм номером і необов'язковим адресатом.**
+ *    Тому її правлять за номером (чужа — 404, як і чужий `peer`), заводять без
+ *    «кому» взагалі, а надсилання прибирає **лише ту**, з якої писали: друга
+ *    чернетка тій самій людині — це теж написане, і воно лишається.
  *
  * @module api-dev/src/controllers/messages.controller.test
  */
@@ -463,8 +464,7 @@ describe("список розмов", () => {
     // порівняння з `0` напросто викинуло б зі списку **усі наявні розмови**.
     expect(select?.sql).toMatch(/COALESCE\(hidden_a, 0\) = 0/);
     expect(select?.sql).toMatch(/COALESCE\(hidden_b, 0\) = 0/);
-    // Я — обидві сторони пари, і двічі ж у підзапиті чернеток; межа списка — та сама.
-    expect(select?.binds).toEqual([ME, ME, ME, ME, 100]);
+    expect(select?.binds).toEqual([ME, ME, 100]);
 
     const names = db.statements.find((s) => /AS peer_id, name/.test(s.sql));
     expect(names?.sql).toMatch(/owner_id = \?/);
@@ -485,9 +485,6 @@ describe("список розмов", () => {
         lastMessageText: "привіт",
         lastSenderId: PEER,
         unread: 2,
-        // `null`, а не «поля немає»: клієнт мусить бачити різницю між
-        // «чернетки немає» і «це старий воркер, який про неї не знає».
-        draft: null,
       },
     ]);
   });
@@ -891,8 +888,11 @@ describe("чернетки й форма нового повідомлення",
     expect(body.recipients[0].id).toBe(OTHER);
   });
 
-  it("збереження чернетки — заявка в базі, а не «спитати й вставити»", async () => {
-    const db = makeDb(LINKED);
+  it("нова чернетка — `INSERT` з номером, який повертає база", async () => {
+    const db = makeDb({
+      ...LINKED,
+      first: (sql) => (/FROM contacts/.test(sql) ? { id: 1 } : { id: 5 }),
+    });
     const res = await handleMessageDraft(
       request("/api/messages/draft", {
         method: "POST",
@@ -903,14 +903,96 @@ describe("чернетки й форма нового повідомлення",
     );
 
     expect(res.status).toBe(200);
-    const upsert = dataStatement(db, "INSERT INTO MESSAGE_DRAFTS");
-    expect(upsert?.sql).toMatch(/ON CONFLICT\(owner_id, peer_id\) DO UPDATE/);
+    await expect(res.json()).resolves.toEqual({
+      ok: true,
+      draft: { id: 5, peerId: PEER, body: "недісланий текст", updatedAt: expect.any(String) },
+    });
+    const insert = dataStatement(db, "INSERT INTO MESSAGE_DRAFTS");
+    expect(insert?.sql).toMatch(/RETURNING id/);
     // Тіло притиснуте по краях (`sanitizeMessageBody`) — тим самим правилом, що
     // й у надісланому: чернетка — це майбутнє повідомлення, а не інший текст.
-    expect(upsert?.binds.slice(0, 3)).toEqual([ME, PEER, "недісланий текст"]);
+    expect(insert?.binds.slice(0, 3)).toEqual([ME, PEER, "недісланий текст"]);
   });
 
-  it("порожнє тіло прибирає чернетку, а не зберігає порожнє", async () => {
+  it("чернетку **без адресата** зберігають без жодного запиту про зв'язок", async () => {
+    // Лист без «кому» — законний стан: текст написано, адресат ще не вибраний.
+    // Перевіряти зв'язок тут нема з чим, і вимагати адресата теж.
+    const db = makeDb({ first: () => ({ id: 9 }) });
+    const res = await handleMessageDraft(
+      request("/api/messages/draft", {
+        method: "POST",
+        body: { body: "комусь, потім вирішу" },
+        initData: await signedInitData(),
+      }),
+      db.env,
+    );
+
+    expect(res.status).toBe(200);
+    const insert = dataStatement(db, "INSERT INTO MESSAGE_DRAFTS");
+    expect(insert?.binds.slice(0, 3)).toEqual([ME, null, "комусь, потім вирішу"]);
+    expect(db.statements.some((s) => /FROM contacts/.test(s.sql))).toBe(false);
+  });
+
+  it("правка чернетки — `UPDATE` за номером і власником", async () => {
+    // Саме за власником: чернетка носить чуже ім'я й чужий текст.
+    const db = makeDb({
+      ...LINKED,
+      first: (sql) => (/FROM contacts/.test(sql) ? { id: 1 } : { id: 7 }),
+    });
+    const res = await handleMessageDraft(
+      request("/api/messages/draft", {
+        method: "POST",
+        body: { id: 7, peer: PEER, body: "інший текст" },
+        initData: await signedInitData(),
+      }),
+      db.env,
+    );
+
+    expect(res.status).toBe(200);
+    const update = dataStatement(db, "UPDATE MESSAGE_DRAFTS");
+    expect(update?.sql).toMatch(/WHERE id = \? AND owner_id = \?/);
+    expect(update?.binds.slice(0, 2)).toEqual([PEER, "інший текст"]);
+    expect(db.statements.some((s) => /INSERT INTO message_drafts/.test(s.sql))).toBe(false);
+  });
+
+  it("⛔ чужу чернетку не правлять: 404 — та сама, що й на чужий `peer`", async () => {
+    // Інакше різниця в коді відповіді сама розповіла б, що така чернетка існує (§7).
+    const db = makeDb({ first: () => null });
+    const res = await handleMessageDraft(
+      request("/api/messages/draft", {
+        method: "POST",
+        body: { id: 7, peer: PEER, body: "чуже" },
+        initData: await signedInitData(),
+      }),
+      db.env,
+    );
+
+    expect(res.status).toBe(404);
+    expect(writes(db, "message_drafts")).toHaveLength(0);
+  });
+
+  it("порожній текст прибирає **саме ту** чернетку, а не лишає порожню", async () => {
+    const db = makeDb({
+      ...LINKED,
+      first: (sql) => (/FROM contacts/.test(sql) ? { id: 1 } : { id: 7 }),
+    });
+    const res = await handleMessageDraft(
+      request("/api/messages/draft", {
+        method: "POST",
+        body: { id: 7, peer: PEER, body: "   " },
+        initData: await signedInitData(),
+      }),
+      db.env,
+    );
+
+    expect(res.status).toBe(200);
+    await expect(res.json()).resolves.toEqual({ ok: true, draft: null });
+    const removed = dataStatement(db, "DELETE FROM MESSAGE_DRAFTS");
+    expect(removed?.binds).toEqual([7, ME]);
+    expect(db.statements.some((s) => /INSERT INTO message_drafts/.test(s.sql))).toBe(false);
+  });
+
+  it("порожній новий лист не заводить рядка — зберігати нічого", async () => {
     const db = makeDb(LINKED);
     const res = await handleMessageDraft(
       request("/api/messages/draft", {
@@ -923,9 +1005,7 @@ describe("чернетки й форма нового повідомлення",
 
     expect(res.status).toBe(200);
     await expect(res.json()).resolves.toEqual({ ok: true, draft: null });
-    const removed = dataStatement(db, "DELETE FROM MESSAGE_DRAFTS");
-    expect(removed?.binds).toEqual([ME, PEER]);
-    expect(db.statements.some((s) => /INSERT INTO message_drafts/.test(s.sql))).toBe(false);
+    expect(writes(db, "message_drafts")).toHaveLength(0);
   });
 
   it("⛔ без зв'язку чернетки не заводяться, і не зникає ніщо", async () => {
@@ -947,7 +1027,27 @@ describe("чернетки й форма нового повідомлення",
     expect(writes(db, "message_drafts")).toHaveLength(0);
   });
 
-  it("надіслане прибирає чернетку — інакше форма відкрилась би надісланим", async () => {
+  it("надіслане прибирає **ту саму** чернетку — і не чіпає решту", async () => {
+    // Чернеток тій самій людині може бути кілька: надсилання з однієї не має
+    // права прибирати другу — то теж написане, і воно лишається не надісланим.
+    const db = makeDb(LINKED);
+    const res = await handleMessageSend(
+      request("/api/messages/send", {
+        method: "POST",
+        body: { peer: PEER, body: "привіт", draft: 7 },
+        initData: await signedInitData(),
+      }),
+      db.env,
+    );
+
+    expect(res.status).toBe(200);
+    const removed = dataStatement(db, "DELETE FROM MESSAGE_DRAFTS");
+    expect(removed?.binds).toEqual([7, ME]);
+  });
+
+  it("надсилання з розмови чернеток не чіпає зовсім", async () => {
+    // Лист із розмови — не той текст, що лежить у чернетці: прибрати його було б
+    // втратою написаного.
     const db = makeDb(LINKED);
     const res = await handleMessageSend(
       request("/api/messages/send", {
@@ -959,56 +1059,30 @@ describe("чернетки й форма нового повідомлення",
     );
 
     expect(res.status).toBe(200);
-    const removed = dataStatement(db, "DELETE FROM MESSAGE_DRAFTS");
-    expect(removed?.binds).toEqual([ME, PEER]);
+    expect(db.statements.some((s) => /DELETE FROM message_drafts/.test(s.sql))).toBe(false);
   });
 
-  it("чернетка тримає рядок у списку — навіть коли розмову прибрано", async () => {
-    // Саме тут чернетка й губилась: розмова прибрана — рядка немає, а про
-    // ненадісланий текст знає лише форма, яку ще треба відкрити. Тобто текст не
-    // було видно **ніде**.
+  it("список чернеток віддає номери — ними список веде у форму", async () => {
     const db = makeDb({
-      first: (sql) => (/FROM contacts/.test(sql) ? { id: 1 } : null),
-      all: (sql) => {
-        if (/FROM conversations/.test(sql)) {
-          return [
-            {
-              id: 11,
-              peer_a: ME,
-              peer_b: PEER,
-              last_message_at: null,
-              last_message_text: null,
-              last_sender_id: null,
-            },
-          ];
-        }
-        if (/FROM message_drafts/.test(sql)) {
-          return [{ peer_id: PEER, body: "недісланий текст", updated_at: "2026-09-19 13:00:00" }];
-        }
-        return [];
-      },
+      ...LINKED,
+      all: (sql) =>
+        /FROM message_drafts/.test(sql)
+          ? [
+              { id: 3, peer_id: null, body: "без адресата", updated_at: "2026-09-19 13:00:00" },
+              { id: 1, peer_id: PEER, body: "комусь", updated_at: "2026-09-19 12:00:00" },
+            ]
+          : [],
     });
 
-    const res = await handleMessages(
-      request("/api/messages", { initData: await signedInitData() }),
+    const res = await handleMessageCompose(
+      request("/api/messages/compose", { initData: await signedInitData() }),
       db.env,
     );
 
-    expect(res.status).toBe(200);
-    const body = (await res.json()) as {
-      conversations: { peer: { id: number }; draft: unknown }[];
-    };
-    expect(body.conversations).toHaveLength(1);
-    // Чернетка їде **в рядку** — клієнт не робить другого запиту, щоб її знайти.
-    expect(body.conversations[0].draft).toEqual({
-      peerId: PEER,
-      body: "недісланий текст",
-      updatedAt: "2026-09-19 13:00:00",
-    });
-    // Заглушка бази SQL не виконує, тож виняток для чернетки перевіряємо в
-    // самому запиті: без нього прибрана розмова просто не дійде до коду, який
-    // причіплює чернетку.
-    const list = db.statements.find((s) => /FROM conversations/.test(s.sql));
-    expect(list?.sql).toMatch(/IN \(SELECT peer_id FROM message_drafts WHERE owner_id = \?\)/);
+    const body = (await res.json()) as { drafts: unknown[] };
+    expect(body.drafts).toEqual([
+      { id: 3, peerId: null, body: "без адресата", updatedAt: "2026-09-19 13:00:00" },
+      { id: 1, peerId: PEER, body: "комусь", updatedAt: "2026-09-19 12:00:00" },
+    ]);
   });
 });

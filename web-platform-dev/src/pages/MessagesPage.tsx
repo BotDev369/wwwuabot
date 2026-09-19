@@ -16,9 +16,15 @@
  * `NewMessageSheet` (кому + тіло) з можливістю зберегти чернетку: написати
  * першим — це **робота**, а не мить, і чернетка мусить мати де жити.
  *
- * **Чернетка живе в рядку списку, і дотик до неї веде у форму.** Ненадісланий
- * текст видно як `Чернетка: …` — інакше він не видно **ніде**: у розмові
- * composer починається з порожнього, а про саму чернетку знає лише форма.
+ * **Чернетки — своїм блоком** (`DraftList`), а не рядком розмови: ненадісланий
+ * лист не належить розмові (в нього може не бути адресата, а одній людині
+ * чернеток буває кілька), і дотик до такого рядка веде **у форму**, а не в
+ * розмову — там composer починається з порожнього поля, тож текст лишився б
+ * невидимим.
+ *
+ * **«+» завжди відкриває чистий лист.** Форму з чернеткою відкриває її рядок, і
+ * це єдиний вхід у неї: підставляти найсвіжу чернетку в «новий лист» означало б
+ * вирішувати за людину, що вона пише.
  *
  * **Розмова відкривається поверхнею**, а не окремим маршрутом: футер лишається
  * хромом і видно, що ти в застосунку, а «назад» повертає до списку.
@@ -43,10 +49,16 @@
 import { useState, type ReactElement } from "react";
 import { useSearchParams } from "react-router-dom";
 import { Icon } from "@wwwuabot/shared";
-import { MESSAGES_PEER_PARAM, readMessagesPeer } from "@wwwuabot/shared/messages";
+import {
+  MESSAGES_PEER_PARAM,
+  readMessagesPeer,
+  type MessageDraft,
+  type MessageDraftInput,
+} from "@wwwuabot/shared/messages";
 import {
   ConversationList,
   DEFAULT_MESSAGES_VIEW,
+  DraftList,
   MessagesToolbar,
   NewMessageSheet,
   ThreadSheet,
@@ -75,10 +87,10 @@ export function MessagesPage(): ReactElement {
   const [openPeerId, setOpenPeerId] = useState<number | null>(() =>
     readMessagesPeer(searchParams.get(MESSAGES_PEER_PARAM)),
   );
-  // Чи відкрито форму нового листа — і **кому саме**, якщо її відкрили з рядка
-  // списку (там чернетка вже адресована). Це стан **екрана**: сама форма нічого
-  // не змінює в даних.
-  const [composing, setComposing] = useState<{ peerId: number | null } | null>(null);
+  // Який лист відкрито у формі: `draft` — правка чернетки, `null` — новий.
+  // Це стан **екрана**: сама форма нічого не змінює в даних, а чернетку їй дає
+  // рядок списку, з якого її відкрили.
+  const [composing, setComposing] = useState<{ draft: MessageDraft | null } | null>(null);
   const thread = useThread(openPeerId);
   const meId = profile?.id ?? 0;
 
@@ -98,29 +110,28 @@ export function MessagesPage(): ReactElement {
     void compose.reload();
   }
 
-  /** Відкрити форму — або сказати, чому її немає чим наповнити. */
+  /**
+   * Відкрити форму — **чистим листом**.
+   *
+   * «+» — це «написати нове», і саме так воно й мусить читатись: чернетки чекають
+   * у своєму блоці, і жодна з них не має права підставитись у новий лист.
+   */
   async function openCompose(): Promise<void> {
     if (compose.error) {
       await dialog.alert(compose.error, { tone: "danger" });
       return;
     }
-    setComposing({ peerId: null });
+    setComposing({ draft: null });
   }
 
-  /**
-   * Дотик до рядка списку: **чернетка веде у форму**, а не в розмову.
-   *
-   * У розмові показати ненадісланий текст нічим — там composer починається з
-   * порожнього поля, а чернетка лежить окремо від переписки. Відкрити розмову
-   * означало б лишити людину з текстом, якого вона не бачить.
-   */
+  /** Дотик до рядка розмови — як був: розмова відкривається поверхнею. */
   function openConversation(peerId: number): void {
-    const conversation = conversations.find((item) => item.peer.id === peerId);
-    if (conversation?.draft) {
-      setComposing({ peerId });
-      return;
-    }
     setOpenPeerId(peerId);
+  }
+
+  /** Дотик до рядка чернетки — у **форму**, з нею самою всередині. */
+  function openDraft(draft: MessageDraft): void {
+    setComposing({ draft });
   }
 
   /**
@@ -129,14 +140,20 @@ export function MessagesPage(): ReactElement {
    * Надсилання тут, а не у формі: `NewMessageSheet` лише повідомляє про дотик,
    * як і розмова. Відкриття розмови після успіху — продовження тієї самої дії:
    * людина написала першою, тож мусить побачити, що лист справді пішов.
+   *
+   * Номер чернетки їде разом із листом: сервер прибирає **саме її** — решта
+   * чернеток це те, що людина ще пише, і чипати їх надсилання не має права.
    */
-  async function sendNew(peerId: number, body: string): Promise<boolean> {
+  async function sendNew(input: MessageDraftInput): Promise<boolean> {
+    if (input.peerId === null) return false; // кнопка на такому листі гасне
+
     try {
-      const message = await messagesApi.send(peerId, body);
+      const message = await messagesApi.send(input.peerId, input.body, input.id);
       if (!message) throw new Error("Сервер не підтвердив надсилання — спробуйте ще раз.");
 
-      setOpenPeerId(peerId);
+      setOpenPeerId(input.peerId);
       void reload();
+      void compose.reload();
       return true;
     } catch (e: unknown) {
       await dialog.alert(e instanceof Error ? e.message : "Не вдалося надіслати повідомлення", {
@@ -149,11 +166,12 @@ export function MessagesPage(): ReactElement {
   /**
    * Зберегти чернетку: форма закриється лише тоді, коли сервер підтвердив.
    *
-   * Список перечитуємо після успіху: чернетка — те, що в рядку **видно**
-   * (`Чернетка: …`), а рядок приходить із сервера разом із розмовами.
+   * Список перечитуємо після успіху: чернетку **видно** рядком у ньому, а рядки
+   * приходять із сервера разом із розмовами — тож без перечитування новий рядок
+   * з'явився б аж наступного разу.
    */
-  async function saveDraft(peerId: number, body: string): Promise<boolean> {
-    if (!(await compose.saveDraft(peerId, body))) {
+  async function saveDraft(input: MessageDraftInput): Promise<boolean> {
+    if (!(await compose.saveDraft(input))) {
       await dialog.alert(compose.error ?? "Не вдалося зберегти чернетку", { tone: "danger" });
       return false;
     }
@@ -243,6 +261,18 @@ export function MessagesPage(): ReactElement {
         </div>
       )}
 
+      {/* Чернетки стоять **над розмовами** й окремим блоком: вони не належать
+          жодній із них — лист буває й без адресата, а одній людині чернеток
+          буває кілька. Блоку немає, коли чернеток немає (`DraftList`). */}
+      {!loading && !error && (
+        <DraftList
+          drafts={compose.drafts}
+          peers={compose.recipients}
+          onOpen={openDraft}
+          collection={{ layout: view.layout, columns: view.columns }}
+        />
+      )}
+
       {!loading && !error && (
         <ConversationList
           groups={groups}
@@ -256,14 +286,13 @@ export function MessagesPage(): ReactElement {
         />
       )}
 
-      {/* Форма з'являється лише тоді, коли отримувачі справді приїхали: під час
-          завантаження поверхня показала б «немає кому писати» — а це неправда,
+      {/* Форма з'являється лише тоді, коли адресати справді приїхали: під час
+          завантаження поле «Кому» показало б «без отримувача» — а це неправда,
           у якої немає виправдання (список дрібний і приходить одразу). */}
       {composing && !compose.loading && (
         <NewMessageSheet
           recipients={compose.recipients}
-          drafts={compose.drafts}
-          initialPeerId={composing.peerId}
+          draft={composing.draft}
           onSaveDraft={saveDraft}
           onSend={sendNew}
           onClose={() => setComposing(null)}

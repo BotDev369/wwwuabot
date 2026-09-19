@@ -16,6 +16,7 @@ import { describe, expect, it } from "vitest";
 import { renderToStaticMarkup } from "react-dom/server";
 import {
   SYSTEM_SENDER_ID,
+  peerLabel,
   type Conversation,
   type Message,
   type MessageDraft,
@@ -23,14 +24,15 @@ import {
 } from "@wwwuabot/shared/messages";
 import { DEFAULT_COLLECTION_VIEW } from "../collection";
 import { ConversationList } from "./ConversationList";
+import { DraftList } from "./DraftList";
 import { MessagesToolbar } from "./MessagesToolbar";
 import { NewMessagePicker } from "./NewMessagePicker";
 import { NewMessageSheet } from "./NewMessageSheet";
-import { draftFor, latestDraft } from "./drafts";
+import { DRAFTS_GROUP_LABEL, NO_RECIPIENT_LABEL, draftRecipientLabel } from "./drafts";
 import { ThreadSheet } from "./ThreadSheet";
 import { DEFAULT_MESSAGES_VIEW } from "./types";
 import { NO_PEERS_HINT, NO_PEERS_TITLE } from "./empty";
-import { conversationLine } from "./lines";
+import { conversationLine, draftLine } from "./lines";
 import { buildConversationGroups } from "./view";
 
 const ME = 7;
@@ -107,27 +109,82 @@ describe("conversationLine", () => {
       "Почніть розмову",
     );
   });
+});
 
-  it("ненадіслане називається чернеткою, а не надісланим", () => {
-    // Без слова «Чернетка» текст читався б як уже надісланий — і людина чекала б
-    // на відповідь на лист, який нікуди не пішов.
-    const drafted = conversation({
-      draft: { peerId: PEER.id, body: "ще не пішло", updatedAt: "2026-09-19 13:00:00" },
-    });
+describe("рядок чернетки", () => {
+  const draft: MessageDraft = {
+    id: 1,
+    peerId: PEER.id,
+    body: "  Хай, вася\n))  ",
+    updatedAt: "2026-09-19 13:00:00",
+  };
 
-    expect(conversationLine(drafted, ME)).toBe("Чернетка: ще не пішло");
+  it("показує свій текст одним рядком — переноси не ламають список", () => {
+    expect(draftLine(draft)).toBe("Хай, вася ))");
   });
 
-  it("чернетка замінює «Почніть розмову»: саме з неї розмову й починають", () => {
-    const drafted = conversation({
-      lastMessageAt: null,
-      lastMessageText: null,
-      lastSenderId: null,
-      draft: { peerId: PEER.id, body: "почав писати", updatedAt: "2026-09-19 13:00:00" },
-    });
+  it("адресат підписаний тим самим словом, що в листуванні", () => {
+    // Інакше та сама людина в списку чернеток і в розмові звалася б по-різному.
+    expect(draftRecipientLabel(draft, [PEER])).toBe("@karas");
+    expect(draftRecipientLabel(draft, [PEER])).toBe(peerLabel(PEER));
+  });
 
-    expect(conversationLine(drafted, ME)).toBe("Чернетка: почав писати");
-    expect(list([drafted])).toContain("Чернетка: почав писати");
+  it("чернетка без адресата — не порожня клітинка, а чесний стан", () => {
+    // Лист без «кому» людина справді завела: місце адресата ще не вибрано, і
+    // сказати про це треба словом, а не порожнечею.
+    expect(draftRecipientLabel({ ...draft, peerId: null }, [PEER])).toBe(NO_RECIPIENT_LABEL);
+  });
+});
+
+describe("блок чернеток", () => {
+  const drafts: MessageDraft[] = [
+    { id: 1, peerId: PEER.id, body: "перша", updatedAt: "2026-09-19 13:00:00" },
+    { id: 2, peerId: null, body: "друга", updatedAt: "2026-09-19 12:00:00" },
+  ];
+
+  function block(items: readonly MessageDraft[], peers: readonly MessagePeer[] = [PEER]): string {
+    return renderToStaticMarkup(
+      <DraftList
+        drafts={items}
+        peers={peers}
+        onOpen={() => {}}
+        collection={DEFAULT_COLLECTION_VIEW}
+      />,
+    );
+  }
+
+  it("немає чернеток — немає й блока: заголовок без вмісту нічого не каже", () => {
+    expect(block([])).toBe("");
+  });
+
+  it("кожна чернетка — свій рядок: одна людина може мати їх кілька", () => {
+    const html = block([...drafts, { ...drafts[0], id: 3, body: "третя" }]);
+
+    expect(html).toContain(DRAFTS_GROUP_LABEL);
+    expect(html).toContain("перша");
+    expect(html).toContain("третя");
+  });
+
+  it("адресат і «без отримувача» стоять в одному блоці", () => {
+    const html = block(drafts);
+
+    expect(html).toContain("@karas");
+    expect(html).toContain(NO_RECIPIENT_LABEL);
+    expect(html).toContain("друга");
+  });
+
+  it("розкладка приходить класом кирпичика, а не другим списком", () => {
+    const html = renderToStaticMarkup(
+      <DraftList
+        drafts={drafts}
+        peers={[PEER]}
+        onOpen={() => {}}
+        collection={{ layout: "cards", columns: 2 }}
+      />,
+    );
+
+    expect(html).toContain("wb-collection--cards");
+    expect(html).toContain("wb-conv-name");
   });
 });
 
@@ -263,6 +320,30 @@ describe("нове повідомлення", () => {
     expect(html).toContain("Контакти");
   });
 
+  it("обраного адресата можна **прибрати** — лист без «кому» це стан", () => {
+    // Вибір мусить мати шлях назад: інакше лист із випадково обраним адресатом
+    // довелося б писати саме йому.
+    const html = renderToStaticMarkup(
+      <NewMessagePicker
+        recipients={[PEER]}
+        onSelect={() => {}}
+        onClear={() => {}}
+        onClose={() => {}}
+      />,
+    );
+
+    expect(html).toContain(NO_RECIPIENT_LABEL);
+    expect(html).toContain(peerLabel(PEER));
+  });
+
+  it("нікого не обрано — пункту «без отримувача» немає: він нічого не робив би", () => {
+    const html = renderToStaticMarkup(
+      <NewMessagePicker recipients={[PEER]} onSelect={() => {}} onClose={() => {}} />,
+    );
+
+    expect(html).not.toContain(NO_RECIPIENT_LABEL);
+  });
+
   it("той самий текст, що в порожньому списку: один стан — одні слова", () => {
     // `renderToStaticMarkup` екранує апострофи (`&#x27;`), тож порівнюємо з
     // текстом у тому вигляді, у якому його прочитає людина.
@@ -274,16 +355,11 @@ describe("нове повідомлення", () => {
 });
 
 describe("форма нового повідомлення", () => {
-  function sheet(
-    recipients: readonly MessagePeer[],
-    drafts: readonly MessageDraft[] = [],
-    initialPeerId: number | null = null,
-  ): string {
+  function sheet(recipients: readonly MessagePeer[], draft: MessageDraft | null = null): string {
     return renderToStaticMarkup(
       <NewMessageSheet
         recipients={recipients}
-        drafts={drafts}
-        initialPeerId={initialPeerId}
+        draft={draft}
         onSaveDraft={async () => true}
         onSend={async () => true}
         onClose={() => {}}
@@ -300,74 +376,69 @@ describe("форма нового повідомлення", () => {
     expect(html).toContain("Надіслати");
   });
 
-  it("⛔ без адресата ні надіслати, ні зберегти неможливо", () => {
-    // Чернетка без людини, якій вона адресована, нічого не несе — туди її й
-    // нема куди покласти (ключ у сховищі — пара «я + хто»).
+  it("«+» відкриває **чистий** лист: ні адресата, ні тексту з чернеток", () => {
+    // Саме на цьому й спіткнулась робота: «+» підставляв найсвіжу чернетку, і
+    // почати новий лист було нічим. Форму з чернеткою відкриває її рядок.
     const html = sheet([PEER]);
 
+    expect(html).toContain(NO_RECIPIENT_LABEL);
+    // Обидві дії гаснуть: ні адресата, ні тексту — ні надіслати, ні зберегти.
     expect(html.match(/disabled=""/g)).toHaveLength(2);
   });
 
-  it("форма відкривається найсвіжою чернеткою: адресат і текст на місці", () => {
-    const drafts: MessageDraft[] = [
-      { peerId: 99, body: "старіше", updatedAt: "2026-09-19 10:00:00" },
-      { peerId: PEER.id, body: "недісланий текст", updatedAt: "2026-09-19 12:00:00" },
-    ];
+  it("чернетку без адресата **можна зберегти** — текст уже написано", () => {
+    // Саме тому адресат необов'язковий: лист буває початий до рішення про «кому».
+    const draft: MessageDraft = {
+      id: 3,
+      peerId: null,
+      body: "комусь, потім вирішу",
+      updatedAt: "2026-09-19 12:00:00",
+    };
 
-    const html = sheet([PEER], drafts);
+    const html = sheet([PEER], draft);
 
-    expect(html).toContain("@karas");
-    expect(html).toContain("недісланий текст");
+    expect(html).toContain(NO_RECIPIENT_LABEL);
+    expect(html).toContain("комусь, потім вирішу");
+    // Зберегти можна навіть без адресата — а надіслати ні (одна гасла, друга ні).
+    expect(html.match(/disabled=""/g)).toHaveLength(1);
   });
 
-  it("форму відкриває **адресат із рядка**, а не найсвіжіша чернетка", () => {
-    // Текст, написаний одній людині, не мусить переїхати до іншої — а саме це й
-    // сталося б, якби форма завжди брала найсвіжу чернетку.
-    const drafts: MessageDraft[] = [
-      { peerId: 99, body: "чужий текст", updatedAt: "2026-09-19 15:00:00" },
-      { peerId: PEER.id, body: "його текст", updatedAt: "2026-09-19 09:00:00" },
-    ];
+  it("чернетка з рядка приходить у форму зі своїм адресатом і текстом", () => {
+    const draft: MessageDraft = {
+      id: 7,
+      peerId: PEER.id,
+      body: "його текст",
+      updatedAt: "2026-09-19 09:00:00",
+    };
 
-    const html = sheet([PEER], drafts, PEER.id);
+    const html = sheet([PEER], draft);
 
+    expect(html).toContain("@karas");
     expect(html).toContain("його текст");
-    expect(html).not.toContain("чужий текст");
+    // Обидві дії живі: і надіслати, і зберегти.
+    expect(html).not.toContain("disabled");
   });
 
-  it("адресат із рядка без чернетки — людина обрана, поле порожнє", () => {
-    const html = sheet([PEER], [], PEER.id);
+  it("у наявної чернетки кнопка збереження жива навіть із порожнім текстом", () => {
+    // Ця сама дія її й прибирає: чернетка без тексту не несе нічого, і лишати
+    // по собі порожній рядок нема чого.
+    const html = sheet([PEER], {
+      id: 4,
+      peerId: PEER.id,
+      body: "   ",
+      updatedAt: "2026-09-19 12:00:00",
+    });
 
-    expect(html).toContain("@karas");
-    expect(html).not.toContain("Оберіть контакт");
+    expect(html.match(/disabled=""/g)).toHaveLength(1);
   });
 
-  it("писати нікому — форма каже те саме, що порожній список", () => {
+  it("писати нікому — форма лишається: чернетку все одно можна завести", () => {
+    // Адресата взяти ніде, але текст — це те, що людина написала: форма мусить
+    // його прийняти, а не підмінятися порожнім станом.
     const html = sheet([]);
 
-    expect(html).toContain(NO_PEERS_TITLE);
-    // Полів немає: адресата взяти ніде, тож форма не вдає, що він є.
-    expect(html).not.toContain("Зберегти чернетку");
-  });
-});
-
-describe("чернетки", () => {
-  const drafts: MessageDraft[] = [
-    { peerId: 1, body: "а", updatedAt: "2026-09-19 09:00:00" },
-    { peerId: 2, body: "б", updatedAt: "2026-09-19 11:00:00" },
-  ];
-
-  it("найсвіжіша — та, якою відкривається форма", () => {
-    expect(latestDraft(drafts)?.peerId).toBe(2);
-  });
-
-  it("чернетка береться **за адресатом**, а не «остання відкрита»", () => {
-    // Інакше текст, написаний одній людині, переїхав би до іншої.
-    expect(draftFor(drafts, 1)?.body).toBe("а");
-    expect(draftFor(drafts, 7)).toBeNull();
-  });
-
-  it("чернеток немає — відкривати форму нема чим", () => {
-    expect(latestDraft([])).toBeNull();
+    expect(html).toContain("Зберегти чернетку");
+    expect(html).toContain(NO_RECIPIENT_LABEL);
   });
 });
 

@@ -15,24 +15,28 @@
  * третій користувач, а не третя копія. Що саме там буває, знає `view.ts`.
  *
  * Нове повідомлення починають **формою** (`NewMessageSheet`: кому + тіло), а не
- * натисканням у списку: чернетка мусить мати де жити — і вона має (`drafts.ts`).
+ * натисканням у списку, а чернетки живуть **своїм блоком** (`DraftList`):
+ * ненадісланий лист не належить розмові — у нього може не бути адресата взагалі,
+ * а одній людині чернеток буває кілька.
  *
  * @module @wwwuabot/ui/messages
  */
 
 export { ConversationList } from "./ConversationList";
+export { DraftList } from "./DraftList";
 export { MessageComposer } from "./MessageComposer";
 export { MessagesToolbar } from "./MessagesToolbar";
 export { NewMessagePicker } from "./NewMessagePicker";
 export { NewMessageSheet } from "./NewMessageSheet";
-export { draftFor, latestDraft } from "./drafts";
+export { DRAFTS_GROUP_LABEL, NO_RECIPIENT_LABEL, draftPeer, draftRecipientLabel } from "./drafts";
 export { ThreadSheet } from "./ThreadSheet";
-export { NO_MESSAGES_LINE, conversationLine } from "./lines";
+export { NO_MESSAGES_LINE, conversationLine, draftLine } from "./lines";
 export { NO_PEERS_HINT, NO_PEERS_TITLE } from "./empty";
 export { useStickToBottom } from "./useStickToBottom";
 export { DEFAULT_MESSAGES_VIEW } from "./types";
 export type {
   ConversationListProps,
+  DraftListProps,
   MessagesChip,
   NewMessagePickerProps,
   NewMessageSheetProps,
