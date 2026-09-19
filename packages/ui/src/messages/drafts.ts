@@ -30,3 +30,17 @@ export function latestDraft(drafts: readonly MessageDraft[]): MessageDraft | nul
 export function draftFor(drafts: readonly MessageDraft[], peerId: number): MessageDraft | null {
   return drafts.find((draft) => draft.peerId === peerId) ?? null;
 }
+
+/**
+ * Чим відкривається форма: чернетка **цієї людини**, а без неї — найсвіжіша.
+ *
+ * Дві різні речі в одній функції навмисно, бо обидві відповідають на одне
+ * питання форми — «що вже написано». Людину задають тоді, коли форму відкрили з
+ * рядка списку (там чернетка вже адресована), і тоді чужий текст брати нічого.
+ */
+export function openingDraft(
+  drafts: readonly MessageDraft[],
+  peerId: number | null,
+): MessageDraft | null {
+  return peerId === null ? latestDraft(drafts) : draftFor(drafts, peerId);
+}

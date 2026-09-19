@@ -22,6 +22,9 @@
  *    повідомлення, тож перевірка зв'язку тут теж перша, а «порожнє тіло» — це
  *    не порожня чернетка, а її відсутність; інакше форма відкривалась би з
  *    текстом, який уже пішов у переписку.
+ * 8. **Чернетка видно в рядку списку — і це єдиний виняток із приховування.**
+ *    Прибрана розмова без чернетки не вертається, а з нею — так: інакше
+ *    ненадісланий текст не було б видно ніде.
  *
  * @module api-dev/src/controllers/messages.controller.test
  */
@@ -460,7 +463,8 @@ describe("список розмов", () => {
     // порівняння з `0` напросто викинуло б зі списку **усі наявні розмови**.
     expect(select?.sql).toMatch(/COALESCE\(hidden_a, 0\) = 0/);
     expect(select?.sql).toMatch(/COALESCE\(hidden_b, 0\) = 0/);
-    expect(select?.binds).toEqual([ME, ME, 100]);
+    // Я — обидві сторони пари, і двічі ж у підзапиті чернеток; межа списка — та сама.
+    expect(select?.binds).toEqual([ME, ME, ME, ME, 100]);
 
     const names = db.statements.find((s) => /AS peer_id, name/.test(s.sql));
     expect(names?.sql).toMatch(/owner_id = \?/);
@@ -481,6 +485,9 @@ describe("список розмов", () => {
         lastMessageText: "привіт",
         lastSenderId: PEER,
         unread: 2,
+        // `null`, а не «поля немає»: клієнт мусить бачити різницю між
+        // «чернетки немає» і «це старий воркер, який про неї не знає».
+        draft: null,
       },
     ]);
   });
@@ -954,5 +961,54 @@ describe("чернетки й форма нового повідомлення",
     expect(res.status).toBe(200);
     const removed = dataStatement(db, "DELETE FROM MESSAGE_DRAFTS");
     expect(removed?.binds).toEqual([ME, PEER]);
+  });
+
+  it("чернетка тримає рядок у списку — навіть коли розмову прибрано", async () => {
+    // Саме тут чернетка й губилась: розмова прибрана — рядка немає, а про
+    // ненадісланий текст знає лише форма, яку ще треба відкрити. Тобто текст не
+    // було видно **ніде**.
+    const db = makeDb({
+      first: (sql) => (/FROM contacts/.test(sql) ? { id: 1 } : null),
+      all: (sql) => {
+        if (/FROM conversations/.test(sql)) {
+          return [
+            {
+              id: 11,
+              peer_a: ME,
+              peer_b: PEER,
+              last_message_at: null,
+              last_message_text: null,
+              last_sender_id: null,
+            },
+          ];
+        }
+        if (/FROM message_drafts/.test(sql)) {
+          return [{ peer_id: PEER, body: "недісланий текст", updated_at: "2026-09-19 13:00:00" }];
+        }
+        return [];
+      },
+    });
+
+    const res = await handleMessages(
+      request("/api/messages", { initData: await signedInitData() }),
+      db.env,
+    );
+
+    expect(res.status).toBe(200);
+    const body = (await res.json()) as {
+      conversations: { peer: { id: number }; draft: unknown }[];
+    };
+    expect(body.conversations).toHaveLength(1);
+    // Чернетка їде **в рядку** — клієнт не робить другого запиту, щоб її знайти.
+    expect(body.conversations[0].draft).toEqual({
+      peerId: PEER,
+      body: "недісланий текст",
+      updatedAt: "2026-09-19 13:00:00",
+    });
+    // Заглушка бази SQL не виконує, тож виняток для чернетки перевіряємо в
+    // самому запиті: без нього прибрана розмова просто не дійде до коду, який
+    // причіплює чернетку.
+    const list = db.statements.find((s) => /FROM conversations/.test(s.sql));
+    expect(list?.sql).toMatch(/IN \(SELECT peer_id FROM message_drafts WHERE owner_id = \?\)/);
   });
 });

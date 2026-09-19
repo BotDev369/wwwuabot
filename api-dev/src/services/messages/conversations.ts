@@ -21,10 +21,11 @@
  * @module api-dev/src/services/messages/conversations
  */
 
-import type { Conversation, MessagePeer } from "@wwwuabot/shared/messages";
+import type { Conversation, MessageDraft, MessagePeer } from "@wwwuabot/shared/messages";
 import type { Env } from "../../shared/types";
 import { conversationPair, peerLabel, peerOf } from "@wwwuabot/shared/messages";
 import { formatSqliteDatetime } from "@wwwuabot/shared/utils/datetime";
+import { readDrafts } from "./drafts";
 import { readPeers, unknownPeer } from "./peers";
 
 /** Стеля списку: розмови — це те, що людина справді веде, а не стрічка. */
@@ -204,19 +205,33 @@ async function unreadByConversation(
  * Прибрані розмови не потрапляють ні з першого джерела, ні з другого: фільтр
  * стоїть на обох (див. `hiddenPeerIds`), бо друге джерело — той самий список, а
  * не окремий перелік, і без фільтра прибране верталось би ним же.
+ *
+ * **Чернетка — виняток із приховування, і єдиний.** Вона тримає рядок видимим
+ * (умова стоїть у самому запиті), бо це власна робота людини: ненадісланий
+ * текст, якого інакше не видно **ніде** — у списку рядка немає, а форма про
+ * нього знає лише тоді, коли її відкрили. Саме так чернетка й губилась.
  */
 export async function listConversations(env: Env, me: number): Promise<Conversation[]> {
-  const result = await env.DB.prepare(
-    `SELECT id, peer_a, peer_b, last_message_at, last_message_text, last_sender_id
-       FROM conversations
-      WHERE (peer_a = ? AND COALESCE(hidden_a, 0) = 0)
-         OR (peer_b = ? AND COALESCE(hidden_b, 0) = 0)
-      ORDER BY COALESCE(last_message_at, created_at) DESC, id DESC
-      LIMIT ?`,
-  )
-    .bind(me, me, CONVERSATION_LIMIT)
-    .all<ConversationRow>();
+  // Чернетки читаються **разом зі списком**, а не окремим запитом: вони лежать
+  // у самому рядку (див. нижче), і спитати їх пізніше означало б показати
+  // список, у якому половина рядків бреше про свій вміст.
+  const [result, drafts] = await Promise.all([
+    env.DB.prepare(
+      `SELECT id, peer_a, peer_b, last_message_at, last_message_text, last_sender_id
+         FROM conversations
+        WHERE (peer_a = ? AND (COALESCE(hidden_a, 0) = 0
+                 OR peer_b IN (SELECT peer_id FROM message_drafts WHERE owner_id = ?)))
+           OR (peer_b = ? AND (COALESCE(hidden_b, 0) = 0
+                 OR peer_a IN (SELECT peer_id FROM message_drafts WHERE owner_id = ?)))
+        ORDER BY COALESCE(last_message_at, created_at) DESC, id DESC
+        LIMIT ?`,
+    )
+      .bind(me, me, me, me, CONVERSATION_LIMIT)
+      .all<ConversationRow>(),
+    readDrafts(env, me),
+  ]);
 
+  const draftByPeer = new Map(drafts.map((draft) => [draft.peerId, draft]));
   const rows = result.results ?? [];
   const threadPeers = rows.map((row) => peerOf(Number(row.peer_a), Number(row.peer_b), me));
   const started = new Set(threadPeers);
@@ -237,14 +252,19 @@ export async function listConversations(env: Env, me: number): Promise<Conversat
       lastMessageText: row.last_message_text ?? null,
       lastSenderId: row.last_sender_id === null ? null : Number(row.last_sender_id),
       unread: unread.get(Number(row.id)) ?? 0,
+      draft: draftByPeer.get(peerId) ?? null,
     };
   });
 
-  return [...threads, ...newThreads(linked, peers)];
+  return [...threads, ...newThreads(linked, peers, draftByPeer)];
 }
 
 /** Розмови, яких ще немає: рядки-запрошення до першого повідомлення. */
-function newThreads(peerIds: readonly number[], peers: Map<number, MessagePeer>): Conversation[] {
+function newThreads(
+  peerIds: readonly number[],
+  peers: Map<number, MessagePeer>,
+  drafts: Map<number, MessageDraft>,
+): Conversation[] {
   return peerIds
     .map((peerId) => ({
       peer: peers.get(peerId) ?? unknownPeer(peerId),
@@ -252,6 +272,7 @@ function newThreads(peerIds: readonly number[], peers: Map<number, MessagePeer>)
       lastMessageText: null,
       lastSenderId: null,
       unread: 0,
+      draft: drafts.get(peerId) ?? null,
     }))
     .sort((a, b) => peerLabel(a.peer).localeCompare(peerLabel(b.peer), "uk"));
 }

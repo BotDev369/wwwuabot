@@ -24,7 +24,7 @@ import { MAX_MESSAGE_BODY, isSendableBody, peerLabel } from "@wwwuabot/shared/me
 import { MenuModal } from "../menu";
 import { NewMessagePicker } from "./NewMessagePicker";
 import { NO_PEERS_HINT, NO_PEERS_TITLE } from "./empty";
-import { draftFor, latestDraft } from "./drafts";
+import { draftFor, latestDraft, openingDraft } from "./drafts";
 import type { NewMessageSheetProps } from "./types";
 
 /** `id` поля тіла — щоб підпис справді вказував на нього, а не стояв поруч. */
@@ -33,14 +33,19 @@ const BODY_ID = "wb-compose-body";
 export function NewMessageSheet({
   recipients,
   drafts,
+  initialPeerId = null,
   onSaveDraft,
   onSend,
   onClose,
 }: NewMessageSheetProps): ReactElement {
   // Початковий стан беремо з чернеток один раз: далі форму веде людина, і
-  // перечитування чернеток на кожному рендері затирало б набране.
-  const [peerId, setPeerId] = useState<number | null>(() => latestDraft(drafts)?.peerId ?? null);
-  const [body, setBody] = useState(() => latestDraft(drafts)?.body ?? "");
+  // перечитування чернеток на кожному рендері затирало б набране. Адресат,
+  // яким форму відкрили зі списку, важливіший за «найсвіжішу чернетку»: текст
+  // з рядка вже адресований, і брати замість нього чужий не можна.
+  const [peerId, setPeerId] = useState<number | null>(
+    () => initialPeerId ?? latestDraft(drafts)?.peerId ?? null,
+  );
+  const [body, setBody] = useState(() => openingDraft(drafts, initialPeerId)?.body ?? "");
   const [picking, setPicking] = useState(false);
   const [busy, setBusy] = useState(false);
 

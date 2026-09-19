@@ -16,6 +16,10 @@
  * `NewMessageSheet` (кому + тіло) з можливістю зберегти чернетку: написати
  * першим — це **робота**, а не мить, і чернетка мусить мати де жити.
  *
+ * **Чернетка живе в рядку списку, і дотик до неї веде у форму.** Ненадісланий
+ * текст видно як `Чернетка: …` — інакше він не видно **ніде**: у розмові
+ * composer починається з порожнього, а про саму чернетку знає лише форма.
+ *
  * **Розмова відкривається поверхнею**, а не окремим маршрутом: футер лишається
  * хромом і видно, що ти в застосунку, а «назад» повертає до списку.
  *
@@ -71,9 +75,10 @@ export function MessagesPage(): ReactElement {
   const [openPeerId, setOpenPeerId] = useState<number | null>(() =>
     readMessagesPeer(searchParams.get(MESSAGES_PEER_PARAM)),
   );
-  // Чи відкрито вибір людини, якій писати («+»). Це стан **екрана**: сам вибір
-  // нічого не змінює в даних, він лише веде в розмову.
-  const [picking, setPicking] = useState(false);
+  // Чи відкрито форму нового листа — і **кому саме**, якщо її відкрили з рядка
+  // списку (там чернетка вже адресована). Це стан **екрана**: сама форма нічого
+  // не змінює в даних.
+  const [composing, setComposing] = useState<{ peerId: number | null } | null>(null);
   const thread = useThread(openPeerId);
   const meId = profile?.id ?? 0;
 
@@ -99,7 +104,23 @@ export function MessagesPage(): ReactElement {
       await dialog.alert(compose.error, { tone: "danger" });
       return;
     }
-    setPicking(true);
+    setComposing({ peerId: null });
+  }
+
+  /**
+   * Дотик до рядка списку: **чернетка веде у форму**, а не в розмову.
+   *
+   * У розмові показати ненадісланий текст нічим — там composer починається з
+   * порожнього поля, а чернетка лежить окремо від переписки. Відкрити розмову
+   * означало б лишити людину з текстом, якого вона не бачить.
+   */
+  function openConversation(peerId: number): void {
+    const conversation = conversations.find((item) => item.peer.id === peerId);
+    if (conversation?.draft) {
+      setComposing({ peerId });
+      return;
+    }
+    setOpenPeerId(peerId);
   }
 
   /**
@@ -125,12 +146,20 @@ export function MessagesPage(): ReactElement {
     }
   }
 
-  /** Зберегти чернетку: форма закриється лише тоді, коли сервер підтвердив. */
+  /**
+   * Зберегти чернетку: форма закриється лише тоді, коли сервер підтвердив.
+   *
+   * Список перечитуємо після успіху: чернетка — те, що в рядку **видно**
+   * (`Чернетка: …`), а рядок приходить із сервера разом із розмовами.
+   */
   async function saveDraft(peerId: number, body: string): Promise<boolean> {
-    if (await compose.saveDraft(peerId, body)) return true;
+    if (!(await compose.saveDraft(peerId, body))) {
+      await dialog.alert(compose.error ?? "Не вдалося зберегти чернетку", { tone: "danger" });
+      return false;
+    }
 
-    await dialog.alert(compose.error ?? "Не вдалося зберегти чернетку", { tone: "danger" });
-    return false;
+    void reload();
+    return true;
   }
 
   /**
@@ -219,7 +248,7 @@ export function MessagesPage(): ReactElement {
           groups={groups}
           total={conversations.length}
           meId={meId}
-          onOpen={(peerId) => setOpenPeerId(peerId)}
+          onOpen={openConversation}
           collection={{ layout: view.layout, columns: view.columns }}
           // Скидання — це повернення до типового вигляду цілком: людина не
           // пам'ятає, що саме вона навибирала, коли список спорожнів.
@@ -230,13 +259,14 @@ export function MessagesPage(): ReactElement {
       {/* Форма з'являється лише тоді, коли отримувачі справді приїхали: під час
           завантаження поверхня показала б «немає кому писати» — а це неправда,
           у якої немає виправдання (список дрібний і приходить одразу). */}
-      {picking && !compose.loading && (
+      {composing && !compose.loading && (
         <NewMessageSheet
           recipients={compose.recipients}
           drafts={compose.drafts}
+          initialPeerId={composing.peerId}
           onSaveDraft={saveDraft}
           onSend={sendNew}
-          onClose={() => setPicking(false)}
+          onClose={() => setComposing(null)}
         />
       )}
 

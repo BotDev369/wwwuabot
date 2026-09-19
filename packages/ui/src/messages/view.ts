@@ -85,6 +85,9 @@ function matchesQuery(conversation: Conversation, words: readonly string[]): boo
     peer.username ?? "",
     [peer.firstName, peer.lastName].filter(Boolean).join(" "),
     conversation.lastMessageText ?? "",
+    // Ненадісланий текст — теж те, що людина шукає: у рядку вона бачить саме
+    // його, тож не знаходити за ним означало б не знаходити за видимим.
+    conversation.draft?.body ?? "",
   ]
     .join(" ")
     .toLocaleLowerCase("uk-UA");
@@ -99,9 +102,16 @@ function matchesFilter(conversation: Conversation, filter: MessagesFilter): bool
   return true;
 }
 
-/** Час останнього повідомлення; `0` — розмова ще не починалась. */
+/**
+ * Час останньої події в розмові; `0` — у ній ще нічого не було.
+ *
+ * Недісланий текст — теж подія, і саме вона привела людину сюди: без цього
+ * чернетка падала б у самий низ списку («без повідомлень»), хоч щойно й писалась.
+ */
 function lastTime(conversation: Conversation): number {
-  return conversation.lastMessageAt ? sqliteTimestamp(conversation.lastMessageAt) : 0;
+  const message = conversation.lastMessageAt ? sqliteTimestamp(conversation.lastMessageAt) : 0;
+  const draft = conversation.draft ? sqliteTimestamp(conversation.draft.updatedAt) : 0;
+  return Math.max(message, draft);
 }
 
 function byName(a: Conversation, b: Conversation): number {

@@ -107,6 +107,28 @@ describe("conversationLine", () => {
       "Почніть розмову",
     );
   });
+
+  it("ненадіслане називається чернеткою, а не надісланим", () => {
+    // Без слова «Чернетка» текст читався б як уже надісланий — і людина чекала б
+    // на відповідь на лист, який нікуди не пішов.
+    const drafted = conversation({
+      draft: { peerId: PEER.id, body: "ще не пішло", updatedAt: "2026-09-19 13:00:00" },
+    });
+
+    expect(conversationLine(drafted, ME)).toBe("Чернетка: ще не пішло");
+  });
+
+  it("чернетка замінює «Почніть розмову»: саме з неї розмову й починають", () => {
+    const drafted = conversation({
+      lastMessageAt: null,
+      lastMessageText: null,
+      lastSenderId: null,
+      draft: { peerId: PEER.id, body: "почав писати", updatedAt: "2026-09-19 13:00:00" },
+    });
+
+    expect(conversationLine(drafted, ME)).toBe("Чернетка: почав писати");
+    expect(list([drafted])).toContain("Чернетка: почав писати");
+  });
 });
 
 describe("список розмов", () => {
@@ -252,11 +274,16 @@ describe("нове повідомлення", () => {
 });
 
 describe("форма нового повідомлення", () => {
-  function sheet(recipients: readonly MessagePeer[], drafts: readonly MessageDraft[] = []): string {
+  function sheet(
+    recipients: readonly MessagePeer[],
+    drafts: readonly MessageDraft[] = [],
+    initialPeerId: number | null = null,
+  ): string {
     return renderToStaticMarkup(
       <NewMessageSheet
         recipients={recipients}
         drafts={drafts}
+        initialPeerId={initialPeerId}
         onSaveDraft={async () => true}
         onSend={async () => true}
         onClose={() => {}}
@@ -291,6 +318,27 @@ describe("форма нового повідомлення", () => {
 
     expect(html).toContain("@karas");
     expect(html).toContain("недісланий текст");
+  });
+
+  it("форму відкриває **адресат із рядка**, а не найсвіжіша чернетка", () => {
+    // Текст, написаний одній людині, не мусить переїхати до іншої — а саме це й
+    // сталося б, якби форма завжди брала найсвіжу чернетку.
+    const drafts: MessageDraft[] = [
+      { peerId: 99, body: "чужий текст", updatedAt: "2026-09-19 15:00:00" },
+      { peerId: PEER.id, body: "його текст", updatedAt: "2026-09-19 09:00:00" },
+    ];
+
+    const html = sheet([PEER], drafts, PEER.id);
+
+    expect(html).toContain("його текст");
+    expect(html).not.toContain("чужий текст");
+  });
+
+  it("адресат із рядка без чернетки — людина обрана, поле порожнє", () => {
+    const html = sheet([PEER], [], PEER.id);
+
+    expect(html).toContain("@karas");
+    expect(html).not.toContain("Оберіть контакт");
   });
 
   it("писати нікому — форма каже те саме, що порожній список", () => {

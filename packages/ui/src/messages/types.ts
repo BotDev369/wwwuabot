@@ -187,6 +187,13 @@ export interface NewMessageSheetProps {
   recipients: readonly MessagePeer[];
   /** Збережені чернетки: найсвіжіша відкриває форму, решта — за адресатом. */
   drafts: readonly MessageDraft[];
+  /**
+   * Чию чернетку відкрити одразу; без цього — найсвіжішу з усіх.
+   *
+   * Це вхід із рядка списку: у ньому чернетка вже адресована, тож відкрити
+   * форму чужим текстом означало б перенести написане одному до іншого.
+   */
+  initialPeerId?: number | null;
   /** Зберегти чернетку; `true` — сервер підтвердив. */
   onSaveDraft: (peerId: number, body: string) => Promise<boolean>;
   /** Надіслати; `true` — сервер підтвердив. */
