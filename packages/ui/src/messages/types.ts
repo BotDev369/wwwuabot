@@ -1,22 +1,106 @@
 /**
- * Типи компонентів повідомлень — склад дає оболонка, вигляд спільний.
+ * Типи повідомлень: склад дає оболонка, вигляд спільний.
  *
  * Та сама пара «склад ↔ розмітка», що в нотатках і контактах: **дані** й дії
  * (`onSend`, `onOpen`) приходять від оболонки, а як це виглядає й поводиться —
  * спільне. Друга копія розмітки в другій оболонці розійшлася б із першою на
  * першій же правці — саме тому це кирпичик, а не «стиль оболонки».
  *
+ * **Вигляд списку тут — не склад екрана.** Пошук, фільтр, порядок, групи й
+ * розкладку описує `MessagesView`, а `view.ts` перетворює `Conversation[]` +
+ * цей вигляд у групи для рендеру — тому всі правила можна перевірити без DOM.
+ *
  * @module @wwwuabot/ui/messages
  */
 
 import type { Conversation, Message, MessagePeer } from "@wwwuabot/shared/messages";
+import type {
+  CollectionChip,
+  CollectionColumns,
+  CollectionLayout,
+  CollectionView,
+} from "../collection";
+
+/**
+ * Порядок показу розмов.
+ *
+ * Типовий — за останнім повідомленням: у листування заходять, щоб побачити те,
+ * що сталося щойно, і жоден інший порядок цього не дає. «За іменем» потрібен,
+ * коли шукають **конкретну людину**, а «непрочитані спершу» — коли розмов
+ * багато і в них загубилось те, на що не відповіли.
+ */
+export type MessagesSort = "recent" | "unread" | "name";
+
+/** За чим збирати розмови в групи. */
+export type MessagesGroupBy = "none" | "day";
+
+/**
+ * Що саме показувати зі списку.
+ *
+ * Це **фільтр**, а не порядок: «без повідомлень» — не «порожні згори», а
+ * «покажи лише ті, де ще нічого не сказано» (з них починають нові розмови).
+ */
+export type MessagesFilter = "all" | "unread" | "empty";
+
+/** Те, що людина вибрала у смузі керування. */
+export interface MessagesView {
+  /** Пошук за іменем, хендлом і текстом останнього повідомлення. */
+  query: string;
+  filter: MessagesFilter;
+  sort: MessagesSort;
+  groupBy: MessagesGroupBy;
+  /** Рядки чи плитки — стан екрана, а не списку. */
+  layout: CollectionLayout;
+  /** Скільком колонками стоять плитки. У рядків значення немає. */
+  columns: CollectionColumns;
+}
+
+/**
+ * Типовий вигляд.
+ *
+ * **Груп типово немає** — як у нотатках і контактах: список розмов і без них
+ * упорядкований за часом, а «Сьогодні / Вчора» ріжуть його рівно тоді, коли
+ * розмов справді багато. Групування лишається вибором у смузі.
+ */
+export const DEFAULT_MESSAGES_VIEW: MessagesView = {
+  query: "",
+  filter: "all",
+  sort: "recent",
+  groupBy: "none",
+  layout: "rows",
+  columns: 2,
+};
+
+/** Чип смуги керування — те, що людина вибрала, і як це зняти. */
+export type MessagesChip = CollectionChip<MessagesView>;
+
+/**
+ * Група в списку — з неї рендериться заголовок і рядки.
+ *
+ * У заголовку стоїть **кількість розмов**: це те, як список розклали, а не ще
+ * одне число лійки.
+ */
+export interface MessagesGroup {
+  /** Стабільний ключ React-списку (`day:today`, `none`). */
+  key: string;
+  /** Підпис групи. */
+  label: string;
+  conversations: Conversation[];
+}
 
 export interface ConversationListProps {
-  conversations: readonly Conversation[];
+  /** Групи — список уже відфільтрований і складений (`buildConversationGroups`). */
+  groups: readonly MessagesGroup[];
+  /** Скільки розмов узагалі: щоб різнити «немає з ким» від «нічого не знайшлось». */
+  total: number;
   /** Хто я — потрібно, щоб позначити **своє** в рядку («Ви: …»). */
   meId: number;
   /** Відкрити розмову зі співрозмовником. */
   onOpen: (peerId: number) => void;
+  /** Рядки чи плитки — стан екрана, а не списку. */
+  collection: CollectionView;
+  /** Скинути пошук і фільтри — потрібен стану «нічого не знайдено». */
+  onReset?: () => void;
 }
 
 export interface ThreadSheetProps {
@@ -37,4 +121,12 @@ export interface ThreadSheetProps {
    */
   onSend: (body: string) => Promise<boolean>;
   onClose: () => void;
+}
+
+export interface MessagesToolbarProps {
+  view: MessagesView;
+  onChange: (patch: Partial<MessagesView>) => void;
+  /** Скільки розмов видно зараз і скільки всього. */
+  shown: number;
+  total: number;
 }

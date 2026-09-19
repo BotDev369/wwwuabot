@@ -23,6 +23,7 @@ import { sqliteTimestamp } from "@wwwuabot/shared/utils/datetime";
 import {
   DAY_BUCKETS,
   UNTAGGED_LABEL,
+  buildTagChips,
   buildViewChips,
   dayBucket,
   hitTags,
@@ -136,6 +137,8 @@ export function contactViewChips(view: ContactsView): ContactsChip[] {
     sortOptions: CONTACT_SORT_OPTIONS,
     groupOptions: CONTACT_GROUP_OPTIONS,
     itemWord: "контакти",
+    // Звужує список тут саме фільтр за хештегами — його чипи й подаємо.
+    filter: (current) => buildTagChips(current.tags, "контакти"),
   });
 }
 

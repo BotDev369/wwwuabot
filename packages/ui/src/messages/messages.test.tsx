@@ -1,11 +1,13 @@
 /**
  * Розмітка повідомлень: **що видно в рядку розмови й де стоїть бульбашка**.
  *
- * Перевіряємо те, що ламається тихо: своє позначається словом «Ви:»; число
- * непрочитаних з'являється лише тоді, коли воно є (нуль на іконці читався б як
- * «щось є»); бульбашка автора — праворуч, чужа — ліворуч (у переписці «хто
+ * Перевіряємо те, що ламається тихо: ім'я береться в правильному порядку (спершу
+ * те, яким людину назвав той, хто дивиться); своє позначається словом «Ви:»;
+ * число непрочитаних з'являється лише тоді, коли воно є (нуль на іконці читався
+ * б як «щось є»); бульбашка автора — праворуч, чужа — ліворуч (у переписці «хто
  * сказав» — половина змісту); кнопка надсилання гасне на порожньому полі, а не
- * зникає.
+ * зникає; два порожніх стани кажуть **різне** — «немає з ким» і «нічого не
+ * знайдено».
  *
  * @module @wwwuabot/ui/messages/messages.test
  */
@@ -13,9 +15,12 @@
 import { describe, expect, it } from "vitest";
 import { renderToStaticMarkup } from "react-dom/server";
 import type { Conversation, Message, MessagePeer } from "@wwwuabot/shared/messages";
+import { DEFAULT_COLLECTION_VIEW } from "../collection";
 import { ConversationList } from "./ConversationList";
 import { ThreadSheet } from "./ThreadSheet";
+import { DEFAULT_MESSAGES_VIEW } from "./types";
 import { conversationLine } from "./lines";
+import { buildConversationGroups } from "./view";
 
 const ME = 7;
 const PEER: MessagePeer = {
@@ -24,6 +29,7 @@ const PEER: MessagePeer = {
   lastName: null,
   username: "serg",
   platformUsername: "karas",
+  contactName: null,
   photoUrl: null,
 };
 
@@ -36,6 +42,22 @@ function conversation(patch: Partial<Conversation> = {}): Conversation {
     unread: 0,
     ...patch,
   };
+}
+
+/** Екран зводить список саме так: спільні правила — а тоді розмітка. */
+function list(
+  conversations: readonly Conversation[],
+  props: { collection?: typeof DEFAULT_COLLECTION_VIEW } = {},
+): string {
+  return renderToStaticMarkup(
+    <ConversationList
+      groups={buildConversationGroups(conversations, DEFAULT_MESSAGES_VIEW)}
+      total={conversations.length}
+      meId={ME}
+      onOpen={() => {}}
+      collection={props.collection ?? DEFAULT_COLLECTION_VIEW}
+    />,
+  );
 }
 
 const MESSAGES: Message[] = [
@@ -57,10 +79,16 @@ describe("conversationLine", () => {
 });
 
 describe("список розмов", () => {
-  it("ім'я — з платформи, Telegram — другим рядком, і це видно того, хто не бачить", () => {
-    const html = renderToStaticMarkup(
-      <ConversationList conversations={[conversation()]} meId={ME} onOpen={() => {}} />,
-    );
+  it("ім'я — наше, другим рядком ім'я на платформі, і це видно того, хто не бачить", () => {
+    const html = list([conversation({ peer: { ...PEER, contactName: "Карась Х" } })]);
+
+    expect(html).toContain("Карась Х");
+    expect(html).toContain("@karas");
+    expect(html).toContain('aria-label="Карась Х. привіт"');
+  });
+
+  it("без свого імені — ім'я на платформі, Telegram — другим рядком", () => {
+    const html = list([conversation()]);
 
     expect(html).toContain("@karas");
     expect(html).toContain("@serg");
@@ -68,53 +96,59 @@ describe("список розмов", () => {
   });
 
   it("число непрочитаних — лише коли воно є", () => {
-    const read = renderToStaticMarkup(
-      <ConversationList conversations={[conversation()]} meId={ME} onOpen={() => {}} />,
-    );
-    const unread = renderToStaticMarkup(
-      <ConversationList
-        conversations={[conversation({ unread: 3 })]}
-        meId={ME}
-        onOpen={() => {}}
-      />,
-    );
-
-    expect(read).not.toContain("wb-conv-unread");
+    expect(list([conversation()])).not.toContain("wb-conv-unread");
     // Нуль на іконці читався б як «щось є» — тому або число, або нічого.
-    expect(
-      renderToStaticMarkup(
-        <ConversationList
-          conversations={[conversation({ unread: 0 })]}
-          meId={ME}
-          onOpen={() => {}}
-        />,
-      ),
-    ).not.toContain("wb-conv-unread");
+    expect(list([conversation({ unread: 0 })])).not.toContain("wb-conv-unread");
+
+    const unread = list([conversation({ unread: 3 })]);
     expect(unread).toContain("wb-conv-unread");
     expect(unread).toContain(">3<");
+  });
+
+  it("розкладка приходить класом кирпичика, а не другим списком", () => {
+    // Та сама розмітка з різною розкладкою: другий набір розмітки розійшовся б
+    // із першим на першій же правці.
+    const cards = list([conversation()], {
+      collection: { layout: "cards", columns: 2 },
+    });
+
+    expect(cards).toContain("wb-collection--cards");
+    expect(cards).toContain("wb-collection--cols-2");
+    expect(cards).toContain("wb-conv-name");
   });
 
   it("порожній список каже, що писати нікому, і як це змінити", () => {
     // Список показує й тих, із ким розмова ще не почата, тож цей стан — саме
     // «немає з ким», а не «немає повідомлень».
-    const html = renderToStaticMarkup(
-      <ConversationList conversations={[]} meId={ME} onOpen={() => {}} />,
-    );
+    const html = list([]);
 
     expect(html).toContain("Ще немає з ким листуватись");
     expect(html).toContain("контакти");
   });
 
-  it("розмова без жодного повідомлення чекає першого", () => {
+  it("«нічого не знайдено» — не те саме, що «немає з ким»", () => {
+    // Розмови є, але їх відсіяли: сказати тут «немає з ким» означало б збрехати
+    // й не лишити виходу.
     const html = renderToStaticMarkup(
       <ConversationList
-        conversations={[
-          conversation({ lastMessageAt: null, lastMessageText: null, lastSenderId: null }),
-        ]}
+        groups={[]}
+        total={3}
         meId={ME}
         onOpen={() => {}}
+        collection={DEFAULT_COLLECTION_VIEW}
+        onReset={() => {}}
       />,
     );
+
+    expect(html).toContain("Нічого не знайдено");
+    expect(html).toContain("Скинути пошук і фільтри");
+    expect(html).not.toContain("Ще немає з ким листуватись");
+  });
+
+  it("розмова без жодного повідомлення чекає першого", () => {
+    const html = list([
+      conversation({ lastMessageAt: null, lastMessageText: null, lastSenderId: null }),
+    ]);
 
     expect(html).toContain("Почніть розмову");
   });
@@ -141,7 +175,7 @@ describe("поверхня розмови", () => {
   it("шапка називає співрозмовника й несе «назад» замість виходу", () => {
     const html = renderToStaticMarkup(
       <ThreadSheet
-        peer={PEER}
+        peer={{ ...PEER, contactName: "Карась Х" }}
         meId={ME}
         messages={MESSAGES}
         onSend={async () => true}
@@ -150,7 +184,8 @@ describe("поверхня розмови", () => {
     );
 
     expect(html).toContain('aria-label="Назад"');
-    expect(html).toContain('aria-label="@karas"');
+    expect(html).toContain('aria-label="Карась Х"');
+    expect(html).toContain("@karas");
   });
 
   it("порожня розмова — не порожній екран: каже, що робити", () => {

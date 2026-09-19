@@ -48,7 +48,7 @@ const COLUMNS: Record<string, string[]> = {
     "created_at",
   ],
   messages: ["id", "conversation_id", "sender_id", "body", "created_at", "read_at"],
-  contacts: ["id", "owner_id", "joined_user_id"],
+  contacts: ["id", "owner_id", "joined_user_id", "name"],
 };
 
 // ── Підпис initData ───────────────────────────────────────────────
@@ -308,6 +308,9 @@ describe("список розмов", () => {
     const db = makeDb({
       ...LINKED,
       all: (sql) => {
+        // Ім'я зі **свого** довідника читається окремим запитом, і тільки за
+        // своїм боком (`owner_id = me`): чуже ім'я для мене — не моє.
+        if (/AS peer_id, name/.test(sql)) return [{ peer_id: PEER, name: "Карась Х" }];
         if (/FROM conversations/.test(sql)) {
           return [
             {
@@ -347,6 +350,10 @@ describe("список розмов", () => {
     expect(select?.sql).toMatch(/WHERE peer_a = \? OR peer_b = \?/);
     expect(select?.binds).toEqual([ME, ME, 100]);
 
+    const names = db.statements.find((s) => /AS peer_id, name/.test(s.sql));
+    expect(names?.sql).toMatch(/owner_id = \?/);
+    expect(names?.binds).toEqual([ME, PEER]);
+
     expect(body.conversations).toEqual([
       {
         peer: {
@@ -355,6 +362,7 @@ describe("список розмов", () => {
           lastName: null,
           username: "serg",
           platformUsername: "karas",
+          contactName: "Карась Х",
           photoUrl: "https://t.me/p.jpg",
         },
         lastMessageAt: "2026-09-19 12:00:00",

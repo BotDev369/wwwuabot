@@ -4,7 +4,8 @@
  * Це чисті функції, і саме тому вони тут, а не «десь у компоненті»: кожна з них
  * ламається мовчки. `conversationPair` — розмова стає двома рядками (і кожен
  * бачить половину переписки); `sanitizeMessageBody` — обрізаний текст у базі;
- * `peerLabel` — чуже ім'я замість імені на платформі (AGENTS.md §2).
+ * `peerLabel` — чуже ім'я замість того, яким людину назвав той, хто дивиться
+ * (AGENTS.md §2).
  *
  * @module @wwwuabot/shared/messages/rules.test
  */
@@ -28,6 +29,7 @@ const PEER: MessagePeer = {
   lastName: "Дискант",
   username: "serg",
   platformUsername: "karas",
+  contactName: null,
   photoUrl: null,
 };
 
@@ -69,27 +71,31 @@ describe("пара розмови", () => {
 });
 
 describe("підпис співрозмовника", () => {
-  it("ім'я на платформі йде першим — воно і є іменем людини в продукті", () => {
-    expect(peerLabel(PEER)).toBe("@karas");
+  // Наше ім'я першим — воно є іменем людини в продукті **для того, хто
+  // дивиться**; далі її власне ім'я на платформі, і лише потім Telegram.
+  it("ім'я зі свого довідника йде першим", () => {
+    expect(peerLabel({ ...PEER, contactName: "Карась Х" })).toBe("Карась Х");
+    // Другий рядок тоді — хто це на платформі, а не ім'я з Telegram.
+    expect(peerSecondary({ ...PEER, contactName: "Карась Х" })).toBe("@karas");
   });
 
-  it("без імені на платформі — ім'я з Telegram, хендл лише як останній шанс", () => {
-    expect(peerLabel({ ...PEER, platformUsername: null })).toBe("Сергій Дискант");
-    expect(peerLabel({ ...PEER, platformUsername: null, firstName: null, lastName: null })).toBe(
-      "@serg",
-    );
+  it("без свого імені — ім'я на платформі, далі Telegram-хендл, і лише потім ім'я з Telegram", () => {
+    expect(peerLabel(PEER)).toBe("@karas");
+    expect(peerLabel({ ...PEER, platformUsername: null })).toBe("@serg");
+    expect(peerLabel({ ...PEER, platformUsername: null, username: null })).toBe("Сергій Дискант");
     expect(peerLabel(null)).toBe("Невідомий");
   });
 
-  it("другий рядок — Telegram-хендл, і лише коли він не вже перший", () => {
+  it("другий рядок — наступний підпис, і лише коли він не вже перший", () => {
     expect(peerSecondary(PEER)).toBe("@serg");
     // Хендл уже стоїть підписом — другий такий самий рядок був би шумом.
     const telegramOnly = { ...PEER, platformUsername: null, firstName: null, lastName: null };
     expect(peerSecondary(telegramOnly)).toBeNull();
   });
 
-  it("літера для аватара береться з імені", () => {
-    expect(peerInitial(PEER)).toBe("С");
+  it("літера для аватара збігається з тим, що видно поруч", () => {
+    expect(peerInitial(PEER)).toBe("K");
+    expect(peerInitial({ ...PEER, contactName: "карась" })).toBe("К");
     expect(peerInitial(null)).toBe("?");
   });
 });

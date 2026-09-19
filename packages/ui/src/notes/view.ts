@@ -22,6 +22,7 @@ import type { NoteRow } from "@wwwuabot/shared/notes";
 import {
   DAY_BUCKETS,
   UNTAGGED_LABEL,
+  buildTagChips,
   buildViewChips,
   dayBucket,
   hitTags,
@@ -130,6 +131,8 @@ export function viewChips(view: NotesView): NotesChip[] {
     sortOptions: SORT_OPTIONS,
     groupOptions: GROUP_OPTIONS,
     itemWord: "нотатки",
+    // Звужує список тут саме фільтр за хештегами — його чипи й подаємо.
+    filter: (current) => buildTagChips(current.tags, "нотатки"),
   });
 }
 

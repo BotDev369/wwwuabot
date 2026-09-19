@@ -69,6 +69,29 @@ describe("смуга вводу", () => {
   });
 });
 
+describe("список розмов", () => {
+  it("розкладку задає кирпичик, а не список", () => {
+    // Два `display` на одному елементі: переміг би той, що нижче у файлі,
+    // тобто випадковий — і вибір «рядки / плитки» перестав би діяти зовсім.
+    expect(rule(MESSAGES, ".wb-conv-list")?.body).not.toContain("display");
+    expect(COMPONENTS.some((entry) => entry.selector === ".wb-collection--rows")).toBe(true);
+  });
+
+  it("у плитці рядок стає стовпчиком і займає свою висоту", () => {
+    expect(rule(MESSAGES, ".wb-collection--cards .wb-conv")?.body).toContain(
+      "flex-direction: column",
+    );
+    // Інформація росте — тільки тоді час і число ляжуть униз плитки, а не
+    // прилипнуть під іменем.
+    expect(rule(MESSAGES, ".wb-collection--cards .wb-conv-main")?.body).toContain("flex: 1 1 auto");
+  });
+
+  it("титул групи видно як заголовок, а не як звичайний текст", () => {
+    // Групи ділять список — без цього титул читався б як ще один рядок розмови.
+    expect(rule(MESSAGES, ".wb-conv-group-title")?.body).toContain("text-transform: uppercase");
+  });
+});
+
 describe("бульбашки", () => {
   it("сторони різні, і свою видно акцентом", () => {
     const mine = rule(MESSAGES, ".wb-bubble--out");

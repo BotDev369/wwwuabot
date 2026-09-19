@@ -17,14 +17,50 @@
 
 /* ═══ Список розмов ═══════════════════════════════════════════════════════ */
 
-.wb-conv-list {
+/* Групи — той самий кирпичик, що в контактах: два списки однієї оболонки
+   мусять мати однакову межу між блоками. */
+.wb-conv-group {
   display: flex;
   flex-direction: column;
   gap: var(--sp-2);
+  margin-bottom: var(--sp-5);
+}
+
+.wb-conv-group-title {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+  margin: 0;
+  font-size: var(--text-xs);
+  font-weight: var(--weight-semibold);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+
+.wb-conv-group-count {
+  color: var(--text-secondary);
+}
+
+/* Розкладку (рядки чи плитки) задає кирпичик `.wb-collection*`, а не список:
+   два `display` на одному елементі билися б, і вибір вигляду був би
+   випадковим — переміг би той, що нижче у файлі. */
+.wb-conv-list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+/* Комірка списку: рядок у ній росте на всю висоту, тож у плитках усі рядки
+   однієї висоти, а не «за вмістом». */
+.wb-conv-item {
+  display: flex;
+  flex-direction: column;
 }
 
 /* Рядок на всю ширину — його **читають**: ім'я, текст, час. */
 .wb-conv {
+  flex: 1 1 auto;
   width: 100%;
   min-height: 64px;
   display: flex;
@@ -114,6 +150,57 @@
   justify-content: center;
 }
 
+/* ── Плитки: та сама розмітка, інша розкладка ─────────────────────────── */
+
+/* У плитці рядок стає стовпчиком: аватар, ім'я з хендлом, останок, а час із
+   числом непрочитаних — унизу. У рядку все це стояло боком, бо ширини
+   вистачало; у плитці боком не влазить нічого. */
+.wb-collection--cards .wb-conv-item {
+  min-height: var(--sp-16);
+}
+
+.wb-collection--cards .wb-conv {
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--sp-2);
+  padding: var(--sp-3);
+}
+
+/* Інформація забирає вільну висоту — тому час опиняється внизу плитки, а не
+   приліплений до імені. */
+.wb-collection--cards .wb-conv-main {
+  flex: 1 1 auto;
+}
+
+/* Ім'я переноситься двома рядками, а не обрізається однією лінією: обрізати
+   правильно в рядку, а в плитці це виглядало б як обрубок. */
+.wb-collection--cards .wb-conv-name {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+  white-space: normal;
+  overflow: hidden;
+}
+
+/* Останок теж має два рядки: у плитці «про що йшлося» — половина справи. */
+.wb-collection--cards .wb-conv-last {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+  white-space: normal;
+  overflow: hidden;
+}
+
+/* Час і число — у рядок, ліворуч: у плитці вони не «праворуч від імені», а
+   підпис під ним. */
+.wb-collection--cards .wb-conv-meta {
+  flex-direction: row;
+  align-items: center;
+  gap: var(--sp-2);
+}
+
 /* ═══ Стрічка розмови ════════════════════════════════════════════════════ */
 
 /* Поверхня розмови: тіло займає всю висоту між шапкою й смугою вводу, тож
@@ -148,8 +235,9 @@
   min-width: 0;
 }
 
-/* Другий рядок шапки: Telegram-хендл — меншим і приглушеним, бо головне ім'я
-   в продукті стоїть першим (`peerLabel`). */
+/* Другий рядок шапки — меншим і приглушеним: головне ім'я стоїть першим
+   (`peerLabel`), а другий підпис лише додає, хто це на платформі чи в
+   Telegram. */
 .wb-thread-sub {
   font-size: var(--text-xs);
   font-weight: var(--weight-regular);

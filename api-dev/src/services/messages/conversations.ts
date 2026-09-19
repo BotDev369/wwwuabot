@@ -154,7 +154,7 @@ export async function listConversations(env: Env, me: number): Promise<Conversat
   const started = new Set(threadPeers);
   const linked = (await linkedPeerIds(env, me)).filter((id) => !started.has(id));
 
-  const peers = await readPeers(env.DB, [...threadPeers, ...linked]);
+  const peers = await readPeers(env.DB, [...threadPeers, ...linked], me);
   const unread = await unreadByConversation(
     env.DB,
     rows.map((row) => Number(row.id)),

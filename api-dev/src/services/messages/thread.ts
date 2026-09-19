@@ -104,7 +104,7 @@ export async function readThread(
 
   const conversationId = await findConversationId(env.DB, me, peerId);
   const [peer, messages] = await Promise.all([
-    readPeer(env.DB, peerId),
+    readPeer(env.DB, peerId, me),
     conversationId === null ? [] : readMessages(env.DB, conversationId, before),
   ]);
 

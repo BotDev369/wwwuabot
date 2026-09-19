@@ -16,7 +16,7 @@
 export { CollectionToolbar } from "./CollectionToolbar";
 export type { ToolbarChip, ToolbarPicker } from "./CollectionToolbar";
 export { CollectionViewSwitch } from "./CollectionViewSwitch";
-export { buildViewChips } from "./chips";
+export { buildTagChips, buildViewChips } from "./chips";
 export type { ChipConfig, ChipView, CollectionChip } from "./chips";
 export { DAY_BUCKETS, dayBucket, startOfDay } from "./days";
 export {

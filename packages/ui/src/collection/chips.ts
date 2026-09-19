@@ -7,14 +7,23 @@
  * місце й говорили б про те, що й так видно зі списку.
  *
  * Порядок стали́й і відповідає тому, як список читають: спершу те, чим його
- * звузили (пошук, хештеги), далі те, як його склали (порядок, групи, вигляд).
- * Вибраних тегів може бути кілька, тож чип має **кожен окремо**: інакше
- * прибрати один тег без втрати решти було б нічим.
+ * звузили (пошук, фільтр), далі те, як його склали (порядок, групи, вигляд).
+ *
+ * **Що саме звужує список — знає екран.** Хештеги, «непрочитані», «без
+ * повідомлень» — це різні фільтри, і спільне правило не мусить знати жодного з
+ * них: воно бере готові чипи фільтра від екрана (`filter`). Хештеги лишаються
+ * тут як **готовий набір** для тих, у кого вони є, — щоб нотатки й контакти не
+ * описували одне правило двічі.
  *
  * @module @wwwuabot/ui/collection
  */
 
-import { UNTAGGED_LABEL, toggleTagFilter, type CollectionTagFilter } from "./tags";
+import {
+  DEFAULT_TAG_FILTER,
+  UNTAGGED_LABEL,
+  toggleTagFilter,
+  type CollectionTagFilter,
+} from "./tags";
 import { collectionViewShort, type CollectionColumns, type CollectionLayout } from "./types";
 
 /**
@@ -26,7 +35,6 @@ import { collectionViewShort, type CollectionColumns, type CollectionLayout } fr
  */
 export interface ChipView {
   query: string;
-  tags: CollectionTagFilter;
   sort: string;
   groupBy: string;
   layout: CollectionLayout;
@@ -48,14 +56,50 @@ export interface ChipConfig<V extends ChipView> {
   groupOptions: readonly { value: V["groupBy"]; short: string }[];
   /** Як назвати елемент у підписі чипа: «нотатки», «контакти». */
   itemWord: string;
+  /** Чим список звузили, крім пошуку. Порожній результат — жодного чипа. */
+  filter?: (view: V) => CollectionChip<V>[];
 }
 
-/** Підпис варіанта — те саме, що стоїть у списку вибору. */
-function optionShort<T extends string>(
-  options: readonly { value: T; short: string }[],
-  value: T,
-): string {
-  return options.find((option) => option.value === value)?.short ?? value;
+/**
+ * Патчі збираються як `Partial<V>`: правило одне, а вигляд — конкретний, тож TS
+ * не може довести, що `{ sort: … }` підходить саме цьому V. Це не послаблення
+ * перевірки: ключі патча — ті самі поля `ChipView`, які є в кожного вигляду за
+ * побудовою.
+ */
+function patch<V>(fields: Record<string, unknown>): Partial<V> {
+  return fields as Partial<V>;
+}
+
+/**
+ * Чипи хештегів — **готовий набір** для списків, у яких вони є.
+ *
+ * Вибраних тегів може бути кілька, тож чип має **кожен окремо**: інакше
+ * прибрати один тег без втрати решти було б нічим.
+ */
+export function buildTagChips<V extends ChipView>(
+  tags: CollectionTagFilter,
+  /** Як назвати елемент у підписі — він звучить лише для скрінрідера. */
+  itemWord: string,
+): CollectionChip<V>[] {
+  if (tags.kind === "untagged") {
+    return [
+      {
+        key: "tags",
+        label: UNTAGGED_LABEL,
+        action: `Показати й ${itemWord} з хештегами`,
+        reset: patch({ tags: DEFAULT_TAG_FILTER }),
+      },
+    ];
+  }
+
+  if (tags.kind !== "tags") return [];
+
+  return tags.tags.map((tag) => ({
+    key: `tag:${tag}`,
+    label: `#${tag}`,
+    action: `Прибрати фільтр за хештегом #${tag}`,
+    reset: patch({ tags: toggleTagFilter(tags, tag) }),
+  }));
 }
 
 export function buildViewChips<V extends ChipView>(
@@ -66,12 +110,6 @@ export function buildViewChips<V extends ChipView>(
   const chips: CollectionChip<V>[] = [];
   const query = view.query.trim();
 
-  // Патчі тут збираються як `Partial<V>`: правило одне, а вигляд — конкретний,
-  // тож TS не може довести, що `{ sort: … }` підходить саме цьому V. Це не
-  // послаблення перевірки: ключі патча — ті самі поля `ChipView`, які є в
-  // кожного вигляду за побудовою.
-  const patch = (fields: Record<string, unknown>): Partial<V> => fields as Partial<V>;
-
   if (query) {
     chips.push({
       key: "query",
@@ -81,23 +119,7 @@ export function buildViewChips<V extends ChipView>(
     });
   }
 
-  if (view.tags.kind === "untagged") {
-    chips.push({
-      key: "tags",
-      label: UNTAGGED_LABEL,
-      action: `Показати й ${config.itemWord} з хештегами`,
-      reset: patch({ tags: defaults.tags }),
-    });
-  } else if (view.tags.kind === "tags") {
-    for (const tag of view.tags.tags) {
-      chips.push({
-        key: `tag:${tag}`,
-        label: `#${tag}`,
-        action: `Прибрати фільтр за хештегом #${tag}`,
-        reset: patch({ tags: toggleTagFilter(view.tags, tag) }),
-      });
-    }
-  }
+  chips.push(...(config.filter?.(view) ?? []));
 
   if (view.sort !== defaults.sort) {
     chips.push({
@@ -130,4 +152,12 @@ export function buildViewChips<V extends ChipView>(
   }
 
   return chips;
+}
+
+/** Підпис варіанта — те саме, що стоїть у списку вибору. */
+function optionShort<T extends string>(
+  options: readonly { value: T; short: string }[],
+  value: T,
+): string {
+  return options.find((option) => option.value === value)?.short ?? value;
 }
