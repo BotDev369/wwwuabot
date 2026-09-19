@@ -24,12 +24,14 @@ import { useDialog } from "@wwwuabot/ui/dialog";
 import { TabBar, buildTabBarItems, withAction, withPrimaryAction } from "@wwwuabot/ui/nav";
 import { notesApi } from "../shared/api/notes.api";
 import { ProfileMenu } from "./ProfileMenu";
-import { PLATFORM_TABS, PROFILE_TAB_KEY, toShellTabs } from "./platform-tabs";
+import { PLATFORM_TABS, PROFILE_TAB_KEY, toShellTabs, withUnreadBadge } from "./platform-tabs";
+import { useUnreadBadge } from "./useUnreadBadge";
 
 export function PlatformTabBar(): ReactElement {
   const navigate = useNavigate();
   const { pathname } = useLocation();
   const dialog = useDialog();
+  const unread = useUnreadBadge();
   const [composerOpen, setComposerOpen] = useState(false);
   const [profileOpen, setProfileOpen] = useState(false);
 
@@ -59,10 +61,13 @@ export function PlatformTabBar(): ReactElement {
     // мовчить про те, що поверх відкрита саме з неї.
     item.key === PROFILE_TAB_KEY ? { ...item, active: profileOpen } : item,
   );
+  // Число непрочитаних — окремим кроком і чистою функцією: без неї «котрий
+  // пункт несе позначку» було б розкидано по розмітці смуги.
+  const tabs = withUnreadBadge(items, unread);
 
   return (
     <>
-      <TabBar items={items} label="Навігація платформи" />
+      <TabBar items={tabs} label="Навігація платформи" />
       {composerOpen && (
         <ComposerModal
           onClose={() => setComposerOpen(false)}

@@ -15,7 +15,7 @@
  */
 
 import { HOME_SLUG, toWebPath } from "@wwwuabot/shared/content";
-import type { ShellTab } from "@wwwuabot/ui/nav";
+import type { ShellTab, TabBarItem } from "@wwwuabot/ui/nav";
 
 export interface PlatformTab extends Omit<ShellTab, "href"> {
   /** Адреса сторінки — `slug` рядка `scenarios`. Немає — заглушка. */
@@ -41,6 +41,22 @@ export const PROFILE_PATH = "/profile";
 /** Ключ пункту профілю: футер вішає на нього меню замість навігації. */
 export const PROFILE_TAB_KEY = "profile";
 
+/**
+ * Екран «Повідомлення» — теж власний маршрут, а не рядок контенту.
+ *
+ * Переписка живе в своїх таблицях (`conversations`, `messages`), а не в
+ * `page_data`: це дані людини, і сторінкою контенту вони не бувають — та сама
+ * причина, що в нотаток, контактів і профілю (AGENTS.md §7).
+ *
+ * Адреса тут, а не в `profile-menu.ts`, бо пункт живе **у футері**: меню
+ * профілю до переписки не веде (це розділ, а не налаштування), і тримати
+ * константу в його модулі означало б зв'язок ні за чим.
+ */
+export const MESSAGES_PATH = "/messages";
+
+/** Ключ пункту повідомлень: на нього чіпляється число непрочитаних. */
+export const MESSAGES_TAB_KEY = "messages";
+
 export const PLATFORM_TABS: readonly PlatformTab[] = [
   { key: "home", label: "Головна", icon: "home", iconActive: "home-solid", slug: HOME_SLUG },
   {
@@ -52,11 +68,12 @@ export const PLATFORM_TABS: readonly PlatformTab[] = [
   },
   { key: "create", label: "Створити", icon: "plus", primary: true },
   {
-    key: "galyashop",
-    label: "GalyaShop",
-    icon: "shop",
-    iconActive: "shop-solid",
-    slug: "galyashop",
+    key: MESSAGES_TAB_KEY,
+    label: "Повідомлення",
+    icon: "message-square",
+    // Залитого близнюка цієї іконки в реєстрі немає, тож вибраний пункт
+    // виділяє колір і жирніший штрих — як у будь-якого пункту без `iconActive`.
+    to: MESSAGES_PATH,
   },
   {
     key: "profile",
@@ -66,6 +83,21 @@ export const PLATFORM_TABS: readonly PlatformTab[] = [
     to: PROFILE_PATH,
   },
 ];
+
+/**
+ * Число непрочитаних на пункті повідомлень.
+ *
+ * Окрема функція, а не `badge: unread` у виклику: правило «котрий пункт несе
+ * число» мусить бути одне, і його треба перевіряти без DOM — `unread` більше
+ * нуля поставити легко, а помилитись пунктом ще легше.
+ *
+ * Нуль і від'ємне **не** ставляться: `badge` без числа — це порожня позначка,
+ * і краще не мати її зовсім (див. `ShellTab.badge`).
+ */
+export function withUnreadBadge(tabs: readonly TabBarItem[], unread: number): TabBarItem[] {
+  if (!Number.isFinite(unread) || unread <= 0) return [...tabs];
+  return tabs.map((tab) => (tab.key === MESSAGES_TAB_KEY ? { ...tab, badge: unread } : tab));
+}
 
 /** Той самий склад, але з готовими адресами — як очікує спільний `TabBar`. */
 export function toShellTabs(tabs: readonly PlatformTab[] = PLATFORM_TABS): ShellTab[] {

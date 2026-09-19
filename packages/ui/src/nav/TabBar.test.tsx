@@ -84,6 +84,26 @@ describe("TabBar", () => {
     expect(render("/").match(/fill="currentColor"/g)).toHaveLength(1);
   });
 
+  it("число непрочитаних стоїть на своєму пункті — і лише коли воно є", () => {
+    const items = buildTabBarItems({
+      tabs: TABS.map((tab) =>
+        tab.key === "shop" ? { ...tab, badge: 3 } : { ...tab, badge: undefined },
+      ),
+      pathname: "/",
+      navigate: vi.fn(),
+      onPlaceholder: vi.fn(),
+    });
+    const html = renderToStaticMarkup(<TabBar items={items} />);
+
+    expect(html).toContain("wb-tabbar-badge");
+    expect(html).toContain(">3<");
+    // Нуль і від'ємне — це «немає позначки», а не нуль на іконці.
+    const none = renderToStaticMarkup(
+      <TabBar items={items.map((item) => ({ ...item, badge: 0 }))} />,
+    );
+    expect(none).not.toContain("wb-tabbar-badge");
+  });
+
   it("пункт без адреси — кнопка-заглушка, а не посилання", () => {
     const html = render("/");
 

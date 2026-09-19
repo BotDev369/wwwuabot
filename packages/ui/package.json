@@ -15,6 +15,7 @@
     "./dialog": "./src/dialog/index.ts",
     "./menu": "./src/menu/index.ts",
     "./contacts": "./src/contacts/index.ts",
+    "./messages": "./src/messages/index.ts",
     "./notes": "./src/notes/index.ts",
     "./nav": "./src/nav/index.ts",
     "./store": "./src/store.ts",

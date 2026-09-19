@@ -91,12 +91,21 @@
     - Смуга — **сестра тіла** з `flex-shrink: 0`, а не останній рядок у тілі: у тіла `overflow-y: auto`,
       і вихід, що їде разом із вмістом, зникає саме тоді, коли його шукають. Місце під футером
       застосунку лишається навіть на весь екран — футер хром і малюється над модалкою.
+    - **Розмова** (`@wwwuabot/ui/messages`) — третій користувач тієї самої поверхні, і своєї розмітки не
+      має: `.wb-modal-overlay--screen` + `.wb-sheet` + `.wb-sheet-head` + `.wb-sheet-bar`. Вона сама
+      лише стрічка (`.wb-bubble*`: **своє — праворуч і акцентом, чуже — ліворуч і тлом**) і поле вводу.
+      Смуга тут **перекриває** притискання праворуч (`.wb-sheet-bar.wb-thread-bar` → `justify-content:
+      stretch`): там контролів два й обидва вузькі, тут поле мусить рости. Кнопка надсилання — коло
+      44px, і на порожньому полі вона **гасне**, а не зникає (§3: на телефоні `hover` не існує).
+      Стежить `styles/messages.test.ts`.
 
 ## Файли цієї теми
 
 | Файл | Призначення |
 |---|---|
 | `packages/ui/src/composer/`, `menu/`, `dialog/`, `nav/` | `ComposerModal`, `MenuModal`, `useDialog()`, `TabBar` |
+| `packages/ui/src/messages/` | `ConversationList`, `ThreadSheet`, `MessageComposer` (розмова — третій користувач повноекранної поверхні) |
 | `packages/shared/src/styles/components.css` | `.wb-sheet*`, `.wb-composer*`, `.wb-menu*`, `.wb-sheet-bar*`, `.wb-segmented*` |
+| `packages/shared/src/styles/messages.css` | `.wb-conv*`, `.wb-thread*`, `.wb-bubble*` |
 | `packages/shared/src/styles/app-chrome.css` | Футер (`.wb-tabbar*`) — хром, над яким малюється поверхня (правило 12) |
 | `web-platform-dev/src/layout/ProfileMenu.tsx` / `profile-menu.ts` | Склад меню профілю, `hasBottomBar`, вигляд карток |

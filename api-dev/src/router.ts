@@ -42,6 +42,13 @@ import {
 } from "./controllers/users.controller";
 import { handleNotes, handleAdminNotes } from "./controllers/notes.controller";
 import { handleContactLink, handleContacts } from "./controllers/contacts.controller";
+import {
+  handleMessages,
+  handleMessageThread,
+  handleMessageSend,
+  handleMessageRead,
+  handleMessageBadge,
+} from "./controllers/messages.controller";
 
 /**
  * Префікси шляхів, доступ до яких вимагає адмінської cookie-сесії.
@@ -149,6 +156,26 @@ export async function handleRequest(request: Request, env: Env): Promise<Respons
   // перестає працювати тим самим дотиком.
   if (pathname === "/api/contacts/link" && request.method === "POST") {
     return handleContactLink(request, env);
+  }
+
+  // ── Messages: повідомлення між людьми (не бот) ────────────────
+  // Кому можна писати — правило «зв'язані через контакти»; воно читає
+  // `contacts`, тож друга перевірка власника тут не потрібна: співрозмовника
+  // вже перевірено на зв'язок ПЕРЕД будь-яким пошуком розмови (§7).
+  if (pathname === "/api/messages") {
+    return handleMessages(request, env);
+  }
+  if (pathname === "/api/messages/thread") {
+    return handleMessageThread(request, env);
+  }
+  if (pathname === "/api/messages/send" && request.method === "POST") {
+    return handleMessageSend(request, env);
+  }
+  if (pathname === "/api/messages/read" && request.method === "POST") {
+    return handleMessageRead(request, env);
+  }
+  if (pathname === "/api/messages/badge" && request.method === "GET") {
+    return handleMessageBadge(request, env);
   }
 
   // ── Admin: Cookie Auth ─────────────────────────────────────────

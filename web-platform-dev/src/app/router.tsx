@@ -12,17 +12,19 @@
  * належить жодній сторінці, тож він стоїть на рівні маршруту, а не всередині
  * `ScenarioPage`.
  *
- * `/profile`, `/notes` і `/contacts` стоять **перед** catch-all навмисно: це
- * єдині екрани, які не є рядком контенту (`slug`) — профіль складається з
- * даних користувача, список нотаток — із таблиці `notes`, а контакти — з
- * таблиці `contacts`, а не зі `page_data`. Тому в них власні маршрути, а не
- * адреси-заглушки в базі.
+ * `/profile`, `/notes`, `/contacts` і `/messages` стоять **перед** catch-all
+ * навмисно: це єдині екрани, які не є рядком контенту (`slug`) — профіль
+ * складається з даних користувача, список нотаток — із таблиці `notes`,
+ * контакти — з таблиці `contacts`, а переписка — з `conversations`/`messages`,
+ * а не зі `page_data`. Тому в них власні маршрути, а не адреси-заглушки в базі.
  */
 
 import { createBrowserRouter } from "react-router-dom";
 import { PlatformShell } from "@/layout/PlatformShell";
 import { CONTACTS_ROUTE, NOTES_ROUTE } from "@/layout/profile-menu";
+import { MESSAGES_PATH } from "@/layout/platform-tabs";
 import { ContactsPage } from "@/pages/ContactsPage";
+import { MessagesPage } from "@/pages/MessagesPage";
 import { NotesPage } from "@/pages/NotesPage";
 import { ProfilePage } from "@/pages/ProfilePage";
 import { ScenarioPage } from "@/pages/ScenarioPage";
@@ -37,6 +39,9 @@ export const router = createBrowserRouter([
       { path: NOTES_ROUTE, element: <NotesPage /> },
       // Контакти — довідник людини (таблиця `contacts`), теж не рядок контенту
       { path: CONTACTS_ROUTE, element: <ContactsPage /> },
+      // Повідомлення — переписка людей (таблиці `conversations`/`messages`).
+      // Адреса зі спільного складу футера: пункт і маршрут — один факт.
+      { path: MESSAGES_PATH, element: <MessagesPage /> },
       // Catch-all: сторінка за її адресою
       { path: "*", element: <ScenarioPage /> },
     ],

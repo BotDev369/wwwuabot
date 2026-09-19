@@ -274,6 +274,80 @@ export const TABLES = {
     indexes: ["CREATE INDEX IF NOT EXISTS idx_contacts_owner ON contacts(owner_id)"],
   },
 
+  /**
+   * Розмова **двох** людей платформи.
+   *
+   * **Один рядок на пару, а не на напрямок.** `peer_a` і `peer_b` — це та
+   * сама пара, впорядкована за зростанням id (`conversationPair` зі
+   * `@wwwuabot/shared/messages`), тож `UNIQUE (peer_a, peer_b)` справді
+   * означає «одна розмова на двох». Без порядку та сама переписка мала б
+   * **два** рядки — по одному на кожного, хто написав першим, і кожен бачив би
+   * половину повідомлень.
+   *
+   * `last_message_at` / `last_message_text` тут навмисно: список розмов
+   * показує останній рядок кожної, і без цих колонок він читав би **всі**
+   * повідомлення людини, щоб показати по одному з розмови.
+   *
+   * `UNIQUE` — у `CREATE TABLE`, а не окремим індексом: імена індексів у
+   * SQLite глобальні для бази, і однойменний `CREATE UNIQUE INDEX IF NOT
+   * EXISTS` на другій таблиці був би **порожньою дією** без помилки (див.
+   * шапку файлу).
+   *
+   * **Хто з ким може листуватись — не тут.** Правило «зв'язані через контакти»
+   * читає таблицю `contacts` і живе в `api-dev/src/services/messages/links.ts`:
+   * у схемі про контакти не сказано нічого, а дублювати правило в SQL означало б
+   * мати дві правди про те, кому можна писати.
+   */
+  conversations: {
+    name: "conversations",
+    owner: "api-dev",
+    purpose:
+      "Розмова двох людей: пара Telegram-id за зростанням та останнє повідомлення для списку розмов.",
+    create: `CREATE TABLE IF NOT EXISTS conversations (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        peer_a INTEGER NOT NULL,
+        peer_b INTEGER NOT NULL,
+        last_message_at TEXT,
+        last_message_text TEXT,
+        last_sender_id INTEGER,
+        created_at TEXT NOT NULL DEFAULT (datetime('now')),
+        UNIQUE (peer_a, peer_b)
+      )`,
+    indexes: ["CREATE INDEX IF NOT EXISTS idx_conversations_peer_b ON conversations(peer_b)"],
+  },
+
+  /**
+   * Повідомлення розмови — тіло, автор і **коли прочитано**.
+   *
+   * Прочитання позначене датою в тому ж рядку (`read_at`), а не окремою
+   * таблицею чи стовпчиком-лічильником у розмові: непрочитані — це запит
+   * `sender_id <> ? AND read_at IS NULL`, і він працює по індексу. Друге
+   * сховище того самого факту неминуче розійшлося б із першим (AGENTS.md §7).
+   *
+   * `body` зберігається **як є** (обрізане й притиснуте по краях
+   * `sanitizeMessageBody`), без розбору розмітки: у платформі тіло — це текст,
+   * а не HTML-фрагмент, і будь-яке «форматування» тут означало б другу мову
+   * розмітки поруч із `page_data`.
+   */
+  messages: {
+    name: "messages",
+    owner: "api-dev",
+    purpose:
+      "Повідомлення розмови: автор, тіло й дата прочитання (непрочитані — `read_at IS NULL`).",
+    create: `CREATE TABLE IF NOT EXISTS messages (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        conversation_id INTEGER NOT NULL,
+        sender_id INTEGER NOT NULL,
+        body TEXT NOT NULL DEFAULT '',
+        created_at TEXT NOT NULL DEFAULT (datetime('now')),
+        read_at TEXT
+      )`,
+    indexes: [
+      "CREATE INDEX IF NOT EXISTS idx_messages_thread ON messages(conversation_id, id)",
+      "CREATE INDEX IF NOT EXISTS idx_messages_unread ON messages(conversation_id, read_at)",
+    ],
+  },
+
   mydate_analysis: {
     name: "mydate_analysis",
     owner: "api-dev",

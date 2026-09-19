@@ -1,0 +1,246 @@
+/*
+ * «Повідомлення» — список розмов, стрічка бульбашок і смуга вводу.
+ *
+ * Окремим файлом, як `contacts.css` і `theme-panel.css`: це цілісна деталь зі
+ * своїми класами, яку рендерить спільний `@wwwuabot/ui/messages`. Класи саме
+ * тут, а не в `index.css` оболонки: приватний CSS однієї оболонки під те, що
+ * рендерить спільний код, — це та межа, за якою друга оболонка не отримує
+ * нічого (AGENTS.md §3).
+ *
+ * Лежить **після** `components.css`: смуга вводу перекриває вирівнювання
+ * спільної смуги (`.wb-sheet-bar` притискає контроли праворуч, а поле вводу
+ * мусить займати всю ширину).
+ *
+ * Ліній не малюємо ніде: рядок розмови видно тлом (`--field-bg` — той самий
+ * кирпичик, що у видимого поля), а бульбашка — власним тлом.
+ */
+
+/* ═══ Список розмов ═══════════════════════════════════════════════════════ */
+
+.wb-conv-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-2);
+}
+
+/* Рядок на всю ширину — його **читають**: ім'я, текст, час. */
+.wb-conv {
+  width: 100%;
+  min-height: 64px;
+  display: flex;
+  align-items: center;
+  gap: var(--sp-3);
+  padding: var(--sp-3);
+  text-align: left;
+  color: var(--text-primary);
+  background: var(--field-bg);
+  border: none;
+  border-radius: var(--radius-lg);
+  cursor: pointer;
+  font-family: inherit;
+  font-size: var(--text-sm);
+  transition: background var(--duration-fast) var(--ease);
+}
+
+.wb-conv:active {
+  background: var(--field-bg-hover, var(--field-bg));
+}
+
+.wb-conv-avatar {
+  flex-shrink: 0;
+  width: 44px;
+  height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  border-radius: var(--radius-full);
+  background: var(--accent);
+  color: var(--text-inverse);
+  font-weight: var(--weight-semibold);
+}
+
+.wb-conv-avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.wb-conv-main {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.wb-conv-name {
+  font-weight: var(--weight-semibold);
+  /* Ім'я людини — чуже слово: довге мусить обрізатися, а не розтягувати рядок */
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.wb-conv-secondary,
+.wb-conv-time {
+  font-size: var(--text-xs);
+  color: var(--text-muted);
+}
+
+.wb-conv-secondary {
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.wb-conv-last {
+  color: var(--text-secondary);
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.wb-conv-meta {
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: var(--sp-1);
+}
+
+.wb-conv-unread {
+  min-width: 20px;
+  justify-content: center;
+}
+
+/* ═══ Стрічка розмови ════════════════════════════════════════════════════ */
+
+/* Поверхня розмови: тіло займає всю висоту між шапкою й смугою вводу, тож
+   поле вводу стоїть унизу, а не там, де закінчились повідомлення. */
+.wb-thread {
+  display: flex;
+  flex-direction: column;
+}
+
+/* Тіло стрічки читається знизу догори: бульбашки притиснуті до поля вводу
+   (`margin-top: auto` у першої), а порожній екран каже себе посередині. */
+.wb-thread-body {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-2);
+}
+
+.wb-thread-body > .wb-bubble:first-child {
+  margin-top: auto;
+}
+
+.wb-thread-note {
+  margin: auto;
+  padding: var(--sp-4);
+  text-align: center;
+}
+
+.wb-thread-name {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+/* Другий рядок шапки: Telegram-хендл — меншим і приглушеним, бо головне ім'я
+   в продукті стоїть першим (`peerLabel`). */
+.wb-thread-sub {
+  font-size: var(--text-xs);
+  font-weight: var(--weight-regular);
+  color: var(--text-muted);
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.wb-bubble {
+  max-width: 82%;
+  display: flex;
+  align-items: flex-end;
+  gap: var(--sp-2);
+  padding: var(--sp-2) var(--sp-3);
+  border-radius: var(--radius-lg);
+  font-size: var(--text-sm);
+  line-height: var(--font-lineheight-3);
+}
+
+.wb-bubble-text {
+  min-width: 0;
+  /* Тіло — чужий текст: довге слово (адреса, код) мусить переноситись, а не
+     вилазити за бульбашку. */
+  overflow-wrap: anywhere;
+  white-space: pre-wrap;
+}
+
+.wb-bubble-time {
+  flex-shrink: 0;
+  font-size: 10px;
+  color: var(--text-muted);
+}
+
+/* Чуже — ліворуч, на тлі поверхні: переписка читається як діалог, і сторона
+   відповідає тому, хто сказав. */
+.wb-bubble--in {
+  align-self: flex-start;
+  background: var(--field-bg);
+  border-bottom-left-radius: var(--radius-sm);
+  color: var(--text-primary);
+}
+
+/* Своє — праворуч, акцентним тлом: акцент у продукті означає «це моє». */
+.wb-bubble--out {
+  align-self: flex-end;
+  background: var(--accent);
+  border-bottom-right-radius: var(--radius-sm);
+  color: var(--text-inverse);
+}
+
+.wb-bubble--out .wb-bubble-time {
+  color: var(--text-inverse);
+  opacity: 0.75;
+}
+
+/* ═══ Смуга вводу ════════════════════════════════════════════════════════ */
+
+/* Поле займає всю ширину, кнопка — коло в кінці. Це перекриває притискання
+   спільної смуги праворуч: там контролів два й обидва вузькі, тут поле мусить
+   рости. */
+.wb-sheet-bar.wb-thread-bar {
+  justify-content: stretch;
+  gap: var(--sp-2);
+  align-items: center;
+}
+
+.wb-thread-input {
+  flex: 1;
+  min-width: 0;
+}
+
+/* Коло зі знаком: на телефоні hover не існує, тож дія видима завжди, а
+   порожнє поле гасить її (`disabled`), а не ховає. */
+.wb-thread-send {
+  flex-shrink: 0;
+  width: 44px;
+  height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  color: var(--text-inverse);
+  background: var(--accent);
+  border: none;
+  border-radius: var(--radius-full);
+  cursor: pointer;
+  transition: opacity var(--duration-fast) var(--ease);
+}
+
+.wb-thread-send:disabled {
+  opacity: 0.45;
+  cursor: default;
+}

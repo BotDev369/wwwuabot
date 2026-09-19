@@ -72,18 +72,31 @@ describe("футер: знаки без тла", () => {
     }
   });
 
-  it("акцент у смузі — рівно один, і це вибраний розділ", () => {
+  it("акцент у смузі має рівно дві ролі: «тут ти» і «є нове»", () => {
     // «+» видно завжди (він не залежить від адреси), тож його акцент означав би
-    // дві акцентні плями в кожному стані смуги — і жодна не сказала б, котра
-    // стан, а котра дія. Акцентних правил про смугу мусить бути одно: вибір.
+    // зайву акцентну пляму в кожному стані смуги. Акценту лишаються дві ролі,
+    // і обидві — про стан, а не про дію: вибраний розділ і число непрочитаних
+    // (число зникає, щойно розмову прочитано, тож на тому самому пункті вони
+    // вдвох не стоять). Усе інше акцентним у смузі бути не може.
     const accent = CHROME.filter(
       (entry) => entry.selector.includes("wb-tabbar") && entry.body.includes("var(--accent)"),
     ).map((entry) => entry.selector);
     expect(accent, "правило вибору мусить бути акцентним").toContain(".wb-tabbar-item--active");
-    for (const selector of accent) expect(selector, selector).toContain("--active");
+    for (const selector of accent) {
+      expect([".wb-tabbar-item--active", ".wb-tabbar-badge"], selector).toContain(selector);
+    }
     // І сам слот дії більше не має ні тла, ні кольору — тільки штрих.
     expect(rule(".wb-tabbar-item--primary")).toBeUndefined();
     expect(rule(".wb-tabbar-item--primary .wb-tabbar-icon")).toBeUndefined();
+  });
+
+  it("число непрочитаних не рухає смугу: воно чіпляється до знака", () => {
+    // Смуга має фіксовану висоту, тож позначка стояла б у куті слота, а не там,
+    // де на неї дивляться. І вона не може збільшувати пункт.
+    const badge = rule(".wb-tabbar-badge");
+    expect(badge, "правило позначки мусить існувати").toBeDefined();
+    expect(badge?.body).toContain("position: absolute");
+    expect(rule(".wb-tabbar-icon")?.body).toContain("position: relative");
   });
 
   it("вибраний розділ — акцентний підпис і жирніший штрих знака", () => {

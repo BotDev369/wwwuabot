@@ -1,0 +1,111 @@
+/**
+ * Типи повідомлень — одна форма на сервер і на оболонку.
+ *
+ * **Що це.** Листування **між людьми платформи**, без участі бота: повідомлення
+ * живуть у нашій базі, а бот у них не бере участі взагалі. Це не «ще одна
+ * нотатка»: у нотатки один власник, а тут їх двоє, і саме тому в кожної дії
+ * спершу перевіряється **зв'язок** зі співрозмовником (див.
+ * `api-dev/src/services/messages/links.ts`).
+ *
+ * **Кому можна писати.** Лише тому, з ким людина **зв'язана через контакти**:
+ * один із них прийшов за особистим лінком іншого. Це той зв'язок, який уже
+ * існує в продукті (`contacts.owner_id` → `contacts.joined_user_id`), тож
+ * окремого «запиту в друзі» немає — і другого сховища тих самих стосунків теж.
+ *
+ * **Ідентичність — `id` людини з Telegram.** Він приходить із підписаного
+ * `initData` (`api-dev/src/shared/identity.ts`), а не з клієнта; тому в жодній
+ * формі запиту немає «від кого» — лише «кому».
+ *
+ * @module @wwwuabot/shared/messages
+ */
+
+/**
+ * Співрозмовник так, як його показує платформа.
+ *
+ * Це **читання** рядка `users`, а не його копія: `platformUsername` — ім'я на
+ * платформі (те, яке людина обрала сама, і воно є її іменем у продукті),
+ * `username` — Telegram-хендл, який ми не обираємо й не можемо повернути
+ * (AGENTS.md §2). Обидва тут — саме тому, що вони різні речі.
+ */
+export interface MessagePeer {
+  /** Telegram-id людини — він же `user_id` у `users`. */
+  id: number;
+  firstName: string | null;
+  lastName: string | null;
+  /** Telegram-хендл **без** `@`; `null` — людина його не має. */
+  username: string | null;
+  /** Ім'я на платформі **без** `@`; `null` — ще не обрала. */
+  platformUsername: string | null;
+  /** Аватар із даних Telegram; `null` — Telegram фото не віддав. */
+  photoUrl: string | null;
+}
+
+/** Одне повідомлення розмови. */
+export interface Message {
+  id: number;
+  /** Хто написав: Telegram-id, тож «моє» визначає той, хто читає. */
+  senderId: number;
+  body: string;
+  createdAt: string;
+  /** Коли прочитав **одержувач**; `null` — ще не прочитано. */
+  readAt: string | null;
+}
+
+/**
+ * Рядок списку розмов.
+ *
+ * Останнє повідомлення лежить у самій розмові, а не вибирається з `messages`:
+ * інакше список читав би всі повідомлення людини заради одного рядка на
+ * розмову. `unread` рахує сервер — клієнт не має для цього даних.
+ */
+export interface Conversation {
+  peer: MessagePeer;
+  lastMessageAt: string | null;
+  lastMessageText: string | null;
+  /** Хто написав останній — щоб у списку було видно «ви: …». */
+  lastSenderId: number | null;
+  /** Скільки повідомлень співрозмовника я ще не прочитав. */
+  unread: number;
+}
+
+/** Розмова зі співрозмовником: самі повідомлення й те, хто він. */
+export interface MessageThread {
+  peer: MessagePeer | null;
+  messages: Message[];
+}
+
+/** Відповідь списку розмов — найсвіжіші згори. */
+export interface ConversationListResponse {
+  ok?: boolean;
+  conversations?: Conversation[];
+  error?: string;
+}
+
+/** Відповідь розмови: повідомлення **від старіших до свіжіших**. */
+export interface MessageThreadResponse {
+  ok?: boolean;
+  peer?: MessagePeer | null;
+  messages?: Message[];
+  error?: string;
+}
+
+/** Відповідь надсилання — той рядок, який справді ліг у базу. */
+export interface MessageSendResponse {
+  ok?: boolean;
+  message?: Message;
+  error?: string;
+}
+
+/** Відповідь позначення прочитаним: скільком повідомленням це сталося. */
+export interface MessageReadResponse {
+  ok?: boolean;
+  read?: number;
+  error?: string;
+}
+
+/** Відповідь лічильника для бейджа у футері. */
+export interface MessageBadgeResponse {
+  ok?: boolean;
+  unread?: number;
+  error?: string;
+}

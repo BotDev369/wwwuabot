@@ -37,6 +37,8 @@ npx wrangler d1 execute wwwuabot-db-dev --remote \
 | `scenarios` | `api-dev` | api-dev (`ensureBase`, `scenarios-portal.controller`) | **bot-dev читає**; api-dev редагує (`/api/portal/scenarios/*`); платформа рендерить (`/api/scenario/:slug`) | **єдине сховище контенту:** рядок = сторінка вебу (`page_data`) + її подання в боті (`caption_*`, `buttons`, `rich_*`). Деталі — [`CONTENT_MODEL.md`](./CONTENT_MODEL.md) |
 | `notes` | `api-dev` | api-dev (`ensureTables` у `notes.controller`) | api-dev: платформа — `/api/notes`, панель — `/api/admin/notes` | нотатки: чернетки людини (`scope = 'user'`, власник — Telegram-id із **підписаного `initData`**) і нотатки про проєкт з панелі (`scope = 'admin'`, власник — акаунт cookie-сесії). `tags` — JSON-масив |
 | `contacts` | `api-dev` | api-dev (`ensureTables` у `contacts.controller`) | api-dev: довідник — `/api/contacts`; **bot-dev пише вхід у бота**, **api-dev — вхід на платформу** | контакти людини: **один рядок = один контакт**, а лінк — **одне з його полів** (`code` з `UNIQUE`, це і є payload бота `inv-8f3k2q`). Власні поля — `name`, `username`, `tags`, `notes`; `owner_id` — Telegram-id із **підписаного `initData`** |
+| `conversations` | `api-dev` | api-dev (`ensureTables` у `messages.controller`) | api-dev: `/api/messages` | переписка людей: **один рядок на пару** (`peer_a`, `peer_b` — за зростанням id, `UNIQUE`) плюс `last_message_*` для списку розмов |
+| `messages` | `api-dev` | api-dev (`ensureTables` у `messages.controller`) | api-dev: `/api/messages/*` | повідомлення розмови: автор (`sender_id`), тіло, `read_at` (`NULL` — непрочитане) |
 | `mydate_analysis` | `api-dev` | api-dev, `getAnalysis` | api-dev | кеш астрологічного аналізу на дату (KV — швидкий шар) |
 
 `npm run check:db` друкує той самий список, що видно в дашборді Cloudflare. Якщо числа розійшлись,
@@ -47,13 +49,31 @@ npx wrangler d1 execute wwwuabot-db-dev --remote \
 редагують вільно.
 
 **Індекси** (`indexes` в оголошенні) живуть поруч із таблицею, щоб не «загубились» окремо від неї.
-Сьогодні їх оголошують дві таблиці — `notes` (`idx_notes_scope_owner` — список власних нотаток за
-`(scope, owner_id)`) і `contacts` (`idx_contacts_owner`). Унікальність `contacts.code` і
+Сьогодні їх оголошують чотири таблиці — `notes` (`idx_notes_scope_owner` — список власних нотаток за
+`(scope, owner_id)`), `contacts` (`idx_contacts_owner`), `conversations` (`idx_conversations_peer_b`) і
+`messages` (`idx_messages_thread`, `idx_messages_unread`). Унікальність `contacts.code` і
 `scenarios.slug` тримає `UNIQUE` у самому `CREATE TABLE`, а не іменований індекс: імена індексів у
 SQLite **глобальні для бази**, тому однойменний `CREATE UNIQUE INDEX IF NOT EXISTS` на другій
 таблиці — не помилка, а **порожня дія**, і таблиця лишилась би без унікальності, не сказавши про це
 нікому. Те саме стосується `platform_username` — його унікальність тримає сам запит
 (`SELECT … WHERE platform_username = ?` перед записом).
+
+### Переписка: одна розмова на двох, і хто з ким може листуватись
+
+**Розмова — один рядок на пару, а не на напрямок.** `peer_a` і `peer_b` — та сама пара, впорядкована
+за зростанням id (`conversationPair` зі `@wwwuabot/shared/messages`), тож `UNIQUE (peer_a, peer_b)`
+справді означає «одна розмова на двох». Без порядку та сама переписка мала б **два** рядки — по одному
+на кожного, хто написав першим, — і кожен бачив би половину повідомлень.
+
+**Непрочитані — запит, а не колонка.** `sender_id <> ? AND read_at IS NULL` працює по індексу; лічильник
+у розмові був би другим сховищем того самого факту й розійшовся б із ним (AGENTS.md §7). Своє не
+позначається прочитаним ніколи: інакше бейдж зникав би від того, що автор відкрив власну розмову.
+
+**Кому можна писати — правило «зв'язані через контакти»** (`api-dev/src/services/messages/links.ts`): у
+`contacts` мусить бути рядок, де один із двох — `owner_id`, а другий — `joined_user_id` (тобто хтось
+справді прийшов за особистим лінком іншого). Перевірка читає **обидва** напрямки — той, кого запросили,
+теж пише, — і виконується **до** будь-якого пошуку розмови: інакше код відповіді (404 проти 400) сам
+казав би, чи існує чужа переписка. Другого сховища цих стосунків немає — воно вже є в `contacts`.
 
 ### `contacts`: два входи — дві дати, і жодну не пише власник
 

@@ -1,0 +1,182 @@
+/**
+ * Розмова зі співрозмовником: читати, писати, позначити прочитаним.
+ *
+ * **Порядок дій у кожному методі однаковий, і це не стиль:** спершу «чи
+ * зв'язані» (`areLinked`), і лише потім будь-який пошук розмови. Перевірка
+ * зв'язку **до** підказок про існування об'єкта — єдина причина, чому код
+ * відповіді не витікає: чужий `peer` дістає ту саму 404, що й неіснуюча
+ * розмова (AGENTS.md §7).
+ *
+ * **Відмова несе причину, а не лише статус.** «Зв'язку немає» і «тіло порожнє» —
+ * різні речі для людини, тож обидві кажуть себе вголос; контролер лише
+ * перекладає це в HTTP.
+ *
+ * @module api-dev/src/services/messages/thread
+ */
+
+import type { Message, MessageThread } from "@wwwuabot/shared/messages";
+import type { Env } from "../../shared/types";
+import { messagePreview, sanitizeMessageBody } from "@wwwuabot/shared/messages";
+import { formatSqliteDatetime } from "@wwwuabot/shared/utils/datetime";
+import { areLinked } from "./links";
+import { ensureConversation, findConversationId } from "./conversations";
+import { readPeer } from "./peers";
+
+/** Скільки повідомлень показує одна сторінка розмови. */
+const THREAD_LIMIT = 50;
+
+/** Результат дії: або дані, або відмова зі статусом і **причиною**. */
+export type ThreadResult =
+  { ok: true; thread: MessageThread } | { ok: false; status: number; error: string };
+export type SendResult =
+  { ok: true; message: Message } | { ok: false; status: number; error: string };
+export type ReadResult = { ok: true; read: number } | { ok: false; status: number; error: string };
+
+/**
+ * Відмова для того, з ким зв'язку немає.
+ *
+ * Та сама відповідь і для неіснуючої людини, і для чужої: іншої відповіді тут
+ * бути не може, бо інша відповідь **і є** підказкою про існування переписки.
+ */
+function noLink(status = 404): { ok: false; status: number; error: string } {
+  return { ok: false, status, error: "Розмови з цією людиною немає" };
+}
+
+interface MessageRow {
+  id: number;
+  sender_id: number;
+  body: string | null;
+  created_at: string | null;
+  read_at: string | null;
+}
+
+function toMessage(row: MessageRow): Message {
+  return {
+    id: Number(row.id),
+    senderId: Number(row.sender_id),
+    body: row.body ?? "",
+    createdAt: row.created_at ?? "",
+    readAt: row.read_at ?? null,
+  };
+}
+
+/**
+ * Повідомлення розмови — **від старіших до свіжіших**.
+ *
+ * Читаємо зворотним порядком (`id DESC`) і перевертаємо на місці: так беруться
+ * останні `THREAD_LIMIT` повідомлень, а не перші, — а перші в переписці
+ * потрібні найменше. `before` — межа для підвантаження старішого тим самим
+ * шляхом.
+ */
+async function readMessages(
+  db: D1Database,
+  conversationId: number,
+  before?: number,
+): Promise<Message[]> {
+  const result =
+    before === undefined
+      ? await db
+          .prepare(
+            `SELECT id, sender_id, body, created_at, read_at FROM messages
+               WHERE conversation_id = ? ORDER BY id DESC LIMIT ?`,
+          )
+          .bind(conversationId, THREAD_LIMIT)
+          .all<MessageRow>()
+      : await db
+          .prepare(
+            `SELECT id, sender_id, body, created_at, read_at FROM messages
+               WHERE conversation_id = ? AND id < ? ORDER BY id DESC LIMIT ?`,
+          )
+          .bind(conversationId, before, THREAD_LIMIT)
+          .all<MessageRow>();
+
+  return (result.results ?? []).map(toMessage).reverse();
+}
+
+/** Розмова зі співрозмовником; порожня розмова — це не помилка. */
+export async function readThread(
+  env: Env,
+  me: number,
+  peerId: number,
+  before?: number,
+): Promise<ThreadResult> {
+  if (!(await areLinked(env.DB, me, peerId))) return noLink();
+
+  const conversationId = await findConversationId(env.DB, me, peerId);
+  const [peer, messages] = await Promise.all([
+    readPeer(env.DB, peerId),
+    conversationId === null ? [] : readMessages(env.DB, conversationId, before),
+  ]);
+
+  return { ok: true, thread: { peer, messages } };
+}
+
+/**
+ * Надіслати повідомлення.
+ *
+ * `last_message_*` у розмові оновлює **цей** виклик, а не тригер: список розмов
+ * читає саме їх, і розійтися з щойно доданим рядком вони можуть лише тоді,
+ * коли про них забули — тож про них не забуває одне місце.
+ */
+export async function sendMessage(
+  env: Env,
+  me: number,
+  peerId: number,
+  rawBody: unknown,
+): Promise<SendResult> {
+  if (!(await areLinked(env.DB, me, peerId))) return noLink();
+
+  const body = sanitizeMessageBody(rawBody);
+  if (!body) return { ok: false, status: 400, error: "Порожнє повідомлення" };
+
+  const conversationId = await ensureConversation(env.DB, me, peerId);
+  if (!conversationId) return { ok: false, status: 500, error: "Не вдалося відкрити розмову" };
+
+  const now = formatSqliteDatetime();
+  const inserted = await env.DB.prepare(
+    `INSERT INTO messages (conversation_id, sender_id, body, created_at) VALUES (?, ?, ?, ?)`,
+  )
+    .bind(conversationId, me, body, now)
+    .run();
+
+  await env.DB.prepare(
+    `UPDATE conversations SET last_message_at = ?, last_message_text = ?, last_sender_id = ?
+       WHERE id = ?`,
+  )
+    .bind(now, messagePreview(body), me, conversationId)
+    .run();
+
+  return {
+    ok: true,
+    message: {
+      id: Number(inserted.meta?.last_row_id ?? 0),
+      senderId: me,
+      body,
+      createdAt: now,
+      readAt: null,
+    },
+  };
+}
+
+/**
+ * Позначити прочитаним усе, що написав співрозмовник.
+ *
+ * Своє не чіпаємо (`sender_id <> ?`): бульбашки автора не мають ставати
+ * «прочитаними» від того, що він сам відкрив розмову. Повертаємо **число** —
+ * воно ж і знімає бейдж у футері.
+ */
+export async function markRead(env: Env, me: number, peerId: number): Promise<ReadResult> {
+  if (!(await areLinked(env.DB, me, peerId))) return noLink();
+
+  const conversationId = await findConversationId(env.DB, me, peerId);
+  if (conversationId === null) return { ok: true, read: 0 };
+
+  const result = await env.DB.prepare(
+    `UPDATE messages SET read_at = ?
+       WHERE conversation_id = ? AND sender_id <> ? AND read_at IS NULL`,
+  )
+    .bind(formatSqliteDatetime(), conversationId, me)
+    .run();
+
+  return { ok: true, read: result.meta?.changes ?? 0 };
+}

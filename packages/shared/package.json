@@ -9,6 +9,7 @@
     "./content": "./src/content/index.ts",
     "./notes": "./src/notes/index.ts",
     "./contacts": "./src/contacts/index.ts",
+    "./messages": "./src/messages/index.ts",
     "./tags": "./src/tags.ts",
     "./constants/block-definitions": "./src/constants/block-definitions/index.ts",
     "./styles/index.css": "./src/styles/index.css",

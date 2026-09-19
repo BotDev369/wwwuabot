@@ -29,10 +29,15 @@ function TabBarButton({ item }: { item: TabBarItem }): ReactElement {
   // це той самий знак, тож смуга не «сіпається» при переході.
   const icon = item.active && item.iconActive ? item.iconActive : item.icon;
   // «+» — центральний слот дії: підпису не має, тож він іде в aria-label.
+  const unread = item.badge ?? 0;
   const content = (
     <>
       <span className="wb-tabbar-icon">
         <Icon name={icon} size={24} />
+        {/* Число лежить у тій самій комірці, що й знак (`position: relative` у
+            `.wb-tabbar-icon`), тож смуга не росте від нього. Показуємо його
+            **лише** коли є що показати: нуль на іконці читався б як «щось є». */}
+        {unread > 0 && <span className="wb-tabbar-badge">{unread}</span>}
       </span>
       {item.primary ? null : <span className="wb-tabbar-label">{item.label}</span>}
     </>

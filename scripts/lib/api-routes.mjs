@@ -31,7 +31,7 @@ const GROUPS = [
   {
     title: "Користувач",
     auth: "підписаний Telegram `initData`",
-    prefixes: ["/api/my-dates", "/api/notes", "/api/contacts", "/api/user/"],
+    prefixes: ["/api/my-dates", "/api/notes", "/api/contacts", "/api/messages", "/api/user/"],
   },
   {
     title: "Адмін",

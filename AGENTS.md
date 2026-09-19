@@ -38,6 +38,7 @@ packages/ui/      Спільні React-компоненти Page Builder (@wwwua
 - **Conditional Rendering** — умовний показ блоків за role/tariff/status/permissions користувача (`packages/shared/src/utils/condition-evaluator.ts`).
 - **Design System** — подвійна тема Apple/Material через `data-brand` на `<html>` і **три кольори користувача** (фон / основний / акцент) через `data-colors` + `data-colors-mode`. CSS-токени: `packages/shared/src/styles/`; палітру з трьох кольорів виводить `user-colors.css`, а сам вибір живе в `localStorage` (ключ `wwwuabot-colors`). Світлої / темної як вибору немає — схему рахує фон.
 - **Notes / Contacts** — два екрани-колекції платформи (`/notes`, `/contacts`), що живуть на **тих самих** спільних кирпичиках (`@wwwuabot/ui/collection`): смуга керування, чипи, вигляд (рядки / картки 1 / картки 2), акордеон у списку.
+- **Повідомлення** — переписка **між людьми платформи**, без бота: він не бере участі ні в надсиланні, ні в сповіщенні. Кому можна писати — правило «зв'язані через контакти» (`api-dev/src/services/messages/links.ts`): у `contacts` хтось прийшов за особистим лінком іншого. Пушів усередині Telegram немає (WebView не дає Push API), тож про нове каже сама смуга — бейдж (`/api/messages/badge`), поки застосунок відкритий.
 
 ---
 
