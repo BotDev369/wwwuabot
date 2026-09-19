@@ -11,6 +11,12 @@
  * правила «як назвати людину» розійшлася б із першою — і та сама особа мала б
  * два імені в одному продукті.
  *
+ * **Але без `@` перед іменем на платформі** (`peerPublicLabel(..., "telegram")`).
+ * Це не дрібниця: Telegram робить із `@слово` посилання на **телеграм-акаунт**, і
+ * `@karas` вело людину в чужий профіль — а те, що наша платформа зве «ім'ям на
+ * платформі», ніде в Telegram не існує. Telegram-хендл `@` зберігає: він і є
+ * акаунт, і посилання з нього веде за адресою.
+ *
  * **Кнопка веде одразу в розмову** (`messagesPeerPath`): людина натиснула
  * «запрошую», і найкоротший шлях до мети — сама переписка, а не список, у
  * якому треба ще щось шукати.
@@ -88,7 +94,7 @@ export async function showInviteScreen(ctx: AppContext, ownerId: number): Promis
   let name: string | null = null;
   try {
     const inviter = await readInviter(ctx, ownerId);
-    name = inviter ? peerPublicLabel(toPeer(inviter, ownerId)) : null;
+    name = inviter ? peerPublicLabel(toPeer(inviter, ownerId), "telegram") : null;
   } catch (e: unknown) {
     // База недоступна — показуємо вітання без імені: дія цього екрана не ім'я,
     // а кнопка, і вона складена ще до звернення до бази.

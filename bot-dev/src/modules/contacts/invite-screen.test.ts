@@ -7,7 +7,9 @@
  *    спільного `messagesPeerPath`, і помилка тут веде не в помилку, а в
  *    порожній список — тобто виглядає як «щось не завантажилось».
  * 2. **Ім'я — з ланцюга підписів продукту** (ім'я на платформі → Telegram):
- *    та сама людина мусить зватися однаково в боті й у розмові.
+ *    та сама людина мусить зватися однаково в боті й у розмові. Але **без `@`**
+ *    перед іменем на платформі: Telegram робить із `@слово` посилання на
+ *    телеграм-акаунт, і `@karas` вело людину в чужий профіль.
  * 3. **Без адреси платформи екрана немає.** Вітання без єдиної дії — глухий
  *    кут; краще головна, як було раніше.
  *
@@ -83,8 +85,17 @@ describe("екран запрошення", () => {
     const ctx = context(FULL);
 
     await showInviteScreen(ctx, OWNER);
-    expect(ctx.screen?.caption.top).toContain("<b>@karas</b>");
+    expect(ctx.screen?.caption.top).toContain("<b>karas</b>");
     expect(ctx.screen?.caption.top).toContain("запрошує вас до конфіденційної бесіди");
+  });
+
+  it("⛔ ім'я на платформі без `@`: у Telegram він стає посиланням на чужого", async () => {
+    stubNetwork();
+    const ctx = context(FULL);
+
+    await showInviteScreen(ctx, OWNER);
+    // `@karas` — це телеграм-акаунт, якого ми не знаємо й не обирали.
+    expect(ctx.screen?.caption.top).not.toContain("@karas");
   });
 
   it("без імені на платформі лишається Telegram-хендл, і лише потім ім'я", async () => {

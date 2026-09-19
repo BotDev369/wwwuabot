@@ -5,7 +5,8 @@
  * ламається мовчки. `conversationPair` — розмова стає двома рядками (і кожен
  * бачить половину переписки); `sanitizeMessageBody` — обрізаний текст у базі;
  * `peerLabel` — чуже ім'я замість того, яким людину назвав той, хто дивиться
- * (AGENTS.md §2).
+ * (AGENTS.md §2); `peerPublicLabel(..., "telegram")` — `@` перед іменем на
+ * платформі, з якого Telegram робить посилання на чужого.
  *
  * @module @wwwuabot/shared/messages/rules.test
  */
@@ -19,7 +20,7 @@ import {
   sanitizeMessageBody,
   MAX_MESSAGE_BODY,
 } from "./fields";
-import { peerInitial, peerLabel, peerSecondary } from "./peer";
+import { peerInitial, peerLabel, peerPublicLabel, peerSecondary } from "./peer";
 import { messageClock, messageTime } from "./time";
 import type { MessagePeer } from "./types";
 
@@ -91,6 +92,16 @@ describe("підпис співрозмовника", () => {
     // Хендл уже стоїть підписом — другий такий самий рядок був би шумом.
     const telegramOnly = { ...PEER, platformUsername: null, firstName: null, lastName: null };
     expect(peerSecondary(telegramOnly)).toBeNull();
+  });
+
+  it("у Telegram ім'я на платформі йде без `@`, а хендл — із ним", () => {
+    // `@` — синтаксис Telegram: клієнт робить із нього посилання на акаунт.
+    // Ім'я на платформі акаунтом не є, тож у тексті для бота воно без `@`...
+    expect(peerPublicLabel(PEER, "telegram")).toBe("karas");
+    // ...а хендл його зберігає: він і є акаунт, посилання веде за адресою.
+    expect(peerPublicLabel({ ...PEER, platformUsername: null }, "telegram")).toBe("@serg");
+    // На наших поверхнях нічого не змінюється.
+    expect(peerPublicLabel(PEER)).toBe("@karas");
   });
 
   it("літера для аватара збігається з тим, що видно поруч", () => {
