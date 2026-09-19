@@ -84,6 +84,12 @@ const ensured = new WeakMap<D1Database, Set<string>>();
  *
  * Повторні виклики в межах одного інстансу воркера нічого не коштують —
  * результат запам'ятовується на об'єкті `db`.
+ *
+ * **Колонка, додана наявній таблиці, приходить як `DEFAULT NULL`** — ні `NOT
+ * NULL`, ні `DEFAULT` з реєстру вона не отримує (змінити наявну колонку SQLite
+ * не вміє). Тож читач такої колонки мусить приймати `NULL` за типове значення
+ * (`COALESCE(column, 0)`): на свіжій базі там буде `0`, на живій — `NULL`, і код,
+ * який порівнює з `0` напросто, мовчки відкине всі наявні рядки.
  */
 export async function ensureTables(db: D1Database, names: readonly TableName[]): Promise<void> {
   let done = ensured.get(db);

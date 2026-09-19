@@ -401,9 +401,11 @@ describe("список розмов", () => {
     const body = (await res.json()) as { conversations?: unknown[] };
 
     const select = db.statements.find((s) => /FROM conversations/.test(s.sql));
-    expect(select?.sql).toMatch(
-      /WHERE \(peer_a = \? AND hidden_a = 0\) OR \(peer_b = \? AND hidden_b = 0\)/,
-    );
+    // `COALESCE` тут не прикраса: колонка, додана наявній таблиці, приходить від
+    // `ensureTables` як `DEFAULT NULL`, тож у старих рядках там `NULL` — і
+    // порівняння з `0` напросто викинуло б зі списку **усі наявні розмови**.
+    expect(select?.sql).toMatch(/COALESCE\(hidden_a, 0\) = 0/);
+    expect(select?.sql).toMatch(/COALESCE\(hidden_b, 0\) = 0/);
     expect(select?.binds).toEqual([ME, ME, 100]);
 
     const names = db.statements.find((s) => /AS peer_id, name/.test(s.sql));
@@ -622,7 +624,7 @@ describe("переписка: стерти й прибрати", () => {
     const db = makeDb({
       first: (sql) => (/FROM contacts/.test(sql) ? { id: 1 } : null),
       all: (sql) => {
-        if (/hidden_a = 1/.test(sql)) return [{ peer_a: ME, peer_b: PEER }];
+        if (/COALESCE\(hidden_a, 0\) = 1/.test(sql)) return [{ peer_a: ME, peer_b: PEER }];
         if (/FROM conversations/.test(sql)) return [];
         if (/FROM contacts/.test(sql)) return [{ peer_id: PEER }];
         return [];
@@ -638,7 +640,7 @@ describe("переписка: стерти й прибрати", () => {
     await expect(res.json()).resolves.toEqual({ ok: true, conversations: [] });
     // І фільтр стоїть в обох джерелах, а не лише в контактах.
     const started = db.statements.find((s) => /FROM conversations/.test(s.sql));
-    expect(started?.sql).toMatch(/hidden_a = 0/);
+    expect(started?.sql).toMatch(/COALESCE\(hidden_a, 0\) = 0/);
   });
 
   it("«очистити» стирає повідомлення й останок, але саму розмову лишає", async () => {

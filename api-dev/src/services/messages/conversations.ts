@@ -126,9 +126,13 @@ async function linkedPeerIds(env: Env, me: number): Promise<number[]> {
  * схема в рядку, яку читав би власний парсер).
  */
 async function hiddenPeerIds(env: Env, me: number): Promise<Set<number>> {
+  // `COALESCE` не для краси: колонка, додана наявній таблиці, приходить від
+  // `ensureTables` як `DEFAULT NULL` (ні `NOT NULL`, ні `DEFAULT` з реєстру вона
+  // не отримує), тож у старому рядку тут `NULL`, а не `0`. Без цього кожна жива
+  // розмова зникла б зі списку як «прибрана».
   const result = await env.DB.prepare(
     `SELECT peer_a, peer_b FROM conversations
-      WHERE (peer_a = ? AND hidden_a = 1) OR (peer_b = ? AND hidden_b = 1)`,
+      WHERE (peer_a = ? AND COALESCE(hidden_a, 0) = 1) OR (peer_b = ? AND COALESCE(hidden_b, 0) = 1)`,
   )
     .bind(me, me)
     .all<{ peer_a: number; peer_b: number }>();
@@ -179,7 +183,8 @@ export async function listConversations(env: Env, me: number): Promise<Conversat
   const result = await env.DB.prepare(
     `SELECT id, peer_a, peer_b, last_message_at, last_message_text, last_sender_id
        FROM conversations
-      WHERE (peer_a = ? AND hidden_a = 0) OR (peer_b = ? AND hidden_b = 0)
+      WHERE (peer_a = ? AND COALESCE(hidden_a, 0) = 0)
+         OR (peer_b = ? AND COALESCE(hidden_b, 0) = 0)
       ORDER BY COALESCE(last_message_at, created_at) DESC, id DESC
       LIMIT ?`,
   )
