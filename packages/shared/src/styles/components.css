@@ -1124,8 +1124,15 @@ html:has(.wb-tabbar) .wb-modal-overlay--screen {
   transition: color var(--duration-fast) var(--ease);
 }
 
-.wb-segmented-btn:hover {
-  color: var(--text-primary);
+/* Підсвічення наведенням — і **лише мишею**, бо на тачі `:hover` лишається
+   на останньому торкнутому елементі. А специфічність `:hover` вища за
+   `--active` — тому обраний варіант ставав чорним рівно тоді, коли його
+   щойно обрали, і вибір виглядав так, ніби він зник. Другий запобіжник —
+   `:not(--active)`: на миші вибраний теж не мусить темніти, він акцентний. */
+@media (hover: hover) {
+  .wb-segmented-btn:not(.wb-segmented-btn--active):hover {
+    color: var(--text-primary);
+  }
 }
 
 /* Стан видно кольором, і ще штрихом: самий лише відтінок на тонкому знаку

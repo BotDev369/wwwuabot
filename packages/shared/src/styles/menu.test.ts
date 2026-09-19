@@ -228,6 +228,23 @@ describe("меню: поверхня на весь екран і смуга вн
     expect(close?.body).not.toMatch(/(?<!min-)width:\s*\d+px/);
   });
 
+  it("дотик не знімає вибір: `:hover` не перебиває вибраний варіант", () => {
+    // На тачі `:hover` лишається на останньому торкнутому елементі, а його
+    // специфічність вища за `--active` — тож вибраний варіант ставав чорним
+    // рівно тоді, коли його щойно вибрали, і перемикач виглядав так, ніби
+    // вибір зник. Тому підсвічення наведенням — або під `@media (hover: hover)`,
+    // або з `:not(--active)`: на тачі hover не існує.
+    expect(CSS).toContain("@media (hover: hover)");
+    const hover = RULES.filter((entry) => /:hover/.test(entry.selector));
+    const overState = hover.filter((entry) =>
+      /(^|[\s,>+~({"])\.wb-segmented-btn(?![\w-])/.test(entry.selector),
+    );
+    expect(overState.length, "підсвічення мишею мусить існувати").toBeGreaterThan(0);
+    for (const entry of overState) {
+      expect(entry.selector, entry.selector).toContain(":not(.wb-segmented-btn--active)");
+    }
+  });
+
   it("у перемикача немає треку, а вибраний показує акцентний колір", () => {
     // Трек (сіра плитка під двома знаками) читався як ще одна кнопка поруч із
     // акцентним виходом — тож його не має бути ні заливкою, ні радіусом.
