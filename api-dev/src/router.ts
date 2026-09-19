@@ -48,6 +48,8 @@ import {
   handleMessageSend,
   handleMessageRead,
   handleMessageBadge,
+  handleMessageClear,
+  handleMessageDelete,
 } from "./controllers/messages.controller";
 
 /**
@@ -176,6 +178,15 @@ export async function handleRequest(request: Request, env: Env): Promise<Respons
   }
   if (pathname === "/api/messages/badge" && request.method === "GET") {
     return handleMessageBadge(request, env);
+  }
+  // Стерти переписку / прибрати розмову. Дві дії, а не одна з прапорцем:
+  // різницю між ними бачить людина (розмова лишається чи ні), тож і шлях у них
+  // свій — інакше на клієнті з'явився б другий спосіб сказати те саме.
+  if (pathname === "/api/messages/clear" && request.method === "POST") {
+    return handleMessageClear(request, env);
+  }
+  if (pathname === "/api/messages/delete" && request.method === "POST") {
+    return handleMessageDelete(request, env);
   }
 
   // ── Admin: Cookie Auth ─────────────────────────────────────────

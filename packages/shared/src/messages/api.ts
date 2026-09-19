@@ -17,6 +17,7 @@ import type {
   ConversationListResponse,
   Message,
   MessageBadgeResponse,
+  MessageClearResponse,
   MessageReadResponse,
   MessageSendResponse,
   MessageThread,
@@ -39,10 +40,41 @@ export interface MessagesApi {
   markRead: (peerId: number) => Promise<number>;
   /** Скільки повідомлень чекає на прочитання — для бейджа футера. */
   badge: () => Promise<number>;
+  /**
+   * Стерти переписку — **у обох** (розмова одна на пару).
+   *
+   * Порожня розмова лишається на місці: людина може писати далі, і в списку
+   * вона нікуди не зникає. Невдача кидає виняток — інакше зникала б історія,
+   * якої насправді ніхто не стирав (та сама причина, чому `markRead` кидає).
+   */
+  clear: (peerId: number) => Promise<void>;
+  /**
+   * Прибрати саму розмову — **у обох**.
+   *
+   * Це не «глибша очистка»: зникає і сам рядок розмови разом із датою вітання,
+   * тож наступне відкриття починається з нуля. Лишається тільки зв'язок — тому
+   * рядок знову видно у списку (список показує тих, кому можна писати).
+   */
+  remove: (peerId: number) => Promise<void>;
 }
 
 /** Складає клієнт повідомлень для конкретного шляху. */
 export function createMessagesApi(fetchJson: MessagesTransport, basePath: string): MessagesApi {
+  /**
+   * Дія над перепискою: тіло таке саме, як у надсиланні, — «з ким».
+   *
+   * Своєї відповіді на кожну дію немає навмисно: успіх — це `ok`, а стан
+   * переписки клієнт і так перечитає (`thread`), бо стерта історія — це вже
+   * інший її вміст. Друга форма відповіді тут лише розійшлася б із першою.
+   */
+  async function drop(path: string, peerId: number): Promise<void> {
+    const response = await fetchJson<MessageClearResponse>(path, {
+      method: "POST",
+      body: JSON.stringify({ peer: peerId }),
+    });
+    if (!response.ok) throw new Error(response.error ?? "Не вдалося змінити переписку");
+  }
+
   return {
     list: async () => (await fetchJson<ConversationListResponse>(basePath)).conversations ?? [],
 
@@ -74,5 +106,9 @@ export function createMessagesApi(fetchJson: MessagesTransport, basePath: string
     },
 
     badge: async () => (await fetchJson<MessageBadgeResponse>(`${basePath}/badge`)).unread ?? 0,
+
+    clear: (peerId) => drop(`${basePath}/clear`, peerId),
+
+    remove: (peerId) => drop(`${basePath}/delete`, peerId),
   };
 }

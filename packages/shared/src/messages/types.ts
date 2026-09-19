@@ -125,6 +125,19 @@ export interface MessageReadResponse {
   error?: string;
 }
 
+/**
+ * Відповідь дій над перепискою (стерти / прибрати розмову).
+ *
+ * `removed` — скільком повідомленням це сталося; `0` — законний результат
+ * (розмови ще не було), а не помилка: натиснути «очистити» в порожній розмові
+ * можна, і це не привід показувати збій.
+ */
+export interface MessageClearResponse {
+  ok?: boolean;
+  removed?: number;
+  error?: string;
+}
+
 /** Відповідь лічильника для бейджа у футері. */
 export interface MessageBadgeResponse {
   ok?: boolean;

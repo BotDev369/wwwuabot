@@ -46,12 +46,14 @@ import {
   filterConversations,
   type MessagesView,
 } from "@wwwuabot/ui/messages";
+import { useDialog } from "@wwwuabot/ui/dialog";
 import { useConversations } from "./useConversations";
 import { useProfile } from "./useProfile";
 import { useThread } from "./useThread";
 
 export function MessagesPage(): ReactElement {
   const { conversations, loading, error, reload } = useConversations();
+  const dialog = useDialog();
   const { profile } = useProfile();
   // Вигляд списку — стан **екрана**, а не даних: сервер віддає ті самі розмови,
   // а те, як їх показати, вирішує той, хто дивиться.
@@ -83,6 +85,46 @@ export function MessagesPage(): ReactElement {
   function startWith(peerId: number): void {
     setPicking(false);
     setOpenPeerId(peerId);
+  }
+
+  /**
+   * Стерти переписку — **в обох**, тож питаємо перед тим, як робити.
+   *
+   * Підтвердження обов'язкове саме тому, що дія незворотна й чужа: людина
+   * стирає не свої копії, а спільний рядок переписки. Помічник — спільний
+   * `useDialog`, а не `window.confirm`: у Telegram Mini App на iOS його не
+   * існує, і підтвердження повернуло б `false` назавжди (§4).
+   *
+   * Список перечитуємо після успіху: у рядку розмови стояв текст, якого більше
+   * немає.
+   */
+  async function clearHistory(): Promise<void> {
+    const yes = await dialog.confirm(
+      "Історія зникне в обох — у вас і в співрозмовника. Це незворотно.",
+      { title: "Стерти переписку?", tone: "danger", confirmText: "Стерти" },
+    );
+    if (!yes) return;
+
+    if (await thread.clear()) void reload();
+  }
+
+  /**
+   * Прибрати саму розмову — теж у обох.
+   *
+   * Це не «глибша чистка»: разом із повідомленнями зникає й дата вітання пари,
+   * тож наступне відкриття починається з нуля. Тому після успіху поверхня
+   * закривається: лишатися в розмові, якої більше немає, означало б показувати
+   * порожній екран замість неї.
+   */
+  async function deleteThread(): Promise<void> {
+    const yes = await dialog.confirm("Зникне все листування в обох, і розмова почнеться з нуля.", {
+      title: "Прибрати розмову?",
+      tone: "danger",
+      confirmText: "Видалити",
+    });
+    if (!yes) return;
+
+    if (await thread.remove()) closeThread();
   }
 
   return (
@@ -152,6 +194,8 @@ export function MessagesPage(): ReactElement {
           error={thread.error}
           sending={thread.sending}
           onSend={thread.send}
+          onClear={() => void clearHistory()}
+          onDelete={() => void deleteThread()}
           onClose={closeThread}
         />
       )}

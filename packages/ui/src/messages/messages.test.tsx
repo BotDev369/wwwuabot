@@ -232,6 +232,8 @@ describe("поверхня розмови", () => {
         meId={ME}
         messages={MESSAGES}
         onSend={async () => true}
+        onClear={() => {}}
+        onDelete={() => {}}
         onClose={() => {}}
       />,
     );
@@ -249,6 +251,8 @@ describe("поверхня розмови", () => {
         meId={ME}
         messages={MESSAGES}
         onSend={async () => true}
+        onClear={() => {}}
+        onDelete={() => {}}
         onClose={() => {}}
       />,
     );
@@ -265,11 +269,37 @@ describe("поверхня розмови", () => {
         meId={ME}
         messages={[]}
         onSend={async () => true}
+        onClear={() => {}}
+        onDelete={() => {}}
         onClose={() => {}}
       />,
     );
 
     expect(html).toContain("Напишіть перше");
+  });
+
+  it("дії над перепискою — у шапці, поруч з іменем і двома різними знаками", () => {
+    // Знак без підпису мусить мати ім'я: інакше для того, хто не бачить іконки,
+    // кнопка без назви. І їх саме **дві** — стирання й видалення це різні дії з
+    // різними наслідками, тож одна кнопка на обидві змушувала б угадувати.
+    const html = renderToStaticMarkup(
+      <ThreadSheet
+        peer={PEER}
+        meId={ME}
+        messages={MESSAGES}
+        onSend={async () => true}
+        onClear={() => {}}
+        onDelete={() => {}}
+        onClose={() => {}}
+      />,
+    );
+
+    expect(html).toContain('aria-label="Очистити переписку"');
+    expect(html).toContain('aria-label="Видалити розмову"');
+    expect(html).toContain("wb-thread-actions");
+    // Ім'я стоїть **до** дій: шапка читається як «з ким я говорю», а не як рядок
+    // кнопок із підписом десь усередині.
+    expect(html.indexOf("@karas")).toBeLessThan(html.indexOf("wb-thread-actions"));
   });
 
   it("кнопка надсилання гасне на порожньому полі, а не зникає", () => {
@@ -279,6 +309,8 @@ describe("поверхня розмови", () => {
         meId={ME}
         messages={[]}
         onSend={async () => true}
+        onClear={() => {}}
+        onDelete={() => {}}
         onClose={() => {}}
       />,
     );
@@ -297,6 +329,8 @@ describe("поверхня розмови", () => {
         meId={ME}
         messages={GREETED}
         onSend={async () => true}
+        onClear={() => {}}
+        onDelete={() => {}}
         onClose={() => {}}
       />,
     );
@@ -315,6 +349,8 @@ describe("поверхня розмови", () => {
         meId={ME}
         messages={GREETED}
         onSend={async () => true}
+        onClear={() => {}}
+        onDelete={() => {}}
         onClose={() => {}}
       />,
     );

@@ -111,6 +111,25 @@ describe("бульбашки", () => {
   });
 });
 
+describe("шапка розмови", () => {
+  it("ім'я — ліворуч, дії — праворуч, і кожна дія під палець", () => {
+    // Спільна шапка розставляє дітей `space-between`: з третьою дитиною ім'я
+    // поїхало б у середину, і відповідь на «з ким я говорю» вимагала б погляду
+    // в центр екрана.
+    expect(rule(MESSAGES, ".wb-thread-head")?.body).toContain("justify-content: flex-start");
+    // Саме ім'я забирає вільне місце — воно й притискає дії до краю.
+    expect(rule(MESSAGES, ".wb-thread-name")?.body).toContain("flex: 1 1 auto");
+
+    const action = rule(MESSAGES, ".wb-thread-action");
+    expect(action?.body).toContain("width: 44px");
+    expect(action?.body).toContain("height: 44px");
+    // Тла немає: у шапці вже є гурток «назад», а акцент у продукті один (§3).
+    expect(action?.body).not.toContain("background: var(--accent)");
+    // Акцент з'являється на дотик, бо на тачі hover не існує.
+    expect(rule(MESSAGES, ".wb-thread-action:active")?.body).toContain("var(--accent)");
+  });
+});
+
 describe("позначка платформи", () => {
   it("не має ні боку, ні тла: бік і тло в стрічці означають автора", () => {
     const note = rule(MESSAGES, ".wb-thread-system");

@@ -33,6 +33,9 @@ export type SendResult =
   { ok: true; message: Message } | { ok: false; status: number; error: string };
 export type ReadResult = { ok: true; read: number } | { ok: false; status: number; error: string };
 
+export type ClearResult =
+  { ok: true; removed: number } | { ok: false; status: number; error: string };
+
 /**
  * Відмова для того, з ким зв'язку немає.
  *
@@ -183,6 +186,56 @@ export async function sendMessage(
       system: false,
     },
   };
+}
+
+/**
+ * Стерти переписку — **у обох**, бо рядок переписки один на пару.
+ *
+ * `whole` — прибрати й саму розмову (друга з двох дій на екрані). Різниця не
+ * в косметиці: разом із рядком зникає `greeted_at`, тож наступне відкриття
+ * розмови починається з нуля — з вітанням, як у нової. Без `whole` лишається
+ * порожня розмова, яку можна вести далі.
+ *
+ * **Порядок дій той самий, що в решті методів:** спершу «чи зв'язані», і лише
+ * потім будь-який пошук і будь-який `DELETE` (§7). Тому для чужого `peer` не
+ * зникає ніщо — ані свого, ані чужого, — а відповідь та сама 404, що й у
+ * неіснуючої розмови (різні коди тут теж були б підказкою).
+ */
+export async function clearThread(
+  env: Env,
+  me: number,
+  peerId: number,
+  whole = false,
+): Promise<ClearResult> {
+  if (!(await areLinked(env.DB, me, peerId))) return noLink();
+
+  const conversationId = await findConversationId(env.DB, me, peerId);
+  // Розмови ще немає — стирати нічого, і це не помилка.
+  if (conversationId === null) return { ok: true, removed: 0 };
+
+  const cleared = await env.DB.prepare("DELETE FROM messages WHERE conversation_id = ?")
+    .bind(conversationId)
+    .run();
+  const removed = cleared.meta?.changes ?? 0;
+
+  if (whole) {
+    await env.DB.prepare("DELETE FROM conversations WHERE id = ?").bind(conversationId).run();
+    return { ok: true, removed };
+  }
+
+  // Останок у списку — **копія** останнього повідомлення (його оновлює
+  // `sendMessage`), тож чистка мусить зачепити й його: інакше список показував
+  // би текст, якого в розмові вже немає. `greeted_at` лишається — вітання
+  // одноразове, і повторювати його після чистки означало б писати в розмову те,
+  // що людина щойно стерла.
+  await env.DB.prepare(
+    `UPDATE conversations SET last_message_at = NULL, last_message_text = NULL, last_sender_id = NULL
+       WHERE id = ?`,
+  )
+    .bind(conversationId)
+    .run();
+
+  return { ok: true, removed };
 }
 
 /**

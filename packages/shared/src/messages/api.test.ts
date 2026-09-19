@@ -90,4 +90,28 @@ describe("createMessagesApi", () => {
     const empty = makeTransport({ ok: true });
     expect(await createMessagesApi(empty.fetch as never, "/api/messages").badge()).toBe(0);
   });
+
+  it("стирання й видалення — два різні шляхи, і обидва ведуть `peer`", async () => {
+    // Один шлях на дві дії означав би, що різницю між «почистити» й «прибрати»
+    // вирішує клієнт прапорцем — а це вже два способи сказати те саме.
+    const transport = makeTransport({ ok: true, removed: 2 });
+    const api = createMessagesApi(transport.fetch as never, "/api/messages");
+
+    await api.clear(42);
+    await api.remove(42);
+
+    expect(transport.calls[0].path).toBe("/api/messages/clear");
+    expect(transport.calls[0].init?.method).toBe("POST");
+    expect(JSON.parse(String(transport.calls[0].init?.body))).toEqual({ peer: 42 });
+    expect(transport.calls[1].path).toBe("/api/messages/delete");
+    expect(JSON.parse(String(transport.calls[1].init?.body))).toEqual({ peer: 42 });
+  });
+
+  it("відмова стирання кидає причину: мовчазний збій виглядав би як успіх", async () => {
+    const failed = makeTransport({ ok: false, error: "Розмови з цією людиною немає" });
+    const api = createMessagesApi(failed.fetch as never, "/api/messages");
+
+    await expect(api.clear(42)).rejects.toThrow("Розмови з цією людиною немає");
+    await expect(api.remove(42)).rejects.toThrow("Розмови з цією людиною немає");
+  });
 });

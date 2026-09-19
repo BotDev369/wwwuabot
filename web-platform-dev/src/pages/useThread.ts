@@ -42,6 +42,10 @@ export interface ThreadState {
   sending: boolean;
   /** Надіслати; повертає `true`, якщо сервер підтвердив. */
   send: (body: string) => Promise<boolean>;
+  /** Стерти переписку (у обох); `true` — сервер підтвердив. */
+  clear: () => Promise<boolean>;
+  /** Прибрати саму розмову (у обох); `true` — сервер підтвердив. */
+  remove: () => Promise<boolean>;
 }
 
 export function useThread(peerId: number | null): ThreadState {
@@ -92,6 +96,47 @@ export function useThread(peerId: number | null): ThreadState {
     [peerId],
   );
 
+  /**
+   * Стерти переписку — у обох.
+   *
+   * Стрічку чистимо **після** відповіді сервера, а не до неї: показати порожній
+   * екран без підтвердження означало б намалювати стан, якого в базі може не
+   * бути (та сама причина, чому надіслане додається з відповіді).
+   */
+  const clear = useCallback(async (): Promise<boolean> => {
+    if (peerId === null) return false;
+
+    try {
+      await messagesApi.clear(peerId);
+      setData((prev) => ({ ...prev, messages: [] }));
+      setError(null);
+      return true;
+    } catch (e: unknown) {
+      setError(e instanceof Error ? e.message : "Не вдалося стерти переписку");
+      return false;
+    }
+  }, [peerId]);
+
+  /**
+   * Прибрати розмову цілком — у обох.
+   *
+   * Стан навмисно **не** підчищаємо: після цієї дії поверхня закривається (це
+   * робить екран), а наступне відкриття однаково перечитує розмову — готувати
+   * тут порожню розмову означало б гадати, що буде далі.
+   */
+  const remove = useCallback(async (): Promise<boolean> => {
+    if (peerId === null) return false;
+
+    try {
+      await messagesApi.remove(peerId);
+      setError(null);
+      return true;
+    } catch (e: unknown) {
+      setError(e instanceof Error ? e.message : "Не вдалося видалити розмову");
+      return false;
+    }
+  }, [peerId]);
+
   const known = data.forPeer === peerId;
 
   return {
@@ -102,5 +147,7 @@ export function useThread(peerId: number | null): ThreadState {
     error,
     sending,
     send,
+    clear,
+    remove,
   };
 }

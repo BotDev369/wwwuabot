@@ -39,6 +39,8 @@ export function ThreadSheet({
   error = null,
   sending = false,
   onSend,
+  onClear,
+  onDelete,
   onClose,
 }: ThreadSheetProps): ReactElement {
   const label = peerLabel(peer);
@@ -54,7 +56,7 @@ export function ThreadSheet({
         aria-label={label}
         onClick={(event) => event.stopPropagation()}
       >
-        <div className="wb-modal-header wb-sheet-head">
+        <div className="wb-modal-header wb-sheet-head wb-thread-head">
           {/* «Назад», а не «закрити»: поверхня відкривається зі списку розмов, і
               дотик повертає саме туди — це звичайна навігація, а не вихід із
               форми. */}
@@ -65,6 +67,31 @@ export function ThreadSheet({
             {label}
             {secondary && <span className="wb-thread-sub">{secondary}</span>}
           </h2>
+
+          {/* Дві дії над перепискою — самими знаками й без тла: у шапці вже стоїть
+              «назад», а другий гурток поруч читався б як ще один вихід. Стирання
+              й видалення — різні речі й різні знаки; підпис живе в `aria-label`,
+              бо знак без імені не має назви для того, хто не бачить. */}
+          <div className="wb-thread-actions">
+            <button
+              type="button"
+              className="wb-thread-action"
+              onClick={onClear}
+              aria-label="Очистити переписку"
+              title="Очистити переписку"
+            >
+              <Icon name="eraser" size={18} />
+            </button>
+            <button
+              type="button"
+              className="wb-thread-action"
+              onClick={onDelete}
+              aria-label="Видалити розмову"
+              title="Видалити розмову"
+            >
+              <Icon name="trash" size={18} />
+            </button>
+          </div>
         </div>
 
         <div className="wb-modal-body wb-thread-body" ref={bodyRef}>

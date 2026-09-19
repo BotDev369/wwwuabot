@@ -24,7 +24,7 @@ import { ensureTables } from "@wwwuabot/shared/database/ensure-tables";
 import { resolveUserId } from "../shared/identity";
 import { apiLog } from "../shared/logger";
 import { listConversations, unreadTotal } from "../services/messages/conversations";
-import { markRead, openThread, sendMessage } from "../services/messages/thread";
+import { markRead, clearThread, openThread, sendMessage } from "../services/messages/thread";
 
 function json(body: unknown, status = 200): Response {
   return new Response(JSON.stringify(body), {
@@ -161,6 +161,60 @@ export async function handleMessageRead(request: Request, env: Env): Promise<Res
     return json({ ok: true, read: result.read });
   } catch (e: unknown) {
     apiLog.error("Message read error", e);
+    return json({ ok: false, error: e instanceof Error ? e.message : "Unknown error" }, 500);
+  }
+}
+
+/**
+ * `POST /api/messages/clear` — стерти переписку **у обох** (розмова лишається).
+ */
+export async function handleMessageClear(request: Request, env: Env): Promise<Response> {
+  return dropThread(request, env, false, "Message clear error");
+}
+
+/**
+ * `POST /api/messages/delete` — прибрати **саму розмову** в обох.
+ *
+ * Друга дія, а не «глибша чистка»: разом із рядком зникає й дата вітання пари,
+ * тож розмова починається з нуля. Розділяє їх саме це, і саме тому на екрані їх
+ * дві, а не одна з підтвердженням «ви впевнені?».
+ */
+export async function handleMessageDelete(request: Request, env: Env): Promise<Response> {
+  return dropThread(request, env, true, "Message delete error");
+}
+
+/**
+ * Спільне тіло двох дій над перепискою: `{ peer }` і жодного «від кого».
+ *
+ * `whole` — те єдине, чим дії відрізняються; усе інше (метод, підпис, розбір
+ * тіла, зв'язок і код відповіді) у них однакове, тож друга копія цього коду
+ * розійшлася б із першою на першій же правці.
+ */
+async function dropThread(
+  request: Request,
+  env: Env,
+  whole: boolean,
+  logLabel: string,
+): Promise<Response> {
+  if (request.method !== "POST") return json({ ok: false, error: "Method not allowed" }, 405);
+
+  const identity = await resolveUserId(request, env);
+  if (!identity.ok) return identity.response;
+
+  const body = await readJson(request);
+  if (!body) return json({ ok: false, error: "Invalid JSON" }, 400);
+
+  const peer = readPeer(body.peer);
+  if (peer === null) return json({ ok: false, error: "Missing peer" }, 400);
+
+  try {
+    await ensureSchema(env);
+    const result = await clearThread(env, identity.userId, peer, whole);
+    if (!result.ok) return json(result, result.status);
+
+    return json({ ok: true, removed: result.removed });
+  } catch (e: unknown) {
+    apiLog.error(logLabel, e);
     return json({ ok: false, error: e instanceof Error ? e.message : "Unknown error" }, 500);
   }
 }

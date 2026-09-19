@@ -14,6 +14,10 @@
  * 5. **Вітання ставиться рівно раз і лише тому, хто прийшов за лінком**: воно
  *    видно обоє, тож помилка тут — це чуже ім'я в спільному рядку або друге
  *    вітання поверх живої переписки.
+ * 6. **Стирання й видалення — у обох і тільки після перевірки зв'язку.** Рядок
+ *    переписки один на пару, тож ці дії знищують **чуже** теж: без перевірки
+ *    «чи зв'язані» чужого `peer` вони б витирали чужу історію, а код відповіді
+ *    (404 проти 400) підказував би, що вона існує.
  *
  * @module api-dev/src/controllers/messages.controller.test
  */
@@ -24,6 +28,8 @@ import { INIT_DATA_HEADER } from "@wwwuabot/shared/security/telegram";
 import type { Conversation } from "@wwwuabot/shared/messages";
 import {
   handleMessageBadge,
+  handleMessageClear,
+  handleMessageDelete,
   handleMessageRead,
   handleMessageSend,
   handleMessages,
@@ -594,5 +600,131 @@ describe("вітання пари", () => {
     );
 
     expect(notes(db)).toHaveLength(0);
+  });
+});
+
+// ── Стерти переписку / прибрати розмову ────────────────────────
+
+describe("переписка: стерти й прибрати", () => {
+  /** Запити, які щось видаляють. */
+  function deletes(db: { statements: Captured[] }): Captured[] {
+    return db.statements.filter((s) => /^DELETE/.test(s.sql.trimStart()));
+  }
+
+  it("«очистити» стирає повідомлення й останок, але саму розмову лишає", async () => {
+    const db = makeDb(LINKED);
+    const res = await handleMessageClear(
+      request("/api/messages/clear", {
+        method: "POST",
+        body: { peer: PEER },
+        initData: await signedInitData(),
+      }),
+      db.env,
+    );
+
+    expect(res.status).toBe(200);
+    const [removed] = deletes(db);
+    expect(removed.sql).toMatch(/DELETE FROM messages WHERE conversation_id = \?/);
+    expect(removed.binds).toEqual([3]);
+    // Розмова лишається — людина може писати далі, і рядок у списку не зникає.
+    expect(deletes(db).some((s) => /conversations/.test(s.sql))).toBe(false);
+    // Останок у списку — копія останнього повідомлення, тож він теж скидається.
+    const summary = db.statements.find((s) => /SET last_message_at/.test(s.sql));
+    expect(summary?.sql).toMatch(/last_message_text = NULL/);
+    expect(summary?.binds).toEqual([3]);
+  });
+
+  it("«видалити» прибирає й сам рядок розмови — тоді розмова як нова", async () => {
+    const db = makeDb(LINKED);
+    const res = await handleMessageDelete(
+      request("/api/messages/delete", {
+        method: "POST",
+        body: { peer: PEER },
+        initData: await signedInitData(),
+      }),
+      db.env,
+    );
+
+    expect(res.status).toBe(200);
+    const statements = deletes(db);
+    expect(statements).toHaveLength(2);
+    expect(statements[0].sql).toMatch(/DELETE FROM messages/);
+    expect(statements[1].sql).toMatch(/DELETE FROM conversations WHERE id = \?/);
+    expect(statements[1].binds).toEqual([3]);
+  });
+
+  it("⛔ без зв'язку — 404, і не зникає ніщо", async () => {
+    // Найважливіший рядок цього набору: помилка тут стирала б **чу-жу**
+    // переписку (вона одна на пару), тож перевірка стоїть до будь-якого DELETE.
+    const db = makeDb({ first: () => null });
+    const body = { peer: PEER };
+    const initData = await signedInitData();
+
+    const clear = await handleMessageClear(
+      request("/api/messages/clear", { method: "POST", body, initData }),
+      db.env,
+    );
+    const remove = await handleMessageDelete(
+      request("/api/messages/delete", { method: "POST", body, initData }),
+      db.env,
+    );
+
+    expect(clear.status).toBe(404);
+    expect(remove.status).toBe(404);
+    expect(deletes(db)).toHaveLength(0);
+  });
+
+  it("⛔ без підписаного initData не стирається нічого", async () => {
+    const db = makeDb(LINKED);
+    const res = await handleMessageDelete(
+      request("/api/messages/delete", { method: "POST", body: { peer: PEER } }),
+      db.env,
+    );
+
+    expect(res.status).toBe(401);
+    expect(db.statements).toHaveLength(0);
+  });
+
+  it("без `peer` — 400, а не «стерти все»", async () => {
+    // `Number(null)` — це 0, а `DELETE` без співрозмовника зніс би переписку
+    // людини з усіма (та сама пастка, що в нотатках).
+    const db = makeDb(LINKED);
+    const res = await handleMessageClear(
+      request("/api/messages/clear", {
+        method: "POST",
+        body: {},
+        initData: await signedInitData(),
+      }),
+      db.env,
+    );
+
+    expect(res.status).toBe(400);
+    expect(deletes(db)).toHaveLength(0);
+  });
+
+  it("розмови ще немає — дія проходить, але стирати нічого", async () => {
+    // Законний результат, а не помилка: у списку є ті, з ким листування лише
+    // починається, і «очистити» в такому рядку не має виглядати як збій.
+    const db = makeDb({ first: (sql) => (/FROM conversations/.test(sql) ? null : { id: 1 }) });
+    const res = await handleMessageClear(
+      request("/api/messages/clear", {
+        method: "POST",
+        body: { peer: PEER },
+        initData: await signedInitData(),
+      }),
+      db.env,
+    );
+
+    expect(res.status).toBe(200);
+    await expect(res.json()).resolves.toEqual({ ok: true, removed: 0 });
+    expect(deletes(db)).toHaveLength(0);
+  });
+
+  it("іншим методом — 405: дію не роблять випадковим GET", async () => {
+    const db = makeDb(LINKED);
+    const res = await handleMessageDelete(request("/api/messages/delete"), db.env);
+
+    expect(res.status).toBe(405);
+    expect(deletes(db)).toHaveLength(0);
   });
 });

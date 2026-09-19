@@ -230,11 +230,50 @@
   text-align: center;
 }
 
+/* Шапка розмови: ім'я — ліворуч, дії — праворуч. Спільна шапка розставляє дітей
+   `space-between`, а з трьома дітьми ім'я поїхало б у середину — і відповідь на
+   «з ким я говорю» вимагала б погляду в центр екрана. */
+.wb-thread-head {
+  justify-content: flex-start;
+}
+
 .wb-thread-name {
   display: flex;
   flex-direction: column;
   gap: 2px;
   min-width: 0;
+  /* Ім'я забирає все, що лишилось: саме воно притискає дії до правого краю. */
+  flex: 1 1 auto;
+}
+
+/* Дії над перепискою — самі знаки, без тла: у шапці вже є гурток «назад», і
+   другий гурток поруч читався б як ще один вихід. */
+.wb-thread-actions {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+}
+
+/* Кожна — під палець (44px): у шапці дії поруч, і менша ціль на телефоні
+   промахується (AGENTS.md §3). Акцент з'являється на дотик, а не на hover:
+   на тачі hover не існує. */
+.wb-thread-action {
+  width: 44px;
+  height: 44px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  color: var(--text-secondary);
+  background: none;
+  border: none;
+  border-radius: var(--radius-full);
+  cursor: pointer;
+  transition: color var(--duration-fast) var(--ease);
+}
+
+.wb-thread-action:active {
+  color: var(--accent);
 }
 
 /* Другий рядок шапки — меншим і приглушеним: головне ім'я стоїть першим

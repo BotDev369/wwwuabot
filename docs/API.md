@@ -29,6 +29,8 @@
 | `POST` | `/api/contacts/link` | `handleContactLink` |
 | `ANY` | `/api/messages` | `handleMessages` |
 | `GET` | `/api/messages/badge` | `handleMessageBadge` |
+| `POST` | `/api/messages/clear` | `handleMessageClear` |
+| `POST` | `/api/messages/delete` | `handleMessageDelete` |
 | `POST` | `/api/messages/read` | `handleMessageRead` |
 | `POST` | `/api/messages/send` | `handleMessageSend` |
 | `ANY` | `/api/messages/thread` | `handleMessageThread` |
@@ -68,4 +70,4 @@
 | `POST` | `/auth/login` | `handleLogin` |
 | `POST` | `/auth/logout` | `handleLogout` |
 
-Усього шляхів: **39**.
+Усього шляхів: **41**.
