@@ -118,7 +118,7 @@ export function MessagesPage(): ReactElement {
    */
   async function deleteThread(): Promise<void> {
     const yes = await dialog.confirm(
-      "Чат зникне зі списку, листування — в обох. Повернеться, коли хтось напише.",
+      "Чат зникне зі списку в обох, листування стерто. Повернеться, коли хтось напише.",
       { title: "Прибрати розмову?", tone: "danger", confirmText: "Видалити" },
     );
     if (!yes) return;

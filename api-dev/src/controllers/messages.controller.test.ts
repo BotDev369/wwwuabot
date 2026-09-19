@@ -665,9 +665,11 @@ describe("переписка: стерти й прибрати", () => {
     expect(summary?.binds).toEqual([3]);
   });
 
-  it("«видалити» ховає розмову на моїй стороні, а рядок лишає на місці", async () => {
+  it("«видалити» ховає розмову обом, а рядок лишає на місці", async () => {
     // Рядка не видаляємо навмисно: без нього в пари не було б жодного входу в
-    // розмову (вона зникає зі списку, а інших дверей немає).
+    // розмову (вона зникає зі списку, а інших дверей немає). Прапорці ставимо
+    // **разом**: переписка спільна, і та сама дія не може дати двом різний
+    // результат — саме на цьому й спіткнулось «прибрати лише собі».
     const db = makeDb(LINKED);
     const res = await handleMessageDelete(
       request("/api/messages/delete", {
@@ -682,15 +684,14 @@ describe("переписка: стерти й прибрати", () => {
     expect(deletes(db)).toHaveLength(1);
     expect(deletes(db)[0].sql).toMatch(/DELETE FROM messages/);
     expect(db.statements.some((s) => /DELETE FROM conversations/.test(s.sql))).toBe(false);
-    // Мене в парі першим (id 777 < 4242), тож ховається саме сторона `a`.
     const summary = db.statements.find((s) => /SET last_message_at/.test(s.sql));
-    expect(summary?.sql).toMatch(/hidden_a = 1/);
-    expect(summary?.sql).not.toMatch(/hidden_b = 1/);
+    expect(summary?.sql).toMatch(/hidden_a = 1, hidden_b = 1/);
   });
 
-  it("хто другий у парі — ховається його сторона, а не моя", async () => {
-    // Пара впорядкована за зростанням id (`conversationPair`), тож «моя сторона»
-    // — це не завжди `a`: переплутати означало б прибрати розмову в нього.
+  it("порядок пари на дію не впливає — ховаються обидві сторони", async () => {
+    // Пара впорядкована за зростанням id (`conversationPair`), тож я можу бути і
+    // `a`, і `b`. Прапорці ставляться разом, і саме тому сторона тут нічого не
+    // вирішує.
     const db = makeDb({ first: (sql) => (/FROM contacts/.test(sql) ? { id: 1 } : { id: 3 }) });
     const res = await handleMessageDelete(
       request("/api/messages/delete", {
@@ -703,7 +704,7 @@ describe("переписка: стерти й прибрати", () => {
 
     expect(res.status).toBe(200);
     const summary = db.statements.find((s) => /SET last_message_at/.test(s.sql));
-    expect(summary?.sql).toMatch(/hidden_b = 1/);
+    expect(summary?.sql).toMatch(/hidden_a = 1, hidden_b = 1/);
   });
 
   it("нове повідомлення вертає розмову обом — прибрана не лишається прибраною", async () => {

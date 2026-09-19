@@ -37,7 +37,7 @@ npx wrangler d1 execute wwwuabot-db-dev --remote \
 | `scenarios` | `api-dev` | api-dev (`ensureBase`, `scenarios-portal.controller`) | **bot-dev читає**; api-dev редагує (`/api/portal/scenarios/*`); платформа рендерить (`/api/scenario/:slug`) | **єдине сховище контенту:** рядок = сторінка вебу (`page_data`) + її подання в боті (`caption_*`, `buttons`, `rich_*`). Деталі — [`CONTENT_MODEL.md`](./CONTENT_MODEL.md) |
 | `notes` | `api-dev` | api-dev (`ensureTables` у `notes.controller`) | api-dev: платформа — `/api/notes`, панель — `/api/admin/notes` | нотатки: чернетки людини (`scope = 'user'`, власник — Telegram-id із **підписаного `initData`**) і нотатки про проєкт з панелі (`scope = 'admin'`, власник — акаунт cookie-сесії). `tags` — JSON-масив |
 | `contacts` | `api-dev` | api-dev (`ensureTables` у `contacts.controller`) | api-dev: довідник — `/api/contacts`; **bot-dev пише вхід у бота та `username`**, **api-dev — вхід на платформу** | контакти людини: **один рядок = один контакт**, а лінк — **одне з його полів** (`code` з `UNIQUE`, це і є payload бота `inv-8f3k2q`). Поля власника — `name`, `tags`, `notes`; `username` пише бот; `owner_id` — Telegram-id із **підписаного `initData`** |
-| `conversations` | `api-dev` | api-dev (`ensureTables` у `messages.controller`) | api-dev: `/api/messages` | переписка людей: **один рядок на пару** (`peer_a`, `peer_b` — за зростанням id, `UNIQUE`), `last_message_*` для списку розмов, `greeted_at` — одноразове вітання пари, `hidden_a`/`hidden_b` — розмова прибрана на стороні |
+| `conversations` | `api-dev` | api-dev (`ensureTables` у `messages.controller`) | api-dev: `/api/messages` | переписка людей: **один рядок на пару** (`peer_a`, `peer_b` — за зростанням id, `UNIQUE`), `last_message_*` для списку розмов, `greeted_at` — одноразове вітання пари, `hidden_a`/`hidden_b` — розмова прибрана зі списку (ставляться разом, у обох) |
 | `messages` | `api-dev` | api-dev (`ensureTables` у `messages.controller`) | api-dev: `/api/messages/*` | повідомлення розмови: автор (`sender_id`), тіло, `read_at` (`NULL` — непрочитане), `is_system` — позначка платформи |
 | `mydate_analysis` | `api-dev` | api-dev, `getAnalysis` | api-dev | кеш астрологічного аналізу на дату (KV — швидкий шар) |
 
@@ -77,16 +77,17 @@ Telegram-id завжди додатний), а `read_at` стоїть одраз
 виграє один `UPDATE … WHERE greeted_at IS NULL`, тож двоє одночасних відкриттів не дають двох
 привітань, а жива переписка не дістає вітання поверх себе.
 
-**Історія стирається в обох, приховування діє на сторону.** Переписка спільна (рядок один на пару),
+**Історія стирається в обох, і приховування теж.** Переписка спільна (рядок один на пару),
 тож і «очистити» (`POST /api/messages/clear`), і «видалити» (`POST /api/messages/delete`) стирають
 повідомлення **в обох**, разом із `last_message_*`: останок у списку є копією останнього повідомлення,
 і без цього список показував би текст, якого вже немає. `greeted_at` лишається — вітання одноразове, а
 повторювати його після чистки означало б писати в розмову те, що людина щойно стерла.
 
 Різнить дії **подання**: «очистити» лишає порожню розмову на місці, а «видалити» ставить
-`hidden_a` / `hidden_b` — «прибрано на моїй стороні» (їх читають через `COALESCE`, бо колонка,
-додана наявній таблиці, приходить як `NULL`, а не `0` — див. `ensure-tables.ts`). Прапорців два, бо пара впорядкована: прибрано —
-це ознака **сторони**, а не розмови. Фільтр стоїть в **обох** джерелах списку (`listConversations`
+`hidden_a` **і** `hidden_b` — розмова зникає зі списку **в обох** (читають їх через `COALESCE`, бо
+колонка, додана наявній таблиці, приходить як `NULL`, а не `0` — див. `ensure-tables.ts`). Прапорців
+два, бо пара впорядкована і кожен читає свій; ставляться вони **разом**, бо поділити спільну розмову
+на «моє» й «чуже» нема де. Фільтр стоїть в **обох** джерелах списку (`listConversations`
 і `linkedPeerIds`), інакше прибране верталося б другим із них як «Почніть розмову». Рядка при цьому
 не видаляємо навмисно: без нього в пари не лишалось би жодного входу в розмову (у списку її немає,
 інших дверей теж), і після «видалити» **обом** було б нікуди написати. Прапорці знімає наступне

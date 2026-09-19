@@ -173,13 +173,13 @@ export async function handleMessageClear(request: Request, env: Env): Promise<Re
 }
 
 /**
- * `POST /api/messages/delete` — прибрати розмову зі списку.
+ * `POST /api/messages/delete` — прибрати розмову зі списку **в обох**.
  *
  * Друга дія, а не «глибша чистка»: чистка лишає порожню розмову на місці, а ця
- * прибирає її зі списку **в того, хто прибрав** (у співрозмовника розмова
- * лишається: інакше після «видалити» жоден із двох не мав би входу в неї).
- * Історію при цьому стерто **в обох** — це дія над _повідомленнями_, а не над
- * поданням, і саме тому на екрані їх дві, а не одна з «ви впевнені?».
+ * зникає зі списку в обох — так само, як історія стерта в обох: усе, що робить
+ * ця дія, стосується спільної переписки, і поділити її на «моє» й «чуже» нема
+ * де. Рядок розмови лишається (інакше в пари не було б жодного входу в неї), і
+ * з першим новим повідомленням розмова повертається обом.
  */
 export async function handleMessageDelete(request: Request, env: Env): Promise<Response> {
   return dropThread(request, env, true, "Message delete error");
@@ -188,14 +188,14 @@ export async function handleMessageDelete(request: Request, env: Env): Promise<R
 /**
  * Спільне тіло двох дій над перепискою: `{ peer }` і жодного «від кого».
  *
- * `whole` — те єдине, чим дії відрізняються; усе інше (метод, підпис, розбір
+ * `hideFromLists` — те єдине, чим дії відрізняються; усе інше (метод, підпис, розбір
  * тіла, зв'язок і код відповіді) у них однакове, тож друга копія цього коду
  * розійшлася б із першою на першій же правці.
  */
 async function dropThread(
   request: Request,
   env: Env,
-  whole: boolean,
+  hideFromLists: boolean,
   logLabel: string,
 ): Promise<Response> {
   if (request.method !== "POST") return json({ ok: false, error: "Method not allowed" }, 405);
@@ -211,7 +211,7 @@ async function dropThread(
 
   try {
     await ensureSchema(env);
-    const result = await clearThread(env, identity.userId, peer, whole);
+    const result = await clearThread(env, identity.userId, peer, hideFromLists);
     if (!result.ok) return json(result, result.status);
 
     return json({ ok: true, removed: result.removed });
