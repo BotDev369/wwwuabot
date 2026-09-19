@@ -18,6 +18,7 @@
 import { describe, expect, it } from "vitest";
 import type { Env } from "../shared/types";
 import { INIT_DATA_HEADER } from "@wwwuabot/shared/security/telegram";
+import type { Conversation } from "@wwwuabot/shared/messages";
 import {
   handleMessageBadge,
   handleMessageRead,
@@ -362,6 +363,46 @@ describe("список розмов", () => {
         unread: 2,
       },
     ]);
+  });
+
+  it("зв'язаний контакт без жодного повідомлення теж у списку — інакше перше надіслати нічим", async () => {
+    const db = makeDb({
+      ...LINKED,
+      all: (sql) => {
+        // Розмов немає зовсім, але зв'язок через контакти є.
+        if (/FROM contacts/.test(sql)) return [{ peer_id: PEER }];
+        if (/FROM users/.test(sql)) {
+          return [
+            {
+              user_id: PEER,
+              first_name: "Сергій",
+              last_name: null,
+              username: null,
+              platform_username: "karas",
+              telegram_json: null,
+            },
+          ];
+        }
+        return [];
+      },
+    });
+
+    const res = await handleMessages(
+      request("/api/messages", { initData: await signedInitData() }),
+      db.env,
+    );
+    const body = (await res.json()) as { conversations?: Conversation[] };
+
+    expect(body.conversations).toHaveLength(1);
+    expect(body.conversations?.[0].peer.id).toBe(PEER);
+    // Порожній рядок чекає першого повідомлення — і клієнт це скаже словами.
+    expect(body.conversations?.[0].lastMessageText).toBeNull();
+    expect(body.conversations?.[0].unread).toBe(0);
+
+    // Список зв'язаних читає лише ті контакти, де хтось справді прийшов.
+    const link = db.statements.find((s) => /CASE WHEN owner_id/.test(s.sql));
+    expect(link?.sql).toMatch(/joined_user_id IS NOT NULL/);
+    expect(link?.binds).toEqual([ME, ME, ME]);
   });
 
   it("розмова зниклого контакту лишається в списку — без імені, але не зникає", async () => {

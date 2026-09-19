@@ -94,13 +94,29 @@ describe("список розмов", () => {
     expect(unread).toContain(">3<");
   });
 
-  it("порожній список каже, з ким узагалі можна писати", () => {
+  it("порожній список каже, що писати нікому, і як це змінити", () => {
+    // Список показує й тих, із ким розмова ще не почата, тож цей стан — саме
+    // «немає з ким», а не «немає повідомлень».
     const html = renderToStaticMarkup(
       <ConversationList conversations={[]} meId={ME} onOpen={() => {}} />,
     );
 
-    expect(html).toContain("Ще немає жодної розмови");
+    expect(html).toContain("Ще немає з ким листуватись");
     expect(html).toContain("контакти");
+  });
+
+  it("розмова без жодного повідомлення чекає першого", () => {
+    const html = renderToStaticMarkup(
+      <ConversationList
+        conversations={[
+          conversation({ lastMessageAt: null, lastMessageText: null, lastSenderId: null }),
+        ]}
+        meId={ME}
+        onOpen={() => {}}
+      />,
+    );
+
+    expect(html).toContain("Почніть розмову");
   });
 });
 
