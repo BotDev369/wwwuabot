@@ -230,11 +230,12 @@ describe("створення контакту", () => {
     expect(insert.sql).not.toMatch(/code/i);
     expect(insert.binds[0]).toBe(USER_ID);
     expect(insert.binds[1]).toBe("Карас");
-    expect(insert.binds[2]).toBe("karas_2");
-    expect(insert.binds[3]).toBe('["друг"]');
-    expect(insert.binds[4]).toBe("телефон у примітці");
+    expect(insert.binds[2]).toBe('["друг"]');
+    expect(insert.binds[3]).toBe("телефон у примітці");
     // Id людини у створенні немає: його пише бот, коли вона прийде за лінком.
     expect(insert.sql).not.toMatch(/joined_/);
+    // І хендла з тіла запиту теж: `@username` приходить від Telegram через бота.
+    expect(insert.sql).not.toMatch(/username/);
   });
 
   it("⛔ порожнє ім'я контакту не створює", async () => {
@@ -305,7 +306,7 @@ describe("правка контакту", () => {
     const res = await handleContacts(
       request("/api/contacts?id=5", {
         method: "PATCH",
-        body: { name: "  Карас   Новий ", username: "karas", tags: [], notes: "" },
+        body: { name: "  Карас   Новий ", tags: [], notes: "" },
         initData: await signedInitData(),
       }),
       db.env,
@@ -314,17 +315,19 @@ describe("правка контакту", () => {
     expect(res.status).toBe(200);
     const update = dataStatement(db, "UPDATE");
     expect(update.sql).toMatch(
-      /UPDATE contacts SET name = \?, username = \?, tags = \?, notes = \?, updated_at = \?\s+WHERE id = \? AND owner_id = \?/,
+      /UPDATE contacts SET name = \?, tags = \?, notes = \?, updated_at = \?\s+WHERE id = \? AND owner_id = \?/,
     );
     expect(update.binds[0]).toBe("Карас Новий");
-    expect(update.binds[1]).toBe("karas");
-    expect(update.binds[5]).toBe(5);
-    expect(update.binds[6]).toBe(USER_ID);
+    expect(update.binds[4]).toBe(5);
+    expect(update.binds[5]).toBe(USER_ID);
     // Дати приєднання правкою не чіпаються: їх ставить той, хто бачив перехід.
     // Поки id був редагованим, власник міг стерти його й зняти заборону лінка.
     expect(update.sql).not.toMatch(/joined_user_id = \?/);
     expect(update.sql).not.toMatch(/joined_bot_at = \?/);
     expect(update.sql).not.toMatch(/joined_platform_at = \?/);
+    // Хендл теж не чіпається: правка картки не має права стерти те, що бот
+    // приніс із переходу за лінком.
+    expect(update.sql).not.toMatch(/username = \?/);
   });
 
   it("⛔ чужий або неіснуючий номер — та сама 404, що й у видаленні", async () => {

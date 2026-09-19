@@ -7,10 +7,15 @@
  * людям контакт закріпив контакт. Друге — не про HTTP, і саме тому це не має
  * жити в одному файлі з розбором `URL`.
  *
- * **Контакт — це запис, а не лінк.** Запис заводять руками (ім'я, `@username`,
- * хештеги, примітки), а лінк — **одне з його полів**: контакт може жити без
- * лінка, і лінк створюють окремою дією. Тому таблиця одна — `contacts`:
- * друга (`invites`) була б другим сховищем того самого контакту (AGENTS.md §7).
+ * **Контакт — це запис, а не лінк.** Запис заводять руками (ім'я, хештеги,
+ * примітки), а лінк — **одне з його полів**: контакт може жити без лінка, і лінк
+ * створюють окремою дією. Тому таблиця одна — `contacts`: друга (`invites`)
+ * була б другим сховищем того самого контакту (AGENTS.md §7).
+ *
+ * **`username` тут не поле вводу, а факт від бота.** Хендл Telegram власник не
+ * знає — його пише `bot-dev` у момент закріплення за лінком. Тому з тіла запиту
+ * він **не читається** (ні при створенні, ні при правці): інакше картка
+ * показувала б одне ім'я, а бот закріплював би контакт за іншим.
  *
  * **Вхід у бота закріплює бот.** Людина приходить із `?start=<код>`, і
  * `bot-dev` пише `joined_user_id` та `joined_bot_at` — один раз і назавжди
@@ -38,7 +43,6 @@ import {
   inviteCodeFromToken,
   sanitizeContactName,
   sanitizeContactNotes,
-  sanitizeContactUsername,
   type Contact,
 } from "@wwwuabot/shared/contacts";
 import { parseTagsJson, sanitizeTags, tagsToJson } from "@wwwuabot/shared/tags";
@@ -72,7 +76,6 @@ interface ContactRecord {
 /** Те, що власник заповнює в картці — уже нормалізоване. */
 export interface ContactFields {
   name: string;
-  username: string | null;
   tags: string[];
   notes: string;
 }
@@ -97,11 +100,15 @@ function randomToken(length = 8): string {
   return [...bytes].map((byte) => (byte % 36).toString(36)).join("");
 }
 
-/** Поля з тіла запиту — з тими самими правилами, що показує картка. */
+/**
+ * Поля з тіла запиту — з тими самими правилами, що показує картка.
+ *
+ * `username` свідомо **не** читається: хендл приходить від Telegram через
+ * бота, і надіслати його клієнтом означало б дозволити записати чуже ім'я.
+ */
 export function readFields(body: { [key: string]: unknown }): ContactFields {
   return {
     name: sanitizeContactName(body.name),
-    username: sanitizeContactUsername(body.username),
     tags: sanitizeTags(body.tags),
     notes: sanitizeContactNotes(body.notes),
   };
@@ -219,11 +226,13 @@ export async function createContact(
   if (fields.name === "") return { ok: false, status: 400, error: "Порожнє ім'я контакту" };
 
   const now = formatSqliteDatetime();
+  // `username` у списку колонок немає: його заповнить бот (`COALESCE`), а
+  // порожній рядок тут означав би «хендла немає» замість «ще не знаємо».
   const inserted = await env.DB.prepare(
-    `INSERT INTO contacts (owner_id, name, username, tags, notes, created_at, updated_at)
-       VALUES (?, ?, ?, ?, ?, ?, ?)`,
+    `INSERT INTO contacts (owner_id, name, tags, notes, created_at, updated_at)
+       VALUES (?, ?, ?, ?, ?, ?)`,
   )
-    .bind(ownerId, fields.name, fields.username, tagsToJson(fields.tags), fields.notes, now, now)
+    .bind(ownerId, fields.name, tagsToJson(fields.tags), fields.notes, now, now)
     .run();
 
   const id = inserted.meta?.last_row_id ?? 0;
@@ -238,6 +247,9 @@ export async function createContact(
  * навмисно: їх ставить той, хто бачив перехід. Поки поле id було редагованим,
  * власник міг стерти його й **зняти** заборону лінка — а вписане число робило
  * контакт приєднаним без жодного переходу.
+ *
+ * `username` у `UPDATE` теж немає: правка картки не має права стерти хендл,
+ * який бот приніс із переходу.
  */
 export async function updateContact(
   env: Env,
@@ -249,18 +261,10 @@ export async function updateContact(
   if (fields.name === "") return { ok: false, status: 400, error: "Порожнє ім'я контакту" };
 
   const result = await env.DB.prepare(
-    `UPDATE contacts SET name = ?, username = ?, tags = ?, notes = ?, updated_at = ?
+    `UPDATE contacts SET name = ?, tags = ?, notes = ?, updated_at = ?
        WHERE id = ? AND owner_id = ?`,
   )
-    .bind(
-      fields.name,
-      fields.username,
-      tagsToJson(fields.tags),
-      fields.notes,
-      formatSqliteDatetime(),
-      id,
-      ownerId,
-    )
+    .bind(fields.name, tagsToJson(fields.tags), fields.notes, formatSqliteDatetime(), id, ownerId)
     .run();
   if ((result.meta?.changes ?? 0) === 0) return { ok: false, status: 404, error: "Not found" };
 

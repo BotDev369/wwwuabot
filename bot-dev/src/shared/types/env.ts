@@ -32,7 +32,11 @@ export interface Env {
   ENVIRONMENT: string;
   DB: D1Database;
   LOG_QUEUE: Queue<LogMessage>;
-  GAS_LOG_WEBHOOK_URL: string;
+  /**
+   * Куди споживач черги віддає логи (Google Apps Script). Не задано — логи
+   * лишаються в Cloudflare, а черга не ретраїть їх вічно.
+   */
+  GAS_LOG_WEBHOOK_URL?: string;
   CLOUDINARY_CLOUD_NAME: string;
   /** Публічна база Mini App; без неї бот не додає автоматичну web_app-кнопку. */
   WEB_PLATFORM_URL?: string;

@@ -67,7 +67,7 @@ const COPIED_MS = 2000;
 
 /** Контакт, якого тільки завели: лінка немає, поля порожні, крім імені. */
 function newContact(name: string): ContactInput {
-  return { name, username: null, tags: [], notes: "" };
+  return { name, tags: [], notes: "" };
 }
 
 export function ContactsPage(): ReactElement {

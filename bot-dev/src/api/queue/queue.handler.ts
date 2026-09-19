@@ -5,6 +5,22 @@ import type { LogMessage } from "../../shared/types/log";
 export async function handleQueue(batch: MessageBatch<LogMessage>, env: Env): Promise<void> {
   const payload = batch.messages.map((msg) => msg.body);
 
+  // Немає куди віддавати логи — підтверджуємо партію й кажемо про це в консоль.
+  // Кидати тут не можна: `fetch(undefined)` — це вічна помилка, а кинутий
+  // виняток змушує Cloudflare ретраїти партію завжди, тож черга логів росте, а
+  // в логах замість причини — «Invalid URL: undefined».
+  if (!env.GAS_LOG_WEBHOOK_URL) {
+    console.error(
+      JSON.stringify({
+        level: "error",
+        context: "gas_webhook_not_configured",
+        message: "GAS_LOG_WEBHOOK_URL не задано — логи лишаються в Cloudflare",
+        batch_size: payload.length,
+      }),
+    );
+    return;
+  }
+
   try {
     const response = await fetch(env.GAS_LOG_WEBHOOK_URL, {
       method: "POST",

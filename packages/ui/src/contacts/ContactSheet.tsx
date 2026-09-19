@@ -5,18 +5,22 @@
  * поверхня**, що меню профілю й композер (`MenuModal` → `.wb-sheet`): третій вид
  * модалки означав би треті правила прокрутки, шапки й закриття.
  *
- * **Тут лише те, що пише власник** — ім'я, `@username`, хештеги, примітки — бо
- * саме тому рядок списку їх не показує: поле в двох місцях неминуче редагується
- * в одному й читається в другому. Форма одна на створення й правку
- * (`ContactInput`), бо картка змінює все одразу.
+ * **Тут лише те, що пише власник** — ім'я, хештеги, примітки — бо саме тому
+ * рядок списку їх не показує: поле в двох місцях неминуче редагується в одному
+ * й читається в другому. Форма одна на створення й правку (`ContactInput`), бо
+ * картка змінює все одразу.
  *
  * **Чого тут немає — і чому.** Немає ні етапів приєднання, ні лінка, ні дат, ні
  * кнопки «Прибрати»: це **факти**, а не поля, і показує їх тіло рядка — там, де
  * контакт читають. Форма, яка показує ті самі факти вдруге, змушувала б тримати
  * їх узгодженими в двох місцях (та сама межа, що в нотатках: редактор редагує,
- * картка показує). І немає поля Telegram-id: власник його не знає — його бачить
- * бот, коли людина приходить за лінком, і саме тому вписане руками число робило
- * б контакт «приєднаним», а лінк — «використаним» (AGENTS.md §7).
+ * картка показує).
+ *
+ * **І немає поля `@username`.** З тієї ж причини, що й Telegram-id: власник
+ * хендла людини **не знає** — його бачить бот, коли та приходить за особистим
+ * лінком, і дописує в контакт. Показує його тіло рядка (`.wb-contact-who`),
+ * а форма лишає недоторканим: інакше правка імені чи примітки стирала б хендл,
+ * принесений переходом.
  *
  * Збереження форма **не робить сама**: це справа оболонки — вона ж веде стан і
  * показує помилку.
@@ -31,7 +35,6 @@ import {
   MAX_CONTACT_NOTES,
   sanitizeContactName,
   sanitizeContactNotes,
-  sanitizeContactUsername,
   type Contact,
   type ContactInput,
 } from "@wwwuabot/shared/contacts";
@@ -46,12 +49,10 @@ interface ContactSheetProps {
 }
 
 const NAME_ID = "wb-contact-name-input";
-const USERNAME_ID = "wb-contact-username-input";
 const NOTES_ID = "wb-contact-notes-input";
 
 export function ContactSheet({ contact, onSave, onClose }: ContactSheetProps): ReactElement {
   const [name, setName] = useState(contact.name);
-  const [username, setUsername] = useState(contact.username ?? "");
   const [tags, setTags] = useState<readonly string[]>(contact.tags);
   const [notes, setNotes] = useState(contact.notes);
 
@@ -63,7 +64,6 @@ export function ContactSheet({ contact, onSave, onClose }: ContactSheetProps): R
     if (!canSave) return;
     onSave({
       name: sanitizeContactName(name),
-      username: sanitizeContactUsername(username),
       tags: [...tags],
       notes: sanitizeContactNotes(notes),
     });
@@ -85,20 +85,6 @@ export function ContactSheet({ contact, onSave, onClose }: ContactSheetProps): R
               value={name}
               maxLength={MAX_CONTACT_NAME}
               onChange={(event) => setName(event.target.value)}
-              autoComplete="off"
-            />
-          </div>
-
-          <div className="wb-field">
-            <label className="wb-label" htmlFor={USERNAME_ID}>
-              @username
-            </label>
-            <input
-              id={USERNAME_ID}
-              className="wb-input"
-              value={username}
-              placeholder="без @, як у Telegram"
-              onChange={(event) => setUsername(event.target.value)}
               autoComplete="off"
             />
           </div>

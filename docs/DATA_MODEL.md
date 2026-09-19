@@ -32,13 +32,13 @@ npx wrangler d1 execute wwwuabot-db-dev --remote \
 
 | Таблиця | Власник | Хто створює | Хто читає / пише | Призначення |
 |---|---|---|---|---|
-| `users` | `bot-dev` | bot-dev, `createUser` | bot-dev (стан, профіль, блокування, `telegram_json`); api-dev (адмін-CRUD, `/api/user/profile`, `platform_username`, колонка `my_dates`) | стан користувача Telegram: профіль, роль, тариф, блокування, **ім'я на платформі** |
+| `users` | `bot-dev` | bot-dev, `createUser` | bot-dev (стан, профіль, блокування, `telegram_json`); api-dev (адмін-CRUD, `/api/user/profile`, `platform_username`, колонка `my_dates`) | стан користувача Telegram: профіль, роль, тариф, блокування, **ім'я на платформі**. `created_at` ставить `createUser`: у живій базі колонка `NOT NULL` без значення за замовчуванням, а `ensureTables` констрейнтів не переписує |
 | `settings` | `bot-dev` | bot-dev, `SettingsRepository.initialize` | bot-dev | один рядок (`id = 1`): `chat_id` груп, прапорець активності |
 | `scenarios` | `api-dev` | api-dev (`ensureBase`, `scenarios-portal.controller`) | **bot-dev читає**; api-dev редагує (`/api/portal/scenarios/*`); платформа рендерить (`/api/scenario/:slug`) | **єдине сховище контенту:** рядок = сторінка вебу (`page_data`) + її подання в боті (`caption_*`, `buttons`, `rich_*`). Деталі — [`CONTENT_MODEL.md`](./CONTENT_MODEL.md) |
 | `notes` | `api-dev` | api-dev (`ensureTables` у `notes.controller`) | api-dev: платформа — `/api/notes`, панель — `/api/admin/notes` | нотатки: чернетки людини (`scope = 'user'`, власник — Telegram-id із **підписаного `initData`**) і нотатки про проєкт з панелі (`scope = 'admin'`, власник — акаунт cookie-сесії). `tags` — JSON-масив |
-| `contacts` | `api-dev` | api-dev (`ensureTables` у `contacts.controller`) | api-dev: довідник — `/api/contacts`; **bot-dev пише вхід у бота**, **api-dev — вхід на платформу** | контакти людини: **один рядок = один контакт**, а лінк — **одне з його полів** (`code` з `UNIQUE`, це і є payload бота `inv-8f3k2q`). Власні поля — `name`, `username`, `tags`, `notes`; `owner_id` — Telegram-id із **підписаного `initData`** |
-| `conversations` | `api-dev` | api-dev (`ensureTables` у `messages.controller`) | api-dev: `/api/messages` | переписка людей: **один рядок на пару** (`peer_a`, `peer_b` — за зростанням id, `UNIQUE`) плюс `last_message_*` для списку розмов |
-| `messages` | `api-dev` | api-dev (`ensureTables` у `messages.controller`) | api-dev: `/api/messages/*` | повідомлення розмови: автор (`sender_id`), тіло, `read_at` (`NULL` — непрочитане) |
+| `contacts` | `api-dev` | api-dev (`ensureTables` у `contacts.controller`) | api-dev: довідник — `/api/contacts`; **bot-dev пише вхід у бота та `username`**, **api-dev — вхід на платформу** | контакти людини: **один рядок = один контакт**, а лінк — **одне з його полів** (`code` з `UNIQUE`, це і є payload бота `inv-8f3k2q`). Поля власника — `name`, `tags`, `notes`; `username` пише бот; `owner_id` — Telegram-id із **підписаного `initData`** |
+| `conversations` | `api-dev` | api-dev (`ensureTables` у `messages.controller`) | api-dev: `/api/messages` | переписка людей: **один рядок на пару** (`peer_a`, `peer_b` — за зростанням id, `UNIQUE`), `last_message_*` для списку розмов і `greeted_at` — одноразове вітання пари |
+| `messages` | `api-dev` | api-dev (`ensureTables` у `messages.controller`) | api-dev: `/api/messages/*` | повідомлення розмови: автор (`sender_id`), тіло, `read_at` (`NULL` — непрочитане), `is_system` — позначка платформи |
 | `mydate_analysis` | `api-dev` | api-dev, `getAnalysis` | api-dev | кеш астрологічного аналізу на дату (KV — швидкий шар) |
 
 `npm run check:db` друкує той самий список, що видно в дашборді Cloudflare. Якщо числа розійшлись,
@@ -69,6 +69,14 @@ SQLite **глобальні для бази**, тому однойменний `
 у розмові був би другим сховищем того самого факту й розійшовся б із ним (AGENTS.md §7). Своє не
 позначається прочитаним ніколи: інакше бейдж зникав би від того, що автор відкрив власну розмову.
 
+**Позначка платформи — це `is_system`, а не автор.** Коли людина приходить за особистим лінком і
+відкриває чат, розмову відкривають два рядки від платформи (`api-dev/src/services/messages/greeting.ts`):
+хто запросив і що контакт встановлено. Автора в них немає (`sender_id` = `SYSTEM_SENDER_ID` = `0`, бо
+Telegram-id завжди додатний), а `read_at` стоїть одразу — «непрочитаного» від платформи чекати нема
+чого. **Вітання ставиться рівно раз на пару** і лише тому, хто прийшов за лінком: заявку на нього
+виграє один `UPDATE … WHERE greeted_at IS NULL`, тож двоє одночасних відкриттів не дають двох
+привітань, а жива переписка не дістає вітання поверх себе.
+
 **Список розмов — це «кому я можу писати», а не «що вже лежить у базі».** `/api/messages` збирає його
 з двох джерел: початі розмови (за останнім повідомленням) і зв'язані контакти, з якими ще нічого не
 сказано (за абеткою підпису). Без другого джерела перше повідомлення не мало б звідки надіслати —
@@ -90,13 +98,15 @@ SQLite **глобальні для бази**, тому однойменний `
 | `joined_user_id` | бот (`ctx.from`) | **хто** прийшов — id людини, не вгаданий власником |
 | `joined_bot_at` | бот, при `?start=<код>` | вхід **у бота** (часткове приєднання) |
 | `joined_platform_at` | `api-dev`, на першому ж запиті з підписом | вхід **на платформу** (повне приєднання) |
+| `username` | бот, при `?start=<код>` | Telegram-хендл людини — власник його **не вписує й не бачить до переходу** |
 
 Правити ці колонки не може ніхто, крім того, хто бачив перехід: вписане руками число робило б
 контакт «приєднаним», а лінк — «використаним» без жодного переходу. Закріплення — **один раз**:
 `WHERE joined_user_id IS NULL` стоїть у самому `UPDATE`, який робить `bot-dev`, тож другий, хто
 відкриє той самий лінк, контакту не змінить (але й не зламає закріпленого). Власник за власним
 лінком контактом не стає, а `username` бот пише лише тоді, коли його ще немає (`COALESCE`) —
-перехід не має права переписати те, що людина написала про людину.
+перехід не має права переписати те, що вже стоїть. Тіла запиту **`/api/contacts` не читає
+взагалі**: надісланий клієнтом хендл не створив би контакту з чужим ім'ям.
 
 ### Дві різні «імена» в `users`
 

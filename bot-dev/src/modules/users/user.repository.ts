@@ -2,6 +2,7 @@ import { DatabaseRepository } from "../../core/database.repository";
 import { withAutoMigrate } from "@wwwuabot/shared/database/auto-migrate";
 import { ensureTables } from "@wwwuabot/shared/database/ensure-tables";
 import type { BotUser } from "../../shared/types/env";
+import { formatSqliteDatetime } from "@wwwuabot/shared/utils/datetime";
 import { log } from "../../shared/utils/debug";
 
 export class UserRepository extends DatabaseRepository {
@@ -37,6 +38,16 @@ export class UserRepository extends DatabaseRepository {
 
   /**
    * Створює нового користувача.
+   *
+   * **Час створення ставить сам `INSERT`.** У живій базі `users.created_at`
+   * оголошено `NOT NULL` **без** значення за замовчуванням, тож рядок без
+   * нього не створювався: `NOT NULL constraint failed: users.created_at`. Реєстр
+   * (`tables.ts`) цього не лікує — `CREATE TABLE IF NOT EXISTS` наявну таблицю не
+   * змінює, а констрейнтів він і не переписує. Тому єдине надійне місце — тут:
+   * час нового рядка знає той, хто його створює.
+   *
+   * Передане ззовні значення не перекриваємо: коли рядок створюють із готовою
+   * датою, вона й лишається.
    */
   async createUser(userId: number, data: Partial<BotUser> = {}): Promise<void> {
     // Таблицю `users` раніше не створював **ніхто** — вона існувала лише тому,
@@ -45,9 +56,10 @@ export class UserRepository extends DatabaseRepository {
     // `withAutoMigrate`, тож гарантія потрібна саме тут.
     await ensureTables(this.db, ["users"]);
 
-    const fields = ["user_id", ...Object.keys(data)];
+    const row = data.created_at ? data : { ...data, created_at: formatSqliteDatetime() };
+    const fields = ["user_id", ...Object.keys(row)];
     const placeholders = fields.map(() => "?").join(", ");
-    const values = [userId, ...Object.values(data)];
+    const values = [userId, ...Object.values(row)];
 
     await this.db
       .prepare(`INSERT INTO users (${fields.join(", ")}) VALUES (${placeholders})`)
