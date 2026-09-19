@@ -19,7 +19,7 @@
  */
 
 import { useCallback, useEffect, useState } from "react";
-import type { Message, MessagePeer } from "@wwwuabot/shared/messages";
+import { notifyUnreadChanged, type Message, type MessagePeer } from "@wwwuabot/shared/messages";
 import { messagesApi } from "@/shared/api/messages.api";
 
 /** «Ще нікого»: справжній id людини завжди додатний. */
@@ -66,6 +66,9 @@ export function useThread(peerId: number | null): ThreadState {
         // Позначаємо прочитаним **після** успішного читання: якби це сталось
         // першим, невдале завантаження зняло б бейдж із непрочитаного.
         await messagesApi.markRead(peerId);
+        // …і кажемо бейджу перечитати число **зараз**: без цього він висів би зі
+        // старим до наступного кроку опитування — рівно те, на що скаржились.
+        notifyUnreadChanged();
       } catch (e: unknown) {
         if (!cancelled) setError(e instanceof Error ? e.message : "Не вдалося відкрити розмову");
       }
@@ -110,6 +113,8 @@ export function useThread(peerId: number | null): ThreadState {
       await messagesApi.clear(peerId);
       setData((prev) => ({ ...prev, messages: [] }));
       setError(null);
+      // Стерте — вже не непрочитане, а іншого шляху сказати це бейджу немає.
+      notifyUnreadChanged();
       return true;
     } catch (e: unknown) {
       setError(e instanceof Error ? e.message : "Не вдалося стерти переписку");
@@ -130,6 +135,8 @@ export function useThread(peerId: number | null): ThreadState {
     try {
       await messagesApi.remove(peerId);
       setError(null);
+      // Розмови більше немає — разом із її непрочитаним.
+      notifyUnreadChanged();
       return true;
     } catch (e: unknown) {
       setError(e instanceof Error ? e.message : "Не вдалося видалити розмову");

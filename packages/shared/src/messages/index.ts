@@ -11,6 +11,8 @@
  * - `greeting.ts` — одноразове вітання пари: що саме написано в стрічці;
  * - `route.ts` — адреса розмови, спільна для кнопки в боті й екрана;
  * - `time.ts` — час у списку розмов і в бульбашці;
+ * - `unread.ts` — сигнал «непрочитане могло змінитись»: за ним бейдж футера
+ *   перечитує число зразу, а не на наступному кроці таймера;
  * - `api.ts` — форма запиту, спільна для всіх оболонок.
  *
  * **Кому можна писати — не тут.** Правило «зв'язані через контакти» читає
@@ -43,6 +45,7 @@ export type { ConversationGreeting } from "./greeting";
 export { peerInitial, peerLabel, peerPublicLabel, peerSecondary } from "./peer";
 export { MESSAGES_PATH, MESSAGES_PEER_PARAM, messagesPeerPath, readMessagesPeer } from "./route";
 export { messageClock, messageTime } from "./time";
+export { notifyUnreadChanged, onUnreadChanged } from "./unread";
 export type {
   Conversation,
   ConversationListResponse,

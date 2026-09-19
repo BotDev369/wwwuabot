@@ -13,6 +13,12 @@
  * повернення у фокус опитує **одразу** — інакше після згортання число стояло б
  * старим рівно до наступного кроку таймера.
  *
+ * **Крок таймера — не єдиний привід перечитати число.** Прочитане й стерте
+ * переписку змінюють той самий лічильник, і чекати на них до наступного кроку
+ * (до пів хвилини) означало б показувати непрочитане вже прочитаного. Тому цей
+ * хук слухає спільний сигнал (`onUnreadChanged`) і на нього опитує **зразу**:
+ * число ставить сервер, і клієнт лише просить його перерахувати.
+ *
  * Помилка тут не показується: бейдж — підказка, і «не вдалося порахувати» не
  * варте того, щоб вішати на екран повідомлення про збій. Мережа повернеться —
  * число повернеться.
@@ -21,6 +27,7 @@
  */
 
 import { useEffect, useState } from "react";
+import { onUnreadChanged } from "@wwwuabot/shared/messages";
 import { messagesApi } from "@/shared/api/messages.api";
 
 /** Крок опитування: частіше — зайві запити, рідше — число помітно старіє. */
@@ -62,12 +69,17 @@ export function useUnreadBadge(): number {
       else start();
     }
 
+    // Сигнал «переписку змінили» — другий привід опитувати, крім кроку
+    // таймера. Ритм таймера він не чіпає: інакше часті дії збивали б його.
+    const off = onUnreadChanged(() => void poll());
+
     if (document.hidden) stop();
     else start();
     document.addEventListener("visibilitychange", handleVisibility);
 
     return () => {
       cancelled = true;
+      off();
       stop();
       document.removeEventListener("visibilitychange", handleVisibility);
     };
