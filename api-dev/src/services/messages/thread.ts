@@ -16,7 +16,7 @@
 
 import type { Message, MessageThread } from "@wwwuabot/shared/messages";
 import type { Env } from "../../shared/types";
-import { messagePreview, sanitizeMessageBody } from "@wwwuabot/shared/messages";
+import { conversationPair, messagePreview, sanitizeMessageBody } from "@wwwuabot/shared/messages";
 import { formatSqliteDatetime } from "@wwwuabot/shared/utils/datetime";
 import { areLinked } from "./links";
 import { ensureConversation, findConversationId } from "./conversations";
@@ -168,8 +168,12 @@ export async function sendMessage(
     .bind(conversationId, me, body, now)
     .run();
 
+  // `hidden_* = 0` — **повідомлення вертає розмову обом**, навіть якщо хтось її
+  // прибрав: інакше прибрана розмова не мала б жодного шляху назад (у списку її
+  // немає, отже й написати в неї нікому), і пара замовкла б назавжди.
   await env.DB.prepare(
-    `UPDATE conversations SET last_message_at = ?, last_message_text = ?, last_sender_id = ?
+    `UPDATE conversations SET last_message_at = ?, last_message_text = ?, last_sender_id = ?,
+            hidden_a = 0, hidden_b = 0
        WHERE id = ?`,
   )
     .bind(now, messagePreview(body), me, conversationId)
@@ -191,10 +195,10 @@ export async function sendMessage(
 /**
  * Стерти переписку — **у обох**, бо рядок переписки один на пару.
  *
- * `whole` — прибрати й саму розмову (друга з двох дій на екрані). Різниця не
- * в косметиці: разом із рядком зникає `greeted_at`, тож наступне відкриття
- * розмови починається з нуля — з вітанням, як у нової. Без `whole` лишається
- * порожня розмова, яку можна вести далі.
+ * `whole` — прибрати розмову **зі списку в того, хто прибрав** (друга з двох дій
+ * на екрані). Ховається сторона, а не розмова: рядок лишається, щоб було кому
+ * відповісти, а прапорець знімає наступне повідомлення. Без `whole` лишається
+ * порожня розмова на місці — її видно у списку, і в неї можна писати далі.
  *
  * **Порядок дій той самий, що в решті методів:** спершу «чи зв'язані», і лише
  * потім будь-який пошук і будь-який `DELETE` (§7). Тому для чужого `peer` не
@@ -218,18 +222,24 @@ export async function clearThread(
     .run();
   const removed = cleared.meta?.changes ?? 0;
 
-  if (whole) {
-    await env.DB.prepare("DELETE FROM conversations WHERE id = ?").bind(conversationId).run();
-    return { ok: true, removed };
-  }
-
   // Останок у списку — **копія** останнього повідомлення (його оновлює
   // `sendMessage`), тож чистка мусить зачепити й його: інакше список показував
   // би текст, якого в розмові вже немає. `greeted_at` лишається — вітання
   // одноразове, і повторювати його після чистки означало б писати в розмову те,
   // що людина щойно стерла.
+  //
+  // «Видалити» до цього додає **приховування на своїй стороні**
+  // (`hidden_a`/`hidden_b` — див. реєстр таблиць): рядок лишається, бо без нього
+  // в пари не було б жодного входу в розмову — вона зникає зі списку, а інших
+  // дверей немає, — і після «видалити» **обом** було б нікуди написати. Прапорець
+  // знімає наступне повідомлення (`sendMessage`), і розмова повертається обом.
+  const [sideA] = conversationPair(me, peerId);
+  const mine = me === sideA ? "hidden_a = 1" : "hidden_b = 1";
+
   await env.DB.prepare(
-    `UPDATE conversations SET last_message_at = NULL, last_message_text = NULL, last_sender_id = NULL
+    `UPDATE conversations SET last_message_at = NULL, last_message_text = NULL, last_sender_id = NULL${
+      whole ? `, ${mine}` : ""
+    }
        WHERE id = ?`,
   )
     .bind(conversationId)

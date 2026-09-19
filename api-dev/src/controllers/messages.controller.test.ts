@@ -54,6 +54,8 @@ const COLUMNS: Record<string, string[]> = {
     "last_message_at",
     "last_message_text",
     "last_sender_id",
+    "hidden_a",
+    "hidden_b",
     "created_at",
   ],
   messages: ["id", "conversation_id", "sender_id", "body", "created_at", "read_at"],
@@ -399,7 +401,9 @@ describe("список розмов", () => {
     const body = (await res.json()) as { conversations?: unknown[] };
 
     const select = db.statements.find((s) => /FROM conversations/.test(s.sql));
-    expect(select?.sql).toMatch(/WHERE peer_a = \? OR peer_b = \?/);
+    expect(select?.sql).toMatch(
+      /WHERE \(peer_a = \? AND hidden_a = 0\) OR \(peer_b = \? AND hidden_b = 0\)/,
+    );
     expect(select?.binds).toEqual([ME, ME, 100]);
 
     const names = db.statements.find((s) => /AS peer_id, name/.test(s.sql));
@@ -611,6 +615,32 @@ describe("переписка: стерти й прибрати", () => {
     return db.statements.filter((s) => /^DELETE/.test(s.sql.trimStart()));
   }
 
+  it("⛔ прибрана розмова не вертається у список через зв'язані контакти", async () => {
+    // Список збирається з двох джерел, і друге (зв'язок через контакти) не знає
+    // про приховування нічого. Без фільтра в ньому прибране поверталося б
+    // назад як «Почніть розмову» — саме це й було видно на телефоні.
+    const db = makeDb({
+      first: (sql) => (/FROM contacts/.test(sql) ? { id: 1 } : null),
+      all: (sql) => {
+        if (/hidden_a = 1/.test(sql)) return [{ peer_a: ME, peer_b: PEER }];
+        if (/FROM conversations/.test(sql)) return [];
+        if (/FROM contacts/.test(sql)) return [{ peer_id: PEER }];
+        return [];
+      },
+    });
+
+    const res = await handleMessages(
+      request("/api/messages", { initData: await signedInitData() }),
+      db.env,
+    );
+
+    expect(res.status).toBe(200);
+    await expect(res.json()).resolves.toEqual({ ok: true, conversations: [] });
+    // І фільтр стоїть в обох джерелах, а не лише в контактах.
+    const started = db.statements.find((s) => /FROM conversations/.test(s.sql));
+    expect(started?.sql).toMatch(/hidden_a = 0/);
+  });
+
   it("«очистити» стирає повідомлення й останок, але саму розмову лишає", async () => {
     const db = makeDb(LINKED);
     const res = await handleMessageClear(
@@ -626,15 +656,16 @@ describe("переписка: стерти й прибрати", () => {
     const [removed] = deletes(db);
     expect(removed.sql).toMatch(/DELETE FROM messages WHERE conversation_id = \?/);
     expect(removed.binds).toEqual([3]);
-    // Розмова лишається — людина може писати далі, і рядок у списку не зникає.
-    expect(deletes(db).some((s) => /conversations/.test(s.sql))).toBe(false);
-    // Останок у списку — копія останнього повідомлення, тож він теж скидається.
+    // Чистка розмову **не** ховає: вона лишається у списку й можна писати далі.
     const summary = db.statements.find((s) => /SET last_message_at/.test(s.sql));
     expect(summary?.sql).toMatch(/last_message_text = NULL/);
+    expect(summary?.sql).not.toContain("hidden_");
     expect(summary?.binds).toEqual([3]);
   });
 
-  it("«видалити» прибирає й сам рядок розмови — тоді розмова як нова", async () => {
+  it("«видалити» ховає розмову на моїй стороні, а рядок лишає на місці", async () => {
+    // Рядка не видаляємо навмисно: без нього в пари не було б жодного входу в
+    // розмову (вона зникає зі списку, а інших дверей немає).
     const db = makeDb(LINKED);
     const res = await handleMessageDelete(
       request("/api/messages/delete", {
@@ -646,11 +677,47 @@ describe("переписка: стерти й прибрати", () => {
     );
 
     expect(res.status).toBe(200);
-    const statements = deletes(db);
-    expect(statements).toHaveLength(2);
-    expect(statements[0].sql).toMatch(/DELETE FROM messages/);
-    expect(statements[1].sql).toMatch(/DELETE FROM conversations WHERE id = \?/);
-    expect(statements[1].binds).toEqual([3]);
+    expect(deletes(db)).toHaveLength(1);
+    expect(deletes(db)[0].sql).toMatch(/DELETE FROM messages/);
+    expect(db.statements.some((s) => /DELETE FROM conversations/.test(s.sql))).toBe(false);
+    // Мене в парі першим (id 777 < 4242), тож ховається саме сторона `a`.
+    const summary = db.statements.find((s) => /SET last_message_at/.test(s.sql));
+    expect(summary?.sql).toMatch(/hidden_a = 1/);
+    expect(summary?.sql).not.toMatch(/hidden_b = 1/);
+  });
+
+  it("хто другий у парі — ховається його сторона, а не моя", async () => {
+    // Пара впорядкована за зростанням id (`conversationPair`), тож «моя сторона»
+    // — це не завжди `a`: переплутати означало б прибрати розмову в нього.
+    const db = makeDb({ first: (sql) => (/FROM contacts/.test(sql) ? { id: 1 } : { id: 3 }) });
+    const res = await handleMessageDelete(
+      request("/api/messages/delete", {
+        method: "POST",
+        body: { peer: ME - 1 },
+        initData: await signedInitData(),
+      }),
+      db.env,
+    );
+
+    expect(res.status).toBe(200);
+    const summary = db.statements.find((s) => /SET last_message_at/.test(s.sql));
+    expect(summary?.sql).toMatch(/hidden_b = 1/);
+  });
+
+  it("нове повідомлення вертає розмову обом — прибрана не лишається прибраною", async () => {
+    const db = makeDb(LINKED);
+    const res = await handleMessageSend(
+      request("/api/messages/send", {
+        method: "POST",
+        body: { peer: PEER, body: "привіт" },
+        initData: await signedInitData(),
+      }),
+      db.env,
+    );
+
+    expect(res.status).toBe(200);
+    const summary = db.statements.find((s) => /SET last_message_at/.test(s.sql));
+    expect(summary?.sql).toMatch(/hidden_a = 0, hidden_b = 0/);
   });
 
   it("⛔ без зв'язку — 404, і не зникає ніщо", async () => {

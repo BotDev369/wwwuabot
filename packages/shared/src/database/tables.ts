@@ -288,6 +288,14 @@ export const TABLES = {
    * показує останній рядок кожної, і без цих колонок він читав би **всі**
    * повідомлення людини, щоб показати по одному з розмови.
    *
+   * **Прибрана розмова ховається на стороні, а не зникає.** `hidden_a` /
+   * `hidden_b` кажуть, кому з двох розмова не показується (індекси ті самі, що
+   * в `peer_a` / `peer_b` — пара ж упорядкована). Рядка не можна видаляти: тоді
+   * не лишається ні того, що саме прибрали, ні шляху написати — після
+   * «видалити» **жоден** із двох не мав би входу в розмову (її немає у списку,
+   * а інших дверей немає), і пара замовкла б назавжди. Тому прапорець знімає
+   * наступне повідомлення (`sendMessage`), і розмова повертається **обом**.
+   *
    * `greeted_at` — дата **одноразового** вітання пари (людину запросили за
    * лінком, і вона відкрила чат). Це не «лічильник повідомлень» і не копія
    * `messages`: ознака стоїть на парі, а не на рядку переписки, і саме вона
@@ -309,7 +317,7 @@ export const TABLES = {
     name: "conversations",
     owner: "api-dev",
     purpose:
-      "Розмова двох людей: пара Telegram-id за зростанням та останнє повідомлення для списку розмов.",
+      "Розмова двох людей: пара Telegram-id за зростанням, останнє повідомлення для списку розмов і приховування на стороні кожного (`hidden_a` / `hidden_b`).",
     create: `CREATE TABLE IF NOT EXISTS conversations (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         peer_a INTEGER NOT NULL,
@@ -318,6 +326,8 @@ export const TABLES = {
         last_message_text TEXT,
         last_sender_id INTEGER,
         greeted_at TEXT,
+        hidden_a INTEGER NOT NULL DEFAULT 0,
+        hidden_b INTEGER NOT NULL DEFAULT 0,
         created_at TEXT NOT NULL DEFAULT (datetime('now')),
         UNIQUE (peer_a, peer_b)
       )`,

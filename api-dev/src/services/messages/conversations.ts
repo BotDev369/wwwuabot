@@ -11,6 +11,13 @@
  * індексу, а лічильник у розмові був би другим сховищем того самого факту — і
  * розійшовся б із ним на першій же помилці (AGENTS.md §7).
  *
+ * **Прибрана розмова ховається на стороні.** `hidden_a` / `hidden_b` — те, чим
+ * `clearThread` позначає «мені цієї розмови не показувати»; фільтр живе в
+ * **обох** джерелах списку, інакше прибране поверталося б другим із них
+ * (зв'язані контакти — це той самий список, а не окремий перелік). Прибирає
+ * прапорець наступне повідомлення (`sendMessage`), і тоді розмова повертається
+ * обом: іншого входу в неї немає.
+ *
  * @module api-dev/src/services/messages/conversations
  */
 
@@ -100,9 +107,35 @@ async function linkedPeerIds(env: Env, me: number): Promise<number[]> {
     .bind(me, me, me)
     .all<{ peer_id: number }>();
 
+  // Прибрані розмови не вертаємо **саме тут**: список — це «кому я можу
+  // писати», і без цього фільтра прибране з'являлося б назад як «Почніть
+  // розмову» (зв'язок через контакти ж нікуди не подівся).
+  const hidden = await hiddenPeerIds(env, me);
+
   return (result.results ?? [])
     .map((row) => Number(row.peer_id))
-    .filter((id) => Number.isInteger(id) && id > 0 && id !== me);
+    .filter((id) => Number.isInteger(id) && id > 0 && id !== me && !hidden.has(id));
+}
+
+/**
+ * Ті, чию розмову я прибрав собі — з їхнім боком у парі.
+ *
+ * Прапорців два, бо пара впорядкована (`peer_a` < `peer_b`): «прибрано в мене»
+ * — це не ознака розмови, а ознака **сторони**, тож одна колонка зі списком
+ * значень була б третім поданням того самого (`hidden_sides = "a,b"` — це вже
+ * схема в рядку, яку читав би власний парсер).
+ */
+async function hiddenPeerIds(env: Env, me: number): Promise<Set<number>> {
+  const result = await env.DB.prepare(
+    `SELECT peer_a, peer_b FROM conversations
+      WHERE (peer_a = ? AND hidden_a = 1) OR (peer_b = ? AND hidden_b = 1)`,
+  )
+    .bind(me, me)
+    .all<{ peer_a: number; peer_b: number }>();
+
+  return new Set(
+    (result.results ?? []).map((row) => peerOf(Number(row.peer_a), Number(row.peer_b), me)),
+  );
 }
 
 /** Скільки повідомлень співрозмовника не прочитано — по кожній розмові. */
@@ -137,12 +170,16 @@ async function unreadByConversation(
  * можу поговорити», а не «що вже лежить у базі». Початі розмови стоять згори й
  * у порядку останнього повідомлення; ті, де ще нічого не сказано — нижче, за
  * абеткою підписа (щоб список не переставлявся сам собою від кожного відкриття).
+ *
+ * Прибрані розмови не потрапляють ні з першого джерела, ні з другого: фільтр
+ * стоїть на обох (див. `hiddenPeerIds`), бо друге джерело — той самий список, а
+ * не окремий перелік, і без фільтра прибране верталось би ним же.
  */
 export async function listConversations(env: Env, me: number): Promise<Conversation[]> {
   const result = await env.DB.prepare(
     `SELECT id, peer_a, peer_b, last_message_at, last_message_text, last_sender_id
        FROM conversations
-      WHERE peer_a = ? OR peer_b = ?
+      WHERE (peer_a = ? AND hidden_a = 0) OR (peer_b = ? AND hidden_b = 0)
       ORDER BY COALESCE(last_message_at, created_at) DESC, id DESC
       LIMIT ?`,
   )
