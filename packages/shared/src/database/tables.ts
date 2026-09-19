@@ -335,6 +335,38 @@ export const TABLES = {
   },
 
   /**
+   * Чернетка нового повідомлення — **власні дані того, хто пише**.
+   *
+   * Існує до першого повідомлення, тож ключ тут — пара людей (`owner_id`,
+   * `peer_id`), а не розмова: розмови на цей момент може ще не бути взагалі.
+   * Співрозмовник про чернетку не знає, і тому вона не в `messages`: у тей
+   * таблиці лежить **спільне**, а чернетка належить одному (як нотатка чи
+   * контакт — з тією ж різницею, що адресат у неї є).
+   *
+   * `UNIQUE (owner_id, peer_id)` — це не прикраса: чернетка на пару рівно
+   * одна, а `ON CONFLICT … DO UPDATE` без неï дав би їх скільки завгодно, і
+   * «остання» визначалася б випадковим порядком рядків.
+   *
+   * Порожне тіло — законний стан («обрав людину, а не написав»), але тоді
+   * рядка немає: його прибирає `saveDraft`, бо чернетка без тіла нічого не несе.
+   */
+  message_drafts: {
+    name: "message_drafts",
+    owner: "api-dev",
+    purpose:
+      "Ненадісланий текст листа: одна чернетка на пару людей, окремо від переписки (співрозмовник її не бачить).",
+    create: `CREATE TABLE IF NOT EXISTS message_drafts (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        owner_id INTEGER NOT NULL,
+        peer_id INTEGER NOT NULL,
+        body TEXT NOT NULL DEFAULT '',
+        updated_at TEXT NOT NULL DEFAULT (datetime('now')),
+        UNIQUE (owner_id, peer_id)
+      )`,
+    indexes: ["CREATE INDEX IF NOT EXISTS idx_drafts_owner ON message_drafts(owner_id)"],
+  },
+
+  /**
    * Повідомлення розмови — тіло, автор і **коли прочитано**.
    *
    * Прочитання позначене датою в тому ж рядку (`read_at`), а не окремою

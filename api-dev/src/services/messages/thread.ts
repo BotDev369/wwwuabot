@@ -20,6 +20,7 @@ import { messagePreview, sanitizeMessageBody } from "@wwwuabot/shared/messages";
 import { formatSqliteDatetime } from "@wwwuabot/shared/utils/datetime";
 import { areLinked } from "./links";
 import { ensureConversation, findConversationId } from "./conversations";
+import { dropDraft } from "./drafts";
 import { ensureGreeting } from "./greeting";
 import { readPeer } from "./peers";
 
@@ -146,6 +147,9 @@ export async function openThread(
  * `last_message_*` у розмові оновлює **цей** виклик, а не тригер: список розмов
  * читає саме їх, і розійтися з щойно доданим рядком вони можуть лише тоді,
  * коли про них забули — тож про них не забуває одне місце.
+ *
+ * **Надіслане прибирає чернетку** — свою, і саме тут, а не в клієнті: текст уже
+ * в переписці, і чернетка, що лишилась, наступного разу відкрила б форму з ним же.
  */
 export async function sendMessage(
   env: Env,
@@ -178,6 +182,8 @@ export async function sendMessage(
   )
     .bind(now, messagePreview(body), me, conversationId)
     .run();
+
+  await dropDraft(env.DB, me, peerId);
 
   return {
     ok: true,

@@ -386,3 +386,48 @@
   opacity: 0.45;
   cursor: default;
 }
+
+/* ── Форма нового повідомлення ─────────────────────────────────────────────
+   Той самий стовпчик полів, що у форми контакту (`.wb-contact-sheet`): поля —
+   зверху, дії — останнім рядком (`margin-top: auto` у `.wb-sheet-actions`). */
+.wb-compose {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-4);
+}
+
+.wb-compose-body {
+  min-height: 120px;
+}
+
+/* Поле-кнопка «кому»: виглядає як контрол (`.wb-input`), поводиться як
+   перехід — бо дропдаунів у продукті немає (§4), а вибір відкриває поверхню. */
+.wb-compose-pick {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--sp-2);
+  width: 100%;
+  padding: var(--sp-3) var(--sp-4);
+  background: var(--field-bg);
+  border: none;
+  border-radius: var(--radius-md);
+  color: var(--text-primary);
+  font-size: var(--text-base);
+  font-family: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.wb-compose-pick-value {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* «Не вибрано» — стан, а не підказка в полі: сірий колір тут єдине, що різнить
+   його від обраної людини з таким самим ім'ям. */
+.wb-compose-pick-value--empty {
+  color: var(--text-secondary);
+}

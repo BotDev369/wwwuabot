@@ -18,8 +18,9 @@
  * в спільний модуль не переїжджає: у клієнта немає й не мусить бути доступу до
  * чужого довідника, а два описи одного правила розійшлися б.
  *
- * Сховище — таблиці `conversations` і `messages`
- * (`@wwwuabot/shared/database/tables`).
+ * Сховище — таблиці `conversations`, `messages` і `message_drafts`
+ * (`@wwwuabot/shared/database/tables`). Чернетка тут окрема сутність: вона
+ * належить тому, хто пише, і існує **до** першого повідомлення.
  *
  * @module @wwwuabot/shared/messages
  */
@@ -46,6 +47,9 @@ export type {
   ConversationListResponse,
   Message,
   MessageBadgeResponse,
+  MessageComposeResponse,
+  MessageDraft,
+  MessageDraftResponse,
   MessagePeer,
   MessageReadResponse,
   MessageSendResponse,

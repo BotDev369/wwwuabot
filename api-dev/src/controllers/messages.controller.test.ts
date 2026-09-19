@@ -18,6 +18,10 @@
  *    переписки один на пару, тож ці дії знищують **чуже** теж: без перевірки
  *    «чи зв'язані» чужого `peer` вони б витирали чужу історію, а код відповіді
  *    (404 проти 400) підказував би, що вона існує.
+ * 7. **Чернетка — власні дані, і надіслане її прибирає.** Вона існує до першого
+ *    повідомлення, тож перевірка зв'язку тут теж перша, а «порожнє тіло» — це
+ *    не порожня чернетка, а її відсутність; інакше форма відкривалась би з
+ *    текстом, який уже пішов у переписку.
  *
  * @module api-dev/src/controllers/messages.controller.test
  */
@@ -29,7 +33,9 @@ import type { Conversation } from "@wwwuabot/shared/messages";
 import {
   handleMessageBadge,
   handleMessageClear,
+  handleMessageCompose,
   handleMessageDelete,
+  handleMessageDraft,
   handleMessageRead,
   handleMessageSend,
   handleMessages,
@@ -59,6 +65,7 @@ const COLUMNS: Record<string, string[]> = {
     "created_at",
   ],
   messages: ["id", "conversation_id", "sender_id", "body", "created_at", "read_at"],
+  message_drafts: ["id", "owner_id", "peer_id", "body", "updated_at"],
   contacts: ["id", "owner_id", "joined_user_id", "name"],
 };
 
@@ -136,6 +143,15 @@ function makeDb(options: DbOptions = {}): { env: Env; statements: Captured[] } {
   return { env: { DB: db, BOT_TOKEN } as unknown as Env, statements };
 }
 
+/**
+ * Запити, які щось **пишуть** у таблицю — щоб відрізнити дію від перевірки
+ * схеми (`ensureTables` питає прагмою, і її ім'я теж містить назву таблиці).
+ */
+function writes(db: { statements: Captured[] }, table: string): Captured[] {
+  const pattern = new RegExp(`^(INSERT INTO|DELETE FROM|UPDATE)\\s+${table}\\b`, "i");
+  return db.statements.filter((s) => pattern.test(s.sql.trimStart()));
+}
+
 /** Запит до даних (DDL, прагми й `CREATE INDEX` від `ensureTables` не рахуємо). */
 function dataStatement(db: { statements: Captured[] }, keyword: string): Captured | undefined {
   return [...db.statements]
@@ -194,6 +210,44 @@ const INVITED: DbOptions = {
           },
         ]
       : [],
+};
+
+/**
+ * Двоє зв'язаних — щоб перевірити і порядок списку отримувачів, і те, що
+ * прихована розмова з нього не зникає.
+ *
+ * Три запити цієї фікстури розрізняються навмисно: контакти дають **id**
+ * зв'язаних, `users` — їхні імена, а імена контактів (`name FROM contacts`) —
+ * підписи з мого довідника.
+ */
+const OTHER = 8;
+const RECIPIENTS: DbOptions = {
+  first: () => ({ id: 1 }),
+  all: (sql) => {
+    if (/FROM users/.test(sql)) {
+      return [
+        {
+          user_id: PEER,
+          first_name: "Сергій",
+          last_name: null,
+          username: "serg",
+          platform_username: "Явір",
+          telegram_json: null,
+        },
+        {
+          user_id: OTHER,
+          first_name: "Анна",
+          last_name: null,
+          username: null,
+          platform_username: "Анна",
+          telegram_json: null,
+        },
+      ];
+    }
+    if (/name FROM contacts/.test(sql)) return [];
+    if (/FROM contacts/.test(sql)) return [{ peer_id: PEER }, { peer_id: OTHER }];
+    return [];
+  },
 };
 
 // ── Ідентичність ──────────────────────────────────────────────────
@@ -796,5 +850,109 @@ describe("переписка: стерти й прибрати", () => {
 
     expect(res.status).toBe(405);
     expect(deletes(db)).toHaveLength(0);
+  });
+});
+
+// ── Чернетки й список отримувачів ───────────────────────────────
+
+describe("чернетки й форма нового повідомлення", () => {
+  it("⛔ «кому можна писати» не залежить від того, чи розмову прибрано", async () => {
+    // Прибрати розмову — це «не показувати в списку», а не «заборонити писати»:
+    // інакше після «видалити» пара мовчала б назавжди (у списку її немає, других
+    // дверей теж). Тому тут жодного запиту про приховане.
+    const db = makeDb(RECIPIENTS);
+    const res = await handleMessageCompose(
+      request("/api/messages/compose", { initData: await signedInitData() }),
+      db.env,
+    );
+
+    expect(res.status).toBe(200);
+    const body = (await res.json()) as { ok: boolean; recipients: { id: number }[] };
+    expect(body.recipients.map((peer) => peer.id).sort((a, b) => a - b)).toEqual([OTHER, PEER]);
+    expect(db.statements.some((s) => /COALESCE\(hidden_a, 0\) = 1/.test(s.sql))).toBe(false);
+    expect(db.statements.some((s) => /FROM contacts/.test(s.sql))).toBe(true);
+  });
+
+  it("отримувачі приходять у порядку імен — клієнт його не переставляє", async () => {
+    const db = makeDb(RECIPIENTS);
+    const res = await handleMessageCompose(
+      request("/api/messages/compose", { initData: await signedInitData() }),
+      db.env,
+    );
+
+    const body = (await res.json()) as { recipients: { id: number }[] };
+    expect(body.recipients[0].id).toBe(OTHER);
+  });
+
+  it("збереження чернетки — заявка в базі, а не «спитати й вставити»", async () => {
+    const db = makeDb(LINKED);
+    const res = await handleMessageDraft(
+      request("/api/messages/draft", {
+        method: "POST",
+        body: { peer: PEER, body: "  недісланий текст  " },
+        initData: await signedInitData(),
+      }),
+      db.env,
+    );
+
+    expect(res.status).toBe(200);
+    const upsert = dataStatement(db, "INSERT INTO MESSAGE_DRAFTS");
+    expect(upsert?.sql).toMatch(/ON CONFLICT\(owner_id, peer_id\) DO UPDATE/);
+    // Тіло притиснуте по краях (`sanitizeMessageBody`) — тим самим правилом, що
+    // й у надісланому: чернетка — це майбутнє повідомлення, а не інший текст.
+    expect(upsert?.binds.slice(0, 3)).toEqual([ME, PEER, "недісланий текст"]);
+  });
+
+  it("порожнє тіло прибирає чернетку, а не зберігає порожнє", async () => {
+    const db = makeDb(LINKED);
+    const res = await handleMessageDraft(
+      request("/api/messages/draft", {
+        method: "POST",
+        body: { peer: PEER, body: "   " },
+        initData: await signedInitData(),
+      }),
+      db.env,
+    );
+
+    expect(res.status).toBe(200);
+    await expect(res.json()).resolves.toEqual({ ok: true, draft: null });
+    const removed = dataStatement(db, "DELETE FROM MESSAGE_DRAFTS");
+    expect(removed?.binds).toEqual([ME, PEER]);
+    expect(db.statements.some((s) => /INSERT INTO message_drafts/.test(s.sql))).toBe(false);
+  });
+
+  it("⛔ без зв'язку чернетки не заводяться, і не зникає ніщо", async () => {
+    // Чернетка несе чуже ім'я й чужий текст, тож перевірка зв'язку тут така ж
+    // перша, як і в решті дій переписки (§7).
+    const db = makeDb({ first: () => null });
+    const res = await handleMessageDraft(
+      request("/api/messages/draft", {
+        method: "POST",
+        body: { peer: PEER, body: "текст" },
+        initData: await signedInitData(),
+      }),
+      db.env,
+    );
+
+    expect(res.status).toBe(404);
+    // Ні запису, ні стирання: `ensureTables` прагмою не рахуємо — він лише
+    // питає схему.
+    expect(writes(db, "message_drafts")).toHaveLength(0);
+  });
+
+  it("надіслане прибирає чернетку — інакше форма відкрилась би надісланим", async () => {
+    const db = makeDb(LINKED);
+    const res = await handleMessageSend(
+      request("/api/messages/send", {
+        method: "POST",
+        body: { peer: PEER, body: "привіт" },
+        initData: await signedInitData(),
+      }),
+      db.env,
+    );
+
+    expect(res.status).toBe(200);
+    const removed = dataStatement(db, "DELETE FROM MESSAGE_DRAFTS");
+    expect(removed?.binds).toEqual([ME, PEER]);
   });
 });

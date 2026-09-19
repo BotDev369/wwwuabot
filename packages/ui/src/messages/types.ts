@@ -13,7 +13,7 @@
  * @module @wwwuabot/ui/messages
  */
 
-import type { Conversation, Message, MessagePeer } from "@wwwuabot/shared/messages";
+import type { Conversation, Message, MessageDraft, MessagePeer } from "@wwwuabot/shared/messages";
 import type {
   CollectionChip,
   CollectionColumns,
@@ -158,14 +158,38 @@ export interface MessagesToolbarProps {
 
 export interface NewMessagePickerProps {
   /**
-   * Усі, кому можна писати, — ті самі рядки, що у списку розмов.
+   * Усі, кому можна писати.
    *
-   * Окремого сховища тут немає навмисно: список розмов — це вже «кому я можу
-   * писати» (початі розмови плюс зв'язані контакти), і другий перелік тих
-   * самих людей розійшовся б із першим на першій же правці.
+   * Перелік дає сервер (`/api/messages/compose`), і це **зв'язані через
+   * контакти** — разом із тими, чию розмову прибрано зі списку: прибрати
+   * розмову не означає «заборонити писати». Порядок приходить готовий (за
+   * іменем), тож тут його ніхто не переставляє другим правилом.
    */
-  conversations: readonly Conversation[];
-  /** Відкрити розмову з обраною людиною. */
-  onOpen: (peerId: number) => void;
+  recipients: readonly MessagePeer[];
+  /** Обрали людину — форма бере її собі. */
+  onSelect: (peerId: number) => void;
+  onClose: () => void;
+}
+
+/**
+ * Форма нового повідомлення: **кому** і **тіло**.
+ *
+ * Це та сама повноекранна поверхня, що форма контакту (`MenuModal`): поля в
+ * тілі, дії — рядком унизу. Надіслати й зберегти чернетку — **дві різні дії**, і
+ * обидві закривають форму: результат у них однаковий — «не надіслано, але
+ * збережено» і «надіслано».
+ *
+ * Самого надсилання форма не робить: це справа оболонки (як у розмові) — вона ж
+ * веде стан, показує помилку й вирішує, що відкрити після відправки.
+ */
+export interface NewMessageSheetProps {
+  /** Кому можна писати — той самий перелік, що у виборі людини. */
+  recipients: readonly MessagePeer[];
+  /** Збережені чернетки: найсвіжіша відкриває форму, решта — за адресатом. */
+  drafts: readonly MessageDraft[];
+  /** Зберегти чернетку; `true` — сервер підтвердив. */
+  onSaveDraft: (peerId: number, body: string) => Promise<boolean>;
+  /** Надіслати; `true` — сервер підтвердив. */
+  onSend: (peerId: number, body: string) => Promise<boolean>;
   onClose: () => void;
 }

@@ -23,7 +23,8 @@ import type { Env } from "../shared/types";
 import { ensureTables } from "@wwwuabot/shared/database/ensure-tables";
 import { resolveUserId } from "../shared/identity";
 import { apiLog } from "../shared/logger";
-import { listConversations, unreadTotal } from "../services/messages/conversations";
+import { listConversations, listRecipients, unreadTotal } from "../services/messages/conversations";
+import { readDrafts, saveDraft } from "../services/messages/drafts";
 import { markRead, clearThread, openThread, sendMessage } from "../services/messages/thread";
 
 function json(body: unknown, status = 200): Response {
@@ -65,7 +66,7 @@ function readBefore(request: Request): number | undefined {
  * таблиці перевірка «кому можна писати» падала б, а не відповідала б «нікому».
  */
 function ensureSchema(env: Env): Promise<void> {
-  return ensureTables(env.DB, ["conversations", "messages", "contacts"]);
+  return ensureTables(env.DB, ["conversations", "messages", "message_drafts", "contacts"]);
 }
 
 /** `GET /api/messages` — розмови людини (найсвіжіші згори). */
@@ -111,6 +112,64 @@ export async function handleMessageThread(request: Request, env: Env): Promise<R
     return json({ ok: true, peer: result.thread.peer, messages: result.thread.messages });
   } catch (e: unknown) {
     apiLog.error("Message thread error", e);
+    return json({ ok: false, error: e instanceof Error ? e.message : "Unknown error" }, 500);
+  }
+}
+
+/**
+ * `GET /api/messages/compose` — усе, що потрібно формі нового повідомлення.
+ *
+ * Одним запитом, бо це одна поверхня й один момент: кому можна писати
+ * (`recipients` — зв'язані через контакти, разом із прибраними розмовами) і що
+ * вже написано, але не надіслано (`drafts`). Два запити дали б два завантаження
+ * на одну форму й кадр, у якому одне вже приїхало, а друге ще ні.
+ */
+export async function handleMessageCompose(request: Request, env: Env): Promise<Response> {
+  if (request.method !== "GET") return json({ ok: false, error: "Method not allowed" }, 405);
+
+  const identity = await resolveUserId(request, env);
+  if (!identity.ok) return identity.response;
+
+  try {
+    await ensureSchema(env);
+    const [recipients, drafts] = await Promise.all([
+      listRecipients(env, identity.userId),
+      readDrafts(env, identity.userId),
+    ]);
+    return json({ ok: true, recipients, drafts });
+  } catch (e: unknown) {
+    apiLog.error("Message compose error", e);
+    return json({ ok: false, error: e instanceof Error ? e.message : "Unknown error" }, 500);
+  }
+}
+
+/**
+ * `POST /api/messages/draft` — зберегти чернетку; порожнє тіло — прибрати її.
+ *
+ * `draft: null` у відповіді — не помилка, а наслідок: людина стерла текст, і
+ * чернетки більше немає. Форма після цього закривається так само, як після
+ * збереження: результат дії однаковий — «не надіслано, але збережено».
+ */
+export async function handleMessageDraft(request: Request, env: Env): Promise<Response> {
+  if (request.method !== "POST") return json({ ok: false, error: "Method not allowed" }, 405);
+
+  const identity = await resolveUserId(request, env);
+  if (!identity.ok) return identity.response;
+
+  const body = await readJson(request);
+  if (!body) return json({ ok: false, error: "Invalid JSON" }, 400);
+
+  const peer = readPeer(body.peer);
+  if (peer === null) return json({ ok: false, error: "Missing peer" }, 400);
+
+  try {
+    await ensureSchema(env);
+    const result = await saveDraft(env, identity.userId, peer, body.body);
+    if (!result.ok) return json(result, result.status);
+
+    return json({ ok: true, draft: result.draft });
+  } catch (e: unknown) {
+    apiLog.error("Message draft error", e);
     return json({ ok: false, error: e instanceof Error ? e.message : "Unknown error" }, 500);
   }
 }

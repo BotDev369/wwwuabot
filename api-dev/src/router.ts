@@ -50,6 +50,8 @@ import {
   handleMessageBadge,
   handleMessageClear,
   handleMessageDelete,
+  handleMessageCompose,
+  handleMessageDraft,
 } from "./controllers/messages.controller";
 
 /**
@@ -178,6 +180,12 @@ export async function handleRequest(request: Request, env: Env): Promise<Respons
   }
   if (pathname === "/api/messages/badge" && request.method === "GET") {
     return handleMessageBadge(request, env);
+  }
+  if (pathname === "/api/messages/compose" && request.method === "GET") {
+    return handleMessageCompose(request, env);
+  }
+  if (pathname === "/api/messages/draft" && request.method === "POST") {
+    return handleMessageDraft(request, env);
   }
   // Стерти переписку / прибрати розмову. Дві дії, а не одна з прапорцем:
   // різницю між ними бачить людина (розмова лишається чи ні), тож і шлях у них

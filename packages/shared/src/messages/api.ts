@@ -9,6 +9,11 @@
  * Надсилання повертає **той рядок, який ліг у базу**: бульбашка малюється з
  * відповіді, а не з припущення про те, яким буде її номер і час.
  *
+ * **Форма нового повідомлення бере двох речей одним запитом** (`compose`): кому
+ * можна писати й що вже написано, але не надіслано. Чернетка — власні дані того,
+ * хто пише (співрозмовник про неї не знає), тож і лежить вона окремо від
+ * переписки, і надсилання прибирає її саме на сервері.
+ *
  * @module @wwwuabot/shared/messages
  */
 
@@ -18,6 +23,10 @@ import type {
   Message,
   MessageBadgeResponse,
   MessageClearResponse,
+  MessageComposeResponse,
+  MessageDraft,
+  MessageDraftResponse,
+  MessagePeer,
   MessageReadResponse,
   MessageSendResponse,
   MessageThread,
@@ -40,6 +49,16 @@ export interface MessagesApi {
   markRead: (peerId: number) => Promise<number>;
   /** Скільки повідомлень чекає на прочитання — для бейджа футера. */
   badge: () => Promise<number>;
+  /**
+   * Усе, що потрібно формі нового повідомлення: **кому можна писати** (зв'язані
+   * через контакти — включно з тими, чию розмову прибрано зі списку) і чернетки.
+   */
+  compose: () => Promise<{ recipients: MessagePeer[]; drafts: MessageDraft[] }>;
+  /**
+   * Зберегти чернетку; порожнє тіло — **прибрати** її (див. `saveDraft` у
+   * `api-dev`). Повертає збережене або `null`, якщо чернетки більше немає.
+   */
+  saveDraft: (peerId: number, body: string) => Promise<MessageDraft | null>;
   /**
    * Стерти переписку — **у обох** (розмова одна на пару).
    *
@@ -112,5 +131,19 @@ export function createMessagesApi(fetchJson: MessagesTransport, basePath: string
     clear: (peerId) => drop(`${basePath}/clear`, peerId),
 
     remove: (peerId) => drop(`${basePath}/delete`, peerId),
+
+    compose: async () => {
+      const response = await fetchJson<MessageComposeResponse>(`${basePath}/compose`);
+      return { recipients: response.recipients ?? [], drafts: response.drafts ?? [] };
+    },
+
+    saveDraft: async (peerId, body) => {
+      const response = await fetchJson<MessageDraftResponse>(`${basePath}/draft`, {
+        method: "POST",
+        body: JSON.stringify({ peer: peerId, body }),
+      });
+      if (!response.ok) throw new Error(response.error ?? "Не вдалося зберегти чернетку");
+      return response.draft ?? null;
+    },
   };
 }

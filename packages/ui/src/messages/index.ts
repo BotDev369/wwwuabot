@@ -14,6 +14,9 @@
  * групи, вигляд) із спільного `@wwwuabot/ui/collection` — повідомлення його
  * третій користувач, а не третя копія. Що саме там буває, знає `view.ts`.
  *
+ * Нове повідомлення починають **формою** (`NewMessageSheet`: кому + тіло), а не
+ * натисканням у списку: чернетка мусить мати де жити — і вона має (`drafts.ts`).
+ *
  * @module @wwwuabot/ui/messages
  */
 
@@ -21,6 +24,8 @@ export { ConversationList } from "./ConversationList";
 export { MessageComposer } from "./MessageComposer";
 export { MessagesToolbar } from "./MessagesToolbar";
 export { NewMessagePicker } from "./NewMessagePicker";
+export { NewMessageSheet } from "./NewMessageSheet";
+export { draftFor, latestDraft } from "./drafts";
 export { ThreadSheet } from "./ThreadSheet";
 export { NO_MESSAGES_LINE, conversationLine } from "./lines";
 export { NO_PEERS_HINT, NO_PEERS_TITLE } from "./empty";
@@ -30,6 +35,7 @@ export type {
   ConversationListProps,
   MessagesChip,
   NewMessagePickerProps,
+  NewMessageSheetProps,
   MessagesFilter,
   MessagesGroup,
   MessagesGroupBy,

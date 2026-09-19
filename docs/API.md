@@ -30,7 +30,9 @@
 | `ANY` | `/api/messages` | `handleMessages` |
 | `GET` | `/api/messages/badge` | `handleMessageBadge` |
 | `POST` | `/api/messages/clear` | `handleMessageClear` |
+| `GET` | `/api/messages/compose` | `handleMessageCompose` |
 | `POST` | `/api/messages/delete` | `handleMessageDelete` |
+| `POST` | `/api/messages/draft` | `handleMessageDraft` |
 | `POST` | `/api/messages/read` | `handleMessageRead` |
 | `POST` | `/api/messages/send` | `handleMessageSend` |
 | `ANY` | `/api/messages/thread` | `handleMessageThread` |
@@ -70,4 +72,4 @@
 | `POST` | `/auth/login` | `handleLogin` |
 | `POST` | `/auth/logout` | `handleLogout` |
 
-Усього шляхів: **41**.
+Усього шляхів: **43**.

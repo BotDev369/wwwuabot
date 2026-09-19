@@ -90,6 +90,24 @@ export interface Conversation {
   unread: number;
 }
 
+/**
+ * Ненадіслана чернетка — **одна на пару людей**.
+ *
+ * Це власні дані того, хто пише (як нотатка чи контакт), а не частина переписки:
+ * співрозмовник про неї не знає, і в `messages` її немає. Тому й ключ тут —
+ * `peerId`, а не розмова: чернетку заводять **до** першого повідомлення, коли
+ * розмови ще не існує.
+ *
+ * `body` може бути порожнім — «обрав людину, але ще не написав» це теж стан
+ * чернетки, і втрачати його нема чого.
+ */
+export interface MessageDraft {
+  /** Кому адресована — Telegram-id людини. */
+  peerId: number;
+  body: string;
+  updatedAt: string;
+}
+
 /** Розмова зі співрозмовником: самі повідомлення й те, хто він. */
 export interface MessageThread {
   peer: MessagePeer | null;
@@ -135,6 +153,27 @@ export interface MessageReadResponse {
 export interface MessageClearResponse {
   ok?: boolean;
   removed?: number;
+  error?: string;
+}
+
+/**
+ * Відповідь форми нового повідомлення — **усе, що їй потрібно**.
+ *
+ * Два факти в одній відповіді, бо їх читає одна поверхня й одночасно: кому
+ * можна писати (`recipients` — зв'язані через контакти) і що вже написано, але
+ * не надіслано (`drafts`).
+ */
+export interface MessageComposeResponse {
+  ok?: boolean;
+  recipients?: MessagePeer[];
+  drafts?: MessageDraft[];
+  error?: string;
+}
+
+/** Відповідь збереження чернетки; `draft: null` — чернетку прибрано. */
+export interface MessageDraftResponse {
+  ok?: boolean;
+  draft?: MessageDraft | null;
   error?: string;
 }
 

@@ -114,4 +114,49 @@ describe("createMessagesApi", () => {
     await expect(api.clear(42)).rejects.toThrow("Розмови з цією людиною немає");
     await expect(api.remove(42)).rejects.toThrow("Розмови з цією людиною немає");
   });
+
+  it("форма нового повідомлення бере отримувачів і чернетки одним запитом", async () => {
+    const peer = { id: 42, platformUsername: "karas" };
+    const draft = { peerId: 42, body: "недісланий", updatedAt: "2026-09-19 12:00:00" };
+    const transport = makeTransport({ ok: true, recipients: [peer], drafts: [draft] });
+    const api = createMessagesApi(transport.fetch as never, "/api/messages");
+
+    await expect(api.compose()).resolves.toEqual({ recipients: [peer], drafts: [draft] });
+
+    expect(transport.calls[0].path).toBe("/api/messages/compose");
+    expect(transport.calls[0].init).toBeUndefined();
+  });
+
+  it("порожня відповідь форми — порожні списки, а не `undefined` у рендері", async () => {
+    const transport = makeTransport({ ok: true });
+    const api = createMessagesApi(transport.fetch as never, "/api/messages");
+
+    await expect(api.compose()).resolves.toEqual({ recipients: [], drafts: [] });
+  });
+
+  it("чернетка зберігається окремим шляхом і повертає записане", async () => {
+    const draft = { peerId: 42, body: "текст", updatedAt: "2026-09-19 12:00:00" };
+    const transport = makeTransport({ ok: true, draft });
+    const api = createMessagesApi(transport.fetch as never, "/api/messages");
+
+    await expect(api.saveDraft(42, "текст")).resolves.toEqual(draft);
+
+    expect(transport.calls[0].path).toBe("/api/messages/draft");
+    expect(transport.calls[0].init?.method).toBe("POST");
+    expect(JSON.parse(String(transport.calls[0].init?.body))).toEqual({ peer: 42, body: "текст" });
+  });
+
+  it("порожня чернетка — це `null`: вона прибрана, а не порожня", async () => {
+    const transport = makeTransport({ ok: true, draft: null });
+    const api = createMessagesApi(transport.fetch as never, "/api/messages");
+
+    await expect(api.saveDraft(42, "   ")).resolves.toBeNull();
+  });
+
+  it("відмова збереження чернетки кидає причину — форма не закриється мовчки", async () => {
+    const failed = makeTransport({ ok: false, error: "Немає зв'язку" });
+    const api = createMessagesApi(failed.fetch as never, "/api/messages");
+
+    await expect(api.saveDraft(42, "текст")).rejects.toThrow("Немає зв'язку");
+  });
 });

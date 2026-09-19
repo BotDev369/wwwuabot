@@ -12,6 +12,10 @@
  * можна писати, — а це вже друге правило того самого. Пошук у смузі тому
  * шукає **свої розмови**, а не людей у продукті.
  *
+ * **Нове повідомлення — форма, а не перехід у розмову.** «+» відкриває
+ * `NewMessageSheet` (кому + тіло) з можливістю зберегти чернетку: написати
+ * першим — це **робота**, а не мить, і чернетка мусить мати де жити.
+ *
  * **Розмова відкривається поверхнею**, а не окремим маршрутом: футер лишається
  * хромом і видно, що ти в застосунку, а «назад» повертає до списку.
  *
@@ -40,19 +44,22 @@ import {
   ConversationList,
   DEFAULT_MESSAGES_VIEW,
   MessagesToolbar,
-  NewMessagePicker,
+  NewMessageSheet,
   ThreadSheet,
   buildConversationGroups,
   filterConversations,
   type MessagesView,
 } from "@wwwuabot/ui/messages";
 import { useDialog } from "@wwwuabot/ui/dialog";
+import { messagesApi } from "@/shared/api/messages.api";
+import { useCompose } from "./useCompose";
 import { useConversations } from "./useConversations";
 import { useProfile } from "./useProfile";
 import { useThread } from "./useThread";
 
 export function MessagesPage(): ReactElement {
   const { conversations, loading, error, reload } = useConversations();
+  const compose = useCompose();
   const dialog = useDialog();
   const { profile } = useProfile();
   // Вигляд списку — стан **екрана**, а не даних: сервер віддає ті самі розмови,
@@ -73,17 +80,57 @@ export function MessagesPage(): ReactElement {
   const groups = buildConversationGroups(conversations, view);
   const visible = filterConversations(conversations, view);
 
-  /** Вихід із розмови: список перечитуємо — у ній зник бейдж і змінився останок. */
+  /**
+   * Вихід із розмови: список перечитуємо — у ній зник бейдж і змінився останок.
+   *
+   * Заразом перечитуємо й форму: отримувачі — це зв'язані контакти, а зв'язок
+   * з'являється не від наших дій (хтось прийшов за посиланням), тож це саме той
+   * момент, коли список міг змінитися сам.
+   */
   function closeThread(): void {
     setOpenPeerId(null);
     void reload();
+    void compose.reload();
   }
 
-  /** Обрали людину: вибір закриваємо, розмову відкриваємо — два кола поверхень
-      одне над одним не потрібні. */
-  function startWith(peerId: number): void {
-    setPicking(false);
-    setOpenPeerId(peerId);
+  /** Відкрити форму — або сказати, чому її немає чим наповнити. */
+  async function openCompose(): Promise<void> {
+    if (compose.error) {
+      await dialog.alert(compose.error, { tone: "danger" });
+      return;
+    }
+    setPicking(true);
+  }
+
+  /**
+   * Надіслати з форми — і **показати, куди лист пішов**.
+   *
+   * Надсилання тут, а не у формі: `NewMessageSheet` лише повідомляє про дотик,
+   * як і розмова. Відкриття розмови після успіху — продовження тієї самої дії:
+   * людина написала першою, тож мусить побачити, що лист справді пішов.
+   */
+  async function sendNew(peerId: number, body: string): Promise<boolean> {
+    try {
+      const message = await messagesApi.send(peerId, body);
+      if (!message) throw new Error("Сервер не підтвердив надсилання — спробуйте ще раз.");
+
+      setOpenPeerId(peerId);
+      void reload();
+      return true;
+    } catch (e: unknown) {
+      await dialog.alert(e instanceof Error ? e.message : "Не вдалося надіслати повідомлення", {
+        tone: "danger",
+      });
+      return false;
+    }
+  }
+
+  /** Зберегти чернетку: форма закриється лише тоді, коли сервер підтвердив. */
+  async function saveDraft(peerId: number, body: string): Promise<boolean> {
+    if (await compose.saveDraft(peerId, body)) return true;
+
+    await dialog.alert(compose.error ?? "Не вдалося зберегти чернетку", { tone: "danger" });
+    return false;
   }
 
   /**
@@ -146,7 +193,7 @@ export function MessagesPage(): ReactElement {
             onChange={(patch) => setView((prev) => ({ ...prev, ...patch }))}
             shown={visible.length}
             total={conversations.length}
-            onNew={() => setPicking(true)}
+            onNew={() => void openCompose()}
           />
         )}
       </div>
@@ -180,10 +227,15 @@ export function MessagesPage(): ReactElement {
         />
       )}
 
-      {picking && (
-        <NewMessagePicker
-          conversations={conversations}
-          onOpen={startWith}
+      {/* Форма з'являється лише тоді, коли отримувачі справді приїхали: під час
+          завантаження поверхня показала б «немає кому писати» — а це неправда,
+          у якої немає виправдання (список дрібний і приходить одразу). */}
+      {picking && !compose.loading && (
+        <NewMessageSheet
+          recipients={compose.recipients}
+          drafts={compose.drafts}
+          onSaveDraft={saveDraft}
+          onSend={sendNew}
           onClose={() => setPicking(false)}
         />
       )}

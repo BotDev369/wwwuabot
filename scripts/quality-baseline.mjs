@@ -18,10 +18,17 @@ export const QUALITY_BASELINE = {
    */ oversizedFiles: {},
 
   /**
-   * Дані, а не логіка: довгі таблиці констант. Ліміт рядків про них не
-   * (дробити `icons.tsx` навпіл — шкодити, а не рефакторити).
+   * Дані, а не логіка: довгі таблиці констант і реєстр схеми. Ліміт рядків про
+   * них не рахується (дробити `icons.tsx` навпіл — шкодити, а не рефакторити).
+   *
+   * `tables.ts` — той самий випадок: це оголошення таблиць із DDL і прозою до
+   * них, а код, який їх застосовує, винесено в `ensure-tables.ts` саме тим
+   * поділом «дані / логіка». Нова таблиця додає до реєстру рядки, а не гілки.
    */
-  dataOnlyFiles: ["packages/shared/src/components/icons.tsx"],
+  dataOnlyFiles: [
+    "packages/shared/src/components/icons.tsx",
+    "packages/shared/src/database/tables.ts",
+  ],
 
   /**
    * Емодзі в UI (`AGENTS.md` §4). Список порожній: усі знайдені випадки

@@ -98,7 +98,11 @@ export async function ensureConversation(
  * NULL`): контакт без входу — це ще не зв'язок, і пропонувати йому написати
  * означало б показати людину, якої в продукті немає.
  */
-async function linkedPeerIds(env: Env, me: number): Promise<number[]> {
+async function linkedPeerIds(
+  env: Env,
+  me: number,
+  options: { includeHidden?: boolean } = {},
+): Promise<number[]> {
   const result = await env.DB.prepare(
     `SELECT DISTINCT CASE WHEN owner_id = ? THEN joined_user_id ELSE owner_id END AS peer_id
        FROM contacts
@@ -109,8 +113,10 @@ async function linkedPeerIds(env: Env, me: number): Promise<number[]> {
 
   // Прибрані розмови не вертаємо **саме тут**: список — це «кому я можу
   // писати», і без цього фільтра прибране з'являлося б назад як «Почніть
-  // розмову» (зв'язок через контакти ж нікуди не подівся).
-  const hidden = await hiddenPeerIds(env, me);
+  // розмову» (зв'язок через контакти ж нікуди не подівся). Форма нового
+  // повідомлення бере той самий перелік **без** цього відбору — прибрати
+  // розмову не означає «заборонити писати», і `listRecipients` нижче.
+  const hidden = options.includeHidden ? new Set<number>() : await hiddenPeerIds(env, me);
 
   return (result.results ?? [])
     .map((row) => Number(row.peer_id))
@@ -140,6 +146,26 @@ async function hiddenPeerIds(env: Env, me: number): Promise<Set<number>> {
   return new Set(
     (result.results ?? []).map((row) => peerOf(Number(row.peer_a), Number(row.peer_b), me)),
   );
+}
+
+/**
+ * Кому людина може писати — **у порядку імен**, разом із прибраними розмовами.
+ *
+ * Той самий перелік, що другий із двох джерел списку (`linkedPeerIds`), лише
+ * без відбору прибраного: чернетка й нове повідомлення — це **вхід у розмову**, і
+ * після «видалити» людина мусить мати змогу почати її знову, інакше пара мовчала
+ * б назавжди (в списку розмови немає, других дверей теж).
+ *
+ * Порядок — тут, а не в клієнті: абетка одного списку не мусить залежати від
+ * того, яка з двох оболонок його показала (`peerLabel` — спільне правило).
+ */
+export async function listRecipients(env: Env, me: number): Promise<MessagePeer[]> {
+  const ids = await linkedPeerIds(env, me, { includeHidden: true });
+  const peers = await readPeers(env.DB, ids, me);
+
+  return ids
+    .map((id) => peers.get(id) ?? unknownPeer(id))
+    .sort((a, b) => peerLabel(a).localeCompare(peerLabel(b), "uk"));
 }
 
 /** Скільки повідомлень співрозмовника не прочитано — по кожній розмові. */
