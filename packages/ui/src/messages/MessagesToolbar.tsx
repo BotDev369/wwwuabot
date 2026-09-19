@@ -40,6 +40,7 @@ export function MessagesToolbar({
   onChange,
   shown,
   total,
+  onNew,
 }: MessagesToolbarProps): ReactElement {
   const filterOption =
     MESSAGE_FILTER_OPTIONS.find((option) => option.value === view.filter) ??
@@ -104,6 +105,9 @@ export function MessagesToolbar({
       pickers={pickers}
       view={{ layout: view.layout, columns: view.columns }}
       onViewChange={(next) => onChange(next)}
+      // Дія списку: створити **нове** повідомлення. Список розмов — це вже «кому
+      // я можу писати», тож дія відкриває вибір людини, а не порожній екран.
+      add={{ label: "Нове повідомлення", onClick: onNew }}
       chips={conversationViewChips(view).map((chip) => ({
         key: chip.key,
         label: chip.label,

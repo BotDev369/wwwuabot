@@ -94,6 +94,14 @@ interface CollectionToolbarProps {
    * розгортають («нотатки», «контакти»). Без нього клітинки немає.
    */
   toggleAll?: { open: boolean; onToggle: () => void; what: string };
+  /**
+   * Головна дія списку — «+» останнім у ряду клітинок.
+   *
+   * Смуга не знає, **що** створюють (повідомлення, нотатку): вона дає дії
+   * місце в ряду й тло, а слово лишається в `aria-label`. Тло має **лише**
+   * вона — у ряду виборів акцент означає дію, і він там рівно один.
+   */
+  add?: { label: string; onClick: () => void };
   /** Чипи вибраного — те, що змінили клітинки. */
   chips?: readonly ToolbarChip[];
   /** Скільки видно зараз і скільки всього: підпис з'являється, коли їх різнить. */
@@ -108,6 +116,7 @@ export function CollectionToolbar({
   view,
   onViewChange,
   toggleAll,
+  add,
   chips,
   filtered,
 }: CollectionToolbarProps): ReactElement {
@@ -198,6 +207,20 @@ export function CollectionToolbar({
               onClick={toggleAll.onToggle}
             >
               <Icon name={toggleAll.open ? "collapse" : "expand"} size={16} />
+            </button>
+          )}
+
+          {/* Дія — останньою й **у тому ж ряду**: вона не вибір, а те, що з цього
+              списку народжують, і саме тому її видно за тлом, а не за місцем. */}
+          {add && (
+            <button
+              type="button"
+              className="wb-tools-add"
+              aria-label={add.label}
+              title={add.label}
+              onClick={add.onClick}
+            >
+              <Icon name="plus" size={18} />
             </button>
           )}
         </div>

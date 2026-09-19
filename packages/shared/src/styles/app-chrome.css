@@ -532,11 +532,18 @@
   z-index: var(--z-sticky);
   display: flex;
   flex-direction: column;
+  /* Проміжки тут — **єдине місце** на весь продукт: між заголовком і смугою
+     керування, і такий самий — до списку. Доти кожен екран сам додавав
+     `margin`, і заголовок тулився до смуги, а знизу збігалася подвійна
+     прогалина; тло шару заливку під собою має, тож проміжок мусить бути
+     всередині, а не поза ним. */
+  gap: var(--sp-4);
   background: var(--bg-page, var(--bg-0));
   /* Спільні відступи сторінки лишаються зовні: у sticky-шарі вони мусять бути
-     заливкою, інакше між шапкою й смугою видно список. */
-  margin: calc(var(--sp-5) * -1) calc(var(--sp-5) * -1) var(--sp-4);
-  padding: var(--sp-5) var(--sp-5) var(--sp-3);
+     заливкою, інакше між шапкою й смугою видно список. Знизу поле й padding
+     міняються місцями — відступ до списку малює заливка шару. */
+  margin: calc(var(--sp-5) * -1) calc(var(--sp-5) * -1) 0;
+  padding: var(--sp-5) var(--sp-5) var(--sp-4);
 }
 
 /* Усередині sticky-шару проміжки задає сам шар: зайвий `margin-bottom` шапки
@@ -592,6 +599,44 @@
   min-height: var(--page-add-size);
   padding: 0;
   border-radius: var(--radius-full);
+}
+
+/* Головна дія списку в **ряду клітинок** смуги керування — «+» останнім.
+
+   Та сама дія, що `.wb-page-add`, лише іншим місцем: там вона в шапці поруч із
+   назвою, тут — у ряду, де живуть вибори списку (пошук, порядок, групи,
+   вигляд). Тому мірку вона дістає від ряду (`--tools-cell`), а не від шапки:
+   клітинка мусить бути одного зросту із сусідами. Тло має лише вона — акцент у
+   ряду означає **дію**, а не ще один вибір, і саме тому в ряду він рівно один.
+
+   Форма — **свій кирпичик, а не `.wb-btn`**: бренди задають кнопці форму й
+   мірку з `!important` (пілюля Apple, M3 20px), і в кола 32×32 довелось би
+   вигравати в них `!important` — те саме, що вже сталось із виходом у смузі
+   поверхні. */
+.wb-tools-add {
+  flex: 0 0 auto;
+  width: var(--tools-cell);
+  height: var(--tools-cell);
+  min-height: var(--tools-cell);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  color: var(--text-inverse);
+  background: var(--accent);
+  border: none;
+  border-radius: var(--radius-full);
+  cursor: pointer;
+  transition: background var(--duration-fast) var(--ease);
+}
+
+.wb-tools-add:active {
+  background: var(--accent-hover, var(--accent));
+}
+
+.wb-tools-add svg {
+  width: 18px;
+  height: 18px;
 }
 
 /* ═══ Splash — перший кадр, поки невідомо, хто користувач ══════════════════ */

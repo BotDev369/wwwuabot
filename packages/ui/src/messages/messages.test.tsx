@@ -17,6 +17,8 @@ import { renderToStaticMarkup } from "react-dom/server";
 import type { Conversation, Message, MessagePeer } from "@wwwuabot/shared/messages";
 import { DEFAULT_COLLECTION_VIEW } from "../collection";
 import { ConversationList } from "./ConversationList";
+import { MessagesToolbar } from "./MessagesToolbar";
+import { NewMessagePicker } from "./NewMessagePicker";
 import { ThreadSheet } from "./ThreadSheet";
 import { DEFAULT_MESSAGES_VIEW } from "./types";
 import { conversationLine } from "./lines";
@@ -151,6 +153,49 @@ describe("список розмов", () => {
     ]);
 
     expect(html).toContain("Почніть розмову");
+  });
+});
+
+describe("нове повідомлення", () => {
+  it("«+» у смузі — це дія, і вона називає себе словом", () => {
+    // У ряду клітинок знак без підпису, тож ім'я мусить бути в `aria-label`: без
+    // нього кнопка не має назви для того, хто не бачить знака.
+    const html = renderToStaticMarkup(
+      <MessagesToolbar
+        view={DEFAULT_MESSAGES_VIEW}
+        onChange={() => {}}
+        shown={1}
+        total={1}
+        onNew={() => {}}
+      />,
+    );
+
+    expect(html).toContain('aria-label="Нове повідомлення"');
+    expect(html).toContain("wb-tools-add");
+  });
+
+  it("вибір людини йде за абеткою: тут шукають людину, а не останнє повідомлення", () => {
+    const people = [
+      conversation({ peer: { ...PEER, id: 1, contactName: "Явір" } }),
+      conversation({ peer: { ...PEER, id: 2, contactName: "Анна" } }),
+    ];
+
+    const html = renderToStaticMarkup(
+      <NewMessagePicker conversations={people} onOpen={() => {}} onClose={() => {}} />,
+    );
+
+    expect(html).toContain("Нове повідомлення");
+    expect(html.indexOf("Анна")).toBeLessThan(html.indexOf("Явір"));
+  });
+
+  it("вибір показує тих, кому лист дійде, а не всіх підряд", () => {
+    // Список приходить із того самого джерела, що список розмов («кому я можу
+    // писати»), і других дверей до людей тут немає.
+    const html = renderToStaticMarkup(
+      <NewMessagePicker conversations={[conversation()]} onOpen={() => {}} onClose={() => {}} />,
+    );
+
+    expect(html).toContain("@karas");
   });
 });
 

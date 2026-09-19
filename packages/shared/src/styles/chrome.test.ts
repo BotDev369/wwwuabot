@@ -50,10 +50,16 @@ function rulesOf(file: string): Rule[] {
 }
 
 const CHROME = rulesOf("packages/shared/src/styles/app-chrome.css");
+const COMPONENTS = rulesOf("packages/shared/src/styles/components.css");
 
 /** Останнє правило для селектора — те, що справді діє при рівній специфічності. */
 function rule(selector: string): Rule | undefined {
   return CHROME.filter((entry) => entry.selector === selector).at(-1);
+}
+
+/** Те саме для спільного шару кирпичиків (`.wb-tools*` живе там). */
+function brickRule(selector: string): Rule | undefined {
+  return COMPONENTS.filter((entry) => entry.selector === selector).at(-1);
 }
 
 describe("футер: знаки без тла", () => {
@@ -112,6 +118,43 @@ describe("футер: знаки без тла", () => {
     // Висота смуги — `--tab-bar-h` (бренд + safe-area), а не сума мірок знака.
     expect(rule(".wb-tabbar")?.body).toContain("height: var(--tab-bar-h)");
     expect(rule(".wb-tabbar-inner")?.body).toContain("align-items: stretch");
+  });
+});
+
+/**
+ * Каркас сторінки: заголовок, смуга керування списком і сам список — одні
+ * відступи на весь продукт. Доти кожен екран додавав свій `margin`, і проміжки
+ * розходились: заголовок тулився до смуги, а знизу збігалися два відступи.
+ */
+describe("каркас сторінки: один проміжок на весь продукт", () => {
+  it("шапка сторінки тримає проміжок сама — `gap` і такий самий `padding` знизу", () => {
+    const sticky = rule(".wb-page-sticky")?.body ?? "";
+
+    // `gap` — це відступ від заголовка до смуги керування; без нього вони
+    // туляться одне до одного (і саме так було).
+    expect(sticky).toContain("gap: var(--sp-4)");
+    // Той самий крок знизу — і саме `padding` (заливка шару), а не `margin`:
+    // поза шаром прогалину видно списком, який крізь неї просвічує.
+    expect(sticky).toContain("padding: var(--sp-5) var(--sp-5) var(--sp-4)");
+    // Знизу шару — нуль: відступ до списку малює його ж заливка (padding).
+    expect(sticky).toContain("calc(var(--sp-5) * -1) calc(var(--sp-5) * -1) 0");
+  });
+
+  it("смуга керування не має власних зовнішніх полів", () => {
+    // Зовнішні відступи задає каркас: два джерела одного відступу дали б
+    // подвійну прогалину під шапкою.
+    expect(brickRule(".wb-tools")?.body).not.toContain("margin");
+  });
+
+  it("дія списку — акцентне коло в ряду клітинок, а не кнопка бренду", () => {
+    const add = rule(".wb-tools-add")?.body ?? "";
+
+    // Мірка ряду: клітинка мусить бути одного зросту із сусідами.
+    expect(add).toContain("width: var(--tools-cell)");
+    expect(add).toContain("border-radius: var(--radius-full)");
+    expect(add).toContain("background: var(--accent)");
+    // А в ряду виборів акцент означає дію — і він там рівно один.
+    expect(brickRule(".wb-tools-btn")?.body ?? "").not.toContain("accent");
   });
 });
 

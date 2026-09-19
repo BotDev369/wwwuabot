@@ -35,6 +35,7 @@ import {
   ConversationList,
   DEFAULT_MESSAGES_VIEW,
   MessagesToolbar,
+  NewMessagePicker,
   ThreadSheet,
   buildConversationGroups,
   filterConversations,
@@ -51,6 +52,9 @@ export function MessagesPage(): ReactElement {
   // а те, як їх показати, вирішує той, хто дивиться.
   const [view, setView] = useState<MessagesView>(DEFAULT_MESSAGES_VIEW);
   const [openPeerId, setOpenPeerId] = useState<number | null>(null);
+  // Чи відкрито вибір людини, якій писати («+»). Це стан **екрана**: сам вибір
+  // нічого не змінює в даних, він лише веде в розмову.
+  const [picking, setPicking] = useState(false);
   const thread = useThread(openPeerId);
   const meId = profile?.id ?? 0;
 
@@ -62,6 +66,13 @@ export function MessagesPage(): ReactElement {
   function closeThread(): void {
     setOpenPeerId(null);
     void reload();
+  }
+
+  /** Обрали людину: вибір закриваємо, розмову відкриваємо — два кола поверхень
+      одне над одним не потрібні. */
+  function startWith(peerId: number): void {
+    setPicking(false);
+    setOpenPeerId(peerId);
   }
 
   return (
@@ -80,6 +91,7 @@ export function MessagesPage(): ReactElement {
             onChange={(patch) => setView((prev) => ({ ...prev, ...patch }))}
             shown={visible.length}
             total={conversations.length}
+            onNew={() => setPicking(true)}
           />
         )}
       </div>
@@ -110,6 +122,14 @@ export function MessagesPage(): ReactElement {
           // Скидання — це повернення до типового вигляду цілком: людина не
           // пам'ятає, що саме вона навибирала, коли список спорожнів.
           onReset={() => setView(DEFAULT_MESSAGES_VIEW)}
+        />
+      )}
+
+      {picking && (
+        <NewMessagePicker
+          conversations={conversations}
+          onOpen={startWith}
+          onClose={() => setPicking(false)}
         />
       )}
 
