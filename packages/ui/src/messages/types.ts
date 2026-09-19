@@ -217,6 +217,18 @@ export interface NewMessageSheetProps {
   onSaveDraft: (input: MessageDraftInput) => Promise<boolean>;
   /** Надіслати; `true` — сервер підтвердив. */
   onSend: (input: MessageDraftInput) => Promise<boolean>;
+  /**
+   * Прибрати чернетку — **наявну**, за її номером.
+   *
+   * Окрема дія, а не «зберегти порожнім»: людина не мусить здогадуватись, що
+   * ненадісланий текст прибирають стиранням усього поля. Підтвердження питає
+   * оболонка (як з `onClear` у розмові) — текст, який нікуди не пішов, щезає
+   * назавжди, а `window.confirm` у Telegram Mini App не існує (§4).
+   *
+   * `false` — не прибрано (відмова або скасоване підтвердження): форма
+   * лишається відкритою з набраним текстом.
+   */
+  onDeleteDraft: (draftId: number) => Promise<boolean>;
   onClose: () => void;
 }
 

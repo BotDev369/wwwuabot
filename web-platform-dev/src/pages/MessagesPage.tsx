@@ -181,6 +181,31 @@ export function MessagesPage(): ReactElement {
   }
 
   /**
+   * Прибрати чернетку — **з підтвердженням**, бо текст ще нікуди не пішов.
+   *
+   * Підтвердження питає оболонка, а не форма: це та сама межа, що з чисткою
+   * розмови — поверхня лише каже, що її покликали (`useDialog`, §4).
+   *
+   * Другого правила «як зникає чернетка» не заводимо: порожнє тіло прибирає її
+   * за номером **на сервері** (`saveDraft` у `api-dev`) — тож шлях той самий, а
+   * дія названа окремо лише тому, що людина не мусить здогадуватись, що для
+   * цього треба стерти все поле.
+   */
+  async function deleteDraft(draftId: number): Promise<boolean> {
+    const yes = await dialog.confirm(
+      "Ненадісланий текст зникне — його немає ні в кого, крім вас.",
+      {
+        title: "Видалити чернетку?",
+        tone: "danger",
+        confirmText: "Видалити",
+      },
+    );
+    if (!yes) return false;
+
+    return saveDraft({ id: draftId, peerId: null, body: "" });
+  }
+
+  /**
    * Стерти переписку — **в обох**, тож питаємо перед тим, як робити.
    *
    * Підтвердження обов'язкове саме тому, що дія незворотна й чужа: людина
@@ -295,6 +320,7 @@ export function MessagesPage(): ReactElement {
           draft={composing.draft}
           onSaveDraft={saveDraft}
           onSend={sendNew}
+          onDeleteDraft={deleteDraft}
           onClose={() => setComposing(null)}
         />
       )}
