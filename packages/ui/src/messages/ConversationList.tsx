@@ -27,6 +27,7 @@ import { Icon } from "@wwwuabot/shared";
 import type { Conversation } from "@wwwuabot/shared/messages";
 import { messageTime, peerInitial, peerLabel, peerSecondary } from "@wwwuabot/shared/messages";
 import { collectionViewClass } from "../collection";
+import { NO_PEERS_HINT, NO_PEERS_TITLE } from "./empty";
 import { conversationLine } from "./lines";
 import type { ConversationListProps } from "./types";
 
@@ -105,12 +106,10 @@ export function ConversationList({
         </span>
         {/* Порожній екран — це не «немає повідомлень», а «немає з ким»: початі
             розмови й ті, кого ще немає, стоять в одному списку, тож цей стан
-            показується лише тоді, коли писати справді нікому. */}
-        <p className="wb-empty-text">Ще немає з ким листуватись.</p>
-        <p className="wb-empty-text">
-          Писати можна тим, із ким ви зв'язані через контакти: хто прийшов за вашим посиланням або
-          за чиїм прийшли ви. Відкрийте «Контакти» й надішліть запрошення.
-        </p>
+            показується лише тоді, коли писати справді нікому. Текст спільний із
+            вибором людини (`empty.ts`) — той самий стан, ті самі слова. */}
+        <p className="wb-empty-text">{NO_PEERS_TITLE}</p>
+        <p className="wb-empty-text">{NO_PEERS_HINT}</p>
       </div>
     );
   }

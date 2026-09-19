@@ -23,6 +23,7 @@ export { MessagesToolbar } from "./MessagesToolbar";
 export { NewMessagePicker } from "./NewMessagePicker";
 export { ThreadSheet } from "./ThreadSheet";
 export { NO_MESSAGES_LINE, conversationLine } from "./lines";
+export { NO_PEERS_HINT, NO_PEERS_TITLE } from "./empty";
 export { useStickToBottom } from "./useStickToBottom";
 export { DEFAULT_MESSAGES_VIEW } from "./types";
 export type {

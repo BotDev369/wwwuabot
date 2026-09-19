@@ -72,7 +72,6 @@ export function MessagesPage(): ReactElement {
 
   const groups = buildConversationGroups(conversations, view);
   const visible = filterConversations(conversations, view);
-  const hasConversations = !loading && !error && conversations.length > 0;
 
   /** Вихід із розмови: список перечитуємо — у ній зник бейдж і змінився останок. */
   function closeThread(): void {
@@ -136,7 +135,12 @@ export function MessagesPage(): ReactElement {
           <h1 className="wb-page-title">Повідомлення</h1>
         </div>
 
-        {hasConversations && (
+        {/* Смуга керування — це **хром екрана, а не вміст** (тому вона тут, а
+            не під списком): «+» — єдина дія, якою починають листування, і
+            ховати її разом зі списком означало б лишати порожній екран без
+            виходу — саме так і сталося. Порожній список — це стан, який вона ж
+            і пояснює (`ConversationList`). */}
+        {!loading && !error && (
           <MessagesToolbar
             view={view}
             onChange={(patch) => setView((prev) => ({ ...prev, ...patch }))}

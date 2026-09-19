@@ -16,12 +16,19 @@
  * Поверхня — та сама, що в решти списків вибору (`MenuModal`, правило 4):
  * варіанти не випадають дропдауном, а відкривають повноекранний список.
  *
+ * **Порожній поверхні тут бути не може.** Кнопка «+» стоїть на екрані завжди
+ * (смуга керування — це хром, а не вміст), тож її можуть натиснути й тоді,
+ * коли писати нікому: тоді поверхня каже, чому людей немає й де їх узяти, — той
+ * самий текст, що в порожньому списку (`empty.ts`).
+ *
  * @module @wwwuabot/ui/messages
  */
 
 import type { ReactElement } from "react";
+import { Icon } from "@wwwuabot/shared";
 import { peerLabel } from "@wwwuabot/shared/messages";
 import { MenuModal, type MenuItem } from "../menu";
+import { NO_PEERS_HINT, NO_PEERS_TITLE } from "./empty";
 import type { NewMessagePickerProps } from "./types";
 import { sortConversations } from "./view";
 
@@ -36,6 +43,24 @@ export function NewMessagePicker({
     icon: "user",
     onSelect: () => onOpen(conversation.peer.id),
   }));
+
+  if (items.length === 0) {
+    return (
+      <MenuModal
+        title="Нове повідомлення"
+        onClose={onClose}
+        content={
+          <div className="wb-empty">
+            <span className="wb-empty-icon">
+              <Icon name="mail" size={32} />
+            </span>
+            <p className="wb-empty-text">{NO_PEERS_TITLE}</p>
+            <p className="wb-empty-text">{NO_PEERS_HINT}</p>
+          </div>
+        }
+      />
+    );
+  }
 
   return <MenuModal title="Нове повідомлення" items={items} onClose={onClose} />;
 }

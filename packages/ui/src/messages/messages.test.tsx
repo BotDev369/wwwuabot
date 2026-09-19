@@ -26,6 +26,7 @@ import { MessagesToolbar } from "./MessagesToolbar";
 import { NewMessagePicker } from "./NewMessagePicker";
 import { ThreadSheet } from "./ThreadSheet";
 import { DEFAULT_MESSAGES_VIEW } from "./types";
+import { NO_PEERS_HINT, NO_PEERS_TITLE } from "./empty";
 import { conversationLine } from "./lines";
 import { buildConversationGroups } from "./view";
 
@@ -221,6 +222,27 @@ describe("нове повідомлення", () => {
     );
 
     expect(html).toContain("@karas");
+  });
+
+  it("вибір без жодного співрозмовника каже, чому людей немає, а не малює порожню поверхню", () => {
+    // «+» стоїть на екрані завжди (смуга керування — хром), тож її натискають
+    // і тоді, коли писати нікому. Порожня поверхня в цей момент читалася б як
+    // зламана кнопка.
+    const html = renderToStaticMarkup(
+      <NewMessagePicker conversations={[]} onOpen={() => {}} onClose={() => {}} />,
+    );
+
+    expect(html).toContain(NO_PEERS_TITLE);
+    expect(html).toContain("Контакти");
+  });
+
+  it("той самий текст, що в порожньому списку: один стан — одні слова", () => {
+    // `renderToStaticMarkup` екранує апострофи (`&#x27;`), тож порівнюємо з
+    // текстом у тому вигляді, у якому його прочитає людина.
+    const empty = list([]).replace(/&#x27;/g, "'");
+
+    expect(empty).toContain(NO_PEERS_TITLE);
+    expect(empty).toContain(NO_PEERS_HINT);
   });
 });
 
