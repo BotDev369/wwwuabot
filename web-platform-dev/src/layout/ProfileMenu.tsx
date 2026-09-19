@@ -25,7 +25,7 @@ import { ProfileAccountCards } from "./ProfileAccountCards";
 import { ProfileCardsSwitch } from "./ProfileCardsSwitch";
 import { readCardsLayout, writeCardsLayout } from "./profile-cards-pref";
 import { PROFILE_PATH } from "./platform-tabs";
-import { buildProfileItems, type ProfileMenuView } from "./profile-menu";
+import { buildProfileItems, hasBottomBar, type ProfileMenuView } from "./profile-menu";
 
 interface ProfileMenuProps {
   /** Закрити меню. Відкриває й закриває його футер. */
@@ -81,14 +81,16 @@ export function ProfileMenu({ onClose }: ProfileMenuProps): ReactElement {
       align={view === "list" ? "end" : "start"}
       // На весь екран, із заголовком по центру, а вихід — унизу: це найбільша
       // поверхня продукту, і в шапці їй нема чого тримати кнопку на відшибі.
+      // Але смуга внизу — **лише в списку** (`hasBottomBar`): у панелі теми
+      // перемикати нічого, а її власний вихід — «Зберегти і закрити» та ✕ у
+      // шапці, де йому й місце.
       fullscreen
       titleAlign="center"
-      closePlacement="bottom"
-      // Перемикач розкладки карток стоїть **перед** «закрити» (той тепер без
-      // підпису — лише знак) і лише там, де картки видно: у панелі теми він
-      // нічого не змінює.
+      closePlacement={hasBottomBar(view) ? "bottom" : "header"}
+      // Перемикач розкладки карток стоїть **перед** «Закрити» і лише там, де
+      // картки видно: у панелі теми він нічого не змінює.
       footer={
-        view === "list" ? (
+        hasBottomBar(view) ? (
           <ProfileCardsSwitch layout={cardsLayout} onChange={changeCardsLayout} />
         ) : undefined
       }

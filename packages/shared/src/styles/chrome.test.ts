@@ -4,11 +4,10 @@
  * Два різні дефекти живуть тут поруч, і обидва ламаються мовчки.
  *
  * **Слот дії у футері.** Він займає ту саму п'яту частину смуги, що й вкладка, а
- * підпису не має — і без кола знак висів у цій порожнечі, читаючись «величезною»
- * вкладкою (сам знак при цьому звичайні 24px). Коло виправляє роль, і воно
- * ламається непомітно: втрачений `border-radius` дає квадрат, втрачене тло —
- * знову нічим не обмежений знак. Тут же — те, чого бути НЕ повинно: коло у
- * **вибраного** розділу (дія й стан це різні сенси).
+ * підпису не має — тож його виділяє **колір** (акцент = дія), а не тло. Тло
+ * (залите коло чи плитка) робило зі слота найважчу пляму футера й читалось як
+ * «ще один розділ». Ламається це мовчки: один `background` у правилі про знак —
+ * і смуга повертається до вигляду, від якого її відмовили.
  *
  * **Бренд проти ролі поверхні.** `apple.css` і `android.css` малюють модалку
  * своїм характером — пілюля, M3, темна плівка — і роблять це через
@@ -55,37 +54,40 @@ function rule(selector: string): Rule | undefined {
   return CHROME.filter((entry) => entry.selector === selector).at(-1);
 }
 
-describe("футер: слот дії", () => {
-  it("«+» стоїть на акцентному колі — це кнопка, а не вкладка", () => {
-    const circle = rule(".wb-tabbar-item--primary .wb-tabbar-icon");
-    expect(circle, "правило знака слота дії мусить існувати").toBeDefined();
-    expect(circle?.body).toContain("background: var(--accent)");
-    expect(circle?.body).toContain("border-radius: var(--radius-full)");
-    // Знак на залитому тлі мусить бути світлим — інакше акцент його з'їдає.
-    expect(circle?.body).toContain("color: var(--text-inverse)");
-    // Коло — планка пальця: менше за 40px воно перестає читатись як кнопка.
-    const size = Number(circle?.body.match(/width:\s*(\d+)px/)?.[1]);
-    expect(size).toBeGreaterThanOrEqual(40);
-    expect(circle?.body).toContain(`height: ${size}px`);
-  });
+describe("футер: знаки без тла", () => {
+  /**
+   * Правила про **знак** пункту — не про тло самої смуги (воно в неї є, і це
+   * хром) і не про підпис. Або тло, або радіус під знаком — це вже плитка, і
+   * вона повертає смузі вигляд, від якого її й прибрали.
+   */
+  const iconRules = CHROME.filter((entry) => entry.selector.includes("wb-tabbar-icon"));
 
-  it("у вибраного розділу кола немає — вибір показує сам знак", () => {
-    // Активна вкладка відрізняється залитим близнюком іконки (`iconActive`) та
-    // кольором підпису. Акцентне коло там означало б «дію», а не «тут ти».
-    expect(rule(".wb-tabbar-item--active .wb-tabbar-icon")).toBeUndefined();
-    // І жодне з правил активної вкладки (там уже є штрих знака) не малює кола.
-    for (const entry of CHROME) {
-      if (!entry.selector.includes("--active") || !entry.selector.includes("wb-tabbar-icon")) {
-        continue;
-      }
+  it("тла під знаками немає — ні в пунктів, ні в слота дії", () => {
+    expect(iconRules.length, "правила про знак мусять існувати").toBeGreaterThan(0);
+    for (const entry of iconRules) {
       expect(entry.body, entry.selector).not.toContain("background");
       expect(entry.body, entry.selector).not.toContain("border-radius");
     }
   });
 
-  it("смуга не росте від кола: мірки задає токен, а не вміст", () => {
-    // Висота смуги — `--tab-bar-h` (бренд + safe-area). Коло 40px у неї влізе
-    // лише тому, що воно не більше за планку HIG (56px) і Material (60px).
+  it("«+» відрізняється кольором, а не кругом", () => {
+    // Акцент у продукті означає дію — цього досить, щоб слот без підпису
+    // читався як «створити», і не треба плями на всю п'яту частину смуги.
+    expect(rule(".wb-tabbar-item--primary")?.body).toContain("color: var(--accent)");
+    expect(rule(".wb-tabbar-item--primary .wb-tabbar-icon")).toBeUndefined();
+  });
+
+  it("вибраний розділ — акцентний підпис і жирніший штрих знака", () => {
+    // Це єдине, чим вибір відрізняється від решти, коли тла немає в жодного
+    // пункту: колір плюс штрих (і залитий близнюк іконки — `iconActive`).
+    const active = rule(".wb-tabbar-item--active");
+    expect(active, "правило вибраного пункту мусить існувати").toBeDefined();
+    expect(active?.body).toContain("color: var(--accent)");
+    expect(rule(".wb-tabbar-item--active .wb-tabbar-icon svg")?.body).toContain("stroke-width");
+  });
+
+  it("смуга не росте від знака: мірки задає токен, а не вміст", () => {
+    // Висота смуги — `--tab-bar-h` (бренд + safe-area), а не сума мірок знака.
     expect(rule(".wb-tabbar")?.body).toContain("height: var(--tab-bar-h)");
     expect(rule(".wb-tabbar-inner")?.body).toContain("align-items: stretch");
   });

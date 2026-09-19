@@ -9,7 +9,7 @@
  */
 
 import { describe, expect, it, vi } from "vitest";
-import { buildProfileItems, CONTACTS_PATH, NOTES_PATH } from "./profile-menu";
+import { buildProfileItems, CONTACTS_PATH, hasBottomBar, NOTES_PATH } from "./profile-menu";
 
 const onOpenTheme = vi.fn();
 
@@ -49,6 +49,15 @@ describe("меню профілю", () => {
     // МоїДати — рядок контенту, тож адреса будується зі `slug` (AGENTS.md §7),
     // а не вигадується рядком на місці.
     expect(items.find((item) => item.key === "mydate")?.href).toBe("/mydate");
+  });
+
+  it("смуга внизу — лише в списку розділів", () => {
+    // Смуга несе перемикач вигляду карток і «Закрити» — обидва мають сенс лише
+    // там, де картки видно. У панелі теми перемикати нічого, а її власний вихід
+    // — ✕ у шапці та «Зберегти і закрити»: смуга додала б їй другий вихід
+    // посеред екрана (саме так вона й читалась зайвою).
+    expect(hasBottomBar("list")).toBe(true);
+    expect(hasBottomBar("theme")).toBe(false);
   });
 
   it("заглушки позначені заглушками й мають пояснення", () => {

@@ -189,8 +189,8 @@ describe("меню: поверхня на весь екран і смуга вн
     expect(bar?.body).toContain("flex-shrink: 0");
     // Безпечна зона знизу — тут: смуга остання на екрані.
     expect(bar?.body).toContain("var(--safe-bottom)");
-    // Мірки контролів — їхні власні: у смузі стоять коло й перемикач, а не дві
-    // половини смуги (розтягнутий вихід читався прапором на всю ширину).
+    // Мірки контролів — їхні власні: у смузі стоять пілюля виходу й перемикач,
+    // а не дві половини смуги (розтягнутий вихід читався прапором).
     expect(rule(".wb-sheet-bar > *")?.body).toContain("flex: 0 0 auto");
   });
 
@@ -207,25 +207,25 @@ describe("меню: поверхня на весь екран і смуга вн
     expect(rule(".wb-segmented-label")).toBeUndefined();
   });
 
-  it("смуга внизу: контроли по центру, вихід — коло на акцентному тлі", () => {
-    // Розтягнута смуга робила з виходу прапор на всю ширину; тепер це два
-    // контроли за шириною вмісту, і стоять вони по центру.
+  it("смуга внизу: контроли праворуч, вихід — підписана пілюля", () => {
+    // Розтягнута смуга робила з виходу прапор на всю ширину, а центровані
+    // контроли тягнули око в порожнечу. Праворуч — там, куди їх поклали.
     const bar = rule(".wb-sheet-bar");
-    expect(bar?.body).toContain("justify-content: center");
+    expect(bar?.body).toContain("justify-content: flex-end");
     expect(rule(".wb-sheet-bar > *")?.body).toContain("flex: 0 0 auto");
 
-    // Коло мусить лишатись колом: і квадратним (44 — планка пальця), і круглим.
     const close = rule(".wb-sheet-bar-close");
     expect(close, "правило виходу мусить існувати").toBeDefined();
-    expect(close?.body).toContain("border-radius: var(--radius-full)");
     expect(close?.body).toContain("background: var(--accent)");
     expect(close?.body).toContain("color: var(--text-inverse)");
-    const size = Number(close?.body.match(/width:\s*(\d+)px/)?.[1]);
-    expect(size).toBeGreaterThanOrEqual(44);
-    expect(close?.body).toContain(`height: ${size}px`);
-    // `padding: 0` — не косметика: це той самий бокс 44×44 без внутрішніх
-    // мірок, які зробили б із кола овал.
-    expect(close?.body).toContain("padding: 0");
+    // Пілюля: радіус — токен, а не число на місці (у `.wb-btn` форму задає
+    // бренд, тому вихід — свій кирпичик зі своєю формою в обох брендах).
+    expect(close?.body).toContain("border-radius: var(--radius-full)");
+    // Планка пальця — мінімум, а не фіксований бокс: ширину тримає підпис,
+    // а `width: 44px` зробило б із підписаної кнопки овал з обрізаним словом.
+    const minHeight = Number(close?.body.match(/min-height:\s*(\d+)px/)?.[1]);
+    expect(minHeight).toBeGreaterThanOrEqual(44);
+    expect(close?.body).not.toMatch(/(?<!min-)width:\s*\d+px/);
   });
 
   it("у перемикача немає треку, а вибраний показує акцентний колір", () => {

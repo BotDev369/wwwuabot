@@ -154,7 +154,7 @@ describe("MenuModal", () => {
     expect(html({ titleAlign: "center" })).toContain("wb-modal-title--center");
   });
 
-  it("«закрити» внизу: ✕ у шапці немає, і смуга стоїть після тіла", () => {
+  it("«Закрити» внизу: ✕ у шапці немає, і смуга стоїть після тіла", () => {
     const markup = html({
       closePlacement: "bottom",
       footer: <span className="wb-segmented">вигляд</span>,
@@ -162,16 +162,15 @@ describe("MenuModal", () => {
     // Два виходи з однієї поверхні — це два місця, де його шукати: один.
     expect(markup).not.toContain("wb-close-btn");
     expect(markup).toContain("wb-sheet-bar-close");
-    // Знак без підпису — на акцентному тлі: вихід у смузі головний, а місце
-    // він ділить із перемикачем. Ім'я лишається в `aria-label`, бо самий ✕
-    // скрінрідеру нічого не каже.
+    // Підпис словом, а не знаком: у смузі поруч стоїть перемикач вигляду — теж
+    // знак без слова, і два невідомі знаки поряд не кажуть, який із них
+    // закриває поверхню. Окремого `aria-label` тому немає — ім'я дає сам текст.
     //
     // І це НЕ `.wb-btn`: бренд дає кнопці свою форму (пілюля Apple, M3 20px),
-    // а вихід круглий у КОЖНОМУ бренді — тож форму задає свій кирпичик, а не
-    // боротьба з брендовим `!important`.
+    // а вихід мусить мати одну форму в КОЖНОМУ бренді — тож форму задає свій
+    // кирпичик, а не боротьба з брендовим `!important`.
+    expect(markup).toContain(">Закрити<");
     expect(markup).not.toMatch(/class="[^"]*wb-btn/);
-    expect(markup).toContain('aria-label="Закрити"');
-    expect(markup).not.toContain(">Закрити<");
     // Смуга — сестра тіла, а не останній пункт у ньому: інакше вона
     // прокручувалась би разом із пунктами й зникала з очей.
     expect(markup.indexOf("wb-sheet-bar")).toBeGreaterThan(markup.indexOf("wb-modal-body"));
