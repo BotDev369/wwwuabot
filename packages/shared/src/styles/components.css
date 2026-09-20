@@ -1090,10 +1090,15 @@ html:has(.wb-tabbar) .wb-modal-overlay--screen {
 
    Горизонтально, бо це вкладки, а не меню: людина перемикає **два погляди на
    те саме**, і в стовпчику другий розділ читався б як окремий пункт списку.
-   Вибраний розділ залитий **тим самим акцентом, що й обраний стиль** у панелі
-   теми (`.wb-btn-primary`): вибір в одному продукті має один вигляд, інакше
-   обраний «Apple» у темі й обрана вкладка тут виглядали б як різні речі, хоч
-   обидва — «це вибрано». */
+
+   **Вигляд вкладка бере в кирпичика кнопки, а не малює свій.** Розмітка ставить
+   `wb-btn` разом із `wb-btn-primary` (вибрана) / `wb-btn-secondary` (друга), а
+   тут лишається **сама розкладка**. Причина не в економії: форму кнопки задає
+   бренд (`apple.css` — пілюля, `android.css` — 20px), і власний `border-radius`
+   у цьому правилі зробив би вкладки прямокутними в **обох** темах — так і було,
+   хоч у тій самій панелі теми кнопки овальні. Той самий кирпичик обрано й у
+   перемикачі стилю (`wb-theme-brands`): вибір в одному продукті має один
+   вигляд. */
 .wb-tabs {
   display: flex;
   flex-direction: row;
@@ -1102,39 +1107,8 @@ html:has(.wb-tabbar) .wb-modal-overlay--screen {
 }
 
 .wb-tabs-btn {
-  display: flex;
   flex: 1 1 0;
-  align-items: center;
-  justify-content: center;
   min-width: 0;
-  min-height: 44px;
-  padding: 0 var(--sp-3);
-  border: none;
-  border-radius: var(--radius-sm);
-  background: none;
-  color: var(--text-secondary);
-  font: inherit;
-  font-size: var(--text-base);
-  font-weight: var(--weight-medium);
-  text-align: center;
-  cursor: pointer;
-  transition:
-    color var(--duration-fast) var(--ease),
-    background var(--duration-fast) var(--ease);
-}
-
-/* Та сама пастка, що в перемикача вигляду: на тачі `:hover` лишається на
-   останньому торкнутому, а його специфічність вища за `--active`. */
-@media (hover: hover) {
-  .wb-tabs-btn:not(.wb-tabs-btn--active):hover {
-    color: var(--text-primary);
-  }
-}
-
-.wb-tabs-btn--active {
-  background: var(--accent);
-  color: var(--text-inverse);
-  font-weight: var(--weight-semibold);
 }
 
 /* ── Меню: поверхня зі списком пунктів ────────────────────────────────────

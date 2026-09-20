@@ -11,6 +11,12 @@
  * два розділи обирають **за словом** — «Платформа» й «Телеграм» не вгадуються
  * зі знака. Тому кирпичик інший (`.wb-tabs*`), хоч обидва й перемикачі.
  *
+ * **Вигляд вкладки — кирпичик кнопки, і це не деталь.** Клас `.wb-tabs-btn`
+ * дає саму розкладку (половинки рядка), а форму, висоту й заливку — `wb-btn`
+ * із `wb-btn-primary` / `wb-btn-secondary`. Інакше власний `border-radius`
+ * робив би вкладки прямокутними в обох брендів, тоді як решта кнопок продукту
+ * овальна в Apple й заокруглена в Material.
+ *
  * **Пояснень немає навмисно.** Підпис поля й значення вже кажуть усе потрібне;
  * абзац про те, що «саме його вживає система», був текстом для нас, а не для
  * людини. Єдине, що лишається сказати словами, — те, чого людина не бачить:
@@ -75,7 +81,8 @@ export function ProfileAccountPage(): ReactElement {
       {profile && !loading && !error && (
         <>
           {/* Розділи — двома рівними половинами рядка: обидва видно одразу, і
-              планка пальця в кожного своя. */}
+              планка пальця в кожного своя. Форму дає кнопка (кирпичик), тут
+              лишається розкладка. */}
           <div className="wb-tabs" role="tablist" aria-label="Розділи акаунта">
             {ACCOUNT_TABS.map((option) => {
               const active = option.key === tab;
@@ -87,7 +94,7 @@ export function ProfileAccountPage(): ReactElement {
                   role="tab"
                   aria-selected={active}
                   aria-controls={panelId(option.key)}
-                  className={`wb-tabs-btn${active ? " wb-tabs-btn--active" : ""}`}
+                  className={`wb-btn wb-tabs-btn ${active ? "wb-btn-primary" : "wb-btn-secondary"}`}
                   onClick={() => setTab(option.key)}
                 >
                   {option.label}

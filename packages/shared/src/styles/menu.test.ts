@@ -1,7 +1,8 @@
 /**
  * Сторож поверхні зі списком: **плитки — по дві в ряду, заглушка не мовчить,
  * а вихід у поверхні один** — і перемикачів: вигляду (`.wb-segmented`,
- * знаками) та розділів сторінки (`.wb-tabs`, підписами, горизонтально).
+ * знаками) та розділів сторінки (`.wb-tabs`, підписами, горизонтально, вигляд —
+ * з кирпичика кнопки).
  *
  * Чому це тест, а не коментар. Кожна з цих речей ламається мовчки: `grid` без
  * `repeat(2, …)` стає одним стовпчиком (розділи знову смуги на всю ширину),
@@ -28,6 +29,13 @@ const CSS = readFileSync(
   join(REPO_ROOT, "packages/shared/src/styles/components.css"),
   "utf8",
 ).replace(/\/\*[\s\S]*?\*\//g, "");
+
+/**
+ * Сторінка, яка рендерить смугу розділів. Смуга — розмітка оболонки, а не
+ * спільного коду, тож саме правило CSS її недоговорює: чи взято кирпичик
+ * кнопки, видно лише в розмітці.
+ */
+const PAGE = "web-platform-dev/src/pages/ProfileAccountPage.tsx";
 
 interface Rule {
   selector: string;
@@ -219,29 +227,42 @@ describe("меню: повноекранна поверхня, перемика�
     // перестала б бути рівною парою.
     expect(btn?.body).toContain("flex: 1 1 0");
     expect(btn?.body).toContain("min-width: 0");
-    const minHeight = Number(btn?.body.match(/min-height:\s*(\d+)px/)?.[1]);
-    expect(minHeight).toBeGreaterThanOrEqual(44);
+
+    // Планку пальця вкладка теж бере в кнопки, а не тримає власну: висота
+    // кнопки — мірка бренду (`apple.css` — 44px), і друга цифра тут завела б
+    // третю мірку того самого.
+    expect(btn?.body).not.toContain("min-height");
   });
 
-  it("вибраний розділ залитий тим самим акцентом, що й обраний стиль", () => {
-    // Інакше вибір в одному продукті мав би два вигляди: обраний «Apple» у
-    // панелі теми (`.wb-btn-primary`) і обрана вкладка тут — обидва кажуть
-    // «це вибрано», тож і виглядати мусять однаково.
-    const active = rule(".wb-tabs-btn--active");
-    expect(active, "правило вибраного розділу мусить існувати").toBeDefined();
-    expect(active?.body).toContain("background: var(--accent)");
-    expect(active?.body).toContain("color: var(--text-inverse)");
+  it("вкладка бере вигляд у кирпичика кнопки, а не малює свій", () => {
+    // Форму задає бренд (`apple.css` — пілюля, `android.css` — 20px). Власний
+    // `border-radius` у `.wb-tabs-btn` робив би вкладки прямокутними в обох
+    // темах — так і було, хоч кнопки в тій самій панелі теми овальні.
+    const btn = rule(".wb-tabs-btn");
+    for (const own of ["border-radius", "background", "padding", "font-size"]) {
+      expect(btn?.body, `вкладка не має задавати ${own} сама`).not.toContain(own);
+    }
+
+    // І станів у неї своїх немає: вибрана — `wb-btn-primary`, друга —
+    // `wb-btn-secondary`. Клас стану, що лишився в CSS без правил, — це саме та
+    // половина пари, яку потім перестають фарбувати й ніхто не помічає.
+    expect(CSS).not.toMatch(/\.wb-tabs-btn--active/);
+
+    // А розмітка справді ставить кирпичик: обидві половини пари — `.wb-btn`.
+    const page = readFileSync(join(REPO_ROOT, PAGE), "utf8");
+    expect(page).toContain("wb-btn wb-tabs-btn");
+    expect(page).toContain("wb-btn-primary");
+    expect(page).toContain("wb-btn-secondary");
   });
 
-  it("дотик не знімає вибір розділу: `:hover` — тільки під `@media (hover: hover)`", () => {
+  it("дотик не знімає вибір розділу: власного `:hover` у вкладки немає", () => {
     // Та сама пастка, що в перемикача вигляду: на тачі `:hover` лишається на
-    // останньому торкнутому елементі, а його специфічність вища за `--active`.
-    const bodies = hoverBlocks();
-    expect(bodies.join("\n")).toContain(".wb-tabs-btn:not(.wb-tabs-btn--active):hover");
-
+    // останньому торкнутому елементі. Вкладка її не має — підсвічення дає
+    // кнопка, а вибір тримає її заливка.
     let outside = CSS;
-    for (const body of bodies) outside = outside.replace(body, "");
+    for (const body of hoverBlocks()) outside = outside.replace(body, "");
     expect(outside).not.toMatch(/\.wb-tabs-btn[^{}]*:hover/);
+    for (const body of hoverBlocks()) expect(body).not.toMatch(/\.wb-tabs-btn/);
   });
 
   it("у перемикача немає треку, а вибраний показує акцентний колір", () => {
