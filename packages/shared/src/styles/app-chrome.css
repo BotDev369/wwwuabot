@@ -815,13 +815,21 @@
   gap: 0;
 }
 
-/* Рядки профілю розділяє просвіт, а не лінія: рядок і так має свій підпис
-   зліва і значення справа, тож читається без штриха. */
+/* Рядок профілю — **один рядок**: підпис зліва, значення справа, і так на
+   будь-якій ширині в обох оболонках.
+
+   Раніше на вузькому екрані рядок ставав стовпчиком (підпис над значенням), і
+   кожне поле займало дві повні лінії: картка з шести полів перетворювалась на
+   простирадло, яке треба гортати, щоб побачити те, що вміщається в екран.
+   Мобільний — тут пріоритет (§3), тож стисло саме на мобільному.
+
+   Лінія між рядками не потрібна: підпис і значення розведені краями. */
 .wb-profile-field {
   display: flex;
   justify-content: space-between;
-  align-items: center;
-  padding: 12px 0;
+  align-items: baseline;
+  gap: var(--sp-3);
+  padding: 9px 0;
 }
 
 .wb-profile-label {
@@ -832,25 +840,14 @@
   font-size: var(--text-base);
 }
 
+/* `max-width` лишає підпису місце: довге значення переноситься саме собою, а не
+   виштовхує підпис за край. */
 .wb-profile-value {
+  max-width: 62%;
   font-size: var(--text-base);
   font-weight: var(--weight-medium);
   text-align: right;
-  max-width: 55%;
   word-break: break-word;
-}
-
-@media (max-width: 480px) {
-  .wb-profile-field {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: var(--sp-1);
-  }
-
-  .wb-profile-value {
-    max-width: 100%;
-    text-align: left;
-  }
 }
 
 /* Ім'я на платформі — перший блок профілю: той самий вигляд в обох оболонках,
@@ -1125,8 +1122,11 @@
   min-width: 0;
 }
 
+/* Ім'я в шапці — **не** заголовок картки: над ним уже стоїть `.wb-profile-title`
+   (18–20px), і два заголовки одного розміру читались би як два рівні там, де
+   рівень один. */
 .wb-account-head-title {
-  font-size: var(--text-lg);
+  font-size: var(--text-md);
   font-weight: var(--weight-semibold);
   word-break: break-word;
 }

@@ -3,7 +3,8 @@
  *
  * Перелік полів складає `telegram-fields.ts` (там і його власні тести); тут
  * перевіряється саме показ: підписи українською, `@` на юзернеймі, порядок
- * рядків у розмітці й те, що нашого дампу в картці немає.
+ * рядків у розмітці, шапка з фото й іменем **усередині тієї самої картки** і те,
+ * що нашого дампу в картці немає.
  *
  * @module packages/shared/src/components/user-profile/TelegramSection.test
  */
@@ -27,6 +28,20 @@ const USER: UserProfileData = {
 };
 
 describe("TelegramSection", () => {
+  it("тримає акаунт і поля в одній картці", () => {
+    const html = renderToStaticMarkup(<TelegramSection user={USER} />);
+
+    // Одна картка, а не дві: фото, ім'я й `@юзернейм` — теж дані Telegram, тож
+    // окремий блок із ними казав би «ось акаунт, а ось його дані».
+    expect(html.match(/class="wb-profile"/g)).toHaveLength(1);
+    // Шапка — **до** полів: спершу впізнавання, далі подробиці.
+    expect(html.indexOf("wb-account-head")).toBeGreaterThan(html.indexOf("wb-profile-title"));
+    expect(html.indexOf("wb-profile-fields")).toBeGreaterThan(html.indexOf("wb-account-head"));
+    // Шапка показує повне ім'я й юзернейм із позначкою `@` (AGENTS.md §2).
+    expect(html).toContain("Diskant Sergiy");
+    expect(html).toContain("@DiskantSergiy");
+  });
+
   it("називає речі так, як їх називає людина: юзернейм, а не хендл", () => {
     const html = renderToStaticMarkup(<TelegramSection user={USER} />);
 
@@ -45,11 +60,13 @@ describe("TelegramSection", () => {
     expect(html).not.toContain("...");
   });
 
-  it("не показує фото рядком: воно стоїть у шапці", () => {
+  it("ставить фото в шапку, а не рядком у переліку", () => {
     const html = renderToStaticMarkup(<TelegramSection user={USER} />);
 
+    // Адреса картинки в переліку не додає нічого — сама картинка стоїть у шапці.
     expect(html).not.toContain("Фото профілю");
-    expect(html).not.toContain("https://t.me/i/userpic");
+    expect(html).toContain('<img src="https://t.me/i/userpic/320/karas.jpg"');
+    expect(html.indexOf("wb-account-head")).toBeLessThan(html.indexOf("<img"));
   });
 
   it("ставить поля в сталий порядок", () => {

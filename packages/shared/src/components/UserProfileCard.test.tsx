@@ -5,7 +5,8 @@
  * **першим** і **не редагується** (чуже ім'я не переписують випадково); чужі
  * дані Telegram показуються **всі**, зокрема невідомі нам поля; і один факт не
  * дублюється в двох розділах — ані Telegram-поля, ані фото (аватар бере те
- * саме фото з двох полів, а не показує літеру при наявному фото).
+ * саме фото з двох полів, а не показує літеру при наявному фото, і стоїть у
+ * блоці імені — окремого блоку з тим самим іменем немає).
  */
 
 import { describe, it, expect } from "vitest";
@@ -40,8 +41,18 @@ describe("UserProfileCard", () => {
     expect(html).toContain("wb-handle-label");
     expect(html).toContain("на платформі");
     expect(html).toContain("#olya");
-    // Перший блок — саме він, а не Telegram-ім'я
-    expect(html.indexOf("wb-handle-label")).toBeLessThan(html.indexOf("Оля Коваль"));
+    // Перший блок — саме він, а не дані Telegram
+    expect(html.indexOf("wb-handle-label")).toBeLessThan(html.indexOf("Дані від Telegram"));
+  });
+
+  it("тримає аватар у блоці імені, а не окремим рядом з тим самим іменем", () => {
+    const html = renderToStaticMarkup(<UserProfileCard user={USER} />);
+
+    // Фото — частина блоку імені: другий блок із тим самим іменем був би другою
+    // копією одного факту (AGENTS.md §7).
+    const avatar = html.indexOf("wb-account-photo--lg");
+    expect(avatar).toBeGreaterThan(html.indexOf("wb-profile--handle"));
+    expect(avatar).toBeLessThan(html.indexOf("Дані від Telegram"));
   });
 
   it("не редагує чуже ім'я й не радить тому, хто на нього дивиться", () => {
