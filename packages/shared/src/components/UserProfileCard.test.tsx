@@ -1,10 +1,11 @@
 /**
- * Спільна картка профілю — той самий екран для TWA й адмінки.
+ * Картка користувача для адмінки: те, що потрібно тому, хто дивиться на чужого.
  *
  * Тести фіксують рішення, які легко зламати мовчки: ім'я на платформі стоїть
- * **першим** і редагується лише там, де є обробник; показуються **всі** поля,
- * які віддав Telegram (включно з тими, яких ми не знаємо); і один факт не
- * дублюється в двох розділах.
+ * **першим** і **не редагується** (чуже ім'я не переписують випадково); чужі
+ * дані Telegram показуються **всі**, зокрема невідомі нам поля; і один факт не
+ * дублюється в двох розділах — ані Telegram-поля, ані фото (аватар бере те
+ * саме фото з двох полів, а не показує літеру при наявному фото).
  */
 
 import { describe, it, expect } from "vitest";
@@ -22,7 +23,13 @@ const USER: UserProfileData = {
   role: "user",
   tariff: "free",
   status: "active",
-  telegram: { id: 777, first_name: "Оля", is_premium: true, unknown_future_field: "нове" },
+  telegram: {
+    id: 777,
+    first_name: "Оля",
+    is_premium: true,
+    photo_url: "https://t.me/i/userpic/320/olya.jpg",
+    unknown_future_field: "нове",
+  },
   telegramSession: { chat_type: "private", start_param: "mydate" },
 };
 
@@ -33,32 +40,30 @@ describe("UserProfileCard", () => {
     // Текст заповнювача екранує апостроф, тому перевіряємо клас кирпичика
     expect(html).toContain("wb-handle-label");
     expect(html).toContain("на платформі");
-    expect(html).toContain("@olya");
+    expect(html).toContain("#olya");
     // Перший блок — саме він, а не Telegram-ім'я
     expect(html.indexOf("wb-handle-label")).toBeLessThan(html.indexOf("Оля Коваль"));
   });
 
-  it("редагує ім'я лише тоді, коли є обробник", () => {
-    const readOnly = renderToStaticMarkup(<UserProfileCard user={USER} />);
-    expect(readOnly).toContain("@olya");
-    expect(readOnly).not.toContain("Змінити");
-
-    const editable = renderToStaticMarkup(
-      <UserProfileCard user={USER} onChangeUsername={async () => null} />,
-    );
-    expect(editable).toContain("Змінити");
+  it("не редагує чуже ім'я й не радить тому, хто на нього дивиться", () => {
+    // Кнопка «Змінити» тут була б кнопкою, що переписує чуже ім'я, а порада
+    // «так вас бачать інші» зверталась би не до того, кого видно в рядку.
+    const html = renderToStaticMarkup(<UserProfileCard user={USER} />);
+    expect(html).toContain("#olya");
+    expect(html).not.toContain("Змінити");
+    expect(html).not.toContain("Так вас бачать інші");
   });
 
-  it("без імені чесно каже «ще не задано» і пропонує його обрати", () => {
-    const html = renderToStaticMarkup(
-      <UserProfileCard
-        user={{ ...USER, platformUsername: null }}
-        onChangeUsername={async () => null}
-      />,
-    );
+  it("показує аватар із двох полів: своє фото платформи, далі фото Telegram", () => {
+    // Фото лежить в одному з двох полів — і показувати літеру при наявному фото
+    // означало б, що картка не бачить того, що вже є.
+    const telegramPhoto = renderToStaticMarkup(<UserProfileCard user={USER} />);
+    expect(telegramPhoto).toContain("https://t.me/i/userpic/320/olya.jpg");
 
-    expect(html).toContain("ще не задано");
-    expect(html).toContain("Обрати");
+    const ownPhoto = renderToStaticMarkup(
+      <UserProfileCard user={{ ...USER, photoUrl: "https://cdn.example/olya.png" }} />,
+    );
+    expect(ownPhoto).toContain("https://cdn.example/olya.png");
   });
 
   it("показує всі поля, які віддав Telegram, зокрема невідомі нам", () => {
@@ -88,10 +93,10 @@ describe("UserProfileCard", () => {
     expect(html).toContain("Статус");
   });
 
-  it("в адмінці не дублює Telegram-поля, коли payload уже є", () => {
-    const withPayload = renderToStaticMarkup(<UserProfileCard user={USER} variant="admin" />);
+  it("не дублює Telegram-поля, коли payload уже є", () => {
+    const withPayload = renderToStaticMarkup(<UserProfileCard user={USER} />);
     const withoutPayload = renderToStaticMarkup(
-      <UserProfileCard user={{ ...USER, telegram: null, telegramSession: null }} variant="admin" />,
+      <UserProfileCard user={{ ...USER, telegram: null, telegramSession: null }} />,
     );
 
     expect(withPayload.match(/Дані від Telegram/g)).toHaveLength(1);
@@ -100,9 +105,9 @@ describe("UserProfileCard", () => {
     expect(withoutPayload).toContain("Прізвище");
   });
 
-  it("в адмінці показує Telegram-поля з рядка, коли payload ще не збережено", () => {
+  it("показує Telegram-поля з рядка, коли payload ще не збережено", () => {
     const html = renderToStaticMarkup(
-      <UserProfileCard user={{ ...USER, telegram: null, telegramSession: null }} variant="admin" />,
+      <UserProfileCard user={{ ...USER, telegram: null, telegramSession: null }} />,
     );
 
     expect(html).not.toContain("Дані від Telegram");

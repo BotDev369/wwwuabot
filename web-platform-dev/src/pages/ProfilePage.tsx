@@ -1,16 +1,17 @@
 /**
  * Профіль у платформі — **хаб**: хто ти і куди ще можна піти.
  *
- * Це той самий екран, що в адмінці — спільний `UserProfileCard` зі
- * `@wwwuabot/shared`; різниця лише в даних (платформа має підписаний
- * `initData`, тому показує все, що Telegram віддав тут і зараз, і має право
- * змінити **своє** ім'я на платформі) і в тому, що нижче додає сама оболонка.
+ * **Обліковий рядок, а не дані.** Людина приходить сюди не читати про себе —
+ * вона приходить далі (у нотатки, контакти, тему). Тому хаб показує **один
+ * рядок**: два фото (своє на платформі й те, що дає Telegram) і два імені
+ * (`#karas` — наше, `@sergiy` — Telegram). Усе решта про акаунт живе на своїй
+ * сторінці (`/profile/account`), і дублювати її тут означало б мати два екрани
+ * з одним вмістом — саме через це хаб і був кашею.
  *
- * **Чому сторінка, а не поверхня.** Пункт футера мусить означати місце:
- * дотик до нього веде на адресу, яку видно в рядку браузера, пам'ятає історія
- * і можна надіслати посиланням, а «назад» вертає **звідси**, а не виходить із
- * застосунку. Слот, який просто відкриває модалку, — це кнопка, а не пункт
- * (адмінка робить саме так, і тепер обидві оболонки роблять однаково).
+ * **Чому сторінка, а не поверхня.** Пункт футера мусить означати місце: дотик
+ * до нього веде на адресу, яку видно в рядку браузера, пам'ятає історія і можна
+ * надіслати посиланням, а «назад» вертає **звідси**, а не виходить із
+ * застосунку. Слот, який просто відкриває модалку, — це кнопка, а не пункт.
  *
  * **Розділи** (Контакти, Локації, Нотатки, Сторінки, Тема) — те, чого немає в
  * футері: у платформи немає бічного меню, і без цього списку власні екрани
@@ -25,19 +26,17 @@
  */
 
 import { useState, type ReactElement } from "react";
-import { ThemeSheet, UserProfileCard, type UserProfileData } from "@wwwuabot/shared";
+import { ThemeSheet, UserAccountRow, formatPlatformUsername } from "@wwwuabot/shared";
 import { useNavigate } from "react-router-dom";
 import { useDialog } from "@wwwuabot/ui/dialog";
 import { MenuList, buildMenuItems } from "@wwwuabot/ui/menu";
+import { PROFILE_ACCOUNT_PATH } from "@/app/routes";
 import { useProfile } from "./useProfile";
 import { ProfileSectionsSwitch } from "./ProfileSectionsSwitch";
 import { buildProfileSections, readSectionsLayout, writeSectionsLayout } from "./profile-sections";
 
-/** Порожній профіль — для станів завантаження й помилки (картка їх розрізняє). */
-const EMPTY_PROFILE: UserProfileData = { id: 0 };
-
 export function ProfilePage(): ReactElement {
-  const { profile, loading, error, saveUsername } = useProfile();
+  const { profile, loading, error } = useProfile();
   const navigate = useNavigate();
   const dialog = useDialog();
   const [themeOpen, setThemeOpen] = useState(false);
@@ -62,23 +61,23 @@ export function ProfilePage(): ReactElement {
     },
   });
 
-  const title = profile?.platformUsername
-    ? `@${profile.platformUsername}`
-    : (profile?.firstName ?? "Профіль");
+  // Заголовок — **ім'я на платформі**, а не ім'я з Telegram: друге ми не
+  // обираємо й воно може зникнути. Поки імені немає, екран зветься своїм ім'ям.
+  const title = formatPlatformUsername(profile?.platformUsername) ?? "Профіль";
 
   return (
     <div className="wb-page">
       <div className="wb-page-head">
-        <h1 className="wb-page-title">{loading ? "Профіль" : title}</h1>
+        <h1 className="wb-page-title">{title}</h1>
         <ProfileSectionsSwitch layout={layout} onChange={changeLayout} />
       </div>
 
-      <UserProfileCard
-        user={profile ?? EMPTY_PROFILE}
-        variant="platform"
-        loading={loading}
-        error={error}
-        onChangeUsername={saveUsername}
+      <UserAccountRow
+        user={profile}
+        // Причину порожнечі каже сам рядок: інакше два круги без імен читались
+        // би як поламане завантаження, а не як «даних ще немає».
+        note={loading ? "Завантаження…" : error}
+        onSelect={() => navigate(PROFILE_ACCOUNT_PATH)}
       />
 
       <MenuList items={items} layout={layout} />

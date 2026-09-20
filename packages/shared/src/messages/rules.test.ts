@@ -5,8 +5,8 @@
  * ламається мовчки. `conversationPair` — розмова стає двома рядками (і кожен
  * бачить половину переписки); `sanitizeMessageBody` — обрізаний текст у базі;
  * `peerLabel` — чуже ім'я замість того, яким людину назвав той, хто дивиться
- * (AGENTS.md §2); `peerPublicLabel(..., "telegram")` — `@` перед іменем на
- * платформі, з якого Telegram робить посилання на чужого.
+ * (AGENTS.md §2); `peerPublicLabel(..., "telegram")` — позначка перед іменем на
+ * платформі, з якої Telegram робить або посилання (`@`), або хештег (`#`).
  *
  * @module @wwwuabot/shared/messages/rules.test
  */
@@ -77,11 +77,11 @@ describe("підпис співрозмовника", () => {
   it("ім'я зі свого довідника йде першим", () => {
     expect(peerLabel({ ...PEER, contactName: "Карась Х" })).toBe("Карась Х");
     // Другий рядок тоді — хто це на платформі, а не ім'я з Telegram.
-    expect(peerSecondary({ ...PEER, contactName: "Карась Х" })).toBe("@karas");
+    expect(peerSecondary({ ...PEER, contactName: "Карась Х" })).toBe("#karas");
   });
 
   it("без свого імені — ім'я на платформі, далі Telegram-хендл, і лише потім ім'я з Telegram", () => {
-    expect(peerLabel(PEER)).toBe("@karas");
+    expect(peerLabel(PEER)).toBe("#karas");
     expect(peerLabel({ ...PEER, platformUsername: null })).toBe("@serg");
     expect(peerLabel({ ...PEER, platformUsername: null, username: null })).toBe("Сергій Дискант");
     expect(peerLabel(null)).toBe("Невідомий");
@@ -94,14 +94,16 @@ describe("підпис співрозмовника", () => {
     expect(peerSecondary(telegramOnly)).toBeNull();
   });
 
-  it("у Telegram ім'я на платформі йде без `@`, а хендл — із ним", () => {
-    // `@` — синтаксис Telegram: клієнт робить із нього посилання на акаунт.
-    // Ім'я на платформі акаунтом не є, тож у тексті для бота воно без `@`...
+  it("позначка імені залежить від поверхні", () => {
+    // `@` — синтаксис Telegram: клієнт робить із нього посилання на акаунт, а
+    // `#` — хештег. Ім'я на платформі акаунтом не є, тож у тексті для бота
+    // воно йде зовсім без позначки...
     expect(peerPublicLabel(PEER, "telegram")).toBe("karas");
-    // ...а хендл його зберігає: він і є акаунт, посилання веде за адресою.
+    // ...а хендл її зберігає: він і є акаунт, посилання веде за адресою.
     expect(peerPublicLabel({ ...PEER, platformUsername: null }, "telegram")).toBe("@serg");
-    // На наших поверхнях нічого не змінюється.
-    expect(peerPublicLabel(PEER)).toBe("@karas");
+    // На наших поверхнях ім'я на платформі позначене `#` — поруч із `@` видно,
+    // котре з них наше, а котре з Telegram.
+    expect(peerPublicLabel(PEER)).toBe("#karas");
   });
 
   it("літера для аватара збігається з тим, що видно поруч", () => {

@@ -922,7 +922,9 @@
   border-radius: var(--radius-sm);
 }
 
-.wb-handle-at {
+/* Позначка імені в полі: `#`, а не `@` — `@` належить Telegram-хендлу, і два
+   різні імені з однаковою позначкою людина не розрізнить (AGENTS.md §2). */
+.wb-handle-sign {
   color: var(--text-muted);
   font-size: var(--text-md);
 }
@@ -997,6 +999,142 @@
 
 .wb-profile-subfields {
   margin-top: var(--sp-2);
+}
+
+/* ═══ Обліковий рядок — два фото й два імені (хаб `/profile`) ══════════════
+   Рендерить СПІЛЬНИЙ `UserAccountRow`, тож правила живуть тут, а не в CSS
+   однієї з оболонок (§3, §7).
+
+   Рядок — **дотикова поверхня на всю ширину**: за ним стоїть сторінка акаунта,
+   тож палець мусить влучати будь-де, а не лише в ім'я. */
+.wb-account-row {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-3);
+  width: 100%;
+  min-height: 44px;
+  margin-bottom: var(--sp-4);
+  padding: 14px 18px;
+  border: none;
+  border-radius: var(--radius-md);
+  background: var(--bg-home, var(--bg-1));
+  box-shadow: var(--shadow-xs);
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+  transition: background var(--duration-fast) var(--ease);
+}
+
+.wb-account-row:active {
+  background: var(--surface-active);
+}
+
+/* Два фото стоять **поруч**, а не накладені одне на одне: накладені круги
+   читаються як одне фото з двома літерами, а просвіт між ними й каже, що це
+   два різні акаунти. */
+.wb-account-photos {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-shrink: 0;
+}
+
+.wb-account-photo {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  flex-shrink: 0;
+  overflow: hidden;
+  border-radius: 50%;
+  background: var(--surface-active);
+  color: var(--text-secondary);
+  font-size: var(--text-md);
+  font-weight: var(--weight-semibold);
+}
+
+.wb-account-photo img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* Фото з Telegram — акцентом: воно є вже сьогодні, на відміну від свого, і
+   саме воно показує, що другий круг — це інший акаунт, а не порожнє місце. */
+.wb-account-photo + .wb-account-photo .wb-account-initial {
+  color: var(--accent);
+}
+
+.wb-account-names {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+/* Довге ім'я обрізається, а не розпирає рядок: двоє імен поруч мусять лишитись
+   в одному рядку — інакше рядок росте на третій і четвертий, і око втрачає
+   пару «фото ↔ ім'я». */
+.wb-account-name,
+.wb-account-handle {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.wb-account-name {
+  font-size: var(--text-base);
+  font-weight: var(--weight-semibold);
+}
+
+.wb-account-handle {
+  color: var(--text-muted);
+  font-size: var(--text-sm);
+}
+
+.wb-account-more {
+  display: inline-flex;
+  align-items: center;
+  flex-shrink: 0;
+  color: var(--text-muted);
+}
+
+/* Фото в розділі акаунта — більше за рядкове: тут воно саме собі голова, а не
+   позначка акаунта поруч із іменем. */
+.wb-account-photo--lg {
+  width: 64px;
+  height: 64px;
+  font-size: var(--text-xl);
+}
+
+/* Пара «фото ↔ підпис» у тілі розділу (не в рядку хабу). */
+.wb-account-head {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-3);
+  margin-bottom: var(--sp-3);
+}
+
+.wb-account-head-text {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.wb-account-head-title {
+  font-size: var(--text-lg);
+  font-weight: var(--weight-semibold);
+  word-break: break-word;
+}
+
+.wb-account-head-note {
+  color: var(--text-muted);
+  font-size: var(--text-sm);
+  line-height: 1.5;
 }
 
 /* ═══ Мобільна адаптація каркаса ════════════════════════════════════════════ */

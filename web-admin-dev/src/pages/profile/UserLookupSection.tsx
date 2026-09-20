@@ -79,7 +79,7 @@ export function UserLookupSection(): ReactElement {
       {status === "empty" && <p className="wb-profile-note">Користувача з таким ID немає.</p>}
       {status === "error" && <p className="wb-handle-error">{errorMsg}</p>}
 
-      {status === "idle" && profile && <UserProfileCard user={profile} variant="admin" />}
+      {status === "idle" && profile && <UserProfileCard user={profile} />}
     </section>
   );
 }

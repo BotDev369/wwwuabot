@@ -5,8 +5,15 @@
  * `initData`, а не з query-параметра, тож клієнт не передає жодного `user_id`
  * і не може попросити чужий профіль.
  *
- * Стан живе тут, а не в компоненті: `ProfilePage` лишається рендерингом, а
- * цей хук знає, звідки беруться дані й куди йде нове ім'я.
+ * Стан живе тут, а не в компоненті: `ProfilePage` і `ProfileAccountPage`
+ * лишаються рендерингом, а цей хук знає, звідки беруться дані й куди йде нове
+ * ім'я.
+ *
+ * **Фото не підмінюється.** Аватар Telegram приходить усередині `telegram`
+ * (`photo_url` з підписаного `initData` — окремого запиту до Telegram немає), і
+ * саме звідти його бере спільний хелпер `telegramPhoto`. Підставляти його в
+ * `photoUrl` не можна: `photoUrl` — це фото **платформи**, і людина одного дня
+ * побачила б під своїм іменем чуже фото, вважаючи його власним.
  *
  * @module web-platform-dev/src/pages/useProfile
  */
@@ -26,17 +33,6 @@ export interface ProfileState {
   error: string | null;
 }
 
-/**
- * Аватар бере **справжнє** фото Telegram, а не лише окреме поле `photoUrl`:
- * `photo_url` приходить усередині payload, і людині дивно бачити ініціал там,
- * де Telegram уже віддав фото.
- */
-function withTelegramPhoto(user: UserProfileData): UserProfileData {
-  const photo = user.telegram?.photo_url;
-  if (user.photoUrl || typeof photo !== "string" || !photo) return user;
-  return { ...user, photoUrl: photo };
-}
-
 export function useProfile() {
   const [state, setState] = useState<ProfileState>({ profile: null, loading: true, error: null });
 
@@ -47,7 +43,7 @@ export function useProfile() {
       .then((data) => {
         if (cancelled) return;
         setState({
-          profile: data?.user ? withTelegramPhoto(data.user) : null,
+          profile: data?.user ?? null,
           loading: false,
           error: data?.user ? null : "Профіль не знайдено",
         });

@@ -34,7 +34,9 @@ describe("validatePlatformUsername", () => {
 
   it("не пускає порожнє, закоротке й задовге", () => {
     expect(validatePlatformUsername("")).toMatchObject({ ok: false, error: "empty" });
+    // Позначка — це позначка: і `@`, і `#` самі собою імені не роблять.
     expect(validatePlatformUsername("@")).toMatchObject({ ok: false, error: "empty" });
+    expect(validatePlatformUsername("#")).toMatchObject({ ok: false, error: "empty" });
     expect(validatePlatformUsername("ab")).toMatchObject({ ok: false, error: "too_short" });
     expect(validatePlatformUsername("a".repeat(PLATFORM_USERNAME_MAX + 1))).toMatchObject({
       ok: false,
@@ -60,6 +62,7 @@ describe("validatePlatformUsername", () => {
   it("не дає зайняти службове ім'я (і не залежить від регістру)", () => {
     expect(validatePlatformUsername("admin")).toMatchObject({ ok: false, error: "reserved" });
     expect(validatePlatformUsername("@ADMIN")).toMatchObject({ ok: false, error: "reserved" });
+    expect(validatePlatformUsername("#Admin")).toMatchObject({ ok: false, error: "reserved" });
     expect(validatePlatformUsername("WWWUABot")).toMatchObject({ ok: false, error: "reserved" });
   });
 
@@ -73,9 +76,13 @@ describe("validatePlatformUsername", () => {
 });
 
 describe("formatPlatformUsername", () => {
-  it("додає `@` і не подвоює його", () => {
-    expect(formatPlatformUsername("@Name")).toBe("@name");
-    expect(formatPlatformUsername("name")).toBe("@name");
+  it("позначає ім'я на платформі `#` — і не подвоює позначку", () => {
+    // `@` лишається Telegram-хендлу: там він веде на акаунт. Наше ім'я має свою
+    // позначку, інакше в одному рядку стояли б два однакові знаки.
+    expect(formatPlatformUsername("#Name")).toBe("#name");
+    expect(formatPlatformUsername("name")).toBe("#name");
+    // Хто звик до `@` — не отримує відмови за зайвий знак.
+    expect(formatPlatformUsername("@Name")).toBe("#name");
   });
 
   it("без імені повертає undefined, а не пустий рядок", () => {

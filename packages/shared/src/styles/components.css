@@ -1080,6 +1080,59 @@ html:has(.wb-tabbar) .wb-modal-overlay--screen {
   stroke-width: 2.4;
 }
 
+/* Перемикач **розділів сторінки** — вертикальний і з підписами.
+
+   Це не той самий перемикач, що `.wb-segmented`, і різниця не в оформленні.
+   Той стоїть у шапці екрана, ділить місце із заголовком і показує **знаки
+   варіантів вигляду** — їх читають формою. Тут розділи **вибирають наосліп за
+   словом** («Платформа» / «Телеграм»), тож підпис обов'язковий, а місця в
+   шапці немає — перемикач стоїть у тілі сторінки й розкладається в стовпчик.
+
+   Вибраний розділ видно і кольором, і тлом (`--accent-dim`): у списку з двох
+   рядків самого лише відтінку слів мало — око не бачить, який із них уже
+   відкритий, а сіра плитка треку тут не читається як кнопка, бо сусід теж
+   плитка. */
+.wb-tabs {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  margin-bottom: var(--sp-4);
+}
+
+.wb-tabs-btn {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  min-height: 44px;
+  padding: 0 var(--sp-3);
+  border: none;
+  border-radius: var(--radius-sm);
+  background: none;
+  color: var(--text-secondary);
+  font: inherit;
+  font-size: var(--text-base);
+  font-weight: var(--weight-medium);
+  text-align: left;
+  cursor: pointer;
+  transition:
+    color var(--duration-fast) var(--ease),
+    background var(--duration-fast) var(--ease);
+}
+
+/* Та сама пастка, що в перемикача вигляду: на тачі `:hover` лишається на
+   останньому торкнутому, а його специфічність вища за `--active`. */
+@media (hover: hover) {
+  .wb-tabs-btn:not(.wb-tabs-btn--active):hover {
+    color: var(--text-primary);
+  }
+}
+
+.wb-tabs-btn--active {
+  background: var(--accent-dim);
+  color: var(--accent);
+  font-weight: var(--weight-semibold);
+}
+
 /* ── Меню: поверхня зі списком пунктів ────────────────────────────────────
    Та сама поверхня, що й композер (`.wb-sheet`), лише замість вкладок —
    вертикальний список. Розмітку рендерить СПІЛЬНИЙ `MenuList` — і в аркуші

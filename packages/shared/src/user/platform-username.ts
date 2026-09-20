@@ -11,7 +11,8 @@
  * Правило одне на всі поверхні: і TWA (сам користувач), і адмінка, і будь-який
  * майбутній бот. Тримаємо його тут, а не в контролері, бо друга копія
  * неминуче розійдеться з першою — а «валідне тут, невалідне там» це вже не
- * правило, а два різних правила.
+ * правило, а два різних правила. У показі ім'я йде з позначкою `#` (див.
+ * `formatPlatformUsername`) — `@` лишається Telegram-хендлу.
  *
  * @module @wwwuabot/shared/user/platform-username
  */
@@ -68,13 +69,19 @@ export type PlatformUsernameResult =
   { ok: true; value: string } | { ok: false; error: PlatformUsernameError; message: string };
 
 /**
- * Зводить введене до канонічного вигляду: без `@`, без пробілів по краях,
+ * Зводить введене до канонічного вигляду: без позначки, без пробілів по краях,
  * у нижньому регістрі. Саме так воно й зберігається — тому порівняння в базі
- * не потребує `COLLATE NOCASE`, а `@Name` і `name` — це одне й те саме ім'я,
+ * не потребує `COLLATE NOCASE`, а `#Name` і `name` — це одне й те саме ім'я,
  * а не два різних рядки, за які потім довелось би битись.
+ *
+ * Приймаються обидві позначки: людина, яка звикла до `@`, вписує його замість
+ * `#`, і відмовити їй через зайвий знак було б причіпкою, а не правилом.
  */
 export function normalizePlatformUsername(raw: string): string {
-  return raw.trim().replace(/^@+/, "").toLowerCase();
+  return raw
+    .trim()
+    .replace(/^[@#]+/, "")
+    .toLowerCase();
 }
 
 /** Перевіряє й канонізує ім'я. Ніколи не кидає виняток. */
@@ -100,8 +107,16 @@ export function validatePlatformUsername(raw: string): PlatformUsernameResult {
   return { ok: true, value };
 }
 
-/** Показ імені в UI: `@name`, або `undefined`, якщо імені ще немає. */
+/**
+ * Показ імені в UI: `#name`, або `undefined`, якщо імені ще немає.
+ *
+ * **Позначка не косметична.** `@` — це синтаксис Telegram: клієнт робить із
+ * `@слово` посилання на телеграм-акаунт, тож «@karas» вело б людину до
+ * незнайомця. Ім'я на платформі — наше, і позначка в нього своя, `#`. Одна
+ * позначка на один факт: у рядку профілю видно одразу, що `#karas` — це тут, а
+ * `@sergiy` — у Telegram (`peerLabel` тримає те саме правило для чужих імен).
+ */
 export function formatPlatformUsername(value: string | null | undefined): string | undefined {
   const name = normalizePlatformUsername(value ?? "");
-  return name ? `@${name}` : undefined;
+  return name ? `#${name}` : undefined;
 }

@@ -31,15 +31,15 @@ const PEER: MessagePeer = {
 
 describe("вітання пари", () => {
   it("називає того, хто запросив, і каже про встановлений контакт", () => {
-    const greeting = conversationGreeting("@karas");
+    const greeting = conversationGreeting("#karas");
 
-    expect(greeting.invited).toContain("@karas");
+    expect(greeting.invited).toContain("#karas");
     expect(greeting.invited).toContain("запрошує");
     expect(greeting.connected).toContain("Контакт встановлено");
   });
 
   it("у стрічку кладуться обидві позначки, і саме в цьому порядку", () => {
-    const [invited, connected] = greetingNotes("@karas");
+    const [invited, connected] = greetingNotes("#karas");
 
     expect(invited).toContain("запрошує");
     expect(connected).toContain("Контакт встановлено");
@@ -48,7 +48,7 @@ describe("вітання пари", () => {
   it("ім'я в спільному рядку публічне: довідник належить тому, хто дивиться", () => {
     // Ім'я «Карась Х» людині дав хтось інший — показати його третій особі не
     // можна, тож публічний підпис іде без нього.
-    expect(peerPublicLabel({ ...PEER, contactName: "Карась Х" })).toBe("@karas");
+    expect(peerPublicLabel({ ...PEER, contactName: "Карась Х" })).toBe("#karas");
     expect(peerPublicLabel({ ...PEER, platformUsername: null })).toBe("@serg");
     expect(peerPublicLabel({ ...PEER, platformUsername: null, username: null })).toBe(
       "Сергій Дискант",

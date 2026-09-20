@@ -60,7 +60,6 @@ export function UserCardModal({ userId, onClose, onEdit, onMessage }: Props) {
         <div className="wb-modal-body">
           <UserProfileCard
             user={profile!}
-            variant="admin"
             loading={loading}
             error={error}
             onEdit={onEdit}

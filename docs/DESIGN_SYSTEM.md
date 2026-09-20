@@ -143,6 +143,18 @@
     важливістю: сталий порядок не залежить від того, хто додав пункт останнім. Стежать
     `pages/profile-sections.test.ts` (абетка в локалі `uk` і відсутність префікса) і `nav/TabBar.test.tsx`.
 
+22. **Профіль — хаб і акаунт окремо.** Хаб `/profile` несе **один рядок** (`UserAccountRow` з
+    `@wwwuabot/shared`): два фото і два імені з різними позначками (`#` — наше, `@` — Telegram), і
+    весь рядок веде на сторінку акаунта. Фото — **різні поля**: аватар Telegram приходить у своєму
+    (`telegram.photo_url`), і підставляти його замість фото платформи не можна — людина побачила б
+    чуже як своє. Дані живуть на сторінці: розділи — **вертикальний перемикач з підписами**
+    (`.wb-tabs`: «Платформа» типово, потім «Телеграм»), а не суцільний список і не сегмент у шапці —
+    розділ обирають **за словом**, а не за знаком. Технічних описів у показі людині немає: підпис і
+    значення кажуть усе, а словами лишається те, чого не видно, — чому Telegram-дані незмінні й де
+    буде своє фото. Сирий JSON, дані сеансу, роль і тариф — **у картці адмінки** (`UserProfileCard`).
+    Стежать `components/user-profile/AccountRow.test.tsx`, `user/platform-username.test.ts` і
+    `styles/menu.test.ts`.
+
 ---
 
 ## File Locations
@@ -157,6 +169,7 @@
 | `packages/shared/src/styles/page-layout.css` / `drawer.css` | Каркас сторінки для `PageRenderer` і виїзне меню |
 | `packages/shared/src/styles/apple.css` / `android.css` | Характер бренду (радіус, мірки, скло) |
 | `packages/shared/src/components/theme/` | `ThemeColorPanel`, `ThemeSheet`, `color-presets.ts`, `useUserColors` |
+| `packages/shared/src/components/user-profile/` | `AccountRow.tsx` (рядок хабу), `account.ts` (два акаунти як чисті функції), `UserProfileCard` (картка адмінки) — правило 22 |
 | `packages/shared/src/components/icons.tsx` / `Icon.tsx` | Набір іконок (`IconName` — єдине джерело) і `<Icon />` |
 | `scripts/check-css-classes.mjs` / `css-baseline.mjs` | Гейт «клас ↔ правило» і задокументований борг |
 

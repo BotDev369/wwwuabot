@@ -11,7 +11,8 @@ import { useHandleEdit } from "./useHandleEdit";
  * платформа вживає всюди.
  *
  * Без `onSubmit` блок лишається **читанням** (так його бачить адмінка): та
- * сама деталь, той самий вигляд, але чуже ім'я адмін не переписує випадково.
+ * сама деталь, той самий вигляд, але чуже ім'я адмін не переписує випадково —
+ * і ради йому не показують: «так вас бачать інші» стосується того, чиє це ім'я.
  */
 export function PlatformHandle({
   value,
@@ -44,7 +45,7 @@ export function PlatformHandle({
       {edit.editing ? (
         <div className="wb-handle-form">
           <div className="wb-handle-input-row">
-            <span className="wb-handle-at">@</span>
+            <span className="wb-handle-sign">#</span>
             <input
               className="wb-handle-input"
               value={edit.value}
@@ -84,10 +85,9 @@ export function PlatformHandle({
           </div>
         </div>
       ) : (
-        <p className="wb-handle-hint">
-          Головне ім'я на платформі: саме його вживає система. Telegram-хендл лишається як є — його
-          обирає Telegram, а не ми.
-        </p>
+        // Порада — **тільки тому, чиє це ім'я**: у адмінки чуже ім'я стоїть для
+        // читання, і «вас» там означало б не того, кого видно в рядку.
+        canEdit && <p className="wb-handle-hint">Так вас бачать інші.</p>
       )}
     </div>
   );

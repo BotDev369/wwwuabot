@@ -83,7 +83,7 @@ const GREETED: Message[] = [
   {
     id: 1,
     senderId: SYSTEM_SENDER_ID,
-    body: "@karas запрошує до конфіденційної бесіди",
+    body: "#karas запрошує до конфіденційної бесіди",
     createdAt: "",
     readAt: "",
     system: true,
@@ -125,7 +125,7 @@ describe("рядок чернетки", () => {
 
   it("адресат підписаний тим самим словом, що в листуванні", () => {
     // Інакше та сама людина в списку чернеток і в розмові звалася б по-різному.
-    expect(draftRecipientLabel(draft, [PEER])).toBe("@karas");
+    expect(draftRecipientLabel(draft, [PEER])).toBe("#karas");
     expect(draftRecipientLabel(draft, [PEER])).toBe(peerLabel(PEER));
   });
 
@@ -168,7 +168,7 @@ describe("блок чернеток", () => {
   it("адресат і «без отримувача» стоять в одному блоці", () => {
     const html = block(drafts);
 
-    expect(html).toContain("@karas");
+    expect(html).toContain("#karas");
     expect(html).toContain(NO_RECIPIENT_LABEL);
     expect(html).toContain("друга");
   });
@@ -193,16 +193,16 @@ describe("список розмов", () => {
     const html = list([conversation({ peer: { ...PEER, contactName: "Карась Х" } })]);
 
     expect(html).toContain("Карась Х");
-    expect(html).toContain("@karas");
+    expect(html).toContain("#karas");
     expect(html).toContain('aria-label="Карась Х. привіт"');
   });
 
   it("без свого імені — ім'я на платформі, Telegram — другим рядком", () => {
     const html = list([conversation()]);
 
-    expect(html).toContain("@karas");
+    expect(html).toContain("#karas");
     expect(html).toContain("@serg");
-    expect(html).toContain('aria-label="@karas. привіт"');
+    expect(html).toContain('aria-label="#karas. привіт"');
   });
 
   it("число непрочитаних — лише коли воно є", () => {
@@ -290,7 +290,7 @@ describe("нове повідомлення", () => {
     );
 
     expect(html).toContain("Нове повідомлення");
-    expect(html).toContain("@karas");
+    expect(html).toContain("#karas");
   });
 
   it("порядок у виборі не переставляємо: його задає сервер одним правилом", () => {
@@ -414,7 +414,7 @@ describe("форма нового повідомлення", () => {
 
     const html = sheet([PEER], draft);
 
-    expect(html).toContain("@karas");
+    expect(html).toContain("#karas");
     expect(html).toContain("його текст");
     // Обидві дії живі: і надіслати, і зберегти.
     expect(html).not.toContain("disabled");
@@ -494,7 +494,7 @@ describe("поверхня розмови", () => {
 
     expect(html).toContain('aria-label="Назад"');
     expect(html).toContain('aria-label="Карась Х"');
-    expect(html).toContain("@karas");
+    expect(html).toContain("#karas");
   });
 
   it("порожня розмова — не порожній екран: каже, що робити", () => {
@@ -534,7 +534,7 @@ describe("поверхня розмови", () => {
     expect(html).toContain("wb-thread-actions");
     // Ім'я стоїть **до** дій: шапка читається як «з ким я говорю», а не як рядок
     // кнопок із підписом десь усередині.
-    expect(html.indexOf("@karas")).toBeLessThan(html.indexOf("wb-thread-actions"));
+    expect(html.indexOf("#karas")).toBeLessThan(html.indexOf("wb-thread-actions"));
   });
 
   it("кнопка надсилання гасне на порожньому полі, а не зникає", () => {

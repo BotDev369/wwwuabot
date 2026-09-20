@@ -19,10 +19,17 @@
 
 import { createBrowserRouter } from "react-router-dom";
 import { PlatformShell } from "@/layout/PlatformShell";
-import { CONTACTS_ROUTE, MESSAGES_PATH, NOTES_ROUTE, PROFILE_ROUTE } from "@/app/routes";
+import {
+  CONTACTS_ROUTE,
+  MESSAGES_PATH,
+  NOTES_ROUTE,
+  PROFILE_ACCOUNT_PATH,
+  PROFILE_ROUTE,
+} from "@/app/routes";
 import { ContactsPage } from "@/pages/ContactsPage";
 import { MessagesPage } from "@/pages/MessagesPage";
 import { NotesPage } from "@/pages/NotesPage";
+import { ProfileAccountPage } from "@/pages/ProfileAccountPage";
 import { ProfilePage } from "@/pages/ProfilePage";
 import { ScenarioPage } from "@/pages/ScenarioPage";
 
@@ -30,9 +37,12 @@ export const router = createBrowserRouter([
   {
     element: <PlatformShell />,
     children: [
-      // Профіль — не контент, а дані користувача: той самий екран, що в
-      // адмінці, плюс розділи платформи (хаб).
+      // Профіль — не контент, а дані користувача: хаб із рядком акаунта й
+      // розділами платформи.
       { path: PROFILE_ROUTE, element: <ProfilePage /> },
+      // Акаунт — окрема адреса під хабу: платформа й Telegram окремими
+      // розділами, а не одним суцільним списком.
+      { path: PROFILE_ACCOUNT_PATH, element: <ProfileAccountPage /> },
       // Нотатки — власні дані людини (таблиця `notes`), не рядок `scenarios`
       { path: NOTES_ROUTE, element: <NotesPage /> },
       // Контакти — довідник людини (таблиця `contacts`), теж не рядок контенту

@@ -8,6 +8,13 @@ export interface UserProfileData {
   /** Ім'я на платформі (wwwuabot) — його обирає сам користувач. */
   platformUsername?: string | null;
   language?: string | null;
+  /**
+   * Фото **платформи** — те, яке людина поставить собі сама.
+   *
+   * Не аватар Telegram: другий приходить усередині `telegram.photo_url`, і
+   * змішувати їх не можна — людина побачила б чуже фото під своїм іменем
+   * (`components/user-profile/account.ts`).
+   */
   photoUrl?: string | null;
   isPremium?: boolean;
   isBot?: boolean;
@@ -33,17 +40,19 @@ export interface UserProfileData {
   rawFields?: Record<string, unknown>;
 }
 
+/**
+ * Картка **адмінки**: те, що потрібно тому, хто дивиться на чужого
+ * користувача, — повний рядок `users`, роль, тариф, права, сирі поля й дії.
+ *
+ * Свого профілю тут немає навмисно: людина бачить себе на **своїй** сторінці
+ * акаунта (`/profile/account` у платформі), і там дані розділені на «наше» й
+ * «Telegram», без технічних полів. Один екран на дві потреби зробив би або
+ * адмінку сліпою, або людину — читачем нашого дампу.
+ */
 export interface UserProfileCardProps {
   user: UserProfileData;
-  variant?: "platform" | "admin";
   loading?: boolean;
   error?: string | null;
-  /**
-   * Зберегти ім'я на платформі. Немає обробника — немає й редагування:
-   * саме так цей блок стає читабельним (адмінка не переписує чуже ім'я).
-   */
-  onChangeUsername?: (value: string) => Promise<string | null>;
   onEdit?: (userId: number) => void;
   onMessage?: (userId: number) => void;
-  onClose?: () => void;
 }

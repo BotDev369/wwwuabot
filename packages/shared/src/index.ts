@@ -76,6 +76,22 @@ export { UserProfileCard } from "./components/UserProfileCard";
 export type { UserProfileData, UserProfileCardProps } from "./components/UserProfileCard";
 /** Рядок «підпис → значення» картки профілю — щоб оболонки не малювали свій. */
 export { FieldRow as UserProfileField } from "./components/user-profile/FieldRow";
+/** Блок «ім'я на платформі» окремо від картки — сторінка акаунта складається з нього. */
+export { PlatformHandle } from "./components/user-profile/PlatformHandle";
+/** Обліковий рядок: два фото й два імені (`#` — платформа, `@` — Telegram). */
+export { UserAccountRow } from "./components/user-profile/AccountRow";
+export type { UserAccountRowProps } from "./components/user-profile/AccountRow";
+/** Два акаунти однієї людини — чисті функції (див. `user-profile/account.ts`). */
+export {
+  accountInitial,
+  platformLabel,
+  platformPhoto,
+  telegramHandle,
+  telegramIsPremium,
+  telegramLanguage,
+  telegramName,
+  telegramPhoto,
+} from "./components/user-profile/account";
 // ── Save Actions Module ──────────────────────────────────────────────
 export { SaveActionButtons } from "./components/SaveActionButtons";
 export type { SaveActionButtonsProps, SavingActionType } from "./components/SaveActionButtons";

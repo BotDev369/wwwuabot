@@ -595,7 +595,7 @@ describe("вітання пари", () => {
     expect(inserted).toHaveLength(2);
     // Автор — платформа, а не людина: id у нього нульовий (`SYSTEM_SENDER_ID`).
     expect(inserted[0].binds[1]).toBe(0);
-    expect(inserted[0].binds[2]).toContain("@karas");
+    expect(inserted[0].binds[2]).toContain("#karas");
     expect(inserted[1].binds[2]).toContain("Контакт встановлено");
     // Прочитані одразу: їх ніхто не писав, тож у бейджі їм нема чого робити.
     expect(inserted[0].binds[3]).toBe(inserted[0].binds[4]);

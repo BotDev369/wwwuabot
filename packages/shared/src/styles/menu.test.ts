@@ -1,6 +1,7 @@
 /**
  * Сторож поверхні зі списком: **плитки — по дві в ряду, заглушка не мовчить,
- * а вихід у поверхні один**.
+ * а вихід у поверхні один** — і перемикачів: вигляду (`.wb-segmented`,
+ * знаками) та розділів сторінки (`.wb-tabs`, підписами).
  *
  * Чому це тест, а не коментар. Кожна з цих речей ламається мовчки: `grid` без
  * `repeat(2, …)` стає одним стовпчиком (розділи знову смуги на всю ширину),
@@ -41,6 +42,39 @@ const RULES: Rule[] = [...CSS.matchAll(/([^{}]+)\{([^{}]*)\}/g)].map(([, selecto
 /** Останнє правило для селектора — те, що справді діє при рівній специфічності. */
 function rule(selector: string): Rule | undefined {
   return RULES.filter((entry) => entry.selector === selector).at(-1);
+}
+
+/**
+ * Тіла всіх `@media (hover: hover)` — із балансом дужок: правила всередині
+ * теж мають `}`, тож простий пошук кінця блоку до першої дужки врізався б у
+ * середину (і саме тому медіа-запиту в `RULES` не видно як селектора правил).
+ */
+function hoverBlocks(): string[] {
+  const bodies: string[] = [];
+  let from = 0;
+
+  for (;;) {
+    const start = CSS.indexOf("@media (hover: hover)", from);
+    if (start < 0) return bodies;
+
+    const open = CSS.indexOf("{", start);
+    let depth = 0;
+    let end = CSS.length;
+
+    for (let i = open; i < CSS.length; i += 1) {
+      if (CSS[i] === "{") depth += 1;
+      else if (CSS[i] === "}") {
+        depth -= 1;
+        if (depth === 0) {
+          end = i;
+          break;
+        }
+      }
+    }
+
+    bodies.push(CSS.slice(open + 1, end));
+    from = end + 1;
+  }
 }
 
 describe("меню: плитки й вигляд пункту", () => {
@@ -171,6 +205,38 @@ describe("меню: повноекранна поверхня, перемика�
     for (const entry of overState) {
       expect(entry.selector, entry.selector).toContain(":not(.wb-segmented-btn--active)");
     }
+  });
+
+  it("перемикач розділів сторінки — вертикальний, і розділ не менший за палець", () => {
+    // Це інший кирпичик, ніж сегмент вигляду, і різниця не в оформленні:
+    // тут обирають **розділ за словом**, а не варіант вигляду за знаком.
+    expect(rule(".wb-tabs")?.body).toContain("flex-direction: column");
+
+    const btn = rule(".wb-tabs-btn");
+    expect(btn, "правило .wb-tabs-btn мусить існувати").toBeDefined();
+    expect(btn?.body).toContain("width: 100%");
+    const minHeight = Number(btn?.body.match(/min-height:\s*(\d+)px/)?.[1]);
+    expect(minHeight).toBeGreaterThanOrEqual(44);
+  });
+
+  it("вибраний розділ видно і кольором, і тлом", () => {
+    // У списку з двох рядків самого лише відтінку слів мало: око не бачить,
+    // який із них уже відкритий.
+    const active = rule(".wb-tabs-btn--active");
+    expect(active, "правило вибраного розділу мусить існувати").toBeDefined();
+    expect(active?.body).toContain("color: var(--accent)");
+    expect(active?.body).toContain("background: var(--accent-dim)");
+  });
+
+  it("дотик не знімає вибір розділу: `:hover` — тільки під `@media (hover: hover)`", () => {
+    // Та сама пастка, що в перемикача вигляду: на тачі `:hover` лишається на
+    // останньому торкнутому елементі, а його специфічність вища за `--active`.
+    const bodies = hoverBlocks();
+    expect(bodies.join("\n")).toContain(".wb-tabs-btn:not(.wb-tabs-btn--active):hover");
+
+    let outside = CSS;
+    for (const body of bodies) outside = outside.replace(body, "");
+    expect(outside).not.toMatch(/\.wb-tabs-btn[^{}]*:hover/);
   });
 
   it("у перемикача немає треку, а вибраний показує акцентний колір", () => {
