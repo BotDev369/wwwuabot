@@ -902,13 +902,6 @@
   font-weight: var(--weight-medium);
 }
 
-.wb-handle-hint {
-  margin: var(--sp-3) 0 0;
-  color: var(--text-muted);
-  font-size: var(--text-sm);
-  line-height: 1.5;
-}
-
 .wb-handle-form {
   display: flex;
   flex-direction: column;

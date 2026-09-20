@@ -8,10 +8,10 @@
  * людину шукати різницю там, де її немає (AGENTS.md §7: один факт — одне місце),
  * а «так вас бачать інші» стосується і фото, і імені одразу.
  *
- * **Фото поки немає — і про це сказано словами, на початку розділу.** Порожній
- * круг без пояснення читався б як поламане зображення, а не як «ще не додано».
- * Один короткий рядок, без лекцій: решту каже сама картка. Стоїть він першим,
- * як і пояснення в розділі «Телеграм», — обидва розділи починаються однаково.
+ * **Слів над карткою немає.** Раніше тут стояв рядок «Своє фото можна буде
+ * додати трохи згодом» — обіцянка на майбутнє, яка в розділі з готовими даними
+ * читалась як ще один пункт. Порожній круг із літерою каже «ще не додано» сам, а
+ * кнопка «Обрати» — що робити.
  *
  * **Дані акаунта — після імені.** Роль, тариф, статус, знижка, права й
  * блокування — те, що людина має бачити про себе: інакше «чому мені щось
@@ -44,27 +44,23 @@ export function AccountPlatformSection({
   const photo = platformPhoto(user);
 
   return (
-    <>
-      {!photo && <p className="wb-profile-note">Своє фото можна буде додати трохи згодом.</p>}
+    /* Картку дає саме розділ, а не підсписки: ім'я і дані акаунта — одна
+       картка, тож жоден із них не малює власної (`plain`). */
+    <UserProfileSection title="Дані на платформі" icon="clipboard">
+      <PlatformHandle
+        plain
+        value={user.platformUsername}
+        onSubmit={onChangeUsername}
+        avatar={
+          <AccountAvatar
+            photo={photo}
+            initial={accountInitial(user, name)}
+            alt="Фото на платформі"
+          />
+        }
+      />
 
-      {/* Картку дає саме розділ, а не підсписки: ім'я і дані акаунта — одна
-          картка, тож жоден із них не малює власної (`plain`). */}
-      <UserProfileSection title="Дані на платформі" icon="clipboard">
-        <PlatformHandle
-          plain
-          value={user.platformUsername}
-          onSubmit={onChangeUsername}
-          avatar={
-            <AccountAvatar
-              photo={photo}
-              initial={accountInitial(user, name)}
-              alt="Фото на платформі"
-            />
-          }
-        />
-
-        <UserProfileDataSection plain user={user} showTelegramFields={false} />
-      </UserProfileSection>
-    </>
+      <UserProfileDataSection plain user={user} showTelegramFields={false} />
+    </UserProfileSection>
   );
 }

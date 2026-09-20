@@ -6,7 +6,8 @@
  * «ось ім'я» і «ось іще щось про мене» там, де йдеться про те саме. Тест тримає
  * три речі, які ламаються мовчки: кількість карток (друга завелась би
  * поверненням `plain`), заголовок (без нього картка знову безіменна) і те, що
- * дані акаунта нікуди не зникли разом із другою карткою.
+ * дані акаунта нікуди не зникли разом із другою карткою. Плюс — що в розділі
+ * немає тексту понад підписи полів.
  *
  * @module web-platform-dev/src/pages/AccountPlatformSection.test
  */
@@ -50,10 +51,20 @@ describe("AccountPlatformSection", () => {
     expect(html.match(/class="wb-profile-title"/g)).toHaveLength(1);
   });
 
-  it("каже про фото, лише коли його немає", () => {
-    expect(render()).toContain("Своє фото можна буде додати");
-    expect(render({ ...USER, photoUrl: "https://cdn.example/photo.jpg" })).not.toContain(
-      "Своє фото можна буде додати",
+  it("не додає слів над карткою і в ній", () => {
+    // Розділ говорить підписами полів: і рядок про майбутнє фото, і порада
+    // «так вас бачать інші» були текстом ні про що — перший обіцяв те, чого ще
+    // немає, друга повторювала підпис поля. Перевіряється розмітка, бо саме
+    // такий текст повертається найлегше — він нічого не ламає.
+    const html = render();
+
+    expect(html).not.toContain("Своє фото можна буде додати");
+    expect(html).not.toContain("Так вас бачать інші");
+    expect(html).not.toContain("wb-profile-note");
+    expect(html).not.toContain("wb-handle-hint");
+    // А фото, яке є, нічого не замовчує: круг показує саме його.
+    expect(render({ ...USER, photoUrl: "https://cdn.example/photo.jpg" })).toContain(
+      '<img src="https://cdn.example/photo.jpg"',
     );
   });
 });
