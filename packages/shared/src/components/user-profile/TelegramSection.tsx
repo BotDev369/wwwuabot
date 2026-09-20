@@ -1,10 +1,10 @@
 import { FieldRow } from "./FieldRow";
 import { ico } from "./badges";
-import { TELEGRAM_FIELD_LABELS, formatTelegramValue } from "./telegram-field-labels";
+import { TELEGRAM_FIELD_LABELS, telegramFieldValue } from "./telegram-field-labels";
 import type { UserProfileData } from "./types";
 
 /**
- * Усе, що Telegram віддав про людину.
+ * Усе, що Telegram віддав про людину — **без винятків**.
  *
  * Абзацу-пояснення над полями немає навмисно: заголовок уже називає джерело, а
  * решта — те саме слово, сказане двічі. Те, чого з полів **не** видно (що ці
@@ -17,28 +17,22 @@ import type { UserProfileData } from "./types";
  * коду. Невідомий ключ показується своїм ім'ям — краще побачити `foo_bar`,
  * ніж не побачити нічого.
  *
+ * **Ім'я, прізвище, хендл і фото теж у списку**, хоч вони є в шапці: шапка — це
+ * впізнавання з першого погляду, а список — відповідь на питання «що про мене
+ * взагалі відомо». Пропустити їх означало б, що найпотрібніші поля єдині, яких
+ * у переліку немає, — і саме їх шукають першими (адмінська картка, де шапка
+ * стоїть так само, не пропускає нічого).
+ *
  * Порожнє значення — **`...`**, а не тире: у розділі чужих даних тире читається
  * як «поля немає», хоч воно є в payload і просто без значення.
  *
  * Дані сеансу Mini App і сирий JSON тут стояли **тимчасово** — для відловлювання
  * багів. Показувати людині наш дамп — не профіль, тож їх тут немає; живуть вони
  * в логах і в адмінці, де їх і читають.
- *
- * `omit` — ті ключі, які вже стоять **у шапці** сторінки (фото, ім'я, хендл).
- * Один факт має одне місце: без цього ім'я й хендл стояли б у профілі людини
- * двічі поспіль — у шапці й першими рядками списку.
  */
-export function TelegramSection({
-  user,
-  omit,
-}: {
-  user: UserProfileData;
-  omit?: readonly string[];
-}) {
+export function TelegramSection({ user }: { user: UserProfileData }) {
   const telegram = user.telegram ?? null;
-  const telegramKeys = (telegram ? Object.keys(telegram) : []).filter(
-    (key) => !omit?.includes(key),
-  );
+  const telegramKeys = telegram ? Object.keys(telegram) : [];
 
   return (
     <div className="wb-profile">
@@ -50,7 +44,7 @@ export function TelegramSection({
             <FieldRow
               key={key}
               label={TELEGRAM_FIELD_LABELS[key] ?? key}
-              value={formatTelegramValue(telegram?.[key])}
+              value={telegramFieldValue(key, telegram?.[key])}
               empty="..."
             />
           ))}

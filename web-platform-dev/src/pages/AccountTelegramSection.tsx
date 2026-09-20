@@ -21,7 +21,6 @@
 import type { ReactElement } from "react";
 import {
   AccountAvatar,
-  TELEGRAM_HEAD_KEYS,
   UserTelegramDataSection,
   accountInitial,
   telegramHandle,
@@ -54,8 +53,8 @@ export function AccountTelegramSection({ user }: { user: UserProfileData }): Rea
         </div>
       </section>
 
-      {/* Шапка вже показала фото, ім'я й хендл — у списку вони зайві. */}
-      <UserTelegramDataSection user={user} omit={TELEGRAM_HEAD_KEYS} />
+      {/* Шапка — впізнавання з першого погляду; список нижче нею не вкорочується. */}
+      <UserTelegramDataSection user={user} />
     </>
   );
 }

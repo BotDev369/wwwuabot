@@ -92,7 +92,6 @@ export { TelegramSection as UserTelegramDataSection } from "./components/user-pr
 export { AccountAvatar } from "./components/user-profile/AccountAvatar";
 /** Два акаунти однієї людини — чисті функції (див. `user-profile/account.ts`). */
 export {
-  TELEGRAM_HEAD_KEYS,
   accountInitial,
   platformLabel,
   platformPhoto,

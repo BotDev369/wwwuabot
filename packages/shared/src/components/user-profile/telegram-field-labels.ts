@@ -25,7 +25,7 @@ export const TELEGRAM_FIELD_LABELS: Record<string, string> = {
  * його рядок профілю (`FieldRow`), а не ця функція — щоб `...` стояло в одному
  * місці для всіх полів.
  */
-export function formatTelegramValue(value: unknown): string | undefined {
+function telegramText(value: unknown): string | undefined {
   if (value === null || value === undefined || value === "") return undefined;
 
   if (typeof value === "boolean") return value ? "Так" : "Ні";
@@ -33,4 +33,18 @@ export function formatTelegramValue(value: unknown): string | undefined {
   if (typeof value === "object") return JSON.stringify(value);
 
   return String(value);
+}
+
+/**
+ * Значення поля для показу — з одним винятком на весь перелік.
+ *
+ * `photo_url` несе адресу картинки, а не дані про людину: людині вона нічого не
+ * каже, і саме фото вже стоїть у шапці. Тож поле каже «Так» (Telegram дав фото)
+ * або `...` (не дав) — так само, як решта полів, і без простирадла посилання
+ * посеред картки.
+ */
+export function telegramFieldValue(key: string, value: unknown): string | undefined {
+  const shown = telegramText(value);
+  if (key !== "photo_url" || !shown) return shown;
+  return "Так";
 }
