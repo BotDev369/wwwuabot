@@ -25,8 +25,6 @@ export interface UserProfileData {
    * ботом; різниця лише в джерелі, а не у вигляді.
    */
   telegram?: Record<string, unknown> | null;
-  /** Решта `initData` (`auth_date`, `chat_type`, `start_param`, …) — дані сеансу. */
-  telegramSession?: Record<string, string> | null;
   // DB fields
   role?: string | null;
   tariff?: string | null;

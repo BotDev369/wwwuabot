@@ -30,7 +30,6 @@ const USER: UserProfileData = {
     photo_url: "https://t.me/i/userpic/320/olya.jpg",
     unknown_future_field: "нове",
   },
-  telegramSession: { chat_type: "private", start_param: "mydate" },
 };
 
 describe("UserProfileCard", () => {
@@ -76,12 +75,13 @@ describe("UserProfileCard", () => {
     expect(html).toContain("нове");
   });
 
-  it("показує дані сеансу Mini App окремим, згорнутим блоком", () => {
+  it("не показує ні сирого JSON, ні даних сеансу Mini App", () => {
+    // Вони стояли тут тимчасово — для відловлювання багів, і більше не потрібні
+    // нікому, крім логів: показувати адмінові наш дамп — не картка користувача.
     const html = renderToStaticMarkup(<UserProfileCard user={USER} />);
 
-    expect(html).toContain("Дані сеансу Mini App");
-    expect(html).toContain("Тип чату");
-    expect(html).toContain("private");
+    expect(html).not.toContain("Показати сирий JSON");
+    expect(html).not.toContain("Дані сеансу");
   });
 
   it("показує дані системи: роль, тариф, статус", () => {
@@ -96,7 +96,7 @@ describe("UserProfileCard", () => {
   it("не дублює Telegram-поля, коли payload уже є", () => {
     const withPayload = renderToStaticMarkup(<UserProfileCard user={USER} />);
     const withoutPayload = renderToStaticMarkup(
-      <UserProfileCard user={{ ...USER, telegram: null, telegramSession: null }} />,
+      <UserProfileCard user={{ ...USER, telegram: null }} />,
     );
 
     expect(withPayload.match(/Дані від Telegram/g)).toHaveLength(1);
@@ -106,9 +106,7 @@ describe("UserProfileCard", () => {
   });
 
   it("показує Telegram-поля з рядка, коли payload ще не збережено", () => {
-    const html = renderToStaticMarkup(
-      <UserProfileCard user={{ ...USER, telegram: null, telegramSession: null }} />,
-    );
+    const html = renderToStaticMarkup(<UserProfileCard user={{ ...USER, telegram: null }} />);
 
     expect(html).not.toContain("Дані від Telegram");
     expect(html).toContain("Telegram-хендл");

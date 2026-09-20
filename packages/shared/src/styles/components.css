@@ -1090,9 +1090,10 @@ html:has(.wb-tabbar) .wb-modal-overlay--screen {
 
    Горизонтально, бо це вкладки, а не меню: людина перемикає **два погляди на
    те саме**, і в стовпчику другий розділ читався б як окремий пункт списку.
-   Вибраний розділ видно і кольором, і тлом (`--accent-dim`): у смузі з двох
-   рівних половин самого лише відтінку слів мало — око не бачить, яка з них уже
-   відкрита. */
+   Вибраний розділ залитий **тим самим акцентом, що й обраний стиль** у панелі
+   теми (`.wb-btn-primary`): вибір в одному продукті має один вигляд, інакше
+   обраний «Apple» у темі й обрана вкладка тут виглядали б як різні речі, хоч
+   обидва — «це вибрано». */
 .wb-tabs {
   display: flex;
   flex-direction: row;
@@ -1131,8 +1132,8 @@ html:has(.wb-tabbar) .wb-modal-overlay--screen {
 }
 
 .wb-tabs-btn--active {
-  background: var(--accent-dim);
-  color: var(--accent);
+  background: var(--accent);
+  color: var(--text-inverse);
   font-weight: var(--weight-semibold);
 }
 

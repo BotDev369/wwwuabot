@@ -207,6 +207,10 @@ export async function handleUserMessage(request: Request, env: Env): Promise<Res
  * `is_premium`, `allows_write_to_pm`, `photo_url`). Живе значення має
  * перевагу над збереженим: показати людині застаріле преміум-прапорце
  * було б брехнею, а `initDataUnsafe` у браузері — дані, яким не можна вірити.
+ *
+ * **Решта `initData` не їде.** `auth_date`, `chat_type`, `start_param` — дані
+ * сеансу, а не людини: вони лишались у відповіді для відловлювання багів і
+ * більше не потрібні нікому, крім логів.
  */
 export async function handleUserProfile(request: Request, env: Env): Promise<Response> {
   const identity = await resolveInitDataIdentity(request, env);
@@ -223,8 +227,6 @@ export async function handleUserProfile(request: Request, env: Env): Promise<Res
       user: {
         ...user,
         telegram: identity.payload.user,
-        telegramSession: identity.payload.params,
-        telegramAuthDate: identity.payload.authDate,
       },
     });
   } catch (e: unknown) {

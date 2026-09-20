@@ -2,16 +2,18 @@
  * Розділ «Телеграм» — те, що Telegram віддав про людину, **як є**.
  *
  * Це половина колишньої картки акаунта, і саме тому тут показується **все**:
- * фото, ім'я, хендл і кожне поле, яке прийшло в payload (зокрема те, якого ми
- * ще не знаємо), плюс дані сеансу й сирий JSON — під згорткою, бо потрібні вони
- * рідко, але потрібні. Людина мусить упізнати себе цілком, а не половину.
+ * фото, повне ім'я (`first_name` + `last_name`), хендл і кожне поле, яке
+ * прийшло в payload — зокрема те, якого ми ще не знаємо. Людина мусить упізнати
+ * себе цілком, а не половину.
  *
- * Сирі значення — не «технічні подробиці», а єдине, що можна показати, коли
- * Telegram додав поле, якого ми не знаємо: невідомий ключ видно своїм ім'ям.
+ * **Порожньо — `...`, а не пропуск.** Хендла може не бути, і тоді другий рядок
+ * шапки стоїть на своєму місці з `...`: рядок, що зникає, читався б як
+ * «поламалось», а не як «його справді немає».
  *
- * **Словами — тільки те, чого не видно з полів.** Поля виглядають як поля, тож
- * без рядка знизу людина шукала б, де їх змінити; а змінюють їх у Telegram, не
- * тут.
+ * **Словами — тільки те, чого не видно з полів, і перед карткою.** Рядок «ці
+ * дані дає Telegram» стоїть **угорі**: людина має знати, чому тут немає кнопки,
+ * ще до того, як почне її шукати під полями. Дані сеансу й сирий JSON, які
+ * стояли тут для відловлювання багів, прибрано — це наш дамп, не профіль.
  *
  * @module web-platform-dev/src/pages/AccountTelegramSection
  */
@@ -28,27 +30,32 @@ import {
   type UserProfileData,
 } from "@wwwuabot/shared";
 
+/** Порожнє місце в шапці лишається на своєму місці — з `...`. */
+const EMPTY = "...";
+
 export function AccountTelegramSection({ user }: { user: UserProfileData }): ReactElement {
+  // Ім'я тут справжнє, а `...` — лише в підписі: літера в крузі береться з
+  // імені, і крапка від `...` читалась би як чужий аватар.
   const name = telegramName(user);
   const handle = telegramHandle(user);
   const photo = telegramPhoto(user);
 
   return (
     <>
+      <p className="wb-profile-note">Ці дані дає Telegram — тут їх не змінити.</p>
+
       <section className="wb-profile">
         <div className="wb-account-head">
           <AccountAvatar photo={photo} initial={accountInitial(user, name)} alt="Фото Telegram" />
           <span className="wb-account-head-text">
-            <span className="wb-account-head-title">{name ?? "Ім'я не вказано"}</span>
-            {handle && <span className="wb-account-head-note">{handle}</span>}
+            <span className="wb-account-head-title">{name ?? EMPTY}</span>
+            <span className="wb-account-head-note">{handle ?? EMPTY}</span>
           </span>
         </div>
       </section>
 
       {/* Шапка вже показала фото, ім'я й хендл — у списку вони зайві. */}
       <UserTelegramDataSection user={user} omit={TELEGRAM_HEAD_KEYS} />
-
-      <p className="wb-profile-note">Ці дані дає Telegram — тут їх не змінити.</p>
     </>
   );
 }

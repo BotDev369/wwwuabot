@@ -1,5 +1,5 @@
 /**
- * Список «Дані від Telegram» — сторож двох рішень, які ламаються мовчки.
+ * Список «Дані від Telegram» — сторож трьох рішень, які ламаються мовчки.
  *
  * Перше: поля перебираються з payload, а не виписані в розмітці, тож **нове**
  * поле Telegram мусить з'явитись саме, зі своїм (неперекладеним) ім'ям —
@@ -7,6 +7,10 @@
  *
  * Друге: те, що вже стоїть у шапці (фото, ім'я, хендл), у списку **не**
  * повторюється — інакше один факт має два місця на одному екрані.
+ *
+ * Третє: нашого дампу тут немає. Дані сеансу й сирий JSON стояли для
+ * відловлювання багів; повернути їх — значить знову показати людині те, що
+ * читають у логах.
  *
  * @module packages/shared/src/components/user-profile/TelegramSection.test
  */
@@ -43,12 +47,35 @@ describe("TelegramSection", () => {
 
     expect(html).not.toContain("Telegram-хендл");
     expect(html).not.toContain("Прізвище");
-    // Самі значення не зникають — вони лишаються в сирому JSON під згорткою
-    // (рівно одне входження: у списку полів його вже немає).
-    expect(html.match(/DiskantSergiy/g) ?? []).toHaveLength(1);
+    expect(html).not.toContain("DiskantSergiy");
     // Решта payload лишається: обрізати треба повтор, а не дані.
     expect(html).toContain("372567448");
     expect(html).toContain("Мова інтерфейсу");
     expect(html).toContain("unknown_future_field");
+  });
+
+  it("порожнє значення показує `...`, а не тире", () => {
+    // Поле є, значення немає: тире читалось би як «такого поля немає».
+    const html = renderToStaticMarkup(
+      <TelegramSection user={{ ...USER, telegram: { id: 372567448, username: "" } }} />,
+    );
+
+    expect(html).toContain("Telegram ID");
+    expect(html).toContain("...");
+    expect(html).not.toContain("—");
+  });
+
+  it("не показує ні сирого JSON, ні даних сеансу", () => {
+    // Рядок `users` та відповідь API більше не несуть цих полів; якщо вони
+    // колись повернуться в payload — список їх не покаже.
+    const user = {
+      ...USER,
+      telegramSession: { chat_type: "private", start_param: "mydate" },
+    } as UserProfileData;
+    const html = renderToStaticMarkup(<TelegramSection user={user} />);
+
+    expect(html).not.toContain("Показати сирий JSON");
+    expect(html).not.toContain("Дані сеансу");
+    expect(html).not.toContain("private");
   });
 });

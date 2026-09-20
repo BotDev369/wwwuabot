@@ -223,13 +223,14 @@ describe("меню: повноекранна поверхня, перемика�
     expect(minHeight).toBeGreaterThanOrEqual(44);
   });
 
-  it("вибраний розділ видно і кольором, і тлом", () => {
-    // У списку з двох рядків самого лише відтінку слів мало: око не бачить,
-    // який із них уже відкритий.
+  it("вибраний розділ залитий тим самим акцентом, що й обраний стиль", () => {
+    // Інакше вибір в одному продукті мав би два вигляди: обраний «Apple» у
+    // панелі теми (`.wb-btn-primary`) і обрана вкладка тут — обидва кажуть
+    // «це вибрано», тож і виглядати мусять однаково.
     const active = rule(".wb-tabs-btn--active");
     expect(active, "правило вибраного розділу мусить існувати").toBeDefined();
-    expect(active?.body).toContain("color: var(--accent)");
-    expect(active?.body).toContain("background: var(--accent-dim)");
+    expect(active?.body).toContain("background: var(--accent)");
+    expect(active?.body).toContain("color: var(--text-inverse)");
   });
 
   it("дотик не знімає вибір розділу: `:hover` — тільки під `@media (hover: hover)`", () => {
