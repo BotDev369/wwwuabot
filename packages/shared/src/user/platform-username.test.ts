@@ -77,7 +77,7 @@ describe("validatePlatformUsername", () => {
 
 describe("formatPlatformUsername", () => {
   it("позначає ім'я на платформі `#` — і не подвоює позначку", () => {
-    // `@` лишається Telegram-хендлу: там він веде на акаунт. Наше ім'я має свою
+    // `@` лишається Telegram-юзернейму: там він веде на акаунт. Наше ім'я має свою
     // позначку, інакше в одному рядку стояли б два однакові знаки.
     expect(formatPlatformUsername("#Name")).toBe("#name");
     expect(formatPlatformUsername("name")).toBe("#name");

@@ -3,7 +3,7 @@ export interface UserProfileData {
   id: number;
   firstName?: string | null;
   lastName?: string | null;
-  /** Telegram-хендл (`@handle`) — дані Telegram, не наш ідентифікатор. */
+  /** Telegram-юзернейм (`@name`) — дані Telegram, не наш ідентифікатор. */
   username?: string | null;
   /** Ім'я на платформі (wwwuabot) — його обирає сам користувач. */
   platformUsername?: string | null;

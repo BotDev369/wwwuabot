@@ -36,7 +36,7 @@ describe("AccountTelegramSection", () => {
 
     expect(html).toContain("wb-account-head-title");
     expect(html).toContain("Сергій Дискант");
-    // Позначка `@` — лише в Telegram-хендла (AGENTS.md §2).
+    // Позначка `@` — лише в Telegram-юзернейма (AGENTS.md §2).
     expect(html).toContain("@DiskantSergiy");
   });
 
@@ -53,7 +53,7 @@ describe("AccountTelegramSection", () => {
     const html = renderToStaticMarkup(<AccountTelegramSection user={USER} />);
 
     // Шапка — не привід викидати поле з переліку: у списку є і хендл, і мова.
-    expect(html).toContain("Telegram-хендл");
+    expect(html).toContain("Юзернейм");
     expect(html).toContain("Мова інтерфейсу");
   });
 

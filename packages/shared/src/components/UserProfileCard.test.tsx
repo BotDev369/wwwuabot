@@ -109,7 +109,7 @@ describe("UserProfileCard", () => {
     const html = renderToStaticMarkup(<UserProfileCard user={{ ...USER, telegram: null }} />);
 
     expect(html).not.toContain("Дані від Telegram");
-    expect(html).toContain("Telegram-хендл");
+    expect(html).toContain("Юзернейм");
     expect(html).toContain("@olya_tg");
   });
 

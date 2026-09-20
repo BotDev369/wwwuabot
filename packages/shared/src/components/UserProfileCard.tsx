@@ -4,6 +4,7 @@ import { PlatformHandle } from "./user-profile/PlatformHandle";
 import { ProfileIdentity } from "./user-profile/ProfileIdentity";
 import { RawFieldsSection } from "./user-profile/RawFieldsSection";
 import { TelegramSection } from "./user-profile/TelegramSection";
+import { hasTelegramFields } from "./user-profile/telegram-fields";
 import type { UserProfileCardProps, UserProfileData } from "./user-profile/types";
 
 export type { UserProfileCardProps, UserProfileData };
@@ -50,7 +51,9 @@ export function UserProfileCard({ user, loading, error, onEdit, onMessage }: Use
     );
   }
 
-  const hasTelegram = Boolean(user.telegram && Object.keys(user.telegram).length > 0);
+  // Не «чи є payload», а «чи є що показати»: у payload може лишитись саме фото,
+  // яке картка не показує списком (`telegram-fields.ts`).
+  const hasTelegram = hasTelegramFields(user);
 
   return (
     <div>

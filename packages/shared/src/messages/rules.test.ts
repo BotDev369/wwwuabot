@@ -80,7 +80,7 @@ describe("підпис співрозмовника", () => {
     expect(peerSecondary({ ...PEER, contactName: "Карась Х" })).toBe("#karas");
   });
 
-  it("без свого імені — ім'я на платформі, далі Telegram-хендл, і лише потім ім'я з Telegram", () => {
+  it("без свого імені — ім'я на платформі, далі Telegram-юзернейм, і лише потім ім'я з Telegram", () => {
     expect(peerLabel(PEER)).toBe("#karas");
     expect(peerLabel({ ...PEER, platformUsername: null })).toBe("@serg");
     expect(peerLabel({ ...PEER, platformUsername: null, username: null })).toBe("Сергій Дискант");

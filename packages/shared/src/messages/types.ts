@@ -39,7 +39,7 @@ export interface MessagePeer {
   id: number;
   firstName: string | null;
   lastName: string | null;
-  /** Telegram-хендл **без** `@`; `null` — людина його не має. */
+  /** Telegram-юзернейм **без** `@`; `null` — людина його не має. */
   username: string | null;
   /** Ім'я на платформі **без** `@`; `null` — ще не обрала. */
   platformUsername: string | null;

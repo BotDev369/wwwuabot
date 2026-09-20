@@ -35,8 +35,12 @@ export function DatabaseSection({
             <FieldRow label="ID" value={user.id} icon="info" />
             <FieldRow label="Ім'я" value={user.firstName} icon="edit" />
             <FieldRow label="Прізвище" value={user.lastName} icon="edit" />
+            {/*
+              Юзернейм, а не «хендл»: у Telegram людина заповнює саме юзернейм, і
+              в продукті таке поле зветься так само (див. `telegram-fields.ts`).
+            */}
             <FieldRow
-              label="Telegram-хендл"
+              label="Юзернейм"
               value={user.username ? `@${user.username}` : null}
               icon="globe"
             />

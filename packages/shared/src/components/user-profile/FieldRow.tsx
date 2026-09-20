@@ -5,21 +5,19 @@ import { ico } from "./badges";
 /**
  * Рядок «підпис → значення» у `.wb-profile-fields`.
  *
- * Порожнє значення показує **сам рядок** (`empty`), а не ховає його: пропущений
- * рядок читався б як «такого поля немає», хоч воно є — просто без значення.
- * Тире — для наших полів (порожня роль, порожня знижка), `...` — для чужих, де
- * значення віддає не ми (розділ «Телеграм»).
+ * Порожнє значення показує **сам рядок** («—»), а не ховає його: у наших полях
+ * (роль, знижка, права) пропущений рядок не відрізниш від помилки. Там, де
+ * порожніх рядків багато й вони не наші — картка Telegram, — їх просто не
+ * створюють (`telegram-fields.ts`), тож окремого тексту для них не потрібно.
  */
 export function FieldRow({
   label,
   value,
   icon,
-  empty = "—",
 }: {
   label: string;
   value: ReactNode;
   icon?: IconName;
-  empty?: string;
 }) {
   return (
     <div className="wb-profile-field">
@@ -27,7 +25,7 @@ export function FieldRow({
         {icon && ico(icon, 14)}
         <span>{label}</span>
       </div>
-      <div className="wb-profile-value">{value || empty}</div>
+      <div className="wb-profile-value">{value || "—"}</div>
     </div>
   );
 }

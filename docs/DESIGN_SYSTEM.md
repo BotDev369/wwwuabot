@@ -153,18 +153,21 @@
     вкладка залита **тим самим акцентом, що й обраний стиль** у панелі теми (`.wb-btn-primary`):
     вибір в одному продукті має один вигляд.
     «Платформа» тримає те, що можна змінити, — фото, ім'я й дані акаунта (роль, тариф, статус,
-    знижка, права, блокування); «Телеграм» — усе, що Telegram віддав, як є: фото, повне ім'я й
-    хендл у шапці, і **кожне** поле payload у переліку нижче — **разом із тими, що в шапці**: шапка
-    дає впізнавання з першого погляду, а не вкорочує список, бо саме ці поля шукають у ньому
-    першими. Невідомі ключі — своїм ім'ям, `photo_url` — «Так» (саме фото стоїть вище, а адреса
-    картинки нічого не каже). Дані сеансу Mini App
+    знижка, права, блокування); «Телеграм» — картка Telegram: у шапці фото, повне ім'я й `@юзернейм`,
+    нижче — **перелік полів у ста́лому нашому порядку**, а не в тому, як Telegram поклав ключі
+    (`telegram-fields.ts`). Склад переліку — теж наше рішення, і саме тому він не залежить від
+    payload: **порожні поля не показуються** (`Прізвище …` не несе нічого, а порожній рядок читався б
+    як збій), **`Telegram Premium` стоїть завжди** (Telegram мовчить про цей ключ, коли підписки
+    немає, тож відсутність — це «ні»), **фото рядком немає** — воно вже в шапці. Невідомі ключі
+    лишаються внизу своїм ім'ям: нове поле Telegram має з'явитись саме. Дані сеансу Mini App
     і сирий JSON прибрано — вони стояли для відловлювання багів, а наш дамп не профіль. Порожнє
     місце показується `...`, а не пропуском: рядок, що зникає, читався б як поламаний.
     Технічних описів у показі людині немає: підпис і значення кажуть усе, а словами лишається те,
     чого не видно, — чому Telegram-дані незмінні (рядок стоїть **перед** карткою) і де буде своє
     фото. Фото й ім'я стоять **в одній** картці: порада «так вас бачать інші» стосується обох. Стежать
-    `components/user-profile/AccountRow.test.tsx`, `components/user-profile/TelegramSection.test.tsx`,
-    `pages/AccountTelegramSection.test.tsx`, `user/platform-username.test.ts` і `styles/menu.test.ts`.
+    `components/user-profile/AccountRow.test.tsx`, `components/user-profile/telegram-fields.test.ts`,
+    `components/user-profile/TelegramSection.test.tsx`, `pages/AccountTelegramSection.test.tsx`,
+    `user/platform-username.test.ts` і `styles/menu.test.ts`.
 
 ---
 
@@ -180,7 +183,7 @@
 | `packages/shared/src/styles/page-layout.css` / `drawer.css` | Каркас сторінки для `PageRenderer` і виїзне меню |
 | `packages/shared/src/styles/apple.css` / `android.css` | Характер бренду (радіус, мірки, скло) |
 | `packages/shared/src/components/theme/` | `ThemeColorPanel`, `ThemeSheet`, `color-presets.ts`, `useUserColors` |
-| `packages/shared/src/components/user-profile/` | `AccountRow.tsx` (рядок хабу), `AccountAvatar.tsx` + `account.ts` (два акаунти як чисті функції), `PlatformHandle` (ім'я + фото в одній картці), `DatabaseSection` / `TelegramSection` (два підсписки акаунта), `UserProfileCard` (картка адмінки) — правило 22 |
+| `packages/shared/src/components/user-profile/` | `AccountRow.tsx` (рядок хабу), `AccountAvatar.tsx` + `account.ts` (два акаунти як чисті функції), `PlatformHandle` (ім'я + фото в одній картці), `DatabaseSection` / `TelegramSection` (два підсписки акаунта), `telegram-fields.ts` (склад і порядок полів Telegram), `UserProfileCard` (картка адмінки) — правило 22 |
 | `packages/shared/src/components/icons.tsx` / `Icon.tsx` | Набір іконок (`IconName` — єдине джерело) і `<Icon />` |
 | `scripts/check-css-classes.mjs` / `css-baseline.mjs` | Гейт «клас ↔ правило» і задокументований борг |
 

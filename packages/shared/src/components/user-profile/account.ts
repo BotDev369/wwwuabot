@@ -63,7 +63,7 @@ export function telegramName(user: UserProfileData | null | undefined): string |
   return fromRow || undefined;
 }
 
-/** Telegram-хендл у вигляді `@name` — або `undefined`, якщо хендла немає. */
+/** Telegram-юзернейм у вигляді `@name` — або `undefined`, якщо його немає. */
 export function telegramHandle(user: UserProfileData | null | undefined): string | undefined {
   if (!user) return undefined;
   const handle = fromTelegram(user, "username") ?? text(user.username);

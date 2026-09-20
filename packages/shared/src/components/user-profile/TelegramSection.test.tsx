@@ -1,18 +1,9 @@
 /**
- * Список «Дані від Telegram» — сторож трьох рішень, які ламаються мовчки.
+ * Картка «Дані від Telegram» — сторож того, що людина бачить у ній.
  *
- * Перше: поля перебираються з payload, а не виписані в розмітці, тож **нове**
- * поле Telegram мусить з'явитись саме, зі своїм (неперекладеним) ім'ям —
- * інакше профіль тихо перестає показувати те, що Telegram уже віддає.
- *
- * Друге: у списку стоїть **кожен** ключ payload, і ті, що вже видні в шапці
- * (ім'я, прізвище, хендл, фото), теж. Шапка — впізнавання з першого погляду;
- * список — відповідь на «що про мене відомо». Якщо найпотрібніші поля випадуть
- * саме з нього, їх шукають першими й не знаходять.
- *
- * Третє: нашого дампу тут немає. Дані сеансу й сирий JSON стояли для
- * відловлювання багів; повернути їх — значить знову показати людині те, що
- * читають у логах.
+ * Перелік полів складає `telegram-fields.ts` (там і його власні тести); тут
+ * перевіряється саме показ: підписи українською, `@` на юзернеймі, порядок
+ * рядків у розмітці й те, що нашого дампу в картці немає.
  *
  * @module packages/shared/src/components/user-profile/TelegramSection.test
  */
@@ -26,64 +17,66 @@ const USER: UserProfileData = {
   id: 42,
   telegram: {
     id: 372567448,
-    first_name: "Сергій",
-    last_name: "Дискант",
+    first_name: "Diskant Sergiy",
+    last_name: "",
     username: "DiskantSergiy",
     language_code: "uk",
     photo_url: "https://t.me/i/userpic/320/karas.jpg",
-    unknown_future_field: "нове",
+    allows_write_to_pm: true,
   },
 };
 
 describe("TelegramSection", () => {
-  it("показує невідоме поле, а не ховає його", () => {
+  it("називає речі так, як їх називає людина: юзернейм, а не хендл", () => {
     const html = renderToStaticMarkup(<TelegramSection user={USER} />);
 
-    expect(html).toContain("unknown_future_field");
-    expect(html).toContain("Мова інтерфейсу");
+    expect(html).toContain("Юзернейм");
+    expect(html).toContain("@DiskantSergiy");
+    expect(html).not.toContain("хендл");
   });
 
-  it("показує кожен ключ payload, зокрема той, що вже стоїть у шапці", () => {
+  it("показує преміум і порожніх рядків не лишає", () => {
     const html = renderToStaticMarkup(<TelegramSection user={USER} />);
 
-    // Мітку «Ім'я» шукаємо за значенням: апостроф у розмітці екранований.
-    for (const label of ["Прізвище", "Telegram-хендл", "Фото профілю"]) {
-      expect(html).toContain(label);
-    }
-    expect(html).toContain("DiskantSergiy");
-    expect(html).toContain("Сергій");
+    expect(html).toContain("Telegram Premium");
+    expect(html).toContain("Ні");
+    // Прізвище порожнє — рядка немає взагалі, а не «Прізвище …».
+    expect(html).not.toContain("Прізвище");
+    expect(html).not.toContain("...");
   });
 
-  it("не друкує адресу фото: у списку видно, що фото є", () => {
-    // Посилання посеред картки не каже людині нічого, а саме фото стоїть у шапці.
+  it("не показує фото рядком: воно стоїть у шапці", () => {
     const html = renderToStaticMarkup(<TelegramSection user={USER} />);
 
+    expect(html).not.toContain("Фото профілю");
     expect(html).not.toContain("https://t.me/i/userpic");
-    expect(html).toContain("Фото профілю");
   });
 
-  it("порожнє значення показує `...`, а не тире", () => {
-    // Поле є, значення немає: тире читалось би як «такого поля немає».
-    const html = renderToStaticMarkup(
-      <TelegramSection user={{ ...USER, telegram: { id: 372567448, username: "" } }} />,
+  it("ставить поля в сталий порядок", () => {
+    const html = renderToStaticMarkup(<TelegramSection user={USER} />);
+    const positions = ["Telegram ID", "Юзернейм", "Мова інтерфейсу", "Telegram Premium"].map(
+      (label) => html.indexOf(label),
     );
 
-    expect(html).toContain("Telegram ID");
-    expect(html).toContain("...");
-    expect(html).not.toContain("—");
+    expect(positions.every((position) => position >= 0)).toBe(true);
+    expect([...positions].sort((a, b) => a - b)).toEqual(positions);
   });
 
   it("не показує ні сирого JSON, ні даних сеансу", () => {
-    // Рядок `users` та відповідь API більше не несуть цих полів; якщо вони
-    // колись повернуться в payload — список їх не покаже.
+    // Ці поля стояли тут тимчасово — для відловлювання багів, і живуть у логах.
     const user = {
       ...USER,
-      telegramSession: { chat_type: "private", start_param: "mydate" },
+      telegram: { ...USER.telegram, chat_type: "private", start_param: "mydate" },
     } as UserProfileData;
     const html = renderToStaticMarkup(<TelegramSection user={user} />);
 
     expect(html).not.toContain("Показати сирий JSON");
     expect(html).not.toContain("Дані сеансу");
     expect(html).not.toContain("private");
+  });
+
+  it("без збереженого payload не малює порожньої картки", () => {
+    expect(renderToStaticMarkup(<TelegramSection user={{ id: 42, telegram: null }} />)).toBe("");
+    expect(renderToStaticMarkup(<TelegramSection user={{ id: 42 }} />)).toBe("");
   });
 });
