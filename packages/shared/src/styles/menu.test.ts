@@ -1,14 +1,12 @@
 /**
- * Сторож меню: **плитки — по дві в ряду, низ — зона пальця, а смуга внизу не
- * прокручується**.
+ * Сторож поверхні зі списком: **плитки — по дві в ряду, заглушка не мовчить,
+ * а вихід у поверхні один**.
  *
  * Чому це тест, а не коментар. Кожна з цих речей ламається мовчки: `grid` без
- * `repeat(2, …)` стає одним стовпчиком (меню знову смуги на всю ширину),
- * притискання до низу, переписане на `justify-content: flex-end`, у тіла з
- * `overflow-y: auto` обрізає початок вмісту, коли той вищий за екран — і пункт,
- * який зник, ніхто не побачить, бо зник він угорі. А смуга з «закрити»,
- * переїхавши з сестри тіла в останній рядок тіла, тихо починає їхати разом із
- * вмістом — тобто зникає саме тоді, коли її шукають.
+ * `repeat(2, …)` стає одним стовпчиком (розділи знову смуги на всю ширину),
+ * приглушена іконка заглушки зрівнює її з робочим пунктом — і око вже не
+ * бачить, що з сітки вже працює. А другий вихід (смуга внизу) — це друге місце,
+ * де його шукають, і воно вже було: поки `MenuModal` умів і шапку, і смугу.
  *
  * Розбору CSS у тестовому середовищі немає (environment: node, без DOM), тож
  * CSS читається як текст — так само зроблено в `buttons.test.ts` і
@@ -45,7 +43,7 @@ function rule(selector: string): Rule | undefined {
   return RULES.filter((entry) => entry.selector === selector).at(-1);
 }
 
-describe("меню: плитки й притискання до низу", () => {
+describe("меню: плитки й вигляд пункту", () => {
   it("плитки — рівно дві в ряду", () => {
     const blocks = rule(".wb-menu-blocks");
     expect(blocks, "правило .wb-menu-blocks мусить існувати").toBeDefined();
@@ -74,85 +72,30 @@ describe("меню: плитки й притискання до низу", () =>
     expect(rule(".wb-menu-block--soon .wb-menu-block-icon")).toBeUndefined();
   });
 
-  it("вміст притискається до низу через `margin-top: auto`, а не флексом", () => {
-    // `justify-content: flex-end` у скролованого тіла обрізає початок вмісту:
-    // те, що не влізло, стає недосяжним. `margin-top: auto` тисне лише тоді,
-    // коли місце справді є.
-    const body = rule(".wb-menu-body--end > :first-child");
-    expect(body, "правило притискання мусить існувати").toBeDefined();
-    expect(body?.body).toContain("margin-top: auto");
-    for (const entry of RULES) {
-      if (!entry.selector.includes("wb-menu-body--end")) continue;
-      expect(entry.body, entry.selector).not.toContain("justify-content");
-    }
-  });
-
-  it("облікові картки — у дві колонки, і ділять вільний простір", () => {
-    // Дві речі ламаються мовчки: `grid` без `repeat(2, …)` стає одним
-    // стовпчиком (картка знову смуга, як пункт), а втрачений `flex: 1`
-    // повертає порожнечу під заголовком — меню при цьому робоче, тож ніхто
-    // й не помітить.
-    const cards = rule(".wb-menu-account");
-    expect(cards, "правило .wb-menu-account мусить існувати").toBeDefined();
-    expect(cards?.body).toContain("display: grid");
-    // `minmax(0, 1fr)`, а не `1fr`: довге ім'я інакше розпирає колонку й
-    // вилазить за екран замість того, щоб перенестись.
-    expect(cards?.body).toContain("grid-template-columns: repeat(2, minmax(0, 1fr))");
-
-    const grow = rule(".wb-menu-body--end > .wb-menu-account");
-    expect(grow, "рости картки мусять лише в притиснутому вмісті").toBeDefined();
-    expect(grow?.body).toContain("flex: 1");
-  });
-
-  it("облікова картка — кнопка: тло, радіус і висота не менша за палець", () => {
-    const card = rule(".wb-menu-account-card");
-    expect(card, "правило .wb-menu-account-card мусить існувати").toBeDefined();
-    expect(card?.body).toContain("background: var(--field-bg)");
-    expect(card?.body).toContain("border-radius: var(--radius-md)");
-    const minHeight = Number(card?.body.match(/min-height:\s*(\d+)px/)?.[1]);
-    expect(minHeight).toBeGreaterThanOrEqual(44);
-  });
-
-  it("рядкова розкладка — одна на ВСІ картки: і облікові, і плитки", () => {
-    // Один перемикач міняє обидві родини карток. Якби рядками ставали лише
-    // облікові, поруч із ними стояли б плитки — і це читалось би як зламаний
-    // перемикач, а не як вибір вигляду.
-    const oneColumn = rule(
-      ".wb-menu-body--cards-rows .wb-menu-blocks, .wb-menu-body--cards-rows .wb-menu-account",
-    );
-    expect(oneColumn, "правило рядкової розкладки мусить існувати").toBeDefined();
-    expect(oneColumn?.body).toContain("grid-template-columns: 1fr");
-
-    // Обидві родини стають смугами — інакше це не рядок, а та сама колонка.
-    expect(rule(".wb-menu-body--cards-rows .wb-menu-block")?.body).toContain("flex-direction: row");
-    expect(rule(".wb-menu-body--cards-rows .wb-menu-account-card")?.body).toContain(
-      "flex-direction: row",
-    );
-    // Текст у рядку читають зліва направо, а не по центру смуги.
-    expect(rule(".wb-menu-body--cards-rows .wb-menu-account-text")?.body).toContain(
-      "align-items: flex-start",
-    );
-    // Галочка вибору в рядку замикає рядок, а не висить у куті, як у плитці.
-    expect(rule(".wb-menu-body--cards-rows .wb-menu-block .wb-menu-item-check")?.body).toContain(
-      "position: static",
-    );
-    // Розкладку тримає клас на ТІЛІ поверхні: модифікатор на самій картці — це
-    // друге місце, де вибір можна забути оновити, і саме так картки розійшлися б
-    // із плитками.
-    expect(rule(".wb-menu-account--rows")).toBeUndefined();
+  it("розкладка — це `layout`, а не модифікатор на самому пункті", () => {
+    // Один набір розмітки й два класи-контейнери: другий набір розійшовся б із
+    // першим на першій же правці, а модифікатор на пункті довелося б пам'ятати
+    // в кожній розкладці окремо.
+    expect(rule(".wb-menu-list")?.body).toContain("flex-direction: column");
+    expect(rule(".wb-menu-blocks")?.body).toContain("display: grid");
+    expect(rule(".wb-menu-item--rows")).toBeUndefined();
+    expect(rule(".wb-menu-block--rows")).toBeUndefined();
   });
 });
 
 /**
- * Поверхня на весь екран і смуга внизу — те, що ламається тихо.
+ * Повноекранна поверхня, перемикач вигляду і **відсутність** смуги внизу.
  *
- * Три речі тут не косметичні: (1) повноекранна поверхня мусить лишити місце
+ * Дві речі тут не косметичні: (1) повноекранна поверхня мусить лишити місце
  * під футером застосунку — інакше її нижня кнопка опиняється ПІД смугою, яку
- * `--z-tabbar` малює над модалкою; (2) смуга з «закрити» і перемикачем — сестра
- * тіла з `flex-shrink: 0`, а не останній рядок у тілі з `overflow-y: auto`, бо
- * тоді вона їде разом із вмістом; (3) сегмент перемикача не менший за палець.
+ * `--z-tabbar` малює над модалкою; (2) сегмент перемикача не менший за палець.
+ *
+ * Третя — про мертве: смуга внизу (`closePlacement` + `footer`) і притискання
+ * вмісту (`align`) лишалися в поверхні тільки тому, що ними колись користувалось
+ * меню профілю. Той, хто поверне їх без користувача, поверне й ці рядки — а без
+ * них у поверхні один вихід і один прямокутник, і обидва видні в розмітці.
  */
-describe("меню: поверхня на весь екран і смуга внизу", () => {
+describe("меню: повноекранна поверхня, перемикач і колишня смуга", () => {
   it("повноекранний оверлей — не скрим, а сама сторінка", () => {
     // Крізь напівпрозорий скрим під футером просвічував контент застосунку, і
     // поверхня розпадалась на дві частини з чорними плямами по краях. Заливка
@@ -183,15 +126,21 @@ describe("меню: поверхня на весь екран і смуга вн
     expect(withTabBar?.body).toContain("padding-bottom: var(--tab-bar-h)");
   });
 
-  it("смуга внизу — сестра тіла, а не останній рядок у ньому", () => {
-    const bar = rule(".wb-sheet-bar");
-    expect(bar, "правило .wb-sheet-bar мусить існувати").toBeDefined();
-    expect(bar?.body).toContain("flex-shrink: 0");
-    // Безпечна зона знизу — тут: смуга остання на екрані.
-    expect(bar?.body).toContain("var(--safe-bottom)");
-    // Мірки контролів — їхні власні: у смузі стоять пілюля виходу й перемикач,
-    // а не дві половини смуги (розтягнутий вихід читався прапором).
-    expect(rule(".wb-sheet-bar > *")?.body).toContain("flex: 0 0 auto");
+  it("смуги внизу в поверхні немає — вихід один, у шапці", () => {
+    // Смуга жила тут разом із меню профілю: перемикач вигляду і «закрити» під
+    // пальцем. Перемикач переїхав у шапку екрана, вихід лишився один — і
+    // кирпичики, яких більше ніхто не рендерить, мусять бути видалені, а не
+    // лежати «на майбутнє»: мертвий CSS виглядає як робочий і саме тому
+    // переживає рефакторинг.
+    for (const selector of [
+      ".wb-sheet-bar",
+      ".wb-sheet-bar > *",
+      ".wb-sheet-bar-close",
+      ".wb-menu-body--end > :first-child",
+      ".wb-modal-title--center",
+    ]) {
+      expect(rule(selector), selector).toBeUndefined();
+    }
   });
 
   it("сегмент перемикача не менший за палець, і вибраний видно", () => {
@@ -202,30 +151,9 @@ describe("меню: поверхня на весь екран і смуга вн
     // Знак без підпису мусить лишатись квадратом пальця: ширина — теж 44.
     const minWidth = Number(btn?.body.match(/min-width:\s*(\d+)px/)?.[1]);
     expect(minWidth).toBeGreaterThanOrEqual(44);
-    // Підписів у сегменті немає — інакше він з'їдав би пів смуги, яку ділить із
-    // «закрити»; ім'я варіанта живе в `aria-label`.
+    // Підписів у сегменті немає — інакше він з'їдав би місце із заголовком
+    // екрана; ім'я варіанта живе в `aria-label`.
     expect(rule(".wb-segmented-label")).toBeUndefined();
-  });
-
-  it("смуга внизу: контроли праворуч, вихід — підписана пілюля", () => {
-    // Розтягнута смуга робила з виходу прапор на всю ширину, а центровані
-    // контроли тягнули око в порожнечу. Праворуч — там, куди їх поклали.
-    const bar = rule(".wb-sheet-bar");
-    expect(bar?.body).toContain("justify-content: flex-end");
-    expect(rule(".wb-sheet-bar > *")?.body).toContain("flex: 0 0 auto");
-
-    const close = rule(".wb-sheet-bar-close");
-    expect(close, "правило виходу мусить існувати").toBeDefined();
-    expect(close?.body).toContain("background: var(--accent)");
-    expect(close?.body).toContain("color: var(--text-inverse)");
-    // Пілюля: радіус — токен, а не число на місці (у `.wb-btn` форму задає
-    // бренд, тому вихід — свій кирпичик зі своєю формою в обох брендах).
-    expect(close?.body).toContain("border-radius: var(--radius-full)");
-    // Планка пальця — мінімум, а не фіксований бокс: ширину тримає підпис,
-    // а `width: 44px` зробило б із підписаної кнопки овал з обрізаним словом.
-    const minHeight = Number(close?.body.match(/min-height:\s*(\d+)px/)?.[1]);
-    expect(minHeight).toBeGreaterThanOrEqual(44);
-    expect(close?.body).not.toMatch(/(?<!min-)width:\s*\d+px/);
   });
 
   it("дотик не знімає вибір: `:hover` не перебиває вибраний варіант", () => {

@@ -4,7 +4,7 @@ export { ThemeButton, useStyleTheme } from "./components/StyleToggle";
 export { StylePicker, ThemeToggle } from "./components/StyleToggle";
 
 // ── Три кольори користувача (фон / основний / акцент) ────────────────
-export { ThemeColorPanel, useUserColors } from "./components/theme";
+export { ThemeColorPanel, ThemeSheet, useUserColors } from "./components/theme";
 export type { ThemeColorPanelProps, UseUserColorsResult } from "./components/theme";
 export { COLOR_PRESETS, isPresetActive } from "./styles/color-presets";
 export type { ColorPreset } from "./styles/color-presets";

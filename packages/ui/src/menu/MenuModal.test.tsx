@@ -3,8 +3,9 @@
  *
  * Перевіряємо те, що легко зламати мовчки: що це ТА САМА поверхня, що й
  * композер, що пункт-заглушка каже про себе ще до дотику, що вибір видно
- * галочкою, що «назад» є лише там, де є куди вертатись, і що два варіанти
- * розкладки (рядки / плитки) та притискання вмісту до низу справді різні.
+ * галочкою, що вихід у поверхні один — у шапці, що два варіанти розкладки
+ * (рядки / плитки) справді різні, і що список пунктів у поверхні — **та сама
+ * розмітка**, яку сторінка може показати без неї (`MenuList`).
  *
  * Середовище тестів — `node` (без DOM), тож перевіряємо розмітку, яку рендерить
  * React, а не дотики: так само зроблено в `composer/ComposerModal.test.tsx`.
@@ -12,6 +13,7 @@
 
 import { describe, expect, it } from "vitest";
 import { renderToStaticMarkup } from "react-dom/server";
+import { MenuList } from "./MenuList";
 import { MenuModal } from "./MenuModal";
 import type { MenuItem } from "./types";
 
@@ -77,13 +79,13 @@ describe("MenuModal", () => {
     expect(html().match(/wb-menu-item-check/g)).toHaveLength(1);
   });
 
-  it("«назад» є лише там, де є куди вертатись", () => {
-    expect(html()).not.toContain("Назад");
-    expect(html({ onBack: noop })).toContain('aria-label="Назад"');
-  });
-
-  it("закриття є завжди — це корінь поверхні", () => {
+  it("вихід у поверхні один — у шапці", () => {
+    // Смуга внизу була б другим місцем, де його шукати. Вона жила тут разом із
+    // меню профілю (перемикач вигляду + «закрити» під пальцем) і зникла, коли
+    // перемикач переїхав у шапку екрана.
     expect(html()).toContain('aria-label="Закрити"');
+    expect(html().match(/wb-close-btn/g)).toHaveLength(1);
+    expect(html()).not.toContain("wb-sheet-bar");
   });
 
   it("заголовок підписаний для скрінрідера", () => {
@@ -118,68 +120,15 @@ describe("MenuModal", () => {
     expect(blocks.match(/wb-menu-item-check/g)).toHaveLength(1);
   });
 
-  it("розкладка карток — стан поверхні, і вона одна на всі картки", () => {
-    expect(html()).not.toContain("wb-menu-body--cards-rows");
-    expect(html({ cardLayout: "horizontal" })).toContain("wb-menu-body--cards-rows");
-    // Клас стоїть на **тілі** поверхні, а не на картках: те саме правило
-    // рухає і плитки пунктів, і те, що оболонка дала в `header` (облікові
-    // картки). Два модифікатори розійшлися б на першій же правці.
-    expect(html({ cardLayout: "horizontal", layout: "blocks" })).toContain("wb-menu-blocks");
-    // Розкладка не міняє ролі пункту: плитки лишаються плитками зі своїм чипом
-    // стану, а не стають абзацом із поясненням.
-    expect(html({ cardLayout: "horizontal", layout: "blocks" })).toContain("wb-badge");
-  });
-
-  it("притискання до низу — стан поверхні, а не розкладки", () => {
-    expect(html()).not.toContain("wb-menu-body--end");
-    expect(html({ align: "end" })).toContain("wb-menu-body--end");
-    // Притиснути можна й список, і плитки: це різні рішення.
-    expect(html({ align: "end", layout: "blocks" })).toContain("wb-menu-blocks");
-  });
-
-  it("поверхня на весь екран — той самий кирпичик, лише інші мірки", () => {
-    // Тіло, пункти й заголовок ті самі: міняються краї, а не поверхня. Саме
-    // тому це `--screen`, а не друга модалка.
-    const markup = html({ fullscreen: true, layout: "blocks" });
-    expect(markup).toContain("wb-modal-overlay--screen");
-    expect(markup).toContain("wb-modal--screen");
-    expect(markup).toContain("wb-sheet");
-    expect(markup).toContain("wb-menu-blocks");
-    // Поля — або майже весь екран, або весь: `--tight` тут зайвий.
-    expect(markup).not.toContain("wb-modal-overlay--tight");
-  });
-
-  it("заголовок по центру — теж стан поверхні", () => {
-    expect(html()).not.toContain("wb-modal-title--center");
-    expect(html({ titleAlign: "center" })).toContain("wb-modal-title--center");
-  });
-
-  it("«Закрити» внизу: ✕ у шапці немає, і смуга стоїть після тіла", () => {
-    const markup = html({
-      closePlacement: "bottom",
-      footer: <span className="wb-segmented">вигляд</span>,
-    });
-    // Два виходи з однієї поверхні — це два місця, де його шукати: один.
-    expect(markup).not.toContain("wb-close-btn");
-    expect(markup).toContain("wb-sheet-bar-close");
-    // Підпис словом, а не знаком: у смузі поруч стоїть перемикач вигляду — теж
-    // знак без слова, і два невідомі знаки поряд не кажуть, який із них
-    // закриває поверхню. Окремого `aria-label` тому немає — ім'я дає сам текст.
-    //
-    // І це НЕ `.wb-btn`: бренд дає кнопці свою форму (пілюля Apple, M3 20px),
-    // а вихід мусить мати одну форму в КОЖНОМУ бренді — тож форму задає свій
-    // кирпичик, а не боротьба з брендовим `!important`.
-    expect(markup).toContain(">Закрити<");
-    expect(markup).not.toMatch(/class="[^"]*wb-btn/);
-    // Смуга — сестра тіла, а не останній пункт у ньому: інакше вона
-    // прокручувалась би разом із пунктами й зникала з очей.
-    expect(markup.indexOf("wb-sheet-bar")).toBeGreaterThan(markup.indexOf("wb-modal-body"));
-    // Те, що поверхня дала в смугу, стоїть ПЕРЕД «закрити».
-    expect(markup.indexOf("wb-segmented")).toBeLessThan(markup.indexOf("wb-sheet-bar-close"));
-  });
-
-  it("без смуги ✕ лишається в шапці", () => {
-    expect(html()).toContain("wb-close-btn");
-    expect(html()).not.toContain("wb-sheet-bar");
+  it("список пунктів поверхні — та сама розмітка, що й без неї", () => {
+    // `MenuList` показує ті самі пункти в потоці (хаб профілю платформи), і
+    // саме тому він винесений окремо: два набори розмітки розійшлися б на
+    // першій же правці, і пункт у потоці перестав би бути тим самим пунктом.
+    for (const layout of ["rows", "blocks"] as const) {
+      const standalone = renderToStaticMarkup(<MenuList items={ITEMS} layout={layout} />);
+      expect(html({ layout })).toContain(standalone);
+    }
+    expect(renderToStaticMarkup(<MenuList items={ITEMS} />)).toContain("wb-menu-list");
+    expect(renderToStaticMarkup(<MenuList items={ITEMS} />)).not.toContain("wb-modal-overlay");
   });
 });

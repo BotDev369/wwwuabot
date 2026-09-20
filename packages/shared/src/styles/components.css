@@ -311,15 +311,6 @@
   font-weight: var(--weight-semibold);
 }
 
-/* Заголовок по центру — для шапки, де поруч немає кнопок: у повноекранній
-   поверхні він тоді читається як назва екрана, а не як підпис ліворуч.
-   `flex: 1` саме тому, що поруч може стояти «назад»: тоді він центрується в
-   тому, що лишилось, а не виїжджає за край. */
-.wb-modal-title--center {
-  flex: 1 1 auto;
-  text-align: center;
-}
-
 .wb-modal-close {
   width: 28px;
   height: 28px;
@@ -596,7 +587,8 @@ html:has(.wb-tabbar) .wb-modal {
   }
 }
 
-/* Поверхня на ВЕСЬ екран (`MenuModal` → `fullscreen`): краї без полів, без
+/* Поверхня на ВЕСЬ екран (`.wb-modal-overlay--screen` + `.wb-modal--screen`
+   парою класів — так її складає розмова, `ThreadSheet`): краї без полів, без
    закруглень і без тіні — їй нічого відділяти, вона і є екран.
 
    Оверлей тут — не скрим, а **сама сторінка**: та сама заливка, що у
@@ -1030,75 +1022,18 @@ html:has(.wb-tabbar) .wb-modal-overlay--screen {
   margin-top: auto;
 }
 
-/* Смуга ВНИЗУ поверхні — те, що мусить бути під пальцем і на місці завжди:
-   перемикач вигляду й «закрити». Це не `.wb-sheet-actions`: ті йдуть останнім
-   рядком тіла й прокручуються разом із ним, а з прокрученого меню «закрити»
-   зникає саме тоді, коли його шукають.
-
-   Безпечна зона знизу — тут, а не в модалки: смуга остання на екрані. */
-.wb-sheet-bar {
-  display: flex;
-  align-items: center;
-  /* Праворуч і за шириною вмісту: це контроли поверхні, а не її середина й не
-     дві половини смуги. Розтягнутий на всю ширину вихід читався прапором, а
-     по центру — тягнув око в порожнечу замість того, щоб стояти там, куди
-     його поклали (у зоні пальця, поруч із перемикачем). */
-  justify-content: flex-end;
-  gap: var(--sp-3);
-  flex-shrink: 0;
-  padding: var(--sp-2) var(--sp-3) calc(var(--sp-3) + var(--safe-bottom));
-}
-
-.wb-sheet-bar > * {
-  flex: 0 0 auto;
-}
-
-/* «Закрити» — ПІДПИСАНА ПІЛЮЛЯ, і це окремий кирпичик, а не `.wb-btn`:
-   форму дає бренд (пілюля Apple, M3 20px), а вихід мусить мати одну форму в
-   обох брендів, і вигравати це довелось би своїм `!important` проти їхнього —
-   а бренд має задавати **характер** кирпичика, не переписувати його роль.
-   Тло акцентне: вихід — головна дія смуги.
-
-   Підпис словом, а не знаком: у смузі поруч стоїть перемикач вигляду — теж
-   знак без слова, і два невідомі знаки поряд не кажуть, який із них закриває
-   поверхню. Висота — планка пальця (44px); ширину тримає сам підпис, тож
-   фіксованої мірки тут немає. */
-.wb-sheet-bar-close {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  flex: 0 0 auto;
-  min-width: 44px;
-  min-height: 44px;
-  padding: 0 var(--sp-4);
-  border: none;
-  border-radius: var(--radius-full);
-  background: var(--accent);
-  color: var(--text-inverse);
-  font: inherit;
-  font-size: var(--text-sm);
-  font-weight: var(--weight-semibold);
-  cursor: pointer;
-  transition: background var(--duration-fast) var(--ease);
-}
-
-.wb-sheet-bar-close:hover,
-.wb-sheet-bar-close:active {
-  background: var(--accent-hover);
-}
-
 /* Перемикач із двох-трьох варіантів: видно **всі** варіанти одразу, а не той,
    що вибрано (це не список — тут їх два-три).
 
    Треку немає: це два-три знаки, а не контрол у коробці. Сіра плитка під ними
-   читалась як ще одна кнопка поруч із сусідом (у меню профілю — з акцентним
-   виходом), і перемикач виглядав важчим за те, що він робить. Вибраний сегмент
-   показує **акцентний колір знака**, і на цьому все — кнопки понад це немає.
+   читалась як ще одна кнопка поруч із сусідом, і перемикач виглядав важчим за
+   те, що він робить. Вибраний сегмент показує **акцентний колір знака**, і на
+   цьому все — кнопки понад це немає.
 
-   Підписів у сегменті теж немає навмисно: у смузі він ділить місце з
-   «закрити», і два підписи трьома рядами з'їдали б половину екрана, а знак
-   варіант читає за формою. Ім'я при цьому не губиться — воно в `aria-label`
-   і `title`. */
+   Підписів у сегменті теж немає навмисно: у смузі (`ProfileSectionsSwitch`)
+   він ділить місце із заголовком екрана, і два підписи з'їдали б рядок, а
+   знак варіант читає за формою. Ім'я при цьому не губиться — воно в
+   `aria-label` і `title`. */
 .wb-segmented {
   display: flex;
   gap: 2px;
@@ -1145,11 +1080,11 @@ html:has(.wb-tabbar) .wb-modal-overlay--screen {
   stroke-width: 2.4;
 }
 
-/* ── Меню (профіль): поверхня зі списком пунктів ───────────────────────────
-   Та сама повноекранна поверхня, що й композер (`.wb-sheet`), лише замість
-   вкладок — вертикальний список. Розмітку рендерить СПІЛЬНИЙ `MenuModal`
-   (`@wwwuabot/ui/menu`), тому правила живуть тут, а не в CSS однієї з
-   оболонок (§3, §7).
+/* ── Меню: поверхня зі списком пунктів ────────────────────────────────────
+   Та сама поверхня, що й композер (`.wb-sheet`), лише замість вкладок —
+   вертикальний список. Розмітку рендерить СПІЛЬНИЙ `MenuList` — і в аркуші
+   (`MenuModal`), і в потоці сторінки (хаб профілю), тому правила живуть тут, а
+   не в CSS однієї з оболонок (§3, §7).
 
    Ліній немає й тут: пункт видно тлом (`--field-bg` — той самий кирпичик, що
    у видимого поля) і підсвіченням на дотик (правило 15). */
@@ -1168,18 +1103,9 @@ html:has(.wb-tabbar) .wb-modal-overlay--screen {
   gap: var(--sp-1);
 }
 
-/* Вміст меню, притиснутий до низу: порожнеча лишається під заголовком, а
-   пункти опиняються в зоні пальця — там, куди рука дістає без прицілювання.
-   Це `margin-top: auto` у першого блоку, а не `justify-content: flex-end`: у
-   тіла з `overflow-y: auto` флекс-end обрізав би початок вмісту, коли той
-   вищий за екран. */
-.wb-menu-body--end > :first-child {
-  margin-top: auto;
-}
-
-/* Плитки — та сама роль, що у рядка, лише по дві в ряду: у меню профілю
-   дотик шукають, а не читають, тож широка смуга лише розтягувала б список.
-   Рядок лишається для того, де пояснення таки читають (вибір вигляду,
+/* Плитки — та сама роль, що у рядка, лише по дві в ряду: у розділах хабу
+   профілю дотик шукають, а не читають, тож широка смуга лише розтягувала б
+   список. Рядок лишається для того, де пояснення таки читають (вибір вигляду,
    теги). */
 .wb-menu-blocks {
   display: grid;
@@ -1330,154 +1256,6 @@ html:has(.wb-tabbar) .wb-modal-overlay--screen {
   align-items: center;
   flex-shrink: 0;
   color: var(--accent);
-}
-
-/* ── Облікові картки під списком ─────────────────────────────────────────
-   Telegram і портал — це два **різні** джерела про одну людину, тож і дві
-   картки: під одним підписом «дані» вони злилися б в одне, а Telegram-хендл
-   і ім'я на платформі — не те саме (AGENTS.md §2). Кирпичик той самий, що у
-   пункту (`--field-bg`, радіус, підсвічення на дотик), лише веде він не до
-   розділу, а до профілю.
-
-   Стоять вони **над пунктами, у дві колонки**: пункти читають згори, а низ —
-   зона пальця, і саме туди рука дістає не прицілюючись. Дві колонки
-   нерозривні (`grid`, а не `flex-wrap`): картка — портрет, а не смуга, бо в
-   смузі вона читалась би як ще один пункт меню.
-
-   Друга розкладка (`--cards-rows` на тілі) — те саме **тіло картки**, лише
-   рядком: це вибір людини, а не другий набір розмітки. */
-.wb-menu-account {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: var(--sp-2);
-  min-height: 0;
-}
-
-/* Картки **ділять вільний простір** над собою: пункти мають свою висоту, і
-   рости тут більше нічому — тож порожнеча під заголовком дістається саме
-   їм. Росте лише притиснутий до низу вміст: там вона й утворюється. */
-.wb-menu-body--end > .wb-menu-account {
-  flex: 1;
-}
-
-.wb-menu-account-card {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: var(--sp-1);
-  width: 100%;
-  min-height: 96px;
-  padding: var(--sp-3);
-  border: none;
-  border-radius: var(--radius-md);
-  background: var(--field-bg);
-  color: var(--text-primary);
-  font: inherit;
-  text-align: center;
-  cursor: pointer;
-  transition: background var(--duration-fast) var(--ease);
-}
-
-.wb-menu-account-card:hover {
-  background: var(--surface-active);
-}
-
-/* Підпис картки каже **звідки** ці дані: без нього дві однакові за формою
-   картки відрізнялись би лише вмістом. */
-.wb-menu-account-label {
-  font-size: var(--text-xs);
-  color: var(--text-muted);
-}
-
-.wb-menu-account-avatar {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  /* 48, а не 56: картка — половина екрана, і велике коло з'їдало б рядки,
-     за якими її впізнають. */
-  width: 48px;
-  height: 48px;
-  flex-shrink: 0;
-  overflow: hidden;
-  border-radius: var(--radius-full);
-  background: var(--accent);
-  color: var(--text-inverse, #fff);
-  font-weight: var(--weight-semibold);
-}
-
-.wb-menu-account-avatar img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-}
-
-.wb-menu-account-initial {
-  font-size: var(--text-lg);
-}
-
-/* Текст картки — окремий блок: у портреті він центрований, у рядку — притиснутий
-   ліворуч. Без нього дві розкладки вимагали б ДВОХ наборів розмітки. */
-.wb-menu-account-text {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 2px;
-  min-width: 0;
-}
-
-.wb-menu-account-name {
-  font-size: var(--text-base);
-  font-weight: var(--weight-semibold);
-  overflow-wrap: anywhere;
-}
-
-.wb-menu-account-sub {
-  font-size: var(--text-sm);
-  color: var(--text-muted);
-  overflow-wrap: anywhere;
-}
-
-/* Рядкова розкладка карток поверхні (`MenuModal` → `cardLayout="horizontal"`).
-   Один перемикач міняє **обидві** родини карток — плитки пунктів і облікові
-   картки: якби він переставляв лише половину, а поруч лишались плитки, це
-   читалось би як зламаний перемикач, а не як вибір вигляду.
-
-   Розкладку тримає клас на **тілі** поверхні, а не модифікатор на кожній
-   картці: два модифікатори — це два місця, де вибір можна забути оновити, і
-   саме так картки розійшлися б із плитками. */
-.wb-menu-body--cards-rows .wb-menu-blocks,
-.wb-menu-body--cards-rows .wb-menu-account {
-  grid-template-columns: 1fr;
-}
-
-.wb-menu-body--cards-rows .wb-menu-block {
-  flex-direction: row;
-  justify-content: flex-start;
-  gap: var(--sp-3);
-  min-height: 56px;
-  padding: var(--sp-2) var(--sp-3);
-  text-align: left;
-}
-
-/* Галочка вибору: у плитці вона в куті, у рядку — замикає рядок праворуч, як у
-   пункту списку. */
-.wb-menu-body--cards-rows .wb-menu-block .wb-menu-item-check {
-  position: static;
-  margin-left: auto;
-}
-
-.wb-menu-body--cards-rows .wb-menu-account-card {
-  flex-direction: row;
-  justify-content: flex-start;
-  gap: var(--sp-3);
-  min-height: 64px;
-  padding: var(--sp-2) var(--sp-3);
-  text-align: left;
-}
-
-.wb-menu-body--cards-rows .wb-menu-account-text {
-  align-items: flex-start;
 }
 
 /* ── Вигляд колекції (спільний кирпичик) ───────────────────────────────────

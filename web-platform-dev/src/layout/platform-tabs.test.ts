@@ -3,22 +3,16 @@
  *
  * Смуга — спільний кирпичик, а склад — свій у кожної оболонки, і саме склад
  * міняють руками: переставити пункт, замінити розділ, повісити позначку не на
- * той пункт. Усе це компілюється бездоганно й видно лише на телефоні.
+ * той пункт, позбавити пункт адреси. Усе це компілюється бездоганно й видно
+ * лише на телефоні.
  *
  * @module web-platform-dev/src/layout/platform-tabs.test
  */
 
 import { describe, expect, it } from "vitest";
 import { buildTabBarItems } from "@wwwuabot/ui/nav";
-import {
-  MESSAGES_PATH,
-  MESSAGES_TAB_KEY,
-  PLATFORM_TABS,
-  PROFILE_PATH,
-  PROFILE_TAB_KEY,
-  toShellTabs,
-  withUnreadBadge,
-} from "./platform-tabs";
+import { MESSAGES_PATH, PROFILE_PATH } from "../app/routes";
+import { MESSAGES_TAB_KEY, PLATFORM_TABS, toShellTabs, withUnreadBadge } from "./platform-tabs";
 
 function items(pathname = "/") {
   return buildTabBarItems({
@@ -35,8 +29,17 @@ describe("склад футера", () => {
 
     expect(tabs).toHaveLength(5);
     expect(tabs[2].primary).toBe(true);
-    expect(tabs[4].key).toBe(PROFILE_TAB_KEY);
+    expect(tabs[4].key).toBe("profile");
     expect(tabs[4].href).toBe(PROFILE_PATH);
+  });
+
+  it("кожен слот, крім «+», веде на адресу — і профіль теж", () => {
+    // Слот без адреси означав би, що дотик відкриває поверхню, а не веде на
+    // екран: тоді футер не має ні історії, ні «назад», ні посилання, яке можна
+    // надіслати. Єдина дія в смузі — «+», і вона позначена `primary`.
+    const actionless = toShellTabs().filter((tab) => !tab.primary);
+    expect(actionless).toHaveLength(4);
+    for (const tab of actionless) expect(tab.href, tab.key).toBeTruthy();
   });
 
   it("«Повідомлення» ведуть на свій екран, а не в GalyaShop", () => {

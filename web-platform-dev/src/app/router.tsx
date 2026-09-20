@@ -13,16 +13,13 @@
  * `ScenarioPage`.
  *
  * `/profile`, `/notes`, `/contacts` і `/messages` стоять **перед** catch-all
- * навмисно: це єдині екрани, які не є рядком контенту (`slug`) — профіль
- * складається з даних користувача, список нотаток — із таблиці `notes`,
- * контакти — з таблиці `contacts`, а переписка — з `conversations`/`messages`,
- * а не зі `page_data`. Тому в них власні маршрути, а не адреси-заглушки в базі.
+ * навмисно: це єдині екрани, які не є рядком контенту (`slug`). Їхні адреси
+ * дає `app/routes.ts` — один власник на маршрут і пункт навігації.
  */
 
 import { createBrowserRouter } from "react-router-dom";
 import { PlatformShell } from "@/layout/PlatformShell";
-import { CONTACTS_ROUTE, NOTES_ROUTE } from "@/layout/profile-menu";
-import { MESSAGES_PATH } from "@/layout/platform-tabs";
+import { CONTACTS_ROUTE, MESSAGES_PATH, NOTES_ROUTE, PROFILE_ROUTE } from "@/app/routes";
 import { ContactsPage } from "@/pages/ContactsPage";
 import { MessagesPage } from "@/pages/MessagesPage";
 import { NotesPage } from "@/pages/NotesPage";
@@ -33,8 +30,9 @@ export const router = createBrowserRouter([
   {
     element: <PlatformShell />,
     children: [
-      // Профіль — не контент, а дані користувача
-      { path: "profile", element: <ProfilePage /> },
+      // Профіль — не контент, а дані користувача: той самий екран, що в
+      // адмінці, плюс розділи платформи (хаб).
+      { path: PROFILE_ROUTE, element: <ProfilePage /> },
       // Нотатки — власні дані людини (таблиця `notes`), не рядок `scenarios`
       { path: NOTES_ROUTE, element: <NotesPage /> },
       // Контакти — довідник людини (таблиця `contacts`), теж не рядок контенту
