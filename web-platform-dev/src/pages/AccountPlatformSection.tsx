@@ -2,10 +2,11 @@
  * Розділ «Платформа» — наш акаунт: **як вас бачать інші** і що про вас знає
  * система.
  *
- * **Одна картка на фото й ім'я.** Інші бачать їх разом, тож і порада під ними
- * одна — «так вас бачать інші» стосується і фото, і імені. Розділені на два
- * блоки, вони казали б одне й те саме двічі, і людина шукала б різницю там, де
- * її немає (AGENTS.md §7: один факт — одне місце).
+ * **Одна картка на все про себе.** Ім'я, фото й дані акаунта (роль, тариф,
+ * статус, знижка, права, блокування) — це "я на платформі", тож і картка одна:
+ * «Дані на платформі». Дві картки ділили б один факт навпіл і змушували б
+ * людину шукати різницю там, де її немає (AGENTS.md §7: один факт — одне місце),
+ * а «так вас бачать інші» стосується і фото, і імені одразу.
  *
  * **Фото поки немає — і про це сказано словами, на початку розділу.** Порожній
  * круг без пояснення читався б як поламане зображення, а не як «ще не додано».
@@ -25,6 +26,7 @@ import {
   AccountAvatar,
   PlatformHandle,
   UserProfileDataSection,
+  UserProfileSection,
   accountInitial,
   platformLabel,
   platformPhoto,
@@ -45,19 +47,24 @@ export function AccountPlatformSection({
     <>
       {!photo && <p className="wb-profile-note">Своє фото можна буде додати трохи згодом.</p>}
 
-      <PlatformHandle
-        value={user.platformUsername}
-        onSubmit={onChangeUsername}
-        avatar={
-          <AccountAvatar
-            photo={photo}
-            initial={accountInitial(user, name)}
-            alt="Фото на платформі"
-          />
-        }
-      />
+      {/* Картку дає саме розділ, а не підсписки: ім'я і дані акаунта — одна
+          картка, тож жоден із них не малює власної (`plain`). */}
+      <UserProfileSection title="Дані на платформі" icon="clipboard">
+        <PlatformHandle
+          plain
+          value={user.platformUsername}
+          onSubmit={onChangeUsername}
+          avatar={
+            <AccountAvatar
+              photo={photo}
+              initial={accountInitial(user, name)}
+              alt="Фото на платформі"
+            />
+          }
+        />
 
-      <UserProfileDataSection user={user} showTelegramFields={false} title="Дані акаунта" />
+        <UserProfileDataSection plain user={user} showTelegramFields={false} />
+      </UserProfileSection>
     </>
   );
 }

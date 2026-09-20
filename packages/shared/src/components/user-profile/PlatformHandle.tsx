@@ -18,23 +18,31 @@ import { useHandleEdit } from "./useHandleEdit";
  * **`avatar`** віддає місце круга тому, хто знає, чи є фото (сторінка акаунта).
  * Тоді порада й фото стоять в **одній** картці — бо фото показують іншим так
  * само, як ім'я, і два блоки з одним підписом читались би як дві речі.
+ *
+ * **`plain`** — без власної картки: тоді блок стоїть у картці того, хто складає
+ * розділ. Так зроблено на сторінці акаунта, де ім'я на платформі й дані акаунта
+ * — **одна** картка «Дані на платформі»: людина читає там усе про себе, і дві
+ * картки ділили б один факт навпіл (AGENTS.md §7).
  */
 export function PlatformHandle({
   value,
   avatar,
   onSubmit,
+  plain = false,
 }: {
   value: string | null | undefined;
   /** Круг у шапці блоку замість знака: `AccountAvatar` на сторінці акаунта. */
   avatar?: ReactNode;
   onSubmit?: (value: string) => Promise<string | null>;
+  /** Без власної картки — її дає той, хто складає розділ. */
+  plain?: boolean;
 }) {
   const formatted = formatPlatformUsername(value);
   const canEdit = Boolean(onSubmit);
   const edit = useHandleEdit(value, onSubmit);
 
   return (
-    <div className="wb-profile wb-profile--handle">
+    <div className={plain ? "wb-handle" : "wb-profile wb-profile--handle"}>
       <div className="wb-handle-head">
         {avatar ?? <span className="wb-handle-badge">{ico("user", 18)}</span>}
         <div className="wb-handle-info">

@@ -1,8 +1,8 @@
 import type { ReactElement } from "react";
 import { AccountAvatar } from "./AccountAvatar";
 import { FieldRow } from "./FieldRow";
+import { ProfileCard } from "./ProfileCard";
 import { accountInitial, telegramHandle, telegramName, telegramPhoto } from "./account";
-import { ico } from "./badges";
 import { telegramFields } from "./telegram-fields";
 import type { UserProfileData } from "./types";
 
@@ -42,9 +42,7 @@ export function TelegramSection({ user }: { user: UserProfileData }): ReactEleme
   const handle = telegramHandle(user);
 
   return (
-    <div className="wb-profile">
-      <h3 className="wb-profile-title">{ico("bot")} Дані від Telegram</h3>
-
+    <ProfileCard title="Дані від Telegram" icon="bot">
       <div className="wb-account-head">
         <AccountAvatar
           photo={telegramPhoto(user)}
@@ -62,6 +60,6 @@ export function TelegramSection({ user }: { user: UserProfileData }): ReactEleme
           <FieldRow key={field.key} label={field.label} value={field.value} />
         ))}
       </div>
-    </div>
+    </ProfileCard>
   );
 }

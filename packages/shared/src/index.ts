@@ -88,6 +88,8 @@ export type { UserAccountRowProps } from "./components/user-profile/AccountRow";
  */
 export { DatabaseSection as UserProfileDataSection } from "./components/user-profile/DatabaseSection";
 export { TelegramSection as UserTelegramDataSection } from "./components/user-profile/TelegramSection";
+/** Картка розділу профілю (заголовок + рамка) — її складає той, хто рендерить розділ. */
+export { ProfileCard as UserProfileSection } from "./components/user-profile/ProfileCard";
 /** Круг акаунта в розділі: фото, а як його немає — літера. */
 export { AccountAvatar } from "./components/user-profile/AccountAvatar";
 /** Два акаунти однієї людини — чисті функції (див. `user-profile/account.ts`). */
