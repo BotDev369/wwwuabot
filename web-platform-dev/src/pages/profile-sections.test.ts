@@ -80,8 +80,11 @@ describe("вибір вигляду розділів", () => {
   });
 
   it("рівно два варіанти, і в кожного є ім'я та свій знак", () => {
-    expect(SECTIONS_LAYOUT_OPTIONS.map((option) => option.key)).toEqual(["blocks", "rows"]);
-    expect(DEFAULT_SECTIONS_LAYOUT).toBe("blocks");
+    // Типовий варіант стоїть першим: у смузі лівіше — те, що людина побачить,
+    // якщо нічого не чіпатиме.
+    expect(SECTIONS_LAYOUT_OPTIONS.map((option) => option.key)).toEqual(["rows", "blocks"]);
+    expect(DEFAULT_SECTIONS_LAYOUT).toBe("rows");
+    expect(SECTIONS_LAYOUT_OPTIONS[0].key).toBe(DEFAULT_SECTIONS_LAYOUT);
 
     const icons = SECTIONS_LAYOUT_OPTIONS.map((option) => option.icon);
     expect(new Set(icons).size).toBe(icons.length);

@@ -71,8 +71,12 @@ export function buildProfileSections({
 
 const KEY = "wwwuabot-profile-sections-layout";
 
-/** Типово — **плитки**: розділів мало, і до них тицяють, а не читають. */
-export const DEFAULT_SECTIONS_LAYOUT: MenuLayout = "blocks";
+/**
+ * Типово — **рядки**: у рядку пункт називає себе словом і пояснює, що там буде,
+ * тож людина не мусить угадувати розділ за знаком у плитці. Плитки лишаються
+ * вибором того, хто вже знає, куди йде.
+ */
+export const DEFAULT_SECTIONS_LAYOUT: MenuLayout = "rows";
 
 /** Варіант вигляду — дані для перемикача, а не розмітка. */
 export interface SectionsLayoutOption {
@@ -86,14 +90,22 @@ export interface SectionsLayoutOption {
 }
 
 export const SECTIONS_LAYOUT_OPTIONS: readonly SectionsLayoutOption[] = [
-  { key: "blocks", label: "Плитки", icon: "card" },
   { key: "rows", label: "Рядки", icon: "list" },
+  { key: "blocks", label: "Плитки", icon: "card" },
 ];
 
-/** Читання вибору. Сміття і недоступне сховище дають типове, а не помилку. */
+/**
+ * Читання вибору. Сміття і недоступне сховище дають типове, а не помилку.
+ *
+ * Вибір звіряється зі **списком варіантів**, а не з одним значенням: коли
+ * зі сховища читався лише `rows`, типовий вигляд мінявся мовчки — людина
+ * обирала плитки, а бачила рядки, бо «плитки» не згадувались у читанні взагалі.
+ */
 export function readSectionsLayout(): MenuLayout {
   try {
-    return localStorage.getItem(KEY) === "rows" ? "rows" : DEFAULT_SECTIONS_LAYOUT;
+    const stored = localStorage.getItem(KEY);
+    const known = SECTIONS_LAYOUT_OPTIONS.some((option) => option.key === stored);
+    return known ? (stored as MenuLayout) : DEFAULT_SECTIONS_LAYOUT;
   } catch {
     return DEFAULT_SECTIONS_LAYOUT;
   }

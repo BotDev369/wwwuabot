@@ -81,8 +81,18 @@ export { PlatformHandle } from "./components/user-profile/PlatformHandle";
 /** Обліковий рядок: два фото й два імені (`#` — платформа, `@` — Telegram). */
 export { UserAccountRow } from "./components/user-profile/AccountRow";
 export type { UserAccountRowProps } from "./components/user-profile/AccountRow";
+/**
+ * Два підсписки акаунта — по одному на розділ (`/profile/account`):
+ * `UserProfileDataSection` — роль, тариф, статус, права (наше),
+ * `UserTelegramDataSection` — усе, що віддав Telegram, як є.
+ */
+export { DatabaseSection as UserProfileDataSection } from "./components/user-profile/DatabaseSection";
+export { TelegramSection as UserTelegramDataSection } from "./components/user-profile/TelegramSection";
+/** Круг акаунта в розділі: фото, а як його немає — літера. */
+export { AccountAvatar } from "./components/user-profile/AccountAvatar";
 /** Два акаунти однієї людини — чисті функції (див. `user-profile/account.ts`). */
 export {
+  TELEGRAM_HEAD_KEYS,
   accountInitial,
   platformLabel,
   platformPhoto,

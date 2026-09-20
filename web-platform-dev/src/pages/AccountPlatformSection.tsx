@@ -1,20 +1,29 @@
 /**
- * Розділ «Платформа» — наш акаунт: фото й ім'я.
+ * Розділ «Платформа» — наш акаунт: **як вас бачать інші** і що про вас знає
+ * система.
  *
- * Два блоки, і це не подрібнення заради рівності: **фото** й **ім'я** — різні
- * речі. Фото ще не можна поставити, і про це сказано словами (порожнє коло без
- * пояснення читалось би як поламане зображення). Ім'я вже є — його людина
- * обрала, і саме воно поводить її в продукті.
+ * **Одна картка на фото й ім'я.** Інші бачать їх разом, тож і порада під ними
+ * одна — «так вас бачать інші» стосується і фото, і імені. Розділені на два
+ * блоки, вони казали б одне й те саме двічі, і людина шукала б різницю там, де
+ * її немає (AGENTS.md §7: один факт — одне місце).
  *
- * Пояснень понад це немає: людина прийшла подивитись і, може, змінити ім'я, а
- * не прочитати нашу логіку ідентичності.
+ * **Фото поки немає — і про це сказано словами.** Порожній круг без пояснення
+ * читався б як поламане зображення, а не як «ще не додано». Один короткий
+ * рядок, без лекцій: решту каже сама картка.
+ *
+ * **Дані акаунта — після імені.** Роль, тариф, статус, знижка, права й
+ * блокування — те, що людина має бачити про себе: інакше «чому мені щось
+ * недоступно» лишається здогадом. Показує їх той самий компонент, що в картці
+ * адмінки, — інший список розійшовся б із ним на першій же правці.
  *
  * @module web-platform-dev/src/pages/AccountPlatformSection
  */
 
 import type { ReactElement } from "react";
 import {
+  AccountAvatar,
   PlatformHandle,
+  UserProfileDataSection,
   accountInitial,
   platformLabel,
   platformPhoto,
@@ -33,27 +42,21 @@ export function AccountPlatformSection({
 
   return (
     <>
-      <section className="wb-profile">
-        <div className="wb-account-head">
-          <span className="wb-account-photo wb-account-photo--lg">
-            {photo ? (
-              <img src={photo} alt="Фото на платформі" />
-            ) : (
-              <span className="wb-account-initial">{accountInitial(user, name)}</span>
-            )}
-          </span>
-          <span className="wb-account-head-text">
-            <span className="wb-account-head-title">Фото</span>
-            <span className="wb-account-head-note">
-              {photo
-                ? "Так вас бачать інші."
-                : "Скоро тут можна буде поставити своє фото — зараз його ще немає."}
-            </span>
-          </span>
-        </div>
-      </section>
+      <PlatformHandle
+        value={user.platformUsername}
+        onSubmit={onChangeUsername}
+        avatar={
+          <AccountAvatar
+            photo={photo}
+            initial={accountInitial(user, name)}
+            alt="Фото на платформі"
+          />
+        }
+      />
 
-      <PlatformHandle value={user.platformUsername} onSubmit={onChangeUsername} />
+      {!photo && <p className="wb-profile-note">Своє фото можна буде додати трохи згодом.</p>}
+
+      <UserProfileDataSection user={user} showTelegramFields={false} title="Дані акаунта" />
     </>
   );
 }

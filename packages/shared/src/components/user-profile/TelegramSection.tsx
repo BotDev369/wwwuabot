@@ -11,24 +11,38 @@ import type { UserProfileData } from "./types";
 /**
  * Усе, що Telegram віддав про людину.
  *
+ * Абзацу-пояснення над полями немає навмисно: заголовок уже називає джерело, а
+ * решта — те саме слово, сказане двічі. Те, чого з полів **не** видно
+ * (що ці дані не редагуються тут), каже той, хто знає, кому це потрібно:
+ * сторінка акаунта.
+ *
  * Поля не перелічені списком у розмітці — вони перебираються з payload. Це
  * навмисно: Telegram додає нові (`is_premium`, `added_to_menu`,
  * `allows_write_to_pm`, …), і вони з'являються в профілі самі, без правки
  * коду. Невідомий ключ показується своїм ім'ям — краще побачити `foo_bar`,
  * ніж не побачити нічого.
+ *
+ * `omit` — ті ключі, які вже стоять **у шапці** сторінки (фото, ім'я, хендл).
+ * Один факт має одне місце: без цього ім'я й хендл стояли б у профілі людини
+ * двічі поспіль — у шапці й першими рядками списку.
  */
-export function TelegramSection({ user }: { user: UserProfileData }) {
+export function TelegramSection({
+  user,
+  omit,
+}: {
+  user: UserProfileData;
+  omit?: readonly string[];
+}) {
   const telegram = user.telegram ?? null;
   const session = user.telegramSession ?? null;
-  const telegramKeys = telegram ? Object.keys(telegram) : [];
+  const telegramKeys = (telegram ? Object.keys(telegram) : []).filter(
+    (key) => !omit?.includes(key),
+  );
   const sessionKeys = session ? Object.keys(session) : [];
 
   return (
     <div className="wb-profile">
       <h3 className="wb-profile-title">{ico("bot")} Дані від Telegram</h3>
-      <p className="wb-profile-note">
-        Це все, що Telegram віддає про ваш акаунт у Mini App — саме ці дані бачить платформа.
-      </p>
 
       {telegramKeys.length > 0 ? (
         <div className="wb-profile-fields">

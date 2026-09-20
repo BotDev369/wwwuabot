@@ -1,3 +1,4 @@
+import type { ReactNode } from "react";
 import { formatPlatformUsername } from "../../user/platform-username";
 import { ico } from "./badges";
 import { useHandleEdit } from "./useHandleEdit";
@@ -13,12 +14,19 @@ import { useHandleEdit } from "./useHandleEdit";
  * Без `onSubmit` блок лишається **читанням** (так його бачить адмінка): та
  * сама деталь, той самий вигляд, але чуже ім'я адмін не переписує випадково —
  * і ради йому не показують: «так вас бачать інші» стосується того, чиє це ім'я.
+ *
+ * **`avatar`** віддає місце круга тому, хто знає, чи є фото (сторінка акаунта).
+ * Тоді порада й фото стоять в **одній** картці — бо фото показують іншим так
+ * само, як ім'я, і два блоки з одним підписом читались би як дві речі.
  */
 export function PlatformHandle({
   value,
+  avatar,
   onSubmit,
 }: {
   value: string | null | undefined;
+  /** Круг у шапці блоку замість знака: `AccountAvatar` на сторінці акаунта. */
+  avatar?: ReactNode;
   onSubmit?: (value: string) => Promise<string | null>;
 }) {
   const formatted = formatPlatformUsername(value);
@@ -28,7 +36,7 @@ export function PlatformHandle({
   return (
     <div className="wb-profile wb-profile--handle">
       <div className="wb-handle-head">
-        <span className="wb-handle-badge">{ico("user", 18)}</span>
+        {avatar ?? <span className="wb-handle-badge">{ico("user", 18)}</span>}
         <div className="wb-handle-info">
           <div className="wb-handle-label">Ім'я на платформі</div>
           <div className={`wb-handle-name${formatted ? "" : " wb-handle-name--empty"}`}>
@@ -86,7 +94,9 @@ export function PlatformHandle({
         </div>
       ) : (
         // Порада — **тільки тому, чиє це ім'я**: у адмінки чуже ім'я стоїть для
-        // читання, і «вас» там означало б не того, кого видно в рядку.
+        // читання, і «вас» там означало б не того, кого видно в рядку. Стосується
+        // вона не лише імені: у тій самій картці стоїть і фото, а його інші
+        // бачать так само.
         canEdit && <p className="wb-handle-hint">Так вас бачать інші.</p>
       )}
     </div>

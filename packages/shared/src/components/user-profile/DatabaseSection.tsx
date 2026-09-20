@@ -9,17 +9,26 @@ import type { UserProfileData } from "./types";
  *
  * Адмінка показує тут ще й Telegram-дані, бо читає повний рядок `users`
  * (окремої колонки «Telegram» у неї немає).
+ *
+ * `title` — бо той самий набір полів читають **двічі з різних позицій**: у
+ * картці адмінки це «дані системи» (звідки воно взялось), у людини на її
+ * сторінці — її акаунт (що воно про неї). Один підпис на два погляди змусив би
+ * або адміна, або людину читати чуже.
  */
 export function DatabaseSection({
   user,
   showTelegramFields,
+  title = "Дані системи",
 }: {
   user: UserProfileData;
   showTelegramFields: boolean;
+  title?: string;
 }) {
   return (
     <div className="wb-profile">
-      <h3 className="wb-profile-title">{ico("clipboard")} Дані системи</h3>
+      <h3 className="wb-profile-title">
+        {ico("clipboard")} {title}
+      </h3>
       <div className="wb-profile-fields">
         {showTelegramFields && (
           <>

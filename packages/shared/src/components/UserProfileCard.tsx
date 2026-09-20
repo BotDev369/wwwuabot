@@ -20,9 +20,11 @@ export type { UserProfileCardProps, UserProfileData };
  *   5. сирі поля рядка — для діагностики.
  *
  * **Чому це не екран користувача.** Людина бачить себе на `/profile/account` у
- * платформі — там два розділи, «Платформа» й «Telegram», без технічних полів і
- * без даних системи, яких вона не шукала. Спільним лишається те, що справді
- * спільне: блок імені (`PlatformHandle`) і кирпичики `.wb-profile*`.
+ * платформі — там ті самі дані розділені на два погляди: «Платформа» (як її
+ * бачать інші та що про неї знає система) і «Телеграм» (усе, що віддав
+ * Telegram). Спільним лишається те, що справді спільне: блок імені
+ * (`PlatformHandle`), два підсписки (`DatabaseSection`, `TelegramSection`) і
+ * кирпичики `.wb-profile*`.
  */
 export function UserProfileCard({ user, loading, error, onEdit, onMessage }: UserProfileCardProps) {
   if (loading) {

@@ -26,7 +26,7 @@
  */
 
 import { useState, type ReactElement } from "react";
-import { ThemeSheet, UserAccountRow, formatPlatformUsername } from "@wwwuabot/shared";
+import { ThemeSheet, UserAccountRow } from "@wwwuabot/shared";
 import { useNavigate } from "react-router-dom";
 import { useDialog } from "@wwwuabot/ui/dialog";
 import { MenuList, buildMenuItems } from "@wwwuabot/ui/menu";
@@ -61,14 +61,14 @@ export function ProfilePage(): ReactElement {
     },
   });
 
-  // Заголовок — **ім'я на платформі**, а не ім'я з Telegram: друге ми не
-  // обираємо й воно може зникнути. Поки імені немає, екран зветься своїм ім'ям.
-  const title = formatPlatformUsername(profile?.platformUsername) ?? "Профіль";
-
   return (
     <div className="wb-page">
       <div className="wb-page-head">
-        <h1 className="wb-page-title">{title}</h1>
+        {/* Заголовок — **ім'я екрана**, а не ім'я людини: те саме слово, що в
+            пункті футера. Ім'я на платформі й Telegram-хендл уже стоять у рядку
+            акаунта — поруч, парою, де вони й читаються як імена, а не як назва
+            місця. */}
+        <h1 className="wb-page-title">Профіль</h1>
         <ProfileSectionsSwitch layout={layout} onChange={changeLayout} />
       </div>
 
