@@ -1,29 +1,40 @@
 /**
- * `GuessGame` — «вгадай число»: поле, підказка й історія спроб.
+ * `GuessGame` — «вгадай число»: смуга діапазону, рядок відповіді, історія.
  *
- * **Історія — не прикраса.** У цій грі памʼять і є гра: без списку спроб
- * людина тримає попередні відповіді в голові й рахує їх заново, а «менше /
- * більше» без історії читається як випадкові слова.
+ * **Смуга — головне тут.** Замість того щоб людина тримала в голові «більше
+ * 40, менше 70», екран малює **те, що ще може бути загаданим**: акцентна
+ * ділянка звужується після кожної спроби (`boundsOf`), а риска показує, де
+ * стоїть останній хід. Це та сама гра, лише видно, а не прочитано.
  *
- * **Порожній ввід не карається.** Промах пальцем по «Спробувати» з порожнім
- * полем не додає спроби — на це вказує підказка під полем, і вона ж показує
- * межі діапазону, які бере з правил (`GUESS_MIN` / `GUESS_MAX`), а не з
- * літералів у розмітці.
+ * **Відповідь — знак і слово.** «Менше» зі стрілкою вниз, «більше» — угору,
+ * «це воно» — галочка: напрямок читається без читання.
+ *
+ * **Невдалий ввід не карається.** Промах пальцем по «Спробувати» з порожнім
+ * полем не додає спроби — про це каже підказка в полі, і вона ж показує межі,
+ * які беруться з правил (`GUESS_MIN` / `GUESS_MAX`), а не з літералів.
  *
  * @module web-platform-dev/src/pages/games/GuessGame
  */
 
 import { useState, type FormEvent, type ReactElement } from "react";
-import { Icon } from "@wwwuabot/shared";
+import { Icon, type IconName } from "@wwwuabot/shared";
 import { GUESS_MAX, GUESS_MIN, type GuessVerdict } from "./guess";
 import { useGuess } from "./useGuess";
 
-/** Що казати після спроби — по-людськи й без підказки «спробуй іще». */
-const VERDICT_TEXT: Record<GuessVerdict, string> = {
-  lower: "менше",
-  higher: "більше",
-  hit: "це воно",
+/** Відповідь — знаком і словом: напрямок видно раніше, ніж прочитано. */
+const VERDICT: Record<GuessVerdict, { text: string; icon: IconName; tone: string }> = {
+  lower: { text: "менше", icon: "arrow-down", tone: "" },
+  higher: { text: "більше", icon: "arrow-up", tone: "" },
+  hit: { text: "це воно", icon: "check", tone: " wb-game-result--win" },
 };
+
+/** Скільки точок на смузі від початку до кінця діапазону. */
+const TOTAL = GUESS_MAX - GUESS_MIN + 1;
+
+/** Частка смуги у відсотках — від межі до межі. */
+function percent(value: number): number {
+  return ((value - GUESS_MIN) / TOTAL) * 100;
+}
 
 /**
  * «1 спроба», «2 спроби», «5 спроб».
@@ -44,6 +55,8 @@ function attemptsWord(count: number): string {
 export function GuessGame(): ReactElement {
   const game = useGuess();
   const [value, setValue] = useState("");
+  const { low, high } = game.range;
+  const last = game.last;
 
   function handleSubmit(event: FormEvent): void {
     event.preventDefault();
@@ -54,10 +67,46 @@ export function GuessGame(): ReactElement {
 
   return (
     <div className="wb-game">
-      <p className="wb-game-status">
-        {game.solved
-          ? `Вгадали за ${game.attempts.length} ${attemptsWord(game.attempts.length)}`
-          : "Я загадав число — спробуйте вгадати"}
+      {/* Що лишилось — числом під смугою: смуга показує **де**, а межі треба
+          знати точно, інакше наступна спроба буде навмання. */}
+      <div>
+        <div className="wb-game-range">
+          <span
+            className="wb-game-range-band"
+            style={{ left: `${percent(low)}%`, width: `${percent(high + 1) - percent(low)}%` }}
+          />
+          {last && (
+            <span
+              className="wb-game-range-mark"
+              style={{ left: `calc(${percent(last.value)}% - 1.5px)` }}
+            />
+          )}
+        </div>
+        <div className="wb-game-range-labels">
+          <span>{game.solved ? GUESS_MIN : low}</span>
+          <span>
+            {game.solved
+              ? `Вгадано за ${game.attempts.length} ${attemptsWord(game.attempts.length)}`
+              : "можливі числа"}
+          </span>
+          <span>{game.solved ? GUESS_MAX : high}</span>
+        </div>
+      </div>
+
+      <p className={`wb-game-result${last ? VERDICT[last.verdict].tone : ""}`}>
+        {game.solved ? (
+          <span className="wb-game-pop" key="hit">
+            <Icon name="check" size={22} />
+            Це воно!
+          </span>
+        ) : last ? (
+          <span className="wb-game-pop" key={game.attempts.length}>
+            <Icon name={VERDICT[last.verdict].icon} size={22} />
+            Загадане {VERDICT[last.verdict].text}
+          </span>
+        ) : (
+          "Я загадав число — спробуйте вгадати"
+        )}
       </p>
 
       {!game.solved && (
@@ -87,9 +136,12 @@ export function GuessGame(): ReactElement {
               // ключем бути не може: те саме число людина має право ввести
               // двічі, і тоді ключі збіглися б.
               key={index}
-              className={`wb-game-attempt${attempt.verdict === "hit" ? " wb-game-attempt--hit" : ""}`}
+              className={`wb-game-attempt wb-game-pop${
+                attempt.verdict === "hit" ? " wb-game-attempt--hit" : ""
+              }`}
             >
-              {attempt.value} · {VERDICT_TEXT[attempt.verdict]}
+              <Icon name={VERDICT[attempt.verdict].icon} size={14} />
+              {attempt.value}
             </span>
           ))}
         </div>

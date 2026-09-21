@@ -29,6 +29,39 @@ export function verdict(secret: number, guess: number): GuessVerdict {
   return guess > secret ? "lower" : "higher";
 }
 
+/** Спроба — число й те, що на нього відповіли. */
+export interface GuessAttempt {
+  value: number;
+  verdict: GuessVerdict;
+}
+
+/** Що ще може бути загаданим — після всіх спроб. */
+export interface GuessRange {
+  low: number;
+  high: number;
+}
+
+/**
+ * Діапазон, який лишився після спроб.
+ *
+ * Це **не прикраса**, а сама гра: смуга на екрані звужується рівно на цю
+ * різницю, і саме тому «менше / більше» видно, а не читається. Рахуємо від
+ * меж (`GUESS_MIN`…`GUESS_MAX`), а не від першої спроби: до першого ходу
+ * можливе **все**, і смуга мусить бути повною.
+ *
+ * Спроба на самій межі, яка нічого не відтинає, діапазон не ламає: `max` і
+ * `min` тримають його в межах.
+ */
+export function boundsOf(attempts: readonly GuessAttempt[]): GuessRange {
+  let low = GUESS_MIN;
+  let high = GUESS_MAX;
+  for (const attempt of attempts) {
+    if (attempt.verdict === "higher") low = Math.max(low, attempt.value + 1);
+    if (attempt.verdict === "lower") high = Math.min(high, attempt.value - 1);
+  }
+  return { low, high };
+}
+
 /**
  * Розібрати введене. `null` — не число або поза діапазоном: порожній рядок,
  * «50,5», «1000» і «абв» — це одна відповідь «спробуй іще», а не пʼять різних

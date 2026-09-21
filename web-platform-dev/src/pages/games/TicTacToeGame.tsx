@@ -1,16 +1,20 @@
 /**
- * `TicTacToeGame` — дошка хрестиків-нуликів: девʼять клітинок, рядок стану й
- * рахунок партій.
+ * `TicTacToeGame` — дошка: девʼять клітинок, рядок результату й рахунок.
  *
- * Розмітка тут лише малює стан із хука (`useTicTacToe`): правила живуть у
+ * Розмітка лише малює стан із хука (`useTicTacToe`): правила живуть у
  * `tictactoe.ts`, хід бота — у хуку, а компонент знає тільки, куди натиснули.
  *
  * **Знаки — `Icon`, а не літери.** «✕» і «○» як текст залежать від шрифту й
  * розʼїжджаються разом із ним (а шрифт у нас — вибір людини); іконка тримає
  * розмір і товщину однаковими в будь-якій темі.
  *
- * **Переможну лінію видно.** Підсвітка — не прикраса: без неї «ви виграли»
- * лишається словами, а в людини немає способу побачити, де її закрили.
+ * **Кожен знак зʼявляється стрибком, лінія дихає.** Це не прикраси: у партії
+ * на дошці важливо бачити, **що саме** щойно сталося — і де саме тебе закрили.
+ * Хід бота приходить у ту саму мить, що й твій, тож без руху два знаки просто
+ * «вже стоять».
+ *
+ * **Рахунок — чипсами зі знаками**, а не рядком «виграно 3 · програно 1»:
+ * три числа з підписами доводилось читати, а три знаки з числами видно одразу.
  *
  * @module web-platform-dev/src/pages/games/TicTacToeGame
  */
@@ -18,34 +22,66 @@
 import type { ReactElement } from "react";
 import { Icon } from "@wwwuabot/shared";
 import { HUMAN, type Cell } from "./tictactoe";
-import { useTicTacToe, type TicTacToeResult } from "./useTicTacToe";
+import { useTicTacToe, type TicTacToeScore } from "./useTicTacToe";
 
-/** Що написати в рядку стану — словами людини, а не нашого стану. */
-const STATUS: Record<TicTacToeResult, string> = {
-  won: "Ви виграли!",
-  lost: "Бот виграв",
-  draw: "Нічия",
-};
+/** Що написати в рядку результату — словами людини, а не нашого стану. */
+const STATUS = {
+  won: { text: "Ви виграли!", tone: "win" },
+  lost: { text: "Бот виграв партію", tone: "lose" },
+  draw: { text: "Нічия", tone: "draw" },
+} as const;
 
-function Mark({ cell }: { cell: Cell }): ReactElement | null {
-  if (cell === null) return null;
-  return <Icon name={cell === "x" ? "x" : "circle"} size={32} />;
+/** Тон рядка — класами: колір стану не живе в розмітці. */
+const TONE_CLASS = {
+  win: " wb-game-result--win",
+  lose: " wb-game-result--lose",
+  draw: " wb-game-result--draw",
+} as const;
+
+/** Рахунок партій: свої перемоги — хрестиком, чужі — нуликом, нічиї — рискою. */
+function ScoreChips({ score }: { score: TicTacToeScore }): ReactElement {
+  return (
+    <div className="wb-game-score-chips">
+      <span className="wb-game-score-chip wb-game-score-chip--won">
+        <Icon name="x" size={14} />
+        {score.won}
+      </span>
+      <span className="wb-game-score-chip">
+        <Icon name="circle" size={14} />
+        {score.lost}
+      </span>
+      <span className="wb-game-score-chip">
+        <Icon name="minus" size={14} />
+        {score.draw}
+      </span>
+    </div>
+  );
 }
 
 export function TicTacToeGame(): ReactElement {
   const game = useTicTacToe();
   const over = game.result !== null;
+  const status = game.result === null ? null : STATUS[game.result];
+  const toneClass = status ? TONE_CLASS[status.tone] : "";
 
   return (
     <div className="wb-game">
       {/* Стан іде ПЕРЕД дошкою: у партії на одного питання «чий хід» стоїть
           першим, а дошка його не пояснює. */}
-      <p className="wb-game-status">
-        {game.result === null ? "Ваш хід — хрестики" : STATUS[game.result]}
+      <p className={`wb-game-result${toneClass}`}>
+        {/* Ключ від тексту — щоб результат **зʼявлявся** стрибком: без нього
+            React міняє лише вміст, і руху не видно. */}
+        {status ? (
+          <span className="wb-game-pop" key={status.text}>
+            {status.text}
+          </span>
+        ) : (
+          "Ваш хід — хрестики"
+        )}
       </p>
 
       <div className="wb-game-board">
-        {game.board.map((cell, index) => {
+        {game.board.map((cell: Cell, index: number) => {
           const winning = game.line?.includes(index) ?? false;
           let className = "wb-game-cell";
           if (cell === HUMAN) className += " wb-game-cell--mine";
@@ -61,15 +97,17 @@ export function TicTacToeGame(): ReactElement {
               aria-label={`Клітинка ${index + 1}${cell ? (cell === "x" ? ": хрестик" : ": нулик") : ""}`}
               onClick={() => game.play(index)}
             >
-              <Mark cell={cell} />
+              {cell && (
+                <span className="wb-game-pop">
+                  <Icon name={cell === "x" ? "x" : "circle"} size={38} />
+                </span>
+              )}
             </button>
           );
         })}
       </div>
 
-      <p className="wb-game-score">
-        Виграно {game.score.won} · програно {game.score.lost} · нічиїх {game.score.draw}
-      </p>
+      <ScoreChips score={game.score} />
 
       <div className="wb-game-actions">
         <button type="button" className="wb-btn wb-btn-secondary wb-btn-sm" onClick={game.reset}>

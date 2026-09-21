@@ -1,19 +1,34 @@
 /**
- * `useRps` — стан партії «камінь, ножиці, папір»: рахунок і останній раунд.
+ * `useRps` — стан партії «камінь, ножиці, папір»: рахунок, хід бота й пауза
+ * перед показом.
  *
- * **Партія — до `RPS_TARGET` перемог.** «Один раунд і все» не дає відчуття
- * партії, а «скільки завгодно» — не дає кінця; три перемоги — звичний і
- * короткий рубіж.
+ * **Бот «вибирає», а не відповідає миттєво.** Правило — чиста функція, тож
+ * вибір бота відомий у ту саму мить; але показати його одразу означало б
+ * прибрати з гри все, крім тексту. Тому між дотиком і результатом стоїть
+ * коротка крутилка: знак бота блимає трьома предметами, а рахунок змінюється
+ * **після** показу — так раунд не «стається сам».
  *
- * **Останній раунд показується разом із рахунком.** Після власного вибору
- * людині треба бачити, що вибрав бот, — інакше рахунок росте сам по собі й
- * зрозуміти, чому, нема з чого.
+ * **Крутилка живе в ефекті, а не в стані.** Це єдине місце з таймерами, і
+ * ефект прибирає їх за собою: вихід зі сторінки посеред раунду не лишає ні
+ * інтервалу, ні пізнього `setState`.
  *
  * @module web-platform-dev/src/pages/games/useRps
  */
 
-import { useState } from "react";
-import { RPS_TARGET, outcome, randomChoice, type RpsChoice, type RpsOutcome } from "./rps";
+import { useEffect, useState } from "react";
+import {
+  RPS_CHOICES,
+  RPS_TARGET,
+  outcome,
+  randomChoice,
+  type RpsChoice,
+  type RpsOutcome,
+} from "./rps";
+
+/** Скільки триває «вибір» бота — коротко, щоб не чекати, і видно, щоб помітити. */
+const ROLL_MS = 650;
+/** Як часто крутилка перебирає предмети — близько 10 кадрів на секунду. */
+const ROLL_STEP_MS = 80;
 
 export interface RpsRound {
   player: RpsChoice;
@@ -21,11 +36,20 @@ export interface RpsRound {
   outcome: RpsOutcome;
 }
 
+/** Що робить екран: нічого, показує вибір бота — чи вже показує раунд. */
+export type RpsPhase = "idle" | "rolling" | "done";
+
 export interface UseRpsResult {
   wins: number;
   losses: number;
-  round: RpsRound | null;
-  /** Партія скінчилась: хід більше нічого не міняє, лишається «ще раз». */
+  phase: RpsPhase;
+  /** Вибір людини показується **одразу** — це її дотик, і чекати йому нема чого. */
+  player: RpsChoice | null;
+  /** Предмет, що блимає в слоте бота, доки триває крутилка. */
+  rolling: RpsChoice | null;
+  /** Хід бота — після показу. */
+  bot: RpsChoice | null;
+  outcome: RpsOutcome | null;
   finished: boolean;
   play: (choice: RpsChoice) => void;
   reset: () => void;
@@ -35,24 +59,66 @@ export function useRps(random: () => number = Math.random): UseRpsResult {
   const [wins, setWins] = useState(0);
   const [losses, setLosses] = useState(0);
   const [round, setRound] = useState<RpsRound | null>(null);
+  // Хід людини, який чекає на показ. Він — і прапорець «крутилка йде».
+  const [pending, setPending] = useState<RpsChoice | null>(null);
+  const [rolling, setRolling] = useState<RpsChoice | null>(null);
 
   const finished = wins >= RPS_TARGET || losses >= RPS_TARGET;
 
-  function play(choice: RpsChoice): void {
-    if (finished) return;
+  useEffect(() => {
+    if (pending === null) return;
 
-    const bot = randomChoice(random);
-    const result = outcome(choice, bot);
-    if (result === "win") setWins((prev) => prev + 1);
-    if (result === "lose") setLosses((prev) => prev + 1);
-    setRound({ player: choice, bot, outcome: result });
+    const spinner = setInterval(() => {
+      setRolling((prev) => {
+        const at = RPS_CHOICES.findIndex((entry) => entry.key === prev);
+        return RPS_CHOICES[(at + 1) % RPS_CHOICES.length]?.key ?? "rock";
+      });
+    }, ROLL_STEP_MS);
+
+    const timer = setTimeout(() => {
+      const bot = randomChoice(random);
+      const result = outcome(pending, bot);
+      // Рахунок міняється тут, а не в `play`: доки раунд не показано, він
+      // не відбувся — інакше точки рахунку росли б під крутилкою.
+      if (result === "win") setWins((prev) => prev + 1);
+      if (result === "lose") setLosses((prev) => prev + 1);
+      setRound({ player: pending, bot, outcome: result });
+      setPending(null);
+      setRolling(null);
+    }, ROLL_MS);
+
+    return () => {
+      clearInterval(spinner);
+      clearTimeout(timer);
+    };
+  }, [pending, random]);
+
+  function play(choice: RpsChoice): void {
+    // Другий хід під час крутилки нічого не робить: раунд триває.
+    if (finished || pending !== null) return;
+    setRound(null);
+    setRolling(choice);
+    setPending(choice);
   }
 
   function reset(): void {
     setWins(0);
     setLosses(0);
     setRound(null);
+    setPending(null);
+    setRolling(null);
   }
 
-  return { wins, losses, round, finished, play, reset };
+  return {
+    wins,
+    losses,
+    phase: pending !== null ? "rolling" : round !== null ? "done" : "idle",
+    player: pending ?? round?.player ?? null,
+    rolling,
+    bot: round?.bot ?? null,
+    outcome: round?.outcome ?? null,
+    finished,
+    play,
+    reset,
+  };
 }

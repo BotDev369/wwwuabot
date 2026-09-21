@@ -4,12 +4,27 @@
  * Головне тут — **знак**: «більше» замість «менше» робить гру нерешаємою, а
  * виглядає це як звичайний текст. Друге — **межі**: число поза діапазоном не
  * мусить ставати спробою, бо тоді людина витрачає їх на промахи пальцем.
+ * Третє — **діапазон**: саме він малює смугу, і помилка в ньому дає екран, що
+ * показує одне, а відповідає іншим.
  *
  * @module web-platform-dev/src/pages/games/guess.test
  */
 
 import { describe, expect, it } from "vitest";
-import { GUESS_MAX, GUESS_MIN, parseGuess, randomSecret, verdict } from "./guess";
+import {
+  GUESS_MAX,
+  GUESS_MIN,
+  boundsOf,
+  parseGuess,
+  randomSecret,
+  verdict,
+  type GuessAttempt,
+} from "./guess";
+
+/** Спроба з відповіддю — так значення й вердикт стоять поруч, як у грі. */
+function attempt(value: number, answer: "lower" | "higher" | "hit"): GuessAttempt {
+  return { value, verdict: answer };
+}
 
 describe("порівняння", () => {
   it("каже «менше», коли спроба більша за загадане", () => {
@@ -59,5 +74,37 @@ describe("розбір вводу", () => {
     for (const raw of ["", "   ", "абв", "50,5", "0", "101", "-3", "1e5", "Infinity", "NaN"]) {
       expect(parseGuess(raw), raw).toBeNull();
     }
+  });
+});
+
+describe("діапазон, який лишився", () => {
+  it("до першої спроби можливе все", () => {
+    expect(boundsOf([])).toEqual({ low: GUESS_MIN, high: GUESS_MAX });
+  });
+
+  it("«більше» піднімає нижню межу, «менше» опускає верхню", () => {
+    expect(boundsOf([attempt(40, "higher")])).toEqual({ low: 41, high: GUESS_MAX });
+    expect(boundsOf([attempt(70, "lower")])).toEqual({ low: GUESS_MIN, high: 69 });
+  });
+
+  it("звужується з кожною спробою, а не смикається", () => {
+    const attempts = [attempt(40, "higher"), attempt(70, "lower"), attempt(55, "higher")];
+    expect(boundsOf(attempts)).toEqual({ low: 56, high: 69 });
+  });
+
+  it("спроба за межами відомого не розширює діапазон назад", () => {
+    // Уже відомо, що загадане менше 75; спроба 90 нічого не відкриває —
+    // інакше смуга росла б від власного промаху.
+    const attempts = [attempt(75, "lower"), attempt(90, "lower")];
+    expect(boundsOf(attempts)).toEqual({ low: GUESS_MIN, high: 74 });
+  });
+
+  it("удар у саму межу нічого не ламає", () => {
+    expect(boundsOf([attempt(GUESS_MIN, "higher")])).toEqual({ low: 2, high: GUESS_MAX });
+    expect(boundsOf([attempt(GUESS_MAX, "lower")])).toEqual({ low: GUESS_MIN, high: 99 });
+  });
+
+  it("вгадування діапазон не рухає: воно вже не про нього", () => {
+    expect(boundsOf([attempt(42, "hit")])).toEqual({ low: GUESS_MIN, high: GUESS_MAX });
   });
 });
