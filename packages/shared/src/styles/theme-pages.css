@@ -1,0 +1,215 @@
+/*
+ * ═══════════════════════════════════════════════════════════════════════════
+ * THEME PAGES — сторінки теми: налаштування, бібліотека схем, готові палітри
+ * ═══════════════════════════════════════════════════════════════════════════
+ *
+ * Тема — **сторінка, а не поверхня** (правило 13 у `docs/SURFACES.md`): у
+ * схеми є історія, адреса й «назад», а поверхня не має жодного з трьох.
+ * Класи тут спільні, як і панель (`theme-panel.css`): ті самі рядки й картки
+ * малюють і платформа, і панель, тож другого «майже такого» набору немає.
+ *
+ * **Голосніше й світліше, ніж налаштування всередині екрана.** Список розділів
+ * теми — не форма, а вибір: підпис тут більший за основний текст, а
+ * пояснення — приглушене. Це та сама пара «назва / пояснення», що в хаба, лише
+ * з іншою вагою: тема — це те, що людина **обирає очима**.
+ *
+ * Ліній немає (правило 15): рядки відділяє глибина (`--field-bg`), картки —
+ * тло поверхні.
+ */
+
+/* ── Список розділів теми (хаб) ──────────────────────────────────────────── */
+
+.wb-theme-nav {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-2);
+}
+
+.wb-theme-nav-item {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-3);
+  width: 100%;
+  /* Тап-таргет із запасом: рядок читають очима, а влучають пальцем */
+  min-height: 64px;
+  padding: var(--sp-3) var(--sp-4);
+  border: none;
+  border-radius: var(--radius-lg);
+  background: var(--field-bg);
+  color: var(--text-primary);
+  font: inherit;
+  text-align: left;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.wb-theme-nav-item:active {
+  transform: scale(0.99);
+}
+
+.wb-theme-nav-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--accent);
+}
+
+.wb-theme-nav-text {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+  flex: 1 1 auto;
+}
+
+.wb-theme-nav-label {
+  font-size: var(--text-lg);
+  font-weight: var(--weight-semibold);
+  line-height: var(--leading-tight);
+}
+
+.wb-theme-nav-hint {
+  font-size: var(--text-sm);
+  color: var(--text-muted);
+  font-weight: var(--weight-normal);
+}
+
+.wb-theme-nav-more {
+  display: flex;
+  align-items: center;
+  color: var(--text-muted);
+  flex-shrink: 0;
+}
+
+/* ── Картка схеми (мої, спільні, готові) ─────────────────────────────────── */
+
+.wb-theme-schemes {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-3);
+}
+
+.wb-theme-scheme {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-3);
+  padding: var(--sp-3);
+  border-radius: var(--radius-lg);
+  background: var(--field-bg);
+}
+
+/* Три кольори схеми — широкою смугою: це її обличчя, і його читають першим */
+.wb-theme-scheme-preview {
+  display: flex;
+  height: 44px;
+  border-radius: var(--radius-md);
+  overflow: hidden;
+}
+
+.wb-theme-scheme-preview span {
+  flex: 1 1 0;
+}
+
+.wb-theme-scheme-head {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+}
+
+.wb-theme-scheme-name {
+  font-size: var(--text-md);
+  font-weight: var(--weight-semibold);
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Чип «застосовано» — стан, а не кнопка: дотик до схеми і є застосуванням */
+.wb-theme-scheme-flag {
+  margin-left: auto;
+  flex-shrink: 0;
+}
+
+.wb-theme-scheme-meta {
+  font-size: var(--text-sm);
+  color: var(--text-muted);
+}
+
+.wb-theme-scheme-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--sp-2);
+}
+
+/* ── Форма схеми (назва, шрифт, публічність) ─────────────────────────────── */
+
+.wb-theme-form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-3);
+}
+
+/* Блоки сторінки: у `.wb-page` відступів між дітьми немає (його тримає лише
+   шапка — `margin-bottom`), тож крок між блоками ставить перший із них. */
+.wb-theme-rows,
+.wb-theme-nav,
+.wb-theme-schemes,
+.wb-theme-presets,
+.wb-theme-form,
+.wb-font-picker {
+  margin-top: var(--sp-4);
+}
+
+/* Заголовок блоку **на сторінці** (не підпис поля): менший за заголовок
+   екрана, бо це ще один крок усередині вже названого розділу. */
+.wb-theme-form-title {
+  margin: var(--sp-4) 0 var(--sp-2);
+  font-size: var(--text-sm);
+  font-weight: var(--weight-medium);
+  color: var(--text-secondary);
+}
+
+/* ── Вибір шрифту ────────────────────────────────────────────────────────── */
+
+.wb-font-picker {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-3);
+}
+
+.wb-font-group {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-2);
+}
+
+.wb-font-group-label {
+  font-size: var(--text-xs);
+  color: var(--text-muted);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.wb-font-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--sp-2);
+}
+
+/* Підпис набрано СВОЇМ шрифтом (інлайном із компонента) — тому тут лише
+   форма й стан: колір, рамка й вага. */
+.wb-font-chip {
+  padding: var(--sp-2) var(--sp-3);
+  border: none;
+  border-radius: var(--radius-full);
+  background: var(--surface-hover);
+  color: var(--text-primary);
+  font-size: var(--text-md);
+  cursor: pointer;
+}
+
+.wb-font-chip--active {
+  background: var(--accent);
+  color: var(--text-inverse);
+}

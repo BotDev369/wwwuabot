@@ -32,6 +32,7 @@ import { useCreateForm } from "@/app/useCreateForm";
 import { AdCreateSheet } from "./create/AdCreateSheet";
 import { adDraftFrom } from "./ads-list";
 import { SpaceAdsTab } from "./SpaceAdsTab";
+import { SpaceThemesTab } from "./SpaceThemesTab";
 import { SpaceUsersTab } from "./SpaceUsersTab";
 import { SPACE_TABS, SPACE_TAB_PARAM, readSpaceTab, spaceTab, type SpaceTab } from "./space-tabs";
 import { useAds } from "./useAds";
@@ -94,6 +95,8 @@ export function SpacePage(): ReactElement {
             onRetry={space.reload}
           />
         )}
+
+        {tab === "themes" && <SpaceThemesTab />}
 
         {tab === "ads" && (
           <SpaceAdsTab

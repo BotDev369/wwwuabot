@@ -36,6 +36,7 @@ import {
   handleUserVisibility,
 } from "./controllers/public-profile.controller";
 import { handleSpaceAds, handleUserAds } from "./controllers/ads.controller";
+import { handleSpaceThemes, handleUserThemes } from "./controllers/themes.controller";
 import {
   handleListUsers,
   handleReadUser,
@@ -285,6 +286,11 @@ export async function handleRequest(request: Request, env: Env): Promise<Respons
   if (pathname === "/api/user/ads") {
     return handleUserAds(request, env);
   }
+  // Схеми теми — теж власні дані людини: `GET` — свої, `POST` — зберегти,
+  // `DELETE` — прибрати. Власника додає сервер із підписаного `initData`.
+  if (pathname === "/api/user/themes") {
+    return handleUserThemes(request, env);
+  }
 
   // ── Public: Space (відкритий простір платформи) ────────────────
   // Без авторизації: у стрічку дивляться без входу, а видимість кожного
@@ -300,6 +306,10 @@ export async function handleRequest(request: Request, env: Env): Promise<Respons
   // Дошка оголошень — теж публічна: показане відбирає запит до бази.
   if (pathname === "/api/space/ads" && request.method === "GET") {
     return handleSpaceAds(request, env);
+  }
+  // Спільна бібліотека схем теми: `is_public = 1` відбирає запит до бази.
+  if (pathname === "/api/space/themes" && request.method === "GET") {
+    return handleSpaceThemes(request, env);
   }
 
   // ── 404 ─────────────────────────────────────────────────────────

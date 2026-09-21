@@ -22,7 +22,7 @@
  */
 
 import { hslToHex } from "./color";
-import type { UserColors } from "./user-colors";
+import type { UserColors } from "./user-colors.types";
 
 export interface ColorPreset extends UserColors {
   id: string;

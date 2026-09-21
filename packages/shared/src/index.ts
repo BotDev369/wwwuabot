@@ -4,8 +4,20 @@ export { ThemeButton, useStyleTheme } from "./components/StyleToggle";
 export { StylePicker, ThemeToggle } from "./components/StyleToggle";
 
 // ── Три кольори користувача (фон / основний / акцент) ────────────────
-export { ThemeColorPanel, ThemeSheet, useUserColors } from "./components/theme";
-export type { ThemeColorPanelProps, UseUserColorsResult } from "./components/theme";
+export {
+  ColorSlotRow,
+  FontPicker,
+  ThemeColorPanel,
+  ThemeSheet,
+  useFontChoice,
+  useUserColors,
+} from "./components/theme";
+export type {
+  FontPickerProps,
+  ThemeColorPanelProps,
+  UseFontChoiceResult,
+  UseUserColorsResult,
+} from "./components/theme";
 export { COLOR_PRESETS, isPresetActive } from "./styles/color-presets";
 export type { ColorPreset } from "./styles/color-presets";
 export {
@@ -37,6 +49,29 @@ export type {
 } from "./styles/user-colors";
 export { contrastRatio, hexToHsl, hexToRgb, hslToHex, rgbToHex } from "./styles/color";
 export type { Hsl, Rgb } from "./styles/color";
+
+// ── Шрифти теми (безкоштовний набір родин) ───────────────────────────
+// Дані й правила — з `./styles/fonts`, робота з екраном — із `./styles/font-dom`:
+// друге тягне `document` і `localStorage`, і його бере лише клієнт.
+export {
+  FONT_KEY,
+  FONT_KIND_LABELS,
+  FONT_WEIGHTS,
+  THEME_FONTS,
+  fontCssUrl,
+  fontLabel,
+  fontStack,
+  isThemeFontId,
+  themeFont,
+} from "./styles/fonts";
+export type { ThemeFont, ThemeFontKind } from "./styles/fonts";
+export {
+  applyFont,
+  preloadFonts,
+  readStoredFont,
+  releaseFontPreviews,
+  saveStoredFont,
+} from "./styles/font-dom";
 
 // ── Icons ─────────────────────────────────────────────────────────────
 export { icons } from "./components/icons";

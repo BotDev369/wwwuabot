@@ -46,6 +46,15 @@ export const PROFILE_ACCOUNT_ROUTE = "account";
 export const PROFILE_ACCOUNT_PATH = `${PROFILE_PATH}/${PROFILE_ACCOUNT_ROUTE}`;
 
 /**
+ * Тема — **сторінки**, а не поверхня: у схеми є історія, адреса й «назад», а в
+ * модалки не було жодного з трьох (людина не могла ні повернутись до схеми
+ * посиланням, ні побачити її у списку). Розділи: стиль, готові теми, свої,
+ * публічні, налаштування — склад і шляхи дає `pages/themes/theme-sections.ts`.
+ */
+export const THEME_ROUTE = "theme";
+export const THEME_PATH = `${PROFILE_PATH}/${THEME_ROUTE}`;
+
+/**
  * Простір — відкрита стрічка платформи: люди, які самі показали свій профіль,
  * а далі оголошення й сторінки.
  *

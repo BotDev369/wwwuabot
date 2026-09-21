@@ -33,6 +33,7 @@ import {
   PROFILE_ROUTE,
   SPACE_ROUTE,
   SPACE_USER_ROUTE,
+  THEME_ROUTE,
 } from "@/app/routes";
 import { ContactsPage } from "@/pages/ContactsPage";
 import { CreatePage } from "@/pages/CreatePage";
@@ -43,6 +44,13 @@ import { ProfilePage } from "@/pages/ProfilePage";
 import { ScenarioPage } from "@/pages/ScenarioPage";
 import { SpacePage } from "@/pages/SpacePage";
 import { SpaceUserPage } from "@/pages/SpaceUserPage";
+import { ThemeLayout } from "@/pages/themes/ThemeLayout";
+import { ThemeHubPage } from "@/pages/themes/ThemeHubPage";
+import { ThemeCustomizePage } from "@/pages/themes/ThemeCustomizePage";
+import { ThemeMinePage } from "@/pages/themes/ThemeMinePage";
+import { ThemePresetsPage } from "@/pages/themes/ThemePresetsPage";
+import { ThemePublicPage } from "@/pages/themes/ThemePublicPage";
+import { ThemeStylePage } from "@/pages/themes/ThemeStylePage";
 
 export const router = createBrowserRouter([
   {
@@ -54,6 +62,22 @@ export const router = createBrowserRouter([
       // Акаунт — окрема адреса під хабу: платформа й Telegram окремими
       // розділами, а не одним суцільним списком.
       { path: PROFILE_ACCOUNT_PATH, element: <ProfileAccountPage /> },
+      // Тема — розділ зі **своїми сторінками**: у кожного розділу є адреса
+      // (посилання, історія, «назад»), а між ними веде друга смуга футера
+      // (`ThemeLayout`). Склад розділів — `pages/themes/theme-sections.ts`;
+      // маршрути мусять збігатися з ним, і це стереже `theme-sections.test.ts`.
+      {
+        path: `${PROFILE_ROUTE}/${THEME_ROUTE}`,
+        element: <ThemeLayout />,
+        children: [
+          { index: true, element: <ThemeHubPage /> },
+          { path: "style", element: <ThemeStylePage /> },
+          { path: "presets", element: <ThemePresetsPage /> },
+          { path: "mine", element: <ThemeMinePage /> },
+          { path: "public", element: <ThemePublicPage /> },
+          { path: "customize", element: <ThemeCustomizePage /> },
+        ],
+      },
       // Створити — хаб власних екранів людини, слот «+» у футері: у кожного
       // пункту два входи, «подивитись» і «створити».
       { path: CREATE_ROUTE, element: <CreatePage /> },

@@ -22,36 +22,20 @@
  */
 
 import { contrastRatio, isDarkColor, isHexColor, normalizeHex } from "./color";
+// Слоти й типи — з DOM-вільного сусіда: їх імпортує й сервер (перевірка схеми).
+import { COLOR_SLOTS, COLORS_ATTR, COLORS_MODE_ATTR, USER_COLORS_KEY } from "./user-colors.types";
+import type { ColorDraft, ColorsMode, ColorSlot, UserColors } from "./user-colors.types";
 
-/** Роль кольору. Порядок — той, у якому його читає людина: тло → текст → акцент. */
-export type ColorSlot = "bg" | "text" | "accent";
-
-/** Три кольори — усі обов'язкові. */
-export type UserColors = Record<ColorSlot, string>;
-
-/** Незавершений вибір: щонайменше один слот порожній. */
-export type ColorDraft = Partial<UserColors>;
-
-/** Схема, яку з трьох кольорів рахує сам продукт (`data-colors-mode`). */
-export type ColorsMode = "light" | "dark";
-
-export interface ColorSlotDefinition {
-  id: ColorSlot;
-  labelUk: string;
-  hintUk: string;
-}
-
-export const COLOR_SLOTS: readonly ColorSlotDefinition[] = [
-  { id: "bg", labelUk: "Фон", hintUk: "Тло екрана, карток і шапки Telegram" },
-  { id: "text", labelUk: "Основний", hintUk: "Текст, межі та поверхні" },
-  { id: "accent", labelUk: "Акцент", hintUk: "Кнопки, посилання й вибране" },
-];
-
-export const USER_COLORS_KEY = "wwwuabot-colors";
-/** DOM-атрибут на `<html>`: без нього працює брендова базова палітра. */
-export const COLORS_ATTR = "data-colors";
-/** Схема, виведена з фону: нею CSS вибирає напрям тіней і `color-scheme`. */
-export const COLORS_MODE_ATTR = "data-colors-mode";
+/* Реекспорт: той, хто брав ці імена звідси (і кореневий `index.ts`), не мусить
+   міняти імпорт — переїзд торкнувся лише файлу. */
+export { COLOR_SLOTS, COLORS_ATTR, COLORS_MODE_ATTR, USER_COLORS_KEY };
+export type {
+  ColorDraft,
+  ColorSlot,
+  ColorSlotDefinition,
+  ColorsMode,
+  UserColors,
+} from "./user-colors.types";
 
 /** CSS-змінна сідового кольору на `<html>` (їх читає `user-colors.css`). */
 export function seedVariable(slot: ColorSlot): string {

@@ -23,7 +23,7 @@ describe("розділи Простору", () => {
 
   it("кожен розділ має підпис, і підписи не повторюються", () => {
     const labels = SPACE_TABS.map((tab) => tab.label);
-    expect(labels).toEqual(["Користувачі", "Оголошення", "Сторінки"]);
+    expect(labels).toEqual(["Користувачі", "Оголошення", "Теми", "Сторінки"]);
     expect(new Set(labels).size).toBe(labels.length);
   });
 
@@ -36,7 +36,7 @@ describe("розділи Простору", () => {
   it("той, що вже працює, нічого не обіцяє: у нього немає ні `soon`, ні `hint`", () => {
     // Заглушка, яку забули зняти, гірша за відсутню: екран працює, а вкладка
     // все ще каже «ще в розробці» — і людина в нього не загляне.
-    for (const key of ["users", "ads"] as const) {
+    for (const key of ["users", "ads", "themes"] as const) {
       expect(spaceTab(key).hint, key).toBeUndefined();
       expect(spaceTab(key).soon, key).toBeUndefined();
     }

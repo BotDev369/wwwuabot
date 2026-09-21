@@ -16,6 +16,7 @@
  * No "system" mode — defaults to "dark" if nothing stored.
  */
 import { resolveLegacyStyle, type Brand } from "../styles/registry";
+import { applyFont, readStoredFont } from "../styles/font-dom";
 import { applyColors, readStoredColors } from "../styles/user-colors";
 import { initTelegramChrome } from "./telegram-chrome";
 
@@ -53,6 +54,11 @@ export function initTheme(): void {
   // інакше екран мигне базовою темою. Немає вибору — немає атрибута, і працює
   // брендова палітра (див. `../styles/user-colors`).
   applyColors(readStoredColors());
+
+  // ── Шрифт вибраної схеми ─────────────────────────────────────────
+  // Теж тут і теж до першого рендера: інакше текст мигне брендовою родиною
+  // (див. `../styles/fonts`).
+  applyFont(readStoredFont());
 
   // Нативний хром Telegram (шапка/низ клієнта) — у кольорах цієї теми.
   // Поза Telegram — no-op. Див. `./telegram-chrome`.

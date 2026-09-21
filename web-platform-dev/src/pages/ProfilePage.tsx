@@ -18,19 +18,20 @@
  * надіслати посиланням, а «назад» вертає **звідси**, а не виходить із
  * застосунку. Слот, який просто відкриває модалку, — це кнопка, а не пункт.
  *
- * **Панель теми** відкривається звідси спільним `ThemeSheet`: у ту саму
- * поверхню, що й в адмінки, — щоб «вибір трьох кольорів» існував в одному
- * місці, а не в двох схожих.
+ * **Тема — сторінка, а не поверхня.** Пункт «Тема» веде на `/profile/theme`:
+ * у розділу є свої сторінки (стиль, готові теми, свої схеми, публічні,
+ * налаштування), а модалка не мала ні історії, ні «назад», ні посилання —
+ * тобто не давала повернутись до збереженої схеми (AGENTS.md §8).
  *
  * @module web-platform-dev/src/pages/ProfilePage
  */
 
-import { useState, type ReactElement } from "react";
-import { ThemeSheet, UserAccountRow } from "@wwwuabot/shared";
+import type { ReactElement } from "react";
+import { UserAccountRow } from "@wwwuabot/shared";
 import { useNavigate } from "react-router-dom";
 import { useDialog } from "@wwwuabot/ui/dialog";
 import { MenuList, buildMenuItems } from "@wwwuabot/ui/menu";
-import { PROFILE_ACCOUNT_PATH } from "@/app/routes";
+import { PROFILE_ACCOUNT_PATH, THEME_PATH } from "@/app/routes";
 import { useProfile } from "./useProfile";
 import { buildProfileSections } from "./profile-sections";
 
@@ -38,10 +39,9 @@ export function ProfilePage(): ReactElement {
   const { profile, loading, error } = useProfile();
   const navigate = useNavigate();
   const dialog = useDialog();
-  const [themeOpen, setThemeOpen] = useState(false);
 
   const items = buildMenuItems({
-    items: buildProfileSections({ onOpenTheme: () => setThemeOpen(true) }),
+    items: buildProfileSections({ onOpenTheme: () => navigate(THEME_PATH) }),
     // Перехід у межах SPA: повне перезавантаження в TWA — це втрачений стан і
     // біла вспишка.
     navigate: (href) => navigate(href),
@@ -71,8 +71,6 @@ export function ProfilePage(): ReactElement {
       />
 
       <MenuList items={items} />
-
-      {themeOpen && <ThemeSheet onClose={() => setThemeOpen(false)} />}
     </div>
   );
 }

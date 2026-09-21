@@ -33,7 +33,9 @@ import { Icon } from "../Icon";
 import { COLOR_PRESETS, isPresetActive } from "../../styles/color-presets";
 import { COLOR_SLOTS, type ColorSlot } from "../../styles/user-colors";
 import { ColorSlotRow } from "./ColorSlotRow";
+import { FontPicker } from "./FontPicker";
 import { ThemeSection } from "./ThemeSection";
+import { useFontChoice } from "./useFontChoice";
 import { useStyleTheme } from "./useStyleTheme";
 import { useUserColors } from "./useUserColors";
 
@@ -48,14 +50,21 @@ export interface ThemeColorPanelProps {
 
 export function ThemeColorPanel({ onClose }: ThemeColorPanelProps): ReactElement {
   const colors = useUserColors();
+  const fonts = useFontChoice();
   const { brand, setBrand, brands } = useStyleTheme();
   // Відкритих слотів немає: акордеони закриті, доки їх не розкриють.
   const [openSlot, setOpenSlot] = useState<ColorSlot | null>(null);
+  // Схема — це три кольори **і** шрифт: незбереженим вона стає від кожного з них.
+  const dirty = colors.dirty || fonts.dirty;
 
-  const handleSave = () => colors.save();
+  const handleSave = () => {
+    colors.save();
+    fonts.save();
+  };
 
   const handleSaveAndClose = () => {
     colors.save();
+    fonts.save();
     onClose?.();
   };
 
@@ -78,6 +87,10 @@ export function ThemeColorPanel({ onClose }: ThemeColorPanelProps): ReactElement
             );
           })}
         </div>
+      </ThemeSection>
+
+      <ThemeSection title="Шрифт">
+        <FontPicker value={fonts.draft} onChange={fonts.setFont} />
       </ThemeSection>
 
       <ThemeSection title="Кольори теми">
@@ -129,9 +142,9 @@ export function ThemeColorPanel({ onClose }: ThemeColorPanelProps): ReactElement
       {/* Що саме станеться з натиснутою кнопкою — рядком, а не кольором кнопки:
           «Збережено» тут означає, що вибір уже в пам'яті пристрою. */}
       {colors.complete && (
-        <p className={`wb-theme-status${colors.dirty ? "" : " wb-theme-status--saved"}`}>
-          <Icon name={colors.dirty ? "edit" : "check"} size={16} />
-          {colors.dirty ? "Незбережені зміни" : "Збережено на цьому пристрої"}
+        <p className={`wb-theme-status${dirty ? "" : " wb-theme-status--saved"}`}>
+          <Icon name={dirty ? "edit" : "check"} size={16} />
+          {dirty ? "Незбережені зміни" : "Збережено на цьому пристрої"}
         </p>
       )}
 
@@ -149,7 +162,7 @@ export function ThemeColorPanel({ onClose }: ThemeColorPanelProps): ReactElement
           type="button"
           className="wb-btn wb-btn-secondary wb-btn-sm"
           onClick={handleSave}
-          disabled={!colors.complete || !colors.dirty}
+          disabled={!colors.complete || !dirty}
         >
           <Icon name="save" size={16} />
           Зберегти

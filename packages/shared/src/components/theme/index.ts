@@ -6,4 +6,8 @@ export { ColorSlotRow } from "./ColorSlotRow";
 export { ColorEditor } from "./ColorEditor";
 export { useUserColors } from "./useUserColors";
 export type { UseUserColorsResult } from "./useUserColors";
+export { FontPicker } from "./FontPicker";
+export type { FontPickerProps } from "./FontPicker";
+export { useFontChoice } from "./useFontChoice";
+export type { UseFontChoiceResult } from "./useFontChoice";
 export { useStyleTheme } from "./useStyleTheme";

@@ -19,6 +19,7 @@
 | `ANY` | `/api/mydate/systems` | `handleSystems` |
 | `ANY` | `/api/scenario/<…>` | `handleScenario` |
 | `GET` | `/api/space/ads` | `handleSpaceAds` |
+| `GET` | `/api/space/themes` | `handleSpaceThemes` |
 | `GET` | `/api/space/users` | `handleSpaceUsers` |
 | `GET` | `/api/space/users/<…>` | `handleSpaceUser` |
 | `ANY` | `/health` | `handleHealth` |
@@ -44,6 +45,7 @@
 | `POST` | `/api/user/about` | `handleUserAbout` |
 | `ANY` | `/api/user/ads` | `handleUserAds` |
 | `GET` | `/api/user/profile` | `handleUserProfile` |
+| `ANY` | `/api/user/themes` | `handleUserThemes` |
 | `POST` | `/api/user/username` | `handleSetPlatformUsername` |
 | `POST` | `/api/user/visibility` | `handleUserVisibility` |
 
@@ -78,4 +80,4 @@
 | `POST` | `/auth/login` | `handleLogin` |
 | `POST` | `/auth/logout` | `handleLogout` |
 
-Усього шляхів: **49**.
+Усього шляхів: **51**.

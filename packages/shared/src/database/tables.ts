@@ -272,6 +272,52 @@ export const TABLES = {
   },
 
   /**
+   * Схеми теми — бібліотека **іменованих** наборів вигляду, які створила
+   * людина: три кольори, шрифт і публічність.
+   *
+   * **Чому окрема таблиця, а не колонка в `users`.** По-перше, схем багато на
+   * одного (своя бібліотека, а не один поточний вибір). По-друге, схема буває
+   * **публічною** — її бачать інші люди в Просторі, а це вже не дані власника:
+   * це опублікований контент із власним правилом видимості. Колонка-JSON у
+   * `users` зробила б публічне подання вибіркою з чужого рядка й поклала б
+   * фільтр видимості в розмітку (AGENTS.md §7).
+   *
+   * **Поточний вибір тут не живе.** Що зараз на екрані, знає пам'ять пристрою
+   * (`localStorage`, ключі `wwwuabot-colors` / `wwwuabot-font`): інакше вигляд
+   * застосунку чекав би на мережу, а палітра мигала б брендовою на кожному
+   * запуску. Тут — **бібліотека**, у пам'яті — **стан**.
+   *
+   * **`text_color`, а не `text`:** слово `text` у SQL читається як частина
+   * виразу, і колонка виглядала б як друкарська помилка.
+   *
+   * `font` — **ідентифікатор** зі спільного набору (`styles/fonts.ts`),
+   * порожній — «як у стилі». Стек тут не лежить навмисно: змінилася б родина в
+   * коді — старі схеми тягли б за собою мертвий стек.
+   */
+  theme_schemes: {
+    name: "theme_schemes",
+    owner: "api-dev",
+    purpose:
+      "Іменовані схеми теми (три кольори + шрифт), створені людиною; `is_public = 1` виносить схему в спільну бібліотеку Простору.",
+    create: `CREATE TABLE IF NOT EXISTS theme_schemes (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        owner_id INTEGER NOT NULL,
+        name TEXT NOT NULL,
+        bg TEXT NOT NULL,
+        text_color TEXT NOT NULL,
+        accent TEXT NOT NULL,
+        font TEXT NOT NULL DEFAULT '',
+        is_public INTEGER NOT NULL DEFAULT 0,
+        created_at TEXT NOT NULL DEFAULT (datetime('now')),
+        updated_at TEXT NOT NULL DEFAULT (datetime('now'))
+      )`,
+    indexes: [
+      "CREATE INDEX IF NOT EXISTS idx_themes_owner ON theme_schemes(owner_id)",
+      "CREATE INDEX IF NOT EXISTS idx_themes_public ON theme_schemes(is_public, id)",
+    ],
+  },
+
+  /**
    * Контакти людини — її власний довідник, а не список лінків.
    *
    * **Один рядок = один контакт.** Запис заводять руками (ім'я, `@username`,

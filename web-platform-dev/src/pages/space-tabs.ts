@@ -40,6 +40,12 @@ export const SPACE_TABS: readonly SpaceTabOption[] = [
     label: "Оголошення",
   },
   {
+    // Теми — теж ``контент`` платформи: схему, яку людина відкрила, видно тут
+    // поряд з оголошеннями, і взяти її собі можна одним дотиком.
+    key: "themes",
+    label: "Теми",
+  },
+  {
     key: "pages",
     label: "Сторінки",
     soon: true,
@@ -47,7 +53,7 @@ export const SPACE_TABS: readonly SpaceTabOption[] = [
   },
 ];
 
-export type SpaceTab = "users" | "ads" | "pages";
+export type SpaceTab = "users" | "ads" | "themes" | "pages";
 
 export const DEFAULT_SPACE_TAB: SpaceTab = "users";
 
