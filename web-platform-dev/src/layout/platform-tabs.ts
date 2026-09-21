@@ -44,11 +44,15 @@ export const MESSAGES_TAB_KEY = "messages";
 export const PLATFORM_TABS: readonly PlatformTab[] = [
   { key: "home", label: "Головна", icon: "home", iconActive: "home-solid", slug: HOME_SLUG },
   {
-    key: "mydate",
-    label: "Дати",
-    icon: "my-dates",
-    iconActive: "my-dates-solid",
-    slug: "mydate",
+    // «Простір» — спільний відкритий простір платформи: спершу користувачі,
+    // які самі зробили свій профіль публічним, далі оголошення й сторінки.
+    // Екрана під ним ще немає, тож слот стоїть **без** `slug` і без `to`:
+    // заглушка каже про це дотиком замість тиші, а адресу отримає тоді, коли
+    // екран справді з'явиться.
+    key: "space",
+    label: "Простір",
+    icon: "feed",
+    iconActive: "feed-solid",
   },
   { key: "create", label: "Створити", icon: "plus", primary: true },
   {
