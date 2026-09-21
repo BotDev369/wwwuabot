@@ -159,6 +159,41 @@ describe("каркас сторінки: один проміжок на весь
 });
 
 /**
+ * Дошка оголошень: картка не має власного списку дій, а вигляд списку мусить
+ * **справді** міняти розкладку.
+ *
+ * Обидві речі ламаються мовчки. Рядок дій під карткою займає власний рядок у
+ * стрічці, яку читають, — але код при цьому працює; а «рядки» й «картка з однією
+ * колонкою» без окремих правил виглядають однаково, і вибір вигляду робиться
+ * декоративним: людина тицяє — і не бачить різниці.
+ */
+describe("дошка оголошень: дії в поверхні, а вигляд міняє розкладку", () => {
+  it("дій у тілі картки немає — вони переїхали за «три крапки»", () => {
+    expect(CHROME.some((entry) => entry.selector === ".wb-ad-actions")).toBe(false);
+    expect(CHROME.some((entry) => entry.selector.includes("wb-ad-action"))).toBe(false);
+
+    const menu = rule(".wb-ad-menu")?.body ?? "";
+    // Клітинка стоїть у шапці картки — остання праворуч.
+    expect(menu).toContain("margin-left: auto");
+    // І не має акценту: у картці акцент означає дію, а «⋮» — «тут ще є».
+    expect(menu).not.toContain("var(--accent");
+  });
+
+  it("рядок ставить ціну на лінію із заголовком, а картка — ні", () => {
+    const rows = rule(".wb-collection--rows .wb-ad")?.body ?? "";
+    expect(rows).toContain("grid-template-columns: minmax(0, 1fr) auto");
+    // Тієї самої розкладки в картки бути не мусить: інакше вигляд не міняє нічого.
+    expect(rule(".wb-collection--cards .wb-ad")).toBeUndefined();
+    expect(rule(".wb-collection--rows .wb-ad-title")?.body).toContain("text-overflow: ellipsis");
+  });
+
+  it("тіло оголошення обрізається по-різному: рядок — одна лінія, картка — три", () => {
+    expect(rule(".wb-collection--rows .wb-ad-body")?.body).toContain("-webkit-line-clamp: 1");
+    expect(rule(".wb-collection--cards .wb-ad-body")?.body).toContain("-webkit-line-clamp: 3");
+  });
+});
+
+/**
  * Бренд має рівно одну роль у модалки: дати **характер** плаваючому аркушу.
  * Повноекранна поверхня — не аркуш, а сторінка, і будь-яке брендове правило
  * про сам ящик мусить її пропускати — інакше `!important` повертає кути й плівку.

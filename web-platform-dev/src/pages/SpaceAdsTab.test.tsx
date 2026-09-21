@@ -9,8 +9,9 @@
  *   а самого `.wb-space-create` немає — того класу більше немає й у CSS;
  * - список бере **спільну розкладку** колекції (`wb-collection--rows`), а не
  *   власну: інакше «рядки / плитки» довелось би писати другою розкладкою;
- * - дії під своїм оголошенням — **словом** (`.wb-ad-action`), а не кнопками
- *   бренду: три заливки важили б більше за саме оголошення.
+ * - дії під своїм оголошенням живуть **за «трьома крапками»** (`.wb-ad-menu`), а
+ *   не рядком у тілі картки: три підписи під кожним оголошенням займали власний
+ *   рядок у стрічці, яку читають; і «⋮» немає під чужим — чуже читають.
  *
  * @module web-platform-dev/src/pages/SpaceAdsTab.test
  */
@@ -88,23 +89,23 @@ describe("SpaceAdsTab", () => {
     expect(html).not.toContain("wb-ads");
   });
 
-  it("дії під своїм — словом і на кожне оголошення окремо", () => {
+  it("дії стоять за «трьома крапками» у шапці картки", () => {
     const html = render();
 
-    // Два власні оголошення (одне з них чернетка) — три дії в кожного.
-    expect(html.match(/<button[^>]*wb-ad-action/g)).toHaveLength(6);
-    expect(html).toContain("Видалити");
-    // Чернетка каже, що її можна показати: стан видно з підпису дії.
-    expect(html).toContain("Показати");
-    expect(html).toContain("Прибрати");
+    expect(html).toContain('aria-label="Дії з оголошенням"');
+    // Клітинка — у шапці картки, праворуч від виду оголошення.
+    expect(html.indexOf("wb-ad-head")).toBeLessThan(html.indexOf("wb-ad-menu"));
+    expect(html.indexOf("wb-ad-menu")).toBeLessThan(html.indexOf("wb-ad-title"));
+    // Поверхня закрита: у тілі картки жодного підпису дії немає.
+    expect(html).not.toContain("Змінити");
+    expect(html).not.toContain("Видалити");
   });
 
-  it("не робить із дій кнопок бренду", () => {
-    // Заливка бренду під кожним оголошенням важила б більше за сам текст.
-    const html = render();
-    const actions = html.slice(html.indexOf("wb-ad-actions"));
-
-    expect(actions).not.toContain("wb-btn");
+  it("«трьох крапок» немає під чужим оголошенням", () => {
+    // Два власні оголошення (одне з них чернетка) і одне чуже: дії — лише на своїх.
+    // Показувати «⋮» над чужим означало б обіцяти дію, якої сервер не дасть (404).
+    expect(render().match(/wb-ad-menu/g)).toHaveLength(2);
+    expect(render([ITEMS[2]])).not.toContain("wb-ad-menu");
   });
 
   it("порожня дошка не показує смугу, але каже, де створити", () => {

@@ -1415,9 +1415,13 @@
    продукт, і дошка бере його тим самим класом, що нотатки з контактами.
    Власного класу списку тут немає навмисно: він був `flex-column`, і вигляд
    «плитки» довелось би писати другою розкладкою на ту саму роль. */
+/* Картка — **сітка**, а не стовпчик: частини стоять у ній своїми місцями, і
+   розкладку міняє вигляд списку, а не друга розмітка. От чому тут `grid`, а не
+   `flex`: у «рядках» ціна й місто стають на лінію із заголовком (`1fr auto`), а
+   в «картках» той самий вміст лишається стовпчиком — розмітка одна. */
 .wb-ad {
-  display: flex;
-  flex-direction: column;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
   gap: var(--sp-1);
   padding: var(--sp-3);
   border-radius: var(--radius-md);
@@ -1474,52 +1478,88 @@
   font-size: var(--text-sm);
 }
 
-/* Дії — окремим рядком унизу: вони належать картці, а не тексту, і на тачі
-   мусять бути видні постійно (ніякого `:hover`, §3).
+/* «Три крапки» — клітинка в шапці картки, остання праворуч.
 
-   **Словом, а не трьома кнопками.** Кнопка в цьому продукті має міру бренду
-   (Apple — 44px із заливкою), і три такі заливки під оголошенням важили б
-   більше за саме оголошення — а в стрічці читають текст, а не ряд кнопок.
-   Тому дія тут — приглушений підпис, видимий постійно; сам кирпичик кнопки не
-   позичаємо навмисно (міру він бере в бренду з `!important` — та сама пастка,
-   що в `.wb-tools-add`). Червоне лишається **лише** видаленню: заливка
-   зробила б із нього головну дію картки, а головне тут — прочитати. */
-.wb-ad-actions {
+   Дії поїхали сюди з тіла картки: три підписи під кожним оголошенням займали
+   власний рядок у стрічці, яку читають, і важили більше за сам текст. Мірка —
+   32px, як у клітинок смуги керування, а тла немає: у картці акценту немає
+   ні в кого, і кнопка мусить читатись як «тут ще є», а не як дія на видноті. */
+.wb-ad-menu {
   display: flex;
-  flex-wrap: wrap;
+  flex: 0 0 auto;
   align-items: center;
-  gap: var(--sp-1);
-  margin-top: var(--sp-2);
-}
-
-.wb-ad-action {
-  display: inline-flex;
-  align-items: center;
-  min-height: 32px;
-  padding: 0 var(--sp-2);
+  justify-content: center;
+  margin-left: auto;
+  width: 32px;
+  height: 32px;
+  min-width: 32px;
+  padding: 0;
   border: none;
-  border-radius: var(--radius-sm);
+  border-radius: var(--radius-full);
   background: none;
   color: var(--text-secondary);
-  font: inherit;
-  font-size: var(--text-sm);
   cursor: pointer;
   transition:
     background var(--duration-fast) var(--ease),
     color var(--duration-fast) var(--ease);
 }
 
-.wb-ad-action:hover {
+.wb-ad-menu:hover {
   background: var(--surface-hover);
   color: var(--text-primary);
 }
 
-.wb-ad-action:active {
+.wb-ad-menu:active {
   background: var(--surface-active);
 }
 
-.wb-ad-action--danger {
-  color: var(--red);
+/* ── Рядок проти картки: та сама розмітка, різна розкладка ────────────────
+   «Рядки» — це список, який **прочитують очима**: ціна й місто стають на лінію
+   із заголовком (`1fr auto`), тіло обрізається однією лінією, а внутрішні
+   відступи менші. «Картки» — блок, який **читають**: той самий вміст
+   стовпчиком, тіло трьома лініями. Без цього рядок і картка з однією колонкою
+   виглядали однаково, і вибір вигляду нічого не міняв. */
+.wb-collection--rows .wb-ad {
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 2px var(--sp-2);
+  padding: var(--sp-2) var(--sp-3);
+}
+
+/* Шапка завжди на всю ширину: вид і «⋮» не діляться місцем із ціною. */
+.wb-collection--rows .wb-ad-head {
+  grid-column: 1 / -1;
+}
+
+/* Заголовок у рядку — **одна лінія**: рядок читають згори вниз, і довга назва,
+   яка переноситься на три рядки, перетворює рядок на картку. */
+.wb-collection--rows .wb-ad-title {
+  grid-column: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.wb-collection--rows .wb-ad-meta {
+  grid-column: 2;
+  align-self: center;
+  white-space: nowrap;
+}
+
+.wb-collection--rows .wb-ad-body {
+  grid-column: 1 / -1;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 1;
+  line-clamp: 1;
+  overflow: hidden;
+}
+
+.wb-collection--cards .wb-ad-body {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 3;
+  line-clamp: 3;
+  overflow: hidden;
 }
 
 /* ═══ Композер: вибір виду оголошення ══════════════════════════════════════ */
