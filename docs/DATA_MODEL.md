@@ -41,7 +41,7 @@ npx wrangler d1 execute wwwuabot-db-dev --remote \
 | `messages` | `api-dev` | api-dev (`ensureTables` у `messages.controller`) | api-dev: `/api/messages/*` | повідомлення розмови: автор (`sender_id`), тіло, `read_at` (`NULL` — непрочитане), `is_system` — позначка платформи |
 | `message_drafts` | `api-dev` | api-dev (`ensureTables` у `messages.controller`) | api-dev: `/api/messages/compose`, `/api/messages/draft` | **ненадісланий лист** — власні дані того, хто пише: документ зі **своїм номером** і необов'язковим адресатом (`peer_id` без `NOT NULL`); схема перебудована міграцією (див. нижче) |
 | `ads` | `api-dev` | api-dev (`ensureTables` у `ads.service`) | api-dev: своє — `/api/user/ads`, дошка — `/api/space/ads` | **оголошення дошки Простору:** вид (куплю / продам / здам / шукаю / …), заголовок, текст, ціна й місто (обидва — **текст**: «договірна» теж ціна). `is_active` — не «чи опубліковано», а **показати на дошці**: вимкнене лишається в списку власника чернеткою. Правила й межі — `@wwwuabot/shared/ads`, видимість — [`SPACE.md`](./SPACE.md) |
-| `theme_schemes` | `api-dev` | api-dev, `ensureTables` | api-dev: своє — `/api/user/themes`, спільна — `/api/space/themes` | **схеми теми**: три кольори + шрифт; `is_public` виносить схему в спільну бібліотеку ([`THEMES.md`](./THEMES.md)) |
+| `theme_schemes` | `api-dev` | api-dev, `ensureTables` | api-dev: своє — `/api/user/themes`, спільна — `/api/space/themes` | **теми**: три кольори + шрифт; `is_public` виносить тему в спільну бібліотеку ([`THEMES.md`](./THEMES.md)) |
 | `mydate_analysis` | `api-dev` | api-dev, `getAnalysis` | api-dev | кеш астрологічного аналізу на дату (KV — швидкий шар) |
 
 `npm run check:db` друкує той самий список, що видно в дашборді Cloudflare. Розбіжність означає,

@@ -1,11 +1,15 @@
 /**
- * Картка схеми — те, як схема виглядає у списку.
+ * Картка теми — те, як тема виглядає у списку.
  *
- * **Обличчя схеми — її кольори**: три смуги на всю ширину. Назва каже, як
- * людина її назвала, але впізнають схему очима, тож кольори стоять першими й
+ * **Обличчя теми — її кольори**: три смуги на всю ширину. Назва каже, як
+ * людина її назвала, але впізнають тему очима, тож кольори стоять першими й
  * найбільшими.
  *
- * **Дії різні, бо різні права.** Свою схему можна змінити й прибрати, чужу —
+ * **Один стан — одне слово.** Застосована тема каже це **чипом**, і кнопки
+ * «Діє» в неї немає: дві позначки про те саме читаються як два різні факти.
+ * Публічність — теж стан, і він теж чип.
+ *
+ * **Дії різні, бо різні права.** Свою тему можна змінити й прибрати, чужу —
  * лише взяти собі. Кнопку, яка гарантовано не працює (сервер відповість 404,
  * бо власник стоїть у `WHERE`), показувати не можна: це обіцянка, а не дія
  * (AGENTS.md §7).
@@ -21,7 +25,7 @@ export interface SchemeCardProps {
   scheme: ThemeScheme;
   /** Вона діє на екрані просто зараз. */
   applied: boolean;
-  /** Своя схема: тоді видно і «правку», і «прибрати». */
+  /** Своя тема: тоді видно і «правку», і «прибрати». */
   mine: boolean;
   onApply: () => void;
   onEdit?: () => void;
@@ -37,7 +41,7 @@ export function SchemeCard({
   onRemove,
 }: SchemeCardProps): ReactElement {
   const colors = themeSchemeColors(scheme);
-  // Шрифт — частина схеми, і про нього каже той самий рядок: «як у стилі»,
+  // Шрифт — частина теми, і про нього каже той самий рядок: «як у стилі»,
   // коли родину не вибирали.
   const font = fontLabel(scheme.font) ?? "як у стилі";
 
@@ -51,6 +55,7 @@ export function SchemeCard({
 
       <div className="wb-theme-scheme-head">
         <span className="wb-theme-scheme-name">{scheme.name}</span>
+        {mine && scheme.isPublic && <span className="wb-badge">Публічна</span>}
         {applied && (
           <span className="wb-badge wb-badge-accent wb-theme-scheme-flag">
             <Icon name="check" size={12} />
@@ -59,22 +64,17 @@ export function SchemeCard({
         )}
       </div>
 
-      <p className="wb-theme-scheme-meta">
-        Шрифт: {font}
-        {mine && scheme.isPublic ? " · доступна іншим" : ""}
-      </p>
+      <p className="wb-theme-scheme-meta">{font}</p>
 
       <div className="wb-theme-scheme-actions">
-        {/* «Застосувати» — головна дія картки: усе решта тут допоміжне. */}
-        <button
-          type="button"
-          className={`wb-btn wb-btn-sm ${applied ? "wb-btn-secondary" : "wb-btn-primary"}`}
-          onClick={onApply}
-          disabled={applied}
-        >
-          <Icon name="check" size={16} />
-          {applied ? "Діє" : "Застосувати"}
-        </button>
+        {/* «Застосувати» — головна дія картки: усе решта тут допоміжне. Коли
+            тема вже діє, кнопки немає — про це сказав чип. */}
+        {!applied && (
+          <button type="button" className="wb-btn wb-btn-primary wb-btn-sm" onClick={onApply}>
+            <Icon name="check" size={16} />
+            Застосувати
+          </button>
+        )}
 
         {mine && onEdit && (
           <button type="button" className="wb-btn wb-btn-secondary wb-btn-sm" onClick={onEdit}>

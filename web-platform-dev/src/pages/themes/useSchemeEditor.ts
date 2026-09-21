@@ -1,16 +1,16 @@
 /**
- * `useSchemeEditor` — стан сторінки «Налаштувати»: три кольори, шрифт, назва
- * й публічність.
+ * `useSchemeEditor` — стан сторінки «Налаштувати тему»: три кольори, шрифт,
+ * назва й публічність.
  *
- * **Правка схеми — це та сама форма.** Коли адреса несе `?id=`, редактор
- * заповнюється зі схеми **один раз** (інакше перечитування затирало б те, що
+ * **Правка теми — це та сама форма.** Коли адреса несе `?id=`, редактор
+ * заповнюється з теми **один раз** (інакше перечитування затирало б те, що
  * людина щойно міняє), а збереження надсилає її номер — тобто оновлює, а не
  * створює другу з тією ж назвою.
  *
  * **Живий перегляд лишається живим.** Кольори й шрифт застосовуються на екран
- * одразу (це роблять `useUserColors` і `useFontChoice`), а «Зберегти схему» —
+ * одразу (це роблять `useUserColors` і `useFontChoice`), а «Зберегти тему» —
  * це два записи: у пам'ять пристрою (щоб вибір пережив перезавантаження) і на
- * сервер (щоб схема була в бібліотеці).
+ * сервер (щоб тема була в бібліотеці).
  *
  * @module web-platform-dev/src/pages/themes/useSchemeEditor
  */
@@ -27,7 +27,7 @@ export function useSchemeEditor() {
   const colors = useUserColors();
   const fonts = useFontChoice();
 
-  const [name, setName] = useState("Моя схема");
+  const [name, setName] = useState("Моя тема");
   const [isPublic, setIsPublic] = useState(false);
   const [busy, setBusy] = useState(false);
 
@@ -36,7 +36,7 @@ export function useSchemeEditor() {
     ? (themes.items.find((scheme) => scheme.id === editId) ?? null)
     : null;
 
-  // Заповнюємо редактор **один раз** на схему: далі полями керує людина.
+  // Заповнюємо редактор **один раз** на тему: далі полями керує людина.
   const loaded = useRef(0);
   useEffect(() => {
     if (!editing || loaded.current === editing.id) return;
@@ -52,7 +52,7 @@ export function useSchemeEditor() {
   /** Зберегти: той самий вибір іде і в пам'ять пристрою, і в бібліотеку. */
   const save = useCallback(async (): Promise<boolean> => {
     const draft = colors.draft;
-    // Порожніх кольорів не буває: без них схема не має сенсу (як і на сервері).
+    // Порожніх кольорів не буває: без них тема не має сенсу (як і на сервері).
     if (busy || !isCompleteColors(draft)) return false;
     setBusy(true);
     try {

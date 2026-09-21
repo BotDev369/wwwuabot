@@ -68,10 +68,23 @@
   line-height: var(--leading-tight);
 }
 
+/* Другий рядок пункту — **стан**, а не пояснення: «Apple», назва теми, шрифт.
+   Кольори стоять у ньому зразками (лівий край рядка), бо три коди не читаються. */
 .wb-theme-nav-hint {
   font-size: var(--text-sm);
   color: var(--text-muted);
   font-weight: var(--weight-normal);
+  /* Один рядок: назва теми на 40 символів не має розтягувати пункт на два
+     поверхи й смикати список. */
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.wb-theme-nav-dots {
+  display: inline-flex;
+  vertical-align: middle;
+  margin-right: var(--sp-2);
 }
 
 .wb-theme-nav-more {

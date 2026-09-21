@@ -1,10 +1,11 @@
 /**
  * Розділи теми — те, що ламається мовчки.
  *
- * Тут три речі, яких не видно ні в компіляторі, ні на око:
+ * Тут чотири речі, яких не видно ні в компіляторі, ні на око:
  * **маршрут** (розділ у списку без адреси — це кнопка, яка веде в нікуди),
- * **друга смуга** (пункт без адреси мовчав би на дотик) і те, що **хаб показує
- * всі розділи**: схований розділ людина знайде тільки вгадавши адресу.
+ * **склад** (три пункти, і саме ті, які людина знає словами «стиль», «готові
+ * теми», «налаштувати»), **друга смуга** (пункт без адреси мовчав би на дотик)
+ * і те, що **другий рядок пункту — стан**, а не пояснення розділу.
  *
  * @module web-platform-dev/src/pages/themes/theme-sections.test
  */
@@ -14,7 +15,7 @@ import { join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { describe, expect, it } from "vitest";
 import { THEME_PATH, THEME_ROUTE, PROFILE_PATH } from "../../app/routes";
-import { THEME_QUICK_SECTIONS, THEME_SECTIONS, themeSectionPath } from "./theme-sections";
+import { THEME_SECTIONS, themeSectionPath } from "./theme-sections";
 
 /** Корінь оболонки — від цього файлу, а не від робочої теки запуску. */
 const WORKSPACE_ROOT = fileURLToPath(new URL("../../../", import.meta.url));
@@ -28,30 +29,37 @@ describe("адреси теми", () => {
   it("лежать під профілем і складаються з констант", () => {
     expect(THEME_ROUTE).toBe("theme");
     expect(THEME_PATH).toBe(`${PROFILE_PATH}/theme`);
-    expect(themeSectionPath("mine")).toBe("/profile/theme/mine");
+    expect(themeSectionPath("presets")).toBe("/profile/theme/presets");
   });
 });
 
 describe("склад розділів", () => {
-  it("кожен розділ має підпис, пояснення й унікальний ключ", () => {
+  it("їх три, і вони названі словами людини", () => {
+    // «Схема» — наше внутрішнє слово (`ThemeScheme`); у продукті сутність
+    // зветься **тема**, бо саме це слово людина вживає. Підписи короткі: вони
+    // стоять у смузі, де на пункт — близько сотні пікселів.
+    expect(THEME_SECTIONS.map((section) => section.label)).toEqual([
+      "Стиль",
+      "Готові теми",
+      "Налаштувати",
+    ]);
+  });
+
+  it("заголовок сторінки налаштувань каже повну назву", () => {
+    // Пункт навігації — дієслово, а сторінка називається повністю: саме тут
+    // людина бачить, що налаштовує **тему**.
+    expect(source("src", "pages", "themes", "ThemeCustomizePage.tsx")).toContain(
+      '"Налаштувати тему"',
+    );
+  });
+
+  it("кожен розділ має унікальний ключ, підпис і знак", () => {
     for (const section of THEME_SECTIONS) {
       expect(section.label, section.key).toBeTruthy();
-      expect(section.hint, section.key).toBeTruthy();
+      expect(section.icon, section.key).toBeTruthy();
     }
     const keys = THEME_SECTIONS.map((section) => section.key);
     expect(new Set(keys).size).toBe(keys.length);
-  });
-
-  it("у другій смузі стоять саме ті розділи, що позначені `quick`", () => {
-    // Смуга — швидкий перехід, а не другий список: якщо пункт зник із неї, це
-    // має бути рішенням (`quick: false`), а не наслідком правки фільтра.
-    expect(THEME_QUICK_SECTIONS.map((section) => section.key)).toEqual([
-      "style",
-      "mine",
-      "public",
-      "customize",
-    ]);
-    expect(THEME_QUICK_SECTIONS.every((section) => THEME_SECTIONS.includes(section))).toBe(true);
   });
 
   it("⛔ кожен розділ має маршрут у роутері — інакше кнопка веде в 404", () => {
@@ -62,5 +70,27 @@ describe("склад розділів", () => {
     // І сам каркас розділу: без нього другої смуги на сторінках не буде.
     expect(router).toContain("<ThemeLayout />");
     expect(router).toContain("index: true");
+  });
+
+  it("у роутері немає розділів, знятих із хабу", () => {
+    // Знятий маршрут лишається живим за посиланням: сторінки під ним більше
+    // немає, і людина побачила б порожній екран замість 404.
+    const router = source("src", "app", "router.tsx");
+    expect(router).not.toContain('path: "mine"');
+    expect(router).not.toContain('path: "public"');
+  });
+
+  it("друга смуга бере пункти з того самого списку", () => {
+    // Пункт смуги, якого немає серед сторінок розділу, — кнопка в нікуди;
+    // друга копія складу розійшлася б із першою на першій же правці.
+    expect(source("src", "layout", "ThemeSubBar.tsx")).toContain("THEME_SECTIONS");
+  });
+
+  it("другий рядок пункту хабу — стан, а не пояснення розділу", () => {
+    // Пояснення («Характер продукту: Apple чи Material») читають один раз, а
+    // стан потрібен щоразу: хаб і є місцем, де дивляться, що вибрано.
+    const hub = source("src", "pages", "themes", "ThemeHubPage.tsx");
+    expect(hub).toContain("useThemeLook");
+    expect(hub).toContain("wb-theme-nav-hint");
   });
 });

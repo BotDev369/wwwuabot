@@ -33,7 +33,7 @@ export function validateThemeName(
 ): { ok: true; value: string } | { ok: false; message: string } {
   if (typeof raw !== "string") return { ok: false, message: "Очікується назва" };
   const value = raw.trim();
-  if (!value) return { ok: false, message: "Дайте схемі назву" };
+  if (!value) return { ok: false, message: "Дайте темі назву" };
   if (value.length > THEME_NAME_MAX_LENGTH) {
     return { ok: false, message: `Занадто довга назва: до ${THEME_NAME_MAX_LENGTH} символів` };
   }
@@ -63,7 +63,7 @@ function readFont(raw: unknown): { ok: true; value: string } | { ok: false; mess
  * те, що описує тип, інакше схема тягне за собою те, чого ми не читаємо.
  */
 export function validateThemeScheme(raw: unknown): ThemeValidation {
-  if (typeof raw !== "object" || raw === null) return { ok: false, message: "Очікується схема" };
+  if (typeof raw !== "object" || raw === null) return { ok: false, message: "Очікується тема" };
   const source = raw as Record<string, unknown>;
 
   const name = validateThemeName(source.name);

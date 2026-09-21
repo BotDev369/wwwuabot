@@ -56,7 +56,7 @@ export function createThemesApi(fetchJson: ThemesTransport, paths: ThemesApiPath
       const response = await fetchJson<ThemeDeleteResponse>(`${paths.mine}?id=${id}`, {
         method: "DELETE",
       });
-      if (!response.ok) throw new Error(response.error ?? "Не вдалося видалити схему");
+      if (!response.ok) throw new Error(response.error ?? "Не вдалося видалити тему");
     },
   };
 }

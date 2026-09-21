@@ -1,22 +1,34 @@
 /**
- * `/profile/theme/presets` — готові теми: перевірені трійки кольорів.
+ * `/profile/theme/presets` — готові теми: три джерела під однією смугою.
  *
- * **Готова тема міняє кольори, а не шрифт.** Шрифт людина вибрала сама, і
- * трійка кольорів не має права його забирати: «готове» — це швидкий старт, а не
- * повне перезаписування вибору.
+ * **Одна сутність — тема, три вкладки.** Платформа, свої, з простору: поділ на
+ * окремі екрани змушував би людину вгадувати, де шукати «ту саму», а так вона
+ * бачить усе, що є, перемикаючись одним дотиком.
  *
- * Вибір стає **одразу** (це той самий дотик, що і в панелі): прев'ю тут не
- * потрібне, бо весь застосунок і є прев'ю — людина бачить його на власні очі.
+ * **Смуга — спільний кирпичик** (`@wwwuabot/ui/tabs`), як у Просторі й
+ * акаунті. Вкладка може приїхати адресою (`?tab=mine`) — так веде «До готових
+ * тем» із налаштувань; далі нею керує стан, тож закриття екрана не тягне її
+ * назад із того самого посилання.
+ *
+ * **Пояснень під заголовком немає.** Що робить вкладка, каже її підпис і самі
+ * картки; абзац над ними читають один раз, а місце він займає щоразу.
  *
  * @module web-platform-dev/src/pages/themes/ThemePresetsPage
  */
 
-import type { ReactElement } from "react";
-import { COLOR_PRESETS, Icon, isPresetActive } from "@wwwuabot/shared";
-import { useAppliedScheme } from "./useAppliedScheme";
+import { useState, type ReactElement } from "react";
+import { useSearchParams } from "react-router-dom";
+import { Tabs, tabId, tabPanelId } from "@wwwuabot/ui/tabs";
+import { MyThemesPanel } from "./MyThemesPanel";
+import { PlatformThemesPanel } from "./PlatformThemesPanel";
+import { SharedThemesPanel } from "./SharedThemesPanel";
+import { PRESET_TABS, PRESET_TAB_PARAM, readPresetTab, type PresetTab } from "./presets-tabs";
 
 export function ThemePresetsPage(): ReactElement {
-  const { applied, apply } = useAppliedScheme();
+  const [searchParams] = useSearchParams();
+  const [tab, setTab] = useState<PresetTab>(() =>
+    readPresetTab(searchParams.get(PRESET_TAB_PARAM)),
+  );
 
   return (
     <div className="wb-page">
@@ -24,40 +36,12 @@ export function ThemePresetsPage(): ReactElement {
         <h1 className="wb-page-title">Готові теми</h1>
       </div>
 
-      <p className="wb-text-muted">
-        Перевірені трійки кольорів: фон, текст і акцент уже підібрані так, щоб текст читався. Шрифт
-        лишається вашим.
-      </p>
+      <Tabs options={PRESET_TABS} value={tab} onChange={setTab} label="Джерела тем" />
 
-      <div className="wb-theme-presets">
-        {COLOR_PRESETS.map((preset) => {
-          const active = isPresetActive(preset, applied.colors);
-          return (
-            <button
-              key={preset.id}
-              type="button"
-              aria-pressed={active}
-              className={`wb-theme-preset${active ? " wb-theme-preset--active" : ""}`}
-              onClick={() =>
-                apply({
-                  bg: preset.bg,
-                  text: preset.text,
-                  accent: preset.accent,
-                  font: applied.font,
-                })
-              }
-            >
-              <span className="wb-theme-preset-dots" aria-hidden="true">
-                <span className="wb-theme-dot" style={{ background: preset.bg }} />
-                <span className="wb-theme-dot" style={{ background: preset.text }} />
-                <span className="wb-theme-dot" style={{ background: preset.accent }} />
-              </span>
-              <span className="wb-theme-preset-label">{preset.labelUk}</span>
-              {/* Галочка — стан «це вибір зараз», а не кнопка */}
-              {active && <Icon name="check" size={16} />}
-            </button>
-          );
-        })}
+      <div id={tabPanelId(tab)} role="tabpanel" aria-labelledby={tabId(tab)}>
+        {tab === "platform" && <PlatformThemesPanel />}
+        {tab === "mine" && <MyThemesPanel />}
+        {tab === "space" && <SharedThemesPanel />}
       </div>
     </div>
   );

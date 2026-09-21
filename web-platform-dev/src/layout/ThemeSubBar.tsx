@@ -1,10 +1,13 @@
 /**
  * Друга смуга футера платформи — **лише всередині теми**.
  *
- * Тема — єдиний розділ, у якого є власні сторінки (стиль, свої схеми, спільна
- * бібліотека, налаштування), тож саме тут з'явилась друга смуга. Перша смуга
- * веде між розділами продукту, друга — між сторінками одного з них; змішати їх
- * в одному ряду означало б, що «Головна» й «Шрифт» стоять поруч як рівні.
+ * Тема — єдиний розділ, у якого є власні сторінки (стиль, готові теми,
+ * налаштування), тож саме тут з'явилась друга смуга. Перша смуга веде між
+ * розділами продукту, друга — між сторінками одного з них; змішати їх в одному
+ * ряду означало б, що «Головна» й «Стиль» стоять поруч як рівні.
+ *
+ * **Смуга показує той самий список, що й хаб** (`THEME_SECTIONS`): пункт, якого
+ * немає серед сторінок розділу, — це кнопка в нікуди.
  *
  * Кирпичик (`SubBar`) спільний: та сама смуга знадобиться будь-якому розділу,
  * який обросте сторінками, і тоді тут не буде жодної нової розмітки.
@@ -16,7 +19,7 @@ import type { ReactElement } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { useDialog } from "@wwwuabot/ui/dialog";
 import { SubBar, buildSubBarItems } from "@wwwuabot/ui/nav";
-import { THEME_QUICK_SECTIONS, themeSectionPath } from "../pages/themes/theme-sections";
+import { THEME_SECTIONS, themeSectionPath } from "../pages/themes/theme-sections";
 
 export function ThemeSubBar(): ReactElement {
   const navigate = useNavigate();
@@ -24,7 +27,7 @@ export function ThemeSubBar(): ReactElement {
   const dialog = useDialog();
 
   const items = buildSubBarItems({
-    items: THEME_QUICK_SECTIONS.map((section) => ({
+    items: THEME_SECTIONS.map((section) => ({
       key: section.key,
       label: section.label,
       icon: section.icon,

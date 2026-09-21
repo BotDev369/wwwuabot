@@ -47,9 +47,7 @@ import { SpaceUserPage } from "@/pages/SpaceUserPage";
 import { ThemeLayout } from "@/pages/themes/ThemeLayout";
 import { ThemeHubPage } from "@/pages/themes/ThemeHubPage";
 import { ThemeCustomizePage } from "@/pages/themes/ThemeCustomizePage";
-import { ThemeMinePage } from "@/pages/themes/ThemeMinePage";
 import { ThemePresetsPage } from "@/pages/themes/ThemePresetsPage";
-import { ThemePublicPage } from "@/pages/themes/ThemePublicPage";
 import { ThemeStylePage } from "@/pages/themes/ThemeStylePage";
 
 export const router = createBrowserRouter([
@@ -64,8 +62,10 @@ export const router = createBrowserRouter([
       { path: PROFILE_ACCOUNT_PATH, element: <ProfileAccountPage /> },
       // Тема — розділ зі **своїми сторінками**: у кожного розділу є адреса
       // (посилання, історія, «назад»), а між ними веде друга смуга футера
-      // (`ThemeLayout`). Склад розділів — `pages/themes/theme-sections.ts`;
-      // маршрути мусять збігатися з ним, і це стереже `theme-sections.test.ts`.
+      // (`ThemeLayout`). Три пункти — три сторінки; джерела тем (платформа,
+      // свої, з простору) діляться вкладками всередині `presets`.
+      // Склад розділів — `pages/themes/theme-sections.ts`; маршрути мусять
+      // збігатися з ним, і це стереже `theme-sections.test.ts`.
       {
         path: `${PROFILE_ROUTE}/${THEME_ROUTE}`,
         element: <ThemeLayout />,
@@ -73,8 +73,6 @@ export const router = createBrowserRouter([
           { index: true, element: <ThemeHubPage /> },
           { path: "style", element: <ThemeStylePage /> },
           { path: "presets", element: <ThemePresetsPage /> },
-          { path: "mine", element: <ThemeMinePage /> },
-          { path: "public", element: <ThemePublicPage /> },
           { path: "customize", element: <ThemeCustomizePage /> },
         ],
       },
