@@ -49,7 +49,7 @@
 import { useState, type ReactElement } from "react";
 import { useSearchParams } from "react-router-dom";
 import { Icon } from "@wwwuabot/shared";
-import { readCreateIntent } from "@/app/routes";
+import { useCreateIntent } from "@/app/useCreateIntent";
 import {
   MESSAGES_PEER_PARAM,
   readMessagesPeer,
@@ -93,9 +93,11 @@ export function MessagesPage(): ReactElement {
   // рядок списку, з якого її відкрили.
   //
   // Новий лист може прийти й **адресою** (`?new=1` — «+» з хабу створення),
-  // і це теж початковий стан: намір читається раз, при появі екрана.
+  // і це теж початковий стан: намір читає `useCreateIntent` раз, при появі
+  // екрана, і він же прибирає його з адреси.
+  const wantsCreate = useCreateIntent();
   const [composing, setComposing] = useState<{ draft: MessageDraft | null } | null>(() =>
-    readCreateIntent(searchParams) ? { draft: null } : null,
+    wantsCreate ? { draft: null } : null,
   );
   const thread = useThread(openPeerId);
   const meId = profile?.id ?? 0;

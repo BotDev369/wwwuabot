@@ -37,8 +37,8 @@
  *
  * **«+» з хабу створення приходить адресою** (`/contacts?new=1`): так кнопка
  * веде в той самий екран, де захід контакту вже описаний, і другого правила
- * «як завести контакт» не з'являється. Намір виконується **один раз**, при
- * появі екрана.
+ * «як завести контакт» не з'являється. Намір читає `useCreateIntent` — **один
+ * раз**, він же прибирає його з адреси.
  *
  * Діалоги, буфер обміну й підтвердження живуть тут, а не в картці: це межі
  * оболонки (та сама межа, що в нотатках і панелі теми).
@@ -50,7 +50,6 @@
  */
 
 import { useEffect, useRef, useState, type ReactElement } from "react";
-import { useSearchParams } from "react-router-dom";
 import { Icon } from "@wwwuabot/shared";
 import { sanitizeContactName, type Contact, type ContactInput } from "@wwwuabot/shared/contacts";
 import {
@@ -66,7 +65,7 @@ import {
   type ContactsView,
 } from "@wwwuabot/ui/contacts";
 import { useDialog } from "@wwwuabot/ui/dialog";
-import { readCreateIntent } from "@/app/routes";
+import { useCreateIntent } from "@/app/useCreateIntent";
 import { useContacts } from "./useContacts";
 
 /** Скільки тримається «Скопійовано» на кнопці. */
@@ -87,9 +86,9 @@ export function ContactsPage(): ReactElement {
   const [editingId, setEditingId] = useState<number | null>(null);
   const [copiedId, setCopiedId] = useState<number | null>(null);
   // Намір із адреси читається один раз, при появі екрана, — так само, як
-  // номер розмови в «Повідомленнях».
-  const [searchParams] = useSearchParams();
-  const wantsCreate = useRef(readCreateIntent(searchParams));
+  // номер розмови в «Повідомленнях»; і прибирається з адреси, щоб закрита
+  // форма не лишалася адресою, яка її відкриває.
+  const wantsCreate = useRef(useCreateIntent());
 
   useEffect(() => {
     if (copiedId === null) return;

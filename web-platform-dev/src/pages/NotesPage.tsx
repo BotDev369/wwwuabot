@@ -16,20 +16,19 @@
  * даних людини (таблиця `notes`), а не з `page_data` (AGENTS.md §7).
  *
  * **Композер можна відкрити адресою** (`/notes?new=1`): так «+» у хабі
- * «Створити» веде саме сюди, а не заводить другу форму нотатки. Намір
- * читається **один раз**, при появі екрана: далі композером керує стан, тож
- * закриття форми не відкриває її знову з того самого посилання.
+ * «Створити» веде саме сюди, а не заводить другу форму нотатки. Намір читає
+ * `useCreateIntent` — **один раз**, і він же прибирає його з адреси, щоб
+ * закрита форма не лишалася адресою, яка її відкриває.
  *
  * @module web-platform-dev/src/pages/NotesPage
  */
 
 import { useState, type ReactElement } from "react";
-import { useSearchParams } from "react-router-dom";
 import { Icon } from "@wwwuabot/shared";
 import type { NoteDraft, NoteRow } from "@wwwuabot/shared/notes";
 import { ComposerModal } from "@wwwuabot/ui/composer";
 import { useDialog } from "@wwwuabot/ui/dialog";
-import { readCreateIntent } from "@/app/routes";
+import { useCreateIntent } from "@/app/useCreateIntent";
 import {
   DEFAULT_NOTES_VIEW,
   NotesList,
@@ -60,12 +59,11 @@ export function NotesPage(): ReactElement {
   const { notes, loading, error, upsert, remove } = useNotes();
   const dialog = useDialog();
   const [view, setView] = useState<NotesView>(DEFAULT_NOTES_VIEW);
-  const [searchParams] = useSearchParams();
   // Намір із адреси береться тільки як **початковий** стан: композер — це
-  // чернетка, і повторне підставляння затерло б написане.
-  const [editor, setEditor] = useState<EditorState>(() => ({
-    open: readCreateIntent(searchParams),
-  }));
+  // чернетка, і повторне підставляння затерло б написане. Хук читає намір
+  // один раз і прибирає його з адреси тим самим кроком.
+  const wantsCreate = useCreateIntent();
+  const [editor, setEditor] = useState<EditorState>(() => ({ open: wantsCreate }));
   // Розгорнуті картки — стан екрана, а не картки: «розгорнути всі» приходить
   // зі смуги керування, і стан мусить бути один (див. `NotesList`).
   const [openIds, setOpenIds] = useState<ReadonlySet<number>>(() => new Set());

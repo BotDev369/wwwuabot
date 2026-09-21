@@ -18,7 +18,8 @@
  * лише на вкладці «Оголошення»: одна форма на два входи — інакше дошка мала б
  * власну, яка розійшлася б із першою першою ж правкою. Сюди ж веде «+» із хабу
  * створення — адресою `/space?tab=ads&new=1`, тож і розділ, і форма
- * відкриваються з посилання, а не з другого коду.
+ * відкриваються з посилання, а не з другого коду. Намір читає
+ * `useCreateIntent`, він же лишає адресу розділом — `/space?tab=ads`.
  *
  * @module web-platform-dev/src/pages/SpacePage
  */
@@ -29,7 +30,7 @@ import { Icon } from "@wwwuabot/shared";
 import type { AdDraft } from "@wwwuabot/shared/ads";
 import { ComposerModal } from "@wwwuabot/ui/composer";
 import { Tabs, tabId, tabPanelId } from "@wwwuabot/ui/tabs";
-import { readCreateIntent } from "@/app/routes";
+import { useCreateIntent } from "@/app/useCreateIntent";
 import { notesApi } from "@/shared/api/notes.api";
 import { adDraftFrom } from "./ads-list";
 import { SpaceAdsTab } from "./SpaceAdsTab";
@@ -49,8 +50,11 @@ export function SpacePage(): ReactElement {
   // Адреса — це вхід, а не стан: усе читається один раз, при появі екрана.
   const [searchParams] = useSearchParams();
   const [tab, setTab] = useState<SpaceTab>(() => readSpaceTab(searchParams.get(SPACE_TAB_PARAM)));
+  // Намір читає хук і він же лишає в адресі сам розділ (`?tab=ads`): форма —
+  // стан екрана, а не другий бік адреси.
+  const wantsCompose = useCreateIntent();
   const [composer, setComposer] = useState<ComposerRequest | null>(() =>
-    readCreateIntent(searchParams) ? {} : null,
+    wantsCompose ? {} : null,
   );
   const space = useSpace();
   const ads = useAds();

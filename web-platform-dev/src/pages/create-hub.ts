@@ -11,6 +11,11 @@
  * своєму екрані, і копія розійшлася б із ним першою ж правкою — та сама
  * причина, з якої контакт заводять «Контакти», а не третій список.
  *
+ * **Хаб не лишається за спиною.** Обраний екран **замінює** його в історії
+ * (`replace`): хаб — це вибір, а не місце, у яке вертаються. Інакше «назад» із
+ * форми, яку людина сама відкрила, вело б на «Створити» замість того екрана,
+ * куди вона щойно пішла.
+ *
  * **Порядок — за абеткою (А→Я).** Сталий порядок не залежить від того, хто
  * додав пункт останнім, тож місце пункту можна запам'ятати. Стежить
  * `create-hub.test.ts` — і мовою (`uk`), бо кирилиця має літери, яких
@@ -23,6 +28,7 @@
  * @module web-platform-dev/src/pages/create-hub
  */
 
+import type { NavigateOptions } from "react-router-dom";
 import type { IconName } from "@wwwuabot/shared";
 import { toWebPath } from "@wwwuabot/shared/content";
 import type { HubItem } from "@wwwuabot/ui/hub";
@@ -141,8 +147,15 @@ export function hubItemSoon(item: CreateHubItem): boolean {
 }
 
 export interface BuildHubItemsOptions {
-  /** Перехід у межах SPA (`useNavigate()`). */
-  navigate: (href: string) => void;
+  /**
+   * Перехід у межах SPA (`useNavigate()`).
+   *
+   * Опції переходу їдуть разом з адресою, бо хаб і сам вирішує, як увійти в
+   * екран: він **обирає**, а не лишається — і його запис в історії замінюється
+   * обраним екраном. Інакше «назад» із форми повертало б на «Створити» —
+   * людина закрила форму, а стоїть перед списком, з якого щойно пішла.
+   */
+  navigate: (href: string, options?: NavigateOptions) => void;
   /** Дотик до дії, якої ще немає: показати, що саме там буде. */
   onSoon: (message: string) => void;
 }
@@ -162,7 +175,7 @@ export function buildHubItems({ navigate, onSoon }: BuildHubItemsOptions): HubIt
         label: `${intent.verb}: ${item.label}`,
         soon: href === null,
         onSelect: () => {
-          if (href) navigate(href);
+          if (href) navigate(href, { replace: true });
           else onSoon(hubIntentSoon(item, intent.key));
         },
       };

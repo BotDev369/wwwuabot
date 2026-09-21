@@ -167,9 +167,25 @@ describe("пункти для списку", () => {
   it("робоча дія веде на адресу, а не мовчить", () => {
     navigate.mockClear();
     items.find((item) => item.key === "notes")?.actions[0].onSelect();
-    expect(navigate).toHaveBeenCalledWith("/notes");
+    expect(navigate).toHaveBeenCalledWith("/notes", { replace: true });
     items.find((item) => item.key === "notes")?.actions[1].onSelect();
-    expect(navigate).toHaveBeenCalledWith("/notes?new=1");
+    expect(navigate).toHaveBeenCalledWith("/notes?new=1", { replace: true });
+  });
+
+  it("хаб замінюється обраним екраном, а не лишається за спиною", () => {
+    // `replace` тут — не оптимізація: без нього «назад» із форми повертає на
+    // «Створити», тобто людина закриває створення нотатки й опиняється перед
+    // списком, з якого щойно пішла (замість нотаток). Обидва входи мусять
+    // поводитись однаково — і «подивитись», і «створити».
+    for (const item of items.filter((entry) => entry.status !== "soon")) {
+      for (const action of item.actions.filter((entry) => !entry.soon)) {
+        navigate.mockClear();
+        action.onSelect();
+        expect(navigate, `${item.key}/${action.key}`).toHaveBeenCalledWith(expect.any(String), {
+          replace: true,
+        });
+      }
+    }
   });
 
   it("заглушка не мовчить, а називає причину", () => {
