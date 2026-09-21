@@ -8,11 +8,15 @@
  *
  * **Рахунок — точки, не числа.** «Ви 1 · бот 1 · до 3 перемог» доводилось
  * читати; дві доріжки з трьох точок видно одним поглядом, і порожні точки самі
- * показують, скільки лишилось.
+ * показують, скільки лишилось. Доріжка бота світиться чужим кольором.
  *
  * **Показ — подія, а не мить.** Поки бот «вибирає», його слот тремтить і
  * перебирає предмети; результат зʼявляється знизу. Це та сама пауза, що в
  * житті: рука летить — потім видно, що вийшло (`useRps`).
+ *
+ * **Сторони різні кольором.** Свій бік — акцентом арени, чужий — її другим
+ * кольором (`--game-foe`): у дуелі мусить бути видно, де ти, а де суперник,
+ * ще до того, як прочитано підпис. Барви бере сцена (`GameView`), не цей файл.
  *
  * @module web-platform-dev/src/pages/games/RpsGame
  */
@@ -53,21 +57,22 @@ function tileState(outcome: RpsOutcome | null, mine: boolean): "idle" | "won" | 
 function Tile({
   choice,
   label,
-  mine,
+  side,
   state,
   rolling,
 }: {
   choice: RpsChoice | null;
   label: string;
-  /** Свій слот має акцентне тло — так видно, котрий із двох твій. */
-  mine?: boolean;
+  /** Свій слот має акцентне тло, чужий — друге: сторони видно без підписів. */
+  side?: "mine" | "foe";
   state: "idle" | "won" | "lost";
   /** Слот бота під час вибору: тремтить, а не мовчить. */
   rolling?: boolean;
 }): ReactElement {
   let className = "wb-game-tile";
   if (choice === null) className += " wb-game-tile--empty";
-  else if (mine) className += " wb-game-tile--mine";
+  else if (side === "mine") className += " wb-game-tile--mine";
+  else if (side === "foe") className += " wb-game-tile--foe";
   if (state === "won") className += " wb-game-tile--won";
   if (state === "lost") className += " wb-game-tile--lost";
 
@@ -83,17 +88,26 @@ function Tile({
 }
 
 /** Доріжка точок: залиті — узяті раунди, порожні — ті, що лишились. */
-function PipsRow({ filled, of }: { filled: number; of: number }): ReactElement {
+function PipsRow({
+  filled,
+  of,
+  foe,
+}: {
+  filled: number;
+  of: number;
+  /** Доріжка бота — чужим кольором: два ряди точок не мають бути однакові. */
+  foe?: boolean;
+}): ReactElement {
   return (
     // Точки — це число, показане знаками: для того, хто їх не бачить, воно
     // мусить лишитись числом, а не порожнім рядом квадратів.
     <span className="wb-game-pips-row" role="img" aria-label={`${filled} з ${of}`}>
-      {Array.from({ length: of }, (_, index) => (
-        <span
-          key={index}
-          className={`wb-game-pip${index < filled ? " wb-game-pip--filled" : ""}`}
-        />
-      ))}
+      {Array.from({ length: of }, (_, index) => {
+        let className = "wb-game-pip";
+        if (index < filled)
+          className += foe ? " wb-game-pip--filled wb-game-pip--foe" : " wb-game-pip--filled";
+        return <span key={index} className={className} />;
+      })}
     </span>
   );
 }
@@ -125,13 +139,20 @@ export function RpsGame(): ReactElement {
         <span className="wb-game-pips-label">Ви</span>
         <PipsRow filled={game.wins} of={RPS_TARGET} />
         <span className="wb-game-pips-label">Бот</span>
-        <PipsRow filled={game.losses} of={RPS_TARGET} />
+        <PipsRow filled={game.losses} of={RPS_TARGET} foe />
       </div>
 
       <div className="wb-game-arena">
-        <Tile choice={game.player} label="Ваш предмет" mine state={mineState} />
+        {" "}
+        <Tile choice={game.player} label="Ваш предмет" side="mine" state={mineState} />
         <span className="wb-game-versus">проти</span>
-        <Tile choice={game.bot ?? game.rolling} label="Бот" state={botState} rolling={rolling} />
+        <Tile
+          choice={game.bot ?? game.rolling}
+          label="Бот"
+          side="foe"
+          state={botState}
+          rolling={rolling}
+        />
       </div>
 
       <p className={`wb-game-result${tone}`}>{text}</p>

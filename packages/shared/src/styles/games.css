@@ -7,27 +7,138 @@
  * Рендерять їх сторінки платформи, а правила тут, а не в її `index.css`, з
  * тієї ж причини, що й у теми (`AGENTS.md` §3).
  *
- * **Гра мусить бути видна, а не прочитана.** Це єдина частина продукту, де
- * текст не носить сенс: рахунок стоїть точками, хід бота — блиманням знака,
- * а «менше / більше» — смугою, що звужується. Числа лишаються підписами, але
- * рішення людина приймає очима.
+ * ── ВЛАСНИЙ СВІТ ГРИ (тимчасовий виняток зі спільних токенів) ────────────
  *
- * **Рух показує стан, а не прикрашає.** Кожна анімація тут відповідає на
- * питання: знак зʼявився (pop), бот іще вибирає (shake), лінія зібрана
- * (pulse), діапазон звузився (transition смуги). Рух без такого питання —
- * шум, тож його тут немає.
+ * Гра — єдине місце продукту, де кольори належать **твору, а не застосунку**:
+ * шахи не носять колір соцмережі. Тому кожна гра тут ставить собі палітру
+ * (`--game-*` на `[data-game]`) і далі не торкається `--text-*` / `--accent`:
+ * усередині сцени видно тільки гру, хай яку тему вибрала людина.
  *
- * **Тривалості — зі спільної шкали** (`--duration*`, `--ease-spring`), не
- * власні числа: інакше гра рухалась би в іншому ритмі, ніж решта продукту.
- * Коли рух вимкнено системно (`prefers-reduced-motion`), він зникає
- * **цілком** — разом зі станом, який він показував: знак зʼявляється одразу,
- * смуга стрибає. Це не втрата, а саме те, про що просить людина.
+ * Це **виняток, а не нова норма**, і тому він обмежений двома речами:
+ *   • палітри оголошені **одним** блоком на гру (жодного кольору в розмітці);
+ *   • усе всередині сцени читає **тільки** `--game-*` — тому прибрати виняток
+ *     колись означатиме замінити три блоки, а не шукати кольори по коду.
+ * Поки що палітра одна на обидві теми застосунку навмисно: це «сцена», а не
+ * ще один шар оформлення.
+ *
+ * ── РУХ ─────────────────────────────────────────────────────────────────
+ *
+ * Рух показує стан, а не прикрашає: знак упав (pop), бот вибирає (shake),
+ * лінія зібрана (highlight), діапазон звузився (transition смуги). Рух без
+ * такого питання тут не живе. Коли рух вимкнено системно, він зникає
+ * **цілком** — разом зі станом, який показував: знак зʼявляється одразу,
+ * смуга стрибає.
  */
 
+/* ── Сцена ───────────────────────────────────────────────────────────────── */
+
+/* Свої типові значення — щоб сцена не лишилась без палітри, якщо `data-game`
+   колись не приїде (невідомий ключ, нова гра без палітри). */
+.wb-game-stage {
+  --game-surface: var(--field-bg);
+  --game-field: var(--surface-hover);
+  --game-ink: var(--text-primary);
+  --game-muted: var(--text-muted);
+  --game-accent: var(--accent);
+  --game-accent-soft: var(--accent-soft);
+  --game-foe: var(--text-secondary);
+  --game-foe-soft: var(--surface-hover);
+  --game-line: transparent;
+  --game-highlight: var(--accent-soft);
+  --game-glow: transparent;
+
+  position: relative;
+  overflow: hidden;
+  /* Сцена, а не блок у формі: гра забирає екран і ставить себе по центру.
+     `dvh`, а не `vh`: у Telegram Mini App панелі забирають висоту, і на `vh`
+     низ сцени йшов би під футер (§3, мобільне). */
+  min-height: min(68dvh, 620px);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: var(--sp-4);
+  border-radius: var(--radius-lg);
+  background-color: var(--game-surface);
+  color: var(--game-ink);
+  animation: wb-game-rise var(--duration-slow) var(--ease-out) both;
+}
+
+/* Сцена сама тримає свою середину: гра всередині — колонка на всю ширину */
+.wb-game-stage > * {
+  width: 100%;
+}
+
+/* ── Палітри ігор ────────────────────────────────────────────────────────── */
+
+/* Хрестики-нулики: папір і олівець. Тепла поверхня, графітні знаки, теракота
+   для свого ходу й маркер для зібраної лінії. */
+.wb-game-stage[data-game="tictactoe"] {
+  --game-surface: #f7f2e6;
+  --game-field: rgba(43, 47, 59, 0.06);
+  --game-ink: #2b2f3b;
+  --game-muted: rgba(43, 47, 59, 0.5);
+  --game-accent: #c9552a;
+  --game-accent-soft: rgba(201, 85, 42, 0.16);
+  --game-foe: #55607a;
+  --game-foe-soft: rgba(85, 96, 122, 0.12);
+  --game-line: rgba(43, 47, 59, 0.08);
+  --game-highlight: rgba(240, 196, 60, 0.45);
+  --game-glow: rgba(201, 85, 42, 0.2);
+
+  /* Міліметровка: вона й робить з екрана аркуш */
+  background-image:
+    repeating-linear-gradient(0deg, var(--game-line) 0 1px, transparent 1px 28px),
+    repeating-linear-gradient(90deg, var(--game-line) 0 1px, transparent 1px 28px);
+}
+
+/* Камінь, ножиці, папір: арена дуелі. Темна зала, прожектор згори, свій бік
+   фіолетовий, чужий — рожевий: сторони видно до підпису. */
+.wb-game-stage[data-game="rps"] {
+  --game-surface: #15122b;
+  --game-field: rgba(255, 255, 255, 0.07);
+  --game-ink: #ece8ff;
+  --game-muted: rgba(236, 232, 255, 0.58);
+  --game-accent: #8b6cff;
+  --game-accent-soft: rgba(139, 108, 255, 0.22);
+  --game-foe: #ff5c8a;
+  --game-foe-soft: rgba(255, 92, 138, 0.16);
+  --game-line: rgba(236, 232, 255, 0.09);
+  --game-highlight: rgba(139, 108, 255, 0.3);
+  --game-glow: rgba(139, 108, 255, 0.45);
+  --game-font: var(--font-display);
+
+  background-image: radial-gradient(120% 90% at 50% -10%, var(--game-glow), transparent 62%);
+}
+
+/* Вгадай число: прилад. Темний корпус, бурштиново-зелена шкала, цифри —
+   моноширинні, як на справжньому вимірювачі. */
+.wb-game-stage[data-game="guess"] {
+  --game-surface: #0e1a1b;
+  --game-field: rgba(255, 255, 255, 0.06);
+  --game-ink: #d7f4ee;
+  --game-muted: rgba(215, 244, 238, 0.55);
+  --game-accent: #2fd0ad;
+  --game-accent-soft: rgba(47, 208, 173, 0.18);
+  --game-foe: #ffb057;
+  --game-foe-soft: rgba(255, 176, 87, 0.16);
+  --game-line: rgba(215, 244, 238, 0.12);
+  --game-highlight: rgba(47, 208, 173, 0.22);
+  --game-glow: rgba(47, 208, 173, 0.4);
+  --game-font: var(--font-mono);
+
+  /* Шкала поділок під низом — «корпус» приладу */
+  background-image: repeating-linear-gradient(90deg, var(--game-line) 0 1px, transparent 1px 12px);
+  background-repeat: no-repeat;
+  background-position: left bottom;
+  background-size: 100% 10px;
+}
+
+/* Уся гра говорить шрифтом своєї сцени (у приладу — моно) */
 .wb-game {
   display: flex;
   flex-direction: column;
   gap: var(--sp-4);
+  font-family: var(--game-font, inherit);
 }
 
 /* ── Рух ─────────────────────────────────────────────────────────────────── */
@@ -74,6 +185,18 @@
 @keyframes wb-game-win {
   0%,
   100% {
+    opacity: 0.7;
+  }
+
+  50% {
+    opacity: 1;
+  }
+}
+
+/* Прожектор арени дихає: зала жива, навіть коли нічого не сталось */
+@keyframes wb-game-spot {
+  0%,
+  100% {
     opacity: 0.75;
   }
 
@@ -110,19 +233,28 @@
 
 .wb-game-pips-label {
   font-size: var(--text-xs);
-  color: var(--text-muted);
+  color: var(--game-muted);
 }
 
 .wb-game-pip {
   width: 12px;
   height: 12px;
   border-radius: var(--radius-full);
-  background: var(--field-bg);
+  background: var(--game-field);
+  transition: background var(--duration) var(--ease);
 }
 
-/* Виграний раунд — залита точка: порожні показують, скільки ще лишилось */
+/* Узятий раунд — світна точка: порожні самі показують, скільки лишилось */
 .wb-game-pip--filled {
-  background: var(--accent);
+  background: var(--game-accent);
+  box-shadow: 0 0 10px var(--game-glow);
+}
+
+/* Доріжка бота світиться чужим кольором: два однакові ряди точок не сказали б,
+   котрий чий, доки не прочитаєш підписи. */
+.wb-game-pip--foe {
+  background: var(--game-foe);
+  box-shadow: 0 0 10px var(--game-foe-soft);
 }
 
 /* ── Арена («камінь, ножиці, папір») ─────────────────────────────────────── */
@@ -137,9 +269,9 @@
 .wb-game-versus {
   font-size: var(--text-xs);
   font-weight: var(--weight-semibold);
-  color: var(--text-muted);
+  color: var(--game-muted);
   text-transform: uppercase;
-  letter-spacing: 0.06em;
+  letter-spacing: 0.08em;
 }
 
 .wb-game-tile {
@@ -150,49 +282,59 @@
   gap: var(--sp-2);
   /* Висота, а не квадрат: арена стоїть у два слоти, і на вузькому екрані
      квадрат зʼїдав би половину екрана під порожнечу. */
-  min-height: 116px;
+  min-height: 120px;
   padding: var(--sp-3);
   border-radius: var(--radius-lg);
-  background: var(--field-bg);
-  color: var(--text-muted);
+  background: var(--game-field);
+  color: var(--game-muted);
   text-align: center;
+  transition:
+    background var(--duration) var(--ease),
+    box-shadow var(--duration-slow) var(--ease);
 }
 
 .wb-game-tile svg {
-  width: 44px;
-  height: 44px;
+  width: 46px;
+  height: 46px;
 }
 
-/* Свій знак — акцентом: видно, що це твій хід, не читаючи підпису */
+/* Свій бік — акцентом, чужий — своїм кольором: сторони видно без підписів */
 .wb-game-tile--mine {
-  background: var(--accent-soft);
-  color: var(--accent);
+  background: var(--game-accent-soft);
+  color: var(--game-accent);
 }
 
-/* Порожній слот — пунктир: «тут буде твій предмет», і це видно до дотику */
+.wb-game-tile--foe {
+  background: var(--game-foe-soft);
+  color: var(--game-foe);
+}
+
+/* Порожній слот — пунктир: «тут стане твій предмет», і це видно до дотику */
 .wb-game-tile--empty {
   background: none;
-  border: 1px dashed var(--border);
+  border: 1px dashed var(--game-line);
 }
 
+/* Узятий раунд світиться — у залі видно, хто її забрав */
 .wb-game-tile--won {
-  background: var(--accent-soft);
-  color: var(--accent);
+  background: var(--game-accent-soft);
+  color: var(--game-accent);
+  box-shadow: 0 0 26px var(--game-glow);
 }
 
 .wb-game-tile--lost {
-  opacity: 0.5;
+  opacity: 0.55;
 }
 
 .wb-game-tile-label {
   font-size: var(--text-sm);
-  font-weight: var(--weight-medium);
-  color: var(--text-primary);
+  font-weight: var(--weight-semibold);
+  color: var(--game-ink);
 }
 
 .wb-game-tile--lost .wb-game-tile-label,
 .wb-game-tile--empty .wb-game-tile-label {
-  color: var(--text-muted);
+  color: var(--game-muted);
   font-weight: var(--weight-normal);
 }
 
@@ -206,18 +348,21 @@
   font-size: var(--text-lg);
   font-weight: var(--weight-semibold);
   text-align: center;
+  color: var(--game-ink);
 }
 
+/* Тон — світлом, а не чужими токенами: усередині сцени свої кольори */
 .wb-game-result--win {
-  color: var(--green);
+  color: var(--game-accent);
+  text-shadow: 0 0 18px var(--game-glow);
 }
 
 .wb-game-result--lose {
-  color: var(--red);
+  color: var(--game-foe);
 }
 
 .wb-game-result--draw {
-  color: var(--text-muted);
+  color: var(--game-muted);
 }
 
 /* ── Вибір («камінь, ножиці, папір») ─────────────────────────────────────── */
@@ -232,7 +377,7 @@
 .wb-game-choice {
   flex: 1 1 0;
   min-width: 0;
-  min-height: 76px;
+  min-height: 80px;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -241,31 +386,33 @@
   padding: var(--sp-2);
   border: none;
   border-radius: var(--radius-lg);
-  background: var(--field-bg);
-  color: var(--text-primary);
+  background: var(--game-field);
+  color: var(--game-ink);
   font: inherit;
   font-size: var(--text-xs);
   font-weight: var(--weight-medium);
   cursor: pointer;
   transition:
     transform var(--duration-fast) var(--ease),
-    background var(--duration-fast) var(--ease);
+    background var(--duration-fast) var(--ease),
+    color var(--duration-fast) var(--ease);
 }
 
 .wb-game-choice svg {
-  width: 26px;
-  height: 26px;
+  width: 28px;
+  height: 28px;
 }
 
 /* Відгук на дотик: на телефоні hover немає, тож «натиснуто» — це `:active` */
 .wb-game-choice:not(:disabled):active {
   transform: scale(0.95);
-  background: var(--surface-active);
+  background: var(--game-accent-soft);
+  color: var(--game-accent);
 }
 
 /* Поки бот вибирає, ходити нічим — і це видно приглушенням, а не підписом */
 .wb-game-choice:disabled {
-  opacity: 0.5;
+  opacity: 0.45;
   cursor: default;
 }
 
@@ -284,16 +431,16 @@
   aspect-ratio: 1;
   min-height: 72px;
   border: none;
-  border-radius: var(--radius-lg);
-  background: var(--field-bg);
-  color: var(--text-primary);
+  border-radius: var(--radius-md);
+  background: var(--game-field);
+  color: var(--game-ink);
   cursor: pointer;
   transition: background var(--duration-fast) var(--ease);
 }
 
 .wb-game-cell svg {
-  width: 38px;
-  height: 38px;
+  width: 40px;
+  height: 40px;
 }
 
 .wb-game-cell:not(:disabled):active {
@@ -304,14 +451,14 @@
   cursor: default;
 }
 
-/* Свій знак — акцентом: так видно, де ти, не читаючи рядка стану */
+/* Свій знак — теракотою, чужий — графітом: так видно, де ти */
 .wb-game-cell--mine {
-  color: var(--accent);
+  color: var(--game-accent);
 }
 
-/* Зібрана лінія: залита підсвітка + дихання — це стан, а не оформлення */
+/* Зібрана лінія обведена маркером і дихає — це стан, а не оформлення */
 .wb-game-cell--win {
-  background: var(--accent-soft);
+  background: var(--game-highlight);
   animation: wb-game-win 1.6s ease-in-out infinite;
 }
 
@@ -330,13 +477,13 @@
   gap: var(--sp-1);
   padding: 2px var(--sp-3);
   border-radius: var(--radius-full);
-  background: var(--surface-hover);
+  background: var(--game-field);
   font-size: var(--text-sm);
-  color: var(--text-muted);
+  color: var(--game-muted);
 }
 
 .wb-game-score-chip--won {
-  color: var(--accent);
+  color: var(--game-accent);
 }
 
 /* ── Смуга діапазону («вгадай число») ────────────────────────────────────── */
@@ -345,9 +492,9 @@
    перечитуючи історію спроб. Тому перехід стоїть на `left`/`width`. */
 .wb-game-range {
   position: relative;
-  height: 40px;
+  height: 44px;
   border-radius: var(--radius-full);
-  background: var(--field-bg);
+  background: var(--game-field);
   overflow: hidden;
 }
 
@@ -356,7 +503,8 @@
   top: 0;
   bottom: 0;
   border-radius: var(--radius-full);
-  background: var(--accent-soft);
+  background: var(--game-accent-soft);
+  box-shadow: 0 0 20px var(--game-glow);
   transition:
     left var(--duration-slow) var(--ease),
     width var(--duration-slow) var(--ease);
@@ -367,17 +515,19 @@
   position: absolute;
   top: 50%;
   width: 3px;
-  height: 20px;
-  margin-top: -10px;
+  height: 22px;
+  margin-top: -11px;
   border-radius: var(--radius-full);
-  background: var(--accent);
+  background: var(--game-accent);
+  box-shadow: 0 0 12px var(--game-glow);
 }
 
 .wb-game-range-labels {
   display: flex;
   justify-content: space-between;
+  gap: var(--sp-2);
   font-size: var(--text-xs);
-  color: var(--text-muted);
+  color: var(--game-muted);
 }
 
 /* ── Вгадування ──────────────────────────────────────────────────────────── */
@@ -387,9 +537,18 @@
   gap: var(--sp-2);
 }
 
+/* Поле всередині сцени — своє: спільний `.wb-input` несе палітру застосунку,
+   а тут усе належить грі (тло, текст, підказка). */
 .wb-game-guess .wb-input {
   flex: 1 1 auto;
   min-width: 0;
+  background: var(--game-field);
+  color: var(--game-ink);
+  border: none;
+}
+
+.wb-game-guess .wb-input::placeholder {
+  color: var(--game-muted);
 }
 
 /* Спробовані числа — чипсами: їх читають як історію, а не як список */
@@ -405,9 +564,9 @@
   gap: var(--sp-1);
   padding: 2px var(--sp-3);
   border-radius: var(--radius-full);
-  background: var(--surface-hover);
+  background: var(--game-field);
   font-size: var(--text-sm);
-  color: var(--text-primary);
+  color: var(--game-ink);
 }
 
 .wb-game-attempt svg {
@@ -416,8 +575,8 @@
 }
 
 .wb-game-attempt--hit {
-  background: var(--accent-soft);
-  color: var(--accent);
+  background: var(--game-accent-soft);
+  color: var(--game-accent);
   font-weight: var(--weight-semibold);
 }
 
@@ -430,17 +589,40 @@
   gap: var(--sp-2);
 }
 
+/* Кнопка — спільний кирпичик, але на сцені вона носить її палітру */
+.wb-game-actions .wb-btn {
+  background: var(--game-field);
+  color: var(--game-ink);
+}
+
+/* ── Світло арени ────────────────────────────────────────────────────────── */
+
+/* Прожектор над ареною дихає: зала жива, навіть коли нічого не сталось.
+   Це тло сцени, а не стан предмета — тому воно не залежить від раунду. */
+.wb-game-stage[data-game="rps"]::before {
+  content: "";
+  position: absolute;
+  inset: -40% -20% auto;
+  height: 90%;
+  background: radial-gradient(60% 100% at 50% 0%, var(--game-glow), transparent 70%);
+  animation: wb-game-spot 4.5s ease-in-out infinite;
+  pointer-events: none;
+}
+
 /* ── Коли рух вимкнено системно ──────────────────────────────────────────── */
 
 @media (prefers-reduced-motion: reduce) {
+  .wb-game-stage,
   .wb-game-pop,
   .wb-game-rise,
   .wb-game-shake,
-  .wb-game-cell--win {
+  .wb-game-cell--win,
+  .wb-game-stage[data-game="rps"]::before {
     animation: none;
   }
 
-  .wb-game-range-band {
+  .wb-game-range-band,
+  .wb-game-pip {
     transition: none;
   }
 }
