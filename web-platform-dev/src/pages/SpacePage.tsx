@@ -14,13 +14,11 @@
  * униз, і без цього смуга зникала б після першого ж екрана — рівно тоді, коли
  * треба перейти в інший розділ. Той самий каркас, що в нотаток і контактів.
  *
- * **Композер відкривається звідси тим самим `ComposerModal`**, що й у нотаток,
- * лише на вкладці «Оголошення»: одна форма на два входи — інакше дошка мала б
- * власну, яка розійшлася б із першою першою ж правкою. Сюди ж веде «+» із хабу
- * створення — адресою `/space?tab=ads&new=1`, тож і розділ, і форма
- * відкриваються з посилання, а не з другого коду. Відкриття форми тримає
- * `useCreateForm`: вона — **запис історії**, тож «назад» закриває форму й
- * лишає людину в дошці, а не виводить із Простору.
+ * **Композер один на два входи** (`AdCreateSheet`): тут його відкриває «+»
+ * ряду керування, а в хабі «Створити» — «+» у пункті «Оголошення», де він
+ * з'являється **поверхнею на самому хабі** й нікуди не веде. Відкриття форми
+ * на дошці тримає `useCreateForm`: вона — **запис історії** (`?new=1`), тож
+ * «назад» закриває форму й лишає людину в дошці, а не виводить із Простору.
  *
  * @module web-platform-dev/src/pages/SpacePage
  */
@@ -29,10 +27,9 @@ import { useState, type ReactElement } from "react";
 import { useSearchParams } from "react-router-dom";
 import { Icon } from "@wwwuabot/shared";
 import type { Ad, AdDraft } from "@wwwuabot/shared/ads";
-import { ComposerModal } from "@wwwuabot/ui/composer";
 import { Tabs, tabId, tabPanelId } from "@wwwuabot/ui/tabs";
 import { useCreateForm } from "@/app/useCreateForm";
-import { notesApi } from "@/shared/api/notes.api";
+import { AdCreateSheet } from "./create/AdCreateSheet";
 import { adDraftFrom } from "./ads-list";
 import { SpaceAdsTab } from "./SpaceAdsTab";
 import { SpaceUsersTab } from "./SpaceUsersTab";
@@ -123,15 +120,11 @@ export function SpacePage(): ReactElement {
       </div>
 
       {composerOpen && (
-        <ComposerModal
-          initialTab="ad"
-          initialAd={composer?.draft}
-          onSaveAd={ads.save}
-          /* Обгортка, а не сам `notesApi.save`: композер чекає на «зберегти й
-             нічого не повертати», а нотатки віддають збережений рядок. */
-          onSaveNote={async (draft) => {
-            await notesApi.save(draft);
-          }}
+        <AdCreateSheet
+          initial={composer?.draft}
+          // Дошка перечитується після запису: у ній видно і своє, і чуже, а
+          // показати це може лише свіжий список.
+          onSaved={() => ads.reload()}
           onClose={closeComposer}
         />
       )}

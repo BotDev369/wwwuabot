@@ -68,7 +68,6 @@ import {
   type MessagesView,
 } from "@wwwuabot/ui/messages";
 import { useDialog } from "@wwwuabot/ui/dialog";
-import { messagesApi } from "@/shared/api/messages.api";
 import { useCompose } from "./useCompose";
 import { useConversations } from "./useConversations";
 import { useProfile } from "./useProfile";
@@ -92,10 +91,11 @@ export function MessagesPage(): ReactElement {
   // Це стан **екрана**: сама форма нічого не змінює в даних, а чернетку їй дає
   // рядок списку, з якого її відкрили.
   //
-  // Новий лист може прийти й **адресою** (`?new=1` — «+» з хабу створення):
-  // відкриття форми тримає `useCreateForm`, тож «назад» її закриває, а людина
-  // лишається в «Повідомленнях». Правка чернетки — тут: вона завжди про
-  // конкретний рядок, і рядок уже є в списку.
+  // «+» екрана відкриває форму, і тримає її `useCreateForm`: «назад» її
+  // закриває, а людина лишається в «Повідомленнях». Хаб «Створити» бере ту
+  // саму форму своїм `MessageCreateSheet` — поверхнею на хабі, без переходу.
+  // Правка чернетки — тут: вона завжди про конкретний рядок, і рядок уже є в
+  // списку.
   const form = useCreateForm();
   const [composing, setComposing] = useState<{ draft: MessageDraft | null } | null>(null);
   const composeOpen = form.open || composing !== null;
@@ -162,20 +162,19 @@ export function MessagesPage(): ReactElement {
   async function sendNew(input: MessageDraftInput): Promise<boolean> {
     if (input.peerId === null) return false; // кнопка на такому листі гасне
 
-    try {
-      const message = await messagesApi.send(input.peerId, input.body, input.id);
-      if (!message) throw new Error("Сервер не підтвердив надсилання — спробуйте ще раз.");
-
-      setOpenPeerId(input.peerId);
-      void reload();
-      void compose.reload();
-      return true;
-    } catch (e: unknown) {
-      await dialog.alert(e instanceof Error ? e.message : "Не вдалося надіслати повідомлення", {
+    // Надсилає спільний хук (`useCompose.send`): він і чернетку прибирає, і
+    // перечитує список — надіслана не мусить лишатись у ньому рядком.
+    const message = await compose.send(input);
+    if (!message) {
+      await dialog.alert(compose.error ?? "Не вдалося надіслати повідомлення", {
         tone: "danger",
       });
       return false;
     }
+
+    setOpenPeerId(input.peerId);
+    void reload();
+    return true;
   }
 
   /**

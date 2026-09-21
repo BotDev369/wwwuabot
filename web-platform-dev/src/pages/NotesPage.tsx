@@ -15,11 +15,12 @@
  * Шлях власний (`/notes`), а не `slug` рядка `scenarios`: список складається з
  * даних людини (таблиця `notes`), а не з `page_data` (AGENTS.md §7).
  *
- * **Композер можна відкрити адресою** (`/notes?new=1`): так «+» у хабі
- * «Створити» веде саме сюди, а не заводить другу форму нотатки. Відкриття й
- * закриття тримає `useCreateForm`: форма — **запис історії**, тож «назад» її
- * закриває, а людина лишається в нотатках. Правка існуючої нотатки адреси не
- * має: вона завжди про конкретний рядок, і рядок уже є в списку.
+ * **Композер один на два входи** (`NoteCreateSheet`): тут його відкриває «+
+ * екрана, а в хабі «Створити» — «+» у пункті «Нотатки», де він з'являється
+ * **поверхнею на самому хабі** й нікуди не веде. Відкриття й закриття на
+ * екрані тримає `useCreateForm`: форма — **запис історії** (`?new=1`), тож
+ * «назад» її закриває, а людина лишається в нотатках. Правка існуючої нотатки
+ * адреси не має: вона завжди про конкретний рядок, і рядок уже є в списку.
  *
  * @module web-platform-dev/src/pages/NotesPage
  */
@@ -27,9 +28,10 @@
 import { useState, type ReactElement } from "react";
 import { Icon } from "@wwwuabot/shared";
 import type { NoteDraft, NoteRow } from "@wwwuabot/shared/notes";
-import { ComposerModal } from "@wwwuabot/ui/composer";
 import { useDialog } from "@wwwuabot/ui/dialog";
 import { useCreateForm } from "@/app/useCreateForm";
+import { NoteCreateSheet } from "./create/NoteCreateSheet";
+import { notesApi } from "@/shared/api/notes.api";
 import {
   DEFAULT_NOTES_VIEW,
   NotesList,
@@ -40,7 +42,6 @@ import {
   foundTags,
   type NotesView,
 } from "@wwwuabot/ui/notes";
-import { notesApi } from "@/shared/api/notes.api";
 import { useNotes } from "./useNotes";
 
 /** Перші слова нотатки — щоб у діалозі видалення було видно, ЩО видаляють. */
@@ -83,16 +84,6 @@ export function NotesPage(): ReactElement {
       if (!next.delete(id)) next.add(id);
       return next;
     });
-  }
-
-  /**
-   * Збереження нотатки — і нової, і відредагованої (це вирішує `draft.id`).
-   * Сервер віддає збережений рядок, тож список оновлюємо ним, а не перезапитом.
-   */
-  async function saveDraft(draft: NoteDraft): Promise<void> {
-    const saved = await notesApi.save(draft);
-    if (!saved) throw new Error("Сервер не підтвердив збереження — спробуйте ще раз.");
-    upsert(saved);
   }
 
   async function deleteNote(note: NoteRow): Promise<void> {
@@ -228,12 +219,12 @@ export function NotesPage(): ReactElement {
       )}
 
       {composerOpen && (
-        <ComposerModal
+        <NoteCreateSheet
           // Композер або закритий, або відкритий для однієї конкретної
           // нотатки — тож `initial` він читає рівно один раз, при появі.
           initial={editing ?? undefined}
+          onSaved={upsert}
           onClose={closeComposer}
-          onSaveNote={saveDraft}
         />
       )}
     </div>

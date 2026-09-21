@@ -14,7 +14,12 @@
  */
 
 import { useCallback, useEffect, useState } from "react";
-import type { MessageDraft, MessageDraftInput, MessagePeer } from "@wwwuabot/shared/messages";
+import type {
+  Message,
+  MessageDraft,
+  MessageDraftInput,
+  MessagePeer,
+} from "@wwwuabot/shared/messages";
 import { messagesApi } from "@/shared/api/messages.api";
 
 export interface ComposeState {
@@ -31,6 +36,14 @@ export interface ComposeState {
    * бо закрити її означало б сказати «збережено» про те, чого не зберегли.
    */
   saveDraft: (input: MessageDraftInput) => Promise<boolean>;
+  /**
+   * Надіслати лист; `null` — сервер відмовив (причина в `error`).
+   *
+   * Надсилання живе тут, а не в екрані, бо чернетку прибирає **сервер**
+   * (`messagesApi.send` везе її номер), тож після успіху список чернеток
+   * перечитується — інакше надіслана лишалася б висіти рядком, якого вже немає.
+   */
+  send: (input: MessageDraftInput) => Promise<Message | null>;
   /**
    * Перечитати — покликати після повернення з розмови: зв'язок через контакти
    * з'являється **не від наших дій** (хтось прийшов за посиланням), тож список
@@ -88,5 +101,24 @@ export function useCompose(): ComposeState {
     }
   }, []);
 
-  return { recipients, drafts, loading, error, saveDraft, reload: load };
+  const send = useCallback(
+    async (input: MessageDraftInput): Promise<Message | null> => {
+      if (input.peerId === null) return null;
+
+      try {
+        const message = await messagesApi.send(input.peerId, input.body, input.id);
+        if (!message) throw new Error("Сервер не підтвердив надсилання — спробуйте ще раз.");
+        setError(null);
+        // Чернетку прибрав сервер — показати це може лише перечитаний список.
+        await load();
+        return message;
+      } catch (e: unknown) {
+        setError(e instanceof Error ? e.message : "Не вдалося надіслати повідомлення");
+        return null;
+      }
+    },
+    [load],
+  );
+
+  return { recipients, drafts, loading, error, saveDraft, send, reload: load };
 }

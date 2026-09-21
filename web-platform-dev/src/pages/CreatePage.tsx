@@ -7,16 +7,20 @@
  * Тема) жили в хабі профілю — серед них губився сам акаунт. Тепер у «+» є
  * сторінка, і з неї видно **все, що людина робить**.
  *
- * **У кожного пункту два входи** — подивитись і створити (`HubList`). Другого
- * створення тут немає навмисно: «+» веде **в той самий** екран, де створення
- * вже живе, лише з наміром `?new=1` — інакше в хабі з'явилася б друга форма
- * нотатки, третя форма оголошення й четверта форма листа, і кожна розійшлася б
- * зі своєю першою ж правкою (AGENTS.md §7). А сам хаб після вибору **не
- * лишається** в історії (`replace`): він обирає, а не приймає назад.
+ * **У кожного пункту два входи, і вони різні.** «Подивитись» веде на екран
+ * розділу — це інша сторінка. «Створити» **не веде нікуди**: форма
+ * відкривається **поверх хабу** (`CreateSheetHost`), а закриття (✕, збереження
+ * чи «назад») лишає людину рівно там, де вона стояла. Автоматичного переходу
+ * немає навмисно: перехід на іншу сторінку — це «подивитись», окрема кнопка.
+ *
+ * Другої форми для того самого тут немає: поверхню дає спільний кирпичик
+ * (`@wwwuabot/ui/composer`, `@wwwuabot/ui/messages`), а хаб лише зводить її з
+ * ключем пункту — інакше в хабі з'явилася б друга форма нотатки, третя форма
+ * оголошення й четверта форма листа (AGENTS.md §7).
  *
  * **Порядок, адреси й чесність заглушок** — у даних (`create-hub.ts`), розмітку
  * пункту дає спільний кирпичик, а свавілля «як показати» — вибір людини
- * (`section-layout.ts`). Тут лишається рівно зведення: стан, вибір і перехід.
+ * (`section-layout.ts`). Тут лишається рівно зведення: стан, вибір і поверхня.
  *
  * @module web-platform-dev/src/pages/CreatePage
  */
@@ -26,9 +30,16 @@ import { useNavigate } from "react-router-dom";
 import { useDialog } from "@wwwuabot/ui/dialog";
 import { HubList } from "@wwwuabot/ui/hub";
 import type { MenuLayout } from "@wwwuabot/ui/menu";
-import { buildHubItems } from "./create-hub";
+import { buildHubItems, type CreateFormKey } from "./create-hub";
+import { CreateSheetHost, type CreateSheetKey } from "./create/CreateSheetHost";
+import { useContactAdd } from "./create/useContactAdd";
 import { readSectionsLayout, writeSectionsLayout } from "./section-layout";
 import { SectionLayoutSwitch } from "./SectionLayoutSwitch";
+
+/** Поверхня, яку хаб тримає відкритою; «контакт» не поверхня — він діалог. */
+function sheetOf(form: CreateFormKey): CreateSheetKey | null {
+  return form === "contact" ? null : form;
+}
 
 export function CreatePage(): ReactElement {
   const navigate = useNavigate();
@@ -36,6 +47,10 @@ export function CreatePage(): ReactElement {
   // Вибір вигляду лежить у сховищі пристрою: екран перемонтовується на
   // кожному переході, і стан компонента скидався б.
   const [layout, setLayout] = useState(readSectionsLayout);
+  // Яка форма відкрита поверх хабу. Це **стан екрана**, а не адреса: форма не
+  // має власної сторінки, бо людина з хабу нікуди не переходить.
+  const [sheet, setSheet] = useState<CreateSheetKey | null>(null);
+  const contact = useContactAdd();
 
   function changeLayout(next: MenuLayout): void {
     setLayout(next);
@@ -45,12 +60,16 @@ export function CreatePage(): ReactElement {
   const items = buildHubItems({
     // Перехід у межах SPA: повне перезавантаження в TWA — це втрачений стан і
     // біла вспишка.
-    //
-    // `replace` — не дрібниця й не оптимізація: хаб стоїть у списку власних
-    // екранів людини, і після вибору він **не лишається** за спиною. Інакше
-    // «назад» із форми повертало б сюди — людина закриває створення нотатки і
-    // опиняється на «Створити» замість нотаток, хоч щойно сама обрала нотатки.
     navigate: (href, options) => navigate(href, options),
+    onForm: (form) => {
+      // Контакт заводять діалогом — поверхні в нього немає, і це не виняток із
+      // правила: форма з полями контакту лишається на своєму екрані.
+      if (form === "contact") {
+        void contact.add();
+        return;
+      }
+      setSheet(sheetOf(form));
+    },
     // Дія, за якою ще нічого немає, не мовчить: у пункту вже є пояснення, що
     // там буде, і саме його показує діалог — без вигаданого тексту на місці (§7).
     onSoon: (message) => void dialog.alert(message, { title: "Скоро" }),
@@ -64,6 +83,8 @@ export function CreatePage(): ReactElement {
       </div>
 
       <HubList items={items} layout={layout} />
+
+      {sheet !== null && <CreateSheetHost form={sheet} onClose={() => setSheet(null)} />}
     </div>
   );
 }

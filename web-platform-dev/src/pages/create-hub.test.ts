@@ -3,28 +3,23 @@
  *
  * Тут чотири речі, яких не видно ні в компіляторі, ні на око: **абетка**
  * (пункти в коді лежать не за абеткою, тож переставити їх випадково дуже
- * легко), **намір створити** (`?new=1` легко загубити — і кнопка «+» тихо
- * відкривала б список замість форми), **наявність обох адрес** (пункт без
- * адреси не падає, він мовчки нічого не робить) і **чесність заглушки**
- * (дія, за якою нічого немає, мусить про це сказати).
+ * легко), **дві різні дії** («подивитись» веде на екран, «створити» відкриває
+ * поверхню **на хабі** — переплутати їх означає знову вести людину на іншу
+ * сторінку замість форми), **наявність обох входів** (пункт без адреси не
+ * падає, він мовчки нічого не робить) і **чесність заглушки** (дія, за якою
+ * нічого немає, мусить про це сказати).
  *
  * @module web-platform-dev/src/pages/create-hub.test
  */
 
 import { describe, expect, it, vi } from "vitest";
 import { toWebPath } from "@wwwuabot/shared/content";
-import {
-  CONTACTS_PATH,
-  CREATE_FORM_STATE,
-  MESSAGES_PATH,
-  NOTES_PATH,
-  withCreateIntent,
-} from "../app/routes";
+import { CONTACTS_PATH, MESSAGES_PATH, NOTES_PATH } from "../app/routes";
 import {
   CREATE_HUB_ITEMS,
   HUB_INTENTS,
   buildHubItems,
-  hubIntentPath,
+  hubIntentReady,
   hubIntentSoon,
   hubItemSoon,
   type CreateHubItem,
@@ -74,7 +69,7 @@ describe("склад хабу «Створити»", () => {
     // поясненням: інакше це безіменний прямокутник, який нікуди не веде й
     // нічого не обіцяє.
     for (const item of CREATE_HUB_ITEMS) {
-      const working = Boolean(item.view || item.create);
+      const working = Boolean(item.view || item.form);
       expect(working || Boolean(item.soon), item.key).toBe(true);
     }
   });
@@ -92,10 +87,10 @@ describe("склад хабу «Створити»", () => {
 });
 
 describe("входи пункту", () => {
-  it("готові пункти ведуть на свої екрани", () => {
-    expect(hubIntentPath(byKey("notes"), "view")).toBe(NOTES_PATH);
-    expect(hubIntentPath(byKey("contacts"), "view")).toBe(CONTACTS_PATH);
-    expect(hubIntentPath(byKey("messages"), "view")).toBe(MESSAGES_PATH);
+  it("«подивитись» веде на екран розділу", () => {
+    expect(byKey("notes").view).toBe(NOTES_PATH);
+    expect(byKey("contacts").view).toBe(CONTACTS_PATH);
+    expect(byKey("messages").view).toBe(MESSAGES_PATH);
     // Адреси — ті самі константи, що в роутера: два літерали розійшлися б, і
     // пункт вів би на 404.
     expect(NOTES_PATH).toBe("/notes");
@@ -104,50 +99,45 @@ describe("входи пункту", () => {
   });
 
   it("«Дати» ведуть у свою сторінку, бо адресу дає `slug`", () => {
-    expect(hubIntentPath(byKey("mydate"), "view")).toBe(toWebPath("mydate"));
-    expect(hubIntentPath(byKey("mydate"), "view")).toBe("/mydate");
+    expect(byKey("mydate").view).toBe(toWebPath("mydate"));
+    expect(byKey("mydate").view).toBe("/mydate");
   });
 
   it("«Оголошення» ведуть у **вкладку** дошки, а не в Простір взагалі", () => {
     // Без розділу в адресі відкривалася б стрічка людей, і вкладку довелося б
     // шукати самій людині.
-    expect(hubIntentPath(byKey("ads"), "view")).toBe(spaceTabPath("ads"));
-    expect(hubIntentPath(byKey("ads"), "view")).toBe("/space?tab=ads");
+    expect(byKey("ads").view).toBe(spaceTabPath("ads"));
+    expect(byKey("ads").view).toBe("/space?tab=ads");
   });
 
-  it("«створити» — та сама адреса плюс намір", () => {
-    for (const key of ["notes", "contacts", "messages", "ads"]) {
-      const item = byKey(key);
-      expect(hubIntentPath(item, "create"), key).toBe(
-        withCreateIntent(hubIntentPath(item, "view") ?? ""),
-      );
-    }
-    expect(hubIntentPath(byKey("notes"), "create")).toBe("/notes?new=1");
+  it("«створити» — ключ поверхні, а не адреса: жодного `?new=1`", () => {
+    expect(byKey("notes").form).toBe("note");
+    expect(byKey("contacts").form).toBe("contact");
+    expect(byKey("messages").form).toBe("message");
+    expect(byKey("ads").form).toBe("ad");
+    // Пункт, який уміє лише показувати, форми не має — і «+» каже про це.
+    expect(byKey("mydate").form).toBeUndefined();
+    expect(byKey("mydate").view).toBeTruthy();
   });
 
-  it("намір не ламає адресу, у якої вже є свій параметр", () => {
-    // `?` замість `&` зробив би `new` частиною `tab`, і замість створення
-    // відкривався б список.
-    expect(hubIntentPath(byKey("ads"), "create")).toBe("/space?tab=ads&new=1");
-  });
-
-  it("дії, якої ще немає, адреси не має — і це видно до дотику", () => {
+  it("дії, якої ще немає, немає й у даних — і це видно до дотику", () => {
     for (const item of CREATE_HUB_ITEMS) {
       for (const intent of HUB_INTENTS.map((entry) => entry.key)) {
-        const missing = hubIntentPath(item, intent) === null;
+        const missing = !hubIntentReady(item, intent as HubIntent);
         // Порожнього пункту немає: якщо хоч один вхід не працює, причина названа.
         if (missing) expect(hubIntentSoon(item, intent as HubIntent), item.key).toBeTruthy();
       }
     }
-    expect(hubIntentPath(byKey("mydate"), "create")).toBeNull();
-    expect(hubIntentPath(byKey("pages"), "view")).toBeNull();
+    expect(hubIntentReady(byKey("mydate"), "create")).toBe(false);
+    expect(hubIntentReady(byKey("pages"), "view")).toBe(false);
   });
 });
 
 describe("пункти для списку", () => {
   const navigate = vi.fn();
+  const onForm = vi.fn();
   const onSoon = vi.fn();
-  const items = buildHubItems({ navigate, onSoon });
+  const items = buildHubItems({ navigate, onForm, onSoon });
 
   it("у кожного пункту рівно дві дії — подивитись і створити", () => {
     for (const item of items) {
@@ -170,58 +160,49 @@ describe("пункти для списку", () => {
     expect(items.find((item) => item.key === "mydate")?.status).toBe("ready");
   });
 
-  it("робоча дія веде на адресу, а не мовчить", async () => {
+  it("«подивитись» веде на адресу й замінює хаб, а не лишає його за спиною", () => {
+    // `replace` тут — не оптимізація: без нього «назад» із розділу повертає на
+    // «Створити», тобто людина, яка обрала нотатки, опиняється перед вибором,
+    // з якого щойно пішла.
     navigate.mockClear();
     items.find((item) => item.key === "notes")?.actions[0].onSelect();
 
-    await vi.waitFor(() => expect(navigate).toHaveBeenCalledWith("/notes", { replace: true }));
+    expect(navigate).toHaveBeenCalledWith("/notes", { replace: true });
   });
 
-  it("хаб замінюється обраним екраном, а не лишається за спиною", async () => {
-    // `replace` тут — не оптимізація: без нього «назад» із форми повертає на
-    // «Створити», тобто людина закриває створення нотатки й опиняється перед
-    // списком, з якого щойно пішла (замість нотаток). Перший крок в обох входів
-    // той самий — хаб стає розділом.
-    for (const item of items.filter((entry) => entry.status !== "soon")) {
-      for (const action of item.actions.filter((entry) => !entry.soon)) {
-        navigate.mockClear();
-        action.onSelect();
+  it("«створити» **не переходить нікуди** — лише відкриває поверхню", () => {
+    // Це і є правило хабу: «+» не веде на іншу сторінку, її відкриває окрема
+    // кнопка («подивитись»). Перехід тут означав би автоматичну зміну екрана.
+    for (const key of ["notes", "contacts", "messages", "ads"]) {
+      navigate.mockClear();
+      onForm.mockClear();
 
-        await vi.waitFor(() =>
-          expect(navigate.mock.calls[0]?.[1], `${item.key}/${action.key}`).toEqual({
-            replace: true,
-          }),
-        );
-      }
+      items.find((item) => item.key === key)?.actions[1].onSelect();
+
+      expect(navigate, key).not.toHaveBeenCalled();
+      expect(onForm, key).toHaveBeenCalledTimes(1);
+      expect(onForm, key).toHaveBeenCalledWith(byKey(key).form);
     }
-  });
-
-  it("«створити» кладе під форму сам розділ — інакше закриття виводить із нього", async () => {
-    // Форму в Telegram закривають «назад», а «назад» — крок по історії: під
-    // записом форми мусить стояти розділ, щоб людина з нього не вийшла. Другий
-    // запис позначено, і саме позначка дозволяє закриттю зробити крок назад.
-    navigate.mockClear();
-    items.find((item) => item.key === "notes")?.actions[1].onSelect();
-
-    await vi.waitFor(() => expect(navigate).toHaveBeenCalledTimes(2));
-    expect(navigate.mock.calls[0]).toEqual(["/notes", { replace: true }]);
-    expect(navigate.mock.calls[1]).toEqual(["/notes?new=1", { state: CREATE_FORM_STATE }]);
-  });
-
-  it("«подивитись» другого запису не вигадує: відкривають сам розділ", async () => {
-    navigate.mockClear();
-    items.find((item) => item.key === "notes")?.actions[0].onSelect();
-
-    await vi.waitFor(() => expect(navigate).toHaveBeenCalled());
-    expect(navigate).toHaveBeenCalledTimes(1);
   });
 
   it("заглушка не мовчить, а називає причину", () => {
     onSoon.mockClear();
     navigate.mockClear();
+    onForm.mockClear();
     items.find((item) => item.key === "pages")?.actions[1].onSelect();
 
     expect(navigate).not.toHaveBeenCalled();
+    expect(onForm).not.toHaveBeenCalled();
     expect(onSoon).toHaveBeenCalledWith(byKey("pages").soon);
+  });
+
+  it("«Дати» показують, але не створюють", () => {
+    navigate.mockClear();
+    onForm.mockClear();
+    items.find((item) => item.key === "mydate")?.actions[1].onSelect();
+
+    expect(navigate).not.toHaveBeenCalled();
+    expect(onForm).not.toHaveBeenCalled();
+    expect(onSoon).toHaveBeenCalledWith(byKey("mydate").soon);
   });
 });
