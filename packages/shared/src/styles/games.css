@@ -1,0 +1,150 @@
+/*
+ * ═══════════════════════════════════════════════════════════════════════════
+ * GAMES — ігри Простору (поки що кожна на одного: суперник — бот)
+ * ═══════════════════════════════════════════════════════════════════════════
+ *
+ * Окремим файлом, як `theme-pages.css`: цілісна деталь зі своїми класами.
+ * Рендерять їх сторінки платформи — і правила тут, а не в її `index.css`, з
+ * тієї ж причини, що й у теми: гра може знадобитись і другій оболонці, а
+ * приватний CSS першої їй би її не дав (`AGENTS.md` §3).
+ *
+ * **Правила Простого.** Нічого, крім стану партії: дошка або вибір, рядок
+ * стану, рахунок і «ще раз». Жодних тіней, градієнтів чи окремих тем — це тло,
+ * на якому грають, а не екран, яким хваляться (правило 15: розділяє простір і
+ * колір поверхні, не лінія).
+ *
+ * **Клітинка мусить бути достатня для пальця.** Дошка — сітка, а квадрат
+ * клітинки тримає `aspect-ratio`: на телефоні дошка не має розтягуватись у
+ * прямокутник від того, яка ширина екрана.
+ */
+
+.wb-game {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-4);
+}
+
+/* ── Дошки ───────────────────────────────────────────────────────────────── */
+
+.wb-game-board {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--sp-2);
+}
+
+.wb-game-cell {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  aspect-ratio: 1;
+  min-height: 64px;
+  border: none;
+  border-radius: var(--radius-md);
+  background: var(--field-bg);
+  color: var(--text-primary);
+  cursor: pointer;
+}
+
+/* Відгук на дотик: на телефоні hover немає, тож «натиснуто» — це `:active` */
+.wb-game-cell:not(:disabled):active {
+  transform: scale(0.97);
+}
+
+.wb-game-cell:disabled {
+  cursor: default;
+}
+
+/* Свій знак — акцентом, чужий — звичайним текстом: так видно, де ти, не
+   читаючи рядка стану. */
+.wb-game-cell--mine {
+  color: var(--accent);
+}
+
+/* Переможна лінія: залита підсвітка — це стан, а не оформлення */
+.wb-game-cell--win {
+  background: var(--accent-soft);
+}
+
+/* ── Рядки стану й рахунку ───────────────────────────────────────────────── */
+
+.wb-game-status {
+  font-size: var(--text-md);
+  font-weight: var(--weight-medium);
+  text-align: center;
+}
+
+.wb-game-score {
+  font-size: var(--text-sm);
+  color: var(--text-muted);
+  text-align: center;
+}
+
+.wb-game-round {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: var(--sp-2);
+  font-size: var(--text-md);
+  text-align: center;
+}
+
+.wb-game-result {
+  font-size: var(--text-md);
+  font-weight: var(--weight-semibold);
+}
+
+/* ── Вибір («камінь, ножиці, папір») ─────────────────────────────────────── */
+
+/* Три рівні клітинки, як слоти футера: палець мусить дістати будь-яку, а око —
+   бачити їх рівними. Кнопка — наявний кирпичик (`.wb-btn`), тут лише місце. */
+.wb-game-choices {
+  display: flex;
+  gap: var(--sp-2);
+}
+
+.wb-game-choices .wb-btn {
+  flex: 1 1 0;
+  min-width: 0;
+}
+
+/* ── «Вгадай число» ─────────────────────────────────────────────────────── */
+
+.wb-game-guess {
+  display: flex;
+  gap: var(--sp-2);
+}
+
+.wb-game-guess .wb-input {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+/* Спробовані числа — чипсами: їх читають як історію, а не як список */
+.wb-game-attempts {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--sp-2);
+}
+
+.wb-game-attempt {
+  padding: 2px var(--sp-3);
+  border-radius: var(--radius-full);
+  background: var(--surface-hover);
+  font-size: var(--text-sm);
+}
+
+.wb-game-attempt--hit {
+  background: var(--accent-soft);
+  color: var(--accent);
+  font-weight: var(--weight-semibold);
+}
+
+/* ── Дії партії ──────────────────────────────────────────────────────────── */
+
+.wb-game-actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: var(--sp-2);
+}

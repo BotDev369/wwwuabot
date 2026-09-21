@@ -46,6 +46,13 @@ export const SPACE_TABS: readonly SpaceTabOption[] = [
     label: "Теми",
   },
   {
+    // Ігри — єдина вкладка, яку **не наповнюють**: вона не з даних, а з
+    // власних екранів. Тому її вміст ніколи не порожній — і саме тому вона
+    // стоїть після тих, які залежать від людей.
+    key: "games",
+    label: "Ігри",
+  },
+  {
     key: "pages",
     label: "Сторінки",
     soon: true,
@@ -53,7 +60,7 @@ export const SPACE_TABS: readonly SpaceTabOption[] = [
   },
 ];
 
-export type SpaceTab = "users" | "ads" | "themes" | "pages";
+export type SpaceTab = "users" | "ads" | "themes" | "games" | "pages";
 
 export const DEFAULT_SPACE_TAB: SpaceTab = "users";
 

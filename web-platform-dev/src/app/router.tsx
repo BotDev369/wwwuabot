@@ -17,9 +17,9 @@
  * (`slug`). Їхні адреси дає `app/routes.ts` — один власник на маршрут і пункт
  * навігації.
  *
- * Сторінка людини в Просторі (`/space/u/:id`) стоїть перед `/space` **порядком
- * рядків**: довший шлях мусить збігтися першим, інакше `/space` з'їв би його
- * хвіст.
+ * Сторінка людини в Просторі (`/space/u/:id`) і гра (`/space/g/:key`) стоять
+ * перед `/space` **порядком рядків**: довший шлях мусить збігтися першим,
+ * інакше `/space` з'їв би його хвіст.
  */
 
 import { createBrowserRouter } from "react-router-dom";
@@ -31,6 +31,7 @@ import {
   NOTES_ROUTE,
   PROFILE_ACCOUNT_PATH,
   PROFILE_ROUTE,
+  SPACE_GAME_ROUTE,
   SPACE_ROUTE,
   SPACE_USER_ROUTE,
   THEME_ROUTE,
@@ -42,6 +43,7 @@ import { NotesPage } from "@/pages/NotesPage";
 import { ProfileAccountPage } from "@/pages/ProfileAccountPage";
 import { ProfilePage } from "@/pages/ProfilePage";
 import { ScenarioPage } from "@/pages/ScenarioPage";
+import { SpaceGamePage } from "@/pages/games/SpaceGamePage";
 import { SpacePage } from "@/pages/SpacePage";
 import { SpaceUserPage } from "@/pages/SpaceUserPage";
 import { ThemeLayout } from "@/pages/themes/ThemeLayout";
@@ -82,6 +84,10 @@ export const router = createBrowserRouter([
       // Простір — відкрита стрічка: відкриті профілі (а далі оголошення).
       // Довший шлях іде першим — інакше `/space` перехопив би людину в Просторі.
       { path: `${SPACE_ROUTE}/${SPACE_USER_ROUTE}/:id`, element: <SpaceUserPage /> },
+      // Гра — своя адреса під тим самим «порядком рядків»: `/space/g/:key`
+      // довший за `/space`, і без цього рядка він потрапив би в catch-all і
+      // відкрив би сторінку контенту під назвою «g».
+      { path: `${SPACE_ROUTE}/${SPACE_GAME_ROUTE}/:key`, element: <SpaceGamePage /> },
       { path: SPACE_ROUTE, element: <SpacePage /> },
       // Нотатки — власні дані людини (таблиця `notes`), не рядок `scenarios`
       { path: NOTES_ROUTE, element: <NotesPage /> },

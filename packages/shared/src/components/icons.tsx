@@ -59,6 +59,7 @@ export type IconName =
   | "sun"
   | "moon"
   | "x"
+  | "circle"
   | "plus"
   | "minus"
   | "heart"
@@ -331,6 +332,10 @@ export const icons: Record<IconName, ReactElement> = {
   check: icon([pl("20 6 9 17 4 12")]),
 
   close: icon([l(18, 6, 6, 18), l(6, 6, 18, 18)]),
+
+  // Кільце: пара до «x» у хрестиках-нуликах, і взагалі будь-яке «порожньо/
+  // вибрано» одним знаком.
+  circle: icon([c(12, 12, 9)]),
 
   "arrow-up": icon([p("M12 19V5"), p("M5 12l7-7 7 7")]),
 

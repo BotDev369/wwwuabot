@@ -74,6 +74,20 @@ export const SPACE_USER_PATH = `${SPACE_PATH}/${SPACE_USER_ROUTE}`;
 /** Шлях профілю людини за її Telegram-id: складає **одна** функція. */
 export const spaceUserPath = (id: number): string => `${SPACE_USER_PATH}/${id}`;
 
+/**
+ * Гра в Просторі — окрема адреса під своїм сегментом.
+ *
+ * `g`, а не `games`: сегмент мусить бути коротким і не збігатися з назвою
+ * вкладки, бо вкладка — це `?tab=games`, і два різні місця з тим самим словом
+ * змушували б вгадувати, котре з них адреса списку, а котре — партії.
+ *
+ * Адреса тут, а не в базі: гра — не сторінка контенту (`slug`), а власний
+ * екран зі своїм станом (AGENTS.md §7). Складає її `gamePath()` у списку
+ * ігор — там же лежать і ключі.
+ */
+export const SPACE_GAME_ROUTE = "g";
+export const SPACE_GAME_PATH = `${SPACE_PATH}/${SPACE_GAME_ROUTE}`;
+
 /** Нотатки — власні дані людини, не рядок `scenarios`. */
 export const NOTES_ROUTE = "notes";
 export const NOTES_PATH = `/${NOTES_ROUTE}`;
