@@ -18,8 +18,9 @@
  * лише на вкладці «Оголошення»: одна форма на два входи — інакше дошка мала б
  * власну, яка розійшлася б із першою першою ж правкою. Сюди ж веде «+» із хабу
  * створення — адресою `/space?tab=ads&new=1`, тож і розділ, і форма
- * відкриваються з посилання, а не з другого коду. Намір читає
- * `useCreateIntent`, він же лишає адресу розділом — `/space?tab=ads`.
+ * відкриваються з посилання, а не з другого коду. Відкриття форми тримає
+ * `useCreateForm`: вона — **запис історії**, тож «назад» закриває форму й
+ * лишає людину в дошці, а не виводить із Простору.
  *
  * @module web-platform-dev/src/pages/SpacePage
  */
@@ -27,10 +28,10 @@
 import { useState, type ReactElement } from "react";
 import { useSearchParams } from "react-router-dom";
 import { Icon } from "@wwwuabot/shared";
-import type { AdDraft } from "@wwwuabot/shared/ads";
+import type { Ad, AdDraft } from "@wwwuabot/shared/ads";
 import { ComposerModal } from "@wwwuabot/ui/composer";
 import { Tabs, tabId, tabPanelId } from "@wwwuabot/ui/tabs";
-import { useCreateIntent } from "@/app/useCreateIntent";
+import { useCreateForm } from "@/app/useCreateForm";
 import { notesApi } from "@/shared/api/notes.api";
 import { adDraftFrom } from "./ads-list";
 import { SpaceAdsTab } from "./SpaceAdsTab";
@@ -50,15 +51,30 @@ export function SpacePage(): ReactElement {
   // Адреса — це вхід, а не стан: усе читається один раз, при появі екрана.
   const [searchParams] = useSearchParams();
   const [tab, setTab] = useState<SpaceTab>(() => readSpaceTab(searchParams.get(SPACE_TAB_PARAM)));
-  // Намір читає хук і він же лишає в адресі сам розділ (`?tab=ads`): форма —
-  // стан екрана, а не другий бік адреси.
-  const wantsCompose = useCreateIntent();
-  const [composer, setComposer] = useState<ComposerRequest | null>(() =>
-    wantsCompose ? {} : null,
-  );
+  // Створення — в адресі (`useCreateForm`), правка свого оголошення — тут: вона
+  // завжди про конкретний рядок, і рядок уже є в дошці.
+  const form = useCreateForm();
+  const [composer, setComposer] = useState<ComposerRequest | null>(null);
+  const composerOpen = form.open || composer !== null;
   const space = useSpace();
   const ads = useAds();
   const current = spaceTab(tab);
+
+  /** Відкрити композер: без оголошення — нове (за адресою), з ним — правка. */
+  function compose(draft?: Ad): void {
+    if (draft === undefined) {
+      setComposer(null);
+      form.openForm();
+      return;
+    }
+    setComposer({ draft: adDraftFrom(draft) });
+  }
+
+  /** Закрити композер: правку скидаємо, форму вертаємо в адресі. */
+  function closeComposer(): void {
+    setComposer(null);
+    form.closeForm();
+  }
 
   return (
     <div className="wb-page">
@@ -88,9 +104,7 @@ export function SpacePage(): ReactElement {
             loading={ads.loading}
             error={ads.error}
             onRetry={() => ads.reload(true)}
-            onCompose={(draft) =>
-              setComposer(draft === undefined ? {} : { draft: adDraftFrom(draft) })
-            }
+            onCompose={compose}
             onToggle={(ad) => ads.save(adDraftFrom(ad, { isActive: !ad.isActive }))}
             onRemove={ads.remove}
           />
@@ -108,17 +122,17 @@ export function SpacePage(): ReactElement {
         )}
       </div>
 
-      {composer && (
+      {composerOpen && (
         <ComposerModal
           initialTab="ad"
-          initialAd={composer.draft}
+          initialAd={composer?.draft}
           onSaveAd={ads.save}
           /* Обгортка, а не сам `notesApi.save`: композер чекає на «зберегти й
              нічого не повертати», а нотатки віддають збережений рядок. */
           onSaveNote={async (draft) => {
             await notesApi.save(draft);
           }}
-          onClose={() => setComposer(null)}
+          onClose={closeComposer}
         />
       )}
     </div>

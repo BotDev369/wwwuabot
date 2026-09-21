@@ -87,35 +87,23 @@ export const CREATE_ROUTE = "create";
 export const CREATE_PATH = `/${CREATE_ROUTE}`;
 
 /* ── Намір створити ───────────────────────────────────────────────────────
-   Пара «параметр = значення» і три чисті функції: читає екран, знімає екран,
-   складає хаб. Сам рядок живе тут, бо це частина адреси, а не стан екрана. */
+   Пара «параметр = значення» і чисті функції навколо неї: читає екран, складає
+   хаб, знімає форма. Сам рядок живе тут, бо це частина адреси, а не стан. */
 
 /** Параметр адреси: `/notes?new=1` — «відкрий створення одразу». */
 export const CREATE_INTENT_PARAM = "new";
 export const CREATE_INTENT_VALUE = "1";
 
-/** Чи просять відкрити створення — читають **один раз**, при появі екрана. */
+/**
+ * Чи просять відкрити створення. Правда — одна: **адреса**.
+ *
+ * Саме тому форма відкривається за адресою, а не за локальним прапорцем: у
+ * Telegram Mini App «закрити форму» — це найчастіше «назад» (жест або кнопка
+ * системи), а це **зміна адреси**. З локальним станом вона не закривала б форму,
+ * а виходила б зі *сторінки*.
+ */
 export function readCreateIntent(params: URLSearchParams): boolean {
   return params.get(CREATE_INTENT_PARAM) === CREATE_INTENT_VALUE;
-}
-
-/**
- * Та сама адреса **без** наміру створити — те, що робить екран, який його
- * прочитав (`useCreateIntent`).
- *
- * Намір — це **вхід**, а не стан: адреса каже «відкрий форму», і після
- * прочитання вона цього більше не каже. Без цього кроку адреса продовжує
- * обіцяти форму вже після того, як її закрили, — і «назад» у той самий запис
- * історії відкриває її знову, а перезавантаження теж.
- *
- * Прибираємо рівно **один** параметр: в адреси можуть бути свої (`/space?tab=ads`),
- * і вони мусять лишитись на місці, інакше замість дошки відкриється стрічка
- * людей.
- */
-export function withoutCreateIntent(params: URLSearchParams): URLSearchParams {
-  const next = new URLSearchParams(params);
-  next.delete(CREATE_INTENT_PARAM);
-  return next;
 }
 
 /**
@@ -130,4 +118,35 @@ export function withCreateIntent(path: string): string {
   const params = new URLSearchParams(query);
   params.set(CREATE_INTENT_PARAM, CREATE_INTENT_VALUE);
   return `${base}?${params.toString()}`;
+}
+
+/**
+ * Та сама адреса **без** наміру — чим лишається екран, коли форму закрито
+ * (`/notes?new=1` → `/notes`, `/space?tab=ads&new=1` → `/space?tab=ads`).
+ *
+ * Прибирається рівно **один** параметр: в адреси можуть бути свої (`tab=ads`), і
+ * вони мусять лишитись на місці — інакше замість дошки відкриється стрічка людей.
+ */
+export function withoutCreateIntent(path: string): string {
+  const [base, query = ""] = path.split("?");
+  const params = new URLSearchParams(query);
+  params.delete(CREATE_INTENT_PARAM);
+  const rest = params.toString();
+  return rest ? `${base}?${rest}` : base;
+}
+
+/**
+ * Позначка запису, який **відкрив форму**.
+ *
+ * Нею хаб і екран кажуть одне: під цим записом стоїть сам розділ. Тому
+ * закриття форми — **крок назад** (людина лишається в розділі), а не заміна
+ * адреси навпростець. Без позначки «назад» повертало б туди, звідки прийшли, а
+ * при відкритті за посиланням — узагалі виводило б із продукту.
+ */
+export const CREATE_FORM_STATE = { createForm: true } as const;
+
+/** Чи це запис форми — тобто чи є під ним розділ, у який вертає закриття. */
+export function isCreateFormEntry(state: unknown): boolean {
+  if (typeof state !== "object" || state === null) return false;
+  return (state as { createForm?: unknown }).createForm === true;
 }

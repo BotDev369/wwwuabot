@@ -49,7 +49,7 @@
 import { useState, type ReactElement } from "react";
 import { useSearchParams } from "react-router-dom";
 import { Icon } from "@wwwuabot/shared";
-import { useCreateIntent } from "@/app/useCreateIntent";
+import { useCreateForm } from "@/app/useCreateForm";
 import {
   MESSAGES_PEER_PARAM,
   readMessagesPeer,
@@ -92,13 +92,13 @@ export function MessagesPage(): ReactElement {
   // Це стан **екрана**: сама форма нічого не змінює в даних, а чернетку їй дає
   // рядок списку, з якого її відкрили.
   //
-  // Новий лист може прийти й **адресою** (`?new=1` — «+» з хабу створення),
-  // і це теж початковий стан: намір читає `useCreateIntent` раз, при появі
-  // екрана, і він же прибирає його з адреси.
-  const wantsCreate = useCreateIntent();
-  const [composing, setComposing] = useState<{ draft: MessageDraft | null } | null>(() =>
-    wantsCreate ? { draft: null } : null,
-  );
+  // Новий лист може прийти й **адресою** (`?new=1` — «+» з хабу створення):
+  // відкриття форми тримає `useCreateForm`, тож «назад» її закриває, а людина
+  // лишається в «Повідомленнях». Правка чернетки — тут: вона завжди про
+  // конкретний рядок, і рядок уже є в списку.
+  const form = useCreateForm();
+  const [composing, setComposing] = useState<{ draft: MessageDraft | null } | null>(null);
+  const composeOpen = form.open || composing !== null;
   const thread = useThread(openPeerId);
   const meId = profile?.id ?? 0;
 
@@ -129,7 +129,14 @@ export function MessagesPage(): ReactElement {
       await dialog.alert(compose.error, { tone: "danger" });
       return;
     }
-    setComposing({ draft: null });
+    setComposing(null);
+    form.openForm();
+  }
+
+  /** Закрити форму: правку чернетки скидаємо, форму вертаємо в адресі. */
+  function closeCompose(): void {
+    setComposing(null);
+    form.closeForm();
   }
 
   /** Дотик до рядка розмови — як був: розмова відкривається поверхнею. */
@@ -322,14 +329,14 @@ export function MessagesPage(): ReactElement {
       {/* Форма з'являється лише тоді, коли адресати справді приїхали: під час
           завантаження поле «Кому» показало б «без отримувача» — а це неправда,
           у якої немає виправдання (список дрібний і приходить одразу). */}
-      {composing && !compose.loading && (
+      {composeOpen && !compose.loading && (
         <NewMessageSheet
           recipients={compose.recipients}
-          draft={composing.draft}
+          draft={composing?.draft ?? null}
           onSaveDraft={saveDraft}
           onSend={sendNew}
           onDeleteDraft={deleteDraft}
-          onClose={() => setComposing(null)}
+          onClose={closeCompose}
         />
       )}
 

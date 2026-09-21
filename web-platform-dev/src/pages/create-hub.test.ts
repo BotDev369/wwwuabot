@@ -13,7 +13,13 @@
 
 import { describe, expect, it, vi } from "vitest";
 import { toWebPath } from "@wwwuabot/shared/content";
-import { CONTACTS_PATH, MESSAGES_PATH, NOTES_PATH, withCreateIntent } from "../app/routes";
+import {
+  CONTACTS_PATH,
+  CREATE_FORM_STATE,
+  MESSAGES_PATH,
+  NOTES_PATH,
+  withCreateIntent,
+} from "../app/routes";
 import {
   CREATE_HUB_ITEMS,
   HUB_INTENTS,
@@ -164,28 +170,50 @@ describe("пункти для списку", () => {
     expect(items.find((item) => item.key === "mydate")?.status).toBe("ready");
   });
 
-  it("робоча дія веде на адресу, а не мовчить", () => {
+  it("робоча дія веде на адресу, а не мовчить", async () => {
     navigate.mockClear();
     items.find((item) => item.key === "notes")?.actions[0].onSelect();
-    expect(navigate).toHaveBeenCalledWith("/notes", { replace: true });
-    items.find((item) => item.key === "notes")?.actions[1].onSelect();
-    expect(navigate).toHaveBeenCalledWith("/notes?new=1", { replace: true });
+
+    await vi.waitFor(() => expect(navigate).toHaveBeenCalledWith("/notes", { replace: true }));
   });
 
-  it("хаб замінюється обраним екраном, а не лишається за спиною", () => {
+  it("хаб замінюється обраним екраном, а не лишається за спиною", async () => {
     // `replace` тут — не оптимізація: без нього «назад» із форми повертає на
     // «Створити», тобто людина закриває створення нотатки й опиняється перед
-    // списком, з якого щойно пішла (замість нотаток). Обидва входи мусять
-    // поводитись однаково — і «подивитись», і «створити».
+    // списком, з якого щойно пішла (замість нотаток). Перший крок в обох входів
+    // той самий — хаб стає розділом.
     for (const item of items.filter((entry) => entry.status !== "soon")) {
       for (const action of item.actions.filter((entry) => !entry.soon)) {
         navigate.mockClear();
         action.onSelect();
-        expect(navigate, `${item.key}/${action.key}`).toHaveBeenCalledWith(expect.any(String), {
-          replace: true,
-        });
+
+        await vi.waitFor(() =>
+          expect(navigate.mock.calls[0]?.[1], `${item.key}/${action.key}`).toEqual({
+            replace: true,
+          }),
+        );
       }
     }
+  });
+
+  it("«створити» кладе під форму сам розділ — інакше закриття виводить із нього", async () => {
+    // Форму в Telegram закривають «назад», а «назад» — крок по історії: під
+    // записом форми мусить стояти розділ, щоб людина з нього не вийшла. Другий
+    // запис позначено, і саме позначка дозволяє закриттю зробити крок назад.
+    navigate.mockClear();
+    items.find((item) => item.key === "notes")?.actions[1].onSelect();
+
+    await vi.waitFor(() => expect(navigate).toHaveBeenCalledTimes(2));
+    expect(navigate.mock.calls[0]).toEqual(["/notes", { replace: true }]);
+    expect(navigate.mock.calls[1]).toEqual(["/notes?new=1", { state: CREATE_FORM_STATE }]);
+  });
+
+  it("«подивитись» другого запису не вигадує: відкривають сам розділ", async () => {
+    navigate.mockClear();
+    items.find((item) => item.key === "notes")?.actions[0].onSelect();
+
+    await vi.waitFor(() => expect(navigate).toHaveBeenCalled());
+    expect(navigate).toHaveBeenCalledTimes(1);
   });
 
   it("заглушка не мовчить, а називає причину", () => {

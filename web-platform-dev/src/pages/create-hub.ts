@@ -12,9 +12,9 @@
  * причина, з якої контакт заводять «Контакти», а не третій список.
  *
  * **Хаб не лишається за спиною.** Обраний екран **замінює** його в історії
- * (`replace`): хаб — це вибір, а не місце, у яке вертаються. Інакше «назад» із
- * форми, яку людина сама відкрила, вело б на «Створити» замість того екрана,
- * куди вона щойно пішла.
+ * (`replace`): хаб — це вибір, а не місце, у яке вертаються. А вхід у створення
+ * кладе ще й **сам розділ** під форму (`enterSection`): форму в Telegram
+ * закривають «назад», і цей крок мусить вертати в розділ, а не виводити з нього.
  *
  * **Порядок — за абеткою (А→Я).** Сталий порядок не залежить від того, хто
  * додав пункт останнім, тож місце пункту можна запам'ятати. Стежить
@@ -32,7 +32,14 @@ import type { NavigateOptions } from "react-router-dom";
 import type { IconName } from "@wwwuabot/shared";
 import { toWebPath } from "@wwwuabot/shared/content";
 import type { HubItem } from "@wwwuabot/ui/hub";
-import { CONTACTS_PATH, MESSAGES_PATH, NOTES_PATH, withCreateIntent } from "../app/routes";
+import {
+  CONTACTS_PATH,
+  CREATE_FORM_STATE,
+  MESSAGES_PATH,
+  NOTES_PATH,
+  withCreateIntent,
+  withoutCreateIntent,
+} from "../app/routes";
 import { spaceTabPath } from "./space-tabs";
 
 /** Сторінка дат — рядок контенту: адресу дає `slug`, а не літерал (AGENTS §7). */
@@ -148,16 +155,37 @@ export function hubItemSoon(item: CreateHubItem): boolean {
 
 export interface BuildHubItemsOptions {
   /**
-   * Перехід у межах SPA (`useNavigate()`).
-   *
-   * Опції переходу їдуть разом з адресою, бо хаб і сам вирішує, як увійти в
-   * екран: він **обирає**, а не лишається — і його запис в історії замінюється
-   * обраним екраном. Інакше «назад» із форми повертало б на «Створити» —
-   * людина закрила форму, а стоїть перед списком, з якого щойно пішла.
+   * Перехід у межах SPA (`useNavigate()`). Повертає `Promise`, бо вхід у форму —
+   * це **два** кроки, і другий мусить стати після першого (див. `enterSection`).
    */
-  navigate: (href: string, options?: NavigateOptions) => void;
+  navigate: (href: string, options?: NavigateOptions) => void | Promise<void>;
   /** Дотик до дії, якої ще немає: показати, що саме там буде. */
   onSoon: (message: string) => void;
+}
+
+/**
+ * Увійти в екран — і при потребі **підкласти під форму сам розділ**.
+ *
+ * Хаб обирає, а не лишається: його запис замінюється обраним екраном
+ * (`replace`), інакше «назад» із форми вертало б на «Створити».
+ *
+ * Але цього мало, коли вхід веде у **створення**: у Telegram Mini App форму
+ * закривають «назад», а «назад» — це крок по історії. Тому «створити» кладе
+ * **два** записи: спершу сам розділ, потім форму на ньому. Закриття форми
+ * вертає в розділ, а не виводить із нього — саме цього від хабу й чекають.
+ */
+async function enterSection(
+  navigate: BuildHubItemsOptions["navigate"],
+  href: string,
+): Promise<void> {
+  const section = withoutCreateIntent(href);
+  if (section === href) {
+    await navigate(href, { replace: true });
+    return;
+  }
+
+  await navigate(section, { replace: true });
+  await navigate(href, { state: CREATE_FORM_STATE });
 }
 
 export function buildHubItems({ navigate, onSoon }: BuildHubItemsOptions): HubItem[] {
@@ -175,7 +203,7 @@ export function buildHubItems({ navigate, onSoon }: BuildHubItemsOptions): HubIt
         label: `${intent.verb}: ${item.label}`,
         soon: href === null,
         onSelect: () => {
-          if (href) navigate(href, { replace: true });
+          if (href) void enterSection(navigate, href);
           else onSoon(hubIntentSoon(item, intent.key));
         },
       };

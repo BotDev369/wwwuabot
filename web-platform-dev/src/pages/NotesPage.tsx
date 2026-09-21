@@ -16,9 +16,10 @@
  * даних людини (таблиця `notes`), а не з `page_data` (AGENTS.md §7).
  *
  * **Композер можна відкрити адресою** (`/notes?new=1`): так «+» у хабі
- * «Створити» веде саме сюди, а не заводить другу форму нотатки. Намір читає
- * `useCreateIntent` — **один раз**, і він же прибирає його з адреси, щоб
- * закрита форма не лишалася адресою, яка її відкриває.
+ * «Створити» веде саме сюди, а не заводить другу форму нотатки. Відкриття й
+ * закриття тримає `useCreateForm`: форма — **запис історії**, тож «назад» її
+ * закриває, а людина лишається в нотатках. Правка існуючої нотатки адреси не
+ * має: вона завжди про конкретний рядок, і рядок уже є в списку.
  *
  * @module web-platform-dev/src/pages/NotesPage
  */
@@ -28,7 +29,7 @@ import { Icon } from "@wwwuabot/shared";
 import type { NoteDraft, NoteRow } from "@wwwuabot/shared/notes";
 import { ComposerModal } from "@wwwuabot/ui/composer";
 import { useDialog } from "@wwwuabot/ui/dialog";
-import { useCreateIntent } from "@/app/useCreateIntent";
+import { useCreateForm } from "@/app/useCreateForm";
 import {
   DEFAULT_NOTES_VIEW,
   NotesList,
@@ -42,12 +43,6 @@ import {
 import { notesApi } from "@/shared/api/notes.api";
 import { useNotes } from "./useNotes";
 
-/** Чернетка, з якою відкривають композер: без `initial` — нова нотатка. */
-interface EditorState {
-  open: boolean;
-  initial?: NoteDraft;
-}
-
 /** Перші слова нотатки — щоб у діалозі видалення було видно, ЩО видаляють. */
 function preview(note: NoteRow): string {
   const text = note.text.trim().replace(/\s+/g, " ");
@@ -59,11 +54,11 @@ export function NotesPage(): ReactElement {
   const { notes, loading, error, upsert, remove } = useNotes();
   const dialog = useDialog();
   const [view, setView] = useState<NotesView>(DEFAULT_NOTES_VIEW);
-  // Намір із адреси береться тільки як **початковий** стан: композер — це
-  // чернетка, і повторне підставляння затерло б написане. Хук читає намір
-  // один раз і прибирає його з адреси тим самим кроком.
-  const wantsCreate = useCreateIntent();
-  const [editor, setEditor] = useState<EditorState>(() => ({ open: wantsCreate }));
+  // Відкриття композера — в адресі (`useCreateForm`), а правка — тут: правиться
+  // конкретна нотатка, і вона вже у списку, тож адреси їй не треба.
+  const form = useCreateForm();
+  const [editing, setEditing] = useState<NoteDraft | null>(null);
+  const composerOpen = form.open || editing !== null;
   // Розгорнуті картки — стан екрана, а не картки: «розгорнути всі» приходить
   // зі смуги керування, і стан мусить бути один (див. `NotesList`).
   const [openIds, setOpenIds] = useState<ReadonlySet<number>>(() => new Set());
@@ -121,7 +116,13 @@ export function NotesPage(): ReactElement {
   }
 
   function edit(note: NoteRow): void {
-    setEditor({ open: true, initial: { id: note.id, text: note.text, tags: [...note.tags] } });
+    setEditing({ id: note.id, text: note.text, tags: [...note.tags] });
+  }
+
+  /** Закрити композер: правку скидаємо, форму вертаємо в адресі. */
+  function closeComposer(): void {
+    setEditing(null);
+    form.closeForm();
   }
 
   return (
@@ -143,7 +144,10 @@ export function NotesPage(): ReactElement {
             <button
               type="button"
               className="wb-btn wb-btn-primary wb-page-add"
-              onClick={() => setEditor({ open: true })}
+              onClick={() => {
+                setEditing(null);
+                form.openForm();
+              }}
               aria-label="Створити нотатку"
             >
               <Icon name="plus" size={20} />
@@ -223,12 +227,12 @@ export function NotesPage(): ReactElement {
         </>
       )}
 
-      {editor.open && (
+      {composerOpen && (
         <ComposerModal
           // Композер або закритий, або відкритий для однієї конкретної
           // нотатки — тож `initial` він читає рівно один раз, при появі.
-          initial={editor.initial}
-          onClose={() => setEditor({ open: false })}
+          initial={editing ?? undefined}
+          onClose={closeComposer}
           onSaveNote={saveDraft}
         />
       )}

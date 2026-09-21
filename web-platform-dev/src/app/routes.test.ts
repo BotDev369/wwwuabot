@@ -1,12 +1,15 @@
 /**
- * Намір створити — три чисті функції й **одне правило про те, хто його читає**.
+ * Намір створити — чисті функції навколо нього й **одне правило про те, як
+ * закривається форма**.
  *
  * Ламається тут усе мовчки. `withCreateIntent` з `?` замість `&` робить другий
  * параметр частиною першого — і замість форми відкривається список;
- * `withoutCreateIntent`, який чистить усі параметри, прибирає разом із наміром
- * і розділ дошки — і замість оголошень відкривається стрічка людей. А екран,
- * який читає намір **сам** (а не хуком), лишає його в адресі назавжди: закрита
- * форма продовжує бути адресою, яка її відкриває, і «назад» повертає туди ж.
+ * `withoutCreateIntent`, який чистить усі параметри, прибирає разом із наміром і
+ * розділ дошки — і замість оголошень відкривається стрічка людей. Позначка
+ * `CREATE_FORM_STATE` — це єдине, чим закриття форми знає, що під нею стоїть
+ * розділ: без неї «назад» виводило б людину з продукту. А екран, який відкриває
+ * форму не хуком, тримає її у локальному стані — і тоді «назад» не закриває
+ * форму, а виходить зі **сторінки** (саме це й було дефектом).
  *
  * Останнє не видно ні в компіляторі, ні на око, тож сторож читає вихідні файли
  * екранів — так само, як `chrome.test.ts` читає CSS.
@@ -20,7 +23,14 @@ import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { describe, expect, it } from "vitest";
-import { CREATE_PATH, readCreateIntent, withCreateIntent, withoutCreateIntent } from "./routes";
+import {
+  CREATE_FORM_STATE,
+  CREATE_PATH,
+  isCreateFormEntry,
+  readCreateIntent,
+  withCreateIntent,
+  withoutCreateIntent,
+} from "./routes";
 
 const REPO_ROOT = fileURLToPath(new URL("../../../", import.meta.url));
 
@@ -49,21 +59,28 @@ describe("намір створити в адресі", () => {
   });
 
   it("знімається рівно один, а не разом із рештою", () => {
-    expect(withoutCreateIntent(new URLSearchParams("new=1")).toString()).toBe("");
-    expect(withoutCreateIntent(new URLSearchParams("tab=ads&new=1")).toString()).toBe("tab=ads");
+    expect(withoutCreateIntent("/notes?new=1")).toBe("/notes");
+    // Розділ дошки лишається на місці: інакше закрита форма викидала б із
+    // вкладки «Оголошення» у стрічку людей.
+    expect(withoutCreateIntent("/space?tab=ads&new=1")).toBe("/space?tab=ads");
   });
 
   it("доданий і знятий намір дають ту саму адресу", () => {
-    // Це і є обіцянка хука: форма лишається відкритою, а адреса вертається до
-    // того, чим була, — інакше вона продовжує обіцяти форму, яку закрили.
     for (const path of ["/notes", "/contacts", "/messages", "/space?tab=ads"]) {
-      const [base, query = ""] = path.split("?");
-      const added = withCreateIntent(path);
-      const back = withoutCreateIntent(new URLSearchParams(added.split("?")[1])).toString();
-
-      expect(back, path).toBe(query);
-      expect(back ? `${base}?${back}` : base, path).toBe(path);
+      expect(withoutCreateIntent(withCreateIntent(path)), path).toBe(path);
     }
+  });
+
+  it("позначку має лише запис форми — і лише він дозволяє крок назад", () => {
+    // Позначку кладуть двоє: хаб (вхід у створення) і `useCreateForm.openForm`.
+    expect(isCreateFormEntry(CREATE_FORM_STATE)).toBe(true);
+    // Чужий `state` (або його відсутність) — це не запис форми: під нею розділу
+    // немає, і «назад» звідти виводить із продукту.
+    expect(isCreateFormEntry(undefined)).toBe(false);
+    expect(isCreateFormEntry(null)).toBe(false);
+    expect(isCreateFormEntry({})).toBe(false);
+    expect(isCreateFormEntry({ createForm: false })).toBe(false);
+    expect(isCreateFormEntry("createForm")).toBe(false);
   });
 
   it("хаб має власну адресу — слот футера веде саме в нього", () => {
@@ -71,14 +88,14 @@ describe("намір створити в адресі", () => {
   });
 });
 
-describe("намір читає хук, а не сам екран", () => {
+describe("форму відкриває й закриває хук, а не прапорець у стані екрана", () => {
   for (const file of FORM_SCREENS) {
-    it(`${file} бере намір хуком`, () => {
+    it(`${file} тримає форму в адресі`, () => {
       const source = readFileSync(join(REPO_ROOT, file), "utf8");
 
-      expect(source, file).toContain("useCreateIntent");
-      // Читання напряму лишає намір в адресі: закрита форма продовжує бути
-      // адресою, яка її відкриває.
+      expect(source, file).toContain("useCreateForm");
+      // Локальний `open` не закривається «назад»: адреса змінюється, а стан — ні,
+      // тож людина виходить зі сторінки, а форма лишається висіти над нею.
       expect(source, file).not.toContain("readCreateIntent");
     });
   }
