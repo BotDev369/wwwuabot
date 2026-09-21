@@ -234,6 +234,31 @@
   border: 1px dashed var(--border);
 }
 
+/* Зразок рядка шрифту: дві літери, набрані **тим самим** шрифтом (інлайном із
+   компонента). Квадрат як у кольору тут не потрібен — у шрифту немає кольору,
+   у нього є форма, і саме форма мусить бути видна до дотику. */
+.wb-theme-row-swatch--glyph {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: none;
+  border-radius: 0;
+  font-size: var(--text-lg);
+  line-height: 1;
+  color: var(--text-primary);
+}
+
+/* Тіло рядка — вміст акордеона. Зверху відступу немає: його вже дав рядок. */
+.wb-theme-row-body {
+  padding: 0 var(--sp-3) var(--sp-3);
+}
+
+/* Список шрифтів стоїть усередині рядка, а не просто на сторінці: відступ
+   зверху він має для блоку (`theme-pages.css`), а тут він був би подвійним. */
+.wb-theme-row-body .wb-font-picker {
+  margin-top: 0;
+}
+
 .wb-theme-row-text {
   display: flex;
   flex-direction: column;

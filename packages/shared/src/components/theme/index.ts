@@ -8,6 +8,7 @@ export { useUserColors } from "./useUserColors";
 export type { UseUserColorsResult } from "./useUserColors";
 export { FontPicker } from "./FontPicker";
 export type { FontPickerProps } from "./FontPicker";
+export { FontSlotRow } from "./FontSlotRow";
 export { useFontChoice } from "./useFontChoice";
 export type { UseFontChoiceResult } from "./useFontChoice";
 export { useStyleTheme } from "./useStyleTheme";

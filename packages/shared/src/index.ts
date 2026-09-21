@@ -7,6 +7,7 @@ export { StylePicker, ThemeToggle } from "./components/StyleToggle";
 export {
   ColorSlotRow,
   FontPicker,
+  FontSlotRow,
   ThemeColorPanel,
   ThemeSheet,
   useFontChoice,

@@ -12,8 +12,13 @@
  * тому напрям мішанини вибирає світлота фону, а не смак (те саме правило, що в
  * `--bg-page`: ліній і тіней у хромі немає навмисно).
  *
- * Висота фіксована (`--subbar-h`), бо друга смуга — хром: контент не має
- * рухатись від того, що підпис у пункті довший.
+ * Висота фіксована (`--subbar-h` = `--nav-bar-h`, як у першої смуги без
+ * safe-area), бо друга смуга — хром: контент не має рухатись від того, що
+ * підпис у пункті довший.
+ *
+ * **Пункт — як у першій смузі:** знак 24px у комірці 32px, підпис під ним.
+ * Спершу тут були знак і слово в один рядок, і смуга читалась як чужий елемент
+ * — вона стоїть упритул під футером, тож око порівнює їх одразу.
  */
 
 /* Місце під смугу лишає той, хто її поставив. Перша смуга вже тримає своє
@@ -53,23 +58,27 @@ html[data-theme="dark"] .wb-subbar {
   align-items: stretch;
 }
 
-/* Пункт: знак і слово. Слоти рівні (`flex-basis: 0`), тож «Мої схеми» не
-   відсуває «Стиль» — смуга не смикається при переході. */
+/* Пункт: знак над словом — той самий патерн, що в першій смузі. Слоти рівні
+   (`flex-basis: 0`), тож «Готові теми» не відсуває «Стиль» — смуга не
+   смикається при переході. */
 .wb-subbar-item {
   flex: 1 1 0;
   min-width: 0;
   min-height: 44px; /* мінімальний тап-таргет для пальця */
   display: flex;
-  flex-direction: row;
+  flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: var(--sp-1);
-  padding: 0 var(--sp-1);
+  gap: 2px;
+  /* 4px + комірка 32 + проміжок 2 + підпис 12 + 4px = 54 — рівно під
+     `--nav-bar-h` першої смуги, бо висота смуги ФІКСОВАНА. */
+  padding: 4px 2px;
   border: none;
   background: none;
   color: var(--text-muted);
   font-family: inherit;
-  font-size: var(--text-xs);
+  font-size: 10px;
+  line-height: 1.2;
   font-weight: var(--weight-medium);
   text-decoration: none;
   cursor: pointer;
@@ -87,19 +96,26 @@ html[data-theme="dark"] .wb-subbar {
   font-weight: var(--weight-semibold);
 }
 
+/* Комірка знака — та сама, що в першій смузі (`.wb-tabbar-icon`): вона тримає
+   рядок рівним, коли один значок залитий, а інші контурні. */
 .wb-subbar-icon {
   display: flex;
   align-items: center;
   justify-content: center;
+  width: 32px;
+  height: 32px;
 }
 
 .wb-subbar-icon svg {
-  width: 18px;
-  height: 18px;
+  width: 24px;
+  height: 24px;
   flex-shrink: 0;
 }
 
+/* Підпис під знаком: один рядок із трикрапкою — висота смуги фіксована, тож
+   довга назва не має її рости. */
 .wb-subbar-label {
+  max-width: 100%;
   overflow: hidden;
   white-space: nowrap;
   text-overflow: ellipsis;

@@ -174,15 +174,6 @@
   margin-top: var(--sp-4);
 }
 
-/* Заголовок блоку **на сторінці** (не підпис поля): менший за заголовок
-   екрана, бо це ще один крок усередині вже названого розділу. */
-.wb-theme-form-title {
-  margin: var(--sp-4) 0 var(--sp-2);
-  font-size: var(--text-sm);
-  font-weight: var(--weight-medium);
-  color: var(--text-secondary);
-}
-
 /* ── Вибір шрифту ────────────────────────────────────────────────────────── */
 
 .wb-font-picker {

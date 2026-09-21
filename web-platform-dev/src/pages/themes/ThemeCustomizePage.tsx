@@ -23,7 +23,7 @@ import { useNavigate } from "react-router-dom";
 import {
   COLOR_SLOTS,
   ColorSlotRow,
-  FontPicker,
+  FontSlotRow,
   Icon,
   SwitchRow,
   type ColorSlot,
@@ -37,12 +37,23 @@ export function ThemeCustomizePage(): ReactElement {
   const navigate = useNavigate();
   const dialog = useDialog();
   const editor = useSchemeEditor();
-  // Відкритий рівно один слот — як у панелі: три повзунки на телефоні це екран,
-  // у якому нічого не видно.
+  // Відкритий рівно один рядок — як у панелі: три повзунки й список шрифтів
+  // на телефоні це екран, у якому нічого не видно.
   const [openSlot, setOpenSlot] = useState<ColorSlot | null>("bg");
+  const [fontOpen, setFontOpen] = useState(false);
   const [saved, setSaved] = useState(false);
 
   const { colors, fonts } = editor;
+
+  const toggleSlot = (slot: ColorSlot): void => {
+    setFontOpen(false);
+    setOpenSlot(openSlot === slot ? null : slot);
+  };
+
+  const toggleFont = (): void => {
+    setOpenSlot(null);
+    setFontOpen(!fontOpen);
+  };
 
   async function submit(): Promise<void> {
     try {
@@ -70,14 +81,20 @@ export function ThemeCustomizePage(): ReactElement {
             slot={slot}
             value={colors.draft[slot.id] ?? ""}
             expanded={openSlot === slot.id}
-            onToggle={() => setOpenSlot(openSlot === slot.id ? null : slot.id)}
+            onToggle={() => toggleSlot(slot.id)}
             onChange={(value) => colors.setSlot(slot.id, value)}
           />
         ))}
-      </div>
 
-      <h2 className="wb-theme-form-title">Шрифт</h2>
-      <FontPicker value={fonts.draft} onChange={fonts.setFont} />
+        {/* Шрифт — такий самий рядок-акордеон, як кольори: це один крок
+            "Налаштувати тему", а не два різні списки. */}
+        <FontSlotRow
+          value={fonts.draft}
+          expanded={fontOpen}
+          onToggle={toggleFont}
+          onChange={fonts.setFont}
+        />
+      </div>
 
       <div className="wb-theme-form">
         <div className="wb-field">
