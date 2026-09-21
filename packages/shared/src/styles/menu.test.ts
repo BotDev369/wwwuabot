@@ -126,6 +126,53 @@ describe("меню: плитки й вигляд пункту", () => {
 });
 
 /**
+ * Хаб: пункт із двома діями. Сторож тут тому, що це той самий кирпичик, що
+ * меню (спільний список у потоці сторінки), і ламається він так само тихо:
+ * друга кнопка без міри стає вдвічі ширшою за першу, а плитка без `grid` —
+ * одним стовпчиком на всю ширину.
+ */
+describe("хаб: пункт із двома діями", () => {
+  it("плитки — рівно дві в ряду, як у меню", () => {
+    const blocks = rule(".wb-hub-blocks");
+    expect(blocks, "правило .wb-hub-blocks мусить існувати").toBeDefined();
+    expect(blocks?.body).toContain("grid-template-columns: repeat(2, minmax(0, 1fr))");
+  });
+
+  it("рядок — тло кирпичика поля, як у пункту меню", () => {
+    // Пункти стоять на сусідніх екранах, тож тло мусить бути те саме: інше
+    // тло зробило б із хабу третій список у продукті.
+    expect(rule(".wb-hub-row")?.body).toContain("background: var(--field-bg)");
+    expect(rule(".wb-hub-row")?.body).toContain("border-radius: var(--radius-md)");
+  });
+
+  it("міра дії — одна на обидві, і вона менша за рядок", () => {
+    const btn = rule(".wb-hub-btn");
+    expect(btn, "правило .wb-hub-btn мусить існувати").toBeDefined();
+    // Квадрат: інакше дві кнопки в ряду стануть різної ширини, бо знаки різні.
+    expect(btn?.body).toContain("width: var(--hub-btn)");
+    expect(btn?.body).toContain("height: var(--hub-btn)");
+    // Міра оголошена в самого кирпичика, а не в кнопки бренду: бренди задають
+    // форму кнопці (`!important`), і коло 36px довелось би в них вигравати.
+    expect(btn?.body).toContain("--hub-btn: 36px");
+    expect(rule(".wb-hub-btn")?.body).not.toContain("min-height");
+  });
+
+  it("дія, за якою нічого немає, приглушена — і до дотику", () => {
+    expect(rule(".wb-hub-btn--soon")?.body).toContain("color: var(--text-muted)");
+    // Приглушена дія лишається натискною: дотик чесно каже, що там буде (§7).
+    expect(rule(".wb-hub-btn--soon")?.body).not.toContain("pointer-events");
+  });
+
+  it("у підписа пункту немає власного :hover — він не кнопка", () => {
+    // У меню рядок натискається цілком, і там `:hover` доречний. У хабу
+    // підпис нічого не робить, тож підсвічувати його означало б обіцяти дію.
+    const labels = RULES.filter((entry) => entry.selector.includes(":hover"));
+    expect(labels.some((entry) => entry.selector.includes("wb-hub-row"))).toBe(false);
+    expect(labels.some((entry) => entry.selector.includes("wb-hub-label"))).toBe(false);
+  });
+});
+
+/**
  * Повноекранна поверхня, перемикач вигляду і **відсутність** смуги внизу.
  *
  * Дві речі тут не косметичні: (1) повноекранна поверхня мусить лишити місце

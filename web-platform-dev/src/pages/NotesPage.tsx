@@ -3,8 +3,8 @@
  * відредагувати, прибрати.
  *
  * Екран лише **зводить** те, що вже є: список-акордеон і смугу керування дає
- * спільний `@wwwuabot/ui/notes`, редактор — спільний композер (він же створює
- * нотатку з «+» у футері), а адреса й власник — ця оболонка. Тому тут немає
+ * спільний `@wwwuabot/ui/notes`, редактор — спільний композер (той самий, що
+ * редагує нотатку), а адреса й власник — ця оболонка. Тому тут немає
  * ні розмітки картки, ні правил пошуку: усе це перевіряється тестами в
  * спільному модулі, незалежно від платформи.
  *
@@ -15,14 +15,21 @@
  * Шлях власний (`/notes`), а не `slug` рядка `scenarios`: список складається з
  * даних людини (таблиця `notes`), а не з `page_data` (AGENTS.md §7).
  *
+ * **Композер можна відкрити адресою** (`/notes?new=1`): так «+» у хабі
+ * «Створити» веде саме сюди, а не заводить другу форму нотатки. Намір
+ * читається **один раз**, при появі екрана: далі композером керує стан, тож
+ * закриття форми не відкриває її знову з того самого посилання.
+ *
  * @module web-platform-dev/src/pages/NotesPage
  */
 
 import { useState, type ReactElement } from "react";
+import { useSearchParams } from "react-router-dom";
 import { Icon } from "@wwwuabot/shared";
 import type { NoteDraft, NoteRow } from "@wwwuabot/shared/notes";
 import { ComposerModal } from "@wwwuabot/ui/composer";
 import { useDialog } from "@wwwuabot/ui/dialog";
+import { readCreateIntent } from "@/app/routes";
 import {
   DEFAULT_NOTES_VIEW,
   NotesList,
@@ -53,7 +60,12 @@ export function NotesPage(): ReactElement {
   const { notes, loading, error, upsert, remove } = useNotes();
   const dialog = useDialog();
   const [view, setView] = useState<NotesView>(DEFAULT_NOTES_VIEW);
-  const [editor, setEditor] = useState<EditorState>({ open: false });
+  const [searchParams] = useSearchParams();
+  // Намір із адреси береться тільки як **початковий** стан: композер — це
+  // чернетка, і повторне підставляння затерло б написане.
+  const [editor, setEditor] = useState<EditorState>(() => ({
+    open: readCreateIntent(searchParams),
+  }));
   // Розгорнуті картки — стан екрана, а не картки: «розгорнути всі» приходить
   // зі смуги керування, і стан мусить бути один (див. `NotesList`).
   const [openIds, setOpenIds] = useState<ReadonlySet<number>>(() => new Set());
@@ -177,9 +189,7 @@ export function NotesPage(): ReactElement {
           </span>
           <p className="wb-empty-text">Ще немає жодної нотатки.</p>
           {/* Кажемо, як створити: без цього порожній екран — це глухий кут. */}
-          <p className="wb-empty-text">
-            Натисніть «+» угорі або «+» у нижньому футері — нотатка з хештегами з'явиться тут.
-          </p>
+          <p className="wb-empty-text">Натисніть «+» угорі — нотатка з хештегами з'явиться тут.</p>
         </div>
       )}
 

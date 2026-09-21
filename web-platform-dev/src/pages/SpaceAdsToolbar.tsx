@@ -38,7 +38,7 @@ export function SpaceAdsToolbar({
   view: AdsView;
   onChange: (patch: Partial<AdsView>) => void;
   shown: number;
-  /** Відкрити композер на створення — та сама форма, що з «+» у футері. */
+  /** Відкрити композер на створення — та сама форма, що в нотаток. */
   onCompose: () => void;
 }): ReactElement {
   const kinds = adsKinds(items);

@@ -12,9 +12,10 @@
  * належить жодній сторінці, тож він стоїть на рівні маршруту, а не всередині
  * `ScenarioPage`.
  *
- * `/profile`, `/space`, `/notes`, `/contacts` і `/messages` стоять **перед**
- * catch-all навмисно: це єдині екрани, які не є рядком контенту (`slug`). Їхні
- * адреси дає `app/routes.ts` — один власник на маршрут і пункт навігації.
+ * `/profile`, `/create`, `/space`, `/notes`, `/contacts` і `/messages` стоять
+ * **перед** catch-all навмисно: це єдині екрани, які не є рядком контенту
+ * (`slug`). Їхні адреси дає `app/routes.ts` — один власник на маршрут і пункт
+ * навігації.
  *
  * Сторінка людини в Просторі (`/space/u/:id`) стоїть перед `/space` **порядком
  * рядків**: довший шлях мусить збігтися першим, інакше `/space` з'їв би його
@@ -25,6 +26,7 @@ import { createBrowserRouter } from "react-router-dom";
 import { PlatformShell } from "@/layout/PlatformShell";
 import {
   CONTACTS_ROUTE,
+  CREATE_ROUTE,
   MESSAGES_PATH,
   NOTES_ROUTE,
   PROFILE_ACCOUNT_PATH,
@@ -33,6 +35,7 @@ import {
   SPACE_USER_ROUTE,
 } from "@/app/routes";
 import { ContactsPage } from "@/pages/ContactsPage";
+import { CreatePage } from "@/pages/CreatePage";
 import { MessagesPage } from "@/pages/MessagesPage";
 import { NotesPage } from "@/pages/NotesPage";
 import { ProfileAccountPage } from "@/pages/ProfileAccountPage";
@@ -51,6 +54,9 @@ export const router = createBrowserRouter([
       // Акаунт — окрема адреса під хабу: платформа й Telegram окремими
       // розділами, а не одним суцільним списком.
       { path: PROFILE_ACCOUNT_PATH, element: <ProfileAccountPage /> },
+      // Створити — хаб власних екранів людини, слот «+» у футері: у кожного
+      // пункту два входи, «подивитись» і «створити».
+      { path: CREATE_ROUTE, element: <CreatePage /> },
       // Простір — відкрита стрічка: відкриті профілі (а далі оголошення).
       // Довший шлях іде першим — інакше `/space` перехопив би людину в Просторі.
       { path: `${SPACE_ROUTE}/${SPACE_USER_ROUTE}/:id`, element: <SpaceUserPage /> },

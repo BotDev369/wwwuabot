@@ -49,6 +49,7 @@
 import { useState, type ReactElement } from "react";
 import { useSearchParams } from "react-router-dom";
 import { Icon } from "@wwwuabot/shared";
+import { readCreateIntent } from "@/app/routes";
 import {
   MESSAGES_PEER_PARAM,
   readMessagesPeer,
@@ -90,7 +91,12 @@ export function MessagesPage(): ReactElement {
   // Який лист відкрито у формі: `draft` — правка чернетки, `null` — новий.
   // Це стан **екрана**: сама форма нічого не змінює в даних, а чернетку їй дає
   // рядок списку, з якого її відкрили.
-  const [composing, setComposing] = useState<{ draft: MessageDraft | null } | null>(null);
+  //
+  // Новий лист може прийти й **адресою** (`?new=1` — «+» з хабу створення),
+  // і це теж початковий стан: намір читається раз, при появі екрана.
+  const [composing, setComposing] = useState<{ draft: MessageDraft | null } | null>(() =>
+    readCreateIntent(searchParams) ? { draft: null } : null,
+  );
   const thread = useThread(openPeerId);
   const meId = profile?.id ?? 0;
 

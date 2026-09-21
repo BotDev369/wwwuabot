@@ -6,12 +6,16 @@
  * той пункт, позбавити пункт адреси. Усе це компілюється бездоганно й видно
  * лише на телефоні.
  *
+ * Сторож адрес тут головний: доки «+» відкривав поверхню, виняток з правила
+ * «слот — це місце» жив саме в ньому, і повернути його (разом із втраченими
+ * історією, «назад» і посиланням) дуже легко.
+ *
  * @module web-platform-dev/src/layout/platform-tabs.test
  */
 
 import { describe, expect, it } from "vitest";
 import { buildTabBarItems } from "@wwwuabot/ui/nav";
-import { MESSAGES_PATH, PROFILE_PATH, SPACE_PATH } from "../app/routes";
+import { CREATE_PATH, MESSAGES_PATH, PROFILE_PATH, SPACE_PATH } from "../app/routes";
 import { MESSAGES_TAB_KEY, PLATFORM_TABS, toShellTabs, withUnreadBadge } from "./platform-tabs";
 
 function items(pathname = "/") {
@@ -24,26 +28,40 @@ function items(pathname = "/") {
 }
 
 describe("склад футера", () => {
-  it("п'ять слотів: центр — дія, крайній справа — профіль", () => {
+  it("п'ять слотів: у центрі — «Створити», крайній справа — профіль", () => {
     const tabs = toShellTabs();
 
     expect(tabs).toHaveLength(5);
+    expect(tabs[2].key).toBe("create");
     expect(tabs[2].primary).toBe(true);
     expect(tabs[4].key).toBe("profile");
     expect(tabs[4].href).toBe(PROFILE_PATH);
   });
 
-  it("кожен слот, крім «+», веде на адресу", () => {
+  it("кожен слот веде на адресу — винятків немає", () => {
     // Слот без адреси означав би, що дотик відкриває поверхню, а не веде на
     // екран: тоді футер не має ні історії, ні «назад», ні посилання, яке можна
-    // надіслати. Єдина дія в смузі — «+», і вона позначена `primary`.
-    const actionless = toShellTabs().filter((tab) => !tab.primary);
-    expect(actionless).toHaveLength(4);
+    // надіслати. Саме так було з «+» — і саме тому він тепер теж адреса.
+    const tabs = toShellTabs();
+    expect(tabs.filter((tab) => !tab.href).map((tab) => tab.key)).toEqual([]);
+    expect(tabs.find((tab) => tab.key === "space")?.href).toBe(SPACE_PATH);
+    // Своєї дії (`onSelect`) немає ні в кого: усе, що робить слот, — це перехід.
+    expect(tabs.every((tab) => tab.onSelect === undefined)).toBe(true);
+  });
 
-    // Заглушок у смузі більше немає: Простір має екран. Слот, який втратив
-    // адресу, — це та сама тиша замість екрана, лише непомітна до дотику.
-    expect(actionless.filter((tab) => !tab.href).map((tab) => tab.key)).toEqual([]);
-    expect(actionless.find((tab) => tab.key === "space")?.href).toBe(SPACE_PATH);
+  it("«+» веде в хаб «Створити», а не відкриває поверхню", () => {
+    // Створення живе на своїх екранах (`?new=1`), а слот відкриває список
+    // входів: інакше дотик не має адреси, а шість власних екранів людини
+    // ховаються в хабі профілю, де їх не шукають.
+    const create = PLATFORM_TABS[2];
+    expect([create.key, create.label, create.icon]).toEqual(["create", "Створити", "plus"]);
+    expect(create.to).toBe(CREATE_PATH);
+    expect(toShellTabs()[2].href).toBe("/create");
+  });
+
+  it("хаб «Створити» підсвічує свій слот, як і будь-який розділ", () => {
+    const active = items(CREATE_PATH).filter((item) => item.active);
+    expect(active.map((item) => item.key)).toEqual(["create"]);
   });
 
   it("другий слот — «Простір» зі своїм знаком і парою для вибраного стану", () => {

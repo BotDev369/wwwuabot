@@ -12,8 +12,14 @@
  * ніж ховати його: людина бачить, що буде далі, а `SpacePage` каже, що саме
  * там з'явиться, замість порожнечі.
  *
+ * **Розділ є в адресі** (`/space?tab=ads`): у хаб створення «Оголошення» веде
+ * саме в цю вкладку, а не в Простір взагалі — інакше замість дошки
+ * відкривалася б стрічка людей, і людині довелося б шукати вкладку самій.
+ *
  * @module web-platform-dev/src/pages/space-tabs
  */
+
+import { SPACE_PATH } from "../app/routes";
 
 export interface SpaceTabOption {
   key: SpaceTab;
@@ -48,4 +54,28 @@ export const DEFAULT_SPACE_TAB: SpaceTab = "users";
 /** Розділ за його ключем — щоб сторінка не тримала другої копії списку. */
 export function spaceTab(key: SpaceTab): SpaceTabOption {
   return SPACE_TABS.find((tab) => tab.key === key) ?? SPACE_TABS[0];
+}
+
+/* ── Розділ в адресі ──────────────────────────────────────────────────────
+   Адреса — це **вхід**, а не стан: вона каже, який розділ відкрити, і
+   читається один раз, при появі екрана. Далі розділом керує стан, тож
+   закриття вкладки не повертає її назад з того самого посилання. */
+
+/** Параметр адреси: `/space?tab=ads` — який розділ показати. */
+export const SPACE_TAB_PARAM = "tab";
+
+/**
+ * Розділ з адреси. Невідомий ключ (і `null`) дає типовий: у Просторі немає
+ * порожнього стану — адреса лише каже, з якої вкладки почати.
+ */
+export function readSpaceTab(value: string | null): SpaceTab {
+  return SPACE_TABS.some((tab) => tab.key === value) ? (value as SpaceTab) : DEFAULT_SPACE_TAB;
+}
+
+/**
+ * Адреса розділу. Типовий адреси не потребує: `/space` і **є** ним — зайвий
+ * параметр робив би два посилання на один і той самий екран.
+ */
+export function spaceTabPath(tab: SpaceTab): string {
+  return tab === DEFAULT_SPACE_TAB ? SPACE_PATH : `${SPACE_PATH}?${SPACE_TAB_PARAM}=${tab}`;
 }

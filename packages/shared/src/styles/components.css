@@ -547,7 +547,7 @@ html:has(.wb-tabbar) .wb-modal {
   max-height: 100%;
 }
 
-/* ── Composer (швидке створення з «+» у футері) ──────────────────────────
+/* ── Композер: швидке створення нотатки й оголошення ──────────────────────
    Модалка майже на весь екран: від країв лишається тільки `--sp-2`, бо це не
    форма на три поля, а робоча поверхня з вкладками. Вкладки — горизонтальна
    смуга, яку на телефоні прокручують пальцем: підписів п'ять, і стискати їх
@@ -1309,6 +1309,126 @@ html:has(.wb-tabbar) .wb-modal-overlay--screen {
   align-items: center;
   flex-shrink: 0;
   color: var(--accent);
+}
+
+/* ── Хаб: пункт із ДВОМА діями (спільний кирпичик) ─────────────────────────
+   Розмітку дає `@wwwuabot/ui/hub`, тож правила живуть тут — як у меню.
+
+   Відмінність від пункту меню одна, і вона не косметична: підпис тут не
+   кнопка. У меню дотик до рядка робить одну річ, тож усю площу віддають їй;
+   тут дій дві, і рядок, який робить третє, змушував би вгадувати, котра з
+   трьох. Тому дію називає знак, а назва лишається назвою. */
+.wb-hub-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-1);
+}
+
+/* Плитки — та сама пара розкладок, що в меню: рядок читають, у плитку тицяють. */
+.wb-hub-blocks {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--sp-2);
+}
+
+.wb-hub-row {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-3);
+  min-height: 52px;
+  padding: var(--sp-2) var(--sp-3);
+  border-radius: var(--radius-md);
+  background: var(--field-bg);
+}
+
+.wb-hub-block {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--sp-1);
+  min-height: 96px;
+  padding: var(--sp-3) var(--sp-2);
+  border-radius: var(--radius-md);
+  background: var(--field-bg);
+  text-align: center;
+}
+
+.wb-hub-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 auto;
+  color: var(--text-secondary);
+}
+
+.wb-hub-text {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.wb-hub-label {
+  font-size: var(--text-base);
+  font-weight: var(--weight-medium);
+  overflow-wrap: anywhere;
+}
+
+/* Пункт, за яким немає жодної робочої дії: підпис приглушений, як у меню. */
+.wb-hub-row--soon .wb-hub-label,
+.wb-hub-block--soon .wb-hub-label {
+  color: var(--text-secondary);
+}
+
+/* Що саме буде — під підписом, у рядку: тут пояснення читають. */
+.wb-hub-hint {
+  font-size: var(--text-xs);
+  color: var(--text-muted);
+}
+
+.wb-hub-actions {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-1);
+  flex: 0 0 auto;
+}
+
+/* Знак дії — квадрат пальця менший за 44 (як «⋮» у картці оголошення): у
+   ряду їх два, і обидва по 44 з'їли б місце в назви. Мірка одна на обидві
+   дії — вони рівні, і різницю між ними несе тло, а знак. */
+.wb-hub-btn {
+  --hub-btn: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: var(--hub-btn);
+  height: var(--hub-btn);
+  min-width: var(--hub-btn);
+  padding: 0;
+  border: none;
+  border-radius: var(--radius-full);
+  background: none;
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition:
+    background var(--duration-fast) var(--ease),
+    color var(--duration-fast) var(--ease);
+}
+
+.wb-hub-btn:hover {
+  background: var(--surface-hover);
+  color: var(--text-primary);
+}
+
+.wb-hub-btn:active {
+  background: var(--surface-active);
+}
+
+/* Дія, за якою ще нічого немає, приглушена — і це видно **до** дотику. */
+.wb-hub-btn--soon {
+  color: var(--text-muted);
 }
 
 /* ── Вигляд колекції (спільний кирпичик) ───────────────────────────────────

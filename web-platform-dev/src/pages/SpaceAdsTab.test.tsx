@@ -113,6 +113,9 @@ describe("SpaceAdsTab", () => {
 
     expect(html).not.toContain("wb-tools-bar");
     expect(html).toContain("Тут поки нічого немає");
-    expect(html).toContain("нижньому футері");
+    // Порожній стан не глухий кут: він називає **вхід до створення**, а він
+    // тепер один — «+» у футері веде в хаб «Створити».
+    expect(html).toContain("у футері");
+    expect(html).toContain("Оголошення");
   });
 });

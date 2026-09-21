@@ -35,6 +35,11 @@
  * приналежність і так видно, а відсував префікс саме те слово, за яким пункт
  * упізнають.
  *
+ * **«+» з хабу створення приходить адресою** (`/contacts?new=1`): так кнопка
+ * веде в той самий екран, де захід контакту вже описаний, і другого правила
+ * «як завести контакт» не з'являється. Намір виконується **один раз**, при
+ * появі екрана.
+ *
  * Діалоги, буфер обміну й підтвердження живуть тут, а не в картці: це межі
  * оболонки (та сама межа, що в нотатках і панелі теми).
  *
@@ -44,7 +49,8 @@
  * @module web-platform-dev/src/pages/ContactsPage
  */
 
-import { useEffect, useState, type ReactElement } from "react";
+import { useEffect, useRef, useState, type ReactElement } from "react";
+import { useSearchParams } from "react-router-dom";
 import { Icon } from "@wwwuabot/shared";
 import { sanitizeContactName, type Contact, type ContactInput } from "@wwwuabot/shared/contacts";
 import {
@@ -60,6 +66,7 @@ import {
   type ContactsView,
 } from "@wwwuabot/ui/contacts";
 import { useDialog } from "@wwwuabot/ui/dialog";
+import { readCreateIntent } from "@/app/routes";
 import { useContacts } from "./useContacts";
 
 /** Скільки тримається «Скопійовано» на кнопці. */
@@ -79,6 +86,10 @@ export function ContactsPage(): ReactElement {
   const [openIds, setOpenIds] = useState<ReadonlySet<number>>(() => new Set());
   const [editingId, setEditingId] = useState<number | null>(null);
   const [copiedId, setCopiedId] = useState<number | null>(null);
+  // Намір із адреси читається один раз, при появі екрана, — так само, як
+  // номер розмови в «Повідомленнях».
+  const [searchParams] = useSearchParams();
+  const wantsCreate = useRef(readCreateIntent(searchParams));
 
   useEffect(() => {
     if (copiedId === null) return;
@@ -167,6 +178,16 @@ export function ContactsPage(): ReactElement {
       });
     }
   }
+
+  /* Намір із адреси — **один раз**, при появі екрана. Ефект без списку
+     залежностей тому й доречний: захід контакту залежить від завантажених
+     даних і діалогу, і повторне його виконання на кожну зміну стану відкривало
+     б діалог знову. Сторожем від повтору стоїть прапорець — він і є «один раз». */
+  useEffect(() => {
+    if (!wantsCreate.current) return;
+    wantsCreate.current = false;
+    void addContact();
+  });
 
   /** Збереження форми: усі поля одразу, і назад до списку — там зміну видно. */
   async function saveContact(id: number, input: ContactInput): Promise<void> {

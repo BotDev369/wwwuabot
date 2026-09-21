@@ -14,23 +14,27 @@
  * униз, і без цього смуга зникала б після першого ж екрана — рівно тоді, коли
  * треба перейти в інший розділ. Той самий каркас, що в нотаток і контактів.
  *
- * **Композер відкривається звідси тим самим `ComposerModal`**, що й з «+» у
- * футері, лише на вкладці «Оголошення»: одна форма на два входи — інакше
- * дошка мала б власну, яка розійшлася б із першою першою ж правкою.
+ * **Композер відкривається звідси тим самим `ComposerModal`**, що й у нотаток,
+ * лише на вкладці «Оголошення»: одна форма на два входи — інакше дошка мала б
+ * власну, яка розійшлася б із першою першою ж правкою. Сюди ж веде «+» із хабу
+ * створення — адресою `/space?tab=ads&new=1`, тож і розділ, і форма
+ * відкриваються з посилання, а не з другого коду.
  *
  * @module web-platform-dev/src/pages/SpacePage
  */
 
 import { useState, type ReactElement } from "react";
+import { useSearchParams } from "react-router-dom";
 import { Icon } from "@wwwuabot/shared";
 import type { AdDraft } from "@wwwuabot/shared/ads";
 import { ComposerModal } from "@wwwuabot/ui/composer";
 import { Tabs, tabId, tabPanelId } from "@wwwuabot/ui/tabs";
+import { readCreateIntent } from "@/app/routes";
 import { notesApi } from "@/shared/api/notes.api";
 import { adDraftFrom } from "./ads-list";
 import { SpaceAdsTab } from "./SpaceAdsTab";
 import { SpaceUsersTab } from "./SpaceUsersTab";
-import { DEFAULT_SPACE_TAB, SPACE_TABS, spaceTab, type SpaceTab } from "./space-tabs";
+import { SPACE_TABS, SPACE_TAB_PARAM, readSpaceTab, spaceTab, type SpaceTab } from "./space-tabs";
 import { useAds } from "./useAds";
 import { useSpace } from "./useSpace";
 
@@ -40,8 +44,14 @@ interface ComposerRequest {
 }
 
 export function SpacePage(): ReactElement {
-  const [tab, setTab] = useState<SpaceTab>(DEFAULT_SPACE_TAB);
-  const [composer, setComposer] = useState<ComposerRequest | null>(null);
+  // Розділ і форма можуть прийти **адресою**: так з хабу «Створити» веде
+  // «+» — у розділ дошки й одразу у форму оголошення (`?tab=ads&new=1`).
+  // Адреса — це вхід, а не стан: усе читається один раз, при появі екрана.
+  const [searchParams] = useSearchParams();
+  const [tab, setTab] = useState<SpaceTab>(() => readSpaceTab(searchParams.get(SPACE_TAB_PARAM)));
+  const [composer, setComposer] = useState<ComposerRequest | null>(() =>
+    readCreateIntent(searchParams) ? {} : null,
+  );
   const space = useSpace();
   const ads = useAds();
   const current = spaceTab(tab);

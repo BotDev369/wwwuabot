@@ -1,35 +1,33 @@
 /**
- * Перемикач вигляду розділів — сегментована смуга з двох варіантів.
+ * Перемикач вигляду списку — сегментована смуга з двох варіантів.
  *
- * Стоїть у шапці хабу `/profile`, праворуч від заголовка: це вибір вигляду,
- * тож обидва варіанти мають бути видні одразу — на відміну від решти виборів
- * продукту, які відкривають повноекранний список (`MenuModal`). Варіантів
- * рівно два, і відкривати заради них поверхню над сторінкою було б гірше.
+ * Стоїть у шапці екрана зі списком пунктів (хаб «Створити»), праворуч від
+ * заголовка: це вибір вигляду, тож обидва варіанти мають бути видні одразу —
+ * на відміну від решти виборів продукту, які відкривають повноекранний список
+ * (`MenuModal`). Варіантів рівно два, і відкривати заради них поверхню над
+ * сторінкою було б гірше.
  *
  * **Тільки знаки, без підписів.** У смузі сегмент ділить місце із заголовком, і
  * два підписи з'їдали б рядок; знак варіант читає за формою («плитки» —
  * картка, «рядки» — три риски). Ім'я при цьому не губиться: воно в
  * `aria-label` і `title`, а самі варіанти приходять із `SECTIONS_LAYOUT_OPTIONS`.
  *
- * @module web-platform-dev/src/pages/ProfileSectionsSwitch
+ * @module web-platform-dev/src/pages/SectionLayoutSwitch
  */
 
 import type { ReactElement } from "react";
 import { Icon } from "@wwwuabot/shared";
 import type { MenuLayout } from "@wwwuabot/ui/menu";
-import { SECTIONS_LAYOUT_OPTIONS } from "./profile-sections";
+import { SECTIONS_LAYOUT_OPTIONS } from "./section-layout";
 
-interface ProfileSectionsSwitchProps {
+interface SectionLayoutSwitchProps {
   layout: MenuLayout;
   onChange: (layout: MenuLayout) => void;
 }
 
-export function ProfileSectionsSwitch({
-  layout,
-  onChange,
-}: ProfileSectionsSwitchProps): ReactElement {
+export function SectionLayoutSwitch({ layout, onChange }: SectionLayoutSwitchProps): ReactElement {
   return (
-    <div className="wb-segmented" role="group" aria-label="Вигляд розділів">
+    <div className="wb-segmented" role="group" aria-label="Вигляд списку">
       {SECTIONS_LAYOUT_OPTIONS.map((option) => {
         const active = option.key === layout;
         return (
