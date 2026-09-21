@@ -69,6 +69,14 @@ export const TABLES = {
    * `telegram_json` — усе, що Telegram віддав про користувача (`ctx.from` як є),
    * щоб профіль показував **справжні** дані, а не перелічені нами поля. Пише його
    * `bot-dev` під час звернення до бота; `api-dev` цю колонку не заповнює.
+   *
+   * **Публічність — три колонки, а не друга таблиця.** `photo_url` — фото, яке
+   * людина ставить собі **на платформі** (не аватар Telegram); `about` — «Про
+   * себе»; `profile_public` — прапорець «показувати мене в Просторі»;
+   * `profile_public_fields` — JSON-масив відкритих полів. Це все ознаки **тієї
+   * самої** людини, тож живуть у її рядку: окрема таблиця `profiles` завела б
+   * другий рядок на людину й друге правило «які дані публічні» (AGENTS.md §7).
+   * Правила набору й фільтр видимості — `@wwwuabot/shared/user/public-profile`.
    */
   users: {
     name: "users",
@@ -93,6 +101,10 @@ export const TABLES = {
         my_dates TEXT,
         telegram_json TEXT,
         platform_username TEXT,
+        photo_url TEXT,
+        about TEXT,
+        profile_public INTEGER DEFAULT 0,
+        profile_public_fields TEXT,
         created_at TEXT,
         updated_at TEXT
       )`,

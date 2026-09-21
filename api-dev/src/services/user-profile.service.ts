@@ -21,6 +21,11 @@ import type { Env } from "../shared/types";
 import { ensureTables } from "@wwwuabot/shared/database/ensure-tables";
 import { formatSqliteDatetime } from "@wwwuabot/shared/utils/datetime";
 import { validatePlatformUsername } from "@wwwuabot/shared/user/platform-username";
+import {
+  isProfilePublic,
+  parsePublicFields,
+  type PublicProfileField,
+} from "@wwwuabot/shared/user/public-profile";
 
 /**
  * Усе, що Telegram віддав про людину, — як є.
@@ -41,6 +46,14 @@ export interface UserProfileDto {
   username: string | null;
   /** Ім'я на платформі — те, що обирає сам користувач. */
   platformUsername: string | null;
+  /** Фото **платформи** — те, яке людина поставить собі сама (не Telegram). */
+  photoUrl: string | null;
+  /** «Про себе» — те, що людина розповідає сама (не більше `ABOUT_MAX_LENGTH`). */
+  about: string;
+  /** Чи видно профіль іншим — у Просторі. */
+  isPublic: boolean;
+  /** Які поля відкриті іншим. Порожній список — свідоме «все закрито». */
+  openFields: PublicProfileField[];
   language: string | null;
   /** Дані Telegram, збережені ботом під час останнього звернення (може бути `null`). */
   telegram: TelegramData | null;
@@ -60,7 +73,8 @@ export type SetPlatformUsernameResult =
   | { ok: false; code: "invalid" | "taken" | "db"; message: string };
 
 /** Колонки профілю — перелічені, а не `SELECT *`: `my_dates` важкий. */
-const PROFILE_COLUMNS = `user_id, first_name, last_name, username, platform_username, language,
+const PROFILE_COLUMNS = `user_id, first_name, last_name, username, platform_username, photo_url,
+                        about, profile_public, profile_public_fields, language,
                         telegram_json, role, tariff, status, discount, permissions,
                         is_blocked, created_at, updated_at`;
 
@@ -117,6 +131,10 @@ export class UserProfileService {
       lastName: (row.last_name as string) ?? null,
       username: (row.username as string) ?? null,
       platformUsername: (row.platform_username as string) ?? null,
+      photoUrl: (row.photo_url as string) ?? null,
+      about: (row.about as string) ?? "",
+      isPublic: isProfilePublic(row.profile_public),
+      openFields: parsePublicFields(row.profile_public_fields),
       language: (row.language as string) ?? null,
       telegram: parseTelegramData(row.telegram_json),
       role: (row.role as string) ?? "user",

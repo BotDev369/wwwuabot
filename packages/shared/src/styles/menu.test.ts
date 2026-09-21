@@ -35,7 +35,7 @@ const CSS = readFileSync(
  * спільного коду, тож саме правило CSS її недоговорює: чи взято кирпичик
  * кнопки, видно лише в розмітці.
  */
-const PAGE = "web-platform-dev/src/pages/ProfileAccountPage.tsx";
+const PAGE = "packages/ui/src/tabs/Tabs.tsx";
 
 interface Rule {
   selector: string;
@@ -249,6 +249,9 @@ describe("меню: повноекранна поверхня, перемика�
     expect(CSS).not.toMatch(/\.wb-tabs-btn--active/);
 
     // А розмітка справді ставить кирпичик: обидві половини пари — `.wb-btn`.
+    // Читається **спільна** смуга (`packages/ui/src/tabs`), а не сторінка: смуг
+    // у продукті дві (розділи акаунта, розділи Простору), і доки розмітка жила
+    // в одній зі сторінок, сторож тримав би тільки її.
     const page = readFileSync(join(REPO_ROOT, PAGE), "utf8");
     expect(page).toContain("wb-btn wb-tabs-btn");
     expect(page).toContain("wb-btn-primary");

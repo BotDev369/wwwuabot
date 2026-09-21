@@ -19,7 +19,7 @@
  */
 
 import { useCallback, useEffect, useState } from "react";
-import type { UserProfileData } from "@wwwuabot/shared";
+import type { PublicProfileChange, UserProfileData } from "@wwwuabot/shared";
 import { apiFetch } from "@/shared/api/client";
 
 interface ProfileResponse {
@@ -90,5 +90,61 @@ export function useProfile() {
     }
   }, []);
 
-  return { ...state, saveUsername };
+  /** «Про себе» — те саме правило: причина відмови приходить із сервера. */
+  const saveAbout = useCallback(async (value: string): Promise<string | null> => {
+    try {
+      const data = await apiFetch<{ ok?: boolean; about?: string }>("/api/user/about", {
+        method: "POST",
+        body: JSON.stringify({ about: value }),
+      });
+
+      if (typeof data?.about !== "string") return "Не вдалося зберегти";
+
+      setState((prev) => ({
+        ...prev,
+        profile: prev.profile ? { ...prev.profile, about: data.about } : prev.profile,
+      }));
+      return null;
+    } catch (e: unknown) {
+      return e instanceof Error ? e.message : "Не вдалося зберегти";
+    }
+  }, []);
+
+  /**
+   * Публічність і набір відкритих полів — **одним запитом**.
+   *
+   * Стан після невдачі лишається тим, що відповів сервер: увімкнений
+   * перемикач, який не зберігся, був би найгіршим із можливих — людина
+   * вважала б профіль відкритим, а він закритий.
+   */
+  const saveVisibility = useCallback(async (next: PublicProfileChange): Promise<string | null> => {
+    try {
+      const data = await apiFetch<{
+        ok?: boolean;
+        isPublic?: boolean;
+        openFields?: UserProfileData["openFields"];
+      }>("/api/user/visibility", {
+        method: "POST",
+        body: JSON.stringify({ public: next.isPublic, fields: next.fields }),
+      });
+
+      setState((prev) =>
+        prev.profile
+          ? {
+              ...prev,
+              profile: {
+                ...prev.profile,
+                isPublic: data?.isPublic ?? next.isPublic,
+                openFields: data?.openFields ?? next.fields,
+              },
+            }
+          : prev,
+      );
+      return null;
+    } catch (e: unknown) {
+      return e instanceof Error ? e.message : "Не вдалося зберегти";
+    }
+  }, []);
+
+  return { ...state, saveUsername, saveAbout, saveVisibility };
 }

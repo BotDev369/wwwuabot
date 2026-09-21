@@ -1,3 +1,5 @@
+import type { PublicProfileField } from "../../user/public-profile";
+
 /** Дані профілю, зведені до одного вигляду — для обох оболонок */
 export interface UserProfileData {
   id: number;
@@ -16,6 +18,12 @@ export interface UserProfileData {
    * (`components/user-profile/account.ts`).
    */
   photoUrl?: string | null;
+  /** «Про себе» — те, що людина розповідає про себе сама (до `ABOUT_MAX_LENGTH`). */
+  about?: string | null;
+  /** Чи видно профіль іншим — у Просторі. */
+  isPublic?: boolean;
+  /** Які поля відкриті іншим. Порожній список — свідоме «все закрито». */
+  openFields?: PublicProfileField[];
   isPremium?: boolean;
   isBot?: boolean;
   addedToMenu?: boolean;

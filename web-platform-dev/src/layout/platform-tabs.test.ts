@@ -11,7 +11,7 @@
 
 import { describe, expect, it } from "vitest";
 import { buildTabBarItems } from "@wwwuabot/ui/nav";
-import { MESSAGES_PATH, PROFILE_PATH } from "../app/routes";
+import { MESSAGES_PATH, PROFILE_PATH, SPACE_PATH } from "../app/routes";
 import { MESSAGES_TAB_KEY, PLATFORM_TABS, toShellTabs, withUnreadBadge } from "./platform-tabs";
 
 function items(pathname = "/") {
@@ -33,18 +33,17 @@ describe("склад футера", () => {
     expect(tabs[4].href).toBe(PROFILE_PATH);
   });
 
-  it("кожен слот, крім «+», веде на адресу — або чесно каже, що екрана немає", () => {
+  it("кожен слот, крім «+», веде на адресу", () => {
     // Слот без адреси означав би, що дотик відкриває поверхню, а не веде на
     // екран: тоді футер не має ні історії, ні «назад», ні посилання, яке можна
     // надіслати. Єдина дія в смузі — «+», і вона позначена `primary`.
     const actionless = toShellTabs().filter((tab) => !tab.primary);
     expect(actionless).toHaveLength(4);
 
-    // Заглушка в смузі може бути — але тільки названа: тут це «Простір»,
-    // екрана під яким ще немає. Слот, який втратив адресу випадково, — це та
-    // сама тиша замість екрана, лише непомітна до дотику.
-    const placeholders = actionless.filter((tab) => !tab.href).map((tab) => tab.key);
-    expect(placeholders).toEqual(["space"]);
+    // Заглушок у смузі більше немає: Простір має екран. Слот, який втратив
+    // адресу, — це та сама тиша замість екрана, лише непомітна до дотику.
+    expect(actionless.filter((tab) => !tab.href).map((tab) => tab.key)).toEqual([]);
+    expect(actionless.find((tab) => tab.key === "space")?.href).toBe(SPACE_PATH);
   });
 
   it("другий слот — «Простір» зі своїм знаком і парою для вибраного стану", () => {

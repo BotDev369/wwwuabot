@@ -24,7 +24,7 @@ import { HOME_SLUG, toWebPath } from "@wwwuabot/shared/content";
 import type { ShellTab, TabBarItem } from "@wwwuabot/ui/nav";
 // Відносний імпорт, а не аліас `@/`: цей модуль читає тест, а тести ганяються
 // з кореневого конфіга без аліасів (`vitest.config.ts`).
-import { MESSAGES_PATH, PROFILE_PATH } from "../app/routes";
+import { MESSAGES_PATH, PROFILE_PATH, SPACE_PATH } from "../app/routes";
 
 export interface PlatformTab extends Omit<ShellTab, "href"> {
   /** Адреса сторінки — `slug` рядка `scenarios`. Немає — заглушка. */
@@ -44,15 +44,16 @@ export const MESSAGES_TAB_KEY = "messages";
 export const PLATFORM_TABS: readonly PlatformTab[] = [
   { key: "home", label: "Головна", icon: "home", iconActive: "home-solid", slug: HOME_SLUG },
   {
-    // «Простір» — спільний відкритий простір платформи: спершу користувачі,
-    // які самі зробили свій профіль публічним, далі оголошення й сторінки.
-    // Екрана під ним ще немає, тож слот стоїть **без** `slug` і без `to`:
-    // заглушка каже про це дотиком замість тиші, а адресу отримає тоді, коли
-    // екран справді з'явиться.
+    // «Простір» — спільний відкритий простір платформи: люди, які самі
+    // показали свій профіль, а далі оголошення й сторінки.
+    //
+    // Адреса — **власна** (`/space`), а не `slug` рядка контенту: Простір є
+    // вибіркою з даних, а не сторінкою, тож `to`, а не `slug`.
     key: "space",
     label: "Простір",
     icon: "feed",
     iconActive: "feed-solid",
+    to: SPACE_PATH,
   },
   { key: "create", label: "Створити", icon: "plus", primary: true },
   {

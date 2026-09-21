@@ -3,11 +3,11 @@
  *
  * Більшість сторінок платформи — це рядки таблиці `scenarios`: адресу дає
  * `slug`, а шлях будує `toWebPath()` (`packages/shared/src/content`). Інші — а
- * саме профіль (хаб і акаунт), список нотаток, контакти й переписка — не рядки
- * контенту: профіль складається з даних користувача, нотатки — з таблиці
- * `notes`, контакти — з `contacts`, переписка — з `conversations`/`messages`,
- * а не з `page_data`. Тому в них власні шляхи, і живуть вони тут, а не в базі
- * (AGENTS.md §7).
+ * саме профіль (хаб і акаунт), простір, список нотаток, контакти й переписка —
+ * не рядки контенту: профіль складається з даних користувача, простір — із
+ * відкритих профілів і оголошень, нотатки — з таблиці `notes`, контакти — з
+ * `contacts`, переписка — з `conversations`/`messages`, а не з `page_data`.
+ * Тому в них власні шляхи, і живуть вони тут, а не в базі (AGENTS.md §7).
  *
  * Один файл на всі — бо на кожну з цих адрес веде **двоє**: маршрут у
  * `app/router.tsx` і пункт навігації (футер, хаб профілю). Два літерали
@@ -36,6 +36,25 @@ export const PROFILE_PATH = `/${PROFILE_ROUTE}`;
  */
 export const PROFILE_ACCOUNT_ROUTE = "account";
 export const PROFILE_ACCOUNT_PATH = `${PROFILE_PATH}/${PROFILE_ACCOUNT_ROUTE}`;
+
+/**
+ * Простір — відкрита стрічка платформи: люди, які самі показали свій профіль,
+ * а далі оголошення й сторінки.
+ *
+ * Адреса тут, а не в базі: рядка `scenarios` під Простором немає, бо це не
+ * сторінка контенту, а **вибірка** з даних (`users`, `ads`). Вигадувати під
+ * нього `slug` означало б завести друге правило «яка адреса відповідає цьому
+ * екрану» (AGENTS.md §7).
+ */
+export const SPACE_ROUTE = "space";
+export const SPACE_PATH = `/${SPACE_ROUTE}`;
+
+/** Людина в Просторі — окрема адреса: за карткою стоїть один профіль. */
+export const SPACE_USER_ROUTE = "u";
+export const SPACE_USER_PATH = `${SPACE_PATH}/${SPACE_USER_ROUTE}`;
+
+/** Шлях профілю людини за її Telegram-id: складає **одна** функція. */
+export const spaceUserPath = (id: number): string => `${SPACE_USER_PATH}/${id}`;
 
 /** Нотатки — власні дані людини, не рядок `scenarios`. */
 export const NOTES_ROUTE = "notes";

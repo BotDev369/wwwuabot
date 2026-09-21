@@ -18,6 +18,7 @@
     "./messages": "./src/messages/index.ts",
     "./notes": "./src/notes/index.ts",
     "./nav": "./src/nav/index.ts",
+    "./tabs": "./src/tabs/index.ts",
     "./store": "./src/store.ts",
     "./registry": "./src/registry.tsx",
     "./blocks": "./src/blocks/index.ts",

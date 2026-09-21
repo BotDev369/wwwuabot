@@ -11,11 +11,8 @@
  * два розділи обирають **за словом** — «Платформа» й «Телеграм» не вгадуються
  * зі знака. Тому кирпичик інший (`.wb-tabs*`), хоч обидва й перемикачі.
  *
- * **Вигляд вкладки — кирпичик кнопки, і це не деталь.** Клас `.wb-tabs-btn`
- * дає саму розкладку (половинки рядка), а форму, висоту й заливку — `wb-btn`
- * із `wb-btn-primary` / `wb-btn-secondary`. Інакше власний `border-radius`
- * робив би вкладки прямокутними в обох брендів, тоді як решта кнопок продукту
- * овальна в Apple й заокруглена в Material.
+ * **Смугу рендерить спільний `Tabs`.** Той самий кирпичик стоїть тепер і в
+ * Просторі: дві смуги, написані окремо, розійшлися б першою ж правкою.
  *
  * **Пояснень немає навмисно.** Підпис поля й значення вже кажуть усе потрібне;
  * абзац про те, що «саме його вживає система», був текстом для нас, а не для
@@ -28,18 +25,15 @@
 import { useState, type ReactElement } from "react";
 import { Icon } from "@wwwuabot/shared";
 import { useNavigate } from "react-router-dom";
+import { Tabs, tabId, tabPanelId } from "@wwwuabot/ui/tabs";
 import { PROFILE_PATH } from "@/app/routes";
 import { ACCOUNT_TABS, DEFAULT_ACCOUNT_TAB, type AccountTab } from "./account-tabs";
 import { AccountPlatformSection } from "./AccountPlatformSection";
 import { AccountTelegramSection } from "./AccountTelegramSection";
 import { useProfile } from "./useProfile";
 
-/** Ідентифікатори вкладки й розділу — щоб `role="tabpanel"` знав свою вкладку. */
-const tabId = (key: AccountTab): string => `account-tab-${key}`;
-const panelId = (key: AccountTab): string => `account-panel-${key}`;
-
 export function ProfileAccountPage(): ReactElement {
-  const { profile, loading, error, saveUsername } = useProfile();
+  const { profile, loading, error, saveUsername, saveAbout, saveVisibility } = useProfile();
   const navigate = useNavigate();
   const [tab, setTab] = useState<AccountTab>(DEFAULT_ACCOUNT_TAB);
 
@@ -81,33 +75,19 @@ export function ProfileAccountPage(): ReactElement {
       {profile && !loading && !error && (
         <>
           {/* Розділи — двома рівними половинами рядка: обидва видно одразу, і
-              планка пальця в кожного своя. Форму дає кнопка (кирпичик), тут
-              лишається розкладка. */}
-          <div className="wb-tabs" role="tablist" aria-label="Розділи акаунта">
-            {ACCOUNT_TABS.map((option) => {
-              const active = option.key === tab;
-              return (
-                <button
-                  key={option.key}
-                  id={tabId(option.key)}
-                  type="button"
-                  role="tab"
-                  aria-selected={active}
-                  aria-controls={panelId(option.key)}
-                  className={`wb-btn wb-tabs-btn ${active ? "wb-btn-primary" : "wb-btn-secondary"}`}
-                  onClick={() => setTab(option.key)}
-                >
-                  {option.label}
-                </button>
-              );
-            })}
-          </div>
+              планка пальця в кожного своя. Смугу складає спільний кирпичик. */}
+          <Tabs options={ACCOUNT_TABS} value={tab} onChange={setTab} label="Розділи акаунта" />
 
           {/* Розділ без власного класу: його малюють картки всередині, а
               обгортка лише каже, котра вкладка зараз відкрита. */}
-          <div id={panelId(tab)} role="tabpanel" aria-labelledby={tabId(tab)}>
+          <div id={tabPanelId(tab)} role="tabpanel" aria-labelledby={tabId(tab)}>
             {tab === "platform" ? (
-              <AccountPlatformSection user={profile} onChangeUsername={saveUsername} />
+              <AccountPlatformSection
+                user={profile}
+                onChangeUsername={saveUsername}
+                onChangeAbout={saveAbout}
+                onChangeVisibility={saveVisibility}
+              />
             ) : (
               <AccountTelegramSection user={profile} />
             )}

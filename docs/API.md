@@ -18,6 +18,8 @@
 | `POST` | `/api/mydate/compare` | `handleCompare` |
 | `ANY` | `/api/mydate/systems` | `handleSystems` |
 | `ANY` | `/api/scenario/<…>` | `handleScenario` |
+| `GET` | `/api/space/users` | `handleSpaceUsers` |
+| `GET` | `/api/space/users/<…>` | `handleSpaceUser` |
 | `ANY` | `/health` | `handleHealth` |
 | `ANY` | `/health/deep` | `handleDeepHealth` |
 
@@ -38,8 +40,10 @@
 | `ANY` | `/api/messages/thread` | `handleMessageThread` |
 | `ANY` | `/api/my-dates` | `handleMyDates` |
 | `ANY` | `/api/notes` | `handleNotes` |
+| `POST` | `/api/user/about` | `handleUserAbout` |
 | `GET` | `/api/user/profile` | `handleUserProfile` |
 | `POST` | `/api/user/username` | `handleSetPlatformUsername` |
+| `POST` | `/api/user/visibility` | `handleUserVisibility` |
 
 ## Адмін — cookie `admin_session`
 
@@ -72,4 +76,4 @@
 | `POST` | `/auth/login` | `handleLogin` |
 | `POST` | `/auth/logout` | `handleLogout` |
 
-Усього шляхів: **43**.
+Усього шляхів: **47**.

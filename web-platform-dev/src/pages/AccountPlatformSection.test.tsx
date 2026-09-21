@@ -4,17 +4,18 @@
  * Раніше тут були дві: «Ім'я на платформі» й «Дані акаунта». Кожна окремо
  * виглядала правильно, а разом вони ділили один факт навпіл — людина читала
  * «ось ім'я» і «ось іще щось про мене» там, де йдеться про те саме. Тест тримає
- * три речі, які ламаються мовчки: кількість карток (друга завелась би
- * поверненням `plain`), заголовок (без нього картка знову безіменна) і те, що
- * дані акаунта нікуди не зникли разом із другою карткою. Плюс — що в розділі
- * немає тексту понад підписи полів.
+ * те, що ламається мовчки: кількість карток (друга завелась би поверненням
+ * `plain`), заголовок (без нього картка знову безіменна), те, що дані акаунта
+ * нікуди не зникли, і — головне — **коли показуються перемикачі полів**:
+ * закритий профіль не мусить показувати шість перемикачів, які ні на що не
+ * впливають.
  *
  * @module web-platform-dev/src/pages/AccountPlatformSection.test
  */
 
 import { describe, expect, it } from "vitest";
 import { renderToStaticMarkup } from "react-dom/server";
-import type { UserProfileData } from "@wwwuabot/shared";
+import { DEFAULT_OPEN_FIELDS, PUBLIC_PROFILE_FIELDS, type UserProfileData } from "@wwwuabot/shared";
 import { AccountPlatformSection } from "./AccountPlatformSection";
 
 const USER: UserProfileData = {
@@ -25,8 +26,20 @@ const USER: UserProfileData = {
   status: "active",
 };
 
+const noop = async (): Promise<null> => null;
+
 const render = (user: UserProfileData = USER): string =>
-  renderToStaticMarkup(<AccountPlatformSection user={user} onChangeUsername={async () => null} />);
+  renderToStaticMarkup(
+    <AccountPlatformSection
+      user={user}
+      onChangeUsername={noop}
+      onChangeAbout={noop}
+      onChangeVisibility={noop}
+    />,
+  );
+
+/** Скільки перемикачів у розділі: головний плюс поля, коли профіль відкрито. */
+const switches = (html: string): number => html.match(/role="switch"/g)?.length ?? 0;
 
 describe("AccountPlatformSection", () => {
   it("тримає ім'я й дані акаунта в одній картці", () => {
@@ -66,5 +79,43 @@ describe("AccountPlatformSection", () => {
     expect(render({ ...USER, photoUrl: "https://cdn.example/photo.jpg" })).toContain(
       '<img src="https://cdn.example/photo.jpg"',
     );
+  });
+
+  it("«Про себе» — у тій самій картці, між іменем і полями", () => {
+    const html = render({ ...USER, about: "Люблю гори" });
+
+    expect(html).toContain("Про себе");
+    expect(html).toContain("Люблю гори");
+    expect(html.indexOf("wb-handle-head")).toBeLessThan(html.indexOf("wb-about"));
+    expect(html.indexOf("wb-about")).toBeLessThan(html.indexOf("wb-profile-fields"));
+  });
+
+  it("«Про себе» показує порожнечу словом, а не порожнім місцем", () => {
+    expect(render()).toContain("Ще не заповнено");
+  });
+
+  it("⛔ закритий профіль не показує перемикачів полів", () => {
+    // Шість перемикачів, які зараз ні на що не впливають, змушували б
+    // здогадуватись, що спершу треба ввімкнути головний.
+    const html = render({ ...USER, isPublic: false, openFields: [] });
+
+    expect(switches(html)).toBe(1);
+    expect(html).toContain("Публічний профіль");
+    expect(html).not.toContain("З нами з");
+  });
+
+  it("відкритий профіль показує всі поля, і типові — увімкненими", () => {
+    // Коли набір не збережено, діє типовий: ім'я, фото й «Про себе» відкриті.
+    const html = render({ ...USER, isPublic: true });
+
+    expect(switches(html)).toBe(1 + PUBLIC_PROFILE_FIELDS.length);
+    expect(html.match(/wb-switch--on/g)).toHaveLength(1 + DEFAULT_OPEN_FIELDS.length);
+  });
+
+  it("порожній набір лишається порожнім — це вибір, а не «ще не вирішували»", () => {
+    const html = render({ ...USER, isPublic: true, openFields: [] });
+
+    expect(switches(html)).toBe(1 + PUBLIC_PROFILE_FIELDS.length);
+    expect(html.match(/wb-switch--on/g)).toHaveLength(1);
   });
 });

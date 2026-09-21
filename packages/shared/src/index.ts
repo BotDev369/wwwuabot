@@ -90,6 +90,15 @@ export { DatabaseSection as UserProfileDataSection } from "./components/user-pro
 export { TelegramSection as UserTelegramDataSection } from "./components/user-profile/TelegramSection";
 /** Картка розділу профілю (заголовок + рамка) — її складає той, хто рендерить розділ. */
 export { ProfileCard as UserProfileSection } from "./components/user-profile/ProfileCard";
+/** «Про себе» — блок із правкою на місці (платформа) або без неї (чужий профіль). */
+export { AboutField } from "./components/user-profile/AboutField";
+/** Публічність профілю: головний перемикач і поля під ним. */
+export { PublicProfileControls } from "./components/user-profile/PublicProfileControls";
+export type { PublicProfileChange } from "./components/user-profile/PublicProfileControls";
+/** Перемикач «увімкнено / вимкнено» — спільний кирпичик (не галочка). */
+export { SwitchRow } from "./components/Switch";
+/** Картка людини в Просторі: лише відкриті поля, жодних даних Telegram. */
+export { PublicUserCard } from "./components/space/PublicUserCard";
 /** Круг акаунта в розділі: фото, а як його немає — літера. */
 export { AccountAvatar } from "./components/user-profile/AccountAvatar";
 /** Два акаунти однієї людини — чисті функції (див. `user-profile/account.ts`). */
@@ -127,6 +136,28 @@ export type {
   PlatformUsernameResult,
   PlatformUsernameRules,
 } from "./user/platform-username";
+
+// ── Публічний профіль: що про людину бачать інші ─────────────────────
+export {
+  ABOUT_MAX_LENGTH,
+  DEFAULT_OPEN_FIELDS,
+  PUBLIC_FIELD_LABELS,
+  PUBLIC_PROFILE_FIELDS,
+  isEmptyPublicProfile,
+  isProfilePublic,
+  isPublicProfileField,
+  parsePublicFields,
+  publicProfileLabel,
+  publicProfileView,
+  serializePublicFields,
+  validateAbout,
+} from "./user/public-profile";
+export type {
+  AboutResult,
+  PublicProfile,
+  PublicProfileField,
+  PublicProfileSource,
+} from "./user/public-profile";
 
 // ── Utils ────────────────────────────────────────────────────────────
 export { formatSqliteDatetime } from "./utils/datetime";

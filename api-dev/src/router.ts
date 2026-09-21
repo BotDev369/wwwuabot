@@ -30,6 +30,12 @@ import {
   handleDelete as handlePortalDelete,
 } from "./controllers/scenarios-portal.controller";
 import {
+  handleSpaceUser,
+  handleSpaceUsers,
+  handleUserAbout,
+  handleUserVisibility,
+} from "./controllers/public-profile.controller";
+import {
   handleListUsers,
   handleReadUser,
   handleUserProfile,
@@ -264,6 +270,26 @@ export async function handleRequest(request: Request, env: Env): Promise<Respons
   }
   if (pathname === "/api/user/username" && request.method === "POST") {
     return handleSetPlatformUsername(request, env);
+  }
+  // Публічність профілю: «Про себе» і набір відкритих полів — дії людини над
+  // **своїм** рядком, тож ідентичність та сама (підписаний `initData`).
+  if (pathname === "/api/user/about" && request.method === "POST") {
+    return handleUserAbout(request, env);
+  }
+  if (pathname === "/api/user/visibility" && request.method === "POST") {
+    return handleUserVisibility(request, env);
+  }
+
+  // ── Public: Space (відкритий простір платформи) ────────────────
+  // Без авторизації: у стрічку дивляться без входу, а видимість кожного
+  // профілю вже відібрана в запиті до бази, а не тут.
+  if (pathname === "/api/space/users" && request.method === "GET") {
+    return handleSpaceUsers(request, env);
+  }
+  if (pathname.startsWith("/api/space/users/") && request.method === "GET") {
+    const id = decodePathSegment(pathname.replace("/api/space/users/", ""));
+    if (id === null) return badRequest();
+    return handleSpaceUser(request, env, id);
   }
 
   // ── 404 ─────────────────────────────────────────────────────────

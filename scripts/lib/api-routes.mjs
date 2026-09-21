@@ -26,7 +26,9 @@ const GROUPS = [
   {
     title: "Публічне",
     auth: "без авторизації",
-    prefixes: ["/health", "/api/scenario/", "/api/mydate/"],
+    // `/api/space/` — відкритий простір платформи: у стрічку дивляться без
+    // входу, а видимість кожного профілю відбирає запит до бази, а не гейт.
+    prefixes: ["/health", "/api/scenario/", "/api/mydate/", "/api/space/"],
   },
   {
     title: "Користувач",

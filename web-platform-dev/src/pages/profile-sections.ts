@@ -9,9 +9,10 @@
  * додав пункт останнім, тож місце пункту можна запам'ятати. Стежить
  * `profile-sections.test.ts`.
  *
- * **«Дати» тут немає** навмисно: це пункт футера, який видно на кожному
- * екрані. Хаб — не друга копія футера, а те, чого в футері немає місця:
- * Контакти, Локації, Нотатки, Сторінки й Тема.
+ * **«Дати» є, і це не друга копія навігації.** У футері слот другий — Простір,
+ * тож до дат ведуть **тільки** звідси: вони — щоденний інструмент людини, але
+ * не та річ, яку шукають на кожному екрані. Хаб — не копія футера, а те, чого
+ * в футері немає місця: Дати, Контакти, Локації, Нотатки, Сторінки й Тема.
  *
  * **Підписів «Мій / Мої» немає** — ні тут, ні в футері, ні на екранах: хаб
  * відкривають зі свого профілю, тож приналежність очевидна, а префікс лише
@@ -28,7 +29,13 @@ import type { IconName } from "@wwwuabot/shared";
 import type { MenuLayout, ShellMenuItem } from "@wwwuabot/ui/menu";
 // Відносний імпорт, а не аліас `@/`: цей модуль читає тест, а тести ганяються
 // з кореневого конфіга без аліасів (`vitest.config.ts`).
+import { toWebPath } from "@wwwuabot/shared/content";
+// Відносний імпорт, а не аліас `@/`: цей модуль читає тест, а тести ганяються
+// з кореневого конфіга без аліасів (`vitest.config.ts`).
 import { CONTACTS_PATH, NOTES_PATH } from "../app/routes";
+
+/** Сторінка дат — рядок контенту: адресу дає `slug`, а не літерал (AGENTS §7). */
+const MY_DATE_SLUG = "mydate";
 
 export interface BuildProfileSectionsOptions {
   /**
@@ -42,6 +49,7 @@ export function buildProfileSections({
   onOpenTheme,
 }: BuildProfileSectionsOptions): ShellMenuItem[] {
   return [
+    { key: "mydate", label: "Дати", icon: "my-dates", href: toWebPath(MY_DATE_SLUG) },
     { key: "contacts", label: "Контакти", icon: "mail", href: CONTACTS_PATH },
     {
       key: "locations",
