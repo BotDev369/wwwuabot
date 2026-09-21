@@ -297,6 +297,20 @@ html[data-brand="apple"] .wb-btn-secondary {
   box-shadow: none !important;
 }
 
+/* Вкладка розділів — та сама кнопка, лише компактніша.
+
+   Міра стоїть тут, а не в `components.css`, бо висоту контрола в цьому продукті
+   задає **бренд**, і його `!important` перемагає будь-яке правило спільного
+   шару (та сама пастка, що описана в `buttons.test.ts`). 44px — це міра
+   **кнопки-дії**; смуга вкладок стоїть над стрічкою, яку читають, і кнопковий
+   зріст забирав у неї цілий рядок. Саме число оголошує смуга (`.wb-tabs`, токен
+   `--tabs-h`) — тут лишається тільки «вкладка цього бренду компактна». */
+html[data-brand="apple"] .wb-tabs-btn {
+  min-height: var(--tabs-h) !important;
+  padding: 0 var(--sp-3) !important;
+  font-size: 14px !important;
+}
+
 /* ── Sidebar: FROSTED GLASS — Apple's signature effect ───────────────────
    Клас рендерить і адмінка (`.wb-nav`), і спільний `PageRenderer`
    (`.page-zone--sidebar`) — бренд мусить діяти на обидва, інакше оболонки

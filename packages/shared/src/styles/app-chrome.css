@@ -1410,23 +1410,11 @@
    цієї картки — деталь продукту, а не однієї сторінки (той самий вибір, що
    для `.wb-person`).
 
-   `wb-space-create` — кнопка створення на вкладці: на телефоні вона мусить
-   займати всю ширину, бо це головна дія екрана. */
-.wb-space-create {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: var(--sp-2);
-  width: 100%;
-  margin-bottom: var(--sp-3);
-}
-
-.wb-ads {
-  display: flex;
-  flex-direction: column;
-  gap: var(--sp-2);
-}
-
+   Список дошки — **спільна розкладка колекції** (`.wb-collection*`): разом із
+   нею приходять і «рядки / плитки», і смуга керування — один кирпичик на весь
+   продукт, і дошка бере його тим самим класом, що нотатки з контактами.
+   Власного класу списку тут немає навмисно: він був `flex-column`, і вигляд
+   «плитки» довелось би писати другою розкладкою на ту саму роль. */
 .wb-ad {
   display: flex;
   flex-direction: column;
@@ -1487,12 +1475,51 @@
 }
 
 /* Дії — окремим рядком унизу: вони належать картці, а не тексту, і на тачі
-   мусять бути видні постійно (ніякого `:hover`, §3). */
+   мусять бути видні постійно (ніякого `:hover`, §3).
+
+   **Словом, а не трьома кнопками.** Кнопка в цьому продукті має міру бренду
+   (Apple — 44px із заливкою), і три такі заливки під оголошенням важили б
+   більше за саме оголошення — а в стрічці читають текст, а не ряд кнопок.
+   Тому дія тут — приглушений підпис, видимий постійно; сам кирпичик кнопки не
+   позичаємо навмисно (міру він бере в бренду з `!important` — та сама пастка,
+   що в `.wb-tools-add`). Червоне лишається **лише** видаленню: заливка
+   зробила б із нього головну дію картки, а головне тут — прочитати. */
 .wb-ad-actions {
   display: flex;
   flex-wrap: wrap;
-  gap: var(--sp-2);
+  align-items: center;
+  gap: var(--sp-1);
   margin-top: var(--sp-2);
+}
+
+.wb-ad-action {
+  display: inline-flex;
+  align-items: center;
+  min-height: 32px;
+  padding: 0 var(--sp-2);
+  border: none;
+  border-radius: var(--radius-sm);
+  background: none;
+  color: var(--text-secondary);
+  font: inherit;
+  font-size: var(--text-sm);
+  cursor: pointer;
+  transition:
+    background var(--duration-fast) var(--ease),
+    color var(--duration-fast) var(--ease);
+}
+
+.wb-ad-action:hover {
+  background: var(--surface-hover);
+  color: var(--text-primary);
+}
+
+.wb-ad-action:active {
+  background: var(--surface-active);
+}
+
+.wb-ad-action--danger {
+  color: var(--red);
 }
 
 /* ═══ Композер: вибір виду оголошення ══════════════════════════════════════ */

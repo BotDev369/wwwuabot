@@ -13,6 +13,9 @@
  * оголошення в списку нічим не відрізнялось би від показаного — а різниця
  * велика: його ніхто, крім власника, не бачить.
  *
+ * **Дії — словом, а не трьома кнопками** (`.wb-ad-actions`): у стрічці читають
+ * оголошення, і ряд кнопок бренду важив би більше за сам текст.
+ *
  * @module web-platform-dev/src/pages/AdCard
  */
 
@@ -48,13 +51,13 @@ export function AdCard({
 
       {mine && (
         <div className="wb-ad-actions">
-          <button type="button" className="wb-btn wb-btn-secondary wb-btn-sm" onClick={onEdit}>
+          <button type="button" className="wb-ad-action" onClick={onEdit}>
             Змінити
           </button>
-          <button type="button" className="wb-btn wb-btn-secondary wb-btn-sm" onClick={onToggle}>
+          <button type="button" className="wb-ad-action" onClick={onToggle}>
             {ad.isActive ? "Прибрати" : "Показати"}
           </button>
-          <button type="button" className="wb-btn wb-btn-danger wb-btn-sm" onClick={onDelete}>
+          <button type="button" className="wb-ad-action wb-ad-action--danger" onClick={onDelete}>
             Видалити
           </button>
         </div>

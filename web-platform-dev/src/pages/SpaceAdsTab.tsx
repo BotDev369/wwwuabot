@@ -1,6 +1,10 @@
 /**
  * «Оголошення» — дошка Простору.
  *
+ * **Смуга керування, а не кнопка на пів екрана.** Створення й пошук живуть в
+ * одному ряду (`SpaceAdsToolbar` + спільна смуга колекції): так дошка виглядає
+ * як усі інші списки продукту, а список читають, а не прогортають повз кнопку.
+ *
  * **Свої дії тільки на своєму.** Кнопки стоять під оголошеннями власника, і це
  * не оформлення: редагувати чуже все одно не вийде — сервер відповість 404, бо
  * власник стоїть у `WHERE`. Показувати кнопку, яка гарантовано не працює, було
@@ -14,11 +18,14 @@
  * @module web-platform-dev/src/pages/SpaceAdsTab
  */
 
-import type { ReactElement } from "react";
+import { useState, type ReactElement } from "react";
 import { Icon } from "@wwwuabot/shared";
 import type { Ad } from "@wwwuabot/shared/ads";
+import { collectionViewClass } from "@wwwuabot/ui/collection";
 import { useDialog } from "@wwwuabot/ui/dialog";
 import { AdCard } from "./AdCard";
+import { SpaceAdsToolbar } from "./SpaceAdsToolbar";
+import { DEFAULT_ADS_VIEW, filterAds, type AdsView } from "./ads-view";
 import type { SpaceAd } from "./ads-list";
 
 export function SpaceAdsTab({
@@ -46,6 +53,11 @@ export function SpaceAdsTab({
   onRemove: (id: number) => Promise<void>;
 }): ReactElement {
   const dialog = useDialog();
+  // Пошук і фільтри — стан екрана, як у нотаток: список лише малює вибране.
+  const [view, setView] = useState<AdsView>(DEFAULT_ADS_VIEW);
+
+  const visible = filterAds(items, view);
+  const hasItems = !loading && !error && items.length > 0;
 
   async function confirmDelete(ad: Ad): Promise<void> {
     const question = ad.title || ad.body.slice(0, 60);
@@ -66,10 +78,15 @@ export function SpaceAdsTab({
 
   return (
     <>
-      <button className="wb-btn wb-btn-primary wb-space-create" onClick={() => onCompose()}>
-        <Icon name="plus" size={16} />
-        Створити оголошення
-      </button>
+      {hasItems && (
+        <SpaceAdsToolbar
+          items={items}
+          view={view}
+          onChange={(patch) => setView((prev) => ({ ...prev, ...patch }))}
+          shown={visible.length}
+          onCompose={() => onCompose()}
+        />
+      )}
 
       {loading && (
         <div className="wb-empty">
@@ -90,20 +107,23 @@ export function SpaceAdsTab({
         </div>
       )}
 
+      {/* Порожня дошка каже, **де** створити оголошення: смуга керування тут не
+          малюється (нема чого шукати й фільтрувати), а «+» лишається у футері. */}
       {!loading && !error && items.length === 0 && (
         <div className="wb-empty">
           <span className="wb-empty-icon">
             <Icon name="feed" size={32} />
           </span>
+          <p className="wb-empty-text">Тут поки нічого немає.</p>
           <p className="wb-empty-text">
-            Тут поки нічого немає. Оголошення з'являються одразу після того, як їх напишуть.
+            Натисніть «+» у нижньому футері — оголошення з'явиться на дошці.
           </p>
         </div>
       )}
 
-      {!loading && !error && items.length > 0 && (
-        <div className="wb-ads">
-          {items.map(({ ad, mine }) => (
+      {hasItems && visible.length > 0 && (
+        <div className={collectionViewClass(view)}>
+          {visible.map(({ ad, mine }) => (
             <AdCard
               key={ad.id}
               ad={ad}
@@ -113,6 +133,25 @@ export function SpaceAdsTab({
               onDelete={() => void confirmDelete(ad)}
             />
           ))}
+        </div>
+      )}
+
+      {/* Фільтр звузив усе — і це видно словами: «порожньо» без причини читалось
+          би як поламана дошка. */}
+      {hasItems && visible.length === 0 && (
+        <div className="wb-empty">
+          <span className="wb-empty-icon">
+            <Icon name="search" size={32} />
+          </span>
+          <p className="wb-empty-text">Нічого не знайдено за цим запитом.</p>
+          <button
+            type="button"
+            className="wb-btn wb-btn-secondary"
+            onClick={() => setView(DEFAULT_ADS_VIEW)}
+          >
+            <Icon name="close" size={16} />
+            Скинути пошук і фільтри
+          </button>
         </div>
       )}
     </>

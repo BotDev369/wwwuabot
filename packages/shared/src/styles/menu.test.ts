@@ -215,23 +215,49 @@ describe("меню: повноекранна поверхня, перемика�
     }
   });
 
-  it("перемикач розділів сторінки — горизонтальний, і розділ не менший за палець", () => {
+  it("перемикач розділів сторінки — горизонтальний, і підпис у ньому не ламається", () => {
     // Це інший кирпичик, ніж сегмент вигляду, і різниця не в оформленні:
     // тут обирають **розділ за словом**, а не варіант вигляду за знаком.
-    expect(rule(".wb-tabs")?.body).toContain("flex-direction: row");
+    const tabs = rule(".wb-tabs")?.body ?? "";
+    expect(tabs).toContain("flex-direction: row");
+    // Вкладок може стати більше, ніж влазить: тоді смуга **прокручується**, а не
+    // стискає підписи — стиснута вкладка ламає слово посередині («Користува/чі»),
+    // і розділ перестає вгадуватись.
+    expect(tabs).toContain("overflow-x: auto");
+    // Міра смуги — **одне** число на обидва бренди, і оголошує його сама смуга.
+    expect(tabs).toContain("--tabs-h: 36px");
 
     const btn = rule(".wb-tabs-btn");
     expect(btn, "правило .wb-tabs-btn мусить існувати").toBeDefined();
-    // Половинки ділять рядок **порівну**: `flex: 1 1 0` із `min-width: 0` —
-    // інакше довше слово («Платформа») розпирало б свою вкладку, і смуга
-    // перестала б бути рівною парою.
-    expect(btn?.body).toContain("flex: 1 1 0");
+    // Вкладка ширшає за своїм підписом (`flex-grow`), але не вужчає під нього
+    // (`flex-shrink: 0`): інакше довге слово розпирало б смугу, а коротке
+    // зникало б у нульовій ширині.
+    expect(btn?.body).toContain("flex: 1 0 auto");
     expect(btn?.body).toContain("min-width: 0");
 
-    // Планку пальця вкладка теж бере в кнопки, а не тримає власну: висота
-    // кнопки — мірка бренду (`apple.css` — 44px), і друга цифра тут завела б
-    // третю мірку того самого.
+    // А висоту вкладка бере в бренду, а не тримає власну: друга цифра тут
+    // завела б третю мірку того самого контрола.
     expect(btn?.body).not.toContain("min-height");
+  });
+
+  it("компактна вкладка — рішення бренду, і число в нього одне", () => {
+    // Висоту контрола в цьому продукті задає бренд (`!important` перекриває
+    // спільний шар — див. `buttons.test.ts`), тож компактність вкладки мусить
+    // бути саме там. Друга цифра замість токена `--tabs-h` розійшлася б із
+    // першою: смуга вкладок однакова в обох брендів.
+    for (const brand of ["apple", "android"] as const) {
+      const css = readFileSync(
+        join(REPO_ROOT, `packages/shared/src/styles/${brand}.css`),
+        "utf8",
+      ).replace(/\/\*[\s\S]*?\*\//g, "");
+      const branded = [...css.matchAll(/([^{}]+)\{([^{}]*)\}/g)]
+        .map(([, selector, body]) => ({ selector: selector.replace(/\s+/g, " ").trim(), body }))
+        .find((entry) => entry.selector.endsWith(".wb-tabs-btn"));
+
+      expect(branded, `${brand}: правило про вкладку мусить існувати`).toBeDefined();
+      expect(branded?.body, brand).toContain("min-height: var(--tabs-h) !important");
+      expect(branded?.body, brand).not.toMatch(/min-height:\s*\d+px/);
+    }
   });
 
   it("вкладка бере вигляд у кирпичика кнопки, а не малює свій", () => {

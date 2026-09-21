@@ -10,6 +10,10 @@
  * розділах акаунта. Розділ, якого ще немає, стоїть **видимим** і чесно каже,
  * що там буде, — ховати його означало б обіцяти, що далі порожньо.
  *
+ * **Заголовок і вкладки їдуть разом** (`.wb-page-sticky`): у стрічці гортають
+ * униз, і без цього смуга зникала б після першого ж екрана — рівно тоді, коли
+ * треба перейти в інший розділ. Той самий каркас, що в нотаток і контактів.
+ *
  * **Композер відкривається звідси тим самим `ComposerModal`**, що й з «+» у
  * футері, лише на вкладці «Оголошення»: одна форма на два входи — інакше
  * дошка мала б власну, яка розійшлася б із першою першою ж правкою.
@@ -44,11 +48,15 @@ export function SpacePage(): ReactElement {
 
   return (
     <div className="wb-page">
-      <div className="wb-page-head">
-        <h1 className="wb-page-title">Простір</h1>
-      </div>
+      {/* Проміжки тут — самого шару (`gap` і `padding`): окремі `margin` у
+          заголовка й смуги дали б подвійну прогалину під шапкою. */}
+      <div className="wb-page-sticky">
+        <div className="wb-page-head">
+          <h1 className="wb-page-title">Простір</h1>
+        </div>
 
-      <Tabs options={SPACE_TABS} value={tab} onChange={setTab} label="Розділи простору" />
+        <Tabs options={SPACE_TABS} value={tab} onChange={setTab} label="Розділи простору" />
+      </div>
 
       <div id={tabPanelId(tab)} role="tabpanel" aria-labelledby={tabId(tab)}>
         {tab === "users" && (

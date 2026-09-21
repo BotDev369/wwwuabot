@@ -285,6 +285,15 @@ html[data-brand="android"] .wb-btn-primary:hover {
   box-shadow: var(--shadow-md) !important;
 }
 
+/* Вкладка розділів — компактна, і міра стоїть саме тут: висоту контрола задає
+   бренд, і його `!important` перемагає спільний шар (див. `buttons.test.ts`).
+   Значення одне на обидва бренди — токен `--tabs-h` з `.wb-tabs`. */
+html[data-brand="android"] .wb-tabs-btn {
+  min-height: var(--tabs-h) !important;
+  padding: 0 var(--sp-3) !important;
+  font-size: 14px !important;
+}
+
 html[data-brand="android"] .wb-btn-secondary {
   background: var(--bg-3) !important;
   color: var(--text-primary) !important;
