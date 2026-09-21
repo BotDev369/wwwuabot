@@ -20,6 +20,15 @@ const noop = async (): Promise<void> => {};
 
 const html = renderToStaticMarkup(<ComposerModal onClose={() => {}} onSaveNote={noop} />);
 
+/** Дошка передає свій обробник — лише тоді в композера з'являється «Оголошення». */
+const withAd = renderToStaticMarkup(
+  <ComposerModal onClose={() => {}} onSaveNote={noop} onSaveAd={noop} initialTab="ad" />,
+);
+
+/** Вкладки, доступні в цьому рендері: без обробника вкладки немає. */
+const labelsExcept = (key: string): string[] =>
+  COMPOSER_TABS.filter((tab) => tab.key !== key).map((tab) => tab.label);
+
 describe("ComposerModal", () => {
   it("відкривається на «Нотатці»: поле вводу, вставка й кнопки дії", () => {
     expect(html).toContain("wb-composer-input");
@@ -93,8 +102,29 @@ describe("ComposerModal", () => {
     expect(html.indexOf("wb-composer-tab--active")).toBeLessThan(html.indexOf("Сторінка"));
   });
 
-  it("показує всі вкладки зі складу, зокрема «Сторінку»", () => {
-    for (const tab of COMPOSER_TABS) expect(html).toContain(tab.label);
+  it("показує вкладки зі складу — крім тієї, чийого обробника не передали", () => {
+    // У панелі дошки немає, тож `onSaveAd` туди не їде — і вкладки «Оголошення»
+    // теж немає: порожній пункт, який нічого не вміє зберегти, ми не показуємо
+    // (AGENTS.md §7).
+    for (const label of labelsExcept("ad")) expect(html).toContain(label);
+    expect(html).not.toContain('aria-label="Оголошення"');
+  });
+
+  it("дошка отримує вкладку «Оголошення» й відкриває її на собі", () => {
+    // Композер кличе дошка «за ділом», а не «створи що-небудь»: підставляти
+    // потрібну вкладку дотиком за людину — це ще один зайвий рух.
+    expect(withAd).toContain('aria-label="Оголошення"');
+    expect(withAd).toContain("wb-composer-kind");
+    expect(withAd).toContain("wb-composer-ad-title");
+    expect(withAd).toContain("wb-sheet-actions");
+    expect(withAd).toContain('aria-selected="true" aria-label="Оголошення"');
+    expect(withAd.match(/aria-selected="true"/g)).toHaveLength(1);
+    // Нотаткових полів тут немає: вкладка одна, і вона своя.
+    expect(withAd).not.toContain("wb-composer-note-input");
+  });
+
+  it("порожнє оголошення зберегти неможливо", () => {
+    expect(withAd).toMatch(/wb-btn-primary" disabled/);
   });
 
   it("дія збереження є лише там, де інтерфейс уже працює", () => {
@@ -112,7 +142,7 @@ describe("ComposerModal", () => {
     // Підпис вкладки на вузькому екрані ховається (CSS), тож ім'я мусить бути
     // в `aria-label` — інакше кнопка стала б безіменною.
     expect(html).toContain("wb-composer-tabs");
-    for (const tab of COMPOSER_TABS) expect(html).toContain(`aria-label="${tab.label}"`);
+    for (const label of labelsExcept("ad")) expect(html).toContain(`aria-label="${label}"`);
   });
 
   it("кнопки вкладень — самі іконки, ім'я дії в aria-label", () => {

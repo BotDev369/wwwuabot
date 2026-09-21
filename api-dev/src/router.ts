@@ -35,6 +35,7 @@ import {
   handleUserAbout,
   handleUserVisibility,
 } from "./controllers/public-profile.controller";
+import { handleSpaceAds, handleUserAds } from "./controllers/ads.controller";
 import {
   handleListUsers,
   handleReadUser,
@@ -279,6 +280,11 @@ export async function handleRequest(request: Request, env: Env): Promise<Respons
   if (pathname === "/api/user/visibility" && request.method === "POST") {
     return handleUserVisibility(request, env);
   }
+  // Оголошення людини: `GET` — свої (з чернетками), `POST` — зберегти,
+  // `DELETE` — прибрати своє. Власника додає сервер із підписаного `initData`.
+  if (pathname === "/api/user/ads") {
+    return handleUserAds(request, env);
+  }
 
   // ── Public: Space (відкритий простір платформи) ────────────────
   // Без авторизації: у стрічку дивляться без входу, а видимість кожного
@@ -290,6 +296,10 @@ export async function handleRequest(request: Request, env: Env): Promise<Respons
     const id = decodePathSegment(pathname.replace("/api/space/users/", ""));
     if (id === null) return badRequest();
     return handleSpaceUser(request, env, id);
+  }
+  // Дошка оголошень — теж публічна: показане відбирає запит до бази.
+  if (pathname === "/api/space/ads" && request.method === "GET") {
+    return handleSpaceAds(request, env);
   }
 
   // ── 404 ─────────────────────────────────────────────────────────

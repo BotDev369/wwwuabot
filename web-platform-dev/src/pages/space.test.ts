@@ -31,9 +31,15 @@ describe("розділи Простору", () => {
     for (const tab of SPACE_TABS.filter((entry) => entry.soon)) {
       expect(tab.hint, tab.key).toBeTruthy();
     }
-    // А той, що вже працює, нічого не обіцяє: у нього немає `hint`.
-    expect(spaceTab("users").hint).toBeUndefined();
-    expect(spaceTab("users").soon).toBeUndefined();
+  });
+
+  it("той, що вже працює, нічого не обіцяє: у нього немає ні `soon`, ні `hint`", () => {
+    // Заглушка, яку забули зняти, гірша за відсутню: екран працює, а вкладка
+    // все ще каже «ще в розробці» — і людина в нього не загляне.
+    for (const key of ["users", "ads"] as const) {
+      expect(spaceTab(key).hint, key).toBeUndefined();
+      expect(spaceTab(key).soon, key).toBeUndefined();
+    }
   });
 
   it("невідомий ключ не валить екран", () => {

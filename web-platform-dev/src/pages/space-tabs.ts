@@ -32,8 +32,6 @@ export const SPACE_TABS: readonly SpaceTabOption[] = [
   {
     key: "ads",
     label: "Оголошення",
-    soon: true,
-    hint: "Куплю, продам, здам чи зніму, шукаю, обміняю, подарую, надам послуги — усе, що людина хоче сказати іншим.",
   },
   {
     key: "pages",

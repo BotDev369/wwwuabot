@@ -11,6 +11,7 @@
 
 import type { ReactNode } from "react";
 import type { IconName } from "@wwwuabot/shared";
+import type { AdDraft } from "@wwwuabot/shared/ads";
 import type { NoteDraft } from "@wwwuabot/shared/notes";
 
 /**
@@ -55,6 +56,16 @@ export interface ComposerModalProps {
    * першою.
    */
   initial?: NoteDraft;
+  /**
+   * Зберегти оголошення. **Немає обробника — немає й вкладки**: дошка живе
+   * тільки в платформі, і показувати в панелі форму, яка не вміє зберігати,
+   * було б порожнім пунктом (AGENTS.md §7).
+   */
+  onSaveAd?: (draft: AdDraft) => Promise<void>;
+  /** Чернетка оголошення: `id` — правка свого (дошка відкриває композер так). */
+  initialAd?: AdDraft;
+  /** Вкладка, з якої відкрити: дошка кличе композер саме на «Оголошення». */
+  initialTab?: string;
 }
 
 /** Види вкладень, місце під які вже позначене. */

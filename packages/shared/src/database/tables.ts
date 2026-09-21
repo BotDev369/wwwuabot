@@ -229,6 +229,49 @@ export const TABLES = {
   },
 
   /**
+   * Оголошення — дошка Простору: куплю, продам, здам, шукаю, обміняю,
+   * подарую, надаю послуги. Пишуть **усі**, читають у стрічці.
+   *
+   * **Чому не `scenarios`.** Там `slug` — `NOT NULL UNIQUE`: це *опублікований
+   * контент із адресою*, сторінка, яку відкривають за посиланням. Оголошення
+   * адреси не має й не матиме — його читають у стрічці, і правила в нього свої
+   * (вид, ціна, місто, зняти з дошки). Поклавши його в `scenarios`, ми мали б
+   * вигадувати `slug` кожному рядку й тримати в тій самій таблиці другий
+   * фільтр видимості — та сама пастка, що колись дала дві копії сценаріїв
+   * (AGENTS.md §7).
+   *
+   * **`is_active` тут — не те саме, що в `scenarios`.** Це «показати на дошці»:
+   * вимкнене оголошення лишається в списку власника (чернетка), але на дошці
+   * його немає. Видаляти його для цього не потрібно.
+   *
+   * `price` — **текст**, і це не недогляд: «договірна» й «за домовленістю» —
+   * теж ціна, а число змусило б людину вигадувати нуль. Правила виду, меж і
+   * перевірки — `@wwwuabot/shared/ads`.
+   */
+  ads: {
+    name: "ads",
+    owner: "api-dev",
+    purpose:
+      "Оголошення дошки Простору: вид (куплю/продам/здам/шукаю/…), заголовок, текст, ціна й місто; `is_active` — показати на дошці чи лишити чернеткою.",
+    create: `CREATE TABLE IF NOT EXISTS ads (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        owner_id INTEGER NOT NULL,
+        kind TEXT NOT NULL,
+        title TEXT NOT NULL DEFAULT '',
+        body TEXT NOT NULL DEFAULT '',
+        price TEXT NOT NULL DEFAULT '',
+        place TEXT NOT NULL DEFAULT '',
+        is_active INTEGER NOT NULL DEFAULT 1,
+        created_at TEXT NOT NULL DEFAULT (datetime('now')),
+        updated_at TEXT NOT NULL DEFAULT (datetime('now'))
+      )`,
+    indexes: [
+      "CREATE INDEX IF NOT EXISTS idx_ads_owner ON ads(owner_id)",
+      "CREATE INDEX IF NOT EXISTS idx_ads_doska ON ads(is_active, id)",
+    ],
+  },
+
+  /**
    * Контакти людини — її власний довідник, а не список лінків.
    *
    * **Один рядок = один контакт.** Запис заводять руками (ім'я, `@username`,

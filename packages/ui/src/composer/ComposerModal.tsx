@@ -7,16 +7,22 @@
  * тому вигляд однаковий в обох оболонках; своє тут лише те, чого в модалки
  * не було: смуга вкладок і майже повноекранний розмір (`.wb-composer`).
  *
- * Кнопок дії в прибитому футері немає: вони — останній рядок тіла вкладки
- * (`.wb-sheet-actions`). Фіксована смуга забирає місце в полів, а кнопок
- * буде більше, ніж дві.
+ * **Кнопки дії — останній рядок тіла вкладки** (`.wb-sheet-actions`), а не
+ * прибитий футер: фіксована смуга забирає місце в полів.
  *
- * **Той самий композер редагує нотатку** — коли оболонка передає `initial` із
- * `id` (це робить екран «Нотатки»). Окремий редактор мусив би повторити
- * хештеги, ріст поля й стелю довжини — і розійшовся б із першою формою.
+ * **Стан у кожної вкладки свій.** Нотатка (`useComposer`) і оголошення
+ * (`useAdDraft`) майже не перетинаються — спільні лише смуга вкладок і кнопки,
+ * а що саме зберігається, вирішує активна вкладка. Тому композер збирає їх
+ * разом, а не звалює в один хук з десятком полів (AGENTS.md §3).
  *
- * Незроблені дії не мовчать: вони кажуть, що це окрема тема. Так само
- * поводиться пункт футера без адреси — краще чесна відмова, ніж тиша (§7).
+ * **Вкладки без обробника немає.** У панелі дошки оголошень не існує, тож
+ * `onSaveAd` туди не передають — і вкладка не показується: обіцяти форму, яка
+ * не вміє зберігати, було б тим самим порожнім пунктом, від якого ми тікаємо
+ * (AGENTS.md §7).
+ *
+ * **Той самий композер і редагує**: коли оболонка передає `initial` / `initialAd`
+ * із `id` (це роблять екран «Нотатки» й дошка оголошень). Окремий редактор
+ * мусив би повторити поля й стелі довжини — і розійшовся б із першою формою.
  *
  * @module @wwwuabot/ui/composer
  */
@@ -24,9 +30,12 @@
 import type { KeyboardEvent, ReactElement } from "react";
 import { Icon } from "@wwwuabot/shared";
 import { useDialog } from "../dialog";
+import { ComposerActions } from "./ComposerActions";
+import { ComposerAdTab } from "./ComposerAdTab";
 import { ComposerNoteTab } from "./ComposerNoteTab";
 import { ComposerPlaceholderTab } from "./ComposerPlaceholderTab";
-import { COMPOSER_TABS } from "./tabs";
+import { COMPOSER_TABS, findComposerTab } from "./tabs";
+import { useAdDraft } from "./useAdDraft";
 import { useComposer } from "./useComposer";
 import type { AttachmentKind, ComposerModalProps } from "./types";
 
@@ -36,18 +45,35 @@ const ATTACHMENT_TITLES: Record<AttachmentKind, string> = {
   file: "Файли",
 };
 
-export function ComposerModal({ onClose, onSaveNote, initial }: ComposerModalProps): ReactElement {
+export function ComposerModal({
+  onClose,
+  onSaveNote,
+  onSaveAd,
+  initial,
+  initialAd,
+  initialTab,
+}: ComposerModalProps): ReactElement {
   const dialog = useDialog();
-  const { tab, selectTab, note, setNote, tags, addTags, removeTag, paste, error, saving, save } =
-    useComposer({ onSaveNote, initial });
+  const composer = useComposer({ onSaveNote, initial, initialTab });
+  const ad = useAdDraft({ onSaveAd, initial: initialAd });
+
+  // Вкладка без обробника не показується й не відкривається: якщо її попросили
+  // ключем (`initialTab`), показуємо типову, а не форму без дії.
+  const adAvailable = Boolean(onSaveAd);
+  const tab = composer.tab.key === "ad" && !adAvailable ? findComposerTab("note") : composer.tab;
+  const isAd = tab.key === "ad";
 
   // Той самий композер і створює, і редагує: різниця лише в заголовку й у
-  // тому, чи поїде `id` зі збереженням (це вирішує хук).
-  const title = initial?.id ? "Редагувати" : "Створити";
+  // тому, чи поїде `id` зі збереженням (це вирішують хуки).
+  const editingId = isAd ? initialAd?.id : initial?.id;
+  const title = editingId ? "Редагувати" : "Створити";
 
-  // Порожню нотатку зберігати нема чого: рядок без тексту й без хештегів — це
-  // не чернетка, а випадковий дотик. Тому кнопка вимкнена, а не «падає» 400-ю.
-  const empty = note.trim() === "" && tags.length === 0;
+  // Порожній запис зберігати нема чого: рядок без тексту — це не чернетка, а
+  // випадковий дотик. Тому кнопка вимкнена, а не «падає» 400-ю.
+  const empty = isAd ? ad.empty : composer.note.trim() === "" && composer.tags.length === 0;
+
+  const saving = isAd ? ad.saving : composer.saving;
+  const error = isAd ? ad.error : composer.error;
 
   // Заглушка — це діалог, а не нативне вікно: у Telegram на iOS `alert`
   // не показується взагалі (§4), тож кнопка просто нічого б не робила.
@@ -55,33 +81,21 @@ export function ComposerModal({ onClose, onSaveNote, initial }: ComposerModalPro
     void dialog.alert(`${what} — окрема тема, ще не зроблено.`, { title });
   };
 
-  // Кнопки дії — у тілі вкладки, а не в прибитому футері: у модалці, яка
-  // росте під вміст, фіксована смуга забирала б місце в полів, а кнопок буде
-  // більше, ніж дві. Хто вони — знає композер (він тримає `save` і стан),
-  // а куди їх поставити — вкладка.
-  const actions =
-    tab.status === "ready" ? (
-      <>
-        <button type="button" className="wb-btn wb-btn-secondary" onClick={onClose}>
-          Закрити
-        </button>
-        <button
-          type="button"
-          className="wb-btn wb-btn-primary"
-          disabled={saving || empty}
-          onClick={() => {
-            // Закриваємо лише тоді, коли справді збереглось: інакше
-            // людина втратила б написане, навіть не побачивши причини.
-            void save().then((saved) => {
-              if (saved) onClose();
-            });
-          }}
-        >
-          <Icon name="save" size={16} />
-          {saving ? "Зберігаю…" : initial?.id ? "Зберегти зміни" : "Зберегти"}
-        </button>
-      </>
-    ) : undefined;
+  const actions = tab.status === "ready" && (
+    <ComposerActions
+      saving={saving}
+      disabled={empty}
+      editing={Boolean(editingId)}
+      onClose={onClose}
+      onSave={() => {
+        // Закриваємо лише тоді, коли справді збереглось: інакше людина
+        // втратила б написане, навіть не побачивши причини.
+        void (isAd ? ad.save() : composer.save()).then((saved) => {
+          if (saved) onClose();
+        });
+      }}
+    />
+  );
 
   function handleKeyDown(event: KeyboardEvent<HTMLDivElement>) {
     if (event.key === "Escape") {
@@ -113,7 +127,7 @@ export function ComposerModal({ onClose, onSaveNote, initial }: ComposerModalPro
             завжди є в `aria-label` — інакше кнопка стала б безіменною. */}
         <div className="wb-composer-main">
           <div className="wb-composer-tabs" role="tablist" aria-label="Що створити">
-            {COMPOSER_TABS.map((item) => {
+            {COMPOSER_TABS.filter((item) => item.key !== "ad" || adAvailable).map((item) => {
               const active = item.key === tab.key;
               return (
                 <button
@@ -124,7 +138,7 @@ export function ComposerModal({ onClose, onSaveNote, initial }: ComposerModalPro
                   aria-label={item.label}
                   title={item.label}
                   className={`wb-composer-tab${active ? " wb-composer-tab--active" : ""}`}
-                  onClick={() => selectTab(item.key)}
+                  onClick={() => composer.selectTab(item.key)}
                 >
                   <Icon name={item.icon} size={18} />
                   <span className="wb-composer-tab-label">{item.label}</span>
@@ -134,14 +148,21 @@ export function ComposerModal({ onClose, onSaveNote, initial }: ComposerModalPro
           </div>
 
           <div className="wb-modal-body wb-composer-body">
-            {tab.status === "ready" ? (
+            {isAd ? (
+              <ComposerAdTab
+                draft={ad.draft}
+                onChange={ad.update}
+                error={error}
+                actions={actions}
+              />
+            ) : tab.status === "ready" ? (
               <ComposerNoteTab
-                note={note}
-                onNoteChange={setNote}
-                tags={tags}
-                onAddTag={addTags}
-                onRemoveTag={removeTag}
-                onPaste={() => void paste()}
+                note={composer.note}
+                onNoteChange={composer.setNote}
+                tags={composer.tags}
+                onAddTag={composer.addTags}
+                onRemoveTag={composer.removeTag}
+                onPaste={() => void composer.paste()}
                 onAttach={(kind) => soon(`Додавання: ${ATTACHMENT_TITLES[kind]}`)}
                 error={error}
                 actions={actions}

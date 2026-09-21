@@ -15,6 +15,10 @@ export const DEFAULT_COMPOSER_TAB = "note";
 
 export const COMPOSER_TABS: readonly ComposerTab[] = [
   { key: "note", label: "Нотатка", icon: "text", status: "ready" },
+  // Оголошення — не «ще одна нотатка»: у нього свій вид, ціна, місто й
+  // прапорець показу. Друга вкладка, бо «+» — єдине місце створення в продукті,
+  // і саме звідси людина очікує побачити все, що можна створити.
+  { key: "ad", label: "Оголошення", icon: "feed", status: "ready" },
   {
     key: "page",
     label: "Сторінка",

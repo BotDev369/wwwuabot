@@ -42,6 +42,7 @@
     "./security/telegram": "./src/security/telegram.ts",
     "./user/platform-username": "./src/user/platform-username.ts",
     "./user/public-profile": "./src/user/public-profile.ts",
+    "./ads": "./src/ads/index.ts",
     "./components/Icon": "./src/components/Icon.tsx",
     "./components/SaveActionButtons": "./src/components/SaveActionButtons.tsx"
   },

@@ -31,6 +31,13 @@ export interface UseComposerOptions {
    * затерло б її на кожен перемальовування батька.
    */
   initial?: NoteDraft;
+  /**
+   * З якої вкладки відкрити. Потрібно тоді, коли композер кличуть **за ділом**
+   * (дошка оголошень відкриває його на вкладці «Оголошення»), а не «створити
+   * щось»: підставляти потрібну вкладку дотиком за людину — це ще один
+   * зайвий рух.
+   */
+  initialTab?: string;
 }
 
 export interface ComposerState {
@@ -56,8 +63,14 @@ export interface ComposerState {
   editingId: number | undefined;
 }
 
-export function useComposer({ onSaveNote, initial }: UseComposerOptions): ComposerState {
-  const [key, setKey] = useState(DEFAULT_COMPOSER_TAB);
+export function useComposer({
+  onSaveNote,
+  initial,
+  initialTab,
+}: UseComposerOptions): ComposerState {
+  // Невідомий ключ дає типову вкладку (`findComposerTab`), тож порожнього
+  // екрана не буде навіть якщо хтось передасть вигаданий ключ.
+  const [key, setKey] = useState(initialTab ?? DEFAULT_COMPOSER_TAB);
   const [note, setNote] = useState(initial?.text ?? "");
   const [tags, setTags] = useState<readonly string[]>(initial?.tags ?? []);
   const [error, setError] = useState<string | null>(null);

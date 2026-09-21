@@ -40,6 +40,7 @@ npx wrangler d1 execute wwwuabot-db-dev --remote \
 | `conversations` | `api-dev` | api-dev (`ensureTables` у `messages.controller`) | api-dev: `/api/messages` | переписка людей: **один рядок на пару** (`peer_a`, `peer_b` — за зростанням id, `UNIQUE`), `last_message_*` для списку розмов, `greeted_at` — одноразове вітання пари, `hidden_a`/`hidden_b` — розмова прибрана зі списку (ставляться разом, у обох) |
 | `messages` | `api-dev` | api-dev (`ensureTables` у `messages.controller`) | api-dev: `/api/messages/*` | повідомлення розмови: автор (`sender_id`), тіло, `read_at` (`NULL` — непрочитане), `is_system` — позначка платформи |
 | `message_drafts` | `api-dev` | api-dev (`ensureTables` у `messages.controller`) | api-dev: `/api/messages/compose`, `/api/messages/draft` | **ненадісланий лист** — власні дані того, хто пише: документ зі **своїм номером** і необов'язковим адресатом (`peer_id` без `NOT NULL`); схема перебудована міграцією (див. нижче) |
+| `ads` | `api-dev` | api-dev (`ensureTables` у `ads.service`) | api-dev: своє — `/api/user/ads`, дошка — `/api/space/ads` | **оголошення дошки Простору:** вид (куплю / продам / здам / шукаю / …), заголовок, текст, ціна й місто (обидва — **текст**: «договірна» теж ціна). `is_active` — не «чи опубліковано», а **показати на дошці**: вимкнене лишається в списку власника чернеткою. Правила й межі — `@wwwuabot/shared/ads`, видимість — [`SPACE.md`](./SPACE.md) |
 | `mydate_analysis` | `api-dev` | api-dev, `getAnalysis` | api-dev | кеш астрологічного аналізу на дату (KV — швидкий шар) |
 
 `npm run check:db` друкує той самий список, що видно в дашборді Cloudflare. Якщо числа розійшлись,
@@ -50,9 +51,10 @@ npx wrangler d1 execute wwwuabot-db-dev --remote \
 редагують вільно.
 
 **Індекси** (`indexes` в оголошенні) живуть поруч із таблицею, щоб не «загубились» окремо від неї.
-Сьогодні їх оголошують чотири таблиці — `notes` (`idx_notes_scope_owner` — список власних нотаток за
-`(scope, owner_id)`), `contacts` (`idx_contacts_owner`), `conversations` (`idx_conversations_peer_b`) і
-`messages` (`idx_messages_thread`, `idx_messages_unread`). Унікальність `contacts.code` і
+Сьогодні їх оголошують п'ять таблиць — `notes` (`idx_notes_scope_owner` — список власних нотаток за
+`(scope, owner_id)`), `contacts` (`idx_contacts_owner`), `conversations` (`idx_conversations_peer_b`),
+`messages` (`idx_messages_thread`, `idx_messages_unread`) і `ads` (`idx_ads_owner`, `idx_ads_doska` —
+дошка читає саме за `(is_active, id)`). Унікальність `contacts.code` і
 `scenarios.slug` тримає `UNIQUE` у самому `CREATE TABLE`, а не іменований індекс: імена індексів у
 SQLite **глобальні для бази**, тому однойменний `CREATE UNIQUE INDEX IF NOT EXISTS` на другій
 таблиці — не помилка, а **порожня дія**, і таблиця лишилась би без унікальності, не сказавши про це
