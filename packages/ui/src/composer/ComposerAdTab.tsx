@@ -8,7 +8,7 @@ import {
   AD_TITLE_MAX,
   type AdDraft,
 } from "@wwwuabot/shared/ads";
-import { useAutoGrowField } from "./useAutoGrowField";
+import { useAutoGrowField } from "../hooks";
 
 /**
  * Вкладка «Оголошення» — форма дошки.

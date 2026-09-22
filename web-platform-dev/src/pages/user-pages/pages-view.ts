@@ -33,6 +33,18 @@ export function pageAddressLabel(page: Pick<UserPage, "slug"> | Pick<PublicPage,
   return `/${page.slug}`;
 }
 
+/**
+ * Номер сторінки з адреси (`/pages/7`, `/pages/7/edit`): ціле, більше за нуль.
+ *
+ * Усе інше — `null`, і це не дрібниця: сміття в адресі (`/pages/abc`) — не
+ * «нуль», а **відсутність** сторінки, тож запит із таким номером пішов би в
+ * нікуди й повернув чужу помилку.
+ */
+export function parseUserPageId(id: string | undefined): number | null {
+  const parsed = Number(id);
+  return Number.isInteger(parsed) && parsed > 0 ? parsed : null;
+}
+
 /** Другий рядок у списку: видимість і адреса — те, чого не видно з назви. */
 export function pageHint(page: Pick<UserPage, "isPublic" | "slug">): string {
   return `${visibilityLabel(page.isPublic)} · ${pageAddressLabel(page)}`;

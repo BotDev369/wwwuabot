@@ -307,6 +307,182 @@ main {
 }
 
 /* ═══════════════════════════════════════════════════════════════════════════════
+   СТОРІНКИ З ШАБЛОНУ — вибір шаблону з переглядом і правка тексту на ньому
+
+   Класи цієї теми — власні для TWA: перегляд шаблонів і полотно редактора
+   існують лише тут (`pages/user-pages/`). Спільний `PageRenderer`, який у них
+   рендериться, стилізований у `page-layout.css` — тут його тільки оправлено
+   під «уривок сторінки» й під «сторінку з полями».
+   ═══════════════════════════════════════════════════════════════════════════════ */
+
+.wb-template-lead {
+  margin-bottom: var(--sp-4);
+}
+
+.wb-template-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-5);
+}
+
+.wb-template-card {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-3);
+  padding: var(--sp-4);
+  border-radius: var(--radius-md);
+  background: var(--surface);
+  box-shadow: var(--shadow-xs);
+}
+
+.wb-template-card-head {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--sp-3);
+}
+
+.wb-template-card-icon {
+  display: inline-flex;
+  flex: 0 0 auto;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border-radius: var(--radius-full);
+  background: var(--accent-dim);
+  color: var(--accent);
+}
+
+.wb-template-card-text {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.wb-template-card-title {
+  color: var(--text-primary);
+  font-weight: var(--weight-semibold);
+}
+
+.wb-template-card-hint {
+  color: var(--text-muted);
+  font-size: var(--text-xs);
+}
+
+/* Перегляд шаблону — **справжня сторінка**, лише обрізана: його малює той
+   самий `PageRenderer` із тим самим `page_data`, тож він не може розійтися з
+   результатом (у цьому й сенс кроку вибору).
+
+   `pointer-events: none` — не оздоблення: усередині справжні блоки з кнопками
+   й посиланнями, і дотик по них відкрив би чуже замість вибору шаблону.
+   Згасання краю каже, що сторінка довша за картку. */
+.wb-template-preview {
+  max-height: 260px;
+  overflow: hidden;
+  border-radius: var(--radius-md);
+  background: var(--bg-page, var(--bg-0));
+  pointer-events: none;
+  user-select: none;
+  -webkit-mask-image: linear-gradient(180deg, #000 72%, transparent 100%);
+  mask-image: linear-gradient(180deg, #000 72%, transparent 100%);
+}
+
+/* Каркас зон належить спільному `page-layout.css`, але тут це «картинка»:
+   висота екрана й великий відступ зробили б із прев'ю другу сторінку в картці
+   замість уривка. */
+.wb-template-preview .page-layout {
+  min-height: 0;
+}
+
+.wb-template-preview .page-zone--main {
+  padding: var(--sp-4);
+  justify-content: flex-start;
+}
+
+.wb-template-card-actions {
+  display: flex;
+}
+
+.wb-template-card-actions .wb-btn {
+  width: 100%;
+}
+
+/* Полотно редактора — та сама `main`, лише текст у ній редагований: тому
+   поверхня, а не «форма з полями» (поля тут успадковують шрифт блока). */
+.wb-page-editor {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-4);
+  margin-bottom: var(--sp-4);
+  padding: var(--sp-5);
+  border-radius: var(--radius-md);
+  background: var(--surface);
+  box-shadow: var(--shadow-xs);
+}
+
+.wb-page-field {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-1);
+}
+
+/* Підпис шаблону («Про себе») і значення, яке людина пише. Колір розділяє їх
+   так само, як на готовій сторінці: заголовок — основним, тіло — приглушеним. */
+.wb-page-field-label,
+.wb-page-field-heading {
+  color: var(--text-primary);
+}
+
+.wb-page-field-body {
+  color: var(--text-secondary);
+}
+
+/* Текст, який правлять. Рамки немає навмисно — це не «поле у формі», а сама
+   сторінка; про те, що тут можна писати, каже лише крапковий слід унизу, а
+   про фокус — він же, акцентний. */
+.wb-page-field-input {
+  display: block;
+  width: 100%;
+  padding: 0 0 2px;
+  border: 0;
+  border-bottom: 1px dashed var(--border-subtle);
+  border-radius: 0;
+  background: none;
+  color: inherit;
+  font: inherit;
+  line-height: var(--leading-normal);
+  resize: none;
+  overflow: hidden;
+}
+
+.wb-page-field-input::placeholder {
+  color: var(--text-muted);
+}
+
+.wb-page-field-input:focus,
+.wb-page-field-input:focus-visible {
+  outline: none;
+  border-bottom-color: var(--accent);
+}
+
+.wb-page-settings-card {
+  margin-bottom: var(--sp-4);
+}
+
+.wb-page-settings {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-4);
+}
+
+.wb-page-settings-field {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-1);
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════════
    MOBILE RESPONSIVE
    ═══════════════════════════════════════════════════════════════════════════════ */
 @media (max-width: 768px) {

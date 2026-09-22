@@ -12,6 +12,13 @@
  * `?new=1` хаб не складає: людина, яка натиснула «+», лишається в хабі, а
  * закриття форми повертає її туди ж.
  *
+ * **Створення, яке в поверхню не влазить, — виняток, і він названий.** Сторінку
+ * з шаблону спершу **показують** (перегляд шаблону), а потім правлять текст
+ * просто на ній — це крок, якого модалка не вміє, тож у такого пункту стоїть
+ * `createPath` (адреса екрана) замість `form`. Перехід тут — **push**, а не
+ * `replace`: під екраном створення лишається хаб, і «назад» вертає саме до
+ * нього (на відміну від «подивитись», яке хаб заміняє — воно й обирає розділ).
+ *
  * **Порядок — за абеткою (А→Я).** Сталий порядок не залежить від того, хто
  * додав пункт останнім, тож місце пункту можна запам'ятати. Стежить
  * `create-hub.test.ts` — і мовою (`uk`), бо кирилиця має літери, яких
@@ -28,7 +35,13 @@ import type { NavigateOptions } from "react-router-dom";
 import type { IconName } from "@wwwuabot/shared";
 import { toWebPath } from "@wwwuabot/shared/content";
 import type { HubItem } from "@wwwuabot/ui/hub";
-import { CONTACTS_PATH, MESSAGES_PATH, NOTES_PATH, PAGES_PATH } from "../app/routes";
+import {
+  CONTACTS_PATH,
+  MESSAGES_PATH,
+  NOTES_PATH,
+  PAGES_NEW_PATH,
+  PAGES_PATH,
+} from "../app/routes";
 import { spaceTabPath } from "./space-tabs";
 
 /** Сторінка дат — рядок контенту: адресу дає `slug`, а не літерал (AGENTS §7). */
@@ -41,7 +54,7 @@ const MYDATE_SLUG = "mydate";
  * переходу за ним немає. Другий список «куди веде створення» тут був би другою
  * правдою про те саме (AGENTS.md §7).
  */
-export type CreateFormKey = "note" | "ad" | "message" | "contact" | "page";
+export type CreateFormKey = "note" | "ad" | "message" | "contact";
 
 export interface CreateHubItem {
   /** Стабільний ключ — він же ключ пункту в `HubList`. */
@@ -54,6 +67,15 @@ export interface CreateHubItem {
   view?: string;
   /** Форма, яку «+» відкриває **поверх хабу**. Немає — створення ще немає. */
   form?: CreateFormKey;
+  /**
+   * Адреса **екрана створення** — коли створення не вміщується в поверхню.
+   *
+   * Так у «Сторінок»: шаблон обирають очима, а текст правлять на самій
+   * сторінці, тож «+» мусить **перейти** — інакше кроку перегляду шаблону не
+   * було б де відбутися. Разом з `form` ці два поля не стоять: у пункту одна
+   * дорога до створення, і вона або поверхня, або екран.
+   */
+  createPath?: string;
   /**
    * Що саме буде там, де дії ще немає.
    *
@@ -104,10 +126,16 @@ export const CREATE_HUB_ITEMS: readonly CreateHubItem[] = [
     view: MESSAGES_PATH,
     form: "message",
   },
-  // Сторінки — тепер робочий пункт: «+» відкриває композер на вкладці
-  // «Сторінка» (шаблон і текст), а «подивитись» веде у власний список, де
-  // видно, що з них уже опубліковано.
-  { key: "pages", label: "Сторінки", icon: "layout", view: PAGES_PATH, form: "page" },
+  // Сторінки — робочий пункт із **екраном** створення: «+» веде на вибір
+  // шаблону (перегляд — частина вибору), а «подивитись» — у власний список,
+  // де видно, що з них уже опубліковано.
+  {
+    key: "pages",
+    label: "Сторінки",
+    icon: "layout",
+    view: PAGES_PATH,
+    createPath: PAGES_NEW_PATH,
+  },
 ];
 
 /** Дві дії, які має кожен пункт: подивитись або створити. */
@@ -124,9 +152,12 @@ export const HUB_INTENTS = [
   { key: "create", icon: "plus", verb: "Створити" },
 ] as const satisfies readonly { key: HubIntent; icon: IconName; verb: string }[];
 
-/** Чи в дії щось справді є: перегляд потребує адреси, створення — форми. */
+/**
+ * Чи в дії щось справді є: перегляд потребує адреси, створення — форми
+ * **або** екрана (див. `createPath`).
+ */
 export function hubIntentReady(item: CreateHubItem, intent: HubIntent): boolean {
-  return intent === "view" ? Boolean(item.view) : Boolean(item.form);
+  return intent === "view" ? Boolean(item.view) : Boolean(item.form ?? item.createPath);
 }
 
 /** Що сказати замість дії, якої ще немає. */
@@ -139,7 +170,7 @@ export function hubIntentSoon(item: CreateHubItem, intent: HubIntent): string {
 
 /** Пункт, у якого не працює жодна дія, — він і показується приглушеним. */
 export function hubItemSoon(item: CreateHubItem): boolean {
-  return !item.view && !item.form;
+  return !item.view && !item.form && !item.createPath;
 }
 
 export interface BuildHubItemsOptions {
@@ -170,10 +201,16 @@ export function buildHubItems({ navigate, onForm, onSoon }: BuildHubItemsOptions
             onSoon(hubIntentSoon(item, intent.key));
             return;
           }
-          // «Подивитись» — єдина дія, яка змінює сторінку: хаб замінюється
+          // «Подивитись» — дія, яка змінює сторінку: хаб замінюється
           // розділом (`replace`), бо він обирає, а не приймає назад.
           if (intent.key === "view" && item.view) {
             void navigate(item.view, { replace: true });
+            return;
+          }
+          // Створення на власному екрані — звичайний крок уперед: хаб
+          // лишається під ним, і «назад» вертає в нього.
+          if (item.createPath) {
+            void navigate(item.createPath);
             return;
           }
           if (item.form) onForm(item.form);

@@ -27,7 +27,7 @@ import { Icon } from "@wwwuabot/shared";
 import { MAX_NOTE_LENGTH } from "@wwwuabot/shared/notes";
 import { ComposerTags, TAG_INPUT_ID } from "./ComposerTags";
 import type { AttachmentKind, ComposerNoteTabProps } from "./types";
-import { useAutoGrowField } from "./useAutoGrowField";
+import { useAutoGrowField } from "../hooks";
 
 /** Ідентифікатор поля тексту: на нього вказує підпис. */
 const NOTE_INPUT_ID = "wb-composer-note-input";

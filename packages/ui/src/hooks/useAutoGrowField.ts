@@ -13,7 +13,7 @@
  *
  * Висоту міряємо від `auto` навмисно: інакше `scrollHeight` ніколи не меншає.
  *
- * @module @wwwuabot/ui/composer
+ * @module @wwwuabot/ui/hooks
  */
 
 import { useEffect, useRef, type RefObject } from "react";

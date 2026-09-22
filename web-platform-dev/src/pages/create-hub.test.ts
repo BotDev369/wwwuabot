@@ -1,20 +1,27 @@
 /**
  * Хаб «Створити» — те, що ламається мовчки.
  *
- * Тут чотири речі, яких не видно ні в компіляторі, ні на око: **абетка**
+ * Тут п'ять речей, яких не видно ні в компіляторі, ні на око: **абетка**
  * (пункти в коді лежать не за абеткою, тож переставити їх випадково дуже
  * легко), **дві різні дії** («подивитись» веде на екран, «створити» відкриває
  * поверхню **на хабі** — переплутати їх означає знову вести людину на іншу
  * сторінку замість форми), **наявність обох входів** (пункт без адреси не
- * падає, він мовчки нічого не робить) і **чесність заглушки** (дія, за якою
- * нічого немає, мусить про це сказати).
+ * падає, він мовчки нічого не робить), **одна дорога до створення** (поверхня
+ * або екран — не обидва разом) і **чесність заглушки** (дія, за якою нічого
+ * немає, мусить про це сказати).
  *
  * @module web-platform-dev/src/pages/create-hub.test
  */
 
 import { describe, expect, it, vi } from "vitest";
 import { toWebPath } from "@wwwuabot/shared/content";
-import { CONTACTS_PATH, MESSAGES_PATH, NOTES_PATH, PAGES_PATH } from "../app/routes";
+import {
+  CONTACTS_PATH,
+  MESSAGES_PATH,
+  NOTES_PATH,
+  PAGES_NEW_PATH,
+  PAGES_PATH,
+} from "../app/routes";
 import {
   CREATE_HUB_ITEMS,
   HUB_INTENTS,
@@ -69,8 +76,16 @@ describe("склад хабу «Створити»", () => {
     // поясненням: інакше це безіменний прямокутник, який нікуди не веде й
     // нічого не обіцяє.
     for (const item of CREATE_HUB_ITEMS) {
-      const working = Boolean(item.view || item.form);
+      const working = Boolean(item.view || item.form || item.createPath);
       expect(working || Boolean(item.soon), item.key).toBe(true);
+    }
+  });
+
+  it("до створення веде одна дорога: або поверхня, або екран", () => {
+    // Два поля разом означали б дві різні поведінки «+» в одного пункту, і
+    // яка з них спрацює — залежало б від порядку рядків у `buildHubItems`.
+    for (const item of CREATE_HUB_ITEMS) {
+      expect(Boolean(item.form && item.createPath), item.key).toBe(false);
     }
   });
 
@@ -112,12 +127,15 @@ describe("входи пункту", () => {
     expect(byKey("ads").view).toBe("/space?tab=ads");
   });
 
-  it("«Сторінки» ведуть у власний список, а плюс — на вкладку «Сторінка»", () => {
+  it("«Сторінки» ведуть у власний список, а плюс — на екран створення", () => {
     // Список і створення — два різні входи: «подивитись» показує своє (разом
-    // із приватним), «створити» відкриває шаблон поверх хабу.
+    // із приватним), «створити» веде туди, де спершу видно шаблон, а потім
+    // текст правиться на ньому самому.
     expect(byKey("pages").view).toBe(PAGES_PATH);
-    expect(byKey("pages").form).toBe("page");
+    expect(byKey("pages").createPath).toBe(PAGES_NEW_PATH);
+    expect(byKey("pages").form).toBeUndefined();
     expect(PAGES_PATH).toBe("/pages");
+    expect(PAGES_NEW_PATH).toBe("/pages/new");
   });
 
   it("«створити» — ключ поверхні, а не адреса: жодного `?new=1`", () => {
@@ -187,7 +205,7 @@ describe("пункти для списку", () => {
   it("«створити» **не переходить нікуди** — лише відкриває поверхню", () => {
     // Це і є правило хабу: «+» не веде на іншу сторінку, її відкриває окрема
     // кнопка («подивитись»). Перехід тут означав би автоматичну зміну екрана.
-    for (const key of ["notes", "contacts", "messages", "ads", "pages"]) {
+    for (const key of ["notes", "contacts", "messages", "ads"]) {
       navigate.mockClear();
       onForm.mockClear();
 
@@ -197,6 +215,19 @@ describe("пункти для списку", () => {
       expect(onForm, key).toHaveBeenCalledTimes(1);
       expect(onForm, key).toHaveBeenCalledWith(byKey(key).form);
     }
+  });
+
+  it("виняток — «Сторінки»: там плюс веде на екран, і це **крок, а не заміна**", () => {
+    // Сторінку з шаблону не вміщує поверхня: спершу шаблон **бачать**. Тому
+    // перехід є (єдиний серед пунктів), але **без** `replace` — під екраном
+    // створення лишається хаб, і «назад» вертає саме до нього.
+    navigate.mockClear();
+    onForm.mockClear();
+
+    items.find((item) => item.key === "pages")?.actions[1].onSelect();
+
+    expect(onForm).not.toHaveBeenCalled();
+    expect(navigate).toHaveBeenCalledWith(PAGES_NEW_PATH);
   });
 
   it("заглушка не мовчить, а називає причину", () => {

@@ -63,6 +63,20 @@ export interface PageTemplate {
   /** Чим цей шаблон відрізняється від сусіднього — одним рядком. */
   hint: string;
   /**
+   * Текст-приклад — те, чим шаблон **показують** перед вибором.
+   *
+   * Шаблон обирають очима: людина мусить побачити готову сторінку **до** того,
+   * як візьме шаблон, а порожні поля цього не показують. Тому приклад лежить у
+   * **даних шаблону**, а не в розмітці екрана: третій шаблон інакше отримав би
+   * перегляд без тексту, і про це не сказав би ні компілятор, ні око (стереже
+   * `templates.test.ts`).
+   *
+   * Значення — ті самі, що заповнює людина: перегляд складають
+   * `buildPageConfig(template, template.preview)`, тож він не може розійтися з
+   * тим, що шаблон робить насправді.
+   */
+  preview: PageFieldValues;
+  /**
    * Ім'я іконки з реєстру (`IconName`).
    *
    * Саме ім'я, а не тип: цей файл читає **сервер** (`api-dev`), а
@@ -80,6 +94,14 @@ export const PAGE_TEMPLATES: readonly PageTemplate[] = [
     label: "Візитка",
     hint: "Про себе: ім'я, кілька слів і як із вами зв'язатися",
     icon: "card",
+    preview: {
+      title: "Олена Ткаченко",
+      tagline: "Ілюстраторка, малюю дитячі книжки",
+      about:
+        "Дванадцять років працюю з видавництвами: обкладинки, розгортки, персонажі.\n" +
+        "Веду майстерню для тих, хто тільки починає.",
+      contact: "Київ · +380 67 000 00 00",
+    },
     fields: [
       {
         key: "title",
@@ -121,6 +143,13 @@ export const PAGE_TEMPLATES: readonly PageTemplate[] = [
     label: "Подія",
     hint: "Що, коли, де — і за яких умов берете участь",
     icon: "calendar",
+    preview: {
+      title: "Лекція «Місто і мова»",
+      when: "12 жовтня, 18:30",
+      where: "Київ, Хрещатик 1 — і в Zoom",
+      about: "Розбираємо, як місто змінює мову людей, і звідки беруться місцеві назви.",
+      terms: "Вхід вільний, потрібна реєстрація",
+    },
     fields: [
       {
         key: "title",
@@ -195,6 +224,26 @@ export function pageBlockId(template: PageTemplate, key: string): string {
   return `${template.key}-${key}`;
 }
 
+/**
+ * Чи **значення** поля показується заголовком — а не тілом під підписом.
+ *
+ * У блока `text` двоє місць: `title` (заголовок) і `content` (тіло), і рівень
+ * фарбує **заголовок**. Звідси два випадки, і обидва справжні:
+ *
+ * 1. у поля є `block.title` («Про себе», «Коли») — це **підпис над текстом**, і
+ *    заголовком стає він; значення людини — тіло;
+ * 2. підпису немає, а рівень — не `body` (назва сторінки) — заголовком стає
+ *    саме значення. Інакше «Візитка» показувала б ім'я приглушеним тілом, а
+ *    сторінка не мала б жодного заголовка.
+ *
+ * Функція одна на **три** читачі — `buildPageConfig`, `readPageValues` і
+ * редактор, який малює те саме поле редагованим: розійтись вони могли б лише
+ * так, що в редакторі видно одне, а на сторінці — інше.
+ */
+export function fieldIsHeading(field: PageField): boolean {
+  return !field.block.title && field.block.level !== "body";
+}
+
 const EMPTY_ZONES: Record<BlockZone, PageBlock[]> = {
   sidebar: [],
   header: [],
@@ -209,19 +258,24 @@ const EMPTY_ZONES: Record<BlockZone, PageBlock[]> = {
  * порожнє поле в шаблоні — це «людина ще не написала», а не порожній
  * заголовок на сторінці. Порожні зони лишаються порожніми — сторінка з
  * шаблону займає рівно `main`.
+ *
+ * Куди саме ляже значення — у `title` чи в `content` — вирішує
+ * `fieldIsHeading`: саме від цього залежить, чи ім'я буде заголовком, чи
+ * приглушеним тілом.
  */
 export function buildPageConfig(template: PageTemplate, values: PageFieldValues): PageConfig {
   const main: PageBlock[] = [];
   for (const field of template.fields) {
     const value = (values[field.key] ?? "").trim();
     if (!value) continue;
+    const heading = fieldIsHeading(field);
     main.push({
       id: pageBlockId(template, field.key),
       type: "text",
       order: main.length,
       props: {
-        title: field.block.title ?? "",
-        content: value,
+        title: heading ? value : (field.block.title ?? ""),
+        content: heading ? "" : value,
         level: field.block.level,
         align: "left",
       },
@@ -236,6 +290,12 @@ export function buildPageConfig(template: PageTemplate, values: PageFieldValues)
  *
  * Читаються лише блоки, чиї `id` належать цьому шаблону: сторінка могла
  * пожити в редакторі блоків, і зайвий блок не має стати полем форми.
+ *
+ * Порядок читання — **тіло, тоді заголовок**, і він такий не випадково:
+ * значення заголовкового поля лежить у `title`, а підпис («Про себе») — це
+ * `title` поля з тілом. Тож спершу беремо непорожнє тіло, і лише якщо його
+ * немає — заголовок. Так читаються і сторінки, збережені **до** цього поділу
+ * (тоді назва лежала в `content`), тож жодна з них не втратить текст.
  */
 export function readPageValues(template: PageTemplate, config: PageConfig | null): PageFieldValues {
   const values: PageFieldValues = {};
@@ -247,8 +307,10 @@ export function readPageValues(template: PageTemplate, config: PageConfig | null
     if (typeof block.id !== "string" || !block.id.startsWith(prefix)) continue;
     const key = block.id.slice(prefix.length);
     if (!known.has(key)) continue;
-    const content = (block.props as Record<string, unknown> | undefined)?.content;
-    if (typeof content === "string") values[key] = content;
+    const props = block.props as Record<string, unknown> | undefined;
+    const content = typeof props?.content === "string" ? props.content : "";
+    const heading = typeof props?.title === "string" ? props.title : "";
+    if (content || heading) values[key] = content || heading;
   }
   return values;
 }

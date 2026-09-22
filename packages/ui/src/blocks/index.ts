@@ -11,7 +11,7 @@
  */
 
 // --- MVP (5) ---
-export { TextBlock } from "./TextBlock";
+export { TextBlock, TEXT_LEVEL_CLASSES } from "./TextBlock";
 export { ImageBlock } from "./ImageBlock";
 export { ButtonsBlock } from "./ButtonsBlock";
 export { ListBlock } from "./ListBlock";

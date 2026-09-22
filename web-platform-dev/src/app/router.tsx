@@ -30,6 +30,8 @@ import {
   CREATE_ROUTE,
   MESSAGES_PATH,
   NOTES_ROUTE,
+  PAGE_EDIT_ROUTE,
+  PAGES_NEW_ROUTE,
   PAGES_ROUTE,
   PROFILE_ACCOUNT_PATH,
   PROFILE_ROUTE,
@@ -48,6 +50,8 @@ import { ScenarioPage } from "@/pages/ScenarioPage";
 import { SpaceGamePage } from "@/pages/games/SpaceGamePage";
 import { SpacePage } from "@/pages/SpacePage";
 import { SpaceUserPage } from "@/pages/SpaceUserPage";
+import { PageCreatePage } from "@/pages/user-pages/PageCreatePage";
+import { PageEditPage } from "@/pages/user-pages/PageEditPage";
 import { UserPageView } from "@/pages/user-pages/UserPageView";
 import { UserPagesPage } from "@/pages/user-pages/UserPagesPage";
 import { ThemeLayout } from "@/pages/themes/ThemeLayout";
@@ -94,9 +98,14 @@ export const router = createBrowserRouter([
       { path: `${SPACE_ROUTE}/${SPACE_GAME_ROUTE}/:key`, element: <SpaceGamePage /> },
       { path: SPACE_ROUTE, element: <SpacePage /> },
       // Сторінки людини — теж не рядок контенту, а екран: список власних
-      // сторінок і перегляд однієї. Сам контент сторінки відкривається за її
-      // `slug` (catch-all нижче) — і то лише тоді, коли вона публічна.
-      // Довший шлях іде першим — та сама причина, що в `/space/u/:id`.
+      // сторінок, перегляд однієї, її правка й створення. Сам контент сторінки
+      // відкривається за її `slug` (catch-all нижче) — і то лише тоді, коли
+      // вона публічна. Довший шлях іде першим — та сама причина, що
+      // в `/space/u/:id`; а `new` мусить стояти **перед** `:id`, бо `:id`
+      // з'їв би його як номер сторінки, і замість вибору шаблону відкрився б
+      // «Такої сторінки немає».
+      { path: `${PAGES_ROUTE}/${PAGES_NEW_ROUTE}`, element: <PageCreatePage /> },
+      { path: `${PAGES_ROUTE}/:id/${PAGE_EDIT_ROUTE}`, element: <PageEditPage /> },
       { path: `${PAGES_ROUTE}/:id`, element: <UserPageView /> },
       { path: PAGES_ROUTE, element: <UserPagesPage /> },
       // Нотатки — власні дані людини (таблиця `notes`), не рядок `scenarios`

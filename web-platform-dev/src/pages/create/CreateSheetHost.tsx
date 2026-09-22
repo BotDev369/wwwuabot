@@ -12,6 +12,11 @@
  * теж вірно: форма з полями контакту лишається на його екрані, а хаб дає
  * завести запис і скласти лінк.
  *
+ * **«Сторінки» теж не мають поверхні, і це не недогляд:** створення сторінки —
+ * власний екран (`/pages/new`): спершу вибір шаблону з переглядом, потім текст
+ * на самій сторінці. У хаба такий пункт веде адресою (`createPath`), а не
+ * ключем форми, бо крок перегляду в модалку не вміщується.
+ *
  * @module web-platform-dev/src/pages/create
  */
 
@@ -19,7 +24,6 @@ import type { ReactElement } from "react";
 import { AdCreateSheet } from "./AdCreateSheet";
 import { MessageCreateSheet } from "./MessageCreateSheet";
 import { NoteCreateSheet } from "./NoteCreateSheet";
-import { PageCreateSheet } from "./PageCreateSheet";
 import type { CreateFormKey } from "../create-hub";
 
 /** Ключі, за якими справді є поверхня; «контакт» сюди не входить навмисно. */
@@ -34,6 +38,5 @@ export function CreateSheetHost({
 }): ReactElement {
   if (form === "ad") return <AdCreateSheet onClose={onClose} />;
   if (form === "message") return <MessageCreateSheet onClose={onClose} />;
-  if (form === "page") return <PageCreateSheet onClose={onClose} />;
   return <NoteCreateSheet onClose={onClose} />;
 }

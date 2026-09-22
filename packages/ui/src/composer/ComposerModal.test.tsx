@@ -25,14 +25,6 @@ const withAd = renderToStaticMarkup(
   <ComposerModal onClose={() => {}} onSaveNote={noop} onSaveAd={noop} initialTab="ad" />,
 );
 
-/**
- * Список сторінок передає свій обробник — лише тоді з'являється «Сторінка».
- * Шаблон і поля ті самі, що будуватимуть `page_data` на сервері.
- */
-const withPage = renderToStaticMarkup(
-  <ComposerModal onClose={() => {}} onSaveNote={noop} onSavePage={noop} initialTab="page" />,
-);
-
 /** Вкладки, доступні в цьому рендері: без обробника вкладки немає. */
 const labelsExcept = (...keys: string[]): string[] =>
   COMPOSER_TABS.filter((tab) => !keys.includes(tab.key)).map((tab) => tab.label);
@@ -111,27 +103,20 @@ describe("ComposerModal", () => {
   });
 
   it("показує вкладки зі складу — крім тих, чийого обробника не передали", () => {
-    // У панелі дошки немає, а сторінки створюють у платформі: без обробників цих
-    // вкладок немає — порожній пункт, який нічого не вміє зберегти, ми не
-    // показуємо (AGENTS.md §7).
-    for (const label of labelsExcept("ad", "page")) expect(html).toContain(label);
+    // У панелі дошки немає: без обробника цієї вкладки немає — порожній пункт,
+    // який нічого не вміє зберегти, ми не показуємо (AGENTS.md §7).
+    for (const label of labelsExcept("ad")) expect(html).toContain(label);
     expect(html).not.toContain('aria-label="Оголошення"');
-    expect(html).not.toContain('aria-label="Сторінка"');
   });
 
-  it("сторінка створюється з шаблону: вибір, текст і перемикач публічності", () => {
-    expect(withPage).toContain('aria-label="Сторінка"');
-    expect(withPage).toContain('aria-selected="true" aria-label="Сторінка"');
-    // Шаблон обирають кнопками — як вид оголошення, а не дропдауном (§4).
-    for (const label of ["Візитка", "Подія"]) expect(withPage).toContain(`>${label}<`);
-    // Поля шаблону: людина змінює лише текст.
-    expect(withPage).toContain('for="wb-page-field-title"');
-    expect(withPage).toContain('for="wb-page-field-about"');
-    // Адреса видима й редагована, але не обов'язкова — її складуть із назви.
-    expect(withPage).toContain('for="wb-page-address"');
-    // Публічність — той самий кирпичик, що у профілю, і типово вимкнена.
-    expect(withPage).toContain('role="switch" aria-checked="false"');
-    expect(withPage).toMatch(/wb-btn-primary" disabled/);
+  it("сторінки в композері немає: вона — власний екран, а не ще одна вкладка", () => {
+    // Сторінку з шаблону спершу **показують** (перегляд шаблону), а текст
+    // правлять на самій сторінці. Форма з підписами полів цього не вміє, і
+    // повертати її сюди «для симетрії» означало б знову просити людину уявити
+    // сторінку за полями (`/pages/new` у платформі).
+    expect(COMPOSER_TABS.map((item) => item.key)).not.toContain("page");
+    expect(html).not.toContain('aria-label="Сторінка"');
+    expect(findComposerTab("page").key).toBe("note");
   });
 
   it("дошка отримує вкладку «Оголошення» й відкриває її на собі", () => {
@@ -166,7 +151,7 @@ describe("ComposerModal", () => {
     // Підпис вкладки на вузькому екрані ховається (CSS), тож ім'я мусить бути
     // в `aria-label` — інакше кнопка стала б безіменною.
     expect(html).toContain("wb-composer-tabs");
-    for (const label of labelsExcept("ad", "page")) expect(html).toContain(`aria-label="${label}"`);
+    for (const label of labelsExcept("ad")) expect(html).toContain(`aria-label="${label}"`);
   });
 
   it("кнопки вкладень — самі іконки, ім'я дії в aria-label", () => {
@@ -191,8 +176,8 @@ describe("ComposerModal", () => {
   });
 
   it("вкладки без інтерфейсу описані як заглушка, а не як порожній екран", () => {
-    // «Сторінка» тут більше не приклад: вона вже працює — а заглушка, яку
-    // забули зняти, гірша за відсутню.
+    // Заглушка без пояснення — той самий порожній екран, лише з іншим виглядом:
+    // тому в неї є `hint` і список того, що там буде.
     const media = findComposerTab("media");
 
     expect(media.status).toBe("soon");

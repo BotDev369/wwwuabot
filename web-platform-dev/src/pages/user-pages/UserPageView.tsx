@@ -1,5 +1,5 @@
 /**
- * Своя сторінка — перегляд, перемикач і редактор в одному місці.
+ * Своя сторінка — перегляд, перемикач і дії в одному місці.
  *
  * **Адреса, а не поверхня.** За рядком списку стоїть сторінка: на неї дивляться
  * довше, з неї мусить бути видно, куди прийшов, «назад» — вертати в список, а
@@ -10,6 +10,11 @@
  * публічної **одним прапорцем**, а не іншим поданням. Так автор бачить те, що
  * побачить інший, і не мусить уявляти це з форми.
  *
+ * **Правка тексту — сусідня адреса, а не стан цього екрана** (`/pages/:id/edit`):
+ * правити текст можна довго, і «назад» із правки вертає саме на перегляд, а не
+ * в список; тут же лишаються дії над сторінкою цілком — показати назовні,
+ * увімкнути публічність, видалити.
+ *
  * **Стан показується після відповіді сервера.** Увімкнений перемикач, який не
  * зберігся, — найгірше з можливого: людина вважала б сторінку відкритою, а
  * вона закрита (`docs/SPACE.md`).
@@ -17,7 +22,7 @@
  * @module web-platform-dev/src/pages/user-pages
  */
 
-import { useState, type ReactElement } from "react";
+import { type ReactElement } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { Icon, SwitchRow } from "@wwwuabot/shared";
 import { toWebPath } from "@wwwuabot/shared/content";
@@ -25,11 +30,11 @@ import { buildPageConfig, pageDraft, pageTemplate, type UserPage } from "@wwwuab
 import { PageRenderer } from "@wwwuabot/ui/PageRenderer";
 import { registerAllBlocks } from "@wwwuabot/ui/blocks";
 import { useDialog } from "@wwwuabot/ui/dialog";
-import { PAGES_PATH } from "@/app/routes";
+import { PAGES_PATH, userPageEditPath } from "@/app/routes";
 import { pagesApi } from "@/shared/api/pages.api";
-import { PageCreateSheet } from "../create/PageCreateSheet";
+import { PageState } from "./PageState";
 import { pageAddressLabel, visibilityLabel } from "./pages-view";
-import { useUserPages } from "./useUserPages";
+import { useUserPage } from "./useUserPage";
 
 registerAllBlocks();
 
@@ -37,20 +42,13 @@ export function UserPageView(): ReactElement {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const dialog = useDialog();
-  const { pages, loading, error, upsert, remove } = useUserPages();
-  const [editing, setEditing] = useState(false);
-
-  // Сміття в адресі (`/pages/abc`) — це не «нуль», а відсутність сторінки:
-  // запит із таким номером пішов би в нікуди й повернув чужу помилку.
-  const parsed = Number(id);
-  const pageId = Number.isInteger(parsed) && parsed > 0 ? parsed : null;
-  const page = pageId === null ? null : (pages.find((item) => item.id === pageId) ?? null);
+  const { page, loading, error, pages } = useUserPage(id);
 
   async function togglePublic(next: boolean): Promise<void> {
     if (!page) return;
     try {
       const saved = await pagesApi.save({ ...pageDraft(page), isPublic: next });
-      if (saved) upsert(saved);
+      if (saved) pages.upsert(saved);
     } catch (e: unknown) {
       await dialog.alert(e instanceof Error ? e.message : "Не вдалося змінити видимість", {
         title: "Помилка",
@@ -68,7 +66,7 @@ export function UserPageView(): ReactElement {
 
     try {
       await pagesApi.remove(target.id);
-      remove(target.id);
+      pages.remove(target.id);
       await navigate(PAGES_PATH, { replace: true });
     } catch (e: unknown) {
       await dialog.alert(e instanceof Error ? e.message : "Не вдалося видалити сторінку", {
@@ -93,23 +91,9 @@ export function UserPageView(): ReactElement {
         </h1>
       </div>
 
-      {loading && (
-        <div className="wb-empty">
-          <div className="wb-skeleton" style={{ width: 160, height: 20 }} />
-          <p className="wb-text-muted">Завантаження…</p>
-        </div>
-      )}
-
-      {!loading && (error || !page) && (
-        <div className="wb-empty">
-          <span className="wb-empty-icon">
-            <Icon name="lock" size={32} />
-          </span>
-          <p className="wb-empty-text">{error ?? "Такої сторінки немає."}</p>
-        </div>
-      )}
-
-      {page && (
+      {!page ? (
+        <PageState loading={loading} message={error ?? "Такої сторінки немає."} />
+      ) : (
         <>
           <div className="wb-card">
             <div className="wb-card-body">
@@ -141,7 +125,7 @@ export function UserPageView(): ReactElement {
                 <button
                   type="button"
                   className="wb-btn wb-btn-secondary"
-                  onClick={() => setEditing(true)}
+                  onClick={() => void navigate(userPageEditPath(page.id))}
                 >
                   <Icon name="edit" size={16} />
                   Змінити текст
@@ -164,14 +148,6 @@ export function UserPageView(): ReactElement {
             className="page-layout"
           />
         </>
-      )}
-
-      {editing && page && (
-        <PageCreateSheet
-          initial={pageDraft(page)}
-          onSaved={upsert}
-          onClose={() => setEditing(false)}
-        />
       )}
     </div>
   );

@@ -1,4 +1,5 @@
 import { describe, expect, it } from "vitest";
+import type { PageConfig } from "../types/page-config.types";
 import { normalizePageSlug, pageAddress, PAGE_SLUG_MAX } from "./address";
 import { pageDraft, validatePageDraft } from "./rules";
 import {
@@ -92,6 +93,37 @@ describe("шаблон ↔ page_data", () => {
     expect(config.zones.main.map((block) => block.id)).toEqual(["card-title", "card-about"]);
     expect(config.zones.main.map((block) => block.order)).toEqual([0, 1]);
     expect(config.zones.header).toEqual([]);
+  });
+
+  it("назва стає заголовком, а текст під підписом — тілом", () => {
+    // Рівень блока фарбує **заголовок** (`props.title`), тож назва мусить лягти
+    // саме туди: інакше сторінка показувала б ім'я приглушеним тілом і не мала
+    // б жодного заголовка.
+    const config = buildPageConfig(card, { title: "Оксана", about: "Пишу тексти" });
+    const props = config.zones.main.map((block) => block.props as Record<string, string>);
+
+    expect(props[0].title).toBe("Оксана");
+    expect(props[0].content).toBe("");
+    // А підпис («Про себе») — це структура шаблону: він у заголовку, текст — у тілі.
+    expect(props[1].title).toBe("Про себе");
+    expect(props[1].content).toBe("Пишу тексти");
+  });
+
+  it("сторінка, збережена до поділу заголовка й тіла, читається як є", () => {
+    // Назва тоді лежала в `content`: загубити її при першому ж відкритті форми
+    // означало б стерти текст людини мовчки.
+    const legacy: PageConfig = {
+      version: 1,
+      zones: {
+        sidebar: [],
+        header: [],
+        footer: [],
+        main: [{ id: "card-title", type: "text", order: 0, props: { content: "Стара назва" } }],
+      },
+      visibleZones: ["main"],
+    };
+
+    expect(readPageValues(card, legacy)).toEqual({ title: "Стара назва" });
   });
 
   it("значення читаються назад — форма відкриває те, що писав автор", () => {

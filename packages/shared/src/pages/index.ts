@@ -4,8 +4,9 @@
  * Один домен на клієнт і сервер:
  *
  * - `templates.ts` — **два шаблони** («Візитка» і «Подія»): поля, з яких
- *   людина змінює лише текст, і чисті `buildPageConfig` / `readPageValues`,
- *   що переводять значення в `page_data` і назад;
+ *   людина змінює лише текст, текст-приклад для перегляду (`preview`) і чисті
+ *   `buildPageConfig` / `readPageValues`, що переводять значення в `page_data`
+ *   і назад;
  * - `address.ts` — адреса сторінки: переклад назви латиницею
  *   (`normalizePageSlug`), зайняті платформою сегменти (`RESERVED_PAGE_SLUGS`)
  *   і перевірка поля форми (`pageAddress`);
@@ -41,6 +42,7 @@ export {
   PAGE_TEMPLATES,
   PAGE_TEMPLATE_KEYS,
   buildPageConfig,
+  fieldIsHeading,
   isPageTemplateKey,
   pageBlockId,
   pageTemplate,
