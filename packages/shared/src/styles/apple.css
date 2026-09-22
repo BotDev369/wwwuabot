@@ -314,8 +314,14 @@ html[data-brand="apple"] .wb-tabs-btn {
 /* ── Sidebar: FROSTED GLASS — Apple's signature effect ───────────────────
    Клас рендерить і адмінка (`.wb-nav`), і спільний `PageRenderer`
    (`.page-zone--sidebar`) — бренд мусить діяти на обидва, інакше оболонки
-   виглядають по-різному при однаковій темі. */
-html[data-brand="apple"] .wb-nav,
+   виглядають по-різному при однаковій темі.
+
+   Виняток — **панель розділів Простору** (`.wb-space-nav`, той самий
+   кирпичик): вона стоїть не хромом застосунку, а поверхнею всередині сторінки,
+   тож своє тло виводить із трьох кольорів теми (як друга смуга футера).
+   Світле скло тут різало б око на темній темі — саме тому виняток тут, у
+   бренда, а не другим `!important` у `space-nav.css`. */
+html[data-brand="apple"] .wb-nav:not(.wb-space-nav),
 html[data-brand="apple"] .page-zone--sidebar {
   background: rgba(242, 242, 247, 0.85) !important;
   backdrop-filter: saturate(180%) blur(24px) !important;
@@ -323,7 +329,7 @@ html[data-brand="apple"] .page-zone--sidebar {
   box-shadow: none !important;
 }
 
-html[data-brand="apple"][data-theme="dark"] .wb-nav,
+html[data-brand="apple"][data-theme="dark"] .wb-nav:not(.wb-space-nav),
 html[data-brand="apple"][data-theme="dark"] .page-zone--sidebar {
   background: rgba(28, 28, 30, 0.8) !important;
 }

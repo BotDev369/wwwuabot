@@ -301,8 +301,12 @@ html[data-brand="android"] .wb-btn-secondary {
 
 /* ── Sidebar: solid surface with strong elevation — VERY different from Apple
    Клас рендерить і адмінка (`.wb-nav`), і спільний `PageRenderer`
-   (`.page-zone--sidebar`) — бренд мусить діяти на обидва. */
-html[data-brand="android"] .wb-nav,
+   (`.page-zone--sidebar`) — бренд мусить діяти на обидва.
+
+   Виняток — **панель розділів Простору** (`.wb-space-nav`): вона стоїть
+   усередині сторінки, а не хромом застосунку, тож тло бере з теми
+   (`space-nav.css`), а не цей сірий. */
+html[data-brand="android"] .wb-nav:not(.wb-space-nav),
 html[data-brand="android"] .page-zone--sidebar {
   background: #e8e8ec !important;
   box-shadow: 4px 0 16px rgba(0, 0, 0, 0.08) !important;
@@ -310,7 +314,7 @@ html[data-brand="android"] .page-zone--sidebar {
   -webkit-backdrop-filter: none !important;
 }
 
-html[data-brand="android"][data-theme="dark"] .wb-nav,
+html[data-brand="android"][data-theme="dark"] .wb-nav:not(.wb-space-nav),
 html[data-brand="android"][data-theme="dark"] .page-zone--sidebar {
   background: #16161a !important;
   box-shadow: 4px 0 16px rgba(0, 0, 0, 0.4) !important;
