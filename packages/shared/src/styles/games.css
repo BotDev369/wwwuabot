@@ -21,6 +21,19 @@
  * Поки що палітра одна на обидві теми застосунку навмисно: це «сцена», а не
  * ще один шар оформлення.
  *
+ * **Палітри світлі — і це рішення, а не випадковість.** Темний «зал» був
+ * спробою дати атмосферу, але вийшов похмурим: у соціальній мережі гра —
+ * перерва, а не кінотеатр, і на телефоні при будь-якому світлі читається
+ * світла поверхня. Свій бік і чужий усе одно розрізняються кольором —
+ * характер дав не відтінок тла, а матеріал гри: папір, арена, прилад.
+ *
+ * ── ПОВНИЙ ЕКРАН ────────────────────────────────────────────────────────
+ *
+ * Партія займає екран цілком (`wb-game-screen`): у ній не має бути ні рядка
+ * заголовка, ні футера — дошці й арені потрібна висота. Тло, текстура й
+ * верхній рядок живуть на екрані, а сцена всередині лише тримає середину;
+ * тому `data-game` стоїть на обох, а палітра в них однакова.
+ *
  * ── РУХ ─────────────────────────────────────────────────────────────────
  *
  * Рух показує стан, а не прикрашає: знак упав (pop), бот вибирає (shake),
@@ -68,12 +81,92 @@
   width: 100%;
 }
 
-/* ── Палітри ігор ────────────────────────────────────────────────────────── */
+/* ── Повноекранний екран партії ──────────────────────────────────────────── */
+
+/* Гра забирає екран **цілком**. У партії не має бути ні рядка заголовка, ні
+   футера: дошці й арені потрібна висота, а chrome забирав її найбільше.
+   `fixed` + `inset: 0`, а не сторінка в потоці, — бо футер теж `fixed` на
+   `--z-tabbar`: доки триває партія, chrome ховається під екраном гри, а
+   вертає з партії сама гра (стрілка вгорі).
+
+   Шар — на одиницю вище за футер: він стоїть **пізніше** в розмітці, і з
+   рівним `z-index` виграла б смуга. */
+.wb-game-screen {
+  position: fixed;
+  inset: 0;
+  z-index: calc(var(--z-tabbar) + 1);
+  display: flex;
+  flex-direction: column;
+  /* Прокрутка своя: із відкритою клавіатурою екран нижчий, і партія мусить
+     лишитись доступною, а не відрізаною. */
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding: var(--sp-3) var(--sp-3) calc(var(--sp-2) + var(--safe-bottom));
+  background-color: var(--game-surface);
+  color: var(--game-ink);
+  animation: wb-game-rise var(--duration) var(--ease-out) both;
+}
+
+/* Верхній рядок партії: назад і назва. Усе інше на екрані належить грі. */
+.wb-game-hud {
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+}
+
+.wb-game-back {
+  width: 40px;
+  height: 40px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  border: none;
+  border-radius: var(--radius-full);
+  background: var(--game-field);
+  color: var(--game-ink);
+  cursor: pointer;
+  transition:
+    transform var(--duration-fast) var(--ease),
+    color var(--duration-fast) var(--ease),
+    background var(--duration-fast) var(--ease);
+}
+
+.wb-game-back:active {
+  transform: scale(0.94);
+  background: var(--game-accent-soft);
+  color: var(--game-accent);
+}
+
+.wb-game-name {
+  font-size: var(--text-sm);
+  font-weight: var(--weight-semibold);
+  color: var(--game-muted);
+}
+
+/* Сцена в повноекранному режимі — середина екрана. Тло, текстура й рамка вже
+   належать екранові, тож сцена не малює власних: дві поверхні одна на одній
+   дали б подвійну міліметровку й подвійну тінь. */
+.wb-game-screen .wb-game-stage {
+  flex: 1 1 auto;
+  min-height: 0;
+  padding: var(--sp-3) 0;
+  border-radius: 0;
+  background: none;
+  animation: none;
+}
+
+/* ── Палітри ігор ──────────────────────────────────────────────────────────
+   Оголошуються на **обох**: екран носить палітру для верхнього рядка й тла,
+   сцена — для себе. Значення одні й ті самі, тож це не два джерела правди, а
+   один блок із двома селекторами. */
 
 /* Хрестики-нулики: папір і олівець. Тепла поверхня, графітні знаки, теракота
    для свого ходу й маркер для зібраної лінії. */
+.wb-game-screen[data-game="tictactoe"],
 .wb-game-stage[data-game="tictactoe"] {
-  --game-surface: #f7f2e6;
+  --game-surface: #fbf7ee;
   --game-field: rgba(43, 47, 59, 0.06);
   --game-ink: #2b2f3b;
   --game-muted: rgba(43, 47, 59, 0.5);
@@ -84,59 +177,67 @@
   --game-line: rgba(43, 47, 59, 0.08);
   --game-highlight: rgba(240, 196, 60, 0.45);
   --game-glow: rgba(201, 85, 42, 0.2);
+}
 
-  /* Тінь по краях — аркуш лежить на столі, а не в площині екрана */
+/* Міліметровка: вона й робить з екрана аркуш. Тінь по краях — аркуш лежить
+   на столі, а не в площині екрана. */
+.wb-game-screen[data-game="tictactoe"] {
   box-shadow: inset 0 0 70px var(--game-line);
-
-  /* Міліметровка: вона й робить з екрана аркуш */
   background-image:
     repeating-linear-gradient(0deg, var(--game-line) 0 1px, transparent 1px 28px),
     repeating-linear-gradient(90deg, var(--game-line) 0 1px, transparent 1px 28px);
 }
 
-/* Камінь, ножиці, папір: арена дуелі. Темна зала, прожектор згори, свій бік
-   фіолетовий, чужий — рожевий: сторони видно до підпису. */
+/* Камінь, ножиці, папір: арена дуелі. Світла зала, прожектор згори, свій бік
+   фіолетовий, чужий — рожевий: сторони видно до підпису. Палітра **світла**
+   навмисно: гра не має бути темною кімнатою, а сторони однаково добре
+   читаються на світлому. */
+.wb-game-screen[data-game="rps"],
 .wb-game-stage[data-game="rps"] {
-  --game-surface: #15122b;
-  --game-field: rgba(255, 255, 255, 0.07);
-  --game-ink: #ece8ff;
-  --game-muted: rgba(236, 232, 255, 0.58);
-  --game-accent: #8b6cff;
-  --game-accent-soft: rgba(139, 108, 255, 0.22);
-  --game-foe: #ff5c8a;
-  --game-foe-soft: rgba(255, 92, 138, 0.16);
-  --game-line: rgba(236, 232, 255, 0.09);
-  --game-highlight: rgba(139, 108, 255, 0.3);
-  --game-glow: rgba(139, 108, 255, 0.45);
+  --game-surface: #f3efff;
+  --game-field: rgba(56, 32, 122, 0.06);
+  --game-ink: #251a4d;
+  --game-muted: rgba(37, 26, 77, 0.55);
+  --game-accent: #6d4dfa;
+  --game-accent-soft: rgba(109, 77, 250, 0.16);
+  --game-foe: #e0457f;
+  --game-foe-soft: rgba(224, 69, 127, 0.14);
+  --game-line: rgba(37, 26, 77, 0.12);
+  --game-highlight: rgba(109, 77, 250, 0.2);
+  --game-glow: rgba(109, 77, 250, 0.3);
   --game-font: var(--font-display);
+}
 
-  /* Прожектор згори і світло підлоги знизу: зала читається як приміщення, а не
-     як темний прямокутник — і сторони стоять на чомусь. */
+/* Прожектор згори і світло підлоги знизу: зала читається як приміщення, а не
+   як рівний прямокутник — і сторони стоять на чомусь. */
+.wb-game-screen[data-game="rps"] {
   background-image:
     radial-gradient(120% 90% at 50% -10%, var(--game-glow), transparent 62%),
     radial-gradient(80% 34% at 50% 104%, var(--game-glow), transparent 70%);
 }
 
-/* Вгадай число: прилад. Темний корпус, бурштиново-зелена шкала, цифри —
+/* Вгадай число: прилад. Світлий корпус, зелено-бурштинова шкала, цифри —
    моноширинні, як на справжньому вимірювачі. */
+.wb-game-screen[data-game="guess"],
 .wb-game-stage[data-game="guess"] {
-  --game-surface: #0e1a1b;
-  --game-field: rgba(255, 255, 255, 0.06);
-  --game-ink: #d7f4ee;
-  --game-muted: rgba(215, 244, 238, 0.55);
-  --game-accent: #2fd0ad;
-  --game-accent-soft: rgba(47, 208, 173, 0.18);
-  --game-foe: #ffb057;
-  --game-foe-soft: rgba(255, 176, 87, 0.16);
-  --game-line: rgba(215, 244, 238, 0.12);
-  --game-highlight: rgba(47, 208, 173, 0.22);
-  --game-glow: rgba(47, 208, 173, 0.4);
+  --game-surface: #effaf7;
+  --game-field: rgba(16, 58, 54, 0.06);
+  --game-ink: #10302d;
+  --game-muted: rgba(16, 48, 45, 0.55);
+  --game-accent: #12a594;
+  --game-accent-soft: rgba(18, 165, 148, 0.16);
+  --game-foe: #d98212;
+  --game-foe-soft: rgba(217, 130, 18, 0.14);
+  --game-line: rgba(16, 48, 45, 0.12);
+  --game-highlight: rgba(18, 165, 148, 0.22);
+  --game-glow: rgba(18, 165, 148, 0.3);
   --game-font: var(--font-mono);
+}
 
-  /* Рамка корпусу — прилад має грань, а не пливе по екрану */
+/* Рамка корпусу — прилад має грань, а не пливе по екрану. Шкала поділок під
+   низом — те, що й робить з екрана вимірювач. */
+.wb-game-screen[data-game="guess"] {
   box-shadow: inset 0 0 0 1px var(--game-line);
-
-  /* Шкала поділок під низом — «корпус» приладу */
   background-image: repeating-linear-gradient(90deg, var(--game-line) 0 1px, transparent 1px 12px);
   background-repeat: no-repeat;
   background-position: left bottom;
@@ -345,7 +446,7 @@
   height: 44px;
   margin: -22px 0 0 -1.5px;
   border-radius: var(--radius-full);
-  background: var(--game-ink);
+  background: var(--game-accent);
   box-shadow: 0 0 16px var(--game-glow);
   animation: wb-game-flash 0.45s var(--ease-out) both;
   pointer-events: none;
@@ -708,17 +809,25 @@
   gap: var(--sp-2);
 }
 
-/* Кнопка — спільний кирпичик, але на сцені вона носить її палітру */
-.wb-game-actions .wb-btn {
+/* Кнопка — спільний кирпичик, але на сцені вона носить її палітру: чорна
+   «Спробувати» посеред світлої партії — це вже інший продукт. */
+.wb-game .wb-btn {
   background: var(--game-field);
   color: var(--game-ink);
+}
+
+/* Головна дія партії — акцентом сцени, а не застосунку: світла поверхня як
+   колір тексту дає контраст без жодного нового токена. */
+.wb-game .wb-btn-primary {
+  background: var(--game-accent);
+  color: var(--game-surface);
 }
 
 /* ── Світло арени ────────────────────────────────────────────────────────── */
 
 /* Прожектор над ареною дихає: зала жива, навіть коли нічого не сталось.
    Це тло сцени, а не стан предмета — тому воно не залежить від раунду. */
-.wb-game-stage[data-game="rps"]::before {
+.wb-game-screen[data-game="rps"]::before {
   content: "";
   position: absolute;
   inset: -40% -20% auto;
@@ -736,7 +845,7 @@
   .wb-game-rise,
   .wb-game-shake,
   .wb-game-cell--win,
-  .wb-game-stage[data-game="rps"]::before,
+  .wb-game-screen[data-game="rps"]::before,
   .wb-game-arena--clash .wb-game-tile--mine,
   .wb-game-arena--clash .wb-game-tile--foe {
     animation: none;
