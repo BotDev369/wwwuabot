@@ -397,24 +397,28 @@ html[data-brand] .wb-game .wb-btn-primary {
      Токенів багато, бо тут намальовано фігури, а не рамки: у курки гребінь і
      дзьоб різних кольорів, а у вовка — кошик з яйцями. */
   --yard-sky: #fdfaf1;
-  --yard-sky-deep: #efe8d5;
-  --yard-daisy: rgba(60, 50, 34, 0.055);
-  --yard-track: rgba(60, 50, 34, 0.11);
-  --yard-track-light: rgba(255, 255, 255, 0.5);
-  --yard-rung: rgba(60, 50, 34, 0.07);
+  --yard-sky-deep: #ece4cf;
+  --yard-daisy: rgba(60, 50, 34, 0.045);
+  --yard-track: rgba(60, 50, 34, 0.065);
+  --yard-rail: rgba(126, 70, 36, 0.3);
+  --yard-rail-soft: rgba(126, 70, 36, 0.16);
+  --yard-rung: rgba(60, 50, 34, 0.055);
   --yard-line-soft: rgba(60, 50, 34, 0.14);
   --yard-perch: #c79a5e;
   --yard-perch-deep: #a97c46;
-  --yard-blade: rgba(255, 255, 255, 0.45);
+  --yard-blade: rgba(255, 255, 255, 0.55);
+  --yard-blade-soft: rgba(255, 255, 255, 0.35);
   --yard-shell: #c98a2e;
   --yard-egg: #fdf6e3;
   --yard-egg-shadow: rgba(60, 50, 34, 0.25);
-  --yard-grass: #d6e0b4;
-  --yard-grass-deep: #c2cf9c;
-  --yard-fur: #9dabb6;
-  --yard-fur-dark: #7b8b98;
-  --yard-fur-light: #e7edf1;
-  --yard-ink: #3c4045;
+  --yard-grass: #cfe0a8;
+  --yard-grass-deep: #b0c683;
+  --yard-bush: #8fae6a;
+  --yard-bush-deep: #6f8f4f;
+  --yard-fur: #454b52;
+  --yard-fur-dark: #24282c;
+  --yard-fur-light: #eef1f3;
+  --yard-ink: #23272c;
   --yard-hen-body: #fdf3dd;
   --yard-hen-wing: #ecd9ad;
   --yard-hen-line: #6f5636;
@@ -1198,8 +1202,8 @@ html[data-brand] .wb-game .wb-btn-primary {
   /* Три міри на весь курник: жердка, курка й вовк мусять збігатись у трьох
      правилах, тож висота жердки тут, а не в кожному правилі окремо. */
   --perch-h: 10px;
-  --hen-size: clamp(36px, 12vw, 48px);
-  --wolf-h: clamp(84px, 26vw, 112px);
+  --hen-size: clamp(40px, 13vw, 54px);
+  --wolf-h: clamp(96px, 30vw, 128px);
 }
 
 /* Сідала: чотири курки, по одній над своєю доріжкою. Жердка — спільна на всіх
@@ -1215,6 +1219,7 @@ html[data-brand] .wb-game .wb-btn-primary {
   position: absolute;
   inset: auto 0 0;
   height: var(--perch-h);
+  border-top: 1px solid var(--yard-rail);
   background: linear-gradient(180deg, var(--yard-perch), var(--yard-perch-deep));
   box-shadow: 0 1px 0 var(--yard-line-soft);
 }
@@ -1277,24 +1282,22 @@ html[data-brand] .wb-game .wb-btn-primary {
 }
 
 /* Доріжка: смуга під куркою, вужча за свою смугу. Яйце котиться нею, і саме
-   тому видно, чи встигає кошик — без неї це було б поле без напрямку. */
+   тому видно, чи встигає кошик — без неї це було б поле без напрямку.
+
+   Доріжка — **жолоб**, а не стовпець: вона тримається двома тонкими рейками по
+   краях і майже прозорим тлом. Ширша й світліша смуга читалась би як колона,
+   на яку дивляться, — а дивитись тут треба на яйце. */
 .wb-nupogodi-track {
   position: absolute;
   top: 0;
   bottom: 0;
-  width: 17%;
+  width: 14%;
   transform: translateX(-50%);
   pointer-events: none;
   background-color: var(--yard-track);
-  background-image:
-    repeating-linear-gradient(180deg, var(--yard-rung) 0 2px, transparent 2px 44px),
-    linear-gradient(
-      90deg,
-      transparent,
-      var(--yard-track-light) 28%,
-      var(--yard-track-light) 72%,
-      transparent
-    );
+  background-image: repeating-linear-gradient(180deg, var(--yard-rung) 0 2px, transparent 2px 38px);
+  border-right: 1px solid var(--yard-rail-soft);
+  border-left: 1px solid var(--yard-rail-soft);
 }
 
 /* Яйце — НАД вовком: за ним стежать усе падіння, і ховати його за головою
@@ -1336,17 +1339,55 @@ html[data-brand] .wb-game .wb-btn-primary {
   flex: 0 0 auto;
   height: clamp(64px, 18%, 96px);
 
-  /* Трава з травинками по верхньому краї: вовк стоїть у траві, а не на
-     рівній смузі кольору. */
+  /* Трава з травинками по верхньому краю: вовк стоїть у траві, а не на
+     рівній смузі кольору. Травинки — **вузькі й високі**: широкі півкола в
+     тому самому місці читались як луска, а не як трава. */
   background-image:
-    radial-gradient(circle at 50% 100%, var(--yard-blade) 0 9px, transparent 9.5px),
+    radial-gradient(ellipse 2.6px 13px at 50% 100%, var(--yard-blade) 0 99%, transparent 100%),
+    radial-gradient(ellipse 2px 9px at 50% 100%, var(--yard-blade-soft) 0 99%, transparent 100%),
     linear-gradient(180deg, var(--yard-grass), var(--yard-grass-deep));
   background-size:
-    28px 15px,
+    19px 15px,
+    27px 11px,
     100% 100%;
   background-position:
-    7px 0,
+    5px 0,
+    16px 0,
     0 0;
+}
+
+/* Паркан за спиною вовка: подвір'я, а не смуга кольору. Малюється першим —
+   вовк іде перед ним. */
+.wb-nupogodi-ground::before {
+  content: "";
+  position: absolute;
+  inset: 0 0 auto;
+  height: 24px;
+  pointer-events: none;
+  background-image:
+    repeating-linear-gradient(90deg, var(--yard-rail) 0 3px, transparent 3px 54px),
+    linear-gradient(180deg, transparent 6px, var(--yard-rail) 6px 10px, transparent 10px);
+}
+
+/* Кущі по краях — те саме подвір'я там, куди вовк не доходить */
+.wb-nupogodi-ground::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background-image:
+    radial-gradient(ellipse 36px 22px at 20px 100%, var(--yard-bush) 0 99%, transparent 100%),
+    radial-gradient(ellipse 30px 18px at 52px 100%, var(--yard-bush-deep) 0 99%, transparent 100%),
+    radial-gradient(
+      ellipse 36px 22px at calc(100% - 20px) 100%,
+      var(--yard-bush) 0 99%,
+      transparent 100%
+    ),
+    radial-gradient(
+      ellipse 30px 18px at calc(100% - 52px) 100%,
+      var(--yard-bush-deep) 0 99%,
+      transparent 100%
+    );
 }
 
 /* Промах лишає слід на траві: слова про це вже сказані, а місце видно */
@@ -1391,11 +1432,19 @@ html[data-brand] .wb-game .wb-btn-primary {
 @keyframes wb-wolf-bob {
   0%,
   100% {
-    transform: translateY(0);
+    transform: rotate(0deg) translateY(0);
+  }
+
+  25% {
+    transform: rotate(-2.5deg) translateY(-3px);
   }
 
   50% {
-    transform: translateY(-3px);
+    transform: rotate(0deg) translateY(0);
+  }
+
+  75% {
+    transform: rotate(2deg) translateY(-2px);
   }
 }
 
@@ -1484,12 +1533,14 @@ html[data-brand] .wb-game .wb-btn-primary {
   stroke-linecap: round;
 }
 
-/* Вовк: дихає легко — фігура на пів екрана не мусить смикатись */
+/* Вовк: біжить — крок швидкий, але дрібний, щоб фігура на пів екрана не
+   смикалась. Легкий нахил уперед: він іде, і це видно навіть у спокої. */
 .wb-wolf {
   display: block;
   width: 100%;
   height: 100%;
-  animation: wb-wolf-bob 1.6s ease-in-out infinite;
+  transform-origin: 50% 92%;
+  animation: wb-wolf-bob 0.9s ease-in-out infinite;
 }
 
 .wb-wolf-tail {
@@ -1530,7 +1581,10 @@ html[data-brand] .wb-game .wb-btn-primary {
   fill: var(--yard-fur-dark);
 }
 
-.wb-wolf-eye,
+.wb-wolf-eye {
+  fill: var(--yard-fur-light);
+}
+
 .wb-wolf-nose {
   fill: var(--yard-ink);
 }

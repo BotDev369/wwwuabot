@@ -58,9 +58,10 @@ export function WolfFigure(): ReactElement {
       {/* Хвіст — позаду всього: його читають силуетом, а не деталлю */}
       <path className="wb-wolf-tail" d="M30 70C14 74 2 62 2 44c8 8 18 12 28 12Z" />
       <path className="wb-wolf-tail-tip" d="M2 44c4 4 8 6 13 7-3 5-8 6-13 3Z" />
-      {/* Ноги — поза кошиком: вовк стоїть у траві, а не висить над нею */}
-      <path className="wb-wolf-leg" d="M24 84v16m0 0l-6 4m6-4l6 4" />
-      <path className="wb-wolf-leg" d="M72 84v16m0 0l-6 4m6-4l6 4" />
+      {/* Ноги — поза кошиком: вовк **біжить**, а не стоїть. Крок розведено:
+          задня нога назад, передня вперед — саме він і робить із фігури рух */}
+      <path className="wb-wolf-leg" d="M32 80c-4 8-8 12-16 14l14 4" />
+      <path className="wb-wolf-leg" d="M64 80c4 8 8 12 14 13l-12 5" />
       <path className="wb-wolf-body" d="M32 34c-12 8-14 32-6 52h44c8-20 6-44-6-52Z" />
       <path className="wb-wolf-belly" d="M41 54c-2 14 0 26 5 32h5c5-6 7-18 5-32Z" />
       <path className="wb-wolf-arm" d="M33 44c-4 10-6 22-6 34M63 44c4 10 6 22 6 34" />
