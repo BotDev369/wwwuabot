@@ -6,6 +6,10 @@
  * смугами, а не стрибає: місце треба передбачити, і це єдина причина, чому
  * гра є грою, а не реакцією на подію.
  *
+ * **Курник намальовано, а не складено з рамок.** Курка й вовк — фігури з
+ * `NupogodiFigures`, доріжки — смуги під кожною куркою, жердка — спільний
+ * CSS: порожнє поле квадратів читалось би як форма, а не як подвір'я.
+ *
  * **Хто впіймав — вирішує не розмітка.** Позиція кошика приходить із правил
  * (`laneOf`), і тут вона лише малюється: якби «чи впіймав» рахував компонент,
  * те саме рішення жило б у двох місцях — і розійшлося б із життями на екрані.
@@ -24,6 +28,7 @@
 import { useEffect, useRef, type ReactElement, type ReactNode } from "react";
 import { Icon } from "@wwwuabot/shared";
 import { LANES, dropPercent, lanePercent } from "./henhouse";
+import { HenFigure, WolfFigure } from "./NupogodiFigures";
 import { START_LIVES, type NupogodiEvent, type NupogodiState } from "./nupogodi";
 import { EGGS, plural } from "./plural";
 import { type GameSound } from "./sound";
@@ -160,13 +165,21 @@ export function NupogodiGame(): ReactElement {
               role="img"
               aria-label={`Курка ${lane + 1}`}
             >
-              <Icon name="hen" size={30} />
+              <HenFigure />
             </span>
           ))}
         </div>
 
         {/* Доріжки: тут котиться все, що знесла курка. Низ — це кошик */}
         <div className="wb-nupogodi-fall">
+          {/* Сама доріжка: без неї поле між куркою й кошиком — порожнє тло */}
+          {Array.from({ length: LANES }, (_, lane) => (
+            <span
+              key={lane}
+              className="wb-nupogodi-track"
+              style={{ left: `${lanePercent(lane)}%` }}
+            />
+          ))}
           {state.eggs.map((egg) => (
             <span
               key={egg.id}
@@ -176,7 +189,7 @@ export function NupogodiGame(): ReactElement {
                 top: `${dropPercent(egg.drop)}%`,
               }}
             >
-              <Icon name="egg" size={22} />
+              <Icon name="egg" size={30} />
             </span>
           ))}
         </div>
@@ -195,7 +208,7 @@ export function NupogodiGame(): ReactElement {
             className={`wb-nupogodi-wolf${moodOf(event)}`}
             style={{ left: `${lanePercent(state.wolf)}%` }}
           >
-            <span className="wb-nupogodi-basket" />
+            <WolfFigure />
           </span>
         </div>
 

@@ -393,16 +393,37 @@ html[data-brand] .wb-game .wb-btn-primary {
   --game-glow: rgba(31, 122, 69, 0.18);
   --game-font: var(--font-display);
 
-  /* Матеріал гри: небо над курником, доріжка, трава, шкаралупа і вовна. */
+  /* Матеріал гри: небо, ромашки, доріжка, жердка, трава, курка, вовна й кошик.
+     Токенів багато, бо тут намальовано фігури, а не рамки: у курки гребінь і
+     дзьоб різних кольорів, а у вовка — кошик з яйцями. */
   --yard-sky: #fdfaf1;
   --yard-sky-deep: #efe8d5;
-  --yard-track: rgba(60, 50, 34, 0.1);
-  --yard-hen: #4a4033;
+  --yard-daisy: rgba(60, 50, 34, 0.055);
+  --yard-track: rgba(60, 50, 34, 0.11);
+  --yard-track-light: rgba(255, 255, 255, 0.5);
+  --yard-rung: rgba(60, 50, 34, 0.07);
+  --yard-line-soft: rgba(60, 50, 34, 0.14);
+  --yard-perch: #c79a5e;
+  --yard-perch-deep: #a97c46;
+  --yard-blade: rgba(255, 255, 255, 0.45);
   --yard-shell: #c98a2e;
+  --yard-egg: #fdf6e3;
+  --yard-egg-shadow: rgba(60, 50, 34, 0.25);
   --yard-grass: #d6e0b4;
   --yard-grass-deep: #c2cf9c;
-  --yard-basket: #8a5a2b;
   --yard-fur: #9dabb6;
+  --yard-fur-dark: #7b8b98;
+  --yard-fur-light: #e7edf1;
+  --yard-ink: #3c4045;
+  --yard-hen-body: #fdf3dd;
+  --yard-hen-wing: #ecd9ad;
+  --yard-hen-line: #6f5636;
+  --yard-feather: #cf9a4a;
+  --yard-comb: #c0392b;
+  --yard-beak: #e08b2a;
+  --yard-basket: #b07a3c;
+  --yard-basket-rim: #8a5a2b;
+  --yard-basket-weave: rgba(60, 50, 34, 0.35);
 }
 
 /* Сонце над курником: світло згори, а не рівне тло */
@@ -1173,21 +1194,36 @@ html[data-brand] .wb-game .wb-btn-primary {
   flex-direction: column;
   min-height: 160px;
   overflow: hidden;
+
+  /* Три міри на весь курник: жердка, курка й вовк мусять збігатись у трьох
+     правилах, тож висота жердки тут, а не в кожному правилі окремо. */
+  --perch-h: 10px;
+  --hen-size: clamp(36px, 12vw, 48px);
+  --wolf-h: clamp(84px, 26vw, 112px);
 }
 
-/* Сідала: чотири курки, по одній над своєю доріжкою. Вони сидять на
-   верхньому краї доріжок, тож яйце починає шлях рівно під куркою. */
+/* Сідала: чотири курки, по одній над своєю доріжкою. Жердка — спільна на всіх
+   чотирьох, тож курка стоїть на ній, а не над порожнечею. */
 .wb-nupogodi-hens {
   position: relative;
   flex: 0 0 auto;
-  height: clamp(40px, 12%, 62px);
+  height: calc(var(--hen-size) + var(--perch-h));
+}
+
+.wb-nupogodi-hens::after {
+  content: "";
+  position: absolute;
+  inset: auto 0 0;
+  height: var(--perch-h);
+  background: linear-gradient(180deg, var(--yard-perch), var(--yard-perch-deep));
+  box-shadow: 0 1px 0 var(--yard-line-soft);
 }
 
 .wb-nupogodi-hen {
   position: absolute;
-  bottom: 0;
-  display: flex;
-  color: var(--yard-hen);
+  bottom: var(--perch-h);
+  width: var(--hen-size);
+  height: var(--hen-size);
   transform: translateX(-50%);
   animation: wb-hen-cluck 2.8s ease-in-out infinite;
 }
@@ -1223,19 +1259,60 @@ html[data-brand] .wb-game .wb-btn-primary {
   position: relative;
   flex: 1 1 auto;
   min-height: 90px;
-  background: linear-gradient(180deg, var(--yard-sky), var(--yard-sky-deep));
+
+  /* Небо з ромашками: порожнє тло між куркою й кошиком читалось як «гра не
+     завантажилась», а подвір'я — це те, на що тут дивляться. */
+  background-image:
+    radial-gradient(circle, var(--yard-daisy) 0 2.4px, transparent 2.9px),
+    radial-gradient(circle, var(--yard-daisy) 0 1.7px, transparent 2.2px),
+    linear-gradient(180deg, var(--yard-sky), var(--yard-sky-deep));
+  background-size:
+    96px 124px,
+    138px 92px,
+    100% 100%;
+  background-position:
+    18px 26px,
+    74px 62px,
+    0 0;
 }
 
+/* Доріжка: смуга під куркою, вужча за свою смугу. Яйце котиться нею, і саме
+   тому видно, чи встигає кошик — без неї це було б поле без напрямку. */
+.wb-nupogodi-track {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 17%;
+  transform: translateX(-50%);
+  pointer-events: none;
+  background-color: var(--yard-track);
+  background-image:
+    repeating-linear-gradient(180deg, var(--yard-rung) 0 2px, transparent 2px 44px),
+    linear-gradient(
+      90deg,
+      transparent,
+      var(--yard-track-light) 28%,
+      var(--yard-track-light) 72%,
+      transparent
+    );
+}
+
+/* Яйце — НАД вовком: за ним стежать усе падіння, і ховати його за головою
+   того, хто його ловить, означало б забирати в гравця останні пів секунди. */
 .wb-nupogodi-egg {
   position: absolute;
+  z-index: 1;
   display: flex;
   color: var(--yard-shell);
   transform: translate(-50%, -50%);
+  pointer-events: none;
 }
 
+/* Тінь під яйцем: без неї воно летить «наклейкою» повз доріжку */
 .wb-nupogodi-egg svg {
-  width: 24px;
-  height: 24px;
+  width: 30px;
+  height: 30px;
+  filter: drop-shadow(0 2px 2px var(--yard-egg-shadow));
   animation: wb-egg-roll 0.7s ease-in-out infinite;
 }
 
@@ -1257,8 +1334,19 @@ html[data-brand] .wb-game .wb-btn-primary {
 .wb-nupogodi-ground {
   position: relative;
   flex: 0 0 auto;
-  height: clamp(50px, 15%, 76px);
-  background: linear-gradient(180deg, var(--yard-grass), var(--yard-grass-deep));
+  height: clamp(64px, 18%, 96px);
+
+  /* Трава з травинками по верхньому краї: вовк стоїть у траві, а не на
+     рівній смузі кольору. */
+  background-image:
+    radial-gradient(circle at 50% 100%, var(--yard-blade) 0 9px, transparent 9.5px),
+    linear-gradient(180deg, var(--yard-grass), var(--yard-grass-deep));
+  background-size:
+    28px 15px,
+    100% 100%;
+  background-position:
+    7px 0,
+    0 0;
 }
 
 /* Промах лишає слід на траві: слова про це вже сказані, а місце видно */
@@ -1287,37 +1375,17 @@ html[data-brand] .wb-game .wb-btn-primary {
 }
 
 /* Вовк стоїть на траві, кошик — на самій лінії доріжок: тоді «в кошику» видно
-   без слів, а промах стається там, де його видно. */
+   без слів, а промах стається там, де його видно.
+
+   Зсув униз на 23% — це вінця кошика з фігури (`y = 80` із 104): саме вони
+   мусять збігтись із низом доріжок, куди приїжджає яйце. */
 .wb-nupogodi-wolf {
   position: absolute;
   bottom: 100%;
-  width: 44px;
-  height: 58px;
+  width: calc(var(--wolf-h) * 0.923);
+  height: var(--wolf-h);
+  margin-bottom: calc(var(--wolf-h) * -0.23);
   transform: translateX(-50%);
-}
-
-/* Голова з вухами одним силуетом: `clip-path` дає два гострі вуха, а
-   прямокутник із двома трикутниками зверху читався б як латки. */
-.wb-nupogodi-wolf::before {
-  content: "";
-  position: absolute;
-  inset: 0 0 auto;
-  height: 44px;
-  background: var(--yard-fur);
-  clip-path: polygon(2% 38%, 20% 2%, 36% 32%, 64% 32%, 80% 2%, 98% 38%, 90% 100%, 10% 100%);
-  animation: wb-wolf-bob 1.6s ease-in-out infinite;
-}
-
-/* Око — одна точка: на 44 пікселях кожна наступна деталь робить із вовка пляму */
-.wb-nupogodi-wolf::after {
-  content: "";
-  position: absolute;
-  top: 18px;
-  left: 58%;
-  width: 5px;
-  height: 5px;
-  border-radius: var(--radius-full);
-  background: var(--yard-hen);
 }
 
 @keyframes wb-wolf-bob {
@@ -1366,16 +1434,160 @@ html[data-brand] .wb-game .wb-btn-primary {
   }
 }
 
-/* Кошик: трапеція, яку впізнають у мить — саме в ній і буде яйце */
+/* ── Фігури курника ──────────────────────────────────────────────────────── */
+
+/* Курка: тіло, гребінь, дзьоб і ноги — кожна частина носить клас, а колір їй
+   дає палітра гри. Гребінь видно вже на 40 пікселях: саме він робить з
+   курки курку, а не пташку взагалі. */
+.wb-hen {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+.wb-hen-tail {
+  fill: var(--yard-feather);
+}
+
+.wb-hen-body,
+.wb-hen-head {
+  fill: var(--yard-hen-body);
+  stroke: var(--yard-hen-line);
+  stroke-width: 2;
+  stroke-linejoin: round;
+}
+
+.wb-hen-wing {
+  fill: var(--yard-hen-wing);
+  stroke: var(--yard-hen-line);
+  stroke-width: 1.6;
+  stroke-linejoin: round;
+}
+
+.wb-hen-comb,
+.wb-hen-wattle {
+  fill: var(--yard-comb);
+}
+
+.wb-hen-beak {
+  fill: var(--yard-beak);
+}
+
+.wb-hen-eye {
+  fill: var(--yard-hen-line);
+}
+
+.wb-hen-legs {
+  fill: none;
+  stroke: var(--yard-beak);
+  stroke-width: 2;
+  stroke-linecap: round;
+}
+
+/* Вовк: дихає легко — фігура на пів екрана не мусить смикатись */
+.wb-wolf {
+  display: block;
+  width: 100%;
+  height: 100%;
+  animation: wb-wolf-bob 1.6s ease-in-out infinite;
+}
+
+.wb-wolf-tail {
+  fill: var(--yard-fur-dark);
+}
+
+.wb-wolf-tail-tip {
+  fill: var(--yard-fur-light);
+}
+
+.wb-wolf-leg {
+  fill: none;
+  stroke: var(--yard-fur-dark);
+  stroke-width: 8;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.wb-wolf-body {
+  fill: var(--yard-fur);
+  stroke: var(--yard-fur-dark);
+  stroke-width: 2.5;
+  stroke-linejoin: round;
+}
+
+.wb-wolf-belly {
+  fill: var(--yard-fur-light);
+}
+
+.wb-wolf-arm {
+  fill: none;
+  stroke: var(--yard-fur);
+  stroke-width: 9;
+  stroke-linecap: round;
+}
+
+.wb-wolf-ear {
+  fill: var(--yard-fur-dark);
+}
+
+.wb-wolf-eye,
+.wb-wolf-nose {
+  fill: var(--yard-ink);
+}
+
+.wb-wolf-head {
+  fill: var(--yard-fur);
+  stroke: var(--yard-fur-dark);
+  stroke-width: 2.5;
+  stroke-linejoin: round;
+}
+
+.wb-wolf-muzzle {
+  fill: var(--yard-fur-light);
+  stroke: var(--yard-fur-dark);
+  stroke-width: 2;
+  stroke-linejoin: round;
+}
+
+.wb-wolf-brow {
+  fill: none;
+  stroke: var(--yard-ink);
+  stroke-width: 2.4;
+  stroke-linecap: round;
+}
+
+/* Кошик: вінця — та сама лінія, на якій ловлять, а яйця, що видно з нього,
+   кажуть, для чого він, без жодного слова */
+/* Кошик цілком: тінь під ним — щоб лінія вінця читалась найсильніше, бо саме
+   на неї дивляться, коли яйце вже котиться */
 .wb-nupogodi-basket {
-  position: absolute;
-  bottom: 0;
-  left: 50%;
-  width: 36px;
-  height: 26px;
-  transform: translateX(-50%);
-  background: var(--yard-basket);
-  clip-path: polygon(6% 0, 94% 0, 82% 100%, 18% 100%);
+  filter: drop-shadow(0 2px 3px var(--yard-egg-shadow));
+}
+
+.wb-basket-body {
+  fill: var(--yard-basket);
+}
+
+.wb-basket-weave {
+  fill: none;
+  stroke: var(--yard-basket-weave);
+  stroke-width: 2;
+}
+
+.wb-basket-rim {
+  fill: var(--yard-basket-rim);
+}
+
+.wb-basket-egg {
+  fill: var(--yard-egg);
+  stroke: var(--yard-shell);
+  stroke-width: 2;
+}
+
+.wb-wolf-paw {
+  fill: var(--yard-fur);
+  stroke: var(--yard-fur-dark);
+  stroke-width: 2;
 }
 
 /* Життя — слотами: порожній слот читається як «одне вже втрачено», число — ні */
@@ -1439,12 +1651,7 @@ html[data-brand] .wb-game .wb-btn-primary {
   border: none;
   background: none;
   cursor: pointer;
-  box-shadow: inset -1px 0 0 var(--yard-track);
   transition: background var(--duration-fast) var(--ease);
-}
-
-.wb-nupogodi-lane:last-child {
-  box-shadow: none;
 }
 
 /* Поділ доріжок видно завжди, а відгук — на дотик: `:hover` на телефоні немає */
@@ -1478,7 +1685,7 @@ html[data-brand] .wb-game .wb-btn-primary {
      Хитання яйця на осі — прикраса, тож воно зникає разом з рештою. */
   .wb-nupogodi-hen,
   .wb-nupogodi-egg svg,
-  .wb-nupogodi-wolf::before,
+  .wb-wolf,
   .wb-nupogodi-wolf--catch,
   .wb-nupogodi-wolf--miss,
   .wb-nupogodi-crack {
