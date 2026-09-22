@@ -21,12 +21,7 @@ import { useState, type ReactElement } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { Icon, SwitchRow } from "@wwwuabot/shared";
 import { toWebPath } from "@wwwuabot/shared/content";
-import {
-  buildPageConfig,
-  pageDraft,
-  pageTemplate,
-  type UserPage,
-} from "@wwwuabot/shared/pages";
+import { buildPageConfig, pageDraft, pageTemplate, type UserPage } from "@wwwuabot/shared/pages";
 import { PageRenderer } from "@wwwuabot/ui/PageRenderer";
 import { registerAllBlocks } from "@wwwuabot/ui/blocks";
 import { useDialog } from "@wwwuabot/ui/dialog";
@@ -172,7 +167,11 @@ export function UserPageView(): ReactElement {
       )}
 
       {editing && page && (
-        <PageCreateSheet initial={pageDraft(page)} onSaved={upsert} onClose={() => setEditing(false)} />
+        <PageCreateSheet
+          initial={pageDraft(page)}
+          onSaved={upsert}
+          onClose={() => setEditing(false)}
+        />
       )}
     </div>
   );

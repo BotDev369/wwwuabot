@@ -106,15 +106,17 @@ export function normalizePageSlug(raw: unknown): string {
     .map((char) => (char in TRANSLIT ? TRANSLIT[char] : char))
     .join("");
 
-  return mapped
-    // `\p{L}` і `\p{N}` — щоб відкинути не-латиницю, якої немає в таблиці
-    // (грек, ієрогліфи): адреса мусить лишатись ASCII.
-    .replace(/[^\p{L}\p{N}]+/gu, "-")
-    .replace(/[^a-z0-9-]+/g, "-")
-    .replace(/-{2,}/g, "-")
-    .replace(/^-+|-+$/g, "")
-    .slice(0, PAGE_SLUG_MAX)
-    .replace(/-+$/g, "");
+  return (
+    mapped
+      // `\p{L}` і `\p{N}` — щоб відкинути не-латиницю, якої немає в таблиці
+      // (грек, ієрогліфи): адреса мусить лишатись ASCII.
+      .replace(/[^\p{L}\p{N}]+/gu, "-")
+      .replace(/[^a-z0-9-]+/g, "-")
+      .replace(/-{2,}/g, "-")
+      .replace(/^-+|-+$/g, "")
+      .slice(0, PAGE_SLUG_MAX)
+      .replace(/-+$/g, "")
+  );
 }
 
 /** Чи це слово, яким уже названо щось у продукті (або яке неможливо вгадати). */

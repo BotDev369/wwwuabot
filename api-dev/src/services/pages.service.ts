@@ -63,13 +63,13 @@ interface PageRow {
 
 /** Що сталося зі збереженням: контролер перекладає це в код відповіді. */
 export type PageSaveOutcome =
-  | { kind: "saved"; page: UserPage }
-  | { kind: "not_found" }
-  | { kind: "address_taken" };
+  { kind: "saved"; page: UserPage } | { kind: "not_found" } | { kind: "address_taken" };
 
 /** Невідомий ключ шаблону читається як типовий: сторінка все одно відкривається. */
 function templateOf(row: PageRow): PageTemplate {
-  return pageTemplate(isPageTemplateKey(row.template_key) ? row.template_key : DEFAULT_PAGE_TEMPLATE);
+  return pageTemplate(
+    isPageTemplateKey(row.template_key) ? row.template_key : DEFAULT_PAGE_TEMPLATE,
+  );
 }
 
 /** Рядок бази → сторінка для клієнта. Значення виводяться з `page_data`. */
@@ -179,9 +179,7 @@ export class PagesService {
   async remove(id: number, ownerId: number): Promise<boolean> {
     await this.ensureSchema();
 
-    const result = await this.env.DB.prepare(
-      "DELETE FROM scenarios WHERE id = ? AND owner_id = ?",
-    )
+    const result = await this.env.DB.prepare("DELETE FROM scenarios WHERE id = ? AND owner_id = ?")
       .bind(id, ownerId)
       .run();
 

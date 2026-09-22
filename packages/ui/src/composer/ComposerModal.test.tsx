@@ -166,8 +166,7 @@ describe("ComposerModal", () => {
     // Підпис вкладки на вузькому екрані ховається (CSS), тож ім'я мусить бути
     // в `aria-label` — інакше кнопка стала б безіменною.
     expect(html).toContain("wb-composer-tabs");
-    for (const label of labelsExcept("ad", "page"))
-      expect(html).toContain(`aria-label="${label}"`);
+    for (const label of labelsExcept("ad", "page")) expect(html).toContain(`aria-label="${label}"`);
   });
 
   it("кнопки вкладень — самі іконки, ім'я дії в aria-label", () => {

@@ -108,7 +108,12 @@ describe("шаблон ↔ page_data", () => {
 
   it("чужі блоки полями не стають: сторінку могло пожити в редакторі блоків", () => {
     const config = buildPageConfig(event, { title: "Ярмарок" });
-    config.zones.main.push({ id: "card-title", type: "text", order: 9, props: { content: "чуже" } });
+    config.zones.main.push({
+      id: "card-title",
+      type: "text",
+      order: 9,
+      props: { content: "чуже" },
+    });
     expect(readPageValues(card, config)).toEqual({ title: "чуже" });
     expect(readPageValues(event, config)).toEqual({ title: "Ярмарок" });
   });

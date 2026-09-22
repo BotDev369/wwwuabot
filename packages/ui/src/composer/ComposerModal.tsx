@@ -73,8 +73,7 @@ export function ComposerModal({
   const adAvailable = Boolean(onSaveAd);
   const pageAvailable = Boolean(onSavePage);
   const unavailable =
-    (composer.tab.key === "ad" && !adAvailable) ||
-    (composer.tab.key === "page" && !pageAvailable);
+    (composer.tab.key === "ad" && !adAvailable) || (composer.tab.key === "page" && !pageAvailable);
   const tab = unavailable ? findComposerTab("note") : composer.tab;
   const isAd = tab.key === "ad";
   const isPage = tab.key === "page";
