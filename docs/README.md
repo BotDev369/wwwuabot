@@ -17,6 +17,7 @@
 | [`API.md`](./API.md) | усі шляхи `api-dev` із групами доступу. **Генерований** з роутера — правити не можна, оновлює `npm run doc:api` |
 | [`DATA_MODEL.md`](./DATA_MODEL.md) | таблиці D1: власник, хто створює, хто читає; як виконати SQL; гейт `check:db` |
 | [`CONTENT_MODEL.md`](./CONTENT_MODEL.md) | контент сторінок: одне сховище (`scenarios`), адреса — одна сутність `slug` |
+| [`PAGES.md`](./PAGES.md) | сторінки з шаблону: два шаблони, власник і публічність, адреса з назви, входи |
 | [`QUALITY_GATE.md`](./QUALITY_GATE.md) | планка в CI: чотири правила, бюджет розміру, леджер боргу, чого ще немає |
 | [`MONITORING.md`](./MONITORING.md) | health, логи, Sentry, UptimeRobot; що робити при падінні |
 | [`../bot-dev/README.md`](../bot-dev/README.md) | бот як система: конвеєр апдейта, `ctx.screen`, рендер, черга нотифікацій, контакти |

@@ -1,5 +1,6 @@
 /**
- * @wwwuabot/ui/composer — модалка швидкого створення (нотатка, оголошення).
+ * @wwwuabot/ui/composer — модалка швидкого створення (нотатка, оголошення,
+ * сторінка з готового шаблону).
  *
  * Підключення в оболонці:
  *
@@ -13,6 +14,8 @@
  */
 
 export { ComposerModal } from "./ComposerModal";
+export { ComposerPageTab } from "./ComposerPageTab";
 export { COMPOSER_TABS, DEFAULT_COMPOSER_TAB, findComposerTab } from "./tabs";
 export type { ComposerState } from "./useComposer";
+export type { PageDraftState } from "./usePageDraft";
 export type { AttachmentKind, ComposerModalProps, ComposerTab } from "./types";

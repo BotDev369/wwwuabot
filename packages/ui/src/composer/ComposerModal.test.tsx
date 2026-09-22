@@ -25,9 +25,17 @@ const withAd = renderToStaticMarkup(
   <ComposerModal onClose={() => {}} onSaveNote={noop} onSaveAd={noop} initialTab="ad" />,
 );
 
+/**
+ * Список сторінок передає свій обробник — лише тоді з'являється «Сторінка».
+ * Шаблон і поля ті самі, що будуватимуть `page_data` на сервері.
+ */
+const withPage = renderToStaticMarkup(
+  <ComposerModal onClose={() => {}} onSaveNote={noop} onSavePage={noop} initialTab="page" />,
+);
+
 /** Вкладки, доступні в цьому рендері: без обробника вкладки немає. */
-const labelsExcept = (key: string): string[] =>
-  COMPOSER_TABS.filter((tab) => tab.key !== key).map((tab) => tab.label);
+const labelsExcept = (...keys: string[]): string[] =>
+  COMPOSER_TABS.filter((tab) => !keys.includes(tab.key)).map((tab) => tab.label);
 
 describe("ComposerModal", () => {
   it("відкривається на «Нотатці»: поле вводу, вставка й кнопки дії", () => {
@@ -99,15 +107,31 @@ describe("ComposerModal", () => {
   it("активна вкладка — рівно одна, і це типова", () => {
     expect(html.match(/aria-selected="true"/g)).toHaveLength(1);
     expect(html.match(/wb-composer-tab--active/g)).toHaveLength(1);
-    expect(html.indexOf("wb-composer-tab--active")).toBeLessThan(html.indexOf("Сторінка"));
+    expect(html).toContain('aria-selected="true" aria-label="Нотатка"');
   });
 
-  it("показує вкладки зі складу — крім тієї, чийого обробника не передали", () => {
-    // У панелі дошки немає, тож `onSaveAd` туди не їде — і вкладки «Оголошення»
-    // теж немає: порожній пункт, який нічого не вміє зберегти, ми не показуємо
-    // (AGENTS.md §7).
-    for (const label of labelsExcept("ad")) expect(html).toContain(label);
+  it("показує вкладки зі складу — крім тих, чийого обробника не передали", () => {
+    // У панелі дошки немає, а сторінки створюють у платформі: без обробників цих
+    // вкладок немає — порожній пункт, який нічого не вміє зберегти, ми не
+    // показуємо (AGENTS.md §7).
+    for (const label of labelsExcept("ad", "page")) expect(html).toContain(label);
     expect(html).not.toContain('aria-label="Оголошення"');
+    expect(html).not.toContain('aria-label="Сторінка"');
+  });
+
+  it("сторінка створюється з шаблону: вибір, текст і перемикач публічності", () => {
+    expect(withPage).toContain('aria-label="Сторінка"');
+    expect(withPage).toContain('aria-selected="true" aria-label="Сторінка"');
+    // Шаблон обирають кнопками — як вид оголошення, а не дропдауном (§4).
+    for (const label of ["Візитка", "Подія"]) expect(withPage).toContain(`>${label}<`);
+    // Поля шаблону: людина змінює лише текст.
+    expect(withPage).toContain('for="wb-page-field-title"');
+    expect(withPage).toContain('for="wb-page-field-about"');
+    // Адреса видима й редагована, але не обов'язкова — її складуть із назви.
+    expect(withPage).toContain('for="wb-page-address"');
+    // Публічність — той самий кирпичик, що у профілю, і типово вимкнена.
+    expect(withPage).toContain('role="switch" aria-checked="false"');
+    expect(withPage).toMatch(/wb-btn-primary" disabled/);
   });
 
   it("дошка отримує вкладку «Оголошення» й відкриває її на собі", () => {
@@ -142,7 +166,8 @@ describe("ComposerModal", () => {
     // Підпис вкладки на вузькому екрані ховається (CSS), тож ім'я мусить бути
     // в `aria-label` — інакше кнопка стала б безіменною.
     expect(html).toContain("wb-composer-tabs");
-    for (const label of labelsExcept("ad")) expect(html).toContain(`aria-label="${label}"`);
+    for (const label of labelsExcept("ad", "page"))
+      expect(html).toContain(`aria-label="${label}"`);
   });
 
   it("кнопки вкладень — самі іконки, ім'я дії в aria-label", () => {
@@ -167,11 +192,13 @@ describe("ComposerModal", () => {
   });
 
   it("вкладки без інтерфейсу описані як заглушка, а не як порожній екран", () => {
-    const page = findComposerTab("page");
+    // «Сторінка» тут більше не приклад: вона вже працює — а заглушка, яку
+    // забули зняти, гірша за відсутню.
+    const media = findComposerTab("media");
 
-    expect(page.status).toBe("soon");
-    expect(page.planned?.length).toBeGreaterThan(0);
-    const markup = renderToStaticMarkup(<ComposerPlaceholderTab tab={page} />);
+    expect(media.status).toBe("soon");
+    expect(media.planned?.length).toBeGreaterThan(0);
+    const markup = renderToStaticMarkup(<ComposerPlaceholderTab tab={media} />);
     expect(markup).toContain("у роботі");
     expect(markup).toContain("wb-composer-plan-item");
   });

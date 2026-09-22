@@ -59,10 +59,17 @@ async function resolveScenario(db: D1Database, ref: string) {
 
   const slug = normalizeSlug(ref);
 
+  // Друга умова — про сторінки, які створила людина: назовні видно лише ті,
+  // що автор відкрив (`is_public = 1`). Контент платформи впізнається за
+  // порожнім власником, тож він доступний як і раніше. Фільтр тут, у запиті,
+  // а не в розмітці: інакше приватну сторінку дістали б прямим посиланням
+  // (`docs/SPACE.md`). `COALESCE` — бо колонка додана наявній таблиці й у
+  // старих рядків вона `NULL`, а не `0`.
   const rows = await db
     .prepare(
       `SELECT ${PAGE_COLUMNS} FROM scenarios
-       WHERE is_active = 1`,
+       WHERE is_active = 1
+         AND (owner_id IS NULL OR COALESCE(is_public, 0) = 1)`,
     )
     .all<ScenarioContentRow>();
   const pages = (rows.results ?? []).map(contentPageFromScenario);

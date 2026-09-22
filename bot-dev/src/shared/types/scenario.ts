@@ -19,6 +19,8 @@ export interface ScenarioRow {
   rich_message: string | null; // ← NEW: "true"/"false" або 1/0
   rich_data: string | null; // ← NEW: JSON-рядок з масивом блоків
   page_data: string | null; // ← NEW: JSON-рядок конфігурації веб-сторінки (Page Builder)
+  /** З якого шаблону зроблено сторінку людини; `NULL` — контент платформи. */
+  template_key: string | null;
   created_at: string;
   updated_at: string;
 }

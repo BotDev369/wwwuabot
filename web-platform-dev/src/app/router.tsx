@@ -12,10 +12,11 @@
  * належить жодній сторінці, тож він стоїть на рівні маршруту, а не всередині
  * `ScenarioPage`.
  *
- * `/profile`, `/create`, `/space`, `/notes`, `/contacts` і `/messages` стоять
- * **перед** catch-all навмисно: це єдині екрани, які не є рядком контенту
- * (`slug`). Їхні адреси дає `app/routes.ts` — один власник на маршрут і пункт
- * навігації.
+ * `/profile`, `/create`, `/space`, `/notes`, `/contacts`, `/messages` і
+ * `/pages` стоять **перед** catch-all навмисно: це єдині екрани, які не є
+ * рядком контенту (`slug`). Їхні адреси дає `app/routes.ts` — один власник на
+ * маршрут і пункт навігації. Саме тому ці сегменти не можуть стати адресою
+ * сторінки людини: їх стереже `pages/user-pages/page-address.test.ts`.
  *
  * Сторінка людини в Просторі (`/space/u/:id`) і гра (`/space/g/:key`) стоять
  * перед `/space` **порядком рядків**: довший шлях мусить збігтися першим,
@@ -29,6 +30,7 @@ import {
   CREATE_ROUTE,
   MESSAGES_PATH,
   NOTES_ROUTE,
+  PAGES_ROUTE,
   PROFILE_ACCOUNT_PATH,
   PROFILE_ROUTE,
   SPACE_GAME_ROUTE,
@@ -46,6 +48,8 @@ import { ScenarioPage } from "@/pages/ScenarioPage";
 import { SpaceGamePage } from "@/pages/games/SpaceGamePage";
 import { SpacePage } from "@/pages/SpacePage";
 import { SpaceUserPage } from "@/pages/SpaceUserPage";
+import { UserPageView } from "@/pages/user-pages/UserPageView";
+import { UserPagesPage } from "@/pages/user-pages/UserPagesPage";
 import { ThemeLayout } from "@/pages/themes/ThemeLayout";
 import { ThemeHubPage } from "@/pages/themes/ThemeHubPage";
 import { ThemeCustomizePage } from "@/pages/themes/ThemeCustomizePage";
@@ -89,6 +93,12 @@ export const router = createBrowserRouter([
       // відкрив би сторінку контенту під назвою «g».
       { path: `${SPACE_ROUTE}/${SPACE_GAME_ROUTE}/:key`, element: <SpaceGamePage /> },
       { path: SPACE_ROUTE, element: <SpacePage /> },
+      // Сторінки людини — теж не рядок контенту, а екран: список власних
+      // сторінок і перегляд однієї. Сам контент сторінки відкривається за її
+      // `slug` (catch-all нижче) — і то лише тоді, коли вона публічна.
+      // Довший шлях іде першим — та сама причина, що в `/space/u/:id`.
+      { path: `${PAGES_ROUTE}/:id`, element: <UserPageView /> },
+      { path: PAGES_ROUTE, element: <UserPagesPage /> },
       // Нотатки — власні дані людини (таблиця `notes`), не рядок `scenarios`
       { path: NOTES_ROUTE, element: <NotesPage /> },
       // Контакти — довідник людини (таблиця `contacts`), теж не рядок контенту

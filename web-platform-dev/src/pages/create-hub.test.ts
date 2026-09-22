@@ -14,7 +14,7 @@
 
 import { describe, expect, it, vi } from "vitest";
 import { toWebPath } from "@wwwuabot/shared/content";
-import { CONTACTS_PATH, MESSAGES_PATH, NOTES_PATH } from "../app/routes";
+import { CONTACTS_PATH, MESSAGES_PATH, NOTES_PATH, PAGES_PATH } from "../app/routes";
 import {
   CREATE_HUB_ITEMS,
   HUB_INTENTS,
@@ -76,7 +76,9 @@ describe("склад хабу «Створити»", () => {
 
   it("заглушки позначені заглушками й мають пояснення", () => {
     const soon = CREATE_HUB_ITEMS.filter(hubItemSoon).map((item) => item.key);
-    expect(soon).toEqual(["locations", "pages"]);
+    // «Сторінки» тут більше немає: пункт став робочим (шаблон, текст,
+    // публічність) — а заглушка, яку забули зняти, гірша за відсутню.
+    expect(soon).toEqual(["locations"]);
     for (const item of CREATE_HUB_ITEMS.filter(hubItemSoon)) {
       // Заглушка без пояснення — це та сама тиша, лише з іншим виглядом.
       expect(item.soon, item.key).toBeTruthy();
@@ -110,6 +112,14 @@ describe("входи пункту", () => {
     expect(byKey("ads").view).toBe("/space?tab=ads");
   });
 
+  it("«Сторінки» ведуть у власний список, а плюс — на вкладку «Сторінка»", () => {
+    // Список і створення — два різні входи: «подивитись» показує своє (разом
+    // із приватним), «створити» відкриває шаблон поверх хабу.
+    expect(byKey("pages").view).toBe(PAGES_PATH);
+    expect(byKey("pages").form).toBe("page");
+    expect(PAGES_PATH).toBe("/pages");
+  });
+
   it("«створити» — ключ поверхні, а не адреса: жодного `?new=1`", () => {
     expect(byKey("notes").form).toBe("note");
     expect(byKey("contacts").form).toBe("contact");
@@ -129,7 +139,10 @@ describe("входи пункту", () => {
       }
     }
     expect(hubIntentReady(byKey("mydate"), "create")).toBe(false);
-    expect(hubIntentReady(byKey("pages"), "view")).toBe(false);
+    expect(hubIntentReady(byKey("locations"), "view")).toBe(false);
+    expect(hubIntentReady(byKey("locations"), "create")).toBe(false);
+    expect(hubIntentReady(byKey("pages"), "view")).toBe(true);
+    expect(hubIntentReady(byKey("pages"), "create")).toBe(true);
   });
 });
 
@@ -156,8 +169,9 @@ describe("пункти для списку", () => {
     const mydate = items.find((item) => item.key === "mydate");
     expect(mydate?.actions.map((action) => Boolean(action.soon))).toEqual([false, true]);
     // А пункт, у якого не працює нічого, каже про себе цілком.
-    expect(items.find((item) => item.key === "pages")?.status).toBe("soon");
+    expect(items.find((item) => item.key === "locations")?.status).toBe("soon");
     expect(items.find((item) => item.key === "mydate")?.status).toBe("ready");
+    expect(items.find((item) => item.key === "pages")?.status).toBe("ready");
   });
 
   it("«подивитись» веде на адресу й замінює хаб, а не лишає його за спиною", () => {
@@ -173,7 +187,7 @@ describe("пункти для списку", () => {
   it("«створити» **не переходить нікуди** — лише відкриває поверхню", () => {
     // Це і є правило хабу: «+» не веде на іншу сторінку, її відкриває окрема
     // кнопка («подивитись»). Перехід тут означав би автоматичну зміну екрана.
-    for (const key of ["notes", "contacts", "messages", "ads"]) {
+    for (const key of ["notes", "contacts", "messages", "ads", "pages"]) {
       navigate.mockClear();
       onForm.mockClear();
 
@@ -189,11 +203,11 @@ describe("пункти для списку", () => {
     onSoon.mockClear();
     navigate.mockClear();
     onForm.mockClear();
-    items.find((item) => item.key === "pages")?.actions[1].onSelect();
+    items.find((item) => item.key === "locations")?.actions[0].onSelect();
 
     expect(navigate).not.toHaveBeenCalled();
     expect(onForm).not.toHaveBeenCalled();
-    expect(onSoon).toHaveBeenCalledWith(byKey("pages").soon);
+    expect(onSoon).toHaveBeenCalledWith(byKey("locations").soon);
   });
 
   it("«Дати» показують, але не створюють", () => {

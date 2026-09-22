@@ -88,6 +88,22 @@ export const spaceUserPath = (id: number): string => `${SPACE_USER_PATH}/${id}`;
 export const SPACE_GAME_ROUTE = "g";
 export const SPACE_GAME_PATH = `${SPACE_PATH}/${SPACE_GAME_ROUTE}`;
 
+/**
+ * Сторінки — власні сторінки людини: ті самі рядки `scenarios`, але з
+ * власником (`owner_id`).
+ *
+ * Адреса тут, а не в базі, бо це **список** входів у власні сторінки, а не
+ * сторінка: сам контент відкривається за своїм `slug` (`/slug`) і рендериться
+ * тим самим `PageRenderer`, а список і перегляд — екрани платформи. Вигадати під
+ * них `slug` означало б завести друге правило «яка адреса відповідає цьому
+ * екрану» (AGENTS.md §7).
+ */
+export const PAGES_ROUTE = "pages";
+export const PAGES_PATH = `/${PAGES_ROUTE}`;
+
+/** Своя сторінка окремо: за рядком списку стоїть одна сторінка. */
+export const userPagePath = (id: number): string => `${PAGES_PATH}/${id}`;
+
 /** Нотатки — власні дані людини, не рядок `scenarios`. */
 export const NOTES_ROUTE = "notes";
 export const NOTES_PATH = `/${NOTES_ROUTE}`;

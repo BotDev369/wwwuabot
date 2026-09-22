@@ -18,8 +18,8 @@
  * звичайний `sort()` не знає.
  *
  * **Чого ще немає — те названо.** Екран без створення («Дати» приходять із
- * бота) і екран без себе взагалі («Локації», «Сторінки») мають пояснення
- * `soon`: дія без нього приглушена й чесно каже, що там буде (§7).
+ * бота) і екран без себе взагалі («Локації») мають пояснення `soon`: дія без
+ * нього приглушена й чесно каже, що там буде (§7).
  *
  * @module web-platform-dev/src/pages/create-hub
  */
@@ -28,7 +28,7 @@ import type { NavigateOptions } from "react-router-dom";
 import type { IconName } from "@wwwuabot/shared";
 import { toWebPath } from "@wwwuabot/shared/content";
 import type { HubItem } from "@wwwuabot/ui/hub";
-import { CONTACTS_PATH, MESSAGES_PATH, NOTES_PATH } from "../app/routes";
+import { CONTACTS_PATH, MESSAGES_PATH, NOTES_PATH, PAGES_PATH } from "../app/routes";
 import { spaceTabPath } from "./space-tabs";
 
 /** Сторінка дат — рядок контенту: адресу дає `slug`, а не літерал (AGENTS §7). */
@@ -41,7 +41,7 @@ const MYDATE_SLUG = "mydate";
  * переходу за ним немає. Другий список «куди веде створення» тут був би другою
  * правдою про те саме (AGENTS.md §7).
  */
-export type CreateFormKey = "note" | "ad" | "message" | "contact";
+export type CreateFormKey = "note" | "ad" | "message" | "contact" | "page";
 
 export interface CreateHubItem {
   /** Стабільний ключ — він же ключ пункту в `HubList`. */
@@ -104,12 +104,10 @@ export const CREATE_HUB_ITEMS: readonly CreateHubItem[] = [
     view: MESSAGES_PATH,
     form: "message",
   },
-  {
-    key: "pages",
-    label: "Сторінки",
-    icon: "layout",
-    soon: "Створені сторінки: адреса, зони й що з них уже опубліковано.",
-  },
+  // Сторінки — тепер робочий пункт: «+» відкриває композер на вкладці
+  // «Сторінка» (шаблон і текст), а «подивитись» веде у власний список, де
+  // видно, що з них уже опубліковано.
+  { key: "pages", label: "Сторінки", icon: "layout", view: PAGES_PATH, form: "page" },
 ];
 
 /** Дві дії, які має кожен пункт: подивитись або створити. */

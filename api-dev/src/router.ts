@@ -49,6 +49,7 @@ import {
   handleUserMessage,
 } from "./controllers/users.controller";
 import { handleNotes, handleAdminNotes } from "./controllers/notes.controller";
+import { handleUserPages, handleSpacePages } from "./controllers/pages.controller";
 import { handleContactLink, handleContacts } from "./controllers/contacts.controller";
 import {
   handleMessages,
@@ -291,6 +292,12 @@ export async function handleRequest(request: Request, env: Env): Promise<Respons
   if (pathname === "/api/user/themes") {
     return handleUserThemes(request, env);
   }
+  // Сторінки людини — рядки `scenarios` з власником: `GET` — свої (разом із
+  // приватними), `POST` — зберегти, `DELETE` — прибрати. Публічність тут не
+  // запит, а колонка: її відбирає `WHERE` у сервісі.
+  if (pathname === "/api/user/pages") {
+    return handleUserPages(request, env);
+  }
 
   // ── Public: Space (відкритий простір платформи) ────────────────
   // Без авторизації: у стрічку дивляться без входу, а видимість кожного
@@ -310,6 +317,11 @@ export async function handleRequest(request: Request, env: Env): Promise<Respons
   // Спільна бібліотека схем теми: `is_public = 1` відбирає запит до бази.
   if (pathname === "/api/space/themes" && request.method === "GET") {
     return handleSpaceThemes(request, env);
+  }
+  // Сторінки Простору — теж публічно: `is_public = 1` відбирає запит до бази,
+  // а приватна сторінка не дістається ні списком, ні за адресою.
+  if (pathname === "/api/space/pages" && request.method === "GET") {
+    return handleSpacePages(request, env);
   }
 
   // ── 404 ─────────────────────────────────────────────────────────

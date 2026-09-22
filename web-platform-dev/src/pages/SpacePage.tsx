@@ -2,9 +2,10 @@
  * Простір — відкрита стрічка платформи.
  *
  * **Люди — перший розділ.** Профіль з'являється тут сам, щойно людина зробить
- * його публічним у себе в акаунті; оголошення пишуть самі люди, а сторінки
- * прийдуть наступною вкладкою. Порядок саме такий: перша вкладка мусить мати
- * що показати, інакше Простір зустрічає людину порожнім екраном.
+ * його публічним у себе в акаунті; оголошення й сторінки пишуть самі люди — і
+ * теж показуються тут лише тоді, коли їх відкрили. Порядок саме такий: перша
+ * вкладка мусить мати що показати, інакше Простір зустрічає людину порожнім
+ * екраном.
  *
  * **Смуга — спільний кирпичик** (`@wwwuabot/ui/tabs`): ті самі вкладки, що в
  * розділах акаунта. Розділ, якого ще немає, стоїть **видимим** і чесно каже,
@@ -35,6 +36,7 @@ import { SpaceAdsTab } from "./SpaceAdsTab";
 import { SpaceThemesTab } from "./SpaceThemesTab";
 import { SpaceGamesTab } from "./games/SpaceGamesTab";
 import { SpaceUsersTab } from "./SpaceUsersTab";
+import { SpacePagesTab } from "./user-pages/SpacePagesTab";
 import { SPACE_TABS, SPACE_TAB_PARAM, readSpaceTab, spaceTab, type SpaceTab } from "./space-tabs";
 import { useAds } from "./useAds";
 import { useSpace } from "./useSpace";
@@ -100,6 +102,8 @@ export function SpacePage(): ReactElement {
         {tab === "themes" && <SpaceThemesTab />}
 
         {tab === "games" && <SpaceGamesTab />}
+
+        {tab === "pages" && <SpacePagesTab />}
 
         {tab === "ads" && (
           <SpaceAdsTab

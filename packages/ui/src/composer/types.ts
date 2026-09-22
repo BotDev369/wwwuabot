@@ -15,6 +15,7 @@ import type { ReactNode } from "react";
 import type { IconName } from "@wwwuabot/shared";
 import type { AdDraft } from "@wwwuabot/shared/ads";
 import type { NoteDraft } from "@wwwuabot/shared/notes";
+import type { PageDraft } from "@wwwuabot/shared/pages";
 
 /**
  * Вкладка композера.
@@ -66,6 +67,14 @@ export interface ComposerModalProps {
   onSaveAd?: (draft: AdDraft) => Promise<void>;
   /** Чернетка оголошення: `id` — правка свого (дошка відкриває композер так). */
   initialAd?: AdDraft;
+  /**
+   * Зберегти сторінку. **Немає обробника — немає й вкладки**: сторінки
+   * створюються в платформі, і показувати в панелі форму, яка не вміє
+   *   зберігати, було б порожнім пунктом (AGENTS.md §7).
+   */
+  onSavePage?: (draft: PageDraft) => Promise<void>;
+  /** Чернетка сторінки: `id` — правка своєї (список відкриває композер так). */
+  initialPage?: PageDraft;
   /** Вкладка, з якої відкрити: дошка кличе композер саме на «Оголошення». */
   initialTab?: string;
 }

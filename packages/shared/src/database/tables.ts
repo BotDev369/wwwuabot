@@ -157,6 +157,18 @@ export const TABLES = {
    * **14.09.2026 на дев-базі:** таблицю перебудовано (номер + `UNIQUE`-адреса),
    * легасі-колонки `codeword`/`web_slug` прибрано, стару таблицю лишено як
    * `scenarios_legacy_20260914` — скрипт і звіт у `scripts/migrations/`.
+   *
+   * **Три колонки для сторінок, які створює людина** (22.09.2026) — і жодної
+   * нової таблиці: `owner_id` (Telegram-id автора з підписаного `initData`;
+   * `NULL` — контент платформи), `is_public` (видимість назовні, типово `0`) і
+   * `template_key` (з якого шаблону зроблено сторінку — щоб форма відкрила
+   * ті самі поля). Ознака контенту — колонка тут, а не таблиця поруч
+   * (`AGENTS.md` §7).
+   *
+   * **`COALESCE(is_public, 0)` — не перестраховка.** Колонка додана наявній
+   * таблиці, а `ensureTables` додає її як `DEFAULT NULL` (`ensure-tables.ts`),
+   * тож у рядках платформи там `NULL`, і просте `is_public = 1` мовчки
+   * відкинуло б усе.
    */
   scenarios: {
     name: "scenarios",
@@ -185,8 +197,12 @@ export const TABLES = {
         rich_message TEXT,
         rich_data TEXT,
         page_data TEXT DEFAULT NULL,
-        is_active INTEGER DEFAULT 1
+        is_active INTEGER DEFAULT 1,
+        owner_id TEXT,
+        is_public INTEGER DEFAULT 0,
+        template_key TEXT
       )`,
+    indexes: ["CREATE INDEX IF NOT EXISTS idx_scenarios_owner ON scenarios(owner_id)"],
   },
 
   /**
