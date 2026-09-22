@@ -9,7 +9,7 @@
  */
 
 import { describe, expect, it } from "vitest";
-import { ATTEMPTS, ATTEMPTS_ACCUSATIVE, plural } from "./plural";
+import { ATTEMPTS, ATTEMPTS_ACCUSATIVE, FISH, plural } from "./plural";
 
 describe("форми множини", () => {
   it("називний: 1 спроба, 2 спроби, 5 спроб", () => {
@@ -37,5 +37,12 @@ describe("форми множини", () => {
     expect(plural(1, ATTEMPTS_ACCUSATIVE)).toBe("спробу");
     expect(plural(3, ATTEMPTS_ACCUSATIVE)).toBe("спроби");
     expect(plural(8, ATTEMPTS_ACCUSATIVE)).toBe("спроб");
+  });
+
+  it("рибалка: 1 риба, 2 риби, 5 риб", () => {
+    expect(plural(1, FISH)).toBe("риба");
+    expect(plural(3, FISH)).toBe("риби");
+    expect(plural(12, FISH)).toBe("риб");
+    expect(plural(0, FISH)).toBe("риб");
   });
 });
