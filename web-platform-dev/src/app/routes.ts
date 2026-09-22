@@ -22,10 +22,15 @@
  * розмови (`?peer=`, `@wwwuabot/shared/messages/route`).
  *
  * **Створення, яке не вміщується в поверхню, — це адреса, а не намір.**
- * Сторінки з шаблону створюють на **власному екрані** (`/pages/new`): спершу
- * вибір шаблону з його переглядом, потім текст. Параметр `?template=` тримає
- * **крок** (шаблон обраний), тож «назад» із редактора вертає до вибору — це
- * той самий механізм «крок у адресі», що й `?new=1`.
+ * Сторінки з шаблону створюють на **власному екрані** (`/pages/new`), і кроків
+ * там три: вибір (`/pages/new`) → **перегляд шаблону цілком**
+ * (`/pages/new?preview=card`) → текст (`/pages/new?template=card`). Обидва
+ * параметри тримають **крок**, тож «назад» веде на попередній, а не виводить зі
+ * створення: це той самий механізм «крок в адресі», що й `?new=1`.
+ *
+ * Два параметри, а не один, бо між переглядом і вибором стоїть **дія людини**
+ * («Обрати шаблон») — і саме вона, а не дотик до рядка, означає, що шаблон
+ * обрано. `?preview=` тому зникає разом із появою `?template=` (`withPageTemplate`).
  *
  * @module web-platform-dev/src/app/routes
  */
@@ -138,8 +143,44 @@ export const PAGES_NEW_PATH = `${PAGES_PATH}/${PAGES_NEW_ROUTE}`;
 export const PAGE_EDIT_ROUTE = "edit";
 export const userPageEditPath = (id: number): string => `${userPagePath(id)}/${PAGE_EDIT_ROUTE}`;
 
-/** Параметр адреси: `/pages/new?template=event` — «крок тексту вже почався». */
+/**
+ * Параметр адреси: `/pages/new?preview=event` — «покажи, як це виглядає».
+ *
+ * Це крок **перед** вибором, і він потрібен саме тому, що шаблон обирають
+ * очима: доки сторінку не видно **всією**, вибір — угадування за описом
+ * (`docs/PAGES.md`). Тому список шаблонів веде сюди, а не одразу в текст.
+ */
+export const PAGE_PREVIEW_PARAM = "preview";
+
+/** Параметр адреси: `/pages/new?template=event` — «шаблон обрано, правлю текст». */
 export const PAGE_TEMPLATE_PARAM = "template";
+
+/**
+ * Шаблон, який просять **показати** — ще не обраний, лише відкритий на огляд.
+ *
+ * Невідомий ключ — «перегляду не було»: адресу могли написати руками, а екран
+ * перегляду без шаблону показав би порожнє місце.
+ */
+export function readPagePreview(params: URLSearchParams): PageTemplateKey | null {
+  const raw = params.get(PAGE_PREVIEW_PARAM);
+  return isPageTemplateKey(raw) ? raw : null;
+}
+
+/**
+ * Та сама адреса, але з відкритим на огляд шаблоном — **новий запис історії**,
+ * тож «назад» вертає до списку шаблонів.
+ *
+ * `template` знімається: два кроки в одній адресі не мають стояти разом, бо
+ * екран вибрав би за старшинством, і «назад» із тексту вів би не туди, звідки
+ * людина прийшла.
+ */
+export function withPagePreview(path: string, key: PageTemplateKey): string {
+  const [base, query = ""] = path.split("?");
+  const params = new URLSearchParams(query);
+  params.delete(PAGE_TEMPLATE_PARAM);
+  params.set(PAGE_PREVIEW_PARAM, key);
+  return `${base}?${params.toString()}`;
+}
 
 /**
  * Шаблон, з якого людина вже обрала (тобто крок перегляду пройдено).
@@ -153,10 +194,18 @@ export function readPageTemplate(params: URLSearchParams): PageTemplateKey | nul
   return isPageTemplateKey(raw) ? raw : null;
 }
 
-/** Та сама адреса з обраним шаблоном — новий запис історії, тож «назад» вертає до вибору. */
+/**
+ * Та сама адреса з **обраним** шаблоном — новий запис історії, тож «назад»
+ * вертає на перегляд шаблону.
+ *
+ * `preview` знімається тут навмисно: обравши шаблон, людина переходить до
+ * тексту, і адреса з обома кроками показувала б перегляд старішого ключа, якби
+ * ключі розійшлися (напр. посиланням).
+ */
 export function withPageTemplate(path: string, key: PageTemplateKey): string {
   const [base, query = ""] = path.split("?");
   const params = new URLSearchParams(query);
+  params.delete(PAGE_PREVIEW_PARAM);
   params.set(PAGE_TEMPLATE_PARAM, key);
   return `${base}?${params.toString()}`;
 }

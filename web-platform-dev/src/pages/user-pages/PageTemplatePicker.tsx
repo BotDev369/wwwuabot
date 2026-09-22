@@ -1,38 +1,35 @@
 /**
- * Вибір шаблону — **погляд**, а не форма.
+ * Вибір шаблону — **список входів у перегляд**, а не прев'ю в рядку.
  *
- * Шаблон — це готовий вигляд сторінки, і обрати його наосліп неможливо: підписи
- * полів («Назва події», «Коли», «Де») нічого не кажуть про те, що вийде.
- * Тому кожна картка показує **справжню сторінку** — той самий `PageRenderer` із
- * тим самим `page_data`, який будує `buildPageConfig(template, template.preview)`:
- * перегляд не може розійтися з результатом, бо це буквально він і є.
+ * Шаблон обирають очима, і зупиняє це рівно одне: **чи видно сторінку**. Перша
+ * спроба показувала її тут же, обрізаною до 260px із згасанням краю, — і саме
+ * цей уривок читався як зламана розмітка: половина блоків за межею, дотиків
+ * усередині немає, а решта сторінки просто не існує.
  *
- * **Текст-приклад — з даних шаблону**, а не з розмітки екрана: інакше третій
- * шаблон отримав би перегляд без тексту (стереже `templates.test.ts`).
+ * Тому кожен рядок веде на **окремий екран перегляду** (`?preview=`), де та
+ * сама `page_data` рендериться цілком, без обрізання: скільки блоків у шаблоні —
+ * стільки й видно. Рядок же несе рівно те, чим шаблони відрізняються **до**
+ * відкриття: підпис і одне речення.
  *
- * **Дотик — лише кнопкою.** Прев'ю — це картинка (`pointer-events: none`,
- * `aria-hidden`): усередині нього живуть справжні блоки, і випадковий дотик по
- * посиланню в прикладі відкрив би чужу сторінку замість вибору шаблону.
+ * Список — кнопкою цілком, а не рядком із кнопкою праворуч: дотик по картці в
+ * Telegram і так читається як «відкрити», і другий маленький тап-таргет поруч
+ * із ним тільки змушував би цілитись.
  *
  * @module web-platform-dev/src/pages/user-pages
  */
 
 import type { ReactElement } from "react";
 import { Icon } from "@wwwuabot/shared";
-import { PAGE_TEMPLATES, buildPageConfig, type PageTemplateKey } from "@wwwuabot/shared/pages";
-import { PageRenderer } from "@wwwuabot/ui/PageRenderer";
-import { registerAllBlocks } from "@wwwuabot/ui/blocks";
+import { PAGE_TEMPLATES, type PageTemplateKey } from "@wwwuabot/shared/pages";
 import { pageTemplateIcon } from "./pages-view";
-
-registerAllBlocks();
 
 export function PageTemplatePicker({
   onBack,
-  onPick,
+  onPreview,
 }: {
   onBack: () => void;
-  /** Дотик до «Обрати шаблон»: далі — текст на обраній сторінці. */
-  onPick: (key: PageTemplateKey) => void;
+  /** Дотик до рядка: далі — сторінка цілком, і вже потім вибір. */
+  onPreview: (key: PageTemplateKey) => void;
 }): ReactElement {
   return (
     <div className="wb-page">
@@ -46,41 +43,29 @@ export function PageTemplatePicker({
       </div>
 
       <p className="wb-text-muted wb-template-lead">
-        Структуру вже зібрано — вам лишиться вписати свій текст. Ось як виглядатиме кожна сторінка.
+        Обидва шаблони вже зверстані — вам лишиться вписати свій текст. Відкрийте будь-який, щоб
+        побачити сторінку цілком.
       </p>
 
       <div className="wb-template-list">
         {PAGE_TEMPLATES.map((template) => (
-          <article className="wb-template-card" key={template.key}>
-            <div className="wb-template-card-head">
-              <span className="wb-template-card-icon">
-                <Icon name={pageTemplateIcon(template.key)} size={20} />
-              </span>
-              <span className="wb-template-card-text">
-                <span className="wb-template-card-title">{template.label}</span>
-                <span className="wb-template-card-hint">{template.hint}</span>
-              </span>
-            </div>
-
-            <div className="wb-template-preview" aria-hidden="true">
-              <PageRenderer
-                config={buildPageConfig(template, template.preview)}
-                context={{ slug: "", title: template.label, photoUrl: null }}
-                className="page-layout"
-              />
-            </div>
-
-            <div className="wb-template-card-actions">
-              <button
-                type="button"
-                className="wb-btn wb-btn-primary"
-                onClick={() => onPick(template.key)}
-              >
-                <Icon name="check" size={16} />
-                {`Обрати шаблон: ${template.label}`}
-              </button>
-            </div>
-          </article>
+          <button
+            type="button"
+            className="wb-template-row"
+            key={template.key}
+            onClick={() => onPreview(template.key)}
+          >
+            <span className="wb-template-row-icon">
+              <Icon name={pageTemplateIcon(template.key)} size={20} />
+            </span>
+            <span className="wb-template-row-text">
+              <span className="wb-template-row-title">{template.label}</span>
+              <span className="wb-template-row-hint">{template.hint}</span>
+            </span>
+            <span className="wb-template-row-action">
+              <Icon name="chevron-right" size={18} />
+            </span>
+          </button>
         ))}
       </div>
     </div>

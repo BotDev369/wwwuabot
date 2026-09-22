@@ -2,17 +2,21 @@
  * Сторінки з шаблону — сторож **порядку кроків**, а не розмітки заради розмітки.
  *
  * Тут ламається тихо: досить повернути створення у форму з підписами полів — і
- * людина знову обирає шаблон наосліп, не бачачи, що вийде; або досить показати
- * в редакторі порожні поля без підписів — і сторінка перестає бути схожою на
- * себе. Тому перевіряється:
+ * людина знову обирає шаблон наосліп, не бачачи, що вийде; досить знову обрізати
+ * перегляд до картки в списку — і від сторінки лишається уривок; або досить
+ * показати в редакторі порожні поля без підписів — і сторінка перестає бути
+ * схожою на себе. Тому перевіряється:
  *
- * - **вибір показує**, а не описує: у кожної картки є текст-приклад шаблону й
- *   справжня розмітка сторінки (`page-zone--main`), а прев'ю — картинка
- *   (`aria-hidden`, дотиків не ловить);
+ * - **список лише веде**: рядок несе підпис і пояснення, а розмітки сторінки в
+ *   ньому немає — перегляд живе окремим кроком;
+ * - **перегляд показує сторінку цілком**: усі тексти-приклади шаблону, обидва
+ *   рівні (заголовок і тіло), справжня розмітка (`page-zone--main`) і жодного
+ *   обрізання — ані `max-height`, ані згасання краю;
  * - **текст правлять на самій сторінці**: кожне поле шаблону — поле вводу з
  *   підказкою, а підписи структури («Коли», «Про себе») лишаються підписами;
- * - **крок живе в адресі**: `?template=event` відкриває редактор події, а без
- *   нього — вибір шаблону; невідомий ключ вертає до вибору, а не в порожнечу;
+ * - **крок живе в адресі**: `?preview=event` відкриває перегляд, `?template=event`
+ *   — редактор події, а без обох — список; невідомий ключ вертає до списку, а не
+ *   в порожнечу; вибір знімає попередній крок із адреси;
  * - **порожню назву зберегти не можна**, а приватність типово вимкнена.
  *
  * Середовище тестів — `node` (без DOM), тож перевіряємо розмітку, яку рендерить
@@ -23,15 +27,18 @@
 
 import { describe, expect, it } from "vitest";
 import { renderToStaticMarkup } from "react-dom/server";
-import { PAGE_TEMPLATES, pageTemplate, primaryField } from "@wwwuabot/shared/pages";
+import { PAGE_TEMPLATES, pageTemplate, type PageTemplateKey } from "@wwwuabot/shared/pages";
 import {
   PAGE_TEMPLATE_PARAM,
   PAGES_NEW_PATH,
+  readPagePreview,
   readPageTemplate,
+  withPagePreview,
   withPageTemplate,
 } from "../../app/routes";
 import { PageEditor, type PageEditorMode } from "./PageEditor";
 import { PageTemplatePicker } from "./PageTemplatePicker";
+import { PageTemplatePreview } from "./PageTemplatePreview";
 import { parseUserPageId } from "./pages-view";
 
 const noop = (): void => {};
@@ -45,7 +52,12 @@ const inMarkup = (text: string): string =>
     .replace(/'/g, "&#x27;")
     .replace(/"/g, "&quot;");
 
-const picker = renderToStaticMarkup(<PageTemplatePicker onBack={noop} onPick={noop} />);
+const picker = renderToStaticMarkup(<PageTemplatePicker onBack={noop} onPreview={noop} />);
+
+const preview = (key: PageTemplateKey): string =>
+  renderToStaticMarkup(
+    <PageTemplatePreview template={pageTemplate(key)} onBack={noop} onPick={noop} />,
+  );
 
 const editor = (
   mode: PageEditorMode,
@@ -56,31 +68,65 @@ const editor = (
 const card = pageTemplate("card");
 const event = pageTemplate("event");
 
-describe("вибір шаблону", () => {
-  it("показує КОЖЕН шаблон разом із його текстом-прикладом", () => {
+/** Параметри адреси так, як їх читає екран: `?a=1&b=2` → `a=1&b=2`. */
+const paramsOf = (path: string): URLSearchParams => new URLSearchParams(path.split("?")[1]);
+
+describe("список шаблонів", () => {
+  it("називає КОЖЕН шаблон і пояснює його одним реченням", () => {
     for (const template of PAGE_TEMPLATES) {
       expect(picker).toContain(template.label);
       expect(picker).toContain(inMarkup(template.hint));
-      // Текст людини в прикладі — той самий, що дає `preview` у даних шаблону:
-      // картка без нього показувала б порожню сторінку.
-      expect(picker).toContain(inMarkup(template.preview[primaryField(template).key]));
-      expect(picker).toContain(`Обрати шаблон: ${template.label}`);
     }
-    expect(picker.match(/wb-template-card"/g)).toHaveLength(PAGE_TEMPLATES.length);
+    expect(picker.match(/wb-template-row"/g)).toHaveLength(PAGE_TEMPLATES.length);
   });
 
-  it("перегляд — **справжня сторінка**, а не картинка збоку", () => {
-    // Той самий `PageRenderer`, той самий `page_data`: розійтись із
-    // результатом перегляд не може, бо це буквально він.
-    expect(picker).toContain("page-zone--main");
-    expect(picker.match(/wb-template-preview/g)?.length).toBe(PAGE_TEMPLATES.length);
+  it("сам сторінку не показує — вона належить кроку перегляду", () => {
+    // Обрізаний уривок у рядку й був тією «розміткою, яку видно наполовину»:
+    // сторінку показують цілком і окремим екраном.
+    expect(picker).not.toContain("page-zone--main");
+  });
+});
+
+describe("перегляд шаблону", () => {
+  it("показує сторінку **цілком**: усі тексти шаблону, а не перші рядки", () => {
+    for (const template of PAGE_TEMPLATES) {
+      const html = preview(template.key);
+      for (const field of template.fields) {
+        expect(html, `${template.key}.${field.key}`).toContain(
+          inMarkup(template.preview[field.key]),
+        );
+      }
+      // Той самий `PageRenderer`, той самий `page_data`: розійтись із
+      // результатом перегляд не може, бо це буквально він.
+      expect(html).toContain("page-zone--main");
+    }
   });
 
-  it("перегляд — картинка: усередині справжні блоки, і дотик по них не пройде", () => {
-    expect(picker).toContain('aria-hidden="true"');
-    // Дотик ловить `pointer-events: none` на самому прев'ю: інакше перше
-    // торкання до прикладу відкривало б чуже замість вибору шаблону.
-    expect(picker).toContain("wb-template-preview");
+  it("рівні полів видно так, як вони будуть на сторінці", () => {
+    // Назва — заголовок, «Про себе» — підпис, абзац — тіло: перегляд, у якому
+    // все однаковим шрифтом, не показує шаблону нічого.
+    const html = preview("card");
+    expect(html).toContain(inMarkup(card.preview.title));
+    expect(html).toContain(inMarkup(card.preview.about));
+    // Назва — щабель `h1` (`wb-text-2xl`), розділ — `h2` (`wb-text-xl`):
+    // саме ці класи мають правила в `styles/text.css`.
+    expect(html).toContain("wb-text-2xl");
+    expect(html).toContain("wb-text-xl");
+  });
+
+  it("не обрізає сторінку й не ловить дотиків", () => {
+    const html = preview("event");
+    // Рамка лише тримає вигляд аркуша — обрізання немає ні в розмітці, ні в
+    // стилях, і жодного «згасання краю» тут не з'явиться.
+    expect(html).toContain("wb-template-frame");
+    expect(html).not.toContain("wb-template-preview");
+    expect(html).toContain('aria-hidden="true"');
+  });
+
+  it("шаблон беруть **окремою кнопкою**, а не дотиком до сторінки", () => {
+    for (const template of PAGE_TEMPLATES) {
+      expect(preview(template.key)).toContain(`Обрати шаблон: ${template.label}`);
+    }
   });
 });
 
@@ -154,14 +200,22 @@ describe("крок у адресі", () => {
     expect(readPageTemplate(new URLSearchParams("template=event"))).toBe("event");
   });
 
-  it("без шаблону — вибір: порожній редактор був би глухим кутом", () => {
-    // Адресу могли написати руками або лишити від старої версії: за невідомим
-    // ключем редактора немає, і людина мусить побачити вибір шаблону.
-    expect(readPageTemplate(new URLSearchParams(""))).toBeNull();
-    expect(readPageTemplate(new URLSearchParams("template=site"))).toBeNull();
+  it("перегляд теж читається з адреси", () => {
+    expect(readPagePreview(new URLSearchParams("preview=card"))).toBe("card");
+    expect(readPagePreview(new URLSearchParams("preview=event"))).toBe("event");
   });
 
-  it("вибір шаблону — лише параметр, а не друга адреса", () => {
+  it("без ключа — список: порожній редактор був би глухим кутом", () => {
+    // Адресу могли написати руками або лишити від старої версії: за невідомим
+    // ключем ні редактора, ні перегляду немає, і людина мусить побачити список.
+    expect(readPageTemplate(new URLSearchParams(""))).toBeNull();
+    expect(readPageTemplate(new URLSearchParams("template=site"))).toBeNull();
+    expect(readPagePreview(new URLSearchParams(""))).toBeNull();
+    expect(readPagePreview(new URLSearchParams("preview=site"))).toBeNull();
+  });
+
+  it("крок — лише параметр, а не друга адреса", () => {
+    expect(withPagePreview(PAGES_NEW_PATH, "event")).toBe("/pages/new?preview=event");
     expect(withPageTemplate(PAGES_NEW_PATH, "event")).toBe("/pages/new?template=event");
     // Чужі параметри лишаються на місці: крок додається до адреси, а не заміняє її.
     const kept = withPageTemplate("/pages/new?from=hub", "card");
@@ -169,10 +223,22 @@ describe("крок у адресі", () => {
     expect(kept).toContain(`${PAGE_TEMPLATE_PARAM}=card`);
   });
 
+  it("два кроки не стоять в одній адресі: новий знімає попередній", () => {
+    // Інакше «назад» із тексту вів би через перегляд **старішого** ключа, а
+    // екран вибирав би між двома кроками за старшинством.
+    expect(withPageTemplate(withPagePreview(PAGES_NEW_PATH, "card"), "card")).toBe(
+      "/pages/new?template=card",
+    );
+    expect(withPagePreview(withPageTemplate(PAGES_NEW_PATH, "card"), "event")).toBe(
+      "/pages/new?preview=event",
+    );
+  });
+
   it("адреса й екран домовляються про один ключ — наскрізно", () => {
-    const path = withPageTemplate(PAGES_NEW_PATH, "event");
-    const params = new URLSearchParams(path.split("?")[1]);
-    expect(readPageTemplate(params)).toBe("event");
+    for (const key of ["card", "event"] as const) {
+      expect(readPageTemplate(paramsOf(withPageTemplate(PAGES_NEW_PATH, key)))).toBe(key);
+      expect(readPagePreview(paramsOf(withPagePreview(PAGES_NEW_PATH, key)))).toBe(key);
+    }
   });
 });
 
