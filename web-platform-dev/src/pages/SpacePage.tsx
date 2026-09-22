@@ -1,19 +1,17 @@
 /**
  * Простір — відкрита стрічка платформи.
  *
- * **Люди — перший розділ.** Профіль з'являється тут сам, щойно людина зробить
- * його публічним у себе в акаунті; оголошення й сторінки пишуть самі люди — і
- * теж показуються тут лише тоді, коли їх відкрили. Порядок саме такий: перша
- * вкладка мусить мати що показати, інакше Простір зустрічає людину порожнім
- * екраном.
+ * **Розділи стоять у лівій панелі, а не смугою зверху.** Вибір розділу — це не
+ * «два погляди на те саме», а **навігація**: рядок угорі зникав після першого ж
+ * екрана прокрутки, а на телефоні ще й прокручувався набік. Панель тримає вибір
+ * на видноті завжди й лишає список поруч із ним. Деталі панелі — `SpaceNav`,
+ * стан — `useSpaceNav`, склад розділів — `space-tabs`.
  *
- * **Смуга — спільний кирпичик** (`@wwwuabot/ui/tabs`): ті самі вкладки, що в
- * розділах акаунта. Розділ, якого ще немає, стоїть **видимим** і чесно каже,
- * що там буде, — ховати його означало б обіцяти, що далі порожньо.
- *
- * **Заголовок і вкладки їдуть разом** (`.wb-page-sticky`): у стрічці гортають
- * униз, і без цього смуга зникала б після першого ж екрана — рівно тоді, коли
- * треба перейти в інший розділ. Той самий каркас, що в нотаток і контактів.
+ * **Заголовок і панель їдуть разом.** Панель `sticky`, тож вона лишається на
+ * екрані, поки гортають дошку: перехід в інший розділ — це один дотик, а не
+ * прокрутка вгору. Другого липкого шару (колишній `wb-page-sticky`) тут більше
+ * немає: обидва липкі шари рухалися б один крізь одного, а місце під футер
+ * лишає сам каркас сторінки.
  *
  * **Композер один на два входи** (`AdCreateSheet`): тут його відкриває «+»
  * ряду керування, а в хабі «Створити» — «+» у пункті «Оголошення», де він
@@ -25,19 +23,19 @@
  */
 
 import { useState, type ReactElement } from "react";
-import { useSearchParams } from "react-router-dom";
 import { Icon } from "@wwwuabot/shared";
 import type { Ad, AdDraft } from "@wwwuabot/shared/ads";
-import { Tabs, tabId, tabPanelId } from "@wwwuabot/ui/tabs";
+import { tabId, tabPanelId } from "@wwwuabot/ui/tabs";
 import { useCreateForm } from "@/app/useCreateForm";
 import { AdCreateSheet } from "./create/AdCreateSheet";
 import { adDraftFrom } from "./ads-list";
 import { SpaceAdsTab } from "./SpaceAdsTab";
 import { SpaceThemesTab } from "./SpaceThemesTab";
+import { SpaceNav } from "./SpaceNav";
 import { SpaceGamesTab } from "./games/SpaceGamesTab";
 import { SpaceUsersTab } from "./SpaceUsersTab";
 import { SpacePagesTab } from "./user-pages/SpacePagesTab";
-import { SPACE_TABS, SPACE_TAB_PARAM, readSpaceTab, spaceTab, type SpaceTab } from "./space-tabs";
+import { useSpaceNav } from "./useSpaceNav";
 import { useAds } from "./useAds";
 import { useSpace } from "./useSpace";
 
@@ -47,11 +45,9 @@ interface ComposerRequest {
 }
 
 export function SpacePage(): ReactElement {
-  // Розділ і форма можуть прийти **адресою**: так з хабу «Створити» веде
-  // «+» — у розділ дошки й одразу у форму оголошення (`?tab=ads&new=1`).
-  // Адреса — це вхід, а не стан: усе читається один раз, при появі екрана.
-  const [searchParams] = useSearchParams();
-  const [tab, setTab] = useState<SpaceTab>(() => readSpaceTab(searchParams.get(SPACE_TAB_PARAM)));
+  // Розділ і панель приходять з адреси (`useSpaceNav`): так з хабу «Створити»
+  // веде «+» — у розділ дошки й одразу у форму оголошення (`?tab=ads&new=1`).
+  const nav = useSpaceNav();
   // Створення — в адресі (`useCreateForm`), правка свого оголошення — тут: вона
   // завжди про конкретний рядок, і рядок уже є в дошці.
   const form = useCreateForm();
@@ -59,7 +55,6 @@ export function SpacePage(): ReactElement {
   const composerOpen = form.open || composer !== null;
   const space = useSpace();
   const ads = useAds();
-  const current = spaceTab(tab);
 
   /** Відкрити композер: без оголошення — нове (за адресою), з ним — правка. */
   function compose(draft?: Ad): void {
@@ -78,55 +73,64 @@ export function SpacePage(): ReactElement {
   }
 
   return (
-    <div className="wb-page">
-      {/* Проміжки тут — самого шару (`gap` і `padding`): окремі `margin` у
-          заголовка й смуги дали б подвійну прогалину під шапкою. */}
-      <div className="wb-page-sticky">
-        <div className="wb-page-head">
-          <h1 className="wb-page-title">Простір</h1>
-        </div>
+    <div className="wb-page wb-space-page">
+      <div className="wb-space-layout">
+        <SpaceNav
+          expanded={nav.expanded}
+          value={nav.tab}
+          onSelect={nav.select}
+          onToggle={nav.toggle}
+        />
 
-        <Tabs options={SPACE_TABS} value={tab} onChange={setTab} label="Розділи простору" />
-      </div>
+        {/* Розгорнута панель на телефоні лягає поверх вмісту: дотик по скриму
+            повертає згорнутий стан — так само, як дотик по обраному розділу. */}
+        {nav.expanded && <div className="wb-space-scrim" onClick={nav.toggle} aria-hidden="true" />}
 
-      <div id={tabPanelId(tab)} role="tabpanel" aria-labelledby={tabId(tab)}>
-        {tab === "users" && (
-          <SpaceUsersTab
-            items={space.items}
-            loading={space.loading}
-            error={space.error}
-            onRetry={space.reload}
-          />
-        )}
-
-        {tab === "themes" && <SpaceThemesTab />}
-
-        {tab === "games" && <SpaceGamesTab />}
-
-        {tab === "pages" && <SpacePagesTab />}
-
-        {tab === "ads" && (
-          <SpaceAdsTab
-            items={ads.items}
-            loading={ads.loading}
-            error={ads.error}
-            onRetry={() => ads.reload(true)}
-            onCompose={compose}
-            onToggle={(ad) => ads.save(adDraftFrom(ad, { isActive: !ad.isActive }))}
-            onRemove={ads.remove}
-          />
-        )}
-
-        {current.soon && (
-          /* Розділ, якого ще немає, не мовчить: він каже, що саме тут буде. */
-          <div className="wb-empty">
-            <span className="wb-empty-icon">
-              <Icon name="layout" size={32} />
-            </span>
-            <p className="wb-empty-text">{current.hint}</p>
-            <p className="wb-text-muted">Розділ «{current.label}» ще в розробці.</p>
+        <div className="wb-space-main">
+          <div className="wb-page-head">
+            <h1 className="wb-page-title">Простір</h1>
           </div>
-        )}
+
+          <div id={tabPanelId(nav.tab)} role="tabpanel" aria-labelledby={tabId(nav.tab)}>
+            {nav.tab === "users" && (
+              <SpaceUsersTab
+                items={space.items}
+                loading={space.loading}
+                error={space.error}
+                onRetry={space.reload}
+              />
+            )}
+
+            {nav.tab === "themes" && <SpaceThemesTab />}
+
+            {nav.tab === "games" && <SpaceGamesTab />}
+
+            {nav.tab === "pages" && <SpacePagesTab />}
+
+            {nav.tab === "ads" && (
+              <SpaceAdsTab
+                items={ads.items}
+                loading={ads.loading}
+                error={ads.error}
+                onRetry={() => ads.reload(true)}
+                onCompose={compose}
+                onToggle={(ad) => ads.save(adDraftFrom(ad, { isActive: !ad.isActive }))}
+                onRemove={ads.remove}
+              />
+            )}
+
+            {nav.current.soon && (
+              /* Розділ, якого ще немає, не мовчить: він каже, що саме тут буде. */
+              <div className="wb-empty">
+                <span className="wb-empty-icon">
+                  <Icon name="layout" size={32} />
+                </span>
+                <p className="wb-empty-text">{nav.current.hint}</p>
+                <p className="wb-text-muted">Розділ «{nav.current.label}» ще в розробці.</p>
+              </div>
+            )}
+          </div>
+        </div>
       </div>
 
       {composerOpen && (
