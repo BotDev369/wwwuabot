@@ -458,13 +458,14 @@ main {
 }
 
 /* Підпис шаблону («Про себе») і значення, яке людина пише. Колір розділяє їх
-   так само, як на готовій сторінці: заголовок — основним, тіло — приглушеним. */
+   так само, як на готовій сторінці: заголовок — основним, тіло — приглушеним
+   (`TextBlock` малює тіло класом `wb-text-secondary`). */
 .wb-page-field-label,
-.wb-page-field-heading {
+.wb-page-field-value {
   color: var(--text-primary);
 }
 
-.wb-page-field-body {
+.wb-page-field-value--body {
   color: var(--text-secondary);
 }
 

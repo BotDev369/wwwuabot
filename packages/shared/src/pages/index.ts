@@ -3,10 +3,11 @@
  *
  * Один домен на клієнт і сервер:
  *
- * - `templates.ts` — **два шаблони** («Візитка» і «Подія»): поля, з яких
- *   людина змінює лише текст, текст-приклад для перегляду (`preview`) і чисті
- *   `buildPageConfig` / `readPageValues`, що переводять значення в `page_data`
- *   і назад;
+ * - `templates.ts` — **два шаблони** («Візитка» і «Подія»): готовий каркас
+ *   сторінки (`layout` — картки, щаблі заголовків, розділювач), поля, з яких
+ *   людина змінює лише текст, і текст-приклад для перегляду (`preview`);
+ * - `page-data.ts` — чисті `buildPageConfig` / `readPageValues` /
+ *   `fieldPlacements`, що переводять значення в `page_data` і назад;
  * - `address.ts` — адреса сторінки: переклад назви латиницею
  *   (`normalizePageSlug`), зайняті платформою сегменти (`RESERVED_PAGE_SLUGS`)
  *   і перевірка поля форми (`pageAddress`);
@@ -41,16 +42,22 @@ export {
   DEFAULT_PAGE_TEMPLATE,
   PAGE_TEMPLATES,
   PAGE_TEMPLATE_KEYS,
-  buildPageConfig,
-  fieldIsHeading,
   isPageTemplateKey,
   pageBlockId,
   pageTemplate,
   pageTitle,
   primaryField,
-  readPageValues,
 } from "./templates";
-export type { PageField, PageFieldValues, PageTemplate, PageTemplateKey } from "./templates";
+export type {
+  PageBlockSpec,
+  PageField,
+  PageFieldLook,
+  PageFieldPlacement,
+  PageFieldValues,
+  PageTemplate,
+  PageTemplateKey,
+} from "./templates";
+export { buildPageConfig, fieldPlacements, readPageValues } from "./page-data";
 export { createPagesApi } from "./api";
 export type { PagesApi, PagesApiPaths, PagesTransport } from "./api";
 export type {

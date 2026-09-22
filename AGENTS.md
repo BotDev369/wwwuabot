@@ -155,7 +155,7 @@ const name = await dialog.prompt("Назва:", { validate: (v) => (v.trim() ? n
 | Тема: схема (три кольори + шрифт), бібліотека схем, сторінки теми | `docs/THEMES.md`, `packages/shared/src/themes/`, `packages/shared/src/styles/fonts.ts` |
 | Контент сторінки: одна модель, адреса, діплінк | `packages/shared/src/content/` — `ContentPage`, `pickContentPage`, `toWebPath` / `toBotPayload` / `buildShareLinks`; правила — `docs/CONTENT_MODEL.md` |
 | Адреса сторінки: одна сутність `slug`, два подання (веб / бот) | `packages/shared/src/content/resolve.ts` (`toWebPath`, `toBotPayload`, `isValidSlug`) |
-| Сторінки з шаблону: два шаблони (з текстом-прикладом для перегляду), переклад назви в адресу, правила, підпис бота | `packages/shared/src/pages/` — `templates.ts`, `address.ts`, `rules.ts`, `api.ts`, `bot.ts`; правила — `docs/PAGES.md` |
+| Сторінки з шаблону: два шаблони (каркас із блоків + текст-приклад для перегляду), переклад назви в адресу, правила, підпис бота | `packages/shared/src/pages/` — `templates.ts`, `address.ts`, `rules.ts`, `api.ts`, `bot.ts`; правила — `docs/PAGES.md` |
 | Авто-добір колонок (`withAutoMigrate`); перебудова таблиці — те, чого `ensureTables` не вміє | `packages/shared/src/database/auto-migrate.ts`; `scripts/migrations/*.sql` (2 кроки: копія + заміна з бекофісною) |
 
 ### bot-dev

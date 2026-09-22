@@ -6,15 +6,15 @@
  * самим виглядом, що й готовий блок:
  *
  * - **підпис** («Про себе», «Коли») — це структура шаблону, його не редагують,
- *   і він їде тими самими класами рівня, що й заголовок блока (`TextBlock`);
+ *   і він їде тими самими класами рівня, що й заголовок картки (`CardBlock`);
  * - **значення** — те, що людина пише: поле вводу, яке успадковує шрифт
  *   підпису-обгортки (`font: inherit`), тож жодних «полів зі своїм шрифтом»
  *   поруч зі сторінкою не видно.
  *
- * **Рівень значення — не смак, а той самий поділ, що в `buildPageConfig`.**
- * Назву показують заголовком, а текст під підписом — приглушеним тілом
- * (`fieldIsHeading`): редактор і сторінка беруть це з одного місця, тож
- * розійтись не можуть.
+ * **Щабель значення — не смак, а те саме, що на сторінці.** `field.look` — це
+ * рівень, яким значення стоїть у каркасі (`templates.ts`), і обидва читачі
+ * беруть його зі спільного `TEXT_LEVEL_CLASSES`: розійтись редактор і сторінка
+ * не можуть, бо це той самий список.
  *
  * **Абзац росте за текстом.** `resize: vertical` на телефоні не існує (ручки
  * немає в жодному WebView), тож висоту дає `useAutoGrowField` — той самий, що
@@ -26,7 +26,7 @@
 import type { ChangeEvent, ReactElement } from "react";
 import { TEXT_LEVEL_CLASSES } from "@wwwuabot/ui/blocks";
 import { useAutoGrowField } from "@wwwuabot/ui/hooks";
-import { fieldIsHeading, type PageField } from "@wwwuabot/shared/pages";
+import type { PageField, PageFieldLook } from "@wwwuabot/shared/pages";
 
 /**
  * Стеля росту абзацу в рядках.
@@ -35,6 +35,16 @@ import { fieldIsHeading, type PageField } from "@wwwuabot/shared/pages";
  * сторінкою, а не одним суцільним полем на весь екран.
  */
 const MAX_TEXT_ROWS = 14;
+
+/** Щабель значення — той самий, яким його показує блок на сторінці. */
+const LOOK_CLASSES: Record<PageFieldLook, string> = {
+  display: TEXT_LEVEL_CLASSES.h1,
+  lead: TEXT_LEVEL_CLASSES.h3,
+  body: TEXT_LEVEL_CLASSES.body,
+};
+
+/** Підпис розділу — як заголовок картки: щаблем нижче за назву сторінки. */
+const SECTION_CLASSES = TEXT_LEVEL_CLASSES.h4;
 
 export function PageEditorField({
   field,
@@ -47,8 +57,7 @@ export function PageEditorField({
 }): ReactElement {
   const id = `wb-page-field-${field.key}`;
   const textareaRef = useAutoGrowField(value, MAX_TEXT_ROWS);
-  const heading = fieldIsHeading(field);
-  const level = TEXT_LEVEL_CLASSES[field.block.level] ?? "";
+  const look = LOOK_CLASSES[field.look] ?? LOOK_CLASSES.body;
 
   const common = {
     id,
@@ -63,10 +72,10 @@ export function PageEditorField({
 
   return (
     <div className="wb-page-field">
-      {field.block.title && (
-        <span className={`wb-page-field-label ${level}`}>{field.block.title}</span>
+      {field.section && (
+        <span className={`wb-page-field-label ${SECTION_CLASSES}`}>{field.section}</span>
       )}
-      <div className={`${heading ? "wb-page-field-heading" : "wb-page-field-body"} ${level}`}>
+      <div className={`wb-page-field-value wb-page-field-value--${field.look} ${look}`}>
         {field.kind === "text" ? (
           <textarea ref={textareaRef} rows={1} {...common} />
         ) : (

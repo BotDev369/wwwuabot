@@ -1,29 +1,40 @@
 /**
- * Шаблони сторінок: дві готові форми, у яких людина змінює **лише текст**.
+ * Шаблони сторінок: дві **готові сторінки**, у яких людина змінює лише текст.
  *
  * **Навіщо шаблон.** Сторінку збирають із блоків (Page Builder), і це
  * редакторська робота: зони, типи блоків, умови показу. Людині, яка хоче
- * «сторінку про себе», цього не треба — їй треба заповнити три поля. Тому
- * структуру задає шаблон (це **дані**), а людина заповнює текстові поля; блоки
- * з порожнім полем на сторінку не потрапляють узагалі.
+ * «сторінку про себе», цього не треба — їй треба вписати ім'я, кілька речень і
+ * контакт. Тому **сторінку збирає шаблон** (це **дані**), а людина заповнює
+ * текстові поля.
  *
- * **Два подання одного контенту, і одне з них — похідне.** У сховищі лежить
- * `page_data` (`PageConfig`) — його рендерить `PageRenderer`. Поля форми — це
- * **подання** того самого: `buildPageConfig()` збирає конфігурацію зі значень,
- * `readPageValues()` дістає значення назад. Другого місця, куди їде текст,
- * немає: значення не зберігаються окремо (`AGENTS.md` §7).
+ * **Шаблон — це не список полів, а каркас із блоків.** Тут лежить готовий
+ * `layout`: картки, рівні заголовків, розділювач — усе те, що робить зі
+ * сторінки сторінку. Поля лише **вписуються** в нього: у каркасі на місці
+ * тексту стоїть плейсхолдер `{{ключ}}`. Звідси дві речі, заради яких усе й
+ * зроблено так:
  *
- * Звідси два правила, і обидва тримає `pageBlockId()`:
+ * 1. **Порожнього не видно.** Блок, який мав текст і не отримав його, на
+ *    сторінку не потрапляє разом із підписом, карткою й лінією навколо нього.
+ *    Тож «візитка з самого імені» — повноцінна сторінка, а не набір порожніх
+ *    прямокутників.
+ * 2. **Другого місця, куди їде текст, немає.** У сховищі лежить `page_data`
+ *    (`PageConfig`) — його рендерить `PageRenderer`, і з нього ж значення
+ *    читаються назад. Поля — це **подання** того самого, а не друга копія
+ *    (`AGENTS.md` §7).
  *
- * 1. **Ідентифікатор блоку — це `шаблон-поле`.** Саме за ним значення
- *    знаходиться назад; блок без такого `id` редакторові не належить.
- * 2. **Порядок полів — це порядок блоків.** Тому шаблон не тримає `order`
- *    окремо: два списки одного порядку розійшлися б першою ж правкою.
+ * Сам переклад у `page_data` і назад — у `page-data.ts`: `buildPageConfig`,
+ * `readPageValues` і `fieldPlacements`. Тут лише дані й довідники до них, бо
+ * розійтись ці два напрямки могли б тихо (тоді форма показувала б не те, що на
+ * сторінці), і тримати їх поруч дешевше, ніж ловити очима.
+ *
+ * **Плейсхолдер займає prop цілком** (`title: "{{title}}"`), а не стоїть
+ * посеред тексту. Це не примха: інакше читання назад не змогло б сказати, де в
+ * написаному рядку закінчується текст людини й починається текст шаблону, і
+ * примірник замість назви показав би «Ваше ім'я · Київ» одним полем. Стереже це
+ * `templates.test.ts`.
  *
  * @module @wwwuabot/shared/pages
  */
-
-import type { BlockZone, PageBlock, PageConfig } from "../types/page-config.types";
 
 /** Ключі шаблонів — закритий список: ним же підписано `scenarios.template_key`. */
 export const PAGE_TEMPLATE_KEYS = ["card", "event"] as const;
@@ -33,11 +44,24 @@ export type PageTemplateKey = (typeof PAGE_TEMPLATE_KEYS)[number];
 /** Типовий шаблон. Ним відкривається створення й читається невідомий ключ. */
 export const DEFAULT_PAGE_TEMPLATE: PageTemplateKey = "card";
 
+/**
+ * Як значення поля показати **в редакторі**.
+ *
+ * На сторінці його малює блок (каркас), а в редакторі текст стоїть полем вводу —
+ * і мусить виглядати там так само, як стоятиме на сторінці: інакше людина
+ * вирівнює не те, що побачить. Класи цих трьох щаблів бере
+ * `PageEditorField` зі спільного `TEXT_LEVEL_CLASSES`.
+ *
+ * `display` — назва сторінки, `lead` — рядок під нею (дата, один рядок про
+ * себе), `body` — текст розділу.
+ */
+export type PageFieldLook = "display" | "lead" | "body";
+
 /** Одне текстове поле шаблону — те, що людина справді заповнює. */
 export interface PageField {
-  /** Ключ поля: з нього складається `id` блоку (`pageBlockId`). */
+  /** Ключ поля: ним воно називається в каркасі (`{{ключ}}`) і у формі. */
   key: string;
-  /** Підпис у формі — те саме слово, що заголовок блоку на сторінці. */
+  /** Підпис у формі — те, що людина бачить над полем. */
   label: string;
   /** `line` — один рядок, `text` — абзаци (переноси зберігаються). */
   kind: "line" | "text";
@@ -51,8 +75,33 @@ export interface PageField {
    * заголовка. Одне на шаблон.
    */
   primary?: boolean;
-  /** Як поле стає блоком: рівень заголовка й підпис над текстом. */
-  block: { level: "h1" | "h2" | "body"; title?: string };
+  /** Як значення виглядає на сторінці — і, отже, у редакторі. */
+  look: PageFieldLook;
+  /**
+   * Підпис розділу, під яким значення стоїть на сторінці («Про себе», «Де»).
+   *
+   * Це **структура** шаблону, і вона ж стає підписом у редакторі: людина править
+   * текст під тим самим словом, під яким його прочитають. Порожньо — значення
+   * стоїть без підпису (назва сторінки, рядок про себе).
+   */
+  section?: string;
+}
+
+/**
+ * Блок каркаса: те, з чого складено сторінку.
+ *
+ * `id` — місцевий, у межах шаблону; назовні блок зветься `шаблон-id`
+ * (`pageBlockId`), бо `page_data` — це плоский список зон, і два шаблони в
+ * одній таблиці не мають права зійтись ідентифікаторами.
+ */
+export interface PageBlockSpec {
+  id: string;
+  /** Тип із реєстру блоків (`@wwwuabot/ui/blocks`). */
+  type: string;
+  /** Props блока; у рядкових — плейсхолдери `{{ключ}}` замість тексту. */
+  props: Record<string, unknown>;
+  /** Вкладені блоки (картка тримає свій текст усередині). */
+  children?: readonly PageBlockSpec[];
 }
 
 /** Готовий шаблон сторінки. */
@@ -86,8 +135,22 @@ export interface PageTemplate {
    */
   icon: string;
   fields: readonly PageField[];
+  /** Каркас сторінки: блоки, у яких стоять плейсхолдери полів. */
+  layout: readonly PageBlockSpec[];
 }
 
+/**
+ * Картки, а не суцільний текст, і це головне в цих двох шаблонах.
+ *
+ * «Сторінка» з п'яти абзаців на тлі — це не сторінка: її нічим не видно, у ній
+ * немає ні межі, ні розділів, і на телефоні вона читається як порожній екран із
+ * кількома рядками посередині. Каркас тому складається з **картки-заголовка**
+ * (назва найбільшим щаблем і рядок під нею), карток-розділів (підпис у
+ * заголовку картки, текст усередині) і **лінії** між заголовком і рештою.
+ *
+ * Порожній розділ не лишає по собі ні картки, ні порожнього підпису: блок, який
+ * не отримав тексту, на сторінку не потрапляє взагалі (`buildPageConfig`).
+ */
 export const PAGE_TEMPLATES: readonly PageTemplate[] = [
   {
     key: "card",
@@ -110,7 +173,7 @@ export const PAGE_TEMPLATES: readonly PageTemplate[] = [
         max: 60,
         placeholder: "Як вас звати або як зветься справа",
         primary: true,
-        block: { level: "h1" },
+        look: "display",
       },
       {
         key: "tagline",
@@ -118,7 +181,7 @@ export const PAGE_TEMPLATES: readonly PageTemplate[] = [
         kind: "line",
         max: 100,
         placeholder: "Одне речення — чим ви займаєтесь",
-        block: { level: "body" },
+        look: "lead",
       },
       {
         key: "about",
@@ -126,7 +189,8 @@ export const PAGE_TEMPLATES: readonly PageTemplate[] = [
         kind: "text",
         max: 1200,
         placeholder: "Кілька абзаців: досвід, проєкти, чим можете допомогти",
-        block: { level: "h2", title: "Про себе" },
+        look: "body",
+        section: "Про себе",
       },
       {
         key: "contact",
@@ -134,7 +198,36 @@ export const PAGE_TEMPLATES: readonly PageTemplate[] = [
         kind: "line",
         max: 140,
         placeholder: "Телефон, пошта, нік або місто",
-        block: { level: "h2", title: "Зв'язок" },
+        look: "body",
+        section: "Зв'язок",
+      },
+    ],
+    layout: [
+      {
+        // Заголовок сторінки: картка з підняттям, бо це єдине місце, де видно
+        // **ім'я** — а його читають першим.
+        id: "head",
+        type: "card",
+        props: { padding: "lg", elevated: true },
+        children: [
+          { id: "head-title", type: "text", props: { title: "{{title}}", level: "h1" } },
+          // Рядок про себе — щаблем нижче за ім'я: це той самий `lead`, яким
+          // поле показано в редакторі.
+          { id: "head-tagline", type: "text", props: { title: "{{tagline}}", level: "h3" } },
+        ],
+      },
+      {
+        id: "about",
+        type: "card",
+        props: { title: "Про себе" },
+        children: [{ id: "about-text", type: "text", props: { content: "{{about}}" } }],
+      },
+      { id: "divider", type: "divider", props: { style: "gradient", spacing: "sm" } },
+      {
+        id: "contact",
+        type: "card",
+        props: { title: "Зв'язок" },
+        children: [{ id: "contact-text", type: "text", props: { content: "{{contact}}" } }],
       },
     ],
   },
@@ -158,7 +251,7 @@ export const PAGE_TEMPLATES: readonly PageTemplate[] = [
         max: 80,
         placeholder: "Що саме відбувається",
         primary: true,
-        block: { level: "h1" },
+        look: "display",
       },
       {
         key: "when",
@@ -166,7 +259,7 @@ export const PAGE_TEMPLATES: readonly PageTemplate[] = [
         kind: "line",
         max: 80,
         placeholder: "Дата й час",
-        block: { level: "h2", title: "Коли" },
+        look: "lead",
       },
       {
         key: "where",
@@ -174,7 +267,8 @@ export const PAGE_TEMPLATES: readonly PageTemplate[] = [
         kind: "line",
         max: 80,
         placeholder: "Місце або посилання",
-        block: { level: "h2", title: "Де" },
+        look: "body",
+        section: "Де",
       },
       {
         key: "about",
@@ -182,7 +276,8 @@ export const PAGE_TEMPLATES: readonly PageTemplate[] = [
         kind: "text",
         max: 1200,
         placeholder: "Програма, учасники, подробиці",
-        block: { level: "h2", title: "Що буде" },
+        look: "body",
+        section: "Що буде",
       },
       {
         key: "terms",
@@ -190,7 +285,40 @@ export const PAGE_TEMPLATES: readonly PageTemplate[] = [
         kind: "line",
         max: 140,
         placeholder: "Вхід вільний, квиток, реєстрація…",
-        block: { level: "h2", title: "Умови" },
+        look: "body",
+        section: "Умови",
+      },
+    ],
+    layout: [
+      {
+        id: "head",
+        type: "card",
+        props: { padding: "lg", elevated: true },
+        children: [
+          { id: "head-title", type: "text", props: { title: "{{title}}", level: "h1" } },
+          // Дата — окремим щаблем, а не приглушеним тілом: у події «коли» — це
+          // перше, що шукають очима.
+          { id: "head-when", type: "text", props: { title: "{{when}}", level: "h3" } },
+        ],
+      },
+      {
+        id: "where",
+        type: "card",
+        props: { title: "Де" },
+        children: [{ id: "where-text", type: "text", props: { content: "{{where}}" } }],
+      },
+      { id: "divider", type: "divider", props: { style: "gradient", spacing: "sm" } },
+      {
+        id: "about",
+        type: "card",
+        props: { title: "Що буде" },
+        children: [{ id: "about-text", type: "text", props: { content: "{{about}}" } }],
+      },
+      {
+        id: "terms",
+        type: "card",
+        props: { title: "Умови" },
+        children: [{ id: "terms-text", type: "text", props: { content: "{{terms}}" } }],
       },
     ],
   },
@@ -198,6 +326,14 @@ export const PAGE_TEMPLATES: readonly PageTemplate[] = [
 
 /** Значення полів: ключ поля → текст. Порожній рядок — поле не заповнене. */
 export type PageFieldValues = Record<string, string>;
+
+/** Де саме на сторінці лежить значення поля. */
+export interface PageFieldPlacement {
+  /** `id` блока в `page_data` (уже з ключем шаблону). */
+  blockId: string;
+  /** Prop блока, у який поїхало значення. */
+  prop: string;
+}
 
 export function isPageTemplateKey(value: unknown): value is PageTemplateKey {
   return typeof value === "string" && (PAGE_TEMPLATE_KEYS as readonly string[]).includes(value);
@@ -219,100 +355,9 @@ export function primaryField(template: PageTemplate): PageField {
   return template.fields.find((field) => field.primary) ?? template.fields[0];
 }
 
-/** Ідентифікатор блоку, який відповідає полю: єдиний зв'язок між ними двома. */
-export function pageBlockId(template: PageTemplate, key: string): string {
-  return `${template.key}-${key}`;
-}
-
-/**
- * Чи **значення** поля показується заголовком — а не тілом під підписом.
- *
- * У блока `text` двоє місць: `title` (заголовок) і `content` (тіло), і рівень
- * фарбує **заголовок**. Звідси два випадки, і обидва справжні:
- *
- * 1. у поля є `block.title` («Про себе», «Коли») — це **підпис над текстом**, і
- *    заголовком стає він; значення людини — тіло;
- * 2. підпису немає, а рівень — не `body` (назва сторінки) — заголовком стає
- *    саме значення. Інакше «Візитка» показувала б ім'я приглушеним тілом, а
- *    сторінка не мала б жодного заголовка.
- *
- * Функція одна на **три** читачі — `buildPageConfig`, `readPageValues` і
- * редактор, який малює те саме поле редагованим: розійтись вони могли б лише
- * так, що в редакторі видно одне, а на сторінці — інше.
- */
-export function fieldIsHeading(field: PageField): boolean {
-  return !field.block.title && field.block.level !== "body";
-}
-
-const EMPTY_ZONES: Record<BlockZone, PageBlock[]> = {
-  sidebar: [],
-  header: [],
-  main: [],
-  footer: [],
-};
-
-/**
- * Значення → `page_data`.
- *
- * Блоки ставляться **в порядку полів** і тільки для непорожніх значень:
- * порожнє поле в шаблоні — це «людина ще не написала», а не порожній
- * заголовок на сторінці. Порожні зони лишаються порожніми — сторінка з
- * шаблону займає рівно `main`.
- *
- * Куди саме ляже значення — у `title` чи в `content` — вирішує
- * `fieldIsHeading`: саме від цього залежить, чи ім'я буде заголовком, чи
- * приглушеним тілом.
- */
-export function buildPageConfig(template: PageTemplate, values: PageFieldValues): PageConfig {
-  const main: PageBlock[] = [];
-  for (const field of template.fields) {
-    const value = (values[field.key] ?? "").trim();
-    if (!value) continue;
-    const heading = fieldIsHeading(field);
-    main.push({
-      id: pageBlockId(template, field.key),
-      type: "text",
-      order: main.length,
-      props: {
-        title: heading ? value : (field.block.title ?? ""),
-        content: heading ? "" : value,
-        level: field.block.level,
-        align: "left",
-      },
-    });
-  }
-
-  return { version: 1, zones: { ...EMPTY_ZONES, main }, visibleZones: ["main"] };
-}
-
-/**
- * `page_data` → значення (назад).
- *
- * Читаються лише блоки, чиї `id` належать цьому шаблону: сторінка могла
- * пожити в редакторі блоків, і зайвий блок не має стати полем форми.
- *
- * Порядок читання — **тіло, тоді заголовок**, і він такий не випадково:
- * значення заголовкового поля лежить у `title`, а підпис («Про себе») — це
- * `title` поля з тілом. Тож спершу беремо непорожнє тіло, і лише якщо його
- * немає — заголовок. Так читаються і сторінки, збережені **до** цього поділу
- * (тоді назва лежала в `content`), тож жодна з них не втратить текст.
- */
-export function readPageValues(template: PageTemplate, config: PageConfig | null): PageFieldValues {
-  const values: PageFieldValues = {};
-  if (!config) return values;
-
-  const known = new Set(template.fields.map((field) => field.key));
-  const prefix = `${template.key}-`;
-  for (const block of config.zones.main) {
-    if (typeof block.id !== "string" || !block.id.startsWith(prefix)) continue;
-    const key = block.id.slice(prefix.length);
-    if (!known.has(key)) continue;
-    const props = block.props as Record<string, unknown> | undefined;
-    const content = typeof props?.content === "string" ? props.content : "";
-    const heading = typeof props?.title === "string" ? props.title : "";
-    if (content || heading) values[key] = content || heading;
-  }
-  return values;
+/** Ідентифікатор блока в `page_data`: `шаблон-id` із каркаса. */
+export function pageBlockId(template: PageTemplate, id: string): string {
+  return `${template.key}-${id}`;
 }
 
 /**
@@ -320,7 +365,7 @@ export function readPageValues(template: PageTemplate, config: PageConfig | null
  *
  * Тримається тут, а не «де треба»: те саме слово бачать список, сторінка,
  * посилання й бот, і друга функція «як зветься сторінка» розійшлася б із
- * першою (AGENTS.md §7).
+ * першою (`AGENTS.md` §7).
  */
 export function pageTitle(template: PageTemplate, values: PageFieldValues): string {
   return (values[primaryField(template).key] ?? "").trim();

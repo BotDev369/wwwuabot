@@ -2,13 +2,8 @@ import { describe, expect, it } from "vitest";
 import type { PageConfig } from "../types/page-config.types";
 import { normalizePageSlug, pageAddress, PAGE_SLUG_MAX } from "./address";
 import { pageDraft, validatePageDraft } from "./rules";
-import {
-  buildPageConfig,
-  pageTemplate,
-  pageTitle,
-  readPageValues,
-  type PageFieldValues,
-} from "./templates";
+import { buildPageConfig, readPageValues } from "./page-data";
+import { pageTemplate, pageTitle, type PageFieldValues } from "./templates";
 
 const card = pageTemplate("card");
 const event = pageTemplate("event");
@@ -88,25 +83,52 @@ describe("перевірка чернетки", () => {
 });
 
 describe("шаблон ↔ page_data", () => {
-  it("будує блоки в порядку полів і лише для заповнених", () => {
+  it("каркас розгортається в блоки: порожнє не лишає по собі ні блока, ні лінії", () => {
     const config = buildPageConfig(card, { title: "Оксана", about: "Пишу тексти" });
-    expect(config.zones.main.map((block) => block.id)).toEqual(["card-title", "card-about"]);
+    // `tagline` і `contact` порожні — їхніх блоків немає зовсім; лінія, яка
+    // лишилась би останньою, теж не потрапляє: розділяти нічого.
+    expect(config.zones.main.map((block) => block.id)).toEqual(["card-head", "card-about"]);
     expect(config.zones.main.map((block) => block.order)).toEqual([0, 1]);
     expect(config.zones.header).toEqual([]);
   });
 
-  it("назва стає заголовком, а текст під підписом — тілом", () => {
-    // Рівень блока фарбує **заголовок** (`props.title`), тож назва мусить лягти
-    // саме туди: інакше сторінка показувала б ім'я приглушеним тілом і не мала
-    // б жодного заголовка.
-    const config = buildPageConfig(card, { title: "Оксана", about: "Пишу тексти" });
-    const props = config.zones.main.map((block) => block.props as Record<string, string>);
+  it("назва стоїть заголовком у картці, текст розділу — під підписом розділу", () => {
+    const config = buildPageConfig(card, {
+      title: "Оксана",
+      about: "Пишу тексти",
+      contact: "Київ",
+    });
+    const [head, about, divider, contact] = config.zones.main;
 
-    expect(props[0].title).toBe("Оксана");
-    expect(props[0].content).toBe("");
-    // А підпис («Про себе») — це структура шаблону: він у заголовку, текст — у тілі.
-    expect(props[1].title).toBe("Про себе");
-    expect(props[1].content).toBe("Пишу тексти");
+    // Заголовок — це картка з підняттям і найбільшим щаблем: саме там видно ім'я.
+    expect(head.type).toBe("card");
+    expect(head.props.elevated).toBe(true);
+    expect(head.children?.[0].props.title).toBe("Оксана");
+    expect(head.children?.[0].props.level).toBe("h1");
+    // А порожній рядок про себе не лишає по собі блока взагалі.
+    expect(head.children).toHaveLength(1);
+
+    // Підпис розділу («Про себе») — структура шаблону: він у заголовку картки,
+    // текст людини — у блоці всередині.
+    expect(about.props.title).toBe("Про себе");
+    expect(about.children?.[0].props.content).toBe("Пишу тексти");
+    expect(divider.type).toBe("divider");
+    expect(contact.props.title).toBe("Зв'язок");
+    expect(contact.children?.[0].props.content).toBe("Київ");
+  });
+
+  it("розділювач стоїть лише між розділами — ні в кінці, ні на початку його немає", () => {
+    const trimmed = buildPageConfig(event, { title: "Ярмарок", where: "Парк" });
+    expect(trimmed.zones.main.map((block) => block.id)).toEqual(["event-head", "event-where"]);
+
+    const full = buildPageConfig(event, event.preview);
+    expect(full.zones.main.map((block) => block.id)).toEqual([
+      "event-head",
+      "event-where",
+      "event-divider",
+      "event-about",
+      "event-terms",
+    ]);
   });
 
   it("сторінка, збережена до поділу заголовка й тіла, читається як є", () => {
@@ -139,15 +161,21 @@ describe("шаблон ↔ page_data", () => {
   });
 
   it("чужі блоки полями не стають: сторінку могло пожити в редакторі блоків", () => {
-    const config = buildPageConfig(event, { title: "Ярмарок" });
+    const config = buildPageConfig(card, { title: "Оксана", about: "Пишу тексти" });
     config.zones.main.push({
       id: "card-title",
       type: "text",
       order: 9,
       props: { content: "чуже" },
     });
-    expect(readPageValues(card, config)).toEqual({ title: "чуже" });
-    expect(readPageValues(event, config)).toEqual({ title: "Ярмарок" });
+    expect(readPageValues(card, config)).toEqual({ title: "Оксана", about: "Пишу тексти" });
+  });
+
+  it("старий шлях читання не підміняє текст підписом картки", () => {
+    // Картка «Про себе» має `id` `card-about`, і якби старий шлях (блок
+    // `шаблон-поле`) спрацьовував завжди, її підпис став би текстом людини.
+    const config = buildPageConfig(card, { title: "Оксана" });
+    expect(readPageValues(card, config)).toEqual({ title: "Оксана" });
   });
 
   it("порожня назва в чернетці не стає полем — порожніх заголовків на сторінці немає", () => {

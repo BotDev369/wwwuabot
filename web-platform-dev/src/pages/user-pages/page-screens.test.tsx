@@ -104,16 +104,26 @@ describe("перегляд шаблону", () => {
     }
   });
 
-  it("рівні полів видно так, як вони будуть на сторінці", () => {
-    // Назва — заголовок, «Про себе» — підпис, абзац — тіло: перегляд, у якому
-    // все однаковим шрифтом, не показує шаблону нічого.
+  it("щаблі полів видно так, як вони будуть на сторінці", () => {
+    // Назва — найбільший щабель, рядок під нею — на щабель нижче, текст
+    // розділу — приглушене тіло: перегляд, у якому все однаковим шрифтом,
+    // не показує шаблону нічого.
     const html = preview("card");
     expect(html).toContain(inMarkup(card.preview.title));
     expect(html).toContain(inMarkup(card.preview.about));
-    // Назва — щабель `h1` (`wb-text-2xl`), розділ — `h2` (`wb-text-xl`):
-    // саме ці класи мають правила в `styles/text.css`.
+    // Це ті самі щаблі, які малює редактор: `display` ↔ `wb-text-2xl`,
+    // `lead` ↔ `wb-text-lg`, `body` ↔ приглушене тіло `wb-text-secondary`.
     expect(html).toContain("wb-text-2xl");
-    expect(html).toContain("wb-text-xl");
+    expect(html).toContain("wb-text-lg");
+    expect(html).toContain("wb-text-secondary");
+  });
+
+  it("показує сторінку з каркаса — картки й розділи, а не абзаци на тлі", () => {
+    // Шаблон — це готова сторінка, і в ній видно саме її будову.
+    const html = preview("card");
+    expect(html).toContain("wb-block-card");
+    expect(html).toContain(inMarkup(card.preview.title));
+    expect(html).toContain(inMarkup(card.preview.contact));
   });
 
   it("це сама сторінка, а не картка з нею: навколо немає екрана платформи", () => {
@@ -161,16 +171,25 @@ describe("редактор сторінки", () => {
     expect(html).toContain("wb-page-editor");
   });
 
-  it("підписи структури лишаються підписами, а не полями", () => {
+  it("підписи розділів («Де», «Що буде») лишаються підписами, а не полями", () => {
     const html = editor("create", { template: "event" });
 
     for (const field of event.fields) {
-      if (!field.block.title) continue;
+      if (!field.section) continue;
       // Підпис малює шаблон: його не редагують, і поля вводу під нього немає.
-      expect(html, field.key).toContain(`>${field.block.title}</span>`);
+      expect(html, field.key).toContain(`>${field.section}</span>`);
     }
     // А значення — поля: назва події, коли, де, «що буде», умови.
     expect(html.match(/wb-page-field-input/g)).toHaveLength(event.fields.length);
+  });
+
+  it("значення видно тим щаблем, яким його побачать на сторінці", () => {
+    // Інакше редактор вирівнював би не те, що вийде: назва — найбільшим
+    // щаблем, текст розділу — приглушеним тілом.
+    const html = editor("create", { template: "card" });
+    expect(html).toContain("wb-page-field-value--display");
+    expect(html).toContain("wb-page-field-value--lead");
+    expect(html).toContain("wb-page-field-value--body");
   });
 
   it("порожню назву зберегти не можна — кнопка вимкнена", () => {
