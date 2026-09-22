@@ -376,58 +376,60 @@ html[data-brand] .wb-game .wb-btn-primary {
   background-image: radial-gradient(120% 70% at 50% -10%, var(--game-accent-soft), transparent 65%);
 }
 
-/* Ну, погоди!: тепле подвір'я, дерев'яні доріжки й трава під ними. Курка,
-   яйце й вовна — це і є весь колір гри; більше його ніде немає. */
+/* Ну, погоди!: екран приладу — світло-зелений LCD із темним контуром,
+   дерев'яні драбинки, курка з гребенем і чорний вовк із кошиком. Палітра
+   взята з приладу, а не придумана: там усе намальовано лінією по сітці
+   екрана, і той самий колір тримає гру разом. */
 .wb-game-screen[data-game="nupogodi"],
 .wb-game-stage[data-game="nupogodi"] {
-  --game-surface: #f7f3e8;
-  --game-field: rgba(58, 46, 30, 0.07);
-  --game-ink: #3c3222;
-  --game-muted: rgba(60, 50, 34, 0.55);
-  --game-accent: #1f7a45;
-  --game-accent-soft: rgba(31, 122, 69, 0.16);
-  --game-foe: #c0392b;
-  --game-foe-soft: rgba(192, 57, 43, 0.16);
-  --game-line: rgba(60, 50, 34, 0.14);
-  --game-highlight: rgba(31, 122, 69, 0.2);
-  --game-glow: rgba(31, 122, 69, 0.18);
+  --game-surface: #e9efe0;
+  --game-field: rgba(43, 58, 47, 0.07);
+  --game-ink: #2b3a2f;
+  --game-muted: rgba(43, 58, 47, 0.55);
+  --game-accent: #4c7a3c;
+  --game-accent-soft: rgba(76, 122, 60, 0.18);
+  --game-foe: #b23a2c;
+  --game-foe-soft: rgba(178, 58, 44, 0.16);
+  --game-line: rgba(43, 58, 47, 0.14);
+  --game-highlight: rgba(76, 122, 60, 0.2);
+  --game-glow: rgba(76, 122, 60, 0.14);
   --game-font: var(--font-display);
 
-  /* Матеріал гри: небо, ромашки, доріжка, жердка, трава, курка, вовна й кошик.
-     Токенів багато, бо тут намальовано фігури, а не рамки: у курки гребінь і
-     дзьоб різних кольорів, а у вовка — кошик з яйцями. */
-  --yard-sky: #fdfaf1;
-  --yard-sky-deep: #ece4cf;
-  --yard-daisy: rgba(60, 50, 34, 0.045);
-  --yard-track: rgba(60, 50, 34, 0.065);
-  --yard-rail: rgba(126, 70, 36, 0.3);
-  --yard-rail-soft: rgba(126, 70, 36, 0.16);
-  --yard-rung: rgba(60, 50, 34, 0.055);
-  --yard-line-soft: rgba(60, 50, 34, 0.14);
-  --yard-perch: #c79a5e;
-  --yard-perch-deep: #a97c46;
-  --yard-blade: rgba(255, 255, 255, 0.55);
-  --yard-blade-soft: rgba(255, 255, 255, 0.35);
+  /* Матеріал гри: екран, сітка, драбинка, жердка, трава, кущі, курка, вовна
+     й кошик. Токенів багато, бо тут намальовано фігури, а не рамки: у курки
+     гребінь і дзьоб різних кольорів, а у вовка — кошик з яйцями. */
+  --yard-sky: #dee6d3;
+  --yard-sky-deep: #cdd9bc;
+  --yard-dot: rgba(43, 58, 47, 0.13);
+  --yard-track: rgba(43, 58, 47, 0.06);
+  --yard-rail: rgba(107, 66, 39, 0.5);
+  --yard-rail-soft: rgba(107, 66, 39, 0.3);
+  --yard-rung: rgba(107, 66, 39, 0.32);
+  --yard-line-soft: rgba(43, 58, 47, 0.22);
+  --yard-perch: #a9764a;
+  --yard-perch-deep: #7d5230;
+  --yard-blade: rgba(43, 58, 47, 0.5);
   --yard-shell: #c98a2e;
   --yard-egg: #fdf6e3;
-  --yard-egg-shadow: rgba(60, 50, 34, 0.25);
-  --yard-grass: #cfe0a8;
-  --yard-grass-deep: #b0c683;
-  --yard-bush: #8fae6a;
-  --yard-bush-deep: #6f8f4f;
-  --yard-fur: #454b52;
-  --yard-fur-dark: #24282c;
+  --yard-egg-shadow: rgba(43, 58, 47, 0.3);
+  --yard-grass: #bacd9b;
+  --yard-grass-deep: #a6bc86;
+  --yard-bush: #8dab68;
+  --yard-bush-deep: #5f7d42;
+  --yard-fur: #34393d;
+  --yard-fur-dark: #1e2225;
+  --yard-fur-mid: #474d53;
   --yard-fur-light: #eef1f3;
-  --yard-ink: #23272c;
-  --yard-hen-body: #fdf3dd;
-  --yard-hen-wing: #ecd9ad;
-  --yard-hen-line: #6f5636;
-  --yard-feather: #cf9a4a;
+  --yard-ink: #1e2225;
+  --yard-hen-body: #f7f3e7;
+  --yard-hen-wing: #e0d4b5;
+  --yard-hen-line: #3b4a37;
+  --yard-feather: #c79a4a;
   --yard-comb: #c0392b;
-  --yard-beak: #e08b2a;
-  --yard-basket: #b07a3c;
-  --yard-basket-rim: #8a5a2b;
-  --yard-basket-weave: rgba(60, 50, 34, 0.35);
+  --yard-beak: #d9822b;
+  --yard-basket: #a9764a;
+  --yard-basket-rim: #7d5230;
+  --yard-basket-weave: rgba(43, 58, 47, 0.38);
 }
 
 /* Сонце над курником: світло згори, а не рівне тло */
@@ -1265,39 +1267,35 @@ html[data-brand] .wb-game .wb-btn-primary {
   flex: 1 1 auto;
   min-height: 90px;
 
-  /* Небо з ромашками: порожнє тло між куркою й кошиком читалось як «гра не
-     завантажилась», а подвір'я — це те, на що тут дивляться. */
+  /* Екран приладу: рівна сітка точок, а не «небо з ромашками». Саме вона й
+     робить із порожнього поля екран — там, де в приладі світиться рідкокрис-
+     талічна сітка, гра має сітку, а не чистий аркуш. */
   background-image:
-    radial-gradient(circle, var(--yard-daisy) 0 2.4px, transparent 2.9px),
-    radial-gradient(circle, var(--yard-daisy) 0 1.7px, transparent 2.2px),
+    radial-gradient(circle, var(--yard-dot) 0 1.1px, transparent 1.7px),
     linear-gradient(180deg, var(--yard-sky), var(--yard-sky-deep));
   background-size:
-    96px 124px,
-    138px 92px,
+    8px 8px,
     100% 100%;
-  background-position:
-    18px 26px,
-    74px 62px,
-    0 0;
 }
 
 /* Доріжка: смуга під куркою, вужча за свою смугу. Яйце котиться нею, і саме
    тому видно, чи встигає кошик — без неї це було б поле без напрямку.
 
-   Доріжка — **жолоб**, а не стовпець: вона тримається двома тонкими рейками по
-   краях і майже прозорим тлом. Ширша й світліша смуга читалась би як колона,
-   на яку дивляться, — а дивитись тут треба на яйце. */
+   Доріжка — **драбинка**, як та, що намальована на самому приладі: дві
+   дерев'яні тятиви по краях і густі щаблі поміж них. Стовпець світлого тла на
+   всю висоту читався як колона, на яку дивляться, — а дивитись тут треба на
+   яйце, тож тло доріжки майже прозоре. */
 .wb-nupogodi-track {
   position: absolute;
   top: 0;
   bottom: 0;
-  width: 14%;
+  width: 15%;
   transform: translateX(-50%);
   pointer-events: none;
   background-color: var(--yard-track);
-  background-image: repeating-linear-gradient(180deg, var(--yard-rung) 0 2px, transparent 2px 38px);
-  border-right: 1px solid var(--yard-rail-soft);
-  border-left: 1px solid var(--yard-rail-soft);
+  background-image: repeating-linear-gradient(180deg, var(--yard-rung) 0 2px, transparent 2px 17px);
+  border-right: 2px solid var(--yard-rail-soft);
+  border-left: 2px solid var(--yard-rail-soft);
 }
 
 /* Яйце — НАД вовком: за ним стежать усе падіння, і ховати його за головою
@@ -1337,57 +1335,10 @@ html[data-brand] .wb-game .wb-btn-primary {
 .wb-nupogodi-ground {
   position: relative;
   flex: 0 0 auto;
+  /* Смуга трави під вовком: кущі й травинки малює `YardStrip` — повторений
+     градієнт давав рівну луску на всю ширину, тобто шпалери, а не подвір'я */
   height: clamp(64px, 18%, 96px);
-
-  /* Трава з травинками по верхньому краю: вовк стоїть у траві, а не на
-     рівній смузі кольору. Травинки — **вузькі й високі**: широкі півкола в
-     тому самому місці читались як луска, а не як трава. */
-  background-image:
-    radial-gradient(ellipse 2.6px 13px at 50% 100%, var(--yard-blade) 0 99%, transparent 100%),
-    radial-gradient(ellipse 2px 9px at 50% 100%, var(--yard-blade-soft) 0 99%, transparent 100%),
-    linear-gradient(180deg, var(--yard-grass), var(--yard-grass-deep));
-  background-size:
-    19px 15px,
-    27px 11px,
-    100% 100%;
-  background-position:
-    5px 0,
-    16px 0,
-    0 0;
-}
-
-/* Паркан за спиною вовка: подвір'я, а не смуга кольору. Малюється першим —
-   вовк іде перед ним. */
-.wb-nupogodi-ground::before {
-  content: "";
-  position: absolute;
-  inset: 0 0 auto;
-  height: 24px;
-  pointer-events: none;
-  background-image:
-    repeating-linear-gradient(90deg, var(--yard-rail) 0 3px, transparent 3px 54px),
-    linear-gradient(180deg, transparent 6px, var(--yard-rail) 6px 10px, transparent 10px);
-}
-
-/* Кущі по краях — те саме подвір'я там, куди вовк не доходить */
-.wb-nupogodi-ground::after {
-  content: "";
-  position: absolute;
-  inset: 0;
-  pointer-events: none;
-  background-image:
-    radial-gradient(ellipse 36px 22px at 20px 100%, var(--yard-bush) 0 99%, transparent 100%),
-    radial-gradient(ellipse 30px 18px at 52px 100%, var(--yard-bush-deep) 0 99%, transparent 100%),
-    radial-gradient(
-      ellipse 36px 22px at calc(100% - 20px) 100%,
-      var(--yard-bush) 0 99%,
-      transparent 100%
-    ),
-    radial-gradient(
-      ellipse 30px 18px at calc(100% - 52px) 100%,
-      var(--yard-bush-deep) 0 99%,
-      transparent 100%
-    );
+  background: linear-gradient(180deg, var(--yard-grass), var(--yard-grass-deep));
 }
 
 /* Промах лишає слід на траві: слова про це вже сказані, а місце видно */
@@ -1548,7 +1499,7 @@ html[data-brand] .wb-game .wb-btn-primary {
 }
 
 .wb-wolf-tail-tip {
-  fill: var(--yard-fur-light);
+  fill: var(--yard-fur-mid);
 }
 
 .wb-wolf-leg {
@@ -1566,8 +1517,10 @@ html[data-brand] .wb-game .wb-btn-primary {
   stroke-linejoin: round;
 }
 
+/* Світліший живіт — **відтінок шерсті**, а не біла пляма: білий живіт на
+   темному тілі читався як фартух, тобто як одяг, а не як вовк */
 .wb-wolf-belly {
-  fill: var(--yard-fur-light);
+  fill: var(--yard-fur-mid);
 }
 
 .wb-wolf-arm {
@@ -1622,7 +1575,32 @@ html[data-brand] .wb-game .wb-btn-primary {
   fill: var(--yard-basket);
 }
 
+/* Подвір'я: кущі й травинки. Товщину лінії тримає `non-scaling-stroke` у
+   розмітці — малюнок розтягнуто на всю ширину, і без цього травинка на
+   широкому екрані була б товща за кущ. */
+.wb-yard {
+  position: absolute;
+  inset: 0;
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+.wb-yard-bush {
+  fill: var(--yard-bush);
+  stroke: var(--yard-bush-deep);
+  stroke-width: 2.5;
+}
+
+.wb-yard-tuft {
+  fill: none;
+  stroke: var(--yard-blade);
+  stroke-width: 2.4;
+  stroke-linecap: round;
+}
+
 .wb-basket-weave {
+  stroke-linejoin: round;
   fill: none;
   stroke: var(--yard-basket-weave);
   stroke-width: 2;

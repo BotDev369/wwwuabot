@@ -6,9 +6,9 @@
  * смугами, а не стрибає: місце треба передбачити, і це єдина причина, чому
  * гра є грою, а не реакцією на подію.
  *
- * **Курник намальовано, а не складено з рамок.** Курка й вовк — фігури з
- * `NupogodiFigures`, доріжки — смуги під кожною куркою, жердка — спільний
- * CSS: порожнє поле квадратів читалось би як форма, а не як подвір'я.
+ * **Курник намальовано, а не складено з рамок.** Курка, вовк і подвір'я —
+ * фігури з `NupogodiFigures`, доріжки — драбинки під кожною куркою, жердка —
+ * спільний CSS: порожнє поле квадратів читалось би як форма, а не як подвір'я.
  *
  * **Хто впіймав — вирішує не розмітка.** Позиція кошика приходить із правил
  * (`laneOf`), і тут вона лише малюється: якби «чи впіймав» рахував компонент,
@@ -28,7 +28,7 @@
 import { useEffect, useRef, type ReactElement, type ReactNode } from "react";
 import { Icon } from "@wwwuabot/shared";
 import { LANES, dropPercent, lanePercent } from "./henhouse";
-import { HenFigure, WolfFigure } from "./NupogodiFigures";
+import { HenFigure, WolfFigure, YardStrip } from "./NupogodiFigures";
 import { START_LIVES, type NupogodiEvent, type NupogodiState } from "./nupogodi";
 import { EGGS, plural } from "./plural";
 import { type GameSound } from "./sound";
@@ -196,6 +196,7 @@ export function NupogodiGame(): ReactElement {
 
         {/* Подвір'я: вовк стоїть на траві, кошик — під самими доріжками */}
         <div className="wb-nupogodi-ground">
+          <YardStrip />
           {miss && (
             <span
               key={flash?.id}
