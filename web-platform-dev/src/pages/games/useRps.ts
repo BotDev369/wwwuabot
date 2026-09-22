@@ -42,6 +42,15 @@ export type RpsPhase = "idle" | "rolling" | "done";
 export interface UseRpsResult {
   wins: number;
   losses: number;
+  /**
+   * Скільки раундів **показано** — не рахунок, а лічильник показів (нічия
+   * рахунок не міняє, а показ відбувся).
+   *
+   * Екранові він потрібен як `key`: клас, що вже стоїть на елементі, анімації
+   * не перезапускає — а новий елемент перезапускає. Без нього зіткнення було б
+   * видно в першому раунді й більше ніколи.
+   */
+  plays: number;
   phase: RpsPhase;
   /** Вибір людини показується **одразу** — це її дотик, і чекати йому нема чого. */
   player: RpsChoice | null;
@@ -62,6 +71,7 @@ export function useRps(random: () => number = Math.random): UseRpsResult {
   // Хід людини, який чекає на показ. Він — і прапорець «крутилка йде».
   const [pending, setPending] = useState<RpsChoice | null>(null);
   const [rolling, setRolling] = useState<RpsChoice | null>(null);
+  const [plays, setPlays] = useState(0);
 
   const finished = wins >= RPS_TARGET || losses >= RPS_TARGET;
 
@@ -83,6 +93,7 @@ export function useRps(random: () => number = Math.random): UseRpsResult {
       if (result === "win") setWins((prev) => prev + 1);
       if (result === "lose") setLosses((prev) => prev + 1);
       setRound({ player: pending, bot, outcome: result });
+      setPlays((prev) => prev + 1);
       setPending(null);
       setRolling(null);
     }, ROLL_MS);
@@ -105,6 +116,7 @@ export function useRps(random: () => number = Math.random): UseRpsResult {
     setWins(0);
     setLosses(0);
     setRound(null);
+    setPlays(0);
     setPending(null);
     setRolling(null);
   }
@@ -112,6 +124,7 @@ export function useRps(random: () => number = Math.random): UseRpsResult {
   return {
     wins,
     losses,
+    plays,
     phase: pending !== null ? "rolling" : round !== null ? "done" : "idle",
     player: pending ?? round?.player ?? null,
     rolling,

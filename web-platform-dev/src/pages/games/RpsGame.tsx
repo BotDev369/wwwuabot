@@ -11,8 +11,9 @@
  * показують, скільки лишилось. Доріжка бота світиться чужим кольором.
  *
  * **Показ — подія, а не мить.** Поки бот «вибирає», його слот тремтить і
- * перебирає предмети; результат зʼявляється знизу. Це та сама пауза, що в
- * житті: рука летить — потім видно, що вийшло (`useRps`).
+ * перебирає предмети; у мить показу боки **сходяться**, а між ними блимає
+ * лінія; результат зʼявляється знизу. Це та сама пауза, що в житті: рука
+ * летить — предмети стукаються — і аж тоді видно, що вийшло (`useRps`).
  *
  * **Сторони різні кольором.** Свій бік — акцентом арени, чужий — її другим
  * кольором (`--game-foe`): у дуелі мусить бути видно, де ти, а де суперник,
@@ -142,8 +143,12 @@ export function RpsGame(): ReactElement {
         <PipsRow filled={game.losses} of={RPS_TARGET} foe />
       </div>
 
-      <div className="wb-game-arena">
-        {" "}
+      {/* `key` — щоб боки **сходились** у кожному раунді: клас на елементі
+          анімацію не перезапускає, а новий елемент — так (`plays`). */}
+      <div
+        key={game.plays}
+        className={game.outcome ? "wb-game-arena wb-game-arena--clash" : "wb-game-arena"}
+      >
         <Tile choice={game.player} label="Ваш предмет" side="mine" state={mineState} />
         <span className="wb-game-versus">проти</span>
         <Tile
@@ -155,7 +160,17 @@ export function RpsGame(): ReactElement {
         />
       </div>
 
-      <p className={`wb-game-result${tone}`}>{text}</p>
+      {/* Результат **з'являється**, а не змінює текст у тому ж рядку: ключ від
+          раунду змушує React поставити новий елемент. */}
+      <p className={`wb-game-result${tone}`}>
+        {game.outcome !== null || game.finished ? (
+          <span className="wb-game-pop" key={game.plays}>
+            {text}
+          </span>
+        ) : (
+          text
+        )}
+      </p>
 
       <div className="wb-game-choices">
         {RPS_CHOICES.map((choice) => (
