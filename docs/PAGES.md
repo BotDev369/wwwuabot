@@ -93,8 +93,13 @@
    зламана сторінка — половина за межею, дотиків усередині немає.
 2. **`/pages/new?preview=card` — сторінка цілком** (`PageTemplatePreview`): той самий `PageRenderer` із
    тим самим `page_data` (`buildPageConfig(template, template.preview)`), без обрізання — скільки
-   блоків у шаблоні, стільки й видно. І лише звідси шаблон беруть — кнопкою «Обрати шаблон». Перегляд
-   при цьому **картинка** (`pointer-events: none`, `aria-hidden`): усередині справжні блоки.
+   блоків у шаблоні, стільки й видно. **Це сама сторінка, а не картка з нею:** жодної рамки, тла й
+   власної розкладки навколо полотна — розміри й відступи дають ті самі `page-layout.css` та `main`
+   оболонки, що й в опублікованої сторінки, а навколо немає навіть шапки екрана платформи (усе це й
+   робило з перегляду «зображення сторінки»). Поверх полотна стоїть лише липка смуга керування:
+   «назад» і «Обрати шаблон» — саме нею шаблон і беруть. Дотик по самому полотну не проходить
+   (`pointer-events: none`, `aria-hidden`): усередині справжні блоки, і дотик по посиланню в прикладі
+   відкрив би чуже замість вибору шаблону.
 3. **`/pages/new?template=card` — текст на самій сторінці** (`PageEditor`): підписи структури
    («Коли», «Про себе») лишаються на місці, а значення стають полями вводу, які успадковують шрифт
    блока (`font: inherit`) — сторінка перед очима рівно та, яку побачать інші.
@@ -139,6 +144,6 @@
 |---|---|
 | `packages/shared/src/pages/` | `templates.ts` (два шаблони, `buildPageConfig` / `readPageValues`), `address.ts`, `rules.ts`, `api.ts` |
 | `api-dev/src/services/pages.service.ts`, `api-dev/src/controllers/pages.controller.ts` | свої сторінки й Простір; власник — у самому запиті |
-| `web-platform-dev/src/pages/user-pages/` | екран `/pages`, перегляд, **створення** (`PageCreatePage` → `PageTemplatePicker` + `PageTemplatePreview` + `PageEditor`), правка (`/pages/:id/edit`), вкладка Простору |
+| `web-platform-dev/src/pages/user-pages/` | екран `/pages`, перегляд (сторінка цілком + липка смуга керування), **створення** (`PageCreatePage` → `PageTemplatePicker` + `PageTemplatePreview` + `PageEditor`), правка (`/pages/:id/edit`), вкладка Простору |
 | `packages/ui/src/hooks/useAutoGrowField.ts` | поле, яке росте за текстом — спільне для композера й редактора сторінки |
 | `bot-dev/src/shared/utils/page-caption.ts` | виведений підпис бота (назва й короткі поля), екранований для Telegram HTML |
