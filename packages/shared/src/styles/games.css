@@ -157,6 +157,72 @@
   animation: none;
 }
 
+/* Партія займає висоту **всю**, а не тулиться по центру: порожнеча зверху й
+   знизу — це і є те «форма в кімнаті», від якого гра не виглядає грою.
+   Блоки стають по краях, а те, що мусить бути найбільшим (дошка, арена,
+   смуга), росте між ними. */
+.wb-game-screen .wb-game {
+  flex: 1 1 auto;
+  justify-content: space-between;
+}
+
+/* Робоче поле — те, на що дивляться в партії, тож воно й забирає вільне місце */
+.wb-game-screen .wb-game-arena {
+  flex: 1 1 auto;
+}
+
+.wb-game-screen .wb-game-tile {
+  min-height: 0;
+}
+
+/* Предмет у слоті росте разом зі слотом: на маленькому значку велика панель
+   виглядає порожньою. */
+.wb-game-screen .wb-game-tile svg {
+  width: 56px;
+  height: 56px;
+}
+
+.wb-game-screen .wb-game-choice {
+  min-height: 96px;
+}
+
+.wb-game-screen .wb-game-choice svg {
+  width: 32px;
+  height: 32px;
+}
+
+/* Смуга приладу теж росте — вона тут головне, а не смужка під текстом */
+.wb-game-screen .wb-game-range {
+  height: 64px;
+}
+
+.wb-game-screen .wb-game-range-mark {
+  height: 32px;
+  margin-top: -16px;
+}
+
+/* ── Кнопки всередині партії ─────────────────────────────────────────────── */
+
+/* `!important` тут не недбалість, а єдиний спосіб: **бренд** (Apple і Material)
+   перекриває кнопки своїм шаром із `!important` (`apple.css`, `android.css`),
+   бо саме він задає радіус, висоту й вагу кнопки. Тому перебити його може
+   лише вищий за специфічністю `!important` — інакше в партії лишається
+   синя «Спочатку» й чорна «Спробувати» з теми застосунку (так було видно на
+   скрінах). */
+html[data-brand] .wb-game .wb-btn {
+  background: var(--game-field) !important;
+  color: var(--game-ink) !important;
+  box-shadow: none !important;
+}
+
+/* Головна дія партії — акцентом гри: світла поверхня як колір тексту дає
+   контраст без жодного нового токена. */
+html[data-brand] .wb-game .wb-btn-primary {
+  background: var(--game-accent) !important;
+  border-color: transparent !important;
+  color: var(--game-surface) !important;
+}
+
 /* ── Палітри ігор ──────────────────────────────────────────────────────────
    Оголошуються на **обох**: екран носить палітру для верхнього рядка й тла,
    сцена — для себе. Значення одні й ті самі, тож це не два джерела правди, а
@@ -242,6 +308,67 @@
   background-repeat: no-repeat;
   background-position: left bottom;
   background-size: 100% 10px;
+}
+
+/* 2048: синя плитка на світлому столі. Сходинки значення — **одна барва**
+   різної щільності: число мусить читатись, а рівень видно й без нього. */
+.wb-game-screen[data-game="2048"],
+.wb-game-stage[data-game="2048"] {
+  --game-surface: #f2f6ff;
+  --game-field: rgba(35, 64, 143, 0.06);
+  --game-ink: #1b2a5e;
+  --game-muted: rgba(27, 42, 94, 0.55);
+  --game-accent: #3b62e8;
+  --game-accent-soft: rgba(59, 98, 232, 0.16);
+  --game-foe: #d9633c;
+  --game-foe-soft: rgba(217, 99, 60, 0.14);
+  --game-line: rgba(27, 42, 94, 0.1);
+  --game-highlight: rgba(59, 98, 232, 0.2);
+  --game-glow: rgba(59, 98, 232, 0.26);
+  --game-font: var(--font-display);
+
+  /* Шість сходинок: 2–4, 8–16, 32–64, 128–256, 512–1024, 2048 і вище */
+  --num-1-bg: rgba(59, 98, 232, 0.1);
+  --num-1-ink: #23408f;
+  --num-2-bg: rgba(59, 98, 232, 0.2);
+  --num-2-ink: #1e3791;
+  --num-3-bg: rgba(59, 98, 232, 0.34);
+  --num-3-ink: #ffffff;
+  --num-4-bg: rgba(59, 98, 232, 0.52);
+  --num-4-ink: #ffffff;
+  --num-5-bg: rgba(45, 78, 210, 0.76);
+  --num-5-ink: #ffffff;
+  --num-6-bg: #2a49b8;
+  --num-6-ink: #ffffff;
+}
+
+/* Світло згори — стіл, на якому лежить дошка */
+.wb-game-screen[data-game="2048"] {
+  background-image: radial-gradient(120% 70% at 50% -10%, var(--game-accent-soft), transparent 65%);
+}
+
+/* Знайди пару: тепла картонна поверхня й рожеві картки — це партія про
+   дотик, а не про числа. */
+.wb-game-screen[data-game="memory"],
+.wb-game-stage[data-game="memory"] {
+  --game-surface: #fff5f1;
+  --game-field: rgba(120, 44, 60, 0.06);
+  --game-ink: #4a1f2b;
+  --game-muted: rgba(74, 31, 43, 0.55);
+  --game-accent: #e2607f;
+  --game-accent-soft: rgba(226, 96, 127, 0.16);
+  --game-foe: #7d5bd6;
+  --game-foe-soft: rgba(125, 91, 214, 0.14);
+  --game-line: rgba(74, 31, 43, 0.1);
+  --game-highlight: rgba(226, 96, 127, 0.2);
+  --game-glow: rgba(226, 96, 127, 0.28);
+  --game-font: var(--font-display);
+}
+
+/* Картки лежать на столі: м'яке світло згори й тінь по краях */
+.wb-game-screen[data-game="memory"] {
+  box-shadow: inset 0 0 80px var(--game-line);
+  background-image: radial-gradient(120% 70% at 50% -10%, var(--game-accent-soft), transparent 65%);
 }
 
 /* Уся гра говорить шрифтом своєї сцени (у приладу — моно) */
@@ -809,19 +936,8 @@
   gap: var(--sp-2);
 }
 
-/* Кнопка — спільний кирпичик, але на сцені вона носить її палітру: чорна
-   «Спробувати» посеред світлої партії — це вже інший продукт. */
-.wb-game .wb-btn {
-  background: var(--game-field);
-  color: var(--game-ink);
-}
-
-/* Головна дія партії — акцентом сцени, а не застосунку: світла поверхня як
-   колір тексту дає контраст без жодного нового токена. */
-.wb-game .wb-btn-primary {
-  background: var(--game-accent);
-  color: var(--game-surface);
-}
+/* Кнопка — спільний кирпичик, але в партії вона носить її палітру (правила
+   з `!important` стоять вище — там же пояснено, чому без них не обійтись). */
 
 /* ── Світло арени ────────────────────────────────────────────────────────── */
 
@@ -837,6 +953,177 @@
   pointer-events: none;
 }
 
+/* ── Дошка «2048» ────────────────────────────────────────────────────────── */
+
+/* Дошка — окрема поверхня всередині партії: клітинки лежать на ній, а не на
+   екрані, і порожня клітинка читається саме як порожня. */
+.wb-num-board {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: var(--sp-2);
+  padding: var(--sp-2);
+  border-radius: var(--radius-lg);
+  background: var(--game-field);
+  /* Свайп по дошці — це хід, а не прокрутка сторінки */
+  touch-action: none;
+  user-select: none;
+}
+
+/* Дошка росте разом зі свободою екрана: вона тут — головне */
+.wb-game-screen .wb-num-board {
+  flex: 1 1 auto;
+  align-content: center;
+}
+
+.wb-num-cell {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  aspect-ratio: 1;
+  border-radius: var(--radius-md);
+  background: var(--game-surface);
+  font-size: var(--text-lg);
+  font-weight: var(--weight-bold);
+  /* Цифри однакової ширини: без цього число «стрибає» при кожному ході */
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.02em;
+  transition:
+    background var(--duration-fast) var(--ease),
+    color var(--duration-fast) var(--ease);
+}
+
+/* Сходинки значення — кольори з палітри гри, не звідси */
+.wb-num-cell--l1 {
+  background: var(--num-1-bg);
+  color: var(--num-1-ink);
+}
+
+.wb-num-cell--l2 {
+  background: var(--num-2-bg);
+  color: var(--num-2-ink);
+}
+
+.wb-num-cell--l3 {
+  background: var(--num-3-bg);
+  color: var(--num-3-ink);
+}
+
+.wb-num-cell--l4 {
+  background: var(--num-4-bg);
+  color: var(--num-4-ink);
+}
+
+.wb-num-cell--l5 {
+  background: var(--num-5-bg);
+  color: var(--num-5-ink);
+}
+
+.wb-num-cell--l6 {
+  background: var(--num-6-bg);
+  color: var(--num-6-ink);
+  box-shadow: 0 0 18px var(--game-glow);
+}
+
+/* Пульт: чотири рівні клітинки — свайп не очевидний, стрілки очевидні */
+.wb-num-pad {
+  display: flex;
+  gap: var(--sp-2);
+}
+
+.wb-num-key {
+  flex: 1 1 0;
+  min-width: 0;
+  min-height: 56px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  border-radius: var(--radius-lg);
+  background: var(--game-field);
+  color: var(--game-ink);
+  cursor: pointer;
+  transition:
+    transform var(--duration-fast) var(--ease),
+    color var(--duration-fast) var(--ease),
+    background var(--duration-fast) var(--ease);
+}
+
+.wb-num-key:active {
+  transform: scale(0.95);
+  background: var(--game-accent-soft);
+  color: var(--game-accent);
+}
+
+/* ── «Знайди пару» ───────────────────────────────────────────────────────── */
+
+.wb-memo-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: var(--sp-2);
+}
+
+.wb-game-screen .wb-memo-grid {
+  flex: 1 1 auto;
+  align-content: center;
+}
+
+.wb-memo-card {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  aspect-ratio: 1;
+  padding: 0;
+  border: none;
+  border-radius: var(--radius-md);
+  background: var(--game-field);
+  color: var(--game-muted);
+  cursor: pointer;
+  transition:
+    transform var(--duration-fast) var(--ease),
+    box-shadow var(--duration-fast) var(--ease),
+    color var(--duration-fast) var(--ease),
+    background var(--duration-fast) var(--ease);
+}
+
+/* Відкрита картка — **новий** елемент за станом, тож знак з'являється разом із
+   нею: сама лише зміна кольору не сказала б, що картку відкрито */
+.wb-memo-card--open {
+  background: var(--game-surface);
+  color: var(--game-accent);
+  box-shadow: inset 0 0 0 1px var(--game-line);
+  animation: wb-game-pop var(--duration) var(--ease-spring) both;
+}
+
+/* Знайдена пара лишається відкритою й помітною: її більше не чіпають */
+.wb-memo-card--found {
+  background: var(--game-accent-soft);
+  color: var(--game-accent);
+  box-shadow: none;
+}
+
+/* Сорочка: смугастий бік. Порожня клітинка читалась би як «тут нічого немає»,
+   а картка мусить виглядати закритою, а не відсутньою. */
+.wb-memo-back {
+  width: 58%;
+  height: 58%;
+  border-radius: var(--radius-sm);
+  background-image: repeating-linear-gradient(
+    45deg,
+    var(--game-accent-soft) 0 4px,
+    transparent 4px 8px
+  );
+  box-shadow: inset 0 0 0 1px var(--game-line);
+}
+
+/* Дотик по закритій картці — відгук: на телефоні hover немає */
+.wb-memo-card:not(:disabled):active {
+  transform: scale(0.96);
+}
+
+.wb-memo-card:disabled {
+  cursor: default;
+}
+
 /* ── Коли рух вимкнено системно ──────────────────────────────────────────── */
 
 @media (prefers-reduced-motion: reduce) {
@@ -847,7 +1134,8 @@
   .wb-game-cell--win,
   .wb-game-screen[data-game="rps"]::before,
   .wb-game-arena--clash .wb-game-tile--mine,
-  .wb-game-arena--clash .wb-game-tile--foe {
+  .wb-game-arena--clash .wb-game-tile--foe,
+  .wb-memo-card--open {
     animation: none;
   }
 

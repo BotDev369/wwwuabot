@@ -19,6 +19,7 @@
 import { useState, type FormEvent, type ReactElement } from "react";
 import { Icon, type IconName } from "@wwwuabot/shared";
 import { GUESS_MAX, GUESS_MIN, type GuessVerdict } from "./guess";
+import { ATTEMPTS_ACCUSATIVE, plural } from "./plural";
 import { useGuess } from "./useGuess";
 
 /** Відповідь — знаком і словом: напрямок видно раніше, ніж прочитано. */
@@ -34,22 +35,6 @@ const TOTAL = GUESS_MAX - GUESS_MIN + 1;
 /** Частка смуги у відсотках — від межі до межі. */
 function percent(value: number): number {
   return ((value - GUESS_MIN) / TOTAL) * 100;
-}
-
-/**
- * «1 спроба», «2 спроби», «5 спроб».
- *
- * Українське число вимагає трьох форм, і без цієї функції екран писав би
- * «Вгадали за 1 спроб» — дрібниця, але саме з дрібниць складається те, чи
- * читається продукт як зроблений.
- */
-function attemptsWord(count: number): string {
-  const hundred = count % 100;
-  if (hundred >= 11 && hundred <= 14) return "спроб";
-  const tail = count % 10;
-  if (tail === 1) return "спробу";
-  if (tail >= 2 && tail <= 4) return "спроби";
-  return "спроб";
 }
 
 export function GuessGame(): ReactElement {
@@ -86,7 +71,7 @@ export function GuessGame(): ReactElement {
           <span>{game.solved ? GUESS_MIN : low}</span>
           <span>
             {game.solved
-              ? `Вгадано за ${game.attempts.length} ${attemptsWord(game.attempts.length)}`
+              ? `Вгадано за ${game.attempts.length} ${plural(game.attempts.length, ATTEMPTS_ACCUSATIVE)}`
               : "можливі числа"}
           </span>
           <span>{game.solved ? GUESS_MAX : high}</span>

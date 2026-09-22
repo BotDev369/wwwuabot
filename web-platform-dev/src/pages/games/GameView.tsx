@@ -20,7 +20,9 @@
  */
 
 import type { ReactElement } from "react";
+import { Game2048 } from "./Game2048";
 import { GuessGame } from "./GuessGame";
+import { MemoryGame } from "./MemoryGame";
 import { RpsGame } from "./RpsGame";
 import { TicTacToeGame } from "./TicTacToeGame";
 import type { GameKey } from "./games";
@@ -29,6 +31,10 @@ const VIEWS: Record<GameKey, () => ReactElement> = {
   tictactoe: TicTacToeGame,
   rps: RpsGame,
   guess: GuessGame,
+  // Ключ-число пишеться в лапках: `2048: Game2048` прочиталось б як код, а не
+  // як ключ гри — а ключ тут саме рядок адреси
+  "2048": Game2048,
+  memory: MemoryGame,
 };
 
 export function GameView({ game }: { game: GameKey }): ReactElement {

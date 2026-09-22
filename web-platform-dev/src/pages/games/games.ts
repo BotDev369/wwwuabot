@@ -21,8 +21,13 @@ import type { IconName } from "@wwwuabot/shared";
 // з кореневого конфіга без аліасів (`vitest.config.ts`).
 import { SPACE_GAME_PATH } from "../../app/routes";
 
-/** Ключі ігор — вони ж сегменти адреси. */
-export type GameKey = "tictactoe" | "rps" | "guess";
+/**
+ * Ключі ігор — вони ж сегменти адреси.
+ *
+ * Ключ може містити цифри: у «2048» ключ — саме `2048`, бо інша назва тієї
+ * самої гри тільки заплутала б адресу (`/space/g/2048`).
+ */
+export type GameKey = "tictactoe" | "rps" | "guess" | "2048" | "memory";
 
 /**
  * Пункт списку ігор — підпис і знак.
@@ -42,6 +47,8 @@ export const GAMES: readonly GameOption[] = [
   { key: "tictactoe", label: "Хрестики-нулики", icon: "grid" },
   { key: "rps", label: "Камінь, ножиці, папір", icon: "refresh" },
   { key: "guess", label: "Вгадай число", icon: "hash" },
+  { key: "2048", label: "2048", icon: "blocks" },
+  { key: "memory", label: "Знайди пару", icon: "card" },
 ];
 
 /** Гра за ключем з адреси. `null` — такої гри немає, і це видно екранові. */
