@@ -171,8 +171,8 @@
   flex: 1 1 auto;
 }
 
-/* Ополонка — те саме робоче поле, лише зі своїм ім'ям */
-.wb-game-screen .wb-fishing {
+/* Курник — те саме робоче поле, лише зі своїм ім'ям */
+.wb-game-screen .wb-nupogodi {
   flex: 1 1 auto;
 }
 
@@ -376,36 +376,37 @@ html[data-brand] .wb-game .wb-btn-primary {
   background-image: radial-gradient(120% 70% at 50% -10%, var(--game-accent-soft), transparent 65%);
 }
 
-/* Весела рибалка: світла крига, темна ополонка, тепла шерсть і золота луска.
-   Темна тут лише вода — і тому вода й читається як вода. */
-.wb-game-screen[data-game="fishing"],
-.wb-game-stage[data-game="fishing"] {
-  --game-surface: #eef7fb;
-  --game-field: rgba(16, 58, 80, 0.07);
-  --game-ink: #103a50;
-  --game-muted: rgba(16, 58, 80, 0.55);
-  --game-accent: #0f7ea8;
-  --game-accent-soft: rgba(15, 126, 168, 0.16);
-  --game-foe: #a8622f;
-  --game-foe-soft: rgba(168, 98, 47, 0.16);
-  --game-line: rgba(16, 58, 80, 0.12);
-  --game-highlight: rgba(15, 126, 168, 0.2);
-  --game-glow: rgba(15, 126, 168, 0.22);
+/* Ну, погоди!: тепле подвір'я, дерев'яні доріжки й трава під ними. Курка,
+   яйце й вовна — це і є весь колір гри; більше його ніде немає. */
+.wb-game-screen[data-game="nupogodi"],
+.wb-game-stage[data-game="nupogodi"] {
+  --game-surface: #f7f3e8;
+  --game-field: rgba(58, 46, 30, 0.07);
+  --game-ink: #3c3222;
+  --game-muted: rgba(60, 50, 34, 0.55);
+  --game-accent: #1f7a45;
+  --game-accent-soft: rgba(31, 122, 69, 0.16);
+  --game-foe: #c0392b;
+  --game-foe-soft: rgba(192, 57, 43, 0.16);
+  --game-line: rgba(60, 50, 34, 0.14);
+  --game-highlight: rgba(31, 122, 69, 0.2);
+  --game-glow: rgba(31, 122, 69, 0.18);
   --game-font: var(--font-display);
 
-  /* Матеріал гри: рівно стільки кольору, скільки має вода й вовна. Більше
-     ніде в цій грі кольору немає — усе приходить звідси. */
-  --fish-ice: #e6f2f8;
-  --fish-ice-edge: #c7dfee;
-  --fish-water: #123f57;
-  --fish-depth: rgba(6, 30, 42, 0.5);
-  --fish-fur: #9dabb6;
-  --fish-scale: #d98c2b;
-  --fish-splash: rgba(255, 255, 255, 0.82);
+  /* Матеріал гри: небо над курником, доріжка, трава, шкаралупа і вовна. */
+  --yard-sky: #fdfaf1;
+  --yard-sky-deep: #efe8d5;
+  --yard-track: rgba(60, 50, 34, 0.1);
+  --yard-hen: #4a4033;
+  --yard-shell: #c98a2e;
+  --yard-grass: #d6e0b4;
+  --yard-grass-deep: #c2cf9c;
+  --yard-basket: #8a5a2b;
+  --yard-fur: #9dabb6;
 }
 
-/* Ранкове світло над ополонкою */
-.wb-game-screen[data-game="fishing"] {
+/* Сонце над курником: світло згори, а не рівне тло */
+.wb-game-screen[data-game="nupogodi"] {
   background-image: radial-gradient(120% 70% at 50% -10%, var(--game-glow), transparent 62%);
 }
 
@@ -1162,10 +1163,10 @@ html[data-brand] .wb-game .wb-btn-primary {
   cursor: default;
 }
 
-/* ── «Весела рибалка» ────────────────────────────────────────────────────── */
+/* ── «Ну, погоди!»────────────────────────────────────────────────────── */
 
-/* Ополонка забирає вільну висоту: вона тут те, на що дивляться */
-.wb-fishing {
+/* Курник забирає вільну висоту: він тут те, на що дивляться */
+.wb-nupogodi {
   position: relative;
   flex: 1 1 auto;
   display: flex;
@@ -1174,93 +1175,106 @@ html[data-brand] .wb-game .wb-btn-primary {
   overflow: hidden;
 }
 
-/* Повітря: тут летить усе, що вистрибнуло. Його низ — лінія води, тож
-   предмет із `bottom: 0` стоїть рівно на ній, тобто у ведрі. */
-.wb-fishing-air {
+/* Сідала: чотири курки, по одній над своєю доріжкою. Вони сидять на
+   верхньому краї доріжок, тож яйце починає шлях рівно під куркою. */
+.wb-nupogodi-hens {
+  position: relative;
+  flex: 0 0 auto;
+  height: clamp(40px, 12%, 62px);
+}
+
+.wb-nupogodi-hen {
+  position: absolute;
+  bottom: 0;
+  display: flex;
+  color: var(--yard-hen);
+  transform: translateX(-50%);
+  animation: wb-hen-cluck 2.8s ease-in-out infinite;
+}
+
+/* Чотири курки, що дихають в один такт, — це шпалери; затримка робить із них
+   подвір'я. */
+.wb-nupogodi-hen:nth-child(2) {
+  animation-delay: 0.7s;
+}
+
+.wb-nupogodi-hen:nth-child(3) {
+  animation-delay: 1.4s;
+}
+
+.wb-nupogodi-hen:nth-child(4) {
+  animation-delay: 2.1s;
+}
+
+@keyframes wb-hen-cluck {
+  0%,
+  100% {
+    transform: translateX(-50%) translateY(0);
+  }
+
+  50% {
+    transform: translateX(-50%) translateY(-2px);
+  }
+}
+
+/* Доріжки: тут котиться все, що знесла курка. Низ цієї області — це кошик,
+   тож яйце з `top: 100%` стоїть рівно в ньому. */
+.wb-nupogodi-fall {
   position: relative;
   flex: 1 1 auto;
   min-height: 90px;
+  background: linear-gradient(180deg, var(--yard-sky), var(--yard-sky-deep));
 }
 
-.wb-fishing-item {
+.wb-nupogodi-egg {
   position: absolute;
   display: flex;
-  color: var(--fish-scale);
+  color: var(--yard-shell);
+  transform: translate(-50%, -50%);
 }
 
-.wb-fishing-item svg {
-  width: 28px;
-  height: 28px;
+.wb-nupogodi-egg svg {
+  width: 24px;
+  height: 24px;
+  animation: wb-egg-roll 0.7s ease-in-out infinite;
 }
 
-/* Чобіт каже, що він не риба, кольором — раніше, ніж формою */
-.wb-fishing-item--boot {
-  color: var(--game-foe);
+/* Яйце котиться, а не летить: воно хитається навколо своєї осі — так рух
+   каже те саме, що його шлях. */
+@keyframes wb-egg-roll {
+  0%,
+  100% {
+    transform: rotate(-14deg);
+  }
+
+  50% {
+    transform: rotate(14deg);
+  }
 }
 
-/* Крига, на якій стоїть вовк. Вовк виходить за її верхній край, тож
-   вловлювати тут нічого не можна. */
-.wb-fishing-ice {
+/* Подвір'я: трава, на якій стоїть вовк. Вовк виходить за її верхній край —
+   саме туди, де його кошик. */
+.wb-nupogodi-ground {
   position: relative;
   flex: 0 0 auto;
-  height: clamp(56px, 16%, 96px);
-  background: linear-gradient(180deg, var(--fish-ice), var(--fish-ice-edge));
-  box-shadow: inset 0 1px 0 var(--fish-splash);
+  height: clamp(50px, 15%, 76px);
+  background: linear-gradient(180deg, var(--yard-grass), var(--yard-grass-deep));
 }
 
-/* Ополонка — вода, і вона **ширша** за ведро: вовк бачить, куди йти */
-.wb-fishing-hole {
+/* Промах лишає слід на траві: слова про це вже сказані, а місце видно */
+.wb-nupogodi-crack {
   position: absolute;
-  left: 5%;
-  right: 5%;
-  top: -14px;
-  height: 40px;
+  bottom: 100%;
+  width: 32px;
+  height: 14px;
+  margin-left: -16px;
+  margin-bottom: -6px;
+  border: 2px solid var(--yard-shell);
   border-radius: 50%;
-  background: var(--fish-water);
-  box-shadow: inset 0 6px 14px var(--fish-depth);
+  animation: wb-egg-crack var(--duration-slow) var(--ease-out) both;
 }
 
-/* Вода дихає: два кільця розходяться від ополонки — це тло сцени, а не
-   стан предмета, тому від подій воно не залежить. */
-.wb-fishing-hole::before,
-.wb-fishing-hole::after {
-  content: "";
-  position: absolute;
-  inset: 0;
-  border: 2px solid var(--fish-splash);
-  border-radius: 50%;
-  animation: wb-fishing-ripple 3.4s ease-out infinite;
-}
-
-.wb-fishing-hole::after {
-  animation-delay: 1.7s;
-}
-
-@keyframes wb-fishing-ripple {
-  from {
-    opacity: 0.6;
-    transform: scale(1);
-  }
-
-  to {
-    opacity: 0;
-    transform: scale(1.16, 1.9);
-  }
-}
-
-/* Промах лишає коло на воді: слова про це вже сказані, а місце видно */
-.wb-fishing-splash {
-  position: absolute;
-  top: -4px;
-  width: 26px;
-  height: 12px;
-  margin-left: -13px;
-  border: 2px solid var(--fish-splash);
-  border-radius: 50%;
-  animation: wb-fishing-spill var(--duration-slow) var(--ease-out) both;
-}
-
-@keyframes wb-fishing-spill {
+@keyframes wb-egg-crack {
   from {
     opacity: 0.9;
     transform: scale(0.4);
@@ -1272,9 +1286,9 @@ html[data-brand] .wb-game .wb-btn-primary {
   }
 }
 
-/* Вовк стоїть на кризі, ведро — на самій лінії води: тоді «у ведрі» видно
+/* Вовк стоїть на траві, кошик — на самій лінії доріжок: тоді «в кошику» видно
    без слів, а промах стається там, де його видно. */
-.wb-fishing-wolf {
+.wb-nupogodi-wolf {
   position: absolute;
   bottom: 100%;
   width: 44px;
@@ -1284,18 +1298,18 @@ html[data-brand] .wb-game .wb-btn-primary {
 
 /* Голова з вухами одним силуетом: `clip-path` дає два гострі вуха, а
    прямокутник із двома трикутниками зверху читався б як латки. */
-.wb-fishing-wolf::before {
+.wb-nupogodi-wolf::before {
   content: "";
   position: absolute;
   inset: 0 0 auto;
   height: 44px;
-  background: var(--fish-fur);
+  background: var(--yard-fur);
   clip-path: polygon(2% 38%, 20% 2%, 36% 32%, 64% 32%, 80% 2%, 98% 38%, 90% 100%, 10% 100%);
-  animation: wb-fishing-bob 1.6s ease-in-out infinite;
+  animation: wb-wolf-bob 1.6s ease-in-out infinite;
 }
 
 /* Око — одна точка: на 44 пікселях кожна наступна деталь робить із вовка пляму */
-.wb-fishing-wolf::after {
+.wb-nupogodi-wolf::after {
   content: "";
   position: absolute;
   top: 18px;
@@ -1303,10 +1317,10 @@ html[data-brand] .wb-game .wb-btn-primary {
   width: 5px;
   height: 5px;
   border-radius: var(--radius-full);
-  background: var(--fish-water);
+  background: var(--yard-hen);
 }
 
-@keyframes wb-fishing-bob {
+@keyframes wb-wolf-bob {
   0%,
   100% {
     transform: translateY(0);
@@ -1318,15 +1332,15 @@ html[data-brand] .wb-game .wb-btn-primary {
 }
 
 /* Удача — стрибок, промах — хитання: рух каже те саме, що й рядок слів */
-.wb-fishing-wolf--catch {
-  animation: wb-fishing-hop var(--duration-slow) var(--ease-spring);
+.wb-nupogodi-wolf--catch {
+  animation: wb-wolf-hop var(--duration-slow) var(--ease-spring);
 }
 
-.wb-fishing-wolf--miss {
-  animation: wb-fishing-miss var(--duration-slow) var(--ease);
+.wb-nupogodi-wolf--miss {
+  animation: wb-wolf-miss var(--duration-slow) var(--ease);
 }
 
-@keyframes wb-fishing-hop {
+@keyframes wb-wolf-hop {
   0%,
   100% {
     transform: translateX(-50%) translateY(0);
@@ -1337,7 +1351,7 @@ html[data-brand] .wb-game .wb-btn-primary {
   }
 }
 
-@keyframes wb-fishing-miss {
+@keyframes wb-wolf-miss {
   0%,
   100% {
     transform: translateX(-50%);
@@ -1352,59 +1366,89 @@ html[data-brand] .wb-game .wb-btn-primary {
   }
 }
 
-/* Ведро: трапеція, яку впізнають у мить — саме в ній і буде риба */
-.wb-fishing-bucket {
+/* Кошик: трапеція, яку впізнають у мить — саме в ній і буде яйце */
+.wb-nupogodi-basket {
   position: absolute;
   bottom: 0;
   left: 50%;
   width: 36px;
   height: 26px;
   transform: translateX(-50%);
-  background: var(--game-foe);
+  background: var(--yard-basket);
   clip-path: polygon(6% 0, 94% 0, 82% 100%, 18% 100%);
 }
 
 /* Життя — слотами: порожній слот читається як «одне вже втрачено», число — ні */
-.wb-fishing-lives {
+.wb-nupogodi-lives {
   display: flex;
   gap: 2px;
 }
 
-.wb-fishing-life {
+.wb-nupogodi-life {
   display: inline-flex;
   color: var(--game-foe);
 }
 
-.wb-fishing-life--spent {
+.wb-nupogodi-life--spent {
   color: var(--game-muted);
   opacity: 0.45;
 }
 
-/* Смуги: чотири стовпці на всю ополонку. Дотик по смузі — і є хід, тож
+/* Звук — кругла кнопка в рядку рахунку: іншого місця в партії для неї немає,
+   і саме тому вона тут, а не в шапці, яку ділять усі ігри */
+.wb-nupogodi-sound {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 30px;
+  padding: 0;
+  border: none;
+  border-radius: var(--radius-full);
+  background: var(--game-field);
+  color: var(--game-ink);
+  cursor: pointer;
+  transition:
+    background var(--duration-fast) var(--ease),
+    color var(--duration-fast) var(--ease);
+}
+
+.wb-nupogodi-sound:active {
+  transform: scale(0.94);
+  background: var(--game-accent-soft);
+  color: var(--game-accent);
+}
+
+/* Вимкнений звук читається приглушеним знаком — без другого підпису */
+.wb-nupogodi-sound[aria-pressed="false"] {
+  color: var(--game-muted);
+}
+
+/* Доріжки: чотири стовпці на весь курник. Дотик по доріжці — і є хід, тож
    кнопка мусить бути не меншою за палець (мінімум 44px). */
-.wb-fishing-lanes {
+.wb-nupogodi-lanes {
   position: absolute;
   inset: 0;
   display: grid;
   grid-template-columns: repeat(4, 1fr);
 }
 
-.wb-fishing-lane {
+.wb-nupogodi-lane {
   min-height: 44px;
   padding: 0;
   border: none;
   background: none;
   cursor: pointer;
-  box-shadow: inset -1px 0 0 var(--game-line);
+  box-shadow: inset -1px 0 0 var(--yard-track);
   transition: background var(--duration-fast) var(--ease);
 }
 
-.wb-fishing-lane:last-child {
+.wb-nupogodi-lane:last-child {
   box-shadow: none;
 }
 
-/* Поділ смуг видно завжди, а відгук — на дотик: `:hover` на телефоні немає */
-.wb-fishing-lane:not(:disabled):active {
+/* Поділ доріжок видно завжди, а відгук — на дотик: `:hover` на телефоні немає */
+.wb-nupogodi-lane:not(:disabled):active {
   background: var(--game-accent-soft);
 }
 
@@ -1429,14 +1473,15 @@ html[data-brand] .wb-game .wb-btn-primary {
     display: none;
   }
 
-  /* Прибираємо тло сцени й відгуки, але **не** політ: рух предмета — це сам
-     стан партії (позиція приходить із правил), і без нього гра зникає. */
-  .wb-fishing-hole::before,
-  .wb-fishing-hole::after,
-  .wb-fishing-wolf::before,
-  .wb-fishing-wolf--catch,
-  .wb-fishing-wolf--miss,
-  .wb-fishing-splash {
+  /* Прибираємо тло сцени й відгуки, але **не** сам рух предмета: шлях яйця —
+     це стан партії (позиція приходить із правил), і без нього гра зникає.
+     Хитання яйця на осі — прикраса, тож воно зникає разом з рештою. */
+  .wb-nupogodi-hen,
+  .wb-nupogodi-egg svg,
+  .wb-nupogodi-wolf::before,
+  .wb-nupogodi-wolf--catch,
+  .wb-nupogodi-wolf--miss,
+  .wb-nupogodi-crack {
     animation: none;
   }
 

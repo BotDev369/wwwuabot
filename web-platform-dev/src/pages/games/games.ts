@@ -27,15 +27,15 @@ import { SPACE_GAME_PATH } from "../../app/routes";
  * Ключ може містити цифри: у «2048» ключ — саме `2048`, бо інша назва тієї
  * самої гри тільки заплутала б адресу (`/space/g/2048`).
  */
-export type GameKey = "tictactoe" | "rps" | "guess" | "2048" | "memory" | "fishing";
+export type GameKey = "tictactoe" | "rps" | "guess" | "2048" | "memory" | "nupogodi";
 
 /**
  * Пункт списку ігор — підпис і знак.
  *
  * Пояснень у пункті немає навмисно: рядок під назвою — це висота й шум, а
  * кожна гра каже, що в ній діється, на **своєму** екрані (і каже словами:
- * «підставляйте ведро — риба стрибає з ополонки»). Підпис має лише назвати
- * гру, щоб її впізнали в списку.
+ * «курки несуться — підставляйте кошик»). Підпис має лише назвати гру, щоб її
+ * впізнали в списку.
  */
 export interface GameOption {
   key: GameKey;
@@ -49,7 +49,7 @@ export const GAMES: readonly GameOption[] = [
   { key: "guess", label: "Вгадай число", icon: "hash" },
   { key: "2048", label: "2048", icon: "blocks" },
   { key: "memory", label: "Знайди пару", icon: "card" },
-  { key: "fishing", label: "Весела рибалка", icon: "fish" },
+  { key: "nupogodi", label: "Ну, погоди!", icon: "egg" },
 ];
 
 /** Гра за ключем з адреси. `null` — такої гри немає, і це видно екранові. */
