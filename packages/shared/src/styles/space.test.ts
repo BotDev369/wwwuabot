@@ -35,9 +35,54 @@ function css(path: string): string {
   return source(path).replace(/\/\*[\s\S]*?\*\//g, "");
 }
 
-const SPACE = css("packages/shared/src/styles/space.css");
-const THEME = css("packages/shared/src/styles/theme-pages.css");
-const CHROME = css("packages/shared/src/styles/components.css");
+/**
+ * Тіла `@media`-блоків — із балансом дужок: правила всередині теж мають `}`,
+ * тож простий пошук кінця блоку до першої дужки врізався б у середину.
+ */
+function mediaBlocks(text: string): string[] {
+  const bodies: string[] = [];
+  let from = 0;
+
+  for (;;) {
+    const start = text.indexOf("@media", from);
+    if (start < 0) return bodies;
+
+    const open = text.indexOf("{", start);
+    let depth = 0;
+    let end = text.length;
+
+    for (let i = open; i < text.length; i += 1) {
+      if (text[i] === "{") depth += 1;
+      else if (text[i] === "}") {
+        depth -= 1;
+        if (depth === 0) {
+          end = i;
+          break;
+        }
+      }
+    }
+
+    bodies.push(text.slice(open + 1, end));
+    from = end + 1;
+  }
+}
+
+/**
+ * CSS без медіазапитів: усередині них правила мають власні дужки, і плоский
+ * розбір (як у `menu.test.ts`) зшиває їхні селектори із сусідами. Правила
+ * всередині `@media` перевіряються окремо, `mediaBlocks`.
+ */
+function topLevel(text: string): string {
+  let rest = text;
+  for (const body of mediaBlocks(text)) rest = rest.replace(body, "");
+  return rest.replace(/@media[^{]*\{\s*\}/g, "");
+}
+
+const SPACE_RAW = source("packages/shared/src/styles/space.css");
+const NAV = css("packages/shared/src/styles/space-nav.css");
+const SPACE = topLevel(css("packages/shared/src/styles/space.css"));
+const THEME = topLevel(css("packages/shared/src/styles/theme-pages.css"));
+const CHROME = topLevel(css("packages/shared/src/styles/components.css"));
 
 interface Rule {
   selector: string;
@@ -165,7 +210,7 @@ describe("картка теми — прев'ю теми", () => {
   });
 });
 
-describe("тумблер панелі — у шапці сторінки", () => {
+describe("шапка сторінки — та сама сітка, що вміст", () => {
   it("у панелі своєї шапки немає", () => {
     // Слово «Розділи» повторювало те, що видно зі знаків, а рядок забирало
     // справжнє — перший пункт списку має вищу ціну, ніж підпис над ним.
@@ -174,26 +219,61 @@ describe("тумблер панелі — у шапці сторінки", () =>
     expect(nav).not.toContain("wb-nav-toggle");
   });
 
-  it("тумблер стоїть поруч із назвою і в міру назви", () => {
+  it("шапка повторює колонки розкладки — тумблер у смузі, назва на лінії вмісту", () => {
+    // Це не косметика, а причина: тумблер зі своїм тапом ширший за знак, і
+    // коли він розсуває заголовок, назва з'їжджає з лінії списку (так і було:
+    // заголовок стояв на 32px правіше за все, що під ним).
+    const head = rule(SPACE, ".wb-space-head");
+    expect(head, "правило шапки мусить існувати").toBeDefined();
+    expect(head?.body).toContain("display: grid");
+    expect(head?.body).toContain("grid-template-columns: var(--space-rail) minmax(0, 1fr)");
+    // Проміжок — як у розкладки: інакше назва з'їде рівно на різницю.
+    expect(head?.body).toContain("gap: var(--sp-3)");
+    // На телефоні проміжок менший — так само, як у розкладки (`space-nav.css`).
+    expect(
+      mediaBlocks(SPACE_RAW).some((body) =>
+        /\.wb-space-head\s*\{[^}]*gap: var\(--sp-2\)/.test(body),
+      ),
+    ).toBe(true);
+  });
+
+  it("ширину смуги знає один токен — його читає і панель", () => {
+    // Друга цифра того самого в двох файлах розійшлася б першою ж правкою.
+    expect(rule(SPACE, ".wb-space-page")?.body).toContain("--space-rail: 48px");
+    expect(NAV).toContain("width: var(--space-rail, 48px)");
+    // І смуга коротша за екран рівно на шапку — інакше порожня сторінка
+    // прокручується на рядок.
+    expect(NAV).toContain("var(--space-head, 0px)");
+  });
+
+  it("тумблер стоїть у шапці — у міру назви й не вужчий за палець", () => {
     const page = source("web-platform-dev/src/pages/SpacePage.tsx");
     expect(page).toContain("wb-space-head");
     expect(page).toContain("wb-space-toggle");
     expect(page).toContain("nav.toggle");
+    // І шапка — до розкладки, а не в правій колонці: інакше її сітка не має як
+    // повторити колонки розкладки.
+    expect(page.indexOf("wb-space-head")).toBeLessThan(page.indexOf("wb-space-layout"));
 
     // Міра береться з розміру тексту (`1em`), а не числом: назва й тумблер —
     // один рядок, і третя цифра розійшлася б із `--text-xl` заголовка.
     expect(rule(SPACE, ".wb-space-toggle svg")?.body).toContain("width: 1em");
-    expect(rule(SPACE, ".wb-space-toggle")?.body).toContain("font-size: var(--text-xl)");
-  });
 
-  it("тумблер не вужчий за палець, але знак не зсуває вбік", () => {
     const toggle = rule(SPACE, ".wb-space-toggle");
     expect(toggle, "правило тумблера мусить існувати").toBeDefined();
-    expect(toggle?.body).toContain("width: 44px");
+    expect(toggle?.body).toContain("font-size: var(--text-xl)");
+    // Ширину дає колонка (48px — більше за палець), висоту — тап-таргет.
+    expect(toggle?.body).toContain("width: 100%");
     expect(toggle?.body).toContain("height: 44px");
-    // (44 − 20) / 2 = 12: на стільки таргет ширший за знак, і рівно на стільки
-    // його тягне назад — щоб знак став на лінію заголовка, а не поруч із нею.
-    expect(toggle?.body).toContain("margin-left: calc(-1 * var(--sp-3))");
+  });
+
+  it("підписи всіх списків починаються на одній лінії", () => {
+    // Знак гри й аватар людини — та сама колонка 48px (`.wb-person-photo`),
+    // тож текст обох списків стоїть на одному відступі, а не на 24 і 48.
+    const lead = rule(SPACE, ".wb-space-page .wb-menu-item-icon");
+    expect(lead, "правило провідної клітинки мусить існувати").toBeDefined();
+    expect(lead?.body).toContain("width: 48px");
+    expect(lead?.body).toContain("justify-content: flex-start");
   });
 });
 

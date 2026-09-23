@@ -13,10 +13,13 @@
  * немає: обидва липкі шари рухалися б один крізь одного, а місце під футер
  * лишає сам каркас сторінки.
  *
- * **Тумблер панелі стоїть у рядку назви.** Своєї шапки панель не має: вона
- * забирала рядок і словом повторювала те, що видно зі знаків. Тумблер поруч із
- * «Простір» видно в обох станах, і саме там він читається як «згорнути /
- * розгорнути розділи», а не як ще один пункт меню (`SpaceNav`).
+ * **Шапка сторінки стоїть на тій самій сітці, що вміст.** Тумблер панелі має
+ * свою шапку над списком: вона забирала рядок у панелі й словом повторювала те,
+ * що видно зі знаків. Тому шапка — **над** розкладкою, а не всередині
+ * правої колонки: її перша колонка рівно така, як смуга розділів (`.wb-space-head`
+ * у `space.css`), тож тумблер стає в колонку знаків, а назва — на лінію
+ * списку, а не з відступом від неї. Це та сама пара «смуга + проміжок», що
+ * тримає вміст: інакше кожен елемент шапки стояв би зі своїм відступом.
  *
  * **Композер один на два входи** (`AdCreateSheet`): тут його відкриває «+»
  * ряду керування, а в хабі «Створити» — «+» у пункті «Оголошення», де він
@@ -81,6 +84,25 @@ export function SpacePage(): ReactElement {
 
   return (
     <div className="wb-page wb-space-page">
+      {/* Тумблер і назва — один рядок: вони й правда про одне (цей екран і
+          його розділи). Шапка стоїть **над** розкладкою і повторює її сітку:
+          тумблер — у колонці знаків, назва — на лінії вмісту. Розмір знака
+          бере з розміру назви (`1em`, `space.css`). */}
+      <div className="wb-page-head wb-space-head">
+        <button
+          type="button"
+          className="wb-space-toggle"
+          onClick={nav.toggle}
+          title={toggleLabel}
+          aria-label={toggleLabel}
+          aria-expanded={nav.expanded}
+        >
+          <Icon name="sidebar-toggle" size={20} />
+        </button>
+
+        <h1 className="wb-page-title">Простір</h1>
+      </div>
+
       <div className="wb-space-layout">
         <SpaceNav expanded={nav.expanded} value={nav.tab} onSelect={nav.select} />
 
@@ -89,26 +111,6 @@ export function SpacePage(): ReactElement {
         {nav.expanded && <div className="wb-space-scrim" onClick={nav.toggle} aria-hidden="true" />}
 
         <div className="wb-space-main">
-          {/* Тумблер і назва — один рядок: вони й правда про одне (цей екран і
-              його розділи). Розмір знака бере з розміру назви — `1em`
-              (`space.css`), тож у шапці він читається як частина заголовка. */}
-          <div className="wb-page-head">
-            <div className="wb-space-head">
-              <button
-                type="button"
-                className="wb-space-toggle"
-                onClick={nav.toggle}
-                title={toggleLabel}
-                aria-label={toggleLabel}
-                aria-expanded={nav.expanded}
-              >
-                <Icon name="sidebar-toggle" size={20} />
-              </button>
-
-              <h1 className="wb-page-title">Простір</h1>
-            </div>
-          </div>
-
           <div id={tabPanelId(nav.tab)} role="tabpanel" aria-labelledby={tabId(nav.tab)}>
             {nav.tab === "users" && (
               <SpaceUsersTab
