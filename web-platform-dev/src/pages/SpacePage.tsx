@@ -112,7 +112,14 @@ export function SpacePage(): ReactElement {
       </div>
 
       <div className="wb-space-layout">
-        <SpaceNav expanded={nav.expanded} value={nav.tab} onSelect={nav.select} />
+        {/* Кнопка закриття — у самій панелі: на телефоні вона лягає поверх
+            шапки сторінки, тож тумблер під нею не видно (див. `SpaceNav`). */}
+        <SpaceNav
+          expanded={nav.expanded}
+          value={nav.tab}
+          onSelect={nav.select}
+          onClose={nav.toggle}
+        />
 
         {/* Розгорнута панель на телефоні лягає поверх вмісту: дотик по скриму
             повертає згорнутий стан — так само, як дотик по обраному розділу. */}

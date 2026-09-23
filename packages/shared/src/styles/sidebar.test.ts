@@ -229,3 +229,68 @@ describe("сайдбари рендерить один компонент", () =
     expect(component).toContain("aria-selected");
   });
 });
+
+describe("сайдбар-поверхня: ширина, кут і вихід", () => {
+  it("ширина — **частка екрана** і **одна** на всі місця", () => {
+    // На телефоні сайдбар виїжджає поверх вмісту, тож його ширина читається від
+    // екрана, а не від бренду. Доти кожне місце брало своє (меню адмінки 280px,
+    // панель Простору `min(260px, 78vw)`), і той самий сайдбар на тому самому
+    // екрані був двічі різний.
+    expect(rule(TOKENS, ":root")?.body).toContain("--sidebar-w-vw: 80vw");
+    expect(TOKENS.match(/--sidebar-w-vw\s*:/g)?.length, "оголошень мусить бути одне").toBe(1);
+
+    for (const name of ["drawer.css", "space-nav.css"]) {
+      expect(css(SHEET(name)), name).toContain("width: var(--sidebar-w-vw)");
+      // Свого числа під ту саму ширину більше не існує — ні піксельного, ні
+      // відсоткового (друга копія й розводила два сайдбари).
+      expect(css(SHEET(name)), name).not.toContain("--drawer-w");
+      expect(css(SHEET(name)), name).not.toMatch(/\d+vw/);
+    }
+  });
+
+  it("заокруглення в сайдбара немає — ні в потоці, ні поверхнею", () => {
+    // Сайдбар — **площина екрана**, а не картка на ньому: скруглений кут читався
+    // як чужий шматок поверхні, приклеєний до берега.
+    expect(rule(NAV, ".wb-nav")?.body).not.toContain("border-radius");
+
+    // Коробки `.wb-space-nav` — дві (місце в потоці й поверхня на телефоні),
+    // тож питаємо **обидві**: радіус повертається саме в другу.
+    const boxes = rules(SPACE_NAV).filter((entry) => entry.selector === ".wb-space-nav");
+    expect(boxes.length, "коробки панелі мусять існувати").toBeGreaterThan(0);
+    for (const box of boxes) expect(box.body).not.toContain("border-radius: var(");
+    for (const body of mediaBodies(css(SHEET("space-nav.css")))) {
+      expect(body, "кут не позичають у бренду").not.toContain("border-radius: var(--radius");
+    }
+  });
+
+  it("кожен сайдбар-поверхня закриває себе сам — кнопкою в собі", () => {
+    // Сайдбар лягає **поверх шапки сторінки**, тож тумблер згортання лишається
+    // під ним: без своєї кнопки панель закривав би лише дотик повз неї.
+    const row = rule(NAV, ".wb-nav-close-row");
+    expect(row, "рядок кнопки мусить існувати").toBeDefined();
+    expect(row?.body).toContain("display: none");
+    // Берег — той самий, що в пункту: знак кнопки стає на лінію тексту пунктів.
+    expect(row?.body).toContain("padding: var(--sp-2) var(--sidebar-pad) 0");
+    expect(
+      mediaBodies(css(SHEET("app-chrome.css"))).some(
+        (body) => body.includes(".wb-nav-close-row") && body.includes("display: flex"),
+      ),
+      "кнопка видна там, де сайдбар — поверхня",
+    ).toBe(true);
+
+    // Кнопка — **спільна**: круглий хрестик продукту (`.wb-close-btn`, як у
+    // модалок), а не своя кнопка сайдбара: свій клас тут означав би свій
+    // вигляд виходу в кожному місці.
+    const component = source("packages/ui/src/nav/Sidebar.tsx");
+    expect(component).toContain('className="wb-close-btn"');
+    expect(component).toContain('aria-label="Закрити меню"');
+    expect(component).toContain('<Icon name="x"');
+
+    // І дію їй передають **обидва** місця, де сайдбар — поверхня: меню адмінки
+    // та панель Простору. Третє таке місце (сайдбар конструктора) має свою
+    // кнопку в `PageRenderer` — `page-sidebar-close`.
+    for (const path of [SITES[0], SITES[2]]) {
+      expect(source(...path.split("/")), path).toContain("onClose");
+    }
+  });
+});

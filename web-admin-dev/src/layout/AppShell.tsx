@@ -22,7 +22,9 @@ export function AppShell() {
   return (
     <div className="wb-app">
       {isMobile && open && <div className="app-drawer-overlay" onClick={close} />}
-      <Sidebar open={isMobile && open} onNavigate={close} />
+      {/* `onClose` — та сама дія, що в скрима: меню-поверхня (телефон) закриває
+          себе сама, бо гамбургер у шапці лишається під нею. */}
+      <Sidebar open={isMobile && open} onNavigate={close} onClose={close} />
       <div className="wb-app-main">
         <header className="wb-app-header">
           {/* Той самий клас і та сама розмітка, що в гамбургері PageRenderer:

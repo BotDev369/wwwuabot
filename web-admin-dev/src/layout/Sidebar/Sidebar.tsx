@@ -10,6 +10,8 @@ interface SidebarProps {
   open?: boolean;
   /** Клік по пункту меню: на мобільному закриває drawer. */
   onNavigate?: () => void;
+  /** Кнопка закриття в самому меню: на мобільному воно лягає поверх шапки. */
+  onClose?: () => void;
 }
 
 /**
@@ -20,8 +22,12 @@ interface SidebarProps {
  * розділів теми: мірки пункту, згортання й «тут ти» описані там один раз
  * (`app-chrome.css`). Тут лишається рівно те, чим адмінка відрізняється від
  * платформи: лого, склад пунктів і кнопка виходу.
+ *
+ * Кнопку закриття теж рендерить **той самий сайдбар** (`onClose`) — вона видно
+ * там, де меню лягає поверхнею (телефон), і має однаковий вигляд із панеллю
+ * Простору; тут лишається передати їй дію.
  */
-export function Sidebar({ open = false, onNavigate }: SidebarProps) {
+export function Sidebar({ open = false, onNavigate, onClose }: SidebarProps) {
   const collapsed = useCollapsedNav();
   const toggle = useSidebar((state) => state.toggle);
 
@@ -34,6 +40,10 @@ export function Sidebar({ open = false, onNavigate }: SidebarProps) {
     <SideBar
       className={`app-drawer${open ? " app-drawer--open" : ""}`}
       collapsed={collapsed}
+      // Кнопка закриття видна лише там, де меню — поверхня (телефон): у потоці
+      // його закриває тумблер у шапці самого меню, і друга кнопка під ту саму
+      // дію читалась би як друга дія.
+      onClose={onClose}
       header={
         <>
           <div className="wb-nav-header">

@@ -25,6 +25,10 @@
  * у шапку сторінки, поруч із її назвою (`SpacePage`): там він видно і в
  * згорнутому стані, а в панелі його місце займає перший пункт.
  *
+ * **Але закрити себе панель мусить сама** (`onClose`): на телефоні вона лягає
+ * **поверх** шапки сторінки, тож тумблер лишається під нею — і без власної
+ * кнопки закриття панель закривав би лише скрим, тобто дотик повз неї.
+ *
  * @module web-platform-dev/src/pages/SpaceNav
  */
 
@@ -40,14 +44,17 @@ interface SpaceNavProps {
   value: SpaceTab;
   /** Вибір розділу: панель після нього згортається (`useSpaceNav`). */
   onSelect: (key: SpaceTab) => void;
+  /** Закрити панель — кнопка в ній самій (видно там, де вона поверхня). */
+  onClose: () => void;
 }
 
-export function SpaceNav({ expanded, value, onSelect }: SpaceNavProps): ReactElement {
+export function SpaceNav({ expanded, value, onSelect, onClose }: SpaceNavProps): ReactElement {
   return (
     <SideBar
       // Місце панелі — усередині сторінки; це і є єдина її відмінність.
       className="wb-space-nav"
       collapsed={!expanded}
+      onClose={onClose}
     >
       <SideBarMenu
         collapsed={!expanded}

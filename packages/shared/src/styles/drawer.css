@@ -18,6 +18,10 @@
  * `!important` тут зламав би прев'ю в рамці телефона, яке перекриває ті самі
  * класи через `.phone-frame-body`.
  *
+ * Ширина — спільний токен `--sidebar-w-vw` (частка екрана, `tokens.css`): на
+ * телефоні сайдбар виїжджає поверх вмісту, тож його ширина читається від
+ * екрана, а не від бренду, і вона одна в усіх сайдбарів продукту.
+ *
  * Брейкпоінт 768px — той самий, що в `useIsMobile` (адмінка) і в
  * `page-zone--sidebar` (платформа), щоб CSS і JS перемикалися разом.
  *
@@ -81,9 +85,12 @@
   aside.app-drawer {
     position: fixed;
     top: 0;
-    left: calc(-1 * var(--drawer-w));
-    width: var(--drawer-w);
-    min-width: var(--drawer-w);
+    /* Ширина — `--sidebar-w-vw`: та сама частка екрана, що в панелі Простору й
+       у сайдбарів, зібраних у конструкторі (`page-layout.css`). Своє число тут
+       означало б, що два сайдбари одного продукту на одному екрані різні. */
+    left: calc(-1 * var(--sidebar-w-vw));
+    width: var(--sidebar-w-vw);
+    min-width: var(--sidebar-w-vw);
     height: 100vh;
     height: 100dvh;
     z-index: 1000;

@@ -189,6 +189,17 @@ export interface SideBarProps {
   header?: ReactNode;
   /** Низ сайдбара (вихід) — теж власність місця. */
   footer?: ReactNode;
+  /**
+   * Закрити сайдбар — своя кнопка закриття (спільний круглий хрестик).
+   *
+   * Показується **лише там, де сайдбар — поверхня** (`.wb-nav-close-row`
+   * рендериться, а видно його з медіазапиту): на телефоні сайдбар лягає поверх
+   * шапки сторінки, і тумблер згортання лишається під ним — без своєї кнопки
+   * його закривав би лише дотик повз нього, тобто навмання. У потоці кнопка не
+   * потрібна: там діє тумблер шапки, і друга кнопка під ту саму дію читалась би
+   * як друга дія.
+   */
+  onClose?: () => void;
   /** Список пунктів: `SideBarMenu` або свій (адмінка). */
   children: ReactNode;
 }
@@ -198,12 +209,28 @@ export function SideBar({
   collapsed = false,
   header,
   footer,
+  onClose,
   children,
 }: SideBarProps): ReactElement {
   return (
     <aside
       className={`wb-nav${collapsed ? " wb-nav--collapsed" : ""}${className ? ` ${className}` : ""}`}
     >
+      {/* Кнопка закриття — **першим рядком коробки**: закривають сайдбар, дивлячись
+          у його верх, як у модалки, а не шукаючи вихід унизу. */}
+      {onClose != null && !collapsed && (
+        <div className="wb-nav-close-row">
+          <button
+            type="button"
+            className="wb-close-btn"
+            onClick={onClose}
+            aria-label="Закрити меню"
+            title="Закрити"
+          >
+            <Icon name="x" size={18} />
+          </button>
+        </div>
+      )}
       {header}
       {children}
       {footer}
