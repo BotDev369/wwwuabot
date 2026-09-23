@@ -229,18 +229,21 @@ describe("шапка сторінки — та сама сітка, що вмі�
     expect(head?.body).toContain("grid-template-columns: var(--space-rail) minmax(0, 1fr)");
     // Проміжок — як у розкладки: інакше назва з'їде рівно на різницю.
     expect(head?.body).toContain("gap: var(--sp-3)");
-    // На телефоні проміжок менший — так само, як у розкладки (`space-nav.css`).
-    expect(
-      mediaBlocks(SPACE_RAW).some((body) =>
-        /\.wb-space-head\s*\{[^}]*gap: var\(--sp-2\)/.test(body),
-      ),
-    ).toBe(true);
+    // Проміжок — **один на всі ширини**: свого `gap` у шапки на телефоні
+    // немає, бо лінія вмісту не має переїжджати разом із шириною екрана —
+    // інакше заголовок сходиться зі списком лише на одній із двох ширини.
+    expect(mediaBlocks(SPACE_RAW).some((body) => /\.wb-space-head\s*\{/.test(body))).toBe(false);
   });
 
   it("ширину смуги знає один токен — його читає і панель", () => {
     // Друга цифра того самого в двох файлах розійшлася б першою ж правкою.
-    expect(rule(SPACE, ".wb-space-page")?.body).toContain("--space-rail: 48px");
-    expect(NAV).toContain("width: var(--space-rail, 48px)");
+    expect(rule(SPACE, ".wb-space-page")?.body).toContain("--space-rail: 44px");
+    expect(NAV).toContain("width: var(--space-rail, 44px)");
+    // 44 + `--sp-3` = 72 — та сама лінія вмісту, що в шапки (див. коментар у
+    // `space.css`): смуга — це **тап-таргет**, а не «колонка під знак».
+    const layout = rule(NAV, ".wb-space-layout");
+    expect(layout?.body).toContain("gap: var(--sp-3)");
+    expect(mediaBlocks(NAV).some((body) => /\.wb-space-layout\s*\{/.test(body))).toBe(false);
     // І смуга коротша за екран рівно на шапку — інакше порожня сторінка
     // прокручується на рядок.
     expect(NAV).toContain("var(--space-head, 0px)");
@@ -262,18 +265,59 @@ describe("шапка сторінки — та сама сітка, що вмі�
     const toggle = rule(SPACE, ".wb-space-toggle");
     expect(toggle, "правило тумблера мусить існувати").toBeDefined();
     expect(toggle?.body).toContain("font-size: var(--text-xl)");
-    // Ширину дає колонка (48px — більше за палець), висоту — тап-таргет.
+    // Ширину дає колонка смуги, висоту — тап-таргет.
     expect(toggle?.body).toContain("width: 100%");
     expect(toggle?.body).toContain("height: 44px");
+    // А сам знак — на лівому краї колонки, тобто на березі сторінки: у центрі
+    // він шукав би собі пару, якої там немає ні з берегом, ні з лінією вмісту.
+    expect(toggle?.body).toContain("place-items: center start");
   });
 
   it("підписи всіх списків починаються на одній лінії", () => {
-    // Знак гри й аватар людини — та сама колонка 48px (`.wb-person-photo`),
-    // тож текст обох списків стоїть на одному відступі, а не на 24 і 48.
+    // Знак гри й аватар людини — та сама колонка (`--space-lead`: 48px, бо
+    // стільки займає аватар), тож текст обох списків стоїть на одному відступі,
+    // а не на 24 і 48.
+    expect(rule(SPACE, ".wb-space-page")?.body).toContain("--space-lead: 48px");
     const lead = rule(SPACE, ".wb-space-page .wb-menu-item-icon");
     expect(lead, "правило провідної клітинки мусить існувати").toBeDefined();
-    expect(lead?.body).toContain("width: 48px");
+    expect(lead?.body).toContain("width: var(--space-lead)");
     expect(lead?.body).toContain("justify-content: flex-start");
+  });
+});
+
+describe("три лінії екрана — берег, вміст, текст", () => {
+  it("текст оголошень стає на лінію тексту, як підписи решти списків", () => {
+    // У рядку дошки знак = чип виду (він стоїть на лінії вмісту), а написане —
+    // на лінії тексту. Без цього текст дошки читався на 60px лівіше за підписи
+    // ігор, і перехід між розділами зсував усе написане на екрані.
+    expect(rule(SPACE, ".wb-space-page")?.body).toContain(
+      "--space-text: calc(var(--space-lead) + var(--sp-3))",
+    );
+    const indent = rule(
+      SPACE,
+      ".wb-space-page .wb-collection--rows .wb-ad-title, .wb-space-page .wb-collection--rows .wb-ad-body",
+    );
+    expect(indent, "правило відступу тексту дошки мусить існувати").toBeDefined();
+    expect(indent?.body).toContain("padding-left: var(--space-text)");
+  });
+
+  it("знаки панелі стають на беріг сторінки — в обох станах і на телефоні", () => {
+    // Центрований знак смуги стояв **між** берегом і лінією вмісту — ні на
+    // одній із них; знаки рядків списку тим часом стояли на своєму лівому краї.
+    const item = rule(NAV, "html[data-brand] .wb-space-nav .wb-nav-item");
+    expect(item, "правило знака панелі мусить існувати").toBeDefined();
+    expect(item?.body).toContain("justify-content: flex-start !important");
+    expect(item?.body).toContain("padding-left: 0 !important");
+    // Список панелі без власних бічних відступів — інакше знак з'їхав би на
+    // 8px кирпичика всередину.
+    expect(rule(NAV, ".wb-space-nav .wb-nav-menu")?.body).toContain("padding-left: 0");
+    // Розгорнута панель на телефоні лягає від краю екрана (`left: 0`), тож
+    // беріг їй задають її ж відступи: знак мусить лишитись там, де він у смузі.
+    expect(
+      mediaBlocks(NAV).some((body) =>
+        /\.wb-space-nav:not\(\.wb-nav--collapsed\)\s*\{[^}]*padding-left: var\(--sp-4\)/.test(body),
+      ),
+    ).toBe(true);
   });
 });
 
