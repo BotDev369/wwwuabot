@@ -76,7 +76,11 @@ function shape(node: unknown): string {
   const element = node as ReactElement<{ children?: unknown }>;
   const props = (element.props ?? {}) as Record<string, unknown>;
   const { children, ...rest } = props;
-  const kids: unknown[] = Array.isArray(children) ? children : children === undefined ? [] : [children];
+  const kids: unknown[] = Array.isArray(children)
+    ? children
+    : children === undefined
+      ? []
+      : [children];
   return `${String(element.type)}${JSON.stringify(rest)}[${kids.map(shape).join("|")}]`;
 }
 

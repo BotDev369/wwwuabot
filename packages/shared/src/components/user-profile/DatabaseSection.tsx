@@ -55,7 +55,8 @@ export function DatabaseSection({
         label="Роль"
         value={user.role ? <RoleBadge value={user.role} /> : null}
         icon="users"
-      />        <FieldRow label="Тариф" value={user.tariff} icon="crown" />
+      />{" "}
+      <FieldRow label="Тариф" value={user.tariff} icon="crown" />
       <FieldRow
         label="Статус"
         value={user.status ? <StatusBadge value={user.status} /> : null}
