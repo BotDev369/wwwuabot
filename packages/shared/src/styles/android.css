@@ -603,11 +603,6 @@ html[data-brand="android"] .kb-toggle-btn {
   border: 1px solid var(--border) !important;
 }
 
-html[data-brand="android"] .kb-toggle-btn--active {
-  background: var(--accent) !important;
-  color: var(--text-inverse) !important;
-}
-
 /* ── Scrollbar — thin ──────────────────────────────────────────────────── */
 html[data-brand="android"] ::-webkit-scrollbar {
   width: 4px !important;

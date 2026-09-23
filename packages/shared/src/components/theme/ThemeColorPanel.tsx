@@ -78,7 +78,7 @@ export function ThemeColorPanel({ onClose }: ThemeColorPanelProps): ReactElement
               <button
                 key={definition.id}
                 type="button"
-                className={`wb-btn wb-btn-sm${active ? " wb-btn-primary" : " wb-btn-secondary"}`}
+                className={`wb-btn wb-btn-sm wb-btn-ghost${active ? " wb-theme-brand--active" : ""}`}
                 aria-pressed={active}
                 onClick={() => setBrand(definition.id)}
               >

@@ -316,25 +316,29 @@ describe("меню: повноекранна поверхня, перемика�
       expect(btn?.body, `вкладка не має задавати ${own} сама`).not.toContain(own);
     }
 
-    // І станів у неї своїх немає: вибрана — `wb-btn-primary`, друга —
-    // `wb-btn-secondary`. Клас стану, що лишився в CSS без правил, — це саме та
-    // половина пари, яку потім перестають фарбувати й ніхто не помічає.
-    expect(CSS).not.toMatch(/\.wb-tabs-btn--active/);
+    // Стан у вкладки свій — і це **той самий маркер, що в пункту сайдбара**
+    // (правило 25): акцент і вага, без заливки. Залита акцентом вкладка була
+    // плишкою, а «обране» в продукті показують колір і штрих.
+    const active = rule(".wb-tabs-btn--active");
+    expect(active, "правило вибраної вкладки мусить існувати").toBeDefined();
+    expect(active?.body).toContain("color: var(--accent)");
+    expect(active?.body).toContain("font-weight: var(--weight-semibold)");
+    expect(active?.body, "вибране не заливають").not.toContain("background");
 
-    // А розмітка справді ставить кирпичик: обидві половини пари — `.wb-btn`.
+    // А розмітка справді ставить кирпичик: обидві вкладки — `.wb-btn` на
+    // прозорій основі (`wb-btn-ghost`), а вибрану називає маркер стану.
     // Читається **спільна** смуга (`packages/ui/src/tabs`), а не сторінка: смуг
     // у продукті дві (розділи акаунта, розділи Простору), і доки розмітка жила
     // в одній зі сторінок, сторож тримав би тільки її.
     const page = readFileSync(join(REPO_ROOT, PAGE), "utf8");
-    expect(page).toContain("wb-btn wb-tabs-btn");
-    expect(page).toContain("wb-btn-primary");
-    expect(page).toContain("wb-btn-secondary");
+    expect(page).toContain("wb-btn wb-btn-ghost wb-tabs-btn");
+    expect(page).toContain("wb-tabs-btn--active");
   });
 
   it("дотик не знімає вибір розділу: власного `:hover` у вкладки немає", () => {
     // Та сама пастка, що в перемикача вигляду: на тачі `:hover` лишається на
     // останньому торкнутому елементі. Вкладка її не має — підсвічення дає
-    // кнопка, а вибір тримає її заливка.
+    // кнопка, а вибір тримає акцентний маркер стану.
     let outside = CSS;
     for (const body of hoverBlocks()) outside = outside.replace(body, "");
     expect(outside).not.toMatch(/\.wb-tabs-btn[^{}]*:hover/);

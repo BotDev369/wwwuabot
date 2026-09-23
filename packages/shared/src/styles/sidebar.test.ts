@@ -158,12 +158,22 @@ describe("сайдбар один — і мірки в нього одні", () 
     expect(SPACE_NAV).not.toContain("!important");
   });
 
-  it("«тут ти» — акцент, а не характер бренду", () => {
+  it("«тут ти» — акцент і штрих, а не плишка", () => {
     // Футер, меню й панель мусять позначати поточне місце однаково: два різні
-    // знаки «тут ти» на одному екрані читались би як два різні стани.
+    // знаки «тут ти» на одному екрані читались би як два різні стани. І саме
+    // позначення — колір, вага й товщий штрих знака (правило 25): заливка
+    // робила активний пункт єдиною плишкою сайдбара, хоч футер позначає те
+    // саме місце без неї.
     const active = rule(NAV, ".wb-nav-item--active");
-    expect(active?.body).toContain("background: var(--accent-dim)");
     expect(active?.body).toContain("color: var(--accent)");
+    expect(active?.body).toContain("font-weight: var(--weight-semibold)");
+    expect(active?.body, "«тут ти» не заливають").not.toContain("--accent-dim");
+    // Штрих — друга половина того самого слова: у смузі знаків колір і штрих і
+    // є всім знаком.
+    expect(rule(NAV, ".wb-nav-item--active .wb-nav-icon svg")?.body).toContain("stroke-width: 2.4");
+    // І стан один на обидва вигляди панели: своїх правил про «тут ти» в місці
+    // панели не лишилось (доти в розгорнутій була плишка, у смузі — колір).
+    expect(SPACE_NAV, "стан панели — загальний").not.toContain("wb-nav-item--active");
     for (const brand of BRANDS) {
       expect(brand).not.toContain(".wb-nav-item {");
       expect(brand).not.toContain(".wb-nav-item--active");

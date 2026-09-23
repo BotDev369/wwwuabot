@@ -156,11 +156,13 @@
   background: var(--surface-active);
 }
 
-/* Вибрана палітра — та сама поверхня, лише підсвічена акцентом: це вибір, а не
-   перехід, тож галочки не треба — вибір видно з трьох зразків. */
+/* Вибрана палітра — **акцентний підпис і обвід** (правило 25), тла не міняє:
+   це вибір, а не перехід, тож галочки не треба — вибір видно з трьох зразків,
+   а плишка робила рядок палітр схожим на рядок кнопок, хоч це вибір. */
 .wb-theme-preset--active {
-  background: var(--accent-dim);
   color: var(--accent);
+  font-weight: var(--weight-semibold);
+  box-shadow: inset 0 0 0 1px var(--accent);
 }
 
 .wb-theme-preset-dots {
@@ -472,4 +474,12 @@
 .wb-theme-brands {
   display: flex;
   gap: var(--sp-2);
+}
+
+/* Обраний характер — **акцентний підпис і обвід** (правило 25): це вибір, тож
+   залитої пілюлі йому не треба — її читали як кнопку поруч із кнопкою. */
+.wb-theme-brand--active {
+  color: var(--accent);
+  font-weight: var(--weight-semibold);
+  box-shadow: inset 0 0 0 1px var(--accent);
 }

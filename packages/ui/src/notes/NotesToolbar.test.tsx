@@ -324,9 +324,12 @@ describe("NotesToolbar", () => {
     expect(rule(".wb-tools-controls")).toContain("--cell: var(--tools-cell)");
   });
 
-  it("стан перемикача видно заливкою, а не лише знаком", () => {
-    expect(rule(".wb-tools-btn--on")).toContain("var(--accent-dim)");
+  it("стан перемикача видно акцентом — тим самим маркером, що в сайдбарі", () => {
+    // Плишку (заливку `--accent-dim`) знято: «обране» в продукті показують
+    // акцентний колір, вага й товщий штрих знака (DESIGN_SYSTEM.md, правило 25)
+    // — так само, як пункт сайдбара та пункт футера.
     expect(rule(".wb-tools-btn--on")).toContain("color: var(--accent)");
+    expect(rule(".wb-tools-btn--on"), "перемикач не заливають").not.toContain("accent-dim");
   });
 
   it("шапка сторінки зі смугою лишаються на видноті при прокрутці", () => {

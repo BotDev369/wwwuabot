@@ -179,7 +179,11 @@ html[data-brand] .wb-theme-scheme .wb-btn-secondary {
   cursor: pointer;
 }
 
+/* Обраний шрифт — **акцентний підпис і обвід** (правило 25): чип має власну
+   поверхню (`--surface-hover`), тож заливки обраному не треба — залитий
+   акцентом чип був гучнішим за саме прев'ю шрифту, яке на нього й дивляться. */
 .wb-font-chip--active {
-  background: var(--accent);
-  color: var(--text-inverse);
+  color: var(--accent);
+  font-weight: var(--weight-semibold);
+  box-shadow: inset 0 0 0 1px var(--accent);
 }

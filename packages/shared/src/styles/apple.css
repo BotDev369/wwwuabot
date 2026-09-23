@@ -622,11 +622,6 @@ html[data-brand="apple"] .kb-toggle-btn {
   border: none !important;
 }
 
-html[data-brand="apple"] .kb-toggle-btn--active {
-  background: var(--accent) !important;
-  color: var(--text-inverse) !important;
-}
-
 /* ── Scrollbar — hidden by default like iOS ────────────────────────────── */
 html[data-brand="apple"] ::-webkit-scrollbar {
   width: 6px !important;

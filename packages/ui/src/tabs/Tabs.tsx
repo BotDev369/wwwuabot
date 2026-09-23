@@ -8,10 +8,12 @@ import type { ReactElement } from "react";
  * `aria-labelledby`, порядок атрибутів, вибір заливки — усе це легко зробити
  * «майже так» (AGENTS.md §3).
  *
- * **Вигляд береться в кнопки.** Клас `wb-tabs-btn` дає саму розкладку, а форму,
- * висоту й заливку — `wb-btn` із `wb-btn-primary` (вибрана) / `wb-btn-secondary`.
- * Власний `border-radius` зробив би вкладки прямокутними в обох брендів — так і
- * було, хоч решта кнопок продукту округлена.
+ * **Форма береться в кнопки, стан — у спільного маркера.** Клас `wb-tabs-btn`
+ * дає саму розкладку, форму й висоту — `wb-btn` (обидві вкладки прозорі,
+ * `wb-btn-ghost`), а обрану показує `wb-tabs-btn--active`: **акцент і вага, без
+ * заливки** (правило 25 — те саме, що в пункту сайдбара й у футері). Власний
+ * `border-radius` зробив би вкладки прямокутними в обох брендів — так і було,
+ * хоч решта кнопок продукту округлена.
  *
  * **Ролі ARIA ставить кирпичик.** `role="tablist"` / `role="tab"` без
  * відповідної позначки на вмісті гірші за їх відсутність, тож id панелі
@@ -56,7 +58,7 @@ export function Tabs<K extends string>({
             role="tab"
             aria-selected={active}
             aria-controls={tabPanelId(option.key)}
-            className={`wb-btn wb-tabs-btn ${active ? "wb-btn-primary" : "wb-btn-secondary"}`}
+            className={`wb-btn wb-btn-ghost wb-tabs-btn${active ? " wb-tabs-btn--active" : ""}`}
             onClick={() => onChange(option.key)}
           >
             {option.label}

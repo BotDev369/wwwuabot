@@ -719,9 +719,17 @@ html:has(.wb-tabbar) .wb-modal-overlay--screen {
   padding: 2px;
 }
 
+/* Вкладка композера — та сама пара, що в пункту сайдбара (правило 25):
+   акцентний підпис, вага й товщий штрих знака. Заливки немає — вона робила
+   вкладку плишкою, а «обране» в продукті показують колір і штрих. */
 .wb-composer-tab--active {
-  background: var(--accent-dim);
+  background: none;
   color: var(--accent);
+  font-weight: var(--weight-semibold);
+}
+
+.wb-composer-tab--active svg {
+  stroke-width: 2.4;
 }
 
 .wb-composer-tab-label {
@@ -1131,6 +1139,14 @@ html:has(.wb-tabbar) .wb-modal-overlay--screen {
 .wb-tabs-btn {
   flex: 1 0 auto;
   min-width: 0;
+}
+
+/* Обрана вкладка — **акцент і вага, без заливки** (правило 25): смуга вкладок
+   і футер кажуть «тут ти» однаково. Форму вкладка й далі бере в кирпичика
+   кнопки — тут лише **стан**. */
+.wb-tabs-btn--active {
+  color: var(--accent);
+  font-weight: var(--weight-semibold);
 }
 
 /* ── Меню: поверхня зі списком пунктів ────────────────────────────────────
@@ -1637,11 +1653,16 @@ html:has(.wb-tabbar) .wb-modal-overlay--screen {
 }
 
 /* Перемикач «розгорнути / згорнути всі» показує свій стан САМ (у клітинці лише
-   знак): залита клітинка — та сама, що в активної вкладки композера, бо це та
-   сама подія «зараз увімкнено». */
+   знак): акцентний знак і товщий штрих — та сама пара, що в обраної вкладки
+   композера (правило 25). Залитої клітинки немає: тло в цьому ряду має лише
+   «+», а воно тут означає **дію**, а не стан. */
 .wb-tools-btn--on {
-  background: var(--accent-dim);
+  background: none;
   color: var(--accent);
+}
+
+.wb-tools-btn--on svg {
+  stroke-width: 2.4;
 }
 
 /* У sticky-шарі смуга керування їде разом із шапкою сторінки
