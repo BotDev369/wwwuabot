@@ -8,91 +8,16 @@
  * Класи тут спільні, як і панель (`theme-panel.css`): ті самі рядки й картки
  * малюють і платформа, і панель, тож другого «майже такого» набору немає.
  *
- * **Голосніше й світліше, ніж налаштування всередині екрана.** Список розділів
- * теми — не форма, а вибір: підпис тут більший за основний текст, а
- * пояснення — приглушене. Це та сама пара «назва / пояснення», що в хаба, лише
- * з іншою вагою: тема — це те, що людина **обирає очима**.
+ * **Список розділів теми — не власний вигляд, а спільний сайдбар.** Доти тут
+ * жив окремий набір `.wb-theme-nav*` (плишка `--field-bg`, рядок 64px, знак
+ * акцентом і підпис 18px) — і той самий продукт мав три сайдбари на три різні
+ * мірки. Тепер розділи теми рендерить той самий `SideBarMenu`, що меню адмінки
+ * і панель Простору: мірка рядка й «тут ти» в нього одні (`app-chrome.css`),
+ * а цей файл лишається за картки схем, форму й готові палітри.
  *
  * Ліній немає (правило 15): рядки відділяє глибина (`--field-bg`), картки —
  * тло поверхні.
  */
-
-/* ── Список розділів теми (хаб) ──────────────────────────────────────────── */
-
-.wb-theme-nav {
-  display: flex;
-  flex-direction: column;
-  gap: var(--sp-2);
-}
-
-.wb-theme-nav-item {
-  display: flex;
-  align-items: center;
-  gap: var(--sp-3);
-  width: 100%;
-  /* Тап-таргет із запасом: рядок читають очима, а влучають пальцем */
-  min-height: 64px;
-  padding: var(--sp-3) var(--sp-4);
-  border: none;
-  border-radius: var(--radius-lg);
-  background: var(--field-bg);
-  color: var(--text-primary);
-  font: inherit;
-  text-align: left;
-  text-decoration: none;
-  cursor: pointer;
-}
-
-.wb-theme-nav-item:active {
-  transform: scale(0.99);
-}
-
-.wb-theme-nav-icon {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: var(--accent);
-}
-
-.wb-theme-nav-text {
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-  min-width: 0;
-  flex: 1 1 auto;
-}
-
-.wb-theme-nav-label {
-  font-size: var(--text-lg);
-  font-weight: var(--weight-semibold);
-  line-height: var(--leading-tight);
-}
-
-/* Другий рядок пункту — **стан**, а не пояснення: «Apple», назва теми, шрифт.
-   Кольори стоять у ньому зразками (лівий край рядка), бо три коди не читаються. */
-.wb-theme-nav-hint {
-  font-size: var(--text-sm);
-  color: var(--text-muted);
-  font-weight: var(--weight-normal);
-  /* Один рядок: назва теми на 40 символів не має розтягувати пункт на два
-     поверхи й смикати список. */
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.wb-theme-nav-dots {
-  display: inline-flex;
-  vertical-align: middle;
-  margin-right: var(--sp-2);
-}
-
-.wb-theme-nav-more {
-  display: flex;
-  align-items: center;
-  color: var(--text-muted);
-  flex-shrink: 0;
-}
 
 /* ── Картка схеми (мої, спільні, готові) ─────────────────────────────────── */
 
@@ -208,7 +133,6 @@ html[data-brand] .wb-theme-scheme .wb-btn-secondary {
 /* Блоки сторінки: у `.wb-page` відступів між дітьми немає (його тримає лише
    шапка — `margin-bottom`), тож крок між блоками ставить перший із них. */
 .wb-theme-rows,
-.wb-theme-nav,
 .wb-theme-schemes,
 .wb-theme-presets,
 .wb-theme-form,

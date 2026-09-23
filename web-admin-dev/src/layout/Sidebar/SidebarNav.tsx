@@ -1,5 +1,16 @@
-import { NavLink } from "react-router-dom";
-import { icons } from "@wwwuabot/shared";
+/**
+ * Пункти меню адмінки — у спільному сайдбарі.
+ *
+ * Склад береться зі store (`useAdminNav`), а **вигляд рендерить спільний
+ * `SideBarMenu`** (`@wwwuabot/ui/nav`) — той самий, що панель розділів Простору
+ * й список розділів теми. Тут лишається рівно те, чим адмінка відрізняється:
+ * її пункти, її адреси й закриття виїзного меню після переходу.
+ *
+ * @module web-admin-dev/src/layout/Sidebar/SidebarNav
+ */
+
+import { useLocation, useNavigate } from "react-router-dom";
+import { SideBarMenu, isTabActive } from "@wwwuabot/ui/nav";
 import { useAdminNav } from "./adminNav.store";
 
 interface SidebarNavProps {
@@ -10,29 +21,33 @@ interface SidebarNavProps {
 
 export function SidebarNav({ collapsed, onNavigate }: SidebarNavProps) {
   const sections = useAdminNav((state) => state.sections);
+  const navigate = useNavigate();
+  const { pathname } = useLocation();
 
   return (
-    <nav className="wb-nav-menu">
-      {sections.map((section, sIdx) => (
-        <div className="wb-nav-section" key={section.title ?? `section-${sIdx}`}>
-          {section.title && !collapsed && (
-            <div className="wb-nav-section-title">{section.title}</div>
-          )}
-          {section.items.map((item) => (
-            <NavLink
-              key={item.to}
-              to={item.to}
-              end={item.to === "/"}
-              title={collapsed ? item.label : undefined}
-              onClick={onNavigate}
-              className={({ isActive }) => `wb-nav-item${isActive ? " wb-nav-item--active" : ""}`}
-            >
-              <span className="wb-nav-icon">{icons[item.icon]}</span>
-              {!collapsed && <span className="wb-nav-label">{item.label}</span>}
-            </NavLink>
-          ))}
-        </div>
-      ))}
-    </nav>
+    <SideBarMenu
+      collapsed={collapsed}
+      label="Розділи панелі"
+      // Активність рахує **та сама** функція, що у футера (`isTabActive`): два
+      // правила «котра сторінка поточна» розійшлися б на першій же вкладеній
+      // адресі.
+      sections={sections.map((section, index) => ({
+        key: section.title ?? `section-${index}`,
+        title: section.title ?? undefined,
+        items: section.items.map((item) => ({
+          key: item.to,
+          label: item.label,
+          icon: item.icon,
+          href: item.to,
+          active: isTabActive(pathname, item.to),
+          onSelect: () => {
+            // Навігацію робить оболонка (react-router): повне перезавантаження
+            // в TWA — це втрачений стан і біла вспишка.
+            navigate(item.to);
+            onNavigate?.();
+          },
+        })),
+      }))}
+    />
   );
 }

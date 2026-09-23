@@ -80,6 +80,8 @@ function topLevel(text: string): string {
 
 const SPACE_RAW = source("packages/shared/src/styles/space.css");
 const NAV = css("packages/shared/src/styles/space-nav.css");
+const APP = topLevel(css("packages/shared/src/styles/app-chrome.css"));
+const TOKENS = topLevel(css("packages/shared/src/styles/tokens.css"));
 const SPACE = topLevel(css("packages/shared/src/styles/space.css"));
 const THEME = topLevel(css("packages/shared/src/styles/theme-pages.css"));
 const CHROME = topLevel(css("packages/shared/src/styles/components.css"));
@@ -272,8 +274,13 @@ describe("шапка сторінки — та сама сітка, що вмі�
   });
 
   it("ширину смуги знає один токен — його читає і панель", () => {
-    // Друга цифра того самого в двох файлах розійшлася б першою ж правкою.
-    expect(rule(SPACE, ".wb-space-page")?.body).toContain("--space-rail: 44px");
+    // Крок пункту сайдбара — **одне число на продукт** (`tokens.css`), і смуга
+    // Простору його читає, а не повторює: доки `--space-rail` стояв своїм
+    // числом (44px) поруч із кроком пункту панели, правка одного розводила
+    // панель і смугу керування — і знаки двох колонок сходились лише з
+    // `!important`.
+    expect(rule(TOKENS, ":root")?.body).toContain("--sidebar-item-h: 44px");
+    expect(rule(SPACE, ".wb-space-page")?.body).toContain("--space-rail: var(--sidebar-item-h)");
     expect(NAV).toContain("width: var(--space-rail, 44px)");
     // 44 + `--sp-3` = 72 — та сама лінія вмісту, що в шапки (див. коментар у
     // `space.css`): смуга — це **тап-таргет**, а не «колонка під знак».
@@ -355,13 +362,20 @@ describe("лінії екрана — берег, вміст, текст", () =>
   it("знаки панелі стають на беріг сторінки — в обох станах і на телефоні", () => {
     // Центрований знак смуги стояв **між** берегом і лінією вмісту — ні на
     // одній із них; знаки рядків списку тим часом стояли на своєму лівому краї.
-    const item = rule(NAV, "html[data-brand] .wb-space-nav .wb-nav-item");
+    //
+    // Берег панелі — **нуль** (`--sidebar-pad: 0`): у розкладці сторінки вона й
+    // так стоїть із відступом `--sp-4`, тож другий берег усередині зсунув би
+    // знак зі спільної лінії. У решти сайдбарів берег дає сам кирпичик
+    // (8px списку + 8px пункту = ті самі 16px).
+    const item = rule(NAV, ".wb-space-nav .wb-nav-item");
     expect(item, "правило знака панелі мусить існувати").toBeDefined();
-    expect(item?.body).toContain("justify-content: flex-start !important");
-    expect(item?.body).toContain("padding: 0 !important");
-    // Список панелі без власних бічних відступів — інакше знак з'їхав би на
-    // 8px кирпичика всередину.
-    expect(rule(NAV, ".wb-space-nav .wb-nav-menu")?.body).toContain("padding-left: 0");
+    expect(item?.body).toContain("justify-content: flex-start");
+    expect(rule(NAV, ".wb-space-nav")?.body).toContain("--sidebar-pad: 0");
+    // Список панелі без власних відступів — інакше знак з'їхав би на 8px
+    // кирпичика всередину. `!important` тут немає: бренд мірок пункту більше не
+    // задає, тож перекривати нічого.
+    expect(rule(NAV, ".wb-space-nav .wb-nav-menu")?.body).toContain("padding: 0");
+    expect(NAV).not.toContain("!important");
     // Розгорнута панель на телефоні лягає від краю екрана (`left: 0`), тож
     // беріг їй задають її ж відступи: знак мусить лишитись там, де він у смузі.
     expect(
@@ -372,17 +386,16 @@ describe("лінії екрана — берег, вміст, текст", () =>
   });
 
   it("крок пункту панелі дорівнює кроку клітинки смуги — інакше знаки розходяться", () => {
-    // Бренд дає пункту `min-height: 48px !important`: його знак стає на 24px від
-    // верху пункту, а клітинка смуги керування має 22px від свого — і око читає
-    // це як «перший знак панелі й пошук не на одній лінії», хоч обидва стоять на
-    // своїх краях. Крок один: та сама цифра, що в клітинки смуги.
-    const item = rule(NAV, "html[data-brand] .wb-space-nav .wb-nav-item");
-    expect(item, "брендові міри пункту мусить перекривати правило панелі").toBeDefined();
-    expect(item?.body).toContain("min-height: var(--space-rail, 44px) !important");
-    expect(item?.body).toContain("padding: 0 !important");
-    // Другої міри того самого немає — інакше наступна правка розвела б їх.
-    expect(NAV).not.toContain("min-height: 44px !important");
-    expect(NAV).not.toContain("min-height: 48px");
+    // Мірку пункту задає **сам сайдбар** і рівно один раз: доки її писали і
+    // бренд, і панель Простору, знаки двох колонок сходились лише з
+    // `!important`, а сайдбар виглядав як дві різні деталі.
+    expect(rule(APP, ".wb-nav-item")?.body).toContain("min-height: var(--sidebar-item-h)");
+    // Бренд мірок пункту не переписує — ні своїм `padding`, ні `min-height`.
+    for (const brand of ["apple.css", "android.css"]) {
+      const file = css(`packages/shared/src/styles/${brand}`);
+      expect(file, brand).not.toContain(`.wb-nav-item {`);
+      expect(file, brand).not.toContain("--sidebar-item-h");
+    }
     // Інша половина пари: клітинка смуги бере ту саму цифру.
     expect(rule(SPACE, ".wb-space-page .wb-tools-bar")?.body).toContain(
       "--tools-row-h: var(--space-rail)",
@@ -445,8 +458,12 @@ describe("другий рядок — смуга керування розділ
 
   it("перший знак панели стає на лінію першої клітинки смуги", () => {
     // Смуга починається там само, де вміст, тож верхній відступ списку панели
-    // з'їжджав би знаки на цей відступ — і око бачило б другу лінію.
-    expect(rule(NAV, ".wb-space-nav.wb-nav--collapsed .wb-nav-menu")?.body).toContain("padding: 0");
+    // з'їжджав би знаки на цей відступ — і око бачило б другу лінію. Правило
+    // **одне на обидва стани**: згорнута панель не має ні свого відступу, ні
+    // свого `!important` — знак лишається на місці саме тому, що мірок менше.
+    const menu = rules(NAV).filter((entry) => entry.selector === ".wb-space-nav .wb-nav-menu");
+    expect(menu.length, "правило списку панелі мусить бути одне").toBe(1);
+    expect(menu[0]?.body).toContain("padding: 0");
   });
 
   it("назва екрана — підпис відкритого розділу, а не «Простір» на всіх", () => {

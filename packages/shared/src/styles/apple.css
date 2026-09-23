@@ -334,31 +334,18 @@ html[data-brand="apple"][data-theme="dark"] .page-zone--sidebar {
   background: rgba(28, 28, 30, 0.8) !important;
 }
 
-/* Nav items: pill shape, FILLED active — Apple signature.
-   Селектори — спільні кирпичики `.wb-nav*`: раніше тут стояли приватні
-   `.sidebar*` / `.logout-btn` адмінки, тож платформа (у неї ті самі меню
-   з `page-zone--sidebar`) брендових правил не отримувала взагалі. */
-html[data-brand="apple"] .wb-nav-item {
-  border-radius: 10px !important;
-  font-size: 16px !important;
-  font-weight: 500 !important;
-  padding: 12px 14px !important;
-  min-height: 44px !important;
-  letter-spacing: -0.015em !important;
-  background: transparent !important;
-  color: var(--text-secondary) !important;
-}
+/* Пунктів сайдбара бренд **не малює** — і це рішення, а не пропуск.
 
-html[data-brand="apple"] .wb-nav-item--active {
-  background: #000000 !important;
-  color: #ffffff !important;
-  font-weight: 600 !important;
-}
+   Доти тут стояли свої `padding: 12px 14px`, `min-height: 44px`, `border-radius`
+   10px і залите чорним «тут ти». Разом із такими самими правилами Material це
+   давало два сайдбари на один продукт: панель розділів Простору (вона ставила
+   свої мірки з `!important`, аби перекрити бренд) і меню адмінки виглядали
+   як різні деталі, хоч це один кирпичик. Тепер мірки пункту одні й оголошені
+   в `app-chrome.css` (`--sidebar-item-h`, `--sidebar-pad`), а «тут ти» —
+   акцент, як у футері.
 
-html[data-brand="apple"][data-theme="dark"] .wb-nav-item--active {
-  background: #ffffff !important;
-  color: #000000 !important;
-}
+   Характер бренду в сайдбарі лишається там, де він справді про характер:
+   поверхня (скло вище), лого й вихід (`.wb-nav-title`, `.wb-app-logout`). */
 
 /* Sidebar header / footer — ліній тут немає: шапку й футер меню бренд
    відділяє так само, як усе інше (правило 15). */

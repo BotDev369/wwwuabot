@@ -91,6 +91,9 @@ describe("склад розділів", () => {
     // стан потрібен щоразу: хаб і є місцем, де дивляться, що вибрано.
     const hub = source("src", "pages", "themes", "ThemeHubPage.tsx");
     expect(hub).toContain("useThemeLook");
-    expect(hub).toContain("wb-theme-nav-hint");
+    // Рядок рендерить **спільний сайдбар**, а стан їде в нього полем `hint`: у
+    // розділів теми більше немає власних класів під рядок.
+    expect(hub).toContain("SideBarMenu");
+    expect(hub).toContain("hint: valueOf(section.key)");
   });
 });

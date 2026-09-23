@@ -196,6 +196,18 @@
     тримає тільки рядок людей, а текст контенту стає на **лінію вмісту**. Стежать
     `styles/space.test.ts` і `pages/SpaceAdsTab.test.tsx`.
 
+24. **Сайдбар у продукті один.** Меню адмінки, панель розділів Простору, розділи теми й вибір
+    характеру в них — це **та сама деталь**, тож рендерить їх один компонент (`SideBar` /
+    `SideBarMenu`, `packages/ui/src/nav/Sidebar.tsx`), а не три схожі розмітки. Мірки теж одні й
+    оголошені **раз**: `--sidebar-item-h` (44px — тап-таргет пальця) і `--sidebar-pad` (8px; разом
+    з 8px списку — 16px, лінія вмісту) у `styles/tokens.css`; панель Простору їх **читає**
+    (`--space-rail` без власної копії числа). **Бренд сайдбар не переписує**: `apple.css` /
+    `android.css` дають йому поверхню (скло чи плиту), а «тут ти» — акцент (`--accent-dim` +
+    `--accent`), як у футері. Відрізняє сайдбари одне від одного рівно **місце**: адмінка — хром
+    застосунку, Простір — усередині сторінки, і живе воно у файлі місця (`styles/space-nav.css`).
+    Доти цих сайдбарів було чотири різних — із чотирма мірками пункту й двома знаками «тут ти».
+    Стежать `styles/sidebar.test.ts` і `styles/space.test.ts`.
+
 ---
 
 ## File Locations
@@ -205,7 +217,8 @@
 | `packages/shared/src/styles/tokens.css` | CSS-змінні |
 | `packages/shared/src/styles/user-colors.css` / `themes.css` | Палітра з трьох кольорів (`color-mix`) і світла / темна схема |
 | `packages/shared/src/styles/components.css` | `.wb-*` кирпичики (кнопки, модалки, поля, діалог) |
-| `packages/shared/src/styles/app-chrome.css` | Каркас оболонки: app / nav / tabbar / topbar / page / auth / splash / profile |
+| `packages/shared/src/styles/app-chrome.css` | Каркас оболонки: app / nav (єдиний сайдбар) / tabbar / topbar / page / auth / splash / profile |
+| `packages/ui/src/nav/Sidebar.tsx` | `SideBar` / `SideBarMenu` — єдиний сайдбар продукту (правило 24) |
 | `packages/shared/src/styles/theme-panel.css` | Панель «Тема» (правило 19) |
 | `packages/shared/src/styles/page-layout.css` / `drawer.css` | Каркас сторінки для `PageRenderer` і виїзне меню |
 | `packages/shared/src/styles/apple.css` / `android.css` | Характер бренду (радіус, мірки, скло) |

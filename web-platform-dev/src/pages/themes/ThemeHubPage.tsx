@@ -18,7 +18,7 @@
 
 import type { ReactElement, ReactNode } from "react";
 import { useNavigate } from "react-router-dom";
-import { Icon } from "@wwwuabot/shared";
+import { SideBarMenu } from "@wwwuabot/ui/nav";
 import { THEME_SECTIONS, themeSectionPath, type ThemeSection } from "./theme-sections";
 import { useThemeLook } from "./useThemeLook";
 
@@ -35,7 +35,7 @@ export function ThemeHubPage(): ReactElement {
         {/* Кольори показуються зразками: три шістнадцяткові коди не читаються,
             а три кола видно з першого погляду. */}
         {look.complete && (
-          <span className="wb-theme-nav-dots" aria-hidden="true">
+          <span className="wb-nav-dots" aria-hidden="true">
             <span className="wb-theme-dot" style={{ background: look.colors.bg }} />
             <span className="wb-theme-dot" style={{ background: look.colors.text }} />
             <span className="wb-theme-dot" style={{ background: look.colors.accent }} />
@@ -52,30 +52,27 @@ export function ThemeHubPage(): ReactElement {
         <h1 className="wb-page-title">Тема</h1>
       </div>
 
-      <nav className="wb-theme-nav" aria-label="Розділи теми">
-        {THEME_SECTIONS.map((section) => {
-          const value = valueOf(section.key);
-          return (
-            <button
-              key={section.key}
-              type="button"
-              className="wb-theme-nav-item"
-              onClick={() => navigate(themeSectionPath(section.key))}
-            >
-              <span className="wb-theme-nav-icon">
-                <Icon name={section.icon} size={22} />
-              </span>
-              <span className="wb-theme-nav-text">
-                <span className="wb-theme-nav-label">{section.label}</span>
-                {value !== null && <span className="wb-theme-nav-hint">{value}</span>}
-              </span>
-              <span className="wb-theme-nav-more">
-                <Icon name="chevron-right" size={18} />
-              </span>
-            </button>
-          );
-        })}
-      </nav>
+      {/* Список розділів — **спільний сайдбар** (`SideBarMenu`), а не своя
+          розмітка: тут він стоїть у сторінці, тож коробки (`aside`) немає, а
+          вигляд пункту той самий, що в меню адмінки й у панелі Простору. */}
+      <SideBarMenu
+        label="Розділи теми"
+        sections={[
+          {
+            key: "theme",
+            items: THEME_SECTIONS.map((section) => ({
+              key: section.key,
+              label: section.label,
+              icon: section.icon,
+              hint: valueOf(section.key),
+              // Шеврон — бо за пунктом стоїть екран зі своєю адресою.
+              more: true,
+              href: themeSectionPath(section.key),
+              onSelect: () => navigate(themeSectionPath(section.key)),
+            })),
+          },
+        ]}
+      />
     </div>
   );
 }

@@ -123,7 +123,25 @@
   color: var(--red);
 }
 
-/* ═══ Меню (бічна навігація) ════════════════════════════════════════════════ */
+/* ═══ Меню (бічна навігація) — ЄДИНИЙ типовий сайдбар ══════════════════════
+   Сайдбар у продукті один, і це він: адмінка, панель розділів Простору
+   (`space-nav.css` додає лише **місце**, де він стоїть) і розділи теми — той
+   самий кирпичик `.wb-nav*`, який рендерить спільний `SideBar`
+   (`@wwwuabot/ui/nav`).
+
+   Доти цих сайдбарів було чотири різних: адмінка тримала пункт 8×10px із
+   підписом 13px, Простір перекривав його `!important` через бренд, розділи
+   теми мали власний `.wb-theme-nav*` (плишка `--field-bg`, рядок 64px, знак
+   акцентом), а `apple.css` / `android.css` переписували геометрію пункту собі
+   — `padding` 12px 14px проти 12px 16px і `min-height` 44 проти 48. Одна деталь
+   з чотирма копіями мірок і виглядала як чотири деталі.
+
+   Тепер мірки одні й оголошені в одному місці (`--sidebar-item-h`,
+   `--sidebar-pad` — `tokens.css`), а місце сайдбара лишається його власному
+   файлові: адмінка — хром застосунку, Простір — усередині сторінки. **Бренд
+   сайдбар не переписує**: `apple.css` / `android.css` дають йому поверхню
+   (скло чи плиту), а «тут ти» лишається акцентом — тим самим, що в футері, тож
+   два сайдбари в одному продукті не можуть читатись як два різні стани. */
 
 .wb-nav {
   width: var(--sidebar-w);
@@ -137,12 +155,14 @@
     min-width 0.22s var(--ease);
 }
 
+/* Шапка сайдбара — **на тому самому березі, що пункти** (16px): лого стоїть
+   на одній лінії зі знаками меню, а не з відступом у порожнечу. */
 .wb-nav-header {
   height: var(--topbar-h);
   display: flex;
   align-items: center;
-  gap: 10px;
-  padding: 0 18px;
+  gap: var(--sp-3);
+  padding: 0 var(--sp-4);
 }
 
 .wb-nav-logo {
@@ -180,9 +200,11 @@
   color: var(--text-primary);
 }
 
-/* Прокручувана частина меню: секції + пункти */
+/* Прокручувана частина меню: секції + пункти. Берег списку — `--sidebar-pad`:
+   разом з однойменним відступом пункту він дає ту саму лінію (8 + 8 = 16px),
+   на якій стоїть вміст сторінки. */
 .wb-nav-menu {
-  padding: 12px 8px;
+  padding: var(--sidebar-pad);
   display: flex;
   flex-direction: column;
   gap: 2px;
@@ -191,9 +213,10 @@
   overflow-y: auto;
 }
 
-/* Обгортка для блока на кшталт перемикача теми — над пунктами меню */
+/* Обгортка для блока на кшталт перемикача теми — над пунктами меню. Берег
+   той самий, що в пунктів: лого, перемикач і знаки стоять на одній лінії. */
 .wb-nav-extra {
-  padding: 8px 8px 0;
+  padding: var(--sp-2) var(--sp-4) 0;
 }
 
 .wb-nav-section {
@@ -212,17 +235,22 @@
   color: var(--text-muted);
 }
 
+/* Пункт — 44px і знак 20px у ньому (обидва — тап-таргет і колонка під знак):
+   по пунктах ходять пальцем, і промах читався б як «сайдбар не працює». Міра
+   одна на всі сайдбари продукту, тож висота пункту не залежить від того, хто
+   його відкрив. */
 .wb-nav-item {
   display: flex;
   align-items: center;
-  gap: 10px;
-  padding: 8px 10px;
+  gap: var(--sp-3);
+  min-height: var(--sidebar-item-h);
+  padding: 0 var(--sidebar-pad);
   border: none;
   background: none;
-  border-radius: var(--radius);
+  border-radius: var(--radius-md);
   color: var(--text-secondary);
   text-decoration: none;
-  font-size: var(--text-sm);
+  font-size: var(--text-base);
   font-weight: var(--weight-medium);
   font-family: inherit;
   text-align: left;
@@ -234,10 +262,13 @@
 }
 
 .wb-nav-item:hover {
-  background: var(--bg-4);
+  background: var(--surface-hover);
   color: var(--text-primary);
 }
 
+/* «Тут ти» — **акцент**, а не характер бренду: те саме слово, що в футері
+   (`--tabbar-item--active`). Два різні знаки «тут ти» на одному екрані
+   читались би як два різні стани, тож бренд тут лише поверхню й дає. */
 .wb-nav-item--active {
   background: var(--accent-dim);
   color: var(--accent);
@@ -258,6 +289,48 @@
   flex-shrink: 0;
 }
 
+/* Текстова колонка пункту: підпис і **другий рядок** — стан пункту (розділи
+   теми кажуть ним, що саме стоїть: «Apple», назва теми, шрифт). Колонка тягнеться
+   на всю ширину, тож знак у кінці рядка лишається при своєму правому краї. */
+.wb-nav-text {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+/* Другий рядок — та сама міра, що підпис під назвою в списках продукту: стан
+   читають тим самим оком, у якому б сайдбарі він не стояв. */
+.wb-nav-hint {
+  font-size: var(--text-sm);
+  font-weight: var(--weight-normal);
+  color: var(--text-muted);
+  /* Один рядок: назва теми на 40 символів не має розтягувати пункт на два
+     поверхи й смикати список. */
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Знак у кінці рядка — **ознака переходу**: за пунктом стоїть екран, а не дія.
+   Приглушений, як шеврон у списках (`space.css`, правило 23): акцент у пункті
+   означає «тут ти», і другий акцентний знак читався б як другий стан. */
+.wb-nav-more {
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
+  color: var(--text-muted);
+}
+
+/* Зразки кольору в другому рядку пункту (розділи теми): носій для трьох кіл,
+   той самий, що в готових палітр (`--theme-dot`). */
+.wb-nav-dots {
+  display: inline-flex;
+  vertical-align: middle;
+  margin-right: var(--sp-2);
+}
+
 .wb-nav-label {
   white-space: nowrap;
   overflow: hidden;
@@ -266,7 +339,7 @@
 
 .wb-nav-footer {
   margin-top: auto;
-  padding: 12px 8px;
+  padding: var(--sp-3) var(--sp-4);
 }
 
 .wb-nav-footer .wb-app-logout {
@@ -289,7 +362,7 @@
 
 .wb-nav--collapsed .wb-nav-item {
   justify-content: center;
-  padding: 9px 0;
+  padding: 0;
 }
 
 .wb-nav--collapsed .wb-nav-footer {

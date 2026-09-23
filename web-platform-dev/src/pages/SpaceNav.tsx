@@ -8,16 +8,17 @@
  *
  * **Розгорнута — для вибору, згорнута — для роботи.** Розгорнута панель показує
  * знак **і підпис** (так обирають), згорнута — тільки знак (так читають вміст).
- * Обраний пункт видно в обох станах, і знак для нього один — **акцент**: у
- * розгорнутій це плишка, у смузі знаків — колір і товщий штрих знака, як у
- * футері (`space-nav.css`).
+ * Обраний пункт видно в обох станах, і знак для нього один — **акцент**, той
+ * самий, що в меню адмінки й у футері.
  *
- * **Розмітка — кирпичики `.wb-nav*`** (`app-chrome.css`), той самий, що бічне
- * меню адмінки: згортання, активний пункт і знак уже описані там, і другий
- * такий набір класів розійшовся б із першим першою ж правкою (AGENTS.md §3).
- * Тут лишається рівно те, чим панель Простору відрізняється: вона стоїть
- * **усередині сторінки** (тому `.wb-space-*` у `styles/space-nav.css`), склад
- * пунктів бере з `SPACE_TABS`, а знаки — з їхнього поля `icon`.
+ * **Розмітку рендерить спільний `SideBar`** (`@wwwuabot/ui/nav`) — єдиний
+ * типовий сайдбар продукту. Доти панель Простору ставила пункту свої мірки з
+ * `!important`, щоб перекрити бренд: та сама деталь виглядала як дві різні.
+ * Тут лишається рівно те, чим панель **відрізняється** — вона стоїть
+ * **усередині сторінки**, а не хромом застосунку (сам`position` і ширину додає
+ * `space-nav.css`), склад пунктів бере з `SPACE_TABS`, а роль смуги —
+ * `tablist`: пункти й панель вмісту зв'язані тими самими `tabId` / `tabPanelId`,
+ * що й у горизонтальної смуги.
  *
  * **Шапки в панелі немає.** Слово «Розділи» повторювало те, що й так видно зі
  * знаків і підписів, а рядок забирало справжнє — тож тумблер згортання поїхав
@@ -28,7 +29,7 @@
  */
 
 import type { ReactElement } from "react";
-import { Icon } from "@wwwuabot/shared";
+import { SideBar, SideBarMenu } from "@wwwuabot/ui/nav";
 import { tabId, tabPanelId } from "@wwwuabot/ui/tabs";
 import { SPACE_TABS, type SpaceTab } from "./space-tabs";
 
@@ -43,40 +44,35 @@ interface SpaceNavProps {
 
 export function SpaceNav({ expanded, value, onSelect }: SpaceNavProps): ReactElement {
   return (
-    <aside className={`wb-nav wb-space-nav${expanded ? "" : " wb-nav--collapsed"}`}>
-      {/* `role="tablist"` і пара `tabId` / `tabPanelId` — ті самі, що в горизонтальної
-          смуги (`@wwwuabot/ui/tabs`): вміст розділу на сторінці позначений ними ж,
-          тож зв'язок «пункт ↔ панель» лишається один, а не два. */}
-      <nav
-        className="wb-nav-menu"
+    <SideBar
+      // Місце панелі — усередині сторінки; це і є єдина її відмінність.
+      className="wb-space-nav"
+      collapsed={!expanded}
+    >
+      <SideBarMenu
+        collapsed={!expanded}
+        label="Розділи простору"
         role="tablist"
-        aria-orientation="vertical"
-        aria-label="Розділи простору"
-      >
-        {SPACE_TABS.map((tab) => {
-          const active = tab.key === value;
-          return (
-            <button
-              key={tab.key}
-              type="button"
-              role="tab"
-              id={tabId(tab.key)}
-              aria-selected={active}
-              aria-controls={tabPanelId(tab.key)}
-              // Згорнута панель підпису не показує, тож ім'я пункту мусить
-              // лишитись хоч десь: підказка на дотик і читач з екрана.
-              title={expanded ? undefined : tab.label}
-              className={`wb-nav-item${active ? " wb-nav-item--active" : ""}`}
-              onClick={() => onSelect(tab.key)}
-            >
-              <span className="wb-nav-icon">
-                <Icon name={tab.icon} size={20} />
-              </span>
-              {expanded && <span className="wb-nav-label">{tab.label}</span>}
-            </button>
-          );
-        })}
-      </nav>
-    </aside>
+        orientation="vertical"
+        sections={[
+          {
+            key: "space",
+            items: SPACE_TABS.map((tab) => {
+              const active = tab.key === value;
+              return {
+                key: tab.key,
+                label: tab.label,
+                icon: tab.icon,
+                active,
+                role: "tab" as const,
+                id: tabId(tab.key),
+                panelId: tabPanelId(tab.key),
+                onSelect: () => onSelect(tab.key),
+              };
+            }),
+          },
+        ]}
+      />
+    </SideBar>
   );
 }

@@ -10,14 +10,18 @@
  * пункту стоїть його іконка, — цього досить: підпис «Вибрано» поруч із
  * галочкою та ще й із назвою характеру був третім словом про те саме.
  *
- * Рядок тут той самий, що в хабі (`wb-theme-nav-item`): вибір читається очима,
- * тож виглядає як вибір, а не як форма з перемикачами.
+ * Рядок тут — **пункт спільного сайдбара** (`SideBarMenu`), той самий, що в
+ * хабі теми, у меню адмінки й у панелі Простору: вибір читається очима, тож
+ * виглядає як вибір, а не як форма з перемикачами. Роль смуги — `radiogroup`,
+ * а стан пункту каже `aria-checked`: це вибір, а не перехід, і розмітка це
+ * мусить називати так само, як названо зором.
  *
  * @module web-platform-dev/src/pages/themes/ThemeStylePage
  */
 
 import type { ReactElement } from "react";
-import { Icon, useStyleTheme } from "@wwwuabot/shared";
+import { useStyleTheme } from "@wwwuabot/shared";
+import { SideBarMenu } from "@wwwuabot/ui/nav";
 
 export function ThemeStylePage(): ReactElement {
   const { brand, setBrand, brands } = useStyleTheme();
@@ -28,28 +32,28 @@ export function ThemeStylePage(): ReactElement {
         <h1 className="wb-page-title">Стиль</h1>
       </div>
 
-      <div className="wb-theme-nav" role="radiogroup" aria-label="Стиль">
-        {brands.map((definition) => {
-          const active = definition.id === brand;
-          return (
-            <button
-              key={definition.id}
-              type="button"
-              role="radio"
-              aria-checked={active}
-              className="wb-theme-nav-item"
-              onClick={() => setBrand(definition.id)}
-            >
-              <span className="wb-theme-nav-icon">
-                <Icon name={active ? "check" : "sliders"} size={22} />
-              </span>
-              <span className="wb-theme-nav-text">
-                <span className="wb-theme-nav-label">{definition.labelUk}</span>
-              </span>
-            </button>
-          );
-        })}
-      </div>
+      {/* Вибір — тим самим пунктом, що й розділи: одна мірка рядка на весь
+          продукт, тож «Стиль» читається як вибір із сайдбара, а не як форма. */}
+      <SideBarMenu
+        label="Стиль"
+        role="radiogroup"
+        sections={[
+          {
+            key: "style",
+            items: brands.map((definition) => {
+              const active = definition.id === brand;
+              return {
+                key: definition.id,
+                label: definition.labelUk,
+                icon: active ? ("check" as const) : ("sliders" as const),
+                role: "radio" as const,
+                active,
+                onSelect: () => setBrand(definition.id),
+              };
+            }),
+          },
+        ]}
+      />
     </div>
   );
 }
