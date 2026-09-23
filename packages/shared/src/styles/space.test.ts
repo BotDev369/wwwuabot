@@ -103,41 +103,63 @@ function rule(text: string, selector: string): Rule | undefined {
     .at(-1);
 }
 
-/** Плитки немає: правило мусить і прибрати заливку, і зняти тінь. */
-describe("список Простору — рядок без плитки", () => {
-  it("заливка й тінь зняті з усіх чотирьох списків, і жодного не забуто", () => {
-    const row = rule(
-      SPACE,
-      ".wb-space-page .wb-ad, .wb-space-page .wb-collection--rows .wb-ad, .wb-space-page .wb-person, .wb-space-page .wb-menu-item",
-    );
+/**
+ * Селектори рядка — **одна сітка на всі списки Простору**. Винесені в сталі
+ * навмисно: якщо правило розділиться на два, тест мусить упасти на ньому, а не
+ * тихо перевіряти половину.
+ */
+const ROW = ".wb-space-page .wb-menu-item, .wb-space-page .wb-person, .wb-space-page .wb-ad-open";
+const GAP =
+  ".wb-space-page .wb-people, .wb-space-page .wb-menu-list, .wb-space-page .wb-collection, .wb-space-page .wb-theme-schemes";
+const ACTIVE =
+  ".wb-space-page .wb-menu-item:active, .wb-space-page .wb-person--tappable:active, .wb-space-page .wb-ad-open:active";
+const TITLE =
+  ".wb-space-page .wb-menu-item-label, .wb-space-page .wb-person-name, .wb-space-page .wb-ad-title, .wb-space-page .wb-theme-scheme-name";
+const HINT =
+  ".wb-space-page .wb-menu-item-hint, .wb-space-page .wb-person-about, .wb-space-page .wb-person-facts, .wb-space-page .wb-ad-meta, .wb-space-page .wb-ad-body, .wb-space-page .wb-theme-scheme-meta";
+
+/** Плитки немає, а рядок — один: та сама сітка, та сама мірка, той самий дотик. */
+describe("список Простору — один рядок на всі розділи", () => {
+  it("рядок — та сама сітка всюди: [знак][текст][шеврон]", () => {
+    // Знак гри, аватар людини й знак оголошення стають в одну колонку, а текст
+    // усіх списків — на одну лінію. Без цього кожен кирпичик тримав свою сітку,
+    // і перехід між розділами рухав усе на екрані.
+    const row = rule(SPACE, ROW);
     expect(row, "правило рядка мусить існувати").toBeDefined();
+    expect(row?.body).toContain("display: grid");
+    expect(row?.body).toContain("grid-template-columns: var(--space-lead) minmax(0, 1fr) auto");
+    expect(row?.body).toContain("min-height: var(--space-row)");
+  });
+
+  it("заливка й тінь зняті з усіх списків, і жодного не забуто", () => {
+    const row = rule(SPACE, ROW);
     expect(row?.body).toContain("background: none");
     expect(row?.body).toContain("box-shadow: none");
     // Відступ існував, щоб текст не впирався в край плитки: без плитки він стає
     // зсувом — знак мусить стояти на лінії заголовка розділу.
     expect(row?.body).toContain("padding: 0");
+    // Межі між рядками немає: правило 15 — розділювач це не лінія.
+    expect(row?.body).toContain("border: none");
   });
 
-  it("рядки розділяє повітря, а не лінія", () => {
-    const gap = rule(
-      SPACE,
-      ".wb-space-page .wb-people, .wb-space-page .wb-menu-list, .wb-space-page .wb-collection",
-    );
+  it("рядки розділяє повітря — одне на всі списки", () => {
+    const gap = rule(SPACE, GAP);
     expect(gap, "правило повітря між рядками мусить існувати").toBeDefined();
     expect(gap?.body).toContain("gap: var(--sp-4)");
-    // Межі між рядками немає: правило 15 — розділювач це не лінія. Перевіряємо
-    // саме рядок (у тумблера `border: none` — це скасування рамки кнопки).
-    const row = rule(
-      SPACE,
-      ".wb-space-page .wb-ad, .wb-space-page .wb-collection--rows .wb-ad, .wb-space-page .wb-person, .wb-space-page .wb-menu-item",
-    );
-    expect(row?.body).not.toContain("border");
   });
 
   it("дотик у списку видно — на телефоні hover немає", () => {
-    expect(rule(SPACE, ".wb-space-page .wb-menu-item:active")?.body).toContain(
-      "background: var(--surface-active)",
-    );
+    expect(rule(SPACE, ACTIVE)?.body).toContain("background: var(--surface-active)");
+  });
+
+  it("мірки тексту — одна на всі розділи", () => {
+    // Назва 16px/medium і підпис 14px приглушений — у пункту меню, людини,
+    // оголошення й теми. Доти у кожного був свій розмір (16 / 18 / 20), і той
+    // самий рядок читався по-різному залежно від розділу.
+    expect(rule(SPACE, TITLE)?.body).toContain("font-size: var(--text-base)");
+    expect(rule(SPACE, TITLE)?.body).toContain("font-weight: var(--weight-medium)");
+    expect(rule(SPACE, HINT)?.body).toContain("font-size: var(--text-sm)");
+    expect(rule(SPACE, HINT)?.body).toContain("color: var(--text-muted)");
   });
 });
 
@@ -265,9 +287,10 @@ describe("шапка сторінки — та сама сітка, що вмі�
     const toggle = rule(SPACE, ".wb-space-toggle");
     expect(toggle, "правило тумблера мусить існувати").toBeDefined();
     expect(toggle?.body).toContain("font-size: var(--text-xl)");
-    // Ширину дає колонка смуги, висоту — тап-таргет.
+    // Ширину дає колонка смуги, висоту — **та сама міра, що в пункту панелі**: з
+    // різними висотами знаки двох колонок стояли на різній лінії.
     expect(toggle?.body).toContain("width: 100%");
-    expect(toggle?.body).toContain("height: 44px");
+    expect(toggle?.body).toContain("height: var(--space-rail)");
     // А сам знак — на лівому краї колонки, тобто на березі сторінки: у центрі
     // він шукав би собі пару, якої там немає ні з берегом, ні з лінією вмісту.
     expect(toggle?.body).toContain("place-items: center start");
@@ -276,29 +299,22 @@ describe("шапка сторінки — та сама сітка, що вмі�
   it("підписи всіх списків починаються на одній лінії", () => {
     // Знак гри й аватар людини — та сама колонка (`--space-lead`: 48px, бо
     // стільки займає аватар), тож текст обох списків стоїть на одному відступі,
-    // а не на 24 і 48.
+    // а не на 24 і 48. Саму ширину колонки задає сітка рядка — не кирпичик.
     expect(rule(SPACE, ".wb-space-page")?.body).toContain("--space-lead: 48px");
-    const lead = rule(SPACE, ".wb-space-page .wb-menu-item-icon");
-    expect(lead, "правило провідної клітинки мусить існувати").toBeDefined();
-    expect(lead?.body).toContain("width: var(--space-lead)");
-    expect(lead?.body).toContain("justify-content: flex-start");
+    expect(rule(SPACE, ROW)?.body).toContain("var(--space-lead) minmax(0, 1fr) auto");
+    const glyph = rule(SPACE, ".wb-space-page .wb-menu-item-icon, .wb-space-page .wb-ad-icon");
+    expect(glyph, "правило провідної клітинки мусить існувати").toBeDefined();
+    expect(glyph?.body).toContain("justify-content: flex-start");
   });
 });
 
-describe("три лінії екрана — берег, вміст, текст", () => {
-  it("текст оголошень стає на лінію тексту, як підписи решти списків", () => {
-    // У рядку дошки знак = чип виду (він стоїть на лінії вмісту), а написане —
-    // на лінії тексту. Без цього текст дошки читався на 60px лівіше за підписи
-    // ігор, і перехід між розділами зсував усе написане на екрані.
-    expect(rule(SPACE, ".wb-space-page")?.body).toContain(
-      "--space-text: calc(var(--space-lead) + var(--sp-3))",
-    );
-    const indent = rule(
-      SPACE,
-      ".wb-space-page .wb-collection--rows .wb-ad-title, .wb-space-page .wb-collection--rows .wb-ad-body",
-    );
-    expect(indent, "правило відступу тексту дошки мусить існувати").toBeDefined();
-    expect(indent?.body).toContain("padding-left: var(--space-text)");
+describe("лінії екрана — берег, вміст, текст", () => {
+  it("текст оголошень стоїть у тій самій текстовій колонці — без власного відступу", () => {
+    // Раніше текст дошки зсували окремим `padding-left`, щоб він став на «лінію
+    // тексту» — і назва оголошення стояла **правіше** за назву гри, а чип виду
+    // лишався на лінії вмісту. Тепер усі тексти стоять у третій колонці рядка.
+    expect(rule(SPACE, ".wb-space-page")?.body).not.toContain("--space-text");
+    expect(SPACE).not.toContain("padding-left: var(--space-text)");
   });
 
   it("знаки панелі стають на беріг сторінки — в обох станах і на телефоні", () => {
@@ -386,6 +402,48 @@ describe("другий рядок — смуга керування розділ
     const page = source("web-platform-dev/src/pages/SpacePage.tsx");
     expect(page).toContain('nav.named ? nav.current.label : "Простір"');
     expect(source("web-platform-dev/src/pages/useSpaceNav.ts")).toContain("named");
+  });
+});
+
+describe("оголошення — рядок, який відкривається", () => {
+  const CARD = "web-platform-dev/src/pages/AdCard.tsx";
+
+  it("назва стоїть **перед** видом: вид — підпис під нею, а не шапка над нею", () => {
+    // Доти в рядку першим був чип виду («Подарую»), і назва читалась другою —
+    // тоді як у гри, сторінки чи людини перша саме назва.
+    const card = source(CARD);
+    expect(card.indexOf("wb-ad-title")).toBeLessThan(card.indexOf("wb-ad-meta"));
+    // Провідна клітинка несе **знак виду** — на місці знака гри й аватара.
+    expect(card).toContain("wb-ad-icon");
+    expect(source("web-platform-dev/src/pages/ads-view.ts")).toContain("adKindIcon");
+  });
+
+  it("шеврон є в кожного — за рядком справді стоїть поверхня", () => {
+    expect(source(CARD)).toContain("wb-ad-more");
+    expect(source(CARD)).toContain("MenuModal");
+  });
+
+  it("дії живуть у поверхні, а не в рядку", () => {
+    // Три підписи під кожним оголошенням займали власний рядок у стрічці, яку
+    // читають, а в рядку їх місця немає зовсім: там сітка з трьох клітинок.
+    const card = source(CARD);
+    expect(card).not.toContain("wb-ad-menu");
+    expect(card).not.toContain("wb-ad-head");
+    expect(card).toContain("wb-ad-view-actions");
+    // Поверхня закрита: у розмітці рядка жодного підпису дії немає.
+    expect(card.indexOf("wb-ad-view-actions")).toBeGreaterThan(card.indexOf("MenuModal"));
+  });
+
+  it("«плитки» міняють розкладку, а не саму лише ширину", () => {
+    // Інакше вибір вигляду — декоративний: людина тицяє й не бачить різниці.
+    const cards = rule(SPACE, ".wb-space-page .wb-collection--cards .wb-ad-open");
+    expect(cards?.body).toContain("grid-template-areas");
+    expect(rule(SPACE, ".wb-space-page .wb-collection--cards .wb-ad-body")?.body).toContain(
+      "-webkit-line-clamp: 3",
+    );
+    expect(rule(SPACE, ".wb-space-page .wb-collection--rows .wb-ad-body")?.body).toContain(
+      "-webkit-line-clamp: 1",
+    );
   });
 });
 

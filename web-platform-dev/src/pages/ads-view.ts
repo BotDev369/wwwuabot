@@ -14,7 +14,15 @@
  * @module web-platform-dev/src/pages/ads-view
  */
 
-import { AD_KIND_LABELS, AD_KINDS, adKindLabel, type Ad, type AdKind } from "@wwwuabot/shared/ads";
+import type { IconName } from "@wwwuabot/shared";
+import {
+  AD_KIND_LABELS,
+  AD_KINDS,
+  adKindLabel,
+  isAdKind,
+  type Ad,
+  type AdKind,
+} from "@wwwuabot/shared/ads";
 import {
   DEFAULT_COLLECTION_VIEW,
   collectionViewShort,
@@ -53,6 +61,32 @@ export const DEFAULT_ADS_VIEW: AdsView = {
  * `short` іде на чип (там довгий підпис не влазить), `label` — у список вибору
  * й у назву вибору для читача з екрана.
  */
+/**
+ * Знак виду — те, що стоїть **провідною клітинкою** в рядку дошки.
+ *
+ * Це не другий підпис: підпис виду й так є текстом у рядку (`adKindLabel`),
+ * тож знак лишається єдиною ознакою, яку видно, не читаючи. Набір — на кожен
+ * вид `AD_KINDS`, бо невідомий вид лишав би провідну клітинку порожньою;
+ * пара напрямків оренди різниться контуром і залитим знаком, як у футера
+ * (`icon` / `iconActive`).
+ */
+const AD_KIND_ICONS: Record<AdKind, IconName> = {
+  buy: "shop",
+  sell: "tag",
+  rentOut: "home",
+  rentIn: "home-solid",
+  want: "search",
+  swap: "compare",
+  gift: "heart",
+  offer: "wrench",
+  need: "clipboard",
+};
+
+/** Знак виду; невідоме значення показується загальним знаком, а не зникає. */
+export function adKindIcon(kind: unknown): IconName {
+  return isAdKind(kind) ? AD_KIND_ICONS[kind] : "tag";
+}
+
 export const ADS_WHOSE_OPTIONS: readonly { value: AdsWhose; label: string; short: string }[] = [
   { value: "all", label: "Усі оголошення на дошці", short: "Усі" },
   { value: "mine", label: "Лише мої", short: "Мої" },
