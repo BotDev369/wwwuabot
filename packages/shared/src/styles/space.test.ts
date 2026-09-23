@@ -321,6 +321,74 @@ describe("три лінії екрана — берег, вміст, текст"
   });
 });
 
+describe("другий рядок — смуга керування розділу", () => {
+  it("кожен розділ має смугу — її бракує мовчки", () => {
+    // Розділ без смуги не ламає нічого видимо: він лише починає список на
+    // рядок вище за решту — і перший знак панели лишається сам відносно нього.
+    for (const path of [
+      "web-platform-dev/src/pages/SpaceUsersTab.tsx",
+      "web-platform-dev/src/pages/SpaceThemesTab.tsx",
+      "web-platform-dev/src/pages/games/SpaceGamesTab.tsx",
+      "web-platform-dev/src/pages/user-pages/SpacePagesTab.tsx",
+    ]) {
+      expect(source(path), path).toContain("SpaceListToolbar");
+    }
+    // Дошка має власну смугу (вид і «чиї»), але це та сама спільна смуга.
+    expect(source("web-platform-dev/src/pages/SpaceAdsToolbar.tsx")).toContain("CollectionToolbar");
+  });
+
+  it("смуга стоїть **перед** списком — це і є другий рядок екрана", () => {
+    const tab = source("web-platform-dev/src/pages/games/SpaceGamesTab.tsx");
+    expect(tab.indexOf("<SpaceListToolbar")).toBeLessThan(tab.indexOf("<MenuList"));
+    // І списки всіх розділів беруть один клас розкладки: інакше крок між
+    // рядками в них розійшовся б (див. `space.css`).
+    for (const path of [
+      "web-platform-dev/src/pages/SpaceUsersTab.tsx",
+      "web-platform-dev/src/pages/user-pages/SpacePagesTab.tsx",
+    ]) {
+      expect(source(path), path).toContain("SPACE_LIST_CLASS");
+    }
+  });
+
+  it("вибір вигляду є лише там, де вигляду справді два", () => {
+    // Клітинка, яка нічого не міняє, — це обіцянка без дії (правило 7). Двоє
+    // виглядів має тільки дошка оголошень, решта розділів беруть самий пошук.
+    expect(source("web-platform-dev/src/pages/SpaceListToolbar.tsx")).toContain(
+      "showViewSwitch={false}",
+    );
+    expect(source("web-platform-dev/src/pages/SpaceAdsToolbar.tsx")).not.toContain(
+      "showViewSwitch",
+    );
+  });
+
+  it("смуга, список і примітка стоять одним стовпчиком з одним кроком", () => {
+    const panel = rule(SPACE, ".wb-space-page .wb-space-panel");
+    expect(panel, "правило панели розділу мусить існувати").toBeDefined();
+    expect(panel?.body).toContain("flex-direction: column");
+    expect(panel?.body).toContain("gap: var(--sp-4)");
+    expect(source("web-platform-dev/src/pages/SpacePage.tsx")).toContain(
+      'className="wb-space-panel"',
+    );
+    // Список тем має свій верхній відступ зі сторінки тем — у розділі він
+    // зсунув би картки нижче за решту списків.
+    expect(rule(SPACE, ".wb-space-page .wb-theme-schemes")?.body).toContain("margin-top: 0");
+  });
+
+  it("перший знак панели стає на лінію першої клітинки смуги", () => {
+    // Смуга починається там само, де вміст, тож верхній відступ списку панели
+    // з'їжджав би знаки на цей відступ — і око бачило б другу лінію.
+    expect(rule(NAV, ".wb-space-nav.wb-nav--collapsed .wb-nav-menu")?.body).toContain("padding: 0");
+  });
+
+  it("назва екрана — підпис відкритого розділу, а не «Простір» на всіх", () => {
+    // Друга копія підпису тут була б третім місцем, яке треба правити при
+    // перейменуванні розділу: ім'я беруть зі `space-tabs`.
+    const page = source("web-platform-dev/src/pages/SpacePage.tsx");
+    expect(page).toContain('nav.named ? nav.current.label : "Простір"');
+    expect(source("web-platform-dev/src/pages/useSpaceNav.ts")).toContain("named");
+  });
+});
+
 describe("список зібраний зі спільних кирпичиків", () => {
   it("правила списку приходять після тих, що малюють кирпичики", () => {
     // Список зводить до одного вигляду класи, які прийшли раніше

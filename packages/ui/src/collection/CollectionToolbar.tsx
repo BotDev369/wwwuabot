@@ -90,6 +90,14 @@ interface CollectionToolbarProps {
   view: CollectionView;
   onViewChange: (view: CollectionView) => void;
   /**
+   * Чи показувати клітинку вигляду. Типове — показувати.
+   *
+   * Список, у якого одна розкладка (розділи Простору, які лише читають),
+   * мусить мати чим його звузити — але вибір вигляду, який нічого не міняє, це
+   * обіцянка без дії (§7). Тому екран каже, чи в нього справді є два вигляди.
+   */
+  showViewSwitch?: boolean;
+  /**
    * Перемикач «розгорнути / згорнути все» разом зі словом, що саме
    * розгортають («нотатки», «контакти»). Без нього клітинки немає.
    */
@@ -115,6 +123,7 @@ export function CollectionToolbar({
   pickers,
   view,
   onViewChange,
+  showViewSwitch = true,
   toggleAll,
   add,
   chips,
@@ -195,7 +204,7 @@ export function CollectionToolbar({
 
           {/* Вигляд — теж вибір, тож стоїть із виборами, а не з перемикачем:
               він відкриває ту саму поверхню, а не діє одразу. */}
-          <CollectionViewSwitch view={view} onChange={onViewChange} />
+          {showViewSwitch && <CollectionViewSwitch view={view} onChange={onViewChange} />}
 
           {toggleAll && (
             <button

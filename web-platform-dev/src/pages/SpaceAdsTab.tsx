@@ -25,6 +25,7 @@ import { collectionViewClass } from "@wwwuabot/ui/collection";
 import { useDialog } from "@wwwuabot/ui/dialog";
 import { AdCard } from "./AdCard";
 import { SpaceAdsToolbar } from "./SpaceAdsToolbar";
+import { SpaceListEmpty } from "./SpaceListEmpty";
 import { DEFAULT_ADS_VIEW, filterAds, type AdsView } from "./ads-view";
 import type { SpaceAd } from "./ads-list";
 
@@ -138,22 +139,14 @@ export function SpaceAdsTab({
       )}
 
       {/* Фільтр звузив усе — і це видно словами: «порожньо» без причини читалось
-          би як поламана дошка. */}
+          би як поламана дошка. Стан — **спільний** із рештою розділів Простору
+          (`SpaceListEmpty`): звужений список виглядає однаково всюди, а не
+          по-своєму на кожному екрані. */}
       {hasItems && visible.length === 0 && (
-        <div className="wb-empty">
-          <span className="wb-empty-icon">
-            <Icon name="search" size={32} />
-          </span>
-          <p className="wb-empty-text">Нічого не знайдено за цим запитом.</p>
-          <button
-            type="button"
-            className="wb-btn wb-btn-secondary"
-            onClick={() => setView(DEFAULT_ADS_VIEW)}
-          >
-            <Icon name="close" size={16} />
-            Скинути пошук і фільтри
-          </button>
-        </div>
+        <SpaceListEmpty
+          onReset={() => setView(DEFAULT_ADS_VIEW)}
+          resetLabel="Скинути пошук і фільтри"
+        />
       )}
     </>
   );

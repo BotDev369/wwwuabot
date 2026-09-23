@@ -33,6 +33,16 @@ export interface SpaceNavState {
   current: SpaceTabOption;
   /** Панель розгорнута: знак **і** підпис у кожного пункту. */
   expanded: boolean;
+  /**
+   * Розділ **названо адресою**, тобто його обрано ще до входу.
+   *
+   * Це те саме, що «панель прийшла згорнутою» (`readSpaceNavExpanded`), але тут
+   * воно потрібне назві екрана: названий розділ показують своїм ім'ям («Ігри»,
+   * «Сторінки»), а неназваний — ім'ям самого Простору, бо людина ще обирає.
+   * Стан береться **один раз із адреси**: розгортання панели дотиком не робить
+   * названий розділ неназваним.
+   */
+  named: boolean;
   /** Обрати розділ — і згорнути панель. */
   select: (key: SpaceTab) => void;
   /** Розгорнути або згорнути панель — без зміни розділу. */
@@ -45,6 +55,7 @@ export function useSpaceNav(): SpaceNavState {
   const [expanded, setExpanded] = useState<boolean>(() =>
     readSpaceNavExpanded(searchParams.get(SPACE_TAB_PARAM)),
   );
+  const [named] = useState<boolean>(() => !readSpaceNavExpanded(searchParams.get(SPACE_TAB_PARAM)));
 
   const select = useCallback((key: SpaceTab) => {
     setTab(key);
@@ -53,5 +64,5 @@ export function useSpaceNav(): SpaceNavState {
 
   const toggle = useCallback(() => setExpanded((open) => !open), []);
 
-  return { tab, current: spaceTab(tab), expanded, select, toggle };
+  return { tab, current: spaceTab(tab), expanded, named, select, toggle };
 }
