@@ -323,7 +323,7 @@ describe("лінії екрана — берег, вміст, текст", () =>
     const item = rule(NAV, "html[data-brand] .wb-space-nav .wb-nav-item");
     expect(item, "правило знака панелі мусить існувати").toBeDefined();
     expect(item?.body).toContain("justify-content: flex-start !important");
-    expect(item?.body).toContain("padding-left: 0 !important");
+    expect(item?.body).toContain("padding: 0 !important");
     // Список панелі без власних бічних відступів — інакше знак з'їхав би на
     // 8px кирпичика всередину.
     expect(rule(NAV, ".wb-space-nav .wb-nav-menu")?.body).toContain("padding-left: 0");
@@ -334,6 +334,24 @@ describe("лінії екрана — берег, вміст, текст", () =>
         /\.wb-space-nav:not\(\.wb-nav--collapsed\)\s*\{[^}]*padding-left: var\(--sp-4\)/.test(body),
       ),
     ).toBe(true);
+  });
+
+  it("крок пункту панелі дорівнює кроку клітинки смуги — інакше знаки розходяться", () => {
+    // Бренд дає пункту `min-height: 48px !important`: його знак стає на 24px від
+    // верху пункту, а клітинка смуги керування має 22px від свого — і око читає
+    // це як «перший знак панелі й пошук не на одній лінії», хоч обидва стоять на
+    // своїх краях. Крок один: та сама цифра, що в клітинки смуги.
+    const item = rule(NAV, "html[data-brand] .wb-space-nav .wb-nav-item");
+    expect(item, "брендові міри пункту мусить перекривати правило панелі").toBeDefined();
+    expect(item?.body).toContain("min-height: var(--space-rail, 44px) !important");
+    expect(item?.body).toContain("padding: 0 !important");
+    // Другої міри того самого немає — інакше наступна правка розвела б їх.
+    expect(NAV).not.toContain("min-height: 44px !important");
+    expect(NAV).not.toContain("min-height: 48px");
+    // Інша половина пари: клітинка смуги бере ту саму цифру.
+    expect(rule(SPACE, ".wb-space-page .wb-tools-bar")?.body).toContain(
+      "--tools-row-h: var(--space-rail)",
+    );
   });
 });
 
@@ -432,6 +450,25 @@ describe("оголошення — рядок, який відкриваєтьс
     expect(card).toContain("wb-ad-view-actions");
     // Поверхня закрита: у розмітці рядка жодного підпису дії немає.
     expect(card.indexOf("wb-ad-view-actions")).toBeGreaterThan(card.indexOf("MenuModal"));
+  });
+
+  it("клітинки рядка **названі** — інакше три `grid-area` збираються в одну", () => {
+    // Так і було: у дітей стояли `grid-area: icon` / `text` / `more`, а схеми
+    // клітинок у самої кнопки не було. За специфікацією ім'я, якого немає серед
+    // ліній сітки, шукається серед **уявних** — і всі три клітинки знаходили ту
+    // саму першу: знак лягав на підпис, шеврон — туди ж. На екрані це читалось
+    // як «текст оголошення зміщено», а насправді сітки не було зовсім.
+    const row = rule(SPACE, ".wb-space-page .wb-ad-open");
+    expect(row, "схема клітинок мусить бути в рядка").toBeDefined();
+    expect(row?.body).toContain('grid-template-areas: "icon text more"');
+    expect(rule(SPACE, ".wb-space-page .wb-ad-icon")?.body).toContain("grid-area: icon");
+    expect(rule(SPACE, ".wb-space-page .wb-ad-text")?.body).toContain("grid-area: text");
+    expect(rule(SPACE, ".wb-space-page .wb-ad-more")?.body).toContain("grid-area: more");
+    // Плитка — та сама розмітка, інша схема: інакше її клітинки поїхали б так
+    // само, лише на два рядом.
+    const cards = rule(SPACE, ".wb-space-page .wb-collection--cards .wb-ad-open");
+    expect(cards?.body).toContain('"icon more"');
+    expect(cards?.body).toContain('"text text"');
   });
 
   it("«плитки» міняють розкладку, а не саму лише ширину", () => {
