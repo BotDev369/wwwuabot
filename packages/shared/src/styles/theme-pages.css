@@ -102,25 +102,26 @@
   gap: var(--sp-3);
 }
 
+/* Картка — **прев'ю теми, а не картка про тему**: тло, текст і акцент узято в
+   самої схеми (змінні `--scheme-*` ставить `SchemeCard`), тож жодного кольору в
+   розмітці немає й жодної смуги зі зразками не потрібно — картка вже показує,
+   як тема виглядає.
+
+   Мірка — компактна: дві лінії замість чотирьох (було: смуга 44px + назва +
+   шрифт + кнопки). Тема в списку — рядок, а не екран.
+
+   Межа — з кольору теми: прев'ю мусить мати край навіть тоді, коли його фон
+   збігається з площиною екрана, але це не наша лінія, а власний колір теми
+   (правило 15: рамка лишається там, де вона зміст). */
 .wb-theme-scheme {
   display: flex;
   flex-direction: column;
-  gap: var(--sp-3);
-  padding: var(--sp-3);
+  gap: var(--sp-2);
+  padding: var(--sp-2) var(--sp-3);
   border-radius: var(--radius-lg);
-  background: var(--field-bg);
-}
-
-/* Три кольори схеми — широкою смугою: це її обличчя, і його читають першим */
-.wb-theme-scheme-preview {
-  display: flex;
-  height: 44px;
-  border-radius: var(--radius-md);
-  overflow: hidden;
-}
-
-.wb-theme-scheme-preview span {
-  flex: 1 1 0;
+  background: var(--scheme-bg);
+  color: var(--scheme-text);
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--scheme-text) 14%, transparent);
 }
 
 .wb-theme-scheme-head {
@@ -144,15 +145,56 @@
   flex-shrink: 0;
 }
 
+/* Друга лінія: підпис і дія в одному ряду. Обидва говорять мовою теми —
+   приглушений підпис змішує її текст із її ж фоном, а не бере наш
+   `--text-muted` (на темній темі чужий сірий різав би око). */
+.wb-theme-scheme-foot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: var(--sp-2);
+}
+
 .wb-theme-scheme-meta {
+  margin: 0;
   font-size: var(--text-sm);
-  color: var(--text-muted);
+  color: color-mix(in srgb, var(--scheme-text) 62%, var(--scheme-bg));
 }
 
 .wb-theme-scheme-actions {
   display: flex;
   flex-wrap: wrap;
   gap: var(--sp-2);
+}
+
+/* Кнопки й чипи прев'ю — **кольорами теми**: залитий акцент — підписом, який
+   обрав би сам користувач цієї теми (`--scheme-on-accent`, `onAccentColor`), а
+   не нашим інверсним. `!important` — бо бренд задає кольори кнопки з ним. */
+html[data-brand] .wb-theme-scheme .wb-btn-primary {
+  background: var(--scheme-accent) !important;
+  border-color: var(--scheme-accent) !important;
+  color: var(--scheme-on-accent) !important;
+}
+
+html[data-brand] .wb-theme-scheme .wb-btn-primary:hover {
+  background: color-mix(in srgb, var(--scheme-accent) 86%, var(--scheme-text)) !important;
+  border-color: transparent !important;
+}
+
+html[data-brand] .wb-theme-scheme .wb-btn-secondary {
+  background: color-mix(in srgb, var(--scheme-text) 12%, transparent) !important;
+  color: var(--scheme-text) !important;
+}
+
+.wb-theme-scheme .wb-badge {
+  background: color-mix(in srgb, var(--scheme-text) 12%, transparent);
+  color: var(--scheme-text);
+}
+
+.wb-theme-scheme .wb-badge-accent {
+  background: var(--scheme-accent);
+  color: var(--scheme-on-accent);
 }
 
 /* ── Форма схеми (назва, шрифт, публічність) ─────────────────────────────── */

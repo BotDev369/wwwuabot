@@ -46,6 +46,14 @@ function MenuRow({ item }: { item: MenuItem }): ReactElement {
           <Icon name="check" size={18} />
         </span>
       )}
+      {/* Шеврон — ознака переходу (`trailing`): так рядок каже, що за ним є
+          екран, а не дія. Галочка і шеврон разом не трапляються: вибір — це
+          стан, а не місце, куди ведуть. */}
+      {item.trailing && (
+        <span className="wb-menu-item-more">
+          <Icon name="chevron-right" size={18} />
+        </span>
+      )}
     </button>
   );
 }

@@ -13,6 +13,11 @@
  * немає: обидва липкі шари рухалися б один крізь одного, а місце під футер
  * лишає сам каркас сторінки.
  *
+ * **Тумблер панелі стоїть у рядку назви.** Своєї шапки панель не має: вона
+ * забирала рядок і словом повторювала те, що видно зі знаків. Тумблер поруч із
+ * «Простір» видно в обох станах, і саме там він читається як «згорнути /
+ * розгорнути розділи», а не як ще один пункт меню (`SpaceNav`).
+ *
  * **Композер один на два входи** (`AdCreateSheet`): тут його відкриває «+»
  * ряду керування, а в хабі «Створити» — «+» у пункті «Оголошення», де він
  * з'являється **поверхнею на самому хабі** й нікуди не веде. Відкриття форми
@@ -72,23 +77,36 @@ export function SpacePage(): ReactElement {
     form.closeForm();
   }
 
+  const toggleLabel = nav.expanded ? "Згорнути панель розділів" : "Розгорнути панель розділів";
+
   return (
     <div className="wb-page wb-space-page">
       <div className="wb-space-layout">
-        <SpaceNav
-          expanded={nav.expanded}
-          value={nav.tab}
-          onSelect={nav.select}
-          onToggle={nav.toggle}
-        />
+        <SpaceNav expanded={nav.expanded} value={nav.tab} onSelect={nav.select} />
 
         {/* Розгорнута панель на телефоні лягає поверх вмісту: дотик по скриму
             повертає згорнутий стан — так само, як дотик по обраному розділу. */}
         {nav.expanded && <div className="wb-space-scrim" onClick={nav.toggle} aria-hidden="true" />}
 
         <div className="wb-space-main">
+          {/* Тумблер і назва — один рядок: вони й правда про одне (цей екран і
+              його розділи). Розмір знака бере з розміру назви — `1em`
+              (`space.css`), тож у шапці він читається як частина заголовка. */}
           <div className="wb-page-head">
-            <h1 className="wb-page-title">Простір</h1>
+            <div className="wb-space-head">
+              <button
+                type="button"
+                className="wb-space-toggle"
+                onClick={nav.toggle}
+                title={toggleLabel}
+                aria-label={toggleLabel}
+                aria-expanded={nav.expanded}
+              >
+                <Icon name="sidebar-toggle" size={20} />
+              </button>
+
+              <h1 className="wb-page-title">Простір</h1>
+            </div>
           </div>
 
           <div id={tabPanelId(nav.tab)} role="tabpanel" aria-labelledby={tabId(nav.tab)}>

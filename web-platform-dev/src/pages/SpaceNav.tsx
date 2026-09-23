@@ -19,6 +19,11 @@
  * **усередині сторінки** (тому `.wb-space-*` у `styles/space-nav.css`), склад
  * пунктів бере з `SPACE_TABS`, а знаки — з їхнього поля `icon`.
  *
+ * **Шапки в панелі немає.** Слово «Розділи» повторювало те, що й так видно зі
+ * знаків і підписів, а рядок забирало справжнє — тож тумблер згортання поїхав
+ * у шапку сторінки, поруч із її назвою (`SpacePage`): там він видно і в
+ * згорнутому стані, а в панелі його місце займає перший пункт.
+ *
  * @module web-platform-dev/src/pages/SpaceNav
  */
 
@@ -34,29 +39,11 @@ interface SpaceNavProps {
   value: SpaceTab;
   /** Вибір розділу: панель після нього згортається (`useSpaceNav`). */
   onSelect: (key: SpaceTab) => void;
-  /** Розгорнути / згорнути панель, не змінюючи розділ. */
-  onToggle: () => void;
 }
 
-export function SpaceNav({ expanded, value, onSelect, onToggle }: SpaceNavProps): ReactElement {
-  const action = expanded ? "Згорнути панель розділів" : "Розгорнути панель розділів";
-
+export function SpaceNav({ expanded, value, onSelect }: SpaceNavProps): ReactElement {
   return (
     <aside className={`wb-nav wb-space-nav${expanded ? "" : " wb-nav--collapsed"}`}>
-      <div className="wb-nav-header">
-        {expanded && <span className="wb-nav-title">Розділи</span>}
-        <button
-          type="button"
-          className="wb-nav-toggle"
-          onClick={onToggle}
-          title={action}
-          aria-label={action}
-          aria-expanded={expanded}
-        >
-          <Icon name="sidebar-toggle" size={18} />
-        </button>
-      </div>
-
       {/* `role="tablist"` і пара `tabId` / `tabPanelId` — ті самі, що в горизонтальної
           смуги (`@wwwuabot/ui/tabs`): вміст розділу на сторінці позначений ними ж,
           тож зв'язок «пункт ↔ панель» лишається один, а не два. */}
