@@ -32,9 +32,13 @@ function MenuRow({ item }: { item: MenuItem }): ReactElement {
       aria-label={itemLabel(item)}
       aria-pressed={item.selected}
     >
-      <span className="wb-menu-item-icon">
-        <Icon name={item.icon} size={20} />
-      </span>
+      {/* Клітинка знака існує тільки там, де знак є: у рядка контенту його
+          немає (правило 23), і порожня клітинка зсувала б текст від краю. */}
+      {item.icon && (
+        <span className="wb-menu-item-icon">
+          <Icon name={item.icon} size={20} />
+        </span>
+      )}
       <span className="wb-menu-item-text">
         <span className="wb-menu-item-label">{item.label}</span>
         {/* Пояснення є лише в тому, чого ще немає: у готового пункту його
@@ -69,9 +73,11 @@ function MenuBlock({ item }: { item: MenuItem }): ReactElement {
       aria-label={itemLabel(item)}
       aria-pressed={item.selected}
     >
-      <span className="wb-menu-block-icon">
-        <Icon name={item.icon} size={22} />
-      </span>
+      {item.icon && (
+        <span className="wb-menu-block-icon">
+          <Icon name={item.icon} size={22} />
+        </span>
+      )}
       <span className="wb-menu-block-label">{item.label}</span>
       {/* Заглушка лишається чесною (§7), але **одним словом**: абзац під
           назвою робив плитки різної висоти й читався як текст, а не як стан.

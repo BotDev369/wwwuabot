@@ -107,8 +107,16 @@ function rule(text: string, selector: string): Rule | undefined {
  * Селектори рядка — **одна сітка на всі списки Простору**. Винесені в сталі
  * навмисно: якщо правило розділиться на два, тест мусить упасти на ньому, а не
  * тихо перевіряти половину.
+ *
+ * Мітки рядка (плишки, межі, мінімальна висота) справді спільні для всіх
+ * трьох; **клітинки — ні** (правило 23): у рядка з обличчям їх три, у рядка
+ * контенту — дві. Це і є та половина, яку тест тримає окремо.
  */
 const ROW = ".wb-space-page .wb-menu-item, .wb-space-page .wb-person, .wb-space-page .wb-ad-open";
+/** Рядки контенту — без провідної клітинки: тільки текст і шеврон. */
+const CONTENT_ROW = ".wb-space-page .wb-menu-item, .wb-space-page .wb-ad-open";
+/** Єдиний рядок із провідною клітинкою — обличчя людини. */
+const FACE_ROW = ".wb-space-page .wb-person";
 const GAP =
   ".wb-space-page .wb-people, .wb-space-page .wb-menu-list, .wb-space-page .wb-collection, .wb-space-page .wb-theme-schemes";
 const ACTIVE =
@@ -120,15 +128,21 @@ const HINT =
 
 /** Плитки немає, а рядок — один: та сама сітка, та сама мірка, той самий дотик. */
 describe("список Простору — один рядок на всі розділи", () => {
-  it("рядок — та сама сітка всюди: [знак][текст][шеврон]", () => {
-    // Знак гри, аватар людини й знак оголошення стають в одну колонку, а текст
-    // усіх списків — на одну лінію. Без цього кожен кирпичик тримав свою сітку,
-    // і перехід між розділами рухав усе на екрані.
+  it("рядок — та сама сітка всюди: мітки спільні, клітинки — за вмістом", () => {
+    // Мірки рядка одні: без них кожен кирпичик тримав свою сітку, і перехід між
+    // розділами рухав усе на екрані.
     const row = rule(SPACE, ROW);
     expect(row, "правило рядка мусить існувати").toBeDefined();
     expect(row?.body).toContain("display: grid");
-    expect(row?.body).toContain("grid-template-columns: var(--space-lead) minmax(0, 1fr) auto");
     expect(row?.body).toContain("min-height: var(--space-row)");
+    // Клітинки — окремо: у контенту перед текстом нічого не стоїть, тож їх дві,
+    // а провідна колонка (48px, під аватар) лишається списку людей.
+    const content = rule(SPACE, CONTENT_ROW);
+    expect(content?.body).toContain("grid-template-columns: minmax(0, 1fr) auto");
+    expect(content?.body).toContain('grid-template-areas: "text more"');
+    expect(rule(SPACE, FACE_ROW)?.body).toContain(
+      "grid-template-columns: var(--space-lead) minmax(0, 1fr) auto",
+    );
   });
 
   it("заливка й тінь зняті з усіх списків, і жодного не забуто", () => {
@@ -296,29 +310,46 @@ describe("шапка сторінки — та сама сітка, що вмі�
     expect(toggle?.body).toContain("place-items: center start");
   });
 
-  it("підписи всіх списків починаються на одній лінії", () => {
-    // Знак гри й аватар людини — та сама колонка (`--space-lead`: 48px, бо
-    // стільки займає аватар), тож текст обох списків стоїть на одному відступі,
-    // а не на 24 і 48. Саму ширину колонки задає сітка рядка — не кирпичик.
+  it("текст контенту стає на лінію вмісту, а людей — на лінію тексту", () => {
+    // Провідну колонку (`--space-lead`: 48px, бо стільки займає аватар) тримає
+    // лише рядок із **обличчям** — воно вміст, а не знак. Рядки контенту стоять
+    // без неї, і їхній текст починається там само, де назва екрана й пошук.
     expect(rule(SPACE, ".wb-space-page")?.body).toContain("--space-lead: 48px");
-    expect(rule(SPACE, ROW)?.body).toContain("var(--space-lead) minmax(0, 1fr) auto");
-    const glyph = rule(SPACE, ".wb-space-page .wb-menu-item-icon");
-    expect(glyph, "правило провідної клітинки мусить існувати").toBeDefined();
-    expect(glyph?.body).toContain("justify-content: flex-start");
+    expect(rule(SPACE, FACE_ROW)?.body).toContain("var(--space-lead) minmax(0, 1fr) auto");
+    expect(rule(SPACE, CONTENT_ROW)?.body).not.toContain("--space-lead");
+  });
+
+  it("іконок у контенті Простору немає — ні в рядку, ні в картці (правило 23)", () => {
+    // Знак у контенті — третій підпис того самого: назва гри, сторінки чи
+    // оголошення називає себе сама, а знак треба ще прочитати. Знак належить
+    // **керуванню** (смуга, панель розділів, футер) і обличчю людини.
+    expect(SPACE).not.toContain("wb-menu-item-icon");
+    expect(SPACE).not.toContain("wb-ad-icon");
+    for (const path of [
+      "web-platform-dev/src/pages/games/SpaceGamesTab.tsx",
+      "web-platform-dev/src/pages/user-pages/SpacePagesTab.tsx",
+    ]) {
+      const tab = source(path);
+      expect(tab, path).not.toContain("wb-menu-item-icon");
+      expect(tab, path).not.toContain("pageTemplateIcon");
+      expect(tab, path).not.toContain("icon: ");
+    }
+    // Знак на кнопках лишається: вони керування, а не вміст.
+    expect(source("web-platform-dev/src/pages/themes/SchemeCard.tsx")).toContain(
+      'className="wb-btn wb-btn-primary wb-btn-sm"',
+    );
   });
 });
 
 describe("лінії екрана — берег, вміст, текст", () => {
-  it("текст оголошень не зсувають відступом — його ставить сама сітка", () => {
+  it("текст рядків не зсувають відступом — його ставить сама сітка", () => {
     // Текст дошки колись зсували окремим `padding-left`, щоб він «став на лінію
     // тексту» — і той самий відступ розводив його з рештою списків. Місце тексту
-    // визначає сітка рядка: зі знаком — третя колонка, без знака (оголошення) —
-    // друга, тобто лінія вмісту.
+    // визначає сітка рядка: у списку людей — третя колонка (перед нею обличчя),
+    // у контенту — друга, тобто **лінія вмісту**.
     expect(rule(SPACE, ".wb-space-page")?.body).not.toContain("--space-text");
     expect(SPACE).not.toContain("padding-left: var(--space-text)");
-    expect(rule(SPACE, ".wb-space-page .wb-ad-open")?.body).toContain(
-      "grid-template-columns: minmax(0, 1fr) auto",
-    );
+    expect(rule(SPACE, CONTENT_ROW)?.body).toContain("grid-template-columns: minmax(0, 1fr) auto");
   });
 
   it("знаки панелі стають на беріг сторінки — в обох станах і на телефоні", () => {
@@ -472,13 +503,17 @@ describe("оголошення — рядок, який відкриваєтьс
     // шукається серед **уявних** — і обидві клітинки (разом із шевроном) знаходили
     // ту саму першу. На екрані це читалось як «текст оголошення зміщено»,
     // а насправді сітки не було зовсім.
-    const row = rule(SPACE, ".wb-space-page .wb-ad-open");
+    const row = rule(SPACE, CONTENT_ROW);
     expect(row, "схема клітинок мусить бути в рядка").toBeDefined();
     expect(row?.body).toContain('grid-template-areas: "text more"');
-    // Провідної колонки в оголошення немає — текст стає на лінію вмісту.
+    // Провідної колонки в контенту немає — текст стає на лінію вмісту.
     expect(row?.body).toContain("grid-template-columns: minmax(0, 1fr) auto");
-    expect(rule(SPACE, ".wb-space-page .wb-ad-text")?.body).toContain("grid-area: text");
-    expect(rule(SPACE, ".wb-space-page .wb-ad-more")?.body).toContain("grid-area: more");
+    expect(
+      rule(SPACE, ".wb-space-page .wb-menu-item-text, .wb-space-page .wb-ad-text")?.body,
+    ).toContain("grid-area: text");
+    expect(
+      rule(SPACE, ".wb-space-page .wb-menu-item-more, .wb-space-page .wb-ad-more")?.body,
+    ).toContain("grid-area: more");
   });
 
   it("«плитки» міняють розкладку, а не саму лише ширину", () => {

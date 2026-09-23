@@ -27,7 +27,7 @@ import {
   filterByQuery,
   type SpaceListView,
 } from "../space-list-view";
-import { pageAddressLabel, pageTemplateIcon, publicPageAuthor } from "./pages-view";
+import { pageAddressLabel, publicPageAuthor } from "./pages-view";
 import { useSpacePages } from "./useSpacePages";
 
 export function SpacePagesTab(): ReactElement {
@@ -106,9 +106,6 @@ export function SpacePagesTab(): ReactElement {
               className="wb-menu-item"
               onClick={() => void navigate(toWebPath(page.slug))}
             >
-              <span className="wb-menu-item-icon">
-                <Icon name={pageTemplateIcon(page.template)} size={20} />
-              </span>
               <span className="wb-menu-item-text">
                 <span className="wb-menu-item-label">{page.title}</span>
                 <span className="wb-menu-item-hint">
