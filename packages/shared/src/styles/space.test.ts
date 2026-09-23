@@ -302,19 +302,23 @@ describe("шапка сторінки — та сама сітка, що вмі�
     // а не на 24 і 48. Саму ширину колонки задає сітка рядка — не кирпичик.
     expect(rule(SPACE, ".wb-space-page")?.body).toContain("--space-lead: 48px");
     expect(rule(SPACE, ROW)?.body).toContain("var(--space-lead) minmax(0, 1fr) auto");
-    const glyph = rule(SPACE, ".wb-space-page .wb-menu-item-icon, .wb-space-page .wb-ad-icon");
+    const glyph = rule(SPACE, ".wb-space-page .wb-menu-item-icon");
     expect(glyph, "правило провідної клітинки мусить існувати").toBeDefined();
     expect(glyph?.body).toContain("justify-content: flex-start");
   });
 });
 
 describe("лінії екрана — берег, вміст, текст", () => {
-  it("текст оголошень стоїть у тій самій текстовій колонці — без власного відступу", () => {
-    // Раніше текст дошки зсували окремим `padding-left`, щоб він став на «лінію
-    // тексту» — і назва оголошення стояла **правіше** за назву гри, а чип виду
-    // лишався на лінії вмісту. Тепер усі тексти стоять у третій колонці рядка.
+  it("текст оголошень не зсувають відступом — його ставить сама сітка", () => {
+    // Текст дошки колись зсували окремим `padding-left`, щоб він «став на лінію
+    // тексту» — і той самий відступ розводив його з рештою списків. Місце тексту
+    // визначає сітка рядка: зі знаком — третя колонка, без знака (оголошення) —
+    // друга, тобто лінія вмісту.
     expect(rule(SPACE, ".wb-space-page")?.body).not.toContain("--space-text");
     expect(SPACE).not.toContain("padding-left: var(--space-text)");
+    expect(rule(SPACE, ".wb-space-page .wb-ad-open")?.body).toContain(
+      "grid-template-columns: minmax(0, 1fr) auto",
+    );
   });
 
   it("знаки панелі стають на беріг сторінки — в обох станах і на телефоні", () => {
@@ -431,9 +435,19 @@ describe("оголошення — рядок, який відкриваєтьс
     // тоді як у гри, сторінки чи людини перша саме назва.
     const card = source(CARD);
     expect(card.indexOf("wb-ad-title")).toBeLessThan(card.indexOf("wb-ad-meta"));
-    // Провідна клітинка несе **знак виду** — на місці знака гри й аватара.
-    expect(card).toContain("wb-ad-icon");
-    expect(source("web-platform-dev/src/pages/ads-view.ts")).toContain("adKindIcon");
+    expect(source("web-platform-dev/src/pages/ads-view.ts")).toContain("adKindLabel");
+  });
+
+  it("свого знака в оголошення немає — його розрізняє написане", () => {
+    // Знак виду стояв там само, де знак гри чи аватар, і працював як ще один
+    // підпис: його все одно треба було прочитати (а «Подарую · Львів» і так
+    // сказано текстом). У гри є її власний знак, у людини — обличчя, у
+    // оголошення — тільки написане.
+    expect(source(CARD)).not.toContain("wb-ad-icon");
+    expect(source(CARD)).not.toContain("adKindIcon");
+    expect(source("web-platform-dev/src/pages/ads-view.ts")).not.toContain("adKindIcon");
+    // Правил для клітинки, якої немає, теж не лишається.
+    expect(SPACE).not.toContain("wb-ad-icon");
   });
 
   it("шеврон є в кожного — за рядком справді стоїть поверхня", () => {
@@ -452,29 +466,23 @@ describe("оголошення — рядок, який відкриваєтьс
     expect(card.indexOf("wb-ad-view-actions")).toBeGreaterThan(card.indexOf("MenuModal"));
   });
 
-  it("клітинки рядка **названі** — інакше три `grid-area` збираються в одну", () => {
-    // Так і було: у дітей стояли `grid-area: icon` / `text` / `more`, а схеми
-    // клітинок у самої кнопки не було. За специфікацією ім'я, якого немає серед
-    // ліній сітки, шукається серед **уявних** — і всі три клітинки знаходили ту
-    // саму першу: знак лягав на підпис, шеврон — туди ж. На екрані це читалось
-    // як «текст оголошення зміщено», а насправді сітки не було зовсім.
+  it("клітинки рядка **названі** — інакше `grid-area` збирає їх усі в одну", () => {
+    // Так і було: у дітей стояли `grid-area: text` / `more`, а схеми клітинок у
+    // самої кнопки не було. За специфікацією ім'я, якого немає серед ліній сітки,
+    // шукається серед **уявних** — і обидві клітинки (разом із шевроном) знаходили
+    // ту саму першу. На екрані це читалось як «текст оголошення зміщено»,
+    // а насправді сітки не було зовсім.
     const row = rule(SPACE, ".wb-space-page .wb-ad-open");
     expect(row, "схема клітинок мусить бути в рядка").toBeDefined();
-    expect(row?.body).toContain('grid-template-areas: "icon text more"');
-    expect(rule(SPACE, ".wb-space-page .wb-ad-icon")?.body).toContain("grid-area: icon");
+    expect(row?.body).toContain('grid-template-areas: "text more"');
+    // Провідної колонки в оголошення немає — текст стає на лінію вмісту.
+    expect(row?.body).toContain("grid-template-columns: minmax(0, 1fr) auto");
     expect(rule(SPACE, ".wb-space-page .wb-ad-text")?.body).toContain("grid-area: text");
     expect(rule(SPACE, ".wb-space-page .wb-ad-more")?.body).toContain("grid-area: more");
-    // Плитка — та сама розмітка, інша схема: інакше її клітинки поїхали б так
-    // само, лише на два рядом.
-    const cards = rule(SPACE, ".wb-space-page .wb-collection--cards .wb-ad-open");
-    expect(cards?.body).toContain('"icon more"');
-    expect(cards?.body).toContain('"text text"');
   });
 
   it("«плитки» міняють розкладку, а не саму лише ширину", () => {
     // Інакше вибір вигляду — декоративний: людина тицяє й не бачить різниці.
-    const cards = rule(SPACE, ".wb-space-page .wb-collection--cards .wb-ad-open");
-    expect(cards?.body).toContain("grid-template-areas");
     expect(rule(SPACE, ".wb-space-page .wb-collection--cards .wb-ad-body")?.body).toContain(
       "-webkit-line-clamp: 3",
     );
