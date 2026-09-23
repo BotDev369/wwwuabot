@@ -50,7 +50,7 @@ export const commerceBlocks: BlockDefinition[] = [
   block({
     type: "feature-card",
     label: "Фіча",
-    icon: "sparkles",
+    icon: "checklist",
     category: "commerce",
     description: "Карточка з іконкою, заголовком та описом",
     props: {
@@ -65,7 +65,7 @@ export const commerceBlocks: BlockDefinition[] = [
   block({
     type: "faq",
     label: "FAQ",
-    icon: "search",
+    icon: "question",
     category: "commerce",
     description: "Часто задавані питання (акордеон)",
     compatibleZones: ["main", "sidebar"],

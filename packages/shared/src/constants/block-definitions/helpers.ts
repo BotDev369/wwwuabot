@@ -8,6 +8,7 @@
  */
 
 import type { BlockDefinition, BlockZone, BlockCategory } from "../../types/page-config";
+import type { IconName } from "../../components/icons";
 
 // ── Field shorthands ────────────────────────────────────────────────
 
@@ -77,7 +78,8 @@ interface BlockDefInput {
   type: string;
   label: string;
   description?: string;
-  icon?: string;
+  /** Знак блоку — ім'я з набору (`IconName`), а не довільний рядок. */
+  icon?: IconName;
   category: BlockCategory;
   compatibleZones?: AllZones;
   props: Record<string, Record<string, unknown>>;

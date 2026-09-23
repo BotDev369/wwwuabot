@@ -305,7 +305,7 @@ export function ContactsPage(): ReactElement {
       {!loading && !error && contacts.length === 0 && (
         <div className="wb-empty">
           <span className="wb-empty-icon">
-            <Icon name="mail" size={32} />
+            <Icon name="contact" size={32} />
           </span>
           <p className="wb-empty-text">Ще немає жодного контакту.</p>
           {/* Кажемо, як контакт з'являється: без цього порожній екран —
@@ -342,7 +342,7 @@ export function ContactsPage(): ReactElement {
               className="wb-btn wb-btn-secondary"
               onClick={() => setView(DEFAULT_CONTACTS_VIEW)}
             >
-              <Icon name="close" size={16} />
+              <Icon name="refresh" size={16} />
               Скинути пошук і фільтри
             </button>
           </div>

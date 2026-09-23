@@ -140,7 +140,7 @@ if (!(await dialog.confirm("Видалити?", { tone: "danger", confirmText: "
 const name = await dialog.prompt("Назва:", { validate: (v) => (v.trim() ? null : "Порожньо") });
 ```
 
-`DialogProvider` стоїть біля кореня `main.tsx` в обох оболонках — там же, де `initTheme()`. Іконки — `<Icon name="home" size={16} />` з `@wwwuabot/shared`; окремого списку іконок у документації немає навмисно (він дрейфує), єдине джерело — тип `IconName` у `packages/shared/src/components/icons.tsx`. Токени й наскрізні правила вигляду — `docs/DESIGN_SYSTEM.md` (номери правил стабільні: на них посилається код, і вони однакові в усіх трьох документах вигляду).
+`DialogProvider` стоїть біля кореня `main.tsx` в обох оболонках — там же, де `initTheme()`. Іконки — `<Icon name="home" size={16} />` з `@wwwuabot/shared`; окремого списку іконок у документації немає навмисно (він дрейфує) — єдине джерело `ICON_NAMES` / `IconName` у `components/icon-names.ts`, гліфи в `icons.tsx`. Знаки малюємо самі: один знак = одне значення (правило 26 `docs/DESIGN_SYSTEM.md`). Токени й наскрізні правила вигляду — `docs/DESIGN_SYSTEM.md` (номери правил стабільні: на них посилається код, і вони однакові в усіх трьох документах вигляду).
 
 ---
 

@@ -210,7 +210,7 @@ export function NotesPage(): ReactElement {
                 className="wb-btn wb-btn-secondary"
                 onClick={() => setView(DEFAULT_NOTES_VIEW)}
               >
-                <Icon name="close" size={16} />
+                <Icon name="refresh" size={16} />
                 Скинути пошук і фільтри
               </button>
             </div>

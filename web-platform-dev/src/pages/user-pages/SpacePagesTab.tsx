@@ -74,7 +74,7 @@ export function SpacePagesTab(): ReactElement {
     return (
       <div className="wb-empty">
         <span className="wb-empty-icon">
-          <Icon name="layout" size={32} />
+          <Icon name="page" size={32} />
         </span>
         <p className="wb-empty-text">Поки ніхто не опублікував сторінку.</p>
         {/* Кажемо, як сюди потрапляють: без цього порожня вкладка — глухий кут. */}

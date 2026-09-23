@@ -16,11 +16,11 @@ import type { ShellTab } from "./types";
 const TABS: readonly ShellTab[] = [
   { key: "home", label: "Головна", icon: "home", iconActive: "home-solid", href: "/" },
   {
-    key: "mydate",
-    label: "Дати",
-    icon: "my-dates",
-    iconActive: "my-dates-solid",
-    href: "/mydate",
+    key: "space",
+    label: "Простір",
+    icon: "feed",
+    iconActive: "feed-solid",
+    href: "/space",
   },
   { key: "create", label: "Створити", icon: "plus", primary: true },
   { key: "shop", label: "GalyaShop", icon: "shop", href: "/galyashop" },
@@ -41,17 +41,17 @@ describe("TabBar", () => {
   it("рендерить усі слоти, підписує навігацію й позначає активний пункт", () => {
     const items = buildTabBarItems({
       tabs: TABS,
-      pathname: "/mydate",
+      pathname: "/space",
       navigate: vi.fn(),
       onPlaceholder: vi.fn(),
     });
     const html = renderToStaticMarkup(<TabBar items={items} label="Навігація платформи" />);
 
     expect(html).toContain('aria-label="Навігація платформи"');
-    for (const label of ["Головна", "Дати", "GalyaShop", "Профіль", "Створити"]) {
+    for (const label of ["Головна", "Простір", "GalyaShop", "Профіль", "Створити"]) {
       expect(html).toContain(label);
     }
-    // Активний — рівно один, і це «Дати»
+    // Активний — рівно один, і це «Простір»
     expect(html.match(/wb-tabbar-item--active/g)).toHaveLength(1);
     expect(html).toContain('aria-current="page"');
   });
@@ -68,11 +68,11 @@ describe("TabBar", () => {
   });
 
   it("активний пункт показує ЗАЛИТИЙ варіант іконки (і лише він)", () => {
-    const html = render("/mydate");
+    const html = render("/space");
 
     // Залитий гліф — це окремий svg з fill замість обводки; в смузі він рівно один
     expect(html.match(/fill="currentColor"/g)).toHaveLength(1);
-    expect(html).toContain('fill-rule="evenodd"'); // «дні» календаря вирізані
+    expect(html).toContain('fill-rule="evenodd"'); // рядки стрічки вирізані з картки
     // Сам підпис активного пункту-посилання лишається підписаним для скрінрідера
     expect(html).toContain('aria-current="page"');
   });
@@ -108,7 +108,7 @@ describe("TabBar", () => {
     const html = render("/");
 
     expect(html).toContain("<button");
-    expect(html.match(/<a /g)).toHaveLength(3); // home, mydate, shop
+    expect(html.match(/<a /g)).toHaveLength(3); // home, space, shop
   });
 });
 
@@ -124,7 +124,7 @@ describe("buildTabBarItems", () => {
     });
 
     items[1].onSelect?.();
-    expect(navigate).toHaveBeenCalledWith("/mydate");
+    expect(navigate).toHaveBeenCalledWith("/space");
     expect(onPlaceholder).not.toHaveBeenCalled();
 
     items[4].onSelect?.();

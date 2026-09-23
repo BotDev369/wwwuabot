@@ -55,8 +55,7 @@ export function DatabaseSection({
         label="Роль"
         value={user.role ? <RoleBadge value={user.role} /> : null}
         icon="users"
-      />
-      <FieldRow label="Тариф" value={user.tariff} icon="sparkles" />
+      />        <FieldRow label="Тариф" value={user.tariff} icon="crown" />
       <FieldRow
         label="Статус"
         value={user.status ? <StatusBadge value={user.status} /> : null}
@@ -69,8 +68,8 @@ export function DatabaseSection({
         icon="lock"
       />
       <FieldRow label="Заблоковано" value={user.isBlocked ? "Так" : "Ні"} icon="lock" />
-      {user.createdAt && <FieldRow label="Створено" value={user.createdAt} icon="info" />}
-      {user.updatedAt && <FieldRow label="Оновлено" value={user.updatedAt} icon="info" />}
+      {user.createdAt && <FieldRow label="Створено" value={user.createdAt} icon="calendar" />}
+      {user.updatedAt && <FieldRow label="Оновлено" value={user.updatedAt} icon="calendar" />}
     </div>
   );
 

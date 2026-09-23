@@ -38,7 +38,7 @@ export interface ThemeSectionOption {
 
 export const THEME_SECTIONS: readonly ThemeSectionOption[] = [
   { key: "style", label: "Стиль", icon: "sliders" },
-  { key: "presets", label: "Готові теми", icon: "sparkles" },
+  { key: "presets", label: "Готові теми", icon: "palette" },
   { key: "customize", label: "Налаштувати", icon: "edit" },
 ];
 

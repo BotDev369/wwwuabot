@@ -38,7 +38,7 @@ export function getTypeBadge(s: { rich_message: string | null; page_data?: strin
   color: string;
 } {
   const type = scenarioType(s);
-  if (type === "page") return { label: "Page", icon: "globe", color: "var(--color-info, #3b82f6)" };
+  if (type === "page") return { label: "Page", icon: "page", color: "var(--color-info, #3b82f6)" };
   if (type === "rich") return { label: "Rich", icon: "sparkles", color: "var(--accent, #6366f1)" };
   return { label: "Photo", icon: "image", color: "var(--text-muted)" };
 }

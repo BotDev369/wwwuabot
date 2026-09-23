@@ -29,7 +29,7 @@ export function SpaceListEmpty({
       </span>
       <p className="wb-empty-text">Нічого не знайдено за цим запитом.</p>
       <button type="button" className="wb-btn wb-btn-secondary" onClick={onReset}>
-        <Icon name="close" size={16} />
+        <Icon name="refresh" size={16} />
         {resetLabel}
       </button>
     </div>

@@ -34,7 +34,7 @@ export const dataBlocks: BlockDefinition[] = [
   block({
     type: "progress",
     label: "Прогрес",
-    icon: "bar-chart",
+    icon: "progress",
     category: "data",
     description: "Індикатор прогресу або рівня заповнення",
     compatibleZones: ["main", "sidebar"],
@@ -51,7 +51,7 @@ export const dataBlocks: BlockDefinition[] = [
   block({
     type: "table",
     label: "Таблиця",
-    icon: "clipboard",
+    icon: "table",
     category: "data",
     description: "Таблиця даних з заголовками",
     props: {

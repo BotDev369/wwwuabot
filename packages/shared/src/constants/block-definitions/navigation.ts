@@ -32,7 +32,7 @@ export const navigationBlocks: BlockDefinition[] = [
   block({
     type: "accordion",
     label: "Акордеон",
-    icon: "arrow-down",
+    icon: "accordion",
     category: "navigation",
     description: "Розгортувані/згортані секції",
     compatibleZones: ["main", "sidebar"],
@@ -49,7 +49,7 @@ export const navigationBlocks: BlockDefinition[] = [
   block({
     type: "nav",
     label: "Меню",
-    icon: "globe",
+    icon: "menu",
     category: "navigation",
     description: "Навігаційне меню з посиланнями",
     props: {

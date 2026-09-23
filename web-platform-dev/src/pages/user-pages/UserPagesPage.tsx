@@ -73,7 +73,7 @@ export function UserPagesPage(): ReactElement {
       {!loading && !error && pages.length === 0 && (
         <div className="wb-empty">
           <span className="wb-empty-icon">
-            <Icon name="layout" size={32} />
+            <Icon name="page" size={32} />
           </span>
           <p className="wb-empty-text">Ще немає жодної сторінки.</p>
           {/* Кажемо, як створити, і що саме від людини вимагається — текст:

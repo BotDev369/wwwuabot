@@ -163,7 +163,7 @@ export function SpacePage(): ReactElement {
               /* Розділ, якого ще немає, не мовчить: він каже, що саме тут буде. */
               <div className="wb-empty">
                 <span className="wb-empty-icon">
-                  <Icon name="layout" size={32} />
+                  <Icon name="page" size={32} />
                 </span>
                 <p className="wb-empty-text">{nav.current.hint}</p>
                 <p className="wb-text-muted">Розділ «{nav.current.label}» ще в розробці.</p>

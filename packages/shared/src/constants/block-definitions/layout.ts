@@ -89,7 +89,7 @@ export const layoutBlocks: BlockDefinition[] = [
   block({
     type: "spacer",
     label: "Відступ",
-    icon: "construction",
+    icon: "spacer",
     category: "layout",
     description: "Вертикальний відступ між блоками",
     props: { height: e("Висота", ["xs", "sm", "md", "lg", "xl", "2xl"], { default: "md" }) },
@@ -130,7 +130,7 @@ export const layoutBlocks: BlockDefinition[] = [
   block({
     type: "hero",
     label: "Hero",
-    icon: "sparkles",
+    icon: "hero",
     category: "layout",
     description: "Великий блок із заголовком, підзаголовком та CTA-кнопками",
     compatibleZones: ["main", "header"],

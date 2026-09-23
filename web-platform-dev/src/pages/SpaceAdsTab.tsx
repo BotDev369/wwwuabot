@@ -114,7 +114,7 @@ export function SpaceAdsTab({
       {!loading && !error && items.length === 0 && (
         <div className="wb-empty">
           <span className="wb-empty-icon">
-            <Icon name="feed" size={32} />
+            <Icon name="announce" size={32} />
           </span>
           <p className="wb-empty-text">Тут поки нічого немає.</p>
           <p className="wb-empty-text">

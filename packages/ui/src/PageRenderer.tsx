@@ -33,7 +33,7 @@ interface PageRendererProps {
 
 /** Мітки зон редактора: іконка зі спільного набору, а не емодзі (`AGENTS.md` §4). */
 const ZONE_LABELS: Record<string, { icon: IconName; label: string }> = {
-  sidebar: { icon: "layout", label: "Sidebar" },
+  sidebar: { icon: "sidebar-toggle", label: "Sidebar" },
   header: { icon: "tabs", label: "Header" },
   main: { icon: "text", label: "Main" },
   footer: { icon: "divider", label: "Footer" },

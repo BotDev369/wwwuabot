@@ -40,7 +40,7 @@ const FILTER_CHIPS: FilterChip[] = [
   { key: "all", label: "Усі" },
   { key: "photo", label: "Photo", icon: "image" },
   { key: "rich", label: "Rich", icon: "sparkles" },
-  { key: "page", label: "Page", icon: "globe" },
+  { key: "page", label: "Page", icon: "page" },
 ];
 
 // ─── Group mode config ──────────────────────────────────────────────

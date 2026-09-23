@@ -42,7 +42,7 @@ export function NewMessagePicker({
 }: NewMessagePickerProps): ReactElement {
   const items: MenuItem[] = [
     ...(onClear
-      ? [{ key: "none", label: NO_RECIPIENT_LABEL, icon: "close" as const, onSelect: onClear }]
+      ? [{ key: "none", label: NO_RECIPIENT_LABEL, icon: "minus" as const, onSelect: onClear }]
       : []),
     ...recipients.map((peer) => ({
       key: String(peer.id),

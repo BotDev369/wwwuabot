@@ -27,12 +27,13 @@ function source(...parts: string[]): string {
 }
 
 describe("склад ігор", () => {
-  it("кожна гра має унікальний ключ, підпис і знак", () => {
+  it("кожна гра має унікальний ключ і підпис", () => {
+    // Знака в пункту немає навмисно: рядок списку в Просторі — вміст, а вміст
+    // знаків не носить (правило 23). Див. `GameOption`.
     const keys = GAMES.map((game) => game.key);
     expect(new Set(keys).size).toBe(keys.length);
     for (const game of GAMES) {
       expect(game.label, game.key).toBeTruthy();
-      expect(game.icon, game.key).toBeTruthy();
     }
   });
 

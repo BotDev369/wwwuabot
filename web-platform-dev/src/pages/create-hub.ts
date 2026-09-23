@@ -99,21 +99,21 @@ export const CREATE_HUB_ITEMS: readonly CreateHubItem[] = [
   {
     key: "contacts",
     label: "Контакти",
-    icon: "mail",
+    icon: "contact",
     view: CONTACTS_PATH,
     form: "contact",
   },
   {
     key: "locations",
     label: "Локації",
-    icon: "globe",
+    icon: "pin",
     soon: "Місця з адресами й координатами, які згадуються у сценаріях.",
   },
   { key: "notes", label: "Нотатки", icon: "text", view: NOTES_PATH, form: "note" },
   {
     key: "ads",
     label: "Оголошення",
-    icon: "feed",
+    icon: "announce",
     // Дошки живуть у Просторі, тож адреса веде саме в її вкладку: без розділу
     // відкрилася б стрічка людей, і вкладку довелося б шукати самій людині.
     view: spaceTabPath("ads"),
@@ -132,7 +132,7 @@ export const CREATE_HUB_ITEMS: readonly CreateHubItem[] = [
   {
     key: "pages",
     label: "Сторінки",
-    icon: "layout",
+    icon: "page",
     view: PAGES_PATH,
     createPath: PAGES_NEW_PATH,
   },

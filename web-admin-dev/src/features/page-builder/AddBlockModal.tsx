@@ -200,7 +200,7 @@ export function AddBlockModal({ onSelect, onClose, targetZone }: AddBlockModalPr
                   }}
                 >
                   <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
-                    {def.icon ? ico(def.icon as IconName, 16) : ico("blocks", 16)}
+                    {def.icon ? ico(def.icon, 16) : ico("blocks", 16)}
                     <span style={{ fontWeight: 600, fontSize: 13 }}>{def.label}</span>
                   </div>
                   {def.description && (

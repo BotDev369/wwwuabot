@@ -43,11 +43,11 @@ function ScoreChips({ score }: { score: TicTacToeScore }): ReactElement {
   return (
     <div className="wb-game-score-chips">
       <span className="wb-game-score-chip wb-game-score-chip--won">
-        <Icon name="x" size={14} />
+        <Icon name="mark-x" size={14} />
         {score.won}
       </span>
       <span className="wb-game-score-chip">
-        <Icon name="circle" size={14} />
+        <Icon name="mark-o" size={14} />
         {score.lost}
       </span>
       <span className="wb-game-score-chip">
@@ -99,7 +99,7 @@ export function TicTacToeGame(): ReactElement {
             >
               {cell && (
                 <span className="wb-game-pop">
-                  <Icon name={cell === "x" ? "x" : "circle"} size={38} />
+                  <Icon name={cell === "x" ? "mark-x" : "mark-o"} size={38} />
                 </span>
               )}
             </button>

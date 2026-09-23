@@ -93,7 +93,7 @@ export const botDomainBlocks: BlockDefinition[] = [
   block({
     type: "compare-systems",
     label: "Вибір систем",
-    icon: "eye",
+    icon: "checklist",
     category: "bot-domain",
     description: "Вибір систем аналізу та параметрів для порівняння дат",
     props: {
@@ -135,7 +135,7 @@ export const botDomainBlocks: BlockDefinition[] = [
   block({
     type: "date-analysis",
     label: "Аналіз дати",
-    icon: "sparkles",
+    icon: "bar-chart",
     category: "bot-domain",
     description: "Аналіз однієї дати з картками систем",
     props: {

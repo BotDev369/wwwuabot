@@ -9,7 +9,7 @@ export const formsBlocks: BlockDefinition[] = [
   block({
     type: "input",
     label: "Інпут",
-    icon: "edit",
+    icon: "field",
     category: "forms",
     description: "Поле введення тексту",
     props: {
@@ -24,7 +24,7 @@ export const formsBlocks: BlockDefinition[] = [
   block({
     type: "textarea",
     label: "Текстове поле",
-    icon: "edit",
+    icon: "textarea",
     category: "forms",
     description: "Поле введення багаторядкового тексту",
     props: {
@@ -39,7 +39,7 @@ export const formsBlocks: BlockDefinition[] = [
   block({
     type: "select",
     label: "Вибір",
-    icon: "filter",
+    icon: "select",
     category: "forms",
     description: "Список вибору з декількома опціями",
     props: {

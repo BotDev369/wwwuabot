@@ -67,7 +67,7 @@ export function SpaceThemesTab(): ReactElement {
           applied={applied}
           onApply={apply}
           empty={{
-            icon: "sparkles",
+            icon: "palette",
             title: "Поки ніхто не поділився темою.",
             hint: "Тема з'являється тут, щойно її автор увімкне «Доступна публічно».",
           }}

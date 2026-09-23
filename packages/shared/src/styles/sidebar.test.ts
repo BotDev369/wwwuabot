@@ -294,7 +294,9 @@ describe("сайдбар-поверхня: ширина, кут і вихід", 
     const component = source("packages/ui/src/nav/Sidebar.tsx");
     expect(component).toContain('className="wb-close-btn"');
     expect(component).toContain('aria-label="Закрити меню"');
-    expect(component).toContain('<Icon name="x"');
+    // Знак — саме `close` (закрити), а не `mark-x`: хрестиком гри вікна не
+    // закривають, і один гліф на дві дії змушував читати підпис (правило 26).
+    expect(component).toContain('<Icon name="close"');
 
     // І дію їй передають **обидва** місця, де сайдбар — поверхня: меню адмінки
     // та панель Простору. Третє таке місце (сайдбар конструктора) має свою

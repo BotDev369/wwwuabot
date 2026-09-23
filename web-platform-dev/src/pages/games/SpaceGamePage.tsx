@@ -57,7 +57,7 @@ export function SpaceGamePage(): ReactElement {
         <Head title="Ігри" onBack={back} />
         <div className="wb-empty">
           <span className="wb-empty-icon">
-            <Icon name="grid" size={32} />
+            <Icon name="game" size={32} />
           </span>
           <p className="wb-empty-text">Такої гри немає.</p>
           <button type="button" className="wb-btn wb-btn-secondary" onClick={back}>

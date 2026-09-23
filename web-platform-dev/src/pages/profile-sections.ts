@@ -31,5 +31,5 @@ export interface BuildProfileSectionsOptions {
 export function buildProfileSections({
   onOpenTheme,
 }: BuildProfileSectionsOptions): ShellMenuItem[] {
-  return [{ key: "theme", label: "Тема", icon: "sliders", onSelect: onOpenTheme }];
+  return [{ key: "theme", label: "Тема", icon: "palette", onSelect: onOpenTheme }];
 }

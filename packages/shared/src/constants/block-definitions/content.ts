@@ -131,7 +131,7 @@ export const contentBlocks: BlockDefinition[] = [
   block({
     type: "badge",
     label: "Бейдж",
-    icon: "tag",
+    icon: "badge",
     category: "content",
     description: "Смуга бейджів/міток для статусів та тегів",
     compatibleZones: ["main", "header", "sidebar"],

@@ -235,6 +235,27 @@
       вибору чотирьох рядків не видно зовсім).
     Стежать `styles/sidebar.test.ts`, `styles/menu.test.ts` і `notes/NotesToolbar.test.tsx`.
 
+26. **Один знак = одне значення.** Знаки продукту ми малюємо самі — `icons.tsx`, сітка 24×24,
+    контур, `currentColor`, без жодної бібліотеки, — і кожен із них мусить **казати свою суть**.
+    Двоє різних пунктів з однаковою картинкою змушують читати підпис, щоб їх розрізнити: саме
+    так «Хрестики-нулики», «2048» і «Сценарії» виглядали однаково (три імені мали піксель у
+    піксель один гліф), а «Камінь, ножиці, папір» носив круглу стрілку `refresh`, тоді як
+    `rock`, `scissors` і `paper` уже лежали в наборі. Імені не позичають у сусіднього розділу:
+    під нову суть малюють новий гліф.
+    - **Перелік імен один** — `ICON_NAMES` / `IconName` з `components/icon-names.ts` (звичайний
+      `.ts`: його читають і воркери, які збираються без JSX), а `icons` типізований як
+      `Record<IconName, …>`. Знак блоку Page Builder типізований так само
+      (`BlockDefinition.icon`): рядок там уже одного разу дав картку блоку **без знака** —
+      імені `buttons` у наборі не існувало, і компілятор про це мовчав.
+    - **Залитий близнюк заводиться лише під пункт футера** (`home` ↔ `home-solid`, `feed` ↔
+      `feed-solid`): активний слот фарбується тим самим знаком (правило 25). Близнюк без
+      пункту футера — мертва картинка, тож його видаляють, а не тримають «про запас».
+    - **Знак без місця теж видаляють.** Мертві імена нічого не ламають — саме тому вони
+      й живуть роками (їх було п'ять: `more`, `chevron-left`, `play`, `button` і залитий
+      близнюк без пункту).
+    Стереже `components/icons.test.ts`: склад набору, відсутність двох імен з однією
+    картинкою, пари близнюків і вжиток кожного імені в продукті.
+
 ---
 
 ## File Locations
@@ -251,7 +272,8 @@
 | `packages/shared/src/styles/apple.css` / `android.css` | Характер бренду (радіус, мірки, скло) |
 | `packages/shared/src/components/theme/` | `ThemeColorPanel`, `ThemeSheet`, `color-presets.ts`, `useUserColors` |
 | `packages/shared/src/components/user-profile/` | `AccountRow.tsx` (рядок хабу), `AccountAvatar.tsx` + `account.ts` (два акаунти як чисті функції), `PlatformHandle` (ім'я + фото в одній картці), `DatabaseSection` / `TelegramSection` (два підсписки акаунта), `telegram-fields.ts` (склад і порядок полів Telegram), `UserProfileCard` (картка адмінки) — правило 22 |
-| `packages/shared/src/components/icons.tsx` / `Icon.tsx` | Набір іконок (`IconName` — єдине джерело) і `<Icon />` |
+| `packages/shared/src/components/icon-names.ts` | Перелік імен знаків (`ICON_NAMES` / `IconName`) — єдине джерело списку (правило 26) |
+| `packages/shared/src/components/icons.tsx` / `Icon.tsx` | Самі гліфи й `<Icon />`; сторож набору — `icons.test.ts` |
 | `scripts/check-css-classes.mjs` / `css-baseline.mjs` | Гейт «клас ↔ правило» і задокументований борг |
 
 Деталі поверхонь і колекцій — у їхніх документах: [`SURFACES.md`](./SURFACES.md),
