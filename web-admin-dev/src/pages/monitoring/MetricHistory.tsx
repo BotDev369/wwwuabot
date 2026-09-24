@@ -11,6 +11,11 @@
  * порівняння груп (окремий екран); на графіку воно перетворилось би на
  * п'ять ліній, які треба читати з легендою.
  *
+ * **Рівна лінія пояснюється вголос.** Якщо всі зрізи стоять на одному коміті,
+ * нульова динаміка — це правда (код не змінювався), а не поломка. Без
+ * пояснення такий графік читається як «нічого не працює», і саме тут сторінка
+ * мусить сказати причину.
+ *
  * @module web-admin-dev/src/pages/monitoring/MetricHistory
  */
 
@@ -20,10 +25,11 @@ import {
   formatMetric,
   metricDefinition,
   metricSeries,
+  sameRef,
   sortPoints,
   type SnapshotPoint,
 } from "@wwwuabot/shared/monitoring";
-import { formatStamp } from "./format";
+import { formatStamp, shortRef } from "./format";
 
 /** Показники, які має сенс бачити лінією: гроші, обсяг і зростання. */
 const SERIES_METRICS = [
@@ -72,6 +78,8 @@ export function MetricHistory({ history }: MetricHistoryProps) {
     .join(" ");
   const first = ordered[0];
   const last = ordered[ordered.length - 1];
+  // Коміт, спільний для всіх зрізів: якщо він є, нульова динаміка очікувана.
+  const flatRef = series.length >= 2 ? sameRef(ordered) : null;
 
   return (
     <div className="mon-panel">
@@ -133,6 +141,14 @@ export function MetricHistory({ history }: MetricHistoryProps) {
               : "—"}
           </span>
         </div>
+
+        {flatRef && (
+          <p className="mon-chart-note">
+            Усі {series.length} зрізів знято на коміті <code>{shortRef(flatRef)}</code> — код між
+            ними не змінювався, тож лінія рівна. Щойно код зміниться, наступний зріз покаже
+            динаміку.
+          </p>
+        )}
       </div>
     </div>
   );

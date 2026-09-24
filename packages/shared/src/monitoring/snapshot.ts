@@ -95,3 +95,22 @@ export function metricSeries(
 export function sortPoints(points: readonly SnapshotPoint[]): SnapshotPoint[] {
   return [...points].sort((a, b) => a.id - b.id);
 }
+
+/**
+ * Коміт, спільний для всіх зрізів, або `null`.
+ *
+ * **Навіщо це взагалі.** Рівна лінія на графіку має дві різні причини: код
+ * між зрізами не змінювався — або ми не змогли порахувати й записали нулі.
+ * Перше — правда, друге — поломка, і плутати їх не можна. Якщо всі зрізи
+ * стоять на одному коміті, нульова динаміка **очікувана**, і сторінка має
+ * сказати це вголос, а не мовчати рівною лінією.
+ *
+ * Зріз без коміта (`ref === null`) ламає висновок: невідомо, на чому його
+ * знято, тож обіцяти «той самий коміт» нема права.
+ */
+export function sameRef(points: readonly SnapshotPoint[]): string | null {
+  if (points.length < 2) return null;
+  const first = points[0].ref;
+  if (!first) return null;
+  return points.every((point) => point.ref === first) ? first : null;
+}

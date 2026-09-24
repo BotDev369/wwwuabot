@@ -16,6 +16,7 @@ import {
   groupsOf,
   indexValues,
   metricSeries,
+  sameRef,
   valueKey,
 } from "./snapshot";
 import {
@@ -119,5 +120,32 @@ describe("історія", () => {
 
   it("показник, якого немає у зрізі, — нуль, а не дірка", () => {
     expect(metricSeries(history, "github.stars")).toEqual([0, 0, 0]);
+  });
+});
+
+describe("спільний коміт", () => {
+  const point = (id: number, ref: string | null): SnapshotPoint => ({
+    id,
+    collectedAt: `2026-09-0${id}T04:17:00.000Z`,
+    status: "ok",
+    trigger: "manual",
+    ref,
+    totals: {},
+  });
+
+  it("називає коміт, спільний для всіх зрізів", () => {
+    expect(sameRef([point(1, "abc"), point(2, "abc")])).toBe("abc");
+  });
+
+  it("молчить, коли хоч один зріз знято на іншому коміті", () => {
+    expect(sameRef([point(1, "abc"), point(2, "def")])).toBeNull();
+  });
+
+  it("молчить, коли коміт хоч одного зрізу невідомий", () => {
+    expect(sameRef([point(1, "abc"), point(2, null)])).toBeNull();
+  });
+
+  it("одного зрізу замало для висновку", () => {
+    expect(sameRef([point(1, "abc")])).toBeNull();
   });
 });

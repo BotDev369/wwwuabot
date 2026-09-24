@@ -254,6 +254,23 @@
   color: var(--text-muted);
 }
 
+/* Пояснення рівної лінії: смуга збоку, а не залита плишка — щоб не читалось
+   як окремий стан поруч із графіком. */
+.mon-chart-note {
+  margin: 10px 0 0;
+  padding-left: 10px;
+  border-left: 2px solid var(--accent);
+  font-size: 12px;
+  line-height: 1.5;
+  color: var(--text-secondary);
+}
+
+.mon-chart-note code {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--text-primary);
+}
+
 /* ── Таблиці ─────────────────────────────────────────────────────────────── */
 .mon-table {
   width: 100%;
