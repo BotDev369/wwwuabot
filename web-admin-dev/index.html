@@ -6,6 +6,12 @@
     <!-- viewport-fit=cover — інакше env(safe-area-inset-*) у tokens.css = 0,
          і контент залазить під виріз/індикатор додому на iPhone. -->
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <!-- Панель відкривають із WebView (телефон, Telegram). Його кеш живучіший за
+         браузерний, і після деплою там лишався старий екран із старими хешами
+         бандла. Ті самі директиви, що у `web-platform-dev/index.html`. -->
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+    <meta http-equiv="Pragma" content="no-cache" />
+    <meta http-equiv="Expires" content="0" />
     <title>WWWUABOT — адмін-панель</title>
   </head>
   <body>
