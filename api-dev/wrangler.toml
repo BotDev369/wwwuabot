@@ -18,8 +18,14 @@ binding = "CONTENT_KV"
 id = "bda7a5fca58b4fbda87d75105d558ebf"
 
 [vars]
-# ADMIN_SECRET, BOT_TOKEN, SECRET_TOKEN і SENTRY_DSN — задаються через Cloudflare
-# Dashboard (Secrets).
+# ADMIN_SECRET, BOT_TOKEN, SECRET_TOKEN, SENTRY_DSN, GITHUB_MONITOR_TOKEN і
+# CF_MONITOR_TOKEN — задаються через Cloudflare Dashboard (Secrets).
+#
+# `MONITOR_GITHUB_REPO` — не секрет: це просто адреса репозиторію, з якого
+# знімається зріз моніторингу. Токен (`GITHUB_MONITOR_TOKEN`) потрібен лише
+# для приватного репозиторію та вищого ліміту запитів: без нього публічний
+# репозиторій читається анонімно (60 запитів/год на IP воркера).
+MONITOR_GITHUB_REPO = "BotDev369/wwwuabot"
 #
 # Воркер називається `api-dev`, тому `dev`: у Sentry мітка `environment` має
 # відповідати тому, де код насправді працює. Прод — окремий воркер із
@@ -41,3 +47,11 @@ invocation_logs = false
 # Дає SDK `id` версії — у Sentry видно, який саме деплой зламався.
 [version_metadata]
 binding = "CF_VERSION_METADATA"
+
+# Автоматичний зріз моніторингу раз на добу (04:17 UTC). Той самий рядок
+# показує сторінка моніторингу — він лежить у `services/monitoring/collect.ts`
+# (`CRON_SCHEDULE`). Збір міряє розмір і рядки коду з архіву гілки та
+# показники репозиторію з GitHub API; пропущені зрізи не біда — кожен
+# наступний міряє той самий проєкт заново.
+[triggers]
+crons = ["17 4 * * *"]

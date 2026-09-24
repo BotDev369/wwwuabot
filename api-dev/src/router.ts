@@ -52,6 +52,10 @@ import { handleNotes, handleAdminNotes } from "./controllers/notes.controller";
 import { handleUserPages, handleSpacePages } from "./controllers/pages.controller";
 import { handleContactLink, handleContacts } from "./controllers/contacts.controller";
 import {
+  handleMonitoringSummary,
+  handleMonitoringCollect,
+} from "./controllers/monitoring.controller";
+import {
   handleMessages,
   handleMessageThread,
   handleMessageSend,
@@ -263,6 +267,16 @@ export async function handleRequest(request: Request, env: Env): Promise<Respons
   // ── Admin: Notes (нотатки про проєкт; власник — акаунт сесії) ───
   if (pathname === "/api/admin/notes") {
     return handleAdminNotes(request, env);
+  }
+
+  // ── Admin: Моніторинг (зрізи показників проєкту) ───────────────
+  // Читання дешеве, а збір — ні (архів гілки + GitHub API), тому це два
+  // різні шляхи: сторінка не має платити за мережу, щоб просто відкритись.
+  if (pathname === "/api/admin/monitoring/summary" && request.method === "GET") {
+    return handleMonitoringSummary(request, env);
+  }
+  if (pathname === "/api/admin/monitoring/collect" && request.method === "POST") {
+    return handleMonitoringCollect(request, env);
   }
 
   // ── Public: User Profile (for web-platform conditional rendering) ──

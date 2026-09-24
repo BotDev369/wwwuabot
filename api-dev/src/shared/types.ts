@@ -26,6 +26,25 @@ export interface Env {
   SENTRY_DSN?: string;
   /** Середовище для подій Sentry (`dev` / `production`). */
   ENVIRONMENT?: string;
+  /**
+   * Репозиторій моніторингу у форматі `owner/name` — звичайна змінна в
+   * `wrangler.toml` `[vars]`, не секрет. Порожнє значення = типовий.
+   */
+  MONITOR_GITHUB_REPO?: string;
+  /**
+   * Read-only токен GitHub для збору показників (Cloudflare Secret
+   * `GITHUB_MONITOR_TOKEN`). Без нього публічний репозиторій читається
+   * анонімно (60 запитів/год на IP воркера), приватний — не читається зовсім.
+   */
+  GITHUB_MONITOR_TOKEN?: string;
+  /**
+   * Read-only токен Cloudflare (Cloudflare Secret `CF_MONITOR_TOKEN`) —
+   * знадобиться для збору по D1/KV/R2/воркерах. Поки не використовується:
+   * джерело показників етапу 2.
+   */
+  CF_MONITOR_TOKEN?: string;
+  /** Account id Cloudflare (не секрет): `/accounts/{id}/analytics` етапу 2. */
+  MONITOR_CF_ACCOUNT_ID?: string;
   /** Binding Cloudflare `CF_VERSION_METADATA` — дає `id` релізу для Sentry. */
   CF_VERSION_METADATA?: { id?: string };
 }

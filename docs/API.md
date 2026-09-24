@@ -55,6 +55,8 @@
 
 | Метод | Шлях | Обробник |
 |---|---|---|
+| `POST` | `/api/admin/monitoring/collect` | `handleMonitoringCollect` |
+| `GET` | `/api/admin/monitoring/summary` | `handleMonitoringSummary` |
 | `ANY` | `/api/admin/notes` | `handleAdminNotes` |
 | `POST` | `/api/admin/users/block` | `handleBlockUser` |
 | `POST` | `/api/admin/users/bulk` | `handleBulkUsers` |
@@ -82,4 +84,4 @@
 | `POST` | `/auth/login` | `handleLogin` |
 | `POST` | `/auth/logout` | `handleLogout` |
 
-Усього шляхів: **53**.
+Усього шляхів: **55**.

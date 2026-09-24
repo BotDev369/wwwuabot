@@ -1,0 +1,375 @@
+/* ─── Моніторинг (сторінка /monitoring) ────────────────────────────────────────
+   Класи однієї оболонки: картки показників, графік динаміки й таблиці зрізу.
+   Палітра — тільки токени (`--accent`, `--green`, `--red`, `--bg-*`): бренд і
+   тема мусять впливати й на цю сторінку, а власні кольори жили б повз них
+   (AGENTS.md §3, §4). Окремий файл, а не хвіст `index.css`, бо `index.css` —
+   це каркас редактора сценаріїв, і сторінка моніторингу йому не рідня. */
+
+.mon {
+  flex: 1;
+  overflow: auto;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.mon-stamp {
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+.mon-status-line {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.mon-note {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 10px 12px;
+  border: 1px solid var(--border);
+  border-left-width: 2px;
+  border-left-color: var(--accent);
+  border-radius: var(--radius-md);
+  background: var(--bg-2);
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--text-secondary);
+}
+
+.mon-note code {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  color: var(--text-primary);
+}
+
+/* ── Картки показників ───────────────────────────────────────────────────── */
+.mon-kpis {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(190px, 1fr));
+  gap: 12px;
+}
+
+.mon-kpi {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 14px;
+  background: var(--bg-2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  transition: border-color var(--duration-normal) var(--ease);
+}
+
+.mon-kpi:hover {
+  border-color: var(--accent);
+}
+
+.mon-kpi-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+.mon-kpi-label {
+  font-weight: 600;
+  letter-spacing: 0.02em;
+}
+
+.mon-kpi-group {
+  font-family: var(--font-mono);
+  font-size: 11px;
+}
+
+.mon-kpi-row {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.mon-kpi-value {
+  font-size: 24px;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  color: var(--text-primary);
+  font-variant-numeric: tabular-nums;
+}
+
+.mon-kpi-delta {
+  font-size: 12px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+
+.mon-kpi-delta--up {
+  color: var(--green);
+}
+
+.mon-kpi-delta--down {
+  color: var(--red);
+}
+
+/* Нейтральна зміна не фарбується: розмір коду — це не досягнення. */
+.mon-kpi-delta--flat {
+  color: var(--text-muted);
+}
+
+.mon-kpi-hint {
+  margin: 0;
+  font-size: 11px;
+  line-height: 1.45;
+  color: var(--text-muted);
+}
+
+/* ── Панель ──────────────────────────────────────────────────────────────── */
+.mon-panel {
+  display: flex;
+  flex-direction: column;
+  background: var(--bg-2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+}
+
+.mon-panel-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+  padding: 12px 14px;
+  border-bottom: 1px solid var(--border);
+}
+
+.mon-panel-title {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+
+.mon-panel-body {
+  padding: 14px;
+}
+
+.mon-columns {
+  display: grid;
+  grid-template-columns: minmax(0, 1.5fr) minmax(0, 1fr);
+  gap: 16px;
+}
+
+@media (max-width: 900px) {
+  .mon-columns {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* ── Графік ──────────────────────────────────────────────────────────────── */
+.mon-chart-tools {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.mon-chip {
+  padding: 4px 10px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-full);
+  background: transparent;
+  color: var(--text-secondary);
+  font-size: 12px;
+  cursor: pointer;
+  transition:
+    border-color var(--duration-fast) var(--ease),
+    color var(--duration-fast) var(--ease);
+}
+
+.mon-chip:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+.mon-chip-active {
+  border-color: var(--accent);
+  color: var(--accent);
+  background: var(--accent-soft);
+}
+
+.mon-chart-svg {
+  display: block;
+  width: 100%;
+  height: 180px;
+}
+
+.mon-chart-grid {
+  stroke: var(--border);
+  stroke-width: 1;
+  vector-effect: non-scaling-stroke;
+}
+
+.mon-chart-area {
+  fill: var(--accent-soft);
+  stroke: none;
+}
+
+/* `vector-effect` тримає товщину лінії: `viewBox` тягнеться по ширині, і без
+   цього штрих виглядав би тоншим зліва й товщим справа. */
+.mon-chart-line {
+  fill: none;
+  stroke: var(--accent);
+  stroke-width: 2;
+  stroke-linejoin: round;
+  vector-effect: non-scaling-stroke;
+}
+
+.mon-chart-dot {
+  fill: var(--accent);
+}
+
+.mon-chart-foot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-top: 8px;
+  font-size: 11px;
+  color: var(--text-muted);
+}
+
+.mon-chart-empty {
+  margin: 0;
+  padding: 12px 0;
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--text-muted);
+}
+
+/* ── Таблиці ─────────────────────────────────────────────────────────────── */
+.mon-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 12px;
+}
+
+.mon-table th {
+  padding: 6px 8px;
+  text-align: left;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  border-bottom: 1px solid var(--border);
+}
+
+.mon-table td {
+  padding: 8px;
+  border-bottom: 1px solid var(--border);
+  color: var(--text-secondary);
+  font-variant-numeric: tabular-nums;
+  vertical-align: middle;
+}
+
+.mon-table tr:last-child td {
+  border-bottom: none;
+}
+
+.mon-table-num {
+  text-align: right;
+}
+
+.mon-group {
+  display: block;
+  margin-bottom: 4px;
+  font-family: var(--font-mono);
+  font-size: 12px;
+  color: var(--text-primary);
+}
+
+.mon-bar {
+  display: block;
+  width: 100%;
+  max-width: 160px;
+  height: 4px;
+  border-radius: var(--radius-full);
+  background: var(--bg-1);
+  overflow: hidden;
+}
+
+.mon-bar-fill {
+  display: block;
+  height: 100%;
+  background: var(--accent);
+}
+
+.mon-status {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: var(--radius-full);
+  font-size: 11px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.mon-status-ok {
+  color: var(--green);
+  background: var(--green-dim);
+}
+
+.mon-status-partial {
+  color: var(--yellow);
+  background: var(--yellow-dim);
+}
+
+.mon-status-error {
+  color: var(--red);
+  background: var(--red-dim);
+}
+
+/* ── Звіт колекторів ─────────────────────────────────────────────────────── */
+.mon-collectors {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.mon-collector {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.mon-collector-head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.mon-collector-label {
+  font-size: 13px;
+  color: var(--text-primary);
+}
+
+.mon-collector-meta {
+  margin: 0;
+  font-size: 11px;
+  line-height: 1.45;
+  color: var(--text-muted);
+}
+
+.mon-ref {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--text-muted);
+}

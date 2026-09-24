@@ -28,6 +28,10 @@ export const QUALITY_BASELINE = {
   dataOnlyFiles: [
     "packages/shared/src/components/icons.tsx",
     "packages/shared/src/database/tables.ts",
+    // Реєстр показників моніторингу — той самий випадок: рядок на показник із
+    // підписом і поясненням. Логіка збору живе в `api-dev`, а формування —
+    // у `@wwwuabot/shared/monitoring/metrics.ts` (лише дані й формат).
+    "packages/shared/src/monitoring/metrics.ts",
   ],
 
   /**

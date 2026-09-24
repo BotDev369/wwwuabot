@@ -540,6 +540,73 @@ export const TABLES = {
         updated_at TEXT
       )`,
   },
+
+  /**
+   * Зріз моніторингу: **коли** зібрано, **чим** і **з яким результатом**.
+   *
+   * Числа тут не живуть — вони в `metrics_values`, і це головне рішення
+   * цієї схеми. Зріз мусить фіксувати **набір** показників, який з часом
+   * росте (спершу код і GitHub, далі D1, KV, R2, воркери): колонки під
+   * кожен показник означали б `ALTER TABLE` на кожен новий параметр і
+   * втрату історії (у новій колонці старих зрізів немає). Рядок на
+   * значення росте в довжину, але не ламає форму — усі зрізи читаються
+   * однаково (AGENTS.md §7: нова ознака = рядок у реєстрі, не друга таблиця).
+   *
+   * `collectors` — JSON звіту колекторів (`[{ id, status, durationMs }]`):
+   * він пояснює, чому зріз `partial`, і лишається при ньому назавжди. Це не
+   * дубль логів, а частина зрізу: логи живуть 3 дні, а питання «чому тут
+   * нулі» виникає через місяць.
+   *
+   * `git_ref` — коміт, на якому зібрано зріз. Без нього динаміка «код виріс
+   * на 8 000 рядків» не відповідає на єдине цікаве питання — **на якому саме**
+   * коміті.
+   */
+  metrics_snapshots: {
+    name: "metrics_snapshots",
+    owner: "api-dev",
+    purpose:
+      "Зріз показників проєкту: момент збору, ручний він чи за розкладом, стан, коміт і звіт колекторів.",
+    create: `CREATE TABLE IF NOT EXISTS metrics_snapshots (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        collected_at TEXT NOT NULL,
+        trigger_kind TEXT NOT NULL DEFAULT 'manual',
+        status TEXT NOT NULL DEFAULT 'ok',
+        git_ref TEXT,
+        collectors TEXT,
+        created_at TEXT NOT NULL DEFAULT (datetime('now'))
+      )`,
+  },
+
+  /**
+   * Значення зрізу: **один рядок = один показник у одній групі**.
+   *
+   * Ключ `(snapshot_id, group_key, metric)` — це і є вся ідентичність
+   * виміру: зріз без групи (воркспейса) не має сенсу, а два значення одного
+   * показника в одному зрізі — це помилка збору, а не дані. `PRIMARY KEY`
+   * ловить її вставкою, а не «останній переміг» при читанні.
+   *
+   * `value REAL` — навмисно не `INTEGER`: динаміка буває дробовою (частки,
+   * середні), і окрема таблиця під відсотки була б другою правдою про
+   * виміри. `group_key` (`total`, `api-dev`, `packages`, …) — саме група, а
+   * не «власник»: показники знімаються з проєкту, а не з людини, і власника
+   * тут не існує.
+   */
+  metrics_values: {
+    name: "metrics_values",
+    owner: "api-dev",
+    purpose:
+      "Значення показників зрізу: ключ `(зріз, група, метрика)` — набір параметрів росте без зміни схеми.",
+    create: `CREATE TABLE IF NOT EXISTS metrics_values (
+        snapshot_id INTEGER NOT NULL,
+        group_key TEXT NOT NULL DEFAULT 'total',
+        metric TEXT NOT NULL,
+        value REAL NOT NULL,
+        PRIMARY KEY (snapshot_id, group_key, metric)
+      )`,
+    indexes: [
+      "CREATE INDEX IF NOT EXISTS idx_metrics_values_metric ON metrics_values(metric, group_key)",
+    ],
+  },
 } satisfies Record<string, TableDefinition>;
 
 /** Імена всіх оголошених таблиць. */

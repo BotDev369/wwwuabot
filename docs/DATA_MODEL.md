@@ -43,6 +43,8 @@ npx wrangler d1 execute wwwuabot-db-dev --remote \
 | `ads` | `api-dev` | api-dev (`ensureTables` у `ads.service`) | api-dev: своє — `/api/user/ads`, дошка — `/api/space/ads` | **оголошення дошки Простору:** вид (куплю / продам / здам / шукаю / …), заголовок, текст, ціна й місто (обидва — **текст**: «договірна» теж ціна). `is_active` — не «чи опубліковано», а **показати на дошці**: вимкнене лишається в списку власника чернеткою. Правила й межі — `@wwwuabot/shared/ads`, видимість — [`SPACE.md`](./SPACE.md) |
 | `theme_schemes` | `api-dev` | api-dev, `ensureTables` | api-dev: своє — `/api/user/themes`, спільна — `/api/space/themes` | **теми**: три кольори + шрифт; `is_public` виносить тему в спільну бібліотеку ([`THEMES.md`](./THEMES.md)) |
 | `mydate_analysis` | `api-dev` | api-dev, `getAnalysis` | api-dev | кеш астрологічного аналізу на дату (KV — швидкий шар) |
+| `metrics_snapshots` | `api-dev` | api-dev, `ensureTables` у `store.ts` | api-dev: `/api/admin/monitoring/summary`, `collect` і `scheduled` | зріз моніторингу проєкту: коли зібрано, ручний він чи за розкладом, стан, коміт і звіт колекторів |
+| `metrics_values` | `api-dev` | api-dev, `ensureTables` у `store.ts` | api-dev — ті самі шляхи + історія | значення зрізу: **рядок на показник** — `(зріз, група, метрика)`, тому набір параметрів росте без зміни схеми ([`MONITORING.md`](./MONITORING.md)) |
 
 `npm run check:db` друкує той самий список, що видно в дашборді Cloudflare. Розбіжність означає,
 що таблицю створили повз реєстр.
@@ -51,10 +53,11 @@ npx wrangler d1 execute wwwuabot-db-dev --remote \
 ідентичність, яка не змінюється ніколи; **`slug`** — адреса (`NOT NULL UNIQUE`), яку редагують вільно.
 
 **Індекси** (`indexes`) живуть поруч із таблицею, щоб не «губились» окремо від неї.
-Їх оголошують шість таблиць — `notes` (`idx_notes_scope_owner` за `(scope, owner_id)`), `contacts`
+Їх оголошують сім таблиць — `notes` (`idx_notes_scope_owner` за `(scope, owner_id)`), `contacts`
 (`idx_contacts_owner`), `conversations` (`idx_conversations_peer_b`), `messages` (`idx_messages_thread`,
-`idx_messages_unread`), `ads` (`idx_ads_owner`, `idx_ads_doska` — дошка за `(is_active, id)`) і
-`theme_schemes` (`idx_themes_owner`, `idx_themes_public`). Унікальність `contacts.code` і
+`idx_messages_unread`), `ads` (`idx_ads_owner`, `idx_ads_doska` — дошка за `(is_active, id)`),
+`theme_schemes` (`idx_themes_owner`, `idx_themes_public`) і `metrics_values`
+(`idx_metrics_values_metric` — історія одного показника за часом). Унікальність `contacts.code` і
 `scenarios.slug` тримає `UNIQUE` у самому `CREATE TABLE`, а не іменований індекс:
 імена індексів у SQLite **глобальні для бази**, тому однойменний `CREATE UNIQUE INDEX IF NOT EXISTS`
 на другій таблиці — не помилка, а **порожня дія**, і таблиця лишилась би без унікальності, не сказавши
@@ -180,6 +183,15 @@ D1 тримає **Time Travel** на 30 днів, тож видалені дан
 Перенос даних між таблицями — окремим SQL, який **тільки додає** (`INSERT`, ніколи
 `DELETE`/`DROP`/`UPDATE`), ідемпотентний і **називає у звіті** все, що пропустив: вибрати за
 власника «правильний» рядок — це тихо втратити чужий контент.
+
+### Зрізи моніторингу: рядок на показник
+
+`metrics_snapshots` фіксує **момент** збору (коли, чим, з яким результатом), а `metrics_values` —
+числа: `(snapshot_id, group_key, metric, value)`. Колонка під кожен показник означала б
+`ALTER TABLE` на кожен новий параметр і **втрату історії** (у новій колонці старих зрізів немає),
+тому набір параметрів зростає рядками. `group_key` — це **група виміру** (`total`, `api-dev`,
+`packages`), а не власник: зріз знімається з проєкту, не з людини. Останній зріз додатково
+кешується в KV (`monitoring:repo:latest`), але джерело правди для історії — D1 ([`MONITORING.md`](./MONITORING.md)).
 
 ## М'яка схема: `users` і `settings`
 

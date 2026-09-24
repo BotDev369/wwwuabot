@@ -19,7 +19,7 @@
 | [`CONTENT_MODEL.md`](./CONTENT_MODEL.md) | контент сторінок: одне сховище (`scenarios`), адреса — одна сутність `slug` |
 | [`PAGES.md`](./PAGES.md) | сторінки з шаблону: два шаблони, власник і публічність, адреса з назви, створення з перегляду шаблону |
 | [`QUALITY_GATE.md`](./QUALITY_GATE.md) | планка в CI: чотири правила, бюджет розміру, леджер боргу, чого ще немає |
-| [`MONITORING.md`](./MONITORING.md) | health, логи, Sentry, UptimeRobot; що робити при падінні |
+| [`MONITORING.md`](./MONITORING.md) | health, логи, Sentry, UptimeRobot; зрізи показників проєкту (код, GitHub) на `/monitoring`; що робити при падінні |
 | [`../bot-dev/README.md`](../bot-dev/README.md) | бот як система: конвеєр апдейта, `ctx.screen`, рендер, черга нотифікацій, контакти |
 | [`HOME_PAGE_DATA.json`](./HOME_PAGE_DATA.json) | дані головної сторінки (вміст `page_data`) для міграції `2026-09-14-scenarios-03-home-page.sql` |
 

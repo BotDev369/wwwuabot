@@ -6,6 +6,7 @@ import { UsersPage } from "../pages/users/UsersPage";
 import { PageBuilderPage } from "../features/page-builder/PageBuilderPage";
 import { BotSettingsPage } from "../pages/bot-settings/BotSettingsPage";
 import { ProfilePage } from "../pages/profile/ProfilePage";
+import { MonitoringPage } from "../pages/monitoring/MonitoringPage";
 
 /**
  * Маршрути web-admin.
@@ -13,6 +14,7 @@ import { ProfilePage } from "../pages/profile/ProfilePage";
  * /scenarios          — Сценарії
  * /page-builder/:cw   — Конструктор сторінок
  * /users              — Користувачі
+ * /monitoring         — Моніторинг проєкту: зрізи код/GitHub, динаміка, історія
  * /bot-settings       — Налаштування бота
  * /profile            — Профіль (акаунт панелі + профіль людини) — той самий
  *                       екран, що й у платформі, зі спільного `UserProfileCard`;
@@ -31,6 +33,7 @@ export const router = createBrowserRouter([
       { path: "scenarios", element: <ScenariosPage /> },
       { path: "page-builder/:slug", element: <PageBuilderPage /> },
       { path: "users", element: <UsersPage /> },
+      { path: "monitoring", element: <MonitoringPage /> },
       { path: "bot-settings", element: <BotSettingsPage /> },
       { path: "profile", element: <ProfilePage /> },
     ],
