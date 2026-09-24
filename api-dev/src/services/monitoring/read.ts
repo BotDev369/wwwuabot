@@ -14,6 +14,7 @@
 
 import {
   TOTAL_GROUP,
+  valueKey,
   type MonitoringSnapshot,
   type MonitoringSources,
   type MonitoringSummary,
@@ -62,7 +63,16 @@ export async function readPrevious(env: Env, id: number): Promise<MonitoringSnap
   return toSnapshot(row, await snapshotValues(env, row.id));
 }
 
-/** Історія зрізів: спершу останні, у кожного — тільки `total`. */
+/**
+ * Історія зрізів: спершу останні, у кожного — тільки `total`.
+ *
+ * **Ключ точки — `група|метрика`, той самий, що й у решті зрізу.** Це не
+ * дрібниця: `totals` читають `metricSeries` і `SnapshotHistory`, і якщо ключ
+ * тут скласти з самої метрики, словник виглядатиме заповненим, а кожне число
+ * у графіку й таблиці стане нулем — типи цього не побачать
+ * (`Record<string, number>` приймає обидва формати). Тому ключ один на весь
+ * проєкт і береться зі `valueKey`.
+ */
 export async function readHistory(env: Env, limit = HISTORY_LIMIT): Promise<SnapshotPoint[]> {
   const rows = await env.DB.prepare(
     `SELECT ${SNAPSHOT_COLUMNS} FROM metrics_snapshots ORDER BY id DESC LIMIT ?`,
@@ -84,7 +94,7 @@ export async function readHistory(env: Env, limit = HISTORY_LIMIT): Promise<Snap
   const totalsBySnapshot = new Map<number, Record<string, number>>();
   for (const row of values.results ?? []) {
     const bucket = totalsBySnapshot.get(row.snapshot_id) ?? {};
-    bucket[row.metric] = row.value;
+    bucket[valueKey(row.group_key, row.metric)] = row.value;
     totalsBySnapshot.set(row.snapshot_id, bucket);
   }
 
