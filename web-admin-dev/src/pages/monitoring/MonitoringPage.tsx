@@ -2,7 +2,12 @@
  * Сторінка моніторингу: зріз, динаміка, розбивка й історія.
  *
  * Сторінка лише рендерить (AGENTS.md §3): стан і запити — у `useMonitoring`,
- * підписи й класи — у `format`, графік і таблиці — окремі компоненти.
+ * підписи й класи — у `format`, панелі показників — `ScopePanel`, графік і
+ * таблиці — окремі компоненти.
+ *
+ * Список карток тут **не перелічується**: склад кожної теми бере `ScopePanel`
+ * із реєстру показників. Перелік у розмітці розійшовся б із реєстром на
+ * першому ж новому показнику — і зібрані числа лишались би невидимими.
  *
  * Честність важливіша за вигляд: якщо токена GitHub немає, це сказано прямо,
  * а частковий зріз позначений бейджем — число з нього не можна читати як повне.
@@ -12,24 +17,14 @@
 
 import { PageTopbar } from "../../layout/PageTopbar";
 import { Icon } from "@wwwuabot/shared";
-import { TOTAL_GROUP, diffSnapshots, groupValues, valueKey } from "@wwwuabot/shared/monitoring";
+import { TOTAL_GROUP, diffSnapshots, groupValues } from "@wwwuabot/shared/monitoring";
 import { CollectorReportList } from "./CollectorReportList";
-import { MetricCard } from "./MetricCard";
 import { MetricHistory } from "./MetricHistory";
+import { ScopePanel } from "./ScopePanel";
 import { SnapshotHistory } from "./SnapshotHistory";
 import { WorkspaceTable } from "./WorkspaceTable";
 import { formatRelative, formatStamp, statusClass, statusLabel } from "./format";
 import { useMonitoring } from "./useMonitoring";
-
-/** Показники на картках: обсяг роботи, репозиторій і те, що болить. */
-const KPI_METRICS = [
-  "code.size_bytes",
-  "code.lines",
-  "code.files",
-  "github.commits",
-  "github.stars",
-  "github.open_issues",
-];
 
 export function MonitoringPage() {
   const { summary, loading, collecting, error, collect } = useMonitoring();
@@ -92,16 +87,8 @@ export function MonitoringPage() {
               </span>
             </div>
 
-            <div className="mon-kpis">
-              {KPI_METRICS.filter((metric) => totals[metric] !== undefined).map((metric) => (
-                <MetricCard
-                  key={metric}
-                  metric={metric}
-                  value={totals[metric]}
-                  delta={deltas[valueKey(TOTAL_GROUP, metric)]}
-                />
-              ))}
-            </div>
+            <ScopePanel scope="code" title="Код" values={totals} deltas={deltas} />
+            <ScopePanel scope="github" title="Репозиторій" values={totals} deltas={deltas} />
 
             <MetricHistory history={summary?.history ?? []} />
 
