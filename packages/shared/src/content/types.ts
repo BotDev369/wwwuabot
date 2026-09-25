@@ -64,6 +64,16 @@ export interface ContentPage {
   photoUrl: string | null;
 
   /**
+   * Ключ шаблону, з якого зібрано сторінку; `null` — контент платформи.
+   *
+   * Це **не** спосіб показати сторінку (контент лежить у `content`), а те, чим
+   * вона відрізняється від решти: у магазину під вітриною стоїть каталог, і без
+   * цього ключа клієнт не знав би, що його треба спитати (`docs/SHOPS.md` §2).
+   * Невідомий ключ лишається як є: показ від нього не ламається.
+   */
+  templateKey: string | null;
+
+  /**
    * Контент для `PageRenderer`.
    *
    * `null` означає «сторінка існує, але контенту в ній немає» — це стан
@@ -104,5 +114,7 @@ export interface ScenarioContentRow {
   title?: string | null;
   photo_url?: string | null;
   page_data?: string | null;
+  /** Шаблон, з якого зібрано `page_data` (`shop` — вітрина магазину). */
+  template_key?: string | null;
   is_active?: number | string | null;
 }

@@ -13,7 +13,10 @@
  *   характеристики, номери фото й перевірка чернетки (`validateProductDraft`);
  * - `orders.ts` — **правила замовлення**: що питати в покупця залежно від виду
  *   товару (`orderContactFields`), кошик і перевірка (`validateOrderDraft`);
- * - `types.ts` — товар, замовлення й знімок позиції.
+ * - `media.ts` — **файли магазину**: ключ R2, межі, адреса з ключа й перевірка
+ *   завантаження (`validateMediaUpload`);
+ * - `api.ts` — **клієнт** магазину: форма запиту, спільна для обох оболонок;
+ * - `types.ts` — товар, файл, замовлення й знімок позиції.
  *
  * **Магазин — це рядок `scenarios`**, а не окрема таблиця: `id` — номер
  * магазину (на нього дивляться товари й замовлення), `slug` — адреса,
@@ -50,6 +53,7 @@ export {
   PRODUCT_TITLE_MAX,
   cleanImageIds,
   productAddress,
+  productDraft,
   sanitizeDescription,
   sanitizeLine,
   sanitizeProductAttributes,
@@ -76,18 +80,51 @@ export type {
 
 export type {
   CatalogResponse,
+  MediaDeleteResponse,
+  MediaListResponse,
+  MediaSaveResponse,
   OrderContact,
   OrderItem,
   OrderListResponse,
   OrderSaveResponse,
   ProductAttribute,
+  ProductDeleteResponse,
   ProductDraft,
   ProductListResponse,
   ProductSaveResponse,
+  ShopMedia,
   ShopOrder,
   ShopProduct,
   StatusListResponse,
 } from "./types";
+
+export {
+  SHOP_MEDIA_IMAGE_LABELS,
+  SHOP_MEDIA_IMAGE_TYPES,
+  SHOP_MEDIA_KINDS,
+  SHOP_MEDIA_MAX_BYTES,
+  SHOP_MEDIA_URL_PREFIX,
+  formatBytes,
+  imageTypesLabel,
+  isImageMime,
+  isShopMediaKey,
+  mediaKey,
+  mediaKindForMime,
+  mediaRandomToken,
+  mediaUrl,
+  safeMediaName,
+  validateMediaUpload,
+} from "./media";
+export type { MediaKind, MediaUploadCheck } from "./media";
+
+export { createShopApi } from "./api";
+export type {
+  ShopApi,
+  ShopApiPaths,
+  ShopProducts,
+  ShopTransport,
+  ShopUploadTransport,
+} from "./api";
 
 export {
   DEFAULT_ORDER_STATUSES,

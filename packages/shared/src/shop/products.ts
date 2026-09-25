@@ -20,7 +20,7 @@
 import { isValidSlug } from "../content/resolve";
 import { transliterateSlug } from "../content/slugify";
 import { isProductKind, type ProductKind } from "./kinds";
-import type { ProductAttribute } from "./types";
+import type { ProductAttribute, ProductDraft, ShopProduct } from "./types";
 
 /**
  * Стеля адреси товару.
@@ -140,6 +140,29 @@ export interface ProductInput {
 }
 
 export type ProductValidation = { ok: true; value: ProductInput } | { ok: false; message: string };
+
+/**
+ * Товар → те, що надсилає форма: один бік правди для правки й перемикача.
+ *
+ * Потрібне саме тому, що правка — це **надсилання цілого товару**, а не
+ * окремих полів: інакше зміна видимості зі списку вимагала б другого шляху на
+ * сервері, і двоє правил «що можна змінити» розійшлися б (`pageDraft` у
+ * сторінок — той самий випадок).
+ */
+export function productDraft(product: ShopProduct): ProductDraft {
+  return {
+    id: product.id,
+    kind: product.kind,
+    title: product.title,
+    summary: product.summary,
+    description: product.description,
+    price: product.price,
+    address: product.slug,
+    images: product.images,
+    attributes: product.attributes,
+    isActive: product.isActive,
+  };
+}
 
 /**
  * Перевірка товару.

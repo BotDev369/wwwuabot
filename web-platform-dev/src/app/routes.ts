@@ -144,6 +144,28 @@ export const PAGE_EDIT_ROUTE = "edit";
 export const userPageEditPath = (id: number): string => `${userPagePath(id)}/${PAGE_EDIT_ROUTE}`;
 
 /**
+ * Товари магазину — **під сторінкою**, а не окремим розділом.
+ *
+ * Магазин — це рядок `scenarios` зі своєю адресою, а товари належать йому
+ * (`shop_id`), тож і адреса їхня стоїть під своєю сторінкою: `/pages/7/products`.
+ * Окремий розділ `/shop` зробив би другу навігацію по тому самому контенту
+ * (`AGENTS.md` §7) і змусив би вибирати магазин там, де його й так видно.
+ *
+ * `products` під `:id` не збивається з `edit` і `new`: це різні сегменти на
+ * одному місці, і сторінка людини не може мати адреси `pages`.
+ */
+export const SHOP_PRODUCTS_ROUTE = "products";
+export const shopProductsPath = (pageId: number): string =>
+  `${userPagePath(pageId)}/${SHOP_PRODUCTS_ROUTE}`;
+
+/** Новий товар — **окрема адреса**: у форми є «назад», історія й посилання. */
+export const shopProductNewPath = (pageId: number): string => `${shopProductsPath(pageId)}/new`;
+
+/** Правка товару: за адресою стоїть один рядок `shop_products`. */
+export const shopProductEditPath = (pageId: number, productId: number): string =>
+  `${shopProductsPath(pageId)}/${productId}`;
+
+/**
  * Параметр адреси: `/pages/new?preview=event` — «покажи, як це виглядає».
  *
  * Це крок **перед** вибором, і він потрібен саме тому, що шаблон обирають

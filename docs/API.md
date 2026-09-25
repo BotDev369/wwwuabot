@@ -18,8 +18,10 @@
 | `POST` | `/api/mydate/compare` | `handleCompare` |
 | `ANY` | `/api/mydate/systems` | `handleSystems` |
 | `ANY` | `/api/scenario/<…>` | `handleScenario` |
+| `ANY` | `/api/shop/media/<…>` | `handleShopMediaFile` |
 | `GET` | `/api/space/ads` | `handleSpaceAds` |
 | `GET` | `/api/space/pages` | `handleSpacePages` |
+| `GET` | `/api/space/shop/products` | `handleSpaceShopProducts` |
 | `GET` | `/api/space/themes` | `handleSpaceThemes` |
 | `GET` | `/api/space/users` | `handleSpaceUsers` |
 | `GET` | `/api/space/users/<…>` | `handleSpaceUser` |
@@ -47,6 +49,8 @@
 | `ANY` | `/api/user/ads` | `handleUserAds` |
 | `ANY` | `/api/user/pages` | `handleUserPages` |
 | `GET` | `/api/user/profile` | `handleUserProfile` |
+| `ANY` | `/api/user/shop/media` | `handleUserShopMedia` |
+| `ANY` | `/api/user/shop/products` | `handleUserShopProducts` |
 | `ANY` | `/api/user/themes` | `handleUserThemes` |
 | `POST` | `/api/user/username` | `handleSetPlatformUsername` |
 | `POST` | `/api/user/visibility` | `handleUserVisibility` |
@@ -84,4 +88,4 @@
 | `POST` | `/auth/login` | `handleLogin` |
 | `POST` | `/auth/logout` | `handleLogout` |
 
-Усього шляхів: **55**.
+Усього шляхів: **59**.

@@ -21,6 +21,8 @@ const page = (slug: string): ContentPage => ({
   slug,
   title: null,
   photoUrl: null,
+  // Адреса — єдине, що тут перевіряють: шаблон до неї не входить.
+  templateKey: null,
   content: null,
   published: true,
   order: 0,

@@ -33,6 +33,7 @@ import {
   PAGE_EDIT_ROUTE,
   PAGES_NEW_ROUTE,
   PAGES_ROUTE,
+  SHOP_PRODUCTS_ROUTE,
   PROFILE_ACCOUNT_PATH,
   PROFILE_ROUTE,
   SPACE_GAME_ROUTE,
@@ -52,6 +53,8 @@ import { SpacePage } from "@/pages/SpacePage";
 import { SpaceUserPage } from "@/pages/SpaceUserPage";
 import { PageCreatePage } from "@/pages/user-pages/PageCreatePage";
 import { PageEditPage } from "@/pages/user-pages/PageEditPage";
+import { ShopProductForm } from "@/pages/shop/ShopProductForm";
+import { ShopProductsPage } from "@/pages/shop/ShopProductsPage";
 import { UserPageView } from "@/pages/user-pages/UserPageView";
 import { UserPagesPage } from "@/pages/user-pages/UserPagesPage";
 import { ThemeLayout } from "@/pages/themes/ThemeLayout";
@@ -105,6 +108,19 @@ export const router = createBrowserRouter([
       // з'їв би його як номер сторінки, і замість вибору шаблону відкрився б
       // «Такої сторінки немає».
       { path: `${PAGES_ROUTE}/${PAGES_NEW_ROUTE}`, element: <PageCreatePage /> },
+      // Товари магазину — **під своєю сторінкою**: `shop_products` належить
+      // рядку `scenarios`, тож і адреса стоїть під ним (`/pages/7/products`).
+      // `new` мусить стояти перед `:productId` — інакше номер з'їв би його, і
+      // замість форми нового товару відкрилось би «такого товару немає».
+      {
+        path: `${PAGES_ROUTE}/:id/${SHOP_PRODUCTS_ROUTE}/new`,
+        element: <ShopProductForm />,
+      },
+      {
+        path: `${PAGES_ROUTE}/:id/${SHOP_PRODUCTS_ROUTE}/:productId`,
+        element: <ShopProductForm />,
+      },
+      { path: `${PAGES_ROUTE}/:id/${SHOP_PRODUCTS_ROUTE}`, element: <ShopProductsPage /> },
       { path: `${PAGES_ROUTE}/:id/${PAGE_EDIT_ROUTE}`, element: <PageEditPage /> },
       { path: `${PAGES_ROUTE}/:id`, element: <UserPageView /> },
       { path: PAGES_ROUTE, element: <UserPagesPage /> },

@@ -36,6 +36,9 @@ export function contentPageFromScenario(row: ScenarioContentRow): ContentPage {
     slug,
     title: row.title ?? null,
     photoUrl: row.photo_url ?? null,
+    // Шаблон читається як є: невідомий ключ не ламає показ, а `null` — це
+    // контент платформи, у якого шаблону немає.
+    templateKey: row.template_key ?? null,
     content: parsePageConfig(row.page_data ?? null),
     // Те саме, що робить SQL-фільтр `is_active = 1`: рядок без прапорця
     // назовні недоступний. `DEFAULT 1` у реєстрі гарантує, що такого не буває

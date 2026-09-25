@@ -16,6 +16,7 @@
  */
 
 import type { ProductKind } from "./kinds";
+import type { MediaKind } from "./media";
 import type { OrderStatus } from "./statuses";
 
 /** Характеристика товару: пара «назва — значення», як її бачить покупець. */
@@ -60,6 +61,23 @@ export interface ProductDraft {
   isActive?: boolean;
 }
 
+/**
+ * Завантажений файл магазину, як він лежить у рядку `shop_media`.
+ *
+ * Тут **ключ R2, а не адреса**: адреса змінилася б разом із шлюзом, а ключ
+ * лишається, і з нього її будує читання (`mediaUrl`). `bytes` і `mime` лежать
+ * поруч, бо за ними файл прибирають і показують.
+ */
+export interface ShopMedia {
+  id: number;
+  shopId: number;
+  key: string;
+  mime: string;
+  bytes: number;
+  kind: MediaKind;
+  createdAt: string;
+}
+
 /** Контакт покупця: набір полів залежить від виду товару (`orders.ts`). */
 export type OrderContact = Readonly<Record<string, string>>;
 
@@ -88,16 +106,32 @@ export interface ShopOrder {
   updatedAt: string;
 }
 
-/** Відповідь `GET /api/user/shop/products`: товари свого магазину (і чернетки). */
+/**
+ * Відповідь `GET /api/user/shop/products`: товари свого магазину (і чернетки).
+ *
+ * Разом із товарами їдуть **рядки файлів** — галерея товару тримає номери, а
+ * адресу з них будує клієнт (`mediaUrl`). Один список на відповідь, а не запит
+ * на кожне фото: каталог на двадцять позицій інакше зробив би двадцять запитів.
+ */
 export interface ProductListResponse {
   ok: boolean;
   products: ShopProduct[];
+  media: ShopMedia[];
 }
 
 /** Відповідь `POST /api/user/shop/products`: збережений товар. */
 export interface ProductSaveResponse {
   ok: boolean;
   product: ShopProduct | null;
+  /** Файли, потрібні цьому товару, — щоб клієнт одразу показав фото. */
+  media: ShopMedia[];
+  error?: string;
+}
+
+/** Відповідь `DELETE /api/user/shop/products`: прибраний товар. */
+export interface ProductDeleteResponse {
+  ok: boolean;
+  id: number;
   error?: string;
 }
 
@@ -105,6 +139,28 @@ export interface ProductSaveResponse {
 export interface CatalogResponse {
   ok: boolean;
   products: ShopProduct[];
+  /** Лише ті файли, які справді стоять у товарах: чужої бібліотеки назовні немає. */
+  media: ShopMedia[];
+}
+
+/** Відповідь `GET /api/user/shop/media`: власна бібліотека файлів магазину. */
+export interface MediaListResponse {
+  ok: boolean;
+  media: ShopMedia[];
+}
+
+/** Відповідь `POST /api/user/shop/media`: прийнятий файл. */
+export interface MediaSaveResponse {
+  ok: boolean;
+  media: ShopMedia | null;
+  error?: string;
+}
+
+/** Відповідь `DELETE /api/user/shop/media`: прибраний файл. */
+export interface MediaDeleteResponse {
+  ok: boolean;
+  id: number;
+  error?: string;
 }
 
 /** Відповідь `GET /api/user/shop/orders`: замовлення магазину або свої покупки. */

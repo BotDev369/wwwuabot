@@ -50,6 +50,8 @@ import {
 } from "./controllers/users.controller";
 import { handleNotes, handleAdminNotes } from "./controllers/notes.controller";
 import { handleUserPages, handleSpacePages } from "./controllers/pages.controller";
+import { handleUserShopProducts, handleSpaceShopProducts } from "./controllers/shop.controller";
+import { handleUserShopMedia, handleShopMediaFile } from "./controllers/shop-media.controller";
 import { handleContactLink, handleContacts } from "./controllers/contacts.controller";
 import {
   handleMonitoringSummary,
@@ -313,6 +315,27 @@ export async function handleRequest(request: Request, env: Env): Promise<Respons
     return handleUserPages(request, env);
   }
 
+  // ── Магазин: товари й файли ───────────────────────────────────
+  // Товари — власні (разом із чернетками) і каталог відкритого магазину.
+  // Власника бере з підписаного `initData` контролер; номер магазину
+  // приходить від клієнта, тож право продавця перевіряє запит до бази.
+  if (pathname === "/api/user/shop/products") {
+    return handleUserShopProducts(request, env);
+  }
+  if (pathname === "/api/user/shop/media") {
+    return handleUserShopMedia(request, env);
+  }
+
+  // Файл магазину — публічний шлях, і це навмисно: фото читають Telegram і веб
+  // **без** `initData`, а адресу не можна вгадати (у ключі випадкова частка).
+  // У бакета публічного доступу немає — єдиний шлюз це `api-dev`
+  // (docs/SHOPS.md §5).
+  if (pathname.startsWith("/api/shop/media/")) {
+    const key = decodePathSegment(pathname.replace("/api/shop/media/", ""));
+    if (key === null) return badRequest();
+    return handleShopMediaFile(env, key);
+  }
+
   // ── Public: Space (відкритий простір платформи) ────────────────
   // Без авторизації: у стрічку дивляться без входу, а видимість кожного
   // профілю вже відібрана в запиті до бази, а не тут.
@@ -336,6 +359,12 @@ export async function handleRequest(request: Request, env: Env): Promise<Respons
   // а приватна сторінка не дістається ні списком, ні за адресою.
   if (pathname === "/api/space/pages" && request.method === "GET") {
     return handleSpacePages(request, env);
+  }
+  // Каталог магазину — теж публічно: `is_public = 1` і `is_active = 1`
+  // відбирає запит до бази, тож закритий магазин не дістається й прямим
+  // запитом.
+  if (pathname === "/api/space/shop/products" && request.method === "GET") {
+    return handleSpaceShopProducts(request, env);
   }
 
   // ── 404 ─────────────────────────────────────────────────────────

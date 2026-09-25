@@ -25,9 +25,11 @@ import {
   sanitizeProductAttributes,
   type ProductInput,
   type ProductKind,
+  type ShopMedia,
   type ShopProduct,
 } from "@wwwuabot/shared/shop";
 import { readJsonColumn } from "./json";
+import { readShopMedia } from "./media.service";
 import { ensureShopSchema, ownShopId, publicShopBySlug } from "./shops";
 
 /** Стеля власного списку: каталог магазину не буває безмежним. */
@@ -87,9 +89,23 @@ function toProduct(row: ProductRow): ShopProduct {
   };
 }
 
+/**
+ * Товари разом із рядками файлів, на які вони посилаються.
+ *
+ * Фото в товарі — **номери**, не адреси: адресу з ключа будує клієнт
+ * (`mediaUrl`). Тому список файлів їде однією відповіддю: інакше каталог на
+ * двадцять позицій зробив би двадцять запитів по ті самі адреси.
+ */
+export interface ProductsData {
+  products: ShopProduct[];
+  media: ShopMedia[];
+}
+
 /** Що сталося зі збереженням: контролер перекладає це в код відповіді. */
 export type ProductSaveOutcome =
-  { kind: "saved"; product: ShopProduct } | { kind: "not_found" } | { kind: "address_taken" };
+  | { kind: "saved"; product: ShopProduct; media: ShopMedia[] }
+  | { kind: "not_found" }
+  | { kind: "address_taken" };
 
 /** Скільки віддавати за запитом: сміття й перебір дають межі, а не помилку. */
 export function clampCatalogLimit(raw: unknown): number {
@@ -101,8 +117,13 @@ export function clampCatalogLimit(raw: unknown): number {
 export class ShopProductsService {
   constructor(private env: Env) {}
 
-  /** Власні товари — разом із чернетками: продавець має їх бачити. */
-  async listOwn(shopId: number, ownerId: number): Promise<ShopProduct[] | null> {
+  /**
+   * Власні товари — разом із чернетками: продавець має їх бачити.
+   *
+   * Файли тут — **уся** бібліотека магазину: саме з неї продавець ставить те
+   * саме фото другому товару, і саме тому список не звужується до вживаних.
+   */
+  async listOwn(shopId: number, ownerId: number): Promise<ProductsData | null> {
     await ensureShopSchema(this.env.DB);
     if ((await ownShopId(this.env.DB, shopId, ownerId)) === null) return null;
 
@@ -114,14 +135,22 @@ export class ShopProductsService {
       .bind(shopId, OWN_LIMIT)
       .all<ProductRow>();
 
-    return (result.results ?? []).map(toProduct);
+    return {
+      products: (result.results ?? []).map(toProduct),
+      media: await readShopMedia(this.env.DB, shopId),
+    };
   }
 
-  /** Каталог відкритого магазину за його адресою; `null` — магазин закритий для нас. */
+  /**
+   * Каталог відкритого магазину за його адресою; `null` — магазин закритий для нас.
+   *
+   * Файлів тут рівно ті, що стоять у показаних товарах: решта — бібліотека
+   * продавця, і назовні їй нема чого робити.
+   */
   async catalog(
     shopSlug: string,
     limit: unknown = CATALOG_PAGE_SIZE,
-  ): Promise<ShopProduct[] | null> {
+  ): Promise<ProductsData | null> {
     await ensureShopSchema(this.env.DB);
 
     const shop = await publicShopBySlug(this.env.DB, shopSlug);
@@ -135,7 +164,10 @@ export class ShopProductsService {
       .bind(shop.id, clampCatalogLimit(limit))
       .all<ProductRow>();
 
-    return (result.results ?? []).map(toProduct);
+    const products = (result.results ?? []).map(toProduct);
+    const imageIds = [...new Set(products.flatMap((product) => product.images))];
+
+    return { products, media: await readShopMedia(this.env.DB, shop.id, imageIds) };
   }
 
   /**
@@ -189,7 +221,12 @@ export class ShopProductsService {
         .run();
 
       const product = await this.read(shopId, id);
-      return product ? { kind: "saved", product } : { kind: "not_found" };
+      if (!product) return { kind: "not_found" };
+      return {
+        kind: "saved",
+        product,
+        media: await readShopMedia(this.env.DB, shopId, product.images),
+      };
     }
 
     const slug = await this.uniqueSlug(shopId, input.slug);
@@ -216,7 +253,12 @@ export class ShopProductsService {
       .run();
 
     const product = await this.read(shopId, inserted.meta?.last_row_id ?? 0);
-    return product ? { kind: "saved", product } : { kind: "not_found" };
+    if (!product) return { kind: "not_found" };
+    return {
+      kind: "saved",
+      product,
+      media: await readShopMedia(this.env.DB, shopId, product.images),
+    };
   }
 
   /** Видалення свого товару; видалені замовлення не чіпає — там знімок. */

@@ -51,7 +51,7 @@ async function ensureBase(db: D1Database): Promise<void> {
  * `slug` — єдина адреса сторінки, яку повертаємо клієнту; `id` — номер рядка,
  * за яким адресу можна відрізнити після редагування.
  */
-const PAGE_COLUMNS = "id, slug, title, photo_url, page_data, is_active";
+const PAGE_COLUMNS = "id, slug, title, photo_url, page_data, template_key, is_active";
 
 // ── resolveScenario ─────────────────────────────────────────────────
 async function resolveScenario(db: D1Database, ref: string) {
@@ -82,6 +82,9 @@ async function resolveScenario(db: D1Database, ref: string) {
       slug: page?.slug ?? HOME_SLUG,
       title: page?.title ?? null,
       photo_url: page?.photoUrl ?? null,
+      // Шаблон сторінки: за ним клієнт знає, що під вітриною стоїть каталог
+      // магазину й його треба спитати окремо (`docs/SHOPS.md` §2).
+      template_key: page?.templateKey ?? null,
     },
     pageData: page?.content ?? null,
   };

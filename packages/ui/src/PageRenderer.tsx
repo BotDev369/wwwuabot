@@ -7,7 +7,7 @@
  * @module packages/ui/src/PageRenderer
  */
 
-import { useState, useCallback, useEffect, useMemo } from "react";
+import { useState, useCallback, useEffect, useMemo, type ReactNode } from "react";
 import type { PageConfig, BlockContext } from "@wwwuabot/shared/types/page-config";
 import { Icon, icons, type IconName } from "@wwwuabot/shared";
 import { ZoneRenderer } from "./ZoneRenderer";
@@ -29,6 +29,15 @@ interface PageRendererProps {
   zoneClassName?: Partial<Record<keyof PageConfig["zones"], string>>;
   /** Показувати мітки зон (sidebar, header, main, footer). */
   showZoneLabels?: boolean;
+  /**
+   * Динамічний вміст головної зони — те, чого не буває в `page_data`.
+   *
+   * Каталог магазину приходить із таблиці товарів, а не з рядка сторінки, і
+   * мусить стояти **всередині** тієї самої `main`, що й блоки: друга `main`
+   * зробила б на сторінці два головні розділи, а вміст поза зонами випав би з
+   * її розкладки.
+   */
+  children?: ReactNode;
 }
 
 /** Мітки зон редактора: іконка зі спільного набору, а не емодзі (`AGENTS.md` §4). */
@@ -45,6 +54,7 @@ export function PageRenderer({
   className = "page-layout",
   zoneClassName,
   showZoneLabels = false,
+  children,
 }: PageRendererProps) {
   const zones = config?.zones ?? { sidebar: [], header: [], main: [], footer: [] };
   const sidebarSettings = config?.sidebarSettings;
@@ -163,10 +173,13 @@ export function PageRenderer({
           </header>
         )}
 
-        {hasMain && (
+        {/* Зона `main` лишається й тоді, коли блоків у ній немає, а є лише
+            динамічний вміст: порожній шаблон із каталогом — це теж сторінка. */}
+        {(hasMain || Boolean(children)) && (
           <main className={zoneClassName?.main ?? "page-zone page-zone--main"} data-zone="main">
             {renderZoneLabel("main")}
             <ZoneRenderer blocks={zones.main} zone="main" context={enrichedContext} />
+            {children}
           </main>
         )}
 
