@@ -23,6 +23,18 @@ export function formatStamp(iso: string): string {
   });
 }
 
+/**
+ * Дата й час зрізу окремо — шапка таблиці показує їх двома рядками.
+ *
+ * Колонка зрізу вузька, і «25.09.2026, 08:14» в один рядок змушувало б або
+ * ламатися посеред дати, або тягнути колонку на всю ширину екрана.
+ */
+export function stampParts(iso: string): readonly [string, string] {
+  const stamp = formatStamp(iso);
+  const [date, time] = stamp.split(", ");
+  return [date ?? stamp, time ?? ""];
+}
+
 /** Скільки часу минуло — одним рядком, без секунд. */
 export function formatRelative(iso: string): string {
   const date = new Date(iso);

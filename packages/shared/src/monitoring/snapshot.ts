@@ -97,6 +97,42 @@ export function sortPoints(points: readonly SnapshotPoint[]): SnapshotPoint[] {
 }
 
 /**
+ * Значення показника по зрізах — із **діркою** там, де його не міряли.
+ *
+ * `metricSeries` вище віддає нуль, і для графіка це правильно: лінія мусить
+ * мати точку на кожен зріз. Для таблиці «показник × зріз» нуль непридатний —
+ * він читається як «нуль рядків», хоч означає «у тому зрізі не міряли».
+ * Тому тут `undefined`, і сторінка малює прочерк.
+ */
+export function metricValues(
+  points: readonly SnapshotPoint[],
+  metric: string,
+  group: string = TOTAL_GROUP,
+): (number | undefined)[] {
+  return sortPoints(points).map((point) => point.totals[valueKey(group, metric)]);
+}
+
+/**
+ * Зміна показника за весь період історії: від першого виміряного до останнього.
+ *
+ * Одного вимірювання замало — різниці немає, і це `undefined`, а не нуль:
+ * «0» читалось би як «не змінився», хоч насправді порівнювати нема з чим.
+ * Зрізи, де показника не було (частковий збір), з розрахунку випадають: вони
+ * не обрив динаміки, а просто не міряли.
+ */
+export function periodDelta(
+  points: readonly SnapshotPoint[],
+  metric: string,
+  group: string = TOTAL_GROUP,
+): number | undefined {
+  const measured = metricValues(points, metric, group).filter(
+    (value): value is number => value !== undefined,
+  );
+  if (measured.length < 2) return undefined;
+  return measured[measured.length - 1] - measured[0];
+}
+
+/**
  * Коміт, спільний для всіх зрізів, або `null`.
  *
  * **Навіщо це взагалі.** Рівна лінія на графіку має дві різні причини: код

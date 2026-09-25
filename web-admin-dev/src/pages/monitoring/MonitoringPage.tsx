@@ -12,6 +12,9 @@
  * Честність важливіша за вигляд: якщо токена GitHub немає, це сказано прямо,
  * а частковий зріз позначений бейджем — число з нього не можна читати як повне.
  *
+ * **Кожен розділ — акордеон, типово закритий** (`usePanels`): сторінка має
+ * читатись як перелік розділів, а не як полотно чисел.
+ *
  * @module web-admin-dev/src/pages/monitoring/MonitoringPage
  */
 
@@ -19,15 +22,20 @@ import { PageTopbar } from "../../layout/PageTopbar";
 import { Icon } from "@wwwuabot/shared";
 import { TOTAL_GROUP, diffSnapshots, groupValues } from "@wwwuabot/shared/monitoring";
 import { CollectorReportList } from "./CollectorReportList";
+import { MetricDynamics } from "./MetricDynamics";
 import { MetricHistory } from "./MetricHistory";
+import { MonPanel } from "./MonPanel";
 import { ScopePanel } from "./ScopePanel";
 import { SnapshotHistory } from "./SnapshotHistory";
 import { WorkspaceTable } from "./WorkspaceTable";
 import { formatRelative, formatStamp, statusClass, statusLabel } from "./format";
 import { useMonitoring } from "./useMonitoring";
+import { usePanels } from "./usePanels";
 
 export function MonitoringPage() {
   const { summary, loading, collecting, error, collect } = useMonitoring();
+  const panels = usePanels();
+  const history = summary?.history ?? [];
   const latest = summary?.latest ?? null;
   const previous = summary?.previous ?? null;
 
@@ -40,6 +48,12 @@ export function MonitoringPage() {
         <h1 className="wb-topbar-title">Моніторинг</h1>
         <div className="wb-topbar-right">
           {latest && <span className="mon-stamp">зріз {formatRelative(latest.collectedAt)}</span>}
+          {latest && (
+            <button className="wb-btn wb-btn-ghost wb-btn-sm" onClick={panels.toggleAll}>
+              <Icon name={panels.allOpen ? "collapse" : "expand"} size={14} />
+              {panels.allOpen ? "Згорнути всі" : "Розгорнути всі"}
+            </button>
+          )}
           <button className="wb-btn wb-btn-primary" onClick={collect} disabled={collecting}>
             {collecting ? "Збираю..." : "Зібрати зріз"}
           </button>
@@ -87,39 +101,59 @@ export function MonitoringPage() {
               </span>
             </div>
 
-            <ScopePanel scope="code" title="Код" values={totals} deltas={deltas} />
-            <ScopePanel scope="github" title="Репозиторій" values={totals} deltas={deltas} />
+            <ScopePanel
+              scope="code"
+              title="Код"
+              values={totals}
+              deltas={deltas}
+              open={panels.isOpen("code")}
+              onToggle={() => panels.toggle("code")}
+            />
+            <ScopePanel
+              scope="github"
+              title="Репозиторій"
+              values={totals}
+              deltas={deltas}
+              open={panels.isOpen("github")}
+              onToggle={() => panels.toggle("github")}
+            />
 
-            <MetricHistory history={summary?.history ?? []} />
+            <MetricHistory
+              history={history}
+              open={panels.isOpen("dynamics")}
+              onToggle={() => panels.toggle("dynamics")}
+            />
+            <MetricDynamics
+              history={history}
+              open={panels.isOpen("metrics")}
+              onToggle={() => panels.toggle("metrics")}
+            />
 
             <div className="mon-columns">
-              <div className="mon-panel">
-                <div className="mon-panel-head">
-                  <span className="mon-panel-title">Розбивка по воркспейсах</span>
-                </div>
-                <div className="mon-panel-body">
-                  <WorkspaceTable values={latest.values} />
-                </div>
-              </div>
+              <MonPanel
+                title="Розбивка по воркспейсах"
+                open={panels.isOpen("workspaces")}
+                onToggle={() => panels.toggle("workspaces")}
+              >
+                <WorkspaceTable values={latest.values} />
+              </MonPanel>
 
-              <div className="mon-panel">
-                <div className="mon-panel-head">
-                  <span className="mon-panel-title">Збір</span>
-                </div>
-                <div className="mon-panel-body">
-                  <CollectorReportList collectors={latest.collectors} />
-                </div>
-              </div>
+              <MonPanel
+                title="Збір"
+                open={panels.isOpen("collectors")}
+                onToggle={() => panels.toggle("collectors")}
+              >
+                <CollectorReportList collectors={latest.collectors} />
+              </MonPanel>
             </div>
 
-            <div className="mon-panel">
-              <div className="mon-panel-head">
-                <span className="mon-panel-title">Історія зрізів</span>
-              </div>
-              <div className="mon-panel-body">
-                <SnapshotHistory history={summary?.history ?? []} />
-              </div>
-            </div>
+            <MonPanel
+              title="Історія зрізів"
+              open={panels.isOpen("history")}
+              onToggle={() => panels.toggle("history")}
+            >
+              <SnapshotHistory history={history} />
+            </MonPanel>
           </>
         )}
       </section>

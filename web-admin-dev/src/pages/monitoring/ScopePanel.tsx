@@ -21,6 +21,7 @@ import {
   type MetricScope,
 } from "@wwwuabot/shared/monitoring";
 import { MetricCard } from "./MetricCard";
+import { MonPanel } from "./MonPanel";
 
 interface ScopePanelProps {
   scope: MetricScope;
@@ -29,29 +30,26 @@ interface ScopePanelProps {
   values: Readonly<Record<string, number>>;
   /** Зміни проти попереднього зрізу — за ключем `група|метрика`. */
   deltas: Readonly<Record<string, number>>;
+  open: boolean;
+  onToggle: () => void;
 }
 
-export function ScopePanel({ scope, title, values, deltas }: ScopePanelProps) {
+export function ScopePanel({ scope, title, values, deltas, open, onToggle }: ScopePanelProps) {
   const metrics = metricsOfScope(scope).filter((metric) => values[metric.key] !== undefined);
   if (metrics.length === 0) return null;
 
   return (
-    <div className="mon-panel">
-      <div className="mon-panel-head">
-        <span className="mon-panel-title">{title}</span>
+    <MonPanel title={title} open={open} onToggle={onToggle}>
+      <div className="mon-kpis">
+        {metrics.map((metric) => (
+          <MetricCard
+            key={metric.key}
+            metric={metric.key}
+            value={values[metric.key]}
+            delta={deltas[valueKey(TOTAL_GROUP, metric.key)]}
+          />
+        ))}
       </div>
-      <div className="mon-panel-body">
-        <div className="mon-kpis">
-          {metrics.map((metric) => (
-            <MetricCard
-              key={metric.key}
-              metric={metric.key}
-              value={values[metric.key]}
-              delta={deltas[valueKey(TOTAL_GROUP, metric.key)]}
-            />
-          ))}
-        </div>
-      </div>
-    </div>
+    </MonPanel>
   );
 }

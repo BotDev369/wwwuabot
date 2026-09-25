@@ -16,6 +16,8 @@ import {
   groupsOf,
   indexValues,
   metricSeries,
+  metricValues,
+  periodDelta,
   sameRef,
   valueKey,
 } from "./snapshot";
@@ -120,6 +122,48 @@ describe("історія", () => {
 
   it("показник, якого немає у зрізі, — нуль, а не дірка", () => {
     expect(metricSeries(history, "github.stars")).toEqual([0, 0, 0]);
+  });
+});
+
+describe("таблиця «показник × зріз»", () => {
+  const withGap: SnapshotPoint[] = [
+    {
+      id: 1,
+      collectedAt: "a",
+      status: "ok",
+      trigger: "cron",
+      ref: null,
+      totals: { [valueKey(TOTAL_GROUP, "code.lines")]: 100 },
+    },
+    {
+      id: 2,
+      collectedAt: "b",
+      status: "partial",
+      trigger: "cron",
+      ref: null,
+      totals: {},
+    },
+    {
+      id: 3,
+      collectedAt: "c",
+      status: "ok",
+      trigger: "manual",
+      ref: null,
+      totals: { [valueKey(TOTAL_GROUP, "code.lines")]: 140 },
+    },
+  ];
+
+  it("зріз без показника — дірка, а не нуль", () => {
+    expect(metricValues(withGap, "code.lines")).toEqual([100, undefined, 140]);
+  });
+
+  it("зміна за період рахується по виміряних зрізах", () => {
+    expect(periodDelta(withGap, "code.lines")).toBe(40);
+  });
+
+  it("одного вимірювання замало — динаміки немає", () => {
+    expect(periodDelta(withGap.slice(0, 1), "code.lines")).toBeUndefined();
+    expect(periodDelta(withGap, "github.stars")).toBeUndefined();
   });
 });
 

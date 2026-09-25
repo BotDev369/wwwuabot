@@ -146,14 +146,40 @@
   overflow: hidden;
 }
 
+/* Шапка — це кнопка-акордеон: увесь рядок клікабельний, і жодного відступу,
+   який треба було б «обстрілювати» пальцем (мобільний — пріоритет, §3).
+   Поділ шапки й тіла малює саме тіло: у згорнутій панелі лінія під шапкою
+   читалась би як порожній вміст. */
 .mon-panel-head {
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 12px;
   flex-wrap: wrap;
-  padding: 12px 14px;
-  border-bottom: 1px solid var(--border);
+}
+
+.mon-panel-trigger {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 44px;
+  padding: 10px 14px;
+  background: transparent;
+  border: none;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+  color: var(--text-muted);
+  transition: color var(--duration-fast) var(--ease);
+}
+
+.mon-panel-trigger:hover .mon-panel-title {
+  color: var(--text-secondary);
+}
+
+.mon-panel-trigger svg {
+  flex-shrink: 0;
 }
 
 .mon-panel-title {
@@ -164,8 +190,18 @@
   color: var(--text-muted);
 }
 
+/* Керування в шапці: на вузькому екрані чіпи переносяться другим рядком,
+   тож відступи з обох боків — інакше вони прилипали б до краю панелі. */
+.mon-panel-tools {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+  padding: 8px 14px;
+}
+
 .mon-panel-body {
   padding: 14px;
+  border-top: 1px solid var(--border);
 }
 
 .mon-columns {
@@ -279,6 +315,12 @@
 }
 
 /* ── Таблиці ─────────────────────────────────────────────────────────────── */
+/* Широкі таблиці скроляться самі: на телефоні «показник × зріз» не влізе,
+   і стискати колонки до нечитабельності — не вихід. */
+.mon-scroll {
+  overflow-x: auto;
+}
+
 .mon-table {
   width: 100%;
   border-collapse: collapse;
@@ -396,4 +438,29 @@
   font-family: var(--font-mono);
   font-size: 11px;
   color: var(--text-muted);
+}
+
+/* ── Динаміка всіх показників ────────────────────────────────────────────── */
+/* Перший стовпчик їде разом зі скролом — і тоді через екран проходять голі
+   числа без підпису: саме тому він липкий і з власним тлом. */
+.mon-table-dynamics th:first-child,
+.mon-table-dynamics td:first-child {
+  position: sticky;
+  left: 0;
+  z-index: 1;
+  background: var(--bg-2);
+  white-space: nowrap;
+  text-align: left;
+}
+
+.mon-dyn-label {
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+/* Дата, час і коміт — трьома рядками в одному стовпчику: так колонка зрізу
+   лишається вузькою, а підпис читається без розривів. */
+.mon-dyn-head {
+  display: block;
+  white-space: nowrap;
 }

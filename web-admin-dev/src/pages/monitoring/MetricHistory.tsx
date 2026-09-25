@@ -16,6 +16,10 @@
  * пояснення такий графік читається як «нічого не працює», і саме тут сторінка
  * мусить сказати причину.
  *
+ * **Стан вибору показника живе тут, а не в панелі.** Згортання панелі не має
+ * його скидати: `MonPanel` лише рендерить вміст, а `metric` — це намір
+ * людини, який тримає сторінка.
+ *
  * @module web-admin-dev/src/pages/monitoring/MetricHistory
  */
 
@@ -29,6 +33,7 @@ import {
   sortPoints,
   type SnapshotPoint,
 } from "@wwwuabot/shared/monitoring";
+import { MonPanel } from "./MonPanel";
 import { formatStamp, shortRef } from "./format";
 
 /** Показники, які має сенс бачити лінією: гроші, обсяг і зростання. */
@@ -46,6 +51,8 @@ const PAD = 14;
 
 interface MetricHistoryProps {
   history: readonly SnapshotPoint[];
+  open: boolean;
+  onToggle: () => void;
 }
 
 interface Point {
@@ -67,7 +74,7 @@ function geometry(series: readonly number[]): Point[] {
   }));
 }
 
-export function MetricHistory({ history }: MetricHistoryProps) {
+export function MetricHistory({ history, open, onToggle }: MetricHistoryProps) {
   const [metric, setMetric] = useState<string>(SERIES_METRICS[0]);
 
   const ordered = sortPoints(history);
@@ -82,11 +89,11 @@ export function MetricHistory({ history }: MetricHistoryProps) {
   const flatRef = series.length >= 2 ? sameRef(ordered) : null;
 
   return (
-    <div className="mon-panel">
-      <div className="mon-panel-head">
-        <span className="mon-panel-title">
-          Динаміка: {metricDefinition(metric)?.label ?? metric}
-        </span>
+    <MonPanel
+      title={`Динаміка: ${metricDefinition(metric)?.label ?? metric}`}
+      open={open}
+      onToggle={onToggle}
+      tools={
         <div className="mon-chart-tools">
           {SERIES_METRICS.map((key) => (
             <button
@@ -99,57 +106,54 @@ export function MetricHistory({ history }: MetricHistoryProps) {
             </button>
           ))}
         </div>
+      }
+    >
+      {series.length < 2 ? (
+        <p className="mon-chart-empty">
+          Зрізів поки {series.length === 0 ? "немає" : "один"} — лінії нема з чого малювати. Другий
+          зріз (ручний або за розкладом) покаже динаміку.
+        </p>
+      ) : (
+        <svg
+          className="mon-chart-svg"
+          viewBox={`0 0 ${WIDTH} ${HEIGHT}`}
+          preserveAspectRatio="none"
+          role="img"
+          aria-label={`Динаміка показника ${metricDefinition(metric)?.label ?? metric}`}
+        >
+          {[PAD, HEIGHT / 2, HEIGHT - PAD].map((y) => (
+            <line key={y} className="mon-chart-grid" x1={0} x2={WIDTH} y1={y} y2={y} />
+          ))}
+          <path className="mon-chart-area" d={`${line} L${WIDTH},${HEIGHT} L0,${HEIGHT} Z`} />
+          <path className="mon-chart-line" d={line} />
+          {points.map((point, index) => (
+            <circle key={index} className="mon-chart-dot" cx={point.x} cy={point.y} r={3}>
+              <title>{`${formatStamp(ordered[index].collectedAt)} — ${formatMetric(metric, series[index])}`}</title>
+            </circle>
+          ))}
+        </svg>
+      )}
+
+      <div className="mon-chart-foot">
+        <span>
+          {first
+            ? `${formatStamp(first.collectedAt)} · ${formatMetric(metric, series[0] ?? 0)}`
+            : "—"}
+        </span>
+        <span>{series.length} зрізів</span>
+        <span>
+          {last
+            ? `${formatStamp(last.collectedAt)} · ${formatMetric(metric, series[series.length - 1] ?? 0)}`
+            : "—"}
+        </span>
       </div>
 
-      <div className="mon-panel-body">
-        {series.length < 2 ? (
-          <p className="mon-chart-empty">
-            Зрізів поки {series.length === 0 ? "немає" : "один"} — лінії нема з чого малювати.
-            Другий зріз (ручний або за розкладом) покаже динаміку.
-          </p>
-        ) : (
-          <svg
-            className="mon-chart-svg"
-            viewBox={`0 0 ${WIDTH} ${HEIGHT}`}
-            preserveAspectRatio="none"
-            role="img"
-            aria-label={`Динаміка показника ${metricDefinition(metric)?.label ?? metric}`}
-          >
-            {[PAD, HEIGHT / 2, HEIGHT - PAD].map((y) => (
-              <line key={y} className="mon-chart-grid" x1={0} x2={WIDTH} y1={y} y2={y} />
-            ))}
-            <path className="mon-chart-area" d={`${line} L${WIDTH},${HEIGHT} L0,${HEIGHT} Z`} />
-            <path className="mon-chart-line" d={line} />
-            {points.map((point, index) => (
-              <circle key={index} className="mon-chart-dot" cx={point.x} cy={point.y} r={3}>
-                <title>{`${formatStamp(ordered[index].collectedAt)} — ${formatMetric(metric, series[index])}`}</title>
-              </circle>
-            ))}
-          </svg>
-        )}
-
-        <div className="mon-chart-foot">
-          <span>
-            {first
-              ? `${formatStamp(first.collectedAt)} · ${formatMetric(metric, series[0] ?? 0)}`
-              : "—"}
-          </span>
-          <span>{series.length} зрізів</span>
-          <span>
-            {last
-              ? `${formatStamp(last.collectedAt)} · ${formatMetric(metric, series[series.length - 1] ?? 0)}`
-              : "—"}
-          </span>
-        </div>
-
-        {flatRef && (
-          <p className="mon-chart-note">
-            Усі {series.length} зрізів знято на коміті <code>{shortRef(flatRef)}</code> — код між
-            ними не змінювався, тож лінія рівна. Щойно код зміниться, наступний зріз покаже
-            динаміку.
-          </p>
-        )}
-      </div>
-    </div>
+      {flatRef && (
+        <p className="mon-chart-note">
+          Усі {series.length} зрізів знято на коміті <code>{shortRef(flatRef)}</code> — код між ними
+          не змінювався, тож лінія рівна. Щойно код зміниться, наступний зріз покаже динаміку.
+        </p>
+      )}
+    </MonPanel>
   );
 }

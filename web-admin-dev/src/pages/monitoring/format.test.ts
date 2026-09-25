@@ -14,6 +14,7 @@ import {
   deltaClass,
   formatDuration,
   shortRef,
+  stampParts,
   statusClass,
   statusLabel,
   triggerLabel,
@@ -65,5 +66,15 @@ describe("дрібниці", () => {
   it("тривалість у мілісекундах і секундах", () => {
     expect(formatDuration(420)).toBe("420 мс");
     expect(formatDuration(2400)).toBe("2.4 с");
+  });
+
+  it("дата й час зрізу — двома рядками, а не одним", () => {
+    const [date, time] = stampParts("2026-09-25T08:14:00.000Z");
+    expect(date).toMatch(/^\d{2}\.\d{2}\.\d{4}$/);
+    expect(time).toMatch(/^\d{2}:\d{2}$/);
+  });
+
+  it("невідома дата не вигадує час", () => {
+    expect(stampParts("не дата")).toEqual(["—", ""]);
   });
 });
