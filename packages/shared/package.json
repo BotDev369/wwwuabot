@@ -44,6 +44,7 @@
     "./user/public-profile": "./src/user/public-profile.ts",
     "./ads": "./src/ads/index.ts",
     "./pages": "./src/pages/index.ts",
+    "./shop": "./src/shop/index.ts",
     "./monitoring": "./src/monitoring/index.ts",
     "./themes": "./src/themes/index.ts",
     "./themes/apply": "./src/themes/apply.ts",

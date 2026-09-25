@@ -264,6 +264,112 @@ export const TABLES = {
    * теж ціна, а число змусило б людину вигадувати нуль. Правила виду, меж і
    * перевірки — `@wwwuabot/shared/ads`.
    */
+  /**
+   * Замовлення магазину — **рядок, а не повідомлення**.
+   *
+   * Замовлення не живе ні в рядку користувача, ні в тексті листування: `users`
+   * пише бот під час звернення, і структурованого замовлення там немає, а
+   * переписка — це текст, у якому факт замовлення не існує як дані
+   * (`docs/SHOPS.md` §6 і §8).
+   *
+   * **`status` — ключ, а не підпис.** Підпис людина переписує під свій процес
+   * скільки завгодно, і якби в замовленні лежав він, перейменування статусу
+   * переписувало б історію. Типові ключі — у коді (`DEFAULT_ORDER_STATUSES`),
+   * а магазин тримає лише відхилення (`shop_order_statuses`).
+   *
+   * **`contact` — JSON**, і це не «гнучкість»: склад полів залежить від виду
+   * товару (фізичному потрібна адреса, цифровому — канал), тож колонки під
+   * кожне поле змусили б `ALTER TABLE` на кожен новий вид. Пише його сервер і
+   * лише за переліком `orderContactFields` — зайвих ключів у JSON не буває.
+   */
+  shop_orders: {
+    name: "shop_orders",
+    owner: "api-dev",
+    purpose:
+      "Замовлення магазину: покупець, ключ статусу, контакт покупця JSON-ом і нотатка. Позиції — знімком у `shop_order_items`.",
+    create: `CREATE TABLE IF NOT EXISTS shop_orders (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        shop_id INTEGER NOT NULL,
+        buyer_id INTEGER NOT NULL,
+        status TEXT NOT NULL DEFAULT 'new',
+        contact TEXT NOT NULL DEFAULT '{}',
+        note TEXT NOT NULL DEFAULT '',
+        created_at TEXT NOT NULL DEFAULT (datetime('now')),
+        updated_at TEXT NOT NULL DEFAULT (datetime('now'))
+      )`,
+    indexes: [
+      "CREATE INDEX IF NOT EXISTS idx_shop_orders_shop ON shop_orders(shop_id, id)",
+      "CREATE INDEX IF NOT EXISTS idx_shop_orders_buyer ON shop_orders(buyer_id, id)",
+    ],
+  },
+
+  /**
+   * Позиція замовлення — **знімок, а не посилання**.
+   *
+   * Назва, ціна й вид **копіюються** на момент замовлення, і це суть таблиці:
+   * правка ціни заднім числом переписувала б історію, а видалений товар зникав
+   * би із замовлення, яке вже прийняли. `product_id` лишається поруч — щоб
+   * знайти, про що було, коли товар ще є; зникати він при цьому не мусить, тож
+   * `NOT NULL` тут немає (видалення товару позицію не чіпає).
+   *
+   * `kind` — **текстом**, а не ключем із кодом: перелік видів може змінитися, а
+   * історія замовлення мусить читатись як є.
+   */
+  shop_order_items: {
+    name: "shop_order_items",
+    owner: "api-dev",
+    purpose:
+      "Знімок позиції замовлення: назва, ціна й вид на момент замовлення + `product_id` як посилання.",
+    create: `CREATE TABLE IF NOT EXISTS shop_order_items (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        order_id INTEGER NOT NULL,
+        product_id INTEGER,
+        title TEXT NOT NULL DEFAULT '',
+        price TEXT NOT NULL DEFAULT '',
+        kind TEXT NOT NULL DEFAULT '',
+        qty INTEGER NOT NULL DEFAULT 1
+      )`,
+    indexes: [
+      "CREATE INDEX IF NOT EXISTS idx_shop_order_items_order ON shop_order_items(order_id, id)",
+    ],
+  },
+
+  /**
+   * Статуси замовлення магазину — **лише відхилення від типових**.
+   *
+   * Типові народжуються з `DEFAULT_ORDER_STATUSES` у коді, а сюди потрапляє
+   * тільки те, чим магазин відрізняється: перейменування (той самий ключ, свій
+   * підпис), вимкнення (`is_active = 0`) і власні статуси. Без цього правила
+   * кожен новий магазин починався б із копії тих самих п'яти рядків, а зміна
+   * типового набору в коді не доїхала б до жодного з них.
+   *
+   * **Статус не видаляють — його вимикають:** підпис потрібен і для старих
+   * замовлень, тож рядок лишається, а для нових статус не пропонується.
+   *
+   * Порожній `label` означає «лишається типовий підпис»; розрізняє це
+   * `resolveOrderStatuses`, а не схема.
+   */
+  shop_order_statuses: {
+    name: "shop_order_statuses",
+    owner: "api-dev",
+    purpose:
+      "Відхилення статусів замовлення магазину: перейменування типового, вимкнення й власні статуси. Ключ — контракт, підпис — слово магазину.",
+    create: `CREATE TABLE IF NOT EXISTS shop_order_statuses (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        shop_id INTEGER NOT NULL,
+        key TEXT NOT NULL,
+        label TEXT NOT NULL DEFAULT '',
+        stage TEXT,
+        is_active INTEGER NOT NULL DEFAULT 1,
+        created_at TEXT NOT NULL DEFAULT (datetime('now')),
+        updated_at TEXT NOT NULL DEFAULT (datetime('now')),
+        UNIQUE (shop_id, key)
+      )`,
+    indexes: [
+      "CREATE INDEX IF NOT EXISTS idx_shop_order_statuses_shop ON shop_order_statuses(shop_id, id)",
+    ],
+  },
+
   ads: {
     name: "ads",
     owner: "api-dev",
@@ -528,6 +634,82 @@ export const TABLES = {
       "CREATE INDEX IF NOT EXISTS idx_messages_thread ON messages(conversation_id, id)",
       "CREATE INDEX IF NOT EXISTS idx_messages_unread ON messages(conversation_id, read_at)",
     ],
+  },
+
+  /**
+   * Товар магазину — **окремий рядок, а не сторінка**.
+   *
+   * Рядок `scenarios` — це сторінка: `page_data` плюс подання в боті
+   * (`caption_*`, `buttons`, `rich_*`). Каталог на триста позицій роздув би
+   * таблицю, у якій кожен рядок несе бота, і зробив би «сторінки» й «товари»
+   * нерозрізнюваними. Товар не має ані подання в боті, ані власного хвоста
+   * параметрів: адресу йому дає магазин (`docs/SHOPS.md` §2–3).
+   *
+   * **`shop_id` — номер рядка `scenarios`**, а не окремої таблиці магазинів:
+   * магазин і є сторінка, тож другої ідентичності в нього немає.
+   * `UNIQUE (shop_id, slug)` — у `CREATE TABLE`, а не індексом: імена індексів
+   * у SQLite глобальні для бази, і однойменний `CREATE UNIQUE INDEX IF NOT
+   * EXISTS` на другій таблиці був би **порожньою дією** (див. шапку файлу).
+   *
+   * **Ціна — текст**, як в оголошеннях: «договірна» теж ціна. **`images` —
+   * номери файлів `shop_media`**, а не адреси: адресу будує читання з ключа R2,
+   * і вона змінилася б разом із бакетом.
+   */
+  shop_products: {
+    name: "shop_products",
+    owner: "api-dev",
+    purpose:
+      "Товар магазину: адреса унікальна в межах магазину (`UNIQUE (shop_id, slug)`), вид — ключ із коду, ціна — текст, фото — номери `shop_media`.",
+    create: `CREATE TABLE IF NOT EXISTS shop_products (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        shop_id INTEGER NOT NULL,
+        slug TEXT NOT NULL,
+        kind TEXT NOT NULL DEFAULT 'physical',
+        title TEXT NOT NULL DEFAULT '',
+        summary TEXT NOT NULL DEFAULT '',
+        description TEXT NOT NULL DEFAULT '',
+        price TEXT NOT NULL DEFAULT '',
+        images TEXT NOT NULL DEFAULT '[]',
+        attributes TEXT NOT NULL DEFAULT '[]',
+        is_active INTEGER NOT NULL DEFAULT 1,
+        created_at TEXT NOT NULL DEFAULT (datetime('now')),
+        updated_at TEXT NOT NULL DEFAULT (datetime('now')),
+        UNIQUE (shop_id, slug)
+      )`,
+    indexes: [
+      "CREATE INDEX IF NOT EXISTS idx_shop_products_shop ON shop_products(shop_id, is_active, id)",
+    ],
+  },
+
+  /**
+   * Облік файлів R2 — **рядок на файл, а не поле товару**.
+   *
+   * Порядок дій розв'язує питання «одне фото в товарі чи бібліотека»: файл
+   * спершу **завантажують**, потім **приєднують**. Між цими кроками він уже
+   * існує, і якщо ніде не записаний — його нічим не прибрати, не порахувати й
+   * не перевикористати. Тому товар посилається на **номери** цих рядків, а
+   * байти лежать у R2.
+   *
+   * `r2_key` — `shop/<shop_id>/<випадкове>-<ім'я>`: магазин у ключі навмисно, бо
+   * за ним рахують квоту й прибирають файли магазину цілком. `UNIQUE (r2_key)`
+   * забороняє **два облікові рядки на один файл** — інакше видалення одного з
+   * них лишало б другий із мертвим ключем.
+   */
+  shop_media: {
+    name: "shop_media",
+    owner: "api-dev",
+    purpose:
+      "Облік файлів магазину в R2: ключ у бакеті, тип і розмір. Товар посилається на номери цих рядків, а не на байти.",
+    create: `CREATE TABLE IF NOT EXISTS shop_media (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        shop_id INTEGER NOT NULL,
+        r2_key TEXT NOT NULL UNIQUE,
+        mime TEXT NOT NULL DEFAULT '',
+        bytes INTEGER NOT NULL DEFAULT 0,
+        kind TEXT NOT NULL DEFAULT 'image',
+        created_at TEXT NOT NULL DEFAULT (datetime('now'))
+      )`,
+    indexes: ["CREATE INDEX IF NOT EXISTS idx_shop_media_shop ON shop_media(shop_id, id)"],
   },
 
   mydate_analysis: {

@@ -17,6 +17,7 @@ import type { PageTemplateKey, PublicPage, UserPage } from "@wwwuabot/shared/pag
 const PAGE_TEMPLATE_ICONS: Record<PageTemplateKey, IconName> = {
   card: "card",
   event: "calendar",
+  shop: "shop",
 };
 
 export function pageTemplateIcon(key: PageTemplateKey): IconName {

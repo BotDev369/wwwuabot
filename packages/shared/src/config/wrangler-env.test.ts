@@ -11,8 +11,10 @@
  *
  * 1. Кожен воркер оголошує `ENVIRONMENT` — щоб середовище не «замовчувалось».
  * 2. Ім'я `*-dev` → `dev`; будь-яке інше ім'я → `production`.
- * 3. У дев-воркері `database_name` мусить містити `-dev` (правило §7 в
- *    `AGENTS.md`: не змішувати prod/dev бази).
+ * 3. У дев-воркері `database_name` **і** `bucket_name` мусять містити `-dev`
+ *    (правило §7 в `AGENTS.md`: не змішувати prod/dev). База — щоб дев-код не
+ *    писав у прод-дані, бакет — із тієї ж причини: фото магазину з дев-воркера
+ *    не мають лягати в прод-бакет.
  *
  * Правила працюють на **будь-якому** знайденому `wrangler.toml`, тому перший
  * же прод-воркер підпаде під них автоматично.
@@ -46,6 +48,8 @@ interface WorkerConfig {
   name: string;
   environment: string | null;
   databaseName: string | null;
+  /** Усі `bucket_name` файлу — R2-бакети, до яких прив'язаний воркер. */
+  bucketNames: string[];
 }
 
 /** Перше значення ключа верхнього рівня (до першої `[table]`). */
@@ -68,6 +72,7 @@ function readWorkers(): WorkerConfig[] {
         environment: topLevelValue(text, "ENVIRONMENT"),
         // `database_name` — це `name` у `[[d1_databases]]`, другий за файлом.
         databaseName: text.match(/database_name\s*=\s*"(.*)"/)?.[1] ?? null,
+        bucketNames: [...text.matchAll(/bucket_name\s*=\s*"([^"]*)"/g)].map((m) => m[1]),
       };
     });
 }
@@ -105,5 +110,15 @@ describe("конфіги воркерів", () => {
       worker.databaseName,
       `дев-воркер «${worker.name}» прив'язаний до бази «${worker.databaseName}»`,
     ).toContain("-dev");
+  });
+
+  it.each(workers)("$dir: дев-воркер не дивиться в прод-бакет R2", (worker) => {
+    if (worker.environment !== ENV_DEV) return;
+
+    for (const bucket of worker.bucketNames) {
+      expect(bucket, `дев-воркер «${worker.name}» прив'язаний до бакета «${bucket}»`).toContain(
+        "-dev",
+      );
+    }
   });
 });

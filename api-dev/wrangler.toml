@@ -17,6 +17,17 @@ database_id = "9fc03f61-d497-4d92-bae4-c92b02c2d1c5"
 binding = "CONTENT_KV"
 id = "bda7a5fca58b4fbda87d75105d558ebf"
 
+# Фото й файли магазину: байти лежать у R2, облік — у рядках `shop_media`, а
+# ключ має вигляд `shop/<shop_id>/<випадкове>-ім'я` (docs/SHOPS.md §5).
+#
+# Бакет — середовища, як і база: дев-воркер дивиться лише в `-dev`. Прод
+# отримає свій бакет разом із прод-воркером — прода поки немає (AGENTS.md §1),
+# а змішати їх означало б писати прод-фото з дев-коду. Стежить
+# `packages/shared/src/config/wrangler-env.test.ts`.
+[[r2_buckets]]
+binding = "SHOP_MEDIA"
+bucket_name = "wwwuabot-shop-dev"
+
 [vars]
 # ADMIN_SECRET, BOT_TOKEN, SECRET_TOKEN, SENTRY_DSN, GITHUB_MONITOR_TOKEN і
 # CF_MONITOR_TOKEN — задаються через Cloudflare Dashboard (Secrets).

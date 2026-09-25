@@ -24,5 +24,6 @@ describe("подання сторінки", () => {
   it("кожен шаблон має свою іконку — вони й розрізняють сторінки в списку", () => {
     expect(pageTemplateIcon("card")).toBe("card");
     expect(pageTemplateIcon("event")).toBe("calendar");
+    expect(pageTemplateIcon("shop")).toBe("shop");
   });
 });

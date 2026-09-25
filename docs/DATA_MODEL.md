@@ -42,6 +42,11 @@ npx wrangler d1 execute wwwuabot-db-dev --remote \
 | `message_drafts` | `api-dev` | api-dev (`ensureTables` у `messages.controller`) | api-dev: `/api/messages/compose`, `/api/messages/draft` | **ненадісланий лист** — власні дані того, хто пише: документ зі **своїм номером** і необов'язковим адресатом (`peer_id` без `NOT NULL`); схема перебудована міграцією (див. нижче) |
 | `ads` | `api-dev` | api-dev (`ensureTables` у `ads.service`) | api-dev: своє — `/api/user/ads`, дошка — `/api/space/ads` | **оголошення дошки Простору:** вид (куплю / продам / здам / шукаю / …), заголовок, текст, ціна й місто (обидва — **текст**: «договірна» теж ціна). `is_active` — не «чи опубліковано», а **показати на дошці**: вимкнене лишається в списку власника чернеткою. Правила й межі — `@wwwuabot/shared/ads`, видимість — [`SPACE.md`](./SPACE.md) |
 | `theme_schemes` | `api-dev` | api-dev, `ensureTables` | api-dev: своє — `/api/user/themes`, спільна — `/api/space/themes` | **теми**: три кольори + шрифт; `is_public` виносить тему в спільну бібліотеку ([`THEMES.md`](./THEMES.md)) |
+| `shop_products` | `api-dev` | api-dev, `ensureTables` у `services/shop/shops.ts` | api-dev (шляхи — робота за [`SHOPS.md`](./SHOPS.md) §9) | **товар магазину:** `shop_id` — **номер рядка `scenarios`** (магазин і є сторінка, другої ідентичності в нього немає), `slug` унікальний **у межах магазину**, `kind` — ключ із `PRODUCT_KINDS`, `price` — **текст** («договірна» теж ціна), `images` — номери `shop_media`, а не адреси. Правила — `@wwwuabot/shared/shop` |
+| `shop_media` | `api-dev` | api-dev, `ensureTables` у `services/shop/shops.ts` | api-dev (шляхи — робота за [`SHOPS.md`](./SHOPS.md) §9) | **облік файлів R2:** рядок на файл, `r2_key` = `shop/<shop_id>/<випадкове>-<ім'я>` (`UNIQUE` — два облікові рядки на один файл зробили б ключ мертвим при видаленні одного з них). Байти — в R2, тут — ключ: товар посилається на **номери рядків** |
+| `shop_orders` | `api-dev` | api-dev, `ensureTables` у `services/shop/shops.ts` | api-dev (шляхи — робота за [`SHOPS.md`](./SHOPS.md) §9) | **замовлення магазину:** `status` — **ключ**, а не підпис (перейменування статусу не має переписувати історію), `contact` — JSON (склад полів залежить від виду товару), позиції — знімком поруч. Замовлення не живе ні в `users`, ні в тексті листування |
+| `shop_order_items` | `api-dev` | api-dev, `ensureTables` у `services/shop/shops.ts` | api-dev (шляхи — робота за [`SHOPS.md`](./SHOPS.md) §9) | **знімок позиції:** `title`, `price`, `kind` **копіюються** на момент замовлення — інакше правка ціни заднім числом переписувала б історію, а видалений товар зникав би з уже прийнятого замовлення. `product_id` лишається посиланням, і `NOT NULL` у нього немає |
+| `shop_order_statuses` | `api-dev` | api-dev, `ensureTables` у `services/shop/shops.ts` | api-dev (шляхи — робота за [`SHOPS.md`](./SHOPS.md) §9) | **лише відхилення від типових** (`DEFAULT_ORDER_STATUSES` у коді): перейменування (той самий ключ, свій підпис), вимкнення (`is_active = 0`) і власні статуси. Статус не видаляють — **вимикають**: підпис потрібен і для старих замовлень |
 | `mydate_analysis` | `api-dev` | api-dev, `getAnalysis` | api-dev | кеш астрологічного аналізу на дату (KV — швидкий шар) |
 | `metrics_snapshots` | `api-dev` | api-dev, `ensureTables` у `store.ts` | api-dev: `/api/admin/monitoring/summary`, `collect` і `scheduled` | зріз моніторингу проєкту: коли зібрано, ручний він чи за розкладом, стан, коміт і звіт колекторів |
 | `metrics_values` | `api-dev` | api-dev, `ensureTables` у `store.ts` | api-dev — ті самі шляхи + історія | значення зрізу: **рядок на показник** — `(зріз, група, метрика)`, тому набір параметрів росте без зміни схеми ([`MONITORING.md`](./MONITORING.md)) |
@@ -53,12 +58,16 @@ npx wrangler d1 execute wwwuabot-db-dev --remote \
 ідентичність, яка не змінюється ніколи; **`slug`** — адреса (`NOT NULL UNIQUE`), яку редагують вільно.
 
 **Індекси** (`indexes`) живуть поруч із таблицею, щоб не «губились» окремо від неї.
-Їх оголошують сім таблиць — `notes` (`idx_notes_scope_owner` за `(scope, owner_id)`), `contacts`
+Їх оголошують дванадцять таблиць — `notes` (`idx_notes_scope_owner` за `(scope, owner_id)`), `contacts`
 (`idx_contacts_owner`), `conversations` (`idx_conversations_peer_b`), `messages` (`idx_messages_thread`,
 `idx_messages_unread`), `ads` (`idx_ads_owner`, `idx_ads_doska` — дошка за `(is_active, id)`),
-`theme_schemes` (`idx_themes_owner`, `idx_themes_public`) і `metrics_values`
-(`idx_metrics_values_metric` — історія одного показника за часом). Унікальність `contacts.code` і
-`scenarios.slug` тримає `UNIQUE` у самому `CREATE TABLE`, а не іменований індекс:
+`theme_schemes` (`idx_themes_owner`, `idx_themes_public`), `metrics_values`
+(`idx_metrics_values_metric` — історія одного показника за часом) і п'ять таблиць магазину:
+`shop_products` (`idx_shop_products_shop` — товари за `(shop_id, is_active, id)`), `shop_media`,
+`shop_orders` (`idx_shop_orders_shop` і `idx_shop_orders_buyer` — список покупця), `shop_order_items`,
+`shop_order_statuses` (кожна — за своїм `shop_id` чи `order_id`). Унікальність `contacts.code`,
+`scenarios.slug`, `shop_products (shop_id, slug)`, `shop_media.r2_key` і
+`shop_order_statuses (shop_id, key)` тримає `UNIQUE` у самому `CREATE TABLE`, а не іменований індекс:
 імена індексів у SQLite **глобальні для бази**, тому однойменний `CREATE UNIQUE INDEX IF NOT EXISTS`
 на другій таблиці — не помилка, а **порожня дія**, і таблиця лишилась би без унікальності, не сказавши
 про це нікому. Те саме стосується `platform_username` — його унікальність тримає сам запит
