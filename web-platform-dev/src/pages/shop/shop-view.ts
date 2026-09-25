@@ -41,6 +41,18 @@ export function productStateLabel(product: Pick<ShopProduct, "isActive">): strin
   return product.isActive ? "У каталозі" : "Чернетка";
 }
 
+/**
+ * Другий рядок картки магазину: скільки товарів і що з ними робити.
+ *
+ * Число стоїть як «Товарів у магазині: 3», а не «3 товари»: підпис мусить бути
+ * правильним для будь-якого числа, а кількість тут — довідка, не речення.
+ */
+export function shopProductsHint(loading: boolean, count: number): string {
+  if (loading) return "Завантаження товарів…";
+  if (count === 0) return "Товарів ще немає. Додайте перший — він зʼявиться під вітриною.";
+  return `Товарів у магазині: ${count}`;
+}
+
 /** Файли за номерами: галерея товару тримає номери, а не адреси. */
 export function mediaById(media: ShopMedia[]): Map<number, ShopMedia> {
   return new Map(media.map((file) => [file.id, file]));

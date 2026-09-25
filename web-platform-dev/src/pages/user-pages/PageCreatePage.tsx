@@ -30,6 +30,7 @@ import {
   PAGES_PATH,
   readPagePreview,
   readPageTemplate,
+  shopProductsPath,
   userPagePath,
   withPagePreview,
   withPageTemplate,
@@ -76,7 +77,17 @@ export function PageCreatePage(): ReactElement {
       // Крок назад — на перегляд цього ж шаблону, а не в список: людина вже
       // бачила сторінку, і вертати її на початок було б втратою кроку.
       onBack={() => void navigate(withPagePreview(PAGES_NEW_PATH, templateKey))}
-      onSaved={(page) => void navigate(userPagePath(page.id), { replace: true })}
+      // Збережений магазин відкривається **товарами**, а не переглядом
+      // вітрини: магазин створюють, щоб продавати, а товарів щойно створена
+      // сторінка не має жодного. Переглянути текст людина завжди може —
+      // «назад» із «Товарів» веде саме туди, а з пустого перегляду до товарів
+      // прямий шлях не видний нізвідки.
+      onSaved={(page) =>
+        void navigate(
+          page.template === "shop" ? shopProductsPath(page.id) : userPagePath(page.id),
+          { replace: true },
+        )
+      }
     />
   );
 }

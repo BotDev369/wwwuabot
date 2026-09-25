@@ -208,7 +208,7 @@ export const PAGE_TEMPLATES: readonly PageTemplate[] = [
   {
     key: "shop",
     label: "Магазин",
-    hint: "Вітрина: що ви продаєте, за якими умовами й як замовити",
+    hint: "Вітрина й товари: що ви продаєте, за якими умовами й як замовити",
     icon: "shop",
     preview: {
       title: "Кава на розі",

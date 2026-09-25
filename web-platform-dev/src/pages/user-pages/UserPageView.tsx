@@ -30,7 +30,8 @@ import { buildPageConfig, pageDraft, pageTemplate, type UserPage } from "@wwwuab
 import { PageRenderer } from "@wwwuabot/ui/PageRenderer";
 import { registerAllBlocks } from "@wwwuabot/ui/blocks";
 import { useDialog } from "@wwwuabot/ui/dialog";
-import { PAGES_PATH, shopProductsPath, userPageEditPath } from "@/app/routes";
+import { PAGES_PATH, userPageEditPath } from "@/app/routes";
+import { ShopPanel } from "@/pages/shop/ShopPanel";
 import { pagesApi } from "@/shared/api/pages.api";
 import { PageState } from "./PageState";
 import { pageAddressLabel, visibilityLabel } from "./pages-view";
@@ -95,6 +96,12 @@ export function UserPageView(): ReactElement {
         <PageState loading={loading} message={error ?? "Такої сторінки немає."} />
       ) : (
         <>
+          {/* Картка магазину стоїть **перед** налаштуваннями сторінки: у
+              магазині головне — товари, і без неї власник бачив би на своїй
+              сторінці рівно текст вітрини, ніби товарів і не існує
+              (`pages/shop/ShopPanel`). */}
+          {page.template === "shop" && <ShopPanel pageId={page.id} />}
+
           <div className="wb-card">
             <div className="wb-card-body">
               <SwitchRow
@@ -120,19 +127,6 @@ export function UserPageView(): ReactElement {
                   >
                     <Icon name="external-link" size={16} />
                     Відкрити
-                  </button>
-                )}
-                {/* Товари — окремий екран, а не розділ тут: у товару своя форма,
-                    свої фото й свій список. Місце кнопки — саме тут, бо людина
-                    стоїть у своєму магазині, а не в списку сторінок. */}
-                {page.template === "shop" && (
-                  <button
-                    type="button"
-                    className="wb-btn wb-btn-secondary"
-                    onClick={() => void navigate(shopProductsPath(page.id))}
-                  >
-                    <Icon name="shop" size={16} />
-                    Товари
                   </button>
                 )}
                 <button
