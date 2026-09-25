@@ -10,7 +10,14 @@
  */
 
 import { describe, expect, it } from "vitest";
-import { mediaById, productCards, productCover, productPhotos, productPriceLabel } from "./cards";
+import {
+  mediaById,
+  productCards,
+  productCover,
+  productPhotos,
+  productPriceLabel,
+  shopCatalogs,
+} from "./cards";
 import type { ShopMedia, ShopProduct } from "./types";
 
 function product(over: Partial<ShopProduct> = {}): ShopProduct {
@@ -20,6 +27,7 @@ function product(over: Partial<ShopProduct> = {}): ShopProduct {
     slug: "kava",
     kind: "physical",
     title: "Кава на розі",
+    category: "Кава",
     summary: "Темне обсмаження",
     description: "",
     price: "320 ₴",
@@ -116,5 +124,44 @@ describe("товари → сітка", () => {
     const cards = productCards([product({ summary: "" })], []);
 
     expect(cards[0].summary).toBe("");
+  });
+
+  it("розділ товару їде в картку, а порожній читається як «Інші товари»", () => {
+    const cards = productCards(
+      [product({ id: 1, category: "Чай" }), product({ id: 2, category: "  " })],
+      [],
+    );
+
+    expect(cards.map((card) => card.category)).toEqual(["Чай", "Інші товари"]);
+  });
+});
+
+describe("розділи каталогу", () => {
+  it("розділ — це назва товару, а не окремий рядок: їх рівно стільки, скільки назв", () => {
+    const groups = shopCatalogs([
+      product({ id: 1, category: "Кава" }),
+      product({ id: 2, category: "Кава" }),
+      product({ id: 3, category: "Посуд" }),
+    ]);
+
+    expect(groups).toEqual([
+      { title: "Кава", count: 2 },
+      { title: "Посуд", count: 1 },
+    ]);
+  });
+
+  it("товар без розділу стоїть останнім — «Інші товари»", () => {
+    const groups = shopCatalogs([
+      product({ id: 1, category: "" }),
+      product({ id: 2, category: "Кава" }),
+    ]);
+
+    expect(groups.map((group) => group.title)).toEqual(["Кава", "Інші товари"]);
+  });
+
+  it("порожні розділи не показуються: чернетка не створює розділу", () => {
+    const groups = shopCatalogs([product({ id: 1, category: "Кава", isActive: false })]);
+
+    expect(groups).toEqual([]);
   });
 });

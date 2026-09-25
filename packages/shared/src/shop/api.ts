@@ -121,11 +121,14 @@ export function createShopApi(
     catalog: async (shopSlug) =>
       read(await fetchJson<CatalogResponse>(withQuery(paths.catalog, { shop: shopSlug }))),
 
+    // Номер магазину їде **в адресі**, як і в решті шляхів товарів: він називає
+    // магазин, а не товар, тож у тілі він був би полем чернетки — і контролер
+    // читав би його звідти, де його немає. Тіло — рівно те, що зберігаємо.
     saveProduct: async (shopId, draft) =>
       (
-        await fetchJson<ProductSaveResponse>(paths.products, {
+        await fetchJson<ProductSaveResponse>(withQuery(paths.products, { shop: shopId }), {
           method: "POST",
-          body: JSON.stringify({ ...draft, shop: shopId }),
+          body: JSON.stringify(draft),
         })
       ).product ?? null,
 

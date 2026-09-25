@@ -325,9 +325,10 @@
   }
 }
 
-/* Кнопка замовлення в картці стоїть **під описом**, а не поруч із ціною:
-   дотик по всій картці нічого не відкриває (сторінки товару ще немає), тож
-   єдине, що тут роблять, мусить читатись як дія, а не як прикраса. */
+/* Кнопка картки стоїть **під описом**, а не поруч із ціною: дотик по
+   зображенню нічого не відкриває (адреси в товару немає — він живе поверхнею
+   вітрини), тож єдине, що тут роблять, мусить читатись як дія, а не як
+   прикраса. */
 .shop-card-order {
   display: block;
   width: calc(100% - var(--sp-3) * 2);
@@ -455,4 +456,241 @@
   color: var(--green);
   background: var(--green-dim);
   border-radius: var(--radius-full);
+}
+
+/* ── Вітрина: один екран магазину ──────────────────────────────────────────
+   Сторінка магазину малюється не рендерером блоків, а вітриною
+   (`pages/shop/store/ShopStore`): у магазину крім тексту є каталог, кошик і
+   замовлення. Тому відступ і ширина тут власні — зони `page-zone` цю роль
+   більше не виконують. */
+
+.shop-store {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-4);
+  width: 100%;
+  max-width: var(--max-content);
+  margin: 0 auto;
+  padding: var(--sp-4);
+  /* + safe-area: рядок «оплата — домовленість» не має ховатись під футером */
+  padding-bottom: calc(var(--sp-8) + var(--safe-bottom));
+}
+
+/* Вітальна частина — поверхня, а не порожній простір: у магазину є ім'я,
+   короткий опис і три дії, і саме вони мусять читатись першими. */
+.shop-store-hero {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-2);
+  padding: var(--sp-5);
+  background: var(--surface);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-sm);
+}
+
+.shop-store-cover {
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  object-fit: cover;
+  background: var(--accent-dim);
+  border-radius: var(--radius-md);
+}
+
+/* Надрячок — довідка про магазин (скільки чого), а не заголовок: великими
+   літерами з розрідженням він не змагається з назвою. */
+.shop-store-kicker {
+  margin: 0;
+  font-size: var(--text-xs);
+  font-weight: var(--weight-semibold);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.shop-store-title {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: var(--text-2xl);
+  line-height: var(--leading-tight);
+}
+
+.shop-store-tagline {
+  margin: 0;
+  font-size: var(--text-lg);
+  line-height: var(--leading-normal);
+  color: var(--text-secondary);
+}
+
+.shop-store-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--sp-2);
+  margin-top: var(--sp-2);
+}
+
+.shop-store-actions .wb-btn {
+  flex: 1 1 auto;
+}
+
+.shop-store-catalog {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-3);
+  /* Кнопка «Каталог» веде сюди — заголовок не мусить залипати під шапкою. */
+  scroll-margin-top: var(--sp-4);
+}
+
+.shop-store-toolbar {
+  display: flex;
+}
+
+.shop-store-toolbar .wb-input {
+  width: 100%;
+}
+
+/* Розділи їдуть убік, а не переносяться: їх буває й десять, і переніс з'їв би
+   пів екрана над каталогом. */
+.shop-store-chips {
+  display: flex;
+  gap: var(--sp-2);
+  padding-bottom: var(--sp-1);
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+
+.shop-store-chips::-webkit-scrollbar {
+  display: none;
+}
+
+.shop-chip {
+  flex: 0 0 auto;
+  min-height: 44px;
+  padding: 0 var(--sp-3);
+  font: inherit;
+  font-weight: var(--weight-medium);
+  color: var(--text-secondary);
+  background: var(--field-bg);
+  border: none;
+  border-radius: var(--radius-full);
+  cursor: pointer;
+}
+
+.shop-chip--active {
+  color: var(--accent);
+  background: var(--accent-dim);
+}
+
+/* Текст про магазин приходить блоками сторінки (`PageRenderer`): вітрина його
+   не переписує, а лише ставить після каталогу — тож лінії між розділами тут
+   немає, розділяє простір. */
+.shop-store-info {
+  display: block;
+}
+
+.shop-store-sections {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-3);
+}
+
+.shop-store-note {
+  padding: 0 var(--sp-1);
+}
+
+/* ── Товар поверхнею: галерея, опис і кількість ─────────────────────────── */
+
+.shop-gallery {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  /* Мірка стала: поверхня не стрибає від того, який знімок завантажив
+     продавець, і від того, чи він є взагалі. */
+  aspect-ratio: 4 / 3;
+  overflow: hidden;
+  color: var(--accent);
+  background: var(--accent-dim);
+  border-radius: var(--radius-md);
+}
+
+.shop-gallery-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.shop-gallery-thumbs {
+  display: flex;
+  gap: var(--sp-2);
+  padding-bottom: var(--sp-1);
+  overflow-x: auto;
+}
+
+/* Мініатюра показує **вибір**, а не оздоблення: вибране видно рамкою, а не
+   зменшенням решти. */
+.shop-gallery-thumb {
+  flex: 0 0 auto;
+  width: 56px;
+  height: 56px;
+  padding: 0;
+  overflow: hidden;
+  background: var(--accent-dim);
+  border: 2px solid transparent;
+  border-radius: var(--radius);
+  cursor: pointer;
+}
+
+.shop-gallery-thumb--active {
+  border-color: var(--accent);
+}
+
+/* Опис товару приходить із переносами абзаців — і саме ними й читається. */
+.shop-modal-desc {
+  white-space: pre-line;
+}
+
+.shop-qty {
+  display: flex;
+  align-self: flex-start;
+  align-items: center;
+  gap: var(--sp-1);
+  padding: var(--sp-1);
+  background: var(--field-bg);
+  border-radius: var(--radius-full);
+}
+
+.shop-qty-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  color: inherit;
+  background: var(--surface);
+  border: none;
+  border-radius: var(--radius-full);
+  cursor: pointer;
+}
+
+.shop-qty-value {
+  min-width: 2ch;
+  font-weight: var(--weight-semibold);
+  text-align: center;
+}
+
+/* Рядок кошика: фото, назва з ціною, кількість і «прибрати» — одним рядком,
+   бо це список того, що вже вибрано, а не картка для вибору. */
+.shop-cart-line-body {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.shop-cart-line-title {
+  font-weight: var(--weight-medium);
+  overflow-wrap: anywhere;
+}
+
+.shop-cart-line-price {
+  font-size: var(--text-sm);
 }

@@ -34,6 +34,13 @@ export interface ShopProduct {
   slug: string;
   kind: ProductKind;
   title: string;
+  /**
+   * Розділ каталогу — назва, яку дав магазин; порожня — «Інші товари».
+   *
+   * Розділів у магазині рівно стільки, скільки різних назв у його товарів
+   * (`shopCatalogs`), тож окремого рядка-розділу не існує й видаляти нічого.
+   */
+  category: string;
   summary: string;
   description: string;
   /** Ціна текстом: «договірна», «2 000 ₴», «за домовленістю». */
@@ -52,6 +59,7 @@ export interface ProductDraft {
   id?: number;
   kind: ProductKind;
   title: string;
+  category: string;
   summary: string;
   description: string;
   price: string;

@@ -34,9 +34,16 @@ import { ensureShopSchema, ownShopId, publicShopBySlug } from "./shops";
 
 /** Стеля власного списку: каталог магазину не буває безмежним. */
 const OWN_LIMIT = 500;
-/** Скільки товарів віддає каталог за раз і яка межа запиту. */
+/**
+ * Скільки товарів віддає каталог за раз і яка межа запиту.
+ *
+ * Стеля каталогу — та сама, що у списку продавця, і це навмисно: покупець
+ * бачить **той самий** каталог, що й продавець. Межа продавця була б обманом
+ * («у вас видно всі товари, у покупця — перші 120»); покупець не бачить хіба
+ * що чернеток, і це інша річ.
+ */
 export const CATALOG_PAGE_SIZE = 60;
-const CATALOG_PAGE_MAX = 120;
+const CATALOG_PAGE_MAX = OWN_LIMIT;
 
 /**
  * Колонки читаємо за іменами, а не `SELECT *` (AGENTS.md §7).
@@ -46,7 +53,7 @@ const CATALOG_PAGE_MAX = 120;
  * їх іншим набором колонок означало б друге подання товару.
  */
 export const PRODUCT_COLUMNS =
-  "id, shop_id, slug, kind, title, summary, description, price, images, attributes, is_active, created_at, updated_at";
+  "id, shop_id, slug, kind, title, category, summary, description, price, images, attributes, is_active, created_at, updated_at";
 
 export interface ProductRow {
   id: number;
@@ -54,6 +61,12 @@ export interface ProductRow {
   slug: string;
   kind: string;
   title: string | null;
+  /**
+   * Колонка додана наявній таблиці, тож у старих рядків вона `NULL`, а не `''`.
+   * Читач приймає обидва (`?? ""`) — це не перестраховка, а вимога
+   * `ensureTables`.
+   */
+  category: string | null;
   summary: string | null;
   description: string | null;
   price: string | null;
@@ -89,6 +102,7 @@ export function toProduct(row: ProductRow): ShopProduct {
     slug: row.slug,
     kind: kindOf(row.kind),
     title: row.title ?? "",
+    category: row.category ?? "",
     summary: row.summary ?? "",
     description: row.description ?? "",
     price: row.price ?? "",
@@ -213,14 +227,15 @@ export class ShopProductsService {
 
       await this.env.DB.prepare(
         `UPDATE shop_products
-            SET slug = ?, kind = ?, title = ?, summary = ?, description = ?, price = ?,
-                images = ?, attributes = ?, is_active = ?, updated_at = ?
+            SET slug = ?, kind = ?, title = ?, category = ?, summary = ?, description = ?,
+                price = ?, images = ?, attributes = ?, is_active = ?, updated_at = ?
           WHERE id = ? AND shop_id = ?`,
       )
         .bind(
           input.slug,
           input.kind,
           input.title,
+          input.category,
           input.summary,
           input.description,
           input.price,
@@ -245,15 +260,16 @@ export class ShopProductsService {
     const slug = await this.uniqueSlug(shopId, input.slug);
     const inserted = await this.env.DB.prepare(
       `INSERT INTO shop_products
-         (shop_id, slug, kind, title, summary, description, price, images, attributes, is_active,
-          created_at, updated_at)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+         (shop_id, slug, kind, title, category, summary, description, price, images, attributes,
+          is_active, created_at, updated_at)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
     )
       .bind(
         shopId,
         slug,
         input.kind,
         input.title,
+        input.category,
         input.summary,
         input.description,
         input.price,

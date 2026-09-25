@@ -21,6 +21,8 @@
 
 import { productKindLabel } from "./kinds";
 import { mediaUrl } from "./media";
+// Розділ — те саме поле товару, що й у формі: одне правило на обидва боки.
+import { UNCATEGORIZED_CATEGORY_TITLE, productCategoryLabel } from "./products";
 import type { ShopMedia, ShopProduct } from "./types";
 
 /** Товар так, як його бачить покупець у сітці. */
@@ -35,6 +37,8 @@ export interface ShopCard {
   kindLabel: string;
   /** Короткий опис; порожній — картка без нього, а не з порожнім рядком. */
   summary: string;
+  /** Розділ каталогу, у якому стоїть картка: порожній товар читається як «Інші». */
+  category: string;
 }
 
 /** Ціна так, як її читають. Порожня — «Ціна не вказана», а не порожнє місце. */
@@ -89,6 +93,43 @@ export function productCards(products: ShopProduct[], media: ShopMedia[]): ShopC
         photoUrl: cover ? mediaUrl(cover.key) : null,
         kindLabel: productKindLabel(product.kind),
         summary: product.summary,
+        category: productCategoryLabel(product.category),
       };
     });
+}
+
+/** Розділ каталогу так, як його показує вітрина: назва й скільки в ньому товарів. */
+export interface ShopCatalog {
+  /** Назва розділу: вона ж ключ — іншого імені в розділу немає (`products.ts`). */
+  title: string;
+  count: number;
+}
+
+/**
+ * Розділи каталогу — з **показаних** товарів, а не з окремого списку.
+ *
+ * Порядок сталий і не залежить від того, як товари лягли в базу: спершу
+ * названі розділи за алфавідом, «Інші товари» — останніми. Так розділ не
+ * стрибає з місця на місце після кожного збереження товару.
+ *
+ * Ім'я тут те саме, що в картці (`productCategoryLabel`), тож кнопки розділів
+ * і картки не розійдуться: порожній розділ у товарі читається як «Інші товари»
+ * в обох місцях.
+ */
+export function shopCatalogs(products: ShopProduct[]): ShopCatalog[] {
+  const counts = new Map<string, number>();
+  for (const product of products) {
+    if (!product.isActive) continue;
+    const title = productCategoryLabel(product.category);
+    counts.set(title, (counts.get(title) ?? 0) + 1);
+  }
+
+  const others = counts.get(UNCATEGORIZED_CATEGORY_TITLE) ?? 0;
+  counts.delete(UNCATEGORIZED_CATEGORY_TITLE);
+
+  const named = [...counts.entries()]
+    .map(([title, count]) => ({ title, count }))
+    .sort((a, b) => a.title.localeCompare(b.title, "uk"));
+
+  return others > 0 ? [...named, { title: UNCATEGORIZED_CATEGORY_TITLE, count: others }] : named;
 }

@@ -38,6 +38,23 @@ export const PRODUCT_SUMMARY_MAX = 200;
 export const PRODUCT_DESCRIPTION_MAX = 4000;
 /** Ціна — **текст**, а не число: «договірна» теж ціна. */
 export const PRODUCT_PRICE_MAX = 40;
+/**
+ * Розділ каталогу — **назва, а не таблиця**.
+ *
+ * Магазин сам вирішує, як звати розділ («Кава», «Чай», «Посуд»), і тримає її
+ * рядком у товарі: окрема таблиця розділів дала б другу ідентичність каталогу
+ * й задачу «а що робити з порожнім розділом», якої ніхто не замовляв. Перелік
+ * розділів магазину складається з його товарів (`shopCatalogs`) — і саме тому
+ * розділ зникає разом з останнім товаром у ньому.
+ */
+export const PRODUCT_CATEGORY_MAX = 40;
+/**
+ * Розділ, у який потрапляє товар без нього.
+ *
+ * Не «Без категорії»: покупцеві це не стан товару, а **розділ**, тож він
+ * мусить читатись як місце в каталозі.
+ */
+export const UNCATEGORIZED_CATEGORY_TITLE = "Інші товари";
 /** Скільки фото буває в галереї товару (перше — головне). */
 export const PRODUCT_IMAGES_MAX = 12;
 export const PRODUCT_ATTRIBUTES_MAX = 20;
@@ -106,6 +123,21 @@ export function sanitizeProductAttributes(raw: unknown): ProductAttribute[] {
   return attributes;
 }
 
+/** Розділ каталогу, як його читає покупець; порожній — «Інші товари». */
+export function productCategoryLabel(category: string): string {
+  return category.trim() || UNCATEGORIZED_CATEGORY_TITLE;
+}
+
+/**
+ * Розділ каталогу з поля форми: рядок із краями, притиснутими до межі.
+ *
+ * Порожній розділ — не помилка: товар без нього просто потрапляє в «Інші
+ * товари». Саме тому тут немає відмови — є пустий рядок.
+ */
+export function sanitizeCategory(raw: unknown): string {
+  return sanitizeLine(raw, PRODUCT_CATEGORY_MAX);
+}
+
 /**
  * Номери файлів галереї: `images` товару — **номери** `shop_media`, не адреси.
  *
@@ -131,6 +163,8 @@ export interface ProductInput {
   slug: string;
   kind: ProductKind;
   title: string;
+  /** Розділ каталогу; порожній — «Інші товари» (`productCategoryLabel`). */
+  category: string;
   summary: string;
   description: string;
   price: string;
@@ -154,6 +188,7 @@ export function productDraft(product: ShopProduct): ProductDraft {
     id: product.id,
     kind: product.kind,
     title: product.title,
+    category: product.category,
     summary: product.summary,
     description: product.description,
     price: product.price,
@@ -191,6 +226,7 @@ export function validateProductDraft(raw: unknown): ProductValidation {
       slug: address.value,
       kind: source.kind,
       title,
+      category: sanitizeCategory(source.category),
       summary: sanitizeLine(source.summary, PRODUCT_SUMMARY_MAX),
       description: sanitizeDescription(source.description),
       price: sanitizeLine(source.price, PRODUCT_PRICE_MAX),

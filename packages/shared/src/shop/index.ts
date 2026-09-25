@@ -12,7 +12,10 @@
  * - `products.ts` — **правила товару**: адреса в межах магазину,
  *   характеристики, номери фото й перевірка чернетки (`validateProductDraft`);
  * - `cards.ts` — **картка товару**: один переклад «товар → те, що видно в
- *   сітці» (`productCards`) для блока вітрини й екранів продавця;
+ *   сітці» (`productCards`) для блока вітрини й екранів продавця, а також
+ *   розділи каталогу, складені з товарів (`shopCatalogs`);
+ * - `cart.ts` — **кошик покупця**: номери й кількості, доки це не замовлення,
+ *   разом із тим, що з цін взагалі можна порахувати (`cartTotal`);
  * - `orders.ts` — **правила замовлення**: що питати в покупця залежно від виду
  *   товару (`orderContactFields`), кошик і перевірка (`validateOrderDraft`),
  *   а також позначка платформи в розмові з продавцем (`orderNoticeText`);
@@ -48,15 +51,19 @@ export {
   ATTRIBUTE_NAME_MAX,
   ATTRIBUTE_VALUE_MAX,
   PRODUCT_ATTRIBUTES_MAX,
+  PRODUCT_CATEGORY_MAX,
   PRODUCT_DESCRIPTION_MAX,
   PRODUCT_IMAGES_MAX,
   PRODUCT_PRICE_MAX,
   PRODUCT_SLUG_MAX,
   PRODUCT_SUMMARY_MAX,
   PRODUCT_TITLE_MAX,
+  UNCATEGORIZED_CATEGORY_TITLE,
   cleanImageIds,
   productAddress,
+  productCategoryLabel,
   productDraft,
+  sanitizeCategory,
   sanitizeDescription,
   sanitizeLine,
   sanitizeProductAttributes,
@@ -64,8 +71,28 @@ export {
 } from "./products";
 export type { ProductAddressResult, ProductInput, ProductValidation } from "./products";
 
-export { mediaById, productCards, productCover, productPhotos, productPriceLabel } from "./cards";
-export type { ShopCard } from "./cards";
+export {
+  mediaById,
+  productCards,
+  productCover,
+  productPhotos,
+  productPriceLabel,
+  shopCatalogs,
+} from "./cards";
+export type { ShopCard, ShopCatalog } from "./cards";
+
+export {
+  cartAdd,
+  cartCount,
+  cartLines,
+  cartNeedsShipping,
+  cartProducts,
+  cartRemove,
+  cartSetQty,
+  cartTotal,
+  parsePriceAmount,
+} from "./cart";
+export type { CartLine, CartTotal } from "./cart";
 
 export {
   EMPTY_ORDER_CART,

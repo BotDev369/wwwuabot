@@ -21,7 +21,13 @@
 import type { ReactElement } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { Icon } from "@wwwuabot/shared";
-import { mediaUrl, productCover, type ShopMedia, type ShopProduct } from "@wwwuabot/shared/shop";
+import {
+  mediaUrl,
+  productCategoryLabel,
+  productCover,
+  type ShopMedia,
+  type ShopProduct,
+} from "@wwwuabot/shared/shop";
 import { useDialog } from "@wwwuabot/ui/dialog";
 import { shopProductEditPath, shopProductNewPath, userPagePath } from "@/app/routes";
 import { PageState } from "@/pages/user-pages/PageState";
@@ -147,8 +153,12 @@ export function ShopProductsPage(): ReactElement {
                     <ShopThumb product={product} media={shop.media} />
                     <span className="wb-menu-item-text">
                       <span className="wb-menu-item-label">{product.title}</span>
+                      {/* Розділ стоїть поруч із видом і станом: саме з нього
+                          складаються каталоги вітрини, і продавець мусить
+                          бачити, що він у товару вже є. */}
                       <span className="wb-menu-item-hint">
-                        {productHint(product)} · {productStateLabel(product)}
+                        {productHint(product)} · {productCategoryLabel(product.category)} ·{" "}
+                        {productStateLabel(product)}
                       </span>
                     </span>
                   </button>
@@ -167,6 +177,12 @@ export function ShopProductsPage(): ReactElement {
                   і саме тому це перше, що варто знати продавцю. */}
               <p className="wb-text-muted shop-note">
                 Фото додають у самому товарі. Перше з них — головне: саме його видно в каталозі.
+              </p>
+              {/* Розділи не заводять окремо — вони складаються з товарів, і
+                  продавець мусить знати, що нового каталогу не треба чекати. */}
+              <p className="wb-text-muted shop-note">
+                Розділи магазину — це назви товарів: щоб завести новий каталог, досить назвати його
+                в товарі.
               </p>
             </div>
           )}

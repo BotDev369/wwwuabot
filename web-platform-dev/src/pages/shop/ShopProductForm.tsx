@@ -19,6 +19,7 @@ import { useNavigate, useParams } from "react-router-dom";
 import { Icon, SwitchRow } from "@wwwuabot/shared";
 import {
   DEFAULT_PRODUCT_KIND,
+  PRODUCT_CATEGORY_MAX,
   PRODUCT_DESCRIPTION_MAX,
   PRODUCT_KINDS,
   PRODUCT_KIND_SPECS,
@@ -28,6 +29,7 @@ import {
   productAddress,
   productDraft,
   productKindLabel,
+  shopCatalogs,
   validateProductDraft,
   type ProductAttribute,
   type ProductDraft,
@@ -47,6 +49,8 @@ import { useShopProducts } from "./useShopProducts";
 interface FormState {
   kind: ProductKind;
   title: string;
+  /** Розділ каталогу: назва, яку вже носять інші товари магазину. */
+  category: string;
   address: string;
   price: string;
   summary: string;
@@ -59,6 +63,7 @@ interface FormState {
 const EMPTY: FormState = {
   kind: DEFAULT_PRODUCT_KIND,
   title: "",
+  category: "",
   address: "",
   price: "",
   summary: "",
@@ -74,6 +79,7 @@ function formFrom(product: ShopProduct): FormState {
   return {
     kind: draft.kind,
     title: draft.title,
+    category: draft.category,
     address: draft.address,
     price: draft.price,
     summary: draft.summary,
@@ -191,6 +197,28 @@ export function ShopProductForm(): ReactElement {
           onChange={(event) => setForm({ ...form, title: event.target.value })}
         />
       </Field>
+
+      {/* Розділ — назва, а не вибір із закритого списку: каталогів у магазині
+          стільки, скільки назв вигадав продавець. Підказку дають назви, які вже
+          носять товари магазину, — щоб «Кава» не завелась удруге як «кава». */}
+      <Field label="Розділ каталогу — необов'язково">
+        <input
+          className="wb-input"
+          list="shop-categories"
+          value={form.category}
+          maxLength={PRODUCT_CATEGORY_MAX}
+          placeholder="Кава"
+          onChange={(event) => setForm({ ...form, category: event.target.value })}
+        />
+      </Field>
+      <datalist id="shop-categories">
+        {shopCatalogs(shop.products).map((catalog) => (
+          <option key={catalog.title} value={catalog.title} />
+        ))}
+      </datalist>
+      <p className="wb-text-muted shop-note">
+        Розділи магазину — це назви його товарів: порожній розділ читається як «Інші товари».
+      </p>
 
       {/* Адреса — похідна від назви, тож вона тут, а не окремим розділом:
           її бачать разом із тим, з чого вона складається. */}

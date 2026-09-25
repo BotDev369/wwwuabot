@@ -25,16 +25,17 @@
  * @module packages/ui/src/blocks/ShopGridBlock
  */
 
-import { Icon } from "@wwwuabot/shared";
 import type { BlockComponentProps } from "@wwwuabot/shared/types/page-config";
 import type { ShopCard } from "@wwwuabot/shared/shop";
+import { ShopCardTile } from "./ShopCardTile";
 
 /**
  * Приклад товарів для перегляду шаблону.
  *
  * Номери від'ємні навмисно: у справжнього товару `id` більший за нуль
  * (`shop_products.id`), тож приклад не зійдеться з жодним рядком навіть
- * випадково.
+ * випадково. Розділи в прикладі різні — щоб було видно, що каталогів у
+ * магазині буває кілька.
  */
 const EXAMPLE_CARDS: readonly ShopCard[] = [
   {
@@ -44,6 +45,7 @@ const EXAMPLE_CARDS: readonly ShopCard[] = [
     photoUrl: null,
     kindLabel: "Фізичний товар",
     summary: "Темне обсмаження — горіх і шоколад",
+    category: "Кава",
   },
   {
     id: -2,
@@ -52,6 +54,7 @@ const EXAMPLE_CARDS: readonly ShopCard[] = [
     photoUrl: null,
     kindLabel: "Фізичний товар",
     summary: "Ручна робота, три кольори",
+    category: "Посуд",
   },
   {
     id: -3,
@@ -60,6 +63,7 @@ const EXAMPLE_CARDS: readonly ShopCard[] = [
     photoUrl: null,
     kindLabel: "Цифровий товар",
     summary: "PDF, надсилаємо в чат після оплати",
+    category: "Кава",
   },
 ];
 
@@ -70,10 +74,10 @@ export function ShopGridBlock({ block, context }: BlockComponentProps) {
   const isPreview = !cards && Boolean(context.preview);
   const shown = cards && cards.length > 0 ? cards : isPreview ? EXAMPLE_CARDS : [];
 
-  // Дія приходить із контексту **разом із картками**: без неї кнопки немає, і
-  // саме тому в перегляді шаблону замовляти нічого — приклад не продається.
-  const onOrder = context.onShopOrder;
-
+  // Дії тут немає й не мусить бути: сторінку магазину відкриває **вітрина**
+  // (`pages/shop/store/ShopStore`), а цей блок лишається тим, що бачить
+  // продавець у редакторі й у перегляді шаблону. Кнопка в перегляді обіцяла б
+  // покупцеві товар із прикладу.
   if (shown.length === 0) return null;
 
   return (
@@ -82,25 +86,7 @@ export function ShopGridBlock({ block, context }: BlockComponentProps) {
 
       <div className="shop-catalog-grid">
         {shown.map((card) => (
-          <article className="shop-card" key={card.id}>
-            {card.photoUrl ? (
-              <img className="shop-card-img" src={card.photoUrl} alt="" loading="lazy" />
-            ) : (
-              // Місце під фото тримається й тоді, коли його ще немає: рядок не
-              // мусить стрибати від того, чи завантажили знімок.
-              <div className="shop-card-img shop-card-img--empty" aria-hidden="true">
-                <Icon name="image" size={22} />
-              </div>
-            )}
-            <h3 className="shop-card-title">{card.title}</h3>
-            <p className="shop-card-price">{card.price}</p>
-            <p className="shop-card-summary">{card.summary || card.kindLabel}</p>
-            {onOrder && (
-              <button type="button" className="shop-card-order" onClick={() => onOrder(card.id)}>
-                Замовити
-              </button>
-            )}
-          </article>
+          <ShopCardTile key={card.id} card={card} />
         ))}
       </div>
 

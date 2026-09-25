@@ -654,6 +654,11 @@ export const TABLES = {
    * **Ціна — текст**, як в оголошеннях: «договірна» теж ціна. **`images` —
    * номери файлів `shop_media`**, а не адреси: адресу будує читання з ключа R2,
    * і вона змінилася б разом із бакетом.
+   *
+   * **`category` — розділ каталогу назвою.** Окремої таблиці розділів немає
+   * навмисно: у розділу немає нічого, крім назви, а перелік розділів магазину
+   * складається з його товарів (`shopCatalogs`). Порожній розділ читається як
+   * «Інші товари», тож порожнього місця в каталозі не буває ніколи.
    */
   shop_products: {
     name: "shop_products",
@@ -666,6 +671,7 @@ export const TABLES = {
         slug TEXT NOT NULL,
         kind TEXT NOT NULL DEFAULT 'physical',
         title TEXT NOT NULL DEFAULT '',
+        category TEXT NOT NULL DEFAULT '',
         summary TEXT NOT NULL DEFAULT '',
         description TEXT NOT NULL DEFAULT '',
         price TEXT NOT NULL DEFAULT '',
