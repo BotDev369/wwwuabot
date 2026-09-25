@@ -8,9 +8,9 @@
  * нічого не відкриває — це сторінка, а не кнопка, і саме тому вхід мусить
  * стояти окремо.
  *
- * **Скільки їх — з того самого джерела, що в списку.** Картка читає
- * `useShopProducts` — той самий запит, що й екран «Товари»; другого лічильника
- * не заводимо, бо два числа про один факт розійшлися б (`AGENTS.md` §7).
+ * **Дані сюди приходять, а не беруться тут.** Товари читає той самий
+ * `useShopProducts`, що й сітка вітрини на цьому ж екрані, і він один на
+ * сторінку: другий виклик хука зробив би другий запит по той самий список.
  *
  * **Головна дія — «Додати товар».** Другою стоїть «Усі товари», і вона завжди
  * є: список порожній не тільки до першого товару, а й коли запит не вдався —
@@ -24,11 +24,19 @@ import { useNavigate } from "react-router-dom";
 import { Icon } from "@wwwuabot/shared";
 import { shopProductNewPath, shopProductsPath } from "@/app/routes";
 import { shopProductsHint } from "./shop-view";
-import { useShopProducts } from "./useShopProducts";
 
-export function ShopPanel({ pageId }: { pageId: number }): ReactElement {
+export function ShopPanel({
+  pageId,
+  loading,
+  count,
+  error,
+}: {
+  pageId: number;
+  loading: boolean;
+  count: number;
+  error: string | null;
+}): ReactElement {
   const navigate = useNavigate();
-  const shop = useShopProducts(pageId);
 
   return (
     <div className="wb-card">
@@ -39,9 +47,7 @@ export function ShopPanel({ pageId }: { pageId: number }): ReactElement {
         </span>
       </div>
       <div className="wb-card-body">
-        <p className="wb-text-muted">
-          {shop.error ?? shopProductsHint(shop.loading, shop.products.length)}
-        </p>
+        <p className="wb-text-muted">{error ?? shopProductsHint(loading, count)}</p>
 
         <div className="wb-sheet-actions">
           <button

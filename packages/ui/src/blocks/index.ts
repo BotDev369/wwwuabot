@@ -1,5 +1,8 @@
 /**
- * Page Builder — barrel export для всіх блоків (35 модулів, 9 категорій).
+ * Page Builder — barrel export для всіх блоків.
+ *
+ * Скільки їх — не тут: число в підписі розходилось із реєстром мовчки (у
+ * `registerAllBlocks` блоків більше, ніж у переліку вище).
  *
  * Імпортуйте цей файл для реєстрації всіх блоків:
  * ```ts
@@ -44,11 +47,12 @@ export { ProgressBlock } from "./ProgressBlock";
 export { TableBlock } from "./TableBlock";
 export { RatingBlock } from "./RatingBlock";
 
-// --- Commerce (4) ---
+// --- Commerce (5) ---
 export { PricingBlock } from "./PricingBlock";
 export { TestimonialBlock } from "./TestimonialBlock";
 export { FeatureCardBlock } from "./FeatureCardBlock";
 export { FaqBlock } from "./FaqBlock";
+export { ShopGridBlock } from "./ShopGridBlock";
 
 // --- Forms (3) ---
 export { InputBlock } from "./InputBlock";
@@ -115,6 +119,7 @@ import { PricingBlock } from "./PricingBlock";
 import { TestimonialBlock } from "./TestimonialBlock";
 import { FeatureCardBlock } from "./FeatureCardBlock";
 import { FaqBlock } from "./FaqBlock";
+import { ShopGridBlock } from "./ShopGridBlock";
 
 // Forms
 import { InputBlock } from "./InputBlock";
@@ -140,7 +145,7 @@ import { HtmlBlock } from "./HtmlBlock";
 import { ThemeToggleBlock } from "./ThemeToggleBlock";
 
 /**
- * Зареєструвати всі блоки в реєстрі (35 модулів).
+ * Зареєструвати всі блоки в реєстрі.
  *
  * Викликається один раз при ініціалізації додатку:
  * ```ts
@@ -192,6 +197,9 @@ export function registerAllBlocks(): void {
   registerBlock("testimonial", TestimonialBlock);
   registerBlock("feature-card", FeatureCardBlock);
   registerBlock("faq", FaqBlock);
+  // Сітка товарів магазину: вміст приходить із `context.shopCards`, а не з
+  // props — товари живуть у своїй таблиці (docs/SHOPS.md §3).
+  registerBlock("shop-grid", ShopGridBlock);
 
   // Forms
   registerBlock("input", InputBlock);

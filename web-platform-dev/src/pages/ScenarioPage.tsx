@@ -16,7 +16,8 @@ import { parsePageConfig } from "@wwwuabot/shared/types/page-config";
 import { HOME_SLUG } from "@wwwuabot/shared/content";
 import { PageRenderer } from "@wwwuabot/ui/PageRenderer";
 import { apiFetchRaw } from "@/shared/api/client";
-import { ShopCatalog } from "@/pages/shop/ShopCatalog";
+import { useShopCatalog } from "@/pages/shop/useShopCatalog";
+import { productCards } from "@wwwuabot/shared/shop";
 import { registerAllBlocks } from "@wwwuabot/ui/blocks";
 
 registerAllBlocks();
@@ -173,6 +174,12 @@ export function ScenarioPage() {
     };
   }, [scenarioSlug]);
 
+  const isShop = status !== "fallback" && templateKey === "shop";
+  // Каталог питаємо **лише в магазину**: решті сторінок товарів не буває, і
+  // запит за їхньою адресою повернув би «такого магазину немає» (`null` замість
+  // адреси означає «не питати зовсім»).
+  const catalog = useShopCatalog(isShop ? pageSlug : null);
+
   // Контекст блоків використовує ту саму адресу сторінки, що й API та resolver.
   const context: BlockContext = useMemo(
     () => ({
@@ -181,8 +188,13 @@ export function ScenarioPage() {
       photoUrl: scenarioPhoto,
       user: userProfile ?? undefined,
       isOwner: userProfile?.role === "owner" || userProfile?.role === "admin",
+      // Товари лежать у своїй таблиці, а не в `page_data`, тож їх кладе в
+      // контекст вітрина: сітку малює блок шаблону (`shop-grid`).
+      shopCards: isShop ? productCards(catalog.products, catalog.media) : undefined,
     }),
-    [pageSlug, scenarioTitle, scenarioPhoto, userProfile],
+    // Залежності — самі списки, а не об'єкт хука: він новий щокадру, і
+    // `useMemo` перераховувався б завжди, тобто нічого не робив.
+    [pageSlug, scenarioTitle, scenarioPhoto, userProfile, isShop, catalog.products, catalog.media],
   );
 
   if (status === "loading") return <LoadingScreen />;
@@ -191,17 +203,11 @@ export function ScenarioPage() {
   const activeConfig = status === "fallback" ? FALLBACK_PAGE : pageConfig;
   if (!activeConfig) return <LoadingScreen />;
 
-  const isShop = status !== "fallback" && templateKey === "shop";
-
   return (
     <PageRenderer
       config={activeConfig}
       context={status === "fallback" ? { slug: HOME_SLUG, title: null, photoUrl: null } : context}
       className="page-layout"
-    >
-      {/* Магазин додає до сторінки каталог — той самий випадок, що в сторінок: сторінка
-          одна, а вміст у неї приходить із двох місць (`PageRenderer.children`). */}
-      {isShop && <ShopCatalog shopSlug={pageSlug} />}
-    </PageRenderer>
+    />
   );
 }

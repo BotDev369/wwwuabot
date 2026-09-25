@@ -21,13 +21,13 @@
 import type { ReactElement } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { Icon } from "@wwwuabot/shared";
-import { mediaUrl, type ShopMedia, type ShopProduct } from "@wwwuabot/shared/shop";
+import { mediaUrl, productCover, type ShopMedia, type ShopProduct } from "@wwwuabot/shared/shop";
 import { useDialog } from "@wwwuabot/ui/dialog";
 import { shopProductEditPath, shopProductNewPath, userPagePath } from "@/app/routes";
 import { PageState } from "@/pages/user-pages/PageState";
 import { useUserPage } from "@/pages/user-pages/useUserPage";
 import { shopApi } from "@/shared/api/shop.api";
-import { productCover, productHint, productStateLabel } from "./shop-view";
+import { productHint, productStateLabel } from "./shop-view";
 import { useShopProducts } from "./useShopProducts";
 
 export function ShopProductsPage(): ReactElement {

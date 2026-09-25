@@ -11,6 +11,8 @@
  *   перейменування, вимкнення й власні (`resolveOrderStatuses`);
  * - `products.ts` — **правила товару**: адреса в межах магазину,
  *   характеристики, номери фото й перевірка чернетки (`validateProductDraft`);
+ * - `cards.ts` — **картка товару**: один переклад «товар → те, що видно в
+ *   сітці» (`productCards`) для блока вітрини й екранів продавця;
  * - `orders.ts` — **правила замовлення**: що питати в покупця залежно від виду
  *   товару (`orderContactFields`), кошик і перевірка (`validateOrderDraft`);
  * - `media.ts` — **файли магазину**: ключ R2, межі, адреса з ключа й перевірка
@@ -60,6 +62,9 @@ export {
   validateProductDraft,
 } from "./products";
 export type { ProductAddressResult, ProductInput, ProductValidation } from "./products";
+
+export { mediaById, productCards, productCover, productPhotos, productPriceLabel } from "./cards";
+export type { ShopCard } from "./cards";
 
 export {
   ORDER_ITEMS_MAX,

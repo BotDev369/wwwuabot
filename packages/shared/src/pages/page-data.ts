@@ -37,8 +37,24 @@ const PLACEHOLDER = /\{\{([a-z0-9_-]+)\}\}/gi;
  */
 const DECORATION_TYPES = new Set(["divider", "spacer"]);
 
+/**
+ * Блоки, вміст яких лежить **не в `page_data`**, а у своїй таблиці.
+ *
+ * Правило «порожнього не видно» про них не діє: у `shop-grid` немає жодного
+ * текстового поля, і порожній блок тут означає не незаповнене поле, а
+ * магазин, у якому товарів ще не додали — тобто нормальну сторінку. Від
+ * декорацій він відрізняється: декорація без сусідів зайва, а сітка товарів —
+ * це і є сторінка магазину (docs/SHOPS.md §3).
+ */
+const DATA_TYPES = new Set(["shop-grid"]);
+
 function isDecoration(type: string): boolean {
   return DECORATION_TYPES.has(type);
+}
+
+/** Чи тримає блок власний вміст — тоді порожнього поля в нього не буває. */
+function hasOwnContent(type: string): boolean {
+  return DATA_TYPES.has(type);
 }
 
 const EMPTY_ZONES: Record<BlockZone, PageBlock[]> = {
@@ -100,8 +116,16 @@ function buildBlock(
   // помітно зламана сторінка.
   if (declared > 0 && filled === 0 && children.length === 0) return null;
   // Каркас без власного тексту потрібен лише заради вмісту (картка навколо
-  // розділу); без нього він — порожній прямокутник.
-  if (declared === 0 && children.length === 0 && !isDecoration(spec.type)) return null;
+  // розділу); без нього він — порожній прямокутник. Крім тих блоків, чий вміст
+  // лежить у своїй таблиці: їхній порожній стан — це магазин без товарів, а не
+  // незаповнене поле.
+  if (
+    declared === 0 &&
+    children.length === 0 &&
+    !isDecoration(spec.type) &&
+    !hasOwnContent(spec.type)
+  )
+    return null;
 
   return {
     id: pageBlockId(template, spec.id),

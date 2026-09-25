@@ -7,6 +7,18 @@ import { block, s, n, b, e, sa, oa } from "./helpers";
 
 export const commerceBlocks: BlockDefinition[] = [
   block({
+    // Сітка товарів магазину. Полів у неї майже немає, і це правильно: товари
+    // беруться зі своєї таблиці (`context.shopCards`), а не з props — у
+    // редакторі тут правлять лише підпис секції (docs/SHOPS.md §3).
+    type: "shop-grid",
+    label: "Товари магазину",
+    icon: "shop",
+    category: "commerce",
+    description: "Сітка товарів магазину — з таблиці товарів, а не з полів сторінки",
+    props: { title: s("Заголовок секції", { default: "Товари" }) },
+    defaultProps: { title: "Товари" },
+  }),
+  block({
     type: "pricing",
     label: "Ціни",
     icon: "tag",

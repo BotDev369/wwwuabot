@@ -30,8 +30,10 @@ import { buildPageConfig, pageDraft, pageTemplate, type UserPage } from "@wwwuab
 import { PageRenderer } from "@wwwuabot/ui/PageRenderer";
 import { registerAllBlocks } from "@wwwuabot/ui/blocks";
 import { useDialog } from "@wwwuabot/ui/dialog";
+import { productCards } from "@wwwuabot/shared/shop";
 import { PAGES_PATH, userPageEditPath } from "@/app/routes";
 import { ShopPanel } from "@/pages/shop/ShopPanel";
+import { useShopProducts } from "@/pages/shop/useShopProducts";
 import { pagesApi } from "@/shared/api/pages.api";
 import { PageState } from "./PageState";
 import { pageAddressLabel, visibilityLabel } from "./pages-view";
@@ -44,6 +46,14 @@ export function UserPageView(): ReactElement {
   const navigate = useNavigate();
   const dialog = useDialog();
   const { page, loading, error, pages } = useUserPage(id);
+
+  // Товари належать магазину (`shop_id` — номер цієї ж сторінки), а живуть вони
+  // в окремій таблиці, тож сторінка питає їх окремо (docs/SHOPS.md §1). Питають
+  // **лише** в магазину: решті шаблонів `useShopProducts(null)` не робить
+  // жодного запиту. Один виклик хука на екран — з нього ж береться й сітка
+  // вітрини нижче.
+  const shopId = page && page.template === "shop" ? page.id : null;
+  const shop = useShopProducts(shopId);
 
   async function togglePublic(next: boolean): Promise<void> {
     if (!page) return;
@@ -100,7 +110,14 @@ export function UserPageView(): ReactElement {
               магазині головне — товари, і без неї власник бачив би на своїй
               сторінці рівно текст вітрини, ніби товарів і не існує
               (`pages/shop/ShopPanel`). */}
-          {page.template === "shop" && <ShopPanel pageId={page.id} />}
+          {shopId !== null && (
+            <ShopPanel
+              pageId={page.id}
+              loading={shop.loading}
+              count={shop.products.length}
+              error={shop.error}
+            />
+          )}
 
           <div className="wb-card">
             <div className="wb-card-body">
@@ -151,7 +168,15 @@ export function UserPageView(): ReactElement {
 
           <PageRenderer
             config={buildPageConfig(pageTemplate(page.template), page.values)}
-            context={{ slug: page.slug, title: page.title, photoUrl: null }}
+            context={{
+              slug: page.slug,
+              title: page.title,
+              photoUrl: null,
+              // Сітка вітрини бере товари звідси: у `page_data` їх немає.
+              // Чернетки відсіює `productCards`, тож власник бачить рівно те,
+              // що побачить покупець (docs/SHOPS.md §3).
+              shopCards: shopId === null ? undefined : productCards(shop.products, shop.media),
+            }}
             className="page-layout"
           />
         </>

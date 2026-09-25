@@ -277,6 +277,11 @@ export const PAGE_TEMPLATES: readonly PageTemplate[] = [
           { id: "head-tagline", type: "text", props: { title: "{{tagline}}", level: "h3" } },
         ],
       },
+      // Товари — **другим екраном, а не останнім**: у магазині спершу дивляться
+      // на товар і лише потім читають умови. Сітку малює блок `shop-grid`,
+      // який бере картки з контексту (вони лежать у таблиці, не в `page_data`) —
+      // саме тому магазин і не виглядає парою текстових блоків.
+      { id: "grid", type: "shop-grid", props: { title: "Товари" } },
       {
         id: "about",
         type: "card",

@@ -60,7 +60,12 @@ export function PageTemplatePreview({
       <div className="wb-template-canvas" aria-hidden="true">
         <PageRenderer
           config={buildPageConfig(template, template.preview)}
-          context={{ slug: "", title: template.label, photoUrl: null }}
+          // `preview` — єдина різниця між переглядом і справжньою сторінкою:
+          // під нею немає нічого, чого немає в `page_data`. Ним користується
+          // блок, чий вміст лежить у своїй таблиці (`shop-grid`): товарів у
+          // шаблоні ще немає, тож він малює приклад — інакше шаблон магазину
+          // виглядав би парою текстових карток (docs/SHOPS.md §3).
+          context={{ slug: "", title: template.label, photoUrl: null, preview: true }}
           className="page-layout"
         />
       </div>

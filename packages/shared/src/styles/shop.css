@@ -289,6 +289,16 @@
   object-fit: cover;
 }
 
+/* Фото ще немає: місце під нього лишається тієї ж мірки, але читається як
+   «тут буде фото», а не як зламана картинка. */
+.shop-card-img--empty {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--accent);
+  background: var(--accent-dim);
+}
+
 .shop-card-title {
   margin: var(--sp-3) var(--sp-3) 0;
   font-size: var(--text-sm);

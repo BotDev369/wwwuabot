@@ -34,14 +34,23 @@ export interface ShopCatalogState {
   loading: boolean;
 }
 
-export function useShopCatalog(shopSlug: string): ShopCatalogState {
+/**
+ * Каталог за адресою магазину; `null` — адреси немає, тож і питати нічого.
+ *
+ * Без цієї межі сторінка, яка не є магазином, питала б каталог за своєю
+ * адресою щоразу: відповідь «немає такого магазину» нічого не додає до того,
+ * що вже видно з `template_key`.
+ */
+export function useShopCatalog(shopSlug: string | null): ShopCatalogState {
   const [data, setData] = useState<CatalogData | null>(null);
   const [settled, setSettled] = useState<string | null>(null);
 
   const current = data && data.slug === shopSlug ? data : null;
-  const loading = settled !== shopSlug;
+  const loading = shopSlug !== null && settled !== shopSlug;
 
   useEffect(() => {
+    if (shopSlug === null) return;
+
     let cancelled = false;
 
     shopApi
