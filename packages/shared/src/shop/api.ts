@@ -11,6 +11,12 @@
  * `shop_media`, а не адреси (`docs/SHOPS.md` §5), тож адресу з них будує той,
  * хто показує: одна відповідь на список, а не запит на кожне фото.
  *
+ * **Замовлення має той самий поділ, і навіть різкіший.** Замовити можна в
+ * **відкритому** магазині за адресою — від покупця потрібна лише ідентичність із
+ * підписаного `initData`; а от **читати** замовлення можна лише з продавського
+ * боку свого магазину. Покупцеві про його замовлення каже розмова, яку воно ж і
+ * відкрило (`docs/SHOPS.md` §8).
+ *
  * **Транспорт передається аргументом** і їх два: звичайний (JSON) і
  * завантаження. Завантаження мусить іти **повз** JSON-транспорт, бо multipart
  * сам ставить `Content-Type` із межею — заголовок `application/json` зіпсував
@@ -19,17 +25,23 @@
  * @module @wwwuabot/shared/shop
  */
 
+import type { OrderDraftInput } from "./orders";
+import type { OrderStatus } from "./statuses";
 import type {
   CatalogResponse,
   MediaDeleteResponse,
   MediaListResponse,
   MediaSaveResponse,
+  OrderListResponse,
+  OrderSaveResponse,
   ProductDeleteResponse,
   ProductDraft,
   ProductListResponse,
   ProductSaveResponse,
   ShopMedia,
+  ShopOrder,
   ShopProduct,
+  StatusListResponse,
 } from "./types";
 
 /** Мінімум, який потрібен від JSON-транспорту оболонки. */
@@ -63,13 +75,26 @@ export interface ShopApi {
   upload: (shopId: number, file: File) => Promise<ShopMedia>;
   /** Прибрати файл; товар, який на нього посилався, лишається. */
   removeMedia: (shopId: number, id: number) => Promise<void>;
+  /** Замовлення свого магазину — те, що бачить продавець. */
+  orders: (shopId: number) => Promise<ShopOrder[]>;
+  /** Замовити у **відкритому** магазині за його адресою. */
+  placeOrder: (shopSlug: string, draft: OrderDraftInput) => Promise<ShopOrder>;
+  /** Поставити статус замовленню свого магазину. */
+  setOrderStatus: (shopId: number, orderId: number, status: string) => Promise<void>;
+  /** Статуси магазину: типові з його правками — те, з чого вибирає екран. */
+  statuses: (shopId: number) => Promise<OrderStatus[]>;
 }
 
-/** Шляхи трьох поверхонь: свої товари, власні файли й публічний каталог. */
+/** Шляхи поверхонь: свої товари, файли, каталог і замовлення. */
 export interface ShopApiPaths {
   products: string;
   media: string;
   catalog: string;
+  orders: string;
+  /** Зміна статусу — окремий шлях: список і дія не плутаються навіть адресою. */
+  orderStatus: string;
+  placeOrder: string;
+  statuses: string;
 }
 
 /** Шлях із параметрами: `?shop=…&limit=…`. */
@@ -133,5 +158,31 @@ export function createShopApi(
       );
       if (!response.ok) throw new Error(response.error ?? "Не вдалося прибрати файл");
     },
+
+    orders: async (shopId) =>
+      (await fetchJson<OrderListResponse>(withQuery(paths.orders, { shop: shopId }))).orders ?? [],
+
+    placeOrder: async (shopSlug, draft) => {
+      const response = await fetchJson<OrderSaveResponse>(
+        withQuery(paths.placeOrder, { shop: shopSlug }),
+        { method: "POST", body: JSON.stringify(draft) },
+      );
+      if (!response.ok || !response.order) {
+        throw new Error(response.error ?? "Не вдалося надіслати замовлення");
+      }
+      return response.order;
+    },
+
+    setOrderStatus: async (shopId, orderId, status) => {
+      const response = await fetchJson<OrderSaveResponse>(paths.orderStatus, {
+        method: "POST",
+        body: JSON.stringify({ shop: shopId, id: orderId, status }),
+      });
+      if (!response.ok) throw new Error(response.error ?? "Не вдалося змінити статус");
+    },
+
+    statuses: async (shopId) =>
+      (await fetchJson<StatusListResponse>(withQuery(paths.statuses, { shop: shopId }))).statuses ??
+      [],
   };
 }

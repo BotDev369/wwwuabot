@@ -12,12 +12,16 @@
 import { describe, expect, it } from "vitest";
 import {
   ORDER_ITEMS_MAX,
+  ORDER_NOTICE_MAX,
   ORDER_QTY_MAX,
   cleanOrderItems,
   orderContactFields,
+  orderNeedsShipping,
+  orderNoticeText,
   sanitizeOrderContact,
   validateOrderDraft,
 } from "./orders";
+import type { ShopOrder } from "./types";
 
 describe("що питаємо в покупця", () => {
   it("фізичний товар питає адресу доставки", () => {
@@ -93,6 +97,69 @@ describe("кошик", () => {
 
   it("позиція без номера товару відкидається", () => {
     expect(cleanOrderItems([{ productId: 0, qty: 1 }, { qty: 1 }, "сміття"])).toEqual([]);
+  });
+});
+
+describe("доставка за кошиком", () => {
+  it("змішане замовлення питає адресу — фізичній частині її нікуди подіти", () => {
+    expect(orderNeedsShipping(["digital", "physical"])).toBe(true);
+  });
+
+  it("без фізичного товару доставки немає", () => {
+    expect(orderNeedsShipping(["digital", "service"])).toBe(false);
+  });
+
+  it("невідомий вид доставки не просить — те саме правило, що в картці товару", () => {
+    expect(orderNeedsShipping(["невідоме"])).toBe(false);
+    expect(orderNeedsShipping([])).toBe(false);
+  });
+});
+
+describe("позначка платформи в розмові", () => {
+  const order: ShopOrder = {
+    id: 12,
+    shopId: 3,
+    buyerId: 42,
+    status: "new",
+    contact: { name: "Олена", phone: "067", address: "Київ" },
+    note: "передзвоніть",
+    items: [
+      { productId: 5, title: "Еспресо-суміш", price: "320 ₴", kind: "physical", qty: 2 },
+      { productId: 6, title: "Рецепти", price: "150 ₴", kind: "digital", qty: 1 },
+    ],
+    createdAt: "2026-09-25T00:00:00.000Z",
+    updatedAt: "2026-09-25T00:00:00.000Z",
+  };
+
+  it("називає замовлення, позиції з кількістю, контакт і примітку", () => {
+    const text = orderNoticeText(order, "Кава на розі");
+
+    expect(text).toContain("№12");
+    expect(text).toContain("Кава на розі");
+    expect(text).toContain("Еспресо-суміш × 2");
+    expect(text).toContain("Олена · 067 · Київ");
+    expect(text).toContain("передзвоніть");
+  });
+
+  it("без підпису магазину не лишає порожнього місця", () => {
+    expect(orderNoticeText(order, "   ")).toContain("магазин");
+  });
+
+  it("довге замовлення обрізається межею, а не лягає шматком у переписку", () => {
+    const long: ShopOrder = {
+      ...order,
+      items: Array.from({ length: ORDER_ITEMS_MAX }, (_, i) => ({
+        productId: i + 1,
+        title: "Дуже довга назва товару, яку ніхто не читатиме повністю",
+        price: "1 ₴",
+        kind: "physical",
+        qty: 1,
+      })),
+    };
+
+    const text = orderNoticeText(long, "Кава на розі");
+    expect(text.length).toBeLessThanOrEqual(ORDER_NOTICE_MAX);
+    expect(text.endsWith("…")).toBe(true);
   });
 });
 

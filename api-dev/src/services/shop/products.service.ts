@@ -38,11 +38,17 @@ const OWN_LIMIT = 500;
 export const CATALOG_PAGE_SIZE = 60;
 const CATALOG_PAGE_MAX = 120;
 
-/** Колонки читаємо за іменами, а не `SELECT *` (AGENTS.md §7). */
-const COLUMNS =
+/**
+ * Колонки читаємо за іменами, а не `SELECT *` (AGENTS.md §7).
+ *
+ * Список **експортований**, бо той самий рядок читає прийом замовлення
+ * (`orders.service.ts`): замовлення бере з товару ціну, назву й вид — і брати
+ * їх іншим набором колонок означало б друге подання товару.
+ */
+export const PRODUCT_COLUMNS =
   "id, shop_id, slug, kind, title, summary, description, price, images, attributes, is_active, created_at, updated_at";
 
-interface ProductRow {
+export interface ProductRow {
   id: number;
   shop_id: number;
   slug: string;
@@ -69,7 +75,14 @@ function kindOf(raw: unknown): ProductKind {
   return (isProductKind(raw) ? raw : String(raw ?? "")) as ProductKind;
 }
 
-function toProduct(row: ProductRow): ShopProduct {
+/**
+ * Рядок товару → товар, як його читає решта коду.
+ *
+ * Експортовано з тієї ж причини, що й колонки: цим перекладом користується
+ * прийом замовлення, а другий переклад зробив би знімок позиції схожим на
+ * товар, а не однаковим із ним.
+ */
+export function toProduct(row: ProductRow): ShopProduct {
   return {
     id: Number(row.id),
     shopId: Number(row.shop_id),
@@ -128,7 +141,7 @@ export class ShopProductsService {
     if ((await ownShopId(this.env.DB, shopId, ownerId)) === null) return null;
 
     const result = await this.env.DB.prepare(
-      `SELECT ${COLUMNS} FROM shop_products
+      `SELECT ${PRODUCT_COLUMNS} FROM shop_products
         WHERE shop_id = ?
         ORDER BY id DESC LIMIT ?`,
     )
@@ -157,7 +170,7 @@ export class ShopProductsService {
     if (!shop) return null;
 
     const result = await this.env.DB.prepare(
-      `SELECT ${COLUMNS} FROM shop_products
+      `SELECT ${PRODUCT_COLUMNS} FROM shop_products
         WHERE shop_id = ? AND is_active = 1
         ORDER BY id DESC LIMIT ?`,
     )
@@ -277,7 +290,7 @@ export class ShopProductsService {
 
   private async row(shopId: number, id: number): Promise<ProductRow | null> {
     return await this.env.DB.prepare(
-      `SELECT ${COLUMNS} FROM shop_products WHERE id = ? AND shop_id = ?`,
+      `SELECT ${PRODUCT_COLUMNS} FROM shop_products WHERE id = ? AND shop_id = ?`,
     )
       .bind(id, shopId)
       .first<ProductRow>();

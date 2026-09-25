@@ -39,7 +39,7 @@ function file(over: Partial<ShopMedia> = {}): ShopMedia {
     key: "shop/10/abc-kava.jpg",
     mime: "image/jpeg",
     bytes: 1024,
-    kind: "photo",
+    kind: "image",
     createdAt: "2026-09-25T00:00:00.000Z",
     ...over,
   };

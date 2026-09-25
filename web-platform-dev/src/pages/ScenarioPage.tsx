@@ -17,6 +17,7 @@ import { HOME_SLUG } from "@wwwuabot/shared/content";
 import { PageRenderer } from "@wwwuabot/ui/PageRenderer";
 import { apiFetchRaw } from "@/shared/api/client";
 import { useShopCatalog } from "@/pages/shop/useShopCatalog";
+import { ShopOrderForm } from "@/pages/shop/ShopOrderForm";
 import { productCards } from "@wwwuabot/shared/shop";
 import { registerAllBlocks } from "@wwwuabot/ui/blocks";
 
@@ -94,6 +95,9 @@ export function ScenarioPage() {
   const [status, setStatus] = useState<PageStatus>("loading");
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
+  // Товар, який замовляють: форма стоїть поверхнею, а не екраном — покупець
+  // лишається на вітрині, і «закрити» вертає його туди ж, звідки він прийшов.
+  const [ordering, setOrdering] = useState<number | null>(null);
 
   // ── Завантаження профілю користувача (для conditional rendering) ──
   // Ідентичність api-dev бере з підписаного initData — query-параметр не потрібен.
@@ -191,6 +195,9 @@ export function ScenarioPage() {
       // Товари лежать у своїй таблиці, а не в `page_data`, тож їх кладе в
       // контекст вітрина: сітку малює блок шаблону (`shop-grid`).
       shopCards: isShop ? productCards(catalog.products, catalog.media) : undefined,
+      // Замовити можна лише те, що **показано**: каталог відбирає чернетки
+      // (`is_active = 1`) у запиті до бази, тож і тут їх немає за побудовою.
+      onShopOrder: isShop ? (productId: number) => setOrdering(productId) : undefined,
     }),
     // Залежності — самі списки, а не об'єкт хука: він новий щокадру, і
     // `useMemo` перераховувався б завжди, тобто нічого не робив.
@@ -203,11 +210,23 @@ export function ScenarioPage() {
   const activeConfig = status === "fallback" ? FALLBACK_PAGE : pageConfig;
   if (!activeConfig) return <LoadingScreen />;
 
+  const orderedProduct = catalog.products.find((product) => product.id === ordering) ?? null;
+
   return (
-    <PageRenderer
-      config={activeConfig}
-      context={status === "fallback" ? { slug: HOME_SLUG, title: null, photoUrl: null } : context}
-      className="page-layout"
-    />
+    <>
+      <PageRenderer
+        config={activeConfig}
+        context={status === "fallback" ? { slug: HOME_SLUG, title: null, photoUrl: null } : context}
+        className="page-layout"
+      />
+
+      {orderedProduct && (
+        <ShopOrderForm
+          product={orderedProduct}
+          shopSlug={pageSlug}
+          onClose={() => setOrdering(null)}
+        />
+      )}
+    </>
   );
 }

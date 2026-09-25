@@ -31,4 +31,9 @@ export const shopApi = createShopApi(apiFetch, uploadForm, {
   products: "/api/user/shop/products",
   media: "/api/user/shop/media",
   catalog: "/api/space/shop/products",
+  orders: "/api/user/shop/orders",
+  orderStatus: "/api/user/shop/orders/status",
+  // Замовляють **за адресою** магазину: номера покупцеві ніхто не казав.
+  placeOrder: "/api/space/shop/orders",
+  statuses: "/api/user/shop/statuses",
 });

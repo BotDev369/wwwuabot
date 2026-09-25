@@ -14,9 +14,23 @@
  * @module scripts/lib/api-routes
  */
 
-import { read } from "./files.mjs";
+import { allSourceFiles, read } from "./files.mjs";
 
 const ROUTER = "api-dev/src/router.ts";
+/**
+ * Домен, який виріс до власного модуля, забирає з собою й свої шляхи.
+ *
+ * Тому інвентар читає **не лише роутер**: коли магазин переїхав у
+ * `routes/shop.ts` (роутер перетнув межу 400 рядків, `AGENTS.md` §3), список, що
+ * читав один файл, тихо втратив би п'ять шляхів — тобто документ почав би
+ * брехати саме там, де щойно став точнішим. Каталог читається цілком, і новий
+ * модуль у ньому не потребує правки тут.
+ */
+const ROUTES_DIR = "api-dev/src/routes";
+
+function routeFiles() {
+  return [ROUTER, ...allSourceFiles().filter((file) => file.startsWith(`${ROUTES_DIR}/`))];
+}
 
 /** Файл, у який виливається інвентар. */
 export const API_DOC = "docs/API.md";
@@ -59,42 +73,47 @@ const GROUPS = [
  * як «шлях без групи», а не як мовчазну прогалину.
  */
 export function apiRoutes() {
-  const lines = read(ROUTER).split("\n");
   const routes = [];
 
-  lines.forEach((line, index) => {
-    const method = /request\.method === "([A-Z]+)"/.exec(line)?.[1] ?? "ANY";
+  for (const file of routeFiles()) {
+    const lines = read(file).split("\n");
 
-    // Один рядок може нести два точні шляхи (`/health` і `/health/`) — беру обидва.
-    const exact = [...line.matchAll(/pathname === "([^"]+)"/g)].map((m) => m[1]);
-    const prefixed = /pathname\.startsWith\("([^"]+)"\)/.exec(line)?.[1];
-    if (exact.length === 0 && !prefixed) return;
+    lines.forEach((line, index) => {
+      const method = /request\.method === "([A-Z]+)"/.exec(line)?.[1] ?? "ANY";
 
-    // Обробник — у наступних рядках: тіло `if` коротке, але трапляються перевірки
-    // (`if (date === null) return badRequest();`), тому шукаємо саме `handle…`.
-    let handler = "—";
-    for (let i = index; i < Math.min(index + 6, lines.length); i++) {
-      const call = /return (handle\w+)\(/.exec(lines[i]);
-      if (call) {
-        handler = call[1];
-        break;
+      // Один рядок може нести два точні шляхи (`/health` і `/health/`) — беру обидва.
+      const exact = [...line.matchAll(/pathname === "([^"]+)"/g)].map((m) => m[1]);
+      const prefixed = /pathname\.startsWith\("([^"]+)"\)/.exec(line)?.[1];
+      if (exact.length === 0 && !prefixed) return;
+
+      // Обробник — у наступних рядках: тіло `if` коротке, але трапляються перевірки
+      // (`if (date === null) return badRequest();`), тому шукаємо саме `handle…`.
+      // У модулі шляху виклик буває **в тому ж рядку**
+      // (`if (…) return handleShopMediaFile(env, key)`) — і це теж ловиться.
+      let handler = "—";
+      for (let i = index; i < Math.min(index + 6, lines.length); i++) {
+        const call = /return (handle\w+)\(/.exec(lines[i]);
+        if (call) {
+          handler = call[1];
+          break;
+        }
       }
-    }
 
-    const found = prefixed ? [`${prefixed}<…>`] : exact;
-    for (const raw of found) {
-      // `/health/` — те саме, що `/health`: тримаємо один рядок у списку.
-      const path = raw.length > 1 ? raw.replace(/\/+$/, "") : raw;
-      if (routes.some((route) => route.path === path)) continue;
-      routes.push({ method, path, handler, group: groupOf(path), line: index + 1 });
-    }
-  });
+      const found = prefixed ? [`${prefixed}<…>`] : exact;
+      for (const raw of found) {
+        // `/health/` — те саме, що `/health`: тримаємо один рядок у списку.
+        const path = raw.length > 1 ? raw.replace(/\/+$/, "") : raw;
+        if (routes.some((route) => route.path === path)) continue;
+        routes.push({ method, path, handler, group: groupOf(path), line: index + 1, file });
+      }
+    });
+  }
 
   const unclassified = routes.filter((route) => route.group === null);
   if (unclassified.length) {
     throw new Error(
       "Шляхи без групи доступу (додай префікс у GROUPS у scripts/lib/api-routes.mjs):\n" +
-        unclassified.map((r) => `  ${r.path} — ${ROUTER}:${r.line}`).join("\n"),
+        unclassified.map((r) => `  ${r.path} — ${r.file}:${r.line}`).join("\n"),
     );
   }
 
@@ -128,8 +147,8 @@ export function renderApiDoc() {
     "# Ендпоїнти API",
     "",
     "> **Згенеровано** — не правити руками: `npm run doc:api` (`scripts/doc-api.mjs`) читає",
-    "> `" + ROUTER + "`. Гейт `check:docs` падає, якщо цей файл розійшовся з кодом, тож",
-    "> список застаріти не може.",
+    "> роутер `" + ROUTER + "` і модулі шляхів `" + ROUTES_DIR + "/`. Гейт `check:docs` падає,",
+    "> якщо цей файл розійшовся з кодом, тож список застаріти не може.",
     "",
     "Кожен шлях належить рівно одній групі доступу, і це визначають **префікси**, а не",
     "сам ендпоїнт: адмінські шляхи мусять бути під `/api/admin/`, `/api/portal/` або",

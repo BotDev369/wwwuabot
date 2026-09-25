@@ -324,3 +324,135 @@
     grid-template-columns: 1fr;
   }
 }
+
+/* Кнопка замовлення в картці стоїть **під описом**, а не поруч із ціною:
+   дотик по всій картці нічого не відкриває (сторінки товару ще немає), тож
+   єдине, що тут роблять, мусить читатись як дія, а не як прикраса. */
+.shop-card-order {
+  display: block;
+  width: calc(100% - var(--sp-3) * 2);
+  min-height: 44px;
+  margin: 0 var(--sp-3) var(--sp-3);
+  font: inherit;
+  font-size: var(--text-sm);
+  font-weight: var(--weight-medium);
+  color: var(--text-inverse);
+  background: var(--accent);
+  border: none;
+  border-radius: var(--radius);
+  cursor: pointer;
+}
+
+.shop-card-order:active {
+  background: var(--accent-hover);
+}
+
+/* ── Замовлення продавця ────────────────────────────────────────────────── */
+
+/* Картка замовлення — поверхня, як і рядок товару: розділяє простір, а не
+   лінія. Відступ знизу той самий, що між рядками списку. */
+.shop-order {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-1);
+  padding: var(--sp-3);
+  margin-bottom: var(--sp-3);
+  background: var(--surface);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-xs);
+}
+
+.shop-order-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--sp-2);
+}
+
+.shop-order-id {
+  font-size: var(--text-base);
+  font-weight: var(--weight-semibold);
+}
+
+.shop-order-when {
+  font-size: var(--text-xs);
+  color: var(--text-muted);
+}
+
+.shop-order-items {
+  margin: 0;
+  font-size: var(--text-sm);
+}
+
+.shop-order-hint,
+.shop-order-note {
+  margin: 0;
+  font-size: var(--text-xs);
+}
+
+.shop-order-contact {
+  margin: 0;
+  font-size: var(--text-sm);
+  overflow-wrap: anywhere;
+}
+
+.shop-order-statuses {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--sp-2);
+  margin-top: var(--sp-1);
+}
+
+/* Статус — тап-таргет, а не мітка: ним рухають замовлення. Вибраний
+   підсвічений тлом (стан), а не рамкою (DESIGN_SYSTEM.md, правило 15). */
+.shop-status {
+  min-height: 44px;
+  padding: 0 var(--sp-3);
+  font: inherit;
+  font-size: var(--text-sm);
+  color: var(--text-secondary);
+  background: var(--field-bg);
+  border: none;
+  border-radius: var(--radius-full);
+  cursor: pointer;
+}
+
+.shop-status--current {
+  color: var(--accent);
+  background: var(--accent-dim);
+  font-weight: var(--weight-medium);
+}
+
+/* ── Форма замовлення покупця ───────────────────────────────────────────── */
+
+.shop-order-form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-3);
+}
+
+.shop-order-form-title {
+  margin: 0;
+  font-size: var(--text-md);
+  font-weight: var(--weight-semibold);
+}
+
+.shop-order-sent {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--sp-3);
+  padding: var(--sp-4) 0;
+  text-align: center;
+}
+
+.shop-order-sent-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 56px;
+  height: 56px;
+  color: var(--green);
+  background: var(--green-dim);
+  border-radius: var(--radius-full);
+}

@@ -1,8 +1,8 @@
 # Ендпоїнти API
 
 > **Згенеровано** — не правити руками: `npm run doc:api` (`scripts/doc-api.mjs`) читає
-> `api-dev/src/router.ts`. Гейт `check:docs` падає, якщо цей файл розійшовся з кодом, тож
-> список застаріти не може.
+> роутер `api-dev/src/router.ts` і модулі шляхів `api-dev/src/routes/`. Гейт `check:docs` падає,
+> якщо цей файл розійшовся з кодом, тож список застаріти не може.
 
 Кожен шлях належить рівно одній групі доступу, і це визначають **префікси**, а не
 сам ендпоїнт: адмінські шляхи мусять бути під `/api/admin/`, `/api/portal/` або
@@ -21,6 +21,7 @@
 | `ANY` | `/api/shop/media/<…>` | `handleShopMediaFile` |
 | `GET` | `/api/space/ads` | `handleSpaceAds` |
 | `GET` | `/api/space/pages` | `handleSpacePages` |
+| `POST` | `/api/space/shop/orders` | `handleSpaceShopOrders` |
 | `GET` | `/api/space/shop/products` | `handleSpaceShopProducts` |
 | `GET` | `/api/space/themes` | `handleSpaceThemes` |
 | `GET` | `/api/space/users` | `handleSpaceUsers` |
@@ -50,7 +51,10 @@
 | `ANY` | `/api/user/pages` | `handleUserPages` |
 | `GET` | `/api/user/profile` | `handleUserProfile` |
 | `ANY` | `/api/user/shop/media` | `handleUserShopMedia` |
+| `ANY` | `/api/user/shop/orders` | `handleUserShopOrders` |
+| `ANY` | `/api/user/shop/orders/status` | `handleUserShopOrders` |
 | `ANY` | `/api/user/shop/products` | `handleUserShopProducts` |
+| `GET` | `/api/user/shop/statuses` | `handleUserShopStatuses` |
 | `ANY` | `/api/user/themes` | `handleUserThemes` |
 | `POST` | `/api/user/username` | `handleSetPlatformUsername` |
 | `POST` | `/api/user/visibility` | `handleUserVisibility` |
@@ -88,4 +92,4 @@
 | `POST` | `/auth/login` | `handleLogin` |
 | `POST` | `/auth/logout` | `handleLogout` |
 
-Усього шляхів: **59**.
+Усього шляхів: **63**.

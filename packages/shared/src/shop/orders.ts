@@ -19,13 +19,32 @@
  * @module @wwwuabot/shared/shop
  */
 
-import type { OrderContact } from "./types";
+import { productKindNeedsShipping } from "./kinds";
+import type { OrderContact, OrderItem, ShopOrder } from "./types";
 
 export const ORDER_NOTE_MAX = 600;
+/**
+ * Стеля позначки платформи в розмові.
+ *
+ * Це **не** те саме, що стеля повідомлення: позначку пише сервер сам, без
+ * форми й без перевірки, тож межу мусить мати сам текст. Двадцять позицій із
+ * довгими назвами дали б у переписці шматок, який ніхто не читає.
+ */
+export const ORDER_NOTICE_MAX = 400;
 /** Стеля кошика: замовлення — це покупка, а не перенесення каталогу. */
 export const ORDER_ITEMS_MAX = 20;
 /** Стеля кількості однієї позиції. */
 export const ORDER_QTY_MAX = 99;
+
+/**
+ * Відмова, з якої починається кожна перевірка замовлення.
+ *
+ * Винесена в константу, бо віддають її **двоє**: правило форми
+ * (`validateOrderDraft`) і прийом на сервері, який мусить спинитись ще до
+ * запиту до бази. Два однакові рядки в цих двох місцях розійшлися б, і покупець
+ * побачив би дві різні причини для однієї відмови.
+ */
+export const EMPTY_ORDER_CART = "Кошик порожній — оберіть товар";
 
 /** Поле контакту покупця: підпис, межа й чи обов'язкове воно. */
 export interface OrderContactField {
@@ -70,6 +89,18 @@ export function orderContactFields(needsShipping: boolean): readonly OrderContac
 }
 
 export type OrderContactResult = { ok: true; value: OrderContact } | { ok: false; message: string };
+
+/**
+ * Чи потрібна доставка хоч одній позиції — від цього залежать поля контакту.
+ *
+ * Питаємо за **кошиком**, а не за одним товаром: змішане замовлення (кава й
+ * PDF) мусить дістати адресу, бо фізичній частині її нікуди подіти. Вид
+ * невідомого товару доставки не просить — те саме правило, що в картці
+ * (`productKindNeedsShipping`).
+ */
+export function orderNeedsShipping(kinds: readonly unknown[]): boolean {
+  return kinds.some((kind) => productKindNeedsShipping(kind));
+}
 
 /**
  * Контакт покупця — лише ті поля, які ми справді питаємо.
@@ -157,7 +188,7 @@ export function validateOrderDraft(raw: unknown, needsShipping: boolean): OrderV
   const source = raw as Record<string, unknown>;
 
   const items = cleanOrderItems(source.items);
-  if (items.length === 0) return { ok: false, message: "Кошик порожній — оберіть товар" };
+  if (items.length === 0) return { ok: false, message: EMPTY_ORDER_CART };
 
   const contact = sanitizeOrderContact(source.contact, needsShipping);
   if (!contact.ok) return contact;
@@ -165,4 +196,44 @@ export function validateOrderDraft(raw: unknown, needsShipping: boolean): OrderV
   const note = typeof source.note === "string" ? source.note.trim().slice(0, ORDER_NOTE_MAX) : "";
 
   return { ok: true, value: { items, contact: contact.value, note } };
+}
+
+/**
+ * Позначка платформи в розмові — з неї продавець дізнається про замовлення.
+ *
+ * **Це покажчик, а не саме замовлення** (`docs/SHOPS.md` §8): історія лежить у
+ * `shop_orders`, і перелічувати її в переписці означало б тримати той самий факт
+ * у двох місцях. Тут рівно те, чого не видно з номера: що́ саме й на кого,
+ * тобто те, за чим продавець вирішує, чи відкривати екран.
+ *
+ * Контакт іде **тим самим порядком**, яким його питали (`orderContactFields`),
+ * і обрізається межею (`ORDER_NOTICE_MAX`): довгий рядок у переписці виглядає
+ * як збій, а не як повідомлення.
+ */
+export function orderNoticeText(order: ShopOrder, shopTitle: string): string {
+  const items = orderItemsLabel(order.items);
+  const contact = Object.values(order.contact).filter(Boolean).join(" · ");
+
+  const lines = [
+    `Нове замовлення №${order.id} — ${shopTitle.trim() || "магазин"}`,
+    items,
+    contact,
+    order.note ? `Примітка: ${order.note}` : "",
+  ].filter(Boolean);
+
+  const text = lines.join("\n");
+  return text.length <= ORDER_NOTICE_MAX
+    ? text
+    : `${text.slice(0, ORDER_NOTICE_MAX - 1).trimEnd()}…`;
+}
+
+/**
+ * Позиції одним рядком — «Еспресо-суміш × 2, Рецепти × 1».
+ *
+ * Один переклад на всіх, хто показує склад: позначку в розмові й екран
+ * замовлень. Два рядки в тих двох місцях розійшлися б, і покупець із продавцем
+ * читали б **різні** замовлення (`AGENTS.md` §7).
+ */
+export function orderItemsLabel(items: readonly OrderItem[]): string {
+  return items.map((item) => `${item.title} × ${item.qty}`).join(", ");
 }

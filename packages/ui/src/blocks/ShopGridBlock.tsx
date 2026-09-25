@@ -70,6 +70,10 @@ export function ShopGridBlock({ block, context }: BlockComponentProps) {
   const isPreview = !cards && Boolean(context.preview);
   const shown = cards && cards.length > 0 ? cards : isPreview ? EXAMPLE_CARDS : [];
 
+  // Дія приходить із контексту **разом із картками**: без неї кнопки немає, і
+  // саме тому в перегляді шаблону замовляти нічого — приклад не продається.
+  const onOrder = context.onShopOrder;
+
   if (shown.length === 0) return null;
 
   return (
@@ -91,6 +95,11 @@ export function ShopGridBlock({ block, context }: BlockComponentProps) {
             <h3 className="shop-card-title">{card.title}</h3>
             <p className="shop-card-price">{card.price}</p>
             <p className="shop-card-summary">{card.summary || card.kindLabel}</p>
+            {onOrder && (
+              <button type="button" className="shop-card-order" onClick={() => onOrder(card.id)}>
+                Замовити
+              </button>
+            )}
           </article>
         ))}
       </div>

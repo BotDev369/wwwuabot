@@ -199,6 +199,18 @@ export function activeOrderStatuses(statuses: readonly OrderStatus[]): OrderStat
 }
 
 /**
+ * Чи можна поставити цей ключ замовленню.
+ *
+ * Ключ мусить **існувати й бути увімкненим**: вимкнений статус магазин прибрав
+ * зі списку вибору, і записати його означало б відкрити з екрана те, що щойно
+ * закрили. Це межа саме для **запису**: рядок, який уже лежить у базі з таким
+ * ключем, читається далі (`orderStatusLabel` його назве).
+ */
+export function canSetOrderStatus(key: unknown, statuses: readonly OrderStatus[]): boolean {
+  return typeof key === "string" && statuses.some((s) => s.key === key && s.isActive);
+}
+
+/**
  * Підпис за ключем; невідомий ключ показується як є, а не зникає.
  *
  * Це не перестраховка: ключ у замовленні живе довше за рядок статусу — його

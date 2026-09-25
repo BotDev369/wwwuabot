@@ -33,8 +33,9 @@ import {
   PAGE_EDIT_ROUTE,
   PAGES_NEW_ROUTE,
   PAGES_ROUTE,
-  SHOP_PRODUCTS_ROUTE,
   PROFILE_ACCOUNT_PATH,
+  SHOP_ORDERS_ROUTE,
+  SHOP_PRODUCTS_ROUTE,
   PROFILE_ROUTE,
   SPACE_GAME_ROUTE,
   SPACE_ROUTE,
@@ -53,6 +54,7 @@ import { SpacePage } from "@/pages/SpacePage";
 import { SpaceUserPage } from "@/pages/SpaceUserPage";
 import { PageCreatePage } from "@/pages/user-pages/PageCreatePage";
 import { PageEditPage } from "@/pages/user-pages/PageEditPage";
+import { ShopOrdersPage } from "@/pages/shop/ShopOrdersPage";
 import { ShopProductForm } from "@/pages/shop/ShopProductForm";
 import { ShopProductsPage } from "@/pages/shop/ShopProductsPage";
 import { UserPageView } from "@/pages/user-pages/UserPageView";
@@ -121,6 +123,10 @@ export const router = createBrowserRouter([
         element: <ShopProductForm />,
       },
       { path: `${PAGES_ROUTE}/:id/${SHOP_PRODUCTS_ROUTE}`, element: <ShopProductsPage /> },
+      // Замовлення магазину — там само, де товари: `shop_orders` належить тому
+      // самому рядку `scenarios`. Сегмент свій, бо це робота з людиною, а не
+      // каталог (`pages/shop/ShopOrdersPage`).
+      { path: `${PAGES_ROUTE}/:id/${SHOP_ORDERS_ROUTE}`, element: <ShopOrdersPage /> },
       { path: `${PAGES_ROUTE}/:id/${PAGE_EDIT_ROUTE}`, element: <PageEditPage /> },
       { path: `${PAGES_ROUTE}/:id`, element: <UserPageView /> },
       { path: PAGES_ROUTE, element: <UserPagesPage /> },

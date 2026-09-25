@@ -166,6 +166,21 @@ export const shopProductEditPath = (pageId: number, productId: number): string =
   `${shopProductsPath(pageId)}/${productId}`;
 
 /**
+ * Замовлення магазину — там само, де товари, і з тієї ж причини.
+ *
+ * `shop_orders` належить тому самому рядку `scenarios`, тож адреса стоїть під
+ * його сторінкою: `/pages/7/orders`. Окремий розділ `/shop` зробив би другу
+ * навігацію по тому самому контенту (`AGENTS.md` §7).
+ *
+ * Сегмент свій, а не вкладка в товарах: замовлення — це **робота з людиною**, а
+ * товари — каталог, і змішуються вони лише в одному випадку: коли магазин
+ * зовсім порожній.
+ */
+export const SHOP_ORDERS_ROUTE = "orders";
+export const shopOrdersPath = (pageId: number): string =>
+  `${userPagePath(pageId)}/${SHOP_ORDERS_ROUTE}`;
+
+/**
  * Параметр адреси: `/pages/new?preview=event` — «покажи, як це виглядає».
  *
  * Це крок **перед** вибором, і він потрібен саме тому, що шаблон обирають

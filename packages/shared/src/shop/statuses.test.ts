@@ -3,6 +3,7 @@ import {
   DEFAULT_ORDER_STATUSES,
   ORDER_STATUS_LABEL_MAX,
   activeOrderStatuses,
+  canSetOrderStatus,
   isDefaultOrderStatusKey,
   isValidOrderStatusKey,
   orderStatusLabel,
@@ -137,5 +138,22 @@ describe("правка статусу з форми", () => {
   it("підпис з форми стискається й ріжеться стелею", () => {
     expect(sanitizeStatusLabel("  В\n роботі  ")).toBe("В роботі");
     expect(sanitizeStatusLabel("я".repeat(80)).length).toBe(ORDER_STATUS_LABEL_MAX);
+  });
+});
+
+describe("що можна поставити замовленню", () => {
+  const statuses = resolveOrderStatuses([{ key: "sent", isActive: false }]);
+
+  it("типовий увімкнений статус проходить", () => {
+    expect(canSetOrderStatus("done", statuses)).toBe(true);
+  });
+
+  it("⛔ вимкнений статус не поставити — з екрана його щойно прибрали", () => {
+    expect(canSetOrderStatus("sent", statuses)).toBe(false);
+  });
+
+  it("⛔ вигаданого ключа в магазині немає", () => {
+    expect(canSetOrderStatus("packed", statuses)).toBe(false);
+    expect(canSetOrderStatus(7, statuses)).toBe(false);
   });
 });

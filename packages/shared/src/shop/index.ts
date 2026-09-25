@@ -14,7 +14,8 @@
  * - `cards.ts` — **картка товару**: один переклад «товар → те, що видно в
  *   сітці» (`productCards`) для блока вітрини й екранів продавця;
  * - `orders.ts` — **правила замовлення**: що питати в покупця залежно від виду
- *   товару (`orderContactFields`), кошик і перевірка (`validateOrderDraft`);
+ *   товару (`orderContactFields`), кошик і перевірка (`validateOrderDraft`),
+ *   а також позначка платформи в розмові з продавцем (`orderNoticeText`);
  * - `media.ts` — **файли магазину**: ключ R2, межі, адреса з ключа й перевірка
  *   завантаження (`validateMediaUpload`);
  * - `api.ts` — **клієнт** магазину: форма запиту, спільна для обох оболонок;
@@ -67,11 +68,16 @@ export { mediaById, productCards, productCover, productPhotos, productPriceLabel
 export type { ShopCard } from "./cards";
 
 export {
+  EMPTY_ORDER_CART,
   ORDER_ITEMS_MAX,
   ORDER_NOTE_MAX,
+  ORDER_NOTICE_MAX,
   ORDER_QTY_MAX,
   cleanOrderItems,
   orderContactFields,
+  orderItemsLabel,
+  orderNeedsShipping,
+  orderNoticeText,
   sanitizeOrderContact,
   validateOrderDraft,
 } from "./orders";
@@ -136,6 +142,7 @@ export {
   ORDER_STATUS_KEY_MAX,
   ORDER_STATUS_LABEL_MAX,
   activeOrderStatuses,
+  canSetOrderStatus,
   isDefaultOrderStatusKey,
   isValidOrderStatusKey,
   orderStatusLabel,

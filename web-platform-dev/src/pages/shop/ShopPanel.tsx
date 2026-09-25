@@ -16,13 +16,20 @@
  * є: список порожній не тільки до першого товару, а й коли запит не вдався —
  * тоді саме список і несе причину.
  *
+ * **Замовлення — окремою кнопкою, а не в товарах.** Вони не про каталог, а про
+ * роботу: замовлення приймають, підтверджують і відправляють, і шукати їх у
+ * списку товарів означало б шукати лист у переліку конвертів
+ * (`pages/shop/ShopOrdersPage`). Кількості тут немає навмисно: за нею стоїть
+ * **другий запит** (до `shop_orders`), а картка стоїть на сторінці, яка вже
+ * читає товари.
+ *
  * @module web-platform-dev/src/pages/shop
  */
 
 import type { ReactElement } from "react";
 import { useNavigate } from "react-router-dom";
 import { Icon } from "@wwwuabot/shared";
-import { shopProductNewPath, shopProductsPath } from "@/app/routes";
+import { shopOrdersPath, shopProductNewPath, shopProductsPath } from "@/app/routes";
 import { shopProductsHint } from "./shop-view";
 
 export function ShopPanel({
@@ -65,6 +72,14 @@ export function ShopPanel({
           >
             <Icon name="list" size={16} />
             Усі товари
+          </button>
+          <button
+            type="button"
+            className="wb-btn wb-btn-secondary"
+            onClick={() => void navigate(shopOrdersPath(pageId))}
+          >
+            <Icon name="tag" size={16} />
+            Замовлення
           </button>
         </div>
       </div>

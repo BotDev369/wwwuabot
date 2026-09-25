@@ -167,9 +167,10 @@ export interface MediaDeleteResponse {
 export interface OrderListResponse {
   ok: boolean;
   orders: ShopOrder[];
+  error?: string;
 }
 
-/** Відповідь `POST /api/user/shop/orders`: прийняте замовлення. */
+/** Відповідь `POST`: прийняте замовлення (або змінений статус — теж воно). */
 export interface OrderSaveResponse {
   ok: boolean;
   order: ShopOrder | null;
@@ -180,4 +181,5 @@ export interface OrderSaveResponse {
 export interface StatusListResponse {
   ok: boolean;
   statuses: OrderStatus[];
+  error?: string;
 }
