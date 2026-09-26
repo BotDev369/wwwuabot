@@ -281,7 +281,9 @@
   background: var(--surface);
   border-radius: var(--radius-lg);
   box-shadow: var(--shadow-sm);
-  transition: transform var(--duration-fast, 150ms) var(--ease, ease), box-shadow var(--duration-fast, 150ms) var(--ease, ease);
+  transition:
+    transform var(--duration-fast, 150ms) var(--ease, ease),
+    box-shadow var(--duration-fast, 150ms) var(--ease, ease);
 }
 
 .shop-card-media {

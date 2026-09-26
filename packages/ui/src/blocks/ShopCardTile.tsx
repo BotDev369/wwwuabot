@@ -41,9 +41,7 @@ export function ShopCardTile({ card, onOpen, actionLabel = "Детальніше
             <Icon name="image" size={24} />
           </div>
         )}
-        <span className="shop-card-badge">
-          {card.category}
-        </span>
+        <span className="shop-card-badge">{card.category}</span>
       </div>
 
       <div className="shop-card-content">

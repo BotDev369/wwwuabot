@@ -220,7 +220,9 @@ export function ShopStore({
           </span>
           <div className="shop-trust-content">
             <h3 className="shop-trust-title">Пряма домовленість</h3>
-            <p className="shop-trust-text">Замовлення напряму відправляється продавцю без посередників</p>
+            <p className="shop-trust-text">
+              Замовлення напряму відправляється продавцю без посередників
+            </p>
           </div>
         </div>
         <div className="shop-trust-card">
@@ -300,11 +302,7 @@ export function ShopStore({
             <span className="shop-sticky-cart-count">{cartCountLabel(cart.count)}</span>
             <span className="shop-sticky-cart-total">{cartTotalLabel(total)}</span>
           </div>
-          <button
-            type="button"
-            className="shop-sticky-cart-btn"
-            onClick={() => setCartOpen(true)}
-          >
+          <button type="button" className="shop-sticky-cart-btn" onClick={() => setCartOpen(true)}>
             <Icon name="list" size={18} />
             Переглянути
           </button>
