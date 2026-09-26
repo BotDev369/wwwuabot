@@ -32,12 +32,8 @@ import {
   type ShopProduct,
 } from "@wwwuabot/shared/shop";
 import { ShopCardTile } from "@wwwuabot/ui/blocks/ShopCardTile";
-import { PageRenderer } from "@wwwuabot/ui/PageRenderer";
-import {
-  createEmptyPageConfig,
-  type BlockContext,
-  type PageConfig,
-} from "@wwwuabot/shared/types/page-config";
+import { ZoneRenderer } from "@wwwuabot/ui/ZoneRenderer";
+import type { BlockContext, PageConfig } from "@wwwuabot/shared/types/page-config";
 import {
   cartCountLabel,
   cartTotalLabel,
@@ -101,11 +97,6 @@ export function ShopStore({
       }),
     [config],
   );
-  const infoConfig = useMemo<PageConfig>(() => {
-    const empty = createEmptyPageConfig();
-    return { ...empty, zones: { ...empty.zones, main: info } };
-  }, [info]);
-
   const product = products.find((item) => item.id === openedProduct) ?? null;
   const total = cartTotal(cart.lines, products);
 
@@ -121,13 +112,26 @@ export function ShopStore({
   }
 
   return (
-    <div className="shop-store">
+    <div className={`shop-store${cart.count > 0 ? " shop-store--cart-open" : ""}`}>
       <header className="shop-store-hero">
         {photoUrl && <img className="shop-store-cover" src={photoUrl} alt="" />}
 
         <p className="shop-store-kicker">{storeStatsLabel(cards.length, catalogs.length)}</p>
         <h1 className="shop-store-title">{title?.trim() || "Магазин"}</h1>
         {tagline && <p className="shop-store-tagline">{tagline}</p>}
+
+        {/* Пошук — у шапці, а не під нею: на вітрині його шукають першим. */}
+        <div className="shop-search">
+          <Icon name="search" size={18} />
+          <input
+            className="shop-search-input"
+            type="search"
+            value={query}
+            placeholder="Пошук товару"
+            aria-label="Пошук товару"
+            onChange={(event) => setQuery(event.target.value)}
+          />
+        </div>
 
         <div className="shop-store-actions">
           <button
@@ -160,18 +164,6 @@ export function ShopStore({
       </header>
 
       <section className="shop-store-catalog" ref={catalogRef}>
-        <div className="shop-search">
-          <Icon name="search" size={18} />
-          <input
-            className="shop-search-input"
-            type="search"
-            value={query}
-            placeholder="Пошук товару"
-            aria-label="Пошук товару"
-            onChange={(event) => setQuery(event.target.value)}
-          />
-        </div>
-
         {catalogs.length > 1 && (
           <div className="shop-store-chips">
             <button
@@ -236,7 +228,12 @@ export function ShopStore({
 
       {info.length > 0 && (
         <section className="shop-store-info" id="shop-store-about">
-          <PageRenderer config={infoConfig} context={context} className="shop-store-sections" />
+          <ZoneRenderer
+            blocks={info}
+            zone="main"
+            context={context}
+            className="shop-store-sections"
+          />
         </section>
       )}
 
