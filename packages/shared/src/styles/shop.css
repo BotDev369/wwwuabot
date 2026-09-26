@@ -909,8 +909,12 @@ html[data-colors-mode="dark"] .shop-catalog {
   font-size: var(--text-xs);
   line-height: var(--leading-normal);
   color: var(--text-secondary);
-  background: color-mix(in srgb, var(--accent) 8%, var(--surface));
-  border: 1px solid color-mix(in srgb, var(--accent) 18%, var(--border-subtle));
+  /* `--accent-dim` — власний токен проєкту для «акцент на будь-якій поверхні»
+     (у брендів це напівпрозорий колір, у базі — світлий). `color-mix` тут був
+     би пасткою: мініфікатор лишає під `@supports` фолбек **суцільним акцентом**,
+     і на Apple-світлі (де акцент чорний) нотатка ставала б чорною плитою. */
+  background: var(--accent-dim);
+  border: 1px solid var(--border-subtle);
   border-radius: var(--radius-lg);
 }
 
@@ -928,10 +932,11 @@ html[data-colors-mode="dark"] .shop-catalog {
   grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 0;
   padding: var(--sp-4) var(--sp-2);
-  /* Тло — відтінок акценту на папері: смуга довіри мусить читатись як
-     **одна** смуга, а не як третя біла картка поспіль. */
-  background: color-mix(in srgb, var(--accent) 7%, var(--surface));
-  border: 1px solid color-mix(in srgb, var(--accent) 16%, var(--border-subtle));
+  /* Тло — відтінок акценту на тлі сторінки: смуга довіри мусить читатись як
+     **одна** смуга, а не як третя біла картка поспіль. Токен, а не `color-mix`:
+     див. нотатку про оплату нижче — фолбек `color-mix` тут непридатний. */
+  background: var(--accent-dim);
+  border: 1px solid var(--border-subtle);
   border-radius: var(--radius-xl);
 }
 
@@ -948,7 +953,7 @@ html[data-colors-mode="dark"] .shop-catalog {
 /* Три пункти розділяє тонка риска — без неї це просто три підписи, що
    злиплися. */
 .shop-trust-card + .shop-trust-card {
-  border-left: 1px solid color-mix(in srgb, var(--accent) 22%, transparent);
+  border-left: 1px solid var(--border-subtle);
 }
 
 .shop-trust-icon {
