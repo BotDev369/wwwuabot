@@ -250,6 +250,74 @@
   flex: 1;
 }
 
+/* ── Палітра вітрини ───────────────────────────────────────────────────────
+   Магазин **не читає** пару «поверхня / текст» із теми, а оголошує власну — і
+   це не свавілля, а вимога читабельності. Людина сама обирає три кольори з
+   Telegram, і в них фон та текст бувають **сусідніми** відтінками (бузкове тло
+   й білий текст — це ≈2,3:1), а `--surface` у тій самій темі є тим самим
+   градієнтом, що й тло: ціна, назва й картка зникали разом із фоном.
+
+   Вітрина — екран, де ціну читають, тож папір і чорнило вона задає собі сама,
+   а смак лишає темі: `--accent` приходить із вибору людини й фарбує **дії**.
+
+   Токени успадковуються, і це тут головне: їх читають і блоки, які продавець
+   написав у редакторі сторінки (вони малюються інлайновими `var(--bg-1)` /
+   `var(--text-primary)`), тож набір оголошено на обох коренях, які ці блоки
+   бачать, — на вітрині й на сітці товарів. */
+.shop-store,
+.shop-catalog {
+  --surface: #ffffff;
+  --surface-hover: #f1f2f6;
+  --surface-active: #e6e8ef;
+  --bg-home: var(--surface);
+  --bg-1: #ffffff;
+  --bg-2: #f6f7fa;
+  --bg-3: #eff1f6;
+  --bg-4: #e9ecf3;
+  --field-bg: #f1f2f6;
+  --border: #dcdfe7;
+  --border-subtle: #e8eaf0;
+  --text-primary: #14161c;
+  --text-secondary: #5a6070;
+  --text-muted: #878d9c;
+  --accent-dim: color-mix(in srgb, var(--accent) 12%, #ffffff);
+  --accent-soft: color-mix(in srgb, var(--accent) 16%, transparent);
+
+  /* Тіні власні: у схемах вони розраховані на ледь помітний крок між тлом і
+     поверхнею, а тут папір лежить на **кольоровому** тлі теми — без тіні він
+     читався б як наклейка. */
+  --shop-shadow: 0 1px 2px rgb(12 16 28 / 8%), 0 8px 24px rgb(12 16 28 / 12%);
+  --shop-shadow-soft: 0 1px 2px rgb(12 16 28 / 6%), 0 4px 14px rgb(12 16 28 / 7%);
+  /* Шапка магазину — **темна обкладинка**: на будь-якому тлі теми вона
+     читається як «це магазин», а не як ще один прямокутник серед інших. */
+  --shop-hero: linear-gradient(158deg, #1d2130 0%, #101320 100%);
+}
+
+/* Схема темна: папір стає темним, чорнило світлим — крок лишається таким
+   самим, бо читабельність не залежить від смаку. */
+html[data-theme="dark"] .shop-store,
+html[data-theme="dark"] .shop-catalog,
+html[data-colors-mode="dark"] .shop-store,
+html[data-colors-mode="dark"] .shop-catalog {
+  --surface: #191c25;
+  --surface-hover: #22262f;
+  --surface-active: #2b303a;
+  --bg-1: #191c25;
+  --bg-2: #20242d;
+  --bg-3: #262a34;
+  --bg-4: #2d323c;
+  --field-bg: #262a34;
+  --border: #333846;
+  --border-subtle: #272c36;
+  --text-primary: #f2f4f8;
+  --text-secondary: #a8aec0;
+  --text-muted: #7c8496;
+  --accent-dim: color-mix(in srgb, var(--accent) 22%, #191c25);
+  --shop-shadow: 0 1px 2px rgb(0 0 0 / 40%), 0 8px 24px rgb(0 0 0 / 45%);
+  --shop-shadow-soft: 0 1px 2px rgb(0 0 0 / 30%), 0 4px 14px rgb(0 0 0 / 30%);
+  --shop-hero: linear-gradient(158deg, #2b3142 0%, #1b1f2b 100%);
+}
+
 /* ── Каталог: те, що бачить покупець під вітриною ────────────────────────── */
 
 .shop-catalog {
@@ -263,44 +331,53 @@
 
 .shop-catalog-title {
   margin: 0;
-  font-size: var(--text-md);
-  font-weight: var(--weight-semibold);
+  font-size: var(--text-lg);
+  font-weight: var(--weight-bold);
+  letter-spacing: -0.02em;
 }
 
+/* Дві колонки на телефоні — **явно**, а не `auto-fill`: із `minmax(150px)` на
+   360px у рядок вміщався один товар (272px < 312px), і каталог ставав
+   метровою стрічкою з одного стовпця. */
 .shop-catalog-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: var(--sp-3);
 }
 
+@media (min-width: 560px) {
+  .shop-catalog-grid {
+    grid-template-columns: repeat(auto-fill, minmax(168px, 1fr));
+  }
+}
+
 .shop-card {
+  position: relative;
   display: flex;
   flex-direction: column;
-  position: relative;
   overflow: hidden;
   background: var(--surface);
+  border: 1px solid var(--border-subtle);
   border-radius: var(--radius-lg);
-  box-shadow: var(--shadow-sm);
-  transition:
-    transform var(--duration-fast, 150ms) var(--ease, ease),
-    box-shadow var(--duration-fast, 150ms) var(--ease, ease);
+  box-shadow: var(--shop-shadow-soft);
 }
 
 .shop-card-media {
   position: relative;
   width: 100%;
-  aspect-ratio: 4 / 3;
+  /* Мірка 1:1 — у кадрі товар, а не підлога навколо нього; і рядок не стрибає
+     від того, який знімок завантажив продавець. */
+  aspect-ratio: 1;
   overflow: hidden;
-  background: var(--accent-dim);
+  background: var(--field-bg);
 }
 
-/* Мірка фото — 4:3: так у кадрі лишається і товар, і тло навколо нього. */
 .shop-card-img {
+  display: block;
   width: 100%;
   height: 100%;
-  aspect-ratio: 4 / 3;
+  aspect-ratio: 1;
   object-fit: cover;
-  display: block;
 }
 
 /* Фото ще немає: місце під нього лишається тієї ж мірки, але читається як
@@ -312,62 +389,73 @@
   width: 100%;
   height: 100%;
   color: var(--accent);
-  background: var(--accent-dim);
+  background: linear-gradient(140deg, var(--accent-dim), var(--field-bg));
 }
 
-/* Категорія товару бейджем на фото */
+/* Категорія товару — на самому фото. Плашка **темна**, а не з тла поверхні:
+   фото буває світлим, і напівпрозорий папір на ньому зникав. */
 .shop-card-badge {
   position: absolute;
   top: var(--sp-2);
   left: var(--sp-2);
-  padding: 2px var(--sp-2);
-  font-size: var(--text-xs);
-  font-weight: var(--weight-medium);
-  color: var(--text-primary);
-  background: color-mix(in srgb, var(--surface) 88%, transparent);
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
+  max-width: calc(100% - var(--sp-4));
+  padding: 3px var(--sp-2);
+  overflow: hidden;
+  font-size: 10px;
+  font-weight: var(--weight-semibold);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: #fff;
+  background: rgb(14 16 24 / 72%);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
   border-radius: var(--radius-full);
-  box-shadow: var(--shadow-xs);
   pointer-events: none;
 }
 
 .shop-card-content {
   display: flex;
-  flex-direction: column;
   flex: 1;
-  padding: var(--sp-3);
-  gap: var(--sp-1);
+  flex-direction: column;
+  gap: 2px;
+  padding: var(--sp-3) var(--sp-3) var(--sp-2);
 }
 
+/* Назва — рівно два рядки: у плитці однакової висоти різні назви інакше
+   зсували б ціну й кнопку то вгору, то вниз. */
 .shop-card-title {
+  display: -webkit-box;
+  overflow: hidden;
   margin: 0;
-  font-size: var(--text-base);
+  font-size: var(--text-sm);
   font-weight: var(--weight-semibold);
   line-height: var(--leading-tight);
   overflow-wrap: anywhere;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
 }
 
+/* Ціна — **чорнилом**, а не акцентом: акцентом у плитці позначена дія (кнопка),
+   а ціну читають першою, тож їй потрібен найбільший контраст на папері. */
 .shop-card-price {
-  margin: 0;
+  margin: 2px 0 0;
   font-size: var(--text-md);
   font-weight: var(--weight-bold);
-  color: var(--accent);
-  letter-spacing: -0.01em;
+  letter-spacing: -0.02em;
+  color: var(--text-primary);
 }
 
 .shop-card-summary {
+  display: -webkit-box;
+  overflow: hidden;
   margin: 0;
   font-size: var(--text-xs);
-  color: var(--text-muted);
   line-height: var(--leading-normal);
-}
-
-@media (max-width: 360px) {
-  /* Дуже вузький екран: дві колонки з'їли б підпис товару — лишаємо одну. */
-  .shop-catalog-grid {
-    grid-template-columns: 1fr;
-  }
+  color: var(--text-muted);
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
 }
 
 /* Кнопка картки стоїть **під описом**, а не поруч із ціною: дотик по
@@ -379,18 +467,18 @@
   align-items: center;
   justify-content: center;
   gap: var(--sp-1);
-  width: calc(100% - var(--sp-3) * 2);
   min-height: 44px;
   margin: 0 var(--sp-3) var(--sp-3);
-  padding: var(--sp-2) var(--sp-3);
+  padding: var(--sp-2);
   font: inherit;
-  font-size: var(--text-sm);
-  font-weight: var(--weight-medium);
+  font-size: var(--text-xs);
+  font-weight: var(--weight-semibold);
   color: var(--text-inverse);
   background: var(--accent);
   border: none;
-  border-radius: var(--radius);
+  border-radius: var(--radius-md);
   cursor: pointer;
+  transition: background var(--duration-fast) var(--ease);
 }
 
 .shop-card-order:active {
@@ -525,75 +613,150 @@
   padding-bottom: calc(var(--sp-8) + var(--safe-bottom));
 }
 
-/* Вітальна частина — поверхня, а не порожній простір: у магазину є ім'я,
-   короткий опис і три дії, і саме вони мусять читатись першими. */
+/* Вітальна частина — **обкладинка**: у магазину є ім'я, короткий опис і дії, і
+   саме вони мусять читатись першими. Темна поверхня відділяє «хто ми» від
+   паперу каталогу, який іде далі. */
 .shop-store-hero {
+  position: relative;
   display: flex;
   flex-direction: column;
   gap: var(--sp-2);
   padding: var(--sp-5);
-  background: var(--surface);
-  border-radius: var(--radius-lg);
-  box-shadow: var(--shadow-sm);
+  background:
+    radial-gradient(
+      130% 100% at 100% 0%,
+      color-mix(in srgb, var(--accent) 70%, transparent) 0%,
+      transparent 62%
+    ),
+    var(--shop-hero);
+  border-radius: var(--radius-xl);
+  box-shadow: var(--shop-shadow);
 }
 
 .shop-store-cover {
   width: 100%;
   aspect-ratio: 16 / 9;
   object-fit: cover;
-  background: var(--accent-dim);
-  border-radius: var(--radius-md);
+  margin-bottom: var(--sp-2);
+  border-radius: var(--radius-lg);
 }
 
 /* Надрячок — довідка про магазин (скільки чого), а не заголовок: великими
    літерами з розрідженням він не змагається з назвою. */
 .shop-store-kicker {
   margin: 0;
-  font-size: var(--text-xs);
+  font-size: 10px;
   font-weight: var(--weight-semibold);
-  letter-spacing: 0.08em;
+  letter-spacing: 0.14em;
   text-transform: uppercase;
+  color: rgb(255 255 255 / 62%);
 }
 
+/* Назва — `--font-ui`, а не `--font-display`: Space Grotesk кирилиці не має, і
+   «Магазин X» виходив двома різними шрифтами в одному слові. */
 .shop-store-title {
   margin: 0;
-  font-family: var(--font-display);
-  font-size: var(--text-2xl);
-  line-height: var(--leading-tight);
+  font-family: var(--font-ui);
+  font-size: clamp(26px, 7vw, 34px);
+  font-weight: var(--weight-bold);
+  line-height: 1.08;
+  letter-spacing: -0.03em;
+  color: #fff;
 }
 
 .shop-store-tagline {
   margin: 0;
-  font-size: var(--text-lg);
+  font-size: var(--text-base);
   line-height: var(--leading-normal);
-  color: var(--text-secondary);
+  color: rgb(255 255 255 / 74%);
 }
 
 .shop-store-actions {
-  display: flex;
-  flex-wrap: wrap;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
   gap: var(--sp-2);
-  margin-top: var(--sp-2);
+  margin-top: var(--sp-3);
 }
 
 .shop-store-actions .wb-btn {
-  flex: 1 1 auto;
+  min-height: 46px;
 }
 
+/* «Каталог» — головна дія екрана, тож вона на всю ширину, а дві допоміжні
+   стоять під нею парою: три кнопки в рядок на 360px дали б три обрубки. */
+.shop-store-actions .wb-btn:first-child {
+  grid-column: 1 / -1;
+}
+
+/* Другорядні дії — **скло**, а не папір теми: біла плашка на темній обкладинці
+   була б найяскравішою плямою і перебивала назву магазину. */
+.shop-store-hero .wb-btn-secondary {
+  color: #fff;
+  background: rgb(255 255 255 / 13%);
+  border-color: rgb(255 255 255 / 16%);
+}
+
+.shop-store-hero .wb-btn-secondary:hover {
+  background: rgb(255 255 255 / 22%);
+}
+
+/* Папір каталогу: пошук, розділи й плитки лежать на одній поверхні, а не
+   пливуть по тлу теми кожен окремо. */
 .shop-store-catalog {
   display: flex;
   flex-direction: column;
   gap: var(--sp-3);
-  /* Кнопка «Каталог» веде сюди — заголовок не мусить залипати під шапкою. */
+  padding: var(--sp-4) var(--sp-3) var(--sp-3);
+  background: var(--surface);
+  border-radius: var(--radius-xl);
+  box-shadow: var(--shop-shadow-soft);
+  /* Кнопка «Каталог» веде сюди — поверхня не мусить залипати під шапкою. */
   scroll-margin-top: var(--sp-4);
 }
 
-.shop-store-toolbar {
+/* Пошук — поле на папері, з іконкою, а не порожня сіра коробка. */
+.shop-search {
   display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+  min-height: 48px;
+  padding: 0 var(--sp-4);
+  color: var(--text-muted);
+  background: var(--field-bg);
+  border: 1px solid transparent;
+  border-radius: var(--radius-full);
+  transition:
+    border-color var(--duration) var(--ease),
+    box-shadow var(--duration) var(--ease);
 }
 
-.shop-store-toolbar .wb-input {
-  width: 100%;
+.shop-search:focus-within {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px var(--accent-soft);
+}
+
+/* 16px — межа, за якої iOS не наближає сторінку при фокусі. */
+.shop-search-input {
+  flex: 1;
+  min-width: 0;
+  min-height: 48px;
+  padding: 0;
+  font: inherit;
+  font-size: var(--text-md);
+  color: var(--text-primary);
+  background: none;
+  border: none;
+  outline: none;
+}
+
+.shop-search-input::placeholder {
+  color: var(--text-muted);
+}
+
+/* Нативний хрестик `type="search"` у WebView виглядає як чужий елемент, а
+   місця забирає стільки ж, скільки текст. */
+.shop-search-input::-webkit-search-cancel-button {
+  display: none;
 }
 
 /* Розділи їдуть убік, а не переносяться: їх буває й десять, і переніс з'їв би
@@ -615,6 +778,7 @@
   min-height: 44px;
   padding: 0 var(--sp-3);
   font: inherit;
+  font-size: var(--text-sm);
   font-weight: var(--weight-medium);
   color: var(--text-secondary);
   background: var(--field-bg);
@@ -623,9 +787,11 @@
   cursor: pointer;
 }
 
+/* Вибраний розділ — залитий акцентом: на папері це найкоротший шлях сказати
+   «каталог зараз показує саме це». */
 .shop-chip--active {
-  color: var(--accent);
-  background: var(--accent-dim);
+  color: var(--text-inverse);
+  background: var(--accent);
 }
 
 /* Текст про магазин приходить блоками сторінки (`PageRenderer`): вітрина його
@@ -641,27 +807,40 @@
   gap: var(--sp-3);
 }
 
+/* Оплата — не дрібним сірим по тлу (такого не читають), а смугою на папері:
+   покупець мусить знати це **до** того, як натисне «оформити» (§9). */
 .shop-store-note {
-  padding: 0 var(--sp-1);
+  margin: 0;
+  padding: var(--sp-3) var(--sp-4);
+  font-size: var(--text-xs);
+  line-height: var(--leading-normal);
+  color: var(--text-secondary);
+  background: var(--surface);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shop-shadow-soft);
 }
 
 /* ── Переваги та довіра магазину ─────────────────────────────────────────── */
 
+/* Три переваги — **один рядок**, а не три картки на цілий екран: переваги
+   читають один раз і не для того, щоб задля них прокручували каталог. */
 .shop-store-trust {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-  gap: var(--sp-3);
-  margin-top: var(--sp-2);
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--sp-2);
+  padding: var(--sp-4) var(--sp-2);
+  background: var(--surface);
+  border-radius: var(--radius-xl);
+  box-shadow: var(--shop-shadow-soft);
 }
 
 .shop-trust-card {
   display: flex;
-  align-items: flex-start;
-  gap: var(--sp-3);
-  padding: var(--sp-3) var(--sp-4);
-  background: var(--surface);
-  border-radius: var(--radius-md);
-  box-shadow: var(--shadow-xs);
+  flex-direction: column;
+  align-items: center;
+  gap: var(--sp-2);
+  min-width: 0;
+  text-align: center;
 }
 
 .shop-trust-icon {
@@ -669,32 +848,20 @@
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
-  width: 40px;
-  height: 40px;
+  width: 34px;
+  height: 34px;
   color: var(--accent);
   background: var(--accent-dim);
   border-radius: var(--radius-full);
 }
 
-.shop-trust-content {
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-  min-width: 0;
-}
-
 .shop-trust-title {
   margin: 0;
-  font-size: var(--text-sm);
+  font-size: 11px;
   font-weight: var(--weight-semibold);
-  color: var(--text-primary);
-}
-
-.shop-trust-text {
-  margin: 0;
-  font-size: var(--text-xs);
+  line-height: 1.3;
   color: var(--text-secondary);
-  line-height: var(--leading-normal);
+  overflow-wrap: anywhere;
 }
 
 /* ── Плаваючий закріплений бар кошика ─────────────────────────────────────── */
@@ -703,7 +870,6 @@
   position: fixed;
   bottom: calc(var(--tab-bar-h, 56px) + var(--sp-3) + var(--safe-bottom, 0px));
   left: 50%;
-  transform: translateX(-50%);
   z-index: var(--z-sticky, 200);
   display: flex;
   align-items: center;
@@ -711,13 +877,14 @@
   gap: var(--sp-3);
   width: calc(100% - var(--sp-4) * 2);
   max-width: min(540px, calc(100vw - var(--sp-4) * 2));
-  padding: var(--sp-2) var(--sp-3);
+  padding: var(--sp-2) var(--sp-2) var(--sp-2) var(--sp-4);
+  color: var(--text-primary);
   background: var(--surface);
+  border: 1px solid var(--border-subtle);
   border-radius: var(--radius-full);
-  box-shadow: var(--shadow-lg);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  animation: shop-slide-up var(--duration-fast, 150ms) var(--ease, ease) forwards;
+  box-shadow: var(--shop-shadow);
+  transform: translateX(-50%);
+  animation: shop-slide-up var(--duration) var(--ease) both;
 }
 
 @keyframes shop-slide-up {
@@ -735,7 +902,6 @@
   display: flex;
   flex-direction: column;
   min-width: 0;
-  padding-left: var(--sp-2);
 }
 
 .shop-sticky-cart-count {
@@ -745,7 +911,7 @@
 }
 
 .shop-sticky-cart-total {
-  font-size: var(--text-sm);
+  font-size: var(--text-base);
   font-weight: var(--weight-bold);
   color: var(--text-primary);
 }
@@ -765,8 +931,7 @@
   border: none;
   border-radius: var(--radius-full);
   cursor: pointer;
-  box-shadow: var(--shadow-sm);
-  transition: background var(--duration-fast, 150ms) var(--ease, ease);
+  transition: background var(--duration-fast) var(--ease);
 }
 
 .shop-sticky-cart-btn:active {

@@ -125,9 +125,7 @@ export function ShopStore({
       <header className="shop-store-hero">
         {photoUrl && <img className="shop-store-cover" src={photoUrl} alt="" />}
 
-        <p className="shop-store-kicker wb-text-muted">
-          {storeStatsLabel(cards.length, catalogs.length)}
-        </p>
+        <p className="shop-store-kicker">{storeStatsLabel(cards.length, catalogs.length)}</p>
         <h1 className="shop-store-title">{title?.trim() || "Магазин"}</h1>
         {tagline && <p className="shop-store-tagline">{tagline}</p>}
 
@@ -162,9 +160,10 @@ export function ShopStore({
       </header>
 
       <section className="shop-store-catalog" ref={catalogRef}>
-        <div className="shop-store-toolbar">
+        <div className="shop-search">
+          <Icon name="search" size={18} />
           <input
-            className="wb-input"
+            className="shop-search-input"
             type="search"
             value={query}
             placeholder="Пошук товару"
@@ -212,36 +211,26 @@ export function ShopStore({
         )}
       </section>
 
-      {/* Переваги магазину (Trust Badges) */}
+      {/* Переваги магазину (Trust Badges) — один рядок із трьох: пояснення тут
+          займало цілий екран, а покупець читає переваги один раз. */}
       <section className="shop-store-trust" aria-label="Переваги покупки">
         <div className="shop-trust-card">
           <span className="shop-trust-icon" aria-hidden="true">
-            <Icon name="check" size={20} />
+            <Icon name="check" size={18} />
           </span>
-          <div className="shop-trust-content">
-            <h3 className="shop-trust-title">Пряма домовленість</h3>
-            <p className="shop-trust-text">
-              Замовлення напряму відправляється продавцю без посередників
-            </p>
-          </div>
+          <p className="shop-trust-title">Без посередників</p>
         </div>
         <div className="shop-trust-card">
           <span className="shop-trust-icon" aria-hidden="true">
-            <Icon name="sparkles" size={20} />
+            <Icon name="sparkles" size={18} />
           </span>
-          <div className="shop-trust-content">
-            <h3 className="shop-trust-title">Перевірена якість</h3>
-            <p className="shop-trust-text">Оригінальні товари та детальний опис кожної позиції</p>
-          </div>
+          <p className="shop-trust-title">Перевірена якість</p>
         </div>
         <div className="shop-trust-card">
           <span className="shop-trust-icon" aria-hidden="true">
-            <Icon name="message-square" size={20} />
+            <Icon name="message-square" size={18} />
           </span>
-          <div className="shop-trust-content">
-            <h3 className="shop-trust-title">Зручний зв’язок</h3>
-            <p className="shop-trust-text">Уточнення деталей і підтримка в Telegram з продавцем</p>
-          </div>
+          <p className="shop-trust-title">Зв’язок у Telegram</p>
         </div>
       </section>
 
@@ -290,7 +279,7 @@ export function ShopStore({
           покупець мусить знати це **до** того, як натисне «оформити» (§9). А
           сума тут — **довідка**, а не ціна замовлення: її називає продавець,
           і саме тому вона підписана `cartTotalLabel`. */}
-      <p className="wb-text-muted shop-note shop-store-note">
+      <p className="shop-store-note">
         Оплата — домовленість із продавцем: платформа замовлення зберігає, а гроші не бере.
         {cart.count > 0 && ` У кошику: ${cartTotalLabel(total)}.`}
       </p>

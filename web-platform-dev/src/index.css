@@ -1,8 +1,28 @@
-@import url("https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Space+Grotesk:wght@500;600;700&display=swap");
 @import "@wwwuabot/shared/styles/index.css";
 @import "tailwindcss";
 /* NOTE: Tailwind MUST come AFTER shared styles. Our tokens.css uses :root
    (unlayered) which beats Tailwind's @layer theme. */
+
+/* ─── Типографіка ──────────────────────────────────────────────────────────
+   Брендові стеки (`android.css` / `apple.css`) починаються із **системних**
+   родин — "Roboto" чи системного знака, — а вони на частині пристроїв
+   підмінені користувацьким шрифтом, аж до моноширинного: тоді вся сторінка
+   виглядає як роздруківка, і жоден токен розміру цього не виправить.
+
+   Inter приходить із мережі **й має кирилицю**, тож ставимо його першим. Саме
+   кирилиця тут і болить: Space Grotesk, яким оголошено `--font-display`,
+   кирилиці не має взагалі — українська назва магазину набиралась двома
+   різними шрифтами в одному слові.
+
+   Селектор `html[data-brand][data-theme]` — та сама специфічність (0,2,1) проти
+   (0,2,0) у бренда; виграє ще й тому, що цей файл іде після спільних стилів.
+   Вибір шрифту людиною (інлайнові змінні з `font-dom.ts`) лишається сильнішим:
+   інлайн перекриває будь-який селектор. */
+html[data-brand][data-theme] {
+  --font-ui: "Inter", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-display: "Space Grotesk", "Inter", system-ui, sans-serif;
+}
 
 /* ═══════════════════════════════════════════════════════════════════════════════
    WWWUABot Web — те, чим ця оболонка відрізняється від адмінки.
