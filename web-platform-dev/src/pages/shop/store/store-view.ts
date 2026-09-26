@@ -88,11 +88,15 @@ export function plural(count: number, forms: readonly [string, string, string]):
   return forms[2];
 }
 
+/** «8 товарів» — довідка шапки каталогу: покупець бачить обсяг полиці. */
+export function goodsLabel(count: number): string {
+  return `${count} ${plural(count, ["товар", "товари", "товарів"])}`;
+}
+
 /** «Товарів: 12 · Розділів: 3» — довідка шапки, а не речення. */
 export function storeStatsLabel(products: number, catalogs: number): string {
-  const goods = `${products} ${plural(products, ["товар", "товари", "товарів"])}`;
   const groups = `${catalogs} ${plural(catalogs, ["розділ", "розділи", "розділів"])}`;
-  return `${goods} · ${groups}`;
+  return `${goodsLabel(products)} · ${groups}`;
 }
 
 /** Сума з розділювачами: «1 250 ₴». Гривня — грошова одиниця магазину. */

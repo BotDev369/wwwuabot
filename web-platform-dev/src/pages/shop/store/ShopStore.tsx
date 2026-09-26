@@ -38,6 +38,7 @@ import {
   cartCountLabel,
   cartTotalLabel,
   filterCards,
+  goodsLabel,
   storeStatsLabel,
   storeTagline,
 } from "./store-view";
@@ -114,56 +115,54 @@ export function ShopStore({
   return (
     <div className={`shop-store${cart.count > 0 ? " shop-store--cart-open" : ""}`}>
       <header className="shop-store-hero">
+        {/* Обкладинка — **тло шапки**, а не картинка в ній: із назвою поверх
+            банера шапка читається як сайт магазину, а не як плейсхолдер. */}
         {photoUrl && <img className="shop-store-cover" src={photoUrl} alt="" />}
 
-        <p className="shop-store-kicker">{storeStatsLabel(cards.length, catalogs.length)}</p>
-        <h1 className="shop-store-title">{title?.trim() || "Магазин"}</h1>
-        {tagline && <p className="shop-store-tagline">{tagline}</p>}
-
-        {/* Пошук — у шапці, а не під нею: на вітрині його шукають першим. */}
-        <div className="shop-search">
-          <Icon name="search" size={18} />
-          <input
-            className="shop-search-input"
-            type="search"
-            value={query}
-            placeholder="Пошук товару"
-            aria-label="Пошук товару"
-            onChange={(event) => setQuery(event.target.value)}
-          />
-        </div>
-
-        <div className="shop-store-actions">
-          <button
-            type="button"
-            className="wb-btn wb-btn-primary"
-            onClick={() => scrollTo(catalogRef.current)}
-          >
-            <Icon name="grid" size={16} />
-            Каталог
-          </button>
-          <button
-            type="button"
-            className="wb-btn wb-btn-secondary"
-            onClick={() => setCartOpen(true)}
-          >
-            <Icon name="list" size={16} />
-            {cartCountLabel(cart.count)}
-          </button>
-          {info.length > 0 && (
-            <button
-              type="button"
-              className="wb-btn wb-btn-secondary"
-              onClick={() => scrollTo(document.getElementById("shop-store-about"))}
-            >
-              <Icon name="info" size={16} />
-              Про магазин
-            </button>
-          )}
+        <div className="shop-store-hero-body">
+          <p className="shop-store-kicker">{storeStatsLabel(cards.length, catalogs.length)}</p>
+          <h1 className="shop-store-title">{title?.trim() || "Магазин"}</h1>
+          {tagline && <p className="shop-store-tagline">{tagline}</p>}
         </div>
       </header>
 
+      {/* Пошук стоїть **на межі обкладинки**: покупець бачить поле магазину, а
+          не ще один рядок у шапці, і каталог від цього не з'їжджає вниз. */}
+      <div className="shop-search">
+        <Icon name="search" size={18} />
+        <input
+          className="shop-search-input"
+          type="search"
+          value={query}
+          placeholder="Пошук товару"
+          aria-label="Пошук товару"
+          onChange={(event) => setQuery(event.target.value)}
+        />
+      </div>
+
+      <div className="shop-store-actions">
+        <button
+          type="button"
+          className="wb-btn wb-btn-primary"
+          onClick={() => scrollTo(catalogRef.current)}
+        >
+          <Icon name="grid" size={16} />
+          Каталог
+        </button>
+        <button type="button" className="wb-btn wb-btn-secondary" onClick={() => setCartOpen(true)}>
+          <Icon name="list" size={16} />
+          {cartCountLabel(cart.count)}
+        </button>
+      </div>
+
       <section className="shop-store-catalog" ref={catalogRef}>
+        {/* Заголовок полиці: покупець має бачити, що це каталог, і скільки в
+            ньому є, — без цього сітка читалась як «десь усе підряд». */}
+        <div className="shop-store-catalog-head">
+          <h2 className="shop-store-catalog-title">Каталог</h2>
+          <span className="shop-store-catalog-count">{goodsLabel(cards.length)}</span>
+        </div>
+
         {catalogs.length > 1 && (
           <div className="shop-store-chips">
             <button
@@ -203,27 +202,27 @@ export function ShopStore({
         )}
       </section>
 
-      {/* Переваги магазину (Trust Badges) — один рядок із трьох: пояснення тут
-          займало цілий екран, а покупець читає переваги один раз. */}
+      {/* Переваги магазину — **чипси одним рядком**: три колонки з описами
+          займали півекрана, а переваги читають один раз. */}
       <section className="shop-store-trust" aria-label="Переваги покупки">
-        <div className="shop-trust-card">
+        <p className="shop-trust-item">
           <span className="shop-trust-icon" aria-hidden="true">
-            <Icon name="check" size={18} />
+            <Icon name="check" size={14} />
           </span>
-          <p className="shop-trust-title">Без посередників</p>
-        </div>
-        <div className="shop-trust-card">
+          Без посередників
+        </p>
+        <p className="shop-trust-item">
           <span className="shop-trust-icon" aria-hidden="true">
-            <Icon name="sparkles" size={18} />
+            <Icon name="sparkles" size={14} />
           </span>
-          <p className="shop-trust-title">Перевірена якість</p>
-        </div>
-        <div className="shop-trust-card">
+          Перевірена якість
+        </p>
+        <p className="shop-trust-item">
           <span className="shop-trust-icon" aria-hidden="true">
-            <Icon name="message-square" size={18} />
+            <Icon name="message-square" size={14} />
           </span>
-          <p className="shop-trust-title">Зв’язок у Telegram</p>
-        </div>
+          Зв’язок у Telegram
+        </p>
       </section>
 
       {info.length > 0 && (

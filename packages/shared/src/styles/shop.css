@@ -329,11 +329,14 @@ html[data-colors-mode="dark"] .shop-catalog {
   margin: var(--sp-5) auto 0;
 }
 
-.shop-catalog-title {
+/* Два класи й `!important` — з тієї ж причини, що й у вітрині: це `h2`, а
+   бренд оголошує `h2` (22–28px) для сторінки з `!important`. */
+.shop-catalog .shop-catalog-title {
   margin: 0;
-  font-size: var(--text-lg);
-  font-weight: var(--weight-bold);
-  letter-spacing: -0.02em;
+  font-size: var(--text-md) !important;
+  font-weight: 700 !important;
+  line-height: 1.25 !important;
+  letter-spacing: -0.015em !important;
 }
 
 /* Дві колонки на телефоні — **явно**, а не `auto-fill`: із `minmax(150px)` на
@@ -424,35 +427,45 @@ html[data-colors-mode="dark"] .shop-catalog {
 }
 
 /* Назва — рівно два рядки: у плитці однакової висоти різні назви інакше
-   зсували б ціну й кнопку то вгору, то вниз. */
-.shop-card-title {
+   зсували б ціну й кнопку то вгору, то вниз.
+
+   Селектори з двома класами (`.shop-catalog` і `.shop-store` — обидва корені,
+   які бачить плитка) перебивають брендовий `h3` (18–22px) для сторінки. */
+.shop-catalog .shop-card-title,
+.shop-store .shop-card-title {
   display: -webkit-box;
   overflow: hidden;
   margin: 0;
-  font-size: var(--text-sm);
-  font-weight: var(--weight-semibold);
-  line-height: var(--leading-tight);
+  font-size: var(--text-sm) !important;
+  font-weight: var(--weight-semibold) !important;
+  line-height: 1.28 !important;
+  letter-spacing: 0 !important;
   overflow-wrap: anywhere;
   -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
 }
 
-/* Ціна — **чорнилом**, а не акцентом: акцентом у плитці позначена дія (кнопка),
-   а ціну читають першою, тож їй потрібен найбільший контраст на папері. */
-.shop-card-price {
-  margin: 2px 0 0;
-  font-size: var(--text-md);
-  font-weight: var(--weight-bold);
-  letter-spacing: -0.02em;
+/* Ціна — **чорнилом** і найбільшим розміром у плитці: її читають першою, тож
+   найбільший контраст на папері належить їй. `tabular-nums` тримає розряди в
+   стовпчик: «420 ₴» і «8 900 ₴» інакше стояли б різної ширини. */
+.shop-catalog .shop-card-price,
+.shop-store .shop-card-price {
+  margin: 3px 0 0;
+  font-size: var(--text-md) !important;
+  font-weight: 700 !important;
+  line-height: 1.2 !important;
+  letter-spacing: -0.01em !important;
+  font-variant-numeric: tabular-nums;
   color: var(--text-primary);
 }
 
-.shop-card-summary {
+.shop-catalog .shop-card-summary,
+.shop-store .shop-card-summary {
   display: -webkit-box;
   overflow: hidden;
   margin: 0;
-  font-size: var(--text-xs);
-  line-height: var(--leading-normal);
+  font-size: var(--text-xs) !important;
+  line-height: 1.4 !important;
   color: var(--text-muted);
   -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
@@ -467,22 +480,25 @@ html[data-colors-mode="dark"] .shop-catalog {
   align-items: center;
   justify-content: center;
   gap: var(--sp-1);
-  min-height: 44px;
+  min-height: 40px;
   margin: 0 var(--sp-3) var(--sp-3);
-  padding: var(--sp-2);
+  padding: 0 var(--sp-2);
   font: inherit;
   font-size: var(--text-xs);
   font-weight: var(--weight-semibold);
-  color: var(--text-inverse);
-  background: var(--accent);
+  /* Дія — **відтінком** акценту, а не суцільною заливкою. У сітці з восьми
+     товарів суцільні кнопки зробили б стіну, яка перебиває і фото, і ціну;
+     найгучніша кнопка екрана одна — кошик, і саме вона лишається суцільною. */
+  color: var(--accent);
+  background: var(--accent-dim);
   border: none;
-  border-radius: var(--radius-md);
+  border-radius: var(--radius-full);
   cursor: pointer;
   transition: background var(--duration-fast) var(--ease);
 }
 
 .shop-card-order:active {
-  background: var(--accent-hover);
+  background: var(--accent-soft);
 }
 
 /* ── Замовлення продавця ────────────────────────────────────────────────── */
@@ -620,19 +636,19 @@ html[data-colors-mode="dark"] .shop-catalog {
   padding-bottom: calc(var(--tab-bar-h, 56px) + 76px + var(--safe-bottom));
 }
 
-/* Вітальна частина — **обкладинка**: у магазину є ім'я, короткий опис і дії, і
-   саме вони мусять читатись першими. Темна поверхня відділяє «хто ми» від
-   паперу каталогу, який іде далі. */
+/* Вітальна частина — **обкладинка**: банер магазину, а на ньому його ім'я та
+   короткий опис. Фото лежить **тлом**, а не окремою картинкою: назва поверх
+   банера читається як сайт магазину, а не як плейсхолдер із заголовком. */
 .shop-store-hero {
   position: relative;
   display: flex;
-  flex-direction: column;
-  gap: var(--sp-2);
-  padding: var(--sp-5);
+  align-items: flex-end;
+  min-height: 224px;
+  overflow: hidden;
   background:
     radial-gradient(
-      130% 100% at 100% 0%,
-      color-mix(in srgb, var(--accent) 70%, transparent) 0%,
+      120% 90% at 100% 0%,
+      color-mix(in srgb, var(--accent) 65%, transparent) 0%,
       transparent 62%
     ),
     var(--shop-hero);
@@ -640,116 +656,144 @@ html[data-colors-mode="dark"] .shop-catalog {
   box-shadow: var(--shop-shadow);
 }
 
+/* Обкладинка приглушена навмисно: яскраве фото під назвою робило б її
+   нечитабельною, а світле — з'їдало б контраст із текстом. */
 .shop-store-cover {
+  position: absolute;
+  inset: 0;
   width: 100%;
-  aspect-ratio: 16 / 9;
+  height: 100%;
   object-fit: cover;
-  margin-bottom: var(--sp-2);
-  border-radius: var(--radius-lg);
+  opacity: 0.55;
+}
+
+/* Затемнення знизу — саме воно робить напис на фото читабельним, а не колір
+   тексту: на світлому знімку біла назва магазину просто зникала. */
+.shop-store-hero::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: linear-gradient(
+    180deg,
+    rgb(10 12 20 / 10%) 0%,
+    rgb(10 12 20 / 52%) 56%,
+    rgb(10 12 20 / 90%) 100%
+  );
+}
+
+.shop-store-hero-body {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-2);
+  width: 100%;
+  /* Знизу більше, ніж зверху: під останнім рядком тексту стає поле пошуку,
+     яке заходить на обкладинку. */
+  padding: var(--sp-6) var(--sp-5) var(--sp-8);
 }
 
 /* Надрячок — довідка про магазин (скільки чого), а не заголовок: великими
-   літерами з розрідженням він не змагається з назвою. */
-.shop-store-kicker {
+   літерами з розрідженням він не змагається з назвою.
+
+   **Чому два класи й `!important`.** Бренд (`android.css` / `apple.css`)
+   оголошує `h1…h3` (18–34px) і `p` (14–17px) з `!important` — для сторінки, де
+   є один великий заголовок і один розмір абзацу. Вітрині це не підходило: у ній
+   зникала ієрархія — надрячок, підпис переваги й примітка ставали одним
+   розміром абзацу сторінки, а назва товару малювалась як `h3`. `.shop-store .x`
+   — це (0,2,0) проти брендового (0,1,2), тож рахунок на нашому боці без
+   залежності від порядку файлів. */
+.shop-store .shop-store-kicker {
   margin: 0;
-  font-size: 10px;
-  font-weight: var(--weight-semibold);
-  letter-spacing: 0.14em;
+  font-size: 10px !important;
+  font-weight: var(--weight-semibold) !important;
+  line-height: 1.4 !important;
+  letter-spacing: 0.14em !important;
   text-transform: uppercase;
-  color: rgb(255 255 255 / 62%);
+  color: rgb(255 255 255 / 68%);
 }
 
 /* Назва — `--font-ui`, а не `--font-display`: Space Grotesk кирилиці не має, і
    «Магазин X» виходив двома різними шрифтами в одному слові. */
-.shop-store-title {
+.shop-store .shop-store-title {
   margin: 0;
   font-family: var(--font-ui);
-  font-size: clamp(26px, 7vw, 34px);
-  font-weight: var(--weight-bold);
-  line-height: 1.08;
-  letter-spacing: -0.03em;
+  font-size: clamp(26px, 7vw, 34px) !important;
+  font-weight: 700 !important;
+  line-height: 1.06 !important;
+  letter-spacing: -0.03em !important;
   color: #fff;
+  text-wrap: balance;
 }
 
-.shop-store-tagline {
+.shop-store .shop-store-tagline {
+  max-width: 44ch;
   margin: 0;
-  font-size: var(--text-base);
-  line-height: var(--leading-normal);
-  color: rgb(255 255 255 / 74%);
+  font-size: var(--text-base) !important;
+  line-height: 1.45 !important;
+  color: rgb(255 255 255 / 78%);
 }
 
+/* Дві дії, а не три: «Про магазин» дублював прокрутку тієї ж сторінки, а
+   третій підпис у рядок на 360px не вміщався й обрізався. */
 .shop-store-actions {
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: 1fr auto;
   gap: var(--sp-2);
-  margin-top: var(--sp-3);
+  margin-top: calc(-1 * var(--sp-2));
 }
 
-/* `!important` тут не нехлюйство: бренд (`android.css` / `apple.css`) оголошує
-   `.wb-btn` і `.wb-btn-secondary` зі своїми мірками, тлом і тим самим
-   `!important` — без нього шапка діставала б світлі плашки теми на темній
-   обкладинці (той самий прийом, що в `.wb-tabs-btn`). */
+/* `!important` — бо бренд оголошує мірки `.wb-btn` власними. */
 .shop-store-actions .wb-btn {
-  min-height: 46px !important;
+  min-height: 48px !important;
+  padding: 0 var(--sp-4) !important;
 }
 
-/* «Каталог» — головна дія екрана, тож вона на всю ширину, а дві допоміжні
-   стоять під нею парою: три кнопки в рядок на 360px дали б три обрубки. */
-.shop-store-actions .wb-btn:first-child {
-  grid-column: 1 / -1;
-}
-
-/* Другорядні дії — **скло**, а не папір теми: світла плашка на темній
-   обкладинці була б найяскравішою плямою і перебивала назву магазину. */
-.shop-store-hero .wb-btn-secondary {
-  color: #fff !important;
-  background: rgb(255 255 255 / 12%) !important;
-  border: 1px solid rgb(255 255 255 / 18%) !important;
-}
-
-.shop-store-hero .wb-btn-secondary:hover {
-  background: rgb(255 255 255 / 22%) !important;
-}
-
-/* Пошук стоїть у шапці — там, куди падає око, а не під нею. Скло, а не папір:
-   обкладинка темна в кожній темі, тож світле поле читалось би як чуже. */
+/* Пошук стоїть **на межі обкладинки**: він читається як поле магазину, а не
+   як ще один рядок у шапці, і каталог від нього не їде вниз. Папір, а не
+   скло: поле перекриває темний банер, і там потрібен елемент керування, а не
+   ще одна частина банера. `margin-top` тягне його на 24px угору — рівно
+   настільки, щоб він стояв «на» обкладинці. */
 .shop-search {
+  position: relative;
+  z-index: 2;
   display: flex;
   align-items: center;
   gap: var(--sp-2);
-  min-height: 48px;
-  margin-top: var(--sp-3);
+  min-height: 52px;
+  /* −24px над щілиною між блоками (яку дає `gap` вітрини) — тобто поле стоїть
+     на обкладинці на чверть своєї висоти. */
+  margin-top: calc(-1 * (var(--sp-6) + var(--sp-4)));
   padding: 0 var(--sp-4);
-  color: rgb(255 255 255 / 70%);
-  background: rgb(255 255 255 / 12%);
-  border: 1px solid rgb(255 255 255 / 18%);
+  color: var(--text-muted);
+  background: var(--surface);
+  border: 1px solid var(--border-subtle);
   border-radius: var(--radius-full);
-  transition:
-    border-color var(--duration) var(--ease),
-    background var(--duration) var(--ease);
+  box-shadow: var(--shop-shadow);
+  transition: border-color var(--duration) var(--ease);
 }
 
 .shop-search:focus-within {
-  background: rgb(255 255 255 / 18%);
-  border-color: rgb(255 255 255 / 55%);
+  border-color: var(--accent);
 }
 
 /* 16px — межа, за якої iOS не наближає сторінку при фокусі. */
 .shop-search-input {
   flex: 1;
   min-width: 0;
-  min-height: 48px;
+  min-height: 50px;
   padding: 0;
   font: inherit;
   font-size: var(--text-md);
-  color: #fff;
+  color: var(--text-primary);
   background: none;
   border: none;
   outline: none;
 }
 
 .shop-search-input::placeholder {
-  color: rgb(255 255 255 / 62%);
+  color: var(--text-muted);
 }
 
 /* Нативний хрестик `type="search"` у WebView виглядає як чужий елемент, а
@@ -764,7 +808,7 @@ html[data-colors-mode="dark"] .shop-catalog {
   display: flex;
   flex-direction: column;
   gap: var(--sp-3);
-  padding: var(--sp-3);
+  padding: var(--sp-4);
   background: var(--surface);
   /* Тонка рамка, а не сама лише тінь: на світлій темі картка й тло сторінки
      одного кольору, і без межі вона «пливе» — не видно, де починається
@@ -774,6 +818,36 @@ html[data-colors-mode="dark"] .shop-catalog {
   box-shadow: var(--shop-shadow-soft);
   /* Кнопка «Каталог» веде сюди — поверхня не мусить залипати під шапкою. */
   scroll-margin-top: var(--sp-4);
+}
+
+/* Шапка полиці: назва ліворуч, обсяг праворуч. Без неї сітка читалась як
+   «десь усе підряд» — не було видно ні межі каталогу, ні того, скільки в
+   ньому товарів. */
+.shop-store-catalog-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--sp-2);
+}
+
+.shop-store .shop-store-catalog-title {
+  margin: 0;
+  font-size: var(--text-md) !important;
+  font-weight: 700 !important;
+  line-height: 1.25 !important;
+  letter-spacing: -0.015em !important;
+  color: var(--text-primary);
+}
+
+.shop-store .shop-store-catalog-count {
+  flex: 0 0 auto;
+  padding: 3px var(--sp-2);
+  font-size: var(--text-xs);
+  font-weight: var(--weight-semibold);
+  font-variant-numeric: tabular-nums;
+  color: var(--text-muted);
+  background: var(--field-bg);
+  border-radius: var(--radius-full);
 }
 
 /* Розділи їдуть убік, а не переносяться: їх буває й десять, і переніс з'їв би
@@ -861,12 +935,13 @@ html[data-colors-mode="dark"] .shop-catalog {
 /* Типографіка всередині — **шкала вітрини**, а не сторінки. Бренди оголошують
    `h1…h3` і `p` з `!important` розмірами для сторінки (18–22px), і назва
    розділу «Доставка й оплата» ставала заголовком сайту. `!important` тут
-   обовʼязковий: бренд саме ним і стоїть. */
-.shop-store-sections h1,
-.shop-store-sections h2,
-.shop-store-sections h3,
-.shop-store-sections h4,
-.shop-store-sections .wb-block-text__title {
+   обовʼязковий: бренд саме ним і стоїть — а `.shop-store` попереду дає нашому
+   правилу другий клас, тож рахунок на нашому боці. */
+.shop-store .shop-store-sections h1,
+.shop-store .shop-store-sections h2,
+.shop-store .shop-store-sections h3,
+.shop-store .shop-store-sections h4,
+.shop-store .shop-store-sections .wb-block-text__title {
   display: flex;
   align-items: center;
   gap: var(--sp-2);
@@ -878,10 +953,10 @@ html[data-colors-mode="dark"] .shop-catalog {
 
 /* Акцентна риска перед назвою розділу — найдорожче, що можна зробити з
    безкоштовного тексту: око чіпляє межу розділу, не читаючи абзац. */
-.shop-store-sections h1::before,
-.shop-store-sections h2::before,
-.shop-store-sections h3::before,
-.shop-store-sections h4::before {
+.shop-store .shop-store-sections h1::before,
+.shop-store .shop-store-sections h2::before,
+.shop-store .shop-store-sections h3::before,
+.shop-store .shop-store-sections h4::before {
   content: "";
   flex: 0 0 auto;
   width: 3px;
@@ -890,17 +965,27 @@ html[data-colors-mode="dark"] .shop-catalog {
   border-radius: var(--radius-full);
 }
 
-.shop-store-sections p,
-.shop-store-sections .wb-block-text__content {
+/* Тіло розділу — 14px і вільний інтерліньяж: текст читають з екрана, а не з
+   аркуша, і рядку треба дихати (у бренда тут розмір абзацу сторінки — 17px на
+   Apple, що в панелі завширшки 328px давало 6–7 слів у рядку). */
+.shop-store .shop-store-sections p,
+.shop-store .shop-store-sections .wb-block-text__content {
   font-size: var(--text-base) !important;
-  line-height: var(--leading-normal) !important;
+  line-height: 1.6 !important;
+}
+
+/* Розділи в панелі стоять на тій самій сітці, що й каталог: заголовок —
+   темним, тіло — приглушеним (у бренда абзац і заголовок майже одного
+   розміру, і абзац читався як ще один заголовок). */
+.shop-store .shop-store-sections p {
+  color: var(--text-secondary);
 }
 
 /* Оплата — не дрібним сірим по тлу (такого не читають), а смугою на папері:
    покупець мусить знати це **до** того, як натисне «оформити» (§9).
    Тло — відтінок акценту: це примітка, а не ще одна картка, і вона мусить
    відрізнятись від розділів вище, а не зливатись із ними в стос. */
-.shop-store-note {
+.shop-store .shop-store-note {
   display: flex;
   align-items: flex-start;
   gap: var(--sp-2);
@@ -925,35 +1010,43 @@ html[data-colors-mode="dark"] .shop-catalog {
 
 /* ── Переваги та довіра магазину ─────────────────────────────────────────── */
 
-/* Три переваги — **один рядок**, а не три картки на цілий екран: переваги
-   читають один раз і не для того, щоб задля них прокручували каталог. */
+/* Три переваги — **чипси в один рядок**, а не три колонки з підписами:
+   колонки ламали підпис на два поверхи й займали пів екрана, а переваги
+   читають один раз. На вузькому екрані рядок їде вбік — так само, як розділи
+   каталогу, і з тієї ж причини: перенос з'їв би третину екрана. */
 .shop-store-trust {
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 0;
-  padding: var(--sp-4) var(--sp-2);
+  display: flex;
+  gap: var(--sp-2);
+  padding: var(--sp-2);
+  overflow-x: auto;
   /* Тло — відтінок акценту на тлі сторінки: смуга довіри мусить читатись як
      **одна** смуга, а не як третя біла картка поспіль. Токен, а не `color-mix`:
      див. нотатку про оплату нижче — фолбек `color-mix` тут непридатний. */
   background: var(--accent-dim);
   border: 1px solid var(--border-subtle);
   border-radius: var(--radius-xl);
+  scrollbar-width: none;
 }
 
-.shop-trust-card {
+.shop-store-trust::-webkit-scrollbar {
+  display: none;
+}
+
+.shop-store .shop-trust-item {
   display: flex;
-  flex-direction: column;
+  flex: 0 0 auto;
   align-items: center;
   gap: var(--sp-2);
-  min-width: 0;
-  padding: 0 var(--sp-1);
-  text-align: center;
-}
-
-/* Три пункти розділяє тонка риска — без неї це просто три підписи, що
-   злиплися. */
-.shop-trust-card + .shop-trust-card {
-  border-left: 1px solid var(--border-subtle);
+  min-height: 36px;
+  margin: 0;
+  padding: 0 var(--sp-3) 0 var(--sp-1);
+  font-size: var(--text-xs) !important;
+  font-weight: var(--weight-semibold) !important;
+  line-height: 1.3 !important;
+  white-space: nowrap;
+  color: var(--text-secondary);
+  background: var(--surface);
+  border-radius: var(--radius-full);
 }
 
 .shop-trust-icon {
@@ -961,20 +1054,11 @@ html[data-colors-mode="dark"] .shop-catalog {
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
-  width: 34px;
-  height: 34px;
+  width: 26px;
+  height: 26px;
   color: var(--accent);
   background: var(--accent-dim);
   border-radius: var(--radius-full);
-}
-
-.shop-trust-title {
-  margin: 0;
-  font-size: 11px;
-  font-weight: var(--weight-semibold);
-  line-height: 1.3;
-  color: var(--text-secondary);
-  overflow-wrap: anywhere;
 }
 
 /* ── Плаваючий закріплений бар кошика ─────────────────────────────────────── */
