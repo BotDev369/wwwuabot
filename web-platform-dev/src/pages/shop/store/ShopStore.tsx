@@ -89,10 +89,16 @@ export function ShopStore({
 
   const shown = useMemo(() => filterCards(cards, catalog, query), [cards, catalog, query]);
 
-  // Текст про магазин — усе, що продавець написав на сторінці **крім** сітки:
-  // сітка тут не потрібна, бо каталог уже вище й читає живі товари.
+  // Текст про магазин — усе, що продавець написав на сторінці **крім** сітки
+  // та блоку заголовка магазину (id: "head" чи "-head"):
+  // назва та опис уже в шапці вітрини, а каталог читає живі товари.
   const info = useMemo(
-    () => (config.zones?.main ?? []).filter((block) => block.type !== GRID_BLOCK),
+    () =>
+      (config.zones?.main ?? []).filter((block) => {
+        if (block.type === GRID_BLOCK) return false;
+        if (block.id === "head" || block.id?.endsWith("-head")) return false;
+        return true;
+      }),
     [config],
   );
   const infoConfig = useMemo<PageConfig>(() => {
@@ -206,6 +212,37 @@ export function ShopStore({
         )}
       </section>
 
+      {/* Переваги магазину (Trust Badges) */}
+      <section className="shop-store-trust" aria-label="Переваги покупки">
+        <div className="shop-trust-card">
+          <span className="shop-trust-icon" aria-hidden="true">
+            <Icon name="check" size={20} />
+          </span>
+          <div className="shop-trust-content">
+            <h3 className="shop-trust-title">Пряма домовленість</h3>
+            <p className="shop-trust-text">Замовлення напряму відправляється продавцю без посередників</p>
+          </div>
+        </div>
+        <div className="shop-trust-card">
+          <span className="shop-trust-icon" aria-hidden="true">
+            <Icon name="sparkles" size={20} />
+          </span>
+          <div className="shop-trust-content">
+            <h3 className="shop-trust-title">Перевірена якість</h3>
+            <p className="shop-trust-text">Оригінальні товари та детальний опис кожної позиції</p>
+          </div>
+        </div>
+        <div className="shop-trust-card">
+          <span className="shop-trust-icon" aria-hidden="true">
+            <Icon name="message-square" size={20} />
+          </span>
+          <div className="shop-trust-content">
+            <h3 className="shop-trust-title">Зручний зв’язок</h3>
+            <p className="shop-trust-text">Уточнення деталей і підтримка в Telegram з продавцем</p>
+          </div>
+        </div>
+      </section>
+
       {info.length > 0 && (
         <section className="shop-store-info" id="shop-store-about">
           <PageRenderer config={infoConfig} context={context} className="shop-store-sections" />
@@ -255,6 +292,24 @@ export function ShopStore({
         Оплата — домовленість із продавцем: платформа замовлення зберігає, а гроші не бере.
         {cart.count > 0 && ` У кошику: ${cartTotalLabel(total)}.`}
       </p>
+
+      {/* Плаваючий закріплений бар кошика (Sticky Cart Bar), коли в кошику є товари */}
+      {cart.count > 0 && (
+        <aside className="shop-sticky-cart" aria-label="Швидкий доступ до кошика">
+          <div className="shop-sticky-cart-info">
+            <span className="shop-sticky-cart-count">{cartCountLabel(cart.count)}</span>
+            <span className="shop-sticky-cart-total">{cartTotalLabel(total)}</span>
+          </div>
+          <button
+            type="button"
+            className="shop-sticky-cart-btn"
+            onClick={() => setCartOpen(true)}
+          >
+            <Icon name="list" size={18} />
+            Переглянути
+          </button>
+        </aside>
+      )}
     </div>
   );
 }

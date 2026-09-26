@@ -33,18 +33,33 @@ export interface ShopCardTileProps {
 export function ShopCardTile({ card, onOpen, actionLabel = "Детальніше" }: ShopCardTileProps) {
   return (
     <article className="shop-card">
-      {card.photoUrl ? (
-        <img className="shop-card-img" src={card.photoUrl} alt="" loading="lazy" />
-      ) : (
-        <div className="shop-card-img shop-card-img--empty" aria-hidden="true">
-          <Icon name="image" size={22} />
-        </div>
-      )}
-      <h3 className="shop-card-title">{card.title}</h3>
-      <p className="shop-card-price">{card.price}</p>
-      <p className="shop-card-summary">{card.summary || card.kindLabel}</p>
+      <div className="shop-card-media">
+        {card.photoUrl ? (
+          <img className="shop-card-img" src={card.photoUrl} alt={card.title} loading="lazy" />
+        ) : (
+          <div className="shop-card-img shop-card-img--empty" aria-hidden="true">
+            <Icon name="image" size={24} />
+          </div>
+        )}
+        <span className="shop-card-badge">
+          {card.category}
+        </span>
+      </div>
+
+      <div className="shop-card-content">
+        <h3 className="shop-card-title">{card.title}</h3>
+        <p className="shop-card-price">{card.price}</p>
+        <p className="shop-card-summary">{card.summary || card.kindLabel}</p>
+      </div>
+
       {onOpen && (
-        <button type="button" className="shop-card-order" onClick={() => onOpen(card.id)}>
+        <button
+          type="button"
+          className="shop-card-order"
+          onClick={() => onOpen(card.id)}
+          aria-label={`${actionLabel}: ${card.title}`}
+        >
+          <Icon name="plus" size={16} />
           {actionLabel}
         </button>
       )}

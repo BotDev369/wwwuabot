@@ -43,7 +43,20 @@ export interface ShopCard {
 
 /** Ціна так, як її читають. Порожня — «Ціна не вказана», а не порожнє місце. */
 export function productPriceLabel(price: string): string {
-  return price.trim() || "Ціна не вказана";
+  const trimmed = price.trim();
+  if (!trimmed) return "Ціна не вказана";
+  // Числову ціну без валюти (напр. "1500" чи "1500.00") приводимо до формату "1 500 ₴"
+  const clean = trimmed.replace(/\s+/g, "").replace(",", ".");
+  if (/^\d+(?:\.\d+)?$/.test(clean)) {
+    const num = parseFloat(clean);
+    if (Number.isFinite(num)) {
+      const formatted = Math.round(num)
+        .toString()
+        .replace(/\B(?=(\d{3})+(?!\d))/gu, "\u00a0");
+      return `${formatted} ₴`;
+    }
+  }
+  return trimmed;
 }
 
 /** Файли за номерами: галерея товару тримає номери, а не адреси. */

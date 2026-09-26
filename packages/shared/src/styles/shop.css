@@ -276,17 +276,29 @@
 .shop-card {
   display: flex;
   flex-direction: column;
+  position: relative;
   overflow: hidden;
   background: var(--surface);
-  border-radius: var(--radius-md);
-  box-shadow: var(--shadow-xs);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-sm);
+  transition: transform var(--duration-fast, 150ms) var(--ease, ease), box-shadow var(--duration-fast, 150ms) var(--ease, ease);
+}
+
+.shop-card-media {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 4 / 3;
+  overflow: hidden;
+  background: var(--accent-dim);
 }
 
 /* Мірка фото — 4:3: так у кадрі лишається і товар, і тло навколо нього. */
 .shop-card-img {
   width: 100%;
+  height: 100%;
   aspect-ratio: 4 / 3;
   object-fit: cover;
+  display: block;
 }
 
 /* Фото ще немає: місце під нього лишається тієї ж мірки, але читається як
@@ -295,27 +307,58 @@
   display: flex;
   align-items: center;
   justify-content: center;
+  width: 100%;
+  height: 100%;
   color: var(--accent);
   background: var(--accent-dim);
 }
 
+/* Категорія товару бейджем на фото */
+.shop-card-badge {
+  position: absolute;
+  top: var(--sp-2);
+  left: var(--sp-2);
+  padding: 2px var(--sp-2);
+  font-size: var(--text-xs);
+  font-weight: var(--weight-medium);
+  color: var(--text-primary);
+  background: color-mix(in srgb, var(--surface) 88%, transparent);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border-radius: var(--radius-full);
+  box-shadow: var(--shadow-xs);
+  pointer-events: none;
+}
+
+.shop-card-content {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  padding: var(--sp-3);
+  gap: var(--sp-1);
+}
+
 .shop-card-title {
-  margin: var(--sp-3) var(--sp-3) 0;
-  font-size: var(--text-sm);
+  margin: 0;
+  font-size: var(--text-base);
   font-weight: var(--weight-semibold);
+  line-height: var(--leading-tight);
   overflow-wrap: anywhere;
 }
 
 .shop-card-price {
-  margin: var(--sp-1) var(--sp-3) 0;
-  font-size: var(--text-sm);
-  color: var(--text-primary);
+  margin: 0;
+  font-size: var(--text-md);
+  font-weight: var(--weight-bold);
+  color: var(--accent);
+  letter-spacing: -0.01em;
 }
 
 .shop-card-summary {
-  margin: var(--sp-1) var(--sp-3) var(--sp-3);
+  margin: 0;
   font-size: var(--text-xs);
   color: var(--text-muted);
+  line-height: var(--leading-normal);
 }
 
 @media (max-width: 360px) {
@@ -330,10 +373,14 @@
    вітрини), тож єдине, що тут роблять, мусить читатись як дія, а не як
    прикраса. */
 .shop-card-order {
-  display: block;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--sp-1);
   width: calc(100% - var(--sp-3) * 2);
   min-height: 44px;
   margin: 0 var(--sp-3) var(--sp-3);
+  padding: var(--sp-2) var(--sp-3);
   font: inherit;
   font-size: var(--text-sm);
   font-weight: var(--weight-medium);
@@ -594,6 +641,134 @@
 
 .shop-store-note {
   padding: 0 var(--sp-1);
+}
+
+/* ── Переваги та довіра магазину ─────────────────────────────────────────── */
+
+.shop-store-trust {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: var(--sp-3);
+  margin-top: var(--sp-2);
+}
+
+.shop-trust-card {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--sp-3);
+  padding: var(--sp-3) var(--sp-4);
+  background: var(--surface);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-xs);
+}
+
+.shop-trust-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: 40px;
+  height: 40px;
+  color: var(--accent);
+  background: var(--accent-dim);
+  border-radius: var(--radius-full);
+}
+
+.shop-trust-content {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.shop-trust-title {
+  margin: 0;
+  font-size: var(--text-sm);
+  font-weight: var(--weight-semibold);
+  color: var(--text-primary);
+}
+
+.shop-trust-text {
+  margin: 0;
+  font-size: var(--text-xs);
+  color: var(--text-secondary);
+  line-height: var(--leading-normal);
+}
+
+/* ── Плаваючий закріплений бар кошика ─────────────────────────────────────── */
+
+.shop-sticky-cart {
+  position: fixed;
+  bottom: calc(var(--tab-bar-h, 56px) + var(--sp-3) + var(--safe-bottom, 0px));
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: var(--z-sticky, 200);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--sp-3);
+  width: calc(100% - var(--sp-4) * 2);
+  max-width: min(540px, calc(100vw - var(--sp-4) * 2));
+  padding: var(--sp-2) var(--sp-3);
+  background: var(--surface);
+  border-radius: var(--radius-full);
+  box-shadow: var(--shadow-lg);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  animation: shop-slide-up var(--duration-fast, 150ms) var(--ease, ease) forwards;
+}
+
+@keyframes shop-slide-up {
+  from {
+    opacity: 0;
+    transform: translate(-50%, var(--sp-4));
+  }
+  to {
+    opacity: 1;
+    transform: translate(-50%, 0);
+  }
+}
+
+.shop-sticky-cart-info {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  padding-left: var(--sp-2);
+}
+
+.shop-sticky-cart-count {
+  font-size: var(--text-xs);
+  font-weight: var(--weight-medium);
+  color: var(--text-muted);
+}
+
+.shop-sticky-cart-total {
+  font-size: var(--text-sm);
+  font-weight: var(--weight-bold);
+  color: var(--text-primary);
+}
+
+.shop-sticky-cart-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--sp-1);
+  min-height: 44px;
+  padding: 0 var(--sp-4);
+  font: inherit;
+  font-size: var(--text-sm);
+  font-weight: var(--weight-semibold);
+  color: var(--text-inverse);
+  background: var(--accent);
+  border: none;
+  border-radius: var(--radius-full);
+  cursor: pointer;
+  box-shadow: var(--shadow-sm);
+  transition: background var(--duration-fast, 150ms) var(--ease, ease);
+}
+
+.shop-sticky-cart-btn:active {
+  background: var(--accent-hover);
 }
 
 /* ── Товар поверхнею: галерея, опис і кількість ─────────────────────────── */
