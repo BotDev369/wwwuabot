@@ -617,7 +617,7 @@ html[data-colors-mode="dark"] .shop-catalog {
    (нотатка про оплату) мусить мати під собою місце: без цього він під нею
    просто зникав. */
 .shop-store--cart-open {
-  padding-bottom: calc(var(--tab-bar-h, 56px) + 96px + var(--safe-bottom));
+  padding-bottom: calc(var(--tab-bar-h, 56px) + 76px + var(--safe-bottom));
 }
 
 /* Вітальна частина — **обкладинка**: у магазину є ім'я, короткий опис і дії, і
@@ -766,6 +766,10 @@ html[data-colors-mode="dark"] .shop-catalog {
   gap: var(--sp-3);
   padding: var(--sp-3);
   background: var(--surface);
+  /* Тонка рамка, а не сама лише тінь: на світлій темі картка й тло сторінки
+     одного кольору, і без межі вона «пливе» — не видно, де починається
+     каталог. */
+  border: 1px solid var(--border-subtle);
   border-radius: var(--radius-xl);
   box-shadow: var(--shop-shadow-soft);
   /* Кнопка «Каталог» веде сюди — поверхня не мусить залипати під шапкою. */
@@ -816,24 +820,38 @@ html[data-colors-mode="dark"] .shop-catalog {
   display: block;
 }
 
+/* Текст продавця — **одна панель із розділами**, а не стос окремих карток.
+   Три білі прямокутники поспіль читаються як чернетка з CMS; спільна межа,
+   розділювач і заголовок із акцентною рискою роблять із того самого тексту
+   сторінку товару. Тло, рамку й тінь малює панель — блоки всередині їх
+   більше не дублюють. */
 .shop-store-sections {
   display: flex;
   flex-direction: column;
-  gap: var(--sp-3);
-}
-
-/* Картка розділу — та сама мірка, що в панелей вітрини. */
-.shop-store-sections .wb-block-card {
-  border-radius: var(--radius-xl) !important;
-  box-shadow: var(--shop-shadow-soft) !important;
+  padding: var(--sp-2) var(--sp-4);
+  background: var(--surface);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-xl);
+  box-shadow: var(--shop-shadow-soft);
 }
 
 /* Розділювач продавець налаштував під сторінку (`lg` — це 32px з кожного боку),
-   а в картці вітрини такий крок ставав 64px порожнечі. Крок тут задає вітрина;
+   а в панелі вітрини такий крок ставав 64px порожнечі. Крок тут задає вітрина;
    сама сторінка лишається з вибором продавця. */
 .shop-store-sections > div {
   padding-top: 0 !important;
   padding-bottom: 0 !important;
+}
+
+/* `div` у селекторі — не зайве: `CardBlock` ставить тло, рамку й відступ
+   **інлайном**, тож без `!important` його не перебити, а без зайвої
+   специфічності скидання відступів вище перебило б розділ навпаки. */
+.shop-store-sections > div.wb-block-card {
+  padding: var(--sp-4) 0 !important;
+  background: none !important;
+  border: none !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
 }
 
 .shop-store-sections .wb-block-divider {
@@ -849,10 +867,27 @@ html[data-colors-mode="dark"] .shop-catalog {
 .shop-store-sections h3,
 .shop-store-sections h4,
 .shop-store-sections .wb-block-text__title {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
   font-size: var(--text-md) !important;
   font-weight: var(--weight-semibold) !important;
   line-height: 1.3 !important;
   letter-spacing: -0.01em !important;
+}
+
+/* Акцентна риска перед назвою розділу — найдорожче, що можна зробити з
+   безкоштовного тексту: око чіпляє межу розділу, не читаючи абзац. */
+.shop-store-sections h1::before,
+.shop-store-sections h2::before,
+.shop-store-sections h3::before,
+.shop-store-sections h4::before {
+  content: "";
+  flex: 0 0 auto;
+  width: 3px;
+  height: 1em;
+  background: var(--accent);
+  border-radius: var(--radius-full);
 }
 
 .shop-store-sections p,
@@ -862,16 +897,26 @@ html[data-colors-mode="dark"] .shop-catalog {
 }
 
 /* Оплата — не дрібним сірим по тлу (такого не читають), а смугою на папері:
-   покупець мусить знати це **до** того, як натисне «оформити» (§9). */
+   покупець мусить знати це **до** того, як натисне «оформити» (§9).
+   Тло — відтінок акценту: це примітка, а не ще одна картка, і вона мусить
+   відрізнятись від розділів вище, а не зливатись із ними в стос. */
 .shop-store-note {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--sp-2);
   margin: 0;
   padding: var(--sp-3) var(--sp-4);
   font-size: var(--text-xs);
   line-height: var(--leading-normal);
   color: var(--text-secondary);
-  background: var(--surface);
+  background: color-mix(in srgb, var(--accent) 8%, var(--surface));
+  border: 1px solid color-mix(in srgb, var(--accent) 18%, var(--border-subtle));
   border-radius: var(--radius-lg);
-  box-shadow: var(--shop-shadow-soft);
+}
+
+.shop-store-note-icon {
+  margin-top: 2px;
+  color: var(--accent);
 }
 
 /* ── Переваги та довіра магазину ─────────────────────────────────────────── */
@@ -881,11 +926,13 @@ html[data-colors-mode="dark"] .shop-catalog {
 .shop-store-trust {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: var(--sp-2);
+  gap: 0;
   padding: var(--sp-4) var(--sp-2);
-  background: var(--surface);
+  /* Тло — відтінок акценту на папері: смуга довіри мусить читатись як
+     **одна** смуга, а не як третя біла картка поспіль. */
+  background: color-mix(in srgb, var(--accent) 7%, var(--surface));
+  border: 1px solid color-mix(in srgb, var(--accent) 16%, var(--border-subtle));
   border-radius: var(--radius-xl);
-  box-shadow: var(--shop-shadow-soft);
 }
 
 .shop-trust-card {
@@ -894,7 +941,14 @@ html[data-colors-mode="dark"] .shop-catalog {
   align-items: center;
   gap: var(--sp-2);
   min-width: 0;
+  padding: 0 var(--sp-1);
   text-align: center;
+}
+
+/* Три пункти розділяє тонка риска — без неї це просто три підписи, що
+   злиплися. */
+.shop-trust-card + .shop-trust-card {
+  border-left: 1px solid color-mix(in srgb, var(--accent) 22%, transparent);
 }
 
 .shop-trust-icon {
