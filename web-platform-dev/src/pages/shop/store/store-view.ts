@@ -17,6 +17,7 @@
 
 import type { PageConfig, PageBlock } from "@wwwuabot/shared/types/page-config";
 import type { CartTotal, ShopCard } from "@wwwuabot/shared/shop";
+import type { IconName } from "@wwwuabot/shared";
 
 /**
  * Підзаголовок вітрини — перший заголовок третього рівня на сторінці.
@@ -37,6 +38,97 @@ export function storeTagline(config: PageConfig | null): string {
     if (found) return String((found.props as { title?: string }).title ?? "").trim();
   }
   return "";
+}
+
+/**
+ * Розділ вітрини: текст продавця, показаний як **окремий розділ зі своєю
+ * шапкою**, а не як абзац у спільному стосі.
+ */
+export interface StoreSection {
+  /** Ключ списку — беремо з блока, щоб розділ не перемонтовувався на правці. */
+  id: string;
+  /** Назва розділу; порожній — текст без власної шапки. */
+  title: string;
+  /** Знак шапки: підказаний назвою, а не вибраний продавцем. */
+  icon: IconName;
+  /** Блоки тіла розділу — те, що рендерить `ZoneRenderer`. */
+  blocks: PageBlock[];
+}
+
+/**
+ * Знак розділу за його назвою.
+ *
+ * У блоці сторінки знака немає (продавець пише тільки заголовок), а без знака
+ * шапка розділу — смуга з самим словом. Ключове слово в назві дає розділові
+ * обличчя: «Доставка» і «Замовлення» перестають виглядати однаково. Невідома
+ * назва отримує нейтральний знак — це **не** помилка, бо назву пише продавець,
+ * і вимагати від неї нашого словника не можна.
+ */
+export function sectionIcon(title: string): IconName {
+  const needle = title.toLowerCase();
+  const rules: readonly [RegExp, IconName][] = [
+    [/достав|відправ|пошт|самовив|кур'?єр/u, "pin"],
+    [/оплат|платіж|грош|рахунок|карт/u, "card"],
+    [/замов|контакт|телефон|адрес|графік|зв'?яз/u, "contact"],
+    [/гарант|поверн|якіст|обмін/u, "check"],
+    [/знижк|акці|бонус|розпродаж/u, "percent"],
+    [/питанн|часті|faq/u, "question"],
+    [/магазин|про нас|істор|команд/u, "shop"],
+  ];
+  return rules.find(([pattern]) => pattern.test(needle))?.[1] ?? "info";
+}
+
+/**
+ * Текст продавця → розділи вітрини.
+ *
+ * Розділом стає картка: саме її в редакторі сторінки заводить продавець під
+ * кожен текст («Про магазин», «Доставка й оплата»), і саме вона має назву.
+ * Тому шапку розділу малює вітрина, а **не** картка: у картці заголовок, тло й
+ * рамка — це три різні правила одного блока, і в шапці вони давали заголовок
+ * посеред білого прямокутника замість шапки зверху.
+ *
+ * Решта блоків не губиться:
+ *
+ *   - **не картка** (напр. просто текст) шапки не отримує і лягає тілом у
+ *     попередній розділ — заголовок і тіло такий блок малює сам, і власна
+ *     шапка поставила б назву двічі;
+ *   - **розділювач** пропускаємо: він малював межу між картками в спільному
+ *     стосі, а тепер картки стоять окремо і межа між ними — власна рамка.
+ */
+export function storeSections(blocks: readonly PageBlock[]): StoreSection[] {
+  const sections: StoreSection[] = [];
+
+  for (const [index, block] of blocks.entries()) {
+    if (block.type === "divider") continue;
+
+    const previous = sections[sections.length - 1];
+
+    if (block.type !== "card") {
+      if (previous) previous.blocks.push(block);
+      else sections.push(anonymous(block.id ?? `section-${index}`, [block]));
+      continue;
+    }
+
+    const props = (block.props ?? {}) as { title?: unknown };
+    const title = typeof props.title === "string" ? props.title.trim() : "";
+    // Картку розбираємо, бо її малює **розділ**: `CardBlock` ставить тло,
+    // рамку й відступ **інлайном**, і в шапці це дало б прямокутник у
+    // прямокутнику. Заголовок картки при цьому не губиться — він стає назвою
+    // розділу.
+    sections.push({
+      id: block.id ?? `section-${index}`,
+      title,
+      icon: sectionIcon(title),
+      blocks: [...(block.children ?? [])],
+    });
+  }
+
+  return sections;
+}
+
+/** Розділ без шапки: тексту продавця не дали назви, і вигадувати її не можна. */
+function anonymous(id: string, blocks: PageBlock[]): StoreSection {
+  return { id, title: "", icon: "info", blocks };
 }
 
 /** Блок за умовою, разом із вкладеними (картка тримає текст у собі). */

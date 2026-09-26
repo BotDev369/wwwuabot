@@ -39,6 +39,7 @@ import {
   cartTotalLabel,
   filterCards,
   goodsLabel,
+  storeSections,
   storeStatsLabel,
   storeTagline,
 } from "./store-view";
@@ -98,6 +99,11 @@ export function ShopStore({
       }),
     [config],
   );
+  // Кожен текст продавця — **окремий розділ зі своєю шапкою**: три абзаци в
+  // спільній панелі читались як один текст без меж, і покупець не бачив, де
+  // кінчається «Про магазин» і починається «Доставка».
+  const sections = useMemo(() => storeSections(info), [info]);
+
   const product = products.find((item) => item.id === openedProduct) ?? null;
   const total = cartTotal(cart.lines, products);
 
@@ -225,14 +231,30 @@ export function ShopStore({
         </p>
       </section>
 
-      {info.length > 0 && (
+      {sections.length > 0 && (
         <section className="shop-store-info" id="shop-store-about">
-          <ZoneRenderer
-            blocks={info}
-            zone="main"
-            context={context}
-            className="shop-store-sections"
-          />
+          {sections.map((item) => (
+            <article className="shop-section" key={item.id}>
+              {item.title && (
+                <header className="shop-section-head">
+                  {/* Знак у шапці — не прикраса: це єдине, чим розділ
+                      відрізняється від сусіднього, ще до читання назви. */}
+                  <span className="shop-section-icon" aria-hidden="true">
+                    <Icon name={item.icon} size={16} />
+                  </span>
+                  <h3 className="shop-section-title">{item.title}</h3>
+                </header>
+              )}
+              {item.blocks.length > 0 && (
+                <ZoneRenderer
+                  blocks={item.blocks}
+                  zone="main"
+                  context={context}
+                  className="shop-section-body"
+                />
+              )}
+            </article>
+          ))}
         </section>
       )}
 

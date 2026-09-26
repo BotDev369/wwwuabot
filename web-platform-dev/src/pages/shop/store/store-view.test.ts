@@ -9,7 +9,7 @@
  */
 
 import { describe, expect, it } from "vitest";
-import type { PageConfig } from "@wwwuabot/shared/types/page-config";
+import type { PageBlock, PageConfig } from "@wwwuabot/shared/types/page-config";
 import type { ShopCard } from "@wwwuabot/shared/shop";
 import {
   amountLabel,
@@ -18,6 +18,8 @@ import {
   filterCards,
   foundLabel,
   plural,
+  sectionIcon,
+  storeSections,
   storeStatsLabel,
   storeTagline,
 } from "./store-view";
@@ -151,5 +153,71 @@ describe("сума кошика", () => {
   it("скільки показано — теж словами", () => {
     expect(foundLabel(2)).toBe("Показано: 2 товари");
     expect(foundLabel(1)).toBe("Показано: 1 товар");
+  });
+});
+
+describe("розділи тексту про магазин", () => {
+  const blocks: PageBlock[] = [
+    {
+      id: "shop-about",
+      type: "card",
+      order: 2,
+      props: { title: "Про магазин" },
+      children: [{ id: "about-text", type: "text", order: 0, props: { content: "Обсмажуємо" } }],
+    },
+    { id: "shop-divider", type: "divider", order: 3, props: { spacing: "lg" } },
+    {
+      id: "shop-terms",
+      type: "card",
+      order: 4,
+      props: { title: "Доставка й оплата" },
+    },
+    {
+      id: "shop-contact",
+      type: "card",
+      order: 5,
+      props: { title: "Замовлення" },
+      children: [{ id: "contact-text", type: "text", order: 0, props: { content: "Київ" } }],
+    },
+  ];
+
+  it("кожна картка продавця стає розділом зі своєю назвою", () => {
+    const sections = storeSections(blocks);
+    expect(sections.map((item) => item.title)).toEqual([
+      "Про магазин",
+      "Доставка й оплата",
+      "Замовлення",
+    ]);
+  });
+
+  it("розділ несе **вміст** картки, а не саму картку", () => {
+    // Картка в шапці розділу дала б прямокутник у прямокутнику: тло, рамку й
+    // відступ `CardBlock` ставить інлайном.
+    const [about] = storeSections(blocks);
+    expect(about.blocks.map((block) => block.id)).toEqual(["about-text"]);
+  });
+
+  it("розділювач між картками не стає розділом", () => {
+    expect(storeSections(blocks).map((item) => item.id)).not.toContain("shop-divider");
+  });
+
+  it("знак розділу відрізняється для доставки, оплати й контактів", () => {
+    expect(sectionIcon("Доставка й оплата")).toBe("pin");
+    expect(sectionIcon("Оплата карткою")).toBe("card");
+    expect(sectionIcon("Наші контакти")).toBe("contact");
+    expect(sectionIcon("Гарантія та повернення")).toBe("check");
+    // Невідому назву продавець пише сам — їй дістається нейтральний знак.
+    expect(sectionIcon("Акція на каву")).toBe("percent");
+    expect(sectionIcon("Щось своє")).toBe("info");
+  });
+
+  it("текст без назви не стає розділом без шапки", () => {
+    const loose: PageBlock[] = [
+      { id: "about", type: "card", order: 0, props: { title: "Про магазин" } },
+      { id: "loose", type: "text", order: 1, props: { content: "Абзац під карткою" } },
+    ];
+    const sections = storeSections(loose);
+    expect(sections).toHaveLength(1);
+    expect(sections[0].blocks.map((block) => block.id)).toEqual(["loose"]);
   });
 });

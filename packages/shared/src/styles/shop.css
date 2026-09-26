@@ -891,93 +891,110 @@ html[data-colors-mode="dark"] .shop-catalog {
    `page-zone--main`, її 24px відступом і власним тлом. Усередині вітрини це
    давало сторінку в сторінці: подвійний берег і плиту тла серед паперу. */
 .shop-store-info {
-  display: block;
-}
-
-/* Текст продавця — **одна панель із розділами**, а не стос окремих карток.
-   Три білі прямокутники поспіль читаються як чернетка з CMS; спільна межа,
-   розділювач і заголовок із акцентною рискою роблять із того самого тексту
-   сторінку товару. Тло, рамку й тінь малює панель — блоки всередині їх
-   більше не дублюють. */
-.shop-store-sections {
   display: flex;
   flex-direction: column;
-  padding: var(--sp-2) var(--sp-4);
+  gap: var(--sp-3);
+}
+
+/* Кожен текст продавця — **окремий розділ зі своєю шапкою**, а не абзац у
+   спільній панелі. Три абзаци поспіль читались як один текст без меж:
+   покупець не бачив, де кінчається «Про магазин» і починається «Доставка й
+   оплата». Розділ має тло, рамку й тінь, а поверх них — шапку зі знаком і
+   назвою, тож межу видно ще до читання першого слова. */
+.shop-section {
+  overflow: hidden;
   background: var(--surface);
   border: 1px solid var(--border-subtle);
   border-radius: var(--radius-xl);
   box-shadow: var(--shop-shadow-soft);
 }
 
-/* Розділювач продавець налаштував під сторінку (`lg` — це 32px з кожного боку),
-   а в панелі вітрини такий крок ставав 64px порожнечі. Крок тут задає вітрина;
-   сама сторінка лишається з вибором продавця. */
-.shop-store-sections > div {
-  padding-top: 0 !important;
-  padding-bottom: 0 !important;
+/* Шапка розділу — смуга відтінку акценту, а не просто назва над текстом:
+   назва без смуги зливалась із тілом, і розділ читався як ще один абзац. */
+.shop-section-head {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-3);
+  padding: var(--sp-3) var(--sp-4);
+  background: var(--accent-dim);
+  border-bottom: 1px solid var(--border-subtle);
+}
+
+/* Знак у платі — акцентної заливки: у розділі з трьох абзаців покупець
+   знаходить потрібний оком, не читаючи назв. */
+.shop-section-icon {
+  display: inline-flex;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 30px;
+  color: var(--text-inverse);
+  background: var(--accent);
+  border-radius: var(--radius-md);
+}
+
+/* Тіло розділу — власний відступ: це розділ, а не стос блоків. */
+.shop-section-body {
+  padding: var(--sp-3) var(--sp-4) var(--sp-4);
 }
 
 /* `div` у селекторі — не зайве: `CardBlock` ставить тло, рамку й відступ
    **інлайном**, тож без `!important` його не перебити, а без зайвої
-   специфічності скидання відступів вище перебило б розділ навпаки. */
-.shop-store-sections > div.wb-block-card {
-  padding: var(--sp-4) 0 !important;
+   специфічності скидання відступів вище перебило б тіло розділу навпаки.
+   Вкладена картка поставила б картку в картці. */
+.shop-store .shop-section-body > div {
+  padding: 0 !important;
   background: none !important;
   border: none !important;
   border-radius: 0 !important;
   box-shadow: none !important;
 }
 
-.shop-store-sections .wb-block-divider {
+/* Розділювач продавець налаштував під сторінку (`lg` — це 32px з кожного боку),
+   а в розділі вітрини такий крок ставав 64px порожнечі. */
+.shop-section-body .wb-block-divider {
   border-top-color: var(--border-subtle) !important;
 }
 
 /* Типографіка всередині — **шкала вітрини**, а не сторінки. Бренди оголошують
    `h1…h3` і `p` з `!important` розмірами для сторінки (18–22px), і назва
    розділу «Доставка й оплата» ставала заголовком сайту. `!important` тут
-   обовʼязковий: бренд саме ним і стоїть — а `.shop-store` попереду дає нашому
+   обов'язковий: бренд саме ним і стоїть — а `.shop-store` попереду дає нашому
    правилу другий клас, тож рахунок на нашому боці. */
-.shop-store .shop-store-sections h1,
-.shop-store .shop-store-sections h2,
-.shop-store .shop-store-sections h3,
-.shop-store .shop-store-sections h4,
-.shop-store .shop-store-sections .wb-block-text__title {
-  display: flex;
-  align-items: center;
-  gap: var(--sp-2);
+.shop-store .shop-section-title {
+  margin: 0;
   font-size: var(--text-md) !important;
+  font-weight: var(--weight-semibold) !important;
+  line-height: 1.25 !important;
+  letter-spacing: -0.01em !important;
+  color: var(--text-primary);
+}
+
+/* Підзаголовок усередині розділу — **менший за назву розділу**: інакше шапка й
+   підзаголовок сперечались би за те саме місце в ієрархії. */
+.shop-store .shop-section-body h1,
+.shop-store .shop-section-body h2,
+.shop-store .shop-section-body h3,
+.shop-store .shop-section-body h4,
+.shop-store .shop-section-body .wb-block-text__title {
+  margin: 0 0 var(--sp-2);
+  font-size: var(--text-sm) !important;
   font-weight: var(--weight-semibold) !important;
   line-height: 1.3 !important;
   letter-spacing: -0.01em !important;
 }
 
-/* Акцентна риска перед назвою розділу — найдорожче, що можна зробити з
-   безкоштовного тексту: око чіпляє межу розділу, не читаючи абзац. */
-.shop-store .shop-store-sections h1::before,
-.shop-store .shop-store-sections h2::before,
-.shop-store .shop-store-sections h3::before,
-.shop-store .shop-store-sections h4::before {
-  content: "";
-  flex: 0 0 auto;
-  width: 3px;
-  height: 1em;
-  background: var(--accent);
-  border-radius: var(--radius-full);
-}
-
 /* Тіло розділу — 14px і вільний інтерліньяж: текст читають з екрана, а не з
    аркуша, і рядку треба дихати (у бренда тут розмір абзацу сторінки — 17px на
-   Apple, що в панелі завширшки 328px давало 6–7 слів у рядку). */
-.shop-store .shop-store-sections p,
-.shop-store .shop-store-sections .wb-block-text__content {
+   Apple, що в розділі завширшки 328px давало 6–7 слів у рядку). Колір —
+   приглушений: у бренда абзац і заголовок майже одного розміру, і абзац
+   читався як ще один заголовок. */
+.shop-store .shop-section-body p,
+.shop-store .shop-section-body .wb-block-text__content {
+  margin: 0;
   font-size: var(--text-base) !important;
-  line-height: 1.6 !important;
-}
-
-/* Розділи в панелі стоять на тій самій сітці, що й каталог: заголовок —
-   темним, тіло — приглушеним (у бренда абзац і заголовок майже одного
-   розміру, і абзац читався як ще один заголовок). */
-.shop-store .shop-store-sections p {
+  line-height: 1.65 !important;
   color: var(--text-secondary);
 }
 
@@ -1000,6 +1017,9 @@ html[data-colors-mode="dark"] .shop-catalog {
      і на Apple-світлі (де акцент чорний) нотатка ставала б чорною плитою. */
   background: var(--accent-dim);
   border: 1px solid var(--border-subtle);
+  /* Ліва межа акцентом — нотатка мусить читатись окремим блоком, а не ще одним
+     розділом: це умова, а не текст про магазин. */
+  border-left: 3px solid var(--accent);
   border-radius: var(--radius-lg);
 }
 
