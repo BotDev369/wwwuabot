@@ -898,7 +898,11 @@ html[data-colors-mode="dark"] .shop-catalog {
   width: 100%;
   max-width: var(--max-content);
   margin: 0 auto;
-  padding: var(--sp-4);
+  /* Верхнього берега немає: обкладинка магазину стоїть **під самим хромом**
+     Telegram, як обкладинка каналу. Смуга тла над фото читалась як порожній
+     відступ, який нічого не несе. Бічні береги лишаються — ними банер і
+     полиця виходять на всю ширину (див. `.shop-store-hero`). */
+  padding: 0 var(--sp-4);
   /* + safe-area: рядок «оплата — домовленість» не має ховатись під футером */
   padding-bottom: calc(var(--sp-8) + var(--safe-bottom));
 }
@@ -908,6 +912,31 @@ html[data-colors-mode="dark"] .shop-catalog {
    просто зникав. */
 .shop-store--cart-open {
   padding-bottom: calc(var(--tab-bar-h, 56px) + 76px + var(--safe-bottom));
+}
+
+/* Смуга полиці — **закріплена**: вона їде вгорі разом із прокруткою, і поки
+   покупець гортає сітку, назва каталогу й розділи лишаються під пальцем без
+   повернення на початок сторінки. Це та сама смуга, а не друга її копія
+   вгорі екрана (див. `ShopStore.tsx`).
+
+   Скло, а не папір: під смугою їдуть плитки, і непрозора плита різала б їх
+   навпіл. Тло — площина екрана (`--bg-page`), а не папір магазину: смуга
+   лежить **на тлі сторінки**, як і самі плитки, а тема буває й темною. */
+.shop-store-bar {
+  position: sticky;
+  top: 0;
+  z-index: var(--z-sticky);
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-3);
+  /* Береги скасовують відступ каталогу: скло смуги йде на всю ширину, як
+     банер, — інакше по її краях видно було б плитки. */
+  margin-inline: calc(-1 * var(--sp-3));
+  padding: var(--sp-2) var(--sp-3) var(--sp-3);
+  background: color-mix(in srgb, var(--bg-page) 82%, transparent);
+  box-shadow: var(--shop-shadow-soft);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
 }
 
 /* Вітальна частина — **обкладинка**: банер магазину, а на ньому його ім'я та

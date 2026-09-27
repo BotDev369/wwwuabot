@@ -163,38 +163,41 @@ export function ShopStore({
       </div>
 
       <section className="shop-store-catalog">
-        {/* Заголовок полиці: покупець має бачити, що це каталог, і скільки в
-            ньому є, — без цього сітка читалась як «десь усе підряд». Обсяг
-            магазину стоїть **тут**, а не надрукований ще раз у шапці: два
-            однакові числа на одному екрані це не довідка, а шум. */}
-        <div className="shop-store-catalog-head">
-          <h2 className="shop-store-catalog-title">Каталог</h2>
-          <span className="shop-store-catalog-count">
-            {storeStatsLabel(cards.length, catalogs.length)}
-          </span>
-        </div>
+        {/* Смуга полиці **закріплюється** вгорі: поки покупець гортає сітку,
+            назва каталогу й розділи лишаються на видноті, і вертатись до них
+            прокруткою не треба. Це та сама смуга, а не друга її копія: копія
+            показувала б ті самі числа двічі (`AGENTS.md` §7). Обсяг магазину
+            стоїть тут, а не в банері: «скільки чого» — довідка каталогу. */}
+        <div className="shop-store-bar">
+          <div className="shop-store-catalog-head">
+            <h2 className="shop-store-catalog-title">Каталог</h2>
+            <span className="shop-store-catalog-count">
+              {storeStatsLabel(cards.length, catalogs.length)}
+            </span>
+          </div>
 
-        {catalogs.length > 1 && (
-          <div className="shop-store-chips">
-            <button
-              type="button"
-              className={`shop-chip${catalog === null ? " shop-chip--active" : ""}`}
-              onClick={() => setCatalog(null)}
-            >
-              Усі товари
-            </button>
-            {catalogs.map((group) => (
+          {catalogs.length > 1 && (
+            <div className="shop-store-chips">
               <button
                 type="button"
-                key={group.title}
-                className={`shop-chip${catalog === group.title ? " shop-chip--active" : ""}`}
-                onClick={() => setCatalog(group.title)}
+                className={`shop-chip${catalog === null ? " shop-chip--active" : ""}`}
+                onClick={() => setCatalog(null)}
               >
-                {group.title} · {group.count}
+                Усі товари
               </button>
-            ))}
-          </div>
-        )}
+              {catalogs.map((group) => (
+                <button
+                  type="button"
+                  key={group.title}
+                  className={`shop-chip${catalog === group.title ? " shop-chip--active" : ""}`}
+                  onClick={() => setCatalog(group.title)}
+                >
+                  {group.title} · {group.count}
+                </button>
+              ))}
+            </div>
+          )}
+        </div>
 
         {loading ? (
           <p className="wb-text-muted shop-note">Завантажуємо каталог…</p>
