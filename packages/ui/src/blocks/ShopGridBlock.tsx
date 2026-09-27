@@ -74,10 +74,14 @@ export function ShopGridBlock({ block, context }: BlockComponentProps) {
   const isPreview = !cards && Boolean(context.preview);
   const shown = cards && cards.length > 0 ? cards : isPreview ? EXAMPLE_CARDS : [];
 
-  // Дії тут немає й не мусить бути: сторінку магазину відкриває **вітрина**
-  // (`pages/shop/store/ShopStore`), а цей блок лишається тим, що бачить
-  // продавець у редакторі й у перегляді шаблону. Кнопка в перегляді обіцяла б
-  // покупцеві товар із прикладу.
+  // Дії покупця тут немає й не мусить бути: сторінку магазину відкриває
+  // **вітрина** (`pages/shop/store/ShopStore`), а цей блок лишається тим, що
+  // бачить продавець у редакторі й у перегляді шаблону. Кнопка «в кошик» у
+  // перегляді обіцяла б покупцеві товар із прикладу.
+  //
+  // Правка — інша річ, і приходить вона ззовні, а не з блока: на власній
+  // сторінці продавця сітка показує справжні товари, і нежива плитка там
+  // читалась як «не відкривається» (дію кладе `pages/user-pages/UserPageView`).
   if (shown.length === 0) return null;
 
   return (
@@ -86,7 +90,7 @@ export function ShopGridBlock({ block, context }: BlockComponentProps) {
 
       <div className="shop-catalog-grid">
         {shown.map((card) => (
-          <ShopCardTile key={card.id} card={card} />
+          <ShopCardTile key={card.id} card={card} onEdit={context.shopEditProduct} />
         ))}
       </div>
 

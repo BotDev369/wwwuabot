@@ -46,14 +46,28 @@ export interface ShopCardTileProps {
   onSetQty?: (id: number, qty: number) => void;
   /** Відкрити товар: галерея, опис, характеристики. */
   onOpen?: (id: number) => void;
+  /**
+   * Відкрити товар **на правку** — дія продавця, а не покупця.
+   *
+   * Окремо від `onOpen` навмисно: покупцеві ця дія показує товар, продавцю —
+   * форму товару, і злити їх в одну означало б назвати обидві «Детальніше».
+   */
+  onEdit?: (id: number) => void;
 }
 
-export function ShopCardTile({ card, qty = 0, onAdd, onSetQty, onOpen }: ShopCardTileProps) {
+export function ShopCardTile({
+  card,
+  qty = 0,
+  onAdd,
+  onSetQty,
+  onOpen,
+  onEdit,
+}: ShopCardTileProps) {
   // Товар у кошику показують кроком лише тоді, коли його справді є чим міняти:
   // кількість без `onSetQty` — це плитка, яка обіцяє дію й не робить нічого.
   const stepper = qty > 0 && onSetQty ? onSetQty : null;
   const line = stepper ? cartLineTotal(card.price, qty) : null;
-  const hasActions = Boolean(stepper ?? onAdd ?? onOpen);
+  const hasActions = Boolean(stepper ?? onAdd ?? onOpen ?? onEdit);
 
   return (
     <article className="shop-card">
@@ -132,6 +146,21 @@ export function ShopCardTile({ card, qty = 0, onAdd, onSetQty, onOpen }: ShopCar
             >
               Детальніше
               <Icon name="arrow-right" size={14} />
+            </button>
+          )}
+
+          {/* Правка — те саме місце, інша дія й інший, хто її бачить. Клас
+              узятий той самий: це та сама кнопка за роллю, і друга назва
+              правила в CSS означала б друге правило для тієї ж кнопки. */}
+          {onEdit && (
+            <button
+              type="button"
+              className="shop-card-details"
+              onClick={() => onEdit(card.id)}
+              aria-label={`Редагувати: ${card.title}`}
+            >
+              <Icon name="edit" size={14} />
+              Редагувати
             </button>
           )}
         </div>

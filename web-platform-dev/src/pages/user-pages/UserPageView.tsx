@@ -44,7 +44,7 @@ import { PageRenderer } from "@wwwuabot/ui/PageRenderer";
 import { registerAllBlocks } from "@wwwuabot/ui/blocks";
 import { useDialog } from "@wwwuabot/ui/dialog";
 import { productCards } from "@wwwuabot/shared/shop";
-import { PAGES_PATH, userPageEditPath } from "@/app/routes";
+import { PAGES_PATH, shopProductEditPath, userPageEditPath } from "@/app/routes";
 import { ShopPanel } from "@/pages/shop/ShopPanel";
 import { useShopProducts } from "@/pages/shop/useShopProducts";
 import { pagesApi } from "@/shared/api/pages.api";
@@ -275,6 +275,13 @@ export function UserPageView(): ReactElement {
               // Чернетки відсіює `productCards`, тож власник бачить рівно те,
               // що побачить покупець (docs/SHOPS.md §3).
               shopCards: shopId === null ? undefined : productCards(shop.products, shop.media),
+              // Плитка товару веде в правку цього товару. Без цієї дії сітка на
+              // власній сторінці виглядала як макет: продавець бачив свої
+              // товари, тап по них нічого не робив, і фото не було де змінити.
+              shopEditProduct:
+                shopId === null
+                  ? undefined
+                  : (productId: number) => void navigate(shopProductEditPath(page.id, productId)),
             }}
             className="page-layout"
           />
