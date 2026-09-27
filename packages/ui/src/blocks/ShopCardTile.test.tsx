@@ -38,11 +38,24 @@ function html(props: Partial<Parameters<typeof ShopCardTile>[0]> = {}): string {
   return renderToStaticMarkup(<ShopCardTile card={CARD} {...props} />);
 }
 
+/**
+ * Пропси кнопки фото — рівно ті, які тут читають: клас, підпис для скрінрідера
+ * і дотик. Тип мусить бути названий: `ReactElement` без параметра дає `unknown`,
+ * і помилка в тесті читалась би як помилка в плитці.
+ */
+interface ButtonProps {
+  className?: string;
+  children?: ReactNode;
+  onClick?: () => void;
+  "aria-label"?: string;
+}
+
 /** Елемент за класом — обходом дерева React, без DOM. */
-function findByClass(node: ReactNode, className: string): ReactElement | null {
+function findByClass(node: ReactNode, className: string): ReactElement<ButtonProps> | null {
   if (!isValidElement(node)) return null;
-  const props = node.props as { className?: string; children?: ReactNode };
-  if ((props.className ?? "").split(/\s+/).includes(className)) return node;
+  const props = node.props as ButtonProps;
+  if ((props.className ?? "").split(/\s+/).includes(className))
+    return node as ReactElement<ButtonProps>;
   for (const child of Children.toArray(props.children)) {
     const found = findByClass(child, className);
     if (found) return found;
@@ -56,14 +69,12 @@ describe("ShopCardTile", () => {
     const tile = ShopCardTile({ card: CARD, onOpen: (id) => opened.push(id) });
 
     const button = findByClass(tile, "shop-card-media--open");
-    expect(button).not.toBeNull();
     expect(button?.type).toBe("button");
     expect(button?.props["aria-label"]).toBe(`Детальніше: ${CARD.title}`);
 
     // Дотик по фото веде в товар **самого** фото, а не в сусідній: увесь сенс
     // правки в тому, що палець іде в зображення, а не в підпис під ним.
-    const onClick = button?.props.onClick as (() => void) | undefined;
-    onClick?.();
+    button?.props.onClick?.();
     expect(opened).toEqual([CARD.id]);
   });
 
