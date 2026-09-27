@@ -13,6 +13,13 @@
  * **Кількість тут, а не в кошику.** Скільки взяти — питання про товар, і саме
  * тому лічильник стоїть поруч із ціною; у кошику кількість лише правлять.
  *
+ * **Порядок картки — це порядок рішення.** Спершу те, за чим товар вибирають
+ * (фото, ціна, характеристики), далі те, що читають за бажанням (опис
+ * розділами), і в кінці дія. Тому характеристики стоять **під ціною**, а не в
+ * кінці: у списку внизу вони відповідали на те саме питання, тільки після
+ * п'яти екранів тексту. Смуга покупки при цьому липне до низу аркуша —
+ * до кнопки доходять, не дочитуючи опис.
+ *
  * @module web-platform-dev/src/pages/shop/store
  */
 
@@ -46,6 +53,9 @@ export function ShopProductModal({
 }: ShopProductModalProps): ReactElement {
   const photos = productPhotos(product, media);
   const detail = detailSections(product.description);
+  // Перший розділ **із назвою** їде розкритим: вступ читають завжди, а далі
+  // покупець розкриває те, за чим прийшов.
+  const firstTitled = detail.findIndex((section) => section.title !== "");
   const [picked, setPicked] = useState(0);
   const [qty, setQty] = useState(1);
 
@@ -93,30 +103,9 @@ export function ShopProductModal({
             {product.summary && <span className="shop-detail-summary">{product.summary}</span>}
           </div>
 
-          {/* Опис описаний як текст із заголовками й пунктами — розділи тут
-              малює розмітка (див. `detailSections`). */}
-          {detail.length > 0 && (
-            <div className="shop-modal-desc shop-detail-sections">
-              {detail.map((section, index) => (
-                <div className="shop-detail-section" key={`${index}-${section.title}`}>
-                  {section.title && <h4 className="shop-detail-heading">{section.title}</h4>}
-                  {section.paragraphs.map((paragraph) => (
-                    <p className="shop-detail-text" key={paragraph}>
-                      {paragraph}
-                    </p>
-                  ))}
-                  {section.items.length > 0 && (
-                    <ul className="shop-detail-list">
-                      {section.items.map((item) => (
-                        <li key={item}>{item}</li>
-                      ))}
-                    </ul>
-                  )}
-                </div>
-              ))}
-            </div>
-          )}
-
+          {/* Характеристики — одразу за ціною, а не в кінці картки: за ними
+              покупець і вирішує, а опис тоді не мусить казати те саме
+              другими словами (він і не каже — §3 `docs/SHOPS.md`). */}
           {product.attributes.length > 0 && (
             <dl className="shop-detail-attrs">
               {product.attributes.map((attribute) => {
@@ -143,37 +132,93 @@ export function ShopProductModal({
             </dl>
           )}
 
+          {/* Опис описаний як текст із заголовками й пунктами — розділи тут
+              малює розмітка (див. `detailSections`). Розділ із назвою
+              згортається: опис на п'ять екранів читають не цілком, а вступ і
+              перший розділ лишаються перед очима. */}
+          {detail.length > 0 && (
+            <div className="shop-modal-desc shop-detail-sections">
+              {detail.map((section, index) => {
+                const body = (
+                  <>
+                    {section.paragraphs.map((paragraph) => (
+                      <p className="shop-detail-text" key={paragraph}>
+                        {paragraph}
+                      </p>
+                    ))}
+                    {section.items.length > 0 && (
+                      <ul className="shop-detail-list">
+                        {section.items.map((item) => (
+                          <li key={item}>{item}</li>
+                        ))}
+                      </ul>
+                    )}
+                  </>
+                );
+
+                // Розділ без назви — вступ: у ньому згортати нічого.
+                return section.title ? (
+                  <details
+                    className="shop-detail-section"
+                    key={`${index}-${section.title}`}
+                    open={index === firstTitled}
+                  >
+                    <summary className="shop-detail-heading">
+                      {section.title}
+                      <span className="shop-detail-chevron">
+                        <Icon name="chevron-down" size={16} />
+                      </span>
+                    </summary>
+                    {body}
+                  </details>
+                ) : (
+                  <div className="shop-detail-section" key={`${index}-${section.title}`}>
+                    {body}
+                  </div>
+                );
+              })}
+            </div>
+          )}
+
+          {/* Оплата — не тут, і це не недогляд: гроші лишаються поза
+              платформою, тож обіцяти їх формою не можна (§9). Примітка стоїть
+              **над** липкою смугою, у потоці: прочитати її треба до дотику, а
+              в самій смузі вона забрала б третину екрана. */}
+          <p className="wb-text-muted shop-note shop-detail-note">
+            Оплата — домовленість із продавцем: платформа замовлення зберігає, а гроші не бере.
+          </p>
+
+          {/* Смуга покупки липне до низу аркуша: до кнопки доходять, не
+              дочитуючи опис (див. `.shop-detail-buy`). */}
           <div className="shop-detail-buy">
-            <div className="shop-qty">
-              <button
-                type="button"
-                className="shop-qty-btn"
-                onClick={() => setQty((value) => Math.max(1, value - 1))}
-                aria-label="Менше"
-              >
-                <Icon name="minus" size={16} />
-              </button>
-              <span className="shop-qty-value">{qty}</span>
-              <button
-                type="button"
-                className="shop-qty-btn"
-                onClick={() => setQty((value) => Math.min(ORDER_QTY_MAX, value + 1))}
-                aria-label="Більше"
-              >
-                <Icon name="plus" size={16} />
-              </button>
+            <div className="shop-detail-buy-row">
+              <span className="shop-detail-buy-price">{productPriceLabel(product.price)}</span>
+
+              <div className="shop-qty">
+                <button
+                  type="button"
+                  className="shop-qty-btn"
+                  onClick={() => setQty((value) => Math.max(1, value - 1))}
+                  aria-label="Менше"
+                >
+                  <Icon name="minus" size={16} />
+                </button>
+                <span className="shop-qty-value">{qty}</span>
+                <button
+                  type="button"
+                  className="shop-qty-btn"
+                  onClick={() => setQty((value) => Math.min(ORDER_QTY_MAX, value + 1))}
+                  aria-label="Більше"
+                >
+                  <Icon name="plus" size={16} />
+                </button>
+              </div>
             </div>
 
             <button type="button" className="wb-btn wb-btn-primary" onClick={() => onAdd(qty)}>
-              <Icon name="list" size={16} />
+              <Icon name="cart" size={16} />
               Додати в кошик
             </button>
-
-            {/* Оплата — не тут, і це не недогляд: гроші лишаються поза
-                платформою, тож обіцяти їх формою не можна (§9). */}
-            <p className="wb-text-muted shop-note shop-detail-note">
-              Оплата — домовленість із продавцем: платформа замовлення зберігає, а гроші не бере.
-            </p>
           </div>
         </div>
       }

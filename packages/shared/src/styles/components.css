@@ -306,9 +306,15 @@
   flex-shrink: 0;
 }
 
+/* Назва поверхні мусить уміти **звужуватись**: у рядку з нею стоїть кнопка
+   виходу, і назва без `min-width: 0` тримала б свою найдовшу словоформу —
+   довга назва товару («Сердиті коти — 20 розмальовок») підлазила б під ✕ або
+   виносила його за край аркуша. */
 .wb-modal-title {
+  min-width: 0;
   font-size: var(--text-md);
   font-weight: var(--weight-semibold);
+  overflow-wrap: break-word;
 }
 
 .wb-modal-close {
