@@ -159,9 +159,9 @@ export function ShopStore({
 
   return (
     <div className={`shop-store${cart.count > 0 ? " shop-store--cart-open" : ""}`}>
-      {/* Клас `--cover` каже CSS, що шапку малює **знімок**: тоді підпис
-          переїжджає на плиту під собою, а не на затемнення над банером
-          (`.shop-store-hero--cover` — `shop-storefront.css`). CSS не ставить
+      {/* Клас `--cover` каже CSS, що шапку малює **знімок**: тоді під підписом
+          лягає м'яке затемнення без форми (`.shop-store-hero--cover` —
+          `shop-storefront.css`), а сам знімок лишається повним. CSS не ставить
           цей клас сам: `:has()` довелося б чекати від рушія Telegram. */}
       <header className={heroClass(photoUrl)}>
         {/* Обкладинка — **тло шапки**, а не картинка в ній: із назвою поверх

@@ -19,8 +19,8 @@ import {
   detailSections,
   detailValues,
   filterCards,
-  heroClass,
   foundLabel,
+  heroClass,
   plural,
   sectionIcon,
   storeSections,
@@ -258,11 +258,11 @@ describe("розділи тексту про магазин", () => {
 });
 
 describe("клас шапки вітрини", () => {
-  it("зі знімком шапка несе `--cover`: підпис ляже на плиту, а не на затемнення", () => {
+  it("зі знімком шапка несе `--cover`: під підписом ляже м'яке затемнення", () => {
     expect(heroClass("/api/shop/media/cover.png")).toBe("shop-store-hero shop-store-hero--cover");
   });
 
-  it("без знімка плити немає: підпис і так стоїть на темному тлі шапки", () => {
+  it("без знімка градієнта немає: підпис і так стоїть на темному тлі шапки", () => {
     expect(heroClass(null)).toBe("shop-store-hero");
   });
 });
