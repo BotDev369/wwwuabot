@@ -205,8 +205,12 @@ export function activeOrderStatuses(statuses: readonly OrderStatus[]): OrderStat
  * зі списку вибору, і записати його означало б відкрити з екрана те, що щойно
  * закрили. Це межа саме для **запису**: рядок, який уже лежить у базі з таким
  * ключем, читається далі (`orderStatusLabel` його назве).
+ *
+ * Сторож **звужує тип** (`key is string`), і це не прикраса: вхід приходить із
+ * тіла запиту як `unknown`, тож без звуження кожен, хто пише статус, робив би
+ * те саме приведення вручну — або, гірше, писав би в базу `unknown`.
  */
-export function canSetOrderStatus(key: unknown, statuses: readonly OrderStatus[]): boolean {
+export function canSetOrderStatus(key: unknown, statuses: readonly OrderStatus[]): key is string {
   return typeof key === "string" && statuses.some((s) => s.key === key && s.isActive);
 }
 

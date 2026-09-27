@@ -14,13 +14,17 @@ import {
   ORDER_ITEMS_MAX,
   ORDER_NOTICE_MAX,
   ORDER_QTY_MAX,
+  ORDER_SELLER_NOTE_MAX,
   cleanOrderItems,
+  mergeOrderItems,
   orderContactFields,
   orderNeedsShipping,
   orderNoticeText,
   sanitizeOrderContact,
+  sanitizeSellerNote,
   validateOrderDraft,
 } from "./orders";
+import type { OrderItem } from "./types";
 import type { ShopOrder } from "./types";
 
 describe("що питаємо в покупця", () => {
@@ -123,6 +127,7 @@ describe("позначка платформи в розмові", () => {
     status: "new",
     contact: { name: "Олена", phone: "067", address: "Київ" },
     note: "передзвоніть",
+    sellerNote: "",
     items: [
       { productId: 5, title: "Еспресо-суміш", price: "320 ₴", kind: "physical", qty: 2 },
       { productId: 6, title: "Рецепти", price: "150 ₴", kind: "digital", qty: 1 },
@@ -187,5 +192,87 @@ describe("чернетка замовлення", () => {
       contact: { name: "Олена", phone: "067", address: "Київ" },
       note: "передзвоніть після 18:00",
     });
+  });
+});
+
+describe("коментар продавця", () => {
+  it("краї притиснуті, а непотрібний текст відрізається межею", () => {
+    expect(sanitizeSellerNote("  оплата на картку  ")).toBe("оплата на картку");
+    expect(sanitizeSellerNote("я".repeat(ORDER_SELLER_NOTE_MAX + 50))).toHaveLength(
+      ORDER_SELLER_NOTE_MAX,
+    );
+  });
+
+  it("порожній коментар — законне «прибрати свій коментар», а не помилка", () => {
+    expect(sanitizeSellerNote("   ")).toBe("");
+    expect(sanitizeSellerNote(undefined)).toBe("");
+  });
+});
+
+describe("правка позицій продавцем", () => {
+  const placed: OrderItem[] = [
+    { productId: 5, title: "Рецепти", price: "150 ₴", kind: "digital", qty: 2 },
+    { productId: 6, title: "Чашка", price: "480 ₴", kind: "physical", qty: 1 },
+  ];
+
+  it("кількість міняється, а знімок лишається тим, що був на момент покупки", () => {
+    const merged = mergeOrderItems(placed, [{ productId: 5, qty: 7 }]);
+
+    expect(merged).toEqual([{ ...placed[0], qty: 7 }]);
+    expect(merged[0].price).toBe("150 ₴");
+  });
+
+  it("кого в списку немає, того в замовленні більше немає", () => {
+    expect(
+      mergeOrderItems(placed, [{ productId: 6, qty: 1 }]).map((item) => item.productId),
+    ).toEqual([6]);
+  });
+
+  it("нова позиція додається тим знімком, який дав сервер, а не клієнт", () => {
+    const merged = mergeOrderItems(
+      placed,
+      [{ productId: 5, qty: 2 }],
+      [{ productId: 9, title: "Кава", price: "320 ₴", kind: "physical", qty: 1 }],
+    );
+
+    expect(merged[merged.length - 1]).toEqual({
+      productId: 9,
+      title: "Кава",
+      price: "320 ₴",
+      kind: "physical",
+      qty: 1,
+    });
+  });
+
+  it("той самий товар двічі — це кількість, а не другий рядок (те саме, що в кошику)", () => {
+    const merged = mergeOrderItems(
+      placed,
+      [{ productId: 5, qty: 2 }],
+      [{ productId: 5, title: "Рецепти", price: "150 ₴", kind: "digital", qty: 3 }],
+    );
+
+    expect(merged).toHaveLength(1);
+    expect(merged[0].qty).toBe(5);
+  });
+
+  it("межа кількості та сама, що в кошика покупця", () => {
+    const merged = mergeOrderItems(
+      placed,
+      [{ productId: 5, qty: ORDER_QTY_MAX }],
+      [{ productId: 5, title: "Рецепти", price: "150 ₴", kind: "digital", qty: 5 }],
+    );
+
+    expect(merged[0].qty).toBe(ORDER_QTY_MAX);
+  });
+
+  it("порожній результат — це нуль позицій, за яким стоїть відмова сервісу", () => {
+    expect(mergeOrderItems(placed, [])).toEqual([]);
+  });
+
+  it("рядок без номера товару лишається: адресувати його нічим", () => {
+    const legacy: OrderItem[] = [
+      { productId: null, title: "Стара позиція", price: "", kind: "", qty: 1 },
+    ];
+    expect(mergeOrderItems(legacy, []).map((item) => item.title)).toEqual(["Стара позиція"]);
   });
 });

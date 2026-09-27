@@ -56,6 +56,7 @@ import { SpacePage } from "@/pages/SpacePage";
 import { SpaceUserPage } from "@/pages/SpaceUserPage";
 import { PageCreatePage } from "@/pages/user-pages/PageCreatePage";
 import { PageEditPage } from "@/pages/user-pages/PageEditPage";
+import { ShopOrderPage } from "@/pages/shop/ShopOrderPage";
 import { ShopOrdersPage } from "@/pages/shop/ShopOrdersPage";
 import { ShopProductForm } from "@/pages/shop/ShopProductForm";
 import { ShopProductsPage } from "@/pages/shop/ShopProductsPage";
@@ -132,6 +133,13 @@ export const router = createBrowserRouter([
       // Замовлення магазину — там само, де товари: `shop_orders` належить тому
       // самому рядку `scenarios`. Сегмент свій, бо це робота з людиною, а не
       // каталог (`pages/shop/ShopOrdersPage`).
+      // Одне замовлення — довший шлях стоїть перед списком, інакше `:id`
+      // з'їв би номер замовлення як сторінку, і замість правки відкрилась би
+      // черга (та сама причина, що в `products/new`).
+      {
+        path: `${PAGES_ROUTE}/:id/${SHOP_ORDERS_ROUTE}/:orderId`,
+        element: <ShopOrderPage />,
+      },
       { path: `${PAGES_ROUTE}/:id/${SHOP_ORDERS_ROUTE}`, element: <ShopOrdersPage /> },
       { path: `${PAGES_ROUTE}/:id/${PAGE_EDIT_ROUTE}`, element: <PageEditPage /> },
       { path: `${PAGES_ROUTE}/:id`, element: <UserPageView /> },

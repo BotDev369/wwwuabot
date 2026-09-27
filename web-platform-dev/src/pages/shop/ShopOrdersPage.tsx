@@ -11,6 +11,15 @@
  * приходять із сервера (типові з правками магазину), тож кнопки показують
  * **слова магазину**, а не перелік у клієнті (§7).
  *
+ * **Чергу ведуть, а не читають.** Зверху стоять два вибори — **статус** і
+ * **порядок** — і обидва відкриваються **поверхнею** зі списком (правило 4
+ * дизайн-системи: вибір не випадає списком під кнопкою). Число в пункті — це
+ * скільки замовлень у цьому статусі: саме за ним видно, куди йти першим.
+ *
+ * **Колір картки — стан роботи** (`orderStatusTone`), і він той самий, що на
+ * екрані одного замовлення: колір належить ключу статусу, а не слову, тож
+ * перейменування «Нове» → «Прийнято» фарбу не міняє (§7).
+ *
  * **Позиції беруться зі знімка замовлення.** Назва й ціна в замовленні
  * скопійовані на момент покупки (§6): правка товару заднім числом не має
  * переписувати те, що людина замовила.
@@ -18,15 +27,31 @@
  * @module web-platform-dev/src/pages/shop
  */
 
-import type { ReactElement } from "react";
+import { useMemo, useState, type ReactElement } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { Icon } from "@wwwuabot/shared";
+import { messagesPeerPath } from "@wwwuabot/shared/messages";
 import type { ShopOrder } from "@wwwuabot/shared/shop";
+import { MenuModal, type MenuItem } from "@wwwuabot/ui/menu";
 import { useDialog } from "@wwwuabot/ui/dialog";
-import { userPagePath } from "@/app/routes";
+import { shopOrderPath, userPagePath } from "@/app/routes";
 import { PageState } from "@/pages/user-pages/PageState";
 import { useUserPage } from "@/pages/user-pages/useUserPage";
-import { orderContactLines, orderHint, orderItemsLine, shopOrdersHint } from "./order-view";
+import {
+  ORDER_FILTER_ALL,
+  ORDER_SORTS,
+  filterOrders,
+  orderContactLines,
+  orderFilterLabel,
+  orderFilterOptions,
+  orderHint,
+  orderItemsLine,
+  orderSortLabel,
+  orderStatusTone,
+  shopOrdersHint,
+  sortOrders,
+  type OrderSort,
+} from "./order-view";
 import { useShopOrders } from "./useShopOrders";
 
 export function ShopOrdersPage(): ReactElement {
@@ -36,12 +61,50 @@ export function ShopOrdersPage(): ReactElement {
   const { page, loading, error } = useUserPage(id);
   const shop = useShopOrders(page?.id ?? null);
 
+  // Відбір і порядок живуть **у стані екрана**, а не в адресі: адреса тут — це
+  // «які замовлення відкрити», а не «як їх показати» (AGENTS.md §7).
+  const [status, setStatus] = useState<string | null>(null);
+  const [sort, setSort] = useState<OrderSort>("new");
+  const [filterOpen, setFilterOpen] = useState(false);
+  const [sortOpen, setSortOpen] = useState(false);
+
   const isShop = page?.template === "shop";
 
-  async function change(order: ShopOrder, status: string): Promise<void> {
-    if (status === order.status) return;
+  const options = useMemo(
+    () => orderFilterOptions(shop.orders, shop.statuses),
+    [shop.orders, shop.statuses],
+  );
+  const shown = useMemo(
+    () => sortOrders(filterOrders(shop.orders, status), sort, shop.statuses),
+    [shop.orders, status, sort, shop.statuses],
+  );
+
+  // Пункт вибору — **підпис разом із числом**: «Нове · 3». Число стоїть у
+  // підписі, а не стовпцем, бо правий край пункту займає галочка вибраного.
+  const filterItems: MenuItem[] = options.map((option) => ({
+    key: option.key ?? ORDER_FILTER_ALL,
+    label: `${option.label} · ${option.count}`,
+    selected: option.key === status,
+    onSelect: () => {
+      setStatus(option.key);
+      setFilterOpen(false);
+    },
+  }));
+
+  const sortItems: MenuItem[] = ORDER_SORTS.map((key) => ({
+    key,
+    label: orderSortLabel(key),
+    selected: key === sort,
+    onSelect: () => {
+      setSort(key);
+      setSortOpen(false);
+    },
+  }));
+
+  async function change(order: ShopOrder, next: string): Promise<void> {
+    if (next === order.status) return;
     try {
-      await shop.setStatus(order.id, status);
+      await shop.setStatus(order.id, next);
     } catch (e: unknown) {
       await dialog.alert(e instanceof Error ? e.message : "Не вдалося змінити статус", {
         title: "Помилка",
@@ -87,11 +150,44 @@ export function ShopOrdersPage(): ReactElement {
       ) : (
         <>
           <p className="wb-text-muted shop-note">
-            {shop.error ?? shopOrdersHint(shop.loading, shop.orders.length)}
+            {shop.error ?? shopOrdersHint(shop.loading, shown.length, shop.orders.length)}
           </p>
 
-          {shop.orders.map((order) => (
-            <article className="shop-order" key={order.id}>
+          {/* Керування чергою — **лише коли є що показувати**: два вибори над
+              порожнім списком були б керуванням нічим. */}
+          {shop.orders.length > 0 && (
+            <div className="shop-orders-bar">
+              <button
+                type="button"
+                className="shop-pick"
+                aria-haspopup="dialog"
+                aria-label={`Статус: ${orderFilterLabel(status, options)}`}
+                onClick={() => setFilterOpen(true)}
+              >
+                <Icon name="filter" size={16} className="shop-pick-icon" />
+                <span className="shop-pick-label">{orderFilterLabel(status, options)}</span>
+                <Icon name="chevron-down" size={16} className="shop-pick-icon" />
+              </button>
+
+              <button
+                type="button"
+                className="shop-pick"
+                aria-haspopup="dialog"
+                aria-label={`Порядок: ${orderSortLabel(sort)}`}
+                onClick={() => setSortOpen(true)}
+              >
+                <Icon name="sort" size={16} className="shop-pick-icon" />
+                <span className="shop-pick-label">{orderSortLabel(sort)}</span>
+                <Icon name="chevron-down" size={16} className="shop-pick-icon" />
+              </button>
+            </div>
+          )}
+
+          {shown.map((order) => (
+            <article
+              className={`shop-order shop-order--${orderStatusTone(order.status, shop.statuses)}`}
+              key={order.id}
+            >
               <div className="shop-order-head">
                 <span className="shop-order-id">№{order.id}</span>
                 <span className="shop-order-when">{order.createdAt}</span>
@@ -108,30 +204,86 @@ export function ShopOrdersPage(): ReactElement {
 
               {order.note && <p className="shop-order-note">{order.note}</p>}
 
+              {/* Власний коментар видно в самій картці: саме ним продавець
+                  згадує, про що домовився, і шукати його в глибині екрана
+                  означало б не мати його в черзі взагалі. */}
+              {order.sellerNote && (
+                <p className="shop-order-mine">
+                  <Icon name="edit" size={14} />
+                  {order.sellerNote}
+                </p>
+              )}
+
               {/* Кнопки — самі статуси магазину: увімкнені й у тому порядку, у
                   якому їх віддав сервер (стан — підсвічена поточна). */}
               <div className="shop-order-statuses">
                 {shop.statuses
-                  .filter((status) => status.isActive)
-                  .map((status) => (
+                  .filter((item) => item.isActive || item.key === order.status)
+                  .map((item) => (
                     <button
-                      key={status.key}
+                      key={item.key}
                       type="button"
                       className={
-                        status.key === order.status
+                        item.key === order.status
                           ? "shop-status shop-status--current"
                           : "shop-status"
                       }
-                      aria-current={status.key === order.status}
-                      onClick={() => void change(order, status.key)}
+                      aria-current={item.key === order.status}
+                      onClick={() => void change(order, item.key)}
                     >
-                      {status.label}
+                      {item.label}
                     </button>
                   ))}
               </div>
+
+              <div className="shop-order-actions">
+                <button
+                  type="button"
+                  className="wb-btn wb-btn-secondary"
+                  onClick={() => void navigate(shopOrderPath(page.id, order.id))}
+                >
+                  <Icon name="edit" size={16} />
+                  Відкрити
+                </button>
+                <button
+                  type="button"
+                  className="wb-btn wb-btn-secondary"
+                  onClick={() => void navigate(messagesPeerPath(order.buyerId))}
+                >
+                  <Icon name="message-square" size={16} />
+                  Написати
+                </button>
+              </div>
             </article>
           ))}
+
+          {/* Порожній список під відбором — це **не** «немає замовлень»: сказати
+              це тим самим словом означало б збрехати про магазин. */}
+          {!shop.loading && shop.orders.length > 0 && shown.length === 0 && (
+            <p className="wb-text-muted shop-note">
+              У статусі «{orderFilterLabel(status, options)}» замовлень немає. Оберіть інший — їхня
+              черга вище.
+            </p>
+          )}
         </>
+      )}
+
+      {filterOpen && (
+        <MenuModal
+          title="Статус"
+          header={<p className="wb-menu-hint">Показати замовлення одного статусу</p>}
+          items={filterItems}
+          onClose={() => setFilterOpen(false)}
+        />
+      )}
+
+      {sortOpen && (
+        <MenuModal
+          title="Порядок"
+          header={<p className="wb-menu-hint">Як розкласти чергу</p>}
+          items={sortItems}
+          onClose={() => setSortOpen(false)}
+        />
       )}
     </div>
   );

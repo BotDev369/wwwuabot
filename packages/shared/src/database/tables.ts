@@ -296,7 +296,7 @@ export const TABLES = {
     name: "shop_orders",
     owner: "api-dev",
     purpose:
-      "Замовлення магазину: покупець, ключ статусу, контакт покупця JSON-ом і нотатка. Позиції — знімком у `shop_order_items`.",
+      "Замовлення магазину: покупець, ключ статусу, контакт покупця JSON-ом, нотатка покупця й окремо коментар продавця. Позиції — знімком у `shop_order_items`.",
     create: `CREATE TABLE IF NOT EXISTS shop_orders (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         shop_id INTEGER NOT NULL,
@@ -304,6 +304,7 @@ export const TABLES = {
         status TEXT NOT NULL DEFAULT 'new',
         contact TEXT NOT NULL DEFAULT '{}',
         note TEXT NOT NULL DEFAULT '',
+        seller_note TEXT NOT NULL DEFAULT '',
         created_at TEXT NOT NULL DEFAULT (datetime('now')),
         updated_at TEXT NOT NULL DEFAULT (datetime('now'))
       )`,

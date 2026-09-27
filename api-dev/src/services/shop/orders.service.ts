@@ -1,5 +1,5 @@
 /**
- * Замовлення магазину: прийом від покупця, читання з обох боків і статус.
+ * Замовлення магазину: прийом від покупця, читання з обох боків, правка й статус.
  *
  * **Ціну й назву бере база, а не покупець.** Клієнт надсилає лише **номери
  * товарів і кількості** (`cleanOrderItems`), а знімок позиції складається тут із
@@ -19,88 +19,40 @@
  * написав би в порожнечу, а адмін не дізнався б про замовлення, яке сам же
  * обіцяв відправити.
  *
+ * **Продавець править замовлення, але не знімок** (§6). Кількість, склад
+ * позицій, контакт і власний коментар міняє `update`; назва й ціна позиції,
+ * яка вже в замовленні, лишаються **ті, що були на момент покупки** — інакше
+ * правка ціни заднім числом переписала б історію. Знімок нової позиції, як і в
+ * покупця, бере **база**.
+ *
+ * **Рядки бази, позначка в розмові й товари за номерами живуть не тут**
+ * (`orders-rows.ts`, `orders-notice.ts`, `products.service.ts`): цей файл — самі
+ * правила, і жодного `snake_case` він не бачить (`AGENTS.md` §3).
+ *
  * @module api-dev/src/services/shop/orders.service
  */
 
 import type { Env } from "../../shared/types";
 import { formatSqliteDatetime } from "@wwwuabot/shared/utils/datetime";
-import { SYSTEM_SENDER_ID, messagePreview } from "@wwwuabot/shared/messages";
 import {
   DEFAULT_ORDER_STATUSES,
   EMPTY_ORDER_CART,
+  ORDER_NEEDS_ITEMS,
   canSetOrderStatus,
   cleanOrderItems,
+  mergeOrderItems,
   orderNeedsShipping,
-  orderNoticeText,
-  resolveOrderStatuses,
+  sanitizeOrderContact,
+  sanitizeSellerNote,
   validateOrderDraft,
-  type OrderContact,
   type OrderItem,
   type OrderStatus,
   type ShopOrder,
-  type ShopProduct,
 } from "@wwwuabot/shared/shop";
-import { apiLog } from "../../shared/logger";
-import { ensureConversation } from "../messages/conversations";
-import { readJsonColumn } from "./json";
-import { PRODUCT_COLUMNS, toProduct, type ProductRow } from "./products.service";
-import {
-  ensureShopSchema,
-  managedShopId,
-  publicShopBySlug,
-  shopStaffIds,
-  type ShopScope,
-} from "./shops";
-
-/** Стеля списку замовлень у будь-який бік: це робоча черга, а не архів. */
-const ORDERS_LIMIT = 200;
-
-const ORDER_COLUMNS = "id, shop_id, buyer_id, status, contact, note, created_at, updated_at";
-const ITEM_COLUMNS = "id, order_id, product_id, title, price, kind, qty";
-
-interface OrderRow {
-  id: number;
-  shop_id: number;
-  buyer_id: number;
-  status: string | null;
-  contact: string | null;
-  note: string | null;
-  created_at: string | null;
-  updated_at: string | null;
-}
-
-interface ItemRow {
-  id: number;
-  order_id: number;
-  product_id: number | null;
-  title: string | null;
-  price: string | null;
-  kind: string | null;
-  qty: number | null;
-}
-
-/** Контакт із JSON-колонки: рядки лишаються, будь-що інше відкидається. */
-function contactOf(raw: unknown): OrderContact {
-  const value = readJsonColumn(raw);
-  if (typeof value !== "object" || value === null) return {};
-
-  const contact: Record<string, string> = {};
-  for (const [key, entry] of Object.entries(value as Record<string, unknown>)) {
-    if (typeof entry === "string") contact[key] = entry;
-  }
-  return contact;
-}
-
-function toItem(row: ItemRow): OrderItem {
-  return {
-    productId: row.product_id === null ? null : Number(row.product_id),
-    title: row.title ?? "",
-    price: row.price ?? "",
-    // Вид — знімок: невідоме значення читається як є, а не як «фізичний».
-    kind: row.kind ?? "",
-    qty: Number(row.qty ?? 1),
-  };
-}
+import { activeProductsByIds, ownProductsByIds } from "./product-rows";
+import { notifyOrder } from "./orders-notice";
+import { itemStatements, readOrder, readOrderStatuses, readOrders } from "./orders-rows";
+import { ensureShopSchema, managedShopId, publicShopBySlug } from "./shops";
 
 /** Що сталося з прийомом замовлення: контролер перекладає це в код відповіді. */
 export type OrderPlaceOutcome =
@@ -108,11 +60,14 @@ export type OrderPlaceOutcome =
   | { kind: "not_found" }
   | { kind: "rejected"; message: string };
 
-/** Що сталося зі зміною статусу. */
-export type OrderStatusOutcome =
+/** Що сталося зі зміною замовлення: статус, контакт, позиції чи коментар. */
+export type OrderUpdateOutcome =
   | { kind: "saved"; order: ShopOrder }
   | { kind: "not_found" }
   | { kind: "rejected"; message: string };
+
+/** Що сталося з прибиранням замовлення. */
+export type OrderRemoveOutcome = { kind: "removed" } | { kind: "not_found" };
 
 export class ShopOrdersService {
   constructor(private env: Env) {}
@@ -135,7 +90,8 @@ export class ShopOrdersService {
     const requested = cleanOrderItems(source.items);
     if (requested.length === 0) return { kind: "rejected", message: EMPTY_ORDER_CART };
 
-    const products = await this.products(
+    const products = await activeProductsByIds(
+      this.env.DB,
       shop.id,
       requested.map((item) => item.productId),
     );
@@ -145,22 +101,12 @@ export class ShopOrdersService {
 
     // Поля контакту залежать від **кошика**, тож виду товару тут мало: змішане
     // замовлення питає адресу, бо фізичній частині її нікуди подіти.
-    const byId = new Map(products.map((product) => [product.id, product]));
     const needsShipping = orderNeedsShipping(products.map((product) => product.kind));
 
     const validated = validateOrderDraft(raw, needsShipping);
     if (!validated.ok) return { kind: "rejected", message: validated.message };
 
-    const items: OrderItem[] = requested.map((item) => {
-      const product = byId.get(item.productId);
-      return {
-        productId: item.productId,
-        title: product?.title ?? "",
-        price: product?.price ?? "",
-        kind: product?.kind ?? "",
-        qty: item.qty,
-      };
-    });
+    const items = this.snapshots(requested, products);
 
     // Типовий статус береться зі списку, а не пишеться рядком: те саме правило
     // читає екран продавця (`DEFAULT_ORDER_STATUSES`).
@@ -185,16 +131,9 @@ export class ShopOrdersService {
     const orderId = Number(inserted.meta?.last_row_id ?? 0);
     if (!orderId) return { kind: "rejected", message: "Не вдалося зберегти замовлення" };
 
-    // Позиції — одним `batch`: частково записане замовлення (шапка без позицій)
-    // виглядало б у продавця як порожнє, і другим таким же воно вже не стало б.
-    await this.env.DB.batch(
-      items.map((item) =>
-        this.env.DB.prepare(
-          `INSERT INTO shop_order_items (order_id, product_id, title, price, kind, qty)
-             VALUES (?, ?, ?, ?, ?, ?)`,
-        ).bind(orderId, item.productId, item.title, item.price, item.kind, item.qty),
-      ),
-    );
+    // Позиції — одним `batch`: частково записане замовлення виглядало б у
+    // продавця як інше, і другим таким же воно вже не стало б (`orders-rows`).
+    await this.env.DB.batch(itemStatements(this.env.DB, orderId, items));
 
     const order: ShopOrder = {
       id: orderId,
@@ -203,12 +142,15 @@ export class ShopOrdersService {
       status,
       contact: validated.value.contact,
       note: validated.value.note,
+      // У нового замовлення коментар продавця порожній — його пише лише
+      // продавець, і лише після того, як замовлення прийняли.
+      sellerNote: "",
       items,
       createdAt: now,
       updatedAt: now,
     };
 
-    await this.notify(shop, buyerId, order);
+    await notifyOrder(this.env.DB, shop, buyerId, order);
 
     return { kind: "placed", order };
   }
@@ -218,7 +160,7 @@ export class ShopOrdersService {
     await ensureShopSchema(this.env.DB);
     if ((await managedShopId(this.env.DB, shopId, userId)) === null) return null;
 
-    return await this.read("shop_id = ?", [shopId]);
+    return await readOrders(this.env.DB, "shop_id = ?", [shopId]);
   }
 
   /** Статуси магазину: типові з його правками (§7) — те, з чого вибирає екран. */
@@ -226,174 +168,171 @@ export class ShopOrdersService {
     await ensureShopSchema(this.env.DB);
     if ((await managedShopId(this.env.DB, shopId, userId)) === null) return null;
 
-    const result = await this.env.DB.prepare(
-      "SELECT key, label, stage, is_active FROM shop_order_statuses WHERE shop_id = ? ORDER BY id",
-    )
-      .bind(shopId)
-      .all<{ key: string; label: string | null; stage: string | null; is_active: number | null }>();
-
-    return resolveOrderStatuses(
-      (result.results ?? []).map((row) => ({
-        key: String(row.key),
-        label: row.label,
-        stage: row.stage === "open" || row.stage === "closed" ? row.stage : null,
-        isActive: Number(row.is_active ?? 1) === 1,
-      })),
-    );
+    return await readOrderStatuses(this.env.DB, shopId);
   }
 
   /**
-   * Поставити статус замовленню свого магазину.
+   * Змінити замовлення свого магазину.
+   *
+   * **Одне тіло — на все, що міняють, і кожне поле необов'язкове.** Порожнє поле
+   * означає «не чіпати»: форма, яка про щось не питала б, не має права це
+   * стерти, а `contact` — ще й дані, за якими знайдуть покупця. Тому
+   * відсутність **усіх** полів — це відмова, а не порожній запис.
    *
    * Право на магазин перевіряємо **до** будь-якого пошуку (`managedShopId`), а
-   * ключ — проти **увімкнених** статусів цього магазину: інакше з екрана можна
-   * було б поставити те, що магазин прибрав зі списку вибору
+   * ключ статусу — проти **увімкнених** статусів цього магазину: інакше з екрана
+   * можна було б поставити те, що магазин прибрав зі списку вибору
    * (`canSetOrderStatus`).
    */
-  async setStatus(
+  async update(
     shopId: number,
     userId: number,
     orderId: number,
-    rawStatus: unknown,
-  ): Promise<OrderStatusOutcome> {
+    raw: unknown,
+  ): Promise<OrderUpdateOutcome> {
     await ensureShopSchema(this.env.DB);
     if ((await managedShopId(this.env.DB, shopId, userId)) === null) return { kind: "not_found" };
 
-    const statuses = (await this.statuses(shopId, userId)) ?? [];
-    if (!canSetOrderStatus(rawStatus, statuses)) {
-      return { kind: "rejected", message: "Такого статусу в магазині немає" };
+    const current = await readOrder(this.env.DB, shopId, orderId);
+    if (!current) return { kind: "not_found" };
+
+    const source = (typeof raw === "object" && raw !== null ? raw : {}) as Record<string, unknown>;
+    const fields = ["status", "contact", "sellerNote", "items", "add"] as const;
+    if (fields.every((field) => source[field] === undefined)) {
+      return { kind: "rejected", message: "Немає що змінювати" };
     }
 
-    const result = await this.env.DB.prepare(
-      "UPDATE shop_orders SET status = ?, updated_at = ? WHERE id = ? AND shop_id = ?",
-    )
-      .bind(rawStatus, formatSqliteDatetime(), orderId, shopId)
-      .run();
-    if ((result.meta?.changes ?? 0) === 0) return { kind: "not_found" };
+    let items = current.items;
+    let itemsTouched = false;
+    if (source.items !== undefined || source.add !== undefined) {
+      const added = await this.addedItems(shopId, source.add);
+      if (added === null)
+        return { kind: "rejected", message: "Такого товару в магазині вже немає" };
 
-    const order = await this.one(shopId, orderId);
-    return order ? { kind: "saved", order } : { kind: "not_found" };
+      // Контакт перевіряємо **після** позицій і за ними: склад полів залежить
+      // від виду товару, а вид міняється саме цією правкою.
+      const merged = mergeOrderItems(current.items, cleanOrderItems(source.items), added);
+      if (merged.length === 0) return { kind: "rejected", message: ORDER_NEEDS_ITEMS };
+      items = merged;
+      itemsTouched = true;
+    }
+
+    let contact = current.contact;
+    if (source.contact !== undefined) {
+      const checked = sanitizeOrderContact(
+        source.contact,
+        orderNeedsShipping(items.map((item) => item.kind)),
+      );
+      if (!checked.ok) return { kind: "rejected", message: checked.message };
+      contact = checked.value;
+    }
+
+    let status = current.status;
+    if (source.status !== undefined) {
+      const statuses = await readOrderStatuses(this.env.DB, shopId);
+      if (!canSetOrderStatus(source.status, statuses)) {
+        return { kind: "rejected", message: "Такого статусу в магазині немає" };
+      }
+      status = source.status;
+    }
+
+    const sellerNote =
+      source.sellerNote === undefined ? current.sellerNote : sanitizeSellerNote(source.sellerNote);
+
+    await this.env.DB.prepare(
+      `UPDATE shop_orders
+          SET status = ?, contact = ?, seller_note = ?, updated_at = ?
+        WHERE id = ? AND shop_id = ?`,
+    )
+      .bind(status, JSON.stringify(contact), sellerNote, formatSqliteDatetime(), orderId, shopId)
+      .run();
+
+    // Позиції переписуємо **лише коли їх справді чіпали**: зайвий `DELETE`+`INSERT`
+    // міняв би номери рядків там, де нічого не змінилось.
+    if (itemsTouched) {
+      await this.env.DB.batch([
+        this.env.DB.prepare("DELETE FROM shop_order_items WHERE order_id = ?").bind(orderId),
+        ...itemStatements(this.env.DB, orderId, items),
+      ]);
+    }
+
+    const saved = await readOrder(this.env.DB, shopId, orderId);
+    return saved ? { kind: "saved", order: saved } : { kind: "not_found" };
   }
 
   /**
-   * Позначка платформи в розмові покупця з продавцем (`docs/SHOPS.md` §8) — і
-   * йде вона **кожному, хто веде магазин**, а не лише власнику рядка.
+   * Прибрати замовлення зі своєї черги.
    *
-   * **Замовлення і є зв'язком**, тож окремої згоди на розмову не питаємо; читає
-   * про це `links.ts`, а не розмітка. Помилка тут не має зривати замовлення:
-   * воно вже збережене, а переписка — спосіб про нього дізнатись, не місце, де
-   * воно живе.
-   *
-   * **Розмова кожному — своя.** `conversations` описує пару **людей**, а не
-   * «сторону магазину»: спільний чат на продавця й адмінів вимагав би другої
-   * таблиці й другого правила «хто в ній є». Тому адресатів стільки, скільки
-   * тих, хто веде магазин (`shopStaffIds`), і кожен бачить покупця у своєму
-   * списку розмов.
-   *
-   * `read_at` лишається порожнім **навмисно**: саме за ним світиться бейдж
-   * непрочитаного, і це єдине, що кличе людину в продукт.
+   * **Обидва запити звужені магазином — і це не формальність.** Голий
+   * `DELETE FROM shop_order_items WHERE order_id = ?` прибрав би позиції
+   * **чужого** замовлення (номер приходить від клієнта): шапка лишилась би на
+   * місці, а робота зникла б. Тому позиції видаляються підзапитом, який спершу
+   * питає, чиє це замовлення, а сам рядок — тим самим `shop_id`.
    */
-  private async notify(shop: ShopScope, buyerId: number, order: ShopOrder): Promise<void> {
-    // Той, хто веде магазин і пробує власну вітрину, замовляє сам у себе — і
-    // розмову із собою відкривати нікому: друга сторона тут та сама людина.
-    const recipients = shopStaffIds(shop).filter((id) => id !== buyerId);
-    if (recipients.length === 0) return;
+  async remove(shopId: number, userId: number, orderId: number): Promise<OrderRemoveOutcome> {
+    await ensureShopSchema(this.env.DB);
+    if ((await managedShopId(this.env.DB, shopId, userId)) === null) return { kind: "not_found" };
 
-    const now = formatSqliteDatetime();
-    const body = orderNoticeText(order, shop.title);
+    const [, order] = await this.env.DB.batch([
+      this.env.DB.prepare(
+        `DELETE FROM shop_order_items
+          WHERE order_id IN (SELECT id FROM shop_orders WHERE id = ? AND shop_id = ?)`,
+      ).bind(orderId, shopId),
+      this.env.DB.prepare("DELETE FROM shop_orders WHERE id = ? AND shop_id = ?").bind(
+        orderId,
+        shopId,
+      ),
+    ]);
 
-    for (const recipientId of recipients) {
-      try {
-        const conversationId = await ensureConversation(this.env.DB, buyerId, recipientId);
-        if (!conversationId) continue;
-
-        await this.env.DB.batch([
-          this.env.DB.prepare(
-            `INSERT INTO messages (conversation_id, sender_id, body, created_at, read_at, is_system)
-               VALUES (?, ?, ?, ?, NULL, 1)`,
-          ).bind(conversationId, SYSTEM_SENDER_ID, body, now),
-          // Список розмов читає `last_message_*`, а не `messages` — те саме
-          // оновлення, що й у `sendMessage`.
-          this.env.DB.prepare(
-            `UPDATE conversations SET last_message_at = ?, last_message_text = ?, last_sender_id = ?,
-                    hidden_a = 0, hidden_b = 0
-               WHERE id = ?`,
-          ).bind(now, messagePreview(body), SYSTEM_SENDER_ID, conversationId),
-        ]);
-      } catch (e: unknown) {
-        apiLog.error("Shop order notice error", e);
-      }
-    }
+    return (order.meta?.changes ?? 0) === 0 ? { kind: "not_found" } : { kind: "removed" };
   }
 
-  /** Показані товари цього магазину за номерами — те, з чого складається знімок. */
-  private async products(shopId: number, ids: readonly number[]): Promise<ShopProduct[]> {
-    const placeholders = ids.map(() => "?").join(", ");
-    const result = await this.env.DB.prepare(
-      `SELECT ${PRODUCT_COLUMNS} FROM shop_products
-        WHERE shop_id = ? AND is_active = 1 AND id IN (${placeholders})`,
-    )
-      .bind(shopId, ...ids)
-      .all<ProductRow>();
+  /**
+   * Нові позиції замовлення зі знімком із бази; `null` — товару немає.
+   *
+   * Знімок бере **база**, як і при покупці (§6): клієнт не називає ні назви, ні
+   * ціни. Наявність перевіряємо **за всіма** одразу: замовлення, половину
+   * позицій якого записано, виглядало б у черзі як інше замовлення.
+   *
+   * Чернетки тут проходять (`ownProductsByIds`) — на відміну від покупця:
+   * продавець править замовлення, яке вже прийняв.
+   */
+  private async addedItems(shopId: number, raw: unknown): Promise<OrderItem[] | null> {
+    const requested = cleanOrderItems(raw);
+    if (requested.length === 0) return [];
 
-    return (result.results ?? []).map(toProduct);
+    const products = await ownProductsByIds(
+      this.env.DB,
+      shopId,
+      requested.map((item) => item.productId),
+    );
+    if (products.length !== requested.length) return null;
+
+    return this.snapshots(requested, products);
   }
 
-  private async read(where: string, params: readonly unknown[]): Promise<ShopOrder[]> {
-    const result = await this.env.DB.prepare(
-      `SELECT ${ORDER_COLUMNS} FROM shop_orders WHERE ${where} ORDER BY id DESC LIMIT ?`,
-    )
-      .bind(...params, ORDERS_LIMIT)
-      .all<OrderRow>();
+  /**
+   * Номери й кількості → знімки позицій.
+   *
+   * Один переклад на **обидва** боки (покупець і продавець): два схожі місця
+   * розійшлися б у тому, які поля позиції беруться з товару, і одна з двох доріг
+   * загубила б вид товару — а від виду залежать поля контакту (§6).
+   */
+  private snapshots(
+    requested: readonly { productId: number; qty: number }[],
+    products: readonly { id: number; title: string; price: string; kind: string }[],
+  ): OrderItem[] {
+    const byId = new Map(products.map((product) => [product.id, product]));
 
-    const rows = result.results ?? [];
-    const items = await this.items(rows.map((row) => Number(row.id)));
-    return rows.map((row) => this.toOrder(row, items.get(Number(row.id)) ?? []));
-  }
-
-  private async one(shopId: number, orderId: number): Promise<ShopOrder | null> {
-    const row = await this.env.DB.prepare(
-      `SELECT ${ORDER_COLUMNS} FROM shop_orders WHERE id = ? AND shop_id = ?`,
-    )
-      .bind(orderId, shopId)
-      .first<OrderRow>();
-    if (!row) return null;
-
-    const items = await this.items([Number(row.id)]);
-    return this.toOrder(row, items.get(Number(row.id)) ?? []);
-  }
-
-  /** Позиції замовлень одним запитом: список із сотні замовлень не робить сотні. */
-  private async items(orderIds: readonly number[]): Promise<Map<number, OrderItem[]>> {
-    const byOrder = new Map<number, OrderItem[]>();
-    if (orderIds.length === 0) return byOrder;
-
-    const placeholders = orderIds.map(() => "?").join(", ");
-    const result = await this.env.DB.prepare(
-      `SELECT ${ITEM_COLUMNS} FROM shop_order_items
-        WHERE order_id IN (${placeholders}) ORDER BY id`,
-    )
-      .bind(...orderIds)
-      .all<ItemRow>();
-
-    for (const row of result.results ?? []) {
-      const orderId = Number(row.order_id);
-      byOrder.set(orderId, [...(byOrder.get(orderId) ?? []), toItem(row)]);
-    }
-    return byOrder;
-  }
-
-  private toOrder(row: OrderRow, items: OrderItem[]): ShopOrder {
-    return {
-      id: Number(row.id),
-      shopId: Number(row.shop_id),
-      buyerId: Number(row.buyer_id),
-      status: row.status ?? DEFAULT_ORDER_STATUSES[0].key,
-      contact: contactOf(row.contact),
-      note: row.note ?? "",
-      items,
-      createdAt: row.created_at ?? "",
-      updatedAt: row.updated_at ?? "",
-    };
+    return requested.map((item) => {
+      const product = byId.get(item.productId);
+      return {
+        productId: item.productId,
+        title: product?.title ?? "",
+        price: product?.price ?? "",
+        kind: product?.kind ?? "",
+        qty: item.qty,
+      };
+    });
   }
 }

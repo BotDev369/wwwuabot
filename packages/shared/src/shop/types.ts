@@ -17,6 +17,9 @@
 
 import type { ProductKind } from "./kinds";
 import type { MediaKind } from "./media";
+// Тип, а не код: `orders.ts` бере звідси `OrderItem`, і цикл лишається лише в
+// типах (він зникає при збірці).
+import type { OrderItemInput } from "./orders";
 import type { OrderStatus } from "./statuses";
 
 /** Характеристика товару: пара «назва — значення», як її бачить покупець. */
@@ -108,7 +111,16 @@ export interface ShopOrder {
   /** Ключ статусу (`new`, `done`, …), а не підпис: підпис — слово магазину. */
   status: string;
   contact: OrderContact;
+  /** Примітка **покупця**: його слова, тому продавець їх не править. */
   note: string;
+  /**
+   * Коментар **продавця** — внутрішній.
+   *
+   * Покупцеві його не показують: про домовленість із ним каже розмова, і той
+   * самий текст у двох місцях розійшовся б. Тут він для того, щоб продавець
+   * пам'ятав, про що домовився («подзвонити після 18:00»).
+   */
+  sellerNote: string;
   items: OrderItem[];
   createdAt: string;
   updatedAt: string;
@@ -183,6 +195,36 @@ export interface OrderSaveResponse {
   ok: boolean;
   order: ShopOrder | null;
   error?: string;
+}
+
+/** Відповідь `DELETE /api/user/shop/orders`: прибраний запис черги. */
+export interface OrderDeleteResponse {
+  ok: boolean;
+  id: number;
+  error?: string;
+}
+
+/**
+ * Те, що продавець міняє в замовленні: усе необов'язкове.
+ *
+ * **Правка надсилає лише те, що справді змінюють.** Порожнє поле — це «не
+ * чіпати», а не «поставити порожнє»: інакше форма, яка про щось не питала б,
+ * стирала б це (а `contact` — це ще й дані, за якими покупця знайдуть).
+ *
+ * Позиції мають **два** поля, а не одне, і це не надмірність: `items` — ті, що
+ * лишаються (їхній знімок уже в базі, міняється тільки кількість), а `add` —
+ * нові, знімок яких бере база з товару. Одним списком продавець перезаписав би
+ * назви й ціни тих позицій, які вже прийняв, — тобто історію (docs/SHOPS.md §6).
+ * Позиція, якої немає в `items`, зникає.
+ */
+export interface OrderEditDraft {
+  status?: string;
+  contact?: OrderContact;
+  sellerNote?: string;
+  /** Позиції, які лишаються: повний набір із **новими** кількостями. */
+  items?: readonly OrderItemInput[];
+  /** Нові позиції: ціну, назву й вид бере база. */
+  add?: readonly OrderItemInput[];
 }
 
 /** Відповідь `GET /api/user/shop/statuses`: повний список — типові з правками. */

@@ -15,11 +15,17 @@
  * другий похід по весь список показав би «завантаження» там, де нічого не
  * завантажується.
  *
+ * **Статус і правка — дві функції, і це не повтор.** Статус міняють кнопкою у
+ * списку й там само у замовленні, тож він приходить **одним полем** і окремим
+ * шляхом; правка несе усе замовлення й повертає його **цілком** — з нього екран
+ * бере нові позиції, контакт і коментар, і перебирати їх локально означало б
+ * друге правило того самого знімка.
+ *
  * @module web-platform-dev/src/pages/shop
  */
 
 import { useCallback, useEffect, useState } from "react";
-import type { OrderStatus, ShopOrder } from "@wwwuabot/shared/shop";
+import type { OrderEditDraft, OrderStatus, ShopOrder } from "@wwwuabot/shared/shop";
 import { shopApi } from "@/shared/api/shop.api";
 
 /** Дані разом із магазином, з якого вони прийшли. */
@@ -36,6 +42,10 @@ export interface ShopOrdersState {
   error: string | null;
   /** Поставити статус; кидає — помилку показує екран, а не хук. */
   setStatus: (orderId: number, status: string) => Promise<void>;
+  /** Зберегти правку (позиції, контакт, коментар) і повернути збережене. */
+  save: (orderId: number, draft: OrderEditDraft) => Promise<ShopOrder>;
+  /** Прибрати замовлення зі своєї черги. */
+  remove: (orderId: number) => Promise<void>;
 }
 
 export function useShopOrders(shopId: number | null): ShopOrdersState {
@@ -90,11 +100,47 @@ export function useShopOrders(shopId: number | null): ShopOrdersState {
     [shopId],
   );
 
+  const save = useCallback(
+    async (orderId: number, draft: OrderEditDraft): Promise<ShopOrder> => {
+      if (shopId === null) throw new Error("Магазин не обрано");
+
+      const saved = await shopApi.saveOrder(shopId, orderId, draft);
+      setData((prev) =>
+        prev && prev.shopId === shopId
+          ? {
+              ...prev,
+              orders: prev.orders.map((order) => (order.id === orderId ? saved : order)),
+            }
+          : prev,
+      );
+      return saved;
+    },
+    [shopId],
+  );
+
+  const remove = useCallback(
+    async (orderId: number): Promise<void> => {
+      if (shopId === null) return;
+
+      await shopApi.removeOrder(shopId, orderId);
+      // Прибране замовлення не лишається в черзі навіть до перезапиту: воно
+      // зникає саме там, де його щойно бачили.
+      setData((prev) =>
+        prev && prev.shopId === shopId
+          ? { ...prev, orders: prev.orders.filter((order) => order.id !== orderId) }
+          : prev,
+      );
+    },
+    [shopId],
+  );
+
   return {
     orders: current?.orders ?? [],
     statuses: current?.statuses ?? [],
     loading,
     error,
     setStatus,
+    save,
+    remove,
   };
 }

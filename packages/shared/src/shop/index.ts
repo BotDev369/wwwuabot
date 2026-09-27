@@ -99,15 +99,19 @@ export type { CartLine, CartTotal } from "./cart";
 export {
   EMPTY_ORDER_CART,
   ORDER_ITEMS_MAX,
+  ORDER_NEEDS_ITEMS,
   ORDER_NOTE_MAX,
   ORDER_NOTICE_MAX,
   ORDER_QTY_MAX,
+  ORDER_SELLER_NOTE_MAX,
   cleanOrderItems,
+  mergeOrderItems,
   orderContactFields,
   orderItemsLabel,
   orderNeedsShipping,
   orderNoticeText,
   sanitizeOrderContact,
+  sanitizeSellerNote,
   validateOrderDraft,
 } from "./orders";
 export type {
@@ -124,6 +128,8 @@ export type {
   MediaListResponse,
   MediaSaveResponse,
   OrderContact,
+  OrderDeleteResponse,
+  OrderEditDraft,
   OrderItem,
   OrderListResponse,
   OrderSaveResponse,

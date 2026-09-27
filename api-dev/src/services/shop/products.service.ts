@@ -20,16 +20,14 @@ import type { Env } from "../../shared/types";
 import { formatSqliteDatetime } from "@wwwuabot/shared/utils/datetime";
 import {
   PRODUCT_SLUG_MAX,
-  cleanImageIds,
-  isProductKind,
-  sanitizeProductAttributes,
   type ProductInput,
-  type ProductKind,
   type ShopMedia,
   type ShopProduct,
 } from "@wwwuabot/shared/shop";
-import { readJsonColumn } from "./json";
 import { readShopMedia } from "./media.service";
+// Рядки товару — колонки, переклад і добір за номерами — живуть окремо
+// (`product-rows.ts`): цей файл тримає правила, а не назви колонок.
+import { PRODUCT_COLUMNS, toProduct, type ProductRow } from "./product-rows";
 import { ensureShopSchema, managedShopId, publicShopBySlug } from "./shops";
 
 /** Стеля власного списку: каталог магазину не буває безмежним. */
@@ -44,77 +42,6 @@ const OWN_LIMIT = 500;
  */
 export const CATALOG_PAGE_SIZE = 60;
 const CATALOG_PAGE_MAX = OWN_LIMIT;
-
-/**
- * Колонки читаємо за іменами, а не `SELECT *` (AGENTS.md §7).
- *
- * Список **експортований**, бо той самий рядок читає прийом замовлення
- * (`orders.service.ts`): замовлення бере з товару ціну, назву й вид — і брати
- * їх іншим набором колонок означало б друге подання товару.
- */
-export const PRODUCT_COLUMNS =
-  "id, shop_id, slug, kind, title, category, summary, description, price, images, attributes, is_active, created_at, updated_at";
-
-export interface ProductRow {
-  id: number;
-  shop_id: number;
-  slug: string;
-  kind: string;
-  title: string | null;
-  /**
-   * Колонка додана наявній таблиці, тож у старих рядків вона `NULL`, а не `''`.
-   * Читач приймає обидва (`?? ""`) — це не перестраховка, а вимога
-   * `ensureTables`.
-   */
-  category: string | null;
-  summary: string | null;
-  description: string | null;
-  price: string | null;
-  images: string | null;
-  attributes: string | null;
-  is_active: number | null;
-  created_at: string | null;
-  updated_at: string | null;
-}
-
-/**
- * Вид товару з рядка: невідоме значення лишається **як є**.
- *
- * Показ його не ламає (`productKindLabel` віддає саме слово), а підміна на
- * «схожий» показала б продавцеві не те, що він записав. Записати чужий вид
- * неможливо — це вже перевірив `validateProductDraft`.
- */
-function kindOf(raw: unknown): ProductKind {
-  return (isProductKind(raw) ? raw : String(raw ?? "")) as ProductKind;
-}
-
-/**
- * Рядок товару → товар, як його читає решта коду.
- *
- * Експортовано з тієї ж причини, що й колонки: цим перекладом користується
- * прийом замовлення, а другий переклад зробив би знімок позиції схожим на
- * товар, а не однаковим із ним.
- */
-export function toProduct(row: ProductRow): ShopProduct {
-  return {
-    id: Number(row.id),
-    shopId: Number(row.shop_id),
-    slug: row.slug,
-    kind: kindOf(row.kind),
-    title: row.title ?? "",
-    category: row.category ?? "",
-    summary: row.summary ?? "",
-    description: row.description ?? "",
-    price: row.price ?? "",
-    images: cleanImageIds(readJsonColumn(row.images)),
-    attributes: sanitizeProductAttributes(readJsonColumn(row.attributes)),
-    // Колонка має `NOT NULL DEFAULT 1`, але читач не має права покладатись на
-    // це: `DEFAULT` діє на нові рядки, а не на ті, що вже лежать у базі.
-    isActive: Number(row.is_active ?? 1) === 1,
-    createdAt: row.created_at ?? "",
-    updatedAt: row.updated_at ?? "",
-  };
-}
 
 /**
  * Товари разом із рядками файлів, на які вони посилаються.

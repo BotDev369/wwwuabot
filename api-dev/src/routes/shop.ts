@@ -46,7 +46,8 @@ export function matchShopRoute(
   if (pathname === "/api/user/shop/products") return handleUserShopProducts(request, env);
   if (pathname === "/api/user/shop/media") return handleUserShopMedia(request, env);
 
-  // Замовлення: `GET` — свого магазину (за `shop`), `POST` — статус. Два шляхи в
+  // Замовлення: `GET` — свого магазину (за `shop`), `POST` — правка (статус,
+  // контакт, позиції, коментар), `DELETE` — прибрати з черги. Три шляхи в
   // одному контролері тому, що це один факт — замовлення, а бік у нього різний
   // (docs/SHOPS.md §6).
   if (pathname === "/api/user/shop/orders" || pathname === "/api/user/shop/orders/status") {

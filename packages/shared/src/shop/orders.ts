@@ -24,6 +24,13 @@ import type { OrderContact, OrderItem, ShopOrder } from "./types";
 
 export const ORDER_NOTE_MAX = 600;
 /**
+ * Стеля коментаря продавця.
+ *
+ * Окремо від примітки покупця, хоч межі й однакові: це **два різні поля**, і
+ * спільна стала дозволила б одній правці непомітно змінити обидва.
+ */
+export const ORDER_SELLER_NOTE_MAX = 600;
+/**
  * Стеля позначки платформи в розмові.
  *
  * Це **не** те саме, що стеля повідомлення: позначку пише сервер сам, без
@@ -45,6 +52,15 @@ export const ORDER_QTY_MAX = 99;
  * побачив би дві різні причини для однієї відмови.
  */
 export const EMPTY_ORDER_CART = "Кошик порожній — оберіть товар";
+
+/**
+ * Відмова порожньому замовленню — і нею користуються **двоє**.
+ *
+ * Сервер не дає прибрати останню позицію, а форма каже про те саме **до**
+ * запиту: два рядки в цих двох місцях розійшлися б, і продавець побачив би дві
+ * різні причини для однієї відмови (те саме правило, що в `EMPTY_ORDER_CART`).
+ */
+export const ORDER_NEEDS_ITEMS = "Замовлення не може лишитись без позицій";
 
 /** Поле контакту покупця: підпис, межа й чи обов'язкове воно. */
 export interface OrderContactField {
@@ -164,6 +180,66 @@ export function cleanOrderItems(raw: unknown): OrderItemInput[] {
     if (items.length >= ORDER_ITEMS_MAX) break;
   }
   return items;
+}
+
+/**
+ * Коментар продавця з форми: краї притиснуті, межа — `ORDER_SELLER_NOTE_MAX`.
+ *
+ * Перевірки тут немає — коментар необов'язковий у будь-якому стані, і
+ * порожній — це законне «прибрати свій коментар».
+ */
+export function sanitizeSellerNote(raw: unknown): string {
+  if (typeof raw !== "string") return "";
+  return raw.trim().slice(0, ORDER_SELLER_NOTE_MAX);
+}
+
+/**
+ * Позиції після правки продавця: знімок лишається, кількість міняється.
+ *
+ * Три джерела — і кожне щось вирішує:
+ *
+ *   - `current` — те, що вже в замовленні: назву, ціну й вид беремо **звідси**
+ *     (це знімок на момент покупки, `docs/SHOPS.md` §6);
+ *   - `quantities` — **повний** набір тих, що лишаються: кого тут немає, того в
+ *     замовленні більше не буде (прибрати = не прислати);
+ *   - `added` — нові позиції зі знімком із бази: товар, який уже стоїть у
+ *     замовленні, **додає кількість**, а не робить другий рядок — те саме
+ *     правило, що в кошику покупця (`cleanOrderItems`).
+ *
+ * Рядок без `productId` (спадок давнішого запису) лишається як є: адресувати
+ * його нічим, і мовчазно прибрати чуже замовлення через це не можна.
+ */
+export function mergeOrderItems(
+  current: readonly OrderItem[],
+  quantities: readonly OrderItemInput[],
+  added: readonly OrderItem[] = [],
+): OrderItem[] {
+  const wanted = new Map(quantities.map((item) => [item.productId, item.qty]));
+  const merged: OrderItem[] = [];
+
+  for (const item of current) {
+    if (item.productId === null) {
+      merged.push({ ...item });
+      continue;
+    }
+    const qty = wanted.get(item.productId);
+    if (qty === undefined) continue;
+    merged.push({ ...item, qty });
+  }
+
+  for (const item of added) {
+    const index = merged.findIndex(
+      (entry) => item.productId !== null && entry.productId === item.productId,
+    );
+    if (index === -1) {
+      merged.push({ ...item });
+      continue;
+    }
+    const kept = merged[index];
+    merged[index] = { ...kept, qty: Math.min(kept.qty + item.qty, ORDER_QTY_MAX) };
+  }
+
+  return merged;
 }
 
 /** Те, що перевірено й готове до запису. */

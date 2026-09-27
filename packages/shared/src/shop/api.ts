@@ -32,6 +32,8 @@ import type {
   MediaDeleteResponse,
   MediaListResponse,
   MediaSaveResponse,
+  OrderDeleteResponse,
+  OrderEditDraft,
   OrderListResponse,
   OrderSaveResponse,
   ProductDeleteResponse,
@@ -81,6 +83,10 @@ export interface ShopApi {
   placeOrder: (shopSlug: string, draft: OrderDraftInput) => Promise<ShopOrder>;
   /** Поставити статус замовленню свого магазину. */
   setOrderStatus: (shopId: number, orderId: number, status: string) => Promise<void>;
+  /** Змінити замовлення свого магазину: позиції, контакт, коментар (і статус теж). */
+  saveOrder: (shopId: number, orderId: number, draft: OrderEditDraft) => Promise<ShopOrder>;
+  /** Прибрати замовлення зі своєї черги; чужого зробити цим шляхом не можна. */
+  removeOrder: (shopId: number, orderId: number) => Promise<void>;
   /** Статуси магазину: типові з його правками — те, з чого вибирає екран. */
   statuses: (shopId: number) => Promise<OrderStatus[]>;
 }
@@ -182,6 +188,29 @@ export function createShopApi(
         body: JSON.stringify({ shop: shopId, id: orderId, status }),
       });
       if (!response.ok) throw new Error(response.error ?? "Не вдалося змінити статус");
+    },
+
+    // Правка йде **тим самим тілом**, що й статус, і на той самий шлях: це
+    // одна дія над одним замовленням, і другий шлях розійшовся б із першим у
+    // правах та перевірках. Адреса магазину — на цей раз у тілі (`shop`), бо
+    // тіло вже несе й сам запис.
+    saveOrder: async (shopId, orderId, draft) => {
+      const response = await fetchJson<OrderSaveResponse>(paths.orders, {
+        method: "POST",
+        body: JSON.stringify({ shop: shopId, id: orderId, ...draft }),
+      });
+      if (!response.ok || !response.order) {
+        throw new Error(response.error ?? "Не вдалося зберегти замовлення");
+      }
+      return response.order;
+    },
+
+    removeOrder: async (shopId, orderId) => {
+      const response = await fetchJson<OrderDeleteResponse>(
+        withQuery(paths.orders, { shop: shopId, id: orderId }),
+        { method: "DELETE" },
+      );
+      if (!response.ok) throw new Error(response.error ?? "Не вдалося прибрати замовлення");
     },
 
     statuses: async (shopId) =>

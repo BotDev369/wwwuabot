@@ -1,10 +1,18 @@
 /**
  * Контролер замовлень магазину.
  *
- *   GET  /api/user/shop/orders        — замовлення свого магазину (за `shop`)
- *   POST /api/user/shop/orders/status — поставити статус замовленню свого магазину
- *   GET  /api/user/shop/statuses      — статуси магазину (типові з його правками)
- *   POST /api/space/shop/orders       — **замовити** у відкритому магазині за адресою
+ *   GET    /api/user/shop/orders        — замовлення свого магазину (за `shop`)
+ *   POST   /api/user/shop/orders        — змінити замовлення (статус, контакт, позиції, коментар)
+ *   POST   /api/user/shop/orders/status — поставити статус замовленню свого магазину
+ *   DELETE /api/user/shop/orders        — прибрати замовлення зі своєї черги
+ *   GET    /api/user/shop/statuses      — статуси магазину (типові з його правками)
+ *   POST   /api/space/shop/orders       — **замовити** у відкритому магазині за адресою
+ *
+ * **Зміна й статус — один шлях у двох адресах.** `POST /orders` несе все, що
+ * продавець міняє (`docs/SHOPS.md` §6), а `/orders/status` лишається тим самим
+ * тілом з одним полем: він уже стоїть у клієнта, і другий шлях під ту саму дію
+ * розійшовся б із першим у правах та перевірках. `GET /orders/status` (і
+ * `DELETE` там само) — 405, щоб адреса, яка обіцяє дію, не віддавала список.
  *
  * **Покупець — із підписаного `initData`, як і скрізь** (`resolveUserId`):
  * ні заголовка, ні параметра, який би називав покупця, тут немає (`AGENTS.md`
@@ -46,7 +54,8 @@ function positiveId(raw: unknown): number | null {
 }
 
 /**
- * `GET` / `POST /api/user/shop/orders` — замовлення магазину й зміна статусу.
+ * `GET` / `POST` / `DELETE /api/user/shop/orders` — черга замовлень, зміна й
+ * прибирання.
  *
  * Номер магазину приходить від клієнта, тож право на нього перевіряє сервіс
  * роллю (`managedShopId`) — «немає» й «чуже» тут нерозрізненні навмисно.
@@ -89,11 +98,28 @@ export async function handleUserShopOrders(request: Request, env: Env): Promise<
       const orderId = positiveId(source.id);
       if (shopId === null || orderId === null) return json({ ok: false, error: "Missing id" }, 400);
 
-      const outcome = await service.setStatus(shopId, identity.userId, orderId, source.status);
+      const outcome = await service.update(shopId, identity.userId, orderId, source);
       if (outcome.kind === "not_found") return json({ ok: false, error: "Not found" }, 404);
       if (outcome.kind === "rejected") return json({ ok: false, error: outcome.message }, 400);
 
       return json({ ok: true, order: outcome.order });
+    }
+
+    // Прибирання — теж номер у запиті, а не в шляху: це дія над записом, і
+    // адреса з номером замовлення в ній нічого не додає.
+    if (request.method === "DELETE") {
+      if (new URL(request.url).pathname.endsWith("/status")) {
+        return json({ ok: false, error: "Method not allowed" }, 405);
+      }
+
+      const params = new URL(request.url).searchParams;
+      const shopId = positiveId(params.get("shop"));
+      const orderId = positiveId(params.get("id"));
+      if (shopId === null || orderId === null) return json({ ok: false, error: "Missing id" }, 400);
+
+      const outcome = await service.remove(shopId, identity.userId, orderId);
+      if (outcome.kind === "not_found") return json({ ok: false, error: "Not found" }, 404);
+      return json({ ok: true, id: orderId });
     }
 
     return json({ ok: false, error: "Method not allowed" }, 405);

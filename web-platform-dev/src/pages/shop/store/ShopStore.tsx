@@ -221,14 +221,14 @@ export function ShopStore({
           {catalogs.length > 1 && (
             <button
               type="button"
-              className="shop-catalog-pick"
+              className="shop-pick"
               aria-haspopup="dialog"
               aria-label={`Розділ каталогу: ${pickLabel}`}
               onClick={() => setCatalogOpen(true)}
             >
-              <span className="shop-catalog-pick-label">{pickLabel}</span>
+              <span className="shop-pick-label">{pickLabel}</span>
               <span className="shop-store-catalog-count">{pickCount}</span>
-              <Icon name="chevron-down" size={16} className="shop-catalog-pick-icon" />
+              <Icon name="chevron-down" size={16} className="shop-pick-icon" />
             </button>
           )}
         </div>
