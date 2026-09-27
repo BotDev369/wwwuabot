@@ -42,6 +42,7 @@ import {
   cartCountLabel,
   cartTotalLabel,
   filterCards,
+  heroClass,
   storeSections,
   storeStatsLabel,
   storeTagline,
@@ -158,7 +159,11 @@ export function ShopStore({
 
   return (
     <div className={`shop-store${cart.count > 0 ? " shop-store--cart-open" : ""}`}>
-      <header className="shop-store-hero">
+      {/* Клас `--cover` каже CSS, що шапку малює **знімок**: тоді підпис
+          переїжджає на плиту під собою, а не на затемнення над банером
+          (`.shop-store-hero--cover` — `shop-storefront.css`). CSS не ставить
+          цей клас сам: `:has()` довелося б чекати від рушія Telegram. */}
+      <header className={heroClass(photoUrl)}>
         {/* Обкладинка — **тло шапки**, а не картинка в ній: із назвою поверх
             банера шапка читається як сайт магазину, а не як плейсхолдер. */}
         {photoUrl && <img className="shop-store-cover" src={photoUrl} alt="" />}

@@ -19,6 +19,7 @@ import {
   detailSections,
   detailValues,
   filterCards,
+  heroClass,
   foundLabel,
   plural,
   sectionIcon,
@@ -253,6 +254,16 @@ describe("розділи тексту про магазин", () => {
     const sections = storeSections(loose);
     expect(sections).toHaveLength(1);
     expect(sections[0].blocks.map((block) => block.id)).toEqual(["loose"]);
+  });
+});
+
+describe("клас шапки вітрини", () => {
+  it("зі знімком шапка несе `--cover`: підпис ляже на плиту, а не на затемнення", () => {
+    expect(heroClass("/api/shop/media/cover.png")).toBe("shop-store-hero shop-store-hero--cover");
+  });
+
+  it("без знімка плити немає: підпис і так стоїть на темному тлі шапки", () => {
+    expect(heroClass(null)).toBe("shop-store-hero");
   });
 });
 
