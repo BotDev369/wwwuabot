@@ -87,6 +87,14 @@ export function ShopStore({
 
   const shown = useMemo(() => filterCards(cards, catalog, query), [cards, catalog, query]);
 
+  // Кількість по товару — з кошика, і **одним переглядом**: крок стоїть у
+  // кожній плитці, а `find` на кожен товар зробив би з сітки квадратичний
+  // прохід на кожен дотик до кнопки.
+  const inCart = useMemo(
+    () => new Map(cart.lines.map((line) => [line.productId, line.qty])),
+    [cart.lines],
+  );
+
   // Текст про магазин — усе, що продавець написав на сторінці **крім** сітки
   // та блоку заголовка магазину (id: "head" чи "-head"):
   // назва та опис уже в шапці вітрини, а каталог читає живі товари.
@@ -196,7 +204,14 @@ export function ShopStore({
         ) : shown.length > 0 ? (
           <div className="shop-catalog-grid">
             {shown.map((card) => (
-              <ShopCardTile key={card.id} card={card} onOpen={setOpenedProduct} />
+              <ShopCardTile
+                key={card.id}
+                card={card}
+                qty={inCart.get(card.id) ?? 0}
+                onAdd={cart.add}
+                onSetQty={cart.setQty}
+                onOpen={setOpenedProduct}
+              />
             ))}
           </div>
         ) : (

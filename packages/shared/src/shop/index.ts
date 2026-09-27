@@ -82,8 +82,10 @@ export {
 export type { ShopCard, ShopCatalog } from "./cards";
 
 export {
+  amountLabel,
   cartAdd,
   cartCount,
+  cartLineTotal,
   cartLines,
   cartNeedsShipping,
   cartProducts,

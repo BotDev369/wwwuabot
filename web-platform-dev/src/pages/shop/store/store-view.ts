@@ -16,7 +16,7 @@
  */
 
 import type { PageConfig, PageBlock } from "@wwwuabot/shared/types/page-config";
-import type { CartTotal, ShopCard } from "@wwwuabot/shared/shop";
+import { amountLabel, type CartTotal, type ShopCard } from "@wwwuabot/shared/shop";
 import type { IconName } from "@wwwuabot/shared";
 
 /**
@@ -189,13 +189,6 @@ export function goodsLabel(count: number): string {
 export function storeStatsLabel(products: number, catalogs: number): string {
   const groups = `${catalogs} ${plural(catalogs, ["розділ", "розділи", "розділів"])}`;
   return `${goodsLabel(products)} · ${groups}`;
-}
-
-/** Сума з розділювачами: «1 250 ₴». Гривня — грошова одиниця магазину. */
-export function amountLabel(amount: number): string {
-  return `${Math.round(amount)
-    .toString()
-    .replace(/\B(?=(\d{3})+(?!\d))/gu, "\u00a0")} ₴`;
 }
 
 /**

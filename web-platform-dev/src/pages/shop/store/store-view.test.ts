@@ -12,7 +12,6 @@ import { describe, expect, it } from "vitest";
 import type { PageBlock, PageConfig } from "@wwwuabot/shared/types/page-config";
 import type { ShopCard } from "@wwwuabot/shared/shop";
 import {
-  amountLabel,
   cartCountLabel,
   cartTotalLabel,
   filterCards,
@@ -128,10 +127,6 @@ describe("число з правильним словом", () => {
 });
 
 describe("сума кошика", () => {
-  it("сума з розділювачами розрядів", () => {
-    expect(amountLabel(1250)).toBe("1\u00a0250 ₴");
-  });
-
   it("самі домовленості — це не нуль, а слово", () => {
     expect(cartTotalLabel({ amount: null, hasUnknown: true, count: 1 })).toBe(
       "Ціну узгодить продавець",

@@ -11,8 +11,10 @@
 
 import { describe, expect, it } from "vitest";
 import {
+  amountLabel,
   cartAdd,
   cartCount,
+  cartLineTotal,
   cartLines,
   cartNeedsShipping,
   cartProducts,
@@ -164,5 +166,21 @@ describe("ціна — текст, і сума це враховує", () => {
     const total = cartTotal([{ productId: 1, qty: 5 }], []);
 
     expect(total).toEqual({ amount: null, hasUnknown: false, count: 0 });
+  });
+});
+
+describe("сума позиції в плитці", () => {
+  it("сума з розділювачами розрядів", () => {
+    expect(amountLabel(1250)).toBe("1\u00a0250 ₴");
+  });
+
+  it("ціна × кількість — те, що покупець бачить у плитці", () => {
+    expect(cartLineTotal("150 ₴", 2)).toBe(300);
+    expect(cartLineTotal("1 250 ₴", 3)).toBe(3750);
+  });
+
+  it("у ціні без числа суми немає: нуль був би безкоштовним замовленням", () => {
+    expect(cartLineTotal("договірна", 4)).toBeNull();
+    expect(cartLineTotal("за домовленістю", 1)).toBeNull();
   });
 });

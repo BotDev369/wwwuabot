@@ -135,6 +135,31 @@ export function parsePriceAmount(price: string): number | null {
   return Number.isFinite(value) ? value : null;
 }
 
+/**
+ * Число з розділювачами розрядів: «1 250 ₴».
+ *
+ * Валюта тут **наша**, а не з ціни-тексту: у «від 300 грн» валюта своя, а
+ * сума — грошова одиниця магазину. Нерозривний пробіл між числом і знаком
+ * тримає їх на одному рядку: перенос «420» / «₴» читався б як два різні числа.
+ */
+export function amountLabel(amount: number): string {
+  return `${Math.round(amount)
+    .toString()
+    .replace(/\B(?=(\d{3})+(?!\d))/gu, "\u00a0")} ₴`;
+}
+
+/**
+ * Сума позиції: ціна × кількість.
+ *
+ * `null` — у ціні немає числа («договірна», «за домовленістю»). Нуль тут
+ * замість `null` показав би покупцеві безкоштовне замовлення — те саме
+ * правило, за яким `cartTotal` не вигадує суму.
+ */
+export function cartLineTotal(price: string, qty: number): number | null {
+  const amount = parsePriceAmount(price);
+  return amount === null ? null : amount * qty;
+}
+
 /** Що показувати замість суми, коли частина цін — домовленість. */
 export interface CartTotal {
   /** Сума відомих цін; `null` — жодної відомої (самі домовленості). */
