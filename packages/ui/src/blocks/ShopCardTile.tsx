@@ -18,6 +18,14 @@
  * (`ShopGridBlock`), і кнопка на прикладі обіцяла б покупцеві те, чого немає.
  * Гейт на дію — сам обробник, а не окремий прапорець: передали `onAdd` — є кнопка.
  *
+ * **Фото — такий самий вхід у товар, як «Детальніше».** У каталозі натискають
+ * на зображення: воно найбільше, і палець іде в нього першим. Тому в плитці
+ * вітрини фото стає кнопкою й відкриває ту саму поверхню товару, а підпис
+ * «Детальніше» лишається під ним — палець шукає фото, око шукає слово, і
+ * прибрати підпис означало б лишити вхід без назви. Гейт той самий, що в
+ * решти дій: є `onOpen` — фото натискається, немає (`ShopGridBlock`) — фото
+ * лишається полотном.
+ *
  * **Фото, якого немає, лишає по собі місце** (`.shop-card-img--empty`): рядок
  * товарів не мусить стрибати від того, чи завантажили знімок.
  *
@@ -44,7 +52,7 @@ export interface ShopCardTileProps {
   onAdd?: (id: number) => void;
   /** Поставити кількість; `0` прибирає позицію (мінус на одиниці). */
   onSetQty?: (id: number, qty: number) => void;
-  /** Відкрити товар: галерея, опис, характеристики. */
+  /** Відкрити товар: галерея, опис, характеристики. **Ним же натискається фото.** */
   onOpen?: (id: number) => void;
   /**
    * Відкрити товар **на правку** — дія продавця, а не покупця.
@@ -69,18 +77,38 @@ export function ShopCardTile({
   const line = stepper ? cartLineTotal(card.price, qty) : null;
   const hasActions = Boolean(stepper ?? onAdd ?? onOpen ?? onEdit);
 
+  // Фото й мітка — **один вміст для двох випадків**: у вітрині цей прямокутник
+  // стає кнопкою, у перегляді шаблону лишається полотном. Розмітка вмісту від
+  // того, хто його тримає, не залежить — другого фото в проєкті немає.
+  const media = (
+    <>
+      {card.photoUrl ? (
+        <img className="shop-card-img" src={card.photoUrl} alt={card.title} loading="lazy" />
+      ) : (
+        // `span`, а не `div`: цей вміст стоїть і всередині кнопки, а блоковий
+        // елемент у ній — уже не розмітка, а те, що браузер мусить пробачити.
+        <span className="shop-card-img shop-card-img--empty" aria-hidden="true">
+          <Icon name="image" size={24} />
+        </span>
+      )}
+      <span className="shop-card-badge">{card.category}</span>
+    </>
+  );
+
   return (
     <article className="shop-card">
-      <div className="shop-card-media">
-        {card.photoUrl ? (
-          <img className="shop-card-img" src={card.photoUrl} alt={card.title} loading="lazy" />
-        ) : (
-          <div className="shop-card-img shop-card-img--empty" aria-hidden="true">
-            <Icon name="image" size={24} />
-          </div>
-        )}
-        <span className="shop-card-badge">{card.category}</span>
-      </div>
+      {onOpen ? (
+        <button
+          type="button"
+          className="shop-card-media shop-card-media--open"
+          onClick={() => onOpen(card.id)}
+          aria-label={`Детальніше: ${card.title}`}
+        >
+          {media}
+        </button>
+      ) : (
+        <div className="shop-card-media">{media}</div>
+      )}
 
       <div className="shop-card-content">
         <h3 className="shop-card-title">{card.title}</h3>
