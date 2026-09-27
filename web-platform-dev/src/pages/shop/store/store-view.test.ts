@@ -10,8 +10,10 @@
 
 import { describe, expect, it } from "vitest";
 import type { PageBlock, PageConfig } from "@wwwuabot/shared/types/page-config";
-import type { ShopCard } from "@wwwuabot/shared/shop";
+import type { ShopCard, ShopCatalog } from "@wwwuabot/shared/shop";
 import {
+  catalogCaption,
+  catalogCount,
   cartCountLabel,
   cartTotalLabel,
   detailSections,
@@ -125,6 +127,26 @@ describe("число з правильним словом", () => {
   it("довідка шапки читається як число, а не як речення", () => {
     expect(storeStatsLabel(3, 1)).toBe("3 товари · 1 розділ");
     expect(storeStatsLabel(0, 0)).toBe("0 товарів · 0 розділів");
+  });
+
+  it("пункт списку розділів несе число свого розділу", () => {
+    const groups: ShopCatalog[] = [
+      { title: "Диха ння та легені", count: 2 },
+      { title: "Імунітет та тонус", count: 4 },
+    ];
+    expect(catalogCaption(null, groups, 7)).toBe("Усі товари · 7");
+    expect(catalogCaption("Імунітет та тонус", groups, 7)).toBe("Імунітет та тонус · 4");
+  });
+
+  it("плашка на кнопці рахує те саме, що й підпис пункту", () => {
+    const groups: ShopCatalog[] = [{ title: "Імунітет та тонус", count: 4 }];
+    expect(catalogCount(null, groups, 7)).toBe(7);
+    expect(catalogCount("Імунітет та тонус", groups, 7)).toBe(4);
+  });
+
+  it("розділ, якого вже немає в товарах, лишається назвою, а не порожнім рядком", () => {
+    expect(catalogCaption("Кава", [], 0)).toBe("Кава");
+    expect(catalogCount("Кава", [], 0)).toBe(0);
   });
 });
 

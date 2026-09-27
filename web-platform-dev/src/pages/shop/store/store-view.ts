@@ -16,7 +16,12 @@
  */
 
 import type { PageConfig, PageBlock } from "@wwwuabot/shared/types/page-config";
-import { amountLabel, type CartTotal, type ShopCard } from "@wwwuabot/shared/shop";
+import {
+  amountLabel,
+  type CartTotal,
+  type ShopCard,
+  type ShopCatalog,
+} from "@wwwuabot/shared/shop";
 import type { IconName } from "@wwwuabot/shared";
 
 /**
@@ -189,6 +194,49 @@ export function goodsLabel(count: number): string {
 export function storeStatsLabel(products: number, catalogs: number): string {
   const groups = `${catalogs} ${plural(catalogs, ["розділ", "розділи", "розділів"])}`;
   return `${goodsLabel(products)} · ${groups}`;
+}
+
+/**
+ * «Усі товари» — розділ, який насправді не розділ: це **стан вітрини за
+ * замовчуванням**, і саме тому в списку він стоїть першим.
+ */
+export const ALL_CATALOG_LABEL = "Усі товари";
+
+/**
+ * Пункт списку розділів — назва **разом із числом**: «Імунітет та тонус · 2».
+ *
+ * **Число стоїть у підписі, а не стовпцем праворуч.** Правий край пункту
+ * займає галочка вибору — другий стовпчик перед нею читався б як ще один
+ * елемент, а не як довідка до назви.
+ *
+ * `null` — «усі товари»: тоді число — обсяг усього каталогу, і саме тому воно
+ * приходить окремим аргументом, а не з `catalogs` (розділу «все» в них немає).
+ */
+export function catalogCaption(
+  catalog: string | null,
+  catalogs: readonly ShopCatalog[],
+  total: number,
+): string {
+  if (catalog === null) return `${ALL_CATALOG_LABEL} · ${total}`;
+  const group = catalogs.find((item) => item.title === catalog);
+  return group ? `${group.title} · ${group.count}` : catalog;
+}
+
+/**
+ * Число для плашки на кнопці вибору — обсяг **вибраного** розділу.
+ *
+ * Число й назва розходяться: на кнопці вони стоять окремо (слово — текстом,
+ * обсяг — плашкою), тож одна функція на обидві ролі не працює. Рахує вона
+ * однаково з `catalogCaption`: розділ, якого в товарах уже немає (його назву
+ * лишив вибір, а товари змінили), дає нуль, а не порожню плашку.
+ */
+export function catalogCount(
+  catalog: string | null,
+  catalogs: readonly ShopCatalog[],
+  total: number,
+): number {
+  if (catalog === null) return total;
+  return catalogs.find((item) => item.title === catalog)?.count ?? 0;
 }
 
 /**

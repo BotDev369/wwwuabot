@@ -32,9 +32,13 @@ import {
   type ShopProduct,
 } from "@wwwuabot/shared/shop";
 import { ShopCardTile } from "@wwwuabot/ui/blocks/ShopCardTile";
+import { MenuModal, type MenuItem } from "@wwwuabot/ui/menu";
 import { ZoneRenderer } from "@wwwuabot/ui/ZoneRenderer";
 import type { BlockContext, PageConfig } from "@wwwuabot/shared/types/page-config";
 import {
+  ALL_CATALOG_LABEL,
+  catalogCaption,
+  catalogCount,
   cartCountLabel,
   cartTotalLabel,
   filterCards,
@@ -78,6 +82,7 @@ export function ShopStore({
 
   const cart = useShopCart(slug);
   const [catalog, setCatalog] = useState<string | null>(null);
+  const [catalogOpen, setCatalogOpen] = useState(false);
   const [query, setQuery] = useState("");
   const [openedProduct, setOpenedProduct] = useState<number | null>(null);
   const [cartOpen, setCartOpen] = useState(false);
@@ -113,6 +118,37 @@ export function ShopStore({
   const product = products.find((item) => item.id === openedProduct) ?? null;
   const total = cartTotal(cart.lines, products);
 
+  // Вибране на кнопці — **назва словом і обсяг числом**, і то окремо: число
+  // стоїть плашкою (`.shop-store-catalog-count`), а не в тексті назви. Розділ,
+  // якого в товарах уже немає, назву не губить — число тоді нуль.
+  const pickLabel = catalog ?? ALL_CATALOG_LABEL;
+  const pickCount = catalogCount(catalog, catalogs, cards.length);
+
+  // Пункти вибору розділу — **ті самі числа, що в сітці**: розділ без товарів
+  // у списку не з'явиться взагалі, бо його не існує (`shopCatalogs`).
+  // «Усі товари» стоїть першим: це стан вітрини за замовчуванням, а не ще один
+  // розділ серед інших.
+  const catalogItems: MenuItem[] = [
+    {
+      key: ALL_CATALOG_LABEL,
+      label: catalogCaption(null, catalogs, cards.length),
+      selected: catalog === null,
+      onSelect: () => {
+        setCatalog(null);
+        setCatalogOpen(false);
+      },
+    },
+    ...catalogs.map((group) => ({
+      key: group.title,
+      label: catalogCaption(group.title, catalogs, cards.length),
+      selected: catalog === group.title,
+      onSelect: () => {
+        setCatalog(group.title);
+        setCatalogOpen(false);
+      },
+    })),
+  ];
+
   function addToCart(qty: number): void {
     if (openedProduct === null) return;
     cart.add(openedProduct, qty);
@@ -127,75 +163,73 @@ export function ShopStore({
             банера шапка читається як сайт магазину, а не як плейсхолдер. */}
         {photoUrl && <img className="shop-store-cover" src={photoUrl} alt="" />}
 
-        {/* Кошик — **єдина дія над полицею**: покупцеві він потрібен із
-            першого екрана, а кнопка «Каталог» вела на сто пікселів нижче —
-            тобто нікуди, бо полиця й так стоїть одразу під банером. Знак —
-            склом на фото, а не папером: біла пілюля на обкладинці читалась би
-            як ще один елемент поряд із полем пошуку. */}
-        <button
-          type="button"
-          className="shop-store-cart"
-          onClick={() => setCartOpen(true)}
-          aria-label={cartCountLabel(cart.count)}
-        >
-          <Icon name="cart" size={18} />
-          {cart.count > 0 && <span className="shop-store-cart-count">{cart.count}</span>}
-        </button>
-
         <div className="shop-store-hero-body">
           <h1 className="shop-store-title">{title?.trim() || "Магазин"}</h1>
           {tagline && <p className="shop-store-tagline">{tagline}</p>}
         </div>
       </header>
 
-      {/* Пошук стоїть **на межі обкладинки**: покупець бачить поле магазину, а
-          не ще один рядок у шапці, і каталог від цього не з'їжджає вниз. */}
-      <div className="shop-search">
-        <Icon name="search" size={18} />
-        <input
-          className="shop-search-input"
-          type="search"
-          value={query}
-          placeholder="Пошук товару"
-          aria-label="Пошук товару"
-          onChange={(event) => setQuery(event.target.value)}
-        />
-      </div>
+      {/* Полиця — **разом із керуванням**: назва, пошук, кошик і вибір розділу
+          стоять однією смугою, і вона їде за прокруткою сама. Другої такої
+          смуги немає (`AGENTS.md` §7) — тому в банері лишаються тільки назва
+          магазину й короткий опис. */}
+      <section className="shop-store-catalog" aria-label="Каталог">
+        {/* Смуга полиці **закріплюється** вгорі й несе **все, чим полицю
+            керують**: пошук, кошик і вибір розділу. Доти пошук стояв на межі
+            обкладинки, а кошик — на самій обкладинці: покупець, який прокрутив
+            сітку на екран униз, втрачав обидва, і щоб щось знайти або побачити
+            набране, мусив вертатись на початок сторінки.
 
-      <section className="shop-store-catalog">
-        {/* Смуга полиці **закріплюється** вгорі: поки покупець гортає сітку,
-            назва каталогу й розділи лишаються на видноті, і вертатись до них
-            прокруткою не треба. Це та сама смуга, а не друга її копія: копія
-            показувала б ті самі числа двічі (`AGENTS.md` §7). Обсяг магазину
-            стоїть тут, а не в банері: «скільки чого» — довідка каталогу. */}
+            Другої копії цих керувань немає ні в банері, ні деінде
+            (`AGENTS.md` §7): пошук і кошик на обкладинці лишались би тими
+            самими двома керуваннями, які зникають з екрана. */}
         <div className="shop-store-bar">
+          {/* Шапка смуги — **назва, пошук і кошик в один ряд**: назва каже, що
+              це за полиця, пошук шукає по ній, кошик показує набране. */}
           <div className="shop-store-catalog-head">
             <h2 className="shop-store-catalog-title">Каталог</h2>
-            <span className="shop-store-catalog-count">
-              {storeStatsLabel(cards.length, catalogs.length)}
-            </span>
+
+            <div className="shop-search">
+              <Icon name="search" size={18} />
+              <input
+                className="shop-search-input"
+                type="search"
+                value={query}
+                placeholder="Пошук товару"
+                aria-label="Пошук товару"
+                onChange={(event) => setQuery(event.target.value)}
+              />
+            </div>
+
+            <button
+              type="button"
+              className="shop-store-cart"
+              onClick={() => setCartOpen(true)}
+              aria-label={cartCountLabel(cart.count)}
+            >
+              <Icon name="cart" size={18} />
+              {cart.count > 0 && <span className="shop-store-cart-count">{cart.count}</span>}
+            </button>
           </div>
 
+          {/* Вибір розділу — **одна кнопка зі списком**, а не ряд чипів: чипи
+              займали цілу смугу, вміщали два з половиною розділи, і третій
+              рвався на півслові («Імуніт…»). Кнопка називає вибране словом,
+              а список відкривається **поверхнею** — тією самою, що вибір
+              вигляду в колекціях (правило 4 дизайн-системи: вибір не випадає
+              списком, а займає окреме вікно). */}
           {catalogs.length > 1 && (
-            <div className="shop-store-chips">
-              <button
-                type="button"
-                className={`shop-chip${catalog === null ? " shop-chip--active" : ""}`}
-                onClick={() => setCatalog(null)}
-              >
-                Усі товари
-              </button>
-              {catalogs.map((group) => (
-                <button
-                  type="button"
-                  key={group.title}
-                  className={`shop-chip${catalog === group.title ? " shop-chip--active" : ""}`}
-                  onClick={() => setCatalog(group.title)}
-                >
-                  {group.title} · {group.count}
-                </button>
-              ))}
-            </div>
+            <button
+              type="button"
+              className="shop-catalog-pick"
+              aria-haspopup="dialog"
+              aria-label={`Розділ каталогу: ${pickLabel}`}
+              onClick={() => setCatalogOpen(true)}
+            >
+              <span className="shop-catalog-pick-label">{pickLabel}</span>
+              <span className="shop-store-catalog-count">{pickCount}</span>
+              <Icon name="chevron-down" size={16} className="shop-catalog-pick-icon" />
+            </button>
           )}
         </div>
 
@@ -271,6 +305,20 @@ export function ShopStore({
             </article>
           ))}
         </section>
+      )}
+
+      {/* Вибір розділу — та сама поверхня, що й решта виборів у продукті:
+          повноекранний список із галочкою на вибраному (правило 4). Довідка
+          про обсяг магазину переїхала сюди — її читають саме тоді, коли
+          вибирають розділ, а в закріпленій смузі вона займала місце, потрібне
+          назвам розділів. */}
+      {catalogOpen && (
+        <MenuModal
+          title="Розділ каталогу"
+          header={<p className="wb-menu-hint">{storeStatsLabel(cards.length, catalogs.length)}</p>}
+          items={catalogItems}
+          onClose={() => setCatalogOpen(false)}
+        />
       )}
 
       {product && (
