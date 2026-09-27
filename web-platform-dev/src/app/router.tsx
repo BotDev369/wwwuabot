@@ -34,6 +34,7 @@ import {
   PAGES_NEW_ROUTE,
   PAGES_ROUTE,
   PROFILE_ACCOUNT_PATH,
+  PROFILE_ORDERS_PATH,
   SHOP_ORDERS_ROUTE,
   SHOP_PRODUCTS_ROUTE,
   PROFILE_ROUTE,
@@ -47,6 +48,7 @@ import { CreatePage } from "@/pages/CreatePage";
 import { MessagesPage } from "@/pages/MessagesPage";
 import { NotesPage } from "@/pages/NotesPage";
 import { ProfileAccountPage } from "@/pages/ProfileAccountPage";
+import { ProfileOrdersPage } from "@/pages/ProfileOrdersPage";
 import { ProfilePage } from "@/pages/ProfilePage";
 import { ScenarioPage } from "@/pages/ScenarioPage";
 import { SpaceGamePage } from "@/pages/games/SpaceGamePage";
@@ -75,6 +77,10 @@ export const router = createBrowserRouter([
       // Акаунт — окрема адреса під хабу: платформа й Telegram окремими
       // розділами, а не одним суцільним списком.
       { path: PROFILE_ACCOUNT_PATH, element: <ProfileAccountPage /> },
+      // Замовлення — пункт профілю: у яких магазинах людина працює й куди йти
+      // за роботою. Під сторінкою магазину вже стоїть його черга замовлень,
+      // тож цей екран лише називає магазини (`ProfileOrdersPage`).
+      { path: PROFILE_ORDERS_PATH, element: <ProfileOrdersPage /> },
       // Тема — розділ зі **своїми сторінками**: у кожного розділу є адреса
       // (посилання, історія, «назад»), а між ними веде друга смуга футера
       // (`ThemeLayout`). Три пункти — три сторінки; джерела тем (платформа,

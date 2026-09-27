@@ -18,6 +18,22 @@
 
 import type { PageFieldValues, PageTemplateKey } from "./templates";
 
+/** Роль людини на сторінці: створила (`owner`) або веде разом із власником. */
+export type PageRole = "owner" | "admin";
+
+/**
+ * Хто веде сторінку — як це показує картка «Доступ».
+ *
+ * `name` — ім'я на платформі (`#ім'я`), а немає — `@хендл` чи ім'я з Telegram:
+ * рядок одного перекладу імені лежить у `peerLabel` (`@wwwuabot/shared/messages`),
+ * і другий переклад тут був би другою правдою про те, як звуть людину.
+ */
+export interface PageStaff {
+  id: number;
+  name: string | null;
+  role: PageRole;
+}
+
 /** Сторінка людини, як вона їде в клієнт. */
 export interface UserPage {
   id: number;
@@ -30,6 +46,16 @@ export interface UserPage {
   values: PageFieldValues;
   /** `true` — сторінку видно в Просторі; `false` — тільки авторові. */
   isPublic: boolean;
+  /**
+   * Хто веде сторінку: власник першим, далі адміни.
+   *
+   * Список, а не саме лише «моя роль»: картка «Доступ» показує його цілком, а
+   * склад адмінів із нього ж і виводиться (`pageAdminsOf`) — друга копія тих
+   * самих id розійшлася б із першою.
+   */
+  staff: PageStaff[];
+  /** Моя роль тут: чужої сторінки в цьому списку не буває. */
+  role: PageRole;
   updatedAt: string;
 }
 
@@ -47,6 +73,15 @@ export interface PageDraft {
    */
   address: string;
   isPublic: boolean;
+  /**
+   * Склад адмінів. **Поле немає** — «не чіпати» (форма, яка про них не знає),
+   * список — новий склад.
+   *
+   * Саме так, а не «порожній список = прибрати всіх»: ту саму чернетку шлють і
+   * перемикач публічності, і редактор тексту, і вони не мають стирати доступ
+   * лише тому, що про нього не питали (`PageDraftInput.admins`).
+   */
+  admins?: number[];
 }
 
 /** Відповідь `GET /api/user/pages`: власні сторінки, разом із неоприлюдненими. */

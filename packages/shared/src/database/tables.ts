@@ -165,6 +165,15 @@ export const TABLES = {
    * ті самі поля). Ознака контенту — колонка тут, а не таблиця поруч
    * (`AGENTS.md` §7).
    *
+   * **`admin_ids` — ті, хто веде сторінку разом із власником, а не копія
+   * власника.** JSON-масив Telegram-id: у магазину їх буває кілька (продавець і
+   * той, хто допомагає з товарами), і замовлення разом із повідомленнями
+   * покупців мусять бачити **усі** вони — саме тому це роль, а не «ще один
+   * власник». Окрема таблиця `page_admins` дала б другий рядок на кожну людину й
+   * друге правило «хто має доступ»; список у колонці — те саме рішення, що
+   * `permissions` у `users`. Ролі читає `pageRole` / `pageStaffIds`
+   * (`@wwwuabot/shared/pages`), а не SQL: адміни лежать JSON-ом.
+   *
    * **`COALESCE(is_public, 0)` — не перестраховка.** Колонка додана наявній
    * таблиці, а `ensureTables` додає її як `DEFAULT NULL` (`ensure-tables.ts`),
    * тож у рядках платформи там `NULL`, і просте `is_public = 1` мовчки
@@ -200,7 +209,8 @@ export const TABLES = {
         is_active INTEGER DEFAULT 1,
         owner_id TEXT,
         is_public INTEGER DEFAULT 0,
-        template_key TEXT
+        template_key TEXT,
+        admin_ids TEXT
       )`,
     indexes: ["CREATE INDEX IF NOT EXISTS idx_scenarios_owner ON scenarios(owner_id)"],
   },

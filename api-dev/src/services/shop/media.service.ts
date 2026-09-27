@@ -6,9 +6,10 @@
  * єдине місце, де видно, скільки файлів у магазині, чим вони є і коли з'явились
  * (`docs/SHOPS.md` §5). Без нього завантажене нічим не прибрати й не порахувати.
  *
- * **Власник перевіряється до будь-якого запису** (`ownShopId`), і тою самою
- * умовою в запиті: чужий `shop_id` інакше поклав би файл у чужу вітрину, а
- * номер магазину приходить від клієнта.
+ * **Той, хто веде магазин, перевіряється до будь-якого запису**
+ * (`managedShopId`) — і власник, і адміни: файли приймають разом із товарами,
+ * а чужий `shop_id` інакше поклав би файл у чужу вітрину, бо номер магазину
+ * приходить від клієнта.
  *
  * **Порядок видалення — рядок спершу, об'єкт потім.** Об'єкт без рядка невидимий
  * і нічого не ламає; рядок без об'єкта — це бита картинка на сторінці, яку вже
@@ -28,7 +29,7 @@ import {
   type ShopMedia,
 } from "@wwwuabot/shared/shop";
 import type { Env } from "../../shared/types";
-import { ensureShopSchema, ownShopId } from "./shops";
+import { ensureShopSchema, managedShopId } from "./shops";
 
 /** Стеля власної бібліотеки: стільки файлів продавець і не гортає. */
 export const MEDIA_LIMIT = 300;
@@ -113,10 +114,10 @@ export class ShopMediaService {
     return this.env.SHOP_MEDIA ?? null;
   }
 
-  /** Власна бібліотека файлів; `null` — магазин чужий або його немає. */
-  async listOwn(shopId: number, ownerId: number): Promise<ShopMedia[] | null> {
+  /** Бібліотека файлів свого магазину; `null` — магазин чужий або його немає. */
+  async listOwn(shopId: number, userId: number): Promise<ShopMedia[] | null> {
     await ensureShopSchema(this.env.DB);
-    if ((await ownShopId(this.env.DB, shopId, ownerId)) === null) return null;
+    if ((await managedShopId(this.env.DB, shopId, userId)) === null) return null;
     return await readShopMedia(this.env.DB, shopId);
   }
 
@@ -129,7 +130,7 @@ export class ShopMediaService {
    * можна; байти без рядка (збій на вставці) лишаються невидимими, і це менша
    * з двох бід.
    */
-  async upload(shopId: number, ownerId: number, file: File): Promise<MediaSaveOutcome> {
+  async upload(shopId: number, userId: number, file: File): Promise<MediaSaveOutcome> {
     const bucket = this.bucket();
     if (!bucket) return { kind: "unavailable" };
 
@@ -137,7 +138,7 @@ export class ShopMediaService {
     if (!checked.ok) return { kind: "rejected", message: checked.message };
 
     await ensureShopSchema(this.env.DB);
-    if ((await ownShopId(this.env.DB, shopId, ownerId)) === null) return { kind: "not_found" };
+    if ((await managedShopId(this.env.DB, shopId, userId)) === null) return { kind: "not_found" };
 
     const key = mediaKey(shopId, file.name, mediaRandomToken());
     const bytes = await file.arrayBuffer();
@@ -159,9 +160,9 @@ export class ShopMediaService {
   }
 
   /** Прибирання: рядок обліку, потім об'єкт (див. шапку модуля). */
-  async remove(shopId: number, ownerId: number, id: number): Promise<boolean> {
+  async remove(shopId: number, userId: number, id: number): Promise<boolean> {
     await ensureShopSchema(this.env.DB);
-    if ((await ownShopId(this.env.DB, shopId, ownerId)) === null) return false;
+    if ((await managedShopId(this.env.DB, shopId, userId)) === null) return false;
 
     const row = await this.row(shopId, id);
     if (!row) return false;

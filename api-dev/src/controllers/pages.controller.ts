@@ -3,10 +3,15 @@
  *
  * Дві поверхні, і різниця між ними принципова:
  *
- *   GET    /api/user/pages   — власні сторінки (разом із приватними)
- *   POST   /api/user/pages   — зберегти свою (без `id` — нова, з `id` — правка)
- *   DELETE /api/user/pages   — прибрати свою за номером
+ *   GET    /api/user/pages   — сторінки, які людина веде (разом із приватними)
+ *   POST   /api/user/pages   — зберегти (без `id` — нова, з `id` — правка)
+ *   DELETE /api/user/pages   — прибрати свою за номером (тільки власник)
  *   GET    /api/space/pages  — Простір: сторінки, які автори відкрили
+ *
+ * **Список — це «що я веду», а не «що я створив».** Адмін стоїть у
+ * `scenarios.admin_ids` і отримує ту саму сторінку — разом із магазином,
+ * товарами й замовленнями; ролі розрізняє сервіс (`pageRole`), а не цей файл:
+ * склад адмінів лежить JSON-ом, і в `WHERE` його не висловити.
  *
  * Ідентичність береться **тільки** з підписаного `initData` (`resolveUserId`):
  * жоден заголовок чи параметр не називає автора (`AGENTS.md` §7). Простір
@@ -42,7 +47,7 @@ export async function handleUserPages(request: Request, env: Env): Promise<Respo
 
   try {
     if (request.method === "GET") {
-      return json({ ok: true, pages: await service.listOwn(identity.userId) });
+      return json({ ok: true, pages: await service.listManaged(identity.userId) });
     }
 
     if (request.method === "POST") {

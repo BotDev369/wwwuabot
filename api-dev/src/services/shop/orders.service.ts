@@ -14,6 +14,11 @@
  * **Замовлення не платить.** Оплата стоїть окремим кроком і окремим полем, а
  * тут її немає за визначенням (`docs/SHOPS.md` §9).
  *
+ * **Замовлення бачить кожен, хто веде магазин** (§8): продавець і адміни.
+ * Черга одна на всіх, і оповіщення йде **кожному з них** — інакше покупець
+ * написав би в порожнечу, а адмін не дізнався б про замовлення, яке сам же
+ * обіцяв відправити.
+ *
  * @module api-dev/src/services/shop/orders.service
  */
 
@@ -39,7 +44,13 @@ import { apiLog } from "../../shared/logger";
 import { ensureConversation } from "../messages/conversations";
 import { readJsonColumn } from "./json";
 import { PRODUCT_COLUMNS, toProduct, type ProductRow } from "./products.service";
-import { ensureShopSchema, ownShopId, publicShopBySlug, type ShopScope } from "./shops";
+import {
+  ensureShopSchema,
+  managedShopId,
+  publicShopBySlug,
+  shopStaffIds,
+  type ShopScope,
+} from "./shops";
 
 /** Стеля списку замовлень у будь-який бік: це робоча черга, а не архів. */
 const ORDERS_LIMIT = 200;
@@ -202,18 +213,18 @@ export class ShopOrdersService {
     return { kind: "placed", order };
   }
 
-  /** Замовлення свого магазину — те, що бачить продавець; `null` — не свій. */
-  async listOwn(shopId: number, ownerId: number): Promise<ShopOrder[] | null> {
+  /** Замовлення магазину, який веде людина; `null` — не її магазин. */
+  async listOwn(shopId: number, userId: number): Promise<ShopOrder[] | null> {
     await ensureShopSchema(this.env.DB);
-    if ((await ownShopId(this.env.DB, shopId, ownerId)) === null) return null;
+    if ((await managedShopId(this.env.DB, shopId, userId)) === null) return null;
 
     return await this.read("shop_id = ?", [shopId]);
   }
 
   /** Статуси магазину: типові з його правками (§7) — те, з чого вибирає екран. */
-  async statuses(shopId: number, ownerId: number): Promise<OrderStatus[] | null> {
+  async statuses(shopId: number, userId: number): Promise<OrderStatus[] | null> {
     await ensureShopSchema(this.env.DB);
-    if ((await ownShopId(this.env.DB, shopId, ownerId)) === null) return null;
+    if ((await managedShopId(this.env.DB, shopId, userId)) === null) return null;
 
     const result = await this.env.DB.prepare(
       "SELECT key, label, stage, is_active FROM shop_order_statuses WHERE shop_id = ? ORDER BY id",
@@ -234,20 +245,21 @@ export class ShopOrdersService {
   /**
    * Поставити статус замовленню свого магазину.
    *
-   * Власника перевіряємо **до** будь-якого пошуку (`ownShopId`), а ключ — проти
-   * **увімкнених** статусів цього магазину: інакше з екрана можна було б
-   * поставити те, що магазин прибрав зі списку вибору (`canSetOrderStatus`).
+   * Право на магазин перевіряємо **до** будь-якого пошуку (`managedShopId`), а
+   * ключ — проти **увімкнених** статусів цього магазину: інакше з екрана можна
+   * було б поставити те, що магазин прибрав зі списку вибору
+   * (`canSetOrderStatus`).
    */
   async setStatus(
     shopId: number,
-    ownerId: number,
+    userId: number,
     orderId: number,
     rawStatus: unknown,
   ): Promise<OrderStatusOutcome> {
     await ensureShopSchema(this.env.DB);
-    if ((await ownShopId(this.env.DB, shopId, ownerId)) === null) return { kind: "not_found" };
+    if ((await managedShopId(this.env.DB, shopId, userId)) === null) return { kind: "not_found" };
 
-    const statuses = (await this.statuses(shopId, ownerId)) ?? [];
+    const statuses = (await this.statuses(shopId, userId)) ?? [];
     if (!canSetOrderStatus(rawStatus, statuses)) {
       return { kind: "rejected", message: "Такого статусу в магазині немає" };
     }
@@ -264,43 +276,53 @@ export class ShopOrdersService {
   }
 
   /**
-   * Позначка платформи в розмові покупця з продавцем (`docs/SHOPS.md` §8).
+   * Позначка платформи в розмові покупця з продавцем (`docs/SHOPS.md` §8) — і
+   * йде вона **кожному, хто веде магазин**, а не лише власнику рядка.
    *
    * **Замовлення і є зв'язком**, тож окремої згоди на розмову не питаємо; читає
    * про це `links.ts`, а не розмітка. Помилка тут не має зривати замовлення:
    * воно вже збережене, а переписка — спосіб про нього дізнатись, не місце, де
    * воно живе.
    *
-   * `read_at` лишається порожнім **навмисно**: саме за ним продавцю світиться
-   * бейдж непрочитаного, і це єдине, що кличе його в продукт.
+   * **Розмова кожному — своя.** `conversations` описує пару **людей**, а не
+   * «сторону магазину»: спільний чат на продавця й адмінів вимагав би другої
+   * таблиці й другого правила «хто в ній є». Тому адресатів стільки, скільки
+   * тих, хто веде магазин (`shopStaffIds`), і кожен бачить покупця у своєму
+   * списку розмов.
+   *
+   * `read_at` лишається порожнім **навмисно**: саме за ним світиться бейдж
+   * непрочитаного, і це єдине, що кличе людину в продукт.
    */
   private async notify(shop: ShopScope, buyerId: number, order: ShopOrder): Promise<void> {
-    // Продавець, який пробує власну вітрину, замовляє сам у себе — і розмову із
-    // собою відкривати нікому: друга сторона тут та сама людина.
-    if (buyerId === shop.ownerId) return;
+    // Той, хто веде магазин і пробує власну вітрину, замовляє сам у себе — і
+    // розмову із собою відкривати нікому: друга сторона тут та сама людина.
+    const recipients = shopStaffIds(shop).filter((id) => id !== buyerId);
+    if (recipients.length === 0) return;
 
-    try {
-      const conversationId = await ensureConversation(this.env.DB, buyerId, shop.ownerId);
-      if (!conversationId) return;
+    const now = formatSqliteDatetime();
+    const body = orderNoticeText(order, shop.title);
 
-      const now = formatSqliteDatetime();
-      const body = orderNoticeText(order, shop.title);
+    for (const recipientId of recipients) {
+      try {
+        const conversationId = await ensureConversation(this.env.DB, buyerId, recipientId);
+        if (!conversationId) continue;
 
-      await this.env.DB.batch([
-        this.env.DB.prepare(
-          `INSERT INTO messages (conversation_id, sender_id, body, created_at, read_at, is_system)
-             VALUES (?, ?, ?, ?, NULL, 1)`,
-        ).bind(conversationId, SYSTEM_SENDER_ID, body, now),
-        // Список розмов читає `last_message_*`, а не `messages` — те саме
-        // оновлення, що й у `sendMessage`.
-        this.env.DB.prepare(
-          `UPDATE conversations SET last_message_at = ?, last_message_text = ?, last_sender_id = ?,
-                  hidden_a = 0, hidden_b = 0
-             WHERE id = ?`,
-        ).bind(now, messagePreview(body), SYSTEM_SENDER_ID, conversationId),
-      ]);
-    } catch (e: unknown) {
-      apiLog.error("Shop order notice error", e);
+        await this.env.DB.batch([
+          this.env.DB.prepare(
+            `INSERT INTO messages (conversation_id, sender_id, body, created_at, read_at, is_system)
+               VALUES (?, ?, ?, ?, NULL, 1)`,
+          ).bind(conversationId, SYSTEM_SENDER_ID, body, now),
+          // Список розмов читає `last_message_*`, а не `messages` — те саме
+          // оновлення, що й у `sendMessage`.
+          this.env.DB.prepare(
+            `UPDATE conversations SET last_message_at = ?, last_message_text = ?, last_sender_id = ?,
+                    hidden_a = 0, hidden_b = 0
+               WHERE id = ?`,
+          ).bind(now, messagePreview(body), SYSTEM_SENDER_ID, conversationId),
+        ]);
+      } catch (e: unknown) {
+        apiLog.error("Shop order notice error", e);
+      }
     }
   }
 

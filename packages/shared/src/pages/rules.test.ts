@@ -184,7 +184,7 @@ describe("шаблон ↔ page_data", () => {
 });
 
 describe("чернетка зі збереженої сторінки", () => {
-  it("віддає те саме, що писав автор, — разом з адресою", () => {
+  it("віддає те саме, що писав автор, — разом з адресою й адмінами", () => {
     const draft = pageDraft({
       id: 7,
       slug: "osinnii-iarmarok",
@@ -192,6 +192,11 @@ describe("чернетка зі збереженої сторінки", () => {
       template: "event",
       values: { title: "Осінній ярмарок", where: "Парк" },
       isPublic: true,
+      staff: [
+        { id: 372567448, name: "#karas", role: "owner" },
+        { id: 1049272067, name: "#galyashop", role: "admin" },
+      ],
+      role: "owner",
       updatedAt: "2026-09-22 10:00:00",
     });
 
@@ -201,6 +206,9 @@ describe("чернетка зі збереженої сторінки", () => {
       values: { title: "Осінній ярмарок", where: "Парк" },
       address: "osinnii-iarmarok",
       isPublic: true,
+      // Склад адмінів виводиться зі `staff`: власник у чернетку не потрапляє —
+      // він і так `owner_id` рядка.
+      admins: [1049272067],
     });
   });
 });

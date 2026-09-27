@@ -20,6 +20,7 @@
  */
 
 import { pageAddress } from "./address";
+import { cleanAdminIds, pageAdminsOf } from "./access";
 import {
   isPageTemplateKey,
   pageTemplate,
@@ -37,6 +38,14 @@ export interface PageDraftInput {
   values: PageFieldValues;
   address: string;
   isPublic: boolean;
+  /**
+   * Склад адмінів: список — новий склад, `null` — «не чіпати» (поля не було).
+   *
+   * Різницю між ними ухвалює форма, а не сервіс: `pageDraft` шле список завжди,
+   * а чернетка без цього поля (старий клієнт, чужий виклик) не має права
+   * обнулити доступ — саме тому `null` існує окремо від `[]`.
+   */
+  admins: number[] | null;
 }
 
 export type PageValidation = { ok: true; value: PageDraftInput } | { ok: false; message: string };
@@ -96,6 +105,9 @@ export function validatePageDraft(raw: unknown): PageValidation {
       values,
       address: address.value,
       isPublic: source.isPublic === true,
+      admins: Object.prototype.hasOwnProperty.call(source, "admins")
+        ? cleanAdminIds(source.admins)
+        : null,
     },
   };
 }
@@ -108,5 +120,8 @@ export function pageDraft(page: UserPage): PageDraft {
     values: page.values,
     address: page.slug,
     isPublic: page.isPublic,
+    // Склад адмінів — зі `staff`: він уже несе ролі, і другої копії тих самих id
+    // у сторінці немає.
+    admins: pageAdminsOf(page),
   };
 }

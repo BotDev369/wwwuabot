@@ -11,7 +11,7 @@
  */
 
 import { formatPlatformUsername, type IconName } from "@wwwuabot/shared";
-import type { PageTemplateKey, PublicPage, UserPage } from "@wwwuabot/shared/pages";
+import type { PageStaff, PageTemplateKey, PublicPage, UserPage } from "@wwwuabot/shared/pages";
 
 /** Іконка шаблону: ім'я з реєстру, приведене до `IconName` (як у блоках). */
 const PAGE_TEMPLATE_ICONS: Record<PageTemplateKey, IconName> = {
@@ -60,4 +60,42 @@ export function pageHint(page: Pick<UserPage, "isPublic" | "slug">): string {
  */
 export function publicPageAuthor(page: Pick<PublicPage, "author">): string {
   return formatPlatformUsername(page.author.name) ?? "Без імені";
+}
+
+/**
+ * Хто веде сторінку — одним рядком для картки «Доступ».
+ *
+ * Імена вже складені сервером (`peerLabel`): клієнт їх не вигадує, бо імені
+ * людини в продукті один переклад. Людини без рядка `users` називають **номером**,
+ * а не порожнім місцем: доступ роздають саме за номером.
+ */
+export function staffLabel(page: Pick<UserPage, "staff">): string {
+  const owner = page.staff.find((member) => member.role === "owner");
+  const admins = page.staff.filter((member) => member.role === "admin");
+  const parts = [`Власник: ${staffMemberLabel(owner)}`];
+  if (admins.length > 0) parts.push(`Адміни: ${admins.map(staffMemberLabel).join(", ")}`);
+  return parts.join(" · ");
+}
+
+/**
+ * Що людина тут може — другим рядком картки.
+ *
+ * Склад адмінів міняє **тільки власник** (`docs/SHOPS.md` §8): адмін веде
+ * магазин, але доступ не роздає — і ряду «Додати адміна» в нього немає.
+ */
+export function accessHint(page: Pick<UserPage, "role">): string {
+  return page.role === "owner"
+    ? "Ви власник — адмінів додаєте ви."
+    : "Ви адміністратор: доступом керує власник.";
+}
+
+/**
+ * Підпис одного з тих, хто веде сторінку.
+ *
+ * Немає імені — номер: людину додають саме номером, і кнопка «Прибрати:»
+ * мусить називати те саме, що вписували.
+ */
+export function staffMemberLabel(member: PageStaff | undefined): string {
+  if (!member) return "невідомо";
+  return member.name ?? `ID ${member.id}`;
 }

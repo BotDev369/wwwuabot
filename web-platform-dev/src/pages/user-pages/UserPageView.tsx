@@ -19,6 +19,12 @@
  * зберігся, — найгірше з можливого: людина вважала б сторінку відкритою, а
  * вона закрита (`docs/SPACE.md`).
  *
+ * **Адміни — теж налаштування сторінки, і стоять тут же.** Магазин веде не одна
+ * людина: власник додає тих, хто разом із ним бачить товари, **замовлення** й
+ * повідомлення покупців. Прибирати їх може тільки власник, тож в адміна кнопок
+ * немає — сама картка лишається: людина мусить бачити, хто ще тут є
+ * (`docs/SHOPS.md` §8).
+ *
  * @module web-platform-dev/src/pages/user-pages
  */
 
@@ -26,7 +32,14 @@ import { type ReactElement } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { Icon, SwitchRow } from "@wwwuabot/shared";
 import { toWebPath } from "@wwwuabot/shared/content";
-import { buildPageConfig, pageDraft, pageTemplate, type UserPage } from "@wwwuabot/shared/pages";
+import {
+  adminIdError,
+  buildPageConfig,
+  pageAdminsOf,
+  pageDraft,
+  pageTemplate,
+  type UserPage,
+} from "@wwwuabot/shared/pages";
 import { PageRenderer } from "@wwwuabot/ui/PageRenderer";
 import { registerAllBlocks } from "@wwwuabot/ui/blocks";
 import { useDialog } from "@wwwuabot/ui/dialog";
@@ -36,7 +49,13 @@ import { ShopPanel } from "@/pages/shop/ShopPanel";
 import { useShopProducts } from "@/pages/shop/useShopProducts";
 import { pagesApi } from "@/shared/api/pages.api";
 import { PageState } from "./PageState";
-import { pageAddressLabel, visibilityLabel } from "./pages-view";
+import {
+  accessHint,
+  pageAddressLabel,
+  staffLabel,
+  staffMemberLabel,
+  visibilityLabel,
+} from "./pages-view";
 import { useUserPage } from "./useUserPage";
 
 registerAllBlocks();
@@ -65,6 +84,41 @@ export function UserPageView(): ReactElement {
         title: "Помилка",
       });
     }
+  }
+
+  /**
+   * Склад адмінів — та сама чернетка, що шле перемикач публічності: у ній
+   * `admins` уже лежать, тож перемикання доступу не затирає видимість, і навпаки.
+   */
+  async function saveAdmins(next: number[]): Promise<void> {
+    if (!page) return;
+    try {
+      const saved = await pagesApi.save({ ...pageDraft(page), admins: next });
+      if (saved) pages.upsert(saved);
+    } catch (e: unknown) {
+      await dialog.alert(e instanceof Error ? e.message : "Не вдалося змінити доступ", {
+        title: "Помилка",
+      });
+    }
+  }
+
+  /**
+   * Адміна додають **Telegram-ID**, а не іменем: імені в продукті два (наше й
+   * телеграмне), і вгадане ім'я віддало б доступ не тій людині.
+   *
+   * Помилку в номері показує сам діалог (`adminIdError`), а не повідомлення
+   * після запису: сервер теж перевірив би, але людині це вже нічого не сказало б.
+   */
+  async function addAdmin(): Promise<void> {
+    if (!page) return;
+    const current = pageAdminsOf(page);
+    const raw = await dialog.prompt("Telegram ID адміністратора", {
+      title: "Додати адміна",
+      placeholder: "Напр. 1049272067",
+      validate: (value) => adminIdError(value, current),
+    });
+    if (raw === null) return;
+    await saveAdmins([...current, Number(raw.trim())]);
   }
 
   async function deletePage(target: UserPage): Promise<void> {
@@ -163,6 +217,51 @@ export function UserPageView(): ReactElement {
                   Видалити
                 </button>
               </div>
+            </div>
+          </div>
+
+          {/* Доступ — налаштування сторінки, тож стоїть поруч із видимістю.
+              Власник і адміни бачать товари й **замовлення** цієї сторінки;
+              роздає доступ тільки власник, тому в адміна тут немає кнопок
+              (`docs/SHOPS.md` §8). */}
+          <div className="wb-card">
+            <div className="wb-card-header">
+              <span className="wb-card-title">
+                <Icon name="lock" size={16} />
+                Доступ
+              </span>
+            </div>
+            <div className="wb-card-body">
+              <p className="wb-text-muted">{staffLabel(page)}</p>
+              <p className="wb-text-muted">{accessHint(page)}</p>
+
+              {page.role === "owner" && (
+                <div className="wb-sheet-actions">
+                  {page.staff
+                    .filter((member) => member.role === "admin")
+                    .map((member) => (
+                      <button
+                        key={member.id}
+                        type="button"
+                        className="wb-btn wb-btn-ghost"
+                        onClick={() =>
+                          void saveAdmins(pageAdminsOf(page).filter((id) => id !== member.id))
+                        }
+                      >
+                        <Icon name="trash" size={16} />
+                        Прибрати: {staffMemberLabel(member)}
+                      </button>
+                    ))}
+                  <button
+                    type="button"
+                    className="wb-btn wb-btn-secondary"
+                    onClick={() => void addAdmin()}
+                  >
+                    <Icon name="plus" size={16} />
+                    Додати адміна
+                  </button>
+                </div>
+              )}
             </div>
           </div>
 

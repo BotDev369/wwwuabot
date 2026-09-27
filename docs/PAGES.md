@@ -41,17 +41,24 @@
 екрана: інакше третій шаблон отримав би перегляд без тексту, і про це не сказав би ні компілятор,
 ні око (`templates.test.ts`).
 
-## 2. Три колонки `scenarios`, і жодної нової таблиці
+## 2. Чотири колонки `scenarios`, і жодної нової таблиці
 
 | Колонка | Що це |
 |---|---|
 | `owner_id` | Telegram-id автора (з підписаного `initData`); `NULL` — контент платформи |
+| `admin_ids` | JSON-масив Telegram-id тих, хто веде сторінку разом із власником |
 | `is_public` | видимість назовні, **типово `0`** — приватна |
 | `template_key` | з якого шаблону зроблено сторінку (форма відкриває ті самі поля) |
 
 Це той самий рядок контенту: у нього та сама адреса (`slug`) і те саме `page_data`. Друга таблиця
 дала б друге сховище одного `PageConfig` і друге правило «яка сторінка для цього URL»
 (`AGENTS.md` §7). Власника шукає індекс `idx_scenarios_owner` (`packages/shared/src/database/tables.ts`).
+
+**Власник і адміни — дві ролі, а не два власники.** Сторінку веде не завжди одна людина: у магазину
+товари заводить один, а замовлення приймає інший. Роль читає `pageRole`
+(`packages/shared/src/pages/access.ts`), і нею ж питає кожен шлях — список сторінок, перегляд, товари
+й замовлення; склад адмінів міняє **тільки власник**, і сторінку видаляє теж він. Правила магазину —
+[`SHOPS.md`](./SHOPS.md) §8.
 
 **`COALESCE(is_public, 0)` — не перестраховка:** колонку додано наявній таблиці, тож у рядків
 платформи там `NULL`, а не `0`, і просте `is_public = 1` мовчки відкинуло б увесь контент.
@@ -148,7 +155,7 @@
 | Файл | Призначення |
 |---|---|
 | `packages/shared/src/pages/` | `templates.ts` (два шаблони: каркас `layout`, поля, `buildPageConfig` / `readPageValues`), `address.ts`, `rules.ts`, `api.ts` |
-| `api-dev/src/services/pages.service.ts`, `api-dev/src/controllers/pages.controller.ts` | свої сторінки й Простір; власник — у самому запиті |
+| `api-dev/src/services/pages.service.ts`, `api-dev/src/controllers/pages.controller.ts` | сторінки, які людина веде (власник і адміни), і Простір; роль ухвалює `pageRole`, запит лише звужує відбір |
 | `web-platform-dev/src/pages/user-pages/` | екран `/pages`, перегляд (сторінка цілком + липка смуга керування), **створення** (`PageCreatePage` → `PageTemplatePicker` + `PageTemplatePreview` + `PageEditor`), правка (`/pages/:id/edit`), вкладка Простору |
 | `packages/ui/src/hooks/useAutoGrowField.ts` | поле, яке росте за текстом — спільне для композера й редактора сторінки |
 | `bot-dev/src/shared/utils/page-caption.ts` | виведений підпис бота (назва й короткі поля), екранований для Telegram HTML |

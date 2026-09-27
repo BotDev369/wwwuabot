@@ -23,6 +23,12 @@
  * мала ні історії, ні «назад», ні посилання — тобто не давала повернутись до
  * збереженої теми (AGENTS.md §8).
  *
+ * **«Замовлення» стоїть тут, бо це вхід, а не інструмент.** Замовлення
+ * магазинів, які людина веде (власником чи адміном), не мали жодного входу,
+ * крім самої сторінки магазину; щоб показати пункт, хаб питає той самий список
+ * сторінок, що й екран «Сторінки» (`useUserPages`) — другого джерела «мої
+ * магазини» не існує.
+ *
  * @module web-platform-dev/src/pages/ProfilePage
  */
 
@@ -31,7 +37,8 @@ import { UserAccountRow } from "@wwwuabot/shared";
 import { useNavigate } from "react-router-dom";
 import { useDialog } from "@wwwuabot/ui/dialog";
 import { MenuList, buildMenuItems } from "@wwwuabot/ui/menu";
-import { PROFILE_ACCOUNT_PATH, THEME_PATH } from "@/app/routes";
+import { PROFILE_ACCOUNT_PATH, PROFILE_ORDERS_PATH, THEME_PATH } from "@/app/routes";
+import { useUserPages } from "./user-pages/useUserPages";
 import { useProfile } from "./useProfile";
 import { buildProfileSections } from "./profile-sections";
 
@@ -40,8 +47,17 @@ export function ProfilePage(): ReactElement {
   const navigate = useNavigate();
   const dialog = useDialog();
 
+  // Чи є в людини магазин — з того самого списку сторінок, що й на екрані
+  // «Сторінки»: пункт «Замовлення» мусить вести туди, де справді є робота.
+  const { pages } = useUserPages();
+  const hasShops = pages.some((page) => page.template === "shop");
+
   const items = buildMenuItems({
-    items: buildProfileSections({ onOpenTheme: () => navigate(THEME_PATH) }),
+    items: buildProfileSections({
+      onOpenTheme: () => navigate(THEME_PATH),
+      onOpenOrders: () => navigate(PROFILE_ORDERS_PATH),
+      hasShops,
+    }),
     // Перехід у межах SPA: повне перезавантаження в TWA — це втрачений стан і
     // біла вспишка.
     navigate: (href) => navigate(href),

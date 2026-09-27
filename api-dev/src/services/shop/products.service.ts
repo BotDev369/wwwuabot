@@ -30,7 +30,7 @@ import {
 } from "@wwwuabot/shared/shop";
 import { readJsonColumn } from "./json";
 import { readShopMedia } from "./media.service";
-import { ensureShopSchema, ownShopId, publicShopBySlug } from "./shops";
+import { ensureShopSchema, managedShopId, publicShopBySlug } from "./shops";
 
 /** Стеля власного списку: каталог магазину не буває безмежним. */
 const OWN_LIMIT = 500;
@@ -150,9 +150,9 @@ export class ShopProductsService {
    * Файли тут — **уся** бібліотека магазину: саме з неї продавець ставить те
    * саме фото другому товару, і саме тому список не звужується до вживаних.
    */
-  async listOwn(shopId: number, ownerId: number): Promise<ProductsData | null> {
+  async listOwn(shopId: number, userId: number): Promise<ProductsData | null> {
     await ensureShopSchema(this.env.DB);
-    if ((await ownShopId(this.env.DB, shopId, ownerId)) === null) return null;
+    if ((await managedShopId(this.env.DB, shopId, userId)) === null) return null;
 
     const result = await this.env.DB.prepare(
       `SELECT ${PRODUCT_COLUMNS} FROM shop_products
@@ -200,18 +200,19 @@ export class ShopProductsService {
   /**
    * Запис: `id` є — правка свого товару, немає — новий.
    *
-   * Номер магазину приходить від клієнта, тож право продавця перевіряє
-   * `ownShopId` **до** будь-якого запису: інакше чужий `shop_id` поклав би
-   * товар у чужу вітрину (AGENTS.md §7).
+   * Номер магазину приходить від клієнта, тож право на нього перевіряє
+   * `managedShopId` **до** будь-якого запису: інакше чужий `shop_id` поклав би
+   * товар у чужу вітрину (AGENTS.md §7). Товар ведуть і власник, і адміни —
+   * товари й є та робота, заради якої магазин заводять удвох.
    */
   async save(
     shopId: number,
-    ownerId: number,
+    userId: number,
     input: ProductInput,
     id?: number,
   ): Promise<ProductSaveOutcome> {
     await ensureShopSchema(this.env.DB);
-    if ((await ownShopId(this.env.DB, shopId, ownerId)) === null) return { kind: "not_found" };
+    if ((await managedShopId(this.env.DB, shopId, userId)) === null) return { kind: "not_found" };
 
     const now = formatSqliteDatetime();
     const images = JSON.stringify(input.images);
@@ -290,10 +291,10 @@ export class ShopProductsService {
     };
   }
 
-  /** Видалення свого товару; видалені замовлення не чіпає — там знімок. */
-  async remove(shopId: number, ownerId: number, id: number): Promise<boolean> {
+  /** Видалення товару свого магазину; видалені замовлення не чіпає — там знімок. */
+  async remove(shopId: number, userId: number, id: number): Promise<boolean> {
     await ensureShopSchema(this.env.DB);
-    if ((await ownShopId(this.env.DB, shopId, ownerId)) === null) return false;
+    if ((await managedShopId(this.env.DB, shopId, userId)) === null) return false;
 
     const result = await this.env.DB.prepare(
       "DELETE FROM shop_products WHERE id = ? AND shop_id = ?",

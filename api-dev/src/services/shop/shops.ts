@@ -1,27 +1,34 @@
 /**
- * Магазин як межа доступу: чий він і чи відкритий назовні.
+ * Магазин як межа доступу: чий він, хто його веде і чи відкритий назовні.
  *
  * **Магазин — це рядок `scenarios`, а не окрема таблиця.** `id` — номер
  * магазину (на нього дивляться товари й замовлення), `owner_id` — продавець,
- * `is_public` — видимість, `slug` — адреса. Друга таблиця дала б другу
- * ідентичність магазину й друге правило «яка сторінка для цього URL»
- * (`AGENTS.md` §7, `docs/SHOPS.md` §1).
+ * `admin_ids` — ті, хто веде магазин разом із ним, `is_public` — видимість,
+ * `slug` — адреса. Друга таблиця дала б другу ідентичність магазину й друге
+ * правило «яка сторінка для цього URL» (`AGENTS.md` §7, `docs/SHOPS.md` §1).
  *
- * **Власник стоїть у самому запиті** (`WHERE owner_id = ?`), а не окремою
- * перевіркою «а це моє?»: перевірку легко забути на новому шляху, а умову в
- * `WHERE` — ні. Тому «немає» й «чуже» тут нерозрізненні — і це навмисно:
- * контролер віддає на обидва ту саму 404 (код відповіді теж витік).
+ * **Право веде роль, а не рівність `owner_id`.** Товари, файли, статуси й
+ * замовлення має бачити **кожен, хто веде магазин**: продавець і адміни
+ * (`docs/SHOPS.md` §8). Ролі читає `pageRole` зі спільного модуля — адміни
+ * лежать JSON-ом, і в `WHERE` їх не висловити; тому перевірка стоїть **до**
+ * будь-якого запису (у кожного сервісу один вхід, `managedShopId`), а не
+ * окремим «а це моє?» десь у контролері. Різниці між «немає» й «чуже» тут
+ * немає навмисно: контролер віддає на обидва ту саму 404 (код відповіді теж
+ * витік).
  *
  * @module api-dev/src/services/shop/shops
  */
 
 import { ensureTables } from "@wwwuabot/shared/database/ensure-tables";
+import { isPageManager, pageAdminIds, pageStaffIds } from "@wwwuabot/shared/pages";
 
 /** Магазин, який дивиться сторонній: номер, адреса, продавець і підпис. */
 export interface ShopScope {
   id: number;
   slug: string;
   ownerId: number;
+  /** Адміни: кому разом із продавцем ідуть замовлення й повідомлення покупця. */
+  adminIds: number[];
   title: string;
 }
 
@@ -42,18 +49,32 @@ export async function ensureShopSchema(db: D1Database): Promise<void> {
   ]);
 }
 
-/** Номер свого магазину; `null` — рядка немає або він чужий (однакова відповідь). */
-export async function ownShopId(
+/** Номер магазину, який веде людина; `null` — рядка немає або він чужий. */
+export async function managedShopId(
   db: D1Database,
   shopId: number,
-  ownerId: number,
+  userId: number,
 ): Promise<number | null> {
   const row = await db
-    .prepare("SELECT id FROM scenarios WHERE id = ? AND owner_id = ?")
-    .bind(shopId, ownerId)
-    .first<{ id: number }>();
+    .prepare("SELECT id, owner_id, admin_ids FROM scenarios WHERE id = ?")
+    .bind(shopId)
+    .first<{ id: number; owner_id: string | number | null; admin_ids: string | null }>();
+  if (!row) return null;
 
-  return row ? Number(row.id) : null;
+  return isPageManager(shopOwner(row.owner_id), pageAdminIds(row.admin_ids), userId)
+    ? Number(row.id)
+    : null;
+}
+
+/** Власник рядка числом; `null` — власника немає (контент платформи). */
+function shopOwner(raw: string | number | null): number | null {
+  const id = Number(raw);
+  return Number.isInteger(id) && id > 0 ? id : null;
+}
+
+/** Усі, кому адресоване замовлення: продавець і адміни (`pageStaffIds`). */
+export function shopStaffIds(shop: ShopScope): number[] {
+  return pageStaffIds(shop.ownerId, shop.adminIds);
 }
 
 /**
@@ -73,7 +94,7 @@ export async function ownShopId(
 export async function publicShopBySlug(db: D1Database, slug: string): Promise<ShopScope | null> {
   const row = await db
     .prepare(
-      `SELECT s.id, s.slug, s.title, s.owner_id
+      `SELECT s.id, s.slug, s.title, s.owner_id, s.admin_ids
          FROM scenarios s
          JOIN users u ON u.user_id = s.owner_id
         WHERE s.slug = ?
@@ -90,6 +111,7 @@ export async function publicShopBySlug(db: D1Database, slug: string): Promise<Sh
         id: Number(row.id),
         slug: String(row.slug ?? ""),
         ownerId: Number(row.owner_id),
+        adminIds: pageAdminIds(row.admin_ids),
         title: (row.title as string) ?? "",
       }
     : null;
