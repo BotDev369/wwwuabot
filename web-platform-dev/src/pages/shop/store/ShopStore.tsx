@@ -42,7 +42,6 @@ import {
   cartCountLabel,
   cartTotalLabel,
   filterCards,
-  heroClass,
   storeSections,
   storeStatsLabel,
   storeTagline,
@@ -51,6 +50,7 @@ import { useShopCart } from "./useShopCart";
 import { ShopProductModal } from "./ShopProductModal";
 import { ShopCartModal } from "./ShopCartModal";
 import { ShopCheckoutModal } from "./ShopCheckoutModal";
+import { ShopHero } from "./ShopHero";
 
 /** Тип блока, який малює каталог: решта блоків — текст про магазин. */
 const GRID_BLOCK = "shop-grid";
@@ -159,20 +159,7 @@ export function ShopStore({
 
   return (
     <div className={`shop-store${cart.count > 0 ? " shop-store--cart-open" : ""}`}>
-      {/* Клас `--cover` каже CSS, що шапку малює **знімок**: тоді під підписом
-          лягає м'яке затемнення без форми (`.shop-store-hero--cover` —
-          `shop-storefront.css`), а сам знімок лишається повним. CSS не ставить
-          цей клас сам: `:has()` довелося б чекати від рушія Telegram. */}
-      <header className={heroClass(photoUrl)}>
-        {/* Обкладинка — **тло шапки**, а не картинка в ній: із назвою поверх
-            банера шапка читається як сайт магазину, а не як плейсхолдер. */}
-        {photoUrl && <img className="shop-store-cover" src={photoUrl} alt="" />}
-
-        <div className="shop-store-hero-body">
-          <h1 className="shop-store-title">{title?.trim() || "Магазин"}</h1>
-          {tagline && <p className="shop-store-tagline">{tagline}</p>}
-        </div>
-      </header>
+      <ShopHero photoUrl={photoUrl} title={title} tagline={tagline} />
 
       {/* Полиця — **разом із керуванням**: назва, пошук, кошик і вибір розділу
           стоять однією смугою, і вона їде за прокруткою сама. Другої такої
@@ -326,12 +313,21 @@ export function ShopStore({
         />
       )}
 
+      {/* Картка товару знає про кошик **числом**, а не прапорцем: вона показує
+          ту саму кількість, що й плитка вітрини, і тим самим кроком її править
+          — мінус на одиниці прибирає позицію. */}
       {product && (
         <ShopProductModal
           product={product}
           media={media}
+          inCart={inCart.get(product.id) ?? 0}
           onClose={() => setOpenedProduct(null)}
           onAdd={addToCart}
+          onSetQty={(qty) => cart.setQty(product.id, qty)}
+          onOpenCart={() => {
+            setOpenedProduct(null);
+            setCartOpen(true);
+          }}
         />
       )}
 

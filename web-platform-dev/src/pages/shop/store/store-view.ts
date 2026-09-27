@@ -265,14 +265,19 @@ export function catalogCount(
  * доларах у гривнях — це неправда, а не «наша одиниця». Коли позиції названо
  * **різними** одиницями, сума йде без валюти й каже про це словом: підробити
  * одну з них означало б додати гривні до доларів і назвати це сумою.
+ *
+ * **Сума не округлюється до цілого.** Скільки знаків після коми вона має,
+ * вирішує сама ціна (`total.decimals`): позиції «USD 4.80» дають «9.60 USD»,
+ * а не «10 USD». Округлити гроші тут — показати іншу цифру, ніж та, що
+ * виходить із цін; ціла сума з цілих цін («640 ₴») при цьому лишається цілою.
  */
 export function cartTotalLabel(total: CartTotal): string {
   if (total.amount === null) return "Ціну узгодить продавець";
 
   const base =
     total.currency === null
-      ? `${amountLabel(total.amount, "")} (ціни в різних валютах)`
-      : amountLabel(total.amount, total.currency);
+      ? `${amountLabel(total.amount, "", total.decimals)} (ціни в різних валютах)`
+      : amountLabel(total.amount, total.currency, total.decimals);
   return total.hasUnknown ? `${base} + договірні позиції` : base;
 }
 

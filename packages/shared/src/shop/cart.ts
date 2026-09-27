@@ -142,7 +142,24 @@ export function parsePriceAmount(price: string): number | null {
 }
 
 /**
- * Одиниця грошей, названа в ціні: «USD 6.00» → `USD`, «320 ₴» → `₴`, «$6` → `$`.
+ * Скільки знаків після коми в ціні: «USD 2.40» → 2, «320 ₴» → 0.
+ *
+ * **Сума не округлюється до цілого — і саме тому ця міра потрібна.** Ціна з
+ * копійками (Etsy-ціни магазину: «USD 4.80») у сумі округлялась би до «5 USD»:
+ * покупець бачив би 5 там, де коштує 4.80, і за двох одиниць — 9 замість 9.60.
+ * Це вже не косметика, а інша цифра в грошах, тож сума бере **стільки знаків,
+ * скільки їх у самій ціні**: де ціна ціла («320 ₴»), там сума й лишається цілою.
+ *
+ * Беремо дробову частину **з кінця** рядка: у «8,5 × 11 дюймів» теж є кома з
+ * цифрою, і це не копійки, а розмір аркуша.
+ */
+export function priceDecimals(price: string): number {
+  const match = /([.,])(\d+)\s*\D*$/u.exec(price.trim());
+  return match ? match[2].length : 0;
+}
+
+/**
+ * Одиниця грошей, названа в ціні: «USD 6.00» → `USD`, «320 ₴` → `₴`, «$6` → `$`.
  *
  * **Одиниця суми береться з тексту ціни, а не з константи платформи.** Ціна в
  * магазині — текст, і валюта живе в ньому ж: магазин у доларах інакше показував
@@ -165,7 +182,7 @@ export function priceCurrency(price: string): string | null {
 }
 
 /**
- * Число з розділювачами розрядів і знаком валюти: «1 250 ₴», «$18», «18 USD».
+ * Число з розділювачами розрядів і знаком валюти: «1 250 ₴», «$18», «4.80 USD».
  *
  * Знак стоїть так, як пишуть самі ці гроші: перед числом («$18», «€6») —
  * для знаків, після числа — для `₴` (валюта платформи, її рядки вже такі) і
@@ -173,11 +190,22 @@ export function priceCurrency(price: string): string | null {
  * рядку: перенос «1» / «250» читався б як два різні числа. Порожня одиниця —
  * сума без валюти: так показують разом, у якому позиції названо різними
  * одиницями (`cartTotal`).
+ *
+ * **`decimals` — не прикраса числа, а його точність:** скільки знаків після
+ * коми має сума, вирішує не формат, а ціна, з якої вона склалась
+ * (`priceDecimals`). Нуль — типове: сума з цілих цін лишається цілою, і
+ * «1 250 ₴» не перетворюється на «1 250.00 ₴». Розділювач — крапка: нею
+ * пишуть ціни самі магазини, і сума не мусить виглядати чужою поряд із ними.
+ * Розряди групуємо лише в цілій частині: «4.80» — це не «4.8 0».
  */
-export function amountLabel(amount: number, currency: string = DEFAULT_CURRENCY): string {
-  const digits = Math.round(amount)
-    .toString()
-    .replace(/\B(?=(\d{3})+(?!\d))/gu, "\u00a0");
+export function amountLabel(
+  amount: number,
+  currency: string = DEFAULT_CURRENCY,
+  decimals = 0,
+): string {
+  const [whole, fraction] = amount.toFixed(decimals).split(".");
+  const digits =
+    whole.replace(/\B(?=(\d{3})+(?!\d))/gu, "\u00a0") + (fraction ? `.${fraction}` : "");
   if (!currency) return digits;
   return /^[$€£¥₺₽]/u.test(currency) ? `${currency}${digits}` : `${digits} ${currency}`;
 }
@@ -194,6 +222,22 @@ export function cartLineTotal(price: string, qty: number): number | null {
   return amount === null ? null : amount * qty;
 }
 
+/**
+ * Сума позиції одним підписом: «4.80 USD» — те, що показують і плитка
+ * вітрини, і картка товару.
+ *
+ * Спільна вона тому, що поверхонь дві, а гроші одні: два місця з власним
+ * складанням розійшлися б тихо — плитка показала б копійки, а картка ціле
+ * (саме це й сталось, коли `amountLabel` округлював суму). `null` — ціни без
+ * числа («договірна»): підсумок тоді не називають узагалі, бо нуль на його
+ * місці читався б як безкоштовне замовлення.
+ */
+export function cartLineLabel(price: string, qty: number): string | null {
+  const line = cartLineTotal(price, qty);
+  if (line === null) return null;
+  return amountLabel(line, priceCurrency(price) ?? DEFAULT_CURRENCY, priceDecimals(price));
+}
+
 /** Що показувати замість суми, коли частина цін — домовленість. */
 export interface CartTotal {
   /** Сума відомих цін; `null` — жодної відомої (самі домовленості). */
@@ -207,6 +251,12 @@ export interface CartTotal {
    * різними одиницями, і тоді сума йде без валюти (підробити одну не можна).
    */
   currency: string | null;
+  /**
+   * Скільки знаків після коми має сума — **найбільше** серед поцінованих
+   * позицій: у кошику з «320 ₴» і «2.40 ₴» сума мусить показати копійки, бо
+   * вони є в одній із цін.
+   */
+  decimals: number;
 }
 
 /**
@@ -222,6 +272,7 @@ export function cartTotal(lines: readonly CartLine[], products: readonly ShopPro
   let known = false;
   let hasUnknown = false;
   let count = 0;
+  let decimals = 0;
   // Одиниці саме поцінованих позицій: ціна без числа одиниці не називає, і
   // входити нею в суму означало б вибирати валюту за «договірною».
   const units = new Set<string>();
@@ -239,6 +290,7 @@ export function cartTotal(lines: readonly CartLine[], products: readonly ShopPro
     }
     known = true;
     amount += price * line.qty;
+    decimals = Math.max(decimals, priceDecimals(product.price));
     units.add(priceCurrency(product.price) ?? DEFAULT_CURRENCY);
   }
 
@@ -248,5 +300,6 @@ export function cartTotal(lines: readonly CartLine[], products: readonly ShopPro
     hasUnknown,
     count,
     currency: units.size === 1 ? only : null,
+    decimals,
   };
 }

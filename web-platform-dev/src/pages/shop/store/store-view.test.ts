@@ -153,31 +153,44 @@ describe("число з правильним словом", () => {
 
 describe("сума кошика", () => {
   it("самі домовленості — це не нуль, а слово", () => {
-    expect(cartTotalLabel({ amount: null, hasUnknown: true, count: 1, currency: null })).toBe(
-      "Ціну узгодить продавець",
-    );
+    expect(
+      cartTotalLabel({ amount: null, hasUnknown: true, count: 1, currency: null, decimals: 0 }),
+    ).toBe("Ціну узгодить продавець");
   });
 
   it("неповна сума позначена, а не показана як повна", () => {
-    expect(cartTotalLabel({ amount: 640, hasUnknown: true, count: 3, currency: "₴" })).toBe(
-      "640 ₴ + договірні позиції",
-    );
-    expect(cartTotalLabel({ amount: 640, hasUnknown: false, count: 3, currency: "₴" })).toBe(
-      "640 ₴",
-    );
+    expect(
+      cartTotalLabel({ amount: 640, hasUnknown: true, count: 3, currency: "₴", decimals: 0 }),
+    ).toBe("640 ₴ + договірні позиції");
+    expect(
+      cartTotalLabel({ amount: 640, hasUnknown: false, count: 3, currency: "₴", decimals: 0 }),
+    ).toBe("640 ₴");
   });
 
   it("сума звучить валютою магазину, а не нашою", () => {
-    expect(cartTotalLabel({ amount: 18, hasUnknown: false, count: 3, currency: "USD" })).toBe(
-      "18 USD",
-    );
-    expect(cartTotalLabel({ amount: 6, hasUnknown: false, count: 1, currency: "$" })).toBe("$6");
+    expect(
+      cartTotalLabel({ amount: 18, hasUnknown: false, count: 3, currency: "USD", decimals: 0 }),
+    ).toBe("18 USD");
+    expect(
+      cartTotalLabel({ amount: 6, hasUnknown: false, count: 1, currency: "$", decimals: 0 }),
+    ).toBe("$6");
+  });
+
+  it("копійки в цінах лишаються копійками в сумі", () => {
+    // Ціни «USD 4.80» дають «9.60 USD»: округлення до «10 USD» показало б
+    // покупцеві іншу цифру, ніж та, що виходить із цін.
+    expect(
+      cartTotalLabel({ amount: 9.6, hasUnknown: false, count: 2, currency: "USD", decimals: 2 }),
+    ).toBe("9.60 USD");
+    expect(
+      cartTotalLabel({ amount: 4.8, hasUnknown: false, count: 1, currency: "$", decimals: 2 }),
+    ).toBe("$4.80");
   });
 
   it("різні одиниці в позиціях — сума без валюти й зі словом", () => {
-    expect(cartTotalLabel({ amount: 326, hasUnknown: false, count: 2, currency: null })).toBe(
-      "326 (ціни в різних валютах)",
-    );
+    expect(
+      cartTotalLabel({ amount: 326, hasUnknown: false, count: 2, currency: null, decimals: 0 }),
+    ).toBe("326 (ціни в різних валютах)");
   });
 
   it("порожній кошик не називає числа на кнопці", () => {

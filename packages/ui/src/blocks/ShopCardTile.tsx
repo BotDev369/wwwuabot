@@ -33,13 +33,7 @@
  */
 
 import { Icon } from "@wwwuabot/shared";
-import {
-  DEFAULT_CURRENCY,
-  amountLabel,
-  cartLineTotal,
-  priceCurrency,
-  type ShopCard,
-} from "@wwwuabot/shared/shop";
+import { cartLineLabel, type ShopCard } from "@wwwuabot/shared/shop";
 
 /** Напис кнопки першої покупки: не «Детальніше» — дотик кладе товар у кошик. */
 const ADD_LABEL = "В кошик";
@@ -74,7 +68,9 @@ export function ShopCardTile({
   // Товар у кошику показують кроком лише тоді, коли його справді є чим міняти:
   // кількість без `onSetQty` — це плитка, яка обіцяє дію й не робить нічого.
   const stepper = qty > 0 && onSetQty ? onSetQty : null;
-  const line = stepper ? cartLineTotal(card.price, qty) : null;
+  // Сума позиції — **спільним підписом** із карткою товару (`cartLineLabel`):
+  // копійки в ціні («USD 4.80») мусять бути видні в обох місцях однаково.
+  const line = stepper ? cartLineLabel(card.price, qty) : null;
   const hasActions = Boolean(stepper ?? onAdd ?? onOpen ?? onEdit);
 
   // Фото й мітка — **один вміст для двох випадків**: у вітрині цей прямокутник
@@ -146,8 +142,7 @@ export function ShopCardTile({
                   «0 ₴» означало б запропонувати безкоштовне замовлення. */}
               {line !== null && (
                 <p className="shop-card-incart">
-                  <Icon name="check" size={13} />У кошику ·{" "}
-                  {amountLabel(line, priceCurrency(card.price) ?? DEFAULT_CURRENCY)}
+                  <Icon name="check" size={13} />У кошику · {line}
                 </p>
               )}
             </>

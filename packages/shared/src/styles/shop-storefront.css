@@ -360,9 +360,14 @@ html[data-colors-mode="dark"] .shop-catalog {
 
 /* Рядок кошика — те, що покупець набрав, **не відкриваючи кошика**. Це сума
    (ціна × кількість), і саме тому рядом стоїть слово: без нього «150 ₴»
-   виглядало б як друга ціна товару, а не як підсумок. */
+   виглядало б як друга ціна товару, а не як підсумок.
+
+   Той самий рядок стоїть і в картці товару (`.shop-detail-incart`): плитка
+   й картка кажуть про кошик **однаково**, бо це один стан одного покупця, і
+   два правила з одним виглядом розійшлися б тихо. */
 .shop-catalog .shop-card-incart,
-.shop-store .shop-card-incart {
+.shop-store .shop-card-incart,
+.shop-detail-incart {
   display: flex;
   align-items: center;
   justify-content: center;

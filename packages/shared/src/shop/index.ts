@@ -86,6 +86,7 @@ export {
   amountLabel,
   cartAdd,
   cartCount,
+  cartLineLabel,
   cartLineTotal,
   cartLines,
   cartNeedsShipping,
@@ -95,6 +96,7 @@ export {
   cartTotal,
   parsePriceAmount,
   priceCurrency,
+  priceDecimals,
 } from "./cart";
 export type { CartLine, CartTotal } from "./cart";
 

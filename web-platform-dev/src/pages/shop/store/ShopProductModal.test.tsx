@@ -77,9 +77,17 @@ const PRODUCT: ShopProduct = {
   updatedAt: "2026-09-27 17:39:53",
 };
 
-function html(): string {
+function html(inCart = 0): string {
   return renderToStaticMarkup(
-    <ShopProductModal product={PRODUCT} media={[]} onClose={noop} onAdd={noop} />,
+    <ShopProductModal
+      product={PRODUCT}
+      media={[]}
+      inCart={inCart}
+      onClose={noop}
+      onAdd={noop}
+      onSetQty={noop}
+      onOpenCart={noop}
+    />,
   );
 }
 
@@ -147,5 +155,25 @@ describe("ShopProductModal", () => {
 
   it("межа під заголовком розділу тане до правого краю", () => {
     expect(rule(".shop-detail-heading")).toContain("border-image");
+  });
+
+  it("товару в кошику немає — картка пропонує додати", () => {
+    const markup = html();
+    expect(markup).toContain("Додати в кошик");
+    expect(markup).not.toContain("Перейти до кошика");
+    expect(markup).not.toContain("shop-detail-incart");
+  });
+
+  it("товар уже в кошику — це видно в картці, і кнопка веде далі", () => {
+    const markup = html(2);
+    // Стан, а не ще одна ціна: покупець мусить бачити, що товар уже додано.
+    expect(markup).toContain("shop-detail-incart");
+    expect(markup).toContain("У кошику · 9.60 USD");
+    expect(markup).toContain("2 шт");
+    // Кнопка стає наступним кроком: додавати той самий товар удруге нічого.
+    expect(markup).toContain("Перейти до кошика");
+    expect(markup).not.toContain("Додати в кошик");
+    // Рядок кошика — той самий кирпичик, що в плитці вітрини.
+    expect(rule(".shop-detail-incart")).toContain("color: var(--accent)");
   });
 });

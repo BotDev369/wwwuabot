@@ -14,6 +14,7 @@ import {
   amountLabel,
   cartAdd,
   cartCount,
+  cartLineLabel,
   cartLineTotal,
   cartLines,
   cartNeedsShipping,
@@ -23,6 +24,7 @@ import {
   cartTotal,
   parsePriceAmount,
   priceCurrency,
+  priceDecimals,
 } from "./cart";
 import { ORDER_ITEMS_MAX, ORDER_QTY_MAX } from "./orders";
 import type { ShopProduct } from "./types";
@@ -152,7 +154,7 @@ describe("ціна — текст, і сума це враховує", () => {
       products,
     );
 
-    expect(total).toEqual({ amount: 640, hasUnknown: true, count: 3, currency: "₴" });
+    expect(total).toEqual({ amount: 640, hasUnknown: true, count: 3, currency: "₴", decimals: 0 });
   });
 
   it("самі домовленості лишають суму без числа, а не з нулем", () => {
@@ -166,7 +168,13 @@ describe("ціна — текст, і сума це враховує", () => {
   it("товар, якого немає в магазині, у суму не входить", () => {
     const total = cartTotal([{ productId: 1, qty: 5 }], []);
 
-    expect(total).toEqual({ amount: null, hasUnknown: false, count: 0, currency: null });
+    expect(total).toEqual({
+      amount: null,
+      hasUnknown: false,
+      count: 0,
+      currency: null,
+      decimals: 0,
+    });
   });
 });
 
@@ -188,7 +196,15 @@ describe("одиниця грошей — з ціни, а не з платфор
     const products = [product({ id: 1, price: "USD 6.00" }), product({ id: 2, price: "$2.40" })];
     const total = cartTotal([{ productId: 1, qty: 2 }], products);
 
-    expect(total).toEqual({ amount: 12, hasUnknown: false, count: 2, currency: "USD" });
+    // Знаків після коми — два, бо їх два в самій ціні: «USD 6.00» дає
+    // «12.00 USD», і це та сама точність грошей, а не прикраса числа.
+    expect(total).toEqual({
+      amount: 12,
+      hasUnknown: false,
+      count: 2,
+      currency: "USD",
+      decimals: 2,
+    });
   });
 
   it("різні одиниці в позиціях лишають суму без валюти: додавати їх не можна", () => {
@@ -210,6 +226,22 @@ describe("одиниця грошей — з ціни, а не з платфор
 
     expect(total.currency).toBe("₴");
   });
+
+  it("точність суми — найбільша з цін у кошику, а не перша-ліпша", () => {
+    const products = [product({ id: 1, price: "320 ₴" }), product({ id: 2, price: "2.40 ₴" })];
+    const total = cartTotal(
+      [
+        { productId: 1, qty: 1 },
+        { productId: 2, qty: 1 },
+      ],
+      products,
+    );
+
+    expect(total.amount).toBeCloseTo(322.4, 10);
+    expect(total.decimals).toBe(2);
+    // А сам підпис суми мусить показати копійки, а не «322 ₴».
+    expect(cartLineLabel("2.40 ₴", 1)).toBe("2.40 ₴");
+  });
 });
 
 describe("сума позиції в плитці", () => {
@@ -222,6 +254,33 @@ describe("сума позиції в плитці", () => {
     expect(amountLabel(18, "$")).toBe("$18");
     expect(amountLabel(1250, "₴")).toBe("1\u00a0250 ₴");
     expect(amountLabel(18, "")).toBe("18");
+  });
+
+  it("скільки знаків після коми в ціні — стільки й у сумі", () => {
+    expect(priceDecimals("USD 4.80")).toBe(2);
+    expect(priceDecimals("4,80 €")).toBe(2);
+    expect(priceDecimals("149,50 ₴")).toBe(2);
+    expect(priceDecimals("320 ₴")).toBe(0);
+    expect(priceDecimals("$6")).toBe(0);
+    expect(priceDecimals("договірна")).toBe(0);
+    // «8,5 × 11 дюймів» — це розмір аркуша, а не копійки: кома з цифрою
+    // всередині рядка сумою не робить нічого.
+    expect(priceDecimals("US Letter 8,5 × 11 дюймів")).toBe(0);
+  });
+
+  it("сума не округлюється до цілого — це інша цифра в грошах", () => {
+    expect(amountLabel(4.8, "USD", 2)).toBe("4.80 USD");
+    expect(amountLabel(9.6, "₴", 2)).toBe("9.60 ₴");
+    expect(amountLabel(1234.5, "₴", 2)).toBe("1\u00a0234.50 ₴");
+    // Цілі ціни лишаються цілими: «1 250 ₴» не стає «1 250.00 ₴».
+    expect(amountLabel(1250, "₴", 0)).toBe("1\u00a0250 ₴");
+  });
+
+  it("рядок кошика — один підпис і для плитки, і для картки товару", () => {
+    expect(cartLineLabel("USD 4.80", 1)).toBe("4.80 USD");
+    expect(cartLineLabel("USD 4.80", 2)).toBe("9.60 USD");
+    expect(cartLineLabel("150 ₴", 2)).toBe("300 ₴");
+    expect(cartLineLabel("договірна", 3)).toBeNull();
   });
 
   it("ціна × кількість — те, що покупець бачить у плитці", () => {

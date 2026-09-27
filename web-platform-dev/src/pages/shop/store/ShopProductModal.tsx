@@ -13,6 +13,12 @@
  * **Кількість тут, а не в кошику.** Скільки взяти — питання про товар, і саме
  * тому лічильник стоїть поруч із ціною; у кошику кількість лише правлять.
  *
+ * **Стан «у кошику» видно в самій картці.** Кількість береться **з кошика**, а не
+ * з локального стану, коли товар уже додано: інакше кнопка пропонувала б додати
+ * те, що вже додане, а число в ній розходилось би з плиткою вітрини. Мінус на
+ * одиниці при цьому **прибирає позицію** — те саме правило, що в плитці, — а
+ * кнопка стає наступним кроком: «Перейти до кошика».
+ *
  * **Порядок картки — це порядок рішення.** Спершу те, за чим товар вибирають
  * (фото, ціна, характеристики), далі те, що читають за бажанням (опис
  * розділами), і в кінці дія. Тому характеристики стоять **під ціною**, а не в
@@ -28,6 +34,7 @@ import { Icon } from "@wwwuabot/shared";
 import { MenuModal } from "@wwwuabot/ui/menu";
 import {
   ORDER_QTY_MAX,
+  cartLineLabel,
   mediaUrl,
   productKindLabel,
   productPhotos,
@@ -40,16 +47,30 @@ import { detailSections, detailValues } from "./store-view";
 export interface ShopProductModalProps {
   product: ShopProduct;
   media: ShopMedia[];
+  /**
+   * Скільки одиниць товару вже в кошику; `0` — товару в кошику немає.
+   *
+   * Звідси береться стан смуги покупки: картка показує те саме, що й плитка
+   * вітрини, — інакше вона пропонувала б додати те, що вже додане.
+   */
+  inCart?: number;
   onClose: () => void;
   /** Додати в кошик; кількість уже вибрана тут. */
   onAdd: (qty: number) => void;
+  /** Поставити кількість у кошику; `0` прибирає позицію. */
+  onSetQty?: (qty: number) => void;
+  /** Показати кошик — наступний крок, коли товар уже в ньому. */
+  onOpenCart?: () => void;
 }
 
 export function ShopProductModal({
   product,
   media,
+  inCart = 0,
   onClose,
   onAdd,
+  onSetQty,
+  onOpenCart,
 }: ShopProductModalProps): ReactElement {
   const photos = productPhotos(product, media);
   const detail = detailSections(product.description);
@@ -58,6 +79,15 @@ export function ShopProductModal({
   const firstTitled = detail.findIndex((section) => section.title !== "");
   const [picked, setPicked] = useState(0);
   const [qty, setQty] = useState(1);
+
+  // Товар уже в кошику — тоді лічильник править **кошик**, а не локальну
+  // кількість, і мінус на одиниці прибирає позицію (як у плитці вітрини).
+  const cartQty = inCart > 0 && onSetQty ? inCart : 0;
+  const units = cartQty > 0 ? cartQty : qty;
+  const setUnits = cartQty > 0 && onSetQty ? onSetQty : setQty;
+  // Сума позиції — тим самим підписом, що в плитці (`cartLineLabel`):
+  // копійки в ціні мусять бути видні в обох місцях однаково.
+  const line = cartQty > 0 ? cartLineLabel(product.price, cartQty) : null;
 
   // Фото могло не бути зовсім — тоді місце під нього тримає рамка, а не
   // порожній рядок: картка без знімка не мусить виглядати зламаною.
@@ -198,16 +228,16 @@ export function ShopProductModal({
                 <button
                   type="button"
                   className="shop-qty-btn"
-                  onClick={() => setQty((value) => Math.max(1, value - 1))}
+                  onClick={() => setUnits(Math.max(cartQty > 0 ? 0 : 1, units - 1))}
                   aria-label="Менше"
                 >
                   <Icon name="minus" size={16} />
                 </button>
-                <span className="shop-qty-value">{qty}</span>
+                <span className="shop-qty-value">{cartQty > 0 ? `${units} шт` : units}</span>
                 <button
                   type="button"
                   className="shop-qty-btn"
-                  onClick={() => setQty((value) => Math.min(ORDER_QTY_MAX, value + 1))}
+                  onClick={() => setUnits(Math.min(ORDER_QTY_MAX, units + 1))}
                   aria-label="Більше"
                 >
                   <Icon name="plus" size={16} />
@@ -215,10 +245,23 @@ export function ShopProductModal({
               </div>
             </div>
 
-            <button type="button" className="wb-btn wb-btn-primary" onClick={() => onAdd(qty)}>
-              <Icon name="cart" size={16} />
-              Додати в кошик
-            </button>
+            {line !== null && (
+              <p className="shop-detail-incart">
+                <Icon name="check" size={13} />У кошику · {line}
+              </p>
+            )}
+
+            {cartQty > 0 && onOpenCart ? (
+              <button type="button" className="wb-btn wb-btn-primary" onClick={onOpenCart}>
+                <Icon name="cart" size={16} />
+                Перейти до кошика
+              </button>
+            ) : (
+              <button type="button" className="wb-btn wb-btn-primary" onClick={() => onAdd(qty)}>
+                <Icon name="cart" size={16} />
+                Додати в кошик
+              </button>
+            )}
           </div>
         </div>
       }
