@@ -22,7 +22,7 @@
  * @module web-platform-dev/src/pages/shop/store
  */
 
-import { useMemo, useRef, useState, type ReactElement } from "react";
+import { useMemo, useState, type ReactElement } from "react";
 import { Icon } from "@wwwuabot/shared";
 import {
   cartTotal,
@@ -38,7 +38,6 @@ import {
   cartCountLabel,
   cartTotalLabel,
   filterCards,
-  goodsLabel,
   storeSections,
   storeStatsLabel,
   storeTagline,
@@ -83,7 +82,6 @@ export function ShopStore({
   const [openedProduct, setOpenedProduct] = useState<number | null>(null);
   const [cartOpen, setCartOpen] = useState(false);
   const [checkingOut, setCheckingOut] = useState(false);
-  const catalogRef = useRef<HTMLElement | null>(null);
 
   const shown = useMemo(() => filterCards(cards, catalog, query), [cards, catalog, query]);
 
@@ -122,10 +120,6 @@ export function ShopStore({
     setCartOpen(true);
   }
 
-  function scrollTo(target: HTMLElement | null): void {
-    target?.scrollIntoView({ behavior: "smooth", block: "start" });
-  }
-
   return (
     <div className={`shop-store${cart.count > 0 ? " shop-store--cart-open" : ""}`}>
       <header className="shop-store-hero">
@@ -133,8 +127,22 @@ export function ShopStore({
             банера шапка читається як сайт магазину, а не як плейсхолдер. */}
         {photoUrl && <img className="shop-store-cover" src={photoUrl} alt="" />}
 
+        {/* Кошик — **єдина дія над полицею**: покупцеві він потрібен із
+            першого екрана, а кнопка «Каталог» вела на сто пікселів нижче —
+            тобто нікуди, бо полиця й так стоїть одразу під банером. Знак —
+            склом на фото, а не папером: біла пілюля на обкладинці читалась би
+            як ще один елемент поряд із полем пошуку. */}
+        <button
+          type="button"
+          className="shop-store-cart"
+          onClick={() => setCartOpen(true)}
+          aria-label={cartCountLabel(cart.count)}
+        >
+          <Icon name="cart" size={18} />
+          {cart.count > 0 && <span className="shop-store-cart-count">{cart.count}</span>}
+        </button>
+
         <div className="shop-store-hero-body">
-          <p className="shop-store-kicker">{storeStatsLabel(cards.length, catalogs.length)}</p>
           <h1 className="shop-store-title">{title?.trim() || "Магазин"}</h1>
           {tagline && <p className="shop-store-tagline">{tagline}</p>}
         </div>
@@ -154,27 +162,16 @@ export function ShopStore({
         />
       </div>
 
-      <div className="shop-store-actions">
-        <button
-          type="button"
-          className="wb-btn wb-btn-primary"
-          onClick={() => scrollTo(catalogRef.current)}
-        >
-          <Icon name="grid" size={16} />
-          Каталог
-        </button>
-        <button type="button" className="wb-btn wb-btn-secondary" onClick={() => setCartOpen(true)}>
-          <Icon name="list" size={16} />
-          {cartCountLabel(cart.count)}
-        </button>
-      </div>
-
-      <section className="shop-store-catalog" ref={catalogRef}>
+      <section className="shop-store-catalog">
         {/* Заголовок полиці: покупець має бачити, що це каталог, і скільки в
-            ньому є, — без цього сітка читалась як «десь усе підряд». */}
+            ньому є, — без цього сітка читалась як «десь усе підряд». Обсяг
+            магазину стоїть **тут**, а не надрукований ще раз у шапці: два
+            однакові числа на одному екрані це не довідка, а шум. */}
         <div className="shop-store-catalog-head">
           <h2 className="shop-store-catalog-title">Каталог</h2>
-          <span className="shop-store-catalog-count">{goodsLabel(cards.length)}</span>
+          <span className="shop-store-catalog-count">
+            {storeStatsLabel(cards.length, catalogs.length)}
+          </span>
         </div>
 
         {catalogs.length > 1 && (

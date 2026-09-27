@@ -291,6 +291,11 @@
   /* Шапка магазину — **темна обкладинка**: на будь-якому тлі теми вона
      читається як «це магазин», а не як ще один прямокутник серед інших. */
   --shop-hero: linear-gradient(158deg, #1d2130 0%, #101320 100%);
+  /* Скрим — тло для того, що лежить **на фото** (мітка плитки, дія шапки):
+     знімок продавця буває будь-якої яскравості, а тему тут не читають, бо
+     підкладка мусить бути темною в обох схемах. */
+  --shop-scrim: rgb(14 16 24 / 72%);
+  --shop-scrim-strong: rgb(14 16 24 / 88%);
 }
 
 /* Схема темна: папір стає темним, чорнило світлим — крок лишається таким
@@ -411,7 +416,7 @@ html[data-colors-mode="dark"] .shop-catalog {
   text-overflow: ellipsis;
   white-space: nowrap;
   color: #fff;
-  background: rgb(14 16 24 / 72%);
+  background: var(--shop-scrim);
   backdrop-filter: blur(6px);
   -webkit-backdrop-filter: blur(6px);
   border-radius: var(--radius-full);
@@ -909,16 +914,22 @@ html[data-colors-mode="dark"] .shop-catalog {
    короткий опис. Фото лежить **тлом**, а не окремою картинкою: назва поверх
    банера читається як сайт магазину, а не як плейсхолдер із заголовком.
 
-   **Банер — на всю ширину.** Обкладинка в берегах вітрини читалась як
-   картка серед карток: берег з'їдав по `--sp-4` з кожного боку, а заокруглені
-   кути на самому краю екрана обрізались і робили банер ще вужчим. Тому берег
-   вітрини скасовують власні від'ємні поля, а кутів немає — прямокутник, що
-   доходить до краю, читається як обкладинка, а не як обрізана плитка. */
+   **Банер — на всю ширину, і невеликий.** Обкладинка в берегах вітрини
+   читалась як картка серед карток: берег з'їдав по `--sp-4` з кожного боку, а
+   заокруглені кути на самому краю екрана обрізались і робили банер ще вужчим.
+   Тому берег вітрини скасовують власні від'ємні поля, а кутів немає —
+   прямокутник, що доходить до краю, читається як обкладинка, а не як обрізана
+   плитка.
+
+   **Висота — смуга, а не постер.** 224px шапки з трьома рядками тексту
+   займали третину екрана до першого товару: покупець відкривав магазин і
+   бачив один банер. Обкладинці досить 168px — назва з описом стоять унизу,
+   а над ними лишається смуга фото. */
 .shop-store-hero {
   position: relative;
   display: flex;
   align-items: flex-end;
-  min-height: 224px;
+  min-height: 168px;
   overflow: hidden;
   background:
     radial-gradient(
@@ -932,14 +943,16 @@ html[data-colors-mode="dark"] .shop-catalog {
 }
 
 /* Обкладинка приглушена навмисно: яскраве фото під назвою робило б її
-   нечитабельною, а світле — з'їдало б контраст із текстом. */
+   нечитабельною, а світле — з'їдало б контраст із текстом. 0.45, а не 0.55:
+   на насипному знімку (квіти, зелень) фото перемагало і назву, і все навколо,
+   і банер читався як картинка, до якої домалювали підпис. */
 .shop-store-cover {
   position: absolute;
   inset: 0;
   width: 100%;
   height: 100%;
   object-fit: cover;
-  opacity: 0.55;
+  opacity: 0.45;
 }
 
 /* Затемнення знизу — саме воно робить напис на фото читабельним, а не колір
@@ -951,9 +964,9 @@ html[data-colors-mode="dark"] .shop-catalog {
   pointer-events: none;
   background: linear-gradient(
     180deg,
-    rgb(10 12 20 / 10%) 0%,
-    rgb(10 12 20 / 52%) 56%,
-    rgb(10 12 20 / 90%) 100%
+    rgb(10 12 20 / 16%) 0%,
+    rgb(10 12 20 / 58%) 46%,
+    rgb(10 12 20 / 92%) 100%
   );
 }
 
@@ -968,35 +981,29 @@ html[data-colors-mode="dark"] .shop-catalog {
      яке заходить на обкладинку. Берег по боках — `--sp-4`, тобто **та сама
      лінія, що й у поля пошуку**: банер вийшов на всю ширину, але текст на
      ньому не поїхав до краю екрана. */
-  padding: var(--sp-6) var(--sp-4) var(--sp-8);
+  padding: var(--sp-5) var(--sp-4) var(--sp-8);
 }
 
-/* Надрячок — довідка про магазин (скільки чого), а не заголовок: великими
-   літерами з розрідженням він не змагається з назвою.
+/* Надрячка — довідки про магазин — у банері **немає**: обсяг («15 товарів ·
+   7 розділів») стоїть у шапці каталогу, і друге число про те саме було шумом у
+   найпомітнішому місці екрана. Лишаються два рядки — назва й короткий опис.
 
-   **Чому два класи й `!important`.** Бренд (`android.css` / `apple.css`)
-   оголошує `h1…h3` (18–34px) і `p` (14–17px) з `!important` — для сторінки, де
-   є один великий заголовок і один розмір абзацу. Вітрині це не підходило: у ній
-   зникала ієрархія — надрячок, підпис переваги й примітка ставали одним
-   розміром абзацу сторінки, а назва товару малювалась як `h3`. `.shop-store .x`
-   — це (0,2,0) проти брендового (0,1,2), тож рахунок на нашому боці без
-   залежності від порядку файлів. */
-.shop-store .shop-store-kicker {
-  margin: 0;
-  font-size: 10px !important;
-  font-weight: var(--weight-semibold) !important;
-  line-height: 1.4 !important;
-  letter-spacing: 0.14em !important;
-  text-transform: uppercase;
-  color: rgb(255 255 255 / 68%);
-}
+   **Чому назва й опис — з двома класами й `!important`.** Бренд
+   (`android.css` / `apple.css`) оголошує `h1…h3` (18–34px) і `p` (14–17px) з
+   `!important` — для сторінки, де є один великий заголовок і один розмір
+   абзацу. Вітрині це не підходило: у ній зникала ієрархія — підпис переваги й
+   примітка ставали одним розміром абзацу сторінки, а назва товару малювалась
+   як `h3`. `.shop-store .x` — це (0,2,0) проти брендового (0,1,2), тож рахунок
+   на нашому боці без залежності від порядку файлів. */
 
 /* Назва — `--font-ui`, а не `--font-display`: Space Grotesk кирилиці не має, і
-   «Магазин X» виходив двома різними шрифтами в одному слові. */
+   «Магазин X» виходив двома різними шрифтами в одному слові. Розмір — до 30px:
+   на банері, а не на окремій сторінці, назва не мусить глушити полицю. */
 .shop-store .shop-store-title {
   margin: 0;
+  max-width: 22ch;
   font-family: var(--font-ui);
-  font-size: clamp(26px, 7vw, 34px) !important;
+  font-size: clamp(24px, 6.4vw, 30px) !important;
   font-weight: 700 !important;
   line-height: 1.06 !important;
   letter-spacing: -0.03em !important;
@@ -1004,50 +1011,99 @@ html[data-colors-mode="dark"] .shop-catalog {
   text-wrap: balance;
 }
 
+/* Опис — 14px, а не 16: він читається раз, і в банері мусить бути підписом, а
+   не другим абзацом сторінки. */
 .shop-store .shop-store-tagline {
-  max-width: 44ch;
+  max-width: 42ch;
   margin: 0;
-  font-size: var(--text-base) !important;
+  font-size: var(--text-sm) !important;
   line-height: 1.45 !important;
-  color: rgb(255 255 255 / 78%);
+  color: rgb(255 255 255 / 82%);
 }
 
-/* Дві дії, а не три: «Про магазин» дублював прокрутку тієї ж сторінки, а
-   третій підпис у рядок на 360px не вміщався й обрізався. */
-.shop-store-actions {
-  display: grid;
-  grid-template-columns: 1fr auto;
-  gap: var(--sp-2);
-  margin-top: calc(-1 * var(--sp-2));
+/* Кошик — **єдина дія над полицею**, і стоїть він на самій обкладинці.
+
+   Доти тут був рядок із двох кнопок: «Каталог» (48px, залитий акцентом) і
+   «Кошик». «Каталог» прокручував на сто пікселів — до полиці, яка й так стоїть
+   одразу під банером, тобто був кнопкою в нікуди; а два тяжких прямокутники
+   під полем пошуку перетворювали верх екрана на стос плит. Кошик лишається
+   тому, що без нього покупець не бачить набраного, доки не дійде до товару.
+
+   Скло, а не папір: дія стоїть **на фото**, і біла пілюля там читалась би як
+   ще одне поле поруч із пошуком. Мітки «Кошик» немає — знак у своєму ряді
+   єдиний (правило 9), а кількість видно числом. */
+.shop-store-cart {
+  position: absolute;
+  top: var(--sp-3);
+  right: var(--sp-4);
+  z-index: 2;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--sp-1);
+  min-width: 44px;
+  min-height: 44px;
+  padding: 0 var(--sp-3);
+  font: inherit;
+  font-size: var(--text-sm);
+  font-weight: var(--weight-semibold);
+  color: #fff;
+  /* Той самий скрим, що й у мітки на фото товару (`--shop-shadow` тут не
+     працює: дія стоїть на знімку, а не на папері, і світле фото з'їдає
+     напівпрозору пілюлю). */
+  background: var(--shop-scrim);
+  border: none;
+  border-radius: var(--radius-full);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  cursor: pointer;
+  transition: background var(--duration) var(--ease);
 }
 
-/* `!important` — бо бренд оголошує мірки `.wb-btn` власними. */
-.shop-store-actions .wb-btn {
-  min-height: 48px !important;
-  padding: 0 var(--sp-4) !important;
+.shop-store-cart:hover {
+  background: var(--shop-scrim-strong);
 }
 
-/* Пошук стоїть **на межі обкладинки**: він читається як поле магазину, а не
-   як ще один рядок у шапці, і каталог від нього не їде вниз. Папір, а не
-   скло: поле перекриває темний банер, і там потрібен елемент керування, а не
-   ще одна частина банера. `margin-top` тягне його на 24px угору — рівно
-   настільки, щоб він стояв «на» обкладинці. */
+/* Кількість — акцентною плашкою, як лічильник непрочитаних у футері: число на
+   знаку каже «в кошику вже щось є» ще до того, як туди зазирнули. */
+.shop-store-cart-count {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 20px;
+  height: 20px;
+  padding: 0 var(--sp-1);
+  font-size: var(--text-xs);
+  font-weight: var(--weight-semibold);
+  font-variant-numeric: tabular-nums;
+  color: var(--text-inverse);
+  background: var(--accent);
+  border-radius: var(--radius-full);
+}
+
+/* Пошук — **поле, а не пілюля**: доти він був найбільшим білим предметом на
+   екрані (52px, пілюля на всю ширину, тінь як у картки) і важив більше за
+   банер. Тепер це звичайне поле магазину: 46px, радіус `--radius-lg` і м'яка
+   тінь — воно читається як керування, а не як ще одна плита.
+
+   Стоїть **на межі обкладинки** — так поле належить банеру, а не висить окремим
+   рядком: `margin-top` тягне його на 16px угору, тобто на третину висоти. */
 .shop-search {
   position: relative;
   z-index: 2;
   display: flex;
   align-items: center;
   gap: var(--sp-2);
-  min-height: 52px;
-  /* −24px над щілиною між блоками (яку дає `gap` вітрини) — тобто поле стоїть
-     на обкладинці на чверть своєї висоти. */
-  margin-top: calc(-1 * (var(--sp-6) + var(--sp-4)));
-  padding: 0 var(--sp-4);
+  min-height: 46px;
+  /* −16px над щілиною між блоками (яку дає `gap` вітрини) — тобто поле стоїть
+     на обкладинці, а не під нею. */
+  margin-top: calc(-1 * (var(--sp-4) + var(--sp-4)));
+  padding: 0 var(--sp-3);
   color: var(--text-muted);
   background: var(--surface);
   border: 1px solid var(--border-subtle);
-  border-radius: var(--radius-full);
-  box-shadow: var(--shop-shadow);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shop-shadow-soft);
   transition: border-color var(--duration) var(--ease);
 }
 
@@ -1059,7 +1115,7 @@ html[data-colors-mode="dark"] .shop-catalog {
 .shop-search-input {
   flex: 1;
   min-width: 0;
-  min-height: 50px;
+  min-height: 44px;
   padding: 0;
   font: inherit;
   font-size: var(--text-md);
