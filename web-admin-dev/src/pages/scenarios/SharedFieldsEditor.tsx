@@ -55,7 +55,7 @@ export function SharedFieldsEditor({ fields, updateField }: Props) {
         <input
           className="wb-input"
           value={address}
-          placeholder="mydate або galyashop/cart (порожньо — головна)"
+          placeholder="mydate або nastya (порожньо — головна)"
           onChange={(e) => updateField("slug", e.target.value)}
         />
         {!valid ? (
