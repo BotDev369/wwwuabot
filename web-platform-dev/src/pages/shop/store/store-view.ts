@@ -246,10 +246,19 @@ export function catalogCount(
  * замовлення не має суми взагалі (`docs/SHOPS.md` §6). Тому коли відомих цін
  * немає, рядок каже «Ціну узгодить продавець», а не «0 ₴»; коли частина цін
  * договірна, сума стоїть **із поміткою**, що вона неповна.
+ *
+ * **Валюта — та, що в цінах магазину** (`priceCurrency`): сума магазину в
+ * доларах у гривнях — це неправда, а не «наша одиниця». Коли позиції названо
+ * **різними** одиницями, сума йде без валюти й каже про це словом: підробити
+ * одну з них означало б додати гривні до доларів і назвати це сумою.
  */
 export function cartTotalLabel(total: CartTotal): string {
   if (total.amount === null) return "Ціну узгодить продавець";
-  const base = amountLabel(total.amount);
+
+  const base =
+    total.currency === null
+      ? `${amountLabel(total.amount, "")} (ціни в різних валютах)`
+      : amountLabel(total.amount, total.currency);
   return total.hasUnknown ? `${base} + договірні позиції` : base;
 }
 

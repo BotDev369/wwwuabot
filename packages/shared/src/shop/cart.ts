@@ -22,6 +22,12 @@ import { ORDER_ITEMS_MAX, ORDER_QTY_MAX, orderNeedsShipping } from "./orders";
 import type { OrderItemInput } from "./orders";
 import type { ShopProduct } from "./types";
 
+/**
+ * Типова одиниця грошей: у ній рахують ціни без одиниці й нею ж підписана
+ * сума, коли позиції названо різними одиницями.
+ */
+export const DEFAULT_CURRENCY = "₴";
+
 /** Позиція кошика: товар і скільки його взяли. */
 export interface CartLine {
   productId: number;
@@ -136,16 +142,44 @@ export function parsePriceAmount(price: string): number | null {
 }
 
 /**
- * Число з розділювачами розрядів: «1 250 ₴».
+ * Одиниця грошей, названа в ціні: «USD 6.00» → `USD`, «320 ₴» → `₴`, «$6` → `$`.
  *
- * Валюта тут **наша**, а не з ціни-тексту: у «від 300 грн» валюта своя, а
- * сума — грошова одиниця магазину. Нерозривний пробіл між числом і знаком
- * тримає їх на одному рядку: перенос «420» / «₴» читався б як два різні числа.
+ * **Одиниця суми береться з тексту ціни, а не з константи платформи.** Ціна в
+ * магазині — текст, і валюта живе в ньому ж: магазин у доларах інакше показував
+ * би покупцеві «18 ₴» за те, що коштує 18 доларів. `null` — одиниці в ціні
+ * немає («договірна», «150»): тоді чинна типова (`DEFAULT_CURRENCY`).
+ *
+ * Числа вимагаємо разом з одиницею: саме «USD» без цифри — не ціна, а слово.
  */
-export function amountLabel(amount: number): string {
-  return `${Math.round(amount)
+export function priceCurrency(price: string): string | null {
+  const text = price.trim();
+  if (!text || !/\d/u.test(text)) return null;
+
+  // Код валюти словом: «USD 6.00», «6,00 EUR», «1 200 UAH».
+  const code = /\b(USD|EUR|UAH|GBP|PLN|CAD|AUD|CHF|JPY|TRY)\b/iu.exec(text);
+  if (code) return code[1].toUpperCase();
+
+  // Знак валюти: «$6», «6 €», «320 ₴».
+  const symbol = /[$€£¥₴₺₽]/u.exec(text);
+  return symbol ? symbol[0] : null;
+}
+
+/**
+ * Число з розділювачами розрядів і знаком валюти: «1 250 ₴», «$18», «18 USD».
+ *
+ * Знак стоїть так, як пишуть самі ці гроші: перед числом («$18», «€6») —
+ * для знаків, після числа — для `₴` (валюта платформи, її рядки вже такі) і
+ * для кодів словом. Нерозривний пробіл між розрядами тримає `1 250` на одному
+ * рядку: перенос «1» / «250» читався б як два різні числа. Порожня одиниця —
+ * сума без валюти: так показують разом, у якому позиції названо різними
+ * одиницями (`cartTotal`).
+ */
+export function amountLabel(amount: number, currency: string = DEFAULT_CURRENCY): string {
+  const digits = Math.round(amount)
     .toString()
-    .replace(/\B(?=(\d{3})+(?!\d))/gu, "\u00a0")} ₴`;
+    .replace(/\B(?=(\d{3})+(?!\d))/gu, "\u00a0");
+  if (!currency) return digits;
+  return /^[$€£¥₺₽]/u.test(currency) ? `${currency}${digits}` : `${digits} ${currency}`;
 }
 
 /**
@@ -168,6 +202,11 @@ export interface CartTotal {
   hasUnknown: boolean;
   /** Скільки одиниць у кошику — разом із тими, чиєї ціни не знаємо. */
   count: number;
+  /**
+   * Одиниця суми, **спільна** для поцінованих позицій; `null` — вони названі
+   * різними одиницями, і тоді сума йде без валюти (підробити одну не можна).
+   */
+  currency: string | null;
 }
 
 /**
@@ -183,6 +222,9 @@ export function cartTotal(lines: readonly CartLine[], products: readonly ShopPro
   let known = false;
   let hasUnknown = false;
   let count = 0;
+  // Одиниці саме поцінованих позицій: ціна без числа одиниці не називає, і
+  // входити нею в суму означало б вибирати валюту за «договірною».
+  const units = new Set<string>();
 
   for (const line of lines) {
     // Товар, якого більше немає, у суму не входить — як і в кошику на екрані.
@@ -197,7 +239,14 @@ export function cartTotal(lines: readonly CartLine[], products: readonly ShopPro
     }
     known = true;
     amount += price * line.qty;
+    units.add(priceCurrency(product.price) ?? DEFAULT_CURRENCY);
   }
 
-  return { amount: known ? amount : null, hasUnknown, count };
+  const [only] = units;
+  return {
+    amount: known ? amount : null,
+    hasUnknown,
+    count,
+    currency: units.size === 1 ? only : null,
+  };
 }

@@ -82,6 +82,7 @@ export {
 export type { ShopCard, ShopCatalog } from "./cards";
 
 export {
+  DEFAULT_CURRENCY,
   amountLabel,
   cartAdd,
   cartCount,
@@ -93,6 +94,7 @@ export {
   cartSetQty,
   cartTotal,
   parsePriceAmount,
+  priceCurrency,
 } from "./cart";
 export type { CartLine, CartTotal } from "./cart";
 

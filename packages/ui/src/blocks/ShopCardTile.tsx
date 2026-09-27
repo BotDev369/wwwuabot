@@ -25,7 +25,13 @@
  */
 
 import { Icon } from "@wwwuabot/shared";
-import { amountLabel, cartLineTotal, type ShopCard } from "@wwwuabot/shared/shop";
+import {
+  DEFAULT_CURRENCY,
+  amountLabel,
+  cartLineTotal,
+  priceCurrency,
+  type ShopCard,
+} from "@wwwuabot/shared/shop";
 
 /** Напис кнопки першої покупки: не «Детальніше» — дотик кладе товар у кошик. */
 const ADD_LABEL = "В кошик";
@@ -98,7 +104,8 @@ export function ShopCardTile({ card, qty = 0, onAdd, onSetQty, onOpen }: ShopCar
                   «0 ₴» означало б запропонувати безкоштовне замовлення. */}
               {line !== null && (
                 <p className="shop-card-incart">
-                  <Icon name="check" size={13} />У кошику · {amountLabel(line)}
+                  <Icon name="check" size={13} />У кошику ·{" "}
+                  {amountLabel(line, priceCurrency(card.price) ?? DEFAULT_CURRENCY)}
                 </p>
               )}
             </>
