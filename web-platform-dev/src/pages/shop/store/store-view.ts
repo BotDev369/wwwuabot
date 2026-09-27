@@ -214,3 +214,85 @@ export function cartCountLabel(count: number): string {
 export function foundLabel(shown: number): string {
   return `Показано: ${shown} ${plural(shown, ["товар", "товари", "товарів"])}`;
 }
+
+/**
+ * Розділ опису товару: заголовок, абзаци й пункти списку.
+ *
+ * **Опис — це поле, яке продавець пише як завгодно, і саме тому розбір тут.**
+ * Раніше він лягав у поверхню одним `<p>` із `white-space: pre-line` — тобто
+ * переноси зберігалися, а **вид** ні: «Властивості та показання» виглядало як
+ * звичайний рядок тіла, пункти разом із ним злипались у полотно, а кожен
+ * перенос пункту починався від лівого краю замість того, щоб триматися під
+ * текстом. Покупцеві це читалось як стіна слів.
+ *
+ * **Заголовком стає лише те, після чого йдуть пункти.** Це недовільний вибір:
+ * рядок «Пийте теплим» у кінці опису — абзац, і зробити з нього заголовок
+ * означало б розірвати опис на розділи там, де їх немає. Продавець, який пише
+ * опис простим текстом, дістає рівно свій текст — без вигаданої структури.
+ */
+export interface DetailSection {
+  /** Назва розділу; порожній — пункти на початку опису, без назви. */
+  title: string;
+  /** Абзаци розділу: рядки без маркера списку. */
+  paragraphs: string[];
+  /** Пункти списку: рядки, маркер яких продавець поставив сам. */
+  items: string[];
+}
+
+/** Маркер пункту: продавець ставить його сам — ми лише прибираємо з тексту. */
+const DETAIL_MARKER = /^[•·*\-—]\s*/u;
+
+export function detailSections(text: string): DetailSection[] {
+  const lines = text
+    .split("\n")
+    .map((line) => line.trim())
+    .filter(Boolean);
+
+  const sections: DetailSection[] = [];
+  let current: DetailSection = { title: "", paragraphs: [], items: [] };
+
+  const flush = () => {
+    if (current.title || current.paragraphs.length > 0 || current.items.length > 0) {
+      sections.push(current);
+    }
+  };
+
+  lines.forEach((line, index) => {
+    const plain = line.replace(DETAIL_MARKER, "");
+    const isItem = plain !== line;
+
+    if (isItem) {
+      current.items.push(plain);
+      return;
+    }
+
+    // Заголовок — лише коли за рядком ідуть пункти: інакше це абзац.
+    const next = lines[index + 1];
+    if (next && next.replace(DETAIL_MARKER, "") !== next) {
+      flush();
+      current = { title: plain, paragraphs: [], items: [] };
+      return;
+    }
+
+    current.paragraphs.push(plain);
+  });
+
+  flush();
+  return sections;
+}
+
+/**
+ * Значення характеристики як окремі значення.
+ *
+ * «Настій · Відвар · Настойка» — це перелік, і одним рядком він читається як
+ * суцільний текст: покупець шукає очима одне слово, а знаходить усі. Порозділені
+ * знаком «·» значення показуються мітками, а значення без нього лишається як є:
+ * «Hypericum perforatum L.» — не список, хоч і довге.
+ */
+export function detailValues(value: string): string[] {
+  const parts = value
+    .split("·")
+    .map((part) => part.trim())
+    .filter(Boolean);
+  return parts.length > 1 ? parts : [];
+}

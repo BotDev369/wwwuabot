@@ -14,6 +14,8 @@ import type { ShopCard } from "@wwwuabot/shared/shop";
 import {
   cartCountLabel,
   cartTotalLabel,
+  detailSections,
+  detailValues,
   filterCards,
   foundLabel,
   plural,
@@ -214,5 +216,46 @@ describe("розділи тексту про магазин", () => {
     const sections = storeSections(loose);
     expect(sections).toHaveLength(1);
     expect(sections[0].blocks.map((block) => block.id)).toEqual(["loose"]);
+  });
+});
+
+describe("опис товару на розділи", () => {
+  it("заголовок відкриває розділ, а пункти лягають у нього", () => {
+    const sections = detailSections(
+      [
+        "Властивості та показання",
+        "• Заспокоює",
+        "• Покращує сон",
+        "",
+        "Як заварювати",
+        "• 1 ст. ложка",
+      ].join("\n"),
+    );
+    expect(sections).toEqual([
+      { title: "Властивості та показання", paragraphs: [], items: ["Заспокоює", "Покращує сон"] },
+      { title: "Як заварювати", paragraphs: [], items: ["1 ст. ложка"] },
+    ]);
+  });
+
+  it("рядок без пунктів після себе лишається абзацом, а не заголовком", () => {
+    const sections = detailSections("Пийте теплим протягом дня.\nНе перевищуйте дозу.");
+    expect(sections).toEqual([
+      { title: "", paragraphs: ["Пийте теплим протягом дня.", "Не перевищуйте дозу."], items: [] },
+    ]);
+  });
+
+  it("пункти без заголовка не губляться", () => {
+    const [first] = detailSections("• Перше\n• Друге");
+    expect(first.title).toBe("");
+    expect(first.items).toEqual(["Перше", "Друге"]);
+  });
+
+  it("порожній опис не дає жодного розділу", () => {
+    expect(detailSections("   \n\n  ")).toEqual([]);
+  });
+
+  it("перелік через «·» стає мітками, а звичайне значення — ні", () => {
+    expect(detailValues("Настій · Відвар")).toEqual(["Настій", "Відвар"]);
+    expect(detailValues("Hypericum perforatum L.")).toEqual([]);
   });
 });

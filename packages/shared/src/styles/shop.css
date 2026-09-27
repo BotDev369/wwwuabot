@@ -681,10 +681,183 @@ html[data-colors-mode="dark"] .shop-catalog {
   gap: var(--sp-3);
 }
 
-.shop-order-form-title {
+/* ── Товар цілком: вступ, розділи опису й характеристики ────────────────
+   Поверхня товару — це форма замовлення з іншим вмістом, і крок у ній
+   ширший: тут блоки різної ваги (ціна, опис, характеристики), а щільний
+   крок зліпив би їх в одне полотно. */
+.shop-order-form.shop-detail {
+  gap: var(--sp-4);
+}
+
+.shop-detail-lead {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-1);
+}
+
+.shop-detail-price {
+  font-size: var(--text-xl);
+  font-weight: var(--weight-bold);
+  line-height: 1.1;
+}
+
+.shop-detail-kind {
+  font-size: var(--text-xs);
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+}
+
+.shop-detail-summary {
+  margin-top: var(--sp-1);
+  font-size: var(--text-sm);
+  line-height: 1.55;
+  color: var(--text-secondary);
+}
+
+.shop-detail-sections {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-4);
+}
+
+/* Полотно більше не тримається переносами: розділи малює розмітка, і
+   `pre-line` (правило `.shop-modal-desc` нижче) тут зайве — воно лише
+   зберегло б подвійні пробіли в тексті продавця. */
+.shop-modal-desc.shop-detail-sections {
+  white-space: normal;
+}
+
+.shop-detail-section {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-2);
+}
+
+/* Межа під заголовком і є тим, що робить розділ розділом: без неї
+   «Властивості та показання» — ще один рядок у полотні тексту. */
+.shop-detail-heading {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
   margin: 0;
-  font-size: var(--text-md);
+  padding-bottom: var(--sp-2);
+  font-size: var(--text-base);
   font-weight: var(--weight-semibold);
+  border-bottom: 1px solid var(--border-subtle);
+}
+
+.shop-detail-heading::before {
+  flex: 0 0 auto;
+  width: 3px;
+  height: 1em;
+  background: var(--accent);
+  border-radius: var(--radius-full);
+  content: "";
+}
+
+/* Абзац опису — це `p`, а бренд оголошує `p` (14–17px) для сторінки
+   з `!important`: без свого розміру абзац був би більшим за пункти списку
+   поруч, і розділ читався б як два різні тексти. */
+.shop-detail-sections .shop-detail-text {
+  margin: 0;
+  font-size: var(--text-sm) !important;
+  line-height: 1.6 !important;
+  color: var(--text-secondary);
+}
+
+.shop-detail-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-2);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+/* Маркер — крапка на осі першого рядка: зі `list-style` перенос пункту
+   починався б від лівого краю, а не під текстом. */
+.shop-detail-list li {
+  position: relative;
+  padding-left: var(--sp-4);
+  font-size: var(--text-sm);
+  line-height: 1.55;
+  color: var(--text-secondary);
+}
+
+.shop-detail-list li::before {
+  position: absolute;
+  top: 0.6em;
+  left: var(--sp-1);
+  width: 5px;
+  height: 5px;
+  background: var(--accent);
+  border-radius: var(--radius-full);
+  content: "";
+}
+
+/* Характеристики — списком із межами, а не парою колонок: довге значення в
+   другій колонці лягало під назву й читалось як продовження підпису. */
+.shop-detail-attrs {
+  margin: 0;
+  border-top: 1px solid var(--border-subtle);
+}
+
+.shop-detail-attr {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-1);
+  padding: var(--sp-3) 0;
+  border-bottom: 1px solid var(--border-subtle);
+}
+
+.shop-detail-attr-name {
+  font-size: var(--text-xs);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.shop-detail-attr-value {
+  margin: 0;
+  font-size: var(--text-sm);
+  line-height: 1.5;
+}
+
+.shop-detail-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--sp-1);
+}
+
+.shop-detail-chip {
+  padding: 3px var(--sp-2);
+  font-size: var(--text-xs);
+  color: var(--accent);
+  background: var(--accent-dim);
+  border-radius: var(--radius-full);
+}
+
+/* Покупка — останній крок поверхні: кількість, кнопка й умова стоять по осі. */
+.shop-detail-buy {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--sp-3);
+}
+
+.shop-detail-buy .shop-qty {
+  align-self: center;
+}
+
+.shop-detail-buy .wb-btn {
+  width: 100%;
+}
+
+/* Нотатка про оплату — теж `p` і з тієї ж причини: вона пояснення під
+   кнопкою, а не абзац сторінки. */
+.shop-detail-buy .shop-detail-note {
+  font-size: var(--text-xs) !important;
+  line-height: 1.5 !important;
+  text-align: center;
 }
 
 .shop-order-sent {
