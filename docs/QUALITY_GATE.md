@@ -66,7 +66,7 @@
 ```bash
 npm run check:quality   # планка (той самий крок у CI)
 npm run check:css       # «клас без правила»
-npm run check:docs      # бюджет документів, мертві посилання й шляхи, свіжість API.md
+npm run check:docs      # бюджет документів, мертві посилання, шляхи й згадки з коду, свіжість API.md
 npm run check:db        # схема D1 по реєстру
 npm run doc:api         # перегенерувати docs/API.md (не гейт, а лікування)
 ```

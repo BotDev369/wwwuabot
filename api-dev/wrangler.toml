@@ -47,7 +47,7 @@ ENVIRONMENT = "dev"
 # invocation_logs = false — вимикає лише службовий лог кожного запиту
 # (найбільший обсяг і найменша користь), а власні console.* та винятки
 # лишаються. Саме тому безкоштовного ліміту (200 000 подій/добу, 3 дні)
-# вистачає з запасом. Див. docs/CONSOLIDATION_PLAN.md §5.8.
+# вистачає з запасом. Див. docs/MONITORING.md.
 [observability]
 enabled = true
 
