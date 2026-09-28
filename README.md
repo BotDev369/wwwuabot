@@ -54,16 +54,12 @@ npm run dev --workspace=web-admin-dev    # Адмін-панель
 
 ## Документація
 
-- **[docs/README.md](docs/README.md)** — **покажчик усієї документації**: один документ = одна тема
-  = один власник факту, бюджет розміру й таблиця «куди писати нове»
-- [AGENTS.md](AGENTS.md) — архітектура, доменні терміни, правила для AI-агентів
+**Покажчик усієї документації — [`docs/README.md`](docs/README.md)**: один документ = одна тема
+= один власник факту, бюджет розміру й таблиця «куди писати нове». Найпотрібніше:
+
+- [AGENTS.md](AGENTS.md) — архітектура, доменні терміни, правила й заборони (для AI-агентів)
 - [docs/RECIPES.md](docs/RECIPES.md) — покрокові рецепти типових задач
-- [CONTRIBUTING.md](CONTRIBUTING.md) — правила розробки, quality gates, конвенції
-- [docs/DESIGN_SYSTEM.md](docs/DESIGN_SYSTEM.md) — токени й правила вигляду
-- [docs/API.md](docs/API.md) — усі шляхи `api-dev` із групами доступу (генерований)
-- [docs/DATA_MODEL.md](docs/DATA_MODEL.md) · [docs/CONTENT_MODEL.md](docs/CONTENT_MODEL.md) — схема D1 і модель контенту
-- [docs/QUALITY_GATE.md](docs/QUALITY_GATE.md) · [docs/MONITORING.md](docs/MONITORING.md) — планка в CI і моніторинг
-- [bot-dev/README.md](bot-dev/README.md) — бот як система: конвеєр апдейта, екрани, нотифікації
+- [CONTRIBUTING.md](CONTRIBUTING.md) — гейти перед пушем і конвенція комітів
 
 Виміряних чисел (файли, рядки, тести, класи) в документах немає — їх друкують самі гейти
 (`npm run check:css` / `check:docs` / `check:quality` / `npm test`) і вони старіють швидше, ніж їх
@@ -76,20 +72,9 @@ npm run dev --workspace=web-admin-dev    # Адмін-панель
 Деплой автоматичний при пуші в `main` через GitHub Actions з path filtering — деплоїться лише
 змінений воркер.
 
-Перед деплоєм обов'язкові гейти (будь-який збій блокує весь деплой):
+Перед деплоєм обов'язкові гейти — будь-який збій блокує **весь** деплой.
 
-| Гейт | Що ловить |
-|---|---|
-| `npm ci` | розсинхрон `package.json` і lockfile — збірка перестала бути відтворюваною |
-| `npm audit --audit-level=high` | уразливості залежностей |
-| `npm run lint` | помилки ESLint, `any` |
-| `npm run typecheck` | помилки типів у всіх воркспейсах |
-| `npx prettier --check .` | розсинхрон форматування |
-| `npm run check:css` | клас без правила: спільний код стилізований у `shared`, клас оболонки має правило |
-| `npm run check:quality` | ліміт рядків на файл, нативні діалоги, голий `100vh`, емодзі в UI |
-| `npm run check:docs` | бюджет документа, мертві посилання, шляхи й згадки документів із коду, свіжість `docs/API.md`, «§N» з коду без дому |
-| `npm run check:db` | таблиця D1 поза реєстром `tables.ts` або друкарська помилка в її імені |
-| `npm test` | регресії |
+**Що саме ловить кожен гейт і як його запускати — [`docs/QUALITY_GATE.md`](docs/QUALITY_GATE.md).**
 
 Ті самі гейти виконуються на кожен pull request. Деплої воркерів не перекриваються: `concurrency`
 ставить їх у чергу, щоб старіший коміт не ліг поверх новішого.

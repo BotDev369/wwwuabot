@@ -14,13 +14,9 @@ Cloudflare Worker: Telegram Mini App для wwwuabot (React 19 + Vite 8 + Tailwi
 Це єдина точка взаємодії користувачів, і майже завжди — телефон. Тому в цьому
 застосунку перевіряють **спочатку 360px**, а десктоп — потім. Обовʼязково:
 
-- резинова верстка (`flex`/`grid`, `clamp()`, без фіксованих ширин розкладки);
-- `100dvh` замість `100vh` (адресний рядок ховається й висота «стрибає»);
-- `var(--safe-top)` / `var(--safe-bottom)` на краях екрана — працюють лише з
-  `viewport-fit=cover` у `index.html`;
-- тап-таргети ≥ 44px і афорданси без `:hover` (`@media (hover: none)`);
-- **ніяких** `alert` / `confirm` / `prompt` — на iOS вони не показуються взагалі,
-  тільки `useDialog()` з `@wwwuabot/ui/dialog`.
+Правила (резинова верстка, `100dvh` + `var(--safe-*)`, `viewport-fit=cover`, тап-таргети ≥ 44px,
+афорданси без `:hover`, **ніяких** `alert` / `confirm` / `prompt` — тільки `useDialog()`) —
+`AGENTS.md` §3 і §4.
 
 ## Роути
 
