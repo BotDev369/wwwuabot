@@ -126,6 +126,7 @@ export const WHO_5: AssessmentTest = {
   items: ITEMS,
   options: OPTIONS,
   bands: BANDS,
+  severityDirection: "lower-is-worse",
   attentionBelow: 50,
   significantChange: { kind: "percent", value: 10 },
   source: {

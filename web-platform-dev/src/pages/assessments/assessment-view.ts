@@ -13,6 +13,7 @@
  */
 
 import {
+  exceedsAttention,
   isSignificantChange,
   maxRawScore,
   profileOf,
@@ -48,17 +49,32 @@ export function profileReading(test: AssessmentTest, record: AssessmentRecord): 
   if (even) {
     const option = test.options.find((one) => one.value === strongest.value)?.label;
     const chosen = option ? `«${option}»` : `${strongest.value} з ${strongest.max}`;
-    if (record.percent > test.attentionBelow) {
+    // **Напрямок шкали вирішує, чи це «добре» чи «важко».** Для благополуччя
+    // все рівно — це про благополуччя; для шкал симптомів все рівно на
+    // низькому балі — це «нічого не турбує», а не «важко скрізь». Без цієї
+    // гілки людина з нулем тривоги читала б «важко не з однієї сторони».
+    const worse = exceedsAttention(test, record.percent);
+    if (!worse && test.severityDirection === "higher-is-worse") {
       return {
-        strongest: `Усі п'ять сфер тримаються рівно: ${chosen}.`,
-        weakest: "Нічого окремо не просіло — і це рідко буває: зазвичай якась сфера тягне вниз.",
-        question: "Що саме тебе тримає на цьому рівні?",
+        strongest: `Ніщо не турбувало: на всі питання — ${chosen}.`,
+        weakest: "Жодна сфера не піднялася вище нуля.",
+        question: null,
+      };
+    }
+    if (worse) {
+      return {
+        strongest: `Усі сфери на одному рівні: ${chosen}.`,
+        weakest:
+          test.severityDirection === "higher-is-worse"
+            ? "Піднялося не одне, а все одразу — так буває, коли важко не з однієї сторони."
+            : "Просило не одне, а все одразу.",
+        question: "Коли таке триває тиждень за тижнем — що заважає почати з одного кроку?",
       };
     }
     return {
-      strongest: `Усі п'ять сфер на одному рівні: ${chosen}.`,
-      weakest: "Просило не одне, а все одразу — так буває, коли важко не з однієї сторони.",
-      question: "Коли таке триває тиждень за тижнем — що заважає почати з одного кроку?",
+      strongest: `Усі п'ять сфер тримаються рівно: ${chosen}.`,
+      weakest: "Нічого окремо не просіло — і це рідко буває: зазвичай якась сфера тягне вниз.",
+      question: "Що саме тебе тримає на цьому рівні?",
     };
   }
 

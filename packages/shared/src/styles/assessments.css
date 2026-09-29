@@ -231,7 +231,7 @@
 }
 
 .wb-source {
-  padding: 0 var(--sp-4) var(--sp-4);
+  margin: 0;
   font-size: 0.75rem;
   line-height: 1.5;
   color: var(--text-muted);
@@ -276,6 +276,9 @@
   border-top: 1px solid var(--border-subtle);
 }
 
+/* Питання — найважливіше на екрані, тому воно темніше за решта тексту й
+   відокремлене рядком, а не кольором: колір не відділяє думку від поради. */
+
 .wb-profile-line {
   font-size: 1rem;
   line-height: 1.5;
@@ -289,8 +292,11 @@
 /* Питання до найслабшої сфери. Виділене, бо це те, що людина забирає
    з собою надовго — на відміну від балу, який цікавить до наступного разу. */
 .wb-profile-question {
-  margin-top: var(--sp-2);
-  font-size: 0.9375rem;
+  margin-top: var(--sp-3);
+  padding-top: var(--sp-3);
+  border-top: 1px dashed var(--border);
+  font-size: 1rem;
+  font-weight: var(--weight-medium);
   line-height: 1.5;
   color: var(--text-primary);
 }
@@ -529,10 +535,56 @@
   color: var(--text-primary);
 }
 
-/* Пояснення рівня — з абзаців і маркерів у джерелі, тому переноси рядків
-   має бути значимим інакше текст злипнеться в стінку. */
-.wb-test-lead {
-  white-space: pre-line;
+/* Спільний заголовок секції на картці результату. */
+.wb-section-title {
+  margin: 0 0 var(--sp-2);
+  font-size: 0.9375rem;
+  font-weight: var(--weight-bold);
+  color: var(--text-primary);
+}
+
+/* Пояснення рівня — блоками, а не суцільним потоком (див. `ProseText`). */
+.wb-level {
+  margin-top: var(--sp-4);
+  padding-top: var(--sp-3);
+  border-top: 1px solid var(--border-subtle);
+}
+
+.wb-prose {
+  margin: 0;
+  font-size: 0.9375rem;
+  line-height: 1.6;
+  color: var(--text-primary);
+}
+
+.wb-prose + .wb-prose,
+.wb-prose + .wb-prose-group,
+.wb-prose-group + .wb-prose,
+.wb-prose-group + .wb-prose-group {
+  margin-top: var(--sp-3);
+}
+
+/* «Що робити:» над маркерами — підпис, а не абзац. */
+.wb-prose-label {
+  display: block;
+  margin: 0 0 var(--sp-2);
+  font-size: 0.875rem;
+  font-weight: var(--weight-medium);
+  color: var(--text-secondary);
+}
+
+.wb-prose-list {
+  margin: 0;
+  padding: 0 0 0 var(--sp-4);
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-2);
+}
+
+.wb-prose-list li {
+  font-size: 0.9375rem;
+  line-height: 1.5;
+  color: var(--text-primary);
 }
 
 /* Застереження, яке не можна сховати (§3.4 специфікації). */

@@ -9,7 +9,7 @@
  */
 
 import { describe, expect, it } from "vitest";
-import { WHO_5, type AssessmentRecord } from "@wwwuabot/shared/assessments";
+import { GAD_7, WHO_5, type AssessmentRecord } from "@wwwuabot/shared/assessments";
 import {
   blockedReason,
   latestByTest,
@@ -175,5 +175,35 @@ describe("поріг уваги", () => {
     const line = thresholdLine(WHO_5, at(1, 80));
     expect(line).toContain("вище за ним");
     expect(line).not.toContain("зі 100");
+  });
+});
+
+describe("рівний результат на шкалі симптомів", () => {
+  const gad = (value: number, percent: number) => ({
+    ...at(1, percent),
+    testKey: "gad7",
+    answers: new Array(7).fill(value).concat(0),
+    raw: value * 7,
+  });
+
+  it("нуль тривоги — це «нічого не турбувало», а не «важко скрізь»", () => {
+    // Регресія: напрямок шкали ігнорувався, і людина з GAD-7 = 0 читала
+    // «просило не одне, а все одразу» — прямо протилежне її результату.
+    const text = profileReading(GAD_7, gad(0, 0));
+    expect(text.strongest).toContain("Ніщо не турбувало");
+    expect(text.weakest).toContain("Жодна сфера не піднялася вище нуля");
+    expect(text.question).toBeNull();
+  });
+
+  it("а от коли симптоми є скрізь — тоді справді «важко не з однієї сторони»", () => {
+    const text = profileReading(GAD_7, gad(3, 100));
+    expect(text.weakest).toContain("Піднялося не одне, а все одразу");
+    expect(text.question).toBeTruthy();
+  });
+
+  it("благополуччя лишається зі своєю логікою рівного профілю", () => {
+    const even = [4, 4, 4, 4, 4];
+    const text = profileReading(WHO_5, { ...at(1, 80), answers: even, raw: 20 });
+    expect(text.strongest).toContain("Усі п'ять сфер тримаються рівно");
   });
 });

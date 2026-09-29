@@ -19,6 +19,7 @@ import { useMemo, type ReactElement } from "react";
 import { Icon } from "@wwwuabot/shared";
 import {
   alertCount as countAlerts,
+  exceedsAttention,
   impactText as impactTextOf,
   impactValue,
   isCoreMoodAlarmed,
@@ -37,7 +38,7 @@ import {
 } from "./assessment-view";
 import { AssessmentAlerts } from "./AssessmentAlerts";
 import { AssessmentSafetyBlock } from "./AssessmentSafetyBlock";
-import { BoldText } from "./BoldText";
+import { ProseText } from "./ProseText";
 
 /** Знак напряму. Для wellbeing «вгору» — це добре, тому стрілка вгору. */
 const TREND_ICON: Record<TrendDirection, "arrow-up" | "arrow-down" | "minus"> = {
@@ -87,15 +88,18 @@ export function AssessmentResultCard({
 
       <div className="wb-profile">
         <p className="wb-profile-line">{profile.strongest}</p>
-        <p className="wb-profile-line wb-profile-line--weak">{profile.weakest}</p>
+        {profile.weakest !== profile.strongest && (
+          <p className="wb-profile-line wb-profile-line--weak">{profile.weakest}</p>
+        )}
         {profile.question && <p className="wb-profile-question">{profile.question}</p>}
         <p className="wb-scale-reading">{thresholdLine(test, record)}</p>
       </div>
 
       {band && (
-        <p className="wb-test-lead">
-          <BoldText text={band.note} />
-        </p>
+        <section className="wb-level">
+          <h2 className="wb-section-title">Що це означає</h2>
+          <ProseText text={band.note} />
+        </section>
       )}
 
       <AssessmentAlerts
@@ -113,7 +117,9 @@ export function AssessmentResultCard({
             {label}
           </span>
         )}
-        {record.needsAttention && <span className="wb-trend wb-trend--down">потрібна розмова</span>}
+        {exceedsAttention(test, record.percent) && (
+          <span className="wb-trend wb-trend--down">варто поговорити з фахівцем</span>
+        )}
       </div>
 
       {test.disclaimerInline && (

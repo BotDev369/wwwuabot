@@ -133,6 +133,7 @@ export const GAD_7: AssessmentTest = {
   items: ITEMS.map((item) => ({ ...item, alertNote: GAD7_ITEM_ALERTS[item.id] })),
   options: OPTIONS,
   bands: BANDS.map((band) => ({ ...band, note: GAD7_BAND_NOTES[band.key] })),
+  severityDirection: "higher-is-worse",
   attentionBelow: 10,
   significantChange: { kind: "points", value: 4 },
   disclaimerInline: true,

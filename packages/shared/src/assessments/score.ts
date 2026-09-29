@@ -64,6 +64,20 @@ export function validateAnswers(test: AssessmentTest, answers: readonly number[]
   return null;
 }
 
+/**
+ * Чи результат перетнув межу уваги — **з боку гіршого**.
+ *
+ * Єдине місце, де напрямок шкали має значення. Раніше умова була
+ * `percent <= attentionBelow`, тобто «нижче = увага» — правильно для
+ * благополуччя, але для шкал симптомів це вмикало прапор на найкращому
+ * результаті й змушувало людину з нулем тривоги читати «потрібна розмова».
+ */
+export function exceedsAttention(test: AssessmentTest, percent: number): boolean {
+  return test.severityDirection === "higher-is-worse"
+    ? percent >= test.attentionBelow
+    : percent <= test.attentionBelow;
+}
+
 /** Смуга, до якої потрапляє відсоток. Кидає, якщо смуги не покривають шкалу. */
 function bandFor(percent: number, test: AssessmentTest): AssessmentBand {
   const band = test.bands.find((candidate) => percent >= candidate.min && percent <= candidate.max);
@@ -89,7 +103,7 @@ export function scoreAssessment(
     raw,
     percent,
     band: bandFor(percent, test),
-    needsAttention: percent <= test.attentionBelow,
+    needsAttention: exceedsAttention(test, percent),
   };
 }
 
@@ -140,13 +154,22 @@ export function profileOf(
     throw new Error(`Тест «${test.key}»: профіль рахується з повними відповідями.`);
   }
   const max = Math.max(...test.options.map((option) => option.value));
-  const scores: ItemScore[] = test.items.map((item, index) => ({
-    id: item.id,
-    label: item.label,
-    value: answers[index],
-    max,
-    weakNote: item.weakNote,
-  }));
+  // **Питання про вплив на життя — не сфера.** Воно міряє наслідок, а не
+  // симптом, тому в профілі йому не місце: інакше людина, яка відповіла
+  // «нічого не ускладнило», бачила б його як «найслабшу ланку».
+  const scores: ItemScore[] = test.items
+    .map((item, index) => ({ item, value: answers[index] }))
+    .filter(({ item }) => item.countsTowardScore !== false)
+    .map(({ item, value }) => ({
+      id: item.id,
+      label: item.label,
+      value,
+      max,
+      weakNote: item.weakNote,
+    }));
+  if (scores.length === 0) {
+    throw new Error(`Тест «${test.key}»: у профілі не залишилося жодної сфери.`);
+  }
   const byValue = [...scores].sort((a, b) => a.value - b.value);
   const weakest = byValue[0];
   const strongest = byValue[byValue.length - 1];

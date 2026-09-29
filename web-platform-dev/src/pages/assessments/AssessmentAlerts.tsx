@@ -37,7 +37,10 @@ export function AssessmentAlerts({
   alertCount,
 }: AssessmentAlertsProps): ReactElement | null {
   if (alerts.length === 0 && !impact) return null;
-  const title = test.key === "phq9" ? "На що варто звернути увагу" : "Що за цим стоїть";
+  const title =
+    test.severityDirection === "higher-is-worse"
+      ? "На що варто звернути увагу"
+      : "Що за цим стоїть";
 
   return (
     <section className="wb-alerts">

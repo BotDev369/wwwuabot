@@ -16,8 +16,15 @@
  */
 
 import { describe, expect, it } from "vitest";
-import { combinedKeyOf, itemAlerts, impactValue, maxRawScore, safetyOf } from "./index";
-import { GAD_7, PHQ_9 } from "./index";
+import {
+  combinedKeyOf,
+  exceedsAttention,
+  itemAlerts,
+  impactValue,
+  maxRawScore,
+  safetyOf,
+} from "./index";
+import { GAD_7, PHQ_9, WHO_5 } from "./index";
 import { GAD7_BAND_NOTES, GAD7_ITEM_ALERTS } from "./gad7_texts";
 import { PHQ9_BAND_NOTES, PHQ9_ITEM_ALERTS } from "./phq9_texts";
 
@@ -170,5 +177,31 @@ describe("спільний висновок за двома шкалами (§7.
     expect(combinedKeyOf(7, 8)).toBe("mild-both");
     expect(combinedKeyOf(1, 2)).toBe("low-both");
     expect(combinedKeyOf(6, 2)).toBe("border");
+  });
+});
+
+describe("напрямок шкали", () => {
+  it("шкала симптомів: увага вгорі, а не внизу", () => {
+    // Регресія: `percent <= attentionBelow` вмикало прапор уваги на найкращому
+    // результаті, і людина з нулем тривоги читала «потрібна розмова».
+    expect(exceedsAttention(PHQ_9, 0)).toBe(false);
+    expect(exceedsAttention(PHQ_9, 9)).toBe(false);
+    expect(exceedsAttention(PHQ_9, 10)).toBe(true);
+    expect(exceedsAttention(GAD_7, 0)).toBe(false);
+    expect(exceedsAttention(GAD_7, 11)).toBe(true);
+  });
+
+  it("шкала благополуччя: увага внизу", () => {
+    expect(exceedsAttention(WHO_5, 48)).toBe(true);
+    expect(exceedsAttention(WHO_5, 52)).toBe(false);
+  });
+
+  it("напрямок у самій смузі не змінюється — він уже в її межах", () => {
+    // Смуга «Легка тривога» PHQ-9 — 5..9, тобто нижче порогу 10, але все одно
+    // не увага: напрямок стосується прапорця, а не поділу шкали.
+    const mild = PHQ_9.bands.find((band) => band.key === "phq_mild");
+    expect(mild?.min).toBe(5);
+    expect(mild?.max).toBe(9);
+    expect(exceedsAttention(PHQ_9, 7)).toBe(false);
   });
 });

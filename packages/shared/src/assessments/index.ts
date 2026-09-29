@@ -35,6 +35,7 @@ export {
   type SafetyLevel,
 } from "./flags";
 export {
+  exceedsAttention,
   isSignificantChange,
   maxRawScore,
   profileOf,

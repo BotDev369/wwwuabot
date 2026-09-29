@@ -16,6 +16,7 @@ import {
   scoreAssessment,
   validateAnswers,
 } from "./score";
+import { GAD_7 } from "./gad7";
 import { WHO_5 } from "./who5";
 
 /** Відповіді однакові на всі питання — так рахунок виходить передбачуваним. */
@@ -157,6 +158,14 @@ describe("профіль по сферах", () => {
     expect(even).toBe(true);
     // Найсильніша не випадкова: обидва поля — та сама сфера.
     expect(strongest.id).toBe(weakest.id);
+  });
+
+  it("питання про вплив на життя не потрапляє у профіль", () => {
+    // Регресія: вплив = 0 («нічого не ускладнило») ставав «найслабшою
+    // сферою», хоча він міряє наслідок, а не симптом.
+    const withImpact = profileOf(GAD_7, [3, 3, 3, 3, 3, 3, 3, 0]);
+    expect(withImpact.weakest.label).not.toBe("Вплив на життя");
+    expect(withImpact.weakest.value).toBe(3);
   });
 
   it("неповні відповіді кидають, а не мовчать", () => {
