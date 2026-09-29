@@ -39,6 +39,13 @@
   gap: var(--sp-3);
 }
 
+/* Назва має право займати два рядки, бал — ні. `flex-shrink: 0` на балі
+   потрібен тому, що довга назва («Індекс благополуччя») інакше стискає його
+   до вузької колонки, і «з 25» переноситься на наступний рядок. */
+.wb-test-title {
+  min-width: 0;
+}
+
 .wb-test-title {
   font-size: 1.0625rem;
   font-weight: 600;
@@ -82,6 +89,39 @@
 
 .wb-score-band {
   font-size: 0.9375rem;
+  color: var(--text-secondary);
+}
+
+/**
+ * **Бал у шапці картки списку** — окреме правило, а не `.wb-score-value`.
+ *
+ * На картці результату число має бути головним (2.25rem), у списку — лише
+ * фактом: «Індекс благополуччя» вже займає два рядки, і великий бал поруч
+ * з ним перетворює рядок на змагання за увагу. Тому тут менший розмір,
+ * а `white-space: nowrap` гарантує, що «20 з 25» ніколи не розірветься
+ * між рядками — такий перенос виглядає як помилка верстки.
+ */
+.wb-test-score {
+  flex: 0 0 auto;
+  display: inline-flex;
+  align-items: baseline;
+  gap: var(--sp-1);
+  white-space: nowrap;
+  font-size: 1.375rem;
+  font-weight: 650;
+  line-height: 1;
+  color: var(--text-primary);
+  font-variant-numeric: tabular-nums;
+}
+
+.wb-test-score--none {
+  color: var(--text-muted);
+  font-weight: var(--weight-medium);
+}
+
+.wb-test-score-max {
+  font-size: 0.875rem;
+  font-weight: var(--weight-medium);
   color: var(--text-secondary);
 }
 

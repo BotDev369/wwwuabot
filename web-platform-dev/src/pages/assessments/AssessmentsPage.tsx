@@ -75,11 +75,17 @@ export function AssessmentsPage({
                     не читається: невідомо, чи це нуль, чи відсоток від
                     сотні. «0 з 21» — це те саме число, що й на картці
                     результату, тож список і результат кажуть одне. */}
-                {record && (
-                  <span className="wb-score-value">
+                {record ? (
+                  <span className="wb-test-score">
                     {record.raw}
-                    <span className="wb-score-band"> з {maxRawScore(test)}</span>
+                    <span className="wb-test-score-max">з {maxRawScore(test)}</span>
                   </span>
+                ) : (
+                  /* **Прокинутий бал на місці результату.** Раніше тут було
+                     порожньо, і третя картка виглядала так, наче бал не
+                     вмістився або зник. Місця тепер займає стільки ж, тож
+                     рядок читається як «поки що немає», а не «зламано». */
+                  <span className="wb-test-score wb-test-score--none">—</span>
                 )}
               </div>
 
