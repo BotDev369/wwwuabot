@@ -178,7 +178,7 @@ export const PHQ_9: AssessmentTest = {
   options: OPTIONS,
   bands: BANDS.map((band) => ({ ...band, note: PHQ9_BAND_NOTES[band.key] })),
   severityDirection: "higher-is-worse",
-  attentionBelow: 10,
+  attentionRaw: 10,
   significantChange: { kind: "points", value: 5 },
   disclaimerInline: true,
   disclaimer:

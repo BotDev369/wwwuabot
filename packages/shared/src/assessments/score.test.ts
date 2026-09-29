@@ -17,6 +17,7 @@ import {
   validateAnswers,
 } from "./score";
 import { GAD_7 } from "./gad7";
+import { PHQ_9 } from "./phq9";
 import { WHO_5 } from "./who5";
 
 /** Відповіді однакові на всі питання — так рахунок виходить передбачуваним. */
@@ -51,10 +52,12 @@ describe("шкала тесту", () => {
 });
 
 describe("смуги покривають усю шкалу", () => {
-  it("кожен відсоток від 0 до 100 потрапляє рівно в одну смугу", () => {
-    for (let percent = 0; percent <= 100; percent += 1) {
-      const hits = WHO_5.bands.filter((band) => percent >= band.min && percent <= band.max);
-      expect(hits).toHaveLength(1);
+  it("кожен бал від 0 до 25 потрапляє рівно в одну смугу", () => {
+    // **Бали, а не відсотки.** Смуги живуть у тій самій одиниці, що й сума:
+    // змішування двох одиниць уже коштувало результатів, які не зберігалися.
+    for (let raw = 0; raw <= maxRawScore(WHO_5); raw += 1) {
+      const hits = WHO_5.bands.filter((band) => raw >= band.min && raw <= band.max);
+      expect(hits, `бал ${raw}`).toHaveLength(1);
     }
   });
 });
@@ -117,7 +120,17 @@ describe("поріг уваги", () => {
   });
 
   it("поріг не змінюється з боку: він у даних тесту, а не в коді", () => {
-    expect(WHO_5.attentionBelow).toBe(50);
+    // 12 із 25 — це 48%, найближча досяжна сума до підтверджених 50 зі 100.
+    expect(WHO_5.attentionRaw).toBe(12);
+  });
+
+  it("шкали симптомів: увага починається з 10 балів, а не з 10%", () => {
+    expect(PHQ_9.attentionRaw).toBe(10);
+    expect(GAD_7.attentionRaw).toBe(10);
+    // 9 балів — ще не увага, 10 — вже так (3+3+3+1 і 3+3+3).
+    expect(scoreAssessment(PHQ_9, [3, 3, 3, 1, 0, 0, 0, 0, 0, 0]).raw).toBe(10);
+    expect(scoreAssessment(PHQ_9, [3, 3, 3, 1, 0, 0, 0, 0, 0, 0]).needsAttention).toBe(true);
+    expect(scoreAssessment(PHQ_9, [3, 3, 3, 0, 0, 0, 0, 0, 0, 0]).needsAttention).toBe(false);
   });
 });
 
@@ -170,5 +183,61 @@ describe("профіль по сферах", () => {
 
   it("неповні відповіді кидають, а не мовчать", () => {
     expect(() => profileOf(WHO_5, [1, 2])).toThrow(/повними відповідями/);
+  });
+});
+
+/**
+ * **Кожна можлива сума має потрапити в смугу.**
+ *
+ * Регресія на змішування одиниць: смуги PHQ-9 і GAD-7 задані в балах (5–9,
+ * 10–14), а `bandFor` шукала їх у відсотках. Тоді 17 із 22 сум GAD-7 і 20 із
+ * 28 сум PHQ-9 не потрапляли ні в одну смугу — і результат **не зберігався
+ * взагалі**: людина проходила тест до кінця й отримувала помилку.
+ *
+ * Тест навмисно йде по всіх сумах, а не по кількох прикладах: рівний розподіл
+ * «по одному рядку на смугу» не помітив би, що смуги накладаються чи
+ * прогалина між ними.
+ */
+describe("кожна сума потрапляє в смугу", () => {
+  const cases = [
+    { name: "GAD-7", test: GAD_7, scored: 7, step: 3 },
+    { name: "PHQ-9", test: PHQ_9, scored: 9, step: 3 },
+    { name: "WHO-5", test: WHO_5, scored: 5, step: 5 },
+  ] as const;
+
+  for (const { name, test, scored, step } of cases) {
+    it(`${name}: від нуля до максимуму без падінь і з правильною смугою`, () => {
+      const max = maxRawScore(test);
+      const bands = [...test.bands].sort((a, b) => a.min - b.min);
+      for (let raw = 0; raw <= max; raw += 1) {
+        const answers: number[] = [];
+        let left = raw;
+        for (let index = 0; index < test.items.length; index += 1) {
+          const take = test.items[index].countsTowardScore === false ? 0 : Math.min(step, left);
+          answers.push(take);
+          left -= take;
+        }
+        const result = scoreAssessment(test, answers);
+        expect(result.raw, `${name}, сума ${raw}`).toBe(raw);
+        const expected = bands.find((band) => raw >= band.min && raw <= band.max);
+        expect(result.band.key, `${name}, сума ${raw}`).toBe(expected?.key);
+      }
+    });
+  }
+
+  it("смуги не перекриваються й не мають прогалин", () => {
+    for (const { name, test } of cases) {
+      const sorted = [...test.bands].sort((a, b) => a.min - b.min);
+      expect(sorted[0].min, name).toBe(0);
+      expect(sorted[sorted.length - 1].max, name).toBe(maxRawScore(test));
+      sorted.forEach((band, index) => {
+        if (index === 0) return;
+        // Наступна смуга має починатися рівно за попередньою: щільність
+        // рівно +1 виключає і накладання, і діру, через яку сума губиться.
+        expect(band.min, `${name}: ${sorted[index - 1].key} → ${band.key}`).toBe(
+          sorted[index - 1].max + 1,
+        );
+      });
+    }
   });
 });

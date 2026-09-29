@@ -134,7 +134,7 @@ export const GAD_7: AssessmentTest = {
   options: OPTIONS,
   bands: BANDS.map((band) => ({ ...band, note: GAD7_BAND_NOTES[band.key] })),
   severityDirection: "higher-is-worse",
-  attentionBelow: 10,
+  attentionRaw: 10,
   significantChange: { kind: "points", value: 4 },
   disclaimerInline: true,
   disclaimer:

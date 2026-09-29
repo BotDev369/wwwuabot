@@ -35,7 +35,7 @@ export interface AssessmentResult {
   /** Відсоток 0…100: саме він порівнюється з порігом і з минулим результатом. */
   readonly percent: number;
   readonly band: AssessmentBand;
-  /** Поріг із `attentionBelow`: нижче — варто обговорити з фахівцем. */
+  /** Поріг із `attentionRaw`: за ним — варто обговорити з фахівцем. */
   readonly needsAttention: boolean;
 }
 
@@ -65,25 +65,28 @@ export function validateAnswers(test: AssessmentTest, answers: readonly number[]
 }
 
 /**
- * Чи результат перетнув межу уваги — **з боку гіршого**.
+ * Чи результат перетнув межу уваги — **за балами, у бік гіршого**.
  *
  * Єдине місце, де напрямок шкали має значення. Раніше умова була
- * `percent <= attentionBelow`, тобто «нижче = увага» — правильно для
+ * `raw <= attentionRaw`, тобто «нижче = увага» — правильно для
  * благополуччя, але для шкал симптомів це вмикало прапор на найкращому
  * результаті й змушувало людину з нулем тривоги читати «потрібна розмова».
+ *
+ * **Порівнюється `raw`, а не `percent`.** Межа — це сума з 21 чи з 27 балів,
+ * і людина відповідала саме на тій шкалі; відсоток тут другорядний.
  */
-export function exceedsAttention(test: AssessmentTest, percent: number): boolean {
+export function exceedsAttention(test: AssessmentTest, raw: number): boolean {
   return test.severityDirection === "higher-is-worse"
-    ? percent >= test.attentionBelow
-    : percent <= test.attentionBelow;
+    ? raw >= test.attentionRaw
+    : raw <= test.attentionRaw;
 }
 
-/** Смуга, до якої потрапляє відсоток. Кидає, якщо смуги не покривають шкалу. */
-function bandFor(percent: number, test: AssessmentTest): AssessmentBand {
-  const band = test.bands.find((candidate) => percent >= candidate.min && percent <= candidate.max);
+/** Смуга, до якої потрапляє сума. Кидає, якщо смуги не покривають шкалу. */
+function bandFor(raw: number, test: AssessmentTest): AssessmentBand {
+  const band = test.bands.find((candidate) => raw >= candidate.min && raw <= candidate.max);
   if (!band) {
     throw new Error(
-      `Тест «${test.key}»: смуги не покривають ${percent}. Межі — це дані, і прогалина в них не має права мовчати.`,
+      `Тест «${test.key}»: смуги не покривають ${raw}. Межі — це дані, і прогалина в них не має права мовчати.`,
     );
   }
   return band;
@@ -102,8 +105,8 @@ export function scoreAssessment(
   return {
     raw,
     percent,
-    band: bandFor(percent, test),
-    needsAttention: exceedsAttention(test, percent),
+    band: bandFor(raw, test),
+    needsAttention: exceedsAttention(test, raw),
   };
 }
 

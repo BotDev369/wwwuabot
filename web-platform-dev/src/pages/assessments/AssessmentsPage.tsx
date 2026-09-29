@@ -18,7 +18,12 @@
 
 import { useMemo, type ReactElement } from "react";
 import { Icon } from "@wwwuabot/shared";
-import type { AssessmentRecord, AssessmentTest } from "@wwwuabot/shared/assessments";
+import {
+  maxRawScore,
+  type AssessmentRecord,
+  type AssessmentTest,
+} from "@wwwuabot/shared/assessments";
+import { formatDay } from "@wwwuabot/shared/utils/datetime";
 import { latestByTest, trendFrom, trendLabel } from "./assessment-view";
 import { CombinedConclusion } from "./CombinedConclusion";
 import { ASSESSMENTS_ROUTE } from "@/app/routes";
@@ -60,12 +65,22 @@ export function AssessmentsPage({
           const record = latest.get(test.key);
           const trend = trendFrom(results, test);
           const label = trendLabel(trend);
+          const band = record ? test.bands.find((one) => one.key === record.bandKey) : undefined;
 
           return (
             <div key={test.key} className="wb-test-card">
               <div className="wb-test-head">
                 <h2 className="wb-test-title">{test.title}</h2>
-                {record && <span className="wb-score-value">{record.percent}</span>}
+                {/* **Бал у балах, а не у відсотках.** «0» без нічого поруч
+                    не читається: невідомо, чи це нуль, чи відсоток від
+                    сотні. «0 з 21» — це те саме число, що й на картці
+                    результату, тож список і результат кажуть одне. */}
+                {record && (
+                  <span className="wb-score-value">
+                    {record.raw}
+                    <span className="wb-score-band"> з {maxRawScore(test)}</span>
+                  </span>
+                )}
               </div>
 
               <p className="wb-test-lead">{test.lead}</p>
@@ -73,7 +88,10 @@ export function AssessmentsPage({
               <div className="wb-test-meta">
                 {record ? (
                   <>
-                    <span>{record.createdAt.slice(0, 10)}</span>
+                    {/* Дата з колонки — у вигляді людини: «29.09.2026», а не
+                        сирий `2026-09-29`, який був у списку. */}
+                    <span>{formatDay(record.createdAt)}</span>
+                    {band && <span>{band.label}</span>}
                     {label && (
                       <span className={`wb-trend wb-trend--${trend.direction}`}>
                         <Icon

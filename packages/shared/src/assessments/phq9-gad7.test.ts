@@ -188,12 +188,14 @@ describe("напрямок шкали", () => {
     expect(exceedsAttention(PHQ_9, 9)).toBe(false);
     expect(exceedsAttention(PHQ_9, 10)).toBe(true);
     expect(exceedsAttention(GAD_7, 0)).toBe(false);
-    expect(exceedsAttention(GAD_7, 11)).toBe(true);
+    expect(exceedsAttention(GAD_7, 9)).toBe(false);
+    expect(exceedsAttention(GAD_7, 10)).toBe(true);
   });
 
   it("шкала благополуччя: увага внизу", () => {
-    expect(exceedsAttention(WHO_5, 48)).toBe(true);
-    expect(exceedsAttention(WHO_5, 52)).toBe(false);
+    // **Бали, а не відсотки**: 12 із 25 — це ті самі підтверджені 48%.
+    expect(exceedsAttention(WHO_5, 12)).toBe(true);
+    expect(exceedsAttention(WHO_5, 13)).toBe(false);
   });
 
   it("напрямок у самій смузі не змінюється — він уже в її межах", () => {

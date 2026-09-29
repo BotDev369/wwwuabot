@@ -250,15 +250,6 @@
   color: var(--text-secondary);
 }
 
-/* Пояснення числа: звідки 19, що означає 76 і де поріг. Мутний, бо це
-   арифметика для звірки, а не заголовок результату. */
-.wb-scale-reading {
-  margin-top: var(--sp-1);
-  font-size: 0.8125rem;
-  line-height: 1.5;
-  color: var(--text-secondary);
-}
-
 /* Підказка під варіантами: чому «далі» ще сіра. Зникає, щойно відповідь
    обрано, щоб не змагатися з помилкою — та займає те саме місце. */
 .wb-hint {
@@ -491,8 +482,10 @@
 
 .wb-alerts-title {
   margin: 0 0 var(--sp-2);
-  font-size: 1rem;
+  /* Див. `.wb-section-title`: те саме про `h2` у бренд-темах. */
+  font-size: 0.9375rem !important;
   font-weight: var(--weight-bold);
+  line-height: 1.35;
   color: var(--text-primary);
 }
 
@@ -535,11 +528,20 @@
   color: var(--text-primary);
 }
 
-/* Спільний заголовок секції на картці результату. */
+/**
+ * Спільний заголовок секції на картці результату.
+ *
+ * **`!important` тут не байт, а відповідь бренд-темам.** `apple.css` і
+ * `android.css` піднімають будь-який `h2` до 28px/22px через `!important`,
+ * тож без цього «Що це означає» і «На що варто звернути увагу» виглядали як
+ * заголовок екрана: на «На що варто звернути увагу» це ще й два рядки,
+ * які легше за текст під ними.
+ */
 .wb-section-title {
   margin: 0 0 var(--sp-2);
-  font-size: 0.9375rem;
+  font-size: 0.9375rem !important;
   font-weight: var(--weight-bold);
+  line-height: 1.35;
   color: var(--text-primary);
 }
 

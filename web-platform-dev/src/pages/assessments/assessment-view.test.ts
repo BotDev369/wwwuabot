@@ -9,7 +9,13 @@
  */
 
 import { describe, expect, it } from "vitest";
-import { GAD_7, WHO_5, type AssessmentRecord } from "@wwwuabot/shared/assessments";
+import {
+  GAD_7,
+  WHO_5,
+  exceedsAttention,
+  maxRawScore,
+  type AssessmentRecord,
+} from "@wwwuabot/shared/assessments";
 import {
   blockedReason,
   latestByTest,
@@ -19,17 +25,25 @@ import {
   trendLabel,
 } from "./assessment-view";
 
-/** Результат із потрібним балом; порядок id — «свіжіший перший», як віддає сервер. */
-const at = (id: number, percent: number, testKey = WHO_5.key): AssessmentRecord => ({
-  id,
-  testKey,
-  answers: [],
-  raw: 0,
-  percent,
-  bandKey: "middle",
-  needsAttention: percent <= 50,
-  createdAt: "2026-09-01 10:00:00",
-});
+/**
+ * Результат із потрібним відсотком; порядок id — «свіжіший перший», як віддає
+ * сервер. `raw` рахується з відсотка, бо екран тепер читає межу уваги саме з
+ * нього: тест-заглушка з `raw: 0` при 80% виглядав би як «нуль балів».
+ */
+const at = (id: number, percent: number, testKey = WHO_5.key): AssessmentRecord => {
+  const test = testKey === GAD_7.key ? GAD_7 : WHO_5;
+  const raw = Math.round((percent / 100) * maxRawScore(test));
+  return {
+    id,
+    testKey,
+    answers: [],
+    raw,
+    percent,
+    bandKey: "middle",
+    needsAttention: exceedsAttention(test, raw),
+    createdAt: "2026-09-01 10:00:00",
+  };
+};
 
 describe("останній результат", () => {
   it("бере перший у списку: сервер уже відсортував новіші спершу", () => {
@@ -166,7 +180,16 @@ describe("трактування профілю", () => {
 
 describe("поріг уваги", () => {
   it("перекладає 50 зі 100 у бали своєї шкали", () => {
-    expect(thresholdLine(WHO_5, at(1, 80))).toContain("Поріг уваги — 13 із 25");
+    expect(thresholdLine(WHO_5, at(1, 80))).toContain("Поріг уваги — 12 із 25");
+  });
+
+  it("поріг шкали симптомів — це 10 балів, а не 10 відсотків", () => {
+    // Регресія: поріг переводився з відсотка, тож для GAD-7 (21 бал) виходило
+    // «поріг 2 із 21» — число, без якого людина з нулем тривоги не розуміє
+    // нічого. Правильна відповідь — та сама 10 зі специфікації, у балах.
+    expect(thresholdLine(GAD_7, { ...at(1, 0, GAD_7.key), testKey: GAD_7.key })).toContain(
+      "Поріг уваги — 10 із 21",
+    );
   });
 
   it("не звірить масштаб у стилі шкали ВООЗ", () => {

@@ -117,7 +117,7 @@ export function AssessmentResultCard({
             {label}
           </span>
         )}
-        {exceedsAttention(test, record.percent) && (
+        {exceedsAttention(test, record.raw) && (
           <span className="wb-trend wb-trend--down">варто поговорити з фахівцем</span>
         )}
       </div>
@@ -142,7 +142,12 @@ export function AssessmentResultCard({
             </p>
           )}
           <p className="wb-source">
-            {test.source.name}. {test.source.citation} Ліцензія: {test.source.license} ·{" "}
+            {/* Крапка ставиться лише коли ім'я не закінчується нею самою:
+                «Pfizer Inc.» + «.» читалося як «Inc..» — дві крапки в
+                атрибуції виглядають як помилка друку. */}
+            {test.source.name}
+            {test.source.name.endsWith(".") ? " " : ". "}
+            {test.source.citation} Ліцензія: {test.source.license} ·{" "}
             <a href={test.source.url} target="_blank" rel="noreferrer">
               Джерело
             </a>

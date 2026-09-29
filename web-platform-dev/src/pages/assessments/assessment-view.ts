@@ -53,7 +53,7 @@ export function profileReading(test: AssessmentTest, record: AssessmentRecord): 
     // все рівно — це про благополуччя; для шкал симптомів все рівно на
     // низькому балі — це «нічого не турбує», а не «важко скрізь». Без цієї
     // гілки людина з нулем тривоги читала б «важко не з однієї сторони».
-    const worse = exceedsAttention(test, record.percent);
+    const worse = exceedsAttention(test, record.raw);
     if (!worse && test.severityDirection === "higher-is-worse") {
       return {
         strongest: `Ніщо не турбувало: на всі питання — ${chosen}.`,
@@ -88,15 +88,23 @@ export function profileReading(test: AssessmentTest, record: AssessmentRecord): 
 /**
  * Поріг уваги — **словами, без арифметики шкали**.
  *
- * «13 з 25» зрозуміліше, ніж «50 зі 100»: поріг рахується на тій самій шкалі,
+ * «13 з 25» зрозуміліше, ніж «52 зі 100»: поріг рахується на тій самій шкалі,
  * на якій людина відповідала. Рядок потрібен у головному виводі — він пояснює,
  * що число не просто «високе», а **порівняно** з чимось.
+ *
+ * **Межа — в балах, як і смуги.** Раніше поріг переводився з відсотка
+ * (`attentionBelow / 100 * max`), і для GAD-7 з 21 бала це давало «поріг 2 з
+ * 21» — число, яке нічого не значить для людину з нулем тривоги.
  */
 export function thresholdLine(test: AssessmentTest, record: AssessmentRecord): string {
   const max = maxRawScore(test);
-  const attentionRaw = Math.round((test.attentionBelow / 100) * max);
-  const side = record.percent > test.attentionBelow ? "вище" : "нижче";
-  return `Поріг уваги — ${attentionRaw} із ${max}. Ти ${side} за ним.`;
+  const attention = test.attentionRaw;
+  // «Вище/нижче» — це просто те, де число стоїть відносно межі. Напрямок
+  // шкали тут ні до чого: він вже спрацював у `exceedsAttention`, і підміняти
+  // ним words означало б читати «нижче за порогом» як проблему тоді, коли це
+  // просто «менше, ніж 10 із 21».
+  const side = record.raw > attention ? "вище" : "нижче";
+  return `Поріг уваги — ${attention} із ${max}. Ти ${side} за ним.`;
 }
 
 /**
