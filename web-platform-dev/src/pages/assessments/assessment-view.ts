@@ -15,9 +15,45 @@
 import {
   isSignificantChange,
   maxRawScore,
+  profileOf,
   type AssessmentRecord,
   type AssessmentTest,
 } from "@wwwuabot/shared/assessments";
+
+/** Три рядки, які людина читає про себе, а не про шкалу. */
+export interface ProfileReading {
+  /** Рядок про те, що тримає. */
+  readonly strongest: string;
+  /** Рядок про те, що просіло. */
+  readonly weakest: string;
+  /** Питання до найслабшої сфери — головне, заради чого все це. */
+  readonly question: string | null;
+}
+
+/**
+ * **Головний зміст результату — розкид, а не сума.** «20 з 25» однаково в
+ * людини, яка спить добре але не має сили, і в тієї, хто має силу, але не
+ * спить. Різні профілі — різні висновки, а сума їх зливає в одне число.
+ *
+ * **Якщо всі сфери рівні, не вибираємо «найсильнішу» випадково** — кажемо
+ * прямо, що виділятися нічому, бо випадковий вибір виглядає б як відкриття.
+ */
+export function profileReading(test: AssessmentTest, answers: readonly number[]): ProfileReading {
+  const { strongest, weakest, even } = profileOf(test, answers);
+  const at = (label: string, value: number, max: number): string => `${label} — ${value} з ${max}`;
+  if (even) {
+    return {
+      strongest: `Усі сфери на одному рівні: ${strongest.value} з ${strongest.max}.`,
+      weakest: "Окремої слабкої сторони тут немає — це рівномірний стан.",
+      question: null,
+    };
+  }
+  return {
+    strongest: `Міцніше: ${at(strongest.label, strongest.value, strongest.max)}.`,
+    weakest: `Слабше: ${at(weakest.label, weakest.value, weakest.max)}.`,
+    question: weakest.weakNote ?? null,
+  };
+}
 
 /**
  * Що означає число — **арифметикою, яку можна перевірити очима**.

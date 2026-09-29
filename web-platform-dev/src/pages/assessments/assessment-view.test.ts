@@ -13,6 +13,7 @@ import { WHO_5, type AssessmentRecord } from "@wwwuabot/shared/assessments";
 import {
   blockedReason,
   latestByTest,
+  profileReading,
   scaleReading,
   trendFrom,
   trendLabel,
@@ -139,5 +140,25 @@ describe("пояснення числа", () => {
   it("каже, вище чи нижче за поріг", () => {
     expect(scaleReading(WHO_5, { ...record, percent: 76 })).toContain("вище за порігом");
     expect(scaleReading(WHO_5, { ...record, percent: 48 })).toContain("нижче за порігом");
+  });
+});
+
+describe("трактування профілю", () => {
+  it("називає конкретну сферу, а не «рівень загалом»", () => {
+    // 4,4,4,1,4 — відпочинок провалився, решта тримається.
+    const text = profileReading(WHO_5, [4, 4, 4, 1, 4]);
+    expect(text.weakest).toContain("Відпочинок");
+    expect(text.strongest).toContain("Міцніше:");
+  });
+
+  it("задає питання до найслабшої сфери — це і є зміст розділу", () => {
+    const text = profileReading(WHO_5, [4, 4, 4, 1, 4]);
+    expect(text.question).toContain("Сон є, але не відновлює");
+  });
+
+  it("коли все рівно — не вигадує «найсильнішу» сферу", () => {
+    const text = profileReading(WHO_5, [3, 3, 3, 3, 3]);
+    expect(text.strongest).toContain("Усі сфери на одному рівні");
+    expect(text.question).toBeNull();
   });
 });

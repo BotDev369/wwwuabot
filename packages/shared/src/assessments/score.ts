@@ -96,3 +96,45 @@ export function isSignificantChange(
     (Math.abs(currentPercent - previousPercent) / baseline) * 100 >= test.significantChangePercent
   );
 }
+
+/** Бал однієї сфери: що вона означає і наскільки сильна. */
+export interface ItemScore {
+  readonly id: string;
+  readonly label: string;
+  readonly value: number;
+  readonly max: number;
+  readonly weakNote?: string;
+}
+
+/**
+ * **Де саме людина сильна, а де слабка.** Найцінніше в багатовимірному
+ * тесті — не сума, а розкид: одна й та сама сума з «відпочинок 0, інтерес 5»
+ * і з «усе по 3» — це дві різні людини, і лише розкид це показує.
+ *
+ * **Найсильніша приховується, якщо всі сфери рівні.** «Найсильніше — енергія:
+ * 3» насправді значить «нічого не виділяється», і це краще сказати вголос,
+ * ніж показати випадкову «найсильнішу» сферу.
+ */
+export function profileOf(
+  test: AssessmentTest,
+  answers: readonly number[],
+): { strongest: ItemScore; weakest: ItemScore; even: boolean } {
+  if (test.items.length === 0 || answers.length !== test.items.length) {
+    throw new Error(`Тест «${test.key}»: профіль рахується з повними відповідями.`);
+  }
+  const max = Math.max(...test.options.map((option) => option.value));
+  const scores: ItemScore[] = test.items.map((item, index) => ({
+    id: item.id,
+    label: item.label,
+    value: answers[index],
+    max,
+    weakNote: item.weakNote,
+  }));
+  const byValue = [...scores].sort((a, b) => a.value - b.value);
+  const weakest = byValue[0];
+  const strongest = byValue[byValue.length - 1];
+  // Коли все рівно, віддаємо **те саме** в обох полях: інакше виклик, що
+  // забув перевірити `even`, показав би випадкову сферу як «найсильнішу».
+  if (weakest.value === strongest.value) return { strongest: weakest, weakest, even: true };
+  return { strongest, weakest, even: false };
+}

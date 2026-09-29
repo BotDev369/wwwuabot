@@ -9,7 +9,13 @@
  */
 
 import { describe, expect, it } from "vitest";
-import { isSignificantChange, maxRawScore, scoreAssessment, validateAnswers } from "./score";
+import {
+  isSignificantChange,
+  maxRawScore,
+  profileOf,
+  scoreAssessment,
+  validateAnswers,
+} from "./score";
 import { WHO_5 } from "./who5";
 
 /** Відповіді однакові на всі питання — так рахунок виходить передбачуваним. */
@@ -129,5 +135,31 @@ describe("значуща зміна", () => {
 
   it("від нуля будь-який рух значний — інакше поділ на нуль", () => {
     expect(isSignificantChange(0, 4, WHO_5)).toBe(true);
+  });
+});
+
+describe("профіль по сферах", () => {
+  it("знаходить найслабшу і найсильнішу сферу", () => {
+    const { weakest, strongest } = profileOf(WHO_5, [5, 5, 5, 1, 5]);
+    expect(weakest.label).toBe("Відпочинок");
+    expect(strongest.label).toBe("Інтерес");
+  });
+
+  it("max — найвищий бал шкали, а не довжина масиву", () => {
+    const { weakest } = profileOf(WHO_5, [5, 5, 5, 5, 5]);
+    expect(weakest.max).toBe(5);
+  });
+
+  it("коли всі рівні — найсильшої випадково не вибирає", () => {
+    // Регресія: без цієї перевірки «найсильніше» мало б випадково впасти на
+    // перший елемент — і людина прочитала б це як відкриття, а не як рівність.
+    const { even, strongest, weakest } = profileOf(WHO_5, [3, 3, 3, 3, 3]);
+    expect(even).toBe(true);
+    // Найсильніша не випадкова: обидва поля — та сама сфера.
+    expect(strongest.id).toBe(weakest.id);
+  });
+
+  it("неповні відповіді кидають, а не мовчать", () => {
+    expect(() => profileOf(WHO_5, [1, 2])).toThrow(/повними відповідями/);
   });
 });

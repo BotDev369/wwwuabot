@@ -19,9 +19,11 @@ export type {
 export {
   isSignificantChange,
   maxRawScore,
+  profileOf,
   scoreAssessment,
   validateAnswers,
   type AssessmentResult,
+  type ItemScore,
 } from "./score";
 export { WHO_5 } from "./who5";
 export { ASSESSMENTS, getAssessment } from "./registry";
