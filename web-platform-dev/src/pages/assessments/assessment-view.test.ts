@@ -10,7 +10,13 @@
 
 import { describe, expect, it } from "vitest";
 import { WHO_5, type AssessmentRecord } from "@wwwuabot/shared/assessments";
-import { blockedReason, latestByTest, trendFrom, trendLabel } from "./assessment-view";
+import {
+  blockedReason,
+  latestByTest,
+  scaleReading,
+  trendFrom,
+  trendLabel,
+} from "./assessment-view";
 
 /** Результат із потрібним балом; порядок id — «свіжіший перший», як віддає сервер. */
 const at = (id: number, percent: number, testKey = WHO_5.key): AssessmentRecord => ({
@@ -112,5 +118,26 @@ describe("кнопка «далі»", () => {
 
   it("крок поза тестом не проходить мовчки", () => {
     expect(blockedReason(WHO_5, [2, 2, 2, 2, 2], WHO_5.items.length)).not.toBeNull();
+  });
+});
+
+describe("пояснення числа", () => {
+  // 19 з 25 -> 76 зі 100; поріг 50 зі 100 це 13 з 25 (12.5 округлюється).
+  const record = at(1, 76);
+
+  it("називає обидва числа, щоб жодне не виглядало помилкою", () => {
+    const line = scaleReading(WHO_5, { ...record, raw: 19 });
+    expect(line).toContain("19 з 25");
+    expect(line).toContain("76 зі 100");
+  });
+
+  it("перекладає поріг у бали сирої шкали, а не лишає у відсотках", () => {
+    // Регресія: «12.5 з 25» — це не число, а людина таке прочитати не може.
+    expect(scaleReading(WHO_5, record)).toContain("13 з 25");
+  });
+
+  it("каже, вище чи нижче за поріг", () => {
+    expect(scaleReading(WHO_5, { ...record, percent: 76 })).toContain("вище за порігом");
+    expect(scaleReading(WHO_5, { ...record, percent: 48 })).toContain("нижче за порігом");
   });
 });

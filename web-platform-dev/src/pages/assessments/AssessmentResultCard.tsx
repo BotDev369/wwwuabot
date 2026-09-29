@@ -20,7 +20,7 @@ import {
   type AssessmentRecord,
   type AssessmentTest,
 } from "@wwwuabot/shared/assessments";
-import { trendFrom, trendLabel, type TrendDirection } from "./assessment-view";
+import { scaleReading, trendFrom, trendLabel, type TrendDirection } from "./assessment-view";
 
 /** Знак напряму. Для wellbeing «вгору» — це добре, тому стрілка вгору. */
 const TREND_ICON: Record<TrendDirection, "arrow-up" | "arrow-down" | "minus"> = {
@@ -54,11 +54,12 @@ export function AssessmentResultCard({
   return (
     <div className="wb-test-card">
       <div className="wb-score">
-        <span className="wb-score-value">{record.percent}</span>
+        <span className="wb-score-value">{record.raw}</span>
         <span className="wb-score-band">з {maxRawScore(test)}</span>
       </div>
 
       {band && <p className="wb-score-note">{band.label}</p>}
+      <p className="wb-scale-reading">{scaleReading(test, record)}</p>
       {band && <p className="wb-test-lead">{band.note}</p>}
 
       <div className="wb-test-meta">

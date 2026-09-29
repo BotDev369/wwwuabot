@@ -14,9 +14,31 @@
 
 import {
   isSignificantChange,
+  maxRawScore,
   type AssessmentRecord,
   type AssessmentTest,
 } from "@wwwuabot/shared/assessments";
+
+/**
+ * Що означає число — **арифметикою, яку можна перевірити очима**.
+ *
+ * На картці стоїть два числа («19 з 25» і «76 зі 100»), і без цього рядка вони
+ * виглядають як помилка: незрозуміло, звідки взявся другий і навіщо він
+ * поруч. Тому кажемо вголос усе: сума, масштаб, поріг — і чи він пройдений.
+ *
+ * **Поріг перекладається в бали сирої шкали**, бо «12 з 25» зрозуміліше, ніж
+ * «50 зі 100», коли мова йде про відповіді на конкретні питання.
+ */
+export function scaleReading(test: AssessmentTest, record: AssessmentRecord): string {
+  const max = maxRawScore(test);
+  const attentionRaw = Math.round((test.attentionBelow / 100) * max);
+  const side = record.percent > test.attentionBelow ? "вище" : "нижче";
+  return (
+    `${record.raw} з ${max} — це ${record.percent} зі 100. ` +
+    `Поріг уваги — ${test.attentionBelow} зі 100, тобто ${attentionRaw} з ${max}. ` +
+    `Ти ${side} за порігом.`
+  );
+}
 
 /** Останній результат кожного тесту — те, що видно в списку. */
 export function latestByTest(results: readonly AssessmentRecord[]): Map<string, AssessmentRecord> {
