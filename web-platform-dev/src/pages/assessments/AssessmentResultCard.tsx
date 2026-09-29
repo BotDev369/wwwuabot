@@ -24,7 +24,7 @@ import {
 } from "@wwwuabot/shared/assessments";
 import {
   profileReading,
-  scaleReading,
+  thresholdLine,
   trendFrom,
   trendLabel,
   type TrendDirection,
@@ -56,7 +56,7 @@ export function AssessmentResultCard({
     [record, history],
   );
   const trend = useMemo(() => trendFrom(latest, test), [latest, test]);
-  const profile = useMemo(() => profileReading(test, record.answers), [test, record.answers]);
+  const profile = useMemo(() => profileReading(test, record), [test, record]);
   const band = test.bands.find((candidate) => candidate.key === record.bandKey);
   const label = trendLabel(trend);
 
@@ -73,6 +73,7 @@ export function AssessmentResultCard({
         <p className="wb-profile-line">{profile.strongest}</p>
         <p className="wb-profile-line wb-profile-line--weak">{profile.weakest}</p>
         {profile.question && <p className="wb-profile-question">{profile.question}</p>}
+        <p className="wb-scale-reading">{thresholdLine(test, record)}</p>
       </div>
 
       {band && <p className="wb-test-lead">{band.note}</p>}
@@ -94,7 +95,7 @@ export function AssessmentResultCard({
           <Icon name="chevron-down" size={16} className="wb-about-chevron" />
         </summary>
         <div className="wb-about-body">
-          <p>{scaleReading(test, record)}</p>
+          <p>{test.about}</p>
           <p className={`wb-notice${record.needsAttention ? " wb-notice--attention" : ""}`}>
             {record.needsAttention && <Icon name="warning" size={14} />} {test.disclaimer}
           </p>

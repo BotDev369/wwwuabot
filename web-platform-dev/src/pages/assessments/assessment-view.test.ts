@@ -14,7 +14,7 @@ import {
   blockedReason,
   latestByTest,
   profileReading,
-  scaleReading,
+  thresholdLine,
   trendFrom,
   trendLabel,
 } from "./assessment-view";
@@ -122,43 +122,58 @@ describe("кнопка «далі»", () => {
   });
 });
 
-describe("пояснення числа", () => {
-  // 19 з 25 -> 76 зі 100; поріг 50 зі 100 це 13 з 25 (12.5 округлюється).
-  const record = at(1, 76);
-
-  it("називає обидва числа, щоб жодне не виглядало помилкою", () => {
-    const line = scaleReading(WHO_5, { ...record, raw: 19 });
-    expect(line).toContain("19 з 25");
-    expect(line).toContain("76 зі 100");
-  });
-
-  it("перекладає поріг у бали сирої шкали, а не лишає у відсотках", () => {
-    // Регресія: «12.5 з 25» — це не число, а людина таке прочитати не може.
-    expect(scaleReading(WHO_5, record)).toContain("13 з 25");
-  });
-
-  it("каже, вище чи нижче за поріг", () => {
-    expect(scaleReading(WHO_5, { ...record, percent: 76 })).toContain("вище за порігом");
-    expect(scaleReading(WHO_5, { ...record, percent: 48 })).toContain("нижче за порігом");
-  });
-});
-
 describe("трактування профілю", () => {
+  const withAnswers = (answers: number[], percent: number) => ({
+    ...at(1, percent),
+    answers,
+    raw: answers.reduce((a, b) => a + b, 0),
+  });
+
   it("називає конкретну сферу, а не «рівень загалом»", () => {
     // 4,4,4,1,4 — відпочинок провалився, решта тримається.
-    const text = profileReading(WHO_5, [4, 4, 4, 1, 4]);
+    const text = profileReading(WHO_5, withAnswers([4, 4, 4, 1, 4], 80));
     expect(text.weakest).toContain("Відпочинок");
     expect(text.strongest).toContain("Міцніше:");
   });
 
   it("задає питання до найслабшої сфери — це і є зміст розділу", () => {
-    const text = profileReading(WHO_5, [4, 4, 4, 1, 4]);
-    expect(text.question).toContain("Сон є, але не відновлює");
+    expect(profileReading(WHO_5, withAnswers([4, 4, 4, 1, 4], 80)).question).toContain(
+      "Сон є, але не відновлює",
+    );
   });
 
-  it("коли все рівно — не вигадує «найсильнішу» сферу", () => {
-    const text = profileReading(WHO_5, [3, 3, 3, 3, 3]);
-    expect(text.strongest).toContain("Усі сфери на одному рівні");
-    expect(text.question).toBeNull();
+  describe("коли всі сфери рівні", () => {
+    it("називає обраний варіант — це конкретно, а не «рівний стан»", () => {
+      // Регресія: рівний профіль повертав опис даних і жодного питання —
+      // тобто нуль трактування там, де людина чекала пояснення.
+      const text = profileReading(WHO_5, withAnswers([4, 4, 4, 4, 4], 80));
+      expect(text.strongest).toContain("«Майже завжди»");
+    });
+
+    it("питання лишається навіть тоді, коли розкиду немає", () => {
+      expect(profileReading(WHO_5, withAnswers([4, 4, 4, 4, 4], 80)).question).toBeTruthy();
+      expect(profileReading(WHO_5, withAnswers([1, 1, 1, 1, 1], 20)).question).toBeTruthy();
+    });
+
+    it("рівний низький — це не те саме, що рівний високий", () => {
+      const high = profileReading(WHO_5, withAnswers([4, 4, 4, 4, 4], 80));
+      const low = profileReading(WHO_5, withAnswers([1, 1, 1, 1, 1], 20));
+      expect(high.weakest).not.toBe(low.weakest);
+      expect(low.weakest).toContain("Просило не одне, а все одразу");
+    });
+  });
+});
+
+describe("поріг уваги", () => {
+  it("перекладає 50 зі 100 у бали своєї шкали", () => {
+    expect(thresholdLine(WHO_5, at(1, 80))).toContain("Поріг уваги — 13 із 25");
+  });
+
+  it("не звірить масштаб у стилі шкали ВООЗ", () => {
+    // Регресія: «50 зі 100» — це мова джерела, а не людини, що відповідала
+    // на «майже завжди».
+    const line = thresholdLine(WHO_5, at(1, 80));
+    expect(line).toContain("вище за ним");
+    expect(line).not.toContain("зі 100");
   });
 });

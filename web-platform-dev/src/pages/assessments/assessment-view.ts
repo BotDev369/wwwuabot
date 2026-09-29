@@ -26,28 +26,42 @@ export interface ProfileReading {
   readonly strongest: string;
   /** Рядок про те, що просіло. */
   readonly weakest: string;
-  /** Питання до найслабшої сфери — головне, заради чого все це. */
+  /** Питання, з яким варто залишитися на хвилину — головне, заради чого все це. */
   readonly question: string | null;
 }
 
 /**
  * **Головний зміст результату — розкид, а не сума.** «20 з 25» однаково в
  * людини, яка спить добре але не має сили, і в тієї, хто має силу, але не
- * спить. Різні профілі — різні висновки, а сума їх зливає в одне число.
+ * спить. Сума зливає два різні стани в одне число, розкид їх розрізняє.
  *
- * **Якщо всі сфери рівні, не вибираємо «найсильнішу» випадково** — кажемо
- * прямо, що виділятися нічому, бо випадковий вибір виглядає б як відкриття.
+ * **Рівний профіль — теж трактування, а не відсутність такого.** Коли всі
+ * п'ять сфер збіглися, розкиду немає і вибирати «найслабшу» — вигадка;
+ * тоді розповідає вже **рівень**: людина, яка тримає все одразу на 4 з 5,
+ * і людина, яка провалила все одразу, — це різні речі, і обидві варто
+ * назвати вголос. Рівність не значить «нічого сказати».
  */
-export function profileReading(test: AssessmentTest, answers: readonly number[]): ProfileReading {
-  const { strongest, weakest, even } = profileOf(test, answers);
+export function profileReading(test: AssessmentTest, record: AssessmentRecord): ProfileReading {
+  const { strongest, weakest, even } = profileOf(test, record.answers);
   const at = (label: string, value: number, max: number): string => `${label} — ${value} з ${max}`;
+
   if (even) {
+    const option = test.options.find((one) => one.value === strongest.value)?.label;
+    const chosen = option ? `«${option}»` : `${strongest.value} з ${strongest.max}`;
+    if (record.percent > test.attentionBelow) {
+      return {
+        strongest: `Усі п'ять сфер тримаються рівно: ${chosen}.`,
+        weakest: "Нічого окремо не просіло — і це рідко буває: зазвичай якась сфера тягне вниз.",
+        question: "Що саме тебе тримає на цьому рівні?",
+      };
+    }
     return {
-      strongest: `Усі сфери на одному рівні: ${strongest.value} з ${strongest.max}.`,
-      weakest: "Окремої слабкої сторони тут немає — це рівномірний стан.",
-      question: null,
+      strongest: `Усі п'ять сфер на одному рівні: ${chosen}.`,
+      weakest: "Просило не одне, а все одразу — так буває, коли важко не з однієї сторони.",
+      question: "Коли таке триває тиждень за тижнем — що заважає почати з одного кроку?",
     };
   }
+
   return {
     strongest: `Міцніше: ${at(strongest.label, strongest.value, strongest.max)}.`,
     weakest: `Слабше: ${at(weakest.label, weakest.value, weakest.max)}.`,
@@ -56,47 +70,37 @@ export function profileReading(test: AssessmentTest, answers: readonly number[])
 }
 
 /**
- * Що означає число — **арифметикою, яку можна перевірити очима**.
+ * Поріг уваги — **словами, без арифметики шкали**.
  *
- * На картці стоїть два числа («19 з 25» і «76 зі 100»), і без цього рядка вони
- * виглядають як помилка: незрозуміло, звідки взявся другий і навіщо він
- * поруч. Тому кажемо вголос усе: сума, масштаб, поріг — і чи він пройдений.
- *
- * **Поріг перекладається в бали сирої шкали**, бо «12 з 25» зрозуміліше, ніж
- * «50 зі 100», коли мова йде про відповіді на конкретні питання.
+ * «13 з 25» зрозуміліше, ніж «50 зі 100»: поріг рахується на тій самій шкалі,
+ * на якій людина відповідала. Рядок потрібен у головному виводі — він пояснює,
+ * що число не просто «високе», а **порівняно** з чимось.
  */
-export function scaleReading(test: AssessmentTest, record: AssessmentRecord): string {
+export function thresholdLine(test: AssessmentTest, record: AssessmentRecord): string {
   const max = maxRawScore(test);
   const attentionRaw = Math.round((test.attentionBelow / 100) * max);
   const side = record.percent > test.attentionBelow ? "вище" : "нижче";
-  return (
-    `${record.raw} з ${max} — це ${record.percent} зі 100. ` +
-    `Поріг уваги — ${test.attentionBelow} зі 100, тобто ${attentionRaw} з ${max}. ` +
-    `Ти ${side} за порігом.`
-  );
+  return `Поріг уваги — ${attentionRaw} із ${max}. Ти ${side} за ним.`;
 }
 
-/** Останній результат кожного тесту — те, що видно в списку. */
-export function latestByTest(results: readonly AssessmentRecord[]): Map<string, AssessmentRecord> {
-  const latest = new Map<string, AssessmentRecord>();
-  for (const record of results) {
-    if (!latest.has(record.testKey)) latest.set(record.testKey, record);
-  }
-  return latest;
-}
-
+/**
+ * Напрям зміни для людини.
+ *
+ * **«Вгору» — це добре**, бо бал wellbeing зростає з якістю стану. Назва
+ * напряму, а не «плюс/мінус»: людині, яка дивиться на себе в тяжкий тиждень,
+ * «плюс 4» не каже нічого, а «покращилося» каже все.
+ */
 /**
  * Чому «далі» не спрацьовує — або `null`, коли можна рухатись далі.
  *
  * **Перевіряється поточне питання, а не весь тест.** `validateAnswers` вимагає
- * заповнених усіх п'яти, а питання показуються по одному: на першому кнопка
+ * заповнених усіх п’ять, а питання показуються по одному: на першому кнопка
  * була б неактивною завжди, тобто пройти тест було б неможливо. Повну
  * перевірку все одно робить сервер надсилачем — тут лише те, що стосується
  * кнопки на екрані.
  *
- * **Повертає причину, а не `boolean`.** Кнопка без пояснення, чому вона
- * сіра, виглядає як зламана програма; людина просто натискає й нічого не
- * відбувається.
+ * **Повертає причину, а не `boolean`.** Кнопка без пояснення, чому вона сіра,
+ * виглядає як зламана програма: людина просто натискає й нічого не відбувається.
  */
 export function blockedReason(
   test: AssessmentTest,
@@ -111,13 +115,15 @@ export function blockedReason(
   return null;
 }
 
-/**
- * Напрям зміни для людини.
- *
- * **«Вгору» — це добре**, бо бал wellbeing зростає з якістю стану. Назва
- * напряму, а не «плюс/мінус»: людині, яка дивиться на себе в тяжкий тиждень,
- * «плюс 4» не каже нічого, а «покращилося» каже все.
- */
+/** Останній результат кожного тесту — те, що видно в списку. */
+export function latestByTest(results: readonly AssessmentRecord[]): Map<string, AssessmentRecord> {
+  const latest = new Map<string, AssessmentRecord>();
+  for (const record of results) {
+    if (!latest.has(record.testKey)) latest.set(record.testKey, record);
+  }
+  return latest;
+}
+
 export type TrendDirection = "up" | "down" | "flat";
 
 export interface Trend {
