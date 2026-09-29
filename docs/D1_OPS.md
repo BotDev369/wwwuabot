@@ -26,6 +26,22 @@ npx wrangler d1 execute wwwuabot-db-dev --remote \
 `actions: write` (`gh workflow run` → 403). Вхід `file` приймає **тільки** `scripts/migrations/*.sql`:
 довільний шлях до `.sql` означав би «виконай будь-що від імені CI».
 
+### Звірити стан, а не лише реєстр
+
+`check:db` читає `tables.ts`, а не базу: таблиця з реєстру, яку ще ніхто не створив запитом, йому
+невидима. Очі та розбіжність видно лише на живій базі:
+
+```bash
+npx wrangler d1 execute wwwuabot-db-dev --remote --config api-dev/wrangler.toml \\
+  --command "SELECT name FROM sqlite_master WHERE type='table' ORDER BY name"
+```
+
+Нова таблиця з'являється в базі **лише після першого авторизованого запиту** — доти `404`/`401` на
+маршруті доводить, що код розвернутий, але не те, що схема створилась.
+
+`wrangler deployments list` друкує деплой**и від найстарішого**: свіжий дивись у `tail`, інакше
+легко вирішити, що останній пуш не задеплоївся.
+
 ## Перебудова таблиці: те, чого `ensureTables` не вміє
 
 `ensureTables` **тільки додає колонки**: PK, `UNIQUE` й типи на наявній таблиці він не змінює. Тому
