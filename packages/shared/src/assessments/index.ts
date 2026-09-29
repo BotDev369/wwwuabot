@@ -14,8 +14,26 @@ export type {
   AssessmentRecord,
   AssessmentSource,
   AssessmentTest,
+  HelpLine,
+  ImpactQuestion,
   ScaleOption,
+  SignificantChange,
 } from "./types";
+export {
+  alertCount,
+  combinedKeyOf,
+  impactText,
+  impactValue,
+  isCoreMoodAlarmed,
+  itemAlerts,
+  itemById,
+  latestOf,
+  safetyOf,
+  safetyValue,
+  type CombinedKey,
+  type ItemAlert,
+  type SafetyLevel,
+} from "./flags";
 export {
   isSignificantChange,
   maxRawScore,
@@ -26,4 +44,6 @@ export {
   type ItemScore,
 } from "./score";
 export { WHO_5 } from "./who5";
+export { PHQ_9 } from "./phq9";
+export { GAD_7 } from "./gad7";
 export { ASSESSMENTS, getAssessment } from "./registry";

@@ -8,11 +8,13 @@
  * @module @wwwuabot/shared/assessments/registry
  */
 
+import { GAD_7 } from "./gad7";
+import { PHQ_9 } from "./phq9";
 import { WHO_5 } from "./who5";
 import type { AssessmentTest } from "./types";
 
 /** Порядок показу на екрані «Розвиток» — від коротших до довших. */
-export const ASSESSMENTS: readonly AssessmentTest[] = [WHO_5];
+export const ASSESSMENTS: readonly AssessmentTest[] = [WHO_5, GAD_7, PHQ_9];
 
 /** Тест за ключем — єдиний спосіб дістати його на сервері й у браузері. */
 export function getAssessment(key: string): AssessmentTest | null {

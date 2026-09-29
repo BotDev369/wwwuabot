@@ -13,11 +13,20 @@
  * @module @wwwuabot/shared/assessments/score
  */
 
-import type { AssessmentBand, AssessmentTest } from "./types";
+import type { AssessmentBand, AssessmentItem, AssessmentTest } from "./types";
 
 /** Найбільша можлива сума: скільки питань, помножено на найбільший бал шкали. */
 export function maxRawScore(test: AssessmentTest): number {
-  return test.items.length * Math.max(...test.options.map((option) => option.value));
+  return scoredItems(test).length * Math.max(...test.options.map((option) => option.value));
+}
+
+/**
+ * Питання, які **входять у суму**. Типово це всі, але питання про вплив на
+ * життя бали не нараховує, тому воно поза сумою — і в сумі, і в максимумі.
+ * Робимо це одним списком, щоб `raw` і `maxRaw` не могли розійтися.
+ */
+function scoredItems(test: AssessmentTest): readonly AssessmentItem[] {
+  return test.items.filter((item) => item.countsTowardScore !== false);
 }
 
 export interface AssessmentResult {
@@ -69,7 +78,7 @@ export function scoreAssessment(
   const problem = validateAnswers(test, answers);
   if (problem) throw new Error(`Тест «${test.key}»: ${problem}`);
 
-  const raw = answers.reduce((sum, answer) => sum + answer, 0);
+  const raw = scoredItems(test).reduce((sum, _, index) => sum + answers[index], 0);
   const percent = Math.round((raw / maxRawScore(test)) * 100);
   return {
     raw,
@@ -91,10 +100,13 @@ export function isSignificantChange(
   currentPercent: number,
   test: AssessmentTest,
 ): boolean {
+  const change = test.significantChange;
+  const delta = Math.abs(currentPercent - previousPercent);
+  if (change.kind === "points") {
+    return delta >= change.value;
+  }
   const baseline = Math.max(1, Math.abs(previousPercent));
-  return (
-    (Math.abs(currentPercent - previousPercent) / baseline) * 100 >= test.significantChangePercent
-  );
+  return (delta / baseline) * 100 >= change.value;
 }
 
 /** Бал однієї сфери: що вона означає і наскільки сильна. */

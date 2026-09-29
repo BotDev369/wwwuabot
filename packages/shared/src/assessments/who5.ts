@@ -127,7 +127,7 @@ export const WHO_5: AssessmentTest = {
   options: OPTIONS,
   bands: BANDS,
   attentionBelow: 50,
-  significantChangePercent: 10,
+  significantChange: { kind: "percent", value: 10 },
   source: {
     name: "WHO-5 Well-Being Index, Всесвітня організація охорони здоров'я",
     citation:

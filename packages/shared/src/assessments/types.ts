@@ -38,6 +38,32 @@ export interface AssessmentItem {
    * чесне питання.
    */
   readonly weakNote?: string;
+  /**
+   * **Не входить у суму.** Так працює питання про вплив на життя: воно
+   * міряє наслідок, а не симптом, тому бали за нього не нараховуються, але
+   * відповідь зберігається й окремо показується.
+   */
+  readonly countsTowardScore?: boolean;
+  /**
+   * Поріг відповіді, за якого це питання вимагає окремої реакції: PHQ-9 і
+   * GAD-7 показують персональний акцент на відповіді ≥ 2 («більше половини
+   * днів» і частіше). На відміну від `weakNote`, який стосується лише
+   * найслабшої сфери, спрацьовує **кожне** питання, що перевищило поріг.
+   */
+  readonly alertAtLeast?: number;
+  readonly alertNote?: string;
+  /**
+   * **Питання безпеки.** Будь-яка відповідь вище нуля запускає протокол
+   * допомоги — незалежно від загального бала. У PHQ-9 це питання 9 («думки
+   * про те, що вам краще було б померти»), і людина з 2 балами з 27 мусить
+   * отримати блок допомоги так само, як з 20.
+   *
+   * Тому це працює **поза смугами**: прапор safety не береться з `percent`
+   * і не може бути придушеним низьким підсумком.
+   */
+  readonly safety?: boolean;
+  /** Текст протоколу за рівнем відповіді: ключ — значення відповіді. */
+  readonly safetyTexts?: Readonly<Record<number, string>>;
 }
 
 /**
@@ -95,11 +121,54 @@ export interface AssessmentTest {
    * разом із джерелом, а не «на око».
    */
   readonly attentionBelow: number;
-  /** Різниця у відсотках, яку вважають значущою зміною (документ ВОЗ Європа). */
-  readonly significantChangePercent: number;
+  /**
+   * Що вважати значущою зміною **з поточним одиницям виміру**.
+   *
+   * WHO-5 вимірює зміну у відсотках (10% — документ ВОЗ Європа), а PHQ-9 і
+   * GAD-7 — у балах (приблизно 5 і 4). Тримати в тесті один `%` означало б
+   * щоразу перемножувати на 4 там, де потрібні бали. Тому одиниця явно
+   * названа, а правило одне.
+   */
+  readonly significantChange: SignificantChange;
   readonly source: AssessmentSource;
   /** Показується на екрані результату. Це не формальність, а частина виводу. */
   readonly disclaimer: string;
+  /**
+   * `true` — застереження лишається відкритим на екрані результату.
+   *
+   * WHO-5: `false`, довідка в акордеоні (вона не змінює дії людини).
+   * PHQ-9/GAD-7: `true` — специфікація вимагає примітку не приховувати
+   * (`specs/phq9-gad7/01-rules.md` §3.4), бо тут результат про симптоми.
+   */
+  readonly disclaimerInline?: boolean;
+  /** Лінії допомоги — показуються лише разом із прапорцем безпеки. */
+  readonly help?: readonly HelpLine[];
+  /** Додаткове питання, що не входить у суму (вплив на повсякденне життя). */
+  readonly impact?: ImpactQuestion;
+  /** Ключ спільного висновку за двома шкалами (§7.5 специфікації). */
+  readonly combinedGroup?: string;
+}
+
+/** Значуща зміна разом із одиницею виміру — одне правило, названий масштаб. */
+export type SignificantChange =
+  | { readonly kind: "percent"; readonly value: number }
+  | { readonly kind: "points"; readonly value: number };
+
+/** Лінія допомоги, яку можна набрати. Номер — дані, а не константа в коді. */
+export interface HelpLine {
+  readonly name: string;
+  readonly number: string;
+  readonly note: string;
+  /** Показується без розгортання: три найважливіші. */
+  readonly primary?: boolean;
+}
+
+/** Питання про вплив на повсякденне життя — окремі варіанти й окремі тексти. */
+export interface ImpactQuestion {
+  readonly prompt: string;
+  readonly options: readonly ScaleOption[];
+  /** Текст за значенням відповіді (§7.4 специфікації). */
+  readonly texts: Readonly<Record<number, string>>;
 }
 
 /**
