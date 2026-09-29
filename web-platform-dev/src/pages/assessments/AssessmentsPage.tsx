@@ -20,6 +20,7 @@ import { useMemo, type ReactElement } from "react";
 import { Icon } from "@wwwuabot/shared";
 import type { AssessmentRecord, AssessmentTest } from "@wwwuabot/shared/assessments";
 import { latestByTest, trendFrom, trendLabel } from "./assessment-view";
+import { CombinedConclusion } from "./CombinedConclusion";
 import { ASSESSMENTS_ROUTE } from "@/app/routes";
 
 interface AssessmentsPageProps {
@@ -42,6 +43,8 @@ export function AssessmentsPage({
       <div className="wb-page-head">
         <h1 className="wb-page-title">Розвиток</h1>
       </div>
+
+      <CombinedConclusion tests={tests} results={results} />
 
       <div className="wb-test-list">
         {loading && <p className="wb-test-lead">Завантаження…</p>}

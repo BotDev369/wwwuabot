@@ -18,7 +18,13 @@
 import { useMemo, type ReactElement } from "react";
 import { Icon } from "@wwwuabot/shared";
 import {
+  alertCount as countAlerts,
+  impactText as impactTextOf,
+  impactValue,
+  isCoreMoodAlarmed,
+  itemAlerts,
   maxRawScore,
+  safetyOf,
   type AssessmentRecord,
   type AssessmentTest,
 } from "@wwwuabot/shared/assessments";
@@ -29,6 +35,9 @@ import {
   trendLabel,
   type TrendDirection,
 } from "./assessment-view";
+import { AssessmentAlerts } from "./AssessmentAlerts";
+import { AssessmentSafetyBlock } from "./AssessmentSafetyBlock";
+import { BoldText } from "./BoldText";
 
 /** Знак напряму. Для wellbeing «вгору» — це добре, тому стрілка вгору. */
 const TREND_ICON: Record<TrendDirection, "arrow-up" | "arrow-down" | "minus"> = {
@@ -59,9 +68,16 @@ export function AssessmentResultCard({
   const profile = useMemo(() => profileReading(test, record), [test, record]);
   const band = test.bands.find((candidate) => candidate.key === record.bandKey);
   const label = trendLabel(trend);
+  // Прапорці рахуються з тих самих відповідей, що лежать у рядку: вони не
+  // зберігаються окремо, тож старий результат отримує ту саму поведінку.
+  const safety = safetyOf(test, record.answers);
+  const alerts = itemAlerts(test, record.answers);
+  const impact = impactTextOf(test.impact, impactValue(test, record.answers));
 
   return (
     <div className="wb-test-card">
+      <AssessmentSafetyBlock test={test} safety={safety} />
+
       <div className="wb-score">
         <span className="wb-score-value">{record.raw}</span>
         <span className="wb-score-band">з {maxRawScore(test)}</span>
@@ -76,7 +92,19 @@ export function AssessmentResultCard({
         <p className="wb-scale-reading">{thresholdLine(test, record)}</p>
       </div>
 
-      {band && <p className="wb-test-lead">{band.note}</p>}
+      {band && (
+        <p className="wb-test-lead">
+          <BoldText text={band.note} />
+        </p>
+      )}
+
+      <AssessmentAlerts
+        test={test}
+        alerts={alerts}
+        impact={impact}
+        coreMood={isCoreMoodAlarmed(test, record.answers)}
+        alertCount={countAlerts(test, record.answers)}
+      />
 
       <div className="wb-test-meta">
         {trend.hasPrevious && label && (
@@ -88,6 +116,12 @@ export function AssessmentResultCard({
         {record.needsAttention && <span className="wb-trend wb-trend--down">потрібна розмова</span>}
       </div>
 
+      {test.disclaimerInline && (
+        <p className="wb-notice wb-notice--required">
+          <Icon name="info" size={14} /> {test.disclaimer}
+        </p>
+      )}
+
       <details className="wb-about">
         <summary className="wb-about-summary">
           <Icon name="info" size={16} />
@@ -96,9 +130,11 @@ export function AssessmentResultCard({
         </summary>
         <div className="wb-about-body">
           <p>{test.about}</p>
-          <p className={`wb-notice${record.needsAttention ? " wb-notice--attention" : ""}`}>
-            {record.needsAttention && <Icon name="warning" size={14} />} {test.disclaimer}
-          </p>
+          {test.disclaimerInline ? null : (
+            <p className={`wb-notice${record.needsAttention ? " wb-notice--attention" : ""}`}>
+              {record.needsAttention && <Icon name="warning" size={14} />} {test.disclaimer}
+            </p>
+          )}
           <p className="wb-source">
             {test.source.name}. {test.source.citation} Ліцензія: {test.source.license} ·{" "}
             <a href={test.source.url} target="_blank" rel="noreferrer">

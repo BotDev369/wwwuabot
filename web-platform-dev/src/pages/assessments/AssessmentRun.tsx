@@ -45,6 +45,10 @@ export function AssessmentRun({
 
   const item = test.items[step];
   const total = test.items.length;
+  // Питання про вплив на життя має **інші** варіанти, ніж симптомні, тож
+  // шкала береться з питання, а не з тесту за замовчуванням.
+  const isImpact = item.countsTowardScore === false;
+  const options = isImpact ? (test.impact?.options ?? test.options) : test.options;
   const chosen = answers[step];
   const isLast = step === total - 1;
 
@@ -122,10 +126,12 @@ export function AssessmentRun({
             На решті чотирьох це шум, а висота екрана тут вирішальна. */}
         {step === 0 && <p className="wb-run-period">{test.periodLabel}</p>}
 
-        <p className="wb-run-question">{item.text}</p>
+        <p className="wb-run-question">
+          {isImpact ? (test.impact?.prompt ?? item.text) : item.text}
+        </p>
 
         <div className="wb-scale" role="group" aria-label={item.text}>
-          {test.options.map((option) => {
+          {options.map((option) => {
             const active = chosen === option.value;
             return (
               <button

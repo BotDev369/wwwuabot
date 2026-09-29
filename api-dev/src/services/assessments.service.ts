@@ -16,6 +16,7 @@
 
 import {
   getAssessment,
+  safetyOf,
   scoreAssessment,
   validateAnswers,
   type AssessmentRecord,
@@ -99,6 +100,10 @@ export async function saveAssessment(
   if (problem) return { ok: false, error: problem };
 
   const result = scoreAssessment(test, answers as number[]);
+  // Прапор безпеки **піднімає** `needs_attention`, а не замінює його: 1 бал із
+  // 27 залишається «мінімальними симптомами» у смузі, але вже не «нічого
+  // страшного». Рядок у базі мусить говорити правду про обидва.
+  const safety = safetyOf(test, answers as number[]);
   const inserted = await db
     .prepare(
       `INSERT INTO assessment_results
@@ -112,7 +117,7 @@ export async function saveAssessment(
       result.raw,
       result.percent,
       result.band.key,
-      result.needsAttention ? 1 : 0,
+      result.needsAttention || safety.triggered ? 1 : 0,
       formatSqliteDatetime(),
     )
     .run();

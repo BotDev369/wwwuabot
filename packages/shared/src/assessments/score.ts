@@ -50,11 +50,16 @@ export function validateAnswers(test: AssessmentTest, answers: readonly number[]
   if (answers.length !== test.items.length) {
     return `Обери відповідь на кожне з ${test.items.length} запитань — зараз ${answers.length}.`;
   }
-  const allowed = new Set(test.options.map((option) => option.value));
-  const broken = answers.findIndex((answer) => !Number.isInteger(answer) || !allowed.has(answer));
-  if (broken !== -1) {
-    const allowedLabel = [...allowed].sort((a, b) => a - b).join(", ");
-    return `Відповідь на запитання ${broken + 1} поза шкалою. Можливі значення: ${allowedLabel}.`;
+  // Шкала **кожного** питання своя: у PHQ-9 і GAD-7 питання про вплив на
+  // життя має інші варіанти, ніж симптомні. Перевірка за спільною шкалою
+  // пропустила б відповідь, яка не належить цьому питанню.
+  for (const [index, item] of test.items.entries()) {
+    const options = item.countsTowardScore === false ? test.impact?.options : test.options;
+    const answer = answers[index];
+    if (!options || !options.some((option) => option.value === answer)) {
+      const allowed = [...new Set((options ?? []).map((option) => option.value))].join(", ");
+      return `Відповідь на запитання ${index + 1} поза шкалою. Можливі значення: ${allowed}.`;
+    }
   }
   return null;
 }

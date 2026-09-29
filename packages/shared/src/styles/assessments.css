@@ -359,3 +359,231 @@
   font-weight: var(--weight-medium);
   color: var(--text-secondary);
 }
+
+/* ── Протокол безпеки ───────────────────────────────────────────────────── */
+
+/* **Тон навмисно не тривожний.** Специфікація забороняє червоні спалахи й
+   «конфетті» на цьому екрані (§8.5): страх зупиняє людину, а не рухає її до
+   допомоги. Тому рамка тепла й підтримувальна, а не сирена. */
+.wb-safety {
+  margin-bottom: var(--sp-4);
+  padding: var(--sp-4);
+  border: 1px solid var(--accent);
+  border-radius: var(--radius-md);
+  background: var(--accent-soft);
+}
+
+.wb-safety-title {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+  margin: 0 0 var(--sp-2);
+  font-size: 1rem;
+  font-weight: var(--weight-bold);
+  color: var(--text-primary);
+}
+
+.wb-safety-text {
+  margin: 0;
+  font-size: 0.9375rem;
+  line-height: 1.55;
+  white-space: pre-line;
+  color: var(--text-primary);
+}
+
+.wb-safety-help-title {
+  margin: var(--sp-3) 0 var(--sp-2);
+  font-size: 0.8125rem;
+  font-weight: var(--weight-medium);
+  color: var(--text-secondary);
+}
+
+.wb-safety-help {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-2);
+}
+
+.wb-safety-help a {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--sp-3);
+  min-height: 44px;
+  padding: var(--sp-2) var(--sp-3);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  background: var(--surface);
+  color: var(--text-primary);
+  text-decoration: none;
+}
+
+.wb-safety-help-name {
+  font-size: 0.9375rem;
+}
+
+.wb-safety-help-number {
+  font-size: 1.0625rem;
+  font-weight: var(--weight-bold);
+  color: var(--accent);
+  font-variant-numeric: tabular-nums;
+}
+
+.wb-safety-help-note {
+  display: block;
+  padding: 0 var(--sp-3) var(--sp-1);
+  font-size: 0.75rem;
+  line-height: 1.4;
+  color: var(--text-muted);
+}
+
+.wb-safety-more {
+  margin-top: var(--sp-2);
+}
+
+.wb-safety-more-summary {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+  min-height: 44px;
+  cursor: pointer;
+  list-style: none;
+  font-size: 0.875rem;
+  color: var(--text-secondary);
+}
+
+.wb-safety-more-summary::-webkit-details-marker {
+  display: none;
+}
+
+.wb-safety-chevron {
+  margin-inline-start: auto;
+  transition: transform 0.15s ease;
+}
+
+.wb-safety-more[open] .wb-safety-chevron {
+  transform: rotate(180deg);
+}
+
+.wb-safety-foot {
+  margin: var(--sp-3) 0 0;
+  font-size: 0.75rem;
+  line-height: 1.4;
+  color: var(--text-muted);
+}
+
+/* ── Персональні акценти ────────────────────────────────────────────────── */
+
+.wb-alerts {
+  margin-top: var(--sp-4);
+  padding-top: var(--sp-3);
+  border-top: 1px solid var(--border-subtle);
+}
+
+.wb-alerts-title {
+  margin: 0 0 var(--sp-2);
+  font-size: 1rem;
+  font-weight: var(--weight-bold);
+  color: var(--text-primary);
+}
+
+.wb-alerts-lead {
+  margin: 0 0 var(--sp-2);
+  font-size: 0.875rem;
+  line-height: 1.5;
+  color: var(--text-secondary);
+}
+
+.wb-alerts-list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-3);
+}
+
+.wb-alerts-label {
+  display: block;
+  font-size: 0.75rem;
+  font-weight: var(--weight-medium);
+  color: var(--text-muted);
+}
+
+.wb-alerts-note {
+  margin: 0;
+  font-size: 0.9375rem;
+  line-height: 1.5;
+  color: var(--text-primary);
+}
+
+.wb-alerts-impact {
+  margin: var(--sp-3) 0 0;
+  padding-top: var(--sp-3);
+  border-top: 1px solid var(--border-subtle);
+  font-size: 0.9375rem;
+  line-height: 1.5;
+  color: var(--text-primary);
+}
+
+/* Пояснення рівня — з абзаців і маркерів у джерелі, тому переноси рядків
+   має бути значимим інакше текст злипнеться в стінку. */
+.wb-test-lead {
+  white-space: pre-line;
+}
+
+/* Застереження, яке не можна сховати (§3.4 специфікації). */
+.wb-notice--required {
+  border-color: var(--border);
+}
+
+/* ── Спільний висновок за двома шкалами ──────────────────────────────────── */
+
+.wb-combined {
+  margin-bottom: var(--sp-4);
+  padding: var(--sp-4);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  background: var(--surface);
+}
+
+.wb-combined-overline {
+  margin: 0 0 var(--sp-1);
+  font-size: 0.75rem;
+  font-weight: var(--weight-medium);
+  color: var(--text-muted);
+}
+
+.wb-combined-title {
+  margin: 0 0 var(--sp-1);
+  font-size: 1.0625rem;
+  font-weight: var(--weight-bold);
+  line-height: 1.35;
+  color: var(--text-primary);
+}
+
+.wb-combined-scores {
+  margin: 0 0 var(--sp-2);
+  font-size: 0.8125rem;
+  color: var(--text-secondary);
+  font-variant-numeric: tabular-nums;
+}
+
+.wb-combined-body {
+  margin: 0;
+  font-size: 0.9375rem;
+  line-height: 1.55;
+  white-space: pre-line;
+  color: var(--text-primary);
+}
+
+.wb-combined-note {
+  margin: var(--sp-3) 0 0;
+  padding-top: var(--sp-2);
+  border-top: 1px solid var(--border-subtle);
+  font-size: 0.8125rem;
+  color: var(--text-secondary);
+}
