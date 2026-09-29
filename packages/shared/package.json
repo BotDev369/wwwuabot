@@ -43,6 +43,7 @@
     "./user/platform-username": "./src/user/platform-username.ts",
     "./user/public-profile": "./src/user/public-profile.ts",
     "./ads": "./src/ads/index.ts",
+    "./assessments": "./src/assessments/index.ts",
     "./pages": "./src/pages/index.ts",
     "./shop": "./src/shop/index.ts",
     "./monitoring": "./src/monitoring/index.ts",

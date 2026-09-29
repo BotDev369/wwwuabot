@@ -1,0 +1,228 @@
+/*
+ * «Розвиток»: самооцінка — картки тестів, проходження, результат.
+ *
+ * Окремим файлом, як `games.css` і `shop.css`: екрани живуть у оболонці, а
+ * вигляд деталі — тут, бо бал, шкала й застереження мають стояти однаково, хто
+ * б їх не малював.
+ *
+ * **Колір не означає діагноз.** Смуга балів фарбується нейтральними токенами,
+ * а не «червоним = хворий»: червоний на екрані сам себе трактує як діагноз,
+ * чим цей бал не є. Поріг, за яким людину щось питають, тягне за собою слово
+ * й посилання на фахівця, а не червоний колір.
+ *
+ * Тільки токени: жодного хардкоду кольору чи мірок (`check:css`).
+ */
+
+/* ── Список тестів ─────────────────────────────────────────────────────── */
+
+.wb-test-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-3);
+  padding: var(--sp-4);
+}
+
+.wb-test-card {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-3);
+  padding: var(--sp-4);
+  background: var(--surface);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-lg);
+}
+
+.wb-test-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--sp-3);
+}
+
+.wb-test-title {
+  font-size: 1.0625rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin: 0;
+}
+
+.wb-test-lead {
+  margin: 0;
+  font-size: 0.875rem;
+  line-height: 1.45;
+  color: var(--text-secondary);
+}
+
+.wb-test-meta {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+  flex-wrap: wrap;
+  font-size: 0.8125rem;
+  color: var(--text-muted);
+}
+
+/* ── Бал і смуга ───────────────────────────────────────────────────────── */
+
+.wb-score {
+  display: flex;
+  align-items: baseline;
+  gap: var(--sp-2);
+}
+
+.wb-score-value {
+  font-size: 2.25rem;
+  font-weight: 650;
+  line-height: 1;
+  color: var(--text-primary);
+  /* Табуляція: «52» і «8» мусять стояти на місці, інакше список результатів
+     сідає вбік на кожному рядку. */
+  font-variant-numeric: tabular-nums;
+}
+
+.wb-score-band {
+  font-size: 0.9375rem;
+  color: var(--text-secondary);
+}
+
+.wb-score-note {
+  margin: 0;
+  font-size: 0.9375rem;
+  line-height: 1.5;
+  color: var(--text-secondary);
+}
+
+/* ── Тренд ─────────────────────────────────────────────────────────────── */
+
+.wb-trend {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sp-1);
+  font-size: 0.8125rem;
+  font-variant-numeric: tabular-nums;
+}
+
+.wb-trend--up {
+  color: var(--green);
+}
+
+.wb-trend--down {
+  color: var(--red);
+}
+
+.wb-trend--flat {
+  color: var(--text-muted);
+}
+
+/* ── Проходження: одне питання на екран ────────────────────────────────── */
+
+.wb-run {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-4);
+  padding: var(--sp-4);
+  min-height: 100dvh;
+}
+
+.wb-run-progress {
+  font-size: 0.8125rem;
+  color: var(--text-muted);
+  font-variant-numeric: tabular-nums;
+}
+
+.wb-run-progress-track {
+  height: 4px;
+  border-radius: var(--radius-full);
+  background: var(--bg-2);
+  overflow: hidden;
+}
+
+.wb-run-progress-fill {
+  height: 100%;
+  border-radius: var(--radius-full);
+  background: var(--accent);
+  transition: width var(--duration-fast) var(--ease-out);
+}
+
+.wb-run-question {
+  margin: 0;
+  font-size: 1.125rem;
+  font-weight: 600;
+  line-height: 1.4;
+  color: var(--text-primary);
+}
+
+/* ── Шкала відповідь ───────────────────────────────────────────────────── */
+
+.wb-scale {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-2);
+}
+
+/* Тап-таргет — не менше 44px (правило мобільного пріоритету): шість варіантів
+   підряд мусять натискатися пальцем, а не прицілюватися. */
+.wb-scale-btn {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-3);
+  width: 100%;
+  min-height: 44px;
+  padding: var(--sp-3);
+  text-align: start;
+  font: inherit;
+  color: var(--text-primary);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  cursor: pointer;
+}
+
+.wb-scale-btn:hover {
+  background: var(--surface-hover);
+}
+
+.wb-scale-btn--active {
+  border-color: var(--accent);
+  background: var(--accent-soft);
+}
+
+.wb-scale-dot {
+  flex: none;
+  width: 20px;
+  height: 20px;
+  border-radius: var(--radius-full);
+  border: 2px solid var(--border);
+}
+
+.wb-scale-btn--active .wb-scale-dot {
+  border-color: var(--accent);
+  background: var(--accent);
+}
+
+/* ── Застереження: це частина виводу, а не дрібний шрифт ───────────────── */
+
+.wb-notice {
+  padding: var(--sp-3);
+  font-size: 0.8125rem;
+  line-height: 1.5;
+  color: var(--text-secondary);
+  background: var(--bg-1);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+}
+
+.wb-notice--attention {
+  border-color: var(--yellow);
+}
+
+.wb-source {
+  padding: 0 var(--sp-4) var(--sp-4);
+  font-size: 0.75rem;
+  line-height: 1.5;
+  color: var(--text-muted);
+}
+
+.wb-source a {
+  color: inherit;
+}

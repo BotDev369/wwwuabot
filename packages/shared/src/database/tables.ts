@@ -806,6 +806,48 @@ export const TABLES = {
       "CREATE INDEX IF NOT EXISTS idx_metrics_values_metric ON metrics_values(metric, group_key)",
     ],
   },
+
+  /**
+   * Результат самооцінки: один рядок — одне проходження одного тесту.
+   *
+   * **Найчутливіші дані в базі, і це не фігуративно.** Бал «благополуччя»
+   * розповідає про людину більше, ніж будь-яке інше поле профілю, тому
+   * `owner_id` ставиться з **підписаного `initData`** і потрапляє в `WHERE`
+   * кожного читання: чужий результат не віддається ні списком, ні за номером
+   * (те саме правило, що в нотатках і контактах). У публічний профіль ці рядки
+   * **не потрапляють ніколи** — `profile_public_fields` їх не знає.
+   *
+   * **Бал зберігається разом із відповідями, а не замість них.** Без
+   * відповідей результат неможливо перерахувати, коли зміниться шкала або
+   * з'явиться інша версія інструменту, а людина не зможе зрозуміти, звідки
+   * взялося її число. `raw`, `percent` і `band_key` — **знімки на момент
+   * проходження**, а не формула: вони не перераховуються заднім числом, бо
+   * тоді минулий результат тихо змінив би сенс.
+   *
+   * `needs_attention` зберігається окремо від `percent`, бо це **висновок на
+   * момент тоді**, а не властивість бала: зміниться поріг — і минулі рядки
+   * мають лишити такими, якими їх показали тоді.
+   */
+  assessment_results: {
+    name: "assessment_results",
+    owner: "api-dev",
+    purpose:
+      "Результати самооцінки («Розвиток»): одне проходження одного тесту, з відповідями та знімком балу на момент проходження.",
+    create: `CREATE TABLE IF NOT EXISTS assessment_results (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        owner_id TEXT NOT NULL,
+        test_key TEXT NOT NULL,
+        answers TEXT NOT NULL DEFAULT '[]',
+        raw INTEGER NOT NULL DEFAULT 0,
+        percent INTEGER NOT NULL DEFAULT 0,
+        band_key TEXT NOT NULL DEFAULT '',
+        needs_attention INTEGER NOT NULL DEFAULT 0,
+        created_at TEXT NOT NULL DEFAULT (datetime('now'))
+      )`,
+    indexes: [
+      "CREATE INDEX IF NOT EXISTS idx_assessment_results_owner ON assessment_results(owner_id, test_key, created_at)",
+    ],
+  },
 } satisfies Record<string, TableDefinition>;
 
 /** Імена всіх оголошених таблиць. */

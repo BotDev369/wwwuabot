@@ -28,6 +28,7 @@ import { PlatformShell } from "@/layout/PlatformShell";
 import {
   CONTACTS_ROUTE,
   CREATE_ROUTE,
+  ASSESSMENTS_ROUTE,
   MESSAGES_PATH,
   NOTES_ROUTE,
   PAGE_EDIT_ROUTE,
@@ -45,6 +46,7 @@ import {
 } from "@/app/routes";
 import { ContactsPage } from "@/pages/ContactsPage";
 import { CreatePage } from "@/pages/CreatePage";
+import { AssessmentsScreen } from "@/pages/assessments/AssessmentsScreen";
 import { MessagesPage } from "@/pages/MessagesPage";
 import { NotesPage } from "@/pages/NotesPage";
 import { ProfileAccountPage } from "@/pages/ProfileAccountPage";
@@ -101,6 +103,11 @@ export const router = createBrowserRouter([
       // Створити — хаб власних екранів людини, слот «+» у футері: у кожного
       // пункту два входи, «подивитись» і «створити».
       { path: CREATE_ROUTE, element: <CreatePage /> },
+      // «Розвиток» — самооцінка. Довший шлях проходження іде **перед**
+      // розділом: інакше `:key` зʼїсть `assessments` і відкрив би порожній
+      // список замість тесту (та сама причина, що в `:id` під сторінками).
+      { path: `${ASSESSMENTS_ROUTE}/:key`, element: <AssessmentsScreen /> },
+      { path: ASSESSMENTS_ROUTE, element: <AssessmentsScreen /> },
       // Простір — відкрита стрічка: відкриті профілі (а далі оголошення).
       // Довший шлях іде першим — інакше `/space` перехопив би людину в Просторі.
       { path: `${SPACE_ROUTE}/${SPACE_USER_ROUTE}/:id`, element: <SpaceUserPage /> },

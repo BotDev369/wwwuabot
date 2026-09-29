@@ -49,6 +49,7 @@ import {
   handleUserMessage,
 } from "./controllers/users.controller";
 import { handleNotes, handleAdminNotes } from "./controllers/notes.controller";
+import { handleAssessments } from "./controllers/assessments.controller";
 import { handleUserPages, handleSpacePages } from "./controllers/pages.controller";
 import { matchShopRoute } from "./routes/shop";
 import { handleContactLink, handleContacts } from "./controllers/contacts.controller";
@@ -296,6 +297,11 @@ export async function handleRequest(request: Request, env: Env): Promise<Respons
   }
   if (pathname === "/api/user/visibility" && request.method === "POST") {
     return handleUserVisibility(request, env);
+  }
+  // Самооцінка («Розвиток»): історія результатів і прийом проходження. Бал
+  // рахує сервер, клієнт надсилає лише номери обраних варіантів.
+  if (pathname === "/api/user/assessments") {
+    return handleAssessments(request, env);
   }
   // Оголошення людини: `GET` — свої (з чернетками), `POST` — зберегти,
   // `DELETE` — прибрати своє. Власника додає сервер із підписаного `initData`.

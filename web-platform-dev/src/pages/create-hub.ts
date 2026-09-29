@@ -39,6 +39,7 @@ import {
   CONTACTS_PATH,
   MESSAGES_PATH,
   NOTES_PATH,
+  ASSESSMENTS_PATH,
   PAGES_NEW_PATH,
   PAGES_PATH,
 } from "../app/routes";
@@ -129,6 +130,15 @@ export const CREATE_HUB_ITEMS: readonly CreateHubItem[] = [
   // Сторінки — робочий пункт із **екраном** створення: «+» веде на вибір
   // шаблону (перегляд — частина вибору), а «подивитись» — у власний список,
   // де видно, що з них уже опубліковано.
+  {
+    key: "assessments",
+    label: "Розвиток",
+    icon: "progress",
+    view: ASSESSMENTS_PATH,
+    // Без `form`: створення тут — це **проходження**, а не композер. Воно
+    // починається з вибору тесту й має кілька кроків, тож окремий «+» у пункті
+    // завів би в нищоздатній формі. Вхід один — «подивитись».
+  },
   {
     key: "pages",
     label: "Сторінки",

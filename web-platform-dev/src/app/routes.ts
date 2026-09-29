@@ -279,6 +279,25 @@ export const CONTACTS_ROUTE = "contacts";
 export const CONTACTS_PATH = `/${CONTACTS_ROUTE}`;
 
 /**
+ * «Розвиток» — самооцінка, власні дані людини, не рядок `scenarios`.
+ *
+ * **Адреса розділу й адреса проходження — різні речі:** `/assessments`
+ * показує список тестів, а `/assessments/:key` — саме проходження. Тому
+ * «назад» у Telegram повертає на список, а не виходить із розділу, і
+ * посиланням можна дати конкретний тест.
+ *
+ * Довший шлях мусить стояти **перед** коротшим у роутері, як `:id` у
+ * `/pages`: інакше `:key` зʼїсть сам розділ.
+ */
+export const ASSESSMENTS_ROUTE = "assessments";
+export const ASSESSMENTS_PATH = `/${ASSESSMENTS_ROUTE}`;
+
+/** Адреса проходження одного тесту. */
+export function assessmentRunPath(key: string): string {
+  return `${ASSESSMENTS_PATH}/${key}`;
+}
+
+/**
  * Хаб «Створити» — екран, куди веде «+» у футері.
  *
  * Власна адреса, а не `slug`: це не сторінка, а **список входів** у власні
