@@ -1,48 +1,30 @@
 # Модель даних D1: одна таблиця — один власник
 
-**Джерело правди про схему:** `packages/shared/src/database/tables.ts` (реєстр) · **гейт:**
-`npm run check:db` · **міграції:** `scripts/migrations/` · **модель контенту:**
-[`CONTENT_MODEL.md`](./CONTENT_MODEL.md)
+**Джерело правди:** `packages/shared/src/database/tables.ts` (реєстр) · **гейт:** `npm run check:db`
+· **міграції:** `scripts/migrations/` · **контент:** [`CONTENT_MODEL.md`](./CONTENT_MODEL.md)
 
 DDL не живе в контролерах і репозиторіях: кожна таблиця оголошена **один раз** у реєстрі — ім'я,
-власник, призначення, `CREATE TABLE`. Створити таблицю повз нього не дасть гейт.
+власник, призначення, `CREATE TABLE`. Створити таблицю повз нього не дасть гейт. Як схему міняти —
+[`D1_OPS.md`](./D1_OPS.md).
 
-**Власник** — воркер, який створює таблицю і відповідає за її дані. Інші можуть читати, але не
-вигадують схему: колонка додається рядком у реєстрі, а не `ALTER`-ом із обробника помилки.
-
-## Як виконати SQL на дев-базі
-
-Токен лежить у кореневому `.env` (поза git), і wrangler бачить його **лише коли запущений із
-кореня** репозиторію:
-
-```bash
-npx wrangler d1 execute wwwuabot-db-dev --remote \
-  --config bot-dev/wrangler.toml --command "SELECT id, slug FROM scenarios ORDER BY id"
-```
-
-Запуск із середини воркера (`cd bot-dev && npx wrangler …`) у non-interactive env падає з
-«it's necessary to set a CLOUDFLARE_API_TOKEN» **навіть коли токен є**: wrangler шукає `.env` у
-теці запуску, а не в корені. Якщо токена під рукою немає, є ручний воркфлоу
-`.github/workflows/d1.yml` (Actions → «D1 (dev) → Run workflow»): він читає токен із секретів
-репозиторію, але **запустити його може лише людина** — у GitHub-інтеграції агента немає
-`actions: write` (`gh workflow run` → 403). Вхід `file` приймає **тільки** `scripts/migrations/*.sql`:
-довільний шлях до `.sql` означав би «виконай будь-що від імені CI».
+**Власник** — воркер, який створює таблицю. Інші можуть читати, але не вигадують схему: колонка
+додається рядком у реєстрі, а не `ALTER`-ом із обробника помилки.
 
 ## Таблиці
 
 | Таблиця | Власник | Хто створює | Хто читає / пише | Призначення |
 |---|---|---|---|---|
-| `users` | `bot-dev` | bot-dev, `createUser` | bot-dev (стан, профіль, блокування, `telegram_json`); api-dev (адмін-CRUD, `/api/user/profile`, `platform_username`, колонка `my_dates`, публічний профіль — `photo_url` / `about` / `profile_public*`, правила в [`SPACE.md`](./SPACE.md)) | стан користувача Telegram: профіль, роль, тариф, блокування, **ім'я на платформі**. `created_at` ставить `createUser`: у живій базі колонка `NOT NULL` без значення за замовчуванням, а `ensureTables` констрейнтів не переписує |
+| `users` | `bot-dev` | bot-dev, `createUser` | bot-dev (стан, профіль, блокування, `telegram_json`); api-dev (адмін-CRUD, `/api/user/profile`, `platform_username`, `my_dates`, публічний профіль — `photo_url` / `about` / `profile_public*`) | стан користувача Telegram: профіль, роль, тариф, блокування, **ім'я на платформі**. Профіль і видимість — [`SPACE.md`](./SPACE.md). `created_at` ставить `createUser`: у живій базі колонка `NOT NULL` без значення за замовчуванням, а `ensureTables` констрейнтів не переписує |
 | `settings` | `bot-dev` | bot-dev, `SettingsRepository.initialize` | bot-dev | один рядок (`id = 1`): `chat_id` груп, прапорець активності |
 | `scenarios` | `api-dev` | api-dev (`ensureBase`, `scenarios-portal.controller`) | **bot-dev читає**; api-dev редагує (`/api/portal/scenarios/*`, сторінки людини — `/api/user/pages`); платформа рендерить (`/api/scenario/:slug`) | **єдине сховище контенту:** рядок = сторінка вебу (`page_data`) + її подання в боті (`caption_*`, `buttons`, `rich_*`). Сторінка людини — той самий рядок із `owner_id`/`admin_ids`/`is_public`/`template_key` ([`PAGES.md`](./PAGES.md)) |
 | `notes` | `api-dev` | api-dev (`ensureTables` у `notes.controller`) | api-dev: платформа — `/api/notes`, панель — `/api/admin/notes` | нотатки: чернетки людини (`scope = 'user'`, власник — Telegram-id із **підписаного `initData`**) і нотатки про проєкт з панелі (`scope = 'admin'`, власник — акаунт cookie-сесії). `tags` — JSON-масив |
-| `contacts` | `api-dev` | api-dev (`ensureTables` у `contacts.controller`) | api-dev: довідник — `/api/contacts`; **bot-dev пише вхід у бота та `username`**, **api-dev — вхід на платформу** | контакти людини: **один рядок = один контакт**, а лінк — **одне з його полів** (`code` з `UNIQUE`, це і є payload бота `inv-8f3k2q`). Поля власника — `name`, `tags`, `notes`; `username` пише бот; `owner_id` — Telegram-id із **підписаного `initData`** |
+| `contacts` | `api-dev` | api-dev (`ensureTables` у `contacts.controller`) | api-dev: довідник — `/api/contacts`; **bot-dev пише вхід у бота та `username`**, **api-dev — вхід на платформу** | контакти людини: **один рядок = один контакт**, а лінк — **одне з його полів** (`code` з `UNIQUE`, це і є payload бота `inv-8f3k2q`). `username` пише бот, `owner_id` — Telegram-id із **підписаного `initData`**. Правила — [`COLLECTIONS.md`](./COLLECTIONS.md) |
 | `conversations` | `api-dev` | api-dev (`ensureTables` у `messages.controller`) | api-dev: `/api/messages` | переписка людей: **один рядок на пару** (`peer_a`, `peer_b` — за зростанням id, `UNIQUE`), `last_message_*` для списку розмов, `greeted_at` — одноразове вітання пари, `hidden_a`/`hidden_b` — розмова прибрана зі списку (ставляться разом, у обох) |
 | `messages` | `api-dev` | api-dev (`ensureTables` у `messages.controller`) | api-dev: `/api/messages/*` | повідомлення розмови: автор (`sender_id`), тіло, `read_at` (`NULL` — непрочитане), `is_system` — позначка платформи |
 | `message_drafts` | `api-dev` | api-dev (`ensureTables` у `messages.controller`) | api-dev: `/api/messages/compose`, `/api/messages/draft` | **ненадісланий лист** — власні дані того, хто пише: документ зі **своїм номером** і необов'язковим адресатом (`peer_id` без `NOT NULL`); схема перебудована міграцією (див. нижче) |
-| `ads` | `api-dev` | api-dev (`ensureTables` у `ads.service`) | api-dev: своє — `/api/user/ads`, дошка — `/api/space/ads` | **оголошення дошки Простору:** вид (куплю / продам / здам / шукаю / …), заголовок, текст, ціна й місто (обидва — **текст**: «договірна» теж ціна). `is_active` — не «чи опубліковано», а **показати на дошці**: вимкнене лишається в списку власника чернеткою. Правила й межі — `@wwwuabot/shared/ads`, видимість — [`SPACE.md`](./SPACE.md) |
+| `ads` | `api-dev` | api-dev (`ensureTables` у `ads.service`) | api-dev: своє — `/api/user/ads`, дошка — `/api/space/ads` | **оголошення дошки Простору:** вид, заголовок, текст, ціна й місто (обидва — **текст**). `is_active` — не «чи опубліковано», а **показати на дошці**: вимкнене лишається в списку власника чернеткою. Правила — [`ADS.md`](./ADS.md) |
 | `theme_schemes` | `api-dev` | api-dev, `ensureTables` | api-dev: своє — `/api/user/themes`, спільна — `/api/space/themes` | **теми**: три кольори + шрифт; `is_public` виносить тему в спільну бібліотеку ([`THEMES.md`](./THEMES.md)) |
-| `shop_products` | `api-dev` | api-dev, `ensureTables` у `services/shop/shops.ts` | api-dev: своє — `/api/user/shop/products`, каталог — `/api/space/shop/products` | **товар магазину:** `shop_id` — **номер рядка `scenarios`** (магазин і є сторінка, другої ідентичності в нього немає), `slug` унікальний **у межах магазину**, `kind` — ключ із `PRODUCT_KINDS`, `price` — **текст** («договірна» теж ціна), `images` — номери `shop_media`, а не адреси, `category` — **розділ каталогу назвою** (окремої таблиці розділів немає: перелік розділів магазину складається з його товарів). Правила — `@wwwuabot/shared/shop` |
+| `shop_products` | `api-dev` | api-dev, `ensureTables` у `services/shop/shops.ts` | api-dev: своє — `/api/user/shop/products`, каталог — `/api/space/shop/products` | **товар магазину:** `shop_id` — **номер рядка `scenarios`** (магазин і є сторінка), `slug` унікальний **у межах магазину**, `kind` — ключ із `PRODUCT_KINDS`, `price` — **текст**, `images` — номери `shop_media`, `category` — **розділ каталогу назвою**. Правила — [`PRODUCTS.md`](./PRODUCTS.md) |
 | `shop_media` | `api-dev` | api-dev, `ensureTables` у `services/shop/shops.ts` | api-dev: своє — `/api/user/shop/media`, сам файл — `/api/shop/media/<…>` | **облік файлів R2:** рядок на файл, `r2_key` = `shop/<shop_id>/<випадкове>-<ім'я>` (`UNIQUE` — два облікові рядки на один файл зробили б ключ мертвим при видаленні одного з них). Байти — в R2, тут — ключ: товар посилається на **номери рядків** |
 | `shop_orders` | `api-dev` | api-dev, `ensureTables` у `services/shop/shops.ts` | api-dev: замовлення — `/api/space/shop/orders`, черга продавця — `/api/user/shop/orders` (`GET`/`POST`/`DELETE`) | **замовлення магазину:** `status` — **ключ**, а не підпис (перейменування статусу не має переписувати історію), `contact` — JSON (склад полів залежить від виду товару), `note` — **примітка покупця**, `seller_note` — **внутрішній коментар продавця** (покупцеві його не показують — про це каже розмова), позиції — знімком поруч. Замовлення не живе ні в `users`, ні в тексті листування |
 | `shop_order_items` | `api-dev` | api-dev, `ensureTables` у `services/shop/shops.ts` | api-dev: позиції пише й читає `services/shop/orders.service.ts` (окремого шляху в них немає — вони частина замовлення) | **знімок позиції:** `title`, `price`, `kind` **копіюються** на момент замовлення — інакше правка ціни заднім числом переписувала б історію, а видалений товар зникав би з уже прийнятого замовлення. `product_id` лишається посиланням, і `NOT NULL` у нього немає |
@@ -173,49 +155,4 @@ Telegram-id завжди додатний), а `read_at` стоїть одраз
 | `scenarios_legacy_20260914` | бекофісна копія `scenarios` до перебудови: крок оборотний одним `ALTER TABLE … RENAME TO` |
 | `sites`, `site_pages`, `templates` (0 рядків) і 7 їхніх індексів | залишки видаленого домену; чекають рішення власника |
 
-`ensureTables` **ніколи не робить `DROP`** — навмисно: інакше схема залежала б від того, який
-воркер запустився першим. Таблиця, якої більше не потрібно, прибирається руками —
-`npx wrangler d1 execute DB --config api-dev/wrangler.toml --remote --yes --command 'DROP TABLE "ім’я";'`.
-D1 тримає **Time Travel** на 30 днів, тож видалені дані можна відновити на момент до `DROP`.
-
-## Перебудова таблиці: те, чого `ensureTables` не вміє
-
-`ensureTables` **тільки додає колонки**: PK, `UNIQUE` й типи на наявній таблиці він не змінює. Тому
-перебудова — окремий усвідомлений крок: два SQL-файли в `scripts/migrations/`, які запускаються по
-черзі (копія → заміна), з бекофісною таблицею замість `DROP`. Зразок — `2026-09-14-scenarios-*`:
-
-| Крок | Файл | Що робить |
-|---|---|---|
-| 1 | `*-01-copy.sql` | створює `*_new` і **тільки додає** рядки з виведеними значеннями |
-| 2 | `*-02-swap.sql` | `ім'я` → `ім'я_legacy_<дата>`, `*_new` → `ім'я` |
-
-Перенос даних між таблицями — окремим SQL, який **тільки додає** (`INSERT`, ніколи
-`DELETE`/`DROP`/`UPDATE`), ідемпотентний і **називає у звіті** все, що пропустив: вибрати за
-власника «правильний» рядок — це тихо втратити чужий контент.
-
-### Зрізи моніторингу: рядок на показник
-
-`metrics_snapshots` фіксує **момент** збору (коли, чим, з яким результатом), а `metrics_values` —
-числа: `(snapshot_id, group_key, metric, value)`. Колонка під кожен показник означала б
-`ALTER TABLE` на кожен новий параметр і **втрату історії** (у новій колонці старих зрізів немає),
-тому набір параметрів зростає рядками. `group_key` — це **група виміру** (`total`, `api-dev`,
-`packages`), а не власник: зріз знімається з проєкту, не з людини. Останній зріз додатково
-кешується в KV (`monitoring:repo:latest`), але джерело правди для історії — D1 ([`MONITORING.md`](./MONITORING.md)).
-
-## М'яка схема: `users` і `settings`
-
-Ці дві таблиці лишаються з м'якою схемою — колонки до них додає `withAutoMigrate` із
-`@wwwuabot/shared/database/auto-migrate` (напр. `settings.getValue(будьЯкийКлюч)`). Реєстр
-оголошує **відомий** набір колонок, щоб база не залежала від того, чиїй гілці коду пощастило
-запуститись першою. Нова колонка, яку пише код, все одно мусить бути в реєстрі.
-
-## Як додати таблицю або колонку
-
-Кроки — у [`RECIPES.md`](./RECIPES.md) (§2). Тут лишається те, що стосується самої моделі:
-**колонку** додають рядком у `create` — `ensureTables` добере її в наявній таблиці через
-`ALTER TABLE … ADD COLUMN`, а перебудувати таблицю (змінити `PRIMARY KEY`, підняти колонку з нуля)
-він не вміє — це окремий SQL за розділом вище.
-
-**Не створюй другу таблицю під той самий контент.** Нова ознака контенту — це колонка в
-`scenarios`, а не таблиця поруч; інакше з'явиться друге сховище, а з ним і друга реалізація
-правила «яка сторінка для цього URL».
+Зрізи моніторингу — [`MONITORING.md`](./MONITORING.md).

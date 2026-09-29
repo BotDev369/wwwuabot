@@ -14,35 +14,7 @@
 
 ## Токени
 
-`packages/shared/src/styles/tokens.css`, перевизначення за брендом — `apple.css` / `android.css`.
-
-| Токен | Призначення |
-|---|---|
-| `var(--bg-page)` | Фон **екрана**: плоский колір, той самий, що йде нативному хрому Telegram (`= var(--chrome-header-bg)`). Ним малюються `body`, `.wb-app`, `main`, `.page-zone*`, `.wb-splash`, `.wb-auth` |
-| `var(--bg-home)` | Градієнт-підкладка **поверхонь** (картки, панелі). Площину екрана ним не малюємо: плоский колір клієнта не дорівняє градієнту — лишився б шов |
-| `var(--bg-0)` … `var(--bg-4)` | Поверхні від підкладки до hover |
-| `var(--text-primary)` / `--text-secondary` / `--text-muted` | Текст: основний / другорядний / підказка |
-| `var(--text-inverse)` | Текст на акцентній плашці |
-| `var(--accent)` / `--accent-hover` / `--accent-dim` / `--accent-soft` | Акцент: база / hover / **підкладка** (бейдж, обличчя, чип-тег, вибраний рядок таблиці) / підкладка під фокус |
-| `var(--user-bg)` / `var(--user-text)` / `var(--user-accent)` | **Три кольори користувача** (фон / основний / акцент). Ставить `applyColors()` інлайном на `<html>` разом із `data-colors`, читає `user-colors.css`. Це єдина палітра продукту: усе інше виведено з цих трьох через `color-mix()` |
-| `var(--user-on-accent)` | Підпис на акцентній плашці (`= var(--text-inverse)`): той із фону / основного, хто далі від акценту (`onAccentColor()`) |
-| `--font-ui` / `--font-display` / `--subbar-h` | Типографіка (вибір перекриває бренд інлайном, `applyFont()`) і висота другої смуги футера |
-| `data-colors-mode` (на `<html>`) | Схема, **виведена з фону** (`colorsMode()`): вибирає тіні, скрим, `color-scheme` і світлі варіанти статусних кольорів |
-| `var(--border)` / `--border-subtle` | Межі: помітна / ледь видима |
-| `var(--surface)` / `--surface-hover` / `--surface-active` / `--surface-overlay` | Поверхні карток, стани й скрим |
-| `var(--field-bg)` / `var(--field-ring)` | **Поле вводу**: колір і м'яка тінь по краях. Межу поля малюють вони, а не лінія. Світла / темна схема — `themes.css` |
-| `var(--chrome-header-bg)` / `--chrome-bottom-bg` | Нативний хром Telegram: шапка клієнта і смуга під футером; синхронізує `shared/app/telegram-chrome.ts`. З трьома кольорами це рівно `--user-bg` (плоский hex — саме тому він іде клієнту як є). Наші смуги (`.wb-app-header`, `.wb-topbar`, `.wb-tabbar`) малюються тими самими токенами на 91% і **без** ліній та тіней |
-| `var(--green)` / `var(--red)` / `var(--yellow)` (+ `--*-dim`) | Успіх / небезпека / попередження |
-| `var(--font-ui)` / `--font-display` / `--font-mono` | Основний / заголовковий / моно |
-| `var(--radius-xs)` … `--radius-xl`, `--radius-full` | 2 / 4 / 6 / 8 / 12 / 16px і 9999px (пілюлі) |
-| `--sp-0` … `--sp-16` | Відступи 4px-кроком |
-| `--btn-pad-y`, `--btn-pad-x` | Мірки кнопки: `padding` пише лише базове `.wb-btn`, з цих токенів (правило 16) |
-| `--shadow-*`, `--elevation-*`, `--duration-*`, `--ease*` | Тіні, рух і пружина |
-| `--z-dropdown` < `--z-sticky` < `--z-overlay` < `--z-modal` (400) < `--z-tabbar` (**1100**) < `--z-toast` (1200) | Шари: футер вище за модалки (правило 12) |
-| `--sidebar-w` / `--sidebar-w-collapsed` / `--sidebar-w-vw` / `--scrim` | Геометрія навігації (однакова в обох оболонках) |
-| `--topbar-h` / `--nav-bar-h` / `--tab-bar-h` | Висоти смуг; `--tab-bar-h` = `--nav-bar-h` + `--safe-bottom` (не перевизначати третім числом) |
-| `--safe-top` / `--safe-bottom` | Краї екрана: `env(safe-area-inset-*)` + `--tg-safe-area-inset-*` від Telegram. Не 0 лише тоді, коли в `index.html` є `viewport-fit=cover` |
-| `--max-content` | Максимальна ширина контенту |
+Словник значень — [`TOKENS.md`](./TOKENS.md). Тут лише наскрізні правила вигляду.
 
 ---
 
@@ -201,23 +173,12 @@
 
 ---
 
-## File Locations
+## Де що лежать файли
 
-| Файл | Призначення |
-|---|---|
-| `packages/shared/src/styles/tokens.css` | CSS-змінні |
-| `packages/shared/src/styles/user-colors.css` / `themes.css` | Палітра з трьох кольорів (`color-mix`) і світла / темна схема |
-| `packages/shared/src/styles/components.css` | `.wb-*` кирпичики (кнопки, модалки, поля, діалог) |
-| `packages/shared/src/styles/app-chrome.css` | Каркас оболонки: app / nav (єдиний сайдбар) / tabbar / topbar / page / auth / splash / profile |
-| `packages/ui/src/nav/Sidebar.tsx` | `SideBar` / `SideBarMenu` — єдиний сайдбар продукту (правило 24) |
-| `packages/shared/src/styles/theme-panel.css` | Панель «Тема» (правило 19) |
-| `packages/shared/src/styles/page-layout.css` / `drawer.css` | Каркас сторінки для `PageRenderer` і виїзне меню |
-| `packages/shared/src/styles/apple.css` / `android.css` | Характер бренду (радіус, мірки, скло) |
-| `packages/shared/src/components/theme/` | `ThemeColorPanel`, `ThemeSheet`, `color-presets.ts`, `useUserColors` |
-| `packages/shared/src/components/user-profile/` | `AccountRow.tsx` (рядок хабу), `AccountAvatar.tsx` + `account.ts` (два акаунти як чисті функції), `PlatformHandle` (ім'я + фото в одній картці), `DatabaseSection` / `TelegramSection` (два підсписки акаунта), `telegram-fields.ts` (склад і порядок полів Telegram), `UserProfileCard` (картка адмінки) — правило 22 |
-| `packages/shared/src/components/icon-names.ts` | Перелік імен знаків (`ICON_NAMES` / `IconName`) — єдине джерело списку (правило 26) |
-| `packages/shared/src/components/icons.tsx` / `Icon.tsx` | Самі гліфи й `<Icon />`; сторож набору — `icons.test.ts` |
-| `scripts/check-css-classes.mjs` / `css-baseline.mjs` | Гейт «клас ↔ правило» і задокументований борг |
+Перелік шляхів, написаний руками, бреше першим — шляхи живуть у коді, а карта проєкту — в
+`AGENTS.md` §5 і в покажчику [`README.md`](./README.md). Тут лише два орієнтири, без яких правила
+не прочитати: керівник набору знаків — `packages/shared/src/components/icon-names.ts`
+(`ICON_NAMES`), а гейт «клас у розмітці ↔ правило в CSS» — `scripts/check-css-classes.mjs`.
 
 Деталі поверхонь і колекцій — у їхніх документах: [`SURFACES.md`](./SURFACES.md),
 [`COLLECTIONS.md`](./COLLECTIONS.md).
