@@ -116,18 +116,32 @@
 
 /* ── Проходження: одне питання на екран ────────────────────────────────── */
 
+/* Висота — від контейнера сторінки, а не `100dvh`. Було `min-height: 100dvh`
+   всередині вже обмеженої `wb-app` (100dvh, `overflow: hidden`) — тобто вміст
+   на всю висоту екрана плюс шапка над ним, тому шість варіантів, питання й
+   кнопка ніколи не вміщались і доводилося гортати на кожному питанні.
+   Тепер колонка рівно по висоті сторінки, а кнопка притискається до низу. */
 .wb-run {
   display: flex;
   flex-direction: column;
-  gap: var(--sp-4);
-  padding: var(--sp-4);
-  min-height: 100dvh;
+  gap: var(--sp-3);
+  min-height: 100%;
 }
 
-.wb-run-progress {
+/* Лічильник «2 / 5» у рядку шапки: прогрес уже видно без окремого рядка
+   тексту, а сам рядок коштував висоту на кожному з п'яти екранів. */
+.wb-run-count {
+  margin-inline-start: auto;
+  font-size: 0.875rem;
+  font-variant-numeric: tabular-nums;
+  color: var(--text-muted);
+}
+
+/* Рамка періоду — тільки на першому питанні. */
+.wb-run-period {
+  margin: 0;
   font-size: 0.8125rem;
   color: var(--text-muted);
-  font-variant-numeric: tabular-nums;
 }
 
 .wb-run-progress-track {
@@ -168,7 +182,7 @@
   gap: var(--sp-3);
   width: 100%;
   min-height: 44px;
-  padding: var(--sp-3);
+  padding: var(--sp-2) var(--sp-3);
   text-align: start;
   font: inherit;
   color: var(--text-primary);
@@ -225,6 +239,15 @@
 
 .wb-source a {
   color: inherit;
+}
+
+/* Пояснення числа: звідки 19, що означає 76 і де поріг. Мутний, бо це
+   арифметика для звірки, а не заголовок результату. */
+.wb-scale-reading {
+  margin-top: var(--sp-1);
+  font-size: 0.8125rem;
+  line-height: 1.5;
+  color: var(--text-secondary);
 }
 
 /* Пояснення числа: звідки 19, що означає 76 і де поріг. Мутний, бо це
@@ -311,4 +334,28 @@
 
 .wb-about-body > * + * {
   margin-top: var(--sp-2);
+}
+
+/* «Далі» до вибору відповіді — **не підсвічується**: сіра плашка з акцентом
+   усередині читається як кнопка, тобто обіцяє перехід, якого не буде.
+   Контур і приглушений текст кажуть «ще рано» без жодного напису. */
+.wb-btn-waiting {
+  color: var(--text-muted);
+  background: transparent;
+  border: 1px solid var(--border-subtle);
+}
+
+/* Кнопка кроку — завжди в одному місці, внизу колонки: на екрані з довгим
+   питанням вона лишається під пальцем, а не тоне внизу списку. */
+.wb-run > .wb-btn {
+  margin-top: auto;
+}
+
+/* Назва тесту на екрані питання — **контекст, а не заголовок**. Крупний
+   `--text-xl` заголовок повторювався п'ять разів поспіль і з'їдав висоту,
+   за якої не вміщалися самі варіанти відповіді. */
+.wb-page-title--slim {
+  font-size: var(--text-base);
+  font-weight: var(--weight-medium);
+  color: var(--text-secondary);
 }

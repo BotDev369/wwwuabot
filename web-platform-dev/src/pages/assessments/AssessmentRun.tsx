@@ -101,13 +101,13 @@ export function AssessmentRun({
         >
           <Icon name="arrow-left" size={20} />
         </button>
-        <h1 className="wb-page-title">{test.title}</h1>
+        <h1 className="wb-page-title wb-page-title--slim">{test.title}</h1>
+        <span className="wb-run-count">
+          {step + 1} / {total}
+        </span>
       </div>
 
       <div className="wb-run">
-        <p className="wb-run-progress">
-          Запитання {step + 1} з {total} · {test.periodLabel}
-        </p>
         <div
           className="wb-run-progress-track"
           role="progressbar"
@@ -117,6 +117,10 @@ export function AssessmentRun({
         >
           <div className="wb-run-progress-fill" style={{ width: `${progress}%` }} />
         </div>
+
+        {/* Період важливий на першому питанні — він задає рамку для відповідей.
+            На решті чотирьох це шум, а висота екрана тут вирішальна. */}
+        {step === 0 && <p className="wb-run-period">{test.periodLabel}</p>}
 
         <p className="wb-run-question">{item.text}</p>
 
@@ -144,15 +148,15 @@ export function AssessmentRun({
           })}
         </div>
 
-        {error ? (
-          <p className="wb-notice wb-notice--attention">{error}</p>
-        ) : (
-          blocked && <p className="wb-hint">{blocked}</p>
-        )}
+        {error && <p className="wb-notice wb-notice--attention">{error}</p>}
 
+        {/* **Мовчить, поки не вибрано.** Сіра плашка з акцентом усередині
+            виглядає як кнопка, на яку можна натиснути, — тобто обіцяє
+            перехід, якого не буде. Тому до вибору це просто контур, а не
+            заповнена поверхня. */}
         <button
           type="button"
-          className="wb-btn wb-btn-primary"
+          className={`wb-btn ${blocked !== null ? "wb-btn-waiting" : "wb-btn-primary"}`}
           disabled={blocked !== null || saving}
           onClick={() => void next()}
         >
