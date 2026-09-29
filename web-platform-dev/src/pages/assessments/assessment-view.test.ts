@@ -10,7 +10,7 @@
 
 import { describe, expect, it } from "vitest";
 import { WHO_5, type AssessmentRecord } from "@wwwuabot/shared/assessments";
-import { latestByTest, trendFrom, trendLabel } from "./assessment-view";
+import { blockedReason, latestByTest, trendFrom, trendLabel } from "./assessment-view";
 
 /** Результат із потрібним балом; порядок id — «свіжіший перший», як віддає сервер. */
 const at = (id: number, percent: number, testKey = WHO_5.key): AssessmentRecord => ({
@@ -81,5 +81,36 @@ describe("тренд", () => {
   it("порівнює два останні, а не найкращий і найгірший", () => {
     const trend = trendFrom([at(3, 52), at(2, 48), at(1, 20)], WHO_5);
     expect(trend.delta).toBe(4);
+  });
+});
+
+describe("кнопка «далі»", () => {
+  const last = WHO_5.items.length - 1;
+
+  it("на першому питанні без відповіді — заблоковано, і каже чому", () => {
+    expect(blockedReason(WHO_5, [], 0)).toBe("Обери один із варіантів, щоб рухатись далі.");
+  });
+
+  it("одна відповідь з п'яти НЕ блокує кнопку", () => {
+    // Регресія: «далі» перевіряло весь тест, тож на першому питанні з одним
+    // обраним варіантом кнопка була сірою завжди — пройти тест було неможливо.
+    expect(blockedReason(WHO_5, [2], 0)).toBeNull();
+  });
+
+  it("на останньому питанні те саме: важлива відповідь на нього, а не заповненість", () => {
+    expect(blockedReason(WHO_5, [2, 3, 1, 4], last)).not.toBeNull();
+    expect(blockedReason(WHO_5, [2, 3, 1, 4, 0], last)).toBeNull();
+  });
+
+  it("порожня відповідь посередині не рахується відповіддю", () => {
+    expect(blockedReason(WHO_5, [2], 1)).not.toBeNull();
+  });
+
+  it("варіант поза шкалою не проходить", () => {
+    expect(blockedReason(WHO_5, [99], 0)).toBe("Обраний варіант не належить цьому питанню.");
+  });
+
+  it("крок поза тестом не проходить мовчки", () => {
+    expect(blockedReason(WHO_5, [2, 2, 2, 2, 2], WHO_5.items.length)).not.toBeNull();
   });
 });

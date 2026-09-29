@@ -18,8 +18,8 @@ import { useMemo, useState, type ReactElement } from "react";
 import { useNavigate } from "react-router-dom";
 import { Icon } from "@wwwuabot/shared";
 import type { AssessmentRecord, AssessmentTest } from "@wwwuabot/shared/assessments";
-import { validateAnswers } from "@wwwuabot/shared/assessments";
 import { AssessmentResultCard } from "./AssessmentResultCard";
+import { blockedReason } from "./assessment-view";
 
 interface AssessmentRunProps {
   test: AssessmentTest;
@@ -48,9 +48,9 @@ export function AssessmentRun({
   const chosen = answers[step];
   const isLast = step === total - 1;
 
-  // Відповідь «заповнена настільки, наскільки дозволяє сервер» — той самий
-  // `validateAnswers`, що й на сервері, тож кнопка «далі» ніколи не
-  // відправить те, що сервер відкине.
+  // Кнопка «далі» дивиться **лише на поточне питання**: питання йдуть по одному,
+  // тому вимога заповнити весь тест тут зробила б кнопку неактивною завжди.
+  const blocked = blockedReason(test, answers, step);
   const progress = useMemo(() => Math.round((step / total) * 100), [step, total]);
 
   async function next(): Promise<void> {
@@ -144,12 +144,16 @@ export function AssessmentRun({
           })}
         </div>
 
-        {error && <p className="wb-notice wb-notice--attention">{error}</p>}
+        {error ? (
+          <p className="wb-notice wb-notice--attention">{error}</p>
+        ) : (
+          blocked && <p className="wb-hint">{blocked}</p>
+        )}
 
         <button
           type="button"
           className="wb-btn wb-btn-primary"
-          disabled={validateAnswers(test, answers) !== null || saving}
+          disabled={blocked !== null || saving}
           onClick={() => void next()}
         >
           {saving ? "Зберігаю…" : isLast ? "Показати результат" : "Далі"}

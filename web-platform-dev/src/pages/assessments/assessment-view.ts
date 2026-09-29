@@ -28,6 +28,32 @@ export function latestByTest(results: readonly AssessmentRecord[]): Map<string, 
 }
 
 /**
+ * Чому «далі» не спрацьовує — або `null`, коли можна рухатись далі.
+ *
+ * **Перевіряється поточне питання, а не весь тест.** `validateAnswers` вимагає
+ * заповнених усіх п'яти, а питання показуються по одному: на першому кнопка
+ * була б неактивною завжди, тобто пройти тест було б неможливо. Повну
+ * перевірку все одно робить сервер надсилачем — тут лише те, що стосується
+ * кнопки на екрані.
+ *
+ * **Повертає причину, а не `boolean`.** Кнопка без пояснення, чому вона
+ * сіра, виглядає як зламана програма; людина просто натискає й нічого не
+ * відбувається.
+ */
+export function blockedReason(
+  test: AssessmentTest,
+  answers: readonly number[],
+  step: number,
+): string | null {
+  if (!test.items[step]) return "Цього питання немає в тесті.";
+  const answer = answers[step];
+  if (answer === undefined) return "Обери один із варіантів, щоб рухатись далі.";
+  const allowed = new Set(test.options.map((option) => option.value));
+  if (!allowed.has(answer)) return "Обраний варіант не належить цьому питанню.";
+  return null;
+}
+
+/**
  * Напрям зміни для людини.
  *
  * **«Вгору» — це добре**, бо бал wellbeing зростає з якістю стану. Назва

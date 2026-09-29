@@ -226,3 +226,12 @@
 .wb-source a {
   color: inherit;
 }
+
+/* Підказка під варіантами: чому «далі» ще сіра. Зникає, щойно відповідь
+   обрано, щоб не змагатися з помилкою — та займає те саме місце. */
+.wb-hint {
+  font-size: 0.8125rem;
+  line-height: 1.5;
+  text-align: center;
+  color: var(--text-muted);
+}
