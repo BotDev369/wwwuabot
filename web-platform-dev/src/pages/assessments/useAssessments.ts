@@ -13,13 +13,15 @@
  */
 
 import { useCallback, useEffect, useState } from "react";
-import type { AssessmentRecord, AssessmentTest } from "@wwwuabot/shared/assessments";
+import type { AssessmentRecord, AssessmentTest, PeerTallies } from "@wwwuabot/shared/assessments";
 import { assessmentsApi } from "@/shared/api/assessments.api";
 
 export interface AssessmentsState {
   tests: readonly AssessmentTest[];
   /** Історія всіх тестів разом, новіші спершу — так її віддає сервер. */
   results: readonly AssessmentRecord[];
+  /** Розподіл по смугах: скільки людей, без імен. */
+  peers: PeerTallies;
   loading: boolean;
   saving: boolean;
   error: string | null;
@@ -32,6 +34,7 @@ export interface AssessmentsState {
 export function useAssessments(): AssessmentsState {
   const [tests, setTests] = useState<readonly AssessmentTest[]>([]);
   const [results, setResults] = useState<readonly AssessmentRecord[]>([]);
+  const [peers, setPeers] = useState<PeerTallies>({});
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -47,6 +50,7 @@ export function useAssessments(): AssessmentsState {
         if (cancelled) return;
         setTests(snapshot.tests);
         setResults(snapshot.results);
+        setPeers(snapshot.peers);
         setError(null);
       })
       .catch((e: unknown) => {
@@ -66,8 +70,12 @@ export function useAssessments(): AssessmentsState {
     setSaving(true);
     setError(null);
     try {
-      const record = await assessmentsApi.submit(testKey, answers);
+      // Розподіл приходить разом із результатом: це один запит, і він уже
+      // враховує щойно записаний рядок, тож блок «Ти не один» під ним каже
+      // правду, а не «ти тут один».
+      const { record, peers: fresh } = await assessmentsApi.submit(testKey, answers);
       setResults((prev) => [record, ...prev]);
+      setPeers(fresh);
       return record;
     } catch (e: unknown) {
       setError(e instanceof Error ? e.message : "Не вдалося зберегти результат");
@@ -79,5 +87,5 @@ export function useAssessments(): AssessmentsState {
 
   const clearError = useCallback(() => setError(null), []);
 
-  return { tests, results, loading, saving, error, submit, clearError };
+  return { tests, results, peers, loading, saving, error, submit, clearError };
 }

@@ -17,13 +17,15 @@
 import { useMemo, useState, type ReactElement } from "react";
 import { useNavigate } from "react-router-dom";
 import { Icon } from "@wwwuabot/shared";
-import type { AssessmentRecord, AssessmentTest } from "@wwwuabot/shared/assessments";
+import type { AssessmentRecord, AssessmentTest, PeerTallies } from "@wwwuabot/shared/assessments";
 import { AssessmentResultCard } from "./AssessmentResultCard";
 import { blockedReason } from "./assessment-view";
 
 interface AssessmentRunProps {
   test: AssessmentTest;
   history: readonly AssessmentRecord[];
+  /** Розподіл по смугах: скільки людей, без імен. */
+  peers: PeerTallies;
   saving: boolean;
   error: string | null;
   submit: (testKey: string, answers: readonly number[]) => Promise<AssessmentRecord>;
@@ -33,6 +35,7 @@ interface AssessmentRunProps {
 export function AssessmentRun({
   test,
   history,
+  peers,
   saving,
   error,
   submit,
@@ -89,6 +92,7 @@ export function AssessmentRun({
           test={test}
           record={finished}
           history={[finished, ...history.filter((item) => item.id !== finished.id)]}
+          tally={peers[test.key] ?? {}}
         />
       </div>
     );

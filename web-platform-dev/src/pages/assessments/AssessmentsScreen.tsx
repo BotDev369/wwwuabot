@@ -19,7 +19,7 @@ import { useAssessments } from "./useAssessments";
 export function AssessmentsScreen(): ReactElement {
   const { key } = useParams();
   const navigate = useNavigate();
-  const { tests, results, loading, saving, error, submit, clearError } = useAssessments();
+  const { tests, results, peers, loading, saving, error, submit, clearError } = useAssessments();
   const [started, setStarted] = useState<string | null>(null);
 
   // Тест береться з реєстру, а не з адреси: невідомий `key` — це «нема такого
@@ -35,6 +35,7 @@ export function AssessmentsScreen(): ReactElement {
       <AssessmentRun
         test={test}
         history={results}
+        peers={peers}
         saving={saving}
         error={error}
         submit={submit}

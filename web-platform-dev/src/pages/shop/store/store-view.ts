@@ -22,6 +22,7 @@ import {
   type ShopCard,
   type ShopCatalog,
 } from "@wwwuabot/shared/shop";
+import { plural } from "@wwwuabot/shared/utils/plural";
 import type { IconName } from "@wwwuabot/shared";
 
 /**
@@ -187,17 +188,11 @@ export function filterCards(
  * Число з українським словом у правильній формі: 1 товар, 2 товари, 5 товарів.
  *
  * Слово приходить трьома формами, бо «3 товари» й «3 товарів» — це не стиль, а
- * помилка; а брати готову бібліотеку заради трьох слів означало б тягнути
- * словник на всю вітрину.
+ * помилка. Сама функція — спільна (`@wwwuabot/shared/utils/plural`): копія
+ * тут віддавала «111 товар» замість «111 товарів», бо дивилася на останню
+ * цифру числа, а не на останні дві.
  */
-export function plural(count: number, forms: readonly [string, string, string]): string {
-  const abs = Math.abs(count) % 100;
-  const tail = abs % 10;
-  if (abs > 10 && abs < 20) return forms[2];
-  if (tail === 1) return forms[0];
-  if (tail >= 2 && tail <= 4) return forms[1];
-  return forms[2];
-}
+export { plural };
 
 /** «8 товарів» — довідка шапки каталогу: покупець бачить обсяг полиці. */
 export function goodsLabel(count: number): string {

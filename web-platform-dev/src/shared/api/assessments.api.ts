@@ -9,7 +9,7 @@
  * @module web-platform-dev/src/shared/api/assessments.api
  */
 
-import type { AssessmentRecord, AssessmentTest } from "@wwwuabot/shared/assessments";
+import type { AssessmentRecord, AssessmentTest, PeerTallies } from "@wwwuabot/shared/assessments";
 import { apiFetch } from "./client";
 
 const PATH = "/api/user/assessments";
@@ -21,11 +21,14 @@ interface Envelope {
   tests?: AssessmentTest[];
   results?: AssessmentRecord[];
   result?: AssessmentRecord;
+  peers?: PeerTallies;
 }
 
 export interface AssessmentsSnapshot {
   readonly tests: readonly AssessmentTest[];
   readonly results: readonly AssessmentRecord[];
+  /** Скільки людей у кожній смузі кожного тесту — без жодного ідентифікатора. */
+  readonly peers: PeerTallies;
 }
 
 /**
@@ -44,22 +47,31 @@ export const assessmentsApi = {
     const query = testKey ? `?test=${encodeURIComponent(testKey)}` : "";
     const envelope = await apiFetch<Envelope>(`${PATH}${query}`);
     assertOk(envelope);
-    return { tests: envelope.tests ?? [], results: envelope.results ?? [] };
+    return {
+      tests: envelope.tests ?? [],
+      results: envelope.results ?? [],
+      peers: envelope.peers ?? {},
+    };
   },
 
   /**
    * Пройти тест.
    *
    * Повертає **збережений рядок**, а не локально порахований бал: тож
-   * історія поповнюється тим самим числом, яке лежить у базі.
+   * історія поповнюється тим самим числом, яке лежить у базі. Поруч —
+   * оновлений розподіл: сервер рахує його вже після запису, тож блок «Ти не
+   * один» під щойно збереженим результалом не бреше, що ти тут один.
    */
-  async submit(testKey: string, answers: readonly number[]): Promise<AssessmentRecord> {
+  async submit(
+    testKey: string,
+    answers: readonly number[],
+  ): Promise<{ record: AssessmentRecord; peers: PeerTallies }> {
     const envelope = await apiFetch<Envelope>(PATH, {
       method: "POST",
       body: JSON.stringify({ test: testKey, answers }),
     });
     assertOk(envelope);
     if (!envelope.result) throw new Error("Сервер не повернув результат");
-    return envelope.result;
+    return { record: envelope.result, peers: envelope.peers ?? {} };
   },
 };

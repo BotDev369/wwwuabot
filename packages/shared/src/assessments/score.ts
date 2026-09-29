@@ -81,9 +81,22 @@ export function exceedsAttention(test: AssessmentTest, raw: number): boolean {
     : raw <= test.attentionRaw;
 }
 
+/**
+ * Смуга, до якої потрапляє сума, — **або `null`, якщо жодна не підійшла.**
+ *
+ * Розподіл між людьми (`peer.ts`) і список результатів мають право показати
+ * «смуги не покривають цю суму» як відсутність своєї смуги, а не як
+ * виняток на екрані. Тому два доступи до одного правило: `bandOf` — тихий
+ * для читання, `bandFor` — такий, що кидає, бо рахунок без смуги не має
+ * права зберегтися мовчки.
+ */
+export function bandOf(test: AssessmentTest, raw: number): AssessmentBand | null {
+  return test.bands.find((candidate) => raw >= candidate.min && raw <= candidate.max) ?? null;
+}
+
 /** Смуга, до якої потрапляє сума. Кидає, якщо смуги не покривають шкалу. */
 function bandFor(raw: number, test: AssessmentTest): AssessmentBand {
-  const band = test.bands.find((candidate) => raw >= candidate.min && raw <= candidate.max);
+  const band = bandOf(test, raw);
   if (!band) {
     throw new Error(
       `Тест «${test.key}»: смуги не покривають ${raw}. Межі — це дані, і прогалина в них не має права мовчати.`,

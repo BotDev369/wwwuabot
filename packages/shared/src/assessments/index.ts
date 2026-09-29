@@ -35,6 +35,7 @@ export {
   type SafetyLevel,
 } from "./flags";
 export {
+  bandOf,
   exceedsAttention,
   isSignificantChange,
   maxRawScore,
@@ -44,6 +45,14 @@ export {
   type AssessmentResult,
   type ItemScore,
 } from "./score";
+export {
+  PEER_SMALL_SAMPLE,
+  peerSnapshot,
+  type PeerBandShare,
+  type PeerSnapshot,
+  type PeerTally,
+  type PeerTallies,
+} from "./peer";
 export { WHO_5 } from "./who5";
 export { PHQ_9 } from "./phq9";
 export { GAD_7 } from "./gad7";

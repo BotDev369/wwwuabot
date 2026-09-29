@@ -28,6 +28,7 @@ import {
   safetyOf,
   type AssessmentRecord,
   type AssessmentTest,
+  type PeerTally,
 } from "@wwwuabot/shared/assessments";
 import {
   profileReading,
@@ -37,6 +38,7 @@ import {
   type TrendDirection,
 } from "./assessment-view";
 import { AssessmentAlerts } from "./AssessmentAlerts";
+import { AssessmentPeers } from "./AssessmentPeers";
 import { AssessmentSafetyBlock } from "./AssessmentSafetyBlock";
 import { ProseText } from "./ProseText";
 
@@ -52,12 +54,15 @@ interface AssessmentResultCardProps {
   record: AssessmentRecord;
   /** Вся історія — тренд рахується з двох останніх. */
   history: readonly AssessmentRecord[];
+  /** Скільки людей у кожній смузі цього тесту — без імен. */
+  tally: PeerTally;
 }
 
 export function AssessmentResultCard({
   test,
   record,
   history,
+  tally,
 }: AssessmentResultCardProps): ReactElement {
   // `latest` — той самий рядок, що показали; тренд рахуємо по ньому, щоб
   // лічильник «від попереднього» не рахувався від наступного за порядком.
@@ -101,6 +106,12 @@ export function AssessmentResultCard({
           <ProseText text={band.note} />
         </section>
       )}
+
+      {/* **Порівняння — після «Що це означає», а не перед ним.** Спершу
+          людині кажуть, що означає її бал, і лише потім — що такі бали є в
+          інших. Навпаки вийде «ти гірший за більшість», і це прочитання
+          з'явиться раніше за розуміння, що взагалі такий бал має сенс. */}
+      <AssessmentPeers test={test} tally={tally} raw={record.raw} />
 
       <AssessmentAlerts
         test={test}

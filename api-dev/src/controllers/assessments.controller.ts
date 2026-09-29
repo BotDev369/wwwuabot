@@ -16,6 +16,7 @@
 import { ensureTables } from "@wwwuabot/shared/database/ensure-tables";
 import { ASSESSMENTS } from "@wwwuabot/shared/assessments";
 import { listAssessments, saveAssessment } from "../services/assessments.service";
+import { peerTallies } from "../services/assessments-peers.service";
 import { resolveUserId } from "../shared/identity";
 import { apiLog } from "../shared/logger";
 import type { Env } from "../shared/types";
@@ -33,6 +34,10 @@ function json(body: unknown, status = 200): Response {
  * `GET` віддає реєстр тестів разом з історією: екран має показати «Розвиток»
  * одним екраном, а не обіцянкою, яку треба довантажувати другим запитом.
  * `?test=who5` звужує історію одним тестом.
+ *
+ * **Разом з `results` йде `peers`** — скільки людей у кожній смузі кожного
+ * тесту. Окремим запитом це означало б, що картка результату спершу малюється
+ * без розподілу, а потім під ним додається ще один блок.
  */
 export async function handleAssessments(request: Request, env: Env): Promise<Response> {
   const identity = await resolveUserId(request, env);
@@ -50,6 +55,7 @@ export async function handleAssessments(request: Request, env: Env): Promise<Res
         ok: true,
         tests: ASSESSMENTS,
         results: await listAssessments(env.DB, ownerId, test),
+        peers: await peerTallies(env.DB),
       });
     }
 
@@ -66,7 +72,10 @@ export async function handleAssessments(request: Request, env: Env): Promise<Res
 
       const outcome = await saveAssessment(env.DB, ownerId, testKey, body.answers);
       if (!outcome.ok) return json({ ok: false, error: outcome.error }, 400);
-      return json({ ok: true, result: outcome.record });
+      // **Рахунок перераховується після запису, а не береться з памʼяті.**
+      // Іначше картка під щойно збереженим результатом показує «ти тут один»
+      // у ту ж мить, коли людина щойно увійшла в статистику.
+      return json({ ok: true, result: outcome.record, peers: await peerTallies(env.DB) });
     }
 
     return json({ ok: false, error: "Method not allowed" }, 405);

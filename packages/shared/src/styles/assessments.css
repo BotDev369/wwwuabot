@@ -681,3 +681,120 @@
   font-size: 0.8125rem;
   color: var(--text-secondary);
 }
+
+/* ── «Ти не один»: результат на фоні загального стану ───────────────────── */
+
+/*
+ * **Одна нейтральна лінійка на всі смуги.** Кольорова шкала «зелено-жовто-
+ * червоно» тут читалася б як оцінка стану, а це те саме, від чого блок
+ * відсторонює: людина прийшла не за оцінкою, а за масштабом. Відмінність
+ * між смугами несе підпис і лінійка, а колір — лише на рядку людини.
+ */
+.wb-peers {
+  margin-top: var(--sp-4);
+  padding-top: var(--sp-3);
+  border-top: 1px solid var(--border-subtle);
+}
+
+.wb-peers-lead {
+  margin: 0 0 var(--sp-3);
+  font-size: 0.9375rem;
+  line-height: 1.5;
+  color: var(--text-secondary);
+}
+
+.wb-peers-list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-2);
+}
+
+/*
+ * Рядок смуги: підпис, лінійка, лічильник. `min-width: 0` на підписі потрібний
+ * тому, що довге «Значно виражені симптоми» інакше витіснило б лінійку в
+ * нуль — і смуга зникла б саме там, де вона найважливіша.
+ *
+ * Лінійка — 64px, а не більше: на телефоні її місце береться від підпису, а
+ * підпис — це те, що читають. Лінійка лише показує відносний розмір, тож
+ * точна довжина їй не потрібна.
+ */
+.wb-peers-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 64px auto;
+  align-items: center;
+  gap: var(--sp-2);
+}
+
+.wb-peers-name {
+  min-width: 0;
+  font-size: 0.8125rem;
+  line-height: 1.35;
+  color: var(--text-secondary);
+}
+
+.wb-peers-bar {
+  height: 6px;
+  border-radius: var(--radius-full);
+  background: var(--bg-2);
+  overflow: hidden;
+}
+
+.wb-peers-fill {
+  display: block;
+  height: 100%;
+  border-radius: var(--radius-full);
+  background: var(--border);
+  transition: width var(--duration-fast) var(--ease-out);
+}
+
+.wb-peers-count {
+  font-size: 0.75rem;
+  font-variant-numeric: tabular-nums;
+  color: var(--text-muted);
+  white-space: nowrap;
+}
+
+/* **Рядок людини — єдиний, хто має колір і вагу.** Акцент позначає «це ти»,
+   а не «це погано»: смуга, у якій людина, не гірша за інші — вона просто
+   його. */
+.wb-peers-row--mine .wb-peers-name {
+  font-weight: var(--weight-bold);
+  color: var(--text-primary);
+}
+
+.wb-peers-row--mine .wb-peers-fill {
+  background: var(--accent);
+}
+
+.wb-peers-row--mine .wb-peers-count {
+  font-weight: var(--weight-medium);
+  color: var(--accent);
+}
+
+.wb-peers-place,
+.wb-peers-better {
+  margin: var(--sp-3) 0 0;
+  font-size: 0.9375rem;
+  line-height: 1.5;
+  color: var(--text-primary);
+}
+
+.wb-peers-note {
+  margin: var(--sp-2) 0 0;
+  font-size: 0.8125rem;
+  line-height: 1.45;
+  color: var(--text-muted);
+}
+
+/* Приватність — дрібним шрифтом і без наголосу: це факт, а не застереження. */
+.wb-peers-privacy {
+  margin: var(--sp-3) 0 0;
+  padding-top: var(--sp-2);
+  border-top: 1px solid var(--border-subtle);
+  font-size: 0.75rem;
+  line-height: 1.45;
+  color: var(--text-muted);
+}
