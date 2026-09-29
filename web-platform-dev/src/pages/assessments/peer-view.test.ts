@@ -2,20 +2,21 @@
  * Тексти блоку «Ти не один»: **що саме людина прочитає про себе.**
  *
  * Найважливіше тут — не граматика, а чесність. Блок каже речі на кшталт
- * «34 людини пройшли цей тест» і «кращих за тебе — 9», тому кожен рядок
- * перевіряється на випадки, де така фраза **бreше**:
+ * «34 людини пройшли цей тест» і «стан, ближчий до одужання, у 9 людей»,
+ * тому кожен рядок перевіряється на випадки, де така фраза **бреше**:
  *
  *  - вибірка з однієї людини («ти тут один», а не «більшість»);
  *  - вибірка з трьох (дані є, але сказано, що їх мало);
- *  - напрямок шкали (в WHO-5 більше бала — краще, тому «кращих за тебе» рахує
- *    тий бік, а не той самий, що в PHQ-9).
+ *  - напрямок шкали (у WHO-5 більше бала — краще, тому «ближчі до одужання»
+ *    рахує з того боку, а не з того самого, що в PHQ-9);
+ *  - заборонені слова (блок не має називати людей кращими чи гіршими).
  *
  * @module web-platform-dev/src/pages/assessments/peer-view.test
  */
 
 import { describe, expect, it } from "vitest";
 import { GAD_7, PHQ_9, peerSnapshot } from "@wwwuabot/shared/assessments";
-import { peerBetter, peerHeadline, peerPlace, peerReading, peerSmallNote } from "./peer-view";
+import { peerAlongside, peerHeadline, peerPlace, peerReading, peerSmallNote } from "./peer-view";
 
 /** PHQ-9: 12 балів — помірні симптоми. */
 const phq = (people: Record<string, number>, raw = 12) => peerSnapshot(PHQ_9, people, raw);
@@ -58,22 +59,46 @@ describe("твоє місце", () => {
   });
 });
 
-describe("кращі за тебе", () => {
-  it("закінчується не оцінкою, а тим, що з цим можна зробити", () => {
-    const text = peerBetter(phq({ phq_minimal: 8, phq_mild: 12, phq_moderate: 4 }));
+/**
+ * Регресія: **блок не має вишиковувати людей один над одним.**
+ *
+ * Раніше тут стояло «Кращих за тебе — 12 людей», і власник спитав, чи я
+ * здурів. По-перше, це називало людей кращими, тобто робило з розподілу
+ * оцінку, від якої весь блок відсторонюється. По-друге, порівнювати треба не
+ * людей, а рівні стану. Нижче два тести: перший — напрямок рахунку, другий —
+ * слова, які в блоці заборонені.
+ */
+describe("стан поруч", () => {
+  it("рахує тих, хто ближче до одужання, і закінчується тим, що з цим можна зробити", () => {
+    // 24 людини: 8 мінімальних, 12 легких, 4 помірних. Ти — у помірній, тож
+    // ближчих до одужання 8 + 12 = 20, а це 83% від усіх.
+    const snapshot = phq({ phq_minimal: 8, phq_mild: 12, phq_moderate: 4 });
+    const text = peerAlongside(snapshot);
     expect(text).toContain("20 людей");
+    expect(text).toContain("83%");
     expect(text).toContain("повтори тест");
   });
 
-  it("нуль кращих — це найкраща група, а не порожне місце", () => {
-    // `raw = 2` — щоб людина була в найкращій смузі, а не в помірній.
-    expect(peerBetter(phq({ phq_minimal: 30 }, 2))).toContain("найкращій");
+  it("немає ближчих до одужання — це сказано прямо, а не порожнім рядком", () => {
+    // `raw = 2` — щоб ти був у найкращій смузі, де ніхто не має кращого стану.
+    expect(peerAlongside(phq({ phq_minimal: 30 }, 2))).toContain("ні в кого немає");
   });
 
-  it("у GAD-7 рахує тий самий бік, що й у PHQ-9", () => {
-    // 12 балів GAD-7 = помірна тривога; кращі — мінімальна й легка.
-    const text = peerBetter(peerSnapshot(GAD_7, { gad_minimal: 5, gad_mild: 5 }, 12));
+  it("у GAD-7 рахує той самий бік, що й у PHQ-9", () => {
+    // 12 балів GAD-7 = помірна тривога; ближчих до одужання — мінімальна й легка.
+    const text = peerAlongside(peerSnapshot(GAD_7, { gad_minimal: 5, gad_mild: 5 }, 12));
     expect(text).toContain("10 людей");
+  });
+
+  it("у блоці немає слів, що роблять людей ієрархією", () => {
+    // Кожне з цих слів ставить когось над кимось або називає людину станом.
+    // Розподіл має показувати рівні, а не вишиковувати людей один над одним.
+    const banned = [/кращ\w* за тебе/i, /гірш\w* за тебе/i, /кращих людей/i, /гірших людей/i];
+    const reading = peerReading(phq({ phq_minimal: 8, phq_mild: 12, phq_moderate: 4 }));
+    const said = [reading.headline, reading.place, reading.alongside, reading.smallNote].join(" ");
+    for (const pattern of banned) {
+      expect(said, pattern.toString()).not.toMatch(pattern);
+    }
   });
 });
 
@@ -97,7 +122,7 @@ describe("peerReading", () => {
     const reading = peerReading(phq({ phq_minimal: 3, phq_mild: 4, phq_moderate: 5 }));
     expect(reading.headline).toContain("12");
     expect(reading.place).toContain("крім тебе");
-    expect(reading.better).toContain("7 людей");
+    expect(reading.alongside).toContain("7 людей");
     expect(reading.smallNote).toBe("");
   });
 });

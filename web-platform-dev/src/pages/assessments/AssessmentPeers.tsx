@@ -56,7 +56,7 @@ export function AssessmentPeers({ test, tally, raw }: AssessmentPeersProps): Rea
       </ul>
 
       {text.place && <p className="wb-peers-place">{text.place}</p>}
-      {text.better && <p className="wb-peers-better">{text.better}</p>}
+      {text.alongside && <p className="wb-peers-alongside">{text.alongside}</p>}
       {text.smallNote && <p className="wb-peers-note">{text.smallNote}</p>}
 
       <p className="wb-peers-privacy">

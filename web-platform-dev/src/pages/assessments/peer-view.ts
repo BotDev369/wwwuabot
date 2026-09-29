@@ -46,30 +46,49 @@ export function peerHeadline(snapshot: PeerSnapshot): string {
   ])} цей тест.`;
 }
 
-/** Скільки людей мають такий самий рівень, скільки з них — ти. */
+/**
+ * Скільки людей мають такий самий рівень, як ти.
+ *
+ * **Рахуємо стан, а не людей.** «Такий самий рівень у 8 людей» — це про
+ * спільний стан, а «8 людей кращих за тебе» було б про ієрархію між людьми.
+ * Тому тут немає ані «кращих», ані «гірших»: лише те, скільки людей стоять
+ * на тому ж рівні, що й ти.
+ */
 export function peerPlace(snapshot: PeerSnapshot): string {
   if (!snapshot.mine || snapshot.total === 0) return "";
   const { people, percent } = snapshot.mine;
   const others = people - 1;
   const tail = ` — ${percent}% від тих, хто проходив.`;
-  if (others <= 0) return `Ти тут один${tail}`;
+  if (others <= 0) return `Поки що ти тут один${tail}`;
   return `Такий самий рівень у ${peopleCount(others)} — крім тебе${tail}.`;
 }
 
 /**
- * **Скільки людей краще за тебе — і головне, що це не вирок.**
+ * **Другий бік розподілу — скільки людей мають стан ближчий до одужання.**
  *
- * Формула «кращих за тебе N» без продовження читається як оцінка. Тому далі
- * завжди йде те, що з цим можна зробити: стан рухається, а не визначений.
+ * Тут була мова, яка ламала весь зміст блоку: «кращих за тебе — 12 людей».
+ * Вона називала людей кращими, тобто ставила їх над людиною, яка читає, — а
+ * блок існує якраз для того, щоб цієї ієрархії не було. Тому порівнюємо не
+ * людей, а **рівні стану**: «у 12 людей стан ближчий до одужання» — це факт
+ * про розподіл, а не оцінка когось.
+ *
+ * **Це другий бік, а не повтор першого.** `peerPlace` каже про тих, хто
+ * **на тому самому** рівні; цей рядок — про тих, хто **в інших** смугах.
+ * Разом із відсотком твоєї смуги вони дають рівно 100% розподілу.
+ *
+ * **Нуль — теж відповідь, а не порожнє місце:** якщо ніхто не має стану
+ * ближчого до одужання, про це сказано прямо, інакше рядок просто не
+ * відмалювався б і виглядав би як збій.
  */
-export function peerBetter(snapshot: PeerSnapshot): string {
-  const { betterPeople, total, mine } = snapshot;
+export function peerAlongside(snapshot: PeerSnapshot): string {
+  const { milderPeople, total, mine } = snapshot;
   if (!mine || total === 0) return "";
-  if (betterPeople === 0) {
-    return "Кращих результатів тут немає — ти в найкращій групі.";
+  const share = Math.round((milderPeople / total) * 100);
+  const tail = " Стан рухається: повтори тест через два тижні й порівняй.";
+  if (milderPeople === 0) {
+    return `У цій вибірці ні в кого немає стану, ближчого до одужання, ніж у тебе.${tail}`;
   }
-  const share = Math.round((betterPeople / total) * 100);
-  return `Кращих за тебе — ${peopleCount(betterPeople)} (${share}%). Стан рухається: повтори тест через два тижні й порівняй.`;
+  return `Стан, ближчий до одужання, у ${peopleCount(milderPeople)} — це ${share}%.${tail}`;
 }
 
 /**
@@ -89,7 +108,7 @@ export function peerSmallNote(snapshot: PeerSnapshot): string {
 export interface PeerReading {
   readonly headline: string;
   readonly place: string;
-  readonly better: string;
+  readonly alongside: string;
   readonly smallNote: string;
 }
 
@@ -97,7 +116,7 @@ export function peerReading(snapshot: PeerSnapshot): PeerReading {
   return {
     headline: peerHeadline(snapshot),
     place: peerPlace(snapshot),
-    better: peerBetter(snapshot),
+    alongside: peerAlongside(snapshot),
     smallNote: peerSmallNote(snapshot),
   };
 }
