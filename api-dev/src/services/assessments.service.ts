@@ -66,11 +66,28 @@ function parseAnswers(raw: string | null): number[] {
   );
 }
 
+/**
+ * Старий рядок належить єдиній шкалі свого тесту.
+ *
+ * `scale_key` з'явився разом із другим блоком, тож у вже записаних рядках він
+ * порожній. Без підстановки вони просто зникли б зі списку: ключ у клієнті
+ * складається з тесту й шкали, а «who5:» не збігається з «who5:wellbeing».
+ *
+ * Підставляти можна лише коли шкала **одна**: тоді результат належить їй за
+ * визначенням, і помилитися неможливо. У тесті з двома шкалами старих рядків
+ * немає, а `phq9` і `gad7` у реєстрі вже не існують.
+ */
+function scaleKeyOf(row: ResultRow): string {
+  if (row.scale_key) return row.scale_key;
+  const test = getAssessment(row.test_key);
+  return test && test.scales.length === 1 ? (test.scales[0]?.key ?? "") : "";
+}
+
 function toRecord(row: ResultRow): AssessmentRecord {
   return {
     id: row.id,
     testKey: row.test_key,
-    scaleKey: row.scale_key ?? "",
+    scaleKey: scaleKeyOf(row),
     answers: parseAnswers(row.answers),
     raw: row.raw ?? 0,
     percent: row.percent ?? 0,
