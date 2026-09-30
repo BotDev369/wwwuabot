@@ -128,13 +128,18 @@
   transform: scale(0.97);
 }
 
-/* Telegram — accent brand color */
+/* Telegram — accent brand color.
+   Колір тексту тут не косметика: без нього `.wb-btn-telegram` успадковує
+   темний `color` і на акцентному фоні підпис просто зникає. */
 .wb-btn-telegram {
   background: var(--accent);
+  color: var(--text-inverse);
+  border-color: var(--accent);
   display: inline-block;
 }
 .wb-btn-telegram:hover {
   background: var(--accent-hover);
+  border-color: var(--accent-hover);
 }
 
 /* Dirty indicator — yellow dot for unsaved changes */

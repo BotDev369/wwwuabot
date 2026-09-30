@@ -26,6 +26,8 @@ export interface Access {
   allowed: boolean;
   /** Відповідь прийшла (або її не потрібно): до неї платформу не показуємо. */
   ready: boolean;
+  /** Запитати ще раз: людину могли запросити щойно, поки вона читала відмову. */
+  retry: () => void;
 }
 
 /**
@@ -45,6 +47,9 @@ export function useAccess(): Access {
   const hasSession = hasTelegramSession();
   // `null` лише до відповіді; стан не скидається на запит, якого не було.
   const [allowed, setAllowed] = useState<boolean | null>(hasSession ? null : false);
+  // Лічильник, а не булевий «повторити»: ефект має побачити зміну, тож
+  // dependency мусить змінюватись навіть тоді, коли другий запит поверне те саме.
+  const [attempt, setAttempt] = useState(0);
 
   useEffect(() => {
     if (!hasSession || allowed !== null) return;
@@ -64,7 +69,14 @@ export function useAccess(): Access {
     return () => {
       cancelled = true;
     };
-  }, [hasSession, allowed]);
+  }, [hasSession, allowed, attempt]);
 
-  return { allowed: allowed === true, ready: allowed !== null };
+  return {
+    allowed: allowed === true,
+    ready: allowed !== null,
+    retry: () => {
+      setAllowed(null);
+      setAttempt((n) => n + 1);
+    },
+  };
 }
