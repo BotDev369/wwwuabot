@@ -209,7 +209,7 @@ const name = await dialog.prompt("Назва:", { validate: (v) => (v.trim() ? n
 | Мертвий CSS оболонок і перейменування `.usr-*` / `.scn-*` → `.wb-*` | `scripts/css-baseline.mjs` (тільки зменшувати) |
 | Бюджет бандла (вага чанків оболонок) і поріг покриття нових модулів | `docs/QUALITY_GATE.md`, «чого тут немає» |
 | Мобільний борг: `@media (hover: none)`, тап-таргети ≥44px | правила §3, борг — у коді |
-| `SELECT *` на `users`, `npm audit` до 0 high | `npm run lint`, `check:quality` |
+| `SELECT *` на `users` | `npm run lint`, `check:quality` |
 | Завантаження свого фото на платформі (`photo_url` уже є й показується) | `docs/SPACE.md`, «чого тут ще немає» |
 | Cloudflare Access на адмінці, окремі домени, прод | §1, «чого ще немає» |
 
