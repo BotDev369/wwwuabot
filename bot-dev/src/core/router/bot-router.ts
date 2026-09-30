@@ -4,6 +4,10 @@ import { log } from "../../shared/utils/debug";
 import { handleTextInput } from "./text-input";
 import { applyContactPayload } from "../../modules/contacts/contact-link";
 import { showInviteScreen } from "../../modules/contacts/invite-screen";
+import { hasBotAccess } from "../../modules/access/access";
+import { showAccessDenied } from "../../modules/access/denied";
+import { showMainKeyboard } from "../../modules/access/keyboard";
+import { splitInviteCode } from "../../modules/access/payload";
 import { isValidBotPayload, isValidSlug, toWebPath } from "@wwwuabot/shared/content";
 
 /**
@@ -26,6 +30,11 @@ import { isValidBotPayload, isValidSlug, toWebPath } from "@wwwuabot/shared/cont
  * **Вітаємо лише з першого переходу.** Друге відкриття того самого лінка — це
  * вже звичайний вхід у бота, і показувати на нього «вас щойно запросили» було б
  * неправдою (розрізняє їх `applyContactPayload`).
+ *
+ * **Бот закритий за запрошеннями**, тому кожен шлях до контенту проходить
+ * `renderOrDeny`. Фільтр стоїть **після** розбору payload: код запрошення в
+ * хвості — це і є допуск, і перевіряти раніше значило б відмовити тому, хто щойно
+ * прийшов за лінком.
  */
 export async function botRouter(ctx: AppContext): Promise<void> {
   if (!ctx.user) return;
@@ -52,20 +61,28 @@ export async function botRouter(ctx: AppContext): Promise<void> {
       }
       log("ROUTER", "deep link", { payload, user_id: ctx.from?.id });
 
+      // Код запрошення — хвіст payload, а не весь payload: посилання зі
+      // сторінкою й кодом (`buildShareLinks`) має вести і туди, і сюди.
+      const { inviteCode, pagePayload } = splitInviteCode(payload);
+
       // Особистий лінк веде не на сторінку контенту: код не є адресою, і
       // шукати сторінку з таким «slug» нема чого. Головна — для тих переходів,
       // де вітати нічого (вдруге, свій лінк, лінк без адреси платформи).
-      if (payload) {
-        const contacted = await applyContactPayload(ctx, payload);
+      if (inviteCode) {
+        const contacted = await applyContactPayload(ctx, inviteCode);
         if (contacted.kind !== "unknown") {
           if (contacted.kind !== "invited" || !(await showInviteScreen(ctx, contacted.ownerId))) {
-            await loadAndRenderPayload(ctx, repo, "");
+            await renderOrDeny(ctx, () => loadAndRenderPayload(ctx, repo, pagePayload), {
+              keyboard: true,
+            });
           }
           return;
         }
       }
 
-      await loadAndRenderPayload(ctx, repo, payload);
+      await renderOrDeny(ctx, () => loadAndRenderPayload(ctx, repo, pagePayload), {
+        keyboard: true,
+      });
       return;
     }
   }
@@ -76,7 +93,7 @@ export async function botRouter(ctx: AppContext): Promise<void> {
 
     if (isValidSlug(slug)) {
       log("ROUTER", "callback navigation", { slug });
-      await loadAndRenderScenario(ctx, repo, slug);
+      await renderOrDeny(ctx, () => loadAndRenderScenario(ctx, repo, slug));
     } else {
       log("ROUTER", "callback rejected | invalid slug", { data: ctx.callbackQuery!.data });
     }
@@ -90,7 +107,7 @@ export async function botRouter(ctx: AppContext): Promise<void> {
       const result = handleTextInput(text!, currentScenario);
       if (result.type === "accept") {
         log("ROUTER", "text input accepted", { value: result.value });
-        await loadAndRenderScenario(ctx, repo, currentScenario.slug);
+        await renderOrDeny(ctx, () => loadAndRenderScenario(ctx, repo, currentScenario.slug));
         return;
       }
     }
@@ -101,6 +118,38 @@ export async function botRouter(ctx: AppContext): Promise<void> {
     });
     await deleteUserMessage(ctx);
   }
+}
+
+/**
+ * Єдина точка, де контент або стає видимим, або ні.
+ *
+ * Відмова не «помилка», а відповідь: тому вона й має бути тут, а не в кожному
+ * місці, де роутер вирішує показати сценарій. Повідомлення людини видаляється
+ * тим самим способом, яким видаляється нерозбране, — у чаті лишається лише
+ * відповідь бота.
+ *
+ * `render` — саме той спосіб, яким цей шлях показує екран: адреса з `?start=`
+ * шукається як payload, а callback — як slug. Різниця лишається в тих, хто
+ * показує; рішення «показувати чи ні» — спільне.
+ */
+async function renderOrDeny(
+  ctx: AppContext,
+  render: () => Promise<void>,
+  options: { keyboard?: boolean } = {},
+): Promise<void> {
+  if (!hasBotAccess(ctx.user)) {
+    log("ACCESS", "denied", { user_id: ctx.user?.user_id });
+    await deleteUserMessage(ctx);
+    await showAccessDenied(ctx);
+    return;
+  }
+
+  await render();
+
+  // Клавіатуру показуємо на вході (`/start`), а не на кожному екрані:
+  // `sendMessage` після кожного кроку плодив би повідомлення в чаті, тоді як
+  // реплай-клавіатура й так лишається під ним сама.
+  if (options.keyboard) await showMainKeyboard(ctx);
 }
 
 async function loadAndRenderPayload(

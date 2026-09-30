@@ -12,8 +12,11 @@
  * - **повторний перехід нічого не змінює** — контакт закріплено раз
  *   (`contact.repository`), тож другий дотик того самого лінка безпечний;
  * - **це часткове приєднання** — людина увійшла в бота, і це все, що бот може
- *   підтвердити; вхід на платформу ставить `api-dev`, коли вона відкриє Mini
- *   App (куди веде кнопка на головній);
+ *   підтвердити; вхід на платформу ставит `api-dev`, коли вона відкриє Mini
+ *   App (куди веде кнопка на головній). Тут же записується `users.inviter_id`:
+ *   бот закритий за запрошеннями, і без цього поля перехід нічого не відкриває;
+ * - **власний лінк теж не запрошення** — він каже, що код наш, але не дає
+ *   нікому нічого: закріплювати власника з самим собою незрозуміло;
  * - **невідомий код — не запрошення**, і тоді payload живе далі своїм життям
  *   (це може бути адреса сторінки).
  *
@@ -78,6 +81,10 @@ export async function applyContactPayload(
       contact_id: contact.id,
       attached_user_id: contact.joined_user_id,
     });
+    // Повторний перехід **саме цієї** людини: допуск їй уже належить, тож
+    // нагадувати `users.inviter_id` не зайве, а без нього людина, що прийшла
+    // ще до появи колонки, побачила б відмову за власним лінком.
+    if (contact.joined_user_id === userId) rememberInviter(ctx, contact.owner_id);
     return { kind: "revisit" };
   }
 
@@ -88,9 +95,31 @@ export async function applyContactPayload(
       owner_id: contact.owner_id,
       user_id: userId,
     });
-    return attached ? { kind: "invited", ownerId: contact.owner_id } : { kind: "revisit" };
+    if (!attached) return { kind: "revisit" };
+
+    rememberInviter(ctx, contact.owner_id);
+    return { kind: "invited", ownerId: contact.owner_id };
   } catch (e: unknown) {
     log("CONTACT", "attach failed", { contact_id: contact.id, error: String(e) });
     return { kind: "revisit" };
   }
+}
+
+/**
+ * Запам'ятати, хто запросив людину.
+ *
+ * **Пишемо тут, а не в роутері.** `contacts.joined_user_id` уже каже «ця людина
+ * прийшла за цим контактом», тож `users.inviter_id` — те саме відповідь на те
+ * саме питання, лише з боку людини. Одне місце запису важливе й для іншого:
+ * саме воно вирішує, чи бачить вона бот (`modules/access`).
+ *
+ * `null` не перезаписуємо: перший запит — справжній, а наступні переходи того
+ * самого лінка не повинні міняти того, хто запросив, на іншого.
+ */
+function rememberInviter(ctx: AppContext, ownerId: number): void {
+  if (!ctx.user || (ctx.user.inviter_id !== null && ctx.user.inviter_id !== undefined)) return;
+
+  ctx.user.inviter_id = ownerId;
+  ctx.userDirty = true;
+  log("CONTACT", "inviter remembered", { user_id: ctx.user.user_id, inviter_id: ownerId });
 }

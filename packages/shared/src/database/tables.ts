@@ -77,6 +77,12 @@ export const TABLES = {
    * самої** людини, тож живуть у її рядку: окрема таблиця `profiles` завела б
    * другий рядок на людину й друге правило «які дані публічні» (AGENTS.md §7).
    * Правила набору й фільтр видимості — `@wwwuabot/shared/user/public-profile`.
+   *
+   * `inviter_id` — хто запросив людину (`users.user_id`); `NULL` — ніхто. Бот
+   * закритий за запрошеннями, тож це та ознака, за якою людині взагалі
+   * показують контент (див. `bot-dev/src/modules/access`). Пише його той самий
+   * перехід, що закріплює контакт (`contacts.joined_user_id`), щоб «хто запросив»
+   * і «за ким прийшли» не були двома різними правдами.
    */
   users: {
     name: "users",
@@ -105,6 +111,7 @@ export const TABLES = {
         about TEXT,
         profile_public INTEGER DEFAULT 0,
         profile_public_fields TEXT,
+        inviter_id INTEGER,
         created_at TEXT,
         updated_at TEXT
       )`,

@@ -88,6 +88,63 @@ describe("buildShareLinks", () => {
     expect(buildShareLinks({ slug: over, botUsername: BOT }).reason).toBe("too_long");
   });
 
+  it("код запрошення їде останнім сегментом payload, а не сегментом веб-адреси", () => {
+    const links = buildShareLinks({
+      slug: "mydate",
+      params: ["1980-03-03"],
+      botUsername: BOT,
+      inviteCode: "inv-8f3k2q",
+    });
+
+    expect(links.payload).toBe("mydate_1980-03-03_inv-8f3k2q");
+    expect(links.deepLink).toBe(`${TELEGRAM_ORIGIN}/${BOT}?start=mydate_1980-03-03_inv-8f3k2q`);
+    // У вебі код зайвий: платформа його не читає, а адреса лишилась адресою.
+    expect(links.webPath).toBe("/mydate/1980-03-03");
+    expect(links.reason).toBe("ok");
+  });
+
+  it("головна сторінка з кодом — це посилання-запрошення, а не порожня адреса", () => {
+    const links = buildShareLinks({ slug: HOME_SLUG, botUsername: BOT, inviteCode: "inv-8f3k2q" });
+
+    expect(links.payload).toBe("inv-8f3k2q");
+    expect(links.deepLink).toBe(`${TELEGRAM_ORIGIN}/${BOT}?start=inv-8f3k2q`);
+    expect(links.webPath).toBe("/");
+  });
+
+  it("⛔ не- код не додається мовчки: посилання каже причину", () => {
+    // Тиха підміна коду чимось іншим дала б посилання, яке нікого не запросить,
+    // і людина не дізналася б про це зовсім.
+    const links = buildShareLinks({
+      slug: "about",
+      botUsername: BOT,
+      inviteCode: "not-a-code",
+    });
+
+    expect(links.reason).toBe("invalid_code");
+    expect(links.deepLink).toBeNull();
+  });
+
+  it("код, який не вміщується разом із адресою, дає `too_long`", () => {
+    // `isDeepLinkable` дивиться на payload цілком, тож код має входити в межу
+    // 64 символи разом з адресою — інакше Telegram обріже його мовчки.
+    const links = buildShareLinks({
+      // 60 + «_» + «inv-8f3k2q» = 70 символів — уже понад межу.
+      slug: "a".repeat(60),
+      botUsername: BOT,
+      inviteCode: "inv-8f3k2q",
+    });
+
+    expect(links.reason).toBe("too_long");
+    expect(links.deepLink).toBeNull();
+  });
+
+  it("без коду поведінка не змінюється", () => {
+    const links = buildShareLinks({ slug: "about", botUsername: BOT, inviteCode: null });
+
+    expect(links.payload).toBe("about");
+    expect(links.reason).toBe("ok");
+  });
+
   it("не робить діплінк із не-імені бота", () => {
     expect(isValidBotUsername("")).toBe(false);
     expect(isValidBotUsername("@")).toBe(false);

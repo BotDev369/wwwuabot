@@ -24,26 +24,16 @@
  * @module @wwwuabot/shared/content/link
  */
 
+import { isInviteCode } from "../contacts/code";
+import { TELEGRAM_ORIGIN, isValidBotUsername, normalizeBotUsername } from "./bot-username";
 import { isDeepLinkable, isValidSlug, normalizeSlug, toBotPayload, toWebPath } from "./resolve";
 
-/** Хост діплінків Telegram. Іншого бути не може: `?start=` розуміє лише він. */
-export const TELEGRAM_ORIGIN = "https://t.me";
-
 /**
- * Ім'я бота у вигляді, який приймає Telegram BotFather: латинська літера на
- * початку, далі літери, цифри й `_`, 5–32 символи.
+ * Правила імені бота живуть у `bot-username` (їх читає й `contacts/code`),
+ * а `link.ts` їх лише переекспортує: так імпорт `@wwwuabot/shared/content`
+ * залишається тим самим, а власник правила один.
  */
-const BOT_USERNAME_RE = /^[A-Za-z][A-Za-z0-9_]{3,31}$/;
-
-/** `@wwwuabot` і ` wwwuabot ` → `wwwuabot`. Порожнє лишається порожнім. */
-export function normalizeBotUsername(raw?: string | null): string {
-  return (raw ?? "").trim().replace(/^@+/, "");
-}
-
-/** Чи з цього імені взагалі вийде робоче посилання. */
-export function isValidBotUsername(raw?: string | null): boolean {
-  return BOT_USERNAME_RE.test(normalizeBotUsername(raw));
-}
+export { TELEGRAM_ORIGIN, isValidBotUsername, normalizeBotUsername } from "./bot-username";
 
 /** Чому діплінка немає. `ok` — посилання є. */
 export type ShareLinkReason =
@@ -51,6 +41,8 @@ export type ShareLinkReason =
   | "ok"
   /** Адреса не пройшла `isValidSlug` (найчастіше — `_` усередині сегмента). */
   | "invalid_slug"
+  /** Передавний код запрошення не є кодом — до посилання його не додано. */
+  | "invalid_code"
   /** Ім'я бота невідоме або не схоже на справжнє. */
   | "no_bot_username"
   /** Параметр довший за 64 символи — Telegram обріже його мовчки. */
@@ -65,6 +57,15 @@ export interface ShareLinksInput {
   botUsername?: string | null;
   /** База платформи, якщо виклик її знає: з неї вийде абсолютна веб-адреса. */
   webBase?: string | null;
+  /**
+   * Код запрошення від того, хто ділиться (`contacts.code`). Додається останнім
+   * сегментом payload, тож перехід і на сторінку, і на допуск — одне посилання.
+   *
+   * Код, що не пройшов `isInviteCode`, **не додається** мовчки: `deepLink` лишається
+   * посиланням на сторінку без нього, а причина зміниться на `invalid_code` —
+   * інакше інтерфейс показав би посилання, яке нікого не запросить.
+   */
+  inviteCode?: string | null;
 }
 
 export interface ShareLinks {
@@ -89,24 +90,36 @@ function joinUrl(base: string, path: string): string {
  * Збирає обидва посилання сторінки одним викликом.
  *
  * Порядок перевірок — від найдешевшої й найчастішої ознаки до рідкісної: спершу
- * адреса (вона може бути недіплінкованою взагалі), далі ім'я бота, і лише тоді
- * довжина. Так повідомлення людині буде про те, що вона справді може виправити.
+ * адреса (вона може бути недіплінкованою взагалі), далі код запрошення, потім
+ * ім'я бота, і лише тоді довжина. Так повідомлення людині буде про те, що вона
+ * справді може виправити.
  */
 export function buildShareLinks(input: ShareLinksInput): ShareLinks {
   const params = input.params ?? [];
   const slug = normalizeSlug(input.slug);
-  const payload = toBotPayload(slug, params);
+  // Код додається в payload, а не у веб-шлях: у вебі сегмент після адреси —
+  // це дані сторінки, і код запрошення серед них був би зайвим параметром,
+  // який платформа не читає.
+  const inviteCode =
+    input.inviteCode && isInviteCode(input.inviteCode)
+      ? input.inviteCode.trim().toLowerCase()
+      : null;
+  // Код — такий самий сегмент payload, як адреса чи параметр: тоді розбір
+  // (`botPayloadSegments`) і межа 64 символи лишаються одними й тими самими.
+  const payload = toBotPayload(slug, inviteCode ? [...params, inviteCode] : params);
   const webPath = toWebPath(slug, params);
   const webUrl = input.webBase ? joinUrl(input.webBase, webPath) : null;
 
   const reason: ShareLinkReason =
     !isValidSlug(slug) || params.some((param) => !isValidSlug(param))
       ? "invalid_slug"
-      : !isValidBotUsername(input.botUsername)
-        ? "no_bot_username"
-        : !isDeepLinkable(slug, params)
-          ? "too_long"
-          : "ok";
+      : input.inviteCode && !inviteCode
+        ? "invalid_code"
+        : !isValidBotUsername(input.botUsername)
+          ? "no_bot_username"
+          : !isDeepLinkable(slug, inviteCode ? [...params, inviteCode] : params)
+            ? "too_long"
+            : "ok";
 
   const username = normalizeBotUsername(input.botUsername);
   const deepLink =

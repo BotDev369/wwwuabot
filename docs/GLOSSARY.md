@@ -13,6 +13,13 @@
   першому записі (`is_blocked`, `rate_limit_json`, …), тому фіксованого списку полів немає. Читання БД
   не пише: зміни позначає прапор `ctx.userDirty`, а запис робить post-middleware
   (`bot-dev/src/core/middleware/post/index.ts`), який викликає `botRouter` з `src/core/router/bot-router.ts`.
+- **Допуск у бот** (`users.inviter_id`) — хто запросив людину; `NULL` — ніхто, тоді бот їй відмовляє.
+  Бот закритий за запрошеннями: контент видно лише запрошеній людині й `role = 'admin'`.
+  Колонку пише той самий перехід, що закріплює контакт (`bot-dev/src/modules/contacts/contact-link.ts`),
+  а перевіряє `bot-dev/src/modules/access/access.ts` — чиста функція, без бази й Telegram.
+- **Код запрошення** (`contacts.code`, `inv-…`) — те, що стоє в `?start=` і відкриває бот запрошеній
+  людині. У посиланні зі сторінкою код — **останній сегмент** payload (`buildShareLinks({ inviteCode })`),
+  тож одне посилання веде і туди, і сюди; розбирає `splitInviteCode()`.
 - **Ім'я на платформі** (`users.platform_username`) — **не** Telegram `username`: це ім'я, яке
   користувач обирає собі сам на wwwuabot, і саме воно є його іменем у продукті
   (`packages/shared/src/user/platform-username.ts` — єдині правила для TWA, адмінки й бота).

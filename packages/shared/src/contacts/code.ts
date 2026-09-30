@@ -15,7 +15,7 @@
  * @module @wwwuabot/shared/contacts
  */
 
-import { TELEGRAM_ORIGIN, isValidBotUsername, normalizeBotUsername } from "../content/link";
+import { TELEGRAM_ORIGIN, isValidBotUsername, normalizeBotUsername } from "../content/bot-username";
 
 /** Префікс коду — щоб код запрошення не збігся з адресою сторінки на око. */
 export const INVITE_CODE_PREFIX = "inv-";

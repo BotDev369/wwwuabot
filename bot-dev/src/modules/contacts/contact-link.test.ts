@@ -35,7 +35,7 @@ interface Capture {
  */
 function context(
   row: Row | null,
-  options: { changes?: number; fail?: boolean; viewerId?: number } = {},
+  options: { changes?: number; fail?: boolean; viewerId?: number; user?: unknown } = {},
 ) {
   const statements: Capture[] = [];
   const db = {
@@ -56,6 +56,7 @@ function context(
   const ctx = {
     env: { DB: db },
     from: { id: options.viewerId ?? GUEST, username: "guest" },
+    user: options.user === undefined ? { user_id: options.viewerId ?? GUEST } : options.user,
   } as unknown as AppContext;
   return { ctx, statements };
 }
@@ -117,5 +118,55 @@ describe("перехід за лінком контакту", () => {
     const { ctx } = context(null, { fail: true });
 
     expect(await applyContactPayload(ctx, CODE)).toEqual({ kind: "unknown" });
+  });
+
+  it("перший перехід запам'ятовує запрошувача: без нього бот лишається закритим", async () => {
+    const { ctx } = context({ id: 7, owner_id: OWNER, joined_user_id: null });
+
+    await applyContactPayload(ctx, CODE);
+
+    // `users.inviter_id` — те, за чим `modules/access` пускає в бот. Забуте
+    // тут поле означало б, що людину запросили, а бот їй відмовив.
+    expect(ctx.user?.inviter_id).toBe(OWNER);
+    expect(ctx.userDirty).toBe(true);
+  });
+
+  it("повторний перехід тієї самої людини згадує запрошувача, якщо колонки ще не було", async () => {
+    const { ctx } = context({ id: 7, owner_id: OWNER, joined_user_id: GUEST });
+
+    await applyContactPayload(ctx, CODE);
+
+    // Людина прийшла ще до появи колонки: без цього вона бачила б відмову за
+    // власним лінком.
+    expect(ctx.user?.inviter_id).toBe(OWNER);
+  });
+
+  it("⛔ чужий лінк не дає нікого записувати", async () => {
+    // Лінк уже зайнятий іншою людиною: її допуск — не нашого запису.
+    const { ctx } = context({ id: 7, owner_id: OWNER, joined_user_id: 999 });
+
+    await applyContactPayload(ctx, CODE);
+
+    expect(ctx.user?.inviter_id).toBeUndefined();
+    expect(ctx.userDirty).toBeUndefined();
+  });
+
+  it("⛔ перший запрошувач не перезаписується наступним", async () => {
+    const { ctx } = context(
+      { id: 7, owner_id: OWNER, joined_user_id: null },
+      { user: { user_id: GUEST, inviter_id: 111 } },
+    );
+
+    await applyContactPayload(ctx, CODE);
+
+    expect(ctx.user?.inviter_id).toBe(111);
+  });
+
+  it("власний лінк нікого не записує", async () => {
+    const { ctx } = context({ id: 7, owner_id: OWNER, joined_user_id: null }, { viewerId: OWNER });
+
+    await applyContactPayload(ctx, CODE);
+
+    expect(ctx.user?.inviter_id).toBeUndefined();
   });
 });

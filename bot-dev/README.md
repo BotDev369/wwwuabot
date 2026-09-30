@@ -43,7 +43,7 @@
 
 | Вхід | Що робить |
 |---|---|
-| `/start <payload>` | спершу **код запрошення** (`modules/contacts/contact-link.ts`), потім адреса сторінки (`getScenarioByBotPayload`) |
+| `/start <payload>` | **хвіст** payload відділяється як код запрошення (`modules/access/payload.ts`), решта — адреса сторінки (`getScenarioByBotPayload`) |
 | `/start <код>`, перший перехід | екран запрошення (`modules/contacts/invite-screen.ts`): ім'я того, хто запросив, і кнопка «Відкрити чат» — `web_app` на `/messages?peer=<id>` платформи |
 | `/start` без payload | головна сторінка (порожній `slug`) |
 | `callback_data` | це `slug` (хвіст після `#` відкидається); невалідний — ігнорується |
@@ -63,6 +63,33 @@
 **Ім'я в цьому екрані береться без `@` перед іменем на платформі** (`peerPublicLabel(peer, "telegram")`):
 Telegram робить із `@слово` посилання на **телеграм-акаунт**, і `@karas` вело б людину в чужий профіль.
 Telegram-хендл `@` зберігає — він і є акаунт (AGENTS.md §2).
+
+## Доступ: бот закритий за запрошеннями (`modules/access/`)
+
+Кожен шлях до контенту проходить `renderOrDeny` у роутері — це єдине місце, де
+контент або стає видимим, або ні. Фільтр стоїть **після** розбору payload: код
+запрошення в хвості і є допуск, і перевіряти раніше значило б відмовити тому, хто
+щойно прийшов за лінком.
+
+| Файл | Що робить |
+|---|---|
+| `access.ts` | чиста перевірка: `role = 'admin'` або додатний `users.inviter_id` |
+| `payload.ts` | відокремив код від адреси: код — **останній** сегмент payload |
+| `denied.ts` | екран відмови: текст + `remove_keyboard`, без сценарію |
+| `keyboard.ts` | постійна реплай-клавіатура з трьох `web_app`-кнопок на `/profile`, `/favorites`, `/space` |
+
+**`users.inviter_id` пише той самий перехід, що закріплює контакт**
+(`applyContactPayload`), тож «хто запросив» і «за ким прийшли» — одне й те саме, а не
+два записи, які можуть розійтися. Перший запрошувач не перезаписується; `null` у
+колонці — це відмова, а не «невідомо».
+
+**Клавіатура лишається на місці** (`is_persistent`): інакше Telegram прибрав би її
+через кілька днів тиші. Показується на вході (`/start`), а не на кожному екрані —
+інакше `sendMessage` плодив би повідомлення в чаті. Адреси кнопок узяті зі
+спільного `@wwwuabot/shared/app/routes`, а не написані тут.
+
+**Екран відмови знімає клавіатуру** (`remove_keyboard`): три кнопки, які ведуть у
+платформу, де людини теж не чекають, — це обіцянка, яку ми не виконаємо.
 
 ## Рендер (`shared/utils/screen.ts`)
 
@@ -100,6 +127,6 @@ Telegram-хендл `@` зберігає — він і є акаунт (AGENTS.m
 |---|---|
 | `scenarios` (читання) | `src/repositories/scenario.repository.ts` |
 | `settings` | `src/repositories/settings.repository.ts` |
-| `users` (стан, профіль, блокування) | `src/modules/users/user.repository.ts` — схема «м'яка», колонки додає `withAutoMigrate` |
+| `users` (стан, профіль, блокування) | `src/modules/users/user.repository.ts` — схема «м'яка», колонки додає `withAutoMigrate`; `inviter_id` — допуск у бот |
 | `contacts` (вхід у бота) | `src/modules/contacts/contact.repository.ts` |
 | Спільний доступ до БД | `src/core/database.repository.ts` |

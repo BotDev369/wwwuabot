@@ -20,6 +20,11 @@ export interface BotUser {
   active_scenario?: string | null;
   message_id?: number;
   my_dates?: string;
+  /**
+   * Хто запросив людину (`users.user_id`); `null` — ніхто. Нульова ознака
+   * «сюди можна»: бот закритий за запрошеннями (`modules/access`).
+   */
+  inviter_id?: number | null;
   created_at?: string;
   updated_at?: string;
   [key: string]: unknown;

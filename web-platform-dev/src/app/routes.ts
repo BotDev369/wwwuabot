@@ -45,12 +45,17 @@ import { isPageTemplateKey, type PageTemplateKey } from "@wwwuabot/shared/pages"
  */
 export { MESSAGES_PATH } from "@wwwuabot/shared/messages";
 
-/** Профіль — хаб: рядок акаунта й розділи платформи. */
-export const FAVORITES_ROUTE = "favorites";
-export const FAVORITES_PATH = `/${FAVORITES_ROUTE}`;
+/**
+ * Три адреси, які читає ще й бот: його клавіатура під чатом веде на профіль,
+ * обране й Простір (`bot-dev/src/modules/access`). Літерали звідси, а не
+ * нижче в цьому файлі: два власники однієї адреси розійшлися б тихо, і
+ * кнопка в чаті відкрила б 404.
+ */
+export { FAVORITES_PATH, PROFILE_PATH, SPACE_PATH } from "@wwwuabot/shared/app/routes";
+import { PROFILE_PATH, SPACE_PATH } from "@wwwuabot/shared/app/routes";
 
+export const FAVORITES_ROUTE = "favorites";
 export const PROFILE_ROUTE = "profile";
-export const PROFILE_PATH = `/${PROFILE_ROUTE}`;
 
 /**
  * Акаунт — сторінка за рядком хабу: окремо платформа (`#ім'я`), окремо
@@ -93,7 +98,6 @@ export const THEME_PATH = `${PROFILE_PATH}/${THEME_ROUTE}`;
  * екрану» (AGENTS.md §7).
  */
 export const SPACE_ROUTE = "space";
-export const SPACE_PATH = `/${SPACE_ROUTE}`;
 
 /** Людина в Просторі — окрема адреса: за карткою стоїть один профіль. */
 export const SPACE_USER_ROUTE = "u";
