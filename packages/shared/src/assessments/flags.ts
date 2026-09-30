@@ -3,11 +3,11 @@
  * бал.
  *
  * **Найважливіше тут — `safetyOf`.** Воно дивиться на відповідь на конкретне
- * питання, а не на суму. У PHQ-9 це питання 9 — про думки, що краще було б
- * померти, — і людина з двома балами з 27 мусить отримати блок допомоги так
- * само, як з двадцятьма. Тому прапор безпеки **не залежить від смуги**: його
- * не можна придушити низьким підсумком, і саме через це він живе тут, а не
- * в `AssessmentBand`.
+ * питання, а не на суму. У «Тревожності і депресії» це питання про думки, що
+ * краще було б померти, — і людина з двома балами з 27 мусить отримати блок
+ * допомоги так само, як з двадцятьма. Тому прапор безпеки **не залежить від
+ * смуги**: його не можна придушити низьким підсумком, і саме через це він живе
+ * тут, а не в `AssessmentBand`.
  *
  * Усе — чисті функції без стану: їх можна перевірити тестом, а тести тут
  * найкритичніші в усьому розділі, бо мовчазний збій прапорця безпеки
@@ -16,7 +16,8 @@
  * @module @wwwuabot/shared/assessments/flags
  */
 
-import type { AssessmentItem, AssessmentRecord, AssessmentTest, ImpactQuestion } from "./types";
+import { placedItems } from "./scales";
+import type { AssessmentRecord, AssessmentScale, AssessmentTest, ImpactQuestion } from "./types";
 
 /**
  * Протокол безпеки за відповіддю на питання безпеки.
@@ -34,7 +35,14 @@ export interface SafetyLevel {
   readonly text: string | null;
 }
 
-/** Відповідь на питання безпеки; 0, якщо такого питання в тесті немає. */
+/**
+ * Відповідь на питання безпеки; 0, якщо такого питання в тесті немає.
+ *
+ * Шукається **по всьому тесту**, а не по шкалі: питання безпеки живе в одній
+ * шкалі, але протокол стосується всього проходження — тому людина, яка
+ * відповіла на нього, мусить бачити блок однаково, з яким би блоком вона не
+ * читалася.
+ */
 export function safetyValue(test: AssessmentTest, answers: readonly number[]): number {
   const index = test.items.findIndex((item) => item.safety === true);
   if (index === -1) return 0;
@@ -70,13 +78,21 @@ export interface ItemAlert {
  * **вище за свій поріг** показує свою ремарку.
  *
  * На відміну від `profileOf`, який добирає найслабшу сферу, тут спрацьовує
- * **кожне** перевищене питання: в PHQ-9 їх може бути п'ять, і кожне має власне
- * пояснення. Поріг заданий у даних (`alertAtLeast`), а не в коді — інакше
- * наступний інструмент переписав би правило згори.
+ * **кожне** перевищене питання: у шкалі настрою їх може бути п'ять, і кожне
+ * має власне пояснення. Поріг заданий у даних (`alertAtLeast`), а не в коді —
+ * інакше наступний інструмент переписав би правило згори.
+ *
+ * **Акценти належать шкалі**, а не тесту: пояснення «сон — 3 з 3» має стояти
+ * під своєю шкалою, інакше список двох блоків злипається в одну стінку без
+ * заголовків.
  */
-export function itemAlerts(test: AssessmentTest, answers: readonly number[]): ItemAlert[] {
+export function itemAlerts(
+  test: AssessmentTest,
+  scale: AssessmentScale,
+  answers: readonly number[],
+): ItemAlert[] {
   const alerts: ItemAlert[] = [];
-  test.items.forEach((item, index) => {
+  placedItems(test, scale).forEach(({ item, index }) => {
     const answer = answers[index];
     if (item.alertAtLeast === undefined || item.alertNote === undefined) return;
     if (typeof answer !== "number" || answer < item.alertAtLeast) return;
@@ -86,8 +102,12 @@ export function itemAlerts(test: AssessmentTest, answers: readonly number[]): It
 }
 
 /** Кількість питань, що спрацювали вище за поріг §6.4 — «більшість симптомів». */
-export function alertCount(test: AssessmentTest, answers: readonly number[]): number {
-  return itemAlerts(test, answers).length;
+export function alertCount(
+  test: AssessmentTest,
+  scale: AssessmentScale,
+  answers: readonly number[],
+): number {
+  return itemAlerts(test, scale, answers).length;
 }
 
 /** Відповідь на питання про вплив на життя, або `null` — його немає. */
@@ -107,44 +127,29 @@ export function impactText(
   return impact.texts[value] ?? null;
 }
 
-/** Умова, за якої «більшість симптомів» варто сказати людині вголос (§7.6). */
-export function isCoreMoodAlarmed(test: AssessmentTest, answers: readonly number[]): boolean {
-  return test.items
-    .map((item, index) => ({ item, value: answers[index] ?? 0 }))
+/**
+ * Чи два ключові питання шкали вже на рівні «більше половини днів» (§7.6).
+ *
+ * Беруться **перші два** питання шкали з порогом, а не перші два взагалі: у
+ * WHO-5 порігів немає, тож перевіряти там нічого, а в тесті з трьома блоками
+ * перші два питання другого блоку — зовсім інші симптоми, ніж перші два першого.
+ */
+export function isCoreMoodAlarmed(
+  test: AssessmentTest,
+  scale: AssessmentScale,
+  answers: readonly number[],
+): boolean {
+  return placedItems(test, scale)
     .filter(({ item }) => item.safety !== true && item.alertAtLeast !== undefined)
     .slice(0, 2)
-    .some(({ value }) => value >= 2);
+    .some(({ index }) => (answers[index] ?? 0) >= 2);
 }
 
-/** Спільний висновок за двома шкалами (§7.5) — лише коли є обидва результати. */
-export type CombinedKey =
-  "comorbid" | "mood-dominant" | "anxiety-dominant" | "mild-both" | "low-both" | "border";
-
-/**
- * Яка з шести комбінацій §7.5. **Порядок перевірки заданий специфікацією**
- * (зверху вниз, перша відповідність), тому сума ≥ 10 обох перевіряється перед
- * тим, як «легкі прояви обох станів» перехопили б випадок 12 і 11.
- */
-export function combinedKeyOf(phq9Raw: number, gad7Raw: number): CombinedKey {
-  const phq9Positive = phq9Raw >= 10;
-  const gad7Positive = gad7Raw >= 10;
-  if (phq9Positive && gad7Positive) return "comorbid";
-  if (phq9Positive) return "mood-dominant";
-  if (gad7Positive) return "anxiety-dominant";
-  if (phq9Raw >= 5 && gad7Raw >= 5) return "mild-both";
-  if (phq9Raw < 5 && gad7Raw < 5) return "low-both";
-  return "border";
-}
-
-/** Останній результат конкретного тесту, якщо він є. */
+/** Останній результат конкретної шкали, якщо він є. */
 export function latestOf(
   results: readonly AssessmentRecord[],
   testKey: string,
+  scaleKey: string,
 ): AssessmentRecord | null {
-  return results.find((record) => record.testKey === testKey) ?? null;
-}
-
-/** Сфера-джерело одного питання — для профілю й акцентів. */
-export function itemById(test: AssessmentTest, id: string): AssessmentItem | undefined {
-  return test.items.find((item) => item.id === id);
+  return results.find((one) => one.testKey === testKey && one.scaleKey === scaleKey) ?? null;
 }

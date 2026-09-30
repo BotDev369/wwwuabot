@@ -12,6 +12,12 @@
  * **Тон теж має значення.** Це не скринінг депресії, а вимір того, наскільки
  * людині добре. Питання позитивні, тож результат не називає людину хворою.
  *
+ * **Одна шкала — і це дані, а не виняток.** `scales` тут містить один
+ * елемент, бо тест з однією шкалою теж має її назвати. Смуги, поріг і напрямок
+ * живуть у шкалі, а не в тесті: інакше «Тревожність і депресія» мусила б
+ * тримати другий блок в окремому тесті, тобто людина проходила б одне й те саме
+ * двічі.
+ *
  * **Що тут підтверджено, а що — наше рішення.** Підтверджено джерелами: п'ять
  * питань, шкала 0–5, сума × 4, поріг **50** (Topp et al., 2015) і значуща
  * зміна **10%** (документ ВОЗ Європа). **Межі верхніх смуг — наше рішення про
@@ -114,6 +120,21 @@ const BANDS = [
   },
 ] as const;
 
+/**
+ * Єдина шкала WHO-5. Назва потрібна не для краси: вона стоїть у підписі блока
+ * на екрані проходження й у заголовку секції результату, тож людина має
+ * бачити, що це «благополуччя», а не «тест №1».
+ */
+const SCALE = {
+  key: "wellbeing",
+  title: "Добро самопочуття",
+  lead: "П'ять тверджень про останні два тижні: настрій, спокій, енергія, відпочинок і інтерес.",
+  bands: BANDS,
+  severityDirection: "lower-is-worse",
+  attentionRaw: 12,
+  significantChange: { kind: "percent", value: 10 },
+} as const;
+
 export const WHO_5: AssessmentTest = {
   key: "who5",
   title: "Індекс благополуччя",
@@ -123,18 +144,19 @@ export const WHO_5: AssessmentTest = {
     "Відповідь від «Ніколи» до «Завжди», тобто 0–5 балів у питанні; " +
     "результат — сума від 0 до 25. Інструмент розроблений Всесвітньою організацією охорони здоров'я.",
   periodLabel: "Упродовж останніх двох тижнів",
-  items: ITEMS,
+  // Ключ шкали проставляється тут, а не в кожному питанні вручну: п'ять рядків
+  // `scale` у даних — це п'ять місць, де можна забути, а тут забуття неможливе.
+  items: ITEMS.map((item) => ({ ...item, scale: SCALE.key })),
   options: OPTIONS,
-  bands: BANDS,
-  severityDirection: "lower-is-worse",
-  attentionRaw: 12,
-  significantChange: { kind: "percent", value: 10 },
-  source: {
-    name: "WHO-5 Well-Being Index, Всесвітня організація охорони здоров'я",
-    citation:
-      "Topp C.W., Østergaard S.D., Søndergaard S., & Bech P. (2015). The WHO-5 Well-Being Index: A Systematic Review of the Literature. Psychotherapy and Psychosomatics, 84, 167-176.",
-    url: "https://www.who.int/publications/m/item/WHO-UCN-MSD-MHE-2024.01",
-    license: "Безкоштовний, дозволу не потребує; атрибуція обов'язкова",
-  },
+  scales: [SCALE],
+  sources: [
+    {
+      name: "WHO-5 Well-Being Index, Всесвітня організація охорони здоров'я",
+      citation:
+        "Topp C.W., Østergaard S.D., Søndergaard S., & Bech P. (2015). The WHO-5 Well-Being Index: A Systematic Review of the Literature. Psychotherapy and Psychosomatics, 84, 167-176.",
+      url: "https://www.who.int/publications/m/item/WHO-UCN-MSD-MHE-2024.01",
+      license: "Безкоштовний, дозволу не потребує; атрибуція обов'язкова",
+    },
+  ],
   disclaimer: "Це самооцінка за останні два тижні, а не медичний діагноз.",
 };

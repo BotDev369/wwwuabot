@@ -69,6 +69,32 @@
   color: var(--text-muted);
 }
 
+/*
+ * **Один рядок на шкалу** — список показує блоки, а не один «головний» бал.
+ *
+ * Назва шкали й її бал стоять поруч, а все інше (дата, смуга, тренд) лишається
+ * спільним рядком. Так людина бачить обидва результати на одному екрані й
+ * одразу розуміє, що це два різні числа, а не одне розбите на частини.
+ */
+.wb-test-scale-row {
+  display: inline-flex;
+  align-items: baseline;
+  gap: var(--sp-2);
+}
+
+.wb-test-scale-name {
+  color: var(--text-secondary);
+}
+
+/* `nowrap` — щоб «21 з 27» не розірвалося: такий перенос читається як помилка
+   верстки, а не як число. */
+.wb-test-scale-score {
+  white-space: nowrap;
+  font-weight: var(--weight-medium);
+  color: var(--text-primary);
+  font-variant-numeric: tabular-nums;
+}
+
 /* ── Бал і смуга ───────────────────────────────────────────────────────── */
 
 .wb-score {
@@ -182,6 +208,35 @@
   margin: 0;
   font-size: 0.8125rem;
   color: var(--text-muted);
+}
+
+/*
+ * **Ім'я блока — один раз на блок, а не на кожне питання.**
+ *
+ * Екран показує одне питання за раз, тож людина, яка проходить другий блок
+ * «Тревожність і депресія», мусить щоразу зрозуміти, де вона находиться.
+ * Назва й речення про блок з'являються перед **першим** питанням шкали; на
+ * решті шістнадцяти вони були б шумом, що повторюється.
+ */
+.wb-run-block {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-1);
+}
+
+.wb-run-block-title {
+  margin: 0;
+  font-size: 1.0625rem;
+  font-weight: var(--weight-bold);
+  line-height: 1.3;
+  color: var(--text-primary);
+}
+
+.wb-run-block-lead {
+  margin: 0;
+  font-size: 0.875rem;
+  line-height: 1.5;
+  color: var(--text-secondary);
 }
 
 .wb-run-progress-track {
@@ -632,6 +687,49 @@
 /* Застереження, яке не можна сховати (§3.4 специфікації). */
 .wb-notice--required {
   border-color: var(--border);
+}
+
+/* ── Результат однієї шкали ──────────────────────────────────────────────── */
+
+/*
+ * **Один блок на шкалу, а не одна стінка на тест.**
+ *
+ * Коли в тесті дві шкали, їхні бали, смуги й порівняння між людьми — різні
+ * числа, і в спільному потоці людина бачила б «20 з 27» поруч із «14 з 21» без
+ * заголовків і не могла б зрозуміти, що до чого належить. Тому кожна шкала —
+ * окрема секція, а спільний висновок стоїть після обох.
+ */
+.wb-scale-result {
+  margin-bottom: var(--sp-5);
+}
+
+.wb-scale-result + .wb-scale-result {
+  padding-top: var(--sp-5);
+  border-top: 1px solid var(--border-subtle);
+}
+
+/* Назва шкали — як у розділу, а не як заголовок екрана: бренд-теми піднімають
+   будь-який `h2` до 28px, і «Настрій і депресія» опинився б вище за власний
+   бал. Див. `.wb-section-title`. */
+.wb-scale-result-title {
+  margin: 0 0 var(--sp-2);
+  font-size: 0.9375rem !important;
+  font-weight: var(--weight-bold);
+  line-height: 1.35;
+  color: var(--text-primary);
+}
+
+/* Прапор уваги — рядок у кінці шкали, а не рамка навколо неї: він має
+   читатися як примітка до цього балу, а не як заборона дивитися в сусідній
+   блок. */
+.wb-scale-result-flag {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-1);
+  margin: var(--sp-3) 0 0;
+  font-size: 0.875rem;
+  line-height: 1.4;
+  color: var(--text-secondary);
 }
 
 /* ── Спільний висновок за двома шкалами ──────────────────────────────────── */

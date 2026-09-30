@@ -2,23 +2,26 @@
  * Персональні акценти (§6.4, §7.6, §7.7) і наслідок для життя (§7.4).
  *
  * **Це те, що відрізняє персональний результат від загального.** Людина
- * прочитала дев'ять тверджень і вже знає свої відповіді; користь у тому, що їй
- * кажуть **що саме** її відповідь означає: «сон — 3 з 3» стає поясненням, що
- * порушення тривають понад 2–3 тижні й треба сказати лікареві.
+ * прочитала свої відповіді й вже знає їх числа; користь у тому, що їй кажуть
+ * **що саме** її відповідь означає: «сон — 3 з 3» стає поясненням, що порушення
+ * тривають понад 2–3 тижні й треба сказати лікареві.
  *
  * Кожне питання, відповідь на яке вище за `alertAtLeast`, показує **свій**
  * текст. Тому їх може бути кілька — і це не шум, а зміст.
+ *
+ * **Один блок на шкалу.** Акценти належать конкретному блоку питань, тож у
+ * тесті з двома шкалами їх два, і кожен стоїть під своєю назвою.
  *
  * @module web-platform-dev/src/pages/assessments/AssessmentAlerts
  */
 
 import { type ReactElement } from "react";
-import type { AssessmentTest, ItemAlert } from "@wwwuabot/shared/assessments";
+import type { ItemAlert } from "@wwwuabot/shared/assessments";
 import { BoldText } from "./BoldText";
 
 interface AssessmentAlertsProps {
-  test: AssessmentTest;
   alerts: readonly ItemAlert[];
+  /** Наслідок для життя — спільне питання, тому показується один раз. */
   impact: string | null;
   /** Ключові симптоми на рівні ≥ 2 — додаткове речення (§7.6). */
   coreMood: boolean;
@@ -30,21 +33,16 @@ interface AssessmentAlertsProps {
 const MOST_SYMPTOMS = 5;
 
 export function AssessmentAlerts({
-  test,
   alerts,
   impact,
   coreMood,
   alertCount,
 }: AssessmentAlertsProps): ReactElement | null {
   if (alerts.length === 0 && !impact) return null;
-  const title =
-    test.severityDirection === "higher-is-worse"
-      ? "На що варто звернути увагу"
-      : "Що за цим стоїть";
 
   return (
     <section className="wb-alerts">
-      <h2 className="wb-alerts-title">{title}</h2>
+      <h3 className="wb-alerts-title">На що варто звернути увагу</h3>
       {coreMood && (
         <p className="wb-alerts-lead">
           Ключові симптоми (втрата інтересу та знижений настрій) були у вас значну частину днів. Це

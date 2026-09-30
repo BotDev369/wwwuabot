@@ -10,9 +10,17 @@
  * структуру сховища текстів.
  */
 import { describe, expect, it } from "vitest";
-import { GAD_7, PHQ_9 } from "@wwwuabot/shared/assessments";
+import { MOOD_ANXIETY } from "@wwwuabot/shared/assessments";
 
-const NOTES: readonly string[] = [...PHQ_9.bands, ...GAD_7.bands].map((band) => band.note);
+/**
+ * Усі смуги всіх шкал: саме їх бачить людина в блоці «Що це означає».
+ *
+ * Розгортається в цикл, а не перелічується: тест, що читає реєстр, падає
+ * на новій шкалі тоді, коли хтось забув додати їй текст.
+ */
+const NOTES: readonly string[] = MOOD_ANXIETY.scales.flatMap((scale) =>
+  scale.bands.map((band) => band.note),
+);
 
 const BULLET = "— ";
 

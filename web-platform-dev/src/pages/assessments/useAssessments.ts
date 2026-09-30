@@ -25,8 +25,12 @@ export interface AssessmentsState {
   loading: boolean;
   saving: boolean;
   error: string | null;
-  /** Пройти тест: надсилає відповіді, повертає збережений рядок. */
-  submit: (testKey: string, answers: readonly number[]) => Promise<AssessmentRecord>;
+  /**
+   * Пройти тест: надсилає відповіді, повертає збережені рядки — **по одному на
+   * кожну шкалу**. «Тревожність і депресія» має дві шкали, тож проходження
+   * повертає два бали, і список історії поповнюється обома.
+   */
+  submit: (testKey: string, answers: readonly number[]) => Promise<AssessmentRecord[]>;
   /** Зняти помилку після того, як людина її побачила. */
   clearError: () => void;
 }
@@ -71,12 +75,12 @@ export function useAssessments(): AssessmentsState {
     setError(null);
     try {
       // Розподіл приходить разом із результатом: це один запит, і він уже
-      // враховує щойно записаний рядок, тож блок «Ти не один» під ним каже
+      // враховує щойно записані рядки, тож блок «Ти не один» під ними каже
       // правду, а не «ти тут один».
-      const { record, peers: fresh } = await assessmentsApi.submit(testKey, answers);
-      setResults((prev) => [record, ...prev]);
+      const { records, peers: fresh } = await assessmentsApi.submit(testKey, answers);
+      setResults((prev) => [...records, ...prev]);
       setPeers(fresh);
-      return record;
+      return records;
     } catch (e: unknown) {
       setError(e instanceof Error ? e.message : "Не вдалося зберегти результат");
       throw e;

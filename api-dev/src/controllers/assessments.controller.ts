@@ -75,7 +75,10 @@ export async function handleAssessments(request: Request, env: Env): Promise<Res
       // **Рахунок перераховується після запису, а не береться з памʼяті.**
       // Іначше картка під щойно збереженим результатом показує «ти тут один»
       // у ту ж мить, коли людина щойно увійшла в статистику.
-      return json({ ok: true, result: outcome.record, peers: await peerTallies(env.DB) });
+      //
+      // Повертаються **усі** рядки проходження — по одному на шкалу: тест із
+      // двома шкалами це два бали, і кліент малює обидва.
+      return json({ ok: true, records: outcome.records, peers: await peerTallies(env.DB) });
     }
 
     return json({ ok: false, error: "Method not allowed" }, 405);

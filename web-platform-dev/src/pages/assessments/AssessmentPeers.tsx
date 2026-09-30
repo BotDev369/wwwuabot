@@ -15,23 +15,27 @@
  * про це сказано прямо; якщо їх мало — це сказано окремою фразою, а сховано
  * нічого.
  *
+ * **Один блок на шкалу.** Розподіл рахується по `scaleKey`: 21 бал тривоги й
+ * 21 бал настрою — різні речі, і лінійка, що їх змішує, показувала б не
+ * «скільки людей має твій стан», а скільки мало схоже число.
+ *
  * @module web-platform-dev/src/pages/assessments/AssessmentPeers
  */
 
 import { useMemo, type ReactElement } from "react";
-import { peerSnapshot, type AssessmentTest, type PeerTally } from "@wwwuabot/shared/assessments";
+import { peerSnapshot, type AssessmentScale, type PeerTally } from "@wwwuabot/shared/assessments";
 import { peerReading, peopleCount } from "./peer-view";
 
 interface AssessmentPeersProps {
-  test: AssessmentTest;
-  /** Скільки людей у кожній смузі: `bandKey` → людей. */
+  scale: AssessmentScale;
+  /** Скільки людей у кожній смузі цієї шкали: `bandKey` → людей. */
   tally: PeerTally;
   /** Твій результат — ним позначається твоя смуга. */
   raw: number;
 }
 
-export function AssessmentPeers({ test, tally, raw }: AssessmentPeersProps): ReactElement {
-  const snapshot = useMemo(() => peerSnapshot(test, tally, raw), [test, tally, raw]);
+export function AssessmentPeers({ scale, tally, raw }: AssessmentPeersProps): ReactElement {
+  const snapshot = useMemo(() => peerSnapshot(scale, tally, raw), [scale, tally, raw]);
   const text = useMemo(() => peerReading(snapshot), [snapshot]);
 
   return (

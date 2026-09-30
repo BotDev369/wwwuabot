@@ -1,9 +1,14 @@
 /**
- * Рахування самооцінки: відповіді → бал → смуга.
+ * Рахування самооцінки: відповіді → бал у шкалі → смуга.
  *
  * **Усе тут — чисті функції.** Ні стану, ні таймерів, ні `fetch`: рахунок
  * мусить однаково вийти в браузері, в `api-dev` і в тесті. Тому результат
  * рахує сервер, а цей модуль не знає, звільки його покликали.
+ *
+ * **Одиниця рахунку — шкала, а не тест.** «Тревожність і депресія» — це
+ * одне проходження з двома шкалами, кожна зі своїми смугами, порогом і
+ * напрямком. Тому всі функції приймають шкалу: тест лише каже, **які** шкали
+ * рахувати.
  *
  * **Немає мовчання.** Тест, у якому смуги не покривають увесь діапазон, або
  * відповідь не з тої шкали — це помилка в даних, і вона кидає помилку, а не
@@ -13,29 +18,40 @@
  * @module @wwwuabot/shared/assessments/score
  */
 
-import type { AssessmentBand, AssessmentItem, AssessmentTest } from "./types";
+import { scoredItems } from "./scales";
+import type { AssessmentBand, AssessmentScale, AssessmentTest } from "./types";
 
-/** Найбільша можлива сума: скільки питань, помножено на найбільший бал шкали. */
-export function maxRawScore(test: AssessmentTest): number {
-  return scoredItems(test).length * Math.max(...test.options.map((option) => option.value));
+/** Найбільший бал шкали: скільки її питань, помножено на найбільший бал варіанта. */
+export function maxRawScore(test: AssessmentTest, scale: AssessmentScale): number {
+  const values = test.options.map((option) => option.value);
+  return scoredItems(test, scale).length * Math.max(...values);
 }
 
-/**
- * Питання, які **входять у суму**. Типово це всі, але питання про вплив на
- * життя бали не нараховує, тому воно поза сумою — і в сумі, і в максимумі.
- * Робимо це одним списком, щоб `raw` і `maxRaw` не могли розійтися.
- */
-function scoredItems(test: AssessmentTest): readonly AssessmentItem[] {
-  return test.items.filter((item) => item.countsTowardScore !== false);
+/** Найбільший бал одного варіанта відповіді — знаменник у профілі по сферах. */
+export function maxOptionValue(test: AssessmentTest): number {
+  return Math.max(...test.options.map((option) => option.value));
 }
 
-export interface AssessmentResult {
-  /** Сума відповідей, 0…`maxRawScore` — те, що показуємо дрібним шрифтом. */
+/** Результат однієї шкали: те, що показують людині й пишуть у базу. */
+export interface ScaleResult {
+  readonly scale: AssessmentScale;
+  /** Сума відповідей, 0…`maxRawScore` — те, що показують дрібним шрифтом. */
   readonly raw: number;
   /** Відсоток 0…100: саме він порівнюється з порігом і з минулим результатом. */
   readonly percent: number;
   readonly band: AssessmentBand;
   /** Поріг із `attentionRaw`: за ним — варто обговорити з фахівцем. */
+  readonly needsAttention: boolean;
+}
+
+/** Результат проходження: по рядку на кожну шкалу тесту. */
+export interface AssessmentResult {
+  readonly scales: readonly ScaleResult[];
+  /**
+   * Прапор уваги на **проходження**, а не на шкалу. Людина, яка набрала 12
+   * з тривоги й 2 за настрій, мусить бачити попередження один раз, а не
+   * двічі й не нуль разів.
+   */
   readonly needsAttention: boolean;
 }
 
@@ -50,7 +66,7 @@ export function validateAnswers(test: AssessmentTest, answers: readonly number[]
   if (answers.length !== test.items.length) {
     return `Обери відповідь на кожне з ${test.items.length} запитань — зараз ${answers.length}.`;
   }
-  // Шкала **кожного** питання своя: у PHQ-9 і GAD-7 питання про вплив на
+  // Шкала **кожного** питання своя: у тестів із симптомами питання про вплив на
   // життя має інші варіанти, ніж симптомні. Перевірка за спільною шкалою
   // пропустила б відповідь, яка не належить цьому питанню.
   for (const [index, item] of test.items.entries()) {
@@ -75,10 +91,10 @@ export function validateAnswers(test: AssessmentTest, answers: readonly number[]
  * **Порівнюється `raw`, а не `percent`.** Межа — це сума з 21 чи з 27 балів,
  * і людина відповідала саме на тій шкалі; відсоток тут другорядний.
  */
-export function exceedsAttention(test: AssessmentTest, raw: number): boolean {
-  return test.severityDirection === "higher-is-worse"
-    ? raw >= test.attentionRaw
-    : raw <= test.attentionRaw;
+export function exceedsAttention(scale: AssessmentScale, raw: number): boolean {
+  return scale.severityDirection === "higher-is-worse"
+    ? raw >= scale.attentionRaw
+    : raw <= scale.attentionRaw;
 }
 
 /**
@@ -90,22 +106,41 @@ export function exceedsAttention(test: AssessmentTest, raw: number): boolean {
  * для читання, `bandFor` — такий, що кидає, бо рахунок без смуги не має
  * права зберегтися мовчки.
  */
-export function bandOf(test: AssessmentTest, raw: number): AssessmentBand | null {
-  return test.bands.find((candidate) => raw >= candidate.min && raw <= candidate.max) ?? null;
+export function bandOf(scale: AssessmentScale, raw: number): AssessmentBand | null {
+  return scale.bands.find((candidate) => raw >= candidate.min && raw <= candidate.max) ?? null;
 }
 
 /** Смуга, до якої потрапляє сума. Кидає, якщо смуги не покривають шкалу. */
-function bandFor(raw: number, test: AssessmentTest): AssessmentBand {
-  const band = bandOf(test, raw);
+function bandFor(test: AssessmentTest, scale: AssessmentScale, raw: number): AssessmentBand {
+  const band = bandOf(scale, raw);
   if (!band) {
     throw new Error(
-      `Тест «${test.key}»: смуги не покривають ${raw}. Межі — це дані, і прогалина в них не має права мовчати.`,
+      `Тест «${test.key}», шкала «${scale.key}»: смуги не покривають ${raw}. Межі — це дані, і прогалина в них не має права мовчати.`,
     );
   }
   return band;
 }
 
-/** Рахує результат. Вимакає `validateAnswers` — на вході мають бути валідні відповіді. */
+/**
+ * Рахує **одну шкалу**. Відповіді мають бути валідними — викликає
+ * `validateAnswers` на рівні проходження (`scoreAssessment`).
+ */
+export function scoreScale(
+  test: AssessmentTest,
+  scale: AssessmentScale,
+  answers: readonly number[],
+): ScaleResult {
+  const raw = scoredItems(test, scale).reduce((sum, { index }) => sum + (answers[index] ?? 0), 0);
+  return {
+    scale,
+    raw,
+    percent: Math.round((raw / maxRawScore(test, scale)) * 100),
+    band: bandFor(test, scale, raw),
+    needsAttention: exceedsAttention(scale, raw),
+  };
+}
+
+/** Рахує все проходження: по рядку на кожну шкалу тесту. */
 export function scoreAssessment(
   test: AssessmentTest,
   answers: readonly number[],
@@ -113,29 +148,23 @@ export function scoreAssessment(
   const problem = validateAnswers(test, answers);
   if (problem) throw new Error(`Тест «${test.key}»: ${problem}`);
 
-  const raw = scoredItems(test).reduce((sum, _, index) => sum + answers[index], 0);
-  const percent = Math.round((raw / maxRawScore(test)) * 100);
-  return {
-    raw,
-    percent,
-    band: bandFor(raw, test),
-    needsAttention: exceedsAttention(test, raw),
-  };
+  const scales = test.scales.map((scale) => scoreScale(test, scale, answers));
+  return { scales, needsAttention: scales.some((one) => one.needsAttention) };
 }
 
 /**
  * Чи це значуща зміна від минулого результату.
  *
- * **Порівнюємо відсотки, а не суми.** Різні тести мають різну кількість
- * питань, тож «набрав менше» між тестами нічого не значить — а ось «змінилося
- * на 10%» значить однаково всюди. Поріг — з джерела, а не «на око».
+ * **Порівнюємо відсотки, а не суми.** Різні шкали мають різну кількість
+ * питань, тож «набрав менше» між шкалами нічого не значить — а ось
+ * «змінилося на 10%» значить однаково всюди. Поріг — з джерела, а не «на око».
  */
 export function isSignificantChange(
   previousPercent: number,
   currentPercent: number,
-  test: AssessmentTest,
+  scale: AssessmentScale,
 ): boolean {
-  const change = test.significantChange;
+  const change = scale.significantChange;
   const delta = Math.abs(currentPercent - previousPercent);
   if (change.kind === "points") {
     return delta >= change.value;
@@ -154,9 +183,13 @@ export interface ItemScore {
 }
 
 /**
- * **Де саме людина сильна, а де слабка.** Найцінніше в багатовимірному
- * тесті — не сума, а розкид: одна й та сама сума з «відпочинок 0, інтерес 5»
- * і з «усе по 3» — це дві різні людини, і лише розкид це показує.
+ * **Де саме людина сильна, а де слабка** — усередині однієї шкали.
+ *
+ * Найцінніше в багатовимірному тесті — не сума, а розкид: одна й та сама сума
+ * з «відпочинок 0, інтерес 5» і з «усе по 3» — це дві різні людини, і лише
+ * розкид це показує. Профіль рахується **по шкалі**, а не по всьому тесту:
+ * порівнювати «сон» із «розслабленням» без спільної шкали — це порівняння
+ * тепло з довжиною.
  *
  * **Найсильніша приховується, якщо всі сфери рівні.** «Найсильніше — енергія:
  * 3» насправді значить «нічого не виділяється», і це краще сказати вголос,
@@ -164,27 +197,31 @@ export interface ItemScore {
  */
 export function profileOf(
   test: AssessmentTest,
+  scale: AssessmentScale,
   answers: readonly number[],
 ): { strongest: ItemScore; weakest: ItemScore; even: boolean } {
-  if (test.items.length === 0 || answers.length !== test.items.length) {
-    throw new Error(`Тест «${test.key}»: профіль рахується з повними відповідями.`);
-  }
-  const max = Math.max(...test.options.map((option) => option.value));
+  // **Неповні відповіді кидають, а не мовчать.** Без перевірки `answers[index]`
+  // тихо перетворюється на нуль, і профіль людини, яка відповіла на половину,
+  // виглядав би як профіль із відповідями «зовсім ні» — тобто розповідь про
+  // найслабшу сферу вигадалася б на місці, де її немає.
+  const problem = validateAnswers(test, answers);
+  if (problem) throw new Error(`Тест «${test.key}»: ${problem}`);
+
+  const max = maxOptionValue(test);
   // **Питання про вплив на життя — не сфера.** Воно міряє наслідок, а не
   // симптом, тому в профілі йому не місце: інакше людина, яка відповіла
   // «нічого не ускладнило», бачила б його як «найслабшу ланку».
-  const scores: ItemScore[] = test.items
-    .map((item, index) => ({ item, value: answers[index] }))
-    .filter(({ item }) => item.countsTowardScore !== false)
+  const scores: ItemScore[] = scoredItems(test, scale)
+    .map(({ item, index }) => ({ item, value: answers[index] }))
     .map(({ item, value }) => ({
       id: item.id,
       label: item.label,
-      value,
+      value: value ?? 0,
       max,
       weakNote: item.weakNote,
     }));
   if (scores.length === 0) {
-    throw new Error(`Тест «${test.key}»: у профілі не залишилося жодної сфери.`);
+    throw new Error(`Шкала «${scale.key}»: у профілі не залишилося жодної сфери.`);
   }
   const byValue = [...scores].sort((a, b) => a.value - b.value);
   const weakest = byValue[0];

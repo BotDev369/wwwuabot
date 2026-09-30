@@ -47,7 +47,7 @@ packages/ui/      Спільні React-компоненти Page Builder (@wwwua
 - **Design System** — Apple/Material через `data-brand` і **три кольори людини** (фон / основний / акцент) через `data-colors`.
 - **Схема теми** — три кольори + шрифт (**без** бренду), таблиця `theme_schemes`; «публічно» виносить її в Простір.
 - **Notes / Contacts** — дві колекції на **спільних** кирпичиках (`@wwwuabot/ui/collection`).
-- **Самооцінка** — «Розвиток»: тести з даними, бал рахує сервер. `docs/ASSESSMENTS.md`.
+- **Самооцінка** — «Розвиток»: тести з даними, бал рахує сервер; тест може мати кілька **шкад**, рядок бази — на шкалу. `docs/ASSESSMENTS.md`.
 - **Повідомлення** — переписка між людьми платформи, без бота; адреса розмови `/messages?peer=<id>` — одна на бота й платформу.
 
 ---
@@ -117,7 +117,7 @@ if (!(await dialog.confirm("Видалити?", { tone: "danger", confirmText: "
 const name = await dialog.prompt("Назва:", { validate: (v) => (v.trim() ? null : "Порожньо") });
 ```
 
-`DialogProvider` стоїть біля кореня `main.tsx` в обох оболонках — там же, де `initTheme()`. Іконки — `<Icon name="home" size={16} />` з `@wwwuabot/shared`; окремого списку іконок у документації немає навмисно (він дрейфує) — єдине джерело `ICON_NAMES` / `IconName` у `components/icon-names.ts`, гліфи в `icons.tsx`. Знаки малюємо самі: один знак = одне значення (правило 26 `docs/DESIGN_SYSTEM.md`). Токени й наскрізні правила вигляду — `docs/DESIGN_SYSTEM.md` (номери правил стабільні: на них посилається код, і вони однакові в усіх трьох документах вигляду).
+`DialogProvider` стоїть біля кореня `main.tsx` в обох оболонках — там же, де `initTheme()`. Іконки — `<Icon name="home" size={16} />` з `@wwwuabot/shared`; окремого списку іконок у документації немає навмисно (він дрейфує) — єдине джерело `ICON_NAMES` / `IconName` у `components/icon-names.ts`, гліфи в `icons.tsx`. Знаки малюємо самі: один знак = одне значення (правило 26 `docs/DESIGN_SYSTEM.md`). Токени й наскрізні правила вигляду — там само, у `docs/DESIGN_SYSTEM.md`.
 
 ---
 
@@ -156,11 +156,12 @@ const name = await dialog.prompt("Назва:", { validate: (v) => (v.trim() ? n
 
 ## 6. Конвенції коду
 
+- **Виконане завдання = коміт + пуш у `main` одним комітом у тому ж turn, без окремого прохання:** незмінена директорія для власника не відрізняється від «нічого не зроблено», тож «зроби» вже є дозволом на доставку. Стережить сам власник; виняток — пряма заборона пушити.
 - **Новий код іде наявним патерном**, а не власним: кирпичик замість приватного класу, чиста функція замість логіки в компоненті, спільна поверхня замість другої модалки, дані замість нової розмітки. Якщо патерн справді не підходить — спершу зміни правило тут, потім код: інакше в проєкті живуть дві правди.
 - **TypeScript strict**, 0 `any` — ESLint `no-explicit-any` = **`error`** в усіх конфігах. **ESLint + Prettier** у всіх 4 сервісах: `npm run lint`, `npm run typecheck`, `npm run format:check`.
 - **Логування:** `bot-dev/` — модуль `modules/logging/` (Queue); `api-dev/` — `apiLog` з префіксом `[api]`. Не використовувати `console.log` у продакшн-коді.
 - **Дата/час у D1:** `formatSqliteDatetime()` з `packages/shared/src/utils/datetime.ts`.
-- **CI/CD:** GitHub Actions + path filtering. Перед деплоєм в одній джобі `checks` виконуються `npm ci`, `npm audit --audit-level=high`, `npm run lint`, `npm run typecheck`, `npm run format:check`, `npm run check:css`, `npm run check:quality`, `npm run check:docs`, `npm run check:db`, `npm test` — будь-який збій блокує деплой усіх воркерів. Деплої воркерів стоять у черзі (`concurrency`). `pull_request` запускає лише гейти. `GITHUB_TOKEN` має `contents: read`. Що саме ловить кожен гейт — `docs/QUALITY_GATE.md`.
+- **CI/CD:** GitHub Actions + path filtering. Перед деплоєм в одній джобі `checks` гоняють увесь ряд гейтів, і будь-який збій блокує деплой усіх воркерів; `pull_request` запускає лише гейти, `GITHUB_TOKEN` має `contents: read`, деплої воркерів стоять у черзі (`concurrency`). Список команд і те, що ловить кожен гейт, — `docs/QUALITY_GATE.md`.
 
 ---
 
@@ -198,7 +199,7 @@ const name = await dialog.prompt("Назва:", { validate: (v) => (v.trim() ? n
 - **Ідентичність і адмін:** єдине джерело користувача — підписаний Telegram `initData`; адмін-авторизація — тільки cookie `admin_session`. Секретів у заголовках і легасі-поверхонь (`/db-proxy`, `/setup-webhook`) не існує.
 - **Поверхні** описані власними документами — `docs/SURFACES.md` (аркуш, композер, меню, розмови), `docs/PLATFORM.md` (екран, хром, **хаби «Створити» й профілю**), `docs/SPACE.md` (Простір, рамка й видимість), `docs/ASSESSMENTS.md` + `specs/` (самооцінка й джерела), `docs/THEMES.md` (тема), `docs/PAGES.md` (сторінки з шаблону), `docs/SHOPS.md` + `docs/SHOP_UI.md` + `docs/PRODUCTS.md` (магазин), `docs/ADS.md` (дошка оголошень), `docs/GAMES.md` (ігри), `docs/DATA_MODEL.md` + `docs/D1_OPS.md` (схема D1), `docs/DESIGN_SYSTEM.md` + `docs/TOKENS.md` (вигляд), `docs/MONITORING.md` (health, Sentry, зрізи). Тут лишається тільки те, що не має іншого дому.
 - **Моніторинг:** `/health` (liveness) і `/health/deep` (D1 + KV, **503** при деградації) — саме другий опитує зовнішній монітор; Sentry є в `api-dev` і `bot-dev`, без секрету він у no-op.
-- **Бюджети розміру — різні для коду й документації.** Код: `npm run check:quality` (>200 попередження, >400 помилка; файли-дані не рахуються), борг — `scripts/quality-baseline.mjs`. Документи: `npm run check:docs` рахує **і рядки, і вагу**, з правами на більше в `BUDGET_RIGHTS` (кожне право — з причиною), **не пускає файл понад межу редагування** й перевіряє мертві посилання, шляхи, згадки документів із коду, свіжість `docs/API.md` та живість `AGENTS.md §N` та рядок кожного документа в покажчику `docs/README.md`.
+- **Бюджети розміру — різні для коду й документації.** Код: `npm run check:quality` (>200 попередження, >400 помилка; файли-дані не рахуються), борг — `scripts/quality-baseline.mjs`. Документи: `npm run check:docs` рахує **і рядки, і вагу**, має права `BUDGET_RIGHTS` (кожне — з причиною), **не пускає файл понад межу редагування** й перевіряє мертві посилання, шляхи, згадки документів із коду, свіжість `docs/API.md` та живість `AGENTS.md §N`.
 - **Документація:** покажчик — `docs/README.md` (**один документ = одна тема = один власник**); терміни — `docs/GLOSSARY.md`; типові задачі — `docs/RECIPES.md`; ендпоїнти — `docs/API.md` (генерований).
 
 **Відкрита робота** (тільки те, що справді попереду; закрите в документах не тримаємо):

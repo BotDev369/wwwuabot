@@ -5,8 +5,12 @@
  * що треба намалювати, без React, без запитів і без стану — тож напрям зміни
  * перевіряється тестом, а не очима на телефоні.
  *
+ * **Одиниця — шкала.** «Тревожність і депресія» має дві шкали, тож тренд,
+ * профіль і поріг рахуються для кожної окремо: порівняльний бал тривоги з
+ * балом настрою — це різні речі, а не два записи однієї історії.
+ *
  * **Напрям рахується від попереднього, а не від нуля.** Історія приходить
- * новачими сперху, тож «попередній» — це другий рядок, а не перший. І саме
+ * новачими спершу, тож «попередній» — це другий рядок, а не перший. І саме
  * він робить число зрозумілим: «52» не каже нічого, «48 → 52» каже все.
  *
  * @module web-platform-dev/src/pages/assessments/assessment-view
@@ -14,10 +18,13 @@
 
 import {
   exceedsAttention,
+  impactText,
+  impactValue,
   isSignificantChange,
   maxRawScore,
   profileOf,
   type AssessmentRecord,
+  type AssessmentScale,
   type AssessmentTest,
 } from "@wwwuabot/shared/assessments";
 
@@ -37,13 +44,17 @@ export interface ProfileReading {
  * спить. Сума зливає два різні стани в одне число, розкид їх розрізняє.
  *
  * **Рівний профіль — теж трактування, а не відсутність такого.** Коли всі
- * п'ять сфер збіглися, розкиду немає і вибирати «найслабшу» — вигадка;
- * тоді розповідає вже **рівень**: людина, яка тримає все одразу на 4 з 5,
- * і людина, яка провалила все одразу, — це різні речі, і обидві варто
- * назвати вголос. Рівність не значить «нічого сказати».
+ * сфери збіглися, розкиду немає і вибирати «найслабшу» — вигадка; тоді
+ * розповідає вже **рівень**: людина, яка тримає все одразу на 4 з 5, і людина,
+ * яка провалила все одразу, — це різні речі, і обидві варто назвати вголос.
+ * Рівність не значить «нічого сказати».
  */
-export function profileReading(test: AssessmentTest, record: AssessmentRecord): ProfileReading {
-  const { strongest, weakest, even } = profileOf(test, record.answers);
+export function profileReading(
+  test: AssessmentTest,
+  scale: AssessmentScale,
+  record: AssessmentRecord,
+): ProfileReading {
+  const { strongest, weakest, even } = profileOf(test, scale, record.answers);
   const at = (label: string, value: number, max: number): string => `${label} — ${value} з ${max}`;
 
   if (even) {
@@ -53,8 +64,8 @@ export function profileReading(test: AssessmentTest, record: AssessmentRecord): 
     // все рівно — це про благополуччя; для шкал симптомів все рівно на
     // низькому балі — це «нічого не турбує», а не «важко скрізь». Без цієї
     // гілки людина з нулем тривоги читала б «важко не з однієї сторони».
-    const worse = exceedsAttention(test, record.raw);
-    if (!worse && test.severityDirection === "higher-is-worse") {
+    const worse = exceedsAttention(scale, record.raw);
+    if (!worse && scale.severityDirection === "higher-is-worse") {
       return {
         strongest: `Ніщо не турбувало: на всі питання — ${chosen}.`,
         weakest: "Жодна сфера не піднялася вище нуля.",
@@ -65,14 +76,14 @@ export function profileReading(test: AssessmentTest, record: AssessmentRecord): 
       return {
         strongest: `Усі сфери на одному рівні: ${chosen}.`,
         weakest:
-          test.severityDirection === "higher-is-worse"
+          scale.severityDirection === "higher-is-worse"
             ? "Піднялося не одне, а все одразу — так буває, коли важко не з однієї сторони."
             : "Просило не одне, а все одразу.",
         question: "Коли таке триває тиждень за тижнем — що заважає почати з одного кроку?",
       };
     }
     return {
-      strongest: `Усі п'ять сфер тримаються рівно: ${chosen}.`,
+      strongest: `Усі сфери тримаються рівно: ${chosen}.`,
       weakest: "Нічого окремо не просіло — і це рідко буває: зазвичай якась сфера тягне вниз.",
       question: "Що саме тебе тримає на цьому рівні?",
     };
@@ -93,32 +104,34 @@ export function profileReading(test: AssessmentTest, record: AssessmentRecord): 
  * що число не просто «високе», а **порівняно** з чимось.
  *
  * **Межа — в балах, як і смуги.** Раніше поріг переводився з відсотка
- * (`attentionBelow / 100 * max`), і для GAD-7 з 21 бала це давало «поріг 2 з
- * 21» — число, яке нічого не значить для людину з нулем тривоги.
+ * (`attentionBelow / 100 * max`), і для шкали тривоги з 21 бала це давало
+ * «поріг 2 з 21» — число, яке нічого не значить для людину з нулем тривоги.
  */
-export function thresholdLine(test: AssessmentTest, record: AssessmentRecord): string {
-  const max = maxRawScore(test);
-  const attention = test.attentionRaw;
+export function thresholdLine(
+  test: AssessmentTest,
+  scale: AssessmentScale,
+  record: AssessmentRecord,
+): string {
+  const max = maxRawScore(test, scale);
+  const attention = scale.attentionRaw;
   // «Вище/нижче» — це просто те, де число стоїть відносно межі. Напрямок
-  // шкали тут ні до чого: він вже спрацював у `exceedsAttention`, і підміняти
-  // ним words означало б читати «нижче за порогом» як проблему тоді, коли це
+  // шкали тут ні до чого: він уже спрацював у `exceedsAttention`, і підміняти
+  // ним слова означало б читати «нижче за порогом» як проблему тоді, коли це
   // просто «менше, ніж 10 із 21».
   const side = record.raw > attention ? "вище" : "нижче";
   return `Поріг уваги — ${attention} із ${max}. Ти ${side} за ним.`;
 }
 
-/**
- * Напрям зміни для людини.
- *
- * **«Вгору» — це добре**, бо бал wellbeing зростає з якістю стану. Назва
- * напряму, а не «плюс/мінус»: людині, яка дивиться на себе в тяжкий тиждень,
- * «плюс 4» не каже нічого, а «покращилося» каже все.
- */
+/** Текст наслідку для життя — рахується з відповідей, а не зберігається. */
+export function impactReading(test: AssessmentTest, record: AssessmentRecord): string | null {
+  return impactText(test.impact, impactValue(test, record.answers));
+}
+
 /**
  * Чому «далі» не спрацьовує — або `null`, коли можна рухатись далі.
  *
  * **Перевіряється поточне питання, а не весь тест.** `validateAnswers` вимагає
- * заповнених усіх п’ять, а питання показуються по одному: на першому кнопка
+ * заповнених усіх питань, а питання показуються по одному: на першому кнопка
  * була б неактивною завжди, тобто пройти тест було б неможливо. Повну
  * перевірку все одно робить сервер надсилачем — тут лише те, що стосується
  * кнопки на екрані.
@@ -134,16 +147,19 @@ export function blockedReason(
   if (!test.items[step]) return "Цього питання немає в тесті.";
   const answer = answers[step];
   if (answer === undefined) return "Обери один із варіантів, щоб рухатись далі.";
-  const allowed = new Set(test.options.map((option) => option.value));
+  const item = test.items[step];
+  const options = item.countsTowardScore === false ? test.impact?.options : test.options;
+  const allowed = new Set((options ?? []).map((option) => option.value));
   if (!allowed.has(answer)) return "Обраний варіант не належить цьому питанню.";
   return null;
 }
 
-/** Останній результат кожного тесту — те, що видно в списку. */
-export function latestByTest(results: readonly AssessmentRecord[]): Map<string, AssessmentRecord> {
+/** Останній результат кожної шкали — те, що видно в списку. */
+export function latestByScale(results: readonly AssessmentRecord[]): Map<string, AssessmentRecord> {
   const latest = new Map<string, AssessmentRecord>();
   for (const record of results) {
-    if (!latest.has(record.testKey)) latest.set(record.testKey, record);
+    const key = `${record.testKey}:${record.scaleKey}`;
+    if (!latest.has(key)) latest.set(key, record);
   }
   return latest;
 }
@@ -160,19 +176,22 @@ export interface Trend {
 }
 
 /**
- * Тренд одного тесту: попередній результат проти поточного.
+ * Тренд однієї шкали: попередній результат проти поточного.
  *
  * Коли попереднього немає, повертаємо `hasPrevious: false`, а **не** нульовий
  * тренд: нуль на екрані читається як «не змінилось», а це неправда — це ще
  * невідомо.
  */
-export function trendFrom(results: readonly AssessmentRecord[], test: AssessmentTest): Trend {
-  const same = results.filter((record) => record.testKey === test.key);
+export function trendFrom(
+  results: readonly AssessmentRecord[],
+  test: AssessmentTest,
+  scale: AssessmentScale,
+): Trend {
+  const same = results.filter(
+    (record) => record.testKey === test.key && record.scaleKey === scale.key,
+  );
   const [current, previous] = same;
-  if (!current) {
-    return { direction: "flat", delta: 0, significant: false, hasPrevious: false };
-  }
-  if (!previous) {
+  if (!current || !previous) {
     return { direction: "flat", delta: 0, significant: false, hasPrevious: false };
   }
 
@@ -181,7 +200,7 @@ export function trendFrom(results: readonly AssessmentRecord[], test: Assessment
   return {
     direction,
     delta,
-    significant: isSignificantChange(previous.percent, current.percent, test),
+    significant: isSignificantChange(previous.percent, current.percent, scale),
     hasPrevious: true,
   };
 }

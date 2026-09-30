@@ -47,7 +47,7 @@
 | Новий токен або наскрізне правило вигляду | [`DESIGN_SYSTEM.md`](./DESIGN_SYSTEM.md) (номер правила не змінювати — на нього посилається код) |
 | Правило про товар магазину | [`PRODUCTS.md`](./PRODUCTS.md); §3 і §4 у [`SHOPS.md`](./SHOPS.md) — покажчики (номери не змінювати: на них посилається код) |
 | Правило про екран магазину | [`SHOP_UI.md`](./SHOP_UI.md); §9 у [`SHOPS.md`](./SHOPS.md) — покажчик |
-| Правило про самооцінку й інструмент | [`ASSESSMENTS.md`](./ASSESSMENTS.md); ліцензія та зміст інструменту — у `AssessmentTest.source` (код) |
+| Правило про самооцінку й інструмент | [`ASSESSMENTS.md`](./ASSESSMENTS.md); ліцензії та зміст інструментів — у `AssessmentTest.sources` (код) |
 | Правило про розподіл результатів між людьми | [`ASSESSMENT_PEERS.md`](./ASSESSMENT_PEERS.md) |
 | Правило про конкретну поверхню або колекцію | документ її теми — [`SURFACES.md`](./SURFACES.md) / [`COLLECTIONS.md`](./COLLECTIONS.md); номер правила лишається в [`DESIGN_SYSTEM.md`](./DESIGN_SYSTEM.md) |
 | Новий клас | спочатку правило в `packages/shared/src/styles/`, тоді вжиток; перелік — `AGENTS.md` §3 |

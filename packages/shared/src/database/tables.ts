@@ -832,11 +832,12 @@ export const TABLES = {
     name: "assessment_results",
     owner: "api-dev",
     purpose:
-      "Результати самооцінки («Розвиток»): одне проходження одного тесту, з відповідями та знімком балу на момент проходження.",
+      "Результати самооцінки («Розвиток»): один результат однієї шкали, з відповідями та знімком балу на момент проходження.",
     create: `CREATE TABLE IF NOT EXISTS assessment_results (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         owner_id TEXT NOT NULL,
         test_key TEXT NOT NULL,
+        scale_key TEXT NOT NULL DEFAULT '',
         answers TEXT NOT NULL DEFAULT '[]',
         raw INTEGER NOT NULL DEFAULT 0,
         percent INTEGER NOT NULL DEFAULT 0,
@@ -845,7 +846,7 @@ export const TABLES = {
         created_at TEXT NOT NULL DEFAULT (datetime('now'))
       )`,
     indexes: [
-      "CREATE INDEX IF NOT EXISTS idx_assessment_results_owner ON assessment_results(owner_id, test_key, created_at)",
+      "CREATE INDEX IF NOT EXISTS idx_assessment_results_owner ON assessment_results(owner_id, test_key, scale_key, created_at)",
     ],
   },
 } satisfies Record<string, TableDefinition>;

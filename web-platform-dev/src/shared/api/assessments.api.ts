@@ -20,7 +20,7 @@ interface Envelope {
   error?: string;
   tests?: AssessmentTest[];
   results?: AssessmentRecord[];
-  result?: AssessmentRecord;
+  records?: AssessmentRecord[];
   peers?: PeerTallies;
 }
 
@@ -57,21 +57,22 @@ export const assessmentsApi = {
   /**
    * Пройти тест.
    *
-   * Повертає **збережений рядок**, а не локально порахований бал: тож
-   * історія поповнюється тим самим числом, яке лежить у базі. Поруч —
-   * оновлений розподіл: сервер рахує його вже після запису, тож блок «Ти не
-   * один» під щойно збереженим результалом не бреше, що ти тут один.
+   * Повертає **збережені рядки**, а не локально пораховані бали: тож історія
+   * поповнюється тими самими числами, які лежать у базі. Рядок **на кожну
+   * шкалу** — тест із двома шкалами повертає два. Поруч — оновлений
+   * розподіл: сервер рахує його вже після запису, тож блок «Ти не один» під
+   * щойно збереженим результатом не бреше, що ти тут один.
    */
   async submit(
     testKey: string,
     answers: readonly number[],
-  ): Promise<{ record: AssessmentRecord; peers: PeerTallies }> {
+  ): Promise<{ records: AssessmentRecord[]; peers: PeerTallies }> {
     const envelope = await apiFetch<Envelope>(PATH, {
       method: "POST",
       body: JSON.stringify({ test: testKey, answers }),
     });
     assertOk(envelope);
-    if (!envelope.result) throw new Error("Сервер не повернув результат");
-    return { record: envelope.result, peers: envelope.peers ?? {} };
+    if (!envelope.records?.length) throw new Error("Сервер не повернув результат");
+    return { records: envelope.records, peers: envelope.peers ?? {} };
   },
 };

@@ -8,18 +8,19 @@
  *  - вибірка з однієї людини («ти тут один», а не «більшість»);
  *  - вибірка з трьох (дані є, але сказано, що їх мало);
  *  - напрямок шкали (у WHO-5 більше бала — краще, тому «ближчі до одужання»
- *    рахує з того боку, а не з того самого, що в PHQ-9);
+ *    рахує з того боку, а не з того самого, що в шкалі симптомів);
  *  - заборонені слова (блок не має називати людей кращими чи гіршими).
  *
  * @module web-platform-dev/src/pages/assessments/peer-view.test
  */
 
 import { describe, expect, it } from "vitest";
-import { GAD_7, PHQ_9, peerSnapshot } from "@wwwuabot/shared/assessments";
+import { MOOD_ANXIETY, peerSnapshot } from "@wwwuabot/shared/assessments";
 import { peerAlongside, peerHeadline, peerPlace, peerReading, peerSmallNote } from "./peer-view";
 
-/** PHQ-9: 12 балів — помірні симптоми. */
-const phq = (people: Record<string, number>, raw = 12) => peerSnapshot(PHQ_9, people, raw);
+/** Шкала настрою: 12 балів — помірні симптоми. */
+const MOOD = MOOD_ANXIETY.scales[0];
+const phq = (people: Record<string, number>, raw = 12) => peerSnapshot(MOOD, people, raw);
 
 describe("головний рядок", () => {
   it("називає число людей, а не «багато хтось»", () => {
@@ -37,7 +38,7 @@ describe("головний рядок", () => {
   });
 
   it("порожня база — теж відповідь, а не порожній рядок", () => {
-    expect(peerHeadline(peerSnapshot(PHQ_9, {}, 5))).toContain("немає чужих результатів");
+    expect(peerHeadline(peerSnapshot(MOOD, {}, 5))).toContain("немає чужих результатів");
   });
 });
 
@@ -84,9 +85,11 @@ describe("стан поруч", () => {
     expect(peerAlongside(phq({ phq_minimal: 30 }, 2))).toContain("ні в кого немає");
   });
 
-  it("у GAD-7 рахує той самий бік, що й у PHQ-9", () => {
-    // 12 балів GAD-7 = помірна тривога; ближчих до одужання — мінімальна й легка.
-    const text = peerAlongside(peerSnapshot(GAD_7, { gad_minimal: 5, gad_mild: 5 }, 12));
+  it("друга шкала того самого тесту рахує той самий бік", () => {
+    // 12 балів тривоги = помірна тривога; ближчих до одужання — мінімальна й легка.
+    const text = peerAlongside(
+      peerSnapshot(MOOD_ANXIETY.scales[1], { gad_minimal: 5, gad_mild: 5 }, 12),
+    );
     expect(text).toContain("10 людей");
   });
 

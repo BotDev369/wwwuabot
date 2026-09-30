@@ -4,8 +4,13 @@
  * **Рахунок рахується тут, у сервері.** Клієнт надсилає лише номери обраних
  * варіантів, а `scoreAssessment` — одна функція на весь продукт. Тому правило
  * рахування живе в одному місці, і людина не може підробити собі «нормальний»
- * результат: бал, який прийшов у запиті, просто ігнорується, а рядок пишеться
+ * результат: бал, який прийшов у запиті, просто ігнорується, а рядки пишуться
  * заново.
+ *
+ * **Одне проходження — рядок на кожну шкалу.** «Тревожність і депресія» має
+ * дві шкали, тож пишуться два рядки з однаковим `created_at` і різними
+ * `scale_key`. Так не потрібно ані колонки з JSON, ані окремої таблиці під
+ * другий бал, а історія й тренд рахуються по кожній шкалі окремо.
  *
  * **Власник стоїть у `WHERE` кожного читання.** Результат самооцінки — це
  * найчутливіше, що є про людину в базі, тому умова не виноситься в окрему
@@ -24,12 +29,14 @@ import {
 } from "@wwwuabot/shared/assessments";
 import { formatSqliteDatetime } from "@wwwuabot/shared/utils/datetime";
 
-const COLUMNS = "id, test_key, answers, raw, percent, band_key, needs_attention, created_at";
+const COLUMNS =
+  "id, test_key, scale_key, answers, raw, percent, band_key, needs_attention, created_at";
 
 /** Рядок бази — звірка з `assessment_results` у `database/tables.ts`. */
 interface ResultRow {
   id: number;
   test_key: string;
+  scale_key: string | null;
   answers: string | null;
   raw: number | null;
   percent: number | null;
@@ -63,6 +70,7 @@ function toRecord(row: ResultRow): AssessmentRecord {
   return {
     id: row.id,
     testKey: row.test_key,
+    scaleKey: row.scale_key ?? "",
     answers: parseAnswers(row.answers),
     raw: row.raw ?? 0,
     percent: row.percent ?? 0,
@@ -78,13 +86,21 @@ export function findTest(key: string): AssessmentTest | null {
 }
 
 export type SaveOutcome =
-  | { readonly ok: true; readonly record: AssessmentRecord }
+  | { readonly ok: true; readonly records: AssessmentRecord[] }
   | { readonly ok: false; readonly error: string };
 
 /**
  * Приймає проходження: перевіряє відповідь **спільним правилом** і рахує бал
  * тим самим правилом, яке читає клієнт. Тому сервер і браузер не можуть
  * розійтися в тому, що бачить людина.
+ *
+ * **Рядок на кожну шкалу, дата одна на все проходження.** Два рядки двох шкал —
+ * це **один замір**, тож історія має показувати його як одну подію, а не дві
+ * різні; різнить їх лише `scale_key`.
+ *
+ * Прапор безпеки **піднімає** `needs_attention`, а не замінює його: 1 бал із 27
+ * залишається «мінімальними симптомами» у смузі, але вже не «нічого страшного».
+ * Рядок у базі мусить говорити правду про обидва.
  */
 export async function saveAssessment(
   db: D1Database,
@@ -100,37 +116,44 @@ export async function saveAssessment(
   if (problem) return { ok: false, error: problem };
 
   const result = scoreAssessment(test, answers as number[]);
-  // Прапор безпеки **піднімає** `needs_attention`, а не замінює його: 1 бал із
-  // 27 залишається «мінімальними симптомами» у смузі, але вже не «нічого
-  // страшного». Рядок у базі мусить говорити правду про обидва.
-  const safety = safetyOf(test, answers as number[]);
-  const inserted = await db
-    .prepare(
-      `INSERT INTO assessment_results
-         (owner_id, test_key, answers, raw, percent, band_key, needs_attention, created_at)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
-    )
-    .bind(
+  const attention = result.needsAttention || safetyOf(test, answers as number[]).triggered ? 1 : 0;
+  const createdAt = formatSqliteDatetime();
+
+  const insert = db.prepare(
+    `INSERT INTO assessment_results
+       (owner_id, test_key, scale_key, answers, raw, percent, band_key, needs_attention, created_at)
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+  );
+  const batch = test.scales.map((one) =>
+    insert.bind(
       ownerId,
       test.key,
+      one.key,
       JSON.stringify(answers),
-      result.raw,
-      result.percent,
-      result.band.key,
-      result.needsAttention || safety.triggered ? 1 : 0,
-      formatSqliteDatetime(),
-    )
-    .run();
+      result.scales.find((scored) => scored.scale.key === one.key)?.raw ?? 0,
+      result.scales.find((scored) => scored.scale.key === one.key)?.percent ?? 0,
+      result.scales.find((scored) => scored.scale.key === one.key)?.band.key ?? "",
+      attention,
+      createdAt,
+    ),
+  );
+  await db.batch(batch);
 
-  // Читаємо рядок назад, а не збираємо відповідь із того, що маємо в памʼяті:
+  // Читаємо рядки назад, а не збираємо відповідь із того, що маємо в памʼяті:
   // `created_at` має бути те саме, що лежить у базі, а не «майже те саме».
-  const id = inserted.meta?.last_row_id ?? 0;
-  const row = await db
-    .prepare(`SELECT ${COLUMNS} FROM assessment_results WHERE id = ? AND owner_id = ?`)
-    .bind(id, ownerId)
-    .first<ResultRow>();
-  if (!row) return { ok: false, error: "Результат не записано" };
-  return { ok: true, record: toRecord(row) };
+  const keys = test.scales.map((one) => one.key).join(", ");
+  const rows = await db
+    .prepare(
+      `SELECT ${COLUMNS} FROM assessment_results
+       WHERE owner_id = ? AND test_key = ? AND created_at = ? AND scale_key IN (${keys})
+       ORDER BY id`,
+    )
+    .bind(ownerId, test.key, createdAt)
+    .all<ResultRow>();
+  if (!rows.results || rows.results.length !== test.scales.length) {
+    return { ok: false, error: "Результат не записано" };
+  }
+  return { ok: true, records: rows.results.map(toRecord) };
 }
 
 /**
