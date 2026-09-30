@@ -1,48 +1,24 @@
 import { type ReactNode } from "react";
-import { Icon } from "@wwwuabot/shared";
+import { AccessDeniedPage } from "./AccessDeniedPage";
 import { useAccess } from "./useAccess";
-
-const BOT_USERNAME = "botdev_test_001_bot";
 
 interface AuthGateProps {
   children: ReactNode;
 }
 
 /**
- * Екран відмови — один кирпичик `.wb-auth*` на обидва випадки: «відкрий у
- * Telegram» (немає підписаного `initData`) і «запрошені тут» (вхід у платформу
- * без запрошення). Різниця лише в словах, тож це той самий каркас, а не два
- * екрани.
- */
-function AccessScreen({ message, hint }: { message: string; hint: string }) {
-  return (
-    <div className="wb-auth">
-      <div className="wb-auth-card">
-        <div className="wb-auth-logo">
-          <span className="wb-auth-logo-icon">✦</span>
-          <span className="wb-auth-logo-text">WWWUABOT</span>
-        </div>
-        <p className="wb-auth-message">{message}</p>
-        <p className="wb-auth-message">{hint}</p>
-        <a href={`https://t.me/${BOT_USERNAME}`} className="wb-btn wb-btn-telegram wb-auth-submit">
-          <Icon name="external-link" size={16} />
-          Відкрити в Telegram
-        </a>
-      </div>
-    </div>
-  );
-}
-
-/**
- * Гейт TWA: підпис Telegram **і** допуск за запрошенням.
+ * Гейт входу в платформу: підпис Telegram **і** допуск за запрошенням.
  *
- * Два питання, два екрани, але обидва «ні» означають одне — продукт закритий.
- * `useAccess` робить запит до `/api/user/access` (єдиний шлях поза гейтом
- * допуску) і чекає на нього: показувати платформу до відповіді означало б
- * віддати людині екрани з помилками замість пояснення.
+ * **Чому чекаємо відповіді, а не малюємо «далі».** Поки ми не знаємо, чи є
+ * допуск, платформа встигла б відмалювати каркас — футер, хаб, порожні
+ * екрани з помилками 403, — а це виглядає як поломка. Тож спершу одне питання
+ * до `/api/user/access` (єдиний шлях поза гейтом допуску), і лише «так»
+ * відкриває додаток.
  *
- * Помилка запиту — те саме «ні»: показати продукт, який не вдалося перевірити,
- * означало б відкрити його.
+ * **Помилка запиту — те саме «ні».** Показати закритий продукт людині, чий
+ * допуск не вдалося перевірити, — це відкрити його.
+ *
+ * @module web-platform-dev/src/app/AuthGate
  */
 export function AuthGate({ children }: AuthGateProps) {
   const { allowed, ready } = useAccess();
@@ -51,8 +27,8 @@ export function AuthGate({ children }: AuthGateProps) {
 
   if (!allowed) {
     return (
-      <AccessScreen
-        message="Платформа — за запрошеннями."
+      <AccessDeniedPage
+        subject="Платформа — за запрошеннями."
         hint="Попросіть людину, яка вже тут, надіслати вам посилання — і воно відкриється."
       />
     );
