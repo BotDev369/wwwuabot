@@ -44,9 +44,6 @@ const SKIP_FILES = [
   "packages/shared/src/components/Icon.tsx",
 ];
 
-/** Де шукати вживання: спільний код і обидві оболонки. */
-const SCANNED_ROOTS = ["packages", "web-platform-dev/src", "web-admin-dev/src"];
-
 const SKIPPED_DIRS = new Set(["node_modules", "dist", "build", "coverage", ".git"]);
 
 function sourceFiles(dir = REPO_ROOT): string[] {
