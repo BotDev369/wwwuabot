@@ -87,6 +87,18 @@ async function call(
   );
 }
 
+/** Запит із тілом — так надсилається прохання про допуск зі сторінки відмови. */
+function post(path: string, env: Env, body: unknown): Promise<Response> {
+  return handleRequest(
+    new Request(`https://api.example.com${path}`, {
+      method: "POST",
+      headers: new Headers({ "Content-Type": "application/json" }),
+      body: JSON.stringify(body),
+    }),
+    env,
+  );
+}
+
 describe("гейт допуску на платформі", () => {
   it("⛔ без підписаного initData платформа закрита (401)", async () => {
     expect((await call("/api/space/users", makeEnv(7))).status).toBe(401);
@@ -138,6 +150,21 @@ describe("гейт допуску на платформі", () => {
       Cookie: `${ADMIN_COOKIE_NAME}=${token}`,
     });
     expect(res.status).not.toBe(403);
+  });
+
+  it("прохання «запростіть мене» приймається і без допуску", async () => {
+    const res = await post("/api/user/access-request", makeEnv(null), {
+      text: "Запростіть мене, будь ласка",
+    });
+    expect(res.status).toBe(200);
+    expect(await res.json()).toEqual({ ok: true });
+  });
+
+  it("⛔ ⛔ порожнє прохання не пише рядок у базу", async () => {
+    for (const body of [{ text: "   " }, {}]) {
+      const res = await post("/api/user/access-request", makeEnv(null), body);
+      expect(res.status).toBe(400);
+    }
   });
 
   it("health не проходить гейт (його опитує монітор без підпису)", async () => {

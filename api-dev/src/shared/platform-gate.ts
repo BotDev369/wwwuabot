@@ -31,11 +31,18 @@ const ADMIN_PATH_PREFIXES = ["/api/admin/", "/api/portal/", "/api/bot/"] as cons
  *
  * - `/api/user/access` — сам запит «чи є в мене доступ»
  *   (`controllers/access.controller.ts`): гейт не може закривати себе;
+ * - `/api/user/access-request` — прохання «запростіть мене», написане зі
+ *   сторінки відмови (`access-request.controller.ts`). Писати можна й без
+ *   допуску — інакше відмова була б стіною без виходу;
  * - `/api/shop/media/` — файли магазину. Вони читаються тегом `<img>`, а браузер
  *   не може додати до такого запиту заголовок із `initData`, тож вимога підпису
  *   зробила б картинки невидимими (див. `docs/SHOPS.md` §5).
  */
-export const PLATFORM_EXEMPT_PATHS = ["/api/user/access", "/api/shop/media/"] as const;
+export const PLATFORM_EXEMPT_PATHS = [
+  "/api/user/access",
+  "/api/user/access-request",
+  "/api/shop/media/",
+] as const;
 
 function denied(): Response {
   return new Response(JSON.stringify({ error: "За запрошенням" }), {

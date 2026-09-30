@@ -245,6 +245,38 @@ export const TABLES = {
    * відео окрема тема; `ensureTables` додасть її одним рядком у цьому
    * оголошенні, без міграції й без правок у логіці.
    */
+  /**
+   * Прохання про допуск — те, що людина написала зі сторінки відмови.
+   *
+   * **Чому це таблиця, а не лист у Telegram.** Відмова — це не помилка, а
+   * відповідь, тож людина має десь сказати «запростіть мене», навіть не маючи
+   * доступу до платформи. Лист у Telegram жив би у чужій системі й не лишив
+   * би слідів у базі; тут же це рядок, який видно в панелі.
+   *
+   * **`user_id` — хто написав**, Telegram-id із підписаного `initData`. Він
+   * `NULL`, а не обов'язковий: написати можна й без підпису (сторінка
+   * відмови показується саме тоді, коли доступу ще немає), а сам факт
+   * `NULL` нічого не відкриває — це просто «хтось без підпису».
+   *
+   * **Текст обрізає сервер, не клієнт.** Правило межі одне й воно біля бази,
+   * тож його не можна обійти, надіславши довший рядок напряму (§7).
+   */
+  access_requests: {
+    name: "access_requests",
+    owner: "api-dev",
+    purpose:
+      "Прохання про допуск, написані зі сторінки відмови: хто (`user_id`, може бути `NULL`) і що він написав.",
+    create: `CREATE TABLE IF NOT EXISTS access_requests (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        user_id INTEGER,
+        text TEXT NOT NULL DEFAULT '',
+        created_at TEXT NOT NULL DEFAULT (datetime('now'))
+      )`,
+    indexes: [
+      "CREATE INDEX IF NOT EXISTS idx_access_requests_user ON access_requests(user_id, id)",
+    ],
+  },
+
   favorites: {
     name: "favorites",
     owner: "api-dev",

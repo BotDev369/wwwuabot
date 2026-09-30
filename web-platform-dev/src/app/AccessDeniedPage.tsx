@@ -1,48 +1,36 @@
 /**
  * Сторінка «за запрошенням» — те, що бачить людина без допуску.
  *
- * **Чому це сторінка, а не порожній екран.** Закритий продукт має сказати
- * чому: без пояснення людина лишається з відчуттям, що платформа зламана.
- * Тут рівно два факти — закритий доступ і хто його відкриває, — і дві дії,
- * бо одна не покриває два різні випадки.
+ * **Одна дія, і вона тут.** Людина, якій відмовили, мусить мати десь сказати
+ * «запростіть мене» — і це має бути **тут**, у цьому ж екрані: перехід кудись
+ * ще далі означає б, що наступного кроку вона не зробить. Тому форма з полем
+ * і кнопкою, без «відкрити в Telegram» й без «спробувати ще раз».
  *
- * **Дві кнопки, бо це два випадки.** «Написати в Telegram» — людині треба
- * сказати, чому її не запросили; текст ми підставляємо заздалегідь
- * (`?text=`), бо з порожнім полем вона не знає, що написати. «Спробувати
- * ще раз» — її могли запросити щойно, поки вона дивилась на цей екран, тож
- * запит про допуск треба повторити, а не просити перезавантажити застосунок.
- *
- * **Каркас — спільний `.wb-auth*` і `.wb-btn*`, як у `LoginScreen` адмінки.**
+ * **Каркас — спільний `.wb-auth*` і `.wb-input`, як у `LoginScreen` адмінки.**
  * Оболонки однакові за виглядом (AGENTS.md §3), тому приватний CSS на цю
  * сторінку не потрібен і не з'явиться.
  *
  * @module web-platform-dev/src/app/AccessDeniedPage
  */
 
+import { useState, type FormEvent } from "react";
 import { Icon } from "@wwwuabot/shared";
+import { sendAccessRequest } from "@/shared/api/access.api";
 
-const BOT_USERNAME = "botdev_test_001_bot";
+export function AccessDeniedPage() {
+  const [text, setText] = useState("");
+  const [state, setState] = useState<"idle" | "sending" | "sent" | "failed">("idle");
 
-/**
- * Текст, який людині не треба думати.
- *
- * Короткий і без прохання «напишіть нам» — Telegram підставить його в поле
- * введення, тож від неї лишається лише натиснути «Надіслати».
- */
-const ASK_TEXT = "Вітаю! Хочу скористатися платформою wwwuabot — запросіть мене, будь ласка.";
+  async function onSubmit(event: FormEvent) {
+    event.preventDefault();
+    const message = text.trim();
+    if (!message || state === "sending") return;
 
-interface AccessDeniedPageProps {
-  /** Перший рядок: що саме закрите. */
-  subject: string;
-  /** Другий рядок: хто відкриває доступ. */
-  hint: string;
-  /** Повторити запит про допуск. */
-  onRetry: () => void;
-}
-
-/** Екран відмови: лого, два рядки й дві дії. */
-export function AccessDeniedPage({ subject, hint, onRetry }: AccessDeniedPageProps) {
-  const askHref = `https://t.me/${BOT_USERNAME}?text=${encodeURIComponent(ASK_TEXT)}`;
+    setState("sending");
+    const ok = await sendAccessRequest(message);
+    setState(ok ? "sent" : "failed");
+    if (ok) setText("");
+  }
 
   return (
     <div className="wb-auth">
@@ -51,16 +39,37 @@ export function AccessDeniedPage({ subject, hint, onRetry }: AccessDeniedPagePro
           <span className="wb-auth-logo-icon">✦</span>
           <span className="wb-auth-logo-text">WWWUABOT</span>
         </div>
-        <p className="wb-auth-message">{subject}</p>
-        <p className="wb-auth-message">{hint}</p>
-        <a href={askHref} className="wb-btn wb-btn-telegram wb-auth-submit">
-          <Icon name="mail" size={16} />
-          Написати в Telegram
-        </a>
-        <button type="button" onClick={onRetry} className="wb-btn wb-btn-secondary">
-          <Icon name="refresh" size={16} />
-          Спробувати ще раз
-        </button>
+        <p className="wb-auth-message">Платформа — за запрошеннями.</p>
+        <p className="wb-auth-message">
+          Напишіть, будь ласка, як вас запросити — і ми відкриємо доступ.
+        </p>
+        {state === "sent" ? (
+          <p className="wb-auth-message">Написано. Дякуємо!</p>
+        ) : (
+          <form className="wb-auth-form" onSubmit={onSubmit}>
+            <div className="wb-auth-field">
+              <textarea
+                className="wb-textarea"
+                value={text}
+                onChange={(event) => setText(event.target.value)}
+                placeholder="Ваше повідомлення"
+                rows={4}
+                maxLength={500}
+              />
+              {state === "failed" ? (
+                <p className="wb-auth-error">Не вдалося надіслати. Спробуйте ще раз.</p>
+              ) : null}
+            </div>
+            <button
+              type="submit"
+              className="wb-btn wb-btn-primary wb-auth-submit"
+              disabled={state === "sending" || !text.trim()}
+            >
+              <Icon name="mail" size={16} />
+              {state === "sending" ? "Надсилаємо…" : "Написати адміну"}
+            </button>
+          </form>
+        )}
       </div>
     </div>
   );

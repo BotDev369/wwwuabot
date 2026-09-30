@@ -2,6 +2,7 @@ import type { Env } from "./shared/types";
 import { decodePathSegment } from "./shared/url";
 import { enforcePlatformAccess } from "./shared/platform-gate";
 import { handleAccess } from "./controllers/access.controller";
+import { handleAccessRequest } from "./controllers/access-request.controller";
 import { handleHealth, handleDeepHealth } from "./controllers/health.controller";
 import {
   handleAnalyze,
@@ -300,6 +301,13 @@ export async function handleRequest(request: Request, env: Env): Promise<Respons
   // Єдиний платформенний шлях поза гейтом допуску — він і запитує його.
   if (pathname === "/api/user/access" && request.method === "GET") {
     return handleAccess(request, env);
+  }
+
+  // ── Допуск: «запростіть мене» ──────────────────────────────────
+  // Сторінка відмови мусить мати вихід: людина, якій відмовили, має десь
+  // сказати «я тут». Тому це другий (і останній) шлях поза гейтом, який пише.
+  if (pathname === "/api/user/access-request" && request.method === "POST") {
+    return handleAccessRequest(request, env);
   }
 
   // ── Public: User Profile (for web-platform conditional rendering) ──

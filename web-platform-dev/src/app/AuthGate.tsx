@@ -21,19 +21,10 @@ interface AuthGateProps {
  * @module web-platform-dev/src/app/AuthGate
  */
 export function AuthGate({ children }: AuthGateProps) {
-  const { allowed, ready, retry } = useAccess();
+  const { allowed, ready } = useAccess();
 
   if (!ready) return <div className="wb-auth" />;
-
-  if (!allowed) {
-    return (
-      <AccessDeniedPage
-        subject="Платформа — за запрошеннями."
-        hint="Попросіть людину, яка вже тут, надіслати вам посилання — і воно відкриється."
-        onRetry={retry}
-      />
-    );
-  }
+  if (!allowed) return <AccessDeniedPage />;
 
   return <>{children}</>;
 }
