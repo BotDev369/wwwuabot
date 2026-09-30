@@ -35,6 +35,7 @@
 |---|---|---|
 | `ANY` | `/api/contacts` | `handleContacts` |
 | `POST` | `/api/contacts/link` | `handleContactLink` |
+| `ANY` | `/api/favorites` | `handleFavorites` |
 | `ANY` | `/api/messages` | `handleMessages` |
 | `GET` | `/api/messages/badge` | `handleMessageBadge` |
 | `POST` | `/api/messages/clear` | `handleMessageClear` |
@@ -93,4 +94,4 @@
 | `POST` | `/auth/login` | `handleLogin` |
 | `POST` | `/auth/logout` | `handleLogout` |
 
-Усього шляхів: **64**.
+Усього шляхів: **65**.

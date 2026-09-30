@@ -41,6 +41,7 @@ export const RESERVED_PAGE_SLUGS: readonly string[] = [
   "assets",
   "contacts",
   "create",
+  "favorites",
   "messages",
   "notes",
   "pages",

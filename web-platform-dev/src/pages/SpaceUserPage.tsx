@@ -18,6 +18,7 @@ import { Icon, PublicUserCard } from "@wwwuabot/shared";
 import { useNavigate, useParams } from "react-router-dom";
 import { SPACE_PATH } from "@/app/routes";
 import { useSpaceUser } from "./useSpaceUser";
+import { FavoriteButton } from "./favorites/FavoriteButton";
 
 export function SpaceUserPage(): ReactElement {
   const { id } = useParams<{ id: string }>();
@@ -61,7 +62,12 @@ export function SpaceUserPage(): ReactElement {
         </div>
       )}
 
-      {profile && <PublicUserCard profile={profile} full />}
+      {profile && (
+        <>
+          <FavoriteButton target={{ kind: "user", targetId: profile.id }} />
+          <PublicUserCard profile={profile} full />
+        </>
+      )}
     </div>
   );
 }

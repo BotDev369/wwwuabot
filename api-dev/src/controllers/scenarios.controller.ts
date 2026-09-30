@@ -79,6 +79,7 @@ async function resolveScenario(db: D1Database, ref: string) {
     scenario: {
       // Одна адреса: з неї клієнт будує і шлях, і діплінк (`toWebPath` /
       // `toBotPayload`).
+      id: page?.id ?? null,
       slug: page?.slug ?? HOME_SLUG,
       title: page?.title ?? null,
       photo_url: page?.photoUrl ?? null,

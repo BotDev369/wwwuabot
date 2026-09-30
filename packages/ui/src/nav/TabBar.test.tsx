@@ -18,8 +18,8 @@ const TABS: readonly ShellTab[] = [
   {
     key: "space",
     label: "Простір",
-    icon: "feed",
-    iconActive: "feed-solid",
+    icon: "users",
+    iconActive: "users-solid",
     href: "/space",
   },
   { key: "create", label: "Створити", icon: "plus", primary: true },
@@ -72,7 +72,6 @@ describe("TabBar", () => {
 
     // Залитий гліф — це окремий svg з fill замість обводки; в смузі він рівно один
     expect(html.match(/fill="currentColor"/g)).toHaveLength(1);
-    expect(html).toContain('fill-rule="evenodd"'); // рядки стрічки вирізані з картки
     // Сам підпис активного пункту-посилання лишається підписаним для скрінрідера
     expect(html).toContain('aria-current="page"');
   });

@@ -82,11 +82,6 @@ function solid(children: ReactNode[]): ReactElement {
   return createElement("svg", solidAttrs, ...children);
 }
 
-/** Контур із «вирізаними» ділянками: вкладені subpath-и віднімаються (evenodd). */
-function eo(d: string): ReactElement {
-  return createElement("path", { d, fillRule: "evenodd" as const, clipRule: "evenodd" as const });
-}
-
 /** Обводка всередині залитої іконки (ручка торби): малюється тим самим кольором. */
 function st(d: string): ReactElement {
   return createElement("path", {
@@ -403,6 +398,11 @@ export const icons: Record<IconName, ReactElement> = {
 
   minus: icon([l(5, 12, 19, 12)]),
 
+  "thumbs-up": icon([
+    p("M7 10v11H3V10z"),
+    p("M7 10l5-7a2 2 0 0 1 2 2v4h5a2 2 0 0 1 2 2l-2 8a2 2 0 0 1-2 2H7"),
+  ]),
+
   heart: icon([
     p(
       "M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z",
@@ -511,18 +511,6 @@ export const icons: Record<IconName, ReactElement> = {
     l(20, 10, 20, 10),
   ]),
 
-  /* Стрічка — картка-публікація: шапка з аватаром і рядки тексту. Це знак
-     «Простору», і він СВІЙ, а не `globe`: глобус уже означає мову й публічність,
-     а в Локацій є свій `pin`, — один гліф на дві різні речі змушує читати
-     підпис (правило 26). */
-  feed: icon([
-    r(3, 3.5, 18, 17, 3),
-    c(7.6, 9.1, 1.8),
-    l(11.5, 8.35, 17.5, 8.35),
-    l(6, 13.35, 18, 13.35),
-    l(6, 16.75, 14.5, 16.75),
-  ]),
-
   // --- Нижній футер: залиті варіанти ------------------------------------
   //  Той самий знак, що й контурний вище, але фарбою: активний розділ у
   //  футері має читатись сам, без фонового кола під іконкою.
@@ -530,16 +518,6 @@ export const icons: Record<IconName, ReactElement> = {
   "home-solid": solid([
     p(
       "M12 2.8 3.2 9.6V19.4A1.6 1.6 0 0 0 4.8 21H9V14.2a1.6 1.6 0 0 1 1.6-1.6h2.8a1.6 1.6 0 0 1 1.6 1.6V21h4.2a1.6 1.6 0 0 0 1.6-1.6V9.6L12 2.8Z",
-    ),
-  ]),
-
-  "feed-solid": solid([
-    eo(
-      "M6 3.5h12a3 3 0 0 1 3 3v11a3 3 0 0 1-3 3H6a3 3 0 0 1-3-3v-11a3 3 0 0 1 3-3Z" +
-        "M7.6 9.1m-1.8 0a1.8 1.8 0 1 0 3.6 0a1.8 1.8 0 1 0-3.6 0Z" +
-        "M11.5 7.35h6v2h-6Z" +
-        "M6 12.35h12v2H6Z" +
-        "M6 15.75h8.5v2H6Z",
     ),
   ]),
 

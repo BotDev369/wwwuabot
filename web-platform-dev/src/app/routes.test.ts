@@ -42,6 +42,29 @@ const FORM_SCREENS = [
   "web-platform-dev/src/pages/MessagesPage.tsx",
 ];
 
+describe("вхід у I", () => {
+  const router = readFileSync(join(REPO_ROOT, "web-platform-dev/src/app/router.tsx"), "utf8");
+  const profile = readFileSync(
+    join(REPO_ROOT, "web-platform-dev/src/pages/ProfilePage.tsx"),
+    "utf8",
+  );
+
+  it("кореневий шлях і старий хаб створення ведуть у профіль без запису в історії", () => {
+    expect(router).toContain("{ index: true, element: <Navigate to={PROFILE_PATH} replace /> }");
+    expect(router).toContain(
+      "{ path: CREATE_ROUTE, element: <Navigate to={PROFILE_PATH} replace /> }",
+    );
+  });
+
+  it("I зводить акаунт, налаштування, власні розділи та поверхні створення", () => {
+    for (const component of ["UserAccountRow", "MenuList", "HubList", "CreateSheetHost"]) {
+      expect(profile).toContain(`<${component}`);
+    }
+    expect(profile).toContain('className="wb-page-title">I</h1>');
+    expect(profile).toContain("usePersonalHub()");
+  });
+});
+
 describe("намір створити в адресі", () => {
   it("читається лише як `1`", () => {
     expect(readCreateIntent(new URLSearchParams("new=1"))).toBe(true);

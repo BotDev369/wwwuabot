@@ -19,6 +19,7 @@ import { apiFetchRaw } from "@/shared/api/client";
 import { useShopCatalog } from "@/pages/shop/useShopCatalog";
 import { ShopStore } from "@/pages/shop/store/ShopStore";
 import { registerAllBlocks } from "@wwwuabot/ui/blocks";
+import { FavoriteButton } from "./favorites/FavoriteButton";
 
 registerAllBlocks();
 
@@ -85,6 +86,7 @@ export function ScenarioPage() {
   const scenarioSlug = splat ?? HOME_SLUG;
 
   const [pageConfig, setPageConfig] = useState<PageConfig | null>(null);
+  const [scenarioId, setScenarioId] = useState<number | null>(null);
   const [scenarioTitle, setScenarioTitle] = useState<string | null>(null);
   const [scenarioPhoto, setScenarioPhoto] = useState<string | null>(null);
   // Шаблон сторінки: за ним видно, що під вітриною стоїть каталог магазину й
@@ -130,7 +132,13 @@ export function ScenarioPage() {
 
         const data = (await res.json()) as {
           ok?: boolean;
-          scenario?: { slug?: string; title?: string; photo_url?: string; template_key?: string };
+          scenario?: {
+            id?: number;
+            slug?: string;
+            title?: string;
+            photo_url?: string;
+            template_key?: string;
+          };
           pageData?: unknown;
         };
 
@@ -150,6 +158,7 @@ export function ScenarioPage() {
         if (!cancelled) {
           if (config) {
             setPageConfig(config);
+            setScenarioId(data.scenario.id ?? null);
             setScenarioTitle(data.scenario.title ?? null);
             setScenarioPhoto(data.scenario.photo_url ?? null);
             setTemplateKey(data.scenario.template_key ?? null);
@@ -204,24 +213,32 @@ export function ScenarioPage() {
   // сітки товарів вона показує в себе, у розділі «про магазин».
   if (isShop) {
     return (
-      <ShopStore
-        slug={pageSlug}
-        title={scenarioTitle}
-        photoUrl={scenarioPhoto}
-        config={activeConfig}
-        context={context}
-        products={catalog.products}
-        media={catalog.media}
-        loading={catalog.loading}
-      />
+      <>
+        {scenarioId !== null && <FavoriteButton target={{ kind: "page", targetId: scenarioId }} />}
+        <ShopStore
+          slug={pageSlug}
+          title={scenarioTitle}
+          photoUrl={scenarioPhoto}
+          config={activeConfig}
+          context={context}
+          products={catalog.products}
+          media={catalog.media}
+          loading={catalog.loading}
+        />
+      </>
     );
   }
 
   return (
-    <PageRenderer
-      config={activeConfig}
-      context={status === "fallback" ? { slug: HOME_SLUG, title: null, photoUrl: null } : context}
-      className="page-layout"
-    />
+    <>
+      {status === "ready" && scenarioId !== null && (
+        <FavoriteButton target={{ kind: "page", targetId: scenarioId }} />
+      )}
+      <PageRenderer
+        config={activeConfig}
+        context={status === "fallback" ? { slug: HOME_SLUG, title: null, photoUrl: null } : context}
+        className="page-layout"
+      />
+    </>
   );
 }

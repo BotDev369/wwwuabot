@@ -22,7 +22,7 @@ import type { ReactElement } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { useDialog } from "@wwwuabot/ui/dialog";
 import { TabBar, buildTabBarItems } from "@wwwuabot/ui/nav";
-import { PLATFORM_TABS, toShellTabs, withUnreadBadge } from "./platform-tabs";
+import { PLATFORM_TABS, platformSectionPath, toShellTabs, withUnreadBadge } from "./platform-tabs";
 import { useUnreadBadge } from "./useUnreadBadge";
 
 export function PlatformTabBar(): ReactElement {
@@ -33,7 +33,7 @@ export function PlatformTabBar(): ReactElement {
 
   const items = buildTabBarItems({
     tabs: toShellTabs(PLATFORM_TABS),
-    pathname,
+    pathname: platformSectionPath(pathname),
     navigate: (href) => navigate(href),
     // Заглушок у смузі немає (стереже `platform-tabs.test.ts`), але слот без
     // адреси мусить сказати про це вголос, а не мовчати дотиком: обробник тут

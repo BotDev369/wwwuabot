@@ -57,6 +57,7 @@ import {
   visibilityLabel,
 } from "./pages-view";
 import { useUserPage } from "./useUserPage";
+import { FavoriteButton } from "../favorites/FavoriteButton";
 
 registerAllBlocks();
 
@@ -190,6 +191,7 @@ export function UserPageView(): ReactElement {
               </p>
 
               <div className="wb-sheet-actions">
+                <FavoriteButton target={{ kind: "page", targetId: page.id }} />
                 {page.isPublic && (
                   <button
                     type="button"

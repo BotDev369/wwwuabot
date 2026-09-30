@@ -88,7 +88,7 @@ export function SpacePage(): ReactElement {
   // жодне питання, а лише повторювала пункт футера. Ім'я самого Простору
   // лишається для того входу, де розділ **ще не обрано** (`/space`): панель тоді
   // розгорнута й просить вибрати, тож і екран зветься собою, а не розділом.
-  const title = nav.named ? nav.current.label : "Простір";
+  const title = nav.named ? nav.current.label : "You";
 
   return (
     <div className="wb-page wb-space-page">

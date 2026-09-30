@@ -46,6 +46,9 @@ import { isPageTemplateKey, type PageTemplateKey } from "@wwwuabot/shared/pages"
 export { MESSAGES_PATH } from "@wwwuabot/shared/messages";
 
 /** Профіль — хаб: рядок акаунта й розділи платформи. */
+export const FAVORITES_ROUTE = "favorites";
+export const FAVORITES_PATH = `/${FAVORITES_ROUTE}`;
+
 export const PROFILE_ROUTE = "profile";
 export const PROFILE_PATH = `/${PROFILE_ROUTE}`;
 

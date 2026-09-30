@@ -470,7 +470,7 @@ describe("другий рядок — смуга керування розділ
     // Друга копія підпису тут була б третім місцем, яке треба правити при
     // перейменуванні розділу: ім'я беруть зі `space-tabs`.
     const page = source("web-platform-dev/src/pages/SpacePage.tsx");
-    expect(page).toContain('nav.named ? nav.current.label : "Простір"');
+    expect(page).toContain('nav.named ? nav.current.label : "You"');
     expect(source("web-platform-dev/src/pages/useSpaceNav.ts")).toContain("named");
   });
 });

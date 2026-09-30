@@ -23,10 +23,11 @@
  * інакше `/space` з'їв би його хвіст.
  */
 
-import { createBrowserRouter } from "react-router-dom";
+import { createBrowserRouter, Navigate } from "react-router-dom";
 import { PlatformShell } from "@/layout/PlatformShell";
 import {
   CONTACTS_ROUTE,
+  FAVORITES_ROUTE,
   CREATE_ROUTE,
   ASSESSMENTS_ROUTE,
   MESSAGES_PATH,
@@ -39,13 +40,14 @@ import {
   SHOP_ORDERS_ROUTE,
   SHOP_PRODUCTS_ROUTE,
   PROFILE_ROUTE,
+  PROFILE_PATH,
   SPACE_GAME_ROUTE,
   SPACE_ROUTE,
   SPACE_USER_ROUTE,
   THEME_ROUTE,
 } from "@/app/routes";
 import { ContactsPage } from "@/pages/ContactsPage";
-import { CreatePage } from "@/pages/CreatePage";
+import { FavoritesPage } from "@/pages/favorites/FavoritesPage";
 import { AssessmentsScreen } from "@/pages/assessments/AssessmentsScreen";
 import { MessagesPage } from "@/pages/MessagesPage";
 import { NotesPage } from "@/pages/NotesPage";
@@ -74,9 +76,11 @@ export const router = createBrowserRouter([
   {
     element: <PlatformShell />,
     children: [
+      { index: true, element: <Navigate to={PROFILE_PATH} replace /> },
       // Профіль — не контент, а дані користувача: хаб із рядком акаунта й
       // розділами платформи.
       { path: PROFILE_ROUTE, element: <ProfilePage /> },
+      { path: FAVORITES_ROUTE, element: <FavoritesPage /> },
       // Акаунт — окрема адреса під хабу: платформа й Telegram окремими
       // розділами, а не одним суцільним списком.
       { path: PROFILE_ACCOUNT_PATH, element: <ProfileAccountPage /> },
@@ -100,9 +104,8 @@ export const router = createBrowserRouter([
           { path: "customize", element: <ThemeCustomizePage /> },
         ],
       },
-      // Створити — хаб власних екранів людини, слот «+» у футері: у кожного
-      // пункту два входи, «подивитись» і «створити».
-      { path: CREATE_ROUTE, element: <CreatePage /> },
+      // Старі посилання на створення ведуть у I: всі дії хабу вже там.
+      { path: CREATE_ROUTE, element: <Navigate to={PROFILE_PATH} replace /> },
       // «Розвиток» — самооцінка. Довший шлях проходження іде **перед**
       // розділом: інакше `:key` зʼїсть `assessments` і відкрив би порожній
       // список замість тесту (та сама причина, що в `:id` під сторінками).

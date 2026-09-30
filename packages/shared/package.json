@@ -8,6 +8,7 @@
     "./types/page-config": "./src/types/page-config.ts",
     "./content": "./src/content/index.ts",
     "./notes": "./src/notes/index.ts",
+    "./favorites": "./src/favorites.ts",
     "./contacts": "./src/contacts/index.ts",
     "./messages": "./src/messages/index.ts",
     "./tags": "./src/tags.ts",

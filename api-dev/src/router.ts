@@ -49,6 +49,7 @@ import {
   handleUserMessage,
 } from "./controllers/users.controller";
 import { handleNotes, handleAdminNotes } from "./controllers/notes.controller";
+import { handleFavorites } from "./controllers/favorites.controller";
 import { handleAssessments } from "./controllers/assessments.controller";
 import { handleUserPages, handleSpacePages } from "./controllers/pages.controller";
 import { matchShopRoute } from "./routes/shop";
@@ -163,6 +164,10 @@ export async function handleRequest(request: Request, env: Env): Promise<Respons
   }
 
   // ── Notes: нотатки людини (ідентичність із підписаного initData) ─
+  if (pathname === "/api/favorites") {
+    return handleFavorites(request, env);
+  }
+
   if (pathname === "/api/notes") {
     return handleNotes(request, env);
   }

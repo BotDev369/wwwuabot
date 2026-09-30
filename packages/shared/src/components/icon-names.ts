@@ -33,7 +33,6 @@ export const ICON_NAMES = [
   "settings",
   "logout",
   "sidebar-toggle",
-  "feed",
   "announce",
   "palette",
   "game",
@@ -102,6 +101,7 @@ export const ICON_NAMES = [
   "badge",
   "star",
   "heart",
+  "thumbs-up",
   "bar-chart",
   "progress",
   "percent",
@@ -130,7 +130,6 @@ export const ICON_NAMES = [
   "paper",
   // ── Залиті близнюки пунктів футера ────────────────────────────────────
   "home-solid",
-  "feed-solid",
   "scenarios-solid",
   "users-solid",
   "user-solid",

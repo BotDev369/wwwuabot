@@ -16,6 +16,7 @@ import { RESERVED_PAGE_SLUGS } from "@wwwuabot/shared/pages";
 import {
   CONTACTS_ROUTE,
   CREATE_ROUTE,
+  FAVORITES_ROUTE,
   MESSAGES_PATH,
   NOTES_ROUTE,
   PAGES_ROUTE,
@@ -36,6 +37,7 @@ describe("адреси, зайняті платформою", () => {
       NOTES_ROUTE,
       CONTACTS_ROUTE,
       CREATE_ROUTE,
+      FAVORITES_ROUTE,
       PAGES_ROUTE,
       topSegment(MESSAGES_PATH),
     ];

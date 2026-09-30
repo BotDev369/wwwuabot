@@ -237,6 +237,21 @@ export const TABLES = {
    * відео окрема тема; `ensureTables` додасть її одним рядком у цьому
    * оголошенні, без міграції й без правок у логіці.
    */
+  favorites: {
+    name: "favorites",
+    owner: "api-dev",
+    purpose: "Особисті лайки: посилання на контент, без копій його тексту чи прав доступу.",
+    create: `CREATE TABLE IF NOT EXISTS favorites (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        owner_id TEXT NOT NULL,
+        kind TEXT NOT NULL,
+        target_id INTEGER NOT NULL,
+        created_at TEXT NOT NULL DEFAULT (datetime('now')),
+        UNIQUE (owner_id, kind, target_id)
+      )`,
+    indexes: ["CREATE INDEX IF NOT EXISTS idx_favorites_owner ON favorites(owner_id, id)"],
+  },
+
   notes: {
     name: "notes",
     owner: "api-dev",
