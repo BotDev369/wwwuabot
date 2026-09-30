@@ -1,5 +1,7 @@
 import type { Env } from "./shared/types";
 import { decodePathSegment } from "./shared/url";
+import { enforcePlatformAccess } from "./shared/platform-gate";
+import { handleAccess } from "./controllers/access.controller";
 import { handleHealth, handleDeepHealth } from "./controllers/health.controller";
 import {
   handleAnalyze,
@@ -114,6 +116,14 @@ export async function handleRequest(request: Request, env: Env): Promise<Respons
       });
     }
   }
+
+  // ── Єдиний гейт допуску ─────────────────────────────────────────
+  // Продукт закритий за запрошеннями, і входів у нього два: чат і платформа.
+  // Поки гейт стояв лише в боті, посилання з кнопки «Відкрити сторінку» вело
+  // повз нього. Правило одне й спільне, перевірка — перед маршрутизацією, тож
+  // новий ендпоїнт за замовчуванням закритий (`shared/platform-gate.ts`).
+  const denied = await enforcePlatformAccess(request, env, pathname);
+  if (denied) return denied;
 
   // ── Bot Settings API ─────────────────────────────────────────────
   if (pathname === "/api/bot/webhook-info" && request.method === "GET") {
@@ -284,6 +294,12 @@ export async function handleRequest(request: Request, env: Env): Promise<Respons
   }
   if (pathname === "/api/admin/monitoring/collect" && request.method === "POST") {
     return handleMonitoringCollect(request, env);
+  }
+
+  // ── Допуск: «чи бачу я платформу» ──────────────────────────────
+  // Єдиний платформенний шлях поза гейтом допуску — він і запитує його.
+  if (pathname === "/api/user/access" && request.method === "GET") {
+    return handleAccess(request, env);
   }
 
   // ── Public: User Profile (for web-platform conditional rendering) ──

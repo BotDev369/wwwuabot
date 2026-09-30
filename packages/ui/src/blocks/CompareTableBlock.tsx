@@ -12,6 +12,7 @@
 
 import { Fragment, useState, useEffect, useMemo } from "react";
 import type { BlockComponentProps } from "@wwwuabot/shared/types/page-config";
+import { telegramAuthHeaders } from "@wwwuabot/shared/security/telegram";
 
 // ── Types ─────────────────────────────────────────────────────────
 
@@ -31,7 +32,7 @@ interface SystemCard {
 // ── API helpers ───────────────────────────────────────────────────
 
 async function fetchSystems(): Promise<SystemCard[]> {
-  const res = await fetch("/api/mydate/systems");
+  const res = await fetch("/api/mydate/systems", { headers: telegramAuthHeaders() });
   const data = await res.json();
   return data?.ok ? data.systems : [];
 }
@@ -43,7 +44,7 @@ async function compareDates(
 ): Promise<Record<string, Record<string, Record<string, string>>>> {
   const res = await fetch("/api/mydate/compare", {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
+    headers: { "Content-Type": "application/json", ...telegramAuthHeaders() },
     body: JSON.stringify({ dates, systemIds, parameterKeys }),
   });
   const data = await res.json();

@@ -13,10 +13,13 @@
   першому записі (`is_blocked`, `rate_limit_json`, …), тому фіксованого списку полів немає. Читання БД
   не пише: зміни позначає прапор `ctx.userDirty`, а запис робить post-middleware
   (`bot-dev/src/core/middleware/post/index.ts`), який викликає `botRouter` з `src/core/router/bot-router.ts`.
-- **Допуск у бот** (`users.inviter_id`) — хто запросив людину; `NULL` — ніхто, тоді бот їй відмовляє.
-  Бот закритий за запрошеннями: контент видно лише запрошеній людині й `role = 'admin'`.
+- **Допуск у продукт** (`users.inviter_id`) — хто запросив людину; `NULL` — ніхто, тоді вона нічого
+  не бачить. Продукт закритий за запрошеннями, і **входів у нього два**: чат і вебплатформа —
+  правило в обох одне (`@wwwuabot/shared/security/access`), інакше посилання з кнопки бота
+  відкриває те, що чат закрив. Роль (`admin` серед інших) допуску **не дає**.
   Колонку пише той самий перехід, що закріплює контакт (`bot-dev/src/modules/contacts/contact-link.ts`),
-  а перевіряє `bot-dev/src/modules/access/access.ts` — чиста функція, без бази й Telegram.
+  перевіряє бот (`bot-dev/src/core/router/bot-router.ts`) і платформа перед маршрутизацією
+  (`api-dev/src/shared/platform-gate.ts`); адмінка стоїть під своїм гейтом cookie-сесії.
 - **Код запрошення** (`contacts.code`, `inv-…`) — те, що стоє в `?start=` і відкриває бот запрошеній
   людині. У посиланні зі сторінкою код — **останній сегмент** payload (`buildShareLinks({ inviteCode })`),
   тож одне посилання веде і туди, і сюди; розбирає `splitInviteCode()`.

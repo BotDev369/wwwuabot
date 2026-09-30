@@ -4,11 +4,11 @@ import { log } from "../../shared/utils/debug";
 import { handleTextInput } from "./text-input";
 import { applyContactPayload } from "../../modules/contacts/contact-link";
 import { showInviteScreen } from "../../modules/contacts/invite-screen";
-import { hasBotAccess } from "../../modules/access/access";
 import { showAccessDenied } from "../../modules/access/denied";
 import { showMainKeyboard } from "../../modules/access/keyboard";
 import { splitInviteCode } from "../../modules/access/payload";
 import { isValidBotPayload, isValidSlug, toWebPath } from "@wwwuabot/shared/content";
+import { hasAccess } from "@wwwuabot/shared/security/access";
 
 /**
  * Головний роутер бота.
@@ -32,9 +32,11 @@ import { isValidBotPayload, isValidSlug, toWebPath } from "@wwwuabot/shared/cont
  * неправдою (розрізняє їх `applyContactPayload`).
  *
  * **Бот закритий за запрошеннями**, тому кожен шлях до контенту проходить
- * `renderOrDeny`. Фільтр стоїть **після** розбору payload: код запрошення в
- * хвості — це і є допуск, і перевіряти раніше значило б відмовити тому, хто щойно
- * прийшов за лінком.
+ * `renderOrDeny`. Правило допуску спільне з платформою
+ * (`@wwwuabot/shared/security/access`): закритий продукт закритий для обох
+ * входів, інакше відмова в чаті оминається посиланням. Фільтр стоїть **після**
+ * розбору payload: код запрошення в хвості — це і є допуск, і перевіряти раніше
+ * значило б відмовити тому, хто щойно прийшов за лінком.
  */
 export async function botRouter(ctx: AppContext): Promise<void> {
   if (!ctx.user) return;
@@ -137,7 +139,7 @@ async function renderOrDeny(
   render: () => Promise<void>,
   options: { keyboard?: boolean } = {},
 ): Promise<void> {
-  if (!hasBotAccess(ctx.user)) {
+  if (!hasAccess(ctx.user)) {
     log("ACCESS", "denied", { user_id: ctx.user?.user_id });
     await deleteUserMessage(ctx);
     await showAccessDenied(ctx);

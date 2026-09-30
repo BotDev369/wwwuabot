@@ -12,6 +12,7 @@
 
 import { useState, useEffect, useMemo, useCallback } from "react";
 import type { BlockComponentProps } from "@wwwuabot/shared/types/page-config";
+import { telegramAuthHeaders } from "@wwwuabot/shared/security/telegram";
 
 // ── Types ─────────────────────────────────────────────────────────
 
@@ -36,7 +37,7 @@ interface SystemResult {
 // ── API helpers ───────────────────────────────────────────────────
 
 async function fetchSystems(): Promise<SystemCard[]> {
-  const res = await fetch("/api/mydate/systems");
+  const res = await fetch("/api/mydate/systems", { headers: telegramAuthHeaders() });
   const data = await res.json();
   return data?.ok ? data.systems : [];
 }
@@ -44,7 +45,7 @@ async function fetchSystems(): Promise<SystemCard[]> {
 async function analyzeDate(date: string, systemId: string): Promise<SystemResult> {
   const res = await fetch("/api/mydate/analyze", {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
+    headers: { "Content-Type": "application/json", ...telegramAuthHeaders() },
     body: JSON.stringify({ date, systemId }),
   });
   const data = await res.json();
@@ -53,7 +54,7 @@ async function analyzeDate(date: string, systemId: string): Promise<SystemResult
 }
 
 async function fetchAnalysis(date: string): Promise<Record<string, SystemResult>> {
-  const res = await fetch(`/api/mydate/analysis/${date}`);
+  const res = await fetch(`/api/mydate/analysis/${date}`, { headers: telegramAuthHeaders() });
   const data = await res.json();
   return data?.ok ? data.systems : {};
 }

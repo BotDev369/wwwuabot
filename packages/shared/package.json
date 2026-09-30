@@ -41,6 +41,7 @@
     "./database/ensure-tables": "./src/database/ensure-tables.ts",
     "./config/environment": "./src/config/environment.ts",
     "./observability/sentry": "./src/observability/sentry.ts",
+    "./security/access": "./src/security/access.ts",
     "./security/session": "./src/security/session.ts",
     "./security/telegram": "./src/security/telegram.ts",
     "./user/platform-username": "./src/user/platform-username.ts",

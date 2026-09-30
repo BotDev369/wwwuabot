@@ -164,8 +164,11 @@ describe("публічні маршрути не зачеплені гейтом
     expect((await call("GET", "/health")).status).toBe(200);
   });
 
-  it("GET /api/mydate/systems відкритий", async () => {
-    expect((await call("GET", "/api/mydate/systems")).status).not.toBe(401);
+  it("реєстр систем астрології тепер під гейтом допуску", async () => {
+    // Раніше цей маршрут був публічним, бо правило допуску жило лише в боті.
+    // Тепер він такий самий платформенний контент, як решта (див. гейт у
+    // `shared/access.test.ts`), тож без підпису — 401.
+    expect((await call("GET", "/api/mydate/systems")).status).toBe(401);
   });
 });
 

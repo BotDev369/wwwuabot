@@ -142,15 +142,16 @@ const name = await dialog.prompt("Назва:", { validate: (v) => (v.trim() ? n
 |---|---|
 | Перевірка підпису Telegram `initData` | `packages/shared/src/security/telegram.ts` |
 | Адмінська cookie-сесія (`signSessionToken`, `hasValidSession`) | `packages/shared/src/security/session.ts` |
-| `user_id` для хендлера API | `api-dev/src/shared/identity.ts` — `resolveUserId()` (обов'язково) або `tryResolveUserId()` |
+| `user_id` для хендлера API | `api-dev/src/shared/identity.ts` — `resolveUserId()` / `tryResolveUserId()` |
 | Діалоги | `packages/ui/src/dialog` — `DialogProvider` + `useDialog()` |
-| Адмін-гейт (єдина точка входу) | `api-dev/src/router.ts` — блок `pathname.startsWith("/api/admin/")` |
+| Адмін-гейт (єдина точка входу) | `api-dev/src/router.ts` — блок `ADMIN_PATH_PREFIXES` |
+| Гейт допуску (запрошення) | `api-dev/src/shared/platform-gate.ts` + правило `@wwwuabot/shared/security/access` |
 
-Обидва модулі в `security/` — **чисті функції**: секрет передається аргументом, рішення «що робити при провалі» приймає виклик. Не дублюй HMAC-логіку в воркерах.
+Модулі в `security/` — **чисті функції**: секрет це аргумент, а «що робити при провалі» ухвалює виклик. HMAC-логіку в воркерах не дублювати.
 
-**Групи доступу — три, і третя не має винятків.** Групу визначає **префікс** шляху, а не сам ендпоїнт: публічне — без авторизації, користувач — підписаний `initData` плюс перевірка власника, адмін — cookie `admin_session`. Повний список — `docs/API.md` (генерований з роутера, тож застаріти не може; збирає `npm run doc:api`). Адмін-авторизація існує в **двох місцях навмисно**: `web-admin-dev/src/worker.ts` (до проксі) і адмін-гейт в `api-dev/src/router.ts` (після) — в `api-dev` є власний публічний URL, тож він не має покладатися на проксі.
+**Групи доступу — три, і третя не має винятків.** Групу визначає **префікс** шляху, а не сам ендпоїнт: публічне — без авторизації, користувач — підписаний `initData` плюс перевірка власника, адмін — cookie `admin_session`. **Платформа закрита за запрошеннями**: гейт стоїть в `api-dev` перед маршрутизацією, новий ендпоїнт закритий за замовчуванням, а роль (`admin`) допуску не дає. Повний список — `docs/API.md` (генерований; збирає `npm run doc:api`). Адмін-авторизація потрібна в **двох місцях**: `web-admin-dev/src/worker.ts` (до проксі) і гейт у `api-dev/src/router.ts` (бо в `api-dev` є власний публічний URL).
 
-**web / web-admin:** однакова архітектура (`app/`, `layout/`, `pages/`, `shared/api/`, `features/`), каркас — спільні кирпичики `app-chrome.css`, оболонка лише складає їх і додає своє; auth, API і стори в кожної свої. Деталі — `docs/PLATFORM.md`.
+**web / web-admin:** однакова архітектура (`app/`, `layout/`, `pages/`, `shared/api/`, `features/`), каркас — спільні кирпичики `app-chrome.css`; auth, API і стори в кожної свої. Деталі — `docs/PLATFORM.md`.
 
 ---
 

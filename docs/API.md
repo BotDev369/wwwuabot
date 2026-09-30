@@ -48,6 +48,7 @@
 | `ANY` | `/api/my-dates` | `handleMyDates` |
 | `ANY` | `/api/notes` | `handleNotes` |
 | `POST` | `/api/user/about` | `handleUserAbout` |
+| `GET` | `/api/user/access` | `handleAccess` |
 | `ANY` | `/api/user/ads` | `handleUserAds` |
 | `ANY` | `/api/user/assessments` | `handleAssessments` |
 | `ANY` | `/api/user/pages` | `handleUserPages` |
@@ -94,4 +95,4 @@
 | `POST` | `/auth/login` | `handleLogin` |
 | `POST` | `/auth/logout` | `handleLogout` |
 
-Усього шляхів: **65**.
+Усього шляхів: **66**.
