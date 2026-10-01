@@ -903,24 +903,73 @@
 
 .wb-auth-sheet {
   width: 100%;
-  max-width: 560px;
+  max-width: 420px;
   margin: 0 auto;
   display: flex;
   flex-direction: column;
-  gap: var(--sp-4);
+  flex: 1;
+}
+
+/* Середина екрана — знак: він і є зміст стопінки */
+.wb-auth-stage {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--sp-6) 0;
+}
+
+/* Знак «зупинка» — кільце й поперечина. Червоний, як у знаків забороненості:
+   це «сюди не можна», а не збій у роботі. */
+.wb-stop-mark {
+  position: relative;
+  width: 96px;
+  height: 96px;
+  border-radius: var(--radius-full);
+  border: 3px solid var(--red);
+}
+
+.wb-stop-mark::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 52px;
+  height: 3px;
+  border-radius: var(--radius-full);
+  background: var(--red);
+  transform: translate(-50%, -50%);
+}
+
+/* Окремий блок дії внизу: заголовок, поле, кнопка — одне завдання */
+.wb-auth-contact {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-3);
+  padding-top: var(--sp-5);
+  border-top: 1px solid var(--border-subtle);
+}
+
+.wb-auth-contact-title {
+  margin: 0;
+  font-size: var(--text-base);
+  font-weight: var(--weight-semibold);
+  color: var(--text-primary);
 }
 
 /* Форма й кнопка — донизу екрана: `auto` відштовхує їх від слів, які читають
    першими, і заповнює те, що між ними, а не збирає все в одному місці. */
+/* Блок дії внизу не відштовхується від знака: підпис, поле й кнопка стоять
+   одразу під ним, у власному блоці — див. `.wb-auth-contact`. */
 .wb-auth--page .wb-auth-form {
-  margin-top: auto;
+  margin-top: 0;
 }
 
 /* Головне на екрані — саме повідомлення, тому воно має бути заголовком
    (велике, основний колір), а не другим абзацом поряд із полем. */
 .wb-auth-message--lead {
-  font-size: var(--text-xl);
-  font-weight: var(--weight-bold);
+  font-size: var(--text-base);
+  font-weight: var(--weight-semibold);
   color: var(--text-primary);
   line-height: var(--leading-tight);
 }

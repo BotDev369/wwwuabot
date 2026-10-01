@@ -1,34 +1,23 @@
 /**
- * Сторінка «за запрошенням» — те, що бачить людина без допуску.
+ * Відмова — **стопінка**, а не сторінка з текстом.
  *
- * **Головне тут — не поле, а повідомлення.** Людина прийшла з питанням
- * «чому платформа закрита», і відповідь на це («за запрошеннями») має бути
- * заголовком екрана. Поле вводу — лише спосіб відповісти, тому воно звичайного
- * розміру: розтягнуте до половини екрана воно перетворює допоміжний елемент
- * на головний і просто штовхає текст угору.
+ * **На екрані два елементи й жодного слогана.** Знак «зупинка» каже «сюди не
+ * можна» без слів, а під ним окремий блок «Написати адміну» з полем і
+ * кнопкою «Відправити». Пояснювати тут нічего не треба: хто відкрив
+ * посилання, той і так знає, що платформа закрита — слогани тут лише
+ * заповнюють екран.
  *
- * **Одна дія, і вона тут.** Людина, якій відмовили, мусить мати десь сказати
- * «ось моє питання» — і це має бути **тут**, у цьому ж екрані: перехід кудись
- * ще далі означає б, що наступного кроку вона не зробить. Тому форма з полем
- * і кнопкою, без «відкрити в Telegram» й без «спробувати ще раз».
+ * **Слова на екрані — ті, що дав продукт.** «Написати адміну» і «Відправити»
+ * єдина дія сторінки; усе інше (`ACCESS_DENIED` у `bot-dev`) живе в чаті,
+ * де людина спершу спробувала відкрити бота.
  *
- * **Текст нейтральний.** Поле не про запрошення: людину можуть цікавити
- * будь-яке питання чи пропозиція, а не лише «запросіть мене». Обіцянка
- * «ми відкриємо доступ» тут не потрібна — вона була б і правдою для одного
- * випадку, і порожніми словами для решти.
- *
- * **Екран, а не плашка.** Вміст займає всю висоту: лого й слова згори, форма
- * з кнопкою внизу. Один блок посередині читається як спливаюче вікно поверх
- * екрана, а не як сторінка.
- *
- * **Каркас — спільний `.wb-auth*` і `.wb-textarea`, як у `LoginScreen`
- * адмінки.** Приватного CSS на цю сторінку немає й не з'явиться.
+ * **Каркас — спільний `.wb-auth*` і `.wb-textarea`,** як у `LoginScreen`
+ * адмінки. Приватного CSS тут немає.
  *
  * @module web-platform-dev/src/app/AccessDeniedPage
  */
 
 import { useState, type FormEvent } from "react";
-import { Icon } from "@wwwuabot/shared";
 import { sendAccessRequest } from "@/shared/api/access.api";
 
 /** Скільки символів вміщує поле — те саме число, що приймає сервер. */
@@ -52,43 +41,35 @@ export function AccessDeniedPage() {
   return (
     <div className="wb-auth wb-auth--page">
       <div className="wb-auth-sheet">
-        <div className="wb-auth-logo">
-          <span className="wb-auth-logo-icon">✦</span>
-          <span className="wb-auth-logo-text">WWWUABOT</span>
+        <div className="wb-auth-stage">
+          <span className="wb-stop-mark" aria-hidden="true" />
         </div>
 
-        <p className="wb-auth-message wb-auth-message--lead">Платформа — за запрошеннями.</p>
-        <p className="wb-auth-message">
-          Напишіть адміну — будь-яке питання, пропозиція чи зауваження.
-        </p>
+        <form className="wb-auth-contact" onSubmit={onSubmit}>
+          <h2 className="wb-auth-contact-title">Написати адміну</h2>
 
-        {state === "sent" ? (
-          <p className="wb-auth-message">Написано. Дякуємо!</p>
-        ) : (
-          <form className="wb-auth-form" onSubmit={onSubmit}>
-            <div className="wb-auth-field">
+          {state === "sent" ? (
+            <p className="wb-auth-message">Відправлено.</p>
+          ) : (
+            <>
               <textarea
                 className="wb-textarea"
                 value={text}
                 onChange={(event) => setText(event.target.value)}
-                placeholder="Ваше повідомлення"
                 rows={4}
                 maxLength={TEXT_MAX}
               />
-              {state === "failed" ? (
-                <p className="wb-auth-error">Не вдалося надіслати. Спробуйте ще раз.</p>
-              ) : null}
-            </div>
-            <button
-              type="submit"
-              className="wb-btn wb-btn-primary wb-auth-submit"
-              disabled={state === "sending" || !text.trim()}
-            >
-              <Icon name="mail" size={16} />
-              {state === "sending" ? "Надсилаємо…" : "Написати адміну"}
-            </button>
-          </form>
-        )}
+              {state === "failed" ? <p className="wb-auth-error">Не вдалося.</p> : null}
+              <button
+                type="submit"
+                className="wb-btn wb-btn-primary wb-auth-submit"
+                disabled={state === "sending" || !text.trim()}
+              >
+                {state === "sending" ? "Надсилаємо…" : "Відправити"}
+              </button>
+            </>
+          )}
+        </form>
       </div>
     </div>
   );
