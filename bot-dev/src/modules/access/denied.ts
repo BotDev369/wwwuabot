@@ -83,6 +83,11 @@ export async function showAccessDenied(ctx: AppContext): Promise<void> {
  *
  * Помилка не критична: гірше за відсутність кнопки нічого немає, а відмова
  * вже надіслана.
+ *
+ * **`deleteMessages(chat_id, message_ids)` — саме так.** grammY приймає позиційні
+ * аргументи, а не об'єкт: переданий об'єкт ішов у запит як `chat_id`, Telegram
+ * відповідав 400, помилка ковталась — і жоден старий екран не зникав ніколи, тож
+ * у чаті копилися «Цей бот — за запрошеннями».
  */
 async function deletePreviousScreens(ctx: AppContext): Promise<void> {
   const chatId = ctx.chat?.id;
@@ -95,13 +100,7 @@ async function deletePreviousScreens(ctx: AppContext): Promise<void> {
   if (ids.size === 0) return;
 
   try {
-    await (
-      ctx.api as unknown as {
-        raw: {
-          deleteMessages: (params: { chat_id: number; message_ids: number[] }) => Promise<unknown>;
-        };
-      }
-    ).raw.deleteMessages({ chat_id: chatId, message_ids: [...ids] });
+    await ctx.api.deleteMessages(chatId, [...ids]);
     log("ACCESS", "previous screens deleted", { ids: [...ids] });
   } catch (err) {
     log("ACCESS", "failed to delete previous screens", { error: String(err) });
