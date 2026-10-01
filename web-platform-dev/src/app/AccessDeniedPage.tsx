@@ -46,7 +46,7 @@ export function AccessDeniedPage() {
   }
 
   return (
-    <div className="wb-auth wb-auth--page">
+    <div className="wb-auth">
       <div className="wb-auth-sheet">
         <div className="wb-auth-logo">
           <span className="wb-auth-logo-icon">✦</span>
