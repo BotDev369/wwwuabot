@@ -7,10 +7,11 @@
  * `admin_dialog_text`, `admin_panel_id`), а логіка «що з цим робити» тут,
  * щоб її можна було перевірити тестом без Telegram.
  *
- * **Кнопки дублюються навмисно: реплай-клавіатурою й inline.** Клавіатура під
- * чатом зручна, але клієнт показує її не завжди (буває, не показує ніколи — ми
- * на це наступили), а кнопка на повідомленні малюється скрізь. Тому дія одна,
- * а два способи її натиснути: під чатом і на самому екрані.
+ * **Усі кнопки діалогу — на повідомленні (панель), а не під чатом.** Реплай-
+ * клавіатура малюється не в кожному клієнті: у нашому випадку вона не
+ * малювалася взагалі, тож кнопки «Відправити» й «Закрити діалог» просто не
+ * існувало для людини. Inline-кнопка малюється завжди, тож панель — єдина
+ * поверхня дialogу, а під чатом ми більше нічого не надсилаємо.
  *
  * **Накопичуємо, а не відправляємо.** Кожне повідомлення додається до
  * чернетки одразу: надіслати раніше ми не можемо, тоді в людини не було б
@@ -24,7 +25,7 @@
  */
 
 import { ACCESS_REQUEST_MAX, sanitizeAccessRequestText } from "@wwwuabot/shared/access-requests";
-import type { InlineKeyboardMarkup, ReplyKeyboardMarkup } from "grammy/types";
+import type { InlineKeyboardMarkup } from "grammy/types";
 import { CONTACT } from "../../../shared/config/texts";
 import type { BotUser } from "../../../shared/types/env";
 
@@ -103,27 +104,17 @@ export function appendDraft(draft: string, message: string): { text: string; tru
  * у минулих версіях («закрита» звичайна клавіатура в пам'яті клієнта) нова
  * клавіатура так і не з'явилася б. Те саме стосується клавіатури платформи
  * (`modules/access/keyboard`).
- */
-export function buildContactKeyboard(state: ContactState): ReplyKeyboardMarkup {
-  const labels = state.draft
-    ? [CONTACT.send, CONTACT.sendAndClose, CONTACT.closeWithoutSend]
-    : [CONTACT.close];
-
-  return {
-    keyboard: [labels.map((text) => ({ text }))],
-    is_persistent: true,
-    resize_keyboard: true,
-  };
-}
-
 /**
- * Клавіатура екрана відмови: поки діалог закритий — єдна кнопка «Написати
- * адміну», а відкритий діалог лишає те, що вже було (щоб `/start` посеред
- * написаного не збив людину з клавіатури, на якій вона стояла).
+ * Кнопка «Написати адміну» — на екрані відмови.
+ *
+ * **Єдина дія людини без допуску, тож вона мусить бути на самому екрані.**
+ * Кнопка на повідомленні малюється завжди, а клавіатура під чатом — не в кожному
+ * клієнті, тож панель діалогу (`buildPanel`) і є місце, де живуть усі кнопки.
  */
-export function buildAccessKeyboard(state: ContactState): ReplyKeyboardMarkup {
-  if (state.open) return buildContactKeyboard(state);
-  return { keyboard: [[{ text: CONTACT.write }]], is_persistent: true, resize_keyboard: true };
+export function buildWriteButton(): InlineKeyboardMarkup {
+  return {
+    inline_keyboard: [[{ text: CONTACT.write, callback_data: `${CONTACT_CALLBACK_PREFIX}write` }]],
+  };
 }
 
 /** Рядок inline-кнопок панелі: підпис і що вона робить — в одному словнику. */
@@ -134,8 +125,8 @@ function panelButton(label: string, action: ContactAction) {
 /**
  * Панель діалогу — повідомлення з inline-кнопками.
  *
- * Вона малюється **завжди**, на відміну від реплай-клавіатури, тож це
- * основний спосіб натиснути кнопку; під чатом лишається дубль для зручності.
+ * Вона малюється **завжди**, на відміну від реплай-клавіатури, тож це єдине
+ * місце, де живуть кнопки дialogу: і «Відправити», і «Закрити діалог».
  */
 export function buildPanel(state: ContactState): {
   text: string;

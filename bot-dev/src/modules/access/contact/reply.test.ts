@@ -1,9 +1,10 @@
 /**
- * Діалог з адміном через реплай-клавіатуру — тести обробки кроків.
+ * Діалог з адміном за текстом у чаті — тести обробки кроків.
  *
- * Перевіряється те, що бачить людина: що натискає, що їй відповідають і що
- * зберігається. Клавіатури, чернетка й панель перевірені в `state.test`,
- * тут — лише рішення бота: зберегти, закрити, з��игнорувати фото.
+ * Головне тут — не те, що ми пишемо, а те, **що панель оновлюється** після
+ * кожного написаного повідомлення: без трьох кнопок «Відправити / Завершити /
+ * Закрити» написане просто некуди відіслати. Раніше ми надсилали повідомлення з
+ * реплай-клавіатурою, тож ці кнопки не з'являлися ніде.
  *
  * @module bot-dev/src/modules/access/contact/reply.test
  */
@@ -12,22 +13,19 @@ import { describe, expect, it } from "vitest";
 import { CONTACT } from "../../../shared/config/texts";
 import { chat, step } from "./fixture";
 
-describe("діалог з адміном", () => {
+describe("діалог за текстом у чаті", () => {
   it("⛔ чужий текст до натискання «Написати адміну» — не наш крок", async () => {
     const store = chat();
     expect(await step(store, "а може я теж щось напишу?")).toBe(false);
     expect(store.sent).toHaveLength(0);
   });
 
-  it("«Написати адміну» відкриває діалог, питає, що цікавить, і дає одну клавіатуру", async () => {
+  it("«Написати адміну» відкриває дialog і питає, що людину цікавить", async () => {
     const store = chat();
 
     expect(await step(store, CONTACT.write)).toBe(true);
-    expect(store.texts()).toContain(CONTACT.started);
+    expect(store.sent[0]?.text).toBe(CONTACT.started);
     expect(store.ctx.user?.admin_dialog_open).toBe(1);
-    // Поки не написано нічого — надсилати нікуди, закривати є що.
-    expect(store.labelsOfLast()).toEqual([CONTACT.close]);
-    expect(store.inserted).toHaveLength(0);
   });
 
   it("⛔ фото не приймається, але людина дізнається про це", async () => {
@@ -40,76 +38,28 @@ describe("діалог з адміном", () => {
     expect(store.ctx.user?.admin_dialog_text).toBe("вже написано");
   });
 
-  it("після першого повідомлення клавіатура міняється на три кнопки", async () => {
+  it("⛔ після першого повідомлення панель має три кнопки, а не «Закрити діалог»", async () => {
     const store = chat({ open: true });
 
     await step(store, "хочу запросити доступ");
 
     expect(store.ctx.user?.admin_dialog_text).toBe("хочу запросити доступ");
-    expect(store.labelsOfLast()).toEqual([
+    expect(store.sent[0]?.labels).toEqual([
       CONTACT.send,
       CONTACT.sendAndClose,
       CONTACT.closeWithoutSend,
     ]);
   });
 
-  it("кілька повідомлень — одне звернення, а не останнє", async () => {
+  it("друге повідомлення додається до першого, а панель лишається з кнопками", async () => {
     const store = chat({ open: true });
 
     await step(store, "перше");
     await step(store, "друге");
-    await step(store, CONTACT.sendAndClose);
 
-    expect(store.inserted).toEqual(["перше\n\nдруге"]);
-  });
-
-  it("після відправки людина отримує подяку, а адмін — хто написав і що", async () => {
-    const store = chat({ open: true, draft: "питання" });
-
-    expect(await step(store, CONTACT.sendAndClose)).toBe(true);
-
-    expect(store.texts()).toContain(CONTACT.sent);
-    expect(store.adminTexts().join("\n")).toContain("id 555");
-    expect(store.adminTexts().join("\n")).toContain("питання");
-  });
-
-  it("«Відправити» лишає діалог відкритим, але вже без написаного", async () => {
-    const store = chat({ open: true, draft: "перша частина" });
-
-    await step(store, CONTACT.send);
-
-    expect(store.inserted).toEqual(["перша частина"]);
-    expect(store.ctx.user?.admin_dialog_open).toBe(1);
-    expect(store.ctx.user?.admin_dialog_text).toBe("");
-  });
-
-  it("«Закрити без відправки» викидає написане, а не надсилає його", async () => {
-    const store = chat({ open: true, draft: "шкода, випадково" });
-
-    await step(store, CONTACT.closeWithoutSend);
-
-    expect(store.inserted).toHaveLength(0);
-    expect(store.texts()).toContain(CONTACT.closed(false));
-    expect(store.ctx.user?.admin_dialog_open).toBe(0);
-  });
-
-  it("«Закрити діалог» працює і з порожньою чернеткою", async () => {
-    const store = chat({ open: true });
-
-    await step(store, CONTACT.close);
-
-    expect(store.texts()).toContain(CONTACT.closed(false));
-    expect(store.labelsOfLast()).toEqual([CONTACT.write]);
-  });
-
-  it("⛔ база впала — не кажемо «отримано» і не змушуємо набирати заново", async () => {
-    const store = chat({ open: true, draft: "довгий текст", saveFails: true });
-
-    await step(store, CONTACT.send);
-
-    expect(store.texts()).toContain(CONTACT.failed);
-    expect(store.texts()).not.toContain(CONTACT.sent);
-    expect(store.ctx.user?.admin_dialog_text).toBe("довгий текст");
+    expect(store.ctx.user?.admin_dialog_text).toBe("перше\n\nдруге");
+    // Панель уже існує, тож ми її редагуємо, а не плодимо нові повідомлення.
+    expect(store.edited[0]?.labels).toContain(CONTACT.sendAndClose);
   });
 
   it("⛔ команда не чернетка: `/start` лишається тим, чим є", async () => {

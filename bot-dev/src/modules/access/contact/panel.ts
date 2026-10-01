@@ -18,12 +18,7 @@ import type { AppContext } from "../../../shared/types/env";
 import { CONTACT } from "../../../shared/config/texts";
 import { log } from "../../../shared/utils/debug";
 import { applyContactAction, type ContactOutcome } from "./flow";
-import { buildPanel, readContactCallback, type ContactState } from "./state";
-
-/** Кнопка «Написати адміну» для екрана відмови. */
-export function buildWriteButton(): InlineKeyboardMarkup {
-  return { inline_keyboard: [[{ text: CONTACT.write, callback_data: "contact:write" }]] };
-}
+import { buildPanel, buildWriteButton, readContactCallback, type ContactState } from "./state";
 
 /**
  * Натискання кнопки на панелі або на екрані відмови.
@@ -63,13 +58,13 @@ function panelView(
 }
 
 /**
- * Надіслати або відредагувати панель.
+ * Надіслати або відредагувати панель — **єдина поверхня дialogу**.
  *
  * Редагування — звичайний випадок, надсилання — коли повідомлення видалили або
  * його вже немає (номер живий, повідомлення мертве). Помилка редагування не
  *-critical: гірше за відсутність панелі нічого немає, а стан у базі вже є.
  */
-async function showPanel(ctx: AppContext, outcome: ContactOutcome): Promise<void> {
+export async function showPanel(ctx: AppContext, outcome: ContactOutcome): Promise<void> {
   const view = panelView(outcome);
   if (!view || !ctx.chat?.id) return;
 

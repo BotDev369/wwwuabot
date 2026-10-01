@@ -35,8 +35,7 @@
 import type { AppContext } from "../../shared/types/env";
 import { ACCESS_DENIED } from "../../shared/config/texts";
 import { log } from "../../shared/utils/debug";
-import { buildAccessKeyboard, readContactState } from "./contact/state";
-import { buildWriteButton } from "./contact/panel";
+import { buildWriteButton } from "./contact/state";
 
 /**
  * Показати відмову й дати людині кнопку зв'язку з адміном.
@@ -50,13 +49,9 @@ export async function showAccessDenied(ctx: AppContext): Promise<void> {
 
   await deletePreviousScreens(ctx);
 
-  const state = readContactState(ctx.user);
-
   try {
     const sent = await ctx.api.sendMessage(ctx.chat.id, ACCESS_DENIED, {
-      // Відкритий діалог лишає ту клавіатуру, на якій людина вже стояла:
-      // `/start` посеред написаного не має її збивати.
-      reply_markup: state.open ? buildAccessKeyboard(state) : buildWriteButton(),
+      reply_markup: buildWriteButton(),
     });
 
     // Відмова стає «поточним екраном»: наступна відмова замінить її, а не

@@ -100,12 +100,14 @@ describe("екран відмови", () => {
     expect(store.deleted[0]?.ids).toEqual([7]);
   });
 
-  it("відкритий дialog лишає клавіатуру діалогу, а не кнопку відмови", async () => {
+  it("⛔ відкритий дialog не ховає кнопку відмови: написане лишається в панелі", async () => {
+    // `/start` посеред написаного показує відмову знову — і кнопка «Написати
+    // адміну» мусить лишатися: панель із чернеткою про неї не знає.
     const store = chat({ dialogOpen: true });
 
     await showAccessDenied(store.ctx);
 
-    expect(store.sent[0]?.labels).toEqual(["Закрити діалог"]);
+    expect(store.sent[0]?.labels).toEqual(["Написати адміну"]);
   });
 
   it("новий екран запам'ятовується як поточний", async () => {
