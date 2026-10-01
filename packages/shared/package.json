@@ -11,6 +11,7 @@
     "./favorites": "./src/favorites.ts",
     "./contacts": "./src/contacts/index.ts",
     "./messages": "./src/messages/index.ts",
+    "./access-requests": "./src/access-requests/index.ts",
     "./tags": "./src/tags.ts",
     "./constants/block-definitions": "./src/constants/block-definitions/index.ts",
     "./styles/index.css": "./src/styles/index.css",

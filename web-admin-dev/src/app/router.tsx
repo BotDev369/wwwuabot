@@ -3,6 +3,7 @@ import { AppShell } from "../layout/AppShell";
 import { HomePage } from "../pages/home/HomePage";
 import { ScenariosPage } from "../pages/scenarios/ScenariosPage";
 import { UsersPage } from "../pages/users/UsersPage";
+import { AccessRequestsPage } from "../pages/messages/AccessRequestsPage";
 import { PageBuilderPage } from "../features/page-builder/PageBuilderPage";
 import { BotSettingsPage } from "../pages/bot-settings/BotSettingsPage";
 import { ProfilePage } from "../pages/profile/ProfilePage";
@@ -14,6 +15,8 @@ import { MonitoringPage } from "../pages/monitoring/MonitoringPage";
  * /scenarios          — Сценарії
  * /page-builder/:cw   — Конструктор сторінок
  * /users              — Користувачі
+ * /messages           — Повідомлення: звернення зі сторінки відмови, повний
+ *                       CRUD з панелі (`/api/admin/access-requests`)
  * /monitoring         — Моніторинг проєкту: зрізи код/GitHub, динаміка, історія
  * /bot-settings       — Налаштування бота
  * /profile            — Профіль (акаунт панелі + профіль людини) — той самий
@@ -33,6 +36,7 @@ export const router = createBrowserRouter([
       { path: "scenarios", element: <ScenariosPage /> },
       { path: "page-builder/:slug", element: <PageBuilderPage /> },
       { path: "users", element: <UsersPage /> },
+      { path: "messages", element: <AccessRequestsPage /> },
       { path: "monitoring", element: <MonitoringPage /> },
       { path: "bot-settings", element: <BotSettingsPage /> },
       { path: "profile", element: <ProfilePage /> },

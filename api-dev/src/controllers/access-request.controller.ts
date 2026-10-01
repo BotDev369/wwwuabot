@@ -8,13 +8,14 @@
  * один рядок, без нічого іншого.
  *
  * **Підпис обов'язковий, і це не бюрократія, а різниця у сенсі.** Сторінка
- * відмови тепер виддна **лише** людині з підписаним `initData` (поза ботом
+ * відмови тепер видчна **лише** людині з підписаним `initData` (поза ботом
  * платформа не відкривається взагалі — див. `web-platform-dev/AuthGate`), тож
  * рядок без `user_id` уже не має змісту: це не «хтось без підпису», а запит
  * поза платформою, який треба відкинути (401), а не зберегти.
  *
- * **Межа тексту — тут, на сервері.** Клієнт не вирішує, що вміститься: правило
- * межі мусить бути одне (§7), тож надіслати довший рядок напрямом не можна.
+ * **Правило тексту спільне** (`@wwwuabot/shared/access-requests`): і прийом
+ * тут, і редагування в панелі за однією межею, тож «можна ввести» й «можна
+ * зберегти» не розходяться.
  *
  * @module api-dev/src/controllers/access-request.controller
  */
@@ -22,10 +23,8 @@
 import type { Env } from "../shared/types";
 import { resolveUserId } from "../shared/identity";
 import { ensureTables } from "@wwwuabot/shared/database/ensure-tables";
+import { sanitizeAccessRequestText } from "@wwwuabot/shared/access-requests";
 import { apiLog } from "../shared/logger";
-
-/** Скільки символів приймаємо: одне повідомлення — це одне-два речення, не лист. */
-export const ACCESS_REQUEST_MAX = 500;
 
 function json(data: unknown, status = 200): Response {
   return new Response(JSON.stringify(data), {
@@ -39,10 +38,10 @@ export async function handleAccessRequest(request: Request, env: Env): Promise<R
   const identity = await resolveUserId(request, env);
   if (!identity.ok) return identity.response;
 
-  let text = "";
+  let text: string;
   try {
     const body = (await request.json()) as { text?: unknown };
-    if (typeof body.text === "string") text = body.text.trim().slice(0, ACCESS_REQUEST_MAX);
+    text = sanitizeAccessRequestText(body.text);
   } catch {
     // Порожнє або биле тіло — це не помилка запиту, а порожнє повідомлення:
     // воно не варте рядка в базі, тож кажемо «нічого не прийнято» (400).

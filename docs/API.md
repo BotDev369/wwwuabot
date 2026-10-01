@@ -67,6 +67,10 @@
 
 | Метод | Шлях | Обробник |
 |---|---|---|
+| `GET` | `/api/admin/access-requests` | `handleAccessRequestsList` |
+| `POST` | `/api/admin/access-requests` | `handleAccessRequestCreate` |
+| `DELETE` | `/api/admin/access-requests` | `handleAccessRequestDelete` |
+| `POST` | `/api/admin/access-requests/update` | `handleAccessRequestUpdate` |
 | `POST` | `/api/admin/monitoring/collect` | `handleMonitoringCollect` |
 | `GET` | `/api/admin/monitoring/summary` | `handleMonitoringSummary` |
 | `ANY` | `/api/admin/notes` | `handleAdminNotes` |
@@ -96,4 +100,4 @@
 | `POST` | `/auth/login` | `handleLogin` |
 | `POST` | `/auth/logout` | `handleLogout` |
 
-Усього шляхів: **67**.
+Усього шляхів: **71**.

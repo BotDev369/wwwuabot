@@ -51,6 +51,8 @@ import {
   handleBulkUsers,
   handleUserMessage,
 } from "./controllers/users.controller";
+import { matchMessagesRoute } from "./routes/messages";
+import { matchAccessRequestAdminRoute } from "./routes/access-requests";
 import { handleNotes, handleAdminNotes } from "./controllers/notes.controller";
 import { handleFavorites } from "./controllers/favorites.controller";
 import { handleAssessments } from "./controllers/assessments.controller";
@@ -61,17 +63,6 @@ import {
   handleMonitoringSummary,
   handleMonitoringCollect,
 } from "./controllers/monitoring.controller";
-import {
-  handleMessages,
-  handleMessageThread,
-  handleMessageSend,
-  handleMessageRead,
-  handleMessageBadge,
-  handleMessageClear,
-  handleMessageDelete,
-  handleMessageCompose,
-  handleMessageDraft,
-} from "./controllers/messages.controller";
 
 /**
  * Префікси шляхів, доступ до яких вимагає адмінської cookie-сесії.
@@ -193,40 +184,11 @@ export async function handleRequest(request: Request, env: Env): Promise<Respons
     return handleContactLink(request, env);
   }
 
-  // ── Messages: повідомлення між людьми (не бот) ────────────────
-  // Кому можна писати — правило «зв'язані через контакти»; воно читає
-  // `contacts`, тож друга перевірка власника тут не потрібна: співрозмовника
-  // вже перевірено на зв'язок ПЕРЕД будь-яким пошуком розмови (§7).
-  if (pathname === "/api/messages") {
-    return handleMessages(request, env);
-  }
-  if (pathname === "/api/messages/thread") {
-    return handleMessageThread(request, env);
-  }
-  if (pathname === "/api/messages/send" && request.method === "POST") {
-    return handleMessageSend(request, env);
-  }
-  if (pathname === "/api/messages/read" && request.method === "POST") {
-    return handleMessageRead(request, env);
-  }
-  if (pathname === "/api/messages/badge" && request.method === "GET") {
-    return handleMessageBadge(request, env);
-  }
-  if (pathname === "/api/messages/compose" && request.method === "GET") {
-    return handleMessageCompose(request, env);
-  }
-  if (pathname === "/api/messages/draft" && request.method === "POST") {
-    return handleMessageDraft(request, env);
-  }
-  // Стерти переписку / прибрати розмову. Дві дії, а не одна з прапорцем:
-  // різницю між ними бачить людина (розмова лишається чи ні), тож і шлях у них
-  // свій — інакше на клієнті з'явився б другий спосіб сказати те саме.
-  if (pathname === "/api/messages/clear" && request.method === "POST") {
-    return handleMessageClear(request, env);
-  }
-  if (pathname === "/api/messages/delete" && request.method === "POST") {
-    return handleMessageDelete(request, env);
-  }
+  // ── Messages: переписка між людьми (не бот) ───────────────────
+  // Один домен — один модуль шляхів (`routes/messages.ts`), щоб роутер лишався
+  // списком доменів, а не переліком десятка дій одного з них.
+  const messages = matchMessagesRoute(request, env, pathname);
+  if (messages) return messages;
 
   // ── Admin: Cookie Auth ─────────────────────────────────────────
   if (pathname === "/auth/login" && request.method === "POST") {
@@ -286,6 +248,12 @@ export async function handleRequest(request: Request, env: Env): Promise<Respons
   if (pathname === "/api/admin/notes") {
     return handleAdminNotes(request, env);
   }
+
+  // ── Admin: пошта про звернення зі сторінки відмови ─────────────
+  // Список, створення, правка й видалення — усі під адмін-гейтом, як і сам
+  // домен (`routes/access-requests.ts`).
+  const accessRequests = matchAccessRequestAdminRoute(request, env, pathname);
+  if (accessRequests) return accessRequests;
 
   // ── Admin: Моніторинг (зрізи показників проєкту) ───────────────
   // Читання дешеве, а збір — ні (архів гілки + GitHub API), тому це два

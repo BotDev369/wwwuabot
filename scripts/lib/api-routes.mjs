@@ -110,7 +110,15 @@ export function apiRoutes() {
       for (const raw of found) {
         // `/health/` — те саме, що `/health`: тримаємо один рядок у списку.
         const path = raw.length > 1 ? raw.replace(/\/+$/, "") : raw;
-        if (routes.some((route) => route.path === path)) continue;
+        // Дубль — це той самий **метод на тому самому шляху**. Саме лише шлях
+        // було б неправильно: `GET` і `POST` одного ендпоїнта (`/…/notes`) —
+        // два різні виклики, і другий зникав би з інвентаря мовчки.
+        if (
+          routes.some(
+            (route) => route.path === path && (route.method === method || method === "ANY"),
+          )
+        )
+          continue;
         routes.push({ method, path, handler, group: groupOf(path), line: index + 1, file });
       }
     });
