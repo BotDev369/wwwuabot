@@ -21,7 +21,8 @@ import { hasAccess } from "@wwwuabot/shared/security/access";
  *    shared resolver → сторінка → рендер
  * 2. /start без payload → головна сторінка
  * 3. callback_data → slug → рендер
- * 4. текст → ТІЛЬКИ якщо awaits_input, інакше видаляємо
+ * 4. текст → ТІЛЬКИ якщо awaits_input, інакше видаляємо; для людини без допуску
+ *    перед цим показується відмова, а не тиша
  *
  * **Код запрошення перевіряється першим.** Він теж проходить
  * `isValidBotPayload` (це адреса, яку приймає Telegram), тож відрізнити його
@@ -110,6 +111,16 @@ export async function botRouter(ctx: AppContext): Promise<void> {
   }
 
   if (isPlainText) {
+    // Людина без допуску пише в чат — значить, їй уже незручно мовчати. Показуємо
+    // відмову (з кнопкою зв'язку з адміном) замість тиші: інакше її перше
+    // повідомлення просто зникало б, а «Написати адміну» — разом із ним.
+    if (!hasAccess(ctx.user)) {
+      log("ACCESS", "denied | plain text", { user_id: ctx.user.user_id });
+      await deleteIncomingMessage(ctx);
+      await showAccessDenied(ctx);
+      return;
+    }
+
     const currentScenario = await repo.getScenario(ctx.user.active_scenario || "");
 
     if (currentScenario?.awaits_input === "text") {
