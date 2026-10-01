@@ -84,6 +84,11 @@ export const TABLES = {
    * `@wwwuabot/shared/security/access`). Пише його той самий перехід, що
    * закріплює контакт (`contacts.joined_user_id`), щоб «хто запросив» і «за ким
    * прийшли» не були двома різними правдами.
+   *
+   * `admin_dialog_open` / `admin_dialog_text` — незавершений звертення людини без
+   * допуску, яку вона пише прямо в чаті (`bot-dev/src/modules/access/contact`).
+   * Це стан розмови, а не окремий документ: самі звернення живуть у рядку
+   * `access_requests`, а тут лише те, що людина ще не відіслала.
    */
   users: {
     name: "users",
@@ -113,6 +118,8 @@ export const TABLES = {
         profile_public INTEGER DEFAULT 0,
         profile_public_fields TEXT,
         inviter_id INTEGER,
+        admin_dialog_open INTEGER DEFAULT 0,
+        admin_dialog_text TEXT,
         created_at TEXT,
         updated_at TEXT
       )`,

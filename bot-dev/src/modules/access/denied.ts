@@ -7,9 +7,12 @@
  * текстом і без сценарію: контент сторінки тут недоречний, бо людина не має
  * жодного права його бачити.
  *
- * **Клавіатуру знімаємо.** На екрані відмови немає жодної дії, тож лишати під
- * чатом три кнопки, які ведуть у платформу, де її теж не чекають, — це
- * обіцянка, яку ми не зможемо виконати. `remove_keyboard` прибирає їх одразу.
+ * **Клавіатуру міняємо на одну кнопку.** Кнопки платформи (`Профіль`, `Обране`,
+ * `Простір`) тут не працюють — доступу все одно немає, — тож лишати їх означало
+ * б обіцянку, яку ми не виконаємо. Натомість під чатом з'являється «Написати
+ * адміну»: це єдина дія, яка в людини тут є (див. `access/contact`). Клавіатура
+ * реплай-п��ится сама, а не живе на екрані, тож зносом екрана вона не
+ * зникає.
  *
  * **Старий екран бота теж зникає.** Кнопка «Відкрити сторінку» — це `web_app`
  * прямо в повідомленні, і `remove_keyboard` її не торкається: лишається старий
@@ -33,9 +36,10 @@
 import type { AppContext } from "../../shared/types/env";
 import { ACCESS_DENIED } from "../../shared/config/texts";
 import { log } from "../../shared/utils/debug";
+import { buildAccessKeyboard, readContactState } from "./contact/state";
 
 /**
- * Показати відмову й прибрати клавіатуру.
+ * Показати відмову й поставити під чатом кнопку зв'язку з адміном.
  *
  * `ctx.screen` навмисно **не** заповнюється: рендер екрана додав би до тексту
  * банер і кнопку «Відкрити сторінку», а це відмова, де сторінки немає.
@@ -48,7 +52,9 @@ export async function showAccessDenied(ctx: AppContext): Promise<void> {
 
   try {
     const sent = await ctx.api.sendMessage(ctx.chat.id, ACCESS_DENIED, {
-      reply_markup: { remove_keyboard: true },
+      // Відкритий діалог лишає ту клавіатуру, на якій людина вже стояла:
+      // `/start` посеред написаного не має її збивати.
+      reply_markup: buildAccessKeyboard(readContactState(ctx.user)),
     });
 
     // Відмова стає «поточним екраном»: наступна відмова замінить її, а не
@@ -57,7 +63,7 @@ export async function showAccessDenied(ctx: AppContext): Promise<void> {
       ctx.user.message_id = sent.message_id;
       ctx.userDirty = true;
     }
-    log("ACCESS", "denied | keyboard removed", { user_id: ctx.user?.user_id });
+    log("ACCESS", "denied | contact button shown", { user_id: ctx.user?.user_id });
   } catch (err) {
     // Відмова не надіслалась — контент все одно не показано, тож це не
     // відкриває нічого; лог лишається, бо мовчазно зникла б відмова.

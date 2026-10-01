@@ -25,6 +25,10 @@ export interface BotUser {
    * «сюди можна»: бот закритий за запрошеннями (`modules/access`).
    */
   inviter_id?: number | null;
+  /** Діалог із адміном відкритий (`modules/access/contact`). */
+  admin_dialog_open?: number | null;
+  /** Накопичений текст зверчення людини без допуску. */
+  admin_dialog_text?: string | null;
   created_at?: string;
   updated_at?: string;
   [key: string]: unknown;

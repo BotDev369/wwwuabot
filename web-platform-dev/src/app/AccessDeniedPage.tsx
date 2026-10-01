@@ -19,9 +19,7 @@
 
 import { useState, type FormEvent } from "react";
 import { sendAccessRequest } from "@/shared/api/access.api";
-
-/** Скільки символів вміщує поле — те саме число, що приймає сервер. */
-const TEXT_MAX = 500;
+import { ACCESS_REQUEST_MAX } from "@wwwuabot/shared/access-requests";
 
 export function AccessDeniedPage() {
   const [text, setText] = useState("");
@@ -57,7 +55,7 @@ export function AccessDeniedPage() {
                 value={text}
                 onChange={(event) => setText(event.target.value)}
                 rows={4}
-                maxLength={TEXT_MAX}
+                maxLength={ACCESS_REQUEST_MAX}
               />
               {state === "failed" ? <p className="wb-auth-error">Не вдалося.</p> : null}
               <button
