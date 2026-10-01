@@ -6,7 +6,8 @@ import { applyContactPayload } from "../../modules/contacts/contact-link";
 import { showInviteScreen } from "../../modules/contacts/invite-screen";
 import { showAccessDenied } from "../../modules/access/denied";
 import { showMainKeyboard } from "../../modules/access/keyboard";
-import { handleContactFlow } from "../../modules/access/contact/dialog";
+import { handleContactFlow } from "../../modules/access/contact/reply";
+import { handleContactCallback } from "../../modules/access/contact/panel";
 import { deleteIncomingMessage } from "../../shared/utils/message";
 import { splitInviteCode } from "../../modules/access/payload";
 import { isValidBotPayload, isValidSlug, toWebPath } from "@wwwuabot/shared/content";
@@ -44,10 +45,13 @@ import { hasAccess } from "@wwwuabot/shared/security/access";
 export async function botRouter(ctx: AppContext): Promise<void> {
   if (!ctx.user) return;
 
-  // Діалог з адміном — окремий шлях: він перехоплює кнопки реплай-клавіатури й
-  // фото/стікери, яких текстовий шлях не бачить. І тільки для людини без
-  // допуску: у кого є доступ, цього діалогу не існує.
-  if (!hasAccess(ctx.user) && (await handleContactFlow(ctx))) return;
+  // Діалог з адміном — окремий шлях: він перехоплює кнопки реплай-клавіатури,
+  // inline-кнопки панелі та фото/стікери, яких текстовий шлях не бачить. І
+  // тільки для людини без допуску: у кого є доступ, цього діалогу не існує.
+  if (!hasAccess(ctx.user)) {
+    if (ctx.callbackQuery && (await handleContactCallback(ctx))) return;
+    if (await handleContactFlow(ctx)) return;
+  }
 
   const repo = new ScenarioRepository(ctx.env);
   const text = ctx.message?.text;

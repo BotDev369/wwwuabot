@@ -16,7 +16,9 @@ import {
   buildAccessKeyboard,
   buildAdminNotice,
   buildContactKeyboard,
+  buildPanel,
   readContactAction,
+  readContactCallback,
   readContactState,
   splitForTelegram,
 } from "./state";
@@ -28,11 +30,12 @@ function labels(markup: ReturnType<typeof buildContactKeyboard>): string[] {
 
 describe("чернетка звернення", () => {
   it("⛔ порожній стан — це закритий діалог, а не відкритий без тексту", () => {
-    // Жива база віддає `NULL` у колонку, додану через `ALTER TABLE`.
-    expect(readContactState(undefined)).toEqual({ open: false, draft: "" });
+    // Жива база віддає `NULL` у колонки, додані через `ALTER TABLE`.
+    expect(readContactState(undefined)).toEqual({ open: false, draft: "", panelId: null });
     expect(readContactState({ admin_dialog_open: null, admin_dialog_text: null })).toEqual({
       open: false,
       draft: "",
+      panelId: null,
     });
   });
 
@@ -104,6 +107,39 @@ describe("клавіатура діалогу", () => {
       CONTACT.sendAndClose,
       CONTACT.closeWithoutSend,
     ]);
+  });
+});
+
+describe("панель на повідомленні", () => {
+  /** Підписи кнопок панелі — саме так їх віддає Telegram. */
+  function panelLabels(state: Parameters<typeof buildPanel>[0]): string[] {
+    const { reply_markup } = buildPanel(state);
+    return reply_markup.inline_keyboard.flat().map((b) => b.text);
+  }
+
+  it("закритий діалог пропонує лише «Написати адміну»", () => {
+    expect(panelLabels({ open: false, draft: "старе" })).toEqual([CONTACT.write]);
+  });
+
+  it("відкритий діалог без тексту — тільки «Закрити діалог»: відправляти нічого", () => {
+    expect(panelLabels({ open: true, draft: "" })).toEqual([CONTACT.close]);
+  });
+
+  it("після тексту — три дії: відправити, завершити, закрити", () => {
+    expect(panelLabels({ open: true, draft: "є текст" })).toEqual([
+      CONTACT.send,
+      CONTACT.sendAndClose,
+      CONTACT.closeWithoutSend,
+    ]);
+  });
+
+  it("⛔ callback розпізнається лише наш префікс — чужий slug лишається сторінкою", () => {
+    expect(readContactCallback("contact:send-close")).toBe("send-close");
+    expect(readContactCallback("contact:write")).toBe("write");
+
+    // Інакше роутер відкривав би сторінку, якої не існує.
+    expect(readContactCallback("mydate_1980-03-03")).toBeNull();
+    expect(readContactCallback("contact:злодій")).toBeNull();
   });
 });
 

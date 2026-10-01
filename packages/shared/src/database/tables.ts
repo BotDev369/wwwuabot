@@ -85,10 +85,11 @@ export const TABLES = {
    * закріплює контакт (`contacts.joined_user_id`), щоб «хто запросив» і «за ким
    * прийшли» не були двома різними правдами.
    *
-   * `admin_dialog_open` / `admin_dialog_text` — незавершений звертення людини без
-   * допуску, яку вона пише прямо в чаті (`bot-dev/src/modules/access/contact`).
-   * Це стан розмови, а не окремий документ: самі звернення живуть у рядку
-   * `access_requests`, а тут лише те, що людина ще не відіслала.
+   * `admin_dialog_open` / `admin_dialog_text` / `admin_panel_id` — незавершене
+   * звертення людини без допуску, яку вона пише прямо в чаті
+   * (`bot-dev/src/modules/access/contact`). Це стан розмови, а не окремий
+   * документ: самі звернення живуть у рядку `access_requests`, а тут лише те,
+   * що людина ще не відіслала, і номер повідомлення з кнопками діалогу.
    */
   users: {
     name: "users",
@@ -120,6 +121,7 @@ export const TABLES = {
         inviter_id INTEGER,
         admin_dialog_open INTEGER DEFAULT 0,
         admin_dialog_text TEXT,
+        admin_panel_id INTEGER,
         created_at TEXT,
         updated_at TEXT
       )`,

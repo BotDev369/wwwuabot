@@ -9,7 +9,9 @@
  */
 
 import type { AppContext } from "../../../shared/types/env";
-import { ADMIN_TELEGRAM_ID, handleContactFlow } from "./dialog";
+import { ADMIN_TELEGRAM_ID } from "./flow";
+import { handleContactCallback } from "./panel";
+import { handleContactFlow } from "./reply";
 
 const GUEST = 555;
 
@@ -23,6 +25,7 @@ export interface Sent {
 export interface Store {
   ctx: AppContext;
   sent: Sent[];
+  edited: Sent[];
   inserted: string[];
   texts: () => string[];
   labelsOfLast: () => string[];
@@ -33,8 +36,11 @@ export interface Store {
  * Чат людини без допуску: база відповідає на все, Telegram записує все, що
  * бот відправив. `saveFails` імітує недоступну базу в момент відправки.
  */
-export function chat(options: { open?: boolean; draft?: string; saveFails?: boolean } = {}): Store {
+export function chat(
+  options: { open?: boolean; draft?: string; panelId?: number; saveFails?: boolean } = {},
+): Store {
   const sent: Sent[] = [];
+  const edited: Sent[] = [];
   const inserted: string[] = [];
 
   const db = {
@@ -58,13 +64,29 @@ export function chat(options: { open?: boolean; draft?: string; saveFails?: bool
     sendMessage: async (
       chatId: number,
       text: string,
-      extra?: { reply_markup?: { keyboard?: { text: string }[][] } },
+      extra?: {
+        reply_markup?: { keyboard?: { text: string }[][]; inline_keyboard?: { text: string }[][] };
+      },
     ) => {
-      const keyboard = extra?.reply_markup?.keyboard ?? [];
-      sent.push({ chat: chatId, text, labels: (keyboard[0] ?? []).map((b) => b.text) });
+      const markup = extra?.reply_markup;
+      // Кнопки бувають і під чатом, і на повідомленні — тестуємо обидва.
+      const labels = (markup?.keyboard?.[0] ?? markup?.inline_keyboard?.flat() ?? []).map(
+        (b) => b.text,
+      );
+      sent.push({ chat: chatId, text, labels });
       return { message_id: 1 };
     },
     deleteMessage: async () => true,
+    editMessageText: async (
+      chatId: number,
+      _messageId: number,
+      text: string,
+      extra?: { reply_markup?: { inline_keyboard?: { text: string }[][] } },
+    ) => {
+      const rows = extra?.reply_markup?.inline_keyboard ?? [];
+      edited.push({ chat: chatId, text, labels: rows.flat().map((b) => b.text) });
+      return true;
+    },
   };
 
   const ctx = {
@@ -79,6 +101,7 @@ export function chat(options: { open?: boolean; draft?: string; saveFails?: bool
       username: "olya",
       admin_dialog_open: options.open ? 1 : 0,
       admin_dialog_text: options.draft ?? "",
+      admin_panel_id: options.panelId ?? null,
     },
   } as unknown as AppContext;
 
@@ -87,11 +110,18 @@ export function chat(options: { open?: boolean; draft?: string; saveFails?: bool
   return {
     ctx,
     sent,
+    edited,
     inserted,
     texts: () => sent.map((s) => s.text),
     labelsOfLast: () => sent[sent.length - 1]?.labels ?? [],
     adminTexts: toAdmin,
   };
+}
+
+/** Натискання inline-кнопки: `callback_data` приходить у `callback_query`. */
+export async function tap(store: Store, data: string): Promise<boolean> {
+  (store.ctx as unknown as { callbackQuery: unknown }).callbackQuery = { data };
+  return handleContactCallback(store.ctx);
 }
 
 /** Крок людини: надісланий текст або (`undefined`) фото/файл/стікер. */

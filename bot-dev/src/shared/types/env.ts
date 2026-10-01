@@ -29,6 +29,8 @@ export interface BotUser {
   admin_dialog_open?: number | null;
   /** Накопичений текст зверчення людини без допуску. */
   admin_dialog_text?: string | null;
+  /** Повідомлення з inline-кнопками діалогу: його редагуємо, а не плодимо нове. */
+  admin_panel_id?: number | null;
   created_at?: string;
   updated_at?: string;
   [key: string]: unknown;
