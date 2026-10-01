@@ -9,6 +9,11 @@ interface AuthGateProps {
 /**
  * Гейт входу в платформу: підпис Telegram **і** допуск за запрошенням.
  *
+ * **Три рішення, а не два.** Поза ботом (без підписаного `initData`) платформа
+ * не відкривається взагалі: невідомо, хто перед нами, тож немає чого
+ * показувати — і сторінки відмови з формою теж, бо писати «адміну» без
+ * ідентичності не можна. Без підпису екрана немає взагалі.
+ *
  * **Чому чекаємо відповіді, а не малюємо «далі».** Поки ми не знаємо, чи є
  * допуск, платформа встигла б відмалювати каркас — футер, хаб, порожні
  * екрани з помилками 403, — а це виглядає як поломка. Тож спершу одне питання
@@ -21,8 +26,9 @@ interface AuthGateProps {
  * @module web-platform-dev/src/app/AuthGate
  */
 export function AuthGate({ children }: AuthGateProps) {
-  const { allowed, ready } = useAccess();
+  const { allowed, ready, outsideTelegram } = useAccess();
 
+  if (outsideTelegram) return null;
   if (!ready) return <div className="wb-auth" />;
   if (!allowed) return <AccessDeniedPage />;
 

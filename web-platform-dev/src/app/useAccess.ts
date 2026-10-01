@@ -22,6 +22,8 @@ interface AccessResponse {
 }
 
 export interface Access {
+  /** Платформа взагалі не має чого показувати: відкрито поза ботом. */
+  outsideTelegram: boolean;
   /** Допуск є. */
   allowed: boolean;
   /** Відповідь прийшла (або її не потрібно): до неї платформу не показуємо. */
@@ -31,8 +33,15 @@ export interface Access {
 /**
  * Допуск людини до платформи.
  *
- * **Одне запрошення, один запит.** Без підпису `/api/user/access` відповість
- * `allowed: false`, тож окремий запит «а чи є підпис» був би зайвим.
+ * **Поза ботом платформа не відкривається взагалі.** Без підписаного `initData`
+ * ми не знаємо, хто перед нами, а значить не маємо що ані показувати, ані
+ * приймати від когось «прохання». Тому запит `/api/user/access` без підпису
+ * не йде, а гейт повертає `outsideTelegram: true` — і застосунок не малює
+ * нічого.
+ *
+ * **Одне запрошення, один запит.** Коли підпис є, питання про допуск іде один
+ * раз у `/api/user/access` — єдиний шлях, який сам запит про допуск і не
+ * закритий гейтом.
  *
  * **`null` — ще невідомо, `false` — відмова.** Три стани, а не два, бо
  * «перевіряємо» й «закрито» — різні екрани: перший чекає, другий пояснює.
@@ -42,12 +51,12 @@ export interface Access {
  * відмову зайвій.
  */
 export function useAccess(): Access {
-  const hasSession = hasTelegramSession();
+  const outsideTelegram = !hasTelegramSession();
   // `null` лише до відповіді.
-  const [allowed, setAllowed] = useState<boolean | null>(hasSession ? null : false);
+  const [allowed, setAllowed] = useState<boolean | null>(null);
 
   useEffect(() => {
-    if (!hasSession || allowed !== null) return;
+    if (outsideTelegram || allowed !== null) return;
 
     let cancelled = false;
     void (async () => {
@@ -64,7 +73,11 @@ export function useAccess(): Access {
     return () => {
       cancelled = true;
     };
-  }, [hasSession, allowed]);
+  }, [outsideTelegram, allowed]);
 
-  return { allowed: allowed === true, ready: allowed !== null };
+  return {
+    outsideTelegram,
+    allowed: allowed === true,
+    ready: !outsideTelegram && allowed !== null,
+  };
 }

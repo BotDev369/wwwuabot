@@ -13,13 +13,19 @@
  *
  * **Старий екран бота теж зникає.** Кнопка «Відкрити сторінку» — це `web_app`
  * прямо в повідомленні, і `remove_keyboard` її не торкається: лишається старий
- * екран із кнопкою, яка веде в платформу. Допуск на платформі тепер той самий,
- * тож відкриття нічого не дасть, але кнопка, яка обіцяє контент і не дає його,
- * — це брехня в інтерфейсі. Тому попереднє повідомлення бота видаляється тим
- * самим способом, яким видаляють старий екран під час рендеру (`screen.ts`),
- * а разом із ним зникає й кнопка. Telegram не дозволяє видаляти повідомлення
- * старші за 48 годин — це не помилка, а межа API, і тоді лишається текст без
- * кнопок, що вже краще за кнопку.
+ * екран із кнопкою, яка веде в платформу. Допуск на платформі той самий, тож
+ * відкриття нічого не дасть, але кнопка, яка обіцяє контент і не дає його, —
+ * це брехня в інтерфейсі. Тому зносяться **усі** екрани, через які можна
+ * було прийти: той, з якого прийшла кнопка (`callback_query.message`), і той,
+ * що бот надіслав останнім (`users.message_id`). Telegram не дозволяє
+ * видаляти повідомлення старші за 48 годин — це межа API, тоді лишається
+ * текст без кнопок, що вже краще за кнопку.
+ *
+ * **Відмова не дублюється.** Людина може натиснути кнопку на старому екрані
+ * або повторити `/start` — і щоразу ми не надсилаємо новий текст, а замінюємо
+ * попередній: `ctx.user.message_id` після відмови веде на неї саму. Інакше в
+ * чаті копиться стос «Платформа — за запрошеннями» — те саме, що ми щойно
+ * видалили з його екрана.
  *
  * @module bot-dev/src/modules/access/denied
  */
@@ -38,12 +44,19 @@ import { log } from "../../shared/utils/debug";
 export async function showAccessDenied(ctx: AppContext): Promise<void> {
   if (!ctx.chat?.id) return;
 
-  await deletePreviousScreen(ctx);
+  await deletePreviousScreens(ctx);
 
   try {
-    await ctx.api.sendMessage(ctx.chat.id, ACCESS_DENIED, {
+    const sent = await ctx.api.sendMessage(ctx.chat.id, ACCESS_DENIED, {
       reply_markup: { remove_keyboard: true },
     });
+
+    // Відмова стає «поточним екраном»: наступна відмова замінить її, а не
+    // доліпить другу таку саму. Те саме поле пише рендер сторінки.
+    if (ctx.user) {
+      ctx.user.message_id = sent.message_id;
+      ctx.userDirty = true;
+    }
     log("ACCESS", "denied | keyboard removed", { user_id: ctx.user?.user_id });
   } catch (err) {
     // Відмова не надіслалась — контент все одно не показано, тож це не
@@ -53,24 +66,36 @@ export async function showAccessDenied(ctx: AppContext): Promise<void> {
 }
 
 /**
- * Прибрати попередній екран бота — разом із його `web_app`-кнопками.
+ * Знести екрани, з яких можна було прийти до платформи.
  *
- * `ctx.user.message_id` — це номер останнього повідомлення, яке бот надіслав
- * цій людині (`screen.ts` записує його після кожного рендеру), тож ми знаємо,
- * що саме треба знести. Помилка не критична: гірше за відсутність кнопки
- * нічого немає, а відмова вже надіслана.
+ * Їх два, і це два різні номери: екран, з якого прийшла кнопка (Telegram
+ * надсилає його в кожному `callback_query`), та останній екран бота, який
+ * лежить у `users.message_id`. Обидва йдуть в один запит, бо видалення двох
+ * повідомлень — це два платні виклики, а не «спробувати, поки не вийде».
+ *
+ * Помилка не критична: гірше за відсутність кнопки нічого немає, а відмова
+ * вже надіслана.
  */
-async function deletePreviousScreen(ctx: AppContext): Promise<void> {
+async function deletePreviousScreens(ctx: AppContext): Promise<void> {
   const chatId = ctx.chat?.id;
-  const messageId = ctx.user?.message_id;
-  if (!chatId || typeof messageId !== "number") return;
+  if (!chatId) return;
+
+  const ids = new Set<number>();
+  if (typeof ctx.user?.message_id === "number") ids.add(ctx.user.message_id);
+  const callbackMessageId = ctx.callbackQuery?.message?.message_id;
+  if (typeof callbackMessageId === "number") ids.add(callbackMessageId);
+  if (ids.size === 0) return;
 
   try {
-    await ctx.api.deleteMessage(chatId, messageId);
-    ctx.user!.message_id = undefined;
-    ctx.userDirty = true;
-    log("ACCESS", "previous screen deleted", { message_id: messageId });
+    await (
+      ctx.api as unknown as {
+        raw: {
+          deleteMessages: (params: { chat_id: number; message_ids: number[] }) => Promise<unknown>;
+        };
+      }
+    ).raw.deleteMessages({ chat_id: chatId, message_ids: [...ids] });
+    log("ACCESS", "previous screens deleted", { ids: [...ids] });
   } catch (err) {
-    log("ACCESS", "failed to delete previous screen", { error: String(err) });
+    log("ACCESS", "failed to delete previous screens", { error: String(err) });
   }
 }

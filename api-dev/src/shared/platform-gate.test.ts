@@ -87,12 +87,14 @@ async function call(
   );
 }
 
-/** Запит із тілом — так надсилається прохання про допуск зі сторінки відмови. */
-function post(path: string, env: Env, body: unknown): Promise<Response> {
+/** Запит із тілом — так надсилається повідомлення адміну зі сторінки відмови. */
+function post(path: string, env: Env, body: unknown, initData?: string): Promise<Response> {
+  const headers: Record<string, string> = { "Content-Type": "application/json" };
+  if (initData) headers["X-Telegram-Init-Data"] = initData;
   return handleRequest(
     new Request(`https://api.example.com${path}`, {
       method: "POST",
-      headers: new Headers({ "Content-Type": "application/json" }),
+      headers: new Headers(headers),
       body: JSON.stringify(body),
     }),
     env,
@@ -152,17 +154,29 @@ describe("гейт допуску на платформі", () => {
     expect(res.status).not.toBe(403);
   });
 
-  it("прохання «запростіть мене» приймається і без допуску", async () => {
-    const res = await post("/api/user/access-request", makeEnv(null), {
-      text: "Запростіть мене, будь ласка",
-    });
+  it("повідомлення адміну приймається без допуску, але з підписом", async () => {
+    const initData = await makeInitData(42);
+    const res = await post(
+      "/api/user/access-request",
+      makeEnv(null),
+      { text: "Питання щодо платформи" },
+      initData,
+    );
     expect(res.status).toBe(200);
     expect(await res.json()).toEqual({ ok: true });
   });
 
-  it("⛔ ⛔ порожнє прохання не пише рядок у базу", async () => {
+  it("⛔ без підпису повідомлення адміну не приймається", async () => {
+    const res = await post("/api/user/access-request", makeEnv(null), {
+      text: "Питання щодо платформи",
+    });
+    expect(res.status).toBe(401);
+  });
+
+  it("⛔ ⛔ порожнє повідомлення не пише рядок у базу", async () => {
+    const initData = await makeInitData(42);
     for (const body of [{ text: "   " }, {}]) {
-      const res = await post("/api/user/access-request", makeEnv(null), body);
+      const res = await post("/api/user/access-request", makeEnv(null), body, initData);
       expect(res.status).toBe(400);
     }
   });
