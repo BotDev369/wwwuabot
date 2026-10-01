@@ -86,6 +86,18 @@ describe("клавіатура діалогу", () => {
     expect(labels(buildAccessKeyboard({ open: false, draft: "старе" }))).toEqual([CONTACT.write]);
   });
 
+  it("⛔ клавіатура проситься показатись навіть після `remove_keyboard` у минулих версіях", () => {
+    // Без `is_persistent` клієнт, у якому реплай-клавіатуру вже зняли, має
+    // право не показувати нову — і «Написати адміну» лишається невидимою.
+    for (const keyboard of [
+      buildAccessKeyboard({ open: false, draft: "" }),
+      buildContactKeyboard({ open: true, draft: "" }),
+      buildContactKeyboard({ open: true, draft: "текст" }),
+    ]) {
+      expect(keyboard.is_persistent).toBe(true);
+    }
+  });
+
   it("відкритий діалог не збивається `/start`-ом: клавіатура лишається своя", () => {
     expect(labels(buildAccessKeyboard({ open: true, draft: "є текст" }))).toEqual([
       CONTACT.send,

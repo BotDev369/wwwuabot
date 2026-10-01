@@ -75,13 +75,23 @@ export function appendDraft(draft: string, message: string): { text: string; tru
 /**
  * Клавіатура під чатом: доти, поки немає нічого відправляти, і три кнопки
  * після першого написаного повідомлення.
+ *
+ * **`is_persistent` — не дрібниця, а те, чи побачить кнопка людина.** Без нього
+ * клієнт має право не показувати клавіатуру знову: після `remove_keyboard`
+ * у минулих версіях («закрита» звичайна клавіатура в пам'яті клієнта) нова
+ * клавіатура так і не з'явилася б — тобто «Написати адміну» була б невидимою.
+ * Те саме стосується клавіатури платформи (`modules/access/keyboard`).
  */
 export function buildContactKeyboard(state: ContactState): ReplyKeyboardMarkup {
   const labels = state.draft
     ? [CONTACT.send, CONTACT.sendAndClose, CONTACT.closeWithoutSend]
     : [CONTACT.close];
 
-  return { keyboard: [labels.map((text) => ({ text }))], resize_keyboard: true };
+  return {
+    keyboard: [labels.map((text) => ({ text }))],
+    is_persistent: true,
+    resize_keyboard: true,
+  };
 }
 
 /**
@@ -91,7 +101,7 @@ export function buildContactKeyboard(state: ContactState): ReplyKeyboardMarkup {
  */
 export function buildAccessKeyboard(state: ContactState): ReplyKeyboardMarkup {
   if (state.open) return buildContactKeyboard(state);
-  return { keyboard: [[{ text: CONTACT.write }]], resize_keyboard: true };
+  return { keyboard: [[{ text: CONTACT.write }]], is_persistent: true, resize_keyboard: true };
 }
 
 /** Хто написав — для повідомлення адміну: ім'я, логін і Telegram-id. */
