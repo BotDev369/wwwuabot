@@ -17,6 +17,10 @@
  * «ми відкриємо доступ» тут не потрібна — вона була б і правдою для одного
  * випадку, і порожніми словами для решти.
  *
+ * **Екран, а не плашка.** Вміст займає всю висоту: лого й слова згори, форма
+ * з кнопкою внизу. Один блок посередині читається як спливаюче вікно поверх
+ * екрана, а не як сторінка.
+ *
  * **Каркас — спільний `.wb-auth*` і `.wb-textarea`, як у `LoginScreen`
  * адмінки.** Приватного CSS на цю сторінку немає й не з'явиться.
  *
@@ -46,7 +50,7 @@ export function AccessDeniedPage() {
   }
 
   return (
-    <div className="wb-auth">
+    <div className="wb-auth wb-auth--page">
       <div className="wb-auth-sheet">
         <div className="wb-auth-logo">
           <span className="wb-auth-logo-icon">✦</span>
