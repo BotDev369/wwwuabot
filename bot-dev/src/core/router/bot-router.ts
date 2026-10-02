@@ -5,7 +5,6 @@ import { handleTextInput } from "./text-input";
 import { applyContactPayload } from "../../modules/contacts/contact-link";
 import { showInviteScreen } from "../../modules/contacts/invite-screen";
 import { showAccessDenied } from "../../modules/access/denied";
-import { showMainKeyboard } from "../../modules/access/keyboard";
 import { handleContactFlow } from "../../modules/access/contact/reply";
 import { handleContactCallback } from "../../modules/access/contact/panel";
 import { deleteIncomingMessage } from "../../shared/utils/message";
@@ -20,7 +19,9 @@ import { hasAccess } from "@wwwuabot/shared/security/access";
  * Потоки:
  * 1. /start <payload> → код запрошення (екран вітання з першого переходу) або
  *    shared resolver → сторінка → рендер
- * 2. /start без payload → головна сторінка
+ * 2. /start без payload → головна сторінка: **одне** повідомлення (банер, підпис
+ *    і рядок екранів платформи), бо окреме повідомлення з реплай-клавіатурою
+ *    плодило б у чаті друге ніби без причини
  * 3. callback_data → slug → рендер
  * 4. текст → ТІЛЬКИ якщо awaits_input, інакше видаляємо; для людини без допуску
  *    звичайний текст теж просто зникає — жодної відмови на нього немає
@@ -96,17 +97,13 @@ export async function botRouter(ctx: AppContext): Promise<void> {
         const contacted = await applyContactPayload(ctx, inviteCode);
         if (contacted.kind !== "unknown") {
           if (contacted.kind !== "invited" || !(await showInviteScreen(ctx, contacted.ownerId))) {
-            await renderOrDeny(ctx, () => loadAndRenderPayload(ctx, repo, pagePayload), {
-              keyboard: true,
-            });
+            await renderOrDeny(ctx, () => loadAndRenderPayload(ctx, repo, pagePayload));
           }
           return;
         }
       }
 
-      await renderOrDeny(ctx, () => loadAndRenderPayload(ctx, repo, pagePayload), {
-        keyboard: true,
-      });
+      await renderOrDeny(ctx, () => loadAndRenderPayload(ctx, repo, pagePayload));
       return;
     }
 
@@ -170,11 +167,7 @@ export async function botRouter(ctx: AppContext): Promise<void> {
  * шукається як payload, а callback — як slug. Різниця лишається в тих, хто
  * показує; рішення «показувати чи ні» — спільне.
  */
-async function renderOrDeny(
-  ctx: AppContext,
-  render: () => Promise<void>,
-  options: { keyboard?: boolean } = {},
-): Promise<void> {
+async function renderOrDeny(ctx: AppContext, render: () => Promise<void>): Promise<void> {
   if (!hasAccess(ctx.user, ctx.env.ADMIN_TELEGRAM_ID)) {
     log("ACCESS", "denied", { user_id: ctx.user?.user_id });
     // Відмова — теж «показ», тож `/start` зникає лише після неї.
@@ -183,11 +176,6 @@ async function renderOrDeny(
   }
 
   await render();
-
-  // Клавіатуру показуємо на вході (`/start`), а не на кожному екрані:
-  // `sendMessage` після кожного кроку плодив би повідомлення в чаті, тоді як
-  // реплай-клавіатура й так лишається під ним сама.
-  if (options.keyboard) await showMainKeyboard(ctx);
 
   // Екран надішлет `postMiddleware`, тож прапорець «знести повідомлення людини»
   // ставимо тут: видалення станеться лише після вдалого рендеру.
@@ -204,7 +192,9 @@ async function loadAndRenderPayload(
     log("ROUTER", "scenario not found", { payload });
     return;
   }
-  setScenarioScreen(ctx, scenario, scenario.web_path);
+  // Порожній payload — це перший екран (`/start` без діплінка): під ним лише
+  // рядок екранів платформи, а не кнопки сторінки.
+  setScenarioScreen(ctx, scenario, scenario.web_path, !payload);
 }
 
 async function loadAndRenderScenario(
@@ -224,6 +214,7 @@ function setScenarioScreen(
   ctx: AppContext,
   scenario: import("../../shared/types/scenario").Scenario,
   webPath?: string,
+  landing?: boolean,
 ): void {
   log("ROUTER", "scenario loaded", {
     slug: scenario.slug,
@@ -257,5 +248,6 @@ function setScenarioScreen(
     rich_message: scenario.rich_message,
     rich_data: scenario.rich_data,
     web_path: routePath,
+    landing,
   };
 }

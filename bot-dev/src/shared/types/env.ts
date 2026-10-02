@@ -88,6 +88,11 @@ export interface ScreenState {
   rich_data?: Record<string, unknown>[] | null;
   /** Повний шлях поточного маршруту; заповнюється для Telegram deep link. */
   web_path?: string;
+  /**
+   * Перший екран (`/start` без діплінка): під ним лише рядок екранів
+   * платформи, без кнопок сторінки — вони ведуть у сценарії, яких ще немає.
+   */
+  landing?: boolean;
 }
 
 export type AppContext = Context & {

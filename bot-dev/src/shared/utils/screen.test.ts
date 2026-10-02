@@ -1,7 +1,10 @@
 /** Regression tests for the Telegram screen keyboard builder. */
 
 import { describe, expect, it } from "vitest";
-import { buildScreenButtons, buildWebAppUrl } from "./screen";
+import { FAVORITES_PATH, PROFILE_PATH, SPACE_PATH } from "@wwwuabot/shared/app/routes";
+import { buildPlatformRow, buildScreenButtons, buildWebAppUrl } from "./screen";
+
+const PLATFORM = "https://app.example.com";
 
 describe("buildWebAppUrl", () => {
   it("joins the configured platform origin with the current web route", () => {
@@ -73,5 +76,36 @@ describe("buildScreenButtons", () => {
         web_app: { url: "https://web-platform-dev.diskomate.workers.dev/" },
       },
     ]);
+  });
+});
+
+describe("перший екран: один рядок екранів платформи", () => {
+  const landing = {
+    buttons: [[{ text: "МоїДати", callback_data: "mydate" }]],
+    web_path: "/",
+    landing: true,
+  } as const;
+
+  it("⛔ кнопок сторінки на ньому немає — вони ведуть у сценарії, яких ще немає", () => {
+    const buttons = buildScreenButtons(landing, PLATFORM);
+
+    expect(buttons).toHaveLength(1);
+    expect(buttons[0]).toHaveLength(3);
+    expect(buttons[0].map((b) => b.text)).toEqual(["👤", "👍", "👥"]);
+  });
+
+  it("⛔ три кнопки ведуть на ті самі адреси, що й пункти футера платформи", () => {
+    const buttons = buildScreenButtons(landing, PLATFORM);
+
+    expect(buttons[0].map((b) => b.web_app?.url)).toEqual([
+      `${PLATFORM}${PROFILE_PATH}`,
+      `${PLATFORM}${FAVORITES_PATH}`,
+      `${PLATFORM}${SPACE_PATH}`,
+    ]);
+  });
+
+  it("⛔ без адреси платформи рядка немає — Telegram не прийме web_app без url", () => {
+    expect(buildPlatformRow(undefined)).toBeNull();
+    expect(buildScreenButtons(landing, undefined)).toEqual([]);
   });
 });
