@@ -11,8 +11,10 @@ import { renderToStaticMarkup } from "react-dom/server";
 import { AppBarView } from "./AppBar";
 import { EMPTY_CHROME, mergeChrome, type ScreenChrome } from "./screen-chrome";
 
+const ACTIONS = { onBack: () => undefined, onTheme: () => undefined };
+
 function render(chrome: ScreenChrome): string {
-  return renderToStaticMarkup(<AppBarView chrome={chrome} />);
+  return renderToStaticMarkup(<AppBarView chrome={chrome} {...ACTIONS} />);
 }
 
 const WITH_ALL: ScreenChrome = {
@@ -49,6 +51,14 @@ describe("хедер застосунку", () => {
     const html = render({ ...EMPTY_CHROME, title: "Профіль" });
 
     expect(html).toContain('aria-label="Тема"');
+  });
+
+  it("⛔ «Назад» є на кожному екрані — навіть там, де немає меню сторінки", () => {
+    // Людина прийшла з конкретної сторінки й мусить вернутися саме туди.
+    const html = render({ ...EMPTY_CHROME, title: "Нотатки" });
+
+    expect(html).toContain('aria-label="Назад"');
+    expect(html).not.toContain('aria-label="Меню сторінки"');
   });
 
   it("знак серця лишається читабельним без підпису", () => {
