@@ -1,13 +1,11 @@
 /**
  * Сторож сайдбара: **він один**.
  *
- * Сайдбарів у продукті чотири місця (меню адмінки, панель розділів Простору,
- * розділи теми й вибір характеру в них же), і кожне колись мало свою мірку
- * рядка: адмінка — пункт 8×10px із підписом 13px, Простір — `!important`
- * поверх бренда, розділи теми — власний набір `.wb-theme-nav*` із плишкою, а
- * `apple.css` / `android.css` переписували геометрію пункту собі (`padding`
- * 12px 14px проти 12px 16px, `min-height` 44 проти 48). Одну деталь із
- * чотирма копіями мірок око читає як чотири деталі — саме це й сталося.
+ * Сайдбарів у продукті два місця (меню адмінки й панель розділів Простору),
+ * і кожне колись мало свою мірку рядка: адмінка — пункт 8×10px із підписом
+ * 13px, Простір — `!important` поверх стилю, а `android.css` переписував
+ * геометрію пункту собі (`padding` 12px 14px проти 12px 16px, `min-height` 44
+ * проти 48). Одна деталь із двома копіями мірок око читає як дві деталі.
  *
  * Кожне з цих правил ламається **мовчки**: новий сайдбар рендериться своєю
  * розміткою й виглядає майже так само, а число повертається в бренд одним
@@ -119,15 +117,13 @@ const TOKENS = topLevel(css(SHEET("tokens.css")));
 const NAV = topLevel(css(SHEET("app-chrome.css")));
 const SPACE_NAV = topLevel(css(SHEET("space-nav.css")));
 const THEME_PAGES = topLevel(css(SHEET("theme-pages.css")));
-const BRANDS = ["apple.css", "android.css"].map((name) => css(SHEET(name)));
+const STYLES = ["android.css"].map((name) => css(SHEET(name)));
 
 /** Місця, де сайдбар є в продукті, і файл, який його рендерить. */
 const SITES = [
   "web-admin-dev/src/layout/Sidebar/Sidebar.tsx",
   "web-admin-dev/src/layout/Sidebar/SidebarNav.tsx",
   "web-platform-dev/src/pages/SpaceNav.tsx",
-  "web-platform-dev/src/pages/themes/ThemeHubPage.tsx",
-  "web-platform-dev/src/pages/themes/ThemeStylePage.tsx",
 ];
 
 describe("сайдбар один — і мірки в нього одні", () => {
@@ -141,7 +137,7 @@ describe("сайдбар один — і мірки в нього одні", () 
       // Читати можна (`var(--sidebar-item-h)`), оголошувати — ні.
       expect(css(SHEET(file)), file).not.toMatch(/--sidebar-item-h\s*:/);
     }
-    for (const brand of BRANDS) {
+    for (const brand of STYLES) {
       expect(brand).not.toContain("--sidebar-item-h");
       expect(brand).not.toContain("--sidebar-pad");
     }
@@ -174,7 +170,7 @@ describe("сайдбар один — і мірки в нього одні", () 
     // І стан один на обидва вигляди панели: своїх правил про «тут ти» в місці
     // панели не лишилось (доти в розгорнутій була плишка, у смузі — колір).
     expect(SPACE_NAV, "стан панели — загальний").not.toContain("wb-nav-item--active");
-    for (const brand of BRANDS) {
+    for (const brand of STYLES) {
       expect(brand).not.toContain(".wb-nav-item {");
       expect(brand).not.toContain(".wb-nav-item--active");
     }
@@ -202,12 +198,9 @@ describe("сайдбари рендерить один компонент", () =
       expect(file, path).toContain("@wwwuabot/ui/nav");
       expect(file, path).toContain("SideBar");
     }
-    // Панель Простору й хаб теми зводять свою розмітку **до даних**: склад
+    // Панель Простору зводить свою розмітку **до даних**: склад
     // пунктів, а не знаки й підписи вручну.
     expect(source("web-platform-dev/src/pages/SpaceNav.tsx")).toContain("SPACE_TABS");
-    expect(source("web-platform-dev/src/pages/themes/ThemeHubPage.tsx")).toContain(
-      "THEME_SECTIONS",
-    );
   });
 
   it("другого вигляду рядка не існує — власні класи розділів теми зняті", () => {

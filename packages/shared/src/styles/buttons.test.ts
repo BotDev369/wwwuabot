@@ -3,16 +3,16 @@
  *
  * Чому це тест, а не коментар. 16.09.2026 власник сказав: «скрізь завеликі
  * відступи у кнопок, вони багато місця займають». Причина виявилась не в
- * спільному шарі, а в брендах: `apple.css` і `android.css` писали своїм
+ * спільному шарі, а в стилі: `android.css` писав своїм
  * `.wb-btn` `padding: 12px 24px !important` і `min-height: 48px !important`.
  * Через це будь-яке зменшення в `components.css` не діяло **взагалі** — та сама
- * пастка, що була з рамкою поля (правило 13): бренд переписує кирпичик, а не
+ * пастка, що була з рамкою поля (правило 13): стиль переписує кирпичик, а не
  * задає його характер.
  *
  * Правило: мірки кнопки — це токени `--btn-pad-y` / `--btn-pad-x`, і задають їх
- * і спільний шар, і бренди. `padding` у `.wb-btn` пише **лише** базове правило,
+ * і спільний шар, і стиль. `padding` у `.wb-btn` пише **лише** базове правило,
  * і пише його з цих токенів. Треба щільніші кнопки — міняється токен, а не
- * правило бренду.
+ * правило стилю.
  *
  * `packages/shared/src/styles/fields.test.ts` зроблений так само: розбору CSS у
  * тестовому середовищі немає (environment: node, без DOM), тож CSS читається як
@@ -35,7 +35,6 @@ const CSS_FILES = [
   "packages/shared/src/styles/tokens.css",
   "packages/shared/src/styles/components.css",
   "packages/shared/src/styles/app-chrome.css",
-  "packages/shared/src/styles/apple.css",
   "packages/shared/src/styles/android.css",
   "web-platform-dev/src/index.css",
   "web-admin-dev/src/index.css",

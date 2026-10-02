@@ -11,7 +11,7 @@
  *
  * Правило (`AGENTS.md` §3, `DESIGN_SYSTEM.md` правило 13): кожне поле оголошує
  * шрифт `max(16px, 1em)` — «не менше 16px, але не дрібніше за тему». `1em`
- * у `font-size` — розмір батька, тож бренд із більшим шрифтом (Apple — 17px)
+ * у `font-size` — розмір батька, тож стиль із більшим шрифтом (у нас 17px)
  * зберігає свій розмір. Межа стоїть **у правилі самого контрола**, де її не
  * може перекрити ніщо наступне.
  *
@@ -38,7 +38,6 @@ const MIN_FIELD_FONT_PX = 16;
 const CSS_FILES = [
   "packages/shared/src/styles/components.css",
   "packages/shared/src/styles/app-chrome.css",
-  "packages/shared/src/styles/apple.css",
   "packages/shared/src/styles/android.css",
   "packages/shared/src/styles/page-layout.css",
   "packages/shared/src/styles/drawer.css",

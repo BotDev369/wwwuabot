@@ -1,23 +1,29 @@
 /**
- * «Платформа» — перша вкладка готових тем: перевірені трійки кольорів.
+ * «Шаблони» — вкладка пункту «Кольори теми»: перевірені трійки кольорів.
  *
- * **Готова тема міняє кольори, а не шрифт.** Шрифт людина вибрала сама, і
- * трійка кольорів не має права його забирати: «готове» — це швидкий старт, а не
+ * **Шаблон міняє кольори, а не шрифт.** Шрифт людина вибрала сама, і трійка
+ * кольорів не має права його забирати: «готове» — це швидкий старт, а не
  * повне перезаписування вибору.
  *
- * Вибір стає **одразу** (це той самий дотик, що і в панелі): прев'ю тут не
- * потрібне, бо весь застосунок і є прев'ю — людина бачить його на власні очі.
+ * Вибір іде **у чернетку панелі**, а не в пам'ять: застосовує його той самий
+ * рядок «Відмінити / Застосувати», що й кольори, набрані вручну. Інакше в
+ * меню було б два способи вирішити одне й те саме, а скасування не скасовувало
+ * б нічого.
  *
  * @module web-platform-dev/src/pages/themes/PlatformThemesPanel
  */
 
 import type { ReactElement } from "react";
 import { COLOR_PRESETS, Icon, isPresetActive } from "@wwwuabot/shared";
-import { useAppliedScheme } from "./useAppliedScheme";
+import type { ApplicableScheme } from "@wwwuabot/shared/themes/apply";
+import type { AppliedLook } from "./useAppliedScheme";
 
-export function PlatformThemesPanel(): ReactElement {
-  const { applied, apply } = useAppliedScheme();
+export interface PlatformThemesPanelProps {
+  applied: AppliedLook;
+  onApply: (scheme: ApplicableScheme) => void;
+}
 
+export function PlatformThemesPanel({ applied, onApply }: PlatformThemesPanelProps): ReactElement {
   return (
     <div className="wb-theme-presets">
       {COLOR_PRESETS.map((preset) => {
@@ -29,7 +35,7 @@ export function PlatformThemesPanel(): ReactElement {
             aria-pressed={active}
             className={`wb-theme-preset${active ? " wb-theme-preset--active" : ""}`}
             onClick={() =>
-              apply({
+              onApply({
                 bg: preset.bg,
                 text: preset.text,
                 accent: preset.accent,

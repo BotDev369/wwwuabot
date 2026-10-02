@@ -44,7 +44,6 @@ import {
   SPACE_GAME_ROUTE,
   SPACE_ROUTE,
   SPACE_USER_ROUTE,
-  THEME_ROUTE,
 } from "@/app/routes";
 import { ContactsPage } from "@/pages/ContactsPage";
 import { FavoritesPage } from "@/pages/favorites/FavoritesPage";
@@ -66,11 +65,6 @@ import { ShopProductForm } from "@/pages/shop/ShopProductForm";
 import { ShopProductsPage } from "@/pages/shop/ShopProductsPage";
 import { UserPageView } from "@/pages/user-pages/UserPageView";
 import { UserPagesPage } from "@/pages/user-pages/UserPagesPage";
-import { ThemeLayout } from "@/pages/themes/ThemeLayout";
-import { ThemeHubPage } from "@/pages/themes/ThemeHubPage";
-import { ThemeCustomizePage } from "@/pages/themes/ThemeCustomizePage";
-import { ThemePresetsPage } from "@/pages/themes/ThemePresetsPage";
-import { ThemeStylePage } from "@/pages/themes/ThemeStylePage";
 
 export const router = createBrowserRouter([
   {
@@ -88,22 +82,10 @@ export const router = createBrowserRouter([
       // за роботою. Під сторінкою магазину вже стоїть його черга замовлень,
       // тож цей екран лише називає магазини (`ProfileOrdersPage`).
       { path: PROFILE_ORDERS_PATH, element: <ProfileOrdersPage /> },
-      // Тема — розділ зі **своїми сторінками**: у кожного розділу є адреса
-      // (посилання, історія, «назад»), а між ними веде друга смуга футера
-      // (`ThemeLayout`). Три пункти — три сторінки; джерела тем (платформа,
-      // свої, з простору) діляться вкладками всередині `presets`.
-      // Склад розділів — `pages/themes/theme-sections.ts`; маршрути мусять
-      // збігатися з ним, і це стереже `theme-sections.test.ts`.
-      {
-        path: `${PROFILE_ROUTE}/${THEME_ROUTE}`,
-        element: <ThemeLayout />,
-        children: [
-          { index: true, element: <ThemeHubPage /> },
-          { path: "style", element: <ThemeStylePage /> },
-          { path: "presets", element: <ThemePresetsPage /> },
-          { path: "customize", element: <ThemeCustomizePage /> },
-        ],
-      },
+      // Тема — **меню, а не розділ**: палітра в хедері відкриває `ThemeMenu`,
+      // де пункти («Кольори теми», «Шрифт теми») розкриваються там же, а
+      // редактор теми — модалкою. Адреси тут не потрібно: вибір вигляду не
+      // мають ні посилати, ні відкривати в іншому місці.
       // Старі посилання на створення ведуть у I: всі дії хабу вже там.
       { path: CREATE_ROUTE, element: <Navigate to={PROFILE_PATH} replace /> },
       // «Розвиток» — самооцінка. Довший шлях проходження іде **перед**

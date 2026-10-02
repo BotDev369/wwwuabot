@@ -1,51 +1,60 @@
 /**
- * `useSchemeEditor` — стан сторінки «Налаштувати тему»: три кольори, шрифт,
- * назва й публічність.
+ * `useSchemeEditor` — стан редактора теми: назва, публічність і збереження.
  *
- * **Правка теми — це та сама форма.** Коли адреса несе `?id=`, редактор
- * заповнюється з теми **один раз** (інакше перечитування затирало б те, що
+ * **Правка теми — це та сама форма.** Коли редактор відкривають на темі, її
+ * поля заповнюються **один раз** (інакше перечитування затирало б те, що
  * людина щойно міняє), а збереження надсилає її номер — тобто оновлює, а не
  * створює другу з тією ж назвою.
  *
- * **Живий перегляд лишається живим.** Кольори й шрифт застосовуються на екран
- * одразу (це роблять `useUserColors` і `useFontChoice`), а «Зберегти тему» —
- * це два записи: у пам'ять пристрою (щоб вибір пережив перезавантаження) і на
- * сервер (щоб тема була в бібліотеці).
+ * **Кольори й шрифт — не свої, а спільні з меню.** Вони живуть у чернетці
+ * панелі вигляду (`useUserColors` / `useFontChoice`), і редактор працює з
+ * тією ж чернеткою: другий примірник цих хуків у модалці поверх меню
+ * застосував би свої кольори й скасовував би вибір панелі на виході.
+ *
+ * **Живий перегляд лишається живим.** Кольори й шрифт лягають на екран одразу,
+ * а «Зберегти тему» — це два записи: у пам'ять пристрою (щоб вибір пережив
+ * перезавантаження) і на сервер (щоб тема була в бібліотеці).
  *
  * @module web-platform-dev/src/pages/themes/useSchemeEditor
  */
 
 import { useCallback, useEffect, useRef, useState } from "react";
-import { useSearchParams } from "react-router-dom";
-import { isCompleteColors, useFontChoice, useUserColors } from "@wwwuabot/shared";
+import {
+  isCompleteColors,
+  type UseFontChoiceResult,
+  type UseUserColorsResult,
+} from "@wwwuabot/shared";
 import type { ThemeScheme } from "@wwwuabot/shared/themes";
-import { useMyThemes } from "./useMyThemes";
+import type { MyThemesLibrary } from "./theme-library";
 
-export function useSchemeEditor() {
-  const [searchParams] = useSearchParams();
-  const themes = useMyThemes();
-  const colors = useUserColors();
-  const fonts = useFontChoice();
+export interface SchemeEditor {
+  name: string;
+  setName: (name: string) => void;
+  isPublic: boolean;
+  setIsPublic: (value: boolean) => void;
+  busy: boolean;
+  save: () => Promise<boolean>;
+}
 
-  const [name, setName] = useState("Моя тема");
-  const [isPublic, setIsPublic] = useState(false);
+export function useSchemeEditor(
+  editing: ThemeScheme | null,
+  colors: UseUserColorsResult,
+  fonts: UseFontChoiceResult,
+  library: MyThemesLibrary,
+): SchemeEditor {
+  const [name, setName] = useState(editing ? editing.name : "Моя тема");
+  const [isPublic, setIsPublic] = useState(editing?.isPublic ?? false);
   const [busy, setBusy] = useState(false);
-
-  const editId = Number(searchParams.get("id")) || 0;
-  const editing: ThemeScheme | null = editId
-    ? (themes.items.find((scheme) => scheme.id === editId) ?? null)
-    : null;
 
   // Заповнюємо редактор **один раз** на тему: далі полями керує людина.
   const loaded = useRef(0);
   useEffect(() => {
-    if (!editing || loaded.current === editing.id) return;
-    loaded.current = editing.id;
+    const id = editing?.id ?? 0;
+    if (!editing || loaded.current === id) return;
+    loaded.current = id;
     setName(editing.name);
     setIsPublic(editing.isPublic);
-    colors.setSlot("bg", editing.bg);
-    colors.setSlot("text", editing.text);
-    colors.setSlot("accent", editing.accent);
+    colors.setColors({ bg: editing.bg, text: editing.text, accent: editing.accent });
     fonts.setFont(editing.font);
   }, [editing, colors, fonts]);
 
@@ -58,7 +67,7 @@ export function useSchemeEditor() {
     try {
       colors.save();
       fonts.save();
-      await themes.save({
+      await library.save({
         ...(editing ? { id: editing.id } : {}),
         name,
         bg: draft.bg,
@@ -71,18 +80,7 @@ export function useSchemeEditor() {
     } finally {
       setBusy(false);
     }
-  }, [busy, colors, editing, fonts, isPublic, name, themes]);
+  }, [busy, colors, editing, fonts, isPublic, library, name]);
 
-  return {
-    themes: { loading: themes.loading, error: themes.error, reload: themes.reload },
-    colors,
-    fonts,
-    name,
-    setName,
-    isPublic,
-    setIsPublic,
-    editing,
-    busy,
-    save,
-  };
+  return { name, setName, isPublic, setIsPublic, busy, save };
 }

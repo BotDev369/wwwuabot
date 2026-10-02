@@ -69,7 +69,7 @@
   продавцем. Ціна — текст («договірна» теж ціна). Правила — `docs/SHOPS.md`.
 - **Conditional Rendering** — умовний показ блоків за role/tariff/status/permissions користувача
   (`packages/shared/src/utils/condition-evaluator.ts`).
-- **Design System** — подвійна тема Apple/Material через `data-brand` на `<html>` і **три кольори
+- **Design System** — стиль продукту (Material) через `data-brand` на `<html>` і **три кольори
   користувача** (фон / основний / акцент) через `data-colors` + `data-colors-mode`. CSS-токени:
   `packages/shared/src/styles/`; палітру з трьох кольорів виводить `user-colors.css`, а сам вибір живе
   в `localStorage` (ключі `wwwuabot-colors` / `wwwuabot-font`). Світлої / темної як вибору немає —

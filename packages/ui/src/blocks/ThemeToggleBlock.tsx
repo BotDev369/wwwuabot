@@ -1,7 +1,7 @@
 /**
  * Page Builder — Theme Toggle Block.
  *
- * Кнопка перемикання теми (бренд Apple/Material + світла/темна схема)
+ * Кнопка перемикання схеми (світла/темна)
  * як блок сценарію. Замінює захардкодений ThemeButton у сайдбарі.
  *
  * @module packages/ui/src/blocks/ThemeToggleBlock

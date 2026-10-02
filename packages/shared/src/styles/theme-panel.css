@@ -59,6 +59,16 @@
   background: var(--surface-active);
 }
 
+/* Назва пункту і те, що обрано, — два рядки однією кнопкою: це і є «меню
+   вигляду», де пункт одразу показує свій вибір (назва теми, шрифт). */
+.wb-theme-section-text {
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 auto;
+  min-width: 0;
+  gap: 2px;
+}
+
 .wb-theme-section-title {
   flex: 1 1 auto;
   min-width: 0;
@@ -67,6 +77,17 @@
   letter-spacing: 0.08em;
   text-transform: uppercase;
   color: var(--text-muted);
+}
+
+/* Стан пункту: назва теми чи шрифт. Обрізається одним рядком — довге ім’я
+   власної теми не має розпирати голову пункту. */
+.wb-theme-section-hint {
+  font-size: var(--text-sm);
+  font-weight: var(--weight-medium);
+  color: var(--text-primary);
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
 }
 
 .wb-theme-section-caret {
@@ -113,17 +134,23 @@
   color: var(--green);
 }
 
-/* Три кнопки в рядок не влазять (на телефоні вони розривались як завгодно),
-   тому рядок дій — дві рівні колонки: зверху «Скинути» та «Зберегти», а
-   «Зберегти і закрити» — на всю ширину під ними, як останній крок. */
+/* Рядок дій — дві рівні колонки: «Відмінити» та «Застосувати». Рівними, бо
+   це два однакові кроки, а не «звичайна» й «головна» кнопка: застосування
+   без змі нічого не робить, тож виділяти його было б неточно. */
 .wb-theme-actions {
   display: grid;
   grid-template-columns: 1fr 1fr;
   align-items: center;
 }
 
-.wb-theme-actions > .wb-btn:last-child {
-  grid-column: 1 / -1;
+/* Кнопка в кінці пункту («Налаштувати власну») — на всю ширину: вона закінчує
+   пункт, а не конкурує з кольорами в ньому. */
+.wb-theme-extra {
+  display: flex;
+}
+
+.wb-theme-extra > .wb-btn {
+  flex: 1 1 auto;
 }
 
 /* ── Готові палітри ─────────────────────────────────────────────────────── */
@@ -468,18 +495,4 @@
   min-width: 0;
   font-family: var(--font-mono);
   background: var(--bg-0);
-}
-
-/* ── Стиль (Apple / Android) ────────────────────────────────────────────── */
-.wb-theme-brands {
-  display: flex;
-  gap: var(--sp-2);
-}
-
-/* Обраний характер — **акцентний підпис і обвід** (правило 25): це вибір, тож
-   залитої пілюлі йому не треба — її читали як кнопку поруч із кнопкою. */
-.wb-theme-brand--active {
-  color: var(--accent);
-  font-weight: var(--weight-semibold);
-  box-shadow: inset 0 0 0 1px var(--accent);
 }

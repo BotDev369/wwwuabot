@@ -58,6 +58,7 @@ export {
   FONT_KEY,
   FONT_KIND_LABELS,
   FONT_WEIGHTS,
+  STYLE_FONT_LABEL,
   THEME_FONTS,
   fontCssUrl,
   fontLabel,
@@ -78,16 +79,8 @@ export {
 export { icons } from "./components/icons";
 export type { IconName } from "./components/icons";
 export { Icon } from "./components/Icon";
-export {
-  BRANDS,
-  getBrand,
-  getBrandIds,
-  resolveLegacyStyle,
-  LEGACY_STYLE_MAP,
-} from "./styles/registry";
-export type { Brand, Scheme, Theme, BrandDefinition, StyleId } from "./styles/registry";
-// Legacy re-exports (deprecated — use BRANDS/getBrand instead)
-export { STYLES, getStyle, getStyleIds } from "./styles/registry";
+export { BRAND, BRAND_FONTS } from "./styles/registry";
+export type { Brand, Scheme, Theme } from "./styles/registry";
 
 // ── App ──────────────────────────────────────────────────────────────
 export { initTheme } from "./app/initTheme";

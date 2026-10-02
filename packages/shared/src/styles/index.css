@@ -8,20 +8,19 @@
  * Usage in any worker:
  *   import "@wwwuabot/shared/styles/index.css";
  *
- * Brands:
- *   apple.css         — iOS 18 HIG (data-brand="apple")
+ * Стиль продукту — один:
  *   android.css       — Material Design 3 (data-brand="android")
  *
  * Apply via HTML attributes:
- *   <html data-brand="apple|android">  — visual brand
- *   <html data-theme="light|dark">     — color scheme
+ *   <html data-brand="android">   — стиль продукту (не вибір)
+ *   <html data-theme="light|dark"> — color scheme
  */
 
 /* ═══════════════════════════════════════════════════════════════════════════
  * IMPORT ORDER MATTERS:
  * 1. Open Props tokens (via :where(html) — zero specificity)
  * 2. Our design tokens + themes (via :root — override Tailwind's @layer theme)
- * 3. Brand CSS (via [data-brand] — highest specificity, overrides everything)
+ * 3. Style CSS (via [data-brand] — highest specificity, overrides everything)
  *
  * IMPORTANT: Tailwind MUST be imported AFTER this file in each app's
  * index.css, so that our @layer theme variables override Tailwind's.
@@ -45,13 +44,12 @@
 @import "./tokens.css";
 @import "./themes.css";
 
-/* ── Brand themes (each uses [data-brand] selectors) ── */
-@import "./apple.css";
+/* ── Стиль продукту (селектори [data-brand]) ── */
 @import "./android.css";
 
 /* ── Три кольори користувача ──────────────────────────────────────────────
    Палітра, виведена з `--user-bg` / `--user-text` / `--user-accent`, які
-   ставить `applyColors()` (`styles/user-colors.ts`). Імпорт ПІСЛЯ брендів:
+   ставить `applyColors()` (`styles/user-colors.ts`). Імпорт ПІСЛЯ стилю:
    селектор тут — `html[data-colors][data-colors-mode=…]`, тож бренд і схема
    його не перекривають (див. шапку файлу). */
 @import "./user-colors.css";
@@ -81,7 +79,7 @@
    не в CSS однієї з оболонок. */
 @import "./subbar.css";
 
-/* ── Панель «Тема» (три кольори користувача) ────────────────────────────────
+/* ── Панель вигляду (кольори теми, шрифт) ────────────────────────────────
    Класи рендерить спільний `ThemeColorPanel`, тож вони тут, а не в CSS однієї
    з оболонок. У `components.css` не покладені, бо це цілісна деталь зі своїми
    класами — як `drawer.css`. */
@@ -93,7 +91,7 @@
    рівні за специфічністю правила виграє той, хто йде пізніше. */
 @import "./drawer.css";
 
-/* ── Сторінки теми (налаштування, бібліотека схем, готові палітри) ─────────
+/* ── Теми: картки схем і форми теми (бібліотека, редактор) ──────────────────
    Теж окремим файлом, як `theme-panel.css`: цілісна деталь зі своїми класами. */
 @import "./theme-pages.css";
 

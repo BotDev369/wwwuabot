@@ -391,7 +391,7 @@ describe("лінії екрана — берег, вміст, текст", () =>
     // `!important`, а сайдбар виглядав як дві різні деталі.
     expect(rule(APP, ".wb-nav-item")?.body).toContain("min-height: var(--sidebar-item-h)");
     // Бренд мірок пункту не переписує — ні своїм `padding`, ні `min-height`.
-    for (const brand of ["apple.css", "android.css"]) {
+    for (const brand of ["android.css"]) {
       const file = css(`packages/shared/src/styles/${brand}`);
       expect(file, brand).not.toContain(`.wb-nav-item {`);
       expect(file, brand).not.toContain("--sidebar-item-h");

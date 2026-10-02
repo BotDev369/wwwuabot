@@ -1,49 +1,53 @@
 /**
- * «З простору» — вкладка готових тем: те, чим поділилися інші.
+ * «Публічні кольори» — вкладка пункту «Кольори теми»: те, чим поділилися інші.
  *
  * **Те саме, що видно в Просторі.** Тема, яку людина відкрила, з'являється тут
  * і у вкладці «Теми» Простору — це одна вибірка з однієї таблиці, тож другого
  * списку з тими самими темами не існує.
  *
- * **Чужу тему можна лише взяти собі.** Змінювати й прибирати чужу не можна, і
- * кнопок під неї тут немає: показувати дію, яка гарантовано не працює, — це
+ * **Чужу тему можна лише взяти собі.** Змінювати й прибрати чужу не можна, і
+ * кнопок під нею тут немає: показувати дію, яка гарантовано не працює, — це
  * обіцянка, а не дія (AGENTS.md §7).
  *
  * @module web-platform-dev/src/pages/themes/SharedThemesPanel
  */
 
 import type { ReactElement } from "react";
-import { useNavigate } from "react-router-dom";
 import { Icon } from "@wwwuabot/shared";
+import type { ApplicableScheme } from "@wwwuabot/shared/themes/apply";
 import { SchemeList } from "./SchemeList";
-import { themeSectionPath } from "./theme-sections";
-import { useAppliedScheme } from "./useAppliedScheme";
-import { useSharedThemes } from "./useSharedThemes";
+import type { AppliedLook } from "./useAppliedScheme";
+import type { ThemeLibrary } from "./theme-library";
 
-export function SharedThemesPanel(): ReactElement {
-  const themes = useSharedThemes();
-  const { applied, apply } = useAppliedScheme();
-  const navigate = useNavigate();
+export interface SharedThemesPanelProps {
+  list: ThemeLibrary;
+  applied: AppliedLook;
+  onApply: (scheme: ApplicableScheme) => void;
+  onCreate: () => void;
+}
 
+export function SharedThemesPanel({
+  list,
+  applied,
+  onApply,
+  onCreate,
+}: SharedThemesPanelProps): ReactElement {
   return (
     <SchemeList
-      items={themes.items}
-      loading={themes.loading}
-      error={themes.error}
-      onRetry={() => themes.reload(true)}
+      items={list.items}
+      loading={list.loading}
+      error={list.error}
+      onRetry={() => list.reload(true)}
       applied={applied}
-      onApply={apply}
+      onApply={onApply}
       empty={{
         icon: "globe",
         title: "Поки ніхто не поділився темою.",
-        hint: "Свою можна відкрити в «Налаштувати тему» — перемикач «Доступна публічно».",
+        hint: "Свою можна відкрити тут — перемикач «Доступна публічно».",
         action: (
-          <button
-            className="wb-btn wb-btn-primary"
-            onClick={() => navigate(themeSectionPath("customize"))}
-          >
+          <button className="wb-btn wb-btn-primary" onClick={onCreate}>
             <Icon name="edit" size={16} />
-            До налаштувань
+            Налаштувати власну
           </button>
         ),
       }}

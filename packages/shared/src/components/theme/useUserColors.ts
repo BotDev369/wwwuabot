@@ -12,10 +12,10 @@
  *
  * Вихід із панелі без збереження вертає збережену палітру: «подивився» і
  * «вибрав» — різні речі, і друга не має ставатися випадково. Вертає саме **зі
- * сховища**, а не зі стану: «Зберегти і закрити» закриває панель тим самим
- * дотиком, тож розмонтування стається **до** перерендеру зі свіжим `saved` — і
- * знятий зі стану знімок повернув би на екран СТАРУ палітру (тема не
- * застосовувалась до перезавантаження сторінки). У сховищі ж запис уже лежить.
+ * сховища**, а не зі стану: «Застосувати» закриває панель тим самим дотиком,
+ * тож розмонтування стається **до** перерендеру зі свіжим `saved` — і знятий зі
+ * стану знімок повернув би на екран СТАРУ палітру (тема не застосовувалась до
+ * перезавантаження сторінки). У сховищі ж запис уже лежить.
  *
  * Поки вибору немає зовсім, чернетка починається з **тих кольорів, які вже на
  * екрані** (`activeColorsFromDom`). Панель з трьома порожніми слотами — це
@@ -55,6 +55,8 @@ export interface UseUserColorsResult {
   /** Попередження про нечитабельний вибір — або `null`. */
   warning: string | null;
   setSlot: (slot: ColorSlot, value: string) => void;
+  /** Уся трійка одразу — «взяти тему собі»: один дотик, а не три рядки. */
+  setColors: (next: ColorDraft) => void;
   applyPreset: (preset: ColorPreset) => void;
   save: () => void;
   reset: () => void;
@@ -88,14 +90,16 @@ export function useUserColors(): UseUserColorsResult {
     applyColors(isCompleteColors(draft) ? draft : savedRef.current);
   }, [draft]);
 
-  // Вихід із панелі без «Зберегти» вертає збережену палітру. Джерело —
-  // сховище: при «Зберегти і закрити» панель зникає тим самим дотиком, і
-  // стан `saved` ще не встигає доїхати до рендера (див. шапку файлу).
+  // Вихід із панелі без «Застосувати» вертає збережену палітру. Джерело —
+  // сховище: панель зникає тим самим дотиком, і стан `saved` ще не встигає
+  // доїхати до рендера (див. шапку файлу).
   useEffect(() => () => applyColors(readStoredColors()), []);
 
   const setSlot = useCallback((slot: ColorSlot, value: string) => {
     setDraft((current) => ({ ...current, [slot]: value }));
   }, []);
+
+  const setColors = useCallback((next: ColorDraft) => setDraft({ ...next }), []);
 
   const applyPreset = useCallback((preset: ColorPreset) => {
     setDraft({ bg: preset.bg, text: preset.text, accent: preset.accent });
@@ -128,6 +132,7 @@ export function useUserColors(): UseUserColorsResult {
     dirty,
     warning,
     setSlot,
+    setColors,
     applyPreset,
     save,
     reset,

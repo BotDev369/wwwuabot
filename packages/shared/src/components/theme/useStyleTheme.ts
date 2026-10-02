@@ -1,42 +1,20 @@
 /**
- * `useStyleTheme` — характер (бренд) і схема, які живуть на `<html>`.
+ * `useStyleTheme` — схема, яка живе на `<html>`.
  *
- * Тут лишається рівно те, що не є трьома кольорами користувача: **характер**
- * (Apple / Android — типографіка, радіуси, щільність) і **схема** брендових
- * правил (`data-theme`). Колірну палітру задає людина трьома кольорами
- * (`useUserColors`), і тоді саме вони малюють екран — але характер від цього
- * не змінюється.
- *
- * Файл переїхав із `components/StyleToggle.tsx` у цю теку, щоб панель
- * (`ThemeColorPanel`) могла читати бренд, не замикаючи імпорт на компонент,
- * який її ж рендерить.
+ * Тут лишається рівно те, що не є трьома кольорами користувача: **схема**
+ * (`data-theme`, світла чи темна). Характер продукту вибором не є — він
+ * константа (див. `./registry`), тож окремого стану для нього немає: значити
+ * його в UI було б показувати людині вибір, якого вона не робить.
+ * Колірну палітру задає людина трьома кольорами (`useUserColors`), і вона ж
+ * визначає, світла тема чи темна на екрані.
  *
  * @module packages/shared/src/components/theme/useStyleTheme
  */
 
 import { useCallback, useEffect, useState } from "react";
-import { BRANDS, type Brand, type Scheme } from "../../styles/registry";
+import { BRAND, type Scheme } from "../../styles/registry";
 
-const BRAND_KEY = "wwwuabot-brand";
-const LEGACY_STYLE_KEY = "wwwuabot-style";
 const THEME_KEY = "wwwuabot-theme";
-
-function getStoredBrand(): Brand {
-  try {
-    const stored = localStorage.getItem(BRAND_KEY) as Brand | null;
-    if (stored && (stored === "apple" || stored === "android")) return stored;
-    const legacy = localStorage.getItem(LEGACY_STYLE_KEY);
-    if (legacy) {
-      const brand: Brand = legacy === "android" ? "android" : "apple";
-      localStorage.setItem(BRAND_KEY, brand);
-      localStorage.removeItem(LEGACY_STYLE_KEY);
-      return brand;
-    }
-    return "apple";
-  } catch {
-    return "apple";
-  }
-}
 
 function getStoredScheme(): Scheme {
   try {
@@ -48,28 +26,13 @@ function getStoredScheme(): Scheme {
   }
 }
 
-function applyBrand(brand: Brand) {
-  document.documentElement.setAttribute("data-brand", brand);
-}
-
 function applyScheme(scheme: Scheme) {
   document.documentElement.setAttribute("data-theme", scheme);
 }
 
-/** Бренд плюс схема. «Системної» схеми немає — світлоту задає вибір кольорів. */
+/** Схема + стиль продукту на атрибутах. «Системної» схеми немає. */
 export function useStyleTheme() {
-  const [brand, setBrandState] = useState<Brand>(getStoredBrand);
   const [scheme, setSchemeState] = useState<Scheme>(getStoredScheme);
-
-  const setBrand = useCallback((next: Brand) => {
-    setBrandState(next);
-    try {
-      localStorage.setItem(BRAND_KEY, next);
-    } catch {
-      /* ignore */
-    }
-    applyBrand(next);
-  }, []);
 
   const setScheme = useCallback((next: Scheme) => {
     setSchemeState(next);
@@ -86,9 +49,9 @@ export function useStyleTheme() {
   }, [scheme, setScheme]);
 
   useEffect(() => {
-    applyBrand(brand);
+    document.documentElement.setAttribute("data-brand", BRAND);
     applyScheme(scheme);
-  }, [brand, scheme]);
+  }, [scheme]);
 
-  return { brand, scheme, setBrand, setScheme, toggleScheme, brands: BRANDS };
+  return { scheme, setScheme, toggleScheme };
 }

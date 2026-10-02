@@ -9,32 +9,34 @@
  * `ScreenChromeProvider` стоїть тут, бо хедер малюється в каркасі, а знає про
  * себе той екран, який зараз відкрито (`useScreenChrome`).
  *
- * **Дві дії хедера знає лише оболонка**, бо вона одна володіє роутером:
- * «Назад» повертає на попередній екран (`-1`, тож саме туди, звідли прийшли),
- * а палітра відкриває **сторінку** теми (`/profile/theme`), а не аркуш поверх
- * екрана — у теми є розділи зі своїми адресами.
+ * **«Назад» знає тільки оболонка**, бо вона одна володіє роутером: повертає на
+ * попередній екран (`-1`, тож саме туди, звідки прийшли). Палітра ж не
+ * навігація, а поверхня — меню теми живе тут, у каркасі, і закривається тим
+ * самим дотиком, яким відкрилася.
  *
  * @module web-platform-dev/src/layout/PlatformShell
  */
 
-import { useCallback, type ReactElement } from "react";
+import { useCallback, useState, type ReactElement } from "react";
 import { Outlet, useNavigate } from "react-router-dom";
 import { AppBar, ScreenChromeProvider } from "@wwwuabot/ui/nav";
-import { THEME_PATH } from "@/app/routes";
+import { ThemeMenu } from "@/pages/themes/ThemeMenu";
 import { PlatformTabBar } from "./PlatformTabBar";
 
 export function PlatformShell(): ReactElement {
   const navigate = useNavigate();
   const goBack = useCallback(() => void navigate(-1), [navigate]);
-  const openTheme = useCallback(() => void navigate(THEME_PATH), [navigate]);
+  const [themeOpen, setThemeOpen] = useState(false);
+  const closeTheme = useCallback(() => setThemeOpen(false), []);
 
   return (
     <ScreenChromeProvider>
       <div className="wb-tabbar-layout">
-        <AppBar onBack={goBack} onTheme={openTheme} />
+        <AppBar onBack={goBack} onTheme={() => setThemeOpen(true)} />
         <Outlet />
         <PlatformTabBar />
       </div>
+      {themeOpen && <ThemeMenu onClose={closeTheme} />}
     </ScreenChromeProvider>
   );
 }
