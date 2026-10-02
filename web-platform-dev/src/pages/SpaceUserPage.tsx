@@ -15,14 +15,12 @@
 
 import type { ReactElement } from "react";
 import { Icon, PublicUserCard } from "@wwwuabot/shared";
-import { useLocation, useNavigate, useParams } from "react-router-dom";
+import { useLocation, useParams } from "react-router-dom";
 import { useScreenChrome } from "@wwwuabot/ui/nav";
-import { SPACE_PATH } from "@/app/routes";
 import { useSpaceUser } from "./useSpaceUser";
 
 export function SpaceUserPage(): ReactElement {
   const { id } = useParams<{ id: string }>();
-  const navigate = useNavigate();
   const { pathname } = useLocation();
   // Сміття в адресі (`/space/u/abc`) — це не «нуль», а відсутність людини:
   // запит із таким номером пішов би в нікуди й повернув чужу помилку.
@@ -41,18 +39,6 @@ export function SpaceUserPage(): ReactElement {
 
   return (
     <div className="wb-page">
-      <div className="wb-page-head">
-        {/* Назва людини — в хедері; тут лишається тільки «Назад» у Простір. */}
-        <button
-          type="button"
-          className="wb-close-btn"
-          onClick={() => navigate(SPACE_PATH)}
-          aria-label="Назад"
-        >
-          <Icon name="arrow-left" size={18} />
-        </button>
-      </div>
-
       {loading && (
         <div className="wb-empty">
           <div className="wb-skeleton" style={{ width: 160, height: 20 }} />

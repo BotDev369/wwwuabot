@@ -107,36 +107,13 @@
   animation: wb-game-rise var(--duration) var(--ease-out) both;
 }
 
-/* Верхній рядок партії: назад і назва. Усе інше на екрані належить грі. */
+/* Верхній рядок партії: лише назва. «Назад» живе в хедері застосунку, тож
+   другий «назад» усередині гри був би тим самим двома способами. */
 .wb-game-hud {
   flex: 0 0 auto;
   display: flex;
   align-items: center;
   gap: var(--sp-2);
-}
-
-.wb-game-back {
-  width: 40px;
-  height: 40px;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  padding: 0;
-  border: none;
-  border-radius: var(--radius-full);
-  background: var(--game-field);
-  color: var(--game-ink);
-  cursor: pointer;
-  transition:
-    transform var(--duration-fast) var(--ease),
-    color var(--duration-fast) var(--ease),
-    background var(--duration-fast) var(--ease);
-}
-
-.wb-game-back:active {
-  transform: scale(0.94);
-  background: var(--game-accent-soft);
-  color: var(--game-accent);
 }
 
 .wb-game-name {

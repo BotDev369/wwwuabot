@@ -28,17 +28,6 @@ import { spaceTabPath } from "../space-tabs";
 import { GameView } from "./GameView";
 import { gameOption } from "./games";
 
-/** Назва гри — в хедері, тож «Назад» лишається сам, без заголовку. */
-function Head({ onBack }: { onBack: () => void }): ReactElement {
-  return (
-    <div className="wb-page-head">
-      <button type="button" className="wb-close-btn" onClick={onBack} aria-label="Назад">
-        <Icon name="arrow-left" size={18} />
-      </button>
-    </div>
-  );
-}
-
 export function SpaceGamePage(): ReactElement {
   useScreenChrome({ title: "Ігри" });
   const { key } = useParams<{ key: string }>();
@@ -53,7 +42,6 @@ export function SpaceGamePage(): ReactElement {
   if (!game) {
     return (
       <div className="wb-page">
-        <Head onBack={back} />
         <div className="wb-empty">
           <span className="wb-empty-icon">
             <Icon name="game" size={32} />
@@ -71,10 +59,9 @@ export function SpaceGamePage(): ReactElement {
     // `data-game` стоїть і тут: палітру носить **екран**, бо він малює тло й
     // верхній рядок, а сцена всередині бере ті самі значення для себе.
     <div className="wb-game-screen" data-game={game.key}>
+      {/* Рядок гри — лише її назва: «Назад» уже в хедері, і друга кнопка
+          повертала б те саме двома способами. */}
       <div className="wb-game-hud">
-        <button type="button" className="wb-game-back" onClick={back} aria-label="Назад">
-          <Icon name="arrow-left" size={18} />
-        </button>
         <span className="wb-game-name">{game.label}</span>
       </div>
       <GameView game={game.key} />
