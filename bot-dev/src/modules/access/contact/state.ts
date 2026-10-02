@@ -39,22 +39,28 @@ export const CONTACT_CALLBACK_PREFIX = "contact:";
 export interface ContactState {
   open: boolean;
   draft: string;
+  /** Скільки повідомлень людина вже написала — показуємо лічильником. */
+  count: number;
   /** Номер повідомлення з inline-кнопками, щоб не плодити їх щодразу. */
   panelId?: number | null;
 }
 
 /** Яка саме дія: підпис кнопки реплай-клавіатури або `callback_data`. */
-export type ContactAction = "write" | "close" | "send" | "send-close" | "close-without-send";
+export type ContactAction = "write" | "close" | "send" | "close-without-send";
 
 /** Стан із рядка користувача; відсутні колонки = діалогу не було. */
-export function readContactState(
-  user: Pick<BotUser, "admin_dialog_open" | "admin_dialog_text" | "admin_panel_id"> | undefined,
-): ContactState {
+export function readContactState(user: Partial<BotUser> | undefined): ContactState {
   return {
     open: user?.admin_dialog_open === 1,
     draft: user?.admin_dialog_text ?? "",
+    count: toCount(user?.admin_dialog_count),
     panelId: user?.admin_panel_id ?? null,
   };
+}
+
+/** Жива база віддає `NULL` у колонку, додану через `ALTER TABLE`, — це нуль. */
+function toCount(value: unknown): number {
+  return typeof value === "number" && Number.isInteger(value) && value > 0 ? value : 0;
 }
 
 /**
@@ -68,8 +74,7 @@ export function readContactAction(text: string): ContactAction | null {
     [CONTACT.write, "write"],
     [CONTACT.close, "close"],
     [CONTACT.send, "send"],
-    [CONTACT.sendAndClose, "send-close"],
-    [CONTACT.closeWithoutSend, "close-without-send"],
+    [CONTACT.closeDraft, "close-without-send"],
   ];
   return buttons.find(([label]) => label === text)?.[1] ?? null;
 }
@@ -78,21 +83,28 @@ export function readContactAction(text: string): ContactAction | null {
 export function readContactCallback(data: string): ContactAction | null {
   if (!data.startsWith(CONTACT_CALLBACK_PREFIX)) return null;
   const action = data.slice(CONTACT_CALLBACK_PREFIX.length);
-  const known: ContactAction[] = ["write", "close", "send", "send-close", "close-without-send"];
+  const known: ContactAction[] = ["write", "close", "send", "close-without-send"];
   return known.includes(action as ContactAction) ? (action as ContactAction) : null;
 }
 
 /**
  * Дописати повідомлення до чернетки.
  *
+ * `count` — лічильник повідомлень після кроку: людина бачить, скільки вона
+ * написала, бо написане живе в ній самій, а не в повідомленні бота.
+ *
  * `truncated` — текст не вмістився: тоді треба сказати людині, що далі лише
  * відправляти або закривати, бо її наступне повідомлення вже не зміниться.
  */
-export function appendDraft(draft: string, message: string): { text: string; truncated: boolean } {
+export function appendDraft(
+  draft: string,
+  message: string,
+  count = 0,
+): { text: string; count: number; truncated: boolean } {
   const parts = [draft, message.trim()].filter(Boolean);
   const joined = parts.join("\n\n");
   const text = sanitizeAccessRequestText(joined);
-  return { text, truncated: joined.length > ACCESS_REQUEST_MAX };
+  return { text, count: count + 1, truncated: joined.length > ACCESS_REQUEST_MAX };
 }
 
 /**
@@ -147,11 +159,10 @@ export function buildPanel(state: ContactState): {
   }
 
   return {
-    text: CONTACT.appended(state.draft.length),
+    text: CONTACT.counted(state.count),
     reply_markup: {
       inline_keyboard: [
-        [panelButton(CONTACT.send, "send"), panelButton(CONTACT.sendAndClose, "send-close")],
-        [panelButton(CONTACT.closeWithoutSend, "close-without-send")],
+        [panelButton(CONTACT.closeDraft, "close-without-send"), panelButton(CONTACT.send, "send")],
       ],
     },
   };

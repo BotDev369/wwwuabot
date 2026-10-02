@@ -32,20 +32,34 @@ function panelLabels(state: Parameters<typeof buildPanel>[0]): string[] {
 describe("чернетка звернення", () => {
   it("⛔ порожній стан — це закритий дialog, а не відкритий без тексту", () => {
     // Жива база віддає `NULL` у колонки, додані через `ALTER TABLE`.
-    expect(readContactState(undefined)).toEqual({ open: false, draft: "", panelId: null });
+    expect(readContactState(undefined)).toEqual({
+      open: false,
+      draft: "",
+      count: 0,
+      panelId: null,
+    });
     expect(readContactState({ admin_dialog_open: null, admin_dialog_text: null })).toEqual({
       open: false,
       draft: "",
+      count: 0,
       panelId: null,
     });
+  });
+
+  it("⛔ лічильник не довіряє сміттю в базі: не число — це нуль", () => {
+    expect(readContactState({ admin_dialog_count: 3 }).count).toBe(3);
+    expect(readContactState({ admin_dialog_count: null }).count).toBe(0);
+    // Тип обіцяє число, але база могла віддати рядок — лічильник не мусить
+    // на цьому впасти, він просто каже «нуль повідомлень».
+    expect(readContactState({ admin_dialog_count: "3" as unknown as number }).count).toBe(0);
+    expect(readContactState({ admin_dialog_count: -2 }).count).toBe(0);
   });
 
   it("кнопки розпізнаються точно: звичайний текст — не кнопка", () => {
     expect(readContactAction(CONTACT.write)).toBe("write");
     expect(readContactAction(CONTACT.close)).toBe("close");
     expect(readContactAction(CONTACT.send)).toBe("send");
-    expect(readContactAction(CONTACT.sendAndClose)).toBe("send-close");
-    expect(readContactAction(CONTACT.closeWithoutSend)).toBe("close-without-send");
+    expect(readContactAction(CONTACT.closeDraft)).toBe("close-without-send");
 
     // «Напишіть, будь ласка» — це звернення, а не натискання кнопки.
     expect(readContactAction("Напишіть, будь ласка")).toBeNull();
@@ -53,14 +67,15 @@ describe("чернетка звернення", () => {
 
   it("повідомлення накопичуються в одному рядку, а не затирають одне одне", () => {
     const first = appendDraft("", "перше");
-    expect(first).toEqual({ text: "перше", truncated: false });
+    expect(first).toEqual({ text: "перше", count: 1, truncated: false });
 
-    expect(appendDraft(first.text, "друге").text).toBe("перше\n\nдруге");
+    const second = appendDraft(first.text, "друге", first.count);
+    expect(second.text).toBe("перше\n\nдруге");
+    expect(second.count).toBe(2);
   });
 
   it("⛔ довший за межу текст обрізається — і про це кажемо", () => {
     const result = appendDraft("", "а".repeat(ACCESS_REQUEST_MAX + 100));
-
     expect(result.text).toHaveLength(ACCESS_REQUEST_MAX);
     // Без цього прапорця людина дописувала б далі й не знала, що далі нічого.
     expect(result.truncated).toBe(true);
@@ -73,20 +88,27 @@ describe("чернетка звернення", () => {
 
 describe("панель на повідомленні", () => {
   it("закритий діалог пропонує лише «Написати адміну»", () => {
-    expect(panelLabels({ open: false, draft: "старе" })).toEqual([CONTACT.write]);
+    expect(panelLabels({ open: false, draft: "старе", count: 0 })).toEqual([CONTACT.write]);
   });
 
   it("відкритий дialog без тексту — тільки «Закрити діалог»: відправляти нічого", () => {
-    expect(panelLabels({ open: true, draft: "" })).toEqual([CONTACT.close]);
+    expect(panelLabels({ open: true, draft: "", count: 0 })).toEqual([CONTACT.close]);
   });
 
   it("⛔ після першого повідомлення — три дії: відправити, завершити, закрити", () => {
     // Без цих кнопок написане неможливо відіслати — дialog не має виходу.
-    expect(panelLabels({ open: true, draft: "є текст" })).toEqual([
+    // Без цих кнопок написане неможливо відіслати — дialog не має виходу.
+    const panel = buildPanel({ open: true, draft: "є текст", count: 1 });
+    expect(panel.reply_markup.inline_keyboard).toHaveLength(1);
+    expect(panelLabels({ open: true, draft: "є текст", count: 1 })).toEqual([
+      CONTACT.closeDraft,
       CONTACT.send,
-      CONTACT.sendAndClose,
-      CONTACT.closeWithoutSend,
     ]);
+  });
+
+  it("⛔ лічильник рахує повідомлення, а не символи", () => {
+    // Написане живе в людині, тож їй треба бачити, скільки вона написала.
+    expect(buildPanel({ open: true, draft: "є текст", count: 3 }).text).toBe(CONTACT.counted(3));
   });
 
   it("екран відмови має кнопку «Написати адміну»", () => {
@@ -98,7 +120,7 @@ describe("панель на повідомленні", () => {
   });
 
   it("⛔ callback розпізнається лише наш префікс — чужий slug лишається сторінкою", () => {
-    expect(readContactCallback("contact:send-close")).toBe("send-close");
+    expect(readContactCallback("contact:send")).toBe("send");
     expect(readContactCallback("contact:write")).toBe("write");
 
     // Інакше роутер відкривав би сторінку, якої не існує.

@@ -13,20 +13,25 @@ import { handleContactCallback } from "./panel";
 import { handleContactFlow } from "./reply";
 
 const GUEST = 555;
+/** Номер повідомлення людини: на нього бот відповідає, тож він має бути видимий. */
+const GUEST_MESSAGE = 77;
 /** Власник у тесті — те саме значення, що живе в секреті `ADMIN_TELEGRAM_ID`. */
 const OWNER = 372567448;
 
-/** Одне надіслане повідомлення: чат, текст і підписи клавіатури. */
+/** Одне надіслане повідомлення: чат, текст, підписи кнопок і відповідь на що. */
 export interface Sent {
   chat: number;
   text: string;
   labels: string[];
+  /** Номер повідомлення людини, на яке це повідомлення — відповідь. */
+  replyTo?: number;
 }
 
 export interface Store {
   ctx: AppContext;
   sent: Sent[];
-  edited: Sent[];
+  /** Повідомлення, з яких зняли кнопки (число — ідентифікатор екрана). */
+  detached: number[];
   inserted: string[];
   texts: () => string[];
   labelsOfLast: () => string[];
@@ -38,10 +43,17 @@ export interface Store {
  * бот відправив. `saveFails` імітує недоступну базу в момент відправки.
  */
 export function chat(
-  options: { open?: boolean; draft?: string; panelId?: number; saveFails?: boolean } = {},
+  options: {
+    open?: boolean;
+    draft?: string;
+    count?: number;
+    panelId?: number;
+    screenId?: number;
+    saveFails?: boolean;
+  } = {},
 ): Store {
   const sent: Sent[] = [];
-  const edited: Sent[] = [];
+  const detached: number[] = [];
   const inserted: string[] = [];
 
   const db = {
@@ -66,26 +78,22 @@ export function chat(
       chatId: number,
       text: string,
       extra?: {
-        reply_markup?: { keyboard?: { text: string }[][]; inline_keyboard?: { text: string }[][] };
+        reply_markup?: { inline_keyboard?: { text: string }[][] };
+        reply_parameters?: { message_id: number };
       },
     ) => {
-      const markup = extra?.reply_markup;
-      // Кнопки бувають і під чатом, і на повідомленні — тестуємо обидва.
-      const labels = (markup?.keyboard?.[0] ?? markup?.inline_keyboard?.flat() ?? []).map(
-        (b) => b.text,
-      );
-      sent.push({ chat: chatId, text, labels });
-      return { message_id: 1 };
+      const rows = extra?.reply_markup?.inline_keyboard ?? [];
+      sent.push({
+        chat: chatId,
+        text,
+        labels: rows.flat().map((b) => b.text),
+        replyTo: extra?.reply_parameters?.message_id,
+      });
+      return { message_id: sent.length };
     },
     deleteMessage: async () => true,
-    editMessageText: async (
-      chatId: number,
-      _messageId: number,
-      text: string,
-      extra?: { reply_markup?: { inline_keyboard?: { text: string }[][] } },
-    ) => {
-      const rows = extra?.reply_markup?.inline_keyboard ?? [];
-      edited.push({ chat: chatId, text, labels: rows.flat().map((b) => b.text) });
+    editMessageReplyMarkup: async (_chatId: number, messageId: number) => {
+      detached.push(messageId);
       return true;
     },
   };
@@ -95,14 +103,16 @@ export function chat(
     api,
     chat: { id: GUEST },
     from: { id: GUEST },
-    message: { message_id: 1 },
+    message: { message_id: GUEST_MESSAGE },
     user: {
       user_id: GUEST,
       first_name: "Оля",
       username: "olya",
       admin_dialog_open: options.open ? 1 : 0,
       admin_dialog_text: options.draft ?? "",
+      admin_dialog_count: options.count ?? (options.draft ? 1 : 0),
       admin_panel_id: options.panelId ?? null,
+      message_id: options.screenId ?? null,
     },
   } as unknown as AppContext;
 
@@ -111,7 +121,7 @@ export function chat(
   return {
     ctx,
     sent,
-    edited,
+    detached,
     inserted,
     texts: () => sent.map((s) => s.text),
     labelsOfLast: () => sent[sent.length - 1]?.labels ?? [],
@@ -127,6 +137,9 @@ export async function tap(store: Store, data: string): Promise<boolean> {
 
 /** Крок людини: надісланий текст або (`undefined`) фото/файл/стікер. */
 export async function step(store: Store, payload: string | undefined): Promise<boolean> {
-  (store.ctx as unknown as { message: unknown }).message = { message_id: 1, text: payload };
+  (store.ctx as unknown as { message: unknown }).message = {
+    message_id: GUEST_MESSAGE,
+    text: payload,
+  };
   return handleContactFlow(store.ctx);
 }

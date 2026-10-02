@@ -70,17 +70,15 @@ export async function applyContactAction(
   if (action === "write") {
     return state.open
       ? { kind: "draft", state, truncated: false }
-      : { kind: "opened", state: setState(ctx, true, "") };
+      : { kind: "opened", state: setState(ctx, true, "", 0) };
   }
 
   switch (action) {
     case "close":
     case "close-without-send":
-      return { kind: "closed", state: setState(ctx, false, ""), kept: false };
+      return { kind: "closed", state: setState(ctx, false, "", 0), kept: false };
     case "send":
       return submit(ctx, state);
-    case "send-close":
-      return submit(ctx, state, true);
     default:
       break;
   }
@@ -88,8 +86,12 @@ export async function applyContactAction(
   if (text === undefined) return { kind: "text-only", state };
   if (text.startsWith("/")) return { kind: "ignored", state };
 
-  const { text: draft, truncated } = appendDraft(state.draft, text);
-  return { kind: "draft", state: setState(ctx, true, draft), truncated };
+  const draft = appendDraft(state.draft, text, state.count);
+  return {
+    kind: "draft",
+    state: setState(ctx, true, draft.text, draft.count),
+    truncated: draft.truncated,
+  };
 }
 
 /**
@@ -98,14 +100,10 @@ export async function applyContactAction(
  * Порожня чернетка — це не помилка, а «нічего не написано»: тоді просто
  * закриваємо діалог, бо надсилати порожній рядок у базу нездачно.
  */
-async function submit(
-  ctx: AppContext,
-  state: ContactState,
-  finish = false,
-): Promise<ContactOutcome> {
+async function submit(ctx: AppContext, state: ContactState): Promise<ContactOutcome> {
   const user = ctx.user!;
   const text = sanitizeAccessRequestText(state.draft);
-  if (!text) return { kind: "closed", state: setState(ctx, false, ""), kept: false };
+  if (!text) return { kind: "closed", state: setState(ctx, false, "", 0), kept: false };
 
   try {
     await ensureTables(ctx.env.DB, ["access_requests"]);
@@ -120,7 +118,7 @@ async function submit(
   }
 
   await notifyAdmin(ctx, text);
-  return { kind: "sent", state: setState(ctx, !finish, "") };
+  return { kind: "sent", state: setState(ctx, false, "", 0) };
 }
 
 /**
@@ -149,10 +147,11 @@ async function notifyAdmin(ctx: AppContext, text: string): Promise<void> {
 }
 
 /** Стан у базі; `ctx.userDirty` записує його post-middleware. */
-function setState(ctx: AppContext, open: boolean, text: string): ContactState {
+function setState(ctx: AppContext, open: boolean, text: string, count: number): ContactState {
   const user = ctx.user!;
   user.admin_dialog_open = open ? 1 : 0;
   user.admin_dialog_text = text;
+  user.admin_dialog_count = count;
   ctx.userDirty = true;
 
   const state = readContactState(user);

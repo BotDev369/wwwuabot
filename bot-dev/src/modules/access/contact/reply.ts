@@ -1,12 +1,12 @@
 /**
  * Діалог з адміном за текстовими повідомленнями в чаті.
  *
- * **Оновлюємо панель, а не надсилаємо нове повідомлення.** Кнопки «Відправити»,
- * «Відправити і завершити» і «Закрити без відправки» живуть на панелі
- * (`panel.ts`), тож після кожного написаного повідомлення ми редагуємо її — і
- * людина бачить кнопки там, де вони малюються завжди. Раніше ми надсилали
- * повідомлення з реплай-клавіатурою: у клієнтах, де вона не малюється, кнопки
- * не з'являлися взагалі, а людина лишалася без «Відправити».
+ * **Написане не видаляється.** Раніше кожне повідомлення людини зносилося, а
+ * бот показував лічильник символів на екрані. Тепер бот **відповідає на саме
+ * те повідомлення** (`reply_parameters`), тож воно мусить лишатися в чаті:
+ * інакше відповідь повисла б у порожнечі, а людина не бачила б, що її
+ * прочитали. Видаляється лише те, що не є зверненням: натискання кнопки
+ * реплай-клавіатури й фото/файл/стікер.
  *
  * **Сюди потрапляє і нетекстове.** Фото, файл чи стікер у відкритому діалозі —
  * це не помилка, а «я не це читаю»: мовчки ігнорувати означало б, що повідомлення
@@ -22,7 +22,7 @@ import { showPanel } from "./panel";
 import { readContactAction, readContactState } from "./state";
 
 /**
- * Крокнути дialogом за повідомленням у чаті; `false` — це не наш текст, хай
+ * Крокнути діалогом за повідомленням у чаті; `false` — це не наш текст, хай
  * далі розбирає роутер.
  */
 export async function handleContactFlow(ctx: AppContext): Promise<boolean> {
@@ -34,10 +34,19 @@ export async function handleContactFlow(ctx: AppContext): Promise<boolean> {
   // Команда — не чернетка: `/start` лишається тим, чим є, а написане не зникає.
   if (text?.startsWith("/")) return false;
 
+  const action = readContactAction(text ?? "");
   // Діалог закритий: реагуємо лише на «Написати адміну» (текстом кнопки).
-  if (!state.open && readContactAction(text ?? "") !== "write") return false;
+  if (!state.open && action !== "write") return false;
 
-  await deleteIncomingMessage(ctx);
-  await showPanel(ctx, await applyContactAction(ctx, readContactAction(text ?? ""), text));
+  // Натискання кнопки — це не звернення, тож повідомлення-кнопка зникає;
+  // нетекст теж (його ми не читаємо, а сміття в чаті не потрібне).
+  if (action !== null || text === undefined) await deleteIncomingMessage(ctx);
+
+  const messageId = ctx.message?.message_id;
+  await showPanel(
+    ctx,
+    await applyContactAction(ctx, action, text),
+    typeof messageId === "number" ? messageId : undefined,
+  );
   return true;
 }

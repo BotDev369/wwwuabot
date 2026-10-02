@@ -1,9 +1,10 @@
 /**
- * Панель дialogу — тести натискань на inline-кнопках.
+ * Панель діалогу — тести натискань на inline-кнопках.
  *
- * **Це основний спосіб натиснути кнопку**, тож тут перевіряється, що панель
- * редагується, а не плодиться новою, і що натискання веде в те саме рішення,
- * що й кнопка під чатом (`reply.test`).
+ * **Це основний спосіб натиснути кнопку**, тож тут перевіряється дві речі:
+ * що панель з'являється новим повідомленням (а не редагується старим), і що
+ * кнопки з минулих екранів знімаються — щоб вони жили тільки під останнім
+ * повідомленням, а не кожна під кожним написаним.
  *
  * @module bot-dev/src/modules/access/contact/panel.test
  */
@@ -12,15 +13,25 @@ import { describe, expect, it } from "vitest";
 import { CONTACT } from "../../../shared/config/texts";
 import { chat, tap } from "./fixture";
 
-describe("панель дialogу", () => {
-  it("«Написати адміну» відкриває дialog і надсилає панель із однією кнопкою", async () => {
+describe("панель діалогу", () => {
+  it("«Написати адміну» відкриває діалог і надсилає панель із однією кнопкою", async () => {
     const store = chat();
 
     expect(await tap(store, "contact:write")).toBe(true);
     expect(store.ctx.user?.admin_dialog_open).toBe(1);
     expect(store.sent[0]?.labels).toEqual([CONTACT.close]);
-    // Номер панелі запам'ятовано, щоб наступна дія редагувала те саме повідомлення.
+    // Номер панелі запам'ятовано, щоб наступна дія зняла кнопки саме з неї.
     expect(store.ctx.user?.admin_panel_id).toBe(1);
+  });
+
+  it("⛔ стара кнопка «Написати адміну» зникає в момент натискання", async () => {
+    // Інакше в чаті лишалися б дві кнопки відкритих дialogів, і «під останнім
+    // повідомленням» перестало б бути правдою.
+    const store = chat({ screenId: 11 });
+
+    await tap(store, "contact:write");
+
+    expect(store.detached).toContain(11);
   });
 
   it("⛔ чужий callback — не ours: роутер має далі відкрити сторінку", async () => {
@@ -32,38 +43,31 @@ describe("панель дialogу", () => {
 
   it("⛔ повторне «Написати адміну» не стирає написане", async () => {
     // Кнопка є і на екрані відмови, і на панелі: натискання не має бути «новим стартом».
-    const store = chat({ open: true, draft: "вже написано" });
+    const store = chat({ open: true, draft: "вже написано", count: 2 });
 
     await tap(store, "contact:write");
 
     expect(store.ctx.user?.admin_dialog_text).toBe("вже написано");
+    expect(store.ctx.user?.admin_dialog_count).toBe(2);
   });
 
-  it("«Відправити і завершити» зберігає звернення, дякує й повертає «Написати адміну»", async () => {
+  it("«Відправити» зберігає звернення, дякує й повертає «Написати адміну»", async () => {
     const store = chat({ open: true, draft: "питання", panelId: 42 });
 
-    expect(await tap(store, "contact:send-close")).toBe(true);
+    expect(await tap(store, "contact:send")).toBe(true);
 
     expect(store.inserted).toEqual(["питання"]);
-    expect(store.edited[0]).toMatchObject({ text: CONTACT.sent, labels: [CONTACT.write] });
+    expect(store.sent.at(-1)).toMatchObject({ text: CONTACT.sent, labels: [CONTACT.write] });
     expect(store.ctx.user?.admin_dialog_open).toBe(0);
+    expect(store.ctx.user?.admin_dialog_count).toBe(0);
   });
 
-  it("«Закрити без відправки» не надсилає нічого", async () => {
+  it("«Закрити» не відсилає нічого й повертає «Написати адміну»", async () => {
     const store = chat({ open: true, draft: "випадково", panelId: 42 });
 
     await tap(store, "contact:close-without-send");
 
     expect(store.inserted).toHaveLength(0);
-    expect(store.edited[0]?.text).toBe(CONTACT.closed(false));
-  });
-
-  it("⛔ мертва панель не ламає нічого: надсилаємо нову", async () => {
-    // Повідомлення могли видалити — тоді редагування падає, а діалог лишається.
-    const store = chat({ open: true, draft: "текст" });
-
-    await tap(store, "contact:close");
-
-    expect(store.sent.length).toBeGreaterThan(0);
+    expect(store.sent.at(-1)?.text).toBe(CONTACT.closed(false));
   });
 });

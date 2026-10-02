@@ -15,7 +15,8 @@
  *   3. Голий `100vh` (`AGENTS.md` §3): висота мусить мати `100dvh`-фолбек,
  *      інакше адресний рядок на телефоні «стрибає».
  *   4. Емодзі в UI (`AGENTS.md` §4) — тільки `<Icon />`. Піктограми, не
- *      символи: `↑ ↓ ✕ ★ ✓` лишаються дозволеними, бо це не емодзі.
+ *      символи: `↑ ↓ ✕ ★ ✓` лишаються дозволеними, бо це не емодзі. Тексти
+ *      бота (`bot-dev` `texts.ts`) — не UI, вони поза перевіркою.
  *
  * Запуск: `npm run check:quality` (той самий гейт стоїть у CI).
  * Відомий борг живе в `scripts/quality-baseline.mjs` і тільки зменшується.
@@ -134,16 +135,22 @@ for (const file of vhScanned) {
 /**
  * Тільки піктограми (емодзі) — символи `↑ ↓ ✕ ★ ✓ ♑` не заборонені: це не
  * емодзі, а типографіка. Різниця навмисна, інакше правило ловило б зодіак.
+ *
+ * **Тексти бота (`bot-dev/src/shared/config/texts.ts`) — виняток.** Це не UI
+ * оболонки, а рядки, які Telegram малює сам: там немає й не може бути `<Icon />`,
+ * і лічильник написаного без піктограми не зрозумілий. Правило стосується
+ * інтерфейсу, а не тексту повідомлення.
  */
 const EMOJI_RE = /[\u{1F000}-\u{1FAFF}\u{FE0F}\u{20E3}]/u;
 const emojiAllowed = new Set(emojiInUi);
+const BOT_TEXTS = join("bot-dev", "src", "shared", "config", "texts.ts");
 
 const emojiScanned = [
   ...walk("packages/ui/src", isSource),
   ...walk("packages/shared/src", isSource),
   ...walk("packages/shared/src/styles", isCss),
   ...SHELLS.flatMap((s) => walk(join(s, "src"), (p) => isCss(p) || isSource(p))),
-];
+].filter((file) => file !== BOT_TEXTS);
 
 for (const file of emojiScanned) {
   readLines(file).forEach((line, i) => {
