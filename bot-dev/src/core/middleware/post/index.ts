@@ -2,6 +2,7 @@ import { MiddlewareFn } from "grammy";
 import type { AppContext } from "../../../shared/types/env";
 import { UserRepository } from "../../../modules/users/user.repository";
 import { sendOrEditLiveMessage } from "../../../shared/utils/screen";
+import { deleteIncomingMessage } from "../../../shared/utils/message";
 import { botRouter } from "../../router/bot-router";
 import { log } from "../../../shared/utils/debug";
 import { dispatchNotification } from "../../../modules/notifications/dispatcher";
@@ -15,7 +16,13 @@ export const postMiddleware: MiddlewareFn<AppContext> = async (ctx) => {
   // 2. Рендеринг (відправка нового + видалення старих повідомлень)
   if (ctx.screen) {
     log("POST", "screen is set, rendering...");
-    await sendOrEditLiveMessage(ctx);
+    const shown = await sendOrEditLiveMessage(ctx);
+
+    // `/start` і діплінки зникають **лише після** того, як екран показано:
+    // видалити раніше — значить знести повідомлення людини, не показавши їй
+    // нічого (просто зникнути в Telegram). Прапорок ставить роутер, бо саме він
+    // знає, що повідомлення не було показане окремо (екран запрошення, наприклад).
+    if (shown && ctx.dropIncomingAfterRender) await deleteIncomingMessage(ctx);
   } else {
     log("POST", "no screen set, skipping render");
   }

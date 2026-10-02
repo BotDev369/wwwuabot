@@ -97,6 +97,13 @@ export type AppContext = Context & {
   menuDirty?: boolean;
   screen?: ScreenState;
   liveMessageSent?: boolean;
+  /**
+   * Повідомлення людини треба знести **після** того, як бот успішно показав
+   * свій екран. Тому роутер лише ставить прапорець, а `postMiddleware` зносить
+   * повідомлення після вдалого рендеру: видалити раніше — значить зникнути
+   * назавжди, не показавши нічого.
+   */
+  dropIncomingAfterRender?: boolean;
   pickTarget?: string;
   pendingNotification?: { data: Record<string, unknown> };
 };

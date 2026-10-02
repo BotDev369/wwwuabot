@@ -29,6 +29,10 @@
  * **Відмова не дублюється.** Повторний `/start` замінює попередній екран, а не
  * доліпить другий такий самий: `ctx.user.message_id` веде на неї саму.
  *
+ * **Функція каже, чи вдалося показати відмову.** Виклик зносить повідомлення
+ * людини (`/start`, діплінк) лише після `true`: знести його, не показавши
+ * нічого, — це просто зникнути в чаті.
+ *
  * @module bot-dev/src/modules/access/denied
  */
 
@@ -44,8 +48,8 @@ import { buildWriteButton } from "./contact/state";
  * банер і кнопку «Відкрити сторінку», а це відмова, де сторінки немає.
  * Повідомлення надсилається напряму — так само, як текст помилки в `core/bot.ts`.
  */
-export async function showAccessDenied(ctx: AppContext): Promise<void> {
-  if (!ctx.chat?.id) return;
+export async function showAccessDenied(ctx: AppContext): Promise<boolean> {
+  if (!ctx.chat?.id) return false;
 
   await deletePreviousScreens(ctx);
 
@@ -61,10 +65,14 @@ export async function showAccessDenied(ctx: AppContext): Promise<void> {
       ctx.userDirty = true;
     }
     log("ACCESS", "denied | write button shown", { user_id: ctx.user?.user_id });
+    // `true` — відмову показано, тож тепер можна знести те, що її викликало
+    // (`/start` чи діплінк): людина бачить відповідь, а не порожнечу.
+    return true;
   } catch (err) {
     // Відмова не надіслалась — контент все одно не показано, тож це не
     // відкриває нічого; лог лишається, бо мовчазно зникла б відмова.
     log("ACCESS", "failed to send denial", { error: String(err) });
+    return false;
   }
 }
 

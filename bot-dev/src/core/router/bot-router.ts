@@ -23,7 +23,14 @@ import { hasAccess } from "@wwwuabot/shared/security/access";
  * 2. /start без payload → головна сторінка
  * 3. callback_data → slug → рендер
  * 4. текст → ТІЛЬКИ якщо awaits_input, інакше видаляємо; для людини без допуску
- *    перед цим показується відмова, а не тиша
+ *    звичайний текст теж просто зникає — жодної відмови на нього немає
+ *
+ * **Видаляється лише те, що не показано.** Порядок один: спершу бот щось
+ * показує, потім зникає повідомлення людини. Якщо екран не вдалося надіслати,
+ * `/start` і діплінк лишаються в чаті — інакше людина натискає «Старт», бачить
+ * порожнечу й не розуміє, чи це помилка. Те саме стосується несподіваних
+ * повідомлень (невідома команда, текст без сценарію): вони зникають мовчки, без
+ * відмови — їм не відповідають, їх просто прибирають.
  *
  * **Код запрошення перевіряється першим.** Він теж проходить
  * `isValidBotPayload` (це адреса, яку приймає Telegram), тож відрізнити його
@@ -67,11 +74,13 @@ export async function botRouter(ctx: AppContext): Promise<void> {
 
   if (isCommand) {
     const command = text!.split(" ")[0].split("@")[0];
+    log("ROUTER", "command", { command });
     if (command === "/start") {
       const payload = text!.split(" ")[1]?.trim() ?? "";
       if (payload && !isValidBotPayload(payload)) {
         log("ROUTER", "deep link rejected | invalid payload", { payload });
-        await deleteIncomingMessage(ctx);
+        // Нічого не показано, тож нічого й не зносимо: адреса, яку не вдалося
+        // розібрати, лишається видимою — так видно, що посилання бите.
         return;
       }
       log("ROUTER", "deep link", { payload, user_id: ctx.from?.id });
@@ -100,6 +109,11 @@ export async function botRouter(ctx: AppContext): Promise<void> {
       });
       return;
     }
+
+    // Невідома команда: ми нічого не показуємо, тож і не зносимо нічого, крім
+    // самого повідомлення — воно не наш адрес і не наш сценарій.
+    await deleteIncomingMessage(ctx);
+    return;
   }
 
   if (isCallback) {
@@ -116,13 +130,12 @@ export async function botRouter(ctx: AppContext): Promise<void> {
   }
 
   if (isPlainText) {
-    // Людина без допуску пише в чат — значить, їй уже незручно мовчати. Показуємо
-    // відмову (з кнопкою зв'язку з адміном) замість тиші: інакше її перше
-    // повідомлення просто зникало б, а «Написати адміну» — разом із ним.
+    // Написаний у чат текст — не запит і не помилка: бот нічого не чекає і
+    // нічого не пояснює, тож просто прибирає його. Відмова вже стоїть у чаті
+    // екраном (з кнопкою «Написати адміну»), і друга вона б лише заважала.
     if (!hasAccess(ctx.user, ctx.env.ADMIN_TELEGRAM_ID)) {
-      log("ACCESS", "denied | plain text", { user_id: ctx.user.user_id });
+      log("ACCESS", "plain text ignored | no access", { user_id: ctx.user.user_id });
       await deleteIncomingMessage(ctx);
-      await showAccessDenied(ctx);
       return;
     }
 
@@ -164,8 +177,8 @@ async function renderOrDeny(
 ): Promise<void> {
   if (!hasAccess(ctx.user, ctx.env.ADMIN_TELEGRAM_ID)) {
     log("ACCESS", "denied", { user_id: ctx.user?.user_id });
-    await deleteIncomingMessage(ctx);
-    await showAccessDenied(ctx);
+    // Відмова — теж «показ», тож `/start` зникає лише після неї.
+    if (await showAccessDenied(ctx)) await deleteIncomingMessage(ctx);
     return;
   }
 
@@ -175,6 +188,10 @@ async function renderOrDeny(
   // `sendMessage` після кожного кроку плодив би повідомлення в чаті, тоді як
   // реплай-клавіатура й так лишається під ним сама.
   if (options.keyboard) await showMainKeyboard(ctx);
+
+  // Екран надішлет `postMiddleware`, тож прапорець «знести повідомлення людини»
+  // ставимо тут: видалення станеться лише після вдалого рендеру.
+  ctx.dropIncomingAfterRender = true;
 }
 
 async function loadAndRenderPayload(
@@ -185,7 +202,6 @@ async function loadAndRenderPayload(
   const scenario = await repo.getScenarioByBotPayload(payload);
   if (!scenario) {
     log("ROUTER", "scenario not found", { payload });
-    await deleteIncomingMessage(ctx);
     return;
   }
   setScenarioScreen(ctx, scenario, scenario.web_path);
@@ -199,7 +215,6 @@ async function loadAndRenderScenario(
   const scenario = await repo.getScenario(slug);
   if (!scenario) {
     log("ROUTER", "scenario not found", { slug });
-    await deleteIncomingMessage(ctx);
     return;
   }
   setScenarioScreen(ctx, scenario);
