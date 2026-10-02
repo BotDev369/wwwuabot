@@ -42,17 +42,15 @@ export function SpaceUserPage(): ReactElement {
   return (
     <div className="wb-page">
       <div className="wb-page-head">
-        <h1 className="wb-page-title">
-          <button
-            type="button"
-            className="wb-close-btn"
-            onClick={() => navigate(SPACE_PATH)}
-            aria-label="Назад"
-          >
-            <Icon name="arrow-left" size={18} />
-          </button>
-          Профіль
-        </h1>
+        {/* Назва людини — в хедері; тут лишається тільки «Назад» у Простір. */}
+        <button
+          type="button"
+          className="wb-close-btn"
+          onClick={() => navigate(SPACE_PATH)}
+          aria-label="Назад"
+        >
+          <Icon name="arrow-left" size={18} />
+        </button>
       </div>
 
       {loading && (

@@ -34,10 +34,6 @@ export function ThemePresetsPage(): ReactElement {
 
   return (
     <div className="wb-page">
-      <div className="wb-page-head">
-        <h1 className="wb-page-title">Готові теми</h1>
-      </div>
-
       <Tabs options={PRESET_TABS} value={tab} onChange={setTab} label="Джерела тем" />
 
       <div id={tabPanelId(tab)} role="tabpanel" aria-labelledby={tabId(tab)}>

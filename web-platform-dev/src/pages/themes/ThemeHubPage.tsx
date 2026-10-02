@@ -51,10 +51,6 @@ export function ThemeHubPage(): ReactElement {
 
   return (
     <div className="wb-page">
-      <div className="wb-page-head">
-        <h1 className="wb-page-title">Тема</h1>
-      </div>
-
       {/* Список розділів — **спільний сайдбар** (`SideBarMenu`), а не своя
           розмітка: тут він стоїть у сторінці, тож коробки (`aside`) немає, а
           вигляд пункту той самий, що в меню адмінки й у панелі Простору. */}

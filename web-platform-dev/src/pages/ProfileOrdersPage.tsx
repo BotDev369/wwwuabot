@@ -35,17 +35,15 @@ export function ProfileOrdersPage(): ReactElement {
   return (
     <div className="wb-page">
       <div className="wb-page-head">
-        <h1 className="wb-page-title">
-          <button
-            type="button"
-            className="wb-close-btn"
-            onClick={() => void navigate(-1)}
-            aria-label="Назад"
-          >
-            <Icon name="arrow-left" size={18} />
-          </button>
-          Замовлення
-        </h1>
+        {/* Назва екрана — в хедері, тому тут лишається тільки «Назад». */}
+        <button
+          type="button"
+          className="wb-close-btn"
+          onClick={() => void navigate(-1)}
+          aria-label="Назад"
+        >
+          <Icon name="arrow-left" size={18} />
+        </button>
       </div>
 
       {loading && (

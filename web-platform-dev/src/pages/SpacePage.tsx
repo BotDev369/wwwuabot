@@ -56,7 +56,6 @@ interface ComposerRequest {
 }
 
 export function SpacePage(): ReactElement {
-  useScreenChrome({ title: "Простір" });
   // Розділ і панель приходять з адреси (`useSpaceNav`): так з хабу «Створити»
   // веде «+» — у розділ дошки й одразу у форму оголошення (`?tab=ads&new=1`).
   const nav = useSpaceNav();
@@ -91,13 +90,15 @@ export function SpacePage(): ReactElement {
   // лишається для того входу, де розділ **ще не обрано** (`/space`): панель тоді
   // розгорнута й просить вибрати, тож і екран зветься собою, а не розділом.
   const title = nav.named ? nav.current.label : "You";
+  // Назва розділу живе в хедері — там, де вона лишається на місці при
+  // прокрутці дошки; унизу екрана її більше немає.
+  useScreenChrome({ title });
 
   return (
     <div className="wb-page wb-space-page">
-      {/* Тумблер і назва — один рядок: вони й правда про одне (цей екран і
-          його розділи). Шапка стоїть **над** розкладкою і повторює її сітку:
-          тумблер — у колонці знаків, назва — на лінії вмісту. Розмір знака
-          бере з розміру назви (`1em`, `space.css`). */}
+      {/* Рядок екрана: лише тумблер панелі розділів — назва вже в хедері.
+          Шапка стоїть **над** розкладкою і повторює її сітку: тумблер — у
+          колонці знаків (`1em`, `space.css`). */}
       <div className="wb-page-head wb-space-head">
         <button
           type="button"
@@ -110,7 +111,7 @@ export function SpacePage(): ReactElement {
           <Icon name="sidebar-toggle" size={20} />
         </button>
 
-        <h1 className="wb-page-title">{title}</h1>
+        {/* Назва розділу — в хедері; тут лишається тумблер панелі. */}
       </div>
 
       <div className="wb-space-layout">

@@ -29,10 +29,6 @@ export function ThemeStylePage(): ReactElement {
 
   return (
     <div className="wb-page">
-      <div className="wb-page-head">
-        <h1 className="wb-page-title">Стиль</h1>
-      </div>
-
       {/* Вибір — тим самим пунктом, що й розділи: одна мірка рядка на весь
           продукт, тож «Стиль» читається як вибір із сайдбара, а не як форма. */}
       <SideBarMenu

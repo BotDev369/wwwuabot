@@ -258,7 +258,6 @@ export function ContactsPage(): ReactElement {
             за ними приходять саме тоді, коли список довгий, а блок під шапкою
             відсував їх від заголовка рівно настільки, щоб не бачити разом. */}
         <div className="wb-page-head">
-          <h1 className="wb-page-title">Контакти</h1>
           {hasContacts && <ContactTotals contacts={contacts} />}
 
           {/* Дія — **коло зі знаком** у тому ж рядку, останнім: підпис забирав

@@ -64,10 +64,6 @@ export function AssessmentsPage({
 
   return (
     <div className="wb-page wb-page-scroll">
-      <div className="wb-page-head">
-        <h1 className="wb-page-title">Розвиток</h1>
-      </div>
-
       <div className="wb-test-list">
         {loading && <p className="wb-test-lead">Завантаження…</p>}
 

@@ -125,7 +125,6 @@ export function NotesPage(): ReactElement {
           рівно тоді, коли знайшлось те, що шукали. */}
       <div className="wb-page-sticky">
         <div className="wb-page-head">
-          <h1 className="wb-page-title">Нотатки</h1>
           <div className="wb-page-actions">
             {/* Створення є й у футері («+»), але на екрані нотаток кнопка мусить
               бути тут: людина вже стоїть у списку, і вертати її до футера —

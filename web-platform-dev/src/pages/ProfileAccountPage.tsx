@@ -42,20 +42,16 @@ export function ProfileAccountPage(): ReactElement {
   return (
     <div className="wb-page">
       <div className="wb-page-head">
-        {/* «Назад» — у рядку із заголовком, як у шапці поверхні: сторінка
-            відкривається з хабу, і дотик вертає саме туди. Знак без підпису —
-            місця в рядку небагато, а ім'я лишається в `aria-label`. */}
-        <h1 className="wb-page-title">
-          <button
-            type="button"
-            className="wb-close-btn"
-            onClick={() => navigate(PROFILE_PATH)}
-            aria-label="Назад"
-          >
-            <Icon name="arrow-left" size={18} />
-          </button>
-          Акаунт
-        </h1>
+        {/* «Назад» — знаком у рядку екрана: назва вже стоїть у хедері, тож
+            другий раз її тут не повторюємо. */}
+        <button
+          type="button"
+          className="wb-close-btn"
+          onClick={() => navigate(PROFILE_PATH)}
+          aria-label="Назад"
+        >
+          <Icon name="arrow-left" size={18} />
+        </button>
       </div>
 
       {loading && (

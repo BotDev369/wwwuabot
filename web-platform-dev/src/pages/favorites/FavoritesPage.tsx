@@ -9,9 +9,6 @@ export function FavoritesPage() {
   const navigate = useNavigate();
   return (
     <div className="wb-page">
-      <div className="wb-page-head">
-        <h1 className="wb-page-title">Обране</h1>
-      </div>
       {favorites.loading && <p className="wb-text-muted">Завантаження…</p>}
       {favorites.error && (
         <div className="wb-empty">

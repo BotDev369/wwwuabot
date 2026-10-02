@@ -28,16 +28,13 @@ import { spaceTabPath } from "../space-tabs";
 import { GameView } from "./GameView";
 import { gameOption } from "./games";
 
-/** Шапка звичайної сторінки — вона лишається тільки в «такої гри немає». */
-function Head({ title, onBack }: { title: string; onBack: () => void }): ReactElement {
+/** Назва гри — в хедері, тож «Назад» лишається сам, без заголовку. */
+function Head({ onBack }: { onBack: () => void }): ReactElement {
   return (
     <div className="wb-page-head">
-      <h1 className="wb-page-title">
-        <button type="button" className="wb-close-btn" onClick={onBack} aria-label="Назад">
-          <Icon name="arrow-left" size={18} />
-        </button>
-        {title}
-      </h1>
+      <button type="button" className="wb-close-btn" onClick={onBack} aria-label="Назад">
+        <Icon name="arrow-left" size={18} />
+      </button>
     </div>
   );
 }
@@ -56,7 +53,7 @@ export function SpaceGamePage(): ReactElement {
   if (!game) {
     return (
       <div className="wb-page">
-        <Head title="Ігри" onBack={back} />
+        <Head onBack={back} />
         <div className="wb-empty">
           <span className="wb-empty-icon">
             <Icon name="game" size={32} />

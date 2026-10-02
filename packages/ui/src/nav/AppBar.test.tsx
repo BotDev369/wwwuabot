@@ -81,4 +81,16 @@ describe("злиття оголошень екрана", () => {
     const untouched = mergeChrome(withoutShare, { title: undefined });
     expect(untouched).toBe(withoutShare);
   });
+
+  it("⛔ ⬜ пустий патч повертає хедер до початкового стану, а не до попереднього екрана", () => {
+    // Різниця між екранами видна саме тут: у профілі теми немає, тож на
+    // «Обраному» вона мала б зʼявитися знову. Якби другий екран успадкував
+    // стан першого, палітра зникла б до наступного переходу.
+    const afterProfile = mergeChrome(EMPTY_CHROME, { title: "Профіль", theme: false });
+    expect(afterProfile.theme).toBe(false);
+
+    const afterFavorites = mergeChrome(afterProfile, { ...EMPTY_CHROME, title: "Обране" });
+    expect(afterFavorites).toEqual({ ...EMPTY_CHROME, title: "Обране" });
+    expect(afterFavorites.theme).toBe(true);
+  });
 });

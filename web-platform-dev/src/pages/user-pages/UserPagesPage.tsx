@@ -40,7 +40,6 @@ export function UserPagesPage(): ReactElement {
   return (
     <div className="wb-page">
       <div className="wb-page-head">
-        <h1 className="wb-page-title">Сторінки</h1>
         <div className="wb-page-actions">
           {/* Створення є й у хабі («+» у футері), але на екрані сторінок кнопка
               мусить бути тут: людина вже стоїть у списку, і вертати її в хаб —

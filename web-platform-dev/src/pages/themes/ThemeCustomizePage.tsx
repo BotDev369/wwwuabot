@@ -35,10 +35,13 @@ import { presetTabPath } from "./presets-tabs";
 import { useSchemeEditor } from "./useSchemeEditor";
 
 export function ThemeCustomizePage(): ReactElement {
-  useScreenChrome({ title: "Налаштувати тему", theme: false });
   const navigate = useNavigate();
   const dialog = useDialog();
   const editor = useSchemeEditor();
+  useScreenChrome({
+    title: editor.editing ? `Правка: ${editor.editing.name}` : "Налаштувати тему",
+    theme: false,
+  });
   // Відкритий рівно один рядок — як у панелі: три повзунки й список шрифтів
   // на телефоні це екран, у якому нічого не видно.
   const [openSlot, setOpenSlot] = useState<ColorSlot | null>("bg");
@@ -70,12 +73,6 @@ export function ThemeCustomizePage(): ReactElement {
 
   return (
     <div className="wb-page">
-      <div className="wb-page-head">
-        <h1 className="wb-page-title">
-          {editor.editing ? `Правка: ${editor.editing.name}` : "Налаштувати тему"}
-        </h1>
-      </div>
-
       <div className="wb-theme-rows">
         {COLOR_SLOTS.map((slot) => (
           <ColorSlotRow
