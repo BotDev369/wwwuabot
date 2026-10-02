@@ -34,7 +34,7 @@ import { AccountTelegramSection } from "./AccountTelegramSection";
 import { useProfile } from "./useProfile";
 
 export function ProfileAccountPage(): ReactElement {
-  useScreenChrome({ title: "Акаунт", theme: false });
+  useScreenChrome({ title: "Акаунт" });
   const { profile, loading, error, saveUsername, saveAbout, saveVisibility } = useProfile();
   const navigate = useNavigate();
   const [tab, setTab] = useState<AccountTab>(DEFAULT_ACCOUNT_TAB);

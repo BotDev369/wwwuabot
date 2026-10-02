@@ -43,10 +43,12 @@ describe("хедер застосунку", () => {
     expect(html).toContain('aria-label="Тема"');
   });
 
-  it("⛔ у профілі теми немає — там вона вже відкрита нижче", () => {
-    const html = render({ ...EMPTY_CHROME, title: "Профіль", theme: false });
+  it("⛔ палітра теми є на кожному екрані — навіть там, де меню профілю", () => {
+    // Тема в хедері, а не пунктом меню: два входи в одну дію означають, що
+    // за один із них забудуть.
+    const html = render({ ...EMPTY_CHROME, title: "Профіль" });
 
-    expect(html).not.toContain('aria-label="Тема"');
+    expect(html).toContain('aria-label="Тема"');
   });
 
   it("знак серця лишається читабельним без підпису", () => {
@@ -82,15 +84,15 @@ describe("злиття оголошень екрана", () => {
     expect(untouched).toBe(withoutShare);
   });
 
-  it("⛔ ⬜ пустий патч повертає хедер до початкового стану, а не до попереднього екрана", () => {
-    // Різниця між екранами видна саме тут: у профілі теми немає, тож на
-    // «Обраному» вона мала б зʼявитися знову. Якби другий екран успадкував
-    // стан першого, палітра зникла б до наступного переходу.
-    const afterProfile = mergeChrome(EMPTY_CHROME, { title: "Профіль", theme: false });
-    expect(afterProfile.theme).toBe(false);
+  it("⬜ другий екран не успадковує дії попереднього — його серце не лишилося в «Обраному»", () => {
+    // Різниця між екранами видна саме тут: серце сторінки не повинно
+    // переїхати в наступний екран, який про себе нічого не сказав.
+    const afterPage = mergeChrome(EMPTY_CHROME, {
+      title: "Галерея",
+      favorite: { kind: "page", targetId: 7 },
+    });
 
-    const afterFavorites = mergeChrome(afterProfile, { ...EMPTY_CHROME, title: "Обране" });
+    const afterFavorites = mergeChrome(afterPage, { ...EMPTY_CHROME, title: "Обране" });
     expect(afterFavorites).toEqual({ ...EMPTY_CHROME, title: "Обране" });
-    expect(afterFavorites.theme).toBe(true);
   });
 });

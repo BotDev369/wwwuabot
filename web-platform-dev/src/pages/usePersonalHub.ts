@@ -2,7 +2,7 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useDialog } from "@wwwuabot/ui/dialog";
 import { buildMenuItems, type MenuLayout } from "@wwwuabot/ui/menu";
-import { PROFILE_ACCOUNT_PATH, PROFILE_ORDERS_PATH, THEME_PATH } from "@/app/routes";
+import { PROFILE_ACCOUNT_PATH, PROFILE_ORDERS_PATH } from "@/app/routes";
 import { useProfile } from "./useProfile";
 import { useUserPages } from "./user-pages/useUserPages";
 import { useContactAdd } from "./create/useContactAdd";
@@ -23,7 +23,6 @@ export function usePersonalHub() {
 
   const sections = buildMenuItems({
     items: buildProfileSections({
-      onOpenTheme: () => navigate(THEME_PATH),
       onOpenOrders: () => navigate(PROFILE_ORDERS_PATH),
       hasShops: pages.some((page) => page.template === "shop"),
     }),

@@ -26,7 +26,7 @@ import { SharedThemesPanel } from "./SharedThemesPanel";
 import { PRESET_TABS, PRESET_TAB_PARAM, readPresetTab, type PresetTab } from "./presets-tabs";
 
 export function ThemePresetsPage(): ReactElement {
-  useScreenChrome({ title: "Готові теми", theme: false });
+  useScreenChrome({ title: "Готові теми" });
   const [searchParams] = useSearchParams();
   const [tab, setTab] = useState<PresetTab>(() =>
     readPresetTab(searchParams.get(PRESET_TAB_PARAM)),

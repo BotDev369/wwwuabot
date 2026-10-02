@@ -40,7 +40,6 @@ export function ThemeCustomizePage(): ReactElement {
   const editor = useSchemeEditor();
   useScreenChrome({
     title: editor.editing ? `Правка: ${editor.editing.name}` : "Налаштувати тему",
-    theme: false,
   });
   // Відкритий рівно один рядок — як у панелі: три повзунки й список шрифтів
   // на телефоні це екран, у якому нічого не видно.

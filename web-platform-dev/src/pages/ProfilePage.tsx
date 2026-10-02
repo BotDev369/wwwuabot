@@ -12,7 +12,7 @@ export function ProfilePage(): ReactElement {
   const hub = usePersonalHub();
   // Теми тут не показуємо: вона лежить у розділі профілю нижче, тож друга
   // кнопка в хедері була б тим самим екраном двома способами.
-  useScreenChrome({ title: "Профіль", theme: false });
+  useScreenChrome({ title: "Профіль" });
 
   return (
     <div className="wb-page">

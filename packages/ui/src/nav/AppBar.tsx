@@ -11,9 +11,10 @@
  * три слова у 44-кнопковому рядку з'їли б назву сторінки на телефоні. Підпис
  * лишається в `aria-label` і `title`.
  *
- * **Тема прибирається в профілі.** Там вона вже відкрита й лежить у своєму
- * розділі, тож друга кнопка на тому самому екрані — це «те ж саме двома
- * способами» (правило 12).
+ * **Палітра теми тут на кожному екрані.** Вона одна й та сама всюди, тож
+ * виняток «а на цьому екрані не показувати» означав би, що людину треба
+ * шукати, де її налаштувати. Пункт «Тема» у меню профілю прибрано саме тому:
+ * те саме одним способом, з хедера, а не двома.
  *
  * @module packages/ui/src/nav/AppBar
  */
@@ -37,7 +38,7 @@ export function AppBar(): ReactElement | null {
  * тестом без рендеру оболонки: що показується, а що прибирається.
  */
 export function AppBarView({ chrome }: { chrome: ScreenChrome }): ReactElement {
-  const { title, menu, shareUrl, favorite, theme } = chrome;
+  const { title, menu, shareUrl, favorite } = chrome;
 
   return (
     <header className="wb-appbar">
@@ -49,7 +50,7 @@ export function AppBarView({ chrome }: { chrome: ScreenChrome }): ReactElement {
       <div className="wb-appbar__actions">
         {shareUrl && <ShareAction url={shareUrl} />}
         {favorite && <FavoriteAction target={favorite} />}
-        {theme && <ThemeAction />}
+        <ThemeAction />
       </div>
     </header>
   );

@@ -27,8 +27,6 @@ export interface ScreenChrome {
   shareUrl: string | null;
   /** На що ставиться серце; `null` — серця немає. */
   favorite: FavoriteTarget | null;
-  /** Показати палітру теми. У профілі — `false`: тема звідти й так відкрита. */
-  theme: boolean;
 }
 
 /** Що екран оновлює: змінені поля + `null`, щоб прибрати дію. */
@@ -47,7 +45,6 @@ export const EMPTY_CHROME: ScreenChrome = {
   menu: null,
   shareUrl: null,
   favorite: null,
-  theme: true,
 };
 
 /**

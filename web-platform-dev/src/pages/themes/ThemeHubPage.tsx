@@ -25,7 +25,7 @@ import { useThemeLook } from "./useThemeLook";
 export function ThemeHubPage(): ReactElement {
   // Тема вже відкрита: у розділі профілю палітру дублювати в хедері не
   // треба (правило 12 — каркас не повторює те, що вже є на екрані).
-  useScreenChrome({ title: "Тема", theme: false });
+  useScreenChrome({ title: "Тема" });
   const navigate = useNavigate();
   const look = useThemeLook();
 

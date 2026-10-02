@@ -27,7 +27,7 @@ import { shopOrdersPath } from "@/app/routes";
 import { useUserPages } from "@/pages/user-pages/useUserPages";
 
 export function ProfileOrdersPage(): ReactElement {
-  useScreenChrome({ title: "Замовлення", theme: false });
+  useScreenChrome({ title: "Замовлення" });
   const navigate = useNavigate();
   const { pages, loading, error } = useUserPages();
   const shops = pages.filter((page) => page.template === "shop");

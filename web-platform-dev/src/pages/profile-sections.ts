@@ -15,11 +15,11 @@
  * б ходити навмання (`ProfileOrdersPage`). Пункт показуємо лише тоді, коли
  * магазин справді є: обіцянка роботи, якої немає, гірша за відсутність пункту.
  *
- * **«Тема» веде на свою сторінку** (`/profile/theme`), а не відкриває панель:
- * у теми є розділи — стиль, готові теми (платформа, свої, з простору) і
- * налаштування, — і кожен зі своєю адресою. Модалка не мала ні адреси, ні
- * «назад», тож до збереженої теми не було як повернутись. Обробники
- * (`onOpenTheme`, `onOpenOrders`) лишаються: хаб не знає про роутер.
+ * **«Тема» тут немає — вона в хедері.** Палітpа одна й та сама на кожному
+ * екрані (`AppBar`), тож пункт у меню був би тим самим другим способом: два
+ * входи в одну дію означають, що за один із них забудуть. Розділ теми
+ * (`/profile/theme`) лишається своєю сторінкою — там стилі, готові теми й
+ * налаштування, кожен зі своєю адресою.
  *
  * **Підписів «Мій / Мої» немає** — ні тут, ні в футері, ні на екранах: хаб
  * відкривають зі свого профілю, тож приналежність очевидна, а префікс лише
@@ -31,8 +31,6 @@
 import type { ShellMenuItem } from "@wwwuabot/ui/menu";
 
 export interface BuildProfileSectionsOptions {
-  /** Перейти в розділ теми (`/profile/theme`). Шлях знає той, хто кличе. */
-  onOpenTheme: () => void;
   /** Відкрити замовлення (`/profile/orders`). Шлях знає той, хто кличе. */
   onOpenOrders: () => void;
   /** Чи є хоч один магазин: без нього пункт «Замовлення» нічого не обіцяє. */
@@ -40,17 +38,10 @@ export interface BuildProfileSectionsOptions {
 }
 
 export function buildProfileSections({
-  onOpenTheme,
   onOpenOrders,
   hasShops,
 }: BuildProfileSectionsOptions): ShellMenuItem[] {
-  const items: ShellMenuItem[] = [
-    { key: "theme", label: "Тема", icon: "palette", onSelect: onOpenTheme },
-  ];
+  if (!hasShops) return [];
 
-  if (hasShops) {
-    items.push({ key: "orders", label: "Замовлення", icon: "tag", onSelect: onOpenOrders });
-  }
-
-  return items;
+  return [{ key: "orders", label: "Замовлення", icon: "tag", onSelect: onOpenOrders }];
 }

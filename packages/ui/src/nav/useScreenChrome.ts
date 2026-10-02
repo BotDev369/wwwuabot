@@ -31,15 +31,13 @@ export function useScreenChrome(chrome: ScreenChromePatch, enabled = true): void
     chrome.menu ? "1" : "",
     chrome.shareUrl ?? "",
     JSON.stringify(chrome.favorite ?? null),
-    String(chrome.theme ?? ""),
   ].join("|");
 
   useEffect(() => {
     // Без провайдера (попередній перегляд сторінки в адмінці) хедера немає —
     // тоді оголошувати нічого й не треба.
     if (!enabled || !update) return;
-    const patch = latest.current;
-    update({ ...patch, theme: patch.theme ?? true });
+    update(latest.current);
   }, [update, enabled, key]);
 
   // Вихід екрана очищає хедер: наступний говоритиме з чистого аркуша.
