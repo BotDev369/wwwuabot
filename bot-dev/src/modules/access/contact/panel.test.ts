@@ -26,12 +26,14 @@ describe("панель діалогу", () => {
 
   it("⛔ стара кнопка «Написати адміну» зникає в момент натискання", async () => {
     // Інакше в чаті лишалися б дві кнопки відкритих дialogів, і «під останнім
-    // повідомленням» перестало б бути правдою.
+    // повідомленням» перестало б бути правдою. Екран відмови лишається — у ньому
+    // пояснення, чому продукт закритий.
     const store = chat({ screenId: 11 });
 
     await tap(store, "contact:write");
 
     expect(store.detached).toContain(11);
+    expect(store.cleared).toHaveLength(0);
   });
 
   it("⛔ чужий callback — не ours: роутер має далі відкрити сторінку", async () => {
@@ -41,14 +43,23 @@ describe("панель діалогу", () => {
     expect(store.sent).toHaveLength(0);
   });
 
-  it("⛔ повторне «Написати адміну» не стирає написане", async () => {
-    // Кнопка є і на екрані відмови, і на панелі: натискання не має бути «новим стартом».
+  it("⛔ повторне «Написати адміну» не стирає написане й нічого не показує", async () => {
+    // Кнопка є і на екрані відмови, і на панелі: натискання не має бути «новим
+    // стартом» і не має плодити ще один такий самий екран.
     const store = chat({ open: true, draft: "вже написано", count: 2 });
 
-    await tap(store, "contact:write");
-
+    expect(await tap(store, "contact:write")).toBe(true);
+    expect(store.sent).toHaveLength(0);
     expect(store.ctx.user?.admin_dialog_text).toBe("вже написано");
     expect(store.ctx.user?.admin_dialog_count).toBe(2);
+  });
+
+  it("⛔ старий статусний екран зникає, а новий стає на його місце", async () => {
+    const store = chat({ open: true, draft: "питання", panelId: 42 });
+
+    await tap(store, "contact:send");
+
+    expect(store.cleared).toEqual([42]);
   });
 
   it("«Відправити» зберігає звернення, дякує й повертає «Написати адміну»", async () => {

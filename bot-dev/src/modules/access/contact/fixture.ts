@@ -30,7 +30,9 @@ export interface Sent {
 export interface Store {
   ctx: AppContext;
   sent: Sent[];
-  /** Повідомлення, з яких зняли кнопки (число — ідентифікатор екрана). */
+  /** Статусні екрани, які бот зніс перед новим (число — ідентифікатор). */
+  cleared: number[];
+  /** Повідомлення, з яких зняли кнопки, але не змогли видалити. */
   detached: number[];
   inserted: string[];
   texts: () => string[];
@@ -49,10 +51,13 @@ export function chat(
     count?: number;
     panelId?: number;
     screenId?: number;
+    /** Старий екран не дається видалити — бот має зняти з нього кнопки. */
+    undeletableScreen?: boolean;
     saveFails?: boolean;
   } = {},
 ): Store {
   const sent: Sent[] = [];
+  const cleared: number[] = [];
   const detached: number[] = [];
   const inserted: string[] = [];
 
@@ -73,6 +78,11 @@ export function chat(
     },
   };
 
+  // Старий статусний екран не завжди можна видалити (48 годин, чужі
+  // повідомлення) — тоді бот має принаймні зняти кнопки, а `deleteMessage`
+  // падає саме тут.
+  const undeletable = options.undeletableScreen === true;
+
   const api = {
     sendMessage: async (
       chatId: number,
@@ -91,7 +101,11 @@ export function chat(
       });
       return { message_id: sent.length };
     },
-    deleteMessage: async () => true,
+    deleteMessage: async (_chatId: number, messageId: number) => {
+      if (undeletable) throw new Error("message can not be deleted");
+      cleared.push(messageId);
+      return true;
+    },
     editMessageReplyMarkup: async (_chatId: number, messageId: number) => {
       detached.push(messageId);
       return true;
@@ -121,6 +135,7 @@ export function chat(
   return {
     ctx,
     sent,
+    cleared,
     detached,
     inserted,
     texts: () => sent.map((s) => s.text),

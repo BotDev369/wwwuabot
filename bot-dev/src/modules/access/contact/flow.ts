@@ -46,6 +46,12 @@ export type ContactOutcome =
   /** Нетекстове повідомлення: пояснити, що читаємо лише текст. */
   | { kind: "text-only"; state: ContactState }
   | { kind: "failed"; state: ContactState }
+  /**
+   * Статус не змінився — нічого не показуємо. Натискання «Написати адміну» в
+   * уже відкритому діалозі: екран той самий, тож другий такий самий у чаті —
+   * це сміття, а не відповідь.
+   */
+  | { kind: "unchanged"; state: ContactState }
   /** Не наша дія — хай далі розбирає роутер. */
   | { kind: "ignored"; state: ContactState };
 
@@ -65,11 +71,12 @@ export async function applyContactAction(
 
   const state = readContactState(user);
 
-  // «Написати адміну» з екрана відмови не стирає чернетку: той самий до��туп є й
+  // «Написати адміну» з екрана відмови не стирає чернетку: той самий доступ є й
   // на панелі, тож повторне натискання лише показує стан, а не починає заново.
+  // Якщо дialog уже відкритий — стан той самий, тож і показувати нічого.
   if (action === "write") {
     return state.open
-      ? { kind: "draft", state, truncated: false }
+      ? { kind: "unchanged", state }
       : { kind: "opened", state: setState(ctx, true, "", 0) };
   }
 

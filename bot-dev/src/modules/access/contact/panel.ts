@@ -1,20 +1,20 @@
 /**
- * Панель дialogу — inline-кнопки на останньому повідомленні бота.
+ * Панель діалогу — один технічний екран, який замінює попередній.
  *
- * **Кнопки живуть під останнім повідомленням, і тільки під ним.** Натиснули
- * «Написати адміну» — стара кнопка зникає; написали повідомлення — зникають
- * кнопки попереднього екрана, а нові з'являються під останнім. Тому кнопки
- * треба **знімати** з минулих повідомлень (`editMessageReplyMarkup` з порожньою
- * клавіатурою), а не просто переносити: інакше в чаті накопичувалося б
- * «Відправити» під кожним написеним — і жодна не зрозуміла, яка з них тепер.
+ * **Статусний екран у чаті один.** Кожен натиск або написане повідомлення
+ * перезаписує стан: старий екран зникає, новий стає на його місце. Раніше ми
+ * лише знімали кнопки з минулого екрана й лишали текст — у чаті накопичувалося
+ * три копії «Напишіть, що вас цікавить», а між ними «Діалог закрито», і людина
+ * не могла зрозуміти, де вона зараз.
  *
- * **Відповідь на конкретне повідомлення.** Після кожного написаного бот
- * відповідає саме на нього (`reply_parameters`), а не просто надсилає в чат:
- * людині видно, до чого належить лічильник, і вона нічого не втрачає — її
- * повідомлення лишається видимим.
+ * **Виняток — написане.** Його не чіпаємо: людина бачить свої повідомлення, а
+ * бот відповідає на них (`reply_parameters`), тож це зміст розмови, а не
+ * технічний шум. Зникає тільки те, що ми надіслали самі й що не несе жодної
+ * цінності: статусні екрани.
  *
- * **Одне повідомлення, а не стос.** Номер панелі лежить у рядку користувача
- * (`admin_panel_id`), тож наступна дія знає, з якого екрана зняти кнопки.
+ * **Один стан — одне повідомлення.** Натискання «Написати адміну» в уже відкритому
+ * діалозі нічого не змінює, тож бот не відповідає взагалі: інакше кожне
+ * повторне натискання народжувало б ще один екран із тим самим текстом.
  *
  * @module bot-dev/src/modules/access/contact/panel
  */
@@ -40,7 +40,7 @@ export async function handleContactCallback(ctx: AppContext): Promise<boolean> {
   return true;
 }
 
-/** Що показати на панелі після дії. */
+/** Що показати на панелі після дії; `null` — нічого не показуємо. */
 function panelView(
   outcome: ContactOutcome,
 ): { text: string; reply_markup: InlineKeyboardMarkup } | null {
@@ -64,7 +64,7 @@ function panelView(
 }
 
 /**
- * Показати панель: зняти кнопки з минулих екранів і надіслати нову.
+ * Надіслати панель: прибрати попередній статус і показати новий.
  *
  * `replyToMessageId` — повідомлення людини, на яке відповідаємо. Без нього
  * панель просто з'являється в чаті: так і відкривається дialog.
@@ -77,7 +77,7 @@ export async function showPanel(
   const view = panelView(outcome);
   if (!view || !ctx.chat?.id) return;
 
-  await detachButtons(ctx);
+  await clearPreviousScreen(ctx);
 
   try {
     const sent = await ctx.api.sendMessage(ctx.chat.id, view.text, {
@@ -94,33 +94,51 @@ export async function showPanel(
 }
 
 /**
- * Зняти кнопки з усіх екранів дialogу, які вже є в чаті.
+ * Прибрати попередній екран дialogу: видалити статусний, зняти з нього кнопки
+ * й закрити кнопку «Написати адміну» на екрані відмови.
  *
- * Їх може бути два: панель із минулого кроку (`admin_panel_id`) і екран відмови,
- * з якого відкрили дialog (`users.message_id`). Номера можуть збігтися — тоді
- * це один виклик, а не два платні.
+ * **Видалення — звичайний випадок, зняття кнопок — запасний.** Telegram не
+ * дозволяє видаляти повідомлення старші за 48 годин: тоді ми хоча б прибираємо
+ * кнопки, щоб «Відправити» не світилася там, де воно вже не діє. Гірше за зайвий
+ * текст у чаті нічого немає, а стан дialogу вже в базі.
  *
- * Помилка не критична: гірше за зайву кнопку в старому повідомленні нічого
- * немає, а стан дialogу вже в базі.
+ * **Екран відмови лишається** — у ньому пояснення, чому продукт закритий, і воно
+ * ще потрібне: людина може закрити дialog, нічого не написавши, і пізніше
+ * натиснути «Написати адміну» знову. Тому з нього тільки знімаються кнопки.
  */
-async function detachButtons(ctx: AppContext): Promise<void> {
+async function clearPreviousScreen(ctx: AppContext): Promise<void> {
   const chatId = ctx.chat?.id;
   if (!chatId) return;
 
-  const ids = new Set<number>();
-  if (typeof ctx.user?.admin_panel_id === "number") ids.add(ctx.user.admin_panel_id);
-  if (typeof ctx.user?.message_id === "number") ids.add(ctx.user.message_id);
-
-  // grammY приймає `editMessageReplyMarkup` для одного повідомлення за раз, тож
-  // два екрани — це два виклики; зведення в Set прибирає дубль, коли це той
-  // самий номер.
-  for (const id of ids) {
+  const panelId = ctx.user?.admin_panel_id;
+  if (typeof panelId === "number") {
     try {
-      await ctx.api.editMessageReplyMarkup(chatId, id, {
-        reply_markup: { inline_keyboard: [] },
-      });
+      await ctx.api.deleteMessage(chatId, panelId);
     } catch (err) {
-      log("ACCESS", "detach buttons failed", { message_id: id, error: String(err) });
+      log("ACCESS", "previous screen delete failed | detaching buttons", {
+        message_id: panelId,
+        error: String(err),
+      });
+      await detachButtons(ctx, panelId);
     }
+  }
+
+  // Екран відмови зберігається, тож з нього кнопка «Написати адміну» знімається.
+  // Коли це той самий номер, що вже зняли, другий виклик не потрібен.
+  const screenId = ctx.user?.message_id;
+  if (screenId !== panelId) await detachButtons(ctx, screenId);
+}
+
+/** Зняти кнопки з повідомлення, лишивши його текст. */
+async function detachButtons(ctx: AppContext, messageId?: number | null): Promise<void> {
+  const chatId = ctx.chat?.id;
+  if (!chatId || typeof messageId !== "number") return;
+
+  try {
+    await ctx.api.editMessageReplyMarkup(chatId, messageId, {
+      reply_markup: { inline_keyboard: [] },
+    });
+  } catch (err) {
+    log("ACCESS", "detach buttons failed", { message_id: messageId, error: String(err) });
   }
 }

@@ -40,6 +40,37 @@ describe("діалог за текстом у чаті", () => {
     expect(store.ctx.user?.admin_dialog_text).toBe("вже написано");
   });
 
+  it("⛔ старий статусний екран зникає, а не лишається в чаті", async () => {
+    // Три натискання «Написати адміну» давали три копії одного тексту — у чаті
+    // не лишається жодного технічного сміття.
+    const store = chat({ open: true, panelId: 42 });
+
+    await step(store, "перше");
+
+    expect(store.cleared).toContain(42);
+    expect(store.detached).toHaveLength(0);
+  });
+
+  it("⛔ старий екран, який не видаляється, усе одно втрачає кнопки", async () => {
+    // Telegram не дозволяє видаляти повідомлення старші за 48 годин: гірше за
+    // зайвий текст нічого немає, але «Відправити» там світитися не мусить.
+    const store = chat({ open: true, panelId: 42, undeletableScreen: true });
+
+    await step(store, "перше");
+
+    expect(store.detached).toContain(42);
+  });
+
+  it("⛔ повторне «Написати адміну» в відкритому діалозі — тиша", async () => {
+    // Статус той самий, тож другий екран із тим самим текстом — це сміття.
+    const store = chat({ open: true, draft: "вже написано", count: 1 });
+
+    await step(store, CONTACT.write);
+
+    expect(store.sent).toHaveLength(0);
+    expect(store.ctx.user?.admin_dialog_text).toBe("вже написано");
+  });
+
   it("⛔ після повідомлення — лічильник і один ряд кнопок: закрити або відправити", async () => {
     const store = chat({ open: true });
 
@@ -69,7 +100,7 @@ describe("діалог за текстом у чаті", () => {
     expect(store.ctx.user?.admin_dialog_text).toBe("перше\n\nдруге");
     expect(store.sent.at(-1)?.text).toBe(CONTACT.counted(2));
     // Кнопки лишаються тільки під останнім повідомленням.
-    expect(store.detached).toContain(1);
+    expect(store.cleared).toContain(1);
   });
 
   it("⛔ команда не чернетка: `/start` лишається тим, чим є", async () => {
