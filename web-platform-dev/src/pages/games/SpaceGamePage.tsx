@@ -21,6 +21,7 @@
  */
 
 import type { ReactElement } from "react";
+import { useScreenChrome } from "@wwwuabot/ui/nav";
 import { useNavigate, useParams } from "react-router-dom";
 import { Icon } from "@wwwuabot/shared";
 import { spaceTabPath } from "../space-tabs";
@@ -42,6 +43,7 @@ function Head({ title, onBack }: { title: string; onBack: () => void }): ReactEl
 }
 
 export function SpaceGamePage(): ReactElement {
+  useScreenChrome({ title: "Ігри" });
   const { key } = useParams<{ key: string }>();
   const navigate = useNavigate();
   const game = gameOption(key);

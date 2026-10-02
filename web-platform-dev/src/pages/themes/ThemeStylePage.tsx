@@ -21,9 +21,10 @@
 
 import type { ReactElement } from "react";
 import { useStyleTheme } from "@wwwuabot/shared";
-import { SideBarMenu } from "@wwwuabot/ui/nav";
+import { SideBarMenu, useScreenChrome } from "@wwwuabot/ui/nav";
 
 export function ThemeStylePage(): ReactElement {
+  useScreenChrome({ title: "Стиль", theme: false });
   const { brand, setBrand, brands } = useStyleTheme();
 
   return (

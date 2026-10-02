@@ -15,20 +15,29 @@
 
 import type { ReactElement } from "react";
 import { Icon, PublicUserCard } from "@wwwuabot/shared";
-import { useNavigate, useParams } from "react-router-dom";
+import { useLocation, useNavigate, useParams } from "react-router-dom";
+import { useScreenChrome } from "@wwwuabot/ui/nav";
 import { SPACE_PATH } from "@/app/routes";
 import { useSpaceUser } from "./useSpaceUser";
-import { FavoriteButton } from "./favorites/FavoriteButton";
 
 export function SpaceUserPage(): ReactElement {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  const { pathname } = useLocation();
   // Сміття в адресі (`/space/u/abc`) — це не «нуль», а відсутність людини:
   // запит із таким номером пішов би в нікуди й повернув чужу помилку.
   const parsed = Number(id);
   const userId = Number.isInteger(parsed) && parsed > 0 ? parsed : null;
 
   const { profile, loading, error } = useSpaceUser(userId);
+
+  // Хедер розповідає про людину: її ім'я — це і є назва екрана, а серце
+  // ставиться їй, не сторінці.
+  useScreenChrome({
+    title: profile?.platformUsername ?? null,
+    shareUrl: profile ? pathname : null,
+    favorite: profile ? { kind: "user", targetId: profile.id } : null,
+  });
 
   return (
     <div className="wb-page">
@@ -62,12 +71,7 @@ export function SpaceUserPage(): ReactElement {
         </div>
       )}
 
-      {profile && (
-        <>
-          <FavoriteButton target={{ kind: "user", targetId: profile.id }} />
-          <PublicUserCard profile={profile} full />
-        </>
-      )}
+      {profile && <PublicUserCard profile={profile} full />}
     </div>
   );
 }

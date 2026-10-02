@@ -53,6 +53,7 @@
 import { useEffect, useRef, useState, type ReactElement } from "react";
 import { Icon } from "@wwwuabot/shared";
 import { sanitizeContactName, type Contact, type ContactInput } from "@wwwuabot/shared/contacts";
+import { useScreenChrome } from "@wwwuabot/ui/nav";
 import {
   ContactList,
   ContactSheet,
@@ -78,6 +79,7 @@ function newContact(name: string): ContactInput {
 }
 
 export function ContactsPage(): ReactElement {
+  useScreenChrome({ title: "Контакти" });
   const { contacts, loading, error, create, update, makeLink, remove } = useContacts();
   const dialog = useDialog();
   const [view, setView] = useState<ContactsView>(DEFAULT_CONTACTS_VIEW);

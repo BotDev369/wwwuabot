@@ -26,6 +26,7 @@ import { useState, type ReactElement } from "react";
 import { Icon } from "@wwwuabot/shared";
 import { useNavigate } from "react-router-dom";
 import { Tabs, tabId, tabPanelId } from "@wwwuabot/ui/tabs";
+import { useScreenChrome } from "@wwwuabot/ui/nav";
 import { PROFILE_PATH } from "@/app/routes";
 import { ACCOUNT_TABS, DEFAULT_ACCOUNT_TAB, type AccountTab } from "./account-tabs";
 import { AccountPlatformSection } from "./AccountPlatformSection";
@@ -33,6 +34,7 @@ import { AccountTelegramSection } from "./AccountTelegramSection";
 import { useProfile } from "./useProfile";
 
 export function ProfileAccountPage(): ReactElement {
+  useScreenChrome({ title: "Акаунт", theme: false });
   const { profile, loading, error, saveUsername, saveAbout, saveVisibility } = useProfile();
   const navigate = useNavigate();
   const [tab, setTab] = useState<AccountTab>(DEFAULT_ACCOUNT_TAB);

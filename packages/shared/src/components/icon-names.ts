@@ -54,6 +54,7 @@ export const ICON_NAMES = [
   "clipboard",
   "save",
   "copy",
+  "share",
   "check",
   "close",
   "refresh",

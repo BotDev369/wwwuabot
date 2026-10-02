@@ -29,6 +29,7 @@ import { useState, type ReactElement } from "react";
 import { Icon } from "@wwwuabot/shared";
 import type { NoteDraft, NoteRow } from "@wwwuabot/shared/notes";
 import { useDialog } from "@wwwuabot/ui/dialog";
+import { useScreenChrome } from "@wwwuabot/ui/nav";
 import { useCreateForm } from "@/app/useCreateForm";
 import { NoteCreateSheet } from "./create/NoteCreateSheet";
 import { notesApi } from "@/shared/api/notes.api";
@@ -52,6 +53,7 @@ function preview(note: NoteRow): string {
 }
 
 export function NotesPage(): ReactElement {
+  useScreenChrome({ title: "Нотатки" });
   const { notes, loading, error, upsert, remove } = useNotes();
   const dialog = useDialog();
   const [view, setView] = useState<NotesView>(DEFAULT_NOTES_VIEW);

@@ -19,6 +19,7 @@
  */
 
 import { useState, type ReactElement } from "react";
+import { useScreenChrome } from "@wwwuabot/ui/nav";
 import { useNavigate } from "react-router-dom";
 import {
   COLOR_SLOTS,
@@ -34,6 +35,7 @@ import { presetTabPath } from "./presets-tabs";
 import { useSchemeEditor } from "./useSchemeEditor";
 
 export function ThemeCustomizePage(): ReactElement {
+  useScreenChrome({ title: "Налаштувати тему", theme: false });
   const navigate = useNavigate();
   const dialog = useDialog();
   const editor = useSchemeEditor();

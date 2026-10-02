@@ -24,10 +24,12 @@ import { Navigate, useNavigate } from "react-router-dom";
 import { useCreateForm } from "@/app/useCreateForm";
 import { Icon } from "@wwwuabot/shared";
 import { PAGES_NEW_PATH, userPagePath } from "@/app/routes";
+import { useScreenChrome } from "@wwwuabot/ui/nav";
 import { pageHint, pageTemplateIcon } from "./pages-view";
 import { useUserPages } from "./useUserPages";
 
 export function UserPagesPage(): ReactElement {
+  useScreenChrome({ title: "Сторінки" });
   const navigate = useNavigate();
   const { pages, loading, error } = useUserPages();
   const form = useCreateForm();

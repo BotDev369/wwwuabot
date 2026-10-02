@@ -29,7 +29,8 @@
  */
 
 import { type ReactElement } from "react";
-import { useNavigate, useParams } from "react-router-dom";
+import { useLocation, useNavigate, useParams } from "react-router-dom";
+import { useScreenChrome } from "@wwwuabot/ui/nav";
 import { Icon, SwitchRow } from "@wwwuabot/shared";
 import { toWebPath } from "@wwwuabot/shared/content";
 import {
@@ -57,7 +58,6 @@ import {
   visibilityLabel,
 } from "./pages-view";
 import { useUserPage } from "./useUserPage";
-import { FavoriteButton } from "../favorites/FavoriteButton";
 
 registerAllBlocks();
 
@@ -65,7 +65,16 @@ export function UserPageView(): ReactElement {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const dialog = useDialog();
+  const { pathname } = useLocation();
   const { page, loading, error, pages } = useUserPage(id);
+
+  // Назва сторінки, її посилання й серце живуть у хедері: це речі про саму
+  // сторінку, а не про редактор, у якому вона відкрита.
+  useScreenChrome({
+    title: page?.title ?? null,
+    shareUrl: page ? pathname : null,
+    favorite: page ? { kind: "page", targetId: page.id } : null,
+  });
 
   // Товари належать магазину (`shop_id` — номер цієї ж сторінки), а живуть вони
   // в окремій таблиці, тож сторінка питає їх окремо (docs/SHOPS.md §1). Питають
@@ -191,7 +200,6 @@ export function UserPageView(): ReactElement {
               </p>
 
               <div className="wb-sheet-actions">
-                <FavoriteButton target={{ kind: "page", targetId: page.id }} />
                 {page.isPublic && (
                   <button
                     type="button"

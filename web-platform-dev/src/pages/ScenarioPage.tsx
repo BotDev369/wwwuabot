@@ -5,12 +5,13 @@
  * сценаріїв (`page_data` в D1). Захардкодені лишається ТІЛЬКИ фолбек
  * на випадок падіння доступу до бази/сценаріїв.
  *
- * Немає глобальних хедерів, сайдбарів, футерів, головної — усі 4 зони
- * (sidebar, header, main, footer) приходять із page_data сценарію.
+ * Хедер застосунку — не з цієї розмітки: він хром (`AppBar`), а назва, серце
+ * й посилання приходять із сценарію. Усі 4 зони (sidebar, header, main,
+ * footer) приходять із page_data сценарію.
  */
 
 import { useEffect, useMemo, useState } from "react";
-import { useParams } from "react-router-dom";
+import { useLocation, useParams } from "react-router-dom";
 import type { PageConfig, BlockContext, UserProfile } from "@wwwuabot/shared/types/page-config";
 import { parsePageConfig } from "@wwwuabot/shared/types/page-config";
 import { HOME_SLUG } from "@wwwuabot/shared/content";
@@ -19,7 +20,7 @@ import { apiFetchRaw } from "@/shared/api/client";
 import { useShopCatalog } from "@/pages/shop/useShopCatalog";
 import { ShopStore } from "@/pages/shop/store/ShopStore";
 import { registerAllBlocks } from "@wwwuabot/ui/blocks";
-import { FavoriteButton } from "./favorites/FavoriteButton";
+import { useScreenChrome } from "@wwwuabot/ui/nav";
 
 registerAllBlocks();
 
@@ -83,6 +84,7 @@ function ErrorScreen({ message }: { message: string }) {
 export function ScenarioPage() {
   // `*`-сплэт дає всю адресу; порожній шлях — головна.
   const { ["*"]: splat } = useParams<{ "*": string }>();
+  const { pathname } = useLocation();
   const scenarioSlug = splat ?? HOME_SLUG;
 
   const [pageConfig, setPageConfig] = useState<PageConfig | null>(null);
@@ -184,6 +186,17 @@ export function ScenarioPage() {
   }, [scenarioSlug]);
 
   const isShop = status !== "fallback" && templateKey === "shop";
+
+  // Хедер знає про сторінку те, що знає вона: як її звати, що можна
+  // скопіювати й на що поставити серце. Фолбек — це не сторінка, тож дій у
+  // ньому немає.
+  useScreenChrome({
+    title: status === "ready" ? (scenarioTitle ?? null) : null,
+    shareUrl: status === "ready" && scenarioId !== null ? pathname : null,
+    favorite:
+      status === "ready" && scenarioId !== null ? { kind: "page", targetId: scenarioId } : null,
+  });
+
   // Каталог питаємо **лише в магазину**: решті сторінок товарів не буває, і
   // запит за їхньою адресою повернув би «такого магазину немає» (`null` замість
   // адреси означає «не питати зовсім»).
@@ -214,7 +227,6 @@ export function ScenarioPage() {
   if (isShop) {
     return (
       <>
-        {scenarioId !== null && <FavoriteButton target={{ kind: "page", targetId: scenarioId }} />}
         <ShopStore
           slug={pageSlug}
           title={scenarioTitle}
@@ -231,9 +243,6 @@ export function ScenarioPage() {
 
   return (
     <>
-      {status === "ready" && scenarioId !== null && (
-        <FavoriteButton target={{ kind: "page", targetId: scenarioId }} />
-      )}
       <PageRenderer
         config={activeConfig}
         context={status === "fallback" ? { slug: HOME_SLUG, title: null, photoUrl: null } : context}

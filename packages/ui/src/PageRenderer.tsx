@@ -7,9 +7,11 @@
  * @module packages/ui/src/PageRenderer
  */
 
-import { useState, useCallback, useEffect, useMemo } from "react";
+import { useContext, useState, useCallback, useEffect, useMemo } from "react";
 import type { PageConfig, BlockContext } from "@wwwuabot/shared/types/page-config";
 import { Icon, icons, type IconName } from "@wwwuabot/shared";
+import { ScreenChromeContext } from "./nav/screen-chrome";
+import { useScreenChrome } from "./nav/useScreenChrome";
 import { ZoneRenderer } from "./ZoneRenderer";
 
 interface PageRendererProps {
@@ -68,6 +70,12 @@ export function PageRenderer({
   const toggleSidebar = useCallback(() => setSidebarOpen((p) => !p), []);
   const closeSidebar = useCallback(() => setSidebarOpen(false), []);
 
+  // Меню сторінки відкривається з хедера застосунку: сторінка лише каже, що
+  // меню в неї є, і дає ручку. Без хедера (попередній перегляд у адмінці)
+  // бургер лишається тут — інакше меню сторінки було б не відкрити взагалі.
+  const hasAppBar = useContext(ScreenChromeContext) !== null;
+  useScreenChrome({ menu: hasSidebar ? toggleSidebar : null }, hasAppBar);
+
   // Закриття сайдбару при натисканні Escape
   useEffect(() => {
     if (!sidebarOpen) return;
@@ -100,8 +108,8 @@ export function PageRenderer({
 
   return (
     <div className={className}>
-      {/* Floating hamburger when hasSidebar && !hasHeader (accessible on mobile) */}
-      {hasSidebar && !hasHeader && (
+      {/* Бургер без хедера застосунку: у платформі його малює `AppBar`. */}
+      {hasSidebar && !hasHeader && !hasAppBar && (
         <button
           className="hamburger page-hamburger page-hamburger--floating"
           onClick={toggleSidebar}
@@ -145,8 +153,8 @@ export function PageRenderer({
             className={zoneClassName?.header ?? "page-zone page-zone--header"}
             data-zone="header"
           >
-            {/* Hamburger inside header — visible on mobile when sidebar has content */}
-            {hasSidebar && (
+            {/* Бургер усередині зони header — лише коли хедера застосунку немає. */}
+            {hasSidebar && !hasAppBar && (
               <button
                 className="hamburger page-hamburger"
                 onClick={toggleSidebar}

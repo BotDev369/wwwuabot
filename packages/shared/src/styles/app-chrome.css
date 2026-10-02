@@ -87,6 +87,100 @@
   letter-spacing: 0.04em;
 }
 
+/* ═══ Глобальний хедер (.wb-appbar) ═══════════════════════════════════════
+   Закріплений рядок на кожному екрані застосунку: ліворуч меню сторінки й
+   назва, праворуч три знаки (поділитись, обране, тема).
+
+   **Скло, а не лінія.** Прозорий фон + `backdrop-filter` дають розмитість
+   вмісту, який скролиться під рядком; лінія чи тінь тут означали б, що рядок
+   «лежить на сторінці», а не є частиною хрома (правило 15). Прозорість
+   навмисно невелика — 84%: ковзання кавитри з іншого застосунку не повинно
+   ставати розмитим текстом.
+
+   **Позиція — `sticky`, а не `fixed`.** Вміст має під нею місце сам (відступ
+   зроблений `padding-top` у `.wb-appbar`), тому рядок не з'їжджає перший
+   блок сторінки й не лишає розкритого рядка знизу. Шар нижчий за модалки
+   (`--z-modal`) і вище за вміст сторінки, щоб футер із значками не
+   наїжджав на нього. */
+
+.wb-appbar {
+  position: sticky;
+  top: 0;
+  z-index: var(--z-sticky);
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+  /* Висота — та сама, що в шалік: `--topbar-h` плюс safe-area телефонів. */
+  min-height: calc(var(--topbar-h) + var(--safe-top));
+  padding: var(--safe-top) var(--sp-2) 0;
+  /* Фолбек для рушіїв без `color-mix()`/`backdrop-filter`: той самий колір,
+     лише непрозорий — читається так само, просто без розмитості. */
+  background: var(--chrome-header-bg);
+  background: color-mix(in srgb, var(--chrome-header-bg) 84%, transparent);
+  -webkit-backdrop-filter: blur(14px) saturate(140%);
+  backdrop-filter: blur(14px) saturate(140%);
+}
+
+.wb-appbar__lead {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-1);
+  min-width: 0;
+  flex: 1 1 auto;
+}
+
+.wb-appbar__title {
+  font-size: var(--text-md);
+  font-weight: var(--weight-semibold);
+  color: var(--text-primary);
+  line-height: 1.2;
+  /* Довга назва обрізається одним рядом: вона не повинна витісняти дії. */
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.wb-appbar__actions {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-1);
+  flex: 0 0 auto;
+}
+
+/* Знак без підпису: 44×44 — тап-таргет пальця (правило §3 AGENTS.md), заливки
+   й рамки немає — знак сказав усе, поверхня з'являється лише під пальцем. */
+.wb-appbar__btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  border: 0;
+  border-radius: var(--radius-full);
+  background: transparent;
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition:
+    background var(--duration-fast) var(--ease),
+    color var(--duration-fast) var(--ease);
+}
+
+.wb-appbar__btn:hover:not(:disabled) {
+  background: var(--surface-hover);
+  color: var(--text-primary);
+}
+
+.wb-appbar__btn:disabled {
+  opacity: 0.4;
+  cursor: default;
+}
+
+/* «Вибрано» — акцентним знаком, без тла (правило 25): залите серце було б
+   другою кнопкою, а не станом цієї. */
+.wb-appbar__btn--on {
+  color: var(--accent);
+}
+
 /* Вміст сторінки: скролять панелі всередині, а не сам каркас */
 .wb-app-body {
   flex: 1;

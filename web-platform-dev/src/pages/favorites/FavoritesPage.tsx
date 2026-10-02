@@ -1,8 +1,10 @@
 import { useNavigate } from "react-router-dom";
 import { Icon } from "@wwwuabot/shared";
 import { useFavorites } from "./useFavorites";
+import { useScreenChrome } from "@wwwuabot/ui/nav";
 
 export function FavoritesPage() {
+  useScreenChrome({ title: "Обране" });
   const favorites = useFavorites();
   const navigate = useNavigate();
   return (

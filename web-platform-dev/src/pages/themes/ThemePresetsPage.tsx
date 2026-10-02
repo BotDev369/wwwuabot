@@ -17,6 +17,7 @@
  */
 
 import { useState, type ReactElement } from "react";
+import { useScreenChrome } from "@wwwuabot/ui/nav";
 import { useSearchParams } from "react-router-dom";
 import { Tabs, tabId, tabPanelId } from "@wwwuabot/ui/tabs";
 import { MyThemesPanel } from "./MyThemesPanel";
@@ -25,6 +26,7 @@ import { SharedThemesPanel } from "./SharedThemesPanel";
 import { PRESET_TABS, PRESET_TAB_PARAM, readPresetTab, type PresetTab } from "./presets-tabs";
 
 export function ThemePresetsPage(): ReactElement {
+  useScreenChrome({ title: "Готові теми", theme: false });
   const [searchParams] = useSearchParams();
   const [tab, setTab] = useState<PresetTab>(() =>
     readPresetTab(searchParams.get(PRESET_TAB_PARAM)),

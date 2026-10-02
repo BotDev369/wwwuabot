@@ -18,11 +18,14 @@
 
 import type { ReactElement, ReactNode } from "react";
 import { useNavigate } from "react-router-dom";
-import { SideBarMenu } from "@wwwuabot/ui/nav";
+import { SideBarMenu, useScreenChrome } from "@wwwuabot/ui/nav";
 import { THEME_SECTIONS, themeSectionPath, type ThemeSection } from "./theme-sections";
 import { useThemeLook } from "./useThemeLook";
 
 export function ThemeHubPage(): ReactElement {
+  // Тема вже відкрита: у розділі профілю палітру дублювати в хедері не
+  // треба (правило 12 — каркас не повторює те, що вже є на екрані).
+  useScreenChrome({ title: "Тема", theme: false });
   const navigate = useNavigate();
   const look = useThemeLook();
 

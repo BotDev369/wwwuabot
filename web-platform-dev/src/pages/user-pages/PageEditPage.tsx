@@ -15,12 +15,14 @@
 import type { ReactElement } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { pageDraft } from "@wwwuabot/shared/pages";
+import { useScreenChrome } from "@wwwuabot/ui/nav";
 import { userPagePath } from "@/app/routes";
 import { PageEditor } from "./PageEditor";
 import { PageState } from "./PageState";
 import { useUserPage } from "./useUserPage";
 
 export function PageEditPage(): ReactElement {
+  useScreenChrome({ title: "Редагування" });
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { page, loading, error, pages } = useUserPage(id);

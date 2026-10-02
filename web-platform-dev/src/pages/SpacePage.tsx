@@ -36,6 +36,7 @@ import { useState, type ReactElement } from "react";
 import { Icon } from "@wwwuabot/shared";
 import type { Ad, AdDraft } from "@wwwuabot/shared/ads";
 import { tabId, tabPanelId } from "@wwwuabot/ui/tabs";
+import { useScreenChrome } from "@wwwuabot/ui/nav";
 import { useCreateForm } from "@/app/useCreateForm";
 import { AdCreateSheet } from "./create/AdCreateSheet";
 import { adDraftFrom } from "./ads-list";
@@ -55,6 +56,7 @@ interface ComposerRequest {
 }
 
 export function SpacePage(): ReactElement {
+  useScreenChrome({ title: "Простір" });
   // Розділ і панель приходять з адреси (`useSpaceNav`): так з хабу «Створити»
   // веде «+» — у розділ дошки й одразу у форму оголошення (`?tab=ads&new=1`).
   const nav = useSpaceNav();

@@ -25,6 +25,7 @@
 import type { ReactElement } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { pageTemplate } from "@wwwuabot/shared/pages";
+import { useScreenChrome } from "@wwwuabot/ui/nav";
 import {
   PAGES_NEW_PATH,
   PAGES_PATH,
@@ -40,6 +41,7 @@ import { PageTemplatePicker } from "./PageTemplatePicker";
 import { PageTemplatePreview } from "./PageTemplatePreview";
 
 export function PageCreatePage(): ReactElement {
+  useScreenChrome({ title: "Нова сторінка" });
   const navigate = useNavigate();
   const [params] = useSearchParams();
   const templateKey = readPageTemplate(params);

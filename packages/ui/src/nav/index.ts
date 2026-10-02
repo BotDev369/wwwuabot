@@ -12,9 +12,19 @@
  * `SideBar` — **єдиний сайдбар продукту**: меню адмінки, панель розділів
  * Простору й список розділів теми рендрить він, а не три схожі розмітки.
  *
+ * `AppBar` — закріплений хедер застосунку: ліворуч меню сторінки й назва,
+ * праворуч самі знаки (поділитись, обране, тема). Що показувати — вирішує
+ * екран через `useScreenChrome`, малює хедер він сам.
+ *
  * @module @wwwuabot/ui/nav
  */
 
+export { AppBar } from "./AppBar";
+export { ScreenChromeProvider } from "./ScreenChromeProvider";
+export { useScreenChrome } from "./useScreenChrome";
+export { useCopyLink } from "./useCopyLink";
+export { ScreenChromeContext } from "./screen-chrome";
+export type { ScreenChrome, ScreenChromePatch } from "./screen-chrome";
 export { TabBar } from "./TabBar";
 export { SubBar, buildSubBarItems } from "./SubBar";
 export { SideBar, SideBarMenu } from "./Sidebar";

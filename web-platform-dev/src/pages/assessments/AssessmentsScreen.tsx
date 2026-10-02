@@ -12,11 +12,13 @@
 import { useMemo, useState, type ReactElement } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { assessmentRunPath } from "@/app/routes";
+import { useScreenChrome } from "@wwwuabot/ui/nav";
 import { AssessmentsPage } from "./AssessmentsPage";
 import { AssessmentRun } from "./AssessmentRun";
 import { useAssessments } from "./useAssessments";
 
 export function AssessmentsScreen(): ReactElement {
+  useScreenChrome({ title: "Розвиток" });
   const { key } = useParams();
   const navigate = useNavigate();
   const { tests, results, peers, loading, saving, error, submit, clearError } = useAssessments();

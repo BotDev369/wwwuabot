@@ -49,6 +49,7 @@
 import { useState, type ReactElement } from "react";
 import { useSearchParams } from "react-router-dom";
 import { Icon } from "@wwwuabot/shared";
+import { useScreenChrome } from "@wwwuabot/ui/nav";
 import { useCreateForm } from "@/app/useCreateForm";
 import {
   MESSAGES_PEER_PARAM,
@@ -74,6 +75,7 @@ import { useProfile } from "./useProfile";
 import { useThread } from "./useThread";
 
 export function MessagesPage(): ReactElement {
+  useScreenChrome({ title: "Повідомлення" });
   const { conversations, loading, error, reload } = useConversations();
   const compose = useCompose();
   const dialog = useDialog();

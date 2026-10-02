@@ -22,10 +22,12 @@
 import type { ReactElement } from "react";
 import { useNavigate } from "react-router-dom";
 import { Icon } from "@wwwuabot/shared";
+import { useScreenChrome } from "@wwwuabot/ui/nav";
 import { shopOrdersPath } from "@/app/routes";
 import { useUserPages } from "@/pages/user-pages/useUserPages";
 
 export function ProfileOrdersPage(): ReactElement {
+  useScreenChrome({ title: "Замовлення", theme: false });
   const navigate = useNavigate();
   const { pages, loading, error } = useUserPages();
   const shops = pages.filter((page) => page.template === "shop");
