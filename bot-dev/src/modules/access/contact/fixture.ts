@@ -9,11 +9,12 @@
  */
 
 import type { AppContext } from "../../../shared/types/env";
-import { ADMIN_TELEGRAM_ID } from "./flow";
 import { handleContactCallback } from "./panel";
 import { handleContactFlow } from "./reply";
 
 const GUEST = 555;
+/** Власник у тесті — те саме значення, що живе в секреті `ADMIN_TELEGRAM_ID`. */
+const OWNER = 372567448;
 
 /** Одне надіслане повідомлення: чат, текст і підписи клавіатури. */
 export interface Sent {
@@ -90,7 +91,7 @@ export function chat(
   };
 
   const ctx = {
-    env: { DB: db },
+    env: { DB: db, ADMIN_TELEGRAM_ID: String(OWNER) },
     api,
     chat: { id: GUEST },
     from: { id: GUEST },
@@ -105,7 +106,7 @@ export function chat(
     },
   } as unknown as AppContext;
 
-  const toAdmin = () => sent.filter((s) => s.chat === ADMIN_TELEGRAM_ID).map((s) => s.text);
+  const toAdmin = () => sent.filter((s) => s.chat === OWNER).map((s) => s.text);
 
   return {
     ctx,

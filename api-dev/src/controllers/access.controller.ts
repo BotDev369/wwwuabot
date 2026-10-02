@@ -27,10 +27,10 @@ export async function handleAccess(request: Request, env: Env): Promise<Response
   let allowed = false;
   if (userId !== null) {
     try {
-      const row = await env.DB.prepare("SELECT inviter_id FROM users WHERE user_id = ?")
+      const row = await env.DB.prepare("SELECT user_id, inviter_id FROM users WHERE user_id = ?")
         .bind(userId)
-        .first<{ inviter_id: number | null }>();
-      allowed = hasAccess(row);
+        .first<{ user_id: number; inviter_id: number | null }>();
+      allowed = hasAccess(row, env.ADMIN_TELEGRAM_ID);
     } catch (error: unknown) {
       // Не вдалося перевірити — значить не впускаємо: закритий продукт лишається
       // закритим (те саме рішення, що в `shared/access.ts`).

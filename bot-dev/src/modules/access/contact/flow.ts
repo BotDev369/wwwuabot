@@ -15,15 +15,17 @@
  * в чернетку (`admin_dialog_text`): надіслати раніше ми не можемо, бо тоді в
  * людини не було б кнопки «Закрити без відправки» — тобто «я передумав».
  *
- * **Хто йому пише:** `sendMessage` на адмінський Telegram-id. Відповідь адміна
- * прийде згодом окремим кроком, а поки що адмін бачить лише суть — хто
- * написав і що.
+ * **Хто йому пише:** `sendMessage` на Telegram-id власника — той самий, що дає
+ * йому виняток із допуску (`ADMIN_TELEGRAM_ID`), тож ID має одного власника й
+ * не живе константою в коді. Відповідь прийде згодом окремим кроком, а поки що
+ * власник бачить лише суть — хто написав і що.
  *
  * @module bot-dev/src/modules/access/contact/flow
  */
 
 import { ensureTables } from "@wwwuabot/shared/database/ensure-tables";
 import { sanitizeAccessRequestText } from "@wwwuabot/shared/access-requests";
+import { parseOwnerTelegramId } from "@wwwuabot/shared/security/access";
 import type { AppContext } from "../../../shared/types/env";
 import { log } from "../../../shared/utils/debug";
 import {
@@ -34,9 +36,6 @@ import {
   type ContactAction,
   type ContactState,
 } from "./state";
-
-/** Telegram-id адміністратора, якому падають звернення. */
-export const ADMIN_TELEGRAM_ID = 372567448;
 
 /** Що зробила дія — і що тепер показати людині. */
 export type ContactOutcome =
@@ -129,10 +128,18 @@ async function submit(
  * втричі більша, ніж те, що Telegram приймає за одне повідомлення.
  */
 async function notifyAdmin(ctx: AppContext, text: string): Promise<void> {
+  const adminId = parseOwnerTelegramId(ctx.env.ADMIN_TELEGRAM_ID);
+  if (adminId === null) {
+    // Зверження вже в базі й його видно в панелі, тож без секрету ми просто
+    // не пишемо в Telegram, а не змушуємо людину думати, що воно загубилося.
+    log("ACCESS", "admin notification skipped | no ADMIN_TELEGRAM_ID");
+    return;
+  }
+
   try {
-    await ctx.api.sendMessage(ADMIN_TELEGRAM_ID, buildAdminNotice(ctx.user!));
+    await ctx.api.sendMessage(adminId, buildAdminNotice(ctx.user!));
     for (const part of splitForTelegram(text)) {
-      await ctx.api.sendMessage(ADMIN_TELEGRAM_ID, part);
+      await ctx.api.sendMessage(adminId, part);
     }
   } catch (err) {
     // Звернення вже в базі й його видно в панелі, тож невдача Telegram лише

@@ -67,7 +67,8 @@ function needsAccess(pathname: string): boolean {
  *
  * **Рядок читається з таблиці `users`**, а не з кешу: `inviter_id` пише бот у
  * момент переходу за лінком, і людина, яка щойно прийшла, має отримати доступ
- * без перезавантаження Mini App.
+ * без перезавантаження Mini App. Власник (`ADMIN_TELEGRAM_ID`) проходить без
+ * `inviter_id`: йому нема ким бути запрошеним.
  */
 async function hasAccessToPlatform(
   request: Request,
@@ -77,10 +78,10 @@ async function hasAccessToPlatform(
   if (!identity.ok) return { ok: false, response: identity.response };
 
   try {
-    const row = await env.DB.prepare("SELECT inviter_id FROM users WHERE user_id = ?")
+    const row = await env.DB.prepare("SELECT user_id, inviter_id FROM users WHERE user_id = ?")
       .bind(identity.userId)
-      .first<{ inviter_id: number | null }>();
-    if (hasAccess(row)) return { ok: true };
+      .first<{ user_id: number; inviter_id: number | null }>();
+    if (hasAccess(row, env.ADMIN_TELEGRAM_ID)) return { ok: true };
   } catch (error: unknown) {
     // База недоступна — це не привід відкрити продукт: закритий продукт
     // лишається закритим, доки не зможемо перевірити.

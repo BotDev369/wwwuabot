@@ -38,7 +38,8 @@ import { hasAccess } from "@wwwuabot/shared/security/access";
  * **Бот закритий за запрошеннями**, тому кожен шлях до контенту проходить
  * `renderOrDeny`. Правило допуску спільне з платформою
  * (`@wwwuabot/shared/security/access`): закритий продукт закритий для обох
- * входів, інакше відмова в чаті оминається посиланням. Фільтр стоїть **після**
+ * входів, інакше відмова в чаті оминається посиланням; виняток власника
+ * (`ADMIN_TELEGRAM_ID`) тому ж спільний. Фільтр стоїть **після**
  * розбору payload: код запрошення в хвості — це і є допуск, і перевіряти раніше
  * значило б відмовити тому, хто щойно прийшов за лінком.
  */
@@ -48,7 +49,7 @@ export async function botRouter(ctx: AppContext): Promise<void> {
   // Діалог з адміном — окремий шлях: він перехоплює кнопки реплай-клавіатури,
   // inline-кнопки панелі та фото/стікери, яких текстовий шлях не бачить. І
   // тільки для людини без допуску: у кого є доступ, цього діалогу не існує.
-  if (!hasAccess(ctx.user)) {
+  if (!hasAccess(ctx.user, ctx.env.ADMIN_TELEGRAM_ID)) {
     if (ctx.callbackQuery && (await handleContactCallback(ctx))) return;
     if (await handleContactFlow(ctx)) return;
   }
@@ -118,7 +119,7 @@ export async function botRouter(ctx: AppContext): Promise<void> {
     // Людина без допуску пише в чат — значить, їй уже незручно мовчати. Показуємо
     // відмову (з кнопкою зв'язку з адміном) замість тиші: інакше її перше
     // повідомлення просто зникало б, а «Написати адміну» — разом із ним.
-    if (!hasAccess(ctx.user)) {
+    if (!hasAccess(ctx.user, ctx.env.ADMIN_TELEGRAM_ID)) {
       log("ACCESS", "denied | plain text", { user_id: ctx.user.user_id });
       await deleteIncomingMessage(ctx);
       await showAccessDenied(ctx);
@@ -161,7 +162,7 @@ async function renderOrDeny(
   render: () => Promise<void>,
   options: { keyboard?: boolean } = {},
 ): Promise<void> {
-  if (!hasAccess(ctx.user)) {
+  if (!hasAccess(ctx.user, ctx.env.ADMIN_TELEGRAM_ID)) {
     log("ACCESS", "denied", { user_id: ctx.user?.user_id });
     await deleteIncomingMessage(ctx);
     await showAccessDenied(ctx);

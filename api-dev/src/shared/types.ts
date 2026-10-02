@@ -32,6 +32,13 @@ export interface Env {
    */
   ADMIN_SECRET?: string;
   /**
+   * Telegram-id власника продукту (Cloudflare Secret) — єдиний виняток із
+   * допуску за запрошеннями, бо його не може запросити ніхто. Те саме значення,
+   * що й у `bot-dev`: правило допуску спільне
+   * (`@wwwuabot/shared/security/access`), тож виняток мусить бути спільним.
+   */
+  ADMIN_TELEGRAM_ID?: string;
+  /**
    * DSN із Sentry. Задається як Cloudflare Secret (`wrangler secret put` або
    * Dashboard). Без нього Sentry вимкнено — воркер працює як звичайно.
    * Див. `@wwwuabot/shared/observability/sentry`.

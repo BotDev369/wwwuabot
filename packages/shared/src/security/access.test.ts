@@ -8,7 +8,9 @@
  */
 
 import { describe, expect, it } from "vitest";
-import { hasAccess } from "./access";
+import { hasAccess, parseOwnerTelegramId } from "./access";
+
+const OWNER = "372567448";
 
 describe("допуск у продукт", () => {
   it("⛔ без `inviter_id` продукт закритий", () => {
@@ -36,5 +38,37 @@ describe("допуск у продукт", () => {
     expect(hasAccess({ role: "admin" } as { inviter_id?: unknown })).toBe(false);
     expect(hasAccess({ role: "admin", inviter_id: null } as { inviter_id?: unknown })).toBe(false);
     expect(hasAccess({ role: "admin", inviter_id: 7 } as { inviter_id?: unknown })).toBe(true);
+  });
+
+  it("власник із секрету має доступ без запрошення", () => {
+    expect(hasAccess({ user_id: 372567448, inviter_id: null }, OWNER)).toBe(true);
+    expect(hasAccess({ user_id: 372567448 }, OWNER)).toBe(true);
+  });
+
+  it("⛔ секрет власника не відкриває інших", () => {
+    expect(hasAccess({ user_id: 555, inviter_id: null }, OWNER)).toBe(false);
+    expect(hasAccess({ user_id: 372567449, inviter_id: null }, OWNER)).toBe(false);
+    // Рядок у колонці — збій, а не збіг: власник у базі має ціле число.
+    expect(hasAccess({ user_id: "372567448", inviter_id: null }, OWNER)).toBe(false);
+  });
+
+  it("⛔ без секрету винячку немає: продукт лишається закритим", () => {
+    const owner = { user_id: 372567448, inviter_id: null };
+    expect(hasAccess(owner)).toBe(false);
+    expect(hasAccess(owner, "")).toBe(false);
+    expect(hasAccess(owner, "   ")).toBe(false);
+    expect(hasAccess(owner, "abc")).toBe(false);
+    expect(hasAccess(owner, "372567448,555")).toBe(false);
+    expect(hasAccess(owner, "-372567448")).toBe(false);
+  });
+
+  it("розбір секрету: лише ціле Telegram-id", () => {
+    expect(parseOwnerTelegramId("372567448")).toBe(372567448);
+    expect(parseOwnerTelegramId("  372567448 ")).toBe(372567448);
+    expect(parseOwnerTelegramId("")).toBeNull();
+    expect(parseOwnerTelegramId("abc")).toBeNull();
+    expect(parseOwnerTelegramId("1e3")).toBeNull();
+    expect(parseOwnerTelegramId(undefined)).toBeNull();
+    expect(parseOwnerTelegramId(null)).toBeNull();
   });
 });

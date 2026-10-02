@@ -52,6 +52,14 @@ export interface Env {
   /** Публічна база Mini App; без неї бот не додає автоматичну web_app-кнопку. */
   WEB_PLATFORM_URL?: string;
   /**
+   * Telegram-id власника продукту (Cloudflare Secret). Його не може запросити
+   * ніхто, тож він єдиний виняток із допуску за запрошеннями
+   * (`@wwwuabot/shared/security/access`), і саме йому падають звернення
+   * (`modules/access/contact`). Без секрету винячку немає, а звернення лишаються
+   * в `access_requests` — їх видно в панелі.
+   */
+  ADMIN_TELEGRAM_ID?: string;
+  /**
    * DSN із Sentry. Задається як Cloudflare Secret. Без нього Sentry вимкнено
    * — бот працює як звичайно.
    */
