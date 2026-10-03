@@ -77,6 +77,8 @@ npx wrangler d1 execute wwwuabot-db-dev --remote --config api-dev/wrangler.toml 
 
 ## Прибирання: чого `ensureTables` не зробить ніколи
 
+> Що саме лишилося в дев-базі й чому ще не прибрано — [`DB_LEGACY.md`](./DB_LEGACY.md).
+
 `ensureTables` **ніколи не робить `DROP`** — навмисно: інакше схема залежала б від того, який воркер
 запуститься першим. Таблиця, якої більше не потрібно, прибирається руками:
 

@@ -117,6 +117,26 @@ Vitest, файл `*.test.ts(x)` поряд із модулем. Обов'язк�
 див. `docs/DATA_MODEL.md`. Міграції з черги CI запускає людина через
 `.github/workflows/d1.yml`.
 
-## 10. Куди писати нове
+## 10. Новий блок сторінки
+
+Блок описують **компактним записом**, а не JSON-схемою: хелпери з
+`packages/shared/src/constants/block-definitions/helpers.ts`.
+
+1. Визнач блок у своєму файлі тематичної групи (`content.ts`, `forms.ts`, `commerce.ts`, …),
+   експортуй його через `block-definitions/index.ts`.
+2. `s()` — рядок для адмінки, `e()` — перелік із значенням за замовчуванням; `required` і
+   `defaultProps` мусять збігатися, бо `defaultProps` живить сторінку поза редактором.
+3. Рендеринг — у `packages/ui`; правило класу — у `packages/shared/src/styles/`.
+
+```typescript
+block({ type: "text", label: "Текст", icon: "text", category: "content",
+  props: { title: s("Заголовок"), content: s("Текст"),
+    level: e("Рівень", ["h1","h2","body"], { default: "body" }) },
+  required: ["content"], defaultProps: { title: "", content: "", level: "body" } })
+```
+
+**Перевірка:** `npm test`, `npm run check:css`; реєстр — `docs/GLOSSARY.md`.
+
+## 11. Куди писати нове
 
 Таблиця «що з'явилось → куди» має одного власника — покажчик [`README.md`](./README.md).

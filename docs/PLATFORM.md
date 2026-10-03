@@ -85,6 +85,22 @@ src/
 `web-admin-dev` — auth через cookie + HMAC; прикладні стори живуть у своїх фічах
 (`features/scenarios/store`, `features/users/store`), а навігація — `layout/Sidebar/adminNav.store.ts`.
 
+### Межа: що спільне, а що лишається в оболонці
+
+Обидві — оболонки навколо спільного ядра. Ділити можна *логіку*, не *рішення*.
+
+| Шар | Спільний? | Куди |
+|---|---|---|
+| Типи, утиліти, токени, CSS | ✅ | `packages/shared` |
+| Рендеринг блоків і сторінок (`PageRenderer`) | ✅ | `packages/ui` |
+| Транспорт API (`apiFetch`) | ✅ | `packages/shared` |
+| Перевірка сесії (HMAC, cookie, `initData`) — **чиста функція** | ✅ | `packages/shared/src/security/` |
+| `AuthGate` (що робити при провалі) | ❌ | окремо в кожному застосунку |
+| Роутер, `worker.ts`, `wrangler.toml` | ❌ | окремо |
+
+**Ключове:** перевірка — спільна, реакція на провал — своя (TWA показує «відкрийте в Telegram»,
+адмінка — `LoginScreen`). Інакше злите рішення тягне в shared роутинг, `worker.ts` і `wrangler.toml`.
+
 ## Каркас складають із кирпичиків (правило 12)
 
 Це повний текст правила **12** дизайн-системи: номер лишається в [`DESIGN_SYSTEM.md`](./DESIGN_SYSTEM.md),
