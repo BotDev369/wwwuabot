@@ -230,13 +230,13 @@ describe("картка теми — прев'ю теми", () => {
     expect(component).not.toMatch(/style=\{\{ background: "#/);
   });
 
-  it("⛔ картка одна на весь продукт — і три в рядку, як шаблони", () => {
+  it("⛔ картка одна на весь продукт — і по дві в рядку, скрізь", () => {
     // Раніше картки тем і плитки шаблонів були різними компонентами з різною
     // міркою: «сітка дрібних плиток» поруч із «великими картками».
     expect(THEME).not.toContain(".wb-theme-scheme");
     expect(THEME).not.toContain(".wb-theme-preset");
     const grid = rule(PANEL, ".wb-theme-cards");
-    expect(grid?.body).toContain("grid-template-columns: repeat(3, minmax(0, 1fr))");
+    expect(grid?.body).toContain("grid-template-columns: repeat(2, minmax(0, 1fr))");
     // Шаблони, свої теми й Простір рендерять ту саму картку.
     for (const path of [
       "web-platform-dev/src/pages/themes/PlatformThemesPanel.tsx",
