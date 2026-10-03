@@ -87,7 +87,39 @@ export function exists(rel) {
 }
 
 /**
- * Вирізати коментарі, щоб `100vh` у поясненні не вважався порушенням.
+ * Чи існує шлях у чекауті — як файл, як тека з файлами або як **хвіст**
+ * наявного шляху.
+ *
+ * Спільно для `check-docs.mjs` (шлях у документі) і `check-comments.mjs`
+ * (шлях у коментарі): правило «названий файл існує» одне, а копія в другому
+ * гейті розійшлася б з першою на першій же перейменовці.
+ */
+export function repoPathExists(path) {
+  const p = path.replace(/\/+$/, "");
+  // `shared/…` — скорочення для `packages/shared/src/…`, яким користуються і документи, і код.
+  const tails = p.startsWith("shared/")
+    ? [p, `packages/shared/src/${p.slice("shared/".length)}`]
+    : [p];
+  return tails.some((tail) =>
+    repoFiles().some(
+      (file) =>
+        file === tail ||
+        file.endsWith(`/${tail}`) ||
+        file.startsWith(`${tail}/`) ||
+        file.includes(`/${tail}/`),
+    ),
+  );
+}
+
+/** Усі файли чекауту — один раз, далі з кешу: обхід дорогий. */
+let repoFilesCache = null;
+function repoFiles() {
+  if (!repoFilesCache) repoFilesCache = [...walk(".", () => true), ...walk(".github", () => true)];
+  return repoFilesCache;
+}
+
+/**
+ * Вирізати коментарі, щоб `100vh` у поясненні не вважалося порушенням.
  * Свідомо грубо: рядкові літерали з `//` усередині не враховуємо — для
  * CSS-значень і шляхів це нешкідливо, а повний парсер тут не потрібен.
  */

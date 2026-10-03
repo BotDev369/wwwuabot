@@ -104,6 +104,8 @@ jobs:
       # схемами й `users`, який не створював ніхто.
       - name: D1 schema
         run: npm run check:db
+      - name: Comments
+        run: npm run check:comments
       - name: Unit tests
         run: npm test
 

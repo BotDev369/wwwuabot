@@ -9,6 +9,8 @@
 знайдуть. Стежить `npm run check:docs`. Дат і розмірів тут немає свідомо — чому, нижче.
 |---|---|
 | [`../AGENTS.md`](../AGENTS.md) | **правила роботи**: архітектура, межі, доменні терміни, заборони, конвенції, гейти, відкрита робота. Єдиний документ, який читають повністю |
+| [`COMMENTS.md`](./COMMENTS.md) | **коментарі в коді**: три рівні (інваріант / пастка / пояснення), що видаляти, що лишається завжди, мова; гейт `check:comments` |
+| [`DECISIONS.md`](./DECISIONS.md) | **журнал рішень**: що ухвалено, чому, що скасовує — щоб наступний агент не «обґрунтовував» те, що вже вирішено |
 | [`DOC_GROWTH.md`](./DOC_GROWTH.md) | **як ростити документацію**: три шари (правило / тема / крок), чотири сигнали винесення, п'ять кроків алгоритму, чого не робити з «додатком у кінці» |
 | [`RECIPES.md`](./RECIPES.md) | **як робити типові задачі**: новий ендпоїнт, колонка D1, кирпичик, екран платформи, екран бота, спільний код, тест |
 | [`GLOSSARY.md`](./GLOSSARY.md) | мова продукту: повні визначення доменних термінів (Scenario, Простір, Магазин, Тема, Замовлення…), поля й код теми |
@@ -39,6 +41,33 @@
 | [`../bot-dev/README.md`](../bot-dev/README.md) | бот як система: конвеєр апдейта, `ctx.screen`, рендер, черга нотифікацій, контакти |
 | [`HOME_PAGE_DATA.json`](./HOME_PAGE_DATA.json) | дані головної сторінки (вміст `page_data`) для міграції `2026-09-14-scenarios-03-home-page.sql` |
 
+## Який документ відкрити під задачу
+
+Покажчик вище — «що є»; ця таблиця — «що відкрити, коли я саме це роблю».
+Великі сховища (`CONTENT_MODEL`, `DATA_MODEL`, `DESIGN_SYSTEM`) читати з
+початку не потрібно: правило нижче каже, який саме розділ має сенс.
+
+| Задача | Спершу відкрити | Потім |
+|---|---|---|
+| Новий REST-ендпоінт | [`RECIPES.md`](./RECIPES.md) §1, [`API.md`](./API.md) (група доступу) | [`DATA_MODEL.md`](./DATA_MODEL.md) — таблиця й власник |
+| Нова таблиця або колонка D1 | [`RECIPES.md`](./RECIPES.md) §2, [`D1_OPS.md`](./D1_OPS.md) | [`DATA_MODEL.md`](./DATA_MODEL.md) |
+| Перейменування / перебудова таблиці | [`RECIPES.md`](./RECIPES.md) §3, [`D1_OPS.md`](./D1_OPS.md) «Перебудова» | — |
+| Новий блок сторінки | [`RECIPES.md`](./RECIPES.md) §10, [`GLOSSARY.md`](./GLOSSARY.md) | [`DESIGN_SYSTEM.md`](./DESIGN_SYSTEM.md) — правило класу |
+| Новий клас `.wb-*` | [`RECIPES.md`](./RECIPES.md) §4 | [`PLATFORM.md`](./PLATFORM.md) — кирпичик чи стиль оболонки |
+| Екран платформи (TWA) | [`RECIPES.md`](./RECIPES.md) §5, [`PLATFORM.md`](./PLATFORM.md) | [`DESIGN_SYSTEM.md`](./DESIGN_SYSTEM.md) |
+| Екран або кнопка бота | [`RECIPES.md`](./RECIPES.md) §6, [`../bot-dev/README.md`](../bot-dev/README.md) | [`GLOSSARY.md`](./GLOSSARY.md) — терміни екрана |
+| Розмітка, токени, колір | [`DESIGN_SYSTEM.md`](./DESIGN_SYSTEM.md), [`TOKENS.md`](./TOKENS.md) | [`SURFACES.md`](./SURFACES.md) — якщо це поверхня |
+| Тема: схема, шрифт, застосування | [`THEMES.md`](./THEMES.md) | [`SPACE.md`](./SPACE.md) — публічність |
+| Магазин: замовлення, статуси, оповіщення | [`SHOPS.md`](./SHOPS.md) | [`PRODUCTS.md`](./PRODUCTS.md), [`SHOP_UI.md`](./SHOP_UI.md) |
+| Сторінка з шаблону | [`PAGES.md`](./PAGES.md) | [`CONTENT_MODEL.md`](./CONTENT_MODEL.md) — адреса й контент |
+| Простір, профіль, видимість | [`SPACE.md`](./SPACE.md) | [`ADS.md`](./ADS.md), [`GAMES.md`](./GAMES.md) |
+| Самооцінка «Розвиток» | [`ASSESSMENTS.md`](./ASSESSMENTS.md) | [`ASSESSMENT_PEERS.md`](./ASSESSMENT_PEERS.md) |
+| Доступ, адмін-гейт, ідентичність | [`API.md`](./API.md) (групи доступу), [`PLATFORM.md`](./PLATFORM.md) «Хаби» | — |
+| Мониторинг, падіння, зрізи | [`MONITORING.md`](./MONITORING.md) | [`QUALITY_GATE.md`](./QUALITY_GATE.md) |
+| Написати або винести правило | [`DOC_GROWTH.md`](./DOC_GROWTH.md) | [`AGENTS.md`](../AGENTS.md) — адреса, не копія |
+| Написати коментар у коді | [`COMMENTS.md`](./COMMENTS.md) | — |
+| Зрозуміти, чому так | [`DECISIONS.md`](./DECISIONS.md) | — |
+
 ## Куди писати нове
 
 | Що з'явилось | Куди |
@@ -46,6 +75,8 @@
 | Нове правило, заборона, конвенція | `AGENTS.md` (відповідний §) |
 | Нова тема, яка заслуговує документа | новий маленький `.md` у `docs/` + рядок у таблиці вище |
 | Новий рецепт | [`RECIPES.md`](./RECIPES.md) |
+| Нове пояснення, яке проситься в код | стандарт — [`COMMENTS.md`](./COMMENTS.md), потім рядок у документі теми |
+| Ухвалене рішення, до якого треба повертатися | рядок у [`DECISIONS.md`](./DECISIONS.md) |
 | Тема, довша за три рядки, або секція `AGENTS.md`, що переросла | алгоритм винесення — [`DOC_GROWTH.md`](./DOC_GROWTH.md), потім тема і рядок у покажчику вище |
 | Новий гейт або поріг | [`QUALITY_GATE.md`](./QUALITY_GATE.md); якщо гейт про одну тему — документ цієї теми (напр. `check:db` — у [`DATA_MODEL.md`](./DATA_MODEL.md)) |
 | Новий токен або наскрізне правило вигляду | [`DESIGN_SYSTEM.md`](./DESIGN_SYSTEM.md) (номер правила не змінювати — на нього посилається код) |

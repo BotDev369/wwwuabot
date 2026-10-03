@@ -137,6 +137,7 @@ const name = await dialog.prompt("Назва:", { validate: (v) => (v.trim() ? n
 - **TypeScript strict**, 0 `any` — ESLint `no-explicit-any` = **`error`** в усіх конфігах. **ESLint + Prettier** у всіх 4 сервісах: `npm run lint`, `npm run typecheck`, `npm run format:check`.
 - **Логування:** `bot-dev/` — модуль `modules/logging/` (Queue); `api-dev/` — `apiLog` з префіксом `[api]`. Не використовувати `console.log` у продакшн-коді.
 - **Дата/час у D1:** `formatSqliteDatetime()` з `packages/shared/src/utils/datetime.ts`.
+- **Коментар лишається тільки там, де код не показує намір** (інваріант, пастка, адреса документа); переказ коду, історія й розгорнуте пояснення — у `docs/` (стандарт і приклади — `docs/COMMENTS.md`). Мова вільна, в межах файлу не міксуй. Стережить `npm run check:comments`.
 - **CI/CD:** GitHub Actions + path filtering. Перед деплоєм в одній джобі `checks` гоняють увесь ряд гейтів, і будь-який збій блокує деплой усіх воркерів; `pull_request` запускає лише гейти, `GITHUB_TOKEN` має `contents: read`, деплої воркерів стоять у черзі (`concurrency`). Список команд і те, що ловить кожен гейт, — `docs/QUALITY_GATE.md`.
 
 ---
@@ -156,6 +157,7 @@ const name = await dialog.prompt("Назва:", { validate: (v) => (v.trim() ? n
 - Не парси `page_data` власним кодом і не пиши четверту копію правила «яка сторінка відповідає цьому URL» — бери `@wwwuabot/shared/content`. Фільтр видимості лишається у сховища (SQL або список у пам'яті): у редакторі чернетка мусить бути видимою, назовні — ні.
 - Не тримай адресу сторінки в двох колонках (`codeword` і `slug`) і не пиши другу функцію «зробити з адреси посилання»: сутність одна — `slug`, подання будує `toWebPath` / `toBotPayload`, посилання для «Поділитись» збирає `buildShareLinks()` — не клей його в інтерфейсі й не вважай, що воно завжди є: функція повертає **причину** (`invalid_slug`, `no_bot_username`, `too_long`). Сегмент адреси не може містити `_` (алфавіт `?start=` задає Telegram): перевіряє `isValidSlug`, довжину — `isDeepLinkable` (на побудові).
 - Не пиши моноліти (>200 рядків) — §3. Не хардкодь стилі/кольори — токени та `<Icon />`. Не клич `alert` / `confirm` / `prompt` — у Telegram Mini App на iOS вони не працюють; тільки `useDialog()` (§4).
+- Не пиши в коді коментарі, які код уже каже: `// Fetch data`, історію зміни та дубль документації — пояснення живе в `docs/` (`docs/COMMENTS.md`).
 - Не додавай у розмітку клас без правила: `class="wb-mt-3"` без `.wb-mt-3` просто нічого не робить. Стереже `npm run check:css`. Не стилізуй клас, який рендерить спільний код (`packages/ui`), у `index.css` однієї з оболонок — місце такого CSS `packages/shared/src/styles/`; стиль (`android.css`) стилізує кирпичик (`.wb-nav-item`), а не приватний клас оболонки.
 - Не малюй власний каркас оболонки (меню, шапку, екран входу) — складай його з кирпичиків `app-chrome.css` (§3). Не лишай `100vh` без `100dvh`-фолбеку — висота пишеться двома лініями. Стереже `npm run check:quality`.
 - Не додавай файли понад 400 рядків, емодзі в UI чи нативні діалоги — це гейт `npm run check:quality`. Описаний у документації борг мусить бути в `scripts/quality-baseline.mjs`, і звідти його можна тільки прибрати.

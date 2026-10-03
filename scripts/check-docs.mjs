@@ -38,7 +38,7 @@
 
 import { statSync } from "node:fs";
 import { dirname, join, normalize } from "node:path";
-import { ROOT, read, readLines, walk, WORKSPACES } from "./lib/files.mjs";
+import { ROOT, read, readLines, repoPathExists, walk, WORKSPACES } from "./lib/files.mjs";
 import { API_DOC, renderApiDoc } from "./lib/api-routes.mjs";
 
 /**
@@ -169,26 +169,6 @@ for (const file of docs) {
 const TOOL_DIRS = /^(?:packages|docs|scripts|bot-dev|api-dev|web-platform-dev|web-admin-dev)\//;
 const CODE_EXT = /\.(?:ts|tsx|mjs|js|css|md|sql|toml|json|html|yml|yaml)$/;
 const PATH_TOKEN = /^[\w.-]+(?:\/[\w.-]+)*\/?$/;
-
-const repoFiles = [...walk(".", () => true), ...walk(".github", () => true)];
-
-/** Чи існує шлях — як файл, як тека з файлами або як хвіст наявного шляху. */
-function repoPathExists(token) {
-  const path = token.replace(/\/+$/, "");
-  // `shared/…` — скорочення для `packages/shared/src/…`, яким користуються документи.
-  const tails = path.startsWith("shared/")
-    ? [path, `packages/shared/src/${path.slice("shared/".length)}`]
-    : [path];
-  return tails.some((tail) =>
-    repoFiles.some(
-      (file) =>
-        file === tail ||
-        file.endsWith(`/${tail}`) ||
-        file.startsWith(`${tail}/`) ||
-        file.includes(`/${tail}/`),
-    ),
-  );
-}
 
 for (const file of docs) {
   read(file)
