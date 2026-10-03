@@ -48,7 +48,7 @@
 сервіс не мають другої копії полів. `as { … }` від `req.json()` — це твердження,
 яке компілятор не перевіряє, тож воно не є перевіркою.
 
-Зразок — `contactBody` у `api-dev/src/controllers/contacts.controller.ts`. Для
+Зразки: `contactBody` (contacts), `noteBody` (notes), `favoriteBody` (favorites). Для
 Patch-схем `.passthrough()`: незнайоме поле має дійти до сервісу, де рішає бізнес-правило.
 Помилка схеми — `400` без імен полів.
 

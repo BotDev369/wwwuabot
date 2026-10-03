@@ -12,7 +12,18 @@
  * @module api-dev/src/controllers/notes.controller
  */
 
+import { z } from "zod";
 import type { Env } from "../shared/types";
+import { readBody } from "../shared/body";
+
+/**
+ * Схема нотатки. `text` і `tags` — `unknown` свідомо: їх нормалізують
+ * `sanitizeNoteText` / `sanitizeTags`, а `id` мусить бути числом, щоб нечисловий
+ * не став ключем UPDATE.
+ */
+const noteBody = z
+  .object({ id: z.number().optional(), text: z.unknown().optional(), tags: z.unknown().optional() })
+  .passthrough();
 import { ensureTables } from "@wwwuabot/shared/database/ensure-tables";
 import {
   SHARED_ADMIN_OWNER,
@@ -102,13 +113,12 @@ async function saveNote(
   scope: NoteScope,
   ownerId: string,
 ): Promise<Response> {
-  let body: { id?: unknown; text?: unknown; tags?: unknown };
-  try {
-    body = (await request.json()) as typeof body;
-  } catch {
-    return json({ ok: false, error: "Invalid JSON" }, 400);
-  }
+  const parsed = await readBody(request, noteBody);
+  if (!parsed.ok) return parsed.response;
+  const body = parsed.body;
 
+  // `text` і `tags` лишаються `unknown` у схемі навмисно: їх нормалізує
+  // `sanitizeNoteText` / `sanitizeTags`, правило одне для бота й API.
   const text = sanitizeNoteText(body.text);
   const tags = sanitizeTags(body.tags);
   if (text === "" && tags.length === 0) {

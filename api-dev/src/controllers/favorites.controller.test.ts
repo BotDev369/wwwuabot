@@ -45,6 +45,15 @@ beforeEach(() => {
 });
 
 describe("особисте обране", () => {
+  it("⛔ не-об'єкт у тілі не доходить до бази", async () => {
+    const { calls, env } = database();
+    const res = await handleFavorites(request("POST", "це не об'єкт"), env);
+
+    expect(res.status).toBe(400);
+    // `ensureTables` уже відпрацював — питання лише в тому, чи поліз запису.
+    expect(calls.some((call) => /^(INSERT|UPDATE|DELETE)/i.test(call.sql.trimStart()))).toBe(false);
+  });
+
   it("без авторизації не читає й не пише базу", async () => {
     mocks.identity.mockResolvedValue({ ok: false, response: new Response(null, { status: 401 }) });
     const db = database();

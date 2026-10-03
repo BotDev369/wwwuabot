@@ -1,5 +1,12 @@
 import { ensureTables } from "@wwwuabot/shared/database/ensure-tables";
+import { z } from "zod";
 import { favoriteTarget } from "@wwwuabot/shared/favorites";
+import { readBody } from "../shared/body";
+
+/** Схема обраного: вид і номер перевіряє `favoriteTarget`, тут — лише форма тіла. */
+const favoriteBody = z
+  .object({ kind: z.unknown().optional(), targetId: z.unknown().optional() })
+  .passthrough();
 import type { Env } from "../shared/types";
 import { resolveUserId } from "../shared/identity";
 import { apiLog } from "../shared/logger";
@@ -37,13 +44,9 @@ export async function handleFavorites(request: Request, env: Env): Promise<Respo
       }
       return json({ ok: true, items: await listFavorites(env, identity.userId) });
     }
-    let body: unknown;
-    try {
-      body = await request.json();
-    } catch {
-      return json({ ok: false, error: "Invalid JSON" }, 400);
-    }
-    const target = favoriteTarget(body);
+    const parsed = await readBody(request, favoriteBody);
+    if (!parsed.ok) return parsed.response;
+    const target = favoriteTarget(parsed.body);
     if (!target) return json({ ok: false, error: "Invalid target" }, 400);
     if (request.method === "DELETE") {
       await removeFavorite(env, identity.userId, target);

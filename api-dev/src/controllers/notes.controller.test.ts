@@ -220,6 +220,36 @@ describe("запис нотатки", () => {
     expect(db.statements.some((s) => /^INSERT/i.test(s.sql.trimStart()))).toBe(false);
   });
 
+  it("⛔ не-об'єкт у тілі не доходить до бази", async () => {
+    const db = makeDb();
+    const res = await handleNotes(
+      request("/api/notes", { body: "це не об'єкт", initData: await signedInitData() }),
+      db.env,
+    );
+
+    expect(res.status).toBe(400);
+    // `ensureTables` уже відпрацював — питання лише в тому, чи поліз запису.
+    expect(db.statements.some((s) => /^(INSERT|UPDATE|DELETE)/i.test(s.sql.trimStart()))).toBe(
+      false,
+    );
+  });
+
+  it("⛔ нечисловий id не створює нову нотатку замість правки", async () => {
+    // До схеми `Number("abc")` давало NaN, `id` не проходив перевірку, і
+    // контролер створював нову нотатку там, де клієнт хотів правку.
+    const db = makeDb();
+    const res = await handleNotes(
+      request("/api/notes", {
+        body: { id: "не число", text: "текст" },
+        initData: await signedInitData(),
+      }),
+      db.env,
+    );
+
+    expect(res.status).toBe(400);
+    expect(db.statements.some((s) => /^INSERT/i.test(s.sql.trimStart()))).toBe(false);
+  });
+
   it("хибні хештеги нормалізуються перед записом", async () => {
     const db = makeDb();
     await handleNotes(
