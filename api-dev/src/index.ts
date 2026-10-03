@@ -3,6 +3,7 @@ import { sentryOptions } from "@wwwuabot/shared/observability/sentry";
 import { handleRequest } from "./router";
 import { apiLog } from "./shared/logger";
 import { markEntryFromRequest } from "./shared/platform-entry";
+import { secureResponse } from "@wwwuabot/shared/security/headers";
 import { collectSnapshot } from "./services/monitoring/collect";
 import { saveSnapshot } from "./services/monitoring/store";
 import type { Env } from "./shared/types";
@@ -53,17 +54,22 @@ export default Sentry.withSentry(
       ctx.waitUntil(markEntryFromRequest(request, env));
 
       try {
-        return await handleRequest(request, env);
+        // Заголовки накладаються на виході воркера, а не в кожному
+        // контролері: одна точка, яку не можна забути на новому шляху.
+        return secureResponse(await handleRequest(request, env), { url: request.url });
       } catch (error) {
         // Назовні — жодних деталей: у повідомленні D1 бувають назви таблиць
         // і значення, а клієнт цей ендпоїнт не захищений. Деталі йдуть у
         // Workers Logs (`apiLog`) і в Sentry — там вони й потрібні.
         apiLog.error("unhandled request error", error);
         Sentry.captureException(error);
-        return new Response(JSON.stringify({ error: "Internal error" }), {
-          status: 500,
-          headers: { "Content-Type": "application/json" },
-        });
+        return secureResponse(
+          new Response(JSON.stringify({ error: "Internal error" }), {
+            status: 500,
+            headers: { "Content-Type": "application/json" },
+          }),
+          { url: request.url },
+        );
       }
     },
 

@@ -56,7 +56,8 @@
     "./themes": "./src/themes/index.ts",
     "./themes/apply": "./src/themes/apply.ts",
     "./components/Icon": "./src/components/Icon.tsx",
-    "./components/SaveActionButtons": "./src/components/SaveActionButtons.tsx"
+    "./components/SaveActionButtons": "./src/components/SaveActionButtons.tsx",
+    "./security/headers": "./src/security/headers.ts"
   },
   "dependencies": {
     "open-props": "^1.7.23"
