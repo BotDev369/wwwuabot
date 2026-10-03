@@ -18,8 +18,10 @@ import { readBody } from "../shared/body";
 
 /**
  * Схема нотатки. `text` і `tags` — `unknown` свідомо: їх нормалізують
- * `sanitizeNoteText` / `sanitizeTags`, а `id` мусить бути числом, щоб нечисловий
- * не став ключем UPDATE.
+ * `sanitizeNoteText` / `sanitizeTags`. Типовим є лише `id`: без нього
+ * нечисловий `id` доходив до `Number(...)`, давав NaN і створював нову нотатку
+ * замість правки. Поля, типи яких не мають правила в схемі, і далі живуть
+ * «сирими» до спільних санітайзерів.
  */
 const noteBody = z
   .object({ id: z.number().optional(), text: z.unknown().optional(), tags: z.unknown().optional() })

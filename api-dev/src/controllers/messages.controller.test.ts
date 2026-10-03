@@ -257,6 +257,26 @@ const RECIPIENTS: DbOptions = {
 // ── Ідентичність ──────────────────────────────────────────────────
 
 describe("повідомлення: хто пише", () => {
+  it("⛔ не-об'єкт у тілі відкидає розбір, а не бізнес-правило", async () => {
+    const db = makeDb();
+    const res = await handleMessageDraft(
+      request("/api/messages/draft", {
+        method: "POST",
+        body: "це не об'єкт",
+        initData: await signedInitData(),
+      }),
+      db.env,
+    );
+
+    expect(res.status).toBe(400);
+    // Саме розбір тіла відкинув його, а не бізнес-правило «Missing peer»:
+    // так видно, що схема стоїть перед сервісом.
+    await expect(res.json()).resolves.toMatchObject({ error: "Invalid body" });
+    expect(db.statements.some((s) => /^(INSERT|UPDATE|DELETE)/i.test(s.sql.trimStart()))).toBe(
+      false,
+    );
+  });
+
   it("⛔ без підписаного initData не пишеться й не читається нічого", async () => {
     const db = makeDb(LINKED);
 

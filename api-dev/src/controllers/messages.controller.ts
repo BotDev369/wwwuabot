@@ -19,7 +19,9 @@
  * @module api-dev/src/controllers/messages.controller
  */
 
+import { z } from "zod";
 import type { Env } from "../shared/types";
+import { readBody } from "../shared/body";
 import { ensureTables } from "@wwwuabot/shared/database/ensure-tables";
 import { resolveUserId } from "../shared/identity";
 import { apiLog } from "../shared/logger";
@@ -34,16 +36,22 @@ function json(body: unknown, status = 200): Response {
   });
 }
 
-/** Тіло запиту як об'єкт; `null` — це не JSON, і про це треба сказати 400. */
-async function readJson(request: Request): Promise<{ [key: string]: unknown } | null> {
-  try {
-    const parsed: unknown = await request.json();
-    if (!parsed || typeof parsed !== "object") return null;
-    return parsed as { [key: string]: unknown };
-  } catch {
-    return null;
-  }
-}
+/**
+ * Схема тіла повідомлень — **охоронець форми, а не валідація**.
+ *
+ * Числові поля лишаються `unknown`, бо їх розбирає `readPeer`, і її правило мусить
+ * лишатись тим самим для `?peer=` в URL і для `peer` у тілі. Тому схема відсікає
+ * лише «це не тіло», а типи перевіряє `readPeer` — і схема з усіма `unknown`
+ * не робить нічого, крім перевірки форми. Мутація `z.any()` це показала.
+ */
+const messageBody = z
+  .object({
+    peer: z.unknown().optional(),
+    id: z.unknown().optional(),
+    body: z.unknown().optional(),
+    draft: z.unknown().optional(),
+  })
+  .passthrough();
 
 /** Номер співрозмовника; `null` — не заданий або не номер. */
 function readPeer(value: unknown): number | null {
@@ -165,8 +173,9 @@ export async function handleMessageDraft(request: Request, env: Env): Promise<Re
   const identity = await resolveUserId(request, env);
   if (!identity.ok) return identity.response;
 
-  const body = await readJson(request);
-  if (!body) return json({ ok: false, error: "Invalid JSON" }, 400);
+  const parsed = await readBody(request, messageBody);
+  if (!parsed.ok) return parsed.response;
+  const body = parsed.body;
 
   // Номер чернетки, яку правлять; `null` — нова. `undefined` і нуль — не номер:
   // «оновити нульову» означало б правити випадковий рядок.
@@ -202,8 +211,9 @@ export async function handleMessageSend(request: Request, env: Env): Promise<Res
   const identity = await resolveUserId(request, env);
   if (!identity.ok) return identity.response;
 
-  const body = await readJson(request);
-  if (!body) return json({ ok: false, error: "Invalid JSON" }, 400);
+  const parsed = await readBody(request, messageBody);
+  if (!parsed.ok) return parsed.response;
+  const body = parsed.body;
 
   const peer = readPeer(body.peer);
   if (peer === null) return json({ ok: false, error: "Missing peer" }, 400);
@@ -227,8 +237,9 @@ export async function handleMessageRead(request: Request, env: Env): Promise<Res
   const identity = await resolveUserId(request, env);
   if (!identity.ok) return identity.response;
 
-  const body = await readJson(request);
-  if (!body) return json({ ok: false, error: "Invalid JSON" }, 400);
+  const parsed = await readBody(request, messageBody);
+  if (!parsed.ok) return parsed.response;
+  const body = parsed.body;
 
   const peer = readPeer(body.peer);
   if (peer === null) return json({ ok: false, error: "Missing peer" }, 400);
@@ -283,8 +294,9 @@ async function dropThread(
   const identity = await resolveUserId(request, env);
   if (!identity.ok) return identity.response;
 
-  const body = await readJson(request);
-  if (!body) return json({ ok: false, error: "Invalid JSON" }, 400);
+  const parsed = await readBody(request, messageBody);
+  if (!parsed.ok) return parsed.response;
+  const body = parsed.body;
 
   const peer = readPeer(body.peer);
   if (peer === null) return json({ ok: false, error: "Missing peer" }, 400);

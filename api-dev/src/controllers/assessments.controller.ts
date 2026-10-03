@@ -13,12 +13,22 @@
  * @module api-dev/src/controllers/assessments.controller
  */
 
+import { z } from "zod";
 import { ensureTables } from "@wwwuabot/shared/database/ensure-tables";
+import { readBody } from "../shared/body";
 import { ASSESSMENTS } from "@wwwuabot/shared/assessments";
 import { listAssessments, saveAssessment } from "../services/assessments.service";
 import { peerTallies } from "../services/assessments-peers.service";
 import { resolveUserId } from "../shared/identity";
 import { apiLog } from "../shared/logger";
+
+/**
+ * Схема відповідей самооцінки: `test` — ключ тесту, `answers` — сирі відповіді,
+ * які розбирає вже сервіс (`saveAssessment`). Схема відсікає лише не-тіло.
+ */
+const assessmentBody = z
+  .object({ test: z.unknown().optional(), answers: z.unknown().optional() })
+  .passthrough();
 import type { Env } from "../shared/types";
 
 function json(body: unknown, status = 200): Response {
@@ -60,12 +70,9 @@ export async function handleAssessments(request: Request, env: Env): Promise<Res
     }
 
     if (request.method === "POST") {
-      let body: { test?: unknown; answers?: unknown };
-      try {
-        body = (await request.json()) as typeof body;
-      } catch {
-        return json({ ok: false, error: "Invalid JSON" }, 400);
-      }
+      const parsed = await readBody(request, assessmentBody);
+      if (!parsed.ok) return parsed.response;
+      const body = parsed.body;
 
       const testKey = typeof body.test === "string" ? body.test : "";
       if (testKey === "") return json({ ok: false, error: "Не вказано тест" }, 400);
