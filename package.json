@@ -37,6 +37,7 @@
     "test:watch": "vitest",
     "check:bundle": "node scripts/check-bundle.mjs",
     "test:coverage": "vitest run --coverage",
-    "check:coverage": "node scripts/check-coverage.mjs"
+    "check:coverage": "node scripts/check-coverage.mjs",
+    "clean:tmp": "node scripts/clean-tmp.mjs"
   }
 }

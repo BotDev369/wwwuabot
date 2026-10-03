@@ -121,6 +121,7 @@ npm run check:bundle    # вага бандла оболонок (після bui
 npm run test:coverage   # прогін із покриттям (окремо, щоб npm test лишався швидким)
 npm run check:coverage  # підлога покриття падає, якщо менша
 npm run doc:api         # перегенерувати docs/API.md (не гейт, а лікування)
+npm run clean:tmp       # прибрати кеш vite-node з /tmp (не гейт: диск, а не код)
 ```
 
 Усі кроки стоять у джобі `checks` перед `npm test`: червоний гейт блокує деплой усіх чотирьох
