@@ -8,11 +8,10 @@ import { log } from "../../shared/utils/debug";
 function buildTopicName(ctx: AppContext): string {
   const user = ctx.from!;
   const userId = user.id;
-  const firstName = user.first_name || "...";
-  const lastName = user.last_name || "...";
+  const fullUserName = [user.first_name, user.last_name].filter(Boolean).join(" ") || "...";
   const username = user.username ? `@${user.username}` : "без username";
 
-  const fullName = `${userId} - ${firstName} ${lastName} - ${username}`;
+  const fullName = `${userId} - ${fullUserName} - ${username}`;
 
   // Ліміт Telegram: 128 символів
   if (fullName.length <= 128) {

@@ -20,9 +20,9 @@ export function buildTemplateContext(
   extraData?: Record<string, unknown>,
 ): TemplateContext {
   const user = ctx.from;
-  const firstName = user?.first_name || "...";
-  const lastName = user?.last_name || "...";
-  const userName = `${firstName} ${lastName}`.trim();
+  // Одне «...» замість «... ...»: людина без імені й прізвища отримує
+  // привітання «Вітаємо, ...», а не «Вітаємо, ... ...».
+  const userName = [user?.first_name, user?.last_name].filter(Boolean).join(" ") || "...";
   const userUsername = user?.username ? `@${user.username}` : "без username";
 
   const now = new Date();
