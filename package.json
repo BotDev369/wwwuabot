@@ -33,6 +33,7 @@
     "doc:api": "node scripts/doc-api.mjs",
     "check:quality": "node scripts/check-quality.mjs",
     "test": "vitest run",
-    "test:watch": "vitest"
+    "test:watch": "vitest",
+    "check:bundle": "node scripts/check-bundle.mjs"
   }
 }

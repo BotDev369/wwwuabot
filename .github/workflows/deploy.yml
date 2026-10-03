@@ -106,6 +106,12 @@ jobs:
         run: npm run check:db
       - name: Comments
         run: npm run check:comments
+      - name: Build shells (bundle budget needs dist)
+        run: |
+          npm run build --workspace web-platform-dev
+          npm run build --workspace web-admin-dev
+      - name: Bundle budget
+        run: npm run check:bundle
       - name: Unit tests
         run: npm test
 
