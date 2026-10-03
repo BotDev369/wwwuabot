@@ -14,11 +14,20 @@
  * @module api-dev/src/controllers/themes.controller
  */
 
+import { z } from "zod";
 import type { Env } from "../shared/types";
+import { readBody } from "../shared/body";
 import { apiLog } from "../shared/logger";
 import { resolveUserId } from "../shared/identity";
 import { validateThemeScheme } from "@wwwuabot/shared/themes";
 import { ThemesService } from "../services/themes.service";
+
+/**
+ * Тут схема — **охоронець форми, а не валідація**: усі поля схеми теми перевіряє
+ * спільне `validateThemeScheme`, і друга копія цих правил у схемі розійшлася б
+ * з першою. Тому схема лише каже «це об'єкт» і пропускає далі.
+ */
+const themeBody = z.object({}).passthrough();
 
 function json(body: unknown, status = 200): Response {
   return new Response(JSON.stringify(body), {
@@ -45,14 +54,10 @@ export async function handleUserThemes(request: Request, env: Env): Promise<Resp
     }
 
     if (request.method === "POST") {
-      let body: unknown;
-      try {
-        body = await request.json();
-      } catch {
-        return json({ ok: false, error: "Invalid JSON" }, 400);
-      }
+      const parsed = await readBody(request, themeBody);
+      if (!parsed.ok) return parsed.response;
 
-      const validated = validateThemeScheme(body);
+      const validated = validateThemeScheme(parsed.body);
       if (!validated.ok) return json({ ok: false, error: validated.message }, 400);
 
       const theme = await service.save(identity.userId, validated.value, validated.value.id);

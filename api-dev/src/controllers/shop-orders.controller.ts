@@ -32,7 +32,9 @@
  * @module api-dev/src/controllers/shop-orders.controller
  */
 
+import { z } from "zod";
 import type { Env } from "../shared/types";
+import { readBody } from "../shared/body";
 import { apiLog } from "../shared/logger";
 import { resolveUserId } from "../shared/identity";
 import { ShopOrdersService } from "../services/shop/orders.service";
@@ -48,6 +50,18 @@ function json(body: unknown, status = 200): Response {
 }
 
 /** Номер із запиту (магазин, замовлення): ціле, більше за нуль. */
+/**
+ * Замовлення: `shop` і `id` перевіряє `positiveId` (вона одна й на зміну, і на
+ * інших гілках), тож схема тут — охоронець форми. Для **розміщення** замовлення
+ * (`place`) тіло перевіряє `validateOrderDraft` всередині сервісу: кошик і
+ * контакти приходять разом, і розбивати їх на два розбори означало б другу
+ * копію правила.
+ */
+const orderUpdateBody = z
+  .object({ shop: z.unknown().optional(), id: z.unknown().optional() })
+  .passthrough();
+const orderBody = z.object({}).passthrough();
+
 function positiveId(raw: unknown): number | null {
   const id = Number(raw);
   return Number.isInteger(id) && id > 0 ? id : null;
@@ -83,17 +97,10 @@ export async function handleUserShopOrders(request: Request, env: Env): Promise<
     }
 
     if (request.method === "POST") {
-      let body: unknown;
-      try {
-        body = await request.json();
-      } catch {
-        return json({ ok: false, error: "Invalid JSON" }, 400);
-      }
+      const parsed = await readBody(request, orderUpdateBody);
+      if (!parsed.ok) return parsed.response;
 
-      const source = (typeof body === "object" && body !== null ? body : {}) as Record<
-        string,
-        unknown
-      >;
+      const source: Record<string, unknown> = parsed.body;
       const shopId = positiveId(source.shop);
       const orderId = positiveId(source.id);
       if (shopId === null || orderId === null) return json({ ok: false, error: "Missing id" }, 400);
@@ -161,15 +168,11 @@ export async function handleSpaceShopOrders(request: Request, env: Env): Promise
   const slug = (new URL(request.url).searchParams.get("shop") ?? "").trim();
   if (!slug) return json({ ok: false, error: "Missing shop" }, 400);
 
-  let body: unknown;
-  try {
-    body = await request.json();
-  } catch {
-    return json({ ok: false, error: "Invalid JSON" }, 400);
-  }
+  const parsed = await readBody(request, orderBody);
+  if (!parsed.ok) return parsed.response;
 
   try {
-    const outcome = await new ShopOrdersService(env).place(slug, identity.userId, body);
+    const outcome = await new ShopOrdersService(env).place(slug, identity.userId, parsed.body);
     if (outcome.kind === "not_found") return json({ ok: false, error: "Not found" }, 404);
     if (outcome.kind === "rejected") return json({ ok: false, error: outcome.message }, 400);
     return json({ ok: true, order: outcome.order });

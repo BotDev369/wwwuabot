@@ -26,10 +26,19 @@
  */
 
 import { validatePageDraft } from "@wwwuabot/shared/pages";
+import { z } from "zod";
 import type { Env } from "../shared/types";
+import { readBody } from "../shared/body";
 import { apiLog } from "../shared/logger";
 import { resolveUserId } from "../shared/identity";
 import { PagesService } from "../services/pages.service";
+
+/**
+ * Сторінка: зміст перевіряє спільне `validatePageDraft`, а `id` мусить бути
+ * числом — ним вирішується «правка чи створення». Не-число відпадає цілому, щоб
+ * замість правки не вийшла нова сторінка-дубль.
+ */
+const pageBody = z.object({ id: z.number().optional() }).passthrough();
 
 function json(body: unknown, status = 200): Response {
   return new Response(JSON.stringify(body), {
@@ -51,21 +60,17 @@ export async function handleUserPages(request: Request, env: Env): Promise<Respo
     }
 
     if (request.method === "POST") {
-      let body: unknown;
-      try {
-        body = await request.json();
-      } catch {
-        return json({ ok: false, error: "Invalid JSON" }, 400);
-      }
+      const parsed = await readBody(request, pageBody);
+      if (!parsed.ok) return parsed.response;
 
-      const validated = validatePageDraft(body);
+      const validated = validatePageDraft(parsed.body);
       if (!validated.ok) return json({ ok: false, error: validated.message }, 400);
 
-      const id = Number((body as { id?: unknown }).id);
+      const id = parsed.body.id;
       const outcome = await service.save(
         identity.userId,
         validated.value,
-        Number.isInteger(id) && id > 0 ? id : undefined,
+        typeof id === "number" && id > 0 ? id : undefined,
       );
 
       if (outcome.kind === "not_found") return json({ ok: false, error: "Not found" }, 404);

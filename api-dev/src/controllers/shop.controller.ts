@@ -19,13 +19,24 @@
  */
 
 import { validateProductDraft } from "@wwwuabot/shared/shop";
+import { z } from "zod";
 import type { Env } from "../shared/types";
+import { readBody } from "../shared/body";
 import { apiLog } from "../shared/logger";
 import { resolveUserId } from "../shared/identity";
 import { ShopProductsService } from "../services/shop/products.service";
 
 /** Текст невдачі — без подробиць: у винятку бувають назви таблиць і значення. */
 const FAILURE = "Не вдалося виконати дію";
+
+/**
+ * Товар: поля перевіряє спільне `validateProductDraft`, а ось `id` — **число**,
+ * бо ним вирішується «правка чи створення». Раніше `Number(body.id)` на рядку
+ * `"5abc"` давав `5`, а не-число взагалі `NaN`: у першому випадку ми правили
+ * не той товар, у другому — створювали дубль замість правки. Тепер таке тіло
+ * відпадає цілому, а не тихо міняє значення.
+ */
+const productBody = z.object({ id: z.number().optional() }).passthrough();
 
 function json(body: unknown, status = 200): Response {
   return new Response(JSON.stringify(body), {
@@ -59,22 +70,18 @@ export async function handleUserShopProducts(request: Request, env: Env): Promis
     }
 
     if (request.method === "POST") {
-      let body: unknown;
-      try {
-        body = await request.json();
-      } catch {
-        return json({ ok: false, error: "Invalid JSON" }, 400);
-      }
+      const parsed = await readBody(request, productBody);
+      if (!parsed.ok) return parsed.response;
 
-      const validated = validateProductDraft(body);
+      const validated = validateProductDraft(parsed.body);
       if (!validated.ok) return json({ ok: false, error: validated.message }, 400);
 
-      const id = Number((body as { id?: unknown }).id);
+      const id = parsed.body.id;
       const outcome = await service.save(
         shopId,
         identity.userId,
         validated.value,
-        Number.isInteger(id) && id > 0 ? id : undefined,
+        typeof id === "number" && id > 0 ? id : undefined,
       );
 
       if (outcome.kind === "not_found") return json({ ok: false, error: "Not found" }, 404);

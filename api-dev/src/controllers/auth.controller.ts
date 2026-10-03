@@ -8,7 +8,9 @@
  * @module api-dev/src/controllers/auth.controller
  */
 
+import { z } from "zod";
 import type { Env } from "../shared/types";
+import { readBody } from "../shared/body";
 import {
   ADMIN_COOKIE_NAME,
   ADMIN_SESSION_TTL_SECONDS,
@@ -21,6 +23,14 @@ import {
   signSessionToken,
   verifySessionToken,
 } from "@wwwuabot/shared/security/session";
+
+/**
+ * Пароль — **рядок**. `password: 123` або `null` не є паролем, тож таке тіло
+ * відпадає до порівняння; лічильник спроб цього не рахує, бо спроба з паролем
+ * тут не починалася. Справжня невдача (є рядок, але не той) лишається `401` і
+ * збільшує лічильник — як і раніше.
+ */
+const loginBody = z.object({ password: z.string() });
 
 /** Ліміт невдалих спроб входу з однієї IP за вікно LOGIN_WINDOW_SECONDS. */
 const LOGIN_MAX_ATTEMPTS = 10;
@@ -66,14 +76,10 @@ export async function handleLogin(request: Request, env: Env): Promise<Response>
     return json({ error: "Too many attempts, try again later" }, 429);
   }
 
-  let body: { password?: string };
-  try {
-    body = await request.json();
-  } catch {
-    return json({ error: "Invalid JSON" }, 400);
-  }
+  const parsed = await readBody(request, loginBody);
+  if (!parsed.ok) return parsed.response;
 
-  if (!body.password || body.password !== secret) {
+  if (parsed.body.password !== secret) {
     await env.CONTENT_KV.put(rateKey, String(attempts + 1), {
       expirationTtl: LOGIN_WINDOW_SECONDS,
     });

@@ -50,7 +50,8 @@
 
 Зразки: `contactBody` (contacts), `noteBody` (notes), `favoriteBody` (favorites),
 `userBody` (users), `dateBody` (my-dates), `visibilityBody` (public-profile),
-`accessRequestBody` (access-request). Для Patch-схем `.passthrough()`: незнайоме поле
+`accessRequestBody` (access-request), `loginBody` (auth), `pageBody` (pages),
+`productBody` (shop). Для Patch-схем `.passthrough()`: незнайоме поле
 має дійти до сервісу, де рішає бізнес-правило. Помилка схеми — `400` без імен полів.
 
 **Причину відмови зберігай там, де вона зрозуміла людині.** `readBody` відповідає
