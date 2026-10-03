@@ -17,10 +17,25 @@
  * @module api-dev/src/controllers/public-profile.controller
  */
 
+import { z } from "zod";
 import type { Env } from "../shared/types";
+import { readBody } from "../shared/body";
 import { apiLog } from "../shared/logger";
 import { resolveUserId } from "../shared/identity";
 import { PublicProfileService } from "../services/public-profile.service";
+
+/**
+ * «Про себе» — `unknown` свідомо: текст нормалізує `saveAbout`, і його межа
+ * (`ABOUT_MAX_LENGTH`) має лишатися в одному місці, а не дублюватися тут.
+ */
+const aboutBody = z.object({ about: z.unknown() });
+
+/**
+ * `public` — саме булеве: рядок `"false"` легко надіслати випадково, і він
+ * відкрив би профіль замість закриття. `fields` нормалізують далі
+ * (`parsePublicFields`), тож схема не знає переліку полів.
+ */
+const visibilityBody = z.object({ public: z.boolean(), fields: z.unknown().optional() });
 
 function json(data: unknown, status = 200): Response {
   return new Response(JSON.stringify(data), {
@@ -34,14 +49,10 @@ export async function handleUserAbout(request: Request, env: Env): Promise<Respo
   const identity = await resolveUserId(request, env);
   if (!identity.ok) return identity.response;
 
-  let body: { about?: unknown };
-  try {
-    body = await request.json();
-  } catch {
-    return json({ error: "Invalid JSON" }, 400);
-  }
+  const parsed = await readBody(request, aboutBody);
+  if (!parsed.ok) return parsed.response;
 
-  const result = await new PublicProfileService(env).saveAbout(identity.userId, body.about);
+  const result = await new PublicProfileService(env).saveAbout(identity.userId, parsed.body.about);
   if (!result.ok) return json({ error: result.message }, 400);
 
   return json({ ok: true, about: result.value });
@@ -52,24 +63,14 @@ export async function handleUserVisibility(request: Request, env: Env): Promise<
   const identity = await resolveUserId(request, env);
   if (!identity.ok) return identity.response;
 
-  let body: { public?: unknown; fields?: unknown };
-  try {
-    body = await request.json();
-  } catch {
-    return json({ error: "Invalid JSON" }, 400);
-  }
+  const parsed = await readBody(request, visibilityBody);
+  if (!parsed.ok) return parsed.response;
 
-  // `public` мусить бути саме булевим: `"false"` як рядок — це те, що легко
-  // надіслати випадково, і воно відкрило б профіль замість закриття.
-  if (typeof body.public !== "boolean") {
-    return json({ error: "public must be a boolean" }, 400);
-  }
-
-  const fields = Array.isArray(body.fields) ? body.fields.map(String) : undefined;
+  const fields = Array.isArray(parsed.body.fields) ? parsed.body.fields.map(String) : undefined;
 
   try {
     const settings = await new PublicProfileService(env).saveVisibility(identity.userId, {
-      isPublic: body.public,
+      isPublic: parsed.body.public,
       fields,
     });
     return json({ ok: true, ...settings });

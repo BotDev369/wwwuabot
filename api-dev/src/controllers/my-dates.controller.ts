@@ -1,4 +1,6 @@
+import { z } from "zod";
 import type { Env } from "../shared/types";
+import { readBody } from "../shared/body";
 import { VALID_TYPES } from "../shared/constants";
 import { formatSqliteDatetime } from "@wwwuabot/shared/utils/datetime";
 import { withAutoMigrate } from "@wwwuabot/shared/database/auto-migrate";
@@ -18,6 +20,26 @@ export interface MyDateItem {
   alias?: string;
   category?: string;
 }
+
+/**
+ * Тіло дати — усе, що пишуть у рядок `MyDateItem`, має бути тим, чим воно
+ * потім є: `date`, `type`, `id`, `name`, `notes` — рядки, `tags` — список рядків.
+ * Раніше це був `as Partial<MyDateItem>`, тобто твердження компілятор не
+ * перевіряв, і число в `id` тихо давало `404`. Невідомі поля лишаються
+ * (`.passthrough()`), решту нормалізують правила нижче.
+ */
+const dateBody = z
+  .object({
+    date: z.string().optional(),
+    type: z.string().optional(),
+    id: z.string().optional(),
+    name: z.string().optional(),
+    tags: z.array(z.string()).optional(),
+    notes: z.string().optional(),
+    alias: z.string().optional(),
+    category: z.string().optional(),
+  })
+  .passthrough();
 
 function json(body: unknown, status = 200): Response {
   return new Response(JSON.stringify(body), {
@@ -137,14 +159,10 @@ export async function handleMyDates(request: Request, env: Env): Promise<Respons
 
     // ── POST (add) ──
     if (request.method === "POST") {
-      let body: Partial<MyDateItem>;
-      try {
-        body = (await request.json()) as Partial<MyDateItem>;
-      } catch {
-        return json({ ok: false, error: "Invalid JSON" }, 400);
-      }
+      const parsed = await readBody(request, dateBody);
+      if (!parsed.ok) return parsed.response;
 
-      const { date, type = "other", name, tags, notes, alias, category } = body;
+      const { date, type = "other", name, tags, notes, alias, category } = parsed.body;
       if (!date) return json({ ok: false, error: "date is required" }, 400);
 
       const now = formatSqliteDatetime();
@@ -167,14 +185,10 @@ export async function handleMyDates(request: Request, env: Env): Promise<Respons
 
     // ── PUT (update) ──
     if (request.method === "PUT") {
-      let body: Partial<MyDateItem>;
-      try {
-        body = (await request.json()) as Partial<MyDateItem>;
-      } catch {
-        return json({ ok: false, error: "Invalid JSON" }, 400);
-      }
+      const parsed = await readBody(request, dateBody);
+      if (!parsed.ok) return parsed.response;
 
-      const { id, date, type, name, tags, notes, alias, category } = body;
+      const { id, date, type, name, tags, notes, alias, category } = parsed.body;
       if (!id) return json({ ok: false, error: "id is required" }, 400);
       if (!date) return json({ ok: false, error: "date is required" }, 400);
 

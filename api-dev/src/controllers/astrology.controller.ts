@@ -1,4 +1,6 @@
+import { z } from "zod";
 import type { Env } from "../shared/types";
+import { readBody } from "../shared/body";
 import { apiLog } from "../shared/logger";
 import {
   SYSTEM_CALCULATORS,
@@ -8,6 +10,25 @@ import {
 } from "../shared/mydate-helpers";
 
 const DATE_RE = /^\d{4}-\d{2}-\d{2}$/;
+
+/**
+ * Дати — рядки, бо `DATE_RE` перевіряє саме рядок: число `20240101` не пройшло
+ * б ні формат, ні жодного розрахунку. Поля лишаються необов'язковими, щоб
+ * причина відмови («Invalid or missing date», «Missing systemId») лишалася
+ * такою самою для людини, а не перетворилася на безлике «Invalid body».
+ */
+const analyzeBody = z
+  .object({ date: z.string().optional(), systemId: z.string().optional() })
+  .passthrough();
+
+/** Порівняння: усі три переліки — рядки, і порожні лишаються порожніми. */
+const compareBody = z
+  .object({
+    dates: z.array(z.string()).optional(),
+    systemIds: z.array(z.string()).optional(),
+    parameterKeys: z.array(z.string()).optional(),
+  })
+  .passthrough();
 
 function json(body: unknown, status = 200): Response {
   return new Response(JSON.stringify(body), {
@@ -38,9 +59,9 @@ export async function handleAnalysisRead(
 // ── POST /api/mydate/analyze ────────────────────────────────────────
 export async function handleAnalyze(request: Request, env: Env): Promise<Response> {
   try {
-    const body = (await request.json()) as { date?: string; systemId?: string };
-    const date = body?.date;
-    const systemId = body?.systemId;
+    const parsed = await readBody(request, analyzeBody);
+    if (!parsed.ok) return parsed.response;
+    const { date, systemId } = parsed.body;
 
     if (!date || !DATE_RE.test(date)) {
       return json({ ok: false, error: "Invalid or missing date" }, 400);
@@ -80,18 +101,11 @@ export async function handleSystems(env: Env): Promise<Response> {
 // ── POST /api/mydate/compare ────────────────────────────────────────
 export async function handleCompare(request: Request, env: Env): Promise<Response> {
   try {
-    const body = (await request.json()) as {
-      dates?: string[];
-      systemIds?: string[];
-      parameterKeys?: string[];
-    };
-    const dates: string[] = Array.isArray(body?.dates) ? body.dates : [];
-    const systemIds: string[] | undefined =
-      Array.isArray(body?.systemIds) && body.systemIds.length ? body.systemIds : undefined;
-    const parameterKeys: string[] | undefined =
-      Array.isArray(body?.parameterKeys) && body.parameterKeys.length
-        ? body.parameterKeys
-        : undefined;
+    const parsed = await readBody(request, compareBody);
+    if (!parsed.ok) return parsed.response;
+    const dates = parsed.body.dates ?? [];
+    const systemIds = parsed.body.systemIds?.length ? parsed.body.systemIds : undefined;
+    const parameterKeys = parsed.body.parameterKeys?.length ? parsed.body.parameterKeys : undefined;
 
     const validDates = dates.filter((d) => DATE_RE.test(d));
     if (validDates.length === 0) {

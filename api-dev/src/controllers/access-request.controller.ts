@@ -20,11 +20,21 @@
  * @module api-dev/src/controllers/access-request.controller
  */
 
+import { z } from "zod";
 import type { Env } from "../shared/types";
+import { readBody } from "../shared/body";
 import { resolveUserId } from "../shared/identity";
 import { ensureTables } from "@wwwuabot/shared/database/ensure-tables";
 import { sanitizeAccessRequestText } from "@wwwuabot/shared/access-requests";
 import { apiLog } from "../shared/logger";
+
+/**
+ * Текст прохання — `unknown` свідомо: його межа одна на прийом і на редагування
+ * в панелі (`sanitizeAccessRequestText`), тож схема не має другої копії правила.
+ * Порожній текст лишається **порожнім повідомленням**, а не помилкою розбору:
+ * «нічого не прийнято» каже людині про її лист, а не про зіпсований JSON.
+ */
+const accessRequestBody = z.object({ text: z.unknown() });
 
 function json(data: unknown, status = 200): Response {
   return new Response(JSON.stringify(data), {
@@ -38,16 +48,10 @@ export async function handleAccessRequest(request: Request, env: Env): Promise<R
   const identity = await resolveUserId(request, env);
   if (!identity.ok) return identity.response;
 
-  let text: string;
-  try {
-    const body = (await request.json()) as { text?: unknown };
-    text = sanitizeAccessRequestText(body.text);
-  } catch {
-    // Порожнє або биле тіло — це не помилка запиту, а порожнє повідомлення:
-    // воно не варте рядка в базі, тож кажемо «нічого не прийнято» (400).
-    return json({ ok: false, error: "Порожнє повідомлення" }, 400);
-  }
+  const parsed = await readBody(request, accessRequestBody);
+  if (!parsed.ok) return parsed.response;
 
+  const text = sanitizeAccessRequestText(parsed.body.text);
   if (!text) return json({ ok: false, error: "Порожнє повідомлення" }, 400);
 
   try {
