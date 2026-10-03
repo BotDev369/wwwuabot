@@ -54,11 +54,11 @@ export function ThemeMenu({ onClose }: ThemeMenuProps): ReactElement {
   const [editing, setEditing] = useState<ThemeScheme | null>(null);
   const [editorOpen, setEditorOpen] = useState(false);
 
-  // Стан — це чернетка: вона лягає на екран живцем, а записують її кнопки
-  // останнього рядка. Тому «що обрано» дивиться саме на неї.
-  const applied: AppliedLook = { colors: colors.draft, font: fonts.draft };
+  // Поточний вибір — це вже застосована тема, тож «що обрано» у другому рядку
+  // пункту дивиться на неї ж.
+  const applied: AppliedLook = { colors: colors.current, font: fonts.current };
   const themeName = describeTheme(
-    { colors: colors.draft, font: fonts.draft, complete: colors.complete },
+    { colors: colors.current, font: fonts.current, complete: colors.complete },
     {
       mine: mine.items,
       shared: shared.items,
@@ -67,7 +67,7 @@ export function ThemeMenu({ onClose }: ThemeMenuProps): ReactElement {
     },
   );
 
-  /** Взяти схему собі: колори й шрифт ідуть у чернетку, а не в пам'ять. */
+  /** Взяти схему собі: колори й шрифт стають поточними й одразу зберігаються. */
   const applyScheme = useCallback(
     (scheme: ApplicableScheme) => {
       colors.setColors(themeSchemeColors(scheme));
@@ -90,14 +90,13 @@ export function ThemeMenu({ onClose }: ThemeMenuProps): ReactElement {
         onClose={onClose}
         content={
           <ThemeColorPanel
-            onClose={onClose}
             colorsHint={
               <>
                 {colors.complete && (
                   <span className="wb-nav-dots" aria-hidden="true">
-                    <span className="wb-theme-dot" style={{ background: colors.draft.bg }} />
-                    <span className="wb-theme-dot" style={{ background: colors.draft.text }} />
-                    <span className="wb-theme-dot" style={{ background: colors.draft.accent }} />
+                    <span className="wb-theme-dot" style={{ background: colors.current.bg }} />
+                    <span className="wb-theme-dot" style={{ background: colors.current.text }} />
+                    <span className="wb-theme-dot" style={{ background: colors.current.accent }} />
                   </span>
                 )}
                 {/* Списки ще їдуть — тоді другий рядок мовчить: «Свої кольори»

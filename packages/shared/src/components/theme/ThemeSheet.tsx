@@ -9,6 +9,8 @@
  *
  * Сама панель (`ThemeColorPanel`) при цьому лишається спільною — цей файл
  * відповідає тільки за рамку: шапку з виходом і блокування прокрутки під нею.
+ * Рядка дій у панелі немає (вибір застосовується сам), тож вихід — лише хрестик
+ * у шапці.
  *
  * @module packages/shared/src/components/theme/ThemeSheet
  */
@@ -62,7 +64,7 @@ export function ThemeSheet({ onClose }: ThemeSheetProps): ReactElement {
           </button>
         </div>
         <div className="wb-modal-body wb-menu-body">
-          <ThemeColorPanel onClose={onClose} />
+          <ThemeColorPanel />
         </div>
       </div>
     </div>

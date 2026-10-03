@@ -11,6 +11,11 @@
  * (`styles/registry`), тому кнопка «Material» у панелі була б вибором, який
  * нічого не змінює.
  *
+ * **Рядка дій у панелі немає.** «Застосувати» з «Відмінити» тримали чернетку
+ * й відкочували її на виході, тож закрита панель губила вибір — тема не
+ * застосовувалася. Тепер натискання палітри чи шрифту і є застосуванням, і ці
+ * кнопки мусять бути відсутні.
+ *
  * **Панель — вибір, а не редактор.** Рядків «фон / основний / акцент» у ній
  * бути не має: вони живуть у редакторі теми, а тут лише джерела (палітри чи
  * вкладки бібліотек). Рядок «Застосовано на цьому пристрої» теж зник: він
@@ -27,7 +32,7 @@ import { renderToStaticMarkup } from "react-dom/server";
 import { ThemeColorPanel } from "./ThemeColorPanel";
 
 function render(): string {
-  return renderToStaticMarkup(<ThemeColorPanel onClose={() => undefined} />);
+  return renderToStaticMarkup(<ThemeColorPanel />);
 }
 
 /** Голови пунктів панелі: їх рівно два, і саме вони — акордеони. */
@@ -56,12 +61,14 @@ describe("панель вигляду", () => {
     expect(heads.filter((head) => head.includes('aria-expanded="false"'))).toHaveLength(1);
   });
 
-  it("⛔ останній рядок — рівно «Відмінити» та «Застосувати»", () => {
+  it("⛔ рядка дій немає: вибір застосовується натисканням", () => {
     const html = render();
 
-    expect(html).toContain("Відмінити");
-    expect(html).toContain("Застосувати");
-    // Кнопок дій дві: «Скинути» чи «Зберегти» тут немає — скасування вже є.
+    // Кнопки діяли на чернетку, яка відкочувалася на виході: панель закривали —
+    // вибір зникав. Тепер застосування і є натискання, тож кнопок немає.
+    expect(html).not.toContain("Застосувати");
+    expect(html).not.toContain("Відмінити");
+    expect(html).not.toContain("wb-theme-actions");
     expect(html).not.toContain("Скинути");
     expect(html).not.toContain("Зберегти");
   });
@@ -77,17 +84,12 @@ describe("панель вигляду", () => {
     expect(html).not.toContain("wb-theme-row-swatch");
   });
 
-  it("⛔ стану «Застосовано» тут немає — його каже сама кнопка", () => {
+  it("⛔ стану «Застосовано» тут немає — застосування і так очевидне", () => {
     const html = render();
 
-    // Рядок повторював незмінне; «активна» кнопка говорить те саме, але лише
-    // тоді, коли є що записати.
+    // Рядок повторював незмінне, а після відмови від «Застосувати» він просто
+    // зник би разом із чернеткою.
     expect(html).not.toContain("Застосовано");
     expect(html).not.toContain("wb-theme-status");
-    // Без збереженого вибору змін немає, тож «Застосувати» неактивна й не акцентна.
-    const apply = html.slice(html.indexOf("Застосувати") - 400).match(/<button[^>]*>/)?.[0] ?? "";
-    expect(apply).toContain("disabled");
-    expect(apply).toContain("wb-btn-secondary");
-    expect(apply).not.toContain("wb-btn-primary");
   });
 });

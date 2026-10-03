@@ -19,21 +19,16 @@
  * перший відкритий одразу: за кольори приходять частіше, і згорнутий список із
  * двома написаними заголовками нічого не каже про вибір.
  *
- * **Останній рядок — «Відмінити» / «Застосувати».** Вибір лягає на екран
- * живцем, тож «Застосувати» — це запис у пам'ять пристрою, а «Відмінити» —
- * вихід без запису: обидва хуки повертають збережене при розмонтуванні, тож це
- * два дотики з одним результатом, а не три кнопки з трьома станами.
- *
- * **«Застосувати» активна лише тоді, коли є що записати** (чернетка відрізняється
- * від збереженого): синя кнопка, на яку можна натиснути без змін, обіцяє дію, якої
- * не буде. Стан зміни показує вона сама — окремий рядок «Застосовано на цьому
- * пристрої» повторював одне й те саме й нічого не додавав.
+ * **Рядка дій тут немає.** Натиснули палітру, схему чи шрифт — вибір **уже**
+ * поточна тема: на екрані й у пам'яті пристрою («Застосувати» не потрібна).
+ * Колись вона була, і це коштувало реального вибору: панель закривали, а
+ * чернетка зникала — тема не застосовувалася. Закриває панель той, хто її
+ * відкрив (`onClose` на оболонці).
  *
  * @module packages/shared/src/components/theme/ThemeColorPanel
  */
 
 import type { ReactElement, ReactNode } from "react";
-import { Icon } from "../Icon";
 import { COLOR_PRESETS, isPresetActive, type ColorPreset } from "../../styles/color-presets";
 import type { ColorDraft } from "../../styles/user-colors";
 import { fontLabel, STYLE_FONT_LABEL } from "../../styles/fonts";
@@ -43,12 +38,6 @@ import { useFontChoice } from "./useFontChoice";
 import { useUserColors } from "./useUserColors";
 
 export interface ThemeColorPanelProps {
-  /**
-   * Закрити поверхню. Панель не знає, чим відкрита (меню хедера в платформі чи
-   * кнопка адмінки), тож закриває її той, хто відкрив: і «Відмінити», і
-   * «Застосувати» ведуть сюди.
-   */
-  onClose: () => void;
   /** Що стоїть у пункті «Кольори теми» замість готових палітр (вкладки платформи). */
   colorsBody?: ReactNode;
   /** Другий рядок пункту «Кольори теми»: що обрано зараз. */
@@ -58,71 +47,50 @@ export interface ThemeColorPanelProps {
 }
 
 export function ThemeColorPanel({
-  onClose,
   colorsBody,
   colorsHint,
   colorsExtra,
 }: ThemeColorPanelProps): ReactElement {
   const colors = useUserColors();
   const fonts = useFontChoice();
-  // Схема — це три кольори **і** шрифт: незбереженим вона стає від кожного з них.
-  const dirty = colors.dirty || fonts.dirty;
 
   return (
     <div className="wb-theme-panel">
       <ThemeSection title="Кольори теми" hint={colorsHint} defaultOpen>
-        {colorsBody ?? <PresetGrid draft={colors.draft} onPick={colors.applyPreset} />}
+        {colorsBody ?? <PresetGrid current={colors.current} onPick={colors.applyPreset} />}
 
         {colorsExtra && <div className="wb-theme-extra">{colorsExtra}</div>}
       </ThemeSection>
 
-      <ThemeSection title="Шрифт теми" hint={fontLabel(fonts.draft) ?? STYLE_FONT_LABEL}>
-        <FontPicker value={fonts.draft} onChange={fonts.setFont} />
+      <ThemeSection title="Шрифт теми" hint={fontLabel(fonts.current) ?? STYLE_FONT_LABEL}>
+        <FontPicker value={fonts.current} onChange={fonts.setFont} />
       </ThemeSection>
 
+      {/* Неповна палітра ніде не записується, тож кажемо прямо: тема лишиться
+          попередньою, поки не вибрано усіх трьох. */}
       {colors.missing.length > 0 && (
         <p className="wb-theme-hint wb-theme-hint--warn">
-          Порожні кольори: {colors.missing.join(", ")}. Без них застосувати не вийде.
+          Порожні кольори: {colors.missing.join(", ")}. Тема лишиться попередньою, поки не вибереш
+          усі три.
         </p>
       )}
       {colors.warning && <p className="wb-theme-hint wb-theme-hint--warn">{colors.warning}</p>}
-
-      <div className="wb-sheet-actions wb-theme-actions">
-        <button type="button" className="wb-btn wb-btn-secondary wb-btn-sm" onClick={onClose}>
-          Відмінити
-        </button>
-        {/* Акцентна — лише коли є зміни: колір кнопки й каже «записати», тож
-            без змін він мовчить, а не пропонує порожню дію. */}
-        <button
-          type="button"
-          className={`wb-btn wb-btn-sm${dirty ? " wb-btn-primary" : " wb-btn-secondary"}`}
-          disabled={!colors.complete || !dirty}
-          onClick={() => {
-            colors.save();
-            fonts.save();
-            onClose();
-          }}
-        >
-          <Icon name="check" size={16} />
-          Застосувати
-        </button>
-      </div>
     </div>
   );
 }
 
 /** Готові палітри — різновид кольорів за одним дотиком (адмінка, без вкладок). */
 function PresetGrid({
-  draft,
+  current,
   onPick,
 }: {
-  draft: ColorDraft;
+  current: ColorDraft;
   onPick: (preset: ColorPreset) => void;
 }): ReactElement {
   return (
     <div className="wb-theme-presets">
       {COLOR_PRESETS.map((preset) => {
-        const active = isPresetActive(preset, draft);
+        const active = isPresetActive(preset, current);
         return (
           <button
             key={preset.id}

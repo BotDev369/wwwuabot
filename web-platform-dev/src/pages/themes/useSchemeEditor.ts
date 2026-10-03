@@ -6,14 +6,14 @@
  * людина щойно міняє), а збереження надсилає її номер — тобто оновлює, а не
  * створює другу з тією ж назвою.
  *
- * **Кольори й шрифт — не свої, а спільні з меню.** Вони живуть у чернетці
- * панелі вигляду (`useUserColors` / `useFontChoice`), і редактор працює з
- * тією ж чернеткою: другий примірник цих хуків у модалці поверх меню
- * застосував би свої кольори й скасовував би вибір панелі на виході.
+ * **Кольори й шрифт — не свої, а спільні з меню.** Вони живуть у тих самих
+ * хуках, що й панель вигляду (`useUserColors` / `useFontChoice`), і редактор
+ * працює з ними ж: другий примірник цих хуків у модалці поверх меню тримав би
+ * другий «поточний» вибір.
  *
- * **Живий перегляд лишається живим.** Кольори й шрифт лягають на екран одразу,
- * а «Зберегти тему» — це два записи: у пам'ять пристрою (щоб вибір пережив
- * перезавантаження) і на сервер (щоб тема була в бібліотеці).
+ * **«Зберегти тему» — це запис на сервер.** Правити колір у редакторі вже
+ * означає застосувати його на екрані й у пам'яті пристрою (хук робить це сам),
+ * тож кнопка лишається лише для бібліотеки: тема мусить у неї потрапити.
  *
  * @module web-platform-dev/src/pages/themes/useSchemeEditor
  */
@@ -29,7 +29,7 @@ import type { MyThemesLibrary } from "./theme-library";
 
 export interface SchemeEditor {
   name: string;
-  setName: (name: string) => void;
+  setName: (value: string) => void;
   isPublic: boolean;
   setIsPublic: (value: boolean) => void;
   busy: boolean;
@@ -38,13 +38,18 @@ export interface SchemeEditor {
 
 export function useSchemeEditor(
   editing: ThemeScheme | null,
-  colors: UseUserColorsResult,
-  fonts: UseFontChoiceResult,
+  colorsArg: UseUserColorsResult,
+  fontsArg: UseFontChoiceResult,
   library: MyThemesLibrary,
 ): SchemeEditor {
   const [name, setName] = useState(editing ? editing.name : "Моя тема");
   const [isPublic, setIsPublic] = useState(editing?.isPublic ?? false);
   const [busy, setBusy] = useState(false);
+
+  // Хуки повертають свіжий об'єкт на кожен рендер, тож у залежностях має бути
+  // саме значення, а не `colors.current`: інакше `useCallback` тримав би застаріле.
+  const { current: colors, setColors } = colorsArg;
+  const { current: font, setFont } = fontsArg;
 
   // Заповнюємо редактор **один раз** на тему: далі полями керує людина.
   const loaded = useRef(0);
@@ -54,33 +59,30 @@ export function useSchemeEditor(
     loaded.current = id;
     setName(editing.name);
     setIsPublic(editing.isPublic);
-    colors.setColors({ bg: editing.bg, text: editing.text, accent: editing.accent });
-    fonts.setFont(editing.font);
-  }, [editing, colors, fonts]);
+    setColors({ bg: editing.bg, text: editing.text, accent: editing.accent });
+    setFont(editing.font);
+  }, [editing, setColors, setFont]);
 
-  /** Зберегти: той самий вибір іде і в пам'ять пристрою, і в бібліотеку. */
+  /** Зберегти в бібліотеку: на екрані й у пам'яті цей вибір уже. */
   const save = useCallback(async (): Promise<boolean> => {
-    const draft = colors.draft;
     // Порожніх кольорів не буває: без них тема не має сенсу (як і на сервері).
-    if (busy || !isCompleteColors(draft)) return false;
+    if (busy || !isCompleteColors(colors)) return false;
     setBusy(true);
     try {
-      colors.save();
-      fonts.save();
       await library.save({
         ...(editing ? { id: editing.id } : {}),
         name,
-        bg: draft.bg,
-        text: draft.text,
-        accent: draft.accent,
-        font: fonts.draft,
+        bg: colors.bg,
+        text: colors.text,
+        accent: colors.accent,
+        font,
         isPublic,
       });
       return true;
     } finally {
       setBusy(false);
     }
-  }, [busy, colors, editing, fonts, isPublic, library, name]);
+  }, [busy, colors, editing, font, isPublic, library, name]);
 
   return { name, setName, isPublic, setIsPublic, busy, save };
 }
