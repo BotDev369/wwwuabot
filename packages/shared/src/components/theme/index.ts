@@ -5,7 +5,6 @@ export type { ThemeCardProps } from "./ThemeCard";
 export { ThemeCardMenu } from "./ThemeCardMenu";
 export type { ThemeCardAction, ThemeCardMenuProps } from "./ThemeCardMenu";
 export { ThemeSheet } from "./ThemeSheet";
-export { ThemeSection } from "./ThemeSection";
 export { ColorSlotRow } from "./ColorSlotRow";
 export { ColorEditor } from "./ColorEditor";
 export { useUserColors } from "./useUserColors";

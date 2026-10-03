@@ -8,7 +8,6 @@
  * кінці цього пункту, і жодного маршруту теми в роутері.
  *
  * CSS і TSX читаються як текст: розбору тут немає (`environment: node`), так
- * само зроблено в `theme-look.test.ts` і в сторожах стилів.
  *
  * @module web-platform-dev/src/pages/themes/color-tabs.test
  */
@@ -43,8 +42,10 @@ describe("меню теми", () => {
     expect(MENU).toContain("colorsBody={");
   });
 
-  it("⛔ пункт «Кольори теми» показує, що обрано, і має кнопку редактора", () => {
-    expect(MENU).toContain("colorsHint=");
+  it("⛔ панель має кнопку редактора і жодного дубля обраної теми", () => {
+    // Другий рядок «обрано: …» дублював виділення картки — про обране каже
+    // тільки картка, тож у меню більше немає чого показувати.
+    expect(MENU).not.toContain("colorsHint=");
     expect(MENU).toContain("Налаштувати власну");
     // Редактор — модалка, а не сторінка: тема не має власної адреси.
     expect(MENU).toContain("<ThemeEditorModal");

@@ -5,28 +5,18 @@
  * хедера, адмінка — кнопкою в бічному меню), і саме тому вона живе в `shared`:
  * два різні «вибір кольору» розійшлися б на першій же правці.
  *
- * **Два пункти, і це межа:** «Кольори теми» та «Шрифт теми». Стиль продукту
- * (Material) вибором не є — він константа, тож третього пункту тут немає
- * (`./registry`).
+ * **Панель — це вибір, а не редактор.** Усередині немає рядків «фон / основний /
+ * акцент» і немає вибору шрифту: точне налаштування і кольорів, і шрифту живе
+ * в редакторі теми (`ThemeEditorModal`) — два місця для одного кольору
+ * розійшлися б на першій же правці. Секція шрифту тут була окремим налаштуванням
+ * тієї самої схеми, тож дві кнопки могли казати про різне.
  *
- * **Панель — це вибір, а не редактор.** Тому всередині пункту «Кольори теми»
- * немає рядків «фон / основний / акцент»: там лише джерела (вкладки платформи
- * або готові палітри адмінки) і «Налаштувати власну». Точне налаштування
- * одного кольору живе в редакторі теми (`ThemeEditorModal`) — два місця для
- * одного кольору розійшлися б на першій же правці.
+ * **Акордеона тут немає:** коли пункт один, рамка з кареткою лише приховує його.
+ * Назва поверхні («Тема») і вкладки кажуть, що це за вибір, досить.
  *
- * **Джерела показані тими самими картками, що й теми** (`ThemeCard`): вкладка
- * шаблонів і вкладка бібліотеки — це один список тем, а не два різні списки.
- *
- * Кожен пункт — акордеон (`ThemeSection`) із **другим рядком «що обрано»**, а
- * перший відкритий одразу: за кольори приходять частіше, і згорнутий список із
- * двома написаними заголовками нічого не каже про вибір.
- *
- * **Рядка дій тут немає.** Натиснули палітру, схему чи шрифт — вибір **уже**
- * поточна тема: на екрані й у пам'яті пристрою («Застосувати» не потрібна).
- * Колись вона була, і це коштувало реального вибору: панель закривали, а
- * чернетка зникала — тема не застосовувалася. Закриває панель той, хто її
- * відкрив (`onClose` на оболонці).
+ * **Дублю обраної теми теж немає.** Раніше другий рядок пункту показував
+ * «· Лаванда», а поруч стояла картка «Лаванда» з галочкою: дві позначки однієї
+ * правди. Тепер про обране каже **лише** виділення картки.
  *
  * @module packages/shared/src/components/theme/ThemeColorPanel
  */
@@ -34,41 +24,24 @@
 import type { ReactElement, ReactNode } from "react";
 import { COLOR_PRESETS, isPresetActive, type ColorPreset } from "../../styles/color-presets";
 import type { ColorDraft } from "../../styles/user-colors";
-import { fontLabel, STYLE_FONT_LABEL } from "../../styles/fonts";
-import { FontPicker } from "./FontPicker";
 import { ThemeCard } from "./ThemeCard";
-import { ThemeSection } from "./ThemeSection";
-import { useFontChoice } from "./useFontChoice";
 import { useUserColors } from "./useUserColors";
 
 export interface ThemeColorPanelProps {
-  /** Що стоїть у пункті «Кольори теми» замість готових палітр (вкладки платформи). */
+  /** Що стоїть у панелі замість готових палітр (вкладки платформи). */
   colorsBody?: ReactNode;
-  /** Другий рядок пункту «Кольори теми»: що обрано зараз. */
-  colorsHint?: ReactNode;
-  /** Кнопка в кінці пункту «Кольори теми» («Налаштувати власну»). */
+  /** Кнопка в кінці панелі («Налаштувати власну»). */
   colorsExtra?: ReactNode;
 }
 
-export function ThemeColorPanel({
-  colorsBody,
-  colorsHint,
-  colorsExtra,
-}: ThemeColorPanelProps): ReactElement {
+export function ThemeColorPanel({ colorsBody, colorsExtra }: ThemeColorPanelProps): ReactElement {
   const colors = useUserColors();
-  const fonts = useFontChoice();
 
   return (
     <div className="wb-theme-panel">
-      <ThemeSection title="Кольори теми" hint={colorsHint} defaultOpen>
-        {colorsBody ?? <PresetGrid current={colors.current} onPick={colors.applyPreset} />}
+      {colorsBody ?? <PresetGrid current={colors.current} onPick={colors.applyPreset} />}
 
-        {colorsExtra && <div className="wb-theme-extra">{colorsExtra}</div>}
-      </ThemeSection>
-
-      <ThemeSection title="Шрифт теми" hint={fontLabel(fonts.current) ?? STYLE_FONT_LABEL}>
-        <FontPicker value={fonts.current} onChange={fonts.setFont} />
-      </ThemeSection>
+      {colorsExtra && <div className="wb-theme-extra">{colorsExtra}</div>}
 
       {/* Неповна палітра ніде не записується, тож кажемо прямо: тема лишиться
           попередньою, поки не вибрано усіх трьох. */}
