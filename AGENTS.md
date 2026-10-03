@@ -186,7 +186,7 @@ const name = await dialog.prompt("Назва:", { validate: (v) => (v.trim() ? n
 |---|---|
 | Скорочення коментарів до абзацу документа | `scripts/comment-baseline.mjs`, стандарт — `docs/COMMENTS.md` |
 | Мертвий CSS оболонок і `.usr-*` / `.scn-*` → `.wb-*` | `scripts/css-baseline.mjs` (тільки зменшувати) |
-| Бюджет бандла (вага чанків оболонок) і поріг покриття нових модулів | `docs/QUALITY_GATE.md`, «чого тут немає» |
+| Поріг покриття для модулів, що додаються новими | `docs/QUALITY_GATE.md`, «чого тут немає» |
 | Мобільний борг: `@media (hover: none)`, тап-таргети ≥44px | §3, борг — у коді |
 | `SELECT *` на `users` | `npm run lint`, `check:quality` |
 | Завантаження свого фото на платформі (`photo_url` уже є) | `docs/SPACE.md`, «чого тут ще немає» |
