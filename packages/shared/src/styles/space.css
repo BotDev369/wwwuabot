@@ -141,7 +141,7 @@
 .wb-space-page .wb-menu-item-label,
 .wb-space-page .wb-person-name,
 .wb-space-page .wb-ad-title,
-.wb-space-page .wb-theme-scheme-name {
+.wb-space-page .wb-theme-card-name {
   font-size: var(--text-base);
   font-weight: var(--weight-medium);
   overflow-wrap: anywhere;
@@ -155,7 +155,7 @@
 .wb-space-page .wb-person-facts,
 .wb-space-page .wb-ad-meta,
 .wb-space-page .wb-ad-body,
-.wb-space-page .wb-theme-scheme-meta {
+.wb-space-page .wb-theme-card-font {
   font-size: var(--text-sm);
   color: var(--text-muted);
   line-height: 1.45;
@@ -167,15 +167,13 @@
    рядка, а `--sp-2` зливав би два оголошення в один абзац. */
 .wb-space-page .wb-people,
 .wb-space-page .wb-menu-list,
-.wb-space-page .wb-collection,
-.wb-space-page .wb-theme-schemes {
+.wb-space-page .wb-collection {
   gap: var(--sp-4);
 }
 
-/* Список тем має власний верхній відступ (`theme-pages.css`): він потрібен
-   сторінці тем, де список іде за формою, а тут проміжок дає панель розділу —
-   другий відступ зсунув би картки тем нижче за решту списків. */
-.wb-space-page .wb-theme-schemes {
+/* Сітка карток тримає свій крок (`theme-panel.css`) і не має верхнього
+   відступу: проміжок до нього дає панель розділу. */
+.wb-space-page .wb-theme-cards {
   margin-top: 0;
 }
 

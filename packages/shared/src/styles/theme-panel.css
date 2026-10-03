@@ -154,66 +154,174 @@
   flex: 1 1 auto;
 }
 
-/* ── Готові палітри ─────────────────────────────────────────────────────── */
-.wb-theme-presets {
+/* ── Картка теми ─────────────────────────────────────────────────────────── */
+
+/* Одна картка на весь продукт: шаблони, свої теми, публічні й теми Простору.
+   Три в рядку — як шаблони; список тем і список шаблонів мають читатися однаково. */
+.wb-theme-cards {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(96px, 1fr));
+  grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: var(--sp-2);
 }
 
-.wb-theme-preset {
+/* Картка — **прев'ю теми, а не картка про тему**: тло, текст і акцент узято в
+   самої схеми (змінні `--scheme-*` ставить `ThemeCard`), тож жодного кольору в
+   розмітці немає й жодної смуги зі зразками не потрібно — картка вже показує,
+   як тема виглядає.
+
+   Мірка одна й та сама в усіх списках, тому й мінус одна: назва довша за рядок
+   обрізається, а не розпирає сітку.
+
+   Межа — з кольору теми: прев'ю мусить мати край навіть тоді, коли його фон
+   збігається з площиною екрана, але це не наша лінія, а власний колір теми
+   (правило 15: рамка лишається там, де вона зміст). */
+.wb-theme-card {
+  position: relative;
+  border-radius: var(--radius-lg);
+  background: var(--scheme-bg);
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--scheme-text) 14%, transparent);
+}
+
+/* Застосована — акцентний обвід: це **вибір**, а не перехід, тож тло не міняє
+   (правило 25). */
+.wb-theme-card--on {
+  box-shadow: inset 0 0 0 2px var(--scheme-accent);
+}
+
+/* Картка-кнопка: дотик до неї і є застосуванням. Вона займає всю картку, тож
+   тап-таргет дорівнює видимій площі, а не рядкові назві. */
+.wb-theme-card-hit {
   display: flex;
   flex-direction: column;
-  align-items: flex-start;
-  gap: var(--sp-2);
-  min-height: 64px;
-  padding: var(--sp-2) var(--sp-3);
+  gap: var(--sp-1);
+  width: 100%;
+  min-height: 84px;
+  padding: var(--sp-3) var(--sp-2);
   border: none;
-  border-radius: var(--radius-md);
-  background: var(--field-bg);
-  color: var(--text-primary);
+  border-radius: inherit;
+  background: none;
+  color: var(--scheme-text);
   font: inherit;
   text-align: left;
   cursor: pointer;
-  transition:
-    background var(--duration-fast) var(--ease),
-    color var(--duration-fast) var(--ease);
 }
 
-.wb-theme-preset:hover {
-  background: var(--surface-active);
-}
-
-/* Вибрана палітра — **акцентний підпис і обвід** (правило 25), тла не міняє:
-   це вибір, а не перехід, тож галочки не треба — вибір видно з трьох зразків,
-   а плишка робила рядок палітр схожим на рядок кнопок, хоч це вибір. */
-.wb-theme-preset--active {
-  color: var(--accent);
+.wb-theme-card-name {
+  display: block;
+  width: 100%;
+  padding-right: var(--sp-5);
+  font-size: var(--text-sm);
   font-weight: var(--weight-semibold);
-  box-shadow: inset 0 0 0 1px var(--accent);
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
 }
 
-.wb-theme-preset-dots {
+/* Другий рядок: шрифт **акцентним** (третій колір теми) і стан застосування. */
+.wb-theme-card-foot {
   display: flex;
-  gap: 2px;
+  align-items: center;
+  gap: var(--sp-1);
+  margin-top: auto;
+  min-width: 0;
 }
 
+.wb-theme-card-font {
+  font-size: var(--text-xs);
+  color: var(--scheme-accent);
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.wb-theme-card-badge {
+  flex-shrink: 0;
+  padding: 0 var(--sp-1);
+  border-radius: var(--radius-sm);
+  background: color-mix(in srgb, var(--scheme-text) 14%, transparent);
+  font-size: var(--text-xs);
+  color: var(--scheme-text);
+}
+
+/* Галочка застосування — стан, а не кнопка, тож вона без підпису: картка вже
+   сказала, яку тему вона тримає. */
+.wb-theme-card-on {
+  display: flex;
+  flex-shrink: 0;
+  color: var(--scheme-accent);
+}
+
+/* Три крапки в другому рядку пункту — «які кольори зараз», без підпису: там
+   уже написано назву теми, а крапки лише показують саму трійку. */
 .wb-theme-dot {
   width: 14px;
   height: 14px;
   border-radius: var(--radius-full);
 }
 
-/* Зразки накладаються: три окремі кола читаються як три різні кольори, а не як
-   одна палітра. */
+/* Зразки накладаються: три окремі кола читаються як три різні кольори, а не
+   як одна палітра. */
 .wb-theme-dot + .wb-theme-dot {
   margin-left: -5px;
 }
 
-.wb-theme-preset-label {
-  font-size: var(--text-xs);
-  font-weight: var(--weight-medium);
-  overflow-wrap: anywhere;
+/* ── Меню дій картки («···») ────────────────────────────────────────────── */
+
+/* Єдиний виняток із заборони дропдаунів (`AGENTS.md` §4): меню не веде кудись,
+   а щось робить із карткою, до якої воно прив'язане. */
+.wb-theme-card-menu {
+  position: absolute;
+  top: var(--sp-1);
+  right: var(--sp-1);
+  z-index: 1;
+}
+
+.wb-theme-card-menu-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  padding: 0;
+  border: none;
+  border-radius: var(--radius-full);
+  background: color-mix(in srgb, var(--scheme-text) 12%, transparent);
+  color: var(--scheme-text);
+  cursor: pointer;
+}
+
+.wb-theme-card-menu-list {
+  position: absolute;
+  top: calc(100% - var(--sp-2));
+  right: 0;
+  display: flex;
+  flex-direction: column;
+  min-width: 168px;
+  padding: var(--sp-1);
+  border-radius: var(--radius-md);
+  background: var(--surface);
+  box-shadow: var(--shadow-lg);
+}
+
+.wb-theme-card-menu-item {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+  min-height: 44px;
+  padding: 0 var(--sp-3);
+  border: none;
+  border-radius: var(--radius-sm);
+  background: none;
+  color: var(--text-primary);
+  font: inherit;
+  font-size: var(--text-sm);
+  text-align: left;
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+.wb-theme-card-menu-item--danger {
+  color: var(--red);
 }
 
 /* ── Три кольори (редактор теми) ───────────────────────────────────────── */

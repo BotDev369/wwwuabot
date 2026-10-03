@@ -68,6 +68,7 @@ export const ICON_NAMES = [
   "filter",
   "sort",
   "menu",
+  "more",
   "expand",
   "collapse",
   "sparkles",

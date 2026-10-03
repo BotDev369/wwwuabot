@@ -8,6 +8,9 @@ export {
   ColorSlotRow,
   FontPicker,
   FontSlotRow,
+  THEME_OWN_ACTIONS,
+  ThemeCard,
+  ThemeCardMenu,
   ThemeColorPanel,
   ThemeSheet,
   useFontChoice,
@@ -15,11 +18,14 @@ export {
 } from "./components/theme";
 export type {
   FontPickerProps,
+  ThemeCardAction,
+  ThemeCardMenuProps,
+  ThemeCardProps,
   ThemeColorPanelProps,
   UseFontChoiceResult,
   UseUserColorsResult,
 } from "./components/theme";
-export { COLOR_PRESETS, isPresetActive } from "./styles/color-presets";
+export { COLOR_PRESETS, isPresetActive, PRESET_FONT } from "./styles/color-presets";
 export type { ColorPreset } from "./styles/color-presets";
 export {
   COLOR_SLOTS,

@@ -15,6 +15,9 @@
  * одного кольору живе в редакторі теми (`ThemeEditorModal`) — два місця для
  * одного кольору розійшлися б на першій же правці.
  *
+ * **Джерела показані тими самими картками, що й теми** (`ThemeCard`): вкладка
+ * шаблонів і вкладка бібліотеки — це один список тем, а не два різні списки.
+ *
  * Кожен пункт — акордеон (`ThemeSection`) із **другим рядком «що обрано»**, а
  * перший відкритий одразу: за кольори приходять частіше, і згорнутий список із
  * двома написаними заголовками нічого не каже про вибір.
@@ -33,6 +36,7 @@ import { COLOR_PRESETS, isPresetActive, type ColorPreset } from "../../styles/co
 import type { ColorDraft } from "../../styles/user-colors";
 import { fontLabel, STYLE_FONT_LABEL } from "../../styles/fonts";
 import { FontPicker } from "./FontPicker";
+import { ThemeCard } from "./ThemeCard";
 import { ThemeSection } from "./ThemeSection";
 import { useFontChoice } from "./useFontChoice";
 import { useUserColors } from "./useUserColors";
@@ -88,26 +92,17 @@ function PresetGrid({
   onPick: (preset: ColorPreset) => void;
 }): ReactElement {
   return (
-    <div className="wb-theme-presets">
-      {COLOR_PRESETS.map((preset) => {
-        const active = isPresetActive(preset, current);
-        return (
-          <button
-            key={preset.id}
-            type="button"
-            className={`wb-theme-preset${active ? " wb-theme-preset--active" : ""}`}
-            aria-pressed={active}
-            onClick={() => onPick(preset)}
-          >
-            <span className="wb-theme-preset-dots" aria-hidden="true">
-              <span className="wb-theme-dot" style={{ background: preset.bg }} />
-              <span className="wb-theme-dot" style={{ background: preset.text }} />
-              <span className="wb-theme-dot" style={{ background: preset.accent }} />
-            </span>
-            <span className="wb-theme-preset-label">{preset.labelUk}</span>
-          </button>
-        );
-      })}
+    <div className="wb-theme-cards">
+      {COLOR_PRESETS.map((preset) => (
+        <ThemeCard
+          key={preset.id}
+          name={preset.labelUk}
+          colors={preset}
+          font={preset.font}
+          applied={isPresetActive(preset, current)}
+          onApply={() => onPick(preset)}
+        />
+      ))}
     </div>
   );
 }

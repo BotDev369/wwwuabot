@@ -1,11 +1,17 @@
 /**
  * `SchemeList` — список схем з трьома станами: чекаємо, зламалось, порожньо.
  *
- * Спільний для трьох місць (вкладки «Мої» й «З простору» у готових темах і
- * вкладка «Теми» в Просторі), бо це **той самий список**: картки, скелет,
- * відмова, порожнеча.
- * Три копії розійшлися б на першій же правці — і в одному місці зникла б
- * кнопка «спробувати ще», а в другому «порожньо» перестало б казати причину.
+ * Спільний для трьох місць (вкладки «Мої кольори» й «Публічні кольори» в меню
+ * теми і вкладка «Теми» в Просторі), бо це **той самий список**: картки,
+ * скелет, відмова, порожнеча. Три копії розійшлися б на першій же правці — і в
+ * одному місці зникла б кнопка «спробувати ще», а в другому «порожньо» перестало
+ * б казати причину.
+ *
+ * **Картка — спільна** (`ThemeCard` з `shared`): ті самі картки показують і
+ * шаблони, і Простір, тож «тема» в одному списку й у іншому виглядає однаково.
+ *
+ * **Меню дій — лише у власних.** `onEdit`/`onRemove` приходять лише звідки, де
+ * тема справді своя; чужа й шаблонна картка їх не отримує й не показує.
  *
  * **Порожнеча каже, що робити.** «Нічого немає» без продовження читається як
  * поламаний екран, тож текст і кнопка приходять від того, хто знає, звідки
@@ -15,9 +21,8 @@
  */
 
 import type { ReactElement, ReactNode } from "react";
-import { Icon, type IconName } from "@wwwuabot/shared";
-import { isThemeApplied, type ThemeScheme } from "@wwwuabot/shared/themes";
-import { SchemeCard } from "./SchemeCard";
+import { Icon, THEME_OWN_ACTIONS, ThemeCard, type IconName } from "@wwwuabot/shared";
+import { isThemeApplied, themeSchemeColors, type ThemeScheme } from "@wwwuabot/shared/themes";
 import type { AppliedLook } from "./useAppliedScheme";
 
 export interface SchemeListProps {
@@ -28,7 +33,7 @@ export interface SchemeListProps {
   /** Що діє на екрані зараз — щоб картка могла сказати «застосовано». */
   applied: AppliedLook;
   onApply: (scheme: ThemeScheme) => void;
-  /** `true` — свої теми: тоді видно «змінити» й «прибрати». */
+  /** `true` — свої теми: тоді в картки з'являється меню «···». */
   mine?: boolean;
   onEdit?: (scheme: ThemeScheme) => void;
   onRemove?: (scheme: ThemeScheme) => void;
@@ -85,16 +90,25 @@ export function SchemeList({
   }
 
   return (
-    <div className="wb-theme-schemes">
+    <div className="wb-theme-cards">
       {items.map((scheme) => (
-        <SchemeCard
+        <ThemeCard
           key={scheme.id}
-          scheme={scheme}
-          mine={mine}
+          name={scheme.name}
+          colors={themeSchemeColors(scheme)}
+          font={scheme.font}
           applied={isThemeApplied(scheme, applied.colors, applied.font)}
           onApply={() => onApply(scheme)}
-          {...(onEdit ? { onEdit: () => onEdit(scheme) } : {})}
-          {...(onRemove ? { onRemove: () => onRemove(scheme) } : {})}
+          {...(mine && scheme.isPublic ? { badge: "Публічна" } : {})}
+          {...(mine && onEdit && onRemove
+            ? {
+                actions: THEME_OWN_ACTIONS,
+                onAction: (key: string) => {
+                  if (key === "edit") onEdit(scheme);
+                  else onRemove(scheme);
+                },
+              }
+            : {})}
         />
       ))}
     </div>

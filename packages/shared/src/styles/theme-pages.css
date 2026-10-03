@@ -1,126 +1,16 @@
 /*
  * ═══════════════════════════════════════════════════════════════════════════
- * THEME PAGES — сторінки теми: налаштування, бібліотека схем, готові палітри
+ * THEME — редактор теми та список шрифтів
  * ═══════════════════════════════════════════════════════════════════════════
  *
- * Тема — **сторінка, а не поверхня** (правило 13 у `docs/SURFACES.md`): у
- * схеми є історія, адреса й «назад», а поверхня не має жодного з трьох.
- * Класи тут спільні, як і панель (`theme-panel.css`): ті самі рядки й картки
- * малюють і платформа, і панель, тож другого «майже такого» набору немає.
- *
- * **Список розділів теми — не власний вигляд, а спільний сайдбар.** Доти тут
- * жив окремий набір `.wb-theme-nav*` (плишка `--field-bg`, рядок 64px, знак
- * акцентом і підпис 18px) — і той самий продукт мав три сайдбари на три різні
- * мірки. Тепер розділи теми рендерить той самий `SideBarMenu`, що меню адмінки
- * і панель Простору: мірка рядка й «тут ти» в нього одні (`app-chrome.css`),
- * а цей файл лишається за картки схем, форму й готові палітри.
+ * Сторінок теми вже немає: тему обирають у меню (`theme-panel.css` — там же
+ * тепер і **єдина картка**), а тут лишилося те, що потрібне редактору: форма
+ * схеми й список шрифтів. Класи спільні, як і панель: ті самі рядки малюють і
+ * платформа, і панель, тож другого «майже такого» набору немає.
  *
  * Ліній немає (правило 15): рядки відділяє глибина (`--field-bg`), картки —
  * тло поверхні.
  */
-
-/* ── Картка схеми (мої, спільні, готові) ─────────────────────────────────── */
-
-.wb-theme-schemes {
-  display: flex;
-  flex-direction: column;
-  gap: var(--sp-3);
-}
-
-/* Картка — **прев'ю теми, а не картка про тему**: тло, текст і акцент узято в
-   самої схеми (змінні `--scheme-*` ставить `SchemeCard`), тож жодного кольору в
-   розмітці немає й жодної смуги зі зразками не потрібно — картка вже показує,
-   як тема виглядає.
-
-   Мірка — компактна: дві лінії замість чотирьох (було: смуга 44px + назва +
-   шрифт + кнопки). Тема в списку — рядок, а не екран.
-
-   Межа — з кольору теми: прев'ю мусить мати край навіть тоді, коли його фон
-   збігається з площиною екрана, але це не наша лінія, а власний колір теми
-   (правило 15: рамка лишається там, де вона зміст). */
-.wb-theme-scheme {
-  display: flex;
-  flex-direction: column;
-  gap: var(--sp-2);
-  padding: var(--sp-2) var(--sp-3);
-  border-radius: var(--radius-lg);
-  background: var(--scheme-bg);
-  color: var(--scheme-text);
-  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--scheme-text) 14%, transparent);
-}
-
-.wb-theme-scheme-head {
-  display: flex;
-  align-items: center;
-  gap: var(--sp-2);
-}
-
-.wb-theme-scheme-name {
-  font-size: var(--text-md);
-  font-weight: var(--weight-semibold);
-  min-width: 0;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-/* Чип «застосовано» — стан, а не кнопка: дотик до схеми і є застосуванням */
-.wb-theme-scheme-flag {
-  margin-left: auto;
-  flex-shrink: 0;
-}
-
-/* Друга лінія: підпис і дія в одному ряду. Обидва говорять мовою теми —
-   приглушений підпис змішує її текст із її ж фоном, а не бере наш
-   `--text-muted` (на темній темі чужий сірий різав би око). */
-.wb-theme-scheme-foot {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  flex-wrap: wrap;
-  gap: var(--sp-2);
-}
-
-.wb-theme-scheme-meta {
-  margin: 0;
-  font-size: var(--text-sm);
-  color: color-mix(in srgb, var(--scheme-text) 62%, var(--scheme-bg));
-}
-
-.wb-theme-scheme-actions {
-  display: flex;
-  flex-wrap: wrap;
-  gap: var(--sp-2);
-}
-
-/* Кнопки й чипи прев'ю — **кольорами теми**: залитий акцент — підписом, який
-   обрав би сам користувач цієї теми (`--scheme-on-accent`, `onAccentColor`), а
-   не нашим інверсним. `!important` — бо бренд задає кольори кнопки з ним. */
-html[data-brand] .wb-theme-scheme .wb-btn-primary {
-  background: var(--scheme-accent) !important;
-  border-color: var(--scheme-accent) !important;
-  color: var(--scheme-on-accent) !important;
-}
-
-html[data-brand] .wb-theme-scheme .wb-btn-primary:hover {
-  background: color-mix(in srgb, var(--scheme-accent) 86%, var(--scheme-text)) !important;
-  border-color: transparent !important;
-}
-
-html[data-brand] .wb-theme-scheme .wb-btn-secondary {
-  background: color-mix(in srgb, var(--scheme-text) 12%, transparent) !important;
-  color: var(--scheme-text) !important;
-}
-
-.wb-theme-scheme .wb-badge {
-  background: color-mix(in srgb, var(--scheme-text) 12%, transparent);
-  color: var(--scheme-text);
-}
-
-.wb-theme-scheme .wb-badge-accent {
-  background: var(--scheme-accent);
-  color: var(--scheme-on-accent);
-}
 
 /* ── Форма схеми (назва, шрифт, публічність) ─────────────────────────────── */
 
@@ -133,8 +23,6 @@ html[data-brand] .wb-theme-scheme .wb-btn-secondary {
 /* Блоки сторінки: у `.wb-page` відступів між дітьми немає (його тримає лише
    шапка — `margin-bottom`), тож крок між блоками ставить перший із них. */
 .wb-theme-rows,
-.wb-theme-schemes,
-.wb-theme-presets,
 .wb-theme-form,
 .wb-font-picker {
   margin-top: var(--sp-4);

@@ -84,6 +84,8 @@ const APP = topLevel(css("packages/shared/src/styles/app-chrome.css"));
 const TOKENS = topLevel(css("packages/shared/src/styles/tokens.css"));
 const SPACE = topLevel(css("packages/shared/src/styles/space.css"));
 const THEME = topLevel(css("packages/shared/src/styles/theme-pages.css"));
+/** Картка теми й меню дій живуть у панелі — єдиній поверхні вибору. */
+const PANEL = topLevel(css("packages/shared/src/styles/theme-panel.css"));
 const CHROME = topLevel(css("packages/shared/src/styles/components.css"));
 
 interface Rule {
@@ -120,13 +122,13 @@ const CONTENT_ROW = ".wb-space-page .wb-menu-item, .wb-space-page .wb-ad-open";
 /** Єдиний рядок із провідною клітинкою — обличчя людини. */
 const FACE_ROW = ".wb-space-page .wb-person";
 const GAP =
-  ".wb-space-page .wb-people, .wb-space-page .wb-menu-list, .wb-space-page .wb-collection, .wb-space-page .wb-theme-schemes";
+  ".wb-space-page .wb-people, .wb-space-page .wb-menu-list, .wb-space-page .wb-collection";
 const ACTIVE =
   ".wb-space-page .wb-menu-item:active, .wb-space-page .wb-person--tappable:active, .wb-space-page .wb-ad-open:active";
 const TITLE =
-  ".wb-space-page .wb-menu-item-label, .wb-space-page .wb-person-name, .wb-space-page .wb-ad-title, .wb-space-page .wb-theme-scheme-name";
+  ".wb-space-page .wb-menu-item-label, .wb-space-page .wb-person-name, .wb-space-page .wb-ad-title, .wb-space-page .wb-theme-card-name";
 const HINT =
-  ".wb-space-page .wb-menu-item-hint, .wb-space-page .wb-person-about, .wb-space-page .wb-person-facts, .wb-space-page .wb-ad-meta, .wb-space-page .wb-ad-body, .wb-space-page .wb-theme-scheme-meta";
+  ".wb-space-page .wb-menu-item-hint, .wb-space-page .wb-person-about, .wb-space-page .wb-person-facts, .wb-space-page .wb-ad-meta, .wb-space-page .wb-ad-body, .wb-space-page .wb-theme-card-font";
 
 /** Плитки немає, а рядок — один: та сама сітка, та сама мірка, той самий дотик. */
 describe("список Простору — один рядок на всі розділи", () => {
@@ -209,42 +211,63 @@ describe("шеврон — ознака переходу", () => {
 
 describe("картка теми — прев'ю теми", () => {
   it("тло, текст і акцент картки беруться з самої теми", () => {
-    const card = rule(THEME, ".wb-theme-scheme");
+    const card = rule(PANEL, ".wb-theme-card");
     expect(card, "правило картки мусить існувати").toBeDefined();
     expect(card?.body).toContain("background: var(--scheme-bg)");
-    expect(card?.body).toContain("color: var(--scheme-text)");
     // Край — з кольору теми: прев'ю мусить мати межу й тоді, коли його фон
     // збігається з площиною екрана, але це не наша лінія (правило 15).
     expect(card?.body).toContain("color-mix(in srgb, var(--scheme-text)");
   });
 
   it("змінні ставить картка, і жодного кольору в розмітці немає", () => {
-    const component = source("web-platform-dev/src/pages/themes/SchemeCard.tsx");
+    const component = source("packages/shared/src/components/theme/ThemeCard.tsx");
     for (const name of ["--scheme-bg", "--scheme-text", "--scheme-accent", "--scheme-on-accent"]) {
       expect(component, name).toContain(name);
     }
     // Підпис на акценті — та сама функція, що дає `--user-on-accent` живим
-    // кольорам: інакше на світлому акценті він зливався б із кнопкою.
+    // кольорам: інакше на світлому акценті він зливався б із текстом.
     expect(component).toContain("onAccentColor");
     expect(component).not.toMatch(/style=\{\{ background: "#/);
   });
 
-  it("смуги зі зразків більше немає — картка і є зразок", () => {
-    // Саме ця смуга робила картку високою й неінформативною: кольори було
-    // видно, а вигляд теми доводилось уявляти.
-    expect(THEME).not.toContain(".wb-theme-scheme-preview");
-    expect(source("web-platform-dev/src/pages/themes/SchemeCard.tsx")).not.toContain(
-      "wb-theme-scheme-preview",
-    );
+  it("⛔ картка одна на весь продукт — і три в рядку, як шаблони", () => {
+    // Раніше картки тем і плитки шаблонів були різними компонентами з різною
+    // міркою: «сітка дрібних плиток» поруч із «великими картками».
+    expect(THEME).not.toContain(".wb-theme-scheme");
+    expect(THEME).not.toContain(".wb-theme-preset");
+    const grid = rule(PANEL, ".wb-theme-cards");
+    expect(grid?.body).toContain("grid-template-columns: repeat(3, minmax(0, 1fr))");
+    // Шаблони, свої теми й Простір рендерять ту саму картку.
+    for (const path of [
+      "web-platform-dev/src/pages/themes/PlatformThemesPanel.tsx",
+      "web-platform-dev/src/pages/themes/SchemeList.tsx",
+    ]) {
+      expect(source(path), path).toContain("<ThemeCard");
+    }
   });
 
-  it("кнопки й чипи картки говорять кольорами теми", () => {
-    // `!important` обов'язковий: бренд задає кольори кнопки з ним, і без нього
-    // кнопка прев'ю ставала б акцентом застосунку — тобто чужим кольором.
-    const primary = rule(THEME, "html[data-brand] .wb-theme-scheme .wb-btn-primary");
-    expect(primary, "правило кнопки прев'ю мусить існувати").toBeDefined();
-    expect(primary?.body).toContain("background: var(--scheme-accent) !important");
-    expect(primary?.body).toContain("color: var(--scheme-on-accent) !important");
+  it("⛔ на картці лишилися тільки дотик і меню власної теми", () => {
+    // Кнопки «Застосувати / Змінити / Прибрати» робили картку різною для
+    // кожної теми; тепер дотик застосовує, а дії власної — у меню «···».
+    const component = source("packages/shared/src/components/theme/ThemeCard.tsx");
+    // Жодної кнопки-дії в картці: дотик — це застосування, решта — меню.
+    expect(component).not.toMatch(/<button[^>]*wb-btn/);
+    expect(component).toContain("wb-theme-card-hit");
+    expect(component).toContain("ThemeCardMenu");
+    // Меню рендериться лише коли дії є: шаблонна й чужа картка без кутка.
+    expect(component).toMatch(/actions\.length > 0/);
+    // Чужа тема й шаблон не отримують дій узагалі — і картка без них не має
+    // і кутка «···».
+    const list = source("web-platform-dev/src/pages/themes/SchemeList.tsx");
+    expect(list).toContain("mine && onEdit && onRemove");
+  });
+
+  it("галочка застосування — стан, а кнопок у картки немає", () => {
+    // Знак лишається на **керуванні** (меню дій), а вміст картки обходиться
+    // без нього: назва теми вже каже, яку вона тримає (правило 23).
+    const component = source("packages/shared/src/components/theme/ThemeCard.tsx");
+    expect(component).not.toContain("wb-btn");
+    expect(component).toContain('name="check"');
   });
 });
 
@@ -341,10 +364,8 @@ describe("шапка сторінки — та сама сітка, що вмі�
       expect(tab, path).not.toContain("pageTemplateIcon");
       expect(tab, path).not.toContain("icon: ");
     }
-    // Знак на кнопках лишається: вони керування, а не вміст.
-    expect(source("web-platform-dev/src/pages/themes/SchemeCard.tsx")).toContain(
-      'className="wb-btn wb-btn-primary wb-btn-sm"',
-    );
+    // Знак лишається на керуванні (кнопка меню «···»), а не на вмісті картки.
+    expect(source("packages/shared/src/components/theme/ThemeCardMenu.tsx")).toContain("<Icon");
   });
 });
 
@@ -453,7 +474,7 @@ describe("другий рядок — смуга керування розділ
     );
     // Список тем має свій верхній відступ зі сторінки тем — у розділі він
     // зсунув би картки нижче за решту списків.
-    expect(rule(SPACE, ".wb-space-page .wb-theme-schemes")?.body).toContain("margin-top: 0");
+    expect(rule(SPACE, ".wb-space-page .wb-theme-cards")?.body).toContain("margin-top: 0");
   });
 
   it("перший знак панели стає на лінію першої клітинки смуги", () => {

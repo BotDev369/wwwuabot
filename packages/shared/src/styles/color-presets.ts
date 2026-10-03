@@ -27,21 +27,41 @@ import type { UserColors } from "./user-colors.types";
 export interface ColorPreset extends UserColors {
   id: string;
   labelUk: string;
+  /**
+   * Шрифт шаблону. Усі шаблони несуть **шрифт проєкту** (порожній id = «як у
+   * стилі»), тож картка показує його так само, як своя тема, і застосування
+   * шаблону не тягне за собою чужий шрифт.
+   */
+  font: string;
+}
+
+/** Шрифт усіх шаблонів: типографіка самого проєкту, а не вибір людини. */
+export const PRESET_FONT = "";
+
+/** Готовий шаблон: кольори + шрифт проєкту (`PRESET_FONT`). */
+function preset(
+  id: string,
+  labelUk: string,
+  bg: string,
+  text: string,
+  accent: string,
+): ColorPreset {
+  return { id, labelUk, bg, text, accent, font: PRESET_FONT };
 }
 
 export const COLOR_PRESETS: readonly ColorPreset[] = [
-  { id: "night", labelUk: "Ніч", bg: "#0b0b0f", text: "#f2f3f7", accent: "#7aa2ff" },
-  { id: "charcoal", labelUk: "Вугілля", bg: "#14161a", text: "#e8eaee", accent: "#ff8a5c" },
-  { id: "graphite", labelUk: "Графіт", bg: "#1c1c1e", text: "#f5f5f7", accent: "#30d158" },
-  { id: "dusk", labelUk: "Сутінки", bg: "#1b1b2f", text: "#e6e6f0", accent: "#c084fc" },
-  { id: "ocean", labelUk: "Океан", bg: "#0d1b2a", text: "#e0e1dd", accent: "#48cae4" },
-  { id: "forest", labelUk: "Ліс", bg: "#14231a", text: "#e6f0e8", accent: "#a3e635" },
-  { id: "wine", labelUk: "Вино", bg: "#2a1119", text: "#f7e9ec", accent: "#f472b6" },
-  { id: "cream", labelUk: "Крем", bg: "#f6f1e7", text: "#2b2620", accent: "#b45309" },
-  { id: "sand", labelUk: "Пісок", bg: "#f3ece3", text: "#3a3229", accent: "#0f766e" },
-  { id: "lavender", labelUk: "Лаванда", bg: "#f3f0ff", text: "#2b2350", accent: "#6d28d9" },
-  { id: "paper", labelUk: "Папір", bg: "#ffffff", text: "#17181c", accent: "#2563eb" },
-  { id: "mono", labelUk: "Моно", bg: "#f0f2f5", text: "#111827", accent: "#1c1b1f" },
+  preset("night", "Ніч", "#0b0b0f", "#f2f3f7", "#7aa2ff"),
+  preset("charcoal", "Вугілля", "#14161a", "#e8eaee", "#ff8a5c"),
+  preset("graphite", "Графіт", "#1c1c1e", "#f5f5f7", "#30d158"),
+  preset("dusk", "Сутінки", "#1b1b2f", "#e6e6f0", "#c084fc"),
+  preset("ocean", "Океан", "#0d1b2a", "#e0e1dd", "#48cae4"),
+  preset("forest", "Ліс", "#14231a", "#e6f0e8", "#a3e635"),
+  preset("wine", "Вино", "#2a1119", "#f7e9ec", "#f472b6"),
+  preset("cream", "Крем", "#f6f1e7", "#2b2620", "#b45309"),
+  preset("sand", "Пісок", "#f3ece3", "#3a3229", "#0f766e"),
+  preset("lavender", "Лаванда", "#f3f0ff", "#2b2350", "#6d28d9"),
+  preset("paper", "Папір", "#ffffff", "#17181c", "#2563eb"),
+  preset("mono", "Моно", "#f0f2f5", "#111827", "#1c1b1f"),
 ];
 
 /* ── Сітка кольорів ─────────────────────────────────────────────────────────
