@@ -54,8 +54,15 @@ async function readRow(env: Env, filter: RowFilter): Promise<Record<string, unkn
     .first<Record<string, unknown>>();
 }
 
-/** Тіло запиту або `null`, якщо це не JSON-об'єкт. */
-async function readBody(request: Request): Promise<Record<string, unknown> | null> {
+/**
+ * Тіло запиту або `null`, якщо це не JSON-об'єкт.
+ *
+ * ⚠️ Назва навмисно **не** `readBody`: спільний `readBody(request, schema)` з
+ * `../shared/body` бере схему й повертає `{ ok }`, а цей — сирий об'єкт без
+ * перевірки полів (сторінка з шаблоном має довільне `page_data`). Дві функції з
+ * одним ім'ям і різними контрактами — це пастка, а не скорочення.
+ */
+async function readJsonObject(request: Request): Promise<Record<string, unknown> | null> {
   try {
     return (await request.json()) as Record<string, unknown>;
   } catch {
@@ -66,7 +73,7 @@ async function readBody(request: Request): Promise<Record<string, unknown> | nul
 // ── read ─────────────────────────────────────────────────────────────
 /** POST …/read — прочитати один запис за номером або адресою. */
 export async function handleRead(request: Request, env: Env): Promise<Response> {
-  const body = await readBody(request);
+  const body = await readJsonObject(request);
   if (!body) return json({ error: "Invalid JSON" }, 400);
 
   const filter = rowFilter(body);
@@ -83,7 +90,7 @@ export async function handleRead(request: Request, env: Env): Promise<Response> 
  * тут неможливе за побудовою — для нього є `update`, який знає номер.
  */
 export async function handleWrite(request: Request, env: Env): Promise<Response> {
-  const body = await readBody(request);
+  const body = await readJsonObject(request);
   if (!body) return json({ error: "Invalid JSON" }, 400);
 
   const slug = readSlug(body);
@@ -148,7 +155,7 @@ export async function handleList(request: Request, env: Env): Promise<Response> 
 // ── read-all ─────────────────────────────────────────────────────────
 /** POST …/read-all — прочитати всі поля рядка (редактор картки). */
 export async function handleReadAll(request: Request, env: Env): Promise<Response> {
-  const body = await readBody(request);
+  const body = await readJsonObject(request);
   if (!body) return json({ error: "Invalid JSON" }, 400);
 
   const filter = rowFilter(body);
@@ -169,7 +176,7 @@ export async function handleReadAll(request: Request, env: Env): Promise<Respons
  * Адреса в тілі — нове значення (`slug`), а не ключ пошуку.
  */
 export async function handleUpdate(request: Request, env: Env): Promise<Response> {
-  const body = await readBody(request);
+  const body = await readJsonObject(request);
   if (!body) return json({ error: "Invalid JSON" }, 400);
 
   const id = readId(body);
@@ -218,7 +225,7 @@ export async function handleUpdate(request: Request, env: Env): Promise<Response
 // ── delete ───────────────────────────────────────────────────────────
 /** POST …/delete — видалити рядок за номером або адресою. */
 export async function handleDelete(request: Request, env: Env): Promise<Response> {
-  const body = await readBody(request);
+  const body = await readJsonObject(request);
   if (!body) return json({ error: "Invalid JSON" }, 400);
 
   const filter = rowFilter(body);

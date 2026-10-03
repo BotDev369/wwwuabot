@@ -77,8 +77,14 @@ function toItem(row: AccessRequestRow): AccessRequestItem {
   };
 }
 
-/** Тіло запиту: розбираємо самі — `unknown` із клієнта не довіряємо. */
-async function readBody(
+/**
+ * Тіло запиту: розбираємо самі — `unknown` із клієнта не довіряємо.
+ *
+ * ⚠️ Назва **не** `readBody`, бо спільний `readBody(request, schema)` бере схему
+ * й повертає `{ ok }`; тут контракт інший (повертає `{}` замість помилки), і
+ * однакове ім'я з різною поведінкою змусила б читати сигнатуру щоразу.
+ */
+async function readRequestBody(
   request: Request,
 ): Promise<{ id?: unknown; user_id?: unknown; text?: unknown }> {
   try {
@@ -124,7 +130,7 @@ async function readItem(db: D1Database, id: number): Promise<AccessRequestItem |
  * перед записом: незнайдений номер — 404, а не рядок-сирота (AGENTS.md §7).
  */
 async function createItem(request: Request, db: D1Database): Promise<Response> {
-  const body = await readBody(request);
+  const body = await readRequestBody(request);
   const text = sanitizeAccessRequestText(body.text);
   if (!text) return json({ ok: false, error: "Порожнє повідомлення" }, 400);
 
@@ -155,7 +161,7 @@ async function createItem(request: Request, db: D1Database): Promise<Response> {
  * чужого номера не розрізняються: коду відповіді теж не можна довіряти (AGENTS.md §7).
  */
 async function updateItem(request: Request, db: D1Database): Promise<Response> {
-  const body = await readBody(request);
+  const body = await readRequestBody(request);
   const id = requestId(body, new URL(request.url).searchParams);
   if (id === null) return json({ ok: false, error: "Не вказано номер" }, 400);
 
