@@ -9,6 +9,12 @@
  * (Material) вибором не є — він константа, тож третього пункту тут немає
  * (`./registry`).
  *
+ * **Панель — це вибір, а не редактор.** Тому всередині пункту «Кольори теми»
+ * немає рядків «фон / основний / акцент»: там лише джерела (вкладки платформи
+ * або готові палітри адмінки) і «Налаштувати власну». Точне налаштування
+ * одного кольору живе в редакторі теми (`ThemeEditorModal`) — два місця для
+ * одного кольору розійшлися б на першій же правці.
+ *
  * Кожен пункт — акордеон (`ThemeSection`) із **другим рядком «що обрано»**, а
  * перший відкритий одразу: за кольори приходять частіше, і згорнутий список із
  * двома написаними заголовками нічого не каже про вибір.
@@ -18,18 +24,19 @@
  * вихід без запису: обидва хуки повертають збережене при розмонтуванні, тож це
  * два дотики з одним результатом, а не три кнопки з трьома станами.
  *
- * Червоного «не можна» тут немає: панель **називає**, якого кольору бракує, і
- * кнопка застосування просто неактивна. Порожній слот — це стан, який видно.
+ * **«Застосувати» активна лише тоді, коли є що записати** (чернетка відрізняється
+ * від збереженого): синя кнопка, на яку можна натиснути без змін, обіцяє дію, якої
+ * не буде. Стан зміни показує вона сама — окремий рядок «Застосовано на цьому
+ * пристрої» повторював одне й те саме й нічого не додавав.
  *
  * @module packages/shared/src/components/theme/ThemeColorPanel
  */
 
-import { useState, type ReactElement, type ReactNode } from "react";
+import type { ReactElement, ReactNode } from "react";
 import { Icon } from "../Icon";
 import { COLOR_PRESETS, isPresetActive, type ColorPreset } from "../../styles/color-presets";
-import { COLOR_SLOTS, type ColorDraft, type ColorSlot } from "../../styles/user-colors";
+import type { ColorDraft } from "../../styles/user-colors";
 import { fontLabel, STYLE_FONT_LABEL } from "../../styles/fonts";
-import { ColorSlotRow } from "./ColorSlotRow";
 import { FontPicker } from "./FontPicker";
 import { ThemeSection } from "./ThemeSection";
 import { useFontChoice } from "./useFontChoice";
@@ -58,28 +65,12 @@ export function ThemeColorPanel({
 }: ThemeColorPanelProps): ReactElement {
   const colors = useUserColors();
   const fonts = useFontChoice();
-  // Відкритий рівно один рядок кольору: три розкриті повзунки на телефоні — це
-  // екран, у якому нічого не видно.
-  const [openSlot, setOpenSlot] = useState<ColorSlot | null>(null);
   // Схема — це три кольори **і** шрифт: незбереженим вона стає від кожного з них.
   const dirty = colors.dirty || fonts.dirty;
 
   return (
     <div className="wb-theme-panel">
       <ThemeSection title="Кольори теми" hint={colorsHint} defaultOpen>
-        <div className="wb-theme-rows">
-          {COLOR_SLOTS.map((slot) => (
-            <ColorSlotRow
-              key={slot.id}
-              slot={slot}
-              value={colors.draft[slot.id] ?? ""}
-              expanded={openSlot === slot.id}
-              onToggle={() => setOpenSlot(openSlot === slot.id ? null : slot.id)}
-              onChange={(value) => colors.setSlot(slot.id, value)}
-            />
-          ))}
-        </div>
-
         {colorsBody ?? <PresetGrid draft={colors.draft} onPick={colors.applyPreset} />}
 
         {colorsExtra && <div className="wb-theme-extra">{colorsExtra}</div>}
@@ -96,23 +87,16 @@ export function ThemeColorPanel({
       )}
       {colors.warning && <p className="wb-theme-hint wb-theme-hint--warn">{colors.warning}</p>}
 
-      {/* Що саме станеться з натиснутою кнопкою — рядком, а не кольором кнопки:
-          «Застосовано» тут означає, що вибір уже в пам'яті пристрою. */}
-      {colors.complete && (
-        <p className={`wb-theme-status${dirty ? "" : " wb-theme-status--saved"}`}>
-          <Icon name={dirty ? "edit" : "check"} size={16} />
-          {dirty ? "Незбережені зміни" : "Застосовано на цьому пристрої"}
-        </p>
-      )}
-
       <div className="wb-sheet-actions wb-theme-actions">
         <button type="button" className="wb-btn wb-btn-secondary wb-btn-sm" onClick={onClose}>
           Відмінити
         </button>
+        {/* Акцентна — лише коли є зміни: колір кнопки й каже «записати», тож
+            без змін він мовчить, а не пропонує порожню дію. */}
         <button
           type="button"
-          className="wb-btn wb-btn-primary wb-btn-sm"
-          disabled={!colors.complete}
+          className={`wb-btn wb-btn-sm${dirty ? " wb-btn-primary" : " wb-btn-secondary"}`}
+          disabled={!colors.complete || !dirty}
           onClick={() => {
             colors.save();
             fonts.save();
