@@ -41,6 +41,19 @@
 
 **Перевірка:** `npm run check:docs` (інвентар свіжий), `npm test`, `npm run typecheck`.
 
+## 1a. Валідація тіла запиту
+
+Тіло читається **лише** через `readBody(request, schema)` (`api-dev/src/shared/body.ts`):
+схема zod перевіряє JSON у рантаймі, а тип виводиться з неї, тому контролер і
+сервіс не мають другої копії полів. `as { … }` від `req.json()` — це твердження,
+яке компілятор не перевіряє, тож воно не є перевіркою.
+
+Зразок — `contactBody` у `api-dev/src/controllers/contacts.controller.ts`. Для
+Patch-схем `.passthrough()`: незнайоме поле має дійти до сервісу, де рішає бізнес-правило.
+Помилка схеми — `400` без імен полів.
+
+**Перевірка:** `npm test` (`api-dev/src/shared/body.test.ts`), `npm run typecheck`.
+
 ## 2. Нова колонка (або таблиця) D1
 
 1. Рядок у реєстрі `packages/shared/src/database/tables.ts`: `name`, `owner`, `purpose`, `create`

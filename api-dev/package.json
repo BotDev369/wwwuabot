@@ -5,7 +5,8 @@
   "type": "module",
   "dependencies": {
     "@sentry/cloudflare": "^10.74.0",
-    "@wwwuabot/shared": "*"
+    "@wwwuabot/shared": "*",
+    "zod": "^4.6.5"
   },
   "scripts": {
     "dev": "wrangler dev",

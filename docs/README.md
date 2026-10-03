@@ -50,7 +50,7 @@
 
 | Задача | Спершу відкрити | Потім |
 |---|---|---|
-| Новий REST-ендпоінт | [`RECIPES.md`](./RECIPES.md) §1, [`API.md`](./API.md) (група доступу) | [`DATA_MODEL.md`](./DATA_MODEL.md) — таблиця й власник |
+| Новий REST-ендпоінт | [`RECIPES.md`](./RECIPES.md) §1, валідація тіла — §1a, [`API.md`](./API.md) (група доступу) | [`DATA_MODEL.md`](./DATA_MODEL.md) — таблиця й власник |
 | Нова таблиця або колонка D1 | [`RECIPES.md`](./RECIPES.md) §2, [`D1_OPS.md`](./D1_OPS.md) | [`DATA_MODEL.md`](./DATA_MODEL.md) |
 | Перейменування / перебудова таблиці | [`RECIPES.md`](./RECIPES.md) §3, [`D1_OPS.md`](./D1_OPS.md) «Перебудова» | — |
 | Новий блок сторінки | [`RECIPES.md`](./RECIPES.md) §10, [`GLOSSARY.md`](./GLOSSARY.md) | [`DESIGN_SYSTEM.md`](./DESIGN_SYSTEM.md) — правило класу |

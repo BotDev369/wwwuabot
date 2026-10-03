@@ -19,6 +19,8 @@
  * @module api-dev/src/controllers/contacts.controller
  */
 
+import { z } from "zod";
+import { readBody } from "../shared/body";
 import type { Env } from "../shared/types";
 import { ensureTables } from "@wwwuabot/shared/database/ensure-tables";
 import {
@@ -40,16 +42,20 @@ function json(body: unknown, status = 200): Response {
   });
 }
 
-/** Тіло запиту як об'єкт; `null` — це не JSON, і про це треба сказати 400. */
-async function readJson(request: Request): Promise<{ [key: string]: unknown } | null> {
-  try {
-    const parsed: unknown = await request.json();
-    if (!parsed || typeof parsed !== "object") return null;
-    return parsed as { [key: string]: unknown };
-  } catch {
-    return null;
-  }
-}
+/**
+ * Схема тіла контакту — зразок для всіх інших ендпоїнтів (`docs/RECIPES.md` §1a).
+ *
+ * `.passthrough()` навмисно: незнайоме поле мусить дійти до `readFields`, де
+ * бізнес-правило вирішує, ігнорувати його чи ні (`username` ігнорується).
+ */
+const contactBody = z
+  .object({
+    name: z.string().optional(),
+    username: z.string().optional(),
+    tags: z.array(z.string()).optional(),
+    notes: z.string().optional(),
+  })
+  .passthrough();
 
 /** Номер свого контакту з `?id=`; `null` — параметра немає або він не номер. */
 function readId(request: Request): number | null {
@@ -89,8 +95,9 @@ export async function handleContacts(request: Request, env: Env): Promise<Respon
 
     // Створення й правка відрізняються лише наявністю номера — тож JSON
     // читаємо один раз, а далі шлях вирішує метод.
-    const body = await readJson(request);
-    if (!body) return json({ ok: false, error: "Invalid JSON" }, 400);
+    const parsed = await readBody(request, contactBody);
+    if (!parsed.ok) return parsed.response;
+    const body = parsed.body;
 
     if (request.method === "POST") {
       return respond(await createContact(env, identity.userId, body));
