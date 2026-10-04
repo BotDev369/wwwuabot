@@ -40,6 +40,9 @@ import { ROOT } from "./lib/files.mjs";
 
 const SUMMARY = "coverage/coverage-summary.json";
 
+const git = (...args) =>
+  execFileSync("git", args, { cwd: ROOT, encoding: "utf8", maxBuffer: 8 << 20 });
+
 /**
  * Файли джерела, змінені після `since`: робоче дерево, індекс і `HEAD`.
  *
@@ -47,9 +50,6 @@ const SUMMARY = "coverage/coverage-summary.json";
  * ще до коміту, і окремо — непростежені файли, яких `git diff` не показує.
  */
 function changedSince(since) {
-  const git = (...args) =>
-    execFileSync("git", args, { cwd: ROOT, encoding: "utf8", maxBuffer: 8 << 20 });
-  let names;
   try {
     git("cat-file", "-e", `${since}^{commit}`);
   } catch {
@@ -58,9 +58,33 @@ function changedSince(since) {
         `Перевір історію: у CI крок \`checks\` мусить робити checkout із fetch-depth: 0.`,
     );
   }
-  names = git("diff", "--name-only", since).split("\n");
+  const names = git("diff", "--name-only", since).split("\n");
   names.push(...git("ls-files", "--others", "--exclude-standard").split("\n"));
   return [...new Set(names.filter(Boolean))];
+}
+
+/**
+ * Чи змінився файл **кодом**, а не лише коментарем.
+ *
+ * Правило про новий код не має права вимагати тестів там, де хтось дописав
+ * два рядки пояснення: файл старий, борг на ньому той самий, а гейт не мав би
+ * цього знати. Тому файли, у яких добавлено лише коментарі й порожні рядки,
+ * проходять повз — а змінився код, додався.
+ */
+function addedCodeLines(since, file) {
+  // Файлу не було на момент бази — він новий цілком, і коментар тут ні до чого.
+  try {
+    git("cat-file", "-e", `${since}:${file}`);
+  } catch {
+    return ["(новий файл)"];
+  }
+  const diff = git("diff", "-U0", since, "--", file);
+  return diff
+    .split("\n")
+    .filter((line) => line.startsWith("+") && !line.startsWith("+++"))
+    .map((line) => line.slice(1).trim())
+    .filter((line) => line !== "" && !line.startsWith("//") && !line.startsWith("/*"))
+    .filter((line) => !line.startsWith("*") && !line.endsWith("*/"));
 }
 
 /** Покриття одного файлу у відсотках; файл без рядків вважаємо повністю живим. */
@@ -103,6 +127,8 @@ if (!existsSync(SUMMARY)) {
     for (const file of newCode.sort()) {
       if (!/\.tsx?$/.test(file) || /\.(test|spec)\.tsx?$/.test(file)) continue;
       if (!existsSync(join(ROOT, file))) continue;
+      // Коментар — не новий код: вимагати тут тестів без причини.
+      if (addedCodeLines(NEW_CODE_SINCE, file).length === 0) continue;
       const entry = report[join(ROOT, file)];
       if (!entry) {
         newErrors.push(
