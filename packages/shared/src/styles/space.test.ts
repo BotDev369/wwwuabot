@@ -121,8 +121,7 @@ const ROW = ".wb-space-page .wb-menu-item, .wb-space-page .wb-person, .wb-space-
 const CONTENT_ROW = ".wb-space-page .wb-menu-item, .wb-space-page .wb-ad-open";
 /** Єдиний рядок із провідною клітинкою — обличчя людини. */
 const FACE_ROW = ".wb-space-page .wb-person";
-const GAP =
-  ".wb-space-page .wb-people, .wb-space-page .wb-menu-list, .wb-space-page .wb-collection";
+const GAP = ".wb-space-page .wb-menu-list, .wb-space-page .wb-collection";
 const ACTIVE =
   ".wb-space-page .wb-menu-item:active, .wb-space-page .wb-person--tappable:active, .wb-space-page .wb-ad-open:active";
 const TITLE =

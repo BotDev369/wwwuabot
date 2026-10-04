@@ -463,10 +463,6 @@ html[data-brand] .wb-game .wb-btn-primary {
   animation: wb-game-pop var(--duration-slow) var(--ease-spring) both;
 }
 
-.wb-game-rise {
-  animation: wb-game-rise var(--duration-slow) var(--ease-out) both;
-}
-
 .wb-game-shake {
   animation: wb-game-shake 0.4s var(--ease) infinite;
 }
@@ -1106,7 +1102,6 @@ html[data-brand] .wb-game .wb-btn-primary {
 @media (prefers-reduced-motion: reduce) {
   .wb-game-stage,
   .wb-game-pop,
-  .wb-game-rise,
   .wb-game-shake,
   .wb-game-cell--win,
   .wb-game-screen[data-game="rps"]::before,

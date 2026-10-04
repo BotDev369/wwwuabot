@@ -426,7 +426,6 @@ html[data-brand="android"] .wb-data-table td {
   font-size: 14px !important;
 }
 
-html[data-brand="android"] .scn-row:hover,
 html[data-brand="android"] .usr-row:hover,
 html[data-brand="android"] .wb-data-table tbody tr:hover {
   background: var(--surface-hover) !important;
@@ -507,7 +506,6 @@ html[data-brand="android"] .wb-chip {
   padding: 6px 16px !important;
 }
 
-html[data-brand="android"] .scn-badge,
 html[data-brand="android"] .usr-badge,
 html[data-brand="android"] .scn-count {
   border-radius: 8px !important;
@@ -516,8 +514,7 @@ html[data-brand="android"] .scn-count {
 }
 
 /* ── Table wrap ────────────────────────────────────────────────────────── */
-html[data-brand="android"] .wb-table-wrap,
-html[data-brand="android"] .wb-compare-wrap {
+html[data-brand="android"] .wb-table-wrap {
   border: none !important;
   border-radius: 16px !important;
   box-shadow: var(--shadow-xs) !important;
@@ -552,36 +549,12 @@ html[data-brand="android"] .wb-auth-input:focus {
     0 0 0 2px var(--accent-soft) !important;
 }
 
-/* ── Block cards ───────────────────────────────────────────────────────── */
-html[data-brand="android"] .block-card {
-  border: none !important;
-  border-radius: 16px !important;
-  box-shadow: var(--shadow-xs) !important;
-}
-
-html[data-brand="android"] .block-card:hover {
-  box-shadow: var(--shadow-sm) !important;
-}
-
-html[data-brand="android"] .block-card-header {
-  background: var(--bg-4) !important;
-  border-bottom: 1px solid var(--border-subtle) !important;
-  border-radius: 16px 16px 0 0 !important;
-}
-
-html[data-brand="android"] .add-block-btn,
 html[data-brand="android"] .kb-add-btn,
 html[data-brand="android"] .kb-add-row {
   border-radius: 12px !important;
   border: 1px dashed var(--border) !important;
   font-size: 13px !important;
   font-weight: 500 !important;
-}
-
-html[data-brand="android"] .block-picker {
-  border: none !important;
-  border-radius: 16px !important;
-  box-shadow: var(--shadow-lg) !important;
 }
 
 /* ── Telegram preview ──────────────────────────────────────────────────── */
@@ -624,20 +597,8 @@ html[data-brand="android"] footer {
   padding: 14px 16px !important;
 }
 
-/* ── Icon buttons ──────────────────────────────────────────────────────── */
-html[data-brand="android"] .icon-btn {
-  border-radius: 12px !important;
-  border: 1px solid var(--border) !important;
-}
-
 /* ── Hamburger ─────────────────────────────────────────────────────────── */
 html[data-brand="android"] .hamburger span {
   height: 2px !important;
   border-radius: 1px !important;
-}
-
-/* ── Bulk bar ──────────────────────────────────────────────────────────── */
-html[data-brand="android"] .bulk-bar {
-  border-radius: 16px !important;
-  border: none !important;
 }

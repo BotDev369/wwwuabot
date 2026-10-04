@@ -52,7 +52,7 @@
 | Гейт | Що ловить |
 |---|---|
 | `npm run check:quality` | моноліти, нативні діалоги, голий `100vh`, емодзі в UI; борг — `scripts/quality-baseline.mjs` |
-| `npm run check:css` | клас у розмітці без правила; борг — `scripts/css-baseline.mjs` |
+| `npm run check:css` | клас у розмітці без правила (помилка) і правило без розмтки (попередження); борг — `scripts/css-baseline.mjs` |
 | `npm run check:docs` | бюджет документів, мертві посилання й шляхи, згадки з коду, `AGENTS.md §N`, покажчик, секційний бюджет, свіжість `API.md` |
 | `npm run check:comments` | блок коментаря, який уже є розділом документа, і мертвий шлях у коментарі; борг — `scripts/comment-baseline.mjs` |
 | `npm run check:bundle` | вага клієнтського бандла оболонки понад ліміт у gzip; ліміти — `scripts/bundle-baseline.mjs` |

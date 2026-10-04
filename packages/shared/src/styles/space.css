@@ -165,7 +165,6 @@
 
 /* Одне на всі списки: два кроки сітки (`--sp-4` = 16px) читаються як межа
    рядка, а `--sp-2` зливав би два оголошення в один абзац. */
-.wb-space-page .wb-people,
 .wb-space-page .wb-menu-list,
 .wb-space-page .wb-collection {
   gap: var(--sp-4);

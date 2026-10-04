@@ -18,8 +18,10 @@
  *      або в shared, або у ВЛАСНОМУ CSS цієї оболонки. Клас, узятий із CSS
  *      сусідньої оболонки, у ній не працює.
  *
- *   3. dead (попередження) — правила, яких немає в `src/` навіть підрядком.
- *      Це НИЖНЯ оцінка: імена, склеєні рядками, статично не видно.
+ *   3. dead (попередження) — правила, яких немає в `src/` навіть підрядком,
+ *      і яких не може створити динамічний фрагмент імені (`wb-trend--${…}`).
+ *      Динаміка знімається окремо: інакше `wb-page-field-value--body` видаляли б
+ *      у коді, де він лише збирається з `field.look`.
  *
  * Запуск: `npm run check:css` (той самий гейт стоїть у CI).
  */
@@ -192,7 +194,10 @@ function markupClasses(source, isDefined) {
 
   const add = (list, bucket) => {
     for (const token of list) {
-      if (!token || token.endsWith("-")) continue;
+      // Фрагмент динаміки, що склеюється з хвостом (`wb-collection--cols-${n}`),
+      // закінчується на дефіс — і це його головна частина, тож у `dynamic`
+      // його лишаємо. У `tokens` такий шматок класом не є.
+      if (!token || (bucket === tokens && token.endsWith("-"))) continue;
       // Токен без дефіса — це або утиліта Tailwind, або взагалі не клас
       // (у виразах трапляються рядки значень: `tone === "danger"`).
       // Беремо його тільки якщо правило справді існує.
@@ -325,7 +330,36 @@ const allSources = [
   .map((f) => readFileSync(join(ROOT, f), "utf8"))
   .join("\n");
 
-const deadCss = [...allCssClasses].filter((c) => !allSources.includes(c)).sort();
+/**
+ * Імена, які трапляються в коді, — як цілі слова.
+ *
+ * Порівнювати підрядком не можна: `photo-preview` знайдеться в
+ * `wb-account-photo`, а `wb-card-footer` у `wb-card-body`, і правило, яке треба
+ * видалити, виглядало б живим.
+ */
+const sourceTokens = new Set(allSources.match(/-?[A-Za-z_][A-Za-z0-9_-]*/g) ?? []);
+
+/**
+ * Фрагменти, з яких розмітка склеює клас під час виконання. Правило, чиє ім'я
+ * починається з такого фрагмента, не можна назвати мертвим: воно може з'явитися
+ * в розмітці, якої в цьому проході немає як літерала.
+ */
+const dynamicPrefixes = new Set([
+  ...sharedMarkup.dynamic,
+  ...Object.values(shellMarkup).flatMap((s) => [...s.dynamic]),
+]);
+
+/**
+ * Початки імен, з яких клас склеюється поза `className` (у змінній або
+ * хелпері: `wb-num-cell--l${…}`) — парсер вище їх не бачить, а правило з таким
+ * іменем мертвим назвати не можна.
+ */
+const gluedTokens = allSources.match(/-?[A-Za-z_][A-Za-z0-9_-]*(?=\$\{)/g) ?? [];
+
+const deadCss = [...allCssClasses]
+  .filter((c) => !sourceTokens.has(c))
+  .filter((c) => ![...dynamicPrefixes, ...gluedTokens].some((p) => c.startsWith(p)))
+  .sort();
 
 if (sharedUnstyled.length) {
   errors.push(
@@ -344,7 +378,7 @@ for (const [shell, list] of Object.entries(unresolved)) {
 
 if (deadCss.length) {
   warnings.push(
-    `Мертвий CSS — клас не згадується в src навіть підрядком (${deadCss.length}):\n` +
+    `Мертвий CSS — клас не згадується в src навіть підрядком і не склеюється з динаміки (${deadCss.length}):\n` +
       deadCss.map((c) => `  .${c}`).join("\n"),
   );
 }

@@ -1059,15 +1059,6 @@
   margin-top: 0;
 }
 
-/* Головне на екрані — саме повідомлення, тому воно має бути заголовком
-   (велике, основний колір), а не другим абзацом поряд із полем. */
-.wb-auth-message--lead {
-  font-size: var(--text-base);
-  font-weight: var(--weight-semibold);
-  color: var(--text-primary);
-  line-height: var(--leading-tight);
-}
-
 @media (max-width: 420px) {
   .wb-auth-card {
     padding: 28px 22px;
@@ -1264,23 +1255,6 @@
   color: var(--text-muted);
   font-size: var(--text-sm);
   line-height: 1.5;
-}
-
-.wb-profile-details {
-  margin-top: var(--sp-4);
-}
-
-.wb-profile-summary {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  cursor: pointer;
-  color: var(--text-muted);
-  font-size: var(--text-sm);
-}
-
-.wb-profile-subfields {
-  margin-top: var(--sp-2);
 }
 
 /* ═══ Обліковий рядок — два фото й два імені (хаб `/profile`) ══════════════
@@ -1581,16 +1555,6 @@
 
 .wb-about-actions {
   display: flex;
-  gap: var(--sp-2);
-}
-
-/* ═══ Простір: стрічка людей ═══════════════════════════════════════════════
-   Картку рендерить СПІЛЬНИЙ `PublicUserCard` — та сама і в стрічці, і на
-   сторінці людини (там `--full`). Дані Telegram у неї не потрапляють: їх немає
-   в типі `PublicProfile`, тож показати чужий аватар неможливо навіть випадково. */
-.wb-people {
-  display: flex;
-  flex-direction: column;
   gap: var(--sp-2);
 }
 

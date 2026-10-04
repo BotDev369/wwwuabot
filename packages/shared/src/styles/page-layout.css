@@ -96,7 +96,6 @@
 
 /* Loading / Error / 404 */
 .page-loading,
-.page-not-found,
 .page-error {
   display: flex;
   flex-direction: column;
@@ -123,7 +122,6 @@
   }
 }
 
-.page-not-found h1,
 .page-error h1 {
   font-size: 48px;
   font-weight: 800;
@@ -131,7 +129,6 @@
   margin: 0 0 8px;
 }
 
-.page-not-found p,
 .page-error p {
   font-size: 16px;
   color: var(--text-secondary);

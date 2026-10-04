@@ -145,12 +145,6 @@
   font-weight: var(--weight-medium);
 }
 
-.wb-test-score-max {
-  font-size: 0.875rem;
-  font-weight: var(--weight-medium);
-  color: var(--text-secondary);
-}
-
 .wb-score-note {
   margin: 0;
   font-size: 0.9375rem;
@@ -343,15 +337,6 @@
   font-size: 0.8125rem;
   line-height: 1.5;
   color: var(--text-secondary);
-}
-
-/* Підказка під варіантами: чому «далі» ще сіра. Зникає, щойно відповідь
-   обрано, щоб не змагатися з помилкою — та займає те саме місце. */
-.wb-hint {
-  font-size: 0.8125rem;
-  line-height: 1.5;
-  text-align: center;
-  color: var(--text-muted);
 }
 
 /* Розкид по сферах — головний зміст результату. Відділяється від балу
