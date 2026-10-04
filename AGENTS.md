@@ -148,7 +148,7 @@ const name = await dialog.prompt("Назва:", { validate: (v) => (v.trim() ? n
 - Не створюй таблицю D1 повз реєстр `packages/shared/src/database/tables.ts` і не пиши свій `CREATE TABLE`. Нова таблиця = оголошення в реєстрі + `ensureTables(db, ["ім'я"])` у воркері-власнику. Стереже `npm run check:db`.
 - Не додавай колонку, реагуючи на помилку SQLite (`no such column` → `ALTER TABLE`): так схема починає залежати від того, що надіслав клієнт. Колонка додається рядком у реєстрі.
 - Не покладайся на унікальність **імені індексу**: у SQLite імена індексів глобальні для бази, тому `CREATE UNIQUE INDEX IF NOT EXISTS` з тим самим ім'ям на другій таблиці — не помилка, а **порожня дія**, і таблиця лишається без унікальності. Стереже `tables.test.ts`.
-- SQL у коді пиши **великими літерами** (`SELECT … FROM users`), інакше `check:db` не відрізнить таблицю від `from "react"`. Не роби `SELECT *` на таблицях з важкими JSON-колонками (`users`). Не забувай `[[d1_databases]]` на top-level `wrangler.toml`. Не змішуй prod/dev бази — різні `database_id`.
+- SQL у коді пиши **великими літерами** (`SELECT … FROM users`), інакче `check:db` не відрізнить таблицю від `from "react"`. Не роби `SELECT *` на таблицях з важкими JSON-колонками (`users`) **там, де читають не одну людину** — лише рядок за `user_id = ?` має право на `SELECT *`, бо аватар приходить із `telegram_json`; стереже `check:db`. Не забувай `[[d1_databases]]` на top-level `wrangler.toml`. Не змішуй prod/dev бази — різні `database_id`.
 - Не створюй **другу таблицю під той самий контент**: контент живе в одному рядку `scenarios` (`page_data` — веб, `caption_*`/`buttons`/`rich_*` — бот), тож нова ознака = колонка, а не таблиця поруч. Не тримай замовлення магазину ні в рядку користувача, ні в тексті повідомлення — воно живе в `shop_orders` зі **знімком** позицій. Деталі — `docs/CONTENT_MODEL.md`, `docs/SHOPS.md`.
 - Перенос даних між таблицями — окремим SQL, який **тільки додає** (`INSERT`, ніколи `DELETE`/`DROP`/`UPDATE`), ідемпотентний і **називає у звіті** все, що пропустив: вибрати за власника «правильний» рядок — це тихо втратити чужий контент.
 - Не читай тіло запиту як `await c.req.json() as { … }`: це твердження, яке компілятор не перевіряє. Бери `readBody(request, schema)` з `api-dev/src/shared/body.ts` (зразок — `contacts.controller.ts`, `docs/RECIPES.md` §1a).
@@ -188,7 +188,7 @@ const name = await dialog.prompt("Назва:", { validate: (v) => (v.trim() ? n
 | Скорочення коментарів до абзацу документа | `scripts/comment-baseline.mjs`, стандарт — `docs/COMMENTS.md` |
 | `.usr-*` / `.scn-*` у адмінці → `.wb-*` | `scripts/css-baseline.mjs` (тільки зменшувати) |
 | Мобільний борг: `@media (hover: none)`, тап-таргети ≥44px | §3, борг — у коді |
-| `SELECT *` на `users` | `npm run lint`, `check:quality` |
+
 | Завантаження свого фото на платформі (`photo_url` уже є) | `docs/SPACE.md`, «чого тут ще немає» |
 | Cloudflare Access на адмінці, окремі домени, прод | §1, «чого ще немає» |
 

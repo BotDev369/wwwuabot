@@ -35,7 +35,14 @@ export class UsersService {
     }
   }
 
-  /** Прочитати запис користувача за user_id. */
+  /**
+   * Прочитати запис користувача за user_id.
+   *
+   * `SELECT *` тут дозволено: це **один** рядок за ключем, а профіль показує
+   * аватар із `telegram_json` — без цієї колонки картка порожніє. Списки
+   * читають переліченими колонками (зразок — `services/messages/peers.ts`);
+   * стереже `check:db`.
+   */
   async readUser(userId: number): Promise<Record<string, unknown> | null> {
     await this.ensureIsBlocked();
     const row = await this.env.DB.prepare("SELECT * FROM users WHERE user_id = ?")

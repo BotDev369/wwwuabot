@@ -9,6 +9,10 @@ export class UserRepository extends DatabaseRepository {
   /**
    * Отримує користувача з БД.
    * Використовує withAutoMigrate для безпечного додавання нових колонок.
+   *
+   * `SELECT *` тут дозволено: це один рядок за ключем, а мідлвар порівнює
+   * `telegram_json` людини з тим, що прийшов від Telegram. Списки читають
+   * переліченими колонками; стереже `check:db`.
    */
   async getUser(userId: number): Promise<BotUser | null> {
     try {
