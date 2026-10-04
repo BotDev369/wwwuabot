@@ -43,12 +43,14 @@ function parsePermissions(raw: unknown): string[] {
 }
 
 /*
- * `platform_username` і `telegram_json` не «додаткові»: перше має власний блок
- * угорі картки, друге — розділ «Дані від Telegram», тому в сирому переліку
- * вони були б третім і четвертим показом того самого.
+ * `platform_username`, `photo_url` і `telegram_json` не «додаткові»: перше й
+ * друге живуть у блоці імені (аватар — фото платформи, а не Telegram), третє —
+ * розділ «Дані від Telegram», тому в сирому переліку вони були б третім і
+ * четвертим показом того самого.
  */
 const SKIP_FIELDS = new Set([
   "user_id",
+  "photo_url",
   "first_name",
   "last_name",
   "username",
@@ -81,6 +83,7 @@ export function rowToProfile(row: UserRow): UserProfileData {
     lastName: r.last_name as string | null,
     username: r.username as string | null,
     platformUsername: (r.platform_username as string | null) ?? null,
+    photoUrl: (r.photo_url as string | null) ?? null,
     language: r.language as string | null,
     telegram: parseTelegramJson(r.telegram_json),
     role: r.role as string | null,
