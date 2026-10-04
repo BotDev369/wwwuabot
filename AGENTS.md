@@ -186,7 +186,7 @@ const name = await dialog.prompt("Назва:", { validate: (v) => (v.trim() ? n
 | Що | Де живий слід |
 |---|---|
 | Скорочення коментарів до абзацу документа | `scripts/comment-baseline.mjs`, стандарт — `docs/COMMENTS.md` |
-| Логіка оболонок без тестів (клієнти API, хуки, помічники сторінок) | прогалини друкує `npm test`; початок домену — `api-dev/src/services/messages/greeting.ts`, далі `web-admin-dev/src/shared/api/*`; хукам потрібен `*.dom.test.*` (див. `docs/QUALITY_GATE.md`) |
+| Логіка оболонок без тестів (клієнти API, хуки, помічники сторінок) | прогалини показує `npm run test:coverage`; початок домену — `api-dev/src/services/messages/greeting.ts`, далі `web-admin-dev/src/shared/api/*`; хукам потрібен `*.dom.test.*` (див. `docs/QUALITY_GATE.md`) |
 | `.usr-*` / `.scn-*` у адмінці → `.wb-*` | `grep -rn "usr-\|scn-" web-admin-dev/src` (леждером не відстежується: правила в них є, тож `check:css` мовчить) |
 | Мобільний борг: тап-таргети < 44px (`.wb-close-btn`, `.wb-switch`, `--tools-row-h`) | §3, `docs/PLATFORM.md`, мобільні мірки |
 | Завантаження свого фото на платформі (`photo_url` уже є) | `docs/SPACE.md`, «чого тут ще немає» |
