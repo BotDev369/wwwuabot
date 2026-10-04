@@ -187,7 +187,7 @@ const name = await dialog.prompt("Назва:", { validate: (v) => (v.trim() ? n
 |---|---|
 | Скорочення коментарів до абзацу документа | `scripts/comment-baseline.mjs`, стандарт — `docs/COMMENTS.md` |
 | `.usr-*` / `.scn-*` у адмінці → `.wb-*` | `scripts/css-baseline.mjs` (тільки зменшувати) |
-| Мобільний борг: `@media (hover: none)`, тап-таргети ≥44px | §3, борг — у коді |
+| Мобільний борг: тап-таргети < 44px (`.wb-close-btn`, `.wb-switch`, `--tools-row-h`) | §3, `docs/PLATFORM.md`, мобільні мірки |
 
 | Завантаження свого фото на платформі (`photo_url` уже є) | `docs/SPACE.md`, «чого тут ще немає» |
 | Cloudflare Access на адмінці, окремі домени, прод | §1, «чого ще немає» |
