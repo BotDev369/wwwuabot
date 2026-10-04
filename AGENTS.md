@@ -173,7 +173,7 @@ const name = await dialog.prompt("Назва:", { validate: (v) => (v.trim() ? n
 **Числа** (файли, рядки, тести, класи) друкують самі гейти; число в документі старіє швидше, ніж його перечитують.
 
 - **Структурно:** шість воркспейсів; 0 `any`, `tsc` чистий.
-- **Тести:** Vitest; червоний тест блокує деплой. Покриття й прогалини перевіряє сам `npm test`. Під дотиком — `*.dom.test.*` (див. `docs/QUALITY_GATE.md`).
+- **Тести:** Vitest; червоний тест блокує деплой. Покриття друкує `npm run test:coverage`, а межі (загальна й для нового коду) тримає `npm run check:coverage`. Під дотиком — `*.dom.test.*` (див. `docs/QUALITY_GATE.md`).
 - **Дані й контент:** усі таблиці — в одному реєстрі, поза ним таблиць немає; контент живе в одній таблиці `scenarios`, де `id` — ідентичність, а `slug` — адреса. Карта — `docs/DATA_MODEL.md`, легасі-хвіст — `docs/DB_LEGACY.md`.
 - **Ідентичність і адмін:** єдине джерело користувача — підписаний Telegram `initData`; адмін-авторизація — тільки cookie `admin_session`. Секретів у заголовках і легасі-поверхонь (`/db-proxy`, `/setup-webhook`) не існує.
 - **Поверхні** описані власними документами — `docs/SURFACES.md` (аркуш, композер, меню, розмови), `docs/PLATFORM.md` (екран, хром, **хаби «Створити» й профілю**), `docs/SPACE.md` (Простір, рамка й видимість), `docs/ASSESSMENTS.md` + `specs/` (самооцінка й джерела), `docs/THEMES.md` (тема), `docs/PAGES.md` (сторінки з шаблону), `docs/SHOPS.md` + `docs/SHOP_UI.md` + `docs/PRODUCTS.md` (магазин), `docs/ADS.md` (дошка оголошень), `docs/GAMES.md` (ігри), `docs/DATA_MODEL.md` + `docs/D1_OPS.md` (схема D1), `docs/DESIGN_SYSTEM.md` + `docs/TOKENS.md` (вигляд), `docs/MONITORING.md` (health, Sentry, зрізи). Тут лишається тільки те, що не має іншого дому.
@@ -186,9 +186,9 @@ const name = await dialog.prompt("Назва:", { validate: (v) => (v.trim() ? n
 | Що | Де живий слід |
 |---|---|
 | Скорочення коментарів до абзацу документа | `scripts/comment-baseline.mjs`, стандарт — `docs/COMMENTS.md` |
-| `.usr-*` / `.scn-*` у адмінці → `.wb-*` | `scripts/css-baseline.mjs` (тільки зменшувати) |
+| Логіка оболонок без тестів (клієнти API, хуки, помічники сторінок) | прогалини друкує `npm test`; початок домену — `api-dev/src/services/messages/greeting.ts`, далі `web-admin-dev/src/shared/api/*`; хукам потрібен `*.dom.test.*` (див. `docs/QUALITY_GATE.md`) |
+| `.usr-*` / `.scn-*` у адмінці → `.wb-*` | `grep -rn "usr-\|scn-" web-admin-dev/src` (леждером не відстежується: правила в них є, тож `check:css` мовчить) |
 | Мобільний борг: тап-таргети < 44px (`.wb-close-btn`, `.wb-switch`, `--tools-row-h`) | §3, `docs/PLATFORM.md`, мобільні мірки |
-
 | Завантаження свого фото на платформі (`photo_url` уже є) | `docs/SPACE.md`, «чого тут ще немає» |
 | Cloudflare Access на адмінці, окремі домени, прод | §1, «чого ще немає» |
 

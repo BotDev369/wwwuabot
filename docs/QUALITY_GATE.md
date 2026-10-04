@@ -56,7 +56,7 @@
 | `npm run check:docs` | бюджет документів, мертві посилання й шляхи, згадки з коду, `AGENTS.md §N`, покажчик, секційний бюджет, свіжість `API.md` |
 | `npm run check:comments` | блок коментаря, який уже є розділом документа, і мертвий шлях у коментарі; борг — `scripts/comment-baseline.mjs` |
 | `npm run check:bundle` | вага клієнтського бандла оболонки понад ліміт у gzip; ліміти — `scripts/bundle-baseline.mjs` |
-| `npm run check:db` | `CREATE TABLE` поза реєстром, розходження реєстру й DDL, `ALTER TABLE` неоголошеної таблиці, `ensureTables` поза реєстром |
+| `npm run check:db` | шість кроків: розходження реєстру й DDL, `CREATE TABLE` поза реєстром, неоголошена таблиця в SQL, `ensureTables` поза реєстром, `SELECT *` із важкою колонкою (`users`) поза рядком за ключем, реєстр без читачів |
 | `npm test` | поведінку, включно з `*.dom.test.*` (див. нижче) |
 | `npm run check:coverage` | падіння покриття нижче підлоги й новий код без покриття; підлоги — `scripts/coverage-baseline.mjs` |
 
