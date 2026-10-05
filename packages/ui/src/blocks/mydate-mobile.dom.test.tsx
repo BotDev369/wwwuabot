@@ -214,10 +214,12 @@ describe("список дат: пошук і вибір", () => {
 });
 
 describe("список дат: сортування й вибір", () => {
-  it("клік по заголовку сортує за назвою", async () => {
+  it("сортування з мобільного рядка впорядковує список за назвою", async () => {
     const user = userEvent.setup();
     const { container } = await renderTable([DATE, OTHER_DATE]);
-    await user.click(screen.getByText("Назва"));
+    const sort = container.querySelector<HTMLSelectElement>(".wb-date-sort select");
+    if (!sort) throw new Error("поля сортування немає");
+    await user.selectOptions(sort, "name");
     await act(async () => {
       await new Promise((resolve) => setTimeout(resolve, 0));
     });
@@ -303,5 +305,48 @@ describe("список дат: рядок відкривається на ред
     expect(container.querySelector(".wb-date-list")).toBeTruthy();
     const withoutButton = render(<MyDatesTableBlock {...props({ showCreateButton: false })} />);
     expect(withoutButton.container.querySelector(".wb-date-head-row")).toBeTruthy();
+  });
+});
+
+describe("мобільний рядок керування", () => {
+  it("сортування і фільтр за типом живуть поза таблицею, бо `thead` ховається", async () => {
+    const { container } = await renderTable([DATE, OTHER_DATE]);
+    const bar = container.querySelector(".wb-date-sort");
+    if (!bar) throw new Error("мобільного рядка керування немає");
+    // Два поля: сортування й тип — усе, що раніше жило в заголовках колонок.
+    expect(bar.querySelectorAll("select")).toHaveLength(2);
+  });
+
+  it("тип у списку видно кнопкою, а не лише текстом", async () => {
+    const { container } = await renderTable();
+    expect(container.textContent).toContain("Сьогодні");
+  });
+});
+
+describe("список дат: фільтри", () => {
+  it("мобільний рядок фільтрує за типом і лічильник показує, що лишилося", async () => {
+    const event = { ...OTHER_DATE, type: "event" };
+    const user = userEvent.setup();
+    const { container } = await renderTable([DATE, event]);
+    const typeSelect = container.querySelectorAll<HTMLSelectElement>(".wb-date-sort select")[1];
+    if (!typeSelect) throw new Error("поля фільтра за типом немає");
+    await user.selectOptions(typeSelect, "event");
+    await act(async () => {
+      await new Promise((resolve) => setTimeout(resolve, 0));
+    });
+    expect(container.textContent).toContain("1 з 2");
+  });
+
+  it("кнопка «Очистити» прибирає активний фільтр", async () => {
+    const user = userEvent.setup();
+    const { container } = await renderTable([DATE, OTHER_DATE]);
+    const typeSelect = container.querySelectorAll<HTMLSelectElement>(".wb-date-sort select")[1];
+    if (!typeSelect) throw new Error("поля фільтра за типом немає");
+    await user.selectOptions(typeSelect, "person");
+    await act(async () => {
+      await new Promise((resolve) => setTimeout(resolve, 0));
+    });
+    await user.click(screen.getByRole("button", { name: "Очистити" }));
+    expect(container.querySelectorAll(".wb-date-row")).toHaveLength(2);
   });
 });

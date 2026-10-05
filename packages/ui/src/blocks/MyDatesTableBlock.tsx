@@ -172,6 +172,43 @@ export function MyDatesTableBlock({ block }: BlockComponentProps) {
         <p className="wb-text-sm wb-text-muted">Поки що немає жодної дати. Додайте першу!</p>
       )}
 
+      {/* Сортування для вузького екрана: там заголовки колонок приховані
+          (у картки кожне поле підписане), тож лишається одне поле вибору. */}
+      {!loading && dates.length > 0 && (
+        <div className="wb-date-sort">
+          <span className="wb-text-sm wb-text-muted">Сортування</span>
+          <select
+            className="wb-input"
+            value={sortField}
+            onChange={(e) => toggleSort(e.target.value as (typeof columns)[number]["key"])}
+          >
+            {columns.map((col) => (
+              <option key={col.key} value={col.key}>
+                {col.label}
+              </option>
+            ))}
+          </select>
+          <button className="wb-btn wb-btn-secondary" onClick={() => toggleSort(sortField)}>
+            {sortOrder === "asc" ? "↑" : "↓"}
+          </button>
+          <select
+            className="wb-input"
+            value=""
+            onChange={(e) => {
+              if (e.target.value) toggleColumnFilter("type", e.target.value);
+              e.target.value = "";
+            }}
+          >
+            <option value="">Тип: усі</option>
+            {allTypes.map((t) => (
+              <option key={t} value={t}>
+                {getTypeConfig(t).label}
+              </option>
+            ))}
+          </select>
+        </div>
+      )}
+
       {/* Table */}
       {!loading && dates.length > 0 && (
         <div className="wb-date-list">
