@@ -22,11 +22,11 @@
 import { z } from "zod";
 import type { Env } from "../shared/types";
 import { readBody } from "../shared/body";
-import { ensureTables } from "@wwwuabot/shared/database/ensure-tables";
 import { resolveUserId } from "../shared/identity";
 import { apiLog } from "../shared/logger";
 import { listConversations, listRecipients, unreadTotal } from "../services/messages/conversations";
 import { readDrafts, saveDraft } from "../services/messages/drafts";
+import { ensureMessagesSchema } from "../services/messages/schema";
 import { markRead, clearThread, openThread, sendMessage } from "../services/messages/thread";
 
 function json(body: unknown, status = 200): Response {
@@ -50,6 +50,7 @@ const messageBody = z
     id: z.unknown().optional(),
     body: z.unknown().optional(),
     draft: z.unknown().optional(),
+    media: z.unknown().optional(),
   })
   .passthrough();
 
@@ -70,11 +71,11 @@ function readBefore(request: Request): number | undefined {
 /**
  * Таблиці переписки створюються тут, а не міграцією: `ensureTables`
  * ідемпотентний, а схема мусить існувати **до** першого запиту, а не після
- * нього. `contacts` у списку тому, що зв'язок читається саме з нього: без
- * таблиці перевірка «кому можна писати» падала б, а не відповідала б «нікому».
+ * нього. Перелік — один на весь домен (`services/messages/schema.ts`), щоб
+ * контролер файлів не мав другого.
  */
 function ensureSchema(env: Env): Promise<void> {
-  return ensureTables(env.DB, ["conversations", "messages", "message_drafts", "contacts"]);
+  return ensureMessagesSchema(env.DB);
 }
 
 /** `GET /api/messages` — розмови людини (найсвіжіші згори). */
@@ -201,9 +202,11 @@ export async function handleMessageDraft(request: Request, env: Env): Promise<Re
 /**
  * `POST /api/messages/send` — надіслати повідомлення співрозмовнику.
  *
- * `draft` — номер чернетки, з якої надіслали (необов'язковий): її прибирає сам
- * сервіс, тією ж дією, що кладе повідомлення. Надсилання з розмови номера не
- * має — і не чіпає жодної чернетки: вони не є тим листом, який туди пішов.
+ * `draft` — номер чернетки, з якої надіслали: її прибирає сам сервіс, а
+ * надсилання з розмови не чіпає жодної чернетки.
+ *
+ * `media` — номер фото (`POST /api/messages/media`): порожній текст із фото —
+ * законне повідомлення.
  */
 export async function handleMessageSend(request: Request, env: Env): Promise<Response> {
   if (request.method !== "POST") return json({ ok: false, error: "Method not allowed" }, 405);
@@ -220,7 +223,14 @@ export async function handleMessageSend(request: Request, env: Env): Promise<Res
 
   try {
     await ensureSchema(env);
-    const result = await sendMessage(env, identity.userId, peer, body.body, readPeer(body.draft));
+    const result = await sendMessage(
+      env,
+      identity.userId,
+      peer,
+      body.body,
+      readPeer(body.draft),
+      readPeer(body.media),
+    );
     if (!result.ok) return json(result, result.status);
 
     return json({ ok: true, message: result.message });

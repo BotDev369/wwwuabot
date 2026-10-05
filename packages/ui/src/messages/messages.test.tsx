@@ -74,16 +74,25 @@ function list(
 }
 
 const MESSAGES: Message[] = [
-  { id: 1, senderId: PEER.id, body: "привіт", createdAt: "", readAt: null, system: false },
-  { id: 2, senderId: ME, body: "ага", createdAt: "", readAt: null, system: false },
+  {
+    id: 1,
+    senderId: PEER.id,
+    body: "привіт",
+    media: null,
+    createdAt: "",
+    readAt: null,
+    system: false,
+  },
+  { id: 2, senderId: ME, body: "ага", media: null, createdAt: "", readAt: null, system: false },
 ];
 
-/** Стрічка, яку відкриває запрошення: дві позначки платформи й жодної репліки. */
+/** Стричка, яку відкриває запрошення: дві позначки платформи й жодної репліки. */
 const GREETED: Message[] = [
   {
     id: 1,
     senderId: SYSTEM_SENDER_ID,
     body: "#karas запрошує до конфіденційної бесіди",
+    media: null,
     createdAt: "",
     readAt: "",
     system: true,
@@ -92,6 +101,7 @@ const GREETED: Message[] = [
     id: 2,
     senderId: SYSTEM_SENDER_ID,
     body: "Контакт встановлено — тепер ви на зв'язку одне з одним",
+    media: null,
     createdAt: "",
     readAt: "",
     system: true,
@@ -592,5 +602,71 @@ describe("поверхня розмови", () => {
 
     expect(html).not.toContain("Напишіть перше");
     expect(html).toContain("Контакт встановлено");
+  });
+
+  it("фото в повідомленні показується, а порожній текст не малює порожньої бульбашки", () => {
+    // Скрин сам по собі — вже повідомлення: вимагати до нього слів означало б,
+    // що надіслати фото не можна взагалі.
+    const photo: Message[] = [
+      {
+        id: 5,
+        senderId: PEER.id,
+        body: "",
+        media: { key: "msg/42/ab12cd-scrin.png", mime: "image/png", bytes: 2048 },
+        createdAt: "",
+        readAt: null,
+        system: false,
+      },
+    ];
+
+    const html = renderToStaticMarkup(
+      <ThreadSheet
+        peer={PEER}
+        meId={ME}
+        messages={photo}
+        onSend={async () => true}
+        onClear={() => {}}
+        onDelete={() => {}}
+        onClose={() => {}}
+      />,
+    );
+
+    // Адреса будується з ключа — у рядку бази лежить ключ, а не адреса.
+    expect(html).toContain('src="/api/messages/media/msg/42/ab12cd-scrin.png"');
+    expect(html).toContain("wb-bubble-photo");
+    expect(html).not.toContain("wb-bubble-text");
+  });
+
+  it("кнопка прикріплення є, коли оболонка вміє завантажувати файли", () => {
+    // Без `onAttach` кнопки немає взагалі: «є, але мовчить» — це дія, про яку
+    // ніхто не дізнається, а потім скаже, що прикріпити неможливо.
+    const withAttach = renderToStaticMarkup(
+      <ThreadSheet
+        peer={PEER}
+        meId={ME}
+        messages={MESSAGES}
+        onSend={async () => true}
+        onAttach={async () => ({ id: 1, key: "msg/7/a-b.jpg" })}
+        onClear={() => {}}
+        onDelete={() => {}}
+        onClose={() => {}}
+      />,
+    );
+    expect(withAttach).toContain('aria-label="Прикріпити фото"');
+    // Вікно вибору приймає ті самі формати, які перевіряє сервер.
+    expect(withAttach).toContain('accept="image/jpeg,image/png,image/webp,image/avif,image/gif"');
+
+    const withoutAttach = renderToStaticMarkup(
+      <ThreadSheet
+        peer={PEER}
+        meId={ME}
+        messages={MESSAGES}
+        onSend={async () => true}
+        onClear={() => {}}
+        onDelete={() => {}}
+        onClose={() => {}}
+      />,
+    );
+    expect(withoutAttach).not.toContain('aria-label="Прикріпити фото"');
   });
 });

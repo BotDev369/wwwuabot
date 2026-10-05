@@ -88,7 +88,7 @@ function makeEnv(options: {
               ],
             };
           }
-          if (/FROM messages/.test(sql) && /ORDER BY id DESC/.test(sql)) {
+          if (/FROM messages/.test(sql) && /ORDER BY m\.id DESC/.test(sql)) {
             const before = record.binds.length > 2 ? Number(record.binds[1]) : null;
             const sorted = [...messages]
               .filter((row) => before === null || row.id < before)
@@ -179,9 +179,9 @@ describe("читання розмови", () => {
     await readThread(env, ME, PEER);
 
     const query = statements.find(
-      (s) => /FROM messages/.test(s.sql) && /ORDER BY id DESC/.test(s.sql),
+      (s) => /FROM messages/.test(s.sql) && /ORDER BY m\.id DESC/.test(s.sql),
     );
-    expect(query?.sql).toContain("ORDER BY id DESC");
+    expect(query?.sql).toContain("ORDER BY m.id DESC");
     expect(query?.binds[0]).toBe(CONVERSATION_ID);
     expect(query?.binds[1]).toBe(50);
   });
@@ -197,7 +197,7 @@ describe("читання розмови", () => {
     const result = await readThread(env, ME, PEER, 5);
     expect(result.ok && result.thread.messages.map((m) => m.id)).toEqual([4]);
 
-    const query = statements.find((s) => /id < \?/.test(s.sql));
+    const query = statements.find((s) => /m\.id < \?/.test(s.sql));
     expect(query?.binds[1]).toBe(5);
   });
 

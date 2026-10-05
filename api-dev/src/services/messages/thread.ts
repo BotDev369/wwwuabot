@@ -14,14 +14,20 @@
  * @module api-dev/src/services/messages/thread
  */
 
-import type { Message, MessageThread } from "@wwwuabot/shared/messages";
+import type { Message, MessageMedia, MessageThread } from "@wwwuabot/shared/messages";
 import type { Env } from "../../shared/types";
-import { messagePreview, sanitizeMessageBody } from "@wwwuabot/shared/messages";
+import {
+  MESSAGE_PHOTO_LABEL,
+  isSendableMessage,
+  messagePreview,
+  sanitizeMessageBody,
+} from "@wwwuabot/shared/messages";
 import { formatSqliteDatetime } from "@wwwuabot/shared/utils/datetime";
 import { areLinked } from "./links";
 import { ensureConversation, findConversationId } from "./conversations";
 import { dropDraft } from "./drafts";
 import { ensureGreeting } from "./greeting";
+import { attachableMedia, dropThreadMedia } from "./media";
 import { readPeer } from "./peers";
 
 /** Скільки повідомлень показує одна сторінка розмови. */
@@ -54,6 +60,26 @@ interface MessageRow {
   created_at: string | null;
   read_at: string | null;
   is_system?: number | null;
+  /** Ключ файлу з `message_media`; `null` — повідомлення без фото. */
+  media_key?: string | null;
+  media_mime?: string | null;
+  media_bytes?: number | null;
+}
+
+/**
+ * Фото повідомлення з приєднаного рядка обліку.
+ *
+ * Повідомлення без файлу не має ні ключа, ні розміру, тож це не «фото порожнє»,
+ * а відсутність фото — саме тому `null`, а не об'єкт із порожніми полями.
+ */
+function toMedia(row: MessageRow): MessageMedia | null {
+  if (!row.media_key) return null;
+
+  return {
+    key: row.media_key,
+    mime: row.media_mime ?? "",
+    bytes: Number(row.media_bytes ?? 0),
+  };
 }
 
 function toMessage(row: MessageRow): Message {
@@ -61,11 +87,23 @@ function toMessage(row: MessageRow): Message {
     id: Number(row.id),
     senderId: Number(row.sender_id),
     body: row.body ?? "",
+    media: toMedia(row),
     createdAt: row.created_at ?? "",
     readAt: row.read_at ?? null,
     system: Number(row.is_system ?? 0) === 1,
   };
 }
+
+/**
+ * Повідомлення розмови разом із прикріпленими фото — **одним запитом**.
+ *
+ * `JOIN` тут навмисно другим: окремий запит по ключах був би другим правилом
+ * «як дістати фото повідомлення», а стрічка мусить лишатися однією.
+ */
+const MESSAGE_SELECT = `SELECT m.id, m.sender_id, m.body, m.created_at, m.read_at, m.is_system,
+              md.r2_key AS media_key, md.mime AS media_mime, md.bytes AS media_bytes
+         FROM messages m
+         LEFT JOIN message_media md ON md.id = m.media_id`;
 
 /**
  * Повідомлення розмови — **від старіших до свіжіших**.
@@ -83,16 +121,12 @@ async function readMessages(
   const result =
     before === undefined
       ? await db
-          .prepare(
-            `SELECT id, sender_id, body, created_at, read_at, is_system FROM messages
-               WHERE conversation_id = ? ORDER BY id DESC LIMIT ?`,
-          )
+          .prepare(`${MESSAGE_SELECT} WHERE m.conversation_id = ? ORDER BY m.id DESC LIMIT ?`)
           .bind(conversationId, THREAD_LIMIT)
           .all<MessageRow>()
       : await db
           .prepare(
-            `SELECT id, sender_id, body, created_at, read_at, is_system FROM messages
-               WHERE conversation_id = ? AND id < ? ORDER BY id DESC LIMIT ?`,
+            `${MESSAGE_SELECT} WHERE m.conversation_id = ? AND m.id < ? ORDER BY m.id DESC LIMIT ?`,
           )
           .bind(conversationId, before, THREAD_LIMIT)
           .all<MessageRow>();
@@ -155,6 +189,12 @@ export async function openThread(
  *
  * Надсилання з розмови (без `draftId`) не чіпає чернеток зовсім: вони не є тим
  * листом, який у цю розмову пішов.
+ *
+ * **Фото — окремим кроком і приєднується тут** (`mediaId`): скрин спершу
+ * завантажують, а потім приєднують до повідомлення, тож порожній текст із
+ * фото — законне повідомлення. Приєднати можна лише **свій** файл і лише
+ * неприєднаний: чужі номери й повторне приєднання відпадають на одній
+ * перевірці (`attachableMedia`), щоб не витікало, чи є в людини такий файл.
  */
 export async function sendMessage(
   env: Env,
@@ -162,31 +202,43 @@ export async function sendMessage(
   peerId: number,
   rawBody: unknown,
   draftId: number | null = null,
+  mediaId: number | null = null,
 ): Promise<SendResult> {
   if (!(await areLinked(env.DB, me, peerId))) return noLink();
 
   const body = sanitizeMessageBody(rawBody);
-  if (!body) return { ok: false, status: 400, error: "Порожнє повідомлення" };
+  const media = mediaId === null ? null : await attachableMedia(env, me, mediaId);
+  if (mediaId !== null && !media) {
+    return { ok: false, status: 400, error: "Фото не додано" };
+  }
+  if (!isSendableMessage(body, media !== null)) {
+    return { ok: false, status: 400, error: "Порожнє повідомлення" };
+  }
 
   const conversationId = await ensureConversation(env.DB, me, peerId);
   if (!conversationId) return { ok: false, status: 500, error: "Не вдалося відкрити розмову" };
 
   const now = formatSqliteDatetime();
   const inserted = await env.DB.prepare(
-    `INSERT INTO messages (conversation_id, sender_id, body, created_at) VALUES (?, ?, ?, ?)`,
+    `INSERT INTO messages (conversation_id, sender_id, body, media_id, created_at)
+     VALUES (?, ?, ?, ?, ?)`,
   )
-    .bind(conversationId, me, body, now)
+    .bind(conversationId, me, body, media?.id ?? null, now)
     .run();
 
   // `hidden_* = 0` — **повідомлення вертає розмову обом**, навіть якщо хтось її
   // прибрав: інакше прибрана розмова не мала б жодного шляху назад (у списку її
   // немає, отже й написати в неї нікому), і пара замовкла б назавжди.
+  //
+  // Останок у списку — саме те, що читає `ConversationList`: фото без тексту
+  // підписується словом «Фото», бо порожній рядок у списку виглядав би як
+  // порожня розмова, а вона не порожня.
   await env.DB.prepare(
     `UPDATE conversations SET last_message_at = ?, last_message_text = ?, last_sender_id = ?,
             hidden_a = 0, hidden_b = 0
        WHERE id = ?`,
   )
-    .bind(now, messagePreview(body), me, conversationId)
+    .bind(now, body ? messagePreview(body) : MESSAGE_PHOTO_LABEL, me, conversationId)
     .run();
 
   if (draftId !== null) await dropDraft(env.DB, me, draftId);
@@ -197,6 +249,7 @@ export async function sendMessage(
       id: Number(inserted.meta?.last_row_id ?? 0),
       senderId: me,
       body,
+      media,
       createdAt: now,
       readAt: null,
       system: false,
@@ -230,6 +283,10 @@ export async function clearThread(
   const conversationId = await findConversationId(env.DB, me, peerId);
   // Розмови ще немає — стирати нічого, і це не помилка.
   if (conversationId === null) return { ok: true, removed: 0 };
+
+  // Фото — **до** видалення повідомлень: після нього ніхто не знає, які файли
+  // були приєднані, і вони лишилися б у сховищі без обліку.
+  await dropThreadMedia(env, conversationId);
 
   const cleared = await env.DB.prepare("DELETE FROM messages WHERE conversation_id = ?")
     .bind(conversationId)

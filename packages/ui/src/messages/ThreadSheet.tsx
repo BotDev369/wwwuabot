@@ -26,7 +26,7 @@
 
 import type { ReactElement } from "react";
 import { Icon } from "@wwwuabot/shared";
-import { messageClock, peerLabel, peerSecondary } from "@wwwuabot/shared/messages";
+import { messageClock, messageMediaUrl, peerLabel, peerSecondary } from "@wwwuabot/shared/messages";
 import { MessageComposer } from "./MessageComposer";
 import type { ThreadSheetProps } from "./types";
 import { useStickToBottom } from "./useStickToBottom";
@@ -39,6 +39,7 @@ export function ThreadSheet({
   error = null,
   sending = false,
   onSend,
+  onAttach,
   onClear,
   onDelete,
   onClose,
@@ -119,14 +120,25 @@ export function ThreadSheet({
                 key={message.id}
                 className={`wb-bubble${message.senderId === meId ? " wb-bubble--out" : " wb-bubble--in"}`}
               >
-                <span className="wb-bubble-text">{message.body}</span>
+                {/* Фото — першим рядком бульбашки, текст і час — під ним: скрин
+                    у повідомленні є головним, а підпис (якщо він є) — лише
+                    підпис. Тому ж `.wb-bubble` переноситься на два рядки. */}
+                {message.media && (
+                  <img
+                    className="wb-bubble-photo"
+                    src={messageMediaUrl(message.media.key)}
+                    alt={message.body ? `Фото: ${message.body}` : "Фото"}
+                    loading="lazy"
+                  />
+                )}
+                {message.body && <span className="wb-bubble-text">{message.body}</span>}
                 <span className="wb-bubble-time">{messageClock(message.createdAt)}</span>
               </div>
             ),
           )}
         </div>
 
-        <MessageComposer sending={sending} onSend={onSend} />
+        <MessageComposer sending={sending} onAttach={onAttach} onSend={onSend} />
       </div>
     </div>
   );

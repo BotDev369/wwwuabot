@@ -12,10 +12,15 @@
  * співрозмовника перевірено на зв'язок **перед** будь-яким пошуком розмови
  * (AGENTS.md §7).
  *
+ * **Фото — теж тут, а не в роутері**: завантаження (`/api/messages/media`) і
+ * сам файл (`/api/messages/media/<ключ>`) — два шари одного домену, і другий
+ * публічний.
+ *
  * @module api-dev/src/routes/messages
  */
 
 import type { Env } from "../shared/types";
+import { decodePathSegment } from "../shared/url";
 import {
   handleMessages,
   handleMessageThread,
@@ -27,6 +32,10 @@ import {
   handleMessageCompose,
   handleMessageDraft,
 } from "../controllers/messages.controller";
+import {
+  handleMessageMediaFile,
+  handleMessageMediaUpload,
+} from "../controllers/message-media.controller";
 
 /** Обробити шлях переписки; `null` — це не він (роутер іде далі). */
 export function matchMessagesRoute(
@@ -63,6 +72,17 @@ export function matchMessagesRoute(
   }
   if (pathname === "/api/messages/delete" && request.method === "POST") {
     return handleMessageDelete(request, env);
+  }
+  // Фото в листуванні: завантаження — власне (разом із `peer` у формі), а сам
+  // файл публічний, бо його читають без `initData` й за невгадуваним ключем —
+  // те саме, що у файлів магазину (`routes/shop.ts`).
+  if (pathname === "/api/messages/media" && request.method === "POST") {
+    return handleMessageMediaUpload(request, env);
+  }
+  if (pathname.startsWith("/api/messages/media/")) {
+    const key = decodePathSegment(pathname.replace("/api/messages/media/", ""));
+    if (key === null) return new Response("Bad Request", { status: 400 });
+    return handleMessageMediaFile(env, key);
   }
   return null;
 }

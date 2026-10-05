@@ -22,6 +22,8 @@ import type {
   MessageDraft,
   MessageDraftInput,
   MessageDraftResponse,
+  MessageMedia,
+  MessageMediaResponse,
   MessagePeer,
   MessageReadResponse,
   MessageSendResponse,
@@ -34,6 +36,17 @@ export interface MessagesTransport {
   <T>(path: string, init?: RequestInit): Promise<T>;
 }
 
+/**
+ * Транспорт завантаження — окремий від `MessagesTransport` навіть тоді, коли це
+ * той самий `fetch`.
+ *
+ * Причина та сама, що в магазині: спільний клієнт ставить `Content-Type:
+ * application/json`, а для multipart це зіпсувало б межу частин.
+ */
+export interface MessagesUploadTransport {
+  <T>(path: string, form: FormData): Promise<T>;
+}
+
 export interface MessagesApi {
   /** Розмови людини, найсвіжіші згори. */
   list: () => Promise<Conversation[]>;
@@ -42,11 +55,24 @@ export interface MessagesApi {
   /**
    * Надіслати повідомлення співрозмовнику.
    *
-   * `draftId` — чернетка, з якої надіслали: зникає **саме та**, і це єдина
-   * чернетка, яку надсилання має право прибрати (решта — те, що людина ще
-   * пише, навіть якщо адресат той самий).
+   * `draftId` — чернетка, з якої надіслали: зникає **саме та**, решта — те, що
+   * людина ще пише. `mediaId` — номер фото (див. `attach`): порожній текст із
+   * фото — законне повідомлення.
    */
-  send: (peerId: number, body: string, draftId?: number | null) => Promise<Message | null>;
+  send: (
+    peerId: number,
+    body: string,
+    draftId?: number | null,
+    mediaId?: number | null,
+  ) => Promise<Message | null>;
+  /**
+   * Завантажити фото в розмову — **до** надсилання.
+   *
+   * Повертає номер рядка обліку: саме він їде в `send`. Повідомлення тут не
+   * створюється, бо фото можна приєднати лише однією стрічкою — до того, як
+   * людина напише текст.
+   */
+  attach: (peerId: number, file: File) => Promise<{ id: number } & MessageMedia>;
   /** Позначити прочитаним усе, що написав співрозмовник; повертає число. */
   markRead: (peerId: number) => Promise<number>;
   /** Скільки повідомлень чекає на прочитання — для бейджа футера. */
@@ -80,7 +106,11 @@ export interface MessagesApi {
 }
 
 /** Складає клієнт повідомлень для конкретного шляху. */
-export function createMessagesApi(fetchJson: MessagesTransport, basePath: string): MessagesApi {
+export function createMessagesApi(
+  fetchJson: MessagesTransport,
+  basePath: string,
+  upload?: MessagesUploadTransport,
+): MessagesApi {
   /**
    * Дія над перепискою: тіло таке саме, як у надсиланні, — «з ким».
    *
@@ -109,12 +139,30 @@ export function createMessagesApi(fetchJson: MessagesTransport, basePath: string
       return { peer: response.peer ?? null, messages: response.messages ?? [] };
     },
 
-    send: async (peerId, body, draftId) => {
+    send: async (peerId, body, draftId, mediaId) => {
       const response = await fetchJson<MessageSendResponse>(`${basePath}/send`, {
         method: "POST",
-        body: JSON.stringify({ peer: peerId, body, draft: draftId ?? undefined }),
+        body: JSON.stringify({
+          peer: peerId,
+          body,
+          draft: draftId ?? undefined,
+          media: mediaId ?? undefined,
+        }),
       });
       return response.message ?? null;
+    },
+
+    attach: async (peerId, file) => {
+      if (!upload) throw new Error("Оболонка не вміє завантажувати файли");
+
+      const form = new FormData();
+      form.append("peer", String(peerId));
+      form.append("file", file);
+
+      const response = await upload<MessageMediaResponse>(`${basePath}/media`, form);
+      if (!response.media) throw new Error(response.error ?? "Не вдалося завантажити фото");
+
+      return response.media;
     },
 
     markRead: async (peerId) => {

@@ -22,7 +22,8 @@ DDL не живе в контролерах і репозиторіях: кож�
 | `notes` | `api-dev` | api-dev (`ensureTables` у `notes.controller`) | api-dev: платформа — `/api/notes`, панель — `/api/admin/notes` | нотатки: чернетки людини (`scope = 'user'`, власник — Telegram-id із **підписаного `initData`**) і нотатки про проєкт з панелі (`scope = 'admin'`, власник — акаунт cookie-сесії). `tags` — JSON-масив |
 | `contacts` | `api-dev` | api-dev (`ensureTables` у `contacts.controller`) | api-dev: довідник — `/api/contacts`; **bot-dev пише вхід у бота та `username`**, **api-dev — вхід на платформу** | контакти людини: **один рядок = один контакт**, а лінк — **одне з його полів** (`code` з `UNIQUE`, це і є payload бота `inv-8f3k2q`). `username` пише бот, `owner_id` — Telegram-id із **підписаного `initData`**. Правила — [`COLLECTIONS.md`](./COLLECTIONS.md) |
 | `conversations` | `api-dev` | api-dev (`ensureTables` у `messages.controller`) | api-dev: `/api/messages` | переписка людей: **один рядок на пару** (`peer_a`, `peer_b` — за зростанням id, `UNIQUE`), `last_message_*` для списку розмов, `greeted_at` — одноразове вітання пари, `hidden_a`/`hidden_b` — розмова прибрана зі списку (ставляться разом, у обох) |
-| `messages` | `api-dev` | api-dev (`ensureTables` у `messages.controller`) | api-dev: `/api/messages/*` | повідомлення розмови: автор (`sender_id`), тіло, `read_at` (`NULL` — непрочитане), `is_system` — позначка платформи |
+| `messages` | `api-dev` | api-dev (`ensureTables` у `messages.controller`) | api-dev: `/api/messages/*` | повідомлення розмови: автор (`sender_id`), тіло, `media_id` — **номер** рядка `message_media` (прикріплене фото; `NULL` — лише текст), `read_at` (`NULL` — непрочитане), `is_system` — позначка платформи |
+| `message_media` | `api-dev` | api-dev, `ensureTables` у `services/messages/schema.ts` | api-dev: завантаження — `/api/messages/media`, сам файл — `/api/messages/media/<…>` | **облік фото в листуванні:** рядок на файл, `r2_key` = `msg/<user_id>/<випадкове>-ім'я` (`UNIQUE`), `owner_id` — хто завантажив. Байти — в R2 (той самий бакет, окремий простір ключів від `shop/`), повідомлення посилається на **номери рядків** |
 | `message_drafts` | `api-dev` | api-dev (`ensureTables` у `messages.controller`) | api-dev: `/api/messages/compose`, `/api/messages/draft` | **ненадісланий лист** — власні дані того, хто пише: документ зі **своїм номером** і необов'язковим адресатом (`peer_id` без `NOT NULL`); схема перебудована міграцією (див. нижче) |
 | `ads` | `api-dev` | api-dev (`ensureTables` у `ads.service`) | api-dev: своє — `/api/user/ads`, дошка — `/api/space/ads` | **оголошення дошки Простору:** вид, заголовок, текст, ціна й місто (обидва — **текст**). `is_active` — не «чи опубліковано», а **показати на дошці**: вимкнене лишається в списку власника чернеткою. Правила — [`ADS.md`](./ADS.md) |
 | `theme_schemes` | `api-dev` | api-dev, `ensureTables` | api-dev: своє — `/api/user/themes`, спільна — `/api/space/themes` | **теми**: три кольори + шрифт; `is_public` виносить тему в спільну бібліотеку ([`THEMES.md`](./THEMES.md)) |
@@ -44,9 +45,10 @@ DDL не живе в контролерах і репозиторіях: кож�
 ідентичність, яка не змінюється ніколи; **`slug`** — адреса (`NOT NULL UNIQUE`), яку редагують вільно.
 
 **Індекси** (`indexes`) живуть поруч із таблицею, щоб не «губились» окремо від неї.
-Їх оголошують дванадцять таблиць — `notes` (`idx_notes_scope_owner` за `(scope, owner_id)`), `contacts`
+Їх оголошують тринадцять таблиць — `notes` (`idx_notes_scope_owner` за `(scope, owner_id)`), `contacts`
 (`idx_contacts_owner`), `conversations` (`idx_conversations_peer_b`), `messages` (`idx_messages_thread`,
-`idx_messages_unread`), `ads` (`idx_ads_owner`, `idx_ads_doska` — дошка за `(is_active, id)`),
+`idx_messages_unread`), `message_media` (`idx_message_media_owner` — квота файлів однієї людини),
+`ads` (`idx_ads_owner`, `idx_ads_doska` — дошка за `(is_active, id)`),
 `theme_schemes` (`idx_themes_owner`, `idx_themes_public`), `metrics_values`
 (`idx_metrics_values_metric` — історія одного показника за часом) і п'ять таблиць магазину:
 `shop_products` (`idx_shop_products_shop` — товари за `(shop_id, is_active, id)`), `shop_media`,
@@ -94,6 +96,20 @@ Telegram-id завжди додатний), а `read_at` стоїть одраз
 
 Обидві дії вимагають **того самого зв'язку**, що читання, і перевіряють його першими (§7): інакше
 чужим `peer` вони б витирали чужу історію, а код відповіді (404 проти 400) підказував би, що вона існує.
+
+**Фото в листуванні — облік у рядку, байти в R2, як у файлах магазину.** Фото завантажують **до**
+надсилання, тож між кроками воно вже існує: без рядка `message_media` його неможливо приєднати до
+листа, прибрати чи порахувати квоту. Тому `messages.media_id` — **номер** цього рядка, а не байти й
+не адреса; адресу будує читання з `r2_key`, тож зміна шлюзу не ламає вже написане.
+
+Приєднати фото може лише той, хто його завантажив, і лише один раз: чужий, неіснуючий і вже приєднаний
+номери відмовляються **однією** відповіддю. Ключ має випадкову частину (`msg/<user_id>/…`), тож файл
+читають за невгадуваною адресою **без** `initData` — як і фото магазину; окремий бакет з'явиться
+разом із прод-воркером.
+
+Стирання розмови прибирає і файли: рядок обліку й байти йдуть разом (`dropThreadMedia` **перед**
+видаленням листів), бо після нього ніхто не знає, які файли були прикріплені. Квота на людину
+(`MESSAGE_MEDIA_PER_USER`) обмежує той хвіст, який лишається від файлу, завантаженого й не надісланого.
 
 **Чернетка — не частина переписки, а власні дані того, хто пише.** Співрозмовник про неї не знає, тож рядок
 у неї свій (`message_drafts`), а не в `messages`: у тій лежить **спільне**. І розмови про чернетки не знають:

@@ -37,12 +37,40 @@ export interface MessagePeer {
   photoUrl: string | null;
 }
 
+/**
+ * Фото, прикріплене до повідомлення.
+ *
+ * У повідомленні лежить **номер** рядка обліку, а не байти й не адреса: ключ у
+ * сховищі — у `message_media`, тож зміна шлюзу не ламає вже написане
+ * (`docs/SURFACES.md`). Адресу будує той, хто показує (`messageMediaUrl`).
+ */
+export interface MessageMedia {
+  /** Ключ у сховищі — саме він, а не адреса, їде в `Message`. */
+  key: string;
+  mime: string;
+  bytes: number;
+}
+
+/** Відповідь завантаження фото: рядок обліку, а не готове повідомлення. */
+export interface MessageMediaResponse {
+  ok?: boolean;
+  media?: { id: number } & MessageMedia;
+  error?: string;
+}
+
 /** Одне повідомлення розмови. */
 export interface Message {
   id: number;
   /** Хто написав: Telegram-id, тож «моє» визначає той, хто читає. */
   senderId: number;
   body: string;
+  /**
+   * Прикріплене фото; `null` — повідомлення лише текстове.
+   *
+   * Текст при цьому може бути порожнім: скрин сам по собі — вже повідомлення,
+   * і вимагати до нього слів означало б, що надсилати фото не можна.
+   */
+  media: MessageMedia | null;
   createdAt: string;
   /** Коли прочитав **одержувач**; `null` — ще не прочитано. */
   readAt: string | null;

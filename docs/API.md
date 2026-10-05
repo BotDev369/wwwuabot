@@ -42,6 +42,8 @@
 | `GET` | `/api/messages/compose` | `handleMessageCompose` |
 | `POST` | `/api/messages/delete` | `handleMessageDelete` |
 | `POST` | `/api/messages/draft` | `handleMessageDraft` |
+| `POST` | `/api/messages/media` | `handleMessageMediaUpload` |
+| `ANY` | `/api/messages/media/<…>` | `handleMessageMediaFile` |
 | `POST` | `/api/messages/read` | `handleMessageRead` |
 | `POST` | `/api/messages/send` | `handleMessageSend` |
 | `ANY` | `/api/messages/thread` | `handleMessageThread` |
@@ -100,4 +102,4 @@
 | `POST` | `/auth/login` | `handleLogin` |
 | `POST` | `/auth/logout` | `handleLogout` |
 
-Усього шляхів: **71**.
+Усього шляхів: **73**.

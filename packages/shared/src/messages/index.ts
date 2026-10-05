@@ -13,6 +13,8 @@
  * - `time.ts` — час у списку розмов і в бульбашці;
  * - `unread.ts` — сигнал «непрочитане могло змінитись»: за ним бейдж футера
  *   перечитує число зразу, а не на наступному кроці таймера;
+ * - `media.ts` — фото в листуванні: ключ у сховищі, адреса з ключа й підпис
+ *   «Фото» для повідомлення без тексту;
  * - `api.ts` — форма запиту, спільна для всіх оболонок.
  *
  * **Кому можна писати — не тут.** Правило «зв'язані через контакти» читає
@@ -29,17 +31,27 @@
  */
 
 export { createMessagesApi } from "./api";
-export type { MessagesApi, MessagesTransport } from "./api";
+export type { MessagesApi, MessagesTransport, MessagesUploadTransport } from "./api";
 export {
   MAX_MESSAGE_BODY,
   MESSAGE_PREVIEW_LENGTH,
   SYSTEM_SENDER_ID,
   conversationPair,
   isSendableBody,
+  isSendableMessage,
   messagePreview,
   peerOf,
   sanitizeMessageBody,
 } from "./fields";
+export {
+  MESSAGE_MEDIA_KEY_PREFIX,
+  MESSAGE_MEDIA_PER_USER,
+  MESSAGE_MEDIA_URL_PREFIX,
+  MESSAGE_PHOTO_LABEL,
+  isMessageMediaKey,
+  messageMediaKey,
+  messageMediaUrl,
+} from "./media";
 export { conversationGreeting, greetingNotes } from "./greeting";
 export type { ConversationGreeting } from "./greeting";
 export { peerInitial, peerLabel, peerPublicLabel, peerSecondary } from "./peer";
@@ -55,6 +67,8 @@ export type {
   MessageDraft,
   MessageDraftInput,
   MessageDraftResponse,
+  MessageMedia,
+  MessageMediaResponse,
   MessagePeer,
   MessageReadResponse,
   MessageSendResponse,

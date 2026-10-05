@@ -696,12 +696,13 @@ export const TABLES = {
     name: "messages",
     owner: "api-dev",
     purpose:
-      "Повідомлення розмови: автор, тіло й дата прочитання (непрочитані — `read_at IS NULL`).",
+      "Повідомлення розмови: автор, тіло, прикріплене фото (`media_id` → `message_media`) і дата прочитання (непрочитані — `read_at IS NULL`).",
     create: `CREATE TABLE IF NOT EXISTS messages (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         conversation_id INTEGER NOT NULL,
         sender_id INTEGER NOT NULL,
         body TEXT NOT NULL DEFAULT '',
+        media_id INTEGER,
         created_at TEXT NOT NULL DEFAULT (datetime('now')),
         read_at TEXT,
         is_system INTEGER NOT NULL DEFAULT 0
@@ -710,6 +711,30 @@ export const TABLES = {
       "CREATE INDEX IF NOT EXISTS idx_messages_thread ON messages(conversation_id, id)",
       "CREATE INDEX IF NOT EXISTS idx_messages_unread ON messages(conversation_id, read_at)",
     ],
+  },
+
+  /**
+   * Фото в листуванні — облік у рядку, байти в R2 (як `shop_media`).
+   *
+   * **Рядок потрібен, бо файл завантажують до надсилання:** між кроками він уже
+   * існує, і без обліку його неможливо приєднати, прибрати чи порахувати.
+   * `messages.media_id` — **номер** цього рядка, а не байти й не адреса. Простір
+   * ключів `msg/` відділяє ці файли від фото магазину, а `owner_id` — автор.
+   */
+  message_media: {
+    name: "message_media",
+    owner: "api-dev",
+    purpose:
+      "Облік фотографій у листуванні: ключ у спільному R2-бакеті (`msg/<user_id>/…`), тип і розмір. Повідомлення посилається на номер цього рядка.",
+    create: `CREATE TABLE IF NOT EXISTS message_media (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        owner_id INTEGER NOT NULL,
+        r2_key TEXT NOT NULL UNIQUE,
+        mime TEXT NOT NULL DEFAULT '',
+        bytes INTEGER NOT NULL DEFAULT 0,
+        created_at TEXT NOT NULL DEFAULT (datetime('now'))
+      )`,
+    indexes: ["CREATE INDEX IF NOT EXISTS idx_message_media_owner ON message_media(owner_id, id)"],
   },
 
   /**

@@ -28,6 +28,14 @@ id = "bda7a5fca58b4fbda87d75105d558ebf"
 binding = "SHOP_MEDIA"
 bucket_name = "wwwuabot-shop-dev"
 
+# Фото в листуванні: **той самий бакет**, окремий простір ключів (`msg/<user_id>/…`
+# проти `shop/<shop_id>/…`). Окремий бакет з'явиться разом із прод-воркером — его
+# ще немає (AGENTS.md §1), а доти домени ділять лише сховище, не ключі й не
+# прибирання. Стежить `packages/shared/src/config/wrangler-env.test.ts`.
+[[r2_buckets]]
+binding = "MESSAGE_MEDIA"
+bucket_name = "wwwuabot-shop-dev"
+
 [vars]
 # ADMIN_SECRET, BOT_TOKEN, SECRET_TOKEN, SENTRY_DSN, GITHUB_MONITOR_TOKEN і
 # CF_MONITOR_TOKEN — задаються через Cloudflare Dashboard (Secrets).

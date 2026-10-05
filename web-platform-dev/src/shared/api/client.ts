@@ -33,3 +33,19 @@ export async function apiFetch<T = unknown>(
     fetchOptions: options,
   });
 }
+
+/**
+ * Завантаження файлу: multipart **без** `Content-Type` у запиті.
+ *
+ * Окрема ручка, бо спільний клієнт ставить `Content-Type: application/json` — а
+ * для multipart це зіпсувало б межу частин, і сервер не розібрав би форму. Тому
+ * заголовок вмісту тут не ставиться узагалі: його визначає браузер.
+ */
+export async function apiUpload<T = unknown>(path: string, form: FormData): Promise<T> {
+  const response = await apiFetchRaw(path, { method: "POST", body: form });
+  if (!response.ok) {
+    const err = await response.json().catch(() => ({ error: `HTTP ${response.status}` }));
+    throw new Error((err as { error?: string }).error ?? `HTTP ${response.status}`);
+  }
+  return (await response.json()) as T;
+}

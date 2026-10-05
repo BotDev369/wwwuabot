@@ -1,5 +1,5 @@
 /**
- * Одна розмова — стрічка, співрозмовник і надсилання.
+ * Одна розмова — стрічка, співрозмовник, надсилання й фото.
  *
  * **Прочитаним позначаємо на боці сервера, а не в стані.** Бейдж у футері
  * рахує сервер; якби «прочитано» осідало лише в клієнті, наступне опитування
@@ -40,8 +40,21 @@ export interface ThreadState {
   loading: boolean;
   error: string | null;
   sending: boolean;
-  /** Надіслати; повертає `true`, якщо сервер підтвердив. */
-  send: (body: string) => Promise<boolean>;
+  /**
+   * Надіслати; повертає `true`, якщо сервер підтвердив.
+   *
+   * `mediaId` — фото, завантажене `attach`: порожній текст із фото — законне
+   * повідомлення, тому тіло й фото не залежать одне від одного.
+   */
+  send: (body: string, mediaId: number | null) => Promise<boolean>;
+  /**
+   * Завантажити фото в розмову — **до** надсилання.
+   *
+   * Повертає `id` (з ним воно піде в повідомлення) і `key` (з нього
+   * кирпичик показує знімок). Помилка — виняток, бо кирпичик показує її біля
+   * поля, де людину й зупинило.
+   */
+  attach: (file: File) => Promise<{ id: number; key: string }>;
   /** Стерти переписку (у обох); `true` — сервер підтвердив. */
   clear: () => Promise<boolean>;
   /** Прибрати саму розмову (у обох); `true` — сервер підтвердив. */
@@ -80,12 +93,12 @@ export function useThread(peerId: number | null): ThreadState {
   }, [peerId]);
 
   const send = useCallback(
-    async (body: string): Promise<boolean> => {
+    async (body: string, mediaId: number | null = null): Promise<boolean> => {
       if (peerId === null) return false;
       setSending(true);
 
       try {
-        const message = await messagesApi.send(peerId, body);
+        const message = await messagesApi.send(peerId, body, null, mediaId);
         if (!message) throw new Error("Сервер не підтвердив надсилання — спробуйте ще раз.");
         setData((prev) => ({ ...prev, messages: [...prev.messages, message] }));
         return true;
@@ -95,6 +108,24 @@ export function useThread(peerId: number | null): ThreadState {
       } finally {
         setSending(false);
       }
+    },
+    [peerId],
+  );
+
+  /**
+   * Фото завантажується **окремим запитом** і до надсилання.
+   *
+   * Стан стрічки при цьому не змінюється: фото ще не в жодному повідомленні, і
+   * показувати його в переписці рано — воно належить людині, поки вона його не
+   * надіслала (або не прибрала сама).
+   */
+  const attach = useCallback(
+    async (file: File): Promise<{ id: number; key: string }> => {
+      if (peerId === null) throw new Error("Розмова не відкрита");
+
+      const media = await messagesApi.attach(peerId, file);
+      setError(null);
+      return { id: media.id, key: media.key };
     },
     [peerId],
   );
@@ -154,6 +185,7 @@ export function useThread(peerId: number | null): ThreadState {
     error,
     sending,
     send,
+    attach,
     clear,
     remove,
   };
