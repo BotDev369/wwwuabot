@@ -160,7 +160,7 @@ export function DateModal({ mode, date, allTags, onClose, onSave, onDelete }: Da
             />
           </div>
         </div>
-        <div className="wb-modal-footer">
+        <div className="wb-modal-footer wb-date-modal-footer">
           {mode === "edit" && date && onDelete && (
             <button
               className="wb-btn wb-btn-danger"

@@ -6,12 +6,21 @@
  */
 
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { analyzeDate, compareDates, fetchAnalysis, fetchSystems } from "./api";
+import {
+  analyzeDate,
+  compareDates,
+  deleteMyDate,
+  deleteMyDates,
+  fetchAnalysis,
+  fetchMyDates,
+  fetchSystems,
+  saveMyDate,
+} from "./api";
 
-function respond(body: unknown): void {
+function respond(body: unknown, status = 200): void {
   vi.stubGlobal(
     "fetch",
-    vi.fn(async () => new Response(JSON.stringify(body), { status: 200 })),
+    vi.fn(async () => new Response(JSON.stringify(body), { status })),
   );
 }
 
@@ -93,5 +102,62 @@ describe("compareDates", () => {
   it("помилку сервера показує людині", async () => {
     respond({ ok: false });
     await expect(compareDates(["1980-03-03"])).rejects.toThrow("Помилка співставлення");
+  });
+});
+
+describe("дати: CRUD", () => {
+  it("читає список дат", async () => {
+    const dates = [{ id: "1", date: "1980-03-03" }];
+    respond({ ok: true, dates });
+    await expect(fetchMyDates()).resolves.toEqual(dates);
+    expect(lastCall().url).toBe("/api/my-dates");
+  });
+
+  it("повідомлення сервера важливіші за код статусу — людині треба знати, що робити", async () => {
+    respond({ ok: false, error: "Немає доступу" }, 403);
+    await expect(fetchMyDates()).rejects.toThrow("Немає доступу");
+  });
+
+  it("без тіла лишається зрозумілий текст із кодом", async () => {
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(async () => new Response("", { status: 503 })),
+    );
+    await expect(fetchMyDates()).rejects.toThrow(/Помилка завантаження.*503/);
+  });
+
+  it("нова дата йде POST-ом, наявна — PUT-ом", async () => {
+    respond({ ok: true });
+    await saveMyDate({ date: "1980-03-03" });
+    expect(lastCall().init?.method).toBe("POST");
+
+    await saveMyDate({ id: "1", date: "1980-03-03" });
+    expect(lastCall().init?.method).toBe("PUT");
+  });
+
+  it("збереження з помилкою сервера не губиться", async () => {
+    respond({ ok: false, error: "Дата невірна" });
+    await expect(saveMyDate({ date: "1980-03-03" })).rejects.toThrow("Дата невірна");
+  });
+
+  it("видалення однієї дати йде за її номером", async () => {
+    respond({ ok: true });
+    await deleteMyDate("1");
+    const call = lastCall();
+    expect(call.url).toBe("/api/my-dates?id=1");
+    expect(call.init?.method).toBe("DELETE");
+  });
+
+  it("масове видалення переносить усі номери", async () => {
+    respond({ ok: true });
+    await deleteMyDates(["1", "2"]);
+    // Кома в значенні query легальна, тож `encodeURIComponent` її не змінює —
+    // важливо, що номери не злипаються з іншими параметрами.
+    expect(lastCall().url).toBe("/api/my-dates?ids=1,2");
+  });
+
+  it("помилка масового видалення показується, а не ковтається", async () => {
+    respond({ ok: false, error: "Чужий рядок" });
+    await expect(deleteMyDates(["9"])).rejects.toThrow("Чужий рядок");
   });
 });

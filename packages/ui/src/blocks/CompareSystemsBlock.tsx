@@ -18,7 +18,7 @@ type SystemCard = AnalysisSystem;
 export function CompareSystemsBlock({ block }: BlockComponentProps) {
   const {
     title = "Оберіть системи та параметри",
-    resultUrl = "/mydate",
+    resultUrl = "/mydate/compare/table",
     paramKey = "dates",
     systemKey = "sys",
     parameterKey = "p",
@@ -89,14 +89,15 @@ export function CompareSystemsBlock({ block }: BlockComponentProps) {
       ),
     );
 
-    // Build result URL: /mydate/date1+date2+...?sys=...&p=...
-    const datePath = dates.join("+");
+    // Результат — окремий рядок контенту, а дати й фільтри їдуть параметрами:
+    // `ScenarioPage` бере весь splat як slug, тож `/mydate/дати+дати` не знайшов
+    // би нічого. Так само й `compare-setup`, який передає `?dates=` далі.
     const qs = new URLSearchParams();
+    qs.set(paramKey, dates.join(","));
     if (sys.length) qs.set(systemKey, sys.join(","));
     if (prm.length) qs.set(parameterKey, prm.join(","));
-    const qsStr = qs.toString();
-    window.location.href = `${resultUrl}/${datePath}${qsStr ? `?${qsStr}` : ""}`;
-  }, [dates, systems, selected, isSystemSelected, resultUrl, systemKey, parameterKey]);
+    window.location.href = `${resultUrl}?${qs.toString()}`;
+  }, [dates, systems, selected, isSystemSelected, resultUrl, paramKey, systemKey, parameterKey]);
 
   // No dates
   if (dates.length === 0) {

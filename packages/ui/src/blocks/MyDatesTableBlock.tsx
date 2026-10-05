@@ -67,23 +67,20 @@ export function MyDatesTableBlock({ block }: BlockComponentProps) {
   return (
     <div className="wb-block-mydates-table">
       {/* Header */}
-      <div
-        style={{
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "space-between",
-          marginBottom: "var(--sp-4)",
-        }}
-      >
+      <div className="wb-date-head-row">
         <div style={{ display: "flex", alignItems: "center", gap: "var(--sp-3)" }}>
           <h2 style={{ margin: 0 }}>Дати</h2>
+          {/* «7 з 7» без фільтра ні про що; лічильник потрібен лише тоді,
+              коли список звузили пошуком або фільтром. */}
           <span className="wb-text-sm wb-text-muted">
-            {processedDates.length} з {dates.length}
+            {processedDates.length === dates.length
+              ? dates.length
+              : `${processedDates.length} з ${dates.length}`}
           </span>
         </div>
         {showCreateButton && (
           <button className="wb-btn wb-btn-primary" onClick={openCreate}>
-            + Нова дата
+            Нова дата
           </button>
         )}
       </div>
@@ -177,10 +174,10 @@ export function MyDatesTableBlock({ block }: BlockComponentProps) {
 
       {/* Table */}
       {!loading && dates.length > 0 && (
-        <div style={{ overflowX: "auto" }}>
+        <div className="wb-date-list">
           <table className="wb-table" style={{ width: "100%" }}>
             <thead>
-              <tr>
+              <tr className="wb-date-head">
                 <th style={{ width: 40 }}>
                   <input
                     type="checkbox"
@@ -233,21 +230,26 @@ export function MyDatesTableBlock({ block }: BlockComponentProps) {
                 return (
                   <tr
                     key={d.id}
+                    className="wb-date-row"
                     style={
                       selectedIds.has(d.id) ? { background: "var(--bg-2, #f8fafc)" } : undefined
                     }
                     onDoubleClick={() => openEdit(d)}
                   >
-                    <td>
+                    <td className="wb-date-cell wb-date-cell--pick">
                       <input
                         type="checkbox"
                         checked={selectedIds.has(d.id)}
                         onChange={() => toggleSelect(d.id)}
                       />
                     </td>
-                    <td style={{ fontWeight: 500 }}>{d.name || "—"}</td>
-                    <td>{formatDate(d.date)}</td>
-                    <td>
+                    <td className="wb-date-cell wb-date-cell--name" data-label="">
+                      {d.name || "—"}
+                    </td>
+                    <td className="wb-date-cell" data-label="Дата">
+                      {formatDate(d.date)}
+                    </td>
+                    <td className="wb-date-cell" data-label="Теги">
                       {(d.tags || []).length > 0 ? (
                         <div style={{ display: "flex", flexWrap: "wrap", gap: 4 }}>
                           {d.tags.map((tag) => (
@@ -260,12 +262,14 @@ export function MyDatesTableBlock({ block }: BlockComponentProps) {
                         "—"
                       )}
                     </td>
-                    <td>
+                    <td className="wb-date-cell" data-label="Тип">
                       <span className="wb-badge" style={{ color: cfg.color, background: cfg.bg }}>
                         {cfg.label}
                       </span>
                     </td>
                     <td
+                      className="wb-date-cell wb-date-cell--notes"
+                      data-label="Примітки"
                       style={{
                         maxWidth: 200,
                         overflow: "hidden",

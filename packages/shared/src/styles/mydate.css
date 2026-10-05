@@ -1,0 +1,136 @@
+/* ── Mydate: список дат і модалка ────────────────────────────────────
+ *
+ * Мобільний пріоритет: на телефоні таблиця з шістьма колонками не читається —
+ * вона або обрізається, або вимагає горизонтального скролу, через що половина
+ * полів лишається невидимою. Тому на вузькому екрані рядок стає карткою:
+ * назва й дата зверху, решта полів під ними, все без горизонтального скролу.
+ *
+ * Планшет і десктоп не змінюються: там таблиця лишається таблицею.
+ */
+
+.wb-date-list {
+  overflow-x: auto;
+}
+
+/* Шапка списку: заголовок ліворуч, кнопка праворуч, але на вузькому екрані
+   кнопка переноситься на власний рядок — інакше вона наїжджає на заголовок. */
+.wb-date-head-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--sp-3);
+  margin-bottom: var(--sp-4);
+}
+
+/* Рядок-картка на телефоні: `display: block` прибирає табличну розкладку,
+ * тож колонки перестають бути колонками і стають підписаними полями. */
+.wb-date-row,
+.wb-date-head {
+  display: block;
+}
+
+.wb-date-cell {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+  padding: var(--sp-1) 0;
+  border: 0;
+}
+
+.wb-date-cell::before {
+  content: attr(data-label);
+  flex: 0 0 40%;
+  color: var(--text-muted, var(--text-2, #64748b));
+  font-size: var(--text-sm);
+}
+
+/* Назва — головне, тому без підпису й більша за решту. */
+.wb-date-cell--name {
+  font-weight: 500;
+  font-size: var(--text-base);
+}
+
+.wb-date-cell--name::before {
+  content: none;
+}
+
+/* Чекбокс добору стоїть у рядку з назвою, а не окремим рядком. */
+.wb-date-cell--pick {
+  float: left;
+  margin-right: var(--sp-2);
+  padding: 0;
+  border: 0;
+}
+
+.wb-date-cell--pick::before {
+  content: none;
+}
+
+.wb-date-cell--notes {
+  white-space: normal;
+  overflow: visible;
+  text-overflow: clip;
+}
+
+/* ── Модалка дати ────────────────────────────────────────────────── */
+
+.wb-date-modal-footer {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+}
+
+.wb-date-modal-footer > .wb-btn {
+  min-height: 44px;
+}
+
+/* Дрібні цілі дотику всередині блока дат: чекбокс добору — пальцем, а не
+   голкою. Загальне правило 44px живе в `docs/PLATFORM.md`. */
+.wb-date-list input[type="checkbox"] {
+  width: 22px;
+  height: 22px;
+  min-width: 44px;
+  min-height: 44px;
+  accent-color: var(--accent, var(--color-accent, #0f766e));
+}
+
+.wb-date-list th,
+.wb-date-list td {
+  vertical-align: middle;
+}
+
+@media (max-width: 520px) {
+  /* Три кнопки в рядок не вміщаються — «Зберегти» випадає за край. */
+  .wb-date-modal-footer {
+    flex-wrap: wrap;
+  }
+
+  .wb-date-modal-footer > .wb-btn {
+    flex: 1 1 100%;
+    width: 100%;
+  }
+
+  /* Порожній розпіркатель більше не потрібен: кнопки й так у стовпці. */
+  .wb-date-modal-footer > [style*="flex: 1"] {
+    display: none;
+  }
+
+  .wb-date-list {
+    overflow-x: visible;
+  }
+
+  .wb-date-head-row {
+    flex-wrap: wrap;
+  }
+
+  .wb-date-head-row > .wb-btn {
+    flex: 1 1 100%;
+    width: 100%;
+    min-height: 44px;
+  }
+
+  .wb-date-row {
+    padding: var(--sp-3) 0;
+    border-bottom: 1px solid var(--border-subtle, #e2e8f0);
+  }
+}

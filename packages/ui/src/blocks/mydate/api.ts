@@ -7,7 +7,7 @@
  */
 
 import { telegramAuthHeaders } from "@wwwuabot/shared/security/telegram";
-import type { MyDateSystem } from "@wwwuabot/shared/types/mydate";
+import type { MyDate, MyDateSystem } from "@wwwuabot/shared/types/mydate";
 
 /** Система аналізу з реєстру: параметри можуть бути відсутні (система без них). */
 export type AnalysisSystem = Omit<MyDateSystem, "parameters"> & {
@@ -25,6 +25,62 @@ export type CompareMatrix = Record<string, Record<string, Record<string, string>
 
 function json(response: Response): Promise<Record<string, unknown>> {
   return response.json() as Promise<Record<string, unknown>>;
+}
+
+/**
+ * Повідомлення з тіла відповіді.
+ *
+ * `HTTP 403` без тіла — це дефект для людини: вона бачить «Помилка: Error:
+ * HTTP 403» і не знає, що робити. Тому спершу читаємо `error` із відповіді, а
+ * код статусу лишається лише на випадок, коли тіла немає взагалі.
+ */
+async function failure(response: Response, fallback: string): Promise<Error> {
+  try {
+    const data = await json(response);
+    const message = data.error;
+    return new Error(typeof message === "string" && message ? message : fallback);
+  } catch {
+    return new Error(`${fallback} (HTTP ${response.status})`);
+  }
+}
+
+// ── Дати ───────────────────────────────────────────────────────────
+
+export async function fetchMyDates(): Promise<MyDate[]> {
+  const response = await fetch("/api/my-dates", { headers: telegramAuthHeaders() });
+  if (!response.ok) throw await failure(response, "Помилка завантаження");
+  const data = await json(response);
+  if (!data.ok) throw new Error((data.error as string) ?? "Помилка завантаження");
+  return data.dates as MyDate[];
+}
+
+export async function saveMyDate(dateData: Partial<MyDate>): Promise<void> {
+  const response = await fetch("/api/my-dates", {
+    method: dateData.id ? "PUT" : "POST",
+    headers: { "Content-Type": "application/json", ...telegramAuthHeaders() },
+    body: JSON.stringify(dateData),
+  });
+  if (!response.ok) throw await failure(response, "Помилка збереження");
+  const data = await json(response);
+  if (!data.ok) throw new Error((data.error as string) ?? "Помилка збереження");
+}
+
+async function remove(query: string, fallback: string): Promise<void> {
+  const response = await fetch(`/api/my-dates${query}`, {
+    method: "DELETE",
+    headers: telegramAuthHeaders(),
+  });
+  if (!response.ok) throw await failure(response, fallback);
+  const data = await json(response);
+  if (!data.ok) throw new Error((data.error as string) ?? fallback);
+}
+
+export function deleteMyDate(id: string): Promise<void> {
+  return remove(`?id=${encodeURIComponent(id)}`, "Помилка видалення");
+}
+
+export function deleteMyDates(ids: string[]): Promise<void> {
+  return remove(`?ids=${ids.map(encodeURIComponent).join(",")}`, "Помилка видалення");
 }
 
 export async function fetchSystems(): Promise<AnalysisSystem[]> {

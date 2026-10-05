@@ -34,9 +34,18 @@ let savedLocation: PropertyDescriptor | undefined;
 function captureNavigation(): { value: () => string } {
   savedLocation ??= Object.getOwnPropertyDescriptor(window, "location");
   let href = "";
+  const real = window.location;
   Object.defineProperty(window, "location", {
     configurable: true,
     value: {
+      // Читання лишається справжнім: блоки читають `location.search`, тож
+      // глуха заглушка вдарила б по them самим тестам.
+      get search() {
+        return real.search;
+      },
+      get pathname() {
+        return real.pathname;
+      },
       get href() {
         return href;
       },
@@ -169,6 +178,43 @@ describe("CompareSystemsBlock", () => {
     expect(checkbox.checked).toBe(true);
     await user.click(checkbox);
     expect(checkbox.checked).toBe(false);
+    vi.unstubAllGlobals();
+  });
+
+  it("передає дати параметрами, а не сегментом адреси", async () => {
+    window.history.replaceState({}, "", "/mydate/compare/systems?dates=1980-03-03");
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(
+        async () =>
+          new Response(
+            JSON.stringify({
+              ok: true,
+              systems: [
+                {
+                  id: "western",
+                  name: "Західна астрологія",
+                  description: "d",
+                  implemented: true,
+                  parameters: [{ key: "sign", label: "Знак" }],
+                },
+              ],
+            }),
+            { status: 200 },
+          ),
+      ),
+    );
+    const user = userEvent.setup();
+    render(<CompareSystemsBlock {...props()} />);
+    await act(async () => {
+      await new Promise((resolve) => setTimeout(resolve, 0));
+    });
+    const nav = captureNavigation();
+    await user.click(screen.getByRole("button", { name: "Співставити" }));
+
+    // Сегмент `/mydate/1980-03-03` не знайшов би рядок: `ScenarioPage` бере
+    // весь splat як slug, тож стан їде параметром, як у `compare-setup`.
+    expect(nav.value()).toBe("/mydate/compare/table?dates=1980-03-03&sys=western&p=sign");
     vi.unstubAllGlobals();
   });
 });

@@ -16,7 +16,7 @@
 import { useCallback, useEffect, useState } from "react";
 import { useDialog } from "../../dialog";
 import type { MyDate } from "./types";
-import { deleteMyDate, deleteMyDates, fetchMyDates, saveMyDate } from "./api";
+import { deleteMyDate, deleteMyDates, fetchMyDates, saveMyDate } from "../mydate/api";
 import { useDateFilters } from "./useDateFilters";
 import { useDateModal } from "./useDateModal";
 import { useDateSelection } from "./useDateSelection";
