@@ -40,7 +40,7 @@
 .wb-date-cell::before {
   content: attr(data-label);
   flex: 0 0 40%;
-  color: var(--text-muted, var(--text-2, #64748b));
+  color: var(--text-muted, #64748b);
   font-size: var(--text-sm);
 }
 
@@ -91,7 +91,7 @@
   height: 22px;
   min-width: 44px;
   min-height: 44px;
-  accent-color: var(--accent, var(--color-accent, #0f766e));
+  accent-color: var(--accent, #0f766e);
 }
 
 .wb-date-list th,
