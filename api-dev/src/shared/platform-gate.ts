@@ -37,12 +37,17 @@ const ADMIN_PATH_PREFIXES = ["/api/admin/", "/api/portal/", "/api/bot/"] as cons
  *   обов'язковий (401), тож рядок завжди має власника;
  * - `/api/shop/media/` — файли магазину. Вони читаються тегом `<img>`, а браузер
  *   не може додати до такого запиту заголовок із `initData`, тож вимога підпису
- *   зробила б картинки невидимими (див. `docs/SHOPS.md` §5).
+ *   зробила б картинки невидимими (див. `docs/SHOPS.md` §5);
+ * - `/api/messages/media/` — файли листування, **та сама причина** в третій
+ *   поверхні: знімок у бульбашці теж береться тегом `<img>`. Слеш у кінці
+ *   важливий — він відкриває лише читання байтів, а саме завантаження
+ *   (`POST /api/messages/media`) лишається закритим і підписаним.
  */
 export const PLATFORM_EXEMPT_PATHS = [
   "/api/user/access",
   "/api/user/access-request",
   "/api/shop/media/",
+  "/api/messages/media/",
 ] as const;
 
 function denied(): Response {

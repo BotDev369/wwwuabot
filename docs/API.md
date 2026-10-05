@@ -13,6 +13,7 @@
 
 | Метод | Шлях | Обробник |
 |---|---|---|
+| `ANY` | `/api/messages/media/<…>` | `handleMessageMediaFile` |
 | `ANY` | `/api/mydate/analysis/<…>` | `handleAnalysisRead` |
 | `POST` | `/api/mydate/analyze` | `handleAnalyze` |
 | `POST` | `/api/mydate/compare` | `handleCompare` |
@@ -43,7 +44,6 @@
 | `POST` | `/api/messages/delete` | `handleMessageDelete` |
 | `POST` | `/api/messages/draft` | `handleMessageDraft` |
 | `POST` | `/api/messages/media` | `handleMessageMediaUpload` |
-| `ANY` | `/api/messages/media/<…>` | `handleMessageMediaFile` |
 | `POST` | `/api/messages/read` | `handleMessageRead` |
 | `POST` | `/api/messages/send` | `handleMessageSend` |
 | `ANY` | `/api/messages/thread` | `handleMessageThread` |

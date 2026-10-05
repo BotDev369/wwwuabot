@@ -45,7 +45,17 @@ const GROUPS = [
     // `/api/shop/` — **сам файл** магазину: фото читають Telegram і веб без
     // `initData`, а адресу не можна вгадати (у ключі випадкова частка).
     // У бакета публічного доступу немає — єдиний шлюз це `api-dev`.
-    prefixes: ["/health", "/api/scenario/", "/api/mydate/", "/api/space/", "/api/shop/"],
+    // `/api/messages/media/` — те саме для фото в листуванні (третя поверхня);
+    // слеш у кінці відкриває лише читання, а `POST /api/messages/media` лишається
+    // підписаним — група береться за найдовшим префіксом.
+    prefixes: [
+      "/health",
+      "/api/scenario/",
+      "/api/mydate/",
+      "/api/space/",
+      "/api/shop/",
+      "/api/messages/media/",
+    ],
   },
   {
     title: "Користувач",

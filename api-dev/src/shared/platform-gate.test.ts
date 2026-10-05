@@ -146,6 +146,16 @@ describe("гейт допуску на платформі", () => {
     expect((await call("/api/shop/media/some-key", makeEnv(null))).status).not.toBe(401);
   });
 
+  it("фото в листуванні теж читається <img> — без підпису", async () => {
+    expect((await call("/api/messages/media/msg/1/some-key.png", makeEnv(null))).status).not.toBe(
+      401,
+    );
+  });
+
+  it("а ось завантаження фото лишається закритим: слеш відкриває лише читання", async () => {
+    expect((await post("/api/messages/media", makeEnv(null), {})).status).toBe(401);
+  });
+
   it("адмін-сесія власника не є обходом", async () => {
     const token = await signSessionToken(`admin:${Date.now() + 60_000}`, ADMIN_SECRET);
     const res = await call("/api/mydate/systems", makeEnv(null), {
