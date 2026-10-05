@@ -67,6 +67,7 @@ export { CompareSetupBlock } from "./CompareSetupBlock";
 export { CompareSystemsBlock } from "./CompareSystemsBlock";
 export { CompareTableBlock } from "./CompareTableBlock";
 export { DateAnalysisBlock } from "./DateAnalysisBlock";
+export { DateInputBlock } from "./DateInputBlock";
 
 // --- Analytics (1) ---
 export { ChartBlock } from "./ChartBlock";
@@ -134,6 +135,7 @@ import { CompareSetupBlock } from "./CompareSetupBlock";
 import { CompareSystemsBlock } from "./CompareSystemsBlock";
 import { CompareTableBlock } from "./CompareTableBlock";
 import { DateAnalysisBlock } from "./DateAnalysisBlock";
+import { DateInputBlock } from "./DateInputBlock";
 
 // Analytics
 import { ChartBlock } from "./ChartBlock";
@@ -214,6 +216,7 @@ export function registerAllBlocks(): void {
   registerBlock("compare-systems", CompareSystemsBlock);
   registerBlock("compare-table", CompareTableBlock);
   registerBlock("date-analysis", DateAnalysisBlock);
+  registerBlock("date-input", DateInputBlock);
 
   // Analytics
   registerBlock("chart", ChartBlock);

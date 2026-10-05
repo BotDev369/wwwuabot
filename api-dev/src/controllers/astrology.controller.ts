@@ -2,12 +2,8 @@ import { z } from "zod";
 import type { Env } from "../shared/types";
 import { readBody } from "../shared/body";
 import { apiLog } from "../shared/logger";
-import {
-  SYSTEM_CALCULATORS,
-  getSystemsRegistry,
-  getAnalysis,
-  saveAnalysis,
-} from "../shared/mydate-helpers";
+import { SYSTEM_CALCULATORS, getAnalysis, saveAnalysis } from "../shared/mydate-helpers";
+import { listAnalysisSystems, listImplementedSystems } from "../services/analysis-systems.service";
 
 const DATE_RE = /^\d{4}-\d{2}-\d{2}$/;
 
@@ -89,10 +85,10 @@ export async function handleAnalyze(request: Request, env: Env): Promise<Respons
 // ── GET /api/mydate/systems ─────────────────────────────────────────
 export async function handleSystems(env: Env): Promise<Response> {
   try {
-    const systems = await getSystemsRegistry(env);
+    const systems = await listAnalysisSystems(env.DB);
     return json({ ok: true, systems });
   } catch (e: unknown) {
-    apiLog.error("KV systems error", e);
+    apiLog.error("Systems registry error", e);
     const msg = e instanceof Error ? e.message : "Unknown error";
     return json({ ok: false, error: msg }, 500);
   }
@@ -115,10 +111,8 @@ export async function handleCompare(request: Request, env: Env): Promise<Respons
       return json({ ok: false, error: "Too many dates, max 30" }, 400);
     }
 
-    const registry = await getSystemsRegistry(env);
-    const targetSystems = systemIds
-      ? registry.filter((s) => systemIds.includes(s.id) && s.implemented)
-      : registry.filter((s) => s.implemented);
+    const registry = await listImplementedSystems(env.DB);
+    const targetSystems = systemIds ? registry.filter((s) => systemIds.includes(s.id)) : registry;
 
     const matrix: Record<string, Record<string, Record<string, unknown>>> = {};
 

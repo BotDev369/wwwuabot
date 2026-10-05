@@ -1,14 +1,5 @@
 import { ensureTables } from "@wwwuabot/shared/database/ensure-tables";
-import { SIGN_ORDER, SIGN_CUTOFFS, SIGN_META, DEFAULT_MYDATE_SYSTEMS } from "./constants";
-import type { Env } from "./types";
-
-export interface MyDateSystem {
-  id: string;
-  name: string;
-  description: string;
-  implemented: boolean;
-  parameters: Array<{ key: string; label: string }>;
-}
+import { SIGN_ORDER, SIGN_CUTOFFS, SIGN_META } from "./constants";
 
 export interface SystemAnalysisResult {
   parameters?: Array<{ key: string; label?: string; value: unknown }>;
@@ -80,29 +71,6 @@ export function calculateWesternAstrology(day: number, month: number): SystemAna
       "Плутон",
     ],
   };
-}
-
-// ── Registry ───────────────────────────────────────────────────────
-export async function getSystemsRegistry(env: Env): Promise<MyDateSystem[]> {
-  const raw = await env.CONTENT_KV.get("mydate:systems");
-  const kvSystems: MyDateSystem[] = raw ? JSON.parse(raw) : [];
-  const kvById = new Map(kvSystems.map((s) => [s.id, s]));
-
-  const merged: MyDateSystem[] = DEFAULT_MYDATE_SYSTEMS.map((def) => {
-    const kv = kvById.get(def.id);
-    if (!kv) return def;
-    const params =
-      Array.isArray(kv.parameters) && kv.parameters.length ? kv.parameters : def.parameters;
-    return { ...def, ...kv, parameters: params };
-  });
-
-  for (const s of kvSystems) {
-    if (!DEFAULT_MYDATE_SYSTEMS.some((d) => d.id === s.id)) {
-      merged.push({ ...s, parameters: Array.isArray(s.parameters) ? s.parameters : [] });
-    }
-  }
-
-  return merged;
 }
 
 // ── Analysis D1 + KV cache ─────────────────────────────────────────

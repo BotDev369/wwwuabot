@@ -806,6 +806,59 @@ export const TABLES = {
   },
 
   /**
+   * Дати людини — **рядками**, а не JSON-ом у `users`: дату шукають, фільтрують і
+   * порівнюють, а в JSON це важка колонка без пошуку й фільтра (`docs/DATA_MODEL.md`).
+   *
+   * Ключ — **`(user_id, id)`**: номер придумала людина, тож однакові номери в різних
+   * людей законні. `date` — **рядок `рррр-мм-дд`**, який порівнює сам SQL, а `type` —
+   * **своїм словом** (`BUILTIN_TYPES` = палітра).
+   */
+  my_dates: {
+    name: "my_dates",
+    owner: "api-dev",
+    purpose:
+      "Дати людини (подія, людина, інше): дата `рррр-мм-дд`, вид, назва, теги, нотатки. Живуть рядками, а не JSON-ом у `users`.",
+    create: `CREATE TABLE IF NOT EXISTS my_dates (
+        user_id INTEGER NOT NULL,
+        id TEXT NOT NULL,
+        date TEXT NOT NULL,
+        type TEXT NOT NULL DEFAULT 'other',
+        name TEXT NOT NULL DEFAULT '',
+        tags TEXT NOT NULL DEFAULT '[]',
+        notes TEXT NOT NULL DEFAULT '',
+        created_at TEXT,
+        updated_at TEXT,
+        PRIMARY KEY (user_id, id)
+      )`,
+    indexes: ["CREATE INDEX IF NOT EXISTS idx_my_dates_user_date ON my_dates(user_id, date)"],
+  },
+
+  /**
+   * Реєстр систем аналізу — **дані, а не хардкод**: у коді лишається лише
+   * розрахунок, а «яка система є, як її звуть, які в неї параметри» живе тут;
+   * реєстр спільний для всіх, тож це не JSON у рядку людини.
+   *
+   * `implemented` — **ключ розрахунку** (`SYSTEM_CALCULATORS`), а не «усе
+   * готово»: описану систему видно з вибору, навіть поки формули немає.
+   */
+  analysis_systems: {
+    name: "analysis_systems",
+    owner: "api-dev",
+    purpose:
+      "Реєстр систем аналізу дати: назва, опис, порядок, перелік параметрів і ключ розрахунку (`implemented`). Хардкод — лише сам розрахунок.",
+    create: `CREATE TABLE IF NOT EXISTS analysis_systems (
+        id TEXT PRIMARY KEY,
+        name TEXT NOT NULL,
+        description TEXT NOT NULL DEFAULT '',
+        position INTEGER NOT NULL DEFAULT 0,
+        parameters TEXT NOT NULL DEFAULT '[]',
+        is_active INTEGER NOT NULL DEFAULT 1,
+        implemented INTEGER NOT NULL DEFAULT 0,
+        updated_at TEXT
+      )`,
+  },
+
+  /**
    * Зріз моніторингу: **коли** зібрано, **чим** і **з яким результатом**.
    *
    * Числа тут не живуть — вони в `metrics_values`, і це головне рішення

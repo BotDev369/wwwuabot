@@ -1,7 +1,3 @@
-// ── VALID_TYPES ──────────────────────────────────────────────────────
-/** Allowed values for the `type` field in MyDates entries. */
-export const VALID_TYPES = ["person", "event", "other"] as const;
-
 // ── BASE_CONFIG ─────────────────────────────────────────────────────
 /** Default Base 1.0 page config served when no matching scenario is found. */
 export const BASE_CONFIG = {
@@ -161,29 +157,3 @@ export const SIGN_META: Record<
     startDay: 19,
   },
 };
-
-/** Default systems registry for the MyDate feature. */
-export const DEFAULT_MYDATE_SYSTEMS: Array<{
-  id: string;
-  name: string;
-  description: string;
-  implemented: boolean;
-  parameters: Array<{ key: string; label: string }>;
-}> = [
-  {
-    id: "western",
-    name: "Західна астрологія",
-    description: "Параметри на основі положення Сонця в зодіакальному колі.",
-    implemented: true,
-    parameters: [
-      { key: "sunSign", label: "Знак Сонця" },
-      { key: "element", label: "Стихія" },
-      { key: "modality", label: "Якість (хрест)" },
-      { key: "ruler", label: "Управитель (сучасний)" },
-      { key: "traditionalRuler", label: "Традиційний управитель" },
-      { key: "decan", label: "Декан" },
-      { key: "degree", label: "Наближений градус Сонця" },
-      { key: "cusp", label: "Прикордонний знак" },
-    ],
-  },
-];
