@@ -1,76 +1,25 @@
 /**
  * Page Builder — DateAnalysisBlock.
- *
- * Single-date analysis with system cards.
- * Replaces the hardcoded MydateResultPage.
- *
- * Reads the date from URL path segment (e.g., /mydate/2024-01-01)
- * or from props. Fetches available systems and shows analysis results.
- *
+ * Аналіз однієї дати картками систем. Дату бере з `?date=YYYY-MM-DD`, бо
+ * `ScenarioPage` віддає весь splat як slug, тож сегмент адреси не дійшов би
+ * до блока; з props — коли дата закладена в саму сторінку.
  * @module packages/ui/src/blocks/DateAnalysisBlock
  */
 
 import { useState, useEffect, useMemo, useCallback } from "react";
 import type { BlockComponentProps } from "@wwwuabot/shared/types/page-config";
-import { telegramAuthHeaders } from "@wwwuabot/shared/security/telegram";
+import { formatDate, isValidDate } from "@wwwuabot/shared/utils/mydate-helpers";
+import {
+  analyzeDate,
+  fetchAnalysis,
+  fetchSystems,
+  type AnalysisSystem,
+  type SystemResult,
+} from "./mydate/api";
 
 // ── Types ─────────────────────────────────────────────────────────
 
-interface SystemParameter {
-  key: string;
-  label: string;
-}
-
-interface SystemCard {
-  id: string;
-  name: string;
-  description: string;
-  implemented: boolean;
-  parameters?: SystemParameter[];
-}
-
-interface SystemResult {
-  parameters: { key: string; label: string; value: string }[];
-  comingSoon: string[];
-}
-
-// ── API helpers ───────────────────────────────────────────────────
-
-async function fetchSystems(): Promise<SystemCard[]> {
-  const res = await fetch("/api/mydate/systems", { headers: telegramAuthHeaders() });
-  const data = await res.json();
-  return data?.ok ? data.systems : [];
-}
-
-async function analyzeDate(date: string, systemId: string): Promise<SystemResult> {
-  const res = await fetch("/api/mydate/analyze", {
-    method: "POST",
-    headers: { "Content-Type": "application/json", ...telegramAuthHeaders() },
-    body: JSON.stringify({ date, systemId }),
-  });
-  const data = await res.json();
-  if (!data?.ok) throw new Error(data?.error ?? "Помилка аналізу");
-  return data.result;
-}
-
-async function fetchAnalysis(date: string): Promise<Record<string, SystemResult>> {
-  const res = await fetch(`/api/mydate/analysis/${date}`, { headers: telegramAuthHeaders() });
-  const data = await res.json();
-  return data?.ok ? data.systems : {};
-}
-
-// ── Helpers ───────────────────────────────────────────────────────
-
-function formatDate(raw: string): string {
-  const parts = raw.split("-");
-  if (parts.length !== 3) return raw;
-  const [yyyy, mm, dd] = parts;
-  return `${dd}.${mm}.${yyyy}`;
-}
-
-function isValidDate(raw: string): boolean {
-  return /^\d{4}-\d{2}-\d{2}$/.test(raw);
-}
+type SystemCard = AnalysisSystem;
 
 // ── System Card View ──────────────────────────────────────────────
 

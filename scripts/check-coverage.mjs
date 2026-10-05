@@ -126,6 +126,10 @@ if (!existsSync(SUMMARY)) {
   if (newCode) {
     for (const file of newCode.sort()) {
       if (!/\.tsx?$/.test(file) || /\.(test|spec)\.tsx?$/.test(file)) continue;
+      // Конфіги збірки й тестів виконуються інструментами, а не застосунком:
+      // «покриття» для них вимірювалось би лише тим, що їх запустили. Вимога
+      // тесту стосується коду, який живе в продукті.
+      if (/(^|\/)[^/]*\.config\.(ts|js|mjs|cjs)$/.test(file)) continue;
       if (!existsSync(join(ROOT, file))) continue;
       // Коментар — не новий код: вимагати тут тестів без причини.
       if (addedCodeLines(NEW_CODE_SINCE, file).length === 0) continue;

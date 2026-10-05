@@ -1,41 +1,17 @@
 /**
  * Page Builder — CompareSystemsBlock.
- *
- * System/parameter selection for the comparison workflow.
- * Replaces the hardcoded CompareSystemsPage.
- *
- * Reads dates from URL params, fetches available systems,
- * lets user select systems + parameters, then navigates to results.
- *
+ * Вибір систем і параметрів для співставлення. Дати бере з `?dates=`, реєстр
+ * систем — з `/api/mydate/systems`, далі веде на результат.
  * @module packages/ui/src/blocks/CompareSystemsBlock
  */
 
 import { useState, useEffect, useMemo, useCallback } from "react";
 import type { BlockComponentProps } from "@wwwuabot/shared/types/page-config";
-import { telegramAuthHeaders } from "@wwwuabot/shared/security/telegram";
+import { fetchSystems, type AnalysisSystem } from "./mydate/api";
 
 // ── Types ─────────────────────────────────────────────────────────
 
-interface SystemParameter {
-  key: string;
-  label: string;
-}
-
-interface SystemCard {
-  id: string;
-  name: string;
-  description: string;
-  implemented: boolean;
-  parameters?: SystemParameter[];
-}
-
-// ── API helpers ───────────────────────────────────────────────────
-
-async function fetchSystems(): Promise<SystemCard[]> {
-  const res = await fetch("/api/mydate/systems", { headers: telegramAuthHeaders() });
-  const data = await res.json();
-  return data?.ok ? data.systems : [];
-}
+type SystemCard = AnalysisSystem;
 
 // ── Main Block Component ──────────────────────────────────────────
 

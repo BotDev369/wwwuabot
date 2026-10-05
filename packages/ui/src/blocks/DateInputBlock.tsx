@@ -9,9 +9,7 @@
 
 import { useState } from "react";
 import type { BlockComponentProps } from "@wwwuabot/shared/types/page-config";
-
-/** Рядки адреси не можуть містити `_`, а дата — лише цифри й дефіс. */
-const DATE_RE = /^\d{4}-\d{2}-\d{2}$/;
+import { isValidDate } from "@wwwuabot/shared/utils/mydate-helpers";
 
 export function DateInputBlock({ block }: BlockComponentProps) {
   const {
@@ -31,7 +29,7 @@ export function DateInputBlock({ block }: BlockComponentProps) {
   };
 
   const [date, setDate] = useState("");
-  const ready = DATE_RE.test(date);
+  const ready = isValidDate(date);
 
   return (
     <div

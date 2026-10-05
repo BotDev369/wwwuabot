@@ -57,6 +57,19 @@ export function formatDate(raw: string): string {
   return `${parts[2]}.${parts[1]}.${parts[0]}`;
 }
 
+/**
+ * Чи це дата у форматі `YYYY-MM-DD` — єдиний, який приймає платформа.
+ *
+ * Парсер `formatDate` навмисно мовчить на сміття, а тут ні: значення приходить
+ * з адреси (`?date=`), тож «не дата» мусить відкидатися, а не малюватися.
+ */
+export function isValidDate(raw: string): boolean {
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(raw)) return false;
+  const [yyyy, mm, dd] = raw.split("-").map(Number);
+  if (mm < 1 || mm > 12 || dd < 1) return false;
+  return dd <= new Date(Date.UTC(yyyy, mm, 0)).getUTCDate();
+}
+
 // ── Type Helpers ────────────────────────────────────────────────────
 
 /** Отримати кастомні типи (не person/event/other). */

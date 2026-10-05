@@ -34,7 +34,11 @@ export default defineConfig({
     allowedHosts: [".monkeycode-ai.live"],
     proxy: {
       "/api": {
-        target: "http://localhost:8788",
+        // Локально API піднімається окремим `wrangler dev` на 8788, тож це
+        // значення за замовчуванням. Кероване прев'ю не має права піднімати
+        // другий процес (воно віддає зовні лише один порт), тому ціль
+        // перекривається змінною — на задеплоєний дев-воркер.
+        target: process.env.API_DEV_URL ?? "http://localhost:8788",
         changeOrigin: true,
       },
     },

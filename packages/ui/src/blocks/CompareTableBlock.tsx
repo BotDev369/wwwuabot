@@ -12,53 +12,12 @@
 
 import { Fragment, useState, useEffect, useMemo } from "react";
 import type { BlockComponentProps } from "@wwwuabot/shared/types/page-config";
-import { telegramAuthHeaders } from "@wwwuabot/shared/security/telegram";
+import { formatDate } from "@wwwuabot/shared/utils/mydate-helpers";
+import { compareDates, fetchSystems, type AnalysisSystem } from "./mydate/api";
 
 // ── Types ─────────────────────────────────────────────────────────
 
-interface SystemParameter {
-  key: string;
-  label: string;
-}
-
-interface SystemCard {
-  id: string;
-  name: string;
-  description: string;
-  implemented: boolean;
-  parameters?: SystemParameter[];
-}
-
-// ── API helpers ───────────────────────────────────────────────────
-
-async function fetchSystems(): Promise<SystemCard[]> {
-  const res = await fetch("/api/mydate/systems", { headers: telegramAuthHeaders() });
-  const data = await res.json();
-  return data?.ok ? data.systems : [];
-}
-
-async function compareDates(
-  dates: string[],
-  systemIds?: string[],
-  parameterKeys?: string[],
-): Promise<Record<string, Record<string, Record<string, string>>>> {
-  const res = await fetch("/api/mydate/compare", {
-    method: "POST",
-    headers: { "Content-Type": "application/json", ...telegramAuthHeaders() },
-    body: JSON.stringify({ dates, systemIds, parameterKeys }),
-  });
-  const data = await res.json();
-  if (!data?.ok) throw new Error(data?.error ?? "Помилка співставлення");
-  return data.matrix;
-}
-
-// ── Helpers ───────────────────────────────────────────────────────
-
-function formatDate(raw: string): string {
-  const parts = raw.split("-");
-  if (parts.length !== 3) return raw;
-  return `${parts[2]}.${parts[1]}.${parts[0]}`;
-}
+type SystemCard = AnalysisSystem;
 
 // ── Main Block Component ──────────────────────────────────────────
 
@@ -129,8 +88,12 @@ export function CompareTableBlock({ block }: BlockComponentProps) {
       .then((m) => {
         if (!cancelled) setMatrix(m);
       })
-      .catch(() => {
-        if (!cancelled) setError("Помилка мережі");
+      .catch((reason: unknown) => {
+        // Повідомлення сервера каже людині, що саме не так («Немає дат»), і
+        // втрачати його на користь спільного «Помилка мережі» — це дефект.
+        if (!cancelled) {
+          setError(reason instanceof Error ? reason.message : "Помилка мережі");
+        }
       })
       .finally(() => {
         if (!cancelled) setLoading(false);

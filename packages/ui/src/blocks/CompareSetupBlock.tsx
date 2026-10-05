@@ -12,14 +12,7 @@
 import { useState, useCallback } from "react";
 import { icons } from "@wwwuabot/shared";
 import type { BlockComponentProps } from "@wwwuabot/shared/types/page-config";
-
-// ── Helpers ───────────────────────────────────────────────────────
-
-function formatDate(raw: string): string {
-  const parts = raw.split("-");
-  if (parts.length !== 3) return raw;
-  return `${parts[2]}.${parts[1]}.${parts[0]}`;
-}
+import { formatDate } from "@wwwuabot/shared/utils/mydate-helpers";
 
 // ── Main Block Component ──────────────────────────────────────────
 
