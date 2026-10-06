@@ -345,4 +345,25 @@ describe("DateAnalysisBlock: аналіз — це два кроки", () => {
 
     expect(screen.getByText("Немає систем, які можна показати.")).toBeTruthy();
   });
+
+  // Стара обіцянка лишилась у `page_data` рядків, створених до зміни тексту, а
+  // міграцію в дев-базі запускає людина: без нормалізації екран показував би її.
+  it("старий підпис із `page_data` показує текстом, який у коді", async () => {
+    window.history.replaceState({}, "", "/mydate/analysis?date=1980-03-03&sys=western");
+    stubAnalysis();
+    render(<DateAnalysisBlock {...props({ title: "Аналіз за датою народження" })} />);
+    await settle();
+
+    expect(screen.getByRole("heading", { name: "Аналіз дати" })).toBeTruthy();
+    expect(screen.queryByText("Аналіз за датою народження")).toBeNull();
+  });
+
+  it("підпис, який людина написала сама, лишається як є", async () => {
+    window.history.replaceState({}, "", "/mydate/analysis?date=1980-03-03&sys=western");
+    stubAnalysis();
+    render(<DateAnalysisBlock {...props({ title: "  Що каже моя дата  " })} />);
+    await settle();
+
+    expect(screen.getByRole("heading", { name: "Що каже моя дата" })).toBeTruthy();
+  });
 });
