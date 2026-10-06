@@ -31,8 +31,11 @@ export interface UseMyDatesReturn
   handleSave: (data: Partial<MyDate>) => Promise<void>;
   handleDelete: (id: string) => Promise<void>;
   handleBulkDelete: () => Promise<void>;
-  /** Аналіз однієї вибраної дати — інший екран (`/mydate/analysis?date=…`). */
+  /**
+   * Аналіз однієї вибраної дати. Крок той самий, що в співставлення: спершу
+   * вибір систем і параметрів, а вже звідти — результат.
+   */
   handleBulkAnalyze: () => void;
-  /** Співставлення двох і більше вибраних дат. */
+  /** Співставлення двох і більше вибраних дат — той самий крок вибору. */
   handleBulkCompare: () => void;
 }

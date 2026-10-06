@@ -28,6 +28,16 @@ export type { UseMyDatesOptions, UseMyDatesReturn } from "./useMyDates.types";
 
 const errorText = (e: unknown) => `Помилка: ${String(e).slice(0, 100)}`;
 
+/**
+ * Адреса кроку «вибір систем і параметрів» — спільний перший крок і для однієї
+ * дати, і для кількох: обидві дії ведуть сюди, а вже звідси людина йде в
+ * результат (`CompareSystemsBlock` → `/mydate/compare/table`).
+ */
+function systemsUrl(dates: MyDate[]): string {
+  const param = encodeURIComponent(dates.map((d) => d.date).join(","));
+  return `/mydate/compare/systems?dates=${param}`;
+}
+
 export function useMyDates(options: UseMyDatesOptions = {}): UseMyDatesReturn {
   const { autoFetch = true, refreshAfterMutation = true } = options;
   const dialog = useDialog();
@@ -105,20 +115,25 @@ export function useMyDates(options: UseMyDatesOptions = {}): UseMyDatesReturn {
     }
   }, [afterMutation, dialog, selection]);
 
-  const handleBulkCompare = useCallback(() => {
-    const selected = filters.processedDates.filter((d) => selection.selectedIds.has(d.id));
-    if (selected.length < 2) return;
-    const param = encodeURIComponent(selected.map((d) => d.date).join(","));
-    window.location.href = `/mydate/compare/systems?dates=${param}`;
-  }, [filters.processedDates, selection.selectedIds]);
+  const selectedDates = useCallback(
+    () => filters.processedDates.filter((d) => selection.selectedIds.has(d.id)),
+    [filters.processedDates, selection.selectedIds],
+  );
 
-  // Аналіз — це **одна** дата: кільком датам відповідає співставлення, тож
-  // кнопки не підміняють одна одну, а стоять за кількістю вибраних.
+  const handleBulkCompare = useCallback(() => {
+    const selected = selectedDates();
+    if (selected.length < 2) return;
+    window.location.href = systemsUrl(selected);
+  }, [selectedDates]);
+
+  // Аналіз — це **одна** дата, співставлення — кілька, але крок у них спільний:
+  // спершу вибір систем і параметрів, і лише звідти — результат. Тому кнопки
+  // розрізняє підпис, а не адреса.
   const handleBulkAnalyze = useCallback(() => {
-    const selected = filters.processedDates.filter((d) => selection.selectedIds.has(d.id));
+    const selected = selectedDates();
     if (selected.length !== 1) return;
-    window.location.href = `/mydate/analysis?date=${encodeURIComponent(selected[0].date)}`;
-  }, [filters.processedDates, selection.selectedIds]);
+    window.location.href = systemsUrl(selected);
+  }, [selectedDates]);
 
   return {
     dates,

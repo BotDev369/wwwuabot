@@ -151,7 +151,7 @@ describe("useMyDates", () => {
     expect(href).toBe("/mydate/compare/systems?dates=2003-02-15%2C1980-03-03");
   });
 
-  it("аналіз іде на екран однієї дати і лише з одною вибраною", async () => {
+  it("аналіз іде на вибір систем і параметрів, а не одразу в результат", async () => {
     stubApi();
     let href = "";
     const real = window.location;
@@ -185,7 +185,8 @@ describe("useMyDates", () => {
     act(() => {
       result.current.handleBulkAnalyze();
     });
-    // Дата береться з рядка `scenarios`, а не з id: саме її читає блок аналізу.
-    expect(href).toBe("/mydate/analysis?date=1980-03-03");
+    // Адреса — крок вибору (`?dates=` читає `CompareSystemsBlock`), а не
+    // `?date=` сторінки аналізу: результат мусить бути кроком далі.
+    expect(href).toBe("/mydate/compare/systems?dates=1980-03-03");
   });
 });
