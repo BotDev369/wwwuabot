@@ -173,8 +173,20 @@ const ANALYSIS_SYSTEM = {
 
 const ANALYSIS_RESULT = {
   parameters: [
-    { key: "sunSign", label: "Знак Сонця", value: "Риби", hint: "Розчинення меж і чутливість." },
-    { key: "element", label: "Стихія", value: "Вода", hint: "Вплив радше відчувається." },
+    {
+      key: "sunSign",
+      label: "Знак Сонця",
+      value: "Риби",
+      about: "Головна якість суті: те, як вона проявляється назовні.",
+      meaning: "Розчинення меж і чутливість.",
+    },
+    {
+      key: "element",
+      label: "Стихія",
+      value: "Вода",
+      about: "Спосіб дії: чим якість живиться.",
+      meaning: "Вплив радше відчувається.",
+    },
   ],
   comingSoon: [],
 };
@@ -265,12 +277,16 @@ describe("DateAnalysisBlock: аналіз — це два кроки", () => {
     expect(nav.value()).toBe("/mydate/analysis?date=1980-03-03&sys=western&p=sunSign%2Celement");
   });
 
-  it("результат показує трактування значення, а не саме лише слово", async () => {
+  it("результат показує і пояснення параметра, і трактування значення", async () => {
     window.history.replaceState({}, "", "/mydate/analysis?date=1980-03-03&sys=western");
     stubAnalysis();
     render(<DateAnalysisBlock {...props()} />);
     await settle();
 
+    // Що визначаємо: назва параметра плюс пояснення самого параметра.
+    expect(screen.getByText("Знак Сонця")).toBeTruthy();
+    expect(screen.getByText("Головна якість суті: те, як вона проявляється назовні.")).toBeTruthy();
+    // Що отримали: значення і трактування саме цього значення.
     expect(screen.getByText("Риби")).toBeTruthy();
     expect(screen.getByText("Розчинення меж і чутливість.")).toBeTruthy();
     expect(screen.getByText("Вплив радше відчувається.")).toBeTruthy();
@@ -284,6 +300,7 @@ describe("DateAnalysisBlock: аналіз — це два кроки", () => {
 
     expect(screen.getByText("Риби")).toBeTruthy();
     expect(screen.queryByText("Вода")).toBeNull();
+    expect(screen.queryByText("Спосіб дії: чим якість живиться.")).toBeNull();
   });
 
   it("обрана система без збереженого аналізу рахується одразу", async () => {

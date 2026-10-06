@@ -1,8 +1,8 @@
 /**
  * Page Builder — DateAnalysisBlock.
  *
- * Аналіз однієї дати — окремий процес: спершу вибір систем і параметрів,
- * і лише звідти результати — картки з **трактуванням** кожного значення.
+ * Кожен параметр — у два шари: **що визначаємо** (назва й пояснення самого
+ * параметра) і **що отримали** (значення та його трактування).
  *
  * @module packages/ui/src/blocks/DateAnalysisBlock
  */
@@ -21,34 +21,54 @@ const CARD_STYLE = {
   borderRadius: "var(--radius-lg)",
 } as const;
 
+/** Назва параметра — окрема мітка над поясненням: спершу що визначаємо. */
+const PARAM_NAME_STYLE = {
+  margin: 0,
+  textTransform: "uppercase",
+  letterSpacing: "0.04em",
+} as const;
+
+/** Значення з трактуванням відділено рискою — це вже те, що отримали. */
+const PARAM_VALUE_STYLE = {
+  marginTop: "var(--sp-3)",
+  paddingLeft: "var(--sp-3)",
+  borderLeft: "2px solid var(--border-subtle, #e2e8f0)",
+} as const;
+
 /**
- * Параметр із трактуванням: значення праворуч, пояснення — під ним, на всю
- * ширину. Поруч із значенням пояснення не влізло б на 360px.
+ * Параметр у два шари: спершу **що визначаємо** (назва й пояснення параметра),
+ * потім **що отримали** (значення і трактування саме цього значення).
+ *
+ * Без першого шару трактування читається як слово без контексту: «Вода»
+ * пояснює себе лише поруч із тим, що міряє стихія.
  */
 function ParameterRow({ parameter }: { parameter: SystemResult["parameters"][number] }) {
   return (
     <div
       style={{
-        padding: "var(--sp-2) 0",
+        padding: "var(--sp-3) 0",
         borderBottom: "1px solid var(--border-subtle, #e2e8f0)",
       }}
     >
-      <div
-        style={{
-          display: "flex",
-          justifyContent: "space-between",
-          alignItems: "baseline",
-          gap: "var(--sp-3)",
-        }}
-      >
-        <span className="wb-text-sm">{parameter.label}</span>
-        <strong className="wb-text-sm">{parameter.value}</strong>
-      </div>
-      {parameter.hint && (
+      <p className="wb-text-xs wb-text-muted wb-font-semibold" style={PARAM_NAME_STYLE}>
+        {parameter.label}
+      </p>
+      {parameter.about && (
         <p className="wb-text-xs wb-text-muted" style={{ margin: "var(--sp-1) 0 0" }}>
-          {parameter.hint}
+          {parameter.about}
         </p>
       )}
+
+      <div style={PARAM_VALUE_STYLE}>
+        <p className="wb-text-base wb-font-semibold" style={{ margin: 0 }}>
+          {parameter.value}
+        </p>
+        {parameter.meaning && (
+          <p className="wb-text-sm wb-text-secondary" style={{ margin: "var(--sp-1) 0 0" }}>
+            {parameter.meaning}
+          </p>
+        )}
+      </div>
     </div>
   );
 }

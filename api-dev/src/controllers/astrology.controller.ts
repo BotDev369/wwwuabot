@@ -45,8 +45,8 @@ export async function handleAnalysisRead(
   }
   try {
     const stored = await getAnalysis(env.DB, env.CONTENT_KV, date);
-    // Знімок у D1 — без трактувань, тож дописуємо їх тут: інакше дата,
-    // порахована до появи довідника, лишилась би без пояснень назавжди.
+    // Знімок у D1 — без пояснень і трактувань, тож дописуємо їх тут: інакше
+    // дата, порахована до появи довідника, лишилась би без текстів назавжди.
     const systems = Object.fromEntries(
       Object.entries(stored).map(([systemId, result]) => [
         systemId,

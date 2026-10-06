@@ -224,8 +224,8 @@ describe("розрахунок і порівняння", () => {
 });
 
 /**
- * База зі **збереженим** аналізом дати: у знімку трактувань немає, тож видно
- * саме те, чи дописує їх відповідь.
+ * База зі **збереженим** аналізом дати: у знімку пояснень і трактувань немає,
+ * тож видно саме те, чи дописує їх відповідь.
  */
 function makeStoredEnv(): Env {
   const stored = JSON.stringify({
@@ -243,37 +243,43 @@ function makeStoredEnv(): Env {
   } as unknown as Env;
 }
 
-describe("трактування значень", () => {
-  it("розрахунок віддає трактування для кожного параметра", async () => {
+describe("пояснення й трактування", () => {
+  it("розрахунок віддає пояснення параметра й трактування значення", async () => {
     const res = await handleAnalyze(
       request("/api/mydate/analyze", { date: "1980-03-03", systemId: "western" }),
       makeEnv(),
     );
     const body = (await res.json()) as {
-      result: { parameters: Array<{ key: string; hint?: string }> };
+      result: { parameters: Array<{ key: string; about?: string; meaning?: string }> };
     };
 
     expect(res.status).toBe(200);
     expect(body.result.parameters.length).toBeGreaterThan(0);
     for (const parameter of body.result.parameters) {
-      expect(parameter.hint, `${parameter.key} без трактування`).toBeTruthy();
+      expect(parameter.about, `${parameter.key} без пояснення параметра`).toBeTruthy();
+      expect(parameter.meaning, `${parameter.key} без трактування значення`).toBeTruthy();
     }
   });
 
-  // Знімок у D1 писали до появи довідника — саме тому трактування додається
+  // Знімок у D1 писали до появи довідника — саме тому тексти додаються
   // під час відповіді, а не при розрахунку.
-  it("збережений аналіз теж дістає трактування", async () => {
+  it("збережений аналіз теж дістає пояснення й трактування", async () => {
     const res = await handleAnalysisRead(
       new Request("https://api.example.com/api/mydate/analysis/1980-03-03"),
       makeStoredEnv(),
       "1980-03-03",
     );
     const body = (await res.json()) as {
-      systems: Record<string, { parameters: Array<{ key: string; value: string; hint?: string }> }>;
+      systems: Record<
+        string,
+        { parameters: Array<{ key: string; value: string; about?: string; meaning?: string }> }
+      >;
     };
 
     expect(res.status).toBe(200);
-    expect(body.systems.western.parameters[0].value).toBe("Риби");
-    expect(body.systems.western.parameters[0].hint).toBeTruthy();
+    const parameter = body.systems.western.parameters[0];
+    expect(parameter.value).toBe("Риби");
+    expect(parameter.about).toBeTruthy();
+    expect(parameter.meaning).toBeTruthy();
   });
 });
