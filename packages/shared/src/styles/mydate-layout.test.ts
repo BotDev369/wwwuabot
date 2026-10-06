@@ -18,10 +18,6 @@ const css = readFileSync(new URL("./mydate.css", import.meta.url), "utf8").repla
 /** Телефонна частина файлу — усе, що стоїть після маркера медіазапиту. */
 const [wide, phone = ""] = css.split("@media (max-width: 520px)");
 
-function escape(selector: string): string {
-  return selector.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
-}
-
 /** Тіло блоку від `{` до парної `}` — разом із вкладеними, як у CSSOM. */
 function body(scope: string, open: number): string {
   let depth = 0;
