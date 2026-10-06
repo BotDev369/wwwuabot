@@ -20,13 +20,18 @@
  * рівно те, що вміщується в меню. Роутера в цьому кирпичику немає, тож дію
  * передає оболонка (`onTheme`, `onBack`).
  *
+ * **Хедер сам каже, скільки він займає** (`useAppBarHeight` → `--appbar-h`):
+ * від цього числа відлічують закріплені речі сторінки, а висота залежить від
+ * шрифту людини та довжини назви — числом із CSS її не задати.
+ *
  * @module packages/ui/src/nav/AppBar
  */
 
-import { useContext, type ReactElement } from "react";
+import { useContext, useRef, type ReactElement } from "react";
 import { Icon, type IconName } from "@wwwuabot/shared";
 import type { FavoriteTarget } from "@wwwuabot/shared/favorites";
 import { ScreenChromeContext, type ScreenChrome } from "./screen-chrome";
+import { useAppBarHeight } from "./useAppBarHeight";
 import { useCopyLink } from "./useCopyLink";
 import { useFavorite } from "../favorites/useFavorite";
 
@@ -54,9 +59,11 @@ export function AppBarView({
   onTheme,
 }: { chrome: ScreenChrome } & AppBarActions): ReactElement {
   const { title, menu, shareUrl, favorite } = chrome;
+  const header = useRef<HTMLElement>(null);
+  useAppBarHeight(header);
 
   return (
-    <header className="wb-appbar">
+    <header className="wb-appbar" ref={header}>
       <div className="wb-appbar__lead">
         <BarButton icon="arrow-left" label="Назад" onClick={onBack} />
         {menu && <BarButton icon="menu" label="Меню сторінки" onClick={menu} />}

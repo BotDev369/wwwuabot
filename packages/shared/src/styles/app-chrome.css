@@ -110,8 +110,9 @@
   display: flex;
   align-items: center;
   gap: var(--sp-2);
-  /* Висота — та сама, що в адмінці (`--appbar-h`): `--topbar-h` плюс
-     safe-area телефонів. */
+  /* Підлога, не стеля: справжню висоту хедер публікує сам (`useAppBarHeight`) —
+     вона залежить від шрифту людини й довжини назви, тож числом із токена
+     її не задати. Та сама мірка, що в адмінці. */
   min-height: var(--appbar-h);
   padding: var(--safe-top) var(--sp-2) 0;
   /* Фолбек для рушіїв без `color-mix()`/`backdrop-filter`: той самий колір,
