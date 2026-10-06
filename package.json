@@ -8,6 +8,9 @@
     "web-platform-dev",
     "web-admin-dev"
   ],
+  "overrides": {
+    "sharp": "0.35.5"
+  },
   "devDependencies": {
     "@eslint/js": "^10.0.1",
     "@testing-library/dom": "^10.4.2",

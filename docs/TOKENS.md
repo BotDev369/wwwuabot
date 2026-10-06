@@ -37,6 +37,7 @@
 | `var(--field-bg)` / `var(--field-ring)` | **Поле вводу**: колір і м'яка тінь по краях. Межу поля малюють вони, а не лінія. Світла / темна схема — `themes.css` |
 | `var(--chrome-header-bg)` / `--chrome-bottom-bg` | Нативний хром Telegram: шапка клієнта і смуга під футером; синхронізує `shared/app/telegram-chrome.ts`. З трьома кольорами це рівно `--user-bg` (плоский hex — саме тому він іде клієнту як є). Наші смуги (`.wb-app-header`, `.wb-topbar`, `.wb-tabbar`) малюються тими самими токенами на 91% і **без** ліній та тіней |
 | `--topbar-h` / `--nav-bar-h` / `--tab-bar-h` | Висоти смуг; `--tab-bar-h` = `--nav-bar-h` + `--safe-bottom` (не перевизначати третім числом) |
+| `--appbar-h` | Висота закріпленого хедера: `--topbar-h` + `--safe-top`. Одна на обидві оболонки, бо від неї відлічують закріплені речі сторінки (шапка таблиці стає під хедером) |
 | `--subbar-h` | Висота другої смуги футера |
 | `--sidebar-w` / `--sidebar-w-collapsed` / `--sidebar-w-vw` / `--scrim` | Геометрія навігації (однакова в обох оболонках) |
 | `--safe-top` / `--safe-bottom` | Краї екрана: `env(safe-area-inset-*)` + `--tg-safe-area-inset-*` від Telegram. Не 0 лише тоді, коли в `index.html` є `viewport-fit=cover` |

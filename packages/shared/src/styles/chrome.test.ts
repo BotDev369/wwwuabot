@@ -199,6 +199,23 @@ describe("стиль не переписує роль повноекранної
  * особистості» ставало «MyDate — ан…». Два рядки — межа, за яку назва
  * не росте, щоб не витісняти дії.
  */
+/**
+ * Висота хедера.
+ *
+ * Від неї відлічують закріплені речі сторінки — шапка таблиці стає під
+ * хедером через `top`. Поки формула «topbar + safe-area» стояла в трьох
+ * місцях, вищий хедер (назва у два рядки на телефоні) ховав шапку під собою,
+ * і це приходило мовчки.
+ */
+describe("висота хедера", () => {
+  it("один токен — `--appbar-h`, і хедер обох оболонок тримає саме його", () => {
+    const tokens = readFileSync(join(REPO_ROOT, "packages/shared/src/styles/tokens.css"), "utf8");
+    expect(tokens).toContain("--appbar-h: calc(var(--topbar-h) + var(--safe-top))");
+    expect(rule(".wb-appbar")?.body).toContain("min-height: var(--appbar-h)");
+    expect(rule(".wb-app-header")?.body).toContain("height: var(--appbar-h)");
+  });
+});
+
 describe("назва екрана", () => {
   it("на телефоні вміщується у два рядки замість обрізання на півслові", () => {
     const title = CHROME.filter((entry) => entry.selector === ".wb-appbar__title");

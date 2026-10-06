@@ -44,9 +44,15 @@ describe("шапка таблиці лишається на видноті", () 
 
   it("платформа зсуває закріплену шапку під хедер", () => {
     expect(rule(".wb-param-table th")).toContain("position: sticky");
-    expect(rule(".wb-tabbar-layout .wb-param-table th")).toContain(
-      "top: calc(var(--topbar-h) + var(--safe-top))",
-    );
+    // Зсув — токен висоти хедера, а не його формула: поки число стояло тут
+    // окремо, вищий хедер (назва у два рядки) ховав шапку під собою.
+    expect(rule(".wb-tabbar-layout .wb-param-table th")).toContain("top: var(--appbar-h)");
+  });
+
+  it("кути шапки повторюють рамку — її більше не обрізає `overflow`", () => {
+    // Прямокутник шапки з непрозорим тлом вилазив за заокруглені кути рамки.
+    expect(rule(".wb-param-table thead th:first-child")).toContain("border-top-left-radius");
+    expect(rule(".wb-param-table thead th:last-child")).toContain("border-top-right-radius");
   });
 
   it("таблиця співставлення вміщається в ширину екрана", () => {
