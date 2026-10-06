@@ -11,6 +11,7 @@
 
 import { describe, expect, it } from "vitest";
 import type { Env } from "../shared/types";
+import { INIT_DATA_HEADER } from "@wwwuabot/shared/security/telegram";
 import {
   handleAnalysisRead,
   handleAnalyze,
@@ -18,12 +19,52 @@ import {
   handleSystems,
 } from "./astrology.controller";
 
-function request(path: string, body: unknown): Request {
+const BOT_TOKEN = "123456:TEST-BOT-TOKEN";
+
+function request(path: string, body: unknown, initData?: string): Request {
   return new Request(`https://api.example.com${path}`, {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
+    headers: {
+      "Content-Type": "application/json",
+      ...(initData ? { [INIT_DATA_HEADER]: initData } : {}),
+    },
     body: typeof body === "string" ? body : JSON.stringify(body),
   });
+}
+
+// ── Підпис initData ───────────────────────────────────────────────
+// Копія зі `my-dates.controller.test.ts`, і навмисно: це фікстура тесту, а не
+// код продукту. Підписувач у `shared/src` умів би підробити ідентичність.
+
+async function hmac(key: ArrayBuffer | Uint8Array, data: string): Promise<ArrayBuffer> {
+  const cryptoKey = await crypto.subtle.importKey(
+    "raw",
+    key as BufferSource,
+    { name: "HMAC", hash: "SHA-256" },
+    false,
+    ["sign"],
+  );
+  return crypto.subtle.sign("HMAC", cryptoKey, new TextEncoder().encode(data));
+}
+
+function toHex(buffer: ArrayBuffer): string {
+  return Array.from(new Uint8Array(buffer))
+    .map((b) => b.toString(16).padStart(2, "0"))
+    .join("");
+}
+
+async function signedInitData(userId = 777): Promise<string> {
+  const params = new URLSearchParams({
+    auth_date: String(Math.floor(Date.now() / 1000)),
+    user: JSON.stringify({ id: userId, first_name: "Тест" }),
+  });
+  const checkString = [...params.entries()]
+    .map(([k, v]) => `${k}=${v}`)
+    .sort()
+    .join("\n");
+  const secret = await hmac(new TextEncoder().encode("WebAppData"), BOT_TOKEN);
+  params.set("hash", toHex(await hmac(secret, checkString)));
+  return params.toString();
 }
 
 /** Середовище без бази й KV: крок углиб упав би, а не «повернув порожнє». */
@@ -44,7 +85,10 @@ const SYSTEM = {
  * запиті**: інакше тест «порівняння бере тільки реалізовані» перевіряв би
  * сам фейк, а не рішення сервісу.
  */
-function makeEnv(rows: (typeof SYSTEM)[] = [SYSTEM]): Env {
+function makeEnv(
+  rows: (typeof SYSTEM)[] = [SYSTEM],
+  dates: Array<{ date: string; name: string | null }> = [],
+): Env {
   const kv = new Map<string, string>();
   const db = {
     prepare(sql: string) {
@@ -52,6 +96,7 @@ function makeEnv(rows: (typeof SYSTEM)[] = [SYSTEM]): Env {
         bind: () => statement,
         first: async () => null,
         all: async () => {
+          if (/FROM my_dates/.test(sql)) return { results: dates };
           if (!/FROM analysis_systems/.test(sql)) return { results: [] };
           // Умова `is_active` виконується за текстом запиту: якщо SQL перестане
           // фільтрувати, тест «вимкнена система не показується» стане зеленим
@@ -68,6 +113,7 @@ function makeEnv(rows: (typeof SYSTEM)[] = [SYSTEM]): Env {
     },
   };
   return {
+    BOT_TOKEN,
     DB: db as unknown as D1Database,
     CONTENT_KV: {
       get: async (key: string) => kv.get(key) ?? null,
@@ -220,6 +266,33 @@ describe("розрахунок і порівняння", () => {
 
     expect(res.status).toBe(400);
     expect(await res.json()).toEqual({ ok: false, error: "Too many dates, max 30" });
+  });
+
+  // Назва дати — не з матриці: вона живе в `my_dates` людини. Без ідентичності
+  // її просто немає, і таблиця показує саму дату — порівняння не ламається.
+  it("назва дати з `my_dates` їде поруч із матрицею", async () => {
+    const res = await handleCompare(
+      request("/api/mydate/compare", { dates: ["1980-03-03"] }, await signedInitData()),
+      makeEnv([SYSTEM], [{ date: "1980-03-03", name: "Мама" }]),
+    );
+    const body = (await res.json()) as { names: Record<string, string> };
+
+    expect(body.names).toEqual({ "1980-03-03": "Мама" });
+  });
+
+  it("без підписаного `initData` назв немає, а таблиця лишається", async () => {
+    const res = await handleCompare(
+      request("/api/mydate/compare", { dates: ["1980-03-03"] }),
+      makeEnv([SYSTEM], [{ date: "1980-03-03", name: "Мама" }]),
+    );
+    const body = (await res.json()) as {
+      names: Record<string, string>;
+      matrix: Record<string, unknown>;
+    };
+
+    expect(res.status).toBe(200);
+    expect(body.names).toEqual({});
+    expect(Object.keys(body.matrix)).toEqual(["1980-03-03"]);
   });
 });
 

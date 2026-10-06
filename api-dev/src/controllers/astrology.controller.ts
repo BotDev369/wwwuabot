@@ -5,6 +5,8 @@ import { apiLog } from "../shared/logger";
 import { SYSTEM_CALCULATORS, getAnalysis, saveAnalysis } from "../shared/mydate-helpers";
 import { withMeanings } from "../shared/mydate-interpretations";
 import { listAnalysisSystems, listImplementedSystems } from "../services/analysis-systems.service";
+import { dateNamesFor } from "../services/my-dates.service";
+import { tryResolveUserId } from "../shared/identity";
 
 const DATE_RE = /^\d{4}-\d{2}-\d{2}$/;
 
@@ -126,6 +128,11 @@ export async function handleCompare(request: Request, env: Env): Promise<Respons
       return json({ ok: false, error: "Too many dates, max 30" }, 400);
     }
 
+    // Назви дат — для шапки таблиці: без ідентичності вони просто не приїжджають,
+    // а порівняння лишається робочим (дата — те, що показано в рядку шапки).
+    const userId = await tryResolveUserId(request, env);
+    const names = userId === null ? {} : await dateNamesFor(env.DB, userId, validDates);
+
     const registry = await listImplementedSystems(env.DB);
     const targetSystems = systemIds ? registry.filter((s) => systemIds.includes(s.id)) : registry;
 
@@ -171,6 +178,7 @@ export async function handleCompare(request: Request, env: Env): Promise<Respons
       systems: targetSystems.map((s) => s.id),
       matrix,
       details,
+      names,
     });
   } catch (e: unknown) {
     apiLog.error("Compare error", e);

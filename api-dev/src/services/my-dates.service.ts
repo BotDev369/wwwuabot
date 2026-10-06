@@ -85,6 +85,33 @@ export async function listMyDates(db: D1Database, userId: number): Promise<MyDat
 }
 
 /**
+ * Назви (`name`) за самими датами — для шапки співставлення: стовпець підписано
+ * датою, а людина знає свої дати за назвою. Порожня назва — не назва: таку дату
+ * лишаємо самою датою, без другого рядка.
+ */
+export async function dateNamesFor(
+  db: D1Database,
+  userId: number,
+  dates: string[],
+): Promise<Record<string, string>> {
+  if (dates.length === 0) return {};
+  await ensureMyDatesSchema(db);
+
+  const placeholders = dates.map(() => "?").join(", ");
+  const result = await db
+    .prepare(`SELECT date, name FROM my_dates WHERE user_id = ? AND date IN (${placeholders})`)
+    .bind(userId, ...dates)
+    .all<{ date: string; name: string | null }>();
+
+  const names: Record<string, string> = {};
+  for (const row of result.results ?? []) {
+    const name = row.name?.trim();
+    if (name && !names[row.date]) names[row.date] = name;
+  }
+  return names;
+}
+
+/**
  * Додати дату.
  *
  * Номер (`id`) приходить від клієнта, а не народжується тут: дата — запис у

@@ -93,6 +93,7 @@ describe("compareDates", () => {
     await expect(compareDates(["1980-03-03"], ["western"], ["sign"])).resolves.toEqual({
       matrix,
       details,
+      names: {},
     });
     const call = lastCall();
     expect(call.url).toBe("/api/mydate/compare");
@@ -108,7 +109,21 @@ describe("compareDates", () => {
   it("без `details` у відповіді матриця все одно приходить", async () => {
     const matrix = { "1980-03-03": { western: { sign: "Овен" } } };
     respond({ ok: true, matrix });
-    await expect(compareDates(["1980-03-03"])).resolves.toEqual({ matrix, details: {} });
+    await expect(compareDates(["1980-03-03"])).resolves.toEqual({
+      matrix,
+      details: {},
+      names: {},
+    });
+  });
+
+  // Назва дати — те, чим людина її знає: без неї в шапці лишається число.
+  it("назви дат приходять разом із матрицею", async () => {
+    respond({ ok: true, matrix: {}, details: {}, names: { "1980-03-03": "Мама" } });
+    await expect(compareDates(["1980-03-03"])).resolves.toEqual({
+      matrix: {},
+      details: {},
+      names: { "1980-03-03": "Мама" },
+    });
   });
 
   it("помилку сервера показує людині", async () => {

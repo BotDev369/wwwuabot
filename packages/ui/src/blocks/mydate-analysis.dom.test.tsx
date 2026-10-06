@@ -38,6 +38,7 @@ function props(over: Record<string, unknown> = {}): BlockComponentProps {
 function stubApi(
   matrix?: Record<string, Record<string, Record<string, string>>>,
   details?: Record<string, Record<string, Record<string, { about?: string; meaning?: string }>>>,
+  names?: Record<string, string>,
 ) {
   vi.stubGlobal(
     "fetch",
@@ -45,7 +46,7 @@ function stubApi(
       const body = url.includes("/api/mydate/systems")
         ? { ok: true, systems: [SYSTEM] }
         : url.includes("/api/mydate/compare")
-          ? { ok: true, matrix, details }
+          ? { ok: true, matrix, details, names }
           : { ok: true, systems: {} };
       return new Response(JSON.stringify(body), { status: 200 });
     }),
@@ -171,6 +172,38 @@ describe("CompareTableBlock", () => {
     await user.click(screen.getByRole("button", { name: "Знак" }));
     expect(screen.getByText("Сонце в знаку")).toBeTruthy();
     expect(screen.getByText("Дія, старт.")).toBeTruthy();
+  });
+
+  // Заголовок живе в контенті, а `?dates=` кожен свій: під назвою дати видно,
+  // який стовпець чий, і рядок системи не губиться на прокрутці.
+  it("у шапці під датою стоїть назва дати, а назва системи — окремим рядком", async () => {
+    window.history.replaceState(
+      {},
+      "",
+      "/mydate/compare/table?dates=1980-03-03,2004-10-07&sys=western&p=sign",
+    );
+    stubApi({ "1980-03-03": { western: { sign: "Овен" } } }, {}, { "2004-10-07": "Донька" });
+    render(<CompareTableBlock {...props({ title: "Порівняння за датами" })} />);
+    await settle();
+
+    expect(screen.getByRole("heading", { name: "Порівняння дат" })).toBeTruthy();
+    expect(screen.getByText("07.10.2004")).toBeTruthy();
+    expect(screen.getByText("Донька")).toBeTruthy();
+    expect(screen.getByText("Західна астрологія")).toBeTruthy();
+  });
+
+  // Підказка про прокрутку повторювала те, що видно з самої таблиці.
+  it("не пояснює, що таблиця скролиться", async () => {
+    window.history.replaceState(
+      {},
+      "",
+      "/mydate/compare/table?dates=1980-03-03&sys=western&p=sign",
+    );
+    stubApi({ "1980-03-03": { western: { sign: "Овен" } } });
+    render(<CompareTableBlock {...props()} />);
+    await settle();
+
+    expect(screen.queryByText(/Прокручуйте таблицю/)).toBeNull();
   });
 });
 

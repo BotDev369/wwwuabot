@@ -20,6 +20,7 @@ import {
   type CompareDetails,
   type CompareMatrix,
 } from "./mydate/api";
+import { mydateTitle } from "./mydate/screen-title";
 
 // ── Types ─────────────────────────────────────────────────────────
 
@@ -29,7 +30,7 @@ type SystemCard = AnalysisSystem;
 
 export function CompareTableBlock({ block }: BlockComponentProps) {
   const {
-    title = "Співставлення дат",
+    title: storedTitle,
     backUrl = "/mydate/compare/setup",
     paramKey = "dates",
     systemKey = "sys",
@@ -41,6 +42,8 @@ export function CompareTableBlock({ block }: BlockComponentProps) {
     systemKey?: string;
     parameterKey?: string;
   };
+
+  const title = mydateTitle("compareTable", storedTitle);
 
   // Parse dates from URL path segment: /date1+date2+date3
   const dates = useMemo(() => {
@@ -71,6 +74,7 @@ export function CompareTableBlock({ block }: BlockComponentProps) {
   const [systems, setSystems] = useState<SystemCard[]>([]);
   const [matrix, setMatrix] = useState<CompareMatrix>({});
   const [details, setDetails] = useState<CompareDetails>({});
+  const [names, setNames] = useState<Record<string, string>>({});
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -98,6 +102,7 @@ export function CompareTableBlock({ block }: BlockComponentProps) {
         if (cancelled) return;
         setMatrix(result.matrix);
         setDetails(result.details);
+        setNames(result.names);
       })
       .catch((reason: unknown) => {
         // Повідомлення сервера каже людині, що саме не так («Немає дат»), і
@@ -147,9 +152,6 @@ export function CompareTableBlock({ block }: BlockComponentProps) {
   return (
     <div className="wb-block-compare-table">
       <h2>{title}</h2>
-      <p className="wb-text-sm wb-text-muted" style={{ marginBottom: "var(--sp-4)" }}>
-        Прокручуйте таблицю горизонтально, щоб бачити всі дати.
-      </p>
 
       {loading && <p className="wb-text-sm wb-text-muted">Аналізуємо...</p>}
       {error && (
@@ -166,7 +168,8 @@ export function CompareTableBlock({ block }: BlockComponentProps) {
                 <th scope="col">Параметр</th>
                 {dates.map((d) => (
                   <th key={d} scope="col">
-                    {formatDate(d)}
+                    <span className="wb-param-date">{formatDate(d)}</span>
+                    {names[d] ? <span className="wb-param-date__name">{names[d]}</span> : null}
                   </th>
                 ))}
               </tr>
@@ -185,7 +188,12 @@ export function CompareTableBlock({ block }: BlockComponentProps) {
                   <Fragment key={rowId}>
                     {showSystemHeader && (
                       <tr className="wb-param-group">
-                        <td colSpan={dates.length + 1}>{r.systemName}</td>
+                        {/* Назва системи — у закріпленому першому стовпці: комірка
+                            на всю ширину на прокрутці обрізалась на краю. */}
+                        <td>{r.systemName}</td>
+                        {dates.map((d) => (
+                          <td key={d} />
+                        ))}
                       </tr>
                     )}
                     <tr>

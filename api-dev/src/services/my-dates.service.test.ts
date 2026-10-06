@@ -11,6 +11,7 @@ import { describe, expect, it } from "vitest";
 
 import {
   addMyDate,
+  dateNamesFor,
   deleteMyDates,
   listMyDates,
   normalizeType,
@@ -239,6 +240,43 @@ describe("видалення", () => {
 
     expect(await deleteMyDates(db, ME, [])).toBe(0);
     expect(statements.some((s) => /DELETE FROM my_dates/.test(s.sql))).toBe(false);
+  });
+});
+
+/**
+ * Назви дат для шапки співставлення: стовпець підписано датою, але людина знає
+ * свої дати за назвою. Порожня назва — не назва: другого рядка не буде.
+ */
+describe("назви дат", () => {
+  it("назву бере за датою, а порожню не віддає", async () => {
+    const { db, statements } = makeDb([
+      { user_id: ME, id: "a", date: "1980-03-03", name: "Мама" },
+      { user_id: ME, id: "b", date: "2004-10-07", name: "   " },
+    ]);
+
+    await expect(dateNamesFor(db, ME, ["1980-03-03", "2004-10-07"])).resolves.toEqual({
+      "1980-03-03": "Мама",
+    });
+
+    // Дати відсікає сам `WHERE`, а не пам'ять після читання всіх рядків людини.
+    expect(statements.at(-1)?.binds).toEqual([ME, "1980-03-03", "2004-10-07"]);
+  });
+
+  it("одна дата в кількох рядках — назва не губиться", async () => {
+    const { db } = makeDb([
+      { user_id: ME, id: "a", date: "1980-03-03", name: "" },
+      { user_id: ME, id: "b", date: "1980-03-03", name: "Мама" },
+    ]);
+
+    await expect(dateNamesFor(db, ME, ["1980-03-03"])).resolves.toEqual({ "1980-03-03": "Мама" });
+  });
+
+  // `IN ()` — це помилка SQL, а не порожній перелік: без дат запиту немає.
+  it("без дат у базу не йде", async () => {
+    const { db, statements } = makeDb([]);
+
+    await expect(dateNamesFor(db, ME, [])).resolves.toEqual({});
+    expect(statements).toHaveLength(0);
   });
 });
 

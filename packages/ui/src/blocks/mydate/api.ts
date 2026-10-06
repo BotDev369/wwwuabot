@@ -40,6 +40,8 @@ export type CompareDetails = Record<
 export interface CompareResult {
   matrix: CompareMatrix;
   details: CompareDetails;
+  /** Назви дат (`my_dates.name`) під датою в шапці; без назви ключа немає. */
+  names: Record<string, string>;
 }
 
 function json(response: Response): Promise<Record<string, unknown>> {
@@ -143,5 +145,6 @@ export async function compareDates(
   return {
     matrix: (data.matrix ?? {}) as CompareMatrix,
     details: (data.details ?? {}) as CompareDetails,
+    names: (data.names ?? {}) as Record<string, string>,
   };
 }

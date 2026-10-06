@@ -141,14 +141,14 @@ export const botDomainBlocks: BlockDefinition[] = [
     category: "bot-domain",
     description: "Матриця порівняння дат за системами аналізу",
     props: {
-      title: s("Заголовок", { default: "Співставлення дат" }),
+      title: s("Заголовок", { default: "Порівняння дат" }),
       backUrl: s("URL назад", { default: "/mydate/compare/setup" }),
       paramKey: s("Query-параметр для дат", { default: "dates" }),
       systemKey: s("Query-параметр для систем", { default: "sys" }),
       parameterKey: s("Query-параметр для параметрів", { default: "p" }),
     },
     defaultProps: {
-      title: "Співставлення дат",
+      title: "Порівняння дат",
       backUrl: "/mydate/compare/setup",
       paramKey: "dates",
       systemKey: "sys",

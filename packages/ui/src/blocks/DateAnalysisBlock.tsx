@@ -12,7 +12,7 @@ import type { BlockComponentProps } from "@wwwuabot/shared/types/page-config";
 import { isValidDate } from "@wwwuabot/shared/utils/mydate-helpers";
 import { SystemsPicker } from "./systems-picker";
 import { SystemParameterTable } from "./date-analysis/SystemParameterTable";
-import { analysisTitle } from "./date-analysis/title";
+import { mydateTitle } from "./mydate/screen-title";
 import { useDateAnalysis } from "./date-analysis/useDateAnalysis";
 
 function DateAnalysisFlow({
@@ -93,7 +93,7 @@ export function DateAnalysisBlock({ block }: BlockComponentProps) {
     targetUrl?: string;
   };
 
-  const title = analysisTitle(storedTitle);
+  const title = mydateTitle("analysis", storedTitle);
 
   const date = useMemo(() => {
     if (dateSource === "custom" && customDate) return customDate;
