@@ -40,3 +40,52 @@ describe("Page Builder New Blocks", () => {
     }
   });
 });
+
+/**
+ * Блоки mydate живуть у рядках контенту (`scripts/migrations/*-mydate-*.sql`),
+ * і адреси екранів там же одні: `/mydate`, `/mydate/analysis`,
+ * `/mydate/compare/{setup,systems,table}`. Дефолт, що веде поза цей перелік, не
+ * падає — він тихо показує фолбек, тож перевіряється саме адреса. Без
+ * визначення блок не має схеми, і редактор адмінки не дає його правити.
+ */
+describe("MyDate — визначення блоків і адреси екранів", () => {
+  const MYDATE_SCREENS = [
+    "/mydate",
+    "/mydate/analysis",
+    "/mydate/compare/setup",
+    "/mydate/compare/systems",
+    "/mydate/compare/table",
+  ];
+
+  const URL_PROPS: Array<[string, string]> = [
+    ["date-input", "basePath"],
+    ["compare-setup", "nextUrl"],
+    ["compare-systems", "resultUrl"],
+    ["compare-table", "backUrl"],
+    ["date-analysis", "backUrl"],
+    ["date-analysis", "targetUrl"],
+  ];
+
+  it("кожна адреса за замовчуванням веде на наявний екран", () => {
+    for (const [type, prop] of URL_PROPS) {
+      const definition = getBlockDefinition(type);
+      expect(definition, type).toBeDefined();
+      const url = definition?.defaultProps[prop];
+      expect(typeof url, `${type}.${prop}`).toBe("string");
+      expect(MYDATE_SCREENS, `${type}.${prop} = ${String(url)}`).toContain(url);
+    }
+  });
+
+  it("кожне поле, яке читає блок, оголошене у схемі", () => {
+    for (const [type, prop] of URL_PROPS) {
+      const schema = getBlockDefinition(type)?.schema as
+        { properties?: Record<string, unknown> } | undefined;
+      expect(schema?.properties?.[prop], `${type}.${prop}`).toBeDefined();
+    }
+  });
+
+  it("ввід дати веде на сторінку аналізу, а не на свій же екран", () => {
+    const def = getBlockDefinition("date-input")?.defaultProps ?? {};
+    expect(`${String(def.basePath)}/${String(def.targetPath)}`).toBe("/mydate/analysis");
+  });
+});

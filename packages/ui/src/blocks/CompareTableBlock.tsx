@@ -30,7 +30,7 @@ type SystemCard = AnalysisSystem;
 export function CompareTableBlock({ block }: BlockComponentProps) {
   const {
     title = "Співставлення дат",
-    backUrl = "/mydate/compare",
+    backUrl = "/mydate/compare/setup",
     paramKey = "dates",
     systemKey = "sys",
     parameterKey = "p",
