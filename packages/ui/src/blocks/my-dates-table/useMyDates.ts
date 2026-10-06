@@ -29,13 +29,21 @@ export type { UseMyDatesOptions, UseMyDatesReturn } from "./useMyDates.types";
 const errorText = (e: unknown) => `Помилка: ${String(e).slice(0, 100)}`;
 
 /**
- * Адреса кроку «вибір систем і параметрів» — спільний перший крок і для однієї
- * дати, і для кількох: обидві дії ведуть сюди, а вже звідси людина йде в
- * результат (`CompareSystemsBlock` → `/mydate/compare/table`).
+ * Співставлення — це кілька дат, і його перший крок спільний: адреса нижче
+ * веде на вибір систем уже в процесі співставлення.
  */
-function systemsUrl(dates: MyDate[]): string {
+function compareSystemsUrl(dates: MyDate[]): string {
   const param = encodeURIComponent(dates.map((d) => d.date).join(","));
   return `/mydate/compare/systems?dates=${param}`;
+}
+
+/**
+ * Аналіз — це одна дата і **свій** процес: вибір систем і параметрів стоїть на
+ * екрані аналізу, а не на екрані співставлення. Одна адреса на два процеси
+ * вела в «співставлення дат» замість аналізу.
+ */
+function analysisUrl(date: string): string {
+  return `/mydate/analysis?date=${encodeURIComponent(date)}`;
 }
 
 export function useMyDates(options: UseMyDatesOptions = {}): UseMyDatesReturn {
@@ -123,16 +131,15 @@ export function useMyDates(options: UseMyDatesOptions = {}): UseMyDatesReturn {
   const handleBulkCompare = useCallback(() => {
     const selected = selectedDates();
     if (selected.length < 2) return;
-    window.location.href = systemsUrl(selected);
+    window.location.href = compareSystemsUrl(selected);
   }, [selectedDates]);
 
-  // Аналіз — це **одна** дата, співставлення — кілька, але крок у них спільний:
-  // спершу вибір систем і параметрів, і лише звідти — результат. Тому кнопки
-  // розрізняє підпис, а не адреса.
+  // Аналіз веде **в аналіз**: далі екран сам спитає системи й параметри. Та сама
+  // адреса в обох дій робила з аналізу співставлення.
   const handleBulkAnalyze = useCallback(() => {
     const selected = selectedDates();
     if (selected.length !== 1) return;
-    window.location.href = systemsUrl(selected);
+    window.location.href = analysisUrl(selected[0].date);
   }, [selectedDates]);
 
   return {

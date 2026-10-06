@@ -3,6 +3,7 @@ import type { Env } from "../shared/types";
 import { readBody } from "../shared/body";
 import { apiLog } from "../shared/logger";
 import { SYSTEM_CALCULATORS, getAnalysis, saveAnalysis } from "../shared/mydate-helpers";
+import { withMeanings } from "../shared/mydate-interpretations";
 import { listAnalysisSystems, listImplementedSystems } from "../services/analysis-systems.service";
 
 const DATE_RE = /^\d{4}-\d{2}-\d{2}$/;
@@ -43,7 +44,15 @@ export async function handleAnalysisRead(
     return json({ ok: false, error: "Invalid date format, expected YYYY-MM-DD" }, 400);
   }
   try {
-    const systems = await getAnalysis(env.DB, env.CONTENT_KV, date);
+    const stored = await getAnalysis(env.DB, env.CONTENT_KV, date);
+    // Знімок у D1 — без трактувань, тож дописуємо їх тут: інакше дата,
+    // порахована до появи довідника, лишилась би без пояснень назавжди.
+    const systems = Object.fromEntries(
+      Object.entries(stored).map(([systemId, result]) => [
+        systemId,
+        withMeanings(systemId, result),
+      ]),
+    );
     return json({ ok: true, date, systems });
   } catch (e: unknown) {
     apiLog.error("Analysis read error", e);
@@ -74,7 +83,13 @@ export async function handleAnalyze(request: Request, env: Env): Promise<Respons
     const result = calculator(date);
     const allSystems = await saveAnalysis(env.DB, env.CONTENT_KV, date, systemId, result);
 
-    return json({ ok: true, date, systemId, result, systems: allSystems });
+    return json({
+      ok: true,
+      date,
+      systemId,
+      result: withMeanings(systemId, result),
+      systems: allSystems,
+    });
   } catch (e: unknown) {
     apiLog.error("Analyze error", e);
     const msg = e instanceof Error ? e.message : "Unknown error";

@@ -151,7 +151,7 @@ describe("useMyDates", () => {
     expect(href).toBe("/mydate/compare/systems?dates=2003-02-15%2C1980-03-03");
   });
 
-  it("аналіз іде на вибір систем і параметрів, а не одразу в результат", async () => {
+  it("аналіз іде в аналіз, а не в процес співставлення", async () => {
     stubApi();
     let href = "";
     const real = window.location;
@@ -185,8 +185,9 @@ describe("useMyDates", () => {
     act(() => {
       result.current.handleBulkAnalyze();
     });
-    // Адреса — крок вибору (`?dates=` читає `CompareSystemsBlock`), а не
-    // `?date=` сторінки аналізу: результат мусить бути кроком далі.
-    expect(href).toBe("/mydate/compare/systems?dates=1980-03-03");
+    // Аналіз і співставлення — різні процеси: кнопка веде на екран аналізу, а
+    // вибір систем і параметрів стоїть уже там (`?sys=` в адресі).
+    expect(href).toBe("/mydate/analysis?date=1980-03-03");
+    expect(href).not.toContain("compare");
   });
 });

@@ -11,7 +11,12 @@
 
 import { describe, expect, it } from "vitest";
 import type { Env } from "../shared/types";
-import { handleAnalyze, handleCompare, handleSystems } from "./astrology.controller";
+import {
+  handleAnalysisRead,
+  handleAnalyze,
+  handleCompare,
+  handleSystems,
+} from "./astrology.controller";
 
 function request(path: string, body: unknown): Request {
   return new Request(`https://api.example.com${path}`, {
@@ -215,5 +220,60 @@ describe("розрахунок і порівняння", () => {
 
     expect(res.status).toBe(400);
     expect(await res.json()).toEqual({ ok: false, error: "Too many dates, max 30" });
+  });
+});
+
+/**
+ * База зі **збереженим** аналізом дати: у знімку трактувань немає, тож видно
+ * саме те, чи дописує їх відповідь.
+ */
+function makeStoredEnv(): Env {
+  const stored = JSON.stringify({
+    western: { parameters: [{ key: "sunSign", label: "Знак Сонця", value: "Риби" }] },
+  });
+  const statement = {
+    bind: () => statement,
+    first: async () => ({ systems_data: stored }),
+    all: async () => ({ results: [] }),
+    run: async () => ({ meta: { changes: 1 } }),
+  };
+  return {
+    DB: { prepare: () => statement } as unknown as D1Database,
+    CONTENT_KV: { get: async () => null, put: async () => {} } as unknown as KVNamespace,
+  } as unknown as Env;
+}
+
+describe("трактування значень", () => {
+  it("розрахунок віддає трактування для кожного параметра", async () => {
+    const res = await handleAnalyze(
+      request("/api/mydate/analyze", { date: "1980-03-03", systemId: "western" }),
+      makeEnv(),
+    );
+    const body = (await res.json()) as {
+      result: { parameters: Array<{ key: string; hint?: string }> };
+    };
+
+    expect(res.status).toBe(200);
+    expect(body.result.parameters.length).toBeGreaterThan(0);
+    for (const parameter of body.result.parameters) {
+      expect(parameter.hint, `${parameter.key} без трактування`).toBeTruthy();
+    }
+  });
+
+  // Знімок у D1 писали до появи довідника — саме тому трактування додається
+  // під час відповіді, а не при розрахунку.
+  it("збережений аналіз теж дістає трактування", async () => {
+    const res = await handleAnalysisRead(
+      new Request("https://api.example.com/api/mydate/analysis/1980-03-03"),
+      makeStoredEnv(),
+      "1980-03-03",
+    );
+    const body = (await res.json()) as {
+      systems: Record<string, { parameters: Array<{ key: string; value: string; hint?: string }> }>;
+    };
+
+    expect(res.status).toBe(200);
+    expect(body.systems.western.parameters[0].value).toBe("Риби");
+    expect(body.systems.western.parameters[0].hint).toBeTruthy();
   });
 });

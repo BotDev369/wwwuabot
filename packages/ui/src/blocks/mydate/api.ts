@@ -14,9 +14,12 @@ export type AnalysisSystem = Omit<MyDateSystem, "parameters"> & {
   parameters?: MyDateSystem["parameters"];
 };
 
-/** Результат аналізу однієї системи — значення приходять уже рядками. */
+/**
+ * Результат аналізу однієї системи — значення приходять уже рядками.
+ * `hint` — трактування значення; дописує його сервер під час відповіді.
+ */
 export interface SystemResult {
-  parameters: { key: string; label: string; value: string }[];
+  parameters: { key: string; label: string; value: string; hint?: string }[];
   comingSoon: string[];
 }
 

@@ -2,7 +2,8 @@ import { ensureTables } from "@wwwuabot/shared/database/ensure-tables";
 import { SIGN_ORDER, SIGN_CUTOFFS, SIGN_META } from "./constants";
 
 export interface SystemAnalysisResult {
-  parameters?: Array<{ key: string; label?: string; value: unknown }>;
+  /** `hint` дописує `withMeanings` уже під час відповіді, а не при розрахунку. */
+  parameters?: Array<{ key: string; label?: string; value: unknown; hint?: string }>;
   comingSoon?: string[];
   [key: string]: unknown;
 }
