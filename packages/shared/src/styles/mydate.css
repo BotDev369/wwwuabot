@@ -212,8 +212,6 @@
     justify-content: center;
     width: 44px;
     height: 44px;
-    margin: 0;
-    padding: 0 !important;
   }
 
   .wb-date-cell--pick::before {
