@@ -8,7 +8,7 @@
  * (`AGENTS.md` §3, «двічі — в спільне»).
  *
  * Цей файл — лише композиція: стан живе у `useDateFilters`, `useDateSelection`,
- * `useDateExpansion` і `useDateModal`, перетворення — у `filter-sort`,
+ * `useExpansion` і `useDateModal`, перетворення — у `filter-sort`,
  * запити — в `api`.
  *
  * @module packages/ui/src/blocks/my-dates-table/useMyDates
@@ -16,9 +16,9 @@
 
 import { useCallback, useEffect, useState } from "react";
 import { useDialog } from "../../dialog";
+import { useExpansion } from "@wwwuabot/ui/hooks";
 import type { MyDate } from "./types";
 import { deleteMyDate, deleteMyDates, fetchMyDates, saveMyDate } from "../mydate/api";
-import { useDateExpansion } from "./useDateExpansion";
 import { useDateFilters } from "./useDateFilters";
 import { useDateModal } from "./useDateModal";
 import { useDateSelection } from "./useDateSelection";
@@ -72,7 +72,7 @@ export function useMyDates(options: UseMyDatesOptions = {}): UseMyDatesReturn {
 
   const filters = useDateFilters(dates);
   const selection = useDateSelection(filters.processedDates);
-  const expansion = useDateExpansion();
+  const expansion = useExpansion();
   const modal = useDateModal();
 
   const afterMutation = useCallback(async () => {

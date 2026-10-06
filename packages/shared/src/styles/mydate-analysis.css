@@ -1,0 +1,138 @@
+/* ── Аналіз дати: таблиця параметрів із акордеонами ────────────────────
+   Кожен параметр — рядок-акордеон, а список лежить у рамці з власним
+   скролом. Рамка тут не оздоблення: у контейнера, який скролить
+   горизонтально (`overflow-x`), вертикального скролу не буває, тож
+   закріпити шапку інакше нема як — а в співставленні треба закріпити ще й
+   перший стовпець, і обидва працюють лише разом із власним скролом. */
+
+.wb-analysis-systems {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-5);
+}
+
+.wb-analysis-systems__name {
+  margin: 0 0 var(--sp-2);
+}
+
+.wb-param-frame {
+  overflow: auto;
+  /* Фолбек перед `dvh`: у телефонних браузерах `vh` міряє висоту без смуги
+     адреси, тож 68vh нижче за потрібне — але скрол від цього не ламається. */
+  max-height: 68vh;
+  max-height: 68dvh;
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  -webkit-overflow-scrolling: touch;
+}
+
+/* `separate`, а не `collapse`: у згорнутій таблиці рамки малює сама таблиця,
+   і на закріпленій комірці вони зникають — закріпити без рамки означає
+   закріпити те, що читається як порожнє місце. */
+.wb-param-table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+  font-size: var(--text-sm);
+}
+
+.wb-param-table th {
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  padding: var(--sp-2) var(--sp-3);
+  font-size: var(--text-xs);
+  font-weight: var(--weight-semibold);
+  color: var(--text-secondary);
+  text-align: left;
+  white-space: nowrap;
+  background: var(--bg-2);
+}
+
+.wb-param-table td {
+  padding: var(--sp-2) var(--sp-3);
+  vertical-align: top;
+  background: var(--bg-1);
+  border-top: 1px solid var(--border-subtle);
+}
+
+/* Комірка-перемикач: відступ живе на кнопці — інакше тап-таргет менший за
+   палець (44px), а тиснути тут доводиться по слову параметра. */
+.wb-param-table td.wb-param-cell--toggle {
+  padding: 0;
+}
+
+.wb-param-toggle {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--sp-2);
+  width: 100%;
+  min-height: 44px;
+  padding: 0 var(--sp-3);
+  border: 0;
+  background: none;
+  color: inherit;
+  font: inherit;
+  font-weight: var(--weight-medium);
+  text-align: left;
+  cursor: pointer;
+}
+
+.wb-param-toggle__caret {
+  display: inline-flex;
+  flex: 0 0 auto;
+  color: var(--text-muted);
+}
+
+.wb-param-toggle--open .wb-param-toggle__caret {
+  color: var(--accent);
+}
+
+.wb-param-value {
+  font-weight: var(--weight-semibold);
+}
+
+.wb-param-detail td {
+  background: var(--bg-2);
+  color: var(--text-secondary);
+}
+
+.wb-param-detail__caption {
+  display: block;
+  margin-bottom: var(--sp-1);
+  font-size: var(--text-xs);
+  font-weight: var(--weight-semibold);
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+/* Співставлення: дат може бути багато — перший стовпець закріплено. */
+.wb-param-table--compare th:first-child,
+.wb-param-table--compare td:first-child {
+  position: sticky;
+  left: 0;
+  z-index: 1;
+  background: var(--bg-1);
+  border-right: 1px solid var(--border-subtle);
+}
+
+/* Ріг (шапка × перший стовпець) — поверх обох закріплень. */
+.wb-param-table--compare thead th:first-child {
+  z-index: 3;
+  background: var(--bg-2);
+}
+
+.wb-param-table--compare .wb-param-detail td:first-child {
+  background: var(--bg-2);
+}
+
+/* Рядок системи — розділювач поміж параметрами, а не дані. Селектор довший
+   за закріплення першого стовпця: інакше смуга системи зникала б саме в
+   тій комірці, яка розтягнута на всю ширину. */
+.wb-param-table .wb-param-group td {
+  font-weight: var(--weight-semibold);
+  color: var(--text-primary);
+  background: var(--bg-2);
+}

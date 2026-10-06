@@ -8,7 +8,7 @@
  */
 
 import type { MyDate } from "./types";
-import type { UseDateExpansionReturn } from "./useDateExpansion";
+import type { UseExpansionReturn } from "@wwwuabot/ui/hooks";
 import type { UseDateFiltersReturn } from "./useDateFilters";
 import type { UseDateModalReturn } from "./useDateModal";
 import type { UseDateSelectionReturn } from "./useDateSelection";
@@ -21,7 +21,7 @@ export interface UseMyDatesOptions {
 }
 
 export interface UseMyDatesReturn
-  extends UseDateFiltersReturn, UseDateSelectionReturn, UseDateExpansionReturn, UseDateModalReturn {
+  extends UseDateFiltersReturn, UseDateSelectionReturn, UseExpansionReturn, UseDateModalReturn {
   /** Усі дати, як прийшли з API (до фільтрів). */
   dates: MyDate[];
   /** `true` лише до першої відповіді API. */

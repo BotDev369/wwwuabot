@@ -1,19 +1,25 @@
 /**
  * Page Builder — CompareTableBlock.
  *
- * Comparison results matrix for multiple dates across selected systems.
- * Replaces the hardcoded CompareTablePage.
- *
- * Reads dates from URL params (date segment: /date1+date2+...),
- * system/parameter filters from query params, fetches comparison data.
+ * Матриця співставлення: рядок — параметр, стовпець — дата. Рядок розкривається
+ * в пояснення параметра (перший стовпець) і трактування значення кожної дати —
+ * значення в чужих осередках не читається без тексту.
  *
  * @module packages/ui/src/blocks/CompareTableBlock
  */
 
 import { Fragment, useState, useEffect, useMemo } from "react";
+import { Icon } from "@wwwuabot/shared";
+import { useExpansion } from "@wwwuabot/ui/hooks";
 import type { BlockComponentProps } from "@wwwuabot/shared/types/page-config";
 import { formatDate } from "@wwwuabot/shared/utils/mydate-helpers";
-import { compareDates, fetchSystems, type AnalysisSystem } from "./mydate/api";
+import {
+  compareDates,
+  fetchSystems,
+  type AnalysisSystem,
+  type CompareDetails,
+  type CompareMatrix,
+} from "./mydate/api";
 
 // ── Types ─────────────────────────────────────────────────────────
 
@@ -60,8 +66,11 @@ export function CompareTableBlock({ block }: BlockComponentProps) {
     return (params.get(parameterKey) ?? "").split(",").filter(Boolean);
   }, [parameterKey]);
 
+  const { isExpanded, toggleExpanded } = useExpansion();
+
   const [systems, setSystems] = useState<SystemCard[]>([]);
-  const [matrix, setMatrix] = useState<Record<string, Record<string, Record<string, string>>>>({});
+  const [matrix, setMatrix] = useState<CompareMatrix>({});
+  const [details, setDetails] = useState<CompareDetails>({});
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -85,8 +94,10 @@ export function CompareTableBlock({ block }: BlockComponentProps) {
           selectedParams.length ? selectedParams : undefined,
         );
       })
-      .then((m) => {
-        if (!cancelled) setMatrix(m);
+      .then((result) => {
+        if (cancelled) return;
+        setMatrix(result.matrix);
+        setDetails(result.details);
       })
       .catch((reason: unknown) => {
         // Повідомлення сервера каже людині, що саме не так («Немає дат»), і
@@ -148,13 +159,13 @@ export function CompareTableBlock({ block }: BlockComponentProps) {
       )}
 
       {!loading && !error && (
-        <div style={{ overflowX: "auto" }}>
-          <table className="wb-table" style={{ width: "100%" }}>
+        <div className="wb-param-frame">
+          <table className="wb-param-table wb-param-table--compare">
             <thead>
               <tr>
-                <th style={{ minWidth: 150 }}>Система / параметр</th>
+                <th scope="col">Параметр</th>
                 {dates.map((d) => (
-                  <th key={d} style={{ minWidth: 120 }}>
+                  <th key={d} scope="col">
                     {formatDate(d)}
                   </th>
                 ))}
@@ -163,29 +174,56 @@ export function CompareTableBlock({ block }: BlockComponentProps) {
             <tbody>
               {rows.map((r, idx) => {
                 const showSystemHeader = idx === 0 || rows[idx - 1].systemId !== r.systemId;
+                const rowId = `${r.systemId}:${r.key}`;
+                const open = isExpanded(rowId);
+                // Пояснення параметра не залежить від дати, тож беремо перше,
+                // яке прийшло: порожня комірка — це не «немає тексту в довіднику».
+                const about = dates
+                  .map((d) => details[d]?.[r.systemId]?.[r.key]?.about)
+                  .find(Boolean);
                 return (
-                  <Fragment key={`${r.systemId}-${r.key}`}>
+                  <Fragment key={rowId}>
                     {showSystemHeader && (
-                      <tr style={{ background: "var(--bg-2, #f8fafc)" }}>
-                        <td
-                          style={{ fontWeight: 600, fontStyle: "italic" }}
-                          colSpan={dates.length + 1}
-                        >
-                          {r.systemName}
-                        </td>
+                      <tr className="wb-param-group">
+                        <td colSpan={dates.length + 1}>{r.systemName}</td>
                       </tr>
                     )}
                     <tr>
-                      <td className="wb-text-sm">{r.label}</td>
-                      {dates.map((d) => {
-                        const value = matrix[d]?.[r.systemId]?.[r.key];
-                        return (
-                          <td key={d} className="wb-text-sm">
-                            {value ?? "—"}
-                          </td>
-                        );
-                      })}
+                      <td className="wb-param-cell--toggle">
+                        <button
+                          type="button"
+                          className={
+                            open ? "wb-param-toggle wb-param-toggle--open" : "wb-param-toggle"
+                          }
+                          aria-expanded={open}
+                          onClick={() => toggleExpanded(rowId)}
+                        >
+                          <span>{r.label}</span>
+                          <span className="wb-param-toggle__caret">
+                            <Icon name={open ? "chevron-up" : "chevron-down"} size={16} />
+                          </span>
+                        </button>
+                      </td>
+                      {dates.map((d) => (
+                        <td key={d} className="wb-param-value">
+                          {matrix[d]?.[r.systemId]?.[r.key] ?? "—"}
+                        </td>
+                      ))}
                     </tr>
+                    {open && (
+                      <tr className="wb-param-detail">
+                        <td>
+                          <span className="wb-param-detail__caption">Пояснення параметра</span>
+                          {about ?? "—"}
+                        </td>
+                        {dates.map((d) => (
+                          <td key={d}>
+                            <span className="wb-param-detail__caption">Трактування</span>
+                            {details[d]?.[r.systemId]?.[r.key]?.meaning ?? "—"}
+                          </td>
+                        ))}
+                      </tr>
+                    )}
                   </Fragment>
                 );
               })}

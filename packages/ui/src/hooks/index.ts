@@ -4,10 +4,13 @@
  * Хук живе тут, а не поруч із компонентом, **коли ним користується не одна
  * поверхня**: поле, яке росте за текстом (`useAutoGrowField`), потрібне і
  * композеру (`@wwwuabot/ui/composer`), і редактору сторінки з шаблону
- * (платформа). Друга копія розійшлася б із першою тихо — так само, як будь-який
+ * (платформа); розгортання рядка (`useExpansion`) — і списку дат, і таблицям
+ * аналізу. Друга копія розійшлася б із першою тихо — так само, як будь-який
  * інший код, потрібний двічі (`AGENTS.md` §3, правило «двічі — в спільне»).
  *
  * @module @wwwuabot/ui/hooks
  */
 
 export { useAutoGrowField } from "./useAutoGrowField";
+export { useExpansion } from "./useExpansion";
+export type { UseExpansionReturn } from "./useExpansion";

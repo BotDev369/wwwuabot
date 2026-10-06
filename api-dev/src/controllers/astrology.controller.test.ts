@@ -261,6 +261,28 @@ describe("пояснення й трактування", () => {
     }
   });
 
+  // Тексти потрібні обом екранам: аналіз розкриває рядок, а співставлення —
+  // той самий рядок на кожну дату. Без них таблиця показувала б самі значення.
+  it("порівняння віддає пояснення й трактування під тим самим ключем", async () => {
+    const res = await handleCompare(
+      request("/api/mydate/compare", { dates: ["1980-03-03"] }),
+      makeEnv(),
+    );
+    const body = (await res.json()) as {
+      matrix: Record<string, Record<string, Record<string, string>>>;
+      details: Record<string, Record<string, Record<string, { about?: string; meaning?: string }>>>;
+    };
+
+    expect(res.status).toBe(200);
+    const matrix = body.matrix["1980-03-03"].western;
+    const details = body.details["1980-03-03"].western;
+    expect(Object.keys(details)).toEqual(Object.keys(matrix));
+    for (const key of Object.keys(matrix)) {
+      expect(details[key].about, `${key} без пояснення параметра`).toBeTruthy();
+      expect(details[key].meaning, `${key} без трактування значення`).toBeTruthy();
+    }
+  });
+
   // Знімок у D1 писали до появи довідника — саме тому тексти додаються
   // під час відповіді, а не при розрахунку.
   it("збережений аналіз теж дістає пояснення й трактування", async () => {

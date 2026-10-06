@@ -3,7 +3,7 @@
  * Блоки аналізу рендеряться, а не тільки компілюються.
  *
  * Три блоки (`date-analysis`, `compare-systems`, `compare-table`) жили без жодного
- * тесту: їхня логіка — це «показати картки або сказати, чому нічого не
+ * тесту: їхня логіка — це «показати таблицю або сказати, чому нічого не
  * показати». Регресія тут не падає в тестах, а просто зникає з екрана, тож
  * перевіряється саме те, що видно людині: порожній стан, помилка й дані.
  *
@@ -35,14 +35,17 @@ function props(over: Record<string, unknown> = {}): BlockComponentProps {
 }
 
 /** Відповідь на будь-який запит: реєстр систем + збережений аналіз. */
-function stubApi(matrix?: Record<string, Record<string, Record<string, string>>>) {
+function stubApi(
+  matrix?: Record<string, Record<string, Record<string, string>>>,
+  details?: Record<string, Record<string, Record<string, { about?: string; meaning?: string }>>>,
+) {
   vi.stubGlobal(
     "fetch",
     vi.fn(async (url: string) => {
       const body = url.includes("/api/mydate/systems")
         ? { ok: true, systems: [SYSTEM] }
         : url.includes("/api/mydate/compare")
-          ? { ok: true, matrix }
+          ? { ok: true, matrix, details }
           : { ok: true, systems: {} };
       return new Response(JSON.stringify(body), { status: 200 });
     }),
@@ -94,12 +97,14 @@ describe("DateAnalysisBlock", () => {
     );
   });
 
-  it("показує картку системи з датою з адреси", async () => {
+  // Дата вже стоїть у шапці хрому: підпис у тілі екрана лише займав місце.
+  it("не повторює дату підписом у тілі екрана", async () => {
     stubApi();
     render(<DateAnalysisBlock {...props()} />);
     await settle();
     expect(screen.getByText("Західна астрологія")).toBeTruthy();
-    expect(screen.getByText("03.03.1980")).toBeTruthy();
+    expect(screen.queryByText(/Ви вказували дату/)).toBeNull();
+    expect(screen.queryByText("03.03.1980")).toBeNull();
   });
 
   it("порожній реєстр не ламає екран і не вигадує систем", async () => {
@@ -144,18 +149,28 @@ describe("CompareTableBlock", () => {
     expect(screen.queryByRole("table")).toBeNull();
   });
 
-  it("з датами показує назву системи у шапці", async () => {
+  it("з датами показує назву системи, а трактування — на дотик", async () => {
     window.history.replaceState(
       {},
       "",
       "/mydate/compare/table?dates=1980-03-03&sys=western&p=sign",
     );
-    stubApi({ "1980-03-03": { western: { sign: "Овен" } } });
+    stubApi(
+      { "1980-03-03": { western: { sign: "Овен" } } },
+      { "1980-03-03": { western: { sign: { about: "Сонце в знаку", meaning: "Дія, старт." } } } },
+    );
+    const user = userEvent.setup();
     render(<CompareTableBlock {...props()} />);
     await settle();
     expect(screen.getByRole("table")).toBeTruthy();
     expect(screen.getByText("Західна астрологія")).toBeTruthy();
     expect(screen.getByText("Овен")).toBeTruthy();
+    // Рядок згорнутий: пояснення й трактування чекають дотику.
+    expect(screen.queryByText("Дія, старт.")).toBeNull();
+
+    await user.click(screen.getByRole("button", { name: "Знак" }));
+    expect(screen.getByText("Сонце в знаку")).toBeTruthy();
+    expect(screen.getByText("Дія, старт.")).toBeTruthy();
   });
 });
 
@@ -277,19 +292,28 @@ describe("DateAnalysisBlock: аналіз — це два кроки", () => {
     expect(nav.value()).toBe("/mydate/analysis?date=1980-03-03&sys=western&p=sunSign%2Celement");
   });
 
-  it("результат показує і пояснення параметра, і трактування значення", async () => {
+  it("рядки таблиці згорнуті, а розкритий показує обидва тексти у своїх комірках", async () => {
     window.history.replaceState({}, "", "/mydate/analysis?date=1980-03-03&sys=western");
     stubAnalysis();
+    const user = userEvent.setup();
     render(<DateAnalysisBlock {...props()} />);
     await settle();
 
-    // Що визначаємо: назва параметра плюс пояснення самого параметра.
+    // Згорнутий рядок каже рівно два факти — параметр і значення.
+    expect(screen.getByRole("table")).toBeTruthy();
     expect(screen.getByText("Знак Сонця")).toBeTruthy();
-    expect(screen.getByText("Головна якість суті: те, як вона проявляється назовні.")).toBeTruthy();
-    // Що отримали: значення і трактування саме цього значення.
     expect(screen.getByText("Риби")).toBeTruthy();
+    expect(screen.queryByText("Головна якість суті: те, як вона проявляється назовні.")).toBeNull();
+    expect(screen.queryByText("Розчинення меж і чутливість.")).toBeNull();
+
+    await user.click(screen.getByRole("button", { name: "Знак Сонця" }));
+
+    expect(screen.getByText("Пояснення параметра")).toBeTruthy();
+    expect(screen.getByText("Трактування значення")).toBeTruthy();
+    expect(screen.getByText("Головна якість суті: те, як вона проявляється назовні.")).toBeTruthy();
     expect(screen.getByText("Розчинення меж і чутливість.")).toBeTruthy();
-    expect(screen.getByText("Вплив радше відчувається.")).toBeTruthy();
+    // Другий рядок лишається згорнутим: розкриття одного не тягне решту.
+    expect(screen.queryByText("Вплив радше відчувається.")).toBeNull();
   });
 
   it("`?p=` лишає тільки обрані параметри", async () => {

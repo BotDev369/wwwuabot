@@ -27,6 +27,21 @@ export interface SystemResult {
 /** Матриця порівняння: `matrix[date][systemId][parameterKey]`. */
 export type CompareMatrix = Record<string, Record<string, Record<string, string>>>;
 
+/**
+ * Тексти під тим самим ключем, що й матриця: `details[date][systemId][key]`.
+ * Трактують **значення конкретної дати**, тож живуть поруч із нею, а не в
+ * окремому запиті на кожну дату.
+ */
+export type CompareDetails = Record<
+  string,
+  Record<string, Record<string, { about?: string; meaning?: string }>>
+>;
+
+export interface CompareResult {
+  matrix: CompareMatrix;
+  details: CompareDetails;
+}
+
 function json(response: Response): Promise<Record<string, unknown>> {
   return response.json() as Promise<Record<string, unknown>>;
 }
@@ -116,7 +131,7 @@ export async function compareDates(
   dates: string[],
   systemIds?: string[],
   parameterKeys?: string[],
-): Promise<CompareMatrix> {
+): Promise<CompareResult> {
   const data = await json(
     await fetch("/api/mydate/compare", {
       method: "POST",
@@ -125,5 +140,8 @@ export async function compareDates(
     }),
   );
   if (!data.ok) throw new Error((data.error as string) ?? "Помилка співставлення");
-  return data.matrix as CompareMatrix;
+  return {
+    matrix: (data.matrix ?? {}) as CompareMatrix,
+    details: (data.details ?? {}) as CompareDetails,
+  };
 }

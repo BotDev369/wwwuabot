@@ -86,10 +86,14 @@ describe("fetchAnalysis", () => {
 });
 
 describe("compareDates", () => {
-  it("надсилає дати разом з фільтрами і повертає матрицю", async () => {
+  it("надсилає дати разом з фільтрами і повертає матрицю з текстами", async () => {
     const matrix = { "1980-03-03": { western: { sign: "Овен" } } };
-    respond({ ok: true, matrix });
-    await expect(compareDates(["1980-03-03"], ["western"], ["sign"])).resolves.toEqual(matrix);
+    const details = { "1980-03-03": { western: { sign: { about: "Що це", meaning: "Що дає" } } } };
+    respond({ ok: true, matrix, details });
+    await expect(compareDates(["1980-03-03"], ["western"], ["sign"])).resolves.toEqual({
+      matrix,
+      details,
+    });
     const call = lastCall();
     expect(call.url).toBe("/api/mydate/compare");
     expect(JSON.parse(String(call.init?.body))).toEqual({
@@ -97,6 +101,14 @@ describe("compareDates", () => {
       systemIds: ["western"],
       parameterKeys: ["sign"],
     });
+  });
+
+  // Старий сервер без текстів не має лишати таблицю без пояснень узагалі:
+  // порожні мапи — це той самий екран, лише без розкриття рядка.
+  it("без `details` у відповіді матриця все одно приходить", async () => {
+    const matrix = { "1980-03-03": { western: { sign: "Овен" } } };
+    respond({ ok: true, matrix });
+    await expect(compareDates(["1980-03-03"])).resolves.toEqual({ matrix, details: {} });
   });
 
   it("помилку сервера показує людині", async () => {

@@ -130,10 +130,18 @@ export async function handleCompare(request: Request, env: Env): Promise<Respons
     const targetSystems = systemIds ? registry.filter((s) => systemIds.includes(s.id)) : registry;
 
     const matrix: Record<string, Record<string, Record<string, unknown>>> = {};
+    // Пояснення й трактування їдуть поруч із значеннями під тим самим ключем:
+    // інакше таблиця співставлення малювала б самі значення, а тексти до них
+    // довелося б тягнути окремим запитом на кожну дату.
+    const details: Record<
+      string,
+      Record<string, Record<string, { about?: string; meaning?: string }>>
+    > = {};
 
     for (const date of validDates) {
       const analysis = await getAnalysis(env.DB, env.CONTENT_KV, date);
       const perSystem: Record<string, Record<string, unknown>> = {};
+      const perDetails: Record<string, Record<string, { about?: string; meaning?: string }>> = {};
 
       for (const sys of targetSystems) {
         let result = analysis[sys.id];
@@ -143,16 +151,18 @@ export async function handleCompare(request: Request, env: Env): Promise<Respons
           result = calculator(date);
           await saveAnalysis(env.DB, env.CONTENT_KV, date, sys.id, result);
         }
-        const params = Array.isArray(result?.parameters)
-          ? (result.parameters as Array<{ key: string; value: unknown }>)
-          : [];
+        const params = withMeanings(sys.id, result).parameters ?? [];
         const selected = parameterKeys
           ? params.filter((p) => parameterKeys.includes(p.key))
           : params;
         perSystem[sys.id] = Object.fromEntries(selected.map((p) => [p.key, p.value]));
+        perDetails[sys.id] = Object.fromEntries(
+          selected.map((p) => [p.key, { about: p.about, meaning: p.meaning }]),
+        );
       }
 
       matrix[date] = perSystem;
+      details[date] = perDetails;
     }
 
     return json({
@@ -160,6 +170,7 @@ export async function handleCompare(request: Request, env: Env): Promise<Respons
       dates: validDates,
       systems: targetSystems.map((s) => s.id),
       matrix,
+      details,
     });
   } catch (e: unknown) {
     apiLog.error("Compare error", e);

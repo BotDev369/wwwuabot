@@ -1,20 +1,20 @@
 /**
- * Розгорнутість карток у списку дат: стан тримає хук, картка лише малює.
+ * Розгорнутість рядків-акордеонів: стан тримає хук, рядок лише малює.
  *
- * Типово **всі згорнуті**: список читають згори вниз, а розгорнуті тіла
- * роблять із нього полотно, де не видно, скільки дат узагалі є (як у нотаток).
+ * Типово **все згорнуто**: список читають згори вниз, а розгорнуті тіла роблять
+ * із нього полотно, де не видно, скільки рядків узагалі є.
  *
- * @module packages/ui/src/blocks/my-dates-table/useDateExpansion
+ * @module packages/ui/src/hooks/useExpansion
  */
 
 import { useCallback, useState } from "react";
 
-export interface UseDateExpansionReturn {
+export interface UseExpansionReturn {
   isExpanded: (id: string) => boolean;
   toggleExpanded: (id: string) => void;
 }
 
-export function useDateExpansion(): UseDateExpansionReturn {
+export function useExpansion(): UseExpansionReturn {
   const [expandedIds, setExpandedIds] = useState<Set<string>>(new Set());
 
   const isExpanded = useCallback((id: string) => expandedIds.has(id), [expandedIds]);
