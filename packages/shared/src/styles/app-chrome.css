@@ -181,6 +181,20 @@
   color: var(--accent);
 }
 
+/* На телефоні назва має **два** рядки, а не один: її дає вміст (назва рядка
+   `scenarios`), тож довжину ніхто не обмежує, а між «Назад» і трьома знаками
+   праворуч лишається ~160px — «MyDate — аналіз особистості» обрізалось до
+   «MyDate — ан…». Два рядки — межа: назва не росте далі й не витісняє дії. */
+@media (max-width: 520px) {
+  .wb-appbar__title {
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+    line-clamp: 2;
+    white-space: normal;
+  }
+}
+
 /* Вміст сторінки: скролять панелі всередині, а не сам каркас */
 .wb-app-body {
   flex: 1;

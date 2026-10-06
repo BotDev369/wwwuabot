@@ -173,7 +173,7 @@ export function DateModal({ mode, date, allTags, onClose, onSave, onDelete }: Da
               Видалити
             </button>
           )}
-          <div style={{ flex: 1 }} />
+          <div className="wb-date-modal-footer__spacer" />
           <button className="wb-btn wb-btn-secondary" onClick={onClose}>
             {isReadonly ? "Закрити" : "Скасувати"}
           </button>

@@ -190,3 +190,23 @@ describe("стиль не переписує роль повноекранної
     });
   }
 });
+
+/**
+ * Назва екрана на телефоні.
+ *
+ * Назву дає вміст (назва рядка `scenarios`), тож її довжину ніхто не
+ * обмежує: в один рядок на 360px влізає ~12 знаків, і «MyDate — аналіз
+ * особистості» ставало «MyDate — ан…». Два рядки — межа, за яку назва
+ * не росте, щоб не витісняти дії.
+ */
+describe("назва екрана", () => {
+  it("на телефоні вміщується у два рядки замість обрізання на півслові", () => {
+    const title = CHROME.filter((entry) => entry.selector === ".wb-appbar__title");
+    // Дві: широка (один рядок із багатокрапкою) і телефонна (два рядки).
+    expect(title.length).toBe(2);
+    expect(title[0].body).toContain("text-overflow: ellipsis");
+    const caption = title.at(-1)?.body ?? "";
+    expect(caption).toContain("-webkit-line-clamp: 2");
+    expect(caption).toContain("white-space: normal");
+  });
+});

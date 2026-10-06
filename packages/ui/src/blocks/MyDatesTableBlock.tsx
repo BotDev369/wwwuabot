@@ -7,7 +7,7 @@
  * @module packages/ui/src/blocks/MyDatesTableBlock
  */
 
-import { icons } from "@wwwuabot/shared";
+import { Icon, icons } from "@wwwuabot/shared";
 import type { BlockComponentProps } from "@wwwuabot/shared/types/page-config";
 import { useMyDates } from "./my-dates-table/useMyDates";
 import { DateModal } from "./my-dates-table/DateModal";
@@ -138,18 +138,8 @@ export function MyDatesTableBlock({ block }: BlockComponentProps) {
 
       {/* Bulk actions */}
       {showBulkActions && selectedIds.size > 0 && (
-        <div
-          style={{
-            display: "flex",
-            alignItems: "center",
-            gap: "var(--sp-3)",
-            padding: "var(--sp-3)",
-            background: "var(--bg-2, #f8fafc)",
-            borderRadius: "var(--radius-md)",
-            marginBottom: "var(--sp-3)",
-          }}
-        >
-          <span className="wb-text-sm">Обрано: {selectedIds.size}</span>
+        <div className="wb-date-bulk">
+          <span className="wb-text-sm wb-date-bulk__count">Обрано: {selectedIds.size}</span>
           {selectedIds.size >= 2 && (
             <button className="wb-btn wb-btn-sm" onClick={handleBulkCompare}>
               Співставити ({selectedIds.size})
@@ -281,7 +271,10 @@ export function MyDatesTableBlock({ block }: BlockComponentProps) {
                       />
                     </td>
                     <td className="wb-date-cell wb-date-cell--name" data-label="">
-                      {d.name || "—"}
+                      <button type="button" className="wb-date-name" onClick={() => openEdit(d)}>
+                        <span className="wb-date-name__text">{d.name || "—"}</span>
+                        <Icon name="edit" size={16} />
+                      </button>
                     </td>
                     <td className="wb-date-cell" data-label="Дата">
                       {formatDate(d.date)}
@@ -304,16 +297,7 @@ export function MyDatesTableBlock({ block }: BlockComponentProps) {
                         {cfg.label}
                       </span>
                     </td>
-                    <td
-                      className="wb-date-cell wb-date-cell--notes"
-                      data-label="Примітки"
-                      style={{
-                        maxWidth: 200,
-                        overflow: "hidden",
-                        textOverflow: "ellipsis",
-                        whiteSpace: "nowrap",
-                      }}
-                    >
+                    <td className="wb-date-cell wb-date-cell--notes" data-label="Примітки">
                       {d.notes || "—"}
                     </td>
                   </tr>
