@@ -45,6 +45,8 @@ export function MyDatesTableBlock({ block }: BlockComponentProps) {
     toggleAll,
     toggleSelect,
     clearSelection,
+    isExpanded,
+    toggleExpanded,
     modalMode,
     modalDate,
     openCreate,
@@ -53,6 +55,7 @@ export function MyDatesTableBlock({ block }: BlockComponentProps) {
     handleSave,
     handleDelete,
     handleBulkDelete,
+    handleBulkAnalyze,
     handleBulkCompare,
   } = useMyDates();
 
@@ -140,6 +143,13 @@ export function MyDatesTableBlock({ block }: BlockComponentProps) {
       {showBulkActions && selectedIds.size > 0 && (
         <div className="wb-date-bulk">
           <span className="wb-text-sm wb-date-bulk__count">Обрано: {selectedIds.size}</span>
+          {/* Одна дата аналізується, кілька — співставляються: це різні
+              екрани, тож у смузі стоїть та кнопка, яка має сенс. */}
+          {selectedIds.size === 1 && (
+            <button className="wb-btn wb-btn-sm wb-btn-primary" onClick={handleBulkAnalyze}>
+              Аналізувати
+            </button>
+          )}
           {selectedIds.size >= 2 && (
             <button className="wb-btn wb-btn-sm" onClick={handleBulkCompare}>
               Співставити ({selectedIds.size})
@@ -254,10 +264,11 @@ export function MyDatesTableBlock({ block }: BlockComponentProps) {
             <tbody>
               {processedDates.map((d) => {
                 const cfg = getTypeConfig(d.type);
+                const open = isExpanded(d.id);
                 return (
                   <tr
                     key={d.id}
-                    className="wb-date-row"
+                    className={`wb-date-row${open ? " wb-date-row--open" : ""}`}
                     style={
                       selectedIds.has(d.id) ? { background: "var(--bg-2, #f8fafc)" } : undefined
                     }
@@ -270,16 +281,40 @@ export function MyDatesTableBlock({ block }: BlockComponentProps) {
                         onChange={() => toggleSelect(d.id)}
                       />
                     </td>
+                    {/* Голова картки — **кнопка на всю ширину**: у закритій видно
+                        назву й дату, а тіло з'являється під нею (як у нотатках). */}
                     <td className="wb-date-cell wb-date-cell--name" data-label="">
-                      <button type="button" className="wb-date-name" onClick={() => openEdit(d)}>
-                        <span className="wb-date-name__text">{d.name || "—"}</span>
-                        <Icon name="edit" size={16} />
-                      </button>
+                      <div className="wb-date-name-row">
+                        <button
+                          type="button"
+                          className="wb-date-name"
+                          aria-expanded={open}
+                          onClick={() => toggleExpanded(d.id)}
+                        >
+                          <span className="wb-date-name__text">{d.name || "—"}</span>
+                          <span className="wb-date-name__meta">{formatDate(d.date)}</span>
+                          <span className="wb-date-name__caret">
+                            <Icon name={open ? "chevron-up" : "chevron-down"} size={16} />
+                          </span>
+                        </button>
+                        {/* У таблиці акордеона немає (усі поля й так у колонках),
+                            тож правка тут — окремою кнопкою; у картці її несе тіло. */}
+                        <button
+                          type="button"
+                          className="wb-date-edit"
+                          aria-label={`Редагувати ${d.name}`}
+                          onClick={() => openEdit(d)}
+                        >
+                          <Icon name="edit" size={16} />
+                        </button>
+                      </div>
                     </td>
-                    <td className="wb-date-cell" data-label="Дата">
+                    {/* Дату в картці показує голова, тож окремої комірки в ній
+                        немає — інакше той самий факт стояв би двічі. */}
+                    <td className="wb-date-cell wb-date-cell--date" data-label="Дата">
                       {formatDate(d.date)}
                     </td>
-                    <td className="wb-date-cell" data-label="Теги">
+                    <td className="wb-date-cell wb-date-cell--body" data-label="Теги">
                       {(d.tags || []).length > 0 ? (
                         <div style={{ display: "flex", flexWrap: "wrap", gap: 4 }}>
                           {d.tags.map((tag) => (
@@ -292,13 +327,33 @@ export function MyDatesTableBlock({ block }: BlockComponentProps) {
                         "—"
                       )}
                     </td>
-                    <td className="wb-date-cell" data-label="Тип">
+                    <td className="wb-date-cell wb-date-cell--body" data-label="Тип">
                       <span className="wb-badge" style={{ color: cfg.color, background: cfg.bg }}>
                         {cfg.label}
                       </span>
                     </td>
-                    <td className="wb-date-cell wb-date-cell--notes" data-label="Примітки">
+                    <td
+                      className="wb-date-cell wb-date-cell--notes wb-date-cell--body"
+                      data-label="Примітки"
+                    >
                       {d.notes || "—"}
+                    </td>
+                    {/* Дії відкритої картки: у таблиці ця комірка схована — там
+                        правку несе кнопка в голові рядка. */}
+                    <td
+                      className="wb-date-cell wb-date-cell--actions wb-date-cell--body"
+                      data-label=""
+                    >
+                      <div className="wb-sheet-actions">
+                        <button
+                          type="button"
+                          className="wb-btn wb-btn-primary"
+                          onClick={() => openEdit(d)}
+                        >
+                          <Icon name="edit" size={16} />
+                          Редагувати
+                        </button>
+                      </div>
                     </td>
                   </tr>
                 );

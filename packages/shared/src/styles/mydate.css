@@ -2,8 +2,10 @@
  *
  * Мобільний пріоритет: на телефоні таблиця з шістьма колонками не читається —
  * вона або обрізається, або вимагає горизонтального скролу, через що половина
- * полів лишається невидимою. Тому на вузькому екрані рядок стає карткою:
- * назва зверху, решта полів під нею з підписами, все без горизонтального скролу.
+ * полів лишається невидимою. Тому на вузькому екрані рядок стає **карткою-
+ * акордеоном**: у голові — назва, дата й каретка (і все, згорнута картка
+ * показує рівно ці два факти), а теги, тип, примітки й дії з'являються на
+ * дотик. Так список лишається списком: видно, скільки в ньому дат.
  *
  * Важливо: таблицю треба ламати **на всіх рівнях** — `table`, `thead`,
  * `tbody`, `tr`, `td`. `display: block` лише на `tr`/`td` залишає табличну
@@ -86,16 +88,26 @@
   min-height: 44px;
 }
 
-/* ── Назва дати — кнопка правки ───────────────────────────────────────
-   На телефоні подвійного дотику не буває, тож правка мусить мати звичайну
-   ціль: назва картки відкриває ту саму модалку, що й подвійний клік на
-   десктопі. */
+/* ── Голова картки — акордеон ─────────────────────────────────────────
+   У картці видно рівно два факти — назву й дату; решта чекає відкриття, тож
+   голова ціла є кнопкою (палець мусить діставати будь-де, як у нотатках).
 
-.wb-date-name {
+   Дата й каретка існують лише в картці: у таблиці дата — окрема колонка, а
+   розкривати нічого, тож там стоїть кнопка правки. Одна дія — одна розмітка,
+   а яку з двох видно, вирішує ширина екрана. */
+
+.wb-date-name-row {
   display: flex;
   align-items: center;
   gap: var(--sp-2);
-  width: 100%;
+}
+
+.wb-date-name {
+  display: flex;
+  flex: 1 1 auto;
+  align-items: center;
+  gap: var(--sp-2);
+  min-width: 0;
   min-height: 44px;
   padding: 0;
   border: 0;
@@ -104,18 +116,46 @@
   font: inherit;
   font-weight: 500;
   text-align: left;
-  cursor: pointer;
 }
 
 .wb-date-name__text {
+  flex: 1 1 auto;
+  min-width: 0;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
-.wb-date-name > svg {
-  flex: 0 0 auto;
+/* Дата в голові картки — приглушена й не стискається: назва довша, вона й
+   віддає місце (інакше дата ламалась би на два рядки). */
+.wb-date-name__meta,
+.wb-date-name__caret {
+  display: none;
+}
+
+/* Правка в таблиці: акордеона тут немає, тож дія стоїть окремою кнопкою. */
+.wb-date-edit {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  border: 0;
+  border-radius: var(--radius-full);
+  background: none;
   color: var(--text-muted, #64748b);
+  cursor: pointer;
+}
+
+.wb-date-edit:hover {
+  background: var(--surface-hover, #f1f5f9);
+  color: var(--text-primary);
+}
+
+/* Тіло картки в таблиці не потрібне: усі поля й так у колонках. */
+.wb-date-cell--actions {
+  display: none;
 }
 
 /* Нотатки на десктопі — один рядок із трьома крапками: у колонці їм місця. */
@@ -201,6 +241,18 @@
     background: transparent;
   }
 
+  /* Згорнута картка — це сама голова: тіло з'являється на дотик. Селектор
+     довший за правило комірки (`display: flex`) — інакше тіло лишалось би
+     видимим у згорнутій картці. */
+  .wb-date-list .wb-date-row:not(.wb-date-row--open) .wb-date-cell--body {
+    display: none;
+  }
+
+  /* Дату показує голова, тож окремої комірки в картці немає. */
+  .wb-date-list .wb-table td.wb-date-cell--date {
+    display: none;
+  }
+
   /* Чекбокс — у правому полі картки, рівно 44×44: він не наїжджає на поля
      (поле порожнє) і не малює під собою окремої смуги зебри. */
   .wb-date-cell--pick {
@@ -220,14 +272,58 @@
 
   /* Назва — головне: без підпису, першою і більшою за поля. `!important` — бо
      `android.css` тримає `font-size: 14px !important` на кожному `td`, і без
-     нього назва не відрізнялась від решти полів узагалі. */
+     нього назва не відрізнялась від решти полів узагалі. Правий бік — під
+     чекбокс: він стоїть там абсолютно і не має наїжджати на каретку. */
   .wb-date-list .wb-table td.wb-date-cell--name {
     font-size: var(--text-md) !important;
     font-weight: var(--weight-semibold);
+    padding-right: 52px !important;
   }
 
-  .wb-date-cell--name::before {
+  .wb-date-cell--name::before,
+  .wb-date-cell--actions::before {
     content: none;
+  }
+
+  /* Голова картки: назва, дата, каретка — однією кнопкою на всю ширину.
+     `cursor` — лише тут: у таблиці ця кнопка нічого не розкриває, тож не
+     обіцяє дотик. */
+  .wb-date-name-row {
+    flex: 1 1 auto;
+    min-width: 0;
+  }
+
+  .wb-date-name {
+    cursor: pointer;
+  }
+
+  .wb-date-name__meta {
+    display: inline;
+    flex: 0 0 auto;
+    color: var(--text-muted, #64748b);
+    font-size: var(--text-sm);
+  }
+
+  .wb-date-name__caret {
+    display: inline-flex;
+    flex: 0 0 auto;
+    color: var(--text-muted, #64748b);
+  }
+
+  /* Відкрита картка — акцентна каретка: стан видно одразу, а не шукають оком
+     (закриту й відкриту голову більше ніщо не розрізняє). */
+  .wb-date-row--open .wb-date-name__caret {
+    color: var(--accent);
+  }
+
+  /* Правка — у тілі картки: у голові її місце зайняла каретка. */
+  .wb-date-edit {
+    display: none;
+  }
+
+  /* Дії тіла — у своєму рядку, притиснуті вправо. */
+  .wb-date-cell--actions {
+    justify-content: flex-end;
   }
 
   /* Нотатки можуть бути довгими — обрізати їх у картці некоректно. Тут же

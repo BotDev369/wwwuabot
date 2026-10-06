@@ -150,4 +150,42 @@ describe("useMyDates", () => {
     // таблиці: за замовчуванням нові дати першими.
     expect(href).toBe("/mydate/compare/systems?dates=2003-02-15%2C1980-03-03");
   });
+
+  it("аналіз іде на екран однієї дати і лише з одною вибраною", async () => {
+    stubApi();
+    let href = "";
+    const real = window.location;
+    Object.defineProperty(window, "location", {
+      configurable: true,
+      value: {
+        get search() {
+          return real.search;
+        },
+        get href() {
+          return href;
+        },
+        set href(next: string) {
+          href = next;
+        },
+      },
+    });
+
+    const { result } = renderHook(() => useMyDates());
+    await waitFor(() => expect(result.current.loading).toBe(false));
+
+    // Нічого не вибрано — переходити нема куди.
+    act(() => {
+      result.current.handleBulkAnalyze();
+    });
+    expect(href).toBe("");
+
+    act(() => {
+      result.current.toggleSelect("1");
+    });
+    act(() => {
+      result.current.handleBulkAnalyze();
+    });
+    // Дата береться з рядка `scenarios`, а не з id: саме її читає блок аналізу.
+    expect(href).toBe("/mydate/analysis?date=1980-03-03");
+  });
 });

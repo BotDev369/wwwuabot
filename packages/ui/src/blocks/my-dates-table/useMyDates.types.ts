@@ -8,6 +8,7 @@
  */
 
 import type { MyDate } from "./types";
+import type { UseDateExpansionReturn } from "./useDateExpansion";
 import type { UseDateFiltersReturn } from "./useDateFilters";
 import type { UseDateModalReturn } from "./useDateModal";
 import type { UseDateSelectionReturn } from "./useDateSelection";
@@ -20,7 +21,7 @@ export interface UseMyDatesOptions {
 }
 
 export interface UseMyDatesReturn
-  extends UseDateFiltersReturn, UseDateSelectionReturn, UseDateModalReturn {
+  extends UseDateFiltersReturn, UseDateSelectionReturn, UseDateExpansionReturn, UseDateModalReturn {
   /** Усі дати, як прийшли з API (до фільтрів). */
   dates: MyDate[];
   /** `true` лише до першої відповіді API. */
@@ -30,5 +31,8 @@ export interface UseMyDatesReturn
   handleSave: (data: Partial<MyDate>) => Promise<void>;
   handleDelete: (id: string) => Promise<void>;
   handleBulkDelete: () => Promise<void>;
+  /** Аналіз однієї вибраної дати — інший екран (`/mydate/analysis?date=…`). */
+  handleBulkAnalyze: () => void;
+  /** Співставлення двох і більше вибраних дат. */
   handleBulkCompare: () => void;
 }

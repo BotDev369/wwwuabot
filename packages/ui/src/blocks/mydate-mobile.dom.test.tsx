@@ -223,7 +223,7 @@ describe("список дат: сортування й вибір", () => {
     await act(async () => {
       await new Promise((resolve) => setTimeout(resolve, 0));
     });
-    const names = [...container.querySelectorAll(".wb-date-cell--name")].map(
+    const names = [...container.querySelectorAll(".wb-date-name__text")].map(
       (cell) => cell.textContent,
     );
     expect(names).toEqual(["Коля", "Сьогодні"]);
@@ -241,6 +241,18 @@ describe("список дат: сортування й вибір", () => {
     expect(screen.getByRole("button", { name: "Видалити (1)" })).toBeTruthy();
   });
 
+  it("одна вибрана дата пропонує аналіз, а не співставлення", async () => {
+    const user = userEvent.setup();
+    const { container } = await renderTable();
+    const checkbox = container.querySelector<HTMLInputElement>(
+      '.wb-date-row input[type="checkbox"]',
+    );
+    if (!checkbox) throw new Error("чекбокса рядка немає");
+    await user.click(checkbox);
+    expect(screen.getByRole("button", { name: "Аналізувати" })).toBeTruthy();
+    expect(screen.queryByRole("button", { name: /Співставити/ })).toBeNull();
+  });
+
   it("дві вибрані дати пропонують співставлення", async () => {
     const user = userEvent.setup();
     const { container } = await renderTable([DATE, OTHER_DATE]);
@@ -250,6 +262,8 @@ describe("список дат: сортування й вибір", () => {
       await user.click(box);
     }
     expect(screen.getByRole("button", { name: "Співставити (2)" })).toBeTruthy();
+    // Двом датам аналіз не відповідає — кнопки не стоять поруч удвох.
+    expect(screen.queryByRole("button", { name: "Аналізувати" })).toBeNull();
   });
 
   it("«Скасувати вибір» повертає список до спокійного стану", async () => {
@@ -287,6 +301,54 @@ describe("список дат: помилка сервера", () => {
     vi.unstubAllGlobals();
     expect(container.textContent).toContain("Немає доступу");
     expect(container.querySelector(".wb-date-row")).toBeNull();
+  });
+});
+
+describe("список дат: картка-акордеон", () => {
+  it("усі картки згорнуті, поки їх не відкрили", async () => {
+    const { container } = await renderTable([DATE, OTHER_DATE]);
+    const heads = [...container.querySelectorAll(".wb-date-name")];
+    expect(heads).toHaveLength(2);
+    expect(heads.map((head) => head.getAttribute("aria-expanded"))).toEqual(["false", "false"]);
+    expect(container.querySelector(".wb-date-row--open")).toBeNull();
+  });
+
+  it("у згорнутій картці видно назву й дату", async () => {
+    const { container } = await renderTable();
+    const head = container.querySelector(".wb-date-name");
+    expect(head?.textContent).toContain("Сьогодні");
+    expect(head?.textContent).toContain("03.03.1980");
+  });
+
+  it("дотик по голові розкриває картку, а не модалку правки", async () => {
+    const user = userEvent.setup();
+    const { container } = await renderTable();
+    const head = container.querySelector(".wb-date-name");
+    if (!head) throw new Error("голови картки немає");
+    await user.click(head);
+    expect(container.querySelector(".wb-date-row--open")).toBeTruthy();
+    expect(head.getAttribute("aria-expanded")).toBe("true");
+    expect(screen.queryByText("Редагувати дату")).toBeNull();
+  });
+
+  it("правка живе в тілі розкритої картки й веде в ту саму модалку", async () => {
+    const user = userEvent.setup();
+    const { container } = await renderTable();
+    const actions = container.querySelector(".wb-date-cell--actions");
+    expect(actions).toBeTruthy();
+    const edit = actions?.querySelector("button");
+    if (!edit) throw new Error("кнопки правки в тілі немає");
+    await user.click(edit);
+    expect(screen.getByText("Редагувати дату")).toBeTruthy();
+  });
+
+  it("картки розкриваються незалежно одна від одної", async () => {
+    const user = userEvent.setup();
+    const { container } = await renderTable([DATE, OTHER_DATE]);
+    for (const head of container.querySelectorAll(".wb-date-name")) {
+      await user.click(head);
+    }
+    expect(container.querySelectorAll(".wb-date-row--open")).toHaveLength(2);
   });
 });
 

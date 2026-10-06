@@ -7,8 +7,9 @@
  * саме через дві реалізації один баг доводилось правити у двох місцях
  * (`AGENTS.md` §3, «двічі — в спільне»).
  *
- * Цей файл — лише композиція: стан живе у `useDateFilters`, `useDateSelection`
- * і `useDateModal`, перетворення — у `filter-sort`, запити — в `api`.
+ * Цей файл — лише композиція: стан живе у `useDateFilters`, `useDateSelection`,
+ * `useDateExpansion` і `useDateModal`, перетворення — у `filter-sort`,
+ * запити — в `api`.
  *
  * @module packages/ui/src/blocks/my-dates-table/useMyDates
  */
@@ -17,6 +18,7 @@ import { useCallback, useEffect, useState } from "react";
 import { useDialog } from "../../dialog";
 import type { MyDate } from "./types";
 import { deleteMyDate, deleteMyDates, fetchMyDates, saveMyDate } from "../mydate/api";
+import { useDateExpansion } from "./useDateExpansion";
 import { useDateFilters } from "./useDateFilters";
 import { useDateModal } from "./useDateModal";
 import { useDateSelection } from "./useDateSelection";
@@ -52,6 +54,7 @@ export function useMyDates(options: UseMyDatesOptions = {}): UseMyDatesReturn {
 
   const filters = useDateFilters(dates);
   const selection = useDateSelection(filters.processedDates);
+  const expansion = useDateExpansion();
   const modal = useDateModal();
 
   const afterMutation = useCallback(async () => {
@@ -109,6 +112,14 @@ export function useMyDates(options: UseMyDatesOptions = {}): UseMyDatesReturn {
     window.location.href = `/mydate/compare/systems?dates=${param}`;
   }, [filters.processedDates, selection.selectedIds]);
 
+  // Аналіз — це **одна** дата: кільком датам відповідає співставлення, тож
+  // кнопки не підміняють одна одну, а стоять за кількістю вибраних.
+  const handleBulkAnalyze = useCallback(() => {
+    const selected = filters.processedDates.filter((d) => selection.selectedIds.has(d.id));
+    if (selected.length !== 1) return;
+    window.location.href = `/mydate/analysis?date=${encodeURIComponent(selected[0].date)}`;
+  }, [filters.processedDates, selection.selectedIds]);
+
   return {
     dates,
     loading,
@@ -116,10 +127,12 @@ export function useMyDates(options: UseMyDatesOptions = {}): UseMyDatesReturn {
     refreshDates,
     ...filters,
     ...selection,
+    ...expansion,
     ...modal,
     handleSave,
     handleDelete,
     handleBulkDelete,
+    handleBulkAnalyze,
     handleBulkCompare,
   };
 }

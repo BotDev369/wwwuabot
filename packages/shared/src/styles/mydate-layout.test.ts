@@ -82,6 +82,45 @@ describe("рядок списку стає карткою", () => {
   });
 });
 
+describe("картка — акордеон", () => {
+  it("згорнута картка показує лише голову", () => {
+    // Селектор довший за правило комірки (`display: flex`) — інакше тіло
+    // згорнутої картки лишалось би видимим.
+    expect(
+      rule(phone, ".wb-date-list .wb-date-row:not(.wb-date-row--open) .wb-date-cell--body"),
+    ).toContain("display: none");
+  });
+
+  it("дату показує голова, а не окрема комірка картки", () => {
+    expect(rule(phone, ".wb-date-list .wb-table td.wb-date-cell--date")).toContain("display: none");
+  });
+
+  it("дата й каретка існують лише в картці", () => {
+    // У таблиці вони сховані одним правилом на два селектори — звідси `group`.
+    for (const selector of [".wb-date-name__meta", ".wb-date-name__caret"]) {
+      expect(group(wide, selector), selector).toContain("display: none");
+      expect(rule(phone, selector), selector).not.toContain("display: none");
+    }
+  });
+
+  it("у таблиці правка — окремою кнопкою, у картці — у тілі", () => {
+    // Одна дія, два місця: що саме видно, вирішує ширина екрана.
+    expect(rule(wide, ".wb-date-edit")).toContain("inline-flex");
+    expect(rule(phone, ".wb-date-edit")).toContain("display: none");
+    expect(rule(wide, ".wb-date-cell--actions")).toContain("display: none");
+    expect(rule(phone, ".wb-date-cell--actions")).toContain("flex-end");
+  });
+
+  it("каретка голови місце для чекбокса не відбирає", () => {
+    const name = rule(phone, ".wb-date-list .wb-table td.wb-date-cell--name");
+    expect(name).toContain("padding-right: 52px !important");
+  });
+
+  it("відкриту картку видно за акцентною кареткою", () => {
+    expect(rule(phone, ".wb-date-row--open .wb-date-name__caret")).toContain("var(--accent)");
+  });
+});
+
 describe("чекбокс добору", () => {
   it("має розмір знака, а не 44px квадрат", () => {
     const box = rule(wide, '.wb-date-list input[type="checkbox"]');
