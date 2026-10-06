@@ -320,6 +320,26 @@ describe("список дат: картка-акордеон", () => {
     expect(head?.textContent).toContain("03.03.1980");
   });
 
+  it("дата стоїть попереду назви — назва може бути порожньою, дата є завжди", async () => {
+    const { container } = await renderTable();
+    const head = container.querySelector(".wb-date-name");
+    if (!head) throw new Error("голови картки немає");
+    // `querySelectorAll` віддає елементи в порядку документа — саме це й
+    // перевіряємо, без пікселів.
+    const order = [...head.querySelectorAll(".wb-date-name__meta, .wb-date-name__text")].map(
+      (el) => (el.className.includes("__meta") ? "date" : "name"),
+    );
+    expect(order).toEqual(["date", "name"]);
+  });
+
+  it("перший стовпець таблиці — дата, а не назва", async () => {
+    const { container } = await renderTable();
+    // Перша комірка шапки — чекбокс вибору, за нею — перший стовпець даних.
+    const headers = [...container.querySelectorAll("thead th")].map((th) => th.textContent ?? "");
+    expect(headers[1]).toContain("Дата");
+    expect(container.querySelector("tbody tr td.wb-date-cell--date")).toBeTruthy();
+  });
+
   it("дотик по голові розкриває картку, а не модалку правки", async () => {
     const user = userEvent.setup();
     const { container } = await renderTable();

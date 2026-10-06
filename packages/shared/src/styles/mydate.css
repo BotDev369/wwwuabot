@@ -228,10 +228,12 @@
     font-size: var(--text-sm);
   }
 
-  /* 5. Рядок — картка: поля праворуч, правий бік порожній під чекбокс. */
+  /* 5. Рядок — картка: висоту задає голова (44px — тап-таргет), відступи лише
+     обрамляють її, а не роздувають картку. Зліва вони є: без них текст тулився
+     до краю картки; праворуч лишається порожній бік під чекбокс. */
   .wb-date-row {
     position: relative;
-    padding: var(--sp-3) var(--sp-2) var(--sp-3) 0;
+    padding: var(--sp-1) var(--sp-2) var(--sp-1) var(--sp-3);
     border-bottom: 1px solid var(--border-subtle, #e2e8f0);
   }
 
@@ -254,11 +256,13 @@
   }
 
   /* Чекбокс — у правому полі картки, рівно 44×44: він не наїжджає на поля
-     (поле порожнє) і не малює під собою окремої смуги зебри. */
+     (поле порожнє) і не малює під собою окремої смуги зебри. По центру висоти:
+     картка стала нижчою, і жорсткий `top` виглядав би зсунутим. */
   .wb-date-cell--pick {
     position: absolute;
-    top: var(--sp-2);
-    right: 0;
+    top: 50%;
+    right: var(--sp-2);
+    transform: translateY(-50%);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -277,7 +281,7 @@
   .wb-date-list .wb-table td.wb-date-cell--name {
     font-size: var(--text-md) !important;
     font-weight: var(--weight-semibold);
-    padding-right: 52px !important;
+    padding: 0 52px 0 0 !important;
   }
 
   .wb-date-cell--name::before,

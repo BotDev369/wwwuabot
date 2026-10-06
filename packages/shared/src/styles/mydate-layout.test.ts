@@ -111,9 +111,22 @@ describe("картка — акордеон", () => {
     expect(rule(phone, ".wb-date-cell--actions")).toContain("flex-end");
   });
 
-  it("каретка голови місце для чекбокса не відбирає", () => {
-    const name = rule(phone, ".wb-date-list .wb-table td.wb-date-cell--name");
-    expect(name).toContain("padding-right: 52px !important");
+  it("картка не роздувається відступами — висоту задає голова", () => {
+    // Згорнута картка = рядок + голова 44px; відступи лише обрамляють її.
+    expect(rule(phone, ".wb-date-row")).toContain(
+      "padding: var(--sp-1) var(--sp-2) var(--sp-1) var(--sp-3)",
+    );
+    expect(rule(phone, ".wb-date-list .wb-table td.wb-date-cell--name")).toContain(
+      "padding: 0 52px 0 0 !important",
+    );
+  });
+
+  it("текст не тулиться до лівого краю картки, а чекбокс — по центру її висоти", () => {
+    // Сам чекбокс висить по центру: жорсткий `top` на нижчій картці виглядав би
+    // зсунутим (розмір поля — у сторожі «чекбокс добору»).
+    const pick = rule(phone, ".wb-date-cell--pick");
+    expect(pick).toContain("top: 50%");
+    expect(pick).toContain("translateY(-50%)");
   });
 
   it("відкриту картку видно за акцентною кареткою", () => {
@@ -132,7 +145,7 @@ describe("чекбокс добору", () => {
   it("у картці стоїть у власному полі 44×44 і не наїжджає на поля", () => {
     const pick = rule(phone, ".wb-date-cell--pick");
     expect(pick).toContain("position: absolute");
-    expect(pick).toContain("right: 0");
+    expect(pick).toContain("right: var(--sp-2)");
     expect(pick).toContain("width: 44px");
     expect(pick).toContain("height: 44px");
     // Абсолютна комірка чіпляється до рядка — той мусить бути контейнером.

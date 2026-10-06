@@ -59,9 +59,12 @@ export function MyDatesTableBlock({ block }: BlockComponentProps) {
     handleBulkCompare,
   } = useMyDates();
 
-  const columns: { key: "name" | "date" | "tags" | "type" | "notes"; label: string }[] = [
-    { key: "name", label: "Назва" },
+  // Дата — перша колонка, і це не смак: назва може бути порожньою, а дата є
+  // завжди, тож саме вона впізнає рядок. Картка на телефоні тримає той самий
+  // порядок — одна модель, два подання.
+  const columns: { key: "date" | "name" | "tags" | "type" | "notes"; label: string }[] = [
     { key: "date", label: "Дата" },
+    { key: "name", label: "Назва" },
     { key: "tags", label: "Теги" },
     { key: "type", label: "Тип" },
     { key: "notes", label: "Примітки" },
@@ -281,8 +284,13 @@ export function MyDatesTableBlock({ block }: BlockComponentProps) {
                         onChange={() => toggleSelect(d.id)}
                       />
                     </td>
-                    {/* Голова картки — **кнопка на всю ширину**: у закритій видно
-                        назву й дату, а тіло з'являється під нею (як у нотатках). */}
+                    {/* Дату в картці показує голова, тож окремої комірки в ній
+                        немає — інакше той самий факт стояв би двічі. */}
+                    <td className="wb-date-cell wb-date-cell--date" data-label="Дата">
+                      {formatDate(d.date)}
+                    </td>
+                    {/* Голова картки — **кнопка на всю ширину**: спершу дата (вона
+                        є завжди), потім назва, а тіло з'являється під нею. */}
                     <td className="wb-date-cell wb-date-cell--name" data-label="">
                       <div className="wb-date-name-row">
                         <button
@@ -291,8 +299,8 @@ export function MyDatesTableBlock({ block }: BlockComponentProps) {
                           aria-expanded={open}
                           onClick={() => toggleExpanded(d.id)}
                         >
-                          <span className="wb-date-name__text">{d.name || "—"}</span>
                           <span className="wb-date-name__meta">{formatDate(d.date)}</span>
+                          <span className="wb-date-name__text">{d.name || "—"}</span>
                           <span className="wb-date-name__caret">
                             <Icon name={open ? "chevron-up" : "chevron-down"} size={16} />
                           </span>
@@ -308,11 +316,6 @@ export function MyDatesTableBlock({ block }: BlockComponentProps) {
                           <Icon name="edit" size={16} />
                         </button>
                       </div>
-                    </td>
-                    {/* Дату в картці показує голова, тож окремої комірки в ній
-                        немає — інакше той самий факт стояв би двічі. */}
-                    <td className="wb-date-cell wb-date-cell--date" data-label="Дата">
-                      {formatDate(d.date)}
                     </td>
                     <td className="wb-date-cell wb-date-cell--body" data-label="Теги">
                       {(d.tags || []).length > 0 ? (
