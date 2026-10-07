@@ -1,4 +1,4 @@
-import { toWebPath } from "@wwwuabot/shared/content";
+import { DATE_ANALYSIS_PATH, toWebPath } from "@wwwuabot/shared/content";
 import type { ShellTab, TabBarItem } from "@wwwuabot/ui/nav";
 import {
   CONTACTS_PATH,
@@ -49,7 +49,7 @@ export function platformSectionPath(pathname: string): string {
     NOTES_PATH,
     CONTACTS_PATH,
     PAGES_PATH,
-    "/mydate",
+    DATE_ANALYSIS_PATH,
   ];
   if (own.some((path) => pathname === path || (path !== "/" && pathname.startsWith(`${path}/`)))) {
     return PROFILE_PATH;

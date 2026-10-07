@@ -37,7 +37,7 @@ describe("три розділи платформи", () => {
       "/contacts",
       "/messages",
       "/pages/7",
-      "/mydate/1980",
+      "/dateanalysis/1980",
     ];
     for (const path of own) expect(activeKeys(path), path).toEqual(["profile"]);
     for (const path of ["/space", "/space/u/7", "/public-card"]) {

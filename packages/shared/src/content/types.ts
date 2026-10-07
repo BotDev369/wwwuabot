@@ -47,8 +47,8 @@ export interface ContentPage {
    * Адреса сторінки — **єдина** сутність ідентичності: і шлях вебу, і основа
    * діплінка бота. Порожній рядок — головна сторінка.
    *
-   * Подання: `toWebPath()` дає `/mydate/1980-03-03/today`, `toBotPayload()` —
-   * `mydate_1980-03-03_today`. Див. `resolve.ts`.
+   * Подання: `toWebPath()` дає `/dateanalysis/1980-03-03/today`, `toBotPayload()` —
+   * `dateanalysis_1980-03-03_today`. Див. `resolve.ts`.
    */
   slug: string;
 

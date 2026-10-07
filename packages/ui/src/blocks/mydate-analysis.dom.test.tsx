@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 /**
- * Екран «Аналіз Дат» рендериться, а не тільки компілюється.
+ * Екран «Аналіз дат» рендериться, а не тільки компілюється.
  *
  * Аналіз і співставлення — один екран: дат може бути одна або більше, а крок
  * вибору систем стоїть на тій самій адресі. Регресія тут не падає в тестах, а
@@ -110,7 +110,7 @@ function captureNavigation(): { value: () => string } {
 }
 
 beforeEach(() => {
-  window.history.replaceState({}, "", "/mydate/analysis?dates=1980-03-03");
+  window.history.replaceState({}, "", "/dateanalysis/analysis?dates=1980-03-03");
 });
 
 afterEach(async () => {
@@ -126,17 +126,19 @@ afterEach(async () => {
 
 describe("DateAnalysisBlock — без дат", () => {
   it("каже, що дат немає, і дає шлях до їхнього списку", () => {
-    window.history.replaceState({}, "", "/mydate/analysis");
-    render(<DateAnalysisBlock {...props({ backUrl: "/mydate" })} />);
+    window.history.replaceState({}, "", "/dateanalysis/analysis");
+    render(<DateAnalysisBlock {...props({ backUrl: "/dateanalysis" })} />);
     expect(screen.getByText("Немає дат для аналізу.")).toBeTruthy();
-    expect(screen.getByRole("link", { name: "Обрати дати" }).getAttribute("href")).toBe("/mydate");
+    expect(screen.getByRole("link", { name: "Обрати дати" }).getAttribute("href")).toBe(
+      "/dateanalysis",
+    );
     expect(screen.queryByRole("table")).toBeNull();
   });
 });
 
 describe("DateAnalysisBlock — крок вибору систем", () => {
   it("без `?sys=` показує вибір, а не готовий результат", async () => {
-    window.history.replaceState({}, "", "/mydate/analysis?dates=1980-03-03,2004-10-07");
+    window.history.replaceState({}, "", "/dateanalysis/analysis?dates=1980-03-03,2004-10-07");
     stubApi();
     render(<DateAnalysisBlock {...props()} />);
     await settle();
@@ -149,7 +151,7 @@ describe("DateAnalysisBlock — крок вибору систем", () => {
   });
 
   it("не питає аналіз, поки систем не обрано: рахувати ще нема чого", async () => {
-    window.history.replaceState({}, "", "/mydate/analysis?dates=1980-03-03");
+    window.history.replaceState({}, "", "/dateanalysis/analysis?dates=1980-03-03");
     const api = stubApi();
     render(<DateAnalysisBlock {...props()} />);
     await settle();
@@ -158,7 +160,7 @@ describe("DateAnalysisBlock — крок вибору систем", () => {
   });
 
   it("веде на ту саму адресу і несе вибір параметрами", async () => {
-    window.history.replaceState({}, "", "/mydate/analysis?dates=1980-03-03");
+    window.history.replaceState({}, "", "/dateanalysis/analysis?dates=1980-03-03");
     stubApi();
     const user = userEvent.setup();
     render(<DateAnalysisBlock {...props()} />);
@@ -168,11 +170,13 @@ describe("DateAnalysisBlock — крок вибору систем", () => {
     await user.click(screen.getByRole("button", { name: "Аналізувати" }));
 
     // Дати — параметром, а не сегментом: `ScenarioPage` бере весь splat як slug.
-    expect(nav.value()).toBe("/mydate/analysis?dates=1980-03-03&sys=western&p=sunSign%2Celement");
+    expect(nav.value()).toBe(
+      "/dateanalysis/analysis?dates=1980-03-03&sys=western&p=sunSign%2Celement",
+    );
   });
 
   it("адреса однієї дати (`?date=`) веде тим самим шляхом", async () => {
-    window.history.replaceState({}, "", "/mydate/analysis?date=1980-03-03");
+    window.history.replaceState({}, "", "/dateanalysis/analysis?date=1980-03-03");
     stubApi();
     render(<DateAnalysisBlock {...props()} />);
     await settle();
@@ -183,7 +187,11 @@ describe("DateAnalysisBlock — крок вибору систем", () => {
 
 describe("DateAnalysisBlock — таблиця", () => {
   it("з однією датою малює параметр у рядку, а значення — у стовпці", async () => {
-    window.history.replaceState({}, "", "/mydate/analysis?dates=1980-03-03&sys=western&p=sunSign");
+    window.history.replaceState(
+      {},
+      "",
+      "/dateanalysis/analysis?dates=1980-03-03&sys=western&p=sunSign",
+    );
     stubApi({ matrix: { "1980-03-03": { western: { sunSign: "Риби" } } } });
     render(<DateAnalysisBlock {...props()} />);
     await settle();
@@ -201,7 +209,7 @@ describe("DateAnalysisBlock — таблиця", () => {
     window.history.replaceState(
       {},
       "",
-      "/mydate/analysis?dates=1980-03-03,2004-10-07&sys=western&p=sunSign",
+      "/dateanalysis/analysis?dates=1980-03-03,2004-10-07&sys=western&p=sunSign",
     );
     stubApi({
       matrix: {
@@ -221,7 +229,11 @@ describe("DateAnalysisBlock — таблиця", () => {
   });
 
   it("рядки згруповано за системами: назва системи стоїть перед своїми параметрами", async () => {
-    window.history.replaceState({}, "", "/mydate/analysis?dates=1980-03-03&sys=western,vedic");
+    window.history.replaceState(
+      {},
+      "",
+      "/dateanalysis/analysis?dates=1980-03-03&sys=western,vedic",
+    );
     stubApi({ matrix: { "1980-03-03": { western: { sunSign: "Риби" } } } }, [
       SYSTEM,
       { ...SYSTEM, id: "vedic", name: "Ведична астрологія" },
@@ -239,7 +251,7 @@ describe("DateAnalysisBlock — таблиця", () => {
     window.history.replaceState(
       {},
       "",
-      "/mydate/analysis?dates=1980-03-03,1980-03-03&sys=western&p=sunSign",
+      "/dateanalysis/analysis?dates=1980-03-03,1980-03-03&sys=western&p=sunSign",
     );
     stubApi({ matrix: { "1980-03-03": { western: { sunSign: "Риби" } } } });
     render(<DateAnalysisBlock {...props()} />);
@@ -249,7 +261,11 @@ describe("DateAnalysisBlock — таблиця", () => {
   });
 
   it("рядок розкривається: пояснення параметра й трактування значення", async () => {
-    window.history.replaceState({}, "", "/mydate/analysis?dates=1980-03-03&sys=western&p=sunSign");
+    window.history.replaceState(
+      {},
+      "",
+      "/dateanalysis/analysis?dates=1980-03-03&sys=western&p=sunSign",
+    );
     stubApi({
       matrix: { "1980-03-03": { western: { sunSign: "Риби" } } },
       details: {
@@ -271,7 +287,7 @@ describe("DateAnalysisBlock — таблиця", () => {
   });
 
   it("пустий реєстр не малює систем, а таблиця каже, що даних немає", async () => {
-    window.history.replaceState({}, "", "/mydate/analysis?dates=1980-03-03&sys=western");
+    window.history.replaceState({}, "", "/dateanalysis/analysis?dates=1980-03-03&sys=western");
     stubEmptyRegistry();
     render(<DateAnalysisBlock {...props()} />);
     await settle();
@@ -281,7 +297,7 @@ describe("DateAnalysisBlock — таблиця", () => {
   });
 
   it("помилку сервера показує людині, а не лишає порожню таблицю", async () => {
-    window.history.replaceState({}, "", "/mydate/analysis?dates=1980-03-03&sys=western");
+    window.history.replaceState({}, "", "/dateanalysis/analysis?dates=1980-03-03&sys=western");
     stubApi({ ok: false, error: "Немає дат" });
     render(<DateAnalysisBlock {...props()} />);
     await settle();
@@ -294,19 +310,19 @@ describe("DateAnalysisBlock — таблиця", () => {
     window.history.replaceState(
       {},
       "",
-      "/mydate/analysis?dates=1980-03-03,2004-10-07&sys=western&p=sunSign",
+      "/dateanalysis/analysis?dates=1980-03-03,2004-10-07&sys=western&p=sunSign",
     );
     stubApi({ matrix: { "1980-03-03": { western: { sunSign: "Риби" } } } });
     render(<DateAnalysisBlock {...props()} />);
     await settle();
 
     const link = screen.getByRole("link", { name: "Змінити системи" });
-    expect(link.getAttribute("href")).toBe("/mydate/analysis?dates=1980-03-03%2C2004-10-07");
+    expect(link.getAttribute("href")).toBe("/dateanalysis/analysis?dates=1980-03-03%2C2004-10-07");
   });
 });
 
 describe("DateAnalysisBlock — підпис екрана", () => {
-  const TABLE_URL = "/mydate/analysis?dates=1980-03-03&sys=western&p=sunSign";
+  const TABLE_URL = "/dateanalysis/analysis?dates=1980-03-03&sys=western&p=sunSign";
 
   // Стара обіцянка лишилась у `page_data` рядків, створених до зміни тексту, а
   // міграцію в дев-базі запускає людина: без нормалізації екран показував би її.

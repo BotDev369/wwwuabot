@@ -1,6 +1,7 @@
 import { describe, it, expect } from "vitest";
 import { getBlockDefinition, getBlocksForZone } from "./block-definitions";
 import { ALL_ZONES } from "../types/page-config";
+import { DATE_ANALYSIS_PATH, DATE_ANALYSIS_RESULT_PATH } from "../content/sections";
 
 describe("Page Builder New Blocks", () => {
   it('should define "nav" (Меню) with all compatible zones', () => {
@@ -42,14 +43,14 @@ describe("Page Builder New Blocks", () => {
 });
 
 /**
- * Блоки mydate живуть у рядках контенту (`scripts/migrations/*-mydate-*.sql`),
- * і адрес екранів дві: `/mydate` — дати, `/mydate/analysis` — аналіз. Дефолт,
- * що веде поза цей перелік, не падає — він тихо показує фолбек, тож
- * перевіряється саме адреса. Без визначення блок не має схеми, і редактор
- * адмінки не дає його правити.
+ * Блоки «Аналізу дат» живуть у рядках контенту (`scripts/migrations/*-mydate-*.sql`),
+ * і адрес екранів дві: `/dateanalysis` — дати, `/dateanalysis/analysis` —
+ * результат. Дефолт, що веде поза цей перелік, не падає — він тихо показує
+ * фолбек, тож перевіряється саме адреса. Без визначення блок не має схеми, і
+ * редактор адмінки не дає його правити.
  */
-describe("MyDate — визначення блоків і адреси екранів", () => {
-  const MYDATE_SCREENS = ["/mydate", "/mydate/analysis"];
+describe("«Аналіз дат» — визначення блоків і адреси екранів", () => {
+  const DATE_ANALYSIS_SCREENS = [DATE_ANALYSIS_PATH, DATE_ANALYSIS_RESULT_PATH];
 
   const URL_PROPS: Array<[string, string]> = [
     ["date-input", "basePath"],
@@ -64,7 +65,7 @@ describe("MyDate — визначення блоків і адреси екра�
       expect(definition, type).toBeDefined();
       const url = definition?.defaultProps[prop];
       expect(typeof url, `${type}.${prop}`).toBe("string");
-      expect(MYDATE_SCREENS, `${type}.${prop} = ${String(url)}`).toContain(url);
+      expect(DATE_ANALYSIS_SCREENS, `${type}.${prop} = ${String(url)}`).toContain(url);
     }
   });
 
@@ -78,6 +79,6 @@ describe("MyDate — визначення блоків і адреси екра�
 
   it("ввід дати веде на сторінку аналізу, а не на свій же екран", () => {
     const def = getBlockDefinition("date-input")?.defaultProps ?? {};
-    expect(`${String(def.basePath)}/${String(def.targetPath)}`).toBe("/mydate/analysis");
+    expect(`${String(def.basePath)}/${String(def.targetPath)}`).toBe(DATE_ANALYSIS_RESULT_PATH);
   });
 });

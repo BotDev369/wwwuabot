@@ -5,9 +5,9 @@
  *
  * | Подання | Вигляд | Хто будує |
  * |---|---|---|
- * | веб-шлях | `/mydate/1980-03-03/today` | `toWebPath()` |
- * | параметр бота | `mydate_1980-03-03_today` | `toBotPayload()` |
- * | **посилання** | `https://t.me/<bot>?start=mydate_1980-03-03_today` | `buildShareLinks()` |
+ * | веб-шлях | `/dateanalysis/1980-03-03/today` | `toWebPath()` |
+ * | параметр бота | `dateanalysis_1980-03-03_today` | `toBotPayload()` |
+ * | **посилання** | `https://t.me/<bot>?start=dateanalysis_1980-03-03_today` | `buildShareLinks()` |
  *
  * **Навіщо окремо.** Кнопка «Поділитись» мусить показати людині готовий текст, а
  * не «збери сам із трьох шматків». Найлегше тут помилитись тихо: Telegram

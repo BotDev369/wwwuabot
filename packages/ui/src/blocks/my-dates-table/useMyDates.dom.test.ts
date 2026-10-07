@@ -40,7 +40,7 @@ function stubDialog(): { confirm: ReturnType<typeof vi.fn> } {
 }
 
 beforeEach(() => {
-  window.history.replaceState({}, "", "/mydate");
+  window.history.replaceState({}, "", "/dateanalysis");
 });
 
 afterEach(() => {
@@ -145,7 +145,7 @@ describe("useMyDates", () => {
     });
     // Аналіз — один екран, і вибір систем стоїть уже на ньому: окремого
     // процесу для кількох дат немає.
-    expect(href).toBe("/mydate/analysis?dates=1980-03-03");
+    expect(href).toBe("/dateanalysis/analysis?dates=1980-03-03");
     expect(href).not.toContain("compare");
 
     href = "";
@@ -157,6 +157,6 @@ describe("useMyDates", () => {
     });
     // Порядок — з відсортованого списку, тобто той самий, що людина бачить у
     // таблиці: за замовчуванням нові дати першими.
-    expect(href).toBe("/mydate/analysis?dates=2003-02-15%2C1980-03-03");
+    expect(href).toBe("/dateanalysis/analysis?dates=2003-02-15%2C1980-03-03");
   });
 });

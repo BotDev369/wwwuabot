@@ -1,7 +1,8 @@
 /**
- * BOT-DOMAIN — специфічні для бота блоки (профіль, дати, MyDate модулі).
+ * BOT-DOMAIN — специфічні для бота блоки (профіль, дати, «Аналіз дат»).
  */
 
+import { DATE_ANALYSIS_PATH, DATE_ANALYSIS_RESULT_PATH } from "../../content/sections";
 import type { BlockDefinition } from "../../types/page-config";
 import { block, s, n, b, e } from "./helpers";
 
@@ -61,7 +62,7 @@ export const botDomainBlocks: BlockDefinition[] = [
     props: {
       label: s("Підпис поля", { default: "Дата народження" }),
       buttonLabel: s("Напис кнопки", { default: "Показати аналіз" }),
-      basePath: s("Адреса сторінки-власника", { default: "/mydate" }),
+      basePath: s("Адреса сторінки-власника", { default: DATE_ANALYSIS_PATH }),
       targetPath: s("Сегмент сторінки аналізу", { default: "analysis" }),
       min: s("Найраніша дата", { default: "1900-01-01" }),
       max: s("Найпізніша дата", { default: "2100-12-31" }),
@@ -69,7 +70,7 @@ export const botDomainBlocks: BlockDefinition[] = [
     defaultProps: {
       label: "Дата народження",
       buttonLabel: "Показати аналіз",
-      basePath: "/mydate",
+      basePath: DATE_ANALYSIS_PATH,
       targetPath: "analysis",
       min: "1900-01-01",
       max: "2100-12-31",
@@ -101,33 +102,33 @@ export const botDomainBlocks: BlockDefinition[] = [
     category: "bot-domain",
     description: "Ручне введення дат для аналізу — другий вхід у той самий екран",
     props: {
-      title: s("Заголовок", { default: "Аналіз Дат" }),
+      title: s("Заголовок", { default: "Аналіз дат" }),
       description: s("Опис"),
       maxDates: n("Максимум дат", { default: 10 }),
-      nextUrl: s("URL наступного кроку", { default: "/mydate/analysis" }),
+      nextUrl: s("URL наступного кроку", { default: DATE_ANALYSIS_RESULT_PATH }),
     },
     defaultProps: {
-      title: "Аналіз Дат",
+      title: "Аналіз дат",
       description: "Вкажіть дати для аналізу.",
       maxDates: 10,
-      nextUrl: "/mydate/analysis",
+      nextUrl: DATE_ANALYSIS_RESULT_PATH,
     },
   }),
   block({
     type: "date-analysis",
-    label: "Аналіз Дат",
+    label: "Аналіз дат",
     icon: "bar-chart",
     category: "bot-domain",
     description: "Таблиця аналізу: параметри й значення — дат одна або більше",
     props: {
       title: s("Підпис над таблицею", { default: "Результат аналізу:" }),
-      backUrl: s("URL назад", { default: "/mydate" }),
-      targetUrl: s("URL вибору систем", { default: "/mydate/analysis" }),
+      backUrl: s("URL назад", { default: DATE_ANALYSIS_PATH }),
+      targetUrl: s("URL вибору систем", { default: DATE_ANALYSIS_RESULT_PATH }),
     },
     defaultProps: {
       title: "Результат аналізу:",
-      backUrl: "/mydate",
-      targetUrl: "/mydate/analysis",
+      backUrl: DATE_ANALYSIS_PATH,
+      targetUrl: DATE_ANALYSIS_RESULT_PATH,
     },
   }),
 ];

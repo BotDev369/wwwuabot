@@ -69,7 +69,7 @@ function dateField(container: HTMLElement): HTMLInputElement {
 
 beforeEach(() => {
   restoreLocation();
-  window.history.replaceState({}, "", "/mydate/compare/setup");
+  window.history.replaceState({}, "", "/dateanalysis/compare/setup");
 });
 
 afterEach(() => {
@@ -115,7 +115,7 @@ describe("CompareSetupBlock", () => {
     await user.click(screen.getAllByTitle("Вгору")[1]);
     await user.click(screen.getByRole("button", { name: /Обрати системи/ }));
 
-    expect(nav.value()).toBe("/mydate/analysis?dates=2003-02-15%2C1980-03-03");
+    expect(nav.value()).toBe("/dateanalysis/analysis?dates=2003-02-15%2C1980-03-03");
   });
 
   it("видаляє дату зі списку", async () => {

@@ -32,7 +32,7 @@ Cloudflare Worker: Telegram Mini App для wwwuabot (React 19 + Vite 8 + Tailwi
 | Адреса вебу | Та сама сторінка в боті |
 |---|---|
 | `/` | `t.me/<bot>` (головна) |
-| `/mydate/19800303/today` | `t.me/<bot>?start=mydate_19800303_today` |
+| `/dateanalysis/19800303/today` | `t.me/<bot>?start=dateanalysis_19800303_today` |
 
 Подання адреси будує `packages/shared/src/content/resolve.ts`
 (`toWebPath` / `toBotPayload`), готове посилання для «Поділитись» —

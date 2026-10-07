@@ -14,7 +14,7 @@
  */
 
 import { describe, expect, it, vi } from "vitest";
-import { toWebPath } from "@wwwuabot/shared/content";
+import { DATE_ANALYSIS_PATH, DATE_ANALYSIS_SLUG } from "@wwwuabot/shared/content";
 import {
   CONTACTS_PATH,
   MESSAGES_PATH,
@@ -48,7 +48,7 @@ describe("склад хабу «Створити»", () => {
   it("пункти стоять за абеткою — А→Я", () => {
     const labels = CREATE_HUB_ITEMS.map((item) => item.label);
     expect(labels).toEqual([
-      "Дати",
+      "Аналіз дат",
       "Контакти",
       "Локації",
       "Нотатки",
@@ -116,9 +116,9 @@ describe("входи пункту", () => {
     expect(MESSAGES_PATH).toBe("/messages");
   });
 
-  it("«Дати» ведуть у свою сторінку, бо адресу дає `slug`", () => {
-    expect(byKey("mydate").view).toBe(toWebPath("mydate"));
-    expect(byKey("mydate").view).toBe("/mydate");
+  it("«Аналіз дат» веде у свою сторінку, бо адресу дає `slug`", () => {
+    expect(byKey(DATE_ANALYSIS_SLUG).view).toBe(DATE_ANALYSIS_PATH);
+    expect(byKey(DATE_ANALYSIS_SLUG).view).toBe("/dateanalysis");
   });
 
   it("«Оголошення» ведуть у **вкладку** дошки, а не в Простір взагалі", () => {
@@ -145,8 +145,8 @@ describe("входи пункту", () => {
     expect(byKey("messages").form).toBe("message");
     expect(byKey("ads").form).toBe("ad");
     // Пункт, який уміє лише показувати, форми не має — і «+» каже про це.
-    expect(byKey("mydate").form).toBeUndefined();
-    expect(byKey("mydate").view).toBeTruthy();
+    expect(byKey(DATE_ANALYSIS_SLUG).form).toBeUndefined();
+    expect(byKey(DATE_ANALYSIS_SLUG).view).toBeTruthy();
   });
 
   it("дії, якої ще немає, немає й у даних — і це видно до дотику", () => {
@@ -157,7 +157,7 @@ describe("входи пункту", () => {
         if (missing) expect(hubIntentSoon(item, intent as HubIntent), item.key).toBeTruthy();
       }
     }
-    expect(hubIntentReady(byKey("mydate"), "create")).toBe(false);
+    expect(hubIntentReady(byKey(DATE_ANALYSIS_SLUG), "create")).toBe(false);
     expect(hubIntentReady(byKey("locations"), "view")).toBe(false);
     expect(hubIntentReady(byKey("locations"), "create")).toBe(false);
     expect(hubIntentReady(byKey("pages"), "view")).toBe(true);
@@ -180,16 +180,16 @@ describe("пункти для списку", () => {
       // Дія без імені — безіменна кнопка для скрінрідера.
       for (const action of item.actions) expect(action.label, item.key).toContain(item.label);
     }
-    expect(items[0].actions[0].label).toBe("Переглянути: Дати");
-    expect(items[0].actions[1].label).toBe("Створити: Дати");
+    expect(items[0].actions[0].label).toBe("Переглянути: Аналіз дат");
+    expect(items[0].actions[1].label).toBe("Створити: Аналіз дат");
   });
 
   it("дія, за якою нічого немає, позначена приглушеною", () => {
-    const mydate = items.find((item) => item.key === "mydate");
+    const mydate = items.find((item) => item.key === DATE_ANALYSIS_SLUG);
     expect(mydate?.actions.map((action) => Boolean(action.soon))).toEqual([false, true]);
     // А пункт, у якого не працює нічого, каже про себе цілком.
     expect(items.find((item) => item.key === "locations")?.status).toBe("soon");
-    expect(items.find((item) => item.key === "mydate")?.status).toBe("ready");
+    expect(items.find((item) => item.key === DATE_ANALYSIS_SLUG)?.status).toBe("ready");
     expect(items.find((item) => item.key === "pages")?.status).toBe("ready");
   });
 
@@ -242,13 +242,13 @@ describe("пункти для списку", () => {
     expect(onSoon).toHaveBeenCalledWith(byKey("locations").soon);
   });
 
-  it("«Дати» показують, але не створюють", () => {
+  it("«Аналіз дат» показує, але не створює", () => {
     navigate.mockClear();
     onForm.mockClear();
-    items.find((item) => item.key === "mydate")?.actions[1].onSelect();
+    items.find((item) => item.key === DATE_ANALYSIS_SLUG)?.actions[1].onSelect();
 
     expect(navigate).not.toHaveBeenCalled();
     expect(onForm).not.toHaveBeenCalled();
-    expect(onSoon).toHaveBeenCalledWith(byKey("mydate").soon);
+    expect(onSoon).toHaveBeenCalledWith(byKey(DATE_ANALYSIS_SLUG).soon);
   });
 });

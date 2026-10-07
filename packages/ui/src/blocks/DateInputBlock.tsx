@@ -2,20 +2,21 @@
  * Page Builder — DateInputBlock.
  * Введення однієї дати. Блок веде на **інший рядок контенту** (`basePath` +
  * `targetPath`), а не на хвіст своєї адреси: `ScenarioPage` бере весь splat як
- * slug, тож `/mydate/2024-01-01` не знайшов би сторінки (`docs/CONTENT_MODEL.md`).
+ * slug, тож `/dateanalysis/2024-01-01` не знайшов би сторінки (`docs/CONTENT_MODEL.md`).
  * Дату несе `?dates=` — той самий параметр, що й у виборі чекбоксами.
  * @module packages/ui/src/blocks/DateInputBlock
  */
 
 import { useState } from "react";
 import type { BlockComponentProps } from "@wwwuabot/shared/types/page-config";
+import { DATE_ANALYSIS_PATH } from "@wwwuabot/shared/content";
 import { isValidDate } from "@wwwuabot/shared/utils/mydate-helpers";
 
 export function DateInputBlock({ block }: BlockComponentProps) {
   const {
     label = "Дата народження",
     buttonLabel = "Показати аналіз",
-    basePath = "/mydate",
+    basePath = DATE_ANALYSIS_PATH,
     targetPath = "analysis",
     min = "1900-01-01",
     max = "2100-12-31",
@@ -36,11 +37,11 @@ export function DateInputBlock({ block }: BlockComponentProps) {
       className="wb-block-date-input"
       style={{ display: "flex", flexDirection: "column", gap: "var(--sp-3)" }}
     >
-      <label className="wb-label" htmlFor="mydate-date">
+      <label className="wb-label" htmlFor="dateanalysis-date">
         {label}
       </label>
       <input
-        id="mydate-date"
+        id="dateanalysis-date"
         name="date"
         type="date"
         className="wb-input"

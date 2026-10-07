@@ -1,5 +1,5 @@
 /**
- * useMyDates — єдиний хук екрана «Дати»: завантаження, фільтри, сортування,
+ * useMyDates — єдиний хук екрана «Аналіз дат»: завантаження, фільтри, сортування,
  * вибір рядків, CRUD і стан модалки.
  *
  * Споживач — блок `MyDatesTableBlock`; окремої сторінки з датами в платформі
@@ -17,6 +17,7 @@
 import { useCallback, useEffect, useState } from "react";
 import { useDialog } from "../../dialog";
 import { useExpansion } from "@wwwuabot/ui/hooks";
+import { DATE_ANALYSIS_RESULT_PATH } from "@wwwuabot/shared/content";
 import type { MyDate } from "./types";
 import { deleteMyDate, deleteMyDates, fetchMyDates, saveMyDate } from "../mydate/api";
 import { useDateFilters } from "./useDateFilters";
@@ -34,7 +35,7 @@ const errorText = (e: unknown) => `Помилка: ${String(e).slice(0, 100)}`;
  */
 function analysisUrl(dates: MyDate[]): string {
   const param = encodeURIComponent(dates.map((d) => d.date).join(","));
-  return `/mydate/analysis?dates=${param}`;
+  return `${DATE_ANALYSIS_RESULT_PATH}?dates=${param}`;
 }
 
 export function useMyDates(options: UseMyDatesOptions = {}): UseMyDatesReturn {

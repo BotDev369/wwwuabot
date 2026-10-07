@@ -159,7 +159,7 @@ export const TABLES = {
    * `docs/CONTENT_MODEL.md`.
    *
    * **Адреса.** Адреса рядка одна — `slug`; саме її використовують веб-шлях і
-   * payload діплінка. Подання адреси (`/mydate/…` і `?start=mydate_…`) будує
+   * payload діплінка. Подання адреси (`/dateanalysis/…` і `?start=dateanalysis_…`) будує
    * `@wwwuabot/shared/content`.
    *
    * **Номер рядка — `id`.** Адреса жива: її редагують, і сторінка від цього не

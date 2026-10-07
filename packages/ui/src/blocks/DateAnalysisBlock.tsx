@@ -1,5 +1,5 @@
 /**
- * Page Builder — DateAnalysisBlock: екран «Аналіз Дат».
+ * Page Builder — DateAnalysisBlock: екран «Аналіз дат».
  * Дат може бути одна або більше: вибір систем спільний, а результат — таблиця,
  * де кожна дата має свій стовпець. Тому дати їдуть `?dates=`, а `?sys=` означає
  * крок результатів; порожній `?sys=` — крок вибору.
@@ -9,6 +9,7 @@
 
 import { useMemo } from "react";
 import type { BlockComponentProps } from "@wwwuabot/shared/types/page-config";
+import { DATE_ANALYSIS_PATH, DATE_ANALYSIS_RESULT_PATH } from "@wwwuabot/shared/content";
 import { SystemsPicker } from "./systems-picker";
 import { mydateTitle } from "./mydate/screen-title";
 import { AnalysisTable } from "./date-analysis/AnalysisTable";
@@ -18,8 +19,8 @@ import { useAnalysisTable } from "./date-analysis/useAnalysisTable";
 export function DateAnalysisBlock({ block }: BlockComponentProps) {
   const {
     title: storedTitle,
-    backUrl = "/mydate",
-    targetUrl = "/mydate/analysis",
+    backUrl = DATE_ANALYSIS_PATH,
+    targetUrl = DATE_ANALYSIS_RESULT_PATH,
   } = block.props as {
     title?: string;
     backUrl?: string;

@@ -42,7 +42,7 @@ export class ContactRepository extends DatabaseRepository {
    * Контакт за кодом із `?start=`.
    *
    * Код перевіряється **до** бази: адреса сторінки теж проходить
-   * `isValidBotPayload`, тож без цієї межі кожен `/start mydate` робив би
+   * `isValidBotPayload`, тож без цієї межі кожен `/start dateanalysis` робив би
    * зайвий запит. `ensureTables` тут — тому що бот пише першим: людина
    * відкриває бота раніше, ніж платформа встигає створити таблицю.
    */

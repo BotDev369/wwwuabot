@@ -24,7 +24,7 @@
  * `create-hub.test.ts` — і мовою (`uk`), бо кирилиця має літери, яких
  * звичайний `sort()` не знає.
  *
- * **Чого ще немає — те названо.** Екран без створення («Дати» приходять із
+ * **Чого ще немає — те названо.** Екран без створення («Аналіз дат» приходить із
  * бота) і екран без себе взагалі («Локації») мають пояснення `soon`: дія без
  * нього приглушена й чесно каже, що там буде (§7).
  *
@@ -33,7 +33,7 @@
 
 import type { NavigateOptions } from "react-router-dom";
 import type { IconName } from "@wwwuabot/shared";
-import { toWebPath } from "@wwwuabot/shared/content";
+import { DATE_ANALYSIS_PATH } from "@wwwuabot/shared/content";
 import type { HubItem } from "@wwwuabot/ui/hub";
 import {
   CONTACTS_PATH,
@@ -44,9 +44,6 @@ import {
   PAGES_PATH,
 } from "../app/routes";
 import { spaceTabPath } from "./space-tabs";
-
-/** Сторінка дат — рядок контенту: адресу дає `slug`, а не літерал (AGENTS §7). */
-const MYDATE_SLUG = "mydate";
 
 /**
  * Яку саме форму відкриває «+» пункту.
@@ -89,10 +86,12 @@ export interface CreateHubItem {
 
 export const CREATE_HUB_ITEMS: readonly CreateHubItem[] = [
   {
-    key: "mydate",
-    label: "Дати",
+    key: "dateanalysis",
+    label: "Аналіз дат",
     icon: "my-dates",
-    view: toWebPath(MYDATE_SLUG),
+    // Адреса — спільна константа, а не літерал: той самий `slug` читає й
+    // футер, тож другий літерал розійшовся б із першим (AGENTS §7).
+    view: DATE_ANALYSIS_PATH,
     // Дату заводять у боті, а тут лишається перегляд: «+», який нічого не
     // створює, мусить сказати про це сам, а не вдавати робочий.
     soon: "Додавання дати прямо із застосунку.",

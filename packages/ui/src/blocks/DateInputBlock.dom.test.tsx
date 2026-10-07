@@ -62,7 +62,7 @@ describe("DateInputBlock", () => {
     await user.type(screen.getByLabelText("Дата народження"), DATE);
     await user.click(screen.getByRole("button", { name: /Показати аналіз/ }));
 
-    expect(nav.value()).toBe(`/mydate/analysis?dates=${DATE}`);
+    expect(nav.value()).toBe(`/dateanalysis/analysis?dates=${DATE}`);
   });
 
   it("шлях і підписи сторінки перекривають типові", async () => {
@@ -77,6 +77,6 @@ describe("DateInputBlock", () => {
     await user.type(screen.getByLabelText("Народження"), DATE);
     await user.click(screen.getByRole("button", { name: "Далі" }));
 
-    expect(nav.value()).toBe(`/mydate/analyze?dates=${DATE}`);
+    expect(nav.value()).toBe(`/dateanalysis/analyze?dates=${DATE}`);
   });
 });

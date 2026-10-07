@@ -10,6 +10,7 @@
 
 import { useState, useCallback } from "react";
 import { icons } from "@wwwuabot/shared";
+import { DATE_ANALYSIS_RESULT_PATH } from "@wwwuabot/shared/content";
 import type { BlockComponentProps } from "@wwwuabot/shared/types/page-config";
 import { formatDate } from "@wwwuabot/shared/utils/mydate-helpers";
 
@@ -17,10 +18,10 @@ import { formatDate } from "@wwwuabot/shared/utils/mydate-helpers";
 
 export function CompareSetupBlock({ block }: BlockComponentProps) {
   const {
-    title = "Аналіз Дат",
+    title = "Аналіз дат",
     description = "Вкажіть дати для аналізу. Дати можна переміщати — це визначить порядок стовпців у таблиці.",
     maxDates = 10,
-    nextUrl = "/mydate/analysis",
+    nextUrl = DATE_ANALYSIS_RESULT_PATH,
   } = block.props as {
     title?: string;
     description?: string;
