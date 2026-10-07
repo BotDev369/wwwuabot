@@ -10,7 +10,7 @@ import { Fragment } from "react";
 import { Icon } from "@wwwuabot/shared";
 import { useExpansion } from "@wwwuabot/ui/hooks";
 import { formatDate } from "@wwwuabot/shared/utils/mydate-helpers";
-import type { CompareDetails, CompareMatrix } from "../mydate/api";
+import type { CompareDetails, CompareMatrix } from "./api";
 import type { AnalysisRow } from "./useAnalysisTable";
 
 export function AnalysisTable({

@@ -8,7 +8,7 @@
  */
 
 import { useCallback, useEffect, useState } from "react";
-import { fetchSystems, type AnalysisSystem } from "../mydate/api";
+import { fetchSystems, type AnalysisSystem } from "../date-analysis/api";
 
 /** Куди веде крок: ім'я параметра зі значеннями (дати) і адреса результату. */
 export interface SystemsPickerTarget {

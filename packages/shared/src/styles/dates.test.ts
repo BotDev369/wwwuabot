@@ -1,16 +1,16 @@
 /**
- * Сторож картки «Дати» на телефоні (`mydate.css`).
+ * Сторож картки «Дати» на телефоні (`dates.css`).
  *
  * Читається як текст: розбору CSS у тестовому середовищі немає
  * (`environment: node`) — так само, як у `chrome.test.ts`.
  *
- * @module packages/shared/src/styles/mydate-layout.test
+ * @module packages/shared/src/styles/dates.test
  */
 
 import { readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
 
-const css = readFileSync(new URL("./mydate.css", import.meta.url), "utf8").replace(
+const css = readFileSync(new URL("./dates.css", import.meta.url), "utf8").replace(
   /\/\*[\s\S]*?\*\//g,
   "",
 );

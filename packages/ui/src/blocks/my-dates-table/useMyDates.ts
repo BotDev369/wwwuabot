@@ -19,7 +19,7 @@ import { useDialog } from "../../dialog";
 import { useExpansion } from "@wwwuabot/ui/hooks";
 import { DATE_ANALYSIS_RESULT_PATH } from "@wwwuabot/shared/content";
 import type { MyDate } from "./types";
-import { deleteMyDate, deleteMyDates, fetchMyDates, saveMyDate } from "../mydate/api";
+import { deleteMyDate, deleteMyDates, fetchMyDates, saveMyDate } from "../date-analysis/api";
 import { useDateFilters } from "./useDateFilters";
 import { useDateModal } from "./useDateModal";
 import { useDateSelection } from "./useDateSelection";

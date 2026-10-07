@@ -4,7 +4,7 @@
  * Тут єдина спільна відповідь на питання «коли людина щось додала»: вона мусить
  * потрапити в наступний екран у тому самому порядку, у якому її ставили.
  *
- * @module packages/ui/src/blocks/mydate-setup.dom.test
+ * @module packages/ui/src/blocks/date-analysis-setup.dom.test
  */
 
 import { afterEach, beforeEach, describe, expect, it } from "vitest";

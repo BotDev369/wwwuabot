@@ -2,7 +2,7 @@
  * Клієнт ендпоинтів `/api/mydate/*` — один на всі блоки: копія `fetchSystems`
  * у другому блоці розійшлася б із цією першою ж правкою відповіді сервера.
  *
- * @module packages/ui/src/blocks/mydate/api
+ * @module packages/ui/src/blocks/date-analysis/api
  */
 
 import { telegramAuthHeaders } from "@wwwuabot/shared/security/telegram";

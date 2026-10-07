@@ -7,7 +7,7 @@
  * просто зникає з екрана, тож перевіряється саме те, що видно людині: крок,
  * порожній стан, помилка й таблиця з одним і двома стовпцями.
  *
- * @module packages/ui/src/blocks/mydate-analysis.dom.test
+ * @module packages/ui/src/blocks/date-analysis-screen.dom.test
  */
 
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";

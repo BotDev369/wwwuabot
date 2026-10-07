@@ -5,10 +5,10 @@
  * Перевіряється саме те, що ламається на телефоні: шість колонок таблиці не
  * вміщуються в ширину екрана, тому на вузькому екрані рядок мусить стати
  * карткою з підписаними полями, а кнопки модалки — скластися в стовпець.
- * Класи, а не пікселі: самі правила живуть у `packages/shared/src/styles/mydate.css`,
+ * Класи, а не пікселі: самі правила живуть у `packages/shared/src/styles/dates.css`,
  * а розкладку ми повинні перестати змінювати випадково.
  *
- * @module packages/ui/src/blocks/mydate-mobile.dom.test
+ * @module packages/ui/src/blocks/dates-mobile.dom.test
  */
 
 import { describe, expect, it, vi } from "vitest";

@@ -185,8 +185,8 @@ describe("пункти для списку", () => {
   });
 
   it("дія, за якою нічого немає, позначена приглушеною", () => {
-    const mydate = items.find((item) => item.key === DATE_ANALYSIS_SLUG);
-    expect(mydate?.actions.map((action) => Boolean(action.soon))).toEqual([false, true]);
+    const dateAnalysis = items.find((item) => item.key === DATE_ANALYSIS_SLUG);
+    expect(dateAnalysis?.actions.map((action) => Boolean(action.soon))).toEqual([false, true]);
     // А пункт, у якого не працює нічого, каже про себе цілком.
     expect(items.find((item) => item.key === "locations")?.status).toBe("soon");
     expect(items.find((item) => item.key === DATE_ANALYSIS_SLUG)?.status).toBe("ready");

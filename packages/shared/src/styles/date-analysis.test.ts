@@ -1,16 +1,16 @@
 /**
- * Сторож закріпленої шапки таблиць «Дати» (`mydate-analysis.css`).
+ * Сторож закріпленої шапки таблиць «Дати» (`date-analysis.css`).
  *
  * Читається як текст: розбору CSS у тестовому середовищі немає
- * (`environment: node`) — так само, як у `mydate-layout.test.ts`.
+ * (`environment: node`) — так само, як у `dates.test.ts`.
  *
- * @module packages/shared/src/styles/mydate-analysis.test
+ * @module packages/shared/src/styles/date-analysis.test
  */
 
 import { readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
 
-const css = readFileSync(new URL("./mydate-analysis.css", import.meta.url), "utf8").replace(
+const css = readFileSync(new URL("./date-analysis.css", import.meta.url), "utf8").replace(
   /\/\*[\s\S]*?\*\//g,
   "",
 );

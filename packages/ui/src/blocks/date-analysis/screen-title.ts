@@ -4,7 +4,7 @@
  * попередніх кроків — тож нормалізація тут, і свій підпис людини при цьому
  * лишається недоторканим.
  *
- * @module packages/ui/src/blocks/mydate/screen-title
+ * @module packages/ui/src/blocks/date-analysis/screen-title
  */
 
 const TITLES = {
@@ -22,9 +22,9 @@ const TITLES = {
   },
 } as const;
 
-export type MydateScreenTitle = keyof typeof TITLES;
+export type AnalysisScreenTitle = keyof typeof TITLES;
 
-export function mydateTitle(screen: MydateScreenTitle, raw: string | undefined): string {
+export function analysisScreenTitle(screen: AnalysisScreenTitle, raw: string | undefined): string {
   const title = raw?.trim() ?? "";
   const { fallback, legacy } = TITLES[screen];
   if (!title || (legacy as readonly string[]).includes(title)) return fallback;

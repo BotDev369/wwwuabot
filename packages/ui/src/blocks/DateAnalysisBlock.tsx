@@ -11,7 +11,7 @@ import { useMemo } from "react";
 import type { BlockComponentProps } from "@wwwuabot/shared/types/page-config";
 import { DATE_ANALYSIS_PATH, DATE_ANALYSIS_RESULT_PATH } from "@wwwuabot/shared/content";
 import { SystemsPicker } from "./systems-picker";
-import { mydateTitle } from "./mydate/screen-title";
+import { analysisScreenTitle } from "./date-analysis/screen-title";
 import { AnalysisTable } from "./date-analysis/AnalysisTable";
 import { listFrom, readDates } from "./date-analysis/date-params";
 import { useAnalysisTable } from "./date-analysis/useAnalysisTable";
@@ -27,7 +27,7 @@ export function DateAnalysisBlock({ block }: BlockComponentProps) {
     targetUrl?: string;
   };
 
-  const title = mydateTitle("analysis", storedTitle);
+  const title = analysisScreenTitle("analysis", storedTitle);
 
   // Адреса читається один раз за прохід екрана: крок змінюється переходом на
   // іншу адресу, а не станом цього компонента.

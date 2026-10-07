@@ -13,7 +13,7 @@ import {
   type AnalysisSystem,
   type CompareDetails,
   type CompareMatrix,
-} from "../mydate/api";
+} from "./api";
 
 /** Рядок таблиці — параметр однієї системи. */
 export interface AnalysisRow {

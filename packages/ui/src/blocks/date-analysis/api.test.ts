@@ -2,7 +2,7 @@
  * Клієнт аналізу: що саме йде на сервер і що повертається назад.
  * Екран аналізу й екран дат користуються ним обидва, тож перевіряється спільна
  * угода: маршрут, тіло запиту і — головне — що помилка сервера не губиться.
- * @module packages/ui/src/blocks/mydate/api.test
+ * @module packages/ui/src/blocks/date-analysis/api.test
  */
 
 import { afterEach, describe, expect, it, vi } from "vitest";
