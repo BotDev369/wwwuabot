@@ -1,9 +1,9 @@
 /**
  * Page Builder — DateInputBlock.
  * Введення однієї дати. Блок веде на **інший рядок контенту** (`basePath` +
- * `targetPath`), а не на хвіст своєї адреси: `ScenarioPage` бере весь splat
- * як slug, тож `/mydate/2024-01-01` не знайшов би сторінки
- * (`docs/CONTENT_MODEL.md`).
+ * `targetPath`), а не на хвіст своєї адреси: `ScenarioPage` бере весь splat як
+ * slug, тож `/mydate/2024-01-01` не знайшов би сторінки (`docs/CONTENT_MODEL.md`).
+ * Дату несе `?dates=` — той самий параметр, що й у виборі чекбоксами.
  * @module packages/ui/src/blocks/DateInputBlock
  */
 
@@ -58,7 +58,7 @@ export function DateInputBlock({ block }: BlockComponentProps) {
         onClick={() => {
           // Те саме, що робить `compare-setup`: повна адреса, а не `pushState`,
           // бо ціль — інший рядок контенту, а не стан цього екрана.
-          window.location.href = `${basePath}/${targetPath}?date=${date}`;
+          window.location.href = `${basePath}/${targetPath}?dates=${date}`;
         }}
       >
         {buttonLabel}

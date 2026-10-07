@@ -68,7 +68,7 @@ describe("шапка таблиці лишається на видноті", () 
     expect(rule(".wb-param-table thead th:last-child")).toContain("border-top-right-radius");
   });
 
-  it("таблиця співставлення вміщається в ширину екрана", () => {
+  it("таблиця аналізу вміщається в ширину екрана", () => {
     // Ширша за екран таблиця вимагала б скролу навколо шапки — і шапка знову
     // була б заручником чужого краю.
     expect(rule(".wb-param-table--compare")).toContain("table-layout: fixed");

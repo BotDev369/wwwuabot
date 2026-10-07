@@ -249,11 +249,11 @@ describe("список дат: сортування й вибір", () => {
     );
     if (!checkbox) throw new Error("чекбокса рядка немає");
     await user.click(checkbox);
-    expect(screen.getByRole("button", { name: "Аналізувати" })).toBeTruthy();
+    expect(screen.getByRole("button", { name: "Аналізувати (1)" })).toBeTruthy();
     expect(screen.queryByRole("button", { name: /Співставити/ })).toBeNull();
   });
 
-  it("дві вибрані дати пропонують співставлення", async () => {
+  it("дві вибрані дати — той самий аналіз, лише з лічильником", async () => {
     const user = userEvent.setup();
     const { container } = await renderTable([DATE, OTHER_DATE]);
     for (const box of container.querySelectorAll<HTMLInputElement>(
@@ -261,9 +261,8 @@ describe("список дат: сортування й вибір", () => {
     )) {
       await user.click(box);
     }
-    expect(screen.getByRole("button", { name: "Співставити (2)" })).toBeTruthy();
-    // Двом датам аналіз не відповідає — кнопки не стоять поруч удвох.
-    expect(screen.queryByRole("button", { name: "Аналізувати" })).toBeNull();
+    expect(screen.getByRole("button", { name: "Аналізувати (2)" })).toBeTruthy();
+    expect(screen.queryByRole("button", { name: /Співставити/ })).toBeNull();
   });
 
   it("«Скасувати вибір» повертає список до спокійного стану", async () => {

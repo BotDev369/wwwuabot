@@ -1,10 +1,9 @@
 /**
- * Page Builder — CompareSetupBlock.
+ * Page Builder — CompareSetupBlock: ручне введення дат для аналізу.
  *
- * Date input form for the comparison workflow.
- * Replaces the hardcoded CompareSetupPage.
- *
- * Users add dates, reorder them, and proceed to system selection.
+ * Другий вхід у той самий функціонал (перший — чекбокси на екрані дат):
+ * людина додає дати, міняє їхній порядок і йде на аналіз — стовпці таблиці
+ * стоять у тому ж порядку.
  *
  * @module packages/ui/src/blocks/CompareSetupBlock
  */
@@ -18,10 +17,10 @@ import { formatDate } from "@wwwuabot/shared/utils/mydate-helpers";
 
 export function CompareSetupBlock({ block }: BlockComponentProps) {
   const {
-    title = "Співставлення дат",
-    description = "Вкажіть дати для аналізу. Дати можна переміщати — це визначить порядок відображення в таблиці.",
+    title = "Аналіз Дат",
+    description = "Вкажіть дати для аналізу. Дати можна переміщати — це визначить порядок стовпців у таблиці.",
     maxDates = 10,
-    nextUrl = "/mydate/compare/systems",
+    nextUrl = "/mydate/analysis",
   } = block.props as {
     title?: string;
     description?: string;
@@ -155,7 +154,7 @@ export function CompareSetupBlock({ block }: BlockComponentProps) {
       >
         {dates.length === 0
           ? "Додайте хоча б одну дату"
-          : `Обрати системи для співставлення (${dates.length})`}
+          : `Обрати системи для аналізу (${dates.length})`}
       </button>
     </div>
   );

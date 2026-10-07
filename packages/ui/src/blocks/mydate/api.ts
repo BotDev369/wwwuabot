@@ -1,8 +1,7 @@
 /**
- * Клієнт ендпоинтів аналізу `/api/mydate/*` — один на всі блоки.
- * Три блоки мали власні копії `fetchSystems`/`SystemCard`, а `formatDate`/
- * `isValidDate` вже жили в `@wwwuabot/shared/utils/mydate-helpers`: копії
- * розійшлися б першою ж правкою відповіді сервера.
+ * Клієнт ендпоинтів `/api/mydate/*` — один на всі блоки: копія `fetchSystems`
+ * у другому блоці розійшлася б із цією першою ж правкою відповіді сервера.
+ *
  * @module packages/ui/src/blocks/mydate/api
  */
 
@@ -15,22 +14,16 @@ export type AnalysisSystem = Omit<MyDateSystem, "parameters"> & {
 };
 
 /**
- * Результат аналізу однієї системи — значення приходять уже рядками.
- * Обидва тексти дописує сервер під час відповіді: `about` — що визначає сам
- * параметр, `meaning` — що означає конкретне значення.
+ * Значення під своєю датою: `matrix[date][systemId][parameterKey]`. Дат може
+ * бути одна або більше — від цього ширини таблиці, а не кількості екранів.
  */
-export interface SystemResult {
-  parameters: { key: string; label: string; value: string; about?: string; meaning?: string }[];
-  comingSoon: string[];
-}
-
-/** Матриця порівняння: `matrix[date][systemId][parameterKey]`. */
 export type CompareMatrix = Record<string, Record<string, Record<string, string>>>;
 
 /**
  * Тексти під тим самим ключем, що й матриця: `details[date][systemId][key]`.
- * Трактують **значення конкретної дати**, тож живуть поруч із нею, а не в
- * окремому запиті на кожну дату.
+ * Обидва дописує сервер: `about` — що визначає сам параметр, `meaning` — що
+ * означає конкретне значення. Трактують **значення своєї дати**, тож живуть
+ * поруч із нею, а не в окремому запиті на кожну дату.
  */
 export type CompareDetails = Record<
   string,
@@ -109,26 +102,10 @@ export async function fetchSystems(): Promise<AnalysisSystem[]> {
   return data.ok ? (data.systems as AnalysisSystem[]) : [];
 }
 
-export async function analyzeDate(date: string, systemId: string): Promise<SystemResult> {
-  const data = await json(
-    await fetch("/api/mydate/analyze", {
-      method: "POST",
-      headers: { "Content-Type": "application/json", ...telegramAuthHeaders() },
-      body: JSON.stringify({ date, systemId }),
-    }),
-  );
-  if (!data.ok) throw new Error((data.error as string) ?? "Помилка аналізу");
-  return data.result as SystemResult;
-}
-
-/** Уже збережений аналіз дати; немає результату — порожня мапа, не помилка. */
-export async function fetchAnalysis(date: string): Promise<Record<string, SystemResult>> {
-  const data = await json(
-    await fetch(`/api/mydate/analysis/${date}`, { headers: telegramAuthHeaders() }),
-  );
-  return data.ok ? (data.systems as Record<string, SystemResult>) : {};
-}
-
+/**
+ * Аналіз дат: сервер рахує те, чого ще немає в базі, і повертає матрицю
+ * значень разом із текстами до них.
+ */
 export async function compareDates(
   dates: string[],
   systemIds?: string[],
@@ -141,7 +118,7 @@ export async function compareDates(
       body: JSON.stringify({ dates, systemIds, parameterKeys }),
     }),
   );
-  if (!data.ok) throw new Error((data.error as string) ?? "Помилка співставлення");
+  if (!data.ok) throw new Error((data.error as string) ?? "Помилка аналізу");
   return {
     matrix: (data.matrix ?? {}) as CompareMatrix,
     details: (data.details ?? {}) as CompareDetails,

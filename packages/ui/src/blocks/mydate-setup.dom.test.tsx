@@ -1,20 +1,17 @@
 // @vitest-environment jsdom
 /**
- * Ввід дат для порівняння й вибір систем: що станеться, коли людина до них доторкнеться.
- *
+ * Ввід дат для аналізу: що станеться, коли людина до нього доторкнеться.
  * Тут єдина спільна відповідь на питання «коли людина щось додала»: вона мусить
- * потрапити в наступний екран у тому самому порядку, у якому її ставили. Тому
- * перевіряються не тільки кнопки, а й те, що саме піде в адресу.
+ * потрапити в наступний екран у тому самому порядку, у якому її ставили.
  *
  * @module packages/ui/src/blocks/mydate-setup.dom.test
  */
 
-import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { act, render, screen } from "@testing-library/react";
+import { afterEach, beforeEach, describe, expect, it } from "vitest";
+import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import type { BlockComponentProps } from "@wwwuabot/shared/types/page-config";
 import { CompareSetupBlock } from "./CompareSetupBlock";
-import { CompareSystemsBlock } from "./CompareSystemsBlock";
 
 function props(over: Record<string, unknown> = {}): BlockComponentProps {
   return {
@@ -81,7 +78,7 @@ afterEach(() => {
 
 describe("CompareSetupBlock", () => {
   it("порожній список не пропонує перейти далі", () => {
-    const { container } = render(<CompareSetupBlock {...props()} />);
+    render(<CompareSetupBlock {...props()} />);
     expect(screen.getByRole("button", { name: /Додайте хоча б одну дату/ })).toBeTruthy();
   });
 
@@ -118,7 +115,7 @@ describe("CompareSetupBlock", () => {
     await user.click(screen.getAllByTitle("Вгору")[1]);
     await user.click(screen.getByRole("button", { name: /Обрати системи/ }));
 
-    expect(nav.value()).toBe("/mydate/compare/systems?dates=2003-02-15%2C1980-03-03");
+    expect(nav.value()).toBe("/mydate/analysis?dates=2003-02-15%2C1980-03-03");
   });
 
   it("видаляє дату зі списку", async () => {
@@ -139,82 +136,5 @@ describe("CompareSetupBlock", () => {
     await user.type(field, "1980-03-03");
     await user.click(screen.getByRole("button", { name: "Додати дату" }));
     expect(screen.getByRole("button", { name: "Додати дату" }).hasAttribute("disabled")).toBe(true);
-  });
-});
-
-describe("CompareSystemsBlock", () => {
-  it("вибір систем знімається й повертається — лічильник іде за вибором", async () => {
-    window.history.replaceState({}, "", "/mydate/compare/systems?dates=1980-03-03");
-    vi.stubGlobal(
-      "fetch",
-      vi.fn(
-        async () =>
-          new Response(
-            JSON.stringify({
-              ok: true,
-              systems: [
-                {
-                  id: "western",
-                  name: "Західна астрологія",
-                  description: "d",
-                  implemented: true,
-                  parameters: [{ key: "sign", label: "Знак" }],
-                },
-              ],
-            }),
-            { status: 200 },
-          ),
-      ),
-    );
-    const user = userEvent.setup();
-    const { container } = render(
-      <CompareSystemsBlock {...props({ resultUrl: "/mydate/compare/table" })} />,
-    );
-    await act(async () => {
-      await new Promise((resolve) => setTimeout(resolve, 0));
-    });
-    const checkbox = container.querySelector<HTMLInputElement>('input[type="checkbox"]');
-    if (!checkbox) throw new Error("чекбокса системи немає");
-    expect(checkbox.checked).toBe(true);
-    await user.click(checkbox);
-    expect(checkbox.checked).toBe(false);
-    vi.unstubAllGlobals();
-  });
-
-  it("передає дати параметрами, а не сегментом адреси", async () => {
-    window.history.replaceState({}, "", "/mydate/compare/systems?dates=1980-03-03");
-    vi.stubGlobal(
-      "fetch",
-      vi.fn(
-        async () =>
-          new Response(
-            JSON.stringify({
-              ok: true,
-              systems: [
-                {
-                  id: "western",
-                  name: "Західна астрологія",
-                  description: "d",
-                  implemented: true,
-                  parameters: [{ key: "sign", label: "Знак" }],
-                },
-              ],
-            }),
-            { status: 200 },
-          ),
-      ),
-    );
-    const user = userEvent.setup();
-    render(<CompareSystemsBlock {...props()} />);
-    await act(async () => {
-      await new Promise((resolve) => setTimeout(resolve, 0));
-    });
-    const nav = captureNavigation();
-    await user.click(screen.getByRole("button", { name: "Співставити" }));
-
-    // Сегмент `/mydate/1980-03-03` не знайшов би рядок: `ScenarioPage` бере
-    // весь splat як slug, тож стан їде параметром, як у `compare-setup`.
-    expect(nav.value()).toBe("/mydate/compare/table?dates=1980-03-03&sys=western&p=sign");
-    vi.unstubAllGlobals();
   });
 });

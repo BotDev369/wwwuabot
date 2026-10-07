@@ -138,7 +138,7 @@ export async function handleCompare(request: Request, env: Env): Promise<Respons
 
     const matrix: Record<string, Record<string, Record<string, unknown>>> = {};
     // Пояснення й трактування їдуть поруч із значеннями під тим самим ключем:
-    // інакше таблиця співставлення малювала б самі значення, а тексти до них
+    // інакше таблиця аналізу малювала б самі значення, а тексти до них
     // довелося б тягнути окремим запитом на кожну дату.
     const details: Record<
       string,

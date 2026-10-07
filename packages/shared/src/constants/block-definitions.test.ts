@@ -43,25 +43,17 @@ describe("Page Builder New Blocks", () => {
 
 /**
  * Блоки mydate живуть у рядках контенту (`scripts/migrations/*-mydate-*.sql`),
- * і адреси екранів там же одні: `/mydate`, `/mydate/analysis`,
- * `/mydate/compare/{setup,systems,table}`. Дефолт, що веде поза цей перелік, не
- * падає — він тихо показує фолбек, тож перевіряється саме адреса. Без
- * визначення блок не має схеми, і редактор адмінки не дає його правити.
+ * і адрес екранів дві: `/mydate` — дати, `/mydate/analysis` — аналіз. Дефолт,
+ * що веде поза цей перелік, не падає — він тихо показує фолбек, тож
+ * перевіряється саме адреса. Без визначення блок не має схеми, і редактор
+ * адмінки не дає його правити.
  */
 describe("MyDate — визначення блоків і адреси екранів", () => {
-  const MYDATE_SCREENS = [
-    "/mydate",
-    "/mydate/analysis",
-    "/mydate/compare/setup",
-    "/mydate/compare/systems",
-    "/mydate/compare/table",
-  ];
+  const MYDATE_SCREENS = ["/mydate", "/mydate/analysis"];
 
   const URL_PROPS: Array<[string, string]> = [
     ["date-input", "basePath"],
     ["compare-setup", "nextUrl"],
-    ["compare-systems", "resultUrl"],
-    ["compare-table", "backUrl"],
     ["date-analysis", "backUrl"],
     ["date-analysis", "targetUrl"],
   ];

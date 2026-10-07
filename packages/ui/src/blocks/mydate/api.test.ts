@@ -1,17 +1,15 @@
 /**
  * Клієнт аналізу: що саме йде на сервер і що повертається назад.
- * Три блоки користуються цим модулем, тож перевіряється спільна угода: маршрут,
- * тіло запиту і — головне — що помилка сервера не губиться.
+ * Екран аналізу й екран дат користуються ним обидва, тож перевіряється спільна
+ * угода: маршрут, тіло запиту і — головне — що помилка сервера не губиться.
  * @module packages/ui/src/blocks/mydate/api.test
  */
 
 import { afterEach, describe, expect, it, vi } from "vitest";
 import {
-  analyzeDate,
   compareDates,
   deleteMyDate,
   deleteMyDates,
-  fetchAnalysis,
   fetchMyDates,
   fetchSystems,
   saveMyDate,
@@ -47,41 +45,6 @@ describe("fetchSystems", () => {
   it("віддає порожній масив, а не кидає помилку, коли реєстра немає", async () => {
     respond({ ok: false });
     await expect(fetchSystems()).resolves.toEqual([]);
-  });
-});
-
-describe("analyzeDate", () => {
-  const result = { parameters: [{ key: "sign", label: "Знак", value: "Овен" }], comingSoon: [] };
-
-  it("надсилає дату й систему методом POST", async () => {
-    respond({ ok: true, result });
-    await expect(analyzeDate("1980-03-03", "western")).resolves.toEqual(result);
-    const call = lastCall();
-    expect(call.url).toBe("/api/mydate/analyze");
-    expect(call.init?.method).toBe("POST");
-    expect(JSON.parse(String(call.init?.body))).toEqual({
-      date: "1980-03-03",
-      systemId: "western",
-    });
-  });
-
-  it("помилку сервера показує людині, а не ковтає", async () => {
-    respond({ ok: false, error: "Система не реалізована" });
-    await expect(analyzeDate("1980-03-03", "vedic")).rejects.toThrow("Система не реалізована");
-  });
-});
-
-describe("fetchAnalysis", () => {
-  it("читає збережений аналіз за датою", async () => {
-    const systems = { western: { parameters: [], comingSoon: [] } };
-    respond({ ok: true, systems });
-    await expect(fetchAnalysis("1980-03-03")).resolves.toEqual(systems);
-    expect(lastCall().url).toBe("/api/mydate/analysis/1980-03-03");
-  });
-
-  it("немає аналізу — порожня мапа, а не помилка", async () => {
-    respond({ ok: false });
-    await expect(fetchAnalysis("1980-03-03")).resolves.toEqual({});
   });
 });
 
@@ -128,7 +91,7 @@ describe("compareDates", () => {
 
   it("помилку сервера показує людині", async () => {
     respond({ ok: false });
-    await expect(compareDates(["1980-03-03"])).rejects.toThrow("Помилка співставлення");
+    await expect(compareDates(["1980-03-03"])).rejects.toThrow("Помилка аналізу");
   });
 });
 

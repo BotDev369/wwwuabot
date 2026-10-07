@@ -109,50 +109,8 @@ describe("useMyDates", () => {
     await waitFor(() => expect(result.current.dates).toHaveLength(0));
   });
 
-  it("співставлення йде на сторінку систем з вибраними датами", async () => {
+  it("аналіз несе в адресу всі вибрані дати — одну або кілька", async () => {
     stubApi({ ok: true, dates: [DATE, { ...DATE, id: "2", date: "2003-02-15" }] });
-    let href = "";
-    const real = window.location;
-    Object.defineProperty(window, "location", {
-      configurable: true,
-      value: {
-        get search() {
-          return real.search;
-        },
-        get href() {
-          return href;
-        },
-        set href(next: string) {
-          href = next;
-        },
-      },
-    });
-
-    const { result } = renderHook(() => useMyDates());
-    await waitFor(() => expect(result.current.loading).toBe(false));
-
-    // Однієї дати мало: порівняння без сенсу, тож переходу бути не повинно.
-    act(() => {
-      result.current.toggleSelect("1");
-    });
-    act(() => {
-      result.current.handleBulkCompare();
-    });
-    expect(href).toBe("");
-
-    act(() => {
-      result.current.toggleSelect("2");
-    });
-    act(() => {
-      result.current.handleBulkCompare();
-    });
-    // Порядок — з відсортованого списку, тобто той самий, що людина бачить у
-    // таблиці: за замовчуванням нові дати першими.
-    expect(href).toBe("/mydate/compare/systems?dates=2003-02-15%2C1980-03-03");
-  });
-
-  it("аналіз іде в аналіз, а не в процес співставлення", async () => {
-    stubApi();
     let href = "";
     const real = window.location;
     Object.defineProperty(window, "location", {
@@ -185,9 +143,20 @@ describe("useMyDates", () => {
     act(() => {
       result.current.handleBulkAnalyze();
     });
-    // Аналіз і співставлення — різні процеси: кнопка веде на екран аналізу, а
-    // вибір систем і параметрів стоїть уже там (`?sys=` в адресі).
-    expect(href).toBe("/mydate/analysis?date=1980-03-03");
+    // Аналіз — один екран, і вибір систем стоїть уже на ньому: окремого
+    // процесу для кількох дат немає.
+    expect(href).toBe("/mydate/analysis?dates=1980-03-03");
     expect(href).not.toContain("compare");
+
+    href = "";
+    act(() => {
+      result.current.toggleSelect("2");
+    });
+    act(() => {
+      result.current.handleBulkAnalyze();
+    });
+    // Порядок — з відсортованого списку, тобто той самий, що людина бачить у
+    // таблиці: за замовчуванням нові дати першими.
+    expect(href).toBe("/mydate/analysis?dates=2003-02-15%2C1980-03-03");
   });
 });

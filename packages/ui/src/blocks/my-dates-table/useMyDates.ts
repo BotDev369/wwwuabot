@@ -29,21 +29,12 @@ export type { UseMyDatesOptions, UseMyDatesReturn } from "./useMyDates.types";
 const errorText = (e: unknown) => `Помилка: ${String(e).slice(0, 100)}`;
 
 /**
- * Співставлення — це кілька дат, і його перший крок спільний: адреса нижче
- * веде на вибір систем уже в процесі співставлення.
+ * Аналіз — одна адреса на одну й більше дат: екран сам спитає системи й
+ * параметри, а далі покаже таблицю, де кожна дата має свій стовпець.
  */
-function compareSystemsUrl(dates: MyDate[]): string {
+function analysisUrl(dates: MyDate[]): string {
   const param = encodeURIComponent(dates.map((d) => d.date).join(","));
-  return `/mydate/compare/systems?dates=${param}`;
-}
-
-/**
- * Аналіз — це одна дата і **свій** процес: вибір систем і параметрів стоїть на
- * екрані аналізу, а не на екрані співставлення. Одна адреса на два процеси
- * вела в «співставлення дат» замість аналізу.
- */
-function analysisUrl(date: string): string {
-  return `/mydate/analysis?date=${encodeURIComponent(date)}`;
+  return `/mydate/analysis?dates=${param}`;
 }
 
 export function useMyDates(options: UseMyDatesOptions = {}): UseMyDatesReturn {
@@ -128,18 +119,12 @@ export function useMyDates(options: UseMyDatesOptions = {}): UseMyDatesReturn {
     [filters.processedDates, selection.selectedIds],
   );
 
-  const handleBulkCompare = useCallback(() => {
-    const selected = selectedDates();
-    if (selected.length < 2) return;
-    window.location.href = compareSystemsUrl(selected);
-  }, [selectedDates]);
-
-  // Аналіз веде **в аналіз**: далі екран сам спитає системи й параметри. Та сама
-  // адреса в обох дій робила з аналізу співставлення.
+  // Одна дія на одну й більше дат: аналіз — це та сама таблиця, тож вибір
+  // систем стоїть у ньому, а не в окремому процесі поруч.
   const handleBulkAnalyze = useCallback(() => {
     const selected = selectedDates();
-    if (selected.length !== 1) return;
-    window.location.href = analysisUrl(selected[0].date);
+    if (selected.length === 0) return;
+    window.location.href = analysisUrl(selected);
   }, [selectedDates]);
 
   return {
@@ -155,6 +140,5 @@ export function useMyDates(options: UseMyDatesOptions = {}): UseMyDatesReturn {
     handleDelete,
     handleBulkDelete,
     handleBulkAnalyze,
-    handleBulkCompare,
   };
 }

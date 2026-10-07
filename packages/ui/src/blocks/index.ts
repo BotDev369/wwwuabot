@@ -64,8 +64,6 @@ export { UserProfileBlock } from "./UserProfileBlock";
 export { DateCardBlock } from "./DateCardBlock";
 export { MyDatesTableBlock } from "./MyDatesTableBlock";
 export { CompareSetupBlock } from "./CompareSetupBlock";
-export { CompareSystemsBlock } from "./CompareSystemsBlock";
-export { CompareTableBlock } from "./CompareTableBlock";
 export { DateAnalysisBlock } from "./DateAnalysisBlock";
 export { DateInputBlock } from "./DateInputBlock";
 
@@ -132,8 +130,6 @@ import { UserProfileBlock } from "./UserProfileBlock";
 import { DateCardBlock } from "./DateCardBlock";
 import { MyDatesTableBlock } from "./MyDatesTableBlock";
 import { CompareSetupBlock } from "./CompareSetupBlock";
-import { CompareSystemsBlock } from "./CompareSystemsBlock";
-import { CompareTableBlock } from "./CompareTableBlock";
 import { DateAnalysisBlock } from "./DateAnalysisBlock";
 import { DateInputBlock } from "./DateInputBlock";
 
@@ -213,10 +209,13 @@ export function registerAllBlocks(): void {
   registerBlock("date-card", DateCardBlock);
   registerBlock("my-dates-table", MyDatesTableBlock);
   registerBlock("compare-setup", CompareSetupBlock);
-  registerBlock("compare-systems", CompareSystemsBlock);
-  registerBlock("compare-table", CompareTableBlock);
   registerBlock("date-analysis", DateAnalysisBlock);
   registerBlock("date-input", DateInputBlock);
+  // Аналіз і співставлення — один екран, тож старі адреси ведуть у нього, а не
+  // в другу реалізацію: рядки контенту з цими типами лишились у базі, і
+  // міграція їх не видаляє (AGENTS.md §7).
+  registerBlock("compare-systems", DateAnalysisBlock);
+  registerBlock("compare-table", DateAnalysisBlock);
 
   // Analytics
   registerBlock("chart", ChartBlock);

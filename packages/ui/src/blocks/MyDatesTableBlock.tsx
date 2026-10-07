@@ -56,7 +56,6 @@ export function MyDatesTableBlock({ block }: BlockComponentProps) {
     handleDelete,
     handleBulkDelete,
     handleBulkAnalyze,
-    handleBulkCompare,
   } = useMyDates();
 
   // Дата — перша колонка, і це не смак: назва може бути порожньою, а дата є
@@ -146,18 +145,11 @@ export function MyDatesTableBlock({ block }: BlockComponentProps) {
       {showBulkActions && selectedIds.size > 0 && (
         <div className="wb-date-bulk">
           <span className="wb-text-sm wb-date-bulk__count">Обрано: {selectedIds.size}</span>
-          {/* Одна дата аналізується, кілька — співставляються: це різні
-              екрани, тож у смузі стоїть та кнопка, яка має сенс. */}
-          {selectedIds.size === 1 && (
-            <button className="wb-btn wb-btn-sm wb-btn-primary" onClick={handleBulkAnalyze}>
-              Аналізувати
-            </button>
-          )}
-          {selectedIds.size >= 2 && (
-            <button className="wb-btn wb-btn-sm" onClick={handleBulkCompare}>
-              Співставити ({selectedIds.size})
-            </button>
-          )}
+          {/* Одна кнопка на будь-яку кількість дат: аналіз — це таблиця, де дат
+              може бути одна або більше, тож окремої дії для кількох немає. */}
+          <button className="wb-btn wb-btn-sm wb-btn-primary" onClick={handleBulkAnalyze}>
+            Аналізувати ({selectedIds.size})
+          </button>
           <button className="wb-btn wb-btn-sm wb-btn-danger" onClick={handleBulkDelete}>
             Видалити ({selectedIds.size})
           </button>
