@@ -42,14 +42,8 @@ function ParameterRow({
       </tr>
       {open && (
         <tr className="wb-param-detail">
-          <td>
-            <span className="wb-param-detail__caption">Пояснення параметра</span>
-            {parameter.about ?? "—"}
-          </td>
-          <td>
-            <span className="wb-param-detail__caption">Трактування значення</span>
-            {parameter.meaning ?? "—"}
-          </td>
+          <td>{parameter.about ?? "—"}</td>
+          <td>{parameter.meaning ?? "—"}</td>
         </tr>
       )}
     </>

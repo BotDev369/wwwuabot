@@ -42,11 +42,24 @@ describe("шапка таблиці лишається на видноті", () 
     expect(frame).not.toContain("max-height");
   });
 
-  it("платформа зсуває закріплену шапку під хедер", () => {
+  it("платформа зсуває закріплену шапку під хедер — із просвітом", () => {
     expect(rule(".wb-param-table th")).toContain("position: sticky");
     // Зсув — токен висоти хедера, а не його формула: поки число стояло тут
     // окремо, вищий хедер (назва у два рядки) ховав шапку під собою.
-    expect(rule(".wb-tabbar-layout .wb-param-table th")).toContain("top: var(--appbar-h)");
+    expect(rule(".wb-tabbar-layout .wb-param-table th")).toContain(
+      "top: calc(var(--appbar-h) + var(--sp-2))",
+    );
+  });
+
+  it("просвіт закриває липка смуга тла екрана — інакше в ньому видно рядки", () => {
+    const veil = rule(".wb-tabbar-layout .wb-param-frame::before");
+    expect(veil).toContain("position: sticky");
+    expect(veil).toContain("top: var(--appbar-h)");
+    expect(veil).toContain("background: var(--bg-page");
+    // Висота смуги — і просвіт, і від'ємний відступ: у спокої шапка стоїть там,
+    // де стояла б без смуги.
+    expect(veil).toContain("height: var(--sp-2)");
+    expect(veil).toContain("margin-bottom: calc(-1 * var(--sp-2))");
   });
 
   it("кути шапки повторюють рамку — її більше не обрізає `overflow`", () => {

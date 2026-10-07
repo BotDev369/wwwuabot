@@ -341,8 +341,6 @@ describe("DateAnalysisBlock: аналіз — це два кроки", () => {
 
     await user.click(screen.getByRole("button", { name: "Знак Сонця" }));
 
-    expect(screen.getByText("Пояснення параметра")).toBeTruthy();
-    expect(screen.getByText("Трактування значення")).toBeTruthy();
     expect(screen.getByText("Головна якість суті: те, як вона проявляється назовні.")).toBeTruthy();
     expect(screen.getByText("Розчинення меж і чутливість.")).toBeTruthy();
     // Другий рядок лишається згорнутим: розкриття одного не тягне решту.

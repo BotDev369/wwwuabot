@@ -220,15 +220,9 @@ export function CompareTableBlock({ block }: BlockComponentProps) {
                     </tr>
                     {open && (
                       <tr className="wb-param-detail">
-                        <td>
-                          <span className="wb-param-detail__caption">Пояснення параметра</span>
-                          {about ?? "—"}
-                        </td>
+                        <td>{about ?? "—"}</td>
                         {dates.map((d) => (
-                          <td key={d}>
-                            <span className="wb-param-detail__caption">Трактування</span>
-                            {details[d]?.[r.systemId]?.[r.key]?.meaning ?? "—"}
-                          </td>
+                          <td key={d}>{details[d]?.[r.systemId]?.[r.key]?.meaning ?? "—"}</td>
                         ))}
                       </tr>
                     )}
