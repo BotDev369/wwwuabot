@@ -33,7 +33,7 @@ export function ScenariosPage() {
     // Telegram і виглядає як "бот не відповідає".
     const raw = await dialog.prompt("Адреса нової сторінки (slug):", {
       title: "Новий сценарій",
-      placeholder: "dateanalysis або nastya",
+      placeholder: "mydate або nastya",
       validate: (value) => {
         const candidate = normalizeSlug(value.trim().toLowerCase());
         if (candidate === "") return "Порожня адреса — це головна сторінка, вона вже існує";
