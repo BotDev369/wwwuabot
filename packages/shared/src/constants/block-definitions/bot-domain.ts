@@ -120,12 +120,12 @@ export const botDomainBlocks: BlockDefinition[] = [
     category: "bot-domain",
     description: "Таблиця аналізу: параметри й значення — дат одна або більше",
     props: {
-      title: s("Заголовок", { default: "Аналіз Дат" }),
+      title: s("Підпис над таблицею", { default: "Результат аналізу:" }),
       backUrl: s("URL назад", { default: "/mydate" }),
       targetUrl: s("URL вибору систем", { default: "/mydate/analysis" }),
     },
     defaultProps: {
-      title: "Аналіз Дат",
+      title: "Результат аналізу:",
       backUrl: "/mydate",
       targetUrl: "/mydate/analysis",
     },

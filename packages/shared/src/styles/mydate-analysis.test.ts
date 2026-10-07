@@ -62,6 +62,10 @@ describe("шапка таблиці лишається на видноті", () 
     expect(veil).toContain("margin-bottom: calc(-1 * var(--sp-2))");
   });
 
+  it("підпис над таблицею має просвіт — інакше читається як перша комірка", () => {
+    expect(rule(".wb-block-date-analysis__title")).toContain("margin-bottom: var(--sp-4)");
+  });
+
   it("кути шапки повторюють рамку — її більше не обрізає `overflow`", () => {
     // Прямокутник шапки з непрозорим тлом вилазив за заокруглені кути рамки.
     expect(rule(".wb-param-table thead th:first-child")).toContain("border-top-left-radius");

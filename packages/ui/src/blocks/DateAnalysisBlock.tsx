@@ -74,7 +74,7 @@ export function DateAnalysisBlock({ block }: BlockComponentProps) {
 
   return (
     <div className="wb-block-date-analysis">
-      <h2>{title}</h2>
+      <h2 className="wb-block-date-analysis__title">{title}</h2>
 
       {table.error && (
         <p className="wb-text-sm" style={{ color: "var(--color-danger, #ef4444)" }}>

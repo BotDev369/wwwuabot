@@ -26,6 +26,12 @@ npx wrangler d1 execute wwwuabot-db-dev --remote \
 `actions: write` (`gh workflow run` → 403). Вхід `file` приймає **тільки** `scripts/migrations/*.sql`:
 довільний шлях до `.sql` означав би «виконай будь-що від імені CI».
 
+**Агент і токен.** У робочому просторі агента `wrangler whoami` каже «not authenticated», а
+`wrangler login` не зарадить — браузерного потоку в агента нема. Тому базу агент дістає одним із
+двох способів, і обидва починає власник: **змінні оточення** `CLOUDFLARE_API_TOKEN` (права D1
+Edit) і `CLOUDFLARE_ACCOUNT_ID` — тоді `wrangler d1 execute --remote` із кореня репозиторію
+працює й у ньому; або **міграція у руки людини** — Actions → «D1 (dev)» → Run workflow → `file`.
+
 ### Звірити стан, а не лише реєстр
 
 `check:db` читає `tables.ts`, а не базу: таблиця з реєстру, яку ще ніхто не створив запитом, йому

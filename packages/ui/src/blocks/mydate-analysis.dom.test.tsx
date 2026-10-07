@@ -188,7 +188,7 @@ describe("DateAnalysisBlock — таблиця", () => {
     render(<DateAnalysisBlock {...props()} />);
     await settle();
 
-    expect(screen.getByRole("heading", { name: "Аналіз Дат" })).toBeTruthy();
+    expect(screen.getByRole("heading", { name: "Результат аналізу:" })).toBeTruthy();
     expect(screen.getByRole("table")).toBeTruthy();
     expect(screen.getByText("03.03.1980")).toBeTruthy();
     expect(screen.getByText("Західна астрологія")).toBeTruthy();
@@ -310,15 +310,18 @@ describe("DateAnalysisBlock — підпис екрана", () => {
 
   // Стара обіцянка лишилась у `page_data` рядків, створених до зміни тексту, а
   // міграцію в дев-базі запускає людина: без нормалізації екран показував би її.
-  it("старий підпис із `page_data` показує текстом, який у коді", async () => {
-    window.history.replaceState({}, "", TABLE_URL);
-    stubApi({ matrix: { "1980-03-03": { western: { sunSign: "Риби" } } } });
-    render(<DateAnalysisBlock {...props({ title: "Порівняння дат" })} />);
-    await settle();
+  it.each(["Порівняння дат", "Аналіз Дат"])(
+    "старий підпис `%s` показує текстом, який у коді",
+    async (stored) => {
+      window.history.replaceState({}, "", TABLE_URL);
+      stubApi({ matrix: { "1980-03-03": { western: { sunSign: "Риби" } } } });
+      render(<DateAnalysisBlock {...props({ title: stored })} />);
+      await settle();
 
-    expect(screen.getByRole("heading", { name: "Аналіз Дат" })).toBeTruthy();
-    expect(screen.queryByText("Порівняння дат")).toBeNull();
-  });
+      expect(screen.getByRole("heading", { name: "Результат аналізу:" })).toBeTruthy();
+      expect(screen.queryByText(stored)).toBeNull();
+    },
+  );
 
   it("підпис, який людина написала сама, лишається як є", async () => {
     window.history.replaceState({}, "", TABLE_URL);
