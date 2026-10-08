@@ -4,13 +4,9 @@ import { initTheme } from "@wwwuabot/shared";
 import { DialogProvider } from "@wwwuabot/ui/dialog";
 import "./index.css";
 import App from "./App.tsx";
-import { mountInsetsReadout } from "./shared/insets-readout.ts";
 
 // Застосовуємо theme/style перед першим рендером (унікальний код)
 initTheme();
-
-// Тимчасово: числа вставок клієнта на екрані (див. `shared/insets-readout.ts`).
-mountInsetsReadout();
 
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
