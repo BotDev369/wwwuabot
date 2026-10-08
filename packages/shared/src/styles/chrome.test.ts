@@ -215,6 +215,25 @@ describe("висота хедера", () => {
   });
 });
 
+/**
+ * Вставки під UI клієнта: у повноекранному режимі клієнт шапки не малює, зате
+ * «закрити» й «меню» стоять ПОВЕРХ застосунку (див. `docs/PLATFORM.md`).
+ */
+describe("мобільні вставки враховують UI клієнта", () => {
+  for (const file of ["tokens.css", "android.css"]) {
+    it(`${file}: у \`--safe-*\` входить місце під кнопками клієнта`, () => {
+      const css = readFileSync(join(REPO_ROOT, `packages/shared/src/styles/${file}`), "utf8");
+
+      expect(css).toMatch(
+        /--safe-top:\s*max\([\s\S]*?--tg-content-safe-area-inset-top, 0px[\s\S]*?\);/,
+      );
+      expect(css).toMatch(
+        /--safe-bottom:\s*max\([\s\S]*?--tg-content-safe-area-inset-bottom, 0px[\s\S]*?\);/,
+      );
+    });
+  }
+});
+
 describe("назва екрана", () => {
   it("на телефоні вміщується у два рядки замість обрізання на півслові", () => {
     const title = CHROME.filter((entry) => entry.selector === ".wb-appbar__title");

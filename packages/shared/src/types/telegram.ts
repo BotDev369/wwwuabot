@@ -28,6 +28,16 @@ export interface TelegramWebApp {
   expand?: () => void;
   /** Mini App готовий — приховує сплеш Telegram (Bot API 6.1+). */
   ready?: () => void;
+  /** Порівняння версії клієнта — єдиний спосіб спитати, чи метод доступний (Bot API 6.1+). */
+  isVersionAtLeast?: (version: string) => boolean;
+  /** Чи Mini App зараз на весь екран (Bot API 8.0+). */
+  isFullscreen?: boolean;
+  /**
+   * Повноекранний режим (Bot API 8.0+). Прибирає **власну шапку клієнта** —
+   * рядок з іменем бота й кнопкою «розгорнути»; лишаються лише «закрити» й
+   * «меню», які клієнт малює поверх застосунку.
+   */
+  requestFullscreen?: () => void;
   /** Колір нативної шапки над Mini App (Bot API 6.1+). */
   setHeaderColor?: (color: TelegramChromeColor) => void;
   /** Колір фону Mini App (Bot API 6.1+). */

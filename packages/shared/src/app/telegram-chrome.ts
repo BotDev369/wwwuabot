@@ -19,6 +19,14 @@
  *                             під час скролу за межі viewport)
  *   смуга під Mini App     ← `--chrome-bottom-bg` (те саме місце, що й футер)
  *
+ * **Хедер застосунку — наш, тож шапку клієнта прибираємо.** Рядок, який
+ * Telegram малює над Mini App (ім'я бота, «розгорнути», «закрити», «меню»),
+ * застосунку не підкоряється: з нього керується лише колір. Зате клієнт уміє
+ * **повноекранний режим** (Bot API 8.0+) — і в ньому власної шапки немає:
+ * лишаються тільки «закрити» й «меню», які клієнт малює поверх застосунку.
+ * Тому тут же просимо повний екран (`applyFullscreen`), а місце під ці дві
+ * кнопки резервують токени `--safe-*` (`styles/tokens.css`).
+ *
  * Коли: старт застосунку (разом з `initTheme()`), кожна зміна `data-brand` /
  * `data-theme` (MutationObserver) і подія клієнта `themeChanged` (користувач
  * повернув тему Telegram у налаштуваннях).
@@ -100,6 +108,28 @@ export function applyChromeColors(
   }
 }
 
+/** Версія клієнта, з якої існує повноекранний режим (Bot API 8.0). */
+const FULLSCREEN_VERSION = "8.0";
+
+/**
+ * Просить клієнт відкрити Mini App на весь екран — це і є «забрати шапку
+ * Telegram»: у повноекранному режимі її немає, а хедером стає наш `AppBar` з
+ * назвою **сторінки**. Старіший клієнт (до Bot API 8.0) і той, що вже на весь
+ * екран, — мовчимо; відмову клієнта глушимо: без повного екрана застосунок
+ * просто лишається таким, як був (деталі — `docs/PLATFORM.md`).
+ */
+export function applyFullscreen(
+  webApp: Pick<TelegramWebApp, "isFullscreen" | "isVersionAtLeast" | "requestFullscreen">,
+): void {
+  if (webApp.isFullscreen === true) return;
+  if (webApp.isVersionAtLeast?.(FULLSCREEN_VERSION) !== true) return;
+  try {
+    webApp.requestFullscreen?.();
+  } catch {
+    /* клієнт відмовив — працюємо в звичайній шапці */
+  }
+}
+
 /** Зчитує обидва токени; `undefined`, коли CSS ще не підвантажився. */
 export function readChromeColors():
   { header: TelegramChromeColor; bottom: TelegramChromeColor } | undefined {
@@ -143,6 +173,9 @@ export function initTelegramChrome(): () => void {
 
   sync();
   webApp.ready?.();
+
+  // Повний екран — теж хром: він прибирає шапку клієнта (див. `applyFullscreen`).
+  applyFullscreen(webApp);
 
   // Один кадр по тому — ще раз: у dev CSS доливається модулем (може встигнути
   // пізніше за перший sync), а частина клієнтів застосовує колір лише після ready.

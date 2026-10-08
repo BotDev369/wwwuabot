@@ -92,6 +92,7 @@ export type { Brand, Scheme, Theme } from "./styles/registry";
 export { initTheme } from "./app/initTheme";
 export {
   applyChromeColors,
+  applyFullscreen,
   initTelegramChrome,
   isTelegramWebApp,
   normalizeChromeColor,

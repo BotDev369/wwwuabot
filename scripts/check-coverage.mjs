@@ -130,6 +130,9 @@ if (!existsSync(SUMMARY)) {
       // «покриття» для них вимірювалось би лише тим, що їх запустили. Вимога
       // тесту стосується коду, який живе в продукті.
       if (/(^|\/)[^/]*\.config\.(ts|js|mjs|cjs)$/.test(file)) continue;
+      // Файли типів `vitest.config.ts` виключає зі збору покриття (`**/types/**`):
+      // у них немає поведінки, тож «немає в звіті» для них — не борг, а глухий кут.
+      if (/(^|\/)types\//.test(file)) continue;
       if (!existsSync(join(ROOT, file))) continue;
       // Коментар — не новий код: вимагати тут тестів без причини.
       if (addedCodeLines(NEW_CODE_SINCE, file).length === 0) continue;

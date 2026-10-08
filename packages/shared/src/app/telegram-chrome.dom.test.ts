@@ -1,0 +1,124 @@
+// @vitest-environment jsdom
+/**
+ * Старт нативного хрому: те, що застосунок робить один раз — фарбує шапку й низ
+ * клієнта кольорами теми, каже `ready` і просить повний екран (щоб шапки
+ * клієнта з іменем бота не було взагалі).
+ *
+ * Перевіряється саме те, що ламається мовчки: без токенів у CSS виклику немає,
+ * без `window.Telegram` модуль нічого не робить, а відписка справді знімає
+ * підписку на тему клієнта.
+ *
+ * @module packages/shared/src/app/telegram-chrome.dom.test
+ */
+
+import { afterEach, describe, expect, it, vi } from "vitest";
+import { initTelegramChrome } from "./telegram-chrome";
+import type { TelegramWebApp } from "../types/telegram";
+
+const HEADER = "#1c1c1e";
+const BOTTOM = "#2c2c2e";
+
+interface Stub {
+  app: TelegramWebApp;
+  calls: string[];
+  handlers: Map<string, () => void>;
+}
+
+/**
+ * Фейковий WebApp: записує виклики так, як їх бачить застосунок.
+ * `isVersionAtLeast` відповідає «так» — клієнт Bot API 8.0+.
+ */
+function install(over: Partial<TelegramWebApp> = {}): Stub {
+  const calls: string[] = [];
+  const handlers = new Map<string, () => void>();
+  const app: TelegramWebApp = {
+    ready: () => calls.push("ready"),
+    setHeaderColor: (color) => calls.push(`header:${color}`),
+    setBackgroundColor: (color) => calls.push(`background:${color}`),
+    setBottomBarColor: (color) => calls.push(`bottom:${color}`),
+    isVersionAtLeast: () => true,
+    requestFullscreen: () => calls.push("fullscreen"),
+    onEvent: (event, handler) => void handlers.set(event, handler),
+    offEvent: (event) => {
+      handlers.delete(event);
+      calls.push(`off:${event}`);
+    },
+    ...over,
+  };
+  window.Telegram = { WebApp: app };
+  return { app, calls, handlers };
+}
+
+/**
+ * jsdom не читає власні CSS-змінні з `getComputedStyle`, тож токени підставляємо
+ * підставним обʼєктом — тим самим інтерфейсом, який читає сам модуль.
+ */
+function mockTokens(tokens: Record<string, string>): void {
+  vi.spyOn(window, "getComputedStyle").mockReturnValue({
+    getPropertyValue: (name: string) => tokens[name] ?? "",
+  } as unknown as CSSStyleDeclaration);
+}
+
+afterEach(() => {
+  vi.restoreAllMocks();
+  delete window.Telegram;
+});
+
+describe("initTelegramChrome", () => {
+  it("фарбує шапку, фон і низ кольорами теми та просить повний екран", () => {
+    mockTokens({ "--chrome-header-bg": HEADER, "--chrome-bottom-bg": BOTTOM });
+    const { calls } = install();
+
+    initTelegramChrome();
+
+    expect(calls).toContain("ready");
+    expect(calls).toContain(`header:${HEADER}`);
+    expect(calls).toContain(`background:${HEADER}`);
+    expect(calls).toContain(`bottom:${BOTTOM}`);
+    expect(calls).toContain("fullscreen");
+  });
+
+  it("без токенів у CSS кольорів не шле (розмітка ще не готова) — але повний екран просить", () => {
+    mockTokens({});
+    const { calls } = install();
+
+    initTelegramChrome();
+
+    // Кольорів немає зовсім: у списку викликів лишаються тільки ці два.
+    expect(calls).toEqual(["ready", "fullscreen"]);
+  });
+
+  it("на зміну теми клієнта перечитує токени", () => {
+    mockTokens({ "--chrome-header-bg": HEADER, "--chrome-bottom-bg": BOTTOM });
+    const { calls, handlers } = install();
+
+    initTelegramChrome();
+    const before = calls.length;
+
+    expect(handlers.get("themeChanged"), "підписка на тему клієнта").toBeDefined();
+    handlers.get("themeChanged")?.();
+
+    expect(calls.length).toBeGreaterThan(before);
+    expect(calls.at(-1)).toBe(`bottom:${BOTTOM}`);
+  });
+
+  it("відписка знімає підписку на тему клієнта", () => {
+    mockTokens({ "--chrome-header-bg": HEADER, "--chrome-bottom-bg": BOTTOM });
+    const { calls, handlers } = install();
+
+    const stop = initTelegramChrome();
+    stop();
+
+    expect(calls).toContain("off:themeChanged");
+    expect(handlers.has("themeChanged")).toBe(false);
+  });
+
+  it("без `window.Telegram` — no-op, який нічого не ламає", () => {
+    mockTokens({ "--chrome-header-bg": HEADER, "--chrome-bottom-bg": BOTTOM });
+    delete window.Telegram;
+
+    const stop = initTelegramChrome();
+
+    expect(() => stop()).not.toThrow();
+  });
+});
