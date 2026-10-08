@@ -16,6 +16,18 @@ export interface TelegramWebAppUser {
  */
 export type TelegramChromeColor = `#${string}`;
 
+/**
+ * Вставки в пікселях (Bot API 8.0+). Дві різні речі: `safeAreaInset` — вирізи й
+ * системні панелі пристрою, `contentSafeAreaInset` — місце, яке займає UI
+ * самого клієнта (у повноекранному режимі — смуга «закрити» й «меню»).
+ */
+export interface TelegramInset {
+  top: number;
+  bottom: number;
+  left: number;
+  right: number;
+}
+
 export interface TelegramWebApp {
   initData?: string;
   initDataUnsafe?: {
@@ -32,6 +44,10 @@ export interface TelegramWebApp {
   isVersionAtLeast?: (version: string) => boolean;
   /** Чи Mini App зараз на весь екран (Bot API 8.0+). */
   isFullscreen?: boolean;
+  /** Вирізи й системні панелі пристрою (Bot API 8.0+). */
+  safeAreaInset?: TelegramInset;
+  /** Місце, яке UI клієнта займає над і під застосунком (Bot API 8.0+). */
+  contentSafeAreaInset?: TelegramInset;
   /**
    * Повноекранний режим (Bot API 8.0+). Прибирає **власну шапку клієнта** —
    * рядок з іменем бота й кнопкою «розгорнути»; лишаються лише «закрити» й

@@ -25,7 +25,8 @@
  * **повноекранний режим** (Bot API 8.0+) — і в ньому власної шапки немає:
  * лишаються тільки «закрити» й «меню», які клієнт малює поверх застосунку.
  * Тому тут же просимо повний екран (`applyFullscreen`), а місце під ці дві
- * кнопки резервують токени `--safe-*` (`styles/tokens.css`).
+ * кнопки резервують `--safe-*` (`styles/tokens.css`) з вставок клієнта
+ * (`applyClientInsets`) — з підлогою, бо не кожен клієнт їх доносить.
  *
  * Коли: старт застосунку (разом з `initTheme()`), кожна зміна `data-brand` /
  * `data-theme` (MutationObserver) і подія клієнта `themeChanged` (користувач
@@ -130,6 +131,71 @@ export function applyFullscreen(
   }
 }
 
+/**
+ * Смуга керування клієнта в повноекранному режимі — «закрити» й «меню» над
+ * застосунком.
+ *
+ * Це **підлога**, а не мірка: частина клієнтів доносить інсет як `0` і при
+ * цьому малює свої кнопки просто по застосунку — тоді наш хедер стояв би під
+ * ними (саме так і виглядало). Коли клієнт інсет таки віддає, береться він.
+ */
+const FULLSCREEN_CONTROLS_H = 48;
+
+/**
+ * Одне поле інсету як число: не-число, `NaN` і від'ємне — `0`. Клієнт шле
+ * «нічого» як `0`, тож нуль мусить бути дійсним значенням.
+ */
+export function readInset(value: unknown): number {
+  return typeof value === "number" && Number.isFinite(value) && value > 0 ? value : 0;
+}
+
+/** Верхнє й нижнє місце, яке UI клієнта займає над і під застосунком. */
+export interface ClientInsets {
+  top: number;
+  bottom: number;
+}
+
+/**
+ * Складає вставки з двох джерел клієнта (`safeAreaInset` — система,
+ * `contentSafeAreaInset` — UI Telegram) в одне число на край.
+ *
+ * `max`, а не сума: джерела описують той самий простір згори й знизу, а сума
+ * на клієнті, який уже віддав усе в `contentSafeAreaInset`, дала б подвійний
+ * відступ. У повноекранному режимі вмикається підлога смуги керування.
+ */
+export function clientInsets(
+  webApp: Pick<TelegramWebApp, "safeAreaInset" | "contentSafeAreaInset" | "isFullscreen">,
+): ClientInsets {
+  const top = Math.max(
+    readInset(webApp.safeAreaInset?.top),
+    readInset(webApp.contentSafeAreaInset?.top),
+  );
+  const bottom = Math.max(
+    readInset(webApp.safeAreaInset?.bottom),
+    readInset(webApp.contentSafeAreaInset?.bottom),
+  );
+  if (webApp.isFullscreen !== true) return { top, bottom };
+  return { top: Math.max(top, FULLSCREEN_CONTROLS_H), bottom };
+}
+
+/**
+ * Публікує вставки у власних змінних на `<html>` — їх читають `--safe-top` і
+ * `--safe-bottom` (`styles/tokens.css`). Саме тут, а не лише в CSS: значення
+ * клієнта — числа з його API, і підлога повного екрана існує тільки в JS.
+ *
+ * Без `document` (SSR, юніт-тест) — no-op.
+ */
+export function applyClientInsets(
+  webApp: Pick<TelegramWebApp, "safeAreaInset" | "contentSafeAreaInset" | "isFullscreen">,
+  root?: HTMLElement,
+): void {
+  const el = root ?? (typeof document === "undefined" ? undefined : document.documentElement);
+  if (!el) return;
+  const { top, bottom } = clientInsets(webApp);
+  el.style.setProperty("--client-inset-top", `${top}px`);
+  el.style.setProperty("--client-inset-bottom", `${bottom}px`);
+}
+
 /** Зчитує обидва токени; `undefined`, коли CSS ще не підвантажився. */
 export function readChromeColors():
   { header: TelegramChromeColor; bottom: TelegramChromeColor } | undefined {
@@ -149,6 +215,14 @@ export function isTelegramWebApp(value: unknown): value is TelegramWebApp {
     typeof app.setBottomBarColor === "function"
   );
 }
+
+/** Події, після яких вставки перечитуються (Bot API 8.0+). */
+const INSET_EVENTS = [
+  "safeAreaChanged",
+  "contentSafeAreaChanged",
+  "fullscreenChanged",
+  "viewportChanged",
+] as const;
 
 /**
  * Реєструє зміну теми: один синхронізаційний прохід + спостерігач.
@@ -172,6 +246,7 @@ export function initTelegramChrome(): () => void {
   };
 
   sync();
+  applyClientInsets(webApp);
   webApp.ready?.();
 
   // Повний екран — теж хром: він прибирає шапку клієнта (див. `applyFullscreen`).
@@ -192,18 +267,34 @@ export function initTelegramChrome(): () => void {
   // Користувач повернув тему Telegram у налаштуваннях — перечитуємо токени
   // (CSS не зміниться, але в момент події клієнт скидає свій хром).
   const onThemeChanged = () => sync();
-  try {
-    webApp.onEvent?.(THEME_CHANGED_EVENT, onThemeChanged);
-  } catch {
-    /* подій немає в цього клієнта — ок */
+
+  // Вставки клієнт міняє живою: вхід у повний екран, розкрита/згорнута його
+  // смуга, поворот екрана. Перехід у повний екран приходить саме подією, тож
+  // без цих підписок підлога смуги керування не встигла б до першого рендера.
+  const onInsetChanged = () => applyClientInsets(webApp);
+
+  for (const [event, handler] of [
+    [THEME_CHANGED_EVENT, onThemeChanged],
+    ...INSET_EVENTS.map((event) => [event, onInsetChanged] as const),
+  ] as const) {
+    try {
+      webApp.onEvent?.(event, handler);
+    } catch {
+      /* подій немає в цього клієнта — ок */
+    }
   }
 
   return () => {
     observer?.disconnect();
-    try {
-      webApp.offEvent?.(THEME_CHANGED_EVENT, onThemeChanged);
-    } catch {
-      /* ignore */
+    for (const [event, handler] of [
+      [THEME_CHANGED_EVENT, onThemeChanged],
+      ...INSET_EVENTS.map((event) => [event, onInsetChanged] as const),
+    ] as const) {
+      try {
+        webApp.offEvent?.(event, handler);
+      } catch {
+        /* ignore */
+      }
     }
   };
 }

@@ -2,8 +2,10 @@ import { describe, it, expect, vi, afterEach } from "vitest";
 import {
   applyChromeColors,
   applyFullscreen,
+  clientInsets,
   isTelegramWebApp,
   normalizeChromeColor,
+  readInset,
 } from "./telegram-chrome";
 import type { TelegramChromeColor, TelegramWebApp } from "../types/telegram";
 
@@ -151,5 +153,47 @@ describe("applyFullscreen", () => {
       },
     };
     expect(() => applyFullscreen(app)).not.toThrow();
+  });
+});
+
+/**
+ * Вставки клієнта — те, що не дає нашому хедеру стояти під кнопками
+ * «закрити»/«меню». Перевіряємо три речі, кожна з яких ламає вигляд мовчки:
+ * сміття замість числа не проходить у CSS, два джерела не сумуються, а в
+ * повноекранному режимі є підлога — бо частина клієнтів шле 0 і малює кнопки
+ * поверх застосунку.
+ */
+describe("clientInsets", () => {
+  it("не-число, NaN і відʼємне — нуль", () => {
+    expect(readInset(40)).toBe(40);
+    expect(readInset(undefined)).toBe(0);
+    expect(readInset(null)).toBe(0);
+    expect(readInset("40")).toBe(0);
+    expect(readInset(Number.NaN)).toBe(0);
+    expect(readInset(-3)).toBe(0);
+  });
+
+  it("бере більше з двох джерел, а не їх суму", () => {
+    const app: TelegramWebApp = {
+      safeAreaInset: { top: 24, bottom: 8, left: 0, right: 0 },
+      contentSafeAreaInset: { top: 56, bottom: 0, left: 0, right: 0 },
+    };
+    expect(clientInsets(app)).toEqual({ top: 56, bottom: 8 });
+  });
+
+  it("поза повним екраном інсета клієнта немає — нуль, без підлоги", () => {
+    expect(clientInsets({ isFullscreen: false })).toEqual({ top: 0, bottom: 0 });
+  });
+
+  it("повний екран: клієнт прислав 0 — резервуємо смугу керування", () => {
+    expect(clientInsets({ isFullscreen: true })).toEqual({ top: 48, bottom: 0 });
+  });
+
+  it("повний екран: інсет клієнта більший за підлогу — беремо його", () => {
+    const app: TelegramWebApp = {
+      isFullscreen: true,
+      contentSafeAreaInset: { top: 64, bottom: 20, left: 0, right: 0 },
+    };
+    expect(clientInsets(app)).toEqual({ top: 64, bottom: 20 });
   });
 });

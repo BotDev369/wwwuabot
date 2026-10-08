@@ -194,21 +194,24 @@
   --subbar-h: var(--nav-bar-h);
   /* Мобільні вставки. Telegram WebApp (Bot API 8+) віддає дві власні змінні:
      --tg-safe-area-inset-* (вирізи пристрою) і --tg-content-safe-area-inset-*
-     (місце, яке займає UI самого клієнта). Друга потрібна саме через
-     повноекранний режим (`shared/app/telegram-chrome.ts`): шапки клієнта в
-     ньому немає, але «закрити» й «меню» він малює ПОВЕРХ застосунку — без цієї
-     вставки наш хедер стояв би під ними. У звичайному браузері обох змінних
-     немає, і працює env(safe-area-inset-*), але лише за наявності
-     viewport-fit=cover. */
+     (місце, яке займає UI самого клієнта), а `shared/app/telegram-chrome.ts`
+     додає до них --client-inset-*: те саме число з API клієнта плюс підлога
+     смуги «закрити»/«меню» у повноекранному режимі. Підлога потрібна, бо
+     частина клієнтів віддає інсет як 0 і все одно малює свої кнопки поверх
+     застосунку — без неї наш хедер стояв би під ними. У звичайному браузері
+     всіх цих змінних немає, і працює env(safe-area-inset-*), але лише за
+     наявності viewport-fit=cover. */
   --safe-top: max(
     env(safe-area-inset-top, 0px),
     var(--tg-safe-area-inset-top, 0px),
-    var(--tg-content-safe-area-inset-top, 0px)
+    var(--tg-content-safe-area-inset-top, 0px),
+    var(--client-inset-top, 0px)
   );
   --safe-bottom: max(
     env(safe-area-inset-bottom, 0px),
     var(--tg-safe-area-inset-bottom, 0px),
-    var(--tg-content-safe-area-inset-bottom, 0px)
+    var(--tg-content-safe-area-inset-bottom, 0px),
+    var(--client-inset-bottom, 0px)
   );
   --max-content: 1200px;
 

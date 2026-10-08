@@ -12,7 +12,7 @@
  */
 
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { initTelegramChrome } from "./telegram-chrome";
+import { applyClientInsets, initTelegramChrome } from "./telegram-chrome";
 import type { TelegramWebApp } from "../types/telegram";
 
 const HEADER = "#1c1c1e";
@@ -120,5 +120,40 @@ describe("initTelegramChrome", () => {
     const stop = initTelegramChrome();
 
     expect(() => stop()).not.toThrow();
+  });
+
+  it("публікує вставки клієнта змінними на `<html>`", () => {
+    mockTokens({ "--chrome-header-bg": HEADER, "--chrome-bottom-bg": BOTTOM });
+    install({
+      contentSafeAreaInset: { top: 56, bottom: 12, left: 0, right: 0 },
+    });
+
+    initTelegramChrome();
+
+    const root = document.documentElement.style;
+    expect(root.getPropertyValue("--client-inset-top")).toBe("56px");
+    expect(root.getPropertyValue("--client-inset-bottom")).toBe("12px");
+  });
+
+  it("на зміну вставок клієнта перечитує їх (вхід у повний екран — теж подія)", () => {
+    mockTokens({ "--chrome-header-bg": HEADER, "--chrome-bottom-bg": BOTTOM });
+    const { app, handlers } = install();
+
+    initTelegramChrome();
+    expect(document.documentElement.style.getPropertyValue("--client-inset-top")).toBe("0px");
+
+    expect(handlers.get("contentSafeAreaChanged"), "підписка на вставки").toBeDefined();
+    app.contentSafeAreaInset = { top: 56, bottom: 0, left: 0, right: 0 };
+    handlers.get("contentSafeAreaChanged")?.();
+
+    expect(document.documentElement.style.getPropertyValue("--client-inset-top")).toBe("56px");
+  });
+});
+
+describe("applyClientInsets", () => {
+  it("пише в переданий корінь, а не шукає документ", () => {
+    const el = document.createElement("div");
+    applyClientInsets({ isFullscreen: true }, el);
+    expect(el.style.getPropertyValue("--client-inset-top")).toBe("48px");
   });
 });

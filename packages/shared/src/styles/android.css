@@ -137,12 +137,14 @@
   --safe-top: max(
     env(safe-area-inset-top, 0px),
     var(--tg-safe-area-inset-top, 0px),
-    var(--tg-content-safe-area-inset-top, 0px)
+    var(--tg-content-safe-area-inset-top, 0px),
+    var(--client-inset-top, 0px)
   );
   --safe-bottom: max(
     env(safe-area-inset-bottom, 0px),
     var(--tg-safe-area-inset-bottom, 0px),
-    var(--tg-content-safe-area-inset-bottom, 0px)
+    var(--tg-content-safe-area-inset-bottom, 0px),
+    var(--client-inset-bottom, 0px)
   );
 
   color-scheme: light;
