@@ -142,6 +142,19 @@ export function applyFullscreen(
 const FULLSCREEN_CONTROLS_H = 48;
 
 /**
+ * Те саме місце на Android — більше за підлогу вище, бо цей клієнт малює
+ * свою смугу не замість системної панелі, а **під нею**, і водночас віддає
+ * обидва інсети як `0` (bugs.telegram.org/c/66082): місце під панель і кнопки
+ * доводиться резервувати самим — 24 системна панель, 40 смуга, 8 просвіт.
+ */
+const ANDROID_FULLSCREEN_H = 72;
+
+/** Підлога повного екрана для цієї платформи; клієнт прислав більше — буде більше. */
+function fullscreenFloor(platform: string | undefined): number {
+  return platform === "android" ? ANDROID_FULLSCREEN_H : FULLSCREEN_CONTROLS_H;
+}
+
+/**
  * Одне поле інсету як число: не-число, `NaN` і від'ємне — `0`. Клієнт шле
  * «нічого» як `0`, тож нуль мусить бути дійсним значенням.
  */
@@ -164,7 +177,10 @@ export interface ClientInsets {
  * відступ. У повноекранному режимі вмикається підлога смуги керування.
  */
 export function clientInsets(
-  webApp: Pick<TelegramWebApp, "safeAreaInset" | "contentSafeAreaInset" | "isFullscreen">,
+  webApp: Pick<
+    TelegramWebApp,
+    "safeAreaInset" | "contentSafeAreaInset" | "isFullscreen" | "platform"
+  >,
 ): ClientInsets {
   const top = Math.max(
     readInset(webApp.safeAreaInset?.top),
@@ -175,7 +191,7 @@ export function clientInsets(
     readInset(webApp.contentSafeAreaInset?.bottom),
   );
   if (webApp.isFullscreen !== true) return { top, bottom };
-  return { top: Math.max(top, FULLSCREEN_CONTROLS_H), bottom };
+  return { top: Math.max(top, fullscreenFloor(webApp.platform)), bottom };
 }
 
 /**
@@ -186,7 +202,10 @@ export function clientInsets(
  * Без `document` (SSR, юніт-тест) — no-op.
  */
 export function applyClientInsets(
-  webApp: Pick<TelegramWebApp, "safeAreaInset" | "contentSafeAreaInset" | "isFullscreen">,
+  webApp: Pick<
+    TelegramWebApp,
+    "safeAreaInset" | "contentSafeAreaInset" | "isFullscreen" | "platform"
+  >,
   root?: HTMLElement,
 ): void {
   const el = root ?? (typeof document === "undefined" ? undefined : document.documentElement);
@@ -246,16 +265,25 @@ export function initTelegramChrome(): () => void {
   };
 
   sync();
-  applyClientInsets(webApp);
+  // `ready` — до вставок, а не після: клієнт заповнює `safeAreaInset` /
+  // `contentSafeAreaInset` тоді, коли показує Mini App, тож прочитане до
+  // `ready` приходить нулями — а події про таке «заповнення» не гарантовані
+  // (саме через це хедер стояв під кнопками клієнта).
   webApp.ready?.();
+  applyClientInsets(webApp);
 
   // Повний екран — теж хром: він прибирає шапку клієнта (див. `applyFullscreen`).
   applyFullscreen(webApp);
 
   // Один кадр по тому — ще раз: у dev CSS доливається модулем (може встигнути
   // пізніше за перший sync), а частина клієнтів застосовує колір лише після ready.
+  // Вставки перечитуємо тим самим кадром: перехід у повний екран зсуває їх, і
+  // значення з першого проходу — ще дорожні.
   if (typeof requestAnimationFrame === "function") {
-    requestAnimationFrame(() => sync());
+    requestAnimationFrame(() => {
+      sync();
+      applyClientInsets(webApp);
+    });
   }
 
   const observer = typeof MutationObserver === "function" ? new MutationObserver(sync) : undefined;

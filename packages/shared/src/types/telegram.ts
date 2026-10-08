@@ -30,6 +30,12 @@ export interface TelegramInset {
 
 export interface TelegramWebApp {
   initData?: string;
+  /**
+   * Платформа клієнта: `android`, `ios`, `macos`, `web`… (Bot API 6.1+).
+   * Потрібна там, де клієнти поводяться по-різному — зокрема в повноекранних
+   * вставках (див. `app/telegram-chrome.ts`).
+   */
+  platform?: string;
   initDataUnsafe?: {
     query_id?: string;
     user?: TelegramWebAppUser;

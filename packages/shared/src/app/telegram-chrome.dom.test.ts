@@ -135,6 +135,21 @@ describe("initTelegramChrome", () => {
     expect(root.getPropertyValue("--client-inset-bottom")).toBe("12px");
   });
 
+  it("вставки читає після `ready` — клієнт заповнює їх, показуючи застосунок", () => {
+    mockTokens({ "--chrome-header-bg": HEADER, "--chrome-bottom-bg": BOTTOM });
+    // Клієнт віддає нулі, поки застосунок не готовий: прочитане до `ready`
+    // лишається нулями — і хедер стоїть під його кнопками.
+    const { app } = install({
+      ready: () => {
+        app.contentSafeAreaInset = { top: 64, bottom: 0, left: 0, right: 0 };
+      },
+    });
+
+    initTelegramChrome();
+
+    expect(document.documentElement.style.getPropertyValue("--client-inset-top")).toBe("64px");
+  });
+
   it("на зміну вставок клієнта перечитує їх (вхід у повний екран — теж подія)", () => {
     mockTokens({ "--chrome-header-bg": HEADER, "--chrome-bottom-bg": BOTTOM });
     const { app, handlers } = install();

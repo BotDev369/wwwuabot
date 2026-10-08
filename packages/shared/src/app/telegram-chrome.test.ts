@@ -187,6 +187,23 @@ describe("clientInsets", () => {
 
   it("повний екран: клієнт прислав 0 — резервуємо смугу керування", () => {
     expect(clientInsets({ isFullscreen: true })).toEqual({ top: 48, bottom: 0 });
+    expect(clientInsets({ isFullscreen: true, platform: "ios" })).toEqual({ top: 48, bottom: 0 });
+  });
+
+  it("на Android смуга керування стоїть під системною панеллю — підлога більша", () => {
+    expect(clientInsets({ isFullscreen: true, platform: "android" })).toEqual({
+      top: 72,
+      bottom: 0,
+    });
+  });
+
+  it("на Android інсет більший за підлогу — беремо його, а не підлогу", () => {
+    const app: TelegramWebApp = {
+      isFullscreen: true,
+      platform: "android",
+      contentSafeAreaInset: { top: 90, bottom: 0, left: 0, right: 0 },
+    };
+    expect(clientInsets(app)).toEqual({ top: 90, bottom: 0 });
   });
 
   it("повний екран: інсет клієнта більший за підлогу — беремо його", () => {
