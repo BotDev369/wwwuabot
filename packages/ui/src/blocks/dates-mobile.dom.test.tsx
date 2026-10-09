@@ -12,7 +12,7 @@
  */
 
 import { describe, expect, it, vi } from "vitest";
-import { act, fireEvent, render, screen } from "@testing-library/react";
+import { act, fireEvent, render, screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import type { BlockComponentProps } from "@wwwuabot/shared/types/page-config";
 import { MyDatesTableBlock } from "./MyDatesTableBlock";
@@ -80,24 +80,33 @@ describe("список дат на вузькому екрані", () => {
   });
 
   /**
-   * Блок — акордеон: підпис згортає список. Кнопка створення при цьому
-   * лишається на місці, бо вона дія, а не вміст: згорнутий блок — це все ще
-   * блок, і «Нова дата» — найпотрібніше, що в ньому є.
+   * Блок — акордеон: підпис згортає список **разом із дією**. Кнопка в підписі
+   * читалась частиною назви («Дати · Нова дата») і стискала сам підпис — тож
+   * дія живе в тілі (власник 09.10.2026).
    */
-  it("підпис згортає список, а «Нова дата» лишається на місці", async () => {
+  it("підпис згортає список разом із дією створення", async () => {
     const user = userEvent.setup();
     const { container } = await renderTable();
     const toggle = screen.getByRole("button", { name: /Дати/ });
     expect(toggle.getAttribute("aria-expanded")).toBe("true");
     expect(container.querySelector(".wb-date-list")).toBeTruthy();
+    expect(container.querySelector(".wb-date-create")).toBeTruthy();
 
     await user.click(toggle);
     expect(toggle.getAttribute("aria-expanded")).toBe("false");
     expect(container.querySelector(".wb-date-list")).toBeNull();
-    expect(screen.getByRole("button", { name: "Нова дата" })).toBeTruthy();
+    expect(screen.queryByRole("button", { name: "Нова дата" })).toBeNull();
 
     await user.click(toggle);
     expect(container.querySelector(".wb-date-list")).toBeTruthy();
+  });
+
+  it("не тримає кнопки створення в підписі акордеона", async () => {
+    const { container } = await renderTable();
+    const head = container.querySelector(".wb-block-section__head");
+    if (!head) throw new Error("підпису акордеона немає");
+    expect(head.querySelector("button")?.textContent).toContain("Дати");
+    expect(head.textContent).not.toContain("Нова дата");
   });
 });
 
@@ -405,9 +414,13 @@ describe("список дат: рядок відкривається на ред
   it("показ прапорців списку прибирає кнопку створення", async () => {
     const { container } = await renderTable();
     expect(container.querySelector(".wb-date-list")).toBeTruthy();
+    expect(container.querySelector(".wb-date-create")).toBeTruthy();
+
     const withoutButton = render(<MyDatesTableBlock {...props({ showCreateButton: false })} />);
-    // Підпис блока лишається на місці — зникає тільки дія праворуч від нього.
+    // Список і підпис блока лишаються на місці — зникає сама дія створення.
     expect(withoutButton.container.querySelector(".wb-block-section__head")).toBeTruthy();
+    expect(withoutButton.container.querySelector(".wb-date-create")).toBeNull();
+    expect(within(withoutButton.container).queryByRole("button", { name: "Нова дата" })).toBeNull();
   });
 });
 

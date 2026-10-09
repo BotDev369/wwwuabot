@@ -1,9 +1,9 @@
 /**
  * Кирпичик блока сторінки: підпис, який згортає своє тіло.
- * «Системи аналізу» й «Дати» — та сама деталь: підпис із кареткою, лічильник,
- * дія праворуч, а під ними вміст. Другий такий самий підпис із власним станом
- * був би копією, тож деталь одна (`AGENTS.md` §3). `h2` тут навмисно: розмір
- * дає бренд.
+ * «Системи аналізу» й «Дати» — та сама деталь: підпис із кареткою й
+ * лічильником, а під ним вміст; другий такий самий підпис був би копією
+ * (`AGENTS.md` §3). `h2` — навмисно: розмір дає бренд, а дій у підписі немає:
+ * кнопка в ньому читалась частиною назви («Дати · Нова дата») і стискала підпис.
  * @module packages/ui/src/blocks/collapsible-section/CollapsibleSection
  */
 
@@ -16,12 +16,10 @@ export interface CollapsibleSectionProps {
   title: string;
   /** Підпис біля назви (лічильник): сама назва не каже, скільки всього. */
   meta?: ReactNode;
-  /** Дія праворуч від підпису — вона блок не згортає. */
-  actions?: ReactNode;
   children: ReactNode;
 }
 
-export function CollapsibleSection({ title, meta, actions, children }: CollapsibleSectionProps) {
+export function CollapsibleSection({ title, meta, children }: CollapsibleSectionProps) {
   const { open, toggle } = useCollapse();
   const bodyId = useId();
   const toggleClass = open
@@ -44,7 +42,6 @@ export function CollapsibleSection({ title, meta, actions, children }: Collapsib
             <Icon name={open ? "chevron-up" : "chevron-down"} size={18} />
           </span>
         </button>
-        {actions}
       </h2>
 
       {/* Тіло зникає разом зі станом: згорнутий блок не тримає мережевих

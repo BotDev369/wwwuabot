@@ -81,14 +81,17 @@ export function MyDatesTableBlock({ block }: BlockComponentProps) {
             ? dates.length
             : `${processedDates.length} з ${dates.length}`
         }
-        actions={
-          showCreateButton ? (
+      >
+        {/* Створення — дія блока, а не його назва: у підписі акордеона кнопка
+          читалась частиною підпису («Дати · Нова дата») і стискала його. */}
+        {showCreateButton && (
+          <div className="wb-date-create">
             <button className="wb-btn wb-btn-primary" onClick={openCreate}>
               Нова дата
             </button>
-          ) : null
-        }
-      >
+          </div>
+        )}
+
         {/* Error */}
         {error && (
           <p className="wb-text-sm" style={{ color: "var(--color-danger, #ef4444)" }}>

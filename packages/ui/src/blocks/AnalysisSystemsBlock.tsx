@@ -34,7 +34,10 @@ export function AnalysisSystemsBlock({ block }: BlockComponentProps) {
           <table className="wb-param-table">
             <tbody>
               {systems.map((system) => {
-                const parameters = system.parameters ?? [];
+                // У системи без формули параметрів ще немає: порожні підписи
+                // роздували б вітрину на екрани прокрутки, а стан системи вже
+                // каже позначка «скоро».
+                const parameters = system.implemented ? (system.parameters ?? []) : [];
                 return (
                   <Fragment key={system.id}>
                     <tr className="wb-param-group">
@@ -90,7 +93,7 @@ export function AnalysisSystemsBlock({ block }: BlockComponentProps) {
                       );
                     })}
 
-                    {parameters.length === 0 && (
+                    {system.implemented && parameters.length === 0 && (
                       <tr>
                         <td className="wb-text-sm wb-text-muted">
                           Розрахунок цієї системи ще не готовий.

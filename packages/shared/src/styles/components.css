@@ -2419,26 +2419,25 @@ button.wb-chip {
 }
 
 /* ── Блок сторінки-акордеон (`.wb-block-section`) ───────────────────────────
-   Підпис блока не просто текст: він його згортає, а поверхня картки показує
-   межі — структуру тримає поверхня, а не лінія (правило 15 `DESIGN_SYSTEM.md`).
-   `overflow` тут немає **навмисно**: усередині липка шапка таблиці, а
+   Підпис блока не просто текст: він його згортає. Власної поверхні в блока
+   **немає** — картка з тлом і тінню з'їдала висоту екрана, а межі між блоками
+   тримає просвіт зони (`.page-zone-blocks`).
+   `overflow` тут теж немає **навмисно**: усередині липка шапка таблиці, а
    `overflow` на предкові робить його контейнером скролу — шапка трималась би
-   картки, а не екрана (`date-analysis.css`). Сторож — `block-section.test.ts`. */
+   блока, а не екрана (`date-analysis.css`). Сторож — `block-section.test.ts`. */
 .wb-block-section {
   display: flex;
   flex-direction: column;
-  background: var(--bg-2);
-  border-radius: var(--radius-lg);
-  box-shadow: var(--elevation-1);
 }
 
+/* Підпис без берегів: він вирівнюється по краю сторінки разом із hero, а
+   тап-таргет дає сам підпис на всю ширину. */
 .wb-block-section__head {
   display: flex;
   align-items: center;
-  justify-content: space-between;
   gap: var(--sp-3);
   margin: 0;
-  padding: var(--sp-2) var(--sp-4);
+  padding: 0;
 }
 
 /* Підпис — тап-таргет пальця, а не текст: по ньому згортають блок. */
@@ -2476,11 +2475,9 @@ button.wb-chip {
   color: var(--accent);
 }
 
-.wb-block-section__head .wb-btn {
-  flex: 0 0 auto;
-  min-height: 44px;
-}
-
+/* Вміст бере береги сам: у кожного кирпичика всередині (таблиця, рамка
+   параметрів) є своя поверхня, а друга рамка навколо них — це друге тло на
+   тій самій площі. */
 .wb-block-section__body {
-  padding: 0 var(--sp-4) var(--sp-4);
+  padding: 0;
 }

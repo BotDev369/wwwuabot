@@ -87,7 +87,41 @@ describe("AnalysisSystemsBlock", () => {
     await flush();
 
     expect(screen.getByText("Ведична астрологія")).toBeTruthy();
+    expect(screen.getByText("Північноіндійська традиція.")).toBeTruthy();
     expect(screen.getByText("скоро")).toBeTruthy();
+  });
+
+  /**
+   * Система без формули показує себе й нічого більше: її параметрів ще немає,
+   * а список порожніх підписів перетворив би вітрину на екрани прокрутки.
+   */
+  it("не вивалює параметри системи, якої ще не рахують", async () => {
+    render(<AnalysisSystemsBlock {...props()} />);
+    await flush();
+
+    expect(screen.queryByText("Накшатра")).toBeNull();
+    expect(screen.queryByText("Розрахунок цієї системи ще не готовий.")).toBeNull();
+  });
+
+  it("рахована система без параметрів каже про це вголос", async () => {
+    stubRegistry([{ ...REGISTRY[0], parameters: [] }]);
+    render(<AnalysisSystemsBlock {...props()} />);
+    await flush();
+
+    expect(screen.getByText("Розрахунок цієї системи ще не готовий.")).toBeTruthy();
+  });
+
+  it("показує всі системи реєстру, а не першу", async () => {
+    stubRegistry([
+      ...REGISTRY,
+      { id: "human-design", name: "Дизайн людини", description: "", implemented: false },
+    ]);
+    render(<AnalysisSystemsBlock {...props()} />);
+    await flush();
+
+    expect(screen.getByText("Західна астрологія")).toBeTruthy();
+    expect(screen.getByText("Ведична астрологія")).toBeTruthy();
+    expect(screen.getByText("Дизайн людини")).toBeTruthy();
   });
 
   it("розкриває пояснення параметра після дотику", async () => {
