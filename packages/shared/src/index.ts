@@ -214,7 +214,12 @@ export type {
 } from "./types/page-config";
 
 // ── Domain & API Types ───────────────────────────────────────────────
-export type { MyDate, MyDateSystem, SystemAnalysisResult } from "./types/mydate";
+export type {
+  MyDate,
+  MyDateSystem,
+  MyDateSystemParameter,
+  SystemAnalysisResult,
+} from "./types/mydate";
 export type {
   TelegramApiResponse,
   TelegramUser,

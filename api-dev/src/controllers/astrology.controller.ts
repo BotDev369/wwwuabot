@@ -3,7 +3,7 @@ import type { Env } from "../shared/types";
 import { readBody } from "../shared/body";
 import { apiLog } from "../shared/logger";
 import { SYSTEM_CALCULATORS, getAnalysis, saveAnalysis } from "../shared/mydate-helpers";
-import { withMeanings } from "../shared/mydate-interpretations";
+import { withMeanings, withParameterAbout } from "../shared/mydate-interpretations";
 import { listAnalysisSystems, listImplementedSystems } from "../services/analysis-systems.service";
 import { dateNamesFor } from "../services/my-dates.service";
 import { tryResolveUserId } from "../shared/identity";
@@ -100,9 +100,15 @@ export async function handleAnalyze(request: Request, env: Env): Promise<Respons
 }
 
 // ── GET /api/mydate/systems ─────────────────────────────────────────
+// Із поясненнями параметрів: вітрина систем показує, **що визначає** параметр,
+// ще до того, як людина ввела бодай одну дату.
 export async function handleSystems(env: Env): Promise<Response> {
   try {
-    const systems = await listAnalysisSystems(env.DB);
+    const registry = await listAnalysisSystems(env.DB);
+    const systems = registry.map((system) => ({
+      ...system,
+      parameters: withParameterAbout(system.id, system.parameters),
+    }));
     return json({ ok: true, systems });
   } catch (e: unknown) {
     apiLog.error("Systems registry error", e);

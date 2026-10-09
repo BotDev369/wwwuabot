@@ -1,6 +1,12 @@
 import { describe, expect, it } from "vitest";
 import { SYSTEM_CALCULATORS, type SystemAnalysisResult } from "./mydate-helpers";
-import { MEANINGS, aboutFor, meaningFor, withMeanings } from "./mydate-interpretations";
+import {
+  MEANINGS,
+  aboutFor,
+  meaningFor,
+  withMeanings,
+  withParameterAbout,
+} from "./mydate-interpretations";
 
 /**
  * Усі дні одного року проходять кожен знак, стихію, хрест, планету й декан —
@@ -100,6 +106,26 @@ describe("довідник трактувань", () => {
     expect((result.parameters ?? [])[0].about).toBeUndefined();
     expect((result.parameters ?? [])[0].meaning).toBeUndefined();
     expect(first.value).toBe((result.parameters ?? [])[0].value);
+  });
+
+  /**
+   * Вітрина систем показує параметри з поясненнями без жодної дати: `about`
+   * дописує саме ця функція, а не рядок реєстру в D1.
+   */
+  it("дописує пояснення параметрам реєстру, не чіпаючи сам реєстр", () => {
+    const fromRegistry = [{ key: "sunSign", label: "Знак Сонця" }];
+    const decorated = withParameterAbout("western", fromRegistry);
+
+    expect(decorated[0].about).toBe(aboutFor("western", "sunSign"));
+    expect(decorated[0].label).toBe("Знак Сонця");
+    expect(fromRegistry[0]).toEqual({ key: "sunSign", label: "Знак Сонця" });
+  });
+
+  it("параметр без пояснення лишається підписом: `about` не вигадується", () => {
+    const decorated = withParameterAbout("майбутня-система", [{ key: "x", label: "Щось" }]);
+
+    expect(decorated).toEqual([{ key: "x", label: "Щось" }]);
+    expect("about" in decorated[0]).toBe(false);
   });
 
   it("невідома система лишається без трактувань, а не падає", () => {

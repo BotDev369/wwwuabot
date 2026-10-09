@@ -12,12 +12,22 @@ export interface MyDate {
   category?: string;
 }
 
+/**
+ * Параметр системи: реєстр дає `key` і `label`, а пояснення (`about`) дописує
+ * сервер із довідника — у реєстрі його немає, тож і тут воно необов'язкове.
+ */
+export interface MyDateSystemParameter {
+  key: string;
+  label: string;
+  about?: string;
+}
+
 export interface MyDateSystem {
   id: string;
   name: string;
   description: string;
   implemented: boolean;
-  parameters: Array<{ key: string; label: string }>;
+  parameters: MyDateSystemParameter[];
 }
 
 export interface SystemAnalysisResult {

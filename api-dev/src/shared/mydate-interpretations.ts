@@ -142,6 +142,22 @@ export function aboutFor(systemId: string, key: string): string | undefined {
   return MEANINGS[systemId]?.[key]?.about;
 }
 
+/**
+ * Параметри реєстру з поясненнями — те, що показує вітрина систем.
+ *
+ * `about` лишається власністю цього довідника, а не рядка `analysis_systems`:
+ * інакше те саме пояснення жило б у двох місцях і розійшлося б першою ж правкою.
+ */
+export function withParameterAbout(
+  systemId: string,
+  parameters: ReadonlyArray<{ key: string; label: string }>,
+): Array<{ key: string; label: string; about?: string }> {
+  return parameters.map((parameter) => {
+    const about = aboutFor(systemId, parameter.key);
+    return about ? { ...parameter, about } : { ...parameter };
+  });
+}
+
 /** Трактування одного значення; `undefined` — довідник його не знає. */
 export function meaningFor(systemId: string, key: string, value: unknown): string | undefined {
   const parameter = MEANINGS[systemId]?.[key];

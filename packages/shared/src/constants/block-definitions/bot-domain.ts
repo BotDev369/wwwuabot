@@ -115,6 +115,19 @@ export const botDomainBlocks: BlockDefinition[] = [
     },
   }),
   block({
+    type: "analysis-systems",
+    label: "Системи аналізу",
+    icon: "layers",
+    category: "bot-domain",
+    description: "Вітрина систем: назва, опис і параметри — без дат",
+    props: {
+      title: s("Заголовок", { default: "Системи аналізу" }),
+    },
+    defaultProps: {
+      title: "Системи аналізу",
+    },
+  }),
+  block({
     type: "date-analysis",
     label: "Аналіз дат",
     icon: "bar-chart",

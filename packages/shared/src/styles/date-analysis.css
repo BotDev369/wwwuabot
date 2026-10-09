@@ -2,7 +2,8 @@
    Кожен параметр — рядок-акордеон, а список лежить у рамці-поверхні.
    Тло тут **одне** — у рамки: комірки його не перемальовують.
    Причина не в смаку: `--bg-1` — це градієнт, і залитий у кожну комірку він
-   дає гратку плям, кожна зі своїм центром. Розділювачі — волосяні лінії. */
+   дає гратку плям, кожна зі своїм центром. Розділювачі — волосяні лінії.
+   Ті самі класи рендерить і вітрина систем: у неї немає дат. */
 
 .wb-analysis-systems {
   display: flex;
@@ -10,8 +11,33 @@
   gap: var(--sp-5);
 }
 
+.wb-analysis-systems__title {
+  margin: 0;
+}
+
+/* Система — рядок групи: назва, за нею підпис стану, під ними опис. */
 .wb-analysis-systems__name {
-  margin: 0 0 var(--sp-2);
+  display: block;
+}
+
+.wb-analysis-systems__desc {
+  display: block;
+  margin-top: 2px;
+  color: var(--text-secondary);
+  font-weight: var(--weight-normal);
+}
+
+/* Система без розрахунку: це не помилка, а стан — і він мусить бути виден. */
+.wb-analysis-systems__soon {
+  display: inline-block;
+  margin-left: var(--sp-2);
+  padding: 0 var(--sp-2);
+  border-radius: var(--radius-full);
+  background: var(--bg-2);
+  color: var(--text-muted);
+  font-size: var(--text-xs);
+  font-weight: var(--weight-normal);
+  vertical-align: middle;
 }
 
 /* Підпис над таблицею — **окреме правило на клас**, а не `h2` усередині рамки:

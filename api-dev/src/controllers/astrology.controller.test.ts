@@ -11,6 +11,7 @@
 
 import { describe, expect, it } from "vitest";
 import type { Env } from "../shared/types";
+import { aboutFor } from "../shared/mydate-interpretations";
 import { INIT_DATA_HEADER } from "@wwwuabot/shared/security/telegram";
 import {
   handleAnalysisRead,
@@ -74,7 +75,8 @@ const SYSTEM = {
   id: "western",
   name: "Західна астрологія",
   description: "",
-  parameters: [{ key: "sunSign", label: "Знак Сонця" }],
+  // Параметри в рядку лежать JSON-рядком — саме так їх віддає D1.
+  parameters: JSON.stringify([{ key: "sunSign", label: "Знак Сонця" }]),
   implemented: 1,
   is_active: 1,
   position: 10,
@@ -172,6 +174,20 @@ describe("реєстр систем приходить з бази", () => {
     expect(res.status).toBe(200);
     expect(body.systems.map((s) => s.id)).toEqual(["western", "vedic"]);
     expect(body.systems[1].implemented).toBe(false);
+  });
+
+  /**
+   * Вітрина систем показує, **що визначає** параметр, ще без жодної дати:
+   * пояснення приходить разом із реєстром.
+   */
+  it("параметри приходять із поясненнями з довідника", async () => {
+    const res = await handleSystems(makeEnv());
+    const body = (await res.json()) as {
+      systems: Array<{ parameters: Array<{ key: string; about?: string }> }>;
+    };
+
+    expect(body.systems[0].parameters[0].key).toBe("sunSign");
+    expect(body.systems[0].parameters[0].about).toBe(aboutFor("western", "sunSign"));
   });
 
   it("вимкнена система не потрапляє у вибір", async () => {
