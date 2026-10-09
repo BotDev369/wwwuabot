@@ -5,9 +5,15 @@
    дає гратку плям, кожна зі своїм центром. Розділювачі — волосяні лінії.
    Ті самі класи рендерить і вітрина систем: у неї немає дат. */
 
-/* Система — рядок групи: назва, за нею підпис стану, під ними опис. */
+/* Система — підпис акордеона: назва й підпис стану в голові, решта в тілі. */
+.wb-analysis-systems__head {
+  display: flex;
+  align-items: center;
+  min-width: 0;
+}
+
 .wb-analysis-systems__name {
-  display: block;
+  font-weight: var(--weight-semibold);
 }
 
 .wb-analysis-systems__desc {
@@ -15,6 +21,14 @@
   margin-top: 2px;
   color: var(--text-secondary);
   font-weight: var(--weight-normal);
+}
+
+/* Історія системи — дрібніша за опис: це довідка, а не те, за чим прийшли. */
+.wb-analysis-systems__history {
+  display: block;
+  margin-top: var(--sp-2);
+  color: var(--text-muted);
+  font-size: var(--text-xs);
 }
 
 /* Система без розрахунку: це не помилка, а стан — і він мусить бути виден. */
@@ -191,6 +205,32 @@
   color: var(--text-secondary);
 }
 
+/* Тіло розкритої системи: опис, історія й підакордеони параметрів у ньому. */
+.wb-system-body > td {
+  padding-top: 0;
+  padding-bottom: var(--sp-4);
+}
+
+/* Параметри системи — вкладеність, і її показує смуга зсуву. Смуга стоїть тут,
+   а не `padding-left` на всьому тілі: у тілі лежить ще опис та історія, які до
+   параметрів не належать. */
+.wb-system-params {
+  margin-top: var(--sp-2);
+  border-left: 2px solid var(--border-subtle);
+}
+
+/* Підпис параметра без пояснення — не кнопка: розкривати в ньому нічого. */
+.wb-param-label {
+  padding: var(--sp-2) var(--sp-3);
+  font-weight: var(--weight-medium);
+}
+
+/* Пояснення параметра — продовження його ж підпису. */
+.wb-param-note {
+  padding: 0 var(--sp-3) var(--sp-2);
+  color: var(--text-secondary);
+}
+
 /* Аналіз: дат стільки, скільки людина обрала, тож стовпці ділять ширину
    екрана — і таблиця вміщається в неї. Інакше вона ширшала б за екран, і
    закріплена шапка знову лишалась би без свого скролу. */
@@ -223,4 +263,10 @@
   color: var(--text-primary);
   font-weight: var(--weight-semibold);
   border-top: 1px solid var(--border);
+}
+
+/* Комірка-перемикач системи: відступ рядка групи тут зайвий — кнопка сама
+   тримає 44px, а проміжок між системами дає тіло попередньої. */
+.wb-param-table .wb-param-group > td.wb-param-cell--toggle {
+  padding: 0;
 }

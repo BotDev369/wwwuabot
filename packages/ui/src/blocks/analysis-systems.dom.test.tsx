@@ -2,8 +2,8 @@
 /**
  * Вітрина систем рендериться, а не тільки компілюється.
  *
- * Перевіряється те, що видно людині: опис системи, акордеон параметра й
- * порожній реєстр, який каже про себе вголос.
+ * Перевіряється те, що видно людині: спершу сама назва системи, а на дотик —
+ * опис, історія й акордеони параметрів; порожній реєстр каже про себе вголос.
  *
  * @module packages/ui/src/blocks/analysis-systems.dom.test
  */
@@ -21,6 +21,7 @@ const REGISTRY = [
     id: "western",
     name: "Західна астрологія",
     description: "Параметри на основі положення Сонця.",
+    history: "Класична європейська традиція: від античності до сучасних шкіл.",
     implemented: true,
     parameters: [
       { key: "sunSign", label: "Знак Сонця", about: "Сонце в знаку зодіаку: основа характеру." },
@@ -31,8 +32,9 @@ const REGISTRY = [
     id: "vedic",
     name: "Ведична астрологія",
     description: "Північноіндійська традиція.",
+    history: "Джйотіш — індійська астрологічна школа.",
     implemented: false,
-    parameters: [{ key: "nakshatra", label: "Накшатра" }],
+    parameters: [{ key: "siderealSign", label: "Сидеричний знак Сонця" }],
   },
 ];
 
@@ -64,6 +66,16 @@ async function flush(): Promise<void> {
   });
 }
 
+/** Тіло блока типово згорнуте — відкриваємо, бо решта перевірок дивиться всередину. */
+async function openBlock(user: ReturnType<typeof userEvent.setup>): Promise<void> {
+  await user.click(screen.getByRole("button", { name: /Системи аналізу/ }));
+}
+
+/** Система теж згорнута — розкриваємо ту, про яку перевірка. */
+async function openSystem(user: ReturnType<typeof userEvent.setup>, name: string): Promise<void> {
+  await user.click(screen.getByRole("button", { name: new RegExp(name) }));
+}
+
 beforeEach(() => {
   stubRegistry();
 });
@@ -73,51 +85,90 @@ afterEach(() => {
 });
 
 describe("AnalysisSystemsBlock", () => {
-  it("показує систему з описом і її параметри", async () => {
+  /**
+   * Блок — акордеон і типово **згорнутий**: сторінка мусить уміщатися в екран,
+   * а назва блока каже, що всередині. Системи видно після дотику до підпису.
+   */
+  it("типово згорнутий: системи з'являються після дотику до підпису", async () => {
+    const user = userEvent.setup();
     render(<AnalysisSystemsBlock {...props()} />);
     await flush();
 
+    const toggle = screen.getByRole("button", { name: /Системи аналізу/ });
+    expect(toggle.getAttribute("aria-expanded")).toBe("false");
+    expect(screen.queryByText("Західна астрологія")).toBeNull();
+
+    await openBlock(user);
+    expect(toggle.getAttribute("aria-expanded")).toBe("true");
     expect(screen.getByText("Західна астрологія")).toBeTruthy();
+  });
+
+  /**
+   * Система теж згорнута: список читають згори вниз, і розкриті тіла роблять із
+   * нього полотно. Опис, історія й параметри приходять разом — на дотик.
+   */
+  it("система показує опис, історію й параметри після дотику", async () => {
+    const user = userEvent.setup();
+    render(<AnalysisSystemsBlock {...props()} />);
+    await flush();
+    await openBlock(user);
+
+    expect(screen.queryByText("Параметри на основі положення Сонця.")).toBeNull();
+    expect(screen.queryByText(/Класична європейська традиція/)).toBeNull();
+    expect(screen.queryByRole("button", { name: "Знак Сонця" })).toBeNull();
+
+    await openSystem(user, "Західна астрологія");
     expect(screen.getByText("Параметри на основі положення Сонця.")).toBeTruthy();
+    expect(screen.getByText(/Класична європейська традиція/)).toBeTruthy();
     expect(screen.getByRole("button", { name: "Знак Сонця" })).toBeTruthy();
   });
 
   it("позначає систему, для якої ще немає розрахунку", async () => {
+    const user = userEvent.setup();
     render(<AnalysisSystemsBlock {...props()} />);
     await flush();
+    await openBlock(user);
 
     expect(screen.getByText("Ведична астрологія")).toBeTruthy();
-    expect(screen.getByText("Північноіндійська традиція.")).toBeTruthy();
     expect(screen.getByText("скоро")).toBeTruthy();
   });
 
   /**
-   * Система без формули показує себе й нічого більше: її параметрів ще немає,
-   * а список порожніх підписів перетворив би вітрину на екрани прокрутки.
+   * Параметри системи без формули — це **обіцянка**, а не порожній список:
+   * реєстр дає перелік заздалегідь (`2026-10-09-dateanalysis-13`). Вітрина
+   * показує його так само, як у рахованої, лише з позначкою «скоро».
    */
-  it("не вивалює параметри системи, якої ще не рахують", async () => {
+  it("не рахована система показує свої параметри після дотику", async () => {
+    const user = userEvent.setup();
     render(<AnalysisSystemsBlock {...props()} />);
     await flush();
+    await openBlock(user);
 
-    expect(screen.queryByText("Накшатра")).toBeNull();
-    expect(screen.queryByText("Розрахунок цієї системи ще не готовий.")).toBeNull();
+    expect(screen.queryByText("Сидеричний знак Сонця")).toBeNull();
+    await openSystem(user, "Ведична астрологія");
+    expect(screen.getByText("Сидеричний знак Сонця")).toBeTruthy();
   });
 
   it("рахована система без параметрів каже про це вголос", async () => {
+    const user = userEvent.setup();
     stubRegistry([{ ...REGISTRY[0], parameters: [] }]);
     render(<AnalysisSystemsBlock {...props()} />);
     await flush();
+    await openBlock(user);
+    await openSystem(user, "Західна астрологія");
 
     expect(screen.getByText("Розрахунок цієї системи ще не готовий.")).toBeTruthy();
   });
 
   it("показує всі системи реєстру, а не першу", async () => {
+    const user = userEvent.setup();
     stubRegistry([
       ...REGISTRY,
       { id: "human-design", name: "Дизайн людини", description: "", implemented: false },
     ]);
     render(<AnalysisSystemsBlock {...props()} />);
     await flush();
+    await openBlock(user);
 
     expect(screen.getByText("Західна астрологія")).toBeTruthy();
     expect(screen.getByText("Ведична астрологія")).toBeTruthy();
@@ -128,9 +179,11 @@ describe("AnalysisSystemsBlock", () => {
     const user = userEvent.setup();
     render(<AnalysisSystemsBlock {...props()} />);
     await flush();
+    await openBlock(user);
+    await openSystem(user, "Західна астрологія");
 
-    // До дотику пояснення немає: список читають згори вниз, і розкриті тіла
-    // роблять із нього полотно.
+    // До дотику пояснення немає: параметрів у системі багато, і розкриті тіла
+    // роблять із переліку полотно.
     expect(screen.queryByText("Сонце в знаку зодіаку: основа характеру.")).toBeNull();
 
     await user.click(screen.getByRole("button", { name: "Знак Сонця" }));
@@ -141,38 +194,22 @@ describe("AnalysisSystemsBlock", () => {
   });
 
   it("параметр без пояснення не вдає кнопку", async () => {
+    const user = userEvent.setup();
     render(<AnalysisSystemsBlock {...props()} />);
     await flush();
+    await openBlock(user);
+    await openSystem(user, "Західна астрологія");
 
     expect(screen.queryByRole("button", { name: "Наближений градус Сонця" })).toBeNull();
     expect(screen.getByText("Наближений градус Сонця")).toBeTruthy();
   });
 
-  /**
-   * Вітрина — акордеон: підпис згортає список систем. Типово вона розгорнута,
-   * бо сторінка не мусить ховати те, за чим людина прийшла.
-   */
-  it("підпис згортає вітрину й розгортає її назад", async () => {
-    const user = userEvent.setup();
-    render(<AnalysisSystemsBlock {...props()} />);
-    await flush();
-
-    const toggle = screen.getByRole("button", { name: /Системи аналізу/ });
-    expect(toggle.getAttribute("aria-expanded")).toBe("true");
-    expect(screen.getByText("Західна астрологія")).toBeTruthy();
-
-    await user.click(toggle);
-    expect(toggle.getAttribute("aria-expanded")).toBe("false");
-    expect(screen.queryByText("Західна астрологія")).toBeNull();
-
-    await user.click(toggle);
-    expect(screen.getByText("Західна астрологія")).toBeTruthy();
-  });
-
   it("порожній реєстр каже про себе, а не мовчить", async () => {
+    const user = userEvent.setup();
     stubRegistry([]);
     render(<AnalysisSystemsBlock {...props()} />);
     await flush();
+    await openBlock(user);
 
     expect(screen.getByText("Систем аналізу поки немає.")).toBeTruthy();
   });
@@ -182,6 +219,7 @@ describe("AnalysisSystemsBlock", () => {
    * Page Builder, а не як окремий компонент.
    */
   it("рендериться у складі сторінки", async () => {
+    const user = userEvent.setup();
     registerAllBlocks();
     const config: PageConfig = {
       version: 1,
@@ -214,6 +252,8 @@ describe("AnalysisSystemsBlock", () => {
 
     expect(screen.getByText("Зрозумій Себе. Зрозумій Інших. Зрозумій події.")).toBeTruthy();
     expect(screen.getByRole("heading", { name: "Системи аналізу" })).toBeTruthy();
+
+    await openBlock(user);
     expect(screen.getByText("Західна астрологія")).toBeTruthy();
   });
 

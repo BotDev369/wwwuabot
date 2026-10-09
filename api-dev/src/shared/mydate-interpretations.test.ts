@@ -1,12 +1,12 @@
 import { describe, expect, it } from "vitest";
 import { SYSTEM_CALCULATORS, type SystemAnalysisResult } from "./mydate-helpers";
+import { MEANINGS } from "./mydate-interpretations";
 import {
-  MEANINGS,
   aboutFor,
   meaningFor,
   withMeanings,
   withParameterAbout,
-} from "./mydate-interpretations";
+} from "./mydate-interpretation-helpers";
 
 /**
  * Усі дні одного року проходять кожен знак, стихію, хрест, планету й декан —
@@ -63,9 +63,15 @@ describe("довідник трактувань", () => {
     expect(missing).toEqual([]);
   });
 
-  /** Ключ довідника без калькулятора — це пояснення, яке ніколи не побачать. */
+  /**
+   * Ключ довідника **рахованої** системи мусить десь бути: інакше це пояснення,
+   * яке ніколи не побачать. Системи без формули сюди не входять: їхній `about`
+   * показує вітрина `analysis-systems`, де дат немає взагалі, тож перелік
+   * заводить реєстр заздалегідь (міграція 13).
+   */
   it("не тримає параметрів, яких калькулятор не рахує", () => {
     for (const [systemId, parameters] of Object.entries(MEANINGS)) {
+      if (!SYSTEM_CALCULATORS[systemId]) continue;
       const produced = new Set(everyValue(systemId).map((it) => it.key));
       for (const key of Object.keys(parameters)) {
         expect(produced.has(key), `${systemId}.${key}`).toBe(true);
@@ -73,8 +79,24 @@ describe("довідник трактувань", () => {
     }
   });
 
+  /**
+   * Система без формули — це обіцянка: довідник знає, **що** міряє параметр,
+   * але значень ще нікому рахувати, тож `values`/`general` там зайві.
+   */
+  it("у системи без формули — пояснення без трактувань", () => {
+    for (const [systemId, parameters] of Object.entries(MEANINGS)) {
+      if (SYSTEM_CALCULATORS[systemId]) continue;
+      for (const [key, meaning] of Object.entries(parameters)) {
+        expect(meaning.about.trim(), `${systemId}.${key}`).not.toBe("");
+        expect(meaning.values, `${systemId}.${key}`).toBeUndefined();
+        expect(meaning.general, `${systemId}.${key}`).toBeUndefined();
+      }
+    }
+  });
+
   it("не тримає мертвих рядків: описано рівно те, що буває", () => {
     for (const [systemId, parameters] of Object.entries(MEANINGS)) {
+      if (!SYSTEM_CALCULATORS[systemId]) continue;
       const produced = new Set(everyValue(systemId).map((it) => `${it.key}\u0000${it.value}`));
 
       for (const [key, meaning] of Object.entries(parameters)) {

@@ -1,9 +1,9 @@
 /**
  * Page Builder — AnalysisSystemsBlock: вітрина «Системи аналізу».
  *
- * Перший стовпець таблиці аналізу без дат: система, а під нею її параметри
- * акордеонами — значень немає, бо їх рахує сервер за датою. Сам блок — теж
- * акордеон (`CollapsibleSection`).
+ * Перший стовпець таблиці аналізу без дат: система закрита — тільки назва.
+ * На дотик відкривається опис, історія й підакордеони параметрів; сам блок —
+ * теж акордеон (`CollapsibleSection`).
  * @module packages/ui/src/blocks/AnalysisSystemsBlock
  */
 
@@ -34,69 +34,87 @@ export function AnalysisSystemsBlock({ block }: BlockComponentProps) {
           <table className="wb-param-table">
             <tbody>
               {systems.map((system) => {
-                // У системи без формули параметрів ще немає: порожні підписи
-                // роздували б вітрину на екрани прокрутки, а стан системи вже
-                // каже позначка «скоро».
-                const parameters = system.implemented ? (system.parameters ?? []) : [];
+                const open = isExpanded(system.id);
+                const parameters = system.parameters ?? [];
                 return (
                   <Fragment key={system.id}>
                     <tr className="wb-param-group">
-                      <td>
-                        <span className="wb-analysis-systems__name">{system.name}</span>
-                        {!system.implemented && (
-                          <span className="wb-analysis-systems__soon">скоро</span>
-                        )}
-                        {system.description ? (
-                          <span className="wb-analysis-systems__desc">{system.description}</span>
-                        ) : null}
+                      <td className="wb-param-cell--toggle">
+                        <button
+                          type="button"
+                          className="wb-param-toggle"
+                          aria-expanded={open}
+                          onClick={() => toggleExpanded(system.id)}
+                        >
+                          <span className="wb-analysis-systems__head">
+                            <span className="wb-analysis-systems__name">{system.name}</span>
+                            {!system.implemented && (
+                              <span className="wb-analysis-systems__soon">скоро</span>
+                            )}
+                          </span>
+                          <span className="wb-param-toggle__caret">
+                            <Icon name={open ? "chevron-up" : "chevron-down"} size={16} />
+                          </span>
+                        </button>
                       </td>
                     </tr>
 
-                    {parameters.map((parameter) => {
-                      const rowId = `${system.id}:${parameter.key}`;
-                      const open = isExpanded(rowId);
-                      // Акордеон має сенс лише там, де є що розкривати: без
-                      // пояснення рядок лишається підписом параметра, а не
-                      // кнопкою, яка відкриває порожнечу.
-                      if (!parameter.about) {
-                        return (
-                          <tr key={rowId}>
-                            <td>{parameter.label}</td>
-                          </tr>
-                        );
-                      }
-                      return (
-                        <Fragment key={rowId}>
-                          <tr>
-                            <td className="wb-param-cell--toggle">
-                              <button
-                                type="button"
-                                className={
-                                  open ? "wb-param-toggle wb-param-toggle--open" : "wb-param-toggle"
-                                }
-                                aria-expanded={open}
-                                onClick={() => toggleExpanded(rowId)}
-                              >
-                                <span>{parameter.label}</span>
-                                <span className="wb-param-toggle__caret">
-                                  <Icon name={open ? "chevron-up" : "chevron-down"} size={16} />
-                                </span>
-                              </button>
-                            </td>
-                          </tr>
-                          {open && (
-                            <tr className="wb-param-detail">
-                              <td>{parameter.about}</td>
-                            </tr>
-                          )}
-                        </Fragment>
-                      );
-                    })}
+                    {open && (
+                      <tr className="wb-system-body">
+                        <td>
+                          {system.description ? (
+                            <p className="wb-analysis-systems__desc">{system.description}</p>
+                          ) : null}
 
-                    {system.implemented && parameters.length === 0 && (
-                      <tr>
-                        <td className="wb-text-sm wb-text-muted">
-                          Розрахунок цієї системи ще не готовий.
+                          {system.history ? (
+                            <p className="wb-analysis-systems__history">{system.history}</p>
+                          ) : null}
+
+                          {parameters.length > 0 && (
+                            <div className="wb-system-params">
+                              {parameters.map((parameter) => {
+                                const rowId = `${system.id}:${parameter.key}`;
+                                const paramOpen = isExpanded(rowId);
+                                // Акордеон має сенс лише там, де є що розкривати:
+                                // без пояснення підпис параметра лишається
+                                // підписом, а не кнопкою в порожнечу.
+                                if (!parameter.about) {
+                                  return (
+                                    <p key={rowId} className="wb-param-label">
+                                      {parameter.label}
+                                    </p>
+                                  );
+                                }
+                                return (
+                                  <Fragment key={rowId}>
+                                    <button
+                                      type="button"
+                                      className="wb-param-toggle"
+                                      aria-expanded={paramOpen}
+                                      onClick={() => toggleExpanded(rowId)}
+                                    >
+                                      <span>{parameter.label}</span>
+                                      <span className="wb-param-toggle__caret">
+                                        <Icon
+                                          name={paramOpen ? "chevron-up" : "chevron-down"}
+                                          size={16}
+                                        />
+                                      </span>
+                                    </button>
+                                    {paramOpen && (
+                                      <p className="wb-param-note">{parameter.about}</p>
+                                    )}
+                                  </Fragment>
+                                );
+                              })}
+                            </div>
+                          )}
+
+                          {parameters.length === 0 && system.implemented && (
+                            <p className="wb-text-sm wb-text-muted">
+                              Розрахунок цієї системи ще не готовий.
+                            </p>
+                          )}
                         </td>
                       </tr>
                     )}

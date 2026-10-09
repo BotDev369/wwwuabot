@@ -3,7 +3,7 @@ import type { Env } from "../shared/types";
 import { readBody } from "../shared/body";
 import { apiLog } from "../shared/logger";
 import { SYSTEM_CALCULATORS, getAnalysis, saveAnalysis } from "../shared/mydate-helpers";
-import { withMeanings, withParameterAbout } from "../shared/mydate-interpretations";
+import { withMeanings, withSystemAbout } from "../shared/mydate-interpretation-helpers";
 import { listAnalysisSystems, listImplementedSystems } from "../services/analysis-systems.service";
 import { dateNamesFor } from "../services/my-dates.service";
 import { tryResolveUserId } from "../shared/identity";
@@ -105,10 +105,7 @@ export async function handleAnalyze(request: Request, env: Env): Promise<Respons
 export async function handleSystems(env: Env): Promise<Response> {
   try {
     const registry = await listAnalysisSystems(env.DB);
-    const systems = registry.map((system) => ({
-      ...system,
-      parameters: withParameterAbout(system.id, system.parameters),
-    }));
+    const systems = registry.map((system) => ({ ...system, ...withSystemAbout(system) }));
     return json({ ok: true, systems });
   } catch (e: unknown) {
     apiLog.error("Systems registry error", e);

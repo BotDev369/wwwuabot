@@ -83,12 +83,25 @@ export function MyDatesTableBlock({ block }: BlockComponentProps) {
         }
       >
         {/* Створення — дія блока, а не його назва: у підписі акордеона кнопка
-          читалась частиною підпису («Дати · Нова дата») і стискала його. */}
-        {showCreateButton && (
-          <div className="wb-date-create">
-            <button className="wb-btn wb-btn-primary" onClick={openCreate}>
-              Нова дата
-            </button>
+          читалась частиною підпису («Дати · Нова дата») і стискала його.
+          Пошук стоїть у тому самому рядку: обидва стосуються списку, а два
+          рядки забирали висоту екрана, якої на телефоні й так мало. */}
+        {(showCreateButton || showSearch) && (
+          <div className="wb-date-tools">
+            {showCreateButton && (
+              <button className="wb-btn wb-btn-primary" onClick={openCreate}>
+                Нова дата
+              </button>
+            )}
+            {showSearch && (
+              <input
+                type="text"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                placeholder="Пошук..."
+                className="wb-input wb-date-tools__search"
+              />
+            )}
           </div>
         )}
 
@@ -97,20 +110,6 @@ export function MyDatesTableBlock({ block }: BlockComponentProps) {
           <p className="wb-text-sm" style={{ color: "var(--color-danger, #ef4444)" }}>
             {error}
           </p>
-        )}
-
-        {/* Search */}
-        {showSearch && (
-          <div style={{ marginBottom: "var(--sp-3)" }}>
-            <input
-              type="text"
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder="Пошук..."
-              className="wb-input"
-              style={{ maxWidth: 400 }}
-            />
-          </div>
         )}
 
         {/* Active filters */}

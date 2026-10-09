@@ -26,6 +26,8 @@ export interface MyDateSystem {
   id: string;
   name: string;
   description: string;
+  /** Звідки взялася система: дописує сервер із довідника, як і `about`. */
+  history?: string;
   implemented: boolean;
   parameters: MyDateSystemParameter[];
 }

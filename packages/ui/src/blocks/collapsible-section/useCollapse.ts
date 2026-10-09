@@ -1,9 +1,9 @@
 /**
- * Стан секції-акордеона: розгорнута вона типово.
+ * Стан секції-акордеона: розгорнута вона чи ні.
  *
- * Типово розгорнута — навмисно: `useExpansion` типово згортає все, бо там
- * ідеться про рядки списку, а тут — про цілий блок сторінки, і відкривати
- * сторінку з трьох однакових підписів означало б ховати те, за чим прийшли.
+ * Типово **згорнута** — як і `useExpansion` для рядків списку: екран мусить
+ * уміщатися без прокрутки, а назва блока каже, що всередині. Відкрите тіло
+ * під кожною назвою робить із сторінки полотно.
  * @module packages/ui/src/blocks/collapsible-section/useCollapse
  */
 
@@ -15,7 +15,7 @@ export interface UseCollapseReturn {
 }
 
 export function useCollapse(): UseCollapseReturn {
-  const [open, setOpen] = useState(true);
+  const [open, setOpen] = useState(false);
 
   const toggle = useCallback(() => setOpen((value) => !value), []);
 

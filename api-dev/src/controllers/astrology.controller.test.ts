@@ -11,7 +11,7 @@
 
 import { describe, expect, it } from "vitest";
 import type { Env } from "../shared/types";
-import { aboutFor } from "../shared/mydate-interpretations";
+import { aboutFor } from "../shared/mydate-interpretation-helpers";
 import { INIT_DATA_HEADER } from "@wwwuabot/shared/security/telegram";
 import {
   handleAnalysisRead,
