@@ -78,6 +78,27 @@ describe("список дат на вузькому екрані", () => {
     expect(container.textContent).not.toContain("з 1");
     expect(container.textContent).toContain("Дати");
   });
+
+  /**
+   * Блок — акордеон: підпис згортає список. Кнопка створення при цьому
+   * лишається на місці, бо вона дія, а не вміст: згорнутий блок — це все ще
+   * блок, і «Нова дата» — найпотрібніше, що в ньому є.
+   */
+  it("підпис згортає список, а «Нова дата» лишається на місці", async () => {
+    const user = userEvent.setup();
+    const { container } = await renderTable();
+    const toggle = screen.getByRole("button", { name: /Дати/ });
+    expect(toggle.getAttribute("aria-expanded")).toBe("true");
+    expect(container.querySelector(".wb-date-list")).toBeTruthy();
+
+    await user.click(toggle);
+    expect(toggle.getAttribute("aria-expanded")).toBe("false");
+    expect(container.querySelector(".wb-date-list")).toBeNull();
+    expect(screen.getByRole("button", { name: "Нова дата" })).toBeTruthy();
+
+    await user.click(toggle);
+    expect(container.querySelector(".wb-date-list")).toBeTruthy();
+  });
 });
 
 describe("модалка дати на вузькому екрані", () => {
@@ -385,7 +406,8 @@ describe("список дат: рядок відкривається на ред
     const { container } = await renderTable();
     expect(container.querySelector(".wb-date-list")).toBeTruthy();
     const withoutButton = render(<MyDatesTableBlock {...props({ showCreateButton: false })} />);
-    expect(withoutButton.container.querySelector(".wb-date-head-row")).toBeTruthy();
+    // Підпис блока лишається на місці — зникає тільки дія праворуч від нього.
+    expect(withoutButton.container.querySelector(".wb-block-section__head")).toBeTruthy();
   });
 });
 

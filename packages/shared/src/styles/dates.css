@@ -33,15 +33,6 @@
   overflow-x: auto;
 }
 
-/* Шапка списку: заголовок ліворуч, кнопка праворуч. */
-.wb-date-head-row {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: var(--sp-3);
-  margin-bottom: var(--sp-4);
-}
-
 .wb-date-sort {
   display: none;
 }
@@ -388,13 +379,5 @@
 
   .wb-date-bulk > .wb-btn {
     flex: 1 1 auto;
-  }
-
-  .wb-date-head-row {
-    flex-wrap: wrap;
-  }
-
-  .wb-date-head-row > .wb-btn {
-    min-height: 44px;
   }
 }

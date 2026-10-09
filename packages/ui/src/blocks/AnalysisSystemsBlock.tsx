@@ -2,8 +2,8 @@
  * Page Builder — AnalysisSystemsBlock: вітрина «Системи аналізу».
  *
  * Перший стовпець таблиці аналізу без дат: система, а під нею її параметри
- * акордеонами — значень немає, бо їх рахує сервер за датою.
- *
+ * акордеонами — значень немає, бо їх рахує сервер за датою. Сам блок — теж
+ * акордеон (`CollapsibleSection`).
  * @module packages/ui/src/blocks/AnalysisSystemsBlock
  */
 
@@ -11,6 +11,7 @@ import { Fragment } from "react";
 import { Icon } from "@wwwuabot/shared";
 import type { BlockComponentProps } from "@wwwuabot/shared/types/page-config";
 import { useExpansion } from "@wwwuabot/ui/hooks";
+import { CollapsibleSection } from "./collapsible-section";
 import { useAnalysisSystems } from "./analysis-systems/useAnalysisSystems";
 
 export function AnalysisSystemsBlock({ block }: BlockComponentProps) {
@@ -19,9 +20,7 @@ export function AnalysisSystemsBlock({ block }: BlockComponentProps) {
   const { isExpanded, toggleExpanded } = useExpansion();
 
   return (
-    <section className="wb-analysis-systems">
-      <h2 className="wb-analysis-systems__title">{title}</h2>
-
+    <CollapsibleSection title={title}>
       {loading && <p className="wb-text-sm wb-text-muted">Завантажуємо системи...</p>}
 
       {error && <p className="wb-text-sm wb-text-muted">{error}</p>}
@@ -105,6 +104,6 @@ export function AnalysisSystemsBlock({ block }: BlockComponentProps) {
           </table>
         </div>
       )}
-    </section>
+    </CollapsibleSection>
   );
 }

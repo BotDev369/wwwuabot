@@ -114,6 +114,27 @@ describe("AnalysisSystemsBlock", () => {
     expect(screen.getByText("Наближений градус Сонця")).toBeTruthy();
   });
 
+  /**
+   * Вітрина — акордеон: підпис згортає список систем. Типово вона розгорнута,
+   * бо сторінка не мусить ховати те, за чим людина прийшла.
+   */
+  it("підпис згортає вітрину й розгортає її назад", async () => {
+    const user = userEvent.setup();
+    render(<AnalysisSystemsBlock {...props()} />);
+    await flush();
+
+    const toggle = screen.getByRole("button", { name: /Системи аналізу/ });
+    expect(toggle.getAttribute("aria-expanded")).toBe("true");
+    expect(screen.getByText("Західна астрологія")).toBeTruthy();
+
+    await user.click(toggle);
+    expect(toggle.getAttribute("aria-expanded")).toBe("false");
+    expect(screen.queryByText("Західна астрологія")).toBeNull();
+
+    await user.click(toggle);
+    expect(screen.getByText("Західна астрологія")).toBeTruthy();
+  });
+
   it("порожній реєстр каже про себе, а не мовчить", async () => {
     stubRegistry([]);
     render(<AnalysisSystemsBlock {...props()} />);

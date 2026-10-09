@@ -27,14 +27,14 @@ describe("проміжок між блоками сторінки", () => {
     const blocks = rule(layout, ".page-zone-blocks");
     expect(blocks).toContain("display: flex");
     expect(blocks).toContain("flex-direction: column");
-    expect(blocks).toContain("gap: var(--sp-4)");
+    expect(blocks).toContain("gap: var(--sp-6)");
   });
 
-  it("зона не тримає другого такого самого проміжку", () => {
-    // Два джерела того самого числа — це і є «відступи різні»: досить одному
-    // відстати, щоб сторінка поїхала.
-    const main = rule(layout, ".page-zone--main");
-    expect(main).toContain("gap: var(--sp-4)");
+  it("крок між блоками більший за внутрішній — блоки мусять читатись окремо", () => {
+    // Власник 09.10.2026: «між блоками відступи більші мають бути. І візуально
+    // треба бачити де який блок». Внутрішній крок зони лишається меншим.
+    expect(rule(layout, ".page-zone--main")).toContain("gap: var(--sp-4)");
+    expect(rule(layout, ".page-zone-blocks")).toContain("gap: var(--sp-6)");
   });
 });
 
@@ -48,6 +48,20 @@ describe("hero-блок", () => {
 
   it("утримує внутрішній відступ лише там, де під текстом лежить фото", () => {
     expect(rule(components, ".wb-block-hero--media")).toContain("padding:");
+  });
+
+  it("не обрізає текст овалом, поки під ним немає фото", () => {
+    // Регресія зі скриншота: `border-radius` разом з `overflow: hidden` на
+    // самій базі давали «текст у овалі, обрізаний по краях».
+    const base = rule(components, ".wb-block-hero");
+    expect(base).not.toContain("overflow");
+    expect(base).not.toContain("border-radius");
+  });
+
+  it("овал і обрізання з'являються разом із фото, яке треба обрізати", () => {
+    const media = rule(components, ".wb-block-hero--media");
+    expect(media).toContain("border-radius");
+    expect(media).toContain("overflow: hidden");
   });
 
   it("має всі три вирівнювання-стани, які рендерить розмітка", () => {
