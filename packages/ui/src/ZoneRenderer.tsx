@@ -31,7 +31,7 @@ export function ZoneRenderer({ blocks, zone, context, className }: ZoneRendererP
   if (sorted.length === 0) return null;
 
   return (
-    <div className={className} data-zone={zone}>
+    <div className={`page-zone-blocks${className ? ` ${className}` : ""}`} data-zone={zone}>
       {sorted.map((block) => {
         // 1. Перевірка базових умов (conditional rendering)
         const conditionsMatch = evaluateConditions(block.conditions, context.user);

@@ -1,8 +1,9 @@
 /**
- * Page Builder — Hero Block.
+ * Page Builder — Hero Block: банер сторінки.
  *
- * Large banner with title, subtitle, optional background image, and CTA buttons.
- *
+ * Вигляд — у `components.css`, не інлайном: інлайн не бачить `data-brand` і
+ * `data-theme` (правило 14 `docs/DESIGN_SYSTEM.md`). Зовнішніх відступів немає
+ * навмисно — просвіт між блоками належить зоні.
  * @module packages/ui/src/blocks/HeroBlock
  */
 
@@ -13,6 +14,17 @@ interface HeroButton {
   url?: string;
   variant?: string;
 }
+
+/**
+ * Вирівнювання — перелік класів, а не склейка (`wb-block-hero--${align}`):
+ * довільне значення з `props` інакше дало б клас без правила, який нічого не
+ * робить (правило 11 `docs/DESIGN_SYSTEM.md`).
+ */
+const ALIGN_CLASSES: Record<string, string> = {
+  left: "wb-block-hero--left",
+  center: "wb-block-hero--center",
+  right: "wb-block-hero--right",
+};
 
 export function HeroBlock({ block }: BlockComponentProps) {
   const {
@@ -29,96 +41,34 @@ export function HeroBlock({ block }: BlockComponentProps) {
     align?: string;
   };
 
+  const alignClass = ALIGN_CLASSES[align] ?? ALIGN_CLASSES.center;
+  const className = `wb-block-hero ${alignClass}${backgroundImage ? " wb-block-hero--media" : ""}`;
+
   return (
     <section
-      className="wb-block-hero"
-      style={{
-        position: "relative",
-        padding: backgroundImage ? "var(--sp-12) var(--sp-4)" : "var(--sp-8) var(--sp-4)",
-        backgroundImage: backgroundImage ? `url(${backgroundImage})` : undefined,
-        backgroundSize: "cover",
-        backgroundPosition: "center",
-        borderRadius: "var(--radius-lg)",
-        overflow: "hidden",
-        textAlign: align as "left" | "center" | "right",
-      }}
+      className={className}
+      style={backgroundImage ? { backgroundImage: `url(${backgroundImage})` } : undefined}
     >
-      {/* Overlay for background images */}
-      {backgroundImage && (
-        <div
-          style={{
-            position: "absolute",
-            inset: 0,
-            background: "rgba(0, 0, 0, 0.5)",
-            zIndex: 0,
-          }}
-        />
-      )}
+      {/* Затемнення під фото — щоб білий текст читався на будь-якому знімку. */}
+      {backgroundImage && <div className="wb-block-hero__scrim" />}
 
-      <div style={{ position: "relative", zIndex: 1 }}>
-        {title && (
-          <h2
-            className="wb-block-hero__title"
-            style={{
-              fontFamily: "var(--font-display)",
-              fontSize: "var(--text-4)",
-              fontWeight: "var(--weight-bold)",
-              margin: 0,
-              color: backgroundImage ? "#fff" : "var(--text-primary)",
-              lineHeight: "var(--font-lineheight-1)",
-            }}
-          >
-            {title}
-          </h2>
-        )}
+      <div className="wb-block-hero__body">
+        {title && <h2 className="wb-block-hero__title">{title}</h2>}
 
-        {subtitle && (
-          <p
-            className="wb-block-hero__subtitle wb-mt-3"
-            style={{
-              fontSize: "var(--text-lg)",
-              margin: "var(--sp-3) 0 0 0",
-              color: backgroundImage ? "rgba(255,255,255,0.85)" : "var(--text-secondary)",
-              maxWidth: "600px",
-              marginLeft: align === "center" ? "auto" : undefined,
-              marginRight: align === "right" || align === "center" ? "auto" : undefined,
-            }}
-          >
-            {subtitle}
-          </p>
-        )}
+        {subtitle && <p className="wb-block-hero__subtitle">{subtitle}</p>}
 
         {buttons.length > 0 && (
-          <div
-            className="wb-block-hero__actions wb-mt-4"
-            style={{
-              display: "flex",
-              gap: "var(--sp-2)",
-              justifyContent:
-                align === "center" ? "center" : align === "right" ? "flex-end" : "flex-start",
-              marginTop: "var(--sp-4)",
-              flexWrap: "wrap",
-            }}
-          >
+          <div className="wb-block-hero__actions">
             {buttons.map((btn, i) => {
               const isSecondary = btn.variant === "secondary";
-              const className = isSecondary ? "wb-btn wb-btn-secondary" : "wb-btn wb-btn-primary";
+              const btnClass = isSecondary ? "wb-btn wb-btn-secondary" : "wb-btn wb-btn-primary";
 
               return btn.url ? (
-                <a
-                  key={i}
-                  href={btn.url}
-                  className={className}
-                  style={
-                    backgroundImage
-                      ? { borderColor: "rgba(255,255,255,0.3)", color: "#fff" }
-                      : undefined
-                  }
-                >
+                <a key={i} href={btn.url} className={btnClass}>
                   {btn.text}
                 </a>
               ) : (
-                <button key={i} type="button" className={className}>
+                <button key={i} type="button" className={btnClass}>
                   {btn.text}
                 </button>
               );

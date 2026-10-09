@@ -2163,12 +2163,6 @@ button.wb-chip {
 .wb-mt-2 {
   margin-top: var(--sp-2);
 }
-.wb-mt-3 {
-  margin-top: var(--sp-3);
-}
-.wb-mt-4 {
-  margin-top: var(--sp-4);
-}
 .wb-mb-2 {
   margin-bottom: var(--sp-2);
 }
@@ -2325,4 +2319,95 @@ button.wb-chip {
     font-size: 13px;
     justify-content: center;
   }
+}
+
+/* ── Hero (блок сторінки) ──────────────────────────────────────────────────
+   Зовнішнього відступу немає **навмисно**: просвіт між блоками тримає зона
+   (`.page-zone-blocks`), а власний `padding` блока додавався б до нього —
+   після hero ставала порожня смуга, а його текст зсувався на 16px усередину
+   відносно заголовків сусідніх блоків. Внутрішній відступ лишається рівно
+   там, де блок справді картка — коли під текстом лежить фото. */
+.wb-block-hero {
+  position: relative;
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+}
+
+.wb-block-hero__body {
+  position: relative;
+  z-index: 1;
+}
+
+/* Заголовок hero — це `h2`, і розмір йому дає бренд
+   (`html[data-brand="android"] h2`). Власного розміру тут немає навмисно:
+   інакше заголовок блока сперечався б із брендом за той самий тег. */
+.wb-block-hero__title {
+  margin: 0;
+  color: var(--text-primary);
+}
+
+.wb-block-hero__subtitle {
+  margin: var(--sp-2) 0 0;
+  max-width: 60ch;
+  color: var(--text-secondary);
+}
+
+.wb-block-hero__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--sp-2);
+  margin-top: var(--sp-4);
+}
+
+/* Вирівнювання — три стани, а не довільне значення з `props`: заголовок,
+   підзаголовок і кнопки тримаються одного берега. */
+.wb-block-hero--left {
+  text-align: left;
+}
+
+.wb-block-hero--center {
+  text-align: center;
+}
+
+.wb-block-hero--center .wb-block-hero__subtitle {
+  margin-inline: auto;
+}
+
+.wb-block-hero--center .wb-block-hero__actions {
+  justify-content: center;
+}
+
+.wb-block-hero--right {
+  text-align: right;
+}
+
+.wb-block-hero--right .wb-block-hero__actions {
+  justify-content: flex-end;
+}
+
+/* Hero з фото — картка: текст мусить відійти від краю зображення. Це єдиний
+   випадок, коли блок має відступ по краях, і саме тому він тут, а не в базі. */
+.wb-block-hero--media {
+  padding: var(--sp-8) var(--sp-4);
+  background-size: cover;
+  background-position: center;
+}
+
+.wb-block-hero__scrim {
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.5);
+}
+
+.wb-block-hero--media .wb-block-hero__title {
+  color: #fff;
+}
+
+.wb-block-hero--media .wb-block-hero__subtitle {
+  color: rgba(255, 255, 255, 0.85);
+}
+
+.wb-block-hero--media .wb-btn {
+  border-color: rgba(255, 255, 255, 0.3);
+  color: #fff;
 }

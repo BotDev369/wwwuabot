@@ -86,6 +86,17 @@
   background: var(--bg-page, var(--bg-0));
 }
 
+/* Обгортка блоків зони — і **вона** володіє проміжком між ними: блоки лежать
+   на рівень глибше за зону (`ZoneRenderer`), тож `gap` на `.page-zone--main`
+   діставався лише їй, а просвіт між блоками давав кожен блок собі — hero
+   тримав 32px, решта нуль. Правило: просвіт належить зоні, блок тримає лише
+   внутрішнє. Деталі й сторож — `page-layout.test.ts`. */
+.page-zone-blocks {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-4);
+}
+
 .page-zone--footer {
   padding: 16px 24px;
   padding-bottom: calc(16px + var(--safe-bottom));

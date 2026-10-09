@@ -149,6 +149,33 @@ describe("PageRenderer", () => {
     expect(html).toContain("Public Content");
   });
 
+  /**
+   * Блоки лежать на рівень глибше за зону, і проміжок між ними тримає саме ця
+   * обгортка (`.page-zone-blocks`). Без неї просвіт давав кожен блок собі —
+   * тому hero мав 32px, а таблиця дат злипалась із рамкою систем вище.
+   */
+  it("складає блоки зони в обгортку, яка володіє проміжком між ними", () => {
+    const config: PageConfig = {
+      version: 1,
+      zones: {
+        sidebar: [],
+        header: [],
+        main: [
+          { id: "b1", type: "hero", order: 0, props: { title: "Перший" } },
+          { id: "b2", type: "text", order: 1, props: { content: "Другий" } },
+        ],
+        footer: [],
+      },
+    };
+    const html = renderToStaticMarkup(<PageRenderer config={config} context={dummyContext} />);
+
+    expect(html).toContain('<div class="page-zone-blocks" data-zone="main">');
+    // Обидва блоки — усередині обгортки, а не поруч із нею.
+    const wrapper = html.slice(html.indexOf('class="page-zone-blocks"'));
+    expect(wrapper).toContain("wb-block-hero");
+    expect(wrapper).toContain("Другий");
+  });
+
   it("renders adminOnly blocks when user is an admin", () => {
     const config: PageConfig = {
       version: 1,

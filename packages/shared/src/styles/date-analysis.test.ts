@@ -62,6 +62,12 @@ describe("шапка таблиці лишається на видноті", () 
     expect(veil).toContain("margin-bottom: calc(-1 * var(--sp-2))");
   });
 
+  it("смуга-просвіт у стані спокою схована за першим рядком, а не швом", () => {
+    // Смуга лежить на верху рамки — без тла в комірки тло сторінки в ній
+    // читалося як сірий шов під верхнім кантом (вилазили й кути смуги).
+    expect(rule(".wb-param-table tbody tr:first-child > td")).toContain("background: var(--bg-2)");
+  });
+
   it("підпис над таблицею має просвіт — інакше читається як перша комірка", () => {
     expect(rule(".wb-block-date-analysis__title")).toContain("margin-bottom: var(--sp-4)");
   });
