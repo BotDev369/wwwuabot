@@ -112,3 +112,36 @@ describe("шапка таблиці лишається на видноті", () 
     expect(rule(".wb-param-table--compare")).toContain("table-layout: fixed");
   });
 });
+
+describe("три шари розкритої системи", () => {
+  it("шапка, опис і параметри не мають спільного тла", () => {
+    // Назва, опис і підакордеони лежали на одному тлі — система читалась одним
+    // сірим полотном. Шапка — підсвітка акцентом, опис — тло рамки, параметри
+    // — вкладена поверхня.
+    expect(rule(".wb-param-group > td .wb-param-toggle--open")).toContain(
+      "background: var(--accent-soft)",
+    );
+    expect(rule(".wb-system-params")).toContain("background: var(--bg-3)");
+  });
+
+  it("назва системи на крок більша за власні параметри", () => {
+    // Підпис групи, а не ще один рядок списку.
+    expect(rule(".wb-analysis-systems__name")).toContain("font-size: var(--text-md)");
+  });
+
+  it("шапка першої системи повторює заокруглення рамки", () => {
+    // Підсвітка стоїть на кнопці — без заокруглення вона лягала б на верхній
+    // кут рамки власним квадратом.
+    const head = rule(".wb-param-table tbody tr:first-child > td > .wb-param-toggle--open");
+    expect(head).toContain("border-top-left-radius: var(--radius-md)");
+    expect(head).toContain("border-top-right-radius: var(--radius-md)");
+  });
+
+  it("дотик лишається сильнішим за підсвітку розкритого рядка", () => {
+    // Інакше саме розкрита шапка не відповідала б на палець: підсвітка має
+    // вищу специфічність, тож `:active` бере її — префіксом таблиці.
+    expect(rule(".wb-param-table .wb-param-toggle:active")).toContain(
+      "background: var(--surface-active)",
+    );
+  });
+});
