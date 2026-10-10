@@ -2007,37 +2007,42 @@ html:has(.wb-tabbar) .wb-modal-overlay--screen {
    інакше кожна таблиця заводить свою копію й розходиться (саме так шість
    таблиць отримали шість різних шапок). Тла тут немає — його несе рядок
    (§15); таблиця, яка справді гортається, дає закріпленій комірці непрозору
-   поверхню, інакше крізь неї видно те, що проїжджає. */
-table thead th {
+   поверхню, інакше крізь неї видно те, що проїжджає.
+
+   `:where()` тут не прикраса, а межа: стандарт — **значення за замовчуванням**
+   (нульова специфічність), тож таблиця, у якої комірка має власну розкладку,
+   перекриває його простим правилом. Без цього він диктує позицію картці дат:
+   чекбокс добору стоїть там абсолютно в правому полі (`dates.css`), а сильніший
+   за замовчування `sticky` виносив його в потік і подвоював висоту картки. */
+:where(table thead th) {
   position: sticky;
   top: 0;
   z-index: 2;
 }
 
-table th:first-child,
-table td:first-child {
+:where(table th:first-child, table td:first-child) {
   position: sticky;
   left: 0;
   z-index: 1;
 }
 
 /* Перетин шапки й першого стовпця — вище за обидва. */
-table thead th:first-child {
+:where(table thead th:first-child) {
   z-index: 3;
 }
 
 /* Перший стовпець `wb-table` прозорий (поверхня — сама сторінка), а закріплене
    мусить бути непрозорим: беремо тло таблиці, а парний рядок — його смугу. */
-.wb-table th:first-child {
+:where(.wb-table th:first-child) {
   background: var(--bg-2);
 }
 
-.wb-table td:first-child {
+:where(.wb-table td:first-child) {
   background: var(--bg-page, var(--bg-0));
 }
 
 @media (min-width: 521px) {
-  .wb-table tbody tr:nth-child(even) td:first-child {
+  :where(.wb-table tbody tr:nth-child(even) td:first-child) {
     background: var(--bg-2);
   }
 }
