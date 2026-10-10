@@ -79,11 +79,21 @@ describe("шапка таблиці лишається на видноті", () 
     expect(frame).not.toContain("border:");
     expect(frame).not.toContain("border-top");
     expect(frame).toContain("box-shadow");
+    // Тла в рамки немає: поверхню несе рядок, а полотно під ним робило з опису
+    // системи ще один рядок.
+    expect(frame).not.toContain("background");
   });
 
-  it("перший рядок не перемальовує заокруглений кут рамки", () => {
-    // Прямокутне тло комірки лягало на кут рамки власним квадратом.
-    expect(rule(".wb-param-table tbody tr:first-child > td")).not.toContain("background");
+  it("крайні рядки повторюють заокруглений кут рамки своїм тлом", () => {
+    // Тло ряду прямокутне, а рамка заокруглена: без цього квадрат ряду вилазив
+    // би за її кути, а обрізати вміст `overflow` не можна — липка шапка
+    // тримається її краю.
+    expect(rule(".wb-param-table tbody:first-child tr:first-child > td:first-child")).toContain(
+      "border-top-left-radius: var(--radius-md)",
+    );
+    expect(rule(".wb-param-table tbody tr:last-child > td:last-child")).toContain(
+      "border-bottom-right-radius: var(--radius-md)",
+    );
   });
 
   it("підакордеони параметрів не тримають вертикальної смуги", () => {
@@ -113,16 +123,28 @@ describe("шапка таблиці лишається на видноті", () 
   });
 });
 
-describe("три шари розкритої системи", () => {
-  it("розкриту систему відділяє підсвітка шапки, а не друга поверхня", () => {
+describe("тло належить рядкам", () => {
+  it("рядок несе поверхню, а опис системи — ні", () => {
     // Назва, опис і підакордеони лежали на одному тлі — система читалась одним
-    // сірим полотном. Шапка — підсвітка акцентом; опис і параметри лишаються
-    // на тлі рамки, а вкладеність показує сам зсув.
+    // сірим полотном. Поверхню несе рядок: шапка — підсвітка акцентом, підпис
+    // параметра — `--bg-2`; опис системи — не рядок, тла він не має.
     expect(rule(".wb-param-group > td .wb-param-toggle--open")).toContain(
       "background: var(--accent-soft)",
     );
-    // Тло, залите під параметрами, читалось зайвою підкладкою під їхніми
-    // описами — розкриту систему вже відділяє підсвітка шапки.
+    expect(rule(".wb-param-table td")).toContain("background: var(--bg-2)");
+    expect(
+      rule(".wb-system-params > .wb-param-toggle,\n.wb-system-params > .wb-param-label"),
+    ).toContain("background: var(--bg-2)");
+    expect(rule(".wb-system-body > td")).toContain("background: transparent");
+  });
+
+  it("пояснення параметра теж не рядок — тла не має", () => {
+    expect(rule(".wb-param-detail td")).toContain("background: transparent");
+  });
+
+  it("панель навколо параметрів тла не має — поверхня на самих рядках", () => {
+    // Залите тло під усіма параметрами читалось зайвою підкладкою під їхніми
+    // описами.
     expect(rule(".wb-system-params")).not.toContain("background");
   });
 
