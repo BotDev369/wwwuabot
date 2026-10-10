@@ -34,42 +34,37 @@ function rule(selector: string): string {
 }
 
 describe("шапка таблиці лишається на видноті", () => {
-  it("рамка не скролить себе — інакше шапка тримається її краю, а не екрана", () => {
-    // Закріплене тримається краю того, хто скролить. Поки скролила рамка,
-    // шапка зникала під хедером разом із нею.
-    const frame = rule(".wb-param-frame");
-    expect(frame).not.toContain("overflow");
-    expect(frame).not.toContain("max-height");
+  it("рамка гортає себе — інакше першому стовпцю ніде закріпитись", () => {
+    // Закріплене тримається краю того, хто скролить. Поки скролила сторінка,
+    // закріпити стовпець було нічим. Висота обмежена: без вільної висоти
+    // `sticky` не має куди тримати.
+    const frame = rule(".wb-param-frame:has(thead)");
+    expect(frame).toContain("overflow: auto");
+    expect(frame).toContain("max-height");
+
+    // Вітрина систем шапки не має — вона лишається потоком сторінки, а не ще
+    // однією смугою скролу навколо акордеонів.
+    expect(rule(".wb-param-frame")).not.toContain("overflow");
   });
 
-  it("платформа зсуває закріплену шапку під хедер — із просвітом", () => {
-    expect(rule(".wb-param-table th")).toContain("position: sticky");
-    // Зсув — токен висоти хедера, а не його формула: поки число стояло тут
-    // окремо, вищий хедер (назва у два рядки) ховав шапку під собою.
-    expect(rule(".wb-tabbar-layout .wb-param-table th")).toContain(
-      "top: calc(var(--appbar-h) + var(--sp-2))",
-    );
+  it("шапка липне до верху рамки, а не зсувається під хедер", () => {
+    // Рамка — сам контейнер скролу, тож шапка тримається її верхнього краю:
+    // зсув на висоту хедера більше не потрібен і лишав би дірку під шапкою.
+    const head = rule(".wb-param-table th");
+    expect(head).toContain("position: sticky");
+    expect(head).toContain("top: 0");
+    expect(css).not.toContain(".wb-tabbar-layout .wb-param-table th");
   });
 
-  it("просвіт закриває липка смуга тла екрана — інакше в ньому видно рядки", () => {
-    const veil = rule(".wb-tabbar-layout .wb-param-frame:has(thead)::before");
-    expect(veil).toContain("position: sticky");
-    expect(veil).toContain("top: var(--appbar-h)");
-    expect(veil).toContain("background: var(--bg-page");
-    // Висота смуги — і просвіт, і від'ємний відступ: у спокої шапка стоїть там,
-    // де стояла б без смуги.
-    expect(veil).toContain("height: var(--sp-2)");
-    expect(veil).toContain("margin-bottom: calc(-1 * var(--sp-2))");
-  });
-
-  it("смуга-просвіт стоїть лише в рамки з липкою шапкою", () => {
-    // У вітрини систем шапки немає, а тло екрана в смузі лягало **поверх**
-    // першого рядка (`z-index` вищий за статичну комірку) — виходила світла
-    // лінія під підписом блока.
-    expect(rule(".wb-tabbar-layout .wb-param-frame:has(thead)::before")).toContain(
-      "background: var(--bg-page",
-    );
-    expect(css).not.toContain(".wb-tabbar-layout .wb-param-frame::before");
+  it("перший стовпець закріплений, а пояснення — ні", () => {
+    // Підпис рядка лишається при гортанні вбік. Пояснення (опис системи,
+    // пояснення параметра) — текст на всю ширину: закріплена прозора комірка
+    // показувала б крізь себе те, що проїжджає.
+    expect(
+      rule(
+        ".wb-param-table .wb-param-detail > td:first-child,\n.wb-param-table .wb-system-body > td:first-child",
+      ),
+    ).toContain("position: static");
   });
 
   it("верхній кант рамки не читається розділювачем під підписом блока", () => {
@@ -85,9 +80,9 @@ describe("шапка таблиці лишається на видноті", () 
   });
 
   it("крайні рядки повторюють заокруглений кут рамки своїм тлом", () => {
-    // Тло ряду прямокутне, а рамка заокруглена: без цього квадрат ряду вилазив
-    // би за її кути, а обрізати вміст `overflow` не можна — липка шапка
-    // тримається її краю.
+    // Тло ряду прямокутне, а рамка заокруглена — і обрізає вміст не завжди:
+    // гортає себе лише рамка з шапкою, а вітрина систем лишається потоком,
+    // тож кути їй дають самі комірки.
     expect(rule(".wb-param-table tbody:first-child tr:first-child > td:first-child")).toContain(
       "border-top-left-radius: var(--radius-md)",
     );
@@ -116,10 +111,13 @@ describe("шапка таблиці лишається на видноті", () 
     expect(rule(".wb-param-table thead th:last-child")).toContain("border-top-right-radius");
   });
 
-  it("таблиця аналізу вміщається в ширину екрана", () => {
-    // Ширша за екран таблиця вимагала б скролу навколо шапки — і шапка знову
-    // була б заручником чужого краю.
-    expect(rule(".wb-param-table--compare")).toContain("table-layout: fixed");
+  it("стовпці аналізу роз'їжджаються вбік, а не рвуть значення", () => {
+    // `fixed` стискав усі дати в екран — значення ламались по складах. Тепер
+    // ширину дає вміст, а зайве гортає рамка.
+    expect(
+      rule(".wb-param-table--compare thead th,\n.wb-param-table--compare .wb-param-value"),
+    ).toContain("white-space: nowrap");
+    expect(rule(".wb-param-table--compare thead th + th")).toContain("min-width: 5.5rem");
   });
 });
 
