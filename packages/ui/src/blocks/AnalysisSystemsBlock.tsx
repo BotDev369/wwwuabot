@@ -42,7 +42,9 @@ export function AnalysisSystemsBlock({ block }: BlockComponentProps) {
                       <td className="wb-param-cell--toggle">
                         <button
                           type="button"
-                          className="wb-param-toggle"
+                          className={
+                            open ? "wb-param-toggle wb-param-toggle--open" : "wb-param-toggle"
+                          }
                           aria-expanded={open}
                           onClick={() => toggleExpanded(system.id)}
                         >
@@ -89,7 +91,11 @@ export function AnalysisSystemsBlock({ block }: BlockComponentProps) {
                                   <Fragment key={rowId}>
                                     <button
                                       type="button"
-                                      className="wb-param-toggle"
+                                      className={
+                                        paramOpen
+                                          ? "wb-param-toggle wb-param-toggle--open"
+                                          : "wb-param-toggle"
+                                      }
                                       aria-expanded={paramOpen}
                                       onClick={() => toggleExpanded(rowId)}
                                     >

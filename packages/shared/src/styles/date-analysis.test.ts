@@ -52,7 +52,7 @@ describe("шапка таблиці лишається на видноті", () 
   });
 
   it("просвіт закриває липка смуга тла екрана — інакше в ньому видно рядки", () => {
-    const veil = rule(".wb-tabbar-layout .wb-param-frame::before");
+    const veil = rule(".wb-tabbar-layout .wb-param-frame:has(thead)::before");
     expect(veil).toContain("position: sticky");
     expect(veil).toContain("top: var(--appbar-h)");
     expect(veil).toContain("background: var(--bg-page");
@@ -62,10 +62,38 @@ describe("шапка таблиці лишається на видноті", () 
     expect(veil).toContain("margin-bottom: calc(-1 * var(--sp-2))");
   });
 
-  it("смуга-просвіт у стані спокою схована за першим рядком, а не швом", () => {
-    // Смуга лежить на верху рамки — без тла в комірки тло сторінки в ній
-    // читалося як сірий шов під верхнім кантом (вилазили й кути смуги).
-    expect(rule(".wb-param-table tbody tr:first-child > td")).toContain("background: var(--bg-2)");
+  it("смуга-просвіт стоїть лише в рамки з липкою шапкою", () => {
+    // У вітрини систем шапки немає, а тло екрана в смузі лягало **поверх**
+    // першого рядка (`z-index` вищий за статичну комірку) — виходила світла
+    // лінія під підписом блока.
+    expect(rule(".wb-tabbar-layout .wb-param-frame:has(thead)::before")).toContain(
+      "background: var(--bg-page",
+    );
+    expect(css).not.toContain(".wb-tabbar-layout .wb-param-frame::before");
+  });
+
+  it("верхній кант рамки не читається розділювачем під підписом блока", () => {
+    // Обвідка давала волосяну лінію просто під підписом — з тією ж товщиною,
+    // що й розділювачі між рядками, тож підпис виглядав першим рядком.
+    const frame = rule(".wb-param-frame");
+    expect(frame).not.toContain("border:");
+    expect(frame).not.toContain("border-top");
+    expect(frame).toContain("box-shadow");
+  });
+
+  it("перший рядок не перемальовує заокруглений кут рамки", () => {
+    // Прямокутне тло комірки лягало на кут рамки власним квадратом.
+    expect(rule(".wb-param-table tbody tr:first-child > td")).not.toContain("background");
+  });
+
+  it("підакордеони параметрів не тримають вертикальної смуги", () => {
+    // Вкладеність показує зсув: підпис параметра стоїть на крок глибше за
+    // назву системи. Смуга була другою межею в списку, побудованому на берегах.
+    expect(rule(".wb-system-params")).not.toContain("border-left");
+  });
+
+  it("текст списку — крок базового, а не дрібніший", () => {
+    expect(rule(".wb-param-table")).toContain("font-size: var(--text-base)");
   });
 
   it("підпис над таблицею має просвіт — інакше читається як перша комірка", () => {

@@ -121,6 +121,11 @@ describe("AnalysisSystemsBlock", () => {
     expect(screen.getByText("Параметри на основі положення Сонця.")).toBeTruthy();
     expect(screen.getByText(/Класична європейська традиція/)).toBeTruthy();
     expect(screen.getByRole("button", { name: "Знак Сонця" })).toBeTruthy();
+
+    // Розкрита система помітна кольором — `--open` на перемикачі (той самий
+    // модифікатор, що й у таблиці аналізу): каретка сама цього не показує.
+    const system = screen.getByRole("button", { name: /Західна астрологія/ });
+    expect(system.className).toContain("wb-param-toggle--open");
   });
 
   it("позначає систему, для якої ще немає розрахунку", async () => {
