@@ -80,7 +80,10 @@ afterEach(() => {
   vi.restoreAllMocks();
 });
 
-function mount(head: number[], body: number[]): ReturnType<typeof render> & { widths: () => string } {
+function mount(
+  head: number[],
+  body: number[],
+): ReturnType<typeof render> & { widths: () => string } {
   const view = render(<Harness head={head} body={body} />);
   const find = (id: string) => view.getByTestId(id);
   scrollable(find("scroll"));

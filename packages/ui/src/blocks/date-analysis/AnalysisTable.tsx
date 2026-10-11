@@ -263,11 +263,7 @@ export function AnalysisTable({ view, ...data }: { view: AnalysisView } & TableD
       </div>
 
       <div className="wb-param-scroll" ref={head.scrollRef} onScroll={head.onScroll}>
-        <table
-          className={`${className} wb-param-table--body`}
-          style={style}
-          ref={head.bodyRef}
-        >
+        <table className={`${className} wb-param-table--body`} style={style} ref={head.bodyRef}>
           {measured && <ColumnWidths widths={head.widths} />}
           {view === "dates" ? (
             <DatesRows {...data} {...expansion} />
