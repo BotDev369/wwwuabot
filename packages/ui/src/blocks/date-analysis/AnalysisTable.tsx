@@ -11,6 +11,7 @@ import { useExpansion, type UseExpansionReturn } from "@wwwuabot/ui/hooks";
 import { formatDate } from "@wwwuabot/shared/utils/mydate-helpers";
 import type { CompareDetails, CompareMatrix } from "./api";
 import type { AnalysisRow } from "./useAnalysisTable";
+import { usePinnedHead } from "./usePinnedHead";
 
 /** Вигляд: рядками параметри чи дати. */
 export type AnalysisView = "params" | "dates";
@@ -210,24 +211,71 @@ function DatesRows({
   );
 }
 
+/**
+ * Спільні ширини стовпців: останній власної не має — він добирає залишок,
+ * коли таблиця вужча за рамку. Числа дає `usePinnedHead`: обидві таблиці
+ * міряються разом, інакше вони розійшлися б стовпцями.
+ */
+function ColumnWidths({ widths }: { widths: number[] }) {
+  return (
+    <colgroup>
+      {widths.map((width, index) => (
+        <col key={index} style={index === widths.length - 1 ? undefined : { width }} />
+      ))}
+    </colgroup>
+  );
+}
+
+/**
+ * Таблиця розділена на дві: шапка — окремою смугою під закріпленим
+ * перемикачем, тіло — під нею і гортається вбік. Чому саме так — у
+ * `usePinnedHead`.
+ */
 export function AnalysisTable({ view, ...data }: { view: AnalysisView } & TableData) {
   const expansion = useExpansion();
+  const head = usePinnedHead();
+
+  const columns = (view === "dates" ? data.rows.length : data.dates.length) + 1;
+  // Міра з попереднього вигляду до нової таблиці не належить: поки кількість
+  // ширин не збіглася з кількістю стовпців, таблиці лишаються на розкладці за
+  // вмістом — інакше чужі ширини тримали б стовпці, яких уже немає.
+  const measured = head.widths.length === columns;
+  const total = head.widths.reduce((sum, width) => sum + width, 0);
+
+  const className = `wb-param-table wb-param-table--compare${
+    measured ? " wb-param-table--measured" : ""
+  }`;
+  const style = measured ? { width: `max(100%, ${total}px)` } : undefined;
 
   return (
     <div className="wb-param-frame">
-      <table className="wb-param-table wb-param-table--compare">
-        {view === "dates" ? (
-          <>
-            <DatesHead rows={data.rows} />
+      <div className="wb-param-pin">
+        <div className="wb-param-head" ref={head.headRef}>
+          <table className={className} style={style} ref={head.copyRef}>
+            {measured && <ColumnWidths widths={head.widths} />}
+            {view === "dates" ? (
+              <DatesHead rows={data.rows} />
+            ) : (
+              <ParamsHead dates={data.dates} names={data.names} />
+            )}
+          </table>
+        </div>
+      </div>
+
+      <div className="wb-param-scroll" ref={head.scrollRef} onScroll={head.onScroll}>
+        <table
+          className={`${className} wb-param-table--body`}
+          style={style}
+          ref={head.bodyRef}
+        >
+          {measured && <ColumnWidths widths={head.widths} />}
+          {view === "dates" ? (
             <DatesRows {...data} {...expansion} />
-          </>
-        ) : (
-          <>
-            <ParamsHead dates={data.dates} names={data.names} />
+          ) : (
             <ParamsRows {...data} {...expansion} />
-          </>
-        )}
-      </table>
+          )}
+        </table>
+      </div>
     </div>
   );
 }

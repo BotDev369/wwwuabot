@@ -33,40 +33,70 @@ function rule(selector: string): string {
   return body(css.indexOf("{", found?.index ?? 0));
 }
 
-describe("шапка і перший стовпець закріплені одночасно", () => {
-  it("рамка скролить себе в обох осях — інакше закріплене прив'язане ні до чого", () => {
-    // Закріплене тримається краю того, хто скролить. `overflow-x: auto` робить
-    // контейнер скролу й по осі блоку, тож закріплена в ній шапка їхала б зі
-    // сторінкою. Щоб шапка й перший стовпець трималися одночасно, скролити
-    // мусить сама рамка — в обох осях.
-    const frame = rule(".wb-param-frame:has(thead)");
-    expect(frame).toContain("overflow: auto");
-    expect(frame).toContain("max-height");
-
-    // Вітрина систем шапки не має — вона лишається потоком сторінки, а не ще
-    // однією смугою скролу навколо акордеонів.
-    expect(rule(".wb-param-frame")).not.toContain("overflow");
+describe("шапка закріплена, а тіло гортає себе вбік", () => {
+  it("у рамки немає ні висоти, ні власного скролу — дані лежать на сторінці", () => {
+    // Рамка тримала себе в екрані через `max-height`, і таблиця гортала себе
+    // сама: донизу лишалася порожнеча, а межа стояла посеред екрана. Тепер
+    // сторінку гортає людина, і в рамки немає ні висоти, ні скролу.
+    const frame = rule(".wb-param-frame");
+    expect(frame).not.toContain("overflow");
+    expect(frame).not.toContain("height");
+    // Умовних правил на шапку (`:has(thead)`) тут більше немає зовсім.
+    expect(css).not.toContain(":has(thead)");
   });
 
-  it("висота рамки лишає місце хедеру, смузі й підпису кроку", () => {
-    // Інакше гортає вже сторінка, і закріплена шапка заїжджає під хедер.
-    const frame = rule(".wb-param-frame:has(thead)");
-    expect(frame).toContain("var(--appbar-h)");
-    expect(frame).toContain("var(--tab-bar-h)");
-    expect(frame).toContain("var(--date-analysis-chrome)");
-    expect(rule(".wb-block-date-analysis")).toContain("--date-analysis-chrome:");
+  it("тіло гортається вбік, а смугу шапки тягне за ним програма", () => {
+    // Смуга шапки — не другий скрол: її зсув повторює зсув тіла
+    // (`usePinnedHead`), інакше шапка поїхала б окремо від стовпців.
+    expect(rule(".wb-param-scroll")).toContain("overflow-x: auto");
+    expect(rule(".wb-param-head")).toContain("overflow: hidden");
   });
 
-  it("рамка тримається під хедером, поки сторінка гортається", () => {
-    // Платформа крутить документ, а хедер закріплений. Без цього рамка з
-    // шапкою їде під нього, і закріпленого підпису стовпця на екрані немає.
-    const sticky = rule(".wb-tabbar-layout .wb-param-frame:has(thead)");
-    expect(sticky).toContain("position: sticky");
-    expect(sticky).toContain("top: calc(var(--appbar-h) + var(--sp-2))");
+  it("шапка тримається під перемикачем, поки сторінка гортається", () => {
+    // Закріплене тримається краю того, хто скролить (§27), а тіло гортає себе
+    // вбік — тобто всередині нього шапці триматись ні за що: вона їхала б зі
+    // сторінкою.
+    const pin = rule(".wb-param-pin");
+    expect(pin).toContain("position: sticky");
+    expect(pin).toContain("top: var(--param-views-h)");
+    expect(rule(".wb-tabbar-layout .wb-param-pin")).toContain(
+      "top: calc(var(--appbar-h) + var(--param-views-h))",
+    );
   });
 
-  it("рамка затуляє рядки, що проїжджають під нею, коли вона закріплена", () => {
-    expect(rule(".wb-param-frame:has(thead)")).toContain("background: var(--bg-page");
+  it("смуга перемикача закріплена сама — на крок вище за шапку", () => {
+    // У одного елемента одна позиція липкості, тож перемикач і шапка — дві
+    // смуги. Від висоти перемикача відлічує шапка, тож висота задана, а не
+    // народжена вмістом: інакше шапка наїхала б на перемикач.
+    const views = rule(".wb-analysis-views");
+    expect(views).toContain("position: sticky");
+    expect(views).toContain("height: var(--param-views-h)");
+    expect(rule(".wb-tabbar-layout .wb-analysis-views")).toContain("top: var(--appbar-h)");
+    expect(rule(".wb-block-date-analysis")).toContain("--param-views-h:");
+  });
+
+  it("обидві закріплені смуги затуляють рядки, що проїжджають під ними", () => {
+    // Крізь закріплене видно те, що під ним їде: смуга перемикача несе
+    // площину екрана, смуга шапки — тло шапки, на якому стоять її заокруглені
+    // кути (інше тло читалося б вирізом посеред сторінки).
+    expect(rule(".wb-analysis-views")).toContain("background: var(--bg-page");
+    expect(rule(".wb-param-pin")).toContain("background: var(--bg-2)");
+  });
+
+  it("спільні ширини стовпців ставить спільна міра, а не вміст", () => {
+    // Шапка й тіло — дві таблиці, і ширину в них дає вміст: у шапки це підпис
+    // стовпця, у тіла — значення. Без спільної міри вони розійшлися б.
+    expect(rule(".wb-param-table--measured")).toContain("table-layout: fixed");
+  });
+
+  it("верхні кути тіла не заокруглюються — над ним шапка, а не край рамки", () => {
+    // `tbody` тіла — перша дитина таблиці, і тим самим правилом воно взяло б
+    // собі кути рамки: під шапкою читався б виріз.
+    const body = rule(
+      ".wb-param-table--body tbody tr:first-child > td:first-child,\n.wb-param-table--body tbody tr:first-child > td:last-child",
+    );
+    expect(body).toContain("border-top-left-radius: 0");
+    expect(body).toContain("border-top-right-radius: 0");
   });
 
   it("кутова комірка шапки лежить вище за решту шапки", () => {
@@ -102,9 +132,8 @@ describe("шапка і перший стовпець закріплені од�
   });
 
   it("крайні рядки повторюють заокруглений кут рамки своїм тлом", () => {
-    // Тло ряду прямокутне, а рамка заокруглена — і обрізає вміст не завжди:
-    // гортає себе лише рамка з шапкою, а вітрина систем лишається потоком,
-    // тож кути їй дають самі комірки.
+    // Тло ряду прямокутне, а рамка заокруглена — і вміст вона не обрізає
+    // (власного скролу в неї немає), тож кути дають самі комірки.
     expect(rule(".wb-param-table tbody:first-child tr:first-child > td:first-child")).toContain(
       "border-top-left-radius: var(--radius-md)",
     );

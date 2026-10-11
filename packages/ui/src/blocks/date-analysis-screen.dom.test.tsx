@@ -197,7 +197,7 @@ describe("DateAnalysisBlock — таблиця", () => {
     await settle();
 
     expect(screen.getByRole("heading", { name: "Результат аналізу:" })).toBeTruthy();
-    expect(screen.getByRole("table")).toBeTruthy();
+    expect(screen.getByRole("columnheader", { name: /03\.03\.1980/ })).toBeTruthy();
     expect(screen.getByText("03.03.1980")).toBeTruthy();
     expect(screen.getByText("Західна астрологія")).toBeTruthy();
     expect(screen.getByText("Риби")).toBeTruthy();
@@ -319,6 +319,38 @@ describe("DateAnalysisBlock — таблиця", () => {
     await settle();
 
     expect(screen.getAllByText("03.03.1980")).toHaveLength(1);
+  });
+
+  it("шапка стоїть окремою смугою — поза тим, що гортається вбік", async () => {
+    window.history.replaceState(
+      {},
+      "",
+      "/dateanalysis/analysis?dates=1980-03-03,2004-10-07&sys=western&p=sunSign",
+    );
+    stubApi({
+      matrix: {
+        "1980-03-03": { western: { sunSign: "Риби" } },
+        "2004-10-07": { western: { sunSign: "Терези" } },
+      },
+    });
+    const { container } = render(<DateAnalysisBlock {...props()} />);
+    await settle();
+
+    // Закріпленому всередині смуги скролу триматись ні за що: воно липне до
+    // краю того, хто скролить, а тіло гортає себе вбік (AGENTS.md §3, §27
+    // `DESIGN_SYSTEM`) — тож шапка живе над тілом, а не в ньому.
+    const head = container.querySelector(".wb-param-head thead");
+    const scroll = container.querySelector(".wb-param-scroll");
+    expect(head).not.toBeNull();
+    expect(scroll).not.toBeNull();
+    expect(scroll?.contains(head as Node)).toBe(false);
+
+    // Стовпці ті самі: інакше шапка стояла б над чужими стовпцями.
+    const columns = head?.querySelectorAll("th").length ?? 0;
+    const cells = scroll?.querySelector("tbody tr")?.children.length ?? 0;
+    // Підпис рядка плюс по стовпцю на кожну дату.
+    expect(columns).toBe(3);
+    expect(cells).toBe(columns);
   });
 
   it("рядок розкривається: пояснення параметра й трактування значення", async () => {
