@@ -56,6 +56,26 @@ describe("шапка таблиці лишається на видноті", () 
     expect(css).not.toContain(".wb-tabbar-layout .wb-param-table th");
   });
 
+  it("рамка тримається під хедером, поки сторінка гортається", () => {
+    // Платформа крутить документ, а хедер закріплений. Без цього рамка з
+    // шапкою їде під нього, і закріпленого підпису стовпця на екрані немає —
+    // саме так «шапка не закріплена». В адмінці панель скролить себе, тож
+    // правило обмежене платформою.
+    const sticky = rule(".wb-tabbar-layout .wb-param-frame:has(thead)");
+    expect(sticky).toContain("position: sticky");
+    expect(sticky).toContain("top: calc(var(--appbar-h) + var(--sp-2))");
+  });
+
+  it("рамка затуляє рядки, що проїжджають під нею, коли вона закріплена", () => {
+    expect(rule(".wb-param-frame:has(thead)")).toContain("background: var(--bg-page");
+  });
+
+  it("висота рамки лишає місце хрому кроку результатів", () => {
+    // Інакше гортає вже сторінка, і закріплена шапка заїжджає під хедер.
+    expect(rule(".wb-param-frame:has(thead)")).toContain("var(--date-analysis-chrome)");
+    expect(rule(".wb-block-date-analysis")).toContain("--date-analysis-chrome:");
+  });
+
   it("кутова комірка шапки лежить вище за решту шапки", () => {
     // Шапка має власне правило, тож `z-index` на ньому перебивало б наскрізний
     // стандарт (`components.css` §27), який рівно для цього тримає

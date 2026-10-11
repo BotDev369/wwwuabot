@@ -7,12 +7,13 @@
  * @module packages/ui/src/blocks/DateAnalysisBlock
  */
 
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import type { BlockComponentProps } from "@wwwuabot/shared/types/page-config";
 import { DATE_ANALYSIS_PATH, DATE_ANALYSIS_RESULT_PATH } from "@wwwuabot/shared/content";
 import { SystemsPicker } from "./systems-picker";
 import { analysisScreenTitle } from "./date-analysis/screen-title";
-import { AnalysisTable } from "./date-analysis/AnalysisTable";
+import { AnalysisTable, type AnalysisView } from "./date-analysis/AnalysisTable";
+import { AnalysisViewSwitch } from "./date-analysis/AnalysisViewSwitch";
 import { listFrom, readDates } from "./date-analysis/date-params";
 import { useAnalysisTable } from "./date-analysis/useAnalysisTable";
 
@@ -42,6 +43,7 @@ export function DateAnalysisBlock({ block }: BlockComponentProps) {
   );
 
   const table = useAnalysisTable(dates, systemIds, parameterKeys);
+  const [view, setView] = useState<AnalysisView>("params");
 
   if (dates.length === 0) {
     return (
@@ -86,13 +88,17 @@ export function DateAnalysisBlock({ block }: BlockComponentProps) {
       {table.loading && <p className="wb-text-sm wb-text-muted">Аналізуємо...</p>}
 
       {!table.error && (
-        <AnalysisTable
-          dates={dates}
-          rows={table.rows}
-          matrix={table.matrix}
-          details={table.details}
-          names={table.names}
-        />
+        <>
+          <AnalysisViewSwitch view={view} onChange={setView} />
+          <AnalysisTable
+            view={view}
+            dates={dates}
+            rows={table.rows}
+            matrix={table.matrix}
+            details={table.details}
+            names={table.names}
+          />
+        </>
       )}
 
       {/* Крок вибору — та сама адреса без `?sys=`: повернення не має губити дати. */}

@@ -228,6 +228,57 @@ describe("DateAnalysisBlock — таблиця", () => {
     expect(screen.getByText("Терези")).toBeTruthy();
   });
 
+  it("перемикач ставить дати рядками, а системи й параметри — стовпцями", async () => {
+    window.history.replaceState(
+      {},
+      "",
+      "/dateanalysis/analysis?dates=1980-03-03,2004-10-07&sys=western&p=sunSign",
+    );
+    stubApi({
+      matrix: {
+        "1980-03-03": { western: { sunSign: "Риби" } },
+        "2004-10-07": { western: { sunSign: "Терези" } },
+      },
+      names: { "2004-10-07": "Донька" },
+    });
+    const user = userEvent.setup();
+    render(<DateAnalysisBlock {...props()} />);
+    await settle();
+
+    // Типово рядками йдуть параметри: шапка підписує стовпець-дату.
+    expect(screen.getByRole("columnheader", { name: "Параметр" })).toBeTruthy();
+
+    await user.click(screen.getByRole("button", { name: "Дати" }));
+
+    // Дати стали рядками, а системи й параметри — стовпцями.
+    expect(screen.getByRole("columnheader", { name: "Дата" })).toBeTruthy();
+    expect(screen.queryByRole("columnheader", { name: "Параметр" })).toBeNull();
+    expect(screen.getByText("Знак Сонця")).toBeTruthy();
+  });
+
+  it("у вигляді «Дати» рядок дати розкриває трактування параметрів", async () => {
+    window.history.replaceState(
+      {},
+      "",
+      "/dateanalysis/analysis?dates=1980-03-03&sys=western&p=sunSign",
+    );
+    stubApi({
+      matrix: { "1980-03-03": { western: { sunSign: "Риби" } } },
+      details: {
+        "1980-03-03": { western: { sunSign: { about: "Сонце в знаку", meaning: "Дія, старт." } } },
+      },
+    });
+    const user = userEvent.setup();
+    render(<DateAnalysisBlock {...props()} />);
+    await settle();
+
+    await user.click(screen.getByRole("button", { name: "Дати" }));
+    expect(screen.queryByText(/Дія, старт\./)).toBeNull();
+
+    await user.click(screen.getByRole("button", { name: /03\.03\.1980/ }));
+    expect(screen.getByText(/Дія, старт\./)).toBeTruthy();
+  });
+
   it("рядки згруповано за системами: назва системи стоїть перед своїми параметрами", async () => {
     window.history.replaceState(
       {},
