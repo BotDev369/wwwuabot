@@ -1,11 +1,36 @@
-Закріплена «шапка» спрацювала. Плитка-кріплення тепер не містить обмеження знизу — таблиця виводиться на сторінку, зі загальним боковим скролом.
+# Супровід завершеного циклу оптимізації таблиці
 
-Що змінилось:
-- `packages/shared/src/styles/date-analysis.css` — прибрано обмеження max-height/overflow у таблиці, замінивши принцип «вертикальний скрол у контейнері» на «бічний скрол сторінки».
-- `packages/ui/src/blocks/date-analysis/usePinnedHead.ts` — нова логіка закріплення шапки під хедером (перемикачі + заголовки).
-- `packages/ui/src/blocks/date-analysis/AnalysisTable.tsx` — оновлений: нині таблиця не містить ані скролів у дуже вертикальному напрямку.
-- `packages/shared/src/styles/date-analysis.test.ts` — оновлено блок тестів.
-- `packages/ui/src/blocks/date-analysis-screen.dom.test.tsx` — виправлені тести під нові блоки.
-- `packages/ui/src/blocks/date-analysis/usePinnedHead.dom.test.tsx` — нова тест-файл для usePinnedHead.
+Цей документ — швидкий запис завершеного завдання, а не окремий документ-projekt. Опис покриває кінцевий стан таблиці після оптимізації, що було затребувано.
 
-Гейти пройшли: typecheck, lint, check:css, check:comments, check:docs, check:quality, test.
+## Що змінилось
+
+Таблиця аналізу не містить більше обмеження знизу; декілька рядків
+(перемикачі + шапка) залишаються під заголовком хедера. Дані
+виводяться на сторінку без додаткового обмеження. Бічний скрол
+зберігається, а закріплення шапки працює як окремий рядок.
+
+## Зміни
+
+• `packages/shared/src/styles/date-analysis.css` — прибрано обмеження
+  max-height / overflow у фреймі таблиці.
+• `packages/ui/src/blocks/date-analysis/usePinnedHead.ts` — нова
+  логіка закріплення шапки під хедером.
+• `packages/ui/src/blocks/date-analysis/AnalysisTable.tsx` —
+  оновлена, таблиця тепер не обмежує гортання.
+• `packages/shared/src/styles/date-analysis.test.ts` —
+  оновлено тест.
+• `packages/ui/src/blocks/date-analysis-screen.dom.test.tsx` —
+  виправлений під новий розклад.
+• `packages/ui/src/blocks/date-analysis/usePinnedHead.dom.test.tsx`
+  — новий DOM-тест.
+
+## Перевірка
+
+Точки контролю пройшли:
+`npm run typecheck`,
+`lint`,
+`npm run check:css`,
+`npm run check:comments`,
+`npm run check:docs`,
+`npm run check:quality`,
+`npm run test`.
