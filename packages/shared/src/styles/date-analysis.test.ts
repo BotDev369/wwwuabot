@@ -1,5 +1,5 @@
 /**
- * Сторож таблиць «Дати» (`date-analysis.css`): рамка, лінії та тло рядків.
+ * Сторож закріплених шапки й першого стовпця таблиць «Дати» (`date-analysis.css`).
  *
  * Читається як текст: розбору CSS у тестовому середовищі немає
  * (`environment: node`) — так само, як у `dates.test.ts`.
@@ -33,24 +33,40 @@ function rule(selector: string): string {
   return body(css.indexOf("{", found?.index ?? 0));
 }
 
-describe("рамка таблиці гортає лише вбік", () => {
-  it("висота не обмежена — гортає сторінка, а не рамка", () => {
-    // Два вертикальні скроли (у рамці й на сторінці) робили з читання хаос:
-    // людина тягла не той, що треба. Тож рамка висоту не тримає.
+describe("шапка і перший стовпець закріплені одночасно", () => {
+  it("рамка скролить себе в обох осях — інакше закріплене прив'язане ні до чого", () => {
+    // Закріплене тримається краю того, хто скролить. `overflow-x: auto` робить
+    // контейнер скролу й по осі блоку, тож закріплена в ній шапка їхала б зі
+    // сторінкою. Щоб шапка й перший стовпець трималися одночасно, скролити
+    // мусить сама рамка — в обох осях.
     const frame = rule(".wb-param-frame:has(thead)");
-    expect(frame).toContain("overflow-x: auto");
-    expect(frame).not.toContain("max-height");
-    expect(frame).not.toContain("overflow: auto");
+    expect(frame).toContain("overflow: auto");
+    expect(frame).toContain("max-height");
 
     // Вітрина систем шапки не має — вона лишається потоком сторінки, а не ще
     // однією смугою скролу навколо акордеонів.
     expect(rule(".wb-param-frame")).not.toContain("overflow");
   });
 
-  it("рамка не липне до хедера: сторінка гортає її як звичайний вміст", () => {
-    // Поки рамка тримала власний вертикальний скрол, її доводилося
-    // закріплювати під хедером — тепер це не потрібно, і правило зайве.
-    expect(css).not.toContain(".wb-tabbar-layout .wb-param-frame");
+  it("висота рамки лишає місце хедеру, смузі й підпису кроку", () => {
+    // Інакше гортає вже сторінка, і закріплена шапка заїжджає під хедер.
+    const frame = rule(".wb-param-frame:has(thead)");
+    expect(frame).toContain("var(--appbar-h)");
+    expect(frame).toContain("var(--tab-bar-h)");
+    expect(frame).toContain("var(--date-analysis-chrome)");
+    expect(rule(".wb-block-date-analysis")).toContain("--date-analysis-chrome:");
+  });
+
+  it("рамка тримається під хедером, поки сторінка гортається", () => {
+    // Платформа крутить документ, а хедер закріплений. Без цього рамка з
+    // шапкою їде під нього, і закріпленого підпису стовпця на екрані немає.
+    const sticky = rule(".wb-tabbar-layout .wb-param-frame:has(thead)");
+    expect(sticky).toContain("position: sticky");
+    expect(sticky).toContain("top: calc(var(--appbar-h) + var(--sp-2))");
+  });
+
+  it("рамка затуляє рядки, що проїжджають під нею, коли вона закріплена", () => {
+    expect(rule(".wb-param-frame:has(thead)")).toContain("background: var(--bg-page");
   });
 
   it("кутова комірка шапки лежить вище за решту шапки", () => {
@@ -111,7 +127,7 @@ describe("рамка таблиці гортає лише вбік", () => {
     expect(rule(".wb-block-date-analysis__title")).toContain("margin-bottom: var(--sp-4)");
   });
 
-  it("кути шапки повторюють рамку — її більше не обрізає `overflow`", () => {
+  it("кути шапки повторюють заокруглення рамки", () => {
     // Прямокутник шапки з непрозорим тлом вилазив за заокруглені кути рамки.
     expect(rule(".wb-param-table thead th:first-child")).toContain("border-top-left-radius");
     expect(rule(".wb-param-table thead th:last-child")).toContain("border-top-right-radius");
