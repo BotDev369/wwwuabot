@@ -100,15 +100,6 @@ export function DateAnalysisBlock({ block }: BlockComponentProps) {
           />
         </>
       )}
-
-      {/* Крок вибору — та сама адреса без `?sys=`: повернення не має губити дати. */}
-      <a
-        className="wb-btn wb-btn-secondary"
-        href={`${targetUrl}?dates=${encodeURIComponent(values)}`}
-        style={{ marginTop: "var(--sp-4)" }}
-      >
-        Змінити системи
-      </a>
     </div>
   );
 }

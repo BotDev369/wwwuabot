@@ -166,9 +166,6 @@ function DatesRows({
       {dates.map((date) => {
         const rowId = `date:${date}`;
         const open = isExpanded(rowId);
-        const notes = rows
-          .map((row) => ({ row, meaning: details[date]?.[row.systemId]?.[row.key]?.meaning }))
-          .filter((entry) => entry.meaning);
         return (
           <Fragment key={date}>
             <tr>
@@ -195,14 +192,14 @@ function DatesRows({
             </tr>
             {open && (
               <tr className="wb-param-detail">
-                <td colSpan={rows.length + 1}>
-                  {notes.length === 0 && <p className="wb-param-note">—</p>}
-                  {notes.map(({ row, meaning }) => (
-                    <p key={`${row.systemId}:${row.key}`} className="wb-param-note">
-                      <span className="wb-param-value">{row.label}</span> — {meaning}
-                    </p>
-                  ))}
-                </td>
+                {/* Трактування стоїть у стовпці свого параметра, як і у вигляді
+                    «Параметри»: клітинка під підписом дати порожня. */}
+                <td />
+                {rows.map((row) => (
+                  <td key={`${row.systemId}:${row.key}`}>
+                    {details[date]?.[row.systemId]?.[row.key]?.meaning ?? "—"}
+                  </td>
+                ))}
               </tr>
             )}
           </Fragment>

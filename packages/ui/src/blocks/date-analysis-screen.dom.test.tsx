@@ -11,7 +11,7 @@
  */
 
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { act, render, screen } from "@testing-library/react";
+import { act, render, screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import type { BlockComponentProps } from "@wwwuabot/shared/types/page-config";
 import { DateAnalysisBlock } from "./DateAnalysisBlock";
@@ -256,16 +256,21 @@ describe("DateAnalysisBlock — таблиця", () => {
     expect(screen.getByText("Знак Сонця")).toBeTruthy();
   });
 
-  it("у вигляді «Дати» рядок дати розкриває трактування параметрів", async () => {
+  it("у вигляді «Дати» трактування стоїть у стовпці свого параметра", async () => {
     window.history.replaceState(
       {},
       "",
-      "/dateanalysis/analysis?dates=1980-03-03&sys=western&p=sunSign",
+      "/dateanalysis/analysis?dates=1980-03-03&sys=western&p=sunSign,element",
     );
     stubApi({
-      matrix: { "1980-03-03": { western: { sunSign: "Риби" } } },
+      matrix: { "1980-03-03": { western: { sunSign: "Риби", element: "Вода" } } },
       details: {
-        "1980-03-03": { western: { sunSign: { about: "Сонце в знаку", meaning: "Дія, старт." } } },
+        "1980-03-03": {
+          western: {
+            sunSign: { about: "Сонце в знаку", meaning: "Дія, старт." },
+            element: { about: "Стихія", meaning: "Чутливість." },
+          },
+        },
       },
     });
     const user = userEvent.setup();
@@ -273,10 +278,15 @@ describe("DateAnalysisBlock — таблиця", () => {
     await settle();
 
     await user.click(screen.getByRole("button", { name: "Дати" }));
-    expect(screen.queryByText(/Дія, старт\./)).toBeNull();
+    expect(screen.queryByText("Дія, старт.")).toBeNull();
 
     await user.click(screen.getByRole("button", { name: /03\.03\.1980/ }));
-    expect(screen.getByText(/Дія, старт\./)).toBeTruthy();
+
+    // Кожна комірка несе своє значення, як і у вигляді «Параметри»: два
+    // трактування лежать у спільному рядку, а не одним полотном.
+    const detail = screen.getByText("Дія, старт.").closest("tr");
+    expect(detail).not.toBeNull();
+    expect(within(detail as HTMLElement).getByText("Чутливість.")).toBeTruthy();
   });
 
   it("рядки згруповано за системами: назва системи стоїть перед своїми параметрами", async () => {
@@ -357,7 +367,7 @@ describe("DateAnalysisBlock — таблиця", () => {
     expect(screen.queryByRole("table")).toBeNull();
   });
 
-  it("«Змінити системи» веде на вибір і не губить дати", async () => {
+  it("не показує кнопки «Змінити системи» — результат лишається чистим", async () => {
     window.history.replaceState(
       {},
       "",
@@ -367,8 +377,7 @@ describe("DateAnalysisBlock — таблиця", () => {
     render(<DateAnalysisBlock {...props()} />);
     await settle();
 
-    const link = screen.getByRole("link", { name: "Змінити системи" });
-    expect(link.getAttribute("href")).toBe("/dateanalysis/analysis?dates=1980-03-03%2C2004-10-07");
+    expect(screen.queryByRole("link", { name: "Змінити системи" })).toBeNull();
   });
 });
 
