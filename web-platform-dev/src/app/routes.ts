@@ -283,6 +283,13 @@ export const CONTACTS_ROUTE = "contacts";
 export const CONTACTS_PATH = `/${CONTACTS_ROUTE}`;
 
 /**
+ * Сервіси — хаб платформи: список екранів, які вже працюють. Адреса власна, а
+ * не `slug`: хаб — це список входів, а не сторінка контенту (AGENTS.md §7).
+ */
+export const SERVICES_ROUTE = "services";
+export const SERVICES_PATH = `/${SERVICES_ROUTE}`;
+
+/**
  * «Розвиток» — самооцінка, власні дані людини, не рядок `scenarios`.
  *
  * **Адреса розділу й адреса проходження — різні речі:** `/assessments`

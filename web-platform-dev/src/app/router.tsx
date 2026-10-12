@@ -41,6 +41,7 @@ import {
   SHOP_PRODUCTS_ROUTE,
   PROFILE_ROUTE,
   PROFILE_PATH,
+  SERVICES_ROUTE,
   SPACE_GAME_ROUTE,
   SPACE_ROUTE,
   SPACE_USER_ROUTE,
@@ -53,6 +54,7 @@ import { NotesPage } from "@/pages/NotesPage";
 import { ProfileAccountPage } from "@/pages/ProfileAccountPage";
 import { ProfileOrdersPage } from "@/pages/ProfileOrdersPage";
 import { ProfilePage } from "@/pages/ProfilePage";
+import { ServicesPage } from "@/pages/ServicesPage";
 import { ScenarioPage } from "@/pages/ScenarioPage";
 import { SpaceGamePage } from "@/pages/games/SpaceGamePage";
 import { SpacePage } from "@/pages/SpacePage";
@@ -74,6 +76,8 @@ export const router = createBrowserRouter([
       // Профіль — не контент, а дані користувача: хаб із рядком акаунта й
       // розділами платформи.
       { path: PROFILE_ROUTE, element: <ProfilePage /> },
+      // Сервіси — хаб платформи: список екранів, які вже працюють.
+      { path: SERVICES_ROUTE, element: <ServicesPage /> },
       { path: FAVORITES_ROUTE, element: <FavoritesPage /> },
       // Акаунт — окрема адреса під хабу: платформа й Telegram окремими
       // розділами, а не одним суцільним списком.

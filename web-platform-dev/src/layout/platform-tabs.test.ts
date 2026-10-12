@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { buildTabBarItems } from "@wwwuabot/ui/nav";
-import { FAVORITES_PATH, PROFILE_PATH, SPACE_PATH } from "../app/routes";
+import { FAVORITES_PATH, PROFILE_ACCOUNT_PATH, SERVICES_PATH } from "../app/routes";
 import { platformSectionPath, toShellTabs, withUnreadBadge } from "./platform-tabs";
 
 function items(pathname = "/") {
@@ -19,19 +19,24 @@ function activeKeys(pathname: string) {
 }
 
 describe("три розділи платформи", () => {
-  it("I, Обране, You — рівні слоти з іконкою та підписом", () => {
+  it("Акаунт, Обране, Сервіси — рівні слоти з іконкою та адресою", () => {
     const tabs = toShellTabs();
-    expect(tabs.map((tab) => tab.label)).toEqual(["I", "Обране", "You"]);
-    expect(tabs.map((tab) => tab.href)).toEqual([PROFILE_PATH, FAVORITES_PATH, SPACE_PATH]);
+    expect(tabs.map((tab) => tab.label)).toEqual(["Акаунт", "Обране", "Сервіси"]);
+    expect(tabs.map((tab) => tab.href)).toEqual([
+      PROFILE_ACCOUNT_PATH,
+      FAVORITES_PATH,
+      SERVICES_PATH,
+    ]);
     expect(tabs.every((tab) => !tab.primary && tab.icon && tab.href)).toBe(true);
     expect(tabs[1].icon).toBe("thumbs-up");
-    expect(tabs[2].icon).toBe("users");
+    expect(tabs[2].icon).toBe("grid");
   });
 
-  it("власні екрани підсвічують I, а чужий контент — You", () => {
+  it("власні екрани підсвічують «Акаунт», сервіси — «Сервіси»", () => {
     const own = [
-      "/",
+      "/profile",
       "/profile/theme",
+      "/profile/account",
       "/create",
       "/notes",
       "/contacts",
@@ -40,14 +45,14 @@ describe("три розділи платформи", () => {
       "/dateanalysis/1980",
     ];
     for (const path of own) expect(activeKeys(path), path).toEqual(["profile"]);
-    for (const path of ["/space", "/space/u/7", "/public-card"]) {
-      expect(activeKeys(path)).toEqual(["space"]);
-    }
     expect(activeKeys(FAVORITES_PATH)).toEqual(["favorites"]);
-    expect(platformSectionPath("/pages-other")).toBe(SPACE_PATH);
+    expect(activeKeys(SERVICES_PATH)).toEqual(["services"]);
+    // Сторінка контенту за `slug` не належить жодному пункту смуги.
+    expect(activeKeys("/public-card")).toEqual([]);
+    expect(platformSectionPath("/public-card")).toBe("/public-card");
   });
 
-  it("непрочитані повідомлення позначають I", () => {
+  it("непрочитані повідомлення позначають «Акаунт»", () => {
     const tabs = withUnreadBadge(items(), 4);
     expect(tabs.filter((tab) => tab.badge !== undefined).map((tab) => tab.key)).toEqual([
       "profile",

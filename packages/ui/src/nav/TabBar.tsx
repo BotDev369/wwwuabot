@@ -28,7 +28,8 @@ function TabBarButton({ item }: { item: TabBarItem }): ReactElement {
   // Вибраний розділ показує ЗАЛИТИЙ варіант іконки, якщо оболонка його дала:
   // це той самий знак, тож смуга не «сіпається» при переході.
   const icon = item.active && item.iconActive ? item.iconActive : item.icon;
-  // «+» — центральний слот дії: підпису не має, тож він іде в aria-label.
+  // Смуга — **самі знаки**: підписів під іконками немає, тож назва розділу
+  // лишається в aria-label і читається скрінрідером.
   const unread = item.badge ?? 0;
   const content = (
     <>
@@ -39,7 +40,6 @@ function TabBarButton({ item }: { item: TabBarItem }): ReactElement {
             **лише** коли є що показати: нуль на іконці читався б як «щось є». */}
         {unread > 0 && <span className="wb-tabbar-badge">{unread}</span>}
       </span>
-      {item.primary ? null : <span className="wb-tabbar-label">{item.label}</span>}
     </>
   );
 

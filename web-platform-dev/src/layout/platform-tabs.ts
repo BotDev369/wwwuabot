@@ -7,8 +7,9 @@ import {
   MESSAGES_PATH,
   NOTES_PATH,
   PAGES_PATH,
+  PROFILE_ACCOUNT_PATH,
   PROFILE_PATH,
-  SPACE_PATH,
+  SERVICES_PATH,
 } from "../app/routes";
 
 export interface PlatformTab extends Omit<ShellTab, "href"> {
@@ -19,10 +20,23 @@ export interface PlatformTab extends Omit<ShellTab, "href"> {
 /** Повідомлення належать I, тож його слот несе число непрочитаних. */
 export const MESSAGES_TAB_KEY = "profile";
 
+/**
+ * Три пункти смуги — **самі знаки**: підписів під іконками немає, а `label`
+ * лишається лише назвою для скрінрідера (`aria-label`).
+ *
+ * «Я» веде на **акаунт**, а не на хаб: за знаком людини стоїть людина, а
+ * хаб — це список, який тепер показує «Сервіси».
+ */
 export const PLATFORM_TABS: readonly PlatformTab[] = [
-  { key: "profile", label: "I", icon: "user", iconActive: "user-solid", to: PROFILE_PATH },
+  {
+    key: "profile",
+    label: "Акаунт",
+    icon: "user",
+    iconActive: "user-solid",
+    to: PROFILE_ACCOUNT_PATH,
+  },
   { key: "favorites", label: "Обране", icon: "thumbs-up", to: FAVORITES_PATH },
-  { key: "space", label: "You", icon: "users", iconActive: "users-solid", to: SPACE_PATH },
+  { key: "services", label: "Сервіси", icon: "grid", to: SERVICES_PATH },
 ];
 
 export function withUnreadBadge(tabs: readonly TabBarItem[], unread: number): TabBarItem[] {
@@ -41,6 +55,8 @@ export function toShellTabs(tabs: readonly PlatformTab[] = PLATFORM_TABS): Shell
 export function platformSectionPath(pathname: string): string {
   if (pathname === FAVORITES_PATH || pathname.startsWith(`${FAVORITES_PATH}/`))
     return FAVORITES_PATH;
+  if (pathname === SERVICES_PATH || pathname.startsWith(`${SERVICES_PATH}/`))
+    return SERVICES_PATH;
   const own = [
     "/",
     PROFILE_PATH,
@@ -52,7 +68,11 @@ export function platformSectionPath(pathname: string): string {
     DATE_ANALYSIS_PATH,
   ];
   if (own.some((path) => pathname === path || (path !== "/" && pathname.startsWith(`${path}/`)))) {
-    return PROFILE_PATH;
+    // Саме адреса пункту, а не хабу: пункт «Я» веде на акаунт, тож підсвітити
+    // його може лише та адреса.
+    return PROFILE_ACCOUNT_PATH;
   }
-  return SPACE_PATH;
+  // Сторінка контенту за `slug` не належить жодному пункту — і не мусить його
+  // підсвічувати: з трьох пунктів жоден не є «читати чуже».
+  return pathname;
 }

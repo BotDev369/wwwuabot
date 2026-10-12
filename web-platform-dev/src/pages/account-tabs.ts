@@ -24,7 +24,9 @@ export const ACCOUNT_TABS = [
 export type AccountTab = (typeof ACCOUNT_TABS)[number]["key"];
 
 /**
- * Розділ, який відкривається першим. Платформа — бо це **наш** акаунт: саме в
- * ньому людина обирає ім'я, яким її знають у продукті; Telegram лишається як є.
+ * Розділ, який відкривається першим — **Telegram**.
+ *
+ * На акаунт приходять із футера («Я»), а не за правкою імені: спершу людина
+ * бачить те, що в неї вже є (дані Telegram), і вже потім — те, що обирає сама.
  */
-export const DEFAULT_ACCOUNT_TAB: AccountTab = "platform";
+export const DEFAULT_ACCOUNT_TAB: AccountTab = "telegram";
