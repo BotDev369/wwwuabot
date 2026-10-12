@@ -55,8 +55,7 @@ export function toShellTabs(tabs: readonly PlatformTab[] = PLATFORM_TABS): Shell
 export function platformSectionPath(pathname: string): string {
   if (pathname === FAVORITES_PATH || pathname.startsWith(`${FAVORITES_PATH}/`))
     return FAVORITES_PATH;
-  if (pathname === SERVICES_PATH || pathname.startsWith(`${SERVICES_PATH}/`))
-    return SERVICES_PATH;
+  if (pathname === SERVICES_PATH || pathname.startsWith(`${SERVICES_PATH}/`)) return SERVICES_PATH;
   const own = [
     "/",
     PROFILE_PATH,
