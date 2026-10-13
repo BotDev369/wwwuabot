@@ -1,18 +1,19 @@
 /**
  * Сторож сайдбара: **він один**.
  *
- * Сайдбарів у продукті два місця (меню адмінки й панель розділів Простору),
- * і кожне колись мало свою мірку рядка: адмінка — пункт 8×10px із підписом
- * 13px, Простір — `!important` поверх стилю, а `android.css` переписував
- * геометрію пункту собі (`padding` 12px 14px проти 12px 16px, `min-height` 44
- * проти 48). Одна деталь із двома копіями мірок око читає як дві деталі.
+ * Сайдбар у продукті **один** — меню адмінки, але раніше їх було два (друге —
+ * панель розділів Простору), і кожне мало свою мірку рядка: адмінка — пункт
+ * 8×10px із підписом 13px, панель — `!important` поверх стилю, а `android.css`
+ * переписував геометрію пункту собі (`padding` 12px 14px проти 12px 16px,
+ * `min-height` 44 проти 48). Одна деталь із двома копіями мірок око читає як дві
+ * деталі — тож сторожі лишаються, хоч місце тепер одне.
  *
  * Кожне з цих правил ламається **мовчки**: новий сайдбар рендериться своєю
  * розміткою й виглядає майже так само, а число повертається в бренд одним
  * рядком. Тому тут сторожі, а не коментар.
  *
  * CSS читається як текст: розбору CSS у тестовому середовищі немає
- * (`environment: node`), так само зроблено в `space.test.ts` і `chrome.test.ts`.
+ * (`environment: node`), так само зроблено в `chrome.test.ts`.
  *
  * @module packages/shared/src/styles/sidebar.test
  */
@@ -115,7 +116,6 @@ const SHEET = (name: string): string => `packages/shared/src/styles/${name}`;
 
 const TOKENS = topLevel(css(SHEET("tokens.css")));
 const NAV = topLevel(css(SHEET("app-chrome.css")));
-const SPACE_NAV = topLevel(css(SHEET("space-nav.css")));
 const THEME_PAGES = topLevel(css(SHEET("theme-pages.css")));
 const STYLES = ["android.css"].map((name) => css(SHEET(name)));
 
@@ -123,7 +123,6 @@ const STYLES = ["android.css"].map((name) => css(SHEET(name)));
 const SITES = [
   "web-admin-dev/src/layout/Sidebar/Sidebar.tsx",
   "web-admin-dev/src/layout/Sidebar/SidebarNav.tsx",
-  "web-platform-dev/src/pages/SpaceNav.tsx",
 ];
 
 describe("сайдбар один — і мірки в нього одні", () => {
@@ -133,7 +132,7 @@ describe("сайдбар один — і мірки в нього одні", () 
     expect(rule(TOKENS, ":root")?.body).toContain("--sidebar-item-h: 44px");
     expect(rule(TOKENS, ":root")?.body).toContain("--sidebar-pad: var(--sp-2)");
 
-    for (const file of ["app-chrome.css", "space-nav.css", "space.css", "theme-pages.css"]) {
+    for (const file of ["app-chrome.css", "theme-pages.css"]) {
       // Читати можна (`var(--sidebar-item-h)`), оголошувати — ні.
       expect(css(SHEET(file)), file).not.toMatch(/--sidebar-item-h\s*:/);
     }
@@ -151,7 +150,11 @@ describe("сайдбар один — і мірки в нього одні", () 
     // Берег пункту й берег списку — та сама цифра: разом 16px, лінія вмісту.
     expect(rule(NAV, ".wb-nav-menu")?.body).toContain("padding: var(--sidebar-pad)");
     // `!important` у сайдбарі означає, що хтось ще пише ті самі мірки.
-    expect(SPACE_NAV).not.toContain("!important");
+    const navRules = rules(NAV).filter((entry) => entry.selector.startsWith(".wb-nav"));
+    expect(navRules.length, "правила сайдбара мусять існувати").toBeGreaterThan(0);
+    for (const entry of navRules) {
+      expect(entry.body, entry.selector).not.toContain("!important");
+    }
   });
 
   it("«тут ти» — акцент і штрих, а не плишка", () => {
@@ -167,9 +170,6 @@ describe("сайдбар один — і мірки в нього одні", () 
     // Штрих — друга половина того самого слова: у смузі знаків колір і штрих і
     // є всім знаком.
     expect(rule(NAV, ".wb-nav-item--active .wb-nav-icon svg")?.body).toContain("stroke-width: 2.4");
-    // І стан один на обидва вигляди панели: своїх правил про «тут ти» в місці
-    // панели не лишилось (доти в розгорнутій була плишка, у смузі — колір).
-    expect(SPACE_NAV, "стан панели — загальний").not.toContain("wb-nav-item--active");
     for (const brand of STYLES) {
       expect(brand).not.toContain(".wb-nav-item {");
       expect(brand).not.toContain(".wb-nav-item--active");
@@ -198,9 +198,6 @@ describe("сайдбари рендерить один компонент", () =
       expect(file, path).toContain("@wwwuabot/ui/nav");
       expect(file, path).toContain("SideBar");
     }
-    // Панель Простору зводить свою розмітку **до даних**: склад
-    // пунктів, а не знаки й підписи вручну.
-    expect(source("web-platform-dev/src/pages/SpaceNav.tsx")).toContain("SPACE_TABS");
   });
 
   it("другого вигляду рядка не існує — власні класи розділів теми зняті", () => {
@@ -242,7 +239,7 @@ describe("сайдбар-поверхня: ширина, кут і вихід", 
     expect(rule(TOKENS, ":root")?.body).toContain("--sidebar-w-vw: 80vw");
     expect(TOKENS.match(/--sidebar-w-vw\s*:/g)?.length, "оголошень мусить бути одне").toBe(1);
 
-    for (const name of ["drawer.css", "space-nav.css"]) {
+    for (const name of ["drawer.css"]) {
       expect(css(SHEET(name)), name).toContain("width: var(--sidebar-w-vw)");
       // Свого числа під ту саму ширину більше не існує — ні піксельного, ні
       // відсоткового (друга копія й розводила два сайдбари).
@@ -254,16 +251,10 @@ describe("сайдбар-поверхня: ширина, кут і вихід", 
   it("заокруглення в сайдбара немає — ні в потоці, ні поверхнею", () => {
     // Сайдбар — **площина екрана**, а не картка на ньому: скруглений кут читався
     // як чужий шматок поверхні, приклеєний до берега.
+    // Кут — у **коробки** сайдбара, а не в бренду: коробка мусить іти без
+    // `border-radius`, а внутрішні елементи (тумблер) свій малий радіус мають.
     expect(rule(NAV, ".wb-nav")?.body).not.toContain("border-radius");
-
-    // Коробки `.wb-space-nav` — дві (місце в потоці й поверхня на телефоні),
-    // тож питаємо **обидві**: радіус повертається саме в другу.
-    const boxes = rules(SPACE_NAV).filter((entry) => entry.selector === ".wb-space-nav");
-    expect(boxes.length, "коробки панелі мусять існувати").toBeGreaterThan(0);
-    for (const box of boxes) expect(box.body).not.toContain("border-radius: var(");
-    for (const body of mediaBodies(css(SHEET("space-nav.css")))) {
-      expect(body, "кут не позичають у бренду").not.toContain("border-radius: var(--radius");
-    }
+    expect(rule(NAV, ".wb-nav")?.body).not.toContain("radius");
   });
 
   it("кожен сайдбар-поверхня закриває себе сам — кнопкою в собі", () => {
@@ -291,11 +282,7 @@ describe("сайдбар-поверхня: ширина, кут і вихід", 
     // закривають, і один гліф на дві дії змушував читати підпис (правило 26).
     expect(component).toContain('<Icon name="close"');
 
-    // І дію їй передають **обидва** місця, де сайдбар — поверхня: меню адмінки
-    // та панель Простору. Третє таке місце (сайдбар конструктора) має свою
-    // кнопку в `PageRenderer` — `page-sidebar-close`.
-    for (const path of [SITES[0], SITES[2]]) {
-      expect(source(...path.split("/")), path).toContain("onClose");
-    }
+    // І дію їй передає те місце, де сайдбар — поверхня: меню адмінки.
+    expect(source(...SITES[0].split("/")), SITES[0]).toContain("onClose");
   });
 });

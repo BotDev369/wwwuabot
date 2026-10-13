@@ -16,8 +16,8 @@ export interface PlatformTab extends Omit<ShellTab, "href"> {
   to?: string;
 }
 
-/** Повідомлення належать I, тож його слот несе число непрочитаних. */
-export const MESSAGES_TAB_KEY = "profile";
+/** Непрочитані належать «Акаунту», тож число несе саме його слот. */
+export const UNREAD_TAB_KEY = "account";
 
 /**
  * Три пункти смуги — **самі знаки**: підписів під іконками немає, а `label`
@@ -28,7 +28,7 @@ export const MESSAGES_TAB_KEY = "profile";
  */
 export const PLATFORM_TABS: readonly PlatformTab[] = [
   {
-    key: "profile",
+    key: "account",
     label: "Акаунт",
     icon: "user",
     iconActive: "user-solid",
@@ -40,7 +40,7 @@ export const PLATFORM_TABS: readonly PlatformTab[] = [
 
 export function withUnreadBadge(tabs: readonly TabBarItem[], unread: number): TabBarItem[] {
   if (!Number.isFinite(unread) || unread <= 0) return [...tabs];
-  return tabs.map((tab) => (tab.key === MESSAGES_TAB_KEY ? { ...tab, badge: unread } : tab));
+  return tabs.map((tab) => (tab.key === UNREAD_TAB_KEY ? { ...tab, badge: unread } : tab));
 }
 
 export function toShellTabs(tabs: readonly PlatformTab[] = PLATFORM_TABS): ShellTab[] {

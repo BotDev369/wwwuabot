@@ -62,7 +62,7 @@ export interface AdDeleteResponse {
   error?: string;
 }
 
-/** Відповідь `GET /api/space/ads`: чужа дошка — лише опубліковане. */
+/** Відповідь `GET /api/public/ads`: чужа дошка — лише опубліковане. */
 export interface AdBoardResponse {
   ok: boolean;
   ads: Ad[];

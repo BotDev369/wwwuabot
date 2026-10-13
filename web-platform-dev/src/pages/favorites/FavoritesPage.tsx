@@ -24,7 +24,7 @@ export function FavoritesPage() {
             <Icon name="thumbs-up" size={32} />
           </span>
           <p className="wb-empty-text">Тут буде все, що ви вподобали.</p>
-          <p className="wb-text-muted">Натисніть «Лайк» на сторінці або в публічному профілі.</p>
+          <p className="wb-text-muted">Натисніть «Лайк» на сторінці.</p>
         </div>
       )}
       {!favorites.loading &&

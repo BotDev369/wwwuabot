@@ -17,10 +17,10 @@
 import { useCallback, useEffect, useState } from "react";
 import type { AdDraft } from "@wwwuabot/shared/ads";
 import { adsApi } from "@/shared/api/ads.api";
-import { composeAds, type SpaceAd } from "./ads-list";
+import { composeAds, type PublicAd } from "./ads-list";
 
 export interface AdsState {
-  items: SpaceAd[];
+  items: PublicAd[];
   loading: boolean;
   error: string | null;
 }

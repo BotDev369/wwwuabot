@@ -20,10 +20,10 @@ import { apiFetch, apiUpload } from "./client";
 export const shopApi = createShopApi(apiFetch, apiUpload, {
   products: "/api/user/shop/products",
   media: "/api/user/shop/media",
-  catalog: "/api/space/shop/products",
+  catalog: "/api/public/shop/products",
   orders: "/api/user/shop/orders",
   orderStatus: "/api/user/shop/orders/status",
   // Замовляють **за адресою** магазину: номера покупцеві ніхто не казав.
-  placeOrder: "/api/space/shop/orders",
+  placeOrder: "/api/public/shop/orders",
   statuses: "/api/user/shop/statuses",
 });

@@ -16,10 +16,10 @@ import { createShopApi, type ShopApiPaths } from "./api";
 const PATHS: ShopApiPaths = {
   products: "/api/user/shop/products",
   media: "/api/user/shop/media",
-  catalog: "/api/space/shop/products",
+  catalog: "/api/public/shop/products",
   orders: "/api/user/shop/orders",
   orderStatus: "/api/user/shop/orders/status",
-  placeOrder: "/api/space/shop/orders",
+  placeOrder: "/api/public/shop/orders",
   statuses: "/api/user/shop/statuses",
 };
 
@@ -114,7 +114,7 @@ describe("номер магазину — завжди в адресі", () => {
 
     await client.catalog("kava");
 
-    expect(calls[0].path).toBe("/api/space/shop/products?shop=kava");
+    expect(calls[0].path).toBe("/api/public/shop/products?shop=kava");
   });
 
   it("замовити можна лише за адресою — і позиції без ціни", async () => {
@@ -126,7 +126,7 @@ describe("номер магазину — завжди в адресі", () => {
       note: "",
     });
 
-    expect(calls[0].path).toBe("/api/space/shop/orders?shop=kava");
+    expect(calls[0].path).toBe("/api/public/shop/orders?shop=kava");
     expect(bodyOf(calls[0])).toEqual({
       items: [{ productId: 1, qty: 2 }],
       contact: { name: "Ім'я", phone: "+380" },

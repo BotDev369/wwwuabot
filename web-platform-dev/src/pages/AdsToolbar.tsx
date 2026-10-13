@@ -12,7 +12,7 @@
  * клітинка: слово лишається в `aria-label`, бо тло в ряду виборів означає
  * **дію**, і вона там рівно одна (правило 18).
  *
- * @module web-platform-dev/src/pages/SpaceAdsToolbar
+ * @module web-platform-dev/src/pages/AdsToolbar
  */
 
 import type { ReactElement } from "react";
@@ -20,13 +20,13 @@ import { AD_KIND_LABELS, adKindLabel } from "@wwwuabot/shared/ads";
 import { CollectionToolbar, type ToolbarPicker } from "@wwwuabot/ui/collection";
 import type { MenuItem } from "@wwwuabot/ui/menu";
 import { ADS_WHOSE_OPTIONS, adsChips, adsKinds, type AdsView } from "./ads-view";
-import type { SpaceAd } from "./ads-list";
+import type { PublicAd } from "./ads-list";
 
 /** Знаки виборів — різні навмисно: однаковий не сказав би, чим різняться дії. */
 const KIND = { key: "kind", label: "Вид оголошення", icon: "tag" } as const;
 const WHOSE = { key: "whose", label: "Чиї оголошення", icon: "user" } as const;
 
-export function SpaceAdsToolbar({
+export function AdsToolbar({
   items,
   view,
   onChange,
@@ -34,7 +34,7 @@ export function SpaceAdsToolbar({
   onCompose,
 }: {
   /** Увесь список дошки — з нього беруться види, які справді є. */
-  items: readonly SpaceAd[];
+  items: readonly PublicAd[];
   view: AdsView;
   onChange: (patch: Partial<AdsView>) => void;
   shown: number;

@@ -16,11 +16,11 @@ import type { ShellTab } from "./types";
 const TABS: readonly ShellTab[] = [
   { key: "home", label: "Головна", icon: "home", iconActive: "home-solid", href: "/" },
   {
-    key: "space",
-    label: "Простір",
+    key: "services",
+    label: "Сервіси",
     icon: "users",
     iconActive: "users-solid",
-    href: "/space",
+    href: "/services",
   },
   { key: "create", label: "Створити", icon: "plus", primary: true },
   { key: "shop", label: "GalyaShop", icon: "shop", href: "/galyashop" },
@@ -41,17 +41,17 @@ describe("TabBar", () => {
   it("рендерить усі слоти, підписує навігацію й позначає активний пункт", () => {
     const items = buildTabBarItems({
       tabs: TABS,
-      pathname: "/space",
+      pathname: "/services",
       navigate: vi.fn(),
       onPlaceholder: vi.fn(),
     });
     const html = renderToStaticMarkup(<TabBar items={items} label="Навігація платформи" />);
 
     expect(html).toContain('aria-label="Навігація платформи"');
-    for (const label of ["Головна", "Простір", "GalyaShop", "Профіль", "Створити"]) {
+    for (const label of ["Головна", "Сервіси", "GalyaShop", "Профіль", "Створити"]) {
       expect(html).toContain(label);
     }
-    // Активний — рівно один, і це «Простір»
+    // Активний — рівно один, і це «Сервіси»
     expect(html.match(/wb-tabbar-item--active/g)).toHaveLength(1);
     expect(html).toContain('aria-current="page"');
   });
@@ -68,7 +68,7 @@ describe("TabBar", () => {
   });
 
   it("активний пункт показує ЗАЛИТИЙ варіант іконки (і лише він)", () => {
-    const html = render("/space");
+    const html = render("/services");
 
     // Залитий гліф — це окремий svg з fill замість обводки; в смузі він рівно один
     expect(html.match(/fill="currentColor"/g)).toHaveLength(1);
@@ -123,7 +123,7 @@ describe("buildTabBarItems", () => {
     });
 
     items[1].onSelect?.();
-    expect(navigate).toHaveBeenCalledWith("/space");
+    expect(navigate).toHaveBeenCalledWith("/services");
     expect(onPlaceholder).not.toHaveBeenCalled();
 
     items[4].onSelect?.();

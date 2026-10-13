@@ -6,7 +6,7 @@
  *   GET    /api/user/pages   — сторінки, які людина веде (разом із приватними)
  *   POST   /api/user/pages   — зберегти (без `id` — нова, з `id` — правка)
  *   DELETE /api/user/pages   — прибрати свою за номером (тільки власник)
- *   GET    /api/space/pages  — Простір: сторінки, які автори відкрили
+ *   GET    /api/public/pages  — сторінки, які автори відкрили
  *
  * **Список — це «що я веду», а не «що я створив».** Адмін стоїть у
  * `scenarios.admin_ids` і отримує ту саму сторінку — разом із магазином,
@@ -14,8 +14,8 @@
  * склад адмінів лежить JSON-ом, і в `WHERE` його не висловити.
  *
  * Ідентичність береться **тільки** з підписаного `initData` (`resolveUserId`):
- * жоден заголовок чи параметр не називає автора (`AGENTS.md` §7). Простір
- * публічний — і це безпечно саме тому, що видимість відбирає **запит до бази**
+ * жоден заголовок чи параметр не називає автора (`AGENTS.md` §7). Відкритий
+ * список публічний — і це безпечно саме тому, що видимість відбирає **запит до бази**
  * (`PagesService.listPublished`), а не цей файл.
  *
  * Коди відповідей різні навмисно (правило з `docs/RECIPES.md` §1): зайнята
@@ -99,15 +99,15 @@ export async function handleUserPages(request: Request, env: Env): Promise<Respo
   }
 }
 
-/** `GET /api/space/pages` — сторінки, які автори відкрили. Без авторизації. */
-export async function handleSpacePages(request: Request, env: Env): Promise<Response> {
+/** `GET /api/public/pages` — сторінки, які автори відкрили. Без авторизації. */
+export async function handlePublicPages(request: Request, env: Env): Promise<Response> {
   const limit = new URL(request.url).searchParams.get("limit");
 
   try {
     const pages = await new PagesService(env).listPublished(limit);
     return json({ ok: true, pages });
   } catch (e: unknown) {
-    apiLog.error("Pages space error", e);
+    apiLog.error("Public pages error", e);
     return json({ ok: false, error: "Не вдалося завантажити сторінки" }, 500);
   }
 }

@@ -155,7 +155,7 @@ export interface ProductDeleteResponse {
   error?: string;
 }
 
-/** Відповідь `GET /api/space/shop/products`: каталог магазину — лише показане. */
+/** Відповідь `GET /api/public/shop/products`: каталог магазину — лише показане. */
 export interface CatalogResponse {
   ok: boolean;
   products: ShopProduct[];

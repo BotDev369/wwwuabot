@@ -1,12 +1,14 @@
 /**
- * «Сторінки» — вкладка Простору: сторінки, які автори відкрили для всіх.
+ * «Публічні» — друга половина екрана «Сторінки»: сторінки, які автори
+ * відкрили для всіх.
  *
  * **Це друга половина перемикача «публічно / приватно».** Без неї прапорець
  * нічого не робив би назовні: сторінка ставала б видимою лише тому, хто знає
- * адресу, а «публічне» в продукті означає саме стрічку (`docs/SPACE.md`).
+ * адресу, а «публічне» в продукті означає саме спільний список
+ * (`docs/PAGES.md`).
  *
- * **Смуга керування стоїть другим рядком** — як у кожному розділі Простору:
- * перший рядок — знак панелі й назва, другий — пошук, далі — список.
+ * **Смуга керування стоїть другим рядком** — як у кожному списку продукту:
+ * перший рядок — вибір «Мої / Публічні», другий — пошук, далі — список.
  *
  * **Рядок веде на адресу сторінки** (`/slug`), а не в чужий редактор: чужу
  * сторінку читають. Рендерить її той самий `ScenarioPage`, що й будь-яку іншу
@@ -19,21 +21,16 @@ import { useState, type ReactElement } from "react";
 import { useNavigate } from "react-router-dom";
 import { Icon } from "@wwwuabot/shared";
 import { toWebPath } from "@wwwuabot/shared/content";
-import { SpaceListEmpty } from "../SpaceListEmpty";
-import { SpaceListToolbar } from "../SpaceListToolbar";
-import {
-  DEFAULT_SPACE_LIST_VIEW,
-  SPACE_LIST_CLASS,
-  filterByQuery,
-  type SpaceListView,
-} from "../space-list-view";
+import { ListEmpty } from "../ListEmpty";
+import { ListToolbar } from "../ListToolbar";
+import { DEFAULT_LIST_VIEW, LIST_CLASS, filterByQuery, type ListView } from "../list-view";
 import { pageAddressLabel, publicPageAuthor } from "./pages-view";
-import { useSpacePages } from "./useSpacePages";
+import { usePublicPages } from "./usePublicPages";
 
-export function SpacePagesTab(): ReactElement {
+export function PublicPagesTab(): ReactElement {
   const navigate = useNavigate();
-  const { pages, loading, error, reload } = useSpacePages();
-  const [view, setView] = useState<SpaceListView>(DEFAULT_SPACE_LIST_VIEW);
+  const { pages, loading, error, reload } = usePublicPages();
+  const [view, setView] = useState<ListView>(DEFAULT_LIST_VIEW);
 
   // Шукаємо за тим, що видно в рядку: назва, автор і адреса — усе це написано
   // під назвою сторінки.
@@ -42,8 +39,7 @@ export function SpacePagesTab(): ReactElement {
     publicPageAuthor(page),
     pageAddressLabel(page),
   ]);
-  const change = (patch: Partial<SpaceListView>): void =>
-    setView((prev) => ({ ...prev, ...patch }));
+  const change = (patch: Partial<ListView>): void => setView((prev) => ({ ...prev, ...patch }));
   const hasItems = !loading && !error && pages.length > 0;
 
   if (loading) {
@@ -87,7 +83,7 @@ export function SpacePagesTab(): ReactElement {
 
   return (
     <>
-      <SpaceListToolbar
+      <ListToolbar
         view={view}
         onChange={change}
         searchLabel="Пошук за назвою, автором або адресою"
@@ -96,9 +92,9 @@ export function SpacePagesTab(): ReactElement {
       />
 
       {hasItems && visible.length === 0 ? (
-        <SpaceListEmpty onReset={() => change(DEFAULT_SPACE_LIST_VIEW)} />
+        <ListEmpty onReset={() => change(DEFAULT_LIST_VIEW)} />
       ) : (
-        <div className={SPACE_LIST_CLASS}>
+        <div className={LIST_CLASS}>
           {visible.map((page) => (
             <button
               key={page.id}

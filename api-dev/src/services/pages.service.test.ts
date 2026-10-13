@@ -305,7 +305,7 @@ describe("адреса сторінки", () => {
   });
 });
 
-describe("Простір: що там видно", () => {
+describe("Відкриті сторінки: що там видно", () => {
   it("приватна сторінка не потрапляє в список", async () => {
     const { env, statements } = makeEnv({
       rows: [page({ is_public: 0 }), page({ id: 6, slug: "shop", is_public: 1 })],

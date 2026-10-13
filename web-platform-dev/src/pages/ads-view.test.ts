@@ -20,7 +20,7 @@
 import { describe, expect, it } from "vitest";
 import type { Ad } from "@wwwuabot/shared/ads";
 import { DEFAULT_ADS_VIEW, adsChips, adsKinds, filterAds, type AdsView } from "./ads-view";
-import type { SpaceAd } from "./ads-list";
+import type { PublicAd } from "./ads-list";
 
 function ad(overrides: Partial<Ad> & { id: number }): Ad {
   return {
@@ -37,13 +37,13 @@ function ad(overrides: Partial<Ad> & { id: number }): Ad {
   };
 }
 
-const mine = (entry: Ad): SpaceAd => ({ ad: entry, mine: true });
-const alien = (entry: Ad): SpaceAd => ({ ad: entry, mine: false });
+const mine = (entry: Ad): PublicAd => ({ ad: entry, mine: true });
+const alien = (entry: Ad): PublicAd => ({ ad: entry, mine: false });
 
 const view = (patch: Partial<AdsView> = {}): AdsView => ({ ...DEFAULT_ADS_VIEW, ...patch });
 
 describe("фільтри дошки", () => {
-  const items: SpaceAd[] = [
+  const items: PublicAd[] = [
     mine(ad({ id: 1, kind: "sell", title: "Телевізор", price: "1000", place: "Київ" })),
     mine(ad({ id: 2, kind: "buy", title: "Велосипед", isActive: false })),
     alien(ad({ id: 3, kind: "rentOut", title: "Квартира", place: "Львів" })),

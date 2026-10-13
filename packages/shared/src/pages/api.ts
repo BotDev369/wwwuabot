@@ -35,20 +35,20 @@ export interface PagesApi {
   save: (draft: PageDraft) => Promise<UserPage | null>;
   /** Видалити свою за номером. Чужого номера тут бути не може: власника додає сервер. */
   remove: (id: number) => Promise<void>;
-  /** Простір: сторінки, які автори відкрили. */
+  /** Відкриті: сторінки, які автори відкрили. */
   published: () => Promise<PublicPage[]>;
 }
 
 /** Шляхи двох поверхонь: своє й опубліковане. */
 export interface PagesApiPaths {
   own: string;
-  space: string;
+  public: string;
 }
 
 export function createPagesApi(fetchJson: PagesTransport, paths: PagesApiPaths): PagesApi {
   return {
     listOwn: async () => (await fetchJson<PageListResponse>(paths.own)).pages ?? [],
-    published: async () => (await fetchJson<PublicPageListResponse>(paths.space)).pages ?? [],
+    published: async () => (await fetchJson<PublicPageListResponse>(paths.public)).pages ?? [],
     save: async (draft) =>
       (
         await fetchJson<PageSaveResponse>(paths.own, {

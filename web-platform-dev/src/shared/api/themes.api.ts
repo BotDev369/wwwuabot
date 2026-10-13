@@ -14,5 +14,5 @@ import { apiFetch } from "./client";
 
 export const themesApi = createThemesApi(apiFetch, {
   mine: "/api/user/themes",
-  shared: "/api/space/themes",
+  shared: "/api/public/themes",
 });

@@ -1,7 +1,7 @@
 /**
- * Сторінки Простору: те, що автори відкрили для всіх.
+ * Публічні сторінки: те, що автори відкрили для всіх.
  *
- * Джерело — `GET /api/space/pages`, публічний: видимість відбирає **сервер**
+ * Джерело — `GET /api/public/pages`, публічний: видимість відбирає **сервер**
  * (`is_public = 1` у запиті до бази), тож тут немає жодного фільтра. Клієнт,
  * який «сам вирішує, що показати», одного дня показав би те, що хтось закрив, —
  * і зробив би це тихо.
@@ -16,14 +16,14 @@ import { useCallback, useEffect, useState } from "react";
 import type { PublicPage } from "@wwwuabot/shared/pages";
 import { pagesApi } from "@/shared/api/pages.api";
 
-export interface SpacePagesState {
+export interface PublicPagesState {
   pages: PublicPage[];
   loading: boolean;
   error: string | null;
 }
 
-export function useSpacePages() {
-  const [state, setState] = useState<SpacePagesState>({ pages: [], loading: true, error: null });
+export function usePublicPages() {
+  const [state, setState] = useState<PublicPagesState>({ pages: [], loading: true, error: null });
   const [attempt, setAttempt] = useState(0);
 
   useEffect(() => {

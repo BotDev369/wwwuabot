@@ -1,15 +1,15 @@
 /**
- * Контролер публічного профілю: власні налаштування видимості й те, що бачить
- * Простір.
+ * Контролер публічного профілю: власні налаштування видимості й те, що бачать
+ * інші.
  *
  * Дві групи ендпоїнтів — і вони принципово різні:
  *
  *   POST /api/user/about       — «Про себе» (ідентичність із підписаного initData)
  *   POST /api/user/visibility  — публічний профіль і набір відкритих полів
- *   GET  /api/space/users      — люди, які самі відкрились
- *   GET  /api/space/users/:id  — профіль однієї людини, якщо вона відкрита
+ *   GET  /api/public/users      — люди, які самі відкрились
+ *   GET  /api/public/users/:id  — профіль однієї людини, якщо вона відкрита
  *
- * `/api/space/*` — **публічні**: у стрічку Простору дивляться без входу, і
+ * `/api/public/*` — **публічні**: у відкриті списки дивляться без входу, і
  * ціна цього — те, що фільтр видимості стоїть у запиті до бази
  * (`PublicProfileService`), а не в цьому файлі. Тут жодного поля не додають до
  * відповіді: усе, що видно, вже відібрано сервісом.
@@ -80,26 +80,26 @@ export async function handleUserVisibility(request: Request, env: Env): Promise<
   }
 }
 
-/** GET /api/space/users — люди, які самі відкрили свій профіль. */
-export async function handleSpaceUsers(request: Request, env: Env): Promise<Response> {
+/** GET /api/public/users — люди, які самі відкрили свій профіль. */
+export async function handlePublicUsers(request: Request, env: Env): Promise<Response> {
   const limit = new URL(request.url).searchParams.get("limit");
 
   try {
     const items = await new PublicProfileService(env).listPublic(limit);
     return json({ ok: true, items });
   } catch (e: unknown) {
-    apiLog.error("Space users error", e);
-    return json({ error: "Не вдалося завантажити простір" }, 500);
+    apiLog.error("Public users error", e);
+    return json({ error: "Не вдалося завантажити список" }, 500);
   }
 }
 
 /**
- * GET /api/space/users/:id — профіль однієї людини.
+ * GET /api/public/users/:id — профіль однієї людини.
  *
  * Закритий профіль і неіснуючий віддають **однаковий** 404: різні коди
  * сказали б, що людина в нас є, але сховалась (AGENTS.md §7).
  */
-export async function handleSpaceUser(request: Request, env: Env, id: string): Promise<Response> {
+export async function handlePublicUser(request: Request, env: Env, id: string): Promise<Response> {
   const userId = Number(id);
   if (!Number.isInteger(userId) || userId <= 0) {
     return json({ error: "Некоректний профіль" }, 400);
@@ -110,7 +110,7 @@ export async function handleSpaceUser(request: Request, env: Env, id: string): P
     if (!profile) return json({ error: "Профіль недоступний" }, 404);
     return json({ ok: true, profile });
   } catch (e: unknown) {
-    apiLog.error("Space user error", e);
+    apiLog.error("Public user error", e);
     return json({ error: "Не вдалося завантажити профіль" }, 500);
   }
 }

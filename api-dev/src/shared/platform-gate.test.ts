@@ -103,12 +103,12 @@ function post(path: string, env: Env, body: unknown, initData?: string): Promise
 
 describe("гейт допуску на платформі", () => {
   it("⛔ без підписаного initData платформа закрита (401)", async () => {
-    expect((await call("/api/space/users", makeEnv(7))).status).toBe(401);
+    expect((await call("/api/public/users", makeEnv(7))).status).toBe(401);
   });
 
   it("⛔ ⛔ людина без запрошення не отримує продукт (403)", async () => {
     const initData = await makeInitData(42);
-    const res = await call("/api/space/users", makeEnv(null), {
+    const res = await call("/api/public/users", makeEnv(null), {
       "X-Telegram-Init-Data": initData,
     });
     expect(res.status).toBe(403);
@@ -116,7 +116,7 @@ describe("гейт допуску на платформі", () => {
 
   it("⛔ збій бази не відкриває закритий продукт", async () => {
     const initData = await makeInitData(42);
-    const res = await call("/api/space/users", makeEnv(new Error("D1 down")), {
+    const res = await call("/api/public/users", makeEnv(new Error("D1 down")), {
       "X-Telegram-Init-Data": initData,
     });
     expect(res.status).toBe(403);
@@ -124,7 +124,7 @@ describe("гейт допуску на платформі", () => {
 
   it("запрошена людина проходить далі", async () => {
     const initData = await makeInitData(42);
-    const res = await call("/api/space/users", makeEnv(7), {
+    const res = await call("/api/public/users", makeEnv(7), {
       "X-Telegram-Init-Data": initData,
     });
     expect(res.status).not.toBe(403);

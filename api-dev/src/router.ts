@@ -33,13 +33,13 @@ import {
   handleDelete as handlePortalDelete,
 } from "./controllers/scenarios-portal.controller";
 import {
-  handleSpaceUser,
-  handleSpaceUsers,
+  handlePublicUser,
+  handlePublicUsers,
   handleUserAbout,
   handleUserVisibility,
 } from "./controllers/public-profile.controller";
-import { handleSpaceAds, handleUserAds } from "./controllers/ads.controller";
-import { handleSpaceThemes, handleUserThemes } from "./controllers/themes.controller";
+import { handlePublicAds, handleUserAds } from "./controllers/ads.controller";
+import { handlePublicThemes, handleUserThemes } from "./controllers/themes.controller";
 import {
   handleListUsers,
   handleReadUser,
@@ -56,7 +56,7 @@ import { matchAccessRequestAdminRoute } from "./routes/access-requests";
 import { handleNotes, handleAdminNotes } from "./controllers/notes.controller";
 import { handleFavorites } from "./controllers/favorites.controller";
 import { handleAssessments } from "./controllers/assessments.controller";
-import { handleUserPages, handleSpacePages } from "./controllers/pages.controller";
+import { handleUserPages, handlePublicPages } from "./controllers/pages.controller";
 import { matchShopRoute } from "./routes/shop";
 import { handleContactLink, handleContacts } from "./controllers/contacts.controller";
 import {
@@ -327,29 +327,29 @@ export async function handleRequest(request: Request, env: Env): Promise<Respons
   const shop = matchShopRoute(request, env, pathname);
   if (shop) return shop;
 
-  // ── Public: Space (відкритий простір платформи) ────────────────
-  // Без авторизації: у стрічку дивляться без входу, а видимість кожного
-  // профілю вже відібрана в запиті до бази, а не тут.
-  if (pathname === "/api/space/users" && request.method === "GET") {
-    return handleSpaceUsers(request, env);
+  // ── Публічне (без авторизації) ─────────────────────────────────
+  // У ці вибірки дивляться без входу, а видимість кожного рядка вже
+  // відібрана в запиті до бази, а не тут.
+  if (pathname === "/api/public/users" && request.method === "GET") {
+    return handlePublicUsers(request, env);
   }
-  if (pathname.startsWith("/api/space/users/") && request.method === "GET") {
-    const id = decodePathSegment(pathname.replace("/api/space/users/", ""));
+  if (pathname.startsWith("/api/public/users/") && request.method === "GET") {
+    const id = decodePathSegment(pathname.replace("/api/public/users/", ""));
     if (id === null) return badRequest();
-    return handleSpaceUser(request, env, id);
+    return handlePublicUser(request, env, id);
   }
   // Дошка оголошень — теж публічна: показане відбирає запит до бази.
-  if (pathname === "/api/space/ads" && request.method === "GET") {
-    return handleSpaceAds(request, env);
+  if (pathname === "/api/public/ads" && request.method === "GET") {
+    return handlePublicAds(request, env);
   }
   // Спільна бібліотека схем теми: `is_public = 1` відбирає запит до бази.
-  if (pathname === "/api/space/themes" && request.method === "GET") {
-    return handleSpaceThemes(request, env);
+  if (pathname === "/api/public/themes" && request.method === "GET") {
+    return handlePublicThemes(request, env);
   }
-  // Сторінки Простору — теж публічно: `is_public = 1` відбирає запит до бази,
+  // Публічні сторінки — теж публічно: `is_public = 1` відбирає запит до бази,
   // а приватна сторінка не дістається ні списком, ні за адресою.
-  if (pathname === "/api/space/pages" && request.method === "GET") {
-    return handleSpacePages(request, env);
+  if (pathname === "/api/public/pages" && request.method === "GET") {
+    return handlePublicPages(request, env);
   }
 
   // ── 404 ─────────────────────────────────────────────────────────

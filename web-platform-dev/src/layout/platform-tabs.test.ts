@@ -39,7 +39,7 @@ describe("три розділи платформи", () => {
       "/pages/7",
       "/dateanalysis/1980",
     ];
-    for (const path of own) expect(activeKeys(path), path).toEqual(["profile"]);
+    for (const path of own) expect(activeKeys(path), path).toEqual(["account"]);
     expect(activeKeys(FAVORITES_PATH)).toEqual(["favorites"]);
     expect(activeKeys(SERVICES_PATH)).toEqual(["services"]);
     // Сторінка контенту за `slug` не належить жодному пункту смуги.
@@ -50,7 +50,7 @@ describe("три розділи платформи", () => {
   it("непрочитані повідомлення позначають «Акаунт»", () => {
     const tabs = withUnreadBadge(items(), 4);
     expect(tabs.filter((tab) => tab.badge !== undefined).map((tab) => tab.key)).toEqual([
-      "profile",
+      "account",
     ]);
     expect(tabs[0].badge).toBe(4);
   });

@@ -6,7 +6,7 @@
  *   POST   /api/user/shop/orders/status — поставити статус замовленню свого магазину
  *   DELETE /api/user/shop/orders        — прибрати замовлення зі своєї черги
  *   GET    /api/user/shop/statuses      — статуси магазину (типові з його правками)
- *   POST   /api/space/shop/orders       — **замовити** у відкритому магазині за адресою
+ *   POST   /api/public/shop/orders      — **замовити** у відкритому магазині за адресою
  *
  * **Зміна й статус — один шлях у двох адресах.** `POST /orders` несе все, що
  * продавець міняє (`docs/SHOPS.md` §6), а `/orders/status` лишається тим самим
@@ -155,13 +155,13 @@ export async function handleUserShopStatuses(request: Request, env: Env): Promis
 }
 
 /**
- * `POST /api/space/shop/orders` — прийняти замовлення.
+ * `POST /api/public/shop/orders` — прийняти замовлення.
  *
  * Без авторизації за номером магазину, але **не без покупця**: ідентичність
  * потрібна, щоб замовлення було кому показати й кому відповісти. Видимість
  * магазину при цьому відбирає запит до бази (`publicShopBySlug`), а не цей файл.
  */
-export async function handleSpaceShopOrders(request: Request, env: Env): Promise<Response> {
+export async function handlePublicShopOrders(request: Request, env: Env): Promise<Response> {
   const identity = await resolveUserId(request, env);
   if (!identity.ok) return identity.response;
 

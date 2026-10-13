@@ -24,7 +24,7 @@
  * **Публічність відбирає запит, а не розмітка.** Приватна сторінка не
  * дістається ні списком, ні за адресою (`listPublished` і
  * `scenarios.controller`), тож перемикач «публічно / приватно» не можна
- * обійти посиланням — та сама межа, що в публічного профілю (`docs/SPACE.md`).
+ * обійти посиланням — та сама межа, що в публічного профілю (`docs/VISIBILITY.md`).
  *
  * @module api-dev/src/services/pages.service
  */
@@ -61,9 +61,9 @@ const MANAGED_LIMIT = 100;
  */
 const NAME_BATCH = 90;
 
-/** Скільки сторінок віддає Простір за раз і яка межа запиту. */
-export const SPACE_PAGE_SIZE = 60;
-const SPACE_PAGE_MAX = 100;
+/** Скільки сторінок віддає відкритий список за раз і яка межа запиту. */
+export const PUBLIC_PAGE_SIZE = 60;
+const PUBLIC_PAGE_MAX = 100;
 
 /** Колонки людини — для імені в картці «Доступ»; `peerLabel` чекає саме їх. */
 const USER_COLUMNS = "user_id, first_name, last_name, username, platform_username";
@@ -81,10 +81,10 @@ export type PageSaveOutcome =
   { kind: "saved"; page: UserPage } | { kind: "not_found" } | { kind: "address_taken" };
 
 /** Скільки віддавати за запитом: сміття й перебір дають межі, а не помилку. */
-export function clampSpacePagesLimit(raw: unknown): number {
+export function clampPublicPagesLimit(raw: unknown): number {
   const value = Number(raw);
-  if (!Number.isFinite(value) || value <= 0) return SPACE_PAGE_SIZE;
-  return Math.min(Math.floor(value), SPACE_PAGE_MAX);
+  if (!Number.isFinite(value) || value <= 0) return PUBLIC_PAGE_SIZE;
+  return Math.min(Math.floor(value), PUBLIC_PAGE_MAX);
 }
 
 /** Рядок `users` у вигляді співрозмовника — щоб ім'я переклав `peerLabel`. */
@@ -225,14 +225,14 @@ export class PagesService {
   }
 
   /**
-   * Простір: сторінки, які автори відкрили.
+   * Відкритий список: сторінки, які автори відкрили.
    *
    * Три умови, і кожна щось відсікає: `is_public` — вибір автора, `owner_id`
    * `NOT NULL` — контент платформи (він не «чужа сторінка»), а `is_blocked`
    * прибирає людей, яких платформа заблокувала: це рішення про людину, і
    * жоден її прапорець його не скасовує.
    */
-  async listPublished(limit: unknown = SPACE_PAGE_SIZE): Promise<PublicPage[]> {
+  async listPublished(limit: unknown = PUBLIC_PAGE_SIZE): Promise<PublicPage[]> {
     await this.ensureSchema();
 
     const result = await this.env.DB.prepare(
@@ -248,7 +248,7 @@ export class PagesService {
         ORDER BY s.updated_at DESC, s.id DESC
         LIMIT ?`,
     )
-      .bind(clampSpacePagesLimit(limit))
+      .bind(clampPublicPagesLimit(limit))
       .all<Record<string, unknown>>();
 
     return (result.results ?? []).map((row) => ({

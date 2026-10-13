@@ -9,8 +9,8 @@
 import { describe, expect, it } from "vitest";
 import { applySameOriginCors, applySecurityHeaders, secureResponse } from "./headers";
 
-const PROD = "https://app.wwwuabot.com/space";
-const LOCAL = "http://localhost:5173/space";
+const PROD = "https://app.wwwuabot.com/users";
+const LOCAL = "http://localhost:5173/users";
 
 function ok(): Response {
   return new Response("body", { status: 200, headers: { "Content-Type": "text/html" } });

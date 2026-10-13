@@ -121,7 +121,7 @@ export interface PublicPage {
   updatedAt: string;
 }
 
-/** Відповідь `GET /api/space/pages`: опубліковане, без авторизації. */
+/** Відповідь `GET /api/public/pages`: опубліковане, без авторизації. */
 export interface PublicPageListResponse {
   ok: boolean;
   pages: PublicPage[];

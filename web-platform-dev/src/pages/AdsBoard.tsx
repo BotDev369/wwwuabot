@@ -1,8 +1,8 @@
 /**
- * «Оголошення» — дошка Простору.
+ * «Оголошення» — дошка.
  *
  * **Смуга керування, а не кнопка на пів екрана.** Створення й пошук живуть в
- * одному ряду (`SpaceAdsToolbar` + спільна смуга колекції): так дошка виглядає
+ * одному ряду (`AdsToolbar` + спільна смуга колекції): так дошка виглядає
  * як усі інші списки продукту, а список читають, а не прогортають повз кнопку.
  *
  * **Свої дії тільки на своєму.** Кнопки стоять під оголошеннями власника, і це
@@ -15,7 +15,7 @@
  * рішення. «Прибрати з дошки» не питає: воно оборотне — те саме оголошення
  * показують назад тим самим дотиком.
  *
- * @module web-platform-dev/src/pages/SpaceAdsTab
+ * @module web-platform-dev/src/pages/AdsBoard
  */
 
 import { useState, type ReactElement } from "react";
@@ -24,12 +24,12 @@ import type { Ad } from "@wwwuabot/shared/ads";
 import { collectionViewClass } from "@wwwuabot/ui/collection";
 import { useDialog } from "@wwwuabot/ui/dialog";
 import { AdCard } from "./AdCard";
-import { SpaceAdsToolbar } from "./SpaceAdsToolbar";
-import { SpaceListEmpty } from "./SpaceListEmpty";
+import { AdsToolbar } from "./AdsToolbar";
+import { ListEmpty } from "./ListEmpty";
 import { DEFAULT_ADS_VIEW, filterAds, type AdsView } from "./ads-view";
-import type { SpaceAd } from "./ads-list";
+import type { PublicAd } from "./ads-list";
 
-export function SpaceAdsTab({
+export function AdsBoard({
   items,
   loading,
   error,
@@ -38,7 +38,7 @@ export function SpaceAdsTab({
   onToggle,
   onRemove,
 }: {
-  items: SpaceAd[];
+  items: PublicAd[];
   loading: boolean;
   error: string | null;
   onRetry: () => void;
@@ -80,7 +80,7 @@ export function SpaceAdsTab({
   return (
     <>
       {hasItems && (
-        <SpaceAdsToolbar
+        <AdsToolbar
           items={items}
           view={view}
           onChange={(patch) => setView((prev) => ({ ...prev, ...patch }))}
@@ -109,17 +109,19 @@ export function SpaceAdsTab({
       )}
 
       {/* Порожня дошка каже, **де** створити оголошення: смуга керування тут не
-          малюється (нема чого шукати й фільтрувати), тож єдиний вхід — «+» у
-          хабі «Створити» (футер) — і про нього треба сказати словами. */}
+          малюється (нема чого шукати й фільтрувати), тож «+» на порожньому
+          екрані — єдиний вхід, і про нього треба сказати словами. */}
       {!loading && !error && items.length === 0 && (
         <div className="wb-empty">
           <span className="wb-empty-icon">
             <Icon name="announce" size={32} />
           </span>
           <p className="wb-empty-text">Тут поки нічого немає.</p>
-          <p className="wb-empty-text">
-            Натисніть «+» у футері й оберіть «Оголошення» — воно з'явиться на дошці.
-          </p>
+          <p className="wb-empty-text">Натисніть «+» — оголошення з'явиться на дошці.</p>
+          <button type="button" className="wb-btn wb-btn-secondary" onClick={() => onCompose()}>
+            <Icon name="plus" size={16} />
+            Створити оголошення
+          </button>
         </div>
       )}
 
@@ -139,14 +141,11 @@ export function SpaceAdsTab({
       )}
 
       {/* Фільтр звузив усе — і це видно словами: «порожньо» без причини читалось
-          би як поламана дошка. Стан — **спільний** із рештою розділів Простору
-          (`SpaceListEmpty`): звужений список виглядає однаково всюди, а не
-          по-своєму на кожному екрані. */}
+          би як поламана дошка. Стан — **спільний** із рештою списків
+          (`ListEmpty`): звужений список виглядає однаково всюди, а не по-своєму
+          на кожному екрані. */}
       {hasItems && visible.length === 0 && (
-        <SpaceListEmpty
-          onReset={() => setView(DEFAULT_ADS_VIEW)}
-          resetLabel="Скинути пошук і фільтри"
-        />
+        <ListEmpty onReset={() => setView(DEFAULT_ADS_VIEW)} resetLabel="Скинути пошук і фільтри" />
       )}
     </>
   );

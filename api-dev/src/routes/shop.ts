@@ -9,7 +9,7 @@
  * поясненнями, а не розділились навпіл.
  *
  * **Дві групи в одному файлі навмисно.** Власне (`/api/user/shop/…`, з
- * ідентичністю з підписаного `initData`) і публічне (`/api/space/shop/…` і сам
+ * ідентичністю з підписаного `initData`) і публічне (`/api/public/shop/…` і сам
  * файл `/api/shop/media/<…>`). Порядок тут такий самий, як бути в роутері:
  * власні шляхи, потім публічні — і жодна умова не збігається з іншою, бо всі
  * вони порівнюють шлях цілком.
@@ -19,12 +19,12 @@
 
 import type { Env } from "../shared/types";
 import { decodePathSegment } from "../shared/url";
-import { handleUserShopProducts, handleSpaceShopProducts } from "../controllers/shop.controller";
+import { handleUserShopProducts, handlePublicShopProducts } from "../controllers/shop.controller";
 import { handleUserShopMedia, handleShopMediaFile } from "../controllers/shop-media.controller";
 import {
   handleUserShopOrders,
   handleUserShopStatuses,
-  handleSpaceShopOrders,
+  handlePublicShopOrders,
 } from "../controllers/shop-orders.controller";
 
 /**
@@ -72,15 +72,15 @@ export function matchShopRoute(
 
   // Каталог магазину — теж публічно: `is_public = 1` і `is_active = 1` відбирає
   // запит до бази, тож закритий магазин не дістається й прямим запитом.
-  if (pathname === "/api/space/shop/products" && request.method === "GET") {
-    return handleSpaceShopProducts(request, env);
+  if (pathname === "/api/public/shop/products" && request.method === "GET") {
+    return handlePublicShopProducts(request, env);
   }
 
   // Замовити — за **адресою** магазину, а не за номером: покупцеві відомий лише
   // хвіст `/<магазин>`, і видимість відбирає запит до бази, а не цей шлях.
   // Покупець при цьому обов'язковий: замовлення мусить бути кому відповісти.
-  if (pathname === "/api/space/shop/orders" && request.method === "POST") {
-    return handleSpaceShopOrders(request, env);
+  if (pathname === "/api/public/shop/orders" && request.method === "POST") {
+    return handlePublicShopOrders(request, env);
   }
 
   return null;

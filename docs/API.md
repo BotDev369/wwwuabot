@@ -18,15 +18,15 @@
 | `POST` | `/api/mydate/analyze` | `handleAnalyze` |
 | `POST` | `/api/mydate/compare` | `handleCompare` |
 | `ANY` | `/api/mydate/systems` | `handleSystems` |
+| `GET` | `/api/public/ads` | `handlePublicAds` |
+| `GET` | `/api/public/pages` | `handlePublicPages` |
+| `POST` | `/api/public/shop/orders` | `handlePublicShopOrders` |
+| `GET` | `/api/public/shop/products` | `handlePublicShopProducts` |
+| `GET` | `/api/public/themes` | `handlePublicThemes` |
+| `GET` | `/api/public/users` | `handlePublicUsers` |
+| `GET` | `/api/public/users/<…>` | `handlePublicUser` |
 | `ANY` | `/api/scenario/<…>` | `handleScenario` |
 | `ANY` | `/api/shop/media/<…>` | `handleShopMediaFile` |
-| `GET` | `/api/space/ads` | `handleSpaceAds` |
-| `GET` | `/api/space/pages` | `handleSpacePages` |
-| `POST` | `/api/space/shop/orders` | `handleSpaceShopOrders` |
-| `GET` | `/api/space/shop/products` | `handleSpaceShopProducts` |
-| `GET` | `/api/space/themes` | `handleSpaceThemes` |
-| `GET` | `/api/space/users` | `handleSpaceUsers` |
-| `GET` | `/api/space/users/<…>` | `handleSpaceUser` |
 | `ANY` | `/health` | `handleHealth` |
 | `ANY` | `/health/deep` | `handleDeepHealth` |
 

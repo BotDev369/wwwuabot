@@ -49,7 +49,7 @@ export interface ThemeSchemeInput {
   isPublic: boolean;
 }
 
-/** Відповідь `GET /api/user/themes` і `GET /api/space/themes`. */
+/** Відповідь `GET /api/user/themes` і `GET /api/public/themes`. */
 export interface ThemeListResponse {
   ok: boolean;
   themes: ThemeScheme[];

@@ -6,7 +6,7 @@
  * не бачила б їх узагалі) і **«моє» визначається один раз, а не в розмітці** —
  * інакше зникла б або кнопка «Змінити» під чужим, або дії під своїм.
  *
- * @module web-platform-dev/src/pages/space-ads.test
+ * @module web-platform-dev/src/pages/ads-list.test
  */
 
 import { describe, expect, it } from "vitest";

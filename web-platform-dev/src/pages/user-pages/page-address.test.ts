@@ -3,7 +3,7 @@
  *
  * Сторінка людини відкривається за своїм `slug` через catch-all (`*`) у
  * `router.tsx`, а екрани платформи — це **власні** маршрути. Отже, сторінка з
- * адресою `space` не «перекриє» розділ: вона просто **ніколи не відкриється**,
+ * адресою `games` не «перекриє» розділ: вона просто **ніколи не відкриється**,
  * і ні компілятор, ні тести про це не скажуть. Тому список зайнятих сегментів
  * живе в спільному модулі (`@wwwuabot/shared/pages`), а цей тест стереже, щоб
  * він не розійшовся з `app/routes.ts` — єдиним власником маршрутів.
@@ -15,13 +15,16 @@ import { describe, expect, it } from "vitest";
 import { RESERVED_PAGE_SLUGS } from "@wwwuabot/shared/pages";
 import {
   ACCOUNT_ROUTE,
+  ADS_ROUTE,
   CONTACTS_ROUTE,
   FAVORITES_ROUTE,
+  GAMES_ROUTE,
   MESSAGES_PATH,
   NOTES_ROUTE,
   ORDERS_ROUTE,
   PAGES_ROUTE,
-  SPACE_ROUTE,
+  SERVICES_ROUTE,
+  USERS_ROUTE,
 } from "../../app/routes";
 
 /** Перший сегмент шляху: `/messages?peer=1` → `messages`. */
@@ -33,8 +36,11 @@ describe("адреси, зайняті платформою", () => {
   it("кожен верхній сегмент маршруту не може стати адресою сторінки", () => {
     const segments = [
       ACCOUNT_ROUTE,
+      ADS_ROUTE,
+      GAMES_ROUTE,
+      USERS_ROUTE,
+      SERVICES_ROUTE,
       ORDERS_ROUTE,
-      SPACE_ROUTE,
       NOTES_ROUTE,
       CONTACTS_ROUTE,
       FAVORITES_ROUTE,

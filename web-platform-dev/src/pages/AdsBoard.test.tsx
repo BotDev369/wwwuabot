@@ -2,28 +2,28 @@
  * Дошка оголошень — сторож **місця на екрані**.
  *
  * Тут ламається тихо: досить повернути кнопку створення окремим блоком на всю
- * ширину — і вкладка знову починається з пів екрана, яке нічого не повідомляє.
+ * ширину — і екран знову починається з пів екрана, яке нічого не повідомляє.
  * Тому перевіряється:
  *
  * - створення живе **в ряду** клітинок разом із пошуком і виборами (`.wb-tools-add`),
- *   а самого `.wb-space-create` немає — того класу більше немає й у CSS;
+ *   а не окремим блоком на всю ширину;
  * - список бере **спільну розкладку** колекції (`wb-collection--rows`), а не
  *   власну: інакше «рядки / плитки» довелось би писати другою розкладкою;
- * - рядок оголошення — **такий самий рядок, як у решти розділів**: назва першою,
+ * - рядок оголошення — **такий самий рядок, як у решти списків**: назва першою,
  *   вид підписом під нею, шеврон напрямку — і без знака: свого знака в
  *   оголошення немає (у гри є її знак, у людини — обличчя);
  * - дій у рядку немає — вони живуть у поверхні, яка відкривається дотиком:
  *   три підписи під кожним оголошенням займали б власний рядок у стрічці, яку
  *   читають, і рядок перестав би виглядати як усі інші.
  *
- * @module web-platform-dev/src/pages/SpaceAdsTab.test
+ * @module web-platform-dev/src/pages/AdsBoard.test
  */
 
 import { describe, expect, it } from "vitest";
 import { renderToStaticMarkup } from "react-dom/server";
 import type { Ad } from "@wwwuabot/shared/ads";
-import { SpaceAdsTab } from "./SpaceAdsTab";
-import type { SpaceAd } from "./ads-list";
+import { AdsBoard } from "./AdsBoard";
+import type { PublicAd } from "./ads-list";
 
 function ad(overrides: Partial<Ad> & { id: number }): Ad {
   return {
@@ -40,7 +40,7 @@ function ad(overrides: Partial<Ad> & { id: number }): Ad {
   };
 }
 
-const ITEMS: SpaceAd[] = [
+const ITEMS: PublicAd[] = [
   { ad: ad({ id: 1, title: "Телевізор", price: "1000", place: "Київ" }), mine: true },
   { ad: ad({ id: 2, title: "Велосипед", isActive: false }), mine: true },
   { ad: ad({ id: 3, title: "Квартира", kind: "rentOut", place: "Львів" }), mine: false },
@@ -49,9 +49,9 @@ const ITEMS: SpaceAd[] = [
 const noop = (): void => {};
 const ok = async (): Promise<void> => {};
 
-const render = (items: SpaceAd[] = ITEMS): string =>
+const render = (items: PublicAd[] = ITEMS): string =>
   renderToStaticMarkup(
-    <SpaceAdsTab
+    <AdsBoard
       items={items}
       loading={false}
       error={null}
@@ -62,7 +62,7 @@ const render = (items: SpaceAd[] = ITEMS): string =>
     />,
   );
 
-describe("SpaceAdsTab", () => {
+describe("AdsBoard", () => {
   it("створення стоїть у ряду керування, а не окремим блоком", () => {
     const html = render();
 
@@ -71,8 +71,8 @@ describe("SpaceAdsTab", () => {
     expect(html).toContain('aria-label="Створити оголошення"');
     // Акцент у ряду означає дію — і він там рівно одна.
     expect(html.match(/wb-tools-add/g)).toHaveLength(1);
-    // Кнопки на всю ширину більше немає — ні в розмітці, ні як класу в CSS.
-    expect(html).not.toContain("wb-space-create");
+    // Кнопки на всю ширину немає: це була б дія окремим блоком під списком.
+    expect(html).not.toContain("wb-sheet-actions");
   });
 
   it("ряд несе пошук і вибори: вид та чиї", () => {
@@ -92,7 +92,7 @@ describe("SpaceAdsTab", () => {
     expect(html).not.toContain("wb-ads");
   });
 
-  it("рядок оголошення — та сама сітка, що в решти розділів", () => {
+  it("рядок оголошення — та сама сітка, що в решти списків", () => {
     const html = render();
 
     expect(html).toContain("wb-ad-open");
@@ -124,9 +124,43 @@ describe("SpaceAdsTab", () => {
 
     expect(html).not.toContain("wb-tools-bar");
     expect(html).toContain("Тут поки нічого немає");
-    // Порожній стан не глухий кут: він називає **вхід до створення**, а він
-    // тепер один — «+» у футері веде в хаб «Створити».
-    expect(html).toContain("у футері");
-    expect(html).toContain("Оголошення");
+    // Порожній стан не глухий кут: на порожньому екрані смуга не малюється,
+    // тож «+» тут — єдиний вхід до створення, і про нього сказано словами.
+    expect(html).toContain("Натисніть «+»");
+    expect(html).toContain("Створити оголошення");
+  });
+
+  it("завантаження не прикидається порожньою дошкою", () => {
+    const html = renderToStaticMarkup(
+      <AdsBoard
+        items={[]}
+        loading
+        error={null}
+        onRetry={noop}
+        onCompose={noop}
+        onToggle={ok}
+        onRemove={ok}
+      />,
+    );
+
+    expect(html).toContain("Завантаження");
+    expect(html).not.toContain("Тут поки нічого немає");
+  });
+
+  it("помилка називає причину й дає спробувати ще", () => {
+    const html = renderToStaticMarkup(
+      <AdsBoard
+        items={[]}
+        loading={false}
+        error="Немає доступу"
+        onRetry={noop}
+        onCompose={noop}
+        onToggle={ok}
+        onRemove={ok}
+      />,
+    );
+
+    expect(html).toContain("Немає доступу");
+    expect(html).toContain("Спробувати ще");
   });
 });

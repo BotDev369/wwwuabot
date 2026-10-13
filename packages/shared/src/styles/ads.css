@@ -1,0 +1,173 @@
+/*
+ * ═══════════════════════════════════════════════════════════════════════════
+ * ADS — рядок дошки оголошень і поверхня «оголошення цілком»
+ * ═══════════════════════════════════════════════════════════════════════════
+ *
+ * Рядок оголошення — **той самий рядок, що в решти списків продукту**: назва
+ * першою, вид і ціна підписом під нею, шеврон як ознака переходу. Свого знака в
+ * оголошення немає: у гри є її власний, у людини — обличчя, а оголошення
+ * розрізняє **написане**, і знак перед назвою був би ще одним словом.
+ *
+ * **Дотик відкриває поверхню** (`wb-ad-view`): у рядку вміщається один рядок
+ * тексту, тож усе інше — повний текст, ціна, місто, стан чернетки й дії
+ * власника — живе за дотиком. Тому рядок не носить заливки, а лише **відгук**
+ * (`:active`): на телефоні hover немає, і рядок без тла, який не озивається,
+ * читався б як мертвий.
+ *
+ * Дошка — власний екран, і правила в неї власні: окремим файлом, як
+ * `games.css` чи `contacts.css`, а не в спільному `components.css`.
+ */
+
+/* Обгортка рядка: сітку тримає сама кнопка (`wb-ad-open`), а коробці лишається
+   те, без чого довга назва розпирає сітку колекції ширше за екран. */
+.wb-ad {
+  min-width: 0;
+}
+
+/* Рядок відкривається кнопкою на всю ширину: палець мусить діставати будь-де,
+   а сітка — дві клітинки (текст і шеврон), з `min-width: 0` у текстовій: без
+   нього довгий рядок розпирає сітку ширше за екран. */
+.wb-ad-open {
+  display: grid;
+  align-items: center;
+  gap: var(--sp-3);
+  grid-template-columns: minmax(0, 1fr) auto;
+  grid-template-areas: "text more";
+  width: 100%;
+  min-height: 52px;
+  padding: 0;
+  border: none;
+  border-radius: var(--radius-md);
+  background: none;
+  box-shadow: none;
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+/* Дотик — заливка на площі рядка: вона з'являється лише під пальцем, тож
+   списку не заважає. */
+.wb-ad-open:active {
+  background: var(--surface-active);
+}
+
+.wb-ad-text {
+  grid-area: text;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+/* Шеврон — ознака переходу, приглушений: за ним стоїть поверхня з оголошенням,
+   а не дія. */
+.wb-ad-more {
+  grid-area: more;
+  display: flex;
+  align-items: center;
+  color: var(--text-muted);
+}
+
+.wb-ad-title {
+  font-size: var(--text-base);
+  font-weight: var(--weight-medium);
+  overflow-wrap: anywhere;
+}
+
+/* Підпис під назвою: вид, ціна, місто, початок тексту — та сама міра й колір. */
+.wb-ad-meta,
+.wb-ad-body {
+  font-size: var(--text-sm);
+  color: var(--text-muted);
+  line-height: 1.45;
+}
+
+/* Вид оголошення — **підпис під назвою**, а не шапка над нею: назва мусить
+   читатися першою, як у гри, сторінки чи людини. У рядку мети стоять чип стану
+   й текст — і більше ніде. */
+.wb-ad-meta {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-1);
+  min-width: 0;
+}
+
+.wb-ad-meta-line {
+  min-width: 0;
+}
+
+/* Тіло в рядку — одна лінія: довга розповідь перетворює рядок на картку, а
+   прочитати її можна, відкривши оголошення. */
+.wb-collection--rows .wb-ad-title,
+.wb-collection--rows .wb-ad-meta-line {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.wb-collection--rows .wb-ad-body,
+.wb-collection--cards .wb-ad-body {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  white-space: pre-wrap;
+}
+
+.wb-collection--rows .wb-ad-body {
+  -webkit-line-clamp: 1;
+  line-clamp: 1;
+}
+
+/* «Рядки» прочитують очима (текст і шеврон в один ряд), «плитки» — читають: у
+   плитці тіло розгортається трьома лініями. Без цієї різниці вибір вигляду був
+   би декоративним. */
+.wb-collection--cards .wb-ad-body {
+  -webkit-line-clamp: 3;
+  line-clamp: 3;
+}
+
+/* ── Поверхня «оголошення цілком» ─────────────────────────────────────────── */
+
+.wb-ad-view {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-3);
+}
+
+.wb-ad-view-flags {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--sp-1);
+}
+
+.wb-ad-view-title {
+  margin: 0;
+  font-size: var(--text-lg);
+  font-weight: var(--weight-semibold);
+  overflow-wrap: anywhere;
+}
+
+.wb-ad-view-meta {
+  margin: 0;
+  color: var(--text-muted);
+  font-size: var(--text-sm);
+}
+
+.wb-ad-view-body {
+  margin: 0;
+  font-size: var(--text-base);
+  line-height: 1.5;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+/* Дії — стовпчиком на всю ширину: у поверхні вони головне, що можна зробити, і
+   кожна мусить бути під палець. */
+.wb-ad-view-actions {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-2);
+  margin-top: var(--sp-2);
+}

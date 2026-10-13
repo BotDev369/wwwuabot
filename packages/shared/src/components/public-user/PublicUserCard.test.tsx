@@ -6,7 +6,7 @@
  * витоком. Тест тримає саме це: рендер іде **полем за полем**, а не дампом
  * того, що прийшло.
  *
- * @module @wwwuabot/shared/components/space/PublicUserCard.test
+ * @module @wwwuabot/shared/components/public-user/PublicUserCard.test
  */
 
 import { describe, expect, it } from "vitest";

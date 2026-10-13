@@ -12,25 +12,26 @@
  * належить жодній сторінці, тож він стоїть на рівні маршруту, а не всередині
  * `ScenarioPage`.
  *
- * `/account`, `/orders`, `/space`, `/notes`, `/contacts`, `/messages` і
- * `/pages` стоять **перед** catch-all навмисно: це єдині екрани, які не є
- * рядком контенту (`slug`). Їхні адреси дає `app/routes.ts` — один власник на
- * маршрут і пункт навігації. Саме тому ці сегменти не можуть стати адресою
- * сторінки людини: їх стереже `pages/user-pages/page-address.test.ts`.
+ * `/account`, `/orders`, `/ads`, `/games`, `/users`, `/notes`, `/contacts`,
+ * `/messages` і `/pages` стоять **перед** catch-all навмисно: це єдині екрани,
+ * які не є рядком контенту (`slug`). Їхні адреси дає `app/routes.ts` — один
+ * власник на маршрут і пункт навігації. Саме тому ці сегменти не можуть стати
+ * адресою сторінки людини: їх стереже `pages/user-pages/page-address.test.ts`.
  *
- * Сторінка людини в Просторі (`/space/u/:id`) і гра (`/space/g/:key`) стоять
- * перед `/space` **порядком рядків**: довший шлях мусить збігтися першим,
- * інакше `/space` з'їв би його хвіст.
+ * Партія (`/games/:key`) стоїть перед `/games` **порядком рядків**: довший шлях
+ * мусить збігтися першим, інакше `/games` з'їв би його хвіст.
  */
 
 import { createBrowserRouter, Navigate } from "react-router-dom";
 import { PlatformShell } from "@/layout/PlatformShell";
 import {
+  ADS_ROUTE,
   CONTACTS_ROUTE,
   FAVORITES_ROUTE,
   ACCOUNT_PATH,
   ACCOUNT_ROUTE,
   ASSESSMENTS_ROUTE,
+  GAMES_ROUTE,
   MESSAGES_PATH,
   NOTES_ROUTE,
   ORDERS_ROUTE,
@@ -40,10 +41,9 @@ import {
   SHOP_ORDERS_ROUTE,
   SHOP_PRODUCTS_ROUTE,
   SERVICES_ROUTE,
-  SPACE_GAME_ROUTE,
-  SPACE_ROUTE,
-  SPACE_USER_ROUTE,
+  USERS_ROUTE,
 } from "@/app/routes";
+import { AdsPage } from "@/pages/AdsPage";
 import { ContactsPage } from "@/pages/ContactsPage";
 import { FavoritesPage } from "@/pages/favorites/FavoritesPage";
 import { AssessmentsScreen } from "@/pages/assessments/AssessmentsScreen";
@@ -53,9 +53,9 @@ import { ProfileAccountPage } from "@/pages/ProfileAccountPage";
 import { ProfileOrdersPage } from "@/pages/ProfileOrdersPage";
 import { ServicesPage } from "@/pages/ServicesPage";
 import { ScenarioPage } from "@/pages/ScenarioPage";
-import { SpaceGamePage } from "@/pages/games/SpaceGamePage";
-import { SpacePage } from "@/pages/SpacePage";
-import { SpaceUserPage } from "@/pages/SpaceUserPage";
+import { UsersPage } from "@/pages/UsersPage";
+import { GamePage } from "@/pages/games/GamePage";
+import { GamesPage } from "@/pages/games/GamesPage";
 import { PageCreatePage } from "@/pages/user-pages/PageCreatePage";
 import { PageEditPage } from "@/pages/user-pages/PageEditPage";
 import { ShopOrderPage } from "@/pages/shop/ShopOrderPage";
@@ -89,19 +89,18 @@ export const router = createBrowserRouter([
       // список замість тесту (та сама причина, що в `:id` під сторінками).
       { path: `${ASSESSMENTS_ROUTE}/:key`, element: <AssessmentsScreen /> },
       { path: ASSESSMENTS_ROUTE, element: <AssessmentsScreen /> },
-      // Простір — відкрита стрічка: відкриті профілі (а далі оголошення).
-      // Довший шлях іде першим — інакше `/space` перехопив би людину в Просторі.
-      { path: `${SPACE_ROUTE}/${SPACE_USER_ROUTE}/:id`, element: <SpaceUserPage /> },
-      // Гра — своя адреса під тим самим «порядком рядків»: `/space/g/:key`
-      // довший за `/space`, і без цього рядка він потрапив би в catch-all і
-      // відкрив би сторінку контенту під назвою «g».
-      { path: `${SPACE_ROUTE}/${SPACE_GAME_ROUTE}/:key`, element: <SpaceGamePage /> },
-      { path: SPACE_ROUTE, element: <SpacePage /> },
+      // Розділу-обгортки немає: «Оголошення», «Ігри» й «Користувачі» —
+      // власні екрани з власними адресами, а не вкладки однієї сторінки.
+      // Партія йде **перед** списком: інакше `/games` з'їв би хвіст `:key`.
+      { path: `${GAMES_ROUTE}/:key`, element: <GamePage /> },
+      { path: GAMES_ROUTE, element: <GamesPage /> },
+      { path: USERS_ROUTE, element: <UsersPage /> },
+      { path: ADS_ROUTE, element: <AdsPage /> },
       // Сторінки людини — теж не рядок контенту, а екран: список власних
       // сторінок, перегляд однієї, її правка й створення. Сам контент сторінки
       // відкривається за її `slug` (catch-all нижче) — і то лише тоді, коли
       // вона публічна. Довший шлях іде першим — та сама причина, що
-      // в `/space/u/:id`; а `new` мусить стояти **перед** `:id`, бо `:id`
+      // у `/games/:key`; а `new` мусить стояти **перед** `:id`, бо `:id`
       // з'їв би його як номер сторінки, і замість вибору шаблону відкрився б
       // «Такої сторінки немає».
       { path: `${PAGES_ROUTE}/${PAGES_NEW_ROUTE}`, element: <PageCreatePage /> },

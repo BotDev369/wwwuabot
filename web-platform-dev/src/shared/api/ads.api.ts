@@ -14,5 +14,5 @@ import { apiFetch } from "./client";
 
 export const adsApi = createAdsApi(apiFetch, {
   own: "/api/user/ads",
-  board: "/api/space/ads",
+  board: "/api/public/ads",
 });

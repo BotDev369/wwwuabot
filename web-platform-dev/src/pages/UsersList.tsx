@@ -4,30 +4,23 @@
  * **Порожнеча має причину.** «Нікого немає» без пояснення читалось би як
  * поламана стрічка, тож текст каже, **чому** тут порожньо: профіль з'являється
  * тоді, коли людина сама його відкриє. Це не наше заповнення — це ознака
- * порожнього Простору.
+ * порожньої стрічки.
  *
- * **Керування стоїть другим рядком** (`SpaceListToolbar`), як у кожному розділі
- * Простору: перший рядок — знак панелі й назва розділу, другий — те, чим список
- * керують, далі — сам список. Тут це пошук: людей шукають за іменем або описом.
+ * **Керування стоїть другим рядком** (`ListToolbar`), як у кожному списку
+ * продукту: перший рядок — назва екрана, другий — те, чим список керують, далі —
+ * сам список. Тут це пошук: людей шукають за іменем або описом.
  *
- * **Картка бере адресу з однієї функції** (`spaceUserPath`): шлях людини
- * складається в одному місці, а не клеїться тут.
+ * **Картка не веде далі.** За людиною стоїть сама людина — окремої адреси під
+ * неї немає, тож картка лишається в стрічці й не обіцяє переходу.
  */
 
 import { useState, type ReactElement } from "react";
 import { Icon, PublicUserCard, type PublicProfile } from "@wwwuabot/shared";
-import { useNavigate } from "react-router-dom";
-import { spaceUserPath } from "@/app/routes";
-import { SpaceListEmpty } from "./SpaceListEmpty";
-import { SpaceListToolbar } from "./SpaceListToolbar";
-import {
-  DEFAULT_SPACE_LIST_VIEW,
-  SPACE_LIST_CLASS,
-  filterByQuery,
-  type SpaceListView,
-} from "./space-list-view";
+import { ListEmpty } from "./ListEmpty";
+import { ListToolbar } from "./ListToolbar";
+import { DEFAULT_LIST_VIEW, LIST_CLASS, filterByQuery, type ListView } from "./list-view";
 
-export function SpaceUsersTab({
+export function UsersList({
   items,
   loading,
   error,
@@ -38,8 +31,7 @@ export function SpaceUsersTab({
   error: string | null;
   onRetry: () => void;
 }): ReactElement {
-  const navigate = useNavigate();
-  const [view, setView] = useState<SpaceListView>(DEFAULT_SPACE_LIST_VIEW);
+  const [view, setView] = useState<ListView>(DEFAULT_LIST_VIEW);
 
   // Шукаємо за тим, що видно в рядку: інакше знайдене неможливо впізнати.
   const visible = filterByQuery(items, view.query, (profile) => [
@@ -48,8 +40,7 @@ export function SpaceUsersTab({
     profile.role,
     profile.status,
   ]);
-  const change = (patch: Partial<SpaceListView>): void =>
-    setView((prev) => ({ ...prev, ...patch }));
+  const change = (patch: Partial<ListView>): void => setView((prev) => ({ ...prev, ...patch }));
 
   if (loading) {
     return (
@@ -90,7 +81,7 @@ export function SpaceUsersTab({
 
   return (
     <>
-      <SpaceListToolbar
+      <ListToolbar
         view={view}
         onChange={change}
         searchLabel="Пошук за іменем або описом"
@@ -99,15 +90,11 @@ export function SpaceUsersTab({
       />
 
       {visible.length === 0 ? (
-        <SpaceListEmpty onReset={() => change(DEFAULT_SPACE_LIST_VIEW)} />
+        <ListEmpty onReset={() => change(DEFAULT_LIST_VIEW)} />
       ) : (
-        <div className={SPACE_LIST_CLASS}>
+        <div className={LIST_CLASS}>
           {visible.map((profile) => (
-            <PublicUserCard
-              key={profile.id}
-              profile={profile}
-              onSelect={() => navigate(spaceUserPath(profile.id))}
-            />
+            <PublicUserCard key={profile.id} profile={profile} />
           ))}
         </div>
       )}

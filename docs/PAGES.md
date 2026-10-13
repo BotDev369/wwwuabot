@@ -1,7 +1,7 @@
 # Сторінки з шаблону: людина змінює лише текст
 
 **Джерело правди про код:** `packages/shared/src/pages/` · **сховище:** `scenarios`
-([`DATA_MODEL.md`](./DATA_MODEL.md)) · **видимість:** [`SPACE.md`](./SPACE.md) ·
+([`DATA_MODEL.md`](./DATA_MODEL.md)) · **видимість:** [`VISIBILITY.md`](./VISIBILITY.md) ·
 **адреса й модель контенту:** [`CONTENT_MODEL.md`](./CONTENT_MODEL.md)
 
 Сторінку можна зібрати з блоків (Page Builder) — і це редакторська робота: зони, типи блоків,
@@ -69,7 +69,7 @@
 Адресу **не питають — її показують**: `normalizePageSlug()` перекладає кирилицю латиницею
 (Telegram-payload приймає лише `A-Za-z0-9_-`), а поле у формі лишається, щоб побачити результат і за
 потреби виправити. Порожнє поле означає «склади сам» (`pageAddress`). Сегмент не може бути зайнятий
-платформою (`RESERVED_PAGE_SLUGS` — те, за чим уже стоїть маршрут, як-от `/space` чи `/pages`).
+платформою (`RESERVED_PAGE_SLUGS` — те, за чим уже стоїть маршрут, як-от `/games` чи `/pages`).
 
 **Зайнята адреса при створенні отримує хвіст (`-2`), а при правці — це відмова (409):** посилання,
 яке людина запам'ятала, повело б в інше місце (`api-dev/src/services/pages.service.ts`).
@@ -82,19 +82,19 @@
 
 - `api-dev/src/controllers/scenarios.controller.ts` — сторінка за адресою;
 - `bot-dev/src/repositories/scenario.repository.ts` — `getScenario` і список для бота;
-- `api-dev/src/services/pages.service.ts` — Простір (`/api/space/pages`), який додає ще дві умови:
-  `owner_id NOT NULL` (стрічка Простору — зроблене **людьми**, а не контент платформи) і
+- `api-dev/src/services/pages.service.ts` — публічні сторінки (`/api/public/pages`), який додає ще дві умови:
+  `owner_id NOT NULL` (спільний список — зроблене **людьми**, а не контент платформи) і
   `is_blocked = 0` (блокування — рішення платформи про людину, і жоден її прапорець його не скасовує).
 
-Деталі видимості й самого Простору — [`SPACE.md`](./SPACE.md).
+Деталі видимості — [`VISIBILITY.md`](./VISIBILITY.md).
 
 ## 5. Створення — **екран із трьох кроків**, а не форма
 
 | Вхід | Що робить |
 |---|---|
 | Список екранів → «Сторінки» | веде на `/pages` — сам список, а не форму |
-| Екран `/pages` | список своїх сторінок і «+» → `/pages/new` (`?new=1` переадресовує туди ж) |
-| Простір → «Сторінки» | опубліковані чужі; рядок веде на `/slug` |
+| Екран `/pages` → «Мої» | список своїх сторінок і «+» → `/pages/new` (`?new=1` переадресовує туди ж) |
+| Екран `/pages` → «Публічні» | опубліковані чужі; рядок веде на `/slug` |
 
 **Форму з підписами полів сторінка не вміщує.** Щоб побачити, що вийде, людині доводилось уявляти
 сторінку за назвами полів — а шаблон існує саме для того, щоб її **бачили**. Тому вкладки «Сторінка»
@@ -155,7 +155,7 @@
 | Файл | Призначення |
 |---|---|
 | `packages/shared/src/pages/` | `templates.ts` (два шаблони: каркас `layout`, поля, `buildPageConfig` / `readPageValues`), `address.ts`, `rules.ts`, `api.ts` |
-| `api-dev/src/services/pages.service.ts`, `api-dev/src/controllers/pages.controller.ts` | сторінки, які людина веде (власник і адміни), і Простір; роль ухвалює `pageRole`, запит лише звужує відбір |
-| `web-platform-dev/src/pages/user-pages/` | екран `/pages`, перегляд (сторінка цілком + липка смуга керування), **створення** (`PageCreatePage` → `PageTemplatePicker` + `PageTemplatePreview` + `PageEditor`), правка (`/pages/:id/edit`), вкладка Простору |
+| `api-dev/src/services/pages.service.ts`, `api-dev/src/controllers/pages.controller.ts` | сторінки, які людина веде (власник і адміни), і список відкритих; роль ухвалює `pageRole`, запит лише звужує відбір |
+| `web-platform-dev/src/pages/user-pages/` | екран `/pages` (погляди «Мої» / «Публічні»), перегляд (сторінка цілком + липка смуга керування), **створення** (`PageCreatePage` → `PageTemplatePicker` + `PageTemplatePreview` + `PageEditor`), правка (`/pages/:id/edit`) |
 | `packages/ui/src/hooks/useAutoGrowField.ts` | поле, яке росте за текстом — спільне для композера й редактора сторінки |
 | `bot-dev/src/shared/utils/page-caption.ts` | виведений підпис бота (назва й короткі поля), екранований для Telegram HTML |

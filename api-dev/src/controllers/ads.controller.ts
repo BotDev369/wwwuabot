@@ -6,7 +6,7 @@
  *   GET    /api/user/ads   — власні оголошення (разом із чернетками)
  *   POST   /api/user/ads   — зберегти своє (без `id` — нове, з `id` — правка)
  *   DELETE /api/user/ads   — прибрати своє за номером
- *   GET    /api/space/ads  — дошка: показане іншими, без авторизації
+ *   GET    /api/public/ads  — дошка: показане іншими, без авторизації
  *
  * Ідентичність береться **тільки** з підписаного `initData` (`resolveUserId`):
  * жоден заголовок чи параметр не називає власника (AGENTS.md §7). Дошка
@@ -88,8 +88,8 @@ export async function handleUserAds(request: Request, env: Env): Promise<Respons
   }
 }
 
-/** `GET /api/space/ads` — дошка: те, що інші показали. Без авторизації. */
-export async function handleSpaceAds(request: Request, env: Env): Promise<Response> {
+/** `GET /api/public/ads` — дошка: те, що інші показали. Без авторизації. */
+export async function handlePublicAds(request: Request, env: Env): Promise<Response> {
   const limit = new URL(request.url).searchParams.get("limit");
 
   try {

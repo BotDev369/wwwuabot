@@ -174,7 +174,7 @@ export function publicProfileView(
   return view;
 }
 
-/** Картка людини в Просторі — те саме подання, що віддає `/api/space/users`. */
+/** Картка відкритого профілю — те саме подання, що віддає `/api/public/users`. */
 export interface PublicProfile {
   id: number;
   platformUsername?: string;

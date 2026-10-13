@@ -8,10 +8,10 @@
  *   потім обріже мовчки);
  * - `types.ts` — `Ad`, `AdDraft` і відповіді API;
  * - `api.ts` — форма запиту до **двох** поверхонь: своє (`/api/user/ads`) і
- *   дошка (`/api/space/ads`).
+ *   дошка (`/api/public/ads`).
  *
  * Сховище — таблиця `ads` (`@wwwuabot/shared/database/tables`), господар
- * `api-dev`. Правила видимості — `docs/SPACE.md`.
+ * `api-dev`. Правила видимості — `docs/VISIBILITY.md`.
  *
  * @module @wwwuabot/shared/ads
  */

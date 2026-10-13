@@ -4,7 +4,7 @@
  *   GET    /api/user/shop/products   — власні товари (разом із чернетками)
  *   POST   /api/user/shop/products   — зберегти свій (без `id` — новий)
  *   DELETE /api/user/shop/products   — прибрати свій за номером
- *   GET    /api/space/shop/products  — каталог **відкритого** магазину
+ *   GET    /api/public/shop/products  — каталог **відкритого** магазину
  *
  * Ідентичність береться **тільки** з підписаного `initData` (`resolveUserId`):
  * жоден заголовок чи параметр не називає продавця (`AGENTS.md` §7). Номер
@@ -109,14 +109,14 @@ export async function handleUserShopProducts(request: Request, env: Env): Promis
 }
 
 /**
- * `GET /api/space/shop/products` — каталог магазину за його адресою.
+ * `GET /api/public/shop/products` — каталог магазину за його адресою.
  *
  * Без авторизації, і це безпечно саме тому, що видимість магазину й товарів
  * відбирає **запит до бази** (`publicShopBySlug`, `is_active = 1`), а не цей
  * файл. Закритий магазин не дістається каталогом — та сама межа, що в
  * сторінок і оголошень.
  */
-export async function handleSpaceShopProducts(request: Request, env: Env): Promise<Response> {
+export async function handlePublicShopProducts(request: Request, env: Env): Promise<Response> {
   const params = new URL(request.url).searchParams;
   const slug = (params.get("shop") ?? "").trim();
   if (!slug) return json({ ok: false, error: "Missing shop" }, 400);

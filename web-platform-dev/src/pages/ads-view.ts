@@ -22,7 +22,7 @@ import {
   type CollectionColumns,
   type CollectionLayout,
 } from "@wwwuabot/ui/collection";
-import type { SpaceAd } from "./ads-list";
+import type { PublicAd } from "./ads-list";
 
 /** Чиє оголошення показуємо: усе, своє (разом із чернетками) або лише чернетки. */
 export type AdsWhose = "all" | "mine" | "drafts";
@@ -89,7 +89,7 @@ function matchesQuery(ad: Ad, words: readonly string[]): boolean {
  * Порожній пункт фільтра читався б як «тут нічого немає» — а це неправда про
  * дошку, лише про цю добірку.
  */
-export function adsKinds(items: readonly SpaceAd[]): AdKind[] {
+export function adsKinds(items: readonly PublicAd[]): AdKind[] {
   const found = new Set<AdKind>();
   for (const { ad } of items) {
     if (AD_KINDS.includes(ad.kind)) found.add(ad.kind);
@@ -103,7 +103,7 @@ export function adsKinds(items: readonly SpaceAd[]): AdKind[] {
  * Порядок не змінюється: його дала база разом із чернетками попереду — і саме
  * тому «моє» тут фільтр, а не перестановка.
  */
-export function filterAds(items: readonly SpaceAd[], view: AdsView): SpaceAd[] {
+export function filterAds(items: readonly PublicAd[], view: AdsView): PublicAd[] {
   const words = queryWords(view.query);
 
   return items.filter(({ ad, mine }) => {

@@ -22,7 +22,7 @@
  * - **порожню назву зберегти не можна**, а приватність типово вимкнена.
  *
  * Середовище тестів — `node` (без DOM), тож перевіряємо розмітку, яку рендерить
- * React, а не дотики: так само зроблено в `SpaceAdsTab.test.tsx`.
+ * React, а не дотики: так само зроблено в `AdsBoard.test.tsx`.
  *
  * @module web-platform-dev/src/pages/user-pages/page-screens.test
  */

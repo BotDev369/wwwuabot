@@ -16,7 +16,7 @@
  * **стеля довжини** сторінки й **зайняті слова**.
  *
  * **Зайняті слова — це адреси платформи.** Сторінка відкривається за своїм
- * `slug` (catch-all у `ScenarioPage`), і саме тому сегмент `space` або `pages`
+ * `slug` (catch-all у `ScenarioPage`), і саме тому сегмент `games` або `pages`
  * до неї ніколи не дійде: маршрут довший за catch-all і виграє. Список нижче —
  * перелік **верхніх сегментів** платформи; розбіжність із `app/routes.ts`
  * стереже тест у самій платформі, бо саме вона — їхній власник.
@@ -38,15 +38,19 @@ export const PAGE_SLUG_MAX = 48;
  */
 export const RESERVED_PAGE_SLUGS: readonly string[] = [
   "account",
+  "ads",
   "api",
   "assets",
+  "assessments",
   "contacts",
   "favorites",
+  "games",
   "messages",
   "notes",
   "orders",
   "pages",
-  "space",
+  "services",
+  "users",
 ];
 
 /** Слова, які вже щось означають у продукті. */

@@ -36,7 +36,7 @@ packages/ui/      Спільні React-компоненти Page Builder (@wwwua
 - **Scenario** — контентна одиниця: екран бота. `id` — номер рядка, `slug` — адреса, `page_data` — подання вебу.
 - **Стан користувача** — рядок таблиці `users` у D1; схему **м'яко** додає `withAutoMigrate`, тож фіксованого списку полів немає. Читання БД не пише: зміни позначає `ctx.userDirty`, запис — post-middleware.
 - **Ім'я на платформі** — `users.platform_username`, і це **не** Telegram `username`: друге ми не обираємо й воно може зникнути. Позначка каже, чий це акаунт: `#` — платформа, `@` — **лише** Telegram.
-- **Простір** — відкрита стрічка платформи (`/space`, слот футера): вибірка з `users`, не рядок `scenarios`, тому адреса в неї **власна**, а не `slug`.
+- **Сервіси** — список входів у екрани платформи (третій слот футера): кожен рядок веде на екран зі **власною** адресою, а не на `slug` рядка `scenarios`. Окремої сторінки-обгортки над ними немає.
 - **Публічний профіль** — поля, які людина відкрила **сама**; фільтр стоїть у **запиті до бази**, тож приватний профіль не дістати й прямим посиланням.
 - **Page Builder** — блочна система: сторінка = рядок `scenarios` (колонка `page_data`), 4 зони, блоки рекурсивні.
 - **Сторінка з шаблону** — той самий рядок `scenarios` плюс власник (`owner_id`), видимість (`is_public`) і ключ шаблону (`template_key`); другої таблиці під контент немає.
@@ -45,7 +45,7 @@ packages/ui/      Спільні React-компоненти Page Builder (@wwwua
 - **Замовлення** — `shop_orders` + знімок (`shop_order_items`); `status` — **ключ**, не текст. Оповіщення продавцю — розмова платформи, а не друга система.
 - **Conditional Rendering** — умовний показ блоків за role/tariff/status/permissions.
 - **Design System** — стиль (Material, не вибір) через `data-brand` і **три кольори людини** (фон / основний / акцент) через `data-colors`.
-- **Схема теми** — три кольори + шрифт (**без** бренду), таблиця `theme_schemes`; «публічно» виносить її в Простір.
+- **Схема теми** — три кольори + шрифт (**без** бренду), таблиця `theme_schemes`; «публічно» виносить її в бібліотеку публічних кольорів.
 - **Notes / Contacts** — дві колекції на **спільних** кирпичиках (`@wwwuabot/ui/collection`).
 - **Самооцінка** — «Розвиток»: тести з даними, бал рахує сервер; тест може мати кілька **шкад**, рядок бази — на шкалу. `docs/ASSESSMENTS.md`.
 - **Повідомлення** — переписка між людьми платформи, без бота; адреса розмови `/messages?peer=<id>` — одна на бота й платформу.
@@ -176,7 +176,7 @@ const name = await dialog.prompt("Назва:", { validate: (v) => (v.trim() ? n
 - **Тести:** Vitest; червоний тест блокує деплой. Покриття друкує `npm run test:coverage`, а межі (загальна й для нового коду) тримає `npm run check:coverage`. Під дотиком — `*.dom.test.*` (див. `docs/QUALITY_GATE.md`).
 - **Дані й контент:** усі таблиці — в одному реєстрі, поза ним таблиць немає; контент живе в одній таблиці `scenarios`, де `id` — ідентичність, а `slug` — адреса. Карта — `docs/DATA_MODEL.md`, легасі-хвіст — `docs/DB_LEGACY.md`.
 - **Ідентичність і адмін:** єдине джерело користувача — підписаний Telegram `initData`; адмін-авторизація — тільки cookie `admin_session`. Секретів у заголовках і легасі-поверхонь (`/db-proxy`, `/setup-webhook`) не існує.
-- **Поверхні** описані власними документами — `docs/SURFACES.md` (аркуш, композер, меню, розмови), `docs/PLATFORM.md` (екран, хром, **хаби «Створити» й профілю**), `docs/SPACE.md` (Простір, рамка й видимість), `docs/ASSESSMENTS.md` + `specs/` (самооцінка й джерела), `docs/THEMES.md` (тема), `docs/PAGES.md` (сторінки з шаблону), `docs/SHOPS.md` + `docs/SHOP_UI.md` + `docs/PRODUCTS.md` (магазин), `docs/ADS.md` (дошка оголошень), `docs/GAMES.md` (ігри), `docs/DATA_MODEL.md` + `docs/D1_OPS.md` (схема D1), `docs/DESIGN_SYSTEM.md` + `docs/TOKENS.md` (вигляд), `docs/MONITORING.md` (health, Sentry, зрізи). Тут лишається тільки те, що не має іншого дому.
+- **Поверхні** описані власними документами — `docs/SURFACES.md` (аркуш, композер, меню, розмови), `docs/PLATFORM.md` (екран, хром, **хаби «Створити» й профілю**), `docs/VISIBILITY.md` (видимість і публічний профіль), `docs/ASSESSMENTS.md` + `specs/` (самооцінка й джерела), `docs/THEMES.md` (тема), `docs/PAGES.md` (сторінки з шаблону), `docs/SHOPS.md` + `docs/SHOP_UI.md` + `docs/PRODUCTS.md` (магазин), `docs/ADS.md` (дошка оголошень), `docs/GAMES.md` (ігри), `docs/DATA_MODEL.md` + `docs/D1_OPS.md` (схема D1), `docs/DESIGN_SYSTEM.md` + `docs/TOKENS.md` (вигляд), `docs/MONITORING.md` (health, Sentry, зрізи). Тут лишається тільки те, що не має іншого дому.
 - **Моніторинг:** `/health` (liveness) і `/health/deep` (D1 + KV, **503** при деградації) — саме другий опитує зовнішній монітор; Sentry є в `api-dev` і `bot-dev`, без секрету він у no-op.
 - **Бюджети розміру — різні для коду й документації.** Код: `npm run check:quality` (файли-дані не рахуються), борг — `scripts/quality-baseline.mjs`; коментарі: `npm run check:comments`, борг — `scripts/comment-baseline.mjs`.
 - **Документація:** покажчик — `docs/README.md` (**один документ = одна тема = один власник**); терміни — `docs/GLOSSARY.md`; типові задачі — `docs/RECIPES.md`; ендпоїнти — `docs/API.md` (генерований).
@@ -189,7 +189,7 @@ const name = await dialog.prompt("Назва:", { validate: (v) => (v.trim() ? n
 | Логіка оболонок без тестів (клієнти API, хуки, помічники сторінок) | прогалини показує `npm run test:coverage`; початок домену — `api-dev/src/services/messages/greeting.ts`, далі `web-admin-dev/src/shared/api/*`; хукам потрібен `*.dom.test.*` (див. `docs/QUALITY_GATE.md`) |
 | `.usr-*` / `.scn-*` у адмінці → `.wb-*` | `grep -rn "usr-\|scn-" web-admin-dev/src` (леждером не відстежується: правила в них є, тож `check:css` мовчить) |
 | Мобільний борг: тап-таргети < 44px (`.wb-close-btn`, `.wb-switch`, `--tools-row-h`) | §3, `docs/PLATFORM.md`, мобільні мірки |
-| Завантаження свого фото на платформі (`photo_url` уже є) | `docs/SPACE.md`, «чого тут ще немає» |
+| Завантаження свого фото на платформі (`photo_url` уже є) | `docs/VISIBILITY.md`, «чого тут ще немає» |
 | Cloudflare Access на адмінці, окремі домени, прод | §1, «чого ще немає» |
 
 ---

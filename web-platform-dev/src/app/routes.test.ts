@@ -37,7 +37,7 @@ const REPO_ROOT = fileURLToPath(new URL("../../../", import.meta.url));
 const FORM_SCREENS = [
   "web-platform-dev/src/pages/NotesPage.tsx",
   "web-platform-dev/src/pages/ContactsPage.tsx",
-  "web-platform-dev/src/pages/SpacePage.tsx",
+  "web-platform-dev/src/pages/AdsPage.tsx",
   "web-platform-dev/src/pages/MessagesPage.tsx",
 ];
 
@@ -70,20 +70,20 @@ describe("намір створити в адресі", () => {
 
   it("додається до адреси, не ламаючи її власних параметрів", () => {
     expect(withCreateIntent("/notes")).toBe("/notes?new=1");
-    // `?` замість `&` зробив би `new` частиною `tab` — і замість форми
-    // відкривався б список.
-    expect(withCreateIntent("/space?tab=ads")).toBe("/space?tab=ads&new=1");
+    // `?` замість `&` зробив би `new` частиною власного параметра адреси — і
+    // замість форми відкривався б список.
+    expect(withCreateIntent("/messages?peer=5")).toBe("/messages?peer=5&new=1");
   });
 
   it("знімається рівно один, а не разом із рештою", () => {
     expect(withoutCreateIntent("/notes?new=1")).toBe("/notes");
-    // Розділ дошки лишається на місці: інакше закрита форма викидала б із
-    // вкладки «Оголошення» у стрічку людей.
-    expect(withoutCreateIntent("/space?tab=ads&new=1")).toBe("/space?tab=ads");
+    // Власний параметр адреси лишається на місці: інакше закрита форма
+    // викидала б людину з відкритої розмови.
+    expect(withoutCreateIntent("/messages?peer=5&new=1")).toBe("/messages?peer=5");
   });
 
   it("доданий і знятий намір дають ту саму адресу", () => {
-    for (const path of ["/notes", "/contacts", "/messages", "/space?tab=ads"]) {
+    for (const path of ["/notes", "/contacts", "/messages", "/messages?peer=5"]) {
       expect(withoutCreateIntent(withCreateIntent(path)), path).toBe(path);
     }
   });

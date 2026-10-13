@@ -3,7 +3,7 @@
 **Джерело правди про правила:** `packages/shared/src/shop/` · **сховище:** рядок `scenarios` і
 таблиці `shop_*` ([`DATA_MODEL.md`](./DATA_MODEL.md)) · **товар і його види:**
 [`PRODUCTS.md`](./PRODUCTS.md) · **адреса й контент:**
-[`CONTENT_MODEL.md`](./CONTENT_MODEL.md) · **видимість:** [`SPACE.md`](./SPACE.md) · **стан:** правила,
+[`CONTENT_MODEL.md`](./CONTENT_MODEL.md) · **видимість:** [`VISIBILITY.md`](./VISIBILITY.md) · **стан:** правила,
 таблиці, файли, товари, замовлення (черга, фільтри, правка) і доступ (власник і адміни) уже в коді
 (§9), картка товару — у [`PRODUCTS.md`](./PRODUCTS.md) §3, бракує сторінки товару й каталогу з
 власною адресою (§10)

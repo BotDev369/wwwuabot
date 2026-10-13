@@ -18,12 +18,12 @@
 import type { Ad, AdDraft } from "@wwwuabot/shared/ads";
 
 /** Оголошення в списку **разом із тим, чиє воно**: дії бувають лише свої. */
-export interface SpaceAd {
+export interface PublicAd {
   ad: Ad;
   mine: boolean;
 }
 
-export function composeAds(board: readonly Ad[], own: readonly Ad[]): SpaceAd[] {
+export function composeAds(board: readonly Ad[], own: readonly Ad[]): PublicAd[] {
   const ownIds = new Set(own.map((ad) => ad.id));
   const drafts = own.filter((ad) => !ad.isActive).map((ad) => ({ ad, mine: true }));
   const published = board.map((ad) => ({ ad, mine: ownIds.has(ad.id) }));

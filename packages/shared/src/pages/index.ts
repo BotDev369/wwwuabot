@@ -20,11 +20,11 @@
  *   замовлення та повідомлення (`pageStaffIds`);
  * - `types.ts` — `UserPage`, `PageDraft`, `PageStaff`, публічне подання `PublicPage`;
  * - `api.ts` — форма запиту до **двох** поверхонь: свої (`/api/user/pages`) і
- *   опубліковані (`/api/space/pages`).
+ *   опубліковані (`/api/public/pages`).
  *
  * Сховище — той самий рядок `scenarios` (`@wwwuabot/shared/database/tables`),
  * господар `api-dev`. Чому не друга таблиця й що таке публічність —
- * `docs/CONTENT_MODEL.md` і `docs/SPACE.md`.
+ * `docs/CONTENT_MODEL.md` і `docs/VISIBILITY.md`.
  *
  * @module @wwwuabot/shared/pages
  */

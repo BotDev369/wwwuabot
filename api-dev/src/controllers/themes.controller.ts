@@ -4,7 +4,7 @@
  *   GET    /api/user/themes   — власні схеми (разом із закритими)
  *   POST   /api/user/themes   — зберегти свою (без `id` — нова, з `id` — правка)
  *   DELETE /api/user/themes   — прибрати свою за номером
- *   GET    /api/space/themes  — спільна бібліотека: те, що інші відкрили
+ *   GET    /api/public/themes  — спільна бібліотека: те, що інші відкрили
  *
  * Ідентичність береться **тільки** з підписаного `initData` (`resolveUserId`):
  * жоден заголовок чи параметр не називає власника (AGENTS.md §7). Спільна
@@ -86,8 +86,8 @@ export async function handleUserThemes(request: Request, env: Env): Promise<Resp
   }
 }
 
-/** `GET /api/space/themes` — спільна бібліотека. Без авторизації. */
-export async function handleSpaceThemes(request: Request, env: Env): Promise<Response> {
+/** `GET /api/public/themes` — спільна бібліотека. Без авторизації. */
+export async function handlePublicThemes(request: Request, env: Env): Promise<Response> {
   const limit = new URL(request.url).searchParams.get("limit");
 
   try {

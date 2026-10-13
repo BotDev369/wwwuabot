@@ -12,7 +12,7 @@
 import { describe, expect, it } from "vitest";
 import type { Env } from "../shared/types";
 import { INIT_DATA_HEADER } from "@wwwuabot/shared/security/telegram";
-import { handleSpaceShopOrders, handleUserShopOrders } from "./shop-orders.controller";
+import { handlePublicShopOrders, handleUserShopOrders } from "./shop-orders.controller";
 
 const BOT_TOKEN = "123456:TEST-BOT-TOKEN";
 const USER_ID = 777;
@@ -108,8 +108,8 @@ function request(path: string, body: unknown, initData?: string): Request {
 describe("⛔ тіло, з яким ми не працюємо", () => {
   it("розміщення без підписаного initData нічого не пише", async () => {
     const db = makeDb();
-    const res = await handleSpaceShopOrders(
-      request("/api/space/shop/orders?shop=kava", { items: [] }),
+    const res = await handlePublicShopOrders(
+      request("/api/public/shop/orders?shop=kava", { items: [] }),
       db.env,
     );
 
@@ -131,8 +131,8 @@ describe("⛔ тіло, з яким ми не працюємо", () => {
 
   it("не-об'єкт у тілі розміщення не доходить до бази", async () => {
     const db = makeDb();
-    const res = await handleSpaceShopOrders(
-      request("/api/space/shop/orders?shop=kava", `"кошик"`, await signedInitData()),
+    const res = await handlePublicShopOrders(
+      request("/api/public/shop/orders?shop=kava", `"кошик"`, await signedInitData()),
       db.env,
     );
 
@@ -159,8 +159,8 @@ describe("⛔ тіло, з яким ми не працюємо", () => {
 describe("зміст відповідає правилу замовлення", () => {
   it("порожній кошик відхиляє `validateOrderDraft`, а не розбір тіла", async () => {
     const db = makeDb();
-    const res = await handleSpaceShopOrders(
-      request("/api/space/shop/orders?shop=kava", { items: [] }, await signedInitData()),
+    const res = await handlePublicShopOrders(
+      request("/api/public/shop/orders?shop=kava", { items: [] }, await signedInitData()),
       db.env,
     );
     const body = (await res.json()) as { ok?: boolean; error?: string };

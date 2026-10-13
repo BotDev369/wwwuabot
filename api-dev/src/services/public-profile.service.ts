@@ -41,9 +41,9 @@ export interface PublicProfileSettings {
   openFields: PublicProfileField[];
 }
 
-/** Скільки людей віддає стрічка Простору за раз і яка межа запиту. */
-export const SPACE_PAGE_SIZE = 60;
-const SPACE_PAGE_MAX = 100;
+/** Скільки людей віддає відкрита стрічка за раз і яка межа запиту. */
+export const PUBLIC_PAGE_SIZE = 60;
+const PUBLIC_PAGE_MAX = 100;
 
 /** Колонки **власного** профілю: без Telegram — щоб витік не залежав від уваги. */
 const OWN_COLUMNS = "about, profile_public, profile_public_fields";
@@ -68,10 +68,10 @@ function toSource(row: Record<string, unknown>): PublicProfileSource {
 }
 
 /** Скільки віддавати за запитом: сміття й перебір дають межі, а не помилку. */
-export function clampSpaceLimit(raw: unknown): number {
+export function clampPublicLimit(raw: unknown): number {
   const value = Number(raw);
-  if (!Number.isFinite(value) || value <= 0) return SPACE_PAGE_SIZE;
-  return Math.min(Math.floor(value), SPACE_PAGE_MAX);
+  if (!Number.isFinite(value) || value <= 0) return PUBLIC_PAGE_SIZE;
+  return Math.min(Math.floor(value), PUBLIC_PAGE_MAX);
 }
 
 export class PublicProfileService {
@@ -144,7 +144,7 @@ export class PublicProfileService {
   }
 
   /** Люди, які самі відкрили свій профіль, — у порядку останньої зміни. */
-  async listPublic(limit: unknown = SPACE_PAGE_SIZE): Promise<PublicProfile[]> {
+  async listPublic(limit: unknown = PUBLIC_PAGE_SIZE): Promise<PublicProfile[]> {
     await this.ensureSchema();
 
     const rows = await this.env.DB.prepare(
@@ -153,7 +153,7 @@ export class PublicProfileService {
         ORDER BY updated_at DESC, user_id DESC
         LIMIT ?`,
     )
-      .bind(clampSpaceLimit(limit))
+      .bind(clampPublicLimit(limit))
       .all<Record<string, unknown>>();
 
     return (rows.results ?? []).map((row) =>

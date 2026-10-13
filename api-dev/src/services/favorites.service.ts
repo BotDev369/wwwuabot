@@ -18,7 +18,10 @@ export async function resolveFavorite(
     return {
       ...target,
       title: profile.platformUsername ? `#${profile.platformUsername}` : "Ім'я приховано",
-      href: `/space/u/${target.targetId}`,
+      // Адреси в людини немає: її показують карткою у списку, а не окремою
+      // сторінкою, тож відкривати з «Обраного» нічого — значення те саме, що
+      // в недоступного контенту.
+      href: null,
     };
   }
 

@@ -28,7 +28,7 @@ Cloudflare Worker: Telegram Mini App для wwwuabot (React 19 + Vite 8 + Tailwi
 | `*` | catch-all: сторінка за її адресою (`slug`) — рендерить `pages/ScenarioPage.tsx` |
 | `/account`, `/orders` | дані людини й робота магазинів, які вона веде |
 | `/favorites`, `/services` | обрані сторінки та список сервісів |
-| `/space`, `/space/u/:id`, `/space/g/:key` | Простір: стрічка, людина, гра |
+| `/ads`, `/games`, `/games/:key`, `/users` | відкритий вміст: дошка оголошень, ігри, люди |
 | `/notes`, `/contacts`, `/messages`, `/assessments/:key?` | власні дані людини |
 | `/pages`, `/pages/new`, `/pages/:id` (+ `products`, `orders`, `edit`) | сторінка з шаблону та її робота |
 
