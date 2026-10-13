@@ -12,7 +12,7 @@
  * належить жодній сторінці, тож він стоїть на рівні маршруту, а не всередині
  * `ScenarioPage`.
  *
- * `/profile`, `/create`, `/space`, `/notes`, `/contacts`, `/messages` і
+ * `/account`, `/orders`, `/space`, `/notes`, `/contacts`, `/messages` і
  * `/pages` стоять **перед** catch-all навмисно: це єдині екрани, які не є
  * рядком контенту (`slug`). Їхні адреси дає `app/routes.ts` — один власник на
  * маршрут і пункт навігації. Саме тому ці сегменти не можуть стати адресою
@@ -28,19 +28,17 @@ import { PlatformShell } from "@/layout/PlatformShell";
 import {
   CONTACTS_ROUTE,
   FAVORITES_ROUTE,
-  CREATE_ROUTE,
+  ACCOUNT_PATH,
+  ACCOUNT_ROUTE,
   ASSESSMENTS_ROUTE,
   MESSAGES_PATH,
   NOTES_ROUTE,
+  ORDERS_ROUTE,
   PAGE_EDIT_ROUTE,
   PAGES_NEW_ROUTE,
   PAGES_ROUTE,
-  PROFILE_ACCOUNT_PATH,
-  PROFILE_ORDERS_PATH,
   SHOP_ORDERS_ROUTE,
   SHOP_PRODUCTS_ROUTE,
-  PROFILE_ROUTE,
-  PROFILE_PATH,
   SERVICES_ROUTE,
   SPACE_GAME_ROUTE,
   SPACE_ROUTE,
@@ -53,7 +51,6 @@ import { MessagesPage } from "@/pages/MessagesPage";
 import { NotesPage } from "@/pages/NotesPage";
 import { ProfileAccountPage } from "@/pages/ProfileAccountPage";
 import { ProfileOrdersPage } from "@/pages/ProfileOrdersPage";
-import { ProfilePage } from "@/pages/ProfilePage";
 import { ServicesPage } from "@/pages/ServicesPage";
 import { ScenarioPage } from "@/pages/ScenarioPage";
 import { SpaceGamePage } from "@/pages/games/SpaceGamePage";
@@ -72,26 +69,21 @@ export const router = createBrowserRouter([
   {
     element: <PlatformShell />,
     children: [
-      { index: true, element: <Navigate to={PROFILE_PATH} replace /> },
-      // Профіль — не контент, а дані користувача: хаб із рядком акаунта й
-      // розділами платформи.
-      { path: PROFILE_ROUTE, element: <ProfilePage /> },
+      { index: true, element: <Navigate to={ACCOUNT_PATH} replace /> },
       // Сервіси — хаб платформи: список екранів, які вже працюють.
       { path: SERVICES_ROUTE, element: <ServicesPage /> },
       { path: FAVORITES_ROUTE, element: <FavoritesPage /> },
-      // Акаунт — окрема адреса під хабу: платформа й Telegram окремими
+      // Акаунт — не контент, а дані користувача: платформа й Telegram окремими
       // розділами, а не одним суцільним списком.
-      { path: PROFILE_ACCOUNT_PATH, element: <ProfileAccountPage /> },
-      // Замовлення — пункт профілю: у яких магазинах людина працює й куди йти
-      // за роботою. Під сторінкою магазину вже стоїть його черга замовлень,
-      // тож цей екран лише називає магазини (`ProfileOrdersPage`).
-      { path: PROFILE_ORDERS_PATH, element: <ProfileOrdersPage /> },
+      { path: ACCOUNT_ROUTE, element: <ProfileAccountPage /> },
+      // Замовлення — у яких магазинах людина працює й куди йти за роботою. Під
+      // сторінкою магазину вже стоїть його черга замовлень, тож цей екран лише
+      // називає магазини (`ProfileOrdersPage`).
+      { path: ORDERS_ROUTE, element: <ProfileOrdersPage /> },
       // Тема — **меню, а не розділ**: палітра в хедері відкриває `ThemeMenu`,
       // де пункти («Кольори теми», «Шрифт теми») розкриваються там же, а
       // редактор теми — модалкою. Адреси тут не потрібно: вибір вигляду не
       // мають ні посилати, ні відкривати в іншому місці.
-      // Старі посилання на створення ведуть у I: всі дії хабу вже там.
-      { path: CREATE_ROUTE, element: <Navigate to={PROFILE_PATH} replace /> },
       // «Розвиток» — самооцінка. Довший шлях проходження іде **перед**
       // розділом: інакше `:key` зʼїсть `assessments` і відкрив би порожній
       // список замість тесту (та сама причина, що в `:id` під сторінками).

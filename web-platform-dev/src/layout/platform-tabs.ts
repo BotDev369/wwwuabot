@@ -1,14 +1,13 @@
 import { DATE_ANALYSIS_PATH, toWebPath } from "@wwwuabot/shared/content";
 import type { ShellTab, TabBarItem } from "@wwwuabot/ui/nav";
 import {
+  ACCOUNT_PATH,
   CONTACTS_PATH,
-  CREATE_PATH,
   FAVORITES_PATH,
   MESSAGES_PATH,
   NOTES_PATH,
+  ORDERS_PATH,
   PAGES_PATH,
-  PROFILE_ACCOUNT_PATH,
-  PROFILE_PATH,
   SERVICES_PATH,
 } from "../app/routes";
 
@@ -24,8 +23,8 @@ export const MESSAGES_TAB_KEY = "profile";
  * Три пункти смуги — **самі знаки**: підписів під іконками немає, а `label`
  * лишається лише назвою для скрінрідера (`aria-label`).
  *
- * «Я» веде на **акаунт**, а не на хаб: за знаком людини стоїть людина, а
- * хаб — це список, який тепер показує «Сервіси».
+ * «Я» веде на **акаунт**: за знаком людини стоїть людина, а список екранів —
+ * «Сервіси».
  */
 export const PLATFORM_TABS: readonly PlatformTab[] = [
   {
@@ -33,7 +32,7 @@ export const PLATFORM_TABS: readonly PlatformTab[] = [
     label: "Акаунт",
     icon: "user",
     iconActive: "user-solid",
-    to: PROFILE_ACCOUNT_PATH,
+    to: ACCOUNT_PATH,
   },
   { key: "favorites", label: "Обране", icon: "thumbs-up", to: FAVORITES_PATH },
   { key: "services", label: "Сервіси", icon: "grid", to: SERVICES_PATH },
@@ -58,8 +57,8 @@ export function platformSectionPath(pathname: string): string {
   if (pathname === SERVICES_PATH || pathname.startsWith(`${SERVICES_PATH}/`)) return SERVICES_PATH;
   const own = [
     "/",
-    PROFILE_PATH,
-    CREATE_PATH,
+    ACCOUNT_PATH,
+    ORDERS_PATH,
     MESSAGES_PATH,
     NOTES_PATH,
     CONTACTS_PATH,
@@ -67,9 +66,9 @@ export function platformSectionPath(pathname: string): string {
     DATE_ANALYSIS_PATH,
   ];
   if (own.some((path) => pathname === path || (path !== "/" && pathname.startsWith(`${path}/`)))) {
-    // Саме адреса пункту, а не хабу: пункт «Я» веде на акаунт, тож підсвітити
-    // його може лише та адреса.
-    return PROFILE_ACCOUNT_PATH;
+    // Саме адреса пункту: пункт «Я» веде на акаунт, тож підсвітити його може
+    // лише та адреса — разом з екранами, які людиною й зайняті.
+    return ACCOUNT_PATH;
   }
   // Сторінка контенту за `slug` не належить жодному пункту — і не мусить його
   // підсвічувати: з трьох пунктів жоден не є «читати чуже».

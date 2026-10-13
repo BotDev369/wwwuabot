@@ -37,15 +37,15 @@ export const PAGE_SLUG_MAX = 48;
  * сторінка за такою адресою не відкрилась би взагалі.
  */
 export const RESERVED_PAGE_SLUGS: readonly string[] = [
+  "account",
   "api",
   "assets",
   "contacts",
-  "create",
   "favorites",
   "messages",
   "notes",
+  "orders",
   "pages",
-  "profile",
   "space",
 ];
 

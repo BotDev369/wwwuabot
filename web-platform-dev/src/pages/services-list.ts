@@ -1,6 +1,6 @@
 /**
  * Сервіси платформи — **дані**, а не розмітка: кожен рядок веде на екран, який
- * уже існує, а знак той самий, що в хабі I.
+ * уже існує, а знак той самий, що в рядках акаунта.
  *
  * @module web-platform-dev/src/pages/services-list
  */
@@ -12,6 +12,7 @@ import {
   CONTACTS_PATH,
   MESSAGES_PATH,
   NOTES_PATH,
+  ORDERS_PATH,
   PAGES_PATH,
   SPACE_PATH,
 } from "../app/routes";
@@ -31,5 +32,6 @@ export const SERVICES: readonly ServiceEntry[] = [
   { key: "contacts", label: "Контакти", icon: "contact", to: CONTACTS_PATH },
   { key: "messages", label: "Повідомлення", icon: "message-square", to: MESSAGES_PATH },
   { key: "pages", label: "Сторінки", icon: "page", to: PAGES_PATH },
+  { key: "orders", label: "Замовлення", icon: "tag", to: ORDERS_PATH },
   { key: "assessments", label: "Розвиток", icon: "checklist", to: ASSESSMENTS_PATH },
 ];

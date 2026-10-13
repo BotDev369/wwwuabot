@@ -62,7 +62,7 @@ describe("футер платформи", () => {
   });
 
   it("акаунт підсвічується на власних екранах людини", () => {
-    renderAt("/profile/account");
+    renderAt("/account");
 
     const active = slots().filter((slot) => slot.getAttribute("aria-current") === "page");
     expect(active).toHaveLength(1);

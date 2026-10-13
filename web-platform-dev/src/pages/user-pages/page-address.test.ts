@@ -14,13 +14,13 @@
 import { describe, expect, it } from "vitest";
 import { RESERVED_PAGE_SLUGS } from "@wwwuabot/shared/pages";
 import {
+  ACCOUNT_ROUTE,
   CONTACTS_ROUTE,
-  CREATE_ROUTE,
   FAVORITES_ROUTE,
   MESSAGES_PATH,
   NOTES_ROUTE,
+  ORDERS_ROUTE,
   PAGES_ROUTE,
-  PROFILE_ROUTE,
   SPACE_ROUTE,
 } from "../../app/routes";
 
@@ -32,11 +32,11 @@ function topSegment(path: string): string {
 describe("адреси, зайняті платформою", () => {
   it("кожен верхній сегмент маршруту не може стати адресою сторінки", () => {
     const segments = [
-      PROFILE_ROUTE,
+      ACCOUNT_ROUTE,
+      ORDERS_ROUTE,
       SPACE_ROUTE,
       NOTES_ROUTE,
       CONTACTS_ROUTE,
-      CREATE_ROUTE,
       FAVORITES_ROUTE,
       PAGES_ROUTE,
       topSegment(MESSAGES_PATH),

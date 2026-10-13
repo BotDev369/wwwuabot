@@ -14,7 +14,6 @@
     "./composer": "./src/composer/index.ts",
     "./hooks": "./src/hooks/index.ts",
     "./dialog": "./src/dialog/index.ts",
-    "./hub": "./src/hub/index.ts",
     "./menu": "./src/menu/index.ts",
     "./contacts": "./src/contacts/index.ts",
     "./messages": "./src/messages/index.ts",

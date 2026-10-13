@@ -65,7 +65,7 @@
 | Простір, профіль, видимість | [`SPACE.md`](./SPACE.md) | [`ADS.md`](./ADS.md), [`GAMES.md`](./GAMES.md) |
 | Самооцінка «Розвиток» | [`ASSESSMENTS.md`](./ASSESSMENTS.md) | [`ASSESSMENT_PEERS.md`](./ASSESSMENT_PEERS.md) |
 | Заголовки безпеки, CORS, CSP | [`SECURITY.md`](./SECURITY.md), код — `packages/shared/src/security/headers.ts`, стережить `npm test` |
-| Доступ, адмін-гейт, ідентичність | [`API.md`](./API.md) (групи доступу), [`PLATFORM.md`](./PLATFORM.md) «Хаби» | — |
+| Доступ, адмін-гейт, ідентичність | [`API.md`](./API.md) (групи доступу), [`PLATFORM.md`](./PLATFORM.md) «Сервіси, акаунт і замовлення» | — |
 | Мониторинг, падіння, зрізи | [`MONITORING.md`](./MONITORING.md) | [`QUALITY_GATE.md`](./QUALITY_GATE.md) |
 | Написати або винести правило | [`DOC_GROWTH.md`](./DOC_GROWTH.md) | [`AGENTS.md`](../AGENTS.md) — адреса, не копія |
 | Написати коментар у коді | [`COMMENTS.md`](./COMMENTS.md) | — |

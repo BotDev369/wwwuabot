@@ -25,7 +25,6 @@ import { fileURLToPath } from "node:url";
 import { describe, expect, it } from "vitest";
 import {
   CREATE_FORM_STATE,
-  CREATE_PATH,
   isCreateFormEntry,
   readCreateIntent,
   withCreateIntent,
@@ -42,26 +41,21 @@ const FORM_SCREENS = [
   "web-platform-dev/src/pages/MessagesPage.tsx",
 ];
 
-describe("вхід у I", () => {
+describe("вхід у продукт", () => {
   const router = readFileSync(join(REPO_ROOT, "web-platform-dev/src/app/router.tsx"), "utf8");
-  const profile = readFileSync(
-    join(REPO_ROOT, "web-platform-dev/src/pages/ProfilePage.tsx"),
-    "utf8",
-  );
 
-  it("кореневий шлях і старий хаб створення ведуть у профіль без запису в історії", () => {
-    expect(router).toContain("{ index: true, element: <Navigate to={PROFILE_PATH} replace /> }");
-    expect(router).toContain(
-      "{ path: CREATE_ROUTE, element: <Navigate to={PROFILE_PATH} replace /> }",
-    );
+  it("корінь веде на акаунт без запису в історії", () => {
+    expect(router).toContain("{ index: true, element: <Navigate to={ACCOUNT_PATH} replace /> }");
   });
 
-  it("I зводить акаунт, налаштування, власні розділи та поверхні створення", () => {
-    for (const component of ["UserAccountRow", "MenuList", "HubList", "CreateSheetHost"]) {
-      expect(profile).toContain(`<${component}`);
-    }
-    expect(profile).toContain('className="wb-page-title">I</h1>');
-    expect(profile).toContain("usePersonalHub()");
+  it("акаунт і замовлення — власні маршрути, а не рядок контенту", () => {
+    expect(router).toContain("{ path: ACCOUNT_ROUTE, element: <ProfileAccountPage /> }");
+    expect(router).toContain("{ path: ORDERS_ROUTE, element: <ProfileOrdersPage /> }");
+  });
+
+  it("⛔ хабу профілю немає — ні сторінки, ні адреси", () => {
+    expect(router).not.toContain("PROFILE");
+    expect(router).not.toContain("/profile");
   });
 });
 
@@ -95,7 +89,7 @@ describe("намір створити в адресі", () => {
   });
 
   it("позначку має лише запис форми — і лише він дозволяє крок назад", () => {
-    // Позначку кладуть двоє: хаб (вхід у створення) і `useCreateForm.openForm`.
+    // Позначку кладе `useCreateForm.openForm` — тобто вхід у створення з екрана.
     expect(isCreateFormEntry(CREATE_FORM_STATE)).toBe(true);
     // Чужий `state` (або його відсутність) — це не запис форми: під нею розділу
     // немає, і «назад» звідти виводить із продукту.
@@ -104,10 +98,6 @@ describe("намір створити в адресі", () => {
     expect(isCreateFormEntry({})).toBe(false);
     expect(isCreateFormEntry({ createForm: false })).toBe(false);
     expect(isCreateFormEntry("createForm")).toBe(false);
-  });
-
-  it("хаб має власну адресу — слот футера веде саме в нього", () => {
-    expect(CREATE_PATH).toBe("/create");
   });
 });
 

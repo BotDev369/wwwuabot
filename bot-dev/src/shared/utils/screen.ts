@@ -1,4 +1,4 @@
-import { FAVORITES_PATH, PROFILE_PATH, SPACE_PATH } from "@wwwuabot/shared/app/routes";
+import { ACCOUNT_PATH, FAVORITES_PATH, SPACE_PATH } from "@wwwuabot/shared/app/routes";
 import type { AppContext } from "../types/env";
 import type { ScenarioButton } from "../types/scenario";
 import { PLATFORM_ROW } from "../config/texts";
@@ -7,11 +7,14 @@ import { log } from "./debug";
 import type { InputRichMessage, InlineKeyboardButton } from "grammy/types";
 
 /**
- * Три екрани платформи в тому самому порядку, що й пункти футера: спершу себе,
- * потім збережене, потім інших людей.
+ * Три екрани платформи: спершу себе, потім збережене, потім інших людей.
+ *
+ * Акаунт і обране — ті самі два входи, що й у футері платформи; третім стоїть
+ * Простір, хоч у футері на тому місці вже список сервісів: у чаті кнопка веде
+ * в стрічку, а не в список екранів.
  */
 const PLATFORM_TARGETS: readonly { icon: string; path: string }[] = [
-  { icon: PLATFORM_ROW.profile, path: PROFILE_PATH },
+  { icon: PLATFORM_ROW.account, path: ACCOUNT_PATH },
   { icon: PLATFORM_ROW.favorites, path: FAVORITES_PATH },
   { icon: PLATFORM_ROW.space, path: SPACE_PATH },
 ];

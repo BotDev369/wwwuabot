@@ -114,11 +114,8 @@ export type { UserProfileData, UserProfileCardProps } from "./components/UserPro
 export { FieldRow as UserProfileField } from "./components/user-profile/FieldRow";
 /** Блок «ім'я на платформі» окремо від картки — сторінка акаунта складається з нього. */
 export { PlatformHandle } from "./components/user-profile/PlatformHandle";
-/** Обліковий рядок: два фото й два імені (`#` — платформа, `@` — Telegram). */
-export { UserAccountRow } from "./components/user-profile/AccountRow";
-export type { UserAccountRowProps } from "./components/user-profile/AccountRow";
 /**
- * Два підсписки акаунта — по одному на розділ (`/profile/account`):
+ * Два підсписки акаунта — по одному на розділ (`/account`):
  * `UserProfileDataSection` — роль, тариф, статус, права (наше),
  * `UserTelegramDataSection` — усе, що віддав Telegram, як є.
  */

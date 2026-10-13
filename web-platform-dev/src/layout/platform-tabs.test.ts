@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { buildTabBarItems } from "@wwwuabot/ui/nav";
-import { FAVORITES_PATH, PROFILE_ACCOUNT_PATH, SERVICES_PATH } from "../app/routes";
+import { ACCOUNT_PATH, FAVORITES_PATH, SERVICES_PATH } from "../app/routes";
 import { platformSectionPath, toShellTabs, withUnreadBadge } from "./platform-tabs";
 
 function items(pathname = "/") {
@@ -22,11 +22,7 @@ describe("три розділи платформи", () => {
   it("Акаунт, Обране, Сервіси — рівні слоти з іконкою та адресою", () => {
     const tabs = toShellTabs();
     expect(tabs.map((tab) => tab.label)).toEqual(["Акаунт", "Обране", "Сервіси"]);
-    expect(tabs.map((tab) => tab.href)).toEqual([
-      PROFILE_ACCOUNT_PATH,
-      FAVORITES_PATH,
-      SERVICES_PATH,
-    ]);
+    expect(tabs.map((tab) => tab.href)).toEqual([ACCOUNT_PATH, FAVORITES_PATH, SERVICES_PATH]);
     expect(tabs.every((tab) => !tab.primary && tab.icon && tab.href)).toBe(true);
     expect(tabs[1].icon).toBe("thumbs-up");
     expect(tabs[2].icon).toBe("grid");
@@ -34,10 +30,9 @@ describe("три розділи платформи", () => {
 
   it("власні екрани підсвічують «Акаунт», сервіси — «Сервіси»", () => {
     const own = [
-      "/profile",
-      "/profile/theme",
-      "/profile/account",
-      "/create",
+      "/",
+      ACCOUNT_PATH,
+      "/orders",
       "/notes",
       "/contacts",
       "/messages",

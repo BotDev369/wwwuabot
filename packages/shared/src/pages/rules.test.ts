@@ -32,7 +32,7 @@ describe("адреса сторінки", () => {
 
   it("⛔ зайнятий платформою сегмент — причина, а не тихо змінений slug", () => {
     // Інакше збережене посилання вело б у розділ платформи, а не на сторінку.
-    for (const taken of ["space", "pages", "profile", "api"]) {
+    for (const taken of ["space", "pages", "account", "api"]) {
       const result = pageAddress(taken, "Байдуже");
       expect(result.ok).toBe(false);
     }
