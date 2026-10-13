@@ -1,4 +1,4 @@
-import { ACCOUNT_PATH, FAVORITES_PATH, SPACE_PATH } from "@wwwuabot/shared/app/routes";
+import { ACCOUNT_PATH, FAVORITES_PATH, SERVICES_PATH } from "@wwwuabot/shared/app/routes";
 import type { AppContext } from "../types/env";
 import type { ScenarioButton } from "../types/scenario";
 import { PLATFORM_ROW } from "../config/texts";
@@ -7,16 +7,14 @@ import { log } from "./debug";
 import type { InputRichMessage, InlineKeyboardButton } from "grammy/types";
 
 /**
- * Три екрани платформи: спершу себе, потім збережене, потім інших людей.
- *
- * Акаунт і обране — ті самі два входи, що й у футері платформи; третім стоїть
- * Простір, хоч у футері на тому місці вже список сервісів: у чаті кнопка веде
- * в стрічку, а не в список екранів.
+ * Три екрани платформи — **ті самі й у тому ж порядку**, що пункти футера:
+ * акаунт, обране, Сервіси. Розійтися вони не мають права: людина, яка звикла
+ * до футера, шукає в чаті ті самі входи.
  */
 const PLATFORM_TARGETS: readonly { icon: string; path: string }[] = [
   { icon: PLATFORM_ROW.account, path: ACCOUNT_PATH },
   { icon: PLATFORM_ROW.favorites, path: FAVORITES_PATH },
-  { icon: PLATFORM_ROW.space, path: SPACE_PATH },
+  { icon: PLATFORM_ROW.services, path: SERVICES_PATH },
 ];
 
 export interface CaptionBlocks {

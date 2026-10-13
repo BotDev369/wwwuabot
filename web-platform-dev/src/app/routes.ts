@@ -44,13 +44,12 @@ import { isPageTemplateKey, type PageTemplateKey } from "@wwwuabot/shared/pages"
 export { MESSAGES_PATH } from "@wwwuabot/shared/messages";
 
 /**
- * Три адреси, які читає ще й бот: його клавіатура під чатом веде на профіль,
- * обране й Простір (`bot-dev/src/modules/access`). Літерали звідси, а не
- * нижче в цьому файлі: два власники однієї адреси розійшлися б тихо, і
- * кнопка в чаті відкрила б 404.
+ * Три адреси, які читає ще й бот: рядок кнопок під першим екраном бота веде на
+ * **ті самі екрани й у тому ж порядку**, що пункти футера (`screen.ts` у
+ * `bot-dev`). Власник у них один — спільний модуль, а не цей файл: два літерали
+ * однієї адреси розійшлися б тихо, і кнопка в чаті відкрила б 404.
  */
-export { ACCOUNT_PATH, FAVORITES_PATH, SPACE_PATH } from "@wwwuabot/shared/app/routes";
-import { SPACE_PATH } from "@wwwuabot/shared/app/routes";
+export { ACCOUNT_PATH, FAVORITES_PATH, SERVICES_PATH } from "@wwwuabot/shared/app/routes";
 
 export const FAVORITES_ROUTE = "favorites";
 
@@ -89,8 +88,13 @@ export const ORDERS_PATH = `/${ORDERS_ROUTE}`;
  * сторінка контенту, а **вибірка** з даних (`users`, `ads`). Вигадувати під
  * нього `slug` означало б завести друге правило «яка адреса відповідає цьому
  * екрану» (AGENTS.md §7).
+ *
+ * І тут, а не в `@wwwuabot/shared/app/routes`: спільний модуль тримає рівно ті
+ * адреси, які читає ще й бот, а його рядок кнопок веде на «Сервіси», у яких
+ * Простір уже стоїть рядком списку.
  */
 export const SPACE_ROUTE = "space";
+export const SPACE_PATH = `/${SPACE_ROUTE}`;
 
 /** Людина в Просторі — окрема адреса: за карткою стоїть один профіль. */
 export const SPACE_USER_ROUTE = "u";
@@ -281,9 +285,12 @@ export const CONTACTS_PATH = `/${CONTACTS_ROUTE}`;
 /**
  * Сервіси — хаб платформи: список екранів, які вже працюють. Адреса власна, а
  * не `slug`: хаб — це список входів, а не сторінка контенту (AGENTS.md §7).
+ *
+ * Сам шлях — реекспорт зі спільного модуля вище: він один на платформу й бота
+ * (третій пункт футера = третя кнопка під першим екраном). Тут лишається тільки
+ * сегмент маршруту.
  */
 export const SERVICES_ROUTE = "services";
-export const SERVICES_PATH = `/${SERVICES_ROUTE}`;
 
 /**
  * «Розвиток» — самооцінка, власні дані людини, не рядок `scenarios`.

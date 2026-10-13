@@ -1,7 +1,7 @@
 /** Regression tests for the Telegram screen keyboard builder. */
 
 import { describe, expect, it, vi } from "vitest";
-import { ACCOUNT_PATH, FAVORITES_PATH, SPACE_PATH } from "@wwwuabot/shared/app/routes";
+import { ACCOUNT_PATH, FAVORITES_PATH, SERVICES_PATH } from "@wwwuabot/shared/app/routes";
 import type { AppContext, ScreenState } from "../types/env";
 import {
   buildCaption,
@@ -98,16 +98,16 @@ describe("перший екран: один рядок екранів платф
 
     expect(buttons).toHaveLength(1);
     expect(buttons[0]).toHaveLength(3);
-    expect(buttons[0].map((b) => b.text)).toEqual(["👤", "👍", "👥"]);
+    expect(buttons[0].map((b) => b.text)).toEqual(["👤", "👍", "🧰"]);
   });
 
-  it("⛔ три кнопки ведуть на екрани платформи", () => {
+  it("⛔ три кнопки ведуть на ті самі адреси, що й пункти футера платформи", () => {
     const buttons = buildScreenButtons(landing, PLATFORM);
 
     expect(buttons[0].map((b) => b.web_app?.url)).toEqual([
       `${PLATFORM}${ACCOUNT_PATH}`,
       `${PLATFORM}${FAVORITES_PATH}`,
-      `${PLATFORM}${SPACE_PATH}`,
+      `${PLATFORM}${SERVICES_PATH}`,
     ]);
   });
 
