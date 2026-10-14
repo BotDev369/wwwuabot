@@ -7,11 +7,16 @@
  * екрані — і людині нікуди натиснути; досить не передати до дошки те, що дав
  * сервер, — і власні чернетки зникають.
  *
+ * **Композер відкривається адресою** (`?new=1`), тож «назад» закриває форму, а
+ * не виводить зі сторінки. Це теж перевіряється: дотик «Створити оголошення»
+ * показує композер, а його закриття вертає дошку.
+ *
  * @module web-platform-dev/src/pages/AdsPage.dom.test
  */
 
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { render, screen } from "@testing-library/react";
+import { render, screen, waitFor } from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
 import { MemoryRouter } from "react-router-dom";
 import type { Ad } from "@wwwuabot/shared/ads";
 import type { PublicAd } from "./ads-list";
@@ -27,6 +32,16 @@ const state = {
 
 vi.mock("./useAds", () => ({ useAds: () => state }));
 vi.mock("@wwwuabot/ui/nav", () => ({ useScreenChrome: () => {} }));
+vi.mock("./create/AdCreateSheet", () => ({
+  AdCreateSheet({ onClose }: { onClose: () => void }) {
+    return (
+      <div>
+        <p>композер оголошення</p>
+        <button onClick={onClose}>закрити композер</button>
+      </div>
+    );
+  },
+}));
 
 const { AdsPage } = await import("./AdsPage");
 
@@ -89,5 +104,26 @@ describe("дошка оголошень", () => {
     renderBoard();
 
     expect(screen.getByText(/Завантаження/)).toBeTruthy();
+  });
+});
+
+describe("створення за адресою", () => {
+  it("дотик «Створити оголошення» відкриває композер", async () => {
+    renderBoard();
+
+    await userEvent.click(screen.getByRole("button", { name: /Створити оголошення/ }));
+
+    expect(await screen.findByText("композер оголошення")).toBeTruthy();
+  });
+
+  it("закриття композера вертає дошку, а не виводить з неї", async () => {
+    renderBoard();
+    await userEvent.click(screen.getByRole("button", { name: /Створити оголошення/ }));
+    await screen.findByText("композер оголошення");
+
+    await userEvent.click(screen.getByRole("button", { name: "закрити композер" }));
+
+    await waitFor(() => expect(screen.queryByText("композер оголошення")).toBeNull());
+    expect(screen.getByText(/Тут поки нічого немає/)).toBeTruthy();
   });
 });
