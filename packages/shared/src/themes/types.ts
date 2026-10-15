@@ -32,7 +32,7 @@ export interface ThemeScheme {
   accent: string;
   /** Ідентифікатор шрифту (`styles/fonts.ts`); порожньо — «як у стилі». */
   font: string;
-  /** `true` — схема доступна всім у Просторі, і її можна взяти собі. */
+  /** `true` — схема доступна всім у спільній бібліотеці, і її можна взяти собі. */
   isPublic: boolean;
   createdAt: string;
   updatedAt: string;

@@ -1,5 +1,5 @@
 /**
- * Сторож картки людини в Просторі.
+ * Сторож картки людини для інших.
  *
  * Найважливіше тут — не вигляд, а **чого в картці не буває**. Картка показує
  * профіль чужій людині, тож будь-яке поле, яке вона «просто відрендерить», стає
@@ -17,7 +17,7 @@ import type { PublicProfile } from "../../user/public-profile";
 const render = (profile: PublicProfile, full = false): string =>
   renderToStaticMarkup(<PublicUserCard profile={profile} full={full} />);
 
-describe("картка людини в Просторі", () => {
+describe("картка людини для інших", () => {
   it("показує ім'я з `#`, про себе й дані акаунта", () => {
     const html = render({
       id: 7,

@@ -22,7 +22,7 @@
   Колонку пише той самий перехід, що закріплює контакт (`bot-dev/src/modules/contacts/contact-link.ts`),
   перевіряє бот (`bot-dev/src/core/router/bot-router.ts`) і платформа перед маршрутизацією
   (`api-dev/src/shared/platform-gate.ts`); адмінка стоїть під своїм гейтом cookie-сесії.
-- **Код запрошення** (`contacts.code`, `inv-…`) — те, що стоє в `?start=` і відкриває бот запрошеній
+- **Код запрошення** (`contacts.code`, `inv-…`) — те, що стоїть у `?start=` і відкриває бот запрошеній
   людині. У посиланні зі сторінкою код — **останній сегмент** payload (`buildShareLinks({ inviteCode })`),
   тож одне посилання веде і туди, і сюди; розбирає `splitInviteCode()`.
 - **Ім'я на платформі** (`users.platform_username`) — **не** Telegram `username`: це ім'я, яке
@@ -50,8 +50,8 @@
   4 зони: sidebar, header, main, footer. Блоки рекурсивні, автономні. Типи:
   `packages/shared/src/types/page-config.ts`. Реєстр: `packages/shared/src/constants/block-definitions/`.
   React-компоненти: `packages/ui/src/blocks/`.
-- **Сторінка з шаблону** — сторінка, яку людина створила сама, змінюючи **лише текст**: два шаблони
-  («Візитка», «Подія»), структуру задає шаблон, а `buildPageConfig` / `readPageValues` переводять
+- **Сторінка з шаблону** — сторінка, яку людина створила сама, змінюючи **лише текст**: три шаблони
+  («Візитка», «Подія», «Магазин»), структуру задає шаблон, а `buildPageConfig` / `readPageValues` переводять
   значення в `page_data` і назад (`packages/shared/src/pages/`). Це **той самий** рядок `scenarios`,
   лише з власником (`owner_id`), прапорцем видимості (`is_public`, типово приватна) і ключем шаблону
   (`template_key`): другої таблиці під контент немає. Приватна сторінка недосяжна **і в боті**, бо бот —

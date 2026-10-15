@@ -187,7 +187,7 @@ export function UserPageView(): ReactElement {
             <div className="wb-card-body">
               <SwitchRow
                 label="Публічна сторінка"
-                hint={page.isPublic ? "Видно всім у Просторі" : "Видно лише вам"}
+                hint={page.isPublic ? "Видно всім" : "Видно лише вам"}
                 checked={page.isPublic}
                 onToggle={(next) => void togglePublic(next)}
               />

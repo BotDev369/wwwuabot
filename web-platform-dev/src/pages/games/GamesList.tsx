@@ -26,7 +26,7 @@
  * над ним: другий рядок екрана належить смузі керування, і примітка перед
  * нею зсунула б список на рядок відносно решти розділів.
  *
- * @module web-platform-dev/src/pages/games/SpaceGamesTab
+ * @module web-platform-dev/src/pages/games/GamesList
  */
 
 import { useState, type ReactElement } from "react";

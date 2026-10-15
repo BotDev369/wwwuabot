@@ -108,7 +108,7 @@ export function PublicPagesTab(): ReactElement {
                   {publicPageAuthor(page)} · {pageAddressLabel(page)}
                 </span>
               </span>
-              {/* Шеврон — тим самим кирпичиком, що в решти рядків Простору
+              {/* Шеврон — тим самим кирпичиком, що в решти рядків
                   (`MenuItem.trailing`): сторінка веде далі, і ознака переходу
                   мусить бути одна на всі списки розділу. */}
               <span className="wb-menu-item-more">

@@ -130,7 +130,7 @@ export { PublicProfileControls } from "./components/user-profile/PublicProfileCo
 export type { PublicProfileChange } from "./components/user-profile/PublicProfileControls";
 /** Перемикач «увімкнено / вимкнено» — спільний кирпичик (не галочка). */
 export { SwitchRow } from "./components/Switch";
-/** Картка людини в Просторі: лише відкриті поля, жодних даних Telegram. */
+/** Картка людини для інших: лише відкриті поля, жодних даних Telegram. */
 export { PublicUserCard } from "./components/public-user/PublicUserCard";
 /** Круг акаунта в розділі: фото, а як його немає — літера. */
 export { AccountAvatar } from "./components/user-profile/AccountAvatar";

@@ -49,7 +49,7 @@ export function PublicProfileControls({
     <div className="wb-switch-group">
       <SwitchRow
         label="Публічний профіль"
-        hint="Вас видно в Просторі"
+        hint="Вас видно іншим"
         checked={isPublic}
         disabled={disabled}
         onToggle={(next) => onChange({ isPublic: next, fields: [...openFields] })}

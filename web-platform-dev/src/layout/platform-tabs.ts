@@ -50,7 +50,7 @@ export function toShellTabs(tabs: readonly PlatformTab[] = PLATFORM_TABS): Shell
   }));
 }
 
-/** Власні інструменти належать I; публічний контент за slug — You. */
+/** Своє належить «Акаунту»; сторінка контенту за `slug` — жодному пункту. */
 export function platformSectionPath(pathname: string): string {
   if (pathname === FAVORITES_PATH || pathname.startsWith(`${FAVORITES_PATH}/`))
     return FAVORITES_PATH;

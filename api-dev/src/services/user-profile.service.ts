@@ -50,7 +50,7 @@ export interface UserProfileDto {
   photoUrl: string | null;
   /** «Про себе» — те, що людина розповідає сама (не більше `ABOUT_MAX_LENGTH`). */
   about: string;
-  /** Чи видно профіль іншим — у Просторі. */
+  /** Чи видно профіль іншим. */
   isPublic: boolean;
   /** Які поля відкриті іншим. Порожній список — свідоме «все закрито». */
   openFields: PublicProfileField[];
