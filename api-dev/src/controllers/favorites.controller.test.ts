@@ -90,6 +90,36 @@ describe("особисте обране", () => {
     expect(insert?.values.slice(0, 3)).toEqual(["777", "user", 5]);
     expect(insert?.values).not.toContain("fake");
   });
+  it("номер сторінки приходить рядком від контенту й лягає в базу числом", async () => {
+    const db = database({
+      id: 5,
+      slug: "pageslay",
+      title: "PageSlay",
+      owner_id: null,
+      admin_ids: null,
+      is_public: 1,
+    });
+    const response = await handleFavorites(
+      request("POST", { kind: "page", targetId: "34" }),
+      db.env,
+    );
+
+    expect(response.status).toBe(200);
+    const insert = db.calls.find((call) => call.sql.startsWith("INSERT"));
+    expect(insert?.values.slice(0, 3)).toEqual(["777", "page", 34]);
+  });
+
+  it("текстова ціль у тілі не доходить до бази", async () => {
+    const db = database();
+    const response = await handleFavorites(
+      request("POST", { kind: "page", targetId: "pageslay" }),
+      db.env,
+    );
+
+    expect(response.status).toBe(400);
+    expect(db.calls.some((call) => call.sql.startsWith("INSERT"))).toBe(false);
+  });
+
   it("недоступний контент лишається без старої назви чи адреси", async () => {
     const db = database(null, [{ kind: "user", target_id: 5 }]);
     const response = await handleFavorites(request("GET"), db.env);
@@ -124,11 +154,15 @@ describe("особисте обране", () => {
       "/pages/5",
     );
   });
-  it("невідомі види, рядкові та нецілі ідентифікатори відкидаються", () => {
+  // Рядок із номером — не сміття: так контент віддає свій id (`ContentPage.id`),
+  // і відкидати його означало б відмовити власному клієнту. Сміттям лишається
+  // усе, що **не** номер: адреса, дріб, нуль, чужий вид.
+  it("невідомі види, не-номери та нецілі ідентифікатори відкидаються", () => {
     for (const value of [
       null,
       { kind: "unknown", targetId: 1 },
-      { kind: "page", targetId: "5" },
+      { kind: "page", targetId: "pageslay" },
+      { kind: "page", targetId: "5.5" },
       { kind: "page", targetId: 1.5 },
       { kind: "page", targetId: -1 },
     ]) {

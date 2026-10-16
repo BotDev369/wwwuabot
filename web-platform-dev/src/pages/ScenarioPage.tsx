@@ -15,6 +15,7 @@ import { useLocation, useParams } from "react-router-dom";
 import type { PageConfig, BlockContext, UserProfile } from "@wwwuabot/shared/types/page-config";
 import { parsePageConfig } from "@wwwuabot/shared/types/page-config";
 import { HOME_SLUG } from "@wwwuabot/shared/content";
+import { favoriteTargetId } from "@wwwuabot/shared/favorites";
 import { PageRenderer } from "@wwwuabot/ui/PageRenderer";
 import { apiFetchRaw } from "@/shared/api/client";
 import { useShopCatalog } from "@/pages/shop/useShopCatalog";
@@ -88,6 +89,9 @@ export function ScenarioPage() {
   const scenarioSlug = splat ?? HOME_SLUG;
 
   const [pageConfig, setPageConfig] = useState<PageConfig | null>(null);
+  // Номер рядка `scenarios` — саме число, бо по ньому йде лайк (`favorites`).
+  // API віддає його рядком (`ContentPage.id`), тож розбирає спільна
+  // `favoriteTargetId`: адреса замість номера серця не отримує.
   const [scenarioId, setScenarioId] = useState<number | null>(null);
   const [scenarioTitle, setScenarioTitle] = useState<string | null>(null);
   const [scenarioPhoto, setScenarioPhoto] = useState<string | null>(null);
@@ -135,7 +139,7 @@ export function ScenarioPage() {
         const data = (await res.json()) as {
           ok?: boolean;
           scenario?: {
-            id?: number;
+            id?: string | null;
             slug?: string;
             title?: string;
             photo_url?: string;
@@ -160,7 +164,7 @@ export function ScenarioPage() {
         if (!cancelled) {
           if (config) {
             setPageConfig(config);
-            setScenarioId(data.scenario.id ?? null);
+            setScenarioId(favoriteTargetId(data.scenario.id));
             setScenarioTitle(data.scenario.title ?? null);
             setScenarioPhoto(data.scenario.photo_url ?? null);
             setTemplateKey(data.scenario.template_key ?? null);

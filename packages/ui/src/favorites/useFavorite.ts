@@ -24,10 +24,17 @@ interface LoadedLike {
   failed: boolean;
 }
 
+/**
+ * Тіло їде в **обох** напрямках — і на `POST`, і на `DELETE`.
+ *
+ * Ціль тут одна й та сама, і сервер бере її з тіла в обох випадках: без тіла
+ * `DELETE` отримує `400 Invalid body`, тож «прибрати лайк» ламалось окремо від
+ * «поставити» — при тому зовні воно виглядало тим самим серцем.
+ */
 async function likeRequest(target: FavoriteTarget, method: "POST" | "DELETE") {
   return apiFetch<{ liked: boolean }>("/api/favorites", {
     headers: { ...telegramAuthHeaders(), "Content-Type": "application/json" },
-    fetchOptions: method === "POST" ? { method, body: JSON.stringify(target) } : { method },
+    fetchOptions: { method, body: JSON.stringify(target) },
   });
 }
 
