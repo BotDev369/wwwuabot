@@ -35,7 +35,10 @@ export function useTrackers(): TrackersState {
   const dialog = useDialog();
   const [trackers, setTrackers] = useState<Tracker[]>([]);
   const [entries, setEntries] = useState<TrackerEntryRow[]>([]);
-  const [endDay, setEndDay] = useState("");
+  // День є **від першого кадру**: поки відповідь летить, список уже може
+  // отримати трекер («+» форми не чекає завантаження), а порожній день
+  // зламав би побудову серії (`addTrackerDays("")` — Invalid time value).
+  const [endDay, setEndDay] = useState(() => todayTrackerDay());
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const generation = useRef(0);

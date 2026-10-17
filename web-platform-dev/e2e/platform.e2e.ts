@@ -33,6 +33,7 @@ const HEART = /Додати в обране|Прибрати з обраного
 const SCREENS = [
   { label: "Акаунт", path: /\/account$/ },
   { label: "Обране", path: /\/favorites$/ },
+  { label: "Трекери", path: /\/trackers$/ },
   { label: "Сервіси", path: /\/services$/ },
 ];
 
