@@ -196,15 +196,25 @@ test("лайк зберігається й видно в «Обраному»", 
   await heart.click();
   await expect(heart).toHaveAttribute("aria-pressed", "true");
 
-  // Успіх видно: серце перефарбувалось, і плитка сказала про це словами.
-  await expect(page.getByRole("status")).toContainText("Додано в обране");
+  // Успіх видно: серце перефарбувалось, і плитка сказала про це словами —
+  // **під хедером**, там, де щойно натиснули, а не над футером.
+  const toast = page.getByRole("status");
+  await expect(toast).toContainText("Додано в обране");
+  // Залитий гліф, а не пофарбований контур: шлях саме `heart-solid`.
+  expect(await heart.innerHTML()).toContain("M12 21.35");
+  const toastBox = await toast.boundingBox();
+  const appbarBox = await page.locator("header.wb-appbar").boundingBox();
+  if (!toastBox || !appbarBox) throw new Error("немає рамок плитки або хедера");
+  expect(toastBox.y).toBeGreaterThanOrEqual(appbarBox.y + appbarBox.height - 1);
+  expect(toastBox.y).toBeLessThan(200);
 
   // Лайк переживає перезавантаження: серце показує відповідь сервера, а не клік.
   await page.reload();
   await expect(page.getByRole("button", { name: HEART })).toHaveAttribute("aria-pressed", "true");
 
   await page.goto("/favorites");
-  await expect(page.locator(".wb-favorites-row", { hasText: title })).toBeVisible();
+  const row = page.locator(".wb-favorites-row", { hasText: title });
+  await expect(row).toBeVisible();
 
   // Число в футері й підпис над списком кажуть те саме, що видно: обидва
   // беруться з сервера, тож розійтись можуть лише помилкою.
@@ -214,6 +224,11 @@ test("лайк зберігається й видно в «Обраному»", 
   await expect(page.locator('.wb-tabbar-item[aria-label="Обране"] .wb-tabbar-badge')).toHaveText(
     String(total),
   );
+
+  // Знак прибирання — смітник: серце тут читалось би як лайк, і ним знімали б
+  // лайк випадково.
+  expect(await row.locator(".wb-favorites-remove").innerHTML()).toContain("M3 6h18");
+  expect(await row.innerHTML()).not.toContain("20.84 4.61");
 
   // Порядок — два вибори однієї людини: вибраний видно, і список йому підкоряється.
   await page.getByRole("button", { name: "За назвою" }).click();
