@@ -62,6 +62,8 @@
 | `ANY` | `/api/user/shop/products` | `handleUserShopProducts` |
 | `GET` | `/api/user/shop/statuses` | `handleUserShopStatuses` |
 | `ANY` | `/api/user/themes` | `handleUserThemes` |
+| `ANY` | `/api/user/trackers` | `handleTrackers` |
+| `ANY` | `/api/user/trackers/entry` | `handleTrackerEntry` |
 | `POST` | `/api/user/username` | `handleSetPlatformUsername` |
 | `POST` | `/api/user/visibility` | `handleUserVisibility` |
 
@@ -102,4 +104,4 @@
 | `POST` | `/auth/login` | `handleLogin` |
 | `POST` | `/auth/logout` | `handleLogout` |
 
-Усього шляхів: **73**.
+Усього шляхів: **75**.

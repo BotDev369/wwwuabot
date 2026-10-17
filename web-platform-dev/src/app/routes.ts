@@ -50,7 +50,10 @@ export { MESSAGES_PATH } from "@wwwuabot/shared/messages";
  * `bot-dev`). Власник у них один — спільний модуль, а не цей файл: два літерали
  * однієї адреси розійшлися б тихо, і кнопка в чаті відкрила б 404.
  */
+import { TRACKERS_PATH } from "@wwwuabot/shared/app/routes";
+
 export { ACCOUNT_PATH, FAVORITES_PATH, SERVICES_PATH } from "@wwwuabot/shared/app/routes";
+export { TRACKERS_PATH };
 
 export const FAVORITES_ROUTE = "favorites";
 
@@ -267,6 +270,15 @@ export function withPageTemplate(path: string, key: PageTemplateKey): string {
   params.set(PAGE_TEMPLATE_PARAM, key);
   return `${base}?${params.toString()}`;
 }
+
+/**
+ * Трекери — власні щоденні записи людини, не рядок `scenarios`.
+ *
+ * Список і один трекер — різні адреси: «назад» із трекера вертає до списку, а
+ * посиланням можна дати конкретну мірку. `id` — номер рядка `trackers`.
+ */
+export const TRACKERS_ROUTE = "trackers";
+export const trackerPath = (id: number): string => `${TRACKERS_PATH}/${id}`;
 
 /** Нотатки — власні дані людини, не рядок `scenarios`. */
 export const NOTES_ROUTE = "notes";

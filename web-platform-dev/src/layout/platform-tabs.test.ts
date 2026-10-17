@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { buildTabBarItems } from "@wwwuabot/ui/nav";
-import { ACCOUNT_PATH, FAVORITES_PATH, SERVICES_PATH } from "../app/routes";
+import { ACCOUNT_PATH, FAVORITES_PATH, SERVICES_PATH, TRACKERS_PATH } from "../app/routes";
 import {
   FAVORITES_TAB_KEY,
   UNREAD_TAB_KEY,
@@ -24,14 +24,20 @@ function activeKeys(pathname: string) {
     .map((tab) => tab.key);
 }
 
-describe("три розділи платформи", () => {
-  it("Акаунт, Обране, Сервіси — рівні слоти з іконкою та адресою", () => {
+describe("чотири розділи платформи", () => {
+  it("Акаунт, Обране, Трекери, Сервіси — рівні слоти з іконкою та адресою", () => {
     const tabs = toShellTabs();
-    expect(tabs.map((tab) => tab.label)).toEqual(["Акаунт", "Обране", "Сервіси"]);
-    expect(tabs.map((tab) => tab.href)).toEqual([ACCOUNT_PATH, FAVORITES_PATH, SERVICES_PATH]);
+    expect(tabs.map((tab) => tab.label)).toEqual(["Акаунт", "Обране", "Трекери", "Сервіси"]);
+    expect(tabs.map((tab) => tab.href)).toEqual([
+      ACCOUNT_PATH,
+      FAVORITES_PATH,
+      TRACKERS_PATH,
+      SERVICES_PATH,
+    ]);
     expect(tabs.every((tab) => !tab.primary && tab.icon && tab.href)).toBe(true);
     expect(tabs[1].icon).toBe("thumbs-up");
-    expect(tabs[2].icon).toBe("grid");
+    expect(tabs[2].icon).toBe("bar-chart");
+    expect(tabs[3].icon).toBe("grid");
   });
 
   it("власні екрани підсвічують «Акаунт», сервіси — «Сервіси»", () => {
@@ -47,6 +53,8 @@ describe("три розділи платформи", () => {
     ];
     for (const path of own) expect(activeKeys(path), path).toEqual(["account"]);
     expect(activeKeys(FAVORITES_PATH)).toEqual(["favorites"]);
+    expect(activeKeys(TRACKERS_PATH)).toEqual(["trackers"]);
+    expect(activeKeys(`${TRACKERS_PATH}/4`)).toEqual(["trackers"]);
     expect(activeKeys(SERVICES_PATH)).toEqual(["services"]);
     // Сторінка контенту за `slug` не належить жодному пункту смуги.
     expect(activeKeys("/public-card")).toEqual([]);

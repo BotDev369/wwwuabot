@@ -1,4 +1,9 @@
-import { ACCOUNT_PATH, FAVORITES_PATH, SERVICES_PATH } from "@wwwuabot/shared/app/routes";
+import {
+  ACCOUNT_PATH,
+  FAVORITES_PATH,
+  SERVICES_PATH,
+  TRACKERS_PATH,
+} from "@wwwuabot/shared/app/routes";
 import type { AppContext } from "../types/env";
 import type { ScenarioButton } from "../types/scenario";
 import { PLATFORM_ROW } from "../config/texts";
@@ -7,13 +12,14 @@ import { log } from "./debug";
 import type { InputRichMessage, InlineKeyboardButton } from "grammy/types";
 
 /**
- * Три екрани платформи — **ті самі й у тому ж порядку**, що пункти футера:
- * акаунт, обране, Сервіси. Розійтися вони не мають права: людина, яка звикла
- * до футера, шукає в чаті ті самі входи.
+ * Екрани платформи — **ті самі й у тому ж порядку**, що пункти футера:
+ * акаунт, обране, трекери, Сервіси. Розійтися вони не мають права: людина,
+ * яка звикла до футера, шукає в чаті ті самі входи.
  */
 const PLATFORM_TARGETS: readonly { icon: string; path: string }[] = [
   { icon: PLATFORM_ROW.account, path: ACCOUNT_PATH },
   { icon: PLATFORM_ROW.favorites, path: FAVORITES_PATH },
+  { icon: PLATFORM_ROW.trackers, path: TRACKERS_PATH },
   { icon: PLATFORM_ROW.services, path: SERVICES_PATH },
 ];
 

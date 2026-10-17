@@ -108,6 +108,12 @@ export const ICON_NAMES = [
   "thumbs-up",
   "bar-chart",
   "progress",
+  // Трекери: один гліф на одну життєву мірку, а не «щось схоже на графік».
+  "footsteps",
+  "droplet",
+  "flame",
+  "book",
+  "wallet",
   "percent",
   "hash",
   "message-square",

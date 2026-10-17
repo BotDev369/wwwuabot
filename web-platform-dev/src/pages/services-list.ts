@@ -20,6 +20,7 @@ import {
   NOTES_PATH,
   ORDERS_PATH,
   PAGES_PATH,
+  TRACKERS_PATH,
   USERS_PATH,
 } from "../app/routes";
 
@@ -33,6 +34,7 @@ export interface ServiceEntry {
 
 export const SERVICES: readonly ServiceEntry[] = [
   { key: "ads", label: "Оголошення", icon: "announce", to: ADS_PATH },
+  { key: "trackers", label: "Трекери", icon: "bar-chart", to: TRACKERS_PATH },
   { key: "dates", label: "Аналіз дат", icon: "my-dates", to: DATE_ANALYSIS_PATH },
   { key: "pages", label: "Сторінки", icon: "page", to: PAGES_PATH },
   { key: "games", label: "Ігри", icon: "game", to: GAMES_PATH },

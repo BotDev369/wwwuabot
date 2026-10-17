@@ -55,6 +55,7 @@ import { matchMessagesRoute } from "./routes/messages";
 import { matchAccessRequestAdminRoute } from "./routes/access-requests";
 import { handleNotes, handleAdminNotes } from "./controllers/notes.controller";
 import { handleFavorites } from "./controllers/favorites.controller";
+import { handleTrackers, handleTrackerEntry } from "./controllers/trackers.controller";
 import { handleAssessments } from "./controllers/assessments.controller";
 import { handleUserPages, handlePublicPages } from "./controllers/pages.controller";
 import { matchShopRoute } from "./routes/shop";
@@ -168,6 +169,16 @@ export async function handleRequest(request: Request, env: Env): Promise<Respons
   // ── Notes: нотатки людини (ідентичність із підписаного initData) ─
   if (pathname === "/api/favorites") {
     return handleFavorites(request, env);
+  }
+
+  // ── Трекери: стрічка, власний трекер і записи дня ──────────────
+  // Дві ручки, бо це дві різні речі: трекер (назва, одиниця, ціль) і день
+  // (значення). Запис дня не створює трекер і не міняє його форму.
+  if (pathname === "/api/user/trackers") {
+    return handleTrackers(request, env);
+  }
+  if (pathname === "/api/user/trackers/entry") {
+    return handleTrackerEntry(request, env);
   }
 
   if (pathname === "/api/notes") {

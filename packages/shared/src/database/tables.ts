@@ -302,6 +302,64 @@ export const TABLES = {
     indexes: ["CREATE INDEX IF NOT EXISTS idx_favorites_owner ON favorites(owner_id, id)"],
   },
 
+  /**
+   * Трекери — рядок на мірку людини (кроки, вода, вага, витрати), не `scenarios`:
+   * трекер не має адреси й не публікується.
+   *
+   * `UNIQUE (owner_id, key)` — перший вхід створює стандартні трекери рівно раз:
+   * `INSERT OR IGNORE` не дублює рядок і не воскрешає прибраний.
+   */
+  trackers: {
+    name: "trackers",
+    owner: "api-dev",
+    purpose: "Трекери людини: назва, одиниця, крок, ціль і межі — одна модель на всі мірки.",
+    create: `CREATE TABLE IF NOT EXISTS trackers (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        owner_id TEXT NOT NULL,
+        key TEXT NOT NULL,
+        title TEXT NOT NULL,
+        unit TEXT NOT NULL DEFAULT '',
+        step REAL NOT NULL DEFAULT 1,
+        goal REAL,
+        min_value REAL NOT NULL DEFAULT 0,
+        max_value REAL,
+        icon TEXT NOT NULL DEFAULT 'bar-chart',
+        is_builtin INTEGER NOT NULL DEFAULT 0,
+        is_active INTEGER NOT NULL DEFAULT 1,
+        created_at TEXT NOT NULL DEFAULT (datetime('now')),
+        UNIQUE (owner_id, key)
+      )`,
+    indexes: [
+      "CREATE INDEX IF NOT EXISTS idx_trackers_owner_key ON trackers(owner_id, key)",
+      "CREATE INDEX IF NOT EXISTS idx_trackers_owner_active ON trackers(owner_id, is_active, id)",
+    ],
+  },
+
+  /**
+   * Записи трекерів: рядок на трекер і день (`day` — `YYYY-MM-DD`).
+   * Два записи за день — це правка одного дня, тож `UNIQUE (tracker_id, day)`
+   * і upsert. `owner_id` — не дубль: стрічка читає всі записи одним запитом.
+   */
+  tracker_entries: {
+    name: "tracker_entries",
+    owner: "api-dev",
+    purpose: "Значення трекерів за днями: історія, з якої рахують графік і звіт.",
+    create: `CREATE TABLE IF NOT EXISTS tracker_entries (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        tracker_id INTEGER NOT NULL,
+        owner_id TEXT NOT NULL,
+        day TEXT NOT NULL,
+        value REAL NOT NULL,
+        note TEXT NOT NULL DEFAULT '',
+        updated_at TEXT NOT NULL DEFAULT (datetime('now')),
+        UNIQUE (tracker_id, day)
+      )`,
+    indexes: [
+      "CREATE INDEX IF NOT EXISTS idx_tracker_entries_tracker_day ON tracker_entries(tracker_id, day)",
+      "CREATE INDEX IF NOT EXISTS idx_tracker_entries_owner_day ON tracker_entries(owner_id, day)",
+    ],
+  },
+
   notes: {
     name: "notes",
     owner: "api-dev",

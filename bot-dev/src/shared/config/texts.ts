@@ -117,5 +117,6 @@ export const CONTACT = {
 export const PLATFORM_ROW = {
   account: "👤",
   favorites: "👍",
+  trackers: "📈",
   services: "🧰",
 } as const;

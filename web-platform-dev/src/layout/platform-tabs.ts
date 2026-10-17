@@ -9,6 +9,7 @@ import {
   ORDERS_PATH,
   PAGES_PATH,
   SERVICES_PATH,
+  TRACKERS_PATH,
 } from "../app/routes";
 
 export interface PlatformTab extends Omit<ShellTab, "href"> {
@@ -21,11 +22,11 @@ export const UNREAD_TAB_KEY = "account";
 export const FAVORITES_TAB_KEY = "favorites";
 
 /**
- * Три пункти смуги — **самі знаки**: підписів під іконками немає, а `label`
- * лишається лише назвою для скрінрідера (`aria-label`).
+ * Чотири пункти смуги — **самі знаки**: підписів немає, `label` лишається
+ * назвою для скрінрідера.
  *
- * «Я» веде на **акаунт**: за знаком людини стоїть людина, а список екранів —
- * «Сервіси».
+ * «Я» веде на **акаунт**; трекери стоять перед «Сервісами» — це щоденна
+ * робота, а не хаб входів. Той самий склад повторює бот.
  */
 export const PLATFORM_TABS: readonly PlatformTab[] = [
   {
@@ -36,6 +37,7 @@ export const PLATFORM_TABS: readonly PlatformTab[] = [
     to: ACCOUNT_PATH,
   },
   { key: "favorites", label: "Обране", icon: "thumbs-up", to: FAVORITES_PATH },
+  { key: "trackers", label: "Трекери", icon: "bar-chart", to: TRACKERS_PATH },
   { key: "services", label: "Сервіси", icon: "grid", to: SERVICES_PATH },
 ];
 
@@ -67,6 +69,7 @@ export function toShellTabs(tabs: readonly PlatformTab[] = PLATFORM_TABS): Shell
 export function platformSectionPath(pathname: string): string {
   if (pathname === FAVORITES_PATH || pathname.startsWith(`${FAVORITES_PATH}/`))
     return FAVORITES_PATH;
+  if (pathname === TRACKERS_PATH || pathname.startsWith(`${TRACKERS_PATH}/`)) return TRACKERS_PATH;
   if (pathname === SERVICES_PATH || pathname.startsWith(`${SERVICES_PATH}/`)) return SERVICES_PATH;
   const own = [
     "/",

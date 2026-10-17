@@ -41,11 +41,14 @@ import {
   SHOP_ORDERS_ROUTE,
   SHOP_PRODUCTS_ROUTE,
   SERVICES_ROUTE,
+  TRACKERS_ROUTE,
   USERS_ROUTE,
 } from "@/app/routes";
 import { AdsPage } from "@/pages/AdsPage";
 import { ContactsPage } from "@/pages/ContactsPage";
 import { FavoritesPage } from "@/pages/favorites/FavoritesPage";
+import { TrackersPage } from "@/pages/trackers/TrackersPage";
+import { TrackerPage } from "@/pages/trackers/TrackerPage";
 import { AssessmentsScreen } from "@/pages/assessments/AssessmentsScreen";
 import { MessagesPage } from "@/pages/MessagesPage";
 import { NotesPage } from "@/pages/NotesPage";
@@ -73,6 +76,10 @@ export const router = createBrowserRouter([
       // Сервіси — хаб платформи: список екранів, які вже працюють.
       { path: SERVICES_ROUTE, element: <ServicesPage /> },
       { path: FAVORITES_ROUTE, element: <FavoritesPage /> },
+      // Трекери — власні щоденні записи людини. Довший шлях іде **перед**
+      // списком: інакше `:id` не зміг би збігтися, а `/trackers` з'їв би номер.
+      { path: `${TRACKERS_ROUTE}/:id`, element: <TrackerPage /> },
+      { path: TRACKERS_ROUTE, element: <TrackersPage /> },
       // Акаунт — не контент, а дані користувача: платформа й Telegram окремими
       // розділами, а не одним суцільним списком.
       { path: ACCOUNT_ROUTE, element: <ProfileAccountPage /> },

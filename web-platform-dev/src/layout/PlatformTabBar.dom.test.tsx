@@ -43,10 +43,10 @@ beforeEach(() => {
 });
 
 describe("футер платформи", () => {
-  it("три слоти, і жодного видимого підпису під знаком", () => {
+  it("чотири слоти, і жодного видимого підпису під знаком", () => {
     renderAt("/services");
 
-    expect(slots()).toHaveLength(3);
+    expect(slots()).toHaveLength(4);
     for (const slot of slots()) {
       expect(slot.querySelector(".wb-tabbar-label")).toBeNull();
       expect(slot.getAttribute("aria-label")).toBeTruthy();

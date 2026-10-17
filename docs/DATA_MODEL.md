@@ -18,6 +18,8 @@ DDL не живе в контролерах і репозиторіях: кож�
 | `settings` | `bot-dev` | bot-dev, `SettingsRepository.initialize` | bot-dev | один рядок (`id = 1`): `chat_id` груп, прапорець активності |
 | `scenarios` | `api-dev` | api-dev (`ensureBase`, `scenarios-portal.controller`) | **bot-dev читає**; api-dev редагує (`/api/portal/scenarios/*`, сторінки людини — `/api/user/pages`); платформа рендерить (`/api/scenario/:slug`) | **єдине сховище контенту:** рядок = сторінка вебу (`page_data`) + її подання в боті (`caption_*`, `buttons`, `rich_*`). Сторінка людини — той самий рядок із `owner_id`/`admin_ids`/`is_public`/`template_key` ([`PAGES.md`](./PAGES.md)) |
 | `favorites` | `api-dev` | api-dev (`ensureTables` у `favorites.controller`) | api-dev: `/api/favorites` | особисті лайки: лише посилання на сутність, назва й доступ перевіряються при читанні ([`FAVORITES.md`](./FAVORITES.md)) |
+| `trackers` | `api-dev` | api-dev (`ensureTables` у `trackers.controller`) | api-dev: `/api/user/trackers` | трекери людини: один ряд «день → число» на всі мірки (`unit`, `step`, `goal`, межі), `UNIQUE (owner_id, key)` для стандартного набору ([`TRACKERS.md`](./TRACKERS.md)) |
+| `tracker_entries` | `api-dev` | api-dev (`ensureTables` у `trackers.controller`) | api-dev: `/api/user/trackers/entry` | записи за днями: один рядок на трекер і `day` (`UNIQUE`), повторний запис править його (upsert); `owner_id` — для читання стрічки одним запитом |
 | `access_requests` | `api-dev` | api-dev, `ensureTables` у `access-request.controller` та `access-requests-admin.controller`; **bot-dev** — `modules/access/contact/flow` | api-dev; **bot-dev пише** зверження з чату | **повідомлення адміну** — зі сторінки відмови **або з діалогу в чаті** (`bot-dev`): `user_id` — обов'язковий Telegram-id (на платформі з підписаного `initData`, у чаті — `ctx.from`). Єдиний шлях поза гейтом допуску, який **пише**. Незавершена чернетка — не тут, а в `users.admin_dialog_text`. З панелі — повний CRUD під `/api/admin/access-requests`: правиться лише текст, автора не рухають |
 | `notes` | `api-dev` | api-dev (`ensureTables` у `notes.controller`) | api-dev: платформа — `/api/notes`, панель — `/api/admin/notes` | нотатки: чернетки людини (`scope = 'user'`, власник — Telegram-id із **підписаного `initData`**) і нотатки про проєкт з панелі (`scope = 'admin'`, власник — акаунт cookie-сесії). `tags` — JSON-масив |
 | `contacts` | `api-dev` | api-dev (`ensureTables` у `contacts.controller`) | api-dev: довідник — `/api/contacts`; **bot-dev пише вхід у бота та `username`**, **api-dev — вхід на платформу** | контакти людини: **один рядок = один контакт**, а лінк — **одне з його полів** (`code` з `UNIQUE`, це і є payload бота `inv-8f3k2q`). `username` пише бот, `owner_id` — Telegram-id із **підписаного `initData`**. Правила — [`COLLECTIONS.md`](./COLLECTIONS.md) |
@@ -46,7 +48,9 @@ DDL не живе в контролерах і репозиторіях: кож�
 ідентичність, яка не змінюється ніколи; **`slug`** — адреса (`NOT NULL UNIQUE`), яку редагують вільно.
 
 **Індекси** (`indexes`) живуть поруч із таблицею, щоб не «губились» окремо від неї.
-Їх оголошують тринадцять таблиць — `notes` (`idx_notes_scope_owner` за `(scope, owner_id)`), `contacts`
+Їх оголошують п'ятнадцять таблиць — `trackers` (`idx_trackers_owner_key`, `idx_trackers_owner_active`),
+`tracker_entries` (`idx_tracker_entries_tracker_day`, `idx_tracker_entries_owner_day`),
+`notes` (`idx_notes_scope_owner` за `(scope, owner_id)`), `contacts`
 (`idx_contacts_owner`), `conversations` (`idx_conversations_peer_b`), `messages` (`idx_messages_thread`,
 `idx_messages_unread`), `message_media` (`idx_message_media_owner` — квота файлів однієї людини),
 `ads` (`idx_ads_owner`, `idx_ads_doska` — дошка за `(is_active, id)`),
