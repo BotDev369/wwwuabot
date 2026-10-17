@@ -196,12 +196,30 @@ test("лайк зберігається й видно в «Обраному»", 
   await heart.click();
   await expect(heart).toHaveAttribute("aria-pressed", "true");
 
+  // Успіх видно: серце перефарбувалось, і плитка сказала про це словами.
+  await expect(page.getByRole("status")).toContainText("Додано в обране");
+
   // Лайк переживає перезавантаження: серце показує відповідь сервера, а не клік.
   await page.reload();
   await expect(page.getByRole("button", { name: HEART })).toHaveAttribute("aria-pressed", "true");
 
   await page.goto("/favorites");
-  await expect(page.locator(".wb-card", { hasText: title })).toBeVisible();
+  await expect(page.locator(".wb-favorites-row", { hasText: title })).toBeVisible();
+
+  // Число в футері й підпис над списком кажуть те саме, що видно: обидва
+  // беруться з сервера, тож розійтись можуть лише помилкою.
+  const rows = page.locator(".wb-favorites-row");
+  const total = await rows.count();
+  await expect(page.locator(".wb-favorites-count")).toHaveText(`${total} у обраному`);
+  await expect(page.locator('.wb-tabbar-item[aria-label="Обране"] .wb-tabbar-badge')).toHaveText(
+    String(total),
+  );
+
+  // Порядок — два вибори однієї людини: вибраний видно, і список йому підкоряється.
+  await page.getByRole("button", { name: "За назвою" }).click();
+  const byName = await rows.locator(".wb-favorites-title").allTextContents();
+  expect(byName).toEqual([...byName].sort((a, b) => a.localeCompare(b, "uk")));
+
   await page.screenshot({ path: `${ARTIFACTS}/04-favorites.png`, fullPage: true });
 
   // Знімаємо з тієї ж сторінки, тим же серцем: прибирання йде окремим запитом.
@@ -212,7 +230,7 @@ test("лайк зберігається й видно в «Обраному»", 
   await expect(again).toHaveAttribute("aria-pressed", "false");
 
   await page.goto("/favorites");
-  await expect(page.locator(".wb-card", { hasText: title })).toBeHidden();
+  await expect(page.locator(".wb-favorites-row", { hasText: title })).toBeHidden();
   expect(errors).toEqual([]);
 });
 
