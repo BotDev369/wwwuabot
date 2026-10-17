@@ -11,9 +11,10 @@
 .wb-like-toast {
   position: fixed;
   left: 50%;
-  /* Над футером, а не в ньому: смуга — навігація, і підтвердження дії з неї
-     нічого не робить. */
-  bottom: calc(var(--tab-bar-h) + var(--sp-4));
+  /* **Під хедером, а не над футером**: людина щойно натиснула серце в шапці,
+     і підтвердження мусить стояти там, куди вона дивиться. Внизу його
+     закривала смуга кошика й вона туди не дивилась узагалі. */
+  top: calc(var(--appbar-h) + var(--sp-3));
   z-index: var(--z-modal);
   transform: translateX(-50%);
   display: flex;
@@ -44,7 +45,7 @@
 @keyframes wb-like-toast-in {
   from {
     opacity: 0;
-    transform: translate(-50%, 12px) scale(0.94);
+    transform: translate(-50%, -10px) scale(0.94);
   }
   to {
     opacity: 1;
@@ -55,7 +56,7 @@
 @keyframes wb-like-toast-out {
   to {
     opacity: 0;
-    transform: translate(-50%, 8px) scale(0.98);
+    transform: translate(-50%, -6px) scale(0.98);
   }
 }
 

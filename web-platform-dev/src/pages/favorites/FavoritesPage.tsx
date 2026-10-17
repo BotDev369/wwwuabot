@@ -126,15 +126,21 @@ export function FavoritesPage(): ReactElement {
                   </span>
                 </div>
               )}
+              {/* Прибрати — **не серце**: серце тут означало б другу дію з тим
+                  самим знаком (`heart`), і людина тиснула б його, думаючи, що
+                  ставить лайк. Смітник — це те саме «видалити», що й у решті
+                  продукту. */}
               <button
                 type="button"
                 className="wb-favorites-remove"
-                aria-label={item.href ? `Прибрати лайк: ${item.title}` : "Прибрати лайк"}
-                title="Прибрати лайк"
+                aria-label={
+                  item.href ? `Прибрати з обраного: ${item.title}` : "Прибрати з обраного"
+                }
+                title="Прибрати з обраного"
                 disabled={favorites.busy !== null}
                 onClick={() => void favorites.remove(item)}
               >
-                <Icon name="heart" size={18} />
+                <Icon name="trash" size={18} />
               </button>
             </div>
           ))}

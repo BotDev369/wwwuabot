@@ -102,14 +102,26 @@ describe("рядок обраного", () => {
     expect(screen.queryByRole("button", { name: /^Моя сторінка/ })).toBeNull();
   });
 
-  it("«Прибрати лайк» прибирає саме цей рядок", async () => {
+  it("«Прибрати з обраного» прибирає саме цей рядок", async () => {
     const first = item();
     favorites.items = [first];
     render(<FavoritesPage />);
 
-    await userEvent.click(screen.getByRole("button", { name: /Прибрати лайк/ }));
+    await userEvent.click(screen.getByRole("button", { name: /Прибрати з обраного/ }));
 
     expect(favorites.remove).toHaveBeenCalledWith(first);
+  });
+
+  it("знак прибирання — смітник, а не друге серце", () => {
+    favorites.items = [item()];
+    const { container } = render(<FavoritesPage />);
+
+    const remove = container.querySelector(".wb-favorites-remove");
+    expect(remove?.getAttribute("aria-label")).toContain("Прибрати з обраного");
+    // Серце тут читалось би як лайк, і ним знімали б лайк випадково: у рядку
+    // не мусить бути жодного серця.
+    expect(container.querySelector(".wb-favorites-remove")?.innerHTML).toContain("M3 6h18");
+    expect(container.innerHTML).not.toContain("20.84 4.61");
   });
 });
 

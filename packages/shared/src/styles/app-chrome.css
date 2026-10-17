@@ -167,9 +167,15 @@
     color var(--duration-fast) var(--ease);
 }
 
-.wb-appbar__btn:hover:not(:disabled) {
-  background: var(--surface-hover);
-  color: var(--text-primary);
+/* Наведення — **лише мишею**. На тачі `:hover` лишається на останньому
+   торкнутому елементі, і серце отримувало сіре коло навколо себе саме після
+   дотику — тобто «стан» читався як чужа кнопка, а залите серце ще й
+   втрачало акцент. `:not(--on)` — другий запобіжник: вибране не темніє. */
+@media (hover: hover) {
+  .wb-appbar__btn:hover:not(:disabled):not(.wb-appbar__btn--on) {
+    background: var(--surface-hover);
+    color: var(--text-primary);
+  }
 }
 
 .wb-appbar__btn:disabled {

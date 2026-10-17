@@ -118,12 +118,18 @@ function ShareAction({ url }: { url: string }): ReactElement {
   return <BarButton icon={copied ? "check" : "share"} label="Поділитись" onClick={copy} />;
 }
 
-/** Серце: те саме обране, що й було на сторінці, — лише знаком у хедері. */
+/**
+ * Серце: те саме обране, що й було на сторінці, — лише знаком у хедері.
+ *
+ * Коли сторінка в обраному, знак стає **залитим**: контур акцентного кольору
+ * виглядав тією самою кнопкою, лише пофарбованою, тож стан доводилось
+ * згадувати замість того, щоб його побачити.
+ */
 function FavoriteAction({ target }: { target: FavoriteTarget }): ReactElement {
   const favorite = useFavorite(target);
   return (
     <BarButton
-      icon="heart"
+      icon={favorite.liked ? "heart-solid" : "heart"}
       label={favorite.liked ? "Прибрати з обраного" : "Додати в обране"}
       onClick={() => void favorite.toggle()}
       on={favorite.liked}
