@@ -1,14 +1,29 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useDialog } from "@wwwuabot/ui/dialog";
-import type { FavoriteItem, FavoritesResponse } from "@wwwuabot/shared/favorites";
+import { bumpFavoritesCount, setFavoritesCount } from "@wwwuabot/ui/favorites";
+import type { FavoriteItem, FavoriteSort, FavoritesResponse } from "@wwwuabot/shared/favorites";
 import { apiFetch } from "@/shared/api/client";
 
-export function useFavorites() {
+interface FavoritesState {
+  items: FavoriteItem[];
+  loading: boolean;
+  error: string | null;
+  busy: string | null;
+  sort: FavoriteSort;
+  setSort: (sort: FavoriteSort) => void;
+  reload: () => Promise<void>;
+  remove: (item: FavoriteItem) => Promise<void>;
+}
+
+export function useFavorites(): FavoritesState {
   const dialog = useDialog();
   const [items, setItems] = useState<FavoriteItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState<string | null>(null);
+  // Порядок — стан екрана, а не запис: сервер віддає обране найновішим першим,
+  // і саме він лишається типовим (див. `sortFavorites`).
+  const [sort, setSort] = useState<FavoriteSort>("date");
   const generation = useRef(0);
   const locked = useRef(false);
 
@@ -18,6 +33,9 @@ export function useFavorites() {
       const result = await apiFetch<FavoritesResponse>("/api/favorites");
       if (request === generation.current) {
         setItems(result.items);
+        // Список — найточніша відповідь на «скільки обраного», тож саме він
+        // виправляє число в пункті футера, а не окремий запит.
+        setFavoritesCount(result.items.length);
         setError(null);
       }
     } catch {
@@ -56,6 +74,7 @@ export function useFavorites() {
       setItems((current) =>
         current.filter((value) => value.kind !== item.kind || value.targetId !== item.targetId),
       );
+      bumpFavoritesCount(-1);
     } catch {
       await dialog.alert("Не вдалося прибрати лайк.", { tone: "danger" });
     } finally {
@@ -63,5 +82,5 @@ export function useFavorites() {
       setBusy(null);
     }
   }
-  return { items, loading, error, busy, reload, remove };
+  return { items, loading, error, busy, sort, setSort, reload, remove };
 }

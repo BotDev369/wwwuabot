@@ -133,6 +133,10 @@ if (!existsSync(SUMMARY)) {
       // Файли типів `vitest.config.ts` виключає зі збору покриття (`**/types/**`):
       // у них немає поведінки, тож «немає в звіті» для них — не борг, а глухий кут.
       if (/(^|\/)types\//.test(file)) continue;
+      // `e2e/` — спеки ІНШОГО запускача (Playwright, `web-platform-dev/playwright.config.ts`).
+      // Vitest їх не виконує й не може виміряти: вимагати тут покриття означало б
+      // вимагати vitest-тест на playwright-тест.
+      if (/(^|\/)e2e\//.test(file)) continue;
       if (!existsSync(join(ROOT, file))) continue;
       // Коментар — не новий код: вимагати тут тестів без причини.
       if (addedCodeLines(NEW_CODE_SINCE, file).length === 0) continue;

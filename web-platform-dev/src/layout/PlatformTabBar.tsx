@@ -22,7 +22,15 @@ import type { ReactElement } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { useDialog } from "@wwwuabot/ui/dialog";
 import { TabBar, buildTabBarItems } from "@wwwuabot/ui/nav";
-import { PLATFORM_TABS, platformSectionPath, toShellTabs, withUnreadBadge } from "./platform-tabs";
+import {
+  FAVORITES_TAB_KEY,
+  PLATFORM_TABS,
+  UNREAD_TAB_KEY,
+  platformSectionPath,
+  toShellTabs,
+  withBadges,
+} from "./platform-tabs";
+import { useFavoritesBadge } from "./useFavoritesBadge";
 import { useUnreadBadge } from "./useUnreadBadge";
 
 export function PlatformTabBar(): ReactElement {
@@ -30,6 +38,7 @@ export function PlatformTabBar(): ReactElement {
   const { pathname } = useLocation();
   const dialog = useDialog();
   const unread = useUnreadBadge();
+  const favorites = useFavoritesBadge();
 
   const items = buildTabBarItems({
     tabs: toShellTabs(PLATFORM_TABS),
@@ -42,9 +51,9 @@ export function PlatformTabBar(): ReactElement {
       void dialog.alert(`Розділ «${tab.label}» ще в розробці.`, { title: "Скоро" });
     },
   });
-  // Число непрочитаних — окремим кроком і чистою функцією: без неї «котрий
+  // Числа на пунктах — окремим кроком і чистою функцією: без неї «котрий
   // пункт несе позначку» було б розкидано по розмітці смуги.
-  const tabs = withUnreadBadge(items, unread);
+  const tabs = withBadges(items, { [UNREAD_TAB_KEY]: unread, [FAVORITES_TAB_KEY]: favorites });
 
   return <TabBar items={tabs} label="Навігація платформи" />;
 }

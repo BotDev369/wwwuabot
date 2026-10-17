@@ -7,11 +7,14 @@
  * `favorites.target_id` отримав би текстову ціль, якої не знайде жоден запит,
  * і серце мовчки не зберігалося б.
  *
+ * Тут же — порядок списку: `created_at` лежить як UTC без позначки зони, тож
+ * сортування мусить читати його тим самим правилом, що й показ дати.
+ *
  * @module @wwwuabot/shared/favorites.test
  */
 
 import { describe, expect, it } from "vitest";
-import { favoriteTarget, favoriteTargetId } from "./favorites";
+import { favoriteTarget, favoriteTargetId, sortFavorites, type FavoriteItem } from "./favorites";
 
 describe("номер цілі", () => {
   it("рядок із номером контенту стає числом", () => {
@@ -54,5 +57,49 @@ describe("ціль із тіла запиту", () => {
     expect(favoriteTarget({ kind: "page" })).toBeNull();
     expect(favoriteTarget("це не об'єкт")).toBeNull();
     expect(favoriteTarget(null)).toBeNull();
+  });
+});
+
+const entry = (id: number, title: string, savedAt: string | null): FavoriteItem => ({
+  kind: "page",
+  targetId: id,
+  title,
+  href: `/pages/${id}`,
+  photoUrl: null,
+  savedAt,
+});
+
+describe("порядок списку", () => {
+  // Назви розставлені **протилежно** до дат: інакше обидва порядки збігалися б, і
+  // тест доводив би лише те, що список не порожній.
+  const oldOne = entry(1, "Абрикос", "2026-10-01 09:00:00");
+  const newOne = entry(2, "Яблуко", "2026-10-16 09:00:00");
+
+  it("за датою — найновіше першим", () => {
+    expect(sortFavorites([oldOne, newOne], "date").map((item) => item.title)).toEqual([
+      "Яблуко",
+      "Абрикос",
+    ]);
+  });
+
+  it("за назвою — абеткою, незалежно від дати", () => {
+    expect(sortFavorites([oldOne, newOne], "name").map((item) => item.title)).toEqual([
+      "Абрикос",
+      "Яблуко",
+    ]);
+  });
+
+  it("та сама дата не робить порядок випадковим", () => {
+    const first = entry(3, "Бета", "2026-10-16 09:00:00");
+    const second = entry(4, "Альфа", "2026-10-16 09:00:00");
+    expect(sortFavorites([first, second], "date").map((item) => item.title)).toEqual([
+      "Альфа",
+      "Бета",
+    ]);
+  });
+
+  it("невідома дата не забирає перше місце в того, чия дата є", () => {
+    const unknown = entry(5, "Без дати", null);
+    expect(sortFavorites([unknown, oldOne], "date")[0].title).toBe("Абрикос");
   });
 });

@@ -22,6 +22,8 @@ vi.mock("@wwwuabot/shared/security/telegram", () => ({
 vi.mock("@wwwuabot/ui/dialog", () => ({ useDialog: () => ({ alert: mocks.alert }) }));
 
 import { useFavorite } from "./useFavorite";
+import { favoritesCount, setFavoritesCount } from "./favorites-count";
+import { onLikeAnnounced } from "./like-feedback";
 
 const TARGET = { kind: "page" as const, targetId: 34 };
 
@@ -77,6 +79,34 @@ describe("серце сторінки", () => {
       "Не вдалося зберегти лайк. Спробуйте ще раз.",
       expect.objectContaining({ tone: "danger" }),
     );
+  });
+
+  it("успіх видно: коротке підтвердження й число обраного", async () => {
+    setFavoritesCount(0);
+    const view = await opened(false);
+    const seen: boolean[] = [];
+    const off = onLikeAnnounced((feedback) => seen.push(feedback.liked));
+    mocks.request.mockResolvedValueOnce({ liked: true });
+
+    await act(() => view.result.current.toggle());
+    off();
+
+    expect(seen).toEqual([true]);
+    expect(favoritesCount()).toBe(1);
+  });
+
+  it("повторний лайк не рухає число вдруге", async () => {
+    setFavoritesCount(1);
+    const view = await opened(true);
+    let announced = 0;
+    const off = onLikeAnnounced(() => (announced += 1));
+    mocks.request.mockResolvedValueOnce({ liked: true });
+
+    await act(() => view.result.current.toggle());
+    off();
+
+    expect(announced).toBe(0);
+    expect(favoritesCount()).toBe(1);
   });
 
   it("невдале читання не вимикає кнопку назавжди: клік довідується про стан", async () => {

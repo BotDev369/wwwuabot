@@ -40,6 +40,11 @@ web-admin/dist/
 .DS_Store
 Thumbs.db
 
+# Playwright (прев'ю — знімки екранів і звіти, не код)
+e2e-artifacts/
+playwright-report/
+test-results/
+
 # Coverage reports
 coverage/
 htmlcov/

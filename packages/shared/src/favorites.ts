@@ -1,4 +1,6 @@
 /** Обране зберігає лише посилання на сутність, не копію приватного контенту. */
+import { sqliteTimestamp } from "./utils/datetime";
+
 export const FAVORITE_KINDS = ["page", "user"] as const;
 export type FavoriteKind = (typeof FAVORITE_KINDS)[number];
 export interface FavoriteTarget {
@@ -8,10 +10,34 @@ export interface FavoriteTarget {
 export interface FavoriteItem extends FavoriteTarget {
   title: string;
   href: string | null;
+  /** Обкладинка сторінки; `null` — рядок показує знак замість фото. */
+  photoUrl: string | null;
+  /** Коли додали (`favorites.created_at`); `null` — дата невідома. */
+  savedAt: string | null;
 }
 export interface FavoritesResponse {
   ok: boolean;
   items: FavoriteItem[];
+}
+
+/** Порядок списку обраного — **два вибори**, а не один «правильний». */
+export const FAVORITE_SORTS = ["date", "name"] as const;
+export type FavoriteSort = (typeof FAVORITE_SORTS)[number];
+
+/**
+ * Список обраного в обраному порядку: дата — найновіше першим, назва — за
+ * абеткою. Обидва порядки мають **другий ключ** (назва й дата відповідно):
+ * інакше записи з тією самою датою мінялись місцями від кожного рендера.
+ */
+export function sortFavorites(items: readonly FavoriteItem[], sort: FavoriteSort): FavoriteItem[] {
+  const byName = (a: FavoriteItem, b: FavoriteItem) => a.title.localeCompare(b.title, "uk");
+  const byDate = (a: FavoriteItem, b: FavoriteItem) =>
+    sqliteTimestamp(b.savedAt ?? "") - sqliteTimestamp(a.savedAt ?? "");
+  return [...items].sort(
+    sort === "name"
+      ? (a, b) => byName(a, b) || byDate(a, b)
+      : (a, b) => byDate(a, b) || byName(a, b),
+  );
 }
 
 /**

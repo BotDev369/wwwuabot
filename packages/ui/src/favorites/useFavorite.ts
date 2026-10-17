@@ -9,6 +9,10 @@
  * **Помилка — голос.** Тихий збій зробив би кнопку «мертвою» без пояснення,
  * тому невдача йде в `useDialog()` — той самий, що в решті продукту.
  *
+ * **Дія має бути видною.** Серце перефарбовується в хедері, але людина дивиться
+ * на нього не завжди, тож успіх каже коротке підтвердження (`announceLike`), а
+ * число обраного в пункті футера змінюється тим же кроком.
+ *
  * @module packages/ui/src/favorites/useFavorite
  */
 
@@ -17,6 +21,8 @@ import { apiFetch } from "@wwwuabot/shared";
 import { telegramAuthHeaders } from "@wwwuabot/shared/security/telegram";
 import type { FavoriteTarget } from "@wwwuabot/shared/favorites";
 import { useDialog } from "@wwwuabot/ui/dialog";
+import { bumpFavoritesCount } from "./favorites-count";
+import { announceLike } from "./like-feedback";
 
 interface LoadedLike {
   key: string;
@@ -76,6 +82,12 @@ export function useFavorite(target: FavoriteTarget) {
           })
         : await likeRequest(target, current.liked ? "DELETE" : "POST");
       setLoaded({ key, liked: result.liked, failed: false });
+      // Лише справжня зміна: повторний `POST` того самого лайка відповідає
+      // `liked: true`, і без цієї перевірки лічильник у футері смикався б.
+      if (result.liked !== current.liked) {
+        bumpFavoritesCount(result.liked ? 1 : -1);
+        announceLike(result.liked);
+      }
     } catch {
       await dialog.alert("Не вдалося зберегти лайк. Спробуйте ще раз.", { tone: "danger" });
     } finally {

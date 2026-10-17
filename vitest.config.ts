@@ -46,6 +46,7 @@ export default {
         "bot-dev/src/**",
         "api-dev/src/**",
         "web-platform-dev/src/**",
+        "web-platform-dev/dev/**",
         "web-admin-dev/src/**",
       ],
       exclude: ["**/*.test.*", "**/*.dom.test.*", "**/*.spec.*", "**/types/**"],

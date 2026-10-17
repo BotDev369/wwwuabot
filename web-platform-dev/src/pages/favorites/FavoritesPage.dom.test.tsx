@@ -7,13 +7,17 @@
  * відкрити те, чого немає; досить забути про дотик «Прибрати лайк» — і лайк
  * лишається назавжди.
  *
+ * Окремо перевіряється порядок: «Спочатку нові» та «За назвою» — два вибори
+ * однієї людини, і вибраний мусить бути видно (`aria-pressed`), а список —
+ * справді перебудуватись.
+ *
  * @module web-platform-dev/src/pages/favorites/FavoritesPage.dom.test
  */
 
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import type { FavoriteItem } from "@wwwuabot/shared/favorites";
+import type { FavoriteItem, FavoriteSort } from "@wwwuabot/shared/favorites";
 
 const navigate = vi.fn();
 const favorites = {
@@ -21,6 +25,10 @@ const favorites = {
   loading: false,
   error: null as string | null,
   busy: null as string | null,
+  sort: "date" as FavoriteSort,
+  setSort: vi.fn((sort: FavoriteSort) => {
+    favorites.sort = sort;
+  }),
   reload: vi.fn(),
   remove: vi.fn(),
 };
@@ -36,6 +44,8 @@ const item = (overrides: Partial<FavoriteItem> = {}): FavoriteItem => ({
   targetId: 1,
   title: "Моя сторінка",
   href: "/pages/1",
+  photoUrl: null,
+  savedAt: "2026-10-14 10:00:00",
   ...overrides,
 });
 
@@ -45,6 +55,7 @@ beforeEach(() => {
   favorites.loading = false;
   favorites.error = null;
   favorites.busy = null;
+  favorites.sort = "date";
 });
 
 describe("стани екрана", () => {
@@ -73,11 +84,12 @@ describe("стани екрана", () => {
 });
 
 describe("рядок обраного", () => {
-  it("дотик «Відкрити» веде за адресою рядка", async () => {
+  it("дотик по рядку веде за адресою сторінки", async () => {
     favorites.items = [item()];
     render(<FavoritesPage />);
 
-    await userEvent.click(screen.getByRole("button", { name: "Відкрити" }));
+    // Саме рядок, а не кнопка зняття лайка: її підпис теж згадує назву.
+    await userEvent.click(screen.getByRole("button", { name: /^Моя сторінка/ }));
 
     expect(navigate).toHaveBeenCalledWith("/pages/1");
   });
@@ -87,7 +99,7 @@ describe("рядок обраного", () => {
     render(<FavoritesPage />);
 
     expect(screen.getByText(/Контент видалено або доступ закрито/)).toBeTruthy();
-    expect(screen.queryByRole("button", { name: "Відкрити" })).toBeNull();
+    expect(screen.queryByRole("button", { name: /^Моя сторінка/ })).toBeNull();
   });
 
   it("«Прибрати лайк» прибирає саме цей рядок", async () => {
@@ -98,5 +110,44 @@ describe("рядок обраного", () => {
     await userEvent.click(screen.getByRole("button", { name: /Прибрати лайк/ }));
 
     expect(favorites.remove).toHaveBeenCalledWith(first);
+  });
+});
+
+describe("порядок списку", () => {
+  it("два вибори видно, і вибраний каже про це", () => {
+    favorites.items = [item()];
+    render(<FavoritesPage />);
+
+    const chosen = screen.getByRole("button", { name: "Спочатку нові" });
+    expect(chosen.getAttribute("aria-pressed")).toBe("true");
+    expect(screen.getByRole("button", { name: "За назвою" }).getAttribute("aria-pressed")).toBe(
+      "false",
+    );
+  });
+
+  it("«За назвою» міняє порядок рядків", async () => {
+    favorites.items = [
+      item({ targetId: 1, title: "Яблуко" }),
+      item({ targetId: 2, title: "Абрикос" }),
+    ];
+    render(<FavoritesPage />);
+
+    await userEvent.click(screen.getByRole("button", { name: "За назвою" }));
+
+    expect(favorites.setSort).toHaveBeenCalledWith("name");
+  });
+
+  it("типовий порядок — найновіше першим", () => {
+    favorites.items = [
+      item({ targetId: 1, title: "Старе", savedAt: "2026-10-01 09:00:00" }),
+      item({ targetId: 2, title: "Нове", savedAt: "2026-10-16 09:00:00" }),
+    ];
+    render(<FavoritesPage />);
+
+    const rows = screen.getAllByRole("button", { name: /^(Старе|Нове)/ });
+    expect(rows.map((row) => row.textContent)).toEqual([
+      expect.stringContaining("Нове"),
+      expect.stringContaining("Старе"),
+    ]);
   });
 });

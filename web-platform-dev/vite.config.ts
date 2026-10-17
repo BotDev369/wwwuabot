@@ -4,6 +4,8 @@ import tailwindcss from "@tailwindcss/vite";
 import { cloudflare } from "@cloudflare/vite-plugin";
 import path from "path";
 
+import { telegramPreviewSession } from "./dev/telegram-session.ts";
+
 import { createHash } from "crypto";
 
 /** Post-process HTML to remove crossorigin and add build hash for cache busting. */
@@ -24,7 +26,10 @@ function fixHtml() {
 }
 
 export default defineConfig({
-  plugins: [cloudflare(), react(), tailwindcss(), fixHtml()],
+  // `telegramPreviewSession()` стоїть першим: він реєструє свою адресу сесії
+  // (`dev/telegram-session.ts`) у мідлварах раніше за плагін Cloudflare, який
+  // інакше віддав би цей шлях воркеру.
+  plugins: [telegramPreviewSession(), cloudflare(), react(), tailwindcss(), fixHtml()],
   resolve: {
     alias: {
       "@": path.resolve(__dirname, "./src"),
@@ -32,6 +37,9 @@ export default defineConfig({
   },
   server: {
     allowedHosts: [".monkeycode-ai.live"],
+    // Артефакти Playwright (трейси, знімки) лягають у корінь воркспейсу, і без
+    // цього рядка Vite перезавантажує сторінку посеред прогону e2e.
+    watch: { ignored: ["**/e2e-artifacts/**"] },
     proxy: {
       "/api": {
         // Локально API піднімається окремим `wrangler dev` на 8788, тож це

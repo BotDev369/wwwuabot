@@ -6,18 +6,22 @@ import { formatSqliteDatetime } from "@wwwuabot/shared/utils/datetime";
 import type { Env } from "../shared/types";
 import { PublicProfileService } from "./public-profile.service";
 
+/** Те, що можна сказати про ціль; дату додавання додає лише список. */
+export type ResolvedFavorite = Omit<FavoriteItem, "savedAt">;
+
 /** Недоступне обране не розкриває навіть стару назву; видалити лайк можна завжди. */
 export async function resolveFavorite(
   env: Env,
   userId: number,
   target: FavoriteTarget,
-): Promise<FavoriteItem | null> {
+): Promise<ResolvedFavorite | null> {
   if (target.kind === "user") {
     const profile = await new PublicProfileService(env).readPublic(target.targetId);
     if (!profile) return null;
     return {
       ...target,
       title: profile.platformUsername ? `#${profile.platformUsername}` : "Ім'я приховано",
+      photoUrl: profile.photoUrl ?? null,
       // Адреси в людини немає: її показують карткою у списку, а не окремою
       // сторінкою, тож відкривати з «Обраного» нічого — значення те саме, що
       // в недоступного контенту.
@@ -27,7 +31,7 @@ export async function resolveFavorite(
 
   await ensureTables(env.DB, ["scenarios"]);
   const row = await env.DB.prepare(
-    `SELECT id, slug, title, owner_id, admin_ids, is_public FROM scenarios
+    `SELECT id, slug, title, photo_url, owner_id, admin_ids, is_public FROM scenarios
      WHERE id = ? AND is_active = 1
        AND (owner_id IS NULL OR COALESCE(is_public, 0) = 1 OR owner_id = ? OR admin_ids LIKE ?)`,
   )
@@ -36,6 +40,7 @@ export async function resolveFavorite(
       id: number;
       slug: string;
       title: string | null;
+      photo_url: string | null;
       owner_id: string | null;
       admin_ids: string | null;
       is_public: number | null;
@@ -44,31 +49,43 @@ export async function resolveFavorite(
   const managed = pageRole(Number(row.owner_id), pageAdminIds(row.admin_ids), userId) !== null;
   // LIKE лише звужує кандидатів, точне право перевіряє спільне правило.
   if (row.owner_id !== null && Number(row.is_public) !== 1 && !managed) return null;
+  // Відкрита сторінка відкривається **як її бачать інші** — за адресою, а не
+  // екраном налаштувань. Власнику він теж не потрібен: право власника не
+  // робить із перегляду редагування (docs/VISIBILITY.md).
+  const open = row.owner_id === null || Number(row.is_public) === 1;
   return {
     ...target,
     title: row.title || "Сторінка",
-    href: managed ? `/pages/${row.id}` : toWebPath(row.slug),
+    photoUrl: row.photo_url,
+    href: open ? toWebPath(row.slug) : `/pages/${row.id}`,
   };
 }
 
 export async function listFavorites(env: Env, userId: number): Promise<FavoriteItem[]> {
   const rows = await env.DB.prepare(
-    "SELECT kind, target_id FROM favorites WHERE owner_id = ? ORDER BY id DESC LIMIT 200",
+    "SELECT kind, target_id, created_at FROM favorites WHERE owner_id = ? ORDER BY id DESC LIMIT 200",
   )
     .bind(String(userId))
-    .all<{ kind: FavoriteTarget["kind"]; target_id: number }>();
+    .all<{ kind: FavoriteTarget["kind"]; target_id: number; created_at: string | null }>();
   return Promise.all(
     (rows.results ?? []).map(async (row) => {
       const target = { kind: row.kind, targetId: row.target_id };
-      return (
-        (await resolveFavorite(env, userId, target)) ?? {
-          ...target,
-          title: "Контент недоступний",
-          href: null,
-        }
-      );
+      const resolved = (await resolveFavorite(env, userId, target)) ?? {
+        ...target,
+        title: "Контент недоступний",
+        href: null,
+        photoUrl: null,
+      };
+      return { ...resolved, savedAt: row.created_at ?? null };
     }),
   );
+}
+
+export async function countFavorites(env: Env, userId: number): Promise<number> {
+  const row = await env.DB.prepare("SELECT COUNT(*) AS total FROM favorites WHERE owner_id = ?")
+    .bind(String(userId))
+    .first<{ total: number }>();
+  return Number(row?.total ?? 0);
 }
 
 export async function saveFavorite(

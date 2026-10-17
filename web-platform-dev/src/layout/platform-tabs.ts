@@ -16,8 +16,9 @@ export interface PlatformTab extends Omit<ShellTab, "href"> {
   to?: string;
 }
 
-/** Непрочитані належать «Акаунту», тож число несе саме його слот. */
+/** Непрочитані належать «Акаунту», а число обраного — своєму пункту. */
 export const UNREAD_TAB_KEY = "account";
+export const FAVORITES_TAB_KEY = "favorites";
 
 /**
  * Три пункти смуги — **самі знаки**: підписів під іконками немає, а `label`
@@ -38,9 +39,21 @@ export const PLATFORM_TABS: readonly PlatformTab[] = [
   { key: "services", label: "Сервіси", icon: "grid", to: SERVICES_PATH },
 ];
 
-export function withUnreadBadge(tabs: readonly TabBarItem[], unread: number): TabBarItem[] {
-  if (!Number.isFinite(unread) || unread <= 0) return [...tabs];
-  return tabs.map((tab) => (tab.key === UNREAD_TAB_KEY ? { ...tab, badge: unread } : tab));
+/**
+ * Число на пункті — **один крок для будь-якого числа**: непрочитані лишаються
+ * у «Акаунта», обране — у свого пункту, і правило показу в них те саме.
+ *
+ * Нуль і невалідне число позначки не дають: знак без числа читався б як «щось є».
+ */
+export function withBadges(
+  tabs: readonly TabBarItem[],
+  counts: Partial<Record<string, number>>,
+): TabBarItem[] {
+  return tabs.map((tab) => {
+    const value = counts[tab.key];
+    if (value === undefined || !Number.isFinite(value) || value <= 0) return tab;
+    return { ...tab, badge: Math.trunc(value) };
+  });
 }
 
 export function toShellTabs(tabs: readonly PlatformTab[] = PLATFORM_TABS): ShellTab[] {

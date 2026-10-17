@@ -121,11 +121,20 @@ describe("особисте обране", () => {
   });
 
   it("недоступний контент лишається без старої назви чи адреси", async () => {
-    const db = database(null, [{ kind: "user", target_id: 5 }]);
+    const db = database(null, [{ kind: "user", target_id: 5, created_at: "2026-10-14 10:00:00" }]);
     const response = await handleFavorites(request("GET"), db.env);
     expect(await response.json()).toEqual({
       ok: true,
-      items: [{ kind: "user", targetId: 5, title: "Контент недоступний", href: null }],
+      items: [
+        {
+          kind: "user",
+          targetId: 5,
+          title: "Контент недоступний",
+          href: null,
+          photoUrl: null,
+          savedAt: "2026-10-14 10:00:00",
+        },
+      ],
     });
   });
   it("видимість сторінки перевіряється в SQL до повернення метаданих", async () => {
@@ -153,6 +162,32 @@ describe("особисте обране", () => {
     expect((await resolveFavorite(db.env, 777, { kind: "page", targetId: 5 }))?.href).toBe(
       "/pages/5",
     );
+  });
+  // Відкрита сторінка відкривається за своєю адресою — як її бачать інші.
+  // Екран налаштувань тут був би редагуванням, а власник закладки хоче читати.
+  it("відкрита сторінка веде за адресою, а не в налаштування", async () => {
+    const db = database({
+      id: 5,
+      slug: "pageslay",
+      title: "PageSlay",
+      owner_id: "777",
+      admin_ids: null,
+      is_public: 1,
+    });
+    expect((await resolveFavorite(db.env, 777, { kind: "page", targetId: 5 }))?.href).toBe(
+      "/pageslay",
+    );
+  });
+  it("число для позначки у футері рахує база, а не клієнт", async () => {
+    const db = database({ total: 3 });
+    const response = await handleFavorites(
+      new Request("https://example.com/api/favorites?count=1"),
+      db.env,
+    );
+
+    expect(await response.json()).toEqual({ ok: true, count: 3 });
+    const count = db.calls.find((call) => call.sql.includes("COUNT(*)"));
+    expect(count?.values).toEqual(["777"]);
   });
   // Рядок із номером — не сміття: так контент віддає свій id (`ContentPage.id`),
   // і відкидати його означало б відмовити власному клієнту. Сміттям лишається

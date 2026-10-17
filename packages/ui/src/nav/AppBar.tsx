@@ -34,6 +34,7 @@ import { ScreenChromeContext, type ScreenChrome } from "./screen-chrome";
 import { useAppBarHeight } from "./useAppBarHeight";
 import { useCopyLink } from "./useCopyLink";
 import { useFavorite } from "../favorites/useFavorite";
+import { LikeToast } from "../favorites/LikeToast";
 
 /** Дії, які знає тільки оболонка: вона одна володіє роутером. */
 export interface AppBarActions {
@@ -64,6 +65,9 @@ export function AppBarView({
 
   return (
     <header className="wb-appbar" ref={header}>
+      {/* Підтвердження лайка народжується тут, у серці, і малюється порталом
+          поверх екрана: місце йому — не в смузі й не в шапці. */}
+      <LikeToast />
       <div className="wb-appbar__lead">
         <BarButton icon="arrow-left" label="Назад" onClick={onBack} />
         {menu && <BarButton icon="menu" label="Меню сторінки" onClick={menu} />}
