@@ -336,14 +336,15 @@ export const TABLES = {
   },
 
   /**
-   * Записи трекерів: рядок на трекер і день (`day` — `YYYY-MM-DD`).
-   * Два записи за день — це правка одного дня, тож `UNIQUE (tracker_id, day)`
-   * і upsert. `owner_id` — не дубль: стрічка читає всі записи одним запитом.
+   * Дотики трекерів: рядок на день + момент запису (`logged_at`, із секундами).
+   * За день їх може бути багато — аналітика бере суму, а не останній дотик.
+   * `UNIQUE (tracker_id, day)` прибрала перебудова
+   * `scripts/migrations/2026-10-17-tracker-entries-01-copy.sql` (див. `docs/D1_OPS.md`).
    */
   tracker_entries: {
     name: "tracker_entries",
     owner: "api-dev",
-    purpose: "Значення трекерів за днями: історія, з якої рахують графік і звіт.",
+    purpose: "Дотики трекерів: день, число, нотатка й момент запису — звідси рахують день.",
     create: `CREATE TABLE IF NOT EXISTS tracker_entries (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         tracker_id INTEGER NOT NULL,
@@ -351,8 +352,8 @@ export const TABLES = {
         day TEXT NOT NULL,
         value REAL NOT NULL,
         note TEXT NOT NULL DEFAULT '',
-        updated_at TEXT NOT NULL DEFAULT (datetime('now')),
-        UNIQUE (tracker_id, day)
+        logged_at TEXT NOT NULL DEFAULT (datetime('now')),
+        updated_at TEXT NOT NULL DEFAULT (datetime('now'))
       )`,
     indexes: [
       "CREATE INDEX IF NOT EXISTS idx_tracker_entries_tracker_day ON tracker_entries(tracker_id, day)",

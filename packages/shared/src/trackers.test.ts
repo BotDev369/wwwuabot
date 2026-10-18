@@ -8,15 +8,16 @@ import {
   isWritableTrackerDay,
   isValidTrackerDay,
   todayTrackerDay,
+  trackerDayTotals,
   trackerReport,
   trackerStreak,
   trackerValue,
   validateTrackerFields,
-  type TrackerEntry,
+  type TrackerDayValue,
 } from "./trackers";
 
-function entry(day: string, value: number, note = ""): TrackerEntry {
-  return { day, value, note };
+function entry(day: string, value: number): TrackerDayValue {
+  return { day, value };
 }
 
 describe("стандартні трекери", () => {
@@ -94,6 +95,40 @@ describe("значення", () => {
   });
 });
 
+describe("суми дня", () => {
+  it("⛔ два дотики одного дня — одна сума, а не два дні", () => {
+    const totals = trackerDayTotals([entry("2026-05-10", 0.5), entry("2026-05-10", 1)]);
+    expect(totals.get("2026-05-10")).toBe(1.5);
+
+    const series = buildTrackerSeries(
+      [entry("2026-05-10", 0.5), entry("2026-05-10", 1)],
+      "2026-05-10",
+      1,
+    );
+    expect(series).toEqual([{ day: "2026-05-10", value: 1.5 }]);
+  });
+
+  it("серія рахує суму дня, а не останній дотик", () => {
+    const series = buildTrackerSeries(
+      [entry("2026-05-10", 0.5), entry("2026-05-10", 1.5), entry("2026-05-09", 4)],
+      "2026-05-10",
+      2,
+    );
+    expect(series).toEqual([
+      { day: "2026-05-09", value: 4 },
+      { day: "2026-05-10", value: 2 },
+    ]);
+  });
+
+  it("середнє вікна — по днях, а не по дотиках", () => {
+    const report = trackerReport(
+      [entry("2026-05-09", 4), entry("2026-05-10", 0.5), entry("2026-05-10", 1.5)],
+      { endDay: "2026-05-10", days: 2, goal: null },
+    );
+    expect(report.average).toBe(3);
+  });
+});
+
 describe("серія й звіт", () => {
   const entries = [entry("2026-05-08", 10), entry("2026-05-10", 20)];
 
@@ -124,7 +159,7 @@ describe("серія й звіт", () => {
     expect(report.filled).toBe(2);
     expect(report.total).toBe(30);
     expect(report.average).toBe(15);
-    expect(report.peak).toEqual({ day: "2026-05-10", value: 20, note: "" });
+    expect(report.peak).toEqual({ day: "2026-05-10", value: 20 });
     expect(report.goalDays).toBe(1);
     expect(report.goalRate).toBeCloseTo(1 / 7, 5);
   });

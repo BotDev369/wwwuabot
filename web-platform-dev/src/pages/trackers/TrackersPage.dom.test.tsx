@@ -1,16 +1,17 @@
 // @vitest-environment jsdom
 /**
- * «Трекери»: рядок показує сьогоднішнє значення, серію й тиждень.
+ * «Трекери»: компактна картка — іконка, назва й порожнє поле швидкого запису.
  *
- * Ламається мовчки саме тут: день без запису легко стає нулем (і людина
- * читає «0 кроків» замість «не записано»), а картка без адреси обіцяє
- * перехід, якого немає.
+ * Ламається мовчки саме тут: дефолтне число в полі читається як чиясь вимога,
+ * кнопка без значення стає порожнім дотиком, а дотик по полю не повинен
+ * відкривати сторінку трекера. Аналітики на стрічці немає — вона на окремій
+ * сторінці, і тут це перевіряється відсутністю, а не сподіванням.
  *
  * @module web-platform-dev/src/pages/trackers/TrackersPage.dom.test
  */
 
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { render, screen } from "@testing-library/react";
+import { render, screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import type { Tracker, TrackerEntryRow } from "@wwwuabot/shared/trackers";
 
@@ -20,6 +21,7 @@ const hooks = {
   create: vi.fn(),
   reload: vi.fn(),
   archive: vi.fn(),
+  addEntry: vi.fn(async () => ({ id: 9, day: "2026-10-17", value: 0.5, note: "", loggedAt: null })),
 };
 
 const water: Tracker = {
@@ -57,6 +59,7 @@ const state = {
   reload: hooks.reload,
   create: hooks.create,
   archive: hooks.archive,
+  addEntry: hooks.addEntry,
 };
 
 vi.mock("react-router-dom", () => ({
@@ -73,33 +76,43 @@ beforeEach(() => {
   hooks.params = new URLSearchParams();
   state.trackers = [water, sleep];
   state.entries = [
-    { trackerId: 1, day: "2026-10-17", value: 2, note: "" },
-    { trackerId: 1, day: "2026-10-16", value: 1.5, note: "" },
-    { trackerId: 2, day: "2026-10-14", value: 7, note: "" },
+    { id: 1, trackerId: 1, day: "2026-10-17", value: 2, note: "", loggedAt: "2026-10-17 09:00:00" },
+    {
+      id: 2,
+      trackerId: 1,
+      day: "2026-10-16",
+      value: 1.5,
+      note: "",
+      loggedAt: "2026-10-16 09:00:00",
+    },
+    { id: 3, trackerId: 2, day: "2026-10-14", value: 7, note: "", loggedAt: "2026-10-14 09:00:00" },
   ];
   state.loading = false;
   state.error = null;
 });
 
 describe("стрічка трекерів", () => {
-  it("картка показує сьогоднішнє значення з одиницею", () => {
-    render(<TrackersPage />);
+  it("картка — іконка, назва й поле; аналітики на ній немає", () => {
+    const { container } = render(<TrackersPage />);
 
-    expect(screen.getByText("2 л")).toBeTruthy();
+    expect(screen.getByRole("button", { name: /Вода/ })).toBeTruthy();
+    expect(screen.getByLabelText("Записати: Вода")).toBeTruthy();
+    // Сума дня, серія й графік лишаються на окремій сторінці трекера.
+    expect(container.querySelector(".wb-tracker-spark")).toBeNull();
+    expect(screen.queryByText("2 л")).toBeNull();
+    expect(screen.queryByText("серія 2 дн.")).toBeNull();
   });
 
-  it("⛔ день без запису — це «—», а не «0»", () => {
+  it("⛔ поле завжди порожнє — дефолтне число в ньому не живе", () => {
     render(<TrackersPage />);
 
-    expect(screen.getByText("—")).toBeTruthy();
-    expect(screen.queryByText("0 год")).toBeNull();
+    expect((screen.getByLabelText("Записати: Вода") as HTMLInputElement).value).toBe("");
   });
 
-  it("підпис каже серію й ціль — за ними й вертаються", () => {
+  it("поле підказує одиницею, а не дефолтним числом", () => {
     render(<TrackersPage />);
 
-    expect(screen.getByText("серія 2 дн. · ціль 2 л")).toBeTruthy();
-    expect(screen.getByText("останній запис 14.10 · ціль 8 год")).toBeTruthy();
+    expect((screen.getByLabelText("Записати: Вода") as HTMLInputElement).placeholder).toBe("л");
   });
 
   it("скільки записано сьогодні видно в шапці", () => {
@@ -108,12 +121,33 @@ describe("стрічка трекерів", () => {
     expect(screen.getByText("Сьогодні записано: 1 з 2")).toBeTruthy();
   });
 
-  it("дотик по картці веде саме на цей трекер", async () => {
+  it("дотик по заголовку веде на цей трекер", async () => {
     render(<TrackersPage />);
 
     await userEvent.click(screen.getByRole("button", { name: /Вода/ }));
 
     expect(hooks.navigate).toHaveBeenCalledWith("/trackers/1");
+  });
+
+  it("порожнє поле не має кнопки надсилання", () => {
+    render(<TrackersPage />);
+
+    expect(screen.queryByRole("button", { name: "Записати Вода" })).toBeNull();
+  });
+
+  it("швидкий запис надсилає число й очищує поле з підтвердженням", async () => {
+    render(<TrackersPage />);
+
+    await userEvent.type(screen.getByLabelText("Записати: Вода"), "0.5");
+    await userEvent.click(screen.getByRole("button", { name: "Записати Вода" }));
+
+    expect(hooks.addEntry).toHaveBeenCalledWith(1, 0.5);
+    const field = screen.getByLabelText("Записати: Вода") as HTMLInputElement;
+    expect(field.value).toBe("");
+    // Свій статус у кожної картки: «status» усієї сторінки знайшов би і чужу.
+    expect(within(field.closest(".wb-tracker-card")!).getByRole("status").textContent).toBe(
+      "Збережено",
+    );
   });
 
   it("порожній список каже, як додати перший", () => {
@@ -138,5 +172,12 @@ describe("стрічка трекерів", () => {
 
     expect(screen.getByText("Свій трекер")).toBeTruthy();
     expect(screen.getByRole("button", { name: "Створити" })).toBeTruthy();
+  });
+
+  it("⛔ крок у формі створення без дефолтної цифри", () => {
+    hooks.params = new URLSearchParams("new=1");
+    render(<TrackersPage />);
+
+    expect((screen.getByLabelText("Крок") as HTMLInputElement).value).toBe("");
   });
 });

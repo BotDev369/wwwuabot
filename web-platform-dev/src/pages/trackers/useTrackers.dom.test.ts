@@ -106,6 +106,41 @@ describe("стрічка", () => {
     expect(view.result.current.trackers).toHaveLength(0);
   });
 
+  it("швидкий запис із картки додає дотик сьогоднішнього дня", async () => {
+    mocks.request.mockResolvedValueOnce({ trackers: [water], entries: [], endDay: "2026-10-17" });
+    const view = renderHook(() => useTrackers());
+    await waitFor(() => expect(view.result.current.endDay).toBe("2026-10-17"));
+
+    mocks.request.mockResolvedValueOnce({
+      entry: { id: 3, day: "2026-10-17", value: 0.5, note: "", loggedAt: "2026-10-17 13:45:00" },
+    });
+    let entry = null;
+    await act(async () => {
+      entry = await view.result.current.addEntry(1, 0.5);
+    });
+
+    expect(mocks.request).toHaveBeenCalledWith(
+      "/api/user/trackers/entry",
+      expect.objectContaining({ method: "POST" }),
+    );
+    expect(entry).toMatchObject({ id: 3, day: "2026-10-17" });
+    expect(view.result.current.entries).toHaveLength(1);
+  });
+
+  it("невдалий швидкий запис каже причину й не додає рядок", async () => {
+    mocks.request.mockResolvedValueOnce({ trackers: [water], entries: [], endDay: "2026-10-17" });
+    const view = renderHook(() => useTrackers());
+    await waitFor(() => expect(view.result.current.loading).toBe(false));
+
+    mocks.request.mockRejectedValueOnce(new Error("Значення поза межами трекера."));
+    await act(async () => {
+      await view.result.current.addEntry(1, 99);
+    });
+
+    expect(mocks.alert).toHaveBeenCalledWith("Значення поза межами трекера.", { tone: "danger" });
+    expect(view.result.current.entries).toHaveLength(0);
+  });
+
   it("прибирання зникає зі стану, а провал лишає рядок", async () => {
     mocks.request.mockResolvedValueOnce({ trackers: [water], entries: [], endDay: "2026-10-17" });
     const view = renderHook(() => useTrackers());

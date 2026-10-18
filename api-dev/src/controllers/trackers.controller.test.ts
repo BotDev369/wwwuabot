@@ -19,7 +19,14 @@ const TRACKER_ROW = {
   is_builtin: 1,
 };
 
-function database(options: { total?: number; tracker?: unknown | null; changes?: number } = {}) {
+function database(
+  options: {
+    total?: number;
+    tracker?: unknown | null;
+    changes?: number;
+    lastRowId?: number;
+  } = {},
+) {
   const calls: { sql: string; values: unknown[] }[] = [];
   const batches: number[] = [];
   const db = {
@@ -38,7 +45,9 @@ function database(options: { total?: number; tracker?: unknown | null; changes?:
           return null;
         },
         all: async () => ({ results: [] }),
-        run: async () => ({ meta: { changes: options.changes ?? 1 } }),
+        run: async () => ({
+          meta: { changes: options.changes ?? 1, last_row_id: options.lastRowId ?? 21 },
+        }),
       };
       return statement;
     },
@@ -163,7 +172,7 @@ describe("запис дня", () => {
     expect(db.calls.some((call) => call.sql.includes("INSERT INTO tracker_entries"))).toBe(false);
   });
 
-  it("день зберігається як upsert — другий запис править перший", async () => {
+  it("збереження — новий рядок із моментом часу, а не правка дня", async () => {
     const db = database();
     const day = todayTrackerDay();
     const response = await handleTrackerEntry(
@@ -178,7 +187,32 @@ describe("запис дня", () => {
 
     expect(response.status).toBe(200);
     const insert = db.calls.find((call) => call.sql.includes("INSERT INTO tracker_entries"));
-    expect(insert?.sql).toContain("ON CONFLICT(tracker_id, day) DO UPDATE");
-    expect(insert?.values).toEqual([4, "777", day, 3, "спокійно", expect.any(String)]);
+    expect(insert?.sql).not.toContain("ON CONFLICT");
+    expect(insert?.values).toEqual([
+      4,
+      "777",
+      day,
+      3,
+      "спокійно",
+      expect.any(String),
+      expect.any(String),
+    ]);
+    // Відповідь несе номер рядка й серверний час — клієнт їх не вигадує.
+    const body = (await response.json()) as { entry: { id: number; loggedAt: string | null } };
+    expect(body.entry.id).toBe(21);
+    expect(body.entry.loggedAt).toEqual(expect.any(String));
+  });
+
+  it("прибирання дотика — за номером рядка, звужене власником", async () => {
+    const db = database();
+    const response = await handleTrackerEntry(
+      request("DELETE", "https://example.com/api/user/trackers/entry?id=21"),
+      db.env,
+    );
+
+    expect(response.status).toBe(200);
+    const remove = db.calls.find((call) => call.sql.startsWith("DELETE FROM tracker_entries"));
+    expect(remove?.sql).toContain("WHERE owner_id = ? AND id = ?");
+    expect(remove?.values).toEqual(["777", 21]);
   });
 });

@@ -35,11 +35,23 @@ export interface Tracker extends TrackerFields {
   isBuiltin: boolean;
 }
 
-/** Запис за день: один на трекер і день (рядок `tracker_entries`). */
+/**
+ * Рядок дня для аналітики. За день може бути багато записів — графік і звіт
+ * рахують їх **суму**, бо «сьогодні випито тричі» — це один день, а не три.
+ */
+export interface TrackerDayValue {
+  day: string;
+  value: number;
+}
+
+/** Запис трекера (рядок `tracker_entries`): окремий дотик людини в день. */
 export interface TrackerEntry {
+  id: number;
   day: string;
   value: number;
   note: string;
+  /** Момент запису (`YYYY-MM-DD HH:MM:SS`); `null` — рядок старший за колонку. */
+  loggedAt: string | null;
 }
 
 /** Запис разом із трекером — стрічка читає всі дні одним запитом. */
@@ -58,7 +70,7 @@ export interface TrackerReport {
   filled: number;
   total: number;
   average: number | null;
-  peak: TrackerEntry | null;
+  peak: TrackerDayValue | null;
   streak: number;
   goalDays: number;
   goalRate: number | null;
@@ -221,17 +233,30 @@ export function validateTrackerFields(
   return { ok: true, value: { title, unit, step, goal, min, max } };
 }
 
+/**
+ * Сума дня: скільки разів людина не записала би мірку — день лишається одним
+ * числом. Саме цю суму показують графік, звіт і шапка трекера.
+ */
+export function trackerDayTotals(entries: readonly TrackerDayValue[]): Map<string, number> {
+  const totals = new Map<string, number>();
+  for (const entry of entries) {
+    totals.set(entry.day, (totals.get(entry.day) ?? 0) + entry.value);
+  }
+  return totals;
+}
+
 /** Серія за вікно: дні без запису стоять `null`, тож графік не зсуває історію. */
 export function buildTrackerSeries(
-  entries: readonly TrackerEntry[],
+  entries: readonly TrackerDayValue[],
   endDay: string,
   days: number,
 ): TrackerPoint[] {
-  const byDay = new Map(entries.map((entry) => [entry.day, entry.value]));
+  const byDay = trackerDayTotals(entries);
   const points: TrackerPoint[] = [];
   for (let offset = days - 1; offset >= 0; offset--) {
     const day = addTrackerDays(endDay, -offset);
-    points.push({ day, value: byDay.get(day) ?? null });
+    const value = byDay.get(day);
+    points.push({ day, value: value === undefined ? null : Math.round(value * 1000) / 1000 });
   }
   return points;
 }
@@ -242,7 +267,7 @@ export function buildTrackerSeries(
  * Інакше людина, яка записала вчора, бачила б нуль: сьогоднішній день ще не
  * прожито, і «нема запису» не означає «нуль кроків».
  */
-export function trackerStreak(entries: readonly TrackerEntry[], endDay: string): number {
+export function trackerStreak(entries: readonly TrackerDayValue[], endDay: string): number {
   const days = new Set(entries.map((entry) => entry.day));
   let cursor = days.has(endDay) ? endDay : addTrackerDays(endDay, -1);
   let streak = 0;
@@ -253,17 +278,23 @@ export function trackerStreak(entries: readonly TrackerEntry[], endDay: string):
   return streak;
 }
 
-function windowAverage(entries: readonly TrackerEntry[], from: string, to: string): number | null {
-  const values = entries
-    .filter((entry) => entry.day >= from && entry.day <= to)
-    .map((e) => e.value);
+/** Середнє вікна — по **днях із записом**, а не по окремих дотиках. */
+function windowAverage(
+  totals: ReadonlyMap<string, number>,
+  from: string,
+  to: string,
+): number | null {
+  const values: number[] = [];
+  for (const [day, value] of totals) {
+    if (day >= from && day <= to) values.push(value);
+  }
   if (values.length === 0) return null;
   return values.reduce((sum, value) => sum + value, 0) / values.length;
 }
 
 /** Звіт за вікно; попереднє вікно тієї ж довжини дає «краще/гірше». */
 export function trackerReport(
-  entries: readonly TrackerEntry[],
+  entries: readonly TrackerDayValue[],
   options: { endDay: string; days: number; goal: number | null },
 ): TrackerReport {
   const { endDay, days, goal } = options;
@@ -274,17 +305,16 @@ export function trackerReport(
   const total = filled.reduce((sum, point) => sum + point.value, 0);
   const start = addTrackerDays(endDay, -(days - 1));
 
-  let peak: TrackerEntry | null = null;
+  let peak: TrackerDayValue | null = null;
   for (const point of filled) {
-    const entry = { day: point.day, value: point.value, note: "" };
-    if (!peak || entry.value > peak.value) peak = entry;
+    if (!peak || point.value > peak.value) peak = { day: point.day, value: point.value };
   }
 
   const goalDays = goal === null ? 0 : filled.filter((point) => point.value >= goal).length;
   const previousTo = addTrackerDays(start, -1);
   const previousFrom = addTrackerDays(previousTo, -(days - 1));
   const current = filled.length ? total / filled.length : null;
-  const previous = windowAverage(entries, previousFrom, previousTo);
+  const previous = windowAverage(trackerDayTotals(entries), previousFrom, previousTo);
   const changePct =
     current !== null && previous !== null && previous > 0
       ? Math.round(((current - previous) / previous) * 1000) / 10

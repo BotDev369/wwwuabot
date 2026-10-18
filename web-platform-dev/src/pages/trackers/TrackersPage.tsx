@@ -1,13 +1,13 @@
 /**
- * «Трекери» — стрічка мірок людини: сьогоднішнє значення, серія й тиждень.
- *
- * Рядок веде на свій трекер, а «+» відкриває форму в адресі (`?new=1`), тож
- * «назад» у Telegram закриває форму, а не виводить зі списку.
+ * «Трекери» — компактна стрічка: іконка, назва й порожнє поле швидкого запису.
+ * Аналітика живе на `/trackers/:id`, тож заголовок відкриває трекер, а поле
+ * лишається полем (форма всередині кнопки не мала б ні клавіатури, ні дотику).
+ * Кнопка надсилання з'являється лише з введеним значенням.
  *
  * @module web-platform-dev/src/pages/trackers/TrackersPage
  */
 
-import type { ReactElement } from "react";
+import { useState, type FormEvent, type ReactElement } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { Icon } from "@wwwuabot/shared";
 import { useScreenChrome } from "@wwwuabot/ui/nav";
@@ -20,54 +20,74 @@ import {
 } from "@/app/routes";
 import { useTrackers } from "./useTrackers";
 import { TrackerCreateForm } from "./TrackerCreateForm";
-import {
-  amountOrDash,
-  dayLabel,
-  goalLabel,
-  toTrackerRows,
-  type TrackerRowView,
-} from "./trackers-view";
+import { toTrackerRows, type TrackerRowView } from "./trackers-view";
 
-function cardMeta(row: TrackerRowView): string {
-  const streak =
-    row.streak > 0
-      ? `серія ${row.streak} дн.`
-      : row.lastDay
-        ? `останній запис ${dayLabel(row.lastDay)}`
-        : "немає записів";
-  const goal = goalLabel(row.tracker);
-  return goal ? `${streak} · ${goal}` : streak;
+interface QuickCardProps {
+  row: TrackerRowView;
+  onOpen: () => void;
+  onAdd: (trackerId: number, value: number) => Promise<unknown>;
 }
 
-function TrackerCard({ row, onOpen }: { row: TrackerRowView; onOpen: () => void }): ReactElement {
-  const peak = Math.max(...row.series.map((point) => point.value ?? 0), 1);
+function TrackerQuickCard({ row, onOpen, onAdd }: QuickCardProps): ReactElement {
+  const [value, setValue] = useState("");
+  const [saving, setSaving] = useState(false);
+  const [saved, setSaved] = useState(false);
+
+  async function submit(event: FormEvent): Promise<void> {
+    event.preventDefault();
+    const raw = value.replace(",", ".").trim();
+    const parsed = Number(raw);
+    if (!raw || !Number.isFinite(parsed) || saving) return;
+    setSaving(true);
+    const entry = await onAdd(row.tracker.id, parsed);
+    setSaving(false);
+    if (entry) {
+      setValue("");
+      setSaved(true);
+    }
+  }
+
   return (
-    <button type="button" className="wb-tracker-card" onClick={onOpen}>
-      <span className="wb-tracker-card-head">
+    <div className="wb-tracker-card">
+      <button type="button" className="wb-tracker-card-open" onClick={onOpen}>
         <span className="wb-tracker-card-icon">
           <Icon name={row.tracker.icon} size={18} />
         </span>
         <span className="wb-tracker-card-title">{row.tracker.title}</span>
         <Icon name="chevron-right" size={18} />
-      </span>
-      <span className="wb-tracker-card-value">{amountOrDash(row.today, row.tracker.unit)}</span>
-      <span className="wb-tracker-card-meta">{cardMeta(row)}</span>
-      <span className="wb-tracker-spark" aria-hidden="true">
-        {row.series.map((point) => (
-          <span
-            key={point.day}
-            className={
-              point.value === null
-                ? "wb-tracker-spark-bar wb-tracker-spark-bar--empty"
-                : "wb-tracker-spark-bar"
-            }
-            style={{
-              height: `${point.value === null ? 2 : Math.max(12, (point.value / peak) * 100)}%`,
-            }}
-          />
-        ))}
-      </span>
-    </button>
+      </button>
+      <form className="wb-tracker-quick" onSubmit={(event) => void submit(event)}>
+        <input
+          className="wb-input wb-tracker-quick-input"
+          type="number"
+          inputMode="decimal"
+          step={row.tracker.step}
+          min={row.tracker.min}
+          max={row.tracker.max ?? undefined}
+          value={value}
+          aria-label={`Записати: ${row.tracker.title}`}
+          placeholder={row.tracker.unit || ""}
+          onChange={(event) => {
+            setValue(event.target.value);
+            setSaved(false);
+          }}
+        />
+        {value.trim() !== "" && (
+          <button
+            type="submit"
+            className="wb-btn wb-btn-primary wb-tracker-quick-submit"
+            disabled={saving}
+            aria-label={`Записати ${row.tracker.title}`}
+          >
+            <Icon name="check" size={16} />
+          </button>
+        )}
+      </form>
+      {/* Підтвердження — своїм рядком: у картці 150px текст поруч із полем стягнув би його. */}
+      <p className="wb-tracker-quick-status" role="status">
+        {saved ? "Збережено" : ""}
+      </p>
+    </div>
   );
 }
 
@@ -135,10 +155,11 @@ export function TrackersPage(): ReactElement {
       {!state.loading && !state.error && rows.length > 0 && (
         <div className="wb-trackers-list">
           {rows.map((row) => (
-            <TrackerCard
+            <TrackerQuickCard
               key={row.tracker.id}
               row={row}
               onOpen={() => navigate(trackerPath(row.tracker.id))}
+              onAdd={state.addEntry}
             />
           ))}
         </div>

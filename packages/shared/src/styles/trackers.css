@@ -15,38 +15,43 @@
   gap: var(--sp-3);
 }
 
+/*
+ * Картка стрічки — контейнер, а не кнопка: усередині живе поле вводу, і
+ * форма всередині кнопки не мала б ні клавіатури, ні дотику. Тому
+ * відкриває саме заголовок (`--open`), а поле відповідає за свій дотик.
+ */
 .wb-tracker-card {
   display: flex;
   flex-direction: column;
   gap: var(--sp-2);
   min-width: 0;
-  padding: var(--sp-4);
+  padding: var(--sp-3);
   border: 1px solid var(--border-subtle);
   border-radius: var(--radius-lg);
   background: var(--surface);
   box-shadow: var(--shadow-xs);
   color: var(--text-primary);
   text-align: left;
-  cursor: pointer;
-  transition:
-    background var(--duration-fast) var(--ease),
-    transform var(--duration-fast) var(--ease);
 }
 
-.wb-tracker-card:hover {
-  background: var(--surface-hover);
-}
-
-.wb-tracker-card:active {
-  transform: scale(0.98);
-}
-
-.wb-tracker-card-head {
+.wb-tracker-card-open {
   display: flex;
   align-items: center;
   gap: var(--sp-2);
   min-width: 0;
+  min-height: 44px;
+  padding: 0;
+  border: none;
+  background: none;
   color: var(--text-secondary);
+  text-align: left;
+  cursor: pointer;
+  transition: background var(--duration-fast) var(--ease);
+  border-radius: var(--radius-md);
+}
+
+.wb-tracker-card-open:hover {
+  background: var(--surface-hover);
 }
 
 .wb-tracker-card-icon {
@@ -72,36 +77,30 @@
   font-weight: var(--weight-semibold);
 }
 
-.wb-tracker-card-value {
-  font-size: var(--text-xl);
-  font-weight: var(--weight-bold);
-  line-height: 1.1;
-  overflow-wrap: anywhere;
-}
-
-.wb-tracker-card-meta {
-  color: var(--text-muted);
-  font-size: var(--text-xs);
-}
-
-.wb-tracker-spark {
+/* Швидкий запис: поле завжди порожнє, кнопка — лише з введеним значенням. */
+.wb-tracker-quick {
   display: flex;
-  align-items: flex-end;
-  gap: 2px;
-  height: 30px;
+  align-items: center;
+  gap: var(--sp-2);
 }
 
-.wb-tracker-spark-bar {
-  flex: 1 1 0;
-  min-height: 2px;
-  border-radius: 2px 2px 0 0;
-  background: var(--accent);
-  opacity: 0.7;
+.wb-tracker-quick-input {
+  flex: 1;
+  min-width: 0;
 }
 
-.wb-tracker-spark-bar--empty {
-  background: var(--border-subtle);
-  opacity: 1;
+.wb-tracker-quick-submit {
+  flex: none;
+  min-width: 44px;
+  padding-inline: var(--sp-3);
+}
+
+.wb-tracker-quick-status {
+  color: var(--green);
+  font-size: var(--text-xs);
+  /* Місце під «Збережено» — наперед: інакше підтвердження зсуває сусідню картку. */
+  min-height: 1.2em;
+  line-height: 1.2;
 }
 
 .wb-tracker-hero {
@@ -300,6 +299,11 @@
 }
 
 .wb-tracker-history-day {
+  color: var(--text-muted);
+  font-size: var(--text-xs);
+}
+
+.wb-tracker-history-time {
   color: var(--text-muted);
   font-size: var(--text-xs);
 }

@@ -31,7 +31,9 @@ export function TrackerCreateForm({
   const [title, setTitle] = useState("");
   const [unit, setUnit] = useState("");
   const [goal, setGoal] = useState("");
-  const [step, setStep] = useState("1");
+  // Без дефолтної цифри: порожній крок — це крок 1 (`?? 1` нижче), а число в
+  // полі, яке ніхто не міняв, читається як чиясь вимога, а не як типовий вибір.
+  const [step, setStep] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
 

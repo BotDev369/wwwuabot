@@ -1,7 +1,8 @@
 /**
  * Трекери: `GET` стрічки, `POST` власного трекера, `DELETE` — прибрати.
- * Друга ручка — записи дня (`/api/user/trackers/entry`), upsert. Власника дає
- * лише підписаний `initData`.
+ * Друга ручка — дотики днів (`/api/user/trackers/entry`): збереження додає
+ * новий рядок (день можна записувати багато разів), прибирання — за номером
+ * запису. Власника дає лише підписаний `initData`.
  *
  * @module api-dev/src/controllers/trackers.controller
  */
@@ -24,12 +25,12 @@ import { apiLog } from "../shared/logger";
 import {
   archiveTracker,
   createTracker,
+  insertTrackerEntry,
   listEntries,
   listTrackers,
   readTracker,
   readTrackerEntries,
   removeTrackerEntry,
-  saveTrackerEntry,
 } from "../services/trackers.service";
 
 /** Вікно стрічки: серія, серія днів і «чи записано сьогодні». */
@@ -123,7 +124,7 @@ export async function handleTrackers(request: Request, env: Env): Promise<Respon
   }
 }
 
-/** Записи дня: збереження — upsert, повторний дотик править той самий рядок. */
+/** Дотики днів: збереження додає рядок, прибирання — за номером запису. */
 export async function handleTrackerEntry(request: Request, env: Env): Promise<Response> {
   const identity = await resolveUserId(request, env);
   if (!identity.ok) return identity.response;
@@ -135,13 +136,9 @@ export async function handleTrackerEntry(request: Request, env: Env): Promise<Re
     await ensureTables(env.DB, ["trackers", "tracker_entries"]);
 
     if (request.method === "DELETE") {
-      const query = new URL(request.url).searchParams;
-      const trackerId = positiveId(query.get("trackerId"));
-      const day = query.get("day") ?? "";
-      if (trackerId === null || !isValidTrackerDay(day)) {
-        return json({ ok: false, error: "Missing entry" }, 400);
-      }
-      if (!(await removeTrackerEntry(env, identity.userId, trackerId, day))) {
+      const entryId = positiveId(new URL(request.url).searchParams.get("id"));
+      if (entryId === null) return json({ ok: false, error: "Missing entry" }, 400);
+      if (!(await removeTrackerEntry(env, identity.userId, entryId))) {
         return json({ ok: false, error: "Not found" }, 404);
       }
       return json({ ok: true });
@@ -168,8 +165,16 @@ export async function handleTrackerEntry(request: Request, env: Env): Promise<Re
       return json({ ok: false, error: "Значення поза межами трекера." }, 400);
     }
 
-    await saveTrackerEntry(env, identity.userId, trackerId, day, value, note.trim());
-    return json({ ok: true, entry: { day, value, note: note.trim() } });
+    const entry = await insertTrackerEntry(
+      env,
+      identity.userId,
+      trackerId,
+      day,
+      value,
+      note.trim(),
+    );
+    if (!entry) return json({ ok: false, error: "Not found" }, 404);
+    return json({ ok: true, entry });
   } catch (error: unknown) {
     apiLog.error("Tracker entry error", error);
     return json({ ok: false, error: "Не вдалося зберегти запис" }, 500);

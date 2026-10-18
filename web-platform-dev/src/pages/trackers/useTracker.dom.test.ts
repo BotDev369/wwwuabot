@@ -1,10 +1,10 @@
 // @vitest-environment jsdom
 /**
- * Хук одного трекера: запис дня **замінює** день, а не додає другий.
+ * Хук одного трекера: запис дня — **новий дотик**, а не правка минулого.
  *
- * Саме тут ламається історія: два рядки за одну дату показали б два різні
- * числа, і жоден із них не був би «правдою». Тому перевіряємо заміну, а не
- * довжину списку.
+ * За день можна записати багато разів (вода тричі, кроки ввечері), тож лічильник
+ * історії росте, а не перезаписується. Час дотику ставить сервер — клієнт його
+ * не вигадує.
  *
  * @module web-platform-dev/src/pages/trackers/useTracker.dom.test
  */
@@ -37,7 +37,7 @@ beforeEach(() => {
   vi.clearAllMocks();
   mocks.request.mockResolvedValue({
     tracker: water,
-    entries: [{ day: "2026-10-16", value: 1.5, note: "" }],
+    entries: [{ id: 11, day: "2026-10-16", value: 1.5, note: "", loggedAt: "2026-10-16 09:00:00" }],
     endDay: "2026-10-17",
   });
 });
@@ -60,23 +60,28 @@ describe("один трекер", () => {
     expect(view.result.current.error).toBe("Трекера не знайдено.");
   });
 
-  it("⛔ повторний запис дня замінює день, а не додає другий", async () => {
+  it("⛔ другий дотик того самого дня — новий рядок, а не правка", async () => {
     const view = renderHook(() => useTracker(1));
     await waitFor(() => expect(view.result.current.loading).toBe(false));
 
-    mocks.request.mockResolvedValueOnce({ entry: { day: "2026-10-16", value: 2, note: "" } });
+    mocks.request.mockResolvedValueOnce({
+      entry: { id: 12, day: "2026-10-16", value: 2, note: "", loggedAt: "2026-10-16 21:30:00" },
+    });
     await act(async () => {
       await view.result.current.save("2026-10-16", 2, "");
     });
 
-    expect(view.result.current.entries).toEqual([{ day: "2026-10-16", value: 2, note: "" }]);
+    expect(view.result.current.entries).toHaveLength(2);
+    expect(view.result.current.entries.map((entry) => entry.id)).toEqual([11, 12]);
   });
 
   it("новий день стає в історію за порядком", async () => {
     const view = renderHook(() => useTracker(1));
     await waitFor(() => expect(view.result.current.loading).toBe(false));
 
-    mocks.request.mockResolvedValueOnce({ entry: { day: "2026-10-17", value: 2, note: "" } });
+    mocks.request.mockResolvedValueOnce({
+      entry: { id: 12, day: "2026-10-17", value: 2, note: "", loggedAt: "2026-10-17 08:00:00" },
+    });
     await act(async () => {
       await view.result.current.save("2026-10-17", 2, "");
     });
@@ -100,17 +105,17 @@ describe("один трекер", () => {
     expect(view.result.current.entries).toHaveLength(1);
   });
 
-  it("прибирання дня прибирає саме його", async () => {
+  it("прибирання дотика йде за номером рядка", async () => {
     const view = renderHook(() => useTracker(1));
     await waitFor(() => expect(view.result.current.loading).toBe(false));
 
     mocks.request.mockResolvedValueOnce({ ok: true });
     await act(async () => {
-      await view.result.current.remove("2026-10-16");
+      await view.result.current.remove(11);
     });
 
     expect(mocks.request).toHaveBeenCalledWith(
-      expect.stringContaining("/api/user/trackers/entry?trackerId=1&day=2026-10-16"),
+      expect.stringContaining("/api/user/trackers/entry?id=11"),
       { method: "DELETE" },
     );
     expect(view.result.current.entries).toHaveLength(0);

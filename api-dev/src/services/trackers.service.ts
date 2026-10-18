@@ -1,5 +1,5 @@
 /**
- * Трекери: стандартний набір при першому вході, власні трекери й записи днів.
+ * Трекери: стандартний набір при першому вході, власні трекери й дотики днів.
  *
  * Власника всюди дає підписаний `initData` (контролер), а не тіло запиту —
  * тому кожен запит звужений `owner_id = ?`, і чужий номер не бачить нічого.
@@ -99,16 +99,26 @@ export async function listEntries(
   since: string,
 ): Promise<TrackerEntryRow[]> {
   const rows = await env.DB.prepare(
-    `SELECT tracker_id, day, value, note FROM tracker_entries
-     WHERE owner_id = ? AND day >= ? ORDER BY day`,
+    `SELECT id, tracker_id, day, value, note, COALESCE(logged_at, updated_at) AS logged_at
+     FROM tracker_entries
+     WHERE owner_id = ? AND day >= ? ORDER BY day, logged_at, id`,
   )
     .bind(String(userId), since)
-    .all<{ tracker_id: number; day: string; value: number; note: string | null }>();
+    .all<{
+      id: number;
+      tracker_id: number;
+      day: string;
+      value: number;
+      note: string | null;
+      logged_at: string | null;
+    }>();
   return (rows.results ?? []).map((row) => ({
+    id: Number(row.id),
     trackerId: Number(row.tracker_id),
     day: row.day,
     value: Number(row.value),
     note: row.note ?? "",
+    loggedAt: row.logged_at,
   }));
 }
 
@@ -128,15 +138,24 @@ export async function readTrackerEntries(
   since: string,
 ): Promise<TrackerEntry[]> {
   const rows = await env.DB.prepare(
-    `SELECT day, value, note FROM tracker_entries
-     WHERE owner_id = ? AND tracker_id = ? AND day >= ? ORDER BY day`,
+    `SELECT id, day, value, note, COALESCE(logged_at, updated_at) AS logged_at
+     FROM tracker_entries
+     WHERE owner_id = ? AND tracker_id = ? AND day >= ? ORDER BY day, logged_at, id`,
   )
     .bind(String(userId), trackerId, since)
-    .all<{ day: string; value: number; note: string | null }>();
+    .all<{
+      id: number;
+      day: string;
+      value: number;
+      note: string | null;
+      logged_at: string | null;
+    }>();
   return (rows.results ?? []).map((row) => ({
+    id: Number(row.id),
     day: row.day,
     value: Number(row.value),
     note: row.note ?? "",
+    loggedAt: row.logged_at,
   }));
 }
 
@@ -182,37 +201,39 @@ export async function archiveTracker(env: Env, userId: number, id: number): Prom
   return Number(result.meta.changes) > 0;
 }
 
-/** Один день — один запис: повторне збереження правит той самий рядок. */
-export async function saveTrackerEntry(
+/**
+ * Новий дотик дня — **новий рядок**, не правка: за день можна записати скільки
+ * завгодно разів, а день у звіті — їх сума. Момент запису друкують самі SQLite
+ * (`datetime('now')`, секунди) — клієнтський годинник не є джерелом істини.
+ */
+export async function insertTrackerEntry(
   env: Env,
   userId: number,
   trackerId: number,
   day: string,
   value: number,
   note: string,
-): Promise<boolean> {
-  if (!(await readTracker(env, userId, trackerId))) return false;
-  await env.DB.prepare(
-    `INSERT INTO tracker_entries (tracker_id, owner_id, day, value, note, updated_at)
-     VALUES (?, ?, ?, ?, ?, ?)
-     ON CONFLICT(tracker_id, day) DO UPDATE SET
-       value = excluded.value, note = excluded.note, updated_at = excluded.updated_at`,
+): Promise<TrackerEntry | null> {
+  if (!(await readTracker(env, userId, trackerId))) return null;
+  const now = formatSqliteDatetime();
+  const result = await env.DB.prepare(
+    `INSERT INTO tracker_entries (tracker_id, owner_id, day, value, note, logged_at, updated_at)
+     VALUES (?, ?, ?, ?, ?, ?, ?)`,
   )
-    .bind(trackerId, String(userId), day, value, note, formatSqliteDatetime())
+    .bind(trackerId, String(userId), day, value, note, now, now)
     .run();
-  return true;
+  const id = Number(result.meta.last_row_id ?? 0);
+  return id > 0 ? { id, day, value, note, loggedAt: now } : null;
 }
 
+/** Один дотик — один рядок; чужий номер запису не існує (власник у WHERE). */
 export async function removeTrackerEntry(
   env: Env,
   userId: number,
-  trackerId: number,
-  day: string,
+  entryId: number,
 ): Promise<boolean> {
-  const result = await env.DB.prepare(
-    "DELETE FROM tracker_entries WHERE owner_id = ? AND tracker_id = ? AND day = ?",
-  )
-    .bind(String(userId), trackerId, day)
+  const result = await env.DB.prepare("DELETE FROM tracker_entries WHERE owner_id = ? AND id = ?")
+    .bind(String(userId), entryId)
     .run();
   return Number(result.meta.changes) > 0;
 }

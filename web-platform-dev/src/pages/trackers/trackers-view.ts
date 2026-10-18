@@ -28,10 +28,10 @@ export interface TrackerRowView {
 export function entriesOf(entries: readonly TrackerEntryRow[], trackerId: number): TrackerEntry[] {
   return entries
     .filter((entry) => entry.trackerId === trackerId)
-    .map(({ day, value, note }) => ({ day, value, note }));
+    .map(({ id, day, value, note, loggedAt }) => ({ id, day, value, note, loggedAt }));
 }
 
-/** Рядок списку: останні сім днів, серія й «чи є сьогодні». */
+/** Рядок списку: сума сьогоднішнього дня, серія й «чи записано сьогодні». */
 export function toTrackerRows(
   trackers: readonly Tracker[],
   entries: readonly TrackerEntryRow[],
@@ -39,14 +39,16 @@ export function toTrackerRows(
 ): TrackerRowView[] {
   return trackers.map((tracker) => {
     const own = entriesOf(entries, tracker.id);
-    const today = own.find((entry) => entry.day === endDay)?.value ?? null;
+    // Записаний нуль — це нуль, а не «не записано»: межа, яку легко злити.
+    const todayValues = own.filter((entry) => entry.day === endDay);
+    const todaySum = todayValues.reduce((sum, entry) => sum + entry.value, 0);
     const last = own.reduce<string | null>(
       (latest, entry) => (latest === null || entry.day > latest ? entry.day : latest),
       null,
     );
     return {
       tracker,
-      today,
+      today: todayValues.length === 0 ? null : Math.round(todaySum * 1000) / 1000,
       series: buildTrackerSeries(own, endDay, 7),
       streak: trackerStreak(own, endDay),
       lastDay: last,
@@ -54,9 +56,22 @@ export function toTrackerRows(
   });
 }
 
-/** Історія — найновіше першим: правка вчорашнього дня стоїть поруч. */
+/**
+ * Історія — найновіше першим: за день може бути кілька дотиків, тож порядок
+ * дає день, у межах дня — момент запису, а в межах секунди — номер рядка.
+ */
 export function newestFirst(entries: readonly TrackerEntry[]): TrackerEntry[] {
-  return [...entries].sort((a, b) => (a.day < b.day ? 1 : a.day > b.day ? -1 : 0));
+  return [...entries].sort((a, b) => {
+    const left = `${a.day} ${a.loggedAt ?? ""} ${String(a.id).padStart(9, "0")}`;
+    const right = `${b.day} ${b.loggedAt ?? ""} ${String(b.id).padStart(9, "0")}`;
+    return left < right ? 1 : left > right ? -1 : 0;
+  });
+}
+
+/** Час дотика з моменту запису: «13:45»; без часу — порожньо. */
+export function timeLabel(loggedAt: string | null): string {
+  const time = (loggedAt ?? "").slice(11, 16);
+  return /^\d{2}:\d{2}$/.test(time) ? time : "";
 }
 
 /** Вікно для запиту: запас на попередній період дає «краще/гірше». */

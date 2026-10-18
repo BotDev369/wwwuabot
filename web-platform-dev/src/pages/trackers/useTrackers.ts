@@ -12,6 +12,7 @@ import { useDialog } from "@wwwuabot/ui/dialog";
 import {
   todayTrackerDay,
   type Tracker,
+  type TrackerEntry,
   type TrackerEntryRow,
   type TrackerFields,
 } from "@wwwuabot/shared/trackers";
@@ -29,6 +30,8 @@ export interface TrackersState extends TrackersPayload {
   reload: () => Promise<void>;
   create: (fields: TrackerFields) => Promise<Tracker | null>;
   archive: (id: number) => Promise<boolean>;
+  /** Швидкий запис із картки: новий дотик сьогоднішнього дня. */
+  addEntry: (trackerId: number, value: number) => Promise<TrackerEntry | null>;
 }
 
 export function useTrackers(): TrackersState {
@@ -39,6 +42,7 @@ export function useTrackers(): TrackersState {
   // отримати трекер («+» форми не чекає завантаження), а порожній день
   // зламав би побудову серії (`addTrackerDays("")` — Invalid time value).
   const [endDay, setEndDay] = useState(() => todayTrackerDay());
+  const endDayRef = useRef(endDay);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const generation = useRef(0);
@@ -52,6 +56,7 @@ export function useTrackers(): TrackersState {
       setTrackers(result.trackers);
       setEntries(result.entries);
       setEndDay(result.endDay);
+      endDayRef.current = result.endDay;
       setError(null);
     } catch {
       if (request === generation.current) setError("Не вдалося завантажити трекери.");
@@ -103,5 +108,21 @@ export function useTrackers(): TrackersState {
     }
   }
 
-  return { trackers, entries, endDay, loading, error, reload, create, archive };
+  async function addEntry(trackerId: number, value: number): Promise<TrackerEntry | null> {
+    try {
+      const result = await apiFetch<{ entry: TrackerEntry }>("/api/user/trackers/entry", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ trackerId, day: endDayRef.current, value, note: "" }),
+      });
+      setEntries((current) => [...current, { ...result.entry, trackerId }]);
+      return result.entry;
+    } catch (e) {
+      const message = e instanceof Error ? e.message : "";
+      await dialog.alert(message || "Не вдалося записати.", { tone: "danger" });
+      return null;
+    }
+  }
+
+  return { trackers, entries, endDay, loading, error, reload, create, archive, addEntry };
 }

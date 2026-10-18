@@ -1,8 +1,7 @@
 /**
- * Один трекер: запис дня, графік, звіт за вікно й історія.
- *
- * Звіт рахує `trackerReport` з тих самих рядків, що й графік: два різні числа
- * для одного вікна означали б, що десь є друга формула.
+ * Один трекер: запис, графік, звіт за вікно й історія дотиків.
+ * Звіт рахує `trackerReport` з тих самих рядків, що й графік: друге число для
+ * одного вікна означало б другу формулу. Дотики дня в звіті сумаються.
  *
  * @module web-platform-dev/src/pages/trackers/TrackerPage
  */
@@ -23,7 +22,14 @@ import { TRACKERS_PATH } from "@/app/routes";
 import { TrackerChart } from "./TrackerChart";
 import { TrackerEntryForm, type EntryDraft } from "./TrackerEntryForm";
 import { useTracker } from "./useTracker";
-import { amountOrDash, changeLabel, dayLabel, goalLabel, newestFirst } from "./trackers-view";
+import {
+  amountOrDash,
+  changeLabel,
+  dayLabel,
+  goalLabel,
+  newestFirst,
+  timeLabel,
+} from "./trackers-view";
 
 const HISTORY_ROWS = 30;
 
@@ -39,12 +45,11 @@ export function TrackerPage(): ReactElement {
   const [saved, setSaved] = useState(false);
 
   const tracker = state.tracker;
-  const todayEntry = state.entries.find((entry) => entry.day === state.endDay) ?? null;
-  const activeDraft: EntryDraft = draft ?? {
-    day: state.endDay,
-    value: todayEntry ? String(todayEntry.value) : "",
-    note: todayEntry?.note ?? "",
-  };
+  // Сума сьогоднішніх дотиків; порожнє поле форми — свідомо: дефолтне число
+  // в ньому бентежить більше, ніж допомагає.
+  const todayValues = state.entries.filter((entry) => entry.day === state.endDay);
+  const todaySum = todayValues.reduce((sum, entry) => sum + entry.value, 0);
+  const activeDraft: EntryDraft = draft ?? { day: state.endDay, value: "", note: "" };
 
   const history = newestFirst(state.entries);
   const points = tracker ? buildTrackerSeries(state.entries, state.endDay, days) : [];
@@ -64,19 +69,20 @@ export function TrackerPage(): ReactElement {
       await dialog.alert("Оберіть день.", { tone: "danger" });
       return;
     }
-    if (await state.save(activeDraft.day, value, activeDraft.note)) setSaved(true);
+    if (await state.save(activeDraft.day, value, activeDraft.note)) {
+      // Дотик додано, а не правлено: поле порожніє для наступного, день лишається.
+      setDraft({ day: activeDraft.day, value: "", note: "" });
+      setSaved(true);
+    }
   }
 
-  async function removeEntry(day: string): Promise<void> {
-    const ok = await dialog.confirm(`Прибрати запис за ${dayLabel(day)}?`, {
+  async function removeEntry(entryId: number): Promise<void> {
+    const ok = await dialog.confirm("Прибрати цей запис?", {
       tone: "danger",
       confirmText: "Прибрати",
     });
     if (!ok) return;
-    if (await state.remove(day)) {
-      if (activeDraft.day === day) setDraft({ day, value: "", note: "" });
-      setSaved(false);
-    }
+    if (await state.remove(entryId)) setSaved(false);
   }
 
   async function archive(): Promise<void> {
@@ -109,7 +115,7 @@ export function TrackerPage(): ReactElement {
         <>
           <section className="wb-card wb-tracker-hero">
             <p className="wb-tracker-hero-value">
-              {amountOrDash(todayEntry?.value ?? null, tracker.unit)}
+              {amountOrDash(todayValues.length === 0 ? null : todaySum, tracker.unit)}
             </p>
             <p className="wb-tracker-hero-meta">
               {goalLabel(tracker) ?? "без цілі"}
@@ -200,16 +206,21 @@ export function TrackerPage(): ReactElement {
               <p className="wb-text-muted">Записів ще немає — почніть із сьогодні.</p>
             )}
             {history.slice(0, HISTORY_ROWS).map((entry) => (
-              <div className="wb-tracker-history-row" key={entry.day}>
+              <div className="wb-tracker-history-row" key={entry.id}>
                 <button
                   type="button"
                   className="wb-tracker-history-open"
                   onClick={() => {
-                    setDraft({ day: entry.day, value: String(entry.value), note: entry.note });
+                    // Дотик підставляє **день** для наступного запису: минуле вже
+                    // збережене, правити його тут не можна — лише додати своє.
+                    setDraft({ day: entry.day, value: "", note: "" });
                     setSaved(false);
                   }}
                 >
                   <span className="wb-tracker-history-day">{dayLabel(entry.day)}</span>
+                  {timeLabel(entry.loggedAt) && (
+                    <span className="wb-tracker-history-time">{timeLabel(entry.loggedAt)}</span>
+                  )}
                   <span className="wb-tracker-history-value">
                     {formatTrackerAmount(entry.value, tracker.unit)}
                   </span>
@@ -218,9 +229,9 @@ export function TrackerPage(): ReactElement {
                 <button
                   type="button"
                   className="wb-tracker-history-remove"
-                  aria-label={`Прибрати запис за ${dayLabel(entry.day)}`}
+                  aria-label={`Прибрати запис ${dayLabel(entry.day)} ${timeLabel(entry.loggedAt)}`.trim()}
                   title="Прибрати запис"
-                  onClick={() => void removeEntry(entry.day)}
+                  onClick={() => void removeEntry(entry.id)}
                 >
                   <Icon name="trash" size={16} />
                 </button>

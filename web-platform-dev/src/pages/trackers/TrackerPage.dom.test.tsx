@@ -3,8 +3,8 @@
  * Один трекер: звіт рахується з тих самих рядків, що й графік.
  *
  * Перевіряємо те, що не видно очима в коді: вікно звіту справді міняється,
- * правка дня підставляє вже збережене число, а «Прибрати» йде через діалог —
- * без нього трекер зникав би одним дотиком.
+ * кілька дотиків одного дня **сумаються**, поле запису приходить порожнім,
+ * а «Прибрати» йде через діалог — без нього дотик зникав би одним дотиком.
  *
  * @module web-platform-dev/src/pages/trackers/TrackerPage.dom.test
  */
@@ -69,9 +69,9 @@ beforeEach(() => {
   state.error = null;
   state.saving = false;
   state.entries = [
-    { day: "2026-10-17", value: 2, note: "" },
-    { day: "2026-10-16", value: 1.5, note: "після бігу" },
-    { day: "2026-10-15", value: 1, note: "" },
+    { id: 1, day: "2026-10-17", value: 2, note: "", loggedAt: "2026-10-17 09:00:00" },
+    { id: 2, day: "2026-10-16", value: 1.5, note: "після бігу", loggedAt: "2026-10-16 21:10:00" },
+    { id: 3, day: "2026-10-15", value: 1, note: "", loggedAt: "2026-10-15 08:00:00" },
   ];
 });
 
@@ -106,19 +106,34 @@ describe("звіт", () => {
 
     expect(screen.getByText(/Записів ще немає/)).toBeTruthy();
   });
+
+  it("⛔ два дотики одного дня — сума в шапці, два рядки в історії", () => {
+    state.entries = [
+      ...state.entries,
+      { id: 4, day: "2026-10-17", value: 0.5, note: "ще склянка", loggedAt: "2026-10-17 13:45:00" },
+    ];
+    const { container } = render(<TrackerPage />);
+
+    expect(container.querySelector(".wb-tracker-hero-value")?.textContent).toBe("2,5 л");
+    expect(container.querySelectorAll(".wb-tracker-history-row")).toHaveLength(4);
+  });
 });
 
 describe("запис дня", () => {
-  it("збереження надсилає день, число й нотатку", async () => {
+  it("⛔ поле приходить порожнім, а дотик додає новий рядок", async () => {
     render(<TrackerPage />);
 
+    expect((screen.getByLabelText("Значення, л") as HTMLInputElement).value).toBe("");
+
+    await userEvent.type(screen.getByLabelText("Значення, л"), "0.5");
     await userEvent.click(screen.getByRole("button", { name: "Зберегти" }));
 
-    expect(hooks.save).toHaveBeenCalledWith("2026-10-17", 2, "");
+    expect(hooks.save).toHaveBeenCalledWith("2026-10-17", 0.5, "");
+    expect((screen.getByLabelText("Значення, л") as HTMLInputElement).value).toBe("");
+    expect(screen.getByRole("status").textContent).toBe("Збережено");
   });
 
   it("порожнє поле не стає нулем — екран каже про це", async () => {
-    state.entries = [];
     render(<TrackerPage />);
 
     await userEvent.click(screen.getByRole("button", { name: "Зберегти" }));
@@ -127,27 +142,33 @@ describe("запис дня", () => {
     expect(hooks.alert).toHaveBeenCalled();
   });
 
-  it("рядок історії підставляє свій день і значення у форму", async () => {
+  it("дотик історії підставляє свій день — для наступного запису", async () => {
     render(<TrackerPage />);
 
     await userEvent.click(screen.getByRole("button", { name: /^16\.10/ }));
 
     expect((screen.getByLabelText("День") as HTMLInputElement).value).toBe("2026-10-16");
-    expect((screen.getByLabelText("Значення, л") as HTMLInputElement).value).toBe("1.5");
-    expect((screen.getByLabelText("Нотатка") as HTMLInputElement).value).toBe("після бігу");
+    expect((screen.getByLabelText("Значення, л") as HTMLInputElement).value).toBe("");
   });
 
-  it("прибирання дня питає підтвердження", async () => {
+  it("історія показує час дотика", () => {
     render(<TrackerPage />);
 
-    await userEvent.click(screen.getByRole("button", { name: "Прибрати запис за 17.10" }));
+    expect(screen.getByText("09:00")).toBeTruthy();
+    expect(screen.getByText("21:10")).toBeTruthy();
+  });
+
+  it("прибирання дотика питає підтвердження", async () => {
+    render(<TrackerPage />);
+
+    await userEvent.click(screen.getByRole("button", { name: "Прибрати запис 17.10 09:00" }));
 
     expect(hooks.confirm).toHaveBeenCalled();
     expect(hooks.remove).not.toHaveBeenCalled();
 
     hooks.confirm.mockResolvedValueOnce(true);
-    await userEvent.click(screen.getByRole("button", { name: "Прибрати запис за 17.10" }));
-    expect(hooks.remove).toHaveBeenCalledWith("2026-10-17");
+    await userEvent.click(screen.getByRole("button", { name: "Прибрати запис 17.10 09:00" }));
+    expect(hooks.remove).toHaveBeenCalledWith(1);
   });
 });
 

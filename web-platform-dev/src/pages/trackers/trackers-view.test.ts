@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import type { Tracker, TrackerEntryRow } from "@wwwuabot/shared/trackers";
+import type { Tracker, TrackerEntry, TrackerEntryRow } from "@wwwuabot/shared/trackers";
 import {
   amountOrDash,
   changeLabel,
@@ -7,6 +7,7 @@ import {
   goalLabel,
   historySince,
   newestFirst,
+  timeLabel,
   toTrackerRows,
 } from "./trackers-view";
 
@@ -26,7 +27,14 @@ const tracker: Tracker = {
 const other: Tracker = { ...tracker, id: 2, key: "sleep", title: "Сон", unit: "год", goal: 8 };
 
 function row(trackerId: number, day: string, value: number): TrackerEntryRow {
-  return { trackerId, day, value, note: "" };
+  return {
+    id: trackerId * 100 + day.length,
+    trackerId,
+    day,
+    value,
+    note: "",
+    loggedAt: `${day} 09:00:00`,
+  };
 }
 
 describe("рядки стрічки", () => {
@@ -59,19 +67,50 @@ describe("рядки стрічки", () => {
     expect(water.series.some((point) => point.value === 7)).toBe(false);
     expect(sleep.series.filter((point) => point.value !== null)).toHaveLength(1);
   });
+
+  it("⛔ два дотики одного дня — сума в рядку, а не два числа", () => {
+    const twice = [row(1, "2026-10-17", 1), { ...row(1, "2026-10-17", 1), id: 2, value: 1 }];
+    const [water] = toTrackerRows([tracker], twice, "2026-10-17");
+
+    expect(water.today).toBe(2);
+    expect(water.series[water.series.length - 1]).toEqual({ day: "2026-10-17", value: 2 });
+  });
+
+  it("записаний нуль — це нуль, а не «не записано»", () => {
+    const zeroed = [row(1, "2026-10-17", 0)];
+    const [water] = toTrackerRows([tracker], zeroed, "2026-10-17");
+
+    expect(water.today).toBe(0);
+    expect(amountOrDash(water.today, water.tracker.unit)).toBe("0 л");
+  });
 });
 
 describe("підписи", () => {
-  it("історія — найновіше першим, без зміни вихідного списку", () => {
-    const source = [
-      { day: "2026-10-15", value: 1, note: "" },
-      { day: "2026-10-17", value: 3, note: "" },
-      { day: "2026-10-16", value: 2, note: "" },
+  it("історія — найновіше першим, у межах дня — за часом", () => {
+    const source: TrackerEntry[] = [
+      { id: 1, day: "2026-10-17", value: 1, note: "", loggedAt: "2026-10-17 09:00:00" },
+      { id: 2, day: "2026-10-17", value: 3, note: "", loggedAt: "2026-10-17 21:00:00" },
+      { id: 3, day: "2026-10-16", value: 2, note: "", loggedAt: "2026-10-16 12:00:00" },
     ];
     const sorted = newestFirst(source);
 
-    expect(sorted.map((entry) => entry.day)).toEqual(["2026-10-17", "2026-10-16", "2026-10-15"]);
-    expect(source[0].day).toBe("2026-10-15");
+    expect(sorted.map((entry) => entry.id)).toEqual([2, 1, 3]);
+    expect(source[0].id).toBe(1);
+  });
+
+  it("два дотики в одну секунду — новіший номер все одно вище", () => {
+    const sameSecond: TrackerEntry[] = [
+      { id: 4, day: "2026-10-17", value: 1, note: "", loggedAt: "2026-10-17 21:00:00" },
+      { id: 9, day: "2026-10-17", value: 2, note: "", loggedAt: "2026-10-17 21:00:00" },
+    ];
+
+    expect(newestFirst(sameSecond).map((entry) => entry.id)).toEqual([9, 4]);
+  });
+
+  it("час дотика — з моменту запису, без нього — порожньо", () => {
+    expect(timeLabel("2026-10-17 09:05:00")).toBe("09:05");
+    expect(timeLabel(null)).toBe("");
+    expect(timeLabel("17.10")).toBe("");
   });
 
   it("вікно бере запас на попередній період — інакше зміни не з чим порівняти", () => {

@@ -1,8 +1,8 @@
 /**
- * Один трекер: історія днів, запис дня й прибирання.
+ * Один трекер: історія дотиків, запис дня й прибирання.
  *
- * Запис править той самий рядок дня (upsert), тож локальний стан замінює день,
- * а не додає другий.
+ * Запис — **новий рядок**: за день можна записати скільки завгодно разів, тож
+ * локальний стан додає дотик, а не замінює день. Час запису ставить сервер.
  *
  * @module web-platform-dev/src/pages/trackers/useTracker
  */
@@ -27,7 +27,7 @@ export interface TrackerState {
   saving: boolean;
   reload: () => Promise<void>;
   save: (day: string, value: number, note: string) => Promise<boolean>;
-  remove: (day: string) => Promise<boolean>;
+  remove: (entryId: number) => Promise<boolean>;
   archive: () => Promise<boolean>;
 }
 
@@ -84,10 +84,15 @@ export function useTracker(id: number): TrackerState {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ trackerId: id, day, value, note }),
       });
-      setEntries((current) => {
-        const rest = current.filter((entry) => entry.day !== day);
-        return [...rest, result.entry].sort((a, b) => (a.day < b.day ? -1 : 1));
-      });
+      // Порядок серії: день, момент запису, номер — щоб два дотики в одну
+      // секунду не міняли місцями одне одного.
+      setEntries((current) =>
+        [...current, result.entry].sort((a, b) => {
+          const left = `${a.day} ${a.loggedAt ?? ""} ${String(a.id).padStart(9, "0")}`;
+          const right = `${b.day} ${b.loggedAt ?? ""} ${String(b.id).padStart(9, "0")}`;
+          return left < right ? -1 : left > right ? 1 : 0;
+        }),
+      );
       return true;
     } catch (e) {
       const message = e instanceof Error ? e.message : "";
@@ -98,10 +103,10 @@ export function useTracker(id: number): TrackerState {
     }
   }
 
-  async function remove(day: string): Promise<boolean> {
+  async function remove(entryId: number): Promise<boolean> {
     try {
-      await apiFetch(`/api/user/trackers/entry?trackerId=${id}&day=${day}`, { method: "DELETE" });
-      setEntries((current) => current.filter((entry) => entry.day !== day));
+      await apiFetch(`/api/user/trackers/entry?id=${entryId}`, { method: "DELETE" });
+      setEntries((current) => current.filter((entry) => entry.id !== entryId));
       return true;
     } catch {
       await dialog.alert("Не вдалося прибрати запис.", { tone: "danger" });
