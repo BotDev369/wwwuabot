@@ -42,11 +42,12 @@ test("трекери: стандартні картки й швидкий зап
   await expect(input).toHaveValue("");
   await expect(page.getByRole("button", { name: "Записати Вода" })).toHaveCount(0);
 
-  // Швидкий запис: значення → кнопка з'явилась → дотик → підтвердження.
+  // Швидкий запис: значення → кнопка з'явилась → дотик → поле порожнє.
+  // Окремого «Збережено» немає: порожнє поле й є відповідь.
   await input.fill("0.5");
   await page.getByRole("button", { name: "Записати Вода" }).click();
-  await expect(page.locator(".wb-tracker-quick-status").first()).toHaveText("Збережено");
   await expect(input).toHaveValue("");
+  await expect(page.getByText("Збережено")).toHaveCount(0);
 
   // Відкриваємо трекер заголовком картки — аналітика там.
   await page.locator(".wb-tracker-card-open", { hasText: "Вода" }).click();
@@ -89,7 +90,7 @@ test("трекери: день приймає кілька дотиків і с�
   const quick = page.getByLabel("Записати: Присідання");
   await quick.fill("3");
   await page.getByRole("button", { name: "Записати Присідання" }).click();
-  await expect(page.locator(".wb-tracker-quick-status").first()).toHaveText("Збережено");
+  await expect(quick).toHaveValue("");
 
   await page.locator(".wb-tracker-card-open", { hasText: "Присідання" }).click();
   await expect(page.locator(".wb-tracker-hero-value")).toHaveText(/12 разів/);

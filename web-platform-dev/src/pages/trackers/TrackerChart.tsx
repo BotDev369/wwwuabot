@@ -27,6 +27,15 @@ export function TrackerChart({ points, goal, unit, title }: TrackerChartProps): 
   const last = points[points.length - 1]?.day;
   const summary = `${title}: ${points.length} дн., записів ${values.length}. Найбільше — ${formatTrackerAmount(peak, unit)}.`;
 
+  // Порожнє вікно — словами: сітка без жодного запису читалась як поламаний графік.
+  if (values.length === 0) {
+    return (
+      <div className="wb-tracker-chart">
+        <p className="wb-tracker-chart-empty">Немає записів за цей період</p>
+      </div>
+    );
+  }
+
   return (
     <div className="wb-tracker-chart">
       <div className="wb-tracker-chart-plot" role="img" aria-label={summary}>

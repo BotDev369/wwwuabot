@@ -1,8 +1,8 @@
 /**
- * «Трекери» — компактна стрічка: іконка, назва й порожнє поле швидкого запису.
+ * «Трекери» — компактний список: іконка, назва й порожнє поле швидкого запису.
  * Аналітика живе на `/trackers/:id`, тож заголовок відкриває трекер, а поле
- * лишається полем (форма всередині кнопки не мала б ні клавіатури, ні дотику).
- * Кнопка надсилання з'являється лише з введеним значенням.
+ * лишається полем: форма всередині кнопки не мала б ні клавіатури, ні дотику.
+ * Підтвердження запису не малюється — поле просто порожніє (див. `docs/TRACKERS.md`).
  *
  * @module web-platform-dev/src/pages/trackers/TrackersPage
  */
@@ -22,16 +22,15 @@ import { useTrackers } from "./useTrackers";
 import { TrackerCreateForm } from "./TrackerCreateForm";
 import { toTrackerRows, type TrackerRowView } from "./trackers-view";
 
-interface QuickCardProps {
+interface QuickRowProps {
   row: TrackerRowView;
   onOpen: () => void;
   onAdd: (trackerId: number, value: number) => Promise<unknown>;
 }
 
-function TrackerQuickCard({ row, onOpen, onAdd }: QuickCardProps): ReactElement {
+function TrackerQuickRow({ row, onOpen, onAdd }: QuickRowProps): ReactElement {
   const [value, setValue] = useState("");
   const [saving, setSaving] = useState(false);
-  const [saved, setSaved] = useState(false);
 
   async function submit(event: FormEvent): Promise<void> {
     event.preventDefault();
@@ -41,37 +40,37 @@ function TrackerQuickCard({ row, onOpen, onAdd }: QuickCardProps): ReactElement 
     setSaving(true);
     const entry = await onAdd(row.tracker.id, parsed);
     setSaving(false);
-    if (entry) {
-      setValue("");
-      setSaved(true);
-    }
+    // Порожнє поле й є підтвердження: «Збережено» в кожному рядку — шум.
+    if (entry) setValue("");
   }
 
   return (
     <div className="wb-tracker-card">
       <button type="button" className="wb-tracker-card-open" onClick={onOpen}>
         <span className="wb-tracker-card-icon">
-          <Icon name={row.tracker.icon} size={18} />
+          <Icon name={row.tracker.icon} size={16} />
         </span>
         <span className="wb-tracker-card-title">{row.tracker.title}</span>
-        <Icon name="chevron-right" size={18} />
+        <Icon name="chevron-right" size={16} />
       </button>
-      <form className="wb-tracker-quick" onSubmit={(event) => void submit(event)}>
+      {/* Без `min`/`max`/`step`: нативна перевірка поля малювала чужу підказку
+          «введіть дійсне значення» на крок, якого людина не обирала. */}
+      <form
+        className={`wb-tracker-quick${value.trim() ? " wb-tracker-quick--ready" : ""}`}
+        onSubmit={(event) => void submit(event)}
+      >
         <input
           className="wb-input wb-tracker-quick-input"
           type="number"
           inputMode="decimal"
-          step={row.tracker.step}
-          min={row.tracker.min}
-          max={row.tracker.max ?? undefined}
+          step="any"
           value={value}
           aria-label={`Записати: ${row.tracker.title}`}
-          placeholder={row.tracker.unit || ""}
-          onChange={(event) => {
-            setValue(event.target.value);
-            setSaved(false);
-          }}
+          onChange={(event) => setValue(event.target.value)}
         />
+        {!value.trim() && row.tracker.unit && (
+          <span className="wb-tracker-quick-unit">{row.tracker.unit}</span>
+        )}
         {value.trim() !== "" && (
           <button
             type="submit"
@@ -83,10 +82,6 @@ function TrackerQuickCard({ row, onOpen, onAdd }: QuickCardProps): ReactElement 
           </button>
         )}
       </form>
-      {/* Підтвердження — своїм рядком: у картці 150px текст поруч із полем стягнув би його. */}
-      <p className="wb-tracker-quick-status" role="status">
-        {saved ? "Збережено" : ""}
-      </p>
     </div>
   );
 }
@@ -101,8 +96,8 @@ export function TrackersPage(): ReactElement {
   const filled = rows.filter((row) => row.today !== null).length;
 
   return (
-    <div className="wb-page">
-      <div className="wb-page-head">
+    <div className="wb-page wb-trackers-page">
+      <div className="wb-page-head wb-trackers-head">
         <p className="wb-text-muted">
           {rows.length > 0
             ? `Сьогодні записано: ${filled} з ${rows.length}`
@@ -155,7 +150,7 @@ export function TrackersPage(): ReactElement {
       {!state.loading && !state.error && rows.length > 0 && (
         <div className="wb-trackers-list">
           {rows.map((row) => (
-            <TrackerQuickCard
+            <TrackerQuickRow
               key={row.tracker.id}
               row={row}
               onOpen={() => navigate(trackerPath(row.tracker.id))}

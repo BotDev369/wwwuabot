@@ -8,7 +8,7 @@
  */
 
 import type { FormEvent, ReactElement } from "react";
-import { formatTrackerAmount, type Tracker } from "@wwwuabot/shared/trackers";
+import type { Tracker } from "@wwwuabot/shared/trackers";
 
 export interface EntryDraft {
   day: string;
@@ -21,7 +21,6 @@ interface TrackerEntryFormProps {
   draft: EntryDraft;
   maxDay: string;
   saving: boolean;
-  saved: boolean;
   onChange: (patch: Partial<EntryDraft>) => void;
   onSubmit: () => void;
 }
@@ -31,7 +30,6 @@ export function TrackerEntryForm({
   draft,
   maxDay,
   saving,
-  saved,
   onChange,
   onSubmit,
 }: TrackerEntryFormProps): ReactElement {
@@ -55,17 +53,14 @@ export function TrackerEntryForm({
         </label>
         <label className="wb-field">
           <span className="wb-label">Значення{tracker.unit ? `, ${tracker.unit}` : ""}</span>
+          {/* Без `min`/`max`/`step`: нативна підказка «введіть дійсне значення»
+              з'являлась на кроці, якого людина не обирала — межі перевіряє сервер. */}
           <input
             className="wb-input"
             type="number"
             inputMode="decimal"
+            step="any"
             value={draft.value}
-            step={tracker.step}
-            min={tracker.min}
-            max={tracker.max ?? undefined}
-            placeholder={
-              tracker.goal === null ? "" : `ціль ${formatTrackerAmount(tracker.goal, "")}`
-            }
             onChange={(event) => onChange({ value: event.target.value })}
           />
         </label>
@@ -81,9 +76,6 @@ export function TrackerEntryForm({
         />
       </label>
       <div className="wb-tracker-entry-actions">
-        <span className="wb-tracker-saved" role="status">
-          {saved ? "Збережено" : ""}
-        </span>
         <button type="submit" className="wb-btn wb-btn-primary" disabled={saving}>
           Зберегти
         </button>

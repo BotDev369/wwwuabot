@@ -89,6 +89,10 @@ html[data-colors][data-colors-mode="light"] {
 
   --field-ring: 0 1px 2px rgb(0 0 0 / 5%), 0 2px 6px rgb(0 0 0 / 4%);
 
+  /* Поле, куди пишуть (швидкий запис трекера), — біле: на теплому тлі
+     поверхні похідна `--field-bg` читалась як заголовок, а не як поле. */
+  --field-bg-raised: #ffffff;
+
   --shadow-xs: 0 1px 2px rgb(0 0 0 / 5%);
   --shadow-sm: 0 1px 3px rgb(0 0 0 / 10%), 0 1px 2px rgb(0 0 0 / 6%);
   --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 10%), 0 2px 4px -2px rgb(0 0 0 / 10%);
@@ -108,6 +112,7 @@ html[data-colors][data-colors-mode="dark"] {
   --scrim: rgb(0 0 0 / 60%);
 
   --field-ring: 0 1px 2px rgb(0 0 0 / 45%), 0 2px 6px rgb(0 0 0 / 30%);
+  --field-bg-raised: color-mix(in srgb, var(--user-bg) 78%, var(--user-text));
 
   --shadow-xs: 0 1px 2px rgb(0 0 0 / 20%);
   --shadow-sm: 0 1px 3px rgb(0 0 0 / 30%), 0 1px 2px rgb(0 0 0 / 20%);

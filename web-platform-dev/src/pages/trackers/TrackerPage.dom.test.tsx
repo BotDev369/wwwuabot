@@ -130,7 +130,7 @@ describe("запис дня", () => {
 
     expect(hooks.save).toHaveBeenCalledWith("2026-10-17", 0.5, "");
     expect((screen.getByLabelText("Значення, л") as HTMLInputElement).value).toBe("");
-    expect(screen.getByRole("status").textContent).toBe("Збережено");
+    expect(screen.queryByText("Збережено")).toBeNull();
   });
 
   it("порожнє поле не стає нулем — екран каже про це", async () => {

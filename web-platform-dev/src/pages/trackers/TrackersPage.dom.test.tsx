@@ -11,7 +11,7 @@
  */
 
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { render, screen, within } from "@testing-library/react";
+import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import type { Tracker, TrackerEntryRow } from "@wwwuabot/shared/trackers";
 
@@ -109,10 +109,12 @@ describe("стрічка трекерів", () => {
     expect((screen.getByLabelText("Записати: Вода") as HTMLInputElement).value).toBe("");
   });
 
-  it("поле підказує одиницею, а не дефолтним числом", () => {
+  it("одиниця стоїть підписом поруч із полем, а не дефолтним числом", () => {
     render(<TrackersPage />);
 
-    expect((screen.getByLabelText("Записати: Вода") as HTMLInputElement).placeholder).toBe("л");
+    expect((screen.getByLabelText("Записати: Вода") as HTMLInputElement).value).toBe("");
+    expect(screen.getByText("л")).toBeTruthy();
+    expect(screen.getByText("год")).toBeTruthy();
   });
 
   it("скільки записано сьогодні видно в шапці", () => {
@@ -135,19 +137,15 @@ describe("стрічка трекерів", () => {
     expect(screen.queryByRole("button", { name: "Записати Вода" })).toBeNull();
   });
 
-  it("швидкий запис надсилає число й очищує поле з підтвердженням", async () => {
+  it("швидкий запис надсилає число й очищує поле — без підтвердження", async () => {
     render(<TrackersPage />);
 
     await userEvent.type(screen.getByLabelText("Записати: Вода"), "0.5");
     await userEvent.click(screen.getByRole("button", { name: "Записати Вода" }));
 
     expect(hooks.addEntry).toHaveBeenCalledWith(1, 0.5);
-    const field = screen.getByLabelText("Записати: Вода") as HTMLInputElement;
-    expect(field.value).toBe("");
-    // Свій статус у кожної картки: «status» усієї сторінки знайшов би і чужу.
-    expect(within(field.closest(".wb-tracker-card")!).getByRole("status").textContent).toBe(
-      "Збережено",
-    );
+    expect((screen.getByLabelText("Записати: Вода") as HTMLInputElement).value).toBe("");
+    expect(screen.queryByText("Збережено")).toBeNull();
   });
 
   it("порожній список каже, як додати перший", () => {

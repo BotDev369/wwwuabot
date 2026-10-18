@@ -42,7 +42,6 @@ export function TrackerPage(): ReactElement {
   const dialog = useDialog();
   const [days, setDays] = useState<TrackerRange>(30);
   const [draft, setDraft] = useState<EntryDraft | null>(null);
-  const [saved, setSaved] = useState(false);
 
   const tracker = state.tracker;
   // Сума сьогоднішніх дотиків; порожнє поле форми — свідомо: дефолтне число
@@ -72,7 +71,6 @@ export function TrackerPage(): ReactElement {
     if (await state.save(activeDraft.day, value, activeDraft.note)) {
       // Дотик додано, а не правлено: поле порожніє для наступного, день лишається.
       setDraft({ day: activeDraft.day, value: "", note: "" });
-      setSaved(true);
     }
   }
 
@@ -82,7 +80,7 @@ export function TrackerPage(): ReactElement {
       confirmText: "Прибрати",
     });
     if (!ok) return;
-    if (await state.remove(entryId)) setSaved(false);
+    await state.remove(entryId);
   }
 
   async function archive(): Promise<void> {
@@ -96,7 +94,7 @@ export function TrackerPage(): ReactElement {
   }
 
   return (
-    <div className="wb-page">
+    <div className="wb-page wb-trackers-page">
       {state.loading && <p className="wb-text-muted">Завантаження…</p>}
 
       {!state.loading && (state.error || !tracker || !report) && (
@@ -126,11 +124,7 @@ export function TrackerPage(): ReactElement {
               draft={activeDraft}
               maxDay={state.endDay}
               saving={state.saving}
-              saved={saved}
-              onChange={(patch) => {
-                setDraft({ ...activeDraft, ...patch });
-                setSaved(false);
-              }}
+              onChange={(patch) => setDraft({ ...activeDraft, ...patch })}
               onSubmit={() => void submit()}
             />
           </section>
@@ -214,7 +208,6 @@ export function TrackerPage(): ReactElement {
                     // Дотик підставляє **день** для наступного запису: минуле вже
                     // збережене, правити його тут не можна — лише додати своє.
                     setDraft({ day: entry.day, value: "", note: "" });
-                    setSaved(false);
                   }}
                 >
                   <span className="wb-tracker-history-day">{dayLabel(entry.day)}</span>

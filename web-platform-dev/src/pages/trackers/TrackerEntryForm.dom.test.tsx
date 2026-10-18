@@ -30,14 +30,13 @@ const water: Tracker = {
   isBuiltin: true,
 };
 
-function renderForm(saved = false) {
+function renderForm() {
   render(
     <TrackerEntryForm
       tracker={water}
       draft={{ day: "2026-10-17", value: "1.5", note: "" }}
       maxDay="2026-10-17"
       saving={false}
-      saved={saved}
       onChange={handlers.change}
       onSubmit={handlers.submit}
     />,
@@ -74,8 +73,9 @@ describe("запис дня", () => {
     expect(handlers.submit).toHaveBeenCalled();
   });
 
-  it("підтвердження збереження видно словами", () => {
-    renderForm(true);
-    expect(screen.getByRole("status").textContent).toBe("Збережено");
+  it("⛔ підтвердження збереження не малюється — поле й так порожніє", () => {
+    renderForm();
+    expect(screen.queryByRole("status")).toBeNull();
+    expect(screen.queryByText("Збережено")).toBeNull();
   });
 });
