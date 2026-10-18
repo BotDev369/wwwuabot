@@ -82,13 +82,18 @@
   text-overflow: ellipsis;
   white-space: nowrap;
   color: var(--text-primary);
-  font-size: var(--text-sm);
+  /* 14px — не дрібніше за поле: текст у полі 16px (вимога iOS), і назва
+     на 13px виглядала поряд із ним другорядною. */
+  font-size: var(--text-base);
   font-weight: var(--weight-semibold);
 }
 
 /* Швидкий запис: поле завжди порожнє, кнопка — лише з введеним значенням.
-   Поле — біле, а не похідна `--field-bg`: це місце, куди писати, і на теплій
-   поверхні сіра плитка читалась як заголовок рядка. */
+
+   Мірки тут ЖОРСТКІ (68 + 4 + 44 = 116px), і це не примха: рядок довгий, а
+   місце під нього мусить бути однакове в обох станах — інакше кнопка, що
+   з'явилась, зсувала б поле під пальцем. Одиниця стоїть у тій самій колонці
+   на 44px, тож підпис не стрибає й не вилазить за край екрана. */
 .wb-tracker-quick {
   display: flex;
   flex: none;
@@ -96,22 +101,34 @@
   gap: var(--sp-1);
 }
 
+/* Поле — свій кирпичик, а не `.wb-input`: у бренда воно з внутрішніми
+   відступами 12/16px і виростало на весь рядок, перетворюючись на білу
+   плитку, більшу за назву. Колір і кільце — ті самі токени поля. */
 .wb-tracker-quick-input {
-  /* 88px, а не 74: бренд ставить полю `padding: 12px 16px !important`, і на
-     п'яти цифрах ("12500") текст уже обрізався. */
-  width: 88px;
-  min-height: 40px;
+  flex: none;
+  /* 68px — щоб «12500» уміщалось цілком; `--radius-sm` — бо `--radius-md` у
+     бренда 16px, і поле 34px висоти ставало пігулкою. */
+  width: 68px;
+  height: 34px;
   padding: 0 var(--sp-2);
+  border: 0;
+  border-radius: var(--radius-sm);
   background: var(--field-bg-raised);
+  box-shadow: var(--field-ring);
+  color: var(--text-primary);
+  font-family: inherit;
+  /* Не менше 16px — інакше iOS у Telegram сам збільшує сторінку на фокусі. */
+  font-size: max(16px, 1em);
   text-align: right;
-  /* Стрілки `type=number` у сітці рядка займають місце, якого немає. */
+  /* Стрілки `type=number` у рядку займають місце, якого немає. */
   appearance: textfield;
 }
 
-/* Кнопка надсилання не має ширити рядок: поки її немає, місце займає одиниця
-   (88 + 4 + 40 ≈ 132px), з нею — вужче поле без одиниці (84 + 4 + 44 = 132px). */
-.wb-tracker-quick--ready .wb-tracker-quick-input {
-  width: 84px;
+.wb-tracker-quick-input:focus {
+  box-shadow:
+    var(--field-ring),
+    0 0 0 3px var(--accent-soft);
+  outline: none;
 }
 
 .wb-tracker-quick-input::-webkit-outer-spin-button,
@@ -121,10 +138,19 @@
 }
 
 .wb-tracker-quick-unit {
-  min-width: 0;
+  flex: none;
+  width: 44px;
+  overflow: hidden;
   color: var(--text-muted);
   font-size: var(--text-xs);
+  text-overflow: ellipsis;
   white-space: nowrap;
+}
+
+.wb-tracker-card-hint {
+  display: inline-flex;
+  flex: none;
+  color: var(--text-muted);
 }
 
 .wb-tracker-quick-submit {

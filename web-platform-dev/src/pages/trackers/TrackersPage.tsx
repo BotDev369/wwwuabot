@@ -51,16 +51,14 @@ function TrackerQuickRow({ row, onOpen, onAdd }: QuickRowProps): ReactElement {
           <Icon name={row.tracker.icon} size={16} />
         </span>
         <span className="wb-tracker-card-title">{row.tracker.title}</span>
-        <Icon name="chevron-right" size={16} />
       </button>
       {/* Без `min`/`max`/`step`: нативна перевірка поля малювала чужу підказку
           «введіть дійсне значення» на крок, якого людина не обирала. */}
-      <form
-        className={`wb-tracker-quick${value.trim() ? " wb-tracker-quick--ready" : ""}`}
-        onSubmit={(event) => void submit(event)}
-      >
+      <form className="wb-tracker-quick" onSubmit={(event) => void submit(event)}>
+        {/* Поле — свій маленький кирпичик, а не `.wb-input`: у бренда воно
+            має 12/16px внутрішніх відступів і росло б на весь рядок. */}
         <input
-          className="wb-input wb-tracker-quick-input"
+          className="wb-tracker-quick-input"
           type="number"
           inputMode="decimal"
           step="any"
@@ -68,9 +66,7 @@ function TrackerQuickRow({ row, onOpen, onAdd }: QuickRowProps): ReactElement {
           aria-label={`Записати: ${row.tracker.title}`}
           onChange={(event) => setValue(event.target.value)}
         />
-        {!value.trim() && row.tracker.unit && (
-          <span className="wb-tracker-quick-unit">{row.tracker.unit}</span>
-        )}
+        {!value.trim() && <span className="wb-tracker-quick-unit">{row.tracker.unit}</span>}
         {value.trim() !== "" && (
           <button
             type="submit"
@@ -82,6 +78,9 @@ function TrackerQuickRow({ row, onOpen, onAdd }: QuickRowProps): ReactElement {
           </button>
         )}
       </form>
+      <span className="wb-tracker-card-hint" aria-hidden="true">
+        <Icon name="chevron-right" size={16} />
+      </span>
     </div>
   );
 }
