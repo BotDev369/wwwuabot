@@ -234,7 +234,7 @@ export function TrackerPage(): ReactElement {
 
           <button
             type="button"
-            className="wb-btn wb-btn-danger wb-tracker-archive"
+            className="wb-btn wb-btn-ghost wb-tracker-archive"
             onClick={() => void archive()}
           >
             <Icon name="trash" size={16} />
