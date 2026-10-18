@@ -1,7 +1,7 @@
 /**
- * Один трекер: запис, графік, звіт за вікно й історія дотиків.
- * Звіт рахує `trackerReport` з тих самих рядків, що й графік: друге число для
- * одного вікна означало б другу формулу. Дотики дня в звіті сумаються.
+ * Один трекер: запис, графік, звіт за вікно й історія дотиків. Звіт рахує
+ * `trackerReport` з тих самих рядків, що й графік: друге число для одного
+ * вікна означало б другу формулу. Порядок екрана — відповідь, а не форма.
  *
  * @module web-platform-dev/src/pages/trackers/TrackerPage
  */
@@ -11,6 +11,7 @@ import { useNavigate, useParams } from "react-router-dom";
 import { Icon } from "@wwwuabot/shared";
 import { useDialog } from "@wwwuabot/ui/dialog";
 import { useScreenChrome } from "@wwwuabot/ui/nav";
+import { Tabs, tabId, tabPanelId, type TabOption } from "@wwwuabot/ui/tabs";
 import {
   TRACKER_RANGES,
   buildTrackerSeries,
@@ -33,6 +34,12 @@ import {
 
 const HISTORY_ROWS = 30;
 
+/** Вікна аналітики — ті самі, що `TRACKER_RANGES`, лише ключем вкладки. */
+const RANGE_TABS: readonly TabOption[] = TRACKER_RANGES.map((range) => ({
+  key: String(range),
+  label: `${range} дн.`,
+}));
+
 export function TrackerPage(): ReactElement {
   const params = useParams<{ id: string }>();
   const numericId = Number(params.id);
@@ -42,6 +49,7 @@ export function TrackerPage(): ReactElement {
   const dialog = useDialog();
   const [days, setDays] = useState<TrackerRange>(30);
   const [draft, setDraft] = useState<EntryDraft | null>(null);
+  const rangeKey = String(days);
 
   const tracker = state.tracker;
   // Сума сьогоднішніх дотиків; порожнє поле форми — свідомо: дефолтне число
@@ -55,6 +63,8 @@ export function TrackerPage(): ReactElement {
   const report = tracker
     ? trackerReport(state.entries, { endDay: state.endDay, days, goal: tracker.goal })
     : null;
+  const goal = tracker?.goal ?? null;
+  const goalShare = goal !== null && goal > 0 ? Math.round((todaySum / goal) * 100) : null;
 
   async function submit(): Promise<void> {
     if (!tracker) return;
@@ -111,16 +121,48 @@ export function TrackerPage(): ReactElement {
 
       {!state.loading && tracker && report && (
         <>
-          <section className="wb-card wb-tracker-hero">
-            <div className="wb-tracker-hero-sum">
-              <p className="wb-tracker-hero-value">
-                {amountOrDash(todayValues.length === 0 ? null : todaySum, tracker.unit)}
-              </p>
-              <p className="wb-tracker-hero-meta">
-                {goalLabel(tracker) ?? "без цілі"}
-                {report.streak > 0 ? ` · серія ${report.streak} дн.` : ""}
-              </p>
+          <section className="wb-tracker-panel wb-tracker-hero">
+            <div className="wb-tracker-hero-head">
+              <span className="wb-tracker-hero-icon">
+                <Icon name={tracker.icon} size={18} />
+              </span>
+              <span className="wb-tracker-hero-label">Сьогодні</span>
             </div>
+            {/* `span`, а не `p`: бренд тримає всі абзаци на 14px з `!important`,
+                і головне число дня ставало таким самим, як підпис під ним. */}
+            <span className="wb-tracker-hero-value">
+              {amountOrDash(todayValues.length === 0 ? null : todaySum, tracker.unit)}
+            </span>
+            <span className="wb-tracker-hero-meta">
+              {goalLabel(tracker) ?? "без цілі"}
+              {report.streak > 0 ? ` · серія ${report.streak} дн.` : ""}
+            </span>
+
+            {goalShare !== null && goal !== null && (
+              <div className="wb-tracker-progress">
+                <div
+                  className="wb-tracker-progress-track"
+                  role="progressbar"
+                  aria-label="Ціль дня"
+                  aria-valuemin={0}
+                  aria-valuemax={goal}
+                  aria-valuenow={Math.min(todaySum, goal)}
+                  aria-valuetext={`${goalShare}%`}
+                >
+                  <span
+                    className="wb-tracker-progress-fill"
+                    style={{ width: `${Math.min(100, goalShare)}%` }}
+                  />
+                </div>
+                <span className="wb-tracker-progress-caption">
+                  {goalShare >= 100 ? "ціль виконано" : `${goalShare}% цілі`}
+                </span>
+              </div>
+            )}
+          </section>
+
+          <section className="wb-tracker-panel">
+            <span className="wb-tracker-section-title">Запис дня</span>
             <TrackerEntryForm
               tracker={tracker}
               draft={activeDraft}
@@ -131,73 +173,67 @@ export function TrackerPage(): ReactElement {
             />
           </section>
 
-          <section className="wb-card wb-tracker-analytics">
-            <div className="wb-tracker-ranges" role="group" aria-label="Вікно аналітики">
-              {TRACKER_RANGES.map((range) => {
-                const active = days === range;
-                return (
-                  <button
-                    key={range}
-                    type="button"
-                    className={`wb-chip wb-tools-chip wb-tracker-range${
-                      active ? " wb-tracker-range--on" : ""
-                    }`}
-                    aria-pressed={active}
-                    onClick={() => setDays(range)}
-                  >
-                    <span className="wb-tools-chip-label">{range} дн.</span>
-                  </button>
-                );
-              })}
-            </div>
-
-            <TrackerChart
-              points={points}
-              goal={tracker.goal}
-              unit={tracker.unit}
-              title={tracker.title}
+          <section className="wb-tracker-panel">
+            <Tabs
+              options={RANGE_TABS}
+              value={rangeKey}
+              onChange={(key) => setDays(Number(key) as TrackerRange)}
+              label="Вікно аналітики"
             />
+            <div
+              id={tabPanelId(rangeKey)}
+              role="tabpanel"
+              aria-labelledby={tabId(rangeKey)}
+              className="wb-tracker-analytics-body"
+            >
+              <TrackerChart
+                points={points}
+                goal={tracker.goal}
+                unit={tracker.unit}
+                title={tracker.title}
+              />
 
-            <dl className="wb-tracker-stats">
-              <div className="wb-tracker-stat">
-                <dt className="wb-tracker-stat-label">Середнє</dt>
-                <dd className="wb-tracker-stat-value">
-                  {amountOrDash(report.average, tracker.unit)}
-                </dd>
-              </div>
-              <div className="wb-tracker-stat">
-                <dt className="wb-tracker-stat-label">Усього</dt>
-                <dd className="wb-tracker-stat-value">
-                  {formatTrackerAmount(report.total, tracker.unit)}
-                </dd>
-              </div>
-              <div className="wb-tracker-stat">
-                <dt className="wb-tracker-stat-label">Днів із записом</dt>
-                <dd className="wb-tracker-stat-value">
-                  {report.filled} з {report.days}
-                </dd>
-              </div>
-              <div className="wb-tracker-stat">
-                <dt className="wb-tracker-stat-label">Серія</dt>
-                <dd className="wb-tracker-stat-value">{report.streak} дн.</dd>
-              </div>
-              {tracker.goal !== null && report.goalRate !== null && (
+              <dl className="wb-tracker-stats">
                 <div className="wb-tracker-stat">
-                  <dt className="wb-tracker-stat-label">Ціль виконано</dt>
+                  <dt className="wb-tracker-stat-label">Середнє</dt>
                   <dd className="wb-tracker-stat-value">
-                    {report.goalDays} з {report.days} · {Math.round(report.goalRate * 100)}%
+                    {amountOrDash(report.average, tracker.unit)}
                   </dd>
                 </div>
-              )}
-            </dl>
+                <div className="wb-tracker-stat">
+                  <dt className="wb-tracker-stat-label">Усього</dt>
+                  <dd className="wb-tracker-stat-value">
+                    {formatTrackerAmount(report.total, tracker.unit)}
+                  </dd>
+                </div>
+                <div className="wb-tracker-stat">
+                  <dt className="wb-tracker-stat-label">Днів із записом</dt>
+                  <dd className="wb-tracker-stat-value">
+                    {report.filled} з {report.days}
+                  </dd>
+                </div>
+                <div className="wb-tracker-stat">
+                  <dt className="wb-tracker-stat-label">Серія</dt>
+                  <dd className="wb-tracker-stat-value">{report.streak} дн.</dd>
+                </div>
+                {tracker.goal !== null && report.goalRate !== null && (
+                  <div className="wb-tracker-stat">
+                    <dt className="wb-tracker-stat-label">Ціль виконано</dt>
+                    <dd className="wb-tracker-stat-value">
+                      {report.goalDays} з {report.days} · {Math.round(report.goalRate * 100)}%
+                    </dd>
+                  </div>
+                )}
+              </dl>
 
-            {changeLabel(report.changePct) && (
-              <p className="wb-tracker-trend">{changeLabel(report.changePct)}</p>
-            )}
+              {changeLabel(report.changePct) && (
+                <p className="wb-tracker-trend">{changeLabel(report.changePct)}</p>
+              )}
+            </div>
           </section>
 
-          <section className="wb-card wb-tracker-history">
-            <p className="wb-tracker-form-title">Історія</p>
+          <section className="wb-tracker-panel wb-tracker-history">
+            <span className="wb-tracker-section-title">Історія</span>
             {history.length === 0 && (
               <p className="wb-text-muted">Записів ще немає — почніть із сьогодні.</p>
             )}
@@ -213,9 +249,7 @@ export function TrackerPage(): ReactElement {
                   }}
                 >
                   <span className="wb-tracker-history-day">{dayLabel(entry.day)}</span>
-                  {timeLabel(entry.loggedAt) && (
-                    <span className="wb-tracker-history-time">{timeLabel(entry.loggedAt)}</span>
-                  )}
+                  <span className="wb-tracker-history-time">{timeLabel(entry.loggedAt)}</span>
                   <span className="wb-tracker-history-value">
                     {formatTrackerAmount(entry.value, tracker.unit)}
                   </span>

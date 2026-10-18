@@ -1,8 +1,7 @@
 /**
- * «Трекери» — компактний список: іконка, назва й порожнє поле швидкого запису.
- * Аналітика живе на `/trackers/:id`, тож заголовок відкриває трекер, а поле
- * лишається полем: форма всередині кнопки не мала б ні клавіатури, ні дотику.
- * Підтвердження запису не малюється — поле просто порожніє (див. `docs/TRACKERS.md`).
+ * «Трекери» — денний список: підсумок «скільки зі скількох» і рядок на мірку з
+ * полем швидкого запису. Аналітика живе на `/trackers/:id`; рядок же не форма:
+ * поле стоїть «лункою», а підпис під назвою каже стан дня («сьогодні 2 л»).
  *
  * @module web-platform-dev/src/pages/trackers/TrackersPage
  */
@@ -20,7 +19,7 @@ import {
 } from "@/app/routes";
 import { useTrackers } from "./useTrackers";
 import { TrackerCreateForm } from "./TrackerCreateForm";
-import { toTrackerRows, type TrackerRowView } from "./trackers-view";
+import { rowStatus, toTrackerRows, type TrackerRowView } from "./trackers-view";
 
 interface QuickRowProps {
   row: TrackerRowView;
@@ -31,6 +30,7 @@ interface QuickRowProps {
 function TrackerQuickRow({ row, onOpen, onAdd }: QuickRowProps): ReactElement {
   const [value, setValue] = useState("");
   const [saving, setSaving] = useState(false);
+  const done = row.today !== null;
 
   async function submit(event: FormEvent): Promise<void> {
     event.preventDefault();
@@ -45,43 +45,53 @@ function TrackerQuickRow({ row, onOpen, onAdd }: QuickRowProps): ReactElement {
   }
 
   return (
-    <div className="wb-tracker-card">
+    <li className="wb-tracker-card">
       <button type="button" className="wb-tracker-card-open" onClick={onOpen}>
         <span className="wb-tracker-card-icon">
-          <Icon name={row.tracker.icon} size={16} />
+          <Icon name={row.tracker.icon} size={18} />
         </span>
-        <span className="wb-tracker-card-title">{row.tracker.title}</span>
+        <span className="wb-tracker-card-body">
+          <span className="wb-tracker-card-title">{row.tracker.title}</span>
+          <span className={`wb-tracker-card-meta${done ? " wb-tracker-card-meta--done" : ""}`}>
+            {done && (
+              <span className="wb-tracker-card-check">
+                <Icon name="check" size={12} />
+              </span>
+            )}
+            <span className="wb-tracker-card-meta-text">{rowStatus(row)}</span>
+          </span>
+        </span>
       </button>
       {/* Без `min`/`max`/`step`: нативна перевірка поля малювала чужу підказку
           «введіть дійсне значення» на крок, якого людина не обирала. */}
       <form className="wb-tracker-quick" onSubmit={(event) => void submit(event)}>
-        {/* Поле — свій маленький кирпичик, а не `.wb-input`: у бренда воно
-            має 12/16px внутрішніх відступів і росло б на весь рядок. */}
-        <input
-          className="wb-tracker-quick-input"
-          type="number"
-          inputMode="decimal"
-          step="any"
-          value={value}
-          aria-label={`Записати: ${row.tracker.title}`}
-          onChange={(event) => setValue(event.target.value)}
-        />
-        {!value.trim() && <span className="wb-tracker-quick-unit">{row.tracker.unit}</span>}
-        {value.trim() !== "" && (
-          <button
-            type="submit"
-            className="wb-btn wb-btn-primary wb-tracker-quick-submit"
-            disabled={saving}
-            aria-label={`Записати ${row.tracker.title}`}
-          >
-            <Icon name="check" size={16} />
-          </button>
-        )}
+        <span className="wb-tracker-quick-field">
+          <input
+            className="wb-tracker-quick-input"
+            type="number"
+            inputMode="decimal"
+            step="any"
+            value={value}
+            placeholder="—"
+            aria-label={`Записати: ${row.tracker.title}`}
+            onChange={(event) => setValue(event.target.value)}
+          />
+          <span className="wb-tracker-quick-unit">{row.tracker.unit}</span>
+        </span>
+        <span className="wb-tracker-quick-action">
+          {value.trim() !== "" && (
+            <button
+              type="submit"
+              className="wb-btn wb-btn-primary wb-tracker-quick-submit"
+              disabled={saving}
+              aria-label={`Записати ${row.tracker.title}`}
+            >
+              <Icon name="check" size={16} />
+            </button>
+          )}
+        </span>
       </form>
-      <span className="wb-tracker-card-hint" aria-hidden="true">
-        <Icon name="chevron-right" size={16} />
-      </span>
-    </div>
+    </li>
   );
 }
 
@@ -96,23 +106,37 @@ export function TrackersPage(): ReactElement {
 
   return (
     <div className="wb-page wb-trackers-page">
-      <div className="wb-page-head wb-trackers-head">
-        <p className="wb-text-muted">
-          {rows.length > 0
-            ? `Сьогодні записано: ${filled} з ${rows.length}`
-            : "Щоденні записи й аналітика"}
-        </p>
-        <div className="wb-page-actions">
-          <button
-            type="button"
-            className="wb-btn wb-btn-primary wb-page-add"
-            aria-label="Додати трекер"
-            onClick={() => navigate(withCreateIntent(TRACKERS_PATH))}
-          >
-            <Icon name="plus" size={20} />
-          </button>
-        </div>
-      </div>
+      {rows.length > 0 && (
+        <section className="wb-tracker-day">
+          <div className="wb-tracker-day-head">
+            {/* `span`, а не `p`: бренд тримає абзаци на 14px з `!important`, і
+                підпис-мітка ставав більшим за число, до якого він веде. */}
+            <span className="wb-tracker-day-label">Сьогодні записано</span>
+            <button
+              type="button"
+              className="wb-tracker-add"
+              aria-label="Додати трекер"
+              onClick={() => navigate(withCreateIntent(TRACKERS_PATH))}
+            >
+              <Icon name="plus" size={22} />
+            </button>
+          </div>
+          <p className="wb-tracker-day-figure">
+            <span className="wb-tracker-day-count">{filled}</span>
+            <span className="wb-tracker-day-total">з {rows.length}</span>
+          </p>
+          <div className="wb-tracker-day-bar" aria-hidden="true">
+            {rows.map((row) => (
+              <span
+                key={row.tracker.id}
+                className={`wb-tracker-day-seg${
+                  row.today !== null ? " wb-tracker-day-seg--on" : ""
+                }`}
+              />
+            ))}
+          </div>
+        </section>
+      )}
 
       {creating && (
         <TrackerCreateForm
@@ -142,12 +166,19 @@ export function TrackersPage(): ReactElement {
             <Icon name="bar-chart" size={32} />
           </span>
           <p className="wb-empty-text">Трекерів ще немає.</p>
-          <p className="wb-text-muted">Натисніть «+» — і запишіть перший день.</p>
+          <p className="wb-text-muted">Стандартний набір з'явиться сам — або створіть свій.</p>
+          <button
+            type="button"
+            className="wb-btn wb-btn-primary"
+            onClick={() => navigate(withCreateIntent(TRACKERS_PATH))}
+          >
+            Створити трекер
+          </button>
         </div>
       )}
 
       {!state.loading && !state.error && rows.length > 0 && (
-        <div className="wb-trackers-list">
+        <ul className="wb-trackers-list">
           {rows.map((row) => (
             <TrackerQuickRow
               key={row.tracker.id}
@@ -156,7 +187,7 @@ export function TrackersPage(): ReactElement {
               onAdd={state.addEntry}
             />
           ))}
-        </div>
+        </ul>
       )}
     </div>
   );

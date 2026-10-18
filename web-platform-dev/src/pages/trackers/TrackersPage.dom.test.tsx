@@ -1,11 +1,12 @@
 // @vitest-environment jsdom
 /**
- * «Трекери»: компактна картка — іконка, назва й порожнє поле швидкого запису.
+ * «Трекери»: рядок на мірку — знак, назва, стан дня й порожнє поле запису.
  *
  * Ламається мовчки саме тут: дефолтне число в полі читається як чиясь вимога,
  * кнопка без значення стає порожнім дотиком, а дотик по полю не повинен
- * відкривати сторінку трекера. Аналітики на стрічці немає — вона на окремій
- * сторінці, і тут це перевіряється відсутністю, а не сподіванням.
+ * відкривати сторінку трекера. Підпис під назвою — це стан («ціль 8 год» до
+ * запису, «сьогодні 2 л» після), а не аналітика: графіка й звіту на стрічці
+ * немає, і це перевіряється відсутністю, а не сподіванням.
  *
  * @module web-platform-dev/src/pages/trackers/TrackersPage.dom.test
  */
@@ -92,15 +93,28 @@ beforeEach(() => {
 });
 
 describe("стрічка трекерів", () => {
-  it("картка — іконка, назва й поле; аналітики на ній немає", () => {
+  it("рядок — знак, назва й поле; графіка й звіту на ньому немає", () => {
     const { container } = render(<TrackersPage />);
 
     expect(screen.getByRole("button", { name: /Вода/ })).toBeTruthy();
     expect(screen.getByLabelText("Записати: Вода")).toBeTruthy();
-    // Сума дня, серія й графік лишаються на окремій сторінці трекера.
-    expect(container.querySelector(".wb-tracker-spark")).toBeNull();
-    expect(screen.queryByText("2 л")).toBeNull();
-    expect(screen.queryByText("серія 2 дн.")).toBeNull();
+    // Графік і звіт лишаються на окремій сторінці трекера; у рядку — лише стан.
+    expect(container.querySelector(".wb-tracker-chart")).toBeNull();
+    expect(container.querySelector(".wb-tracker-stats")).toBeNull();
+  });
+
+  it("підпис під назвою каже стан: ціль до запису, суму дня після", () => {
+    const { container } = render(<TrackersPage />);
+    const cards = [...container.querySelectorAll(".wb-tracker-card")];
+    const meta = (title: string) =>
+      cards
+        .find((card) => card.textContent?.includes(title))
+        ?.querySelector(".wb-tracker-card-meta-text")?.textContent;
+
+    expect(meta("Вода")).toBe("2 л");
+    expect(meta("Сон")).toBe("ціль 8 год");
+    expect(cards[0]?.querySelector(".wb-tracker-card-check")).toBeTruthy();
+    expect(cards[1]?.querySelector(".wb-tracker-card-check")).toBeNull();
   });
 
   it("⛔ поле завжди порожнє — дефолтне число в ньому не живе", () => {
@@ -117,10 +131,13 @@ describe("стрічка трекерів", () => {
     expect(screen.getByText("год")).toBeTruthy();
   });
 
-  it("скільки записано сьогодні видно в шапці", () => {
-    render(<TrackersPage />);
+  it("скільки записано сьогодні видно в шапці й на смузі дня", () => {
+    const { container } = render(<TrackersPage />);
 
-    expect(screen.getByText("Сьогодні записано: 1 з 2")).toBeTruthy();
+    expect(container.querySelector(".wb-tracker-day-count")?.textContent).toBe("1");
+    expect(container.querySelector(".wb-tracker-day-total")?.textContent).toBe("з 2");
+    expect(container.querySelectorAll(".wb-tracker-day-seg")).toHaveLength(2);
+    expect(container.querySelectorAll(".wb-tracker-day-seg--on")).toHaveLength(1);
   });
 
   it("дотик по заголовку веде на цей трекер", async () => {
@@ -148,12 +165,24 @@ describe("стрічка трекерів", () => {
     expect(screen.queryByText("Збережено")).toBeNull();
   });
 
-  it("порожній список каже, як додати перший", () => {
+  it("ціль стоїть у рядку до запису — а після нього її міняє сума дня", () => {
+    state.entries = [];
+    const { container } = render(<TrackersPage />);
+
+    // Стан дня й підпис будуються з тих самих рядків: `rowStatus` і `toTrackerRows`
+    // перевірені в `trackers-view.test.ts`, але рядок мусить їх справді показати.
+    expect(container.querySelector(".wb-tracker-card-meta-text")?.textContent).toBe("ціль 2 л");
+    expect(container.querySelector(".wb-tracker-card-check")).toBeNull();
+  });
+
+  it("порожній список каже, як додати перший, і не малює смугу дня", () => {
     state.trackers = [];
     state.entries = [];
-    render(<TrackersPage />);
+    const { container } = render(<TrackersPage />);
 
     expect(screen.getByText("Трекерів ще немає.")).toBeTruthy();
+    expect(screen.getByRole("button", { name: "Створити трекер" })).toBeTruthy();
+    expect(container.querySelector(".wb-tracker-day")).toBeNull();
   });
 
   it("«+» відкриває форму в адресі, а не в локальному стані", async () => {

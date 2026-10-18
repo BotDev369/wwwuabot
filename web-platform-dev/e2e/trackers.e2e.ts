@@ -1,5 +1,5 @@
 /**
- * «Трекери» в прев'ю: компактна картка, швидкий запис і кілька дотиків на день.
+ * «Трекери» в прев'ю: рядок мірки, швидкий запис і кілька дотиків на день.
  *
  * Сценарій іде шляхом людини: футер → картка → поле → дотик; аналітику дивимось
  * на окремій сторінці трекера. За день можна записати багато разів — і сума дня
@@ -57,7 +57,7 @@ test("трекери: стандартні картки й швидкий зап
   // Поле дня теж порожнє — дефолтного числа не друкує ніхто.
   await expect(page.getByLabel(/^Значення/)).toHaveValue("");
 
-  await page.getByRole("button", { name: "7 дн." }).click();
+  await page.getByRole("tab", { name: "7 дн." }).click();
   await expect(page.getByText(/^\d+ з 7$/)).toBeVisible();
   await page.screenshot({ path: `${ARTIFACTS}/11-tracker-detail.png`, fullPage: true });
 
@@ -68,12 +68,15 @@ test("трекери: день приймає кілька дотиків і с�
   const errors = watchErrors(page);
 
   // Свіжий трекер — щоб чисна перевірка не залежала від старих записів дня.
+  // Назва з номером прогону: інакше другий прогін знаходив би кілька однакових
+  // рядків і перевіряв би чужу історію (у дев-базі вони вже накопичились).
+  const title = `Присідання ${Date.now().toString().slice(-5)}`;
   await page.goto("/trackers?new=1");
-  await page.getByLabel("Назва").fill("Присідання");
+  await page.getByLabel("Назва").fill(title);
   await page.getByLabel("Одиниця").fill("разів");
   await page.getByRole("button", { name: "Створити" }).click();
   await expect(page).toHaveURL(/\/trackers\/\d+$/);
-  await expect(page.locator("h1.wb-appbar__title")).toHaveText("Присідання");
+  await expect(page.locator("h1.wb-appbar__title")).toHaveText(title);
 
   // Два дотики одного дня: шапка показує суму, історія — два рядки.
   await page.getByLabel(/^Значення/).fill("5");
@@ -87,12 +90,12 @@ test("трекери: день приймає кілька дотиків і с�
 
   // Третій дотик — зі стрічки, тією ж карткою.
   await page.goto("/trackers");
-  const quick = page.getByLabel("Записати: Присідання");
+  const quick = page.getByLabel(`Записати: ${title}`);
   await quick.fill("3");
-  await page.getByRole("button", { name: "Записати Присідання" }).click();
+  await page.getByRole("button", { name: `Записати ${title}` }).click();
   await expect(quick).toHaveValue("");
 
-  await page.locator(".wb-tracker-card-open", { hasText: "Присідання" }).click();
+  await page.locator(".wb-tracker-card-open", { hasText: title }).click();
   await expect(page.locator(".wb-tracker-hero-value")).toHaveText(/12 разів/);
   await expect(page.locator(".wb-tracker-history-row")).toHaveCount(3);
 

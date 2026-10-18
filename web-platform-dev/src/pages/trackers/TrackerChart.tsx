@@ -1,8 +1,8 @@
 /**
  * Графік трекера: стовпчик на день, пунктирна лінія цілі.
  *
- * Порожній день — порожній стовпчик, а не нуль: «не записано» і «нуль» різні,
- * і зливати їх означало б малювати неправду.
+ * Порожній день — порожній стовпчик, а не нуль: «не записано» і «нуль» різні.
+ * Сітку малює CSS — без неї самотній стовпчик праворуч читався як поломка.
  *
  * @module web-platform-dev/src/pages/trackers/TrackerChart
  */
@@ -22,10 +22,13 @@ export function TrackerChart({ points, goal, unit, title }: TrackerChartProps): 
   const values = points
     .map((point) => point.value)
     .filter((value): value is number => value !== null);
-  const peak = Math.max(goal ?? 0, ...values, 1);
+  const highest = Math.max(...values);
+  // Запас над найбільшим стовпчиком: без нього єдиний запис у вікні стоїть на
+  // всю висоту й читається як поломка, а не як одне вимірювання.
+  const peak = Math.max(goal ?? 0, highest * 1.12, 1);
   const first = points[0]?.day;
   const last = points[points.length - 1]?.day;
-  const summary = `${title}: ${points.length} дн., записів ${values.length}. Найбільше — ${formatTrackerAmount(peak, unit)}.`;
+  const summary = `${title}: ${points.length} дн., записів ${values.length}. Найбільше — ${formatTrackerAmount(highest, unit)}.`;
 
   // Порожнє вікно — словами: сітка без жодного запису читалась як поламаний графік.
   if (values.length === 0) {

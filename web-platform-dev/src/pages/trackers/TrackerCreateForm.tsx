@@ -59,7 +59,7 @@ export function TrackerCreateForm({
   }
 
   return (
-    <form className="wb-card wb-tracker-form" onSubmit={(event) => void submit(event)}>
+    <form className="wb-tracker-form" onSubmit={(event) => void submit(event)}>
       <p className="wb-tracker-form-title">Свій трекер</p>
       <label className="wb-field">
         <span className="wb-label">Назва</span>

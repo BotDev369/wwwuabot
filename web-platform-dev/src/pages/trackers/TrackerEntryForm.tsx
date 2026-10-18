@@ -8,6 +8,7 @@
  */
 
 import type { FormEvent, ReactElement } from "react";
+import { Icon } from "@wwwuabot/shared";
 import type { Tracker } from "@wwwuabot/shared/trackers";
 
 export interface EntryDraft {
@@ -40,7 +41,7 @@ export function TrackerEntryForm({
 
   return (
     <form className="wb-tracker-entry" onSubmit={submit}>
-      <div className="wb-tracker-form-row">
+      <div className="wb-tracker-entry-row">
         <label className="wb-field">
           <span className="wb-label">День</span>
           <input
@@ -64,6 +65,15 @@ export function TrackerEntryForm({
             onChange={(event) => onChange({ value: event.target.value })}
           />
         </label>
+        <button
+          type="submit"
+          className="wb-btn wb-btn-primary wb-tracker-entry-submit"
+          disabled={saving}
+          aria-label="Зберегти"
+          title="Зберегти"
+        >
+          <Icon name="check" size={20} />
+        </button>
       </div>
       <label className="wb-field">
         <span className="wb-label">Нотатка</span>
@@ -75,11 +85,6 @@ export function TrackerEntryForm({
           onChange={(event) => onChange({ note: event.target.value })}
         />
       </label>
-      <div className="wb-tracker-entry-actions">
-        <button type="submit" className="wb-btn wb-btn-primary" disabled={saving}>
-          Зберегти
-        </button>
-      </div>
     </form>
   );
 }

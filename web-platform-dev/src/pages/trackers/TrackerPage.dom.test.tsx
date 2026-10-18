@@ -2,9 +2,10 @@
 /**
  * Один трекер: звіт рахується з тих самих рядків, що й графік.
  *
- * Перевіряємо те, що не видно очима в коді: вікно звіту справді міняється,
- * кілька дотиків одного дня **сумаються**, поле запису приходить порожнім,
- * а «Прибрати» йде через діалог — без нього дотик зникав би одним дотиком.
+ * Перевіряємо те, що не видно очима в коді: вікно звіту справді міняється
+ * (вкладки, а не два місця правди), кілька дотиків одного дня **сумаються**,
+ * смуга цілі рахує **день**, поле запису приходить порожнім, а «Прибрати» йде
+ * через діалог — без нього дотик зникав би одним дотиком.
  *
  * @module web-platform-dev/src/pages/trackers/TrackerPage.dom.test
  */
@@ -88,10 +89,20 @@ describe("звіт", () => {
   it("вікно звіту справді звужується", async () => {
     render(<TrackerPage />);
 
-    await userEvent.click(screen.getByRole("button", { name: "7 дн." }));
+    await userEvent.click(screen.getByRole("tab", { name: "7 дн." }));
 
     expect(screen.getByText("3 з 7")).toBeTruthy();
-    expect(screen.getByRole("button", { name: "7 дн." }).getAttribute("aria-pressed")).toBe("true");
+    expect(screen.getByRole("tab", { name: "7 дн." }).getAttribute("aria-selected")).toBe("true");
+    expect(screen.getByRole("tab", { name: "30 дн." }).getAttribute("aria-selected")).toBe("false");
+  });
+
+  it("смуга цілі показує частку дня, а не число звіту", () => {
+    const { container } = render(<TrackerPage />);
+    const bar = container.querySelector('[role="progressbar"]');
+
+    // 2 л з цілі 2 л — 100%: це сьогодні, а не вікно звіту.
+    expect(bar?.getAttribute("aria-valuetext")).toBe("100%");
+    expect(screen.getByText("ціль виконано")).toBeTruthy();
   });
 
   it("ціль виконано — число днів, а не середнє", () => {

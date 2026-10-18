@@ -7,6 +7,7 @@ import {
   goalLabel,
   historySince,
   newestFirst,
+  rowStatus,
   timeLabel,
   toTrackerRows,
 } from "./trackers-view";
@@ -74,6 +75,16 @@ describe("рядки стрічки", () => {
 
     expect(water.today).toBe(2);
     expect(water.series[water.series.length - 1]).toEqual({ day: "2026-10-17", value: 2 });
+  });
+
+  it("підпис рядка — стан дня: сума після запису, ціль до нього", () => {
+    const [water, sleep] = toTrackerRows([tracker, other], entries, "2026-10-17");
+
+    expect(rowStatus(water)).toBe("2 л");
+    expect(rowStatus(sleep)).toBe("ціль 8 год");
+    expect(rowStatus(toTrackerRows([{ ...tracker, goal: null }], [], "2026-10-17")[0])).toBe(
+      "без цілі",
+    );
   });
 
   it("записаний нуль — це нуль, а не «не записано»", () => {

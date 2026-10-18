@@ -89,6 +89,18 @@ export function amountOrDash(value: number | null, unit: string): string {
   return value === null ? "—" : formatTrackerAmount(value, unit);
 }
 
+/**
+ * Підпис рядка стрічки: записано — сума дня, ні — ціль (або «без цілі»).
+ *
+ * Дві половини свідомо не стоять разом: «сьогодні 2 л · ціль 2 л» на телефоні
+ * не вміщалось і обрізалось під кнопкою. «Чи записано» додає знак перед
+ * підписом, а не слово: місця в рядку рівно стільки, скільки треба числу.
+ */
+export function rowStatus(row: TrackerRowView): string {
+  if (row.today !== null) return formatTrackerAmount(row.today, row.tracker.unit);
+  return goalLabel(row.tracker) ?? "без цілі";
+}
+
 /** Підпис цілі: «ціль 8 год» або порожньо — без цілі нема чого досягати. */
 export function goalLabel(tracker: Tracker): string | null {
   if (tracker.goal === null) return null;
