@@ -112,13 +112,15 @@ export function TrackerPage(): ReactElement {
       {!state.loading && tracker && report && (
         <>
           <section className="wb-card wb-tracker-hero">
-            <p className="wb-tracker-hero-value">
-              {amountOrDash(todayValues.length === 0 ? null : todaySum, tracker.unit)}
-            </p>
-            <p className="wb-tracker-hero-meta">
-              {goalLabel(tracker) ?? "без цілі"}
-              {report.streak > 0 ? ` · серія ${report.streak} дн.` : ""}
-            </p>
+            <div className="wb-tracker-hero-sum">
+              <p className="wb-tracker-hero-value">
+                {amountOrDash(todayValues.length === 0 ? null : todaySum, tracker.unit)}
+              </p>
+              <p className="wb-tracker-hero-meta">
+                {goalLabel(tracker) ?? "без цілі"}
+                {report.streak > 0 ? ` · серія ${report.streak} дн.` : ""}
+              </p>
+            </div>
             <TrackerEntryForm
               tracker={tracker}
               draft={activeDraft}

@@ -38,7 +38,7 @@
   align-items: center;
   gap: var(--sp-2);
   min-width: 0;
-  padding: 0 var(--sp-1);
+  padding: var(--sp-1);
   border-bottom: 1px solid var(--border-subtle);
   color: var(--text-primary);
 }
@@ -97,7 +97,9 @@
 }
 
 .wb-tracker-quick-input {
-  width: 74px;
+  /* 88px, а не 74: бренд ставить полю `padding: 12px 16px !important`, і на
+     п'яти цифрах ("12500") текст уже обрізався. */
+  width: 88px;
   min-height: 40px;
   padding: 0 var(--sp-2);
   background: var(--field-bg-raised);
@@ -107,9 +109,9 @@
 }
 
 /* Кнопка надсилання не має ширити рядок: поки її немає, місце займає одиниця
-   (74 + 4 + 40 ≈ 118px), з нею — те саме поле без одиниці (72 + 4 + 44 = 120px). */
+   (88 + 4 + 40 ≈ 132px), з нею — вужче поле без одиниці (84 + 4 + 44 = 132px). */
 .wb-tracker-quick--ready .wb-tracker-quick-input {
-  width: 72px;
+  width: 84px;
 }
 
 .wb-tracker-quick-input::-webkit-outer-spin-button,
@@ -141,11 +143,20 @@
   margin-bottom: var(--sp-2);
 }
 
+/* Сума дня й підпис — одним рядком: окремим рядком підпис з'їдав 20px висоти
+   на екрані, де й без нього є що показати. */
+.wb-tracker-hero-sum {
+  display: flex;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: var(--sp-2);
+}
+
 .wb-tracker-hero-value {
   margin: 0;
-  font-size: 1.75rem;
+  font-size: 1.65rem;
   font-weight: var(--weight-bold);
-  line-height: 1.05;
+  line-height: 1.1;
 }
 
 .wb-tracker-hero-meta {
