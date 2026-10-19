@@ -11,6 +11,8 @@ import { ensureTables } from "@wwwuabot/shared/database/ensure-tables";
 import { formatSqliteDatetime } from "@wwwuabot/shared/utils/datetime";
 import {
   TRACKER_CATALOG,
+  todayTrackerDay,
+  trackerMode,
   type Tracker,
   type TrackerEntry,
   type TrackerEntryRow,
@@ -27,11 +29,18 @@ interface TrackerRow {
   goal: number | null;
   min_value: number;
   max_value: number | null;
+  mode: string | null;
   icon: string;
   is_builtin: number;
 }
 
-const TRACKER_COLUMNS = "id, key, title, unit, step, goal, min_value, max_value, icon, is_builtin";
+/**
+ * `COALESCE` — не перестраховка: колонку `mode` добрав `ensureTables`, тож у
+ * рядків, старших за неї, там `NULL` (див. `docs/D1_OPS.md`, «М'яка схема»).
+ */
+const TRACKER_COLUMNS =
+  "id, key, title, unit, step, goal, min_value, max_value, " +
+  "COALESCE(mode, CASE WHEN goal IS NULL THEN 'read' ELSE 'sum' END) AS mode, icon, is_builtin";
 
 function toTracker(row: TrackerRow): Tracker {
   return {
@@ -43,6 +52,7 @@ function toTracker(row: TrackerRow): Tracker {
     goal: row.goal === null ? null : Number(row.goal),
     min: Number(row.min_value),
     max: row.max_value === null ? null : Number(row.max_value),
+    mode: trackerMode({ key: row.key, goal: row.goal, mode: row.mode }),
     icon: (row.icon || "bar-chart") as Tracker["icon"],
     isBuiltin: Number(row.is_builtin) === 1,
   };
@@ -59,8 +69,8 @@ async function seedTrackers(env: Env, userId: number): Promise<void> {
   const statements = TRACKER_CATALOG.map((tracker) =>
     env.DB.prepare(
       `INSERT OR IGNORE INTO trackers
-         (owner_id, key, title, unit, step, goal, min_value, max_value, icon, is_builtin, is_active, created_at)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 1, 1, ?)`,
+         (owner_id, key, title, unit, step, goal, min_value, max_value, mode, icon, is_builtin, is_active, created_at)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 1, 1, ?)`,
     ).bind(
       String(userId),
       tracker.key,
@@ -70,6 +80,7 @@ async function seedTrackers(env: Env, userId: number): Promise<void> {
       tracker.goal,
       tracker.min,
       tracker.max,
+      tracker.mode,
       tracker.icon,
       now,
     ),
@@ -168,8 +179,8 @@ export async function createTracker(
   const key = `own-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}`;
   await env.DB.prepare(
     `INSERT INTO trackers
-       (owner_id, key, title, unit, step, goal, min_value, max_value, icon, is_builtin, is_active, created_at)
-     VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'bar-chart', 0, 1, ?)`,
+       (owner_id, key, title, unit, step, goal, min_value, max_value, mode, icon, is_builtin, is_active, created_at)
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 'bar-chart', 0, 1, ?)`,
   )
     .bind(
       String(userId),
@@ -180,6 +191,7 @@ export async function createTracker(
       fields.goal,
       fields.min,
       fields.max,
+      fields.mode,
       formatSqliteDatetime(),
     )
     .run();
@@ -202,20 +214,21 @@ export async function archiveTracker(env: Env, userId: number, id: number): Prom
 }
 
 /**
- * Новий дотик дня — **новий рядок**, не правка: за день можна записати скільки
- * завгодно разів, а день у звіті — їх сума. Момент запису друкують самі SQLite
- * (`datetime('now')`, секунди) — клієнтський годинник не є джерелом істини.
+ * Новий запис — **новий рядок**, не правка: міра стається зараз, і двоє
+ * зважувань за день — два виміри. Ні день, ні момент не приходить від клієнта:
+ * клієнтський годинник не є джерелом істини, а день — лише кошик для денних
+ * сум (вода, кроки).
  */
 export async function insertTrackerEntry(
   env: Env,
   userId: number,
   trackerId: number,
-  day: string,
   value: number,
   note: string,
 ): Promise<TrackerEntry | null> {
   if (!(await readTracker(env, userId, trackerId))) return null;
   const now = formatSqliteDatetime();
+  const day = todayTrackerDay();
   const result = await env.DB.prepare(
     `INSERT INTO tracker_entries (tracker_id, owner_id, day, value, note, logged_at, updated_at)
      VALUES (?, ?, ?, ?, ?, ?, ?)`,

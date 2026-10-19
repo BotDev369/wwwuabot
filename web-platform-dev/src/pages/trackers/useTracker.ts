@@ -1,15 +1,20 @@
 /**
- * Один трекер: історія дотиків, запис дня й прибирання.
+ * Один трекер: історія записів, новий вимір і прибирання.
  *
- * Запис — **новий рядок**: за день можна записати скільки завгодно разів, тож
- * локальний стан додає дотик, а не замінює день. Час запису ставить сервер.
+ * Запис — **новий рядок**: міра стається зараз, і двоє зважувань за день — два
+ * виміри. День не питаємо й не шлемо — його й момент ставить сервер.
  *
  * @module web-platform-dev/src/pages/trackers/useTracker
  */
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useDialog } from "@wwwuabot/ui/dialog";
-import { todayTrackerDay, type Tracker, type TrackerEntry } from "@wwwuabot/shared/trackers";
+import {
+  compareTrackerEntries,
+  todayTrackerDay,
+  type Tracker,
+  type TrackerEntry,
+} from "@wwwuabot/shared/trackers";
 import { apiFetch } from "@/shared/api/client";
 
 interface TrackerPayload {
@@ -26,7 +31,7 @@ export interface TrackerState {
   error: string | null;
   saving: boolean;
   reload: () => Promise<void>;
-  save: (day: string, value: number, note: string) => Promise<boolean>;
+  save: (value: number, note: string) => Promise<boolean>;
   remove: (entryId: number) => Promise<boolean>;
   archive: () => Promise<boolean>;
 }
@@ -75,24 +80,16 @@ export function useTracker(id: number): TrackerState {
     await load();
   }
 
-  async function save(day: string, value: number, note: string): Promise<boolean> {
+  async function save(value: number, note: string): Promise<boolean> {
     if (saving) return false;
     setSaving(true);
     try {
       const result = await apiFetch<{ entry: TrackerEntry }>("/api/user/trackers/entry", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ trackerId: id, day, value, note }),
+        body: JSON.stringify({ trackerId: id, value, note }),
       });
-      // Порядок серії: день, момент запису, номер — щоб два дотики в одну
-      // секунду не міняли місцями одне одного.
-      setEntries((current) =>
-        [...current, result.entry].sort((a, b) => {
-          const left = `${a.day} ${a.loggedAt ?? ""} ${String(a.id).padStart(9, "0")}`;
-          const right = `${b.day} ${b.loggedAt ?? ""} ${String(b.id).padStart(9, "0")}`;
-          return left < right ? -1 : left > right ? 1 : 0;
-        }),
-      );
+      setEntries((current) => [...current, result.entry].sort(compareTrackerEntries));
       return true;
     } catch (e) {
       const message = e instanceof Error ? e.message : "";

@@ -30,6 +30,7 @@ const water: Tracker = {
   max: 20,
   icon: "droplet",
   isBuiltin: true,
+  mode: "sum",
 };
 
 beforeEach(() => {
@@ -78,6 +79,7 @@ describe("стрічка", () => {
         goal: 2,
         min: 0,
         max: 20,
+        mode: "sum",
       });
     });
 
@@ -99,6 +101,7 @@ describe("стрічка", () => {
         goal: null,
         min: 0,
         max: null,
+        mode: "read",
       });
     });
 
@@ -106,7 +109,7 @@ describe("стрічка", () => {
     expect(view.result.current.trackers).toHaveLength(0);
   });
 
-  it("швидкий запис із картки додає дотик сьогоднішнього дня", async () => {
+  it("швидкий запис із картки додає вимір без дня в запиті", async () => {
     mocks.request.mockResolvedValueOnce({ trackers: [water], entries: [], endDay: "2026-10-17" });
     const view = renderHook(() => useTrackers());
     await waitFor(() => expect(view.result.current.endDay).toBe("2026-10-17"));
@@ -121,7 +124,10 @@ describe("стрічка", () => {
 
     expect(mocks.request).toHaveBeenCalledWith(
       "/api/user/trackers/entry",
-      expect.objectContaining({ method: "POST" }),
+      expect.objectContaining({
+        method: "POST",
+        body: JSON.stringify({ trackerId: 1, value: 0.5, note: "" }),
+      }),
     );
     expect(entry).toMatchObject({ id: 3, day: "2026-10-17" });
     expect(view.result.current.entries).toHaveLength(1);

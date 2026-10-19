@@ -3,18 +3,20 @@ import {
   TRACKER_CATALOG,
   TRACKER_LIMITS,
   addTrackerDays,
-  buildTrackerSeries,
   formatTrackerAmount,
   isWritableTrackerDay,
   isValidTrackerDay,
   todayTrackerDay,
-  trackerDayTotals,
-  trackerReport,
-  trackerStreak,
   trackerValue,
   validateTrackerFields,
   type TrackerDayValue,
 } from "./trackers";
+import {
+  buildTrackerSeries,
+  trackerDayTotals,
+  trackerReport,
+  trackerStreak,
+} from "./trackers/analytics";
 
 function entry(day: string, value: number): TrackerDayValue {
   return { day, value };
@@ -64,8 +66,22 @@ describe("форма власного трекера", () => {
     const result = validateTrackerFields({ title: "  Кава  ", unit: "чашок", step: 1 });
     expect(result).toEqual({
       ok: true,
-      value: { title: "Кава", unit: "чашок", step: 1, goal: null, min: 0, max: null },
+      value: { title: "Кава", unit: "чашок", step: 1, goal: null, min: 0, max: null, mode: "read" },
     });
+  });
+
+  it("вид без цілі — «читати», з ціллею — «додавати»; явний вибір священний", () => {
+    expect(validateTrackerFields({ title: "Вага", step: 0.1 })).toMatchObject({
+      value: { mode: "read" },
+    });
+    expect(validateTrackerFields({ title: "Кава", step: 1, goal: 3 })).toMatchObject({
+      value: { mode: "sum" },
+    });
+    expect(validateTrackerFields({ title: "Сон", step: 0.5, goal: 8, mode: "read" })).toMatchObject(
+      {
+        value: { mode: "read" },
+      },
+    );
   });
 
   it("⛔ порожня назва не створює трекер", () => {

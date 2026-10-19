@@ -1,8 +1,9 @@
 /**
- * Трекери — один універсальний трекер: щоденне число з одиницею й ціллю.
- * Вид задають дані (`unit`/`step`/`goal`), а не гілка в коді; аналітика —
- * чисті функції, правила — `docs/TRACKERS.md`.
- *
+ * Трекери — один універсальний трекер: **запис із моментом часу**. День — не
+ * сутність запису, а кошик: він потрібен лише накопичувальним міркам (вода,
+ * кроки). Тому вид задають дані: `mode` каже, як читати записи (`sum` —
+ * додаються, `read` — беруть останній); гілок у UI немає. Правила — у
+ * `docs/TRACKERS.md`.
  * @module @wwwuabot/shared/trackers
  */
 
@@ -19,7 +20,17 @@ export interface TrackerFields {
   goal: number | null;
   min: number;
   max: number | null;
+  mode: TrackerMode;
 }
+
+/**
+ * Як читати записи мірки.
+ *
+ * `sum` — записи додаються (вода, кроки, витрати): день має суму, а ціль —
+ * сенс. `read` — кожен запис є виміром (вага, настрій, сон): показуємо
+ * **останній**, а сумувати виміри не можна (два настрої по 4 бали — не 8).
+ */
+export type TrackerMode = "sum" | "read";
 
 /** Стандартний трекер: людина отримує його при першому вході. */
 export interface TrackerCatalogEntry extends TrackerFields {
@@ -36,15 +47,15 @@ export interface Tracker extends TrackerFields {
 }
 
 /**
- * Рядок дня для аналітики. За день може бути багато записів — графік і звіт
- * рахують їх **суму**, бо «сьогодні випито тричі» — це один день, а не три.
+ * Рядок дня для аналітики. За день може бути багато записів — як їх звести,
+ * каже `mode`: сума («випито тричі» — це один день) чи останній вимір.
  */
 export interface TrackerDayValue {
   day: string;
   value: number;
 }
 
-/** Запис трекера (рядок `tracker_entries`): окремий дотик людини в день. */
+/** Запис трекера (рядок `tracker_entries`): окремий вимір із моментом часу. */
 export interface TrackerEntry {
   id: number;
   day: string;
@@ -110,9 +121,30 @@ export const TRACKER_CATALOG: readonly TrackerCatalogEntry[] = [
     min: 0,
     max: 100000,
     icon: "footsteps",
+    mode: "sum",
   },
-  { key: "water", title: "Вода", unit: "л", step: 0.25, goal: 2, min: 0, max: 20, icon: "droplet" },
-  { key: "sleep", title: "Сон", unit: "год", step: 0.5, goal: 8, min: 0, max: 24, icon: "moon" },
+  {
+    key: "water",
+    title: "Вода",
+    unit: "л",
+    step: 0.25,
+    goal: 2,
+    min: 0,
+    max: 20,
+    icon: "droplet",
+    mode: "sum",
+  },
+  {
+    key: "sleep",
+    title: "Сон",
+    unit: "год",
+    step: 0.5,
+    goal: 8,
+    min: 0,
+    max: 24,
+    icon: "moon",
+    mode: "read",
+  },
   {
     key: "weight",
     title: "Вага",
@@ -122,10 +154,41 @@ export const TRACKER_CATALOG: readonly TrackerCatalogEntry[] = [
     min: 0,
     max: 500,
     icon: "progress",
+    mode: "read",
   },
-  { key: "mood", title: "Настрій", unit: "бал", step: 1, goal: 4, min: 1, max: 5, icon: "heart" },
-  { key: "energy", title: "Енергія", unit: "бал", step: 1, goal: 4, min: 1, max: 5, icon: "sun" },
-  { key: "workout", title: "Рух", unit: "хв", step: 5, goal: 30, min: 0, max: 600, icon: "flame" },
+  {
+    key: "mood",
+    title: "Настрій",
+    unit: "бал",
+    step: 1,
+    goal: 4,
+    min: 1,
+    max: 5,
+    icon: "heart",
+    mode: "read",
+  },
+  {
+    key: "energy",
+    title: "Енергія",
+    unit: "бал",
+    step: 1,
+    goal: 4,
+    min: 1,
+    max: 5,
+    icon: "sun",
+    mode: "read",
+  },
+  {
+    key: "workout",
+    title: "Рух",
+    unit: "хв",
+    step: 5,
+    goal: 30,
+    min: 0,
+    max: 600,
+    icon: "flame",
+    mode: "sum",
+  },
   {
     key: "reading",
     title: "Читання",
@@ -135,6 +198,7 @@ export const TRACKER_CATALOG: readonly TrackerCatalogEntry[] = [
     min: 0,
     max: 600,
     icon: "book",
+    mode: "sum",
   },
   {
     key: "spend",
@@ -145,8 +209,33 @@ export const TRACKER_CATALOG: readonly TrackerCatalogEntry[] = [
     min: 0,
     max: TRACKER_LIMITS.value,
     icon: "wallet",
+    mode: "sum",
   },
 ];
+
+const CATALOG_BY_KEY = new Map(TRACKER_CATALOG.map((entry) => [entry.key, entry]));
+
+/**
+ * Як читати записи цієї мірки.
+ *
+ * Вид — **дані, а не здогад**: його обирає людина (поле «Як читати записи»), і
+ * він лежить у `trackers.mode`. Колонка жива база приїде як `NULL` — тоді, і
+ * лише тоді, беремо старий здогад (каталог за ключем, далі «ціль ⇒ сума»),
+ * щоб рядки, створені до колонки, читались як читались.
+ */
+export function trackerMode(tracker: {
+  key: string;
+  goal: number | null;
+  mode?: string | null;
+}): TrackerMode {
+  if (tracker.mode === "sum" || tracker.mode === "read") return tracker.mode;
+  return CATALOG_BY_KEY.get(tracker.key)?.mode ?? (tracker.goal === null ? "read" : "sum");
+}
+
+/** Вид із нерозпізнаного вводу: `null` — не вид (його добере `trackerMode`). */
+export function parseTrackerMode(value: unknown): TrackerMode | null {
+  return value === "sum" || value === "read" ? value : null;
+}
 
 const DAY_PATTERN = /^\d{4}-\d{2}-\d{2}$/;
 
@@ -230,107 +319,53 @@ export function validateTrackerFields(
     return { ok: false, message: "Ціль має лежати в межах трекера." };
   }
 
-  return { ok: true, value: { title, unit, step, goal, min, max } };
+  // Вид не задають явно — беремо типовий за ціллю: ціль без накопичення не має
+  // сенсу, а вимір із ціллю (цільова вага) — має, тож у формі вид видно його ж.
+  const mode = parseTrackerMode(body.mode) ?? (goal === null ? "read" : "sum");
+
+  return { ok: true, value: { title, unit, step, goal, min, max, mode } };
 }
 
 /**
- * Сума дня: скільки разів людина не записала би мірку — день лишається одним
- * числом. Саме цю суму показують графік, звіт і шапка трекера.
+ * Записи за зростанням: день, момент, номер — той самий порядок, що в історії.
+ * Два записи в одну секунду не міняються місцями, бо номер останній у ключі.
  */
-export function trackerDayTotals(entries: readonly TrackerDayValue[]): Map<string, number> {
-  const totals = new Map<string, number>();
-  for (const entry of entries) {
-    totals.set(entry.day, (totals.get(entry.day) ?? 0) + entry.value);
-  }
-  return totals;
+export type TrackerEntryOrder = Pick<TrackerEntry, "day"> &
+  Partial<Pick<TrackerEntry, "id" | "loggedAt">>;
+
+export function compareTrackerEntries(a: TrackerEntryOrder, b: TrackerEntryOrder): number {
+  const left = `${a.day} ${a.loggedAt ?? ""} ${String(a.id ?? 0).padStart(9, "0")}`;
+  const right = `${b.day} ${b.loggedAt ?? ""} ${String(b.id ?? 0).padStart(9, "0")}`;
+  return left < right ? -1 : left > right ? 1 : 0;
 }
 
-/** Серія за вікно: дні без запису стоять `null`, тож графік не зсуває історію. */
-export function buildTrackerSeries(
-  entries: readonly TrackerDayValue[],
+export function sortedTrackerEntries<T extends TrackerEntryOrder>(entries: readonly T[]): T[] {
+  return [...entries].sort(compareTrackerEntries);
+}
+
+/** Останній запис — те, що показує мірка режиму `read` замість «сьогодні». */
+export function trackerLatest<T extends TrackerEntry>(entries: readonly T[]): T | null {
+  let latest: T | null = null;
+  for (const entry of entries) {
+    if (!latest || compareTrackerEntries(latest, entry) < 0) latest = entry;
+  }
+  return latest;
+}
+
+/** Запис перед останнім: «−0,5 кг від попереднього» — без жодного вікна. */
+export function trackerPrevious<T extends TrackerEntry>(entries: readonly T[]): T | null {
+  const sorted = sortedTrackerEntries(entries);
+  return sorted.length > 1 ? sorted[sorted.length - 2] : null;
+}
+
+/** Записи вікна — історія, графік і звіт читають один список, а не три. */
+export function trackerWindow<T extends TrackerEntry>(
+  entries: readonly T[],
   endDay: string,
   days: number,
-): TrackerPoint[] {
-  const byDay = trackerDayTotals(entries);
-  const points: TrackerPoint[] = [];
-  for (let offset = days - 1; offset >= 0; offset--) {
-    const day = addTrackerDays(endDay, -offset);
-    const value = byDay.get(day);
-    points.push({ day, value: value === undefined ? null : Math.round(value * 1000) / 1000 });
-  }
-  return points;
-}
-
-/**
- * Серія — до **останнього запису**, а не до сьогодні.
- *
- * Інакше людина, яка записала вчора, бачила б нуль: сьогоднішній день ще не
- * прожито, і «нема запису» не означає «нуль кроків».
- */
-export function trackerStreak(entries: readonly TrackerDayValue[], endDay: string): number {
-  const days = new Set(entries.map((entry) => entry.day));
-  let cursor = days.has(endDay) ? endDay : addTrackerDays(endDay, -1);
-  let streak = 0;
-  while (days.has(cursor)) {
-    streak++;
-    cursor = addTrackerDays(cursor, -1);
-  }
-  return streak;
-}
-
-/** Середнє вікна — по **днях із записом**, а не по окремих дотиках. */
-function windowAverage(
-  totals: ReadonlyMap<string, number>,
-  from: string,
-  to: string,
-): number | null {
-  const values: number[] = [];
-  for (const [day, value] of totals) {
-    if (day >= from && day <= to) values.push(value);
-  }
-  if (values.length === 0) return null;
-  return values.reduce((sum, value) => sum + value, 0) / values.length;
-}
-
-/** Звіт за вікно; попереднє вікно тієї ж довжини дає «краще/гірше». */
-export function trackerReport(
-  entries: readonly TrackerDayValue[],
-  options: { endDay: string; days: number; goal: number | null },
-): TrackerReport {
-  const { endDay, days, goal } = options;
-  const series = buildTrackerSeries(entries, endDay, days);
-  const filled = series.filter(
-    (point): point is { day: string; value: number } => point.value !== null,
-  );
-  const total = filled.reduce((sum, point) => sum + point.value, 0);
-  const start = addTrackerDays(endDay, -(days - 1));
-
-  let peak: TrackerDayValue | null = null;
-  for (const point of filled) {
-    if (!peak || point.value > peak.value) peak = { day: point.day, value: point.value };
-  }
-
-  const goalDays = goal === null ? 0 : filled.filter((point) => point.value >= goal).length;
-  const previousTo = addTrackerDays(start, -1);
-  const previousFrom = addTrackerDays(previousTo, -(days - 1));
-  const current = filled.length ? total / filled.length : null;
-  const previous = windowAverage(trackerDayTotals(entries), previousFrom, previousTo);
-  const changePct =
-    current !== null && previous !== null && previous > 0
-      ? Math.round(((current - previous) / previous) * 1000) / 10
-      : null;
-
-  return {
-    days,
-    filled: filled.length,
-    total: Math.round(total * 100) / 100,
-    average: current === null ? null : Math.round(current * 100) / 100,
-    peak,
-    streak: trackerStreak(entries, endDay),
-    goalDays,
-    goalRate: goal === null || filled.length === 0 ? null : goalDays / days,
-    changePct,
-  };
+): T[] {
+  const from = addTrackerDays(endDay, -(days - 1));
+  return sortedTrackerEntries(entries).filter((entry) => entry.day >= from && entry.day <= endDay);
 }
 
 /** Число для екрана: без зайвих нулів, з розділювачем тисяч. */

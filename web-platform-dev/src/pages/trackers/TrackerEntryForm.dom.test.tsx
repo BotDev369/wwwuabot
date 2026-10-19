@@ -1,9 +1,9 @@
 // @vitest-environment jsdom
 /**
- * Форма дня: одиниця у підписі, зміна кожного поля — окремим патчем.
+ * Форма запису: одиниця у підписі, зміна поля — окремим патчем.
  *
- * Патч, а не ціла чернетка: поле, яке надсилає весь об'єкт, затирає день, який
- * людина щойно обрала в історії.
+ * Поля дати тут немає навмисно: вимір стається зараз, і день ставить сервер —
+ * клієнт не має чим його підробити.
  *
  * @module web-platform-dev/src/pages/trackers/TrackerEntryForm.dom.test
  */
@@ -28,14 +28,14 @@ const water: Tracker = {
   max: 20,
   icon: "droplet",
   isBuiltin: true,
+  mode: "sum",
 };
 
 function renderForm() {
   render(
     <TrackerEntryForm
       tracker={water}
-      draft={{ day: "2026-10-17", value: "1.5", note: "" }}
-      maxDay="2026-10-17"
+      draft={{ value: "1.5", note: "" }}
       saving={false}
       onChange={handlers.change}
       onSubmit={handlers.submit}
@@ -47,17 +47,23 @@ beforeEach(() => {
   vi.clearAllMocks();
 });
 
-describe("запис дня", () => {
+describe("форма запису", () => {
   it("підпис значення каже одиницю, а не «значення» без мірки", () => {
     renderForm();
     expect(screen.getByLabelText("Значення, л")).toBeTruthy();
   });
 
+  it("⛔ поля дати немає — день ставить сервер, а не людина", () => {
+    renderForm();
+    expect(screen.queryByLabelText("День")).toBeNull();
+    expect(screen.queryByRole("button", { name: /день/i })).toBeNull();
+  });
+
   it("зміна кожного поля — окремий патч", async () => {
     renderForm();
 
-    fireEvent.change(screen.getByLabelText("День"), { target: { value: "2026-10-16" } });
-    expect(handlers.change).toHaveBeenCalledWith({ day: "2026-10-16" });
+    fireEvent.change(screen.getByLabelText("Значення, л"), { target: { value: "2" } });
+    expect(handlers.change).toHaveBeenCalledWith({ value: "2" });
 
     await userEvent.type(screen.getByLabelText("Нотатка"), "після бігу");
     // Чернетка контрольована сторінкою: тут перевіряємо, що кожен дотик дає

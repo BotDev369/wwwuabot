@@ -141,13 +141,12 @@ describe("трекери людини", () => {
   });
 });
 
-describe("запис дня", () => {
+describe("запис", () => {
   it("значення поза межами трекера не доходить до бази", async () => {
     const db = database();
     const response = await handleTrackerEntry(
       request("POST", "https://example.com/api/user/trackers/entry", {
         trackerId: 4,
-        day: todayTrackerDay(),
         value: 9,
       }),
       db.env,
@@ -157,7 +156,7 @@ describe("запис дня", () => {
     expect(db.calls.some((call) => call.sql.includes("INSERT INTO tracker_entries"))).toBe(false);
   });
 
-  it("⛔ майбутній день записати не можна", async () => {
+  it("⛔ день із тіла клієнта ігнорується — його ставить сервер", async () => {
     const db = database();
     const response = await handleTrackerEntry(
       request("POST", "https://example.com/api/user/trackers/entry", {
@@ -168,8 +167,10 @@ describe("запис дня", () => {
       db.env,
     );
 
-    expect(response.status).toBe(400);
-    expect(db.calls.some((call) => call.sql.includes("INSERT INTO tracker_entries"))).toBe(false);
+    expect(response.status).toBe(200);
+    const insert = db.calls.find((call) => call.sql.includes("INSERT INTO tracker_entries"));
+    // Третє значення INSERT — день: саме сьогоднішній, а не «завтра» з тіла.
+    expect(insert?.values[2]).toBe(todayTrackerDay());
   });
 
   it("збереження — новий рядок із моментом часу, а не правка дня", async () => {
@@ -178,7 +179,6 @@ describe("запис дня", () => {
     const response = await handleTrackerEntry(
       request("POST", "https://example.com/api/user/trackers/entry", {
         trackerId: 4,
-        day,
         value: 3,
         note: "  спокійно  ",
       }),

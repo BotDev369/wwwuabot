@@ -36,6 +36,7 @@ const water: Tracker = {
   max: 20,
   icon: "droplet",
   isBuiltin: true,
+  mode: "sum",
 };
 
 const state = {
@@ -130,7 +131,7 @@ describe("звіт", () => {
   });
 });
 
-describe("запис дня", () => {
+describe("запис", () => {
   it("⛔ поле приходить порожнім, а дотик додає новий рядок", async () => {
     render(<TrackerPage />);
 
@@ -139,9 +140,17 @@ describe("запис дня", () => {
     await userEvent.type(screen.getByLabelText("Значення, л"), "0.5");
     await userEvent.click(screen.getByRole("button", { name: "Зберегти" }));
 
-    expect(hooks.save).toHaveBeenCalledWith("2026-10-17", 0.5, "");
+    // День не їде в запит: його ставить сервер, тож форма його не питає.
+    expect(hooks.save).toHaveBeenCalledWith(0.5, "");
     expect((screen.getByLabelText("Значення, л") as HTMLInputElement).value).toBe("");
     expect(screen.queryByText("Збережено")).toBeNull();
+  });
+
+  it("⛔ поля дати на екрані немає — його не обирають, його фіксує момент", () => {
+    render(<TrackerPage />);
+
+    expect(screen.queryByLabelText("День")).toBeNull();
+    expect(screen.queryByText("Запис дня")).toBeNull();
   });
 
   it("порожнє поле не стає нулем — екран каже про це", async () => {
@@ -153,13 +162,12 @@ describe("запис дня", () => {
     expect(hooks.alert).toHaveBeenCalled();
   });
 
-  it("дотик історії підставляє свій день — для наступного запису", async () => {
-    render(<TrackerPage />);
+  it("⛔ рядок історії — не кнопка: минулий вимір не редагується, лише прибирається", () => {
+    const { container } = render(<TrackerPage />);
+    const first = container.querySelector(".wb-tracker-history-row") as HTMLElement;
 
-    await userEvent.click(screen.getByRole("button", { name: /^16\.10/ }));
-
-    expect((screen.getByLabelText("День") as HTMLInputElement).value).toBe("2026-10-16");
-    expect((screen.getByLabelText("Значення, л") as HTMLInputElement).value).toBe("");
+    expect(within(first).queryByRole("button", { name: /16\.10/ })).toBeNull();
+    expect(within(first).getByRole("button", { name: /Прибрати запис/ })).toBeTruthy();
   });
 
   it("історія показує час дотика", () => {

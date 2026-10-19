@@ -1,14 +1,30 @@
 /**
- * Власний трекер — форма з чотирьох полів: назва, одиниця, ціль, крок.
- *
- * Перевіряє та сама `validateTrackerFields`, що й сервер: поле не дає
- * надіслати те, що база однаково відхилить (AGENTS.md §3).
+ * Власний трекер: назва, одиниця, ціль, крок і вид запису. Перевіряє форму та
+ * сама `validateTrackerFields`, що й сервер (AGENTS.md §3). Вид питаємо прямо:
+ * «додавати за день» і «показувати останній» — різні речі, не вгадані за ціллю.
  *
  * @module web-platform-dev/src/pages/trackers/TrackerCreateForm
  */
 
 import { useState, type FormEvent, type ReactElement } from "react";
-import { validateTrackerFields, type Tracker, type TrackerFields } from "@wwwuabot/shared/trackers";
+import { Tabs, type TabOption } from "@wwwuabot/ui/tabs";
+import {
+  validateTrackerFields,
+  type Tracker,
+  type TrackerFields,
+  type TrackerMode,
+} from "@wwwuabot/shared/trackers";
+
+const MODE_TABS: readonly TabOption<TrackerMode>[] = [
+  { key: "sum", label: "Додавати за день" },
+  { key: "read", label: "Показувати останній" },
+];
+
+/** Що обраний вид означає для людини — прикладами, а не визначенням. */
+const MODE_HINT: Record<TrackerMode, string> = {
+  sum: "Записи одного дня додаються: вода, кроки, витрати.",
+  read: "Видно останнє значення: вага, тиск, настрій.",
+};
 
 interface TrackerCreateFormProps {
   onCreate: (fields: TrackerFields) => Promise<Tracker | null>;
@@ -34,6 +50,7 @@ export function TrackerCreateForm({
   // Без дефолтної цифри: порожній крок — це крок 1 (`?? 1` нижче), а число в
   // полі, яке ніхто не міняв, читається як чиясь вимога, а не як типовий вибір.
   const [step, setStep] = useState("");
+  const [mode, setMode] = useState<TrackerMode>("sum");
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
 
@@ -46,6 +63,7 @@ export function TrackerCreateForm({
       goal: numberOrNull(goal),
       step: numberOrNull(step) ?? 1,
       min: 0,
+      mode,
     });
     if (!validated.ok) {
       setError(validated.message);
@@ -104,6 +122,11 @@ export function TrackerCreateForm({
           placeholder="1"
         />
       </label>
+      <div className="wb-field">
+        <span className="wb-label">Як читати записи</span>
+        <Tabs options={MODE_TABS} value={mode} onChange={setMode} label="Як читати записи" />
+        <p className="wb-text-muted">{MODE_HINT[mode]}</p>
+      </div>
       {error && <p className="wb-input-error">{error}</p>}
       <div className="wb-tracker-form-actions">
         <button type="button" className="wb-btn wb-btn-secondary" onClick={onCancel}>

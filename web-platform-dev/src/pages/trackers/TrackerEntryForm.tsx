@@ -1,8 +1,8 @@
 /**
- * Запис дня: дата, значення, нотатка. Той самий рядок править уже наявний день.
+ * Запис: значення й нотатка, без поля дати.
  *
- * Чернетка живе в сторінці, бо її ж заповнює вибір рядка в історії — двоє
- * власників одного поля розійшлися б.
+ * Екран, на якому стоїш, уже відповідає на питання «коли»: вимір стається зараз,
+ * а денна сума (вода, кроки) — теж сьогоднішня. Дату фіксує момент запису.
  *
  * @module web-platform-dev/src/pages/trackers/TrackerEntryForm
  */
@@ -12,7 +12,6 @@ import { Icon } from "@wwwuabot/shared";
 import type { Tracker } from "@wwwuabot/shared/trackers";
 
 export interface EntryDraft {
-  day: string;
   value: string;
   note: string;
 }
@@ -20,7 +19,6 @@ export interface EntryDraft {
 interface TrackerEntryFormProps {
   tracker: Tracker;
   draft: EntryDraft;
-  maxDay: string;
   saving: boolean;
   onChange: (patch: Partial<EntryDraft>) => void;
   onSubmit: () => void;
@@ -29,7 +27,6 @@ interface TrackerEntryFormProps {
 export function TrackerEntryForm({
   tracker,
   draft,
-  maxDay,
   saving,
   onChange,
   onSubmit,
@@ -42,16 +39,6 @@ export function TrackerEntryForm({
   return (
     <form className="wb-tracker-entry" onSubmit={submit}>
       <div className="wb-tracker-entry-row">
-        <label className="wb-field">
-          <span className="wb-label">День</span>
-          <input
-            className="wb-input"
-            type="date"
-            value={draft.day}
-            max={maxDay}
-            onChange={(event) => onChange({ day: event.target.value })}
-          />
-        </label>
         <label className="wb-field">
           <span className="wb-label">Значення{tracker.unit ? `, ${tracker.unit}` : ""}</span>
           {/* Без `min`/`max`/`step`: нативна підказка «введіть дійсне значення»

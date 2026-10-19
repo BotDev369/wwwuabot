@@ -30,7 +30,7 @@ export interface TrackersState extends TrackersPayload {
   reload: () => Promise<void>;
   create: (fields: TrackerFields) => Promise<Tracker | null>;
   archive: (id: number) => Promise<boolean>;
-  /** Швидкий запис із картки: новий дотик сьогоднішнього дня. */
+  /** Швидкий запис із картки: новий вимір (день і момент ставить сервер). */
   addEntry: (trackerId: number, value: number) => Promise<TrackerEntry | null>;
 }
 
@@ -42,7 +42,6 @@ export function useTrackers(): TrackersState {
   // отримати трекер («+» форми не чекає завантаження), а порожній день
   // зламав би побудову серії (`addTrackerDays("")` — Invalid time value).
   const [endDay, setEndDay] = useState(() => todayTrackerDay());
-  const endDayRef = useRef(endDay);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const generation = useRef(0);
@@ -56,7 +55,6 @@ export function useTrackers(): TrackersState {
       setTrackers(result.trackers);
       setEntries(result.entries);
       setEndDay(result.endDay);
-      endDayRef.current = result.endDay;
       setError(null);
     } catch {
       if (request === generation.current) setError("Не вдалося завантажити трекери.");
@@ -113,7 +111,7 @@ export function useTrackers(): TrackersState {
       const result = await apiFetch<{ entry: TrackerEntry }>("/api/user/trackers/entry", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ trackerId, day: endDayRef.current, value, note: "" }),
+        body: JSON.stringify({ trackerId, value, note: "" }),
       });
       setEntries((current) => [...current, { ...result.entry, trackerId }]);
       return result.entry;

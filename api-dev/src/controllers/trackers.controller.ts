@@ -1,8 +1,8 @@
 /**
  * Трекери: `GET` стрічки, `POST` власного трекера, `DELETE` — прибрати.
- * Друга ручка — дотики днів (`/api/user/trackers/entry`): збереження додає
- * новий рядок (день можна записувати багато разів), прибирання — за номером
- * запису. Власника дає лише підписаний `initData`.
+ * Друга ручка — записи (`/api/user/trackers/entry`): збереження додає **новий
+ * вимір** (тіло — лише `trackerId`, `value`, `note`; день і момент ставить
+ * сервер), прибирання — за номером запису. Власника дає лише підписаний `initData`.
  *
  * @module api-dev/src/controllers/trackers.controller
  */
@@ -13,7 +13,6 @@ import {
   TRACKER_LIMITS,
   addTrackerDays,
   isValidTrackerDay,
-  isWritableTrackerDay,
   todayTrackerDay,
   trackerValue,
   validateTrackerFields,
@@ -33,16 +32,15 @@ import {
   removeTrackerEntry,
 } from "../services/trackers.service";
 
-/** Вікно стрічки: серія, серія днів і «чи записано сьогодні». */
+/** Вікно стрічки: чи записано сьогодні й останній вимір кожного трекера. */
 const LIST_DAYS = 30;
 
-/** Історія одного трекера: 400 днів — серія й порівняння з минулим вікном. */
+/** Історія одного трекера: 400 днів — лінія за довге вікно й зсув за рік. */
 const HISTORY_DAYS = 400;
 
 const anyObject = z.object({}).passthrough();
 const entryBody = z.object({
   trackerId: z.number(),
-  day: z.string(),
   value: z.number(),
   note: z.string().optional(),
 });
@@ -146,12 +144,9 @@ export async function handleTrackerEntry(request: Request, env: Env): Promise<Re
 
     const parsed = await readBody(request, entryBody);
     if (!parsed.ok) return parsed.response;
-    const { trackerId, day, note = "" } = parsed.body;
+    const { trackerId, note = "" } = parsed.body;
     if (!Number.isInteger(trackerId) || trackerId <= 0) {
       return json({ ok: false, error: "Invalid tracker" }, 400);
-    }
-    if (!isWritableTrackerDay(day)) {
-      return json({ ok: false, error: "День записати не можна." }, 400);
     }
     if (note.length > TRACKER_LIMITS.note) {
       return json({ ok: false, error: "Нотатка задовга." }, 400);
@@ -165,14 +160,7 @@ export async function handleTrackerEntry(request: Request, env: Env): Promise<Re
       return json({ ok: false, error: "Значення поза межами трекера." }, 400);
     }
 
-    const entry = await insertTrackerEntry(
-      env,
-      identity.userId,
-      trackerId,
-      day,
-      value,
-      note.trim(),
-    );
+    const entry = await insertTrackerEntry(env, identity.userId, trackerId, value, note.trim());
     if (!entry) return json({ ok: false, error: "Not found" }, 404);
     return json({ ok: true, entry });
   } catch (error: unknown) {

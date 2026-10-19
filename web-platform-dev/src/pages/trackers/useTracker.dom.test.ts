@@ -1,10 +1,10 @@
 // @vitest-environment jsdom
 /**
- * Хук одного трекера: запис дня — **новий дотик**, а не правка минулого.
+ * Хук одного трекера: новий запис — **новий вимір**, а не правка минулого.
  *
- * За день можна записати багато разів (вода тричі, кроки ввечері), тож лічильник
- * історії росте, а не перезаписується. Час дотику ставить сервер — клієнт його
- * не вигадує.
+ * День можна записувати багато разів (вода тричі, зважування ввечері), тож
+ * історія росте, а не перезаписується. Ні день, ні час не приходять від
+ * клієнта — їх ставить сервер.
  *
  * @module web-platform-dev/src/pages/trackers/useTracker.dom.test
  */
@@ -31,6 +31,7 @@ const water: Tracker = {
   max: 20,
   icon: "droplet",
   isBuiltin: true,
+  mode: "sum",
 };
 
 beforeEach(() => {
@@ -60,7 +61,7 @@ describe("один трекер", () => {
     expect(view.result.current.error).toBe("Трекера не знайдено.");
   });
 
-  it("⛔ другий дотик того самого дня — новий рядок, а не правка", async () => {
+  it("⛔ другий запис того самого дня — новий рядок, а не правка", async () => {
     const view = renderHook(() => useTracker(1));
     await waitFor(() => expect(view.result.current.loading).toBe(false));
 
@@ -68,14 +69,14 @@ describe("один трекер", () => {
       entry: { id: 12, day: "2026-10-16", value: 2, note: "", loggedAt: "2026-10-16 21:30:00" },
     });
     await act(async () => {
-      await view.result.current.save("2026-10-16", 2, "");
+      await view.result.current.save(2, "");
     });
 
     expect(view.result.current.entries).toHaveLength(2);
     expect(view.result.current.entries.map((entry) => entry.id)).toEqual([11, 12]);
   });
 
-  it("новий день стає в історію за порядком", async () => {
+  it("⛔ у запиті немає дня — його ставить сервер, а не годинник клієнта", async () => {
     const view = renderHook(() => useTracker(1));
     await waitFor(() => expect(view.result.current.loading).toBe(false));
 
@@ -83,9 +84,13 @@ describe("один трекер", () => {
       entry: { id: 12, day: "2026-10-17", value: 2, note: "", loggedAt: "2026-10-17 08:00:00" },
     });
     await act(async () => {
-      await view.result.current.save("2026-10-17", 2, "");
+      await view.result.current.save(2, "");
     });
 
+    expect(mocks.request).toHaveBeenCalledWith(
+      "/api/user/trackers/entry",
+      expect.objectContaining({ body: JSON.stringify({ trackerId: 1, value: 2, note: "" }) }),
+    );
     expect(view.result.current.entries.map((entry) => entry.day)).toEqual([
       "2026-10-16",
       "2026-10-17",
@@ -98,7 +103,7 @@ describe("один трекер", () => {
 
     mocks.request.mockRejectedValueOnce(new Error("Значення поза межами трекера."));
     await act(async () => {
-      await view.result.current.save("2026-10-17", 99, "");
+      await view.result.current.save(99, "");
     });
 
     expect(mocks.alert).toHaveBeenCalledWith("Значення поза межами трекера.", { tone: "danger" });

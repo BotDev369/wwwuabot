@@ -312,7 +312,8 @@ export const TABLES = {
   trackers: {
     name: "trackers",
     owner: "api-dev",
-    purpose: "Трекери людини: назва, одиниця, крок, ціль і межі — одна модель на всі мірки.",
+    purpose:
+      "Трекери людини: назва, одиниця, крок, ціль, межі й `mode` (як читати записи: сума дня чи останній вимір) — одна модель на всі мірки.",
     create: `CREATE TABLE IF NOT EXISTS trackers (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         owner_id TEXT NOT NULL,
@@ -323,6 +324,7 @@ export const TABLES = {
         goal REAL,
         min_value REAL NOT NULL DEFAULT 0,
         max_value REAL,
+        mode TEXT NOT NULL DEFAULT 'sum',
         icon TEXT NOT NULL DEFAULT 'bar-chart',
         is_builtin INTEGER NOT NULL DEFAULT 0,
         is_active INTEGER NOT NULL DEFAULT 1,
@@ -336,8 +338,9 @@ export const TABLES = {
   },
 
   /**
-   * Дотики трекерів: рядок на день + момент запису (`logged_at`, із секундами).
-   * За день їх може бути багато — аналітика бере суму, а не останній дотик.
+   * Записи трекерів: **один рядок = один вимір** із моментом (`logged_at`,
+   * секунди), а `day` — лише кошик дня, який ставить сервер. Скільки записів на
+   * день і як їх зводити, каже `trackers.mode`.
    * `UNIQUE (tracker_id, day)` прибрала перебудова
    * `scripts/migrations/2026-10-17-tracker-entries-01-copy.sql` (див. `docs/D1_OPS.md`).
    */

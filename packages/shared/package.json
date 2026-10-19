@@ -10,6 +10,7 @@
     "./notes": "./src/notes/index.ts",
     "./favorites": "./src/favorites.ts",
     "./trackers": "./src/trackers.ts",
+    "./trackers/analytics": "./src/trackers/analytics.ts",
     "./contacts": "./src/contacts/index.ts",
     "./messages": "./src/messages/index.ts",
     "./files": "./src/files/index.ts",

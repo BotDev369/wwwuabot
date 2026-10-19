@@ -36,6 +36,7 @@ const water: Tracker = {
   max: 20,
   icon: "droplet",
   isBuiltin: true,
+  mode: "sum",
 };
 
 const sleep: Tracker = {
@@ -49,6 +50,7 @@ const sleep: Tracker = {
   max: 24,
   icon: "moon",
   isBuiltin: true,
+  mode: "sum",
 };
 
 const state = {

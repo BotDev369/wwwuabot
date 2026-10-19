@@ -32,6 +32,7 @@ const created: Tracker = {
   max: null,
   icon: "bar-chart",
   isBuiltin: false,
+  mode: "sum",
 };
 
 beforeEach(() => {
@@ -58,7 +59,7 @@ describe("свій трекер", () => {
     expect(screen.getByText("Назва — від 1 до 40 символів.")).toBeTruthy();
   });
 
-  it("створює з назвою, одиницею й ціллю", async () => {
+  it("створює з назвою, одиницею, ціллю й видом запису", async () => {
     handlers.create.mockResolvedValueOnce(created);
     renderForm();
 
@@ -74,8 +75,22 @@ describe("свій трекер", () => {
       goal: 3,
       min: 0,
       max: null,
+      mode: "sum",
     });
     expect(handlers.created).toHaveBeenCalledWith(created);
+  });
+
+  it("вид запису перемикається: «показувати останній» їде на сервер своїм словом", async () => {
+    handlers.create.mockResolvedValueOnce(created);
+    renderForm();
+
+    await userEvent.type(screen.getByLabelText("Назва"), "Вага");
+    await userEvent.click(screen.getByRole("tab", { name: "Показувати останній" }));
+    await userEvent.click(screen.getByRole("button", { name: "Створити" }));
+
+    expect(handlers.create).toHaveBeenCalledWith(
+      expect.objectContaining({ title: "Вага", mode: "read" }),
+    );
   });
 
   it("кому в цілі читає як десяткову — так пише телефон", async () => {

@@ -1,7 +1,8 @@
 /**
- * «Трекери» — денний список: підсумок «скільки зі скількох» і рядок на мірку з
- * полем швидкого запису. Аналітика живе на `/trackers/:id`; рядок же не форма:
- * поле стоїть «лункою», а підпис під назвою каже стан дня («сьогодні 2 л»).
+ * «Трекери» — список мірок: підсумок «скільки зі скількох записано сьогодні» і
+ * рядок на мірку з полем швидкого запису. Аналітика живе на `/trackers/:id`;
+ * рядок же не форма: поле стоїть «лункою», а підпис під назвою каже стан мірки —
+ * суму дня («2 л») або останній вимір із його датою («7 кг · вчора»).
  *
  * @module web-platform-dev/src/pages/trackers/TrackersPage
  */
@@ -23,14 +24,15 @@ import { rowStatus, toTrackerRows, type TrackerRowView } from "./trackers-view";
 
 interface QuickRowProps {
   row: TrackerRowView;
+  day: string;
   onOpen: () => void;
   onAdd: (trackerId: number, value: number) => Promise<unknown>;
 }
 
-function TrackerQuickRow({ row, onOpen, onAdd }: QuickRowProps): ReactElement {
+function TrackerQuickRow({ row, day, onOpen, onAdd }: QuickRowProps): ReactElement {
   const [value, setValue] = useState("");
   const [saving, setSaving] = useState(false);
-  const done = row.today !== null;
+  const done = row.recordedToday;
 
   async function submit(event: FormEvent): Promise<void> {
     event.preventDefault();
@@ -58,7 +60,7 @@ function TrackerQuickRow({ row, onOpen, onAdd }: QuickRowProps): ReactElement {
                 <Icon name="check" size={12} />
               </span>
             )}
-            <span className="wb-tracker-card-meta-text">{rowStatus(row)}</span>
+            <span className="wb-tracker-card-meta-text">{rowStatus(row, day)}</span>
           </span>
         </span>
       </button>
@@ -102,7 +104,7 @@ export function TrackersPage(): ReactElement {
   const [params] = useSearchParams();
   const creating = readCreateIntent(params);
   const rows = toTrackerRows(state.trackers, state.entries, state.endDay);
-  const filled = rows.filter((row) => row.today !== null).length;
+  const filled = rows.filter((row) => row.recordedToday).length;
 
   return (
     <div className="wb-page wb-trackers-page">
@@ -130,7 +132,7 @@ export function TrackersPage(): ReactElement {
               <span
                 key={row.tracker.id}
                 className={`wb-tracker-day-seg${
-                  row.today !== null ? " wb-tracker-day-seg--on" : ""
+                  row.recordedToday ? " wb-tracker-day-seg--on" : ""
                 }`}
               />
             ))}
@@ -183,6 +185,7 @@ export function TrackersPage(): ReactElement {
             <TrackerQuickRow
               key={row.tracker.id}
               row={row}
+              day={state.endDay}
               onOpen={() => navigate(trackerPath(row.tracker.id))}
               onAdd={state.addEntry}
             />
