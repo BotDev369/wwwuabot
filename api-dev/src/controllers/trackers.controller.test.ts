@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { todayTrackerDay } from "@wwwuabot/shared/trackers";
+import { TRACKER_CATALOG, todayTrackerDay } from "@wwwuabot/shared/trackers";
 import type { Env } from "../shared/types";
 import { handleTrackerEntry, handleTrackers } from "./trackers.controller";
 
@@ -21,7 +21,6 @@ const TRACKER_ROW = {
 
 function database(
   options: {
-    total?: number;
     tracker?: unknown | null;
     changes?: number;
     lastRowId?: number;
@@ -39,7 +38,6 @@ function database(
           return statement;
         },
         first: async () => {
-          if (sql.includes("COUNT(*)")) return { total: options.total ?? 1 };
           if (sql.includes("FROM trackers"))
             return options.tracker === undefined ? TRACKER_ROW : options.tracker;
           return null;
@@ -80,16 +78,14 @@ describe("трекери людини", () => {
     expect(db.calls).toHaveLength(0);
   });
 
-  it("перший вхід створює стандартні трекери один раз", async () => {
-    const empty = database({ total: 0 });
-    await handleTrackers(request("GET"), empty.env);
-    expect(empty.batches).toEqual([9]);
-
-    const filled = database({ total: 3 });
-    await handleTrackers(request("GET"), filled.env);
-    expect(filled.batches).toHaveLength(0);
+  it("стандартні трекери сіються при кожному вході й не дублюються", async () => {
+    const db = database();
+    await handleTrackers(request("GET"), db.env);
+    // Каталог їде й до наявних баз: так нові мірки з'являються в уже
+    // створених людей, а `INSERT OR IGNORE` не дублює наявні.
+    expect(db.batches).toEqual([TRACKER_CATALOG.length]);
     // Стрічка й записи звужені підписом, а не параметром запиту.
-    const list = filled.calls.find((call) => call.sql.includes("FROM trackers WHERE owner_id"));
+    const list = db.calls.find((call) => call.sql.includes("FROM trackers WHERE owner_id"));
     expect(list?.values).toEqual(["777"]);
   });
 

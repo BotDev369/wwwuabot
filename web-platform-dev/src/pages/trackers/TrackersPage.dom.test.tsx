@@ -1,12 +1,10 @@
 // @vitest-environment jsdom
 /**
- * «Трекери»: рядок на мірку — знак, назва, стан дня й порожнє поле запису.
+ * «Трекери»: група тематики й плитка «знак + назва» — більше нічого.
  *
- * Ламається мовчки саме тут: дефолтне число в полі читається як чиясь вимога,
- * кнопка без значення стає порожнім дотиком, а дотик по полю не повинен
- * відкривати сторінку трекера. Підпис під назвою — це стан («ціль 8 год» до
- * запису, «сьогодні 2 л» після), а не аналітика: графіка й звіту на стрічці
- * немає, і це перевіряється відсутністю, а не сподіванням.
+ * Поле запису зі стрічки прибрано (запис живе на сторінці трекера), тож тут
+ * перевіряємо відсутністю: ні поля, ні кнопки «Записати», ні підписів стану.
+ * Групи йдуть порядком каталогу, «Свої» — останні; смуга дня лишається.
  *
  * @module web-platform-dev/src/pages/trackers/TrackersPage.dom.test
  */
@@ -22,7 +20,6 @@ const hooks = {
   create: vi.fn(),
   reload: vi.fn(),
   archive: vi.fn(),
-  addEntry: vi.fn(async () => ({ id: 9, day: "2026-10-17", value: 0.5, note: "", loggedAt: null })),
 };
 
 const water: Tracker = {
@@ -53,6 +50,34 @@ const sleep: Tracker = {
   mode: "sum",
 };
 
+const steps: Tracker = {
+  id: 3,
+  key: "steps",
+  title: "Кроки",
+  unit: "кроків",
+  step: 500,
+  goal: 8000,
+  min: 0,
+  max: 100000,
+  icon: "footsteps",
+  isBuiltin: true,
+  mode: "sum",
+};
+
+const coffee: Tracker = {
+  id: 4,
+  key: "own-coffee",
+  title: "Кава",
+  unit: "мл",
+  step: 50,
+  goal: null,
+  min: 0,
+  max: 1000,
+  icon: "bar-chart",
+  isBuiltin: false,
+  mode: "sum",
+};
+
 const state = {
   trackers: [] as Tracker[],
   entries: [] as TrackerEntryRow[],
@@ -62,7 +87,6 @@ const state = {
   reload: hooks.reload,
   create: hooks.create,
   archive: hooks.archive,
-  addEntry: hooks.addEntry,
 };
 
 vi.mock("react-router-dom", () => ({
@@ -95,42 +119,30 @@ beforeEach(() => {
 });
 
 describe("стрічка трекерів", () => {
-  it("рядок — знак, назва й поле; графіка й звіту на ньому немає", () => {
+  it("⛔ картка — лише знак і назва: ні поля, ні кнопки «Записати», ні підписів", () => {
     const { container } = render(<TrackersPage />);
 
-    expect(screen.getByRole("button", { name: /Вода/ })).toBeTruthy();
-    expect(screen.getByLabelText("Записати: Вода")).toBeTruthy();
-    // Графік і звіт лишаються на окремій сторінці трекера; у рядку — лише стан.
+    const card = screen.getByRole("button", { name: /Вода/ });
+    expect(card.textContent).toBe("Вода");
+    expect(container.querySelector(".wb-tracker-card input")).toBeNull();
+    expect(screen.queryByLabelText(/Записати/)).toBeNull();
+    expect(container.querySelector(".wb-tracker-card-meta")).toBeNull();
+    // Графік і звіт лишаються на окремій сторінці трекера.
     expect(container.querySelector(".wb-tracker-chart")).toBeNull();
     expect(container.querySelector(".wb-tracker-stats")).toBeNull();
   });
 
-  it("підпис під назвою каже стан: ціль до запису, суму дня після", () => {
+  it("стрічка групиться тематиками: порядок каталогу, «Свої» останні", () => {
+    state.trackers = [coffee, water, sleep, steps];
     const { container } = render(<TrackersPage />);
-    const cards = [...container.querySelectorAll(".wb-tracker-card")];
-    const meta = (title: string) =>
-      cards
-        .find((card) => card.textContent?.includes(title))
-        ?.querySelector(".wb-tracker-card-meta-text")?.textContent;
 
-    expect(meta("Вода")).toBe("2 л");
-    expect(meta("Сон")).toBe("ціль 8 год");
-    expect(cards[0]?.querySelector(".wb-tracker-card-check")).toBeTruthy();
-    expect(cards[1]?.querySelector(".wb-tracker-card-check")).toBeNull();
-  });
-
-  it("⛔ поле завжди порожнє — дефолтне число в ньому не живе", () => {
-    render(<TrackersPage />);
-
-    expect((screen.getByLabelText("Записати: Вода") as HTMLInputElement).value).toBe("");
-  });
-
-  it("одиниця стоїть підписом поруч із полем, а не дефолтним числом", () => {
-    render(<TrackersPage />);
-
-    expect((screen.getByLabelText("Записати: Вода") as HTMLInputElement).value).toBe("");
-    expect(screen.getByText("л")).toBeTruthy();
-    expect(screen.getByText("год")).toBeTruthy();
+    const groups = [...container.querySelectorAll(".wb-trackers-group")];
+    expect(
+      groups.map((group) => group.querySelector(".wb-trackers-group-title")?.textContent),
+    ).toEqual(["Активність", "Режим", "Свої"]);
+    const own = groups[groups.length - 1];
+    expect(own?.textContent).toContain("Кава");
+    expect(own?.textContent).not.toContain("Вода");
   });
 
   it("скільки записано сьогодні видно в шапці й на смузі дня", () => {
@@ -150,31 +162,12 @@ describe("стрічка трекерів", () => {
     expect(hooks.navigate).toHaveBeenCalledWith("/trackers/1");
   });
 
-  it("порожнє поле не має кнопки надсилання", () => {
-    render(<TrackersPage />);
-
-    expect(screen.queryByRole("button", { name: "Записати Вода" })).toBeNull();
-  });
-
-  it("швидкий запис надсилає число й очищує поле — без підтвердження", async () => {
-    render(<TrackersPage />);
-
-    await userEvent.type(screen.getByLabelText("Записати: Вода"), "0.5");
-    await userEvent.click(screen.getByRole("button", { name: "Записати Вода" }));
-
-    expect(hooks.addEntry).toHaveBeenCalledWith(1, 0.5);
-    expect((screen.getByLabelText("Записати: Вода") as HTMLInputElement).value).toBe("");
-    expect(screen.queryByText("Збережено")).toBeNull();
-  });
-
-  it("ціль стоїть у рядку до запису — а після нього її міняє сума дня", () => {
+  it("ціль і стан дня лише на сторінці трекера, не в стрічці", () => {
     state.entries = [];
     const { container } = render(<TrackersPage />);
 
-    // Стан дня й підпис будуються з тих самих рядків: `rowStatus` і `toTrackerRows`
-    // перевірені в `trackers-view.test.ts`, але рядок мусить їх справді показати.
-    expect(container.querySelector(".wb-tracker-card-meta-text")?.textContent).toBe("ціль 2 л");
-    expect(container.querySelector(".wb-tracker-card-check")).toBeNull();
+    expect(container.querySelector(".wb-tracker-card-meta")).toBeNull();
+    expect(screen.queryByText("ціль 2 л")).toBeNull();
   });
 
   it("порожній список каже, як додати перший, і не малює смугу дня", () => {

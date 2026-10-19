@@ -8,6 +8,17 @@
  */
 
 import type { IconName } from "./components/icon-names";
+import { catalogEntry, TRACKER_LIMITS } from "./trackers/catalog";
+
+// Каталог — дані окремим модулем; споживачі лишаються на цій поверхні.
+export type { TrackerCatalogEntry, TrackerGroup } from "./trackers/catalog";
+export {
+  TRACKER_CATALOG,
+  TRACKER_GROUPS,
+  TRACKER_OWN_GROUP,
+  trackerGroup,
+  TRACKER_LIMITS,
+} from "./trackers/catalog";
 
 /** Поля, які людина задає для будь-якого трекера. */
 export interface TrackerFields {
@@ -31,12 +42,6 @@ export interface TrackerFields {
  * **останній**, а сумувати виміри не можна (два настрої по 4 бали — не 8).
  */
 export type TrackerMode = "sum" | "read";
-
-/** Стандартний трекер: людина отримує його при першому вході. */
-export interface TrackerCatalogEntry extends TrackerFields {
-  key: string;
-  icon: IconName;
-}
 
 /** Трекер людини: рядок `trackers` (ключ унікальний у межах власника). */
 export interface Tracker extends TrackerFields {
@@ -97,124 +102,6 @@ export function isTrackerRange(value: unknown): value is TrackerRange {
   return TRACKER_RANGES.includes(Number(value) as TrackerRange);
 }
 
-export const TRACKER_LIMITS = {
-  title: 40,
-  unit: 8,
-  note: 200,
-  trackers: 60,
-  value: 1_000_000_000,
-} as const;
-
-/**
- * Стандартний набір — те, що людина бачить при першому вході.
- *
- * Це приклади одного механізму, а не закритий перелік: власний трекер
- * додають тим самим полем «назва + одиниця + ціль» (див. `docs/TRACKERS.md`).
- */
-export const TRACKER_CATALOG: readonly TrackerCatalogEntry[] = [
-  {
-    key: "steps",
-    title: "Кроки",
-    unit: "кроків",
-    step: 500,
-    goal: 8000,
-    min: 0,
-    max: 100000,
-    icon: "footsteps",
-    mode: "sum",
-  },
-  {
-    key: "water",
-    title: "Вода",
-    unit: "л",
-    step: 0.25,
-    goal: 2,
-    min: 0,
-    max: 20,
-    icon: "droplet",
-    mode: "sum",
-  },
-  {
-    key: "sleep",
-    title: "Сон",
-    unit: "год",
-    step: 0.5,
-    goal: 8,
-    min: 0,
-    max: 24,
-    icon: "moon",
-    mode: "read",
-  },
-  {
-    key: "weight",
-    title: "Вага",
-    unit: "кг",
-    step: 0.1,
-    goal: null,
-    min: 0,
-    max: 500,
-    icon: "progress",
-    mode: "read",
-  },
-  {
-    key: "mood",
-    title: "Настрій",
-    unit: "бал",
-    step: 1,
-    goal: 4,
-    min: 1,
-    max: 5,
-    icon: "heart",
-    mode: "read",
-  },
-  {
-    key: "energy",
-    title: "Енергія",
-    unit: "бал",
-    step: 1,
-    goal: 4,
-    min: 1,
-    max: 5,
-    icon: "sun",
-    mode: "read",
-  },
-  {
-    key: "workout",
-    title: "Рух",
-    unit: "хв",
-    step: 5,
-    goal: 30,
-    min: 0,
-    max: 600,
-    icon: "flame",
-    mode: "sum",
-  },
-  {
-    key: "reading",
-    title: "Читання",
-    unit: "хв",
-    step: 5,
-    goal: 20,
-    min: 0,
-    max: 600,
-    icon: "book",
-    mode: "sum",
-  },
-  {
-    key: "spend",
-    title: "Витрати",
-    unit: "₴",
-    step: 10,
-    goal: null,
-    min: 0,
-    max: TRACKER_LIMITS.value,
-    icon: "wallet",
-    mode: "sum",
-  },
-];
-
-const CATALOG_BY_KEY = new Map(TRACKER_CATALOG.map((entry) => [entry.key, entry]));
-
 /**
  * Як читати записи цієї мірки.
  *
@@ -229,7 +116,7 @@ export function trackerMode(tracker: {
   mode?: string | null;
 }): TrackerMode {
   if (tracker.mode === "sum" || tracker.mode === "read") return tracker.mode;
-  return CATALOG_BY_KEY.get(tracker.key)?.mode ?? (tracker.goal === null ? "read" : "sum");
+  return catalogEntry(tracker.key)?.mode ?? (tracker.goal === null ? "read" : "sum");
 }
 
 /** Вид із нерозпізнаного вводу: `null` — не вид (його добере `trackerMode`). */

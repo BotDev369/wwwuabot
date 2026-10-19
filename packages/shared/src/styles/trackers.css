@@ -117,23 +117,36 @@
 
 /* ── Стрічка мірок ────────────────────────────────────────────────────────── */
 
-.wb-trackers-list {
+.wb-trackers-group {
   display: flex;
   flex-direction: column;
-  gap: var(--sp-1);
+  gap: var(--sp-2);
+  margin-top: var(--sp-4);
+}
+
+.wb-trackers-group-title {
+  margin: 0;
+  padding: 0 var(--sp-1);
+  color: var(--text-secondary);
+  font-size: var(--text-xs);
+  font-weight: var(--weight-semibold);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+/* По два в рядку: плитка — знак і назва, тож колонка дві й на 360px. */
+.wb-trackers-list {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--sp-2);
   margin: 0;
   padding: 0;
   list-style: none;
 }
 
-/* Рядок — контейнер, а не кнопка: усередині живе поле вводу, і форма всередині
-   кнопки не мала б ні клавіатури, ні дотику. Відкриває заголовок, поле
-   відповідає за свій дотик. */
+/* Плитка групи: поверхня й радіус, а вміст — суцільна кнопка «знак + назва». */
 .wb-tracker-card {
   display: flex;
-  align-items: center;
-  gap: var(--sp-1);
-  padding: var(--sp-1) var(--sp-3);
   border-radius: var(--radius-md);
   background: var(--tracker-surface);
 }
@@ -141,11 +154,12 @@
 .wb-tracker-card-open {
   display: flex;
   flex: 1 1 auto;
-  align-items: center;
-  gap: var(--sp-3);
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--sp-2);
   min-width: 0;
   min-height: 44px;
-  padding: 0;
+  padding: var(--sp-2) var(--sp-3);
   border: none;
   border-radius: var(--radius);
   background: none;
@@ -177,149 +191,16 @@
   color: var(--accent);
 }
 
-.wb-tracker-card-body {
-  display: flex;
-  flex: 1 1 auto;
-  flex-direction: column;
-  gap: 2px;
-  min-width: 0;
-}
-
 .wb-tracker-card-title {
+  display: -webkit-box;
   overflow: hidden;
   color: var(--text-primary);
   font-size: var(--text-base);
   font-weight: var(--weight-semibold);
   line-height: 1.2;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-/* Підпис під назвою — стан, а не аналітика: ціль до запису, сума дня після.
-   Обидва разом на телефоні не вміщались і обрізались під кнопкою. */
-.wb-tracker-card-meta {
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-  min-width: 0;
-  color: var(--text-secondary);
-  font-size: var(--text-xs);
-  line-height: 1.2;
-  white-space: nowrap;
-}
-
-.wb-tracker-card-meta--done {
-  color: var(--text-primary);
-}
-
-.wb-tracker-card-check {
-  display: inline-flex;
-  flex: none;
-  color: var(--accent);
-}
-
-.wb-tracker-card-meta-text {
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-/* ── Швидкий запис ────────────────────────────────────────────────────────── */
-
-/* Ширина поля однакова в усіх рядках: числа стоять стовпчиком, і рядок не
-   «дихає» від того, яка одиниця в мірці. */
-.wb-tracker-quick {
-  display: flex;
-  flex: none;
-  align-items: center;
-  gap: var(--sp-1);
-}
-
-/* Поле — рядок із волосінню, а не плитка: тринадцять залитих полів і були тим
-   «наляпистим» екраном. Лінія каже «тут пишуть», а місце лишається рівним. */
-.wb-tracker-quick-field {
-  display: inline-flex;
-  align-items: center;
-  gap: 3px;
-  flex: none;
-  width: 96px;
-  height: 40px;
-  padding: 0 2px;
-  border-bottom: 1px solid var(--border);
-  border-radius: var(--radius-xs) var(--radius-xs) 0 0;
-  background: none;
-  transition:
-    border-color var(--duration-fast) var(--ease),
-    background-color var(--duration-fast) var(--ease);
-}
-
-/* Фокус: волосінь стає акцентом і під нею з'являється те саме м'яке світло,
-   що в кирпичику поля (`components.css`) — але без рамки навколо рядка. */
-.wb-tracker-quick-field:focus-within {
-  border-bottom-color: var(--accent);
-  background: var(--accent-soft);
-  box-shadow: 0 1px 0 0 var(--accent);
-}
-
-.wb-tracker-quick-input {
-  flex: 1 1 auto;
-  width: 0;
-  min-width: 0;
-  height: 100%;
-  padding: 0;
-  border: 0;
-  background: none;
-  color: var(--text-primary);
-  font-family: inherit;
-  /* Не менше 16px — інакше iOS у Telegram сам збільшує сторінку на фокусі. */
-  font-size: 16px;
-  font-weight: var(--weight-semibold);
-  font-variant-numeric: tabular-nums;
-  text-align: right;
-  /* Стрілки `type=number` у рядку займають місце, якого немає. */
-  appearance: textfield;
-}
-
-.wb-tracker-quick-input::placeholder {
-  color: var(--text-muted);
-  font-weight: var(--weight-medium);
-}
-
-.wb-tracker-quick-input:focus {
-  outline: none;
-}
-
-.wb-tracker-quick-input::-webkit-outer-spin-button,
-.wb-tracker-quick-input::-webkit-inner-spin-button {
-  margin: 0;
-  appearance: none;
-}
-
-.wb-tracker-quick-unit {
-  flex: none;
-  max-width: 44px;
-  overflow: hidden;
-  color: var(--text-secondary);
-  font-size: var(--text-xs);
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-/* Місце під «✓» тримається завжди: кнопка, що з'явилась, зсувала б поле під
-   пальцем — а поле стоїть у рядку, який щойно натиснули. */
-.wb-tracker-quick-action {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  flex: none;
-  width: 40px;
-  height: 40px;
-}
-
-.wb-tracker-quick-submit {
-  width: 40px;
-  height: 40px;
-  padding: 0;
-  border-radius: var(--radius-full);
+  overflow-wrap: anywhere;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
 }
 
 /* ── Панель: спільна поверхня блоків сторінки трекера ─────────────────────── */

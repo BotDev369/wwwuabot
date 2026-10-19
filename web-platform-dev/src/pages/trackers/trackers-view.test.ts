@@ -1,15 +1,14 @@
 import { describe, expect, it } from "vitest";
 import type { Tracker, TrackerEntry, TrackerEntryRow } from "@wwwuabot/shared/trackers";
 import {
-  amountOrDash,
   changeAmountLabel,
   changeLabel,
   dayLabel,
   goalLabel,
+  groupTrackerRows,
   historySince,
   newestFirst,
   readingBand,
-  rowStatus,
   signedAmount,
   timeLabel,
   toTrackerRows,
@@ -58,59 +57,64 @@ function row(trackerId: number, day: string, value: number, time = "09:00"): Tra
 describe("рядки стрічки", () => {
   const entries = [row(1, "2026-10-16", 1.5), row(1, "2026-10-17", 2), row(2, "2026-10-15", 7)];
 
-  it("⛔ день без запису — це `—`, а не нуль", () => {
+  it("⛔ сьогоднішній запис рахується своїй мірці, а не сусідній", () => {
     const [sum, read] = toTrackerRows([water, weight], entries, "2026-10-17");
 
-    expect(sum.today).toBe(2);
     expect(sum.recordedToday).toBe(true);
-    expect(read.today).toBeNull();
     expect(read.recordedToday).toBe(false);
-    expect(amountOrDash(read.today, read.tracker.unit)).toBe("—");
   });
 
-  it("⛔ вимірювальна мірка веде останнім виміром, а не сумою дня", () => {
-    const twice = [
-      row(2, "2026-10-17", 80, "07:51"),
-      { ...row(2, "2026-10-17", 79.5, "21:00"), id: 77 },
-    ];
-    const [read] = toTrackerRows([weight], twice, "2026-10-17");
-
-    expect(read.latest?.value).toBe(79.5);
-    // Сума двох зважувань — 159,5 кг: число, яке не існує в реальності.
-    expect(read.today).toBeNull();
-    expect(rowStatus(read, "2026-10-17")).toBe("79,5 кг · сьогодні");
-  });
-
-  it("⛔ два дотики одного дня — сума в рядку, а не два числа", () => {
-    const twice = [row(1, "2026-10-17", 1), { ...row(1, "2026-10-17", 1), id: 2, value: 1 }];
-    const [sum] = toTrackerRows([water], twice, "2026-10-17");
-
-    expect(sum.today).toBe(2);
-  });
-
-  it("підпис рядка — стан мірки: сума дня для `sum`, останній вимір для `read`", () => {
-    const [sum, read] = toTrackerRows([water, weight], entries, "2026-10-17");
-
-    expect(rowStatus(sum, "2026-10-17")).toBe("2 л");
-    expect(rowStatus(read, "2026-10-17")).toBe("7 кг · 15.10");
-    expect(
-      rowStatus(toTrackerRows([{ ...water, goal: null }], [], "2026-10-17")[0], "2026-10-17"),
-    ).toBe("немає записів");
-  });
-
-  it("записаний нуль — це нуль, а не «не записано»", () => {
+  it("записаний нуль — це «записано», а не «не записано»", () => {
     const zeroed = [row(1, "2026-10-17", 0)];
     const [sum] = toTrackerRows([water], zeroed, "2026-10-17");
 
-    expect(sum.today).toBe(0);
     expect(sum.recordedToday).toBe(true);
-    expect(amountOrDash(sum.today, sum.tracker.unit)).toBe("0 л");
+  });
+});
+
+describe("групи стрічки", () => {
+  const steps: Tracker = {
+    id: 3,
+    key: "steps",
+    title: "Кроки",
+    unit: "кроків",
+    step: 500,
+    goal: 8000,
+    min: 0,
+    max: 100000,
+    icon: "footsteps",
+    isBuiltin: true,
+    mode: "sum",
+  };
+  const coffee: Tracker = {
+    id: 4,
+    key: "own-coffee",
+    title: "Кава",
+    unit: "мл",
+    step: 50,
+    goal: null,
+    min: 0,
+    max: 1000,
+    icon: "bar-chart",
+    isBuiltin: false,
+    mode: "sum",
+  };
+
+  it("порядок тематик — з каталогу, «Свої» завжди останні", () => {
+    const rows = toTrackerRows([weight, water, steps, coffee], [], "2026-10-17");
+    const groups = groupTrackerRows(rows);
+
+    expect(groups.map((group) => group.title)).toEqual(["Активність", "Режим", "Свої"]);
+    expect(groups[2].rows.map((row) => row.tracker.id)).toEqual([2, 4]);
   });
 
-  it("записи одного трекера не потрапляють у сусідній", () => {
-    const [sum, read] = toTrackerRows([water, weight], entries, "2026-10-17");
-    expect(sum.latest?.value).toBe(2);
-    expect(read.latest?.value).toBe(7);
+  it("порожня тематика не показується — порожня полиця це шум", () => {
+    const rows = toTrackerRows([water], [], "2026-10-17");
+    const groups = groupTrackerRows(rows);
+
+    expect(groups).toHaveLength(1);
+    expect(groups[0].title).toBe("Режим");
+    expect(groups[0].rows).toHaveLength(1);
   });
 });
 

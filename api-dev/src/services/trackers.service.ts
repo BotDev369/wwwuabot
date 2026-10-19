@@ -59,10 +59,11 @@ function toTracker(row: TrackerRow): Tracker {
 }
 
 /**
- * Стандартні трекери створюються при **першому** вході.
+ * Стандартні трекери сіються при **кожному** вході в стрічку.
  *
  * `INSERT OR IGNORE` + `UNIQUE (owner_id, key)` робить це ідемпотентним, а
- * прибраний трекер не воскресає: його ключ лишається зайнятим.
+ * прибраний трекер не воскресає: його ключ лишається зайнятим. Саме так
+ * нові мірки каталогу доїжджають до наявних людей, а не лише до порожніх.
  */
 async function seedTrackers(env: Env, userId: number): Promise<void> {
   const now = formatSqliteDatetime();
@@ -90,10 +91,7 @@ async function seedTrackers(env: Env, userId: number): Promise<void> {
 
 export async function listTrackers(env: Env, userId: number): Promise<Tracker[]> {
   await ensureTables(env.DB, ["trackers"]);
-  const count = await env.DB.prepare("SELECT COUNT(*) AS total FROM trackers WHERE owner_id = ?")
-    .bind(String(userId))
-    .first<{ total: number }>();
-  if (Number(count?.total ?? 0) === 0) await seedTrackers(env, userId);
+  await seedTrackers(env, userId);
 
   const rows = await env.DB.prepare(
     `SELECT ${TRACKER_COLUMNS} FROM trackers WHERE owner_id = ? AND is_active = 1 ORDER BY id`,

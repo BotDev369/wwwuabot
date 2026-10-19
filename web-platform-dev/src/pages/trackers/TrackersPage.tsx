@@ -1,13 +1,13 @@
 /**
- * «Трекери» — список мірок: підсумок «скільки зі скількох записано сьогодні» і
- * рядок на мірку з полем швидкого запису. Аналітика живе на `/trackers/:id`;
- * рядок же не форма: поле стоїть «лункою», а підпис під назвою каже стан мірки —
- * суму дня («2 л») або останній вимір із його датою («7 кг · вчора»).
+ * «Трекери» — стрічка мірок тематиками: підсумок «скільки зі скількох
+ * записано сьогодні», заголовок групи й плитка «знак + назва» по два в рядку.
+ * Поле запису зі стрічки прибрано: запис живе на сторінці трекера, де є
+ * і контекст, і місце для історії.
  *
  * @module web-platform-dev/src/pages/trackers/TrackersPage
  */
 
-import { useState, type FormEvent, type ReactElement } from "react";
+import type { ReactElement } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { Icon } from "@wwwuabot/shared";
 import { useScreenChrome } from "@wwwuabot/ui/nav";
@@ -20,82 +20,7 @@ import {
 } from "@/app/routes";
 import { useTrackers } from "./useTrackers";
 import { TrackerCreateForm } from "./TrackerCreateForm";
-import { rowStatus, toTrackerRows, type TrackerRowView } from "./trackers-view";
-
-interface QuickRowProps {
-  row: TrackerRowView;
-  day: string;
-  onOpen: () => void;
-  onAdd: (trackerId: number, value: number) => Promise<unknown>;
-}
-
-function TrackerQuickRow({ row, day, onOpen, onAdd }: QuickRowProps): ReactElement {
-  const [value, setValue] = useState("");
-  const [saving, setSaving] = useState(false);
-  const done = row.recordedToday;
-
-  async function submit(event: FormEvent): Promise<void> {
-    event.preventDefault();
-    const raw = value.replace(",", ".").trim();
-    const parsed = Number(raw);
-    if (!raw || !Number.isFinite(parsed) || saving) return;
-    setSaving(true);
-    const entry = await onAdd(row.tracker.id, parsed);
-    setSaving(false);
-    // Порожнє поле й є підтвердження: «Збережено» в кожному рядку — шум.
-    if (entry) setValue("");
-  }
-
-  return (
-    <li className="wb-tracker-card">
-      <button type="button" className="wb-tracker-card-open" onClick={onOpen}>
-        <span className="wb-tracker-card-icon">
-          <Icon name={row.tracker.icon} size={18} />
-        </span>
-        <span className="wb-tracker-card-body">
-          <span className="wb-tracker-card-title">{row.tracker.title}</span>
-          <span className={`wb-tracker-card-meta${done ? " wb-tracker-card-meta--done" : ""}`}>
-            {done && (
-              <span className="wb-tracker-card-check">
-                <Icon name="check" size={12} />
-              </span>
-            )}
-            <span className="wb-tracker-card-meta-text">{rowStatus(row, day)}</span>
-          </span>
-        </span>
-      </button>
-      {/* Без `min`/`max`/`step`: нативна перевірка поля малювала чужу підказку
-          «введіть дійсне значення» на крок, якого людина не обирала. */}
-      <form className="wb-tracker-quick" onSubmit={(event) => void submit(event)}>
-        <span className="wb-tracker-quick-field">
-          <input
-            className="wb-tracker-quick-input"
-            type="number"
-            inputMode="decimal"
-            step="any"
-            value={value}
-            placeholder="—"
-            aria-label={`Записати: ${row.tracker.title}`}
-            onChange={(event) => setValue(event.target.value)}
-          />
-          <span className="wb-tracker-quick-unit">{row.tracker.unit}</span>
-        </span>
-        <span className="wb-tracker-quick-action">
-          {value.trim() !== "" && (
-            <button
-              type="submit"
-              className="wb-btn wb-btn-primary wb-tracker-quick-submit"
-              disabled={saving}
-              aria-label={`Записати ${row.tracker.title}`}
-            >
-              <Icon name="check" size={16} />
-            </button>
-          )}
-        </span>
-      </form>
-    </li>
-  );
-}
+import { groupTrackerRows, toTrackerRows } from "./trackers-view";
 
 export function TrackersPage(): ReactElement {
   useScreenChrome({ title: "Трекери" });
@@ -104,6 +29,7 @@ export function TrackersPage(): ReactElement {
   const [params] = useSearchParams();
   const creating = readCreateIntent(params);
   const rows = toTrackerRows(state.trackers, state.entries, state.endDay);
+  const groups = groupTrackerRows(rows);
   const filled = rows.filter((row) => row.recordedToday).length;
 
   return (
@@ -180,17 +106,29 @@ export function TrackersPage(): ReactElement {
       )}
 
       {!state.loading && !state.error && rows.length > 0 && (
-        <ul className="wb-trackers-list">
-          {rows.map((row) => (
-            <TrackerQuickRow
-              key={row.tracker.id}
-              row={row}
-              day={state.endDay}
-              onOpen={() => navigate(trackerPath(row.tracker.id))}
-              onAdd={state.addEntry}
-            />
+        <>
+          {groups.map((group) => (
+            <section className="wb-trackers-group" key={group.title}>
+              <h2 className="wb-trackers-group-title">{group.title}</h2>
+              <ul className="wb-trackers-list">
+                {group.rows.map((row) => (
+                  <li className="wb-tracker-card" key={row.tracker.id}>
+                    <button
+                      type="button"
+                      className="wb-tracker-card-open"
+                      onClick={() => navigate(trackerPath(row.tracker.id))}
+                    >
+                      <span className="wb-tracker-card-icon">
+                        <Icon name={row.tracker.icon} size={18} />
+                      </span>
+                      <span className="wb-tracker-card-title">{row.tracker.title}</span>
+                    </button>
+                  </li>
+                ))}
+              </ul>
+            </section>
           ))}
-        </ul>
+        </>
       )}
     </div>
   );

@@ -114,6 +114,8 @@ export const ICON_NAMES = [
   "flame",
   "book",
   "wallet",
+  "thermometer",
+  "lotus",
   "percent",
   "hash",
   "message-square",

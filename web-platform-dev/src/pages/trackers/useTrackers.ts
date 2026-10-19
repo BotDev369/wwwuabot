@@ -12,7 +12,6 @@ import { useDialog } from "@wwwuabot/ui/dialog";
 import {
   todayTrackerDay,
   type Tracker,
-  type TrackerEntry,
   type TrackerEntryRow,
   type TrackerFields,
 } from "@wwwuabot/shared/trackers";
@@ -30,8 +29,6 @@ export interface TrackersState extends TrackersPayload {
   reload: () => Promise<void>;
   create: (fields: TrackerFields) => Promise<Tracker | null>;
   archive: (id: number) => Promise<boolean>;
-  /** Швидкий запис із картки: новий вимір (день і момент ставить сервер). */
-  addEntry: (trackerId: number, value: number) => Promise<TrackerEntry | null>;
 }
 
 export function useTrackers(): TrackersState {
@@ -106,21 +103,5 @@ export function useTrackers(): TrackersState {
     }
   }
 
-  async function addEntry(trackerId: number, value: number): Promise<TrackerEntry | null> {
-    try {
-      const result = await apiFetch<{ entry: TrackerEntry }>("/api/user/trackers/entry", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ trackerId, value, note: "" }),
-      });
-      setEntries((current) => [...current, { ...result.entry, trackerId }]);
-      return result.entry;
-    } catch (e) {
-      const message = e instanceof Error ? e.message : "";
-      await dialog.alert(message || "Не вдалося записати.", { tone: "danger" });
-      return null;
-    }
-  }
-
-  return { trackers, entries, endDay, loading, error, reload, create, archive, addEntry };
+  return { trackers, entries, endDay, loading, error, reload, create, archive };
 }

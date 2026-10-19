@@ -1,7 +1,6 @@
 /**
- * Вигляд трекерів — чисті функції: як назвати стан рядка, зсув виміру й момент
+ * Вигляд трекерів — чисті функції: тематика рядка, зсув виміру й момент
  * запису. День тут — не сутність, а підпис: «сьогодні», «вчора», «05.10».
- * Мірка режиму `read` показує **останній запис** із його датою.
  *
  * @module web-platform-dev/src/pages/trackers/trackers-view
  */
@@ -10,23 +9,18 @@ import {
   addTrackerDays,
   compareTrackerEntries,
   formatTrackerAmount,
-  trackerLatest,
-  trackerMode,
+  TRACKER_GROUPS,
+  TRACKER_OWN_GROUP,
+  trackerGroup,
   type Tracker,
   type TrackerEntry,
   type TrackerEntryRow,
-  type TrackerMode,
 } from "@wwwuabot/shared/trackers";
 
 export interface TrackerRowView {
   tracker: Tracker;
-  mode: TrackerMode;
-  /** Чи є запис за сьогодні — питання до обох видів, а не лише до денної суми. */
+  /** Чи є запис за сьогодні — смуга дня рахує мірки, а не рядки. */
   recordedToday: boolean;
-  /** Сума сьогоднішніх записів (режим `sum`); `null` — сьогодні запису немає. */
-  today: number | null;
-  /** Останній запис — те, що мірка режиму `read` показує замість суми дня. */
-  latest: TrackerEntry | null;
 }
 
 /** Записи одного трекера — без `trackerId`, який рядку вже не потрібен. */
@@ -36,7 +30,7 @@ export function entriesOf(entries: readonly TrackerEntryRow[], trackerId: number
     .map(({ id, day, value, note, loggedAt }) => ({ id, day, value, note, loggedAt }));
 }
 
-/** Рядок стрічки: режим, сума дня (для `sum`) і останній запис (для `read`). */
+/** Рядок стрічки: чи записана мірка сьогодні. */
 export function toTrackerRows(
   trackers: readonly Tracker[],
   entries: readonly TrackerEntryRow[],
@@ -45,19 +39,31 @@ export function toTrackerRows(
   return trackers.map((tracker) => {
     const own = entriesOf(entries, tracker.id);
     // Записаний нуль — це нуль, а не «не записано»: межа, яку легко злити.
-    const todayValues = own.filter((entry) => entry.day === endDay);
-    const todaySum = todayValues.reduce((sum, entry) => sum + entry.value, 0);
-    const mode = trackerMode(tracker);
-    return {
-      tracker,
-      mode,
-      recordedToday: todayValues.length > 0,
-      // Суми дня для вимірювальної мірки немає навмисно: два зважування по
-      // 80 кг — не «160 кг сьогодні», а два виміри, і сума їх брехня.
-      today: mode !== "sum" || todayValues.length === 0 ? null : Math.round(todaySum * 1000) / 1000,
-      latest: trackerLatest(own),
-    };
+    const recordedToday = own.some((entry) => entry.day === endDay);
+    return { tracker, recordedToday };
   });
+}
+
+export interface TrackerGroupView {
+  title: string;
+  rows: TrackerRowView[];
+}
+
+/**
+ * Стрічка тематиками: порядок груп — з каталогу, «Свої» завжди останні,
+ * порожні групи не показуємо — порожня полиця це шум, а не структура.
+ */
+export function groupTrackerRows(rows: readonly TrackerRowView[]): TrackerGroupView[] {
+  const byGroup = new Map<string, TrackerRowView[]>();
+  for (const row of rows) {
+    const title = trackerGroup(row.tracker);
+    const bucket = byGroup.get(title);
+    if (bucket) bucket.push(row);
+    else byGroup.set(title, [row]);
+  }
+  return [...TRACKER_GROUPS, TRACKER_OWN_GROUP]
+    .filter((title) => byGroup.has(title))
+    .map((title) => ({ title, rows: byGroup.get(title) ?? [] }));
 }
 
 /**
@@ -96,20 +102,6 @@ export function amountOrDash(value: number | null, unit: string): string {
 export function goalLabel(tracker: Tracker): string | null {
   if (tracker.goal === null) return null;
   return `ціль ${formatTrackerAmount(tracker.goal, tracker.unit)}`;
-}
-
-/**
- * Підпис рядка стрічки: накопичувальна мірка — суму дня, вимірювальна — останній
- * запис із його датою. Одна формула на два режими була би брехнею: «7 кг» і
- * «7 кг сьогодні» — різні твердження, і друге з них неправдиве.
- */
-export function rowStatus(row: TrackerRowView, endDay: string): string {
-  if (row.mode === "sum") {
-    if (row.today !== null) return formatTrackerAmount(row.today, row.tracker.unit);
-    return goalLabel(row.tracker) ?? "немає записів";
-  }
-  if (!row.latest) return goalLabel(row.tracker) ?? "немає записів";
-  return `${formatTrackerAmount(row.latest.value, row.tracker.unit)} · ${whenLabel(row.latest.day, endDay)}`;
 }
 
 export interface ChartBand {
