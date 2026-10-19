@@ -36,6 +36,11 @@ export const QUALITY_BASELINE = {
     // підписом і поясненням. Логіка збору живе в `api-dev`, а формування —
     // у `@wwwuabot/shared/monitoring/metrics.ts` (лише дані й формат).
     "packages/shared/src/monitoring/metrics.ts",
+    // Каталог трекерів — рядок на мірку (29+ позицій першого входу), без жодної
+    // гілки; пошук за ключем — глухий індекс. Ділити на «таблицю + логіку» не
+    // вийшло б чесно: таблиця потребує `TRACKER_LIMITS`, а сама лежить у
+    // `trackers.ts`, який імпортує індекс — вийшов би цикл модулів.
+    "packages/shared/src/trackers/catalog.ts",
   ],
 
   /**

@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
   TRACKER_CATALOG,
+  TRACKER_GROUPS,
   TRACKER_LIMITS,
   addTrackerDays,
   formatTrackerAmount,
@@ -28,6 +29,10 @@ describe("стандартні трекери", () => {
     expect(new Set(keys).size).toBe(keys.length);
     for (const tracker of TRACKER_CATALOG) {
       expect(tracker.title.length).toBeGreaterThan(0);
+      // Межі — ті самі, що валідує форма: каталог не має права їх ламати.
+      expect(tracker.title.length).toBeLessThanOrEqual(TRACKER_LIMITS.title);
+      expect(tracker.unit.length).toBeLessThanOrEqual(TRACKER_LIMITS.unit);
+      expect(TRACKER_GROUPS).toContain(tracker.group);
       expect(tracker.step).toBeGreaterThan(0);
       expect(tracker.max === null || tracker.max > tracker.min).toBe(true);
       if (tracker.goal !== null) {

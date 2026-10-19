@@ -3,8 +3,10 @@
  * сторінці трекера. За день можна записати скільки завгодно разів —
  * накопичувальна мірка сумує їх, а вимірювальна показує останній.
  *
- * Створені тести трекери прибираються після кожного тесту (`afterEach`):
- * інакше дев-база лишається списком копій, які нікому не потрібні.
+ * **Тести не створюють трекерів.** Кожен сценарій пише записи всередині
+ * наявної мірки з каталогу (`Читання`, `Температура`): чисна звірка йде
+ * від значення перед першим дотиком, тому накопичена історія дев-бази
+ * нічого не ламає, а стрічка не росте копіями від кожного прогону.
  *
  * Передумова — та сама, що в `platform.e2e.ts`: підписана сесія прев'ю
  * (`BOT_TOKEN_DEV` + `PREVIEW_TELEGRAM_ID`).
@@ -16,9 +18,6 @@ import { expect, test, type Page } from "@playwright/test";
 
 const ARTIFACTS = "e2e-artifacts";
 
-/** Назви, створені тестами цього прогону: прибираємо після себе. */
-const created: string[] = [];
-
 /** Помилки сторінки: у прев'ю вони виглядають як білий екран. */
 function watchErrors(page: Page): string[] {
   const errors: string[] = [];
@@ -29,18 +28,11 @@ function watchErrors(page: Page): string[] {
   return errors;
 }
 
-test.afterEach(async ({ page }) => {
-  while (created.length > 0) {
-    const title = created.pop() ?? "";
-    await page.goto("/trackers");
-    const card = page.locator(".wb-tracker-card-open", { hasText: title });
-    if ((await card.count()) === 0) continue;
-    await card.first().click();
-    await page.getByRole("button", { name: /Прибрати трекер/ }).click();
-    await page.getByRole("button", { name: "Прибрати" }).click();
-    await page.waitForURL(/\/trackers$/);
-  }
-});
+/** Перше число з шапки: «12 хв» → 12; без чисна (записів дня ще нема) → 0. */
+async function heroNumber(page: Page): Promise<number> {
+  const text = (await page.locator(".wb-tracker-hero-value").textContent()) ?? "";
+  return Number(text.match(/\d+/)?.[0] ?? 0);
+}
 
 test("трекери: групи тематик, картки «знак + назва» й запис на сторінці трекера", async ({
   page,
@@ -55,7 +47,13 @@ test("трекери: групи тематик, картки «знак + на�
   expect(await cards.count()).toBeGreaterThanOrEqual(5);
   const groupTitles = page.locator(".wb-trackers-group-title");
   await expect(groupTitles.first()).toBeVisible();
-  await expect(groupTitles).toContainText(["Активність", "Самопочуття", "Режим", "Гроші"]);
+  await expect(groupTitles).toContainText([
+    "Активність",
+    "Самопочуття",
+    "Режим",
+    "Розвиток",
+    "Гроші",
+  ]);
   await page.screenshot({ path: `${ARTIFACTS}/10-trackers.png`, fullPage: true });
 
   // Картка — лише знак і назва: записати зі стрічки не можна, підписів стану немає.
@@ -82,48 +80,40 @@ test("трекери: групи тематик, картки «знак + на�
 test("трекери: день приймає кілька дотиків і сумує їх", async ({ page }) => {
   const errors = watchErrors(page);
 
-  // Свіжий трекер — щоб чисна перевірка не залежала від старих записів дня.
-  // Назва з номером прогону: інакше другий прогін знаходив би кілька однакових
-  // рядків і перевіряв би чужу історію (у дев-базі вони вже накопичились).
-  const title = `Присідання ${Date.now().toString().slice(-5)}`;
-  created.push(title);
-  await page.goto("/trackers?new=1");
-  await page.getByLabel("Назва").fill(title);
-  await page.getByLabel("Одиниця").fill("разів");
-  // Вид запису обирають у формі: «додавати за день» — типовий, і саме він тут
-  // потрібен — присідання за день додаються.
-  await expect(page.getByRole("tab", { name: "Додавати за день" })).toHaveAttribute(
-    "aria-selected",
-    "true",
-  );
-  await page.getByRole("button", { name: "Створити" }).click();
+  // Накопичувальна мірка з каталогу: дотики йдуть у її день, а чисна звірка
+  // — від значення перед першим дотиком, тож попередні прогони не заважають.
+  await page.goto("/trackers");
+  await expect(page.locator(".wb-tracker-card").first()).toBeVisible();
+  await page.locator(".wb-tracker-card-open", { hasText: "Читання" }).click();
   await expect(page).toHaveURL(/\/trackers\/\d+$/);
-  await expect(page.locator("h1.wb-appbar__title")).toHaveText(title);
+  // Дані трекера рендеряться одним кадром: поки шапка не з'явилась,
+  // історія ще не завантажилась — і лічильник рядків зафіксував би 0.
+  await expect(page.locator(".wb-tracker-hero-value")).toBeVisible();
 
-  // Два виміри одного дня: шапка показує суму, історія — два рядки.
+  const base = await heroNumber(page);
+  const before = await page.locator(".wb-tracker-history-row").count();
+
   await page.getByLabel(/^Значення/).fill("5");
   await page.getByRole("button", { name: "Зберегти" }).click();
-  await expect(page.locator(".wb-tracker-hero-value")).toHaveText(/5 разів/);
+  await expect.poll(() => heroNumber(page)).toBe(base + 5);
+  await expect(page.locator(".wb-tracker-history-row")).toHaveCount(before + 1);
 
   await page.getByLabel(/^Значення/).fill("4");
   await page.getByRole("button", { name: "Зберегти" }).click();
-  await expect(page.locator(".wb-tracker-hero-value")).toHaveText(/9 разів/);
-  await expect(page.locator(".wb-tracker-history-row")).toHaveCount(2);
+  await expect.poll(() => heroNumber(page)).toBe(base + 9);
+  await expect(page.locator(".wb-tracker-history-row")).toHaveCount(before + 2);
 
   // Третій дотик — теж на сторінці трекера: зі стрічки запису більше немає.
   await page.getByLabel(/^Значення/).fill("3");
   await page.getByRole("button", { name: "Зберегти" }).click();
-  await expect(page.locator(".wb-tracker-hero-value")).toHaveText(/12 разів/);
-  await expect(page.locator(".wb-tracker-history-row")).toHaveCount(3);
+  await expect.poll(() => heroNumber(page)).toBe(base + 12);
+  await expect(page.locator(".wb-tracker-history-row")).toHaveCount(before + 3);
 
-  // Свій трекер живе в групі «Свої», а картка веде на нього самого.
+  // Стрічка після записів та сама: нових трекерів не з'явилось, поле запису
+  // зі списку прибрано — картка лише веде на мірку.
   await page.goto("/trackers");
-  const own = page.locator(".wb-trackers-group-title", { hasText: "Свої" });
-  await expect(own).toHaveCount(1);
-  await page.locator(".wb-tracker-card-open", { hasText: title }).click();
-  await expect(page).toHaveURL(/\/trackers\/\d+$/);
-  await expect(page.locator(".wb-tracker-hero-value")).toHaveText(/12 разів/);
-  await expect(page.locator(".wb-tracker-history-row")).toHaveCount(3);
+  await expect(page.locator(".wb-tracker-card-open", { hasText: "Читання" })).toHaveCount(1);
+  await expect(page.getByLabel(/^Значення/)).toHaveCount(0);
 
   expect(errors).toEqual([]);
 });
@@ -131,28 +121,32 @@ test("трекери: день приймає кілька дотиків і с�
 test("трекери: вимірювальна мірка веде останнім виміром, а не сумою", async ({ page }) => {
   const errors = watchErrors(page);
 
-  // Свій трекер без цілі — типовий вимір («температура», «вага»); вид у формі
-  // перемикається на «показувати останній».
-  const title = `Температура ${Date.now().toString().slice(-5)}`;
-  created.push(title);
-  await page.goto("/trackers?new=1");
-  await page.getByLabel("Назва").fill(title);
-  await page.getByLabel("Одиниця").fill("°");
-  await page.getByRole("tab", { name: "Показувати останній" }).click();
-  await page.getByRole("button", { name: "Створити" }).click();
+  // Вимірювальна мірка з каталогу: два записи одного дня — шапка показує
+  // **останнє**, а не суму; старі виміри цього самого трекера не заважають.
+  await page.goto("/trackers");
+  await expect(page.locator(".wb-tracker-card").first()).toBeVisible();
+  await page.locator(".wb-tracker-card-open", { hasText: "Температура" }).click();
   await expect(page).toHaveURL(/\/trackers\/\d+$/);
+  // Та сама синхронізація, що й у накопичувальній мірці: шапка — знак того,
+  // що й історія вже на екрані.
+  await expect(page.locator(".wb-tracker-hero-value")).toBeVisible();
 
-  // Два виміри одного дня — шапка показує **останнє**, а не їх суму.
+  const before = await page.locator(".wb-tracker-history-row").count();
+
   await page.getByLabel(/^Значення/).fill("36.6");
   await page.getByRole("button", { name: "Зберегти" }).click();
   // Перше збереження очищає поле по завершенні: без цього кроку другий ввід
   // потрапляє в очищення — і сабміт іде з порожньою чернеткою, без запиту.
   await expect(page.getByLabel(/^Значення/)).toHaveValue("");
+  await expect(page.locator(".wb-tracker-hero-value")).toHaveText(/36,6/);
+  await expect(page.locator(".wb-tracker-history-row")).toHaveCount(before + 1);
+
   await page.getByLabel(/^Значення/).fill("37.1");
   await page.getByRole("button", { name: "Зберегти" }).click();
 
   await expect(page.locator(".wb-tracker-hero-label")).toHaveText("Останній запис");
   await expect(page.locator(".wb-tracker-hero-value")).toHaveText(/37,1/);
+  await expect(page.locator(".wb-tracker-history-row")).toHaveCount(before + 2);
   // Суми двох вимірів (73,7) на екрані немає ніде — вона не існує.
   await expect(page.getByText(/73,7/)).toHaveCount(0);
   // Графік вимірів — лінія з точками, а не стовпчики днів.
