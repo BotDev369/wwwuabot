@@ -73,7 +73,9 @@ export function TrackerPage(): ReactElement {
   const todaySum = todayValues.reduce((sum, entry) => sum + entry.value, 0);
   const latest = trackerLatest(entries);
   const previous = trackerPrevious(entries);
-  const windowRecords = trackerWindow(entries, state.endDay, days);
+  // Поки трекер не завантажено, `endDay` порожній: добудова дня з нього кидає
+  // `RangeError: Invalid time value`, і екран падає раніше за свій власний стан завантаження.
+  const windowRecords = state.endDay ? trackerWindow(entries, state.endDay, days) : [];
   const reads = trackerReadingStats(windowRecords);
 
   const history = newestFirst(entries);

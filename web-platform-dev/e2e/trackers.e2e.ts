@@ -125,6 +125,9 @@ test("трекери: вимірювальна мірка веде останн�
   // Два виміри одного дня — шапка показує **останнє**, а не їх суму.
   await page.getByLabel(/^Значення/).fill("36.6");
   await page.getByRole("button", { name: "Зберегти" }).click();
+  // Перше збереження очищає поле по завершенні: без цього кроку другий ввід
+  // потрапляє в очищення — і сабміт іде з порожньою чернеткою, без запиту.
+  await expect(page.getByLabel(/^Значення/)).toHaveValue("");
   await page.getByLabel(/^Значення/).fill("37.1");
   await page.getByRole("button", { name: "Зберегти" }).click();
 

@@ -67,6 +67,7 @@ const { TrackerPage } = await import("./TrackerPage");
 beforeEach(() => {
   vi.clearAllMocks();
   state.tracker = water;
+  state.endDay = "2026-10-17";
   state.loading = false;
   state.error = null;
   state.saving = false;
@@ -117,6 +118,17 @@ describe("звіт", () => {
     render(<TrackerPage />);
 
     expect(screen.getByText(/Записів ще немає/)).toBeTruthy();
+  });
+
+  it("⛔ завантаження без дня не падає: вікно ще не будується", () => {
+    state.tracker = null;
+    state.endDay = "";
+    state.loading = true;
+
+    render(<TrackerPage />);
+
+    // Без підпису тут був `RangeError: Invalid time value` з `addTrackerDays("")`.
+    expect(screen.getByText("Завантаження…")).toBeTruthy();
   });
 
   it("⛔ два дотики одного дня — сума в шапці, два рядки в історії", () => {
