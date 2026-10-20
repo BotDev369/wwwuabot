@@ -28,10 +28,12 @@ function watchErrors(page: Page): string[] {
   return errors;
 }
 
-/** Перше число з шапки: «12 хв» → 12; без чисна (записів дня ще нема) → 0. */
-async function heroNumber(page: Page): Promise<number> {
-  const text = (await page.locator(".wb-tracker-hero-value").textContent()) ?? "";
-  return Number(text.match(/\d+/)?.[0] ?? 0);
+/** Число з клітинки звіту: «2 124 кроків» → 2124, «36,6 °C» → 36.6. */
+async function statNumber(page: Page, label: string): Promise<number> {
+  const cell = page.locator(".wb-tracker-stat").filter({ hasText: label }).last();
+  const text = ((await cell.textContent()) ?? "").replace(/\s/g, "");
+  const match = text.match(/-?\d+(?:,\d+)?/);
+  return match ? Number(match[0].replace(",", ".")) : 0;
 }
 
 test("трекери: групи тематик, картки «знак + назва» й запис на сторінці трекера", async ({
@@ -86,27 +88,27 @@ test("трекери: день приймає кілька дотиків і с�
   await expect(page.locator(".wb-tracker-card").first()).toBeVisible();
   await page.locator(".wb-tracker-card-open", { hasText: "Читання" }).click();
   await expect(page).toHaveURL(/\/trackers\/\d+$/);
-  // Дані трекера рендеряться одним кадром: поки шапка не з'явилась,
+  // Дані трекера рендеряться одним кадром: поки звіт не з'явився,
   // історія ще не завантажилась — і лічильник рядків зафіксував би 0.
-  await expect(page.locator(".wb-tracker-hero-value")).toBeVisible();
+  await expect(page.locator(".wb-tracker-stats")).toBeVisible();
 
-  const base = await heroNumber(page);
+  const base = await statNumber(page, "Усього");
   const before = await page.locator(".wb-tracker-history-row").count();
 
   await page.getByLabel(/^Значення/).fill("5");
   await page.getByRole("button", { name: "Зберегти" }).click();
-  await expect.poll(() => heroNumber(page)).toBe(base + 5);
+  await expect.poll(() => statNumber(page, "Усього")).toBe(base + 5);
   await expect(page.locator(".wb-tracker-history-row")).toHaveCount(before + 1);
 
   await page.getByLabel(/^Значення/).fill("4");
   await page.getByRole("button", { name: "Зберегти" }).click();
-  await expect.poll(() => heroNumber(page)).toBe(base + 9);
+  await expect.poll(() => statNumber(page, "Усього")).toBe(base + 9);
   await expect(page.locator(".wb-tracker-history-row")).toHaveCount(before + 2);
 
   // Третій дотик — теж на сторінці трекера: зі стрічки запису більше немає.
   await page.getByLabel(/^Значення/).fill("3");
   await page.getByRole("button", { name: "Зберегти" }).click();
-  await expect.poll(() => heroNumber(page)).toBe(base + 12);
+  await expect.poll(() => statNumber(page, "Усього")).toBe(base + 12);
   await expect(page.locator(".wb-tracker-history-row")).toHaveCount(before + 3);
 
   // Стрічка після записів та сама: нових трекерів не з'явилось, поле запису
@@ -121,15 +123,15 @@ test("трекери: день приймає кілька дотиків і с�
 test("трекери: вимірювальна мірка веде останнім виміром, а не сумою", async ({ page }) => {
   const errors = watchErrors(page);
 
-  // Вимірювальна мірка з каталогу: два записи одного дня — шапка показує
+  // Вимірювальна мірка з каталогу: два записи одного дня — підсумок показує
   // **останнє**, а не суму; старі виміри цього самого трекера не заважають.
   await page.goto("/trackers");
   await expect(page.locator(".wb-tracker-card").first()).toBeVisible();
   await page.locator(".wb-tracker-card-open", { hasText: "Температура" }).click();
   await expect(page).toHaveURL(/\/trackers\/\d+$/);
-  // Та сама синхронізація, що й у накопичувальній мірці: шапка — знак того,
-  // що й історія вже на екрані.
-  await expect(page.locator(".wb-tracker-hero-value")).toBeVisible();
+  // Та сама синхронізація, що й у накопичувальній мірці: звіт на екрані —
+  // значить, і історія вже завантажена.
+  await expect(page.locator(".wb-tracker-stats")).toBeVisible();
 
   const before = await page.locator(".wb-tracker-history-row").count();
 
@@ -138,14 +140,13 @@ test("трекери: вимірювальна мірка веде останн�
   // Перше збереження очищає поле по завершенні: без цього кроку другий ввід
   // потрапляє в очищення — і сабміт іде з порожньою чернеткою, без запиту.
   await expect(page.getByLabel(/^Значення/)).toHaveValue("");
-  await expect(page.locator(".wb-tracker-hero-value")).toHaveText(/36,6/);
+  await expect.poll(() => statNumber(page, "Останнє")).toBe(36.6);
   await expect(page.locator(".wb-tracker-history-row")).toHaveCount(before + 1);
 
   await page.getByLabel(/^Значення/).fill("37.1");
   await page.getByRole("button", { name: "Зберегти" }).click();
 
-  await expect(page.locator(".wb-tracker-hero-label")).toHaveText("Останній запис");
-  await expect(page.locator(".wb-tracker-hero-value")).toHaveText(/37,1/);
+  await expect.poll(() => statNumber(page, "Останнє")).toBe(37.1);
   await expect(page.locator(".wb-tracker-history-row")).toHaveCount(before + 2);
   // Суми двох вимірів (73,7) на екрані немає ніде — вона не існує.
   await expect(page.getByText(/73,7/)).toHaveCount(0);

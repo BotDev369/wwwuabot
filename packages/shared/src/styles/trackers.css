@@ -215,90 +215,10 @@
   background: var(--tracker-surface);
 }
 
-.wb-tracker-hero {
-  gap: var(--sp-2);
-}
-
 /* Смуга вкладок всередині панелі відступ до вмісту бере з гепу панелі.
    Власний `margin` смуги додався б до нього подвійно. */
 .wb-tracker-panel .wb-tabs {
   margin-bottom: 0;
-}
-
-.wb-tracker-hero-head {
-  display: flex;
-  align-items: center;
-  gap: var(--sp-2);
-}
-
-.wb-tracker-hero-icon {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  flex: none;
-  width: 32px;
-  height: 32px;
-  border-radius: 10px;
-  background: var(--accent-soft);
-  color: var(--accent);
-}
-
-.wb-tracker-hero-label {
-  margin: 0;
-  color: var(--text-secondary);
-  font-size: var(--text-xs);
-  font-weight: var(--weight-semibold);
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-}
-
-/* Головне число дня — найбільше на екрані: це відповідь, за якою людина
-   прийшла на сторінку. `display: block` — бо в розмітці це `span`: бренд
-   тримає всі абзаци на 14px з `!important`. */
-.wb-tracker-hero-value {
-  display: block;
-  margin: 0;
-  color: var(--text-primary);
-  font-size: 2.35rem;
-  font-weight: var(--weight-bold);
-  font-variant-numeric: tabular-nums;
-  letter-spacing: -0.01em;
-  line-height: 1.05;
-  overflow-wrap: anywhere;
-}
-
-.wb-tracker-hero-meta {
-  margin: 0;
-  color: var(--text-secondary);
-  font-size: var(--text-sm);
-}
-
-.wb-tracker-progress {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-  margin-top: var(--sp-1);
-}
-
-.wb-tracker-progress-track {
-  height: 8px;
-  overflow: hidden;
-  border-radius: var(--radius-full);
-  background: var(--tracker-slot);
-}
-
-.wb-tracker-progress-fill {
-  display: block;
-  height: 100%;
-  border-radius: inherit;
-  background: var(--accent);
-  transition: width var(--duration) var(--ease);
-}
-
-.wb-tracker-progress-caption {
-  margin: 0;
-  color: var(--text-secondary);
-  font-size: var(--text-xs);
 }
 
 /* ── Запис дня ────────────────────────────────────────────────────────────── */

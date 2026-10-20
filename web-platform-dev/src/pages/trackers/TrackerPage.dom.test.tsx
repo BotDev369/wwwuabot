@@ -4,7 +4,7 @@
  *
  * Перевіряємо те, що не видно очима в коді: вікно звіту справді міняється
  * (вкладки, а не два місця правди), кілька дотиків одного дня **сумаються**,
- * смуга цілі рахує **день**, поле запису приходить порожнім, а «Прибрати» йде
+ * поле запису приходить порожнім, а «Прибрати» йде
  * через діалог — без нього дотик зникав би одним дотиком.
  *
  * @module web-platform-dev/src/pages/trackers/TrackerPage.dom.test
@@ -98,15 +98,6 @@ describe("звіт", () => {
     expect(screen.getByRole("tab", { name: "30 дн." }).getAttribute("aria-selected")).toBe("false");
   });
 
-  it("смуга цілі показує частку дня, а не число звіту", () => {
-    const { container } = render(<TrackerPage />);
-    const bar = container.querySelector('[role="progressbar"]');
-
-    // 2 л з цілі 2 л — 100%: це сьогодні, а не вікно звіту.
-    expect(bar?.getAttribute("aria-valuetext")).toBe("100%");
-    expect(screen.getByText("ціль виконано")).toBeTruthy();
-  });
-
   it("ціль виконано — число днів, а не середнє", () => {
     render(<TrackerPage />);
 
@@ -131,14 +122,13 @@ describe("звіт", () => {
     expect(screen.getByText("Завантаження…")).toBeTruthy();
   });
 
-  it("⛔ два дотики одного дня — сума в шапці, два рядки в історії", () => {
+  it("⛔ два дотики одного дня — два рядки в історії, а не один", () => {
     state.entries = [
       ...state.entries,
       { id: 4, day: "2026-10-17", value: 0.5, note: "ще склянка", loggedAt: "2026-10-17 13:45:00" },
     ];
     const { container } = render(<TrackerPage />);
 
-    expect(container.querySelector(".wb-tracker-hero-value")?.textContent).toBe("2,5 л");
     expect(container.querySelectorAll(".wb-tracker-history-row")).toHaveLength(4);
   });
 });
