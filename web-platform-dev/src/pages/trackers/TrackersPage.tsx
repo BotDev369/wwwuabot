@@ -24,7 +24,7 @@ import { useTrackers } from "./useTrackers";
 import { useGroupAccordion } from "./useGroupAccordion";
 import { TrackerCreateForm } from "./TrackerCreateForm";
 import { TrackerGroupSection } from "./TrackerGroupSection";
-import { groupRowsTree, matrixDays, toTrackerRows, trackerCells } from "./trackers-view";
+import { groupRowsTree, matrixDays, trackerCells } from "./trackers-view";
 
 /** Ширина матриці: стільки днів уміщується на 360px без горизонтального скролу. */
 const MATRIX_DAYS = 5;
@@ -38,9 +38,12 @@ export function TrackersPage(): ReactElement {
   const accordion = useGroupAccordion();
   const creating = readCreateIntent(params);
 
-  const rows = toTrackerRows(state.trackers, state.entries, state.endDay);
+  const rows = state.trackers;
   const days = useMemo(() => matrixDays(state.endDay, MATRIX_DAYS), [state.endDay]);
-  const tree = useMemo(() => groupRowsTree(rows, state.groups), [rows, state.groups]);
+  const tree = useMemo(
+    () => groupRowsTree(state.trackers, state.groups),
+    [state.trackers, state.groups],
+  );
 
   const cellsOf = useCallback(
     (tracker: Tracker) => trackerCells(tracker, state.entries, days),
@@ -61,47 +64,28 @@ export function TrackersPage(): ReactElement {
 
   return (
     <div className="wb-page wb-trackers-page">
-      {rows.length > 0 && (
-        <section className="wb-tracker-day">
-          <div className="wb-tracker-day-head">
-            {/* `span`, а не `p`: бренд тримає абзаци на 14px з `!important`, і
-                підпис-мітка ставав більшим за число, до якого він веде. */}
-            <span className="wb-tracker-day-label">Сьогодні записано</span>
-            <span className="wb-tracker-day-tools">
-              <button
-                type="button"
-                className="wb-tracker-add wb-tracker-add--ghost"
-                aria-label="Додати групу"
-                onClick={() => void addGroup()}
-              >
-                <Icon name="folder" size={20} />
-              </button>
-              <button
-                type="button"
-                className="wb-tracker-add"
-                aria-label="Додати трекер"
-                onClick={() => navigate(withCreateIntent(TRACKERS_PATH))}
-              >
-                <Icon name="plus" size={22} />
-              </button>
-            </span>
-          </div>
-          <p className="wb-tracker-day-figure">
-            <span className="wb-tracker-day-count">
-              {rows.filter((row) => row.recordedToday).length}
-            </span>
-            <span className="wb-tracker-day-total">з {rows.length}</span>
-          </p>
-          <div className="wb-tracker-day-bar" aria-hidden="true">
-            {rows.map((row) => (
-              <span
-                key={row.tracker.id}
-                className={`wb-tracker-day-seg${row.recordedToday ? " wb-tracker-day-seg--on" : ""}`}
-              />
-            ))}
-          </div>
-        </section>
-      )}
+      {/* Дії екрана — знаки без підпису праворуч: підсумок дня прибрали,
+          але створення лишилось на тому самому місці, де й шукали.
+          Підпис — у `aria-label`: без нього кнопка не має назви для того,
+          хто не бачить знака. */}
+      <div className="wb-trackers-tools">
+        <button
+          type="button"
+          className="wb-tracker-add wb-tracker-add--ghost"
+          aria-label="Додати групу"
+          onClick={() => void addGroup()}
+        >
+          <Icon name="folder" size={20} />
+        </button>
+        <button
+          type="button"
+          className="wb-tracker-add"
+          aria-label="Додати трекер"
+          onClick={() => navigate(withCreateIntent(TRACKERS_PATH))}
+        >
+          <Icon name="plus" size={22} />
+        </button>
+      </div>
 
       {creating && (
         <TrackerCreateForm
@@ -150,7 +134,6 @@ export function TrackersPage(): ReactElement {
               key={view.group.id}
               view={view}
               depth={0}
-              trackers={state.trackers}
               cellsOf={cellsOf}
               today={state.endDay}
               saving={state.saving}

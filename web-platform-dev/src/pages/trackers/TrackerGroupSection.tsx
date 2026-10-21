@@ -18,7 +18,6 @@ import type { TrackerGroupTreeView } from "./trackers-view";
 interface TrackerGroupSectionProps {
   view: TrackerGroupTreeView;
   depth: number;
-  trackers: readonly Tracker[];
   cellsOf: (tracker: Tracker) => readonly { day: string; value: number | null; goalMet: boolean }[];
   today: string;
   saving: boolean;
@@ -37,7 +36,6 @@ interface TrackerGroupSectionProps {
 export function TrackerGroupSection({
   view,
   depth,
-  trackers,
   cellsOf,
   today,
   saving,
@@ -128,7 +126,6 @@ export function TrackerGroupSection({
               key={child.group.id}
               view={child}
               depth={depth + 1}
-              trackers={trackers}
               cellsOf={cellsOf}
               today={today}
               saving={saving}
@@ -142,21 +139,17 @@ export function TrackerGroupSection({
             />
           ))}
           <ul className="wb-matrix-list">
-            {view.rows.map((row) => {
-              const tracker = trackers.find((item) => item.id === row.tracker.id);
-              if (!tracker) return null;
-              return (
-                <TrackerMatrixRow
-                  key={tracker.id}
-                  tracker={tracker}
-                  cells={cellsOf(tracker)}
-                  today={today}
-                  saving={saving}
-                  onOpen={() => onOpenTracker(tracker.id)}
-                  onSave={(value, note) => onSave(tracker.id, value, note)}
-                />
-              );
-            })}
+            {view.trackers.map((tracker) => (
+              <TrackerMatrixRow
+                key={tracker.id}
+                tracker={tracker}
+                cells={cellsOf(tracker)}
+                today={today}
+                saving={saving}
+                onOpen={() => onOpenTracker(tracker.id)}
+                onSave={(value, note) => onSave(tracker.id, value, note)}
+              />
+            ))}
           </ul>
         </div>
       )}

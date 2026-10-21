@@ -30,6 +30,7 @@ const water: Tracker = {
   groupId: null,
   isBuiltin: true,
   mode: "sum",
+  valueType: "number",
 };
 
 function renderForm() {
@@ -84,5 +85,32 @@ describe("форма запису", () => {
     renderForm();
     expect(screen.queryByRole("status")).toBeNull();
     expect(screen.queryByText("Збережено")).toBeNull();
+  });
+
+  it("«так-ні» не питає число: статус обирають вкладкою, значення — «1» / «0»", async () => {
+    const habit: Tracker = {
+      ...water,
+      key: "own-habit",
+      title: "Тренування",
+      unit: "",
+      valueType: "boolean",
+    };
+    render(
+      <TrackerEntryForm
+        tracker={habit}
+        draft={{ value: "", note: "" }}
+        saving={false}
+        onChange={handlers.change}
+        onSubmit={handlers.submit}
+      />,
+    );
+
+    expect(screen.queryByLabelText(/Значення/)).toBeNull();
+    await userEvent.click(screen.getByRole("tab", { name: "Так" }));
+    // Клавіша несе те саме значення, що йде на сервер: межу 0…1 перевіряє він.
+    expect(handlers.change).toHaveBeenCalledWith({ value: "1" });
+
+    await userEvent.click(screen.getByRole("tab", { name: "Ні" }));
+    expect(handlers.change).toHaveBeenCalledWith({ value: "0" });
   });
 });

@@ -10,6 +10,7 @@
 import type { FormEvent, ReactElement } from "react";
 import { Icon } from "@wwwuabot/shared";
 import type { Tracker } from "@wwwuabot/shared/trackers";
+import { TrackerYesNo } from "./TrackerYesNo";
 
 export interface EntryDraft {
   value: string;
@@ -39,19 +40,30 @@ export function TrackerEntryForm({
   return (
     <form className="wb-tracker-entry" onSubmit={submit}>
       <div className="wb-tracker-entry-row">
-        <label className="wb-field">
-          <span className="wb-label">Значення{tracker.unit ? `, ${tracker.unit}` : ""}</span>
-          {/* Без `min`/`max`/`step`: нативна підказка «введіть дійсне значення»
-              з'являлась на кроці, якого людина не обирала — межі перевіряє сервер. */}
-          <input
-            className="wb-input"
-            type="number"
-            inputMode="decimal"
-            step="any"
-            value={draft.value}
-            onChange={(event) => onChange({ value: event.target.value })}
-          />
-        </label>
+        {tracker.valueType === "boolean" ? (
+          <div className="wb-field">
+            <span className="wb-label">Статус</span>
+            <TrackerYesNo
+              value={draft.value}
+              onChange={(value) => onChange({ value })}
+              label="Так чи ні"
+            />
+          </div>
+        ) : (
+          <label className="wb-field">
+            <span className="wb-label">Значення{tracker.unit ? `, ${tracker.unit}` : ""}</span>
+            {/* Без `min`/`max`/`step`: нативна підказка «введіть дійсне значення»
+                з'являлась на кроці, якого людина не обирала — межі перевіряє сервер. */}
+            <input
+              className="wb-input"
+              type="number"
+              inputMode="decimal"
+              step="any"
+              value={draft.value}
+              onChange={(event) => onChange({ value: event.target.value })}
+            />
+          </label>
+        )}
         <button
           type="submit"
           className="wb-btn wb-btn-primary wb-tracker-entry-submit"

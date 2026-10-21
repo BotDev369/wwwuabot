@@ -49,6 +49,7 @@ const water: Tracker = {
   groupId: 10,
   isBuiltin: true,
   mode: "sum",
+  valueType: "number",
 };
 
 const steps: Tracker = {
@@ -64,6 +65,7 @@ const steps: Tracker = {
   groupId: 12,
   isBuiltin: true,
   mode: "sum",
+  valueType: "number",
 };
 
 const coffee: Tracker = {
@@ -79,6 +81,7 @@ const coffee: Tracker = {
   groupId: null,
   isBuiltin: false,
   mode: "sum",
+  valueType: "number",
 };
 
 const state = {
@@ -223,5 +226,52 @@ describe("матриця днів", () => {
     expect(today.querySelector("svg")).toBeTruthy();
     const past = screen.getByRole("button", { name: /Кава, 2026-10-15/ });
     expect(past.textContent).toBe("·");
+  });
+});
+
+describe("дії екрана", () => {
+  it("підсумок дня прибрано разом із рахунком і смугою", () => {
+    render(<TrackersPage />);
+
+    expect(screen.queryByText("Сьогодні записано")).toBeNull();
+    expect(document.querySelector(".wb-tracker-day-bar")).toBeNull();
+  });
+
+  it("створення лишилось: група й трекер — ті самі знаки праворуч", () => {
+    render(<TrackersPage />);
+
+    expect(screen.getByRole("button", { name: "Додати групу" })).toBeTruthy();
+    expect(screen.getByRole("button", { name: "Додати трекер" })).toBeTruthy();
+  });
+
+  it("«так-ні» у матриці несе статус, а не число", async () => {
+    state.trackers = [
+      {
+        ...water,
+        id: 9,
+        key: "own-habit",
+        title: "Тренування",
+        unit: "",
+        goal: null,
+        groupId: null,
+        isBuiltin: false,
+        valueType: "boolean",
+      },
+    ];
+    state.entries = [
+      {
+        id: 9,
+        trackerId: 9,
+        day: "2026-10-17",
+        value: 1,
+        note: "",
+        loggedAt: "2026-10-17 08:00:00",
+      },
+    ];
+    render(<TrackersPage />);
+
+    await userEvent.click(screen.getByRole("button", { name: "Свої" }));
+
+    expect(screen.getByRole("button", { name: "Тренування, 2026-10-17: так" })).toBeTruthy();
   });
 });

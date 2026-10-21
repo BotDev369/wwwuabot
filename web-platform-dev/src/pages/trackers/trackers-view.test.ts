@@ -19,7 +19,6 @@ import {
   readingBand,
   signedAmount,
   timeLabel,
-  toTrackerRows,
   trackerCells,
   whenLabel,
 } from "./trackers-view";
@@ -37,6 +36,7 @@ const water: Tracker = {
   groupId: 10,
   isBuiltin: true,
   mode: "sum",
+  valueType: "number",
 };
 
 const weight: Tracker = {
@@ -52,36 +52,8 @@ const weight: Tracker = {
   groupId: 13,
   isBuiltin: false,
   mode: "read",
+  valueType: "number",
 };
-
-function row(trackerId: number, day: string, value: number, time = "09:00"): TrackerEntryRow {
-  return {
-    id: trackerId * 100 + day.length + value,
-    trackerId,
-    day,
-    value,
-    note: "",
-    loggedAt: `${day} ${time}:00`,
-  };
-}
-
-describe("рядки стрічки", () => {
-  const entries = [row(1, "2026-10-16", 1.5), row(1, "2026-10-17", 2), row(2, "2026-10-15", 7)];
-
-  it("⛔ сьогоднішній запис рахується своїй мірці, а не сусідній", () => {
-    const [sum, read] = toTrackerRows([water, weight], entries, "2026-10-17");
-
-    expect(sum.recordedToday).toBe(true);
-    expect(read.recordedToday).toBe(false);
-  });
-
-  it("записаний нуль — це «записано», а не «не записано»", () => {
-    const zeroed = [row(1, "2026-10-17", 0)];
-    const [sum] = toTrackerRows([water], zeroed, "2026-10-17");
-
-    expect(sum.recordedToday).toBe(true);
-  });
-});
 
 describe("групи стрічки", () => {
   const steps: Tracker = {
@@ -97,6 +69,7 @@ describe("групи стрічки", () => {
     groupId: 12,
     isBuiltin: true,
     mode: "sum",
+    valueType: "number",
   };
   const coffee: Tracker = {
     id: 4,
@@ -111,6 +84,7 @@ describe("групи стрічки", () => {
     groupId: null,
     isBuiltin: false,
     mode: "sum",
+    valueType: "number",
   };
 
   const groups: TrackerGroup[] = [
@@ -127,26 +101,24 @@ describe("групи стрічки", () => {
       steps, // groupId: 12 → підгрупа «Ранкова рутина»
       coffee, // groupId: null → «Свої»
     ];
-    const rows = toTrackerRows(grouped, [], "2026-10-17");
-    const tree = groupRowsTree(rows, groups);
+    const tree = groupRowsTree(grouped, groups);
 
     // Порядок верхнього рівня — порядок списку груп; «Свої» (13) — теж корінь.
     expect(tree.map((node) => node.group.id)).toEqual([10, 11, 13]);
     // Підгрупа живе під батьком, а не поруч.
     expect(tree[1]?.children.map((node) => node.group.id)).toEqual([12]);
-    expect(tree[1]?.rows).toHaveLength(0);
+    expect(tree[1]?.trackers).toHaveLength(0);
     // Рахунок рекурсивний: згорнутий заголовок каже й про підгрупу.
     expect(tree[1]?.count).toBe(1);
     // «Свої» збирає і свій трекер, і той, що без групи.
-    expect(tree[2]?.rows.map((row) => row.tracker.id).sort()).toEqual([2, 4]);
+    expect(tree[2]?.trackers.map((tracker) => tracker.id).sort()).toEqual([2, 4]);
   });
 
   it("порожня тематика не показується — порожня полиця це шум", () => {
-    const rows = toTrackerRows([{ ...water, groupId: 10 }], [], "2026-10-17");
-    const tree = groupRowsTree(rows, groups);
+    const tree = groupRowsTree([{ ...water, groupId: 10 }], groups);
 
     expect(tree.map((node) => node.group.id)).toEqual([10]);
-    expect(tree[0]?.rows).toHaveLength(1);
+    expect(tree[0]?.trackers).toHaveLength(1);
   });
 });
 
@@ -215,11 +187,20 @@ describe("матриця днів", () => {
   });
 
   it("число клітинки коротшає лише до тисяч", () => {
-    expect(cellAmount(null)).toBe("");
-    expect(cellAmount(2.5)).toBe("2,5");
+    expect(cellAmount(null, water)).toBe("");
+    expect(cellAmount(2.5, water)).toBe("2,5");
     // `uk-UA` розділяє тисячі нерозривним пробілом — тому не рядок, а схема.
-    expect(cellAmount(9999)).toMatch(/^9\s999$/);
-    expect(cellAmount(12000)).toBe("12к");
+    expect(cellAmount(9999, water)).toMatch(/^9\s999$/);
+    expect(cellAmount(12000, water)).toBe("12к");
+  });
+
+  it("«так-ні» не числи́ться: клітинка несе статус, і нуль — теж запис", () => {
+    const habit: Tracker = { ...water, valueType: "boolean", unit: "" };
+
+    expect(cellAmount(1, habit)).toBe("так");
+    // Записаний «ні» — це статус дня, а не порожня клітинка.
+    expect(cellAmount(0, habit)).toBe("ні");
+    expect(cellAmount(null, habit)).toBe("");
   });
 });
 

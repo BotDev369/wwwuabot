@@ -19,6 +19,9 @@ export {
   catalogEntry,
   TRACKER_LIMITS,
 } from "./trackers/catalog";
+// Довідник одиниць — дані окремим модулем, як і каталог.
+export type { TrackerUnitGroup } from "./trackers/units";
+export { TRACKER_UNIT_GROUPS, isTrackerUnit } from "./trackers/units";
 // Групи — дерево власника; спільні функції — тут само.
 export type { TrackerGroup, TrackerGroupNode, TrackerGroupOption } from "./trackers/groups";
 export {
@@ -41,7 +44,16 @@ export interface TrackerFields {
   min: number;
   max: number | null;
   mode: TrackerMode;
+  /**
+   * Що людина записує: число (вода, кроки, вага) чи так-ні (тренування,
+   * «не палю»). Для «так-ні» одиниця, крок і ціль не існують — це статус
+   * дня, а не міра, тож форма їх не показує, а сервер не приймає.
+   */
+  valueType: TrackerValueType;
 }
+
+/** Тип запису мірки: число або так-ні. */
+export type TrackerValueType = "number" | "boolean";
 
 /**
  * Як читати записи мірки.
@@ -135,6 +147,20 @@ export function parseTrackerMode(value: unknown): TrackerMode | null {
   return value === "sum" || value === "read" ? value : null;
 }
 
+/**
+ * Тип запису цієї мірки. Колонку, добрану на живій базі `ensureTables`,
+ * читаємо з `COALESCE`, тож `null` тут — не «немає типу», а «число»:
+ * рядки, створені до колонки, лишаються числами.
+ */
+export function trackerValueType(tracker: { valueType?: string | null }): TrackerValueType {
+  return tracker.valueType === "boolean" ? "boolean" : "number";
+}
+
+/** Тип із нерозпізнаного вводу: `null` — не тип (його добере `trackerValueType`). */
+export function parseTrackerValueType(value: unknown): TrackerValueType | null {
+  return value === "number" || value === "boolean" ? value : null;
+}
+
 const DAY_PATTERN = /^\d{4}-\d{2}-\d{2}$/;
 
 /** День у форматі `YYYY-MM-DD` — реальна дата, а не «2026-02-31». */
@@ -196,8 +222,21 @@ export function validateTrackerFields(
   const title = text(body.title, TRACKER_LIMITS.title);
   if (!title) return { ok: false, message: "Назва — від 1 до 40 символів." };
 
+  // Тип — **раніше за числові поля**: «так-ні» не має ні одиниці, ні кроку, ні
+  // цілі, тож форма їх не показує, а сервер не має вимагати полів, яких у цього
+  // типу не існує (межа запису 0…1 ставить він сам).
+  const valueType = parseTrackerValueType(body.valueType) ?? "number";
+  if (valueType === "boolean") {
+    // Типовий вид — «останній»: без цілі сума не має сенсу, а статус дня — має.
+    const mode = parseTrackerMode(body.mode) ?? "read";
+    return {
+      ok: true,
+      value: { title, unit: "", step: 1, goal: null, min: 0, max: 1, mode, valueType },
+    };
+  }
+
   const unit = text(body.unit ?? "", TRACKER_LIMITS.unit);
-  if (unit === null) return { ok: false, message: "Одиниця — до 8 символів." };
+  if (unit === null) return { ok: false, message: `Одиниця — до ${TRACKER_LIMITS.unit} символів.` };
 
   const step = measure(body.step, 0.001, 100000);
   if (step === null) return { ok: false, message: "Крок має бути додатним числом." };
@@ -221,7 +260,7 @@ export function validateTrackerFields(
   // сенсу, а вимір із ціллю (цільова вага) — має, тож у формі вид видно його ж.
   const mode = parseTrackerMode(body.mode) ?? (goal === null ? "read" : "sum");
 
-  return { ok: true, value: { title, unit, step, goal, min, max, mode } };
+  return { ok: true, value: { title, unit, step, goal, min, max, mode, valueType } };
 }
 
 /**
@@ -275,4 +314,21 @@ export function formatTrackerValue(value: number): string {
 export function formatTrackerAmount(value: number, unit: string): string {
   const amount = formatTrackerValue(value);
   return unit ? `${amount} ${unit}` : amount;
+}
+
+/**
+ * Запис **для показу**: у трекера «так-ні» 1/0 читається статусом —
+ * «так»/«ні» (день із нулем — теж «ні»: нуль записаний, а не пропущений).
+ * Числові трекери йдуть звичним форматом із одиницею.
+ *
+ * Лише для самих записів і днів: **середнє й сума не є статусом** (0,7
+ * «так» не буває), тож агрегати показуються числом.
+ */
+export function trackerAmountText(
+  value: number | null,
+  tracker: Pick<TrackerFields, "valueType" | "unit">,
+): string {
+  if (value === null) return "—";
+  if (tracker.valueType === "boolean") return value > 0 ? "так" : "ні";
+  return formatTrackerAmount(value, tracker.unit);
 }

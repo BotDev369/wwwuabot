@@ -18,6 +18,7 @@ import {
   buildTrackerGroupTree,
   flattenTrackerGroupTree,
   formatTrackerAmount,
+  trackerAmountText,
   trackerLatest,
   trackerMode,
   trackerWindow,
@@ -73,6 +74,16 @@ export function TrackerPage(): ReactElement {
 
   async function submit(): Promise<void> {
     if (!tracker) return;
+    // «Так-ні» не вводиться цифрой: статус обирають вкладкою, і порожній вибір
+    // — це ще не відповідь, а не «0». Межі все одно перевіряє сервер.
+    if (tracker.valueType === "boolean") {
+      if (draft.value !== "0" && draft.value !== "1") {
+        await dialog.alert("Оберіть «Так» або «Ні».", { tone: "danger" });
+        return;
+      }
+      if (await state.save(Number(draft.value), draft.note)) setDraft(EMPTY_DRAFT);
+      return;
+    }
     const raw = draft.value.replace(",", ".").trim();
     const value = Number(raw);
     if (!raw || !Number.isFinite(value)) {
@@ -219,7 +230,7 @@ export function TrackerPage(): ReactElement {
                     <div className="wb-tracker-stat">
                       <dt className="wb-tracker-stat-label">Останнє</dt>
                       <dd className="wb-tracker-stat-value">
-                        {amountOrDash(latest?.value ?? null, tracker.unit)}
+                        {trackerAmountText(latest?.value ?? null, tracker)}
                       </dd>
                     </div>
                     <div className="wb-tracker-stat">
@@ -231,13 +242,13 @@ export function TrackerPage(): ReactElement {
                     <div className="wb-tracker-stat">
                       <dt className="wb-tracker-stat-label">Найменше</dt>
                       <dd className="wb-tracker-stat-value">
-                        {amountOrDash(reads.min?.value ?? null, tracker.unit)}
+                        {trackerAmountText(reads.min?.value ?? null, tracker)}
                       </dd>
                     </div>
                     <div className="wb-tracker-stat">
                       <dt className="wb-tracker-stat-label">Найбільше</dt>
                       <dd className="wb-tracker-stat-value">
-                        {amountOrDash(reads.max?.value ?? null, tracker.unit)}
+                        {trackerAmountText(reads.max?.value ?? null, tracker)}
                       </dd>
                     </div>
                     <div className="wb-tracker-stat">
@@ -262,7 +273,7 @@ export function TrackerPage(): ReactElement {
                 <span className="wb-tracker-history-day">{dayLabel(entry.day)}</span>
                 <span className="wb-tracker-history-time">{timeLabel(entry.loggedAt)}</span>
                 <span className="wb-tracker-history-value">
-                  {formatTrackerAmount(entry.value, tracker.unit)}
+                  {trackerAmountText(entry.value, tracker)}
                 </span>
                 {entry.note && <span className="wb-tracker-history-note">{entry.note}</span>}
                 <button

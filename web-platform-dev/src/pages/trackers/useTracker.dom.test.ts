@@ -33,6 +33,7 @@ const water: Tracker = {
   groupId: null,
   isBuiltin: true,
   mode: "sum",
+  valueType: "number",
 };
 
 beforeEach(() => {

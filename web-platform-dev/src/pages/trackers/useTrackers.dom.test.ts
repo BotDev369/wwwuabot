@@ -32,6 +32,7 @@ const water: Tracker = {
   groupId: null,
   isBuiltin: true,
   mode: "sum",
+  valueType: "number",
 };
 
 beforeEach(() => {
@@ -84,6 +85,7 @@ describe("стрічка", () => {
         min: 0,
         max: 20,
         mode: "sum",
+        valueType: "number",
       });
     });
 
@@ -106,6 +108,7 @@ describe("стрічка", () => {
         min: 0,
         max: null,
         mode: "read",
+        valueType: "number",
       });
     });
 

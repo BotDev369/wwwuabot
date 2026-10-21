@@ -9,7 +9,7 @@
  */
 
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { render, screen } from "@testing-library/react";
+import { render, screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import type { Tracker, TrackerGroup } from "@wwwuabot/shared/trackers";
 
@@ -34,6 +34,7 @@ const created: Tracker = {
   groupId: null,
   isBuiltin: false,
   mode: "sum",
+  valueType: "number",
 };
 
 beforeEach(() => {
@@ -61,12 +62,14 @@ describe("свій трекер", () => {
     expect(screen.getByText("Назва — від 1 до 40 символів.")).toBeTruthy();
   });
 
-  it("створює з назвою, одиницею, ціллю й видом запису", async () => {
+  it("створює з назвою, одиницею з довідника, ціллю й видом запису", async () => {
     handlers.create.mockResolvedValueOnce(created);
     renderForm();
 
     await userEvent.type(screen.getByLabelText("Назва"), "Кава");
-    await userEvent.type(screen.getByLabelText("Одиниця"), "чашок");
+    // Одиниця — вибір, а не текст: типова береться з довідника, своя — окремим пунктом.
+    await userEvent.selectOptions(screen.getByLabelText("Одиниця"), "custom");
+    await userEvent.type(screen.getByLabelText("Своя одиниця"), "чашок");
     await userEvent.type(screen.getByLabelText("Ціль дня"), "3");
     await userEvent.click(screen.getByRole("button", { name: "Створити" }));
 
@@ -80,10 +83,46 @@ describe("свій трекер", () => {
         min: 0,
         max: null,
         mode: "sum",
+        valueType: "number",
       },
       null,
     );
     expect(handlers.created).toHaveBeenCalledWith(created);
+  });
+
+  it("довідник одиниць згрупований за спорідненістю, а не суцільний список", () => {
+    renderForm();
+
+    const time = screen.getByRole("group", { name: "Час" });
+    expect(within(time).getByRole("option", { name: "хв" })).toBeTruthy();
+    expect(within(time).getByRole("option", { name: "декада" })).toBeTruthy();
+    // Споріднені групи — окремі підписи: вага не живе серед часу.
+    const mass = screen.getByRole("group", { name: "Вага" });
+    expect(within(mass).getByRole("option", { name: "кг" })).toBeTruthy();
+    expect(within(time).queryByRole("option", { name: "кг" })).toBeNull();
+  });
+
+  it("тип «так-ні» ховає одиницю, ціль і крок — їх у цього типу немає", async () => {
+    handlers.create.mockResolvedValueOnce({ ...created, valueType: "boolean" });
+    renderForm();
+
+    await userEvent.click(screen.getByRole("tab", { name: "Так-ні" }));
+
+    expect(screen.queryByLabelText("Одиниця")).toBeNull();
+    expect(screen.queryByLabelText("Ціль дня")).toBeNull();
+    expect(screen.queryByLabelText("Крок")).toBeNull();
+    // Вид запису лишається: «додавати» для звички — це рахунок «так» за день.
+    expect(screen.getByRole("tab", { name: "Додавати за день" })).toBeTruthy();
+
+    await userEvent.type(screen.getByLabelText("Назва"), "Не палю");
+    await userEvent.click(screen.getByRole("button", { name: "Створити" }));
+
+    // Межа 0…1 і порожня одиниця — робить сервер (`validateTrackerFields`),
+    // форма лише не подає полів, яких у цього типу не існує.
+    expect(handlers.create).toHaveBeenCalledWith(
+      expect.objectContaining({ title: "Не палю", valueType: "boolean" }),
+      null,
+    );
   });
 
   it("вид запису перемикається: «показувати останній» їде на сервер своїм словом", async () => {

@@ -10,8 +10,12 @@
 import type { IconName } from "../components/icon-names";
 import type { TrackerFields } from "../trackers";
 
-/** Рядок каталогу: стандартний трекер — приклад одного механізму, а не новий вид. */
-export interface TrackerCatalogEntry extends TrackerFields {
+/**
+ * Рядок каталогу: стандартний трекер — приклад одного механізму, а не новий
+ * вид. `valueType` тут і немає **навмисно**: тип не вибирають, стандартні
+ * мірки числові, і колонка бази дає їм «число» сама.
+ */
+export interface TrackerCatalogEntry extends Omit<TrackerFields, "valueType"> {
   key: string;
   icon: IconName;
   /** Тематика в стрічці: ключ групи каталогу, рядок якої сіє сервер. */
@@ -21,7 +25,9 @@ export interface TrackerCatalogEntry extends TrackerFields {
 /** Стеля вводу: межа числа, довжини тексту й кількості трекерів у людини. */
 export const TRACKER_LIMITS = {
   title: 40,
-  unit: 8,
+  // 12, а не 8: довідник одиниць пропонує повні слова («півмісяця» — 9),
+  // і межа не має відкидати власне добірне слово довше за абревіатуру.
+  unit: 12,
   note: 200,
   trackers: 60,
   value: 1_000_000_000,

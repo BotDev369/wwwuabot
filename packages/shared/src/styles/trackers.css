@@ -1,5 +1,5 @@
 /*
- * ═══ ТРЕКЕРИ — денний рядок, графік і звіт ══════════════════════════════════
+ * ═══ ТРЕКЕРИ — стрічка, графік і звіт ══════════════════════════════════
  *
  * Класи живуть у shared (`check:css`): розмітку рендерить оболонка, але вигляд
  * той самий кирпичик, що й решта продукту.
@@ -15,35 +15,21 @@
 
 .wb-trackers-page {
   --tracker-surface: var(--bg-2);
-  /* «Лунка» — місце вводу в рядку: той самий колір тексту, підмішаний у тло,
-     тож вона читається як заглиблення, а не як біла наклейка. */
-  --tracker-slot: color-mix(in srgb, var(--text-primary) 9%, transparent);
   padding-inline: var(--sp-3);
   padding-bottom: var(--sp-8);
 }
 
-/* ── Підсумок дня ─────────────────────────────────────────────────────────── */
+/* ── Дії екрана ─────────────────────────────────────────────────────────── */
 
-.wb-tracker-day {
+/* Створення лишилось на місці, поки його тримав блок підсумку дня:
+   сам підсумок прибрали, дії — ні. */
+.wb-trackers-tools {
   display: flex;
-  flex-direction: column;
+  justify-content: flex-end;
   gap: var(--sp-2);
-  /* Відступ = відступ рядка: знаки мірок і підпис підсумку стоять на одній
-     вертикалі, інакше список «завалюється» на кілька пікселів ліворуч. */
-  padding: var(--sp-3);
   margin-bottom: var(--sp-3);
-  border-radius: var(--radius-lg);
-  background: var(--tracker-surface);
 }
 
-.wb-tracker-day-head {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: var(--sp-3);
-}
-
-.wb-tracker-day-label,
 .wb-tracker-section-title {
   margin: 0;
   color: var(--text-secondary);
@@ -53,34 +39,9 @@
   text-transform: uppercase;
 }
 
-.wb-tracker-day-figure {
-  display: flex;
-  align-items: baseline;
-  gap: var(--sp-1);
-  margin: 0;
-}
-
-.wb-tracker-day-count {
-  color: var(--text-primary);
-  font-size: 1.75rem;
-  font-weight: var(--weight-bold);
-  font-variant-numeric: tabular-nums;
-  line-height: 1;
-}
-
-.wb-tracker-day-total {
-  color: var(--text-secondary);
-  font-size: var(--text-base);
-}
-
 /* «+» — залита акцентом куля 44px: це головна дія екрана. Поруч — «група»:
    той самий розмір, але привид — вона головна лише коли людина збирає
    структуру, а не коли міряє день. */
-.wb-tracker-day-tools {
-  display: inline-flex;
-  gap: var(--sp-2);
-}
-
 .wb-tracker-add {
   display: inline-flex;
   align-items: center;
@@ -105,26 +66,6 @@
 
 .wb-tracker-add:active {
   transform: scale(0.96);
-}
-
-/* Смуга дня: сегмент на мірку. Один погляд — і видно, скільки лишилось, без
-   чисел і без другого списку. */
-.wb-tracker-day-bar {
-  display: flex;
-  gap: 3px;
-  height: 6px;
-}
-
-.wb-tracker-day-seg {
-  flex: 1 1 0;
-  min-width: 0;
-  border-radius: var(--radius-full);
-  background: var(--tracker-slot);
-  transition: background var(--duration) var(--ease);
-}
-
-.wb-tracker-day-seg--on {
-  background: var(--accent);
 }
 
 /* ── Стрічка: акордеон груп + матриця днів ──────────────────────────────── */
@@ -635,11 +576,20 @@
   gap: var(--sp-2);
 }
 
+/* Дії липнуть над футером: форма довга, і «Створити» мусить бути під рукою,
+   а не за прокруткою — той самий прийом, що в `.shop-form-actions`. Тло — саме
+   тло форми: рядок стоїть усередині картки, й під ним не повинні просвічувати
+   поля, що прогортаються. */
 .wb-tracker-form-actions {
+  position: sticky;
+  bottom: calc(var(--tab-bar-h) + var(--sp-3));
+  z-index: var(--z-sticky);
   display: flex;
   align-items: center;
   justify-content: flex-end;
   gap: var(--sp-2);
+  padding: var(--sp-2) 0;
+  background: var(--tracker-surface);
 }
 
 @media (max-width: 380px) {

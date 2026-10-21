@@ -12,6 +12,7 @@ import {
   isWritableTrackerDay,
   isValidTrackerDay,
   todayTrackerDay,
+  trackerAmountText,
   trackerValue,
   validateTrackerFields,
   validateTrackerGroupFields,
@@ -77,7 +78,16 @@ describe("форма власного трекера", () => {
     const result = validateTrackerFields({ title: "  Кава  ", unit: "чашок", step: 1 });
     expect(result).toEqual({
       ok: true,
-      value: { title: "Кава", unit: "чашок", step: 1, goal: null, min: 0, max: null, mode: "read" },
+      value: {
+        title: "Кава",
+        unit: "чашок",
+        step: 1,
+        goal: null,
+        min: 0,
+        max: null,
+        mode: "read",
+        valueType: "number",
+      },
     });
   });
 
@@ -108,6 +118,62 @@ describe("форма власного трекера", () => {
       false,
     );
     expect(validateTrackerFields({ title: "Вага", step: 0, min: 0 }).ok).toBe(false);
+  });
+
+  it("невідомий тип — не поломка, а число", () => {
+    expect(validateTrackerFields({ title: "Кава", step: 1, valueType: "так-ні" })).toMatchObject({
+      value: { valueType: "number" },
+    });
+  });
+});
+
+describe("тип запису «так-ні»", () => {
+  it("не має одиниці, кроку й цілі — тип ставить межу 0…1 сам", () => {
+    const result = validateTrackerFields({
+      title: "Не палю",
+      valueType: "boolean",
+      // Приховані формою поля не впливають на результат, а не «проходять повз».
+      unit: "днів",
+      goal: 5,
+      step: 999,
+      mode: "sum",
+    });
+
+    expect(result).toEqual({
+      ok: true,
+      value: {
+        title: "Не палю",
+        unit: "",
+        step: 1,
+        goal: null,
+        min: 0,
+        max: 1,
+        mode: "sum",
+        valueType: "boolean",
+      },
+    });
+  });
+
+  it("без явного виду — «останній»: статус дня, а не сума", () => {
+    expect(validateTrackerFields({ title: "Тренування", valueType: "boolean" })).toMatchObject({
+      value: { mode: "read" },
+    });
+  });
+
+  it("запис: 1 і 0 — у межах, записаний «ні» — не відмова", () => {
+    const habit = { min: 0, max: 1 };
+    expect(trackerValue(1, habit)).toBe(1);
+    expect(trackerValue(0, habit)).toBe(0);
+    expect(trackerValue(2, habit)).toBeNull();
+  });
+
+  it("показ: статус словом, число — з одиницею", () => {
+    const habit = { valueType: "boolean" as const, unit: "" };
+    expect(trackerAmountText(1, habit)).toBe("так");
+    expect(trackerAmountText(0, habit)).toBe("ні");
+    expect(trackerAmountText(null, habit)).toBe("—");
+    expect(trackerAmountText(2.5, { valueType: "number", unit: "л" })).toBe("2,5 л");
+    expect(trackerAmountText(0, { valueType: "number", unit: "" })).toBe("0");
   });
 });
 

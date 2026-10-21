@@ -10,40 +10,22 @@ import {
   compareTrackerEntries,
   formatTrackerAmount,
   TRACKER_OWN_GROUP_KEY,
+  trackerAmountText,
   trackerMode,
   type Tracker,
   type TrackerEntry,
   type TrackerEntryRow,
+  type TrackerFields,
   type TrackerGroup,
   type TrackerMode,
 } from "@wwwuabot/shared/trackers";
 import { trackerDayLast, trackerDayTotals } from "@wwwuabot/shared/trackers/analytics";
-
-export interface TrackerRowView {
-  tracker: Tracker;
-  /** Чи є запис за сьогодні — смуга дня рахує мірки, а не рядки. */
-  recordedToday: boolean;
-}
 
 /** Записи одного трекера — без `trackerId`, який рядку вже не потрібен. */
 export function entriesOf(entries: readonly TrackerEntryRow[], trackerId: number): TrackerEntry[] {
   return entries
     .filter((entry) => entry.trackerId === trackerId)
     .map(({ id, day, value, note, loggedAt }) => ({ id, day, value, note, loggedAt }));
-}
-
-/** Рядок стрічки: чи записана мірка сьогодні. */
-export function toTrackerRows(
-  trackers: readonly Tracker[],
-  entries: readonly TrackerEntryRow[],
-  endDay: string,
-): TrackerRowView[] {
-  return trackers.map((tracker) => {
-    const own = entriesOf(entries, tracker.id);
-    // Записаний нуль — це нуль, а не «не записано»: межа, яку легко злити.
-    const recordedToday = own.some((entry) => entry.day === endDay);
-    return { tracker, recordedToday };
-  });
 }
 
 /** Одна клітинка матриці: день без запису — `null`, а не нуль. */
@@ -93,9 +75,14 @@ export function matrixDayLabel(day: string): string {
 /**
  * Клітинка коротша за рядок історії: «8 000» у клітинці ширшої одиниці не
  * вміщується, тож тисячі йдуть скорочено («8к»), а дробові — без зайвих нулів.
+ * «Так-ні» не числи́ться — клітинка несе статус (спільне правило показу).
  */
-export function cellAmount(value: number | null): string {
+export function cellAmount(
+  value: number | null,
+  tracker: Pick<TrackerFields, "valueType">,
+): string {
   if (value === null) return "";
+  if (tracker.valueType === "boolean") return trackerAmountText(value, { ...tracker, unit: "" });
   const rounded = Math.round(value * 10) / 10;
   if (Math.abs(rounded) >= 10000) return `${Math.round(rounded / 1000)}к`;
   return formatTrackerAmount(rounded, "");
@@ -104,7 +91,8 @@ export function cellAmount(value: number | null): string {
 export interface TrackerGroupTreeView {
   group: TrackerGroup;
   children: TrackerGroupTreeView[];
-  rows: TrackerRowView[];
+  /** Мірки цієї групи — самі трекери, рядок у стрічці міряє день собі сам. */
+  trackers: readonly Tracker[];
   /** Рекурсивний рахунок — підпис згорнутого акордеона. */
   count: number;
 }
@@ -116,22 +104,27 @@ export interface TrackerGroupTreeView {
  * щойно в ній буде трекер, як і решта.
  */
 export function groupRowsTree(
-  rows: readonly TrackerRowView[],
+  trackers: readonly Tracker[],
   groups: readonly TrackerGroup[],
 ): TrackerGroupTreeView[] {
   const ownId = groups.find((group) => group.key === TRACKER_OWN_GROUP_KEY)?.id ?? null;
-  const byGroup = new Map<number, TrackerRowView[]>();
-  for (const row of rows) {
-    const id = row.tracker.groupId ?? ownId;
+  const byGroup = new Map<number, Tracker[]>();
+  for (const tracker of trackers) {
+    const id = tracker.groupId ?? ownId;
     if (id === null) continue;
     const bucket = byGroup.get(id);
-    if (bucket) bucket.push(row);
-    else byGroup.set(id, [row]);
+    if (bucket) bucket.push(tracker);
+    else byGroup.set(id, [tracker]);
   }
 
   const views = new Map<number, TrackerGroupTreeView>();
   for (const group of groups) {
-    views.set(group.id, { group, children: [], rows: byGroup.get(group.id) ?? [], count: 0 });
+    views.set(group.id, {
+      group,
+      children: [],
+      trackers: byGroup.get(group.id) ?? [],
+      count: 0,
+    });
   }
   const roots: TrackerGroupTreeView[] = [];
   for (const group of groups) {
@@ -145,7 +138,7 @@ export function groupRowsTree(
   // Рахунок рекурсивно від листків; порожні групи й гілки прибираємо після —
   // гілка лишається, якщо під нею хоча б один трекер (хоча б онук).
   const countOf = (view: TrackerGroupTreeView): number =>
-    view.rows.length + view.children.reduce((sum, child) => sum + countOf(child), 0);
+    view.trackers.length + view.children.reduce((sum, child) => sum + countOf(child), 0);
   const prune = (view: TrackerGroupTreeView): TrackerGroupTreeView | null => {
     view.children = view.children
       .map(prune)

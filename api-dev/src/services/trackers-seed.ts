@@ -11,6 +11,7 @@ import {
   TRACKER_CATALOG,
   TRACKER_CATALOG_GROUPS,
   trackerMode,
+  trackerValueType,
   type Tracker,
 } from "@wwwuabot/shared/trackers";
 import type { Env } from "../shared/types";
@@ -27,18 +28,21 @@ export interface TrackerRow {
   mode: string | null;
   icon: string;
   group_id: number | null;
+  value_type: string | null;
   is_builtin: number;
 }
 
 /**
  * `COALESCE` — не перестраховка: колонку `mode` добрав `ensureTables`, тож у
  * рядків, старших за неї, там `NULL` (див. `docs/D1_OPS.md`, «М'яка схема»).
- * `group_id` іде без `COALESCE` навмисно: `NULL` — це осмислений стан «ще не
- * віднесено», а не старий рядок.
+ * `value_type` — та сама історія: старі рядки й сів без явного значення
+ * читаються як «число». `group_id` іде без `COALESCE` навмисно: `NULL` — це
+ * осмислений стан «ще не віднесено», а не старий рядок.
  */
 export const TRACKER_COLUMNS =
   "id, key, title, unit, step, goal, min_value, max_value, " +
-  "COALESCE(mode, CASE WHEN goal IS NULL THEN 'read' ELSE 'sum' END) AS mode, icon, group_id, is_builtin";
+  "COALESCE(mode, CASE WHEN goal IS NULL THEN 'read' ELSE 'sum' END) AS mode, " +
+  "COALESCE(value_type, 'number') AS value_type, icon, group_id, is_builtin";
 
 export function toTracker(row: TrackerRow): Tracker {
   return {
@@ -51,6 +55,7 @@ export function toTracker(row: TrackerRow): Tracker {
     min: Number(row.min_value),
     max: row.max_value === null ? null : Number(row.max_value),
     mode: trackerMode({ key: row.key, goal: row.goal, mode: row.mode }),
+    valueType: trackerValueType({ valueType: row.value_type }),
     icon: (row.icon || "bar-chart") as Tracker["icon"],
     groupId: row.group_id === null ? null : Number(row.group_id),
     isBuiltin: Number(row.is_builtin) === 1,

@@ -264,8 +264,8 @@ export async function createTracker(
   const key = `own-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}`;
   await env.DB.prepare(
     `INSERT INTO trackers
-       (owner_id, key, title, unit, step, goal, min_value, max_value, mode, icon, group_id, is_builtin, is_active, created_at)
-     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 'bar-chart', ?, 0, 1, ?)`,
+       (owner_id, key, title, unit, step, goal, min_value, max_value, mode, value_type, icon, group_id, is_builtin, is_active, created_at)
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'bar-chart', ?, 0, 1, ?)`,
   )
     .bind(
       String(userId),
@@ -277,6 +277,7 @@ export async function createTracker(
       fields.min,
       fields.max,
       fields.mode,
+      fields.valueType,
       groupId,
       formatSqliteDatetime(),
     )

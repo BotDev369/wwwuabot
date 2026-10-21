@@ -10,6 +10,7 @@
 import { useState, type FormEvent, type ReactElement } from "react";
 import { Icon } from "@wwwuabot/shared";
 import type { Tracker } from "@wwwuabot/shared/trackers";
+import { TrackerYesNo } from "./TrackerYesNo";
 import { cellAmount, type TrackerCellView } from "./trackers-view";
 
 interface TrackerMatrixRowProps {
@@ -56,7 +57,7 @@ export function TrackerMatrixRow({
         </button>
         {cells.map((cell) => {
           const isToday = cell.day === today;
-          const content = cellAmount(cell.value);
+          const content = cellAmount(cell.value, tracker);
           const label = `${tracker.title}, ${cell.day}${content ? `: ${content}` : ""}`;
           return (
             <button
@@ -79,23 +80,30 @@ export function TrackerMatrixRow({
       </div>
       {open && (
         <form className="wb-matrix-form" onSubmit={(event) => void submit(event)}>
-          <label className="wb-field">
-            <span className="wb-label">
-              {tracker.title}
-              {tracker.unit ? `, ${tracker.unit}` : ""}
-            </span>
-            {/* Без нативних min/max/step: межі перевіряє сервер, а підказка
-                «введіть дійсне значення» малює чужий крок. */}
-            <input
-              className="wb-input"
-              type="number"
-              inputMode="decimal"
-              step="any"
-              value={draft}
-              autoFocus
-              onChange={(event) => setDraft(event.target.value)}
-            />
-          </label>
+          {tracker.valueType === "boolean" ? (
+            <div className="wb-field">
+              <span className="wb-label">{tracker.title}</span>
+              <TrackerYesNo value={draft} onChange={setDraft} label="Так чи ні" />
+            </div>
+          ) : (
+            <label className="wb-field">
+              <span className="wb-label">
+                {tracker.title}
+                {tracker.unit ? `, ${tracker.unit}` : ""}
+              </span>
+              {/* Без нативних min/max/step: межі перевіряє сервер, а підказка
+                  «введіть дійсне значення» малює чужий крок. */}
+              <input
+                className="wb-input"
+                type="number"
+                inputMode="decimal"
+                step="any"
+                value={draft}
+                autoFocus
+                onChange={(event) => setDraft(event.target.value)}
+              />
+            </label>
+          )}
           <label className="wb-field">
             <span className="wb-label">Нотатка</span>
             <input

@@ -146,6 +146,29 @@ describe("трекери людини", () => {
     expect(db.calls.some((call) => call.sql.includes("INSERT INTO trackers"))).toBe(false);
   });
 
+  it("тип «так-ні» їде в колонку, а числові поля цього типу не існують", async () => {
+    const db = database();
+    const response = await handleTrackers(
+      request("POST", "https://example.com/api/user/trackers", {
+        title: "Не палю",
+        // Приховані формою поля: сервер не має ані вимагати їх, ані приймати.
+        unit: "днів",
+        goal: 5,
+        step: 999,
+        valueType: "boolean",
+      }),
+      db.env,
+    );
+
+    expect(response.status).toBe(200);
+    const insert = db.calls.find((call) => call.sql.includes("INSERT INTO trackers"));
+    expect(insert?.values).toContain("boolean");
+    expect(insert?.values).toContain("Не палю");
+    expect(insert?.values).not.toContain("днів");
+    expect(insert?.values).not.toContain(5);
+    expect(insert?.values).not.toContain(999);
+  });
+
   it("прибирання трекера звужене власником із підпису", async () => {
     const db = database();
     await handleTrackers(request("DELETE", "https://example.com/api/user/trackers?id=4"), db.env);

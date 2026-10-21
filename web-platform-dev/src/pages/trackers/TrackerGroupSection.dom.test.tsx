@@ -42,36 +42,30 @@ const water: Tracker = {
   groupId: 9,
   isBuiltin: true,
   mode: "sum",
+  valueType: "number",
 };
-
-/** Трекер, якого немає в списку сторінки — рядок матриці мусить мовчати. */
-const gone: Tracker = { ...water, id: 77, title: "Зниклий", groupId: 9 };
 
 const ownGroup: TrackerGroup = { id: 9, parentId: null, title: "Режим", key: null };
 const builtinGroup: TrackerGroup = { id: 10, parentId: null, title: "Активність", key: "activity" };
 
-function viewOf(group: TrackerGroup, rows: Tracker[]): TreeView {
+function viewOf(group: TrackerGroup, trackers: Tracker[]): TreeView {
   return {
     group,
     children: [],
-    rows: rows.map((tracker) => ({ tracker, recordedToday: false })),
-    count: rows.length,
+    trackers,
+    count: trackers.length,
   };
 }
 
 function renderSection(
   group: TrackerGroup,
-  rows: Tracker[] = [water],
-  trackers: readonly Tracker[] = rows,
+  trackers: Tracker[] = [water],
 ): ReturnType<typeof render> {
   return render(
     <TrackerGroupSection
-      view={viewOf(group, rows)}
+      view={viewOf(group, trackers)}
       depth={0}
-      trackers={trackers}
-      cellsOf={(tracker) => [
-        { day: "2026-10-17", value: tracker.id === 77 ? null : 2, goalMet: false },
-      ]}
+      cellsOf={() => [{ day: "2026-10-17", value: 2, goalMet: false }]}
       today="2026-10-17"
       saving={false}
       isOpen={() => true}
@@ -165,10 +159,10 @@ describe("меню групи", () => {
     expect(screen.getByRole("button", { name: "Перейменувати" })).toBeTruthy();
   });
 
-  it("рядок із трекером поза списком мовчки пропускається", () => {
-    renderSection(ownGroup, [water, gone], [water]);
+  it("кожен трекер групи малює свій рядок матриці", () => {
+    renderSection(ownGroup, [water, { ...water, id: 4, title: "Кава" }]);
 
     expect(screen.getByRole("button", { name: "Вода" })).toBeTruthy();
-    expect(screen.queryByRole("button", { name: "Зниклий" })).toBeNull();
+    expect(screen.getByRole("button", { name: "Кава" })).toBeTruthy();
   });
 });

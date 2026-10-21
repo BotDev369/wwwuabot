@@ -1,8 +1,8 @@
 /**
- * Власний трекер: назва, група, одиниця, ціль, крок і вид запису. Перевіряє
+ * Власний трекер: назва, тип запису (число / так-ні), група, одиниця —
+ * з довідника споріднених груп або своя, ціль, крок і вид запису. Перевіряє
  * форму та сама `validateTrackerFields`, що й сервер (AGENTS.md §3); вид
- * питаємо прямо, а не вгадуємо за ціллю. Група — селект дерева власника,
- * типові тематики теж можуть бути батьком: група — це рядок, а не слово.
+ * питаємо прямо, а не вгадуємо за ціллю. Група — селект дерева власника.
  *
  * @module web-platform-dev/src/pages/trackers/TrackerCreateForm
  */
@@ -10,6 +10,8 @@
 import { useState, type FormEvent, type ReactElement } from "react";
 import { Tabs, type TabOption } from "@wwwuabot/ui/tabs";
 import {
+  TRACKER_LIMITS,
+  TRACKER_UNIT_GROUPS,
   buildTrackerGroupTree,
   flattenTrackerGroupTree,
   validateTrackerFields,
@@ -17,6 +19,7 @@ import {
   type TrackerFields,
   type TrackerGroup,
   type TrackerMode,
+  type TrackerValueType,
 } from "@wwwuabot/shared/trackers";
 
 const MODE_TABS: readonly TabOption<TrackerMode>[] = [
@@ -29,6 +32,20 @@ const MODE_HINT: Record<TrackerMode, string> = {
   sum: "Записи одного дня додаються: вода, кроки, витрати.",
   read: "Видно останнє значення: вага, тиск, настрій.",
 };
+
+const TYPE_TABS: readonly TabOption<TrackerValueType>[] = [
+  { key: "number", label: "Число" },
+  { key: "boolean", label: "Так-ні" },
+];
+
+/** Що тип запису означає для людини — тим самим тоном, що й вид. */
+const TYPE_HINT: Record<TrackerValueType, string> = {
+  number: "Скільки: вода, кроки, витрати, вага.",
+  boolean: "Один статус дня: тренування, «не палю».",
+};
+
+/** Значення одиниці, яке стоїть у виборі, коли людина пише свою. */
+const CUSTOM_UNIT = "custom";
 
 interface TrackerCreateFormProps {
   groups: readonly TrackerGroup[];
@@ -51,8 +68,12 @@ export function TrackerCreateForm({
   onCancel,
 }: TrackerCreateFormProps): ReactElement {
   const [title, setTitle] = useState("");
+  const [valueType, setValueType] = useState<TrackerValueType>("number");
   const [groupId, setGroupId] = useState("");
   const [unit, setUnit] = useState("");
+  // Своя одиниця — не рядок у стані, а ознака вибору: довідник і свій текст
+  // живуть в одному полі `unit`, і форма лише знає, показувати чи ні ввід.
+  const [customUnit, setCustomUnit] = useState(false);
   const [goal, setGoal] = useState("");
   // Без дефолтної цифри: порожній крок — це крок 1 (`?? 1` нижче), а число в
   // полі, яке ніхто не міняв, читається як чиясь вимога, а не як типовий вибір.
@@ -71,6 +92,7 @@ export function TrackerCreateForm({
       step: numberOrNull(step) ?? 1,
       min: 0,
       mode,
+      valueType,
     });
     if (!validated.ok) {
       setError(validated.message);
@@ -97,6 +119,11 @@ export function TrackerCreateForm({
           autoFocus
         />
       </label>
+      <div className="wb-field">
+        <span className="wb-label">Тип запису</span>
+        <Tabs options={TYPE_TABS} value={valueType} onChange={setValueType} label="Тип запису" />
+        <p className="wb-text-muted">{TYPE_HINT[valueType]}</p>
+      </div>
       <label className="wb-field">
         <span className="wb-label">Група</span>
         <select
@@ -115,38 +142,75 @@ export function TrackerCreateForm({
           ))}
         </select>
       </label>
-      <div className="wb-tracker-form-row">
+      {/* «Так-ні» не має ні одиниці, ні цілі, ні кроку — це статус дня, а не
+          міра; сервер теж відкидає ці поля для нього (див. `validateTrackerFields`). */}
+      {valueType === "number" && (
+        <div className="wb-tracker-form-row">
+          <label className="wb-field">
+            <span className="wb-label">Одиниця</span>
+            <select
+              className="wb-select"
+              value={customUnit ? CUSTOM_UNIT : unit}
+              onChange={(event) => {
+                const chosen = event.target.value;
+                if (chosen === CUSTOM_UNIT) setCustomUnit(true);
+                else {
+                  setCustomUnit(false);
+                  setUnit(chosen);
+                }
+              }}
+            >
+              <option value="">Без одиниці</option>
+              {/* Групи — підписи спорідненості (час із часом): сама одиниця
+                  лишається текстом, тож старі трекери читаються як читалися. */}
+              {TRACKER_UNIT_GROUPS.map((group) => (
+                <optgroup key={group.key} label={group.title}>
+                  {group.units.map((option) => (
+                    <option key={option} value={option}>
+                      {option}
+                    </option>
+                  ))}
+                </optgroup>
+              ))}
+              <option value={CUSTOM_UNIT}>Своя одиниця…</option>
+            </select>
+          </label>
+          <label className="wb-field">
+            <span className="wb-label">Ціль дня</span>
+            <input
+              className="wb-input"
+              value={goal}
+              onChange={(event) => setGoal(event.target.value)}
+              inputMode="decimal"
+              placeholder="не обов'язково"
+            />
+          </label>
+        </div>
+      )}
+      {valueType === "number" && customUnit && (
         <label className="wb-field">
-          <span className="wb-label">Одиниця</span>
+          <span className="wb-label">Своя одиниця</span>
           <input
             className="wb-input"
             value={unit}
             onChange={(event) => setUnit(event.target.value)}
             placeholder="чашок"
-            maxLength={8}
+            maxLength={TRACKER_LIMITS.unit}
           />
         </label>
+      )}
+      {valueType === "number" && (
         <label className="wb-field">
-          <span className="wb-label">Ціль дня</span>
+          <span className="wb-label">Крок</span>
           <input
             className="wb-input"
-            value={goal}
-            onChange={(event) => setGoal(event.target.value)}
+            value={step}
+            onChange={(event) => setStep(event.target.value)}
             inputMode="decimal"
-            placeholder="не обов'язково"
+            placeholder="1"
           />
         </label>
-      </div>
-      <label className="wb-field">
-        <span className="wb-label">Крок</span>
-        <input
-          className="wb-input"
-          value={step}
-          onChange={(event) => setStep(event.target.value)}
-          inputMode="decimal"
-          placeholder="1"
-        />
-      </label>
+      )}
       <div className="wb-field">
         <span className="wb-label">Як читати записи</span>
         <Tabs options={MODE_TABS} value={mode} onChange={setMode} label="Як читати записи" />
