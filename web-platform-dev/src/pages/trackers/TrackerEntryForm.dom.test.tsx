@@ -27,6 +27,7 @@ const water: Tracker = {
   min: 0,
   max: 20,
   icon: "droplet",
+  groupId: null,
   isBuiltin: true,
   mode: "sum",
 };

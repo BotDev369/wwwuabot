@@ -10,7 +10,7 @@
 
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { act, renderHook, waitFor } from "@testing-library/react";
-import type { Tracker } from "@wwwuabot/shared/trackers";
+import type { Tracker, TrackerGroup } from "@wwwuabot/shared/trackers";
 
 const mocks = { request: vi.fn(), alert: vi.fn() };
 
@@ -29,6 +29,7 @@ const water: Tracker = {
   min: 0,
   max: 20,
   icon: "droplet",
+  groupId: null,
   isBuiltin: true,
   mode: "sum",
 };
@@ -49,6 +50,9 @@ describe("стрічка", () => {
     );
     expect(view.result.current.trackers).toHaveLength(1);
     expect(view.result.current.endDay).toBe("2026-10-17");
+    // Старий api-dev не вміє `groups`: стрічка лишається з порожнім деревом,
+    // а не з `undefined`, яке валило б рендер (`groups.find`).
+    expect(view.result.current.groups).toEqual([]);
   });
 
   it("невдача називає причину і дає повторити", async () => {
@@ -127,5 +131,199 @@ describe("стрічка", () => {
       await view.result.current.archive(9);
     });
     expect(mocks.alert).toHaveBeenCalledWith("Не вдалося прибрати трекер.", { tone: "danger" });
+  });
+});
+
+describe("запис у клітинці", () => {
+  it("запис додає рядок дня — без перезавантаження стрічки", async () => {
+    mocks.request.mockResolvedValueOnce({ trackers: [water], entries: [], endDay: "2026-10-17" });
+    const view = renderHook(() => useTrackers());
+    await waitFor(() => expect(view.result.current.loading).toBe(false));
+
+    mocks.request.mockResolvedValueOnce({
+      entry: { id: 7, day: "2026-10-17", value: 1, note: "", loggedAt: "2026-10-17 10:00:00" },
+    });
+    let ok = false;
+    await act(async () => {
+      ok = await view.result.current.save(1, 1, "");
+    });
+
+    expect(ok).toBe(true);
+    expect(view.result.current.entries).toHaveLength(1);
+    expect(view.result.current.entries[0]).toMatchObject({ trackerId: 1, value: 1 });
+    expect(view.result.current.saving).toBe(false);
+  });
+
+  it("невдалий запис каже причину й не додає рядок", async () => {
+    mocks.request.mockResolvedValueOnce({ trackers: [water], entries: [], endDay: "2026-10-17" });
+    const view = renderHook(() => useTrackers());
+    await waitFor(() => expect(view.result.current.loading).toBe(false));
+
+    mocks.request.mockRejectedValueOnce(new Error("Значення поза межами трекера."));
+    let ok = true;
+    await act(async () => {
+      ok = await view.result.current.save(1, 1, "");
+    });
+
+    expect(ok).toBe(false);
+    expect(mocks.alert).toHaveBeenCalledWith("Значення поза межами трекера.", { tone: "danger" });
+    expect(view.result.current.entries).toHaveLength(0);
+  });
+
+  it("⛔ другий запис під час польоту не йде на сервер", async () => {
+    mocks.request.mockResolvedValueOnce({ trackers: [water], entries: [], endDay: "2026-10-17" });
+    const view = renderHook(() => useTrackers());
+    await waitFor(() => expect(view.result.current.loading).toBe(false));
+
+    mocks.request.mockReturnValueOnce(new Promise(() => {}));
+    await act(async () => {
+      void view.result.current.save(1, 1, "");
+    });
+    let second: boolean | undefined;
+    await act(async () => {
+      second = await view.result.current.save(1, 2, "");
+    });
+
+    expect(second).toBe(false);
+    // Завантаження + один запис: другий не долітає.
+    expect(mocks.request).toHaveBeenCalledTimes(2);
+  });
+});
+
+describe("групи стрічки", () => {
+  const own: TrackerGroup = { id: 10, parentId: null, title: "Свої", key: "own" };
+  const routine: TrackerGroup = { id: 11, parentId: null, title: "Режим", key: "routine" };
+  const morning: TrackerGroup = { id: 12, parentId: 11, title: "Ранок", key: null };
+
+  /** Стрічка з уже наявними групами й трекерами — хук після першого кадру. */
+  function seeded(groups: TrackerGroup[], trackers: Tracker[] = [water]) {
+    mocks.request.mockResolvedValueOnce({ trackers, groups, entries: [], endDay: "2026-10-17" });
+    const view = renderHook(() => useTrackers());
+    return view;
+  }
+
+  it("пересування міняє групу трекера в стані", async () => {
+    const view = seeded([own]);
+    await waitFor(() => expect(view.result.current.loading).toBe(false));
+
+    mocks.request.mockResolvedValueOnce({ ok: true });
+    let ok = false;
+    await act(async () => {
+      ok = await view.result.current.move(1, 10);
+    });
+
+    expect(ok).toBe(true);
+    expect(view.result.current.trackers[0].groupId).toBe(10);
+  });
+
+  it("невдале пересування лишає групу й каже про це", async () => {
+    const view = seeded([own]);
+    await waitFor(() => expect(view.result.current.loading).toBe(false));
+
+    mocks.request.mockRejectedValueOnce(new Error("HTTP 404"));
+    let ok = true;
+    await act(async () => {
+      ok = await view.result.current.move(1, 10);
+    });
+
+    expect(ok).toBe(false);
+    expect(mocks.alert).toHaveBeenCalledWith("Не вдалося пересунути трекер.", { tone: "danger" });
+    expect(view.result.current.trackers[0].groupId).toBeNull();
+  });
+
+  it("нова група додається у дерево без перезавантаження", async () => {
+    const view = seeded([own]);
+    await waitFor(() => expect(view.result.current.loading).toBe(false));
+
+    mocks.request.mockResolvedValueOnce({
+      group: { id: 14, parentId: null, title: "Дім", key: null },
+    });
+    let created: TrackerGroup | null = null;
+    await act(async () => {
+      created = await view.result.current.createGroup("Дім", null);
+    });
+
+    expect(created).toMatchObject({ id: 14 });
+    expect(view.result.current.groups).toHaveLength(2);
+  });
+
+  it("невдала група каже причину й не додає рядок", async () => {
+    const view = seeded([own]);
+    await waitFor(() => expect(view.result.current.loading).toBe(false));
+
+    mocks.request.mockRejectedValueOnce(new Error("Забагато груп."));
+    let created: TrackerGroup | null = { id: 0, parentId: null, title: "", key: null };
+    await act(async () => {
+      created = await view.result.current.createGroup("Дім", null);
+    });
+
+    expect(created).toBeNull();
+    expect(mocks.alert).toHaveBeenCalledWith("Забагато груп.", { tone: "danger" });
+    expect(view.result.current.groups).toHaveLength(1);
+  });
+
+  it("перейменування міняє назву того самого рядка", async () => {
+    const view = seeded([routine]);
+    await waitFor(() => expect(view.result.current.loading).toBe(false));
+
+    mocks.request.mockResolvedValueOnce({
+      group: { id: 11, parentId: null, title: "Новий режим", key: "routine" },
+    });
+    let ok = false;
+    await act(async () => {
+      ok = await view.result.current.updateGroup(11, { title: "Новий режим" });
+    });
+
+    expect(ok).toBe(true);
+    expect(view.result.current.groups[0].title).toBe("Новий режим");
+  });
+
+  it("невдала правка групи — попередження без зміни стану", async () => {
+    const view = seeded([routine]);
+    await waitFor(() => expect(view.result.current.loading).toBe(false));
+
+    mocks.request.mockRejectedValueOnce(new Error("HTTP 500"));
+    let ok = true;
+    await act(async () => {
+      ok = await view.result.current.updateGroup(11, { title: "Новий режим" });
+    });
+
+    expect(ok).toBe(false);
+    expect(mocks.alert).toHaveBeenCalledWith("Не вдалося змінити групу.", { tone: "danger" });
+    expect(view.result.current.groups[0].title).toBe("Режим");
+  });
+
+  it("прибирання групи піднімає дітей і трекери на її місце", async () => {
+    const lifted: Tracker = { ...water, id: 2, groupId: 11 };
+    const view = seeded([own, routine, morning], [water, lifted]);
+    await waitFor(() => expect(view.result.current.loading).toBe(false));
+
+    mocks.request.mockResolvedValueOnce({ ok: true });
+    let ok = false;
+    await act(async () => {
+      ok = await view.result.current.deleteGroup(11);
+    });
+
+    expect(ok).toBe(true);
+    // Рівень вище — у «Свої» (системний корінь): там і діти, і трекери.
+    expect(view.result.current.groups.map((group) => group.id)).toEqual([10, 12]);
+    expect(view.result.current.groups[1].parentId).toBe(10);
+    expect(view.result.current.trackers[1].groupId).toBe(10);
+    expect(view.result.current.trackers[0].groupId).toBeNull();
+  });
+
+  it("невдале прибирання лишає дерево й каже про це", async () => {
+    const view = seeded([own, routine]);
+    await waitFor(() => expect(view.result.current.loading).toBe(false));
+
+    mocks.request.mockRejectedValueOnce(new Error("HTTP 500"));
+    let ok = true;
+    await act(async () => {
+      ok = await view.result.current.deleteGroup(11);
+    });
+
+    expect(ok).toBe(false);
+    expect(mocks.alert).toHaveBeenCalledWith("Не вдалося прибрати групу.", { tone: "danger" });
+    expect(view.result.current.groups).toHaveLength(2);
   });
 });

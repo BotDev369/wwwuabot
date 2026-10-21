@@ -1,17 +1,26 @@
 import { describe, expect, it } from "vitest";
-import type { Tracker, TrackerEntry, TrackerEntryRow } from "@wwwuabot/shared/trackers";
+import type {
+  Tracker,
+  TrackerEntry,
+  TrackerEntryRow,
+  TrackerGroup,
+} from "@wwwuabot/shared/trackers";
 import {
+  cellAmount,
   changeAmountLabel,
   changeLabel,
   dayLabel,
   goalLabel,
-  groupTrackerRows,
+  groupRowsTree,
   historySince,
+  matrixDayLabel,
+  matrixDays,
   newestFirst,
   readingBand,
   signedAmount,
   timeLabel,
   toTrackerRows,
+  trackerCells,
   whenLabel,
 } from "./trackers-view";
 
@@ -25,6 +34,7 @@ const water: Tracker = {
   min: 0,
   max: 20,
   icon: "droplet",
+  groupId: 10,
   isBuiltin: true,
   mode: "sum",
 };
@@ -39,6 +49,7 @@ const weight: Tracker = {
   min: 0,
   max: 400,
   icon: "bar-chart",
+  groupId: 13,
   isBuiltin: false,
   mode: "read",
 };
@@ -83,6 +94,7 @@ describe("групи стрічки", () => {
     min: 0,
     max: 100000,
     icon: "footsteps",
+    groupId: 12,
     isBuiltin: true,
     mode: "sum",
   };
@@ -96,25 +108,118 @@ describe("групи стрічки", () => {
     min: 0,
     max: 1000,
     icon: "bar-chart",
+    groupId: null,
     isBuiltin: false,
     mode: "sum",
   };
 
-  it("порядок тематик — з каталогу, «Свої» завжди останні", () => {
-    const rows = toTrackerRows([weight, water, steps, coffee], [], "2026-10-17");
-    const groups = groupTrackerRows(rows);
+  const groups: TrackerGroup[] = [
+    { id: 10, parentId: null, title: "Режим", key: "routine" },
+    { id: 11, parentId: null, title: "Активність", key: "activity" },
+    { id: 12, parentId: 11, title: "Ранкова рутина", key: null },
+    { id: 13, parentId: null, title: "Свої", key: "own" },
+  ];
 
-    expect(groups.map((group) => group.title)).toEqual(["Активність", "Режим", "Свої"]);
-    expect(groups[2].rows.map((row) => row.tracker.id)).toEqual([2, 4]);
+  it("дерево будується за батьками, «Свої» збирає й безгрупових", () => {
+    const grouped: Tracker[] = [
+      { ...weight, groupId: 13 },
+      { ...water, groupId: 10 },
+      steps, // groupId: 12 → підгрупа «Ранкова рутина»
+      coffee, // groupId: null → «Свої»
+    ];
+    const rows = toTrackerRows(grouped, [], "2026-10-17");
+    const tree = groupRowsTree(rows, groups);
+
+    // Порядок верхнього рівня — порядок списку груп; «Свої» (13) — теж корінь.
+    expect(tree.map((node) => node.group.id)).toEqual([10, 11, 13]);
+    // Підгрупа живе під батьком, а не поруч.
+    expect(tree[1]?.children.map((node) => node.group.id)).toEqual([12]);
+    expect(tree[1]?.rows).toHaveLength(0);
+    // Рахунок рекурсивний: згорнутий заголовок каже й про підгрупу.
+    expect(tree[1]?.count).toBe(1);
+    // «Свої» збирає і свій трекер, і той, що без групи.
+    expect(tree[2]?.rows.map((row) => row.tracker.id).sort()).toEqual([2, 4]);
   });
 
   it("порожня тематика не показується — порожня полиця це шум", () => {
-    const rows = toTrackerRows([water], [], "2026-10-17");
-    const groups = groupTrackerRows(rows);
+    const rows = toTrackerRows([{ ...water, groupId: 10 }], [], "2026-10-17");
+    const tree = groupRowsTree(rows, groups);
 
-    expect(groups).toHaveLength(1);
-    expect(groups[0].title).toBe("Режим");
-    expect(groups[0].rows).toHaveLength(1);
+    expect(tree.map((node) => node.group.id)).toEqual([10]);
+    expect(tree[0]?.rows).toHaveLength(1);
+  });
+});
+
+describe("матриця днів", () => {
+  it("вікно закінчується днем стрічки й має стільки днів, скільки просили", () => {
+    expect(matrixDays("2026-10-17", 5)).toEqual([
+      "2026-10-13",
+      "2026-10-14",
+      "2026-10-15",
+      "2026-10-16",
+      "2026-10-17",
+    ]);
+  });
+
+  it("підпис дня читається як «день тижня + число»", () => {
+    // 2026-10-17 — субота.
+    expect(matrixDayLabel("2026-10-17")).toBe("Сб 17");
+  });
+
+  it("клітинка sum — сума дня, read — останній вимір", () => {
+    const entries: TrackerEntryRow[] = [
+      {
+        id: 1,
+        trackerId: 1,
+        day: "2026-10-17",
+        value: 1,
+        note: "",
+        loggedAt: "2026-10-17 08:00:00",
+      },
+      {
+        id: 2,
+        trackerId: 1,
+        day: "2026-10-17",
+        value: 1.5,
+        note: "",
+        loggedAt: "2026-10-17 20:00:00",
+      },
+    ];
+    const days = ["2026-10-17"];
+
+    expect(trackerCells(water, entries, days)[0]?.value).toBe(2.5);
+    const reading: Tracker = { ...water, mode: "read", goal: null };
+    expect(trackerCells(reading, entries, days)[0]?.value).toBe(1.5);
+  });
+
+  it("день без запису — null, а не нуль", () => {
+    const cells = trackerCells(water, [], ["2026-10-17"]);
+    expect(cells[0]?.value).toBeNull();
+    expect(cells[0]?.goalMet).toBe(false);
+  });
+
+  it("ціль досягнута — клітинка каже про це, без цілі — не каже", () => {
+    const entries: TrackerEntryRow[] = [
+      {
+        id: 1,
+        trackerId: 1,
+        day: "2026-10-17",
+        value: 2.5,
+        note: "",
+        loggedAt: "2026-10-17 08:00:00",
+      },
+    ];
+    expect(trackerCells(water, entries, ["2026-10-17"])[0]?.goalMet).toBe(true);
+    const goalless: Tracker = { ...water, goal: null };
+    expect(trackerCells(goalless, entries, ["2026-10-17"])[0]?.goalMet).toBe(false);
+  });
+
+  it("число клітинки коротшає лише до тисяч", () => {
+    expect(cellAmount(null)).toBe("");
+    expect(cellAmount(2.5)).toBe("2,5");
+    // `uk-UA` розділяє тисячі нерозривним пробілом — тому не рядок, а схема.
+    expect(cellAmount(9999)).toMatch(/^9\s999$/);
+    expect(cellAmount(12000)).toBe("12к");
   });
 });
 

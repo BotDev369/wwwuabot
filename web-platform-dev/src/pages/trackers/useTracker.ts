@@ -14,17 +14,20 @@ import {
   todayTrackerDay,
   type Tracker,
   type TrackerEntry,
+  type TrackerGroup,
 } from "@wwwuabot/shared/trackers";
 import { apiFetch } from "@/shared/api/client";
 
 interface TrackerPayload {
   tracker: Tracker;
+  groups: TrackerGroup[];
   entries: TrackerEntry[];
   endDay: string;
 }
 
 export interface TrackerState {
   tracker: Tracker | null;
+  groups: TrackerGroup[];
   entries: TrackerEntry[];
   endDay: string;
   loading: boolean;
@@ -34,11 +37,14 @@ export interface TrackerState {
   save: (value: number, note: string) => Promise<boolean>;
   remove: (entryId: number) => Promise<boolean>;
   archive: () => Promise<boolean>;
+  /** Пересунути трекер в іншу групу — дерева стрічки воно торкається лише після успіху. */
+  move: (groupId: number | null) => Promise<boolean>;
 }
 
 export function useTracker(id: number): TrackerState {
   const dialog = useDialog();
   const [tracker, setTracker] = useState<Tracker | null>(null);
+  const [groups, setGroups] = useState<TrackerGroup[]>([]);
   const [entries, setEntries] = useState<TrackerEntry[]>([]);
   const [endDay, setEndDay] = useState("");
   const [loading, setLoading] = useState(true);
@@ -54,6 +60,7 @@ export function useTracker(id: number): TrackerState {
       );
       if (request !== generation.current) return;
       setTracker(result.tracker);
+      setGroups(result.groups);
       setEntries(result.entries);
       setEndDay(result.endDay);
       setError(null);
@@ -121,5 +128,33 @@ export function useTracker(id: number): TrackerState {
     }
   }
 
-  return { tracker, entries, endDay, loading, error, saving, reload, save, remove, archive };
+  async function move(groupId: number | null): Promise<boolean> {
+    try {
+      await apiFetch("/api/user/trackers", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ id, groupId }),
+      });
+      setTracker((current) => (current ? { ...current, groupId } : current));
+      return true;
+    } catch {
+      await dialog.alert("Не вдалося змінити групу.", { tone: "danger" });
+      return false;
+    }
+  }
+
+  return {
+    tracker,
+    groups,
+    entries,
+    endDay,
+    loading,
+    error,
+    saving,
+    reload,
+    save,
+    remove,
+    archive,
+    move,
+  };
 }

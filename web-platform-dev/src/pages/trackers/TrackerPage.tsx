@@ -15,6 +15,8 @@ import { useScreenChrome } from "@wwwuabot/ui/nav";
 import { Tabs, tabId, tabPanelId, type TabOption } from "@wwwuabot/ui/tabs";
 import {
   TRACKER_RANGES,
+  buildTrackerGroupTree,
+  flattenTrackerGroupTree,
   formatTrackerAmount,
   trackerLatest,
   trackerMode,
@@ -128,6 +130,25 @@ export function TrackerPage(): ReactElement {
               onChange={(patch) => setDraft({ ...draft, ...patch })}
               onSubmit={() => void submit()}
             />
+            <label className="wb-field">
+              <span className="wb-label">Група</span>
+              {/* Нерозривні пробіли позначають рівень глибини дерева. */}
+              <select
+                className="wb-select"
+                value={tracker.groupId ?? ""}
+                onChange={(event) =>
+                  void state.move(event.target.value === "" ? null : Number(event.target.value))
+                }
+              >
+                <option value="">Свої</option>
+                {flattenTrackerGroupTree(buildTrackerGroupTree(state.groups)).map((option) => (
+                  <option key={option.group.id} value={option.group.id}>
+                    {"\u00A0".repeat(option.depth * 3)}
+                    {option.group.title}
+                  </option>
+                ))}
+              </select>
+            </label>
           </section>
 
           <section className="wb-tracker-panel">

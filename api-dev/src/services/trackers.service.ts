@@ -10,88 +10,27 @@
 import { ensureTables } from "@wwwuabot/shared/database/ensure-tables";
 import { formatSqliteDatetime } from "@wwwuabot/shared/utils/datetime";
 import {
-  TRACKER_CATALOG,
+  TRACKER_OWN_GROUP_KEY,
   todayTrackerDay,
-  trackerMode,
   type Tracker,
   type TrackerEntry,
   type TrackerEntryRow,
   type TrackerFields,
+  type TrackerGroup,
 } from "@wwwuabot/shared/trackers";
 import type { Env } from "../shared/types";
-
-interface TrackerRow {
-  id: number;
-  key: string;
-  title: string;
-  unit: string;
-  step: number;
-  goal: number | null;
-  min_value: number;
-  max_value: number | null;
-  mode: string | null;
-  icon: string;
-  is_builtin: number;
-}
-
-/**
- * `COALESCE` — не перестраховка: колонку `mode` добрав `ensureTables`, тож у
- * рядків, старших за неї, там `NULL` (див. `docs/D1_OPS.md`, «М'яка схема»).
- */
-const TRACKER_COLUMNS =
-  "id, key, title, unit, step, goal, min_value, max_value, " +
-  "COALESCE(mode, CASE WHEN goal IS NULL THEN 'read' ELSE 'sum' END) AS mode, icon, is_builtin";
-
-function toTracker(row: TrackerRow): Tracker {
-  return {
-    id: Number(row.id),
-    key: row.key,
-    title: row.title,
-    unit: row.unit,
-    step: Number(row.step),
-    goal: row.goal === null ? null : Number(row.goal),
-    min: Number(row.min_value),
-    max: row.max_value === null ? null : Number(row.max_value),
-    mode: trackerMode({ key: row.key, goal: row.goal, mode: row.mode }),
-    icon: (row.icon || "bar-chart") as Tracker["icon"],
-    isBuiltin: Number(row.is_builtin) === 1,
-  };
-}
-
-/**
- * Стандартні трекери сіються при **кожному** вході в стрічку.
- *
- * `INSERT OR IGNORE` + `UNIQUE (owner_id, key)` робить це ідемпотентним, а
- * прибраний трекер не воскресає: його ключ лишається зайнятим. Саме так
- * нові мірки каталогу доїжджають до наявних людей, а не лише до порожніх.
- */
-async function seedTrackers(env: Env, userId: number): Promise<void> {
-  const now = formatSqliteDatetime();
-  const statements = TRACKER_CATALOG.map((tracker) =>
-    env.DB.prepare(
-      `INSERT OR IGNORE INTO trackers
-         (owner_id, key, title, unit, step, goal, min_value, max_value, mode, icon, is_builtin, is_active, created_at)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 1, 1, ?)`,
-    ).bind(
-      String(userId),
-      tracker.key,
-      tracker.title,
-      tracker.unit,
-      tracker.step,
-      tracker.goal,
-      tracker.min,
-      tracker.max,
-      tracker.mode,
-      tracker.icon,
-      now,
-    ),
-  );
-  await env.DB.batch(statements);
-}
+import {
+  TRACKER_COLUMNS,
+  seedGroups,
+  seedTrackers,
+  toTracker,
+  type TrackerRow,
+} from "./trackers-seed";
 
 export async function listTrackers(env: Env, userId: number): Promise<Tracker[]> {
-  await ensureTables(env.DB, ["trackers"]);
-  await seedTrackers(env, userId);
+  await ensureTables(env.DB, ["trackers", "tracker_groups"]);
+  const groups = await seedGroups(env, userId);
+  await seedTrackers(env, userId, groups);
 
   const rows = await env.DB.prepare(
     `SELECT ${TRACKER_COLUMNS} FROM trackers WHERE owner_id = ? AND is_active = 1 ORDER BY id`,
@@ -99,6 +38,59 @@ export async function listTrackers(env: Env, userId: number): Promise<Tracker[]>
     .bind(String(userId))
     .all<TrackerRow>();
   return (rows.results ?? []).map(toTracker);
+}
+
+/** Дерево груп людини: верхній рівень першим (типові тематики сіються раніше). */
+export async function listGroups(env: Env, userId: number): Promise<TrackerGroup[]> {
+  await ensureTables(env.DB, ["tracker_groups"]);
+  await seedGroups(env, userId);
+  const rows = await env.DB.prepare(
+    `SELECT id, parent_id, title, key FROM tracker_groups WHERE owner_id = ? ORDER BY id`,
+  )
+    .bind(String(userId))
+    .all<{ id: number; parent_id: number | null; title: string; key: string | null }>();
+  return (rows.results ?? []).map((row) => ({
+    id: Number(row.id),
+    parentId: row.parent_id === null ? null : Number(row.parent_id),
+    title: row.title,
+    key: row.key,
+  }));
+}
+
+/** Нова група: ключа вона не має — він ознака типової тематики каталогу. */
+export async function createGroup(
+  env: Env,
+  userId: number,
+  fields: { title: string; parentId: number | null },
+): Promise<TrackerGroup | null> {
+  const result = await env.DB.prepare(
+    `INSERT INTO tracker_groups (owner_id, key, parent_id, title, created_at)
+     VALUES (?, NULL, ?, ?, ?)`,
+  )
+    .bind(String(userId), fields.parentId, fields.title, formatSqliteDatetime())
+    .run();
+  const id = Number(result.meta.last_row_id ?? 0);
+  return id > 0 ? { id, parentId: fields.parentId, title: fields.title, key: null } : null;
+}
+
+/**
+ * Група цієї людини; `null` — чужа або неіснуюча. Один запит за номером і
+ * власником, тож чужий номер не існує й тут.
+ */
+async function readGroup(env: Env, userId: number, id: number): Promise<TrackerGroup | null> {
+  const row = await env.DB.prepare(
+    `SELECT id, parent_id, title, key FROM tracker_groups WHERE id = ? AND owner_id = ?`,
+  )
+    .bind(id, String(userId))
+    .first<{ id: number; parent_id: number | null; title: string; key: string | null }>();
+  return row
+    ? {
+        id: Number(row.id),
+        parentId: row.parent_id === null ? null : Number(row.parent_id),
+        title: row.title,
+        key: row.key,
+      }
+    : null;
 }
 
 /** Записи вікна для стрічки: одна вибірка на всі трекери людини. */
@@ -168,17 +160,112 @@ export async function readTrackerEntries(
   }));
 }
 
+/**
+ * Назва й батько групи. Батька перевіряємо **до** запису: цикл (група під
+ * власним нащадком) замкнув би дерево, і стрічка перестала б рендеритись.
+ */
+export async function updateGroup(
+  env: Env,
+  userId: number,
+  id: number,
+  fields: { title?: string; parentId?: number | null },
+): Promise<{ ok: true; group: TrackerGroup } | { ok: false; reason: "not_found" | "cycle" }> {
+  const group = await readGroup(env, userId, id);
+  if (!group) return { ok: false, reason: "not_found" };
+
+  const parentId: number | null =
+    "parentId" in fields && fields.parentId !== undefined ? fields.parentId : group.parentId;
+  if (parentId !== null) {
+    if (parentId === id) return { ok: false, reason: "cycle" };
+    // Піднятись батьками нового батька: якщо дійшли до самої групи — це цикл.
+    let cursor = await readGroup(env, userId, parentId);
+    if (!cursor) return { ok: false, reason: "not_found" };
+    const seen = new Set<number>();
+    while (cursor.parentId !== null && !seen.has(cursor.id)) {
+      if (cursor.id === id) return { ok: false, reason: "cycle" };
+      seen.add(cursor.id);
+      const next = await readGroup(env, userId, cursor.parentId);
+      if (!next) break; // батька видалили — дерево сироти виправить стрічка
+      cursor = next;
+    }
+    if (cursor.id === id) return { ok: false, reason: "cycle" };
+  }
+
+  const title = fields.title ?? group.title;
+  await env.DB.prepare(
+    `UPDATE tracker_groups SET title = ?, parent_id = ? WHERE id = ? AND owner_id = ?`,
+  )
+    .bind(title, parentId, id, String(userId))
+    .run();
+  return { ok: true, group: { ...group, title, parentId } };
+}
+
+/**
+ * Прибрання групи не прибирає нічого з трекерів: діти підіймаються на місце
+ * батька, а трекери — у групу «Свої» (системний корінь, його не можна
+ * видалити). Історія вимірів не чіпається взагалі.
+ */
+export async function deleteGroup(
+  env: Env,
+  userId: number,
+  id: number,
+): Promise<"ok" | "not_found" | "builtin"> {
+  const group = await readGroup(env, userId, id);
+  if (!group) return "not_found";
+  // Типова тематика: ключ — це контракт каталогу, його рядок сіється знову.
+  if (group.key !== null) return "builtin";
+
+  const own = await env.DB.prepare(`SELECT id FROM tracker_groups WHERE owner_id = ? AND key = ?`)
+    .bind(String(userId), TRACKER_OWN_GROUP_KEY)
+    .first<{ id: number }>();
+  const moveTo = group.parentId ?? (own ? Number(own.id) : null);
+
+  await env.DB.batch([
+    env.DB.prepare(
+      `UPDATE tracker_groups SET parent_id = ? WHERE parent_id = ? AND owner_id = ?`,
+    ).bind(moveTo, id, String(userId)),
+    env.DB.prepare(`UPDATE trackers SET group_id = ? WHERE group_id = ? AND owner_id = ?`).bind(
+      moveTo,
+      id,
+      String(userId),
+    ),
+    env.DB.prepare(`DELETE FROM tracker_groups WHERE id = ? AND owner_id = ?`).bind(
+      id,
+      String(userId),
+    ),
+  ]);
+  return "ok";
+}
+
+/** Пересунути трекер в іншу групу; група має бути цієї ж людини. */
+export async function moveTracker(
+  env: Env,
+  userId: number,
+  trackerId: number,
+  groupId: number | null,
+): Promise<boolean> {
+  if (groupId !== null && !(await readGroup(env, userId, groupId))) return false;
+  const result = await env.DB.prepare(
+    `UPDATE trackers SET group_id = ? WHERE id = ? AND owner_id = ? AND is_active = 1`,
+  )
+    .bind(groupId, trackerId, String(userId))
+    .run();
+  return Number(result.meta.changes) > 0;
+}
+
 /** Власний трекер: ключ внутрішній, людина його не бачить і не задає. */
 export async function createTracker(
   env: Env,
   userId: number,
   fields: TrackerFields,
+  groupId: number | null = null,
 ): Promise<Tracker | null> {
+  if (groupId !== null && !(await readGroup(env, userId, groupId))) return null;
   const key = `own-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}`;
   await env.DB.prepare(
     `INSERT INTO trackers
-       (owner_id, key, title, unit, step, goal, min_value, max_value, mode, icon, is_builtin, is_active, created_at)
-     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 'bar-chart', 0, 1, ?)`,
+       (owner_id, key, title, unit, step, goal, min_value, max_value, mode, icon, group_id, is_builtin, is_active, created_at)
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 'bar-chart', ?, 0, 1, ?)`,
   )
     .bind(
       String(userId),
@@ -190,6 +277,7 @@ export async function createTracker(
       fields.min,
       fields.max,
       fields.mode,
+      groupId,
       formatSqliteDatetime(),
     )
     .run();

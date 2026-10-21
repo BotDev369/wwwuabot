@@ -14,8 +14,8 @@ import type { TrackerFields } from "../trackers";
 export interface TrackerCatalogEntry extends TrackerFields {
   key: string;
   icon: IconName;
-  /** Тематика в стрічці: мірки одного сенсу стоять під одним заголовком. */
-  group: TrackerGroup;
+  /** Тематика в стрічці: ключ групи каталогу, рядок якої сіє сервер. */
+  groupKey: TrackerCatalogGroupKey;
 }
 
 /** Стеля вводу: межа числа, довжини тексту й кількості трекерів у людини. */
@@ -27,12 +27,26 @@ export const TRACKER_LIMITS = {
   value: 1_000_000_000,
 } as const;
 
-/** Тематики стрічки — у такому порядку йдуть заголовки груп. */
-export const TRACKER_GROUPS = ["Активність", "Самопочуття", "Режим", "Розвиток", "Гроші"] as const;
-export type TrackerGroup = (typeof TRACKER_GROUPS)[number];
+/**
+ * Тематики стрічки — **дані, а не механіка**: рядок каталогу сіє сервер у
+ * `tracker_groups` ключем, а людина може перейменувати його й наділити
+ * підгрупами, як власну групу. Порядок ключів — порядок заголовків.
+ */
+export const TRACKER_CATALOG_GROUPS = [
+  { key: "activity", title: "Активність" },
+  { key: "wellbeing", title: "Самопочуття" },
+  { key: "routine", title: "Режим" },
+  { key: "growth", title: "Розвиток" },
+  { key: "money", title: "Гроші" },
+  // «Свої» — системний корінь для всього, що людина не віднесла сама; він
+  // останній у списку, бо його ніхто не обирає — він завжди є.
+  { key: "own", title: "Свої" },
+] as const;
 
-/** Група власних трекерів: усе, чого немає в каталозі, — під одним дахом. */
-export const TRACKER_OWN_GROUP = "Свої";
+export type TrackerCatalogGroupKey = (typeof TRACKER_CATALOG_GROUPS)[number]["key"];
+
+/** Системна група «Свої»: її рядок сіє сервер, видалити її не можна. */
+export const TRACKER_OWN_GROUP_KEY = "own";
 
 /**
  * Стандартний набір — те, що людина бачить при першому вході.
@@ -51,7 +65,7 @@ export const TRACKER_CATALOG: readonly TrackerCatalogEntry[] = [
     max: 100000,
     icon: "footsteps",
     mode: "sum",
-    group: "Активність",
+    groupKey: "activity",
   },
   {
     key: "water",
@@ -63,7 +77,7 @@ export const TRACKER_CATALOG: readonly TrackerCatalogEntry[] = [
     max: 20,
     icon: "droplet",
     mode: "sum",
-    group: "Режим",
+    groupKey: "routine",
   },
   {
     key: "sleep",
@@ -75,7 +89,7 @@ export const TRACKER_CATALOG: readonly TrackerCatalogEntry[] = [
     max: 24,
     icon: "moon",
     mode: "read",
-    group: "Режим",
+    groupKey: "routine",
   },
   {
     key: "weight",
@@ -87,7 +101,7 @@ export const TRACKER_CATALOG: readonly TrackerCatalogEntry[] = [
     max: 500,
     icon: "progress",
     mode: "read",
-    group: "Самопочуття",
+    groupKey: "wellbeing",
   },
   {
     key: "mood",
@@ -99,7 +113,7 @@ export const TRACKER_CATALOG: readonly TrackerCatalogEntry[] = [
     max: 5,
     icon: "heart",
     mode: "read",
-    group: "Самопочуття",
+    groupKey: "wellbeing",
   },
   {
     key: "energy",
@@ -111,7 +125,7 @@ export const TRACKER_CATALOG: readonly TrackerCatalogEntry[] = [
     max: 5,
     icon: "sun",
     mode: "read",
-    group: "Самопочуття",
+    groupKey: "wellbeing",
   },
   {
     key: "workout",
@@ -123,7 +137,7 @@ export const TRACKER_CATALOG: readonly TrackerCatalogEntry[] = [
     max: 600,
     icon: "flame",
     mode: "sum",
-    group: "Активність",
+    groupKey: "activity",
   },
   {
     key: "reading",
@@ -135,7 +149,7 @@ export const TRACKER_CATALOG: readonly TrackerCatalogEntry[] = [
     max: 600,
     icon: "book",
     mode: "sum",
-    group: "Розвиток",
+    groupKey: "growth",
   },
   {
     key: "spend",
@@ -147,7 +161,7 @@ export const TRACKER_CATALOG: readonly TrackerCatalogEntry[] = [
     max: TRACKER_LIMITS.value,
     icon: "wallet",
     mode: "sum",
-    group: "Гроші",
+    groupKey: "money",
   },
   {
     key: "temp",
@@ -159,7 +173,7 @@ export const TRACKER_CATALOG: readonly TrackerCatalogEntry[] = [
     max: 45,
     icon: "thermometer",
     mode: "read",
-    group: "Самопочуття",
+    groupKey: "wellbeing",
   },
   {
     key: "protein",
@@ -171,7 +185,7 @@ export const TRACKER_CATALOG: readonly TrackerCatalogEntry[] = [
     max: 500,
     icon: "hash",
     mode: "sum",
-    group: "Самопочуття",
+    groupKey: "wellbeing",
   },
   {
     key: "calm",
@@ -183,7 +197,7 @@ export const TRACKER_CATALOG: readonly TrackerCatalogEntry[] = [
     max: 600,
     icon: "lotus",
     mode: "sum",
-    group: "Режим",
+    groupKey: "routine",
   },
   {
     key: "run",
@@ -195,7 +209,7 @@ export const TRACKER_CATALOG: readonly TrackerCatalogEntry[] = [
     max: 200,
     icon: "run",
     mode: "sum",
-    group: "Активність",
+    groupKey: "activity",
   },
   {
     key: "bike",
@@ -207,7 +221,7 @@ export const TRACKER_CATALOG: readonly TrackerCatalogEntry[] = [
     max: 300,
     icon: "bike",
     mode: "sum",
-    group: "Активність",
+    groupKey: "activity",
   },
   {
     key: "pressure",
@@ -219,7 +233,7 @@ export const TRACKER_CATALOG: readonly TrackerCatalogEntry[] = [
     max: 250,
     icon: "pulse",
     mode: "read",
-    group: "Самопочуття",
+    groupKey: "wellbeing",
   },
   {
     key: "glucose",
@@ -231,7 +245,7 @@ export const TRACKER_CATALOG: readonly TrackerCatalogEntry[] = [
     max: 35,
     icon: "flask",
     mode: "read",
-    group: "Самопочуття",
+    groupKey: "wellbeing",
   },
   {
     key: "calories",
@@ -243,7 +257,7 @@ export const TRACKER_CATALOG: readonly TrackerCatalogEntry[] = [
     max: 10000,
     icon: "plate",
     mode: "sum",
-    group: "Самопочуття",
+    groupKey: "wellbeing",
   },
   {
     key: "coffee",
@@ -255,7 +269,7 @@ export const TRACKER_CATALOG: readonly TrackerCatalogEntry[] = [
     max: 15,
     icon: "cup",
     mode: "sum",
-    group: "Режим",
+    groupKey: "routine",
   },
   {
     key: "screen",
@@ -267,7 +281,7 @@ export const TRACKER_CATALOG: readonly TrackerCatalogEntry[] = [
     max: 1440,
     icon: "mobile",
     mode: "sum",
-    group: "Режим",
+    groupKey: "routine",
   },
   {
     key: "smoke",
@@ -279,7 +293,7 @@ export const TRACKER_CATALOG: readonly TrackerCatalogEntry[] = [
     max: 100,
     icon: "cigarette",
     mode: "sum",
-    group: "Режим",
+    groupKey: "routine",
   },
   {
     key: "alcohol",
@@ -291,7 +305,7 @@ export const TRACKER_CATALOG: readonly TrackerCatalogEntry[] = [
     max: 20,
     icon: "glass",
     mode: "sum",
-    group: "Режим",
+    groupKey: "routine",
   },
   {
     key: "medicine",
@@ -303,7 +317,7 @@ export const TRACKER_CATALOG: readonly TrackerCatalogEntry[] = [
     max: 10,
     icon: "pill",
     mode: "sum",
-    group: "Режим",
+    groupKey: "routine",
   },
   {
     key: "chores",
@@ -315,7 +329,7 @@ export const TRACKER_CATALOG: readonly TrackerCatalogEntry[] = [
     max: 600,
     icon: "checklist",
     mode: "sum",
-    group: "Режим",
+    groupKey: "routine",
   },
   {
     key: "study",
@@ -327,7 +341,7 @@ export const TRACKER_CATALOG: readonly TrackerCatalogEntry[] = [
     max: 1440,
     icon: "cap",
     mode: "sum",
-    group: "Розвиток",
+    groupKey: "growth",
   },
   {
     key: "language",
@@ -339,7 +353,7 @@ export const TRACKER_CATALOG: readonly TrackerCatalogEntry[] = [
     max: 720,
     icon: "globe",
     mode: "sum",
-    group: "Розвиток",
+    groupKey: "growth",
   },
   {
     key: "journal",
@@ -351,7 +365,7 @@ export const TRACKER_CATALOG: readonly TrackerCatalogEntry[] = [
     max: 10,
     icon: "message-square",
     mode: "sum",
-    group: "Розвиток",
+    groupKey: "growth",
   },
   {
     key: "gratitude",
@@ -363,7 +377,7 @@ export const TRACKER_CATALOG: readonly TrackerCatalogEntry[] = [
     max: 10,
     icon: "star",
     mode: "sum",
-    group: "Розвиток",
+    groupKey: "growth",
   },
   {
     key: "saving",
@@ -375,7 +389,7 @@ export const TRACKER_CATALOG: readonly TrackerCatalogEntry[] = [
     max: TRACKER_LIMITS.value,
     icon: "jar",
     mode: "sum",
-    group: "Гроші",
+    groupKey: "money",
   },
   {
     key: "income",
@@ -387,18 +401,19 @@ export const TRACKER_CATALOG: readonly TrackerCatalogEntry[] = [
     max: TRACKER_LIMITS.value,
     icon: "hryvnia",
     mode: "sum",
-    group: "Гроші",
+    groupKey: "money",
   },
 ];
 
 const CATALOG_BY_KEY = new Map(TRACKER_CATALOG.map((entry) => [entry.key, entry]));
 
-/** Запис каталогу за ключем: `undefined` — це власний трекер людини. */
+/**
+ * Запис каталогу за ключем: `undefined` — це власний трекер людини.
+ *
+ * Тематика тепер не виводиться з каталогу — вона живе в рядку
+ * `tracker_groups` власника (див. `./groups`), бо людина може її
+ * перейменувати й наділити підгрупами.
+ */
 export function catalogEntry(key: string): TrackerCatalogEntry | undefined {
   return CATALOG_BY_KEY.get(key);
-}
-
-/** Тематика мірки: з каталогу за ключем; свій трекер — завжди «Свої». */
-export function trackerGroup(tracker: { key: string }): string {
-  return catalogEntry(tracker.key)?.group ?? TRACKER_OWN_GROUP;
 }

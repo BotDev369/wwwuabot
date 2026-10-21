@@ -1,10 +1,9 @@
 // @vitest-environment jsdom
 /**
- * «Трекери»: група тематики й плитка «знак + назва» — більше нічого.
- *
- * Поле запису зі стрічки прибрано (запис живе на сторінці трекера), тож тут
- * перевіряємо відсутністю: ні поля, ні кнопки «Записати», ні підписів стану.
- * Групи йдуть порядком каталогу, «Свої» — останні; смуга дня лишається.
+ * «Трекери» — акордеон груп + матриця днів: дерево груп із рахунком, дотик
+ * по назві веде на картку, по сьогоднішній клітинці відкриває форму запису,
+ * по минулій — теж веде на картку (день ставить сервер); вибір групи
+ * пам'ятається в localStorage, а не в стані сторінки.
  *
  * @module web-platform-dev/src/pages/trackers/TrackersPage.dom.test
  */
@@ -12,7 +11,7 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import type { Tracker, TrackerEntryRow } from "@wwwuabot/shared/trackers";
+import type { Tracker, TrackerEntryRow, TrackerGroup } from "@wwwuabot/shared/trackers";
 
 const hooks = {
   navigate: vi.fn(),
@@ -20,7 +19,22 @@ const hooks = {
   create: vi.fn(),
   reload: vi.fn(),
   archive: vi.fn(),
+  save: vi.fn(),
+  move: vi.fn(),
+  createGroup: vi.fn(),
+  updateGroup: vi.fn(),
+  deleteGroup: vi.fn(),
+  prompt: vi.fn(),
+  confirm: vi.fn(),
+  alert: vi.fn(),
 };
+
+const groups: TrackerGroup[] = [
+  { id: 10, parentId: null, title: "Режим", key: "routine" },
+  { id: 11, parentId: null, title: "Активність", key: "activity" },
+  { id: 12, parentId: 11, title: "Ранкова рутина", key: null },
+  { id: 13, parentId: null, title: "Свої", key: "own" },
+];
 
 const water: Tracker = {
   id: 1,
@@ -32,20 +46,7 @@ const water: Tracker = {
   min: 0,
   max: 20,
   icon: "droplet",
-  isBuiltin: true,
-  mode: "sum",
-};
-
-const sleep: Tracker = {
-  id: 2,
-  key: "sleep",
-  title: "Сон",
-  unit: "год",
-  step: 0.5,
-  goal: 8,
-  min: 0,
-  max: 24,
-  icon: "moon",
+  groupId: 10,
   isBuiltin: true,
   mode: "sum",
 };
@@ -60,6 +61,7 @@ const steps: Tracker = {
   min: 0,
   max: 100000,
   icon: "footsteps",
+  groupId: 12,
   isBuiltin: true,
   mode: "sum",
 };
@@ -74,19 +76,27 @@ const coffee: Tracker = {
   min: 0,
   max: 1000,
   icon: "bar-chart",
+  groupId: null,
   isBuiltin: false,
   mode: "sum",
 };
 
 const state = {
   trackers: [] as Tracker[],
+  groups,
   entries: [] as TrackerEntryRow[],
   endDay: "2026-10-17",
   loading: false,
+  saving: false,
   error: null as string | null,
   reload: hooks.reload,
   create: hooks.create,
   archive: hooks.archive,
+  save: hooks.save,
+  move: hooks.move,
+  createGroup: hooks.createGroup,
+  updateGroup: hooks.updateGroup,
+  deleteGroup: hooks.deleteGroup,
 };
 
 vi.mock("react-router-dom", () => ({
@@ -94,112 +104,124 @@ vi.mock("react-router-dom", () => ({
   useSearchParams: () => [hooks.params, vi.fn()],
 }));
 vi.mock("@wwwuabot/ui/nav", () => ({ useScreenChrome: () => {} }));
+vi.mock("@wwwuabot/ui/dialog", () => ({
+  useDialog: () => ({
+    alert: hooks.alert,
+    confirm: hooks.confirm,
+    prompt: hooks.prompt,
+  }),
+}));
 vi.mock("./useTrackers", () => ({ useTrackers: () => state }));
 
 const { TrackersPage } = await import("./TrackersPage");
 
 beforeEach(() => {
   vi.clearAllMocks();
+  localStorage.clear();
   hooks.params = new URLSearchParams();
-  state.trackers = [water, sleep];
+  state.trackers = [water, steps, coffee];
+  state.groups = groups;
   state.entries = [
-    { id: 1, trackerId: 1, day: "2026-10-17", value: 2, note: "", loggedAt: "2026-10-17 09:00:00" },
     {
-      id: 2,
+      id: 1,
       trackerId: 1,
-      day: "2026-10-16",
-      value: 1.5,
+      day: "2026-10-17",
+      value: 2.5,
       note: "",
-      loggedAt: "2026-10-16 09:00:00",
+      loggedAt: "2026-10-17 09:00:00",
     },
-    { id: 3, trackerId: 2, day: "2026-10-14", value: 7, note: "", loggedAt: "2026-10-14 09:00:00" },
   ];
   state.loading = false;
+  state.saving = false;
   state.error = null;
 });
 
-describe("стрічка трекерів", () => {
-  it("⛔ картка — лише знак і назва: ні поля, ні кнопки «Записати», ні підписів", () => {
+describe("акордеон груп", () => {
+  it("дефолт — усі згорнуті; згорнутий заголовок несе рекурсивний рахунок", () => {
     const { container } = render(<TrackersPage />);
 
-    const card = screen.getByRole("button", { name: /Вода/ });
-    expect(card.textContent).toBe("Вода");
-    expect(container.querySelector(".wb-tracker-card input")).toBeNull();
-    expect(screen.queryByLabelText(/Записати/)).toBeNull();
-    expect(container.querySelector(".wb-tracker-card-meta")).toBeNull();
-    // Графік і звіт лишаються на окремій сторінці трекера.
-    expect(container.querySelector(".wb-tracker-chart")).toBeNull();
-    expect(container.querySelector(".wb-tracker-stats")).toBeNull();
+    const toggles = screen.getAllByRole("button", { expanded: false });
+    expect(toggles.length).toBeGreaterThan(0);
+    // Активність: один трекер у підгрупі — рахунок рекурсивний, не лише свої.
+    const active = toggles.find((toggle) => toggle.textContent?.includes("Активність"));
+    expect(active?.textContent).toContain("1");
+    // Згорнутий акордеон не ховає рахунок, але ховає вміст.
+    expect(container.querySelector(".wb-matrix")).toBeNull();
+    expect(screen.getByText("Свої")).toBeTruthy();
   });
 
-  it("стрічка групиться тематиками: порядок каталогу, «Свої» останні", () => {
-    state.trackers = [coffee, water, sleep, steps];
-    const { container } = render(<TrackersPage />);
-
-    const groups = [...container.querySelectorAll(".wb-trackers-group")];
-    expect(
-      groups.map((group) => group.querySelector(".wb-trackers-group-title")?.textContent),
-    ).toEqual(["Активність", "Режим", "Свої"]);
-    const own = groups[groups.length - 1];
-    expect(own?.textContent).toContain("Кава");
-    expect(own?.textContent).not.toContain("Вода");
-  });
-
-  it("скільки записано сьогодні видно в шапці й на смузі дня", () => {
-    const { container } = render(<TrackersPage />);
-
-    expect(container.querySelector(".wb-tracker-day-count")?.textContent).toBe("1");
-    expect(container.querySelector(".wb-tracker-day-total")?.textContent).toBe("з 2");
-    expect(container.querySelectorAll(".wb-tracker-day-seg")).toHaveLength(2);
-    expect(container.querySelectorAll(".wb-tracker-day-seg--on")).toHaveLength(1);
-  });
-
-  it("дотик по заголовку веде на цей трекер", async () => {
+  // Точні імена, а не регулярка: кнопка дій має підпис «Дії групи …», а
+  // клітинки — «Назва, день», тож нерозривний збіг збирає по два елементи.
+  it("дотик розгортає групу й показує матрицю з назвою трекера", async () => {
     render(<TrackersPage />);
 
-    await userEvent.click(screen.getByRole("button", { name: /Вода/ }));
+    await userEvent.click(screen.getByRole("button", { name: "Режим" }));
+
+    expect(screen.getByRole("button", { name: "Вода" })).toBeTruthy();
+  });
+
+  it("підгрупа малюється під батьком, а не поруч", async () => {
+    render(<TrackersPage />);
+
+    await userEvent.click(screen.getByRole("button", { name: "Активність" }));
+    expect(screen.getByRole("button", { name: "Ранкова рутина" })).toBeTruthy();
+
+    await userEvent.click(screen.getByRole("button", { name: "Ранкова рутина" }));
+    expect(screen.getByRole("button", { name: "Кроки" })).toBeTruthy();
+  });
+
+  it("стан розгорнутості пам'ятається в localStorage", async () => {
+    const first = render(<TrackersPage />);
+    await userEvent.click(screen.getByRole("button", { name: "Режим" }));
+    first.unmount();
+
+    render(<TrackersPage />);
+
+    // Після повторного входу група лишається розгорнутою — вибір людини.
+    expect(screen.getByRole("button", { name: "Вода" })).toBeTruthy();
+    expect(localStorage.getItem("wb-tracker-groups-open")).toContain("10");
+  });
+});
+
+describe("матриця днів", () => {
+  it("клітинка сьогодні відкриває форму запису, минула — веде на картку", async () => {
+    render(<TrackersPage />);
+    await userEvent.click(screen.getByRole("button", { name: "Режим" }));
+
+    // Сьогоднішня клітинка виділена класом і несе суму дня (2.5 л).
+    const today = screen.getByRole("button", { name: /Вода, 2026-10-17/ });
+    expect(today.className).toContain("wb-matrix-cell--today");
+    expect(today.textContent).toBe("2,5");
+
+    // Минула клітинка — історія: дотик веде на картку трекера.
+    await userEvent.click(screen.getByRole("button", { name: /Вода, 2026-10-15/ }));
+    expect(hooks.navigate).toHaveBeenCalledWith("/trackers/1");
+
+    // Сьогоднішня відкриває форму — і сейв іде тим самим шляхом, що й на картці.
+    await userEvent.click(today);
+    await userEvent.type(screen.getByLabelText("Вода, л"), "1");
+    await userEvent.click(screen.getByRole("button", { name: "Записати" }));
+    expect(hooks.save).toHaveBeenCalledWith(1, 1, "");
+  });
+
+  it("назва трекера веде на картку", async () => {
+    render(<TrackersPage />);
+    await userEvent.click(screen.getByRole("button", { name: "Режим" }));
+
+    await userEvent.click(screen.getByRole("button", { name: "Вода" }));
 
     expect(hooks.navigate).toHaveBeenCalledWith("/trackers/1");
   });
 
-  it("ціль і стан дня лише на сторінці трекера, не в стрічці", () => {
+  it("порожня сьогоднішня клітинка кличе плюсом, порожня минула — мовчить точкою", async () => {
     state.entries = [];
-    const { container } = render(<TrackersPage />);
-
-    expect(container.querySelector(".wb-tracker-card-meta")).toBeNull();
-    expect(screen.queryByText("ціль 2 л")).toBeNull();
-  });
-
-  it("порожній список каже, як додати перший, і не малює смугу дня", () => {
-    state.trackers = [];
-    state.entries = [];
-    const { container } = render(<TrackersPage />);
-
-    expect(screen.getByText("Трекерів ще немає.")).toBeTruthy();
-    expect(screen.getByRole("button", { name: "Створити трекер" })).toBeTruthy();
-    expect(container.querySelector(".wb-tracker-day")).toBeNull();
-  });
-
-  it("«+» відкриває форму в адресі, а не в локальному стані", async () => {
     render(<TrackersPage />);
 
-    await userEvent.click(screen.getByRole("button", { name: "Додати трекер" }));
-
-    expect(hooks.navigate).toHaveBeenCalledWith("/trackers?new=1");
-  });
-
-  it("?new=1 показує форму власного трекера", () => {
-    hooks.params = new URLSearchParams("new=1");
-    render(<TrackersPage />);
-
-    expect(screen.getByText("Свій трекер")).toBeTruthy();
-    expect(screen.getByRole("button", { name: "Створити" })).toBeTruthy();
-  });
-
-  it("⛔ крок у формі створення без дефолтної цифри", () => {
-    hooks.params = new URLSearchParams("new=1");
-    render(<TrackersPage />);
-
-    expect((screen.getByLabelText("Крок") as HTMLInputElement).value).toBe("");
+    await userEvent.click(screen.getByRole("button", { name: "Свої" }));
+    const today = screen.getByRole("button", { name: /Кава, 2026-10-17/ });
+    // Плюс — запрошення записати; точка — «тут нічого», без другого підпису.
+    expect(today.querySelector("svg")).toBeTruthy();
+    const past = screen.getByRole("button", { name: /Кава, 2026-10-15/ });
+    expect(past.textContent).toBe("·");
   });
 });

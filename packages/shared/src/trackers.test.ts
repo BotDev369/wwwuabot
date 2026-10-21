@@ -1,16 +1,22 @@
 import { describe, expect, it } from "vitest";
 import {
   TRACKER_CATALOG,
-  TRACKER_GROUPS,
+  TRACKER_CATALOG_GROUPS,
   TRACKER_LIMITS,
+  TRACKER_OWN_GROUP_KEY,
   addTrackerDays,
+  buildTrackerGroupTree,
+  countTrackerGroupNode,
+  flattenTrackerGroupTree,
   formatTrackerAmount,
   isWritableTrackerDay,
   isValidTrackerDay,
   todayTrackerDay,
   trackerValue,
   validateTrackerFields,
+  validateTrackerGroupFields,
   type TrackerDayValue,
+  type TrackerGroup,
 } from "./trackers";
 import {
   buildTrackerSeries,
@@ -32,7 +38,7 @@ describe("стандартні трекери", () => {
       // Межі — ті самі, що валідує форма: каталог не має права їх ламати.
       expect(tracker.title.length).toBeLessThanOrEqual(TRACKER_LIMITS.title);
       expect(tracker.unit.length).toBeLessThanOrEqual(TRACKER_LIMITS.unit);
-      expect(TRACKER_GROUPS).toContain(tracker.group);
+      expect(TRACKER_CATALOG_GROUPS.map((group) => group.key)).toContain(tracker.groupKey);
       expect(tracker.step).toBeGreaterThan(0);
       expect(tracker.max === null || tracker.max > tracker.min).toBe(true);
       if (tracker.goal !== null) {
@@ -211,5 +217,61 @@ describe("серія й звіт", () => {
   it("значення з одиницею читається як мірка", () => {
     expect(formatTrackerAmount(2.5, "л")).toBe("2,5 л");
     expect(formatTrackerAmount(8000, "")).toMatch(/^8\s000$/);
+  });
+});
+
+function group(id: number, parentId: number | null, title = `Г${id}`): TrackerGroup {
+  return { id, parentId, title, key: null };
+}
+
+describe("дерево груп", () => {
+  it("глибина не обмежена: три рівні — один ланцюг, а не помилка", () => {
+    const tree = buildTrackerGroupTree([group(1, null), group(2, 1), group(3, 2)]);
+    expect(tree).toHaveLength(1);
+    expect(tree[0]?.children[0]?.children[0]?.group.id).toBe(3);
+    // Рахунок рекурсивний: згорнутий акордеон показує й підгрупи.
+    tree[0]?.trackers.push(10, 11);
+    tree[0]?.children[0]?.trackers.push(12);
+    expect(countTrackerGroupNode(tree[0]!)).toBe(3);
+  });
+
+  it("сирота не зникає — вона стає верхнім рівнем", () => {
+    const tree = buildTrackerGroupTree([group(5, 999)]);
+    expect(tree.map((node) => node.group.id)).toEqual([5]);
+  });
+
+  it("сплащений список іде з відступом за рівнем — для селекта", () => {
+    const options = flattenTrackerGroupTree(
+      buildTrackerGroupTree([group(1, null), group(2, 1), group(3, null)]),
+    );
+    expect(options.map((option) => [option.group.id, option.depth])).toEqual([
+      [1, 0],
+      [2, 1],
+      [3, 0],
+    ]);
+  });
+});
+
+describe("форма групи", () => {
+  it("назва мусить бути після trim і не довшою за межу", () => {
+    expect(validateTrackerGroupFields({ title: "  Ранкова рутина " })).toEqual({
+      ok: true,
+      value: { title: "Ранкова рутина", parentId: null },
+    });
+    expect(validateTrackerGroupFields({ title: "   " }).ok).toBe(false);
+    expect(validateTrackerGroupFields({ title: "x".repeat(41) }).ok).toBe(false);
+  });
+
+  it("батько — номер або порожньо; між собою — не число", () => {
+    expect(validateTrackerGroupFields({ title: "A", parentId: 7 })).toEqual({
+      ok: true,
+      value: { title: "A", parentId: 7 },
+    });
+    expect(validateTrackerGroupFields({ title: "A", parentId: -1 }).ok).toBe(false);
+    expect(validateTrackerGroupFields({ title: "A", parentId: 1.5 }).ok).toBe(false);
+  });
+
+  it("системний ключ «Свої» — у каталозі й останній", () => {
+    expect(TRACKER_CATALOG_GROUPS.at(-1)?.key).toBe(TRACKER_OWN_GROUP_KEY);
   });
 });

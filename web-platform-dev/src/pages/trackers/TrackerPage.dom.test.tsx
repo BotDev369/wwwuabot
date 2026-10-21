@@ -13,7 +13,7 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { render, screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import type { Tracker, TrackerEntry } from "@wwwuabot/shared/trackers";
+import type { Tracker, TrackerEntry, TrackerGroup } from "@wwwuabot/shared/trackers";
 
 const hooks = {
   navigate: vi.fn(),
@@ -22,6 +22,7 @@ const hooks = {
   save: vi.fn(async () => true),
   remove: vi.fn(async () => true),
   archive: vi.fn(async () => true),
+  move: vi.fn(async () => true),
   reload: vi.fn(),
 };
 
@@ -35,12 +36,14 @@ const water: Tracker = {
   min: 0,
   max: 20,
   icon: "droplet",
+  groupId: null,
   isBuiltin: true,
   mode: "sum",
 };
 
 const state = {
   tracker: water as Tracker | null,
+  groups: [] as TrackerGroup[],
   entries: [] as TrackerEntry[],
   endDay: "2026-10-17",
   loading: false,
@@ -50,6 +53,7 @@ const state = {
   save: hooks.save,
   remove: hooks.remove,
   archive: hooks.archive,
+  move: hooks.move,
 };
 
 vi.mock("react-router-dom", () => ({

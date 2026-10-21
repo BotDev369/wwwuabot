@@ -1,16 +1,18 @@
 /**
- * «Трекери» — стрічка мірок тематиками: підсумок «скільки зі скількох
- * записано сьогодні», заголовок групи й плитка «знак + назва» по два в рядку.
- * Поле запису зі стрічки прибрано: запис живе на сторінці трекера, де є
- * і контекст, і місце для історії.
- *
+ * «Трекери» — **акордеон груп + матриця днів**: групи (тематики каталогу,
+ * власні, підгрупи будь-якої глибини) — акордеони зі станом у
+ * `localStorage`, згорнутий заголовок несе рекурсивний рахунок мірок;
+ * усередині — матриця: назва веде на картку, сьогоднішня клітинка відкриває
+ * швидкий запис, решта — історія.
  * @module web-platform-dev/src/pages/trackers/TrackersPage
  */
 
-import type { ReactElement } from "react";
+import { useCallback, useMemo, type ReactElement } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { Icon } from "@wwwuabot/shared";
 import { useScreenChrome } from "@wwwuabot/ui/nav";
+import { useDialog } from "@wwwuabot/ui/dialog";
+import type { Tracker } from "@wwwuabot/shared/trackers";
 import {
   TRACKERS_PATH,
   readCreateIntent,
@@ -19,18 +21,43 @@ import {
   withoutCreateIntent,
 } from "@/app/routes";
 import { useTrackers } from "./useTrackers";
+import { useGroupAccordion } from "./useGroupAccordion";
 import { TrackerCreateForm } from "./TrackerCreateForm";
-import { groupTrackerRows, toTrackerRows } from "./trackers-view";
+import { TrackerGroupSection } from "./TrackerGroupSection";
+import { groupRowsTree, matrixDays, toTrackerRows, trackerCells } from "./trackers-view";
+
+/** Ширина матриці: стільки днів уміщується на 360px без горизонтального скролу. */
+const MATRIX_DAYS = 5;
 
 export function TrackersPage(): ReactElement {
   useScreenChrome({ title: "Трекери" });
   const state = useTrackers();
   const navigate = useNavigate();
+  const dialog = useDialog();
   const [params] = useSearchParams();
+  const accordion = useGroupAccordion();
   const creating = readCreateIntent(params);
+
   const rows = toTrackerRows(state.trackers, state.entries, state.endDay);
-  const groups = groupTrackerRows(rows);
-  const filled = rows.filter((row) => row.recordedToday).length;
+  const days = useMemo(() => matrixDays(state.endDay, MATRIX_DAYS), [state.endDay]);
+  const tree = useMemo(() => groupRowsTree(rows, state.groups), [rows, state.groups]);
+
+  const cellsOf = useCallback(
+    (tracker: Tracker) => trackerCells(tracker, state.entries, days),
+    [state.entries, days],
+  );
+
+  const save = useCallback(
+    (trackerId: number, value: number, note: string) => state.save(trackerId, value, note),
+    [state],
+  );
+
+  async function addGroup(): Promise<void> {
+    const title = await dialog.prompt("Назва групи:", {
+      validate: (value) => (value.trim() ? null : "Порожньо"),
+    });
+    if (title !== null) await state.createGroup(title.trim(), null);
+  }
 
   return (
     <div className="wb-page wb-trackers-page">
@@ -40,26 +67,36 @@ export function TrackersPage(): ReactElement {
             {/* `span`, а не `p`: бренд тримає абзаци на 14px з `!important`, і
                 підпис-мітка ставав більшим за число, до якого він веде. */}
             <span className="wb-tracker-day-label">Сьогодні записано</span>
-            <button
-              type="button"
-              className="wb-tracker-add"
-              aria-label="Додати трекер"
-              onClick={() => navigate(withCreateIntent(TRACKERS_PATH))}
-            >
-              <Icon name="plus" size={22} />
-            </button>
+            <span className="wb-tracker-day-tools">
+              <button
+                type="button"
+                className="wb-tracker-add wb-tracker-add--ghost"
+                aria-label="Додати групу"
+                onClick={() => void addGroup()}
+              >
+                <Icon name="folder" size={20} />
+              </button>
+              <button
+                type="button"
+                className="wb-tracker-add"
+                aria-label="Додати трекер"
+                onClick={() => navigate(withCreateIntent(TRACKERS_PATH))}
+              >
+                <Icon name="plus" size={22} />
+              </button>
+            </span>
           </div>
           <p className="wb-tracker-day-figure">
-            <span className="wb-tracker-day-count">{filled}</span>
+            <span className="wb-tracker-day-count">
+              {rows.filter((row) => row.recordedToday).length}
+            </span>
             <span className="wb-tracker-day-total">з {rows.length}</span>
           </p>
           <div className="wb-tracker-day-bar" aria-hidden="true">
             {rows.map((row) => (
               <span
                 key={row.tracker.id}
-                className={`wb-tracker-day-seg${
-                  row.recordedToday ? " wb-tracker-day-seg--on" : ""
-                }`}
+                className={`wb-tracker-day-seg${row.recordedToday ? " wb-tracker-day-seg--on" : ""}`}
               />
             ))}
           </div>
@@ -68,7 +105,8 @@ export function TrackersPage(): ReactElement {
 
       {creating && (
         <TrackerCreateForm
-          onCreate={state.create}
+          groups={state.groups}
+          onCreate={(fields, groupId) => state.create(fields, groupId)}
           onCreated={(tracker) => navigate(trackerPath(tracker.id), { replace: true })}
           onCancel={() => navigate(withoutCreateIntent(TRACKERS_PATH), { replace: true })}
         />
@@ -106,29 +144,26 @@ export function TrackersPage(): ReactElement {
       )}
 
       {!state.loading && !state.error && rows.length > 0 && (
-        <>
-          {groups.map((group) => (
-            <section className="wb-trackers-group" key={group.title}>
-              <h2 className="wb-trackers-group-title">{group.title}</h2>
-              <ul className="wb-trackers-list">
-                {group.rows.map((row) => (
-                  <li className="wb-tracker-card" key={row.tracker.id}>
-                    <button
-                      type="button"
-                      className="wb-tracker-card-open"
-                      onClick={() => navigate(trackerPath(row.tracker.id))}
-                    >
-                      <span className="wb-tracker-card-icon">
-                        <Icon name={row.tracker.icon} size={18} />
-                      </span>
-                      <span className="wb-tracker-card-title">{row.tracker.title}</span>
-                    </button>
-                  </li>
-                ))}
-              </ul>
-            </section>
+        <div className="wb-trackers-tree">
+          {tree.map((view) => (
+            <TrackerGroupSection
+              key={view.group.id}
+              view={view}
+              depth={0}
+              trackers={state.trackers}
+              cellsOf={cellsOf}
+              today={state.endDay}
+              saving={state.saving}
+              isOpen={accordion.isOpen}
+              onToggle={accordion.toggle}
+              onOpenTracker={(id) => navigate(trackerPath(id))}
+              onSave={save}
+              onCreateGroup={state.createGroup}
+              onUpdateGroup={state.updateGroup}
+              onDeleteGroup={state.deleteGroup}
+            />
           ))}
-        </>
+        </div>
       )}
     </div>
   );

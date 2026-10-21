@@ -313,7 +313,7 @@ export const TABLES = {
     name: "trackers",
     owner: "api-dev",
     purpose:
-      "Трекери людини: назва, одиниця, крок, ціль, межі й `mode` (як читати записи: сума дня чи останній вимір) — одна модель на всі мірки.",
+      "Трекери людини: назва, одиниця, крок, ціль, межі, `mode` (як читати записи: сума дня чи останній вимір) і група (`group_id`) — одна модель на всі мірки.",
     create: `CREATE TABLE IF NOT EXISTS trackers (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         owner_id TEXT NOT NULL,
@@ -326,6 +326,7 @@ export const TABLES = {
         max_value REAL,
         mode TEXT NOT NULL DEFAULT 'sum',
         icon TEXT NOT NULL DEFAULT 'bar-chart',
+        group_id INTEGER,
         is_builtin INTEGER NOT NULL DEFAULT 0,
         is_active INTEGER NOT NULL DEFAULT 1,
         created_at TEXT NOT NULL DEFAULT (datetime('now')),
@@ -334,6 +335,33 @@ export const TABLES = {
     indexes: [
       "CREATE INDEX IF NOT EXISTS idx_trackers_owner_key ON trackers(owner_id, key)",
       "CREATE INDEX IF NOT EXISTS idx_trackers_owner_active ON trackers(owner_id, is_active, id)",
+      "CREATE INDEX IF NOT EXISTS idx_trackers_owner_group ON trackers(owner_id, group_id)",
+    ],
+  },
+
+  /**
+   * Групи трекерів — **дерево власника** (`parent_id`), без обмеження глибини.
+   * `UNIQUE (owner_id, key)` — типові тематики каталогу сіються ключем і не
+   * дублюються; власні групи мають `key = NULL`, і в SQLite такі рядки
+   * унікальністю не обмежуються (NULL ≠ NULL) — це свідомо, а не прогалина.
+   */
+  tracker_groups: {
+    name: "tracker_groups",
+    owner: "api-dev",
+    purpose:
+      "Групи трекерів: дерево (`parent_id`) тематик стрічки; `key` — типова група каталогу, «Свої» — системний корінь.",
+    create: `CREATE TABLE IF NOT EXISTS tracker_groups (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        owner_id TEXT NOT NULL,
+        key TEXT,
+        parent_id INTEGER,
+        title TEXT NOT NULL,
+        created_at TEXT NOT NULL DEFAULT (datetime('now')),
+        UNIQUE (owner_id, key)
+      )`,
+    indexes: [
+      "CREATE INDEX IF NOT EXISTS idx_tracker_groups_owner ON tracker_groups(owner_id, id)",
+      "CREATE INDEX IF NOT EXISTS idx_tracker_groups_parent ON tracker_groups(parent_id)",
     ],
   },
 

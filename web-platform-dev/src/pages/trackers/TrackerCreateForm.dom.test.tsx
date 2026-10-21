@@ -11,7 +11,7 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import type { Tracker } from "@wwwuabot/shared/trackers";
+import type { Tracker, TrackerGroup } from "@wwwuabot/shared/trackers";
 
 const handlers = {
   create: vi.fn(),
@@ -31,6 +31,7 @@ const created: Tracker = {
   min: 0,
   max: null,
   icon: "bar-chart",
+  groupId: null,
   isBuiltin: false,
   mode: "sum",
 };
@@ -39,9 +40,10 @@ beforeEach(() => {
   vi.clearAllMocks();
 });
 
-function renderForm() {
+function renderForm(groups: TrackerGroup[] = []) {
   render(
     <TrackerCreateForm
+      groups={groups}
       onCreate={handlers.create}
       onCreated={handlers.created}
       onCancel={handlers.cancel}
@@ -68,15 +70,19 @@ describe("свій трекер", () => {
     await userEvent.type(screen.getByLabelText("Ціль дня"), "3");
     await userEvent.click(screen.getByRole("button", { name: "Створити" }));
 
-    expect(handlers.create).toHaveBeenCalledWith({
-      title: "Кава",
-      unit: "чашок",
-      step: 1,
-      goal: 3,
-      min: 0,
-      max: null,
-      mode: "sum",
-    });
+    // Другий аргумент — група; порожній селект означає «Свої» (null).
+    expect(handlers.create).toHaveBeenCalledWith(
+      {
+        title: "Кава",
+        unit: "чашок",
+        step: 1,
+        goal: 3,
+        min: 0,
+        max: null,
+        mode: "sum",
+      },
+      null,
+    );
     expect(handlers.created).toHaveBeenCalledWith(created);
   });
 
@@ -90,6 +96,7 @@ describe("свій трекер", () => {
 
     expect(handlers.create).toHaveBeenCalledWith(
       expect.objectContaining({ title: "Вага", mode: "read" }),
+      null,
     );
   });
 
@@ -103,6 +110,7 @@ describe("свій трекер", () => {
 
     expect(handlers.create).toHaveBeenCalledWith(
       expect.objectContaining({ goal: 2.5, title: "Вода" }),
+      null,
     );
   });
 
@@ -124,5 +132,20 @@ describe("свій трекер", () => {
 
     expect(handlers.cancel).toHaveBeenCalled();
     expect(handlers.create).not.toHaveBeenCalled();
+  });
+
+  it("вибір групи їде на сервер номером, а не словом", async () => {
+    handlers.create.mockResolvedValueOnce(created);
+    const groups: TrackerGroup[] = [
+      { id: 10, parentId: null, title: "Режим", key: "routine" },
+      { id: 11, parentId: 10, title: "Ранкова рутина", key: null },
+    ];
+    renderForm(groups);
+
+    await userEvent.type(screen.getByLabelText("Назва"), "Кава");
+    await userEvent.selectOptions(screen.getByLabelText("Група"), "11");
+    await userEvent.click(screen.getByRole("button", { name: "Створити" }));
+
+    expect(handlers.create).toHaveBeenCalledWith(expect.objectContaining({ title: "Кава" }), 11);
   });
 });

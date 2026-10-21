@@ -11,14 +11,23 @@ import type { IconName } from "./components/icon-names";
 import { catalogEntry, TRACKER_LIMITS } from "./trackers/catalog";
 
 // Каталог — дані окремим модулем; споживачі лишаються на цій поверхні.
-export type { TrackerCatalogEntry, TrackerGroup } from "./trackers/catalog";
+export type { TrackerCatalogEntry, TrackerCatalogGroupKey } from "./trackers/catalog";
 export {
   TRACKER_CATALOG,
-  TRACKER_GROUPS,
-  TRACKER_OWN_GROUP,
-  trackerGroup,
+  TRACKER_CATALOG_GROUPS,
+  TRACKER_OWN_GROUP_KEY,
+  catalogEntry,
   TRACKER_LIMITS,
 } from "./trackers/catalog";
+// Групи — дерево власника; спільні функції — тут само.
+export type { TrackerGroup, TrackerGroupNode, TrackerGroupOption } from "./trackers/groups";
+export {
+  TRACKER_GROUP_LIMITS,
+  buildTrackerGroupTree,
+  countTrackerGroupNode,
+  flattenTrackerGroupTree,
+  validateTrackerGroupFields,
+} from "./trackers/groups";
 
 /** Поля, які людина задає для будь-якого трекера. */
 export interface TrackerFields {
@@ -49,6 +58,8 @@ export interface Tracker extends TrackerFields {
   key: string;
   icon: IconName;
   isBuiltin: boolean;
+  /** Група власника; `null` — людина ще не віднесла трекер нікуди. */
+  groupId: number | null;
 }
 
 /**

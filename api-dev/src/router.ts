@@ -55,7 +55,11 @@ import { matchMessagesRoute } from "./routes/messages";
 import { matchAccessRequestAdminRoute } from "./routes/access-requests";
 import { handleNotes, handleAdminNotes } from "./controllers/notes.controller";
 import { handleFavorites } from "./controllers/favorites.controller";
-import { handleTrackers, handleTrackerEntry } from "./controllers/trackers.controller";
+import {
+  handleTrackers,
+  handleTrackerEntry,
+  handleTrackerGroups,
+} from "./controllers/trackers.controller";
 import { handleAssessments } from "./controllers/assessments.controller";
 import { handleUserPages, handlePublicPages } from "./controllers/pages.controller";
 import { matchShopRoute } from "./routes/shop";
@@ -179,6 +183,10 @@ export async function handleRequest(request: Request, env: Env): Promise<Respons
   }
   if (pathname === "/api/user/trackers/entry") {
     return handleTrackerEntry(request, env);
+  }
+  // Групи — окрема ручка: дерево власника (`parent_id`), глибина не обмежена.
+  if (pathname === "/api/user/trackers/group") {
+    return handleTrackerGroups(request, env);
   }
 
   if (pathname === "/api/notes") {

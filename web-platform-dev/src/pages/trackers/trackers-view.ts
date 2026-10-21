@@ -1,5 +1,5 @@
 /**
- * Вигляд трекерів — чисті функції: тематика рядка, зсув виміру й момент
+ * Вигляд трекерів — чисті функції: клітинки матриці дня, зсув виміру й момент
  * запису. День тут — не сутність, а підпис: «сьогодні», «вчора», «05.10».
  *
  * @module web-platform-dev/src/pages/trackers/trackers-view
@@ -9,13 +9,15 @@ import {
   addTrackerDays,
   compareTrackerEntries,
   formatTrackerAmount,
-  TRACKER_GROUPS,
-  TRACKER_OWN_GROUP,
-  trackerGroup,
+  TRACKER_OWN_GROUP_KEY,
+  trackerMode,
   type Tracker,
   type TrackerEntry,
   type TrackerEntryRow,
+  type TrackerGroup,
+  type TrackerMode,
 } from "@wwwuabot/shared/trackers";
+import { trackerDayLast, trackerDayTotals } from "@wwwuabot/shared/trackers/analytics";
 
 export interface TrackerRowView {
   tracker: Tracker;
@@ -44,26 +46,114 @@ export function toTrackerRows(
   });
 }
 
-export interface TrackerGroupView {
-  title: string;
-  rows: TrackerRowView[];
+/** Одна клітинка матриці: день без запису — `null`, а не нуль. */
+export interface TrackerCellView {
+  day: string;
+  value: number | null;
+  /** Ціль дня досягнута (лише коли ціль є) — клітинка підсвічується. */
+  goalMet: boolean;
 }
 
 /**
- * Стрічка тематиками: порядок груп — з каталогу, «Свої» завжди останні,
- * порожні групи не показуємо — порожня полиця це шум, а не структура.
+ * Матриця одного трекера: клітинки за днями вікна. Значення дня — те саме
+ * зведення, що й на сторінці трекера: сума для `sum`, останній вимір для
+ * `read` — одне джерело правди, а не друга арифметика стрічки.
  */
-export function groupTrackerRows(rows: readonly TrackerRowView[]): TrackerGroupView[] {
-  const byGroup = new Map<string, TrackerRowView[]>();
+export function trackerCells(
+  tracker: Tracker,
+  entries: readonly TrackerEntryRow[],
+  days: readonly string[],
+): TrackerCellView[] {
+  const own = entriesOf(entries, tracker.id);
+  const mode: TrackerMode = trackerMode(tracker);
+  const values = mode === "sum" ? trackerDayTotals(own) : trackerDayLast(own);
+  return days.map((day) => {
+    const value = values.get(day) ?? null;
+    return {
+      day,
+      value,
+      goalMet: value !== null && tracker.goal !== null && value >= tracker.goal,
+    };
+  });
+}
+
+/** Вікно матриці: `count` днів, завершуючи днем стрічки (включно). */
+export function matrixDays(endDay: string, count: number): string[] {
+  return Array.from({ length: count }, (_, index) => addTrackerDays(endDay, index - count + 1));
+}
+
+/** Підпис дня матриці: «Пт 17» — день тижня читається першим, бо по ньому й шукають. */
+const WEEKDAYS = ["Нд", "Пн", "Вт", "Ср", "Чт", "Пт", "Сб"] as const;
+
+export function matrixDayLabel(day: string): string {
+  const weekday = WEEKDAYS[new Date(`${day}T00:00:00Z`).getUTCDay()] ?? "";
+  return `${weekday} ${Number(day.slice(8, 10))}`;
+}
+
+/**
+ * Клітинка коротша за рядок історії: «8 000» у клітинці ширшої одиниці не
+ * вміщується, тож тисячі йдуть скорочено («8к»), а дробові — без зайвих нулів.
+ */
+export function cellAmount(value: number | null): string {
+  if (value === null) return "";
+  const rounded = Math.round(value * 10) / 10;
+  if (Math.abs(rounded) >= 10000) return `${Math.round(rounded / 1000)}к`;
+  return formatTrackerAmount(rounded, "");
+}
+
+export interface TrackerGroupTreeView {
+  group: TrackerGroup;
+  children: TrackerGroupTreeView[];
+  rows: TrackerRowView[];
+  /** Рекурсивний рахунок — підпис згорнутого акордеона. */
+  count: number;
+}
+
+/**
+ * Дерево груп стрічки: верхній рівень — у порядку id (типові тематики сіються
+ * першими). Порожні групи не показуємо: порожня полиця — це шум, а не
+ * структура; правило одне для всіх, включно з «Своїми» — вона з'явиться,
+ * щойно в ній буде трекер, як і решта.
+ */
+export function groupRowsTree(
+  rows: readonly TrackerRowView[],
+  groups: readonly TrackerGroup[],
+): TrackerGroupTreeView[] {
+  const ownId = groups.find((group) => group.key === TRACKER_OWN_GROUP_KEY)?.id ?? null;
+  const byGroup = new Map<number, TrackerRowView[]>();
   for (const row of rows) {
-    const title = trackerGroup(row.tracker);
-    const bucket = byGroup.get(title);
+    const id = row.tracker.groupId ?? ownId;
+    if (id === null) continue;
+    const bucket = byGroup.get(id);
     if (bucket) bucket.push(row);
-    else byGroup.set(title, [row]);
+    else byGroup.set(id, [row]);
   }
-  return [...TRACKER_GROUPS, TRACKER_OWN_GROUP]
-    .filter((title) => byGroup.has(title))
-    .map((title) => ({ title, rows: byGroup.get(title) ?? [] }));
+
+  const views = new Map<number, TrackerGroupTreeView>();
+  for (const group of groups) {
+    views.set(group.id, { group, children: [], rows: byGroup.get(group.id) ?? [], count: 0 });
+  }
+  const roots: TrackerGroupTreeView[] = [];
+  for (const group of groups) {
+    const view = views.get(group.id);
+    if (!view) continue;
+    const parent = group.parentId === null ? undefined : views.get(group.parentId);
+    if (parent) parent.children.push(view);
+    else roots.push(view);
+  }
+
+  // Рахунок рекурсивно від листків; порожні групи й гілки прибираємо після —
+  // гілка лишається, якщо під нею хоча б один трекер (хоча б онук).
+  const countOf = (view: TrackerGroupTreeView): number =>
+    view.rows.length + view.children.reduce((sum, child) => sum + countOf(child), 0);
+  const prune = (view: TrackerGroupTreeView): TrackerGroupTreeView | null => {
+    view.children = view.children
+      .map(prune)
+      .filter((child): child is TrackerGroupTreeView => child !== null);
+    view.count = countOf(view);
+    return view.count > 0 ? view : null;
+  };
+  return roots.map(prune).filter((view): view is TrackerGroupTreeView => view !== null);
 }
 
 /**

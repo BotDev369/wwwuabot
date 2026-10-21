@@ -33,7 +33,7 @@ export function trackerDayTotals(entries: readonly TrackerDayValue[]): Map<strin
  * Останній вимір дня — для режиму `read`. Сумувати виміри не можна (два
  * настрої по 4 — не 8), тож день показує те, що виміряли останнім.
  */
-function trackerDayLast(entries: readonly TrackerDayValue[]): Map<string, number> {
+export function trackerDayLast(entries: readonly TrackerDayValue[]): Map<string, number> {
   const last = new Map<string, number>();
   for (const entry of [...entries].sort(compareTrackerEntries)) last.set(entry.day, entry.value);
   return last;
