@@ -68,31 +68,12 @@
 
 /* ── Список обраного ─────────────────────────────────────────────────────── */
 
-.wb-favorites-head {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: var(--sp-3);
-  flex-wrap: wrap;
-  margin-bottom: var(--sp-4);
-}
-
+/* Скільки всього — один тихий підпис над списком: вибір порядку стоїть у
+   контекстному футері, тож рядок над картками більше нічого не тримає. */
 .wb-favorites-count {
+  margin-bottom: var(--sp-4);
   font-size: var(--text-sm);
   color: var(--text-muted);
-}
-
-.wb-favorites-sort {
-  display: flex;
-  gap: var(--sp-1);
-}
-
-/* Вибраний порядок видно акцентом — тим самим словом, що «тут ти» у футері.
-   Два класи в селекторі — бо чип смуги (`wb-chip wb-tools-chip`) задає колір
-   двома, і одним класом акцент не виграв би. */
-.wb-favorites-sort-btn.wb-favorites-sort-btn--on {
-  background: var(--accent-dim);
-  color: var(--accent);
 }
 
 .wb-favorites-list {

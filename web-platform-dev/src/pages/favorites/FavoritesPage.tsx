@@ -1,24 +1,24 @@
 /**
- * «Обране» — список збереженого з двох видів порядку: дата або назва.
+ * «Обране» — список збереженого з двох видів порядку: дата або назва. Сам
+ * вибір порядку живе в контекстному футері (`ContextBar`), а не над списком.
  *
  * Ліва частина рядка відкриває сторінку, знак праворуч знімає лайк: дві кнопки
  * з підписами читались як форма. Порядок рахує чиста `sortFavorites`.
- *
  * @module web-platform-dev/src/pages/favorites/FavoritesPage
  */
 
 import type { ReactElement } from "react";
 import { useNavigate } from "react-router-dom";
-import { Icon } from "@wwwuabot/shared";
+import { Icon, type IconName } from "@wwwuabot/shared";
 import { formatDay } from "@wwwuabot/shared/utils/datetime";
 import { sortFavorites, type FavoriteItem, type FavoriteSort } from "@wwwuabot/shared/favorites";
-import { useScreenChrome } from "@wwwuabot/ui/nav";
+import { ContextBar, useScreenChrome } from "@wwwuabot/ui/nav";
 import { useFavorites } from "./useFavorites";
 
-/** Два вибори порядку — з тим самим підписом, що в списку (`aria-label`). */
-const SORTS: readonly { key: FavoriteSort; label: string }[] = [
-  { key: "date", label: "Спочатку нові" },
-  { key: "name", label: "За назвою" },
+/** Два порядки — з тим самим підписом, що й у смузі дій (`aria-label`). */
+const SORTS: readonly { key: FavoriteSort; label: string; icon: IconName }[] = [
+  { key: "date", label: "Спочатку нові", icon: "calendar" },
+  { key: "name", label: "За назвою", icon: "text" },
 ];
 
 const KIND_LABELS = { page: "Сторінка", user: "Людина" } as const;
@@ -69,29 +69,7 @@ export function FavoritesPage(): ReactElement {
         </div>
       )}
 
-      {showList && (
-        <div className="wb-favorites-head">
-          <p className="wb-favorites-count">{items.length} у обраному</p>
-          <div className="wb-favorites-sort" role="group" aria-label="Порядок обраного">
-            {SORTS.map((option) => {
-              const active = favorites.sort === option.key;
-              return (
-                <button
-                  key={option.key}
-                  type="button"
-                  className={`wb-chip wb-tools-chip wb-favorites-sort-btn${
-                    active ? " wb-favorites-sort-btn--on" : ""
-                  }`}
-                  aria-pressed={active}
-                  onClick={() => favorites.setSort(option.key)}
-                >
-                  <span className="wb-tools-chip-label">{option.label}</span>
-                </button>
-              );
-            })}
-          </div>
-        </div>
-      )}
+      {showList && <p className="wb-favorites-count">{items.length} у обраному</p>}
 
       <div className="wb-favorites-list">
         {showList &&
@@ -145,6 +123,21 @@ export function FavoritesPage(): ReactElement {
             </div>
           ))}
       </div>
+
+      {/* Порядок — дія екрана, тож стоїть у контекстному футері: у списку він
+          забирав рядок над першою ж карткою. */}
+      {showList && (
+        <ContextBar
+          label="Дії обраного"
+          actions={SORTS.map((option) => ({
+            key: option.key,
+            label: option.label,
+            icon: option.icon,
+            active: favorites.sort === option.key,
+            onSelect: () => favorites.setSort(option.key),
+          }))}
+        />
+      )}
     </div>
   );
 }

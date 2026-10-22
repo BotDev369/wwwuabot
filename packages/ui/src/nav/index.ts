@@ -9,6 +9,9 @@
  * `SubBar` — **друга** смуга, над головною: вона веде між сторінками одного
  * розділу (налаштування теми), а не між розділами продукту.
  *
+ * `ContextBar` — **контекстний футер**: дії поточного екрана (групи, порядок,
+ * «+») над головною смугою. Смуга однакова, склад дій задає екран.
+ *
  * `SideBar` — **єдиний сайдбар продукту**: меню адмінки й список розділів
  * теми рендрить він, а не дві схожі розмітки.
  *
@@ -27,6 +30,8 @@ export { ScreenChromeContext } from "./screen-chrome";
 export type { ScreenChrome, ScreenChromePatch } from "./screen-chrome";
 export { TabBar } from "./TabBar";
 export { SubBar, buildSubBarItems } from "./SubBar";
+export { ContextBar } from "./ContextBar";
+export type { ContextAction } from "./ContextBar";
 export { SideBar, SideBarMenu } from "./Sidebar";
 export type { SideBarProps } from "./Sidebar";
 export { buildTabBarItems, isTabActive, withPrimaryAction } from "./build-items";

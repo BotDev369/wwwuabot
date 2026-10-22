@@ -1,28 +1,19 @@
 /**
- * Шапка таблиці: дії екрана в клітинці назви, далі — день тижня над числом,
- * сьогодні першою. Дії стоять тут, а не окремим рядком: без них дати займали
- * б власний рядок, і над таблицею було б дві смуги замість однієї.
+ * Шапка таблиці: день тижня над числом, сьогодні першою колонкою.
  *
+ * Дій екрана тут немає — вони в контекстному футері (`ContextBar`): у клітинці
+ * назви вони забирали рядок у дат. Порожня клітинка лишається — вона тримає
+ * сітку з рядками, і дати стоять рівно над своїми числами.
  * @module web-platform-dev/src/pages/trackers/TrackerDayHeader
  */
 
-import type { ReactElement, ReactNode } from "react";
+import type { ReactElement } from "react";
 import { matrixDayNumber, matrixWeekday } from "./trackers-view";
 
-export function TrackerDayHeader({
-  days,
-  leading,
-  ordering = false,
-}: {
-  days: readonly string[];
-  /** Дії екрана — ліворуч, у тій самій сітці, що й дні. */
-  leading?: ReactNode;
-  /** Режим «Порядок»: колонок дат немає, сітка — назва й стрілки. */
-  ordering?: boolean;
-}): ReactElement {
+export function TrackerDayHeader({ days }: { days: readonly string[] }): ReactElement {
   return (
-    <div className={"wb-matrix-head" + (ordering ? " wb-matrix-head--order" : "")}>
-      <div className="wb-matrix-head-lead">{leading}</div>
+    <div className="wb-matrix-head">
+      <span className="wb-matrix-head-lead" aria-hidden="true" />
       {days.map((day) => (
         <span key={day} className="wb-matrix-head-day" aria-hidden="true">
           <span className="wb-matrix-head-weekday">{matrixWeekday(day)}</span>

@@ -10,7 +10,7 @@
 import { useCallback, useMemo, useState, type CSSProperties, type ReactElement } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { Icon } from "@wwwuabot/shared";
-import { useScreenChrome } from "@wwwuabot/ui/nav";
+import { ContextBar, useScreenChrome } from "@wwwuabot/ui/nav";
 import { MenuModal } from "@wwwuabot/ui/menu";
 import { Tabs, tabId, tabPanelId, type TabOption } from "@wwwuabot/ui/tabs";
 import type { Tracker } from "@wwwuabot/shared/trackers";
@@ -94,47 +94,14 @@ export function TrackersPage(): ReactElement {
       className="wb-page wb-trackers-page"
       style={{ "--matrix-cols": MATRIX_DAYS } as CSSProperties}
     >
-      {/* Три рядки лишаються на видноті: назва екрана (AppBar), вкладки й —
-          у «Моїх» — дії разом із датами. Дні читають разом із числами, тож
-          шапка таблиці мусить не зникати при прокрутці. */}
+      {/* Два рядки лишаються на видноті: назва екрана (AppBar) і вкладки з
+          датами. Дні читають разом із числами, тож шапка таблиці мусить не
+          зникати при прокрутці; дії ж живуть у контекстному футері. */}
       <div className="wb-trackers-head">
         <Tabs options={TABS} value={tab} onChange={switchTab} label="Поверхні трекерів" />
-        {tab === "mine" && (
-          <TrackerDayHeader
-            days={ordering || rows.length === 0 ? [] : days}
-            ordering={ordering}
-            leading={
-              <div className="wb-trackers-tools">
-                <button
-                  type="button"
-                  className="wb-btn wb-btn-secondary"
-                  onClick={() => setGroupsOpen(true)}
-                >
-                  Групи
-                </button>
-                <button
-                  type="button"
-                  className={"wb-btn wb-btn-ghost wb-trackers-order" + (ordering ? " is-on" : "")}
-                  aria-pressed={ordering}
-                  aria-label="Порядок"
-                  title="Порядок"
-                  disabled={rows.length === 0}
-                  onClick={() => setOrdering((value) => !value)}
-                >
-                  <Icon name="sort" size={18} />
-                </button>
-                <button
-                  type="button"
-                  className="wb-tracker-add"
-                  aria-label="Додати трекер"
-                  onClick={() => navigate(withCreateIntent(TRACKERS_PATH))}
-                >
-                  <Icon name="plus" size={22} />
-                </button>
-              </div>
-            }
-          />
-        )}
+        {/* У режимі «Порядок» колонок дат немає — шапці нема що показати, і
+            порожній рядок лише з'їдав би місце. */}
+        {tab === "mine" && !ordering && rows.length > 0 && <TrackerDayHeader days={days} />}
       </div>
 
       <div
@@ -238,6 +205,32 @@ export function TrackersPage(): ReactElement {
           </>
         )}
       </div>
+
+      {/* Дії екрана — над футером, а не в шапці таблиці: там вони забирали
+          рядок у дат і зникали з очей при прокрутці. */}
+      {tab === "mine" && !state.loading && !state.error && (
+        <ContextBar
+          label="Дії трекерів"
+          actions={[
+            { key: "groups", label: "Групи", icon: "folder", onSelect: () => setGroupsOpen(true) },
+            {
+              key: "order",
+              label: "Порядок",
+              icon: "sort",
+              active: ordering,
+              disabled: rows.length === 0,
+              onSelect: () => setOrdering((value) => !value),
+            },
+            {
+              key: "add",
+              label: "Додати трекер",
+              icon: "plus",
+              primary: true,
+              onSelect: () => navigate(withCreateIntent(TRACKERS_PATH)),
+            },
+          ]}
+        />
+      )}
 
       {creating && (
         <MenuModal

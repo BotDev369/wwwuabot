@@ -1,0 +1,118 @@
+/*
+ * ═══ CONTEXT BAR — контекстний футер (дії поточного екрана) ═══════════
+ *
+ * Розмітку рендерить спільний `ContextBar` (`@wwwuabot/ui/nav`), тому правила
+ * живуть тут. Смуга на 9% глибша за фон (ліній у хромі немає), шар —
+ * `--z-overlay`: форма, відкрита поверх екрана, її накриває.
+ */
+
+/* Місце під смугу: сторінка платформи скролиться документом, і без цього
+   останній рядок назавжди лишався б під нею. Додається лише тоді, коли смуга
+   справді на екрані. */
+.wb-tabbar-layout:has(.wb-contextbar) {
+  padding-bottom: calc(var(--tab-bar-h) + var(--context-bar-h));
+}
+
+.wb-contextbar {
+  position: fixed;
+  left: 0;
+  right: 0;
+  /* Над першою смугою, упритул — як друга смуга: один хром, а не два поверхи */
+  bottom: var(--tab-bar-h);
+  z-index: var(--z-overlay);
+  height: var(--context-bar-h);
+  display: flex;
+  justify-content: center;
+  background: var(--bg-page);
+  background: color-mix(in srgb, var(--bg-page) 91%, black);
+}
+
+/* Темне тло: крок угору — два селектори, бо темну схему задає і бренд
+   (`data-theme`), і вибір трьох кольорів (`data-colors-mode`). */
+html[data-colors-mode="dark"] .wb-contextbar,
+html[data-theme="dark"] .wb-contextbar {
+  background: color-mix(in srgb, var(--bg-page) 91%, white);
+}
+
+/* На десктопі смуга не розповзається на всю ширину вікна — як футер */
+.wb-contextbar-inner {
+  width: 100%;
+  max-width: 560px;
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+  padding-inline: var(--sp-4);
+  /* Дій буває більше, ніж уміщує 360px: ряд прокручується пальцем, а не
+     ламається на другий поверх і не стискає підписи до нечитабельності. */
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+
+.wb-contextbar-inner::-webkit-scrollbar {
+  display: none;
+}
+
+/* Другорядна дія: знак і слово в пілюлі. Мірка — планка пальця (44px), а не
+   висота футера: до смуги дій людина тягнеться так само, як до футера. */
+.wb-contextbar-btn {
+  flex: 0 0 auto;
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sp-2);
+  min-height: 44px;
+  padding: 0 var(--sp-3);
+  border: none;
+  border-radius: var(--radius-full);
+  /* Заливка, без контуру: межу тримає тло (правило 15) */
+  background: var(--surface-hover);
+  color: var(--text-primary);
+  font-family: inherit;
+  font-size: var(--text-sm);
+  font-weight: var(--weight-medium);
+  line-height: 1;
+  white-space: nowrap;
+  text-decoration: none;
+  cursor: pointer;
+  transition:
+    background var(--duration-fast) var(--ease),
+    transform var(--duration-fast) var(--ease);
+}
+
+/* На телефоні hover немає, тож відгук на дотик — це `:active` */
+.wb-contextbar-btn:active {
+  transform: scale(0.96);
+}
+
+/* Стан-вибір («Порядок» увімкнений, порядок обраного): акцентна поверхня й
+   акцентний підпис — та сама пара, що в обраної вкладки. */
+.wb-contextbar-btn[aria-pressed="true"] {
+  background: var(--accent-dim);
+  color: var(--accent);
+}
+
+/* Недоступна дія лишається на місці: смуга не має переставляти сусідів туди
+   й назад, коли в списку порожньо. */
+.wb-contextbar-btn:disabled {
+  opacity: 0.45;
+  cursor: default;
+}
+
+/* Довгий підпис не розтягує пілюлю понад смугу */
+.wb-contextbar-label {
+  max-width: 12rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Головна дія — акцентна куля праворуч. `margin-inline-start: auto` тримає її
+   осторонь від виборів: у смузі акцент означає **дію**, і він рівно один. */
+.wb-contextbar-btn--primary {
+  margin-inline-start: auto;
+  justify-content: center;
+  width: 44px;
+  min-width: 44px;
+  padding: 0;
+  border-radius: var(--radius-full);
+  background: var(--accent);
+  color: var(--text-inverse);
+}

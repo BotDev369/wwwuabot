@@ -145,7 +145,12 @@ vi.mock("react-router-dom", () => ({
   useNavigate: () => hooks.navigate,
   useSearchParams: () => [hooks.params, vi.fn()],
 }));
-vi.mock("@wwwuabot/ui/nav", () => ({ useScreenChrome: () => {} }));
+// Хедер у тесті не потрібен (його малює каркас), а контекстний футер —
+// потрібен: саме там тепер живуть дії екрана.
+vi.mock("@wwwuabot/ui/nav", async (importOriginal) => ({
+  ...(await importOriginal<typeof import("@wwwuabot/ui/nav")>()),
+  useScreenChrome: () => {},
+}));
 vi.mock("@wwwuabot/ui/dialog", () => ({
   useDialog: () => ({
     alert: hooks.alert,
@@ -392,21 +397,38 @@ describe("три поверхні", () => {
     expect(head?.textContent).toContain("17");
     const firstCell = document.querySelector(".wb-matrix-row .wb-matrix-cell");
     expect(firstCell?.getAttribute("aria-label")).toContain("Сб 17");
+    // У шапці — лише дати: дії переїхали в контекстний футер.
+    expect(within(head as HTMLElement).queryByRole("button")).toBeNull();
   });
 
-  it("дії стоять у рядку з датами, а вкладки й шапка закріплені разом", () => {
+  it("дії екрана живуть у контекстному футері, а не в шапці таблиці", () => {
     render(<TrackersPage />);
 
+    const bar = document.querySelector(".wb-contextbar");
+    expect(bar?.getAttribute("aria-label")).toBe("Дії трекерів");
+    expect(within(bar as HTMLElement).getByRole("button", { name: "Групи" })).toBeTruthy();
+    expect(within(bar as HTMLElement).getByRole("button", { name: "Порядок" })).toBeTruthy();
+    expect(within(bar as HTMLElement).getByRole("button", { name: "Додати трекер" })).toBeTruthy();
+
     const head = document.querySelector(".wb-matrix-head");
-    // Кнопки й дати — одна сітка: окрема смуга дій з'їдала б рядок екрана.
-    expect(within(head as HTMLElement).getByRole("button", { name: "Групи" })).toBeTruthy();
-    expect(within(head as HTMLElement).getByRole("button", { name: "Порядок" })).toBeTruthy();
-    expect(within(head as HTMLElement).getByRole("button", { name: "Додати трекер" })).toBeTruthy();
     expect(head?.querySelectorAll(".wb-matrix-head-day")).toHaveLength(4);
     // Вкладки й шапка — один закріплений шар, а не два різні за рівнями.
     const sticky = document.querySelector(".wb-trackers-head");
     expect(sticky?.querySelector("[role=tablist]")).not.toBeNull();
     expect(sticky?.querySelector(".wb-matrix-head")).not.toBeNull();
+    // Смуга дій стоїть поза закріпленим шаром: вона не рухає таблицю.
+    expect(sticky?.querySelector(".wb-contextbar")).toBeNull();
+  });
+
+  it("«Порядок» — стан кнопки, і смуга дій це показує", async () => {
+    render(<TrackersPage />);
+
+    const order = screen.getByRole("button", { name: "Порядок" });
+    expect(order.getAttribute("aria-pressed")).toBe("false");
+
+    await userEvent.click(order);
+
+    expect(order.getAttribute("aria-pressed")).toBe("true");
   });
 
   it("режим «Порядок» міняє місце стрілками й не дає вийти за межі групи", async () => {
@@ -417,9 +439,9 @@ describe("три поверхні", () => {
     await userEvent.click(screen.getByRole("button", { name: "Порядок" }));
     await userEvent.click(screen.getByRole("button", { name: "Режим" }));
 
-    // Колонок днів у цьому режимі немає: тап там відкривав би запис.
-    expect(document.querySelector(".wb-matrix-head--order")).not.toBeNull();
-    expect(document.querySelector(".wb-matrix-head-day")).toBeNull();
+    // Колонок днів у цьому режимі немає — і шапки теж: вона б лишилась
+    // порожнім рядком над стрілками.
+    expect(document.querySelector(".wb-matrix-head")).toBeNull();
     await userEvent.click(screen.getByRole("button", { name: "Вода — нижче" }));
     expect(hooks.moveTracker).toHaveBeenCalledWith(1, "down");
     // Перший у групі не йде вгору — межа вимкнена, а не зникає.

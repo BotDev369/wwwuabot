@@ -15,7 +15,7 @@
  */
 
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { render, screen } from "@testing-library/react";
+import { render, screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import type { FavoriteItem, FavoriteSort } from "@wwwuabot/shared/favorites";
 
@@ -34,7 +34,11 @@ const favorites = {
 };
 
 vi.mock("react-router-dom", () => ({ useNavigate: () => navigate }));
-vi.mock("@wwwuabot/ui/nav", () => ({ useScreenChrome: () => {} }));
+// Хедер малює каркас, а контекстний футер — сам екран: він лишається справжнім.
+vi.mock("@wwwuabot/ui/nav", async (importOriginal) => ({
+  ...(await importOriginal<typeof import("@wwwuabot/ui/nav")>()),
+  useScreenChrome: () => {},
+}));
 vi.mock("./useFavorites", () => ({ useFavorites: () => favorites }));
 
 const { FavoritesPage } = await import("./FavoritesPage");
@@ -126,15 +130,24 @@ describe("рядок обраного", () => {
 });
 
 describe("порядок списку", () => {
-  it("два вибори видно, і вибраний каже про це", () => {
+  it("два вибори стоять у контекстному футері, і вибраний каже про це", () => {
     favorites.items = [item()];
     render(<FavoritesPage />);
 
-    const chosen = screen.getByRole("button", { name: "Спочатку нові" });
+    const bar = document.querySelector(".wb-contextbar");
+    const chosen = within(bar as HTMLElement).getByRole("button", { name: "Спочатку нові" });
     expect(chosen.getAttribute("aria-pressed")).toBe("true");
-    expect(screen.getByRole("button", { name: "За назвою" }).getAttribute("aria-pressed")).toBe(
-      "false",
-    );
+    expect(
+      within(bar as HTMLElement)
+        .getByRole("button", { name: "За назвою" })
+        .getAttribute("aria-pressed"),
+    ).toBe("false");
+  });
+
+  it("порожнє обране не тримає смуги дій — сортувати нічого", () => {
+    render(<FavoritesPage />);
+
+    expect(document.querySelector(".wb-contextbar")).toBeNull();
   });
 
   it("«За назвою» міняє порядок рядків", async () => {
