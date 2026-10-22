@@ -15,15 +15,6 @@ import type { Tracker, TrackerGroup } from "@wwwuabot/shared/trackers";
 import { TrackerMatrixRow } from "./TrackerMatrixRow";
 import type { TrackerGroupTreeView } from "./trackers-view";
 
-/** Тло тримає лише група з підгрупами; глибина чергує відтінки (CSS). */
-function groupClass(depth: number, hasChildren: boolean): string {
-  return (
-    "wb-group" +
-    (hasChildren ? " wb-group--parent" : "") +
-    (depth % 2 === 1 ? " wb-group--sub" : "")
-  );
-}
-
 interface TrackerGroupSectionProps {
   view: TrackerGroupTreeView;
   depth: number;
@@ -108,7 +99,7 @@ export function TrackerGroupSection({
   ];
 
   return (
-    <section className={groupClass(depth, view.children.length > 0)}>
+    <section className="wb-group">
       <div className="wb-group-head">
         <button
           type="button"

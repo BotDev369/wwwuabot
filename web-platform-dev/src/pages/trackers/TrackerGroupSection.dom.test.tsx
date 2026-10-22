@@ -49,10 +49,10 @@ const water: Tracker = {
 const ownGroup: TrackerGroup = { id: 9, parentId: null, title: "Режим", key: null };
 const builtinGroup: TrackerGroup = { id: 10, parentId: null, title: "Активність", key: "activity" };
 
-function viewOf(group: TrackerGroup, trackers: Tracker[], children: TreeView[] = []): TreeView {
+function viewOf(group: TrackerGroup, trackers: Tracker[]): TreeView {
   return {
     group,
-    children,
+    children: [],
     trackers,
     count: trackers.length,
   };
@@ -61,11 +61,10 @@ function viewOf(group: TrackerGroup, trackers: Tracker[], children: TreeView[] =
 function renderSection(
   group: TrackerGroup,
   trackers: Tracker[] = [water],
-  children: TreeView[] = [],
 ): ReturnType<typeof render> {
   return render(
     <TrackerGroupSection
-      view={viewOf(group, trackers, children)}
+      view={viewOf(group, trackers)}
       depth={0}
       cellsOf={() => [{ day: "2026-10-17", value: 2, goalMet: false }]}
       today="2026-10-17"
@@ -161,20 +160,6 @@ describe("меню групи", () => {
 
     expect(screen.queryByRole("button", { name: "Прибрати групу" })).toBeNull();
     expect(screen.getByRole("button", { name: "Перейменувати" })).toBeTruthy();
-  });
-
-  it("тло має лише група з підгрупами, а підгрупа — свій відтінок", () => {
-    renderSection(ownGroup);
-    expect(screen.getByText("Режим").closest("section")?.className).not.toContain(
-      "wb-group--parent",
-    );
-
-    const child = viewOf({ ...ownGroup, id: 11, parentId: 9, title: "Біг" }, []);
-    renderSection(ownGroup, [water], [child]);
-    expect(screen.getAllByText("Режим")[1].closest("section")?.className).toContain(
-      "wb-group--parent",
-    );
-    expect(screen.getByText("Біг").closest("section")?.className).toContain("wb-group--sub");
   });
 
   it("кожен трекер групи малює свій рядок матриці", () => {
