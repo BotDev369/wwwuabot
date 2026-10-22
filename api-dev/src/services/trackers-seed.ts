@@ -71,11 +71,11 @@ export function toTracker(row: TrackerRow): Tracker {
 export async function seedGroups(env: Env, userId: number): Promise<Map<string, number>> {
   const now = formatSqliteDatetime();
   await env.DB.batch(
-    TRACKER_CATALOG_GROUPS.map((group) =>
+    TRACKER_CATALOG_GROUPS.map((group, index) =>
       env.DB.prepare(
-        `INSERT OR IGNORE INTO tracker_groups (owner_id, key, parent_id, title, created_at)
-         VALUES (?, ?, NULL, ?, ?)`,
-      ).bind(String(userId), group.key, group.title, now),
+        `INSERT OR IGNORE INTO tracker_groups (owner_id, key, parent_id, title, position, created_at)
+         VALUES (?, ?, NULL, ?, ?, ?)`,
+      ).bind(String(userId), group.key, group.title, (index + 1) * 10, now),
     ),
   );
   const rows = await env.DB.prepare(

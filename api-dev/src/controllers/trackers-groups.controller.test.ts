@@ -178,7 +178,8 @@ describe("створення груп", () => {
 
     expect(response.status).toBe(200);
     const insert = db.calls.find((call) => call.sql.startsWith("INSERT INTO tracker_groups"));
-    expect(insert?.values).toEqual(["777", null, "Дім", expect.any(String)]);
+    expect(insert?.sql).toContain("COALESCE(MAX(position), 0) + 10");
+    expect(insert?.values).toEqual(["777", null, "Дім", "777", null, expect.any(String)]);
     const body = (await response.json()) as { group: { id: number; key: string | null } };
     expect(body.group.id).toBe(21);
     expect(body.group.key).toBeNull();
@@ -339,6 +340,63 @@ describe("перейменування й цикли дерева", () => {
     );
 
     expect(response.status).toBe(400);
+  });
+});
+
+describe("рух груп вгору/вниз", () => {
+  it("перестановка з сусідом: позиції обох матеріалізуються, відповідь — перелік", async () => {
+    const db = database({ group: groupRow(9), groups: [groupRow(8), groupRow(9)] });
+    const response = await handleTrackerGroups(
+      request("PATCH", GROUP_URL, { id: 9, move: "up" }),
+      db.env,
+    );
+
+    expect(response.status).toBe(200);
+    const moves = db.calls.filter((call) =>
+      call.sql.startsWith("UPDATE tracker_groups SET position"),
+    );
+    expect(moves.map((call) => call.values)).toEqual([
+      [10, 9, "777"],
+      [20, 8, "777"],
+    ]);
+    const body = (await response.json()) as { groups: { id: number }[] };
+    expect(Array.isArray(body.groups)).toBe(true);
+  });
+
+  it("межа дерева — без змін, а не помилка", async () => {
+    const db = database({ group: groupRow(9), groups: [groupRow(9)] });
+    const response = await handleTrackerGroups(
+      request("PATCH", GROUP_URL, { id: 9, move: "down" }),
+      db.env,
+    );
+
+    expect(response.status).toBe(200);
+    expect(db.calls.some((call) => call.sql.startsWith("UPDATE tracker_groups SET position"))).toBe(
+      false,
+    );
+  });
+
+  it("невідома група — 404", async () => {
+    const db = database();
+    const response = await handleTrackerGroups(
+      request("PATCH", GROUP_URL, { id: 9, move: "up" }),
+      db.env,
+    );
+
+    expect(response.status).toBe(404);
+  });
+
+  it("⛔ напрям поза схемою — відмова від читання тіла", async () => {
+    const db = database({ group: groupRow(9), groups: [groupRow(8), groupRow(9)] });
+    const response = await handleTrackerGroups(
+      request("PATCH", GROUP_URL, { id: 9, move: "sideways" }),
+      db.env,
+    );
+
+    expect(response.status).toBe(400);
+    expect(db.calls.some((call) => call.sql.startsWith("UPDATE tracker_groups SET position"))).toBe(
+      false,
+    );
   });
 });
 

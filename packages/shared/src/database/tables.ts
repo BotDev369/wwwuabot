@@ -350,12 +350,13 @@ export const TABLES = {
     name: "tracker_groups",
     owner: "api-dev",
     purpose:
-      "Групи трекерів: дерево (`parent_id`) тематик стрічки; `key` — типова група каталогу, «Свої» — системний корінь.",
+      "Групи трекерів: дерево (`parent_id`) тематик стрічки; `key` — типова група каталогу, «Свої» — системний корінь; `position` — порядок серед сусідів (рух вгору/вниз).",
     create: `CREATE TABLE IF NOT EXISTS tracker_groups (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         owner_id TEXT NOT NULL,
         key TEXT,
         parent_id INTEGER,
+        position INTEGER,
         title TEXT NOT NULL,
         created_at TEXT NOT NULL DEFAULT (datetime('now')),
         UNIQUE (owner_id, key)

@@ -329,4 +329,42 @@ describe("групи стрічки", () => {
     expect(mocks.alert).toHaveBeenCalledWith("Не вдалося прибрати групу.", { tone: "danger" });
     expect(view.result.current.groups).toHaveLength(2);
   });
+
+  it("рух вгору бере свіжий порядок від сервера, а не збирає його локально", async () => {
+    const view = seeded([own, routine]);
+    await waitFor(() => expect(view.result.current.loading).toBe(false));
+
+    mocks.request.mockResolvedValueOnce({ groups: [routine, own] });
+    let ok = false;
+    await act(async () => {
+      ok = await view.result.current.moveGroup(11, "up");
+    });
+
+    expect(ok).toBe(true);
+    expect(mocks.request).toHaveBeenCalledWith(
+      "/api/user/trackers/group",
+      expect.objectContaining({
+        method: "PATCH",
+        body: JSON.stringify({ id: 11, move: "up" }),
+      }),
+    );
+    expect(view.result.current.groups.map((group) => group.id)).toEqual([11, 10]);
+  });
+
+  it("невдалий рух — попередження без зміни стану", async () => {
+    const view = seeded([own, routine]);
+    await waitFor(() => expect(view.result.current.loading).toBe(false));
+
+    mocks.request.mockRejectedValueOnce(new Error("HTTP 500"));
+    let ok = true;
+    await act(async () => {
+      ok = await view.result.current.moveGroup(11, "down");
+    });
+
+    expect(ok).toBe(false);
+    expect(mocks.alert).toHaveBeenCalledWith("Не вдалося змінити порядок груп.", {
+      tone: "danger",
+    });
+    expect(view.result.current.groups.map((group) => group.id)).toEqual([10, 11]);
+  });
 });

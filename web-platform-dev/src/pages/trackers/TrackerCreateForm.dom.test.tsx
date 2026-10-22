@@ -53,10 +53,12 @@ function renderForm(groups: TrackerGroup[] = []) {
 }
 
 describe("новий трекер", () => {
-  it("заголовок — «Новий трекер», група — найперше поле, над назвою", () => {
+  it("група — найперше поле форми, над назвою", () => {
     renderForm();
 
-    expect(screen.getByText("Новий трекер")).toBeTruthy();
+    // Заголовок «Новий трекер» несе модалка сторінки: форма — вміст, а не
+    // другий підпис того самого факту поруч із шапкою модалки.
+    expect(screen.queryByText("Новий трекер")).toBeNull();
     expect(screen.queryByText("Свій трекер")).toBeNull();
     // Група визначає, куди трекер ляже, — її обирають раніше за саму назву.
     const group = screen.getByLabelText("Група");

@@ -112,7 +112,6 @@ export function TrackerCreateForm({
 
   return (
     <form className="wb-tracker-form" onSubmit={(event) => void submit(event)}>
-      <p className="wb-tracker-form-title">Новий трекер</p>
       <TrackerGroupPicker
         label="Група"
         groups={groups}

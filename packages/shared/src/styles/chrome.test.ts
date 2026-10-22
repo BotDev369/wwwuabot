@@ -208,7 +208,7 @@ describe("стиль не переписує роль повноекранної
 describe("висота хедера", () => {
   it("`--appbar-h` — початкове значення, і хедер обох оболонок тримає саме його", () => {
     const tokens = readFileSync(join(REPO_ROOT, "packages/shared/src/styles/tokens.css"), "utf8");
-    expect(tokens).toContain("--appbar-h: calc(var(--topbar-h) + var(--safe-top))");
+    expect(tokens).toContain("--appbar-h: calc(var(--topbar-h) + var(--safe-top) + var(--sp-2))");
     expect(rule(".wb-appbar")?.body).toContain("min-height: var(--appbar-h)");
     expect(rule(".wb-app-header")?.body).toContain("height: var(--appbar-h)");
   });

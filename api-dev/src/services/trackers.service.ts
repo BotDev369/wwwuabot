@@ -45,7 +45,8 @@ export async function listGroups(env: Env, userId: number): Promise<TrackerGroup
   await ensureTables(env.DB, ["tracker_groups"]);
   await seedGroups(env, userId);
   const rows = await env.DB.prepare(
-    `SELECT id, parent_id, title, key FROM tracker_groups WHERE owner_id = ? ORDER BY id`,
+    `SELECT id, parent_id, title, key FROM tracker_groups WHERE owner_id = ?
+     ORDER BY COALESCE(position, 0), id`,
   )
     .bind(String(userId))
     .all<{ id: number; parent_id: number | null; title: string; key: string | null }>();
@@ -64,10 +65,19 @@ export async function createGroup(
   fields: { title: string; parentId: number | null },
 ): Promise<TrackerGroup | null> {
   const result = await env.DB.prepare(
-    `INSERT INTO tracker_groups (owner_id, key, parent_id, title, created_at)
-     VALUES (?, NULL, ?, ?, ?)`,
+    `INSERT INTO tracker_groups (owner_id, key, parent_id, title, position, created_at)
+     VALUES (?, NULL, ?, ?,
+       (SELECT COALESCE(MAX(position), 0) + 10 FROM tracker_groups
+        WHERE owner_id = ? AND parent_id IS ?), ?)`,
   )
-    .bind(String(userId), fields.parentId, fields.title, formatSqliteDatetime())
+    .bind(
+      String(userId),
+      fields.parentId,
+      fields.title,
+      String(userId),
+      fields.parentId,
+      formatSqliteDatetime(),
+    )
     .run();
   const id = Number(result.meta.last_row_id ?? 0);
   return id > 0 ? { id, parentId: fields.parentId, title: fields.title, key: null } : null;
@@ -235,6 +245,46 @@ export async function deleteGroup(
     ),
   ]);
   return "ok";
+}
+
+/**
+ * Рух групи вгору/вниз у межах свого батька — порядок між сусідами, бо
+ * дерево групує по `parent_id`. Позиції всіх сусідів матеріалізуються при
+ * кожній перестановці (`(індекс+1)*10`): наявні рядки приїхали з `DEFAULT
+ * NULL`, і свіжий рядок без позиції інакше стрибав би на перше місце.
+ * Межа — без змін, а не помилка: перший і останній нікуди не рухаються.
+ */
+export async function moveGroup(
+  env: Env,
+  userId: number,
+  id: number,
+  direction: -1 | 1,
+): Promise<{ ok: true } | { ok: false }> {
+  const group = await readGroup(env, userId, id);
+  if (!group) return { ok: false };
+
+  const siblings = await env.DB.prepare(
+    `SELECT id FROM tracker_groups WHERE owner_id = ? AND parent_id IS ?
+     ORDER BY COALESCE(position, 0), id`,
+  )
+    .bind(String(userId), group.parentId)
+    .all<{ id: number }>();
+  const ids = (siblings.results ?? []).map((row) => Number(row.id));
+  const from = ids.indexOf(id);
+  const to = from + direction;
+  if (from < 0 || to < 0 || to >= ids.length) return { ok: true };
+
+  [ids[from], ids[to]] = [ids[to], ids[from]];
+  await env.DB.batch(
+    ids.map((siblingId, index) =>
+      env.DB.prepare(`UPDATE tracker_groups SET position = ? WHERE id = ? AND owner_id = ?`).bind(
+        (index + 1) * 10,
+        siblingId,
+        String(userId),
+      ),
+    ),
+  );
+  return { ok: true };
 }
 
 /** Пересунути трекер в іншу групу; група має бути цієї ж людини. */

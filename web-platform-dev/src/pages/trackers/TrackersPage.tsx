@@ -7,10 +7,11 @@
  * @module web-platform-dev/src/pages/trackers/TrackersPage
  */
 
-import { useCallback, useMemo, type ReactElement } from "react";
+import { useCallback, useMemo, useState, type ReactElement } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { Icon } from "@wwwuabot/shared";
 import { useScreenChrome } from "@wwwuabot/ui/nav";
+import { MenuModal } from "@wwwuabot/ui/menu";
 import type { Tracker } from "@wwwuabot/shared/trackers";
 import {
   TRACKERS_PATH,
@@ -22,6 +23,7 @@ import {
 import { useTrackers } from "./useTrackers";
 import { useGroupAccordion } from "./useGroupAccordion";
 import { TrackerCreateForm } from "./TrackerCreateForm";
+import { TrackerGroupsModal } from "./TrackerGroupsModal";
 import { TrackerGroupSection } from "./TrackerGroupSection";
 import { groupRowsTree, matrixDays, trackerCells } from "./trackers-view";
 
@@ -35,6 +37,7 @@ export function TrackersPage(): ReactElement {
   const [params] = useSearchParams();
   const accordion = useGroupAccordion();
   const creating = readCreateIntent(params);
+  const [groupsOpen, setGroupsOpen] = useState(false);
 
   const rows = state.trackers;
   const days = useMemo(() => matrixDays(state.endDay, MATRIX_DAYS), [state.endDay]);
@@ -55,11 +58,17 @@ export function TrackersPage(): ReactElement {
 
   return (
     <div className="wb-page wb-trackers-page">
-      {/* Дія екрана — один знак без підпису праворуч: створення трекера.
-          Підпис — в `aria-label`: без нього кнопка не має назви для того,
-          хто не бачить знака. Окремої дії «додати групу» немає — групу
-          додають з меню самої групи («Додати підгрупу»). */}
+      {/* Дії екрана: «Групи» — дерево й порядок груп, «+» — створення трекера
+          (залита куля). Підпис кнопки дії — її текст; знак без підпису має
+          `aria-label`. */}
       <div className="wb-trackers-tools">
+        <button
+          type="button"
+          className="wb-btn wb-btn-secondary"
+          onClick={() => setGroupsOpen(true)}
+        >
+          Групи
+        </button>
         <button
           type="button"
           className="wb-tracker-add"
@@ -70,13 +79,30 @@ export function TrackersPage(): ReactElement {
         </button>
       </div>
 
-      {creating && (
-        <TrackerCreateForm
+      {groupsOpen && (
+        <TrackerGroupsModal
           groups={state.groups}
-          onCreate={(fields, groupId) => state.create(fields, groupId)}
-          onCreated={(tracker) => navigate(trackerPath(tracker.id), { replace: true })}
-          onCancel={() => navigate(withoutCreateIntent(TRACKERS_PATH), { replace: true })}
-          onCreateGroup={(title) => state.createGroup(title, null)}
+          onClose={() => setGroupsOpen(false)}
+          onCreate={state.createGroup}
+          onUpdate={state.updateGroup}
+          onDelete={state.deleteGroup}
+          onMove={state.moveGroup}
+        />
+      )}
+
+      {creating && (
+        <MenuModal
+          title="Новий трекер"
+          onClose={() => navigate(withoutCreateIntent(TRACKERS_PATH), { replace: true })}
+          content={
+            <TrackerCreateForm
+              groups={state.groups}
+              onCreate={(fields, groupId) => state.create(fields, groupId)}
+              onCreated={(tracker) => navigate(trackerPath(tracker.id), { replace: true })}
+              onCancel={() => navigate(withoutCreateIntent(TRACKERS_PATH), { replace: true })}
+              onCreateGroup={(title) => state.createGroup(title, null)}
+            />
+          }
         />
       )}
 

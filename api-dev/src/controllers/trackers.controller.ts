@@ -32,6 +32,7 @@ import {
   listEntries,
   listGroups,
   listTrackers,
+  moveGroup,
   moveTracker,
   readTracker,
   readTrackerEntries,
@@ -54,6 +55,7 @@ const groupBody = z.object({
   id: z.number().optional(),
   title: z.string().optional(),
   parentId: z.number().nullable().optional(),
+  move: z.enum(["up", "down"]).optional(),
 });
 const entryBody = z.object({
   trackerId: z.number(),
@@ -214,8 +216,9 @@ export async function handleTrackerEntry(request: Request, env: Env): Promise<Re
 }
 
 /**
- * Групи трекерів: `POST` — нова, `PATCH` — перейменувати чи перемістити,
- * `DELETE` — прибрати (трекери й підгрупи піднімаються на місце батька).
+ * Групи трекерів: `POST` — нова, `PATCH` — перейменувати, рухнути вгору/вниз
+ * (`move`) чи перемістити в іншу групу, `DELETE` — прибрати (трекери й
+ * підгрупи піднімаються на місце батька).
  * Типова тематика каталогу (її `key`) не видаляється — ключ це контракт
  * сіву, а видалення зламало б прив'язку нових мірок.
  */
@@ -264,6 +267,15 @@ export async function handleTrackerGroups(request: Request, env: Env): Promise<R
 
     const id = positiveId(parsed.body.id === undefined ? null : String(parsed.body.id));
     if (id === null) return json({ ok: false, error: "Missing id" }, 400);
+
+    // Рух вгору/вниз — окрема гілка PATCH: перестановка міняє порядок усіх
+    // сусідів, тож у відповідь іде свіжий перелік груп, а не один рядок.
+    if (parsed.body.move !== undefined) {
+      const moved = await moveGroup(env, identity.userId, id, parsed.body.move === "up" ? -1 : 1);
+      if (!moved.ok) return json({ ok: false, error: "Not found" }, 404);
+      return json({ ok: true, groups: await listGroups(env, identity.userId) });
+    }
+
     const fields: { title?: string; parentId?: number | null } = {};
     if (parsed.body.title !== undefined) {
       const validated = validateTrackerGroupFields({

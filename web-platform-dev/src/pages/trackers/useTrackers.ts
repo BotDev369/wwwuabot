@@ -42,6 +42,8 @@ export interface TrackersState extends TrackersPayload {
     patch: { title?: string; parentId?: number | null },
   ) => Promise<boolean>;
   deleteGroup: (id: number) => Promise<boolean>;
+  /** Рух групи вгору/вниз: порядок міняється між сусідами одного батька. */
+  moveGroup: (id: number, direction: "up" | "down") => Promise<boolean>;
 }
 
 export function useTrackers(): TrackersState {
@@ -210,6 +212,23 @@ export function useTrackers(): TrackersState {
     }
   }
 
+  async function moveGroup(id: number, direction: "up" | "down"): Promise<boolean> {
+    try {
+      const result = await apiFetch<{ groups: TrackerGroup[] }>("/api/user/trackers/group", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ id, move: direction }),
+      });
+      // Перестановка міняє всіх сусідів, тож свіжий перелік іде від сервера,
+      // а не збирається локально з двох місць.
+      if (Array.isArray(result.groups)) setGroups(result.groups);
+      return true;
+    } catch {
+      await dialog.alert("Не вдалося змінити порядок груп.", { tone: "danger" });
+      return false;
+    }
+  }
+
   async function archive(id: number): Promise<boolean> {
     try {
       await apiFetch(`/api/user/trackers?id=${id}`, { method: "DELETE" });
@@ -237,5 +256,6 @@ export function useTrackers(): TrackersState {
     createGroup,
     updateGroup,
     deleteGroup,
+    moveGroup,
   };
 }

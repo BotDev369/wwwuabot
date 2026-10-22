@@ -9,7 +9,7 @@
  */
 
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { render, screen } from "@testing-library/react";
+import { render, screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import type { Tracker, TrackerEntryRow, TrackerGroup } from "@wwwuabot/shared/trackers";
 
@@ -24,6 +24,7 @@ const hooks = {
   createGroup: vi.fn(),
   updateGroup: vi.fn(),
   deleteGroup: vi.fn(),
+  moveGroup: vi.fn(),
   prompt: vi.fn(),
   confirm: vi.fn(),
   alert: vi.fn(),
@@ -100,6 +101,7 @@ const state = {
   createGroup: hooks.createGroup,
   updateGroup: hooks.updateGroup,
   deleteGroup: hooks.deleteGroup,
+  moveGroup: hooks.moveGroup,
 };
 
 vi.mock("react-router-dom", () => ({
@@ -237,6 +239,18 @@ describe("дії екрана", () => {
     expect(document.querySelector(".wb-tracker-day-bar")).toBeNull();
   });
 
+  it("новий трекер відкривається модалкою, а не кашею на сторінці", () => {
+    hooks.params = new URLSearchParams({ new: "1" });
+    render(<TrackersPage />);
+
+    const dialog = screen.getByRole("dialog", { name: "Новий трекер" });
+    expect(dialog).toBeTruthy();
+    expect(within(dialog).getByLabelText("Група")).toBeTruthy();
+    expect(within(dialog).getByLabelText("Назва")).toBeTruthy();
+    // Форма — вміст модалки, а не блок сторінки під нею.
+    expect(dialog.querySelector(".wb-tracker-form")).not.toBeNull();
+  });
+
   it("⛔ окремої дії «додати групу» немає — знак створення один, це трекер", () => {
     render(<TrackersPage />);
 
@@ -244,6 +258,17 @@ describe("дії екрана", () => {
     // у шапці дублював ту саму дію й забирав місце біля «+».
     expect(screen.queryByRole("button", { name: "Додати групу" })).toBeNull();
     expect(screen.getByRole("button", { name: "Додати трекер" })).toBeTruthy();
+  });
+
+  it("«Групи» відкриває дерево груп в модалці, а не на сторінці", async () => {
+    render(<TrackersPage />);
+
+    await userEvent.click(screen.getByRole("button", { name: "Групи" }));
+    const dialog = screen.getByRole("dialog", { name: "Групи" });
+    expect(within(dialog).getByRole("button", { name: "Нова група" })).toBeTruthy();
+    // Підгрупа з порядком і діями — усередині модалки, а не під нею.
+    expect(within(dialog).getByText("Ранкова рутина")).toBeTruthy();
+    expect(within(dialog).getByRole("button", { name: "Дії групи Ранкова рутина" })).toBeTruthy();
   });
 
   it("«так-ні» у матриці несе статус, а не число", async () => {

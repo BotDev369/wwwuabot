@@ -149,6 +149,56 @@ export function groupRowsTree(
   return roots.map(prune).filter((view): view is TrackerGroupTreeView => view !== null);
 }
 
+/** Рядок дерева груп для модалки «Групи»: глибина відступу й межі сусідів. */
+export interface GroupTreeLine {
+  group: TrackerGroup;
+  depth: number;
+  /** Перший серед сусідів одного батька — «вгору» вимкнена. */
+  first: boolean;
+  /** Останній серед сусідів — «вниз» вимкнена. */
+  last: boolean;
+}
+
+/**
+ * Дерево груп плоским списком (DFS): модалка малює рядки без рекурсії,
+ * а `first`/`last` дають межі для руху вгору/вниз. Сирота (батька видалили)
+ * піднімається на верхній рівень, а не зникає; `seen` — охорона від циклу,
+ * який замкнув би обхід (сервер цикл не створює, але й малюнок не має
+ * зависати, якщо дані приїхали криві).
+ */
+export function groupTreeLines(groups: readonly TrackerGroup[]): GroupTreeLine[] {
+  const known = new Set(groups.map((group) => group.id));
+  const byParent = new Map<number | null, TrackerGroup[]>();
+  for (const group of groups) {
+    const parent = group.parentId !== null && known.has(group.parentId) ? group.parentId : null;
+    const bucket = byParent.get(parent);
+    if (bucket) bucket.push(group);
+    else byParent.set(parent, [group]);
+  }
+
+  const lines: GroupTreeLine[] = [];
+  const seen = new Set<number>();
+  const walk = (parentId: number | null, depth: number): void => {
+    const siblings = byParent.get(parentId) ?? [];
+    siblings.forEach((group, index) => {
+      if (seen.has(group.id)) return;
+      seen.add(group.id);
+      lines.push({ group, depth, first: index === 0, last: index === siblings.length - 1 });
+      walk(group.id, depth + 1);
+    });
+  };
+  walk(null, 0);
+  // Недосяжне з кореня (цикл або батька підчистили вручну) — теж рядки,
+  // а не нікуди: модалка мусить показати все, що є в базі, інакше група
+  // стає невидимою для управління.
+  for (const group of groups) {
+    if (seen.has(group.id)) continue;
+    seen.add(group.id);
+    lines.push({ group, depth: 0, first: false, last: false });
+  }
+  return lines;
+}
+
 /**
  * Історія — найновіше першим. Порядок дає спільний `compareTrackerEntries`:
  * день, момент запису, номер рядка — щоб два записи в одну секунду не мінялися
