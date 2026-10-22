@@ -394,6 +394,21 @@ describe("три поверхні", () => {
     expect(firstCell?.getAttribute("aria-label")).toContain("Сб 17");
   });
 
+  it("дії стоять у рядку з датами, а вкладки й шапка закріплені разом", () => {
+    render(<TrackersPage />);
+
+    const head = document.querySelector(".wb-matrix-head");
+    // Кнопки й дати — одна сітка: окрема смуга дій з'їдала б рядок екрана.
+    expect(within(head as HTMLElement).getByRole("button", { name: "Групи" })).toBeTruthy();
+    expect(within(head as HTMLElement).getByRole("button", { name: "Порядок" })).toBeTruthy();
+    expect(within(head as HTMLElement).getByRole("button", { name: "Додати трекер" })).toBeTruthy();
+    expect(head?.querySelectorAll(".wb-matrix-head-day")).toHaveLength(4);
+    // Вкладки й шапка — один закріплений шар, а не два різні за рівнями.
+    const sticky = document.querySelector(".wb-trackers-head");
+    expect(sticky?.querySelector("[role=tablist]")).not.toBeNull();
+    expect(sticky?.querySelector(".wb-matrix-head")).not.toBeNull();
+  });
+
   it("режим «Порядок» міняє місце стрілками й не дає вийти за межі групи", async () => {
     // Двоє сусідів в одній групі: межа має бути в першого згори й у другого
     // знизу, а в середині — обидві стрілки живі.
@@ -402,8 +417,9 @@ describe("три поверхні", () => {
     await userEvent.click(screen.getByRole("button", { name: "Порядок" }));
     await userEvent.click(screen.getByRole("button", { name: "Режим" }));
 
-    // Клітинок днів у цьому режимі немає: тап там відкривав би запис.
-    expect(document.querySelector(".wb-matrix-head")).toBeNull();
+    // Колонок днів у цьому режимі немає: тап там відкривав би запис.
+    expect(document.querySelector(".wb-matrix-head--order")).not.toBeNull();
+    expect(document.querySelector(".wb-matrix-head-day")).toBeNull();
     await userEvent.click(screen.getByRole("button", { name: "Вода — нижче" }));
     expect(hooks.moveTracker).toHaveBeenCalledWith(1, "down");
     // Перший у групі не йде вгору — межа вимкнена, а не зникає.

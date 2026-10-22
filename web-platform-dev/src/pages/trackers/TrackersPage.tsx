@@ -94,7 +94,48 @@ export function TrackersPage(): ReactElement {
       className="wb-page wb-trackers-page"
       style={{ "--matrix-cols": MATRIX_DAYS } as CSSProperties}
     >
-      <Tabs options={TABS} value={tab} onChange={switchTab} label="Поверхні трекерів" />
+      {/* Три рядки лишаються на видноті: назва екрана (AppBar), вкладки й —
+          у «Моїх» — дії разом із датами. Дні читають разом із числами, тож
+          шапка таблиці мусить не зникати при прокрутці. */}
+      <div className="wb-trackers-head">
+        <Tabs options={TABS} value={tab} onChange={switchTab} label="Поверхні трекерів" />
+        {tab === "mine" && (
+          <TrackerDayHeader
+            days={ordering || rows.length === 0 ? [] : days}
+            ordering={ordering}
+            leading={
+              <div className="wb-trackers-tools">
+                <button
+                  type="button"
+                  className="wb-btn wb-btn-secondary"
+                  onClick={() => setGroupsOpen(true)}
+                >
+                  Групи
+                </button>
+                <button
+                  type="button"
+                  className={"wb-btn wb-btn-ghost wb-trackers-order" + (ordering ? " is-on" : "")}
+                  aria-pressed={ordering}
+                  aria-label="Порядок"
+                  title="Порядок"
+                  disabled={rows.length === 0}
+                  onClick={() => setOrdering((value) => !value)}
+                >
+                  <Icon name="sort" size={18} />
+                </button>
+                <button
+                  type="button"
+                  className="wb-tracker-add"
+                  aria-label="Додати трекер"
+                  onClick={() => navigate(withCreateIntent(TRACKERS_PATH))}
+                >
+                  <Icon name="plus" size={22} />
+                </button>
+              </div>
+            }
+          />
+        )}
+      </div>
 
       <div
         id={tabPanelId(tab)}
@@ -126,35 +167,6 @@ export function TrackersPage(): ReactElement {
 
         {tab === "mine" && (
           <>
-            <div className="wb-trackers-tools">
-              <button
-                type="button"
-                className="wb-btn wb-btn-secondary"
-                onClick={() => setGroupsOpen(true)}
-              >
-                Групи
-              </button>
-              <button
-                type="button"
-                className={"wb-btn wb-btn-ghost wb-trackers-order" + (ordering ? " is-on" : "")}
-                aria-pressed={ordering}
-                aria-label="Порядок"
-                title="Порядок"
-                disabled={rows.length === 0}
-                onClick={() => setOrdering((value) => !value)}
-              >
-                <Icon name="sort" size={18} />
-              </button>
-              <button
-                type="button"
-                className="wb-tracker-add"
-                aria-label="Додати трекер"
-                onClick={() => navigate(withCreateIntent(TRACKERS_PATH))}
-              >
-                <Icon name="plus" size={22} />
-              </button>
-            </div>
-
             {groupsOpen && (
               <TrackerGroupsModal
                 groups={state.groups}
@@ -201,30 +213,27 @@ export function TrackersPage(): ReactElement {
             )}
 
             {!state.loading && !state.error && rows.length > 0 && (
-              <>
-                {!ordering && <TrackerDayHeader days={days} />}
-                <div className="wb-trackers-tree">
-                  {tree.map((view) => (
-                    <TrackerGroupSection
-                      key={view.group.id}
-                      view={view}
-                      depth={0}
-                      cellsOf={cellsOf}
-                      today={state.endDay}
-                      saving={state.saving}
-                      ordering={ordering}
-                      isOpen={accordion.isOpen}
-                      onToggle={accordion.toggle}
-                      onMoveTracker={(id, direction) => void state.moveTracker(id, direction)}
-                      onOpenTracker={(id) => navigate(trackerPath(id))}
-                      onSave={save}
-                      onCreateGroup={state.createGroup}
-                      onUpdateGroup={state.updateGroup}
-                      onDeleteGroup={state.deleteGroup}
-                    />
-                  ))}
-                </div>
-              </>
+              <div className="wb-trackers-tree">
+                {tree.map((view) => (
+                  <TrackerGroupSection
+                    key={view.group.id}
+                    view={view}
+                    depth={0}
+                    cellsOf={cellsOf}
+                    today={state.endDay}
+                    saving={state.saving}
+                    ordering={ordering}
+                    isOpen={accordion.isOpen}
+                    onToggle={accordion.toggle}
+                    onMoveTracker={(id, direction) => void state.moveTracker(id, direction)}
+                    onOpenTracker={(id) => navigate(trackerPath(id))}
+                    onSave={save}
+                    onCreateGroup={state.createGroup}
+                    onUpdateGroup={state.updateGroup}
+                    onDeleteGroup={state.deleteGroup}
+                  />
+                ))}
+              </div>
             )}
           </>
         )}

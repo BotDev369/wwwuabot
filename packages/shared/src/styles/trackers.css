@@ -19,15 +19,33 @@
   padding-bottom: var(--sp-8);
 }
 
+/* ── Закріплений шар: вкладки й шапка таблиці ───────────────────────────── */
+
+/* Вкладки й дії з датами лишаються на видноті: екран гортають до дальніх груп,
+   і без них назва колонки з числами стає здогадом. Відлік — від хедера, який
+   сам публікує свою висоту (`--appbar-h`), а не від нуля: інакше смуга
+   заїхала б під нього. Негативні поля збігаються з полем сторінки, а заливка
+   шару має бути непрозорою — під нею їдуть рядки. */
+.wb-trackers-head {
+  position: sticky;
+  top: var(--appbar-h);
+  z-index: var(--z-sticky);
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-2);
+  margin: calc(var(--sp-5) * -1) calc(var(--sp-3) * -1) 0;
+  padding: var(--sp-5) var(--sp-3) var(--sp-2);
+  background: var(--bg-page, var(--bg-0));
+}
+
 /* ── Дії екрана ─────────────────────────────────────────────────────────── */
 
-/* Створення лишилось на місці, поки його тримав блок підсумку дня:
-   сам підсумок прибрали, дії — ні. */
+/* Дії живуть у шапці таблиці, у колонці назви: окремий рядок над датами
+   з'їдав би висоту екрана і давав би дві смуги замість однієї. */
 .wb-trackers-tools {
   display: flex;
-  justify-content: flex-end;
+  justify-content: flex-start;
   gap: var(--sp-2);
-  margin-bottom: var(--sp-3);
 }
 
 .wb-tracker-section-title {
@@ -197,16 +215,18 @@
   min-height: 44px;
 }
 
-/* Шапка днів: день тижня над числом, без рамки — вона підпис, а не рядок. */
+/* Шапка таблиці: дії в клітинці назви, далі — дні тижня над числами. */
 .wb-matrix-head {
-  margin-top: var(--sp-2);
-  padding-top: var(--sp-1);
+  min-height: 44px;
   border-bottom: 1px solid var(--border-subtle);
 }
 
-/* Порожня клітинка над назвою: без неї стовпчики днів зсунулись би на один. */
-.wb-matrix-head-spacer {
-  display: block;
+/* Клітинка дій над назвою: ширину бере той самий стовпчик, що й назви рядків. */
+.wb-matrix-head-lead {
+  display: flex;
+  align-items: center;
+  min-width: 0;
+  padding-inline-end: var(--sp-1);
 }
 
 .wb-matrix-head-day {
@@ -214,7 +234,10 @@
   flex-direction: column;
   align-items: center;
   gap: 2px;
-  padding-bottom: var(--sp-1);
+  padding-block: 2px;
+  /* Вертикальна лінія — та сама, що в рядках: так читання йде стовпчиком,
+     а не рядком, і дата вгорі належить своїм числам. */
+  border-inline-start: 1px solid var(--border-subtle);
   color: var(--text-muted);
   line-height: 1.1;
 }
@@ -233,7 +256,8 @@
 
 /* Режим «Порядок»: замість днів — стрілки, тож колонка однакова для всіх
    рядків, а назва лишається на місці (оком шукаєш саме її). */
-.wb-matrix-row--order {
+.wb-matrix-row--order,
+.wb-matrix-head--order {
   grid-template-columns: minmax(0, 1fr) 92px;
 }
 
@@ -292,6 +316,9 @@
   min-height: 44px;
   padding: 0 2px;
   border: none;
+  /* Вертикальна лінія стовпчика: легка й без рамки довкола клітинки, щоб
+     таблиця читалась сіткою, а не набором плиток. */
+  border-inline-start: 1px solid var(--border-subtle);
   border-radius: var(--radius-sm);
   background: none;
   color: var(--text-secondary);
