@@ -1,8 +1,8 @@
 /**
- * Власний трекер: назва, тип запису (число / так-ні), група, одиниця —
- * з довідника споріднених груп або своя, ціль, крок і вид запису. Перевіряє
- * форму та сама `validateTrackerFields`, що й сервер (AGENTS.md §3); вид
- * питаємо прямо, а не вгадуємо за ціллю. Група — селект дерева власника.
+ * Власний трекер: група (найперше — вона визначає, куди трекер ляже), назва,
+ * тип запису (число / так-ні), одиниця з довідника або своя, ціль, крок і вид
+ * запису. Перевіряє форму та сама `validateTrackerFields`, що й сервер
+ * (AGENTS.md §3); вид питаємо прямо, а не вгадуємо за ціллю.
  *
  * @module web-platform-dev/src/pages/trackers/TrackerCreateForm
  */
@@ -109,23 +109,7 @@ export function TrackerCreateForm({
 
   return (
     <form className="wb-tracker-form" onSubmit={(event) => void submit(event)}>
-      <p className="wb-tracker-form-title">Свій трекер</p>
-      <label className="wb-field">
-        <span className="wb-label">Назва</span>
-        <input
-          className="wb-input"
-          value={title}
-          onChange={(event) => setTitle(event.target.value)}
-          placeholder="Наприклад, кава"
-          maxLength={40}
-          autoFocus
-        />
-      </label>
-      <div className="wb-field">
-        <span className="wb-label">Тип запису</span>
-        <Tabs options={TYPE_TABS} value={valueType} onChange={setValueType} label="Тип запису" />
-        <p className="wb-text-muted">{TYPE_HINT[valueType]}</p>
-      </div>
+      <p className="wb-tracker-form-title">Новий трекер</p>
       <label className="wb-field">
         <span className="wb-label">Група</span>
         <select
@@ -144,6 +128,22 @@ export function TrackerCreateForm({
           ))}
         </select>
       </label>
+      <label className="wb-field">
+        <span className="wb-label">Назва</span>
+        <input
+          className="wb-input"
+          value={title}
+          onChange={(event) => setTitle(event.target.value)}
+          placeholder="Наприклад, кава"
+          maxLength={40}
+          autoFocus
+        />
+      </label>
+      <div className="wb-field">
+        <span className="wb-label">Тип запису</span>
+        <Tabs options={TYPE_TABS} value={valueType} onChange={setValueType} label="Тип запису" />
+        <p className="wb-text-muted">{TYPE_HINT[valueType]}</p>
+      </div>
       {/* «Так-ні» не має ні одиниці, ні цілі, ні кроку — це статус дня, а не
           міра; сервер теж відкидає ці поля для нього (див. `validateTrackerFields`). */}
       {valueType === "number" && (

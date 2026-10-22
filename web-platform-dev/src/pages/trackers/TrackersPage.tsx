@@ -11,7 +11,6 @@ import { useCallback, useMemo, type ReactElement } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { Icon } from "@wwwuabot/shared";
 import { useScreenChrome } from "@wwwuabot/ui/nav";
-import { useDialog } from "@wwwuabot/ui/dialog";
 import type { Tracker } from "@wwwuabot/shared/trackers";
 import {
   TRACKERS_PATH,
@@ -33,7 +32,6 @@ export function TrackersPage(): ReactElement {
   useScreenChrome({ title: "Трекери" });
   const state = useTrackers();
   const navigate = useNavigate();
-  const dialog = useDialog();
   const [params] = useSearchParams();
   const accordion = useGroupAccordion();
   const creating = readCreateIntent(params);
@@ -55,28 +53,13 @@ export function TrackersPage(): ReactElement {
     [state],
   );
 
-  async function addGroup(): Promise<void> {
-    const title = await dialog.prompt("Назва групи:", {
-      validate: (value) => (value.trim() ? null : "Порожньо"),
-    });
-    if (title !== null) await state.createGroup(title.trim(), null);
-  }
-
   return (
     <div className="wb-page wb-trackers-page">
-      {/* Дії екрана — знаки без підпису праворуч: підсумок дня прибрали,
-          але створення лишилось на тому самому місці, де й шукали.
-          Підпис — у `aria-label`: без нього кнопка не має назви для того,
-          хто не бачить знака. */}
+      {/* Дія екрана — один знак без підпису праворуч: створення трекера.
+          Підпис — в `aria-label`: без нього кнопка не має назви для того,
+          хто не бачить знака. Окремої дії «додати групу» немає — групу
+          додають з меню самої групи («Додати підгрупу»). */}
       <div className="wb-trackers-tools">
-        <button
-          type="button"
-          className="wb-tracker-add wb-tracker-add--ghost"
-          aria-label="Додати групу"
-          onClick={() => void addGroup()}
-        >
-          <Icon name="folder" size={20} />
-        </button>
         <button
           type="button"
           className="wb-tracker-add"

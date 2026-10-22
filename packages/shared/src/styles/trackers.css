@@ -39,9 +39,8 @@
   text-transform: uppercase;
 }
 
-/* «+» — залита акцентом куля 44px: це головна дія екрана. Поруч — «група»:
-   той самий розмір, але привид — вона головна лише коли людина збирає
-   структуру, а не коли міряє день. */
+/* «+» — залита акцентом куля 44px: це єдина дія екрана (окремої дії
+   «додати групу» немає — групу додають з меню групи). */
 .wb-tracker-add {
   display: inline-flex;
   align-items: center;
@@ -56,12 +55,6 @@
   color: var(--text-inverse);
   box-shadow: var(--shadow-sm);
   cursor: pointer;
-}
-
-.wb-tracker-add--ghost {
-  background: var(--tracker-surface);
-  color: var(--text-secondary);
-  box-shadow: none;
 }
 
 .wb-tracker-add:active {
@@ -547,13 +540,16 @@
   color: var(--red);
 }
 
-/* ── Власний трекер ───────────────────────────────────────────────────────── */
+/* ── Новий трекер ─────────────────────────────────────────────────────────── */
 
+/* Повітря між полями — міра форми, а не кожного поля окремо: раніше рядки
+   стояли один на одному (12px між полями, 4px усередині), і форма читалась
+   як суцільна маса. Заголовок і підказки дихають тим самим гепом. */
 .wb-tracker-form {
   display: flex;
   flex-direction: column;
-  gap: var(--sp-3);
-  padding: var(--sp-4);
+  gap: var(--sp-4);
+  padding: var(--sp-5);
   margin-bottom: var(--sp-3);
   border-radius: var(--radius-lg);
   background: var(--tracker-surface);
@@ -561,19 +557,20 @@
 
 .wb-tracker-form .wb-field {
   margin-bottom: 0;
+  gap: var(--sp-2);
 }
 
 .wb-tracker-form-title {
   margin: 0;
   color: var(--text-primary);
-  font-size: var(--text-md);
+  font-size: var(--text-lg);
   font-weight: var(--weight-semibold);
 }
 
 .wb-tracker-form-row {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: var(--sp-2);
+  gap: var(--sp-3);
 }
 
 /* Дії липнуть над футером: форма довга, і «Створити» мусить бути під рукою,

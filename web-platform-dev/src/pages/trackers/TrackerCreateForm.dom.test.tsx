@@ -52,7 +52,19 @@ function renderForm(groups: TrackerGroup[] = []) {
   );
 }
 
-describe("свій трекер", () => {
+describe("новий трекер", () => {
+  it("заголовок — «Новий трекер», група — найперше поле, над назвою", () => {
+    renderForm();
+
+    expect(screen.getByText("Новий трекер")).toBeTruthy();
+    expect(screen.queryByText("Свій трекер")).toBeNull();
+    // Група визначає, куди трекер ляже, — її обирають раніше за саму назву.
+    const group = screen.getByLabelText("Група");
+    const name = screen.getByLabelText("Назва");
+    const nameFollows = group.compareDocumentPosition(name) & Node.DOCUMENT_POSITION_FOLLOWING;
+    expect(nameFollows).toBeTruthy();
+  });
+
   it("⛔ порожня назва не йде на сервер", async () => {
     renderForm();
 

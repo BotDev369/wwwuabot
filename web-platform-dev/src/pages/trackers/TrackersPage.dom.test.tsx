@@ -237,10 +237,12 @@ describe("дії екрана", () => {
     expect(document.querySelector(".wb-tracker-day-bar")).toBeNull();
   });
 
-  it("створення лишилось: група й трекер — ті самі знаки праворуч", () => {
+  it("⛔ окремої дії «додати групу» немає — знак створення один, це трекер", () => {
     render(<TrackersPage />);
 
-    expect(screen.getByRole("button", { name: "Додати групу" })).toBeTruthy();
+    // Групу додають з меню самої групи («Додати підгрупу»); другий знак
+    // у шапці дублював ту саму дію й забирав місце біля «+».
+    expect(screen.queryByRole("button", { name: "Додати групу" })).toBeNull();
     expect(screen.getByRole("button", { name: "Додати трекер" })).toBeTruthy();
   });
 
