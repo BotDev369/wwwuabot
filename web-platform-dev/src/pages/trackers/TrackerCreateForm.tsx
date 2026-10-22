@@ -1,8 +1,8 @@
 /**
- * Власний трекер: група (найперше — вона визначає, куди трекер ляже), назва,
- * тип запису (число / так-ні), одиниця з довідника або своя, ціль, крок і вид
- * запису. Перевіряє форму та сама `validateTrackerFields`, що й сервер
- * (AGENTS.md §3); вид питаємо прямо, а не вгадуємо за ціллю.
+ * Власний трекер: група першою (вибір — модалка з деревом), назва, тип запису
+ * (число / так-ні), одиниця з довідника або своя, ціль, крок і вид запису.
+ * Перевіряє форму та сама `validateTrackerFields`, що й сервер (AGENTS.md §3);
+ * вид питаємо прямо, а не вгадуємо за ціллю.
  *
  * @module web-platform-dev/src/pages/trackers/TrackerCreateForm
  */
@@ -12,8 +12,6 @@ import { Tabs, type TabOption } from "@wwwuabot/ui/tabs";
 import {
   TRACKER_LIMITS,
   TRACKER_UNIT_GROUPS,
-  buildTrackerGroupTree,
-  flattenTrackerGroupTree,
   validateTrackerFields,
   type Tracker,
   type TrackerFields,
@@ -21,6 +19,7 @@ import {
   type TrackerMode,
   type TrackerValueType,
 } from "@wwwuabot/shared/trackers";
+import { TrackerGroupPicker } from "./TrackerGroupPicker";
 
 const MODE_TABS: readonly TabOption<TrackerMode>[] = [
   { key: "sum", label: "Додавати за день" },
@@ -52,6 +51,8 @@ interface TrackerCreateFormProps {
   onCreate: (fields: TrackerFields, groupId: number | null) => Promise<Tracker | null>;
   onCreated: (tracker: Tracker) => void;
   onCancel: () => void;
+  /** Створити нову верхню групу з модалки вибору; немає — кнопки немає. */
+  onCreateGroup?: (title: string) => Promise<TrackerGroup | null>;
 }
 
 function numberOrNull(value: string): number | null {
@@ -66,10 +67,12 @@ export function TrackerCreateForm({
   onCreate,
   onCreated,
   onCancel,
+  onCreateGroup,
 }: TrackerCreateFormProps): ReactElement {
   const [title, setTitle] = useState("");
   const [valueType, setValueType] = useState<TrackerValueType>("number");
-  const [groupId, setGroupId] = useState("");
+  // Група — вибір, а не текст: `null` — «Свої», решта — id з модалки з деревом.
+  const [group, setGroup] = useState<number | null>(null);
   const [unit, setUnit] = useState("");
   // Своя одиниця — не рядок у стані, а ознака вибору: довідник і свій текст
   // живуть в одному полі `unit`, і форма лише знає, показувати чи ні ввід.
@@ -102,7 +105,7 @@ export function TrackerCreateForm({
     }
     setError(null);
     setBusy(true);
-    const tracker = await onCreate(validated.value, groupId === "" ? null : Number(groupId));
+    const tracker = await onCreate(validated.value, group);
     setBusy(false);
     if (tracker) onCreated(tracker);
   }
@@ -110,24 +113,13 @@ export function TrackerCreateForm({
   return (
     <form className="wb-tracker-form" onSubmit={(event) => void submit(event)}>
       <p className="wb-tracker-form-title">Новий трекер</p>
-      <label className="wb-field">
-        <span className="wb-label">Група</span>
-        <select
-          className="wb-select"
-          value={groupId}
-          onChange={(event) => setGroupId(event.target.value)}
-        >
-          <option value="">Свої</option>{" "}
-          {/* Нерозривні пробіли: звичайні HTML згортає, і рівень глибини
-              у селекті читався б як одне ім'я без відступу. */}
-          {flattenTrackerGroupTree(buildTrackerGroupTree(groups)).map((option) => (
-            <option key={option.group.id} value={option.group.id}>
-              {"\u00A0".repeat(option.depth * 3)}
-              {option.group.title}
-            </option>
-          ))}
-        </select>
-      </label>
+      <TrackerGroupPicker
+        label="Група"
+        groups={groups}
+        value={group}
+        onPick={setGroup}
+        onCreate={onCreateGroup}
+      />
       <label className="wb-field">
         <span className="wb-label">Назва</span>
         <input

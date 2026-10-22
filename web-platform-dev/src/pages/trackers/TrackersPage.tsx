@@ -76,6 +76,7 @@ export function TrackersPage(): ReactElement {
           onCreate={(fields, groupId) => state.create(fields, groupId)}
           onCreated={(tracker) => navigate(trackerPath(tracker.id), { replace: true })}
           onCancel={() => navigate(withoutCreateIntent(TRACKERS_PATH), { replace: true })}
+          onCreateGroup={(title) => state.createGroup(title, null)}
         />
       )}
 

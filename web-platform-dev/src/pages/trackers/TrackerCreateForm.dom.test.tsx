@@ -188,7 +188,7 @@ describe("новий трекер", () => {
     expect(handlers.create).not.toHaveBeenCalled();
   });
 
-  it("вибір групи їде на сервер номером, а не словом", async () => {
+  it("вибір групи — рядок дерева в модалці, на сервер їде id", async () => {
     handlers.create.mockResolvedValueOnce(created);
     const groups: TrackerGroup[] = [
       { id: 10, parentId: null, title: "Режим", key: "routine" },
@@ -197,7 +197,11 @@ describe("новий трекер", () => {
     renderForm(groups);
 
     await userEvent.type(screen.getByLabelText("Назва"), "Кава");
-    await userEvent.selectOptions(screen.getByLabelText("Група"), "11");
+    await userEvent.click(screen.getByRole("button", { name: "Група" }));
+    // Підпапка типово закрита: структуру розгортають, а не вгадують за відступом.
+    expect(screen.queryByRole("button", { name: "Ранкова рутина" })).toBeNull();
+    await userEvent.click(screen.getByRole("button", { name: "Розгорнути всі" }));
+    await userEvent.click(screen.getByRole("button", { name: "Ранкова рутина" }));
     await userEvent.click(screen.getByRole("button", { name: "Створити" }));
 
     expect(handlers.create).toHaveBeenCalledWith(expect.objectContaining({ title: "Кава" }), 11);
