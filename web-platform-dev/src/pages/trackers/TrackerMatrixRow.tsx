@@ -29,15 +29,13 @@ interface TrackerMatrixRowProps {
 interface CellClassInput {
   empty: boolean;
   goal: boolean;
-  today: boolean;
 }
 
-function cellClass({ empty, goal, today }: CellClassInput): string {
+function cellClass({ empty, goal }: CellClassInput): string {
   return (
     "wb-matrix-cell" +
     (empty ? " wb-matrix-cell--empty" : "") +
-    (goal ? " wb-matrix-cell--goal" : "") +
-    (today ? " wb-matrix-cell--today" : "")
+    (goal ? " wb-matrix-cell--goal" : "")
   );
 }
 
@@ -122,7 +120,6 @@ export function TrackerMatrixRow({
                 className={cellClass({
                   empty: cell.value === null,
                   goal: cell.goalMet,
-                  today: isToday,
                 })}
                 aria-label={label}
                 onClick={() => (isToday ? setOpen((value) => !value) : onOpen())}
@@ -134,8 +131,6 @@ export function TrackerMatrixRow({
                     <span className="wb-matrix-number">{content}</span>
                     {tracker.unit && <span className="wb-matrix-unit">{tracker.unit}</span>}
                   </span>
-                ) : isToday ? (
-                  <Icon name="plus" size={14} />
                 ) : (
                   <span aria-hidden="true">·</span>
                 )}

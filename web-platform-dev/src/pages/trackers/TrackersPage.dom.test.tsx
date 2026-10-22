@@ -233,10 +233,9 @@ describe("матриця днів", () => {
     render(<TrackersPage />);
     await userEvent.click(screen.getByRole("button", { name: "Режим" }));
 
-    // Сьогоднішня клітинка виділена класом і несе суму дня (2.5 л): число
-    // великим, одиниця дрібним під ним.
+    // Сьогоднішня клітинка не має окремого вигляду — у ній те саме значення
+    // дня (2.5 л): число великим, одиниця дрібним під ним.
     const today = screen.getByRole("button", { name: /Вода, Сб 17/ });
-    expect(today.className).toContain("wb-matrix-cell--today");
     expect(today.querySelector(".wb-matrix-number")?.textContent).toBe("2,5");
     expect(today.querySelector(".wb-matrix-unit")?.textContent).toBe("л");
 
@@ -260,15 +259,16 @@ describe("матриця днів", () => {
     expect(hooks.navigate).toHaveBeenCalledWith("/trackers/1");
   });
 
-  it("порожня сьогоднішня клітинка кличе плюсом, порожня минула — мовчить точкою", async () => {
+  it("порожня клітинка — точка, без плюса й заливки, у будь-який день", async () => {
     state.entries = [];
     render(<TrackersPage />);
 
     await userEvent.click(screen.getByRole("button", { name: "Свої" }));
     const today = screen.getByRole("button", { name: /Кава, Сб 17/ });
-    // Плюс — запрошення записати; точка — «тут нічого», без другого підпису.
-    expect(today.querySelector("svg")).toBeTruthy();
     const past = screen.getByRole("button", { name: /Кава, Чт 15/ });
+    // Порожньо — «тут нічого»: одна точка, жодного знака дії.
+    expect(today.textContent).toBe("·");
+    expect(today.querySelector("svg")).toBeNull();
     expect(past.textContent).toBe("·");
   });
 });

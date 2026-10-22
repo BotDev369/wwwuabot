@@ -275,9 +275,7 @@
   gap: var(--sp-1);
 }
 
-.wb-matrix:has(.wb-matrix-form) {
-  background: var(--surface-hover);
-}
+
 
 .wb-matrix-name {
   display: flex;
@@ -381,12 +379,6 @@
 
 .wb-matrix-cell--goal {
   color: var(--accent);
-  font-weight: var(--weight-semibold);
-}
-
-/* Сьогоднішня клітинка приймає запис — позначається самою дією («+»),
-   а не заливкою: залита плитка ламала сітку таблиці. */
-.wb-matrix-cell--today {
   font-weight: var(--weight-semibold);
 }
 
