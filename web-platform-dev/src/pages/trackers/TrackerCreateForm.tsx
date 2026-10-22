@@ -91,8 +91,10 @@ export function TrackerCreateForm({
       goal: numberOrNull(goal),
       step: numberOrNull(step) ?? 1,
       min: 0,
-      mode,
       valueType,
+      // Вид «так-ні» не подаємо: блок вибору приховано, тож типовий ставить
+      // сервер (`validateTrackerFields` → «останній»), а не невидимий вибір.
+      ...(valueType === "number" ? { mode } : {}),
     });
     if (!validated.ok) {
       setError(validated.message);
@@ -211,11 +213,16 @@ export function TrackerCreateForm({
           />
         </label>
       )}
-      <div className="wb-field">
-        <span className="wb-label">Як читати записи</span>
-        <Tabs options={MODE_TABS} value={mode} onChange={setMode} label="Як читати записи" />
-        <p className="wb-text-muted">{MODE_HINT[mode]}</p>
-      </div>
+      {/* Вид «так-ні» не питають: блок ховається повністю, бо статус дня не
+          сума — типовий вид цього типу ставить сервер (`validateTrackerFields`),
+          а вибір, який ніхто не бачить, — це дві правди. */}
+      {valueType === "number" && (
+        <div className="wb-field">
+          <span className="wb-label">Як читати записи</span>
+          <Tabs options={MODE_TABS} value={mode} onChange={setMode} label="Як читати записи" />
+          <p className="wb-text-muted">{MODE_HINT[mode]}</p>
+        </div>
+      )}
       {error && <p className="wb-input-error">{error}</p>}
       <div className="wb-tracker-form-actions">
         <button type="button" className="wb-btn wb-btn-secondary" onClick={onCancel}>

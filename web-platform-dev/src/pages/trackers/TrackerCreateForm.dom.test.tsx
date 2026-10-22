@@ -102,7 +102,7 @@ describe("свій трекер", () => {
     expect(within(time).queryByRole("option", { name: "кг" })).toBeNull();
   });
 
-  it("тип «так-ні» ховає одиницю, ціль і крок — їх у цього типу немає", async () => {
+  it("тип «так-ні» ховає одиницю, ціль, крок і вибір виду — їх у цього типу немає", async () => {
     handlers.create.mockResolvedValueOnce({ ...created, valueType: "boolean" });
     renderForm();
 
@@ -111,16 +111,19 @@ describe("свій трекер", () => {
     expect(screen.queryByLabelText("Одиниця")).toBeNull();
     expect(screen.queryByLabelText("Ціль дня")).toBeNull();
     expect(screen.queryByLabelText("Крок")).toBeNull();
-    // Вид запису лишається: «додавати» для звички — це рахунок «так» за день.
-    expect(screen.getByRole("tab", { name: "Додавати за день" })).toBeTruthy();
+    // ⛔ Блок «Як читати записи» ховається повністю: вибір, якого ніхто не бачить,
+    // — це невидиме рішення, тож типовий вид ставить сервер, а не форма.
+    expect(screen.queryByRole("tablist", { name: "Як читати записи" })).toBeNull();
+    expect(screen.queryByLabelText("Як читати записи")).toBeNull();
+    expect(screen.queryByRole("tab", { name: "Додавати за день" })).toBeNull();
 
     await userEvent.type(screen.getByLabelText("Назва"), "Не палю");
     await userEvent.click(screen.getByRole("button", { name: "Створити" }));
 
-    // Межа 0…1 і порожня одиниця — робить сервер (`validateTrackerFields`),
-    // форма лише не подає полів, яких у цього типу не існує.
+    // Межа 0…1, порожня одиниця й типовий вид «останній» — робить сервер
+    // (`validateTrackerFields`), форма лише не подає полів, яких у цього типу не існує.
     expect(handlers.create).toHaveBeenCalledWith(
-      expect.objectContaining({ title: "Не палю", valueType: "boolean" }),
+      expect.objectContaining({ title: "Не палю", valueType: "boolean", mode: "read" }),
       null,
     );
   });
