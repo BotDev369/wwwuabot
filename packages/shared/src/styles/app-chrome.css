@@ -68,6 +68,10 @@
 .wb-tabbar {
   background: var(--chrome-bottom-bg) !important;
   background: color-mix(in srgb, var(--chrome-bottom-bg) 91%, transparent) !important;
+  /* Скло, як у шапки: без розмиття контент, що їде під смугою, читався крізь неї
+     як текст під напівпрозорою плівкою. */
+  -webkit-backdrop-filter: blur(14px) saturate(140%);
+  backdrop-filter: blur(14px) saturate(140%);
 }
 
 .wb-app-header {

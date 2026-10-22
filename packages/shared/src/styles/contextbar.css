@@ -2,8 +2,9 @@
  * ═══ CONTEXT BAR — контекстний футер (дії поточного екрана) ═══════════
  *
  * Розмітку рендерить спільний `ContextBar` (`@wwwuabot/ui/nav`), тому правила
- * живуть тут. Смуга на 9% глибша за фон (ліній у хромі немає), шар —
- * `--z-overlay`: форма, відкрита поверх екрана, її накриває.
+ * живуть тут. Смуга — той самий хром, що й футер, лише на 4% глибша: два ряди
+ * читаються однією підніжкою, а не двома поверхами (ліній у хромі немає).
+ * Шар — `--z-overlay`: форма, відкрита поверх екрана, її накриває.
  */
 
 /* Місце під смугу: сторінка платформи скролиться документом, і без цього
@@ -23,15 +24,24 @@
   height: var(--context-bar-h);
   display: flex;
   justify-content: center;
-  background: var(--bg-page);
-  background: color-mix(in srgb, var(--bg-page) 91%, black);
+  /* Той самий хром і те саме скло, що в футера, лише на 4% глибше — цей крок
+     і відділяє ряд дій від ряду навігації (ліній у хромі немає). */
+  --context-bar-fill: color-mix(in srgb, var(--chrome-bottom-bg) 96%, black);
+  background: var(--chrome-bottom-bg);
+  background: color-mix(in srgb, var(--context-bar-fill) 91%, transparent);
+  /* Скло: без розмиття контент, що їде під смугою, читався крізь неї. */
+  -webkit-backdrop-filter: blur(14px) saturate(140%);
+  backdrop-filter: blur(14px) saturate(140%);
 }
 
 /* Темне тло: крок угору — два селектори, бо темну схему задає і бренд
    (`data-theme`), і вибір трьох кольорів (`data-colors-mode`). */
 html[data-colors-mode="dark"] .wb-contextbar,
 html[data-theme="dark"] .wb-contextbar {
-  background: color-mix(in srgb, var(--bg-page) 91%, white);
+  /* Крок угору — тією самою мішаниною, що й у другої смуги: чорне на чорному
+     невидиме, і напрям вибирає світлота фону, а не смак. */
+  --context-bar-fill: color-mix(in srgb, var(--chrome-bottom-bg) 96%, white);
+  background: color-mix(in srgb, var(--context-bar-fill) 91%, transparent);
 }
 
 /* На десктопі смуга не розповзається на всю ширину вікна — як футер */
@@ -63,8 +73,11 @@ html[data-theme="dark"] .wb-contextbar {
   padding: 0 var(--sp-3);
   border: none;
   border-radius: var(--radius-full);
-  /* Заливка, без контуру: межу тримає тло (правило 15) */
-  background: var(--surface-hover);
+  /* Заливка — основний колір людини на 12%, а не токен поверхні: смуга стоїть
+     на хромі, де `--field-bg` майже зливається з тлом (будь-яка палітра), а
+     підмішаний текст читається як контрол і на світлому, і на темному, і на
+     кольоровому тлі. Межу тримає тло, а не контур (правило 15). */
+  background: color-mix(in srgb, var(--text-primary) 12%, transparent);
   color: var(--text-primary);
   font-family: inherit;
   font-size: var(--text-sm);
