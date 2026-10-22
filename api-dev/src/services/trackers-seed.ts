@@ -1,14 +1,13 @@
 /**
- * Сів стандартного набору трекерів і мапінг рядка бази в доменну мірку.
- * Окремо від сервісу, бо це **завдання на вхід**, а не поведінка: сів іде
- * при кожному вході в стрічку, його не місце серед читань і записів.
+ * Сів тематик стрічки й мапінг рядка бази в доменну мірку. Тематики сіються
+ * при кожному вході (дерево існує завжди), а мірки — ні: їх додає людина
+ * (`docs/TRACKERS.md`).
  *
  * @module api-dev/src/services/trackers-seed
  */
 
 import { formatSqliteDatetime } from "@wwwuabot/shared/utils/datetime";
 import {
-  TRACKER_CATALOG,
   TRACKER_CATALOG_GROUPS,
   trackerMode,
   trackerValueType,
@@ -30,6 +29,9 @@ export interface TrackerRow {
   group_id: number | null;
   value_type: string | null;
   is_builtin: number;
+  position: number | null;
+  source: string | null;
+  is_public: number | null;
 }
 
 /**
@@ -42,7 +44,8 @@ export interface TrackerRow {
 export const TRACKER_COLUMNS =
   "id, key, title, unit, step, goal, min_value, max_value, " +
   "COALESCE(mode, CASE WHEN goal IS NULL THEN 'read' ELSE 'sum' END) AS mode, " +
-  "COALESCE(value_type, 'number') AS value_type, icon, group_id, is_builtin";
+  "COALESCE(value_type, 'number') AS value_type, icon, group_id, is_builtin, " +
+  "COALESCE(position, 0) AS position, source, COALESCE(is_public, 0) AS is_public";
 
 export function toTracker(row: TrackerRow): Tracker {
   return {
@@ -59,6 +62,8 @@ export function toTracker(row: TrackerRow): Tracker {
     icon: (row.icon || "bar-chart") as Tracker["icon"],
     groupId: row.group_id === null ? null : Number(row.group_id),
     isBuiltin: Number(row.is_builtin) === 1,
+    source: row.source ?? null,
+    isPublic: Number(row.is_public) === 1,
   };
 }
 
@@ -84,54 +89,4 @@ export async function seedGroups(env: Env, userId: number): Promise<Map<string, 
     .bind(String(userId))
     .all<{ id: number; key: string }>();
   return new Map((rows.results ?? []).map((row) => [row.key, Number(row.id)]));
-}
-
-/**
- * Стандартні трекери сіються при **кожному** вході — `INSERT OR IGNORE` за
- * `UNIQUE (owner_id, key)`: ідемпотентно, а прибраний не воскресає (ключ
- * лишається зайнятим) — так нові мірки каталогу доїжджають до наявних людей.
- * Прив'язка до тематики — `UPDATE … WHERE group_id IS NULL`: тільки рядки,
- * які людина ще не поклала в групу сама, — пересунутий трекер свій вибір
- * зберігає (див. `docs/TRACKERS.md`).
- */
-export async function seedTrackers(
-  env: Env,
-  userId: number,
-  groups: Map<string, number>,
-): Promise<void> {
-  const now = formatSqliteDatetime();
-  const statements = TRACKER_CATALOG.map((tracker) =>
-    env.DB.prepare(
-      `INSERT OR IGNORE INTO trackers
-         (owner_id, key, title, unit, step, goal, min_value, max_value, mode, icon, group_id, is_builtin, is_active, created_at)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 1, 1, ?)`,
-    ).bind(
-      String(userId),
-      tracker.key,
-      tracker.title,
-      tracker.unit,
-      tracker.step,
-      tracker.goal,
-      tracker.min,
-      tracker.max,
-      tracker.mode,
-      tracker.icon,
-      groups.get(tracker.groupKey) ?? null,
-      now,
-    ),
-  );
-  for (const groupKey of new Set(TRACKER_CATALOG.map((tracker) => tracker.groupKey))) {
-    const groupId = groups.get(groupKey);
-    if (groupId === undefined) continue;
-    const keys = TRACKER_CATALOG.filter((tracker) => tracker.groupKey === groupKey).map(
-      (tracker) => tracker.key,
-    );
-    statements.push(
-      env.DB.prepare(
-        `UPDATE trackers SET group_id = ?
-         WHERE owner_id = ? AND group_id IS NULL AND key IN (${keys.map(() => "?").join(", ")})`,
-      ).bind(groupId, String(userId), ...keys),
-    );
-  }
-  await env.DB.batch(statements);
 }

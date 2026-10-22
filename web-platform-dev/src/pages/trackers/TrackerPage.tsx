@@ -9,7 +9,7 @@
 
 import { useState, type ReactElement } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import { Icon } from "@wwwuabot/shared";
+import { Icon, SwitchRow } from "@wwwuabot/shared";
 import { useDialog } from "@wwwuabot/ui/dialog";
 import { useScreenChrome } from "@wwwuabot/ui/nav";
 import { Tabs, tabId, tabPanelId, type TabOption } from "@wwwuabot/ui/tabs";
@@ -287,6 +287,15 @@ export function TrackerPage(): ReactElement {
                 </button>
               </div>
             ))}
+          </section>
+
+          <section className="wb-tracker-panel wb-tracker-share">
+            <SwitchRow
+              label="Публічний"
+              hint="Інші бачать лише форму мірки — назву, одиницю й ціль. Записи не публікуються ніколи."
+              checked={tracker.isPublic ?? false}
+              onToggle={(next: boolean) => void state.setPublic(next)}
+            />
           </section>
 
           <button

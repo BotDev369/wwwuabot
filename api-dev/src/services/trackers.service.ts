@@ -1,8 +1,7 @@
 /**
- * Трекери: стандартний набір при першому вході, власні трекери й дотики днів.
- *
- * Власника всюди дає підписаний `initData` (контролер), а не тіло запиту —
- * тому кожен запит звужений `owner_id = ?`, і чужий номер не бачить нічого.
+ * «Мої»: власні трекери, їхній порядок і групи; каталог і чужі визначення — у
+ * `trackers-library`. Власника дає підписаний `initData`, тож кожен запит
+ * звужений `owner_id = ?`, і чужий номер не бачить нічого.
  *
  * @module api-dev/src/services/trackers.service
  */
@@ -11,36 +10,33 @@ import { ensureTables } from "@wwwuabot/shared/database/ensure-tables";
 import { formatSqliteDatetime } from "@wwwuabot/shared/utils/datetime";
 import {
   TRACKER_OWN_GROUP_KEY,
-  todayTrackerDay,
   type Tracker,
-  type TrackerEntry,
-  type TrackerEntryRow,
   type TrackerFields,
   type TrackerGroup,
 } from "@wwwuabot/shared/trackers";
 import type { Env } from "../shared/types";
-import {
-  TRACKER_COLUMNS,
-  seedGroups,
-  seedTrackers,
-  toTracker,
-  type TrackerRow,
-} from "./trackers-seed";
+import { nextTrackerPosition } from "./trackers-library";
+import { TRACKER_COLUMNS, seedGroups, toTracker, type TrackerRow } from "./trackers-seed";
 
+/**
+ * «Мої» — лише те, що людина додала (або мала доти). Каталог більше не
+ * сіється: він живе вкладкой «Шаблони», і копія в «Мої» — завжди явний крок
+ * людини (`docs/TRACKERS.md`, «Три поверхні»).
+ */
 export async function listTrackers(env: Env, userId: number): Promise<Tracker[]> {
   await ensureTables(env.DB, ["trackers", "tracker_groups"]);
-  const groups = await seedGroups(env, userId);
-  await seedTrackers(env, userId, groups);
-
   const rows = await env.DB.prepare(
-    `SELECT ${TRACKER_COLUMNS} FROM trackers WHERE owner_id = ? AND is_active = 1 ORDER BY id`,
+    `SELECT ${TRACKER_COLUMNS} FROM trackers WHERE owner_id = ? AND is_active = 1
+     ORDER BY COALESCE(position, 0), id`,
   )
     .bind(String(userId))
     .all<TrackerRow>();
   return (rows.results ?? []).map(toTracker);
 }
 
-/** Дерево груп людини: верхній рівень першим (типові тематики сіються раніше). */
+/**
+ * Дерево груп людини: верхній рівень першим (типові тематики сіються раніше).
+ */
 export async function listGroups(env: Env, userId: number): Promise<TrackerGroup[]> {
   await ensureTables(env.DB, ["tracker_groups"]);
   await seedGroups(env, userId);
@@ -103,36 +99,6 @@ async function readGroup(env: Env, userId: number, id: number): Promise<TrackerG
     : null;
 }
 
-/** Записи вікна для стрічки: одна вибірка на всі трекери людини. */
-export async function listEntries(
-  env: Env,
-  userId: number,
-  since: string,
-): Promise<TrackerEntryRow[]> {
-  const rows = await env.DB.prepare(
-    `SELECT id, tracker_id, day, value, note, COALESCE(logged_at, updated_at) AS logged_at
-     FROM tracker_entries
-     WHERE owner_id = ? AND day >= ? ORDER BY day, logged_at, id`,
-  )
-    .bind(String(userId), since)
-    .all<{
-      id: number;
-      tracker_id: number;
-      day: string;
-      value: number;
-      note: string | null;
-      logged_at: string | null;
-    }>();
-  return (rows.results ?? []).map((row) => ({
-    id: Number(row.id),
-    trackerId: Number(row.tracker_id),
-    day: row.day,
-    value: Number(row.value),
-    note: row.note ?? "",
-    loggedAt: row.logged_at,
-  }));
-}
-
 export async function readTracker(env: Env, userId: number, id: number): Promise<Tracker | null> {
   const row = await env.DB.prepare(
     `SELECT ${TRACKER_COLUMNS} FROM trackers WHERE id = ? AND owner_id = ? AND is_active = 1`,
@@ -140,34 +106,6 @@ export async function readTracker(env: Env, userId: number, id: number): Promise
     .bind(id, String(userId))
     .first<TrackerRow>();
   return row ? toTracker(row) : null;
-}
-
-export async function readTrackerEntries(
-  env: Env,
-  userId: number,
-  trackerId: number,
-  since: string,
-): Promise<TrackerEntry[]> {
-  const rows = await env.DB.prepare(
-    `SELECT id, day, value, note, COALESCE(logged_at, updated_at) AS logged_at
-     FROM tracker_entries
-     WHERE owner_id = ? AND tracker_id = ? AND day >= ? ORDER BY day, logged_at, id`,
-  )
-    .bind(String(userId), trackerId, since)
-    .all<{
-      id: number;
-      day: string;
-      value: number;
-      note: string | null;
-      logged_at: string | null;
-    }>();
-  return (rows.results ?? []).map((row) => ({
-    id: Number(row.id),
-    day: row.day,
-    value: Number(row.value),
-    note: row.note ?? "",
-    loggedAt: row.logged_at,
-  }));
 }
 
 /**
@@ -303,6 +241,60 @@ export async function moveTracker(
   return Number(result.meta.changes) > 0;
 }
 
+/**
+ * Рух трекера вгору/вниз серед **сусідів своєї групи** — та сама механіка, що
+ * в груп: позиції матеріалізуються при кожній перестановці, бо в наявних
+ * рядків там `NULL`, і без цього рух міняв би не тих сусідів. Межа списку —
+ * без змін, а не помилка: перший і останній нікуди не рухаються.
+ */
+export async function moveTrackerOrder(
+  env: Env,
+  userId: number,
+  id: number,
+  direction: -1 | 1,
+): Promise<boolean> {
+  const tracker = await readTracker(env, userId, id);
+  if (!tracker) return false;
+
+  const siblings = await env.DB.prepare(
+    `SELECT id FROM trackers WHERE owner_id = ? AND group_id IS ? AND is_active = 1
+     ORDER BY COALESCE(position, 0), id`,
+  )
+    .bind(String(userId), tracker.groupId)
+    .all<{ id: number }>();
+  const ids = (siblings.results ?? []).map((row) => Number(row.id));
+  const from = ids.indexOf(id);
+  const to = from + direction;
+  if (from < 0 || to < 0 || to >= ids.length) return true;
+
+  [ids[from], ids[to]] = [ids[to], ids[from]];
+  await env.DB.batch(
+    ids.map((siblingId, index) =>
+      env.DB.prepare(`UPDATE trackers SET position = ? WHERE id = ? AND owner_id = ?`).bind(
+        (index + 1) * 10,
+        siblingId,
+        String(userId),
+      ),
+    ),
+  );
+  return true;
+}
+
+/** Публічність визначення — прапорець рядка; виміри не публікуються ніколи. */
+export async function setTrackerPublic(
+  env: Env,
+  userId: number,
+  id: number,
+  isPublic: boolean,
+): Promise<boolean> {
+  const result = await env.DB.prepare(
+    "UPDATE trackers SET is_public = ? WHERE id = ? AND owner_id = ? AND is_active = 1",
+  )
+    .bind(isPublic ? 1 : 0, id, String(userId))
+    .run();
+  return Number(result.meta.changes) > 0;
+}
+
 /** Власний трекер: ключ внутрішній, людина його не бачить і не задає. */
 export async function createTracker(
   env: Env,
@@ -314,8 +306,9 @@ export async function createTracker(
   const key = `own-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}`;
   await env.DB.prepare(
     `INSERT INTO trackers
-       (owner_id, key, title, unit, step, goal, min_value, max_value, mode, value_type, icon, group_id, is_builtin, is_active, created_at)
-     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'bar-chart', ?, 0, 1, ?)`,
+       (owner_id, key, title, unit, step, goal, min_value, max_value, mode, value_type,
+        icon, group_id, is_builtin, is_active, position, source, created_at)
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'bar-chart', ?, 0, 1, ?, NULL, ?)`,
   )
     .bind(
       String(userId),
@@ -329,6 +322,7 @@ export async function createTracker(
       fields.mode,
       fields.valueType,
       groupId,
+      await nextTrackerPosition(env, userId, groupId),
       formatSqliteDatetime(),
     )
     .run();
@@ -346,44 +340,6 @@ export async function archiveTracker(env: Env, userId: number, id: number): Prom
     "UPDATE trackers SET is_active = 0 WHERE id = ? AND owner_id = ? AND is_active = 1",
   )
     .bind(id, String(userId))
-    .run();
-  return Number(result.meta.changes) > 0;
-}
-
-/**
- * Новий запис — **новий рядок**, не правка: міра стається зараз, і двоє
- * зважувань за день — два виміри. Ні день, ні момент не приходить від клієнта:
- * клієнтський годинник не є джерелом істини, а день — лише кошик для денних
- * сум (вода, кроки).
- */
-export async function insertTrackerEntry(
-  env: Env,
-  userId: number,
-  trackerId: number,
-  value: number,
-  note: string,
-): Promise<TrackerEntry | null> {
-  if (!(await readTracker(env, userId, trackerId))) return null;
-  const now = formatSqliteDatetime();
-  const day = todayTrackerDay();
-  const result = await env.DB.prepare(
-    `INSERT INTO tracker_entries (tracker_id, owner_id, day, value, note, logged_at, updated_at)
-     VALUES (?, ?, ?, ?, ?, ?, ?)`,
-  )
-    .bind(trackerId, String(userId), day, value, note, now, now)
-    .run();
-  const id = Number(result.meta.last_row_id ?? 0);
-  return id > 0 ? { id, day, value, note, loggedAt: now } : null;
-}
-
-/** Один дотик — один рядок; чужий номер запису не існує (власник у WHERE). */
-export async function removeTrackerEntry(
-  env: Env,
-  userId: number,
-  entryId: number,
-): Promise<boolean> {
-  const result = await env.DB.prepare("DELETE FROM tracker_entries WHERE owner_id = ? AND id = ?")
-    .bind(String(userId), entryId)
     .run();
   return Number(result.meta.changes) > 0;
 }

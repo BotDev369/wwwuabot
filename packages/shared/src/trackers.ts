@@ -9,6 +9,9 @@
 
 import type { IconName } from "./components/icon-names";
 import { catalogEntry, TRACKER_LIMITS } from "./trackers/catalog";
+// Поверхні «Шаблони» / «Публічні» — окремий модуль; споживачі лишаються тут.
+export type { PublicTracker, TrackerCopySource, TrackerTemplate } from "./trackers/library";
+export { parseTrackerSource, trackerCopyKey } from "./trackers/library";
 
 // Каталог — дані окремим модулем; споживачі лишаються на цій поверхні.
 export type { TrackerCatalogEntry, TrackerCatalogGroupKey } from "./trackers/catalog";
@@ -72,6 +75,10 @@ export interface Tracker extends TrackerFields {
   isBuiltin: boolean;
   /** Група власника; `null` — людина ще не віднесла трекер нікуди. */
   groupId: number | null;
+  /** Звідки копія: `catalog:<key>`, `public:<id>`; `null` — власна мірка. */
+  source?: string | null;
+  /** Визначення відкрите іншим; виміри не публікуються ніколи. */
+  isPublic?: boolean;
 }
 
 /**

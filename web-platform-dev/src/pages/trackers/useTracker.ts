@@ -39,6 +39,8 @@ export interface TrackerState {
   archive: () => Promise<boolean>;
   /** Пересунути трекер в іншу групу — дерева стрічки воно торкається лише після успіху. */
   move: (groupId: number | null) => Promise<boolean>;
+  /** Відкрити визначення іншим; виміри не публікуються ніколи. */
+  setPublic: (isPublic: boolean) => Promise<boolean>;
 }
 
 export function useTracker(id: number): TrackerState {
@@ -143,6 +145,23 @@ export function useTracker(id: number): TrackerState {
     }
   }
 
+  async function setPublic(isPublic: boolean): Promise<boolean> {
+    try {
+      await apiFetch("/api/user/trackers", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ id, isPublic }),
+      });
+      // Стан показуємо після відповіді: перемикач, який «зберігся» локально й
+      // не зберігся на сервері, — гірший за вимкнений.
+      setTracker((current) => (current ? { ...current, isPublic } : current));
+      return true;
+    } catch {
+      await dialog.alert("Не вдалося змінити публічність.", { tone: "danger" });
+      return false;
+    }
+  }
+
   return {
     tracker,
     groups,
@@ -156,5 +175,6 @@ export function useTracker(id: number): TrackerState {
     remove,
     archive,
     move,
+    setPublic,
   };
 }

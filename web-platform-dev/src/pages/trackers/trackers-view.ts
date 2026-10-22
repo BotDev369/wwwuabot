@@ -61,15 +61,25 @@ export function trackerCells(
 
 /** Вікно матриці: `count` днів, завершуючи днем стрічки (включно). */
 export function matrixDays(endDay: string, count: number): string[] {
-  return Array.from({ length: count }, (_, index) => addTrackerDays(endDay, index - count + 1));
+  return Array.from({ length: count }, (_, index) => addTrackerDays(endDay, -index));
 }
 
 /** Підпис дня матриці: «Пт 17» — день тижня читається першим, бо по ньому й шукають. */
 const WEEKDAYS = ["Нд", "Пн", "Вт", "Ср", "Чт", "Пт", "Сб"] as const;
 
+/** День тижня шапки: «Чт» — по ньому людина й шукає колонку. */
+export function matrixWeekday(day: string): string {
+  return WEEKDAYS[new Date(`${day}T00:00:00Z`).getUTCDay()] ?? "";
+}
+
+/** Число місяця шапки: «22» — другий рядок під днем тижня. */
+export function matrixDayNumber(day: string): number {
+  return Number(day.slice(8, 10));
+}
+
+/** Підпис дня одним рядком: «Пт 17» — там, де шапки немає (історія, картка). */
 export function matrixDayLabel(day: string): string {
-  const weekday = WEEKDAYS[new Date(`${day}T00:00:00Z`).getUTCDay()] ?? "";
-  return `${weekday} ${Number(day.slice(8, 10))}`;
+  return `${matrixWeekday(day)} ${matrixDayNumber(day)}`;
 }
 
 /**

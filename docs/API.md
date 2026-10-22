@@ -65,6 +65,8 @@
 | `ANY` | `/api/user/trackers` | `handleTrackers` |
 | `ANY` | `/api/user/trackers/entry` | `handleTrackerEntry` |
 | `ANY` | `/api/user/trackers/group` | `handleTrackerGroups` |
+| `ANY` | `/api/user/trackers/public` | `handleTrackerPublic` |
+| `ANY` | `/api/user/trackers/templates` | `handleTrackerTemplates` |
 | `POST` | `/api/user/username` | `handleSetPlatformUsername` |
 | `POST` | `/api/user/visibility` | `handleUserVisibility` |
 
@@ -105,4 +107,4 @@
 | `POST` | `/auth/login` | `handleLogin` |
 | `POST` | `/auth/logout` | `handleLogout` |
 
-Усього шляхів: **76**.
+Усього шляхів: **78**.

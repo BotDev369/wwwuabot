@@ -6,7 +6,12 @@ import {
   todayTrackerDay,
 } from "@wwwuabot/shared/trackers";
 import type { Env } from "../shared/types";
-import { handleTrackerEntry, handleTrackers } from "./trackers.controller";
+import {
+  handleTrackerEntry,
+  handleTrackerPublic,
+  handleTrackers,
+  handleTrackerTemplates,
+} from "./trackers.controller";
 
 const mocks = vi.hoisted(() => ({ identity: vi.fn() }));
 vi.mock("../shared/identity", () => ({ resolveUserId: mocks.identity }));
@@ -37,6 +42,9 @@ function database(
 ) {
   const calls: { sql: string; values: unknown[] }[] = [];
   const batches: number[] = [];
+  // Рядок існує лише після INSERT: інакше пошук «уже доданого» повертав би
+  // рядок на порожній базі, і повторне додавання виглядало б як перше.
+  let inserted = false;
   const db = {
     prepare(sql: string) {
       const call = { sql, values: [] as unknown[] };
@@ -48,8 +56,11 @@ function database(
         },
         first: async () => {
           if (options.throwOn && sql.includes(options.throwOn)) throw new Error("D1 недоступна");
-          if (sql.includes("FROM trackers"))
-            return options.tracker === undefined ? TRACKER_ROW : options.tracker;
+          if (sql.includes("FROM trackers")) {
+            if (options.tracker !== undefined) return options.tracker;
+            if (sql.includes("AND key = ?")) return inserted ? TRACKER_ROW : null;
+            return TRACKER_ROW;
+          }
           return null;
         },
         // Сів груп читає їх назад із бази — мок віддає щойно «сіяні» ключі.
@@ -68,9 +79,10 @@ function database(
           }
           return { results: [] };
         },
-        run: async () => ({
-          meta: { changes: options.changes ?? 1, last_row_id: options.lastRowId ?? 21 },
-        }),
+        run: async () => {
+          if (sql.includes("INSERT INTO trackers")) inserted = true;
+          return { meta: { changes: options.changes ?? 1, last_row_id: options.lastRowId ?? 21 } };
+        },
       };
       return statement;
     },
@@ -103,18 +115,143 @@ describe("трекери людини", () => {
     expect(db.calls).toHaveLength(0);
   });
 
-  it("стандартні трекери сіються при кожному вході й не дублюються", async () => {
+  it("⛔ каталог не сіється: читання «Моїх» не пише в trackers", async () => {
     const db = database();
-    await handleTrackers(request("GET"), db.env);
-    // Каталог їде й до наявних баз: так нові мірки з'являються в уже
-    // створених людей, а `INSERT OR IGNORE` не дублює наявні. Першим іде сів
-    // груп (тематики ключами), далі — трекери з прив'язкою й backfill тих,
-    // що людина ще не віднесла сама.
-    expect(db.batches[0]).toBe(TRACKER_CATALOG_GROUPS.length);
-    expect(db.batches[1]).toBeGreaterThan(TRACKER_CATALOG.length);
+    const response = await handleTrackers(request("GET"), db.env);
+    const body = (await response.json()) as { trackers: unknown[] };
+
+    expect(body.trackers).toEqual([]);
+    // Сіються лише тематики — вони дерево стрічки, а не вміст «Моїх».
+    // Каталог живе в «Шаблонах», і копія в «Моїх» — явний крок людини.
+    expect(db.batches).toEqual([TRACKER_CATALOG_GROUPS.length]);
+    expect(db.calls.some((call) => call.sql.includes("INSERT INTO trackers"))).toBe(false);
     // Стрічка й записи звужені підписом, а не параметром запиту.
     const list = db.calls.find((call) => call.sql.includes("FROM trackers WHERE owner_id"));
     expect(list?.values).toEqual(["777"]);
+  });
+
+  it("«Шаблони» — каталог із прапорцем «вже доданій»", async () => {
+    const db = database();
+    const response = await handleTrackerTemplates(
+      request("GET", "https://example.com/api/user/trackers/templates"),
+      db.env,
+    );
+    const body = (await response.json()) as { templates: { added: boolean }[] };
+
+    expect(response.status).toBe(200);
+    expect(body.templates).toHaveLength(TRACKER_CATALOG.length);
+    expect(body.templates.every((template: { added: boolean }) => template.added === false)).toBe(
+      true,
+    );
+  });
+
+  it("додавання шаблону — копія з ключем каталогу, а не сів", async () => {
+    const db = database();
+    const response = await handleTrackers(
+      request("POST", "https://example.com/api/user/trackers", { from: "catalog:water" }),
+      db.env,
+    );
+
+    expect(response.status).toBe(200);
+    const insert = db.calls.find((call) => call.sql.includes("INSERT INTO trackers"));
+    // Ключ каталогу лишається своїм — він же і є захистом від дубля.
+    expect(insert?.values[1]).toBe("water");
+    expect(insert?.values).toContain("catalog:water");
+  });
+
+  it("вигаданий шаблон — 400, а не порожня копія", async () => {
+    const db = database();
+    const response = await handleTrackers(
+      request("POST", "https://example.com/api/user/trackers", { from: "catalog:вигадка" }),
+      db.env,
+    );
+
+    expect(response.status).toBe(400);
+    expect(db.calls.some((call) => call.sql.includes("INSERT INTO trackers"))).toBe(false);
+  });
+
+  it("чужий закритий трекер не копіюється — та сама відповідь, що й неіснуючий", async () => {
+    const db = database({ tracker: null });
+    const response = await handleTrackers(
+      request("POST", "https://example.com/api/user/trackers", { from: "public:12" }),
+      db.env,
+    );
+
+    expect(response.status).toBe(404);
+    expect(db.calls.some((call) => call.sql.includes("INSERT INTO trackers"))).toBe(false);
+  });
+
+  it("порядок — рух у межах групи, перелік приходить від сервера", async () => {
+    const db = database();
+    const response = await handleTrackers(
+      request("PATCH", "https://example.com/api/user/trackers", { id: 4, move: "up" }),
+      db.env,
+    );
+    const body = (await response.json()) as { trackers: unknown[] };
+
+    expect(response.status).toBe(200);
+    expect(Array.isArray(body.trackers)).toBe(true);
+    // Сусіди беруться в тому самому порядку, що й стрічка: позиція, потім id.
+    const siblings = db.calls.find((call) => call.sql.includes("FROM trackers WHERE owner_id"));
+    expect(siblings?.sql).toContain("COALESCE(position, 0)");
+  });
+
+  it("публічність — прапорець рядка, а не друга таблиця", async () => {
+    const db = database();
+    const response = await handleTrackers(
+      request("PATCH", "https://example.com/api/user/trackers", { id: 4, isPublic: true }),
+      db.env,
+    );
+
+    expect(response.status).toBe(200);
+    const update = db.calls.find((call) => call.sql.includes("SET is_public"));
+    expect(update?.values).toEqual([1, 4, "777"]);
+  });
+
+  it("PATCH без зміни — 400: тіло не має бути порожнім", async () => {
+    const db = database();
+    const response = await handleTrackers(
+      request("PATCH", "https://example.com/api/user/trackers", { id: 4 }),
+      db.env,
+    );
+
+    expect(response.status).toBe(400);
+  });
+
+  it("«Публічні» — лише визначення: запит не торкається tracker_entries", async () => {
+    const db = database();
+    const response = await handleTrackerPublic(
+      request("GET", "https://example.com/api/user/trackers/public"),
+      db.env,
+    );
+
+    expect(response.status).toBe(200);
+    expect(db.calls.some((call) => call.sql.includes("tracker_entries"))).toBe(false);
+    const select = db.calls.find((call) => call.sql.includes("FROM trackers t"));
+    expect(select?.sql).toContain("is_public = 1");
+  });
+
+  it("⛔ без підпису «Шаблони» й «Публічні» не читаються", async () => {
+    mocks.identity.mockResolvedValue({ ok: false, response: new Response(null, { status: 401 }) });
+    const db = database();
+
+    expect(
+      (
+        await handleTrackerTemplates(
+          request("GET", "https://example.com/api/user/trackers/templates"),
+          db.env,
+        )
+      ).status,
+    ).toBe(401);
+    expect(
+      (
+        await handleTrackerPublic(
+          request("GET", "https://example.com/api/user/trackers/public"),
+          db.env,
+        )
+      ).status,
+    ).toBe(401);
+    expect(db.calls).toHaveLength(0);
   });
 
   it("⛔ власник із тіла не потрапляє в INSERT", async () => {

@@ -368,3 +368,98 @@ describe("групи стрічки", () => {
     expect(view.result.current.groups.map((group) => group.id)).toEqual([10, 11]);
   });
 });
+
+describe("три поверхні", () => {
+  const seeded = (trackers: Tracker[] = []) => {
+    mocks.request.mockResolvedValueOnce({
+      trackers,
+      groups: [],
+      entries: [],
+      endDay: "2026-10-17",
+    });
+    return renderHook(() => useTrackers());
+  };
+
+  it("«додати в мої» шле джерело й додає копію в стрічку", async () => {
+    const view = seeded([]);
+    await waitFor(() => expect(view.result.current.loading).toBe(false));
+
+    mocks.request.mockResolvedValueOnce({ tracker: water });
+    let added: Tracker | null = null;
+    await act(async () => {
+      added = await view.result.current.addFrom("catalog:water");
+    });
+
+    expect(added).not.toBeNull();
+    expect(mocks.request).toHaveBeenCalledWith(
+      "/api/user/trackers",
+      expect.objectContaining({
+        method: "POST",
+        body: JSON.stringify({ from: "catalog:water" }),
+      }),
+    );
+    expect(view.result.current.trackers.map((tracker) => tracker.id)).toEqual([1]);
+  });
+
+  it("повторне додавання замінює рядок, а не плодить другий", async () => {
+    const view = seeded([water]);
+    await waitFor(() => expect(view.result.current.loading).toBe(false));
+
+    // Сервер воскрешає той самий рядок (ключ зайнятий) — клієнт не додає копію.
+    mocks.request.mockResolvedValueOnce({ tracker: { ...water, groupId: 10 } });
+    await act(async () => {
+      await view.result.current.addFrom("catalog:water");
+    });
+
+    expect(view.result.current.trackers).toHaveLength(1);
+    expect(view.result.current.trackers[0].groupId).toBe(10);
+  });
+
+  it("невдале додавання каже причину й не чіпає стрічку", async () => {
+    const view = seeded([]);
+    await waitFor(() => expect(view.result.current.loading).toBe(false));
+
+    mocks.request.mockRejectedValueOnce(new Error("HTTP 404"));
+    let added: Tracker | null = water;
+    await act(async () => {
+      added = await view.result.current.addFrom("public:12");
+    });
+
+    expect(added).toBeNull();
+    expect(mocks.alert).toHaveBeenCalledWith("HTTP 404", { tone: "danger" });
+    expect(view.result.current.trackers).toEqual([]);
+  });
+
+  it("порядок трекерів приходить від сервера цілком", async () => {
+    const view = seeded([water]);
+    await waitFor(() => expect(view.result.current.loading).toBe(false));
+
+    mocks.request.mockResolvedValueOnce({ trackers: [{ ...water, id: 9 }, water] });
+    let ok = false;
+    await act(async () => {
+      ok = await view.result.current.moveTracker(1, "down");
+    });
+
+    expect(ok).toBe(true);
+    expect(mocks.request).toHaveBeenCalledWith(
+      "/api/user/trackers",
+      expect.objectContaining({ method: "PATCH", body: JSON.stringify({ id: 1, move: "down" }) }),
+    );
+    expect(view.result.current.trackers.map((tracker) => tracker.id)).toEqual([9, 1]);
+  });
+
+  it("невдалий рух лишає порядок як був", async () => {
+    const view = seeded([water]);
+    await waitFor(() => expect(view.result.current.loading).toBe(false));
+
+    mocks.request.mockRejectedValueOnce(new Error("HTTP 500"));
+    let ok = true;
+    await act(async () => {
+      ok = await view.result.current.moveTracker(1, "up");
+    });
+
+    expect(ok).toBe(false);
+    expect(mocks.alert).toHaveBeenCalledWith("Не вдалося змінити порядок.", { tone: "danger" });
+    expect(view.result.current.trackers.map((tracker) => tracker.id)).toEqual([1]);
+  });
+});

@@ -44,6 +44,10 @@ export interface TrackersState extends TrackersPayload {
   deleteGroup: (id: number) => Promise<boolean>;
   /** Рух групи вгору/вниз: порядок міняється між сусідами одного батька. */
   moveGroup: (id: number, direction: "up" | "down") => Promise<boolean>;
+  /** «Додати в мої»: `catalog:<key>` або `public:<id>` — копія визначення. */
+  addFrom: (source: string) => Promise<Tracker | null>;
+  /** Рух трекера в межах його групи; порядок повертає сервер. */
+  moveTracker: (id: number, direction: "up" | "down") => Promise<boolean>;
 }
 
 export function useTrackers(): TrackersState {
@@ -229,6 +233,44 @@ export function useTrackers(): TrackersState {
     }
   }
 
+  async function addFrom(source: string): Promise<Tracker | null> {
+    try {
+      const result = await apiFetch<{ tracker: Tracker }>("/api/user/trackers", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ from: source }),
+      });
+      // Повторне додавання повертає той самий рядок — тоді не додаємо копію в
+      // стрічку, а замінюємо ним наявний (історія його не губиться).
+      setTrackers((current) =>
+        current.some((tracker) => tracker.id === result.tracker.id)
+          ? current.map((tracker) => (tracker.id === result.tracker.id ? result.tracker : tracker))
+          : [...current, result.tracker],
+      );
+      return result.tracker;
+    } catch (e) {
+      const message = e instanceof Error ? e.message : "";
+      await dialog.alert(message || "Не вдалося додати трекер.", { tone: "danger" });
+      return null;
+    }
+  }
+
+  async function moveTracker(id: number, direction: "up" | "down"): Promise<boolean> {
+    try {
+      const result = await apiFetch<{ trackers: Tracker[] }>("/api/user/trackers", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ id, move: direction }),
+      });
+      // Перестановка міняє позиції всіх сусідів, тож перелік іде від сервера.
+      if (Array.isArray(result.trackers)) setTrackers(result.trackers);
+      return true;
+    } catch {
+      await dialog.alert("Не вдалося змінити порядок.", { tone: "danger" });
+      return false;
+    }
+  }
+
   async function archive(id: number): Promise<boolean> {
     try {
       await apiFetch(`/api/user/trackers?id=${id}`, { method: "DELETE" });
@@ -257,5 +299,7 @@ export function useTrackers(): TrackersState {
     updateGroup,
     deleteGroup,
     moveGroup,
+    addFrom,
+    moveTracker,
   };
 }

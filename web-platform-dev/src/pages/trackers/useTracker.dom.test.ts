@@ -46,6 +46,24 @@ beforeEach(() => {
 });
 
 describe("один трекер", () => {
+  it("публічність — прапорець на сервері, і лише потім стан", async () => {
+    const view = renderHook(() => useTracker(1));
+    await waitFor(() => expect(view.result.current.loading).toBe(false));
+
+    mocks.request.mockResolvedValueOnce({ ok: true });
+    let ok = false;
+    await act(async () => {
+      ok = await view.result.current.setPublic(true);
+    });
+
+    expect(ok).toBe(true);
+    expect(mocks.request).toHaveBeenCalledWith(
+      "/api/user/trackers",
+      expect.objectContaining({ method: "PATCH", body: JSON.stringify({ id: 1, isPublic: true }) }),
+    );
+    expect(view.result.current.tracker?.isPublic).toBe(true);
+  });
+
   it("читає трекер з днем людини", async () => {
     const view = renderHook(() => useTracker(1));
     await waitFor(() => expect(view.result.current.loading).toBe(false));

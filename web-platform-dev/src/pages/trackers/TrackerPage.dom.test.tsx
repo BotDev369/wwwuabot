@@ -23,6 +23,7 @@ const hooks = {
   remove: vi.fn(async () => true),
   archive: vi.fn(async () => true),
   move: vi.fn(async () => true),
+  setPublic: vi.fn(async () => true),
   reload: vi.fn(),
 };
 
@@ -55,6 +56,7 @@ const state = {
   remove: hooks.remove,
   archive: hooks.archive,
   move: hooks.move,
+  setPublic: hooks.setPublic,
 };
 
 vi.mock("react-router-dom", () => ({
@@ -216,5 +218,23 @@ describe("прибирання трекера", () => {
 
     expect(hooks.archive).toHaveBeenCalled();
     expect(hooks.navigate).toHaveBeenCalledWith("/trackers", { replace: true });
+  });
+});
+
+describe("публічність", () => {
+  it("перемикач каже, що відкривається лише форма мірки", () => {
+    render(<TrackerPage />);
+
+    const toggle = screen.getByRole("switch", { name: "Публічний" });
+    expect(toggle.getAttribute("aria-checked")).toBe("false");
+    expect(screen.getByText(/Записи не публікуються/)).toBeTruthy();
+  });
+
+  it("увімкнення йде на сервер, а не лише в стан", async () => {
+    render(<TrackerPage />);
+
+    await userEvent.click(screen.getByRole("switch", { name: "Публічний" }));
+
+    expect(hooks.setPublic).toHaveBeenCalledWith(true);
   });
 });

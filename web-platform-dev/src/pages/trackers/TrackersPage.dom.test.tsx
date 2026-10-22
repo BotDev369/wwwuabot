@@ -25,6 +25,9 @@ const hooks = {
   updateGroup: vi.fn(),
   deleteGroup: vi.fn(),
   moveGroup: vi.fn(),
+  addFrom: vi.fn(),
+  moveTracker: vi.fn(),
+  libraryReload: vi.fn(),
   prompt: vi.fn(),
   confirm: vi.fn(),
   alert: vi.fn(),
@@ -102,6 +105,40 @@ const state = {
   updateGroup: hooks.updateGroup,
   deleteGroup: hooks.deleteGroup,
   moveGroup: hooks.moveGroup,
+  addFrom: hooks.addFrom,
+  moveTracker: hooks.moveTracker,
+};
+
+/** Списки на читання: один рядок на шаблон і на публічний трекер. */
+const library = {
+  templates: [
+    {
+      source: "catalog:water",
+      key: "water",
+      title: "Вода",
+      meta: "Режим · ціль 2 л",
+      added: false,
+    },
+    {
+      source: "catalog:sleep",
+      key: "sleep",
+      title: "Сон",
+      meta: "Режим · ціль 8 год",
+      added: true,
+    },
+  ],
+  publicTrackers: [
+    {
+      source: "public:12",
+      key: "public-12",
+      title: "Кава вдома",
+      meta: "#олена · ціль 3 чашки",
+      added: false,
+    },
+  ],
+  loading: false,
+  error: null as string | null,
+  reload: hooks.libraryReload,
 };
 
 vi.mock("react-router-dom", () => ({
@@ -117,6 +154,7 @@ vi.mock("@wwwuabot/ui/dialog", () => ({
   }),
 }));
 vi.mock("./useTrackers", () => ({ useTrackers: () => state }));
+vi.mock("./useTrackerLibrary", () => ({ useTrackerLibrary: () => library }));
 
 const { TrackersPage } = await import("./TrackersPage");
 
@@ -126,6 +164,8 @@ beforeEach(() => {
   hooks.params = new URLSearchParams();
   state.trackers = [water, steps, coffee];
   state.groups = groups;
+  hooks.addFrom.mockResolvedValue({ ...water, id: 2 });
+  hooks.moveTracker.mockResolvedValue(true);
   state.entries = [
     {
       id: 1,
@@ -193,13 +233,15 @@ describe("матриця днів", () => {
     render(<TrackersPage />);
     await userEvent.click(screen.getByRole("button", { name: "Режим" }));
 
-    // Сьогоднішня клітинка виділена класом і несе суму дня (2.5 л).
-    const today = screen.getByRole("button", { name: /Вода, 2026-10-17/ });
+    // Сьогоднішня клітинка виділена класом і несе суму дня (2.5 л): число
+    // великим, одиниця дрібним під ним.
+    const today = screen.getByRole("button", { name: /Вода, Сб 17/ });
     expect(today.className).toContain("wb-matrix-cell--today");
-    expect(today.textContent).toBe("2,5");
+    expect(today.querySelector(".wb-matrix-number")?.textContent).toBe("2,5");
+    expect(today.querySelector(".wb-matrix-unit")?.textContent).toBe("л");
 
     // Минула клітинка — історія: дотик веде на картку трекера.
-    await userEvent.click(screen.getByRole("button", { name: /Вода, 2026-10-15/ }));
+    await userEvent.click(screen.getByRole("button", { name: /Вода, Чт 15/ }));
     expect(hooks.navigate).toHaveBeenCalledWith("/trackers/1");
 
     // Сьогоднішня відкриває форму — і сейв іде тим самим шляхом, що й на картці.
@@ -223,10 +265,10 @@ describe("матриця днів", () => {
     render(<TrackersPage />);
 
     await userEvent.click(screen.getByRole("button", { name: "Свої" }));
-    const today = screen.getByRole("button", { name: /Кава, 2026-10-17/ });
+    const today = screen.getByRole("button", { name: /Кава, Сб 17/ });
     // Плюс — запрошення записати; точка — «тут нічого», без другого підпису.
     expect(today.querySelector("svg")).toBeTruthy();
-    const past = screen.getByRole("button", { name: /Кава, 2026-10-15/ });
+    const past = screen.getByRole("button", { name: /Кава, Чт 15/ });
     expect(past.textContent).toBe("·");
   });
 });
@@ -299,6 +341,81 @@ describe("дії екрана", () => {
 
     await userEvent.click(screen.getByRole("button", { name: "Свої" }));
 
-    expect(screen.getByRole("button", { name: "Тренування, 2026-10-17: так" })).toBeTruthy();
+    const cell = screen.getByRole("button", { name: "Тренування, Сб 17: так" });
+    // Статус — знаком, а не числом: «1» у клітинці читалося б як міра.
+    expect(cell.textContent).toBe("");
+    expect(cell.querySelector("svg")).toBeTruthy();
+  });
+});
+
+describe("три поверхні", () => {
+  it("«Шаблони» — каталог із «Додати», вже додане каже «Додано»", async () => {
+    render(<TrackersPage />);
+    await userEvent.click(screen.getByRole("tab", { name: "Шаблони" }));
+
+    // Каталог начав нічого не сіє: у «Моїх» він сам не з'являється — тільки копія.
+    expect(screen.getByRole("button", { name: "Додати" })).toBeTruthy();
+    await userEvent.click(screen.getByRole("button", { name: "Додати" }));
+
+    expect(hooks.addFrom).toHaveBeenCalledWith("catalog:water");
+    // «Додано» — це стан кнопки, а не пункт меню: вдруге копію не роблять.
+    expect(screen.getByRole("button", { name: "Додано" }).hasAttribute("disabled")).toBe(true);
+    expect(hooks.libraryReload).toHaveBeenCalled();
+  });
+
+  it("«Публічні» — лише визначення: немає клітинок днів, підпис — ім'я на платформі", async () => {
+    render(<TrackersPage />);
+    await userEvent.click(screen.getByRole("tab", { name: "Публічні" }));
+
+    expect(screen.getByText("Кава вдома")).toBeTruthy();
+    expect(screen.getByText("#олена · ціль 3 чашки")).toBeTruthy();
+    // Вимірів у чужій мірці немає й бути не може.
+    expect(document.querySelector(".wb-matrix-cell")).toBeNull();
+  });
+
+  it("пошук звужує список, а не гортає море пальцем", async () => {
+    render(<TrackersPage />);
+    await userEvent.click(screen.getByRole("tab", { name: "Шаблони" }));
+
+    await userEvent.type(screen.getByRole("searchbox", { name: "Пошук трекера" }), "сон");
+
+    expect(screen.queryByText("Вода")).toBeNull();
+    expect(screen.getByText("Сон")).toBeTruthy();
+  });
+
+  it("шапка днів ставить сьогодні першою колонкою", async () => {
+    render(<TrackersPage />);
+    await userEvent.click(screen.getByRole("button", { name: "Режим" }));
+
+    const head = document.querySelector(".wb-matrix-head");
+    expect(head?.textContent).toContain("Сб");
+    expect(head?.textContent).toContain("17");
+    const firstCell = document.querySelector(".wb-matrix-row .wb-matrix-cell");
+    expect(firstCell?.getAttribute("aria-label")).toContain("Сб 17");
+  });
+
+  it("режим «Порядок» міняє місце стрілками й не дає вийти за межі групи", async () => {
+    // Двоє сусідів в одній групі: межа має бути в першого згори й у другого
+    // знизу, а в середині — обидві стрілки живі.
+    state.trackers = [water, { ...water, id: 5, key: "own-tea", title: "Чай" }, steps, coffee];
+    render(<TrackersPage />);
+    await userEvent.click(screen.getByRole("button", { name: "Порядок" }));
+    await userEvent.click(screen.getByRole("button", { name: "Режим" }));
+
+    // Клітинок днів у цьому режимі немає: тап там відкривав би запис.
+    expect(document.querySelector(".wb-matrix-head")).toBeNull();
+    await userEvent.click(screen.getByRole("button", { name: "Вода — нижче" }));
+    expect(hooks.moveTracker).toHaveBeenCalledWith(1, "down");
+    // Перший у групі не йде вгору — межа вимкнена, а не зникає.
+    expect(screen.getByRole("button", { name: "Вода — вище" }).hasAttribute("disabled")).toBe(true);
+  });
+
+  it("порожні «Мої» ведуть у «Шаблони», а не лишають глухий кут", async () => {
+    state.trackers = [];
+    render(<TrackersPage />);
+
+    expect(screen.getByText("Трекерів ще немає.")).toBeTruthy();
+    await userEvent.click(screen.getByRole("button", { name: "До шаблонів" }));
+    expect(screen.getByRole("tab", { name: "Шаблони" })).toBeTruthy();
   });
 });

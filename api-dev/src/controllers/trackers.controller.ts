@@ -1,8 +1,7 @@
 /**
- * Трекери: `GET` стрічки, `POST` власного трекера, `DELETE`/`PATCH` — прибрати
- * чи пересунути в іншу групу; групи — окрема ручка `/api/user/trackers/group`,
- * записи — `/api/user/trackers/entry` (день і момент ставить сервер), власника
- * дає лише підписаний `initData`.
+ * Трекери: «Мої» (`GET/POST/PATCH/DELETE`), «Шаблони» й «Публічні» (читання й
+ * копія через `POST { from }`), групи — `/api/user/trackers/group`, записи —
+ * `/api/user/trackers/entry`; власника дає лише підписаний `initData`.
  *
  * @module api-dev/src/controllers/trackers.controller
  */
@@ -15,6 +14,7 @@ import {
   addTrackerDays,
   isValidTrackerDay,
   todayTrackerDay,
+  parseTrackerSource,
   trackerValue,
   validateTrackerFields,
   validateTrackerGroupFields,
@@ -23,20 +23,25 @@ import type { Env } from "../shared/types";
 import { readBody } from "../shared/body";
 import { resolveUserId } from "../shared/identity";
 import { apiLog } from "../shared/logger";
+import { addTrackerFrom, listPublicTrackers, listTemplates } from "../services/trackers-library";
+import {
+  insertTrackerEntry,
+  listEntries,
+  readTrackerEntries,
+  removeTrackerEntry,
+} from "../services/trackers-entries";
 import {
   archiveTracker,
   createGroup,
   createTracker,
   deleteGroup,
-  insertTrackerEntry,
-  listEntries,
   listGroups,
   listTrackers,
   moveGroup,
   moveTracker,
+  moveTrackerOrder,
   readTracker,
-  readTrackerEntries,
-  removeTrackerEntry,
+  setTrackerPublic,
   updateGroup,
 } from "../services/trackers.service";
 
@@ -47,9 +52,16 @@ const LIST_DAYS = 30;
 const HISTORY_DAYS = 400;
 
 const anyObject = z.object({}).passthrough();
-const moveBody = z.object({
+/**
+ * `PATCH` міняє **одну** річ за раз: групу, місце серед сусідів або
+ * публічність. Одне тіло на три дії — бо це той самий рядок, і друга ручка на
+ * кожну ознаку розвела б правила володіння на три копії.
+ */
+const patchBody = z.object({
   id: z.number(),
-  groupId: z.number().nullable(),
+  groupId: z.number().nullable().optional(),
+  move: z.enum(["up", "down"]).optional(),
+  isPublic: z.boolean().optional(),
 });
 const groupBody = z.object({
   id: z.number().optional(),
@@ -117,16 +129,33 @@ export async function handleTrackers(request: Request, env: Env): Promise<Respon
     }
 
     if (request.method === "PATCH") {
-      const parsed = await readBody(request, moveBody);
+      const parsed = await readBody(request, patchBody);
       if (!parsed.ok) return parsed.response;
-      const { id, groupId } = parsed.body;
+      const { id, groupId, move, isPublic } = parsed.body;
       if (!Number.isInteger(id) || id <= 0)
         return json({ ok: false, error: "Invalid tracker" }, 400);
+
+      // Порядок: перестановка міняє всіх сусідів, тож у відповідь іде свіжий
+      // перелік рядків — як у груп, а не один пересунутий.
+      if (move !== undefined) {
+        const moved = await moveTrackerOrder(env, identity.userId, id, move === "up" ? -1 : 1);
+        if (!moved) return json({ ok: false, error: "Not found" }, 404);
+        return json({ ok: true, trackers: await listTrackers(env, identity.userId) });
+      }
+
+      if (isPublic !== undefined) {
+        // Чужий трекер — та сама відмова, що й чужа група: код не підказує,
+        // що номер існує в іншої людини.
+        if (!(await setTrackerPublic(env, identity.userId, id, isPublic))) {
+          return json({ ok: false, error: "Not found" }, 404);
+        }
+        return json({ ok: true, id, isPublic });
+      }
+
+      if (groupId === undefined) return json({ ok: false, error: "Missing change" }, 400);
       if (groupId !== null && (!Number.isInteger(groupId) || groupId <= 0)) {
         return json({ ok: false, error: "Invalid group" }, 400);
       }
-      // Чужа група — та сама відмова, що й чужий трекер: код не підказує,
-      // що номер існує в іншої людини.
       if (!(await moveTracker(env, identity.userId, id, groupId))) {
         return json({ ok: false, error: "Not found" }, 404);
       }
@@ -136,6 +165,23 @@ export async function handleTrackers(request: Request, env: Env): Promise<Respon
     if (request.method === "POST") {
       const parsed = await readBody(request, anyObject);
       if (!parsed.ok) return parsed.response;
+
+      // «Додати в мої» — копія шаблону або чужого публічного визначення.
+      // `from` є — це додавання; немає — людина створює власну мірку.
+      if (parsed.body.from !== undefined) {
+        const source = parseTrackerSource(parsed.body.from);
+        if (!source) return json({ ok: false, error: "Unknown source" }, 400);
+        const trackers = await listTrackers(env, identity.userId);
+        if (trackers.length >= TRACKER_LIMITS.trackers) {
+          return json({ ok: false, error: "Забагато трекерів." }, 400);
+        }
+        const tracker = await addTrackerFrom(env, identity.userId, source);
+        // Неіснуючий або закритий — одна відповідь: номер не підказує, що
+        // в когось такий трекер є.
+        if (!tracker) return json({ ok: false, error: "Not found" }, 404);
+        return json({ ok: true, tracker });
+      }
+
       const validated = validateTrackerFields(parsed.body);
       if (!validated.ok) return json({ ok: false, error: validated.message }, 400);
       const rawGroup: unknown = parsed.body.groupId ?? null;
@@ -165,6 +211,39 @@ export async function handleTrackers(request: Request, env: Env): Promise<Respon
   } catch (error: unknown) {
     apiLog.error("Trackers error", error);
     return json({ ok: false, error: "Не вдалося виконати дію" }, 500);
+  }
+}
+
+/**
+ * «Шаблони» — каталог як дані: читання нічого не пише й нічого не сіє.
+ * Додавання йде через `POST /api/user/trackers { from: "catalog:<key>" }`, бо
+ * копія — це рядок «Моїх», а не другий спосіб жити каталогу.
+ */
+export async function handleTrackerTemplates(request: Request, env: Env): Promise<Response> {
+  if (request.method !== "GET") return json({ ok: false, error: "Method not allowed" }, 405);
+  const identity = await resolveUserId(request, env);
+  if (!identity.ok) return identity.response;
+  try {
+    return json({ ok: true, templates: await listTemplates(env, identity.userId) });
+  } catch (error: unknown) {
+    apiLog.error("Tracker templates error", error);
+    return json({ ok: false, error: "Не вдалося завантажити шаблони" }, 500);
+  }
+}
+
+/**
+ * «Публічні» — лише визначення людей, які їх відкрили. Вимірів тут немає й
+ * бути не може: публікується форма мірки, а не історія (`docs/TRACKERS.md`).
+ */
+export async function handleTrackerPublic(request: Request, env: Env): Promise<Response> {
+  if (request.method !== "GET") return json({ ok: false, error: "Method not allowed" }, 405);
+  const identity = await resolveUserId(request, env);
+  if (!identity.ok) return identity.response;
+  try {
+    return json({ ok: true, trackers: await listPublicTrackers(env, identity.userId) });
+  } catch (error: unknown) {
+    apiLog.error("Tracker public error", error);
+    return json({ ok: false, error: "Не вдалося завантажити публічні" }, 500);
   }
 }
 

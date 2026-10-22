@@ -11,7 +11,9 @@ import {
   formatTrackerAmount,
   isWritableTrackerDay,
   isValidTrackerDay,
+  parseTrackerSource,
   todayTrackerDay,
+  trackerCopyKey,
   trackerAmountText,
   trackerValue,
   validateTrackerFields,
@@ -339,5 +341,30 @@ describe("форма групи", () => {
 
   it("системний ключ «Свої» — у каталозі й останній", () => {
     expect(TRACKER_CATALOG_GROUPS.at(-1)?.key).toBe(TRACKER_OWN_GROUP_KEY);
+  });
+});
+
+describe("звідки копія", () => {
+  it("каталог приймає лише наявний ключ, а не будь-який рядок", () => {
+    expect(parseTrackerSource("catalog:water")).toEqual({ kind: "catalog", key: "water" });
+    expect(parseTrackerSource("catalog:вигадка")).toBeNull();
+  });
+
+  it("публічний — додатний номер; нуль, дробове й текст — не джерело", () => {
+    expect(parseTrackerSource("public:12")).toEqual({ kind: "public", id: 12 });
+    expect(parseTrackerSource("public:0")).toBeNull();
+    expect(parseTrackerSource("public:1.5")).toBeNull();
+    expect(parseTrackerSource("public:вода")).toBeNull();
+  });
+
+  it("не джерело: інший префікс, порожнє значення, не рядок", () => {
+    expect(parseTrackerSource("tracker:12")).toBeNull();
+    expect(parseTrackerSource("catalog:")).toBeNull();
+    expect(parseTrackerSource(12)).toBeNull();
+  });
+
+  it("ключ копії не зіштовхується зі своїм: каталог — свій, чужий — `public-<id>`", () => {
+    expect(trackerCopyKey({ kind: "catalog", key: "water" })).toBe("water");
+    expect(trackerCopyKey({ kind: "public", id: 12 })).toBe("public-12");
   });
 });

@@ -59,6 +59,8 @@ import {
   handleTrackers,
   handleTrackerEntry,
   handleTrackerGroups,
+  handleTrackerPublic,
+  handleTrackerTemplates,
 } from "./controllers/trackers.controller";
 import { handleAssessments } from "./controllers/assessments.controller";
 import { handleUserPages, handlePublicPages } from "./controllers/pages.controller";
@@ -187,6 +189,14 @@ export async function handleRequest(request: Request, env: Env): Promise<Respons
   // Групи — окрема ручка: дерево власника (`parent_id`), глибина не обмежена.
   if (pathname === "/api/user/trackers/group") {
     return handleTrackerGroups(request, env);
+  }
+  // Дві поверхні на читання: каталог («Шаблони») і чужі відкриті визначення
+  // («Публічні»). Запис сюди ніколи не йде — додаються вони копією.
+  if (pathname === "/api/user/trackers/templates") {
+    return handleTrackerTemplates(request, env);
+  }
+  if (pathname === "/api/user/trackers/public") {
+    return handleTrackerPublic(request, env);
   }
 
   if (pathname === "/api/notes") {

@@ -1,17 +1,18 @@
 /**
- * «Трекери» — **акордеон груп + матриця днів**: групи (тематики каталогу,
- * власні, підгрупи будь-якої глибини) — акордеони зі станом у
- * `localStorage`, згорнутий заголовок несе рекурсивний рахунок мірок;
- * усередині — матриця: назва веде на картку, сьогоднішня клітинка відкриває
- * швидкий запис, решта — історія.
+ * «Трекери» — три поверхні в одному екрані: **Мої** (запис і порядок),
+ * **Шаблони** (каталог) і **Публічні** (чужі відкриті визначення). Вносити
+ * дані можна тільки в «Моїх»: там матриця днів, сьогодні першою колонкою;
+ * решта — читання й «Додати».
+ *
  * @module web-platform-dev/src/pages/trackers/TrackersPage
  */
 
-import { useCallback, useMemo, useState, type ReactElement } from "react";
+import { useCallback, useMemo, useState, type CSSProperties, type ReactElement } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { Icon } from "@wwwuabot/shared";
 import { useScreenChrome } from "@wwwuabot/ui/nav";
 import { MenuModal } from "@wwwuabot/ui/menu";
+import { Tabs, tabId, tabPanelId, type TabOption } from "@wwwuabot/ui/tabs";
 import type { Tracker } from "@wwwuabot/shared/trackers";
 import {
   TRACKERS_PATH,
@@ -21,20 +22,34 @@ import {
   withoutCreateIntent,
 } from "@/app/routes";
 import { useTrackers } from "./useTrackers";
+import { useTrackerLibrary } from "./useTrackerLibrary";
 import { useGroupAccordion } from "./useGroupAccordion";
 import { TrackerCreateForm } from "./TrackerCreateForm";
 import { TrackerGroupsModal } from "./TrackerGroupsModal";
 import { TrackerGroupSection } from "./TrackerGroupSection";
+import { TrackerDayHeader } from "./TrackerDayHeader";
+import { TrackersLibraryPanel } from "./TrackersLibraryPanel";
 import { groupRowsTree, matrixDays, trackerCells } from "./trackers-view";
 
 /** Ширина матриці: стільки днів уміщується на 360px без горизонтального скролу. */
-const MATRIX_DAYS = 5;
+const MATRIX_DAYS = 4;
+
+type TrackerTab = "mine" | "templates" | "public";
+
+const TABS: readonly TabOption<TrackerTab>[] = [
+  { key: "mine", label: "Мої" },
+  { key: "templates", label: "Шаблони" },
+  { key: "public", label: "Публічні" },
+];
 
 export function TrackersPage(): ReactElement {
   useScreenChrome({ title: "Трекери" });
   const state = useTrackers();
+  const library = useTrackerLibrary();
   const navigate = useNavigate();
   const [params] = useSearchParams();
+  const [tab, setTab] = useState<TrackerTab>("mine");
+  const [ordering, setOrdering] = useState(false);
   const accordion = useGroupAccordion();
   const creating = readCreateIntent(params);
   const [groupsOpen, setGroupsOpen] = useState(false);
@@ -56,39 +71,164 @@ export function TrackersPage(): ReactElement {
     [state],
   );
 
-  return (
-    <div className="wb-page wb-trackers-page">
-      {/* Дії екрана: «Групи» — дерево й порядок груп, «+» — створення трекера
-          (залита куля). Підпис кнопки дії — її текст; знак без підпису має
-          `aria-label`. */}
-      <div className="wb-trackers-tools">
-        <button
-          type="button"
-          className="wb-btn wb-btn-secondary"
-          onClick={() => setGroupsOpen(true)}
-        >
-          Групи
-        </button>
-        <button
-          type="button"
-          className="wb-tracker-add"
-          aria-label="Додати трекер"
-          onClick={() => navigate(withCreateIntent(TRACKERS_PATH))}
-        >
-          <Icon name="plus" size={22} />
-        </button>
-      </div>
+  const addFrom = useCallback(
+    async (source: string): Promise<boolean> => {
+      const added = await state.addFrom(source);
+      // Прапорець «Додано» й `mine` приходять із сервера — список перечитуємо,
+      // а не вгадуємо стан локально.
+      if (added) await library.reload();
+      return added !== null;
+    },
+    [state, library],
+  );
 
-      {groupsOpen && (
-        <TrackerGroupsModal
-          groups={state.groups}
-          onClose={() => setGroupsOpen(false)}
-          onCreate={state.createGroup}
-          onUpdate={state.updateGroup}
-          onDelete={state.deleteGroup}
-          onMove={state.moveGroup}
-        />
-      )}
+  function switchTab(next: TrackerTab): void {
+    setTab(next);
+    // Порядок — це «Мої»; у списках на читання його немає, і режим не має
+    // пережити перемикання вкладки.
+    if (next !== "mine") setOrdering(false);
+  }
+
+  return (
+    <div
+      className="wb-page wb-trackers-page"
+      style={{ "--matrix-cols": MATRIX_DAYS } as CSSProperties}
+    >
+      <Tabs options={TABS} value={tab} onChange={switchTab} label="Поверхні трекерів" />
+
+      <div
+        id={tabPanelId(tab)}
+        role="tabpanel"
+        aria-labelledby={tabId(tab)}
+        className="wb-trackers-panel"
+      >
+        {tab === "templates" && (
+          <TrackersLibraryPanel
+            items={library.templates}
+            loading={library.loading}
+            error={library.error}
+            emptyText="Шаблонів не знайдено."
+            onAdd={addFrom}
+            onRetry={() => void library.reload()}
+          />
+        )}
+
+        {tab === "public" && (
+          <TrackersLibraryPanel
+            items={library.publicTrackers}
+            loading={library.loading}
+            error={library.error}
+            emptyText="Ще ніхто не відкрив своїх трекерів."
+            onAdd={addFrom}
+            onRetry={() => void library.reload()}
+          />
+        )}
+
+        {tab === "mine" && (
+          <>
+            <div className="wb-trackers-tools">
+              <button
+                type="button"
+                className="wb-btn wb-btn-secondary"
+                onClick={() => setGroupsOpen(true)}
+              >
+                Групи
+              </button>
+              <button
+                type="button"
+                className={"wb-btn wb-btn-ghost wb-trackers-order" + (ordering ? " is-on" : "")}
+                aria-pressed={ordering}
+                aria-label="Порядок"
+                title="Порядок"
+                disabled={rows.length === 0}
+                onClick={() => setOrdering((value) => !value)}
+              >
+                <Icon name="sort" size={18} />
+              </button>
+              <button
+                type="button"
+                className="wb-tracker-add"
+                aria-label="Додати трекер"
+                onClick={() => navigate(withCreateIntent(TRACKERS_PATH))}
+              >
+                <Icon name="plus" size={22} />
+              </button>
+            </div>
+
+            {groupsOpen && (
+              <TrackerGroupsModal
+                groups={state.groups}
+                onClose={() => setGroupsOpen(false)}
+                onCreate={state.createGroup}
+                onUpdate={state.updateGroup}
+                onDelete={state.deleteGroup}
+                onMove={state.moveGroup}
+              />
+            )}
+
+            {state.loading && <p className="wb-text-muted">Завантаження…</p>}
+
+            {!state.loading && state.error && (
+              <div className="wb-empty">
+                <span className="wb-empty-icon">
+                  <Icon name="warning" size={32} />
+                </span>
+                <p className="wb-empty-text">{state.error}</p>
+                <button className="wb-btn wb-btn-secondary" onClick={() => void state.reload()}>
+                  Повторити
+                </button>
+              </div>
+            )}
+
+            {!state.loading && !state.error && rows.length === 0 && (
+              <div className="wb-empty">
+                <span className="wb-empty-icon">
+                  <Icon name="bar-chart" size={32} />
+                </span>
+                <p className="wb-empty-text">Трекерів ще немає.</p>
+                <p className="wb-text-muted">
+                  Візьміть готову мірку з «Шаблонів» або створіть свою — у «Моїх» лишається тільки
+                  те, що ви обрали.
+                </p>
+                <button
+                  type="button"
+                  className="wb-btn wb-btn-primary"
+                  onClick={() => switchTab("templates")}
+                >
+                  До шаблонів
+                </button>
+              </div>
+            )}
+
+            {!state.loading && !state.error && rows.length > 0 && (
+              <>
+                {!ordering && <TrackerDayHeader days={days} />}
+                <div className="wb-trackers-tree">
+                  {tree.map((view) => (
+                    <TrackerGroupSection
+                      key={view.group.id}
+                      view={view}
+                      depth={0}
+                      cellsOf={cellsOf}
+                      today={state.endDay}
+                      saving={state.saving}
+                      ordering={ordering}
+                      isOpen={accordion.isOpen}
+                      onToggle={accordion.toggle}
+                      onMoveTracker={(id, direction) => void state.moveTracker(id, direction)}
+                      onOpenTracker={(id) => navigate(trackerPath(id))}
+                      onSave={save}
+                      onCreateGroup={state.createGroup}
+                      onUpdateGroup={state.updateGroup}
+                      onDeleteGroup={state.deleteGroup}
+                    />
+                  ))}
+                </div>
+              </>
+            )}
+          </>
+        )}
+      </div>
 
       {creating && (
         <MenuModal
@@ -104,59 +244,6 @@ export function TrackersPage(): ReactElement {
             />
           }
         />
-      )}
-
-      {state.loading && <p className="wb-text-muted">Завантаження…</p>}
-
-      {!state.loading && state.error && (
-        <div className="wb-empty">
-          <span className="wb-empty-icon">
-            <Icon name="warning" size={32} />
-          </span>
-          <p className="wb-empty-text">{state.error}</p>
-          <button className="wb-btn wb-btn-secondary" onClick={() => void state.reload()}>
-            Повторити
-          </button>
-        </div>
-      )}
-
-      {!state.loading && !state.error && rows.length === 0 && (
-        <div className="wb-empty">
-          <span className="wb-empty-icon">
-            <Icon name="bar-chart" size={32} />
-          </span>
-          <p className="wb-empty-text">Трекерів ще немає.</p>
-          <p className="wb-text-muted">Стандартний набір з'явиться сам — або створіть свій.</p>
-          <button
-            type="button"
-            className="wb-btn wb-btn-primary"
-            onClick={() => navigate(withCreateIntent(TRACKERS_PATH))}
-          >
-            Створити трекер
-          </button>
-        </div>
-      )}
-
-      {!state.loading && !state.error && rows.length > 0 && (
-        <div className="wb-trackers-tree">
-          {tree.map((view) => (
-            <TrackerGroupSection
-              key={view.group.id}
-              view={view}
-              depth={0}
-              cellsOf={cellsOf}
-              today={state.endDay}
-              saving={state.saving}
-              isOpen={accordion.isOpen}
-              onToggle={accordion.toggle}
-              onOpenTracker={(id) => navigate(trackerPath(id))}
-              onSave={save}
-              onCreateGroup={state.createGroup}
-              onUpdateGroup={state.updateGroup}
-              onDeleteGroup={state.deleteGroup}
-            />
-          ))}
-        </div>
       )}
     </div>
   );

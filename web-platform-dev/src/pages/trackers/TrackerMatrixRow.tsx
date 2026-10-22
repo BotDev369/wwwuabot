@@ -1,8 +1,7 @@
 /**
- * Рядок матриці: назва мірки (веде на картку) й клітинки днів. Дотик по
- * клітинці — форма введення, але **лише по сьогоднішній**: день ставить
- * сервер, і «записати за вчора» в моделі не існує; минулі клітинки —
- * історія, вони ведуть на картку, де вона й живе (див. `docs/TRACKERS.md`).
+ * Рядок матриці: назва (веде на картку) і значення днів, сьогодні першим;
+ * число велике, одиниця дрібна під ним, «так-ні» — знаком ✓/✕. У режимі
+ * «Порядок» клітинки поступаються місцем стрілкам: тап там відкривав би запис.
  *
  * @module web-platform-dev/src/pages/trackers/TrackerMatrixRow
  */
@@ -11,15 +10,35 @@ import { useState, type FormEvent, type ReactElement } from "react";
 import { Icon } from "@wwwuabot/shared";
 import type { Tracker } from "@wwwuabot/shared/trackers";
 import { TrackerYesNo } from "./TrackerYesNo";
-import { cellAmount, type TrackerCellView } from "./trackers-view";
+import { cellAmount, matrixDayLabel, type TrackerCellView } from "./trackers-view";
 
 interface TrackerMatrixRowProps {
   tracker: Tracker;
   cells: readonly TrackerCellView[];
   today: string;
   saving: boolean;
+  /** Режим «Порядок»: замість днів — стрілки, назва не веде на картку. */
+  ordering: boolean;
+  first: boolean;
+  last: boolean;
   onOpen: () => void;
   onSave: (value: number, note: string) => Promise<boolean>;
+  onMove: (direction: "up" | "down") => void;
+}
+
+interface CellClassInput {
+  empty: boolean;
+  goal: boolean;
+  today: boolean;
+}
+
+function cellClass({ empty, goal, today }: CellClassInput): string {
+  return (
+    "wb-matrix-cell" +
+    (empty ? " wb-matrix-cell--empty" : "") +
+    (goal ? " wb-matrix-cell--goal" : "") +
+    (today ? " wb-matrix-cell--today" : "")
+  );
 }
 
 export function TrackerMatrixRow({
@@ -27,8 +46,12 @@ export function TrackerMatrixRow({
   cells,
   today,
   saving,
+  ordering,
+  first,
+  last,
   onOpen,
   onSave,
+  onMove,
 }: TrackerMatrixRowProps): ReactElement {
   const [draft, setDraft] = useState("");
   const [note, setNote] = useState("");
@@ -46,39 +69,83 @@ export function TrackerMatrixRow({
     }
   }
 
+  const name = (
+    <>
+      <span className="wb-matrix-icon">
+        <Icon name={tracker.icon} size={16} />
+      </span>
+      <span className="wb-matrix-title">{tracker.title}</span>
+    </>
+  );
+
   return (
     <li className="wb-matrix">
-      <div className="wb-matrix-row">
-        <button type="button" className="wb-matrix-name" onClick={onOpen}>
-          <span className="wb-matrix-icon">
-            <Icon name={tracker.icon} size={14} />
-          </span>
-          <span className="wb-matrix-title">{tracker.title}</span>
-        </button>
-        {cells.map((cell) => {
-          const isToday = cell.day === today;
-          const content = cellAmount(cell.value, tracker);
-          const label = `${tracker.title}, ${cell.day}${content ? `: ${content}` : ""}`;
-          return (
+      <div className={"wb-matrix-row" + (ordering ? " wb-matrix-row--order" : "")}>
+        {ordering ? (
+          <span className="wb-matrix-name">{name}</span>
+        ) : (
+          <button type="button" className="wb-matrix-name" onClick={onOpen}>
+            {name}
+          </button>
+        )}
+
+        {ordering ? (
+          <span className="wb-matrix-move">
             <button
-              key={cell.day}
               type="button"
-              className={
-                "wb-matrix-cell" +
-                (cell.value === null ? " wb-matrix-cell--empty" : "") +
-                (cell.goalMet ? " wb-matrix-cell--goal" : "") +
-                (isToday ? " wb-matrix-cell--today" : "")
-              }
-              aria-label={label}
-              onClick={() => (isToday ? setOpen((value) => !value) : onOpen())}
+              className="wb-matrix-move-btn"
+              aria-label={`${tracker.title} — вище`}
+              disabled={first}
+              onClick={() => onMove("up")}
             >
-              {content ||
-                (isToday ? <Icon name="plus" size={14} /> : <span aria-hidden="true">·</span>)}
+              <Icon name="chevron-up" size={18} />
             </button>
-          );
-        })}
+            <button
+              type="button"
+              className="wb-matrix-move-btn"
+              aria-label={`${tracker.title} — нижче`}
+              disabled={last}
+              onClick={() => onMove("down")}
+            >
+              <Icon name="chevron-down" size={18} />
+            </button>
+          </span>
+        ) : (
+          cells.map((cell) => {
+            const isToday = cell.day === today;
+            const content = cellAmount(cell.value, tracker);
+            const label = `${tracker.title}, ${matrixDayLabel(cell.day)}${content ? `: ${content}` : ""}`;
+            return (
+              <button
+                key={cell.day}
+                type="button"
+                className={cellClass({
+                  empty: cell.value === null,
+                  goal: cell.goalMet,
+                  today: isToday,
+                })}
+                aria-label={label}
+                onClick={() => (isToday ? setOpen((value) => !value) : onOpen())}
+              >
+                {tracker.valueType === "boolean" && cell.value !== null ? (
+                  <Icon name={cell.value > 0 ? "check" : "close"} size={16} />
+                ) : content ? (
+                  <span className="wb-matrix-value">
+                    <span className="wb-matrix-number">{content}</span>
+                    {tracker.unit && <span className="wb-matrix-unit">{tracker.unit}</span>}
+                  </span>
+                ) : isToday ? (
+                  <Icon name="plus" size={14} />
+                ) : (
+                  <span aria-hidden="true">·</span>
+                )}
+              </button>
+            );
+          })
+        )}
       </div>
-      {open && (
+
+      {open && !ordering && (
         <form className="wb-matrix-form" onSubmit={(event) => void submit(event)}>
           {tracker.valueType === "boolean" ? (
             <div className="wb-field">

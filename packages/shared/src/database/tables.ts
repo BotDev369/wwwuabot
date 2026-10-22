@@ -313,7 +313,7 @@ export const TABLES = {
     name: "trackers",
     owner: "api-dev",
     purpose:
-      "Трекери людини: назва, одиниця, крок, ціль, межі, `mode` (як читати записи: сума дня чи останній вимір), `value_type` (тип запису: число чи так-ні) і група (`group_id`) — одна модель на всі мірки.",
+      "Трекери людини: назва, одиниця, крок, ціль, межі, `mode` (як читати записи: сума дня чи останній вимір), `value_type` (тип запису: число чи так-ні), група (`group_id`), порядок серед сусідів (`position`), походження копії (`source`) і публічність визначення (`is_public`) — одна модель на всі мірки.",
     create: `CREATE TABLE IF NOT EXISTS trackers (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         owner_id TEXT NOT NULL,
@@ -330,6 +330,9 @@ export const TABLES = {
         group_id INTEGER,
         is_builtin INTEGER NOT NULL DEFAULT 0,
         is_active INTEGER NOT NULL DEFAULT 1,
+        position INTEGER,
+        source TEXT,
+        is_public INTEGER NOT NULL DEFAULT 0,
         created_at TEXT NOT NULL DEFAULT (datetime('now')),
         UNIQUE (owner_id, key)
       )`,
@@ -337,6 +340,7 @@ export const TABLES = {
       "CREATE INDEX IF NOT EXISTS idx_trackers_owner_key ON trackers(owner_id, key)",
       "CREATE INDEX IF NOT EXISTS idx_trackers_owner_active ON trackers(owner_id, is_active, id)",
       "CREATE INDEX IF NOT EXISTS idx_trackers_owner_group ON trackers(owner_id, group_id)",
+      "CREATE INDEX IF NOT EXISTS idx_trackers_public ON trackers(is_public, is_active)",
     ],
   },
 
