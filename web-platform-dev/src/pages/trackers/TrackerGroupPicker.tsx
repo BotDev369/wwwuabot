@@ -30,8 +30,11 @@ interface TrackerGroupPickerProps {
   /** Мітка поля — вона ж ім'я кнопки й заголовок модалки для читача екрана. */
   label: string;
   groups: readonly TrackerGroup[];
-  /** Обрана група; `null` — «Свої» (без групи). */
-  value: number | null;
+  /**
+   * Обрана група: `undefined` — людина ще не обирала (поле порожнє),
+   * `null` — «Свої» (без групи).
+   */
+  value: number | null | undefined;
   onPick: (groupId: number | null) => void;
   /** Створити нову верхню групу. Немає — і кнопки «Створити нову» немає. */
   onCreate?: (title: string) => Promise<TrackerGroup | null>;
@@ -53,7 +56,11 @@ export function TrackerGroupPicker({
   const branches = useMemo(() => branchIds(tree), [tree]);
   const allOpen = branches.length > 0 && branches.every((id) => expanded.has(id));
   const selected =
-    value === null ? "Свої" : (groups.find((group) => group.id === value)?.title ?? "Свої");
+    value === undefined
+      ? ""
+      : value === null
+        ? "Свої"
+        : (groups.find((group) => group.id === value)?.title ?? "Свої");
 
   function show(): void {
     // Провідник відкривається закритим: розкладку дерева людина розгортає сама.
@@ -156,7 +163,9 @@ export function TrackerGroupPicker({
         aria-labelledby={labelId}
         onClick={show}
       >
-        <span className="wb-group-picker-value">{selected}</span>
+        <span className={`wb-group-picker-value${selected ? "" : " wb-text-muted"}`}>
+          {selected || "Обрати групу"}
+        </span>
         <Icon name="chevron-down" size={16} />
       </button>
       {open && (

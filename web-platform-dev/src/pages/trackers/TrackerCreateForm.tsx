@@ -71,8 +71,9 @@ export function TrackerCreateForm({
 }: TrackerCreateFormProps): ReactElement {
   const [title, setTitle] = useState("");
   const [valueType, setValueType] = useState<TrackerValueType>("number");
-  // Група — вибір, а не текст: `null` — «Свої», решта — id з модалки з деревом.
-  const [group, setGroup] = useState<number | null>(null);
+  // Група — вибір, а не текст: `undefined` — людина ще не обирала, `null` —
+  // «Свої», решта — id з модалки з деревом.
+  const [group, setGroup] = useState<number | null | undefined>(undefined);
   const [unit, setUnit] = useState("");
   // Своя одиниця — не рядок у стані, а ознака вибору: довідник і свій текст
   // живуть в одному полі `unit`, і форма лише знає, показувати чи ні ввід.
@@ -105,7 +106,7 @@ export function TrackerCreateForm({
     }
     setError(null);
     setBusy(true);
-    const tracker = await onCreate(validated.value, group);
+    const tracker = await onCreate(validated.value, group ?? null);
     setBusy(false);
     if (tracker) onCreated(tracker);
   }
@@ -127,7 +128,6 @@ export function TrackerCreateForm({
           onChange={(event) => setTitle(event.target.value)}
           placeholder="Наприклад, кава"
           maxLength={40}
-          autoFocus
         />
       </label>
       <div className="wb-field">

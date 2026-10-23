@@ -67,6 +67,22 @@ describe("новий трекер", () => {
     expect(nameFollows).toBeTruthy();
   });
 
+  it("⛔ курсор не стрибає в поле назви: клавіатура телефона не займає пів екрана", () => {
+    renderForm();
+
+    // Назва — не перше рішення у формі: група важливіша, тож автофокус
+    // відкривав би клавіатуру раніше, ніж людина побачила саму форму.
+    expect(document.activeElement).not.toBe(screen.getByLabelText("Назва"));
+  });
+
+  it("група без типового вибору: поле каже «Обрати групу», а не «Свої»", () => {
+    renderForm();
+
+    const trigger = screen.getByRole("button", { name: "Група" });
+    expect(trigger.textContent).toContain("Обрати групу");
+    expect(trigger.textContent).not.toContain("Свої");
+  });
+
   it("⛔ порожня назва не йде на сервер", async () => {
     renderForm();
 
@@ -87,7 +103,7 @@ describe("новий трекер", () => {
     await userEvent.type(screen.getByLabelText("Ціль дня"), "3");
     await userEvent.click(screen.getByRole("button", { name: "Створити" }));
 
-    // Другий аргумент — група; порожній селект означає «Свої» (null).
+    // Другий аргумент — група; необрана лягає в «Свої» (null), як і ставить сервер.
     expect(handlers.create).toHaveBeenCalledWith(
       {
         title: "Кава",

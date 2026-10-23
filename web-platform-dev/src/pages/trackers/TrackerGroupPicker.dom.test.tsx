@@ -29,7 +29,7 @@ const groups: TrackerGroup[] = [
   { id: 13, parentId: 12, title: "Ранок", key: null },
 ];
 
-function renderPicker(value: number | null = null): void {
+function renderPicker(value: number | null | undefined = undefined): void {
   render(
     <TrackerGroupPicker
       label="Група"
@@ -50,6 +50,14 @@ beforeEach(() => {
 });
 
 describe("вибір групи", () => {
+  it("нічого не обрано — поле порожнє й каже «Обрати групу», а не «Свої»", () => {
+    renderPicker();
+
+    const trigger = screen.getByRole("button", { name: "Група" });
+    expect(trigger.textContent).toContain("Обрати групу");
+    expect(trigger.textContent).not.toContain("Свої");
+  });
+
   it("⛔ типово все закрито: підпапки не видно, доки їх не розгорнули", async () => {
     renderPicker();
     await open();
