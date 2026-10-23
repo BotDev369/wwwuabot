@@ -40,28 +40,17 @@
   color: var(--text-inverse);
   border-color: var(--accent);
 }
-.wb-btn-primary:hover {
-  background: var(--accent-hover);
-  border-color: var(--accent-hover);
-}
 
 /* Secondary — залита поверхня, без контуру: її видно тлом (правило 15) */
 .wb-btn-secondary {
   background: var(--surface-hover);
   color: var(--text-primary);
 }
-.wb-btn-secondary:hover {
-  background: var(--surface-active);
-}
 
 /* Ghost */
 .wb-btn-ghost {
   background: transparent;
   color: var(--text-secondary);
-}
-.wb-btn-ghost:hover {
-  background: var(--surface-hover);
-  color: var(--text-primary);
 }
 
 /* Danger */
@@ -70,8 +59,30 @@
   color: #fff;
   border-color: var(--red);
 }
-.wb-btn-danger:hover {
-  opacity: 0.9;
+
+/* Підсвічення наведенням — **лише мишею**, бо на тачі `:hover` лишається на
+   останньому торкнутому елементі, а його специфічність вища за стан вибору:
+   залежала вибрана вкладка (`--active`) — той самий випадок, що з
+   `.wb-segmented-btn`. Другий запобіжник — `:not(--active)`: вибрана вкладка
+   тримає акцентний маркер і під мишею. */
+@media (hover: hover) {
+  .wb-btn-primary:hover {
+    background: var(--accent-hover);
+    border-color: var(--accent-hover);
+  }
+
+  .wb-btn-secondary:hover {
+    background: var(--surface-active);
+  }
+
+  .wb-btn-ghost:not(.wb-tabs-btn--active):hover {
+    background: var(--surface-hover);
+    color: var(--text-primary);
+  }
+
+  .wb-btn-danger:hover {
+    opacity: 0.9;
+  }
 }
 
 /* Sizes */
@@ -1112,17 +1123,16 @@ html:has(.wb-tabbar) .wb-modal-overlay--screen {
 .wb-tabs-btn {
   flex: 1 0 auto;
   min-width: 0;
-}
-
-/* Обрана вкладка — пілюля на доріжці: акцент і вага лишаються, але без
-   заливки два підписи на повну ширину зливаються з простором — їх читають
-   як рядок тексту, а не як вибір (правило 25, виняток «смуга вкладок»).
+} /* Обрана вкладка — **залита акцентом** пілюля на доріжці (правило 25,
+   виняток «смуга вкладок»): вибір мусить бути видно з першого погляду —
+   відтінок заливки на темній темі читався як «трохи світліше», а не як вибір.
+   Підпис — `--text-inverse`: на акценті він контрастний у будь-якій темі.
    Форму вкладка й далі бере в кирпичика кнопки — тут лише **стан**. */
 .wb-tabs-btn--active {
-  background: var(--field-bg-raised);
+  background: var(--accent);
   border-radius: var(--radius-full);
   box-shadow: var(--shadow-xs);
-  color: var(--accent);
+  color: var(--text-inverse);
   font-weight: var(--weight-semibold);
 }
 

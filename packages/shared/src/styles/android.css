@@ -304,6 +304,11 @@ html[data-brand="android"] .wb-tabs-btn {
   min-height: var(--tabs-h) !important;
   padding: 0 var(--sp-3) !important;
   font-size: 14px !important;
+} /* Маркер вибраної вкладки — теж у бренду: загальна кнопка тримає
+   `font-weight: 500 !important`, і без цієї відповіді вага (600) не діє —
+   вибір не видно навіть на залитій акцентом пілюлі. */
+html[data-brand="android"] .wb-tabs-btn--active {
+  font-weight: var(--weight-semibold) !important;
 }
 
 html[data-brand="android"] .wb-btn-secondary {

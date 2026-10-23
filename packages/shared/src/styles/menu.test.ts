@@ -269,14 +269,17 @@ describe("меню: повноекранна поверхня, перемика�
       expect(btn?.body, `вкладка не має задавати ${own} сама`).not.toContain(own);
     }
 
-    // Стан у вкладки свій: акцент і вага — плюс **пілюля на доріжці**
-    // (правило 25, виняток «смуга вкладок»): два підписи на повну ширину
-    // без заливки читалися як текст, а не як вибір — вимога власника.
+    // Стан у вкладки свій: **залита акцентом пілюля** на доріжці (правило 25,
+    // виняток «смуга вкладок») з інверсним підписом і вагою. Два підписи на
+    // повну ширину без заливки читалися як текст, а відтінок на темній темі —
+    // як «трохи світліше»: вибір мусить бути видно з першого погляду.
     const active = rule(".wb-tabs-btn--active");
     expect(active, "правило вибраної вкладки мусить існувати").toBeDefined();
-    expect(active?.body).toContain("color: var(--accent)");
+    expect(active?.body).toContain("color: var(--text-inverse)");
     expect(active?.body).toContain("font-weight: var(--weight-semibold)");
-    expect(active?.body, "обрана має пілюлю").toContain("background: var(--field-bg-raised)");
+    expect(active?.body, "обрана має залиту акцентом пілюлю").toContain(
+      "background: var(--accent)",
+    );
 
     // А розмітка справді ставить кирпичик: обидві вкладки — `.wb-btn` на
     // прозорій основі (`wb-btn-ghost`), а вибрану називає маркер стану.
@@ -288,14 +291,23 @@ describe("меню: повноекранна поверхня, перемика�
     expect(page).toContain("wb-tabs-btn--active");
   });
 
-  it("дотик не знімає вибір розділу: власного `:hover` у вкладки немає", () => {
+  it("дотик не знімає вибір розділу: `:hover` не перебиває вибрану вкладку", () => {
     // Та сама пастка, що в перемикача вигляду: на тачі `:hover` лишається на
-    // останньому торкнутому елементі. Вкладка її не має — підсвічення дає
-    // кнопка, а вибір тримає акцентний маркер стану.
+    // останньому торкнутому елементі, а його специфічність вища за маркер
+    // стану — вибір зникав рівно тоді, коли його щойно зробили. Тому
+    // підсвічення наведенням — або під `@media (hover: hover)`, або
+    // з `:not(--active)`: вибрана вкладка тримає маркер і під мишею.
+    expect(CSS).toContain("@media (hover: hover)");
     let outside = CSS;
     for (const body of hoverBlocks()) outside = outside.replace(body, "");
     expect(outside).not.toMatch(/\.wb-tabs-btn[^{}]*:hover/);
-    for (const body of hoverBlocks()) expect(body).not.toMatch(/\.wb-tabs-btn/);
+    const hover = RULES.filter((entry) => /:hover/.test(entry.selector));
+    const overState = hover.filter((entry) =>
+      /(^|[\s,>+~({"])\.wb-tabs-btn(?![\w-])/.test(entry.selector),
+    );
+    for (const entry of overState) {
+      expect(entry.selector, entry.selector).toContain(":not(.wb-tabs-btn--active)");
+    }
   });
 
   it("у перемикача немає треку, а вибраний показує акцентний колір", () => {
