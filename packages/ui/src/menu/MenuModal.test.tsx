@@ -46,6 +46,20 @@ describe("MenuModal", () => {
     expect(html()).toContain("wb-modal-body");
   });
 
+  it("форма приходить карткою за вмістом, а не аркушем на весь екран", () => {
+    const card = html({ variant: "card", content: <span>форма</span> });
+
+    expect(card).toContain("wb-modal--card");
+    // Аркуш розтягнутий і додає `--safe-top` над назвою: формі з семи полів це
+    // пів екрана порожнечі, а кнопки притискаються до футера.
+    expect(card).not.toContain("wb-modal--full");
+    expect(card).not.toContain("wb-sheet");
+    expect(card).toContain("wb-modal-header");
+    // Заголовок і вихід ті самі: інша лише рамка.
+    expect(card).toContain('aria-label="Закрити"');
+    expect(card).toContain(">Профіль<");
+  });
+
   it("показує пункти в тому порядку, який дала оболонка", () => {
     const markup = html();
     const order = ["Контакти", "Нотатки", "Тема"].map((label) => markup.indexOf(label));

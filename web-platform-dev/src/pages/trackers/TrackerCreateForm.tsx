@@ -122,7 +122,9 @@ export function TrackerCreateForm({
   return (
     <form className="wb-tracker-form" onSubmit={(event) => void submit(event)}>
       <section className="wb-tracker-form-zone">
-        <h3 className="wb-tracker-form-zone-title">Куди зберегти</h3>
+        <div className="wb-tracker-form-zone-title" role="heading" aria-level={3}>
+          Куди зберегти
+        </div>
         <TrackerGroupPicker
           label="Група"
           groups={groups}
@@ -133,7 +135,9 @@ export function TrackerCreateForm({
       </section>
 
       <section className="wb-tracker-form-zone">
-        <h3 className="wb-tracker-form-zone-title">Що відстежуємо</h3>
+        <div className="wb-tracker-form-zone-title" role="heading" aria-level={3}>
+          Що відстежуємо
+        </div>
         <label className="wb-field">
           <span className="wb-label">Назва</span>
           <input
@@ -147,7 +151,7 @@ export function TrackerCreateForm({
         <div className="wb-field">
           <span className="wb-label">Тип запису</span>
           <Tabs options={TYPE_TABS} value={valueType} onChange={setValueType} label="Тип запису" />
-          <p className="wb-field-hint">{TYPE_HINT[valueType]}</p>
+          <div className="wb-field-hint">{TYPE_HINT[valueType]}</div>
         </div>
       </section>
 
@@ -155,7 +159,9 @@ export function TrackerCreateForm({
           міра; сервер теж відкидає ці поля для нього (див. `validateTrackerFields`). */}
       {valueType === "number" && (
         <section className="wb-tracker-form-zone">
-          <h3 className="wb-tracker-form-zone-title">Як рахувати</h3>
+          <div className="wb-tracker-form-zone-title" role="heading" aria-level={3}>
+            Як рахувати
+          </div>
           <div className="wb-tracker-form-row">
             <label className="wb-field">
               <span className="wb-label">Одиниця</span>
@@ -225,7 +231,7 @@ export function TrackerCreateForm({
           <div className="wb-field">
             <span className="wb-label">Як читати записи</span>
             <Tabs options={MODE_TABS} value={mode} onChange={setMode} label="Як читати записи" />
-            <p className="wb-field-hint">{MODE_HINT[mode]}</p>
+            <div className="wb-field-hint">{MODE_HINT[mode]}</div>
           </div>
         </section>
       )}
@@ -233,14 +239,14 @@ export function TrackerCreateForm({
       {error && <p className="wb-tracker-form-error">{error}</p>}
 
       <div className="wb-tracker-form-actions">
-        <p className="wb-tracker-form-summary">
-          <span
-            className={`wb-tracker-form-summary-name${title.trim() ? "" : " wb-tracker-form-summary-name--empty"}`}
-          >
-            {title.trim() || "Без назви"}
-          </span>
-          <span className="wb-tracker-form-summary-meta">{summary}</span>
-        </p>
+        {/* Огляду без назви немає: порожній рядок «Без назви · Число» — це шум,
+            а створити трекер без назви все одно не вийде. */}
+        {title.trim() && (
+          <p className="wb-tracker-form-summary">
+            <span className="wb-tracker-form-summary-name">{title.trim()}</span>
+            <span className="wb-tracker-form-summary-meta">{summary}</span>
+          </p>
+        )}
         <div className="wb-tracker-form-buttons">
           <button type="button" className="wb-btn wb-btn-ghost" onClick={onCancel}>
             Скасувати

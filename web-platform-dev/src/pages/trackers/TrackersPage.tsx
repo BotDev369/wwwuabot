@@ -235,6 +235,7 @@ export function TrackersPage(): ReactElement {
       {creating && (
         <MenuModal
           title="Новий трекер"
+          variant="card"
           onClose={() => navigate(withoutCreateIntent(TRACKERS_PATH), { replace: true })}
           content={
             <TrackerCreateForm

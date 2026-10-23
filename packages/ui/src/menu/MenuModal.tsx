@@ -36,8 +36,11 @@ export function MenuModal({
   content,
   header,
   layout = "rows",
+  variant = "sheet",
   onClose,
 }: MenuModalProps): ReactElement {
+  const sheet = variant === "sheet";
+
   function handleKeyDown(event: KeyboardEvent<HTMLDivElement>) {
     if (event.key === "Escape") {
       event.stopPropagation();
@@ -53,14 +56,14 @@ export function MenuModal({
       onClick={onClose}
     >
       <div
-        className="wb-modal wb-modal--full wb-sheet"
+        className={sheet ? "wb-modal wb-modal--full wb-sheet" : "wb-modal wb-modal--card"}
         role="dialog"
         aria-modal="true"
         aria-label={title}
         onClick={(event) => event.stopPropagation()}
         onKeyDown={handleKeyDown}
       >
-        <div className="wb-modal-header wb-sheet-head">
+        <div className={sheet ? "wb-modal-header wb-sheet-head" : "wb-modal-header"}>
           <h2 className="wb-modal-title">{title}</h2>
           <button type="button" className="wb-close-btn" onClick={onClose} aria-label="Закрити">
             <Icon name="close" size={18} />

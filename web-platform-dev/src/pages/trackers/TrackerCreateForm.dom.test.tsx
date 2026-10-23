@@ -94,11 +94,13 @@ describe("новий трекер", () => {
   it("огляд біля кнопок каже, що саме запишеться", async () => {
     renderForm();
 
-    // Порожня форма теж має назву — інакше рядок огляду читався б як обріз.
-    expect(screen.getByText("Без назви")).toBeTruthy();
-    expect(screen.getByText("Число · без одиниці")).toBeTruthy();
+    // Без назви огляду немає: порожній рядок «Без назви · Число» — шум, а
+    // створити трекер без назви все одно не вийде.
+    expect(screen.queryByText("Число · без одиниці")).toBeNull();
 
     await userEvent.type(screen.getByLabelText("Назва"), "Кава");
+    expect(screen.getByText("Число · без одиниці")).toBeTruthy();
+
     await userEvent.selectOptions(screen.getByLabelText("Одиниця"), "хв");
     await userEvent.type(screen.getByLabelText("Ціль дня"), "30");
 
@@ -171,9 +173,10 @@ describe("новий трекер", () => {
     expect(screen.queryByRole("tab", { name: "Сума за день" })).toBeNull();
     // Блок «Як рахувати» теж зникає: без одиниці й цілі йому нічого групувати.
     expect(screen.queryByRole("heading", { name: "Як рахувати" })).toBeNull();
-    expect(screen.getByText("Так-ні · статус дня")).toBeTruthy();
 
     await userEvent.type(screen.getByLabelText("Назва"), "Не палю");
+    // Огляд каже, що це статус дня, а не міра — без одиниці й цілі.
+    expect(screen.getByText("Так-ні · статус дня")).toBeTruthy();
     await userEvent.click(screen.getByRole("button", { name: "Створити" }));
 
     // Межа 0…1, порожня одиниця й типовий вид «останній» — робить сервер
