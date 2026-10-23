@@ -1,19 +1,21 @@
 name: Deploy
 
-# Два режими роботи однієї пайплайни:
-#   • pull_request — тільки гейти (`checks`). Деплой неможливий.
-#   • push у main / workflow_dispatch — гейти, потім деплой змінених воркерів.
+# Два режими однієї пайплайни:
+#   • pull_request — тільки гейти (`checks`), деплой неможливий.
+#   • push у main / workflow_dispatch — гейти, потім **усі** воркери.
+#
+# **Усі, а не «змінені».** Фільтр шляхів відповідає на питання «чи змінився
+# воркер у ЦЬОМУ пуші», а не «чи відрізняється задеплоєне від `main`». Один
+# червоний прогін лишав веб незадеплоєним, наступний пуш по `api-dev` його вже
+# не піднімав — і `main` зеленів, поки воркер відставав, а «пропущено» у списку
+# джоб виглядає так само, як «нічого не змінилось». Ціна повного деплою —
+# паралельні `npm ci` + збірка на кожен пуш; вони дешевші за `checks`, який і
+# так стоїть перед ними, і не лишають двох правд між воркерами.
 on:
   push:
     branches: [main]
   pull_request:
   workflow_dispatch:
-    inputs:
-      deploy_all:
-        description: "Deploy all workers"
-        required: false
-        default: "false"
-        type: boolean
 
 # Мінімальні права GITHUB_TOKEN: деплою він не потрібен зовсім, а дефолтний
 # токен у багатьох репозиторіях має write-доступ. Менше прав — менше наслідків,
@@ -29,34 +31,6 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
-  changes:
-    runs-on: ubuntu-latest
-    outputs:
-      bot: ${{ steps.filter.outputs.bot }}
-      api: ${{ steps.filter.outputs.api }}
-      web: ${{ steps.filter.outputs.web }}
-      web-admin: ${{ steps.filter.outputs.web-admin }}
-    steps:
-      - uses: actions/checkout@v7
-      - uses: dorny/paths-filter@v4
-        id: filter
-        with:
-          filters: |
-            bot:
-              - 'bot-dev/**'
-              - 'packages/shared/**'
-            api:
-              - 'api-dev/**'
-              - 'packages/shared/**'
-            web:
-              - 'web-platform-dev/**'
-              - 'packages/shared/**'
-              - 'packages/ui/**'
-            web-admin:
-              - 'web-admin-dev/**'
-              - 'packages/shared/**'
-              - 'packages/ui/**'
-
   # Єдиний гейт перед деплоєм. Раніше тут не було тестів (S-6) і `npm audit`
   # стояв із `continue-on-error: true`, тобто не блокував нічого. Тепер:
   # вразливість `high` або червоний тест = жоден воркер не поїде на прод.
@@ -125,9 +99,11 @@ jobs:
           npm run test:coverage
           npm run check:coverage
 
+  # Тег — `$GITHUB_SHA`: без нього `wrangler deployments status` показує лише
+  # час, і «що зараз живе на воркері» доводиться вгадувати.
   deploy-bot:
-    needs: [changes, checks]
-    if: github.event_name != 'pull_request' && (needs.changes.outputs.bot == 'true' || github.event.inputs.deploy_all == 'true')
+    needs: checks
+    if: github.event_name != 'pull_request'
     runs-on: ubuntu-latest
     timeout-minutes: 15
     steps:
@@ -137,14 +113,14 @@ jobs:
           node-version: 22
           cache: npm
       - run: npm ci
-      - run: cd bot-dev && npx wrangler deploy
+      - run: cd bot-dev && npx wrangler deploy --tag "$GITHUB_SHA"
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
 
   deploy-api:
-    needs: [changes, checks]
-    if: github.event_name != 'pull_request' && (needs.changes.outputs.api == 'true' || github.event.inputs.deploy_all == 'true')
+    needs: checks
+    if: github.event_name != 'pull_request'
     runs-on: ubuntu-latest
     timeout-minutes: 15
     steps:
@@ -154,14 +130,14 @@ jobs:
           node-version: 22
           cache: npm
       - run: npm ci
-      - run: cd api-dev && npx wrangler deploy
+      - run: cd api-dev && npx wrangler deploy --tag "$GITHUB_SHA"
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
 
   deploy-web:
-    needs: [changes, checks]
-    if: github.event_name != 'pull_request' && (needs.changes.outputs.web == 'true' || github.event.inputs.deploy_all == 'true')
+    needs: checks
+    if: github.event_name != 'pull_request'
     runs-on: ubuntu-latest
     timeout-minutes: 15
     steps:
@@ -172,14 +148,14 @@ jobs:
           cache: npm
       - run: npm ci
       - run: cd web-platform-dev && npm run build
-      - run: cd web-platform-dev && npx wrangler deploy
+      - run: cd web-platform-dev && npx wrangler deploy --tag "$GITHUB_SHA"
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
 
   deploy-web-admin:
-    needs: [changes, checks]
-    if: github.event_name != 'pull_request' && (needs.changes.outputs.web-admin == 'true' || github.event.inputs.deploy_all == 'true')
+    needs: checks
+    if: github.event_name != 'pull_request'
     runs-on: ubuntu-latest
     timeout-minutes: 15
     steps:
@@ -190,7 +166,7 @@ jobs:
           cache: npm
       - run: npm ci
       - run: cd web-admin-dev && npm run build
-      - run: cd web-admin-dev && npx wrangler deploy
+      - run: cd web-admin-dev && npx wrangler deploy --tag "$GITHUB_SHA"
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
