@@ -87,7 +87,7 @@ describe("форма запису", () => {
     expect(screen.queryByText("Збережено")).toBeNull();
   });
 
-  it("«так-ні» не питає число: статус обирають вкладкою, значення — «1» / «0»", async () => {
+  it("«так-ні» не питає число: статус обирають вкладкою, і вибір уже фіксує запис", async () => {
     const habit: Tracker = {
       ...water,
       key: "own-habit",
@@ -106,11 +106,16 @@ describe("форма запису", () => {
     );
 
     expect(screen.queryByLabelText(/Значення/)).toBeNull();
+    // Окремої кнопки збереження тут немає: вибір статусу і є записом.
+    expect(screen.queryByRole("button", { name: "Зберегти" })).toBeNull();
+
     await userEvent.click(screen.getByRole("tab", { name: "Так" }));
     // Клавіша несе те саме значення, що йде на сервер: межу 0…1 перевіряє він.
     expect(handlers.change).toHaveBeenCalledWith({ value: "1" });
+    expect(handlers.submit).toHaveBeenCalledWith("1");
 
     await userEvent.click(screen.getByRole("tab", { name: "Ні" }));
     expect(handlers.change).toHaveBeenCalledWith({ value: "0" });
+    expect(handlers.submit).toHaveBeenCalledWith("0");
   });
 });

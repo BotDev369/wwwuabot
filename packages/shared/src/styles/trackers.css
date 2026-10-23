@@ -363,31 +363,22 @@
 
 /* ── Запис дня ────────────────────────────────────────────────────────────── */
 
+/* Поля стосом, збереження — під ними: круг біля поля лишав мертве місце
+   праворуч, а головна дія не мала вигляду головної. */
 .wb-tracker-entry {
   display: flex;
   flex-direction: column;
-  gap: var(--sp-2);
+  gap: var(--sp-3);
 }
 
-/* Значення й «✓» в один рядок: підписів тут більше, ніж полів, а поле одне —
-   число. Поле забирає вільне місце, кнопка припадає вправо: третя колонка без
-   вмісту лишала праворуч від «✓» мертву діру. */
-.wb-tracker-entry-row {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) auto;
-  align-items: end;
-  gap: var(--sp-2);
-}
-
-.wb-tracker-entry-row .wb-field {
+.wb-tracker-entry .wb-field {
   margin-bottom: 0;
 }
 
+/* Єдина акцентна плитка картки: те, за чим сюди приходять. */
 .wb-tracker-entry-submit {
-  width: 44px;
-  height: 44px;
-  padding: 0;
-  border-radius: var(--radius-full);
+  width: 100%;
+  justify-content: center;
 }
 
 /* ── Запис у модалці (дотик на трекер) ─────────────────────────────────────
@@ -400,57 +391,37 @@
   gap: var(--sp-4);
 }
 
-/* Шапка картки — міра з обличчям: знак, стан дня, смуга цілі. Самотній
-   сірий рядок «немає запису» читався як повідомлення про помилку. */
-.wb-tracker-sheet-hero {
-  display: flex;
-  align-items: center;
-  gap: var(--sp-3);
-  padding: var(--sp-3);
-  border-radius: var(--radius-lg);
-  background: color-mix(in srgb, var(--accent) 10%, transparent);
-}
-
-/* Знак міри — залита плитка: акцентна пляма дає картці обличчя, і воно те
-   саме, що в рядка стрічки (міра впізнається знаком, а не лише назвою). */
-.wb-tracker-sheet-icon {
-  display: flex;
-  flex: none;
-  align-items: center;
-  justify-content: center;
-  width: 44px;
-  height: 44px;
-  border-radius: var(--radius-md);
-  background: var(--accent);
-  color: var(--text-inverse);
-}
-
-.wb-tracker-sheet-status {
-  display: flex;
-  flex: 1 1 auto;
-  flex-direction: column;
-  gap: var(--sp-2);
-  min-width: 0;
-}
-
+/* День — число, підпис під ним, смуга цілі нижче. Без заливок і плиток:
+   акцент картки один — збереження, і кольорова пляма поруч краде його
+   в найважливішої дії. */
 .wb-tracker-sheet-today {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-1);
+  margin: 0;
+}
+
+.wb-tracker-sheet-today-value {
+  margin: 0;
+  font-size: var(--text-2xl);
+  font-weight: var(--weight-semibold);
+  line-height: var(--leading-tight);
+  font-variant-numeric: tabular-nums;
+}
+
+.wb-tracker-sheet-today-text {
   margin: 0;
   color: var(--text-secondary);
   font-size: var(--text-sm);
 }
 
-/* День уже має запис: стан говорить голосніше за відсутність. */
-.wb-tracker-sheet-today--done {
-  color: var(--text-primary);
-  font-weight: var(--weight-medium);
-}
-
 /* Смуга цілі — скільки дня вже зроблено. */
 .wb-tracker-sheet-progress {
   overflow: hidden;
-  height: 6px;
+  height: 3px;
+  margin-top: var(--sp-1);
   border-radius: var(--radius-full);
-  background: color-mix(in srgb, var(--accent) 18%, transparent);
+  background: color-mix(in srgb, var(--text-primary) 10%, transparent);
 }
 
 .wb-tracker-sheet-progress-fill {
@@ -461,9 +432,9 @@
   transition: width var(--duration-slow) var(--ease-out);
 }
 
-/* Дії — плитки по дві: чотири рівні пілюлі в рядок не вміщуються на 360px, а
-   стос по одній робив звичайну дію головною. Знак і підпис разом: чотири
-   однакові пілюлі текстом зливались у стіну. */
+/* Дії керування — тихі: на картці є головна дія (збереження), і решта
+   поступається їй. Парні — по дві, широкі — через ряд; зону тримає
+   повітря, а не лінія (правило 15). */
 .wb-tracker-actions {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -475,16 +446,18 @@
   min-height: 44px;
 }
 
-/* Небезпечна дія — власний рядок через усе: видалення поруч із буденною
-   дією читалось як ще одна плитка, а воно прибирає трекер. */
-.wb-tracker-action--danger {
+.wb-tracker-action--wide {
   grid-column: 1 / -1;
-  background: color-mix(in srgb, var(--red) 10%, transparent);
+}
+
+/* Прибирання — червоне словом, а не залитою плиткою: руйнівна дія не кричить
+   найгучніше на картці, де головне — збереження. */
+.wb-tracker-actions .wb-tracker-action--danger {
   color: var(--red);
 }
 
-.wb-tracker-action--danger:hover {
-  background: color-mix(in srgb, var(--red) 16%, transparent);
+.wb-tracker-actions .wb-tracker-action--danger:hover {
+  background: color-mix(in srgb, var(--red) 10%, transparent);
   color: var(--red);
 }
 

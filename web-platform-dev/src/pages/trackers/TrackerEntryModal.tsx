@@ -46,30 +46,23 @@ export function TrackerEntryModal({
   const [draft, setDraft] = useState<EntryDraft>(EMPTY_DRAFT);
   const [busy, setBusy] = useState(false);
 
-  const todayLabel =
-    todayValue === null
-      ? "Сьогодні ще немає запису"
-      : `Сьогодні: ${trackerAmountText(todayValue, tracker)}${
-          tracker.valueType === "number" && tracker.goal !== null
-            ? ` · ціль ${formatTrackerAmount(tracker.goal, tracker.unit)}`
-            : ""
-        }`;
+  const todayCaption =
+    tracker.valueType === "number" && tracker.goal !== null
+      ? `Сьогодні · ціль ${formatTrackerAmount(tracker.goal, tracker.unit)}`
+      : "Сьогодні";
   // Смуга цілі — скільки дня вже зроблено; без цілі (або не в числі) її немає.
   const progress =
     tracker.valueType === "number" && tracker.goal !== null && tracker.goal > 0
       ? Math.min(100, Math.round(((todayValue ?? 0) / tracker.goal) * 100))
       : null;
 
-  async function submit(): Promise<void> {
+  async function submit(status?: string): Promise<void> {
     if (busy) return;
-    // «Так-ні» не вводиться цифрою: порожній вибір — це ще не відповідь, а не «0».
+    // «Так-ні» фіксується вибором — дотик на статус уже є записом.
     if (tracker.valueType === "boolean") {
-      if (draft.value !== "0" && draft.value !== "1") {
-        await dialog.alert("Оберіть «Так» або «Ні».", { tone: "danger" });
-        return;
-      }
+      if (status !== "0" && status !== "1") return;
       setBusy(true);
-      const saved = await onSave(Number(draft.value), draft.note.trim());
+      const saved = await onSave(Number(status), draft.note.trim());
       setBusy(false);
       if (saved) onClose();
       return;
@@ -116,29 +109,25 @@ export function TrackerEntryModal({
       onClose={onClose}
       content={
         <div className="wb-tracker-sheet">
-          <div className="wb-tracker-sheet-hero">
-            <span className="wb-tracker-sheet-icon" aria-hidden="true">
-              <Icon name={tracker.icon} size={22} />
-            </span>
-            <div className="wb-tracker-sheet-status">
-              <p
-                className={
-                  todayValue === null
-                    ? "wb-tracker-sheet-today"
-                    : "wb-tracker-sheet-today wb-tracker-sheet-today--done"
-                }
-              >
-                {todayLabel}
-              </p>
-              {progress !== null && (
-                <div className="wb-tracker-sheet-progress">
-                  <span
-                    className="wb-tracker-sheet-progress-fill"
-                    style={{ width: `${progress}%` }}
-                  />
-                </div>
-              )}
-            </div>
+          <div className="wb-tracker-sheet-today">
+            {todayValue === null ? (
+              <p className="wb-tracker-sheet-today-text">Сьогодні ще немає запису</p>
+            ) : (
+              <>
+                <p className="wb-tracker-sheet-today-value">
+                  {trackerAmountText(todayValue, tracker)}
+                </p>
+                <p className="wb-tracker-sheet-today-text">{todayCaption}</p>
+              </>
+            )}
+            {progress !== null && (
+              <div className="wb-tracker-sheet-progress">
+                <span
+                  className="wb-tracker-sheet-progress-fill"
+                  style={{ width: `${progress}%` }}
+                />
+              </div>
+            )}
           </div>
 
           <TrackerEntryForm
@@ -146,7 +135,7 @@ export function TrackerEntryModal({
             draft={draft}
             saving={saving || busy}
             onChange={(patch) => setDraft((current) => ({ ...current, ...patch }))}
-            onSubmit={() => void submit()}
+            onSubmit={(status) => void submit(status)}
           />
 
           <div className="wb-tracker-actions">
@@ -155,35 +144,33 @@ export function TrackerEntryModal({
               className="wb-btn wb-btn-secondary wb-tracker-action"
               onClick={onSettings}
             >
-              <Icon name="sliders" size={18} />
+              <Icon name="sliders" size={16} />
               Налаштувати
             </button>
             <button
               type="button"
-              className="wb-btn wb-btn-ghost wb-tracker-action"
+              className="wb-btn wb-btn-secondary wb-tracker-action"
               onClick={() => void duplicate()}
             >
-              <Icon name="copy" size={18} />
+              <Icon name="copy" size={16} />
               Дублювати
             </button>
             {todayValue !== null && (
               <button
                 type="button"
-                className="wb-btn wb-btn-ghost wb-tracker-action"
+                className="wb-btn wb-btn-secondary wb-tracker-action wb-tracker-action--wide"
                 onClick={() => void reset()}
               >
-                <Icon name="eraser" size={18} />
+                <Icon name="eraser" size={16} />
                 Скинути сьогодні
               </button>
             )}
-            {/* Видалення — червоне словом, а не залитою пілюлею: найгучніша
-                плитка картки не мусить бути тією, що прибирає трекер. */}
             <button
               type="button"
-              className="wb-btn wb-btn-ghost wb-tracker-action wb-tracker-action--danger"
+              className="wb-btn wb-btn-ghost wb-tracker-action wb-tracker-action--wide wb-tracker-action--danger"
               onClick={() => void remove()}
             >
-              <Icon name="trash" size={18} />
+              <Icon name="trash" size={16} />
               Видалити
             </button>
           </div>

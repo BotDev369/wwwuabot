@@ -80,10 +80,11 @@ beforeEach(() => {
 });
 
 describe("запис числа", () => {
-  it("день видно зразу: зведення й ціль — та сама правда, що в клітинці", () => {
+  it("день видно зразу: число дня і ціль — та сама правда, що в клітинці", () => {
     renderCard();
 
-    expect(screen.getByText("Сьогодні: 2,5 л · ціль 2 л")).toBeTruthy();
+    expect(screen.getByText("2,5 л")).toBeTruthy();
+    expect(screen.getByText("Сьогодні · ціль 2 л")).toBeTruthy();
   });
 
   it("значення й нотатка йдуть разом, і картка закривається після збереження", async () => {
@@ -123,18 +124,28 @@ describe("запис числа", () => {
 });
 
 describe("запис «так-ні»", () => {
-  it("статус обирають вкладкою, і нотатка теж необовʼязкова", async () => {
+  it("статус обирають вкладкою — вибір уже є записом, кнопки підтвердження немає", async () => {
     renderCard(habit, null);
     const card = screen.getByRole("dialog", { name: "Тренування" });
 
-    // Порожній вибір — це ще не відповідь, а не «0».
-    await userEvent.click(within(card).getByRole("button", { name: "Зберегти" }));
-    expect(hooks.alert).toHaveBeenCalledWith("Оберіть «Так» або «Ні».", { tone: "danger" });
+    // Окремої кнопки збереження біля статусу немає: «Так»/«Ні» — це вже відповідь.
+    expect(within(card).queryByRole("button", { name: "Зберегти" })).toBeNull();
 
     await userEvent.click(within(card).getByRole("tab", { name: "Ні" }));
-    await userEvent.click(within(card).getByRole("button", { name: "Зберегти" }));
 
     expect(hooks.save).toHaveBeenCalledWith(0, "");
+    expect(hooks.close).toHaveBeenCalled();
+  });
+
+  it("нотатка йде разом зі статусом, якщо її ввели до вибору", async () => {
+    renderCard(habit, null);
+    const card = screen.getByRole("dialog", { name: "Тренування" });
+
+    await userEvent.type(within(card).getByLabelText("Нотатка"), "після бігу");
+    await userEvent.click(within(card).getByRole("tab", { name: "Так" }));
+
+    expect(hooks.save).toHaveBeenCalledWith(1, "після бігу");
+    expect(hooks.close).toHaveBeenCalled();
   });
 
   it("без запису дня каже це словами, і скидати нічого", () => {
