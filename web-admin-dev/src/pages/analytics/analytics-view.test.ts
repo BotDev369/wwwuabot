@@ -4,9 +4,11 @@ import {
   EVENT_PAGE_SIZE,
   actionMethod,
   actionText,
+  clockStamp,
   mergeEvents,
   presetRange,
   rangeFromInputs,
+  refreshRange,
   toDateTimeInput,
   userLabel,
   userMeta,
@@ -33,6 +35,19 @@ describe("помічники аналітики", () => {
       from: "2026-10-22T12:00:00.000Z",
       to: "2026-10-23T12:00:00.000Z",
     });
+  });
+
+  it("оновлення зсуває готове вікно, а ручний проміжок не чіпає", () => {
+    const window = presetRange(24, new Date("2026-10-23T12:00:00Z"));
+    const later = refreshRange(window, 24, new Date("2026-10-23T13:00:00Z"));
+    expect(later.to).toBe("2026-10-23T13:00:00.000Z");
+    expect(later.from).toBe("2026-10-22T13:00:00.000Z");
+    expect(refreshRange(window, null, new Date("2026-10-23T13:00:00Z"))).toBe(window);
+  });
+
+  it("мітка оновлення — локальний час із секундами", () => {
+    const ms = new Date(2026, 9, 23, 20, 5, 9).getTime();
+    expect(clockStamp(ms)).toMatch(/^20:05:09$/);
   });
 
   it("поле datetime-local дає локальний час без секунд", () => {

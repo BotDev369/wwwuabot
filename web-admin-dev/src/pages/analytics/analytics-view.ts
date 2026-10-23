@@ -35,6 +35,29 @@ export function presetRange(hours: number, now: Date = new Date()): EventRangeIn
   return { from: from.toISOString(), to: to.toISOString() };
 }
 
+/**
+ * Проміжок після «Оновити».
+ *
+ * Готовий проміжок — це ковзне вікно («остання доба»), тож оновлення мусить
+ * зсунути його до поточного часу: інакше запит іде в той самий закритий
+ * інтервал, зафіксований при відкритті екрана, і події, зроблені після нього,
+ * не видно ніколи. Ручний проміжок лишається як його задали.
+ */
+export function refreshRange(
+  current: EventRangeInput,
+  presetHours: number | null,
+  now: Date = new Date(),
+): EventRangeInput {
+  return presetHours === null ? current : presetRange(presetHours, now);
+}
+
+/** Мітка «коли оновлено» — лише час: дату видно в діапазоні. */
+export function clockStamp(ms: number): string {
+  const date = new Date(ms);
+  const pad = (value: number): string => String(value).padStart(2, "0");
+  return `${pad(date.getHours())}:${pad(date.getMinutes())}:${pad(date.getSeconds())}`;
+}
+
 /** ISO → значення поля `datetime-local` (локальний час, без секунд). */
 export function toDateTimeInput(iso: string): string {
   const date = new Date(iso);

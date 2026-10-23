@@ -11,7 +11,7 @@ import type { ReactElement } from "react";
 import { Icon } from "@wwwuabot/shared";
 import { formatStamp } from "@wwwuabot/shared/utils/datetime";
 import { PageTopbar } from "../../layout/PageTopbar";
-import { EVENT_PRESETS, userLabel, userMeta } from "./analytics-view";
+import { EVENT_PRESETS, clockStamp, userLabel, userMeta } from "./analytics-view";
 import { EventRows } from "./EventRows";
 import { useAnalytics } from "./useAnalytics";
 
@@ -48,11 +48,12 @@ export function AnalyticsPage(): ReactElement {
           </div>
           <button
             type="button"
-            className="wb-btn wb-btn-secondary"
+            className="wb-btn wb-btn-secondary ana-refresh"
             onClick={a.reload}
             disabled={a.loading}
+            aria-busy={a.loading}
           >
-            <Icon name="refresh" size={14} /> Оновити
+            <Icon name="refresh" size={14} /> {a.loading ? "Оновлюю…" : "Оновити"}
           </button>
         </div>
       </PageTopbar>
@@ -92,6 +93,11 @@ export function AnalyticsPage(): ReactElement {
               </button>
             ))}
           </div>
+          {a.updatedAt !== null && !a.loading && (
+            <p className="ana-updated" role="status">
+              оновлено о {clockStamp(a.updatedAt)}
+            </p>
+          )}
         </section>
 
         {a.error && (

@@ -99,6 +99,19 @@ describe("екран «Аналітика»", () => {
     await waitFor(() => expect(api.summary).toHaveBeenCalledTimes(2));
   });
 
+  it("«Оновити» перечитує журнал, зсуває вікно й каже, коли це було", async () => {
+    render(<AnalyticsPage />);
+    await screen.findByText("Сергій Дискант");
+    const firstTo = api.summary.mock.calls[0]?.[0].to as string;
+
+    await userEvent.click(screen.getByRole("button", { name: /Оновити|Оновлюю/ }));
+
+    await waitFor(() => expect(api.summary).toHaveBeenCalledTimes(2));
+    const secondTo = api.summary.mock.calls[1]?.[0].to as string;
+    expect(new Date(secondTo).getTime()).toBeGreaterThanOrEqual(new Date(firstTo).getTime());
+    expect((await screen.findByRole("status")).textContent).toContain("оновлено о");
+  });
+
   it("помилка читання називає причину, а не лишає порожній екран", async () => {
     api.summary.mockRejectedValue(new Error("Сесія прострочена"));
 

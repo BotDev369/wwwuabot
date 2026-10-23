@@ -15,12 +15,14 @@ import {
   mergeEvents,
   presetRange,
   rangeFromInputs,
+  refreshRange,
   toDateTimeInput,
   type AnalyticsMode,
   type EventRangeInput,
 } from "./analytics-view";
 
-const INITIAL_RANGE = presetRange(24);
+const INITIAL_HOURS = 24;
+const INITIAL_RANGE = presetRange(INITIAL_HOURS);
 
 export interface AnalyticsState {
   mode: AnalyticsMode;
@@ -40,6 +42,7 @@ export interface AnalyticsState {
   loading: boolean;
   loadingUser: number | null;
   loadingMore: boolean;
+  updatedAt: number | null;
   error: string | null;
   reload: () => void;
   toggleUser: (userId: number) => Promise<void>;
@@ -59,9 +62,13 @@ export function useAnalytics(): AnalyticsState {
   const [userEvents, setUserEvents] = useState<Record<number, UserEvent[]>>({});
   const [userTotals, setUserTotals] = useState<Record<number, number>>({});
 
+  /** Готовий проміжок у годинах; `null` — межи задані вручну. */
+  const [presetHours, setPresetHours] = useState<number | null>(INITIAL_HOURS);
+
   const [loading, setLoading] = useState(true);
   const [loadingUser, setLoadingUser] = useState<number | null>(null);
   const [loadingMore, setLoadingMore] = useState(false);
+  const [updatedAt, setUpdatedAt] = useState<number | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [refreshToken, setRefreshToken] = useState(0);
 
@@ -82,6 +89,7 @@ export function useAnalytics(): AnalyticsState {
         setEvents([]);
         setListTotal(0);
       }
+      setUpdatedAt(Date.now());
     } catch (err) {
       setError(err instanceof Error ? err.message : "Не вдалось прочитати журнал");
     } finally {
@@ -95,17 +103,27 @@ export function useAnalytics(): AnalyticsState {
   }, [load, refreshToken]);
 
   const applyRange = useCallback(() => {
+    setPresetHours(null);
     setRange(rangeFromInputs(fromInput, toInput));
   }, [fromInput, toInput]);
 
   const applyPreset = useCallback((hours: number) => {
     const next = presetRange(hours);
+    setPresetHours(hours);
     setFromInput(toDateTimeInput(next.from));
     setToInput(toDateTimeInput(next.to));
     setRange(next);
   }, []);
 
-  const reload = useCallback(() => setRefreshToken((token) => token + 1), []);
+  const reload = useCallback(() => {
+    const next = refreshRange(range, presetHours);
+    if (next !== range) {
+      setFromInput(toDateTimeInput(next.from));
+      setToInput(toDateTimeInput(next.to));
+      setRange(next);
+    }
+    setRefreshToken((token) => token + 1);
+  }, [presetHours, range]);
 
   const toggleUser = useCallback(
     async (userId: number) => {
@@ -167,6 +185,7 @@ export function useAnalytics(): AnalyticsState {
     loading,
     loadingUser,
     loadingMore,
+    updatedAt,
     error,
     reload,
     toggleUser,
