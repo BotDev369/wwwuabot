@@ -9,9 +9,9 @@
  * приклеєна плитка — саме це й робило екран «наляпистим». Тому жоден блок
  * трекерів не бере `.wb-card`, а тло тримає один токен сторінки.
  *
- * **Дерево груп і трекерів — без жодного тла.** Ні групи, ні підгрупи, ні
- * рядки не залиті: на залитих рядках лінії таблиці губилися. Групу видно
- * жирнішим підписом і знаком, підгрупу — знаком і рахунком.
+ * **Заливка є тільки в назви групи.** Рядок заголовка залитий, рядок мірки —
+ * ні: залитий рядок з числом читався як плитка, і сітка днів губилася. Два
+ * рівні розрізняє тон (група темніша за підгрупу) і відступ підгрупи.
  *
  * **Порожній день** — порожній стовпчик, а не нуль: висота означає «скільки»,
  * і нуль намалював би значення, якого ніхто не записував.
@@ -19,6 +19,11 @@
 
 .wb-trackers-page {
   --tracker-surface: var(--bg-2);
+  /* Заливка заголовка: підмішаний основний колір замість окремого кольору —
+     напрямок мішанини виходить сам, тож один токен працює і на світлому, і
+     на темному, і на трьох кольорах людини (як у `user-colors.css`). */
+  --tracker-group-bg: color-mix(in srgb, var(--text-primary) 9%, transparent);
+  --tracker-group-sub-bg: color-mix(in srgb, var(--text-primary) 5%, transparent);
   padding-inline: var(--sp-3);
   padding-bottom: var(--sp-8);
 }
@@ -66,22 +71,40 @@
 .wb-trackers-tree {
   display: flex;
   flex-direction: column;
-  gap: var(--sp-1);
+  /* Проміжок більший за власний проміжок групи: залиті заголовки сусідніх
+     груп без повітря між ними зливалися б в одну смугу. */
+  gap: var(--sp-3);
   /* Не більше за проміжок між власними групами: порожнеча над першою групою
      читалась як розрив між шапкою й таблицею. */
   margin-top: var(--sp-2);
 }
 
-/* Група будь-якої глибини без тла й без відступу: відступ краде ширину назви. */
+/* Група — заголовок і його вміст: проміжок між ними менший за проміжок між
+   групами, щоб заголовок читався як частина своєї групи. */
 .wb-group {
   display: flex;
   flex-direction: column;
+  gap: var(--sp-2);
 }
 
+/* Залитий рядок заголовка: саме він каже «тут починається група». Відступ і
+   радіус — у нього, а не в кнопки всередині: кнопка лишається прозорою, тож
+   заливка одна на весь рядок, разом із меню «···». */
 .wb-group-head {
   display: flex;
   align-items: center;
   gap: var(--sp-1);
+  padding-inline-start: var(--sp-2);
+  border-radius: var(--radius-md);
+  background: var(--tracker-group-bg);
+}
+
+/* Підгрупа: вужчий рядок і м'якша заливка — глибина читається двома
+   ознаками. Відступ малює заголовок, а не таблицю під ним: рядки матриці
+   мусять збігатися з шапкою днів по всій ширині. */
+.wb-group--sub > .wb-group-head {
+  margin-inline-start: var(--sp-5);
+  background: var(--tracker-group-sub-bg);
 }
 
 .wb-group-toggle {
@@ -91,7 +114,8 @@
   gap: var(--sp-2);
   min-width: 0;
   min-height: 44px;
-  padding: 0 var(--sp-2);
+  /* Відступ рядка тримає `.wb-group-head`: другий зсунув би заливку. */
+  padding: 0;
   border: none;
   background: none;
   color: var(--text-primary);
@@ -99,13 +123,17 @@
   cursor: pointer;
 }
 
+/* Натиск — акцентна плівка поверх заливки: `--surface-hover` на ній майже
+   збігався з тлом і дотик не давав відгуку. */
 .wb-group-toggle:active {
-  background: var(--surface-hover);
+  background: var(--accent-soft);
 }
 
+/* Заголовок більший за назву мірки (`--text-sm`): це різні рівні, і різниця
+   в розмірі каже про це там, де заливки не видно (наприклад, у списку). */
 .wb-group-title {
   overflow: hidden;
-  font-size: var(--text-base);
+  font-size: var(--text-md);
   font-weight: var(--weight-semibold);
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -136,7 +164,7 @@
 }
 
 .wb-group-actions:active {
-  background: var(--surface-hover);
+  background: var(--accent-soft);
 }
 
 /* Без бічних полів: рядки мусять збігатися з шапкою таблиці по ширині, інакше
@@ -144,8 +172,8 @@
 .wb-group-body {
   display: flex;
   flex-direction: column;
-  gap: var(--sp-1);
-  padding: 0 0 var(--sp-2);
+  gap: var(--sp-3);
+  padding: 0;
 }
 
 /* Рядки матриці без спільної поверхні: підгрупа вже несе радіус, другий
@@ -249,7 +277,9 @@
   gap: var(--sp-2);
   min-width: 0;
   min-height: 44px;
-  padding: 0 var(--sp-2);
+  /* Назва зсунута під заголовок групи: рядок читається як дитина заголовка,
+     а колонки днів лишаються на місці — зсув у назві, не в усьому рядку. */
+  padding: 0 var(--sp-2) 0 var(--sp-4);
   border: none;
   background: none;
   color: var(--text-primary);
@@ -999,14 +1029,20 @@
   width: 100%;
 }
 
+/* Список усередині групи — та сама плоска таблиця, що й матриця «Моїх»:
+   залитий заголовок і рядки без тла, розділені лінією. */
+.wb-library-tree {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-3);
+}
+
 .wb-library-list {
   display: flex;
   flex-direction: column;
   margin: 0;
   padding: 0;
   list-style: none;
-  border-radius: var(--radius-md);
-  background: var(--tracker-surface);
 }
 
 .wb-library-row {
@@ -1014,11 +1050,27 @@
   align-items: center;
   gap: var(--sp-2);
   min-height: 52px;
-  padding: var(--sp-1) var(--sp-2);
+  padding: var(--sp-1) var(--sp-2) var(--sp-1) var(--sp-4);
 }
 
 .wb-library-row + .wb-library-row {
   border-top: 1px solid var(--border-subtle);
+}
+
+/* Заголовок списку на читання: стрілки й меню тут немає, тож відступ свій —
+   назва стає на одну лінію зі значком рядка під нею. */
+.wb-library-head {
+  padding-inline: var(--sp-4) var(--sp-2);
+}
+
+/* Значок мірки — той самий, що в матриці: рядок упізнають по знаку, а не по
+   назві, яку доводиться читати. */
+.wb-library-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: none;
+  color: var(--accent);
 }
 
 .wb-library-text {
@@ -1029,10 +1081,12 @@
   gap: 2px;
 }
 
+/* Назва мірки — той самий рядок, що в матриці: одна назва в «Моїх» і в
+   «Шаблонах» не має читатись двома різними розмірами. */
 .wb-library-title {
   overflow: hidden;
   color: var(--text-primary);
-  font-size: var(--text-base);
+  font-size: var(--text-sm);
   font-weight: var(--weight-medium);
   text-overflow: ellipsis;
   white-space: nowrap;

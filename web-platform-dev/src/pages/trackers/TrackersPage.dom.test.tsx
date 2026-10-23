@@ -116,14 +116,18 @@ const library = {
       source: "catalog:water",
       key: "water",
       title: "Вода",
-      meta: "Режим · ціль 2 л",
+      group: "Режим",
+      meta: "ціль 2 л",
+      icon: "droplet",
       added: false,
     },
     {
       source: "catalog:sleep",
       key: "sleep",
       title: "Сон",
-      meta: "Режим · ціль 8 год",
+      group: "Режим",
+      meta: "ціль 8 год",
+      icon: "bar-chart",
       added: true,
     },
   ],
@@ -132,7 +136,9 @@ const library = {
       source: "public:12",
       key: "public-12",
       title: "Кава вдома",
-      meta: "#олена · ціль 3 чашки",
+      group: "#олена",
+      meta: "ціль 3 чашки",
+      icon: "cup",
       added: false,
     },
   ],
@@ -214,7 +220,9 @@ describe("акордеон груп", () => {
     render(<TrackersPage />);
 
     await userEvent.click(screen.getByRole("button", { name: "Активність" }));
-    expect(screen.getByRole("button", { name: "Ранкова рутина" })).toBeTruthy();
+    const subgroup = screen.getByRole("button", { name: "Ранкова рутина" }).closest(".wb-group");
+    // Рівень глибини — класом: від нього залежить відступ і тон заливки.
+    expect(subgroup?.classList.contains("wb-group--sub")).toBe(true);
 
     await userEvent.click(screen.getByRole("button", { name: "Ранкова рутина" }));
     expect(screen.getByRole("button", { name: "Кроки" })).toBeTruthy();
@@ -368,14 +376,32 @@ describe("три поверхні", () => {
     expect(hooks.libraryReload).toHaveBeenCalled();
   });
 
-  it("«Публічні» — лише визначення: немає клітинок днів, підпис — ім'я на платформі", async () => {
+  it("«Публічні» — лише визначення: немає клітинок днів, група — ім'я на платформі", async () => {
     render(<TrackersPage />);
     await userEvent.click(screen.getByRole("tab", { name: "Публічні" }));
 
     expect(screen.getByText("Кава вдома")).toBeTruthy();
-    expect(screen.getByText("#олена · ціль 3 чашки")).toBeTruthy();
+    const group = screen.getByText("#олена");
+    expect(group.classList.contains("wb-group-title")).toBe(true);
+    expect(group.parentElement?.classList.contains("wb-group-head")).toBe(true);
+    expect(screen.getByText("ціль 3 чашки")).toBeTruthy();
     // Вимірів у чужій мірці немає й бути не може.
     expect(document.querySelector(".wb-matrix-cell")).toBeNull();
+  });
+
+  it("список на читання — те саме дерево: залитий заголовок і рядки під ним", async () => {
+    render(<TrackersPage />);
+    await userEvent.click(screen.getByRole("tab", { name: "Шаблони" }));
+
+    const groups = document.querySelectorAll(".wb-library-tree .wb-group");
+    expect(groups).toHaveLength(1);
+    expect(groups[0].querySelector(".wb-group-head")?.textContent).toContain("Режим");
+    expect(groups[0].querySelectorAll(".wb-library-row")).toHaveLength(2);
+    // Рядок мірки несе значок, назву й ціль — ті самі частини, що в матриці.
+    const row = groups[0].querySelector(".wb-library-row");
+    expect(row?.querySelector(".wb-library-icon svg")).toBeTruthy();
+    expect(row?.querySelector(".wb-library-title")?.textContent).toBe("Вода");
+    expect(row?.querySelector(".wb-library-meta")?.textContent).toBe("ціль 2 л");
   });
 
   it("пошук звужує список, а не гортає море пальцем", async () => {

@@ -1,14 +1,14 @@
 /**
- * Список на читання: «Шаблони» й «Публічні». Рядок показує назву, тематику й
- * ціль; єдина дія — «Додати» (копія в «Мої»). Ні запису, ні правки тут немає:
- * чужі виміри не публікуються, а правка копії живе в «Моїх».
+ * Список на читання: «Шаблони» й «Публічні» — залитий заголовок групи
+ * (тематика каталогу або автор) і плоскі рядки під ним, як у «Моїх». Єдина
+ * дія рядка — «Додати»: чужі виміри не публікуються, правка копії — в «Моїх».
  *
  * @module web-platform-dev/src/pages/trackers/TrackersLibraryPanel
  */
 
 import { useMemo, useState, type ReactElement } from "react";
 import { Icon } from "@wwwuabot/shared";
-import { filterLibrary, type TrackerLibraryItem } from "./tracker-library";
+import { filterLibrary, groupLibrary, type TrackerLibraryItem } from "./tracker-library";
 
 interface TrackersLibraryPanelProps {
   items: readonly TrackerLibraryItem[];
@@ -31,6 +31,7 @@ export function TrackersLibraryPanel({
   const [query, setQuery] = useState("");
   const [adding, setAdding] = useState<string | null>(null);
   const visible = useMemo(() => filterLibrary(items, query), [items, query]);
+  const groups = useMemo(() => groupLibrary(visible), [visible]);
 
   async function add(source: string): Promise<void> {
     if (adding !== null) return;
@@ -72,26 +73,45 @@ export function TrackersLibraryPanel({
       )}
 
       {!loading && !error && visible.length > 0 && (
-        <ul className="wb-library-list">
-          {visible.map((item) => (
-            <li key={item.key} className="wb-library-row">
-              <span className="wb-library-text">
-                <span className="wb-library-title">{item.title}</span>
-                <span className="wb-library-meta">{item.meta}</span>
-              </span>
-              <button
-                type="button"
-                className={
-                  "wb-btn wb-library-add" + (item.added ? " wb-btn-ghost" : " wb-btn-secondary")
-                }
-                disabled={item.added || adding === item.source}
-                onClick={() => void add(item.source)}
-              >
-                {item.added ? "Додано" : "Додати"}
-              </button>
-            </li>
-          ))}
-        </ul>
+        <div className="wb-library-tree">
+          {groups.map((group, index) => {
+            const titleId = `tracker-library-group-${index}`;
+            return (
+              <section key={group.title} className="wb-group" aria-labelledby={titleId}>
+                <div className="wb-group-head wb-library-head">
+                  <span id={titleId} className="wb-group-title">
+                    {group.title}
+                  </span>
+                  <span className="wb-group-count">{group.items.length}</span>
+                </div>
+                <ul className="wb-library-list">
+                  {group.items.map((item) => (
+                    <li key={item.key} className="wb-library-row">
+                      <span className="wb-library-icon">
+                        <Icon name={item.icon} size={16} />
+                      </span>
+                      <span className="wb-library-text">
+                        <span className="wb-library-title">{item.title}</span>
+                        <span className="wb-library-meta">{item.meta}</span>
+                      </span>
+                      <button
+                        type="button"
+                        className={
+                          "wb-btn wb-library-add" +
+                          (item.added ? " wb-btn-ghost" : " wb-btn-secondary")
+                        }
+                        disabled={item.added || adding === item.source}
+                        onClick={() => void add(item.source)}
+                      >
+                        {item.added ? "Додано" : "Додати"}
+                      </button>
+                    </li>
+                  ))}
+                </ul>
+              </section>
+            );
+          })}
+        </div>
       )}
     </div>
   );

@@ -1,14 +1,14 @@
 /**
  * Два джерела на один рядок списку: каталог і чужі публічні визначення.
- * Перевіряємо саме те, що бачить людина: підпис (тематика й ціль або автор),
- * джерело для копії та стан кнопки.
+ * Перевіряємо саме те, що бачить людина: групу (тематика або автор), підпис
+ * (ціль), джерело для копії та стан кнопки.
  *
  * @module web-platform-dev/src/pages/trackers/tracker-library.test
  */
 
 import { describe, expect, it } from "vitest";
 import type { PublicTracker, TrackerTemplate } from "@wwwuabot/shared/trackers";
-import { filterLibrary, publicItems, templateItems } from "./tracker-library";
+import { filterLibrary, groupLibrary, publicItems, templateItems } from "./tracker-library";
 
 const water: TrackerTemplate = {
   key: "water",
@@ -54,17 +54,19 @@ const shared: PublicTracker = {
 };
 
 describe("шаблони", () => {
-  it("рядок каталогу несе тематику, ціль і джерело копії", () => {
+  it("рядок каталогу несе тематику групи, ціль і джерело копії", () => {
     const [row] = templateItems([water]);
 
     expect(row.source).toBe("catalog:water");
     expect(row.title).toBe("Вода");
-    expect(row.meta).toBe("Режим · ціль 2 л");
+    expect(row.group).toBe("Режим");
+    expect(row.meta).toBe("ціль 2 л");
+    expect(row.icon).toBe("droplet");
     expect(row.added).toBe(false);
   });
 
-  it("без цілі підпис каже лише тематику, а не «ціль —»", () => {
-    expect(templateItems([weight])[0].meta).toBe("Самопочуття");
+  it("без цілі підпис каже «без цілі», а не «ціль —»", () => {
+    expect(templateItems([weight])[0].meta).toBe("без цілі");
   });
 
   it("уже доданий шаблон каже «Додано»", () => {
@@ -73,12 +75,13 @@ describe("шаблони", () => {
 });
 
 describe("публічні", () => {
-  it("підпис — ім'я на платформі з решіткою, не Telegram-нік", () => {
-    expect(publicItems([shared])[0].meta).toBe("#олена · ціль 3 чашки");
+  it("група — ім'я на платформі з решіткою, не Telegram-нік", () => {
+    expect(publicItems([shared])[0].group).toBe("#олена");
+    expect(publicItems([shared])[0].meta).toBe("ціль 3 чашки");
   });
 
-  it("закритий профіль не лишає порожнього місця — підпис «спільнота»", () => {
-    expect(publicItems([{ ...shared, author: "" }])[0].meta).toBe("спільнота · ціль 3 чашки");
+  it("закритий профіль не лишає порожнього місця — група «спільнота»", () => {
+    expect(publicItems([{ ...shared, author: "" }])[0].group).toBe("спільнота");
   });
 
   it("своє опубліковане вже позначене як додане", () => {
@@ -86,6 +89,21 @@ describe("публічні", () => {
 
     expect(row.added).toBe(true);
     expect(row.source).toBe("public:12");
+  });
+});
+
+describe("дерево списку", () => {
+  it("рядки одного заголовка стоять разом, а не врізнобіч", () => {
+    const groups = groupLibrary(
+      templateItems([water, weight, { ...water, key: "tea", title: "Чай" }]),
+    );
+
+    expect(groups.map((group) => group.title)).toEqual(["Режим", "Самопочуття"]);
+    expect(groups[0].items.map((item) => item.title)).toEqual(["Вода", "Чай"]);
+  });
+
+  it("порожній список — порожнє дерево, а не група без рядків", () => {
+    expect(groupLibrary([])).toEqual([]);
   });
 });
 
@@ -103,7 +121,7 @@ describe("пошук", () => {
     expect(filterLibrary(items, "ВАГА").map((item) => item.title)).toEqual(["Вага"]);
   });
 
-  it("збіг у підписі знаходить і за тематикою, і за автором", () => {
+  it("збіг у групі знаходить і за тематикою, і за автором", () => {
     expect(filterLibrary(items, "режим").map((item) => item.title)).toEqual(["Вода"]);
     expect(filterLibrary(items, "олена").map((item) => item.title)).toEqual(["Кава вдома"]);
   });
