@@ -369,11 +369,12 @@
   gap: var(--sp-2);
 }
 
-/* Дата, число й «✓» в один рядок: три підписи над трьома полями з'їдали
-   пів екрана, а саме поле тут одне — число. */
+/* Значення й «✓» в один рядок: підписів тут більше, ніж полів, а поле одне —
+   число. Поле забирає вільне місце, кнопка припадає вправо: третя колонка без
+   вмісту лишала праворуч від «✓» мертву діру. */
 .wb-tracker-entry-row {
   display: grid;
-  grid-template-columns: minmax(0, 1.15fr) minmax(0, 0.85fr) auto;
+  grid-template-columns: minmax(0, 1fr) auto;
   align-items: end;
   gap: var(--sp-2);
 }
@@ -396,26 +397,95 @@
 .wb-tracker-sheet {
   display: flex;
   flex-direction: column;
+  gap: var(--sp-4);
+}
+
+/* Шапка картки — міра з обличчям: знак, стан дня, смуга цілі. Самотній
+   сірий рядок «немає запису» читався як повідомлення про помилку. */
+.wb-tracker-sheet-hero {
+  display: flex;
+  align-items: center;
   gap: var(--sp-3);
+  padding: var(--sp-3);
+  border-radius: var(--radius-lg);
+  background: color-mix(in srgb, var(--accent) 10%, transparent);
+}
+
+/* Знак міри — залита плитка: акцентна пляма дає картці обличчя, і воно те
+   саме, що в рядка стрічки (міра впізнається знаком, а не лише назвою). */
+.wb-tracker-sheet-icon {
+  display: flex;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  border-radius: var(--radius-md);
+  background: var(--accent);
+  color: var(--text-inverse);
+}
+
+.wb-tracker-sheet-status {
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
+  gap: var(--sp-2);
+  min-width: 0;
 }
 
 .wb-tracker-sheet-today {
   margin: 0;
+  color: var(--text-secondary);
   font-size: var(--text-sm);
 }
 
+/* День уже має запис: стан говорить голосніше за відсутність. */
+.wb-tracker-sheet-today--done {
+  color: var(--text-primary);
+  font-weight: var(--weight-medium);
+}
+
+/* Смуга цілі — скільки дня вже зроблено. */
+.wb-tracker-sheet-progress {
+  overflow: hidden;
+  height: 6px;
+  border-radius: var(--radius-full);
+  background: color-mix(in srgb, var(--accent) 18%, transparent);
+}
+
+.wb-tracker-sheet-progress-fill {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: var(--accent);
+  transition: width var(--duration-slow) var(--ease-out);
+}
+
 /* Дії — плитки по дві: чотири рівні пілюлі в рядок не вміщуються на 360px, а
-   стос по одній робив звичайну дію головною. */
+   стос по одній робив звичайну дію головною. Знак і підпис разом: чотири
+   однакові пілюлі текстом зливались у стіну. */
 .wb-tracker-actions {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: var(--sp-2);
-  padding-top: var(--sp-1);
 }
 
-.wb-tracker-actions .wb-btn {
+.wb-tracker-action {
   justify-content: center;
   min-height: 44px;
+}
+
+/* Небезпечна дія — власний рядок через усе: видалення поруч із буденною
+   дією читалось як ще одна плитка, а воно прибирає трекер. */
+.wb-tracker-action--danger {
+  grid-column: 1 / -1;
+  background: color-mix(in srgb, var(--red) 10%, transparent);
+  color: var(--red);
+}
+
+.wb-tracker-action--danger:hover {
+  background: color-mix(in srgb, var(--red) 16%, transparent);
+  color: var(--red);
 }
 
 /* ── Звіт ─────────────────────────────────────────────────────────────────── */
@@ -923,10 +993,6 @@
 @media (max-width: 380px) {
   .wb-tracker-form-row {
     grid-template-columns: 1fr;
-  }
-
-  .wb-tracker-entry-row {
-    grid-template-columns: minmax(0, 1fr) minmax(0, 0.7fr) auto;
   }
 }
 

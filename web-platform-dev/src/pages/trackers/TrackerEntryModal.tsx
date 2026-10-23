@@ -7,6 +7,7 @@
  */
 
 import { useState, type ReactElement } from "react";
+import { Icon } from "@wwwuabot/shared";
 import { useDialog } from "@wwwuabot/ui/dialog";
 import { MenuModal } from "@wwwuabot/ui/menu";
 import { formatTrackerAmount, trackerAmountText, type Tracker } from "@wwwuabot/shared/trackers";
@@ -53,6 +54,11 @@ export function TrackerEntryModal({
             ? ` · ціль ${formatTrackerAmount(tracker.goal, tracker.unit)}`
             : ""
         }`;
+  // Смуга цілі — скільки дня вже зроблено; без цілі (або не в числі) її немає.
+  const progress =
+    tracker.valueType === "number" && tracker.goal !== null && tracker.goal > 0
+      ? Math.min(100, Math.round(((todayValue ?? 0) / tracker.goal) * 100))
+      : null;
 
   async function submit(): Promise<void> {
     if (busy) return;
@@ -110,7 +116,30 @@ export function TrackerEntryModal({
       onClose={onClose}
       content={
         <div className="wb-tracker-sheet">
-          <p className="wb-text-muted wb-tracker-sheet-today">{todayLabel}</p>
+          <div className="wb-tracker-sheet-hero">
+            <span className="wb-tracker-sheet-icon" aria-hidden="true">
+              <Icon name={tracker.icon} size={22} />
+            </span>
+            <div className="wb-tracker-sheet-status">
+              <p
+                className={
+                  todayValue === null
+                    ? "wb-tracker-sheet-today"
+                    : "wb-tracker-sheet-today wb-tracker-sheet-today--done"
+                }
+              >
+                {todayLabel}
+              </p>
+              {progress !== null && (
+                <div className="wb-tracker-sheet-progress">
+                  <span
+                    className="wb-tracker-sheet-progress-fill"
+                    style={{ width: `${progress}%` }}
+                  />
+                </div>
+              )}
+            </div>
+          </div>
 
           <TrackerEntryForm
             tracker={tracker}
@@ -121,18 +150,40 @@ export function TrackerEntryModal({
           />
 
           <div className="wb-tracker-actions">
-            <button type="button" className="wb-btn wb-btn-secondary" onClick={onSettings}>
+            <button
+              type="button"
+              className="wb-btn wb-btn-secondary wb-tracker-action"
+              onClick={onSettings}
+            >
+              <Icon name="sliders" size={18} />
               Налаштувати
             </button>
-            <button type="button" className="wb-btn wb-btn-ghost" onClick={() => void duplicate()}>
+            <button
+              type="button"
+              className="wb-btn wb-btn-ghost wb-tracker-action"
+              onClick={() => void duplicate()}
+            >
+              <Icon name="copy" size={18} />
               Дублювати
             </button>
             {todayValue !== null && (
-              <button type="button" className="wb-btn wb-btn-ghost" onClick={() => void reset()}>
+              <button
+                type="button"
+                className="wb-btn wb-btn-ghost wb-tracker-action"
+                onClick={() => void reset()}
+              >
+                <Icon name="eraser" size={18} />
                 Скинути сьогодні
               </button>
             )}
-            <button type="button" className="wb-btn wb-btn-danger" onClick={() => void remove()}>
+            {/* Видалення — червоне словом, а не залитою пілюлею: найгучніша
+                плитка картки не мусить бути тією, що прибирає трекер. */}
+            <button
+              type="button"
+              className="wb-btn wb-btn-ghost wb-tracker-action wb-tracker-action--danger"
+              onClick={() => void remove()}
+            >
+              <Icon name="trash" size={18} />
               Видалити
             </button>
           </div>
