@@ -188,6 +188,43 @@ describe("стрічка", () => {
   });
 });
 
+describe("скидання дня", () => {
+  it("шле трекер і перечитує стрічку — день ставить сервер", async () => {
+    mocks.request.mockResolvedValueOnce({ trackers: [water], entries: [], endDay: "2026-10-17" });
+    const view = renderHook(() => useTrackers());
+    await waitFor(() => expect(view.result.current.loading).toBe(false));
+
+    mocks.request.mockResolvedValueOnce({ removed: 2 });
+    mocks.request.mockResolvedValueOnce({ trackers: [water], entries: [], endDay: "2026-10-17" });
+    let removed: number | null = null;
+    await act(async () => {
+      removed = await view.result.current.clearDay(1);
+    });
+
+    expect(mocks.request).toHaveBeenCalledWith("/api/user/trackers/entry?trackerId=1", {
+      method: "DELETE",
+    });
+    expect(removed).toBe(2);
+  });
+
+  it("провал скидання каже причину й не вдає, що скинуто", async () => {
+    mocks.request.mockResolvedValueOnce({ trackers: [water], entries: [], endDay: "2026-10-17" });
+    const view = renderHook(() => useTrackers());
+    await waitFor(() => expect(view.result.current.loading).toBe(false));
+
+    mocks.request.mockRejectedValueOnce(new Error("HTTP 500"));
+    let removed: number | null = 1;
+    await act(async () => {
+      removed = await view.result.current.clearDay(1);
+    });
+
+    expect(removed).toBeNull();
+    expect(mocks.alert).toHaveBeenCalledWith("Не вдалося скинути сьогоднішні записи.", {
+      tone: "danger",
+    });
+  });
+});
+
 describe("запис у клітинці", () => {
   it("запис додає рядок дня — без перезавантаження стрічки", async () => {
     mocks.request.mockResolvedValueOnce({ trackers: [water], entries: [], endDay: "2026-10-17" });

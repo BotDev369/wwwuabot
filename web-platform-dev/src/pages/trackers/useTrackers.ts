@@ -50,6 +50,8 @@ export interface TrackersState extends TrackersPayload {
   addMany: (sources: readonly string[]) => Promise<number>;
   /** Спорожнити групу: прибрати мірки її піддерева, саму групу лишити. */
   clearGroup: (id: number) => Promise<number | null>;
+  /** «Скинути сьогодні»: прибрати сьогоднішні виміри трекера (день ставить сервер). */
+  clearDay: (trackerId: number) => Promise<number | null>;
 }
 
 export function useTrackers(): TrackersState {
@@ -267,6 +269,21 @@ export function useTrackers(): TrackersState {
     }
   }
 
+  async function clearDay(trackerId: number): Promise<number | null> {
+    try {
+      const result = await apiFetch<{ removed: number }>(
+        `/api/user/trackers/entry?trackerId=${trackerId}`,
+        { method: "DELETE" },
+      );
+      // Значення дня зведене з усіх записів — після скидання беремо їх заново.
+      await load();
+      return result.removed;
+    } catch {
+      await dialog.alert("Не вдалося скинути сьогоднішні записи.", { tone: "danger" });
+      return null;
+    }
+  }
+
   async function addFrom(source: string): Promise<Tracker | null> {
     try {
       const result = await apiFetch<{ tracker: Tracker }>("/api/user/trackers", {
@@ -320,5 +337,6 @@ export function useTrackers(): TrackersState {
     addFrom,
     addMany,
     clearGroup,
+    clearDay,
   };
 }

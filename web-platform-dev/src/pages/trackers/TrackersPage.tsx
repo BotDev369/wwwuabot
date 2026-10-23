@@ -28,10 +28,11 @@ import { useGroupAccordion } from "./useGroupAccordion";
 import { TrackerCreateForm } from "./TrackerCreateForm";
 import { TrackerGroupsModal } from "./TrackerGroupsModal";
 import { TrackerGroupSection } from "./TrackerGroupSection";
+import { TrackerEntryModal } from "./TrackerEntryModal";
 import { TrackerDayHeader } from "./TrackerDayHeader";
 import { TrackersLibraryPanel } from "./TrackersLibraryPanel";
 import { groupLibrary } from "./tracker-library";
-import { groupRowsTree, matrixDays, trackerCells } from "./trackers-view";
+import { duplicateTrackerTitle, groupRowsTree, matrixDays, trackerCells } from "./trackers-view";
 
 /** Ширина матриці: стільки днів уміщується на 360px без горизонтального скролу. */
 const MATRIX_DAYS = 4;
@@ -60,6 +61,9 @@ export function TrackersPage(): ReactElement {
   const createGroupId = readCreateGroupId(params);
   const [groupsOpen, setGroupsOpen] = useState(false);
   const [addOpen, setAddOpen] = useState(false);
+  // Дотик на трекер відкриває картку запису, а не сторінку: номер — стан, а не
+  // адреса, бо «назад» має закрити картку, а не повернути на список.
+  const [entryId, setEntryId] = useState<number | null>(null);
 
   const rows = state.trackers;
   const days = useMemo(() => matrixDays(state.endDay, MATRIX_DAYS), [state.endDay]);
@@ -71,11 +75,6 @@ export function TrackersPage(): ReactElement {
   const cellsOf = useCallback(
     (tracker: Tracker) => trackerCells(tracker, state.entries, days),
     [state.entries, days],
-  );
-
-  const save = useCallback(
-    (trackerId: number, value: number, note: string) => state.save(trackerId, value, note),
-    [state],
   );
 
   const addFrom = useCallback(
@@ -110,6 +109,31 @@ export function TrackersPage(): ReactElement {
     [tab, tree, library.templates, library.publicTrackers],
   );
   const allOpen = accordion.allOpen(groupKeys);
+
+  const entryTracker =
+    entryId === null ? null : (state.trackers.find((tracker) => tracker.id === entryId) ?? null);
+  // Значення дня — те саме, що в клітинці: модалка не рахує свою арифметику.
+  const entryToday = entryTracker
+    ? (cellsOf(entryTracker).find((cell) => cell.day === state.endDay)?.value ?? null)
+    : null;
+
+  async function duplicateTracker(tracker: Tracker): Promise<boolean> {
+    // Копія — визначення без історії: мірка та сама, виміри починаються заново.
+    const created = await state.create(
+      {
+        title: duplicateTrackerTitle(tracker.title),
+        unit: tracker.unit,
+        step: tracker.step,
+        goal: tracker.goal,
+        min: tracker.min,
+        max: tracker.max,
+        mode: tracker.mode,
+        valueType: tracker.valueType,
+      },
+      tracker.groupId,
+    );
+    return created !== null;
+  }
 
   function toggleAll(): void {
     accordion.setAll(groupKeys, !allOpen);
@@ -252,11 +276,10 @@ export function TrackersPage(): ReactElement {
                     depth={0}
                     cellsOf={cellsOf}
                     today={state.endDay}
-                    saving={state.saving}
                     isOpen={mineAccordion.isOpen}
                     onToggle={mineAccordion.toggle}
-                    onOpenTracker={(id) => navigate(trackerPath(id))}
-                    onSave={save}
+                    onOpenTracker={setEntryId}
+                    onOpenHistory={(id) => navigate(trackerPath(id))}
                     onCreateGroup={state.createGroup}
                     onUpdateGroup={state.updateGroup}
                     onDeleteGroup={state.deleteGroup}
@@ -300,6 +323,23 @@ export function TrackersPage(): ReactElement {
 
       {addOpen && (
         <MenuModal title="Що додати?" items={addItems} onClose={() => setAddOpen(false)} />
+      )}
+
+      {entryTracker && (
+        <TrackerEntryModal
+          tracker={entryTracker}
+          todayValue={entryToday}
+          saving={state.saving}
+          onClose={() => setEntryId(null)}
+          onSave={(value, note) => state.save(entryTracker.id, value, note)}
+          onSettings={() => {
+            setEntryId(null);
+            navigate(trackerPath(entryTracker.id));
+          }}
+          onDuplicate={() => duplicateTracker(entryTracker)}
+          onReset={() => state.clearDay(entryTracker.id)}
+          onDelete={() => state.archive(entryTracker.id)}
+        />
       )}
 
       {creating && (

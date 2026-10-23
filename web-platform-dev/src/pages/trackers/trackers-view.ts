@@ -10,6 +10,7 @@ import {
   compareTrackerEntries,
   formatTrackerAmount,
   formatTrackerValue,
+  TRACKER_LIMITS,
   TRACKER_OWN_GROUP_KEY,
   trackerAmountText,
   trackerMode,
@@ -77,6 +78,15 @@ export function matrixWeekday(day: string): string {
 /** Число місяця шапки: «22» — другий рядок під днем тижня. */
 export function matrixDayNumber(day: string): number {
   return Number(day.slice(8, 10));
+}
+
+/**
+ * Назва копії — «Вода (копія)». Суфікс додається до дозволеної межі, а не
+ * поверх неї: довга назва інакше провалила б серверну валідацію.
+ */
+export function duplicateTrackerTitle(title: string): string {
+  const suffix = " (копія)";
+  return `${title.slice(0, TRACKER_LIMITS.title - suffix.length).trimEnd()}${suffix}`;
 }
 
 /** Підпис дня одним рядком: «Пт 17» — там, де шапки немає (історія, картка). */

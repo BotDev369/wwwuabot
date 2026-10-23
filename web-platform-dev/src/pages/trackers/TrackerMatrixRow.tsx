@@ -1,23 +1,24 @@
 /**
- * Рядок матриці: назва (веде на картку) і значення днів, сьогодні першим;
- * число велике, одиниця дрібна під ним, «так-ні» — знаком ✓/✕.
+ * Рядок матриці: назва (відкриває картку запису) і значення днів, сьогодні
+ * першим. Назва й сьогоднішня клітинка — запис (`TrackerEntryModal`), минула —
+ * картка трекера: минулі виміри живуть у звіті й історії.
  *
  * @module web-platform-dev/src/pages/trackers/TrackerMatrixRow
  */
 
-import { useState, type FormEvent, type ReactElement } from "react";
+import type { ReactElement } from "react";
 import { Icon } from "@wwwuabot/shared";
 import type { Tracker } from "@wwwuabot/shared/trackers";
-import { TrackerYesNo } from "./TrackerYesNo";
 import { cellAmount, matrixDayLabel, type TrackerCellView } from "./trackers-view";
 
 interface TrackerMatrixRowProps {
   tracker: Tracker;
   cells: readonly TrackerCellView[];
   today: string;
-  saving: boolean;
+  /** Дотик на назву або сьогоднішню клітинку — модалка запису. */
   onOpen: () => void;
-  onSave: (value: number, note: string) => Promise<boolean>;
+  /** Минулий день — картка трекера: звіт та історія. */
+  onOpenHistory: () => void;
 }
 
 interface CellClassInput {
@@ -37,26 +38,9 @@ export function TrackerMatrixRow({
   tracker,
   cells,
   today,
-  saving,
   onOpen,
-  onSave,
+  onOpenHistory,
 }: TrackerMatrixRowProps): ReactElement {
-  const [draft, setDraft] = useState("");
-  const [note, setNote] = useState("");
-  const [open, setOpen] = useState(false);
-
-  async function submit(event: FormEvent): Promise<void> {
-    event.preventDefault();
-    const value = Number(draft.replace(",", "."));
-    if (!Number.isFinite(value)) return;
-    const saved = await onSave(value, note.trim());
-    if (saved) {
-      setDraft("");
-      setNote("");
-      setOpen(false);
-    }
-  }
-
   const name = (
     <>
       <span className="wb-matrix-icon">
@@ -86,7 +70,7 @@ export function TrackerMatrixRow({
                 goal: cell.goalMet,
               })}
               aria-label={label}
-              onClick={() => (isToday ? setOpen((value) => !value) : onOpen())}
+              onClick={isToday ? onOpen : onOpenHistory}
             >
               {tracker.valueType === "boolean" && cell.value !== null ? (
                 <Icon name={cell.value > 0 ? "check" : "close"} size={16} />
@@ -102,48 +86,6 @@ export function TrackerMatrixRow({
           );
         })}
       </div>
-
-      {open && (
-        <form className="wb-matrix-form" onSubmit={(event) => void submit(event)}>
-          {tracker.valueType === "boolean" ? (
-            <div className="wb-field">
-              <span className="wb-label">{tracker.title}</span>
-              <TrackerYesNo value={draft} onChange={setDraft} label="Так чи ні" />
-            </div>
-          ) : (
-            <label className="wb-field">
-              <span className="wb-label">
-                {tracker.title}
-                {tracker.unit ? `, ${tracker.unit}` : ""}
-              </span>
-              {/* Без нативних min/max/step: межі перевіряє сервер, а підказка
-                  «введіть дійсне значення» малює чужий крок. */}
-              <input
-                className="wb-input"
-                type="number"
-                inputMode="decimal"
-                step="any"
-                value={draft}
-                autoFocus
-                onChange={(event) => setDraft(event.target.value)}
-              />
-            </label>
-          )}
-          <label className="wb-field">
-            <span className="wb-label">Нотатка</span>
-            <input
-              className="wb-input"
-              value={note}
-              maxLength={200}
-              placeholder="не обов'язково"
-              onChange={(event) => setNote(event.target.value)}
-            />
-          </label>
-          <button type="submit" className="wb-btn wb-btn-primary" disabled={saving}>
-            Записати
-          </button>
-        </form>
-      )}
     </li>
   );
 }

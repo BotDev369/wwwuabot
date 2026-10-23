@@ -17,9 +17,9 @@ const hooks = {
   update: vi.fn(),
   create: vi.fn(),
   remove: vi.fn(),
-  save: vi.fn(),
   toggle: vi.fn(),
   open: vi.fn(),
+  history: vi.fn(),
   newTracker: vi.fn(),
   clear: vi.fn(),
 };
@@ -67,13 +67,15 @@ function renderSection(
     <TrackerGroupSection
       view={viewOf(group, trackers)}
       depth={0}
-      cellsOf={() => [{ day: "2026-10-17", value: 2, goalMet: false }]}
+      cellsOf={() => [
+        { day: "2026-10-17", value: 2, goalMet: false },
+        { day: "2026-10-16", value: null, goalMet: false },
+      ]}
       today="2026-10-17"
-      saving={false}
       isOpen={() => true}
       onToggle={hooks.toggle}
       onOpenTracker={hooks.open}
-      onSave={hooks.save}
+      onOpenHistory={hooks.history}
       onCreateGroup={hooks.create}
       onUpdateGroup={hooks.update}
       onDeleteGroup={hooks.remove}
@@ -186,5 +188,15 @@ describe("меню групи", () => {
 
     expect(screen.getByRole("button", { name: "Вода" })).toBeTruthy();
     expect(screen.getByRole("button", { name: "Кава" })).toBeTruthy();
+  });
+
+  it("назва й сьогоднішня клітинка — запис, минула — історія", async () => {
+    renderSection(ownGroup);
+
+    await userEvent.click(screen.getByRole("button", { name: "Вода" }));
+    expect(hooks.open).toHaveBeenCalledWith(1);
+
+    await userEvent.click(screen.getByRole("button", { name: /Вода, Пт 16/ }));
+    expect(hooks.history).toHaveBeenCalledWith(1);
   });
 });

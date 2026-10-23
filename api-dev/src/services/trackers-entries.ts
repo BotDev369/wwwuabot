@@ -100,6 +100,26 @@ export async function insertTrackerEntry(
   return id > 0 ? { id, day, value, note, loggedAt: now } : null;
 }
 
+/**
+ * «Скинути сьогодні» — усі записи трекера за день: міра дня скидається, сама
+ * мірка лишається. День приходить **не від клієнта**: скидання завжди про
+ * сьогодні, а минулий вимір прибирають поштучно в історії.
+ * `null` — трекера немає (чужий номер відповідає так само, як неіснуючий).
+ */
+export async function clearTrackerEntriesToday(
+  env: Env,
+  userId: number,
+  trackerId: number,
+): Promise<number | null> {
+  if (!(await readTracker(env, userId, trackerId))) return null;
+  const result = await env.DB.prepare(
+    `DELETE FROM tracker_entries WHERE owner_id = ? AND tracker_id = ? AND day = ?`,
+  )
+    .bind(String(userId), trackerId, todayTrackerDay())
+    .run();
+  return Number(result.meta.changes ?? 0);
+}
+
 /** Один дотик — один рядок; чужий номер запису не існує (власник у WHERE). */
 export async function removeTrackerEntry(
   env: Env,

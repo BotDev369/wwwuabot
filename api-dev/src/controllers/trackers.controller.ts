@@ -28,6 +28,7 @@ import {
   listTemplates,
 } from "../services/trackers-library";
 import {
+  clearTrackerEntriesToday,
   insertTrackerEntry,
   listEntries,
   readTrackerEntries,
@@ -264,7 +265,10 @@ export async function handleTrackerPublic(request: Request, env: Env): Promise<R
   }
 }
 
-/** Дотики днів: збереження додає рядок, прибирання — за номером запису. */
+/**
+ * Дотики днів: збереження додає рядок, прибирання — за номером запису або
+ * скидання дня трекера цілком (`trackerId`).
+ */
 export async function handleTrackerEntry(request: Request, env: Env): Promise<Response> {
   const identity = await resolveUserId(request, env);
   if (!identity.ok) return identity.response;
@@ -276,7 +280,16 @@ export async function handleTrackerEntry(request: Request, env: Env): Promise<Re
     await ensureTables(env.DB, ["trackers", "tracker_entries"]);
 
     if (request.method === "DELETE") {
-      const entryId = positiveId(new URL(request.url).searchParams.get("id"));
+      const params = new URL(request.url).searchParams;
+      // Два прибирання на одній ручці: `id` — один вимір з історії,
+      // `trackerId` — «скинути сьогодні» (день ставить сервер).
+      const trackerId = positiveId(params.get("trackerId"));
+      if (trackerId !== null) {
+        const removed = await clearTrackerEntriesToday(env, identity.userId, trackerId);
+        if (removed === null) return json({ ok: false, error: "Not found" }, 404);
+        return json({ ok: true, removed });
+      }
+      const entryId = positiveId(params.get("id"));
       if (entryId === null) return json({ ok: false, error: "Missing entry" }, 400);
       if (!(await removeTrackerEntry(env, identity.userId, entryId))) {
         return json({ ok: false, error: "Not found" }, 404);

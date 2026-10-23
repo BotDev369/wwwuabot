@@ -20,11 +20,12 @@ interface TrackerGroupSectionProps {
   depth: number;
   cellsOf: (tracker: Tracker) => readonly { day: string; value: number | null; goalMet: boolean }[];
   today: string;
-  saving: boolean;
   isOpen: (id: number) => boolean;
   onToggle: (id: number) => void;
+  /** Дотик на рядок — модалка запису. */
   onOpenTracker: (id: number) => void;
-  onSave: (trackerId: number, value: number, note: string) => Promise<boolean>;
+  /** Минулий день — картка трекера: звіт та історія. */
+  onOpenHistory: (id: number) => void;
   onCreateGroup: (title: string, parentId: number | null) => Promise<TrackerGroup | null>;
   onUpdateGroup: (
     id: number,
@@ -42,11 +43,10 @@ export function TrackerGroupSection({
   depth,
   cellsOf,
   today,
-  saving,
   isOpen,
   onToggle,
   onOpenTracker,
-  onSave,
+  onOpenHistory,
   onCreateGroup,
   onUpdateGroup,
   onDeleteGroup,
@@ -154,11 +154,10 @@ export function TrackerGroupSection({
               depth={depth + 1}
               cellsOf={cellsOf}
               today={today}
-              saving={saving}
               isOpen={isOpen}
               onToggle={onToggle}
               onOpenTracker={onOpenTracker}
-              onSave={onSave}
+              onOpenHistory={onOpenHistory}
               onCreateGroup={onCreateGroup}
               onUpdateGroup={onUpdateGroup}
               onDeleteGroup={onDeleteGroup}
@@ -173,9 +172,8 @@ export function TrackerGroupSection({
                 tracker={tracker}
                 cells={cellsOf(tracker)}
                 today={today}
-                saving={saving}
                 onOpen={() => onOpenTracker(tracker.id)}
-                onSave={(value, note) => onSave(tracker.id, value, note)}
+                onOpenHistory={() => onOpenHistory(tracker.id)}
               />
             ))}
           </ul>

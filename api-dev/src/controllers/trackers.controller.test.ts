@@ -583,6 +583,35 @@ describe("методи, картка й збої", () => {
   });
 });
 
+describe("скидання сьогодні", () => {
+  it("прибирає лише сьогоднішні виміри трекера", async () => {
+    const db = database({ changes: 2 });
+    const response = await handleTrackerEntry(
+      request("DELETE", "https://example.com/api/user/trackers/entry?trackerId=4"),
+      db.env,
+    );
+    const body = (await response.json()) as { removed: number };
+
+    expect(response.status).toBe(200);
+    expect(body.removed).toBe(2);
+    const statement = db.calls.find((call) => call.sql.includes("DELETE FROM tracker_entries"));
+    // День ставить сервер: клієнт не обирає, який день скидати.
+    expect(statement?.sql).toContain("AND day = ?");
+    expect(statement?.values).toContain(todayTrackerDay());
+  });
+
+  it("чужий трекер — 404 без DELETE: номер не підтверджує, що рядок існує", async () => {
+    const db = database({ tracker: null });
+    const response = await handleTrackerEntry(
+      request("DELETE", "https://example.com/api/user/trackers/entry?trackerId=4"),
+      db.env,
+    );
+
+    expect(response.status).toBe(404);
+    expect(db.calls.some((call) => call.sql.includes("DELETE FROM tracker_entries"))).toBe(false);
+  });
+});
+
 describe("дотики: методи й межі", () => {
   it("метод поза списком — 405", async () => {
     const db = database();

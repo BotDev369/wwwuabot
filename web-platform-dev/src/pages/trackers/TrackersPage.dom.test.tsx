@@ -1,9 +1,9 @@
 // @vitest-environment jsdom
 /**
  * «Трекери» — акордеон груп + матриця днів: дерево груп із рахунком, дотик
- * по назві веде на картку, по сьогоднішній клітинці відкриває форму запису,
- * по минулій — теж веде на картку (день ставить сервер); вибір групи
- * пам'ятається в localStorage, а не в стані сторінки.
+ * по назві й по сьогоднішній клітинці відкриває **картку запису**, по минулій
+ * — веде на картку трекера (день ставить сервер); вибір групи пам'ятається в
+ * localStorage, а не в стані сторінки.
  *
  * @module web-platform-dev/src/pages/trackers/TrackersPage.dom.test
  */
@@ -28,6 +28,7 @@ const hooks = {
   addFrom: vi.fn(),
   addMany: vi.fn(),
   clearGroup: vi.fn(),
+  clearDay: vi.fn(),
   libraryReload: vi.fn(),
   prompt: vi.fn(),
   confirm: vi.fn(),
@@ -109,6 +110,7 @@ const state = {
   addFrom: hooks.addFrom,
   addMany: hooks.addMany,
   clearGroup: hooks.clearGroup,
+  clearDay: hooks.clearDay,
 };
 
 /** Списки на читання: один рядок на шаблон і на публічний трекер. */
@@ -180,6 +182,7 @@ beforeEach(() => {
   hooks.addFrom.mockResolvedValue({ ...water, id: 2 });
   hooks.addMany.mockResolvedValue(1);
   hooks.clearGroup.mockResolvedValue(1);
+  hooks.clearDay.mockResolvedValue(1);
   state.entries = [
     {
       id: 1,
@@ -265,7 +268,7 @@ describe("акордеон груп", () => {
 });
 
 describe("матриця днів", () => {
-  it("клітинка сьогодні відкриває форму запису, минула — веде на картку", async () => {
+  it("клітинка сьогодні відкриває картку запису, минула — веде на картку", async () => {
     render(<TrackersPage />);
     await userEvent.click(screen.getByRole("button", { name: "Режим" }));
 
@@ -279,20 +282,22 @@ describe("матриця днів", () => {
     await userEvent.click(screen.getByRole("button", { name: /Вода, Чт 15/ }));
     expect(hooks.navigate).toHaveBeenCalledWith("/trackers/1");
 
-    // Сьогоднішня відкриває форму — і сейв іде тим самим шляхом, що й на картці.
+    // Сьогоднішня відкриває картку запису — і сейв іде тим самим шляхом, що й на картці.
     await userEvent.click(today);
-    await userEvent.type(screen.getByLabelText("Вода, л"), "1");
-    await userEvent.click(screen.getByRole("button", { name: "Записати" }));
+    const card = screen.getByRole("dialog", { name: "Вода" });
+    await userEvent.type(within(card).getByLabelText("Значення, л"), "1");
+    await userEvent.click(within(card).getByRole("button", { name: "Зберегти" }));
     expect(hooks.save).toHaveBeenCalledWith(1, 1, "");
   });
 
-  it("назва трекера веде на картку", async () => {
+  it("назва трекера відкриває картку запису, а не сторінку", async () => {
     render(<TrackersPage />);
     await userEvent.click(screen.getByRole("button", { name: "Режим" }));
 
     await userEvent.click(screen.getByRole("button", { name: "Вода" }));
 
-    expect(hooks.navigate).toHaveBeenCalledWith("/trackers/1");
+    expect(screen.getByRole("dialog", { name: "Вода" })).toBeTruthy();
+    expect(hooks.navigate).not.toHaveBeenCalled();
   });
 
   it("порожня клітинка — точка, без плюса й заливки, у будь-який день", async () => {
@@ -306,6 +311,64 @@ describe("матриця днів", () => {
     expect(today.textContent).toBe("·");
     expect(today.querySelector("svg")).toBeNull();
     expect(past.textContent).toBe("·");
+  });
+});
+
+describe("картка запису", () => {
+  async function openWater() {
+    render(<TrackersPage />);
+    await userEvent.click(screen.getByRole("button", { name: "Режим" }));
+    await userEvent.click(screen.getByRole("button", { name: "Вода" }));
+    return screen.getByRole("dialog", { name: "Вода" });
+  }
+
+  it("«Налаштувати» веде на картку трекера: звіт та історія живуть там", async () => {
+    const card = await openWater();
+
+    await userEvent.click(within(card).getByRole("button", { name: "Налаштувати" }));
+
+    expect(hooks.navigate).toHaveBeenCalledWith("/trackers/1");
+  });
+
+  it("«Дублювати» створює копію визначення без історії", async () => {
+    const card = await openWater();
+
+    await userEvent.click(within(card).getByRole("button", { name: "Дублювати" }));
+
+    expect(hooks.create).toHaveBeenCalledWith(
+      expect.objectContaining({
+        title: "Вода (копія)",
+        unit: "л",
+        goal: 2,
+        valueType: "number",
+      }),
+      10,
+    );
+  });
+
+  it("«Скинути сьогодні» питає й шле трекер: минулі дні не чіпаються", async () => {
+    hooks.confirm.mockResolvedValueOnce(true);
+    const card = await openWater();
+
+    await userEvent.click(within(card).getByRole("button", { name: "Скинути сьогодні" }));
+
+    expect(hooks.confirm).toHaveBeenCalledWith(
+      expect.stringContaining("Скинути сьогоднішні записи «Вода»?"),
+      expect.objectContaining({ tone: "danger" }),
+    );
+    expect(hooks.clearDay).toHaveBeenCalledWith(1);
+  });
+
+  it("«Видалити» питає й прибирає трекер, а не лише закриває картку", async () => {
+    hooks.confirm.mockResolvedValueOnce(false);
+    const card = await openWater();
+    await userEvent.click(within(card).getByRole("button", { name: "Видалити" }));
+    expect(hooks.archive).not.toHaveBeenCalled();
+
+    hooks.confirm.mockResolvedValueOnce(true);
+    hooks.archive.mockResolvedValueOnce(true);
+    await userEvent.click(within(card).getByRole("button", { name: "Видалити" }));
+    expect(hooks.archive).toHaveBeenCalledWith(1);
   });
 });
 
