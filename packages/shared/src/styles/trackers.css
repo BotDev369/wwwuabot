@@ -656,25 +656,25 @@
 .wb-tracker-form {
   display: flex;
   flex-direction: column;
-  gap: var(--sp-6);
+  gap: var(--sp-8);
 }
 
 .wb-tracker-form-zone {
   display: flex;
   flex-direction: column;
-  gap: var(--sp-3);
+  gap: var(--sp-4);
   min-width: 0;
 }
 
-/* Підзаголовок блоку: дрібний, приглушений і розріджений — він групує поля,
-   а не змагається з ними за увагу. */
+/* Підзаголовок блоку: розріджений, приглушений і більший за підказку — він
+   відкриває блок, а не губиться поруч із полями. */
 .wb-tracker-form-zone-title {
-  margin: 0;
-  font-size: var(--text-xs);
+  margin: 0 0 var(--sp-1);
+  font-size: var(--text-sm);
   font-weight: var(--weight-semibold);
-  letter-spacing: 0.08em;
+  letter-spacing: 0.07em;
   text-transform: uppercase;
-  color: var(--text-muted);
+  color: var(--text-secondary);
 }
 
 .wb-tracker-form .wb-field {
@@ -682,16 +682,35 @@
   gap: var(--sp-2);
 }
 
+/* Підпис поля — не службовий дрібний текст: у формі він називає те, що
+   заповнюють, тож іде основним кольором і вагою. */
+.wb-tracker-form .wb-label {
+  font-size: var(--text-md);
+  font-weight: var(--weight-semibold);
+  color: var(--text-primary);
+}
+
+/* Підказка — пояснення, а не підпис: більша за колишню, але й далі тихіша
+   за поле (колір і вага). */
+.wb-tracker-form .wb-field-hint {
+  font-size: var(--text-base);
+  color: var(--text-secondary);
+}
+
 /* Поля підняті над аркушем (`--field-bg-raised` — той самий кирпичик, що в
    обраної вкладки): на теплому тлі `--field-bg` майже збігався з поверхнею,
    і поле читалось як порожній прямокутник. */
 .wb-tracker-form .wb-input,
 .wb-tracker-form .wb-select {
+  min-height: 52px;
   background: var(--field-bg-raised);
 }
 
-/* Смуга вибору стоїть у полі: відступ до підказки малює поле, а не вона. */
+/* Смуга вибору стоїть у полі: відступ до підказки малює поле, а не вона.
+   Висота — клітинка пальця, а не компактні 36 бренду: це вибір, на який
+   мусять влучити з першого разу. */
 .wb-tracker-form .wb-tabs {
+  --tabs-h: 44px;
   margin-bottom: 0;
 }
 
@@ -846,7 +865,7 @@
   gap: var(--sp-2);
   min-width: 0;
   margin: 0;
-  font-size: var(--text-sm);
+  font-size: var(--text-base);
   line-height: 1.4;
   white-space: nowrap;
 }
