@@ -23,6 +23,7 @@ import {
   signedAmount,
   timeLabel,
   trackerCells,
+  trackerDraftSummary,
   whenLabel,
 } from "./trackers-view";
 
@@ -323,5 +324,29 @@ describe("підписи", () => {
     // Вага з ціллю: ціль входить у діапазон — відстань до неї і є сенс графіка.
     expect(readingBand([79], 60).min).toBeLessThanOrEqual(60);
     expect(readingBand([], null)).toEqual({ min: 0, max: 1 });
+  });
+});
+
+describe("огляд чернетки нового трекера", () => {
+  it("число без одиниці й цілі — теж повний рядок, а не обріз", () => {
+    expect(trackerDraftSummary({ valueType: "number", unit: "", goal: null })).toBe(
+      "Число · без одиниці",
+    );
+  });
+
+  it("одиниця й ціль — кожна своїм словом, без повтору одиниці в цілі", () => {
+    expect(trackerDraftSummary({ valueType: "number", unit: "чашок", goal: 3 })).toBe(
+      "Число · чашок · ціль 3",
+    );
+    // Дробова ціль — тим самим форматом, що й скрізь у продукті.
+    expect(trackerDraftSummary({ valueType: "number", unit: "л", goal: 2.5 })).toBe(
+      "Число · л · ціль 2,5",
+    );
+  });
+
+  it("«так-ні» не числиться — одиниці й цілі в нього немає", () => {
+    expect(trackerDraftSummary({ valueType: "boolean", unit: "кг", goal: 70 })).toBe(
+      "Так-ні · статус дня",
+    );
   });
 });

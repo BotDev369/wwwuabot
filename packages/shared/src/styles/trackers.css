@@ -650,17 +650,32 @@
 
 /* ── Новий трекер ─────────────────────────────────────────────────────────── */
 
-/* Повітря між полями — міра форми, а не кожного поля окремо: раніше рядки
-   стояли один на одному (12px між полями, 4px усередині), і форма читалась
-   як суцільна маса. Заголовок і підказки дихають тим самим гепом. */
+/* Форма — не картка: вона вже стоїть на поверхні аркуша, і друга заливка того
+   самого відтінку читалась як одне безкрає поле, де все злипається. Структуру
+   тримають блоки з підзаголовками й повітря між ними. */
 .wb-tracker-form {
   display: flex;
   flex-direction: column;
-  gap: var(--sp-4);
-  padding: var(--sp-5);
-  margin-bottom: var(--sp-3);
-  border-radius: var(--radius-lg);
-  background: var(--tracker-surface);
+  gap: var(--sp-6);
+  min-height: 100%;
+}
+
+.wb-tracker-form-zone {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-3);
+  min-width: 0;
+}
+
+/* Підзаголовок блоку: дрібний, приглушений і розріджений — він групує поля,
+   а не змагається з ними за увагу. */
+.wb-tracker-form-zone-title {
+  margin: 0;
+  font-size: var(--text-xs);
+  font-weight: var(--weight-semibold);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-muted);
 }
 
 .wb-tracker-form .wb-field {
@@ -668,10 +683,35 @@
   gap: var(--sp-2);
 }
 
+/* Поля підняті над аркушем (`--field-bg-raised` — той самий кирпичик, що в
+   обраної вкладки): на теплому тлі `--field-bg` майже збігався з поверхнею,
+   і поле читалось як порожній прямокутник. */
+.wb-tracker-form .wb-input,
+.wb-tracker-form .wb-select {
+  background: var(--field-bg-raised);
+}
+
+/* Смуга вибору стоїть у полі: відступ до підказки малює поле, а не вона. */
+.wb-tracker-form .wb-tabs {
+  margin-bottom: 0;
+}
+
 .wb-tracker-form-row {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: var(--sp-3);
+  align-items: start;
+}
+
+/* Помилка — не рамка навколо підпису, а смуга: так вона читається як стан
+   форми, а не як ще один рядок тексту. */
+.wb-tracker-form-error {
+  margin: 0;
+  padding: var(--sp-2) var(--sp-3);
+  border-radius: var(--radius);
+  background: var(--red-dim);
+  color: var(--red);
+  font-size: var(--text-sm);
 }
 
 /* ── Вибір групи: дерево в модалці ────────────────────────────────────── */
@@ -689,10 +729,26 @@
   cursor: pointer;
 }
 
+/* Знак і значення — пара ліворуч, шеврон окремо: так обрана група не зсуває
+   стрілку, коли назва довга чи коротка. */
+.wb-group-picker-lead {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+  min-width: 0;
+  color: var(--text-secondary);
+}
+
 .wb-group-picker-value {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+  color: var(--text-primary);
+}
+
+/* Нічого не обрано — це стан поля, а не значення: приглушений колір це й каже. */
+.wb-group-picker-value--empty {
+  color: var(--text-muted);
 }
 
 /* Рядок інструментів над деревом: «ствворити нову» поруч «розгорнути всі». */
@@ -774,27 +830,60 @@
   color: var(--accent);
 }
 
-/* Дії липнуть над футером: форма довга, і «Створити» мусить бути під рукою,
-   а не за прокруткою — той самий прийом, що в `.shop-form-actions`. Тло — саме
-   тло форми: рядок стоїть усередині картки, й під ним не повинні просвічувати
-   поля, що прогортаються. */
+/* Дії стоять у кінці форми, а не липнуть над футером: липка смуга мала своє
+   тло, і її край читався як обріз, коли під нею їхали поля. На короткому
+   блоці (`так-ні`) рядок сам опускається вниз аркуша — `margin-top: auto`. */
 .wb-tracker-form-actions {
-  position: sticky;
-  bottom: calc(var(--tab-bar-h) + var(--sp-3));
-  z-index: var(--z-sticky);
   display: flex;
-  align-items: center;
-  justify-content: flex-end;
+  flex-direction: column;
   gap: var(--sp-2);
-  padding: var(--sp-2) 0;
-  background: var(--tracker-surface);
+  margin-top: auto;
+  padding-top: var(--sp-2);
 }
 
-/* У модалці дії липнуть до низу поверхні, а не над футером: оверлей
-   `--tight` уже закінчується над смугою, і відступ `tab-bar-h` лишив би
-   під кнопками порожню смугу поверх вмісту. */
-.wb-modal .wb-tracker-form-actions {
-  bottom: 0;
+/* Огляд чернетки: назва й форма запису одним рядком — те, що створиться.
+   Рядок тихий: головна дія тут кнопка, а не підпис під нею. */
+.wb-tracker-form-summary {
+  display: flex;
+  align-items: baseline;
+  gap: var(--sp-2);
+  min-width: 0;
+  margin: 0;
+  font-size: var(--text-sm);
+  line-height: 1.4;
+  white-space: nowrap;
+}
+
+.wb-tracker-form-summary-name {
+  max-width: 45%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  color: var(--text-primary);
+  font-weight: var(--weight-medium);
+}
+
+/* Порожня назва — стан, а не назва: колір це й каже. */
+.wb-tracker-form-summary-name--empty {
+  color: var(--text-muted);
+  font-weight: var(--weight-medium);
+}
+
+.wb-tracker-form-summary-meta {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  color: var(--text-muted);
+}
+
+.wb-tracker-form-buttons {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+}
+
+/* Головна дія забирає вільне місце, «Скасувати» лишається словом: дві рівні
+   пілюлі читались як вибір із двох, а це не вибір. */
+.wb-tracker-form-submit {
+  flex: 1 1 auto;
 }
 
 @media (max-width: 380px) {

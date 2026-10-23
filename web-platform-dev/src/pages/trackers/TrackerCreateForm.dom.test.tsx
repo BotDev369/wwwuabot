@@ -83,6 +83,29 @@ describe("новий трекер", () => {
     expect(trigger.textContent).not.toContain("Свої");
   });
 
+  it("форма — три підписаних блоки, а не суцільний стовпчик полів", () => {
+    renderForm();
+
+    expect(screen.getByRole("heading", { name: "Куди зберегти" })).toBeTruthy();
+    expect(screen.getByRole("heading", { name: "Що відстежуємо" })).toBeTruthy();
+    expect(screen.getByRole("heading", { name: "Як рахувати" })).toBeTruthy();
+  });
+
+  it("огляд біля кнопок каже, що саме запишеться", async () => {
+    renderForm();
+
+    // Порожня форма теж має назву — інакше рядок огляду читався б як обріз.
+    expect(screen.getByText("Без назви")).toBeTruthy();
+    expect(screen.getByText("Число · без одиниці")).toBeTruthy();
+
+    await userEvent.type(screen.getByLabelText("Назва"), "Кава");
+    await userEvent.selectOptions(screen.getByLabelText("Одиниця"), "хв");
+    await userEvent.type(screen.getByLabelText("Ціль дня"), "30");
+
+    expect(screen.getByText("Кава")).toBeTruthy();
+    expect(screen.getByText("Число · хв · ціль 30")).toBeTruthy();
+  });
+
   it("⛔ порожня назва не йде на сервер", async () => {
     renderForm();
 
@@ -145,7 +168,10 @@ describe("новий трекер", () => {
     // — це невидиме рішення, тож типовий вид ставить сервер, а не форма.
     expect(screen.queryByRole("tablist", { name: "Як читати записи" })).toBeNull();
     expect(screen.queryByLabelText("Як читати записи")).toBeNull();
-    expect(screen.queryByRole("tab", { name: "Додавати за день" })).toBeNull();
+    expect(screen.queryByRole("tab", { name: "Сума за день" })).toBeNull();
+    // Блок «Як рахувати» теж зникає: без одиниці й цілі йому нічого групувати.
+    expect(screen.queryByRole("heading", { name: "Як рахувати" })).toBeNull();
+    expect(screen.getByText("Так-ні · статус дня")).toBeTruthy();
 
     await userEvent.type(screen.getByLabelText("Назва"), "Не палю");
     await userEvent.click(screen.getByRole("button", { name: "Створити" }));
@@ -158,12 +184,12 @@ describe("новий трекер", () => {
     );
   });
 
-  it("вид запису перемикається: «показувати останній» їде на сервер своїм словом", async () => {
+  it("вид запису перемикається: «останнє значення» їде на сервер своїм словом", async () => {
     handlers.create.mockResolvedValueOnce(created);
     renderForm();
 
     await userEvent.type(screen.getByLabelText("Назва"), "Вага");
-    await userEvent.click(screen.getByRole("tab", { name: "Показувати останній" }));
+    await userEvent.click(screen.getByRole("tab", { name: "Останнє значення" }));
     await userEvent.click(screen.getByRole("button", { name: "Створити" }));
 
     expect(handlers.create).toHaveBeenCalledWith(

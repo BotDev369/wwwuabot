@@ -9,6 +9,7 @@ import {
   addTrackerDays,
   compareTrackerEntries,
   formatTrackerAmount,
+  formatTrackerValue,
   TRACKER_OWN_GROUP_KEY,
   trackerAmountText,
   trackerMode,
@@ -18,6 +19,7 @@ import {
   type TrackerFields,
   type TrackerGroup,
   type TrackerMode,
+  type TrackerValueType,
 } from "@wwwuabot/shared/trackers";
 import { trackerDayLast, trackerDayTotals } from "@wwwuabot/shared/trackers/analytics";
 
@@ -245,6 +247,21 @@ export function amountOrDash(value: number | null, unit: string): string {
 export function goalLabel(tracker: Tracker): string | null {
   if (tracker.goal === null) return null;
   return `ціль ${formatTrackerAmount(tracker.goal, tracker.unit)}`;
+}
+
+/**
+ * Огляд чернетки нового трекера: що саме записуватиме ця мірка. Назва сюди не
+ * входить — її людина бачить у полі; тут форма запису, яку обирають навички.
+ */
+export function trackerDraftSummary(draft: {
+  valueType: TrackerValueType;
+  unit: string;
+  goal: number | null;
+}): string {
+  if (draft.valueType === "boolean") return "Так-ні · статус дня";
+  const parts = ["Число", draft.unit || "без одиниці"];
+  if (draft.goal !== null) parts.push(`ціль ${formatTrackerValue(draft.goal)}`);
+  return parts.join(" · ");
 }
 
 export interface ChartBand {

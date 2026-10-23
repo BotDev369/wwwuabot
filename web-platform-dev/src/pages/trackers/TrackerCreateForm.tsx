@@ -1,8 +1,8 @@
 /**
- * Власний трекер: група першою (вибір — модалка з деревом), назва, тип запису
- * (число / так-ні), одиниця з довідника або своя, ціль, крок і вид запису.
- * Перевіряє форму та сама `validateTrackerFields`, що й сервер (AGENTS.md §3);
- * вид питаємо прямо, а не вгадуємо за ціллю.
+ * Власний трекер: три блоки — куди зберегти (група першою: вибір — модалка з
+ * деревом), що відстежуємо (назва й тип запису) і як рахувати (одиниця, ціль,
+ * крок, вид запису). Перевіряє форму та сама `validateTrackerFields`, що й
+ * сервер (AGENTS.md §3); вид питаємо прямо, а не вгадуємо за ціллю.
  *
  * @module web-platform-dev/src/pages/trackers/TrackerCreateForm
  */
@@ -20,10 +20,11 @@ import {
   type TrackerValueType,
 } from "@wwwuabot/shared/trackers";
 import { TrackerGroupPicker } from "./TrackerGroupPicker";
+import { trackerDraftSummary } from "./trackers-view";
 
 const MODE_TABS: readonly TabOption<TrackerMode>[] = [
-  { key: "sum", label: "Додавати за день" },
-  { key: "read", label: "Показувати останній" },
+  { key: "sum", label: "Сума за день" },
+  { key: "read", label: "Останнє значення" },
 ];
 
 /** Що обраний вид означає для людини — прикладами, а не визначенням. */
@@ -86,13 +87,20 @@ export function TrackerCreateForm({
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
 
+  const typedGoal = numberOrNull(goal);
+  const summary = trackerDraftSummary({
+    valueType,
+    unit,
+    goal: typedGoal === null ? null : Number.isFinite(typedGoal) ? typedGoal : null,
+  });
+
   async function submit(event: FormEvent): Promise<void> {
     event.preventDefault();
     if (busy) return;
     const validated = validateTrackerFields({
       title,
       unit,
-      goal: numberOrNull(goal),
+      goal: typedGoal,
       step: numberOrNull(step) ?? 1,
       min: 0,
       valueType,
@@ -113,115 +121,138 @@ export function TrackerCreateForm({
 
   return (
     <form className="wb-tracker-form" onSubmit={(event) => void submit(event)}>
-      <TrackerGroupPicker
-        label="Група"
-        groups={groups}
-        value={group}
-        onPick={setGroup}
-        onCreate={onCreateGroup}
-      />
-      <label className="wb-field">
-        <span className="wb-label">Назва</span>
-        <input
-          className="wb-input"
-          value={title}
-          onChange={(event) => setTitle(event.target.value)}
-          placeholder="Наприклад, кава"
-          maxLength={40}
+      <section className="wb-tracker-form-zone">
+        <h3 className="wb-tracker-form-zone-title">Куди зберегти</h3>
+        <TrackerGroupPicker
+          label="Група"
+          groups={groups}
+          value={group}
+          onPick={setGroup}
+          onCreate={onCreateGroup}
         />
-      </label>
-      <div className="wb-field">
-        <span className="wb-label">Тип запису</span>
-        <Tabs options={TYPE_TABS} value={valueType} onChange={setValueType} label="Тип запису" />
-        <p className="wb-text-muted">{TYPE_HINT[valueType]}</p>
-      </div>
+      </section>
+
+      <section className="wb-tracker-form-zone">
+        <h3 className="wb-tracker-form-zone-title">Що відстежуємо</h3>
+        <label className="wb-field">
+          <span className="wb-label">Назва</span>
+          <input
+            className="wb-input"
+            value={title}
+            onChange={(event) => setTitle(event.target.value)}
+            placeholder="Наприклад, кава"
+            maxLength={40}
+          />
+        </label>
+        <div className="wb-field">
+          <span className="wb-label">Тип запису</span>
+          <Tabs options={TYPE_TABS} value={valueType} onChange={setValueType} label="Тип запису" />
+          <p className="wb-field-hint">{TYPE_HINT[valueType]}</p>
+        </div>
+      </section>
+
       {/* «Так-ні» не має ні одиниці, ні цілі, ні кроку — це статус дня, а не
           міра; сервер теж відкидає ці поля для нього (див. `validateTrackerFields`). */}
       {valueType === "number" && (
-        <div className="wb-tracker-form-row">
+        <section className="wb-tracker-form-zone">
+          <h3 className="wb-tracker-form-zone-title">Як рахувати</h3>
+          <div className="wb-tracker-form-row">
+            <label className="wb-field">
+              <span className="wb-label">Одиниця</span>
+              <select
+                className="wb-select"
+                value={customUnit ? CUSTOM_UNIT : unit}
+                onChange={(event) => {
+                  const chosen = event.target.value;
+                  if (chosen === CUSTOM_UNIT) setCustomUnit(true);
+                  else {
+                    setCustomUnit(false);
+                    setUnit(chosen);
+                  }
+                }}
+              >
+                <option value="">Без одиниці</option>
+                {/* Групи — підписи спорідненості (час із часом): сама одиниця
+                    лишається текстом, тож старі трекери читаються як читалися. */}
+                {TRACKER_UNIT_GROUPS.map((group) => (
+                  <optgroup key={group.key} label={group.title}>
+                    {group.units.map((option) => (
+                      <option key={option} value={option}>
+                        {option}
+                      </option>
+                    ))}
+                  </optgroup>
+                ))}
+                <option value={CUSTOM_UNIT}>Своя одиниця…</option>
+              </select>
+            </label>
+            <label className="wb-field">
+              <span className="wb-label">Ціль дня</span>
+              <input
+                className="wb-input"
+                value={goal}
+                onChange={(event) => setGoal(event.target.value)}
+                inputMode="decimal"
+                placeholder="без цілі"
+              />
+            </label>
+          </div>
+          {customUnit && (
+            <label className="wb-field">
+              <span className="wb-label">Своя одиниця</span>
+              <input
+                className="wb-input"
+                value={unit}
+                onChange={(event) => setUnit(event.target.value)}
+                placeholder="чашок"
+                maxLength={TRACKER_LIMITS.unit}
+              />
+            </label>
+          )}
           <label className="wb-field">
-            <span className="wb-label">Одиниця</span>
-            <select
-              className="wb-select"
-              value={customUnit ? CUSTOM_UNIT : unit}
-              onChange={(event) => {
-                const chosen = event.target.value;
-                if (chosen === CUSTOM_UNIT) setCustomUnit(true);
-                else {
-                  setCustomUnit(false);
-                  setUnit(chosen);
-                }
-              }}
-            >
-              <option value="">Без одиниці</option>
-              {/* Групи — підписи спорідненості (час із часом): сама одиниця
-                  лишається текстом, тож старі трекери читаються як читалися. */}
-              {TRACKER_UNIT_GROUPS.map((group) => (
-                <optgroup key={group.key} label={group.title}>
-                  {group.units.map((option) => (
-                    <option key={option} value={option}>
-                      {option}
-                    </option>
-                  ))}
-                </optgroup>
-              ))}
-              <option value={CUSTOM_UNIT}>Своя одиниця…</option>
-            </select>
-          </label>
-          <label className="wb-field">
-            <span className="wb-label">Ціль дня</span>
+            <span className="wb-label">Крок</span>
             <input
               className="wb-input"
-              value={goal}
-              onChange={(event) => setGoal(event.target.value)}
+              value={step}
+              onChange={(event) => setStep(event.target.value)}
               inputMode="decimal"
-              placeholder="не обов'язково"
+              placeholder="1"
             />
           </label>
-        </div>
+          {/* Вид «так-ні» не питають: блок ховається повністю, бо статус дня не
+              сума — типовий вид цього типу ставить сервер (`validateTrackerFields`),
+              а вибір, який ніхто не бачить, — це дві правди. */}
+          <div className="wb-field">
+            <span className="wb-label">Як читати записи</span>
+            <Tabs options={MODE_TABS} value={mode} onChange={setMode} label="Як читати записи" />
+            <p className="wb-field-hint">{MODE_HINT[mode]}</p>
+          </div>
+        </section>
       )}
-      {valueType === "number" && customUnit && (
-        <label className="wb-field">
-          <span className="wb-label">Своя одиниця</span>
-          <input
-            className="wb-input"
-            value={unit}
-            onChange={(event) => setUnit(event.target.value)}
-            placeholder="чашок"
-            maxLength={TRACKER_LIMITS.unit}
-          />
-        </label>
-      )}
-      {valueType === "number" && (
-        <label className="wb-field">
-          <span className="wb-label">Крок</span>
-          <input
-            className="wb-input"
-            value={step}
-            onChange={(event) => setStep(event.target.value)}
-            inputMode="decimal"
-            placeholder="1"
-          />
-        </label>
-      )}
-      {/* Вид «так-ні» не питають: блок ховається повністю, бо статус дня не
-          сума — типовий вид цього типу ставить сервер (`validateTrackerFields`),
-          а вибір, який ніхто не бачить, — це дві правди. */}
-      {valueType === "number" && (
-        <div className="wb-field">
-          <span className="wb-label">Як читати записи</span>
-          <Tabs options={MODE_TABS} value={mode} onChange={setMode} label="Як читати записи" />
-          <p className="wb-text-muted">{MODE_HINT[mode]}</p>
-        </div>
-      )}
-      {error && <p className="wb-input-error">{error}</p>}
+
+      {error && <p className="wb-tracker-form-error">{error}</p>}
+
       <div className="wb-tracker-form-actions">
-        <button type="button" className="wb-btn wb-btn-secondary" onClick={onCancel}>
-          Скасувати
-        </button>
-        <button type="submit" className="wb-btn wb-btn-primary" disabled={busy}>
-          Створити
-        </button>
+        <p className="wb-tracker-form-summary">
+          <span
+            className={`wb-tracker-form-summary-name${title.trim() ? "" : " wb-tracker-form-summary-name--empty"}`}
+          >
+            {title.trim() || "Без назви"}
+          </span>
+          <span className="wb-tracker-form-summary-meta">{summary}</span>
+        </p>
+        <div className="wb-tracker-form-buttons">
+          <button type="button" className="wb-btn wb-btn-ghost" onClick={onCancel}>
+            Скасувати
+          </button>
+          <button
+            type="submit"
+            className="wb-btn wb-btn-primary wb-tracker-form-submit"
+            disabled={busy}
+          >
+            Створити
+          </button>
+        </div>
       </div>
     </form>
   );

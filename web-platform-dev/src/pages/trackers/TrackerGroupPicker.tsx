@@ -163,8 +163,13 @@ export function TrackerGroupPicker({
         aria-labelledby={labelId}
         onClick={show}
       >
-        <span className={`wb-group-picker-value${selected ? "" : " wb-text-muted"}`}>
-          {selected || "Обрати групу"}
+        <span className="wb-group-picker-lead">
+          <Icon name="folder" size={16} />
+          <span
+            className={`wb-group-picker-value${selected ? "" : " wb-group-picker-value--empty"}`}
+          >
+            {selected || "Обрати групу"}
+          </span>
         </span>
         <Icon name="chevron-down" size={16} />
       </button>
