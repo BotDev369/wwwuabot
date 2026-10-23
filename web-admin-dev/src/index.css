@@ -1727,7 +1727,7 @@ body {
 
 .ana-event-time {
   flex-shrink: 0;
-  width: 118px;
+  width: 148px;
   font-size: var(--text-xs);
   color: var(--text-muted);
   font-family: var(--font-mono);

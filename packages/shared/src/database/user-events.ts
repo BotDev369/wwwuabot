@@ -7,10 +7,18 @@
  */
 
 import type { UserEventInput } from "../events";
-import { formatSqliteDatetime } from "../utils/datetime";
+import { formatSqliteDatetimeMs } from "../utils/datetime";
 import { ensureTables } from "./ensure-tables";
 
-export async function recordUserEvent(db: D1Database, event: UserEventInput): Promise<void> {
+/**
+ * `at` — коли дію **зробили**, а не коли встигли записати: запис іде після
+ * відповіді, тож інакше порядок історії задавав би той, хто швидше записав.
+ */
+export async function recordUserEvent(
+  db: D1Database,
+  event: UserEventInput,
+  at?: number,
+): Promise<void> {
   await ensureTables(db, ["user_events"]);
   await db
     .prepare(
@@ -23,7 +31,7 @@ export async function recordUserEvent(db: D1Database, event: UserEventInput): Pr
       event.action,
       event.details ?? null,
       event.status ?? "ok",
-      formatSqliteDatetime(),
+      formatSqliteDatetimeMs(at === undefined ? undefined : new Date(at)),
     )
     .run();
 }

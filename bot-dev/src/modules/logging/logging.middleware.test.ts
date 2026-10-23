@@ -10,7 +10,9 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import type { AppContext, Env } from "../../shared/types/env";
 
-const record = vi.hoisted(() => vi.fn(async () => {}));
+const record = vi.hoisted(() =>
+  vi.fn(async (_db: unknown, _event: unknown, _at?: number) => undefined),
+);
 
 vi.mock("@wwwuabot/shared/database/user-events", () => ({ recordUserEvent: record }));
 
@@ -34,7 +36,20 @@ describe("журнал подій бота", () => {
     expect(record).toHaveBeenCalledWith(
       env.DB,
       expect.objectContaining({ userId: 42, surface: "bot", kind: "command", action: "/start" }),
+      expect.any(Number),
     );
+  });
+
+  it("бере час до обробки, а не після неї", async () => {
+    const before = Date.now();
+    await comprehensiveLogger(context(), async () => {
+      await new Promise((resolve) => setTimeout(resolve, 15));
+    });
+    const after = Date.now();
+
+    const at = record.mock.calls[0]?.[2] as number | undefined;
+    expect(at).toBeGreaterThanOrEqual(before);
+    expect(at).toBeLessThan(after);
   });
 
   it("виняток пише помилку й летить далі", async () => {
@@ -45,7 +60,11 @@ describe("журнал подій бота", () => {
       }),
     ).rejects.toBe(fail);
 
-    expect(record).toHaveBeenCalledWith(env.DB, expect.objectContaining({ status: "error" }));
+    expect(record).toHaveBeenCalledWith(
+      env.DB,
+      expect.objectContaining({ status: "error" }),
+      expect.any(Number),
+    );
   });
 
   it("недоступна D1 не забирає відповідь у людини", async () => {

@@ -8,7 +8,7 @@
  */
 
 import type { ReactElement } from "react";
-import { formatStamp } from "@wwwuabot/shared/utils/datetime";
+import { formatPreciseStamp } from "@wwwuabot/shared/utils/datetime";
 import { eventKindLabel, surfaceLabel, type UserEvent } from "@wwwuabot/shared/events";
 import { actionMethod, actionText, surfaceClass, userLabel, userMeta } from "./analytics-view";
 
@@ -27,7 +27,7 @@ export function EventRows({
     <ul className="ana-events">
       {events.map((event) => (
         <li className="ana-event" key={event.id}>
-          <span className="ana-event-time">{formatStamp(event.createdAt)}</span>
+          <span className="ana-event-time">{formatPreciseStamp(event.createdAt)}</span>
           <span className="ana-event-body">
             <span className="ana-event-head">
               <span className={surfaceClass(event.surface)}>{surfaceLabel(event.surface)}</span>

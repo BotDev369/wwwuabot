@@ -10,11 +10,16 @@ import { buildUserEvent } from "./builder";
  * мусить усе одно отримати свій екран. Тому помилка тут лише лишає слід у
  * логах воркера.
  */
-async function record(ctx: AppContext, env: Env, status: "ok" | "error"): Promise<void> {
+async function record(
+  ctx: AppContext,
+  env: Env,
+  status: "ok" | "error",
+  at: number,
+): Promise<void> {
   const event = buildUserEvent(ctx, status);
   if (!event) return;
   try {
-    await recordUserEvent(env.DB, event);
+    await recordUserEvent(env.DB, event, at);
   } catch (error) {
     console.error(
       JSON.stringify({
@@ -27,12 +32,15 @@ async function record(ctx: AppContext, env: Env, status: "ok" | "error"): Promis
 }
 
 export const comprehensiveLogger: MiddlewareFn<AppContext> = async (ctx, next) => {
+  // Час оновлення — до обробки: повільний хендлер не має рухати подію в історії.
+  const at = Date.now();
+
   try {
     await next();
   } catch (error) {
-    await record(ctx, ctx.env, "error");
+    await record(ctx, ctx.env, "error", at);
     throw error;
   }
 
-  await record(ctx, ctx.env, "ok");
+  await record(ctx, ctx.env, "ok", at);
 };

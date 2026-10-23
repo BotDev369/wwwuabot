@@ -71,6 +71,17 @@ describe("журнал дій платформи", () => {
     ]);
   });
 
+  it("час події береться з моменту запиту й пише мілісекунди", async () => {
+    const db = database();
+    const at = Date.UTC(2026, 8, 22, 22, 13, 20, 123);
+
+    await recordPlatformRequest(new Request("https://example.com/api/favorites"), db.env, 200, at);
+
+    const insert = db.calls.find((call) => call.sql.startsWith("INSERT INTO user_events"));
+    // Секунди — занадто груба сітка: два дотики в одну секунду мінялися б місцями.
+    expect(insert?.values[6]).toBe("2026-09-22 22:13:20.123");
+  });
+
   it("⛔ адмінка, бот і портал у журнал людей не потрапляють", async () => {
     const db = database();
     await recordPlatformRequest(
@@ -180,6 +191,8 @@ describe("читання журналу", () => {
 
     const select = db.calls.find((call) => call.sql.includes("FROM user_events e"));
     expect(select?.sql).toContain("e.user_id = ?");
+    // Порядок — за часом дії, а не за номером запису: записи йдуть у `waitUntil`.
+    expect(select?.sql).toContain("ORDER BY e.created_at DESC, e.id DESC");
     expect(select?.values).toEqual([range.from, range.to, 7, 100, 0]);
     expect(list.items[0]).toMatchObject({ userId: 7, action: "/start", firstName: "Сергій" });
   });

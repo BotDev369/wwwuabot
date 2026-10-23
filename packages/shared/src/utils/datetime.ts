@@ -11,6 +11,16 @@ export function formatSqliteDatetime(date?: Date): string {
 }
 
 /**
+ * Час із мілісекундами — для журналу дій: секунди не розводять дії однієї
+ * секунди, і порядок тоді задає номер запису. Рядком порівнюється так само,
+ * як формат без дробової частини: коротший рядок менший.
+ */
+export function formatSqliteDatetimeMs(date?: Date): string {
+  const d = date ?? new Date();
+  return d.toISOString().replace("T", " ").slice(0, 23);
+}
+
+/**
  * Час із колонки D1 — у мілісекунди; невалідне значення — `0`.
  *
  * Час лежить як UTC без позначки зони (`YYYY-MM-DD HH:MM:SS`), тож розбір
@@ -45,6 +55,20 @@ export function formatDay(value: string): string {
     day: "2-digit",
     month: "2-digit",
     year: "numeric",
+  });
+}
+
+/** Дата й час із секундами: «16.09.2026, 15:19:07» — для журналу дій. */
+export function formatPreciseStamp(value: string): string {
+  const time = sqliteTimestamp(value);
+  if (!time) return value;
+  return new Date(time).toLocaleString("uk-UA", {
+    day: "2-digit",
+    month: "2-digit",
+    year: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+    second: "2-digit",
   });
 }
 

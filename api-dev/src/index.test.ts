@@ -74,7 +74,9 @@ describe("необроблений виняток", () => {
 
     await worker.fetch(request, env, ctx);
 
-    expect(recordPlatform).toHaveBeenCalledWith(request, env, 200);
+    // Четвертий аргумент — час приходу запиту: журнал пишеться після відповіді,
+    // тож без нього порядок історії задавав би той, хто швидше записав рядок.
+    expect(recordPlatform).toHaveBeenCalledWith(request, env, 200, expect.any(Number));
     await expect(Promise.all(waited)).resolves.toBeDefined();
   });
 

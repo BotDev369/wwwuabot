@@ -50,6 +50,10 @@ export default Sentry.withSentry(
   (env: Env) => sentryOptions(env) satisfies Sentry.CloudflareOptions | undefined,
   {
     async fetch(request: Request, env: Env, ctx: ExecutionContext): Promise<Response> {
+      // Час дії береться тут, до обробки: журнал пишеться після відповіді, і
+      // інакше порядок історії задавав би той, хто швидше записав рядок.
+      const eventAt = Date.now();
+
       // Не `await`: відмітка часу не входить у відповідь, але мусить пережити
       // її відправку — інакше Cloudflare завершив би обіцянку разом із запитом.
       ctx.waitUntil(markEntryFromRequest(request, env));
@@ -61,7 +65,7 @@ export default Sentry.withSentry(
 
         // Журнал дій — теж у `waitUntil`: подія вже сталася, і чекати запису
         // в базі перед відповіддю означало б платити за спостереження.
-        ctx.waitUntil(recordPlatformRequest(request, env, response.status));
+        ctx.waitUntil(recordPlatformRequest(request, env, response.status, eventAt));
 
         return response;
       } catch (error) {

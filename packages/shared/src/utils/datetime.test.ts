@@ -1,5 +1,10 @@
 import { describe, it, expect } from "vitest";
-import { formatDay, formatSqliteDatetime } from "./datetime";
+import {
+  formatDay,
+  formatPreciseStamp,
+  formatSqliteDatetime,
+  formatSqliteDatetimeMs,
+} from "./datetime";
 
 describe("formatSqliteDatetime", () => {
   it("formats current date into SQLite timestamp when called without arguments", () => {
@@ -32,6 +37,28 @@ describe("formatSqliteDatetime", () => {
     expect(formatted).not.toContain("Z");
     expect(formatted).not.toContain(".");
     expect(formatted).toBe("2026-12-31 23:59:59");
+  });
+});
+
+describe("formatSqliteDatetimeMs", () => {
+  it("зберігає мілісекунди — інакше три дії в одну секунду не впорядкувати", () => {
+    const a = formatSqliteDatetimeMs(new Date("2026-09-04T15:30:45.123Z"));
+    const b = formatSqliteDatetimeMs(new Date("2026-09-04T15:30:45.987Z"));
+    expect(a).toBe("2026-09-04 15:30:45.123");
+    expect(a < b).toBe(true);
+  });
+
+  it("рядки без мілісекунд лишаються попереду того ж самого моменту", () => {
+    // Старі рядки — `HH:MM:SS` без дробової частини: коротший рядок більший
+    // не стає, тож порядок між старими й новими не ламається.
+    expect("2026-09-04 15:30:45" < "2026-09-04 15:30:45.000").toBe(true);
+  });
+});
+
+describe("formatPreciseStamp", () => {
+  it("показує секунди й розуміє формат із мілісекундами", () => {
+    expect(formatPreciseStamp("2026-09-18 09:30:07")).toBe("18.09.2026, 09:30:07");
+    expect(formatPreciseStamp("2026-09-18 09:30:07.123")).toBe("18.09.2026, 09:30:07");
   });
 });
 

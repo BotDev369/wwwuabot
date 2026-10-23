@@ -26,16 +26,17 @@ import { apiLog } from "../shared/logger";
 const SUMMARY_USERS_LIMIT = 200;
 
 /**
- * Дія платформи — у журнал, якщо запит має підписану людину.
+ * Дія платформи — у журнал, якщо запит має підписану людину; `at` — момент
+ * приходу запиту, бо запис іде в `waitUntil`, а не до відповіді.
  *
  * Query не пишеться: у ньому буває пошук людини, а поведінку описує екран.
- * Адмінські, ботові й порталові шляхи пропускаються — це дії панелі, а не
- * людей, і журнал про поведінку користувачів (`shouldRecordPlatformRequest`).
+ * Адмінські, ботові й порталові шляхи пропускаються — це дії панелі.
  */
 export async function recordPlatformRequest(
   request: Request,
   env: Env,
   status: number,
+  at?: number,
 ): Promise<void> {
   try {
     const { pathname } = new URL(request.url);
@@ -44,13 +45,17 @@ export async function recordPlatformRequest(
     const userId = await tryResolveUserId(request, env);
     if (userId === null) return;
 
-    await recordUserEvent(env.DB, {
-      userId,
-      surface: "platform",
-      kind: "request",
-      action: platformAction(request.method, pathname),
-      status: status < 400 ? "ok" : "error",
-    });
+    await recordUserEvent(
+      env.DB,
+      {
+        userId,
+        surface: "platform",
+        kind: "request",
+        action: platformAction(request.method, pathname),
+        status: status < 400 ? "ok" : "error",
+      },
+      at,
+    );
   } catch (error) {
     apiLog.error("events: запис дії платформи", error);
   }
@@ -155,7 +160,7 @@ export async function readEvents(
        FROM user_events e
        LEFT JOIN users u ON u.user_id = e.user_id
        ${where}
-      ORDER BY e.id DESC
+      ORDER BY e.created_at DESC, e.id DESC
       LIMIT ? OFFSET ?`,
   )
     .bind(...values, options.limit, options.offset)
