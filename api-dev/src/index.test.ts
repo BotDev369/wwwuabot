@@ -19,15 +19,19 @@
 import { describe, expect, it, vi } from "vitest";
 import type { Env } from "./shared/types";
 
-const boom = new Error("D1_ERROR: no such table: users_secrets");
-
 // Підміняємо роутер, щоб гарантовано отримати необроблений виняток: інакше
 // довелося б триматися за випадковий маршрут, чий контролер не має `try`.
-vi.mock("./router", () => ({
-  handleRequest: vi.fn(async () => {
-    throw boom;
-  }),
+const router = vi.hoisted(() => ({
+  handler: async (): Promise<Response> => {
+    throw new Error("D1_ERROR: no such table: users_secrets");
+  },
 }));
+vi.mock("./router", () => ({ handleRequest: () => router.handler() }));
+
+// Журнал підміняємо: перевіряємо не запис у D1, а те, що він узагалі береться
+// під `waitUntil` після успішної відповіді.
+const recordPlatform = vi.hoisted(() => vi.fn(async () => {}));
+vi.mock("./services/user-events.service", () => ({ recordPlatformRequest: recordPlatform }));
 
 const { default: worker } = await import("./index");
 
@@ -61,6 +65,17 @@ describe("необроблений виняток", () => {
     expect(raw).not.toContain("D1_ERROR");
     expect(raw).not.toContain("users_secrets");
     expect(raw).not.toContain("no such table");
+  });
+
+  it("успішна відповідь теж бере журнал дій під `waitUntil`", async () => {
+    router.handler = async () => new Response("{}", { status: 200 });
+    const { ctx, waited } = executionContext();
+    const request = new Request("https://api.example.com/api/favorites");
+
+    await worker.fetch(request, env, ctx);
+
+    expect(recordPlatform).toHaveBeenCalledWith(request, env, 200);
+    await expect(Promise.all(waited)).resolves.toBeDefined();
   });
 
   it("відмітка входу на платформу іде у `waitUntil`, а не чекається", async () => {
