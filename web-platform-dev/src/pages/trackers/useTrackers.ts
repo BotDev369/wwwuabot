@@ -46,8 +46,6 @@ export interface TrackersState extends TrackersPayload {
   moveGroup: (id: number, direction: "up" | "down") => Promise<boolean>;
   /** «Додати в мої»: `catalog:<key>` або `public:<id>` — копія визначення. */
   addFrom: (source: string) => Promise<Tracker | null>;
-  /** Рух трекера в межах його групи; порядок повертає сервер. */
-  moveTracker: (id: number, direction: "up" | "down") => Promise<boolean>;
 }
 
 export function useTrackers(): TrackersState {
@@ -255,22 +253,6 @@ export function useTrackers(): TrackersState {
     }
   }
 
-  async function moveTracker(id: number, direction: "up" | "down"): Promise<boolean> {
-    try {
-      const result = await apiFetch<{ trackers: Tracker[] }>("/api/user/trackers", {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ id, move: direction }),
-      });
-      // Перестановка міняє позиції всіх сусідів, тож перелік іде від сервера.
-      if (Array.isArray(result.trackers)) setTrackers(result.trackers);
-      return true;
-    } catch {
-      await dialog.alert("Не вдалося змінити порядок.", { tone: "danger" });
-      return false;
-    }
-  }
-
   async function archive(id: number): Promise<boolean> {
     try {
       await apiFetch(`/api/user/trackers?id=${id}`, { method: "DELETE" });
@@ -300,6 +282,5 @@ export function useTrackers(): TrackersState {
     deleteGroup,
     moveGroup,
     addFrom,
-    moveTracker,
   };
 }

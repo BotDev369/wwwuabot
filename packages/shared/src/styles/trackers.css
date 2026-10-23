@@ -258,19 +258,6 @@
   color: var(--accent);
 }
 
-/* Режим «Порядок»: замість днів — стрілки, тож колонка однакова для всіх
-   рядків, а назва лишається на місці (оком шукаєш саме її). */
-.wb-matrix-row--order {
-  grid-template-columns: minmax(0, 1fr) 92px;
-}
-
-.wb-matrix-move {
-  display: flex;
-  align-items: center;
-  justify-content: flex-end;
-  gap: var(--sp-1);
-}
-
 .wb-matrix-name {
   display: flex;
   align-items: center;
@@ -345,28 +332,6 @@
 .wb-matrix-unit {
   color: var(--text-muted);
   font-size: 10px;
-}
-
-/* Стрілки порядку: 44px тап-таргет, вимкнена межа списку — сіра, а не
-   зникла: інакше рядок без «вгору» читався б як рядок без дій. */
-.wb-matrix-move-btn {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 44px;
-  height: 44px;
-  padding: 0;
-  border: none;
-  border-radius: var(--radius-sm);
-  background: none;
-  color: var(--text-primary);
-  cursor: pointer;
-}
-
-.wb-matrix-move-btn:disabled {
-  color: var(--text-muted);
-  opacity: 0.45;
-  cursor: default;
 }
 
 .wb-matrix-cell--empty {
@@ -1055,12 +1020,6 @@
 
 .wb-library-row + .wb-library-row {
   border-top: 1px solid var(--border-subtle);
-}
-
-/* Заголовок списку на читання: стрілки й меню тут немає, тож відступ свій —
-   назва стає на одну лінію зі значком рядка під нею. */
-.wb-library-head {
-  padding-inline: var(--sp-4) var(--sp-2);
 }
 
 /* Значок мірки — той самий, що в матриці: рядок упізнають по знаку, а не по

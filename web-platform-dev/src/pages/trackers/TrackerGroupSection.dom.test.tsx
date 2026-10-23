@@ -20,7 +20,6 @@ const hooks = {
   save: vi.fn(),
   toggle: vi.fn(),
   open: vi.fn(),
-  move: vi.fn(),
 };
 
 vi.mock("@wwwuabot/ui/dialog", () => ({
@@ -69,10 +68,8 @@ function renderSection(
       cellsOf={() => [{ day: "2026-10-17", value: 2, goalMet: false }]}
       today="2026-10-17"
       saving={false}
-      ordering={false}
       isOpen={() => true}
       onToggle={hooks.toggle}
-      onMoveTracker={hooks.move}
       onOpenTracker={hooks.open}
       onSave={hooks.save}
       onCreateGroup={hooks.create}

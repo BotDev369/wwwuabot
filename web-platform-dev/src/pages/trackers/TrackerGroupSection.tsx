@@ -1,8 +1,8 @@
 /**
  * Група-акордеон: заголовок із рахунком і діями, всередині — підгрупи
- * (рекурсивно) й рядки-матриці. Залита тільки назва: група й підгрупа
- * різняться тоном і відступом. Дії — меню-модалка на все вікно (AGENTS.md §4);
- * типову тематику каталогу прибрати не можна — сервер чинить опір.
+ * (рекурсивно) й рядки-матриці. Залита тільки назва; порожня група теж
+ * видима — людина її створила. Дії — меню на все вікно (AGENTS.md §4), типову
+ * тематику каталогу прибрати не можна.
  *
  * @module web-platform-dev/src/pages/trackers/TrackerGroupSection
  */
@@ -23,9 +23,6 @@ interface TrackerGroupSectionProps {
   saving: boolean;
   isOpen: (id: number) => boolean;
   onToggle: (id: number) => void;
-  /** Режим «Порядок»: у рядків замість днів — стрілки, межа — сусіди групи. */
-  ordering: boolean;
-  onMoveTracker: (id: number, direction: "up" | "down") => void;
   onOpenTracker: (id: number) => void;
   onSave: (trackerId: number, value: number, note: string) => Promise<boolean>;
   onCreateGroup: (title: string, parentId: number | null) => Promise<TrackerGroup | null>;
@@ -44,8 +41,6 @@ export function TrackerGroupSection({
   saving,
   isOpen,
   onToggle,
-  ordering,
-  onMoveTracker,
   onOpenTracker,
   onSave,
   onCreateGroup,
@@ -136,8 +131,6 @@ export function TrackerGroupSection({
               saving={saving}
               isOpen={isOpen}
               onToggle={onToggle}
-              ordering={ordering}
-              onMoveTracker={onMoveTracker}
               onOpenTracker={onOpenTracker}
               onSave={onSave}
               onCreateGroup={onCreateGroup}
@@ -146,19 +139,15 @@ export function TrackerGroupSection({
             />
           ))}
           <ul className="wb-matrix-list">
-            {view.trackers.map((tracker, index) => (
+            {view.trackers.map((tracker) => (
               <TrackerMatrixRow
                 key={tracker.id}
                 tracker={tracker}
                 cells={cellsOf(tracker)}
                 today={today}
                 saving={saving}
-                ordering={ordering}
-                first={index === 0}
-                last={index === view.trackers.length - 1}
                 onOpen={() => onOpenTracker(tracker.id)}
                 onSave={(value, note) => onSave(tracker.id, value, note)}
-                onMove={(direction) => onMoveTracker(tracker.id, direction)}
               />
             ))}
           </ul>

@@ -111,9 +111,9 @@ export interface TrackerGroupTreeView {
 
 /**
  * Дерево груп стрічки: верхній рівень — у порядку id (типові тематики сіються
- * першими). Порожні групи не показуємо: порожня полиця — це шум, а не
- * структура; правило одне для всіх, включно з «Своїми» — вона з'явиться,
- * щойно в ній буде трекер, як і решта.
+ * першими). Порожня **типова** тематика не показується — це шум; група, яку
+ * створила людина (`key === null`), лишається навіть порожня, разом із
+ * батьками: інакше щойно створена група не з'являлась би до першого трекера.
  */
 export function groupRowsTree(
   trackers: readonly Tracker[],
@@ -147,8 +147,9 @@ export function groupRowsTree(
     else roots.push(view);
   }
 
-  // Рахунок рекурсивно від листків; порожні групи й гілки прибираємо після —
-  // гілка лишається, якщо під нею хоча б один трекер (хоча б онук).
+  // Рахунок рекурсивно від листків; порожні типові тематики прибираємо після —
+  // гілка лишається, якщо під нею є трекер, власна група людини або така
+  // власна група в підгрупах.
   const countOf = (view: TrackerGroupTreeView): number =>
     view.trackers.length + view.children.reduce((sum, child) => sum + countOf(child), 0);
   const prune = (view: TrackerGroupTreeView): TrackerGroupTreeView | null => {
@@ -156,7 +157,8 @@ export function groupRowsTree(
       .map(prune)
       .filter((child): child is TrackerGroupTreeView => child !== null);
     view.count = countOf(view);
-    return view.count > 0 ? view : null;
+    const keep = view.count > 0 || view.group.key === null || view.children.length > 0;
+    return keep ? view : null;
   };
   return roots.map(prune).filter((view): view is TrackerGroupTreeView => view !== null);
 }

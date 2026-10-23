@@ -429,37 +429,4 @@ describe("три поверхні", () => {
     expect(mocks.alert).toHaveBeenCalledWith("HTTP 404", { tone: "danger" });
     expect(view.result.current.trackers).toEqual([]);
   });
-
-  it("порядок трекерів приходить від сервера цілком", async () => {
-    const view = seeded([water]);
-    await waitFor(() => expect(view.result.current.loading).toBe(false));
-
-    mocks.request.mockResolvedValueOnce({ trackers: [{ ...water, id: 9 }, water] });
-    let ok = false;
-    await act(async () => {
-      ok = await view.result.current.moveTracker(1, "down");
-    });
-
-    expect(ok).toBe(true);
-    expect(mocks.request).toHaveBeenCalledWith(
-      "/api/user/trackers",
-      expect.objectContaining({ method: "PATCH", body: JSON.stringify({ id: 1, move: "down" }) }),
-    );
-    expect(view.result.current.trackers.map((tracker) => tracker.id)).toEqual([9, 1]);
-  });
-
-  it("невдалий рух лишає порядок як був", async () => {
-    const view = seeded([water]);
-    await waitFor(() => expect(view.result.current.loading).toBe(false));
-
-    mocks.request.mockRejectedValueOnce(new Error("HTTP 500"));
-    let ok = true;
-    await act(async () => {
-      ok = await view.result.current.moveTracker(1, "up");
-    });
-
-    expect(ok).toBe(false);
-    expect(mocks.alert).toHaveBeenCalledWith("Не вдалося змінити порядок.", { tone: "danger" });
-    expect(view.result.current.trackers.map((tracker) => tracker.id)).toEqual([1]);
-  });
 });

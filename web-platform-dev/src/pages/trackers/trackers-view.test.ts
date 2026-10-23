@@ -118,11 +118,25 @@ describe("групи стрічки", () => {
     expect(tree[2]?.trackers.map((tracker) => tracker.id).sort()).toEqual([2, 4]);
   });
 
-  it("порожня тематика не показується — порожня полиця це шум", () => {
-    const tree = groupRowsTree([{ ...water, groupId: 10 }], groups);
+  it("порожня тематика каталогу не показується — порожня полиця це шум", () => {
+    const bare: TrackerGroup[] = [
+      { id: 10, parentId: null, title: "Режим", key: "routine" },
+      { id: 14, parentId: null, title: "Гроші", key: "money" },
+    ];
+    const tree = groupRowsTree([{ ...water, groupId: 10 }], bare);
 
     expect(tree.map((node) => node.group.id)).toEqual([10]);
     expect(tree[0]?.trackers).toHaveLength(1);
+  });
+
+  it("створена людиною група видима навіть порожня — разом із батьком", () => {
+    const tree = groupRowsTree([{ ...water, groupId: 10 }], groups);
+
+    // «Ранкова рутина» (12) — власна (key === null) і без жодного трекера;
+    // її батько «Активність» (11) теж лишається, інакше підгрупа зникла б з екрана.
+    expect(tree.map((node) => node.group.id)).toEqual([10, 11]);
+    expect(tree[1]?.children.map((node) => node.group.id)).toEqual([12]);
+    expect(tree[1]?.count).toBe(0);
   });
 });
 

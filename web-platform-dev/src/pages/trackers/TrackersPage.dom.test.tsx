@@ -26,7 +26,6 @@ const hooks = {
   deleteGroup: vi.fn(),
   moveGroup: vi.fn(),
   addFrom: vi.fn(),
-  moveTracker: vi.fn(),
   libraryReload: vi.fn(),
   prompt: vi.fn(),
   confirm: vi.fn(),
@@ -106,7 +105,6 @@ const state = {
   deleteGroup: hooks.deleteGroup,
   moveGroup: hooks.moveGroup,
   addFrom: hooks.addFrom,
-  moveTracker: hooks.moveTracker,
 };
 
 /** Списки на читання: один рядок на шаблон і на публічний трекер. */
@@ -176,7 +174,6 @@ beforeEach(() => {
   state.trackers = [water, steps, coffee];
   state.groups = groups;
   hooks.addFrom.mockResolvedValue({ ...water, id: 2 });
-  hooks.moveTracker.mockResolvedValue(true);
   state.entries = [
     {
       id: 1,
@@ -306,13 +303,13 @@ describe("дії екрана", () => {
     expect(dialog.querySelector(".wb-tracker-form")).not.toBeNull();
   });
 
-  it("⛔ окремої дії «додати групу» немає — знак створення один, це трекер", () => {
+  it("⛔ окремої дії «додати групу» немає — знак створення один, і він питає", () => {
     render(<TrackersPage />);
 
-    // Групу додають з меню самої групи («Додати підгрупу»); другий знак
-    // у шапці дублював ту саму дію й забирав місце біля «+».
+    // Групу додають з меню самої групи («Додати підгрупу») або з «+» — другого
+    // знака в шапці немає: він дублював би ту саму дію.
     expect(screen.queryByRole("button", { name: "Додати групу" })).toBeNull();
-    expect(screen.getByRole("button", { name: "Додати трекер" })).toBeTruthy();
+    expect(screen.getByRole("button", { name: "Створити" })).toBeTruthy();
   });
 
   it("«Групи» відкриває дерево груп в модалці, а не на сторінці", async () => {
@@ -366,6 +363,11 @@ describe("три поверхні", () => {
     render(<TrackersPage />);
     await userEvent.click(screen.getByRole("tab", { name: "Шаблони" }));
 
+    // Той самий акордеон, що в «Моїх»: спершу заголовок, рядки — на дотик.
+    const group = screen.getByRole("button", { name: "Режим" });
+    expect(group.getAttribute("aria-expanded")).toBe("false");
+    await userEvent.click(group);
+
     // Каталог начав нічого не сіє: у «Моїх» він сам не з'являється — тільки копія.
     expect(screen.getByRole("button", { name: "Додати" })).toBeTruthy();
     await userEvent.click(screen.getByRole("button", { name: "Додати" }));
@@ -380,28 +382,35 @@ describe("три поверхні", () => {
     render(<TrackersPage />);
     await userEvent.click(screen.getByRole("tab", { name: "Публічні" }));
 
+    const heading = screen.getByRole("button", { name: "#олена" });
+    expect(heading.classList.contains("wb-group-toggle")).toBe(true);
+    await userEvent.click(heading);
+
     expect(screen.getByText("Кава вдома")).toBeTruthy();
-    const group = screen.getByText("#олена");
-    expect(group.classList.contains("wb-group-title")).toBe(true);
-    expect(group.parentElement?.classList.contains("wb-group-head")).toBe(true);
     expect(screen.getByText("ціль 3 чашки")).toBeTruthy();
     // Вимірів у чужій мірці немає й бути не може.
     expect(document.querySelector(".wb-matrix-cell")).toBeNull();
   });
 
-  it("список на читання — те саме дерево: залитий заголовок і рядки під ним", async () => {
+  it("список на читання — те саме дерево: залитий заголовок і акордеон", async () => {
     render(<TrackersPage />);
     await userEvent.click(screen.getByRole("tab", { name: "Шаблони" }));
 
     const groups = document.querySelectorAll(".wb-library-tree .wb-group");
     expect(groups).toHaveLength(1);
     expect(groups[0].querySelector(".wb-group-head")?.textContent).toContain("Режим");
-    expect(groups[0].querySelectorAll(".wb-library-row")).toHaveLength(2);
+    // Згорнутий заголовок ховає рядки — рівно як у «Моїх».
+    expect(groups[0].querySelectorAll(".wb-library-row")).toHaveLength(0);
+
+    await userEvent.click(screen.getByRole("button", { name: "Режим" }));
+
+    const rows = document.querySelectorAll(".wb-library-tree .wb-library-row");
+    expect(rows).toHaveLength(2);
     // Рядок мірки несе значок, назву й ціль — ті самі частини, що в матриці.
-    const row = groups[0].querySelector(".wb-library-row");
-    expect(row?.querySelector(".wb-library-icon svg")).toBeTruthy();
-    expect(row?.querySelector(".wb-library-title")?.textContent).toBe("Вода");
-    expect(row?.querySelector(".wb-library-meta")?.textContent).toBe("ціль 2 л");
+    const row = rows[0];
+    expect(row.querySelector(".wb-library-icon svg")).toBeTruthy();
+    expect(row.querySelector(".wb-library-title")?.textContent).toBe("Вода");
+    expect(row.querySelector(".wb-library-meta")?.textContent).toBe("ціль 2 л");
   });
 
   it("пошук звужує список, а не гортає море пальцем", async () => {
@@ -433,8 +442,8 @@ describe("три поверхні", () => {
     const bar = document.querySelector(".wb-contextbar");
     expect(bar?.getAttribute("aria-label")).toBe("Дії трекерів");
     expect(within(bar as HTMLElement).getByRole("button", { name: "Групи" })).toBeTruthy();
-    expect(within(bar as HTMLElement).getByRole("button", { name: "Порядок" })).toBeTruthy();
-    expect(within(bar as HTMLElement).getByRole("button", { name: "Додати трекер" })).toBeTruthy();
+    expect(within(bar as HTMLElement).getByRole("button", { name: "Розгорнути" })).toBeTruthy();
+    expect(within(bar as HTMLElement).getByRole("button", { name: "Створити" })).toBeTruthy();
 
     const head = document.querySelector(".wb-matrix-head");
     expect(head?.querySelectorAll(".wb-matrix-head-day")).toHaveLength(4);
@@ -446,36 +455,71 @@ describe("три поверхні", () => {
     expect(sticky?.querySelector(".wb-contextbar")).toBeNull();
   });
 
-  it("«Порядок» — стан кнопки, і смуга дій це показує", async () => {
+  it("«Розгорнути» відкриває всі групи, «Згорнути» — закриває", async () => {
     render(<TrackersPage />);
 
-    const order = screen.getByRole("button", { name: "Порядок" });
-    expect(order.getAttribute("aria-pressed")).toBe("false");
+    await userEvent.click(screen.getByRole("button", { name: "Розгорнути" }));
 
-    await userEvent.click(order);
+    // Усі групи верхнього рівня розгорнуті, а дія каже про зворотний бік.
+    expect(screen.getAllByRole("button", { expanded: true }).length).toBeGreaterThan(0);
+    expect(screen.getByRole("button", { name: "Згорнути" })).toBeTruthy();
 
-    expect(order.getAttribute("aria-pressed")).toBe("true");
+    await userEvent.click(screen.getByRole("button", { name: "Згорнути" }));
+
+    expect(screen.queryAllByRole("button", { expanded: true })).toHaveLength(0);
   });
 
-  it("режим «Порядок» міняє місце стрілками й не дає вийти за межі групи", async () => {
-    // Двоє сусідів в одній групі: межа має бути в першого згори й у другого
-    // знизу, а в середині — обидві стрілки живі.
-    state.trackers = [water, { ...water, id: 5, key: "own-tea", title: "Чай" }, steps, coffee];
+  it("смуга дій лишається на всіх трьох вкладках", async () => {
     render(<TrackersPage />);
-    await userEvent.click(screen.getByRole("button", { name: "Порядок" }));
-    await userEvent.click(screen.getByRole("button", { name: "Режим" }));
 
-    // Колонок днів у цьому режимі немає — і шапки теж: вона б лишилась
-    // порожнім рядком над стрілками.
-    expect(document.querySelector(".wb-matrix-head")).toBeNull();
-    await userEvent.click(screen.getByRole("button", { name: "Вода — нижче" }));
-    expect(hooks.moveTracker).toHaveBeenCalledWith(1, "down");
-    // Перший у групі не йде вгору — межа вимкнена, а не зникає.
-    expect(screen.getByRole("button", { name: "Вода — вище" }).hasAttribute("disabled")).toBe(true);
+    expect(document.querySelector(".wb-contextbar")).not.toBeNull();
+    await userEvent.click(screen.getByRole("tab", { name: "Шаблони" }));
+    expect(document.querySelector(".wb-contextbar")).not.toBeNull();
+    await userEvent.click(screen.getByRole("tab", { name: "Публічні" }));
+    expect(document.querySelector(".wb-contextbar")).not.toBeNull();
+  });
+
+  it("«+» питає, що додати: трекер чи групу", async () => {
+    render(<TrackersPage />);
+
+    await userEvent.click(screen.getByRole("button", { name: "Створити" }));
+
+    const dialog = screen.getByRole("dialog", { name: "Що додати?" });
+    expect(within(dialog).getByRole("button", { name: "Трекер" })).toBeTruthy();
+    expect(within(dialog).getByRole("button", { name: "Група" })).toBeTruthy();
+  });
+
+  it("вибір «Трекер» веде у форму створення мірки", async () => {
+    render(<TrackersPage />);
+
+    await userEvent.click(screen.getByRole("button", { name: "Створити" }));
+    await userEvent.click(screen.getByRole("button", { name: "Трекер" }));
+
+    expect(hooks.navigate).toHaveBeenCalledWith("/trackers?new=1");
+  });
+
+  it("вибір «Група» створює її й показує порожню одразу", async () => {
+    hooks.prompt.mockResolvedValueOnce("Сад");
+    hooks.createGroup.mockImplementation(async (title: string, parentId: number | null) => {
+      const group = { id: 21, parentId, title, key: null };
+      state.groups = [...state.groups, group];
+      return group;
+    });
+    render(<TrackersPage />);
+
+    await userEvent.click(screen.getByRole("button", { name: "Створити" }));
+    await userEvent.click(screen.getByRole("button", { name: "Група" }));
+
+    const created = await screen.findByRole("button", { name: "Сад" });
+    expect(hooks.createGroup).toHaveBeenCalledWith("Сад", null);
+    // Група без жодного трекера й одразу розгорнута — щоб людина бачила, що сталось.
+    expect(created.getAttribute("aria-expanded")).toBe("true");
+    expect(screen.getByRole("tab", { name: "Мої" }).getAttribute("aria-selected")).toBe("true");
   });
 
   it("порожні «Мої» ведуть у «Шаблони», а не лишають глухий кут", async () => {
     state.trackers = [];
+    state.groups = [];
     render(<TrackersPage />);
 
     expect(screen.getByText("Трекерів ще немає.")).toBeTruthy();

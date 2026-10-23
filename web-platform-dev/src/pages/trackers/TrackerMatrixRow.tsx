@@ -1,7 +1,6 @@
 /**
  * Рядок матриці: назва (веде на картку) і значення днів, сьогодні першим;
- * число велике, одиниця дрібна під ним, «так-ні» — знаком ✓/✕. У режимі
- * «Порядок» клітинки поступаються місцем стрілкам: тап там відкривав би запис.
+ * число велике, одиниця дрібна під ним, «так-ні» — знаком ✓/✕.
  *
  * @module web-platform-dev/src/pages/trackers/TrackerMatrixRow
  */
@@ -17,13 +16,8 @@ interface TrackerMatrixRowProps {
   cells: readonly TrackerCellView[];
   today: string;
   saving: boolean;
-  /** Режим «Порядок»: замість днів — стрілки, назва не веде на картку. */
-  ordering: boolean;
-  first: boolean;
-  last: boolean;
   onOpen: () => void;
   onSave: (value: number, note: string) => Promise<boolean>;
-  onMove: (direction: "up" | "down") => void;
 }
 
 interface CellClassInput {
@@ -44,12 +38,8 @@ export function TrackerMatrixRow({
   cells,
   today,
   saving,
-  ordering,
-  first,
-  last,
   onOpen,
   onSave,
-  onMove,
 }: TrackerMatrixRowProps): ReactElement {
   const [draft, setDraft] = useState("");
   const [note, setNote] = useState("");
@@ -78,69 +68,42 @@ export function TrackerMatrixRow({
 
   return (
     <li className="wb-matrix">
-      <div className={"wb-matrix-row" + (ordering ? " wb-matrix-row--order" : "")}>
-        {ordering ? (
-          <span className="wb-matrix-name">{name}</span>
-        ) : (
-          <button type="button" className="wb-matrix-name" onClick={onOpen}>
-            {name}
-          </button>
-        )}
+      <div className="wb-matrix-row">
+        <button type="button" className="wb-matrix-name" onClick={onOpen}>
+          {name}
+        </button>
 
-        {ordering ? (
-          <span className="wb-matrix-move">
+        {cells.map((cell) => {
+          const isToday = cell.day === today;
+          const content = cellAmount(cell.value, tracker);
+          const label = `${tracker.title}, ${matrixDayLabel(cell.day)}${content ? `: ${content}` : ""}`;
+          return (
             <button
+              key={cell.day}
               type="button"
-              className="wb-matrix-move-btn"
-              aria-label={`${tracker.title} — вище`}
-              disabled={first}
-              onClick={() => onMove("up")}
+              className={cellClass({
+                empty: cell.value === null,
+                goal: cell.goalMet,
+              })}
+              aria-label={label}
+              onClick={() => (isToday ? setOpen((value) => !value) : onOpen())}
             >
-              <Icon name="chevron-up" size={18} />
+              {tracker.valueType === "boolean" && cell.value !== null ? (
+                <Icon name={cell.value > 0 ? "check" : "close"} size={16} />
+              ) : content ? (
+                <span className="wb-matrix-value">
+                  <span className="wb-matrix-number">{content}</span>
+                  {tracker.unit && <span className="wb-matrix-unit">{tracker.unit}</span>}
+                </span>
+              ) : (
+                <span aria-hidden="true">·</span>
+              )}
             </button>
-            <button
-              type="button"
-              className="wb-matrix-move-btn"
-              aria-label={`${tracker.title} — нижче`}
-              disabled={last}
-              onClick={() => onMove("down")}
-            >
-              <Icon name="chevron-down" size={18} />
-            </button>
-          </span>
-        ) : (
-          cells.map((cell) => {
-            const isToday = cell.day === today;
-            const content = cellAmount(cell.value, tracker);
-            const label = `${tracker.title}, ${matrixDayLabel(cell.day)}${content ? `: ${content}` : ""}`;
-            return (
-              <button
-                key={cell.day}
-                type="button"
-                className={cellClass({
-                  empty: cell.value === null,
-                  goal: cell.goalMet,
-                })}
-                aria-label={label}
-                onClick={() => (isToday ? setOpen((value) => !value) : onOpen())}
-              >
-                {tracker.valueType === "boolean" && cell.value !== null ? (
-                  <Icon name={cell.value > 0 ? "check" : "close"} size={16} />
-                ) : content ? (
-                  <span className="wb-matrix-value">
-                    <span className="wb-matrix-number">{content}</span>
-                    {tracker.unit && <span className="wb-matrix-unit">{tracker.unit}</span>}
-                  </span>
-                ) : (
-                  <span aria-hidden="true">·</span>
-                )}
-              </button>
-            );
-          })
-        )}
+          );
+        })}
       </div>
 
-      {open && !ordering && (
+      {open && (
         <form className="wb-matrix-form" onSubmit={(event) => void submit(event)}>
           {tracker.valueType === "boolean" ? (
             <div className="wb-field">
