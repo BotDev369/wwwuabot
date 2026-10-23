@@ -68,10 +68,9 @@ export function ProfileAccountPage(): ReactElement {
                 user={profile}
                 onChangeUsername={saveUsername}
                 onChangeAbout={saveAbout}
-                onChangeVisibility={saveVisibility}
               />
             ) : (
-              <AccountTelegramSection user={profile} />
+              <AccountTelegramSection user={profile} onChangeVisibility={saveVisibility} />
             )}
           </div>
         </>

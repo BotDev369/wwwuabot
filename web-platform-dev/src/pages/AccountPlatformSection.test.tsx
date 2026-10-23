@@ -6,16 +6,15 @@
  * «ось ім'я» і «ось іще щось про мене» там, де йдеться про те саме. Тест тримає
  * те, що ламається мовчки: кількість карток (друга завелась би поверненням
  * `plain`), заголовок (без нього картка знову безіменна), те, що дані акаунта
- * нікуди не зникли, і — головне — **коли показуються перемикачі полів**:
- * закритий профіль не мусить показувати шість перемикачів, які ні на що не
- * впливають.
+ * нікуди не зникли, і — головне — **перемикачів публічності тут немає**: вони
+ * живуть у розділі «Телеграм», окремою карткою.
  *
  * @module web-platform-dev/src/pages/AccountPlatformSection.test
  */
 
 import { describe, expect, it } from "vitest";
 import { renderToStaticMarkup } from "react-dom/server";
-import { DEFAULT_OPEN_FIELDS, PUBLIC_PROFILE_FIELDS, type UserProfileData } from "@wwwuabot/shared";
+import type { UserProfileData } from "@wwwuabot/shared";
 import { AccountPlatformSection } from "./AccountPlatformSection";
 
 const USER: UserProfileData = {
@@ -30,16 +29,8 @@ const noop = async (): Promise<null> => null;
 
 const render = (user: UserProfileData = USER): string =>
   renderToStaticMarkup(
-    <AccountPlatformSection
-      user={user}
-      onChangeUsername={noop}
-      onChangeAbout={noop}
-      onChangeVisibility={noop}
-    />,
+    <AccountPlatformSection user={user} onChangeUsername={noop} onChangeAbout={noop} />,
   );
-
-/** Скільки перемикачів у розділі: головний плюс поля, коли профіль відкрито. */
-const switches = (html: string): number => html.match(/role="switch"/g)?.length ?? 0;
 
 describe("AccountPlatformSection", () => {
   it("тримає ім'я й дані акаунта в одній картці", () => {
@@ -94,28 +85,13 @@ describe("AccountPlatformSection", () => {
     expect(render()).toContain("Ще не заповнено");
   });
 
-  it("⛔ закритий профіль не показує перемикачів полів", () => {
-    // Шість перемикачів, які зараз ні на що не впливають, змушували б
-    // здогадуватись, що спершу треба ввімкнути головний.
+  it("⛔ перемикачів публічності тут немає — вони в розділі «Телеграм»", () => {
+    // Закритий профіль — найлегший стан, у якому зайвий перемикач лишається
+    // непоміченим: полів під ним немає, тож виглядає як один рядок.
     const html = render({ ...USER, isPublic: false, openFields: [] });
 
-    expect(switches(html)).toBe(1);
-    expect(html).toContain("Публічний профіль");
-    expect(html).not.toContain("З нами з");
-  });
-
-  it("відкритий профіль показує всі поля, і типові — увімкненими", () => {
-    // Коли набір не збережено, діє типовий: ім'я, фото й «Про себе» відкриті.
-    const html = render({ ...USER, isPublic: true });
-
-    expect(switches(html)).toBe(1 + PUBLIC_PROFILE_FIELDS.length);
-    expect(html.match(/wb-switch--on/g)).toHaveLength(1 + DEFAULT_OPEN_FIELDS.length);
-  });
-
-  it("порожній набір лишається порожнім — це вибір, а не «ще не вирішували»", () => {
-    const html = render({ ...USER, isPublic: true, openFields: [] });
-
-    expect(switches(html)).toBe(1 + PUBLIC_PROFILE_FIELDS.length);
-    expect(html.match(/wb-switch--on/g)).toHaveLength(1);
+    expect(html).not.toContain("Публічний профіль");
+    expect(html).not.toContain('role="switch"');
+    expect(render({ ...USER, isPublic: true })).not.toContain('role="switch"');
   });
 });
