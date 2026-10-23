@@ -21,11 +21,7 @@
 
 import { describe, expect, it } from "vitest";
 import { renderToStaticMarkup } from "react-dom/server";
-import {
-  DEFAULT_OPEN_FIELDS,
-  PUBLIC_PROFILE_FIELDS,
-  type UserProfileData,
-} from "@wwwuabot/shared";
+import { DEFAULT_OPEN_FIELDS, PUBLIC_PROFILE_FIELDS, type UserProfileData } from "@wwwuabot/shared";
 import { AccountTelegramSection } from "./AccountTelegramSection";
 
 const USER: UserProfileData = {
