@@ -178,17 +178,6 @@ describe("особисте обране", () => {
       "/pageslay",
     );
   });
-  it("число для позначки у футері рахує база, а не клієнт", async () => {
-    const db = database({ total: 3 });
-    const response = await handleFavorites(
-      new Request("https://example.com/api/favorites?count=1"),
-      db.env,
-    );
-
-    expect(await response.json()).toEqual({ ok: true, count: 3 });
-    const count = db.calls.find((call) => call.sql.includes("COUNT(*)"));
-    expect(count?.values).toEqual(["777"]);
-  });
   // Рядок із номером — не сміття: так контент віддає свій id (`ContentPage.id`),
   // і відкидати його означало б відмовити власному клієнту. Сміттям лишається
   // усе, що **не** номер: адреса, дріб, нуль, чужий вид.

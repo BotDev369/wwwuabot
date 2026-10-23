@@ -213,17 +213,22 @@ test("лайк зберігається й видно в «Обраному»", 
   await page.reload();
   await expect(page.getByRole("button", { name: HEART })).toHaveAttribute("aria-pressed", "true");
 
+  // Лайк щойно поставлено — позначка у футері каже «є нове» (одне), а не «все».
+  await expect(page.locator('.wb-tabbar-item[aria-label="Обране"] .wb-tabbar-badge')).toHaveText(
+    "1",
+  );
+
   await page.goto("/favorites");
   const row = page.locator(".wb-favorites-row", { hasText: title });
   await expect(row).toBeVisible();
 
-  // Число в футері й підпис над списком кажуть те саме, що видно: обидва
-  // беруться з сервера, тож розійтись можуть лише помилкою.
+  // Підпис над списком — це **все** обране; позначка у футері — **нове**, і
+  // відкритий список її обнуляє (див. `docs/FAVORITES.md`).
   const rows = page.locator(".wb-favorites-row");
   const total = await rows.count();
   await expect(page.locator(".wb-favorites-count")).toHaveText(`${total} у обраному`);
-  await expect(page.locator('.wb-tabbar-item[aria-label="Обране"] .wb-tabbar-badge')).toHaveText(
-    String(total),
+  await expect(page.locator('.wb-tabbar-item[aria-label="Обране"] .wb-tabbar-badge')).toHaveCount(
+    0,
   );
 
   // Знак прибирання — смітник: серце тут читалось би як лайк, і ним знімали б

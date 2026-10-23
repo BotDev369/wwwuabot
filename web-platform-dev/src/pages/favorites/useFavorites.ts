@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useDialog } from "@wwwuabot/ui/dialog";
-import { bumpFavoritesCount, setFavoritesCount } from "@wwwuabot/ui/favorites";
+import { setFavoritesNewCount } from "@wwwuabot/ui/favorites";
 import type { FavoriteItem, FavoriteSort, FavoritesResponse } from "@wwwuabot/shared/favorites";
 import { apiFetch } from "@/shared/api/client";
 
@@ -33,9 +33,9 @@ export function useFavorites(): FavoritesState {
       const result = await apiFetch<FavoritesResponse>("/api/favorites");
       if (request === generation.current) {
         setItems(result.items);
-        // Список — найточніша відповідь на «скільки обраного», тож саме він
-        // виправляє число в пункті футера, а не окремий запит.
-        setFavoritesCount(result.items.length);
+        // Відкритий список — це «побачено»: позначка у футері обнуляється, а не
+        // показує все обране (вона саме про нове, див. `docs/FAVORITES.md`).
+        setFavoritesNewCount(0);
         setError(null);
       }
     } catch {
@@ -74,7 +74,6 @@ export function useFavorites(): FavoritesState {
       setItems((current) =>
         current.filter((value) => value.kind !== item.kind || value.targetId !== item.targetId),
       );
-      bumpFavoritesCount(-1);
     } catch {
       await dialog.alert("Не вдалося прибрати лайк.", { tone: "danger" });
     } finally {

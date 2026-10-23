@@ -1,10 +1,9 @@
 // @vitest-environment jsdom
 /**
- * Стан «Обраного»: список, причина помилки, зняття лайка й число у футері.
+ * Стан «Обраного»: список, причина помилки, зняття лайка й позначка у футері.
  *
- * Число тут не подробиця: його показує пункт футера, тож список мусить
- * виправити його і при читанні, і при знятті лайка — інакше позначка жила б
- * своїм життям окремо від того, що людина бачить.
+ * Позначка тут не подробиця: вона каже «є нове», а не «скільки всього», тож
+ * відкритий список її **обнуляє**, а прибирання рядка її не рухає.
  *
  * @module web-platform-dev/src/pages/favorites/useFavorites.dom.test
  */
@@ -12,7 +11,7 @@
 import { act, renderHook, waitFor } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import type { FavoriteItem } from "@wwwuabot/shared/favorites";
-import { favoritesCount, setFavoritesCount } from "@wwwuabot/ui/favorites";
+import { favoritesNewCount, setFavoritesNewCount } from "@wwwuabot/ui/favorites";
 
 const mocks = vi.hoisted(() => ({ request: vi.fn(), alert: vi.fn() }));
 
@@ -34,11 +33,12 @@ const item = (overrides: Partial<FavoriteItem> = {}): FavoriteItem => ({
 beforeEach(() => {
   vi.clearAllMocks();
   mocks.alert.mockResolvedValue(undefined);
-  setFavoritesCount(0);
+  setFavoritesNewCount(0);
 });
 
 describe("читання списку", () => {
-  it("складає список і виправляє число у футері", async () => {
+  it("складає список і обнуляє позначку «нове» у футері", async () => {
+    setFavoritesNewCount(3);
     mocks.request.mockResolvedValueOnce({ ok: true, items: [item(), item({ targetId: 8 })] });
     const view = renderHook(() => useFavorites());
 
@@ -46,7 +46,8 @@ describe("читання списку", () => {
 
     expect(view.result.current.items).toHaveLength(2);
     expect(view.result.current.error).toBeNull();
-    expect(favoritesCount()).toBe(2);
+    // Відкритий список — це «побачено»: позначка не показує все обране.
+    expect(favoritesNewCount()).toBe(0);
   });
 
   it("помилка називає причину, а не порожній список", async () => {
@@ -72,7 +73,7 @@ describe("читання списку", () => {
 });
 
 describe("зняття лайка", () => {
-  it("прибирає рядок і зменшує число у футері", async () => {
+  it("прибирає рядок, не рухаючи позначку «нове»", async () => {
     mocks.request.mockResolvedValueOnce({ ok: true, items: [item()] });
     const view = renderHook(() => useFavorites());
     await waitFor(() => expect(view.result.current.items).toHaveLength(1));
@@ -81,7 +82,8 @@ describe("зняття лайка", () => {
     await act(() => view.result.current.remove(item()));
 
     expect(view.result.current.items).toEqual([]);
-    expect(favoritesCount()).toBe(0);
+    // Рядок у списку вже побачений — новим він не стає і зникнення його не знімає.
+    expect(favoritesNewCount()).toBe(0);
     expect(mocks.request).toHaveBeenLastCalledWith(
       "/api/favorites",
       expect.objectContaining({ method: "DELETE" }),

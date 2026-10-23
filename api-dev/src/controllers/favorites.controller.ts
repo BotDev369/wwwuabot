@@ -10,12 +10,7 @@ const favoriteBody = z
 import type { Env } from "../shared/types";
 import { resolveUserId } from "../shared/identity";
 import { apiLog } from "../shared/logger";
-import {
-  countFavorites,
-  listFavorites,
-  removeFavorite,
-  saveFavorite,
-} from "../services/favorites.service";
+import { listFavorites, removeFavorite, saveFavorite } from "../services/favorites.service";
 
 function json(body: unknown, status = 200): Response {
   return new Response(JSON.stringify(body), {
@@ -34,11 +29,6 @@ export async function handleFavorites(request: Request, env: Env): Promise<Respo
     await ensureTables(env.DB, ["favorites"]);
     if (request.method === "GET") {
       const query = new URL(request.url).searchParams;
-      // Число для позначки у футері — **окремий вибір**, а не довжина списку:
-      // смуга питає лише «скільки», тож їй не потрібні назви й адреси.
-      if (query.has("count")) {
-        return json({ ok: true, count: await countFavorites(env, identity.userId) });
-      }
       if (query.has("kind") || query.has("targetId")) {
         const target = favoriteTarget({
           kind: query.get("kind"),

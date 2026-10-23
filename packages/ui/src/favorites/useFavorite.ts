@@ -11,7 +11,7 @@
  *
  * **Дія має бути видною.** Серце перефарбовується в хедері, але людина дивиться
  * на нього не завжди, тож успіх каже коротке підтвердження (`announceLike`), а
- * число обраного в пункті футера змінюється тим же кроком.
+ * позначка «нове» в пункті футера змінюється тим же кроком.
  *
  * @module packages/ui/src/favorites/useFavorite
  */
@@ -21,7 +21,7 @@ import { apiFetch } from "@wwwuabot/shared";
 import { telegramAuthHeaders } from "@wwwuabot/shared/security/telegram";
 import type { FavoriteTarget } from "@wwwuabot/shared/favorites";
 import { useDialog } from "@wwwuabot/ui/dialog";
-import { bumpFavoritesCount } from "./favorites-count";
+import { bumpFavoritesNew } from "./favorites-new";
 import { announceLike } from "./like-feedback";
 
 interface LoadedLike {
@@ -85,7 +85,7 @@ export function useFavorite(target: FavoriteTarget) {
       // Лише справжня зміна: повторний `POST` того самого лайка відповідає
       // `liked: true`, і без цієї перевірки лічильник у футері смикався б.
       if (result.liked !== current.liked) {
-        bumpFavoritesCount(result.liked ? 1 : -1);
+        bumpFavoritesNew(result.liked ? 1 : -1);
         announceLike(result.liked);
       }
     } catch {

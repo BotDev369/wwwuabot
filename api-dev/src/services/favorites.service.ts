@@ -81,13 +81,6 @@ export async function listFavorites(env: Env, userId: number): Promise<FavoriteI
   );
 }
 
-export async function countFavorites(env: Env, userId: number): Promise<number> {
-  const row = await env.DB.prepare("SELECT COUNT(*) AS total FROM favorites WHERE owner_id = ?")
-    .bind(String(userId))
-    .first<{ total: number }>();
-  return Number(row?.total ?? 0);
-}
-
 export async function saveFavorite(
   env: Env,
   userId: number,
