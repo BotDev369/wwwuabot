@@ -9,7 +9,8 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { TRACKER_CATALOG_GROUPS, TRACKER_GROUP_LIMITS } from "@wwwuabot/shared/trackers";
 import type { Env } from "../shared/types";
-import { handleTrackerGroups, handleTrackers } from "./trackers.controller";
+import { handleTrackerGroups } from "./trackers-groups.controller";
+import { handleTrackers } from "./trackers.controller";
 
 const mocks = vi.hoisted(() => ({ identity: vi.fn() }));
 vi.mock("../shared/identity", () => ({ resolveUserId: mocks.identity }));

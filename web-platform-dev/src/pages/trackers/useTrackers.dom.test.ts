@@ -135,6 +135,57 @@ describe("стрічка", () => {
     });
     expect(mocks.alert).toHaveBeenCalledWith("Не вдалося прибрати трекер.", { tone: "danger" });
   });
+
+  it("«додати всю групу» шле джерела пачкою й перечитує стрічку", async () => {
+    mocks.request.mockResolvedValueOnce({ trackers: [], entries: [], endDay: "2026-10-17" });
+    const view = renderHook(() => useTrackers());
+    await waitFor(() => expect(view.result.current.loading).toBe(false));
+
+    mocks.request.mockResolvedValueOnce({ trackers: [water, { ...water, id: 2 }] });
+    mocks.request.mockResolvedValueOnce({ trackers: [water], entries: [], endDay: "2026-10-17" });
+    let count = 0;
+    await act(async () => {
+      count = await view.result.current.addMany(["catalog:water", "catalog:sleep"]);
+    });
+
+    expect(mocks.request).toHaveBeenCalledWith(
+      "/api/user/trackers",
+      expect.objectContaining({
+        method: "POST",
+        body: JSON.stringify({ sources: ["catalog:water", "catalog:sleep"] }),
+      }),
+    );
+    expect(count).toBe(2);
+    // Групи могли з'явитися — стан бере свіжий перелік, а не додає вручну.
+    expect(view.result.current.trackers).toHaveLength(1);
+  });
+
+  it("очищення групи каже, скільки зникло, а провал — причину", async () => {
+    mocks.request.mockResolvedValueOnce({ trackers: [water], entries: [], endDay: "2026-10-17" });
+    const view = renderHook(() => useTrackers());
+    await waitFor(() => expect(view.result.current.loading).toBe(false));
+
+    mocks.request.mockResolvedValueOnce({ removed: 3 });
+    mocks.request.mockResolvedValueOnce({ trackers: [], entries: [], endDay: "2026-10-17" });
+    let removed: number | null = null;
+    await act(async () => {
+      removed = await view.result.current.clearGroup(11);
+    });
+
+    expect(mocks.request).toHaveBeenCalledWith("/api/user/trackers/group/trackers?id=11", {
+      method: "DELETE",
+    });
+    expect(removed).toBe(3);
+    expect(view.result.current.trackers).toHaveLength(0);
+
+    mocks.request.mockRejectedValueOnce(new Error("HTTP 500"));
+    await act(async () => {
+      await view.result.current.clearGroup(11);
+    });
+    expect(mocks.alert).toHaveBeenCalledWith("Не вдалося прибрати трекери групи.", {
+      tone: "danger",
+    });
+  });
 });
 
 describe("запис у клітинці", () => {

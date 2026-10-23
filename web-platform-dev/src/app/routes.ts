@@ -324,6 +324,11 @@ export function assessmentRunPath(key: string): string {
 /** Параметр адреси: `/notes?new=1` — «відкрий створення одразу». */
 export const CREATE_INTENT_PARAM = "new";
 export const CREATE_INTENT_VALUE = "1";
+/**
+ * Група, у якій створити рядок: `/trackers?new=1&group=12` — «новий трекер
+ * у цій групі». Адреса, а не стан: «назад» закриває форму так само.
+ */
+export const CREATE_GROUP_PARAM = "group";
 
 /**
  * Чи просять відкрити створення. Правда — одна: **адреса**.
@@ -344,11 +349,20 @@ export function readCreateIntent(params: URLSearchParams): boolean {
  * свої параметри (`/messages?peer=5`), і `?` замість `&` зробив би другий
  * параметр частиною першого — тоді замість створення відкривався б список.
  */
-export function withCreateIntent(path: string): string {
+export function withCreateIntent(path: string, groupId?: number | null): string {
   const [base, query = ""] = path.split("?");
   const params = new URLSearchParams(query);
   params.set(CREATE_INTENT_PARAM, CREATE_INTENT_VALUE);
+  if (groupId !== undefined && groupId !== null) {
+    params.set(CREATE_GROUP_PARAM, String(groupId));
+  }
   return `${base}?${params.toString()}`;
+}
+
+/** Група з адреси створення; немає або смiття — `null` (людина обере сама). */
+export function readCreateGroupId(params: URLSearchParams): number | null {
+  const id = Number(params.get(CREATE_GROUP_PARAM));
+  return Number.isInteger(id) && id > 0 ? id : null;
 }
 
 /**

@@ -31,6 +31,10 @@ interface TrackerGroupSectionProps {
     patch: { title?: string; parentId?: number | null },
   ) => Promise<boolean>;
   onDeleteGroup: (id: number) => Promise<boolean>;
+  /** «Новий трекер» — форма відкривається з цією групою вже обраною. */
+  onNewTracker: (groupId: number) => void;
+  /** «Прибрати трекери групи» — типова тематика лишається, мірки зникають. */
+  onClearTrackers: (groupId: number) => Promise<number | null>;
 }
 
 export function TrackerGroupSection({
@@ -46,6 +50,8 @@ export function TrackerGroupSection({
   onCreateGroup,
   onUpdateGroup,
   onDeleteGroup,
+  onNewTracker,
+  onClearTrackers,
 }: TrackerGroupSectionProps): ReactElement {
   const dialog = useDialog();
   const [menu, setMenu] = useState(false);
@@ -71,26 +77,46 @@ export function TrackerGroupSection({
 
   async function remove(): Promise<void> {
     const ok = await dialog.confirm(
-      `Прибрати «${view.group.title}»? Трекери й підгрупи піднімуться вище.`,
-      { tone: "danger", confirmText: "Прибрати" },
+      `Видалити «${view.group.title}»? Трекери й підгрупи піднімуться вище.`,
+      { tone: "danger", confirmText: "Видалити" },
     );
     if (ok) await onDeleteGroup(view.group.id);
   }
 
+  async function clearTrackers(): Promise<void> {
+    const ok = await dialog.confirm(
+      `Прибрати ${view.count} з «${view.group.title}»? Сама тематика лишиться в «Моїх».`,
+      { tone: "danger", confirmText: "Прибрати" },
+    );
+    if (ok) await onClearTrackers(view.group.id);
+  }
+
+  // Діалог відкривається після закриття меню: дві поверхні одна над одною
+  // лишали людину в меню після скасування.
+  function run(action: () => void | Promise<void>): void {
+    setMenu(false);
+    void action();
+  }
+
   const items: MenuItem[] = [
-    { key: "sub", label: "Додати підгрупу", icon: "plus", onSelect: () => void addSubgroup() },
-    { key: "rename", label: "Перейменувати", icon: "edit", onSelect: () => void rename() },
-    // Типова тематика (key !== null) не видаляється — сервер поверне 400.
-    ...(view.group.key === null
-      ? [
-          {
-            key: "remove",
-            label: "Прибрати групу",
-            icon: "trash",
-            onSelect: () => void remove(),
-          } satisfies MenuItem,
-        ]
-      : []),
+    { key: "sub", label: "Додати підгрупу", icon: "plus", onSelect: () => run(addSubgroup) },
+    {
+      key: "tracker",
+      label: "Новий трекер",
+      icon: "bar-chart",
+      onSelect: () => run(() => onNewTracker(view.group.id)),
+    },
+    { key: "rename", label: "Перейменувати", icon: "edit", onSelect: () => run(rename) },
+    // Типова тематика (key !== null) не видаляється — її рядок сіється знову,
+    // тож у неї прибирають уміст: мірки зникають, заголовок лишається.
+    view.group.key === null
+      ? { key: "remove", label: "Видалити групу", icon: "trash", onSelect: () => run(remove) }
+      : {
+          key: "clear",
+          label: "Прибрати трекери групи",
+          icon: "trash",
+          onSelect: () => run(clearTrackers),
+        },
   ];
 
   return (
@@ -136,6 +162,8 @@ export function TrackerGroupSection({
               onCreateGroup={onCreateGroup}
               onUpdateGroup={onUpdateGroup}
               onDeleteGroup={onDeleteGroup}
+              onNewTracker={onNewTracker}
+              onClearTrackers={onClearTrackers}
             />
           ))}
           <ul className="wb-matrix-list">
@@ -153,7 +181,14 @@ export function TrackerGroupSection({
           </ul>
         </div>
       )}
-      {menu && <MenuModal title={view.group.title} items={items} onClose={() => setMenu(false)} />}
+      {menu && (
+        <MenuModal
+          title={view.group.title}
+          variant="card"
+          items={items}
+          onClose={() => setMenu(false)}
+        />
+      )}
     </section>
   );
 }

@@ -16,6 +16,7 @@ import { Tabs, tabId, tabPanelId, type TabOption } from "@wwwuabot/ui/tabs";
 import type { Tracker } from "@wwwuabot/shared/trackers";
 import {
   TRACKERS_PATH,
+  readCreateGroupId,
   readCreateIntent,
   trackerPath,
   withCreateIntent,
@@ -56,6 +57,7 @@ export function TrackersPage(): ReactElement {
   const mineAccordion = useGroupAccordion();
   const libraryAccordion = useGroupAccordion("wb-tracker-library-open");
   const creating = readCreateIntent(params);
+  const createGroupId = readCreateGroupId(params);
   const [groupsOpen, setGroupsOpen] = useState(false);
   const [addOpen, setAddOpen] = useState(false);
 
@@ -83,6 +85,15 @@ export function TrackersPage(): ReactElement {
       // а не вгадуємо стан локально.
       if (added) await library.reload();
       return added !== null;
+    },
+    [state, library],
+  );
+
+  const addMany = useCallback(
+    async (sources: readonly string[]): Promise<boolean> => {
+      const count = await state.addMany(sources);
+      if (count > 0) await library.reload();
+      return count > 0;
     },
     [state, library],
   );
@@ -166,6 +177,7 @@ export function TrackersPage(): ReactElement {
             isOpen={libraryAccordion.isOpen}
             onToggle={libraryAccordion.toggle}
             onAdd={addFrom}
+            onAddMany={addMany}
             onRetry={() => void library.reload()}
           />
         )}
@@ -179,6 +191,7 @@ export function TrackersPage(): ReactElement {
             isOpen={libraryAccordion.isOpen}
             onToggle={libraryAccordion.toggle}
             onAdd={addFrom}
+            onAddMany={addMany}
             onRetry={() => void library.reload()}
           />
         )}
@@ -247,6 +260,8 @@ export function TrackersPage(): ReactElement {
                     onCreateGroup={state.createGroup}
                     onUpdateGroup={state.updateGroup}
                     onDeleteGroup={state.deleteGroup}
+                    onNewTracker={(groupId) => navigate(withCreateIntent(TRACKERS_PATH, groupId))}
+                    onClearTrackers={state.clearGroup}
                   />
                 ))}
               </div>
@@ -295,6 +310,7 @@ export function TrackersPage(): ReactElement {
           content={
             <TrackerCreateForm
               groups={state.groups}
+              initialGroupId={createGroupId}
               onCreate={(fields, groupId) => state.create(fields, groupId)}
               onCreated={(tracker) => navigate(trackerPath(tracker.id), { replace: true })}
               onCancel={() => navigate(withoutCreateIntent(TRACKERS_PATH), { replace: true })}

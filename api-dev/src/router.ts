@@ -55,16 +55,10 @@ import { matchMessagesRoute } from "./routes/messages";
 import { matchAccessRequestAdminRoute } from "./routes/access-requests";
 import { handleNotes, handleAdminNotes } from "./controllers/notes.controller";
 import { handleFavorites } from "./controllers/favorites.controller";
-import {
-  handleTrackers,
-  handleTrackerEntry,
-  handleTrackerGroups,
-  handleTrackerPublic,
-  handleTrackerTemplates,
-} from "./controllers/trackers.controller";
 import { handleAssessments } from "./controllers/assessments.controller";
 import { handleUserPages, handlePublicPages } from "./controllers/pages.controller";
 import { matchShopRoute } from "./routes/shop";
+import { matchTrackersRoute } from "./routes/trackers";
 import { handleContactLink, handleContacts } from "./controllers/contacts.controller";
 import {
   handleMonitoringSummary,
@@ -177,27 +171,11 @@ export async function handleRequest(request: Request, env: Env): Promise<Respons
     return handleFavorites(request, env);
   }
 
-  // ── Трекери: стрічка, власний трекер і записи дня ──────────────
-  // Дві ручки, бо це дві різні речі: трекер (назва, одиниця, ціль) і день
-  // (значення). Запис дня не створює трекер і не міняє його форму.
-  if (pathname === "/api/user/trackers") {
-    return handleTrackers(request, env);
-  }
-  if (pathname === "/api/user/trackers/entry") {
-    return handleTrackerEntry(request, env);
-  }
-  // Групи — окрема ручка: дерево власника (`parent_id`), глибина не обмежена.
-  if (pathname === "/api/user/trackers/group") {
-    return handleTrackerGroups(request, env);
-  }
-  // Дві поверхні на читання: каталог («Шаблони») і чужі відкриті визначення
-  // («Публічні»). Запис сюди ніколи не йде — додаються вони копією.
-  if (pathname === "/api/user/trackers/templates") {
-    return handleTrackerTemplates(request, env);
-  }
-  if (pathname === "/api/user/trackers/public") {
-    return handleTrackerPublic(request, env);
-  }
+  // ── Трекери: стрічка, записи дня, групи й дві поверхні на читання ──
+  // Один домен — один модуль (`api-dev/src/routes/trackers.ts`): коли додались
+  // групи й копія пачкою, список шляхів перетнув межу файлу (`AGENTS.md` §3).
+  const trackers = matchTrackersRoute(request, env, pathname);
+  if (trackers) return trackers;
 
   if (pathname === "/api/notes") {
     return handleNotes(request, env);

@@ -54,6 +54,8 @@ interface TrackerCreateFormProps {
   onCancel: () => void;
   /** Створити нову верхню групу з модалки вибору; немає — кнопки немає. */
   onCreateGroup?: (title: string) => Promise<TrackerGroup | null>;
+  /** Група з адреси (`group=<id>`): форма відкрита з меню самої групи. */
+  initialGroupId?: number | null;
 }
 
 function numberOrNull(value: string): number | null {
@@ -69,12 +71,13 @@ export function TrackerCreateForm({
   onCreated,
   onCancel,
   onCreateGroup,
+  initialGroupId,
 }: TrackerCreateFormProps): ReactElement {
   const [title, setTitle] = useState("");
   const [valueType, setValueType] = useState<TrackerValueType>("number");
   // Група — вибір, а не текст: `undefined` — людина ще не обирала, `null` —
-  // «Свої», решта — id з модалки з деревом.
-  const [group, setGroup] = useState<number | null | undefined>(undefined);
+  // «Свої», решта — id з модалки з деревом. Відкрили з меню групи — вона вже обрана.
+  const [group, setGroup] = useState<number | null | undefined>(initialGroupId ?? undefined);
   const [unit, setUnit] = useState("");
   // Своя одиниця — не рядок у стані, а ознака вибору: довідник і свій текст
   // живуть в одному полі `unit`, і форма лише знає, показувати чи ні ввід.

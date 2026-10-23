@@ -46,6 +46,10 @@ export interface TrackersState extends TrackersPayload {
   moveGroup: (id: number, direction: "up" | "down") => Promise<boolean>;
   /** «Додати в мої»: `catalog:<key>` або `public:<id>` — копія визначення. */
   addFrom: (source: string) => Promise<Tracker | null>;
+  /** «Додати всю групу»: ті самі джерела пачкою, одна відповідь. */
+  addMany: (sources: readonly string[]) => Promise<number>;
+  /** Спорожнити групу: прибрати мірки її піддерева, саму групу лишити. */
+  clearGroup: (id: number) => Promise<number | null>;
 }
 
 export function useTrackers(): TrackersState {
@@ -231,6 +235,38 @@ export function useTrackers(): TrackersState {
     }
   }
 
+  async function addMany(sources: readonly string[]): Promise<number> {
+    if (sources.length === 0) return 0;
+    try {
+      const result = await apiFetch<{ trackers: Tracker[] }>("/api/user/trackers", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ sources }),
+      });
+      // Групи теж могли з'явитися (тематика шаблону) — беремо свіжий перелік.
+      await load();
+      return result.trackers.length;
+    } catch (e) {
+      const message = e instanceof Error ? e.message : "";
+      await dialog.alert(message || "Не вдалося додати групу.", { tone: "danger" });
+      return 0;
+    }
+  }
+
+  async function clearGroup(id: number): Promise<number | null> {
+    try {
+      const result = await apiFetch<{ removed: number }>(
+        `/api/user/trackers/group/trackers?id=${id}`,
+        { method: "DELETE" },
+      );
+      await load();
+      return result.removed;
+    } catch {
+      await dialog.alert("Не вдалося прибрати трекери групи.", { tone: "danger" });
+      return null;
+    }
+  }
+
   async function addFrom(source: string): Promise<Tracker | null> {
     try {
       const result = await apiFetch<{ tracker: Tracker }>("/api/user/trackers", {
@@ -282,5 +318,7 @@ export function useTrackers(): TrackersState {
     deleteGroup,
     moveGroup,
     addFrom,
+    addMany,
+    clearGroup,
   };
 }

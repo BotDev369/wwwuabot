@@ -149,6 +149,34 @@ export async function updateGroup(
 }
 
 /**
+ * Очищення групи: прибирає всі мірки її піддерева (`is_active = 0`), саму
+ * групу лишає. Це єдина дія для типової тематики каталогу — її рядок не
+ * видаляється, а «порожня полиця» тоді й зникає зі стрічки.
+ * Історія вимірів не чіпається: прибране повертається разом із нею.
+ */
+export async function clearGroupTrackers(
+  env: Env,
+  userId: number,
+  id: number,
+): Promise<number | null> {
+  const group = await readGroup(env, userId, id);
+  if (!group) return null;
+  const row = await env.DB.prepare(
+    `WITH RECURSIVE subtree(id) AS (
+       SELECT id FROM tracker_groups WHERE id = ? AND owner_id = ?
+       UNION ALL
+       SELECT g.id FROM tracker_groups g JOIN subtree s ON g.parent_id = s.id
+       WHERE g.owner_id = ?
+     )
+     UPDATE trackers SET is_active = 0
+     WHERE owner_id = ? AND is_active = 1 AND group_id IN (SELECT id FROM subtree)`,
+  )
+    .bind(id, String(userId), String(userId), String(userId))
+    .run();
+  return Number(row.meta?.changes ?? 0);
+}
+
+/**
  * Прибрання групи не прибирає нічого з трекерів: діти підіймаються на місце
  * батька, а трекери — у групу «Свої» (системний корінь, його не можна
  * видалити). Історія вимірів не чіпається взагалі.

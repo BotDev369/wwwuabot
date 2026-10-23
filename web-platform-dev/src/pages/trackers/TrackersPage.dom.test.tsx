@@ -26,6 +26,8 @@ const hooks = {
   deleteGroup: vi.fn(),
   moveGroup: vi.fn(),
   addFrom: vi.fn(),
+  addMany: vi.fn(),
+  clearGroup: vi.fn(),
   libraryReload: vi.fn(),
   prompt: vi.fn(),
   confirm: vi.fn(),
@@ -105,6 +107,8 @@ const state = {
   deleteGroup: hooks.deleteGroup,
   moveGroup: hooks.moveGroup,
   addFrom: hooks.addFrom,
+  addMany: hooks.addMany,
+  clearGroup: hooks.clearGroup,
 };
 
 /** Списки на читання: один рядок на шаблон і на публічний трекер. */
@@ -174,6 +178,8 @@ beforeEach(() => {
   state.trackers = [water, steps, coffee];
   state.groups = groups;
   hooks.addFrom.mockResolvedValue({ ...water, id: 2 });
+  hooks.addMany.mockResolvedValue(1);
+  hooks.clearGroup.mockResolvedValue(1);
   state.entries = [
     {
       id: 1,
@@ -223,6 +229,26 @@ describe("акордеон груп", () => {
 
     await userEvent.click(screen.getByRole("button", { name: "Ранкова рутина" }));
     expect(screen.getByRole("button", { name: "Кроки" })).toBeTruthy();
+  });
+
+  it("меню групи веде у форму нового трекера з цією групою", async () => {
+    render(<TrackersPage />);
+
+    await userEvent.click(screen.getByRole("button", { name: "Дії групи Режим" }));
+    await userEvent.click(screen.getByRole("button", { name: "Новий трекер" }));
+
+    // Група йде в адресі: форма відкриється з неї ж, і «назад» її закриє.
+    expect(hooks.navigate).toHaveBeenCalledWith("/trackers?new=1&group=10");
+  });
+
+  it("типова тематика очищується одною дією — сама група лишається", async () => {
+    hooks.confirm.mockResolvedValueOnce(true);
+    render(<TrackersPage />);
+
+    await userEvent.click(screen.getByRole("button", { name: "Дії групи Активність" }));
+    await userEvent.click(screen.getByRole("button", { name: "Прибрати трекери групи" }));
+
+    expect(hooks.clearGroup).toHaveBeenCalledWith(11);
   });
 
   it("стан розгорнутості пам'ятається в localStorage", async () => {
@@ -411,6 +437,18 @@ describe("три поверхні", () => {
     expect(row.querySelector(".wb-library-icon svg")).toBeTruthy();
     expect(row.querySelector(".wb-library-title")?.textContent).toBe("Вода");
     expect(row.querySelector(".wb-library-meta")?.textContent).toBe("ціль 2 л");
+  });
+
+  it("«Додати всю групу» копіює всі незадані мірки однією дією", async () => {
+    render(<TrackersPage />);
+    await userEvent.click(screen.getByRole("tab", { name: "Шаблони" }));
+
+    await userEvent.click(screen.getByRole("button", { name: "Дії групи Режим" }));
+    await userEvent.click(screen.getByRole("button", { name: "Додати всю групу (1)" }));
+
+    // «Сон» уже в «Моїх», тож у пачку йде лише незадане.
+    expect(hooks.addMany).toHaveBeenCalledWith(["catalog:water"]);
+    expect(hooks.libraryReload).toHaveBeenCalled();
   });
 
   it("пошук звужує список, а не гортає море пальцем", async () => {

@@ -22,7 +22,7 @@ import {
   type TrackerTemplate,
 } from "@wwwuabot/shared/trackers";
 import type { Env } from "../shared/types";
-import { TRACKER_COLUMNS, toTracker, type TrackerRow } from "./trackers-seed";
+import { TRACKER_COLUMNS, seedGroups, toTracker, type TrackerRow } from "./trackers-seed";
 
 /**
  * Позиція нового рядка — **у кінець** своєї групи: `MAX + 10`. Нуль (позиція
@@ -123,15 +123,17 @@ export async function listPublicTrackers(env: Env, userId: number): Promise<Publ
 }
 
 /**
- * «Додати в мої» — **копія**, а не посилання: ціль і історія мої, тож правка
- * шаблону їх не переписує. Повторне додавання воскрешає прибраний рядок
- * (`is_active = 1`) разом з історією — ключ уже зайнятий. `null` — визначення
- * немає (закрите, неактивне або номер вигадано): різних відповідей немає.
+ * «Додати в мої» — **копія**: ціль і історія мої, тож правка шаблону їх не
+ * переписує. Повторне додавання воскрешає прибраний рядок з історією, а
+ * `null` — джерела немає. Копія шаблону стає в **свою тематику**, а не в
+ * «Свої»: інакше «додати всю групу» не дало б структури, що й у «Моїх».
+ * `groups` — карта «ключ → id» для серії копій, щоб не сіяти її на кожен рядок.
  */
 export async function addTrackerFrom(
   env: Env,
   userId: number,
   source: TrackerCopySource,
+  groups?: Map<string, number>,
 ): Promise<Tracker | null> {
   const key = trackerCopyKey(source);
   const existing = await env.DB.prepare(
@@ -155,12 +157,15 @@ export async function addTrackerFrom(
 
   let fields: TrackerFields;
   let icon: string;
+  let groupId: number | null = null;
   if (source.kind === "catalog") {
     const entry = catalogEntry(source.key);
     if (!entry) return null;
     const { title, unit, step, goal, min, max, mode } = entry;
     fields = { title, unit, step, goal, min, max, mode, valueType: "number" };
     icon = entry.icon;
+    const themes = groups ?? (await seedGroups(env, userId));
+    groupId = themes.get(entry.groupKey) ?? null;
   } else {
     const origin = await env.DB.prepare(
       `SELECT ${TRACKER_COLUMNS}, owner_id FROM trackers
@@ -185,12 +190,12 @@ export async function addTrackerFrom(
     icon = entry.icon;
   }
 
-  const position = await nextTrackerPosition(env, userId, null);
+  const position = await nextTrackerPosition(env, userId, groupId);
   await env.DB.prepare(
     `INSERT INTO trackers
        (owner_id, key, title, unit, step, goal, min_value, max_value, mode, value_type,
         icon, group_id, is_builtin, is_active, position, source, created_at)
-     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NULL, ?, 1, ?, ?, ?)`,
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 1, ?, ?, ?)`,
   )
     .bind(
       String(userId),
@@ -204,6 +209,7 @@ export async function addTrackerFrom(
       fields.mode,
       fields.valueType,
       icon,
+      groupId,
       source.kind === "catalog" ? 1 : 0,
       position,
       `${source.kind}:${source.kind === "catalog" ? source.key : source.id}`,
@@ -216,4 +222,24 @@ export async function addTrackerFrom(
     .bind(String(userId), key)
     .first<TrackerRow>();
   return row ? toTracker(row) : null;
+}
+
+/**
+ * «Додати всю групу» — та сама копія для списку джерел, однією ручкою: серія
+ * запитів із клієнта лишала б половину доданою при збої на середині.
+ * `null` — одне з джерел не існує: відповідь та сама, що й для одного.
+ */
+export async function addTrackersFrom(
+  env: Env,
+  userId: number,
+  sources: readonly TrackerCopySource[],
+): Promise<Tracker[] | null> {
+  const groups = await seedGroups(env, userId);
+  const added: Tracker[] = [];
+  for (const source of sources) {
+    const tracker = await addTrackerFrom(env, userId, source, groups);
+    if (!tracker) return null;
+    added.push(tracker);
+  }
+  return added;
 }

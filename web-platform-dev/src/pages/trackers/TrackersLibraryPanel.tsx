@@ -1,13 +1,15 @@
 /**
  * Список на читання («Шаблони», «Публічні») — той самий акордеон, що в
- * «Моїх»: залитий заголовок групи з рахунком, рядки під ним. Єдина дія рядка
- * — «Додати»; під час пошуку групи розгорнуті, щоб збіг було видно.
+ * «Моїх»: залитий заголовок групи з рахунком, рядки під ним. Дія рядка —
+ * «Додати», дія заголовка — додати всю групу однією копією; під час пошуку
+ * групи розгорнуті, щоб збіг було видно.
  *
  * @module web-platform-dev/src/pages/trackers/TrackersLibraryPanel
  */
 
 import { useMemo, useState, type ReactElement } from "react";
 import { Icon } from "@wwwuabot/shared";
+import { MenuModal } from "@wwwuabot/ui/menu";
 import { filterLibrary, groupLibrary, type TrackerLibraryItem } from "./tracker-library";
 
 interface TrackersLibraryPanelProps {
@@ -19,7 +21,14 @@ interface TrackersLibraryPanelProps {
   isOpen: (title: string) => boolean;
   onToggle: (title: string) => void;
   onAdd: (source: string) => Promise<boolean>;
+  /** «Додати всю групу»: усі джерела однією відповіддю сервера. */
+  onAddMany: (sources: readonly string[]) => Promise<boolean>;
   onRetry: () => void;
+}
+
+interface GroupMenu {
+  title: string;
+  sources: string[];
 }
 
 export function TrackersLibraryPanel({
@@ -30,10 +39,13 @@ export function TrackersLibraryPanel({
   isOpen,
   onToggle,
   onAdd,
+  onAddMany,
   onRetry,
 }: TrackersLibraryPanelProps): ReactElement {
   const [query, setQuery] = useState("");
   const [adding, setAdding] = useState<string | null>(null);
+  const [addingAll, setAddingAll] = useState(false);
+  const [menu, setMenu] = useState<GroupMenu | null>(null);
   const visible = useMemo(() => filterLibrary(items, query), [items, query]);
   const groups = useMemo(() => groupLibrary(visible), [visible]);
   const searching = query.trim().length > 0;
@@ -46,6 +58,20 @@ export function TrackersLibraryPanel({
     } finally {
       setAdding(null);
     }
+  }
+
+  async function addAll(sources: readonly string[]): Promise<void> {
+    if (addingAll || sources.length === 0) return;
+    setAddingAll(true);
+    try {
+      await onAddMany(sources);
+    } finally {
+      setAddingAll(false);
+    }
+  }
+
+  function openMenu(title: string, items: readonly TrackerLibraryItem[]): void {
+    setMenu({ title, sources: items.filter((item) => !item.added).map((item) => item.source) });
   }
 
   return (
@@ -82,6 +108,7 @@ export function TrackersLibraryPanel({
           {groups.map((group, index) => {
             const titleId = `tracker-library-group-${index}`;
             const open = searching || isOpen(group.title);
+            const fresh = group.items.some((item) => !item.added);
             return (
               <section key={group.title} className="wb-group" aria-labelledby={titleId}>
                 <div className="wb-group-head">
@@ -98,6 +125,18 @@ export function TrackersLibraryPanel({
                     </span>
                     <span className="wb-group-count">{group.items.length}</span>
                   </button>
+                  {/* Меню — лише коли є що додавати: «усі вже в «Моїх»» — це
+                      не дія, а порожній пункт. */}
+                  {fresh && (
+                    <button
+                      type="button"
+                      className="wb-group-actions"
+                      aria-label={`Дії групи ${group.title}`}
+                      onClick={() => openMenu(group.title, group.items)}
+                    >
+                      <Icon name="more" size={18} />
+                    </button>
+                  )}
                 </div>
                 {open && (
                   <ul className="wb-library-list">
@@ -116,7 +155,7 @@ export function TrackersLibraryPanel({
                             "wb-btn wb-library-add" +
                             (item.added ? " wb-btn-ghost" : " wb-btn-secondary")
                           }
-                          disabled={item.added || adding === item.source}
+                          disabled={item.added || adding === item.source || addingAll}
                           onClick={() => void add(item.source)}
                         >
                           {item.added ? "Додано" : "Додати"}
@@ -129,6 +168,26 @@ export function TrackersLibraryPanel({
             );
           })}
         </div>
+      )}
+
+      {menu && (
+        <MenuModal
+          title={menu.title}
+          variant="card"
+          onClose={() => setMenu(null)}
+          items={[
+            {
+              key: "all",
+              label: `Додати всю групу (${menu.sources.length})`,
+              icon: "plus",
+              onSelect: () => {
+                const sources = menu.sources;
+                setMenu(null);
+                void addAll(sources);
+              },
+            },
+          ]}
+        />
       )}
     </div>
   );

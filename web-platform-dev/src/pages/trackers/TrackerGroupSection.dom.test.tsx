@@ -20,6 +20,8 @@ const hooks = {
   save: vi.fn(),
   toggle: vi.fn(),
   open: vi.fn(),
+  newTracker: vi.fn(),
+  clear: vi.fn(),
 };
 
 vi.mock("@wwwuabot/ui/dialog", () => ({
@@ -75,6 +77,8 @@ function renderSection(
       onCreateGroup={hooks.create}
       onUpdateGroup={hooks.update}
       onDeleteGroup={hooks.remove}
+      onNewTracker={hooks.newTracker}
+      onClearTrackers={hooks.clear}
     />,
   );
 }
@@ -88,14 +92,26 @@ beforeEach(() => {
 });
 
 describe("меню групи", () => {
-  it("дії відкривають повноекранну поверхню з усіма пунктами", async () => {
+  it("дії відкривають картку з усіма пунктами", async () => {
     renderSection(ownGroup);
     await openMenu("Режим");
 
-    expect(screen.getByRole("dialog", { name: "Режим" })).toBeTruthy();
+    const dialog = screen.getByRole("dialog", { name: "Режим" });
+    // Картка, а не аркуш на весь екран: пунктів мало, і прилипати до верху нічому.
+    expect(dialog.classList.contains("wb-modal--card")).toBe(true);
     expect(screen.getByRole("button", { name: "Додати підгрупу" })).toBeTruthy();
+    expect(screen.getByRole("button", { name: "Новий трекер" })).toBeTruthy();
     expect(screen.getByRole("button", { name: "Перейменувати" })).toBeTruthy();
-    expect(screen.getByRole("button", { name: "Прибрати групу" })).toBeTruthy();
+    expect(screen.getByRole("button", { name: "Видалити групу" })).toBeTruthy();
+  });
+
+  it("«Новий трекер» відкриває форму з цією групою", async () => {
+    renderSection(ownGroup);
+    await openMenu("Режим");
+
+    await userEvent.click(screen.getByRole("button", { name: "Новий трекер" }));
+
+    expect(hooks.newTracker).toHaveBeenCalledWith(9);
   });
 
   it("перейменування шле обрізану назву того самого рядка", async () => {
@@ -134,29 +150,35 @@ describe("меню групи", () => {
     expect(hooks.create).toHaveBeenCalledWith("Біг", 9);
   });
 
-  it("прибирання питає й шле лише підтверджене", async () => {
+  it("видалення групи питає й шле лише підтверджене", async () => {
     renderSection(ownGroup);
     hooks.confirm.mockResolvedValueOnce(false);
     await openMenu("Режим");
-    await userEvent.click(screen.getByRole("button", { name: "Прибрати групу" }));
+    await userEvent.click(screen.getByRole("button", { name: "Видалити групу" }));
 
     expect(hooks.confirm).toHaveBeenCalledWith(
-      expect.stringContaining("Прибрати «Режим»?"),
-      expect.objectContaining({ tone: "danger", confirmText: "Прибрати" }),
+      expect.stringContaining("Видалити «Режим»?"),
+      expect.objectContaining({ tone: "danger", confirmText: "Видалити" }),
     );
     expect(hooks.remove).not.toHaveBeenCalled();
 
     hooks.confirm.mockResolvedValueOnce(true);
-    await userEvent.click(screen.getByRole("button", { name: "Прибрати групу" }));
+    await openMenu("Режим");
+    await userEvent.click(screen.getByRole("button", { name: "Видалити групу" }));
     expect(hooks.remove).toHaveBeenCalledWith(9);
   });
 
-  it("типовій тематиці меню не пропонує прибирання", async () => {
+  it("типовій тематиці пропонує прибрати трекери, а не видалити групу", async () => {
     renderSection(builtinGroup);
     await openMenu("Активність");
 
-    expect(screen.queryByRole("button", { name: "Прибрати групу" })).toBeNull();
-    expect(screen.getByRole("button", { name: "Перейменувати" })).toBeTruthy();
+    expect(screen.queryByRole("button", { name: "Видалити групу" })).toBeNull();
+    await userEvent.click(screen.getByRole("button", { name: "Прибрати трекери групи" }));
+
+    expect(hooks.confirm).toHaveBeenCalledWith(
+      expect.stringContaining("Сама тематика лишиться"),
+      expect.objectContaining({ tone: "danger", confirmText: "Прибрати" }),
+    );
   });
 
   it("кожен трекер групи малює свій рядок матриці", () => {

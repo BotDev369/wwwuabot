@@ -6,6 +6,7 @@ import {
   todayTrackerDay,
 } from "@wwwuabot/shared/trackers";
 import type { Env } from "../shared/types";
+import { handleTrackerGroupClear } from "./trackers-groups.controller";
 import {
   handleTrackerEntry,
   handleTrackerPublic,
@@ -36,6 +37,8 @@ function database(
     lastRowId?: number;
     /** Рядки стрічки — щоб дійшла стеля кількості трекерів. */
     listTrackers?: unknown[];
+    /** Група, яку бачить `readGroup` (для очищення й видалення). */
+    group?: { id: number; parent_id: number | null; title: string; key: string | null } | null;
     /** SQL, на якому фейк падає: шлях контролера до відповіді 500. */
     throwOn?: string;
   } = {},
@@ -44,7 +47,8 @@ function database(
   const batches: number[] = [];
   // Рядок існує лише після INSERT: інакше пошук «уже доданого» повертав би
   // рядок на порожній базі, і повторне додавання виглядало б як перше.
-  let inserted = false;
+  // Ключі — окремо: у пачці другий трекер не має знайти рядок першого.
+  const keys = new Set<string>();
   const db = {
     prepare(sql: string) {
       const call = { sql, values: [] as unknown[] };
@@ -56,9 +60,11 @@ function database(
         },
         first: async () => {
           if (options.throwOn && sql.includes(options.throwOn)) throw new Error("D1 недоступна");
+          if (sql.includes("FROM tracker_groups")) return options.group ?? null;
           if (sql.includes("FROM trackers")) {
             if (options.tracker !== undefined) return options.tracker;
-            if (sql.includes("AND key = ?")) return inserted ? TRACKER_ROW : null;
+            if (sql.includes("AND key = ?"))
+              return keys.has(String(call.values[1])) ? TRACKER_ROW : null;
             return TRACKER_ROW;
           }
           return null;
@@ -80,7 +86,7 @@ function database(
           return { results: [] };
         },
         run: async () => {
-          if (sql.includes("INSERT INTO trackers")) inserted = true;
+          if (sql.includes("INSERT INTO trackers")) keys.add(String(call.values[1]));
           return { meta: { changes: options.changes ?? 1, last_row_id: options.lastRowId ?? 21 } };
         },
       };
@@ -157,6 +163,34 @@ describe("трекери людини", () => {
     // Ключ каталогу лишається своїм — він же і є захистом від дубля.
     expect(insert?.values[1]).toBe("water");
     expect(insert?.values).toContain("catalog:water");
+  });
+
+  it("додавання всієї групи — дві копії однією відповіддю", async () => {
+    const db = database();
+    const response = await handleTrackers(
+      request("POST", "https://example.com/api/user/trackers", {
+        sources: ["catalog:water", "catalog:sleep"],
+      }),
+      db.env,
+    );
+    const body = (await response.json()) as { trackers: unknown[] };
+
+    expect(response.status).toBe(200);
+    expect(body.trackers).toHaveLength(2);
+    expect(db.calls.filter((call) => call.sql.includes("INSERT INTO trackers"))).toHaveLength(2);
+  });
+
+  it("вигадане джерело в пачці — 400 і жодного INSERT", async () => {
+    const db = database();
+    const response = await handleTrackers(
+      request("POST", "https://example.com/api/user/trackers", {
+        sources: ["catalog:water", "catalog:вигадка"],
+      }),
+      db.env,
+    );
+
+    expect(response.status).toBe(400);
+    expect(db.calls.some((call) => call.sql.includes("INSERT INTO trackers"))).toBe(false);
   });
 
   it("вигаданий шаблон — 400, а не порожня копія", async () => {
@@ -322,6 +356,48 @@ describe("трекери людини", () => {
       db.env,
     );
     expect(response.status).toBe(404);
+  });
+});
+
+describe("очищення групи", () => {
+  const builtin = { id: 11, parent_id: null, title: "Активність", key: "activity" };
+
+  it("прибирає мірки піддерева й лишає саму тематику", async () => {
+    const db = database({ group: builtin, changes: 3 });
+    const response = await handleTrackerGroupClear(
+      request("DELETE", "https://example.com/api/user/trackers/group/trackers?id=11"),
+      db.env,
+    );
+    const body = (await response.json()) as { removed: number };
+
+    expect(response.status).toBe(200);
+    expect(body.removed).toBe(3);
+    const update = db.calls.find((call) => call.sql.includes("UPDATE trackers SET is_active = 0"));
+    // Піддерево — рекурсією в SQL: у підгрупах теж трекери.
+    expect(update?.sql).toContain("WITH RECURSIVE subtree");
+    expect(db.calls.some((call) => call.sql.includes("DELETE FROM tracker_groups"))).toBe(false);
+  });
+
+  it("чужа або неіснуюча група — 404 без UPDATE", async () => {
+    const db = database({ group: null });
+    const response = await handleTrackerGroupClear(
+      request("DELETE", "https://example.com/api/user/trackers/group/trackers?id=11"),
+      db.env,
+    );
+
+    expect(response.status).toBe(404);
+    expect(db.calls.some((call) => call.sql.includes("UPDATE trackers"))).toBe(false);
+  });
+
+  it("метод поза списком — 405 без читань", async () => {
+    const db = database();
+    const response = await handleTrackerGroupClear(
+      request("GET", "https://example.com/api/user/trackers/group/trackers?id=11"),
+      db.env,
+    );
+
+    expect(response.status).toBe(405);
+    expect(db.calls).toHaveLength(0);
   });
 });
 
