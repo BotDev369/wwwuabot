@@ -161,17 +161,26 @@ export async function clearGroupTrackers(
 ): Promise<number | null> {
   const group = await readGroup(env, userId, id);
   if (!group) return null;
+  // Піддерево збирається з переліку груп у памʼяті, а не рекурсивним запитом:
+  // груп у людини десятки (є стеля), а один `UPDATE` із переліком читається
+  // простіше за `WITH RECURSIVE`.
+  const ids = new Set<number>([id]);
+  const groups = await listGroups(env, userId);
+  for (let grew = true; grew;) {
+    grew = false;
+    for (const candidate of groups) {
+      if (ids.has(candidate.id) || candidate.parentId === null) continue;
+      if (!ids.has(candidate.parentId)) continue;
+      ids.add(candidate.id);
+      grew = true;
+    }
+  }
+  const placeholders = [...ids].map(() => "?").join(", ");
   const row = await env.DB.prepare(
-    `WITH RECURSIVE subtree(id) AS (
-       SELECT id FROM tracker_groups WHERE id = ? AND owner_id = ?
-       UNION ALL
-       SELECT g.id FROM tracker_groups g JOIN subtree s ON g.parent_id = s.id
-       WHERE g.owner_id = ?
-     )
-     UPDATE trackers SET is_active = 0
-     WHERE owner_id = ? AND is_active = 1 AND group_id IN (SELECT id FROM subtree)`,
+    `UPDATE trackers SET is_active = 0
+     WHERE owner_id = ? AND is_active = 1 AND group_id IN (${placeholders})`,
   )
-    .bind(id, String(userId), String(userId), String(userId))
+    .bind(String(userId), ...ids)
     .run();
   return Number(row.meta?.changes ?? 0);
 }

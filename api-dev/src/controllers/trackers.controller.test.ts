@@ -39,6 +39,8 @@ function database(
     listTrackers?: unknown[];
     /** Група, яку бачить `readGroup` (для очищення й видалення). */
     group?: { id: number; parent_id: number | null; title: string; key: string | null } | null;
+    /** Дерево груп для `listGroups` — щоб дійшло піддерево очищення. */
+    groupRows?: { id: number; parent_id: number | null; key: string | null }[];
     /** SQL, на якому фейк падає: шлях контролера до відповіді 500. */
     throwOn?: string;
   } = {},
@@ -73,6 +75,7 @@ function database(
         all: async () => {
           if (options.throwOn && sql.includes(options.throwOn)) throw new Error("D1 недоступна");
           if (sql.includes("FROM tracker_groups")) {
+            if (options.groupRows) return { results: options.groupRows };
             return {
               results: TRACKER_CATALOG_GROUPS.map((group, index) => ({
                 id: index + 1,
@@ -363,7 +366,16 @@ describe("очищення групи", () => {
   const builtin = { id: 11, parent_id: null, title: "Активність", key: "activity" };
 
   it("прибирає мірки піддерева й лишає саму тематику", async () => {
-    const db = database({ group: builtin, changes: 3 });
+    const db = database({
+      group: builtin,
+      changes: 3,
+      groupRows: [
+        { id: 11, parent_id: null, key: "activity" },
+        { id: 12, parent_id: 11, key: null },
+        { id: 13, parent_id: 12, key: null },
+        { id: 14, parent_id: null, key: null },
+      ],
+    });
     const response = await handleTrackerGroupClear(
       request("DELETE", "https://example.com/api/user/trackers/group/trackers?id=11"),
       db.env,
@@ -373,8 +385,11 @@ describe("очищення групи", () => {
     expect(response.status).toBe(200);
     expect(body.removed).toBe(3);
     const update = db.calls.find((call) => call.sql.includes("UPDATE trackers SET is_active = 0"));
-    // Піддерево — рекурсією в SQL: у підгрупах теж трекери.
-    expect(update?.sql).toContain("WITH RECURSIVE subtree");
+    // Піддерево — переліком `IN (…)`: у підгрупах теж мірки, а сусідня гілка
+    // (`14`) лишається — очищення не має виходити за межі групи.
+    expect(update?.sql).toContain("IN (?, ?, ?)");
+    // Перший бінд — власник: мірки чужої людини очищення не зачіпає.
+    expect(update?.values.slice(1)).toEqual([11, 12, 13]);
     expect(db.calls.some((call) => call.sql.includes("DELETE FROM tracker_groups"))).toBe(false);
   });
 
