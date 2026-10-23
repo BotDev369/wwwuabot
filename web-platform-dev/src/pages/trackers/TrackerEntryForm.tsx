@@ -1,8 +1,8 @@
 /**
- * Запис: значення й нотатка, без поля дати — момент фіксує сам запис.
+ * Запис: значення або статус, нотатка, без поля дати — момент фіксує сам запис.
  *
- * «Так-ні» фіксується самим вибором (`docs/TRACKERS.md`): статус уже є
- * відповіддю, і кнопка підтвердження поруч лише додає дотик до рішення.
+ * «Так-ні» обирається вкладкою, а зберігає та сама кнопка «Зберегти», що й
+ * число: вибір показує обраний стан, але не фіксує запис за людину.
  *
  * @module web-platform-dev/src/pages/trackers/TrackerEntryForm
  */
@@ -22,11 +22,8 @@ interface TrackerEntryFormProps {
   draft: EntryDraft;
   saving: boolean;
   onChange: (patch: Partial<EntryDraft>) => void;
-  /**
-   * Запис готовий: число — з форми, статус — одразу з дотику на вибір
-   * (`status` — «1» / «0»).
-   */
-  onSubmit: (status?: string) => void;
+  /** Запис готовий: значення або статус — у чернетці, зберігає людина кнопкою. */
+  onSubmit: () => void;
 }
 
 export function TrackerEntryForm({
@@ -48,10 +45,7 @@ export function TrackerEntryForm({
           <span className="wb-label">Статус</span>
           <TrackerYesNo
             value={draft.value}
-            onChange={(value) => {
-              onChange({ value });
-              onSubmit(value);
-            }}
+            onChange={(value) => onChange({ value })}
             label="Так чи ні"
           />
         </div>
@@ -80,16 +74,14 @@ export function TrackerEntryForm({
           onChange={(event) => onChange({ note: event.target.value })}
         />
       </label>
-      {tracker.valueType === "number" && (
-        <button
-          type="submit"
-          className="wb-btn wb-btn-primary wb-tracker-entry-submit"
-          disabled={saving}
-        >
-          <Icon name="check" size={18} />
-          Зберегти
-        </button>
-      )}
+      <button
+        type="submit"
+        className="wb-btn wb-btn-primary wb-tracker-entry-submit"
+        disabled={saving}
+      >
+        <Icon name="check" size={18} />
+        Зберегти
+      </button>
     </form>
   );
 }

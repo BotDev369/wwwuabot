@@ -124,25 +124,35 @@ describe("запис числа", () => {
 });
 
 describe("запис «так-ні»", () => {
-  it("статус обирають вкладкою — вибір уже є записом, кнопки підтвердження немає", async () => {
+  it("статус обирають вкладкою з видимим станом, а зберігає «Зберегти»", async () => {
     renderCard(habit, null);
     const card = screen.getByRole("dialog", { name: "Тренування" });
 
-    // Окремої кнопки збереження біля статусу немає: «Так»/«Ні» — це вже відповідь.
-    expect(within(card).queryByRole("button", { name: "Зберегти" })).toBeNull();
+    // Порожній вибір — це ще не відповідь, а не «0».
+    await userEvent.click(within(card).getByRole("button", { name: "Зберегти" }));
+    expect(hooks.alert).toHaveBeenCalledWith("Оберіть «Так» або «Ні».", { tone: "danger" });
+    expect(hooks.close).not.toHaveBeenCalled();
 
     await userEvent.click(within(card).getByRole("tab", { name: "Ні" }));
+    // Вибір видно одразу, і він не фіксує запис за людину: картка лишається.
+    expect(within(card).getByRole("tab", { name: "Ні" }).className).toContain(
+      "wb-tabs-btn--active",
+    );
+    expect(hooks.save).not.toHaveBeenCalled();
+    expect(hooks.close).not.toHaveBeenCalled();
 
+    await userEvent.click(within(card).getByRole("button", { name: "Зберегти" }));
     expect(hooks.save).toHaveBeenCalledWith(0, "");
     expect(hooks.close).toHaveBeenCalled();
   });
 
-  it("нотатка йде разом зі статусом, якщо її ввели до вибору", async () => {
+  it("нотатка необовʼязкова: зі статусом вона йде одним записом", async () => {
     renderCard(habit, null);
     const card = screen.getByRole("dialog", { name: "Тренування" });
 
     await userEvent.type(within(card).getByLabelText("Нотатка"), "після бігу");
     await userEvent.click(within(card).getByRole("tab", { name: "Так" }));
+    await userEvent.click(within(card).getByRole("button", { name: "Зберегти" }));
 
     expect(hooks.save).toHaveBeenCalledWith(1, "після бігу");
     expect(hooks.close).toHaveBeenCalled();

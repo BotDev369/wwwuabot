@@ -72,13 +72,16 @@ export function TrackerPage(): ReactElement {
     ? trackerReport(entries, { endDay: state.endDay, days, goal: tracker.goal, mode })
     : null;
 
-  async function submit(status?: string): Promise<void> {
+  async function submit(): Promise<void> {
     if (!tracker) return;
-    // «Так-ні» фіксується вибором: дотик на статус уже є записом, а порожній
-    // вибір — це ще не відповідь, а не «0». Межі все одно перевіряє сервер.
+    // «Так-ні» обирається вкладкою: порожній вибір — це ще не відповідь, а не «0».
+    // Межі все одно перевіряє сервер.
     if (tracker.valueType === "boolean") {
-      if (status !== "0" && status !== "1") return;
-      if (await state.save(Number(status), draft.note)) setDraft(EMPTY_DRAFT);
+      if (draft.value !== "0" && draft.value !== "1") {
+        await dialog.alert("Оберіть «Так» або «Ні».", { tone: "danger" });
+        return;
+      }
+      if (await state.save(Number(draft.value), draft.note)) setDraft(EMPTY_DRAFT);
       return;
     }
     const raw = draft.value.replace(",", ".").trim();
@@ -136,7 +139,7 @@ export function TrackerPage(): ReactElement {
               draft={draft}
               saving={state.saving}
               onChange={(patch) => setDraft({ ...draft, ...patch })}
-              onSubmit={(status) => void submit(status)}
+              onSubmit={() => void submit()}
             />
             <label className="wb-field">
               <span className="wb-label">Група</span>

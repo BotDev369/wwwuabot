@@ -87,7 +87,7 @@ describe("форма запису", () => {
     expect(screen.queryByText("Збережено")).toBeNull();
   });
 
-  it("«так-ні» не питає число: статус обирають вкладкою, і вибір уже фіксує запис", async () => {
+  it("«так-ні» не питає число: статус обирають вкладкою, а зберігає та сама кнопка", async () => {
     const habit: Tracker = {
       ...water,
       key: "own-habit",
@@ -106,16 +106,40 @@ describe("форма запису", () => {
     );
 
     expect(screen.queryByLabelText(/Значення/)).toBeNull();
-    // Окремої кнопки збереження тут немає: вибір статусу і є записом.
-    expect(screen.queryByRole("button", { name: "Зберегти" })).toBeNull();
+    // Кнопка збереження та сама, що й у числа: статус — це вибір, а не запис.
+    expect(screen.getByRole("button", { name: "Зберегти" })).toBeTruthy();
 
     await userEvent.click(screen.getByRole("tab", { name: "Так" }));
     // Клавіша несе те саме значення, що йде на сервер: межу 0…1 перевіряє він.
     expect(handlers.change).toHaveBeenCalledWith({ value: "1" });
-    expect(handlers.submit).toHaveBeenCalledWith("1");
+    expect(handlers.submit).not.toHaveBeenCalled();
 
     await userEvent.click(screen.getByRole("tab", { name: "Ні" }));
     expect(handlers.change).toHaveBeenCalledWith({ value: "0" });
-    expect(handlers.submit).toHaveBeenCalledWith("0");
+
+    await userEvent.click(screen.getByRole("button", { name: "Зберегти" }));
+    expect(handlers.submit).toHaveBeenCalled();
+  });
+
+  it("обране «Так» чи «Ні» видно одразу: пілюля стоїть на обраній вкладці", () => {
+    const habit: Tracker = {
+      ...water,
+      key: "own-habit",
+      title: "Тренування",
+      unit: "",
+      valueType: "boolean",
+    };
+    render(
+      <TrackerEntryForm
+        tracker={habit}
+        draft={{ value: "1", note: "" }}
+        saving={false}
+        onChange={handlers.change}
+        onSubmit={handlers.submit}
+      />,
+    );
+
+    expect(screen.getByRole("tab", { name: "Так" }).className).toContain("wb-tabs-btn--active");
+    expect(screen.getByRole("tab", { name: "Ні" }).className).not.toContain("wb-tabs-btn--active");
   });
 });

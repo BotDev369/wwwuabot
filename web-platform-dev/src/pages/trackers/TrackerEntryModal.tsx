@@ -56,13 +56,16 @@ export function TrackerEntryModal({
       ? Math.min(100, Math.round(((todayValue ?? 0) / tracker.goal) * 100))
       : null;
 
-  async function submit(status?: string): Promise<void> {
+  async function submit(): Promise<void> {
     if (busy) return;
-    // «Так-ні» фіксується вибором — дотик на статус уже є записом.
+    // «Так-ні» обирається вкладкою: порожній вибір — це ще не відповідь, а не «0».
     if (tracker.valueType === "boolean") {
-      if (status !== "0" && status !== "1") return;
+      if (draft.value !== "0" && draft.value !== "1") {
+        await dialog.alert("Оберіть «Так» або «Ні».", { tone: "danger" });
+        return;
+      }
       setBusy(true);
-      const saved = await onSave(Number(status), draft.note.trim());
+      const saved = await onSave(Number(draft.value), draft.note.trim());
       setBusy(false);
       if (saved) onClose();
       return;
@@ -135,7 +138,7 @@ export function TrackerEntryModal({
             draft={draft}
             saving={saving || busy}
             onChange={(patch) => setDraft((current) => ({ ...current, ...patch }))}
-            onSubmit={(status) => void submit(status)}
+            onSubmit={() => void submit()}
           />
 
           <div className="wb-tracker-actions">
