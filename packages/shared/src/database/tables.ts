@@ -303,6 +303,31 @@ export const TABLES = {
   },
 
   /**
+   * Журнал дій людей: **один рядок — одна дія, а не стан**; імена беруться
+   * `JOIN`-ом із `users`. Пишуть обидва воркери, господар — `api-dev`.
+   * Правила — `docs/EVENTS.md`.
+   */
+  user_events: {
+    name: "user_events",
+    owner: "api-dev",
+    purpose: "Журнал дій людей: поверхня (бот / платформа), вид дії, що саме й коли зробили.",
+    create: `CREATE TABLE IF NOT EXISTS user_events (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        user_id INTEGER NOT NULL,
+        surface TEXT NOT NULL,
+        kind TEXT NOT NULL,
+        action TEXT NOT NULL,
+        details TEXT,
+        status TEXT NOT NULL DEFAULT 'ok',
+        created_at TEXT NOT NULL DEFAULT (datetime('now'))
+      )`,
+    indexes: [
+      "CREATE INDEX IF NOT EXISTS idx_user_events_user ON user_events(user_id, id)",
+      "CREATE INDEX IF NOT EXISTS idx_user_events_time ON user_events(created_at)",
+    ],
+  },
+
+  /**
    * Трекери — рядок на мірку людини (кроки, вода, вага, витрати), не `scenarios`:
    * трекер не має адреси й не публікується.
    *

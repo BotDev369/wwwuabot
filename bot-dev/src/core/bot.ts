@@ -2,8 +2,6 @@ import * as Sentry from "@sentry/cloudflare";
 import { Bot, BotError } from "grammy";
 import type { Env, AppContext } from "../shared/types/env";
 import { TEXTS } from "../shared/config/texts";
-import { LogQueueService } from "../modules/logging/queue";
-import { buildLogMessage } from "../modules/logging/builder";
 import { preMiddleware } from "./middleware/pre";
 import { interceptMiddleware } from "./middleware/intercept";
 import { postMiddleware } from "./middleware/post";
@@ -30,9 +28,8 @@ export function createBot(env: Env): Bot<AppContext> {
     // явно. Контекст Telegram (текст повідомлення, initData) НЕ передаємо:
     // у Sentry має їхати тільки сам виняток.
     Sentry.captureException(error);
-    const log = buildLogMessage(ctx, "error", error);
-    log.action_type = `bot_${ctx.update?.message ? "message" : "callback_query"}`;
-    await LogQueueService.push(env, log);
+    // Подію зі `status=error` уже записав `interceptMiddleware`: він обгортає
+    // решту ланцюга, і другий запис дав би дві події на одну помилку.
     const errorMsg = TEXTS.error(env.ENVIRONMENT);
     await ctx.reply(errorMsg).catch((replyErr) => {
       console.error(

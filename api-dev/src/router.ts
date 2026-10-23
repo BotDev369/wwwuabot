@@ -64,6 +64,7 @@ import {
   handleMonitoringSummary,
   handleMonitoringCollect,
 } from "./controllers/monitoring.controller";
+import { handleEventSummary, handleEventList } from "./controllers/events.controller";
 
 /**
  * Префікси шляхів, доступ до яких вимагає адмінської cookie-сесії.
@@ -270,6 +271,16 @@ export async function handleRequest(request: Request, env: Env): Promise<Respons
   }
   if (pathname === "/api/admin/monitoring/collect" && request.method === "POST") {
     return handleMonitoringCollect(request, env);
+  }
+
+  // ── Admin: журнал дій людей ────────────────────────────────────
+  // Зведення — «хто що робив», список — «що було за час» або дії однієї
+  // людини. Обидва під адмін-гейтом вище, як і весь префікс.
+  if (pathname === "/api/admin/events/summary" && request.method === "GET") {
+    return handleEventSummary(request, env);
+  }
+  if (pathname === "/api/admin/events" && request.method === "GET") {
+    return handleEventList(request, env);
   }
 
   // ── Допуск: «чи бачу я платформу» ──────────────────────────────

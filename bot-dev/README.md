@@ -9,12 +9,13 @@
 
 ## Вхід воркера
 
-`bot-dev/src/index.ts` — `Sentry.withSentry` обгортає обидва шляхи:
+`bot-dev/src/index.ts` — `Sentry.withSentry` обгортає воркер:
 
 | Шлях | Що робить |
 |---|---|
 | `fetch` | `api/router.ts` — єдиний маршрут `POST /webhook`; далі `controllers/telegram.controller.ts` перевіряє `X-Telegram-Bot-Api-Secret-Token` (якщо задано `SECRET_TOKEN`) і віддає апдейт grammY |
-| `queue` | `api/queue/queue.handler.ts` — пачка логів іде на `GAS_LOG_WEBHOOK_URL`; збій кидають далі, щоб Cloudflare повторив |
+
+Черги логів більше немає: дії людей пишуться в D1 напряму (див. «Помилки, логи»).
 
 ## Конвеєр апдейта
 
@@ -33,7 +34,7 @@
 
 | Поле | Призначення |
 |---|---|
-| `env` | біндинги: `DB`, `LOG_QUEUE`, `BOT_TOKEN`, `WEB_PLATFORM_URL`, `SENTRY_DSN`, Cloudinary |
+| `env` | біндинги: `DB`, `BOT_TOKEN`, `WEB_PLATFORM_URL`, `SENTRY_DSN`, Cloudinary |
 | `user` + `userDirty` | рядок `users` і прапорець «є що зберегти» |
 | `screen` | те, що треба показати: `slug`, `title`, `photo_url`, `caption.{top,mid,bot}`, `buttons`, `rich_message` / `rich_data`, `web_path` |
 | `liveMessageSent` | рендер відбувся (для звітів і логів) |
@@ -124,11 +125,12 @@ Telegram-хендл `@` зберігає — він і є акаунт (AGENTS.m
 
 ## Помилки, логи, нотифікації
 
-- `bot.catch` (`core/bot.ts`): виняток → Sentry (без контексту Telegram) + запис у чергу логів +
-  відповідь користувачу з `shared/config/texts.ts`. Помилки, які grammY ловить сам, до
-  `withSentry` не долітають — саме тому їх звітує `bot.catch`.
-- Логи: `modules/logging/` (побудова повідомлення → черга → GAS-webhook). `console.log` у коді
-  воркера не використовують.
+- `bot.catch` (`core/bot.ts`): виняток → Sentry (без контексту Telegram) + відповідь користувачу
+  з `shared/config/texts.ts`. Помилки, які grammY ловить сам, до `withSentry` не долітають — саме
+  тому їх звітує `bot.catch`. Подію `status=error` у журнал пише `interceptMiddleware`, а не він.
+- Логи: `modules/logging/` (опис події → рядок `user_events` у D1). Google Sheets більше не
+  приймає логи. `console.log` у коді воркера не використовують; журнал подій описано в
+  [`docs/EVENTS.md`](../docs/EVENTS.md).
 - Нотифікації: `modules/notifications/` (dispatcher, sender, template-engine, topic-manager)
   спрацьовують на полях екрана — групи й шаблон задають у контенті, а не в коді.
 

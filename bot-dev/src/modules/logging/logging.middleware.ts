@@ -1,28 +1,38 @@
 import { MiddlewareFn } from "grammy";
-import { AppContext } from "../../shared/types/env";
-import { LogQueueService } from "./queue";
-import { buildLogMessage } from "./builder";
+import { recordUserEvent } from "@wwwuabot/shared/database/user-events";
+import type { AppContext, Env } from "../../shared/types/env";
+import { buildUserEvent } from "./builder";
+
+/**
+ * Пише подію в журнал — і **ніколи не валить оновлення**.
+ *
+ * Журнал — спостереження, а не частина відповіді: якщо D1 недоступна, людина
+ * мусить усе одно отримати свій екран. Тому помилка тут лише лишає слід у
+ * логах воркера.
+ */
+async function record(ctx: AppContext, env: Env, status: "ok" | "error"): Promise<void> {
+  const event = buildUserEvent(ctx, status);
+  if (!event) return;
+  try {
+    await recordUserEvent(env.DB, event);
+  } catch (error) {
+    console.error(
+      JSON.stringify({
+        level: "error",
+        context: "user_event_write_failed",
+        message: error instanceof Error ? error.message : String(error),
+      }),
+    );
+  }
+}
 
 export const comprehensiveLogger: MiddlewareFn<AppContext> = async (ctx, next) => {
-  const startTime = Date.now();
-  const env = ctx.env;
-
   try {
     await next();
-
-    // Успіх: формуємо лог через log-builder
-    const log = buildLogMessage(ctx, "success");
-    log.duration_ms = Date.now() - startTime;
-
-    await LogQueueService.push(env, log);
   } catch (error) {
-    // Помилка: формуємо лог з помилкою
-    const log = buildLogMessage(ctx, "error", error);
-    log.duration_ms = Date.now() - startTime;
-
-    await LogQueueService.push(env, log);
-
-    // Перекидаємо помилку далі для глобального обробника
+    await record(ctx, ctx.env, "error");
     throw error;
   }
+
+  await record(ctx, ctx.env, "ok");
 };

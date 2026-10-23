@@ -26,15 +26,6 @@ CLOUDINARY_CLOUD_NAME = "ddoumoe5n"
 # Заповнюється перед деплоєм; без неї збережені кнопки працюють як раніше.
 WEB_PLATFORM_URL = "https://web-platform-dev.diskomate.workers.dev"
 
-[[queues.producers]]
-binding = "LOG_QUEUE"
-queue = "wwwuabot-logs"
-
-[[queues.consumers]]
-queue = "wwwuabot-logs"
-max_batch_size = 100
-max_batch_timeout = 30
-
 [observability]
 enabled = true
 

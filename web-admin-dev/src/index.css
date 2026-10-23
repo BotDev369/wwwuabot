@@ -1500,3 +1500,315 @@ body {
   flex: 1 1 100% !important;
   width: 100% !important;
 }
+
+/* ═══ Аналітика: журнал дій людей ═══════════════════════════════════════════
+   Екран показує поведінку, тож щільність важливіша за повітря: рядок події —
+   один погляд, а не картка. Кольори — лише токени; поверхня — та сама, що в
+   решти панелі. */
+
+.ana-page {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-3);
+  padding: var(--sp-4);
+  overflow: auto;
+  flex: 1;
+  min-height: 0;
+}
+
+.ana-mode {
+  display: flex;
+  gap: 2px;
+  padding: 2px;
+  border-radius: var(--radius-full);
+  background: var(--bg-2);
+}
+
+.ana-mode-btn {
+  border: none;
+  background: transparent;
+  color: var(--text-secondary);
+  font-size: var(--text-sm);
+  padding: 6px 12px;
+  border-radius: var(--radius-full);
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.ana-mode-btn--active {
+  background: var(--accent);
+  color: var(--on-accent);
+}
+
+.ana-range {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: var(--sp-2);
+}
+
+.ana-field {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.ana-label {
+  font-size: var(--text-xs);
+  color: var(--text-muted);
+}
+
+.ana-input {
+  background: var(--field-bg);
+  box-shadow: var(--field-ring);
+  border: none;
+  border-radius: var(--radius-sm);
+  color: var(--text-primary);
+  font-size: var(--text-sm);
+  padding: 6px 8px;
+  min-width: 190px;
+}
+
+.ana-presets {
+  display: flex;
+  gap: var(--sp-2);
+  margin-left: auto;
+}
+
+.ana-preset {
+  border: 1px solid var(--border);
+  background: transparent;
+  color: var(--text-secondary);
+  border-radius: var(--radius-full);
+  padding: 5px 11px;
+  font-size: var(--text-xs);
+  cursor: pointer;
+}
+
+.ana-preset:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+.ana-stats {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(110px, 1fr));
+  gap: var(--sp-2);
+}
+
+.ana-stat {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: var(--sp-3);
+  border-radius: var(--radius-md);
+  background: var(--bg-1);
+  border: 1px solid var(--border-subtle);
+}
+
+.ana-stat-value {
+  font-family: var(--font-display);
+  font-size: var(--text-xl);
+  font-weight: var(--weight-bold);
+  color: var(--text-primary);
+}
+
+.ana-stat-label {
+  font-size: var(--text-xs);
+  color: var(--text-muted);
+}
+
+.ana-users,
+.ana-events {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.ana-user {
+  border-radius: var(--radius-md);
+  background: var(--bg-1);
+  border: 1px solid var(--border-subtle);
+  overflow: hidden;
+}
+
+.ana-user-head {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+  width: 100%;
+  min-height: 44px;
+  padding: 8px 12px;
+  background: transparent;
+  border: none;
+  color: var(--text-primary);
+  text-align: left;
+  cursor: pointer;
+}
+
+.ana-user-name {
+  font-size: var(--text-sm);
+  font-weight: var(--weight-semibold);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.ana-user-meta {
+  font-size: var(--text-xs);
+  color: var(--text-muted);
+  font-family: var(--font-mono);
+}
+
+.ana-user-last {
+  margin-left: auto;
+  font-size: var(--text-xs);
+  color: var(--text-muted);
+  white-space: nowrap;
+}
+
+.ana-user-count {
+  min-width: 28px;
+  text-align: center;
+  font-size: var(--text-xs);
+  font-weight: var(--weight-semibold);
+  color: var(--accent);
+  background: var(--accent-dim);
+  border-radius: var(--radius-full);
+  padding: 2px 6px;
+}
+
+.ana-user-body {
+  padding: 4px 8px 10px;
+  border-top: 1px solid var(--border-subtle);
+}
+
+.ana-event {
+  display: flex;
+  gap: var(--sp-2);
+  padding: 7px 10px;
+  border-radius: var(--radius-sm);
+  background: var(--bg-1);
+  border: 1px solid var(--border-subtle);
+}
+
+.ana-user-body .ana-event {
+  background: var(--bg-2);
+}
+
+.ana-event-time {
+  flex-shrink: 0;
+  width: 118px;
+  font-size: var(--text-xs);
+  color: var(--text-muted);
+  font-family: var(--font-mono);
+}
+
+.ana-event-body {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+  flex: 1;
+}
+
+.ana-event-head {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.ana-surface,
+.ana-method,
+.ana-event-kind {
+  font-size: var(--text-xs);
+  padding: 1px 6px;
+  border-radius: var(--radius-full);
+}
+
+.ana-surface--bot {
+  background: var(--accent-dim);
+  color: var(--accent);
+}
+
+.ana-surface--platform {
+  background: var(--green-dim);
+  color: var(--green);
+}
+
+.ana-method {
+  background: var(--bg-3);
+  color: var(--text-secondary);
+  font-family: var(--font-mono);
+}
+
+.ana-event-kind {
+  color: var(--text-muted);
+}
+
+.ana-event-user {
+  font-size: var(--text-xs);
+  font-weight: var(--weight-semibold);
+}
+
+.ana-event-action {
+  font-size: var(--text-sm);
+  word-break: break-word;
+}
+
+.ana-event-details,
+.ana-note {
+  font-size: var(--text-xs);
+  color: var(--text-muted);
+}
+
+.ana-event-error {
+  font-size: var(--text-xs);
+  color: var(--red);
+}
+
+.ana-error {
+  margin: 0;
+  font-size: var(--text-sm);
+  color: var(--red);
+}
+
+.ana-loading,
+.ana-empty {
+  margin: 0;
+  padding: var(--sp-4);
+  text-align: center;
+  font-size: var(--text-sm);
+  color: var(--text-muted);
+}
+
+.ana-more {
+  align-self: center;
+}
+
+@media (max-width: 640px) {
+  .ana-page {
+    padding: var(--sp-2);
+  }
+
+  .ana-presets {
+    margin-left: 0;
+  }
+
+  .ana-user-last {
+    display: none;
+  }
+
+  .ana-event {
+    flex-direction: column;
+    gap: 2px;
+  }
+
+  .ana-event-time {
+    width: auto;
+  }
+}

@@ -8,6 +8,7 @@ import { PageBuilderPage } from "../features/page-builder/PageBuilderPage";
 import { BotSettingsPage } from "../pages/bot-settings/BotSettingsPage";
 import { ProfilePage } from "../pages/profile/ProfilePage";
 import { MonitoringPage } from "../pages/monitoring/MonitoringPage";
+import { AnalyticsPage } from "../pages/analytics/AnalyticsPage";
 
 /**
  * Маршрути web-admin.
@@ -17,6 +18,8 @@ import { MonitoringPage } from "../pages/monitoring/MonitoringPage";
  * /users              — Користувачі
  * /messages           — Повідомлення: звернення зі сторінки відмови, повний
  *                       CRUD з панелі (`/api/admin/access-requests`)
+ * /analytics          — Аналітика поведінки: журнал дій людей (бот і платформа),
+ *                       по користувачах або за діапазоном часу
  * /monitoring         — Моніторинг проєкту: зрізи код/GitHub, динаміка, історія
  * /bot-settings       — Налаштування бота
  * /profile            — Профіль (акаунт панелі + профіль людини) — той самий
@@ -37,6 +40,7 @@ export const router = createBrowserRouter([
       { path: "page-builder/:slug", element: <PageBuilderPage /> },
       { path: "users", element: <UsersPage /> },
       { path: "messages", element: <AccessRequestsPage /> },
+      { path: "analytics", element: <AnalyticsPage /> },
       { path: "monitoring", element: <MonitoringPage /> },
       { path: "bot-settings", element: <BotSettingsPage /> },
       { path: "profile", element: <ProfilePage /> },

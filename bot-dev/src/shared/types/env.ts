@@ -1,5 +1,4 @@
 import { Context } from "grammy";
-import { LogMessage } from "./log";
 import type { ScenarioButton } from "./scenario";
 
 export interface BotUser {
@@ -44,12 +43,6 @@ export interface Env {
   SECRET_TOKEN: string;
   ENVIRONMENT: string;
   DB: D1Database;
-  LOG_QUEUE: Queue<LogMessage>;
-  /**
-   * Куди споживач черги віддає логи (Google Apps Script). Не задано — логи
-   * лишаються в Cloudflare, а черга не ретраїть їх вічно.
-   */
-  GAS_LOG_WEBHOOK_URL?: string;
   CLOUDINARY_CLOUD_NAME: string;
   /** Публічна база Mini App; без неї бот не додає автоматичну web_app-кнопку. */
   WEB_PLATFORM_URL?: string;

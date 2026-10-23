@@ -3,6 +3,7 @@ import { sentryOptions } from "@wwwuabot/shared/observability/sentry";
 import { handleRequest } from "./router";
 import { apiLog } from "./shared/logger";
 import { markEntryFromRequest } from "./shared/platform-entry";
+import { recordPlatformRequest } from "./services/user-events.service";
 import { secureResponse } from "@wwwuabot/shared/security/headers";
 import { collectSnapshot } from "./services/monitoring/collect";
 import { saveSnapshot } from "./services/monitoring/store";
@@ -56,7 +57,13 @@ export default Sentry.withSentry(
       try {
         // Заголовки накладаються на виході воркера, а не в кожному
         // контролері: одна точка, яку не можна забути на новому шляху.
-        return secureResponse(await handleRequest(request, env), { url: request.url });
+        const response = secureResponse(await handleRequest(request, env), { url: request.url });
+
+        // Журнал дій — теж у `waitUntil`: подія вже сталася, і чекати запису
+        // в базі перед відповіддю означало б платити за спостереження.
+        ctx.waitUntil(recordPlatformRequest(request, env, response.status));
+
+        return response;
       } catch (error) {
         // Назовні — жодних деталей: у повідомленні D1 бувають назви таблиць
         // і значення, а клієнт цей ендпоїнт не захищений. Деталі йдуть у

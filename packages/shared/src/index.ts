@@ -192,6 +192,36 @@ export type {
   PublicProfileSource,
 } from "./user/public-profile";
 
+// ── Події людей: що зробив, де й коли ─────────────────────────────
+export {
+  EVENT_KINDS,
+  EVENT_KIND_LABELS,
+  EVENT_RANGE_HOURS,
+  EVENT_SURFACES,
+  EVENT_TEXT_MAX,
+  SURFACE_LABELS,
+  eventKindLabel,
+  eventMethod,
+  isEventKind,
+  isEventSurface,
+  platformAction,
+  resolveEventRange,
+  shouldRecordPlatformRequest,
+  surfaceLabel,
+  truncateEventText,
+} from "./events";
+export type {
+  EventKind,
+  EventList,
+  EventRange,
+  EventStatus,
+  EventSummary,
+  EventSurface,
+  EventUserSummary,
+  UserEvent,
+  UserEventInput,
+} from "./events";
+
 // ── Utils ────────────────────────────────────────────────────────────
 export { formatSqliteDatetime } from "./utils/datetime";
 export {
