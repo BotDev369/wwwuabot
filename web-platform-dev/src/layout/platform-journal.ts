@@ -7,8 +7,12 @@
  * @module web-platform-dev/src/layout/platform-journal
  */
 
-/** Пауза дотику: довша — не встигає за людиною, коротша — не ловить модалку. */
-export const CLICK_HOLD_MS = 350;
+/**
+ * Пауза дотику: довша — не встигає за людиною, коротша — не ловить модалку.
+ * Товар у магазині відкривається після запиту каталогу, тож пауза мусить
+ * накривати й цей час — інакше та сама дія пише два рядки.
+ */
+export const CLICK_HOLD_MS = 800;
 
 interface Held {
   timer: ReturnType<typeof setTimeout>;

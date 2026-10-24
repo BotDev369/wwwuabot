@@ -18,13 +18,20 @@ const mocks = vi.hoisted(() => ({ request: vi.fn() }));
 vi.mock("@/shared/api/client", () => ({ apiFetch: mocks.request, apiUpload: vi.fn() }));
 
 const { PlatformShell } = await import("./PlatformShell");
+const { useScreenChrome } = await import("@wwwuabot/ui/nav");
+
+/** Екран, як справжній: він сам каже хедеру свою назву. */
+function TrackerScreen(): React.ReactElement {
+  useScreenChrome({ title: "Трекери" });
+  return <p>екран трекерів</p>;
+}
 
 function renderShell(): void {
   render(
     <MemoryRouter initialEntries={["/trackers"]}>
       <Routes>
         <Route element={<PlatformShell />}>
-          <Route path="*" element={<p>екран трекерів</p>} />
+          <Route path="*" element={<TrackerScreen />} />
         </Route>
       </Routes>
     </MemoryRouter>,

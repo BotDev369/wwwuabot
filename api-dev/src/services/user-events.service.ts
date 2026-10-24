@@ -86,11 +86,15 @@ export async function recordPlatformView(
   );
 }
 
-/** Модалка, яку відкрили: її назва з шапки — і є назва дії. */
+/**
+ * Модалка, яку відкрили: її назва з шапки — і є назва дії. Подробиці —
+ * сторінка, з якої її відкрили: товар у «GalyaShop» і товар в «Обране» — різні
+ * речі з однаковою шапкою.
+ */
 export async function recordPlatformModal(
   env: Env,
   userId: number,
-  modal: { screen: string; title: string },
+  modal: { screen: string; title: string; page: string | null },
   at?: number,
 ): Promise<void> {
   await recordUserEvent(
@@ -100,6 +104,7 @@ export async function recordPlatformModal(
       surface: "platform",
       kind: "modal",
       action: modal.title,
+      details: modal.page,
     },
     at,
   );
@@ -115,7 +120,13 @@ export async function recordPlatformModal(
 export async function recordPlatformGesture(
   env: Env,
   userId: number,
-  gesture: { kind: PlatformGestureKind; screen: string; label: string; field: string | null },
+  gesture: {
+    kind: PlatformGestureKind;
+    screen: string;
+    label: string;
+    field: string | null;
+    page: string | null;
+  },
   at?: number,
 ): Promise<void> {
   if (!(await readFullEventLogging(env))) return;
@@ -126,12 +137,21 @@ export async function recordPlatformGesture(
       surface: "platform",
       kind: gesture.kind,
       action: gesture.label,
-      // У дотику подробиць немає: підпис уже називає дію. Введеному тексту
-      // лишається назва поля: без неї значення не пояснює себе.
-      details: gesture.kind === "input" ? gesture.field : null,
+      // Подробиці — місце дії: без нього однакові підписи («Закрити», «Додати»)
+      // з різних сторінок зливаються в купу. Уведеному тексту додається назва
+      // поля: без неї значення не пояснює себе.
+      details:
+        [gesture.kind === "input" && fieldLabel(gesture.field), gesture.page]
+          .filter(Boolean)
+          .join(" · ") || null,
     },
     at,
   );
+}
+
+/** Назва поля уведеного тексту — з підписом, щоб не плутати з місцем дії. */
+function fieldLabel(field: string | null): string | null {
+  return field ? `Поле «${field}»` : null;
 }
 
 /**

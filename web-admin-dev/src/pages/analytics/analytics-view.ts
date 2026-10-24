@@ -147,9 +147,8 @@ export function eventPhrase(
     case "click":
       return `Натиснув «${event.action}»`;
     case "input":
-      return event.details
-        ? `Поле «${event.details}»: «${event.action}»`
-        : `Ввів «${event.action}»`;
+      // Місце дії й назва поля — у сірому рядку під фразою (`details`).
+      return `Ввів «${event.action}»`;
     default:
       return null;
   }

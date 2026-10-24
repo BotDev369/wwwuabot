@@ -15,7 +15,7 @@ import { ScreenChromeProvider, useScreenChrome } from "@wwwuabot/ui/nav";
 const mocks = vi.hoisted(() => ({ request: vi.fn() }));
 vi.mock("@/shared/api/client", () => ({ apiFetch: mocks.request }));
 
-const { usePlatformViews } = await import("./usePlatformViews");
+const { usePlatformViews, TITLE_FALLBACK_MS } = await import("./usePlatformViews");
 
 function Harness(): React.ReactElement {
   usePlatformViews();
@@ -92,6 +92,30 @@ describe("що бачить журнал", () => {
     fireEvent.click(screen.getByText("до трекерів із хвостом"));
 
     expect(reportedScreens()).toEqual(["trackers"]);
+  });
+});
+
+describe("назва сторінки", () => {
+  it("без назви шле подію без `title`, а не з `null`", async () => {
+    vi.useFakeTimers();
+    try {
+      // Екран без хедера (сторінка контенту ще вантажиться) не має назви взагалі.
+      render(
+        <MemoryRouter initialEntries={["/some-scenario"]}>
+          <ScreenChromeProvider>
+            <Harness />
+          </ScreenChromeProvider>
+        </MemoryRouter>,
+      );
+
+      await vi.advanceTimersByTimeAsync(TITLE_FALLBACK_MS + 10);
+
+      const body = JSON.parse(mocks.request.mock.calls[0]?.[1].body as string);
+      expect(body).not.toHaveProperty("title");
+      expect(body).toMatchObject({ screen: "page" });
+    } finally {
+      vi.useRealTimers();
+    }
   });
 });
 

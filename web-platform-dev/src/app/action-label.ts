@@ -48,11 +48,17 @@ function clipped(text: string, max = GESTURE_LABEL_MAX): string {
   return text.length <= max ? text : `${text.slice(0, max - 1)}…`;
 }
 
-/** Підпис контрола: явний (`aria-label`, `title`) важливіший за текст усередині. */
+/**
+ * Підпис контрола: явний (`aria-label`, `title`), далі заголовок усередині,
+ * і аж тоді текст. Картка товару без заголовка дала б шматок опису
+ * («…Маленький шрифт…») замість назви речі, яку людина відкрила.
+ */
 function labelOf(element: Element): string {
+  const heading = element.querySelector("h1, h2, h3, h4, [role='heading']");
   return (
     collapsed(element.getAttribute("aria-label")) ||
     collapsed(element.getAttribute("title")) ||
+    collapsed(heading?.textContent) ||
     collapsed(element.textContent)
   );
 }

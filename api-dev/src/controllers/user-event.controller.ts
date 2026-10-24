@@ -22,13 +22,23 @@ const eventSchema = z.object({
   screen: z.string().min(1).max(40),
   /** Немає `kind` — це «відкрив сторінку»: стара форма лишається чинною. */
   kind: z.enum(["view", "modal", "click", "input"]).optional(),
-  /** Людська назва: заголовок сторінки чи модалки. */
-  title: z.string().trim().min(1).max(80).optional(),
+  /** Людська назва: заголовок сторінки чи модалки (`null` — ще невідома). */
+  title: z.string().trim().min(1).max(80).nullish(),
+  /** Сторінка, на якій діялась дія: назва з шапки. */
+  page: z.string().trim().min(1).max(80).optional(),
   /** Підпис контрола або те, що людина обрала чи ввела. */
   label: z.string().trim().min(1).max(200).optional(),
   /** Назва поля — лише для вибору й уведення: без неї значення не пояснює себе. */
   field: z.string().trim().min(1).max(160).optional(),
+  /** Коли людина зробила дію (мс): дотик чекає поверхню, назва — дані. */
+  at: z.number().int().positive().optional(),
 });
+
+/** Час дії від застосунку; далеке значення (чужий годинник) не береться. */
+function actionTime(value: number | undefined): number | undefined {
+  if (!value) return undefined;
+  return Math.abs(Date.now() - value) <= 24 * 3600_000 ? value : undefined;
+}
 
 function json(body: unknown, status = 200): Response {
   return new Response(JSON.stringify(body), {
@@ -41,8 +51,9 @@ function json(body: unknown, status = 200): Response {
 export async function handleUserEvent(request: Request, env: Env): Promise<Response> {
   const parsed = await readBody(request, eventSchema);
   if (!parsed.ok) return parsed.response;
-  const { screen, title, label, field } = parsed.body;
+  const { screen, title, page, label, field } = parsed.body;
   const kind = parsed.body.kind ?? "view";
+  const at = actionTime(parsed.body.at);
 
   if (!isPlatformScreenKey(screen)) return json({ error: "Невідомий екран" }, 400);
   if (kind === "modal" && !title) return json({ error: "Модалка без назви" }, 400);
@@ -54,16 +65,27 @@ export async function handleUserEvent(request: Request, env: Env): Promise<Respo
   if (userId === null) return json({ error: "Unauthorized" }, 401);
 
   try {
-    if (kind === "view") await recordPlatformView(env, userId, screen, title);
+    if (kind === "view") await recordPlatformView(env, userId, screen, title, at);
     else if (kind === "modal")
-      await recordPlatformModal(env, userId, { screen, title: title as string });
+      await recordPlatformModal(
+        env,
+        userId,
+        { screen, title: title as string, page: page ?? null },
+        at,
+      );
     else
-      await recordPlatformGesture(env, userId, {
-        kind,
-        screen,
-        label: label as string,
-        field: field ?? null,
-      });
+      await recordPlatformGesture(
+        env,
+        userId,
+        {
+          kind,
+          screen,
+          label: label as string,
+          field: field ?? null,
+          page: page ?? null,
+        },
+        at,
+      );
     return json({ ok: true });
   } catch (error) {
     // Журнал не мусить ламати екран: навігація вже сталася.

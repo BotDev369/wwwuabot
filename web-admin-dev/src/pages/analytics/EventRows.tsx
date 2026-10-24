@@ -57,9 +57,9 @@ export function EventRows({
               <span className="ana-event-action">
                 {phrase ?? actionText(event.action, event.kind)}
               </span>
-              {!phrase && event.details && (
-                <span className="ana-event-details">{event.details}</span>
-              )}
+              {/* Місце дії: без нього однакові підписи з різних сторінок не
+                  відрізнити («Закрити» в магазині й у нотатках). */}
+              {event.details && <span className="ana-event-details">{event.details}</span>}
               {event.status === "error" && <span className="ana-event-error">помилка</span>}
             </span>
           </li>

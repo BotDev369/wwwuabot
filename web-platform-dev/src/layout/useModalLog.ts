@@ -7,8 +7,10 @@
  * @module web-platform-dev/src/layout/useModalLog
  */
 
-import { useEffect, useRef } from "react";
+import { useContext, useEffect, useRef } from "react";
 import { useLocation } from "react-router-dom";
+import { ScreenChromeContext } from "@wwwuabot/ui/nav";
+import { screenLabel } from "@wwwuabot/shared/events";
 import { apiFetch } from "@/shared/api/client";
 import { screenKeyOfPath } from "@/app/screens";
 import { claimHeldClick } from "./platform-journal";
@@ -29,7 +31,11 @@ function dialogIn(node: Element): Element | null {
 
 export function useModalLog(): void {
   const { pathname } = useLocation();
+  const chrome = useContext(ScreenChromeContext)?.chrome;
   const screen = screenKeyOfPath(pathname);
+  // Сторінка, з якої відкрили поверхню: сам товар — це поверхня, а магазин,
+  // у якому він лежить, — місце, без якого рядок не прочитати.
+  const page = chrome?.title ?? screenLabel(screen);
   const seen = useRef(new WeakSet<Element>());
 
   useEffect(() => {
@@ -50,7 +56,7 @@ export function useModalLog(): void {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             keepalive: true,
-            body: JSON.stringify({ kind: "modal", screen, title }),
+            body: JSON.stringify({ kind: "modal", screen, page, title }),
           }).catch(() => {
             // Журнал не ламає роботу з поверхнею.
           });
@@ -60,5 +66,5 @@ export function useModalLog(): void {
 
     observer.observe(document.body, { childList: true, subtree: true });
     return () => observer.disconnect();
-  }, [screen]);
+  }, [screen, page]);
 }

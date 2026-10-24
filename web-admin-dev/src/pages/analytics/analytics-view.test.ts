@@ -103,9 +103,15 @@ describe("помічники аналітики", () => {
     expect(
       eventPhrase({ surface: "platform", kind: "click", action: "Шаблони", details: null }),
     ).toBe("Натиснув «Шаблони»");
+    // Місце дії й назва поля — сірий рядок під фразою (`details`).
     expect(
-      eventPhrase({ surface: "platform", kind: "input", action: "купити хліб", details: "Назва" }),
-    ).toBe("Поле «Назва»: «купити хліб»");
+      eventPhrase({
+        surface: "platform",
+        kind: "input",
+        action: "купити хліб",
+        details: "Поле «Назва» · Нотатки",
+      }),
+    ).toBe("Ввів «купити хліб»");
     expect(eventPhrase({ surface: "platform", kind: "input", action: "Кава", details: null })).toBe(
       "Ввів «Кава»",
     );

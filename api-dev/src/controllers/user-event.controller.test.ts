@@ -75,28 +75,49 @@ describe("подія від застосунку", () => {
     expect(response.status).toBe(400);
   });
 
-  it("натискання пишеться назвою й без службових подробиць", async () => {
+  it("натискання пишеться назвою, а сторінка — місцем дії", async () => {
     const db = database();
     const response = await handleUserEvent(
-      post({ kind: "click", screen: "trackers", label: "Шаблони" }),
+      post({ kind: "click", screen: "page", page: "GalyaShop", label: "Солапанк" }),
       db.env,
     );
 
     expect(response.status).toBe(200);
     const insert = db.calls.find((call) => call.sql.startsWith("INSERT INTO user_events"));
-    expect(insert?.values.slice(0, 5)).toEqual([777, "platform", "click", "Шаблони", null]);
+    expect(insert?.values.slice(0, 5)).toEqual([777, "platform", "click", "Солапанк", "GalyaShop"]);
   });
 
-  it("введений текст пише назву поля окремо від значення", async () => {
+  it("введений текст пише назву поля й місце дії окремо від значення", async () => {
     const db = database();
     const response = await handleUserEvent(
-      post({ kind: "input", screen: "notes", label: "купити хліб", field: "Назва" }),
+      post({
+        kind: "input",
+        screen: "notes",
+        page: "Нотатки",
+        label: "купити хліб",
+        field: "Назва",
+      }),
       db.env,
     );
 
     expect(response.status).toBe(200);
     const insert = db.calls.find((call) => call.sql.startsWith("INSERT INTO user_events"));
-    expect(insert?.values.slice(0, 5)).toEqual([777, "platform", "input", "купити хліб", "Назва"]);
+    expect(insert?.values.slice(0, 5)).toEqual([
+      777,
+      "platform",
+      "input",
+      "купити хліб",
+      "Поле «Назва» · Нотатки",
+    ]);
+  });
+
+  it("порожня назва сторінки не відхиляє подію", async () => {
+    const db = database();
+    const response = await handleUserEvent(post({ screen: "page", title: null }), db.env);
+
+    expect(response.status).toBe(200);
+    const insert = db.calls.find((call) => call.sql.startsWith("INSERT INTO user_events"));
+    expect(insert?.values.slice(0, 5)).toEqual([777, "platform", "view", "page", null]);
   });
 
   it("сторінка приходить із назвою з шапки, а не ключем розділу", async () => {

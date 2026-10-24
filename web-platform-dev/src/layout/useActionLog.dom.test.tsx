@@ -62,7 +62,14 @@ describe("що стає рядком", () => {
     fireEvent.click(screen.getByRole("button", { name: "Додати трекер" }));
 
     await waitFor(() =>
-      expect(reported()).toEqual([{ kind: "click", screen: "trackers", label: "Додати трекер" }]),
+      expect(reported()).toEqual([
+        expect.objectContaining({
+          kind: "click",
+          screen: "trackers",
+          page: "Трекери",
+          label: "Додати трекер",
+        }),
+      ]),
     );
     // Запит мусить пережити навігацію: без `keepalive` дотик «Назад» губився.
     expect(mocks.request.mock.calls[0]?.[1]).toMatchObject({ keepalive: true });
@@ -74,7 +81,14 @@ describe("що стає рядком", () => {
     fireEvent.click(screen.getByText("Кава вдома"));
 
     await waitFor(() =>
-      expect(reported()).toEqual([{ kind: "click", screen: "notes", label: "Кава вдома" }]),
+      expect(reported()).toEqual([
+        expect.objectContaining({
+          kind: "click",
+          screen: "notes",
+          page: "Нотатки",
+          label: "Кава вдома",
+        }),
+      ]),
     );
   });
 
@@ -84,7 +98,13 @@ describe("що стає рядком", () => {
     fireEvent.change(screen.getByRole("combobox"), { target: { value: "мл" } });
 
     expect(reported()).toEqual([
-      { kind: "input", screen: "trackers", label: "мл", field: "Одиниця" },
+      expect.objectContaining({
+        kind: "input",
+        screen: "trackers",
+        page: "Трекери",
+        label: "мл",
+        field: "Одиниця",
+      }),
     ]);
   });
 
@@ -97,7 +117,13 @@ describe("що стає рядком", () => {
     await waitFor(
       () =>
         expect(reported()).toEqual([
-          { kind: "input", screen: "notes", label: "купити хліб", field: "Назва" },
+          expect.objectContaining({
+            kind: "input",
+            screen: "notes",
+            page: "Нотатки",
+            label: "купити хліб",
+            field: "Назва",
+          }),
         ]),
       { timeout: 2000 },
     );

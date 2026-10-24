@@ -60,7 +60,9 @@ describe("відкрита поверхня", () => {
     await userEvent.click(screen.getByRole("button", { name: "Товари" }));
 
     await waitFor(() =>
-      expect(reported()).toEqual([{ kind: "modal", screen: "services", title: "Товари" }]),
+      expect(reported()).toEqual([
+        { kind: "modal", screen: "services", page: "Сервіси", title: "Товари" },
+      ]),
     );
   });
 
@@ -90,7 +92,9 @@ describe("відкрита поверхня", () => {
     await userEvent.click(screen.getByRole("button", { name: "Створити нотатку" }));
 
     await waitFor(() =>
-      expect(reported()).toEqual([{ kind: "modal", screen: "notes", title: "Створити нотатку" }]),
+      expect(reported()).toEqual([
+        { kind: "modal", screen: "notes", page: "Нотатки", title: "Створити нотатку" },
+      ]),
     );
   });
 

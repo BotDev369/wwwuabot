@@ -7,8 +7,10 @@
  * @module web-platform-dev/src/layout/useActionLog
  */
 
-import { useEffect } from "react";
+import { useContext, useEffect } from "react";
 import { useLocation } from "react-router-dom";
+import { ScreenChromeContext } from "@wwwuabot/ui/nav";
+import { screenLabel } from "@wwwuabot/shared/events";
 import { apiFetch } from "@/shared/api/client";
 import { choiceOf, entryOf, gestureOf, type Gesture } from "@/app/action-label";
 import { screenKeyOfPath } from "@/app/screens";
@@ -29,21 +31,28 @@ function isNavigation(control: Element): boolean {
 
 export function useActionLog(): void {
   const { pathname } = useLocation();
+  const chrome = useContext(ScreenChromeContext)?.chrome;
   const screen = screenKeyOfPath(pathname);
+  // Назва сторінки, на якій діє людина: товар у модалці на «GalyaShop» і товар
+  // у модалці на «Обране» — різні речі, а підпис кнопки в них однаковий.
+  const page = chrome?.title ?? screenLabel(screen);
 
   useEffect(() => {
-    function body(kind: GestureKind, gesture: Gesture): string {
-      return JSON.stringify({ kind, screen, label: gesture.label, field: gesture.field });
-    }
-
-    function send(kind: GestureKind, gesture: Gesture): void {
+    function send(kind: GestureKind, gesture: Gesture, at: number = Date.now()): void {
       void apiFetch("/api/user/event", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         // Дотик після навігації таки має дійти: звичайний `fetch` гине разом зі
         // сторінкою, і саме так губилися натискання «Назад».
         keepalive: true,
-        body: body(kind, gesture),
+        body: JSON.stringify({
+          kind,
+          screen,
+          page,
+          label: gesture.label,
+          field: gesture.field,
+          at,
+        }),
       }).catch(() => {
         // Журнал не входить у роботу екрана: наступний дотик спробує знову.
       });
@@ -71,8 +80,10 @@ export function useActionLog(): void {
       if (!target || isNavigation(target)) return;
       const gesture = gestureOf(target);
       if (!gesture) return;
+      // Час дотику, а не час, коли встигли записати: дотик чекає поверхню.
+      const at = Date.now();
       // Дотик, що відкриє сторінку чи модалку, скасується сам — див. вище.
-      holdClick(() => send("click", gesture), gesture.label);
+      holdClick(() => send("click", gesture, at), gesture.label);
     }
 
     function onChange(event: Event): void {
@@ -113,5 +124,5 @@ export function useActionLog(): void {
       document.removeEventListener("input", onInput, true);
       document.removeEventListener("focusout", onFocusOut, true);
     };
-  }, [screen]);
+  }, [screen, page]);
 }
