@@ -23,28 +23,56 @@ export function AnalyticsPage(): ReactElement {
   return (
     <>
       <PageTopbar>
-        <div className="wb-topbar-left">
+        <div className="wb-topbar-left ana-topbar-left">
           <h1 className="wb-topbar-title">Аналітика</h1>
+          {/* Зведення стоїть там, де вже є назва сторінки: окремої смуги з
+              тим самим словом унизу не треба. */}
+          {a.summary && (
+            <div className="ana-stats" aria-label="Зведення за діапазон">
+              <span className="ana-stat" title="подій">
+                <Icon name="pulse" size={18} />
+                <span className="ana-stat-value">{a.summary.total}</span>
+              </span>
+              <span className="ana-stat" title="людей">
+                <Icon name="users" size={18} />
+                <span className="ana-stat-value">{a.summary.users.length}</span>
+              </span>
+              <span className="ana-stat" title="у боті">
+                <Icon name="bot" size={18} />
+                <span className="ana-stat-value">{a.summary.bySurface.bot}</span>
+              </span>
+              <span className="ana-stat" title="на платформі">
+                <Icon name="mobile" size={18} />
+                <span className="ana-stat-value">{a.summary.bySurface.platform}</span>
+              </span>
+            </div>
+          )}
         </div>
         <div className="wb-topbar-right">
+          {/* Режими — знаки: підпис читається з підказки й `aria-label`, а
+              місце лишається списку. */}
           <div className="ana-mode" role="tablist" aria-label="Режим перегляду">
             <button
               type="button"
               role="tab"
               aria-selected={a.mode === "users"}
+              aria-label="По користувачах"
+              title="По користувачах"
               className={`ana-mode-btn${a.mode === "users" ? " ana-mode-btn--active" : ""}`}
               onClick={() => a.setMode("users")}
             >
-              <Icon name="user" size={14} /> По користувачах
+              <Icon name="user" size={16} />
             </button>
             <button
               type="button"
               role="tab"
               aria-selected={a.mode === "time"}
+              aria-label="За часом"
+              title="За часом"
               className={`ana-mode-btn${a.mode === "time" ? " ana-mode-btn--active" : ""}`}
               onClick={() => a.setMode("time")}
             >
-              <Icon name="clock" size={14} /> За часом
+              <Icon name="clock" size={16} />
             </button>
           </div>
           <button
@@ -117,95 +145,69 @@ export function AnalyticsPage(): ReactElement {
 
         {a.loading && !a.summary && <p className="ana-loading">Завантаження журналу…</p>}
 
-        {a.summary && (
-          <>
-            {/* Зведення — один рядок: питання «скільки всього» ставлять раз, а
-                місце потрібне списку. Підпис під числом замінено знаком із
-                підказкою. */}
-            <section className="ana-summary" aria-label="Аналітика">
-              <h2 className="ana-summary-title">Аналітика</h2>
-              <span className="ana-stat" title="подій">
-                <Icon name="pulse" size={14} />
-                <span className="ana-stat-value">{a.summary.total}</span>
-              </span>
-              <span className="ana-stat" title="людей">
-                <Icon name="users" size={14} />
-                <span className="ana-stat-value">{a.summary.users.length}</span>
-              </span>
-              <span className="ana-stat" title="у боті">
-                <Icon name="bot" size={14} />
-                <span className="ana-stat-value">{a.summary.bySurface.bot}</span>
-              </span>
-              <span className="ana-stat" title="на платформі">
-                <Icon name="mobile" size={14} />
-                <span className="ana-stat-value">{a.summary.bySurface.platform}</span>
-              </span>
-            </section>
+        {a.summary &&
+          (a.mode === "users" ? (
+            <ul className="ana-users">
+              {users.length === 0 && <li className="ana-empty">Подій за цей час немає</li>}
+              {users.map((user) => {
+                const open = a.expandedUserId === user.userId;
+                const items = a.userEvents[user.userId] ?? [];
+                const total = a.userTotals[user.userId] ?? 0;
+                return (
+                  <li className="ana-user" key={user.userId}>
+                    <button
+                      type="button"
+                      className="ana-user-head"
+                      aria-expanded={open}
+                      onClick={() => void a.toggleUser(user.userId)}
+                    >
+                      <span className="ana-user-name">{userLabel(user)}</span>
+                      <span className="ana-user-meta">{userMeta(user)}</span>
+                      <span className="ana-user-last">{formatStamp(user.lastAt)}</span>
+                      <span className="ana-user-count" title="подій за діапазон">
+                        {user.count}
+                      </span>
+                      <Icon name={open ? "chevron-down" : "chevron-right"} size={16} />
+                    </button>
 
-            {a.mode === "users" ? (
-              <ul className="ana-users">
-                {users.length === 0 && <li className="ana-empty">Подій за цей час немає</li>}
-                {users.map((user) => {
-                  const open = a.expandedUserId === user.userId;
-                  const items = a.userEvents[user.userId] ?? [];
-                  const total = a.userTotals[user.userId] ?? 0;
-                  return (
-                    <li className="ana-user" key={user.userId}>
-                      <button
-                        type="button"
-                        className="ana-user-head"
-                        aria-expanded={open}
-                        onClick={() => void a.toggleUser(user.userId)}
-                      >
-                        <span className="ana-user-name">{userLabel(user)}</span>
-                        <span className="ana-user-meta">{userMeta(user)}</span>
-                        <span className="ana-user-last">{formatStamp(user.lastAt)}</span>
-                        <span className="ana-user-count" title="подій за діапазон">
-                          {user.count}
-                        </span>
-                        <Icon name={open ? "chevron-down" : "chevron-right"} size={16} />
-                      </button>
-
-                      {open && (
-                        <div className="ana-user-body">
-                          {a.loadingUser === user.userId ? (
-                            <p className="ana-loading">Завантаження дій…</p>
-                          ) : (
-                            <>
-                              <EventRows events={items} showUser={false} />
-                              {total > items.length && (
-                                <p className="ana-note">
-                                  Показано перші {items.length} з {total} — звузьте діапазон.
-                                </p>
-                              )}
-                            </>
-                          )}
-                        </div>
-                      )}
-                    </li>
-                  );
-                })}
-              </ul>
-            ) : (
-              <>
-                <EventRows events={a.events} />
-                {a.events.length < a.listTotal && (
-                  <button
-                    type="button"
-                    className="wb-btn wb-btn-secondary ana-more"
-                    onClick={() => void a.loadMore()}
-                    disabled={a.loadingMore}
-                  >
-                    {a.loadingMore ? "Завантаження…" : "Показати ще"}
-                  </button>
-                )}
-                <p className="ana-note">
-                  Показано {a.events.length} з {a.listTotal}
-                </p>
-              </>
-            )}
-          </>
-        )}
+                    {open && (
+                      <div className="ana-user-body">
+                        {a.loadingUser === user.userId ? (
+                          <p className="ana-loading">Завантаження дій…</p>
+                        ) : (
+                          <>
+                            <EventRows events={items} showUser={false} />
+                            {total > items.length && (
+                              <p className="ana-note">
+                                Показано перші {items.length} з {total} — звузьте діапазон.
+                              </p>
+                            )}
+                          </>
+                        )}
+                      </div>
+                    )}
+                  </li>
+                );
+              })}
+            </ul>
+          ) : (
+            <>
+              <EventRows events={a.events} />
+              {a.events.length < a.listTotal && (
+                <button
+                  type="button"
+                  className="wb-btn wb-btn-secondary ana-more"
+                  onClick={() => void a.loadMore()}
+                  disabled={a.loadingMore}
+                >
+                  {a.loadingMore ? "Завантаження…" : "Показати ще"}
+                </button>
+              )}
+              <p className="ana-note">
+                Показано {a.events.length} з {a.listTotal}
+              </p>
+            </>
+          ))}
       </div>
 
       {a.rangeOpen && (

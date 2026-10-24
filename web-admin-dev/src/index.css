@@ -1516,6 +1516,13 @@ body {
   min-height: 0;
 }
 
+/* Назва й зведення — та сама група: на вузькому екрані вона переноситься, а
+   не виштовхує дії за край. */
+.ana-topbar-left {
+  flex-wrap: wrap;
+  row-gap: var(--sp-2);
+}
+
 .ana-mode {
   display: flex;
   gap: 2px;
@@ -1524,18 +1531,20 @@ body {
   background: var(--bg-2);
 }
 
+/* Режим — квадрат-знак: підпис у `aria-label`, тож смуга не ширшає від двох
+   слів і лишається місце для дій. */
 .ana-mode-btn {
   display: inline-flex;
   align-items: center;
-  gap: 5px;
+  justify-content: center;
   border: none;
   background: transparent;
   color: var(--text-secondary);
-  font-size: var(--text-sm);
-  padding: 6px 12px;
+  min-width: 34px;
+  min-height: 30px;
+  padding: 0 8px;
   border-radius: var(--radius-full);
   cursor: pointer;
-  white-space: nowrap;
 }
 
 .ana-mode-btn--active {
@@ -1585,10 +1594,20 @@ body {
 /* Період — ряд чипів під шапкою: обраний видно кольором, а не окремим полем
    вводу. Ручні межі живуть у модалці («Період»), бо два поля поруч з'їдали
    місце списку й читались як частина кожного запиту. */
+/* Ряд липне до верху списку: період міняють під час читання, і без цього
+   доводилось вертатись на самий початок. Від'ємні поля збігаються з
+   padding `.ana-page`, а заливка перекриває те, що їде під нею. */
 .ana-periods {
+  position: sticky;
+  top: 0;
+  z-index: var(--z-sticky);
   display: flex;
   flex-wrap: wrap;
   gap: var(--sp-2);
+  margin: calc(var(--sp-4) * -1) calc(var(--sp-4) * -1) 0;
+  padding: var(--sp-3) var(--sp-4);
+  background: var(--bg-page, var(--bg-0));
+  border-bottom: 1px solid var(--border-subtle);
 }
 
 .ana-preset {
@@ -1643,38 +1662,31 @@ body {
   }
 }
 
-/* Зведення — смуга в один рядок: назви показників замінено знаками з
-   підказкою, бо питання «скільки всього» ставлять раз, а місце потрібне
-   списку. */
-.ana-summary {
+/* Зведення стоїть у шапці поруч із назвою сторінки: назви показників замінено
+   знаками з підказкою, а числа — великі й жирні, щоб їх було видно без
+   придивляння. */
+.ana-stats {
   display: flex;
   align-items: center;
   flex-wrap: wrap;
   gap: var(--sp-3);
-  padding: var(--sp-2) var(--sp-3);
-  border-radius: var(--radius-md);
-  background: var(--bg-1);
-  border: 1px solid var(--border-subtle);
-}
-
-.ana-summary-title {
-  margin: 0 auto 0 0;
-  font-size: var(--text-sm);
-  font-weight: var(--weight-semibold);
-  color: var(--text-primary);
 }
 
 .ana-stat {
   display: inline-flex;
   align-items: center;
-  gap: 4px;
-  color: var(--text-muted);
+  gap: 5px;
+  color: var(--text-secondary);
+}
+
+.ana-stat svg {
+  stroke-width: 2.4;
 }
 
 .ana-stat-value {
   font-family: var(--font-mono);
-  font-size: var(--text-sm);
-  font-weight: var(--weight-semibold);
+  font-size: var(--text-lg);
+  font-weight: var(--weight-bold);
   color: var(--text-primary);
 }
 
