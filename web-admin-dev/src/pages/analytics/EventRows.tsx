@@ -31,7 +31,9 @@ export function EventRows({
           <span className="ana-event-body">
             <span className="ana-event-head">
               <span className={surfaceClass(event.surface)}>{surfaceLabel(event.surface)}</span>
-              {event.kind !== "view" && (
+              {/* Метод — лише в запиту: у дотику й у повідомлення його немає,
+                  тож бейдж «ДІЯ» там був би шумом. */}
+              {event.kind === "request" && (
                 <span className="ana-method">{actionMethod(event.action)}</span>
               )}
               <span className="ana-event-kind">{eventKindLabel(event.kind)}</span>
