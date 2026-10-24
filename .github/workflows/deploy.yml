@@ -34,8 +34,11 @@ jobs:
   # Єдиний гейт перед деплоєм. Раніше тут не було тестів (S-6) і `npm audit`
   # стояв із `continue-on-error: true`, тобто не блокував нічого. Тепер:
   # вразливість `high` або червоний тест = жоден воркер не поїде на прод.
+  # Образ пінимо, а не `ubuntu-latest`: міграція `latest` на новий образ
+  # міняє раннер під ногами, і джоба з усіма зеленими кроками впирається в
+  # ліміт часу — тоді деплой зривається не через код, а через образ.
   checks:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 15
     steps:
       - uses: actions/checkout@v7
@@ -104,7 +107,7 @@ jobs:
   deploy-bot:
     needs: checks
     if: github.event_name != 'pull_request'
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 15
     steps:
       - uses: actions/checkout@v7
@@ -121,7 +124,7 @@ jobs:
   deploy-api:
     needs: checks
     if: github.event_name != 'pull_request'
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 15
     steps:
       - uses: actions/checkout@v7
@@ -138,7 +141,7 @@ jobs:
   deploy-web:
     needs: checks
     if: github.event_name != 'pull_request'
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 15
     steps:
       - uses: actions/checkout@v7
@@ -156,7 +159,7 @@ jobs:
   deploy-web-admin:
     needs: checks
     if: github.event_name != 'pull_request'
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 15
     steps:
       - uses: actions/checkout@v7
