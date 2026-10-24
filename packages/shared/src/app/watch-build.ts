@@ -25,14 +25,11 @@ const DEFAULT_INTERVAL_MS = 60_000;
 /**
  * Те, що потрібно оболонкам: нова збірка — перезавантаження вкладки.
  *
- * Одна функція на обидві оболонки, щоб кожна не писала власну перевірку й не
- * розходилась у поведінці.
+ * `enabled` передає оболонка (`import.meta.env.PROD`): у `packages/shared` типів
+ * Vite немає, а другого місця, де це вирішується, бути не має.
  */
 export function reloadOnNewBuild(options: WatchBuildOptions = {}): void {
-  watchBuild(() => window.location.reload(), {
-    enabled: import.meta.env.PROD,
-    ...options,
-  });
+  watchBuild(() => window.location.reload(), options);
 }
 
 /**

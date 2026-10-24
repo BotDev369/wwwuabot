@@ -8,7 +8,7 @@ import App from "./App.tsx";
 // Застосовуємо theme/style перед першим рендером (унікальний код)
 initTheme();
 // Деплой посеред сесії не має лишати вкладку на старому коді.
-reloadOnNewBuild();
+reloadOnNewBuild({ enabled: import.meta.env.PROD });
 
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
