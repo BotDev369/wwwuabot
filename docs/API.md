@@ -80,6 +80,7 @@
 | `DELETE` | `/api/admin/access-requests` | `handleAccessRequestDelete` |
 | `POST` | `/api/admin/access-requests/update` | `handleAccessRequestUpdate` |
 | `GET` | `/api/admin/events` | `handleEventList` |
+| `POST` | `/api/admin/events/delete` | `handleEventCleanup` |
 | `GET` | `/api/admin/events/summary` | `handleEventSummary` |
 | `POST` | `/api/admin/monitoring/collect` | `handleMonitoringCollect` |
 | `GET` | `/api/admin/monitoring/summary` | `handleMonitoringSummary` |
@@ -110,4 +111,4 @@
 | `POST` | `/auth/login` | `handleLogin` |
 | `POST` | `/auth/logout` | `handleLogout` |
 
-Усього шляхів: **81**.
+Усього шляхів: **82**.

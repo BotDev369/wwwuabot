@@ -1816,6 +1816,20 @@ body {
   align-self: center;
 }
 
+/* Прибирання журналу: поля одно під одним, бо це питання «кого / коли / що»,
+   а не довга форма — кроки читаються згори вниз. */
+.ana-cleanup {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-3);
+}
+
+.ana-cleanup-warn {
+  margin: 0;
+  font-size: var(--text-sm);
+  color: var(--text-muted);
+}
+
 @media (max-width: 640px) {
   .ana-page {
     padding: var(--sp-2);

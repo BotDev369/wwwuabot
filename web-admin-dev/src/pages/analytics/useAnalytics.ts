@@ -33,6 +33,7 @@ export interface AnalyticsState {
   setToInput: (value: string) => void;
   applyRange: () => void;
   applyPreset: (hours: number) => void;
+  range: EventRangeInput;
   summary: EventSummary | null;
   events: UserEvent[];
   listTotal: number;
@@ -44,6 +45,9 @@ export interface AnalyticsState {
   loadingMore: boolean;
   updatedAt: number | null;
   error: string | null;
+  cleanupOpen: boolean;
+  openCleanup: () => void;
+  closeCleanup: () => void;
   reload: () => void;
   toggleUser: (userId: number) => Promise<void>;
   loadMore: () => Promise<void>;
@@ -70,6 +74,7 @@ export function useAnalytics(): AnalyticsState {
   const [loadingMore, setLoadingMore] = useState(false);
   const [updatedAt, setUpdatedAt] = useState<number | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [cleanupOpen, setCleanupOpen] = useState(false);
   const [refreshToken, setRefreshToken] = useState(0);
 
   const load = useCallback(async () => {
@@ -176,6 +181,7 @@ export function useAnalytics(): AnalyticsState {
     setToInput,
     applyRange,
     applyPreset,
+    range,
     summary,
     events,
     listTotal,
@@ -187,6 +193,9 @@ export function useAnalytics(): AnalyticsState {
     loadingMore,
     updatedAt,
     error,
+    cleanupOpen,
+    openCleanup: () => setCleanupOpen(true),
+    closeCleanup: () => setCleanupOpen(false),
     reload,
     toggleUser,
     loadMore,

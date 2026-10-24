@@ -7,8 +7,19 @@
  * @module web-admin-dev/src/shared/api/events.api
  */
 
-import type { EventList, EventSummary } from "@wwwuabot/shared/events";
+import type { EventKind, EventList, EventSurface, EventSummary } from "@wwwuabot/shared/events";
 import { apiFetch } from "./client";
+
+/** Тіло прибирання: ознаки плюс `all` (єдина згода на «стерти все»). */
+export interface EventCleanupRequest {
+  all?: boolean;
+  dryRun?: boolean;
+  userId?: number;
+  from?: string;
+  to?: string;
+  surface?: EventSurface;
+  kind?: EventKind;
+}
 
 function rangeQuery(range: { from: string; to: string }): string {
   return `from=${encodeURIComponent(range.from)}&to=${encodeURIComponent(range.to)}`;
@@ -35,4 +46,18 @@ export function fetchEvents(params: {
     query.set("userId", String(params.userId));
   }
   return apiFetch<EventList>(`/api/admin/events?${query.toString()}`);
+}
+
+/**
+ * Прибирання журналу: `dryRun` повертає `matched`, інакше — `deleted`.
+ * Обидва — у тій самій відповіді, бо це той самий відбір, лише без запису.
+ */
+export function cleanupEvents(
+  body: EventCleanupRequest,
+): Promise<{ matched?: number; deleted?: number }> {
+  return apiFetch(`/api/admin/events/delete`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(body),
+  });
 }

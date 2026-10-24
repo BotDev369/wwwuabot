@@ -64,7 +64,11 @@ import {
   handleMonitoringSummary,
   handleMonitoringCollect,
 } from "./controllers/monitoring.controller";
-import { handleEventSummary, handleEventList } from "./controllers/events.controller";
+import {
+  handleEventSummary,
+  handleEventList,
+  handleEventCleanup,
+} from "./controllers/events.controller";
 
 /**
  * Префікси шляхів, доступ до яких вимагає адмінської cookie-сесії.
@@ -281,6 +285,11 @@ export async function handleRequest(request: Request, env: Env): Promise<Respons
   }
   if (pathname === "/api/admin/events" && request.method === "GET") {
     return handleEventList(request, env);
+  }
+  // Прибирання — окремий шлях із `POST`: `DELETE` тут читався б як «видали
+  // подію за адресою», якої немає, а `events/delete` каже мету прямо.
+  if (pathname === "/api/admin/events/delete" && request.method === "POST") {
+    return handleEventCleanup(request, env);
   }
 
   // ── Допуск: «чи бачу я платформу» ──────────────────────────────

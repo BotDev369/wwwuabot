@@ -10,6 +10,7 @@
 import {
   platformAction,
   platformScreen,
+  resolveEventRange,
   shouldRecordPlatformRequest,
   type EventList,
   type EventRange,
@@ -62,6 +63,73 @@ export async function recordPlatformRequest(
   } catch (error) {
     apiLog.error("events: запис дії платформи", error);
   }
+}
+
+/** Що прибрати: кожна задана ознака звужує вибір, незадані не беруть участі. */
+export interface EventCleanupFilter {
+  userId?: number | null;
+  from?: string | null;
+  to?: string | null;
+  surface?: EventSurface | null;
+  kind?: UserEvent["kind"] | null;
+}
+
+/**
+ * `WHERE` із заданих ознак; порожній — це «всі рядки», і його дозволяє
+ * лише явне `all` у контролері, а не забутий фільтр.
+ */
+function cleanupWhere(filter: EventCleanupFilter): {
+  sql: string;
+  values: (string | number)[];
+} {
+  const clauses: string[] = [];
+  const values: (string | number)[] = [];
+
+  if (filter.userId) {
+    clauses.push("user_id = ?");
+    values.push(filter.userId);
+  }
+  if (filter.surface) {
+    clauses.push("surface = ?");
+    values.push(filter.surface);
+  }
+  if (filter.kind) {
+    clauses.push("kind = ?");
+    values.push(filter.kind);
+  }
+  if (filter.from || filter.to) {
+    const range = resolveEventRange({ from: filter.from, to: filter.to });
+    clauses.push("created_at BETWEEN ? AND ?");
+    values.push(range.from, range.to);
+  }
+
+  return { sql: clauses.length > 0 ? `WHERE ${clauses.join(" AND ")}` : "", values };
+}
+
+/**
+ * Прибирання журналу: `dryRun` лише рахує, що підпадає під ознаки — людина
+ * бачить кількість до того, як щось зникне.
+ */
+export async function cleanupEvents(
+  env: Env,
+  filter: EventCleanupFilter,
+  dryRun: boolean,
+): Promise<number> {
+  await ensureTables(env.DB, ["user_events"]);
+  const where = cleanupWhere(filter);
+  const from = where.sql ? `FROM user_events ${where.sql}` : "FROM user_events";
+
+  if (dryRun) {
+    const row = await env.DB.prepare(`SELECT COUNT(*) AS total ${from}`)
+      .bind(...where.values)
+      .first<{ total: number }>();
+    return row?.total ?? 0;
+  }
+
+  const result = await env.DB.prepare(`DELETE ${from}`)
+    .bind(...where.values)
+    .run();
+  return result.meta?.changes ?? 0;
 }
 
 interface SummaryRow {

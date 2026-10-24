@@ -7,13 +7,39 @@
  * @module api-dev/src/controllers/events.controller
  */
 
-import { resolveEventRange, type EventRange } from "@wwwuabot/shared/events";
+import { z } from "zod";
+import {
+  EVENT_KINDS,
+  EVENT_SURFACES,
+  resolveEventRange,
+  type EventRange,
+} from "@wwwuabot/shared/events";
 import type { Env } from "../shared/types";
 import { apiLog } from "../shared/logger";
-import { readEventSummary, readEvents } from "../services/user-events.service";
+import { readBody } from "../shared/body";
+import {
+  cleanupEvents,
+  readEventSummary,
+  readEvents,
+  type EventCleanupFilter,
+} from "../services/user-events.service";
 
 const EVENTS_LIMIT_DEFAULT = 100;
 const EVENTS_LIMIT_MAX = 200;
+
+/**
+ * Ознаки прибирання. `all` — єдине, що дозволяє порожній набір: забутий
+ * фільтр не має сам перетворюватись у «видалити все».
+ */
+const cleanupSchema = z.object({
+  all: z.boolean().optional(),
+  dryRun: z.boolean().optional(),
+  userId: z.number().int().positive().optional(),
+  from: z.string().min(1).optional(),
+  to: z.string().min(1).optional(),
+  surface: z.enum(EVENT_SURFACES).optional(),
+  kind: z.enum(EVENT_KINDS).optional(),
+});
 
 function json(body: unknown, status = 200): Response {
   return new Response(JSON.stringify(body), {
@@ -38,6 +64,46 @@ export async function handleEventSummary(request: Request, env: Env): Promise<Re
   } catch (error) {
     apiLog.error("events: зведення", error);
     return json({ error: "Не вдалось прочитати журнал" }, 500);
+  }
+}
+
+/**
+ * `POST /api/admin/events/delete` — прибрати події за ознаками.
+ *
+ * `dryRun` повертає `matched` і нічого не чіпає: адмінка показує кількість
+ * до підтвердження. Без жодної ознаки потрібне явне `all` — інакше 400.
+ */
+export async function handleEventCleanup(request: Request, env: Env): Promise<Response> {
+  const parsed = await readBody(request, cleanupSchema);
+  if (!parsed.ok) return parsed.response;
+  const body = parsed.body;
+
+  const filter: EventCleanupFilter = {
+    userId: body.userId ?? null,
+    from: body.from ?? null,
+    to: body.to ?? null,
+    surface: body.surface ?? null,
+    kind: body.kind ?? null,
+  };
+  const hasFilter = [filter.userId, filter.from, filter.to, filter.surface, filter.kind].some(
+    (value) => value !== null,
+  );
+  if (!hasFilter && body.all !== true) {
+    return json({ error: "Немає критеріїв" }, 400);
+  }
+  if (
+    (filter.from && Number.isNaN(Date.parse(filter.from))) ||
+    (filter.to && Number.isNaN(Date.parse(filter.to)))
+  ) {
+    return json({ error: "Некоректна дата" }, 400);
+  }
+
+  try {
+    const count = await cleanupEvents(env, filter, body.dryRun === true);
+    return json(body.dryRun === true ? { matched: count } : { deleted: count });
+  } catch (error) {
+    apiLog.error("events: прибирання", error);
+    return json({ error: "Не вдалось прибрати журнал" }, 500);
   }
 }
 

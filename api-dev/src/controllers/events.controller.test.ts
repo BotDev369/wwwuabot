@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import type { Env } from "../shared/types";
-import { handleEventList, handleEventSummary } from "./events.controller";
+import { handleEventCleanup, handleEventList, handleEventSummary } from "./events.controller";
 import {
   recordPlatformRequest,
   readEventSummary,
@@ -283,5 +283,78 @@ describe("читання журналу", () => {
     const response = await handleEventSummary(new Request("https://example.com/x"), env);
     expect(response.status).toBe(500);
     expect(JSON.stringify(await response.json())).not.toContain("no such table");
+  });
+});
+
+describe("прибирання журналу", () => {
+  const post = (body: unknown): Request =>
+    new Request("https://example.com/api/admin/events/delete", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(body),
+    });
+
+  it("звужує вибір ознаками й пише їх у SQL", async () => {
+    const db = database({ total: 12 });
+
+    const response = await handleEventCleanup(
+      post({
+        userId: 7,
+        from: "2026-10-20T00:00:00Z",
+        to: "2026-10-21T00:00:00Z",
+        surface: "platform",
+        kind: "view",
+      }),
+      db.env,
+    );
+
+    expect(response.status).toBe(200);
+    const remove = db.calls.find((call) => call.sql.startsWith("DELETE FROM user_events"));
+    expect(remove?.sql).toContain("user_id = ?");
+    expect(remove?.sql).toContain("surface = ?");
+    expect(remove?.sql).toContain("kind = ?");
+    expect(remove?.sql).toContain("created_at BETWEEN ? AND ?");
+    expect(remove?.values).toEqual([
+      7,
+      "platform",
+      "view",
+      "2026-10-20 00:00:00",
+      "2026-10-21 00:00:00",
+    ]);
+  });
+
+  it("порожній набір ознак — 400, а не «стерти все»", async () => {
+    const db = database();
+    const response = await handleEventCleanup(post({ dryRun: true }), db.env);
+
+    expect(response.status).toBe(400);
+    expect(db.calls.some((call) => call.sql.startsWith("DELETE"))).toBe(false);
+  });
+
+  it("явне `all` стирає журнал цілком і без WHERE", async () => {
+    const db = database();
+    const response = await handleEventCleanup(post({ all: true }), db.env);
+
+    expect(response.status).toBe(200);
+    const remove = db.calls.find((call) => call.sql.startsWith("DELETE FROM user_events"));
+    expect(remove?.sql).toBe("DELETE FROM user_events");
+    expect(remove?.values).toEqual([]);
+  });
+
+  it("`dryRun` лише рахує: DELETE не виконується", async () => {
+    const db = database({ total: 42 });
+    const response = await handleEventCleanup(post({ userId: 7, dryRun: true }), db.env);
+
+    expect(await response.json()).toEqual({ matched: 42 });
+    expect(db.calls.some((call) => call.sql.startsWith("DELETE"))).toBe(false);
+    expect(db.calls.some((call) => call.sql.includes("SELECT COUNT(*)"))).toBe(true);
+  });
+
+  it("крива дата — 400, а не тиха підміна на добу", async () => {
+    const db = database();
+    const response = await handleEventCleanup(post({ from: "вчора" }), db.env);
+
+    expect(response.status).toBe(400);
+    expect(db.calls.some((call) => call.sql.startsWith("DELETE"))).toBe(false);
   });
 });

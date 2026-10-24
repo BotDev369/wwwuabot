@@ -4,14 +4,16 @@ import { render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import type { EventList, EventSummary, UserEvent } from "@wwwuabot/shared/events";
 
-const api = vi.hoisted(() => ({ summary: vi.fn(), events: vi.fn() }));
+const api = vi.hoisted(() => ({ summary: vi.fn(), events: vi.fn(), cleanup: vi.fn() }));
 
 vi.mock("../../shared/api/events.api", () => ({
   fetchEventSummary: api.summary,
   fetchEvents: api.events,
+  cleanupEvents: api.cleanup,
 }));
 
 const { AnalyticsPage } = await import("./AnalyticsPage");
+const { DialogProvider } = await import("@wwwuabot/ui/dialog");
 
 const PERSON = { userId: 7, firstName: "Сергій", lastName: "Дискант", username: "DiskantSergiy" };
 
@@ -118,6 +120,29 @@ describe("екран «Аналітика»", () => {
     render(<AnalyticsPage />);
 
     expect((await screen.findByRole("alert")).textContent).toContain("Сесія прострочена");
+  });
+
+  it("очищає журнал: спершу рахує, потім видаляє після підтвердження", async () => {
+    api.cleanup.mockResolvedValueOnce({ matched: 4 }).mockResolvedValueOnce({ deleted: 4 });
+    render(
+      <DialogProvider>
+        <AnalyticsPage />
+      </DialogProvider>,
+    );
+    await screen.findByText("Сергій Дискант");
+
+    await userEvent.click(screen.getByRole("button", { name: /Очистити журнал/ }));
+    await userEvent.click(screen.getByRole("button", { name: "За весь час" }));
+    await userEvent.click(screen.getByRole("button", { name: "Очистити" }));
+
+    // Перший запит — лише підрахунок: нічого не зникає без підтвердження.
+    await waitFor(() => expect(api.cleanup).toHaveBeenCalledTimes(1));
+    expect(api.cleanup.mock.calls[0]?.[0]).toEqual({ all: true, dryRun: true });
+
+    await userEvent.click(await screen.findByRole("button", { name: "Видалити" }));
+
+    await waitFor(() => expect(api.cleanup).toHaveBeenCalledTimes(2));
+    expect(api.cleanup.mock.calls[1]?.[0]).toEqual({ all: true });
   });
 
   it("догортає список і каже, скільки вже видно", async () => {
