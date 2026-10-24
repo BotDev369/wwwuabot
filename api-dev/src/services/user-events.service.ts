@@ -8,7 +8,6 @@
  */
 
 import {
-  EVENT_VIEW_WINDOW_MS,
   platformAction,
   platformScreen,
   shouldRecordPlatformRequest,
@@ -29,8 +28,9 @@ const SUMMARY_USERS_LIMIT = 200;
 
 /**
  * Дія платформи в журнал; `at` — момент приходу запиту, бо запис іде в
- * `waitUntil`. `GET` екрана — одна подія `view` на екран і на вікно, зміна
- * стану — завжди окремий рядок зі своїм шляхом (`docs/EVENTS.md`).
+ * `waitUntil`. **Кожен запит — окремий рядок**, без згортань: у `GET` екрана
+ * `action` — ключ екрана, а `details` — точний шлях, тож видно і назву, і те,
+ * що саме запитали (`docs/EVENTS.md`).
  */
 export async function recordPlatformRequest(
   request: Request,
@@ -54,10 +54,10 @@ export async function recordPlatformRequest(
         surface: "platform",
         kind: screen ? "view" : "request",
         action: screen ? screen.key : platformAction(request.method, pathname),
+        details: screen ? pathname : null,
         status: status < 400 ? "ok" : "error",
       },
       at,
-      screen ? EVENT_VIEW_WINDOW_MS : undefined,
     );
   } catch (error) {
     apiLog.error("events: запис дії платформи", error);

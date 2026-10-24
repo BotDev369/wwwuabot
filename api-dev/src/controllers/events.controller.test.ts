@@ -61,38 +61,52 @@ describe("журнал дій платформи", () => {
 
     const insert = db.calls.find((call) => call.sql.startsWith("INSERT INTO user_events"));
     expect(insert).toBeDefined();
-    expect(insert?.values.slice(0, 6)).toEqual([777, "platform", "view", "favorites", null, "ok"]);
+    expect(insert?.values.slice(0, 6)).toEqual([
+      777,
+      "platform",
+      "view",
+      "favorites",
+      "/api/favorites",
+      "ok",
+    ]);
   });
 
-  it("читання екрана згортається у вікні, а зміна стану — ні", async () => {
+  it("кожен запит — окремий рядок, без згортання", async () => {
     const at = Date.UTC(2026, 9, 24, 12, 17, 25);
+    const db = database();
 
-    const view = database();
-    await recordPlatformRequest(
-      new Request("https://example.com/api/user/trackers/templates"),
-      view.env,
-      200,
-      at,
-    );
-    const viewInsert = view.calls.find((call) => call.sql.startsWith("INSERT INTO user_events"));
-    // Той самий екран, інший ендпоїнт — ключ екрана, а не шлях.
-    expect(viewInsert?.values.slice(2, 4)).toEqual(["view", "trackers"]);
-    expect(viewInsert?.sql).toContain("WHERE NOT EXISTS");
-    expect(viewInsert?.values.at(-1)).toBe("2026-10-24 12:16:25.000");
+    // Один екран робить кілька запитів паралельно: у журналі мусять бути всі,
+    // інакше «скільки разів» і «в якому порядку» стають неправдою.
+    for (const path of [
+      "/api/user/trackers",
+      "/api/user/trackers/templates",
+      "/api/user/trackers/public",
+    ]) {
+      await recordPlatformRequest(new Request(`https://example.com${path}`), db.env, 200, at);
+    }
 
-    const action = database();
+    const inserts = db.calls.filter((call) => call.sql.startsWith("INSERT INTO user_events"));
+    expect(inserts).toHaveLength(3);
+    expect(inserts.map((call) => call.values[3])).toEqual(["trackers", "trackers", "trackers"]);
+    // Шлях запиту не губиться — він у `details`.
+    expect(inserts.map((call) => call.values[4])).toEqual([
+      "/api/user/trackers",
+      "/api/user/trackers/templates",
+      "/api/user/trackers/public",
+    ]);
+    expect(inserts.every((call) => !call.sql.includes("WHERE NOT EXISTS"))).toBe(true);
+  });
+
+  it("зміна стану пише метод і шлях", async () => {
+    const db = database();
     await recordPlatformRequest(
       new Request("https://example.com/api/user/trackers", { method: "POST" }),
-      action.env,
+      db.env,
       200,
-      at,
     );
-    const actionInsert = action.calls.find((call) =>
-      call.sql.startsWith("INSERT INTO user_events"),
-    );
-    // Дотик пише навіть той самий шлях: це намір, і повтор — теж подія.
-    expect(actionInsert?.values.slice(2, 4)).toEqual(["request", "POST /api/user/trackers"]);
-    expect(actionInsert?.sql).not.toContain("WHERE NOT EXISTS");
+
+    const insert = db.calls.find((call) => call.sql.startsWith("INSERT INTO user_events"));
+    expect(insert?.values.slice(2, 5)).toEqual(["request", "POST /api/user/trackers", null]);
   });
 
   it("час події береться з моменту запиту й пише мілісекунди", async () => {

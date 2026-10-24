@@ -1,7 +1,6 @@
 import { describe, expect, it } from "vitest";
 import {
   EVENT_TEXT_MAX,
-  EVENT_VIEW_WINDOW_MS,
   eventKindLabel,
   eventMethod,
   isEventKind,
@@ -63,7 +62,6 @@ describe("події людей", () => {
     expect(screenLabel("unknown")).toBe("unknown");
     // Префікс матчиться по межі сегмента, а не по літерах.
     expect(platformScreen("/api/notes2")).toBeNull();
-    expect(EVENT_VIEW_WINDOW_MS).toBeGreaterThan(0);
   });
 
   it("перегляд екрана — окремий вид події з людською назвою", () => {

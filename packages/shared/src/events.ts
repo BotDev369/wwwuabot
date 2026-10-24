@@ -171,9 +171,6 @@ export function screenLabel(key: string): string {
   return PLATFORM_SCREENS.find((screen) => screen.key === key)?.label ?? key;
 }
 
-/** Вікно згортання переглядів: хвилина — межа між «ще тут» і «зайшов знову». */
-export const EVENT_VIEW_WINDOW_MS = 60_000;
-
 /** Дія платформи не для журналу: службове, адмінське й публічне без людини. */
 const PLATFORM_SKIP_PREFIXES = ["/api/admin/", "/api/portal/", "/api/bot/"] as const;
 
