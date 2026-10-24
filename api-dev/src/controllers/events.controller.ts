@@ -25,7 +25,7 @@ import {
   readFullEventLogging,
   writeFullEventLogging,
   type EventCleanupFilter,
-} from "../services/user-events.service";
+} from "../services/user-events-admin.service";
 
 const EVENTS_LIMIT_DEFAULT = 100;
 const EVENTS_LIMIT_MAX = 200;

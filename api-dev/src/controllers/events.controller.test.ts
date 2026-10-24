@@ -7,12 +7,8 @@ import {
   handleEventSettingsWrite,
   handleEventSummary,
 } from "./events.controller";
-import {
-  recordPlatformAction,
-  recordPlatformView,
-  readEventSummary,
-  readEvents,
-} from "../services/user-events.service";
+import { recordPlatformAction, recordPlatformView } from "../services/user-events.service";
+import { readEventSummary, readEvents } from "../services/user-events-admin.service";
 
 const mocks = vi.hoisted(() => ({ identity: vi.fn() }));
 vi.mock("../shared/identity", () => ({ tryResolveUserId: mocks.identity }));
