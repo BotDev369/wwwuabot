@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { render, screen, waitFor, within } from "@testing-library/react";
+import { fireEvent, render, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import type { EventList, EventSummary, UserEvent } from "@wwwuabot/shared/events";
 
@@ -79,8 +79,10 @@ describe("екран «Аналітика»", () => {
     render(<AnalyticsPage />);
 
     expect(await screen.findByText("Сергій Дискант")).toBeTruthy();
-    expect(screen.getByText("подій")).toBeTruthy();
-    expect(screen.getByText("у боті")).toBeTruthy();
+    // Зведення — знаки з підказкою, а не підписи під числом.
+    expect(screen.getByTitle("подій").textContent).toBe("3");
+    expect(screen.getByTitle("у боті").textContent).toBe("2");
+    expect(screen.getByTitle("на платформі").textContent).toBe("1");
     expect(screen.getByText("@DiskantSergiy · 7")).toBeTruthy();
   });
 
@@ -116,6 +118,29 @@ describe("екран «Аналітика»", () => {
     await userEvent.click(screen.getByRole("button", { name: "Тиждень" }));
 
     await waitFor(() => expect(api.summary).toHaveBeenCalledTimes(2));
+    expect(screen.getByRole("button", { name: "Тиждень" }).getAttribute("aria-pressed")).toBe(
+      "true",
+    );
+  });
+
+  it("«Період» бере межі з модалки й лишається обраним", async () => {
+    render(<AnalyticsPage />);
+    await screen.findByText("Сергій Дискант");
+
+    await userEvent.click(screen.getByRole("button", { name: /Період/ }));
+    // date-полю значення дають зміною, а не посимвольним набором.
+    fireEvent.change(screen.getByLabelText("Від"), { target: { value: "2026-10-01T00:00" } });
+    fireEvent.change(screen.getByLabelText("До"), { target: { value: "2026-10-02T00:00" } });
+    await userEvent.click(screen.getByRole("button", { name: "Застосувати" }));
+
+    await waitFor(() => expect(api.summary).toHaveBeenCalledTimes(2));
+    expect(api.summary.mock.calls[1]?.[0]).toEqual({
+      from: new Date("2026-10-01T00:00").toISOString(),
+      to: new Date("2026-10-02T00:00").toISOString(),
+    });
+    expect(screen.getByRole("button", { name: /Період/ }).getAttribute("aria-pressed")).toBe(
+      "true",
+    );
   });
 
   it("«Оновити» перечитує журнал, зсуває вікно й каже, коли це було", async () => {

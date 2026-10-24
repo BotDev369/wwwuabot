@@ -486,6 +486,9 @@ export const icons: Record<IconName, ReactElement> = {
 
   calendar: icon([r(3, 4, 18, 18, 2), l(16, 2, 16, 6), l(8, 2, 8, 6), l(3, 10, 21, 10)]),
 
+  // Стрілки з центру — «коли», а не «якого числа»: календар уже зайнятий датою.
+  clock: icon([c(12, 12, 9), pl("12 7 12 12 15.5 14")]),
+
   user: icon([p("M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"), c(12, 7, 4)]),
 
   // --- Navigation icons ---

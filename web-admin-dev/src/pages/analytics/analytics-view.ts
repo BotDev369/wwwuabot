@@ -27,6 +27,12 @@ export const EVENT_PRESETS = [
 
 export type EventPresetKey = (typeof EVENT_PRESETS)[number]["key"];
 
+/** Готовий період → години: одна таблиця для чипа й для «Оновити». */
+export function presetWindowHours(key: EventPresetKey): number {
+  const preset = EVENT_PRESETS.find((item) => item.key === key);
+  return preset ? preset.hours : EVENT_PRESETS[0].hours;
+}
+
 /** Одна сторінка журналу: більше в один екран усе одно не влізе. */
 export const EVENT_PAGE_SIZE = 100;
 

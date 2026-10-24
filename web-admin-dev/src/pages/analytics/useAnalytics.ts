@@ -19,25 +19,32 @@ import {
   EVENT_PAGE_SIZE,
   mergeEvents,
   presetRange,
+  presetWindowHours,
   rangeFromInputs,
   refreshRange,
   toDateTimeInput,
   type AnalyticsMode,
+  type EventPresetKey,
   type EventRangeInput,
 } from "./analytics-view";
 
-const INITIAL_HOURS = 24;
-const INITIAL_RANGE = presetRange(INITIAL_HOURS);
+/** Обраний період: готовий чип або межі, задані в модалці. */
+export type AnalyticsPeriod = EventPresetKey | "period";
+
+const INITIAL_PERIOD: AnalyticsPeriod = "day";
+const INITIAL_RANGE = presetRange(presetWindowHours("day"));
 
 export interface AnalyticsState {
   mode: AnalyticsMode;
   setMode: (mode: AnalyticsMode) => void;
-  fromInput: string;
-  toInput: string;
-  setFromInput: (value: string) => void;
-  setToInput: (value: string) => void;
-  applyRange: () => void;
-  applyPreset: (hours: number) => void;
+  period: AnalyticsPeriod;
+  applyPreset: (key: EventPresetKey) => void;
+  /** Межі поточного діапазону для полів модалки. */
+  rangeInput: { from: string; to: string };
+  rangeOpen: boolean;
+  openRange: () => void;
+  closeRange: () => void;
+  applyRange: (from: string, to: string) => void;
   range: EventRangeInput;
   summary: EventSummary | null;
   events: UserEvent[];
@@ -64,9 +71,9 @@ export interface AnalyticsState {
 
 export function useAnalytics(): AnalyticsState {
   const [mode, setMode] = useState<AnalyticsMode>("users");
+  const [period, setPeriod] = useState<AnalyticsPeriod>(INITIAL_PERIOD);
   const [range, setRange] = useState<EventRangeInput>(INITIAL_RANGE);
-  const [fromInput, setFromInput] = useState(() => toDateTimeInput(INITIAL_RANGE.from));
-  const [toInput, setToInput] = useState(() => toDateTimeInput(INITIAL_RANGE.to));
+  const [rangeOpen, setRangeOpen] = useState(false);
 
   const [summary, setSummary] = useState<EventSummary | null>(null);
   const [events, setEvents] = useState<UserEvent[]>([]);
@@ -74,9 +81,6 @@ export function useAnalytics(): AnalyticsState {
   const [expandedUserId, setExpandedUserId] = useState<number | null>(null);
   const [userEvents, setUserEvents] = useState<Record<number, UserEvent[]>>({});
   const [userTotals, setUserTotals] = useState<Record<number, number>>({});
-
-  /** Готовий проміжок у годинах; `null` — межи задані вручну. */
-  const [presetHours, setPresetHours] = useState<number | null>(INITIAL_HOURS);
 
   const [loading, setLoading] = useState(true);
   const [loadingUser, setLoadingUser] = useState<number | null>(null);
@@ -150,26 +154,23 @@ export function useAnalytics(): AnalyticsState {
     }
   }, []);
 
-  const applyRange = useCallback(() => {
-    setPresetHours(null);
-    setRange(rangeFromInputs(fromInput, toInput));
-  }, [fromInput, toInput]);
+  /** Готовий проміжок у годинах; `null` — межи задані вручну. */
+  const presetHours = period === "period" ? null : presetWindowHours(period);
 
-  const applyPreset = useCallback((hours: number) => {
-    const next = presetRange(hours);
-    setPresetHours(hours);
-    setFromInput(toDateTimeInput(next.from));
-    setToInput(toDateTimeInput(next.to));
-    setRange(next);
+  const applyPreset = useCallback((key: EventPresetKey) => {
+    setPeriod(key);
+    setRange(presetRange(presetWindowHours(key)));
+  }, []);
+
+  const applyRange = useCallback((from: string, to: string) => {
+    setPeriod("period");
+    setRange(rangeFromInputs(from, to));
+    setRangeOpen(false);
   }, []);
 
   const reload = useCallback(() => {
     const next = refreshRange(range, presetHours);
-    if (next !== range) {
-      setFromInput(toDateTimeInput(next.from));
-      setToInput(toDateTimeInput(next.to));
-      setRange(next);
-    }
+    if (next !== range) setRange(next);
     setRefreshToken((token) => token + 1);
   }, [presetHours, range]);
 
@@ -218,12 +219,13 @@ export function useAnalytics(): AnalyticsState {
   return {
     mode,
     setMode,
-    fromInput,
-    toInput,
-    setFromInput,
-    setToInput,
-    applyRange,
+    period,
     applyPreset,
+    rangeInput: { from: toDateTimeInput(range.from), to: toDateTimeInput(range.to) },
+    rangeOpen,
+    openRange: () => setRangeOpen(true),
+    closeRange: () => setRangeOpen(false),
+    applyRange,
     range,
     summary,
     events,

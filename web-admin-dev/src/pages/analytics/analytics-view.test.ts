@@ -8,6 +8,7 @@ import {
   eventPhrase,
   mergeEvents,
   presetRange,
+  presetWindowHours,
   rangeFromInputs,
   refreshRange,
   toDateTimeInput,
@@ -36,6 +37,12 @@ describe("помічники аналітики", () => {
       from: "2026-10-22T12:00:00.000Z",
       to: "2026-10-23T12:00:00.000Z",
     });
+  });
+
+  it("чип періоду дає ті самі години, що й таблиця пресетів", () => {
+    expect(presetWindowHours("day")).toBe(24);
+    expect(presetWindowHours("week")).toBe(24 * 7);
+    expect(presetWindowHours("month")).toBe(24 * 30);
   });
 
   it("оновлення зсуває готове вікно, а ручний проміжок не чіпає", () => {

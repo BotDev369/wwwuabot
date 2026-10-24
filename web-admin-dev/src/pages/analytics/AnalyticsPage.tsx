@@ -4,6 +4,10 @@
  * Два режими того самого журналу: по користувачах (акордеон із діями людини)
  * і за часом (суцільний список). Діапазон у них спільний — `docs/EVENTS.md`.
  *
+ * Дії екрана стоять одним рядком у шапці: режими, «Оновити» і «Очистити»
+ * (знаки, бо підпис тут дорожчий за місце списку), а період — окремим рядом
+ * чипів під ним.
+ *
  * @module web-admin-dev/src/pages/analytics/AnalyticsPage
  */
 
@@ -14,6 +18,7 @@ import { PageTopbar } from "../../layout/PageTopbar";
 import { EVENT_PRESETS, clockStamp, userLabel, userMeta } from "./analytics-view";
 import { CleanupModal } from "./CleanupModal";
 import { EventRows } from "./EventRows";
+import { RangeModal } from "./RangeModal";
 import { useAnalytics } from "./useAnalytics";
 
 export function AnalyticsPage(): ReactElement {
@@ -35,7 +40,7 @@ export function AnalyticsPage(): ReactElement {
               className={`ana-mode-btn${a.mode === "users" ? " ana-mode-btn--active" : ""}`}
               onClick={() => a.setMode("users")}
             >
-              По користувачах
+              <Icon name="user" size={14} /> По користувачах
             </button>
             <button
               type="button"
@@ -44,69 +49,60 @@ export function AnalyticsPage(): ReactElement {
               className={`ana-mode-btn${a.mode === "time" ? " ana-mode-btn--active" : ""}`}
               onClick={() => a.setMode("time")}
             >
-              За часом
+              <Icon name="clock" size={14} /> За часом
             </button>
           </div>
           <button
             type="button"
-            className="wb-btn wb-btn-secondary ana-refresh"
+            className="wb-btn wb-btn-secondary ana-icon-btn"
             onClick={a.reload}
             disabled={a.loading}
             aria-busy={a.loading}
+            aria-label={a.loading ? "Оновлюю…" : "Оновити"}
+            title="Оновити"
           >
-            <Icon name="refresh" size={14} /> {a.loading ? "Оновлюю…" : "Оновити"}
+            <Icon name="refresh" size={16} />
           </button>
           <button
             type="button"
-            className="wb-btn wb-btn-secondary ana-refresh"
+            className="wb-btn wb-btn-secondary ana-icon-btn"
             onClick={a.openCleanup}
+            aria-label="Очистити журнал"
+            title="Очистити журнал"
           >
-            <Icon name="trash" size={14} /> Очистити журнал
+            <Icon name="trash" size={16} />
           </button>
         </div>
       </PageTopbar>
 
       <div className="ana-page">
-        <section className="ana-range" aria-label="Діапазон дат">
-          <label className="ana-field">
-            <span className="ana-label">Від</span>
-            <input
-              className="ana-input"
-              type="datetime-local"
-              value={a.fromInput}
-              onChange={(event) => a.setFromInput(event.target.value)}
-            />
-          </label>
-          <label className="ana-field">
-            <span className="ana-label">До</span>
-            <input
-              className="ana-input"
-              type="datetime-local"
-              value={a.toInput}
-              onChange={(event) => a.setToInput(event.target.value)}
-            />
-          </label>
-          <button type="button" className="wb-btn wb-btn-primary" onClick={a.applyRange}>
-            Застосувати
+        <section className="ana-periods" aria-label="Період">
+          {EVENT_PRESETS.map((preset) => (
+            <button
+              key={preset.key}
+              type="button"
+              aria-pressed={a.period === preset.key}
+              className={`ana-preset${a.period === preset.key ? " ana-preset--active" : ""}`}
+              onClick={() => a.applyPreset(preset.key)}
+            >
+              {preset.label}
+            </button>
+          ))}
+          <button
+            type="button"
+            aria-pressed={a.period === "period"}
+            className={`ana-preset${a.period === "period" ? " ana-preset--active" : ""}`}
+            onClick={a.openRange}
+          >
+            <Icon name="calendar" size={13} /> Період
           </button>
-          <div className="ana-presets">
-            {EVENT_PRESETS.map((preset) => (
-              <button
-                key={preset.key}
-                type="button"
-                className="ana-preset"
-                onClick={() => a.applyPreset(preset.hours)}
-              >
-                {preset.label}
-              </button>
-            ))}
-          </div>
-          {a.updatedAt !== null && !a.loading && (
-            <p className="ana-updated" role="status">
-              оновлено о {clockStamp(a.updatedAt)}
-            </p>
-          )}
         </section>
+
+        {a.updatedAt !== null && !a.loading && (
+          <p className="ana-updated" role="status">
+            оновлено о {clockStamp(a.updatedAt)}
+          </p>
+        )}
 
         <section className="ana-settings" aria-label="Налаштування журналу">
           <SwitchRow
@@ -128,24 +124,28 @@ export function AnalyticsPage(): ReactElement {
 
         {a.summary && (
           <>
-            <div className="ana-stats">
-              <div className="ana-stat">
+            {/* Зведення — один рядок: питання «скільки всього» ставлять раз, а
+                місце потрібне списку. Підпис під числом замінено знаком із
+                підказкою. */}
+            <section className="ana-summary" aria-label="Аналітика">
+              <h2 className="ana-summary-title">Аналітика</h2>
+              <span className="ana-stat" title="подій">
+                <Icon name="pulse" size={14} />
                 <span className="ana-stat-value">{a.summary.total}</span>
-                <span className="ana-stat-label">подій</span>
-              </div>
-              <div className="ana-stat">
+              </span>
+              <span className="ana-stat" title="людей">
+                <Icon name="users" size={14} />
                 <span className="ana-stat-value">{a.summary.users.length}</span>
-                <span className="ana-stat-label">людей</span>
-              </div>
-              <div className="ana-stat">
+              </span>
+              <span className="ana-stat" title="у боті">
+                <Icon name="bot" size={14} />
                 <span className="ana-stat-value">{a.summary.bySurface.bot}</span>
-                <span className="ana-stat-label">у боті</span>
-              </div>
-              <div className="ana-stat">
+              </span>
+              <span className="ana-stat" title="на платформі">
+                <Icon name="mobile" size={14} />
                 <span className="ana-stat-value">{a.summary.bySurface.platform}</span>
-                <span className="ana-stat-label">на платформі</span>
-              </div>
-            </div>
+              </span>
+            </section>
 
             {a.mode === "users" ? (
               <ul className="ana-users">
@@ -212,6 +212,15 @@ export function AnalyticsPage(): ReactElement {
           </>
         )}
       </div>
+
+      {a.rangeOpen && (
+        <RangeModal
+          from={a.rangeInput.from}
+          to={a.rangeInput.to}
+          onApply={a.applyRange}
+          onClose={a.closeRange}
+        />
+      )}
 
       {a.cleanupOpen && (
         <CleanupModal range={a.range} onClose={a.closeCleanup} onDeleted={a.reload} />

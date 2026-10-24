@@ -134,6 +134,8 @@ export const ICON_NAMES = [
   "message-square",
   "layers",
   "calendar",
+  // Годинник — плин часу (журнал «за часом»), а не дата в календарі.
+  "clock",
   "globe",
   "sun",
   "moon",

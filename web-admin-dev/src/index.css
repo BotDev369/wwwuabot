@@ -1525,6 +1525,9 @@ body {
 }
 
 .ana-mode-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
   border: none;
   background: transparent;
   color: var(--text-secondary);
@@ -1579,13 +1582,19 @@ body {
   min-width: 190px;
 }
 
-.ana-presets {
+/* Період — ряд чипів під шапкою: обраний видно кольором, а не окремим полем
+   вводу. Ручні межі живуть у модалці («Період»), бо два поля поруч з'їдали
+   місце списку й читались як частина кожного запиту. */
+.ana-periods {
   display: flex;
+  flex-wrap: wrap;
   gap: var(--sp-2);
-  margin-left: auto;
 }
 
 .ana-preset {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
   border: 1px solid var(--border);
   background: transparent;
   color: var(--text-secondary);
@@ -1600,20 +1609,28 @@ body {
   color: var(--accent);
 }
 
-/* Кнопка оновлення мусить відповідати на дотик: підпис міняється на «Оновлюю…»,
-   а поряд з'являється час останнього читання — інакше невидима робота. */
-.ana-refresh {
+.ana-preset--active {
+  border-color: var(--accent);
+  background: var(--accent-soft);
+  color: var(--accent);
+}
+
+/* Кнопка-знак: підпис живе в `aria-label` і підказці, тож місце тримає
+   квадрат, а не слово. Мінімум 44px — палець, а не курсор. */
+.ana-icon-btn {
+  min-width: 36px;
   min-height: 36px;
+  padding-inline: 0;
 }
 
 @media (hover: none) {
-  .ana-refresh {
+  .ana-icon-btn {
+    min-width: 44px;
     min-height: 44px;
   }
 }
 
 .ana-updated {
-  flex-basis: 100%;
   margin: 0;
   font-size: var(--text-xs);
   color: var(--text-muted);
@@ -1626,32 +1643,39 @@ body {
   }
 }
 
-.ana-stats {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(110px, 1fr));
-  gap: var(--sp-2);
-}
-
-.ana-stat {
+/* Зведення — смуга в один рядок: назви показників замінено знаками з
+   підказкою, бо питання «скільки всього» ставлять раз, а місце потрібне
+   списку. */
+.ana-summary {
   display: flex;
-  flex-direction: column;
-  gap: 2px;
-  padding: var(--sp-3);
+  align-items: center;
+  flex-wrap: wrap;
+  gap: var(--sp-3);
+  padding: var(--sp-2) var(--sp-3);
   border-radius: var(--radius-md);
   background: var(--bg-1);
   border: 1px solid var(--border-subtle);
 }
 
-.ana-stat-value {
-  font-family: var(--font-display);
-  font-size: var(--text-xl);
-  font-weight: var(--weight-bold);
+.ana-summary-title {
+  margin: 0 auto 0 0;
+  font-size: var(--text-sm);
+  font-weight: var(--weight-semibold);
   color: var(--text-primary);
 }
 
-.ana-stat-label {
-  font-size: var(--text-xs);
+.ana-stat {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
   color: var(--text-muted);
+}
+
+.ana-stat-value {
+  font-family: var(--font-mono);
+  font-size: var(--text-sm);
+  font-weight: var(--weight-semibold);
+  color: var(--text-primary);
 }
 
 .ana-users,
@@ -1893,10 +1917,6 @@ body {
 @media (max-width: 640px) {
   .ana-page {
     padding: var(--sp-2);
-  }
-
-  .ana-presets {
-    margin-left: 0;
   }
 
   .ana-user-last {
