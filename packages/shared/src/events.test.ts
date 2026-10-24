@@ -44,6 +44,13 @@ describe("події людей", () => {
     // `GET` — завантаження даних: три запити «Трекерів» не стають трьома діями.
     expect(shouldRecordPlatformAction("GET", "/api/user/trackers/templates")).toBe(false);
     expect(shouldRecordPlatformAction("GET", "/api/messages/badge")).toBe(false);
+    // Звіт про екран — це вже рядок «екран», а не друга дія; чернетка й
+    // «прочитано» теж ідуть без дотику людини.
+    expect(shouldRecordPlatformAction("POST", "/api/user/event")).toBe(false);
+    expect(shouldRecordPlatformAction("POST", "/api/messages/draft")).toBe(false);
+    expect(shouldRecordPlatformAction("POST", "/api/messages/read")).toBe(false);
+    // А от надісланий лист — дія: його людина таки натиснула.
+    expect(shouldRecordPlatformAction("POST", "/api/messages/send")).toBe(true);
     // Панель і службове — не поведінка людей.
     expect(shouldRecordPlatformAction("POST", "/api/admin/users/update")).toBe(false);
     expect(shouldRecordPlatformAction("POST", "/api/portal/scenarios/write")).toBe(false);

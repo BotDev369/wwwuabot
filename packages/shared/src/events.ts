@@ -167,13 +167,29 @@ export function screenLabel(key: string): string {
 const PLATFORM_SKIP_PREFIXES = ["/api/admin/", "/api/portal/", "/api/bot/"] as const;
 
 /**
+ * Записи, які робить **сам застосунок**, а не людина.
+ *
+ * `POST /api/user/event` — це звіт про відкритий екран: він уже став рядком
+ * «екран», тож як «дія» це та сама подія двічі. Автозбереження чернетки й
+ * позначка «прочитано» теж ідуть без дотику: людина пише текст, а не натискає
+ * «зберегти».
+ */
+const PLATFORM_SKIP_PATHS = [
+  "/api/user/event",
+  "/api/messages/draft",
+  "/api/messages/read",
+] as const;
+
+/**
  * Чи цей запит — дія людини. **`GET` не пише нічого:** дані, які екран тягне
  * сам (список, шаблони, позначка), — це система, а не людина. Пишуться лише
- * зміни стану: `POST`, `PUT`, `PATCH`, `DELETE`.
+ * зміни стану: `POST`, `PUT`, `PATCH`, `DELETE` — і не ті, що їх робить код.
  */
 export function shouldRecordPlatformAction(method: string, pathname: string): boolean {
   if (method.toUpperCase() === "GET") return false;
   if (!pathname.startsWith("/api/")) return false;
+  if (PLATFORM_SKIP_PATHS.some((path) => pathname === path || pathname.startsWith(`${path}/`)))
+    return false;
   return !PLATFORM_SKIP_PREFIXES.some((prefix) => pathname.startsWith(prefix));
 }
 
