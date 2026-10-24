@@ -123,9 +123,23 @@ export function platformAction(method: string, pathname: string): string {
 /** Дія платформи не для журналу: службове, адмінське й публічне без людини. */
 const PLATFORM_SKIP_PREFIXES = ["/api/admin/", "/api/portal/", "/api/bot/"] as const;
 
+/**
+ * Запити, які робить сам застосунок, а не людина: перевірка допуску при вході,
+ * добір профілю й опитування позначки непрочитаних. Вони повторюються самі по
+ * собі (позначка — кожні кілька секунд), тож у журналі перетворюють годину
+ * роботи на сотню «дотиків», яких не було, і топлять справжні дії.
+ */
+const PLATFORM_AUTOMATIC_PATHS = [
+  "/api/user/access",
+  "/api/user/profile",
+  "/api/messages/badge",
+] as const;
+
+/** Чи цей запит — дія людини, варта рядка в журналі. */
 export function shouldRecordPlatformRequest(pathname: string): boolean {
   if (!pathname.startsWith("/api/")) return false;
-  return !PLATFORM_SKIP_PREFIXES.some((prefix) => pathname.startsWith(prefix));
+  if (PLATFORM_SKIP_PREFIXES.some((prefix) => pathname.startsWith(prefix))) return false;
+  return !PLATFORM_AUTOMATIC_PATHS.some((path) => pathname === path);
 }
 
 /** Типовий діапазон — доба: «що робили сьогодні» питають найчастіше. */

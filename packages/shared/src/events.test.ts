@@ -45,6 +45,17 @@ describe("події людей", () => {
     expect(shouldRecordPlatformRequest("/health")).toBe(false);
   });
 
+  it("не пише те, що застосунок робить сам, без людини", () => {
+    // Позначка непрочитаних опитується за розкладом: без цього фільтра
+    // година відкритого застосунку дає сотню рядків, яких людина не робила.
+    expect(shouldRecordPlatformRequest("/api/messages/badge")).toBe(false);
+    expect(shouldRecordPlatformRequest("/api/user/access")).toBe(false);
+    expect(shouldRecordPlatformRequest("/api/user/profile")).toBe(false);
+    // Решта дій людини лишається: і читання екрана, і зміна стану.
+    expect(shouldRecordPlatformRequest("/api/user/trackers")).toBe(true);
+    expect(shouldRecordPlatformRequest("/api/user/access-request")).toBe(true);
+  });
+
   it("обрізає довгий текст, лишаючи позначку обрізання", () => {
     expect(truncateEventText("коротко")).toBe("коротко");
     const long = "я".repeat(EVENT_TEXT_MAX + 10);
