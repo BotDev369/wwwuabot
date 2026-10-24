@@ -62,6 +62,25 @@ export function fetchEventUsers(search: string): Promise<EventUserSummary[]> {
 }
 
 /**
+ * Сквозна деталізація: чи писати кожен дотик, а не лише відкриті екрани.
+ * Читає й пише адмінка, а застосовує **сервер** — клієнт не вирішує, що
+ * потрапляє в журнал.
+ */
+export async function fetchEventLogging(): Promise<boolean> {
+  const data = await apiFetch<{ fullLogging?: boolean }>("/api/admin/events/settings");
+  return data.fullLogging === true;
+}
+
+export async function saveEventLogging(fullLogging: boolean): Promise<boolean> {
+  const data = await apiFetch<{ fullLogging?: boolean }>("/api/admin/events/settings", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ fullLogging }),
+  });
+  return data.fullLogging === true;
+}
+
+/**
  * Прибирання журналу: `dryRun` повертає `matched`, інакше — `deleted`.
  * Обидва — у тій самій відповіді, бо це той самий відбір, лише без запису.
  */

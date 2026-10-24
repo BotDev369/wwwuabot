@@ -8,7 +8,7 @@
  */
 
 import type { ReactElement } from "react";
-import { Icon } from "@wwwuabot/shared";
+import { Icon, SwitchRow } from "@wwwuabot/shared";
 import { formatStamp } from "@wwwuabot/shared/utils/datetime";
 import { PageTopbar } from "../../layout/PageTopbar";
 import { EVENT_PRESETS, clockStamp, userLabel, userMeta } from "./analytics-view";
@@ -106,6 +106,16 @@ export function AnalyticsPage(): ReactElement {
               оновлено о {clockStamp(a.updatedAt)}
             </p>
           )}
+        </section>
+
+        <section className="ana-settings" aria-label="Налаштування журналу">
+          <SwitchRow
+            label="Сквозна деталізація"
+            hint="Кожен дотик: кнопки, вкладки, картки, поля — не тільки відкриті екрани"
+            checked={a.fullLogging}
+            disabled={a.savingSettings}
+            onToggle={(next) => void a.setFullLogging(next)}
+          />
         </section>
 
         {a.error && (

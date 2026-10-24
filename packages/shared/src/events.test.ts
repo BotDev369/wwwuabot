@@ -5,6 +5,7 @@ import {
   eventMethod,
   isEventKind,
   isEventSurface,
+  isPlatformGestureKind,
   isPlatformScreenKey,
   platformAction,
   resolveEventRange,
@@ -28,7 +29,7 @@ describe("події людей", () => {
     expect(isEventSurface("bot")).toBe(true);
     expect(isEventSurface("admin")).toBe(false);
     expect(isEventKind("request")).toBe(true);
-    expect(isEventKind("click")).toBe(false);
+    expect(isEventKind("tap")).toBe(false);
     expect(isEventKind(null)).toBe(false);
   });
 
@@ -56,6 +57,16 @@ describe("події людей", () => {
     expect(shouldRecordPlatformAction("POST", "/api/portal/scenarios/write")).toBe(false);
     expect(shouldRecordPlatformAction("POST", "/api/bot/setup-webhook")).toBe(false);
     expect(shouldRecordPlatformAction("POST", "/health")).toBe(false);
+  });
+
+  it("дотик і вибір — свої види події, їх видно в журналі", () => {
+    expect(isEventKind("click")).toBe(true);
+    expect(isEventKind("input")).toBe(true);
+    expect(eventKindLabel("click")).toBe("Дотик");
+    expect(eventKindLabel("input")).toBe("Вибір");
+    expect(isPlatformGestureKind("click")).toBe(true);
+    expect(isPlatformGestureKind("view")).toBe(false);
+    expect(isPlatformGestureKind(null)).toBe(false);
   });
 
   it("приймає від застосунку тільки відомий ключ екрана", () => {

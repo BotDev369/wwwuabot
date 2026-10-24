@@ -1,6 +1,12 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import type { Env } from "../shared/types";
-import { handleEventCleanup, handleEventList, handleEventSummary } from "./events.controller";
+import {
+  handleEventCleanup,
+  handleEventList,
+  handleEventSettingsRead,
+  handleEventSettingsWrite,
+  handleEventSummary,
+} from "./events.controller";
 import {
   recordPlatformAction,
   recordPlatformView,
@@ -13,6 +19,8 @@ vi.mock("../shared/identity", () => ({ tryResolveUserId: mocks.identity }));
 
 interface FakeRows {
   total?: number;
+  /** Значення `settings.event_log_full` — сквозна деталізація. */
+  full?: number;
   surfaces?: unknown[];
   users?: unknown[];
   events?: unknown[];
@@ -29,7 +37,7 @@ function database(data: FakeRows = {}) {
           call.values = values;
           return statement;
         },
-        first: async () => ({ total: data.total ?? 0 }),
+        first: async () => ({ total: data.total ?? 0, full: data.full ?? 1 }),
         all: async () => {
           if (sql.startsWith("PRAGMA")) return { results: [] };
           if (sql.includes("GROUP BY surface")) return { results: data.surfaces ?? [] };
@@ -363,5 +371,45 @@ describe("прибирання журналу", () => {
 
     expect(response.status).toBe(400);
     expect(db.calls.some((call) => call.sql.startsWith("DELETE"))).toBe(false);
+  });
+});
+
+describe("налаштування журналу", () => {
+  const settingsRequest = (method = "GET", body?: unknown): Request =>
+    new Request("https://example.com/api/admin/events/settings", {
+      method,
+      ...(body === undefined
+        ? {}
+        : { headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) }),
+    });
+
+  it("читає, чи пишеться кожен дотик", async () => {
+    const db = database({ full: 0 });
+    const response = await handleEventSettingsRead(settingsRequest(), db.env);
+
+    expect(await response.json()).toEqual({ fullLogging: false });
+  });
+
+  it("перемикач зберігається одним рядком налаштувань", async () => {
+    const db = database();
+    const response = await handleEventSettingsWrite(
+      settingsRequest("POST", { fullLogging: false }),
+      db.env,
+    );
+
+    expect(await response.json()).toEqual({ fullLogging: false });
+    const save = db.calls.find((call) => call.sql.startsWith("INSERT INTO settings"));
+    expect(save?.values).toEqual([0]);
+  });
+
+  it("без булевого прапорця — 400, а не «вимкнено»", async () => {
+    const db = database();
+    const response = await handleEventSettingsWrite(
+      settingsRequest("POST", { fullLogging: "ні" }),
+      db.env,
+    );
+
+    expect(response.status).toBe(400);
+    expect(db.calls.some((call) => call.sql.startsWith("INSERT"))).toBe(false);
   });
 });

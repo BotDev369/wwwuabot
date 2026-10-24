@@ -15,6 +15,7 @@ import {
   type EventRange,
   type EventSurface,
   type EventSummary,
+  type PlatformGestureKind,
   type UserEvent,
   type EventUserSummary,
 } from "@wwwuabot/shared/events";
@@ -72,6 +73,57 @@ export async function recordPlatformView(
   at?: number,
 ): Promise<void> {
   await recordUserEvent(env.DB, { userId, surface: "platform", kind: "view", action: screen }, at);
+}
+
+/**
+ * Жести в застосунку: дотик до кнопки/вкладки/картки й вибір у полі.
+ *
+ * Пише їх теж застосунок — сервер не бачить дотику, лише наслідок. Скільки
+ * саме писати, вирішує налаштування `event_log_full`: без нього журнал
+ * лишається на рівні «екран + зміна стану» (`docs/EVENTS.md`).
+ */
+export async function recordPlatformGesture(
+  env: Env,
+  userId: number,
+  gesture: { kind: PlatformGestureKind; screen: string; label: string; target: string | null },
+  at?: number,
+): Promise<void> {
+  if (!(await readFullEventLogging(env))) return;
+  await recordUserEvent(
+    env.DB,
+    {
+      userId,
+      surface: "platform",
+      kind: gesture.kind,
+      action: gesture.label,
+      // Екран — у подробицях: дія вже названа, а місце пояснює її.
+      details: gesture.target ? `${gesture.screen} · ${gesture.target}` : gesture.screen,
+    },
+    at,
+  );
+}
+
+/**
+ * «Сквозна деталізація»: чи писати кожен дотик. Типово **увімкнено** —
+ * питання «де людина застрягла» без дотиків не має відповіді.
+ */
+export async function readFullEventLogging(env: Env): Promise<boolean> {
+  await ensureTables(env.DB, ["settings"]);
+  const row = await env.DB.prepare(
+    "SELECT COALESCE(event_log_full, 1) AS full FROM settings WHERE id = 1",
+  ).first<{ full: number }>();
+  // Порожня таблиця — ще не «вимкнено»: типове значення мусить діяти й тоді,
+  // коли рядок налаштувань ще ніхто не створив.
+  return row === null ? true : row.full === 1;
+}
+
+export async function writeFullEventLogging(env: Env, full: boolean): Promise<void> {
+  await ensureTables(env.DB, ["settings"]);
+  await env.DB.prepare(
+    "INSERT INTO settings (id, event_log_full) VALUES (1, ?) ON CONFLICT(id) DO UPDATE SET event_log_full = excluded.event_log_full",
+  )
+    .bind(full ? 1 : 0)
+    .run();
 }
 
 /** Що прибрати: кожна задана ознака звужує вибір, незадані не беруть участі. */

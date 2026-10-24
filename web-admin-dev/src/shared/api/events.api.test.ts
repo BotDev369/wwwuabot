@@ -1,9 +1,6 @@
 /**
  * Транспорт журналу в адмінці: кожен виклик іде на свій `/api/admin/events`-шлях
- * і не губить ознак відбору.
- *
- * Ознака, загублена в дорозі, — це тихо ширший відбір, тобто прибирання не того,
- * що людина обрала, тож перевіряються саме параметри запиту.
+ * і не губить ознак відбору — загублена ознака означає прибирання не того.
  *
  * @module web-admin-dev/src/shared/api/events.api.test
  */
@@ -12,9 +9,14 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 
 const mocks = { request: vi.fn() };
 vi.mock("./client", () => ({ apiFetch: mocks.request }));
-
-const { cleanupEvents, fetchEventSummary, fetchEventUsers, fetchEvents } =
-  await import("./events.api");
+const {
+  cleanupEvents,
+  fetchEventLogging,
+  fetchEventSummary,
+  fetchEventUsers,
+  fetchEvents,
+  saveEventLogging,
+} = await import("./events.api");
 
 beforeEach(() => {
   vi.clearAllMocks();
@@ -66,6 +68,23 @@ describe("читання", () => {
     expect(
       new URLSearchParams((mocks.request.mock.calls[1][0] as string).split("?")[1]).has("search"),
     ).toBe(false);
+  });
+});
+
+describe("налаштування", () => {
+  it("читає, чи пишеться кожен дотик", async () => {
+    mocks.request.mockResolvedValue({ fullLogging: true });
+
+    expect(await fetchEventLogging()).toBe(true);
+    expect(mocks.request).toHaveBeenCalledWith("/api/admin/events/settings");
+  });
+
+  it("перемикач іде POST-ом із булевим прапорцем", async () => {
+    mocks.request.mockResolvedValue({ fullLogging: false });
+
+    expect(await saveEventLogging(false)).toBe(false);
+    const init = mocks.request.mock.calls[0][1] as RequestInit;
+    expect(JSON.parse(init.body as string)).toEqual({ fullLogging: false });
   });
 });
 

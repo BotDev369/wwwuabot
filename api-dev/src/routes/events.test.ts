@@ -17,6 +17,8 @@ const handlers = {
   handleEventList: vi.fn(),
   handleEventUsers: vi.fn(),
   handleEventCleanup: vi.fn(),
+  handleEventSettingsRead: vi.fn(),
+  handleEventSettingsWrite: vi.fn(),
 };
 
 vi.mock("../controllers/events.controller", () => ({
@@ -24,6 +26,8 @@ vi.mock("../controllers/events.controller", () => ({
   handleEventList: handlers.handleEventList,
   handleEventUsers: handlers.handleEventUsers,
   handleEventCleanup: handlers.handleEventCleanup,
+  handleEventSettingsRead: handlers.handleEventSettingsRead,
+  handleEventSettingsWrite: handlers.handleEventSettingsWrite,
 }));
 
 const { matchEventsRoute } = await import("./events");
@@ -55,6 +59,26 @@ describe("читання журналу", () => {
     expect(
       matchEventsRoute(request("POST", "/api/admin/events/users"), ENV, "/api/admin/events/users"),
     ).toBeNull();
+  });
+});
+
+describe("налаштування журналу", () => {
+  it("читання й запис живуть на одній адресі, розрізняє метод", async () => {
+    for (const handler of Object.values(handlers)) handler.mockReturnValue(new Response("ok"));
+
+    await matchEventsRoute(
+      request("GET", "/api/admin/events/settings"),
+      ENV,
+      "/api/admin/events/settings",
+    );
+    expect(handlers.handleEventSettingsRead).toHaveBeenCalledTimes(1);
+
+    await matchEventsRoute(
+      request("POST", "/api/admin/events/settings"),
+      ENV,
+      "/api/admin/events/settings",
+    );
+    expect(handlers.handleEventSettingsWrite).toHaveBeenCalledTimes(1);
   });
 });
 

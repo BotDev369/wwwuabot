@@ -9,7 +9,12 @@
 
 import { useCallback, useEffect, useState } from "react";
 import type { EventSummary, UserEvent } from "@wwwuabot/shared/events";
-import { fetchEvents, fetchEventSummary } from "../../shared/api/events.api";
+import {
+  fetchEventLogging,
+  fetchEvents,
+  fetchEventSummary,
+  saveEventLogging,
+} from "../../shared/api/events.api";
 import {
   EVENT_PAGE_SIZE,
   mergeEvents,
@@ -47,6 +52,10 @@ export interface AnalyticsState {
   error: string | null;
   cleanupOpen: boolean;
   openCleanup: () => void;
+  /** Сквозна деталізація: чи пише сервер кожен дотик. */
+  fullLogging: boolean;
+  savingSettings: boolean;
+  setFullLogging: (full: boolean) => Promise<void>;
   closeCleanup: () => void;
   reload: () => void;
   toggleUser: (userId: number) => Promise<void>;
@@ -75,6 +84,8 @@ export function useAnalytics(): AnalyticsState {
   const [updatedAt, setUpdatedAt] = useState<number | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [cleanupOpen, setCleanupOpen] = useState(false);
+  const [fullLogging, setFullLoggingState] = useState(true);
+  const [savingSettings, setSavingSettings] = useState(false);
   const [refreshToken, setRefreshToken] = useState(0);
 
   const load = useCallback(async () => {
@@ -106,6 +117,38 @@ export function useAnalytics(): AnalyticsState {
     // eslint-disable-next-line react-hooks/set-state-in-effect -- асинхронне завантаження: setState усередині load()
     void load();
   }, [load, refreshToken]);
+
+  // Налаштування читаються окремо від журналу: збій журналу не має ховати
+  // перемикач, а збій налаштувань — журнал.
+  useEffect(() => {
+    let cancelled = false;
+    void fetchEventLogging()
+      .then((full) => {
+        if (!cancelled) setFullLoggingState(full);
+      })
+      .catch(() => {
+        if (!cancelled) setFullLoggingState(true);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [refreshToken]);
+
+  const setFullLogging = useCallback(async (full: boolean) => {
+    setFullLoggingState(full);
+    setSavingSettings(true);
+    try {
+      setFullLoggingState(await saveEventLogging(full));
+      setError(null);
+    } catch (err) {
+      // Перемикач повертається до того, що справді в базі: показане «увімкнено»
+      // при вимкненому записі читалося б як «журнал працює», а його немає.
+      setFullLoggingState(!full);
+      setError(err instanceof Error ? err.message : "Не вдалось зберегти налаштування");
+    } finally {
+      setSavingSettings(false);
+    }
+  }, []);
 
   const applyRange = useCallback(() => {
     setPresetHours(null);
@@ -196,6 +239,9 @@ export function useAnalytics(): AnalyticsState {
     cleanupOpen,
     openCleanup: () => setCleanupOpen(true),
     closeCleanup: () => setCleanupOpen(false),
+    fullLogging,
+    savingSettings,
+    setFullLogging,
     reload,
     toggleUser,
     loadMore,

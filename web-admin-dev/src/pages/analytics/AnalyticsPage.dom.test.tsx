@@ -9,6 +9,8 @@ const api = vi.hoisted(() => ({
   events: vi.fn(),
   cleanup: vi.fn(),
   users: vi.fn(),
+  logging: vi.fn(),
+  saveLogging: vi.fn(),
 }));
 
 vi.mock("../../shared/api/events.api", () => ({
@@ -16,6 +18,8 @@ vi.mock("../../shared/api/events.api", () => ({
   fetchEvents: api.events,
   cleanupEvents: api.cleanup,
   fetchEventUsers: api.users,
+  fetchEventLogging: api.logging,
+  saveEventLogging: api.saveLogging,
 }));
 
 const { AnalyticsPage } = await import("./AnalyticsPage");
@@ -63,6 +67,7 @@ beforeEach(() => {
   vi.resetAllMocks();
   api.summary.mockResolvedValue(SUMMARY);
   api.events.mockResolvedValue(list([botEvent]));
+  api.logging.mockResolvedValue(true);
   api.users.mockResolvedValue([
     { ...PERSON, count: 3, lastAt: "2026-10-01 12:00:00" },
     { userId: 9, firstName: null, lastName: null, username: null, count: 1, lastAt: "—" },
@@ -227,6 +232,19 @@ describe("екран «Аналітика»", () => {
     await userEvent.click(screen.getByRole("button", { name: "Очистити" }));
 
     expect(await screen.findByText("D1 недоступна")).toBeTruthy();
+  });
+
+  it("перемикач сквозна деталізація керує записом дотиків", async () => {
+    api.saveLogging.mockResolvedValue(false);
+    render(<AnalyticsPage />);
+    await screen.findByText("Сергій Дискант");
+    const toggle = await screen.findByRole("switch", { name: "Сквозна деталізація" });
+    expect(toggle.getAttribute("aria-checked")).toBe("true");
+
+    await userEvent.click(toggle);
+
+    await waitFor(() => expect(api.saveLogging).toHaveBeenCalledWith(false));
+    await waitFor(() => expect(toggle.getAttribute("aria-checked")).toBe("false"));
   });
 
   it("догортає список і каже, скільки вже видно", async () => {

@@ -22,6 +22,7 @@ import { Outlet, useNavigate } from "react-router-dom";
 import { AppBar, ScreenChromeProvider } from "@wwwuabot/ui/nav";
 import { ThemeMenu } from "@/pages/themes/ThemeMenu";
 import { PlatformTabBar } from "./PlatformTabBar";
+import { useActionLog } from "./useActionLog";
 import { usePlatformViews } from "./usePlatformViews";
 
 export function PlatformShell(): ReactElement {
@@ -29,8 +30,10 @@ export function PlatformShell(): ReactElement {
   const goBack = useCallback(() => void navigate(-1), [navigate]);
   const [themeOpen, setThemeOpen] = useState(false);
   const closeTheme = useCallback(() => setThemeOpen(false), []);
-  // Журнал бачить «відкрив екран», а не запити, які екран зробив сам.
+  // Журнал бачить «відкрив екран» і кожен дотик у ньому — а не запити, які
+  // екран зробив сам.
   usePlatformViews();
+  useActionLog();
 
   return (
     <ScreenChromeProvider>

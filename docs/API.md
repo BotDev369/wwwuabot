@@ -82,6 +82,7 @@
 | `POST` | `/api/admin/access-requests/update` | `handleAccessRequestUpdate` |
 | `GET` | `/api/admin/events` | `handleEventList` |
 | `POST` | `/api/admin/events/delete` | `handleEventCleanup` |
+| `ANY` | `/api/admin/events/settings` | `handleEventSettingsRead` |
 | `GET` | `/api/admin/events/summary` | `handleEventSummary` |
 | `GET` | `/api/admin/events/users` | `handleEventUsers` |
 | `ANY` | `/api/admin/events<…>` | `handleEventSummary` |
@@ -114,4 +115,4 @@
 | `POST` | `/auth/login` | `handleLogin` |
 | `POST` | `/auth/logout` | `handleLogout` |
 
-Усього шляхів: **85**.
+Усього шляхів: **86**.

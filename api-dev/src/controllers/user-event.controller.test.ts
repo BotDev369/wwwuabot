@@ -5,7 +5,7 @@ import { handleUserEvent } from "./user-event.controller";
 const mocks = vi.hoisted(() => ({ identity: vi.fn() }));
 vi.mock("../shared/identity", () => ({ tryResolveUserId: mocks.identity }));
 
-function database() {
+function database(first: () => unknown = () => null) {
   const calls: { sql: string; values: unknown[] }[] = [];
   const db = {
     prepare(sql: string) {
@@ -16,7 +16,7 @@ function database() {
           call.values = values;
           return statement;
         },
-        first: async () => null,
+        first: async () => first(),
         all: async () => ({ results: [] }),
         run: async () => ({ meta: { changes: 1 } }),
       };
@@ -73,6 +73,46 @@ describe("подія від застосунку", () => {
     );
 
     expect(response.status).toBe(400);
+  });
+
+  it("дотик пишеться назвою, а екран — подробицями", async () => {
+    const db = database();
+    const response = await handleUserEvent(
+      post({ kind: "click", screen: "trackers", label: "Додати", target: "кнопка" }),
+      db.env,
+    );
+
+    expect(response.status).toBe(200);
+    const insert = db.calls.find((call) => call.sql.startsWith("INSERT INTO user_events"));
+    expect(insert?.values.slice(0, 5)).toEqual([
+      777,
+      "platform",
+      "click",
+      "Додати",
+      "trackers · кнопка",
+    ]);
+  });
+
+  it("жест без назви — 400: рядок без підпису не пояснює нічого", async () => {
+    const db = database();
+    const response = await handleUserEvent(post({ kind: "click", screen: "trackers" }), db.env);
+
+    expect(response.status).toBe(400);
+    expect(db.calls.some((call) => call.sql.startsWith("INSERT"))).toBe(false);
+  });
+
+  it("вимкнена сквозна деталізація пише екран, але не дотик", async () => {
+    const off = database(() => ({ full: 0 }));
+    const click = await handleUserEvent(
+      post({ kind: "click", screen: "trackers", label: "Додати" }),
+      off.env,
+    );
+    expect(click.status).toBe(200);
+    expect(off.calls.some((call) => call.sql.startsWith("INSERT"))).toBe(false);
+
+    const view = await handleUserEvent(post({ screen: "trackers" }), off.env);
+    expect(view.status).toBe(200);
+    expect(off.calls.some((call) => call.sql.startsWith("INSERT INTO user_events"))).toBe(true);
   });
 
   it("збій запису не ламає навігацію", async () => {

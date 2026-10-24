@@ -11,6 +11,8 @@ import type { Env } from "../shared/types";
 import {
   handleEventCleanup,
   handleEventList,
+  handleEventSettingsRead,
+  handleEventSettingsWrite,
   handleEventSummary,
   handleEventUsers,
 } from "../controllers/events.controller";
@@ -28,6 +30,11 @@ export function matchEventsRoute(
   }
   if (pathname === "/api/admin/events/users" && request.method === "GET") {
     return handleEventUsers(request, env);
+  }
+  if (pathname === "/api/admin/events/settings") {
+    if (request.method === "GET") return handleEventSettingsRead(request, env);
+    if (request.method === "POST") return handleEventSettingsWrite(request, env);
+    return null;
   }
   if (pathname === "/api/admin/events" && request.method === "GET") {
     return handleEventList(request, env);

@@ -12,8 +12,9 @@ export const EVENT_SURFACES = ["bot", "platform"] as const;
 export type EventSurface = (typeof EVENT_SURFACES)[number];
 
 /**
- * Вид події. `view` — людина відкрила екран, `request` — дія на платформі
- * (зміна стану), решта — те, що прийшло від Telegram, і саме в тих словах,
+ * Вид події. `view` — людина відкрила екран, `click` — натиснула кнопку, вкладку
+ * чи картку, `input` — обрала значення в полі, `request` — зміна стану, яку
+ * сервер бачить сам; решта — те, що прийшло від Telegram, і саме в тих словах,
  * у яких це називає Bot API.
  */
 export const EVENT_KINDS = [
@@ -23,6 +24,8 @@ export const EVENT_KINDS = [
   "inline_query",
   "edited_message",
   "view",
+  "click",
+  "input",
   "request",
 ] as const;
 export type EventKind = (typeof EVENT_KINDS)[number];
@@ -88,8 +91,23 @@ export const EVENT_KIND_LABELS: Record<EventKind, string> = {
   inline_query: "Inline-запит",
   edited_message: "Правка",
   view: "Екран",
+  click: "Дотик",
+  input: "Вибір",
   request: "Дія",
 };
+
+/**
+ * Події, які застосунок надсилає сам: екран і жести в ньому.
+ *
+ * Сервер не може вивести дотик із HTTP — запит робить код — тож це єдиний
+ * шлях, яким «натиснув кнопку» стає рядком журналу (`docs/EVENTS.md`).
+ */
+export const PLATFORM_GESTURE_KINDS = ["click", "input"] as const;
+export type PlatformGestureKind = (typeof PLATFORM_GESTURE_KINDS)[number];
+
+export function isPlatformGestureKind(value: unknown): value is PlatformGestureKind {
+  return typeof value === "string" && (PLATFORM_GESTURE_KINDS as readonly string[]).includes(value);
+}
 
 export function isEventSurface(value: unknown): value is EventSurface {
   return typeof value === "string" && (EVENT_SURFACES as readonly string[]).includes(value);

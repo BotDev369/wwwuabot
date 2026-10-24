@@ -1547,6 +1547,16 @@ body {
   gap: var(--sp-2);
 }
 
+/* Перемикач деталізації стоїть окремо від діапазону: він керує тим, що
+   взагалі потрапляє в журнал, а не тим, що з нього прочитано. */
+.ana-settings {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: var(--sp-3);
+  margin-bottom: var(--sp-3);
+}
+
 .ana-field {
   display: flex;
   flex-direction: column;
