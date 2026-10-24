@@ -12,6 +12,7 @@
 
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { INIT_DATA_HEADER } from "@wwwuabot/shared/security/telegram";
+import { CLICK_HOLD_MS, holdClick } from "@/layout/platform-journal";
 import { apiFetchRaw, apiUpload } from "./client";
 
 function stubFetch(response: Response): ReturnType<typeof vi.fn> {
@@ -48,6 +49,32 @@ describe("apiFetchRaw", () => {
     await apiFetchRaw("/api/messages", { headers: { [INIT_DATA_HEADER]: "override" } });
 
     expect(new Headers(fetchMock.mock.calls[0][1].headers).get(INIT_DATA_HEADER)).toBe("override");
+  });
+});
+
+describe("дотик і зміна стану", () => {
+  it("зміна стану скасовує відкладений дотик: рядок уже дасть сервер", async () => {
+    initData("x");
+    stubFetch(new Response("{}"));
+    const send = vi.fn();
+    holdClick(send, "Зберегти");
+
+    await apiFetchRaw("/api/notes", { method: "POST" });
+    await new Promise((resolve) => setTimeout(resolve, CLICK_HOLD_MS + 60));
+
+    expect(send).not.toHaveBeenCalled();
+  });
+
+  it("читання дотик не чіпає: `GET` у журнал не пише", async () => {
+    initData("x");
+    stubFetch(new Response("{}"));
+    const send = vi.fn();
+    holdClick(send, "Шаблони");
+
+    await apiFetchRaw("/api/notes");
+    await new Promise((resolve) => setTimeout(resolve, CLICK_HOLD_MS + 60));
+
+    expect(send).toHaveBeenCalledOnce();
   });
 });
 

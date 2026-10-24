@@ -10,10 +10,21 @@
  */
 
 import { apiFetch as sharedApiFetch } from "@wwwuabot/shared";
+import { shouldRecordPlatformAction } from "@wwwuabot/shared/events";
 import { telegramAuthHeaders } from "@wwwuabot/shared/security/telegram";
+import { cancelHeldClick } from "@/layout/platform-journal";
+
+/**
+ * Дотик, що став зміною стану, не пише себе ще раз: журнал уже матиме рядок
+ * від сервера («Зберіг нотатку»). Читання нічого не пише, тож дотик лишається.
+ */
+function settleHeldClick(path: string, method: string | undefined): void {
+  if (shouldRecordPlatformAction(method ?? "GET", path.split("?")[0])) cancelHeldClick();
+}
 
 /** fetch до api-dev із заголовками ідентичності. Повертає сиру відповідь. */
 export function apiFetchRaw(path: string, init: RequestInit = {}): Promise<Response> {
+  settleHeldClick(path, init.method);
   return fetch(path, {
     ...init,
     headers: {
@@ -28,6 +39,7 @@ export async function apiFetch<T = unknown>(
   endpoint: string,
   options: RequestInit = {},
 ): Promise<T> {
+  settleHeldClick(endpoint, options.method);
   return sharedApiFetch<T>(endpoint, {
     headers: telegramAuthHeaders(),
     fetchOptions: options,
