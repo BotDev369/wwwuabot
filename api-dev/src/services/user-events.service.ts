@@ -8,7 +8,9 @@
  */
 
 import {
+  EVENT_VIEW_WINDOW_MS,
   platformAction,
+  platformScreen,
   shouldRecordPlatformRequest,
   type EventList,
   type EventRange,
@@ -26,11 +28,9 @@ import { apiLog } from "../shared/logger";
 const SUMMARY_USERS_LIMIT = 200;
 
 /**
- * Дія платформи — у журнал, якщо запит має підписану людину; `at` — момент
- * приходу запиту, бо запис іде в `waitUntil`, а не до відповіді.
- *
- * Query не пишеться: у ньому буває пошук людини, а поведінку описує екран.
- * Адмінські, ботові й порталові шляхи пропускаються — це дії панелі.
+ * Дія платформи в журнал; `at` — момент приходу запиту, бо запис іде в
+ * `waitUntil`. `GET` екрана — одна подія `view` на екран і на вікно, зміна
+ * стану — завжди окремий рядок зі своїм шляхом (`docs/EVENTS.md`).
  */
 export async function recordPlatformRequest(
   request: Request,
@@ -45,16 +45,19 @@ export async function recordPlatformRequest(
     const userId = await tryResolveUserId(request, env);
     if (userId === null) return;
 
+    const screen = request.method === "GET" ? platformScreen(pathname) : null;
+
     await recordUserEvent(
       env.DB,
       {
         userId,
         surface: "platform",
-        kind: "request",
-        action: platformAction(request.method, pathname),
+        kind: screen ? "view" : "request",
+        action: screen ? screen.key : platformAction(request.method, pathname),
         status: status < 400 ? "ok" : "error",
       },
       at,
+      screen ? EVENT_VIEW_WINDOW_MS : undefined,
     );
   } catch (error) {
     apiLog.error("events: запис дії платформи", error);

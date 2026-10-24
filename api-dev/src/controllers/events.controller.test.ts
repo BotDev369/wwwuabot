@@ -51,7 +51,7 @@ beforeEach(() => {
 });
 
 describe("журнал дій платформи", () => {
-  it("пише метод і шлях, а query не пише", async () => {
+  it("відкритий екран пише один рядок екрана, а query не пише", async () => {
     const db = database();
     await recordPlatformRequest(
       new Request("https://example.com/api/favorites?kind=page"),
@@ -61,14 +61,38 @@ describe("журнал дій платформи", () => {
 
     const insert = db.calls.find((call) => call.sql.startsWith("INSERT INTO user_events"));
     expect(insert).toBeDefined();
-    expect(insert?.values.slice(0, 6)).toEqual([
-      777,
-      "platform",
-      "request",
-      "GET /api/favorites",
-      null,
-      "ok",
-    ]);
+    expect(insert?.values.slice(0, 6)).toEqual([777, "platform", "view", "favorites", null, "ok"]);
+  });
+
+  it("читання екрана згортається у вікні, а зміна стану — ні", async () => {
+    const at = Date.UTC(2026, 9, 24, 12, 17, 25);
+
+    const view = database();
+    await recordPlatformRequest(
+      new Request("https://example.com/api/user/trackers/templates"),
+      view.env,
+      200,
+      at,
+    );
+    const viewInsert = view.calls.find((call) => call.sql.startsWith("INSERT INTO user_events"));
+    // Той самий екран, інший ендпоїнт — ключ екрана, а не шлях.
+    expect(viewInsert?.values.slice(2, 4)).toEqual(["view", "trackers"]);
+    expect(viewInsert?.sql).toContain("WHERE NOT EXISTS");
+    expect(viewInsert?.values.at(-1)).toBe("2026-10-24 12:16:25.000");
+
+    const action = database();
+    await recordPlatformRequest(
+      new Request("https://example.com/api/user/trackers", { method: "POST" }),
+      action.env,
+      200,
+      at,
+    );
+    const actionInsert = action.calls.find((call) =>
+      call.sql.startsWith("INSERT INTO user_events"),
+    );
+    // Дотик пише навіть той самий шлях: це намір, і повтор — теж подія.
+    expect(actionInsert?.values.slice(2, 4)).toEqual(["request", "POST /api/user/trackers"]);
+    expect(actionInsert?.sql).not.toContain("WHERE NOT EXISTS");
   });
 
   it("час події береться з моменту запиту й пише мілісекунди", async () => {

@@ -324,6 +324,8 @@ export const TABLES = {
     indexes: [
       "CREATE INDEX IF NOT EXISTS idx_user_events_user ON user_events(user_id, id)",
       "CREATE INDEX IF NOT EXISTS idx_user_events_time ON user_events(created_at)",
+      // Згортання переглядів шукає останній такий самий рядок людини.
+      "CREATE INDEX IF NOT EXISTS idx_user_events_repeat ON user_events(user_id, kind, action, created_at)",
     ],
   },
 

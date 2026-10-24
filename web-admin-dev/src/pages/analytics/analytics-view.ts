@@ -7,7 +7,13 @@
  * @module web-admin-dev/src/pages/analytics/analytics-view
  */
 
-import type { EventSurface, EventUserSummary, UserEvent } from "@wwwuabot/shared/events";
+import {
+  screenLabel,
+  type EventKind,
+  type EventSurface,
+  type EventUserSummary,
+  type UserEvent,
+} from "@wwwuabot/shared/events";
 
 export type AnalyticsMode = "users" | "time";
 
@@ -108,8 +114,14 @@ export function actionMethod(action: string): string {
   return method ? method[1] : "ДІЯ";
 }
 
-/** Дія без методу — те, що показують після бейджа. */
-export function actionText(action: string): string {
+/**
+ * Дія без методу — те, що показують після бейджа.
+ *
+ * У перегляду в `action` лежить **ключ екрана**, а не шлях: людині показуємо
+ * назву («Трекери»), бо шлях API вона читати не мусить.
+ */
+export function actionText(action: string, kind?: EventKind): string {
+  if (kind === "view") return screenLabel(action);
   return action.replace(/^(GET|POST|PUT|PATCH|DELETE)\s+/, "");
 }
 

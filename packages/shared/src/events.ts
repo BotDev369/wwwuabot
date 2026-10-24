@@ -12,8 +12,9 @@ export const EVENT_SURFACES = ["bot", "platform"] as const;
 export type EventSurface = (typeof EVENT_SURFACES)[number];
 
 /**
- * Вид події. `request` — дія на платформі (шлях API), решта — те, що прийшло
- * від Telegram, і саме в тих словах, у яких це називає Bot API.
+ * Вид події. `view` — людина відкрила екран, `request` — дія на платформі
+ * (зміна стану), решта — те, що прийшло від Telegram, і саме в тих словах,
+ * у яких це називає Bot API.
  */
 export const EVENT_KINDS = [
   "command",
@@ -21,6 +22,7 @@ export const EVENT_KINDS = [
   "callback",
   "inline_query",
   "edited_message",
+  "view",
   "request",
 ] as const;
 export type EventKind = (typeof EVENT_KINDS)[number];
@@ -85,6 +87,7 @@ export const EVENT_KIND_LABELS: Record<EventKind, string> = {
   callback: "Кнопка",
   inline_query: "Inline-запит",
   edited_message: "Правка",
+  view: "Екран",
   request: "Дія",
 };
 
@@ -119,6 +122,57 @@ export function eventMethod(action: string): string | null {
 export function platformAction(method: string, pathname: string): string {
   return `${method.toUpperCase()} ${pathname}`;
 }
+
+/**
+ * Екран платформи: ключ для журналу, людська назва й адреси API, з яких він
+ * складається (один екран робить кілька запитів — `docs/EVENTS.md`).
+ */
+export interface PlatformScreen {
+  key: string;
+  label: string;
+  paths: readonly string[];
+}
+
+export const PLATFORM_SCREENS: readonly PlatformScreen[] = [
+  { key: "trackers", label: "Трекери", paths: ["/api/user/trackers"] },
+  { key: "favorites", label: "Обране", paths: ["/api/favorites"] },
+  { key: "messages", label: "Повідомлення", paths: ["/api/messages"] },
+  { key: "notes", label: "Нотатки", paths: ["/api/notes"] },
+  { key: "contacts", label: "Контакти", paths: ["/api/contacts"] },
+  {
+    key: "orders",
+    label: "Замовлення",
+    paths: ["/api/user/shop/orders", "/api/public/shop/orders"],
+  },
+  { key: "shop", label: "Магазин", paths: ["/api/user/shop", "/api/public/shop"] },
+  { key: "ads", label: "Оголошення", paths: ["/api/public/ads", "/api/user/ads"] },
+  { key: "themes", label: "Тема", paths: ["/api/public/themes", "/api/user/themes"] },
+  { key: "pages", label: "Сторінки", paths: ["/api/user/pages", "/api/public/pages"] },
+  { key: "scenario", label: "Сторінка", paths: ["/api/scenario"] },
+  { key: "users", label: "Користувачі", paths: ["/api/public/users"] },
+  { key: "assessments", label: "Розвиток", paths: ["/api/user/assessments"] },
+  { key: "date-analysis", label: "Аналіз дати", paths: ["/api/mydate", "/api/my-dates"] },
+];
+
+function withinPath(pathname: string, base: string): boolean {
+  return pathname === base || pathname.startsWith(`${base}/`);
+}
+
+/** Екран, до якого належить шлях API; `null` — шлях не про жоден екран. */
+export function platformScreen(pathname: string): PlatformScreen | null {
+  return (
+    PLATFORM_SCREENS.find((screen) => screen.paths.some((path) => withinPath(pathname, path))) ??
+    null
+  );
+}
+
+/** Людська назва екрана за ключем; невідомий ключ не губиться. */
+export function screenLabel(key: string): string {
+  return PLATFORM_SCREENS.find((screen) => screen.key === key)?.label ?? key;
+}
+
+/** Вікно згортання переглядів: хвилина — межа між «ще тут» і «зайшов знову». */
+export const EVENT_VIEW_WINDOW_MS = 60_000;
 
 /** Дія платформи не для журналу: службове, адмінське й публічне без людини. */
 const PLATFORM_SKIP_PREFIXES = ["/api/admin/", "/api/portal/", "/api/bot/"] as const;

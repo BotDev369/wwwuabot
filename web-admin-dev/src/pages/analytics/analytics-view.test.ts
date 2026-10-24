@@ -84,6 +84,12 @@ describe("помічники аналітики", () => {
     expect(actionText("/start")).toBe("/start");
   });
 
+  it("перегляд екрана показується назвою, а не шляхом API", () => {
+    expect(actionText("trackers", "view")).toBe("Трекери");
+    // Невідомий ключ не губиться: краще ключ, ніж порожній рядок.
+    expect(actionText("unknown", "view")).toBe("unknown");
+  });
+
   it("догортання не дублює вже показані події", () => {
     expect(mergeEvents([event(1), event(2)], [event(2), event(3)]).map((item) => item.id)).toEqual([
       1, 2, 3,

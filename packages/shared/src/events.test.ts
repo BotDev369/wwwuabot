@@ -1,12 +1,15 @@
 import { describe, expect, it } from "vitest";
 import {
   EVENT_TEXT_MAX,
+  EVENT_VIEW_WINDOW_MS,
   eventKindLabel,
   eventMethod,
   isEventKind,
   isEventSurface,
   platformAction,
+  platformScreen,
   resolveEventRange,
+  screenLabel,
   shouldRecordPlatformRequest,
   surfaceLabel,
   truncateEventText,
@@ -43,6 +46,29 @@ describe("події людей", () => {
     expect(shouldRecordPlatformRequest("/api/portal/scenarios/list")).toBe(false);
     expect(shouldRecordPlatformRequest("/api/bot/info")).toBe(false);
     expect(shouldRecordPlatformRequest("/health")).toBe(false);
+  });
+
+  it("зводить запити екрана до одного екрана з людською назвою", () => {
+    // «Трекери» тягне три шляхи — це один екран, а не три події.
+    expect(platformScreen("/api/user/trackers")?.key).toBe("trackers");
+    expect(platformScreen("/api/user/trackers/templates")?.key).toBe("trackers");
+    expect(platformScreen("/api/user/trackers/public")?.key).toBe("trackers");
+    expect(screenLabel("trackers")).toBe("Трекери");
+    // Специфічніший шлях перевіряється раніше за загальний.
+    expect(platformScreen("/api/user/shop/orders")?.key).toBe("orders");
+    expect(platformScreen("/api/public/shop/products")?.key).toBe("shop");
+    expect(platformScreen("/api/messages/thread")?.key).toBe("messages");
+    // Невідоме не вигадуємо: ключ екрана лишається ключем.
+    expect(platformScreen("/api/unknown")).toBeNull();
+    expect(screenLabel("unknown")).toBe("unknown");
+    // Префікс матчиться по межі сегмента, а не по літерах.
+    expect(platformScreen("/api/notes2")).toBeNull();
+    expect(EVENT_VIEW_WINDOW_MS).toBeGreaterThan(0);
+  });
+
+  it("перегляд екрана — окремий вид події з людською назвою", () => {
+    expect(eventKindLabel("view")).toBe("Екран");
+    expect(isEventKind("view")).toBe(true);
   });
 
   it("не пише те, що застосунок робить сам, без людини", () => {
