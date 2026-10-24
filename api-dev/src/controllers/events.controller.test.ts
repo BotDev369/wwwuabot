@@ -96,14 +96,16 @@ describe("журнал дій платформи", () => {
     expect(mocks.identity).not.toHaveBeenCalled();
   });
 
-  it("відкритий екран від застосунку — окрема подія з ключем екрана", async () => {
+  it("відкрита сторінка — окрема подія з назвою з шапки", async () => {
     const db = database();
     const at = Date.UTC(2026, 9, 24, 12, 17, 25);
 
-    await recordPlatformView(db.env, 777, "trackers", at);
+    await recordPlatformView(db.env, 777, "trackers", "Трекери", at);
 
     const insert = db.calls.find((call) => call.sql.startsWith("INSERT INTO user_events"));
-    expect(insert?.values.slice(0, 6)).toEqual([777, "platform", "view", "trackers", null, "ok"]);
+    // Подробиць немає: назва екрана вже каже, що відкрили, а «сторінка» поруч
+    // була б другим словом про те саме.
+    expect(insert?.values.slice(0, 6)).toEqual([777, "platform", "view", "Трекери", null, "ok"]);
     expect(insert?.values[6]).toBe("2026-10-24 12:17:25.000");
   });
 

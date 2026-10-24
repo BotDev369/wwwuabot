@@ -8,6 +8,7 @@
  */
 
 import {
+  platformActionLabel,
   screenLabel,
   type EventKind,
   type EventSurface,
@@ -115,14 +116,43 @@ export function actionMethod(action: string): string {
 }
 
 /**
- * Дія без методу — те, що показують після бейджа.
+ * Що показуємо після бейджа — те, що людина зрозуміє.
  *
- * У перегляду в `action` лежить **ключ екрана**, а не шлях: людині показуємо
- * назву («Трекери»), бо шлях API вона читати не мусить.
+ * Сторінка й модалка приходять із назвою з шапки; старий рядок із ключем
+ * екрана не губиться (`screenLabel`). Запис сервера — людською фразою
+ * («Надіслав повідомлення»), а не методом і шляхом.
  */
 export function actionText(action: string, kind?: EventKind): string {
   if (kind === "view") return screenLabel(action);
+  if (kind === "request") return platformActionLabel(action);
   return action.replace(/^(GET|POST|PUT|PATCH|DELETE)\s+/, "");
+}
+
+/**
+ * Подія платформи як фраза: «відкрив Трекери», «натиснув Шаблони», «поле
+ * «Назва»: «купити хліб»».
+ *
+ * **Назва, а не вид.** «Дотик» і «екран» — мова розмітки: у списку вони стояли
+ * б поруч із назвою й нічого не додавали. Бот повертає `null`: там свої слова.
+ */
+export function eventPhrase(
+  event: Pick<UserEvent, "surface" | "kind" | "action" | "details">,
+): string | null {
+  if (event.surface !== "platform") return null;
+  switch (event.kind) {
+    case "view":
+      return `Відкрив «${actionText(event.action, event.kind)}»`;
+    case "modal":
+      return `Відкрив вікно «${event.action}»`;
+    case "click":
+      return `Натиснув «${event.action}»`;
+    case "input":
+      return event.details
+        ? `Поле «${event.details}»: «${event.action}»`
+        : `Ввів «${event.action}»`;
+    default:
+      return null;
+  }
 }
 
 export function surfaceClass(surface: EventSurface): string {

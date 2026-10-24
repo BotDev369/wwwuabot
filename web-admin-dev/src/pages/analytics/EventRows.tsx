@@ -10,7 +10,14 @@
 import type { ReactElement } from "react";
 import { formatPreciseStamp } from "@wwwuabot/shared/utils/datetime";
 import { eventKindLabel, surfaceLabel, type UserEvent } from "@wwwuabot/shared/events";
-import { actionMethod, actionText, surfaceClass, userLabel, userMeta } from "./analytics-view";
+import {
+  actionMethod,
+  actionText,
+  eventPhrase,
+  surfaceClass,
+  userLabel,
+  userMeta,
+} from "./analytics-view";
 
 export function EventRows({
   events,
@@ -25,30 +32,39 @@ export function EventRows({
 
   return (
     <ul className="ana-events">
-      {events.map((event) => (
-        <li className="ana-event" key={event.id}>
-          <span className="ana-event-time">{formatPreciseStamp(event.createdAt)}</span>
-          <span className="ana-event-body">
-            <span className="ana-event-head">
-              <span className={surfaceClass(event.surface)}>{surfaceLabel(event.surface)}</span>
-              {/* Метод — лише в запиту: у дотику й у повідомлення його немає,
-                  тож бейдж «ДІЯ» там був би шумом. */}
-              {event.kind === "request" && (
-                <span className="ana-method">{actionMethod(event.action)}</span>
+      {events.map((event) => {
+        // Дію платформи читає фраза («натиснув «Шаблони»»): вид події в ній
+        // уже сказаний, тож бейдж поруч був би другим словом про те саме.
+        const phrase = eventPhrase(event);
+        return (
+          <li className="ana-event" key={event.id}>
+            <span className="ana-event-time">{formatPreciseStamp(event.createdAt)}</span>
+            <span className="ana-event-body">
+              <span className="ana-event-head">
+                <span className={surfaceClass(event.surface)}>{surfaceLabel(event.surface)}</span>
+                {/* Метод — лише в запиту: у дотику й у повідомлення його немає,
+                    тож бейдж «ДІЯ» там був би шумом. */}
+                {event.kind === "request" && (
+                  <span className="ana-method">{actionMethod(event.action)}</span>
+                )}
+                {!phrase && <span className="ana-event-kind">{eventKindLabel(event.kind)}</span>}
+                {showUser && (
+                  <span className="ana-event-user" title={userMeta(event)}>
+                    {userLabel(event)}
+                  </span>
+                )}
+              </span>
+              <span className="ana-event-action">
+                {phrase ?? actionText(event.action, event.kind)}
+              </span>
+              {!phrase && event.details && (
+                <span className="ana-event-details">{event.details}</span>
               )}
-              <span className="ana-event-kind">{eventKindLabel(event.kind)}</span>
-              {showUser && (
-                <span className="ana-event-user" title={userMeta(event)}>
-                  {userLabel(event)}
-                </span>
-              )}
+              {event.status === "error" && <span className="ana-event-error">помилка</span>}
             </span>
-            <span className="ana-event-action">{actionText(event.action, event.kind)}</span>
-            {event.details && <span className="ana-event-details">{event.details}</span>}
-            {event.status === "error" && <span className="ana-event-error">помилка</span>}
-          </span>
-        </li>
-      ))}
+          </li>
+        );
+      })}
     </ul>
   );
 }

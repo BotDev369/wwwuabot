@@ -5,6 +5,7 @@ import {
   actionMethod,
   actionText,
   clockStamp,
+  eventPhrase,
   mergeEvents,
   presetRange,
   rangeFromInputs,
@@ -84,10 +85,46 @@ describe("помічники аналітики", () => {
     expect(actionText("/start")).toBe("/start");
   });
 
-  it("перегляд екрана показується назвою, а не шляхом API", () => {
+  it("перегляд сторінки показується назвою, а не шляхом API", () => {
     expect(actionText("trackers", "view")).toBe("Трекери");
     // Невідомий ключ не губиться: краще ключ, ніж порожній рядок.
     expect(actionText("unknown", "view")).toBe("unknown");
+    // Назва з шапки (модалка, детальна сторінка) іде як є.
+    expect(actionText("Кошик", "modal")).toBe("Кошик");
+  });
+
+  it("подія платформи читається фразою, а не назвою виду", () => {
+    expect(
+      eventPhrase({ surface: "platform", kind: "view", action: "Трекери", details: null }),
+    ).toBe("Відкрив «Трекери»");
+    expect(
+      eventPhrase({ surface: "platform", kind: "modal", action: "Кошик", details: null }),
+    ).toBe("Відкрив вікно «Кошик»");
+    expect(
+      eventPhrase({ surface: "platform", kind: "click", action: "Шаблони", details: null }),
+    ).toBe("Натиснув «Шаблони»");
+    expect(
+      eventPhrase({ surface: "platform", kind: "input", action: "купити хліб", details: "Назва" }),
+    ).toBe("Поле «Назва»: «купити хліб»");
+    expect(eventPhrase({ surface: "platform", kind: "input", action: "Кава", details: null })).toBe(
+      "Ввів «Кава»",
+    );
+    // Запис сервера вже названий дією, а бот говорить своїми словами.
+    expect(
+      eventPhrase({
+        surface: "platform",
+        kind: "request",
+        action: "POST /api/notes",
+        details: null,
+      }),
+    ).toBeNull();
+    expect(
+      eventPhrase({ surface: "bot", kind: "message", action: "привіт", details: null }),
+    ).toBeNull();
+  });
+
+  it("запис сервера читається дією, а не шляхом", () => {
+    expect(actionText("POST /api/messages/send", "request")).toBe("Надіслав повідомлення");
   });
 
   it("догортання не дублює вже показані події", () => {

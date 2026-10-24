@@ -24,6 +24,7 @@ export const EVENT_KINDS = [
   "inline_query",
   "edited_message",
   "view",
+  "modal",
   "click",
   "input",
   "request",
@@ -90,10 +91,11 @@ export const EVENT_KIND_LABELS: Record<EventKind, string> = {
   callback: "Кнопка",
   inline_query: "Inline-запит",
   edited_message: "Правка",
-  view: "Екран",
-  click: "Дотик",
+  view: "Сторінка",
+  modal: "Модалка",
+  click: "Дія",
   input: "Вибір",
-  request: "Дія",
+  request: "Запис",
 };
 
 /**
@@ -139,6 +141,52 @@ export function eventMethod(action: string): string | null {
  */
 export function platformAction(method: string, pathname: string): string {
   return `${method.toUpperCase()} ${pathname}`;
+}
+
+/**
+ * Що людина зробила — людською фразою, а не методом і шляхом.
+ *
+ * Сервер бачить лише запит, тож у базі лежить `POST /api/messages/send` (це
+ * правда, і вона не міняється при зміні тексту на екрані), а в журналі показуємо
+ * дію. Незаданий шлях не губиться — лишається методом і шляхом, щоб новий
+ * ендпоїнт було видно, а не вигадувати йому назву на око.
+ */
+const PLATFORM_WRITE_LABELS: Record<string, string> = {
+  "POST /api/messages/send": "Надіслав повідомлення",
+  "POST /api/messages/clear": "Очистив переписку",
+  "POST /api/messages/delete": "Видалив переписку",
+  "POST /api/favorites": "Додав в обране",
+  "DELETE /api/favorites": "Прибрав з обраного",
+  "POST /api/notes": "Зберіг нотатку",
+  "DELETE /api/notes": "Видалив нотатку",
+  "POST /api/contacts": "Зберіг контакт",
+  "DELETE /api/contacts": "Видалив контакт",
+  "POST /api/contacts/link": "Склав код контакту",
+  "POST /api/user/trackers": "Створив трекер",
+  "DELETE /api/user/trackers": "Видалив трекер",
+  "POST /api/user/trackers/entry": "Записав трекер",
+  "DELETE /api/user/trackers/entry": "Прибрав запис трекера",
+  "POST /api/user/trackers/group": "Створив групу трекерів",
+  "POST /api/user/pages": "Зберіг сторінку",
+  "POST /api/user/shop/products": "Зберіг товар",
+  "POST /api/user/shop/orders": "Оновив замовлення",
+  "POST /api/user/shop/orders/status": "Змінив статус замовлення",
+  "POST /api/public/shop/orders": "Оформив замовлення",
+  "POST /api/user/username": "Змінив ім'я на платформі",
+  "POST /api/user/about": "Змінив «Про себе»",
+  "POST /api/user/visibility": "Змінив видимість профілю",
+  "POST /api/user/themes": "Зберіг тему",
+  "POST /api/user/access-request": "Попросив доступ",
+  "POST /api/mydate/compare": "Порівняв дати",
+  "POST /api/ads": "Зберіг оголошення",
+};
+
+export function platformActionLabel(action: string): string {
+  const match = /^(GET|POST|PUT|PATCH|DELETE)\s+(\/\S*)$/.exec(action.trim());
+  if (!match) return action;
+  const path = match[2].split("?")[0].replace(/\/+$/, "");
+  // Метод уже стоїть бейджем поруч, тож невідомий шлях показуємо без нього.
+  return PLATFORM_WRITE_LABELS[`${match[1]} ${path}`] ?? path;
 }
 
 /**

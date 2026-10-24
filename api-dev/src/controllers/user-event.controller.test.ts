@@ -45,7 +45,7 @@ describe("подія від застосунку", () => {
 
     expect(response.status).toBe(200);
     const insert = db.calls.find((call) => call.sql.startsWith("INSERT INTO user_events"));
-    expect(insert?.values.slice(0, 4)).toEqual([777, "platform", "view", "trackers"]);
+    expect(insert?.values.slice(0, 5)).toEqual([777, "platform", "view", "trackers", null]);
   });
 
   it("вигаданий ключ екрана не пише нічого", async () => {
@@ -75,22 +75,56 @@ describe("подія від застосунку", () => {
     expect(response.status).toBe(400);
   });
 
-  it("дотик пишеться назвою, а екран — подробицями", async () => {
+  it("натискання пишеться назвою й без службових подробиць", async () => {
     const db = database();
     const response = await handleUserEvent(
-      post({ kind: "click", screen: "trackers", label: "Додати", target: "кнопка" }),
+      post({ kind: "click", screen: "trackers", label: "Шаблони" }),
       db.env,
     );
 
     expect(response.status).toBe(200);
     const insert = db.calls.find((call) => call.sql.startsWith("INSERT INTO user_events"));
-    expect(insert?.values.slice(0, 5)).toEqual([
-      777,
-      "platform",
-      "click",
-      "Додати",
-      "trackers · кнопка",
-    ]);
+    expect(insert?.values.slice(0, 5)).toEqual([777, "platform", "click", "Шаблони", null]);
+  });
+
+  it("введений текст пише назву поля окремо від значення", async () => {
+    const db = database();
+    const response = await handleUserEvent(
+      post({ kind: "input", screen: "notes", label: "купити хліб", field: "Назва" }),
+      db.env,
+    );
+
+    expect(response.status).toBe(200);
+    const insert = db.calls.find((call) => call.sql.startsWith("INSERT INTO user_events"));
+    expect(insert?.values.slice(0, 5)).toEqual([777, "platform", "input", "купити хліб", "Назва"]);
+  });
+
+  it("сторінка приходить із назвою з шапки, а не ключем розділу", async () => {
+    const db = database();
+    await handleUserEvent(post({ screen: "notes", title: "Кава вдома" }), db.env);
+
+    const insert = db.calls.find((call) => call.sql.startsWith("INSERT INTO user_events"));
+    expect(insert?.values.slice(0, 5)).toEqual([777, "platform", "view", "Кава вдома", null]);
+  });
+
+  it("модалка пише свою назву й сторінку, з якої її відкрили", async () => {
+    const db = database();
+    const response = await handleUserEvent(
+      post({ kind: "modal", screen: "notes", title: "Створити" }),
+      db.env,
+    );
+
+    expect(response.status).toBe(200);
+    const insert = db.calls.find((call) => call.sql.startsWith("INSERT INTO user_events"));
+    expect(insert?.values.slice(0, 5)).toEqual([777, "platform", "modal", "Створити", null]);
+  });
+
+  it("модалка без назви — 400: без назви це не подія", async () => {
+    const db = database();
+    const response = await handleUserEvent(post({ kind: "modal", screen: "notes" }), db.env);
+
+    expect(response.status).toBe(400);
+    expect(db.calls.some((call) => call.sql.startsWith("INSERT"))).toBe(false);
   });
 
   it("жест без назви — 400: рядок без підпису не пояснює нічого", async () => {

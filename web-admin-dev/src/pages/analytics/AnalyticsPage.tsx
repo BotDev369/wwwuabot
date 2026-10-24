@@ -111,7 +111,7 @@ export function AnalyticsPage(): ReactElement {
         <section className="ana-settings" aria-label="Налаштування журналу">
           <SwitchRow
             label="Сквозна деталізація"
-            hint="Кожен дотик: кнопки, вкладки, картки, поля — не тільки відкриті екрани"
+            hint="Дії: кнопки, вкладки, картки й вибір у полях — а не лише сторінки й модалки"
             checked={a.fullLogging}
             disabled={a.savingSettings}
             onToggle={(next) => void a.setFullLogging(next)}

@@ -1,10 +1,8 @@
 // @vitest-environment jsdom
 /**
- * «Відкрив екран»: журнал бачить **екран людини**, а не запити, які екран
- * зробив сам, — саме тому ключ береться з адреси, а не з мережі.
- *
- * Повторний той самий екран підряд не рахується (перемальовка не є переходом),
- * а невдалий звіт не ламає навігацію: журнал — спостереження.
+ * «Відкрив екран»: ключ береться з адреси, а не з мережі — журнал бачить
+ * екран людини, а не запити, які екран зробив сам. Повторний той самий екран
+ * не рахується, а невдалий звіт не ламає навігацію.
  *
  * @module web-platform-dev/src/layout/usePlatformViews.dom.test
  */
@@ -12,6 +10,7 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { MemoryRouter, useNavigate } from "react-router-dom";
+import { ScreenChromeProvider, useScreenChrome } from "@wwwuabot/ui/nav";
 
 const mocks = vi.hoisted(() => ({ request: vi.fn() }));
 vi.mock("@/shared/api/client", () => ({ apiFetch: mocks.request }));
@@ -29,10 +28,19 @@ function Harness(): React.ReactElement {
   );
 }
 
+/** Назва сторінки приходить із хедера — його тут замінює один виклик. */
+function Title(): null {
+  useScreenChrome({ title: "Трекери" });
+  return null;
+}
+
 function renderAt(path: string): void {
   render(
     <MemoryRouter initialEntries={[path]}>
-      <Harness />
+      <ScreenChromeProvider>
+        <Title />
+        <Harness />
+      </ScreenChromeProvider>
     </MemoryRouter>,
   );
 }
@@ -56,8 +64,14 @@ describe("що бачить журнал", () => {
     await waitFor(() => expect(mocks.request).toHaveBeenCalledTimes(1));
     expect(mocks.request).toHaveBeenCalledWith(
       "/api/user/event",
-      expect.objectContaining({ method: "POST" }),
+      expect.objectContaining({ method: "POST", keepalive: true }),
     );
+    // Назва з шапки — те, що людина бачить; без неї всі детальні сторінки
+    // виглядали б одним ключем розділу.
+    expect(JSON.parse(mocks.request.mock.calls[0]?.[1].body as string)).toMatchObject({
+      screen: "trackers",
+      title: "Трекери",
+    });
     expect(reportedScreens()).toEqual(["trackers"]);
   });
 

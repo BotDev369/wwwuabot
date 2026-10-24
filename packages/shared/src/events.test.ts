@@ -8,6 +8,7 @@ import {
   isPlatformGestureKind,
   isPlatformScreenKey,
   platformAction,
+  platformActionLabel,
   resolveEventRange,
   screenLabel,
   shouldRecordPlatformAction,
@@ -39,6 +40,14 @@ describe("події людей", () => {
     expect(eventMethod("натиснув серце")).toBeNull();
   });
 
+  it("запис сервера читається дією, а не шляхом", () => {
+    expect(platformActionLabel("POST /api/messages/send")).toBe("Надіслав повідомлення");
+    expect(platformActionLabel("DELETE /api/favorites")).toBe("Прибрав з обраного");
+    // Забутий шлях не губиться — його видно як є, і це привід додати назву.
+    expect(platformActionLabel("POST /api/new-thing")).toBe("/api/new-thing");
+    expect(platformActionLabel("/start")).toBe("/start");
+  });
+
   it("пише лише зміну стану: читання — це система, а не людина", () => {
     expect(shouldRecordPlatformAction("POST", "/api/favorites")).toBe(true);
     expect(shouldRecordPlatformAction("delete", "/api/user/trackers/entry")).toBe(true);
@@ -62,8 +71,9 @@ describe("події людей", () => {
   it("дотик і вибір — свої види події, їх видно в журналі", () => {
     expect(isEventKind("click")).toBe(true);
     expect(isEventKind("input")).toBe(true);
-    expect(eventKindLabel("click")).toBe("Дотик");
+    expect(eventKindLabel("click")).toBe("Дія");
     expect(eventKindLabel("input")).toBe("Вибір");
+    expect(eventKindLabel("modal")).toBe("Модалка");
     expect(isPlatformGestureKind("click")).toBe(true);
     expect(isPlatformGestureKind("view")).toBe(false);
     expect(isPlatformGestureKind(null)).toBe(false);
@@ -81,7 +91,7 @@ describe("події людей", () => {
   });
 
   it("перегляд екрана — окремий вид події з людською назвою", () => {
-    expect(eventKindLabel("view")).toBe("Екран");
+    expect(eventKindLabel("view")).toBe("Сторінка");
     expect(isEventKind("view")).toBe(true);
   });
 

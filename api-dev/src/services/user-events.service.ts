@@ -70,9 +70,39 @@ export async function recordPlatformView(
   env: Env,
   userId: number,
   screen: string,
+  title?: string | null,
   at?: number,
 ): Promise<void> {
-  await recordUserEvent(env.DB, { userId, surface: "platform", kind: "view", action: screen }, at);
+  await recordUserEvent(
+    env.DB,
+    {
+      userId,
+      surface: "platform",
+      kind: "view",
+      // Назва екрана з хедера — те, що людина бачить; без неї лишається ключ.
+      action: title?.trim() || screen,
+    },
+    at,
+  );
+}
+
+/** Модалка, яку відкрили: її назва з шапки — і є назва дії. */
+export async function recordPlatformModal(
+  env: Env,
+  userId: number,
+  modal: { screen: string; title: string },
+  at?: number,
+): Promise<void> {
+  await recordUserEvent(
+    env.DB,
+    {
+      userId,
+      surface: "platform",
+      kind: "modal",
+      action: modal.title,
+    },
+    at,
+  );
 }
 
 /**
@@ -85,7 +115,7 @@ export async function recordPlatformView(
 export async function recordPlatformGesture(
   env: Env,
   userId: number,
-  gesture: { kind: PlatformGestureKind; screen: string; label: string; target: string | null },
+  gesture: { kind: PlatformGestureKind; screen: string; label: string; field: string | null },
   at?: number,
 ): Promise<void> {
   if (!(await readFullEventLogging(env))) return;
@@ -96,8 +126,9 @@ export async function recordPlatformGesture(
       surface: "platform",
       kind: gesture.kind,
       action: gesture.label,
-      // Екран — у подробицях: дія вже названа, а місце пояснює її.
-      details: gesture.target ? `${gesture.screen} · ${gesture.target}` : gesture.screen,
+      // У дотику подробиць немає: підпис уже називає дію. Введеному тексту
+      // лишається назва поля: без неї значення не пояснює себе.
+      details: gesture.kind === "input" ? gesture.field : null,
     },
     at,
   );

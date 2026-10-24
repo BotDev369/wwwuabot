@@ -209,6 +209,7 @@ export {
   isPlatformGestureKind,
   isPlatformScreenKey,
   platformAction,
+  platformActionLabel,
   resolveEventRange,
   screenLabel,
   shouldRecordPlatformAction,

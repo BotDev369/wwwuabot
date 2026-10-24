@@ -55,6 +55,6 @@ describe("прибирання журналу", () => {
       cleanupTargetLabel({ userId: 7, from: RANGE.from, to: RANGE.to, surface: "bot" }),
     ).toContain("користувач #7");
     expect(cleanupTargetLabel({ from: RANGE.from, to: RANGE.to })).toContain("період");
-    expect(cleanupTargetLabel({ kind: "view" })).toContain("Екран");
+    expect(cleanupTargetLabel({ kind: "view" })).toContain("Сторінка");
   });
 });

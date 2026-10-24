@@ -1,19 +1,21 @@
 // @vitest-environment jsdom
 /**
- * Кожен дотик у застосунку стає рядком журналу: кнопка, картка, поле —
- * з підписом і екраном, у якому це сталося.
+ * Дія — натискання, яке не стало ні переходом, ні модалкою: перехід пише
+ * сторінка, поверхню — модалка, тож дотик чекає й скасовується, якщо щось
+ * відкрилось. Інакше в журналі було б два рядки з тією самою назвою.
  *
  * @module web-platform-dev/src/layout/useActionLog.dom.test
  */
 
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { fireEvent, render, screen } from "@testing-library/react";
+import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { MemoryRouter } from "react-router-dom";
 
 const mocks = vi.hoisted(() => ({ request: vi.fn() }));
 vi.mock("@/shared/api/client", () => ({ apiFetch: mocks.request, apiUpload: vi.fn() }));
 
 const { useActionLog } = await import("./useActionLog");
+const { cancelHeldClick } = await import("./platform-journal");
 
 function Harness(): React.ReactElement {
   useActionLog();
@@ -21,6 +23,9 @@ function Harness(): React.ReactElement {
     <>
       <button aria-label="Додати трекер">+</button>
       <div className="card">Кава вдома</div>
+      <a href="/notes">Нотатки</a>
+      <input aria-label="Назва" />
+      <input type="password" aria-label="Пароль" />
       <select aria-label="Одиниця">
         <option>л</option>
         <option>мл</option>
@@ -51,26 +56,26 @@ beforeEach(() => {
 });
 
 describe("що стає рядком", () => {
-  it("дотик по кнопці — її підпис і екран", () => {
+  it("кнопка — її підпис і сторінка, у якій вона стоїть", async () => {
     renderAt();
 
     fireEvent.click(screen.getByRole("button", { name: "Додати трекер" }));
 
-    expect(reported()).toEqual([
-      { kind: "click", screen: "trackers", label: "Додати трекер", target: "кнопка" },
-    ]);
+    await waitFor(() =>
+      expect(reported()).toEqual([{ kind: "click", screen: "trackers", label: "Додати трекер" }]),
+    );
     // Запит мусить пережити навігацію: без `keepalive` дотик «Назад» губився.
     expect(mocks.request.mock.calls[0]?.[1]).toMatchObject({ keepalive: true });
   });
 
-  it("дотик по картці теж рахується", () => {
+  it("картка без адреси теж рахується", async () => {
     renderAt("/notes");
 
     fireEvent.click(screen.getByText("Кава вдома"));
 
-    expect(reported()).toEqual([
-      { kind: "click", screen: "notes", label: "Кава вдома", target: "div" },
-    ]);
+    await waitFor(() =>
+      expect(reported()).toEqual([{ kind: "click", screen: "notes", label: "Кава вдома" }]),
+    );
   });
 
   it("вибір у полі — окремий вид події", () => {
@@ -79,28 +84,52 @@ describe("що стає рядком", () => {
     fireEvent.change(screen.getByRole("combobox"), { target: { value: "мл" } });
 
     expect(reported()).toEqual([
-      { kind: "input", screen: "trackers", label: "Одиниця: мл", target: "поле" },
+      { kind: "input", screen: "trackers", label: "мл", field: "Одиниця" },
     ]);
   });
 
-  it("дотик по тексту теж рахується — це теж місце, куди людина ткнула", () => {
-    renderAt();
+  it("уведений текст стає рядком після паузи, із назвою поля", async () => {
+    renderAt("/notes");
+    const field = screen.getByLabelText("Назва");
 
-    fireEvent.click(screen.getByText("просто текст"));
+    fireEvent.input(field, { target: { value: "купити хліб" } });
 
-    expect(reported()).toEqual([
-      { kind: "click", screen: "trackers", label: "просто текст", target: "p" },
-    ]);
+    await waitFor(
+      () =>
+        expect(reported()).toEqual([
+          { kind: "input", screen: "notes", label: "купити хліб", field: "Назва" },
+        ]),
+      { timeout: 2000 },
+    );
+  });
+
+  it("секрет у журнал не потрапляє", async () => {
+    renderAt("/notes");
+
+    fireEvent.input(screen.getByLabelText("Пароль"), { target: { value: "hunter2" } });
+    fireEvent.focusOut(screen.getByLabelText("Пароль"));
+
+    expect(mocks.request).not.toHaveBeenCalled();
   });
 });
 
-describe("навігація", () => {
-  it("звіт не ламає екран, коли мережа відмовила", () => {
-    mocks.request.mockRejectedValue(new Error("HTTP 500"));
+describe("чого не дублюємо", () => {
+  it("перехід за посиланням — це «відкрив сторінку», а не дія", async () => {
+    renderAt();
+
+    fireEvent.click(screen.getByRole("link", { name: "Нотатки" }));
+    await new Promise((resolve) => setTimeout(resolve, 500));
+
+    expect(mocks.request).not.toHaveBeenCalled();
+  });
+
+  it("дотик скасовується, коли відкрилась поверхня", async () => {
     renderAt();
 
     fireEvent.click(screen.getByRole("button", { name: "Додати трекер" }));
+    cancelHeldClick();
+    await new Promise((resolve) => setTimeout(resolve, 500));
 
-    expect(screen.getByRole("button", { name: "Додати трекер" })).toBeTruthy();
+    expect(mocks.request).not.toHaveBeenCalled();
   });
 });
