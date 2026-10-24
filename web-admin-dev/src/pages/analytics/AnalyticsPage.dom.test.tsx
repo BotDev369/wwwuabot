@@ -145,6 +145,57 @@ describe("екран «Аналітика»", () => {
     expect(api.cleanup.mock.calls[1]?.[0]).toEqual({ all: true });
   });
 
+  it("без номера людини не очищає — каже, чого бракує", async () => {
+    render(
+      <DialogProvider>
+        <AnalyticsPage />
+      </DialogProvider>,
+    );
+    await screen.findByText("Сергій Дискант");
+
+    await userEvent.click(screen.getByRole("button", { name: /Очистити журнал/ }));
+    await userEvent.click(screen.getByRole("button", { name: "Один користувач" }));
+    expect(screen.getByPlaceholderText("372567448")).toBeTruthy();
+    await userEvent.click(screen.getByRole("button", { name: "Очистити" }));
+
+    expect(screen.getByText("Вкажіть номер користувача")).toBeTruthy();
+    expect(api.cleanup).not.toHaveBeenCalled();
+  });
+
+  it("коли під ознаки нічого не підпадає, журнал не чіпається", async () => {
+    api.cleanup.mockResolvedValueOnce({ matched: 0 });
+    render(
+      <DialogProvider>
+        <AnalyticsPage />
+      </DialogProvider>,
+    );
+    await screen.findByText("Сергій Дискант");
+
+    await userEvent.click(screen.getByRole("button", { name: /Очистити журнал/ }));
+    await userEvent.click(screen.getByRole("button", { name: "За весь час" }));
+    await userEvent.click(screen.getByRole("button", { name: "Очистити" }));
+
+    expect(await screen.findByText(/не підпадає жодна подія/)).toBeTruthy();
+    expect(api.cleanup).toHaveBeenCalledTimes(1);
+    expect(screen.queryByRole("button", { name: "Видалити" })).toBeNull();
+  });
+
+  it("помилка прибирання лишається на екрані, а не мовчить", async () => {
+    api.cleanup.mockRejectedValueOnce(new Error("D1 недоступна"));
+    render(
+      <DialogProvider>
+        <AnalyticsPage />
+      </DialogProvider>,
+    );
+    await screen.findByText("Сергій Дискант");
+
+    await userEvent.click(screen.getByRole("button", { name: /Очистити журнал/ }));
+    await userEvent.click(screen.getByRole("button", { name: "За весь час" }));
+    await userEvent.click(screen.getByRole("button", { name: "Очистити" }));
+
+    expect(await screen.findByText("D1 недоступна")).toBeTruthy();
+  });
+
   it("догортає список і каже, скільки вже видно", async () => {
     api.events
       .mockResolvedValueOnce(list([platformEvent], 2))
