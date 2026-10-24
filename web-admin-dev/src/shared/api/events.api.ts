@@ -7,7 +7,13 @@
  * @module web-admin-dev/src/shared/api/events.api
  */
 
-import type { EventKind, EventList, EventSurface, EventSummary } from "@wwwuabot/shared/events";
+import type {
+  EventKind,
+  EventList,
+  EventSurface,
+  EventSummary,
+  EventUserSummary,
+} from "@wwwuabot/shared/events";
 import { apiFetch } from "./client";
 
 /** Тіло прибирання: ознаки плюс `all` (єдина згода на «стерти все»). */
@@ -46,6 +52,13 @@ export function fetchEvents(params: {
     query.set("userId", String(params.userId));
   }
   return apiFetch<EventList>(`/api/admin/events?${query.toString()}`);
+}
+
+/** Люди з журналу — джерело списку у виборі користувача для прибирання. */
+export function fetchEventUsers(search: string): Promise<EventUserSummary[]> {
+  const query = new URLSearchParams({ limit: "50" });
+  if (search.trim()) query.set("search", search.trim());
+  return apiFetch<EventUserSummary[]>(`/api/admin/events/users?${query.toString()}`);
 }
 
 /**

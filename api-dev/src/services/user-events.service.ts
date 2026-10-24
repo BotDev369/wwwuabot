@@ -9,14 +9,14 @@
 
 import {
   platformAction,
-  platformScreen,
   resolveEventRange,
-  shouldRecordPlatformRequest,
+  shouldRecordPlatformAction,
   type EventList,
   type EventRange,
   type EventSurface,
   type EventSummary,
   type UserEvent,
+  type EventUserSummary,
 } from "@wwwuabot/shared/events";
 import { ensureTables } from "@wwwuabot/shared/database/ensure-tables";
 import { recordUserEvent } from "@wwwuabot/shared/database/user-events";
@@ -28,12 +28,11 @@ import { apiLog } from "../shared/logger";
 const SUMMARY_USERS_LIMIT = 200;
 
 /**
- * Дія платформи в журнал; `at` — момент приходу запиту, бо запис іде в
- * `waitUntil`. **Кожен запит — окремий рядок**, без згортань: у `GET` екрана
- * `action` — ключ екрана, а `details` — точний шлях, тож видно і назву, і те,
- * що саме запитали (`docs/EVENTS.md`).
+ * Зміна стану на платформі в журнал; `at` — момент запиту, бо запис іде в
+ * `waitUntil`. `GET` не пишеться взагалі: це завантаження даних, а не дія
+ * людини (`docs/EVENTS.md`).
  */
-export async function recordPlatformRequest(
+export async function recordPlatformAction(
   request: Request,
   env: Env,
   status: number,
@@ -41,21 +40,18 @@ export async function recordPlatformRequest(
 ): Promise<void> {
   try {
     const { pathname } = new URL(request.url);
-    if (!shouldRecordPlatformRequest(pathname)) return;
+    if (!shouldRecordPlatformAction(request.method, pathname)) return;
 
     const userId = await tryResolveUserId(request, env);
     if (userId === null) return;
-
-    const screen = request.method === "GET" ? platformScreen(pathname) : null;
 
     await recordUserEvent(
       env.DB,
       {
         userId,
         surface: "platform",
-        kind: screen ? "view" : "request",
-        action: screen ? screen.key : platformAction(request.method, pathname),
-        details: screen ? pathname : null,
+        kind: "request",
+        action: platformAction(request.method, pathname),
         status: status < 400 ? "ok" : "error",
       },
       at,
@@ -63,6 +59,19 @@ export async function recordPlatformRequest(
   } catch (error) {
     apiLog.error("events: запис дії платформи", error);
   }
+}
+
+/**
+ * Відкритий екран — рядок від самого застосунку: він один знає, що людина
+ * перейшла на екран, а не що компонент перезапитав дані.
+ */
+export async function recordPlatformView(
+  env: Env,
+  userId: number,
+  screen: string,
+  at?: number,
+): Promise<void> {
+  await recordUserEvent(env.DB, { userId, surface: "platform", kind: "view", action: screen }, at);
 }
 
 /** Що прибрати: кожна задана ознака звужує вибір, незадані не беруть участі. */
@@ -188,6 +197,49 @@ export async function readEventSummary(env: Env, range: EventRange): Promise<Eve
       lastAt: row.last_at,
     })),
   };
+}
+
+/**
+ * Люди, які вже є в журналі — для вибору в адмінці: номер ніхто не тримає в
+ * голові, а список мусить бути з того самого журналу, а не з усіх `users`.
+ *
+ * `search` шукає за іменем, хендлом і номером: людина може знати будь-що з них.
+ */
+export async function readEventUsers(
+  env: Env,
+  search: string,
+  limit = 50,
+): Promise<EventUserSummary[]> {
+  await ensureTables(env.DB, ["user_events"]);
+
+  const term = search.trim();
+  const like = `%${term}%`;
+  const where = term
+    ? `WHERE CAST(e.user_id AS TEXT) LIKE ? OR u.first_name LIKE ? OR u.last_name LIKE ? OR u.username LIKE ?`
+    : "";
+  const values = term ? [like, like, like, like] : [];
+
+  const rows = await env.DB.prepare(
+    `SELECT e.user_id AS user_id, COUNT(*) AS count, MAX(e.created_at) AS last_at,
+            u.first_name AS first_name, u.last_name AS last_name, u.username AS username
+       FROM user_events e
+       LEFT JOIN users u ON u.user_id = e.user_id
+       ${where}
+      GROUP BY e.user_id
+      ORDER BY last_at DESC
+      LIMIT ?`,
+  )
+    .bind(...values, limit)
+    .all<SummaryRow>();
+
+  return (rows.results ?? []).map((row) => ({
+    userId: row.user_id,
+    firstName: row.first_name,
+    lastName: row.last_name,
+    username: row.username,
+    count: row.count,
+    lastAt: row.last_at,
+  }));
 }
 
 interface EventRow {

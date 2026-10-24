@@ -1830,6 +1830,56 @@ body {
   color: var(--text-muted);
 }
 
+/* Вибір людини з журналу: номер ніхто не знає, тож список із пошуком
+   замінює поле вводу. Обмежена висота — щоб модалка не росла з кожним новим
+   користувачем. */
+.ana-picker {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  max-height: 220px;
+  overflow: auto;
+  margin-top: var(--sp-2);
+}
+
+.ana-picker-row {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+  width: 100%;
+  padding: var(--sp-2);
+  border: none;
+  border-radius: var(--radius-sm);
+  background: transparent;
+  color: var(--text-primary);
+  text-align: left;
+  cursor: pointer;
+}
+
+.ana-picker-row:hover {
+  background: var(--bg-2);
+}
+
+.ana-picker-row--active {
+  background: var(--accent-soft);
+  color: var(--accent);
+}
+
+.ana-picker-name {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: var(--text-sm);
+}
+
+.ana-picker-meta {
+  font-size: var(--text-xs);
+  color: var(--text-muted);
+  white-space: nowrap;
+}
+
 @media (max-width: 640px) {
   .ana-page {
     padding: var(--sp-2);

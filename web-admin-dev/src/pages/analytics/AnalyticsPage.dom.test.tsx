@@ -1,15 +1,21 @@
 // @vitest-environment jsdom
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { render, screen, waitFor } from "@testing-library/react";
+import { render, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import type { EventList, EventSummary, UserEvent } from "@wwwuabot/shared/events";
 
-const api = vi.hoisted(() => ({ summary: vi.fn(), events: vi.fn(), cleanup: vi.fn() }));
+const api = vi.hoisted(() => ({
+  summary: vi.fn(),
+  events: vi.fn(),
+  cleanup: vi.fn(),
+  users: vi.fn(),
+}));
 
 vi.mock("../../shared/api/events.api", () => ({
   fetchEventSummary: api.summary,
   fetchEvents: api.events,
   cleanupEvents: api.cleanup,
+  fetchEventUsers: api.users,
 }));
 
 const { AnalyticsPage } = await import("./AnalyticsPage");
@@ -52,9 +58,15 @@ const list = (items: UserEvent[], total = items.length): EventList => ({
 });
 
 beforeEach(() => {
-  vi.clearAllMocks();
+  // Саме `reset`: «once»-відповіді, які тест не використав, інакше дістаються
+  // наступному тестові, і той бачить чужі дані.
+  vi.resetAllMocks();
   api.summary.mockResolvedValue(SUMMARY);
   api.events.mockResolvedValue(list([botEvent]));
+  api.users.mockResolvedValue([
+    { ...PERSON, count: 3, lastAt: "2026-10-01 12:00:00" },
+    { userId: 9, firstName: null, lastName: null, username: null, count: 1, lastAt: "—" },
+  ]);
 });
 
 describe("екран «Аналітика»", () => {
@@ -145,7 +157,8 @@ describe("екран «Аналітика»", () => {
     expect(api.cleanup.mock.calls[1]?.[0]).toEqual({ all: true });
   });
 
-  it("без номера людини не очищає — каже, чого бракує", async () => {
+  it("людину вибирають зі списку журналу, а не вписують руками", async () => {
+    api.cleanup.mockResolvedValueOnce({ matched: 1 }).mockResolvedValueOnce({ deleted: 1 });
     render(
       <DialogProvider>
         <AnalyticsPage />
@@ -155,7 +168,27 @@ describe("екран «Аналітика»", () => {
 
     await userEvent.click(screen.getByRole("button", { name: /Очистити журнал/ }));
     await userEvent.click(screen.getByRole("button", { name: "Один користувач" }));
-    expect(screen.getByPlaceholderText("372567448")).toBeTruthy();
+
+    // Список — із самих логів: ім'я видно, номера знати не треба.
+    const picker = document.querySelector(".ana-picker") as HTMLElement;
+    const row = await within(picker).findByRole("button", { name: /Сергій Дискант/ });
+    await userEvent.click(row);
+    await userEvent.click(screen.getByRole("button", { name: "Очистити" }));
+
+    await waitFor(() => expect(api.cleanup).toHaveBeenCalledTimes(1));
+    expect(api.cleanup.mock.calls[0]?.[0]).toMatchObject({ userId: 7, dryRun: true });
+  });
+
+  it("без вибору людини не очищає — каже, чого бракує", async () => {
+    render(
+      <DialogProvider>
+        <AnalyticsPage />
+      </DialogProvider>,
+    );
+    await screen.findByText("Сергій Дискант");
+
+    await userEvent.click(screen.getByRole("button", { name: /Очистити журнал/ }));
+    await userEvent.click(screen.getByRole("button", { name: "Один користувач" }));
     await userEvent.click(screen.getByRole("button", { name: "Очистити" }));
 
     expect(screen.getByText("Вкажіть номер користувача")).toBeTruthy();

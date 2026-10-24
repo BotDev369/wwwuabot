@@ -64,11 +64,8 @@ import {
   handleMonitoringSummary,
   handleMonitoringCollect,
 } from "./controllers/monitoring.controller";
-import {
-  handleEventSummary,
-  handleEventList,
-  handleEventCleanup,
-} from "./controllers/events.controller";
+import { matchEventsRoute } from "./routes/events";
+import { handleUserEvent } from "./controllers/user-event.controller";
 
 /**
  * Префікси шляхів, доступ до яких вимагає адмінської cookie-сесії.
@@ -278,19 +275,9 @@ export async function handleRequest(request: Request, env: Env): Promise<Respons
   }
 
   // ── Admin: журнал дій людей ────────────────────────────────────
-  // Зведення — «хто що робив», список — «що було за час» або дії однієї
-  // людини. Обидва під адмін-гейтом вище, як і весь префікс.
-  if (pathname === "/api/admin/events/summary" && request.method === "GET") {
-    return handleEventSummary(request, env);
-  }
-  if (pathname === "/api/admin/events" && request.method === "GET") {
-    return handleEventList(request, env);
-  }
-  // Прибирання — окремий шлях із `POST`: `DELETE` тут читався б як «видали
-  // подію за адресою», якої немає, а `events/delete` каже мету прямо.
-  if (pathname === "/api/admin/events/delete" && request.method === "POST") {
-    return handleEventCleanup(request, env);
-  }
+  // Зведення, список, люди й прибирання — один домен (`routes/events.ts`).
+  const events = matchEventsRoute(request, env, pathname);
+  if (events) return events;
 
   // ── Допуск: «чи бачу я платформу» ──────────────────────────────
   // Єдиний платформенний шлях поза гейтом допуску — він і запитує його.
@@ -305,6 +292,11 @@ export async function handleRequest(request: Request, env: Env): Promise<Respons
   // нічий.
   if (pathname === "/api/user/access-request" && request.method === "POST") {
     return handleAccessRequest(request, env);
+  }
+
+  // ── Подія людини: «відкрив екран» із оболонки ──────────────────
+  if (pathname === "/api/user/event" && request.method === "POST") {
+    return handleUserEvent(request, env);
   }
 
   // ── Public: User Profile (for web-platform conditional rendering) ──

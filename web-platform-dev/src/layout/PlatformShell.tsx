@@ -22,12 +22,15 @@ import { Outlet, useNavigate } from "react-router-dom";
 import { AppBar, ScreenChromeProvider } from "@wwwuabot/ui/nav";
 import { ThemeMenu } from "@/pages/themes/ThemeMenu";
 import { PlatformTabBar } from "./PlatformTabBar";
+import { usePlatformViews } from "./usePlatformViews";
 
 export function PlatformShell(): ReactElement {
   const navigate = useNavigate();
   const goBack = useCallback(() => void navigate(-1), [navigate]);
   const [themeOpen, setThemeOpen] = useState(false);
   const closeTheme = useCallback(() => setThemeOpen(false), []);
+  // Журнал бачить «відкрив екран», а не запити, які екран зробив сам.
+  usePlatformViews();
 
   return (
     <ScreenChromeProvider>

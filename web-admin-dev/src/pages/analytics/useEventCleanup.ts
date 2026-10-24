@@ -7,7 +7,9 @@
 
 import { useCallback, useState } from "react";
 import { useDialog } from "@wwwuabot/ui/dialog";
+import type { EventUserSummary } from "@wwwuabot/shared/events";
 import { cleanupEvents } from "../../shared/api/events.api";
+import { useLogUsers } from "./useLogUsers";
 import {
   buildCleanupRequest,
   cleanupTargetLabel,
@@ -21,6 +23,12 @@ export interface CleanupState {
   run: () => Promise<void>;
   busy: boolean;
   error: string | null;
+  /** Люди з журналу — вибір замість ручного вводу номера. */
+  users: EventUserSummary[];
+  usersLoading: boolean;
+  usersError: string | null;
+  userSearch: string;
+  setUserSearch: (value: string) => void;
 }
 
 export function useEventCleanup(
@@ -31,6 +39,8 @@ export function useEventCleanup(
   const [form, setForm] = useState<CleanupForm>(() => initialCleanupForm(range));
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [userSearch, setUserSearch] = useState("");
+  const logUsers = useLogUsers(userSearch);
 
   const update = useCallback((patch: Partial<CleanupForm>) => {
     setForm((current) => ({ ...current, ...patch }));
@@ -70,5 +80,16 @@ export function useEventCleanup(
     }
   }, [dialog, form, onDeleted]);
 
-  return { form, update, run, busy, error };
+  return {
+    form,
+    update,
+    run,
+    busy,
+    error,
+    users: logUsers.users,
+    usersLoading: logUsers.loading,
+    usersError: logUsers.error,
+    userSearch,
+    setUserSearch,
+  };
 }

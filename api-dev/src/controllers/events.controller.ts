@@ -20,6 +20,7 @@ import { readBody } from "../shared/body";
 import {
   cleanupEvents,
   readEventSummary,
+  readEventUsers,
   readEvents,
   type EventCleanupFilter,
 } from "../services/user-events.service";
@@ -64,6 +65,25 @@ export async function handleEventSummary(request: Request, env: Env): Promise<Re
   } catch (error) {
     apiLog.error("events: зведення", error);
     return json({ error: "Не вдалось прочитати журнал" }, 500);
+  }
+}
+
+/**
+ * `GET /api/admin/events/users` — люди з журналу для вибору в прибиранні.
+ *
+ * Список береться з **самих подій**, а не з `users`: у журналі вже є тільки
+ * ті, хто щось робив, і їхні номери показувати є сенс.
+ */
+export async function handleEventUsers(request: Request, env: Env): Promise<Response> {
+  const query = new URL(request.url).searchParams;
+  const requested = Number(query.get("limit") ?? 50);
+  const limit = Number.isFinite(requested) ? Math.min(200, Math.max(1, Math.trunc(requested))) : 50;
+
+  try {
+    return json(await readEventUsers(env, query.get("search") ?? "", limit));
+  } catch (error) {
+    apiLog.error("events: люди журналу", error);
+    return json({ error: "Не вдалось прочитати людей" }, 500);
   }
 }
 

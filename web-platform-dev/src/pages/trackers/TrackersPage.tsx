@@ -49,10 +49,12 @@ export function TrackersPage(): ReactElement {
   useScreenChrome({ title: "Трекери" });
   const dialog = useDialog();
   const state = useTrackers();
-  const library = useTrackerLibrary();
   const navigate = useNavigate();
   const [params] = useSearchParams();
   const [tab, setTab] = useState<TrackerTab>("mine");
+  // Каталог і чужі трекери — тільки коли вкладку справді відкрили: «Мої» не
+  // мусить тягнути два зайвих списки при кожному вході.
+  const library = useTrackerLibrary(tab !== "mine");
   // Два набори стану: власні групи й заголовки списків на читання — різні
   // сховища, бо це різні дерева; механізм акордеона той самий.
   const mineAccordion = useGroupAccordion();

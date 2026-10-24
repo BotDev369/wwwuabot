@@ -31,7 +31,7 @@ vi.mock("./router", () => ({ handleRequest: () => router.handler() }));
 // Журнал підміняємо: перевіряємо не запис у D1, а те, що він узагалі береться
 // під `waitUntil` після успішної відповіді.
 const recordPlatform = vi.hoisted(() => vi.fn(async () => {}));
-vi.mock("./services/user-events.service", () => ({ recordPlatformRequest: recordPlatform }));
+vi.mock("./services/user-events.service", () => ({ recordPlatformAction: recordPlatform }));
 
 const { default: worker } = await import("./index");
 

@@ -2,7 +2,8 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import type { Env } from "../shared/types";
 import { handleEventCleanup, handleEventList, handleEventSummary } from "./events.controller";
 import {
-  recordPlatformRequest,
+  recordPlatformAction,
+  recordPlatformView,
   readEventSummary,
   readEvents,
 } from "../services/user-events.service";
@@ -51,69 +52,63 @@ beforeEach(() => {
 });
 
 describe("журнал дій платформи", () => {
-  it("відкритий екран пише один рядок екрана, а query не пише", async () => {
+  it("зміна стану пише метод і шлях", async () => {
     const db = database();
-    await recordPlatformRequest(
-      new Request("https://example.com/api/favorites?kind=page"),
+    await recordPlatformAction(
+      new Request("https://example.com/api/user/trackers?day=2026-10-24", { method: "POST" }),
       db.env,
       200,
     );
 
     const insert = db.calls.find((call) => call.sql.startsWith("INSERT INTO user_events"));
-    expect(insert).toBeDefined();
+    // Query не пишеться: поведінку описує дія, а не те, що людина шукала.
     expect(insert?.values.slice(0, 6)).toEqual([
       777,
       "platform",
-      "view",
-      "favorites",
-      "/api/favorites",
+      "request",
+      "POST /api/user/trackers",
+      null,
       "ok",
     ]);
   });
 
-  it("кожен запит — окремий рядок, без згортання", async () => {
-    const at = Date.UTC(2026, 9, 24, 12, 17, 25);
+  it("читання не пише нічого — це система, а не людина", async () => {
     const db = database();
-
-    // Один екран робить кілька запитів паралельно: у журналі мусять бути всі,
-    // інакше «скільки разів» і «в якому порядку» стають неправдою.
+    // Екран «Трекери» тягне три списки: жоден не стає подією.
     for (const path of [
       "/api/user/trackers",
       "/api/user/trackers/templates",
       "/api/user/trackers/public",
+      "/api/messages/badge",
     ]) {
-      await recordPlatformRequest(new Request(`https://example.com${path}`), db.env, 200, at);
+      await recordPlatformAction(new Request(`https://example.com${path}`), db.env, 200);
     }
 
-    const inserts = db.calls.filter((call) => call.sql.startsWith("INSERT INTO user_events"));
-    expect(inserts).toHaveLength(3);
-    expect(inserts.map((call) => call.values[3])).toEqual(["trackers", "trackers", "trackers"]);
-    // Шлях запиту не губиться — він у `details`.
-    expect(inserts.map((call) => call.values[4])).toEqual([
-      "/api/user/trackers",
-      "/api/user/trackers/templates",
-      "/api/user/trackers/public",
-    ]);
-    expect(inserts.every((call) => !call.sql.includes("WHERE NOT EXISTS"))).toBe(true);
+    expect(db.calls.some((call) => call.sql.startsWith("INSERT"))).toBe(false);
+    expect(mocks.identity).not.toHaveBeenCalled();
   });
 
-  it("зміна стану пише метод і шлях", async () => {
+  it("відкритий екран від застосунку — окрема подія з ключем екрана", async () => {
     const db = database();
-    await recordPlatformRequest(
-      new Request("https://example.com/api/user/trackers", { method: "POST" }),
-      db.env,
-      200,
-    );
+    const at = Date.UTC(2026, 9, 24, 12, 17, 25);
+
+    await recordPlatformView(db.env, 777, "trackers", at);
 
     const insert = db.calls.find((call) => call.sql.startsWith("INSERT INTO user_events"));
-    expect(insert?.values.slice(2, 5)).toEqual(["request", "POST /api/user/trackers", null]);
+    expect(insert?.values.slice(0, 6)).toEqual([777, "platform", "view", "trackers", null, "ok"]);
+    expect(insert?.values[6]).toBe("2026-10-24 12:17:25.000");
   });
 
   it("час події береться з моменту запиту й пише мілісекунди", async () => {
     const db = database();
     const at = Date.UTC(2026, 8, 22, 22, 13, 20, 123);
 
-    await recordPlatformRequest(new Request("https://example.com/api/favorites"), db.env, 200, at);
+    await recordPlatformAction(
+      new Request("https://example.com/api/favorites", { method: "POST" }),
+      db.env,
+      200,
+      at,
+    );
 
     const insert = db.calls.find((call) => call.sql.startsWith("INSERT INTO user_events"));
     // Секунди — занадто груба сітка: два дотики в одну секунду мінялися б місцями.
@@ -122,8 +117,8 @@ describe("журнал дій платформи", () => {
 
   it("⛔ адмінка, бот і портал у журнал людей не потрапляють", async () => {
     const db = database();
-    await recordPlatformRequest(
-      new Request("https://example.com/api/admin/users/list"),
+    await recordPlatformAction(
+      new Request("https://example.com/api/admin/users/update", { method: "POST" }),
       db.env,
       200,
     );
@@ -135,7 +130,11 @@ describe("журнал дій платформи", () => {
   it("без підписаної людини запису немає", async () => {
     mocks.identity.mockResolvedValue(null);
     const db = database();
-    await recordPlatformRequest(new Request("https://example.com/api/favorites"), db.env, 200);
+    await recordPlatformAction(
+      new Request("https://example.com/api/favorites", { method: "POST" }),
+      db.env,
+      200,
+    );
 
     expect(db.calls.some((call) => call.sql.startsWith("INSERT"))).toBe(false);
   });
@@ -150,13 +149,21 @@ describe("журнал дій платформи", () => {
     } as unknown as Env;
 
     await expect(
-      recordPlatformRequest(new Request("https://example.com/api/favorites"), env, 200),
+      recordPlatformAction(
+        new Request("https://example.com/api/favorites", { method: "DELETE" }),
+        env,
+        200,
+      ),
     ).resolves.toBeUndefined();
   });
 
   it("невдала відповідь лишається подією зі статусом error", async () => {
     const db = database();
-    await recordPlatformRequest(new Request("https://example.com/api/favorites"), db.env, 500);
+    await recordPlatformAction(
+      new Request("https://example.com/api/favorites", { method: "POST" }),
+      db.env,
+      500,
+    );
 
     const insert = db.calls.find((call) => call.sql.startsWith("INSERT INTO user_events"));
     expect(insert?.values[5]).toBe("error");

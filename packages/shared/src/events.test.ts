@@ -5,11 +5,11 @@ import {
   eventMethod,
   isEventKind,
   isEventSurface,
+  isPlatformScreenKey,
   platformAction,
-  platformScreen,
   resolveEventRange,
   screenLabel,
-  shouldRecordPlatformRequest,
+  shouldRecordPlatformAction,
   surfaceLabel,
   truncateEventText,
 } from "./events";
@@ -38,46 +38,33 @@ describe("події людей", () => {
     expect(eventMethod("натиснув серце")).toBeNull();
   });
 
-  it("не пише в журнал адмінку, бота й портал", () => {
-    expect(shouldRecordPlatformRequest("/api/favorites")).toBe(true);
-    expect(shouldRecordPlatformRequest("/api/public/pages")).toBe(true);
-    expect(shouldRecordPlatformRequest("/api/admin/events")).toBe(false);
-    expect(shouldRecordPlatformRequest("/api/portal/scenarios/list")).toBe(false);
-    expect(shouldRecordPlatformRequest("/api/bot/info")).toBe(false);
-    expect(shouldRecordPlatformRequest("/health")).toBe(false);
+  it("пише лише зміну стану: читання — це система, а не людина", () => {
+    expect(shouldRecordPlatformAction("POST", "/api/favorites")).toBe(true);
+    expect(shouldRecordPlatformAction("delete", "/api/user/trackers/entry")).toBe(true);
+    // `GET` — завантаження даних: три запити «Трекерів» не стають трьома діями.
+    expect(shouldRecordPlatformAction("GET", "/api/user/trackers/templates")).toBe(false);
+    expect(shouldRecordPlatformAction("GET", "/api/messages/badge")).toBe(false);
+    // Панель і службове — не поведінка людей.
+    expect(shouldRecordPlatformAction("POST", "/api/admin/users/update")).toBe(false);
+    expect(shouldRecordPlatformAction("POST", "/api/portal/scenarios/write")).toBe(false);
+    expect(shouldRecordPlatformAction("POST", "/api/bot/setup-webhook")).toBe(false);
+    expect(shouldRecordPlatformAction("POST", "/health")).toBe(false);
   });
 
-  it("зводить запити екрана до одного екрана з людською назвою", () => {
-    // «Трекери» тягне три шляхи — це один екран, а не три події.
-    expect(platformScreen("/api/user/trackers")?.key).toBe("trackers");
-    expect(platformScreen("/api/user/trackers/templates")?.key).toBe("trackers");
-    expect(platformScreen("/api/user/trackers/public")?.key).toBe("trackers");
+  it("приймає від застосунку тільки відомий ключ екрана", () => {
+    expect(isPlatformScreenKey("trackers")).toBe(true);
+    expect(isPlatformScreenKey("page")).toBe(true);
+    // Довільний текст від клієнта в журнал не потрапляє.
+    expect(isPlatformScreenKey("/api/user/trackers")).toBe(false);
+    expect(isPlatformScreenKey("Головна")).toBe(false);
+    expect(isPlatformScreenKey(null)).toBe(false);
     expect(screenLabel("trackers")).toBe("Трекери");
-    // Специфічніший шлях перевіряється раніше за загальний.
-    expect(platformScreen("/api/user/shop/orders")?.key).toBe("orders");
-    expect(platformScreen("/api/public/shop/products")?.key).toBe("shop");
-    expect(platformScreen("/api/messages/thread")?.key).toBe("messages");
-    // Невідоме не вигадуємо: ключ екрана лишається ключем.
-    expect(platformScreen("/api/unknown")).toBeNull();
     expect(screenLabel("unknown")).toBe("unknown");
-    // Префікс матчиться по межі сегмента, а не по літерах.
-    expect(platformScreen("/api/notes2")).toBeNull();
   });
 
   it("перегляд екрана — окремий вид події з людською назвою", () => {
     expect(eventKindLabel("view")).toBe("Екран");
     expect(isEventKind("view")).toBe(true);
-  });
-
-  it("не пише те, що застосунок робить сам, без людини", () => {
-    // Позначка непрочитаних опитується за розкладом: без цього фільтра
-    // година відкритого застосунку дає сотню рядків, яких людина не робила.
-    expect(shouldRecordPlatformRequest("/api/messages/badge")).toBe(false);
-    expect(shouldRecordPlatformRequest("/api/user/access")).toBe(false);
-    expect(shouldRecordPlatformRequest("/api/user/profile")).toBe(false);
-    // Решта дій людини лишається: і читання екрана, і зміна стану.
-    expect(shouldRecordPlatformRequest("/api/user/trackers")).toBe(true);
-    expect(shouldRecordPlatformRequest("/api/user/access-request")).toBe(true);
   });
 
   it("обрізає довгий текст, лишаючи позначку обрізання", () => {

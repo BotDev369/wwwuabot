@@ -1,7 +1,7 @@
 /**
  * Дві поверхні на читання: каталог («Шаблони») і чужі відкриті визначення
- * («Публічні»). Обидва списки завантажуються разом — вони малі, і перемикання
- * вкладки не має чекати на мережу.
+ * («Публічні»). Вантажаться лише коли їх відкрили (`enabled`): екран стартує
+ * з «Моїх», і два зайві списки при вході — це плата мережею ні за що.
  *
  * @module web-platform-dev/src/pages/trackers/useTrackerLibrary
  */
@@ -19,15 +19,17 @@ export interface TrackerLibraryState {
   reload: () => Promise<void>;
 }
 
-export function useTrackerLibrary(): TrackerLibraryState {
+export function useTrackerLibrary(enabled = true): TrackerLibraryState {
   const [rawTemplates, setRawTemplates] = useState<TrackerTemplate[]>([]);
   const [rawPublic, setRawPublic] = useState<PublicTracker[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const generation = useRef(0);
+  const started = useRef(false);
 
   const load = useCallback(async () => {
     const request = ++generation.current;
+    setLoading(true);
     try {
       const [templates, published] = await Promise.all([
         apiFetch<{ templates: TrackerTemplate[] }>("/api/user/trackers/templates"),
@@ -45,14 +47,10 @@ export function useTrackerLibrary(): TrackerLibraryState {
   }, []);
 
   useEffect(() => {
-    let cancelled = false;
-    void Promise.resolve().then(() => {
-      if (!cancelled) void load();
-    });
-    return () => {
-      cancelled = true;
-    };
-  }, [load]);
+    if (!enabled || started.current) return;
+    started.current = true;
+    void load();
+  }, [enabled, load]);
 
   const templates = useMemo(() => templateItems(rawTemplates), [rawTemplates]);
   const publicTrackers = useMemo(() => publicItems(rawPublic), [rawPublic]);

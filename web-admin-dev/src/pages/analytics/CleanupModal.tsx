@@ -12,6 +12,7 @@ import { Icon } from "@wwwuabot/shared";
 import { EVENT_KIND_LABELS, SURFACE_LABELS } from "@wwwuabot/shared/events";
 import { CLEANUP_KINDS, CLEANUP_SURFACES } from "./cleanup-view";
 import { useEventCleanup } from "./useEventCleanup";
+import { userLabel, userMeta } from "./analytics-view";
 
 /** Той самий сегментований перемикач, що й режим екрана: один вигляд на вибір. */
 function Choice<T extends string>({
@@ -81,16 +82,42 @@ export function CleanupModal({
             ]}
           />
           {form.scope === "user" && (
-            <label className="wb-field">
-              <span className="wb-label">Номер користувача (Telegram ID)</span>
+            <div className="wb-field">
+              <span className="wb-label">Користувач із журналу</span>
               <input
                 className="wb-input"
-                inputMode="numeric"
-                placeholder="372567448"
-                value={form.userId}
-                onChange={(event) => update({ userId: event.target.value })}
+                type="search"
+                placeholder="Пошук за ім'ям, хендлом або номером"
+                aria-label="Пошук користувача"
+                value={cleanup.userSearch}
+                onChange={(event) => cleanup.setUserSearch(event.target.value)}
               />
-            </label>
+              <div className="ana-picker">
+                {cleanup.usersLoading && <p className="ana-note">Завантаження…</p>}
+                {cleanup.usersError && <p className="wb-modal-error">{cleanup.usersError}</p>}
+                {!cleanup.usersLoading && cleanup.users.length === 0 && (
+                  <p className="ana-note">У журналі ще немає людей</p>
+                )}
+                {cleanup.users.map((user) => {
+                  const active = form.userId === String(user.userId);
+                  return (
+                    <button
+                      key={user.userId}
+                      type="button"
+                      aria-pressed={active}
+                      className={`ana-picker-row${active ? " ana-picker-row--active" : ""}`}
+                      onClick={() => update({ userId: String(user.userId) })}
+                    >
+                      <span className="ana-picker-name">{userLabel(user)}</span>
+                      <span className="ana-picker-meta">
+                        {userMeta(user)} · {user.count}
+                      </span>
+                      {active && <Icon name="check" size={16} />}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
           )}
 
           <Choice

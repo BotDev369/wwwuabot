@@ -3,7 +3,7 @@ import { sentryOptions } from "@wwwuabot/shared/observability/sentry";
 import { handleRequest } from "./router";
 import { apiLog } from "./shared/logger";
 import { markEntryFromRequest } from "./shared/platform-entry";
-import { recordPlatformRequest } from "./services/user-events.service";
+import { recordPlatformAction } from "./services/user-events.service";
 import { secureResponse } from "@wwwuabot/shared/security/headers";
 import { collectSnapshot } from "./services/monitoring/collect";
 import { saveSnapshot } from "./services/monitoring/store";
@@ -64,8 +64,9 @@ export default Sentry.withSentry(
         const response = secureResponse(await handleRequest(request, env), { url: request.url });
 
         // Журнал дій — теж у `waitUntil`: подія вже сталася, і чекати запису
-        // в базі перед відповіддю означало б платити за спостереження.
-        ctx.waitUntil(recordPlatformRequest(request, env, response.status, eventAt));
+        // в базі перед відповіддю означало б платити за спостереження. `GET`
+        // сюди не пише: читання — це система, а не дія людини.
+        ctx.waitUntil(recordPlatformAction(request, env, response.status, eventAt));
 
         return response;
       } catch (error) {

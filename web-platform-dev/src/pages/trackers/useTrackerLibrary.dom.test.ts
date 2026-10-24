@@ -76,6 +76,20 @@ describe("списки на читання", () => {
     expect(view.result.current.templates).toEqual([]);
   });
 
+  it("не тягне списки, поки вкладку не відкрили", async () => {
+    mocks.request.mockResolvedValue({ templates, trackers: published });
+    const view = renderHook(({ enabled }) => useTrackerLibrary(enabled), {
+      initialProps: { enabled: false },
+    });
+
+    // «Мої» не мусить платити за два зайві списки при кожному вході.
+    expect(mocks.request).not.toHaveBeenCalled();
+
+    view.rerender({ enabled: true });
+    await waitFor(() => expect(view.result.current.loading).toBe(false));
+    expect(mocks.request).toHaveBeenCalledTimes(2);
+  });
+
   it("reload перечитує — так «Додано» приходить із сервера", async () => {
     mocks.request.mockResolvedValue({ templates: [], trackers: [] });
     const view = renderHook(() => useTrackerLibrary());

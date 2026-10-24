@@ -124,46 +124,38 @@ export function platformAction(method: string, pathname: string): string {
 }
 
 /**
- * Екран платформи: ключ для журналу, людська назва й адреси API, з яких він
- * складається (один екран робить кілька запитів — `docs/EVENTS.md`).
+ * Екрани платформи: ключ (те, що лежить у журналі) і людська назва.
+ * Відкриття екрана репортує **сам застосунок** — один рядок на навігацію, а не
+ * на кожен запит даних (`docs/EVENTS.md`).
  */
 export interface PlatformScreen {
   key: string;
   label: string;
-  paths: readonly string[];
 }
 
 export const PLATFORM_SCREENS: readonly PlatformScreen[] = [
-  { key: "trackers", label: "Трекери", paths: ["/api/user/trackers"] },
-  { key: "favorites", label: "Обране", paths: ["/api/favorites"] },
-  { key: "messages", label: "Повідомлення", paths: ["/api/messages"] },
-  { key: "notes", label: "Нотатки", paths: ["/api/notes"] },
-  { key: "contacts", label: "Контакти", paths: ["/api/contacts"] },
-  {
-    key: "orders",
-    label: "Замовлення",
-    paths: ["/api/user/shop/orders", "/api/public/shop/orders"],
-  },
-  { key: "shop", label: "Магазин", paths: ["/api/user/shop", "/api/public/shop"] },
-  { key: "ads", label: "Оголошення", paths: ["/api/public/ads", "/api/user/ads"] },
-  { key: "themes", label: "Тема", paths: ["/api/public/themes", "/api/user/themes"] },
-  { key: "pages", label: "Сторінки", paths: ["/api/user/pages", "/api/public/pages"] },
-  { key: "scenario", label: "Сторінка", paths: ["/api/scenario"] },
-  { key: "users", label: "Користувачі", paths: ["/api/public/users"] },
-  { key: "assessments", label: "Розвиток", paths: ["/api/user/assessments"] },
-  { key: "date-analysis", label: "Аналіз дати", paths: ["/api/mydate", "/api/my-dates"] },
+  { key: "account", label: "Акаунт" },
+  { key: "services", label: "Сервіси" },
+  { key: "trackers", label: "Трекери" },
+  { key: "tracker", label: "Трекер" },
+  { key: "favorites", label: "Обране" },
+  { key: "messages", label: "Повідомлення" },
+  { key: "notes", label: "Нотатки" },
+  { key: "contacts", label: "Контакти" },
+  { key: "orders", label: "Замовлення" },
+  { key: "shop", label: "Магазин" },
+  { key: "ads", label: "Оголошення" },
+  { key: "pages", label: "Сторінки" },
+  { key: "page", label: "Сторінка" },
+  { key: "users", label: "Користувачі" },
+  { key: "assessments", label: "Розвиток" },
+  { key: "date-analysis", label: "Аналіз дати" },
+  { key: "games", label: "Ігри" },
 ];
 
-function withinPath(pathname: string, base: string): boolean {
-  return pathname === base || pathname.startsWith(`${base}/`);
-}
-
-/** Екран, до якого належить шлях API; `null` — шлях не про жоден екран. */
-export function platformScreen(pathname: string): PlatformScreen | null {
-  return (
-    PLATFORM_SCREENS.find((screen) => screen.paths.some((path) => withinPath(pathname, path))) ??
-    null
-  );
+/** Ключ екрана з того, що прислав застосунок: чуже значення в журнал не йде. */
+export function isPlatformScreenKey(value: unknown): value is string {
+  return typeof value === "string" && PLATFORM_SCREENS.some((screen) => screen.key === value);
 }
 
 /** Людська назва екрана за ключем; невідомий ключ не губиться. */
@@ -175,22 +167,14 @@ export function screenLabel(key: string): string {
 const PLATFORM_SKIP_PREFIXES = ["/api/admin/", "/api/portal/", "/api/bot/"] as const;
 
 /**
- * Запити, які робить сам застосунок, а не людина: перевірка допуску при вході,
- * добір профілю й опитування позначки непрочитаних. Вони повторюються самі по
- * собі (позначка — кожні кілька секунд), тож у журналі перетворюють годину
- * роботи на сотню «дотиків», яких не було, і топлять справжні дії.
+ * Чи цей запит — дія людини. **`GET` не пише нічого:** дані, які екран тягне
+ * сам (список, шаблони, позначка), — це система, а не людина. Пишуться лише
+ * зміни стану: `POST`, `PUT`, `PATCH`, `DELETE`.
  */
-const PLATFORM_AUTOMATIC_PATHS = [
-  "/api/user/access",
-  "/api/user/profile",
-  "/api/messages/badge",
-] as const;
-
-/** Чи цей запит — дія людини, варта рядка в журналі. */
-export function shouldRecordPlatformRequest(pathname: string): boolean {
+export function shouldRecordPlatformAction(method: string, pathname: string): boolean {
+  if (method.toUpperCase() === "GET") return false;
   if (!pathname.startsWith("/api/")) return false;
-  if (PLATFORM_SKIP_PREFIXES.some((prefix) => pathname.startsWith(prefix))) return false;
-  return !PLATFORM_AUTOMATIC_PATHS.some((path) => pathname === path);
+  return !PLATFORM_SKIP_PREFIXES.some((prefix) => pathname.startsWith(prefix));
 }
 
 /** Типовий діапазон — доба: «що робили сьогодні» питають найчастіше. */

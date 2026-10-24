@@ -204,9 +204,11 @@ export {
   eventMethod,
   isEventKind,
   isEventSurface,
+  isPlatformScreenKey,
   platformAction,
   resolveEventRange,
-  shouldRecordPlatformRequest,
+  screenLabel,
+  shouldRecordPlatformAction,
   surfaceLabel,
   truncateEventText,
 } from "./events";

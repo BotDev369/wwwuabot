@@ -54,6 +54,7 @@
 | `POST` | `/api/user/access-request` | `handleAccessRequest` |
 | `ANY` | `/api/user/ads` | `handleUserAds` |
 | `ANY` | `/api/user/assessments` | `handleAssessments` |
+| `POST` | `/api/user/event` | `handleUserEvent` |
 | `ANY` | `/api/user/pages` | `handleUserPages` |
 | `GET` | `/api/user/profile` | `handleUserProfile` |
 | `ANY` | `/api/user/shop/media` | `handleUserShopMedia` |
@@ -82,6 +83,8 @@
 | `GET` | `/api/admin/events` | `handleEventList` |
 | `POST` | `/api/admin/events/delete` | `handleEventCleanup` |
 | `GET` | `/api/admin/events/summary` | `handleEventSummary` |
+| `GET` | `/api/admin/events/users` | `handleEventUsers` |
+| `ANY` | `/api/admin/events<…>` | `handleEventSummary` |
 | `POST` | `/api/admin/monitoring/collect` | `handleMonitoringCollect` |
 | `GET` | `/api/admin/monitoring/summary` | `handleMonitoringSummary` |
 | `ANY` | `/api/admin/notes` | `handleAdminNotes` |
@@ -111,4 +114,4 @@
 | `POST` | `/auth/login` | `handleLogin` |
 | `POST` | `/auth/logout` | `handleLogout` |
 
-Усього шляхів: **82**.
+Усього шляхів: **85**.
