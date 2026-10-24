@@ -59,6 +59,8 @@ describe("що стає рядком", () => {
     expect(reported()).toEqual([
       { kind: "click", screen: "trackers", label: "Додати трекер", target: "кнопка" },
     ]);
+    // Запит мусить пережити навігацію: без `keepalive` дотик «Назад» губився.
+    expect(mocks.request.mock.calls[0]?.[1]).toMatchObject({ keepalive: true });
   });
 
   it("дотик по картці теж рахується", () => {

@@ -23,6 +23,8 @@ export function usePlatformViews(): void {
     void apiFetch("/api/user/event", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
+      // Перехід може закінчитися перезавантаженням — рядок мусить дійти.
+      keepalive: true,
       body: JSON.stringify({ screen }),
     }).catch(() => {
       // Звіт не входить у навігацію: не вдалось — наступний екран спробує знову.

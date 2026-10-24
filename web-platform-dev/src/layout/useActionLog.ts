@@ -23,6 +23,9 @@ export function useActionLog(): void {
       void apiFetch("/api/user/event", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
+        // Дотик після навігації таки має дійти: звичайний `fetch` гине разом зі
+        // сторінкою, і саме так губилися натискання «Назад».
+        keepalive: true,
         body: JSON.stringify({ kind, screen, label: gesture.label, target: gesture.target }),
       }).catch(() => {
         // Журнал не входить у роботу екрана: наступний дотик спробує знову.
