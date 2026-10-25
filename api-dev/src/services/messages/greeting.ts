@@ -26,12 +26,7 @@
  */
 
 import type { Env } from "../../shared/types";
-import {
-  SYSTEM_SENDER_ID,
-  greetingNotes,
-  messagePreview,
-  peerPublicLabel,
-} from "@wwwuabot/shared/messages";
+import { SYSTEM_SENDER_ID, greetingNotes, peerPublicLabel } from "@wwwuabot/shared/messages";
 import { formatSqliteDatetime } from "@wwwuabot/shared/utils/datetime";
 import { apiLog } from "../../shared/logger";
 import { ensureConversation } from "./conversations";
@@ -69,19 +64,13 @@ export async function ensureGreeting(env: Env, me: number, peerId: number): Prom
     const inviter = await readPeer(env.DB, peerId, me);
     const notes = greetingNotes(peerPublicLabel(inviter));
 
-    // Номер розмови той самий, тож останок списку оновлюємо тим самим правилом,
-    // що й `sendMessage`: список розмов читає `last_message_*`, а не `messages`.
+    // Окремої копії для списку немає: `listConversations` читає найновіший рядок
+    // `messages`, тож вітання потрапляє туди тим самим шляхом, що й решта.
     const statements = notes.map((body) =>
       env.DB.prepare(
         `INSERT INTO messages (conversation_id, sender_id, body, created_at, read_at, is_system)
            VALUES (?, ?, ?, ?, ?, 1)`,
       ).bind(conversationId, SYSTEM_SENDER_ID, body, now, now),
-    );
-    statements.push(
-      env.DB.prepare(
-        `UPDATE conversations SET last_message_at = ?, last_message_text = ?, last_sender_id = ?
-           WHERE id = ?`,
-      ).bind(now, messagePreview(notes.at(-1) ?? ""), SYSTEM_SENDER_ID, conversationId),
     );
 
     await env.DB.batch(statements);

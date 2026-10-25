@@ -241,16 +241,17 @@ describe("надсилання", () => {
     });
   });
 
-  it("останнє повідомлення розмови оновлює цей виклик, разом із поверненням у список", async () => {
+  it("прибрана розмова вертається обом, а копії останку не пишемо", async () => {
     const { env, statements } = makeEnv({});
     await sendMessage(env, ME, PEER, "Привіт");
 
-    const update = statements.find((s) => /UPDATE conversations SET last_message_at/.test(s.sql));
-    expect(update?.binds[2]).toBe(ME);
-    expect(update?.binds[3]).toBe(CONVERSATION_ID);
+    const update = statements.find((s) => /UPDATE conversations/.test(s.sql));
     // Прибрана розмова повертається обом, інакше їй немає жодного шляху назад.
     expect(update?.sql).toContain("hidden_a = 0");
     expect(update?.sql).toContain("hidden_b = 0");
+    expect(update?.binds).toEqual([CONVERSATION_ID]);
+    // Останок списку — найновіший рядок `messages`, тож копії в розмові немає.
+    expect(statements.some((s) => /last_message/.test(s.sql))).toBe(false);
   });
 
   it("чернетка прибирається та сама, з якої надіслали", async () => {
@@ -284,27 +285,25 @@ describe("чистка розмови", () => {
     const result = await clearThread(env, ME, PEER);
 
     expect(result.ok && result.removed).toBe(1);
-    const update = statements.find((s) => /UPDATE conversations SET last_message_at/.test(s.sql));
-    expect(update?.sql).not.toContain("hidden_a = 1");
-    expect(update?.sql).not.toContain("hidden_b = 1");
+    // Чистка розмову **не** ховає: вона лишається у списку й можна писати далі,
+    // а порожній рядок у списку — це вже висновок із `messages`.
+    expect(statements.some((s) => /UPDATE conversations/.test(s.sql))).toBe(false);
   });
 
   it("«Видалити» приховує розмову в обох, але рядок лишається", async () => {
     const { env, statements } = makeEnv({});
     await clearThread(env, ME, PEER, true);
 
-    const update = statements.find((s) => /UPDATE conversations SET last_message_at/.test(s.sql));
+    const update = statements.find((s) => /UPDATE conversations SET hidden_a/.test(s.sql));
     expect(update?.sql).toContain("hidden_a = 1");
     expect(update?.sql).toContain("hidden_b = 1");
   });
 
-  it("останок у списку теж чиститься: текст лишився б у розмові, якої вже немає", async () => {
+  it("чистка не чіпає копій останку — їх більше немає", async () => {
     const { env, statements } = makeEnv({});
-    await clearThread(env, ME, PEER);
+    await clearThread(env, ME, PEER, true);
 
-    const update = statements.find((s) => /UPDATE conversations SET last_message_at/.test(s.sql));
-    expect(update?.sql).toContain("last_message_text = NULL");
-    expect(update?.sql).toContain("last_sender_id = NULL");
+    expect(statements.some((s) => /last_message/.test(s.sql))).toBe(false);
   });
 });
 

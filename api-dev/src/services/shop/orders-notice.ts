@@ -28,7 +28,7 @@
  */
 
 import { formatSqliteDatetime } from "@wwwuabot/shared/utils/datetime";
-import { SYSTEM_SENDER_ID, messagePreview } from "@wwwuabot/shared/messages";
+import { SYSTEM_SENDER_ID } from "@wwwuabot/shared/messages";
 import { orderNoticeText, type ShopOrder } from "@wwwuabot/shared/shop";
 import { apiLog } from "../../shared/logger";
 import { ensureConversation } from "../messages/conversations";
@@ -60,15 +60,12 @@ export async function notifyOrder(
                VALUES (?, ?, ?, ?, NULL, 1)`,
           )
           .bind(conversationId, SYSTEM_SENDER_ID, body, now),
-        // Список розмов читає `last_message_*`, а не `messages` — те саме
-        // оновлення, що й у `sendMessage`.
+        // Останок списку — найновіший рядок `messages` (`listConversations`),
+        // тож окремої копії немає; прапорці знімаємо, бо замовлення вертає
+        // розмову обом — так само, як звичайне повідомлення.
         db
-          .prepare(
-            `UPDATE conversations SET last_message_at = ?, last_message_text = ?, last_sender_id = ?,
-                    hidden_a = 0, hidden_b = 0
-               WHERE id = ?`,
-          )
-          .bind(now, messagePreview(body), SYSTEM_SENDER_ID, conversationId),
+          .prepare("UPDATE conversations SET hidden_a = 0, hidden_b = 0 WHERE id = ?")
+          .bind(conversationId),
       ]);
     } catch (e: unknown) {
       apiLog.error("Shop order notice error", e);

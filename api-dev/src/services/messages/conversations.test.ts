@@ -10,9 +10,9 @@
  *    джерелах списку — інакше вона поверталася б другим із них як «Почніть
  *    розмову». Прапорці приходять з міграції як `NULL`, тому фільтр з `COALESCE`:
  *    без нього кожна жива розмова зникла б зі списку.
- * 3. **Останнє повідомлення лежить у розмові**, а не вибирається з `messages`, і
- *    непрочитані рахуються запитом: обидва числа мають бути правдою, а не другим
- *    сховищем.
+ * 3. **Останнє повідомлення береться з `messages`** (`MAX(id)` у межах розмови),
+ *    а не з копії в розмові, і непрочитані теж рахуються запитом: обидва числа
+ *    мають бути правдою, а не другим сховищем.
  * 4. **Ті, з ким розмови ще немає, стоять унизу за абеткою** — інакше список
  *    переставлявся б сам собою від кожного відкриття.
  * 5. **`listRecipients` прибраних не відсікає**: прибрати розмову не означає
@@ -46,9 +46,11 @@ interface ConversationRow {
   id: number;
   peer_a: number;
   peer_b: number;
-  last_message_at: string | null;
-  last_message_text: string | null;
+  /** Тіло найновішого повідомлення — те, що віддає `LEFT JOIN messages`. */
+  last_body: string | null;
+  last_media_id: number | null;
   last_sender_id: number | null;
+  last_at: string | null;
   hidden_a?: number | null;
   hidden_b?: number | null;
 }
@@ -65,8 +67,9 @@ function conversation(overrides: Partial<ConversationRow> = {}): ConversationRow
     id: 10,
     peer_a: ME,
     peer_b: 2,
-    last_message_at: "2026-01-05 10:00:00",
-    last_message_text: "Привіт",
+    last_at: "2026-01-05 10:00:00",
+    last_body: "Привіт",
+    last_media_id: null,
     last_sender_id: 2,
     hidden_a: null,
     hidden_b: null,
@@ -129,7 +132,7 @@ function makeEnv(options: {
           if (/CASE WHEN owner_id = \? THEN joined_user_id/.test(sql)) {
             return { results: (options.linked ?? []).map((id) => ({ peer_id: id })) };
           }
-          if (/FROM conversations/.test(sql) && /ORDER BY COALESCE\(last_message_at/.test(sql)) {
+          if (/FROM conversations c/.test(sql)) {
             // Основне джерело: моя сторона не прибрана, порядок — свіжий згори.
             const visible = conversations.filter(
               (row) => (mySide(row) === "a" ? row.hidden_a : row.hidden_b) !== 1,
@@ -137,8 +140,7 @@ function makeEnv(options: {
             return {
               results: visible.sort(
                 (left, right) =>
-                  String(right.last_message_at).localeCompare(String(left.last_message_at)) ||
-                  right.id - left.id,
+                  String(right.last_at).localeCompare(String(left.last_at)) || right.id - left.id,
               ),
             };
           }
@@ -190,10 +192,42 @@ describe("список розмов", () => {
     const { env, statements } = makeEnv({ conversations: [] });
     await listConversations(env, ME);
 
-    const query = statements.find((s) => /ORDER BY COALESCE\(last_message_at/.test(s.sql));
+    const query = statements.find((s) => /FROM conversations c/.test(s.sql));
     expect(query?.binds).toEqual([ME, ME, 100]);
     // Розмова без повідомлень має бути в списку — вона сортується за часом створення.
-    expect(query?.sql).toContain("COALESCE(last_message_at, created_at) DESC");
+    expect(query?.sql).toContain("COALESCE(m.created_at, c.created_at) DESC");
+  });
+
+  it("останок — найновіший рядок `messages`, а не копія в розмові", async () => {
+    const { env, statements } = makeEnv({ conversations: [] });
+    await listConversations(env, ME);
+
+    const query = statements.find((s) => /FROM conversations c/.test(s.sql));
+    expect(query?.sql).toContain(
+      "ON m.id = (SELECT MAX(m2.id) FROM messages m2 WHERE m2.conversation_id = c.id)",
+    );
+    expect(query?.sql).not.toContain("last_message");
+  });
+
+  it("фото без тексту в списку підписане словом «Фото», а не порожнім рядком", async () => {
+    const { env } = makeEnv({
+      conversations: [conversation({ last_body: "", last_media_id: 7 })],
+      users: [user(2, "Олесь")],
+    });
+
+    const list = await listConversations(env, ME);
+    expect(list[0].lastMessageText).toBe("Фото");
+  });
+
+  it("розмова без повідомлень не вигадує текст останнього", async () => {
+    const { env } = makeEnv({
+      conversations: [conversation({ last_at: null, last_body: null, last_sender_id: null })],
+      users: [user(2, "Олесь")],
+    });
+
+    const list = await listConversations(env, ME);
+    expect(list[0].lastMessageText).toBeNull();
+    expect(list[0].lastMessageAt).toBeNull();
   });
 
   it("прибрана з мого боку розмова не повертається другим джерелом", async () => {

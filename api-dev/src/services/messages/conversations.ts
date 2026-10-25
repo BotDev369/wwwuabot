@@ -1,11 +1,12 @@
 /**
  * Список розмов людини — дані, а не HTTP.
  *
- * **Останнє повідомлення лежить у самій розмові** (`last_message_*`), а не
- * вибирається з `messages`: інакше список читав би **всі** повідомлення людини,
- * щоб показати по одному рядку на розмову. Ціна цього — оновлювати дві колонки
- * на кожному надсиланні, і це робить `sendMessage` (у тій самій транзакції
- * дій, де пише повідомлення).
+ * **Останнє повідомлення читається з `messages`, а не з копії в розмові.**
+ * Копія (`last_message_*`) означала б, що той самий факт живе у двох місцях, і
+ * розходиться з оригіналом на першому ж забутому записі: список показував би
+ * **попередню** фразу або порожнечу там, де лежить фото без тексту. Тут береться
+ * рівно той рядок, який стрічка показує першим, — `MAX(id)` у межах розмови
+ * (порядок у стрічці той самий), тож два вигляди не можуть розійтися.
  *
  * **Непрочитані рахуються запитом, а не колонкою.** `read_at IS NULL` працює по
  * індексу, а лічильник у розмові був би другим сховищем того самого факту — і
@@ -23,7 +24,13 @@
 
 import type { Conversation, MessagePeer } from "@wwwuabot/shared/messages";
 import type { Env } from "../../shared/types";
-import { conversationPair, peerLabel, peerOf } from "@wwwuabot/shared/messages";
+import {
+  MESSAGE_PHOTO_LABEL,
+  conversationPair,
+  messagePreview,
+  peerLabel,
+  peerOf,
+} from "@wwwuabot/shared/messages";
 import { formatSqliteDatetime } from "@wwwuabot/shared/utils/datetime";
 import { readPeers, unknownPeer } from "./peers";
 
@@ -34,9 +41,23 @@ interface ConversationRow {
   id: number;
   peer_a: number;
   peer_b: number;
-  last_message_at: string | null;
-  last_message_text: string | null;
+  /** Тіло найновішого повідомлення; `null` — у розмові ще нічого немає. */
+  last_body: string | null;
+  last_media_id: number | null;
   last_sender_id: number | null;
+  last_at: string | null;
+}
+
+/**
+ * Рядок останнього повідомлення для списку.
+ *
+ * Фото без тексту підписується словом «Фото»: порожній рядок у списку читався б
+ * як «розмова без повідомлень», а вона не порожня. `null` — повідомлень немає.
+ */
+function lastPreview(row: ConversationRow): string | null {
+  if (!row.last_at) return null;
+  const body = row.last_body?.trim() ?? "";
+  return body ? messagePreview(body) : MESSAGE_PHOTO_LABEL;
 }
 
 /**
@@ -211,11 +232,15 @@ async function unreadByConversation(
  */
 export async function listConversations(env: Env, me: number): Promise<Conversation[]> {
   const result = await env.DB.prepare(
-    `SELECT id, peer_a, peer_b, last_message_at, last_message_text, last_sender_id
-       FROM conversations
-      WHERE (peer_a = ? AND COALESCE(hidden_a, 0) = 0)
-         OR (peer_b = ? AND COALESCE(hidden_b, 0) = 0)
-      ORDER BY COALESCE(last_message_at, created_at) DESC, id DESC
+    `SELECT c.id, c.peer_a, c.peer_b,
+            m.body AS last_body, m.media_id AS last_media_id,
+            m.sender_id AS last_sender_id, m.created_at AS last_at
+       FROM conversations c
+       LEFT JOIN messages m
+         ON m.id = (SELECT MAX(m2.id) FROM messages m2 WHERE m2.conversation_id = c.id)
+      WHERE (c.peer_a = ? AND COALESCE(c.hidden_a, 0) = 0)
+         OR (c.peer_b = ? AND COALESCE(c.hidden_b, 0) = 0)
+      ORDER BY COALESCE(m.created_at, c.created_at) DESC, c.id DESC
       LIMIT ?`,
   )
     .bind(me, me, CONVERSATION_LIMIT)
@@ -237,8 +262,8 @@ export async function listConversations(env: Env, me: number): Promise<Conversat
     const peerId = peerOf(Number(row.peer_a), Number(row.peer_b), me);
     return {
       peer: peers.get(peerId) ?? unknownPeer(peerId),
-      lastMessageAt: row.last_message_at ?? null,
-      lastMessageText: row.last_message_text ?? null,
+      lastMessageAt: row.last_at ?? null,
+      lastMessageText: lastPreview(row),
       lastSenderId: row.last_sender_id === null ? null : Number(row.last_sender_id),
       unread: unread.get(Number(row.id)) ?? 0,
     };

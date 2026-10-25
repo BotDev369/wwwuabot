@@ -360,10 +360,11 @@ describe("надсилання", () => {
     expect(insert?.sql).toMatch(/INTO messages/);
     expect(insert?.binds.slice(0, 3)).toEqual([3, ME, "Куку"]);
 
-    // Список розмов читає `last_message_*`, тож оновлює їх саме надсилання.
+    // Останок списку — найновіший рядок `messages`, тож надсилання оновлює
+    // лише прапорці приховування (розмова вертається обом).
     const update = dataStatement(db, "UPDATE");
-    expect(update?.sql).toMatch(/UPDATE conversations SET last_message_at/);
-    expect(update?.binds[2]).toBe(ME);
+    expect(update?.sql).toMatch(/UPDATE conversations SET hidden_a = 0, hidden_b = 0/);
+    expect(update?.binds).toEqual([3]);
   });
 
   it("порожнє тіло — 400, і розмова не створюється", async () => {
@@ -449,8 +450,9 @@ describe("список розмов", () => {
               id: 3,
               peer_a: ME,
               peer_b: PEER,
-              last_message_at: "2026-09-19 12:00:00",
-              last_message_text: "привіт",
+              last_at: "2026-09-19 12:00:00",
+              last_body: "привіт",
+              last_media_id: null,
               last_sender_id: PEER,
             },
           ];
@@ -482,8 +484,8 @@ describe("список розмов", () => {
     // `COALESCE` тут не прикраса: колонка, додана наявній таблиці, приходить від
     // `ensureTables` як `DEFAULT NULL`, тож у старих рядках там `NULL` — і
     // порівняння з `0` напросто викинуло б зі списку **усі наявні розмови**.
-    expect(select?.sql).toMatch(/COALESCE\(hidden_a, 0\) = 0/);
-    expect(select?.sql).toMatch(/COALESCE\(hidden_b, 0\) = 0/);
+    expect(select?.sql).toMatch(/COALESCE\(c\.hidden_a, 0\) = 0/);
+    expect(select?.sql).toMatch(/COALESCE\(c\.hidden_b, 0\) = 0/);
     expect(select?.binds).toEqual([ME, ME, 100]);
 
     const names = db.statements.find((s) => /AS peer_id, name/.test(s.sql));
@@ -554,7 +556,7 @@ describe("список розмов", () => {
       ...LINKED,
       all: (sql) =>
         /FROM conversations/.test(sql)
-          ? [{ id: 3, peer_a: PEER, peer_b: ME, last_message_text: null, last_sender_id: null }]
+          ? [{ id: 3, peer_a: PEER, peer_b: ME, last_at: null, last_body: null }]
           : [],
     });
 
@@ -718,7 +720,7 @@ describe("переписка: стерти й прибрати", () => {
     await expect(res.json()).resolves.toEqual({ ok: true, conversations: [] });
     // І фільтр стоїть в обох джерелах, а не лише в контактах.
     const started = db.statements.find((s) => /FROM conversations/.test(s.sql));
-    expect(started?.sql).toMatch(/COALESCE\(hidden_a, 0\) = 0/);
+    expect(started?.sql).toMatch(/COALESCE\(c\.hidden_a, 0\) = 0/);
   });
 
   it("«очистити» стирає повідомлення й останок, але саму розмову лишає", async () => {
@@ -736,11 +738,9 @@ describe("переписка: стерти й прибрати", () => {
     const [removed] = deletes(db);
     expect(removed.sql).toMatch(/DELETE FROM messages WHERE conversation_id = \?/);
     expect(removed.binds).toEqual([3]);
-    // Чистка розмову **не** ховає: вона лишається у списку й можна писати далі.
-    const summary = db.statements.find((s) => /SET last_message_at/.test(s.sql));
-    expect(summary?.sql).toMatch(/last_message_text = NULL/);
-    expect(summary?.sql).not.toContain("hidden_");
-    expect(summary?.binds).toEqual([3]);
+    // Чистка розмову **не** ховає: вона лишається у списку й можна писати далі,
+    // а порожній рядок у списку — це вже висновок із `messages`.
+    expect(db.statements.some((s) => /UPDATE conversations/.test(s.sql))).toBe(false);
   });
 
   it("«видалити» ховає розмову обом, а рядок лишає на місці", async () => {
@@ -762,7 +762,7 @@ describe("переписка: стерти й прибрати", () => {
     expect(deletes(db)).toHaveLength(1);
     expect(deletes(db)[0].sql).toMatch(/DELETE FROM messages/);
     expect(db.statements.some((s) => /DELETE FROM conversations/.test(s.sql))).toBe(false);
-    const summary = db.statements.find((s) => /SET last_message_at/.test(s.sql));
+    const summary = db.statements.find((s) => /UPDATE conversations SET hidden_a/.test(s.sql));
     expect(summary?.sql).toMatch(/hidden_a = 1, hidden_b = 1/);
   });
 
@@ -781,7 +781,7 @@ describe("переписка: стерти й прибрати", () => {
     );
 
     expect(res.status).toBe(200);
-    const summary = db.statements.find((s) => /SET last_message_at/.test(s.sql));
+    const summary = db.statements.find((s) => /UPDATE conversations SET hidden_a/.test(s.sql));
     expect(summary?.sql).toMatch(/hidden_a = 1, hidden_b = 1/);
   });
 
@@ -797,7 +797,7 @@ describe("переписка: стерти й прибрати", () => {
     );
 
     expect(res.status).toBe(200);
-    const summary = db.statements.find((s) => /SET last_message_at/.test(s.sql));
+    const summary = db.statements.find((s) => /UPDATE conversations SET hidden_a/.test(s.sql));
     expect(summary?.sql).toMatch(/hidden_a = 0, hidden_b = 0/);
   });
 

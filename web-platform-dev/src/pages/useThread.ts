@@ -100,7 +100,14 @@ export function useThread(peerId: number | null): ThreadState {
       try {
         const message = await messagesApi.send(peerId, body, null, mediaId);
         if (!message) throw new Error("Сервер не підтвердив надсилання — спробуйте ще раз.");
-        setData((prev) => ({ ...prev, messages: [...prev.messages, message] }));
+        // За номером, а не «просто дописати»: те саме повідомлення могло вже
+        // приїхати в стрічці, яка вантажилась тоді ж, — і тоді людина бачила б
+        // свою фразу **двічі**.
+        setData((prev) =>
+          prev.messages.some((existing) => existing.id === message.id)
+            ? prev
+            : { ...prev, messages: [...prev.messages, message] },
+        );
         return true;
       } catch (e: unknown) {
         setError(e instanceof Error ? e.message : "Не вдалося надіслати повідомлення");

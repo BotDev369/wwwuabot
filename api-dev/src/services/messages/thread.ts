@@ -16,12 +16,7 @@
 
 import type { Message, MessageMedia, MessageThread } from "@wwwuabot/shared/messages";
 import type { Env } from "../../shared/types";
-import {
-  MESSAGE_PHOTO_LABEL,
-  isSendableMessage,
-  messagePreview,
-  sanitizeMessageBody,
-} from "@wwwuabot/shared/messages";
+import { isSendableMessage, sanitizeMessageBody } from "@wwwuabot/shared/messages";
 import { formatSqliteDatetime } from "@wwwuabot/shared/utils/datetime";
 import { areLinked } from "./links";
 import { ensureConversation, findConversationId } from "./conversations";
@@ -178,9 +173,8 @@ export async function openThread(
 /**
  * Надіслати повідомлення.
  *
- * `last_message_*` у розмові оновлює **цей** виклик, а не тригер: список розмов
- * читає саме їх, і розійтися з щойно доданим рядком вони можуть лише тоді,
- * коли про них забули — тож про них не забуває одне місце.
+ * **Список розмов бере останок із `messages`** (`MAX(id)` у межах розмови),
+ * тож окремої копії тут немає — записати її забути неможливо, бо її не існує.
  *
  * **Надіслане прибирає чернетку** — **ту саму**, з якої надіслали (`draftId`), і
  * саме тут, а не в клієнті: текст уже в переписці, і чернетка, що лишилась, у
@@ -229,16 +223,8 @@ export async function sendMessage(
   // `hidden_* = 0` — **повідомлення вертає розмову обом**, навіть якщо хтось її
   // прибрав: інакше прибрана розмова не мала б жодного шляху назад (у списку її
   // немає, отже й написати в неї нікому), і пара замовкла б назавжди.
-  //
-  // Останок у списку — саме те, що читає `ConversationList`: фото без тексту
-  // підписується словом «Фото», бо порожній рядок у списку виглядав би як
-  // порожня розмова, а вона не порожня.
-  await env.DB.prepare(
-    `UPDATE conversations SET last_message_at = ?, last_message_text = ?, last_sender_id = ?,
-            hidden_a = 0, hidden_b = 0
-       WHERE id = ?`,
-  )
-    .bind(now, body ? messagePreview(body) : MESSAGE_PHOTO_LABEL, me, conversationId)
+  await env.DB.prepare("UPDATE conversations SET hidden_a = 0, hidden_b = 0 WHERE id = ?")
+    .bind(conversationId)
     .run();
 
   if (draftId !== null) await dropDraft(env.DB, me, draftId);
@@ -293,11 +279,11 @@ export async function clearThread(
     .run();
   const removed = cleared.meta?.changes ?? 0;
 
-  // Останок у списку — **копія** останнього повідомлення (його оновлює
-  // `sendMessage`), тож чистка мусить зачепити й його: інакше список показував
-  // би текст, якого в розмові вже немає. `greeted_at` лишається — вітання
-  // одноразове, і повторювати його після чистки означало б писати в розмову те,
-  // що людина щойно стерла.
+  // Останок у списку — не копія, а найновіший рядок `messages` (`listConversations`).
+  // Тому чистка не має окремого кроку: видалили повідомлення — і рядок списку
+  // сам показує порожню розмову. `greeted_at` лишається — вітання одноразове, і
+  // повторювати його після чистки означало б писати в розмову те, що людина
+  // щойно стерла.
   //
   // «Видалити» до цього додає **приховування зі списку в обох** (`hidden_a` /
   // `hidden_b` — див. реєстр таблиць). Обидва прапорці разом, бо розмова одна
@@ -306,14 +292,11 @@ export async function clearThread(
   // пари не було б жодного входу в розмову — вона зникає зі списку, а інших
   // дверей немає. Прапорці знімає наступне повідомлення (`sendMessage`), і
   // розмова повертається обом.
-  await env.DB.prepare(
-    `UPDATE conversations SET last_message_at = NULL, last_message_text = NULL, last_sender_id = NULL${
-      whole ? ", hidden_a = 1, hidden_b = 1" : ""
-    }
-       WHERE id = ?`,
-  )
-    .bind(conversationId)
-    .run();
+  if (whole) {
+    await env.DB.prepare("UPDATE conversations SET hidden_a = 1, hidden_b = 1 WHERE id = ?")
+      .bind(conversationId)
+      .run();
+  }
 
   return { ok: true, removed };
 }
