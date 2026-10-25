@@ -231,8 +231,12 @@ describe("акордеон груп", () => {
 
     await userEvent.click(screen.getByRole("button", { name: "Активність" }));
     const subgroup = screen.getByRole("button", { name: "Ранкова рутина" }).closest(".wb-group");
-    // Рівень глибини — класом: від нього залежить відступ і тон заливки.
+    // Глибина — числом у `--depth`: від нього CSS рахує сходинку відступу, а
+    // клас додає другу ознаку рівня (тон заливки й акцентну смугу).
+    expect((subgroup as HTMLElement).style.getPropertyValue("--depth")).toBe("1");
     expect(subgroup?.classList.contains("wb-group--sub")).toBe(true);
+    const root = screen.getByRole("button", { name: "Активність" }).closest(".wb-group");
+    expect((root as HTMLElement).style.getPropertyValue("--depth")).toBe("0");
 
     await userEvent.click(screen.getByRole("button", { name: "Ранкова рутина" }));
     expect(screen.getByRole("button", { name: "Кроки" })).toBeTruthy();

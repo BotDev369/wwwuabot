@@ -7,7 +7,7 @@
  * @module web-platform-dev/src/pages/trackers/TrackerGroupSection
  */
 
-import { useState, type ReactElement } from "react";
+import { useState, type CSSProperties, type ReactElement } from "react";
 import { Icon } from "@wwwuabot/shared";
 import { MenuModal, type MenuItem } from "@wwwuabot/ui/menu";
 import { useDialog } from "@wwwuabot/ui/dialog";
@@ -146,7 +146,10 @@ export function TrackerGroupSection({
   ];
 
   return (
-    <section className={"wb-group" + (depth > 0 ? " wb-group--sub" : "")}>
+    <section
+      className={"wb-group" + (depth > 0 ? " wb-group--sub" : "")}
+      style={{ "--depth": depth } as CSSProperties}
+    >
       <div className="wb-group-head">
         <button
           type="button"
