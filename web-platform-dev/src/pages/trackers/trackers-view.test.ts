@@ -19,10 +19,12 @@ import {
   matrixDays,
   matrixWeekday,
   newestFirst,
+  ownGroupLines,
   readingBand,
   signedAmount,
   timeLabel,
   trackerCells,
+  trackerCountsByGroup,
   trackerDraftSummary,
   whenLabel,
 } from "./trackers-view";
@@ -178,6 +180,39 @@ describe("дерево груп модалки", () => {
     // Сирота — на верхньому рівні; цикл не замикає обхід і теж рядки.
     expect(lines.map((line) => line.group.id)).toEqual([20, 21, 22]);
     expect(lines.every((line) => line.depth === 0)).toBe(true);
+  });
+});
+
+describe("модалка «Групи» — лише власні", () => {
+  const groups: TrackerGroup[] = [
+    { id: 10, parentId: null, title: "Режим", key: "routine" },
+    { id: 11, parentId: null, title: "Активність", key: "activity" },
+    { id: 12, parentId: 11, title: "Ранкова рутина", key: null },
+    { id: 13, parentId: null, title: "Свої", key: "own" },
+  ];
+  const steps: Tracker = { ...water, id: 3, key: "steps", groupId: 12 };
+  const coffee: Tracker = { ...weight, id: 4, key: "own-coffee", groupId: null };
+
+  it("типові тематики каталогу не потрапляють у дерево", () => {
+    expect(ownGroupLines(groups).map((line) => line.group.id)).toEqual([12]);
+  });
+
+  it("власна підгрупа під типовою тематикою піднімається на верхній рівень", () => {
+    const [line] = ownGroupLines(groups);
+
+    expect(line?.depth).toBe(0);
+    expect(line).toMatchObject({ first: true, last: true });
+  });
+
+  it("рахунок трекерів — рекурсивний, безгрупові йдуть у «Свої»", () => {
+    const counts = trackerCountsByGroup([water, steps, weight, coffee], groups);
+
+    expect(counts.get(10)).toBe(1);
+    // «Активність» рахує й мірку своєї підгрупи.
+    expect(counts.get(11)).toBe(1);
+    expect(counts.get(12)).toBe(1);
+    // «Свої» збирає і свій трекер, і той, що без групи.
+    expect(counts.get(13)).toBe(2);
   });
 });
 

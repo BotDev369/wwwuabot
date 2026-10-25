@@ -227,6 +227,7 @@ export function TrackersPage(): ReactElement {
             {groupsOpen && (
               <TrackerGroupsModal
                 groups={state.groups}
+                trackers={state.trackers}
                 onClose={() => setGroupsOpen(false)}
                 onCreate={state.createGroup}
                 onUpdate={state.updateGroup}

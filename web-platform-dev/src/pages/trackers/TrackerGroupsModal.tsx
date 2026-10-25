@@ -1,7 +1,8 @@
 /**
- * «Групи» — дерево груп: дії рядка в меню «···», порядок стрілками ⬆/⬇
- * (рух робить сервер). Групу каталогу (`key !== null`) не прибрати — сервер
- * чинить опір, тож пункту немає.
+ * «Групи» — дерево **власних** груп людини: дії рядка в меню «···», порядок
+ * стрілками ⬆/⬇ (рух робить сервер), число в рядку — скільки трекерів у
+ * піддереві. Типові тематики каталогу сюди не потрапляють: їхній рядок
+ * сіється знову, тож прибирають уміст, а не групу.
  *
  * @module web-platform-dev/src/pages/trackers/TrackerGroupsModal
  */
@@ -10,11 +11,13 @@ import { useState, type ReactElement } from "react";
 import { Icon } from "@wwwuabot/shared";
 import { MenuModal, type MenuItem } from "@wwwuabot/ui/menu";
 import { useDialog } from "@wwwuabot/ui/dialog";
-import type { TrackerGroup } from "@wwwuabot/shared/trackers";
-import { groupTreeLines } from "./trackers-view";
+import type { Tracker, TrackerGroup } from "@wwwuabot/shared/trackers";
+import { ownGroupLines, trackerCountsByGroup } from "./trackers-view";
 
 interface TrackerGroupsModalProps {
   groups: readonly TrackerGroup[];
+  /** Трекери людини — лише для числа в рядку групи. */
+  trackers: readonly Tracker[];
   onClose: () => void;
   onCreate: (title: string, parentId: number | null) => Promise<TrackerGroup | null>;
   onUpdate: (id: number, patch: { title?: string; parentId?: number | null }) => Promise<boolean>;
@@ -24,6 +27,7 @@ interface TrackerGroupsModalProps {
 
 export function TrackerGroupsModal({
   groups,
+  trackers,
   onClose,
   onCreate,
   onUpdate,
@@ -32,6 +36,8 @@ export function TrackerGroupsModal({
 }: TrackerGroupsModalProps): ReactElement {
   const dialog = useDialog();
   const [menu, setMenu] = useState<TrackerGroup | null>(null);
+  const lines = ownGroupLines(groups);
+  const counts = trackerCountsByGroup(trackers, groups);
 
   const validate = (value: string): string | null => (value.trim() ? null : "Порожньо");
 
@@ -79,19 +85,15 @@ export function TrackerGroupsModal({
           void rename(group);
         },
       },
-      ...(group.key === null
-        ? [
-            {
-              key: "remove",
-              label: "Прибрати групу",
-              icon: "trash",
-              onSelect: () => {
-                close();
-                void remove(group);
-              },
-            } satisfies MenuItem,
-          ]
-        : []),
+      {
+        key: "remove",
+        label: "Прибрати групу",
+        icon: "trash",
+        onSelect: () => {
+          close();
+          void remove(group);
+        },
+      },
     ];
   }
 
@@ -111,14 +113,18 @@ export function TrackerGroupsModal({
                 Нова група
               </button>
             </div>
+            {lines.length === 0 && (
+              <p className="wb-text-muted">Своїх груп ще немає — створіть першу.</p>
+            )}
             <ul className="wb-groups-mgr-list">
-              {groupTreeLines(groups).map(({ group, depth, first, last }) => (
+              {lines.map(({ group, depth, first, last }) => (
                 <li
                   key={group.id}
                   className="wb-groups-mgr-row"
                   style={{ marginInlineStart: depth * 16 }}
                 >
                   <span className="wb-groups-mgr-title">{group.title}</span>
+                  <span className="wb-groups-mgr-count">{counts.get(group.id) ?? 0}</span>
                   <button
                     type="button"
                     className="wb-groups-mgr-btn"

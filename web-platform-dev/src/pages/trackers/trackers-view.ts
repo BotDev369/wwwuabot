@@ -184,6 +184,56 @@ export interface GroupTreeLine {
 }
 
 /**
+ * Рядки модалки «Групи» — **лише власні** групи: типові тематики каталогу
+ * (`key !== null`) людина тут не редагує, а їхні рядки ховали б її власні.
+ * Власна підгрупа під типовою тематикою стає верхнім рівнем — сирота не
+ * зникає, інакше її не було б чим керувати.
+ */
+export function ownGroupLines(groups: readonly TrackerGroup[]): GroupTreeLine[] {
+  return groupTreeLines(groups.filter((group) => group.key === null));
+}
+
+/**
+ * Скільки трекерів у піддереві кожної групи: порожня й повна група в списку
+ * виглядають однаково, а число каже, що всередині. Трекер без групи рахується
+ * в «Свої» — так само, як його показує стрічка.
+ */
+export function trackerCountsByGroup(
+  trackers: readonly Tracker[],
+  groups: readonly TrackerGroup[],
+): Map<number, number> {
+  const ownId = groups.find((group) => group.key === TRACKER_OWN_GROUP_KEY)?.id ?? null;
+  const direct = new Map<number, number>();
+  for (const tracker of trackers) {
+    const id = tracker.groupId ?? ownId;
+    if (id === null) continue;
+    direct.set(id, (direct.get(id) ?? 0) + 1);
+  }
+
+  const children = new Map<number, TrackerGroup[]>();
+  for (const group of groups) {
+    if (group.parentId === null) continue;
+    const bucket = children.get(group.parentId);
+    if (bucket) bucket.push(group);
+    else children.set(group.parentId, [group]);
+  }
+
+  // `seen` — та сама охорона від циклу, що й у `groupTreeLines`: криві дані
+  // не мають замикати обхід.
+  const walk = (group: TrackerGroup, seen: ReadonlySet<number>): number => {
+    const inner = new Set(seen).add(group.id);
+    const nested = (children.get(group.id) ?? [])
+      .filter((child) => !inner.has(child.id))
+      .reduce((sum, child) => sum + walk(child, inner), 0);
+    return (direct.get(group.id) ?? 0) + nested;
+  };
+
+  const counts = new Map<number, number>();
+  for (const group of groups) counts.set(group.id, walk(group, new Set()));
+  return counts;
+}
+
+/**
  * Дерево груп плоским списком (DFS): модалка малює рядки без рекурсії,
  * а `first`/`last` дають межі для руху вгору/вниз. Сирота (батька видалили)
  * піднімається на верхній рівень, а не зникає; `seen` — охорона від циклу,

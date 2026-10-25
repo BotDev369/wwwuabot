@@ -1014,6 +1014,17 @@
   white-space: nowrap;
 }
 
+/* Число трекерів у рядку — підпис, а не кнопка: тихе й табличними цифрами,
+   щоб стовпчик чисел читався без стрибків ширини. */
+.wb-groups-mgr-count {
+  flex: none;
+  min-width: 2ch;
+  color: var(--text-muted);
+  font-size: var(--text-sm);
+  font-variant-numeric: tabular-nums;
+  text-align: end;
+}
+
 .wb-groups-mgr-btn {
   display: inline-flex;
   align-items: center;
