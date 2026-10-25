@@ -42,18 +42,14 @@ interface AdminNavState {
 
 // ── Default config (from legacy navItems.ts) ─────────────────────
 
+/* Один список без заголовків: назви груп («Сценарії», «Адміністрування»)
+   повторювали пункти під ними й додавали рядки, які нічого не ведуть. */
 const DEFAULT_SECTIONS: AdminNavSection[] = [
   {
     title: null,
-    items: [{ to: "/", label: "Головна", icon: "home" }],
-  },
-  {
-    title: "Сценарії",
-    items: [{ to: "/scenarios", label: "Сценарії", icon: "scenarios" }],
-  },
-  {
-    title: "Адміністрування",
     items: [
+      { to: "/", label: "Головна", icon: "home" },
+      { to: "/scenarios", label: "Сценарії", icon: "scenarios" },
       { to: "/users", label: "Користувачі", icon: "users" },
       // Звернення зі сторінки відмови: люди пишуть їх, не маючи доступу, тож
       // адміністратор дивиться на них поруч із тими, хто доступу має.
@@ -66,8 +62,6 @@ const DEFAULT_SECTIONS: AdminNavSection[] = [
       // конкретної задачі.
       { to: "/monitoring", label: "Моніторинг", icon: "bar-chart" },
       { to: "/bot-settings", label: "Налаштування бота", icon: "settings" },
-      // Профіль — на мобільному в нижньому футері, на десктопі в меню: футер
-      // існує лише на мобільному, а екран мусить бути досяжним всюди.
       { to: "/profile", label: "Профіль", icon: "user" },
     ],
   },

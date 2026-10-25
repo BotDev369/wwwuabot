@@ -424,6 +424,12 @@
   stroke-width: 2.4;
 }
 
+/* Знаки одного списку — акцентні: коли сайдбар — єдина навігація оболонки,
+   колір знака тримає пункт, а «тут ти» лишається за підписом і штрихом. */
+.wb-nav--accent-icons .wb-nav-icon {
+  color: var(--accent);
+}
+
 .wb-nav-icon {
   display: flex;
   align-items: center;
@@ -534,9 +540,8 @@
    — це не вкладка, а кнопка, і її видно саме як кнопку.
 
    Смуга ФІКСОВАНА, тож контент мусить мати місце під нею — інакше останній
-   рядок назавжди лишається під нею:
-     • платформа (потік сторінки) — `.wb-tabbar-layout`;
-     • адмінка (скролить панель) — `.wb-app-body--tabbar`.
+   рядок назавжди лишається під нею (`.wb-tabbar-layout`). У панелі смуги немає
+   зовсім: її єдина навігація — сайдбар.
 
    Висота — одна: `--tab-bar-h` (`--nav-bar-h` бренду + safe-area, tokens.css).
    Розмітку рендерить спільний `TabBar` з `@wwwuabot/ui/nav`, тому правила
@@ -554,10 +559,6 @@
   min-height: 0;
   overflow-y: auto;
   -webkit-overflow-scrolling: touch;
-}
-
-.wb-app-body--tabbar {
-  padding-bottom: var(--tab-bar-h);
 }
 
 .wb-tabbar {

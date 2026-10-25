@@ -13,13 +13,15 @@ import { TabBar } from "./TabBar";
 import { buildTabBarItems, isTabActive, withPrimaryAction } from "./build-items";
 import type { ShellTab } from "./types";
 
+// Залитий близнюк у наборі один — `user-solid` (пункт профілю платформи);
+// поведінка смуги не залежить від того, який саме знак залитий.
 const TABS: readonly ShellTab[] = [
-  { key: "home", label: "Головна", icon: "home", iconActive: "home-solid", href: "/" },
+  { key: "home", label: "Головна", icon: "home", iconActive: "user-solid", href: "/" },
   {
     key: "services",
     label: "Сервіси",
     icon: "users",
-    iconActive: "users-solid",
+    iconActive: "user-solid",
     href: "/services",
   },
   { key: "create", label: "Створити", icon: "plus", primary: true },

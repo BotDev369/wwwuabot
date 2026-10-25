@@ -14,6 +14,7 @@ import {
   EVENT_PAGE_SIZE,
   mergeEvents,
   presetRange,
+  periodLabel,
   presetWindowHours,
   rangeFromInputs,
   readAnalyticsView,
@@ -35,9 +36,11 @@ export interface AnalyticsState {
   applyPreset: (key: EventPresetKey) => void;
   /** Межі поточного діапазону для полів модалки. */
   rangeInput: { from: string; to: string };
-  rangeOpen: boolean;
-  openRange: () => void;
-  closeRange: () => void;
+  /** Підпис обраного періоду — його показує кнопка, що відкриває модалку. */
+  periodText: string;
+  periodOpen: boolean;
+  openPeriod: () => void;
+  closePeriod: () => void;
   applyRange: (from: string, to: string) => void;
   range: EventRangeInput;
   summary: EventSummary | null;
@@ -68,7 +71,7 @@ export function useAnalytics(): AnalyticsState {
   const [range, setRange] = useState<EventRangeInput>(
     restored?.range ?? presetRange(presetWindowHours("day")),
   );
-  const [rangeOpen, setRangeOpen] = useState(false);
+  const [periodOpen, setPeriodOpen] = useState(false);
 
   const [summary, setSummary] = useState<EventSummary | null>(null);
   const [events, setEvents] = useState<UserEvent[]>([]);
@@ -150,12 +153,14 @@ export function useAnalytics(): AnalyticsState {
   const applyPreset = useCallback((key: EventPresetKey) => {
     setPeriod(key);
     setRange(presetRange(presetWindowHours(key)));
+    // Готовий проміжок застосовується дотиком — поверхня більше не потрібна.
+    setPeriodOpen(false);
   }, []);
 
   const applyRange = useCallback((from: string, to: string) => {
     setPeriod("period");
     setRange(rangeFromInputs(from, to));
-    setRangeOpen(false);
+    setPeriodOpen(false);
   }, []);
 
   const reload = useCallback(() => {
@@ -192,9 +197,10 @@ export function useAnalytics(): AnalyticsState {
     period,
     applyPreset,
     rangeInput: { from: toDateTimeInput(range.from), to: toDateTimeInput(range.to) },
-    rangeOpen,
-    openRange: () => setRangeOpen(true),
-    closeRange: () => setRangeOpen(false),
+    periodText: periodLabel(period),
+    periodOpen,
+    openPeriod: () => setPeriodOpen(true),
+    closePeriod: () => setPeriodOpen(false),
     applyRange,
     range,
     summary,

@@ -1,6 +1,5 @@
 import { Outlet } from "react-router-dom";
 import { Icon } from "@wwwuabot/shared";
-import { AdminTabBar } from "./AdminTabBar";
 import { Sidebar } from "./Sidebar/Sidebar";
 import { useIsMobile } from "./useIsMobile";
 import { useMobileNav } from "./useMobileNav";
@@ -9,10 +8,6 @@ import { logout } from "../shared/api/auth.api";
 export function AppShell() {
   const isMobile = useIsMobile();
   const { open, toggle, close } = useMobileNav();
-
-  // Нижній футер — на мобільному: на десктопі навігація вже є (сайдбар), і
-  // друга копія тих самих пунктів унизу вважалась би дефектом, а не стилем.
-  const withTabBar = isMobile;
 
   async function handleLogout() {
     await logout();
@@ -46,11 +41,12 @@ export function AppShell() {
             <span>Вийти</span>
           </button>
         </header>
-        <main className={`wb-app-body${withTabBar ? " wb-app-body--tabbar" : ""}`}>
+        {/* Єдина навігація панелі — сайдбар: друга смуга внизу лише займала
+            місце на екрані й повторювала ті самі розділи. */}
+        <main className="wb-app-body">
           <Outlet />
         </main>
       </div>
-      {withTabBar && <AdminTabBar />}
     </div>
   );
 }

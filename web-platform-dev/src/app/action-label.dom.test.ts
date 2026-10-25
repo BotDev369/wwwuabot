@@ -45,6 +45,14 @@ describe("натискання", () => {
     expect(gestureOf(null)).toBeNull();
   });
 
+  it("закриття поверхні не пишеться — це вихід, а не дія", () => {
+    expect(gestureOf(mount('<button aria-label="Закрити">✕</button>'))).toBeNull();
+    expect(gestureOf(mount('<button aria-label="Закрити меню">✕</button>'))).toBeNull();
+    expect(gestureOf(mount("<button>Закрити</button>"))).toBeNull();
+    // Дія, яка лише звучить схоже, лишається: «Зберегти» — не вихід.
+    expect(gestureOf(mount("<button>Зберегти</button>"))).toEqual({ label: "Зберегти" });
+  });
+
   it("довгий текст обрізається: журнал описує дотик, а не картку цілком", () => {
     const label = gestureOf(mount(`<button>${"я".repeat(GESTURE_LABEL_MAX + 20)}</button>`))?.label;
 

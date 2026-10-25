@@ -1,23 +1,23 @@
 /**
- * Список подій: час, людина, поверхня, дія.
+ * Рядок журналу: знак поверхні, назва сторінки-розділу, подробиці й час.
  *
- * Найновіші першими: журнал читають, щоб зрозуміти «що сталося щойно».
- * Метод — бейдж, крім перегляду екрана: там назва екрана, і `GET` нічого не додає.
+ * Дієслів («відкрив», «натиснув», «закрив») тут немає: їх читали як шум, а
+ * питання до журналу — «що це було» і «де». Поверхня каже знак із власним
+ * тлом, тож підпис «Платформа» в рядку був би другим словом про те саме.
  *
  * @module web-admin-dev/src/pages/analytics/EventRows
  */
 
 import type { ReactElement } from "react";
+import { Icon } from "@wwwuabot/shared";
 import { formatPreciseStamp } from "@wwwuabot/shared/utils/datetime";
-import { eventKindLabel, surfaceLabel, type UserEvent } from "@wwwuabot/shared/events";
-import {
-  actionMethod,
-  actionText,
-  eventPhrase,
-  surfaceClass,
-  userLabel,
-  userMeta,
-} from "./analytics-view";
+import { surfaceLabel, type UserEvent } from "@wwwuabot/shared/events";
+import { eventRowOf, userLabel, userMeta } from "./analytics-view";
+
+/** Знак поверхні: бот і застосунок мають різні знаки, не різні слова. */
+function surfaceIcon(event: UserEvent): "bot" | "mobile" {
+  return event.surface === "bot" ? "bot" : "mobile";
+}
 
 export function EventRows({
   events,
@@ -33,35 +33,36 @@ export function EventRows({
   return (
     <ul className="ana-events">
       {events.map((event) => {
-        // Дію платформи читає фраза («натиснув «Шаблони»»): вид події в ній
-        // уже сказаний, тож бейдж поруч був би другим словом про те саме.
-        const phrase = eventPhrase(event);
+        const row = eventRowOf(event);
         return (
           <li className="ana-event" key={event.id}>
-            <span className="ana-event-time">{formatPreciseStamp(event.createdAt)}</span>
+            <span
+              className={`ana-event-surface ana-event-surface--${event.surface}`}
+              role="img"
+              aria-label={surfaceLabel(event.surface)}
+              title={surfaceLabel(event.surface)}
+            >
+              <Icon name={surfaceIcon(event)} size={16} />
+            </span>
+
             <span className="ana-event-body">
-              <span className="ana-event-head">
-                <span className={surfaceClass(event.surface)}>{surfaceLabel(event.surface)}</span>
-                {/* Метод — лише в запиту: у дотику й у повідомлення його немає,
-                    тож бейдж «ДІЯ» там був би шумом. */}
-                {event.kind === "request" && (
-                  <span className="ana-method">{actionMethod(event.action)}</span>
-                )}
-                {!phrase && <span className="ana-event-kind">{eventKindLabel(event.kind)}</span>}
-                {showUser && (
-                  <span className="ana-event-user" title={userMeta(event)}>
-                    {userLabel(event)}
-                  </span>
-                )}
-              </span>
-              <span className="ana-event-action">
-                {phrase ?? actionText(event.action, event.kind)}
-              </span>
-              {/* Місце дії: без нього однакові підписи з різних сторінок не
-                  відрізнити («Закрити» в магазині й у нотатках). */}
-              {event.details && <span className="ana-event-details">{event.details}</span>}
+              <span className="ana-event-title">{row.title}</span>
+              {(row.details || showUser) && (
+                <span className="ana-event-meta">
+                  {showUser && (
+                    <span className="ana-event-user" title={userMeta(event)}>
+                      {userLabel(event)}
+                    </span>
+                  )}
+                  {row.details && <span className="ana-event-details">{row.details}</span>}
+                </span>
+              )}
               {event.status === "error" && <span className="ana-event-error">помилка</span>}
             </span>
+
+            <time className="ana-event-time" dateTime={event.createdAt}>
+              {formatPreciseStamp(event.createdAt)}
+            </time>
           </li>
         );
       })}

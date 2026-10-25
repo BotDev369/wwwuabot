@@ -1,7 +1,7 @@
 /// <reference types="node" />
 
 /**
- * Шапка «Аналітики» — один закріплений блок: назва з діями, зведення й період.
+ * Шапка «Аналітики» — один закріплений блок: назва з діями й зведення.
  * Окрема заливка в кожного ряду лишала б між ними шов, крізь який видно журнал.
  *
  * @module web-admin-dev/src/pages/analytics/analytics-layout
@@ -50,13 +50,16 @@ describe("аналітика: закріплений блок керування
     expect(pinned).toContain("padding: var(--sp-3) var(--ana-gutter)");
   });
 
-  it("ряд періодів не має власної липкості й полів — інакше це другий шар", () => {
-    const periods = body("\\.ana-periods");
+  it("період — кнопка в ряду дій, а не окремий ряд у шапці", () => {
+    const source = readFileSync(
+      join(REPO_ROOT, "web-admin-dev/src/pages/analytics/AnalyticsPage.tsx"),
+      "utf8",
+    );
 
-    expect(periods).not.toContain("position");
-    expect(periods).not.toContain("margin");
-    expect(periods).not.toContain("padding");
-    expect(periods).not.toContain("background");
+    // Ряд чипів з'їдав місце в шапці — вибір живе в модалці.
+    expect(source).not.toContain("ana-periods");
+    expect(source).toContain('className="wb-btn wb-btn-secondary ana-period-btn"');
+    expect(body("\\.ana-period-btn")).toContain("min-height");
   });
 
   it("зведення стоїть на сітці й тягнеться на всю ширину, як чипи й картки", () => {
@@ -79,7 +82,7 @@ describe("аналітика: закріплений блок керування
     expect(body("\\.ana-head-title")).toContain("font-weight: var(--weight-bold)");
   });
 
-  it("у розмітці всі три ряди живуть у закріпленому шарі, вміст — під ним", () => {
+  it("у розмітці обидва ряди живуть у закріпленому шарі, вміст — під ними", () => {
     const source = readFileSync(
       join(REPO_ROOT, "web-admin-dev/src/pages/analytics/AnalyticsPage.tsx"),
       "utf8",
@@ -88,13 +91,11 @@ describe("аналітика: закріплений блок керування
     const pinned = source.indexOf('className="ana-pinned"');
     const head = source.indexOf('className="ana-head"');
     const stats = source.indexOf('className="ana-stats"');
-    const periods = source.indexOf('className="ana-periods"');
     const content = source.indexOf('className="ana-body"');
 
     expect(pinned).toBeGreaterThan(-1);
     expect(head).toBeGreaterThan(pinned);
     expect(stats).toBeGreaterThan(head);
-    expect(periods).toBeGreaterThan(stats);
-    expect(content).toBeGreaterThan(periods);
+    expect(content).toBeGreaterThan(stats);
   });
 });

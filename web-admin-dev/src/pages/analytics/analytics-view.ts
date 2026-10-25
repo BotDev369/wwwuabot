@@ -10,6 +10,7 @@
 import {
   platformActionLabel,
   screenLabel,
+  surfaceLabel,
   type EventKind,
   type EventSurface,
   type EventUserSummary,
@@ -135,6 +136,12 @@ export function rememberAnalyticsView(view: AnalyticsView): void {
   }
 }
 
+/** Підпис обраного періоду — те, що показує кнопка замість ряду чипів. */
+export function periodLabel(period: AnalyticsPeriod): string {
+  if (period === "period") return "Період";
+  return EVENT_PRESETS.find((preset) => preset.key === period)?.label ?? EVENT_PRESETS[0].label;
+}
+
 /** Мітка «коли оновлено» — лише час: дату видно в діапазоні. */
 export function clockStamp(ms: number): string {
   const date = new Date(ms);
@@ -186,12 +193,6 @@ export function userMeta(user: Pick<EventUserSummary, "username" | "userId">): s
   return user.username ? `@${user.username} · ${user.userId}` : `${user.userId}`;
 }
 
-/** Метод HTTP з дії платформи: у списку це бейдж, а не частина рядка. */
-export function actionMethod(action: string): string {
-  const method = /^(GET|POST|PUT|PATCH|DELETE)\s+/.exec(action);
-  return method ? method[1] : "ДІЯ";
-}
-
 /**
  * Що показуємо після бейджа — те, що людина зрозуміє.
  *
@@ -205,34 +206,49 @@ export function actionText(action: string, kind?: EventKind): string {
   return action.replace(/^(GET|POST|PUT|PATCH|DELETE)\s+/, "");
 }
 
-/**
- * Подія платформи як фраза: «відкрив Трекери», «натиснув Шаблони», «поле
- * «Назва»: «купити хліб»».
- *
- * **Назва, а не вид.** «Дотик» і «екран» — мова розмітки: у списку вони стояли
- * б поруч із назвою й нічого не додавали. Бот повертає `null`: там свої слова.
- */
-export function eventPhrase(
-  event: Pick<UserEvent, "surface" | "kind" | "action" | "details">,
-): string | null {
-  if (event.surface !== "platform") return null;
-  switch (event.kind) {
-    case "view":
-      return `Відкрив «${actionText(event.action, event.kind)}»`;
-    case "modal":
-      return `Відкрив вікно «${event.action}»`;
-    case "click":
-      return `Натиснув «${event.action}»`;
-    case "input":
-      // Місце дії й назва поля — у сірому рядку під фразою (`details`).
-      return `Ввів «${event.action}»`;
-    default:
-      return null;
-  }
+/** Що показує рядок журналу: **назва сторінки-розділу** й подробиці під нею. */
+export interface EventRow {
+  title: string;
+  details: string | null;
 }
 
-export function surfaceClass(surface: EventSurface): string {
-  return `ana-surface ana-surface--${surface}`;
+/** Місце дії з `details` — без назви поля й без підпису поверхні. */
+function placeOf(details: string | null, surface: EventSurface): string | null {
+  const segments = (details ?? "")
+    .split(" · ")
+    .map((segment) => segment.trim())
+    .filter(
+      (segment) => segment && segment !== surfaceLabel(surface) && !segment.startsWith("Поле «"),
+    );
+  return segments.length > 0 ? segments.join(" · ") : null;
+}
+
+/**
+ * Рядок читається **назвою сторінки**, а не дієслівною фразою.
+ *
+ * «Відкрив», «Натиснув», «Закрив» — мова розмітки, а не подія: питання до
+ * журналу — «що це було» і «де». Поверхня йде знаком (`EventRows`), тож її
+ * підпис із подробиць прибирається: «Платформа» поруч зі знаком платформи — те
+ * саме слово двічі.
+ */
+export function eventRowOf(
+  event: Pick<UserEvent, "surface" | "kind" | "action" | "details">,
+): EventRow {
+  const place = placeOf(event.details, event.surface);
+
+  // Дотик і введений текст: головне — сторінка, де це сталося; сам дотик —
+  // подробиця. Інакше «Додати» з різних екранів злилося б в один рядок.
+  if (event.kind === "click" || event.kind === "input") {
+    const field = /Поле «([^»]+)»/.exec(event.details ?? "")?.[1] ?? null;
+    const entered =
+      event.kind === "input"
+        ? [field ? `Поле «${field}»:` : null, `«${event.action}»`].filter(Boolean).join(" ")
+        : event.action;
+    return place ? { title: place, details: entered } : { title: event.action, details: null };
+  }
+
+  const title = actionText(event.action, event.kind);
+  return { title, details: place && place !== title ? place : null };
 }
 
 /** Догортання сторінок: те саме, що показали, не дублюється. */

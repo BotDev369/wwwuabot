@@ -37,7 +37,9 @@ export function Sidebar({ open = false, onNavigate, onClose }: SidebarProps) {
 
   return (
     <SideBar
-      className={`app-drawer${open ? " app-drawer--open" : ""}`}
+      // Знаки меню — акцентні: у панелі список один, тож колір тримає саме
+      // пункт, а не знак обраного.
+      className={`app-drawer wb-nav--accent-icons${open ? " app-drawer--open" : ""}`}
       collapsed={collapsed}
       // Кнопка закриття видна лише там, де меню — поверхня (телефон): у потоці
       // його закриває тумблер у шапці самого меню, і друга кнопка під ту саму

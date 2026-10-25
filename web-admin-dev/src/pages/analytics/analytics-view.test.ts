@@ -2,11 +2,11 @@ import { describe, expect, it } from "vitest";
 import type { UserEvent } from "@wwwuabot/shared/events";
 import {
   EVENT_PAGE_SIZE,
-  actionMethod,
   actionText,
   clockStamp,
-  eventPhrase,
+  eventRowOf,
   mergeEvents,
+  periodLabel,
   parseAnalyticsView,
   presetRange,
   presetWindowHours,
@@ -121,10 +121,8 @@ describe("помічники аналітики", () => {
     expect(userMeta({ userId: 7, username: null })).toBe("7");
   });
 
-  it("метод відділяється від дії", () => {
-    expect(actionMethod("GET /api/favorites")).toBe("GET");
+  it("метод запиту не лишається в назві дії", () => {
     expect(actionText("GET /api/favorites")).toBe("/api/favorites");
-    expect(actionMethod("/start")).toBe("ДІЯ");
     expect(actionText("/start")).toBe("/start");
   });
 
@@ -136,40 +134,53 @@ describe("помічники аналітики", () => {
     expect(actionText("Кошик", "modal")).toBe("Кошик");
   });
 
-  it("подія платформи читається фразою, а не назвою виду", () => {
+  it("рядок журналу — назва сторінки й подробиці, без дієслів", () => {
+    // Екран: назва — те, що людина відкрила; підпис поверхні вже є знаком.
     expect(
-      eventPhrase({ surface: "platform", kind: "view", action: "Трекери", details: null }),
-    ).toBe("Відкрив «Трекери»");
+      eventRowOf({ surface: "platform", kind: "view", action: "trackers", details: "Платформа" }),
+    ).toEqual({ title: "Трекери", details: null });
     expect(
-      eventPhrase({ surface: "platform", kind: "modal", action: "Кошик", details: null }),
-    ).toBe("Відкрив вікно «Кошик»");
+      eventRowOf({
+        surface: "platform",
+        kind: "view",
+        action: "Акаунт",
+        details: "Магазин",
+      }),
+    ).toEqual({ title: "Акаунт", details: "Магазин" });
+
+    // Дотик: головне — сторінка, дотик — подробиця.
     expect(
-      eventPhrase({ surface: "platform", kind: "click", action: "Шаблони", details: null }),
-    ).toBe("Натиснув «Шаблони»");
-    // Місце дії й назва поля — сірий рядок під фразою (`details`).
+      eventRowOf({ surface: "platform", kind: "click", action: "Кошик", details: "Магазин" }),
+    ).toEqual({ title: "Магазин", details: "Кошик" });
+
+    // Уведений текст: значення йде з назвою поля, сторінка — заголовком.
     expect(
-      eventPhrase({
+      eventRowOf({
         surface: "platform",
         kind: "input",
         action: "купити хліб",
         details: "Поле «Назва» · Нотатки",
       }),
-    ).toBe("Ввів «купити хліб»");
-    expect(eventPhrase({ surface: "platform", kind: "input", action: "Кава", details: null })).toBe(
-      "Ввів «Кава»",
-    );
-    // Запис сервера вже названий дією, а бот говорить своїми словами.
+    ).toEqual({ title: "Нотатки", details: "Поле «Назва»: «купити хліб»" });
+
+    // Бот говорить своїми словами, а запис сервера — своєю дією.
     expect(
-      eventPhrase({
+      eventRowOf({ surface: "bot", kind: "message", action: "привіт", details: null }),
+    ).toEqual({ title: "привіт", details: null });
+    expect(
+      eventRowOf({
         surface: "platform",
         kind: "request",
         action: "POST /api/notes",
         details: null,
       }),
-    ).toBeNull();
-    expect(
-      eventPhrase({ surface: "bot", kind: "message", action: "привіт", details: null }),
-    ).toBeNull();
+    ).toEqual({ title: "Зберіг нотатку", details: null });
+  });
+
+  it("кнопка періоду називає обране", () => {
+    expect(periodLabel("day")).toBe("Доба");
+    expect(periodLabel("week")).toBe("Тиждень");
+    expect(periodLabel("period")).toBe("Період");
   });
 
   it("запис сервера читається дією, а не шляхом", () => {

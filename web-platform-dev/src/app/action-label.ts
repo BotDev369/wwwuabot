@@ -15,6 +15,12 @@ export interface Gesture {
   field?: string;
 }
 
+/**
+ * Підпис закриття — не подія: «Закрив» каже, що людина пішла, і нічого — про
+ * те, що вона робила. Такі контроли в журнал не потрапляють (`docs/EVENTS.md`).
+ */
+const DISMISS_LABEL = /^(закри|зачин|close)/i;
+
 /** Межа підпису: журнал описує дію, а не переказує весь текст картки. */
 export const GESTURE_LABEL_MAX = 100;
 
@@ -100,7 +106,7 @@ export function gestureOf(target: Element | null): Gesture | null {
   if (target.closest("input, textarea, select")) return null;
   const control = target.closest(CONTROL_SELECTOR) ?? target;
   const label = labelOf(control);
-  if (!label) return null;
+  if (!label || DISMISS_LABEL.test(label)) return null;
   return { label: clipped(label) };
 }
 

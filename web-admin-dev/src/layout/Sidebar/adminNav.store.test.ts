@@ -12,9 +12,9 @@ import { useAdminNav } from "./adminNav.store";
 
 describe("навігація адмінки", () => {
   it("веде в «Аналітику» поруч із людьми та повідомленнями", () => {
-    const sections = useAdminNav.getState().sections;
-    const admin = sections.find((section) => section.title === "Адміністрування");
-    const analytics = admin?.items.find((item) => item.to === "/analytics");
+    // Меню — один список без заголовків: шукаємо пункт серед усіх.
+    const items = useAdminNav.getState().sections.flatMap((section) => section.items);
+    const analytics = items.find((item) => item.to === "/analytics");
 
     expect(analytics).toEqual({ to: "/analytics", label: "Аналітика", icon: "pulse" });
   });

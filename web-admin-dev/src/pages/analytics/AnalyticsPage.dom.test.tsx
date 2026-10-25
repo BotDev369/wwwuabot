@@ -81,7 +81,9 @@ describe("екран «Аналітика»", () => {
     expect(screen.getByTitle("подій").textContent).toBe("3");
     expect(screen.getByTitle("у боті").textContent).toBe("2");
     expect(screen.getByTitle("на платформі").textContent).toBe("1");
-    expect(screen.getByText("@DiskantSergiy · 7")).toBeTruthy();
+    // Закритий акордеон: ім'я й хендл, номера немає — він у розкритому.
+    expect(screen.getByText("@DiskantSergiy")).toBeTruthy();
+    expect(screen.queryByText("ID 7")).toBeNull();
   });
 
   it("розгортає людину й тягне саме її дії", async () => {
@@ -91,6 +93,8 @@ describe("екран «Аналітика»", () => {
     await userEvent.click(head);
 
     await waitFor(() => expect(screen.getByText("/start")).toBeTruthy());
+    // Номер показується лише під розкритим акордеоном.
+    expect(screen.getByText("ID 7")).toBeTruthy();
     expect(api.events).toHaveBeenCalledWith(expect.objectContaining({ userId: 7, limit: 100 }));
     // Повторний дотик закриває акордеон, а не тягне ті самі дії вдруге.
     await userEvent.click(head);
@@ -98,34 +102,41 @@ describe("екран «Аналітика»", () => {
     expect(api.events).toHaveBeenCalledTimes(1);
   });
 
-  it("«За часом» показує суцільний список без людини", async () => {
+  it("«За часом» показує суцільний список із людиною в рядку", async () => {
     api.events.mockResolvedValue(list([platformEvent, botEvent]));
     render(<AnalyticsPage />);
 
     await userEvent.click(screen.getByRole("tab", { name: "За часом" }));
 
+    // Рядок — назва сторінки/дії без методу й без дієслова.
     await waitFor(() => expect(screen.getByText("/api/favorites")).toBeTruthy());
-    expect(screen.getByText("GET")).toBeTruthy();
+    expect(screen.queryByText("GET")).toBeNull();
+    // Обидві події — однієї людини, тож ім'я в кожному рядку.
+    expect(screen.getAllByText("Сергій Дискант")).toHaveLength(2);
     expect(api.events.mock.calls[0]?.[0]).not.toHaveProperty("userId");
   });
 
-  it("готовий проміжок перезавантажує журнал", async () => {
+  it("період вибирають у модалці, а кнопка називає обране", async () => {
     render(<AnalyticsPage />);
     await screen.findByText("Сергій Дискант");
 
-    await userEvent.click(screen.getByRole("button", { name: "Тиждень" }));
+    // Кнопка показує поточний період і відкриває поверхню.
+    const trigger = screen.getByRole("button", { name: /Доба/ });
+    expect(trigger.getAttribute("aria-haspopup")).toBe("dialog");
+    await userEvent.click(trigger);
+    await userEvent.click(await screen.findByRole("button", { name: "Тиждень" }));
 
     await waitFor(() => expect(api.summary).toHaveBeenCalledTimes(2));
-    expect(screen.getByRole("button", { name: "Тиждень" }).getAttribute("aria-pressed")).toBe(
-      "true",
-    );
+    // Готовий проміжок застосовується дотиком і закриває поверхню.
+    expect(screen.queryByRole("dialog", { name: "Період" })).toBeNull();
+    expect(screen.getByRole("button", { name: /Тиждень/ })).toBeTruthy();
   });
 
   it("«Період» бере межі з модалки й лишається обраним", async () => {
     render(<AnalyticsPage />);
     await screen.findByText("Сергій Дискант");
 
-    await userEvent.click(screen.getByRole("button", { name: /Період/ }));
+    await userEvent.click(screen.getByRole("button", { name: /Доба/ }));
     // date-полю значення дають зміною, а не посимвольним набором.
     fireEvent.change(screen.getByLabelText("Від"), { target: { value: "2026-10-01T00:00" } });
     fireEvent.change(screen.getByLabelText("До"), { target: { value: "2026-10-02T00:00" } });
@@ -136,9 +147,7 @@ describe("екран «Аналітика»", () => {
       from: new Date("2026-10-01T00:00").toISOString(),
       to: new Date("2026-10-02T00:00").toISOString(),
     });
-    expect(screen.getByRole("button", { name: /Період/ }).getAttribute("aria-pressed")).toBe(
-      "true",
-    );
+    expect(screen.getByRole("button", { name: /Період/ }).textContent).toContain("Період");
   });
 
   it("«Оновити» перечитує журнал, зсуває вікно й каже, коли це було", async () => {
@@ -276,7 +285,8 @@ describe("екран «Аналітика»", () => {
   it("перезавантаження вкладки повертає вигляд: період і відкритий акордеон", async () => {
     const first = render(<AnalyticsPage />);
     await screen.findByText("Сергій Дискант");
-    await userEvent.click(screen.getByRole("button", { name: "Тиждень" }));
+    await userEvent.click(screen.getByRole("button", { name: /Доба/ }));
+    await userEvent.click(await screen.findByRole("button", { name: "Тиждень" }));
     await userEvent.click(screen.getByRole("button", { name: /Сергій Дискант/ }));
     await screen.findByText("/start");
     first.unmount();
@@ -285,9 +295,8 @@ describe("екран «Аналітика»", () => {
 
     const head = await screen.findByRole("button", { name: /Сергій Дискант/ });
     expect(head.getAttribute("aria-expanded")).toBe("true");
-    expect(screen.getByRole("button", { name: "Тиждень" }).getAttribute("aria-pressed")).toBe(
-      "true",
-    );
+    // Період повернувся той самий: кнопка називає обране.
+    expect(screen.getByRole("button", { name: /Тиждень/ }).textContent).toContain("Тиждень");
   });
 
   it("догортає список і каже, скільки вже видно", async () => {

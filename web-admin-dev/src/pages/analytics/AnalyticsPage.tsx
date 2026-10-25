@@ -1,18 +1,17 @@
 /**
  * «Аналітика» — журнал дій людей у боті й на платформі: два режими, спільний
- * діапазон. Шапка — три ряди одного закріпленого блока (назва з діями,
- * зведення, період), між ними немає шва. Правила — `docs/EVENTS.md`.
+ * діапазон. Шапка — два ряди одного закріпленого блока (назва з діями,
+ * зведення), між ними немає шва. Правила — `docs/EVENTS.md`.
  *
  * @module web-admin-dev/src/pages/analytics/AnalyticsPage
  */
 
 import type { ReactElement } from "react";
 import { Icon, type IconName } from "@wwwuabot/shared";
-import { formatStamp } from "@wwwuabot/shared/utils/datetime";
-import { EVENT_PRESETS, clockStamp, userLabel, userMeta } from "./analytics-view";
+import { clockStamp, userLabel } from "./analytics-view";
 import { CleanupModal } from "./CleanupModal";
 import { EventRows } from "./EventRows";
-import { RangeModal } from "./RangeModal";
+import { PeriodModal } from "./PeriodModal";
 import { useAnalytics } from "./useAnalytics";
 
 /** Зведення: одна смуга, чотири рівні клітинки — число й знак, підпис у підказці. */
@@ -76,26 +75,39 @@ export function AnalyticsPage(): ReactElement {
                   <Icon name="clock" size={16} />
                 </button>
               </div>
+              {/* Період — кнопка, а не ряд чипів: обране вона й називає. */}
               <button
                 type="button"
-                className="wb-btn wb-btn-secondary ana-icon-btn"
-                onClick={a.reload}
-                disabled={a.loading}
-                aria-busy={a.loading}
-                aria-label={a.loading ? "Оновлюю…" : "Оновити"}
-                title="Оновити"
+                className="wb-btn wb-btn-secondary ana-period-btn"
+                onClick={a.openPeriod}
+                aria-haspopup="dialog"
+                title="Змінити період"
               >
-                <Icon name="refresh" size={16} />
+                <Icon name="calendar" size={16} />
+                <span>{a.periodText}</span>
               </button>
-              <button
-                type="button"
-                className="wb-btn wb-btn-secondary ana-icon-btn"
-                onClick={a.openCleanup}
-                aria-label="Очистити журнал"
-                title="Очистити журнал"
-              >
-                <Icon name="trash" size={16} />
-              </button>
+              <div className="ana-tools">
+                <button
+                  type="button"
+                  className="wb-btn wb-btn-secondary ana-icon-btn"
+                  onClick={a.reload}
+                  disabled={a.loading}
+                  aria-busy={a.loading}
+                  aria-label={a.loading ? "Оновлюю…" : "Оновити"}
+                  title="Оновити"
+                >
+                  <Icon name="refresh" size={16} />
+                </button>
+                <button
+                  type="button"
+                  className="wb-btn wb-btn-secondary ana-icon-btn"
+                  onClick={a.openCleanup}
+                  aria-label="Очистити журнал"
+                  title="Очистити журнал"
+                >
+                  <Icon name="trash" size={16} />
+                </button>
+              </div>
             </div>
           </div>
 
@@ -112,28 +124,6 @@ export function AnalyticsPage(): ReactElement {
               </span>
             ))}
           </div>
-
-          <section className="ana-periods" aria-label="Період">
-            {EVENT_PRESETS.map((preset) => (
-              <button
-                key={preset.key}
-                type="button"
-                aria-pressed={a.period === preset.key}
-                className={`ana-preset${a.period === preset.key ? " ana-preset--active" : ""}`}
-                onClick={() => a.applyPreset(preset.key)}
-              >
-                {preset.label}
-              </button>
-            ))}
-            <button
-              type="button"
-              aria-pressed={a.period === "period"}
-              className={`ana-preset${a.period === "period" ? " ana-preset--active" : ""}`}
-              onClick={a.openRange}
-            >
-              <Icon name="calendar" size={13} /> Період
-            </button>
-          </section>
         </header>
 
         <div className="ana-body">
@@ -161,6 +151,8 @@ export function AnalyticsPage(): ReactElement {
                   const total = a.userTotals[user.userId] ?? 0;
                   return (
                     <li className="ana-user" key={user.userId}>
+                      {/* Закритий акордеон — лише ім'я й хендл: номер людині
+                          нічого не каже, а місце в рядку займає. */}
                       <button
                         type="button"
                         className="ana-user-head"
@@ -168,8 +160,7 @@ export function AnalyticsPage(): ReactElement {
                         onClick={() => a.toggleUser(user.userId)}
                       >
                         <span className="ana-user-name">{userLabel(user)}</span>
-                        <span className="ana-user-meta">{userMeta(user)}</span>
-                        <span className="ana-user-last">{formatStamp(user.lastAt)}</span>
+                        {user.username && <span className="ana-user-meta">@{user.username}</span>}
                         <span className="ana-user-count" title="подій за діапазон">
                           {user.count}
                         </span>
@@ -178,6 +169,7 @@ export function AnalyticsPage(): ReactElement {
 
                       {open && (
                         <div className="ana-user-body">
+                          <p className="ana-user-id">ID {user.userId}</p>
                           {a.loadingUser === user.userId ? (
                             <p className="ana-loading">Завантаження дій…</p>
                           ) : (
@@ -217,12 +209,14 @@ export function AnalyticsPage(): ReactElement {
         </div>
       </div>
 
-      {a.rangeOpen && (
-        <RangeModal
+      {a.periodOpen && (
+        <PeriodModal
+          period={a.period}
           from={a.rangeInput.from}
           to={a.rangeInput.to}
+          onPreset={a.applyPreset}
           onApply={a.applyRange}
-          onClose={a.closeRange}
+          onClose={a.closePeriod}
         />
       )}
 
