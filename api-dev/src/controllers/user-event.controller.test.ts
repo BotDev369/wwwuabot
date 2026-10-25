@@ -5,7 +5,7 @@ import { handleUserEvent } from "./user-event.controller";
 const mocks = vi.hoisted(() => ({ identity: vi.fn() }));
 vi.mock("../shared/identity", () => ({ tryResolveUserId: mocks.identity }));
 
-function database(first: () => unknown = () => null) {
+function database() {
   const calls: { sql: string; values: unknown[] }[] = [];
   const db = {
     prepare(sql: string) {
@@ -16,7 +16,7 @@ function database(first: () => unknown = () => null) {
           call.values = values;
           return statement;
         },
-        first: async () => first(),
+        first: async () => null,
         all: async () => ({ results: [] }),
         run: async () => ({ meta: { changes: 1 } }),
       };
@@ -156,18 +156,16 @@ describe("подія від застосунку", () => {
     expect(db.calls.some((call) => call.sql.startsWith("INSERT"))).toBe(false);
   });
 
-  it("вимкнена сквозна деталізація пише екран, але не дотик", async () => {
-    const off = database(() => ({ full: 0 }));
+  it("дотик пишеться завжди — прапорця деталізації більше немає", async () => {
+    const db = database();
     const click = await handleUserEvent(
       post({ kind: "click", screen: "trackers", label: "Додати" }),
-      off.env,
+      db.env,
     );
-    expect(click.status).toBe(200);
-    expect(off.calls.some((call) => call.sql.startsWith("INSERT"))).toBe(false);
 
-    const view = await handleUserEvent(post({ screen: "trackers" }), off.env);
-    expect(view.status).toBe(200);
-    expect(off.calls.some((call) => call.sql.startsWith("INSERT INTO user_events"))).toBe(true);
+    expect(click.status).toBe(200);
+    const insert = db.calls.find((call) => call.sql.startsWith("INSERT INTO user_events"));
+    expect(insert?.values.slice(0, 5)).toEqual([777, "platform", "click", "Додати", null]);
   });
 
   it("збій запису не ламає навігацію", async () => {
