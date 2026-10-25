@@ -162,6 +162,17 @@ describe("три стани екрана не плутаються", () => {
 
     expect(conversationRow()).not.toBeNull();
   });
+
+  it("журнал отримує ім'я розмови, а не текст останнього повідомлення", () => {
+    render(<MessagesPage />);
+
+    const row = conversationRow();
+    // `data-log` читає журнал дій: текст чужого повідомлення з його датою
+    // зробив би рядок схожим на «надіслав зараз» (docs/EVENTS.md).
+    expect(row.getAttribute("data-log")).toBe("#karas");
+    // А `aria-label` лишається повним — його читає скрінрідер на екрані.
+    expect(row.getAttribute("aria-label")).toContain("привіт");
+  });
 });
 
 describe("розмова відкривається поверхнею", () => {

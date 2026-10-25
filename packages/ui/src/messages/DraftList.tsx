@@ -54,8 +54,10 @@ export function DraftList({
                 className="wb-conv"
                 onClick={() => onOpen(draft)}
                 // Рядок читається як «кому лист і що в ньому»: без підпису
-                // скрінрідер прочитав би його суцільною фразою.
+                // скрінрідер прочитав би його суцільною фразою. У журнал іде
+                // лише адресат (`data-log`): набраний текст не пишеться ніколи.
                 aria-label={`${DRAFTS_GROUP_LABEL}. ${label}. ${line}`}
+                data-log={`${DRAFTS_GROUP_LABEL} · ${label}`}
               >
                 <span className="wb-conv-avatar">
                   <Icon name="save" size={20} />
