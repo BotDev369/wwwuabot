@@ -17,6 +17,8 @@ const hooks = {
   update: vi.fn(),
   create: vi.fn(),
   remove: vi.fn(),
+  moveTo: vi.fn(),
+  order: vi.fn(),
   toggle: vi.fn(),
   open: vi.fn(),
   history: vi.fn(),
@@ -79,6 +81,8 @@ function renderSection(
       onCreateGroup={hooks.create}
       onUpdateGroup={hooks.update}
       onDeleteGroup={hooks.remove}
+      onMoveGroup={hooks.moveTo}
+      onMoveGroupOrder={hooks.order}
       onNewTracker={hooks.newTracker}
       onClearTrackers={hooks.clear}
     />,
@@ -104,6 +108,9 @@ describe("меню групи", () => {
     expect(screen.getByRole("button", { name: "Додати підгрупу" })).toBeTruthy();
     expect(screen.getByRole("button", { name: "Новий трекер" })).toBeTruthy();
     expect(screen.getByRole("button", { name: "Перейменувати" })).toBeTruthy();
+    expect(screen.getByRole("button", { name: "Перемістити" })).toBeTruthy();
+    expect(screen.getByRole("button", { name: "Вище" })).toBeTruthy();
+    expect(screen.getByRole("button", { name: "Нижче" })).toBeTruthy();
     expect(screen.getByRole("button", { name: "Видалити групу" })).toBeTruthy();
   });
 
@@ -127,6 +134,26 @@ describe("меню групи", () => {
       expect.objectContaining({ defaultValue: "Режим" }),
     );
     expect(hooks.update).toHaveBeenCalledWith(9, { title: "Новий режим" });
+  });
+
+  it("«Перемістити» відкриває дерево місць для цієї групи", async () => {
+    renderSection(ownGroup);
+    await openMenu("Режим");
+
+    await userEvent.click(screen.getByRole("button", { name: "Перемістити" }));
+
+    expect(hooks.moveTo).toHaveBeenCalledWith(9);
+  });
+
+  it("стрілки шлють порядок серед сусідів, а не місце в дереві", async () => {
+    renderSection(ownGroup);
+    await openMenu("Режим");
+    await userEvent.click(screen.getByRole("button", { name: "Вище" }));
+    expect(hooks.order).toHaveBeenCalledWith(9, "up");
+
+    await openMenu("Режим");
+    await userEvent.click(screen.getByRole("button", { name: "Нижче" }));
+    expect(hooks.order).toHaveBeenCalledWith(9, "down");
   });
 
   it("порожній ввід відсікає валідатор, скасування — нічого не шле", async () => {

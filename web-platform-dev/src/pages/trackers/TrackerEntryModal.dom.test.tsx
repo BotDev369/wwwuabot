@@ -19,6 +19,7 @@ const hooks = {
   close: vi.fn(),
   settings: vi.fn(),
   duplicate: vi.fn(),
+  move: vi.fn(),
   reset: vi.fn(),
   remove: vi.fn(),
 };
@@ -65,6 +66,7 @@ function renderCard(tracker: Tracker = water, todayValue: number | null = 2.5) {
       onSave={hooks.save}
       onSettings={hooks.settings}
       onDuplicate={hooks.duplicate}
+      onMove={hooks.move}
       onReset={hooks.reset}
       onDelete={hooks.remove}
     />,
@@ -189,6 +191,13 @@ describe("дії картки", () => {
     await userEvent.click(screen.getByRole("button", { name: "Дублювати" }));
 
     expect(hooks.close).not.toHaveBeenCalled();
+  });
+
+  it("«Перемістити» передає вибір місця сторінці, а не закриває назавжди", async () => {
+    renderCard();
+    await userEvent.click(screen.getByRole("button", { name: "Перемістити" }));
+
+    expect(hooks.move).toHaveBeenCalled();
   });
 
   it("«Скинути сьогодні» питає, бо прибирає виміри", async () => {

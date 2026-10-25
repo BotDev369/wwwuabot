@@ -173,104 +173,22 @@ export function groupRowsTree(
   return roots.map(prune).filter((view): view is TrackerGroupTreeView => view !== null);
 }
 
-/** Рядок дерева груп для модалки «Групи»: глибина відступу й межі сусідів. */
-export interface GroupTreeLine {
-  group: TrackerGroup;
-  depth: number;
-  /** Перший серед сусідів одного батька — «вгору» вимкнена. */
-  first: boolean;
-  /** Останній серед сусідів — «вниз» вимкнена. */
-  last: boolean;
-}
-
 /**
- * Рядки модалки «Групи» — **лише власні** групи: типові тематики каталогу
- * (`key !== null`) людина тут не редагує, а їхні рядки ховали б її власні.
- * Власна підгрупа під типовою тематикою стає верхнім рівнем — сирота не
- * зникає, інакше її не було б чим керувати.
+ * Гілка дерева групи: сама група та всі нащадки. Потрібна руху — групу не
+ * можна поставити під власний нащадок (сервер відхиляє цикл), тож у дереві
+ * вибору місця цих рядків немає.
  */
-export function ownGroupLines(groups: readonly TrackerGroup[]): GroupTreeLine[] {
-  return groupTreeLines(groups.filter((group) => group.key === null));
-}
-
-/**
- * Скільки трекерів у піддереві кожної групи: порожня й повна група в списку
- * виглядають однаково, а число каже, що всередині. Трекер без групи рахується
- * в «Свої» — так само, як його показує стрічка.
- */
-export function trackerCountsByGroup(
-  trackers: readonly Tracker[],
-  groups: readonly TrackerGroup[],
-): Map<number, number> {
-  const ownId = groups.find((group) => group.key === TRACKER_OWN_GROUP_KEY)?.id ?? null;
-  const direct = new Map<number, number>();
-  for (const tracker of trackers) {
-    const id = tracker.groupId ?? ownId;
-    if (id === null) continue;
-    direct.set(id, (direct.get(id) ?? 0) + 1);
+export function groupSubtreeIds(groups: readonly TrackerGroup[], id: number): number[] {
+  const ids = new Set<number>([id]);
+  for (let grew = true; grew;) {
+    grew = false;
+    for (const group of groups) {
+      if (ids.has(group.id) || group.parentId === null || !ids.has(group.parentId)) continue;
+      ids.add(group.id);
+      grew = true;
+    }
   }
-
-  const children = new Map<number, TrackerGroup[]>();
-  for (const group of groups) {
-    if (group.parentId === null) continue;
-    const bucket = children.get(group.parentId);
-    if (bucket) bucket.push(group);
-    else children.set(group.parentId, [group]);
-  }
-
-  // `seen` — та сама охорона від циклу, що й у `groupTreeLines`: криві дані
-  // не мають замикати обхід.
-  const walk = (group: TrackerGroup, seen: ReadonlySet<number>): number => {
-    const inner = new Set(seen).add(group.id);
-    const nested = (children.get(group.id) ?? [])
-      .filter((child) => !inner.has(child.id))
-      .reduce((sum, child) => sum + walk(child, inner), 0);
-    return (direct.get(group.id) ?? 0) + nested;
-  };
-
-  const counts = new Map<number, number>();
-  for (const group of groups) counts.set(group.id, walk(group, new Set()));
-  return counts;
-}
-
-/**
- * Дерево груп плоским списком (DFS): модалка малює рядки без рекурсії,
- * а `first`/`last` дають межі для руху вгору/вниз. Сирота (батька видалили)
- * піднімається на верхній рівень, а не зникає; `seen` — охорона від циклу,
- * який замкнув би обхід (сервер цикл не створює, але й малюнок не має
- * зависати, якщо дані приїхали криві).
- */
-export function groupTreeLines(groups: readonly TrackerGroup[]): GroupTreeLine[] {
-  const known = new Set(groups.map((group) => group.id));
-  const byParent = new Map<number | null, TrackerGroup[]>();
-  for (const group of groups) {
-    const parent = group.parentId !== null && known.has(group.parentId) ? group.parentId : null;
-    const bucket = byParent.get(parent);
-    if (bucket) bucket.push(group);
-    else byParent.set(parent, [group]);
-  }
-
-  const lines: GroupTreeLine[] = [];
-  const seen = new Set<number>();
-  const walk = (parentId: number | null, depth: number): void => {
-    const siblings = byParent.get(parentId) ?? [];
-    siblings.forEach((group, index) => {
-      if (seen.has(group.id)) return;
-      seen.add(group.id);
-      lines.push({ group, depth, first: index === 0, last: index === siblings.length - 1 });
-      walk(group.id, depth + 1);
-    });
-  };
-  walk(null, 0);
-  // Недосяжне з кореня (цикл або батька підчистили вручну) — теж рядки,
-  // а не нікуди: модалка мусить показати все, що є в базі, інакше група
-  // стає невидимою для управління.
-  for (const group of groups) {
-    if (seen.has(group.id)) continue;
-    seen.add(group.id);
-    lines.push({ group, depth: 0, first: false, last: false });
-  }
-  return lines;
+  return [...ids];
 }
 
 /**

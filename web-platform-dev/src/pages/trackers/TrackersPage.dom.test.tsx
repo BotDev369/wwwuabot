@@ -314,6 +314,56 @@ describe("матриця днів", () => {
   });
 });
 
+describe("переміщення", () => {
+  it("«Перемістити» в меню групи показує дерево місць і шле нового батька", async () => {
+    render(<TrackersPage />);
+    await userEvent.click(screen.getByRole("button", { name: "Дії групи Режим" }));
+    await userEvent.click(screen.getByRole("button", { name: "Перемістити" }));
+
+    const dialog = screen.getByRole("dialog", { name: "Перемістити «Режим»" });
+    // Теперішнє місце — верхній рівень: кнопка каже «Тут» і не діє.
+    expect(
+      within(dialog)
+        .getByRole("button", { name: "Теперішнє місце: Верхній рівень" })
+        .hasAttribute("disabled"),
+    ).toBe(true);
+
+    await userEvent.click(within(dialog).getByRole("button", { name: "Обрати: Активність" }));
+
+    expect(hooks.updateGroup).toHaveBeenCalledWith(10, { parentId: 11 });
+  });
+
+  it("гілка, яку переміщують, у дереві не показується — цикл неможливий", async () => {
+    render(<TrackersPage />);
+    await userEvent.click(screen.getByRole("button", { name: "Дії групи Активність" }));
+    await userEvent.click(screen.getByRole("button", { name: "Перемістити" }));
+
+    const dialog = screen.getByRole("dialog", { name: "Перемістити «Активність»" });
+    expect(within(dialog).queryByRole("button", { name: "Обрати: Активність" })).toBeNull();
+    expect(within(dialog).queryByText("Ранкова рутина")).toBeNull();
+    expect(within(dialog).getByRole("button", { name: "Обрати: Режим" })).toBeTruthy();
+  });
+
+  it("трекер переміщують тим самим деревом — без «Своїх» у списку груп", async () => {
+    render(<TrackersPage />);
+    await userEvent.click(screen.getByRole("button", { name: "Режим" }));
+    await userEvent.click(screen.getByRole("button", { name: "Вода" }));
+    await userEvent.click(
+      within(screen.getByRole("dialog", { name: "Вода" })).getByRole("button", {
+        name: "Перемістити",
+      }),
+    );
+
+    // Картка закривається перед вибором місця: дві поверхні одна над одною
+    // лишали б людину в тій, де вона вже нічого не обирає.
+    expect(screen.queryByRole("dialog", { name: "Вода" })).toBeNull();
+    const dialog = screen.getByRole("dialog", { name: "Перемістити «Вода»" });
+    await userEvent.click(within(dialog).getByRole("button", { name: "Обрати: Свої" }));
+
+    expect(hooks.move).toHaveBeenCalledWith(1, null);
+  });
+});
+
 describe("картка запису", () => {
   async function openWater() {
     render(<TrackersPage />);
@@ -401,15 +451,11 @@ describe("дії екрана", () => {
     expect(screen.getByRole("button", { name: "Створити" })).toBeTruthy();
   });
 
-  it("«Групи» відкриває дерево груп в модалці, а не на сторінці", async () => {
+  it("окремої поверхні «Групи» більше немає — все в меню самої групи", () => {
     render(<TrackersPage />);
 
-    await userEvent.click(screen.getByRole("button", { name: "Групи" }));
-    const dialog = screen.getByRole("dialog", { name: "Групи" });
-    expect(within(dialog).getByRole("button", { name: "Нова група" })).toBeTruthy();
-    // Підгрупа з порядком і діями — усередині модалки, а не під нею.
-    expect(within(dialog).getByText("Ранкова рутина")).toBeTruthy();
-    expect(within(dialog).getByRole("button", { name: "Дії групи Ранкова рутина" })).toBeTruthy();
+    expect(screen.queryByRole("button", { name: "Групи" })).toBeNull();
+    expect(screen.queryByRole("dialog", { name: "Групи" })).toBeNull();
   });
 
   it("«так-ні» у матриці несе статус, а не число", async () => {
@@ -542,7 +588,7 @@ describe("три поверхні", () => {
 
     const bar = document.querySelector(".wb-contextbar");
     expect(bar?.getAttribute("aria-label")).toBe("Дії трекерів");
-    expect(within(bar as HTMLElement).getByRole("button", { name: "Групи" })).toBeTruthy();
+    expect(within(bar as HTMLElement).queryByRole("button", { name: "Групи" })).toBeNull();
     expect(within(bar as HTMLElement).getByRole("button", { name: "Розгорнути" })).toBeTruthy();
     expect(within(bar as HTMLElement).getByRole("button", { name: "Створити" })).toBeTruthy();
 

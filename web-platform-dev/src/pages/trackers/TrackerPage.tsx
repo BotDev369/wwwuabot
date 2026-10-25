@@ -15,8 +15,6 @@ import { useScreenChrome } from "@wwwuabot/ui/nav";
 import { Tabs, tabId, tabPanelId, type TabOption } from "@wwwuabot/ui/tabs";
 import {
   TRACKER_RANGES,
-  buildTrackerGroupTree,
-  flattenTrackerGroupTree,
   formatTrackerAmount,
   trackerAmountText,
   trackerLatest,
@@ -32,6 +30,7 @@ import {
 import { TRACKERS_PATH } from "@/app/routes";
 import { TrackerChart } from "./TrackerChart";
 import { TrackerEntryForm, type EntryDraft } from "./TrackerEntryForm";
+import { TrackerGroupPicker } from "./TrackerGroupPicker";
 import { TrackerTrend } from "./TrackerTrend";
 import { useTracker } from "./useTracker";
 import { amountOrDash, changeLabel, dayLabel, newestFirst, timeLabel } from "./trackers-view";
@@ -141,25 +140,14 @@ export function TrackerPage(): ReactElement {
               onChange={(patch) => setDraft({ ...draft, ...patch })}
               onSubmit={() => void submit()}
             />
-            <label className="wb-field">
-              <span className="wb-label">Група</span>
-              {/* Нерозривні пробіли позначають рівень глибини дерева. */}
-              <select
-                className="wb-select"
-                value={tracker.groupId ?? ""}
-                onChange={(event) =>
-                  void state.move(event.target.value === "" ? null : Number(event.target.value))
-                }
-              >
-                <option value="">Свої</option>
-                {flattenTrackerGroupTree(buildTrackerGroupTree(state.groups)).map((option) => (
-                  <option key={option.group.id} value={option.group.id}>
-                    {"\u00A0".repeat(option.depth * 3)}
-                    {option.group.title}
-                  </option>
-                ))}
-              </select>
-            </label>
+            {/* Група — тим самим деревом-провідником, що й новий трекер:
+                плаский список з відступами губив структуру. */}
+            <TrackerGroupPicker
+              label="Група"
+              groups={state.groups}
+              value={tracker.groupId}
+              onPick={(groupId) => void state.move(groupId)}
+            />
           </section>
 
           <section className="wb-tracker-panel">

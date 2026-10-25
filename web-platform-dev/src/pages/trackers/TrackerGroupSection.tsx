@@ -32,6 +32,10 @@ interface TrackerGroupSectionProps {
     patch: { title?: string; parentId?: number | null },
   ) => Promise<boolean>;
   onDeleteGroup: (id: number) => Promise<boolean>;
+  /** «Перемістити» — дерево місць у модалці (обирає сторінка). */
+  onMoveGroup: (id: number) => void;
+  /** Порядок серед сусідів того самого батька — стрілки меню. */
+  onMoveGroupOrder: (id: number, direction: "up" | "down") => Promise<boolean>;
   /** «Новий трекер» — форма відкривається з цією групою вже обраною. */
   onNewTracker: (groupId: number) => void;
   /** «Прибрати трекери групи» — типова тематика лишається, мірки зникають. */
@@ -50,6 +54,8 @@ export function TrackerGroupSection({
   onCreateGroup,
   onUpdateGroup,
   onDeleteGroup,
+  onMoveGroup,
+  onMoveGroupOrder,
   onNewTracker,
   onClearTrackers,
 }: TrackerGroupSectionProps): ReactElement {
@@ -93,7 +99,7 @@ export function TrackerGroupSection({
 
   // Діалог відкривається після закриття меню: дві поверхні одна над одною
   // лишали людину в меню після скасування.
-  function run(action: () => void | Promise<void>): void {
+  function run(action: () => unknown): void {
     setMenu(false);
     void action();
   }
@@ -107,6 +113,26 @@ export function TrackerGroupSection({
       onSelect: () => run(() => onNewTracker(view.group.id)),
     },
     { key: "rename", label: "Перейменувати", icon: "edit", onSelect: () => run(rename) },
+    {
+      key: "move",
+      label: "Перемістити",
+      icon: "folder",
+      onSelect: () => run(() => onMoveGroup(view.group.id)),
+    },
+    // Порядок серед сусідів — окремо від місця в дереві: «Перемістити» міняє
+    // батька, а ці два рядки — лише позицію серед рівних.
+    {
+      key: "up",
+      label: "Вище",
+      icon: "arrow-up",
+      onSelect: () => run(() => onMoveGroupOrder(view.group.id, "up")),
+    },
+    {
+      key: "down",
+      label: "Нижче",
+      icon: "arrow-down",
+      onSelect: () => run(() => onMoveGroupOrder(view.group.id, "down")),
+    },
     // Типова тематика (key !== null) не видаляється — її рядок сіється знову,
     // тож у неї прибирають уміст: мірки зникають, заголовок лишається.
     view.group.key === null
@@ -161,6 +187,8 @@ export function TrackerGroupSection({
               onCreateGroup={onCreateGroup}
               onUpdateGroup={onUpdateGroup}
               onDeleteGroup={onDeleteGroup}
+              onMoveGroup={onMoveGroup}
+              onMoveGroupOrder={onMoveGroupOrder}
               onNewTracker={onNewTracker}
               onClearTrackers={onClearTrackers}
             />

@@ -12,19 +12,17 @@ import {
   dayLabel,
   goalLabel,
   groupRowsTree,
-  groupTreeLines,
+  groupSubtreeIds,
   historySince,
   matrixDayLabel,
   matrixDayNumber,
   matrixDays,
   matrixWeekday,
   newestFirst,
-  ownGroupLines,
   readingBand,
   signedAmount,
   timeLabel,
   trackerCells,
-  trackerCountsByGroup,
   trackerDraftSummary,
   whenLabel,
 } from "./trackers-view";
@@ -142,77 +140,22 @@ describe("групи стрічки", () => {
   });
 });
 
-describe("дерево груп модалки", () => {
+describe("рух гілки", () => {
   const groups: TrackerGroup[] = [
     { id: 10, parentId: null, title: "Режим", key: "routine" },
     { id: 11, parentId: null, title: "Активність", key: "activity" },
     { id: 12, parentId: 11, title: "Ранкова рутина", key: null },
-    { id: 13, parentId: null, title: "Свої", key: "own" },
+    { id: 13, parentId: 12, title: "Зарядка", key: null },
+    { id: 14, parentId: null, title: "Свої", key: "own" },
   ];
 
-  it("DFS: підгрупа — одразу після батька, зі своєю глибиною", () => {
-    const lines = groupTreeLines(groups);
-
-    expect(lines.map((line) => [line.group.id, line.depth])).toEqual([
-      [10, 0],
-      [11, 0],
-      [12, 1],
-      [13, 0],
-    ]);
+  it("гілка — сама група й усі нащадки на будь-яку глибину", () => {
+    expect(groupSubtreeIds(groups, 11).sort()).toEqual([11, 12, 13]);
+    expect(groupSubtreeIds(groups, 13)).toEqual([13]);
   });
 
-  it("межі сусідів: крайній корінь не йде вгору, єдиний син — нікуди", () => {
-    const lines = new Map(groupTreeLines(groups).map((line) => [line.group.id, line]));
-
-    expect(lines.get(10)).toMatchObject({ first: true, last: false });
-    expect(lines.get(13)).toMatchObject({ first: false, last: true });
-    // Єдина підгрупа — і перша, і остання: обидві стрілки вимкнені.
-    expect(lines.get(12)).toMatchObject({ first: true, last: true });
-  });
-
-  it("сирота й цикл не зникають із дерева", () => {
-    const lines = groupTreeLines([
-      { id: 20, parentId: 99, title: "Сирота", key: null },
-      { id: 21, parentId: 22, title: "А", key: null },
-      { id: 22, parentId: 21, title: "Б", key: null },
-    ]);
-
-    // Сирота — на верхньому рівні; цикл не замикає обхід і теж рядки.
-    expect(lines.map((line) => line.group.id)).toEqual([20, 21, 22]);
-    expect(lines.every((line) => line.depth === 0)).toBe(true);
-  });
-});
-
-describe("модалка «Групи» — лише власні", () => {
-  const groups: TrackerGroup[] = [
-    { id: 10, parentId: null, title: "Режим", key: "routine" },
-    { id: 11, parentId: null, title: "Активність", key: "activity" },
-    { id: 12, parentId: 11, title: "Ранкова рутина", key: null },
-    { id: 13, parentId: null, title: "Свої", key: "own" },
-  ];
-  const steps: Tracker = { ...water, id: 3, key: "steps", groupId: 12 };
-  const coffee: Tracker = { ...weight, id: 4, key: "own-coffee", groupId: null };
-
-  it("типові тематики каталогу не потрапляють у дерево", () => {
-    expect(ownGroupLines(groups).map((line) => line.group.id)).toEqual([12]);
-  });
-
-  it("власна підгрупа під типовою тематикою піднімається на верхній рівень", () => {
-    const [line] = ownGroupLines(groups);
-
-    expect(line?.depth).toBe(0);
-    expect(line).toMatchObject({ first: true, last: true });
-  });
-
-  it("рахунок трекерів — рекурсивний, безгрупові йдуть у «Свої»", () => {
-    const counts = trackerCountsByGroup([water, steps, weight, coffee], groups);
-
-    expect(counts.get(10)).toBe(1);
-    // «Активність» рахує й мірку своєї підгрупи.
-    expect(counts.get(11)).toBe(1);
-    expect(counts.get(12)).toBe(1);
-    // «Свої» збирає і свій трекер, і той, що без групи.
-    expect(counts.get(13)).toBe(2);
+  it("чужий номер не тягне за собою сусідів", () => {
+    expect(groupSubtreeIds(groups, 10)).toEqual([10]);
   });
 });
 

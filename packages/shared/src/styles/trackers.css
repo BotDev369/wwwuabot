@@ -908,6 +908,15 @@
   color: var(--accent);
 }
 
+/* «Обрати» в рядку дерева: дія рядка, а не весь рядок — дотик у порожнє
+   місце не переносить нічого. Притиснута до правого краю. */
+.wb-group-picker-pick {
+  flex: none;
+  min-height: 36px;
+  margin-inline-start: auto;
+  padding-inline: var(--sp-3);
+}
+
 /* Дії стоять у кінці форми, а не липнуть над футером: липка смуга мала своє
    тло, і її край читався як обріз, коли під нею їхали поля. */
 .wb-tracker-form-actions {
@@ -967,89 +976,6 @@
   .wb-tracker-form-row {
     grid-template-columns: 1fr;
   }
-}
-
-/* ── «Групи»: дерево в модалці ─────────────────────────────────────────── */
-
-.wb-groups-mgr {
-  display: flex;
-  flex-direction: column;
-  gap: var(--sp-3);
-}
-
-/* «Нова група» на всю ширину: головна дія поверхні має бути під палець,
-   а не тіснитися зі стрілками рядків у куті. */
-.wb-groups-mgr-top .wb-btn {
-  width: 100%;
-}
-
-.wb-groups-mgr-list {
-  display: flex;
-  flex-direction: column;
-  gap: var(--sp-1);
-  margin: 0;
-  padding: 0;
-  list-style: none;
-}
-
-/* Рядок дерева: тло — тло сторінки (той самий токен, що в акордеонах
-   стрічки), відступ ліворуч малює глибину; мінімум 44px — тап-таргет. */
-.wb-groups-mgr-row {
-  display: flex;
-  align-items: center;
-  gap: var(--sp-1);
-  min-height: 44px;
-  padding-inline: var(--sp-2);
-  border-radius: var(--radius-md);
-  background: var(--bg-2);
-}
-
-.wb-groups-mgr-title {
-  flex: 1 1 auto;
-  min-width: 0;
-  overflow: hidden;
-  font-size: var(--text-base);
-  font-weight: var(--weight-semibold);
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-/* Число трекерів у рядку — підпис, а не кнопка: тихе й табличними цифрами,
-   щоб стовпчик чисел читався без стрибків ширини. */
-.wb-groups-mgr-count {
-  flex: none;
-  min-width: 2ch;
-  color: var(--text-muted);
-  font-size: var(--text-sm);
-  font-variant-numeric: tabular-nums;
-  text-align: end;
-}
-
-.wb-groups-mgr-btn {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  flex: none;
-  width: 44px;
-  height: 44px;
-  padding: 0;
-  border: none;
-  border-radius: var(--radius-full);
-  background: none;
-  color: var(--text-secondary);
-  cursor: pointer;
-}
-
-.wb-groups-mgr-btn:active {
-  background: var(--surface-hover);
-}
-
-/* Межа дерева: стрілка сусіднього краю вимкнена, а не ховається —
-   рядки лишаються однакової ширини, коли дерево розгортається. */
-.wb-groups-mgr-btn:disabled {
-  color: var(--text-muted);
-  opacity: 0.4;
-  cursor: default;
 }
 
 /* ── Списки на читання: «Шаблони» й «Публічні» ─────────────────────────── */

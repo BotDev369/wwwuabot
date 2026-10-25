@@ -26,6 +26,8 @@ interface TrackerEntryModalProps {
   onSettings: () => void;
   /** «Дублювати» — копія визначення; історія не копіюється. `false` — не вийшло. */
   onDuplicate: () => Promise<boolean>;
+  /** «Перемістити» — дерево груп у наступній поверхні (картка закривається). */
+  onMove: () => void;
   /** «Скинути сьогодні»: прибрати сьогоднішні виміри. */
   onReset: () => Promise<number | null>;
   onDelete: () => Promise<boolean>;
@@ -39,6 +41,7 @@ export function TrackerEntryModal({
   onSave,
   onSettings,
   onDuplicate,
+  onMove,
   onReset,
   onDelete,
 }: TrackerEntryModalProps): ReactElement {
@@ -157,6 +160,14 @@ export function TrackerEntryModal({
             >
               <Icon name="copy" size={16} />
               Дублювати
+            </button>
+            <button
+              type="button"
+              className="wb-btn wb-btn-secondary wb-tracker-action"
+              onClick={onMove}
+            >
+              <Icon name="folder" size={16} />
+              Перемістити
             </button>
             {todayValue !== null && (
               <button

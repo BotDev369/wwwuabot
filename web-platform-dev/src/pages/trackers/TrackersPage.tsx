@@ -26,8 +26,8 @@ import { useTrackers } from "./useTrackers";
 import { useTrackerLibrary } from "./useTrackerLibrary";
 import { useGroupAccordion } from "./useGroupAccordion";
 import { TrackerCreateForm } from "./TrackerCreateForm";
-import { TrackerGroupsModal } from "./TrackerGroupsModal";
 import { TrackerGroupSection } from "./TrackerGroupSection";
+import { TrackerMoveSurface, type MovingTarget } from "./TrackerMoveSurface";
 import { TrackerEntryModal } from "./TrackerEntryModal";
 import { TrackerDayHeader } from "./TrackerDayHeader";
 import { TrackersLibraryPanel } from "./TrackersLibraryPanel";
@@ -61,8 +61,10 @@ export function TrackersPage(): ReactElement {
   const libraryAccordion = useGroupAccordion("wb-tracker-library-open");
   const creating = readCreateIntent(params);
   const createGroupId = readCreateGroupId(params);
-  const [groupsOpen, setGroupsOpen] = useState(false);
   const [addOpen, setAddOpen] = useState(false);
+  // Переміщення — окрема поверхня з деревом: місце обирають точно, а не
+  // стрілками «вище/нижче» (ті лишаються для порядку серед сусідів).
+  const [moving, setMoving] = useState<MovingTarget | null>(null);
   // Дотик на трекер відкриває картку запису, а не сторінку: номер — стан, а не
   // адреса, бо «назад» має закрити картку, а не повернути на список.
   const [entryId, setEntryId] = useState<number | null>(null);
@@ -224,18 +226,6 @@ export function TrackersPage(): ReactElement {
 
         {tab === "mine" && (
           <>
-            {groupsOpen && (
-              <TrackerGroupsModal
-                groups={state.groups}
-                trackers={state.trackers}
-                onClose={() => setGroupsOpen(false)}
-                onCreate={state.createGroup}
-                onUpdate={state.updateGroup}
-                onDelete={state.deleteGroup}
-                onMove={state.moveGroup}
-              />
-            )}
-
             {state.loading && <p className="wb-text-muted">Завантаження…</p>}
 
             {!state.loading && state.error && (
@@ -286,6 +276,8 @@ export function TrackersPage(): ReactElement {
                     onCreateGroup={state.createGroup}
                     onUpdateGroup={state.updateGroup}
                     onDeleteGroup={state.deleteGroup}
+                    onMoveGroup={(id) => setMoving({ kind: "group", id })}
+                    onMoveGroupOrder={state.moveGroup}
                     onNewTracker={(groupId) => navigate(withCreateIntent(TRACKERS_PATH, groupId))}
                     onClearTrackers={state.clearGroup}
                   />
@@ -303,7 +295,6 @@ export function TrackersPage(): ReactElement {
         <ContextBar
           label="Дії трекерів"
           actions={[
-            { key: "groups", label: "Групи", icon: "folder", onSelect: () => setGroupsOpen(true) },
             {
               key: "expand",
               label: allOpen ? "Згорнути" : "Розгорнути",
@@ -340,10 +331,23 @@ export function TrackersPage(): ReactElement {
             navigate(trackerPath(entryTracker.id));
           }}
           onDuplicate={() => duplicateTracker(entryTracker)}
+          onMove={() => {
+            setEntryId(null);
+            setMoving({ kind: "tracker", id: entryTracker.id });
+          }}
           onReset={() => state.clearDay(entryTracker.id)}
           onDelete={() => state.archive(entryTracker.id)}
         />
       )}
+
+      <TrackerMoveSurface
+        moving={moving}
+        groups={state.groups}
+        trackers={state.trackers}
+        onClose={() => setMoving(null)}
+        onMoveGroup={(id, parentId) => state.updateGroup(id, { parentId })}
+        onMoveTracker={state.move}
+      />
 
       {creating && (
         <MenuModal
