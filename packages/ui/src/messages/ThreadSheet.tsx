@@ -138,7 +138,14 @@ export function ThreadSheet({
           )}
         </div>
 
-        <MessageComposer sending={sending} onAttach={onAttach} onSend={onSend} />
+        {/* Ключ — співрозмовник: набране й прикріплене належать **одній**
+            розмові, тож у сусідню воно не переїжджає. */}
+        <MessageComposer
+          key={peer?.id ?? 0}
+          sending={sending}
+          onAttach={onAttach}
+          onSend={onSend}
+        />
       </div>
     </div>
   );
