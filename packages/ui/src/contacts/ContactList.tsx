@@ -199,6 +199,9 @@ export function ContactList({
                       type="button"
                       className="wb-contact-card"
                       aria-expanded={isOpen}
+                      /* Ім'я для журналу: без нього картка віддала б злиплий рядок
+                         своїх полів (дата, хендл, id) замість того, кого відкрили. */
+                      data-log={contact.name}
                       onClick={() => onToggle(contact.id)}
                     >
                       <span className="wb-contact-head">

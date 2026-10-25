@@ -87,15 +87,15 @@ describe("подія від застосунку", () => {
     expect(insert?.values.slice(0, 5)).toEqual([777, "platform", "click", "Солапанк", "GalyaShop"]);
   });
 
-  it("введений текст пише назву поля й місце дії окремо від значення", async () => {
+  it("вибір у полі пише назву поля й місце дії окремо від значення", async () => {
     const db = database();
     const response = await handleUserEvent(
       post({
         kind: "input",
-        screen: "notes",
-        page: "Нотатки",
-        label: "купити хліб",
-        field: "Назва",
+        screen: "trackers",
+        page: "Трекери",
+        label: "мл",
+        field: "Одиниця",
       }),
       db.env,
     );
@@ -106,8 +106,8 @@ describe("подія від застосунку", () => {
       777,
       "platform",
       "input",
-      "купити хліб",
-      "Поле «Назва» · Нотатки",
+      "мл",
+      "Поле «Одиниця» · Трекери",
     ]);
   });
 

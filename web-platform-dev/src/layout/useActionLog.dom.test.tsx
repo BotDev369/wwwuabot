@@ -22,7 +22,9 @@ function Harness(): React.ReactElement {
   return (
     <>
       <button aria-label="Додати трекер">+</button>
-      <div className="card">Кава вдома</div>
+      <div className="card" role="button">
+        Кава вдома
+      </div>
       <a href="/notes">Нотатки</a>
       <input aria-label="Назва" />
       <input type="password" aria-label="Пароль" />
@@ -75,7 +77,7 @@ describe("що стає рядком", () => {
     expect(mocks.request.mock.calls[0]?.[1]).toMatchObject({ keepalive: true });
   });
 
-  it("картка без адреси теж рахується", async () => {
+  it("картка без адреси, але з роллю кнопки, рахується", async () => {
     renderAt("/notes");
 
     fireEvent.click(screen.getByText("Кава вдома"));
@@ -108,32 +110,22 @@ describe("що стає рядком", () => {
     ]);
   });
 
-  it("уведений текст стає рядком після паузи, із назвою поля", async () => {
+  it("набраний текст не пишеться — ні значенням, ні рядком", async () => {
     renderAt("/notes");
     const field = screen.getByLabelText("Назва");
 
     fireEvent.input(field, { target: { value: "купити хліб" } });
+    fireEvent.focusOut(field);
+    await new Promise((resolve) => setTimeout(resolve, 800));
 
-    await waitFor(
-      () =>
-        expect(reported()).toEqual([
-          expect.objectContaining({
-            kind: "input",
-            screen: "notes",
-            page: "Нотатки",
-            label: "купити хліб",
-            field: "Назва",
-          }),
-        ]),
-      { timeout: 2000 },
-    );
+    expect(mocks.request).not.toHaveBeenCalled();
   });
 
-  it("секрет у журнал не потрапляє", async () => {
+  it("дотик по тексту сторінки — не дія", async () => {
     renderAt("/notes");
 
-    fireEvent.input(screen.getByLabelText("Пароль"), { target: { value: "hunter2" } });
-    fireEvent.focusOut(screen.getByLabelText("Пароль"));
+    fireEvent.click(screen.getByText("просто текст"));
+    await new Promise((resolve) => setTimeout(resolve, 900));
 
     expect(mocks.request).not.toHaveBeenCalled();
   });

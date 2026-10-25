@@ -1,13 +1,14 @@
 // @vitest-environment jsdom
 /**
- * Дія → підпис у журналі: те, що читає людина (`aria-label`, `title`, текст),
- * назва поля й уведене значення. Порожнє місце й секрет у журнал не йдуть.
+ * Дія → рядок журналу: ім'я контрола й назва поля при виборі. Дотик по тексту
+ * сторінки дією не є, введений текст не пишеться ніколи, а вихід («Закрити»,
+ * «Назад») у журнал не потрапляє.
  *
  * @module web-platform-dev/src/app/action-label.dom.test
  */
 
 import { describe, expect, it } from "vitest";
-import { GESTURE_LABEL_MAX, GESTURE_VALUE_MAX, choiceOf, entryOf, gestureOf } from "./action-label";
+import { GESTURE_LABEL_MAX, choiceOf, gestureOf } from "./action-label";
 
 function mount(html: string): HTMLElement {
   document.body.innerHTML = html;
@@ -36,21 +37,44 @@ describe("натискання", () => {
     expect(gestureOf(mount('<a href="/notes">Нотатки</a>'))).toEqual({ label: "Нотатки" });
   });
 
-  it("картка не-кнопка теж стає рядком — зі своїм текстом", () => {
-    expect(gestureOf(mount("<div class='card'>Кава вдома</div>"))).toEqual({ label: "Кава вдома" });
-  });
-
-  it("порожнє місце не пише нічого", () => {
-    expect(gestureOf(mount("<div></div>"))).toBeNull();
+  it("дотик по тексту сторінки — не дія", () => {
+    // Повідомлення, емодзі, підпис — не контроли: саме вони давали рядки
+    // «❤️❤️❤️» і «Ма-мі. Ви: Фото», які нічого не описували.
+    expect(gestureOf(mount("<div class='card'>Кава вдома</div>"))).toBeNull();
+    expect(gestureOf(mount("<p>❤️❤️❤️</p>"))).toBeNull();
     expect(gestureOf(null)).toBeNull();
   });
 
-  it("закриття поверхні не пишеться — це вихід, а не дія", () => {
-    expect(gestureOf(mount('<button aria-label="Закрити">✕</button>'))).toBeNull();
-    expect(gestureOf(mount('<button aria-label="Закрити меню">✕</button>'))).toBeNull();
-    expect(gestureOf(mount("<button>Закрити</button>"))).toBeNull();
+  it("порожній контрол не пише нічого", () => {
+    expect(gestureOf(mount("<button></button>"))).toBeNull();
+  });
+
+  it("вихід не пишеться — це не дія", () => {
+    for (const html of [
+      '<button aria-label="Закрити">✕</button>',
+      '<button aria-label="Закрити меню">✕</button>',
+      "<button>Закрити</button>",
+      "<button>Скасувати</button>",
+      "<button>Назад</button>",
+      '<button aria-label="Back">←</button>',
+    ]) {
+      expect(gestureOf(mount(html)), html).toBeNull();
+    }
     // Дія, яка лише звучить схоже, лишається: «Зберегти» — не вихід.
     expect(gestureOf(mount("<button>Зберегти</button>"))).toEqual({ label: "Зберегти" });
+  });
+
+  it("явне ім'я розмітки заміняє злиплий текст картки", () => {
+    const card = mount(
+      '<button data-log="Настя"><span>1</span>Настя<span>21.09.2026</span>' +
+        "<span>@nastyulyaa7</span><span>id 1090029614</span></button>",
+    );
+
+    expect(gestureOf(card)).toEqual({ label: "Настя" });
+  });
+
+  it('`data-log="-"` вимикає запис дотику', () => {
+    expect(gestureOf(mount('<button data-log="-">Показати ще</button>'))).toBeNull();
   });
 
   it("довгий текст обрізається: журнал описує дотик, а не картку цілком", () => {
@@ -78,48 +102,14 @@ describe("вибір у полі", () => {
     expect(choiceOf(field)).toEqual({ label: "увімкнено", field: "Публічний профіль" });
   });
 
-  it("текстове поле — не вибір: його пише `entryOf`", () => {
-    expect(choiceOf(mount('<input aria-label="Назва" value="таємне" />'))).toBeNull();
+  it("текстове поле — не вибір: набране не пишеться ніколи", () => {
+    const field = mount('<input aria-label="Текст повідомлення" />') as HTMLInputElement;
+    field.value = "Кукурудза 🌽";
+
+    expect(choiceOf(field)).toBeNull();
   });
 
   it("не-поле не є вибором", () => {
     expect(choiceOf(mount("<button>Додати</button>"))).toBeNull();
-  });
-});
-
-describe("уведений текст", () => {
-  it("пише значення й назву поля", () => {
-    const field = mount('<input aria-label="Назва" />') as HTMLInputElement;
-    field.value = "купити хліб";
-
-    expect(entryOf(field)).toEqual({ label: "купити хліб", field: "Назва" });
-  });
-
-  it("назва поля береться й зі сусіднього `<label for>`", () => {
-    const container = mount(
-      '<div><label for="note">Нотатка</label><textarea id="note"></textarea></div>',
-    );
-    const field = container.querySelector("textarea") as HTMLTextAreaElement;
-    field.value = "купити хліб";
-
-    expect(entryOf(field)).toEqual({ label: "купити хліб", field: "Нотатка" });
-  });
-
-  it("порожнє поле не подія", () => {
-    expect(entryOf(mount('<input aria-label="Назва" value="  " />'))).toBeNull();
-  });
-
-  it("секрет і файл не копіюються ніколи", () => {
-    expect(
-      entryOf(mount('<input type="password" aria-label="Пароль" value="secret" />')),
-    ).toBeNull();
-    expect(entryOf(mount('<input type="file" aria-label="Фото" />'))).toBeNull();
-  });
-
-  it("довгий текст обрізається до межі значення", () => {
-    const field = mount('<textarea aria-label="Текст"></textarea>') as HTMLTextAreaElement;
-    field.value = "я".repeat(GESTURE_VALUE_MAX + 20);
-
-    expect(entryOf(field)?.label).toHaveLength(GESTURE_VALUE_MAX);
   });
 });
