@@ -1,8 +1,7 @@
 /**
- * Адмінська сторона журналу дій: налаштування, зведення, список людей і подій,
- * прибирання (`docs/EVENTS.md`). Запис живе окремо — це інша сторона тієї
- * самої таблиці, і тримати їх в одному файлі означало б міняти одне, читаючи
- * інше.
+ * Адмінська сторона журналу дій: зведення, список людей і подій, прибирання
+ * (`docs/EVENTS.md`). Запис живе окремо — це інша сторона тієї самої таблиці,
+ * і тримати їх в одному файлі означало б міняти одне, читаючи інше.
  *
  * @module api-dev/src/services/user-events-admin.service
  */
@@ -21,29 +20,6 @@ import type { Env } from "../shared/types";
 
 /** Скільки людей показує зведення: більше — вже не «огляд», а список. */
 const SUMMARY_USERS_LIMIT = 200;
-
-/**
- * «Сквозна деталізація»: чи писати кожен дотик. Типово **увімкнено** —
- * питання «де людина застрягла» без дотиків не має відповіді.
- */
-export async function readFullEventLogging(env: Env): Promise<boolean> {
-  await ensureTables(env.DB, ["settings"]);
-  const row = await env.DB.prepare(
-    "SELECT COALESCE(event_log_full, 1) AS full FROM settings WHERE id = 1",
-  ).first<{ full: number }>();
-  // Порожня таблиця — ще не «вимкнено»: типове значення мусить діяти й тоді,
-  // коли рядок налаштувань ще ніхто не створив.
-  return row === null ? true : row.full === 1;
-}
-
-export async function writeFullEventLogging(env: Env, full: boolean): Promise<void> {
-  await ensureTables(env.DB, ["settings"]);
-  await env.DB.prepare(
-    "INSERT INTO settings (id, event_log_full) VALUES (1, ?) ON CONFLICT(id) DO UPDATE SET event_log_full = excluded.event_log_full",
-  )
-    .bind(full ? 1 : 0)
-    .run();
-}
 
 /** Що прибрати: кожна задана ознака звужує вибір, незадані не беруть участі. */
 export interface EventCleanupFilter {

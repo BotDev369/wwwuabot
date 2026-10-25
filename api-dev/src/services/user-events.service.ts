@@ -16,7 +16,6 @@ import { recordUserEvent } from "@wwwuabot/shared/database/user-events";
 import type { Env } from "../shared/types";
 import { tryResolveUserId } from "../shared/identity";
 import { apiLog } from "../shared/logger";
-import { readFullEventLogging } from "./user-events-admin.service";
 
 /**
  * Зміна стану на платформі в журнал; `at` — момент запиту, бо запис іде в
@@ -104,9 +103,9 @@ export async function recordPlatformModal(
 /**
  * Жести в застосунку: дотик до кнопки/вкладки/картки, вибір і уведений текст.
  *
- * Пише їх теж застосунок — сервер не бачить дотику, лише наслідок. Скільки
- * саме писати, вирішує налаштування `event_log_full`: без нього журнал
- * лишається на рівні «екран + зміна стану» (`docs/EVENTS.md`).
+ * Пише їх теж застосунок — сервер не бачить дотику, лише наслідок. Пишеться
+ * завжди: питання «де людина застрягла» без дій не має відповіді, а прапорець
+ * деталізації лишав журнал сліпим саме там, де він потрібен (`docs/EVENTS.md`).
  */
 export async function recordPlatformGesture(
   env: Env,
@@ -120,7 +119,6 @@ export async function recordPlatformGesture(
   },
   at?: number,
 ): Promise<void> {
-  if (!(await readFullEventLogging(env))) return;
   await recordUserEvent(
     env.DB,
     {

@@ -132,13 +132,11 @@ export const TABLES = {
   settings: {
     name: "settings",
     owner: "bot-dev",
-    purpose:
-      "Один рядок (id = 1) налаштувань: chat_id груп, прапорець активності, сквозна деталізація журналу (`event_log_full`).",
+    purpose: "Один рядок (id = 1) налаштувань бота: chat_id груп і прапорець активності.",
     create: `CREATE TABLE IF NOT EXISTS settings (
         id INTEGER PRIMARY KEY DEFAULT 1,
         bot_active INTEGER DEFAULT 1,
-        group_admin TEXT DEFAULT '',
-        event_log_full INTEGER NOT NULL DEFAULT 1
+        group_admin TEXT DEFAULT ''
       )`,
   },
 

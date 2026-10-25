@@ -1,13 +1,8 @@
 /// <reference types="node" />
 
 /**
- * Шапка «Аналітики» й ряд періодів — один закріплений блок.
- *
- * Шапка стоїть поза прокруткою, а чипи липнуть до неї. Через це в сторінки
- * немає верхнього відступу: `padding` над липким рядом — це прозора смуга, у
- * якій видно список, тобто дірка посеред блока. Бокова мірка в чипів така
- * сама, як у сторінки й шапки, інакше назва, знаки, чипи й картки стоять на
- * трьох різних лініях.
+ * Шапка «Аналітики» — один закріплений блок: назва з діями, зведення й період.
+ * Окрема заливка в кожного ряду лишала б між ними шов, крізь який видно журнал.
  *
  * @module web-admin-dev/src/pages/analytics/analytics-layout
  */
@@ -30,43 +25,76 @@ function body(selector: string): string {
 }
 
 describe("аналітика: закріплений блок керування", () => {
-  it("сторінка не має верхнього відступу — ряд липне до шапки впритул", () => {
+  it("сторінка не має власних полів — шар закриває всю ширину прокрутки", () => {
     const page = body("\\.ana-page");
 
     expect(page, "правило сторінки мусить існувати").not.toBe("");
-    expect(page).toContain("padding: 0 var(--ana-gutter)");
-  });
-
-  it("бокова мірка одна: її дістають і сторінка, і заливка ряду", () => {
-    expect(body("\\.ana-page")).toContain("--ana-gutter: var(--sp-5)");
+    expect(page).not.toContain("padding");
+    expect(page).toContain("--ana-gutter: var(--sp-5)");
     // Мобільна мірка міняється на тому самому 768px, що й відступ шапки
-    // (`app-chrome.css`): між 640 і 768 сторінка й шапка інакше розійшлися б.
+    // (`app-chrome.css`): інакше назва й картки розійшлися б на планшеті.
     expect(CSS).toMatch(
       /@media \(max-width: 768px\) \{\s*\.ana-page \{\s*--ana-gutter: var\(--sp-4\)/,
     );
   });
 
-  it("ряд періодів: липне, заливка від краю до краю, чипи на лінії карток", () => {
-    const periods = body("\\.ana-periods");
+  it("шапка, зведення й період — один липкий шар зі своїм тлом", () => {
+    const pinned = body("\\.ana-pinned");
 
-    expect(periods).toContain("position: sticky");
-    expect(periods).toContain("top: 0");
-    expect(periods).toContain("margin: 0 calc(var(--ana-gutter) * -1)");
-    expect(periods).toContain("padding: var(--sp-2) var(--ana-gutter)");
+    expect(pinned).toContain("position: sticky");
+    expect(pinned).toContain("top: 0");
+    // Заливка обов'язкова й непрозора: під шаром їде журнал.
+    expect(pinned).toContain("background: var(--bg-page");
+    // Проміжки всередині — `gap` шару: вони теж закриті тлом, а не прозорі.
+    expect(pinned).toContain("gap: var(--sp-3)");
+    expect(pinned).toContain("padding: var(--sp-3) var(--ana-gutter)");
   });
 
-  it("у розмітці ряд стоїть першим — вище нього немає що прокручувати", () => {
+  it("ряд періодів не має власної липкості й полів — інакше це другий шар", () => {
+    const periods = body("\\.ana-periods");
+
+    expect(periods).not.toContain("position");
+    expect(periods).not.toContain("margin");
+    expect(periods).not.toContain("padding");
+    expect(periods).not.toContain("background");
+  });
+
+  it("зведення стоїть на сітці й тягнеться на всю ширину, як чипи й картки", () => {
+    const stats = body("\\.ana-stats");
+
+    expect(stats).toContain("display: grid");
+    expect(stats).toContain("grid-template-columns: repeat(4, minmax(0, 1fr))");
+    // Смуга, яка обривається на власній `max-width`, читається як окрема
+    // коробка посеред екрана: її край мусить збігатися з рештою рядів.
+    expect(stats).not.toContain("max-width");
+  });
+
+  it("вага назви не залежить від `h1` бренду", () => {
     const source = readFileSync(
       join(REPO_ROOT, "web-admin-dev/src/pages/analytics/AnalyticsPage.tsx"),
       "utf8",
     );
 
-    const page = source.indexOf('className="ana-page"');
-    const periods = source.indexOf('className="ana-periods"');
-    const settings = source.indexOf('className="ana-settings"');
+    expect(source).toContain('className="ana-head-title"');
+    expect(body("\\.ana-head-title")).toContain("font-weight: var(--weight-bold)");
+  });
 
-    expect(page).toBeGreaterThan(-1);
-    expect(periods).toBeGreaterThan(page);
-    expect(settings).toBeGreaterThan(periods);
+  it("у розмітці всі три ряди живуть у закріпленому шарі, вміст — під ним", () => {
+    const source = readFileSync(
+      join(REPO_ROOT, "web-admin-dev/src/pages/analytics/AnalyticsPage.tsx"),
+      "utf8",
+    );
+
+    const pinned = source.indexOf('className="ana-pinned"');
+    const head = source.indexOf('className="ana-head"');
+    const stats = source.indexOf('className="ana-stats"');
+    const periods = source.indexOf('className="ana-periods"');
+    const content = source.indexOf('className="ana-body"');
+
+    expect(pinned).toBeGreaterThan(-1);
+    expect(head).toBeGreaterThan(pinned);
+    expect(stats).toBeGreaterThan(head);
+    expect(periods).toBeGreaterThan(stats);
+    expect(content).toBeGreaterThan(periods);
   });
 });

@@ -27,6 +27,9 @@ export const EVENT_PRESETS = [
 
 export type EventPresetKey = (typeof EVENT_PRESETS)[number]["key"];
 
+/** Обраний період: готовий чип або межі, задані в модалці. */
+export type AnalyticsPeriod = EventPresetKey | "period";
+
 /** Готовий період → години: одна таблиця для чипа й для «Оновити». */
 export function presetWindowHours(key: EventPresetKey): number {
   const preset = EVENT_PRESETS.find((item) => item.key === key);
@@ -62,6 +65,74 @@ export function refreshRange(
   now: Date = new Date(),
 ): EventRangeInput {
   return presetHours === null ? current : presetRange(presetHours, now);
+}
+
+/**
+ * Вигляд екрана, який переживає перезавантаження вкладки.
+ *
+ * Скидання режиму й закритий акордеон читались як «сторінка забула, що я
+ * робив»: після кожної нової збірки вкладка перезавантажується сама
+ * (`@wwwuabot/shared` `watch-build`), тож стан мусить жити поза React.
+ */
+export interface AnalyticsView {
+  mode: AnalyticsMode;
+  period: AnalyticsPeriod;
+  range: EventRangeInput;
+  expandedUserId: number | null;
+}
+
+/** Сміття в сховищі — не привід падати: невідомий вигляд просто не читаємо. */
+export function parseAnalyticsView(raw: string | null): AnalyticsView | null {
+  if (!raw) return null;
+  let value: unknown;
+  try {
+    value = JSON.parse(raw);
+  } catch {
+    return null;
+  }
+  if (!value || typeof value !== "object") return null;
+
+  const saved = value as Record<string, unknown>;
+  const range = saved.range as Record<string, unknown> | undefined;
+  const from = range?.from;
+  const to = range?.to;
+  if (typeof from !== "string" || typeof to !== "string") return null;
+  if (Number.isNaN(Date.parse(from)) || Number.isNaN(Date.parse(to))) return null;
+
+  const presets: readonly string[] = EVENT_PRESETS.map((preset) => preset.key);
+  const period =
+    saved.period === "period" || presets.includes(saved.period as string)
+      ? (saved.period as AnalyticsPeriod)
+      : "day";
+
+  return {
+    mode: saved.mode === "time" ? "time" : "users",
+    period,
+    range: { from, to },
+    expandedUserId: typeof saved.expandedUserId === "number" ? saved.expandedUserId : null,
+  };
+}
+
+/**
+ * Сховище вигляду — `sessionStorage`: вкладка одна, а між сесіями журнал
+ * починається з чистого аркуша, бо «остання доба» вже інша.
+ */
+export const ANALYTICS_VIEW_KEY = "wb-admin-analytics-view";
+
+export function readAnalyticsView(): AnalyticsView | null {
+  try {
+    return parseAnalyticsView(sessionStorage.getItem(ANALYTICS_VIEW_KEY));
+  } catch {
+    return null;
+  }
+}
+
+export function rememberAnalyticsView(view: AnalyticsView): void {
+  try {
+    sessionStorage.setItem(ANALYTICS_VIEW_KEY, JSON.stringify(view));
+  } catch {
+    // Приватний режим без сховища — екран працює, просто без пам'яті.
+  }
 }
 
 /** Мітка «коли оновлено» — лише час: дату видно в діапазоні. */

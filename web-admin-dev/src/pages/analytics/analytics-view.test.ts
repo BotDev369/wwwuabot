@@ -7,6 +7,7 @@ import {
   clockStamp,
   eventPhrase,
   mergeEvents,
+  parseAnalyticsView,
   presetRange,
   presetWindowHours,
   rangeFromInputs,
@@ -51,6 +52,41 @@ describe("помічники аналітики", () => {
     expect(later.to).toBe("2026-10-23T13:00:00.000Z");
     expect(later.from).toBe("2026-10-22T13:00:00.000Z");
     expect(refreshRange(window, null, new Date("2026-10-23T13:00:00Z"))).toBe(window);
+  });
+
+  it("вигляд екрана переживає перезавантаження вкладки", () => {
+    const raw = JSON.stringify({
+      mode: "time",
+      period: "week",
+      range: { from: "2026-10-01T00:00:00.000Z", to: "2026-10-02T00:00:00.000Z" },
+      expandedUserId: 7,
+    });
+
+    expect(parseAnalyticsView(raw)).toEqual({
+      mode: "time",
+      period: "week",
+      range: { from: "2026-10-01T00:00:00.000Z", to: "2026-10-02T00:00:00.000Z" },
+      expandedUserId: 7,
+    });
+  });
+
+  it("сміття в сховищі не ламає екран — вигляд просто не читається", () => {
+    expect(parseAnalyticsView(null)).toBeNull();
+    expect(parseAnalyticsView("не json")).toBeNull();
+    expect(parseAnalyticsView(JSON.stringify({ mode: "time" }))).toBeNull();
+    expect(
+      parseAnalyticsView(JSON.stringify({ range: { from: "вчора", to: "завтра" } })),
+    ).toBeNull();
+    // Невідомий період і режим — типовий вигляд, а не падіння.
+    expect(
+      parseAnalyticsView(
+        JSON.stringify({
+          mode: "xxx",
+          period: "year",
+          range: { from: "2026-10-01T00:00:00.000Z", to: "2026-10-02T00:00:00.000Z" },
+        }),
+      ),
+    ).toMatchObject({ mode: "users", period: "day", expandedUserId: null });
   });
 
   it("мітка оновлення — локальний час із секундами", () => {

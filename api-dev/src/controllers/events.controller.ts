@@ -22,8 +22,6 @@ import {
   readEventSummary,
   readEventUsers,
   readEvents,
-  readFullEventLogging,
-  writeFullEventLogging,
   type EventCleanupFilter,
 } from "../services/user-events-admin.service";
 
@@ -44,9 +42,6 @@ const cleanupSchema = z.object({
   kind: z.enum(EVENT_KINDS).optional(),
 });
 
-/** Налаштування журналу: чи писати кожен дотик, а не лише екрани. */
-const loggingSchema = z.object({ fullLogging: z.boolean() });
-
 function json(body: unknown, status = 200): Response {
   return new Response(JSON.stringify(body), {
     status,
@@ -61,30 +56,6 @@ function json(body: unknown, status = 200): Response {
 function rangeOf(request: Request): EventRange {
   const query = new URL(request.url).searchParams;
   return resolveEventRange({ from: query.get("from"), to: query.get("to") });
-}
-
-/** `GET /api/admin/events/settings` — чи ввімкнена сквозна деталізація. */
-export async function handleEventSettingsRead(request: Request, env: Env): Promise<Response> {
-  try {
-    return json({ fullLogging: await readFullEventLogging(env) });
-  } catch (error) {
-    apiLog.error("events: налаштування журналу", error);
-    return json({ error: "Не вдалось прочитати налаштування" }, 500);
-  }
-}
-
-/** `POST /api/admin/events/settings` — перемкнути сквозну деталізацію. */
-export async function handleEventSettingsWrite(request: Request, env: Env): Promise<Response> {
-  const parsed = await readBody(request, loggingSchema);
-  if (!parsed.ok) return parsed.response;
-
-  try {
-    await writeFullEventLogging(env, parsed.body.fullLogging);
-    return json({ fullLogging: parsed.body.fullLogging });
-  } catch (error) {
-    apiLog.error("events: збереження налаштувань журналу", error);
-    return json({ error: "Не вдалось зберегти налаштування" }, 500);
-  }
 }
 
 /** `GET /api/admin/events/summary` — зведення за діапазоном. */

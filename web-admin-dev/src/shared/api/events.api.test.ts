@@ -9,14 +9,8 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 
 const mocks = { request: vi.fn() };
 vi.mock("./client", () => ({ apiFetch: mocks.request }));
-const {
-  cleanupEvents,
-  fetchEventLogging,
-  fetchEventSummary,
-  fetchEventUsers,
-  fetchEvents,
-  saveEventLogging,
-} = await import("./events.api");
+const { cleanupEvents, fetchEventSummary, fetchEventUsers, fetchEvents } =
+  await import("./events.api");
 
 beforeEach(() => {
   vi.clearAllMocks();
@@ -68,23 +62,6 @@ describe("читання", () => {
     expect(
       new URLSearchParams((mocks.request.mock.calls[1][0] as string).split("?")[1]).has("search"),
     ).toBe(false);
-  });
-});
-
-describe("налаштування", () => {
-  it("читає, чи пишеться кожен дотик", async () => {
-    mocks.request.mockResolvedValue({ fullLogging: true });
-
-    expect(await fetchEventLogging()).toBe(true);
-    expect(mocks.request).toHaveBeenCalledWith("/api/admin/events/settings");
-  });
-
-  it("перемикач іде POST-ом із булевим прапорцем", async () => {
-    mocks.request.mockResolvedValue({ fullLogging: false });
-
-    expect(await saveEventLogging(false)).toBe(false);
-    const init = mocks.request.mock.calls[0][1] as RequestInit;
-    expect(JSON.parse(init.body as string)).toEqual({ fullLogging: false });
   });
 });
 

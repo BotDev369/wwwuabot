@@ -9,8 +9,6 @@ const api = vi.hoisted(() => ({
   events: vi.fn(),
   cleanup: vi.fn(),
   users: vi.fn(),
-  logging: vi.fn(),
-  saveLogging: vi.fn(),
 }));
 
 vi.mock("../../shared/api/events.api", () => ({
@@ -18,8 +16,6 @@ vi.mock("../../shared/api/events.api", () => ({
   fetchEvents: api.events,
   cleanupEvents: api.cleanup,
   fetchEventUsers: api.users,
-  fetchEventLogging: api.logging,
-  saveEventLogging: api.saveLogging,
 }));
 
 const { AnalyticsPage } = await import("./AnalyticsPage");
@@ -65,9 +61,11 @@ beforeEach(() => {
   // Саме `reset`: «once»-відповіді, які тест не використав, інакше дістаються
   // наступному тестові, і той бачить чужі дані.
   vi.resetAllMocks();
+  // Вигляд екрана переживає перезавантаження вкладки — тест мусить починати
+  // з чистого аркуша, інакше бачить режим попереднього тесту.
+  sessionStorage.clear();
   api.summary.mockResolvedValue(SUMMARY);
   api.events.mockResolvedValue(list([botEvent]));
-  api.logging.mockResolvedValue(true);
   api.users.mockResolvedValue([
     { ...PERSON, count: 3, lastAt: "2026-10-01 12:00:00" },
     { userId: 9, firstName: null, lastName: null, username: null, count: 1, lastAt: "—" },
@@ -259,17 +257,37 @@ describe("екран «Аналітика»", () => {
     expect(await screen.findByText("D1 недоступна")).toBeTruthy();
   });
 
-  it("перемикач сквозна деталізація керує записом дотиків", async () => {
-    api.saveLogging.mockResolvedValue(false);
+  it("«Оновити» не скидає вигляд: акордеон лишається відкритим і оновлює дії", async () => {
     render(<AnalyticsPage />);
+    const head = await screen.findByRole("button", { name: /Сергій Дискант/ });
+    await userEvent.click(head);
+    await screen.findByText("/start");
+
+    await userEvent.click(screen.getByRole("button", { name: /Оновити|Оновлюю/ }));
+
+    await waitFor(() => expect(api.summary).toHaveBeenCalledTimes(2));
+    await waitFor(() =>
+      expect(api.events).toHaveBeenLastCalledWith(expect.objectContaining({ userId: 7 })),
+    );
+    expect(head.getAttribute("aria-expanded")).toBe("true");
+    expect(screen.getByText("/start")).toBeTruthy();
+  });
+
+  it("перезавантаження вкладки повертає вигляд: період і відкритий акордеон", async () => {
+    const first = render(<AnalyticsPage />);
     await screen.findByText("Сергій Дискант");
-    const toggle = await screen.findByRole("switch", { name: "Сквозна деталізація" });
-    expect(toggle.getAttribute("aria-checked")).toBe("true");
+    await userEvent.click(screen.getByRole("button", { name: "Тиждень" }));
+    await userEvent.click(screen.getByRole("button", { name: /Сергій Дискант/ }));
+    await screen.findByText("/start");
+    first.unmount();
 
-    await userEvent.click(toggle);
+    render(<AnalyticsPage />);
 
-    await waitFor(() => expect(api.saveLogging).toHaveBeenCalledWith(false));
-    await waitFor(() => expect(toggle.getAttribute("aria-checked")).toBe("false"));
+    const head = await screen.findByRole("button", { name: /Сергій Дискант/ });
+    expect(head.getAttribute("aria-expanded")).toBe("true");
+    expect(screen.getByRole("button", { name: "Тиждень" }).getAttribute("aria-pressed")).toBe(
+      "true",
+    );
   });
 
   it("догортає список і каже, скільки вже видно", async () => {
