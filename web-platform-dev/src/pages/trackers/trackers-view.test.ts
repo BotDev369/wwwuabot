@@ -24,7 +24,9 @@ import {
   timeLabel,
   trackerCells,
   trackerDraftSummary,
+  trackerPriorityCounts,
   whenLabel,
+  withPriority,
 } from "./trackers-view";
 
 const water: Tracker = {
@@ -156,6 +158,39 @@ describe("рух гілки", () => {
 
   it("чужий номер не тягне за собою сусідів", () => {
     expect(groupSubtreeIds(groups, 10)).toEqual([10]);
+  });
+});
+
+describe("пріоритет", () => {
+  it("фільтр бере рівень; `null` — без рівня, `undefined` — усі", () => {
+    const list: Tracker[] = [
+      { ...water, id: 1, priority: 3 },
+      { ...water, id: 2, priority: null },
+      { ...water, id: 3 },
+    ];
+
+    expect(withPriority(list, undefined).map((tracker) => tracker.id)).toEqual([1, 2, 3]);
+    expect(withPriority(list, 3).map((tracker) => tracker.id)).toEqual([1]);
+    // Поле, якого немає, — це той самий «відсутній», що й `null`.
+    expect(withPriority(list, null).map((tracker) => tracker.id)).toEqual([2, 3]);
+  });
+
+  it("рахунок для кнопок — по рівнях, «без рівня» окремо", () => {
+    const counts = trackerPriorityCounts([
+      { ...water, id: 1, priority: 3 },
+      { ...water, id: 2, priority: 3 },
+      { ...water, id: 3 },
+    ]);
+
+    expect(counts.get(3)).toBe(2);
+    expect(counts.get(null)).toBe(1);
+  });
+
+  it("під фільтром порожня власна група теж зникає", () => {
+    const ownGroup: TrackerGroup = { id: 20, parentId: null, title: "Сад", key: null };
+
+    expect(groupRowsTree([], [ownGroup]).map((node) => node.group.id)).toEqual([20]);
+    expect(groupRowsTree([], [ownGroup], { keepEmptyOwn: false })).toEqual([]);
   });
 });
 

@@ -36,6 +36,10 @@ export interface TrackersState extends TrackersPayload {
   /** Запис із матриці: новий вимір, день ставить сервер. */
   save: (trackerId: number, value: number, note: string) => Promise<boolean>;
   move: (trackerId: number, groupId: number | null) => Promise<boolean>;
+  /** Нова назва мірки — та сама, що в шапці картки. */
+  rename: (trackerId: number, title: string) => Promise<boolean>;
+  /** Пріоритет 1–9; `null` — прибрати рівень. */
+  setPriority: (trackerId: number, priority: number | null) => Promise<boolean>;
   createGroup: (title: string, parentId: number | null) => Promise<TrackerGroup | null>;
   updateGroup: (
     id: number,
@@ -157,6 +161,44 @@ export function useTrackers(): TrackersState {
       return true;
     } catch {
       await dialog.alert("Не вдалося пересунути трекер.", { tone: "danger" });
+      return false;
+    }
+  }
+
+  async function rename(trackerId: number, title: string): Promise<boolean> {
+    try {
+      const result = await apiFetch<{ title: string }>("/api/user/trackers", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ id: trackerId, title }),
+      });
+      setTrackers((current) =>
+        current.map((tracker) =>
+          tracker.id === trackerId ? { ...tracker, title: result.title } : tracker,
+        ),
+      );
+      return true;
+    } catch {
+      await dialog.alert("Не вдалося змінити назву.", { tone: "danger" });
+      return false;
+    }
+  }
+
+  async function setPriority(trackerId: number, priority: number | null): Promise<boolean> {
+    try {
+      const result = await apiFetch<{ priority: number | null }>("/api/user/trackers", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ id: trackerId, priority }),
+      });
+      setTrackers((current) =>
+        current.map((tracker) =>
+          tracker.id === trackerId ? { ...tracker, priority: result.priority } : tracker,
+        ),
+      );
+      return true;
+    } catch {
+      await dialog.alert("Не вдалося змінити пріоритет.", { tone: "danger" });
       return false;
     }
   }
@@ -330,6 +372,8 @@ export function useTrackers(): TrackersState {
     archive,
     save,
     move,
+    rename,
+    setPriority,
     createGroup,
     updateGroup,
     deleteGroup,

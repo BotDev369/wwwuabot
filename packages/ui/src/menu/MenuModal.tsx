@@ -32,6 +32,7 @@ import type { MenuModalProps } from "./types";
 
 export function MenuModal({
   title,
+  titleSlot,
   items,
   content,
   header,
@@ -64,7 +65,7 @@ export function MenuModal({
         onKeyDown={handleKeyDown}
       >
         <div className={sheet ? "wb-modal-header wb-sheet-head" : "wb-modal-header"}>
-          <h2 className="wb-modal-title">{title}</h2>
+          <h2 className="wb-modal-title">{titleSlot ?? title}</h2>
           <button type="button" className="wb-close-btn" onClick={onClose} aria-label="Закрити">
             <Icon name="close" size={18} />
           </button>

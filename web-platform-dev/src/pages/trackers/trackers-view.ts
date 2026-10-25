@@ -122,13 +122,16 @@ export interface TrackerGroupTreeView {
 /**
  * Дерево груп стрічки: верхній рівень — у порядку id (типові тематики сіються
  * першими). Порожня **типова** тематика не показується — це шум; група, яку
- * створила людина (`key === null`), лишається навіть порожня, разом із
- * батьками: інакше щойно створена група не з'являлась би до першого трекера.
+ * створила людина (`key === null`), лишається навіть порожня, разом із батьками.
+ * `keepEmptyOwn: false` — під фільтром: там порожня власна група теж шум, бо
+ * людина питає «що має цей пріоритет», а не «де мої теки».
  */
 export function groupRowsTree(
   trackers: readonly Tracker[],
   groups: readonly TrackerGroup[],
+  options: { keepEmptyOwn?: boolean } = {},
 ): TrackerGroupTreeView[] {
+  const keepEmptyOwn = options.keepEmptyOwn ?? true;
   const ownId = groups.find((group) => group.key === TRACKER_OWN_GROUP_KEY)?.id ?? null;
   const byGroup = new Map<number, Tracker[]>();
   for (const tracker of trackers) {
@@ -167,10 +170,34 @@ export function groupRowsTree(
       .map(prune)
       .filter((child): child is TrackerGroupTreeView => child !== null);
     view.count = countOf(view);
-    const keep = view.count > 0 || view.group.key === null || view.children.length > 0;
+    const keep =
+      view.count > 0 || (keepEmptyOwn && view.group.key === null) || view.children.length > 0;
     return keep ? view : null;
   };
   return roots.map(prune).filter((view): view is TrackerGroupTreeView => view !== null);
+}
+
+/**
+ * Мірки вибраного рівня: `undefined` — усі, `null` — ті, що без пріоритету.
+ * Не заданий пріоритет — це `null`, а не «нуль»: на живій базі колонка в
+ * наявних рядків саме така.
+ */
+export function withPriority(
+  trackers: readonly Tracker[],
+  priority: number | null | undefined,
+): Tracker[] {
+  if (priority === undefined) return [...trackers];
+  return trackers.filter((tracker) => (tracker.priority ?? null) === priority);
+}
+
+/** Скільки мірок на кожному рівні — числа на кнопках фільтра (`null` — без рівня). */
+export function trackerPriorityCounts(trackers: readonly Tracker[]): Map<number | null, number> {
+  const counts = new Map<number | null, number>();
+  for (const tracker of trackers) {
+    const priority = tracker.priority ?? null;
+    counts.set(priority, (counts.get(priority) ?? 0) + 1);
+  }
+  return counts;
 }
 
 /**

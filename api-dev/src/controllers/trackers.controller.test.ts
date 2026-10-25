@@ -245,6 +245,73 @@ describe("трекери людини", () => {
     expect(update?.values).toEqual([1, 4, "777"]);
   });
 
+  it("назва мірки — той самий рядок, звужений власником", async () => {
+    const db = database();
+    const response = await handleTrackers(
+      request("PATCH", "https://example.com/api/user/trackers", {
+        id: 4,
+        title: "  Настрій дня  ",
+      }),
+      db.env,
+    );
+    const body = (await response.json()) as { title: string };
+
+    expect(response.status).toBe(200);
+    expect(body.title).toBe("Настрій дня");
+    expect(db.calls.find((call) => call.sql.includes("SET title"))?.values).toEqual([
+      "Настрій дня",
+      4,
+      "777",
+    ]);
+  });
+
+  it("порожня назва — 400 без UPDATE", async () => {
+    const db = database();
+    const response = await handleTrackers(
+      request("PATCH", "https://example.com/api/user/trackers", { id: 4, title: "   " }),
+      db.env,
+    );
+
+    expect(response.status).toBe(400);
+    expect(db.calls.some((call) => call.sql.includes("SET title"))).toBe(false);
+  });
+
+  it("пріоритет — число 1–9 або «відсутній»", async () => {
+    const db = database();
+    const set = await handleTrackers(
+      request("PATCH", "https://example.com/api/user/trackers", { id: 4, priority: 3 }),
+      db.env,
+    );
+    expect(set.status).toBe(200);
+    expect(db.calls.find((call) => call.sql.includes("SET priority"))?.values).toEqual([
+      3,
+      4,
+      "777",
+    ]);
+
+    const clear = await handleTrackers(
+      request("PATCH", "https://example.com/api/user/trackers", { id: 4, priority: null }),
+      db.env,
+    );
+    expect(clear.status).toBe(200);
+    expect(db.calls.filter((call) => call.sql.includes("SET priority")).pop()?.values).toEqual([
+      null,
+      4,
+      "777",
+    ]);
+  });
+
+  it("рівень поза шкалою — 400, а не десяте значення", async () => {
+    const db = database();
+    const response = await handleTrackers(
+      request("PATCH", "https://example.com/api/user/trackers", { id: 4, priority: 10 }),
+      db.env,
+    );
+
+    expect(response.status).toBe(400);
+    expect(db.calls.some((call) => call.sql.includes("SET priority"))).toBe(false);
+  });
+
   it("PATCH без зміни — 400: тіло не має бути порожнім", async () => {
     const db = database();
     const response = await handleTrackers(

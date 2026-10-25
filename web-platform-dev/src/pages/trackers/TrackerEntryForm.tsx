@@ -7,7 +7,7 @@
  * @module web-platform-dev/src/pages/trackers/TrackerEntryForm
  */
 
-import type { FormEvent, ReactElement } from "react";
+import type { FormEvent, ReactElement, ReactNode } from "react";
 import { Icon } from "@wwwuabot/shared";
 import type { Tracker } from "@wwwuabot/shared/trackers";
 import { TrackerYesNo } from "./TrackerYesNo";
@@ -24,6 +24,12 @@ interface TrackerEntryFormProps {
   onChange: (patch: Partial<EntryDraft>) => void;
   /** Запис готовий: значення або статус — у чернетці, зберігає людина кнопкою. */
   onSubmit: () => void;
+  /**
+   * Друга дія в рядку збереження: картка трекера ставить там пріоритет, а
+   * сторінка трекера — нічого. Рядок один, бо обидві дії стосуються цього ж
+   * запису.
+   */
+  aside?: ReactNode;
 }
 
 export function TrackerEntryForm({
@@ -32,6 +38,7 @@ export function TrackerEntryForm({
   saving,
   onChange,
   onSubmit,
+  aside,
 }: TrackerEntryFormProps): ReactElement {
   function submit(event: FormEvent): void {
     event.preventDefault();
@@ -74,14 +81,17 @@ export function TrackerEntryForm({
           onChange={(event) => onChange({ note: event.target.value })}
         />
       </label>
-      <button
-        type="submit"
-        className="wb-btn wb-btn-primary wb-tracker-entry-submit"
-        disabled={saving}
-      >
-        <Icon name="check" size={18} />
-        Зберегти
-      </button>
+      <div className="wb-tracker-entry-actions">
+        <button
+          type="submit"
+          className="wb-btn wb-btn-primary wb-tracker-entry-submit"
+          disabled={saving}
+        >
+          <Icon name="check" size={18} />
+          Зберегти
+        </button>
+        {aside}
+      </div>
     </form>
   );
 }

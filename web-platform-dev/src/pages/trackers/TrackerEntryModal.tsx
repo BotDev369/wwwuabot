@@ -1,7 +1,8 @@
 /**
- * Дотик на трекер — картка з записом і діями, а не перехід на сторінку. Запис
- * той самий `TrackerEntryForm`, що й на картці трекера; день ставить сервер.
- * Дії, що щось змінюють (скидання, видалення), питають — `docs/TRACKERS.md`.
+ * Дотик на трекер — картка з записом і діями, а не перехід на сторінку. Назва
+ * в шапці редагується дотиком: заголовок — це і є назва. Запис — той самий
+ * `TrackerEntryForm`, що й на картці трекера, поруч зі «Зберегти» — пріоритет.
+ * День ставить сервер; дії, що щось змінюють, питають (`docs/TRACKERS.md`).
  *
  * @module web-platform-dev/src/pages/trackers/TrackerEntryModal
  */
@@ -10,8 +11,10 @@ import { useState, type ReactElement } from "react";
 import { Icon } from "@wwwuabot/shared";
 import { useDialog } from "@wwwuabot/ui/dialog";
 import { MenuModal } from "@wwwuabot/ui/menu";
-import { formatTrackerAmount, trackerAmountText, type Tracker } from "@wwwuabot/shared/trackers";
+import type { Tracker } from "@wwwuabot/shared/trackers";
 import { TrackerEntryForm, type EntryDraft } from "./TrackerEntryForm";
+import { TrackerPriorityModal } from "./TrackerPriorityModal";
+import { TrackerTitleEdit } from "./TrackerTitleEdit";
 
 const EMPTY_DRAFT: EntryDraft = { value: "", note: "" };
 
@@ -28,6 +31,10 @@ interface TrackerEntryModalProps {
   onDuplicate: () => Promise<boolean>;
   /** «Перемістити» — дерево груп у наступній поверхні (картка закривається). */
   onMove: () => void;
+  /** Нова назва з шапки; `false` — не вдалось, назва лишається старою. */
+  onRename: (title: string) => Promise<boolean>;
+  /** Пріоритет 1–9; `null` — прибрати рівень. */
+  onPriority: (priority: number | null) => Promise<boolean>;
   /** «Скинути сьогодні»: прибрати сьогоднішні виміри. */
   onReset: () => Promise<number | null>;
   onDelete: () => Promise<boolean>;
@@ -42,22 +49,16 @@ export function TrackerEntryModal({
   onSettings,
   onDuplicate,
   onMove,
+  onRename,
+  onPriority,
   onReset,
   onDelete,
 }: TrackerEntryModalProps): ReactElement {
   const dialog = useDialog();
   const [draft, setDraft] = useState<EntryDraft>(EMPTY_DRAFT);
   const [busy, setBusy] = useState(false);
-
-  const todayCaption =
-    tracker.valueType === "number" && tracker.goal !== null
-      ? `Сьогодні · ціль ${formatTrackerAmount(tracker.goal, tracker.unit)}`
-      : "Сьогодні";
-  // Смуга цілі — скільки дня вже зроблено; без цілі (або не в числі) її немає.
-  const progress =
-    tracker.valueType === "number" && tracker.goal !== null && tracker.goal > 0
-      ? Math.min(100, Math.round(((todayValue ?? 0) / tracker.goal) * 100))
-      : null;
+  const [priorityOpen, setPriorityOpen] = useState(false);
+  const priority = tracker.priority ?? null;
 
   async function submit(): Promise<void> {
     if (busy) return;
@@ -109,87 +110,92 @@ export function TrackerEntryModal({
   }
 
   return (
-    <MenuModal
-      title={tracker.title}
-      variant="card"
-      onClose={onClose}
-      content={
-        <div className="wb-tracker-sheet">
-          <div className="wb-tracker-sheet-today">
-            {todayValue === null ? (
-              <p className="wb-tracker-sheet-today-text">Сьогодні ще немає запису</p>
-            ) : (
-              <>
-                <p className="wb-tracker-sheet-today-value">
-                  {trackerAmountText(todayValue, tracker)}
-                </p>
-                <p className="wb-tracker-sheet-today-text">{todayCaption}</p>
-              </>
-            )}
-            {progress !== null && (
-              <div className="wb-tracker-sheet-progress">
-                <span
-                  className="wb-tracker-sheet-progress-fill"
-                  style={{ width: `${progress}%` }}
-                />
-              </div>
-            )}
-          </div>
+    <>
+      <MenuModal
+        title={tracker.title}
+        titleSlot={<TrackerTitleEdit title={tracker.title} onRename={onRename} />}
+        variant="card"
+        onClose={onClose}
+        content={
+          <div className="wb-tracker-sheet">
+            <TrackerEntryForm
+              tracker={tracker}
+              draft={draft}
+              saving={saving || busy}
+              onChange={(patch) => setDraft((current) => ({ ...current, ...patch }))}
+              onSubmit={() => void submit()}
+              aside={
+                <button
+                  type="button"
+                  className="wb-btn wb-btn-secondary wb-tracker-priority"
+                  aria-label={`Пріоритет: ${priority === null ? "відсутній" : priority}`}
+                  onClick={() => setPriorityOpen(true)}
+                >
+                  <Icon name="sort" size={16} />
+                  {priority === null ? "Пріоритет" : `Пріоритет: ${priority}`}
+                </button>
+              }
+            />
 
-          <TrackerEntryForm
-            tracker={tracker}
-            draft={draft}
-            saving={saving || busy}
-            onChange={(patch) => setDraft((current) => ({ ...current, ...patch }))}
-            onSubmit={() => void submit()}
-          />
-
-          <div className="wb-tracker-actions">
-            <button
-              type="button"
-              className="wb-btn wb-btn-secondary wb-tracker-action"
-              onClick={onSettings}
-            >
-              <Icon name="sliders" size={16} />
-              Налаштувати
-            </button>
-            <button
-              type="button"
-              className="wb-btn wb-btn-secondary wb-tracker-action"
-              onClick={() => void duplicate()}
-            >
-              <Icon name="copy" size={16} />
-              Дублювати
-            </button>
-            <button
-              type="button"
-              className="wb-btn wb-btn-secondary wb-tracker-action"
-              onClick={onMove}
-            >
-              <Icon name="folder" size={16} />
-              Перемістити
-            </button>
-            {todayValue !== null && (
+            <div className="wb-tracker-actions">
               <button
                 type="button"
-                className="wb-btn wb-btn-secondary wb-tracker-action wb-tracker-action--wide"
-                onClick={() => void reset()}
+                className="wb-btn wb-btn-secondary wb-tracker-action"
+                onClick={onSettings}
               >
-                <Icon name="eraser" size={16} />
-                Скинути сьогодні
+                <Icon name="sliders" size={16} />
+                Налаштувати
               </button>
-            )}
-            <button
-              type="button"
-              className="wb-btn wb-btn-ghost wb-tracker-action wb-tracker-action--wide wb-tracker-action--danger"
-              onClick={() => void remove()}
-            >
-              <Icon name="trash" size={16} />
-              Видалити
-            </button>
+              <button
+                type="button"
+                className="wb-btn wb-btn-secondary wb-tracker-action"
+                onClick={() => void duplicate()}
+              >
+                <Icon name="copy" size={16} />
+                Дублювати
+              </button>
+              <button
+                type="button"
+                className="wb-btn wb-btn-secondary wb-tracker-action"
+                onClick={onMove}
+              >
+                <Icon name="folder" size={16} />
+                Перемістити
+              </button>
+              {todayValue !== null && (
+                <button
+                  type="button"
+                  className="wb-btn wb-btn-secondary wb-tracker-action wb-tracker-action--wide"
+                  onClick={() => void reset()}
+                >
+                  <Icon name="eraser" size={16} />
+                  Скинути сьогодні
+                </button>
+              )}
+              <button
+                type="button"
+                className="wb-btn wb-btn-ghost wb-tracker-action wb-tracker-action--wide wb-tracker-action--danger"
+                onClick={() => void remove()}
+              >
+                <Icon name="trash" size={16} />
+                Видалити
+              </button>
+            </div>
           </div>
-        </div>
-      }
-    />
+        }
+      />
+
+      {priorityOpen && (
+        <TrackerPriorityModal
+          title="Пріоритет"
+          value={priority}
+          onClose={() => setPriorityOpen(false)}
+          onPick={(next) => {
+            setPriorityOpen(false);
+            if (next !== undefined) void onPriority(next);
+          }}
+        />
+      )}
+    </>
   );
 }

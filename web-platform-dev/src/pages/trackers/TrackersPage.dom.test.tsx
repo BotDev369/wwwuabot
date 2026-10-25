@@ -21,6 +21,8 @@ const hooks = {
   archive: vi.fn(),
   save: vi.fn(),
   move: vi.fn(),
+  rename: vi.fn(),
+  priority: vi.fn(),
   createGroup: vi.fn(),
   updateGroup: vi.fn(),
   deleteGroup: vi.fn(),
@@ -103,6 +105,8 @@ const state = {
   archive: hooks.archive,
   save: hooks.save,
   move: hooks.move,
+  rename: hooks.rename,
+  setPriority: hooks.priority,
   createGroup: hooks.createGroup,
   updateGroup: hooks.updateGroup,
   deleteGroup: hooks.deleteGroup,
@@ -311,6 +315,81 @@ describe("матриця днів", () => {
     expect(today.textContent).toBe("·");
     expect(today.querySelector("svg")).toBeNull();
     expect(past.textContent).toBe("·");
+  });
+});
+
+describe("пріоритет", () => {
+  function withPriorities(): void {
+    state.trackers = [
+      { ...water, priority: 2 },
+      { ...steps, priority: null },
+      { ...coffee, priority: null },
+    ];
+  }
+
+  it("кнопка в смузі дій каже вибране й відкриває сітку з рахунком", async () => {
+    withPriorities();
+    render(<TrackersPage />);
+
+    const bar = document.querySelector(".wb-contextbar") as HTMLElement;
+    await userEvent.click(within(bar).getByRole("button", { name: "Усі" }));
+
+    const dialog = screen.getByRole("dialog", { name: "Пріоритет" });
+    expect(within(dialog).getByRole("button", { name: "Відсутній: трекерів 2" })).toBeTruthy();
+    expect(within(dialog).getByRole("button", { name: "2: трекерів 1" })).toBeTruthy();
+
+    await userEvent.click(within(dialog).getByRole("button", { name: "2: трекерів 1" }));
+
+    expect(screen.queryByRole("dialog", { name: "Пріоритет" })).toBeNull();
+    expect(within(bar).getByRole("button", { name: "2" })).toBeTruthy();
+  });
+
+  it("фільтр лишає мірки рівня й ховає групи без них", async () => {
+    withPriorities();
+    render(<TrackersPage />);
+
+    await userEvent.click(screen.getByRole("button", { name: "Усі" }));
+    await userEvent.click(screen.getByRole("button", { name: "2: трекерів 1" }));
+
+    expect(screen.getByRole("button", { name: "Режим" })).toBeTruthy();
+    // «Кроки» мають пріоритет «відсутній», тож їхня тематика й сама зникає.
+    expect(screen.queryByRole("button", { name: "Активність" })).toBeNull();
+    expect(screen.queryByRole("button", { name: "Свої" })).toBeNull();
+  });
+
+  it("порожній рівень каже, що саме порожнє", async () => {
+    withPriorities();
+    render(<TrackersPage />);
+
+    await userEvent.click(screen.getByRole("button", { name: "Усі" }));
+    await userEvent.click(screen.getByRole("button", { name: "9: трекерів 0" }));
+
+    expect(screen.getByText("Немає трекерів із цим пріоритетом.")).toBeTruthy();
+  });
+
+  it("у картці пріоритет ставиться тими ж самими кнопками", async () => {
+    render(<TrackersPage />);
+    await userEvent.click(screen.getByRole("button", { name: "Режим" }));
+    await userEvent.click(screen.getByRole("button", { name: "Вода" }));
+
+    await userEvent.click(screen.getByRole("button", { name: "Пріоритет: відсутній" }));
+    await userEvent.click(screen.getByRole("button", { name: "4" }));
+
+    expect(hooks.priority).toHaveBeenCalledWith(1, 4);
+  });
+
+  it("назва в шапці картки йде в перейменування", async () => {
+    render(<TrackersPage />);
+    await userEvent.click(screen.getByRole("button", { name: "Режим" }));
+    await userEvent.click(screen.getByRole("button", { name: "Вода" }));
+
+    const card = screen.getByRole("dialog", { name: "Вода" });
+    await userEvent.click(within(card).getByRole("button", { name: "Вода" }));
+    const field = within(card).getByLabelText("Назва трекера");
+    await userEvent.clear(field);
+    await userEvent.type(field, "Вода питна{Enter}");
+
+    expect(hooks.rename).toHaveBeenCalledWith(1, "Вода питна");
   });
 });
 

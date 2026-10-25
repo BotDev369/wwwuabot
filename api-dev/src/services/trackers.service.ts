@@ -317,21 +317,6 @@ export async function moveTrackerOrder(
   return true;
 }
 
-/** Публічність визначення — прапорець рядка; виміри не публікуються ніколи. */
-export async function setTrackerPublic(
-  env: Env,
-  userId: number,
-  id: number,
-  isPublic: boolean,
-): Promise<boolean> {
-  const result = await env.DB.prepare(
-    "UPDATE trackers SET is_public = ? WHERE id = ? AND owner_id = ? AND is_active = 1",
-  )
-    .bind(isPublic ? 1 : 0, id, String(userId))
-    .run();
-  return Number(result.meta.changes) > 0;
-}
-
 /** Власний трекер: ключ внутрішній, людина його не бачить і не задає. */
 export async function createTracker(
   env: Env,
@@ -344,8 +329,8 @@ export async function createTracker(
   await env.DB.prepare(
     `INSERT INTO trackers
        (owner_id, key, title, unit, step, goal, min_value, max_value, mode, value_type,
-        icon, group_id, is_builtin, is_active, position, source, created_at)
-     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'bar-chart', ?, 0, 1, ?, NULL, ?)`,
+        icon, group_id, priority, is_builtin, is_active, position, source, created_at)
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'bar-chart', ?, NULL, 0, 1, ?, NULL, ?)`,
   )
     .bind(
       String(userId),

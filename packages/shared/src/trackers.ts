@@ -75,6 +75,11 @@ export interface Tracker extends TrackerFields {
   isBuiltin: boolean;
   /** Група власника; `null` — людина ще не віднесла трекер нікуди. */
   groupId: number | null;
+  /**
+   * Пріоритет 1–9 (1 — найвищий); `null` або немає поля — не заданий. Колонка
+   * на живій базі приходить як `NULL`, тож читач мусить це приймати.
+   */
+  priority?: number | null;
   /** Звідки копія: `catalog:<key>`, `public:<id>`; `null` — власна мірка. */
   source?: string | null;
   /** Визначення відкрите іншим; виміри не публікуються ніколи. */
@@ -166,6 +171,33 @@ export function trackerValueType(tracker: { valueType?: string | null }): Tracke
 /** Тип із нерозпізнаного вводу: `null` — не тип (його добере `trackerValueType`). */
 export function parseTrackerValueType(value: unknown): TrackerValueType | null {
   return value === "number" || value === "boolean" ? value : null;
+}
+
+/**
+ * Пріоритет — **ранг мірки**: 1 найвищий … 9 найнижчий, `null` — не заданий
+ * (типовий стан, у якому лишаються всі наявні трекери). Шкала одна на всі
+ * мірки: десяте значення — не число, а «відсутній», тож вибір має 10 кнопок.
+ */
+export const TRACKER_PRIORITIES = [1, 2, 3, 4, 5, 6, 7, 8, 9] as const;
+export type TrackerPriority = (typeof TRACKER_PRIORITIES)[number];
+
+/** Рівень із вводу: `null` — «відсутній», `undefined` — не рівень (відмова). */
+export function parseTrackerPriority(value: unknown): TrackerPriority | null | undefined {
+  if (value === null) return null;
+  return TRACKER_PRIORITIES.includes(value as TrackerPriority)
+    ? (value as TrackerPriority)
+    : undefined;
+}
+
+/** Підпис рівня: «Відсутній» або саме число — так його читають на кнопках. */
+export function trackerPriorityLabel(priority: number | null): string {
+  return priority === null ? "Відсутній" : String(priority);
+}
+
+/** Назва мірки — та сама межа, що у формі створення; `null` — відмова. */
+export function parseTrackerTitle(raw: unknown): string | null {
+  const title = text(raw, TRACKER_LIMITS.title);
+  return title ? title : null;
 }
 
 const DAY_PATTERN = /^\d{4}-\d{2}-\d{2}$/;

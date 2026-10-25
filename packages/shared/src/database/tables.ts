@@ -338,7 +338,7 @@ export const TABLES = {
     name: "trackers",
     owner: "api-dev",
     purpose:
-      "Трекери людини: назва, одиниця, крок, ціль, межі, `mode` (як читати записи: сума дня чи останній вимір), `value_type` (тип запису: число чи так-ні), група (`group_id`), порядок серед сусідів (`position`), походження копії (`source`) і публічність визначення (`is_public`) — одна модель на всі мірки.",
+      "Трекери людини: назва, одиниця, крок, ціль, межі, `mode` (як читати записи: сума дня чи останній вимір), `value_type` (тип запису: число чи так-ні), група (`group_id`), пріоритет (`priority` 1–9, NULL — не заданий), порядок серед сусідів (`position`), походження копії (`source`) і публічність визначення (`is_public`) — одна модель на всі мірки.",
     create: `CREATE TABLE IF NOT EXISTS trackers (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         owner_id TEXT NOT NULL,
@@ -353,6 +353,7 @@ export const TABLES = {
         value_type TEXT NOT NULL DEFAULT 'number',
         icon TEXT NOT NULL DEFAULT 'bar-chart',
         group_id INTEGER,
+        priority INTEGER,
         is_builtin INTEGER NOT NULL DEFAULT 0,
         is_active INTEGER NOT NULL DEFAULT 1,
         position INTEGER,

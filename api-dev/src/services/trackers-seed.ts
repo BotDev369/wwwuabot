@@ -27,6 +27,8 @@ export interface TrackerRow {
   mode: string | null;
   icon: string;
   group_id: number | null;
+  /** Колонку добарує `ensureTables`: у рядків, старших за неї, тут `null`. */
+  priority?: number | null;
   value_type: string | null;
   is_builtin: number;
   position: number | null;
@@ -44,7 +46,7 @@ export interface TrackerRow {
 export const TRACKER_COLUMNS =
   "id, key, title, unit, step, goal, min_value, max_value, " +
   "COALESCE(mode, CASE WHEN goal IS NULL THEN 'read' ELSE 'sum' END) AS mode, " +
-  "COALESCE(value_type, 'number') AS value_type, icon, group_id, is_builtin, " +
+  "COALESCE(value_type, 'number') AS value_type, icon, group_id, priority, is_builtin, " +
   "COALESCE(position, 0) AS position, source, COALESCE(is_public, 0) AS is_public";
 
 export function toTracker(row: TrackerRow): Tracker {
@@ -61,6 +63,7 @@ export function toTracker(row: TrackerRow): Tracker {
     valueType: trackerValueType({ valueType: row.value_type }),
     icon: (row.icon || "bar-chart") as Tracker["icon"],
     groupId: row.group_id === null ? null : Number(row.group_id),
+    priority: row.priority ?? null,
     isBuiltin: Number(row.is_builtin) === 1,
     source: row.source ?? null,
     isPublic: Number(row.is_public) === 1,

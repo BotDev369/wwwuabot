@@ -13,7 +13,9 @@ import {
   addTrackerDays,
   isValidTrackerDay,
   todayTrackerDay,
+  parseTrackerPriority,
   parseTrackerSource,
+  parseTrackerTitle,
   trackerValue,
   validateTrackerFields,
 } from "@wwwuabot/shared/trackers";
@@ -42,8 +44,8 @@ import {
   moveTracker,
   moveTrackerOrder,
   readTracker,
-  setTrackerPublic,
 } from "../services/trackers.service";
+import { renameTracker, setTrackerPriority, setTrackerPublic } from "../services/trackers-fields";
 
 /** Вікно стрічки: чи записано сьогодні й останній вимір кожного трекера. */
 const LIST_DAYS = 30;
@@ -60,12 +62,14 @@ const postBody = z
   .object({ from: z.unknown().optional(), sources: z.array(z.string()).optional() })
   .passthrough();
 /**
- * `PATCH` міняє **одну** річ за раз: групу, місце серед сусідів або
- * публічність. Одне тіло на три дії — бо це той самий рядок, і друга ручка на
- * кожну ознаку розвела б правила володіння на три копії.
+ * `PATCH` міняє **одну** річ за раз: назву, пріоритет, групу, місце серед
+ * сусідів або публічність. Одне тіло на п'ять дій — бо це той самий рядок, і
+ * друга ручка на кожну ознаку розвела б правила володіння на п'ять копій.
  */
 const patchBody = z.object({
   id: z.number(),
+  title: z.string().optional(),
+  priority: z.number().nullable().optional(),
   groupId: z.number().nullable().optional(),
   move: z.enum(["up", "down"]).optional(),
   isPublic: z.boolean().optional(),
@@ -132,7 +136,7 @@ export async function handleTrackers(request: Request, env: Env): Promise<Respon
     if (request.method === "PATCH") {
       const parsed = await readBody(request, patchBody);
       if (!parsed.ok) return parsed.response;
-      const { id, groupId, move, isPublic } = parsed.body;
+      const { id, title, priority, groupId, move, isPublic } = parsed.body;
       if (!Number.isInteger(id) || id <= 0)
         return json({ ok: false, error: "Invalid tracker" }, 400);
 
@@ -151,6 +155,27 @@ export async function handleTrackers(request: Request, env: Env): Promise<Respon
           return json({ ok: false, error: "Not found" }, 404);
         }
         return json({ ok: true, id, isPublic });
+      }
+
+      if (priority !== undefined) {
+        const level = parseTrackerPriority(priority);
+        // `undefined` — це 0, 10 або дробове: шкала 1–9 — закритий перелік.
+        if (level === undefined) return json({ ok: false, error: "Invalid priority" }, 400);
+        if (!(await setTrackerPriority(env, identity.userId, id, level))) {
+          return json({ ok: false, error: "Not found" }, 404);
+        }
+        return json({ ok: true, id, priority: level });
+      }
+
+      if (title !== undefined) {
+        const name = parseTrackerTitle(title);
+        if (name === null) {
+          return json({ ok: false, error: "Назва — від 1 до 40 символів." }, 400);
+        }
+        if (!(await renameTracker(env, identity.userId, id, name))) {
+          return json({ ok: false, error: "Not found" }, 404);
+        }
+        return json({ ok: true, id, title: name });
       }
 
       if (groupId === undefined) return json({ ok: false, error: "Missing change" }, 400);

@@ -518,3 +518,69 @@ describe("три поверхні", () => {
     expect(view.result.current.trackers).toEqual([]);
   });
 });
+
+describe("назва й пріоритет", () => {
+  async function seeded() {
+    mocks.request.mockResolvedValueOnce({
+      trackers: [water],
+      groups: [],
+      entries: [],
+      endDay: "2026-10-17",
+    });
+    const view = renderHook(() => useTrackers());
+    await waitFor(() => expect(view.result.current.loading).toBe(false));
+    return view;
+  }
+
+  it("нова назва йде PATCH-ом і лягає в стан тим, що відповів сервер", async () => {
+    const view = await seeded();
+    mocks.request.mockResolvedValueOnce({ title: "Джерельна" });
+
+    let ok = false;
+    await act(async () => {
+      ok = await view.result.current.rename(1, "Джерельна");
+    });
+
+    expect(ok).toBe(true);
+    expect(mocks.request).toHaveBeenCalledWith(
+      "/api/user/trackers",
+      expect.objectContaining({
+        method: "PATCH",
+        body: JSON.stringify({ id: 1, title: "Джерельна" }),
+      }),
+    );
+    expect(view.result.current.trackers[0].title).toBe("Джерельна");
+  });
+
+  it("пріоритет — ранг рядка; `null` прибирає його", async () => {
+    const view = await seeded();
+    mocks.request.mockResolvedValueOnce({ priority: 5 });
+    await act(async () => {
+      await view.result.current.setPriority(1, 5);
+    });
+    expect(view.result.current.trackers[0].priority).toBe(5);
+
+    mocks.request.mockResolvedValueOnce({ priority: null });
+    await act(async () => {
+      await view.result.current.setPriority(1, null);
+    });
+    expect(mocks.request.mock.calls.pop()?.[1]).toMatchObject({
+      body: JSON.stringify({ id: 1, priority: null }),
+    });
+    expect(view.result.current.trackers[0].priority).toBeNull();
+  });
+
+  it("невдала зміна каже причину й лишає рядок як був", async () => {
+    const view = await seeded();
+    mocks.request.mockRejectedValueOnce(new Error("HTTP 400"));
+
+    let ok = true;
+    await act(async () => {
+      ok = await view.result.current.rename(1, "Джерельна");
+    });
+
+    expect(ok).toBe(false);
+    expect(mocks.alert).toHaveBeenCalledWith("Не вдалося змінити назву.", { tone: "danger" });
+    expect(view.result.current.trackers[0].title).toBe("Вода");
+  });
+});

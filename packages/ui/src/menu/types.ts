@@ -95,6 +95,11 @@ export type MenuLayout = "rows" | "blocks";
 export interface MenuModalProps {
   /** Заголовок модалки (`aria-label` — теж він). */
   title: string;
+  /**
+   * Свій вміст заголовка замість тексту: картка трекера робить його полем.
+   * Заголовок лишається ім'ям поверхні для читача екрана.
+   */
+  titleSlot?: ReactNode;
   /** Пункти у порядку показу — згори вниз. Немає — поверхня показує `content`. */
   items?: readonly MenuItem[];
   /** Розкладка пунктів — див. `MenuLayout`. */

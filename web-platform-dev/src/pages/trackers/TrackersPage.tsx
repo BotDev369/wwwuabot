@@ -10,10 +10,10 @@ import { useCallback, useMemo, useState, type CSSProperties, type ReactElement }
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { Icon } from "@wwwuabot/shared";
 import { ContextBar, useScreenChrome } from "@wwwuabot/ui/nav";
-import { MenuModal, type MenuItem } from "@wwwuabot/ui/menu";
+import { MenuModal } from "@wwwuabot/ui/menu";
 import { useDialog } from "@wwwuabot/ui/dialog";
 import { Tabs, tabId, tabPanelId, type TabOption } from "@wwwuabot/ui/tabs";
-import type { Tracker } from "@wwwuabot/shared/trackers";
+import { trackerPriorityLabel, type Tracker } from "@wwwuabot/shared/trackers";
 import {
   TRACKERS_PATH,
   readCreateGroupId,
@@ -28,11 +28,21 @@ import { useGroupAccordion } from "./useGroupAccordion";
 import { TrackerCreateForm } from "./TrackerCreateForm";
 import { TrackerGroupSection } from "./TrackerGroupSection";
 import { TrackerMoveSurface, type MovingTarget } from "./TrackerMoveSurface";
+import { TrackerAddMenu } from "./TrackerAddMenu";
+import { TrackersEmptyState } from "./TrackersEmptyState";
+import { TrackerPriorityModal } from "./TrackerPriorityModal";
 import { TrackerEntryModal } from "./TrackerEntryModal";
 import { TrackerDayHeader } from "./TrackerDayHeader";
 import { TrackersLibraryPanel } from "./TrackersLibraryPanel";
 import { groupLibrary } from "./tracker-library";
-import { duplicateTrackerTitle, groupRowsTree, matrixDays, trackerCells } from "./trackers-view";
+import {
+  duplicateTrackerTitle,
+  groupRowsTree,
+  matrixDays,
+  trackerCells,
+  trackerPriorityCounts,
+  withPriority,
+} from "./trackers-view";
 
 /** Ширина матриці: стільки днів уміщується на 360px без горизонтального скролу. */
 const MATRIX_DAYS = 4;
@@ -62,6 +72,9 @@ export function TrackersPage(): ReactElement {
   const creating = readCreateIntent(params);
   const createGroupId = readCreateGroupId(params);
   const [addOpen, setAddOpen] = useState(false);
+  // Фільтр пріоритету: `undefined` — усі рівні, `null` — ті, що без рівня.
+  const [priorityFilter, setPriorityFilter] = useState<number | null | undefined>(undefined);
+  const [priorityOpen, setPriorityOpen] = useState(false);
   // Переміщення — окрема поверхня з деревом: місце обирають точно, а не
   // стрілками «вище/нижче» (ті лишаються для порядку серед сусідів).
   const [moving, setMoving] = useState<MovingTarget | null>(null);
@@ -69,12 +82,17 @@ export function TrackersPage(): ReactElement {
   // адреса, бо «назад» має закрити картку, а не повернути на список.
   const [entryId, setEntryId] = useState<number | null>(null);
 
-  const rows = state.trackers;
+  const rows = useMemo(
+    () => withPriority(state.trackers, priorityFilter),
+    [state.trackers, priorityFilter],
+  );
   const days = useMemo(() => matrixDays(state.endDay, MATRIX_DAYS), [state.endDay]);
   const tree = useMemo(
-    () => groupRowsTree(state.trackers, state.groups),
-    [state.trackers, state.groups],
+    // Під фільтром порожня група теж ховається: питають «що має цей рівень».
+    () => groupRowsTree(rows, state.groups, { keepEmptyOwn: priorityFilter === undefined }),
+    [rows, state.groups, priorityFilter],
   );
+  const priorityCounts = useMemo(() => trackerPriorityCounts(state.trackers), [state.trackers]);
 
   const cellsOf = useCallback(
     (tracker: Tracker) => trackerCells(tracker, state.entries, days),
@@ -156,27 +174,6 @@ export function TrackersPage(): ReactElement {
     mineAccordion.setAll([group.id], true);
   }
 
-  const addItems: MenuItem[] = [
-    {
-      key: "tracker",
-      label: "Трекер",
-      icon: "bar-chart",
-      onSelect: () => {
-        setAddOpen(false);
-        navigate(withCreateIntent(TRACKERS_PATH));
-      },
-    },
-    {
-      key: "group",
-      label: "Група",
-      icon: "folder",
-      onSelect: () => {
-        setAddOpen(false);
-        void addGroup();
-      },
-    },
-  ];
-
   return (
     <div
       className="wb-page wb-trackers-page"
@@ -241,23 +238,11 @@ export function TrackersPage(): ReactElement {
             )}
 
             {!state.loading && !state.error && tree.length === 0 && (
-              <div className="wb-empty">
-                <span className="wb-empty-icon">
-                  <Icon name="bar-chart" size={32} />
-                </span>
-                <p className="wb-empty-text">Трекерів ще немає.</p>
-                <p className="wb-text-muted">
-                  Візьміть готову мірку з «Шаблонів» або створіть свою — у «Моїх» лишається тільки
-                  те, що ви обрали.
-                </p>
-                <button
-                  type="button"
-                  className="wb-btn wb-btn-primary"
-                  onClick={() => setTab("templates")}
-                >
-                  До шаблонів
-                </button>
-              </div>
+              <TrackersEmptyState
+                filtered={priorityFilter !== undefined}
+                onTemplates={() => setTab("templates")}
+                onClearFilter={() => setPriorityFilter(undefined)}
+              />
             )}
 
             {!state.loading && !state.error && tree.length > 0 && (
@@ -296,6 +281,13 @@ export function TrackersPage(): ReactElement {
           label="Дії трекерів"
           actions={[
             {
+              key: "priority",
+              // Підпис — саме вибране значення: кнопка каже, за чим зараз видно.
+              label: priorityFilter === undefined ? "Усі" : trackerPriorityLabel(priorityFilter),
+              icon: "sort",
+              onSelect: () => setPriorityOpen(true),
+            },
+            {
               key: "expand",
               label: allOpen ? "Згорнути" : "Розгорнути",
               icon: allOpen ? "collapse" : "expand",
@@ -316,7 +308,30 @@ export function TrackersPage(): ReactElement {
       )}
 
       {addOpen && (
-        <MenuModal title="Що додати?" items={addItems} onClose={() => setAddOpen(false)} />
+        <TrackerAddMenu
+          onClose={() => setAddOpen(false)}
+          onNewTracker={() => {
+            setAddOpen(false);
+            navigate(withCreateIntent(TRACKERS_PATH));
+          }}
+          onNewGroup={() => {
+            setAddOpen(false);
+            void addGroup();
+          }}
+        />
+      )}
+
+      {priorityOpen && (
+        <TrackerPriorityModal
+          title="Пріоритет"
+          value={priorityFilter}
+          counts={priorityCounts}
+          onClose={() => setPriorityOpen(false)}
+          onPick={(priority) => {
+            setPriorityOpen(false);
+            setPriorityFilter(priority);
+          }}
+        />
       )}
 
       {entryTracker && (
@@ -331,6 +346,8 @@ export function TrackersPage(): ReactElement {
             navigate(trackerPath(entryTracker.id));
           }}
           onDuplicate={() => duplicateTracker(entryTracker)}
+          onRename={(title) => state.rename(entryTracker.id, title)}
+          onPriority={(priority) => state.setPriority(entryTracker.id, priority)}
           onMove={() => {
             setEntryId(null);
             setMoving({ kind: "tracker", id: entryTracker.id });

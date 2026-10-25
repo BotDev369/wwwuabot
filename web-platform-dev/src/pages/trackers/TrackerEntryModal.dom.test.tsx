@@ -20,6 +20,8 @@ const hooks = {
   settings: vi.fn(),
   duplicate: vi.fn(),
   move: vi.fn(),
+  rename: vi.fn(),
+  priority: vi.fn(),
   reset: vi.fn(),
   remove: vi.fn(),
 };
@@ -67,6 +69,8 @@ function renderCard(tracker: Tracker = water, todayValue: number | null = 2.5) {
       onSettings={hooks.settings}
       onDuplicate={hooks.duplicate}
       onMove={hooks.move}
+      onRename={hooks.rename}
+      onPriority={hooks.priority}
       onReset={hooks.reset}
       onDelete={hooks.remove}
     />,
@@ -79,14 +83,47 @@ beforeEach(() => {
   hooks.remove.mockResolvedValue(true);
   hooks.reset.mockResolvedValue(1);
   hooks.duplicate.mockResolvedValue(true);
+  hooks.rename.mockResolvedValue(true);
+  hooks.priority.mockResolvedValue(true);
 });
 
 describe("запис числа", () => {
-  it("день видно зразу: число дня і ціль — та сама правда, що в клітинці", () => {
+  it("картка не переказує сьогоднішнє число — вона для запису", () => {
     renderCard();
 
-    expect(screen.getByText("2,5 л")).toBeTruthy();
-    expect(screen.getByText("Сьогодні · ціль 2 л")).toBeTruthy();
+    expect(screen.queryByText("2,5 л")).toBeNull();
+    expect(screen.queryByText("Сьогодні · ціль 2 л")).toBeNull();
+  });
+
+  it("назва в шапці стає полем на дотик і зберігається Enter", async () => {
+    renderCard();
+    const header = screen.getByRole("dialog", { name: "Вода" });
+
+    await userEvent.click(within(header).getByRole("button", { name: "Вода" }));
+    const field = within(header).getByLabelText("Назва трекера");
+    await userEvent.clear(field);
+    await userEvent.type(field, "  Вода питна  {Enter}");
+
+    expect(hooks.rename).toHaveBeenCalledWith("Вода питна");
+    // Поле закривається: заголовок знову показує назву.
+    expect(within(header).queryByLabelText("Назва трекера")).toBeNull();
+  });
+
+  it("пріоритет — кнопка в рядку збереження й десять рівнів у модалці", async () => {
+    renderCard();
+    await userEvent.click(screen.getByRole("button", { name: "Пріоритет: відсутній" }));
+
+    const grid = screen.getByRole("dialog", { name: "Пріоритет" });
+    expect(within(grid).getByRole("button", { name: "Відсутній" })).toBeTruthy();
+    await userEvent.click(within(grid).getByRole("button", { name: "3" }));
+
+    expect(hooks.priority).toHaveBeenCalledWith(3);
+  });
+
+  it("рівень на кнопці каже, який він тепер", () => {
+    renderCard({ ...water, priority: 7 });
+
+    expect(screen.getByRole("button", { name: "Пріоритет: 7" })).toBeTruthy();
   });
 
   it("значення й нотатка йдуть разом, і картка закривається після збереження", async () => {
@@ -160,11 +197,10 @@ describe("запис «так-ні»", () => {
     expect(hooks.close).toHaveBeenCalled();
   });
 
-  it("без запису дня каже це словами, і скидати нічого", () => {
+  it("без запису дня скидати нічого — кнопки немає", () => {
     renderCard(habit, null);
     const card = screen.getByRole("dialog", { name: "Тренування" });
 
-    expect(within(card).getByText("Сьогодні ще немає запису")).toBeTruthy();
     expect(within(card).queryByRole("button", { name: "Скинути сьогодні" })).toBeNull();
   });
 });
