@@ -467,9 +467,10 @@ describe("переміщення", () => {
     render(<TrackersPage />);
     await userEvent.click(screen.getByRole("button", { name: "Режим" }));
     await userEvent.click(screen.getByRole("button", { name: "Вода" }));
+    // Кнопка називає теперішнє місце, а не дію: «Група: Режим».
     await userEvent.click(
       within(screen.getByRole("dialog", { name: "Вода" })).getByRole("button", {
-        name: "Перемістити",
+        name: "Група: Режим",
       }),
     );
 

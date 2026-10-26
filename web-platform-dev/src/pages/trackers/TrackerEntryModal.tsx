@@ -31,7 +31,8 @@ interface TrackerEntryModalProps {
   onPublic: (isPublic: boolean) => Promise<boolean>;
   /** «Дублювати» — копія визначення; історія не копіюється. `false` — не вийшло. */
   onDuplicate: () => Promise<boolean>;
-  /** «Перемістити» — дерево груп поверхнею над карткою. */
+  /** «Група» — дерево груп поверхнею над карткою; підпис каже, де мірка зараз. */
+  groupTitle: string;
   onMove: () => void;
   /** Нова назва з шапки; `false` — не вдалось, назва лишається старою. */
   onRename: (title: string) => Promise<boolean>;
@@ -51,6 +52,7 @@ export function TrackerEntryModal({
   onAnalytics,
   onPublic,
   onDuplicate,
+  groupTitle,
   onMove,
   onRename,
   onPriority,
@@ -157,7 +159,7 @@ export function TrackerEntryModal({
             onChange={(patch) => setDraft((current) => ({ ...current, ...patch }))}
             onSubmit={() => void submit()}
           >
-            <div className="wb-tracker-actions">
+            <div className="wb-tracker-block wb-tracker-actions">
               <button
                 type="button"
                 className="wb-btn wb-btn-secondary wb-tracker-action"
@@ -177,24 +179,16 @@ export function TrackerEntryModal({
               </button>
               <button
                 type="button"
-                className="wb-btn wb-btn-secondary wb-tracker-action"
-                onClick={() => void duplicate()}
-              >
-                <Icon name="copy" size={16} />
-                Дублювати
-              </button>
-              <button
-                type="button"
-                className="wb-btn wb-btn-secondary wb-tracker-action"
+                className="wb-btn wb-btn-secondary wb-tracker-action wb-tracker-action--wide"
                 onClick={onMove}
               >
                 <Icon name="folder" size={16} />
-                Перемістити
+                <span className="wb-tracker-action-label">Група: {groupTitle}</span>
               </button>
               {todayValue !== null && (
                 <button
                   type="button"
-                  className="wb-btn wb-btn-secondary wb-tracker-action"
+                  className="wb-btn wb-btn-secondary wb-tracker-action wb-tracker-action--wide"
                   onClick={() => void reset()}
                 >
                   <Icon name="eraser" size={16} />
@@ -203,7 +197,7 @@ export function TrackerEntryModal({
               )}
             </div>
 
-            <div className="wb-tracker-public">
+            <div className="wb-tracker-block">
               <SwitchRow
                 label="Публічний"
                 hint="Інші бачать лише форму мірки. Записи не публікуються ніколи."
@@ -212,7 +206,7 @@ export function TrackerEntryModal({
               />
             </div>
 
-            <div className="wb-tracker-bottom">
+            <div className="wb-tracker-block wb-tracker-bottom">
               <button
                 type="button"
                 className="wb-btn wb-btn-secondary wb-tracker-action"
@@ -220,6 +214,14 @@ export function TrackerEntryModal({
               >
                 <Icon name="trash" size={16} />
                 Видалити
+              </button>
+              <button
+                type="button"
+                className="wb-btn wb-btn-secondary wb-tracker-action"
+                onClick={() => void duplicate()}
+              >
+                <Icon name="copy" size={16} />
+                Дублювати
               </button>
               <button
                 type="submit"

@@ -71,6 +71,7 @@ function renderCard(tracker: Tracker = water, todayValue: number | null = 2.5) {
       onAnalytics={hooks.analytics}
       onPublic={hooks.public}
       onDuplicate={hooks.duplicate}
+      groupTitle="Самопочуття"
       onMove={hooks.move}
       onRename={hooks.rename}
       onPriority={hooks.priority}
@@ -156,14 +157,19 @@ describe("запис числа", () => {
     expect(hooks.close).toHaveBeenCalled();
   });
 
-  it("«Зберегти» стоїть у низу поруч із «Видалити» й бере акцент, коли є що зберігати", async () => {
+  it("«Зберегти» стоїть у низу поруч із «Видалити», а «Дублювати» — між ними", async () => {
     renderCard();
     const card = screen.getByRole("dialog", { name: "Вода" });
     const save = within(card).getByRole("button", { name: "Зберегти" });
+    const bottom = save.closest(".wb-tracker-bottom");
+    const labels = Array.from(bottom?.querySelectorAll(".wb-btn") ?? []).map((button) =>
+      button.textContent?.trim(),
+    );
 
+    // Копія — між прибиранням і збереженням, а не окремою дією зверху.
+    expect(labels).toEqual(["Видалити", "Дублювати", "Зберегти"]);
     // Порожня картка не кличе діяти: заливка — це «є що зберігати».
     expect(save.className).not.toContain("wb-btn-primary");
-    expect(save.closest(".wb-tracker-bottom")?.textContent).toContain("Видалити");
 
     await userEvent.type(within(card).getByLabelText("Значення, л"), "1");
 
@@ -209,12 +215,16 @@ describe("запис числа", () => {
     expect(hooks.close).not.toHaveBeenCalled();
   });
 
-  it("публічність — остання зона перед рядком «Видалити / Зберегти»", () => {
+  it("картка поділена на чотири зони, і публічність — третя з них", () => {
     renderCard();
     const card = screen.getByRole("dialog", { name: "Вода" });
+    const blocks = Array.from(card.querySelectorAll(".wb-tracker-entry > .wb-tracker-block"));
 
-    expect(card.querySelector(".wb-tracker-actions + .wb-tracker-public")).toBeTruthy();
-    expect(card.querySelector(".wb-tracker-public + .wb-tracker-bottom")).toBeTruthy();
+    // Поля → дії → публічність → нижній рядок: між зонами одна тонка лінія.
+    expect(blocks).toHaveLength(4);
+    expect(blocks[1].classList.contains("wb-tracker-actions")).toBe(true);
+    expect(blocks[2].contains(screen.getByRole("switch", { name: "Публічний" }))).toBe(true);
+    expect(blocks[3].classList.contains("wb-tracker-bottom")).toBe(true);
   });
 
   it("нотатка не обовʼязкова: без неї запис іде з порожнім рядком", async () => {
@@ -341,9 +351,9 @@ describe("дії картки", () => {
     expect(hooks.close).not.toHaveBeenCalled();
   });
 
-  it("«Перемістити» передає вибір місця сторінці, а не закриває назавжди", async () => {
+  it("«Група» називає теперішнє місце й передає вибір сторінці", async () => {
     renderCard();
-    await userEvent.click(screen.getByRole("button", { name: "Перемістити" }));
+    await userEvent.click(screen.getByRole("button", { name: "Група: Самопочуття" }));
 
     expect(hooks.move).toHaveBeenCalled();
   });

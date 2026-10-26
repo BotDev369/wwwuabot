@@ -40,40 +40,44 @@ export function TrackerEntryForm({
 
   return (
     <form className="wb-tracker-entry" onSubmit={submit}>
-      {tracker.valueType === "boolean" ? (
-        <div className="wb-field">
-          <span className="wb-label">Статус</span>
-          <TrackerYesNo
-            value={draft.value}
-            onChange={(value) => onChange({ value })}
-            label="Так чи ні"
-          />
-        </div>
-      ) : (
+      {/* Перша зона картки: значення й нотатка. Назва редагується в шапці, а
+          дії, публічність і рядок збереження приходять зонами нижче. */}
+      <div className="wb-tracker-block">
+        {tracker.valueType === "boolean" ? (
+          <div className="wb-field">
+            <span className="wb-label">Статус</span>
+            <TrackerYesNo
+              value={draft.value}
+              onChange={(value) => onChange({ value })}
+              label="Так чи ні"
+            />
+          </div>
+        ) : (
+          <label className="wb-field">
+            <span className="wb-label">Значення{tracker.unit ? `, ${tracker.unit}` : ""}</span>
+            {/* Без `min`/`max`/`step`: нативна підказка «введіть дійсне значення»
+                з'являлась на кроці, якого людина не обирала — межі перевіряє сервер. */}
+            <input
+              className="wb-input"
+              type="number"
+              inputMode="decimal"
+              step="any"
+              value={draft.value}
+              onChange={(event) => onChange({ value: event.target.value })}
+            />
+          </label>
+        )}
         <label className="wb-field">
-          <span className="wb-label">Значення{tracker.unit ? `, ${tracker.unit}` : ""}</span>
-          {/* Без `min`/`max`/`step`: нативна підказка «введіть дійсне значення»
-              з'являлась на кроці, якого людина не обирала — межі перевіряє сервер. */}
+          <span className="wb-label">Нотатка</span>
           <input
             className="wb-input"
-            type="number"
-            inputMode="decimal"
-            step="any"
-            value={draft.value}
-            onChange={(event) => onChange({ value: event.target.value })}
+            value={draft.note}
+            maxLength={200}
+            placeholder="не обов'язково"
+            onChange={(event) => onChange({ note: event.target.value })}
           />
         </label>
-      )}
-      <label className="wb-field">
-        <span className="wb-label">Нотатка</span>
-        <input
-          className="wb-input"
-          value={draft.note}
-          maxLength={200}
-          placeholder="не обов'язково"
-          onChange={(event) => onChange({ note: event.target.value })}
-        />
-      </label>
+      </div>
       {children}
     </form>
   );

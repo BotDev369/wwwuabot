@@ -144,6 +144,11 @@ export function TrackersPage(): ReactElement {
   const entryToday = entryTracker
     ? (cellsOf(entryTracker).find((cell) => cell.day === state.endDay)?.value ?? null)
     : null;
+  // Підпис кнопки «Група»: місце мірки видно ще до відкриття дерева. `null` у
+  // трекера — це «Свої», тож невідома група теж каже «Свої», а не порожнечу.
+  const entryGroupTitle = entryTracker
+    ? (state.groups.find((group) => group.id === entryTracker.groupId)?.title ?? "Свої")
+    : "Свої";
 
   async function duplicateTracker(tracker: Tracker): Promise<boolean> {
     // Копія — визначення без історії: мірка та сама, виміри починаються заново.
@@ -338,6 +343,7 @@ export function TrackersPage(): ReactElement {
           onAnalytics={() => setAnalyticsId(entryTracker.id)}
           onPublic={(isPublic) => state.setPublic(entryTracker.id, isPublic)}
           onDuplicate={() => duplicateTracker(entryTracker)}
+          groupTitle={entryGroupTitle}
           onRename={(title) => state.rename(entryTracker.id, title)}
           onPriority={(priority) => state.setPriority(entryTracker.id, priority)}
           onMove={() => setMoving({ kind: "tracker", id: entryTracker.id })}
