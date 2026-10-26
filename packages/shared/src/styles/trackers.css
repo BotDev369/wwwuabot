@@ -539,18 +539,26 @@
 }
 
 /* Останній рядок закриває картку — «Видалити», «Дублювати» й «Зберегти»
-   стоять разом, у порядку читання. На телефоні три підписи в рядок не
-   вміщаються (та сама причина, що у футера модалки дати), тож там вони —
-   стовпчик; на ширшому екрані — один ряд. */
+   стоять разом, у порядку читання, і **завжди одним рядом**: це один набір
+   дій над трекером, а стовпчик розтягував картку на три поверхи. На вузькому
+   екрані підпис іде **під знак**, а не вбік: три підписи в ряд по ширині не
+   вміщаються (та сама причина, що у футера модалки дати), але ряд лишається
+   один, і жодне слово не ріжеться. */
 .wb-tracker-bottom {
   display: grid;
-  grid-template-columns: minmax(0, 1fr);
+  grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: var(--sp-2);
 }
 
-@media (min-width: 521px) {
+@media (max-width: 520px) {
   .wb-tracker-bottom {
-    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: var(--sp-1);
+  }
+
+  .wb-tracker-bottom .wb-btn {
+    flex-direction: column;
+    gap: var(--sp-1);
+    padding-inline: var(--sp-1);
   }
 }
 
@@ -1006,6 +1014,21 @@
 .wb-group-picker-item--on,
 .wb-group-picker-item--on .wb-group-picker-item-text {
   color: var(--accent);
+}
+
+/* Теперішнє місце в дереві переміщення — акцентом цілком: заливка, обвід,
+   знак-галочка й підпис. Дерево буває глибоким, і однакові назви на сусідніх
+   гілках без цього не відрізнити; кнопка «Тут» залита, бо це стан, а не дія. */
+.wb-group-picker-row--here,
+.wb-group-picker-row--here:hover {
+  background: color-mix(in srgb, var(--accent) 12%, var(--field-bg));
+  box-shadow: inset 0 0 0 1.5px var(--accent);
+}
+
+.wb-group-picker-row--here .wb-group-picker-lead,
+.wb-group-picker-row--here .wb-group-picker-item-text {
+  color: var(--accent);
+  font-weight: var(--weight-semibold);
 }
 
 /* «Обрати» в рядку дерева: дія рядка, а не весь рядок — дотик у порожнє

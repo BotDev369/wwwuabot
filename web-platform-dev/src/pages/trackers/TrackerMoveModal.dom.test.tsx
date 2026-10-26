@@ -100,6 +100,13 @@ describe("вибір місця", () => {
     const here = screen.getByRole("button", { name: "Теперішнє місце: Активність" });
     expect(here.hasAttribute("disabled")).toBe(true);
     expect(here.textContent).toBe("Тут");
+    // Теперішнє місце виділене цілим рядком: акцентна заливка, обвід і
+    // знак-галочка, а не лише підпис кнопки.
+    expect(here.closest(".wb-group-picker-row--here")?.getAttribute("aria-current")).toBe("true");
+    expect(here.className).toContain("wb-btn-primary");
+    expect(
+      screen.getByRole("button", { name: "Обрати: Режим" }).closest(".wb-group-picker-row--here"),
+    ).toBeNull();
     // Корінь лишається доступним: підняти групу на верхній рівень — це рух.
     expect(
       screen.getByRole("button", { name: "Обрати: Верхній рівень" }).hasAttribute("disabled"),

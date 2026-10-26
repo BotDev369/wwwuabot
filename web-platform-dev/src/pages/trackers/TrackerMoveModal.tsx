@@ -2,7 +2,8 @@
  * «Перемістити» — дерево груп із кнопкою «Обрати» в кожному рядку: місце
  * призначення обирають точно, а не вгадують стрілками «вище/нижче». Гілка,
  * яку переміщують (разом із нащадками), у дереві не показується — група не
- * може стати під собою; теперішнє місце каже «Тут» замість «Обрати».
+ * може стати під собою; теперішнє місце виділене цілим рядком (акцент,
+ * галочка, залита кнопка «Тут»), щоб його було видно серед однойменних гілок.
  *
  * @module web-platform-dev/src/pages/trackers/TrackerMoveModal
  */
@@ -84,7 +85,12 @@ export function TrackerMoveModal({
     },
   ): ReactElement {
     return (
-      <li key={key} className="wb-group-picker-row" style={{ marginInlineStart: depth * 14 }}>
+      <li
+        key={key}
+        className={`wb-group-picker-row${options.here ? " wb-group-picker-row--here" : ""}`}
+        style={{ marginInlineStart: depth * 14 }}
+        aria-current={options.here ? "true" : undefined}
+      >
         {options.branch ? (
           <button
             type="button"
@@ -99,12 +105,12 @@ export function TrackerMoveModal({
           <span className="wb-group-picker-toggle" aria-hidden="true" />
         )}
         <span className="wb-group-picker-lead">
-          <Icon name="folder" size={16} />
+          <Icon name={options.here ? "check" : "folder"} size={16} />
           <span className="wb-group-picker-item-text">{title}</span>
         </span>
         <button
           type="button"
-          className="wb-btn wb-btn-secondary wb-group-picker-pick"
+          className={`wb-btn wb-group-picker-pick ${options.here ? "wb-btn-primary" : "wb-btn-secondary"}`}
           disabled={options.here}
           aria-label={`${options.here ? "Теперішнє місце" : "Обрати"}: ${title}`}
           onClick={options.onPick}
