@@ -28,10 +28,7 @@ export function screenKeyOfPath(pathname: string): string {
   const path = pathname.replace(/\/+$/, "") || "/";
   const at = (base: string): boolean => path === base || path.startsWith(`${base}/`);
 
-  if (at("/trackers")) {
-    // `/trackers/:id` — окремий екран (картка трекера), а не список.
-    return path === TRACKERS_PATH ? "trackers" : "tracker";
-  }
+  if (at(TRACKERS_PATH)) return "trackers";
   if (at(FAVORITES_PATH)) return "favorites";
   if (at(MESSAGES_PATH)) return "messages";
   if (at(NOTES_PATH)) return "notes";

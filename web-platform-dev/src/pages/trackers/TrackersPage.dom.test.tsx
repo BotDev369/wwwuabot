@@ -2,8 +2,8 @@
 /**
  * «Трекери» — акордеон груп + матриця днів: дерево груп із рахунком, дотик
  * по назві й по сьогоднішній клітинці відкриває **картку запису**, по минулій
- * — веде на картку трекера (день ставить сервер); вибір групи пам'ятається в
- * localStorage, а не в стані сторінки.
+ * — **аналітику** зі звітом та історією (день ставить сервер); вибір групи
+ * пам'ятається в localStorage, а не в стані сторінки.
  *
  * @module web-platform-dev/src/pages/trackers/TrackersPage.dom.test
  */
@@ -11,7 +11,12 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { render, screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import type { Tracker, TrackerEntryRow, TrackerGroup } from "@wwwuabot/shared/trackers";
+import type {
+  Tracker,
+  TrackerEntry,
+  TrackerEntryRow,
+  TrackerGroup,
+} from "@wwwuabot/shared/trackers";
 
 const hooks = {
   navigate: vi.fn(),
@@ -23,6 +28,7 @@ const hooks = {
   move: vi.fn(),
   rename: vi.fn(),
   priority: vi.fn(),
+  public: vi.fn(),
   createGroup: vi.fn(),
   updateGroup: vi.fn(),
   deleteGroup: vi.fn(),
@@ -107,6 +113,7 @@ const state = {
   move: hooks.move,
   rename: hooks.rename,
   setPriority: hooks.priority,
+  setPublic: hooks.public,
   createGroup: hooks.createGroup,
   updateGroup: hooks.updateGroup,
   deleteGroup: hooks.deleteGroup,
@@ -115,6 +122,23 @@ const state = {
   addMany: hooks.addMany,
   clearGroup: hooks.clearGroup,
   clearDay: hooks.clearDay,
+};
+
+/** Аналітика читає трекер окремо (`useTracker`) — тут він без мережі. */
+const analytics = {
+  tracker: null as Tracker | null,
+  groups: [] as TrackerGroup[],
+  entries: [] as TrackerEntry[],
+  endDay: "2026-10-17",
+  loading: false,
+  error: null as string | null,
+  saving: false,
+  reload: vi.fn(),
+  save: vi.fn(),
+  remove: vi.fn(),
+  archive: vi.fn(),
+  move: vi.fn(),
+  setPublic: vi.fn(),
 };
 
 /** Списки на читання: один рядок на шаблон і на публічний трекер. */
@@ -174,6 +198,7 @@ vi.mock("@wwwuabot/ui/dialog", () => ({
 }));
 vi.mock("./useTrackers", () => ({ useTrackers: () => state }));
 vi.mock("./useTrackerLibrary", () => ({ useTrackerLibrary: () => library }));
+vi.mock("./useTracker", () => ({ useTracker: () => analytics }));
 
 const { TrackersPage } = await import("./TrackersPage");
 
@@ -181,6 +206,7 @@ beforeEach(() => {
   vi.clearAllMocks();
   localStorage.clear();
   hooks.params = new URLSearchParams();
+  analytics.tracker = water;
   state.trackers = [water, steps, coffee];
   state.groups = groups;
   hooks.addFrom.mockResolvedValue({ ...water, id: 2 });
@@ -286,9 +312,11 @@ describe("матриця днів", () => {
     expect(today.querySelector(".wb-matrix-number")?.textContent).toBe("2,5");
     expect(today.querySelector(".wb-matrix-unit")?.textContent).toBe("л");
 
-    // Минула клітинка — історія: дотик веде на картку трекера.
+    // Минула клітинка — історія: дотик відкриває аналітику.
     await userEvent.click(screen.getByRole("button", { name: /Вода, Чт 15/ }));
-    expect(hooks.navigate).toHaveBeenCalledWith("/trackers/1");
+    const analyticsDialog = screen.getByRole("dialog", { name: "Аналітика" });
+    expect(analyticsDialog).toBeTruthy();
+    await userEvent.click(within(analyticsDialog).getByRole("button", { name: "Закрити" }));
 
     // Сьогоднішня відкриває картку запису — і сейв іде тим самим шляхом, що й на картці.
     await userEvent.click(today);
@@ -455,12 +483,21 @@ describe("картка запису", () => {
     return screen.getByRole("dialog", { name: "Вода" });
   }
 
-  it("«Налаштувати» веде на картку трекера: звіт та історія живуть там", async () => {
+  it("«Аналітика» відкриває звіт окремою поверхнею й закриває картку", async () => {
     const card = await openWater();
 
-    await userEvent.click(within(card).getByRole("button", { name: "Налаштувати" }));
+    await userEvent.click(within(card).getByRole("button", { name: "Аналітика" }));
 
-    expect(hooks.navigate).toHaveBeenCalledWith("/trackers/1");
+    expect(screen.queryByRole("dialog", { name: "Вода" })).toBeNull();
+    expect(screen.getByRole("dialog", { name: "Аналітика" })).toBeTruthy();
+  });
+
+  it("публічність — перемикач у картці, і він іде на сервер", async () => {
+    const card = await openWater();
+
+    await userEvent.click(within(card).getByRole("switch", { name: "Публічний" }));
+
+    expect(hooks.public).toHaveBeenCalledWith(1, true);
   });
 
   it("«Дублювати» створює копію визначення без історії", async () => {

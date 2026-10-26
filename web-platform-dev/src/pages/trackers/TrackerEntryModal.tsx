@@ -1,14 +1,14 @@
 /**
  * Дотик на трекер — картка з записом і діями, а не перехід на сторінку. Назва
- * в шапці редагується дотиком: заголовок — це і є назва. Запис — той самий
- * `TrackerEntryForm`, що й на картці трекера, поруч зі «Зберегти» — пріоритет.
+ * в шапці редагується дотиком: заголовок — це і є назва. Дії стоять зонами:
+ * запис, публічність, решта дій і прибирання — а не купою різноширинних плиток.
  * День ставить сервер; дії, що щось змінюють, питають (`docs/TRACKERS.md`).
  *
  * @module web-platform-dev/src/pages/trackers/TrackerEntryModal
  */
 
 import { useState, type ReactElement } from "react";
-import { Icon } from "@wwwuabot/shared";
+import { Icon, SwitchRow } from "@wwwuabot/shared";
 import { useDialog } from "@wwwuabot/ui/dialog";
 import { MenuModal } from "@wwwuabot/ui/menu";
 import type { Tracker } from "@wwwuabot/shared/trackers";
@@ -25,8 +25,10 @@ interface TrackerEntryModalProps {
   saving: boolean;
   onClose: () => void;
   onSave: (value: number, note: string) => Promise<boolean>;
-  /** «Налаштувати» — картка трекера: звіт, історія, публічність. */
-  onSettings: () => void;
+  /** «Аналітика» — окрема поверхня: графік, звіт та історія. */
+  onAnalytics: () => void;
+  /** Публічність визначення: інші бачать форму мірки, а записи — ніколи. */
+  onPublic: (isPublic: boolean) => Promise<boolean>;
   /** «Дублювати» — копія визначення; історія не копіюється. `false` — не вийшло. */
   onDuplicate: () => Promise<boolean>;
   /** «Перемістити» — дерево груп у наступній поверхні (картка закривається). */
@@ -46,7 +48,8 @@ export function TrackerEntryModal({
   saving,
   onClose,
   onSave,
-  onSettings,
+  onAnalytics,
+  onPublic,
   onDuplicate,
   onMove,
   onRename,
@@ -137,14 +140,23 @@ export function TrackerEntryModal({
               }
             />
 
+            <div className="wb-tracker-public">
+              <SwitchRow
+                label="Публічний"
+                hint="Інші бачать лише форму мірки. Записи не публікуються ніколи."
+                checked={tracker.isPublic ?? false}
+                onToggle={(next: boolean) => void onPublic(next)}
+              />
+            </div>
+
             <div className="wb-tracker-actions">
               <button
                 type="button"
                 className="wb-btn wb-btn-secondary wb-tracker-action"
-                onClick={onSettings}
+                onClick={onAnalytics}
               >
-                <Icon name="sliders" size={16} />
-                Налаштувати
+                <Icon name="bar-chart" size={16} />
+                Аналітика
               </button>
               <button
                 type="button"
@@ -165,22 +177,23 @@ export function TrackerEntryModal({
               {todayValue !== null && (
                 <button
                   type="button"
-                  className="wb-btn wb-btn-secondary wb-tracker-action wb-tracker-action--wide"
+                  className="wb-btn wb-btn-secondary wb-tracker-action"
                   onClick={() => void reset()}
                 >
                   <Icon name="eraser" size={16} />
                   Скинути сьогодні
                 </button>
               )}
-              <button
-                type="button"
-                className="wb-btn wb-btn-ghost wb-tracker-action wb-tracker-action--wide wb-tracker-action--danger"
-                onClick={() => void remove()}
-              >
-                <Icon name="trash" size={16} />
-                Видалити
-              </button>
             </div>
+
+            <button
+              type="button"
+              className="wb-btn wb-btn-ghost wb-tracker-remove"
+              onClick={() => void remove()}
+            >
+              <Icon name="trash" size={16} />
+              Видалити
+            </button>
           </div>
         }
       />

@@ -40,6 +40,8 @@ export interface TrackersState extends TrackersPayload {
   rename: (trackerId: number, title: string) => Promise<boolean>;
   /** Пріоритет 1–9; `null` — прибрати рівень. */
   setPriority: (trackerId: number, priority: number | null) => Promise<boolean>;
+  /** Відкрити визначення іншим; виміри не публікуються ніколи. */
+  setPublic: (trackerId: number, isPublic: boolean) => Promise<boolean>;
   createGroup: (title: string, parentId: number | null) => Promise<TrackerGroup | null>;
   updateGroup: (
     id: number,
@@ -148,59 +150,65 @@ export function useTrackers(): TrackersState {
     }
   }
 
-  async function move(trackerId: number, groupId: number | null): Promise<boolean> {
+  /** Одна зміна рядка трекера; `null` — сервер відмовив, причина вже на екрані. */
+  async function patchTracker(
+    trackerId: number,
+    patch: {
+      title?: string;
+      priority?: number | null;
+      groupId?: number | null;
+      isPublic?: boolean;
+    },
+    failure: string,
+  ): Promise<{ title?: string; priority?: number | null } | null> {
     try {
-      await apiFetch("/api/user/trackers", {
+      return await apiFetch<{ title?: string; priority?: number | null }>("/api/user/trackers", {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ id: trackerId, groupId }),
+        body: JSON.stringify({ id: trackerId, ...patch }),
       });
-      setTrackers((current) =>
-        current.map((tracker) => (tracker.id === trackerId ? { ...tracker, groupId } : tracker)),
-      );
-      return true;
     } catch {
-      await dialog.alert("Не вдалося пересунути трекер.", { tone: "danger" });
+      await dialog.alert(failure, { tone: "danger" });
+      return null;
+    }
+  }
+
+  /** Один рядок стрічки після відповіді сервера — без перечитування списку. */
+  function replaceTracker(trackerId: number, patch: Partial<Tracker>): void {
+    setTrackers((current) =>
+      current.map((tracker) => (tracker.id === trackerId ? { ...tracker, ...patch } : tracker)),
+    );
+  }
+
+  async function move(trackerId: number, groupId: number | null): Promise<boolean> {
+    if (!(await patchTracker(trackerId, { groupId }, "Не вдалося пересунути трекер."))) {
       return false;
     }
+    replaceTracker(trackerId, { groupId });
+    return true;
   }
 
   async function rename(trackerId: number, title: string): Promise<boolean> {
-    try {
-      const result = await apiFetch<{ title: string }>("/api/user/trackers", {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ id: trackerId, title }),
-      });
-      setTrackers((current) =>
-        current.map((tracker) =>
-          tracker.id === trackerId ? { ...tracker, title: result.title } : tracker,
-        ),
-      );
-      return true;
-    } catch {
-      await dialog.alert("Не вдалося змінити назву.", { tone: "danger" });
-      return false;
-    }
+    const result = await patchTracker(trackerId, { title }, "Не вдалося змінити назву.");
+    if (!result) return false;
+    replaceTracker(trackerId, { title: result.title ?? title });
+    return true;
   }
 
   async function setPriority(trackerId: number, priority: number | null): Promise<boolean> {
-    try {
-      const result = await apiFetch<{ priority: number | null }>("/api/user/trackers", {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ id: trackerId, priority }),
-      });
-      setTrackers((current) =>
-        current.map((tracker) =>
-          tracker.id === trackerId ? { ...tracker, priority: result.priority } : tracker,
-        ),
-      );
-      return true;
-    } catch {
-      await dialog.alert("Не вдалося змінити пріоритет.", { tone: "danger" });
-      return false;
-    }
+    const result = await patchTracker(trackerId, { priority }, "Не вдалося змінити пріоритет.");
+    if (!result) return false;
+    replaceTracker(trackerId, { priority: result.priority ?? null });
+    return true;
+  }
+
+  async function setPublic(trackerId: number, isPublic: boolean): Promise<boolean> {
+    const result = await patchTracker(trackerId, { isPublic }, "Не вдалося змінити публічність.");
+    if (!result) return false;
+    // Стан показуємо після відповіді: перемикач, який «зберігся» локально й не
+    // зберігся на сервері, — гірший за вимкнений.
+    replaceTracker(trackerId, { isPublic });
+    return true;
   }
 
   async function createGroup(title: string, parentId: number | null): Promise<TrackerGroup | null> {
@@ -374,6 +382,7 @@ export function useTrackers(): TrackersState {
     move,
     rename,
     setPriority,
+    setPublic,
     createGroup,
     updateGroup,
     deleteGroup,

@@ -4,7 +4,6 @@ import { screenKeyOfPath } from "./screens";
 describe("ключ екрана з адреси", () => {
   it("називає екрани тим самим ключем, що й журнал", () => {
     expect(screenKeyOfPath("/trackers")).toBe("trackers");
-    expect(screenKeyOfPath("/trackers/7")).toBe("tracker");
     expect(screenKeyOfPath("/favorites")).toBe("favorites");
     expect(screenKeyOfPath("/messages")).toBe("messages");
     expect(screenKeyOfPath("/account")).toBe("account");

@@ -10,7 +10,6 @@ import { useCallback, useMemo, useState, type CSSProperties, type ReactElement }
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { Icon } from "@wwwuabot/shared";
 import { ContextBar, useScreenChrome } from "@wwwuabot/ui/nav";
-import { MenuModal } from "@wwwuabot/ui/menu";
 import { useDialog } from "@wwwuabot/ui/dialog";
 import { Tabs, tabId, tabPanelId, type TabOption } from "@wwwuabot/ui/tabs";
 import { trackerPriorityLabel, type Tracker } from "@wwwuabot/shared/trackers";
@@ -18,20 +17,20 @@ import {
   TRACKERS_PATH,
   readCreateGroupId,
   readCreateIntent,
-  trackerPath,
   withCreateIntent,
   withoutCreateIntent,
 } from "@/app/routes";
 import { useTrackers } from "./useTrackers";
 import { useTrackerLibrary } from "./useTrackerLibrary";
 import { useGroupAccordion } from "./useGroupAccordion";
-import { TrackerCreateForm } from "./TrackerCreateForm";
+import { TrackerCreateModal } from "./TrackerCreateModal";
 import { TrackerGroupSection } from "./TrackerGroupSection";
 import { TrackerMoveSurface, type MovingTarget } from "./TrackerMoveSurface";
 import { TrackerAddMenu } from "./TrackerAddMenu";
 import { TrackersEmptyState } from "./TrackersEmptyState";
 import { TrackerPriorityModal } from "./TrackerPriorityModal";
 import { TrackerEntryModal } from "./TrackerEntryModal";
+import { TrackerAnalyticsModal } from "./TrackerAnalyticsModal";
 import { TrackerDayHeader } from "./TrackerDayHeader";
 import { TrackersLibraryPanel } from "./TrackersLibraryPanel";
 import { groupLibrary } from "./tracker-library";
@@ -81,6 +80,8 @@ export function TrackersPage(): ReactElement {
   // Дотик на трекер відкриває картку запису, а не сторінку: номер — стан, а не
   // адреса, бо «назад» має закрити картку, а не повернути на список.
   const [entryId, setEntryId] = useState<number | null>(null);
+  // Аналітика — окрема поверхня над списком, так само на номер, а не на адресу.
+  const [analyticsId, setAnalyticsId] = useState<number | null>(null);
 
   const rows = useMemo(
     () => withPriority(state.trackers, priorityFilter),
@@ -134,6 +135,10 @@ export function TrackersPage(): ReactElement {
 
   const entryTracker =
     entryId === null ? null : (state.trackers.find((tracker) => tracker.id === entryId) ?? null);
+  const analyticsTracker =
+    analyticsId === null
+      ? null
+      : (state.trackers.find((tracker) => tracker.id === analyticsId) ?? null);
   // Значення дня — те саме, що в клітинці: модалка не рахує свою арифметику.
   const entryToday = entryTracker
     ? (cellsOf(entryTracker).find((cell) => cell.day === state.endDay)?.value ?? null)
@@ -193,26 +198,14 @@ export function TrackersPage(): ReactElement {
         aria-labelledby={tabId(tab)}
         className="wb-trackers-panel"
       >
-        {tab === "templates" && (
+        {tab !== "mine" && (
           <TrackersLibraryPanel
-            items={library.templates}
+            items={tab === "templates" ? library.templates : library.publicTrackers}
             loading={library.loading}
             error={library.error}
-            emptyText="Шаблонів не знайдено."
-            isOpen={libraryAccordion.isOpen}
-            onToggle={libraryAccordion.toggle}
-            onAdd={addFrom}
-            onAddMany={addMany}
-            onRetry={() => void library.reload()}
-          />
-        )}
-
-        {tab === "public" && (
-          <TrackersLibraryPanel
-            items={library.publicTrackers}
-            loading={library.loading}
-            error={library.error}
-            emptyText="Ще ніхто не відкрив своїх трекерів."
+            emptyText={
+              tab === "templates" ? "Шаблонів не знайдено." : "Ще ніхто не відкрив своїх трекерів."
+            }
             isOpen={libraryAccordion.isOpen}
             onToggle={libraryAccordion.toggle}
             onAdd={addFrom}
@@ -257,7 +250,7 @@ export function TrackersPage(): ReactElement {
                     isOpen={mineAccordion.isOpen}
                     onToggle={mineAccordion.toggle}
                     onOpenTracker={setEntryId}
-                    onOpenHistory={(id) => navigate(trackerPath(id))}
+                    onOpenHistory={setAnalyticsId}
                     onCreateGroup={state.createGroup}
                     onUpdateGroup={state.updateGroup}
                     onDeleteGroup={state.deleteGroup}
@@ -341,10 +334,11 @@ export function TrackersPage(): ReactElement {
           saving={state.saving}
           onClose={() => setEntryId(null)}
           onSave={(value, note) => state.save(entryTracker.id, value, note)}
-          onSettings={() => {
+          onAnalytics={() => {
             setEntryId(null);
-            navigate(trackerPath(entryTracker.id));
+            setAnalyticsId(entryTracker.id);
           }}
+          onPublic={(isPublic) => state.setPublic(entryTracker.id, isPublic)}
           onDuplicate={() => duplicateTracker(entryTracker)}
           onRename={(title) => state.rename(entryTracker.id, title)}
           onPriority={(priority) => state.setPriority(entryTracker.id, priority)}
@@ -357,6 +351,10 @@ export function TrackersPage(): ReactElement {
         />
       )}
 
+      {analyticsTracker && (
+        <TrackerAnalyticsModal tracker={analyticsTracker} onClose={() => setAnalyticsId(null)} />
+      )}
+
       <TrackerMoveSurface
         moving={moving}
         groups={state.groups}
@@ -367,20 +365,18 @@ export function TrackersPage(): ReactElement {
       />
 
       {creating && (
-        <MenuModal
-          title="Новий трекер"
-          variant="card"
-          onClose={() => navigate(withoutCreateIntent(TRACKERS_PATH), { replace: true })}
-          content={
-            <TrackerCreateForm
-              groups={state.groups}
-              initialGroupId={createGroupId}
-              onCreate={(fields, groupId) => state.create(fields, groupId)}
-              onCreated={(tracker) => navigate(trackerPath(tracker.id), { replace: true })}
-              onCancel={() => navigate(withoutCreateIntent(TRACKERS_PATH), { replace: true })}
-              onCreateGroup={(title) => state.createGroup(title, null)}
-            />
-          }
+        <TrackerCreateModal
+          groups={state.groups}
+          initialGroupId={createGroupId}
+          onCreate={(fields, groupId) => state.create(fields, groupId)}
+          onCreated={(tracker) => {
+            // Форму закриваємо адресою, а картку відкриваємо станом: новий
+            // трекер одразу готовий до запису — без проміжної сторінки.
+            navigate(withoutCreateIntent(TRACKERS_PATH), { replace: true });
+            setEntryId(tracker.id);
+          }}
+          onCancel={() => navigate(withoutCreateIntent(TRACKERS_PATH), { replace: true })}
+          onCreateGroup={(title) => state.createGroup(title, null)}
         />
       )}
     </div>

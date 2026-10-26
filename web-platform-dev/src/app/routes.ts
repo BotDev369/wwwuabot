@@ -278,7 +278,6 @@ export function withPageTemplate(path: string, key: PageTemplateKey): string {
  * посиланням можна дати конкретну мірку. `id` — номер рядка `trackers`.
  */
 export const TRACKERS_ROUTE = "trackers";
-export const trackerPath = (id: number): string => `${TRACKERS_PATH}/${id}`;
 
 /** Нотатки — власні дані людини, не рядок `scenarios`. */
 export const NOTES_ROUTE = "notes";

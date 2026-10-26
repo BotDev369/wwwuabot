@@ -1,8 +1,9 @@
 // @vitest-environment jsdom
 /**
  * Картка запису: дотик на трекер відкриває її замість сторінки. Запис —
- * число або «так/ні», нотатка необовʼязкова в обох; дії (налаштувати,
- * дублювати, скинути, видалити) — окремі, і кожна питає там, де щось зникає.
+ * число або «так/ні», нотатка необовʼязкова в обох; публічність стоїть
+ * перемикачем у самій картці, а аналітика, копія, переміщення, скидання й
+ * прибирання — окремі дії, і кожна питає там, де щось зникає.
  *
  * @module web-platform-dev/src/pages/trackers/TrackerEntryModal.dom.test
  */
@@ -17,7 +18,8 @@ const hooks = {
   confirm: vi.fn(),
   save: vi.fn(),
   close: vi.fn(),
-  settings: vi.fn(),
+  analytics: vi.fn(),
+  public: vi.fn(),
   duplicate: vi.fn(),
   move: vi.fn(),
   rename: vi.fn(),
@@ -66,7 +68,8 @@ function renderCard(tracker: Tracker = water, todayValue: number | null = 2.5) {
       saving={false}
       onClose={hooks.close}
       onSave={hooks.save}
-      onSettings={hooks.settings}
+      onAnalytics={hooks.analytics}
+      onPublic={hooks.public}
       onDuplicate={hooks.duplicate}
       onMove={hooks.move}
       onRename={hooks.rename}
@@ -85,6 +88,7 @@ beforeEach(() => {
   hooks.duplicate.mockResolvedValue(true);
   hooks.rename.mockResolvedValue(true);
   hooks.priority.mockResolvedValue(true);
+  hooks.public.mockResolvedValue(true);
 });
 
 describe("запис числа", () => {
@@ -205,12 +209,38 @@ describe("запис «так-ні»", () => {
   });
 });
 
-describe("дії картки", () => {
-  it("«Налаштувати» веде на картку трекера", async () => {
+describe("публічність", () => {
+  it("перемикач стоїть у картці й каже, що відкривається лише форма мірки", () => {
     renderCard();
-    await userEvent.click(screen.getByRole("button", { name: "Налаштувати" }));
 
-    expect(hooks.settings).toHaveBeenCalled();
+    const toggle = screen.getByRole("switch", { name: "Публічний" });
+    expect(toggle.getAttribute("aria-checked")).toBe("false");
+    expect(screen.getByText(/Записи не публікуються/)).toBeTruthy();
+  });
+
+  it("увімкнення йде на сервер, а не лише в стан", async () => {
+    renderCard();
+
+    await userEvent.click(screen.getByRole("switch", { name: "Публічний" }));
+
+    expect(hooks.public).toHaveBeenCalledWith(true);
+  });
+
+  it("відкрите визначення показує перемикач увімкненим", () => {
+    renderCard({ ...water, isPublic: true });
+
+    expect(screen.getByRole("switch", { name: "Публічний" }).getAttribute("aria-checked")).toBe(
+      "true",
+    );
+  });
+});
+
+describe("дії картки", () => {
+  it("«Аналітика» відкриває окрему поверхню зі звітом та історією", async () => {
+    renderCard();
+    await userEvent.click(screen.getByRole("button", { name: "Аналітика" }));
+
+    expect(hooks.analytics).toHaveBeenCalled();
   });
 
   it("«Дублювати» створює копію й закриває картку", async () => {

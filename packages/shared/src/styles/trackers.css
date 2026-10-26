@@ -4,10 +4,8 @@
  * Класи живуть у shared (`check:css`): розмітку рендерить оболонка, але вигляд
  * той самий кирпичик, що й решта продукту.
  *
- * **Поверхня.** `--tracker-surface` — це `--bg-2`: фон людини, підмішаний її
- * текстом. Брендовий `.wb-card` холодний, і на теплому тлі картка читалась як
- * приклеєна плитка — саме це й робило екран «наляпистим». Тому жоден блок
- * трекерів не бере `.wb-card`, а тло тримає один токен сторінки.
+ * **Поверхня.** Трекери живуть у звичайних `.wb-modal--card`: своєї заливки їм
+ * не потрібно, бо поверхня вже піднята над екраном скримом.
  *
  * **Заливка є тільки в назви групи.** Рядок заголовка залитий, рядок мірки —
  * ні: залитий рядок з числом читався як плитка, і сітка днів губилася.
@@ -23,7 +21,6 @@
  */
 
 .wb-trackers-page {
-  --tracker-surface: var(--bg-2);
   /* Заливка заголовка: підмішаний основний колір замість окремого кольору —
      напрямок мішанини виходить сам, тож один токен працює і на світлому, і
      на темному, і на трьох кольорах людини (як у `user-colors.css`). */
@@ -369,24 +366,6 @@
   font-weight: var(--weight-semibold);
 }
 
-/* ── Панель: спільна поверхня блоків сторінки трекера ─────────────────────── */
-
-.wb-tracker-panel {
-  display: flex;
-  flex-direction: column;
-  gap: var(--sp-3);
-  padding: var(--sp-4);
-  margin-bottom: var(--sp-3);
-  border-radius: var(--radius-lg);
-  background: var(--tracker-surface);
-}
-
-/* Смуга вкладок всередині панелі відступ до вмісту бере з гепу панелі.
-   Власний `margin` смуги додався б до нього подвійно. */
-.wb-tracker-panel .wb-tabs {
-  margin-bottom: 0;
-}
-
 /* ── Запис дня ────────────────────────────────────────────────────────────── */
 
 /* Поля стосом, збереження — під ними: круг біля поля лишав мертве місце
@@ -548,22 +527,41 @@
   min-height: 44px;
 }
 
-.wb-tracker-action--wide {
+/* Остання дія в непарній сітці займає рядок: половинка, що лишилась сама,
+   читалась як обірваний список. */
+.wb-tracker-actions > .wb-tracker-action:last-child:nth-child(odd) {
   grid-column: 1 / -1;
 }
 
-/* Прибирання — червоне словом, а не залитою плиткою: руйнівна дія не кричить
-   найгучніше на картці, де головне — збереження. */
-.wb-tracker-actions .wb-tracker-action--danger {
+/* Публічність — своя зона картки: перемикач має виділятись, бо його наслідок
+   бачать інші люди. Відділяє повітря й тонка лінія, а не друга заливка. */
+.wb-tracker-public {
+  padding-top: var(--sp-4);
+  border-top: 1px solid var(--border-subtle);
+}
+
+/* Прибирання — окремим рядком унизу, червоне словом, а не залитою плиткою:
+   руйнівна дія не кричить найгучніше на картці, де головне — запис. */
+.wb-tracker-remove {
+  justify-content: center;
+  min-height: 44px;
   color: var(--red);
 }
 
-.wb-tracker-actions .wb-tracker-action--danger:hover {
-  background: color-mix(in srgb, var(--red) 10%, transparent);
+.wb-tracker-remove:hover {
+  background: var(--red-dim);
   color: var(--red);
 }
 
 /* ── Звіт ─────────────────────────────────────────────────────────────────── */
+
+/* Аналітика — стос блоків у картці: вкладки, звіт та історія, кожен зі своїм
+   повітрям, а не одна суцільна простирадло. */
+.wb-tracker-analytics {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-4);
+}
 
 .wb-tracker-analytics-body {
   display: flex;
@@ -729,7 +727,11 @@
 /* ── Історія ──────────────────────────────────────────────────────────────── */
 
 .wb-tracker-history {
+  display: flex;
+  flex-direction: column;
   gap: var(--sp-1);
+  padding-top: var(--sp-4);
+  border-top: 1px solid var(--border-subtle);
 }
 
 /* Рядок історії — сітка, а не кнопка: правити минулий вимір нема як, тож
@@ -793,19 +795,6 @@
 
 .wb-tracker-history-remove:hover,
 .wb-tracker-history-remove:active {
-  background: var(--red-dim);
-  color: var(--red);
-}
-
-/* Прибирання — не головна дія сторінки: привид із червоним підписом посередині,
-   а не залита смуга на весь екран. */
-.wb-tracker-archive {
-  align-self: center;
-  margin-top: var(--sp-1);
-  color: var(--red);
-}
-
-.wb-tracker-archive:hover {
   background: var(--red-dim);
   color: var(--red);
 }
@@ -1164,10 +1153,4 @@
   flex: none;
   min-height: 36px;
   padding-inline: var(--sp-3);
-}
-
-/* Публічність — окрема панель картки: перемикач не має стояти в кущі дій,
-   бо його наслідок бачать інші люди. */
-.wb-tracker-share {
-  gap: var(--sp-2);
 }
