@@ -153,7 +153,7 @@ export function AddBlockModal({ onSelect, onClose, targetZone }: AddBlockModalPr
         </div>
 
         {/* Block list */}
-        <div className="wb-modal-body" style={{ padding: "8px 16px" }}>
+        <div className="wb-modal-body" style={{ flex: 1, overflow: "auto", padding: "8px 16px" }}>
           {filtered.length === 0 ? (
             <div
               style={{

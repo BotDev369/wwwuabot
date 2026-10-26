@@ -58,7 +58,7 @@ export function ScenarioCardBody({
   const isEmpty = Object.keys(allFields).length === 0;
 
   return (
-    <div className="wb-modal-body">
+    <div className="wb-modal-body" style={{ flex: 1, overflow: "auto" }}>
       {loading ? (
         <div className="wb-modal-loading">Завантаження…</div>
       ) : error && isEmpty ? (
