@@ -121,7 +121,7 @@ html[data-theme="dark"] .wb-subbar {
   text-overflow: ellipsis;
 }
 
-/* Модалка й повноекранна поверхня лягають на хром: коли друга смуга на екрані,
+/* Модалка лягає на хром: коли друга смуга на екрані,
    місце під неї — частина того самого відступу (як `:has(.wb-tabbar)` у
    `components.css`). */
 html:has(.wb-subbar) .wb-modal-overlay {

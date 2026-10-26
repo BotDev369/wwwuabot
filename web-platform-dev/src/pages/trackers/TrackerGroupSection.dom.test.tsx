@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 /**
- * Дії групи: меню на все вікно (AGENTS.md §4), ввід — через спільний
+ * Дії групи: меню-поверхня (AGENTS.md §4), ввід — через спільний
  * `useDialog`, типова тематика каталогу пункту прибирання не має.
  *
  * @module web-platform-dev/src/pages/trackers/TrackerGroupSection.dom.test

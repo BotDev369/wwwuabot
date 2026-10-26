@@ -32,7 +32,7 @@ export function UserEditModal({ userId, onClose, onSaved }: Props) {
           </button>
         </div>
 
-        <div className="wb-modal-body" style={{ overflow: "auto", flex: 1 }}>
+        <div className="wb-modal-body">
           {edit.loading ? (
             <div style={{ padding: 20, textAlign: "center", color: "var(--text-muted)" }}>
               Завантаження…
