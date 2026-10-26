@@ -46,7 +46,11 @@ export function TrackerPriorityModal({
         onClick={() => onPick(priority)}
       >
         <span className="wb-priority-label">{label}</span>
-        {count !== undefined && <span className="wb-priority-count">{count}</span>}
+        {count !== undefined && (
+          <span className={"wb-priority-count" + (count === 0 ? " wb-priority-count--zero" : "")}>
+            {count}
+          </span>
+        )}
       </button>
     );
   }

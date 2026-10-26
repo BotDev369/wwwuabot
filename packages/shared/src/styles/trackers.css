@@ -394,7 +394,7 @@
 .wb-tracker-entry {
   display: flex;
   flex-direction: column;
-  gap: var(--sp-3);
+  gap: var(--sp-4);
 }
 
 .wb-tracker-entry .wb-field {
@@ -406,7 +406,7 @@
 .wb-tracker-entry-actions {
   display: flex;
   align-items: stretch;
-  gap: var(--sp-2);
+  gap: var(--sp-3);
 }
 
 .wb-tracker-entry-submit {
@@ -426,16 +426,19 @@
 .wb-priority-grid {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: var(--sp-2);
+  gap: var(--sp-3);
 }
 
+/* Рівень і рахунок стоять **поруч і по центру**, а не по краях плитки: два
+   числа на протилежних краях читались як дві незалежні мітки. Рівень —
+   акцентний жетон, рахунок — акцентне значення одразу за ним. */
 .wb-priority-btn {
   display: flex;
   align-items: center;
-  justify-content: space-between;
+  justify-content: center;
   gap: var(--sp-2);
-  min-height: 48px;
-  padding-inline: var(--sp-3);
+  min-height: 52px;
+  padding-inline: var(--sp-4);
   border: none;
   border-radius: var(--radius-md);
   background: var(--field-bg);
@@ -443,31 +446,52 @@
   font: inherit;
   font-variant-numeric: tabular-nums;
   cursor: pointer;
+  transition:
+    background var(--duration-fast) var(--ease),
+    box-shadow var(--duration-fast) var(--ease);
 }
 
 .wb-priority-btn--wide {
   grid-column: 1 / -1;
 }
 
+/* Вибір — не лише тло: 10% прозорого акценту на темній плитці темнішало за
+   невибрану кнопку, тож вибраний рівень виглядав приглушеним. Тепер плитка
+   світлішає від `--field-bg`, а обвід каже, що саме обрано. */
 .wb-priority-btn--on {
-  background: var(--accent-dim);
+  background: color-mix(in srgb, var(--accent) 16%, var(--field-bg));
   color: var(--accent);
+  box-shadow: inset 0 0 0 1.5px var(--accent);
 }
 
 .wb-priority-label {
-  font-weight: var(--weight-medium);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 30px;
+  height: 26px;
+  padding-inline: var(--sp-2);
+  border-radius: var(--radius-full);
+  background: var(--accent-soft);
+  color: var(--accent);
+  font-size: var(--text-sm);
+  font-weight: var(--weight-semibold);
+  white-space: nowrap;
 }
 
-/* Рахунок — підпис, а не друга кнопка: тихий і табличними цифрами, щоб
-   стовпчик чисел у сітці не стрибав шириною. */
+/* Рахунок — значення, а не підпис: акцентний і більший за рівень. Нуль теж
+   видно, але приглушеним акцентом: «на цьому рівні порожньо» — це відповідь,
+   а не відсутність кнопки. */
 .wb-priority-count {
-  color: var(--text-muted);
-  font-size: var(--text-sm);
+  color: var(--accent);
+  font-size: var(--text-md);
+  font-weight: var(--weight-semibold);
   font-variant-numeric: tabular-nums;
 }
 
-.wb-priority-btn--on .wb-priority-count {
-  color: var(--accent);
+.wb-priority-count--zero {
+  color: color-mix(in srgb, var(--accent) 42%, transparent);
+  font-weight: var(--weight-medium);
 }
 
 /* Назва в шапці — поле на дотик: крапки під нею кажуть, що її можна змінити,
@@ -506,7 +530,7 @@
 .wb-tracker-sheet {
   display: flex;
   flex-direction: column;
-  gap: var(--sp-4);
+  gap: var(--sp-5);
 }
 
 /* Дії керування — тихі: на картці є головна дія (збереження), і решта
@@ -515,7 +539,7 @@
 .wb-tracker-actions {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: var(--sp-2);
+  gap: var(--sp-3);
 }
 
 .wb-tracker-action {

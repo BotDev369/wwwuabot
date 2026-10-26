@@ -244,7 +244,12 @@
 .wb-modal {
   background: var(--surface);
   border-radius: var(--radius-lg);
-  box-shadow: var(--shadow-xl);
+  /* Край вікна тримає тонке кільце, а не сама тінь: на темній поверхні тінь
+     зливається з плівкою, і вікно читається як пляма без межі. Це межа
+     поверхні, а не розділювач усередині неї (правило 15). */
+  box-shadow:
+    var(--shadow-xl),
+    0 0 0 1px var(--border);
   width: 100%;
   max-width: 560px;
   max-height: 100%;
@@ -259,7 +264,7 @@
 }
 
 .wb-modal-header {
-  padding: var(--sp-4) var(--sp-5);
+  padding: var(--sp-5);
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -296,6 +301,9 @@
 
 /* ── Close Button (circular, themed) ───────────────────────────────────── */
 
+/* Вихід — маленька, але справжня кнопка: акцентний знак на акцентній
+   підкладці й тонкий обвід. Сірий хрестик на темній плитці не читався як
+   контрол — його шукали очима замість того, щоб бачити. */
 .wb-close-btn {
   width: 36px;
   height: 36px;
@@ -305,8 +313,9 @@
   align-items: center;
   justify-content: center;
   border-radius: var(--radius-full);
-  background: var(--bg-2);
-  color: var(--text-secondary);
+  background: var(--accent-soft);
+  color: var(--accent);
+  box-shadow: inset 0 0 0 1px var(--border-subtle);
   cursor: pointer;
   transition: all var(--duration-fast) var(--ease);
   flex-shrink: 0;
@@ -315,13 +324,12 @@
   line-height: 1;
 }
 .wb-close-btn svg {
-  width: 18px;
-  height: 18px;
+  width: 20px;
+  height: 20px;
 }
 .wb-close-btn:hover {
-  background: var(--surface-hover);
-  color: var(--text-primary);
-  border-color: var(--border);
+  background: var(--accent-dim);
+  color: var(--accent);
 }
 .wb-close-btn:active {
   transform: scale(0.92);
@@ -540,11 +548,11 @@ html:has(.wb-tabbar) .wb-modal-overlay--tight {
    тулитися до країв вікна, а її вміст — до країв картки. Розмір у неї
    спільний з рештою вікон (його дає вміст), тож власних висот тут немає. */
 .wb-modal.wb-modal--card .wb-modal-header {
-  padding: var(--sp-5) var(--sp-6) var(--sp-3);
+  padding: var(--sp-5) var(--sp-6) var(--sp-4);
 }
 
 .wb-modal.wb-modal--card .wb-modal-body {
-  padding: var(--sp-3) var(--sp-6) var(--sp-6);
+  padding: var(--sp-4) var(--sp-6) var(--sp-6);
 }
 
 /* Краї поверхні, яка НЕ тримає екран (`:not` — композер і `--screen`): місце
@@ -1148,7 +1156,9 @@ html:has(.wb-tabbar) .wb-modal-overlay--screen {
   display: flex;
   flex-direction: column;
   gap: var(--sp-2);
-  padding: var(--sp-1) var(--sp-3) var(--sp-3);
+  /* Бокові поля ті самі, що в шапки (`--sp-5`): коли вони були вужчі, пункти й
+     кнопки тулилися до країв вікна, а назва над ними — ні. */
+  padding: var(--sp-1) var(--sp-5) var(--sp-5);
   overflow-y: auto;
   -webkit-overflow-scrolling: touch;
 }

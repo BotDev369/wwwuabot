@@ -501,7 +501,11 @@ html[data-brand="android"] .wb-modal-overlay:not(.wb-modal-overlay--screen) {
 html[data-brand="android"] .wb-modal:not(.wb-modal--screen) {
   border: none !important;
   border-radius: 28px !important;
-  box-shadow: var(--shadow-xl) !important;
+  /* Кільце краю — частина тіні, тож бренд мусить повторити його разом із
+     підняттям: окремого `border` тут немає. */
+  box-shadow:
+    var(--shadow-xl),
+    0 0 0 1px var(--border) !important;
 }
 
 html[data-brand="android"] .wb-modal-title {
