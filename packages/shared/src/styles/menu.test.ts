@@ -145,7 +145,10 @@ describe("меню: повноекранна поверхня, перемика�
     const overlay = rule(".wb-modal-overlay--screen");
     expect(overlay?.body).toContain("background: var(--surface)");
     expect(overlay?.body).not.toContain("--surface-overlay");
-    expect(rule(".wb-modal")?.body).toContain("background: var(--surface)");
+    // Піднята `--surface-modal` — лише плаваючому вікну; поверхня на весь
+    // екран тримає ту саму заливку, що її оверлей.
+    expect(rule(".wb-modal.wb-modal--screen")?.body).toContain("background: var(--surface)");
+    expect(rule(".wb-modal")?.body).toContain("background: var(--surface-modal");
   });
 
   it("закруглення знімається парою класів — інакше медіа-запит виграє за порядком", () => {
