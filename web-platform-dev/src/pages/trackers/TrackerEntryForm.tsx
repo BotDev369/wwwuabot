@@ -1,14 +1,13 @@
 /**
  * Запис: значення або статус, нотатка, без поля дати — момент фіксує сам запис.
- *
  * «Так-ні» обирається вкладкою, а зберігає та сама кнопка «Зберегти», що й
- * число: вибір показує обраний стан, але не фіксує запис за людину.
+ * число: вибір показує обраний стан, але не фіксує запис за людину. Решта
+ * картки приходить вмістом — «Зберегти» належить формі, хай і стоїть унизу.
  *
  * @module web-platform-dev/src/pages/trackers/TrackerEntryForm
  */
 
 import type { FormEvent, ReactElement, ReactNode } from "react";
-import { Icon } from "@wwwuabot/shared";
 import type { Tracker } from "@wwwuabot/shared/trackers";
 import { TrackerYesNo } from "./TrackerYesNo";
 
@@ -20,25 +19,19 @@ export interface EntryDraft {
 interface TrackerEntryFormProps {
   tracker: Tracker;
   draft: EntryDraft;
-  saving: boolean;
   onChange: (patch: Partial<EntryDraft>) => void;
   /** Запис готовий: значення або статус — у чернетці, зберігає людина кнопкою. */
   onSubmit: () => void;
-  /**
-   * Друга дія в рядку збереження: картка трекера ставить там пріоритет, а
-   * сторінка трекера — нічого. Рядок один, бо обидві дії стосуються цього ж
-   * запису.
-   */
-  aside?: ReactNode;
+  /** Дії, публічність і рядок збереження — усе, що належить цій формі. */
+  children?: ReactNode;
 }
 
 export function TrackerEntryForm({
   tracker,
   draft,
-  saving,
   onChange,
   onSubmit,
-  aside,
+  children,
 }: TrackerEntryFormProps): ReactElement {
   function submit(event: FormEvent): void {
     event.preventDefault();
@@ -81,17 +74,7 @@ export function TrackerEntryForm({
           onChange={(event) => onChange({ note: event.target.value })}
         />
       </label>
-      <div className="wb-tracker-entry-actions">
-        <button
-          type="submit"
-          className="wb-btn wb-btn-primary wb-tracker-entry-submit"
-          disabled={saving}
-        >
-          <Icon name="check" size={18} />
-          Зберегти
-        </button>
-        {aside}
-      </div>
+      {children}
     </form>
   );
 }

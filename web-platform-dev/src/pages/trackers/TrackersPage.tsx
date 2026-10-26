@@ -80,7 +80,8 @@ export function TrackersPage(): ReactElement {
   // Дотик на трекер відкриває картку запису, а не сторінку: номер — стан, а не
   // адреса, бо «назад» має закрити картку, а не повернути на список.
   const [entryId, setEntryId] = useState<number | null>(null);
-  // Аналітика — окрема поверхня над списком, так само на номер, а не на адресу.
+  // Аналітика — окрема поверхня НАД карткою, так само на номер, а не на адресу:
+  // картка під нею лишається, тож закриття звіту повертає до запису.
   const [analyticsId, setAnalyticsId] = useState<number | null>(null);
 
   const rows = useMemo(
@@ -334,18 +335,12 @@ export function TrackersPage(): ReactElement {
           saving={state.saving}
           onClose={() => setEntryId(null)}
           onSave={(value, note) => state.save(entryTracker.id, value, note)}
-          onAnalytics={() => {
-            setEntryId(null);
-            setAnalyticsId(entryTracker.id);
-          }}
+          onAnalytics={() => setAnalyticsId(entryTracker.id)}
           onPublic={(isPublic) => state.setPublic(entryTracker.id, isPublic)}
           onDuplicate={() => duplicateTracker(entryTracker)}
           onRename={(title) => state.rename(entryTracker.id, title)}
           onPriority={(priority) => state.setPriority(entryTracker.id, priority)}
-          onMove={() => {
-            setEntryId(null);
-            setMoving({ kind: "tracker", id: entryTracker.id });
-          }}
+          onMove={() => setMoving({ kind: "tracker", id: entryTracker.id })}
           onReset={() => state.clearDay(entryTracker.id)}
           onDelete={() => state.archive(entryTracker.id)}
         />

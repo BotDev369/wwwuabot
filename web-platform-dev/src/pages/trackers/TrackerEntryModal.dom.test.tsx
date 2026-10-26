@@ -113,7 +113,7 @@ describe("запис числа", () => {
     expect(within(header).queryByLabelText("Назва трекера")).toBeNull();
   });
 
-  it("пріоритет — кнопка в рядку збереження й десять рівнів у модалці", async () => {
+  it("пріоритет — кнопка в ряду дій і десять рівнів у модалці", async () => {
     renderCard();
     await userEvent.click(screen.getByRole("button", { name: "Пріоритет: відсутній" }));
 
@@ -140,6 +140,28 @@ describe("запис числа", () => {
 
     expect(hooks.save).toHaveBeenCalledWith(0.5, "після бігу");
     expect(hooks.close).toHaveBeenCalled();
+  });
+
+  it("«Зберегти» стоїть у низу поруч із «Видалити» й бере акцент, коли є що зберігати", async () => {
+    renderCard();
+    const card = screen.getByRole("dialog", { name: "Вода" });
+    const save = within(card).getByRole("button", { name: "Зберегти" });
+
+    // Порожня картка не кличе діяти: заливка — це «є що зберігати».
+    expect(save.className).not.toContain("wb-btn-primary");
+    expect(save.closest(".wb-tracker-bottom")?.textContent).toContain("Видалити");
+
+    await userEvent.type(within(card).getByLabelText("Значення, л"), "1");
+
+    expect(save.className).toContain("wb-btn-primary");
+  });
+
+  it("публічність — остання зона перед рядком «Видалити / Зберегти»", () => {
+    renderCard();
+    const card = screen.getByRole("dialog", { name: "Вода" });
+
+    expect(card.querySelector(".wb-tracker-actions + .wb-tracker-public")).toBeTruthy();
+    expect(card.querySelector(".wb-tracker-public + .wb-tracker-bottom")).toBeTruthy();
   });
 
   it("нотатка не обовʼязкова: без неї запис іде з порожнім рядком", async () => {

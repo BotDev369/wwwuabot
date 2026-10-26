@@ -3,7 +3,8 @@
  * Форма запису: одиниця у підписі, зміна поля — окремим патчем.
  *
  * Поля дати тут немає навмисно: вимір стається зараз, і день ставить сервер —
- * клієнт не має чим його підробити.
+ * клієнт не має чим його підробити. Кнопки збереження тут теж немає: її місце
+ * в рядку картки, і вона надсилає саме цю форму (`TrackerEntryModal`).
  *
  * @module web-platform-dev/src/pages/trackers/TrackerEntryForm.dom.test
  */
@@ -33,16 +34,24 @@ const water: Tracker = {
   valueType: "number",
 };
 
-function renderForm() {
-  render(
+const habit: Tracker = {
+  ...water,
+  key: "own-habit",
+  title: "Тренування",
+  unit: "",
+  valueType: "boolean",
+};
+
+function renderForm(tracker: Tracker = water, value = "1.5") {
+  const { container } = render(
     <TrackerEntryForm
-      tracker={water}
-      draft={{ value: "1.5", note: "" }}
-      saving={false}
+      tracker={tracker}
+      draft={{ value, note: "" }}
       onChange={handlers.change}
       onSubmit={handlers.submit}
     />,
   );
+  return container;
 }
 
 beforeEach(() => {
@@ -73,10 +82,10 @@ describe("форма запису", () => {
     expect(handlers.change).toHaveBeenCalledWith({ note: "п" });
   });
 
-  it("надсилання форми — це `onSubmit`, а не новий день", async () => {
-    renderForm();
+  it("надсилання форми — це `onSubmit`, а не новий день", () => {
+    const container = renderForm();
 
-    await userEvent.click(screen.getByRole("button", { name: "Зберегти" }));
+    fireEvent.submit(container.querySelector("form") as HTMLFormElement);
 
     expect(handlers.submit).toHaveBeenCalled();
   });
@@ -87,27 +96,10 @@ describe("форма запису", () => {
     expect(screen.queryByText("Збережено")).toBeNull();
   });
 
-  it("«так-ні» не питає число: статус обирають вкладкою, а зберігає та сама кнопка", async () => {
-    const habit: Tracker = {
-      ...water,
-      key: "own-habit",
-      title: "Тренування",
-      unit: "",
-      valueType: "boolean",
-    };
-    render(
-      <TrackerEntryForm
-        tracker={habit}
-        draft={{ value: "", note: "" }}
-        saving={false}
-        onChange={handlers.change}
-        onSubmit={handlers.submit}
-      />,
-    );
+  it("«так-ні» не питає число: статус обирають вкладкою, а зберігає та сама форма", async () => {
+    renderForm(habit, "");
 
     expect(screen.queryByLabelText(/Значення/)).toBeNull();
-    // Кнопка збереження та сама, що й у числа: статус — це вибір, а не запис.
-    expect(screen.getByRole("button", { name: "Зберегти" })).toBeTruthy();
 
     await userEvent.click(screen.getByRole("tab", { name: "Так" }));
     // Клавіша несе те саме значення, що йде на сервер: межу 0…1 перевіряє він.
@@ -116,28 +108,10 @@ describe("форма запису", () => {
 
     await userEvent.click(screen.getByRole("tab", { name: "Ні" }));
     expect(handlers.change).toHaveBeenCalledWith({ value: "0" });
-
-    await userEvent.click(screen.getByRole("button", { name: "Зберегти" }));
-    expect(handlers.submit).toHaveBeenCalled();
   });
 
   it("обране «Так» чи «Ні» видно одразу: пілюля стоїть на обраній вкладці", () => {
-    const habit: Tracker = {
-      ...water,
-      key: "own-habit",
-      title: "Тренування",
-      unit: "",
-      valueType: "boolean",
-    };
-    render(
-      <TrackerEntryForm
-        tracker={habit}
-        draft={{ value: "1", note: "" }}
-        saving={false}
-        onChange={handlers.change}
-        onSubmit={handlers.submit}
-      />,
-    );
+    renderForm(habit, "1");
 
     expect(screen.getByRole("tab", { name: "Так" }).className).toContain("wb-tabs-btn--active");
     expect(screen.getByRole("tab", { name: "Ні" }).className).not.toContain("wb-tabs-btn--active");

@@ -1,8 +1,8 @@
 /**
- * Дотик на трекер — картка з записом і діями, а не перехід на сторінку. Назва
- * в шапці редагується дотиком: заголовок — це і є назва. Дії стоять зонами:
- * запис, публічність, решта дій і прибирання — а не купою різноширинних плиток.
- * День ставить сервер; дії, що щось змінюють, питають (`docs/TRACKERS.md`).
+ * Дотик на трекер — картка запису й дій, а не сторінка: назва в шапці
+ * редагується дотиком, дії стоять зонами, день ставить сервер
+ * (`docs/TRACKERS.md`). Картку закривають лише «Зберегти», «Видалити» й вихід;
+ * пріоритет, переміщення й аналітика лягають НАД нею й повертають сюди ж.
  *
  * @module web-platform-dev/src/pages/trackers/TrackerEntryModal
  */
@@ -25,13 +25,13 @@ interface TrackerEntryModalProps {
   saving: boolean;
   onClose: () => void;
   onSave: (value: number, note: string) => Promise<boolean>;
-  /** «Аналітика» — окрема поверхня: графік, звіт та історія. */
+  /** «Аналітика» — поверхня над карткою: графік, звіт та історія. */
   onAnalytics: () => void;
   /** Публічність визначення: інші бачать форму мірки, а записи — ніколи. */
   onPublic: (isPublic: boolean) => Promise<boolean>;
   /** «Дублювати» — копія визначення; історія не копіюється. `false` — не вийшло. */
   onDuplicate: () => Promise<boolean>;
-  /** «Перемістити» — дерево груп у наступній поверхні (картка закривається). */
+  /** «Перемістити» — дерево груп поверхнею над карткою. */
   onMove: () => void;
   /** Нова назва з шапки; `false` — не вдалось, назва лишається старою. */
   onRename: (title: string) => Promise<boolean>;
@@ -62,6 +62,8 @@ export function TrackerEntryModal({
   const [busy, setBusy] = useState(false);
   const [priorityOpen, setPriorityOpen] = useState(false);
   const priority = tracker.priority ?? null;
+  // Акцент у «Зберегти» — це «є що зберігати»: порожня картка не кличе діяти.
+  const dirty = draft.value.trim() !== "" || draft.note.trim() !== "";
 
   async function submit(): Promise<void> {
     if (busy) return;
@@ -120,36 +122,22 @@ export function TrackerEntryModal({
         variant="card"
         onClose={onClose}
         content={
-          <div className="wb-tracker-sheet">
-            <TrackerEntryForm
-              tracker={tracker}
-              draft={draft}
-              saving={saving || busy}
-              onChange={(patch) => setDraft((current) => ({ ...current, ...patch }))}
-              onSubmit={() => void submit()}
-              aside={
-                <button
-                  type="button"
-                  className="wb-btn wb-btn-secondary wb-tracker-priority"
-                  aria-label={`Пріоритет: ${priority === null ? "відсутній" : priority}`}
-                  onClick={() => setPriorityOpen(true)}
-                >
-                  <Icon name="sort" size={16} />
-                  {priority === null ? "Пріоритет" : `Пріоритет: ${priority}`}
-                </button>
-              }
-            />
-
-            <div className="wb-tracker-public">
-              <SwitchRow
-                label="Публічний"
-                hint="Інші бачать лише форму мірки. Записи не публікуються ніколи."
-                checked={tracker.isPublic ?? false}
-                onToggle={(next: boolean) => void onPublic(next)}
-              />
-            </div>
-
+          <TrackerEntryForm
+            tracker={tracker}
+            draft={draft}
+            onChange={(patch) => setDraft((current) => ({ ...current, ...patch }))}
+            onSubmit={() => void submit()}
+          >
             <div className="wb-tracker-actions">
+              <button
+                type="button"
+                className="wb-btn wb-btn-secondary wb-tracker-action"
+                aria-label={`Пріоритет: ${priority === null ? "відсутній" : priority}`}
+                onClick={() => setPriorityOpen(true)}
+              >
+                <Icon name="sort" size={16} />
+                {priority === null ? "Пріоритет" : `Пріоритет: ${priority}`}
+              </button>
               <button
                 type="button"
                 className="wb-btn wb-btn-secondary wb-tracker-action"
@@ -186,15 +174,34 @@ export function TrackerEntryModal({
               )}
             </div>
 
-            <button
-              type="button"
-              className="wb-btn wb-btn-ghost wb-tracker-remove"
-              onClick={() => void remove()}
-            >
-              <Icon name="trash" size={16} />
-              Видалити
-            </button>
-          </div>
+            <div className="wb-tracker-public">
+              <SwitchRow
+                label="Публічний"
+                hint="Інші бачать лише форму мірки. Записи не публікуються ніколи."
+                checked={tracker.isPublic ?? false}
+                onToggle={(next: boolean) => void onPublic(next)}
+              />
+            </div>
+
+            <div className="wb-tracker-bottom">
+              <button
+                type="button"
+                className="wb-btn wb-btn-secondary wb-tracker-action"
+                onClick={() => void remove()}
+              >
+                <Icon name="trash" size={16} />
+                Видалити
+              </button>
+              <button
+                type="submit"
+                className={`wb-btn wb-tracker-action ${dirty ? "wb-btn-primary" : "wb-btn-secondary"}`}
+                disabled={saving || busy}
+              >
+                <Icon name="check" size={16} />
+                Зберегти
+              </button>
+            </div>
+          </TrackerEntryForm>
         }
       />
 

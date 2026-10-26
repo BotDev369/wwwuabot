@@ -465,13 +465,14 @@ describe("переміщення", () => {
       }),
     );
 
-    // Картка закривається перед вибором місця: дві поверхні одна над одною
-    // лишали б людину в тій, де вона вже нічого не обирає.
-    expect(screen.queryByRole("dialog", { name: "Вода" })).toBeNull();
+    // Дерево відкривається НАД карткою: початий запис не губиться, а закриття
+    // вибору місця повертає до нього ж.
+    expect(screen.getByRole("dialog", { name: "Вода" })).toBeTruthy();
     const dialog = screen.getByRole("dialog", { name: "Перемістити «Вода»" });
     await userEvent.click(within(dialog).getByRole("button", { name: "Обрати: Свої" }));
 
     expect(hooks.move).toHaveBeenCalledWith(1, null);
+    expect(screen.getByRole("dialog", { name: "Вода" })).toBeTruthy();
   });
 });
 
@@ -483,13 +484,17 @@ describe("картка запису", () => {
     return screen.getByRole("dialog", { name: "Вода" });
   }
 
-  it("«Аналітика» відкриває звіт окремою поверхнею й закриває картку", async () => {
+  it("«Аналітика» відкриває звіт над карткою, і закриття повертає до неї", async () => {
     const card = await openWater();
 
     await userEvent.click(within(card).getByRole("button", { name: "Аналітика" }));
 
-    expect(screen.queryByRole("dialog", { name: "Вода" })).toBeNull();
-    expect(screen.getByRole("dialog", { name: "Аналітика" })).toBeTruthy();
+    expect(screen.getByRole("dialog", { name: "Вода" })).toBeTruthy();
+    const analytics = screen.getByRole("dialog", { name: "Аналітика" });
+    await userEvent.click(within(analytics).getByRole("button", { name: "Закрити" }));
+
+    expect(screen.queryByRole("dialog", { name: "Аналітика" })).toBeNull();
+    expect(screen.getByRole("dialog", { name: "Вода" })).toBeTruthy();
   });
 
   it("публічність — перемикач у картці, і він іде на сервер", async () => {
