@@ -4,6 +4,9 @@
  * (`docs/TRACKERS.md`). Картку закривають лише «Зберегти», «Видалити» й вихід;
  * пріоритет, переміщення й аналітика лягають НАД нею й повертають сюди ж.
  *
+ * Назва, пріоритет і публічність — чернетка: до «Зберегти» сервер про них не
+ * знає, тож акцент кнопки й означає «є що зберігати».
+ *
  * @module web-platform-dev/src/pages/trackers/TrackerEntryModal
  */
 
@@ -59,36 +62,65 @@ export function TrackerEntryModal({
 }: TrackerEntryModalProps): ReactElement {
   const dialog = useDialog();
   const [draft, setDraft] = useState<EntryDraft>(EMPTY_DRAFT);
+  const [title, setTitle] = useState(tracker.title);
+  const [priority, setPriority] = useState<number | null>(tracker.priority ?? null);
+  const [isPublic, setIsPublic] = useState(tracker.isPublic ?? false);
   const [busy, setBusy] = useState(false);
   const [priorityOpen, setPriorityOpen] = useState(false);
-  const priority = tracker.priority ?? null;
+  const savedPriority = tracker.priority ?? null;
+  const savedPublic = tracker.isPublic ?? false;
+  // Поля картки міняються лише чернеткою: одна «Зберегти» фіксує їх усі.
+  const fieldsDirty =
+    title !== tracker.title || priority !== savedPriority || isPublic !== savedPublic;
+  const entryFilled = draft.value.trim() !== "" || draft.note.trim() !== "";
   // Акцент у «Зберегти» — це «є що зберігати»: порожня картка не кличе діяти.
-  const dirty = draft.value.trim() !== "" || draft.note.trim() !== "";
+  const dirty = fieldsDirty || entryFilled;
 
-  async function submit(): Promise<void> {
-    if (busy) return;
+  /** Запис із чернетки; `null` — вводити ще нічого, але причина вже сказана. */
+  async function readEntry(): Promise<{ value: number } | null> {
     // «Так-ні» обирається вкладкою: порожній вибір — це ще не відповідь, а не «0».
     if (tracker.valueType === "boolean") {
       if (draft.value !== "0" && draft.value !== "1") {
         await dialog.alert("Оберіть «Так» або «Ні».", { tone: "danger" });
-        return;
+        return null;
       }
-      setBusy(true);
-      const saved = await onSave(Number(draft.value), draft.note.trim());
-      setBusy(false);
-      if (saved) onClose();
-      return;
+      return { value: Number(draft.value) };
     }
     const raw = draft.value.replace(",", ".").trim();
     const value = Number(raw);
     if (!raw || !Number.isFinite(value)) {
       await dialog.alert("Введіть число — скільки вийшло.", { tone: "danger" });
+      return null;
+    }
+    return { value };
+  }
+
+  async function submit(): Promise<void> {
+    if (busy || saving) return;
+    let value: number | null = null;
+    if (entryFilled) {
+      const entry = await readEntry();
+      if (entry === null) return;
+      value = entry.value;
+    } else if (!fieldsDirty) {
+      // Порожня картка не має що зберігати — кажемо причину, як і раніше.
+      await dialog.alert(
+        tracker.valueType === "boolean"
+          ? "Оберіть «Так» або «Ні»."
+          : "Введіть число — скільки вийшло.",
+        { tone: "danger" },
+      );
       return;
     }
+
     setBusy(true);
-    const saved = await onSave(value, draft.note.trim());
+    let ok = true;
+    if (ok && title !== tracker.title) ok = await onRename(title);
+    if (ok && priority !== savedPriority) ok = await onPriority(priority);
+    if (ok && isPublic !== savedPublic) ok = await onPublic(isPublic);
+    if (ok && value !== null) ok = await onSave(value, draft.note.trim());
     setBusy(false);
-    if (saved) onClose();
+    if (ok) onClose();
   }
 
   async function reset(): Promise<void> {
@@ -117,8 +149,8 @@ export function TrackerEntryModal({
   return (
     <>
       <MenuModal
-        title={tracker.title}
-        titleSlot={<TrackerTitleEdit title={tracker.title} onRename={onRename} />}
+        title={title}
+        titleSlot={<TrackerTitleEdit title={title} onCommit={setTitle} />}
         variant="card"
         onClose={onClose}
         content={
@@ -178,8 +210,8 @@ export function TrackerEntryModal({
               <SwitchRow
                 label="Публічний"
                 hint="Інші бачать лише форму мірки. Записи не публікуються ніколи."
-                checked={tracker.isPublic ?? false}
-                onToggle={(next: boolean) => void onPublic(next)}
+                checked={isPublic}
+                onToggle={setIsPublic}
               />
             </div>
 
@@ -212,7 +244,7 @@ export function TrackerEntryModal({
           onClose={() => setPriorityOpen(false)}
           onPick={(next) => {
             setPriorityOpen(false);
-            if (next !== undefined) void onPriority(next);
+            if (next !== undefined) setPriority(next);
           }}
         />
       )}

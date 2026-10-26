@@ -399,7 +399,7 @@ describe("пріоритет", () => {
     expect(screen.getByText("Немає трекерів із цим пріоритетом.")).toBeTruthy();
   });
 
-  it("у картці пріоритет ставиться тими ж самими кнопками", async () => {
+  it("у картці пріоритет ставиться тими ж самими кнопками й фіксується «Зберегти»", async () => {
     render(<TrackersPage />);
     await userEvent.click(screen.getByRole("button", { name: "Режим" }));
     await userEvent.click(screen.getByRole("button", { name: "Вода" }));
@@ -407,10 +407,15 @@ describe("пріоритет", () => {
     await userEvent.click(screen.getByRole("button", { name: "Пріоритет: відсутній" }));
     await userEvent.click(screen.getByRole("button", { name: "4" }));
 
+    // Рівень стоїть у картці чернеткою: без «Зберегти» сервер про нього не знає.
+    expect(hooks.priority).not.toHaveBeenCalled();
+    const card = screen.getByRole("dialog", { name: "Вода" });
+    await userEvent.click(within(card).getByRole("button", { name: "Зберегти" }));
+
     expect(hooks.priority).toHaveBeenCalledWith(1, 4);
   });
 
-  it("назва в шапці картки йде в перейменування", async () => {
+  it("назва в шапці картки йде в перейменування на «Зберегти»", async () => {
     render(<TrackersPage />);
     await userEvent.click(screen.getByRole("button", { name: "Режим" }));
     await userEvent.click(screen.getByRole("button", { name: "Вода" }));
@@ -420,6 +425,9 @@ describe("пріоритет", () => {
     const field = within(card).getByLabelText("Назва трекера");
     await userEvent.clear(field);
     await userEvent.type(field, "Вода питна{Enter}");
+
+    expect(hooks.rename).not.toHaveBeenCalled();
+    await userEvent.click(within(card).getByRole("button", { name: "Зберегти" }));
 
     expect(hooks.rename).toHaveBeenCalledWith(1, "Вода питна");
   });
@@ -497,10 +505,13 @@ describe("картка запису", () => {
     expect(screen.getByRole("dialog", { name: "Вода" })).toBeTruthy();
   });
 
-  it("публічність — перемикач у картці, і він іде на сервер", async () => {
+  it("публічність — перемикач у картці, і він іде на сервер на «Зберегти»", async () => {
     const card = await openWater();
 
     await userEvent.click(within(card).getByRole("switch", { name: "Публічний" }));
+
+    expect(hooks.public).not.toHaveBeenCalled();
+    await userEvent.click(within(card).getByRole("button", { name: "Зберегти" }));
 
     expect(hooks.public).toHaveBeenCalledWith(1, true);
   });

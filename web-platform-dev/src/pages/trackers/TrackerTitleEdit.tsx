@@ -1,7 +1,8 @@
 /**
  * Назва в шапці картки: дотик робить її полем — заголовок і є назвою, тож
- * друге поле «Назва» в тілі подвоювало б те саме. Зберігає Enter або вихід із
- * поля; порожній рядок назвою не стає, тож лишається попередня.
+ * друге поле «Назва» в тілі подвоювало б те саме. Enter або вихід із поля
+ * лишають назву в картці чернеткою: на сервер її відправляє «Зберегти».
+ * Порожній рядок назвою не стає, тож лишається попередня.
  *
  * @module web-platform-dev/src/pages/trackers/TrackerTitleEdit
  */
@@ -12,38 +13,31 @@ import { TRACKER_LIMITS, parseTrackerTitle } from "@wwwuabot/shared/trackers";
 
 interface TrackerTitleEditProps {
   title: string;
-  onRename: (title: string) => Promise<boolean>;
+  /** Готова назва: картка тримає її до «Зберегти», сервер тут не викликають. */
+  onCommit: (title: string) => void;
 }
 
-export function TrackerTitleEdit({ title, onRename }: TrackerTitleEditProps): ReactElement {
+export function TrackerTitleEdit({ title, onCommit }: TrackerTitleEditProps): ReactElement {
   const dialog = useDialog();
   // `null` — не редагуємо: заголовок показує саму назву.
   const [draft, setDraft] = useState<string | null>(null);
   const input = useRef<HTMLInputElement | null>(null);
-  // Enter і вихід із поля приходять одним дотиком: без охорони назва пішла б
-  // двома запитами, і другий переписав би перший тим самим значенням.
-  const saving = useRef(false);
 
   useEffect(() => {
     if (draft !== null) input.current?.focus();
   }, [draft]);
 
-  async function save(): Promise<void> {
-    if (draft === null || saving.current) return;
-    saving.current = true;
-    try {
-      const name = parseTrackerTitle(draft);
-      // Редагування закривається в обох випадках: інакше невдала назва
-      // лишалась би у фокусі й повторювала ту саму відмову на кожен вихід.
-      setDraft(null);
-      if (name === null) {
-        await dialog.alert("Назва — від 1 до 40 символів.", { tone: "danger" });
-        return;
-      }
-      if (name !== title) await onRename(name);
-    } finally {
-      saving.current = false;
+  function commit(): void {
+    if (draft === null) return;
+    const name = parseTrackerTitle(draft);
+    // Редагування закривається в обох випадках: інакше невдала назва
+    // лишалась би у фокусі й повторювала ту саму відмову на кожен вихід.
+    setDraft(null);
+    if (name === null) {
+      void dialog.alert("Назва — від 1 до 40 символів.", { tone: "danger" });
+      return;
     }
+    if (name !== title) onCommit(name);
   }
 
   if (draft === null) {
@@ -70,14 +64,14 @@ export function TrackerTitleEdit({ title, onRename }: TrackerTitleEditProps): Re
       onKeyDown={(event) => {
         if (event.key === "Enter") {
           event.preventDefault();
-          void save();
+          commit();
         }
         if (event.key === "Escape") {
           event.preventDefault();
           setDraft(null);
         }
       }}
-      onBlur={() => void save()}
+      onBlur={commit}
     />
   );
 }

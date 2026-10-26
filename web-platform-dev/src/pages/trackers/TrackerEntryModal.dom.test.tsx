@@ -99,7 +99,7 @@ describe("запис числа", () => {
     expect(screen.queryByText("Сьогодні · ціль 2 л")).toBeNull();
   });
 
-  it("назва в шапці стає полем на дотик і зберігається Enter", async () => {
+  it("назва в шапці стає полем на дотик і чекає на «Зберегти»", async () => {
     renderCard();
     const header = screen.getByRole("dialog", { name: "Вода" });
 
@@ -108,9 +108,16 @@ describe("запис числа", () => {
     await userEvent.clear(field);
     await userEvent.type(field, "  Вода питна  {Enter}");
 
-    expect(hooks.rename).toHaveBeenCalledWith("Вода питна");
-    // Поле закривається: заголовок знову показує назву.
+    // Назва лишається чернеткою картки: сервер її ще не бачив.
+    expect(hooks.rename).not.toHaveBeenCalled();
+    // Поле закривається: заголовок показує нову назву ще до збереження.
     expect(within(header).queryByLabelText("Назва трекера")).toBeNull();
+    expect(within(header).getByRole("button", { name: "Вода питна" })).toBeTruthy();
+
+    await userEvent.click(within(header).getByRole("button", { name: "Зберегти" }));
+
+    expect(hooks.rename).toHaveBeenCalledWith("Вода питна");
+    expect(hooks.close).toHaveBeenCalled();
   });
 
   it("пріоритет — кнопка в ряду дій і десять рівнів у модалці", async () => {
@@ -121,7 +128,14 @@ describe("запис числа", () => {
     expect(within(grid).getByRole("button", { name: "Відсутній" })).toBeTruthy();
     await userEvent.click(within(grid).getByRole("button", { name: "3" }));
 
+    // Рівень лягає в картку чернеткою — на сервер його відправляє «Зберегти».
+    expect(hooks.priority).not.toHaveBeenCalled();
+    expect(screen.getByRole("button", { name: "Пріоритет: 3" })).toBeTruthy();
+
+    await userEvent.click(screen.getByRole("button", { name: "Зберегти" }));
+
     expect(hooks.priority).toHaveBeenCalledWith(3);
+    expect(hooks.close).toHaveBeenCalled();
   });
 
   it("рівень на кнопці каже, який він тепер", () => {
@@ -154,6 +168,45 @@ describe("запис числа", () => {
     await userEvent.type(within(card).getByLabelText("Значення, л"), "1");
 
     expect(save.className).toContain("wb-btn-primary");
+  });
+
+  it("змінена назва підсвічує «Зберегти» — вона теж чернетка", async () => {
+    renderCard();
+    const card = screen.getByRole("dialog", { name: "Вода" });
+
+    await userEvent.click(within(card).getByRole("button", { name: "Вода" }));
+    const field = within(card).getByLabelText("Назва трекера");
+    await userEvent.clear(field);
+    await userEvent.type(field, "Вода питна{Enter}");
+
+    expect(within(card).getByRole("button", { name: "Зберегти" }).className).toContain(
+      "wb-btn-primary",
+    );
+  });
+
+  it("назва без Enter доходить до «Зберегти» — вихід із поля її фіксує", async () => {
+    renderCard();
+    const card = screen.getByRole("dialog", { name: "Вода" });
+
+    await userEvent.click(within(card).getByRole("button", { name: "Вода" }));
+    const field = within(card).getByLabelText("Назва трекера");
+    await userEvent.clear(field);
+    await userEvent.type(field, "Вода питна");
+    await userEvent.click(within(card).getByRole("button", { name: "Зберегти" }));
+
+    expect(hooks.rename).toHaveBeenCalledWith("Вода питна");
+  });
+
+  it("змінений пріоритет підсвічує «Зберегти» й не закриває картку сам", async () => {
+    renderCard();
+    await userEvent.click(screen.getByRole("button", { name: "Пріоритет: відсутній" }));
+    await userEvent.click(screen.getByRole("button", { name: "5" }));
+
+    const card = screen.getByRole("dialog", { name: "Вода" });
+    expect(within(card).getByRole("button", { name: "Зберегти" }).className).toContain(
+      "wb-btn-primary",
+    );
+    expect(hooks.close).not.toHaveBeenCalled();
   });
 
   it("публічність — остання зона перед рядком «Видалити / Зберегти»", () => {
@@ -240,10 +293,17 @@ describe("публічність", () => {
     expect(screen.getByText(/Записи не публікуються/)).toBeTruthy();
   });
 
-  it("увімкнення йде на сервер, а не лише в стан", async () => {
+  it("увімкнення лягає в картку, а на сервер іде з «Зберегти»", async () => {
     renderCard();
 
     await userEvent.click(screen.getByRole("switch", { name: "Публічний" }));
+
+    expect(screen.getByRole("switch", { name: "Публічний" }).getAttribute("aria-checked")).toBe(
+      "true",
+    );
+    expect(hooks.public).not.toHaveBeenCalled();
+
+    await userEvent.click(screen.getByRole("button", { name: "Зберегти" }));
 
     expect(hooks.public).toHaveBeenCalledWith(true);
   });
