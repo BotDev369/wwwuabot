@@ -597,6 +597,21 @@ describe("методи, картка й збої", () => {
     expect(history?.values[1]).toBe(4);
   });
 
+  it("`history=all` читає всю історію: аналітика будує колонки років", async () => {
+    const db = database();
+    const response = await handleTrackers(
+      request("GET", "https://example.com/api/user/trackers?id=4&day=2026-09-01&history=all"),
+      db.env,
+    );
+
+    expect(response.status).toBe(200);
+    const history = db.calls.find(
+      (call) => call.sql.includes("FROM tracker_entries") && call.sql.includes("tracker_id"),
+    );
+    // Межа «від початку»: дати в SQLite — рядки, тож досить найменшої.
+    expect(history?.values[2]).toBe("0001-01-01");
+  });
+
   it("стеля кількості трекерів — ще до INSERT", async () => {
     const db = database({
       listTrackers: Array.from({ length: TRACKER_LIMITS.trackers }, (_, index) => ({

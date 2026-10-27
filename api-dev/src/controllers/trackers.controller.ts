@@ -54,6 +54,12 @@ const LIST_DAYS = 30;
 const HISTORY_DAYS = 400;
 
 /**
+ * Нижня межа «усієї історії» (`?history=all`): аналітика будує колонки років,
+ * тож вікно в 400 днів їй не досить. Дати — рядки, тому досить найменшої.
+ */
+const HISTORY_FROM = "0001-01-01";
+
+/**
  * `POST` — три дії на одному шляху: копія одного джерела (`from`), копія
  * списку ( `sources` — «додати всю групу») і власна мірка (поля форми).
  * Групове додавання тут, а не окремою ручкою: це та сама копія, лише пачкою.
@@ -112,12 +118,11 @@ export async function handleTrackers(request: Request, env: Env): Promise<Respon
         const tracker = await readTracker(env, identity.userId, id);
         // Чужий і неіснуючий — одна відповідь: код теж сказав би, що рядок є.
         if (!tracker) return json({ ok: false, error: "Not found" }, 404);
-        const entries = await readTrackerEntries(
-          env,
-          identity.userId,
-          id,
-          addTrackerDays(endDay, -(HISTORY_DAYS - 1)),
-        );
+        const since =
+          query.get("history") === "all"
+            ? HISTORY_FROM
+            : addTrackerDays(endDay, -(HISTORY_DAYS - 1));
+        const entries = await readTrackerEntries(env, identity.userId, id, since);
         // Групи їдуть із карткою: вибір групи живе на ній, а не на стрічці.
         const groups = await listGroups(env, identity.userId);
         return json({ ok: true, tracker, groups, entries, endDay });
