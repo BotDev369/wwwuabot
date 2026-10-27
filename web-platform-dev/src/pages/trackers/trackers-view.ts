@@ -246,10 +246,6 @@ export function whenLabel(day: string, endDay: string): string {
   return dayLabel(day);
 }
 
-export function amountOrDash(value: number | null, unit: string): string {
-  return value === null ? "—" : formatTrackerAmount(value, unit);
-}
-
 /** Підпис цілі: «ціль 8 год» або порожньо — без цілі нема чого досягати. */
 export function goalLabel(tracker: Tracker): string | null {
   if (tracker.goal === null) return null;
@@ -310,17 +306,10 @@ export function changeAmountLabel(
 }
 
 /**
- * Зміна середнього — словами, а не знаком: стрілка вгору для витрат читалась
- * би як «добре», хоч це «більше». Тому кажемо просто «більше/менше».
+ * Поточний момент пристрою «YYYY-MM-DD HH:MM:SS»: остання година й 15 хв
+ * рахуються від нього, бо серверний день годинника не має.
  */
-export function changeLabel(changePct: number | null): string | null {
-  if (changePct === null) return null;
-  if (Math.abs(changePct) < 1) return "Як у попередній період";
-  const amount = Math.abs(changePct).toLocaleString("uk-UA", { maximumFractionDigits: 1 });
-  return changePct > 0 ? `Більше на ${amount}%` : `Менше на ${amount}%`;
-}
-
-/** Вікно для запиту: запас на попередній період дає «краще/гірше». */
-export function historySince(endDay: string, days: number): string {
-  return addTrackerDays(endDay, -(days * 2 - 1));
+export function nowStamp(now: Date = new Date()): string {
+  const pad = (value: number): string => String(value).padStart(2, "0");
+  return `${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())} ${pad(now.getHours())}:${pad(now.getMinutes())}:${pad(now.getSeconds())}`;
 }

@@ -1,6 +1,7 @@
 /**
  * Історія вимірів: рядок — не кнопка, бо минулий вимір не редагується, лише
- * прибирається. Стоїть у аналітиці: звіт і історія читають ті самі рядки.
+ * прибирається. Стоїть у аналітиці під акордеоном «Історія»: заголовок дає
+ * акордеон, а не сам список.
  *
  * @module web-platform-dev/src/pages/trackers/TrackerHistoryList
  */
@@ -37,7 +38,6 @@ export function TrackerHistoryList({
 
   return (
     <section className="wb-tracker-history">
-      <span className="wb-tracker-section-title">Історія</span>
       {history.length === 0 && <p className="wb-text-muted">Записів ще немає.</p>}
       {history.map((entry) => (
         <div className="wb-tracker-history-row" key={entry.id}>

@@ -43,7 +43,8 @@ export interface TrackerState {
   setPublic: (isPublic: boolean) => Promise<boolean>;
 }
 
-export function useTracker(id: number): TrackerState {
+export function useTracker(id: number, options: { allHistory?: boolean } = {}): TrackerState {
+  const allHistory = options.allHistory ?? false;
   const dialog = useDialog();
   const [tracker, setTracker] = useState<Tracker | null>(null);
   const [groups, setGroups] = useState<TrackerGroup[]>([]);
@@ -57,8 +58,10 @@ export function useTracker(id: number): TrackerState {
   const load = useCallback(async () => {
     const request = ++generation.current;
     try {
+      // Аналітика читає роки, тож їй потрібна вся історія: типове вікно — 400 днів.
+      const scope = allHistory ? "&history=all" : "";
       const result = await apiFetch<TrackerPayload>(
-        `/api/user/trackers?id=${id}&day=${todayTrackerDay()}`,
+        `/api/user/trackers?id=${id}&day=${todayTrackerDay()}${scope}`,
       );
       if (request !== generation.current) return;
       setTracker(result.tracker);
@@ -71,7 +74,7 @@ export function useTracker(id: number): TrackerState {
     } finally {
       if (request === generation.current) setLoading(false);
     }
-  }, [id]);
+  }, [id, allHistory]);
 
   useEffect(() => {
     let cancelled = false;

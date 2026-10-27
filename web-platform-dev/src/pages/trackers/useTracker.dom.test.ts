@@ -73,6 +73,13 @@ describe("один трекер", () => {
     expect(view.result.current.entries).toHaveLength(1);
   });
 
+  it("аналітика просить усю історію: колонки років не вміщаються у вікно", async () => {
+    const view = renderHook(() => useTracker(1, { allHistory: true }));
+    await waitFor(() => expect(view.result.current.loading).toBe(false));
+
+    expect(mocks.request).toHaveBeenCalledWith(expect.stringMatching(/id=1&day=.*&history=all/));
+  });
+
   it("невідомий трекер — це помилка, а не порожній екран", async () => {
     mocks.request.mockRejectedValueOnce(new Error("HTTP 404"));
     const view = renderHook(() => useTracker(9));

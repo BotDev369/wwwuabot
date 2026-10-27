@@ -1,72 +1,123 @@
 /**
- * Аналітика трекера — окрема поверхня, а не сторінка: графік, звіт за вікно й
- * історія вимірів. Вид мірки (`trackerMode`) вирішує форму графіка й підсумки:
- * суми читають стовпчиками, виміри — лінією.
+ * Аналітика трекера — окрема поверхня, а не сторінка: серія акордеонів із
+ * періодами (рік → місяць → тиждень → день → година → 15 хв → довільний
+ * проміжок) і історія під власним акордеоном. Стан відкритості живе в
+ * `localStorage`, бо це вибір людини, а не налаштування сервера.
  *
  * @module web-platform-dev/src/pages/trackers/TrackerAnalyticsModal
  */
 
-import { useState, type ReactElement } from "react";
+import { useMemo, type ReactElement, type ReactNode } from "react";
+import { Icon } from "@wwwuabot/shared";
 import { MenuModal } from "@wwwuabot/ui/menu";
-import { Tabs, tabId, tabPanelId, type TabOption } from "@wwwuabot/ui/tabs";
 import {
-  TRACKER_RANGES,
-  formatTrackerAmount,
-  trackerAmountText,
-  trackerLatest,
+  trackerHourBuckets,
+  trackerMinuteBuckets,
   trackerMode,
-  trackerWindow,
+  trackerMonthBuckets,
+  trackerMonthDayBuckets,
+  trackerWeekBuckets,
+  trackerYearBuckets,
   type Tracker,
-  type TrackerRange,
+  type TrackerBucket,
 } from "@wwwuabot/shared/trackers";
-import {
-  buildTrackerSeries,
-  trackerReadingStats,
-  trackerReport,
-} from "@wwwuabot/shared/trackers/analytics";
-import { TrackerChart } from "./TrackerChart";
+import { TrackerBucketChart } from "./TrackerBucketChart";
 import { TrackerHistoryList } from "./TrackerHistoryList";
-import { TrackerTrend } from "./TrackerTrend";
+import { TrackerRangePanel } from "./TrackerRangePanel";
+import { nowStamp } from "./trackers-view";
+import { useGroupAccordion } from "./useGroupAccordion";
 import { useTracker } from "./useTracker";
-import { amountOrDash, changeLabel } from "./trackers-view";
 
-/** Вікна аналітики — ті самі, що `TRACKER_RANGES`, лише ключем вкладки. */
-const RANGE_TABS: readonly TabOption[] = TRACKER_RANGES.map((range) => ({
-  key: String(range),
-  label: `${range} дн.`,
-}));
+/** Ключ сховища: які акордеони аналітики відкриті. */
+const STORAGE_KEY = "wb-tracker-analytics-open";
+
+const HISTORY_KEY = "history";
+const RANGE_KEY = "range";
 
 interface TrackerAnalyticsModalProps {
   tracker: Tracker;
   onClose: () => void;
 }
 
+interface AnalyticsPanelProps {
+  title: string;
+  open: boolean;
+  onToggle: () => void;
+  children: ReactNode;
+}
+
+function AnalyticsPanel({ title, open, onToggle, children }: AnalyticsPanelProps): ReactElement {
+  return (
+    <section className="wb-tp-panel">
+      <button type="button" className="wb-tp-panel-head" aria-expanded={open} onClick={onToggle}>
+        <Icon name={open ? "chevron-down" : "chevron-right"} size={16} />
+        <span className="wb-tp-panel-title">{title}</span>
+      </button>
+      {open && <div className="wb-tp-panel-body">{children}</div>}
+    </section>
+  );
+}
+
 export function TrackerAnalyticsModal({
   tracker,
   onClose,
 }: TrackerAnalyticsModalProps): ReactElement {
-  const state = useTracker(tracker.id);
-  const [days, setDays] = useState<TrackerRange>(30);
-  const rangeKey = String(days);
+  const state = useTracker(tracker.id, { allHistory: true });
+  const accordion = useGroupAccordion(STORAGE_KEY);
 
   // Поки відповідь летить, картка вже показує те, що прийшло зі стрічкою.
   const shown = state.tracker ?? tracker;
   const mode = trackerMode(shown);
   const entries = state.entries;
-  // Порожній `endDay` — ще не завантажено: вікно з нього не будується.
-  const windowRecords = state.endDay ? trackerWindow(entries, state.endDay, days) : [];
-  const reads = trackerReadingStats(windowRecords);
-  const latest = trackerLatest(entries);
-  const points = state.endDay ? buildTrackerSeries(entries, state.endDay, days, mode) : [];
-  const report = state.endDay
-    ? trackerReport(entries, { endDay: state.endDay, days, goal: shown.goal, mode })
-    : null;
+  const endDay = state.endDay;
+
+  const panels = useMemo(() => {
+    if (!endDay) return [] as { key: string; title: string; buckets: TrackerBucket[] }[];
+    const options = { mode, valueType: shown.valueType };
+    const clock = nowStamp();
+    return [
+      { key: "years", title: "Всього", buckets: trackerYearBuckets(entries, endDay, options) },
+      { key: "months", title: "Помісячно", buckets: trackerMonthBuckets(entries, endDay, options) },
+      {
+        key: "month",
+        title: "Поточний місяць",
+        buckets: trackerMonthDayBuckets(entries, endDay, options),
+      },
+      { key: "week", title: "Тиждень", buckets: trackerWeekBuckets(entries, endDay, options) },
+      { key: "day", title: "День", buckets: trackerHourBuckets(entries, endDay, options) },
+      {
+        key: "hour",
+        title: "Година",
+        buckets: trackerMinuteBuckets(entries, clock, { ...options, size: 5, count: 12 }),
+      },
+      {
+        key: "quarter",
+        title: "15 хв",
+        buckets: trackerMinuteBuckets(entries, clock, { ...options, size: 1, count: 15 }),
+      },
+    ];
+  }, [entries, endDay, mode, shown.valueType]);
+
+  const keys = [...panels.map((panel) => panel.key), RANGE_KEY, HISTORY_KEY];
+  const allOpen = accordion.allOpen(keys);
 
   return (
     <MenuModal
       title="Аналітика"
       variant="card"
       onClose={onClose}
+      header={
+        <div className="wb-tp-tools">
+          <button
+            type="button"
+            className="wb-btn wb-btn-secondary"
+            disabled={!endDay}
+            onClick={() => accordion.setAll(keys, !allOpen)}
+          >
+            {allOpen ? "Згорнути все" : "Розгорнути все"}
+          </button>
+        </div>
+      }
       content={
         <div className="wb-tracker-analytics">
           {state.loading && <p className="wb-text-muted">Завантаження…</p>}
@@ -80,110 +131,49 @@ export function TrackerAnalyticsModal({
             </div>
           )}
 
-          {!state.loading && !state.error && report && (
+          {!state.loading && !state.error && endDay && (
             <>
-              <Tabs
-                options={RANGE_TABS}
-                value={rangeKey}
-                onChange={(key) => setDays(Number(key) as TrackerRange)}
-                label="Вікно аналітики"
-              />
-              <div
-                id={tabPanelId(rangeKey)}
-                role="tabpanel"
-                aria-labelledby={tabId(rangeKey)}
-                className="wb-tracker-analytics-body"
+              {panels.map((panel) => (
+                <AnalyticsPanel
+                  key={panel.key}
+                  title={panel.title}
+                  open={accordion.isOpen(panel.key)}
+                  onToggle={() => accordion.toggle(panel.key)}
+                >
+                  <TrackerBucketChart
+                    buckets={panel.buckets}
+                    mode={mode}
+                    valueType={shown.valueType}
+                    goal={shown.goal}
+                    unit={shown.unit}
+                    title={`${shown.title} — ${panel.title}`}
+                  />
+                </AnalyticsPanel>
+              ))}
+
+              <AnalyticsPanel
+                title="Довільний проміжок"
+                open={accordion.isOpen(RANGE_KEY)}
+                onToggle={() => accordion.toggle(RANGE_KEY)}
               >
-                {mode === "sum" ? (
-                  <TrackerChart
-                    points={points}
-                    goal={shown.goal}
-                    unit={shown.unit}
-                    title={shown.title}
-                  />
-                ) : (
-                  <TrackerTrend
-                    records={windowRecords}
-                    goal={shown.goal}
-                    unit={shown.unit}
-                    title={shown.title}
-                  />
-                )}
+                <TrackerRangePanel
+                  entries={entries}
+                  endDay={endDay}
+                  mode={mode}
+                  valueType={shown.valueType}
+                  goal={shown.goal}
+                  unit={shown.unit}
+                  title={shown.title}
+                />
+              </AnalyticsPanel>
 
-                <dl className="wb-tracker-stats">
-                  {mode === "sum" ? (
-                    <>
-                      <div className="wb-tracker-stat">
-                        <dt className="wb-tracker-stat-label">Середнє за день</dt>
-                        <dd className="wb-tracker-stat-value">
-                          {amountOrDash(report.average, shown.unit)}
-                        </dd>
-                      </div>
-                      <div className="wb-tracker-stat">
-                        <dt className="wb-tracker-stat-label">Усього</dt>
-                        <dd className="wb-tracker-stat-value">
-                          {formatTrackerAmount(report.total, shown.unit)}
-                        </dd>
-                      </div>
-                      <div className="wb-tracker-stat">
-                        <dt className="wb-tracker-stat-label">Днів із записом</dt>
-                        <dd className="wb-tracker-stat-value">
-                          {report.filled} з {report.days}
-                        </dd>
-                      </div>
-                      <div className="wb-tracker-stat">
-                        <dt className="wb-tracker-stat-label">Серія</dt>
-                        <dd className="wb-tracker-stat-value">{report.streak} дн.</dd>
-                      </div>
-                      {shown.goal !== null && report.goalRate !== null && (
-                        <div className="wb-tracker-stat">
-                          <dt className="wb-tracker-stat-label">Ціль виконано</dt>
-                          <dd className="wb-tracker-stat-value">
-                            {report.goalDays} з {report.days} · {Math.round(report.goalRate * 100)}%
-                          </dd>
-                        </div>
-                      )}
-                    </>
-                  ) : (
-                    <>
-                      <div className="wb-tracker-stat">
-                        <dt className="wb-tracker-stat-label">Останнє</dt>
-                        <dd className="wb-tracker-stat-value">
-                          {trackerAmountText(latest?.value ?? null, shown)}
-                        </dd>
-                      </div>
-                      <div className="wb-tracker-stat">
-                        <dt className="wb-tracker-stat-label">Середнє</dt>
-                        <dd className="wb-tracker-stat-value">
-                          {amountOrDash(reads.average, shown.unit)}
-                        </dd>
-                      </div>
-                      <div className="wb-tracker-stat">
-                        <dt className="wb-tracker-stat-label">Найменше</dt>
-                        <dd className="wb-tracker-stat-value">
-                          {trackerAmountText(reads.min?.value ?? null, shown)}
-                        </dd>
-                      </div>
-                      <div className="wb-tracker-stat">
-                        <dt className="wb-tracker-stat-label">Найбільше</dt>
-                        <dd className="wb-tracker-stat-value">
-                          {trackerAmountText(reads.max?.value ?? null, shown)}
-                        </dd>
-                      </div>
-                      <div className="wb-tracker-stat">
-                        <dt className="wb-tracker-stat-label">Записів</dt>
-                        <dd className="wb-tracker-stat-value">{reads.count}</dd>
-                      </div>
-                    </>
-                  )}
-                </dl>
-
-                {mode === "sum" && changeLabel(report.changePct) && (
-                  <p className="wb-tracker-trend">{changeLabel(report.changePct)}</p>
-                )}
-              </div>
-
-              <TrackerHistoryList tracker={shown} entries={entries} onRemove={state.remove} />
+              <AnalyticsPanel
+                title="Історія"
+                open={accordion.isOpen(HISTORY_KEY)}
+                onToggle={() => accordion.toggle(HISTORY_KEY)}
+              >
+                <TrackerHistoryList tracker={shown} entries={entries} onRemove={state.remove} />
+              </AnalyticsPanel>
             </>
           )}
         </div>

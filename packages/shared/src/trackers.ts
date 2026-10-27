@@ -25,6 +25,17 @@ export {
 // Довідник одиниць — дані окремим модулем, як і каталог.
 export type { TrackerUnitGroup } from "./trackers/units";
 export { TRACKER_UNIT_GROUPS, isTrackerUnit } from "./trackers/units";
+// Періоди аналітики — колонки «рік / місяць / день / година / 15 хв».
+export type { TrackerBucket, TrackerBucketOptions } from "./trackers/buckets";
+export {
+  trackerHourBuckets,
+  trackerMinuteBuckets,
+  trackerMonthBuckets,
+  trackerMonthDayBuckets,
+  trackerRangeBuckets,
+  trackerWeekBuckets,
+  trackerYearBuckets,
+} from "./trackers/buckets";
 // Групи — дерево власника; спільні функції — тут само.
 export type { TrackerGroup, TrackerGroupNode, TrackerGroupOption } from "./trackers/groups";
 export {
@@ -108,33 +119,6 @@ export interface TrackerEntry {
 /** Запис разом із трекером — стрічка читає всі дні одним запитом. */
 export interface TrackerEntryRow extends TrackerEntry {
   trackerId: number;
-}
-
-/** Точка серії: день без запису лишається в серії як `null`, а не зникає. */
-export interface TrackerPoint {
-  day: string;
-  value: number | null;
-}
-
-export interface TrackerReport {
-  days: number;
-  filled: number;
-  total: number;
-  average: number | null;
-  peak: TrackerDayValue | null;
-  streak: number;
-  goalDays: number;
-  goalRate: number | null;
-  /** Зміна середнього проти попереднього вікна, у відсотках; `null` — нема з чим порівнювати. */
-  changePct: number | null;
-}
-
-/** Вікна аналітики, які пропонує екран. */
-export const TRACKER_RANGES = [7, 30, 90] as const;
-export type TrackerRange = (typeof TRACKER_RANGES)[number];
-
-export function isTrackerRange(value: unknown): value is TrackerRange {
-  return TRACKER_RANGES.includes(Number(value) as TrackerRange);
 }
 
 /**
@@ -332,16 +316,6 @@ export function trackerLatest<T extends TrackerEntry>(entries: readonly T[]): T 
 export function trackerPrevious<T extends TrackerEntry>(entries: readonly T[]): T | null {
   const sorted = sortedTrackerEntries(entries);
   return sorted.length > 1 ? sorted[sorted.length - 2] : null;
-}
-
-/** Записи вікна — історія, графік і звіт читають один список, а не три. */
-export function trackerWindow<T extends TrackerEntry>(
-  entries: readonly T[],
-  endDay: string,
-  days: number,
-): T[] {
-  const from = addTrackerDays(endDay, -(days - 1));
-  return sortedTrackerEntries(entries).filter((entry) => entry.day >= from && entry.day <= endDay);
 }
 
 /** Число для екрана: без зайвих нулів, з розділювачем тисяч. */

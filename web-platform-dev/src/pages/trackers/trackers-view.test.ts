@@ -8,12 +8,10 @@ import type {
 import {
   cellAmount,
   changeAmountLabel,
-  changeLabel,
   dayLabel,
   goalLabel,
   groupRowsTree,
   groupSubtreeIds,
-  historySince,
   matrixDayLabel,
   matrixDayNumber,
   matrixDays,
@@ -314,10 +312,6 @@ describe("підписи", () => {
     expect(whenLabel("2026-10-05", "2026-10-17")).toBe("05.10");
   });
 
-  it("вікно бере запас на попередній період — інакше зміни не з чим порівняти", () => {
-    expect(historySince("2026-10-17", 7)).toBe("2026-10-04");
-  });
-
   it("день у списку — короткий, без року", () => {
     expect(dayLabel("2026-10-05")).toBe("05.10");
   });
@@ -334,13 +328,6 @@ describe("підписи", () => {
     expect(changeAmountLabel(null, "кг", 30)).toBeNull();
     expect(changeAmountLabel(0, "кг", 30)).toBe("Без змін за 30 дн.");
     expect(changeAmountLabel(-0.5, "кг", 30)).toBe("−0,5 кг за 30 дн.");
-  });
-
-  it("зміна — словами, а не стрілкою: «більше» не завжди добре", () => {
-    expect(changeLabel(null)).toBeNull();
-    expect(changeLabel(0.4)).toBe("Як у попередній період");
-    expect(changeLabel(12.4)).toBe("Більше на 12,4%");
-    expect(changeLabel(-8)).toBe("Менше на 8%");
   });
 
   it("діапазон лінії — навколо значень, а не від нуля", () => {

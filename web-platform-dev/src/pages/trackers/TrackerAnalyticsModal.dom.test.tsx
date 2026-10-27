@@ -1,15 +1,14 @@
 // @vitest-environment jsdom
 /**
- * Аналітика трекера — окрема поверхня: звіт рахується з тих самих рядків, що й
- * графік, а історія поруч лише читається. Вікно звіту справді міняється
- * вкладками, кілька дотиків одного дня лишаються окремими рядками, а
- * прибирання виміру питає — без питання дотик зникав би одним рухом.
+ * Аналітика трекера — серія акордеонів: періоди зверху вниз, історія під
+ * власним акордеоном. Типово все закрито, вибір пам'ятається в `localStorage`,
+ * а «Розгорнути все» відкриває кожну панель однією дією.
  *
  * @module web-platform-dev/src/pages/trackers/TrackerAnalyticsModal.dom.test
  */
 
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { render, screen, within } from "@testing-library/react";
+import { fireEvent, render, screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import type { Tracker, TrackerEntry } from "@wwwuabot/shared/trackers";
 
@@ -37,6 +36,17 @@ const water: Tracker = {
   valueType: "number",
 };
 
+const temperature: Tracker = {
+  ...water,
+  id: 2,
+  key: "temperature",
+  title: "Температура",
+  unit: "°C",
+  step: 0.1,
+  goal: null,
+  mode: "read",
+};
+
 const state = {
   tracker: water as Tracker | null,
   entries: [] as TrackerEntry[],
@@ -54,8 +64,15 @@ vi.mock("./useTracker", () => ({ useTracker: () => state }));
 
 const { TrackerAnalyticsModal } = await import("./TrackerAnalyticsModal");
 
+const STORAGE_KEY = "wb-tracker-analytics-open";
+
+function renderModal(tracker: Tracker = water) {
+  return render(<TrackerAnalyticsModal tracker={tracker} onClose={hooks.close} />);
+}
+
 beforeEach(() => {
   vi.clearAllMocks();
+  localStorage.clear();
   state.tracker = water;
   state.endDay = "2026-10-17";
   state.loading = false;
@@ -67,37 +84,122 @@ beforeEach(() => {
   ];
 });
 
-describe("звіт", () => {
-  it("середнє, серія й дні з записом рахуються з історії", () => {
-    const { container } = render(<TrackerAnalyticsModal tracker={water} onClose={hooks.close} />);
-    const stats = container.querySelector(".wb-tracker-stats") as HTMLElement;
+describe("акордеони періодів", () => {
+  it("блок «середнє, усього, серія» зник — лишились графіки", () => {
+    const { container } = renderModal();
 
-    expect(within(stats).getByText("1,5 л")).toBeTruthy();
-    expect(within(stats).getByText("3 з 30")).toBeTruthy();
-    expect(within(stats).getByText("3 дн.")).toBeTruthy();
+    expect(container.querySelector(".wb-tracker-stats")).toBeNull();
+    expect(screen.queryByText("Середнє за день")).toBeNull();
+    expect(screen.queryByText("Серія")).toBeNull();
   });
 
-  it("вікно звіту справді звужується", async () => {
-    render(<TrackerAnalyticsModal tracker={water} onClose={hooks.close} />);
+  it("усі панелі закриті типово — жодного графіка на екрані", () => {
+    const { container } = renderModal();
 
-    await userEvent.click(screen.getByRole("tab", { name: "7 дн." }));
-
-    expect(screen.getByText("3 з 7")).toBeTruthy();
-    expect(screen.getByRole("tab", { name: "7 дн." }).getAttribute("aria-selected")).toBe("true");
-    expect(screen.getByRole("tab", { name: "30 дн." }).getAttribute("aria-selected")).toBe("false");
+    const titles = container.querySelectorAll(".wb-tp-panel-title");
+    expect(Array.from(titles).map((node) => node.textContent)).toEqual([
+      "Всього",
+      "Помісячно",
+      "Поточний місяць",
+      "Тиждень",
+      "День",
+      "Година",
+      "15 хв",
+      "Довільний проміжок",
+      "Історія",
+    ]);
+    expect(container.querySelectorAll(".wb-tp-plot")).toHaveLength(0);
   });
 
-  it("ціль виконано — число днів, а не середнє", () => {
-    render(<TrackerAnalyticsModal tracker={water} onClose={hooks.close} />);
+  it("«Всього» показує колонки років, підписи — у шапці зверху", async () => {
+    const { container } = renderModal();
 
-    expect(screen.getByText("1 з 30 · 3%")).toBeTruthy();
+    await userEvent.click(screen.getByRole("button", { name: "Всього" }));
+
+    const head = within(container.querySelector(".wb-tp-head") as HTMLElement);
+    expect(head.getByText("2026")).toBeTruthy();
+    expect(container.querySelectorAll(".wb-tp-bar")).toHaveLength(1);
+    // Порожні колонки — сірі крапки, а не нулі.
+    expect(container.querySelectorAll(".wb-tp-void")).toHaveLength(0);
+  });
+
+  it("«Помісячно» — 12 колонок року, порожні місяці — сірі крапки", async () => {
+    const { container } = renderModal();
+
+    await userEvent.click(screen.getByRole("button", { name: "Помісячно" }));
+
+    expect(container.querySelectorAll(".wb-tp-slot")).toHaveLength(12);
+    expect(container.querySelectorAll(".wb-tp-void")).toHaveLength(11);
+  });
+
+  it("виміри стоять точками, а не стовпчиками від нуля", async () => {
+    state.tracker = temperature;
+    const { container } = renderModal(temperature);
+
+    await userEvent.click(screen.getByRole("button", { name: "Всього" }));
+
+    expect(container.querySelectorAll(".wb-tp-dot")).toHaveLength(1);
+    expect(container.querySelectorAll(".wb-tp-bar")).toHaveLength(0);
+  });
+
+  it("«Розгорнути все» відкриває кожну панель і стає «Згорнути все»", async () => {
+    const { container } = renderModal();
+
+    await userEvent.click(screen.getByRole("button", { name: "Розгорнути все" }));
+
+    // Графік є там, де є записи: «Година» і «15 хв» для цих даних порожні.
+    expect(container.querySelectorAll(".wb-tp-plot")).toHaveLength(6);
+    expect(screen.getAllByText("Немає записів за цей період")).toHaveLength(2);
+    expect(container.querySelectorAll(".wb-tracker-history-row")).toHaveLength(3);
+    expect(screen.getByRole("button", { name: "Згорнути все" })).toBeTruthy();
+
+    await userEvent.click(screen.getByRole("button", { name: "Згорнути все" }));
+    expect(container.querySelectorAll(".wb-tp-plot")).toHaveLength(0);
+  });
+
+  it("повторний дотик закриває панель", async () => {
+    const { container } = renderModal();
+
+    await userEvent.click(screen.getByRole("button", { name: "День" }));
+    expect(container.querySelectorAll(".wb-tp-plot")).toHaveLength(1);
+
+    await userEvent.click(screen.getByRole("button", { name: "День" }));
+    expect(container.querySelectorAll(".wb-tp-plot")).toHaveLength(0);
+  });
+
+  it("стан акордеонів пам'ятається в localStorage", async () => {
+    const first = renderModal();
+    await userEvent.click(screen.getByRole("button", { name: "Тиждень" }));
+
+    expect(localStorage.getItem(STORAGE_KEY)).toContain("week");
+    expect(first.container.querySelectorAll(".wb-tp-plot")).toHaveLength(1);
+
+    first.unmount();
+    const again = renderModal();
+    expect(again.container.querySelectorAll(".wb-tp-plot")).toHaveLength(1);
+  });
+
+  it("довільний проміжок типово — 30 днів і поля дат", async () => {
+    const { container } = renderModal();
+
+    await userEvent.click(screen.getByRole("button", { name: "Довільний проміжок" }));
+
+    expect(container.querySelectorAll(".wb-tp-slot")).toHaveLength(30);
+    expect(screen.getByLabelText("Від")).toBeTruthy();
+    expect(screen.getByLabelText("До")).toBeTruthy();
+
+    // Обрана дата перебудовує проміжок: 10.10–17.10 — вісім колонок.
+    fireEvent.change(screen.getByLabelText("Від"), { target: { value: "2026-10-10" } });
+    expect(container.querySelectorAll(".wb-tp-slot")).toHaveLength(8);
   });
 });
 
 describe("історія", () => {
-  it("порожній трекер каже, з чого почати", () => {
+  it("порожній трекер каже, з чого почати", async () => {
     state.entries = [];
-    render(<TrackerAnalyticsModal tracker={water} onClose={hooks.close} />);
+    renderModal();
+
+    await userEvent.click(screen.getByRole("button", { name: "Історія" }));
 
     expect(screen.getByText(/Записів ще немає/)).toBeTruthy();
   });
@@ -107,23 +209,27 @@ describe("історія", () => {
     state.endDay = "";
     state.loading = true;
 
-    render(<TrackerAnalyticsModal tracker={water} onClose={hooks.close} />);
+    renderModal();
 
     expect(screen.getByText("Завантаження…")).toBeTruthy();
   });
 
-  it("⛔ два дотики одного дня — два рядки в історії, а не один", () => {
+  it("⛔ два дотики одного дня — два рядки в історії, а не один", async () => {
     state.entries = [
       ...state.entries,
       { id: 4, day: "2026-10-17", value: 0.5, note: "ще склянка", loggedAt: "2026-10-17 13:45:00" },
     ];
-    const { container } = render(<TrackerAnalyticsModal tracker={water} onClose={hooks.close} />);
+    const { container } = renderModal();
+
+    await userEvent.click(screen.getByRole("button", { name: "Історія" }));
 
     expect(container.querySelectorAll(".wb-tracker-history-row")).toHaveLength(4);
   });
 
-  it("⛔ рядок історії — не кнопка: минулий вимір не редагується, лише прибирається", () => {
-    const { container } = render(<TrackerAnalyticsModal tracker={water} onClose={hooks.close} />);
+  it("⛔ рядок історії — не кнопка: минулий вимір не редагується, лише прибирається", async () => {
+    const { container } = renderModal();
+
+    await userEvent.click(screen.getByRole("button", { name: "Історія" }));
     const first = container.querySelector(".wb-tracker-history-row") as HTMLElement;
 
     // День і число — текст, а не кнопка: єдиний дотик у рядку — прибирання.
@@ -132,16 +238,19 @@ describe("історія", () => {
     expect(within(first).getByRole("button", { name: /Прибрати запис/ })).toBeTruthy();
   });
 
-  it("історія показує час дотика", () => {
-    render(<TrackerAnalyticsModal tracker={water} onClose={hooks.close} />);
+  it("історія показує час дотика", async () => {
+    renderModal();
+
+    await userEvent.click(screen.getByRole("button", { name: "Історія" }));
 
     expect(screen.getByText("09:00")).toBeTruthy();
     expect(screen.getByText("21:10")).toBeTruthy();
   });
 
   it("прибирання дотика питає підтвердження", async () => {
-    render(<TrackerAnalyticsModal tracker={water} onClose={hooks.close} />);
+    renderModal();
 
+    await userEvent.click(screen.getByRole("button", { name: "Історія" }));
     await userEvent.click(screen.getByRole("button", { name: "Прибрати запис 17.10 09:00" }));
 
     expect(hooks.confirm).toHaveBeenCalled();
@@ -154,9 +263,9 @@ describe("історія", () => {
 });
 
 describe("збій", () => {
-  it("причина й повторення стоять на місці звіту", async () => {
+  it("причина й повторення стоять на місці графіків", async () => {
     state.error = "Трекера не знайдено.";
-    render(<TrackerAnalyticsModal tracker={water} onClose={hooks.close} />);
+    renderModal();
 
     expect(screen.getByText("Трекера не знайдено.")).toBeTruthy();
     await userEvent.click(screen.getByRole("button", { name: "Повторити" }));
