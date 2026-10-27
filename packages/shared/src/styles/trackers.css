@@ -1031,12 +1031,17 @@
   font-weight: var(--weight-semibold);
 }
 
-/* Шлях до теперішнього місця — акцентний підпис і стрілка: коли гілки
-   згорнуті, самого рядка «Тут» не видно, і лише цей підпис каже, у якій
-   папці лежить трекер. Сусідні гілки лишаються звичайними. */
+/* Шлях до теперішнього місця — акцентний підпис, стрілка й назва: коли гілки
+   згорнуті, самого рядка «Тут» не видно, і лише цей підпис каже, у якій папці
+   лежить трекер. Підпис трохи важчий за сусідів — сама барва на телефоні тонка. */
 .wb-group-picker-row--path .wb-group-picker-lead,
-.wb-group-picker-row--path .wb-group-picker-toggle {
+.wb-group-picker-row--path .wb-group-picker-toggle,
+.wb-group-picker-row--path .wb-group-picker-item-text {
   color: var(--accent);
+}
+
+.wb-group-picker-row--path .wb-group-picker-item-text {
+  font-weight: var(--weight-semibold);
 }
 
 /* «Обрати» в рядку дерева: дія рядка, а не весь рядок — дотик у порожнє
