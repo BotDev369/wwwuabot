@@ -113,6 +113,23 @@ describe("вибір місця", () => {
     ).toBe(false);
   });
 
+  it("шлях до теперішнього місця акцентний навіть у згорнутому дереві", () => {
+    renderModal({ currentId: 12 });
+
+    // «Ранкова рутина» (12) лежить у «Активності» (11), а та згорнута: самого
+    // рядка «Тут» не видно — місце видає акцентний підпис батька.
+    expect(screen.queryByRole("button", { name: "Обрати: Ранкова рутина" })).toBeNull();
+    expect(
+      screen
+        .getByRole("button", { name: "Обрати: Активність" })
+        .closest(".wb-group-picker-row--path"),
+    ).toBeTruthy();
+    // Сусідня гілка не акцентна: це шлях, а не все, що поруч.
+    expect(
+      screen.getByRole("button", { name: "Обрати: Режим" }).closest(".wb-group-picker-row--path"),
+    ).toBeNull();
+  });
+
   it("гілка, яку переміщують, разом із нащадками в дереві не показується", () => {
     renderModal({ excludeIds: [11, 12] });
 

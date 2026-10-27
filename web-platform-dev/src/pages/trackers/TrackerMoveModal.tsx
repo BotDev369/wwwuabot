@@ -26,6 +26,17 @@ function branchIds(nodes: readonly TrackerGroupNode[], into: number[] = []): num
   return into;
 }
 
+/** ids гілок від кореня до `target` — цей шлях каже, де трекер, навіть згорнутий. */
+function pathIds(nodes: readonly TrackerGroupNode[], target: number | null): ReadonlySet<number> {
+  if (target === null) return new Set();
+  for (const node of nodes) {
+    if (node.group.id === target) return new Set([target]);
+    const deeper = pathIds(node.children, target);
+    if (deeper.size > 0) return new Set([node.group.id, ...deeper]);
+  }
+  return new Set();
+}
+
 interface TrackerMoveModalProps {
   /** Що переміщують — назва в заголовку поверхні. */
   name: string;
@@ -60,6 +71,7 @@ export function TrackerMoveModal({
     );
   }, [groups, excludeIds]);
   const branches = useMemo(() => branchIds(tree), [tree]);
+  const onPath = useMemo(() => pathIds(tree, currentId), [tree, currentId]);
   const allOpen = branches.length > 0 && branches.every((id) => expanded.has(id));
 
   function toggle(id: number): void {
@@ -81,12 +93,20 @@ export function TrackerMoveModal({
       onToggle?: () => void;
       onPick: () => void;
       here: boolean;
+      /** Гілка на шляху до теперішнього місця — акцентний підпис. */
+      onPath?: boolean;
     },
   ): ReactElement {
+    const marks = [
+      options.here ? "wb-group-picker-row--here" : "",
+      options.onPath ? "wb-group-picker-row--path" : "",
+    ]
+      .filter(Boolean)
+      .join(" ");
     return (
       <li
         key={key}
-        className={`wb-group-picker-row${options.here ? " wb-group-picker-row--here" : ""}`}
+        className={`wb-group-picker-row${marks ? ` ${marks}` : ""}`}
         style={{ marginInlineStart: depth * 14 }}
         aria-current={options.here ? "true" : undefined}
       >
@@ -129,6 +149,7 @@ export function TrackerMoveModal({
         onToggle: () => toggle(node.group.id),
         onPick: () => onPick(node.group.id),
         here: currentId === node.group.id,
+        onPath: currentId !== node.group.id && onPath.has(node.group.id),
       });
       return open ? [element, ...rows(node.children, depth + 1)] : [element];
     });
