@@ -4,13 +4,15 @@ import { pageCardBlocks } from "./page-card";
 describe("картка сторінки для діплінка", () => {
   it("назва й фото — заголовок і зображення", () => {
     expect(pageCardBlocks("PageSlay", "https://cdn.example/p.png")).toEqual([
-      { type: "heading", text: "PageSlay" },
+      { type: "heading", text: "PageSlay", size: 1 },
       { type: "photo", photo: { type: "photo", media: "https://cdn.example/p.png" } },
     ]);
   });
 
   it("⛔ без фото лишається сама назва, без порожнього блока", () => {
-    expect(pageCardBlocks("PageSlay", null)).toEqual([{ type: "heading", text: "PageSlay" }]);
+    expect(pageCardBlocks("PageSlay", null)).toEqual([
+      { type: "heading", text: "PageSlay", size: 1 },
+    ]);
   });
 
   it("⛔ без назви — тільки фото, а не порожній заголовок", () => {

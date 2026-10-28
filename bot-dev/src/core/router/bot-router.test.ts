@@ -198,7 +198,7 @@ describe("перший екран — одне повідомлення", () => 
     expect(store.ctx.screen?.landing).toBeUndefined();
     expect(store.ctx.screen?.rich_message).toBe(true);
     expect(store.ctx.screen?.rich_data).toEqual([
-      { type: "heading", text: "mydate" },
+      { type: "heading", text: "mydate", size: 1 },
       { type: "photo", photo: { type: "photo", media: "https://cdn.example/banner.png" } },
     ]);
     expect(buildScreenButtons(store.ctx.screen!, "https://p.example")).toEqual([

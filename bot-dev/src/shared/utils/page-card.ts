@@ -13,7 +13,8 @@ export function pageCardBlocks(
   const blocks: Record<string, unknown>[] = [];
   const heading = (title ?? "").trim();
 
-  if (heading !== "") blocks.push({ type: "heading", text: heading });
+  // `size` у заголовка обов'язковий: без нього Telegram відхиляє блок.
+  if (heading !== "") blocks.push({ type: "heading", text: heading, size: 1 });
   if (photoUrl) blocks.push({ type: "photo", photo: { type: "photo", media: photoUrl } });
 
   return blocks;
