@@ -14,7 +14,8 @@ import type { PageConfig } from "@wwwuabot/shared/types/page-config";
 import { HOME_SLUG } from "@wwwuabot/shared/content";
 
 /** Те, що екран сказав хедеру про сторінку. */
-let chrome: { title: string | null; share: { slug: string } | null; favorite: unknown } | null = null;
+let chrome: { title: string | null; share: { slug: string } | null; favorite: unknown } | null =
+  null;
 /** Те, що дійшло до рендерера: конфігурація сторінки і контекст блоків. */
 let rendered: { config: PageConfig; context: Record<string, unknown> } | null = null;
 let params: Record<string, string> = { "*": "pageslay" };

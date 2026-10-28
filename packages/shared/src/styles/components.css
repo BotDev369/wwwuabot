@@ -1341,6 +1341,67 @@ html:has(.wb-tabbar) .wb-modal-overlay--screen {
   color: var(--text-muted);
 }
 
+/* ── «Поділитись»: посилання, месенджери, QR ─────────────────────────────
+   Вміст спільного `ShareModal` (його відкриває шапка). Адресу збирає
+   `buildShareLinks`, тож самі класи живуть тут, а не в CSS оболонки. */
+.wb-share {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-3);
+}
+
+/* Адресу читають, а не набирають: вона займає всю ширину й ламається по будь-
+   якому місцю — інакше довгий діплінк розпирав картку. */
+.wb-share__url {
+  margin: 0;
+  padding: var(--sp-3);
+  border-radius: var(--radius-md);
+  background: var(--field-bg);
+  color: var(--text-secondary);
+  font-size: var(--text-sm);
+  overflow-wrap: anywhere;
+  user-select: all;
+}
+
+.wb-share__copy {
+  width: 100%;
+  min-height: 44px;
+}
+
+.wb-share__apps {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--sp-2);
+}
+
+/* Месенджери — плитки тієї самої висоти, що кнопка копіювання: палець
+   мусить влучати в будь-яку з них на ходу. */
+.wb-share__apps a {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 44px;
+  padding: 0 var(--sp-3);
+  border-radius: var(--radius);
+  background: var(--field-bg);
+  color: var(--text-primary);
+  font-size: var(--text-sm);
+  font-weight: var(--weight-medium);
+  text-decoration: none;
+}
+
+.wb-share__apps a:active {
+  transform: scale(0.97);
+}
+
+/* QR — на білому завжди: інвертований код частина сканерів не читає. */
+.wb-share__qr {
+  align-self: center;
+  padding: var(--sp-2);
+  border-radius: var(--radius-md);
+  background: #fff;
+}
+
 /* ── Вигляд колекції (спільний кирпичик) ───────────────────────────────────
    Рядки чи картки-превью, і скількома колонками. Кирпичик **не для нотаток**:
    той самий вибір є в товарів, новин і постів, і розкладка мусить бути вже

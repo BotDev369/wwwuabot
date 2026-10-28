@@ -46,7 +46,11 @@ export interface AppBarActions {
   botUsername?: string | null;
 }
 
-export function AppBar({ onBack, onTheme, botUsername = null }: AppBarActions): ReactElement | null {
+export function AppBar({
+  onBack,
+  onTheme,
+  botUsername = null,
+}: AppBarActions): ReactElement | null {
   const chrome = useContext(ScreenChromeContext)?.chrome;
   if (!chrome) return null;
   return <AppBarView chrome={chrome} onBack={onBack} onTheme={onTheme} botUsername={botUsername} />;
