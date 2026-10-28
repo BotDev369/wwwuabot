@@ -20,7 +20,8 @@
 | [`DESIGN_SYSTEM.md`](./DESIGN_SYSTEM.md) | **наскрізні правила вигляду** (нумеровані — на них посилається код), бренд. Словник токенів — `TOKENS.md`; склад класів — у CSS і `check:css` (перелік у документі дрейфує) |
 | [`TOKENS.md`](./TOKENS.md) | токени вигляду: поверхні й текст, три кольори людини, поля й хром Telegram, типографіка, мірки, рух |
 | [`ICONS.md`](./ICONS.md) | знаки: один знак = одне значення, перелік імен, близнюки футера — правило **26** |
-| [`SURFACES.md`](./SURFACES.md) | поверхні: аркуш (`.wb-sheet`), композер, меню — правила **13** і **17** |
+| [`SURFACES.md`](./SURFACES.md) | спільні правила поверхонь, аркуша й композера — правила **13** і **17** |
+| [`MESSAGES.md`](./MESSAGES.md) | повідомлення: зв'язок і доступ, модель D1, розмови, чернетки, фото й спільна поверхня |
 | [`FAVORITES.md`](./FAVORITES.md) | особисті лайки, обране, серверна перевірка доступу й місця кнопок |
 | [`EVENTS.md`](./EVENTS.md) | журнал дій людей: що лягає в `user_events`, що пишуть бот і платформа, читання й екран «Аналітика» |
 | [`COLLECTIONS.md`](./COLLECTIONS.md) | колекції: нотатки й контакти, спільна смуга керування — правила **18** і **20** |
@@ -57,11 +58,12 @@
 | Новий REST-ендпоінт | [`RECIPES.md`](./RECIPES.md) §1, валідація тіла — §1a, [`API.md`](./API.md) (група доступу) | [`DATA_MODEL.md`](./DATA_MODEL.md) — таблиця й власник |
 | Нова таблиця або колонка D1 | [`RECIPES.md`](./RECIPES.md) §2, [`D1_OPS.md`](./D1_OPS.md) | [`DATA_MODEL.md`](./DATA_MODEL.md) |
 | Перейменування / перебудова таблиці | [`RECIPES.md`](./RECIPES.md) §3, [`D1_OPS.md`](./D1_OPS.md) «Перебудова» | — |
+| Повідомлення: доступ, модель, чернетки й фото | [`MESSAGES.md`](./MESSAGES.md) | [`API.md`](./API.md), [`DATA_MODEL.md`](./DATA_MODEL.md) |
 | Новий блок сторінки | [`RECIPES.md`](./RECIPES.md) §10, [`GLOSSARY.md`](./GLOSSARY.md) | [`DESIGN_SYSTEM.md`](./DESIGN_SYSTEM.md) — правило класу |
 | Новий клас `.wb-*` | [`RECIPES.md`](./RECIPES.md) §4 | [`PLATFORM.md`](./PLATFORM.md) — кирпичик чи стиль оболонки |
 | Екран платформи (TWA) | [`RECIPES.md`](./RECIPES.md) §5, [`PLATFORM.md`](./PLATFORM.md) | [`DESIGN_SYSTEM.md`](./DESIGN_SYSTEM.md) |
 | Екран або кнопка бота | [`RECIPES.md`](./RECIPES.md) §6, [`../bot-dev/README.md`](../bot-dev/README.md) | [`GLOSSARY.md`](./GLOSSARY.md) — терміни екрана |
-| Розмітка, токени, колір | [`DESIGN_SYSTEM.md`](./DESIGN_SYSTEM.md), [`TOKENS.md`](./TOKENS.md) | [`SURFACES.md`](./SURFACES.md) — якщо це поверхня |
+| Розмітка, токени, колір | [`DESIGN_SYSTEM.md`](./DESIGN_SYSTEM.md), [`TOKENS.md`](./TOKENS.md) | [`SURFACES.md`](./SURFACES.md) або [`MESSAGES.md`](./MESSAGES.md) — якщо це поверхня |
 | Тема: схема, шрифт, застосування | [`THEMES.md`](./THEMES.md) | [`VISIBILITY.md`](./VISIBILITY.md) — публічність |
 | Магазин: замовлення, статуси, оповіщення | [`SHOPS.md`](./SHOPS.md) | [`PRODUCTS.md`](./PRODUCTS.md), [`SHOP_UI.md`](./SHOP_UI.md) |
 | Сторінка з шаблону | [`PAGES.md`](./PAGES.md) | [`CONTENT_MODEL.md`](./CONTENT_MODEL.md) — адреса й контент |
@@ -91,7 +93,7 @@
 | Правило про екран магазину | [`SHOP_UI.md`](./SHOP_UI.md); §9 у [`SHOPS.md`](./SHOPS.md) — покажчик |
 | Правило про самооцінку й інструмент | [`ASSESSMENTS.md`](./ASSESSMENTS.md); ліцензії та зміст інструментів — у `AssessmentTest.sources` (код) |
 | Правило про розподіл результатів між людьми | [`ASSESSMENT_PEERS.md`](./ASSESSMENT_PEERS.md) |
-| Правило про конкретну поверхню або колекцію | документ її теми — [`SURFACES.md`](./SURFACES.md) / [`COLLECTIONS.md`](./COLLECTIONS.md); номер правила лишається в [`DESIGN_SYSTEM.md`](./DESIGN_SYSTEM.md) |
+| Правило про конкретну поверхню або колекцію | документ її теми — [`SURFACES.md`](./SURFACES.md), [`MESSAGES.md`](./MESSAGES.md) / [`COLLECTIONS.md`](./COLLECTIONS.md); номер правила лишається в [`DESIGN_SYSTEM.md`](./DESIGN_SYSTEM.md) |
 | Новий клас | спочатку правило в `packages/shared/src/styles/`, тоді вжиток; перелік — `AGENTS.md` §3 |
 | Нова іконка | спершу правило 26 — [`ICONS.md`](./ICONS.md), тоді `packages/shared/src/components/icons.tsx` (перелік імен — у коді) |
 | Новий ендпоїнт | нікуди вручну: `npm run doc:api` перегенеровує [`API.md`](./API.md) |

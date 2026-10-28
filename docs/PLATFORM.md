@@ -2,7 +2,7 @@
 
 Власник правил **`web-platform-dev` і `web-admin-dev`** — двох оболонок одного продукту. Каркас і
 мірки — `packages/shared/src/styles/app-chrome.css`; правила вигляду — `docs/DESIGN_SYSTEM.md`;
-поверхні — `docs/SURFACES.md`.
+поверхні — `docs/SURFACES.md`, листування — `docs/MESSAGES.md`.
 
 ## Однакові, а не «схожі»
 

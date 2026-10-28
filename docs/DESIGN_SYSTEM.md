@@ -7,7 +7,7 @@
 > **Номери правил стабільні:** на них посилається код, тож правило **замінюється**, а не зникає. Форма
 > правила й заборона історій — `AGENTS.md` §9 (причина мусить лишатись: без неї правило виглядає
 > надлишковим, і його «оптимізують» назад). Правила про конкретну поверхню живуть у її документі
-> ([`SURFACES.md`](./SURFACES.md), [`COLLECTIONS.md`](./COLLECTIONS.md), [`ICONS.md`](./ICONS.md)) — тут
+> ([`SURFACES.md`](./SURFACES.md), [`MESSAGES.md`](./MESSAGES.md), [`COLLECTIONS.md`](./COLLECTIONS.md), [`ICONS.md`](./ICONS.md)) — тут
 > від них лишається номер і суть.
 
 ---
@@ -196,5 +196,5 @@
 не прочитати: керівник набору знаків — `packages/shared/src/components/icon-names.ts`
 (`ICON_NAMES`), а гейт «клас у розмітці ↔ правило в CSS» — `scripts/check-css-classes.mjs`.
 
-Деталі поверхонь і колекцій — у їхніх документах: [`SURFACES.md`](./SURFACES.md),
+Деталі поверхонь і колекцій — у їхніх документах: [`SURFACES.md`](./SURFACES.md), [`MESSAGES.md`](./MESSAGES.md),
 [`COLLECTIONS.md`](./COLLECTIONS.md).
