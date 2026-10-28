@@ -1,6 +1,6 @@
 import { describe, it, expect, vi } from "vitest";
-import { UsersService } from "./users.service";
 import type { Env } from "../shared/types";
+import { UsersService } from "./users.service";
 
 function createMockEnv(overrides?: Partial<Env>): {
   env: Env;
@@ -28,21 +28,22 @@ function createMockEnv(overrides?: Partial<Env>): {
 
 describe("UsersService", () => {
   describe("readUser", () => {
-    it("fetches user by ID and ensures is_blocked column", async () => {
+    it("checks the dynamic block column through the shared migration helper", async () => {
       const { env, mockDb } = createMockEnv();
-
-      // Mock ensureIsBlocked
-      const alterStatement = {
-        run: vi.fn().mockResolvedValue({}),
-      };
-      // Mock SELECT statement
       const selectStatement = {
         bind: vi.fn().mockReturnThis(),
         first: vi.fn().mockResolvedValue({ user_id: 123, first_name: "TestUser" }),
       };
-
+      const schemaProbe = {
+        first: vi
+          .fn()
+          .mockRejectedValueOnce(new Error("no such column: is_blocked"))
+          .mockResolvedValue(null),
+      };
+      const alterStatement = { run: vi.fn().mockResolvedValue({}) };
       mockDb.prepare.mockImplementation((sql: string) => {
-        if (sql.includes("ALTER TABLE")) return alterStatement;
+        if (sql.includes("LIMIT 0")) return schemaProbe;
+        if (sql.startsWith("ALTER TABLE")) return alterStatement;
         return selectStatement;
       });
 
@@ -51,17 +52,23 @@ describe("UsersService", () => {
 
       expect(user).toEqual({ user_id: 123, first_name: "TestUser" });
       expect(selectStatement.bind).toHaveBeenCalledWith(123);
+      expect(mockDb.prepare).toHaveBeenCalledWith("SELECT is_blocked FROM users LIMIT 0");
+      expect(mockDb.prepare).toHaveBeenCalledWith(
+        "ALTER TABLE users ADD COLUMN is_blocked INTEGER DEFAULT NULL",
+      );
+      expect(alterStatement.run).toHaveBeenCalledOnce();
     });
 
     it("returns null if user does not exist", async () => {
       const { env, mockDb } = createMockEnv();
-      mockDb.prepare.mockImplementation((sql: string) => {
-        if (sql.includes("ALTER TABLE")) return { run: vi.fn().mockResolvedValue({}) };
-        return {
-          bind: vi.fn().mockReturnThis(),
-          first: vi.fn().mockResolvedValue(null),
-        };
-      });
+      mockDb.prepare.mockImplementation((sql: string) =>
+        sql.includes("LIMIT 0")
+          ? { first: vi.fn().mockResolvedValue(null) }
+          : {
+              bind: vi.fn().mockReturnThis(),
+              first: vi.fn().mockResolvedValue(null),
+            },
+      );
 
       const service = new UsersService(env);
       const user = await service.readUser(999);
@@ -129,21 +136,45 @@ describe("UsersService", () => {
       );
       expect(updateStmt.bind).toHaveBeenCalledWith("Alice", 123);
     });
+
+    it("adds a dynamic field through the shared helper and retries the update", async () => {
+      const { env, mockDb } = createMockEnv();
+      const updateStmt = {
+        bind: vi.fn().mockReturnThis(),
+        run: vi
+          .fn()
+          .mockRejectedValueOnce(new Error("no such column: custom_field"))
+          .mockResolvedValue({}),
+      };
+      const alterStmt = { run: vi.fn().mockResolvedValue({}) };
+      mockDb.prepare.mockImplementation((sql: string) =>
+        sql.startsWith("ALTER TABLE") ? alterStmt : updateStmt,
+      );
+
+      const service = new UsersService(env);
+      await service.updateUser(123, { custom_field: "value" });
+
+      expect(mockDb.prepare).toHaveBeenCalledWith(
+        "UPDATE users SET custom_field = ? WHERE user_id = ?",
+      );
+      expect(mockDb.prepare).toHaveBeenCalledWith(
+        "ALTER TABLE users ADD COLUMN custom_field TEXT DEFAULT NULL",
+      );
+      expect(updateStmt.bind).toHaveBeenCalledTimes(2);
+      expect(updateStmt.run).toHaveBeenCalledTimes(2);
+      expect(alterStmt.run).toHaveBeenCalledOnce();
+    });
   });
 
   describe("bulkUsers", () => {
     it("handles bulk delete with multiple IDs", async () => {
       const { env, mockDb } = createMockEnv();
-      const alterStatement = { run: vi.fn().mockResolvedValue({}) };
       const bulkDeleteStmt = {
         bind: vi.fn().mockReturnThis(),
         run: vi.fn().mockResolvedValue({ meta: { changes: 3 } }),
       };
 
-      mockDb.prepare.mockImplementation((sql: string) => {
-        if (sql.includes("ALTER TABLE")) return alterStatement;
-        return bulkDeleteStmt;
-      });
+      mockDb.prepare.mockReturnValue(bulkDeleteStmt);
 
       const service = new UsersService(env);
       const count = await service.bulkUsers("delete", [1, 2, 3]);

@@ -1,3 +1,4 @@
+import { withAutoMigrate } from "@wwwuabot/shared/database/auto-migrate";
 import type { Env } from "../shared/types";
 
 const SAFE_RE = /^[a-zA-Z_][a-zA-Z0-9_]*$/;
@@ -6,32 +7,28 @@ const PROTECTED_USERS = new Set(["user_id"]);
 export class UsersService {
   constructor(private env: Env) {}
 
-  /** Гарантує наявність колонки is_blocked. */
-  async ensureIsBlocked(): Promise<void> {
-    await this.env.DB.prepare("ALTER TABLE users ADD COLUMN is_blocked INTEGER DEFAULT 0")
-      .run()
-      .catch(() => {});
+  /** Гарантує динамічну колонку блокування через спільний механізм D1. */
+  private async ensureIsBlocked(): Promise<void> {
+    await withAutoMigrate(
+      this.env.DB,
+      () => this.env.DB.prepare("SELECT is_blocked FROM users LIMIT 0").first(),
+      { is_blocked: 0 },
+      "users",
+    );
   }
 
   /** Отримати список користувачів (без важких JSON колонок на зразок my_dates). */
   async listUsers(): Promise<Record<string, unknown>[]> {
-    await this.ensureIsBlocked();
     try {
+      await this.ensureIsBlocked();
       const result = await this.env.DB.prepare(
         "SELECT user_id, first_name, last_name, username, language, created_at, is_blocked FROM users ORDER BY user_id ASC",
-      ).all();
-
-      return (result.results ?? []).map((row: Record<string, unknown>) => {
-        const copy = { ...row };
-        delete copy.my_dates;
-        return copy;
-      });
-    } catch (e: unknown) {
-      const msg = e instanceof Error ? e.message : String(e);
-      if (msg.includes("no such table")) {
-        return [];
-      }
-      throw e;
+      ).all<Record<string, unknown>>();
+      return result.results ?? [];
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : String(error);
+      if (message.includes("no such table")) return [];
+      throw error;
     }
   }
 
@@ -51,7 +48,7 @@ export class UsersService {
     return row ?? null;
   }
 
-  /** Оновити поля користувача з авто-міграцією відсутніх колонок. */
+  /** Оновити наявні поля користувача; нові колонки оголошуються в реєстрі D1. */
   async updateUser(userId: number, body: Record<string, unknown>): Promise<void> {
     const fields: Record<string, unknown> = {};
     for (const [key, value] of Object.entries(body)) {
@@ -65,32 +62,18 @@ export class UsersService {
       throw new Error("no fields to update");
     }
 
-    try {
-      const setClause = keys.map((k) => `${k} = ?`).join(", ");
-      const values = keys.map((k) => fields[k]);
-      await this.env.DB.prepare(`UPDATE users SET ${setClause} WHERE user_id = ?`)
-        .bind(...values, userId)
-        .run();
-    } catch (e: unknown) {
-      const msg = e instanceof Error ? e.message : String(e);
-      if (msg.includes("no such column")) {
-        const match = msg.match(/no such column: (\w+)/);
-        if (match && fields[match[1]] !== undefined) {
-          const colName = match[1];
-          const type = typeof fields[colName] === "number" ? "INTEGER" : "TEXT";
-          await this.env.DB.prepare(
-            `ALTER TABLE users ADD COLUMN ${colName} ${type} DEFAULT NULL`,
-          ).run();
-          const setClause2 = keys.map((k) => `${k} = ?`).join(", ");
-          const values2 = keys.map((k) => fields[k]);
-          await this.env.DB.prepare(`UPDATE users SET ${setClause2} WHERE user_id = ?`)
-            .bind(...values2, userId)
-            .run();
-          return;
-        }
-      }
-      throw e;
-    }
+    await withAutoMigrate(
+      this.env.DB,
+      async () => {
+        const setClause = keys.map((key) => `${key} = ?`).join(", ");
+        const values = keys.map((key) => fields[key]);
+        await this.env.DB.prepare(`UPDATE users SET ${setClause} WHERE user_id = ?`)
+          .bind(...values, userId)
+          .run();
+      },
+      fields,
+      "users",
+    );
   }
 
   /** Видалити користувача за user_id. */
@@ -105,38 +88,22 @@ export class UsersService {
   async blockUser(userId: number, blocked: boolean): Promise<void> {
     await this.ensureIsBlocked();
     const blockedVal = blocked ? 1 : 0;
-    try {
-      const current = await this.env.DB.prepare("SELECT is_blocked FROM users WHERE user_id = ?")
-        .bind(userId)
-        .first<{ is_blocked: number }>();
-      const wasBlocked = current?.is_blocked === 1;
+    const current = await this.env.DB.prepare("SELECT is_blocked FROM users WHERE user_id = ?")
+      .bind(userId)
+      .first<{ is_blocked: number }>();
+    const wasBlocked = current?.is_blocked === 1;
 
-      await this.env.DB.prepare("UPDATE users SET is_blocked = ? WHERE user_id = ?")
-        .bind(blockedVal, userId)
-        .run();
+    await this.env.DB.prepare("UPDATE users SET is_blocked = ? WHERE user_id = ?")
+      .bind(blockedVal, userId)
+      .run();
 
-      if (wasBlocked !== blocked) {
-        await this.notifyBlockChange(userId, blocked);
-      }
-    } catch (e: unknown) {
-      const msg = e instanceof Error ? e.message : String(e);
-      if (msg.includes("no such column: is_blocked")) {
-        await this.env.DB.prepare(
-          "ALTER TABLE users ADD COLUMN is_blocked INTEGER DEFAULT 0",
-        ).run();
-        await this.env.DB.prepare("UPDATE users SET is_blocked = ? WHERE user_id = ?")
-          .bind(blockedVal, userId)
-          .run();
-        await this.notifyBlockChange(userId, blocked);
-        return;
-      }
-      throw e;
+    if (wasBlocked !== blocked) {
+      await this.notifyBlockChange(userId, blocked);
     }
   }
 
   /** Масові операції (delete, block, unblock). */
   async bulkUsers(action: "delete" | "block" | "unblock", ids: number[]): Promise<number> {
-    await this.ensureIsBlocked();
     if (ids.length === 0) return 0;
 
     const placeholders = ids.map(() => "?").join(",");
@@ -151,6 +118,7 @@ export class UsersService {
     }
 
     if (action === "block" || action === "unblock") {
+      await this.ensureIsBlocked();
       const val = action === "block" ? 1 : 0;
       const isNowBlocked = action === "block";
 
@@ -170,28 +138,12 @@ export class UsersService {
         }
       }
 
-      try {
-        const result = await this.env.DB.prepare(
-          `UPDATE users SET is_blocked = ? WHERE user_id IN (${placeholders})`,
-        )
-          .bind(val, ...ids)
-          .run();
-        return result.meta?.changes ?? 0;
-      } catch (e: unknown) {
-        const msg = e instanceof Error ? e.message : String(e);
-        if (msg.includes("no such column: is_blocked")) {
-          await this.env.DB.prepare(
-            "ALTER TABLE users ADD COLUMN is_blocked INTEGER DEFAULT 0",
-          ).run();
-          const result = await this.env.DB.prepare(
-            `UPDATE users SET is_blocked = ? WHERE user_id IN (${placeholders})`,
-          )
-            .bind(val, ...ids)
-            .run();
-          return result.meta?.changes ?? 0;
-        }
-        throw e;
-      }
+      const result = await this.env.DB.prepare(
+        `UPDATE users SET is_blocked = ? WHERE user_id IN (${placeholders})`,
+      )
+        .bind(val, ...ids)
+        .run();
+      return result.meta?.changes ?? 0;
     }
 
     return 0;
