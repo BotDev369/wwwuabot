@@ -1,45 +1,36 @@
 /**
- * «Розвиток» — список тестів самооцінки з останнім результатом.
+ * «Розвиток» — список входів: аналіз дат і тести самооцінки.
  *
- * **Тільки картки, нічого іншого.** Власник 29.09.2026 сказав прямо: на
- * сторінці мають бути картки-прев'ю тестів, а все, що стосується деталей
- * тесту, — усередині самого тесту. Тому тут немає ані спільного висновку за
- * шкалами, ані розподілу, ані пояснень: список відповідає на одне питання —
- * «що я вже проходив і як змінилося».
+ * **Рядок — це акордеон, і більше нічого.** Власник 28.10.2026 сказав прямо: на
+ * сторінці не має бути ані балів, ані трендів, ані розбору — тільки згорнуті
+ * підписи зі знаком і назвою. Розгорнутий рядок каже одним реченням, що
+ * всередині, і дає кнопку «Відкрити»: усе інше живе на екрані самого тесту.
  *
- * **Картка — це прев'ю, а не результат.** Вона показує останній бал і зміну
- * від попереднього, бо саме це й змушує повертатись; усе інше (розкид по
- * сферах, «що це означає», «Ти не один») лишається на картці результату.
+ * **Згорнуто за замовчуванням.** Список відповідає на «що тут є», тож він
+ * мусить уміщатися в екран без прокрутки; відкрите тіло під кожним рядком
+ * робило б із нього полотно.
  *
- * **Шкали видно окремо.** У теста з двома шкалами одна цифра в шапці нічого не
- * каже: «10» — це настрій чи тривога? Тому в списку рядок на кожну шкалу з
- * назвою блока, а велика цифра в шапці — найвища з них.
- *
- * **Пройдений тест лишається в списку** з датою: історія поруч дорівнює
- * просторі над самим числом.
- *
- * **Перший рядок — аналіз дат.** Це той самий розділ, а не друга навігація:
- * «Розвиток» відповідає на «що я знаю про себе», і власні дати — така сама
- * відповідь, як бал тесту. Своєї картки результату в аналізу немає (він
- * показує таблицю), тому тут тільки вхід — і він один, а не рядок у «Сервісах».
+ * **Один рядок — один факт про людину, і не більше:** скільки питань і коли
+ * проходили востаннє. Бал тут не показується навмисно — число без шкали, смуги
+ * й тренду читається як вирок, а не як «повернись і подивись».
  *
  * Шлях власний (`/assessments`), а не `slug` рядка `scenarios`: список
- * складається з даних людини (таблиця `assessment_results`), а не з
- * `page_data` (AGENTS.md §7).
+ * складається з реєстру тестів і даних людини (таблиця `assessment_results`), а
+ * не з `page_data` (AGENTS.md §7).
  *
  * @module web-platform-dev/src/pages/assessments/AssessmentsPage
  */
 
 import { useMemo, type ReactElement } from "react";
-import { Icon } from "@wwwuabot/shared";
-import {
-  maxRawScore,
-  type AssessmentRecord,
-  type AssessmentTest,
-} from "@wwwuabot/shared/assessments";
+import { Icon, type IconName } from "@wwwuabot/shared";
+import type { AssessmentRecord, AssessmentTest } from "@wwwuabot/shared/assessments";
 import { formatDay } from "@wwwuabot/shared/utils/datetime";
-import { latestByScale, trendFrom, trendLabel } from "./assessment-view";
+import { plural, type PluralForms } from "@wwwuabot/shared/utils/plural";
+import { CollapsibleSection } from "@wwwuabot/ui/blocks/collapsible-section";
+import { latestByScale } from "./assessment-view";
 import { ASSESSMENTS_ROUTE } from "@/app/routes";
+
+const QUESTIONS: PluralForms = ["питання", "питання", "питань"];
 
 interface AssessmentsPageProps {
   tests: readonly AssessmentTest[];
@@ -49,15 +40,35 @@ interface AssessmentsPageProps {
   onOpenDates: () => void;
 }
 
+/** Рядок списку: усе, що потрібне акордеону, і нічого понад те. */
+interface Entry {
+  readonly key: string;
+  readonly title: string;
+  readonly icon: IconName;
+  /** Одне речення про те, що всередині. */
+  readonly lead: string;
+  /** Факт про людину (скільки питань, коли проходила) — або `null`. */
+  readonly note: string | null;
+  readonly open: () => void;
+}
+
+/** Питання, які людина справді проходить: питання про вплив не рахується. */
+function questionCount(test: AssessmentTest): number {
+  return test.items.filter((item) => item.countsTowardScore !== false).length;
+}
+
 /**
- * Бал, який стоїть у шапці картки: **найвищий відсоток серед шкал**.
- *
- * Більший відсоток — це не «страшніше» ( напрямок шкали різний), а те, що
- * потрібніше уваги: у тесті з двома шкалами одна цифра має означати щось, і
- * найбільший відсоток — єдина чесна відповідь на «що там».
+ * Коли людина проходила тест востаннє — **за найновішим рядком будь-якої його
+ * шкали**. У тесті з двома шкалами рядки йдуть одним проходженням, тож питати
+ * треба обидві: інакше дата зникла б, щойно одна шкала записалась пізніше.
  */
-function headlinePercent(records: readonly AssessmentRecord[]): number {
-  return records.reduce((max, record) => Math.max(max, record.percent), -1);
+function lastPassed(latest: Map<string, AssessmentRecord>, test: AssessmentTest): string | null {
+  const dates = test.scales
+    .map((scale) => latest.get(`${test.key}:${scale.key}`)?.createdAt)
+    .filter((date): date is string => date !== undefined)
+    .sort();
+  const last = dates[dates.length - 1];
+  return last ? formatDay(last) : null;
 }
 
 export function AssessmentsPage({
@@ -69,116 +80,61 @@ export function AssessmentsPage({
 }: AssessmentsPageProps): ReactElement {
   const latest = useMemo(() => latestByScale(results), [results]);
 
+  const entries: Entry[] = [
+    {
+      key: "dates",
+      title: "Аналіз дат",
+      icon: "my-dates",
+      lead: "Ваші дати, їхнє порівняння й таблиця аналізу — за тими даними, що ви вже зберегли.",
+      note: null,
+      open: onOpenDates,
+    },
+    ...tests.map((test) => {
+      const passed = lastPassed(latest, test);
+      const questions = `${questionCount(test)} ${plural(questionCount(test), QUESTIONS)}`;
+      return {
+        key: test.key,
+        title: test.title,
+        icon: test.icon,
+        lead: test.lead,
+        note: passed ? `${questions} · востаннє ${passed}` : questions,
+        open: () => onOpen(test.key),
+      };
+    }),
+  ];
+
   return (
     <div className="wb-page wb-page-scroll">
+      {/* Список є завжди: аналіз дат не залежить від реєстру тестів, тож
+          чекати на нього людина не мусить. */}
       <div className="wb-test-list">
-        <div className="wb-test-card">
-          <div className="wb-test-head">
-            <h2 className="wb-test-title">Аналіз дат</h2>
-            <Icon name="my-dates" size={22} />
-          </div>
-          <p className="wb-test-lead">
-            Ваші дати, їхнє порівняння й таблиця аналізу — за тими самими даними, що ви вже
-            зберегли.
-          </p>
-          <button type="button" className="wb-btn wb-btn-primary" onClick={onOpenDates}>
-            Відкрити
-          </button>
-        </div>
-
-        {loading && <p className="wb-test-lead">Завантаження…</p>}
-
-        {!loading && tests.length === 0 && (
-          <div className="wb-empty">
-            <Icon name="progress" size={24} />
-            <p className="wb-empty-text">Тут поки немає жодного тесту.</p>
-          </div>
-        )}
-
-        {tests.map((test) => {
-          // Рядок на кожну шкалу: у тесті їх може бути одна або дві, і список
-          // має назвати кожну — інакше «10» у шапці не про що.
-          const perScale = test.scales.map((scale) => {
-            const record = latest.get(`${test.key}:${scale.key}`);
-            return {
-              scale,
-              record,
-              trend: trendFrom(results, test, scale),
-              band: record ? scale.bands.find((one) => one.key === record.bandKey) : undefined,
-            };
-          });
-          const withResult = perScale.filter((one) => one.record !== undefined);
-          const percent = headlinePercent(withResult.map((one) => one.record as AssessmentRecord));
-
-          return (
-            <div key={test.key} className="wb-test-card">
-              <div className="wb-test-head">
-                <h2 className="wb-test-title">{test.title}</h2>
-                {/* **Бал у балах, а не у відсотках.** «0» без нічого поруч
-                    не читається: невідомо, чи це нуль, чи відсоток від
-                    сотні. Рядки нижче називають шкалу й знаменник, тож
-                    список і результат кажуть одне. */}
-                {percent >= 0 ? (
-                  <span className="wb-test-score">{percent}%</span>
-                ) : (
-                  /* **Прокинутий бал на місці результату.** Місця тепер
-                     займає стільки ж, тож рядок читається як «поки що
-                     немає», а не «зламано». */
-                  <span className="wb-test-score wb-test-score--none">—</span>
-                )}
+        {entries.map((entry) => (
+          <div key={entry.key} className="wb-test-row">
+            <CollapsibleSection title={entry.title} icon={entry.icon}>
+              <div className="wb-test-body">
+                <p className="wb-test-lead">{entry.lead}</p>
+                {entry.note && <p className="wb-test-meta">{entry.note}</p>}
+                <button type="button" className="wb-btn wb-btn-primary" onClick={entry.open}>
+                  Відкрити
+                </button>
               </div>
-
-              <p className="wb-test-lead">{test.lead}</p>
-
-              <div className="wb-test-meta">
-                {withResult.length === 0 && <span>ще не проходили</span>}
-                {withResult.map(({ scale, record, band, trend }) => {
-                  const label = trendLabel(trend);
-                  return (
-                    <span key={scale.key} className="wb-test-scale-row">
-                      <span className="wb-test-scale-name">{scale.title}</span>
-                      <span className="wb-test-scale-score">
-                        {record?.raw} з {maxRawScore(test, scale)}
-                      </span>
-                      {/* Дата з колонки — у вигляді людини: «29.09.2026», а не
-                          сирий `2026-09-29`, який був у списку. */}
-                      {record && <span>{formatDay(record.createdAt)}</span>}
-                      {band && <span>{band.label}</span>}
-                      {label && (
-                        <span className={`wb-trend wb-trend--${trend.direction}`}>
-                          <Icon
-                            name={
-                              trend.direction === "up"
-                                ? "arrow-up"
-                                : trend.direction === "down"
-                                  ? "arrow-down"
-                                  : "minus"
-                            }
-                            size={14}
-                          />
-                          {label}
-                        </span>
-                      )}
-                    </span>
-                  );
-                })}
-              </div>
-
-              <button
-                type="button"
-                className="wb-btn wb-btn-primary"
-                onClick={() => onOpen(test.key)}
-              >
-                {withResult.length > 0 ? "Пройти знову" : "Пройти"}
-              </button>
-            </div>
-          );
-        })}
+            </CollapsibleSection>
+          </div>
+        ))}
       </div>
 
+      {loading && <p className="wb-test-lead">Завантаження тестів…</p>}
+
+      {!loading && tests.length === 0 && (
+        <div className="wb-empty">
+          <Icon name="progress" size={24} />
+          <p className="wb-empty-text">Тут поки немає жодного тесту.</p>
+        </div>
+      )}
+
       <p className="wb-source">
-        Результати приватні: їх не видно у публічному профілі й ніде, крім «Розвитку». Адреса
-        розділу — {ASSESSMENTS_ROUTE}.
+        Це самооцінка, а не діагноз. Результати приватні: їх не видно у публічному профілі й ніде,
+        крім «Розвитку». Адреса розділу — {ASSESSMENTS_ROUTE}.
       </p>
     </div>
   );

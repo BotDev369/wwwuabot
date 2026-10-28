@@ -22,6 +22,8 @@
  * @module @wwwuabot/shared/assessments/types
  */
 
+import type { IconName } from "../components/icon-names";
+
 /** Один варіант відповіді: `value` — це бал у шкалі, `label` — що бачить людина. */
 export interface ScaleOption {
   readonly value: number;
@@ -157,6 +159,13 @@ export interface AssessmentScale {
 export interface AssessmentTest {
   readonly key: string;
   readonly title: string;
+  /**
+   * Знак для списку «Розвиток». Обов'язковий, бо рядок згорнутого акордеона
+   * показує лише знак і назву: тест без знака виглядав би як збій, а не як
+   * тест. Знак — дані тесту, а не гілка в екрані, тож новий тест приносить
+   * його з собою.
+   */
+  readonly icon: IconName;
   /** Що міряє — одне речення, без «діагнозує депресію». */
   readonly lead: string;
   /**

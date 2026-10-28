@@ -158,14 +158,18 @@ export async function saveAssessment(
 
   // Читаємо рядки назад, а не збираємо відповідь із того, що маємо в памʼяті:
   // `created_at` має бути те саме, що лежить у базі, а не «майже те саме».
-  const keys = test.scales.map((one) => one.key).join(", ");
+  //
+  // **Ключі шкал — параметрами, а не текстом запиту.** `scale_key IN (wellbeing)`
+  // SQLite читає як стовпець `wellbeing` і відповідає `no such column`:
+  // результат записувався, а потім падав на власному читанні.
+  const placeholders = test.scales.map(() => "?").join(", ");
   const rows = await db
     .prepare(
       `SELECT ${COLUMNS} FROM assessment_results
-       WHERE owner_id = ? AND test_key = ? AND created_at = ? AND scale_key IN (${keys})
+       WHERE owner_id = ? AND test_key = ? AND created_at = ? AND scale_key IN (${placeholders})
        ORDER BY id`,
     )
-    .bind(ownerId, test.key, createdAt)
+    .bind(ownerId, test.key, createdAt, ...test.scales.map((one) => one.key))
     .all<ResultRow>();
   if (!rows.results || rows.results.length !== test.scales.length) {
     return { ok: false, error: "Результат не записано" };

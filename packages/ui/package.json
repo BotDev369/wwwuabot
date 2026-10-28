@@ -25,6 +25,7 @@
     "./registry": "./src/registry.tsx",
     "./blocks": "./src/blocks/index.ts",
     "./blocks/my-dates-table": "./src/blocks/my-dates-table/index.ts",
+    "./blocks/collapsible-section": "./src/blocks/collapsible-section/index.ts",
     "./blocks/*": "./src/blocks/*.tsx"
   },
   "scripts": {

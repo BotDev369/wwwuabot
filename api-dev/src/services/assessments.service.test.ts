@@ -1,5 +1,6 @@
 /**
- * Читання результатів: **старі рядки не мають зникати зі списку.**
+ * Запис і читання результатів: **старі рядки не мають зникати зі списку**, а
+ * ключ шкали не має потрапляти в текст SQL.
  *
  * `scale_key` з'явився разом із другим блоком у «Тревожності і депресії».
  * Рядки, записані до того, мають порожній ключ, а список шукає результат за
@@ -14,7 +15,7 @@
  */
 
 import { describe, expect, it } from "vitest";
-import { listAssessments } from "./assessments.service";
+import { listAssessments, saveAssessment } from "./assessments.service";
 
 interface ResultRow {
   id: number;
@@ -51,6 +52,29 @@ function dbWith(rows: ResultRow[]): D1Database {
   } as unknown as D1Database;
 }
 
+/**
+ * База, яка **записує** кожен запит із його параметрами.
+ *
+ * Запис перевіряється саме так, а не очима: `no such column: wellbeing`
+ * приходив із тексту запиту, і жоден тест на вміст рядка його не ловив.
+ */
+function recordingDb(rows: ResultRow[]): {
+  db: D1Database;
+  queries: { sql: string; params: unknown[] }[];
+} {
+  const queries: { sql: string; params: unknown[] }[] = [];
+  const db = {
+    prepare: (sql: string) => ({
+      bind: (...params: unknown[]) => {
+        queries.push({ sql, params });
+        return { all: async () => ({ results: rows }) };
+      },
+    }),
+    batch: async () => [],
+  } as unknown as D1Database;
+  return { db, queries };
+}
+
 describe("listAssessments", () => {
   it("старий рядок тесту з однією шкалою отримує ключ своєї шкали", async () => {
     const records = await listAssessments(dbWith([row({})]), "42");
@@ -80,5 +104,37 @@ describe("listAssessments", () => {
 
   it("порожня база дає порожній список, а не виняток", async () => {
     await expect(listAssessments(dbWith([]), "42")).resolves.toEqual([]);
+  });
+});
+
+describe("saveAssessment", () => {
+  it("ключі шкал ідуть параметрами, а не текстом запиту", async () => {
+    // `scale_key IN (wellbeing)` SQLite читає як стовпець і відповідає
+    // «no such column», тобто проходження записувалося й падало на власному
+    // читанні — з помилкою бази на екрані замість результату.
+    const { db, queries } = recordingDb([row({ scale_key: "wellbeing" })]);
+
+    const outcome = await saveAssessment(db, "42", "who5", [5, 5, 5, 5, 5]);
+
+    expect(outcome.ok).toBe(true);
+    const read = queries.at(-1);
+    expect(read?.sql).toContain("scale_key IN (?)");
+    expect(read?.sql).not.toContain("wellbeing");
+    expect(read?.params.slice(0, 2)).toEqual(["42", "who5"]);
+    expect(read?.params.at(-1)).toBe("wellbeing");
+  });
+
+  it("тест із двома шкалами читає обидва рядки за одним запитом", async () => {
+    const { db, queries } = recordingDb([
+      row({ test_key: "mood-anxiety", scale_key: "mood" }),
+      row({ id: 2, test_key: "mood-anxiety", scale_key: "anxiety" }),
+    ]);
+    const answers = [...Array(16).fill(0), 0];
+
+    await saveAssessment(db, "42", "mood-anxiety", answers);
+
+    const read = queries.at(-1);
+    expect(read?.sql).toContain("scale_key IN (?, ?)");
+    expect(read?.params.slice(-2)).toEqual(["mood", "anxiety"]);
   });
 });

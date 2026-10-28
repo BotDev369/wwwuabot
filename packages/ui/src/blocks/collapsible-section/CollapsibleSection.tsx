@@ -8,18 +8,20 @@
  */
 
 import { useId, type ReactNode } from "react";
-import { Icon } from "@wwwuabot/shared";
+import { Icon, type IconName } from "@wwwuabot/shared";
 import { useCollapse } from "./useCollapse";
 
 export interface CollapsibleSectionProps {
   /** Підпис блока — він же його згортає. */
   title: string;
+  /** Знак перед назвою: у списку рядків він і є вибір очима. */
+  icon?: IconName;
   /** Підпис біля назви (лічильник): сама назва не каже, скільки всього. */
   meta?: ReactNode;
   children: ReactNode;
 }
 
-export function CollapsibleSection({ title, meta, children }: CollapsibleSectionProps) {
+export function CollapsibleSection({ title, icon, meta, children }: CollapsibleSectionProps) {
   const { open, toggle } = useCollapse();
   const bodyId = useId();
   const toggleClass = open
@@ -36,6 +38,11 @@ export function CollapsibleSection({ title, meta, children }: CollapsibleSection
           aria-controls={bodyId}
           onClick={toggle}
         >
+          {icon ? (
+            <span className="wb-block-section__icon">
+              <Icon name={icon} size={20} />
+            </span>
+          ) : null}
           <span className="wb-block-section__title">{title}</span>
           {meta ? <span className="wb-block-section__meta">{meta}</span> : null}
           <span className="wb-block-section__caret">

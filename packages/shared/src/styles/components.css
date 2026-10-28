@@ -2516,6 +2516,15 @@ button.wb-chip {
   text-align: left;
 }
 
+/* Знак перед назвою: показує, ЩО всередині, коли підписів кілька й людина
+   вибирає очима, а не читає. Приглушений він навмисно — колір у цьому
+   розділі означає стан, а не приналежність до розділу. */
+.wb-block-section__icon {
+  display: inline-flex;
+  flex: 0 0 auto;
+  color: var(--text-secondary);
+}
+
 .wb-block-section__meta {
   color: var(--text-muted);
   font-size: var(--text-sm);
