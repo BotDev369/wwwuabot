@@ -29,7 +29,7 @@ export function useScreenChrome(chrome: ScreenChromePatch, enabled = true): void
   const key = [
     chrome.title ?? "",
     chrome.menu ? "1" : "",
-    chrome.shareUrl ?? "",
+    chrome.share?.slug ?? "",
     JSON.stringify(chrome.favorite ?? null),
   ].join("|");
 

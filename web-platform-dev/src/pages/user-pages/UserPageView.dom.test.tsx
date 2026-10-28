@@ -51,7 +51,7 @@ const shop = {
 };
 
 /** Хедер: те, що екран віддає йому про саму сторінку. */
-let chrome: { title: string | null; shareUrl: string | null; favorite: unknown } | null = null;
+let chrome: { title: string | null; share: { slug: string } | null; favorite: unknown } | null = null;
 /** Контекст полотна: ним сторінка домовляється зі сіткою вітрини. */
 let rendered: Record<string, unknown> | null = null;
 
@@ -314,7 +314,7 @@ describe("сама сторінка", () => {
     expect(screen.getByTestId("page-renderer")).toBeTruthy();
     expect(chrome).toEqual({
       title: "Привіт",
-      shareUrl: "/pages/7",
+      share: null,
       favorite: { kind: "page", targetId: 7 },
     });
   });

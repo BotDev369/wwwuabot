@@ -29,7 +29,7 @@
  */
 
 import { type ReactElement } from "react";
-import { useLocation, useNavigate, useParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import { useScreenChrome } from "@wwwuabot/ui/nav";
 import { Icon, SwitchRow } from "@wwwuabot/shared";
 import { toWebPath } from "@wwwuabot/shared/content";
@@ -65,14 +65,13 @@ export function UserPageView(): ReactElement {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const dialog = useDialog();
-  const { pathname } = useLocation();
   const { page, loading, error, pages } = useUserPage(id);
 
   // Назва сторінки, її посилання й серце живуть у хедері: це речі про саму
   // сторінку, а не про редактор, у якому вона відкрита.
   useScreenChrome({
     title: page?.title ?? null,
-    shareUrl: page ? pathname : null,
+    share: null,
     favorite: page ? { kind: "page", targetId: page.id } : null,
   });
 

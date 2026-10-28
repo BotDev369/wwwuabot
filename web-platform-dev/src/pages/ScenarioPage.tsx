@@ -11,7 +11,7 @@
  */
 
 import { useEffect, useMemo, useState } from "react";
-import { useLocation, useParams } from "react-router-dom";
+import { useParams } from "react-router-dom";
 import type { PageConfig, BlockContext, UserProfile } from "@wwwuabot/shared/types/page-config";
 import { parsePageConfig } from "@wwwuabot/shared/types/page-config";
 import { HOME_SLUG } from "@wwwuabot/shared/content";
@@ -85,7 +85,6 @@ function ErrorScreen({ message }: { message: string }) {
 export function ScenarioPage() {
   // `*`-сплэт дає всю адресу; порожній шлях — головна.
   const { ["*"]: splat } = useParams<{ "*": string }>();
-  const { pathname } = useLocation();
   const scenarioSlug = splat ?? HOME_SLUG;
 
   const [pageConfig, setPageConfig] = useState<PageConfig | null>(null);
@@ -196,7 +195,7 @@ export function ScenarioPage() {
   // ньому немає.
   useScreenChrome({
     title: status === "ready" ? (scenarioTitle ?? null) : null,
-    shareUrl: status === "ready" && scenarioId !== null ? pathname : null,
+    share: status === "ready" && scenarioId !== null ? { slug: pageSlug } : null,
     favorite:
       status === "ready" && scenarioId !== null ? { kind: "page", targetId: scenarioId } : null,
   });

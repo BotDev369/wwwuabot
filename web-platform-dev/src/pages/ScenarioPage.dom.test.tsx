@@ -14,7 +14,7 @@ import type { PageConfig } from "@wwwuabot/shared/types/page-config";
 import { HOME_SLUG } from "@wwwuabot/shared/content";
 
 /** Те, що екран сказав хедеру про сторінку. */
-let chrome: { title: string | null; shareUrl: string | null; favorite: unknown } | null = null;
+let chrome: { title: string | null; share: { slug: string } | null; favorite: unknown } | null = null;
 /** Те, що дійшло до рендерера: конфігурація сторінки і контекст блоків. */
 let rendered: { config: PageConfig; context: Record<string, unknown> } | null = null;
 let params: Record<string, string> = { "*": "pageslay" };
@@ -123,7 +123,7 @@ describe("відповідь API → хедер", () => {
     await waitFor(() => expect(chrome?.favorite).toEqual({ kind: "page", targetId: 34 }));
     expect(chrome).toEqual({
       title: "PageSlay",
-      shareUrl: "/pageslay",
+      share: { slug: "pageslay" },
       favorite: { kind: "page", targetId: 34 },
     });
     expect(rendered?.config).toEqual(pageData);
@@ -145,7 +145,7 @@ describe("відповідь API → хедер", () => {
     render(<ScenarioPage />);
 
     await waitFor(() => expect(rendered?.context.slug).toBe("pageslay"));
-    expect(chrome).toEqual({ title: "PageSlay", shareUrl: null, favorite: null });
+    expect(chrome).toEqual({ title: "PageSlay", share: null, favorite: null });
   });
 
   it("профіль власника робить контекст контекстом власника", async () => {
@@ -171,7 +171,7 @@ describe("відповідь API → хедер", () => {
     expect(rendered?.context.slug).toBe(HOME_SLUG);
     expect(chrome).toEqual({
       title: null,
-      shareUrl: "/",
+      share: { slug: "" },
       favorite: { kind: "page", targetId: 1 },
     });
   });
@@ -185,7 +185,7 @@ describe("чого сторінки немає", () => {
 
     await waitFor(() => expect(fallbackTitle()).toBe("Сторінка тимчасово недоступна"));
     expect(rendered?.context).toEqual({ slug: HOME_SLUG, title: null, photoUrl: null });
-    expect(chrome).toEqual({ title: null, shareUrl: null, favorite: null });
+    expect(chrome).toEqual({ title: null, share: null, favorite: null });
   });
 
   it("сценарій без `page_data` — теж фолбек, а не порожня сторінка", async () => {

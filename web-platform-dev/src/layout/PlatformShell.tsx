@@ -8,25 +8,46 @@
  * @module web-platform-dev/src/layout/PlatformShell
  */
 
-import { useCallback, useState, type ReactElement } from "react";
+import { useCallback, useEffect, useState, type ReactElement } from "react";
 import { Outlet, useNavigate } from "react-router-dom";
 import { AppBar, ScreenChromeProvider } from "@wwwuabot/ui/nav";
 import { ThemeMenu } from "@/pages/themes/ThemeMenu";
+import { apiFetch } from "@/shared/api/client";
 import { JournalBridge } from "./JournalBridge";
 import { PlatformTabBar } from "./PlatformTabBar";
+
+/** Ім'я бота з Telegram (`getMe`) — для діплінків; `null`, поки не відомо. */
+function useBotUsername(): string | null {
+  const [username, setUsername] = useState<string | null>(null);
+  useEffect(() => {
+    let cancelled = false;
+    apiFetch<{ result?: { username?: string } }>("/api/bot/info")
+      .then((info) => {
+        if (!cancelled) setUsername(info.result?.username ?? null);
+      })
+      .catch(() => {
+        if (!cancelled) setUsername(null);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+  return username;
+}
 
 export function PlatformShell(): ReactElement {
   const navigate = useNavigate();
   const goBack = useCallback(() => void navigate(-1), [navigate]);
   const [themeOpen, setThemeOpen] = useState(false);
   const closeTheme = useCallback(() => setThemeOpen(false), []);
+  const botUsername = useBotUsername();
   return (
     <ScreenChromeProvider>
       {/* Журнал бачить «відкрив сторінку», «відкрив модалку» й дії в них — а не
           запити, які екран зробив сам. */}
       <JournalBridge />
       <div className="wb-tabbar-layout">
-        <AppBar onBack={goBack} onTheme={() => setThemeOpen(true)} />
+        <AppBar onBack={goBack} onTheme={() => setThemeOpen(true)} botUsername={botUsername} />
         <Outlet />
         <PlatformTabBar />
       </div>

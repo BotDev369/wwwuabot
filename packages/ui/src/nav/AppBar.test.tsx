@@ -21,7 +21,7 @@ const WITH_ALL: ScreenChrome = {
   ...EMPTY_CHROME,
   title: "Галерея",
   menu: () => undefined,
-  shareUrl: "/gallery",
+  share: { slug: "gallery" },
   favorite: { kind: "page", targetId: 7 },
 };
 
@@ -76,7 +76,7 @@ describe("злиття оголошень екрана", () => {
     const merged = mergeChrome(WITH_ALL, { favorite: { kind: "user", targetId: 3 } });
 
     expect(merged.title).toBe("Галерея");
-    expect(merged.shareUrl).toBe("/gallery");
+    expect(merged.share).toEqual({ slug: "gallery" });
     expect(merged.favorite).toEqual({ kind: "user", targetId: 3 });
   });
 
@@ -87,8 +87,8 @@ describe("злиття оголошень екрана", () => {
   });
 
   it("null прибирає дію, undefined її не чіпає", () => {
-    const withoutShare = mergeChrome(WITH_ALL, { shareUrl: null });
-    expect(withoutShare.shareUrl).toBeNull();
+    const withoutShare = mergeChrome(WITH_ALL, { share: null });
+    expect(withoutShare.share).toBeNull();
 
     const untouched = mergeChrome(withoutShare, { title: undefined });
     expect(untouched).toBe(withoutShare);

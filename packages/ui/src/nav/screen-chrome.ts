@@ -23,10 +23,20 @@ export interface ScreenChrome {
   title: string | null;
   /** Відкрити власне меню сторінки (бургер); `null` — меню немає. */
   menu: (() => void) | null;
-  /** Адреса, яку «Поділитись» копіює; `null` — кнопки немає. */
-  shareUrl: string | null;
+  /** Що «Поділитись» передає: адреса сторінки; `null` — кнопки немає. */
+  share: ShareTarget | null;
   /** На що ставиться серце; `null` — серця немає. */
   favorite: FavoriteTarget | null;
+}
+
+/**
+ * Сторінка, якою діляться. Діплінк будує хедер через `buildShareLinks`, тож
+ * екран передає адресу (`slug`), а не готовий рядок.
+ */
+export interface ShareTarget {
+  slug: string;
+  /** Хвіст адреси (дата, вигляд): дані сторінки, які йдуть у діплінк. */
+  params?: readonly string[];
 }
 
 /** Що екран оновлює: змінені поля + `null`, щоб прибрати дію. */
@@ -43,7 +53,7 @@ export interface ScreenChromeApi {
 export const EMPTY_CHROME: ScreenChrome = {
   title: null,
   menu: null,
-  shareUrl: null,
+  share: null,
   favorite: null,
 };
 

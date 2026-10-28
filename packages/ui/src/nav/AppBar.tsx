@@ -27,12 +27,12 @@
  * @module packages/ui/src/nav/AppBar
  */
 
-import { useContext, useRef, type ReactElement } from "react";
+import { useContext, useRef, useState, type ReactElement } from "react";
 import { Icon, type IconName } from "@wwwuabot/shared";
 import type { FavoriteTarget } from "@wwwuabot/shared/favorites";
 import { ScreenChromeContext, type ScreenChrome } from "./screen-chrome";
 import { useAppBarHeight } from "./useAppBarHeight";
-import { useCopyLink } from "./useCopyLink";
+import { ShareModal } from "./ShareModal";
 import { useFavorite } from "../favorites/useFavorite";
 import { LikeToast } from "../favorites/LikeToast";
 
@@ -42,12 +42,14 @@ export interface AppBarActions {
   onBack: () => void;
   /** Відкрити меню вигляду (теми). */
   onTheme: () => void;
+  /** Ім'я бота для діплінка «Поділитись»; `null` — діплінка не буде. */
+  botUsername?: string | null;
 }
 
-export function AppBar({ onBack, onTheme }: AppBarActions): ReactElement | null {
+export function AppBar({ onBack, onTheme, botUsername = null }: AppBarActions): ReactElement | null {
   const chrome = useContext(ScreenChromeContext)?.chrome;
   if (!chrome) return null;
-  return <AppBarView chrome={chrome} onBack={onBack} onTheme={onTheme} />;
+  return <AppBarView chrome={chrome} onBack={onBack} onTheme={onTheme} botUsername={botUsername} />;
 }
 
 /**
@@ -58,9 +60,11 @@ export function AppBarView({
   chrome,
   onBack,
   onTheme,
+  botUsername = null,
 }: { chrome: ScreenChrome } & AppBarActions): ReactElement {
-  const { title, menu, shareUrl, favorite } = chrome;
+  const { title, menu, share, favorite } = chrome;
   const header = useRef<HTMLElement>(null);
+  const [sharing, setSharing] = useState(false);
   useAppBarHeight(header);
 
   return (
@@ -75,10 +79,13 @@ export function AppBarView({
       </div>
 
       <div className="wb-appbar__actions">
-        {shareUrl && <ShareAction url={shareUrl} />}
+        {share && <BarButton icon="share" label="Поділитись" onClick={() => setSharing(true)} />}
         {favorite && <FavoriteAction target={favorite} />}
         <BarButton icon="palette" label="Тема" onClick={onTheme} />
       </div>
+      {share && sharing && (
+        <ShareModal share={share} botUsername={botUsername} onClose={() => setSharing(false)} />
+      )}
     </header>
   );
 }
@@ -110,12 +117,6 @@ function BarButton({
       <Icon name={icon} size={20} />
     </button>
   );
-}
-
-/** «Поділитись» — копіювання адреси; після вдачі знак стає галочкою. */
-function ShareAction({ url }: { url: string }): ReactElement {
-  const { copied, copy } = useCopyLink(url);
-  return <BarButton icon={copied ? "check" : "share"} label="Поділитись" onClick={copy} />;
 }
 
 /**
