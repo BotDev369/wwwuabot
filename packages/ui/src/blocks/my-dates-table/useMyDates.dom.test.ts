@@ -32,13 +32,6 @@ function stubApi(body: unknown = { ok: true, dates: [DATE] }): ReturnType<typeof
   return mock;
 }
 
-/** `useMyDates` спирається на спільний діалог; підміняємо його підтвердження. */
-function stubDialog(): { confirm: ReturnType<typeof vi.fn> } {
-  const confirm = vi.fn(async () => true);
-  vi.stubGlobal("__dialogConfirm", confirm);
-  return { confirm };
-}
-
 beforeEach(() => {
   window.history.replaceState({}, "", "/dateanalysis");
 });

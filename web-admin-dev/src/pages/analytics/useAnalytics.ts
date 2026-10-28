@@ -83,12 +83,13 @@ export function useAnalytics(): AnalyticsState {
   const [userTotals, setUserTotals] = useState<Record<number, number>>({});
 
   const [loading, setLoading] = useState(true);
-  const [loadingUser, setLoadingUser] = useState<number | null>(null);
   const [loadingMore, setLoadingMore] = useState(false);
   const [updatedAt, setUpdatedAt] = useState<number | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [cleanupOpen, setCleanupOpen] = useState(false);
   const [refreshToken, setRefreshToken] = useState(0);
+  const [userRequestToken, setUserRequestToken] = useState(0);
+  const [settledUserRequest, setSettledUserRequest] = useState<string | null>(null);
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -121,31 +122,48 @@ export function useAnalytics(): AnalyticsState {
     rememberAnalyticsView({ mode, period, range, expandedUserId });
   }, [mode, period, range, expandedUserId]);
 
+  const userRequestKey =
+    expandedUserId === null
+      ? null
+      : JSON.stringify([
+          mode,
+          expandedUserId,
+          range.from,
+          range.to,
+          refreshToken,
+          userRequestToken,
+        ]);
+
   // Дії розгорнутої людини тягнуться окремо від зведення — і перечитуються,
   // коли змінився діапазон або натиснули «Оновити»: акордеон лишається
-  // відкритим, а не скидає вигляд сторінки.
+  // відкритим, а не скидає вигляд сторінки. Індикатор завантаження виводиться
+  // з ключа запиту, тому ефект не мусить синхронно міняти стан під час запуску.
   useEffect(() => {
-    if (expandedUserId === null || mode !== "users") return;
+    const requestKey = userRequestKey;
+    if (expandedUserId === null || mode !== "users" || requestKey === null) return;
     let cancelled = false;
-    setLoadingUser(expandedUserId);
     void fetchEvents({ ...range, userId: expandedUserId, limit: EVENT_PAGE_SIZE })
       .then((list) => {
         if (cancelled) return;
         setUserEvents({ [expandedUserId]: list.items });
         setUserTotals({ [expandedUserId]: list.total });
+        setSettledUserRequest(requestKey);
         setError(null);
       })
       .catch((err: unknown) => {
         if (cancelled) return;
+        setSettledUserRequest(requestKey);
         setError(err instanceof Error ? err.message : "Не вдалось прочитати дії людини");
-      })
-      .finally(() => {
-        if (!cancelled) setLoadingUser(null);
       });
     return () => {
       cancelled = true;
     };
-  }, [expandedUserId, mode, range, refreshToken]);
+  }, [expandedUserId, mode, range, userRequestKey]);
+
+  const loadingUser =
+    mode === "users" && userRequestKey !== null && userRequestKey !== settledUserRequest
+      ? expandedUserId
+      : null;
 
   /** Готовий проміжок у годинах; `null` — межи задані вручну. */
   const presetHours = period === "period" ? null : presetWindowHours(period);
@@ -171,6 +189,12 @@ export function useAnalytics(): AnalyticsState {
 
   const toggleUser = useCallback((userId: number) => {
     setExpandedUserId((current) => (current === userId ? null : userId));
+    setUserRequestToken((token) => token + 1);
+  }, []);
+
+  const changeMode = useCallback((nextMode: AnalyticsMode) => {
+    setMode(nextMode);
+    setUserRequestToken((token) => token + 1);
   }, []);
 
   const loadMore = useCallback(async () => {
@@ -193,7 +217,7 @@ export function useAnalytics(): AnalyticsState {
 
   return {
     mode,
-    setMode,
+    setMode: changeMode,
     period,
     applyPreset,
     rangeInput: { from: toDateTimeInput(range.from), to: toDateTimeInput(range.to) },

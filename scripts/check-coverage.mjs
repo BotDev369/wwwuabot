@@ -41,7 +41,20 @@ import { ROOT } from "./lib/files.mjs";
 const SUMMARY = "coverage/coverage-summary.json";
 
 const git = (...args) =>
-  execFileSync("git", args, { cwd: ROOT, encoding: "utf8", maxBuffer: 8 << 20 });
+  execFileSync("git", args, {
+    cwd: ROOT,
+    encoding: "utf8",
+    maxBuffer: 8 << 20,
+    stdio: ["ignore", "pipe", "inherit"],
+  });
+
+const gitQuiet = (...args) =>
+  execFileSync("git", args, {
+    cwd: ROOT,
+    encoding: "utf8",
+    maxBuffer: 8 << 20,
+    stdio: ["ignore", "pipe", "ignore"],
+  });
 
 /**
  * Файли джерела, змінені після `since`: робоче дерево, індекс і `HEAD`.
@@ -51,7 +64,7 @@ const git = (...args) =>
  */
 function changedSince(since) {
   try {
-    git("cat-file", "-e", `${since}^{commit}`);
+    gitQuiet("cat-file", "-e", `${since}^{commit}`);
   } catch {
     throw new Error(
       `Коміт ${since} не знайдено — гейт не знає, що вважати новим кодом. ` +
@@ -74,7 +87,7 @@ function changedSince(since) {
 function addedCodeLines(since, file) {
   // Файлу не було на момент бази — він новий цілком, і коментар тут ні до чого.
   try {
-    git("cat-file", "-e", `${since}:${file}`);
+    gitQuiet("cat-file", "-e", `${since}:${file}`);
   } catch {
     return ["(новий файл)"];
   }

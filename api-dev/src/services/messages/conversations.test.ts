@@ -93,9 +93,6 @@ function makeEnv(options: {
 
   /** Мій бік у парі: `peer_a` — це я, коли `me` менший за співрозмовника. */
   const mySide = (row: ConversationRow): "a" | "b" => (row.peer_a === ME ? "a" : "b");
-  const other = (row: ConversationRow): number =>
-    mySide(row) === "a" ? Number(row.peer_b) : Number(row.peer_a);
-
   const db = {
     prepare(sql: string) {
       const record: Captured = { sql, binds: [] };

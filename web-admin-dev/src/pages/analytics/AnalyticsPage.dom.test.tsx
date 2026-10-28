@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { fireEvent, render, screen, waitFor, within } from "@testing-library/react";
+import { act, fireEvent, render, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import type { EventList, EventSummary, UserEvent } from "@wwwuabot/shared/events";
 
@@ -100,6 +100,26 @@ describe("екран «Аналітика»", () => {
     await userEvent.click(head);
     expect(screen.queryByText("/start")).toBeNull();
     expect(api.events).toHaveBeenCalledTimes(1);
+  });
+
+  it("показує завантаження розгорнутої людини, доки її запит не завершився", async () => {
+    let resolveEvents: (value: EventList) => void = () => undefined;
+    api.events.mockReturnValueOnce(
+      new Promise<EventList>((resolve) => {
+        resolveEvents = resolve;
+      }),
+    );
+    render(<AnalyticsPage />);
+    const head = await screen.findByRole("button", { name: /Сергій Дискант/ });
+
+    await userEvent.click(head);
+
+    expect(await screen.findByText("Завантаження дій…")).toBeTruthy();
+    await act(async () => {
+      resolveEvents(list([botEvent]));
+    });
+    expect(await screen.findByText("/start")).toBeTruthy();
+    expect(screen.queryByText("Завантаження дій…")).toBeNull();
   });
 
   it("«За часом» показує суцільний список із людиною в рядку", async () => {

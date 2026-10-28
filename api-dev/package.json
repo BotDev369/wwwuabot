@@ -13,7 +13,7 @@
     "typecheck": "tsc --noEmit",
     "deploy:dev": "wrangler deploy --env dev",
     "deploy:prod": "wrangler deploy --env production",
-    "lint": "eslint .",
+    "lint": "eslint . --max-warnings=0",
     "lint:fix": "eslint . --fix",
     "format": "prettier --write .",
     "format:check": "prettier --check ."

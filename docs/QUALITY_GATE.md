@@ -55,7 +55,7 @@
 | `npm run check:css` | клас у розмітці без правила (помилка) і правило без розмтки (попередження); борг — `scripts/css-baseline.mjs` |
 | `npm run check:docs` | бюджет документів, мертві посилання й шляхи, згадки з коду, `AGENTS.md §N`, покажчик, секційний бюджет, свіжість `API.md` |
 | `npm run check:comments` | блок коментаря, який уже є розділом документа, і мертвий шлях у коментарі; борг — `scripts/comment-baseline.mjs` |
-| `npm run check:bundle` | вага клієнтського бандла оболонки понад ліміт у gzip; ліміти — `scripts/bundle-baseline.mjs` |
+| `npm run check:bundle` | вага клієнтського бандла оболонки понад ліміт у gzip; ліміти — `scripts/bundle-baseline.mjs`; перед запуском потрібні зібрані `dist/` обох оболонок |
 | `npm run check:db` | шість кроків: розходження реєстру й DDL, `CREATE TABLE` поза реєстром, неоголошена таблиця в SQL, `ensureTables` поза реєстром, `SELECT *` із важкою колонкою (`users`) поза рядком за ключем, реєстр без читачів |
 | `npm test` | поведінку, включно з `*.dom.test.*` (див. нижче) |
 | `npm run check:coverage` | падіння покриття нижче підлоги й новий код без покриття; підлоги — `scripts/coverage-baseline.mjs` |
@@ -132,7 +132,9 @@ npm run check:css       # «клас без правила»
 npm run check:docs      # бюджет документів, мертві посилання, шляхи й згадки з коду, покажчик, свіжість API.md
 npm run check:comments  # коментар довший за документний абзац і мертвий шлях у коментарі
 npm run check:db        # схема D1 по реєстру
-npm run check:bundle    # вага бандла оболонок (після build у них)
+npm run build --workspace web-platform-dev
+npm run build --workspace web-admin-dev
+npm run check:bundle    # вага бандла оболонок (після обох build)
 npm run test:coverage   # прогін із покриттям (окремо, щоб npm test лишався швидким)
 npm run check:coverage  # підлога покриття падає, якщо менша
 npm run doc:api         # перегенерувати docs/API.md (не гейт, а лікування)
