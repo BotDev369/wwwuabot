@@ -16,14 +16,19 @@ import { apiFetch } from "@/shared/api/client";
 import { JournalBridge } from "./JournalBridge";
 import { PlatformTabBar } from "./PlatformTabBar";
 
-/** Ім'я бота з Telegram (`getMe`) — для діплінків; `null`, поки не відомо. */
+/**
+ * Ім'я бота для діплінків; `null`, поки не відомо.
+ *
+ * Адреса — платформна (`/api/user/bot`), а не адмінська `/api/bot/info`: Mini
+ * App ходить із `initData`, тож адмін-гейт за cookie віддав би йому 401.
+ */
 function useBotUsername(): string | null {
   const [username, setUsername] = useState<string | null>(null);
   useEffect(() => {
     let cancelled = false;
-    apiFetch<{ result?: { username?: string } }>("/api/bot/info")
+    apiFetch<{ username?: string | null }>("/api/user/bot")
       .then((info) => {
-        if (!cancelled) setUsername(info.result?.username ?? null);
+        if (!cancelled) setUsername(info.username ?? null);
       })
       .catch(() => {
         if (!cancelled) setUsername(null);

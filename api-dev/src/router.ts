@@ -18,6 +18,7 @@ import {
   handleDeleteWebhook,
   handleBotInfo,
 } from "./controllers/bot-settings.controller";
+import { handleBotUsername } from "./controllers/bot-username.controller";
 import {
   handleLogin,
   handleLogout,
@@ -132,6 +133,13 @@ export async function handleRequest(request: Request, env: Env): Promise<Respons
   }
   if (pathname === "/api/bot/info" && request.method === "GET") {
     return handleBotInfo(request, env);
+  }
+
+  // ── Ім'я бота для платформи ────────────────────────────────────
+  // Не під `/api/bot/`: там адмін-гейт за cookie, а Mini App приходить із
+  // підписаним `initData` — і діставав би 401 замість імені для діплінка.
+  if (pathname === "/api/user/bot" && request.method === "GET") {
+    return handleBotUsername(env);
   }
 
   // ── MyDate: analysis by date ────────────────────────────────────

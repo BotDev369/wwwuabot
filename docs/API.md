@@ -54,6 +54,7 @@
 | `POST` | `/api/user/access-request` | `handleAccessRequest` |
 | `ANY` | `/api/user/ads` | `handleUserAds` |
 | `ANY` | `/api/user/assessments` | `handleAssessments` |
+| `GET` | `/api/user/bot` | `handleBotUsername` |
 | `POST` | `/api/user/event` | `handleUserEvent` |
 | `ANY` | `/api/user/pages` | `handleUserPages` |
 | `GET` | `/api/user/profile` | `handleUserProfile` |
@@ -114,4 +115,4 @@
 | `POST` | `/auth/login` | `handleLogin` |
 | `POST` | `/auth/logout` | `handleLogout` |
 
-Усього шляхів: **85**.
+Усього шляхів: **86**.

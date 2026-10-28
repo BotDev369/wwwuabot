@@ -6,6 +6,7 @@
  */
 
 import { useEffect, useState, type ReactElement } from "react";
+import { createPortal } from "react-dom";
 import QRCode from "qrcode";
 import { buildShareLinks, TELEGRAM_ORIGIN } from "@wwwuabot/shared/content";
 import { MenuModal } from "../menu/MenuModal";
@@ -18,7 +19,7 @@ export interface ShareModalProps {
   onClose: () => void;
 }
 
-export function ShareModal({ share, botUsername, onClose }: ShareModalProps): ReactElement {
+export function ShareModal({ share, botUsername, onClose }: ShareModalProps): ReactElement | null {
   const links = buildShareLinks({
     slug: share.slug,
     params: share.params,
@@ -30,7 +31,11 @@ export function ShareModal({ share, botUsername, onClose }: ShareModalProps): Re
   const qr = useQrDataUrl(url);
   const text = encodeURIComponent(url);
 
-  return (
+  // Портал у `body` — бо кнопка живе в хедері, а його `backdrop-filter`
+  // контейнить `fixed`: без порталу вікно малювалось би в смузі хедера.
+  if (typeof document === "undefined") return null;
+
+  return createPortal(
     <MenuModal
       title="Поділитись"
       variant="card"
@@ -64,7 +69,8 @@ export function ShareModal({ share, botUsername, onClose }: ShareModalProps): Re
           )}
         </div>
       }
-    />
+    />,
+    document.body,
   );
 }
 
