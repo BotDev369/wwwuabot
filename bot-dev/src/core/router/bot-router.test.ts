@@ -188,16 +188,21 @@ describe("перший екран — одне повідомлення", () => 
     expect(store.sent).toHaveLength(0);
   });
 
-  it("діплінк — звичайна сторінка: її кнопки лишаються на місці", async () => {
+  it("діплінк — картка сторінки: назва, фото й **одна** кнопка «Відкрити сторінку»", async () => {
     const store = chat({ text: "/start mydate", pages: ["", "mydate"] });
 
     await botRouter(store.ctx);
 
-    // Сторінка за діплінком — не перший екран: її власні кнопки й далі
-    // потрібні, бо це вхід у сценарій.
-    expect(store.ctx.screen?.landing).toBe(false);
-    expect(buildScreenButtons(store.ctx.screen!, "https://p.example")[0]).toEqual([
-      { text: "МоїДати", callback_data: "mydate" },
+    // Дані бота (`buttons`, `caption_*`) не читаються взагалі: сторінку
+    // ділять з платформи, і готувати для неї сценарій ніхто не буде.
+    expect(store.ctx.screen?.landing).toBeUndefined();
+    expect(store.ctx.screen?.rich_message).toBe(true);
+    expect(store.ctx.screen?.rich_data).toEqual([
+      { type: "heading", text: "mydate" },
+      { type: "photo", photo: { type: "photo", media: "https://cdn.example/banner.png" } },
+    ]);
+    expect(buildScreenButtons(store.ctx.screen!, "https://p.example")).toEqual([
+      [{ text: "Відкрити сторінку", web_app: { url: "https://p.example/mydate" } }],
     ]);
   });
 });

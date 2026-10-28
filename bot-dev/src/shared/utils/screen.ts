@@ -111,7 +111,6 @@ export async function sendOrEditLiveMessage(ctx: AppContext): Promise<boolean> {
 
   log("SCREEN", "rendering", { slug, chat_id: chatId });
 
-  const photoUrl = await getPhoto(slug, photo_url, ctx.env);
   const captionText = buildCaption(caption);
 
   // ── RICH MESSAGE ──────────────────────────────────────────────
@@ -149,6 +148,9 @@ export async function sendOrEditLiveMessage(ctx: AppContext): Promise<boolean> {
   }
 
   // ── ЗВИЧАЙНЕ ПОВІДОМЛЕННЯ (photo) ──────────────────────────────
+  // Фото шукаємо лише тут: у rich-повідомленні воно вже в блоках, а
+  // `getPhoto` без власного `photo_url` ходить у Cloudinary за банером.
+  const photoUrl = await getPhoto(slug, photo_url, ctx.env);
   try {
     const sent = await ctx.api.sendPhoto(chatId, photoUrl, {
       caption: captionText,

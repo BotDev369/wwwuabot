@@ -10,6 +10,8 @@ import { handleContactCallback } from "../../modules/access/contact/panel";
 import { deleteIncomingMessage } from "../../shared/utils/message";
 import { splitInviteCode } from "../../modules/access/payload";
 import { isValidBotPayload, isValidSlug, toWebPath } from "@wwwuabot/shared/content";
+import { pageCardBlocks } from "../../shared/utils/page-card";
+import type { Scenario } from "../../shared/types/scenario";
 import { hasAccess } from "@wwwuabot/shared/security/access";
 
 /**
@@ -194,7 +196,36 @@ async function loadAndRenderPayload(
   }
   // Порожній payload — це перший екран (`/start` без діплінка): під ним лише
   // рядок екранів платформи, а не кнопки сторінки.
-  setScenarioScreen(ctx, scenario, scenario.web_path, !payload);
+  if (!payload) {
+    setScenarioScreen(ctx, scenario, scenario.web_path, true);
+    return;
+  }
+  setPageCardScreen(ctx, scenario);
+}
+
+/**
+ * Діплінк — **універсальна картка сторінки**, без даних сценарію: назву й фото
+ * бере сама сторінка, а кнопка одна — «Відкрити сторінку» (`buildScreenButtons`).
+ */
+function setPageCardScreen(ctx: AppContext, scenario: Scenario): void {
+  log("ROUTER", "page card", { slug: scenario.slug });
+
+  if (ctx.user && ctx.user.active_scenario !== scenario.slug) {
+    ctx.user.active_scenario = scenario.slug;
+    ctx.userDirty = true;
+  }
+
+  ctx.screen = {
+    slug: scenario.slug,
+    title: scenario.title,
+    // Фото живе в блоках: другим шляхом його б не бачив ніхто.
+    photo_url: "",
+    caption: {},
+    buttons: [],
+    rich_message: true,
+    rich_data: pageCardBlocks(scenario.title, scenario.photo_url),
+    web_path: scenario.web_path ?? toWebPath(scenario.slug),
+  };
 }
 
 async function loadAndRenderScenario(
@@ -212,7 +243,7 @@ async function loadAndRenderScenario(
 
 function setScenarioScreen(
   ctx: AppContext,
-  scenario: import("../../shared/types/scenario").Scenario,
+  scenario: Scenario,
   webPath?: string,
   landing?: boolean,
 ): void {
