@@ -1,9 +1,6 @@
 /**
- * `ShareModal` — «Поділитись»: копіювання посилання, передача в месенджер і QR.
- *
- * Посилання збирає `buildShareLinks` з адреси сторінки й імені бота. Якщо
- * діплінка немає (бота не відомо), показуємо веб-адресу — людина все одно
- * може її передати.
+ * «Поділитись»: копіювання, месенджер і QR. Посилання збирає `buildShareLinks`;
+ * без діплінка показуємо веб-адресу — її теж можна передати.
  *
  * @module packages/ui/src/nav/ShareModal
  */
@@ -39,21 +36,33 @@ export function ShareModal({ share, botUsername, onClose }: ShareModalProps): Re
       variant="card"
       onClose={onClose}
       content={
-      <div className="wb-share">
-        <p className="wb-share__url">{url}</p>
-        <button type="button" className="wb-share__copy" onClick={copy}>
-          {copied ? "Скопійовано" : "Копіювати посилання"}
-        </button>
-        <div className="wb-share__apps">
-          <a href={`${TELEGRAM_ORIGIN}/share/url?url=${text}`} target="_blank" rel="noopener noreferrer">
-            Telegram
-          </a>
-          <a href={`https://wa.me/?text=${text}`} target="_blank" rel="noopener noreferrer">
-            WhatsApp
-          </a>
+        <div className="wb-share">
+          <p className="wb-share__url">{url}</p>
+          <button type="button" className="wb-btn wb-btn-primary wb-share__copy" onClick={copy}>
+            {copied ? "Скопійовано" : "Копіювати посилання"}
+          </button>
+          <div className="wb-share__apps">
+            <a
+              href={`${TELEGRAM_ORIGIN}/share/url?url=${text}`}
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              Telegram
+            </a>
+            <a href={`https://wa.me/?text=${text}`} target="_blank" rel="noopener noreferrer">
+              WhatsApp
+            </a>
+          </div>
+          {qr && (
+            <img
+              className="wb-share__qr"
+              src={qr}
+              alt="QR-код посилання"
+              width={200}
+              height={200}
+            />
+          )}
         </div>
-        {qr && <img className="wb-share__qr" src={qr} alt="QR-код посилання" width={200} height={200} />}
-      </div>
       }
     />
   );
