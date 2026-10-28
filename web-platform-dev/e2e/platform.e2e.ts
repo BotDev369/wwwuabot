@@ -34,6 +34,7 @@ const SCREENS = [
   { label: "Акаунт", path: /\/account$/ },
   { label: "Обране", path: /\/favorites$/ },
   { label: "Трекери", path: /\/trackers$/ },
+  { label: "Розвиток", path: /\/assessments$/ },
   { label: "Сервіси", path: /\/services$/ },
 ];
 

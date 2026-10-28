@@ -29,6 +29,8 @@ export const ICON_NAMES = [
   "users",
   "bot",
   "my-dates",
+  // Розвиток — живий ріст (самооцінка й аналіз дат), а не «графік» трекерів.
+  "growth",
   "compare",
   "settings",
   "logout",

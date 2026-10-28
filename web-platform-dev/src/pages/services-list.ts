@@ -10,17 +10,14 @@
  */
 
 import type { IconName } from "@wwwuabot/shared";
-import { DATE_ANALYSIS_PATH } from "@wwwuabot/shared/content";
 import {
   ADS_PATH,
-  ASSESSMENTS_PATH,
   CONTACTS_PATH,
   GAMES_PATH,
   MESSAGES_PATH,
   NOTES_PATH,
   ORDERS_PATH,
   PAGES_PATH,
-  TRACKERS_PATH,
   USERS_PATH,
 } from "../app/routes";
 
@@ -32,10 +29,13 @@ export interface ServiceEntry {
   to: string;
 }
 
+/**
+ * **Список входів — те, що не має свого пункту в футері.** Трекери, розвиток
+ * і аналіз дат стоять у смузі, тож рядками тут не повторюються: два входи в
+ * один екран означають, що за один із них забудуть.
+ */
 export const SERVICES: readonly ServiceEntry[] = [
   { key: "ads", label: "Оголошення", icon: "announce", to: ADS_PATH },
-  { key: "trackers", label: "Трекери", icon: "bar-chart", to: TRACKERS_PATH },
-  { key: "dates", label: "Аналіз дат", icon: "my-dates", to: DATE_ANALYSIS_PATH },
   { key: "pages", label: "Сторінки", icon: "page", to: PAGES_PATH },
   { key: "games", label: "Ігри", icon: "game", to: GAMES_PATH },
   { key: "notes", label: "Нотатки", icon: "text", to: NOTES_PATH },
@@ -43,5 +43,4 @@ export const SERVICES: readonly ServiceEntry[] = [
   { key: "messages", label: "Повідомлення", icon: "message-square", to: MESSAGES_PATH },
   { key: "users", label: "Користувачі", icon: "users", to: USERS_PATH },
   { key: "orders", label: "Замовлення", icon: "tag", to: ORDERS_PATH },
-  { key: "assessments", label: "Розвиток", icon: "checklist", to: ASSESSMENTS_PATH },
 ];

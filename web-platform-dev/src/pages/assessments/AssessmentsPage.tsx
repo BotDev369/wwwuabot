@@ -18,6 +18,11 @@
  * **Пройдений тест лишається в списку** з датою: історія поруч дорівнює
  * просторі над самим числом.
  *
+ * **Перший рядок — аналіз дат.** Це той самий розділ, а не друга навігація:
+ * «Розвиток» відповідає на «що я знаю про себе», і власні дати — така сама
+ * відповідь, як бал тесту. Своєї картки результату в аналізу немає (він
+ * показує таблицю), тому тут тільки вхід — і він один, а не рядок у «Сервісах».
+ *
  * Шлях власний (`/assessments`), а не `slug` рядка `scenarios`: список
  * складається з даних людини (таблиця `assessment_results`), а не з
  * `page_data` (AGENTS.md §7).
@@ -41,6 +46,7 @@ interface AssessmentsPageProps {
   results: readonly AssessmentRecord[];
   loading: boolean;
   onOpen: (testKey: string) => void;
+  onOpenDates: () => void;
 }
 
 /**
@@ -59,12 +65,27 @@ export function AssessmentsPage({
   results,
   loading,
   onOpen,
+  onOpenDates,
 }: AssessmentsPageProps): ReactElement {
   const latest = useMemo(() => latestByScale(results), [results]);
 
   return (
     <div className="wb-page wb-page-scroll">
       <div className="wb-test-list">
+        <div className="wb-test-card">
+          <div className="wb-test-head">
+            <h2 className="wb-test-title">Аналіз дат</h2>
+            <Icon name="my-dates" size={22} />
+          </div>
+          <p className="wb-test-lead">
+            Ваші дати, їхнє порівняння й таблиця аналізу — за тими самими даними, що ви вже
+            зберегли.
+          </p>
+          <button type="button" className="wb-btn wb-btn-primary" onClick={onOpenDates}>
+            Відкрити
+          </button>
+        </div>
+
         {loading && <p className="wb-test-lead">Завантаження…</p>}
 
         {!loading && tests.length === 0 && (

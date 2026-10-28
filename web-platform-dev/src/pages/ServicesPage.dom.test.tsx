@@ -11,6 +11,8 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
+import { DATE_ANALYSIS_PATH } from "@wwwuabot/shared/content";
+import { ASSESSMENTS_PATH, TRACKERS_PATH } from "@/app/routes";
 import { SERVICES } from "./services-list";
 
 const hooks = { navigate: vi.fn(), dialog: { alert: vi.fn() } };
@@ -48,5 +50,14 @@ describe("список сервісів", () => {
   it("адреси не повторюються — інакше два пункти ведуть в одне місце", () => {
     const paths = SERVICES.map((service) => service.to);
     expect(new Set(paths).size).toBe(paths.length);
+  });
+
+  // Трекери й розвиток мають власний пункт футера: рядок у списку був би
+  // другим входом у той самий екран (аналіз дат — частина «Розвитку»).
+  it("не дублює те, що вже стоїть у футері", () => {
+    const paths = SERVICES.map((service) => service.to);
+    expect(paths).not.toContain(TRACKERS_PATH);
+    expect(paths).not.toContain(ASSESSMENTS_PATH);
+    expect(paths).not.toContain(DATE_ANALYSIS_PATH);
   });
 });

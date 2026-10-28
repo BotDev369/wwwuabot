@@ -2,6 +2,7 @@ import { DATE_ANALYSIS_PATH, toWebPath } from "@wwwuabot/shared/content";
 import type { ShellTab, TabBarItem } from "@wwwuabot/ui/nav";
 import {
   ACCOUNT_PATH,
+  ASSESSMENTS_PATH,
   CONTACTS_PATH,
   FAVORITES_PATH,
   MESSAGES_PATH,
@@ -22,11 +23,11 @@ export const UNREAD_TAB_KEY = "account";
 export const FAVORITES_TAB_KEY = "favorites";
 
 /**
- * Чотири пункти смуги — **самі знаки**: підписів немає, `label` лишається
+ * П'ять пунктів смуги — **самі знаки**: підписів немає, `label` лишається
  * назвою для скрінрідера.
  *
- * «Я» веде на **акаунт**; трекери стоять перед «Сервісами» — це щоденна
- * робота, а не хаб входів. Той самий склад повторює бот.
+ * «Я» веде на **акаунт**; трекери й розвиток стоять перед «Сервісами» — це
+ * щоденна робота, а не хаб входів. Той самий склад повторює бот.
  */
 export const PLATFORM_TABS: readonly PlatformTab[] = [
   {
@@ -38,6 +39,7 @@ export const PLATFORM_TABS: readonly PlatformTab[] = [
   },
   { key: "favorites", label: "Обране", icon: "thumbs-up", to: FAVORITES_PATH },
   { key: "trackers", label: "Трекери", icon: "bar-chart", to: TRACKERS_PATH },
+  { key: "assessments", label: "Розвиток", icon: "growth", to: ASSESSMENTS_PATH },
   { key: "services", label: "Сервіси", icon: "grid", to: SERVICES_PATH },
 ];
 
@@ -70,6 +72,12 @@ export function platformSectionPath(pathname: string): string {
   if (pathname === FAVORITES_PATH || pathname.startsWith(`${FAVORITES_PATH}/`))
     return FAVORITES_PATH;
   if (pathname === TRACKERS_PATH || pathname.startsWith(`${TRACKERS_PATH}/`)) return TRACKERS_PATH;
+  // Аналіз дат — частина «Розвитку», хоч і живе окремою сторінкою контенту:
+  // підсвічувати він мусить той пункт, з якого до нього прийшли.
+  if (pathname === DATE_ANALYSIS_PATH || pathname.startsWith(`${DATE_ANALYSIS_PATH}/`))
+    return ASSESSMENTS_PATH;
+  if (pathname === ASSESSMENTS_PATH || pathname.startsWith(`${ASSESSMENTS_PATH}/`))
+    return ASSESSMENTS_PATH;
   if (pathname === SERVICES_PATH || pathname.startsWith(`${SERVICES_PATH}/`)) return SERVICES_PATH;
   const own = [
     "/",
@@ -79,7 +87,6 @@ export function platformSectionPath(pathname: string): string {
     NOTES_PATH,
     CONTACTS_PATH,
     PAGES_PATH,
-    DATE_ANALYSIS_PATH,
   ];
   if (own.some((path) => pathname === path || (path !== "/" && pathname.startsWith(`${path}/`)))) {
     // Саме адреса пункту: пункт «Я» веде на акаунт, тож підсвітити його може
@@ -87,6 +94,6 @@ export function platformSectionPath(pathname: string): string {
     return ACCOUNT_PATH;
   }
   // Сторінка контенту за `slug` не належить жодному пункту — і не мусить його
-  // підсвічувати: з трьох пунктів жоден не є «читати чуже».
+  // підсвічувати: з п'яти пунктів жоден не є «читати чуже».
   return pathname;
 }

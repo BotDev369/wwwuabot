@@ -3,6 +3,7 @@
 import { describe, expect, it, vi } from "vitest";
 import {
   ACCOUNT_PATH,
+  ASSESSMENTS_PATH,
   FAVORITES_PATH,
   SERVICES_PATH,
   TRACKERS_PATH,
@@ -102,8 +103,8 @@ describe("перший екран: один рядок екранів платф
     const buttons = buildScreenButtons(landing, PLATFORM);
 
     expect(buttons).toHaveLength(1);
-    expect(buttons[0]).toHaveLength(4);
-    expect(buttons[0].map((b) => b.text)).toEqual(["👤", "👍", "📈", "🧰"]);
+    expect(buttons[0]).toHaveLength(5);
+    expect(buttons[0].map((b) => b.text)).toEqual(["👤", "👍", "📈", "🌱", "🧰"]);
   });
 
   it("⛔ кнопки ведуть на ті самі адреси, що й пункти футера платформи", () => {
@@ -113,6 +114,7 @@ describe("перший екран: один рядок екранів платф
       `${PLATFORM}${ACCOUNT_PATH}`,
       `${PLATFORM}${FAVORITES_PATH}`,
       `${PLATFORM}${TRACKERS_PATH}`,
+      `${PLATFORM}${ASSESSMENTS_PATH}`,
       `${PLATFORM}${SERVICES_PATH}`,
     ]);
   });

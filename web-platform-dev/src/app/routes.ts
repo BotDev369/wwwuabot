@@ -50,10 +50,10 @@ export { MESSAGES_PATH } from "@wwwuabot/shared/messages";
  * `bot-dev`). Власник у них один — спільний модуль, а не цей файл: два літерали
  * однієї адреси розійшлися б тихо, і кнопка в чаті відкрила б 404.
  */
-import { TRACKERS_PATH } from "@wwwuabot/shared/app/routes";
+import { ASSESSMENTS_PATH, TRACKERS_PATH } from "@wwwuabot/shared/app/routes";
 
 export { ACCOUNT_PATH, FAVORITES_PATH, SERVICES_PATH } from "@wwwuabot/shared/app/routes";
-export { TRACKERS_PATH };
+export { ASSESSMENTS_PATH, TRACKERS_PATH };
 
 export const FAVORITES_ROUTE = "favorites";
 
@@ -298,18 +298,21 @@ export const CONTACTS_PATH = `/${CONTACTS_ROUTE}`;
 export const SERVICES_ROUTE = "services";
 
 /**
- * «Розвиток» — самооцінка, власні дані людини, не рядок `scenarios`.
+ * «Розвиток» — самооцінка й аналіз власних дат, не рядок `scenarios`.
  *
  * **Адреса розділу й адреса проходження — різні речі:** `/assessments`
  * показує список тестів, а `/assessments/:key` — саме проходження. Тому
  * «назад» у Telegram повертає на список, а не виходить із розділу, і
  * посиланням можна дати конкретний тест.
  *
+ * Сам шлях — реекспорт зі спільного модуля вище: він один на платформу й бота
+ * (четвертий пункт футера = четверта кнопка під першим екраном). Тут лишається
+ * тільки сегмент маршруту.
+ *
  * Довший шлях мусить стояти **перед** коротшим у роутері, як `:id` у
  * `/pages`: інакше `:key` зʼїсть сам розділ.
  */
 export const ASSESSMENTS_ROUTE = "assessments";
-export const ASSESSMENTS_PATH = `/${ASSESSMENTS_ROUTE}`;
 
 /** Адреса проходження одного тесту. */
 export function assessmentRunPath(key: string): string {

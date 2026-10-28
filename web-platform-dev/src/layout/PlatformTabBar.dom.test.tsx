@@ -10,7 +10,7 @@
  */
 
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { render, screen } from "@testing-library/react";
+import { cleanup, render, screen } from "@testing-library/react";
 import { MemoryRouter } from "react-router-dom";
 
 const hooks = { unread: 0, dialog: { alert: vi.fn() } };
@@ -28,6 +28,11 @@ function renderAt(path: string) {
   );
 }
 
+/** Розмонтування між двома адресами в одному тесті: смуга не має лишатись у DOM. */
+function unmount(): void {
+  cleanup();
+}
+
 /** Смуга футера — навігація зі своїм підписом для скрінрідера. */
 function bar(): HTMLElement {
   return screen.getByRole("navigation", { name: "Навігація платформи" });
@@ -43,10 +48,10 @@ beforeEach(() => {
 });
 
 describe("футер платформи", () => {
-  it("чотири слоти, і жодного видимого підпису під знаком", () => {
+  it("п'ять слотів, і жодного видимого підпису під знаком", () => {
     renderAt("/services");
 
-    expect(slots()).toHaveLength(4);
+    expect(slots()).toHaveLength(5);
     for (const slot of slots()) {
       expect(slot.querySelector(".wb-tabbar-label")).toBeNull();
       expect(slot.getAttribute("aria-label")).toBeTruthy();
@@ -59,6 +64,21 @@ describe("футер платформи", () => {
     const active = slots().filter((slot) => slot.getAttribute("aria-current") === "page");
     expect(active).toHaveLength(1);
     expect(active[0].getAttribute("aria-label")).toBe("Сервіси");
+  });
+
+  it("«Розвиток» підсвічується на своєму екрані й на аналізі дат", () => {
+    renderAt("/assessments");
+
+    let active = slots().filter((slot) => slot.getAttribute("aria-current") === "page");
+    expect(active).toHaveLength(1);
+    expect(active[0].getAttribute("aria-label")).toBe("Розвиток");
+
+    unmount();
+    renderAt("/dateanalysis");
+
+    active = slots().filter((slot) => slot.getAttribute("aria-current") === "page");
+    expect(active).toHaveLength(1);
+    expect(active[0].getAttribute("aria-label")).toBe("Розвиток");
   });
 
   it("акаунт підсвічується на власних екранах людини", () => {

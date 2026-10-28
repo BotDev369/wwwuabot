@@ -179,12 +179,12 @@ describe("перший екран — одне повідомлення", () => 
 
     expect(store.ctx.screen?.landing).toBe(true);
 
-    // Рівно один рядок кнопок на повідомленні: чотири емодзі. Кнопки сторінки
+    // Рівно один рядок кнопок на повідомленні: п'ять емодзі. Кнопки сторінки
     // («МоїДати») тут немає, а другого повідомлення з клавіатурою роутер
     // більше не надсилає — `sent` лишається порожнім.
     const buttons = buildScreenButtons(store.ctx.screen!, "https://p.example");
     expect(buttons).toHaveLength(1);
-    expect(buttons[0].map((button) => button.text)).toEqual(["👤", "👍", "📈", "🧰"]);
+    expect(buttons[0].map((button) => button.text)).toEqual(["👤", "👍", "📈", "🌱", "🧰"]);
     expect(store.sent).toHaveLength(0);
   });
 

@@ -11,6 +11,7 @@
 
 import { useMemo, useState, type ReactElement } from "react";
 import { useNavigate, useParams } from "react-router-dom";
+import { DATE_ANALYSIS_PATH } from "@wwwuabot/shared/content";
 import { assessmentRunPath } from "@/app/routes";
 import { useScreenChrome } from "@wwwuabot/ui/nav";
 import { AssessmentsPage } from "./AssessmentsPage";
@@ -55,6 +56,7 @@ export function AssessmentsScreen(): ReactElement {
         setStarted(testKey);
         navigate(assessmentRunPath(testKey));
       }}
+      onOpenDates={() => navigate(DATE_ANALYSIS_PATH)}
     />
   );
 }

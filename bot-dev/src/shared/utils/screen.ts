@@ -1,5 +1,6 @@
 import {
   ACCOUNT_PATH,
+  ASSESSMENTS_PATH,
   FAVORITES_PATH,
   SERVICES_PATH,
   TRACKERS_PATH,
@@ -13,13 +14,14 @@ import type { InputRichMessage, InlineKeyboardButton } from "grammy/types";
 
 /**
  * Екрани платформи — **ті самі й у тому ж порядку**, що пункти футера:
- * акаунт, обране, трекери, Сервіси. Розійтися вони не мають права: людина,
- * яка звикла до футера, шукає в чаті ті самі входи.
+ * акаунт, обране, трекери, розвиток, Сервіси. Розійтися вони не мають права:
+ * людина, яка звикла до футера, шукає в чаті ті самі входи.
  */
 const PLATFORM_TARGETS: readonly { icon: string; path: string }[] = [
   { icon: PLATFORM_ROW.account, path: ACCOUNT_PATH },
   { icon: PLATFORM_ROW.favorites, path: FAVORITES_PATH },
   { icon: PLATFORM_ROW.trackers, path: TRACKERS_PATH },
+  { icon: PLATFORM_ROW.assessments, path: ASSESSMENTS_PATH },
   { icon: PLATFORM_ROW.services, path: SERVICES_PATH },
 ];
 
@@ -75,7 +77,7 @@ export function buildPlatformRow(platformUrl: string | undefined): ScenarioButto
  * **Чому перший екран без кнопок сторінки.** Він відкривається самому собою
  * (`/start` без діплінка), і кнопки сторінки — це вхід у сценарії, яких ще
  * немає в розмові. Замість них під картинкою стоїть те, що людині потрібне
- * відразу: три екрани платформи, як у футері.
+ * відразу: п'ять екранів платформи, як у футері.
  */
 export function buildScreenButtons(
   screen: { buttons: readonly (readonly ScenarioButton[])[]; web_path?: string; landing?: boolean },
