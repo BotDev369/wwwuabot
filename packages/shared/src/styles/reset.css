@@ -152,9 +152,78 @@ summary,
   touch-action: manipulation;
 }
 
+/* Те саме для цілого екрана: картка, рядок і плитка теж реагують на дотик, і
+   подвійний тап по них масштабував сторінку, хоч на кнопці — ні. `manipulation`
+   прибирає лише подвійний тап: прокрутка й пінч лишаються. */
+body {
+  touch-action: manipulation;
+}
+
 ::selection {
   background: var(--selection-bg);
   color: var(--accent-hover);
+}
+
+/* ── Контроли: однакові в iOS, Android і на десктопі ──────────────────────
+   iOS малює `input[type=search]` власною заокругленою «шукалкою» зі своїми
+   полями й висотою, Android — своєю; у продукту поле одне — з токенів.
+   `appearance: none` прибирає **нативну коробку**, лишаючи поведінку
+   (пошук, клавіатуру, очищення). */
+input[type="search"] {
+  -webkit-appearance: none;
+  appearance: none;
+}
+
+/* iOS малює в полі пошуку другу іконку-лупу й рамку навколо неї. */
+input[type="search"]::-webkit-search-decoration {
+  -webkit-appearance: none;
+}
+
+/* Довге натискання на контролі в iOS відкриває меню «Копіювати / Поділитись»
+   й виділяє підпис кнопки: це поведінка **тексту**, а контрол не текст. */
+button,
+summary,
+[role="button"] {
+  -webkit-touch-callout: none;
+  user-select: none;
+}
+
+/* Автозаповнення Chrome і Safari фарбує поле власним жовтим або синім — у
+   темній схемі це виглядало як помилка форми. `background` тут не діє: браузер
+   малює свою заливку поверх, тож перекриваємо її внутрішньою тінню. */
+input:-webkit-autofill,
+input:-webkit-autofill:focus,
+textarea:-webkit-autofill {
+  -webkit-text-fill-color: var(--text-primary);
+  -webkit-box-shadow: 0 0 0 1000px var(--field-bg, var(--surface)) inset;
+  caret-color: var(--text-primary);
+}
+
+/* Firefox робить підказку в полі напівпрозорою: на сірому тлі вона ставала
+   майже невидимою, хоч колір заданий токеном. */
+input::placeholder,
+textarea::placeholder {
+  opacity: 1;
+}
+
+/* ── Системні режими, у яких продукт теж мусить читатись ─────────────────
+   Windows «Високий контраст» (і `forced-colors` у Chrome) відкидає власні
+   кольори й тіні: там, де межу малювала тінь, вона зникає. */
+@media (forced-colors: active) {
+  :focus-visible {
+    outline: 2px solid Highlight;
+    outline-offset: 2px;
+  }
+}
+
+/* «Більше контрасту» в macOS, iOS і Windows: приглушений текст і тонкі межі
+   піднімаємо до наступного рівня — це той самий стиль, лише з більшим
+   контрастом, а не друга палітра. */
+@media (prefers-contrast: more) {
+  :root {
+    --text-muted: var(--text-secondary);
+    --border-subtle: var(--border);
+  }
 }
 
 /* Клавіатурний фокус. `:focus-visible` показує рамку лише тоді, коли людина йде

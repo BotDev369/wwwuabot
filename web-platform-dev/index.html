@@ -4,7 +4,15 @@
     <meta charset="UTF-8" />
     <!-- viewport-fit=cover — інакше env(safe-area-inset-*) у tokens.css = 0,
          і контент залазить під виріз/індикатор додому на iPhone. -->
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <!-- interactive-widget=resizes-content: на Android клавіатура закривала
+         смугу вводу, бо розмір сторінки не мінявся (мінявся лише видимий
+         прямокутник). iOS і старші браузери цей ключ ігнорують — там клавіатуру
+         обробляє сам клієнт або Safari. `user-scalable` НЕ вимкнено: пінч
+         лишається доступним. -->
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, viewport-fit=cover, interactive-widget=resizes-content"
+    />
     <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
     <meta http-equiv="Pragma" content="no-cache" />
     <meta http-equiv="Expires" content="0" />

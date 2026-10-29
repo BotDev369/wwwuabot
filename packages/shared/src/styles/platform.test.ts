@@ -97,6 +97,51 @@ describe("поведінка під пристрій", () => {
     expect(read("packages/shared/src/styles/user-colors.css")).toContain("color-scheme: dark");
   });
 
+  it("поле, автозаповнення й дотик — однакові в iOS, Android і на десктопі", () => {
+    const reset = read("packages/shared/src/styles/reset.css");
+    for (const line of [
+      // iOS малює власну «шукалку» зі своїми полями; у продукту поле одне.
+      'input[type="search"]',
+      "appearance: none",
+      "-webkit-search-decoration",
+      // iOS не має відкривати меню «Копіювати» на кнопці.
+      "-webkit-touch-callout: none",
+      // Автозаповнення не фарбує поле в жовтий/синій.
+      ":-webkit-autofill", // Firefox не робить підказку напівпрозорою.
+      "opacity: 1",
+    ]) {
+      expect(reset, line).toContain(line);
+    }
+    // Подвійний тап масштабував сторінку й на картці, а не лише на кнопці.
+    expect(reset).toMatch(/body \{\s*touch-action: manipulation;/);
+  });
+
+  it("високий контраст Windows не стирає поверхню й фокус", () => {
+    // `forced-colors` відкидає тіні — картка й поле тримали межу саме тінню.
+    const components = read("packages/shared/src/styles/components.css");
+    expect(components).toContain("@media (forced-colors: active)");
+    expect(components).toContain("border: 1px solid CanvasText");
+    expect(read("packages/shared/src/styles/reset.css")).toContain("2px solid Highlight");
+  });
+
+  it("«більше контрасту» піднімає рівень, а не заводить другу палітру", () => {
+    const reset = read("packages/shared/src/styles/reset.css");
+    expect(reset).toContain("@media (prefers-contrast: more)");
+    // Палітру не переписуємо: міняються лише дві сходинки, які й так є.
+    expect(reset).toMatch(/--text-muted: var\(--text-secondary\)/);
+    expect(reset).toMatch(/--border-subtle: var\(--border\)/);
+  });
+
+  it("обидві оболонки просять браузер перерахувати висоту під клавіатуру", () => {
+    for (const file of ["web-platform-dev/index.html", "web-admin-dev/index.html"]) {
+      const html = read(file);
+      // Android без цього лишає смугу вводу під клавіатурою.
+      expect(html, file).toContain("interactive-widget=resizes-content");
+      // Пінч лишається: вимкнений масштаб — це вимкнена доступність.
+      expect(html, file).not.toContain("user-scalable=no");
+    }
+  });
+
   it("обидві оболонки кажуть браузеру про виріз, колір смуги й числа", () => {
     for (const file of ["web-platform-dev/index.html", "web-admin-dev/index.html"]) {
       const html = read(file);

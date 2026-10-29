@@ -2669,3 +2669,27 @@ button.wb-chip {
 .wb-block-section--row .wb-block-section__body {
   padding: 0 var(--row-pad-x) var(--row-pad-y);
 }
+
+/* ═══ Системні режими, у яких поверхня мусить лишатись видимою ═════════════
+   Windows «Високий контраст» (`forced-colors`) не малює ні тіней, ні власних
+   заливок: картка й поле, які тримали межу тінню, зливалися з тлом — продукт
+   виглядав зламаним саме в того, кому контраст потрібен найбільше. Тут межа
+   стає справжньою, а колір бере система (`CanvasText`). */
+@media (forced-colors: active) {
+  .wb-card,
+  .wb-input,
+  .wb-select,
+  .wb-textarea,
+  .wb-composer-input {
+    border: 1px solid CanvasText;
+  }
+
+  /* Фокус поля показувало кільце з тіні — у високому контрасті його немає:
+     поле, у якому зараз пишуть, мусить називатись системним кольором. */
+  .wb-input:focus,
+  .wb-select:focus,
+  .wb-textarea:focus {
+    outline: 2px solid Highlight;
+    outline-offset: 1px;
+  }
+}

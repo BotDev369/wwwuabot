@@ -5,7 +5,15 @@
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <!-- viewport-fit=cover — інакше env(safe-area-inset-*) у tokens.css = 0,
          і контент залазить під виріз/індикатор додому на iPhone. -->
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <!-- interactive-widget=resizes-content: на Android клавіатура закривала
+         поле вводу, бо розмір сторінки не мінявся (мінявся лише видимий
+         прямокутник). iOS і старші браузери цей ключ ігнорують — там клавіатуру
+         обробляє сам клієнт або Safari. `user-scalable` НЕ вимкнено: пінч
+         лишається доступним. -->
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, viewport-fit=cover, interactive-widget=resizes-content"
+    />
     <!-- Панель відкривають із WebView (телефон, Telegram). Його кеш живучіший за
          браузерний, і після деплою там лишався старий екран із старими хешами
          бандла. Ті самі директиви, що у `web-platform-dev/index.html`. -->
