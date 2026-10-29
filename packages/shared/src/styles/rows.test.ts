@@ -34,6 +34,7 @@ const tokens = css("tokens.css");
 const components = css("components.css");
 const favorites = css("favorites.css");
 const trackers = css("trackers.css");
+const messages = css("messages.css");
 
 const ROW_TOKENS = [
   "--row-bg",
@@ -112,6 +113,18 @@ describe("рядок бере мірки токенами", () => {
       selector: ".wb-group-toggle",
       expect: ["gap: var(--row-gap)", "min-height: var(--row-min-h)"],
     },
+    {
+      file: "messages.css",
+      source: messages,
+      selector: ".wb-conv",
+      expect: [
+        "gap: var(--row-gap)",
+        "min-height: var(--row-min-h)",
+        "padding: var(--row-pad-y) var(--row-pad-x)",
+        "border-radius: var(--row-radius)",
+        "background: var(--row-bg)",
+      ],
+    },
   ];
 
   for (const item of cases) {
@@ -129,6 +142,7 @@ describe("рядок бере мірки токенами", () => {
       ["components.css", ".wb-block-section--row .wb-block-section__title"],
       ["favorites.css", ".wb-favorites-title"],
       ["trackers.css", ".wb-group-title"],
+      ["messages.css", ".wb-conv-name"],
     ];
     for (const [file, selector] of labels) {
       const body = rule(css(file), selector);
@@ -152,6 +166,8 @@ describe("рядок не повертає власні числа", () => {
     ["trackers.css", ".wb-group-head"],
     ["trackers.css", ".wb-group-toggle"],
     ["trackers.css", ".wb-group-title"],
+    ["messages.css", ".wb-conv"],
+    ["messages.css", ".wb-conv-name"],
   ];
 
   const pxProperties = /(?:padding|font-size|border-radius|min-height|gap|background)[^;]*\d+px/;

@@ -59,20 +59,21 @@
   flex-direction: column;
 }
 
-/* Рядок на всю ширину — його **читають**: ім'я, текст, час. */
+/* Рядок на всю ширину — його **читають**: ім'я, текст, час. Мірки — рядкові
+   (`--row-*`): розмова в списку стоїть на тій самій лінії, що пункт меню. */
 .wb-conv {
   flex: 1 1 auto;
   width: 100%;
-  min-height: 64px;
+  min-height: var(--row-min-h);
   display: flex;
   align-items: center;
-  gap: var(--sp-3);
-  padding: var(--sp-3);
+  gap: var(--row-gap);
+  padding: var(--row-pad-y) var(--row-pad-x);
   text-align: left;
   color: var(--text-primary);
-  background: var(--field-bg);
+  background: var(--row-bg);
   border: none;
-  border-radius: var(--radius-lg);
+  border-radius: var(--row-radius);
   cursor: pointer;
   font-family: inherit;
   font-size: var(--text-sm);
@@ -112,7 +113,9 @@
 }
 
 .wb-conv-name {
-  font-weight: var(--weight-semibold);
+  font-size: var(--row-title-size);
+  font-weight: var(--row-title-weight);
+  color: var(--row-title-color);
   /* Ім'я людини — чуже слово: довге мусить обрізатися, а не розтягувати рядок */
   overflow: hidden;
   white-space: nowrap;
