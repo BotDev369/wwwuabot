@@ -345,6 +345,17 @@
   transform: scale(0.92);
 }
 
+/* Палець б'є по краю: на дотикових пристроях кнопка закриття стає 44×44 —
+   інакше промах закриває не те вікно, а сусіднє. */
+@media (pointer: coarse) {
+  .wb-close-btn {
+    width: 44px;
+    height: 44px;
+    min-width: 44px;
+    min-height: 44px;
+  }
+}
+
 /* ── Move Buttons (for drag-reorder lists) ─────────────────────────────── */
 
 .wb-move-btn {
@@ -737,7 +748,7 @@ html:has(.wb-tabbar) .wb-modal-overlay--screen {
 
 .wb-composer-tab-label {
   max-width: 100%;
-  font-size: 10px;
+  font-size: var(--text-xs);
   line-height: 1.15;
   text-align: center;
   /* Підпис — одним рядком і без розриву посередині слова: «Сторінк / а» —
@@ -1486,6 +1497,14 @@ html:has(.wb-tabbar) .wb-modal-overlay--screen {
   --tools-row-h: 32px;
 }
 
+/* Той самий ряд, але під палець: на телефоні клітинка росте до 44, бо там
+   саме нею ведуть список, а не читають його. */
+@media (pointer: coarse) {
+  .wb-tools-bar {
+    --tools-row-h: 44px;
+  }
+}
+
 /* Поле пошуку — ОДИН контрол, і контрол тут **саме поле**, а не оболонка з
    іконкою: заливка й світло фокуса стоять навколо місця, де пишуть, а не
    навколо всього ряду. У спокої навколо поля немає нічого — ні заливки, ні
@@ -2133,7 +2152,7 @@ button.wb-chip {
 
 .wb-chip-sm {
   padding: 0 var(--sp-2);
-  font-size: 11px;
+  font-size: var(--text-xs);
 }
 
 /* ── Tags input ──────────────────────────────────────────────────────────────
@@ -2192,7 +2211,7 @@ button.wb-chip {
 }
 
 .wb-empty-icon {
-  font-size: 2.5rem;
+  font-size: var(--text-5xl);
   opacity: 0.5;
 }
 
@@ -2284,13 +2303,13 @@ button.wb-chip {
   display: flex;
   align-items: center;
   justify-content: flex-end;
-  gap: var(--sp-2, 8px);
+  gap: var(--sp-2);
   width: 100%;
 }
 
 .wb-save-actions--success {
   justify-content: center;
-  padding: var(--sp-2, 8px) 0;
+  padding: var(--sp-2) 0;
 }
 
 .wb-save-actions-btn {
@@ -2300,9 +2319,9 @@ button.wb-chip {
   gap: 6px;
   min-height: 38px;
   padding: 8px 14px;
-  font-size: var(--text-sm, 14px);
+  font-size: var(--text-sm);
   font-weight: 500;
-  border-radius: var(--radius, 8px);
+  border-radius: var(--radius);
   cursor: pointer;
   white-space: nowrap;
   user-select: none;
@@ -2320,7 +2339,7 @@ button.wb-chip {
 .wb-save-actions-btn.wb-btn-sm {
   min-height: 30px;
   padding: 4px 10px;
-  font-size: var(--text-xs, 12px);
+  font-size: var(--text-xs);
 }
 
 .wb-save-actions-btn:disabled {
@@ -2330,42 +2349,42 @@ button.wb-chip {
 }
 
 .wb-save-actions-btn--primary {
-  background: var(--accent, #000);
-  color: var(--text-inverse, #fff);
-  border: 1px solid var(--accent, #000);
+  background: var(--accent);
+  color: var(--text-inverse);
+  border: 1px solid var(--accent);
 }
 
 .wb-save-actions-btn--primary:hover:not(:disabled) {
-  background: var(--accent-hover, #222);
-  border-color: var(--accent-hover, #222);
+  background: var(--accent-hover);
+  border-color: var(--accent-hover);
 }
 
 .wb-save-actions-btn--secondary {
-  background: var(--surface, var(--bg-home, #f0f2f5));
-  color: var(--text-primary, #111827);
-  border: 1px solid var(--border, #e5e7eb);
+  background: var(--surface, var(--bg-home));
+  color: var(--text-primary);
+  border: 1px solid var(--border);
 }
 
 .wb-save-actions-btn--secondary:hover:not(:disabled) {
-  background: var(--surface-hover, #f3f4f6);
-  border-color: var(--border-hover, #d1d5db);
+  background: var(--surface-hover);
+  border-color: var(--border-hover);
 }
 
 .wb-save-actions-btn--close {
   background: transparent;
-  color: var(--text-secondary, #4b5563);
-  border: 1px solid var(--border, #e5e7eb);
+  color: var(--text-secondary);
+  border: 1px solid var(--border);
 }
 
 .wb-save-actions-btn--close:hover:not(:disabled) {
-  background: var(--surface-hover, #f3f4f6);
-  color: var(--text-primary, #111827);
+  background: var(--surface-hover);
+  color: var(--text-primary);
 }
 
 .wb-save-actions-btn--saved {
-  background: var(--green-dim, #ecfdf5) !important;
-  color: var(--green, #059669) !important;
-  border-color: var(--green, #10b981) !important;
+  background: var(--green-dim) !important;
+  color: var(--green) !important;
+  border-color: var(--green) !important;
 }
 
 /* Mobile responsive layout (max-width: 520px) */
@@ -2386,7 +2405,7 @@ button.wb-chip {
     width: 100%;
     min-width: 0;
     padding: 8px 6px;
-    font-size: 13px;
+    font-size: var(--text-sm);
     justify-content: center;
   }
 }

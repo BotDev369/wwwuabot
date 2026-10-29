@@ -23,11 +23,12 @@
   --bg-4: #dcdce0; /* surface-container-high */
 
   --border: #b0b0b8;
+  --border-hover: #94949e; /* межа під курсором: темніша за типову */
   --border-subtle: #c8c8d0;
 
   --text-primary: #1c1b1f; /* on-surface */
   --text-secondary: #44464f; /* on-surface-variant */
-  --text-muted: #74777f; /* outline */
+  --text-muted: #63666e; /* outline; ≥4.5:1 на всіх світлих поверхнях (AA) */
   --text-inverse: #ffffff;
 
   --accent: #1c1b1f; /* теплий сірий, не чистий чорний */
@@ -102,6 +103,16 @@
   --text-lg: 1.125rem; /* 18px — title medium */
   --text-xl: 1.375rem; /* 22px — title large */
   --text-2xl: 1.75rem; /* 28px — headline medium */
+  --text-3xl: 2rem; /* 32px — число, що тримає екран */
+  --text-4xl: 2.25rem; /* 36px — бал результату */
+  --text-5xl: 2.5rem; /* 40px — велике число */
+  --text-6xl: 3rem; /* 48px — екран помилки */
+
+  /* Клавіатурний фокус: одна рамка на продукт, щоб Tab було видно скрізь,
+     а не лише в полях, які малюють кільце самі. */
+  --focus-ring-width: 2px;
+  --focus-ring-offset: 2px;
+  --focus-ring-color: var(--accent);
 
   --leading-tight: 1.25;
   --leading-normal: 1.5;

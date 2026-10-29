@@ -124,3 +124,30 @@ table {
   background: var(--selection-bg);
   color: var(--accent-hover);
 }
+
+/* Клавіатурний фокус. `:focus-visible` показує рамку лише тоді, коли людина йде
+   Tab'ом: миша не малює зайвих кілець, а клавіатура бачить кожен пункт. Поля
+   сюди не входять: у них власне кільце (`--field-ring`), і друга рамка поверх
+   нього виглядала б як помилка. */
+a:focus-visible,
+button:focus-visible,
+select:focus-visible,
+summary:focus-visible,
+[tabindex]:focus-visible {
+  outline: var(--focus-ring-width) solid var(--focus-ring-color);
+  outline-offset: var(--focus-ring-offset);
+}
+
+/* Той, кому рух заважає, отримує той самий продукт без анімацій: переходи
+   лишаються миттєвими, а не зникають — інакше верстка стрибала б на зміні
+   стану. */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}

@@ -77,7 +77,7 @@ html[data-theme="dark"] .wb-subbar {
   background: none;
   color: var(--text-muted);
   font-family: inherit;
-  font-size: 10px;
+  font-size: var(--text-xs);
   line-height: 1.2;
   font-weight: var(--weight-medium);
   text-decoration: none;
