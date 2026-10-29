@@ -139,7 +139,7 @@ function styleRule(name: string, selector: string): string {
   return source.slice(open, source.indexOf("\n}", open));
 }
 
-describe("поля вводу: мірки — токен, а бренд лише змінює його значення", () => {
+describe("поля вводу: мірки — токен, і жоден файл його не переписує", () => {
   it("токени відступів оголошені в tokens.css", () => {
     const tokens = read("packages/shared/src/styles/tokens.css");
     for (const token of ["--field-pad-y", "--field-pad-x"]) {
@@ -148,7 +148,7 @@ describe("поля вводу: мірки — токен, а бренд лише
   });
 
   it("кирпичик поля бере відступи з токенів", () => {
-    // Поки Android писав `padding: 12px 16px !important` у свого `.wb-input`,
+    // Поки другий шар стилів писав `padding: 12px 16px !important` у свого `.wb-input`,
     // будь-яке зменшення в спільному кирпичику не діяло зовсім: поле на одному
     // екрані було 8×12, на іншому — 12×16.
     expect(styleRule("components.css", ".wb-input,\n.wb-select,\n.wb-textarea")).toContain(

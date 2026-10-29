@@ -46,8 +46,8 @@ describe("ComposerModal", () => {
   });
 
   it("поля композера — власні кирпичики, а не .wb-textarea/.wb-input", () => {
-    // Це не стилістична примха: у брендових темах ті класи отримують рамку
-    // через `!important`, а рамок у композері немає за рішенням.
+    // Це не стилістична примха: ті класи отримують рамку через `!important`,
+    // а рамок у композері немає за рішенням.
     expect(html).not.toContain("wb-textarea");
     expect(html).not.toContain("wb-input");
     expect(html).toContain("wb-composer-tags");

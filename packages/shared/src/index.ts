@@ -1,4 +1,4 @@
-// ── Theme / Brand System ─────────────────────────────────────────────
+// ── Theme / Colors ───────────────────────────────────────────────────
 export { ThemeButton, useStyleTheme } from "./components/StyleToggle";
 // Legacy — deprecated
 export { StylePicker, ThemeToggle } from "./components/StyleToggle";

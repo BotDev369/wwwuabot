@@ -90,8 +90,8 @@ export function saveStoredFont(id: string | null): void {
 /**
  * Застосувати шрифт (або зняти його — порожній id).
  *
- * Інлайнові змінні на `<html>` перекривають бренд без `!important`, а знімання
- * змінної повертає його стек: бренд лишається джерелом типового.
+ * Інлайнові змінні на `<html>` перекривають типовий стек без `!important`, а
+ * знімання змінної повертає його: джерело типового — `tokens.css`.
  */
 export function applyFont(id: string | null): void {
   if (typeof document === "undefined") return;

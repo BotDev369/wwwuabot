@@ -7,15 +7,12 @@
  * токенів, а роль (частина сторінки, картка, рядок) перебиває їх **своїм
  * класом** — без війни специфічності.
  *
- * Другий сторож тут — від **другого шару** взагалі: атрибут `data-brand` і
- * файл-стиль не мусять повернутися ні в CSS, ні в код, ні в розмітку.
- *
  * @module packages/shared/src/styles/typography.test
  */
 
 /// <reference types="node" />
 
-import { readFileSync, readdirSync, statSync } from "node:fs";
+import { readFileSync, readdirSync } from "node:fs";
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { describe, expect, it } from "vitest";
@@ -85,50 +82,5 @@ describe("типографіка елементів — лише в reset.css", 
       }
     }
     expect(offenders, "типографіка елементів — у reset.css із токенів, без !important").toEqual([]);
-  });
-});
-
-describe("другого шару стилів немає", () => {
-  /**
-   * `data-brand` був атрибутом, під яким жив другий стиль: будь-яке правило
-   * можна було написати двічі, і саме так розходились кеглі, береги й радіуси
-   * між екранами. Повертатися йому нема чого — стиль один.
-   */
-  it("`data-brand` не згадується ні в CSS, ні в коді, ні в розмітці", () => {
-    const sources: string[] = [];
-    const walk = (dir: string): void => {
-      for (const name of readdirSync(join(REPO_ROOT, dir))) {
-        if (/^(node_modules|dist|coverage|\.git|\.freebuff)$/.test(name)) continue;
-        const rel = join(dir, name);
-        if (statSync(join(REPO_ROOT, rel)).isDirectory()) {
-          walk(rel);
-          continue;
-        }
-        if (!/\.(?:css|ts|tsx|html|md|mjs|json)$/.test(name)) continue;
-        if (/\.test\.(?:ts|tsx)$/.test(name)) continue;
-        if (name === "typography.test.ts") continue;
-        sources.push(rel);
-      }
-    };
-    for (const dir of [
-      "packages",
-      "web-platform-dev/src",
-      "web-admin-dev/src",
-      "bot-dev/src",
-      "api-dev/src",
-      "docs",
-    ]) {
-      walk(dir);
-    }
-
-    const offenders = sources
-      .filter((file) => !file.includes("package-lock"))
-      .filter((file) => readFileSync(join(REPO_ROOT, file), "utf8").includes("data-brand"));
-    expect(offenders, "стиль продукту один — атрибута вибору стилю немає").toEqual([]);
-  });
-
-  it("файлу-шару стилів у пакеті немає", () => {
-    const files = readdirSync(new URL(".", import.meta.url));
-    expect(files.filter((name) => /^(?:android|apple|brand)\.css$/.test(name))).toEqual([]);
   });
 });

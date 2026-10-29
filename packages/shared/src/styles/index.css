@@ -9,8 +9,8 @@
  *   import "@wwwuabot/shared/styles/index.css";
  *
  * Стиль продукту — ОДИН: `tokens.css` (світла схема й мірки), `themes.css`
- * (темна схема), `reset.css` + `components.css` (кирпичики). Шару «бренду»
- * немає — тому й атрибута вибору стилю немає.
+ * (темна схема), `reset.css` + `components.css` (кирпичики). Другого шару
+ * стилів немає — тому й атрибута вибору стилю немає.
  *
  * Apply via HTML attribute:
  *   <html data-theme="light|dark"> — схема (ставить `shared/app/initTheme.ts`)

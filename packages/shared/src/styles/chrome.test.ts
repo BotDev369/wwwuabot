@@ -110,7 +110,7 @@ describe("футер: знаки без тла", () => {
   });
 
   it("смуга не росте від знака: мірки задає токен, а не вміст", () => {
-    // Висота смуги — `--tab-bar-h` (бренд + safe-area), а не сума мірок знака.
+    // Висота смуги — `--tab-bar-h` і safe-area, а не сума мірок знака.
     expect(rule(".wb-tabbar")?.body).toContain("height: var(--tab-bar-h)");
     expect(rule(".wb-tabbar-inner")?.body).toContain("align-items: stretch");
   });
@@ -141,7 +141,7 @@ describe("каркас сторінки: один проміжок на весь
     expect(brickRule(".wb-tools")?.body).not.toContain("margin");
   });
 
-  it("дія списку — акцентне коло в ряду клітинок, а не кнопка бренду", () => {
+  it("дія списку — акцентне коло в ряду клітинок, а не окрема кнопка", () => {
     const add = rule(".wb-tools-add")?.body ?? "";
 
     // Мірка ряду: клітинка мусить бути одного зросту із сусідами.

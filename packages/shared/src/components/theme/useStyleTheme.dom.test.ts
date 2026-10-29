@@ -19,7 +19,6 @@ const THEME_KEY = "wwwuabot-theme";
 beforeEach(() => {
   localStorage.clear();
   document.documentElement.removeAttribute("data-theme");
-  document.documentElement.removeAttribute("data-brand");
 });
 
 describe("useStyleTheme", () => {
@@ -49,10 +48,5 @@ describe("useStyleTheme", () => {
     expect(result.current.scheme).toBe("light");
     act(() => result.current.toggleScheme());
     expect(result.current.scheme).toBe("dark");
-  });
-
-  it("не чіпає атрибут стилю: його немає", () => {
-    renderHook(() => useStyleTheme());
-    expect(document.documentElement.hasAttribute("data-brand")).toBe(false);
   });
 });

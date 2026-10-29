@@ -35,7 +35,7 @@ export const COLOR_SLOTS: readonly ColorSlotDefinition[] = [
 ];
 
 export const USER_COLORS_KEY = "wwwuabot-colors";
-/** DOM-атрибут на `<html>`: без нього працює брендова базова палітра. */
+/** DOM-атрибут на `<html>`: без нього працює базова палітра. */
 export const COLORS_ATTR = "data-colors";
 /** Схема, виведена з фону: нею CSS вибирає напрям тіней і `color-scheme`. */
 export const COLORS_MODE_ATTR = "data-colors-mode";

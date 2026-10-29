@@ -72,7 +72,7 @@ describe("аналітика: закріплений блок керування
     expect(stats).not.toContain("max-width");
   });
 
-  it("вага назви не залежить від `h1` бренду", () => {
+  it("вага назви не залежить від типового `h1`", () => {
     const source = readFileSync(
       join(REPO_ROOT, "web-admin-dev/src/pages/analytics/AnalyticsPage.tsx"),
       "utf8",

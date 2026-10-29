@@ -91,7 +91,7 @@ const BASE_BUTTON = /\.wb-btn(?![\w-])/;
 
 const baseButtonRules = RULES.filter((rule) => BASE_BUTTON.test(rule.selector));
 
-/** Мірки, оголошені будь-де: і в `:root`, і в бренді. */
+/** Мірки, оголошені будь-де: і в `:root`, і в темі. */
 const padDeclarations = RULES.flatMap((rule) =>
   [...rule.body.matchAll(/--btn-pad-([xy])\s*:\s*([^;]+);/g)].map((m) => ({
     file: rule.file,
@@ -101,10 +101,10 @@ const padDeclarations = RULES.flatMap((rule) =>
   })),
 );
 
-describe("кнопка: мірки — токен, і жоден бренд їх не переписує", () => {
+describe("кнопка: мірки — токен, і жоден файл їх не переписує", () => {
   it("padding у `.wb-btn` пише лише базове правило — і пише з токенів", () => {
-    // Це і є виправлення власника: `padding: 12px 24px !important` у бренді
-    // робив будь-яке зменшення в `components.css` невидимим.
+    // Друга копія `padding: 12px 24px !important` робила будь-яке зменшення
+    // у `components.css` невидимим.
     for (const rule of baseButtonRules) {
       const padding = rule.body.match(/padding\s*:\s*([^;]+);/)?.[1].trim();
       if (padding === undefined) continue;
@@ -115,8 +115,8 @@ describe("кнопка: мірки — токен, і жоден бренд їх
     }
   });
 
-  it("жоден бренд не піднімає `min-height` кнопки вище стелі", () => {
-    // Висота — теж «місце, яке кнопка займає»: Apple тримала 48px !important.
+  it("типовий стиль не піднімає `min-height` кнопки вище стелі", () => {
+    // Висота — теж «місце, яке кнопка займає»: другий шар тримав 48px !important.
     for (const rule of baseButtonRules) {
       const minHeight = rule.body.match(/min-height\s*:\s*([^;]+);/)?.[1].trim();
       if (minHeight === undefined) continue;

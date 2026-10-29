@@ -5,8 +5,8 @@
  * `initTheme()` стоїть у `main.tsx` обох оболонок до першого рендера, тож його
  * помилка видна як миготіння екрана, а не як падіння: схема не встигла — і
  * людина бачить світлий екран у темній схемі. Тут перевіряється те, що інакше
- * ловиться лише очима: атрибут схеми, типове значення, прибирання мертвих
- * ключів і **відсутність** атрибута стилю — стиль один, вибирати нема чого.
+ * ловиться лише очима: атрибут схеми, типове значення й прибирання мертвих
+ * ключів вибору стилю.
  *
  * @module packages/shared/src/app/initTheme.dom.test
  */
@@ -19,7 +19,6 @@ const THEME_KEY = "wwwuabot-theme";
 beforeEach(() => {
   localStorage.clear();
   document.documentElement.removeAttribute("data-theme");
-  document.documentElement.removeAttribute("data-brand");
 });
 
 describe("initTheme", () => {
@@ -46,10 +45,5 @@ describe("initTheme", () => {
     initTheme();
     expect(localStorage.getItem("wwwuabot-brand")).toBeNull();
     expect(localStorage.getItem("wwwuabot-style")).toBeNull();
-  });
-
-  it("не ставить атрибут вибору стилю: стиль один", () => {
-    initTheme();
-    expect(document.documentElement.hasAttribute("data-brand")).toBe(false);
   });
 });

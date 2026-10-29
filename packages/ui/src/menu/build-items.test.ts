@@ -56,7 +56,7 @@ describe("buildMenuItems", () => {
 
   it("стан пункту не губиться: вибір і заглушка доїжджають до розмітки", () => {
     const [selected, soon] = build([
-      { key: "brand-apple", label: "Apple", icon: "grid", selected: true, onSelect: vi.fn() },
+      { key: "favorites", label: "Обране", icon: "grid", selected: true, onSelect: vi.fn() },
       { key: "contacts", label: "Контакти", icon: "mail", status: "soon", onSelect: vi.fn() },
     ]);
 

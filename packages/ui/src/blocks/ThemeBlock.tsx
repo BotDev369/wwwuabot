@@ -1,7 +1,7 @@
 /**
  * Page Builder — Theme Block.
  *
- * Theme switcher supporting light/dark theme toggle and brand design system selection.
+ * Theme switcher supporting light/dark toggle and the user's three colors.
  * Compatible with all zones (header, sidebar, main, footer).
  *
  * @module packages/ui/src/blocks/ThemeBlock

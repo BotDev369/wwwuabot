@@ -34,8 +34,8 @@
   backdrop-filter: blur(14px) saturate(140%);
 }
 
-/* Темне тло: крок угору — два селектори, бо темну схему задає і бренд
-   (`data-theme`), і вибір трьох кольорів (`data-colors-mode`). */
+/* Темне тло: крок угору — два селектори, бо темну схему задає і
+   `data-theme`, і вибір трьох кольорів (`data-colors-mode`). */
 html[data-colors-mode="dark"] .wb-contextbar,
 html[data-theme="dark"] .wb-contextbar {
   /* Крок угору — тією самою мішаниною, що й у другої смуги: чорне на чорному
