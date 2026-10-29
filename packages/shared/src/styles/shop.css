@@ -162,8 +162,10 @@
   cursor: pointer;
 }
 
-.shop-photo-drop:hover {
-  color: var(--text-primary);
+@media (hover: hover) {
+  .shop-photo-drop:hover {
+    color: var(--text-primary);
+  }
 }
 
 .shop-photo-add {
@@ -527,9 +529,11 @@
   color: var(--red);
 }
 
-.shop-order-delete:hover {
-  color: var(--red);
-  background: var(--red-dim);
+@media (hover: hover) {
+  .shop-order-delete:hover {
+    color: var(--red);
+    background: var(--red-dim);
+  }
 }
 
 /* ── Кирпичик магазину: вибір зі списком ─────────────────────────────────────
@@ -557,8 +561,10 @@
   transition: border-color var(--duration) var(--ease);
 }
 
-.shop-pick:hover {
-  border-color: var(--accent);
+@media (hover: hover) {
+  .shop-pick:hover {
+    border-color: var(--accent);
+  }
 }
 
 /* Назва забирає все вільне місце й не переноситься: «Нирки та сечовивідні

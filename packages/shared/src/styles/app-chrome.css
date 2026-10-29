@@ -249,9 +249,11 @@
     color var(--duration-fast) var(--ease);
 }
 
-.wb-app-logout:hover {
-  background: var(--red-dim);
-  color: var(--red);
+@media (hover: hover) {
+  .wb-app-logout:hover {
+    background: var(--red-dim);
+    color: var(--red);
+  }
 }
 
 /* ═══ Меню (бічна навігація) — ЄДИНИЙ типовий сайдбар ══════════════════════
@@ -327,9 +329,11 @@
     color var(--duration-fast) var(--ease);
 }
 
-.wb-nav-toggle:hover {
-  background: var(--bg-4);
-  color: var(--text-primary);
+@media (hover: hover) {
+  .wb-nav-toggle:hover {
+    background: var(--bg-4);
+    color: var(--text-primary);
+  }
 }
 
 /* ── Кнопка закриття сайдбара ────────────────────────────────────────────────
@@ -414,9 +418,11 @@
     color var(--duration-fast) var(--ease);
 }
 
-.wb-nav-item:hover {
-  background: var(--surface-hover);
-  color: var(--text-primary);
+@media (hover: hover) {
+  .wb-nav-item:hover {
+    background: var(--surface-hover);
+    color: var(--text-primary);
+  }
 }
 
 /* «Тут ти» — **акцент і штрих, а не плишка** (правило 25): те саме слово, що в

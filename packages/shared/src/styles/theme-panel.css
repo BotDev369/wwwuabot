@@ -357,8 +357,10 @@
   transition: background var(--duration-fast) var(--ease);
 }
 
-.wb-theme-picker:hover {
-  background: var(--surface-active);
+@media (hover: hover) {
+  .wb-theme-picker:hover {
+    background: var(--surface-active);
+  }
 }
 
 .wb-theme-picker-swatch {
@@ -433,8 +435,10 @@
   transition: transform var(--duration-fast) var(--ease);
 }
 
-.wb-theme-chip:hover {
-  transform: scale(1.12);
+@media (hover: hover) {
+  .wb-theme-chip:hover {
+    transform: scale(1.12);
+  }
 }
 
 /* Вибраний зразок обводить акцент — той самий «вибране», що й у кнопок.

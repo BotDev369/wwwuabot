@@ -163,9 +163,11 @@
   cursor: pointer;
 }
 
-.wb-date-edit:hover {
-  background: var(--surface-hover);
-  color: var(--text-primary);
+@media (hover: hover) {
+  .wb-date-edit:hover {
+    background: var(--surface-hover);
+    color: var(--text-primary);
+  }
 }
 
 /* Тіло картки в таблиці не потрібне: усі поля й так у колонках. */

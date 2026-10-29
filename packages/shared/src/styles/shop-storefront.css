@@ -773,8 +773,10 @@ html[data-colors-mode="dark"] .shop-catalog {
   -webkit-backdrop-filter: none;
 }
 
-.shop-store-bar .shop-store-cart:hover {
-  background: var(--surface-active);
+@media (hover: hover) {
+  .shop-store-bar .shop-store-cart:hover {
+    background: var(--surface-active);
+  }
 }
 
 /* Кнопка вибору розділу — кирпичик `.shop-pick` із `shop.css`: ним же веде
@@ -951,8 +953,10 @@ html[data-colors-mode="dark"] .shop-catalog {
   transition: background var(--duration) var(--ease);
 }
 
-.shop-store-cart:hover {
-  background: var(--shop-scrim-strong);
+@media (hover: hover) {
+  .shop-store-cart:hover {
+    background: var(--shop-scrim-strong);
+  }
 }
 
 /* Кількість — акцентною плашкою, як лічильник непрочитаних у футері: число на

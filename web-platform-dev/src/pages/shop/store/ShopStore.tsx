@@ -189,6 +189,10 @@ export function ShopStore({
                 value={query}
                 placeholder="Пошук товару"
                 aria-label="Пошук товару"
+                enterKeyHint="search"
+                autoComplete="off"
+                autoCorrect="off"
+                spellCheck={false}
                 onChange={(event) => setQuery(event.target.value)}
               />
             </div>

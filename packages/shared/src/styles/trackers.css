@@ -823,10 +823,16 @@
   cursor: pointer;
 }
 
-.wb-tracker-history-remove:hover,
 .wb-tracker-history-remove:active {
   background: var(--red-dim);
   color: var(--red);
+}
+
+@media (hover: hover) {
+  .wb-tracker-history-remove:hover {
+    background: var(--red-dim);
+    color: var(--red);
+  }
 }
 
 /* ── Новий трекер ─────────────────────────────────────────────────────────── */
@@ -979,8 +985,10 @@
   transition: background var(--duration-fast) var(--ease);
 }
 
-.wb-group-picker-row:hover {
-  background: var(--surface-active);
+@media (hover: hover) {
+  .wb-group-picker-row:hover {
+    background: var(--surface-active);
+  }
 }
 
 /* Стрілка розгортання — окрема кнопка від вибору: одна дія відкриває
@@ -1032,8 +1040,7 @@
 /* Теперішнє місце в дереві переміщення — акцентом цілком: заливка, обвід,
    знак-галочка й підпис. Дерево буває глибоким, і однакові назви на сусідніх
    гілках без цього не відрізнити; кнопка «Тут» залита, бо це стан, а не дія. */
-.wb-group-picker-row--here,
-.wb-group-picker-row--here:hover {
+.wb-group-picker-row--here {
   background: color-mix(in srgb, var(--accent) 12%, var(--field-bg));
   box-shadow: inset 0 0 0 1.5px var(--accent);
 }

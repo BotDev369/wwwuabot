@@ -147,8 +147,10 @@
   transition: background var(--duration-fast) var(--ease);
 }
 
-.wb-contact-card:hover {
-  background: var(--surface-hover);
+@media (hover: hover) {
+  .wb-contact-card:hover {
+    background: var(--surface-hover);
+  }
 }
 
 /* Рядок 1: номер, ім'я, дата-час зміни й каретка. Ім'я забирає вільне місце й

@@ -93,8 +93,10 @@ a {
   text-decoration: none;
 }
 
-a:hover {
-  text-decoration: underline;
+@media (hover: hover) {
+  a:hover {
+    text-decoration: underline;
+  }
 }
 
 table {
@@ -116,8 +118,38 @@ table {
   border-radius: var(--radius-xs);
 }
 
-::-webkit-scrollbar-thumb:hover {
-  background: var(--text-secondary);
+@media (hover: hover) {
+  ::-webkit-scrollbar-thumb:hover {
+    background: var(--text-secondary);
+  }
+}
+
+/* ═══ Поведінка під конкретний пристрій ═══════════════════════════════════
+   Одна розмітка — різні ОС. Ці рядки прибирають не «стиль», а різницю в тому,
+   як поводиться сама платформа, щоб один дотик не давав двох відгуків. */
+
+html {
+  /* Android Chrome малює власну сіру пляму на тапі поверх нашої `:active`. */
+  -webkit-tap-highlight-color: transparent;
+  /* Firefox не знає `::-webkit-scrollbar`: без цих двох рядків у темній схемі
+     він показує світлу смугу, і темний екран виглядає зламаним. */
+  scrollbar-width: thin;
+  scrollbar-color: var(--text-muted) transparent;
+  /* Pull-to-refresh у WebView перезавантажував застосунок посеред дії, а
+     «гумове» тло за модалкою читалось як прокрутка сторінки. */
+  overscroll-behavior-y: none;
+}
+
+/* Палець на контролі не має чекати 300 мс і не має масштабувати екран
+   подвійним тапом: масштаб лишається за пінчем. */
+a,
+button,
+label,
+select,
+summary,
+[role="button"],
+[tabindex] {
+  touch-action: manipulation;
 }
 
 ::selection {

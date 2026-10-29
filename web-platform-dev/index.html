@@ -8,6 +8,13 @@
     <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
     <meta http-equiv="Pragma" content="no-cache" />
     <meta http-equiv="Expires" content="0" />
+    <!-- Смуга браузера (і standalone-режим) має той самий колір, що екран:
+         без цього темний застосунок відкривався з білою смугою зверху. -->
+    <meta name="theme-color" media="(prefers-color-scheme: light)" content="#f0f0f4" />
+    <meta name="theme-color" media="(prefers-color-scheme: dark)" content="#0f1013" />
+    <!-- Safari сам робить із чисел посилання й фарбує їх синім: у тексті
+         магазину «ціна 250» ставала дзвінком. -->
+    <meta name="format-detection" content="telephone=no" />
     <title>WWWUABot — Web Platform</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
   </head>

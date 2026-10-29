@@ -162,6 +162,8 @@ export function CollectionToolbar({
       <div className="wb-tools-bar">
         <div className={`wb-tools-search${searchOpen ? " wb-tools-search--open" : ""}`}>
           <Icon name="search" size={16} className="wb-tools-search-icon" />
+          {/* Клавіатура телефона: клавіша «Знайти», без автопідказок і
+              автозаголовків — пошук вводить людина, а не словник. */}
           <input
             type="search"
             className="wb-input"
@@ -171,6 +173,10 @@ export function CollectionToolbar({
             onBlur={() => setFocused(false)}
             placeholder="Пошук"
             aria-label={searchLabel}
+            enterKeyHint="search"
+            autoComplete="off"
+            autoCorrect="off"
+            spellCheck={false}
           />
 
           {/* Прибрати запит можна й чипом, але той стоїть аж у другому рядку,

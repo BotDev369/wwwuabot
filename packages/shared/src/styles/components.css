@@ -304,9 +304,11 @@
   font-size: var(--text-lg);
   transition: all var(--duration-fast) var(--ease);
 }
-.wb-modal-close:hover {
-  background: var(--surface-hover);
-  color: var(--text-primary);
+@media (hover: hover) {
+  .wb-modal-close:hover {
+    background: var(--surface-hover);
+    color: var(--text-primary);
+  }
 }
 
 /* ── Close Button (circular, themed) ───────────────────────────────────── */
@@ -337,10 +339,13 @@
   width: 20px;
   height: 20px;
 }
-.wb-close-btn:hover {
-  background: var(--accent-dim);
-  color: var(--accent);
+@media (hover: hover) {
+  .wb-close-btn:hover {
+    background: var(--accent-dim);
+    color: var(--accent);
+  }
 }
+
 .wb-close-btn:active {
   transform: scale(0.92);
 }
@@ -380,11 +385,14 @@
   width: 18px;
   height: 18px;
 }
-.wb-move-btn:hover:not(:disabled) {
-  background: var(--surface-hover);
-  color: var(--text-primary);
-  border-color: var(--border);
+@media (hover: hover) {
+  .wb-move-btn:hover:not(:disabled) {
+    background: var(--surface-hover);
+    color: var(--text-primary);
+    border-color: var(--border);
+  }
 }
+
 .wb-move-btn:disabled {
   opacity: 0.3;
   cursor: not-allowed;
@@ -446,14 +454,19 @@
   text-align: left;
   transition: background var(--duration-fast) var(--ease);
 }
-.wb-modal-menu-item:hover {
-  background: var(--surface-hover);
+@media (hover: hover) {
+  .wb-modal-menu-item:hover {
+    background: var(--surface-hover);
+  }
 }
+
 .wb-modal-menu-item--danger {
   color: var(--red);
 }
-.wb-modal-menu-item--danger:hover {
-  background: var(--red-dim);
+@media (hover: hover) {
+  .wb-modal-menu-item--danger:hover {
+    background: var(--red-dim);
+  }
 }
 
 .wb-modal-divider {
@@ -718,12 +731,14 @@ html:has(.wb-tabbar) .wb-modal-overlay--screen {
     color var(--duration-fast) var(--ease);
 }
 
-.wb-composer-tab:hover,
-.wb-composer-tool:hover,
-.wb-tools-btn:hover,
-.wb-collection-tool:hover {
-  background: var(--surface-hover);
-  color: var(--text-primary);
+@media (hover: hover) {
+  .wb-composer-tab:hover,
+  .wb-composer-tool:hover,
+  .wb-tools-btn:hover,
+  .wb-collection-tool:hover {
+    background: var(--surface-hover);
+    color: var(--text-primary);
+  }
 }
 
 .wb-composer-tab {
@@ -929,8 +944,10 @@ html:has(.wb-tabbar) .wb-modal-overlay--screen {
   border-radius: var(--radius-full);
 }
 
-.wb-composer-tag-remove:hover {
-  background: var(--accent-soft);
+@media (hover: hover) {
+  .wb-composer-tag-remove:hover {
+    background: var(--accent-soft);
+  }
 }
 
 .wb-composer-tag-input {
@@ -1185,6 +1202,9 @@ html:has(.wb-tabbar) .wb-modal-overlay--screen {
   padding: var(--sp-1) var(--sp-5) var(--sp-5);
   overflow-y: auto;
   -webkit-overflow-scrolling: touch;
+  /* Прокрутка всередині вікна не передається сторінці за ним: на iOS список
+     під модалкою «їхав» разом із нею. */
+  overscroll-behavior: contain;
 }
 
 .wb-menu-list {
@@ -1221,8 +1241,10 @@ html:has(.wb-tabbar) .wb-modal-overlay--screen {
   transition: background var(--duration-fast) var(--ease);
 }
 
-.wb-menu-block:hover {
-  background: var(--surface-active);
+@media (hover: hover) {
+  .wb-menu-block:hover {
+    background: var(--surface-active);
+  }
 }
 
 .wb-menu-block-icon {
@@ -1241,8 +1263,10 @@ html:has(.wb-tabbar) .wb-modal-overlay--screen {
 
 /* Тому дотик підсвічує лише заглушку: у готового пункту іконка вже акцентна,
    і міняти її на нейтральну означало б гасити колір під пальцем. */
-.wb-menu-block--soon:hover .wb-menu-block-icon {
-  color: var(--text-primary);
+@media (hover: hover) {
+  .wb-menu-block--soon:hover .wb-menu-block-icon {
+    color: var(--text-primary);
+  }
 }
 
 .wb-menu-block-label {
@@ -1296,8 +1320,10 @@ html:has(.wb-tabbar) .wb-modal-overlay--screen {
     color var(--duration-fast) var(--ease);
 }
 
-.wb-menu-item:hover {
-  background: var(--surface-active);
+@media (hover: hover) {
+  .wb-menu-item:hover {
+    background: var(--surface-active);
+  }
 }
 
 .wb-menu-item-icon {
@@ -1308,8 +1334,10 @@ html:has(.wb-tabbar) .wb-modal-overlay--screen {
   color: var(--row-icon-color);
 }
 
-.wb-menu-item:hover .wb-menu-item-icon {
-  color: var(--text-primary);
+@media (hover: hover) {
+  .wb-menu-item:hover .wb-menu-item-icon {
+    color: var(--text-primary);
+  }
 }
 
 .wb-menu-item-text {
@@ -1578,9 +1606,11 @@ html:has(.wb-tabbar) .wb-modal-overlay--screen {
   cursor: pointer;
 }
 
-.wb-tools-search-clear:hover {
-  background: var(--surface-hover);
-  color: var(--text-primary);
+@media (hover: hover) {
+  .wb-tools-search-clear:hover {
+    background: var(--surface-hover);
+    color: var(--text-primary);
+  }
 }
 
 .wb-tools-search-icon {
@@ -1665,8 +1695,10 @@ html:has(.wb-tabbar) .wb-modal-overlay--screen {
   color: var(--text-primary);
 }
 
-.wb-chip.wb-tools-chip:hover {
-  background: var(--surface-hover);
+@media (hover: hover) {
+  .wb-chip.wb-tools-chip:hover {
+    background: var(--surface-hover);
+  }
 }
 
 /* Довгий пошуковий запит не розтягує смугу: чип показує початок, а повний
@@ -1749,8 +1781,10 @@ html:has(.wb-tabbar) .wb-modal-overlay--screen {
   transition: background var(--duration-fast) var(--ease);
 }
 
-.wb-note-card:hover {
-  background: var(--surface-hover);
+@media (hover: hover) {
+  .wb-note-card:hover {
+    background: var(--surface-hover);
+  }
 }
 
 /* Рядок 1. Текст забирає вільне місце й обрізається однією лінією, а дата з
@@ -1974,8 +2008,10 @@ html:has(.wb-tabbar) .wb-modal-overlay--screen {
   transition: background var(--duration-fast) var(--ease);
 }
 
-.wb-table tbody tr:hover {
-  background: var(--surface-hover);
+@media (hover: hover) {
+  .wb-table tbody tr:hover {
+    background: var(--surface-hover);
+  }
 }
 
 /* ── Data table (complex: sticky, sort, select) ────────────────────────── */
@@ -2031,8 +2067,10 @@ html:has(.wb-tabbar) .wb-modal-overlay--screen {
   transition: background var(--duration-fast) var(--ease);
 }
 
-.wb-data-table tbody tr:hover {
-  background: var(--surface-hover);
+@media (hover: hover) {
+  .wb-data-table tbody tr:hover {
+    background: var(--surface-hover);
+  }
 }
 
 .wb-data-table tbody tr.selected {
@@ -2186,8 +2224,10 @@ button.wb-chip {
   opacity: 0.6;
 }
 
-.wb-tag-remove:hover {
-  opacity: 1;
+@media (hover: hover) {
+  .wb-tag-remove:hover {
+    opacity: 1;
+  }
 }
 
 .wb-tag-suggestions {
@@ -2354,9 +2394,11 @@ button.wb-chip {
   border: 1px solid var(--accent);
 }
 
-.wb-save-actions-btn--primary:hover:not(:disabled) {
-  background: var(--accent-hover);
-  border-color: var(--accent-hover);
+@media (hover: hover) {
+  .wb-save-actions-btn--primary:hover:not(:disabled) {
+    background: var(--accent-hover);
+    border-color: var(--accent-hover);
+  }
 }
 
 .wb-save-actions-btn--secondary {
@@ -2365,9 +2407,11 @@ button.wb-chip {
   border: 1px solid var(--border);
 }
 
-.wb-save-actions-btn--secondary:hover:not(:disabled) {
-  background: var(--surface-hover);
-  border-color: var(--border-hover);
+@media (hover: hover) {
+  .wb-save-actions-btn--secondary:hover:not(:disabled) {
+    background: var(--surface-hover);
+    border-color: var(--border-hover);
+  }
 }
 
 .wb-save-actions-btn--close {
@@ -2376,9 +2420,11 @@ button.wb-chip {
   border: 1px solid var(--border);
 }
 
-.wb-save-actions-btn--close:hover:not(:disabled) {
-  background: var(--surface-hover);
-  color: var(--text-primary);
+@media (hover: hover) {
+  .wb-save-actions-btn--close:hover:not(:disabled) {
+    background: var(--surface-hover);
+    color: var(--text-primary);
+  }
 }
 
 .wb-save-actions-btn--saved {

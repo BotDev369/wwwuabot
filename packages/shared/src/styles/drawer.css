@@ -64,9 +64,11 @@
   background: currentColor;
 }
 
-.hamburger:hover {
-  background: var(--bg-4);
-  color: var(--text-primary);
+@media (hover: hover) {
+  .hamburger:hover {
+    background: var(--bg-4);
+    color: var(--text-primary);
+  }
 }
 
 .hamburger:active {

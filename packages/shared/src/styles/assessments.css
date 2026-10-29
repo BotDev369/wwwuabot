@@ -212,8 +212,10 @@
   cursor: pointer;
 }
 
-.wb-scale-btn:hover {
-  background: var(--surface-hover);
+@media (hover: hover) {
+  .wb-scale-btn:hover {
+    background: var(--surface-hover);
+  }
 }
 
 .wb-scale-btn--active {

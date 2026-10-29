@@ -82,6 +82,10 @@ export function TrackersLibraryPanel({
         value={query}
         placeholder="Пошук"
         aria-label="Пошук трекера"
+        enterKeyHint="search"
+        autoComplete="off"
+        autoCorrect="off"
+        spellCheck={false}
         onChange={(event) => setQuery(event.target.value)}
       />
 
