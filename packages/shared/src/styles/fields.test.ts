@@ -130,3 +130,38 @@ describe("поля вводу: шрифт не менший за 16px", () => {
     }
   });
 });
+
+/** Тіло правила з файлу стилів: селектор шукається як початок рядка. */
+function styleRule(name: string, selector: string): string {
+  const source = read(`packages/shared/src/styles/${name}`);
+  const start = source.indexOf(`\n${selector}`);
+  expect(start, `правило ${selector} у ${name} має існувати`).toBeGreaterThan(-1);
+  const open = source.indexOf("{", start);
+  return source.slice(open, source.indexOf("\n}", open));
+}
+
+describe("поля вводу: мірки — токен, а бренд лише змінює його значення", () => {
+  it("токени відступів оголошені в tokens.css", () => {
+    const tokens = read("packages/shared/src/styles/tokens.css");
+    for (const token of ["--field-pad-y", "--field-pad-x"]) {
+      expect(tokens, token).toContain(`${token}:`);
+    }
+  });
+
+  it("кирпичик поля бере відступи з токенів", () => {
+    // Поки Android писав `padding: 12px 16px !important` у свого `.wb-input`,
+    // будь-яке зменшення в спільному кирпичику не діяло зовсім: поле на одному
+    // екрані було 8×12, на іншому — 12×16.
+    expect(styleRule("components.css", ".wb-input,\n.wb-select,\n.wb-textarea")).toContain(
+      "padding: var(--field-pad-y) var(--field-pad-x)",
+    );
+  });
+
+  it("бренд задає мірки токеном, а не `padding` у правилі контрола", () => {
+    const brand = read("packages/shared/src/styles/android.css");
+    expect(brand).toContain("--field-pad-y: 12px;");
+    expect(brand).toContain("--field-pad-x: 16px;");
+    const body = styleRule("android.css", 'html[data-brand="android"] .wb-input,');
+    expect(body, "мірки поля — токен, а не !important").not.toContain("padding");
+  });
+});

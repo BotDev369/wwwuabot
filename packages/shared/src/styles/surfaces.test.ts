@@ -49,6 +49,7 @@ describe("токени картки й заголовків", () => {
       "--card-radius",
       "--card-pad",
       "--card-gap",
+      "--card-shadow",
       "--heading-section-size",
       "--heading-section-weight",
       "--heading-card-size",
@@ -91,6 +92,25 @@ describe("картка бере мірки токенами", () => {
         expect(body, `${selector}: ${fragment}`).toContain(fragment);
     });
   }
+
+  it("бренд задає картку токенами, а не `!important` у її правилі", () => {
+    // Поки тло, радіус і тінь картки стояли в `android.css` з `!important`,
+    // будь-яка правка `components.css` була невидимою, а новий екран із
+    // власним `box-shadow` отримував іншу картку. Тепер бренд міняє значення
+    // токена — правило картки лишається одне.
+    const brand = css("android.css");
+    for (const fragment of [
+      "--card-bg: #ecedf0;",
+      "--card-radius: var(--radius-xl);",
+      "--card-shadow: none;",
+    ]) {
+      expect(brand, fragment).toContain(fragment);
+    }
+    expect(brand, "правило самої картки належить components.css").not.toMatch(
+      /\nhtml\[data-brand="android"\][^{]*\.wb-card\s*\{[^}]*!important/,
+    );
+    expect(rule(css("components.css"), ".wb-card")).toContain("box-shadow: var(--card-shadow)");
+  });
 
   it("картка не малює рамки — місце відділяє поверхня (правило 15)", () => {
     for (const selector of [".wb-test-card", ".wb-combined"]) {
