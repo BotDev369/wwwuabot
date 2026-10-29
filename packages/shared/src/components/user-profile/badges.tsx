@@ -16,8 +16,9 @@ export const ico = (name: IconName, size = 16) => (
 );
 
 /**
- * Кольори бейджів — токени теми, а не hex: інакше `data-brand` і `data-theme`
- * до картки не доходять. `fallback` — для невідомих значень із бази.
+ * Кольори бейджів — токени теми, а не hex: інакше `data-theme` до картки не
+ * доходить, і бейдж лишається однаковим у світлій і темній схемі. `fallback` —
+ * для невідомих значень із бази.
  */
 const NEUTRAL = { bg: "var(--surface-active)", color: "var(--text-secondary)" };
 

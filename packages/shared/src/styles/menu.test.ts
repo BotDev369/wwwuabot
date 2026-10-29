@@ -238,35 +238,22 @@ describe("меню: повноекранна поверхня, перемика�
     expect(btn?.body).toContain("flex: 1 0 auto");
     expect(btn?.body).toContain("min-width: 0");
 
-    // А висоту вкладка бере в бренду, а не тримає власну: друга цифра тут
-    // завела б третю мірку того самого контрола.
-    expect(btn?.body).not.toContain("min-height");
+    // А висоту вкладка бере токеном смуги: друга цифра тут завела б третю
+    // мірку того самого контрола.
+    expect(btn?.body).toContain("min-height: var(--tabs-h)");
   });
 
-  it("компактна вкладка — рішення стилю, і число в нього одне", () => {
-    // Висоту контрола в цьому продукті задає стиль (`!important` перекриває
-    // спільний шар — див. `buttons.test.ts`), тож компактність вкладки мусить
-    // бути саме там. Друга цифра замість токена `--tabs-h` розійшлася б із
-    // першою: смуга вкладок однакова в усьому застосунку.
-    for (const brand of ["android"] as const) {
-      const css = readFileSync(
-        join(REPO_ROOT, `packages/shared/src/styles/${brand}.css`),
-        "utf8",
-      ).replace(/\/\*[\s\S]*?\*\//g, "");
-      const branded = [...css.matchAll(/([^{}]+)\{([^{}]*)\}/g)]
-        .map(([, selector, body]) => ({ selector: selector.replace(/\s+/g, " ").trim(), body }))
-        .find((entry) => entry.selector.endsWith(".wb-tabs-btn"));
-
-      expect(branded, `${brand}: правило про вкладку мусить існувати`).toBeDefined();
-      expect(branded?.body, brand).toContain("min-height: var(--tabs-h) !important");
-      expect(branded?.body, brand).not.toMatch(/min-height:\s*\d+px/);
-    }
+  it("компактна вкладка — число одне, і воно токен", () => {
+    // Компактність вкладки — це `--tabs-h` зі самої смуги. Літерал у правилі
+    // розійшовся б із нею: смуга вкладок однакова в усьому застосунку.
+    const btn = rule(".wb-tabs-btn");
+    expect(btn?.body, "вкладка не має тримати власне число").not.toMatch(/min-height:\s*\d+px/);
   });
 
   it("вкладка бере вигляд у кирпичика кнопки, а не малює свій", () => {
-    // Форму задає стиль (`android.css` — 20px). Власний
-    // `border-radius` у `.wb-tabs-btn` робив би вкладки прямокутними —
-    // так і було, хоч кнопки в тій самій панелі овальні.
+    // Форму задає кирпичик кнопки (`--btn-radius`). Власний `border-radius`
+    // у `.wb-tabs-btn` робив би вкладки прямокутними — так і було, хоч кнопки
+    // в тій самій панелі овальні.
     const btn = rule(".wb-tabs-btn");
     for (const own of ["border-radius", "background", "padding", "font-size"]) {
       expect(btn?.body, `вкладка не має задавати ${own} сама`).not.toContain(own);

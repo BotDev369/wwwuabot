@@ -33,6 +33,9 @@ body {
   font-family: var(--font-ui);
   font-size: var(--text-base);
   line-height: var(--leading-normal);
+  /* Трекінг — частина типографіки продукту, а не «набірниками»: без нього
+     дрібний текст на телефоні злипається, а з ним сторінки читаються однаково. */
+  letter-spacing: 0.015em;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
@@ -100,8 +103,8 @@ table {
 }
 
 ::-webkit-scrollbar {
-  width: 6px;
-  height: 6px;
+  width: 4px;
+  height: 4px;
 }
 
 ::-webkit-scrollbar-track {
@@ -110,7 +113,7 @@ table {
 
 ::-webkit-scrollbar-thumb {
   background: var(--text-muted);
-  border-radius: var(--radius-full);
+  border-radius: var(--radius-xs);
 }
 
 ::-webkit-scrollbar-thumb:hover {
@@ -118,6 +121,6 @@ table {
 }
 
 ::selection {
-  background: var(--accent-dim);
+  background: var(--selection-bg);
   color: var(--accent-hover);
 }

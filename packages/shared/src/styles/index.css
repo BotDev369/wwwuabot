@@ -8,19 +8,19 @@
  * Usage in any worker:
  *   import "@wwwuabot/shared/styles/index.css";
  *
- * Стиль продукту — один:
- *   android.css       — Material Design 3 (data-brand="android")
+ * Стиль продукту — ОДИН: `tokens.css` (світла схема й мірки), `themes.css`
+ * (темна схема), `reset.css` + `components.css` (кирпичики). Шару «бренду»
+ * немає — тому й атрибута вибору стилю немає.
  *
- * Apply via HTML attributes:
- *   <html data-brand="android">   — стиль продукту (не вибір)
- *   <html data-theme="light|dark"> — color scheme
+ * Apply via HTML attribute:
+ *   <html data-theme="light|dark"> — схема (ставить `shared/app/initTheme.ts`)
  */
 
 /* ═══════════════════════════════════════════════════════════════════════════
  * IMPORT ORDER MATTERS:
  * 1. Open Props tokens (via :where(html) — zero specificity)
  * 2. Our design tokens + themes (via :root — override Tailwind's @layer theme)
- * 3. Style CSS (via [data-brand] — highest specificity, overrides everything)
+ * 3. Reset + component classes (кирпичики, без `!important`)
  *
  * IMPORTANT: Tailwind MUST be imported AFTER this file in each app's
  * index.css, so that our @layer theme variables override Tailwind's.
@@ -44,14 +44,11 @@
 @import "./tokens.css";
 @import "./themes.css";
 
-/* ── Стиль продукту (селектори [data-brand]) ── */
-@import "./android.css";
-
 /* ── Три кольори користувача ──────────────────────────────────────────────
    Палітра, виведена з `--user-bg` / `--user-text` / `--user-accent`, які
-   ставить `applyColors()` (`styles/user-colors.ts`). Імпорт ПІСЛЯ стилю:
-   селектор тут — `html[data-colors][data-colors-mode=…]`, тож бренд і схема
-   його не перекривають (див. шапку файлу). */
+   ставить `applyColors()` (`styles/user-colors.ts`). Імпорт ПІСЛЯ токенів:
+   селектор тут — `html[data-colors][data-colors-mode=…]` (0,2,1), тож схема
+   (`[data-theme]` — 0,1,0) його не перекриває. */
 @import "./user-colors.css";
 
 /* ── Reset + component classes ── */

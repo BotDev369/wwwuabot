@@ -180,24 +180,20 @@
 
 /* ── Кнопки всередині партії ─────────────────────────────────────────────── */
 
-/* `!important` тут не недбалість, а єдиний спосіб: **бренд** (Apple і Material)
-   перекриває кнопки своїм шаром із `!important` (`apple.css`, `android.css`),
-   бо саме він задає радіус, висоту й вагу кнопки. Тому перебити його може
-   лише вищий за специфічністю `!important` — інакше в партії лишається
-   синя «Спочатку» й чорна «Спробувати» з теми застосунку (так було видно на
-   скрінах). */
-html[data-brand] .wb-game .wb-btn {
-  background: var(--game-field) !important;
-  color: var(--game-ink) !important;
-  box-shadow: none !important;
+/* Кнопки партії живуть у палітрі гри, а не в палітрі застосунку: селектор
+   довший за кирпичик кнопки, тож жодного `!important` тут не потрібно. */
+.wb-game .wb-btn {
+  background: var(--game-field);
+  color: var(--game-ink);
+  box-shadow: none;
 }
 
 /* Головна дія партії — акцентом гри: світла поверхня як колір тексту дає
    контраст без жодного нового токена. */
-html[data-brand] .wb-game .wb-btn-primary {
-  background: var(--game-accent) !important;
-  border-color: transparent !important;
-  color: var(--game-surface) !important;
+.wb-game .wb-btn-primary {
+  background: var(--game-accent);
+  border-color: transparent;
+  color: var(--game-surface);
 }
 
 /* ── Палітри ігор ──────────────────────────────────────────────────────────

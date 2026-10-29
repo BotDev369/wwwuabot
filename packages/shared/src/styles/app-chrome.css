@@ -63,6 +63,12 @@
   /* фолбек для рушіїв без `color-mix()` — той самий колір, лише непрозорий */
   background: var(--chrome-header-bg) !important;
   background: color-mix(in srgb, var(--chrome-header-bg) 91%, transparent) !important;
+  /* Обвідки й тіні немає: контур сам по собі малює шов між шапкою Telegram і
+     нашою — навіть тоді, коли кольори вже збігаються. */
+  border-bottom: none;
+  box-shadow: none;
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
 }
 
 .wb-tabbar {
@@ -230,11 +236,13 @@
   display: inline-flex;
   align-items: center;
   gap: var(--sp-1);
-  padding: var(--sp-1) var(--sp-3);
+  padding: 10px 16px;
   background: var(--surface-hover);
-  border-radius: var(--radius);
-  color: var(--text-muted);
-  font-size: var(--text-xs);
+  border: none;
+  border-radius: var(--btn-radius);
+  color: var(--red);
+  font-size: var(--text-base);
+  font-weight: var(--weight-medium);
   cursor: pointer;
   transition:
     background var(--duration-fast) var(--ease),
@@ -258,14 +266,19 @@
    Мірки одні й оголошені в одному місці (`--sidebar-item-h`,
    `--sidebar-pad` — `tokens.css`), а місце сайдбара лишається його власному
    файлові: адмінка — хром застосунку, розділи теми — усередині сторінки.
-   **Бренд сайдбар не переписує**: `apple.css` / `android.css` дають йому поверхню
-   (скло чи плиту), а «тут ти» лишається акцентом — тим самим, що в футері, тож
-   два сайдбари в одному продукті не можуть читатись як два різні стани. */
+   Поверхню сайдбара дають `--sidebar-bg` / `--sidebar-shadow`, а «тут ти»
+   лишається акцентом — тим самим, що в футері, тож два сайдбари в одному
+   продукті не можуть читатись як два різні стани. */
 
 .wb-nav {
   width: var(--sidebar-w);
   min-width: var(--sidebar-w);
-  background: var(--bg-1);
+  /* Плита, а не скло: тло й тінь праворуч відділяють меню від вмісту, а
+     розмиття під ним з'їдало контраст тексту на телефоні. */
+  background: var(--sidebar-bg);
+  box-shadow: var(--sidebar-shadow);
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
   display: flex;
   flex-direction: column;
   overflow: hidden;
@@ -290,9 +303,9 @@
 }
 
 .wb-nav-title {
-  font-size: var(--text-sm);
-  font-weight: var(--weight-bold);
-  letter-spacing: 0.06em;
+  font-size: var(--text-base);
+  font-weight: var(--weight-medium);
+  letter-spacing: 0.01em;
   color: var(--text-primary);
 }
 
@@ -543,7 +556,7 @@
    рядок назавжди лишається під нею (`.wb-tabbar-layout`). У панелі смуги немає
    зовсім: її єдина навігація — сайдбар.
 
-   Висота — одна: `--tab-bar-h` (`--nav-bar-h` бренду + safe-area, tokens.css).
+   Висота — одна: `--tab-bar-h` (`--nav-bar-h` + safe-area, tokens.css).
    Розмітку рендерить спільний `TabBar` з `@wwwuabot/ui/nav`, тому правила
    живуть тут: оболонка додає лише свій склад пунктів. */
 
@@ -706,8 +719,9 @@
   align-items: center;
   gap: var(--sp-2);
   margin: 0;
-  font-size: var(--text-base);
-  font-weight: var(--weight-semibold);
+  font-size: var(--text-md);
+  font-weight: var(--weight-medium);
+  letter-spacing: 0.01em;
   color: var(--text-primary);
 }
 
@@ -826,10 +840,8 @@
    клітинка мусить бути одного зросту із сусідами. Тло має лише вона — акцент у
    ряду означає **дію**, а не ще один вибір, і саме тому в ряду він рівно один.
 
-   Форма — **свій кирпичик, а не `.wb-btn`**: бренди задають кнопці форму й
-   мірку з `!important` (пілюля Apple, M3 20px), і в кола 32×32 довелось би
-   вигравати в них `!important` — те саме, що вже сталось із виходом у смузі
-   поверхні. */
+   Форма — **свій кирпичик, а не `.wb-btn`**: акцентне коло — інший контрол, а
+   не кнопка з іншим кольором, тож і мірки в нього свої (32×32). */
 .wb-tools-add {
   flex: 0 0 auto;
   width: var(--tools-cell);
@@ -907,8 +919,9 @@
   width: 100%;
   max-width: 360px;
   background: var(--bg-1);
-  border-radius: var(--radius-lg);
-  box-shadow: var(--shadow-md);
+  border: none;
+  border-radius: var(--radius-xl);
+  box-shadow: var(--shadow-lg);
   padding: 40px 36px;
   display: flex;
   flex-direction: column;
@@ -967,8 +980,18 @@
 /* Пароль — той самий `.wb-input`, лише моноширинний і розряджений */
 .wb-auth-input {
   padding: 10px 12px;
+  border-radius: var(--radius);
+  /* 16px: менший шрифт змушує iOS сам збільшувати сторінку на фокусі. */
+  font-size: max(16px, 1em);
   font-family: var(--font-mono);
   letter-spacing: 0.1em;
+}
+
+/* Фокус — те саме кільце, що й у решти полів. */
+.wb-auth-input:focus {
+  box-shadow:
+    var(--field-ring),
+    0 0 0 2px var(--accent-soft);
 }
 
 /* Помилка — кільце, а не рамка: у полів її немає (кирпичик «поле вводу»
@@ -996,8 +1019,10 @@
 .wb-auth-submit {
   width: 100%;
   min-height: 44px;
+  padding: 12px 24px;
+  border-radius: var(--btn-radius);
   font-size: var(--text-base);
-  font-weight: var(--weight-semibold);
+  font-weight: var(--weight-medium);
 }
 
 /* ── Екран, а не картка-модалка ───────────────────────────────────────────────
@@ -1100,8 +1125,9 @@
   align-items: center;
   gap: var(--sp-2);
   margin: 0 0 var(--sp-3);
-  font-size: var(--text-md);
-  font-weight: var(--weight-semibold);
+  font-size: var(--text-lg);
+  font-weight: var(--weight-medium);
+  letter-spacing: 0.01em;
 }
 
 .wb-profile-fields {
@@ -1349,9 +1375,8 @@
    галочка вибору зі списку, а стан, який триває, поки його не вимкнуть, — тож
    і вигляд у нього ковзний.
 
-   Форму беремо з бренду (`--radius-full`), а не з власного числа: у Apple
-   перемикачі й кнопки округлені, у Material — заокруглені, і третій варіант
-   зробив би з нього окрему річ у тому самому екрані (§4). */
+   Форму беремо з токена (`--radius-full`), а не з власного числа: третій
+   варіант радіуса зробив би з перемикача окрему річ у тому самому екрані (§4). */
 .wb-switch-group {
   display: flex;
   flex-direction: column;

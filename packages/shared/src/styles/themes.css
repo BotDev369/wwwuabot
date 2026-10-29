@@ -1,173 +1,102 @@
 /*
  * ═══════════════════════════════════════════════════════════════════════════
- * THEMES — Light & Dark (baseline fallback)
+ * THEMES — темна схема
  * ═══════════════════════════════════════════════════════════════════════════
  *
- * This file provides a neutral light/dark baseline.
- * Brand-specific themes (apple.css, android.css) override these
- * via higher-specificity [data-brand] selectors.
+ * Світла схема — це типові значення `tokens.css` (`:root`), і вона тут НЕ
+ * повторюється: поки світла палітра жила двома копіями, правка в одній не
+ * доходила до іншої.
  *
- * Import order in index.css:
- *   1. Open Props tokens
- *   2. tokens.css (base variables)
- *   3. themes.css (light/dark baseline)
- *   4. apple.css (brand overrides)
- *   5. android.css (brand overrides)
- *   6. reset.css
- *   7. components.css
+ * Темна — не «інший стиль», а та сама: ті самі ролі кольору, лише інші
+ * значення (M3 dark surface containers). Перемикає її рівно один атрибут —
+ * `data-theme="dark"` на `<html>` (ставить `shared/app/initTheme.ts`).
+ *
+ * «Системної» схеми немає: світлоту виводить вибір кольорів людини
+ * (`shared/styles/user-colors`), тож `prefers-color-scheme` тут не читається.
  */
 
-/* ── Light theme (default) ───────────────────────────────────────────── */
-:root,
-[data-theme="light"] {
-  --bg-home: radial-gradient(120% 90% at 12% 0%, #ffffff 0%, var(--bg-2) 55%, var(--bg-0) 100%);
-  --bg-0: #f0f2f5;
-  --bg-1: var(--bg-home, #f0f2f5);
-  --bg-2: #f8f9fa;
-  --bg-3: #e8ecf2;
-  --bg-4: #f0f2f5;
-
-  --border: #dde1e7;
-  --border-subtle: #eaecef;
-
-  --text-primary: #111827;
-  --text-secondary: #6b7280;
-  --text-muted: #9ca3af;
-  --text-inverse: #ffffff;
-
-  --accent: #2563eb;
-  --accent-dim: #dbeafe;
-  --accent-hover: #1d4ed8;
-  --accent-soft: rgba(37, 99, 235, 0.08);
-
-  --green: #16a34a;
-  --green-dim: #dcfce7;
-  --red: #dc2626;
-  --red-dim: #fee2e2;
-  --yellow: #ca8a04;
-  --yellow-dim: #fef9c3;
-
-  --surface: var(--bg-home, #f0f2f5);
-  --surface-hover: #eaecef;
-  --surface-active: #dde1e7;
-  --surface-overlay: rgba(0, 0, 0, 0.4);
-
-  /* ── Поле вводу ──────────────────────────────────────────────────────────
-     Межі поля малює не лінія, а сам колір і м'яка тінь по краях: `--field-bg`
-     трохи відрізняється від тла поверхні (у світлій схемі — темніший,
-     у темній — світліший), `--field-ring` окреслює краї розмиттям.
-     Це ОДИН кирпичик на всі поля продукту — правило — у `components.css`,
-     у блоці «поле вводу». */
-  --field-bg: var(--bg-3);
-  /* Поле, яке мусить читатись як місце для вводу на тлі картки: біле, а не
-     сіре тло поверхні (`TRACKERS.md`, швидкий запис). */
-  --field-bg-raised: #ffffff;
-  --field-ring: 0 1px 2px rgba(15, 23, 42, 0.05), 0 2px 6px rgba(15, 23, 42, 0.04);
-
-  --shadow-xs: 0 1px 2px rgba(0, 0, 0, 0.05);
-  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.1), 0 1px 2px rgba(0, 0, 0, 0.06);
-  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.1);
-  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -4px rgba(0, 0, 0, 0.1);
-
-  color-scheme: light;
-}
-
-/* ── Dark theme ──────────────────────────────────────────────────────── */
 [data-theme="dark"] {
+  /* ── Тло: M3 dark surface containers ─────────────────────────────────── */
   --bg-home: radial-gradient(
     120% 90% at 12% 0%,
     var(--surface) 0%,
     var(--bg-2) 55%,
     var(--bg-0) 100%
   );
-  --bg-0: #0f1117;
-  --bg-1: #1a1d27;
-  --bg-2: #22262f;
-  --bg-3: #1e222b;
-  --bg-4: #282c35;
+  --bg-0: #0f1013; /* surface-container-lowest */
+  --bg-1: #1b1b1f; /* surface */
+  --bg-2: #202024; /* surface-container-low */
+  --bg-3: #2a2a2e; /* surface-container */
+  --bg-4: #353538; /* surface-container-high */
 
-  --border: #2e3340;
-  --border-subtle: #252933;
+  /* ── Межі ─────────────────────────────────────────────────────────────── */
+  --border: #44464f;
+  --border-subtle: #38383d;
 
-  --text-primary: #f0f2f5;
-  --text-secondary: #9ca3af;
-  --text-muted: #6b7280;
-  --text-inverse: #111827;
+  /* ── Текст ────────────────────────────────────────────────────────────── */
+  --text-primary: #e3e2e6;
+  --text-secondary: #c7c5d0;
+  --text-muted: #90909a;
+  --text-inverse: #1b1b1f;
 
-  --accent: #60a5fa;
-  --accent-dim: rgba(96, 165, 250, 0.15);
-  --accent-hover: #93bbfd;
-  --accent-soft: rgba(96, 165, 250, 0.08);
+  /* ── Акцент ───────────────────────────────────────────────────────────── */
+  --accent: #e3e2e6;
+  --accent-dim: rgba(227, 226, 230, 0.1);
+  --accent-hover: #ffffff;
+  --accent-soft: rgba(227, 226, 230, 0.08);
 
-  --green: #4ade80;
-  --green-dim: rgba(74, 222, 128, 0.15);
-  --red: #f87171;
-  --red-dim: rgba(248, 113, 113, 0.15);
-  --yellow: #facc15;
-  --yellow-dim: rgba(250, 204, 21, 0.15);
+  /* ── Статусні кольори ─────────────────────────────────────────────────── */
+  --green: #7bda90;
+  --green-dim: rgba(123, 218, 144, 0.12);
+  --red: #ffb4ab;
+  --red-dim: rgba(255, 180, 171, 0.12);
+  --yellow: #ddb948;
+  --yellow-dim: rgba(221, 185, 72, 0.12);
 
-  --surface: #1a1d27;
-  --surface-hover: #22262f;
-  --surface-active: #282c35;
+  /* ── Поверхні ─────────────────────────────────────────────────────────── */
+  --surface: #1b1b1f;
+  --surface-hover: #2a2a2e;
+  --surface-active: #353538;
   --surface-overlay: rgba(0, 0, 0, 0.6);
+  --selection-bg: rgba(227, 226, 230, 0.2);
 
-  /* Поле — світліше за поверхню (у темній схемі тінь країв не видно, тож
+  /* Модалка — на сходинку вище за поверхню екрана (M3 surface-container):
+     інакше вона того самого кольору, що й тло під скримом, і губиться. Поле
+     всередині (`--field-bg` = `--bg-4`) лишається ще вищим за неї. */
+  --surface-modal: var(--bg-3);
+
+  /* Картка — та сама «заповнена поверхня», що й у світлій схемі, лише на
+     сходинку вище за тло екрана. */
+  --card-bg: #26262a;
+
+  /* Сайдбар — плита на сходинку вище за тло, з глибшою тінню. */
+  --sidebar-bg: #16161a;
+  --sidebar-shadow: 4px 0 16px rgba(0, 0, 0, 0.4);
+
+  /* ── Поле вводу ─────────────────────────────────────────────────────────
+     Поле — світліше за поверхню (у темній схемі тінь країв не видно, тож
      межі тримає сам колір, а тінь дає об'єм). */
   --field-bg: var(--bg-4);
   --field-bg-raised: #343a46;
   --field-ring: 0 1px 2px rgba(0, 0, 0, 0.45), 0 2px 6px rgba(0, 0, 0, 0.3);
 
-  --shadow-xs: 0 1px 2px rgba(0, 0, 0, 0.2);
-  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.3), 0 1px 2px rgba(0, 0, 0, 0.2);
-  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.3), 0 2px 4px -2px rgba(0, 0, 0, 0.2);
-  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.3), 0 4px 6px -4px rgba(0, 0, 0, 0.2);
+  /* ── Нативний хром Telegram ──────────────────────────────────────────────
+     Плоска форма --bg-1: шапка клієнта і смуга під футером зливаються з
+     нашою шапкою й футером без шва. */
+  --chrome-header-bg: #1b1b1f;
+  --chrome-bottom-bg: #1b1b1f;
+
+  /* ── Підняття й тіні: у темній схемі глибші ───────────────────────────── */
+  --shadow-xs: 0 1px 2px rgba(0, 0, 0, 0.45);
+  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.5), 0 1px 2px rgba(0, 0, 0, 0.4);
+  --shadow-md: 0 2px 6px rgba(0, 0, 0, 0.5), 0 1px 2px rgba(0, 0, 0, 0.4);
+  --shadow-lg: 0 4px 8px rgba(0, 0, 0, 0.5), 0 2px 4px rgba(0, 0, 0, 0.4);
+  --shadow-xl: 0 6px 10px rgba(0, 0, 0, 0.5), 0 2px 3px rgba(0, 0, 0, 0.4);
+
+  --elevation-0: none;
+  --elevation-1: 0 1px 3px rgba(0, 0, 0, 0.4);
+  --elevation-2: 0 2px 6px rgba(0, 0, 0, 0.5);
+  --elevation-3: 0 4px 8px rgba(0, 0, 0, 0.5);
 
   color-scheme: dark;
-}
-
-/* ── Auto theme (follows OS preference, fallback when no data-theme set) */
-@media (prefers-color-scheme: dark) {
-  :root:not([data-theme="light"]) {
-    --bg-0: #0f1117;
-    --bg-1: #1a1d27;
-    --bg-2: #22262f;
-    --bg-3: #1e222b;
-    --bg-4: #282c35;
-
-    --border: #2e3340;
-    --border-subtle: #252933;
-
-    --text-primary: #f0f2f5;
-    --text-secondary: #9ca3af;
-    --text-muted: #6b7280;
-    --text-inverse: #111827;
-
-    --accent: #60a5fa;
-    --accent-dim: rgba(96, 165, 250, 0.15);
-    --accent-hover: #93bbfd;
-    --accent-soft: rgba(96, 165, 250, 0.08);
-
-    --green: #4ade80;
-    --green-dim: rgba(74, 222, 128, 0.15);
-    --red: #f87171;
-    --red-dim: rgba(248, 113, 113, 0.15);
-    --yellow: #facc15;
-    --yellow-dim: rgba(250, 204, 21, 0.15);
-
-    --surface: #1a1d27;
-    --surface-hover: #22262f;
-    --surface-active: #282c35;
-    --surface-overlay: rgba(0, 0, 0, 0.6);
-
-    --field-bg: var(--bg-4);
-    --field-bg-raised: #343a46;
-    --field-ring: 0 1px 2px rgba(0, 0, 0, 0.45), 0 2px 6px rgba(0, 0, 0, 0.3);
-
-    --shadow-xs: 0 1px 2px rgba(0, 0, 0, 0.2);
-    --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.3), 0 1px 2px rgba(0, 0, 0, 0.2);
-    --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.3), 0 2px 4px -2px rgba(0, 0, 0, 0.2);
-    --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.3), 0 4px 6px -4px rgba(0, 0, 0, 0.2);
-
-    color-scheme: dark;
-  }
 }

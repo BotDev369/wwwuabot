@@ -60,17 +60,19 @@ describe("рядок списку стає карткою", () => {
     expect(group(phone, ".wb-date-row"), ".wb-date-row").toContain("display: block");
   });
 
-  it("комірка перебиває бренд-відступи своїм `padding`, а не тільки довшим селектором", () => {
-    // `android.css` дає `.wb-table td` відступи `12px 16px !important`, тож без
-    // `!important` тут картка знову стає таблицею.
+  it("комірка бере свої береги довшим селектором, а не `!important`", () => {
+    // Мірки `td` належать таблиці; картка стає карткою тому, що її селектор
+    // довший — війни `!important` у проєкті немає.
     const cell = rule(phone, ".wb-date-list .wb-table td.wb-date-cell");
     expect(cell).toContain("display: flex");
-    expect(cell).toContain("padding: 2px 0 !important");
+    expect(cell).toContain("padding: 2px 0");
+    expect(cell, "комірка картки — без `!important`").not.toContain("!important");
   });
 
-  it("назва картки більша за поля й перебиває бренд-розмір `td`", () => {
+  it("назва картки більша за поля — токеном, без `!important`", () => {
     const name = rule(phone, ".wb-date-list .wb-table td.wb-date-cell--name");
-    expect(name).toContain("font-size: var(--text-md) !important");
+    expect(name).toContain("font-size: var(--text-md)");
+    expect(name).not.toContain("!important");
   });
 
   it("зебра таблиці не фарбує картку: тло лишається за вибраним рядком", () => {
@@ -117,7 +119,7 @@ describe("картка — акордеон", () => {
       "padding: var(--sp-1) var(--sp-2) var(--sp-1) var(--sp-3)",
     );
     expect(rule(phone, ".wb-date-list .wb-table td.wb-date-cell--name")).toContain(
-      "padding: 0 52px 0 0 !important",
+      "padding: 0 52px 0 0",
     );
   });
 

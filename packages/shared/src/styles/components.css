@@ -9,21 +9,20 @@
  * Naming convention: .wb-* (wwwuabot) to avoid conflicts with Tailwind/etc.
  */
 
-/* ── Button ──────────────────────────────────────────────────────────────── */
-
-/* Мірки кнопки — токени (`--btn-pad-y` / `--btn-pad-x`), бо це те саме
-   значення, яке задає бренд: Apple і Android роблять кнопку своєю шириною
-   і щільністю, а не переписують правило. */
+/* ── Button ──────────────────────────────────────────────────────────────── */ /* Мірки кнопки — токени (`--btn-pad-*`, `--btn-radius`): одна міра на продукт,
+   а не «своя ширина» в кожного екрана. */
 .wb-btn {
   display: inline-flex;
   align-items: center;
   justify-content: center;
   gap: var(--sp-2);
   padding: var(--btn-pad-y) var(--btn-pad-x);
-  font-size: var(--text-sm);
+  font-size: var(--text-base);
   font-weight: var(--weight-medium);
+  letter-spacing: 0.01em;
   line-height: 1;
-  border-radius: var(--radius);
+  border-radius: var(--btn-radius);
+  box-shadow: var(--shadow-xs);
   transition: all var(--duration) var(--ease);
   white-space: nowrap;
   user-select: none;
@@ -31,7 +30,8 @@
 }
 
 .wb-btn:active {
-  transform: scale(0.97);
+  transform: scale(0.98);
+  box-shadow: none;
 }
 
 /* Primary */
@@ -39,11 +39,12 @@
   background: var(--accent);
   color: var(--text-inverse);
   border-color: var(--accent);
+  box-shadow: var(--shadow-sm);
 }
 
 /* Secondary — залита поверхня, без контуру: її видно тлом (правило 15) */
 .wb-btn-secondary {
-  background: var(--surface-hover);
+  background: var(--surface-active);
   color: var(--text-primary);
 }
 
@@ -69,6 +70,7 @@
   .wb-btn-primary:hover {
     background: var(--accent-hover);
     border-color: var(--accent-hover);
+    box-shadow: var(--shadow-md);
   }
 
   .wb-btn-secondary:hover {
@@ -100,7 +102,7 @@
  * «не працює» без жодної видимої причини.
  *
  * Стеля 44px — та сама, що в `buttons.test.ts` (`MAX_MIN_HEIGHT_PX`), тож
- * бренд, який захоче зробити кнопку ще вищою на дотику, гейт зупинить.
+ * екран, який захоче зробити кнопку ще вищою на дотику, гейт зупинить.
  */
 @media (hover: none) {
   .wb-btn {
@@ -112,8 +114,7 @@
 
 /* Кола фону й межі полів задає кирпичик «поле вводу» нижче — тут лишаються
    мірки самого контрола, щоб колір поля не був написаний двічі. Мірки —
-   токени `--field-pad-*`: бренд задає їх своїм характером (Android — 12×16),
-   а не переписує `padding` цього правила через `!important`. */
+   токени `--field-pad-*`: міра живе в токені, а не в цьому правилі. */
 .wb-input,
 .wb-select,
 .wb-textarea {
@@ -136,7 +137,7 @@
 .wb-textarea:focus {
   box-shadow:
     var(--field-ring),
-    0 0 0 3px var(--accent-soft);
+    0 0 0 2px var(--accent-soft);
 }
 
 .wb-input::placeholder,
@@ -207,7 +208,9 @@
    відступами підпис шапки й текст тіла стояли на різних лініях. */
 .wb-card-header {
   padding: var(--card-pad);
-  font-weight: var(--weight-semibold);
+  font-size: var(--text-lg);
+  font-weight: var(--weight-medium);
+  letter-spacing: 0.01em;
   display: flex;
   align-items: center;
   gap: var(--card-gap);
@@ -230,7 +233,7 @@
 .wb-modal-overlay {
   position: fixed;
   inset: 0;
-  background: var(--surface-overlay);
+  background: var(--modal-scrim);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -249,7 +252,7 @@
   /* Піднята поверхня, а не та сама, що картка: у темній схемі скрим гасить
      тло екрана, і вікно того самого кольору читалось як порожнє місце. */
   background: var(--surface-modal, var(--surface));
-  border-radius: var(--radius-lg);
+  border-radius: var(--radius-xl);
   /* Край вікна тримає тонке кільце, а не сама тінь: на темній поверхні тінь
      зливається з плівкою, і вікно читається як пляма без межі. Це межа
      поверхні, а не розділювач усередині неї (правило 15). */
@@ -284,8 +287,9 @@
    виносила його за край аркуша. */
 .wb-modal-title {
   min-width: 0;
-  font-size: var(--text-md);
-  font-weight: var(--weight-semibold);
+  font-size: var(--text-xl);
+  font-weight: var(--weight-medium);
+  letter-spacing: 0;
   overflow-wrap: break-word;
 }
 
@@ -775,10 +779,9 @@ html:has(.wb-tabbar) .wb-modal-overlay--screen {
 }
 
 /* ── Поля композера ─────────────────────────────────────────────────────────
-   Це ВЛАСНІ поля, а не `.wb-input`/`.wb-textarea`. Причина не в смаку: у
-   брендових темах (`apple.css` / `android.css`) ті класи примусово отримують
-   рамку, радіус і відступи через `!important`, тож перебити їх з `components.css`
-   можна було б лише власним `!important` — а воєн на `!important` тут немає.
+   Це ВЛАСНІ поля, а не `.wb-input`/`.wb-textarea`: у композері вони пласкі за
+   рішенням (правило 13), тож мають свою розкладку — решта полів бере поверхню
+   з кирпичика.
    У композері поля пласкі за рішенням (див. `DESIGN_SYSTEM.md`, правило 13),
    і саме тому вони — окремий кирпичик.
 
@@ -852,11 +855,10 @@ html:has(.wb-tabbar) .wb-modal-overlay--screen {
    однаково всюди, а не «схоже».
 
    Чому `border: 0` тут узагалі згадано: раніше колір поля задавався в
-   кожного свого класу окремо, а брендові теми додавали рамку через
-   `!important` — тож поле було або з лінією, або невидиме. Тепер рамки немає
-   ніде, а значення кольору — у токенах `--field-bg` / `--field-ring`
-   (схема світла/темна — `themes.css`), які бренд може перекрити лише
-   свідомо, а не випадково (див. `DESIGN_SYSTEM.md`, правило 13). */
+   кожного свого класу окремо, а рамка приходила з іншого шару — тож поле було
+   або з лінією, або невидиме. Тепер рамки немає ніде, а значення кольору — у
+   токенах `--field-bg` / `--field-ring` (схема світла/темна — `themes.css`;
+   див. `DESIGN_SYSTEM.md`, правило 13). */
 .wb-input,
 .wb-select,
 .wb-textarea,
@@ -874,9 +876,8 @@ html:has(.wb-tabbar) .wb-modal-overlay--screen {
    того не робить взагалі, тому й здається, що там усе гаразд.
 
    `max(16px, 1em)` — це «не менше 16px, але не дрібніше за тему»: `1em` у
-   `font-size` — розмір батька, тож бренд із більшим шрифтом (Apple — 17px)
-   зберігає свій розмір. Бренд може задати й своє значення — але не менше 16px:
-   саме тому в `android.css` ті самі поля теж 16px, а не 14px.
+   `font-size` — розмір батька, тож екран із більшим шрифтом зберігає свій
+   розмір. Своє значення задати можна — але не менше 16px.
 
    Межа стоїть саме ТУТ, а не одним списком на всі поля: власні поля композера
    задають свій `font-size` у своїх правилах — і коли ті правила стояли нижче
@@ -1101,9 +1102,8 @@ html:has(.wb-tabbar) .wb-modal-overlay--screen {
    **Вигляд вкладка бере в кирпичика кнопки, а не малює свій.** Розмітка ставить
    `wb-btn` разом із `wb-btn-primary` (вибрана) / `wb-btn-secondary` (друга), а
    тут лишається **сама розкладка**. Причина не в економії: форму кнопки задає
-   стиль (`android.css` — 20px), і власний `border-radius`
-   у цьому правилі зробив би вкладки прямокутними — так і було, хоч у тій самій
-   панелі кнопки овальні. */
+   `--btn-radius`, і власний `border-radius` у цьому правилі зробив би вкладки
+   прямокутними — так і було, хоч у тій самій панелі кнопки овальні. */
 .wb-tabs {
   display: flex;
   flex-direction: row;
@@ -1120,9 +1120,8 @@ html:has(.wb-tabbar) .wb-modal-overlay--screen {
      і розділ перестає вгадуватись — а прокрутка лишає обидва підписи цілими. */
   overflow-x: auto;
   scrollbar-width: none;
-  /* Компактна міра смуги. Значення застосовують бренди (`apple.css` /
-     `android.css`) — висоту контрола в цьому продукті задає бренд, — а тут
-     воно оголошене **одне** на обидва: смуга вкладок однакова в обох. */
+  /* Компактна міра смуги: висоту контрола задає вона, і вкладка бере її ж —
+     смуга в розділів теми, у користувачів і в сценаріїв однакова. */
   --tabs-h: 36px;
 }
 
@@ -1142,6 +1141,9 @@ html:has(.wb-tabbar) .wb-modal-overlay--screen {
 .wb-tabs-btn {
   flex: 1 0 auto;
   min-width: 0;
+  /* Компактна висота — єдина міра смуги: форму (радіус, шрифт, береги) вкладка
+     бере у кирпичика кнопки, а тут лише те, чим вкладка **нижча** за кнопку. */
+  min-height: var(--tabs-h);
 } /* Обрана вкладка — **залита акцентом** пілюля на доріжці (правило 25,
    виняток «смуга вкладок»): вибір мусить бути видно з першого погляду —
    відтінок заливки на темній темі читався як «трохи світліше», а не як вибір.
@@ -1518,7 +1520,7 @@ html:has(.wb-tabbar) .wb-modal-overlay--screen {
   height: var(--tools-row-h);
   min-width: 0;
   padding: 0 var(--sp-2);
-  border-radius: var(--radius-md);
+  border-radius: 10px;
   background: none;
   box-shadow: none;
 }
@@ -1777,16 +1779,15 @@ html:has(.wb-tabbar) .wb-modal-overlay--screen {
   display: flex;
   flex-wrap: wrap;
   /* Між хештегами — тільки проміжок: мірок навколо кожного немає, тож
-     розсувати їх більше нема чим (спершу тут стояв чип із мірками бренду). */
+     розсувати їх більше нема чим (спершу тут стояв чип зі своїми мірками). */
   gap: var(--sp-1) var(--sp-2);
 }
 
 /* Хештег у картці — **підпис, а не чип**, і це власний кирпичик, а не «той
-   самий чип із вимкненим тлом». Причина не в смаку: бренди задають `.wb-chip`
-   свої мірки з `!important` (Apple — `padding: 7px 16px`, Android — 6×16), і
-   хештеги в картці розповзались на пів екрана, а рядок виходив удвічі вищим за
-   рядок із текстом — перебивати це `!important` означало б воювати з брендом
-   там, де чипа просто немає (правило 13).
+   самий чип із вимкненим тлом». Причина не в смаку: мірки чипа належать чипу
+   (`6px 16px`, кегль 14px), і хештеги в картці розповзались на пів екрана, а
+   рядок виходив удвічі вищим за рядок із текстом — перебивати це в чужому
+   правилі означало б воювати там, де чипа просто немає (правило 13).
 
    Кегль і колір тут — не ті, що в дати: 12px і `--text-muted` виявились замалими
    (на телефоні хештеги в картці не читались узагалі). Тому `--text-sm` і
@@ -1917,15 +1918,16 @@ html:has(.wb-tabbar) .wb-modal-overlay--screen {
 .wb-table-wrap {
   overflow-x: auto;
   border-radius: var(--radius-md);
+  box-shadow: var(--shadow-xs);
 }
 
 .wb-table {
   width: 100%;
-  font-size: var(--text-sm);
+  font-size: var(--text-base);
 }
 
 .wb-table th {
-  padding: var(--sp-2) var(--sp-3);
+  padding: var(--sp-3) var(--sp-4);
   text-align: left;
   font-weight: var(--weight-semibold);
   font-size: var(--text-xs);
@@ -1936,7 +1938,7 @@ html:has(.wb-tabbar) .wb-modal-overlay--screen {
 }
 
 .wb-table td {
-  padding: var(--sp-2) var(--sp-3);
+  padding: var(--sp-3) var(--sp-4);
   vertical-align: middle;
 }
 
@@ -1970,7 +1972,9 @@ html:has(.wb-tabbar) .wb-modal-overlay--screen {
   width: 100%;
   border-collapse: separate;
   border-spacing: 0;
-  font-size: var(--text-sm);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  font-size: var(--text-base);
   min-width: 580px;
 }
 
@@ -1978,7 +1982,7 @@ html:has(.wb-tabbar) .wb-modal-overlay--screen {
   position: sticky;
   top: 0;
   z-index: 2;
-  padding: var(--sp-2) var(--sp-3);
+  padding: var(--sp-3) var(--sp-4);
   text-align: left;
   font-weight: var(--weight-semibold);
   font-size: var(--text-xs);
@@ -1989,7 +1993,7 @@ html:has(.wb-tabbar) .wb-modal-overlay--screen {
 }
 
 .wb-data-table td {
-  padding: var(--sp-2) var(--sp-3);
+  padding: var(--sp-3) var(--sp-4);
   vertical-align: middle;
   background: var(--bg-1);
   color: var(--text-primary);
@@ -2114,12 +2118,13 @@ html:has(.wb-tabbar) .wb-modal-overlay--screen {
   display: inline-flex;
   align-items: center;
   gap: var(--sp-1);
-  padding: var(--sp-1) var(--sp-3);
-  font-size: var(--text-xs);
+  padding: 6px 16px;
+  font-size: var(--text-base);
+  font-weight: var(--weight-medium);
   font-family: inherit;
   background: var(--surface-active);
   color: var(--text-secondary);
-  border-radius: var(--radius-full);
+  border-radius: var(--radius-sm);
 }
 
 button.wb-chip {
@@ -2407,9 +2412,9 @@ button.wb-chip {
   z-index: 1;
 }
 
-/* Заголовок hero — це `h2`, і розмір йому дає бренд
-   (`html[data-brand="android"] h2`). Власного розміру тут немає навмисно:
-   інакше заголовок блока сперечався б із брендом за той самий тег. */
+/* Заголовок hero — це `h2`, і розмір йому дає `reset.css` із токенів.
+   Власного розміру тут немає навмисно: інакше заголовок блока сперечався б із
+   типовим значенням за той самий тег. */
 .wb-block-hero__title {
   margin: 0;
   color: var(--text-primary);
@@ -2559,7 +2564,7 @@ button.wb-chip {
 /* ── Блок як РЯДОК списку (`.wb-block-section--row`) ────────────────────────
    Той самий акордеон, але в списку входів («Розвиток»): назва пункту стоїть
    там, де і в пункті меню, і міряє її той самий набір `--row-*`. Без цього
-   варіанта рядок жив своїми числами (22px/500 з брендового `h2`, власна
+   варіанта рядок жив своїми числами (22px/500 з типового `h2`, власна
    поверхня з рамкою, інші береги) і на сусідньому екрані читався як інший
    продукт. Правило 15: місце відділяє поверхня, а не штрих. */
 .wb-block-section--row {
@@ -2576,8 +2581,8 @@ button.wb-chip {
   min-height: var(--row-min-h);
 }
 
-/* Розмір задає рядок, а не елемент: бренд піднімає будь-який `h2` до 22px
-   (`android.css`), і в рядку це читалось як назва екрана. */
+/* Розмір задає рядок, а не елемент: типовий `h2` у рядку читався б як назва
+   екрана. */
 .wb-block-section--row .wb-block-section__title {
   font-size: var(--row-title-size);
   font-weight: var(--row-title-weight);

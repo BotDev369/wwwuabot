@@ -3,8 +3,8 @@
  * DESIGN TOKENS — wwwuabot shared design system
  * ═══════════════════════════════════════════════════════════════════════════
  *
- * Single source of truth for all visual values.
- * Each brand (apple.css, android.css) overrides these with brand-specific values.
+ * Single source of truth for all visual values: светла схема й мірки тут,
+ * темна — у `themes.css`. Другого стилю немає й бути не може.
  *
  * Usage:
  *   import "@wwwuabot/shared/styles/index.css";
@@ -13,42 +13,49 @@
  */
 
 :root {
-  /* ── Color palette (overridden by brand themes) ──────────────────────── */
+  /* ── Палітра світлої схеми (M3 surface containers) ──────────────────────
+     Одна: темна схема — у `themes.css`, і більше жодного шару кольорів немає. */
   --bg-home: radial-gradient(120% 90% at 12% 0%, #ffffff 0%, var(--bg-2) 55%, var(--bg-0) 100%);
-  --bg-0: #f0f2f5;
-  --bg-1: var(--bg-home, #f0f2f5);
-  --bg-2: #f8f9fa;
-  --bg-3: #e8ecf2;
-  --bg-4: #f0f2f5;
+  --bg-0: #f0f0f4; /* surface-container-lowest — легкий холодний відтінок */
+  --bg-1: var(--bg-home, #f0f0f4); /* surface */
+  --bg-2: #ededf0; /* surface-container-low */
+  --bg-3: #e4e4e8; /* surface-container */
+  --bg-4: #dcdce0; /* surface-container-high */
 
-  --border: #dde1e7;
-  --border-subtle: #eaecef;
+  --border: #b0b0b8;
+  --border-subtle: #c8c8d0;
 
-  --text-primary: #111827;
-  --text-secondary: #6b7280;
-  --text-muted: #9ca3af;
+  --text-primary: #1c1b1f; /* on-surface */
+  --text-secondary: #44464f; /* on-surface-variant */
+  --text-muted: #74777f; /* outline */
   --text-inverse: #ffffff;
 
-  --accent: #2563eb;
-  --accent-dim: #dbeafe;
-  --accent-hover: #1d4ed8;
-  --accent-soft: rgba(37, 99, 235, 0.08);
+  --accent: #1c1b1f; /* теплий сірий, не чистий чорний */
+  --accent-dim: rgba(28, 27, 31, 0.08);
+  --accent-hover: #000000;
+  --accent-soft: rgba(28, 27, 31, 0.06);
 
-  --green: #16a34a;
-  --green-dim: #dcfce7;
-  --red: #dc2626;
-  --red-dim: #fee2e2;
-  --yellow: #ca8a04;
-  --yellow-dim: #fef9c3;
+  --green: #0a6e2a;
+  --green-dim: rgba(10, 110, 42, 0.08);
+  --red: #ba1a1a;
+  --red-dim: rgba(186, 26, 26, 0.08);
+  --yellow: #6d5700;
+  --yellow-dim: rgba(109, 87, 0, 0.08);
 
-  --surface: var(--bg-home, #f0f2f5);
-  --surface-hover: #eaecef;
-  --surface-active: #dde1e7;
+  --surface: var(--bg-home, #f0f0f4);
+  --surface-hover: #ededf0;
+  --surface-active: #e4e4e8;
+  /* Скрим і скрим модалки — різні речі: перший затемнює тло під панеллю,
+     другий мусить гасити екран за діалогом в обох схемах однаково. */
   --surface-overlay: rgba(0, 0, 0, 0.4);
+  --modal-scrim: rgba(0, 0, 0, 0.5);
+
+  /* Виділення тексту: та сама пара, що в темній схемі — лише інший бік. */
+  --selection-bg: rgba(28, 27, 31, 0.14);
 
   /* Поверхня модалки. У світлій схемі — та сама, що `--surface`; у темній її
-     піднімає бренд, бо вікно, однакове з екраном, губилось за скримом і його
-     тримало лише тонке кільце краю. */
+     піднімає `themes.css`, бо вікно, однакове з екраном, губилось за скримом
+     і його тримало лише тонке кільце краю. */
   --surface-modal: var(--surface);
 
   /* ── Нативний хром Telegram ──────────────────────────────────────────────
@@ -58,8 +65,8 @@
      setBackgroundColor / setBottomBarColor). Значення — саме ПЛОСКІ hex:
      градієнт (яким обчислюється --bg-1) Telegram прийняти не може, тож
      плоскі форми --bg-1 живуть тут окремими токенами, а не `var(--bg-1)`. */
-  --chrome-header-bg: #f0f2f5;
-  --chrome-bottom-bg: #f0f2f5;
+  --chrome-header-bg: #f0f0f4;
+  --chrome-bottom-bg: #f0f0f4;
 
   /* ── Фон екрана ──────────────────────────────────────────────────────────
      Той самий ПЛОСКИЙ колір, що йде нативному хрому Telegram (градієнт він
@@ -71,15 +78,16 @@
   --bg-page: var(--chrome-header-bg);
 
   /* ── Typography ────────────────────────────────────────────────────────── */
+  /* Inter — тому що имеет кирилицю й лежить локально: системні "Roboto"
+     на частині пристроїв підмінюються аж до моноширинного, і український
+     текст тихо міняв родину посеред слова. Заголовки — та сама родина. */
   --font-ui: "Inter", system-ui, -apple-system, "Segoe UI", sans-serif;
   --font-mono: "JetBrains Mono", "Fira Code", ui-monospace, monospace;
-  --font-display: "Space Grotesk", var(--font-ui);
+  --font-display: var(--font-ui);
 
-  /* Заголовки документа (`h1`–`h3`). Одна міра на продукт і **без** бренду:
+  /* Заголовки документа (`h1`–`h3`). Одна міра на продукт:
      розмір частини сторінки задає її власний клас (`.wb-section-title`), а
-     сам елемент дає лише типове значення — тому й без `!important`. Поки ці
-     числа жили в бренді з `!important`, будь-який заголовок усередині екрана
-     ставав 22px, і кожна сторінка мала свій вигляд. */
+     сам елемент дає лише типове значення — тому й без `!important`. */
   --h1-size: 1.75rem; /* 28px */
   --h1-weight: var(--weight-normal);
   --h2-size: 1.375rem; /* 22px */
@@ -87,13 +95,13 @@
   --h3-size: 1.125rem; /* 18px */
   --h3-weight: var(--weight-medium);
 
-  --text-xs: 0.75rem; /* 12px */
-  --text-sm: 0.8125rem; /* 13px */
-  --text-base: 0.875rem; /* 14px */
-  --text-md: 1rem; /* 16px */
-  --text-lg: 1.125rem; /* 18px */
-  --text-xl: 1.25rem; /* 20px */
-  --text-2xl: 1.5rem; /* 24px */
+  --text-xs: 0.6875rem; /* 11px — label small */
+  --text-sm: 0.8125rem; /* 13px — label medium */
+  --text-base: 0.875rem; /* 14px — body medium */
+  --text-md: 1rem; /* 16px — body large */
+  --text-lg: 1.125rem; /* 18px — title medium */
+  --text-xl: 1.375rem; /* 22px — title large */
+  --text-2xl: 1.75rem; /* 28px — headline medium */
 
   --leading-tight: 1.25;
   --leading-normal: 1.5;
@@ -118,30 +126,27 @@
   --sp-16: 4rem; /* 64px */
 
   /* ── Button metrics ──────────────────────────────────────────────────────
-     Саме ці дві міри роблять кнопку «великою» — і саме їх задає бренд своїм
-     характером (Apple просторіша, Android щільніша). Тому бренди більше НЕ
-     пишуть `padding` у свого `.wb-btn` через `!important`: вони задають ці
-     токени, а padding читає сама кнопка. Так «зменшити кнопки» — це один
-     рядок, і жоден бренд не поверне їх назад потай. */
-  --btn-pad-y: var(--sp-2); /* 8px */
-  --btn-pad-x: var(--sp-3); /* 12px */
+     Саме ці міри роблять кнопку «великою». Вони живуть тут, а не в правилі
+     кожного екрана: «зменшити кнопки» — це один рядок, і жоден екран не
+     поверне їх назад своїм `padding` потай. */
+  --btn-pad-y: 8px;
+  --btn-pad-x: 16px;
+  --btn-radius: 20px;
 
   /* ── Поле вводу ──────────────────────────────────────────────────────────
      Колір і краї поля живуть у `themes.css` (`--field-bg` / `--field-ring`),
-     а мірки самого контрола — тут. Поки їх писав бренд у свого `.wb-input`
-     через `!important` (Android — 12×16), будь-яке зменшення в спільному
-     кирпичику не діяло зовсім: поле на одному екрані було 8×12, на іншому
-     12×16. Тепер міра одна, і бренд задає її токеном. Стежить
-     `styles/fields.test.ts`. */
-  --field-pad-y: var(--sp-2); /* 8px */
-  --field-pad-x: var(--sp-3); /* 12px */
+     а мірки самого контрола — тут. Одна міра на всі поля продукту: поки їх
+     писав кожен екран, поле було 8×12 на одній сторінці й 12×16 на іншій.
+     Стежить `styles/fields.test.ts`. */
+  --field-pad-y: 12px;
+  --field-pad-x: 16px;
 
   /* ── Рядок списку ────────────────────────────────────────────────────────
      Геометрія рядка одна на весь продукт: пункт меню, акордеон «Розвитку»,
      рядок «Обраного» й група трекерів — та сама деталь, а не чотири схожі.
      Числа живуть ТУТ, а не в правилі кожного екрана: інакше вони розходяться
-     на 2–4px, і це видно як «кожен екран живе своїм життям». Місце — тут, бо
-     міряє рядок бренд (характер), а не поверхня, яка його показує.
+     на 2–4px, і це видно як «кожен екран живе своїм життям». Місце — тут, а
+     не в поверхні, яка рядок показує.
      Стежить `styles/rows.test.ts`: рядок, що бере власний px, його валить. */
   --row-bg: var(--field-bg);
   --row-radius: var(--radius-md);
@@ -160,20 +165,19 @@
      Екран, який малює картку власними 18px і рамкою, дає той самий продукт
      іншим виглядом — тому числа живуть ТУТ, а не в правилі екрана.
      Стежить `styles/surfaces.test.ts`. */
-  --card-bg: var(--surface);
+  --card-bg: #ecedf0;
   --card-radius: var(--radius-md);
   --card-pad: var(--sp-4);
   --card-gap: var(--sp-3);
-  /* Тінь — теж мірка картки, а не прикраса правила: `none` у бренду означає
-     «заповнена поверхня», і це його характер, а не привід переписати
-     `box-shadow` у правила картки. */
+  /* Тінь — теж мірка картки, а не прикраса правила: `none` означає
+     «заповнена поверхня», і це міняється тут, а не в правилі картки. */
   --card-shadow: var(--shadow-xs);
 
   /* ── Заголовки всередині екрана ──────────────────────────────────────────
      Назву екрана дає шапка (`.wb-appbar__title`), тож усередині є рівно три
      ролі: частина сторінки, назва картки й підпис групи — і кожної одна міра.
-     Поки «частина сторінки» була 15/700 в одному місці й 17/700 у другому, а
-     брендовий `h2` робив її ще 22/500, сторінки читались як різні продукти. */
+     Поки «частина сторінки» була 15/700 в одному місці й 17/700 у другому,
+     сторінки читались як різні продукти. */
   --heading-section-size: var(--text-md);
   --heading-section-weight: var(--weight-semibold);
   --heading-card-size: var(--text-sm);
@@ -182,35 +186,35 @@
   --heading-group-weight: var(--weight-semibold);
 
   /* ── Border radius ─────────────────────────────────────────────────────── */
-  --radius-xs: 2px;
-  --radius-sm: 4px;
-  --radius: 6px;
-  --radius-md: 8px;
-  --radius-lg: 12px;
-  --radius-xl: 16px;
+  --radius-xs: 4px;
+  --radius-sm: 8px;
+  --radius: 12px;
+  --radius-md: 16px;
+  --radius-lg: 24px;
+  --radius-xl: 28px;
   --radius-full: 9999px;
 
   /* ── Shadows ───────────────────────────────────────────────────────────── */
-  --shadow-xs: 0 1px 2px rgba(0, 0, 0, 0.05);
-  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.1), 0 1px 2px rgba(0, 0, 0, 0.06);
-  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.1);
-  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -4px rgba(0, 0, 0, 0.1);
-  --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
+  --shadow-xs: 0 1px 2px rgba(0, 0, 0, 0.15);
+  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.18), 0 1px 2px rgba(0, 0, 0, 0.12);
+  --shadow-md: 0 2px 6px rgba(0, 0, 0, 0.18), 0 1px 2px rgba(0, 0, 0, 0.12);
+  --shadow-lg: 0 4px 8px rgba(0, 0, 0, 0.18), 0 2px 4px rgba(0, 0, 0, 0.12);
+  --shadow-xl: 0 6px 10px rgba(0, 0, 0, 0.18), 0 2px 3px rgba(0, 0, 0, 0.12);
 
-  /* ── Elevation levels (per-brand overrides) ────────────────────────────── */
+  /* ── Рівні підняття ────────────────────────────────────────────────────── */
   --elevation-0: none;
-  --elevation-1: 0 1px 3px rgba(0, 0, 0, 0.06);
-  --elevation-2: 0 4px 12px rgba(0, 0, 0, 0.08);
-  --elevation-3: 0 8px 24px rgba(0, 0, 0, 0.12);
+  --elevation-1: 0 1px 3px rgba(0, 0, 0, 0.12);
+  --elevation-2: 0 2px 6px rgba(0, 0, 0, 0.15);
+  --elevation-3: 0 4px 8px rgba(0, 0, 0, 0.18);
 
   /* ── Transitions ───────────────────────────────────────────────────────── */
   --duration-fast: 100ms;
-  --duration: 150ms;
-  --duration-slow: 250ms;
-  --ease: cubic-bezier(0.4, 0, 0.2, 1);
-  --ease-in: cubic-bezier(0.4, 0, 1, 1);
-  --ease-out: cubic-bezier(0, 0, 0.2, 1);
-  --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+  --duration: 200ms;
+  --duration-slow: 400ms;
+  --ease: cubic-bezier(0.2, 0, 0, 1);
+  --ease-in: cubic-bezier(0.2, 0, 1, 1);
+  --ease-out: cubic-bezier(0, 0, 0, 1);
+  --ease-spring: cubic-bezier(0.2, 0, 0, 1);
 
   /* ── Z-index scale ─────────────────────────────────────────────────────── */
   --z-dropdown: 100;
@@ -225,11 +229,11 @@
   --z-toast: 1200;
 
   /* ── Layout ────────────────────────────────────────────────────────────── */
-  --sidebar-w: 220px;
+  --sidebar-w: 240px;
   --sidebar-w-collapsed: 64px;
   /* Розгорнутий сайдбар-поверхня — **частка екрана**, а не пікселі: на телефоні
-     сайдбар виїжджає ПОВЕРХ вмісту, тож його ширина мусить читатись від екрана,
-     а не від бренду. Число одне на всі місця (адмінка й панель розділів теми):
+     сайдбар виїжджає ПОВЕРХ вмісту, тож його ширина мусить читатись від екрана.
+     Число одне на всі місця (адмінка й панель розділів теми):
      доки кожне брало своє (280px проти `min(260px, 78vw)`), той самий сайдбар
      на тому самому екрані був двічі різний. */
   --sidebar-w-vw: 80vw;
@@ -247,18 +251,22 @@
      тому самому екрані мав би дві різні геометрії. */
   --sidebar-item-h: 44px;
   --sidebar-pad: var(--sp-2);
+  /* Поверхня сайдбара — плита, а не скло: його видно тлом і тінню праворуч,
+     тож він не зливається з вмістом на телефоні. Одна пара значень на обидва
+     місця (адмінка й панель розділів теми) — сайдбар у продукті один. */
+  --sidebar-bg: #e8e8ec;
+  --sidebar-shadow: 4px 0 16px rgba(0, 0, 0, 0.08);
   --topbar-h: 56px;
   /* Початкова висота закріпленого хедера. Справжню публікує сам хедер
      (`useAppBarHeight`): `min-height` — підлога, а назва у два рядки на
      збільшеному шрифті вища за `--topbar-h`. Тут — значення до першого виміру
      (і коли JS немає). */
   --appbar-h: calc(var(--topbar-h) + var(--safe-top) + var(--sp-2));
-  /* Нижній глобальний футер. Висоту самої смуги задає бренд
-     (`--nav-bar-h`: 56px Apple HIG, 60px Material — планка HIG плюс місце
-     під залите коло активного розділу); повна висота додає safe-area, бо
-     смуга стоїть під індикатором дому. Значення ОДНЕ — другої константи
-     під ту саму висоту бути не може. */
-  --nav-bar-h: 56px;
+  /* Нижній глобальний футер: 60px — планка Material плюс місце під залите
+     коло активного розділу; повна висота додає safe-area, бо смуга стоїть
+     під індикатором дому. Значення ОДНЕ — другої константи під ту саму
+     висоту бути не може. */
+  --nav-bar-h: 60px;
   --tab-bar-h: calc(var(--nav-bar-h) + var(--safe-bottom));
   /* Друга смуга футера (сторінки одного розділу) — над першою, без safe-area:
      краї екрана вже враховані першою смугою (див. `subbar.css`). Висота — та

@@ -2,9 +2,9 @@
  * Сторож сайдбара: **він один**.
  *
  * Сайдбар у продукті **один** — меню адмінки, і мірка рядка в нього одна: пункт
- * бере `--sidebar-item-h` і `--sidebar-pad` з `tokens.css`, а бренд геометрію не
- * переписує (`android.css` дає лише поверхню). Одна деталь із двома копіями
- * мірок око читає як дві деталі — тож сторожі лишаються, хоч місце тепер одне.
+ * бере `--sidebar-item-h` і `--sidebar-pad` з `tokens.css`, а поверхню — з
+ * `--sidebar-bg`. Одна деталь із двома копіями мірок око читає як дві деталі —
+ * тож сторожі лишаються, хоч місце тепер одне.
  *
  * Кожне з цих правил ламається **мовчки**: новий сайдбар рендериться своєю
  * розміткою й виглядає майже так само, а число повертається в бренд одним
@@ -115,7 +115,6 @@ const SHEET = (name: string): string => `packages/shared/src/styles/${name}`;
 const TOKENS = topLevel(css(SHEET("tokens.css")));
 const NAV = topLevel(css(SHEET("app-chrome.css")));
 const THEME_PAGES = topLevel(css(SHEET("theme-pages.css")));
-const STYLES = ["android.css"].map((name) => css(SHEET(name)));
 
 /** Місця, де сайдбар є в продукті, і файл, який його рендерить. */
 const SITES = [
@@ -134,9 +133,9 @@ describe("сайдбар один — і мірки в нього одні", () 
       // Читати можна (`var(--sidebar-item-h)`), оголошувати — ні.
       expect(css(SHEET(file)), file).not.toMatch(/--sidebar-item-h\s*:/);
     }
-    for (const brand of STYLES) {
-      expect(brand).not.toContain("--sidebar-item-h");
-      expect(brand).not.toContain("--sidebar-pad");
+    for (const file of ["app-chrome.css", "theme-pages.css", "page-layout.css"]) {
+      expect(css(SHEET(file)), file).not.toMatch(/--sidebar-item-h\s*:/);
+      expect(css(SHEET(file)), file).not.toMatch(/--sidebar-pad\s*:/);
     }
   });
 
@@ -168,10 +167,6 @@ describe("сайдбар один — і мірки в нього одні", () 
     // Штрих — друга половина того самого слова: у смузі знаків колір і штрих і
     // є всім знаком.
     expect(rule(NAV, ".wb-nav-item--active .wb-nav-icon svg")?.body).toContain("stroke-width: 2.4");
-    for (const brand of STYLES) {
-      expect(brand).not.toContain(".wb-nav-item {");
-      expect(brand).not.toContain(".wb-nav-item--active");
-    }
   });
 
   it("згорнутий сайдбар — **відсутність підпису**, а не друга геометрія", () => {

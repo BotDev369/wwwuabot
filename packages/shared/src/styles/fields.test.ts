@@ -38,7 +38,6 @@ const MIN_FIELD_FONT_PX = 16;
 const CSS_FILES = [
   "packages/shared/src/styles/components.css",
   "packages/shared/src/styles/app-chrome.css",
-  "packages/shared/src/styles/android.css",
   "packages/shared/src/styles/page-layout.css",
   "packages/shared/src/styles/drawer.css",
   "web-platform-dev/src/index.css",
@@ -157,11 +156,22 @@ describe("поля вводу: мірки — токен, а бренд лише
     );
   });
 
-  it("бренд задає мірки токеном, а не `padding` у правилі контрола", () => {
-    const brand = read("packages/shared/src/styles/android.css");
-    expect(brand).toContain("--field-pad-y: 12px;");
-    expect(brand).toContain("--field-pad-x: 16px;");
-    const body = styleRule("android.css", 'html[data-brand="android"] .wb-input,');
-    expect(body, "мірки поля — токен, а не !important").not.toContain("padding");
+  it("мірки поля оголошені РАЗ — і жодне правило не пише свій `padding`", () => {
+    // Друга копія цих чисел означала б другу міру поля: саме так один екран
+    // мав 8×12, а інший — 12×16.
+    const declarations = [
+      ...read("packages/shared/src/styles/tokens.css").matchAll(
+        /--field-pad-([xy])\s*:\s*([^;]+);/g,
+      ),
+    ].map(([, axis, value]) => `--field-pad-${axis}: ${value.trim()}`);
+    expect(declarations).toEqual(["--field-pad-y: 12px", "--field-pad-x: 16px"]);
+
+    // Пошук в адмінці — той самий кирпичик поля: своє число тут розвело б
+    // його з полями решти продукту.
+    const search = read("web-admin-dev/src/index.css");
+    const start = search.indexOf("\n.scn-search {");
+    expect(start, ".scn-search має існувати").toBeGreaterThan(-1);
+    const rule = search.slice(start, search.indexOf("\n}", start));
+    expect(rule).toContain("padding: var(--field-pad-y) var(--field-pad-x)");
   });
 });

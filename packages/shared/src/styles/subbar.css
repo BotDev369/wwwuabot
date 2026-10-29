@@ -43,8 +43,8 @@
   background: color-mix(in srgb, var(--bg-page) 91%, black);
 }
 
-/* Темне тло: крок угору. Два селектори — бо темну схему задає і бренд
-   (`data-theme`), і вибір трьох кольорів (`data-colors-mode`). */
+/* Темне тло: крок угору. Два селектори — бо темну схему задають і токени
+   схеми (`data-theme`), і вибір трьох кольорів (`data-colors-mode`). */
 html[data-colors-mode="dark"] .wb-subbar,
 html[data-theme="dark"] .wb-subbar {
   background: color-mix(in srgb, var(--bg-page) 91%, white);

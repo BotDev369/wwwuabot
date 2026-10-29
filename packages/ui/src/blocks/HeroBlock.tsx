@@ -1,8 +1,8 @@
 /**
  * Page Builder — Hero Block: банер сторінки.
  *
- * Вигляд — у `components.css`, не інлайном: інлайн не бачить `data-brand` і
- * `data-theme` (правило 14 `docs/DESIGN_SYSTEM.md`). Зовнішніх відступів немає
+ * Вигляд — у `components.css`, не інлайном: інлайн не бачить `data-theme`
+ * (правило 14 `docs/DESIGN_SYSTEM.md`). Зовнішніх відступів немає
  * навмисно — просвіт між блоками належить зоні.
  * @module packages/ui/src/blocks/HeroBlock
  */

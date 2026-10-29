@@ -93,23 +93,20 @@ describe("картка бере мірки токенами", () => {
     });
   }
 
-  it("бренд задає картку токенами, а не `!important` у її правилі", () => {
-    // Поки тло, радіус і тінь картки стояли в `android.css` з `!important`,
+  it("картка описана ОДИН раз — кирпичиком, а не другим шаром", () => {
+    // Поки тло, радіус і тінь картки стояли в другому стилі з `!important`,
     // будь-яка правка `components.css` була невидимою, а новий екран із
-    // власним `box-shadow` отримував іншу картку. Тепер бренд міняє значення
-    // токена — правило картки лишається одне.
-    const brand = css("android.css");
+    // власним `box-shadow` отримував іншу картку. Тепер місце одне — і кожна
+    // мірка читається токеном.
+    const card = rule(css("components.css"), ".wb-card");
     for (const fragment of [
-      "--card-bg: #ecedf0;",
-      "--card-radius: var(--radius-xl);",
-      "--card-shadow: none;",
+      "background: var(--card-bg)",
+      "border-radius: var(--card-radius)",
+      "box-shadow: var(--card-shadow)",
     ]) {
-      expect(brand, fragment).toContain(fragment);
+      expect(card, fragment).toContain(fragment);
     }
-    expect(brand, "правило самої картки належить components.css").not.toMatch(
-      /\nhtml\[data-brand="android"\][^{]*\.wb-card\s*\{[^}]*!important/,
-    );
-    expect(rule(css("components.css"), ".wb-card")).toContain("box-shadow: var(--card-shadow)");
+    expect(card, "картка без `!important`").not.toContain("!important");
   });
 
   it("картка не малює рамки — місце відділяє поверхня (правило 15)", () => {

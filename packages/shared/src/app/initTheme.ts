@@ -6,12 +6,13 @@
  * Uses localStorage + CSS attributes only — works without React.
  *
  * Attribute format:
- *   <html data-brand="android" data-theme="light|dark"
+ *   <html data-theme="light|dark"
  *         data-colors="custom" data-colors-mode="light|dark">
  *
- * `data-brand` — не вибір, а стиль продукту (див. `./registry`): його пишуть
- * разом зі схемою, і старих ключі вибору бренду (`wwwuabot-brand`,
- * `wwwuabot-style`) прибираємо, щоб мертвий вибір не читався знову.
+ * Стиль продукту вибирати не можна й не треба: він один і живе в CSS
+ * (`styles/tokens.css` + `styles/themes.css`). Старі ключі вибору стилю
+ * (`wwwuabot-brand`, `wwwuabot-style`) прибираємо, щоб мертвий вибір не
+ * читався знову.
  *
  * `data-colors*` появляється лише тоді, коли людина зберегла всі три кольори
  * («порожніх не буває» — див. `../styles/user-colors`): без атрибута працює
@@ -19,21 +20,19 @@
  *
  * No "system" mode — defaults to "dark" if nothing stored.
  */
-import { BRAND } from "../styles/registry";
 import { applyFont, readStoredFont } from "../styles/font-dom";
 import { applyColors, readStoredColors } from "../styles/user-colors";
 import { initTelegramChrome } from "./telegram-chrome";
 
 const THEME_KEY = "wwwuabot-theme";
 
-/** Ключі вибору бренду, яких більше немає: прибираємо, а не читаємо. */
-const DEAD_BRAND_KEYS = ["wwwuabot-brand", "wwwuabot-style"];
+/** Ключі вибору стилю, яких більше немає: прибираємо, а не читаємо. */
+const DEAD_STYLE_KEYS = ["wwwuabot-brand", "wwwuabot-style"];
 
 export function initTheme(): void {
   try {
-    // ── Стиль продукту — константа, вибору немає ──────────────────────────
-    for (const key of DEAD_BRAND_KEYS) localStorage.removeItem(key);
-    document.documentElement.setAttribute("data-brand", BRAND);
+    // ── Стиль продукту — один і в CSS: вибору немає ───────────────────────
+    for (const key of DEAD_STYLE_KEYS) localStorage.removeItem(key);
 
     // ── Resolve scheme (light/dark only, no system) ──────────────────
     const raw = localStorage.getItem(THEME_KEY);

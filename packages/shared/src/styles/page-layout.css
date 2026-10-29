@@ -50,7 +50,9 @@
 .page-zone--sidebar {
   width: 260px;
   flex-shrink: 0;
-  background: var(--bg-2);
+  /* Той самий сайдбар, що й `.wb-nav` в адмінці: одна плита й одна тінь. */
+  background: var(--sidebar-bg);
+  box-shadow: var(--sidebar-shadow);
 }
 
 .page-zone-group {

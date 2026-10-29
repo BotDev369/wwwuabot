@@ -85,8 +85,7 @@ export {
 export { icons } from "./components/icons";
 export type { IconName } from "./components/icons";
 export { Icon } from "./components/Icon";
-export { BRAND, BRAND_FONTS } from "./styles/registry";
-export type { Brand, Scheme, Theme } from "./styles/registry";
+export type { Scheme, Theme } from "./styles/registry";
 
 // ── App ──────────────────────────────────────────────────────────────
 export { initTheme } from "./app/initTheme";

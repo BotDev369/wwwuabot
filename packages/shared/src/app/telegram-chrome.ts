@@ -28,9 +28,9 @@
  * кнопки резервують `--safe-*` (`styles/tokens.css`) з вставок клієнта
  * (`applyClientInsets`) — з підлогою, бо не кожен клієнт їх доносить.
  *
- * Коли: старт застосунку (разом з `initTheme()`), кожна зміна `data-brand` /
- * `data-theme` (MutationObserver) і подія клієнта `themeChanged` (користувач
- * повернув тему Telegram у налаштуваннях).
+ * Коли: старт застосунку (разом з `initTheme()`), кожна зміна `data-theme`
+ * (MutationObserver) і подія клієнта `themeChanged` (користувач повернув тему
+ * Telegram у налаштуваннях).
  *
  * Поза Telegram (звичайний браузер, тести) модуль — no-op: без `window`
  * і без `window.Telegram.WebApp` він нічого не робить і нічого не ламає.
@@ -49,13 +49,13 @@ const THEME_CHANGED_EVENT = "themeChanged";
  * Без останніх двох хром не перефарбувався б, доки людина рухає повзунок у
  * панелі теми — а саме тоді це видніше за все.
  */
-const OBSERVED_ATTRS = ["data-brand", "data-theme", "data-colors", "data-colors-mode"] as const;
+const OBSERVED_ATTRS = ["data-theme", "data-colors", "data-colors-mode"] as const;
 
 /**
  * Зчитує плоский колір з CSS-змінної на `<html>`.
  *
- * Чому `getComputedStyle`, а не власна таблиця «стиль × схема → колір»:
- * таблиця задублювала б значення з `android.css`, і рано чи пізно
+ * Чому `getComputedStyle`, а не власна таблиця «схема → колір»:
+ * таблиця задублювала б значення з `themes.css`, і рано чи пізно
  * хтось оновив би CSS і забув TS — а це саме той клас розсинхрону, який у
  * проєкті ловлять гейти, а не очі. `#f00` розгортається до `#ff0000`: старі
  * клієнти Telegram траплялись і на 3-значних значеннях.
