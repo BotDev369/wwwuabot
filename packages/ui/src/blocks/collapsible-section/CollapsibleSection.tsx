@@ -18,18 +18,31 @@ export interface CollapsibleSectionProps {
   icon?: IconName;
   /** Підпис біля назви (лічильник): сама назва не каже, скільки всього. */
   meta?: ReactNode;
+  /**
+   * Блок стоїть **рядком списку** (вхід у розділ), а не підписом частини
+   * сторінки: тоді він бере поверхню й мірки рядка (`--row-*`) — ті самі, що
+   * в пункту меню. Розділ сторінки лишається без поверхні (правило 12).
+   */
+  surface?: boolean;
   children: ReactNode;
 }
 
-export function CollapsibleSection({ title, icon, meta, children }: CollapsibleSectionProps) {
+export function CollapsibleSection({
+  title,
+  icon,
+  meta,
+  surface = false,
+  children,
+}: CollapsibleSectionProps) {
   const { open, toggle } = useCollapse();
   const bodyId = useId();
   const toggleClass = open
     ? "wb-block-section__toggle wb-block-section__toggle--open"
     : "wb-block-section__toggle";
+  const sectionClass = surface ? "wb-block-section wb-block-section--row" : "wb-block-section";
 
   return (
-    <section className="wb-block-section">
+    <section className={sectionClass}>
       <h2 className="wb-block-section__head">
         <button
           type="button"

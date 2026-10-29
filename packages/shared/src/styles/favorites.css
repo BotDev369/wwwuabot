@@ -82,27 +82,28 @@
   gap: var(--sp-2);
 }
 
+/* Поверхня рядка — та сама, що в пункту меню (`--row-*`): список читається
+   як список, а не як третя колекція карток. */
 .wb-favorites-row {
   display: flex;
   align-items: stretch;
   gap: var(--sp-1);
-  background: var(--surface);
-  border-radius: var(--radius-md);
-  box-shadow: var(--shadow-xs);
-  padding-right: var(--sp-2);
+  background: var(--row-bg);
+  border-radius: var(--row-radius);
+  padding-right: var(--row-pad-x);
 }
 
 /* Ліва частина рядка — **кнопка цілком**: відкривається те, що видно. */
 .wb-favorites-open {
   display: flex;
   align-items: center;
-  gap: var(--sp-3);
+  gap: var(--row-gap);
   flex: 1 1 auto;
   min-width: 0;
-  min-height: 64px;
-  padding: var(--sp-2) var(--sp-1) var(--sp-2) var(--sp-3);
+  min-height: var(--row-min-h);
+  padding: var(--row-pad-y) var(--sp-1) var(--row-pad-y) var(--row-pad-x);
   border: 0;
-  border-radius: var(--radius-md);
+  border-radius: var(--row-radius);
   background: none;
   color: inherit;
   font: inherit;
@@ -142,9 +143,9 @@
 }
 
 .wb-favorites-title {
-  font-size: var(--text-base);
-  font-weight: var(--weight-medium);
-  color: var(--text-primary);
+  font-size: var(--row-title-size);
+  font-weight: var(--row-title-weight);
+  color: var(--row-title-color);
   /* Назва в один рядок: список має лишатися списком, а не поверхами тексту. */
   overflow: hidden;
   text-overflow: ellipsis;
@@ -160,7 +161,7 @@
   display: flex;
   align-items: center;
   flex: 0 0 auto;
-  color: var(--text-muted);
+  color: var(--row-trailing-color);
 }
 
 /* Зниклий контент: рядок лишається, але він **не** обіцяє переходу. */

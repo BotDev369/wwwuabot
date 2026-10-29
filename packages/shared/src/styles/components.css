@@ -1263,13 +1263,13 @@ html:has(.wb-tabbar) .wb-modal-overlay--screen {
 .wb-menu-item {
   display: flex;
   align-items: center;
-  gap: var(--sp-3);
+  gap: var(--row-gap);
   width: 100%;
-  min-height: 52px;
-  padding: var(--sp-2) var(--sp-3);
+  min-height: var(--row-min-h);
+  padding: var(--row-pad-y) var(--row-pad-x);
   border: none;
-  border-radius: var(--radius-md);
-  background: var(--field-bg);
+  border-radius: var(--row-radius);
+  background: var(--row-bg);
   color: var(--text-primary);
   font: inherit;
   text-align: left;
@@ -1288,7 +1288,7 @@ html:has(.wb-tabbar) .wb-modal-overlay--screen {
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
-  color: var(--text-secondary);
+  color: var(--row-icon-color);
 }
 
 .wb-menu-item:hover .wb-menu-item-icon {
@@ -1304,8 +1304,9 @@ html:has(.wb-tabbar) .wb-modal-overlay--screen {
 }
 
 .wb-menu-item-label {
-  font-size: var(--text-base);
-  font-weight: var(--weight-medium);
+  font-size: var(--row-title-size);
+  font-weight: var(--row-title-weight);
+  color: var(--row-title-color);
   overflow-wrap: anywhere;
 }
 
@@ -1338,7 +1339,7 @@ html:has(.wb-tabbar) .wb-modal-overlay--screen {
   display: flex;
   align-items: center;
   flex-shrink: 0;
-  color: var(--text-muted);
+  color: var(--row-trailing-color);
 }
 
 /* ── «Поділитись»: посилання, месенджери, QR ─────────────────────────────
@@ -2549,4 +2550,48 @@ button.wb-chip {
    тій самій площі. */
 .wb-block-section__body {
   padding: 0;
+}
+
+/* ── Блок як РЯДОК списку (`.wb-block-section--row`) ────────────────────────
+   Той самий акордеон, але в списку входів («Розвиток»): назва пункту стоїть
+   там, де і в пункті меню, і міряє її той самий набір `--row-*`. Без цього
+   варіанта рядок жив своїми числами (22px/500 з брендового `h2`, власна
+   поверхня з рамкою, інші береги) і на сусідньому екрані читався як інший
+   продукт. Правило 15: місце відділяє поверхня, а не штрих. */
+.wb-block-section--row {
+  background: var(--row-bg);
+  border-radius: var(--row-radius);
+}
+
+.wb-block-section--row .wb-block-section__head {
+  padding: var(--row-pad-y) var(--row-pad-x);
+}
+
+.wb-block-section--row .wb-block-section__toggle {
+  gap: var(--row-gap);
+  min-height: var(--row-min-h);
+}
+
+/* Розмір задає рядок, а не елемент: бренд піднімає будь-який `h2` до 22px
+   (`android.css`), і в рядку це читалось як назва екрана. */
+.wb-block-section--row .wb-block-section__title {
+  font-size: var(--row-title-size);
+  font-weight: var(--row-title-weight);
+  line-height: var(--leading-tight);
+  color: var(--row-title-color);
+  overflow-wrap: anywhere;
+}
+
+.wb-block-section--row .wb-block-section__icon {
+  color: var(--row-icon-color);
+}
+
+.wb-block-section--row .wb-block-section__caret {
+  color: var(--row-trailing-color);
+}
+
+/* Тіло тримає береги поверхні: назва вирівняна по них, і текст під нею мусить
+   стояти на тій самій лінії. */
+.wb-block-section--row .wb-block-section__body {
+  padding: 0 var(--row-pad-x) var(--row-pad-y);
 }

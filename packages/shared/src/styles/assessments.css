@@ -13,14 +13,10 @@
  * Тільки токени: жодного хардкоду кольору чи мірок (`check:css`).
  */
 
-/* ── Список: рядок = згорнутий акордеон ───────────────────────────────── */
-
-.wb-test-list {
-  display: flex;
-  flex-direction: column;
-  gap: var(--sp-3);
-  padding: var(--sp-4);
-}
+/* ── Список: рядок = згорнутий акордеон ────────────────────────────────
+   Геометрії тут НЕМА: контейнер — `.wb-menu-list`, рядок —
+   `.wb-block-section--row`, і міряє його набір `--row-*` (`tokens.css`).
+   Другі береги й друга поверхня — це той самий екран з іншим виглядом. */
 
 /* Картка результату проходження: поверхня, у якій уже лежить розбір. */
 .wb-test-card {
@@ -28,16 +24,6 @@
   flex-direction: column;
   gap: var(--sp-3);
   padding: var(--sp-4);
-  background: var(--surface);
-  border: 1px solid var(--border-subtle);
-  border-radius: var(--radius-lg);
-}
-
-/* Поверхня згорнутого рядка — тут, а не в акордеоні: кирпичик
-   `.wb-block-section` тла не має, а без межі три рядки читаються як один абзац.
-   Береги теж тут, щоб тап-таргет підпису тягнувся на всю ширину. */
-.wb-test-row {
-  padding: var(--sp-3) var(--sp-4);
   background: var(--surface);
   border: 1px solid var(--border-subtle);
   border-radius: var(--radius-lg);
@@ -54,8 +40,8 @@
 
 .wb-test-lead {
   margin: 0;
-  font-size: 0.875rem;
-  line-height: 1.45;
+  font-size: var(--text-base);
+  line-height: var(--leading-normal);
   color: var(--text-secondary);
 }
 
@@ -64,7 +50,7 @@
   align-items: center;
   gap: var(--sp-2);
   flex-wrap: wrap;
-  font-size: 0.8125rem;
+  font-size: var(--text-sm);
   color: var(--text-muted);
 }
 

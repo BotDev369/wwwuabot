@@ -106,20 +106,19 @@ export function AssessmentsPage({
   return (
     <div className="wb-page wb-page-scroll">
       {/* Список є завжди: аналіз дат не залежить від реєстру тестів, тож
-          чекати на нього людина не мусить. */}
-      <div className="wb-test-list">
+          чекати на нього людина не мусить. Контейнер і рядок — ті самі
+          кирпичики, що в «Сервісах»: екран не має власної геометрії списку. */}
+      <div className="wb-menu-list">
         {entries.map((entry) => (
-          <div key={entry.key} className="wb-test-row">
-            <CollapsibleSection title={entry.title} icon={entry.icon}>
-              <div className="wb-test-body">
-                <p className="wb-test-lead">{entry.lead}</p>
-                {entry.note && <p className="wb-test-meta">{entry.note}</p>}
-                <button type="button" className="wb-btn wb-btn-primary" onClick={entry.open}>
-                  Відкрити
-                </button>
-              </div>
-            </CollapsibleSection>
-          </div>
+          <CollapsibleSection key={entry.key} title={entry.title} icon={entry.icon} surface>
+            <div className="wb-test-body">
+              <p className="wb-test-lead">{entry.lead}</p>
+              {entry.note && <p className="wb-test-meta">{entry.note}</p>}
+              <button type="button" className="wb-btn wb-btn-primary" onClick={entry.open}>
+                Відкрити
+              </button>
+            </div>
+          </CollapsibleSection>
         ))}
       </div>
 

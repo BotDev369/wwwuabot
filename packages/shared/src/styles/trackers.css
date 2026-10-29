@@ -96,8 +96,10 @@
   /* Зсув рядка — у заголовку, а не в таблиці під ним: сітка днів має
      збігатися з шапкою по всій ширині на будь-якій глибині. */
   margin-inline-start: calc(var(--depth) * var(--tracker-step));
-  padding-inline-start: var(--sp-2);
-  border-radius: var(--radius-md);
+  padding-inline: var(--row-pad-x);
+  border-radius: var(--row-radius);
+  /* Заливка своя (вона каже про глибину), а мірки — рядкові: група в списку
+     мусить стояти на тій самій лінії, що пункт меню (`--row-*`). */
   background: var(--tracker-group-bg);
 }
 
@@ -121,9 +123,9 @@
   display: flex;
   flex: 1 1 auto;
   align-items: center;
-  gap: var(--sp-2);
+  gap: var(--row-gap);
   min-width: 0;
-  min-height: 44px;
+  min-height: var(--row-min-h);
   /* Відступ рядка тримає `.wb-group-head`: другий зсунув би заливку. */
   padding: 0;
   border: none;
@@ -143,8 +145,9 @@
    в розмірі каже про це там, де заливки не видно (наприклад, у списку). */
 .wb-group-title {
   overflow: hidden;
-  font-size: var(--text-md);
-  font-weight: var(--weight-semibold);
+  font-size: var(--row-title-size);
+  font-weight: var(--row-title-weight);
+  color: var(--row-title-color);
   text-overflow: ellipsis;
   white-space: nowrap;
 }

@@ -114,6 +114,25 @@
   --btn-pad-y: var(--sp-2); /* 8px */
   --btn-pad-x: var(--sp-3); /* 12px */
 
+  /* ── Рядок списку ────────────────────────────────────────────────────────
+     Геометрія рядка одна на весь продукт: пункт меню, акордеон «Розвитку»,
+     рядок «Обраного» й група трекерів — та сама деталь, а не чотири схожі.
+     Числа живуть ТУТ, а не в правилі кожного екрана: інакше вони розходяться
+     на 2–4px, і це видно як «кожен екран живе своїм життям». Місце — тут, бо
+     міряє рядок бренд (характер), а не поверхня, яка його показує.
+     Стежить `styles/rows.test.ts`: рядок, що бере власний px, його валить. */
+  --row-bg: var(--field-bg);
+  --row-radius: var(--radius-md);
+  --row-pad-y: var(--sp-2);
+  --row-pad-x: var(--sp-3);
+  --row-gap: var(--sp-3);
+  --row-min-h: 52px;
+  --row-title-size: var(--text-base);
+  --row-title-weight: var(--weight-medium);
+  --row-title-color: var(--text-primary);
+  --row-icon-color: var(--text-secondary);
+  --row-trailing-color: var(--text-muted);
+
   /* ── Border radius ─────────────────────────────────────────────────────── */
   --radius-xs: 2px;
   --radius-sm: 4px;
