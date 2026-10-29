@@ -35,6 +35,7 @@ const components = css("components.css");
 const favorites = css("favorites.css");
 const trackers = css("trackers.css");
 const messages = css("messages.css");
+const contacts = css("contacts.css");
 
 const ROW_TOKENS = [
   "--row-bg",
@@ -143,6 +144,7 @@ describe("рядок бере мірки токенами", () => {
       ["favorites.css", ".wb-favorites-title"],
       ["trackers.css", ".wb-group-title"],
       ["messages.css", ".wb-conv-name"],
+      ["contacts.css", ".wb-contact-name"],
     ];
     for (const [file, selector] of labels) {
       const body = rule(css(file), selector);
@@ -168,6 +170,7 @@ describe("рядок не повертає власні числа", () => {
     ["trackers.css", ".wb-group-title"],
     ["messages.css", ".wb-conv"],
     ["messages.css", ".wb-conv-name"],
+    ["contacts.css", ".wb-contact-name"],
   ];
 
   const pxProperties = /(?:padding|font-size|border-radius|min-height|gap|background)[^;]*\d+px/;

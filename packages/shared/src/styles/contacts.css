@@ -171,11 +171,15 @@
   color: var(--text-muted);
 }
 
+/* Ім'я — підпис рядка, і міряє його той самий набір `--row-*`, що й пункт
+   меню чи назву розмови: 600 робило контакт важчим за сусідній список.
+   `--text-base` лишився там само — попередній розмір був такий самий. */
 .wb-contact-name {
   flex: 1 1 auto;
   min-width: 0;
-  font-size: var(--text-base);
-  font-weight: var(--weight-semibold);
+  font-size: var(--row-title-size);
+  font-weight: var(--row-title-weight);
+  color: var(--row-title-color);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
