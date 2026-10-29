@@ -1539,7 +1539,7 @@ html:has(.wb-tabbar) .wb-modal-overlay--screen {
   height: var(--tools-row-h);
   min-width: 0;
   padding: 0 var(--sp-2);
-  border-radius: 10px;
+  border-radius: var(--radius-sm);
   background: none;
   box-shadow: none;
 }

@@ -1,9 +1,9 @@
 /**
- * Кегль — лише зі шкали токенів, і жоден екран не має свого розміру.
+ * Кегль і кути — лише зі шкали токенів, а не власним числом екрана.
  *
- * Поки в CSS жили `font-size: 9px`, `10px`, `12.5px`, `15px`, той самий підпис
- * на двох екранах був різним. Сторож: `font-size` поза `tokens.css` мусить
- * брати `var(--…)`; сирі числа лишились тільки в полів (iOS) і в `0`.
+ * Поки в CSS жили `font-size: 9px`, `10px`, `12.5px`, `15px` і `border-radius:
+ * 6px`, той самий підпис і та сама картка на двох екранах були різними. Сторож:
+ * `font-size` і `border-radius` поза `tokens.css` беруть `var(--…)`.
  *
  * @module packages/shared/src/styles/type-scale.test
  */
@@ -54,6 +54,19 @@ describe("шкала кеглів", () => {
     for (const step of ["xs", "sm", "base", "md", "lg", "xl", "2xl", "3xl", "4xl", "5xl", "6xl"]) {
       expect(tokens.match(new RegExp(`--text-${step}:`, "g"))?.length, step).toBe(1);
     }
+  });
+
+  it("кути — теж кроки шкали, а не власне число", () => {
+    const allowed = /border-radius:\s*(?:var\(--|0;|0\s|50%;|100%;|inherit)/;
+    const offenders: string[] = [];
+    for (const file of SHEETS) {
+      if (OWNERS.includes(file)) continue;
+      for (const match of read(file).matchAll(/border-radius:\s*[^;]+;/g)) {
+        if (allowed.test(match[0])) continue;
+        offenders.push(`${file}: ${match[0]}`);
+      }
+    }
+    expect(offenders, "кут — зі шкали `--radius-*`").toEqual([]);
   });
 
   it("фокус і рух — наскрізні, а не в окремому екрані", () => {
