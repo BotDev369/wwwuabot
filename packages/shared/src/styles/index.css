@@ -40,6 +40,9 @@
 @import "open-props/src/props.borders.css";
 @import "open-props/src/props.palette.css";
 
+/* ── Родина продукту: файли в бандлі, а не запит до Google ── */
+@import "./font-faces.css";
+
 /* ── Our design tokens + themes ── */
 @import "./tokens.css";
 @import "./themes.css";

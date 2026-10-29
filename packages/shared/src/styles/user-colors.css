@@ -54,8 +54,12 @@ html[data-colors][data-colors-mode="dark"] {
      Без них ці токени приходили зі СХЕМИ (`tokens.css` / `themes.css`), а
      схема — це друга правда про світлоту: темна палітра зі збереженою світлою
      схемою давала білу картку зі світлим текстом. Стежить `one-style.test.ts`. */
-  --card-bg: color-mix(in srgb, var(--user-bg) 94%, var(--user-text));
   --sidebar-bg: color-mix(in srgb, var(--user-bg) 96%, var(--user-text));
+  /* Волосина й край картки — від основного кольору, а не від схеми: у палітрі
+     світлота залежить від фону людини, тож біла межа на світлому тлі зникла б,
+     а темна на темному — стала б плямою. */
+  --hairline: color-mix(in srgb, var(--user-text) 7%, transparent);
+  --card-border: color-mix(in srgb, var(--user-text) 7%, transparent);
   --border-hover: color-mix(in srgb, var(--user-text) 45%, var(--user-bg));
   --selection-bg: color-mix(in srgb, var(--user-text) 16%, transparent);
 
@@ -78,6 +82,7 @@ html[data-colors][data-colors-mode="dark"] {
   /* Поле вводу — той самий кирпичик, що й у схемах: колір трохи інший за
      поверхню, а межу тримає м'яка тінь (див. схеми нижче). */
   --field-bg: var(--bg-3);
+  --switch-knob: color-mix(in srgb, var(--user-text) 82%, var(--user-bg));
 }
 
 /* ── Світлий фон: схема світла ───────────────────────────────────────────── */
@@ -108,6 +113,9 @@ html[data-colors][data-colors-mode="light"] {
     color-mix(in srgb, var(--user-bg) 14%, #ffffff)
   );
 
+  /* Папір картки у світлій палітрі йде В БІК БІЛОГО: домішка основного (темного)
+     робила картку темнішою за екран, і вона читалась як заглиблення. */
+  --card-bg: color-mix(in srgb, var(--user-bg) 86%, #ffffff);
   --surface-overlay: rgb(0 0 0 / 40%);
   --scrim: rgb(0 0 0 / 45%);
 
@@ -140,6 +148,8 @@ html[data-colors][data-colors-mode="dark"] {
   --yellow-dim: color-mix(in srgb, var(--yellow) 18%, var(--user-bg));
   --accent-dim: color-mix(in srgb, var(--user-accent) 18%, var(--user-bg));
 
+  /* Тут навпаки: папір піднімається в бік світлого тексту. */
+  --card-bg: color-mix(in srgb, var(--user-bg) 94%, var(--user-text));
   --surface-overlay: rgb(0 0 0 / 60%);
   --scrim: rgb(0 0 0 / 60%);
 

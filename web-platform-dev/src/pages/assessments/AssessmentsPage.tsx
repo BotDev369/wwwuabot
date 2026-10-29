@@ -126,7 +126,9 @@ export function AssessmentsPage({
 
       {!loading && tests.length === 0 && (
         <div className="wb-empty">
-          <Icon name="progress" size={24} />
+          <span className="wb-empty-icon">
+            <Icon name="growth" size={26} />
+          </span>
           <p className="wb-empty-text">Тут поки немає жодного тесту.</p>
         </div>
       )}

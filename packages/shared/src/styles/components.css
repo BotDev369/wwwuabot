@@ -196,10 +196,12 @@
 
 /* ── Card ────────────────────────────────────────────────────────────────── */
 
-/* Картка — поверхня, а не рамка: її видно тлом і тінню (правило 15). Це
-   стосується й меж усередині: шапку і футер відділяє простір, не лінія. */
+/* Картка — плита над сторінкою: тло, м'яка тінь і волосяна межа краю.
+   Межа не замінює тінь, а тримає край там, де тіні не видно (світла схема на
+   світлому тлі, темна — на темному). */
 .wb-card {
   background: var(--card-bg);
+  border: 1px solid var(--card-border);
   border-radius: var(--card-radius);
   box-shadow: var(--card-shadow);
 }
@@ -208,9 +210,9 @@
    відступами підпис шапки й текст тіла стояли на різних лініях. */
 .wb-card-header {
   padding: var(--card-pad);
-  font-size: var(--text-lg);
-  font-weight: var(--weight-medium);
-  letter-spacing: 0.01em;
+  font-size: var(--heading-card-size);
+  font-weight: var(--heading-card-weight);
+  letter-spacing: var(--tracking-title);
   display: flex;
   align-items: center;
   gap: var(--card-gap);
@@ -1135,7 +1137,7 @@ html:has(.wb-tabbar) .wb-modal-overlay--screen {
 .wb-tabs {
   display: flex;
   flex-direction: row;
-  gap: var(--sp-1);
+  gap: 2px;
   /* Доріжка: два підписи без тла читаються як текст, а не як вибір, тож смуга
      — контрол із тлом поля (`--field-bg`), як у вводу (правило 25,
      виняток «смуга вкладок»). */
@@ -1169,6 +1171,16 @@ html:has(.wb-tabbar) .wb-modal-overlay--screen {
 .wb-tabs-btn {
   flex: 1 0 auto;
   min-width: 0;
+  /* Невибрана вкладка — **прозора** ділянка доріжки, а не друга кнопка:
+     власне тло робило з неї окрему плитку, і смуга читалась як дві різні
+     кнопки замість одного вибору. Колір підпису — другий рівень (видимий,
+     але не головний). */
+  /* Тіні в ділянки доріжки немає: `wb-btn` дає їй `--shadow-xs`, і невибрана
+     вкладка висіла окремою плиткою над смугою — смуга читалась як дві різні
+     кнопки, а не як один вибір. */
+  box-shadow: none;
+  color: var(--text-secondary);
+  font-weight: var(--weight-medium);
   /* Компактна висота — єдина міра смуги: форму (радіус, шрифт, береги) вкладка
      бере у кирпичика кнопки, а тут лише те, чим вкладка **нижча** за кнопку. */
   min-height: var(--tabs-h);
@@ -1326,17 +1338,24 @@ html:has(.wb-tabbar) .wb-modal-overlay--screen {
   }
 }
 
+/* Знак пункту — **у кольоровій плитці**, а не голий: акцентна підкладка дає
+   списку ритм, за яким око веде рядок, і єдине місце акценту в ньому (підпис
+   лишається основним кольором). Розмір плитки — тап-таргет іконки, не більше. */
 .wb-menu-item-icon {
   display: flex;
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
-  color: var(--row-icon-color);
+  width: 36px;
+  height: 36px;
+  border-radius: var(--radius);
+  background: var(--accent-soft);
+  color: var(--accent);
 }
 
 @media (hover: hover) {
   .wb-menu-item:hover .wb-menu-item-icon {
-    color: var(--text-primary);
+    background: var(--accent-dim);
   }
 }
 
@@ -2250,13 +2269,28 @@ button.wb-chip {
   gap: var(--sp-3);
 }
 
+/* Порожній стан починається з **знака на підкладці**, а не з блідої іконки:
+   це єдина пляма кольору в порожньому екрані й точка, з якої око починає
+   читати пояснення під нею. */
 .wb-empty-icon {
-  font-size: var(--text-5xl);
-  opacity: 0.5;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 56px;
+  height: 56px;
+  border-radius: var(--radius-full);
+  background: var(--accent-soft);
+  color: var(--accent);
 }
 
+/* Пояснення порожнього стану — читабельний абзац, а не підпис: 15px, другий
+   рівень кольору й міра рядка, за якою око не губить початок. */
 .wb-empty-text {
-  font-size: var(--text-sm);
+  max-width: 34ch;
+  margin: 0;
+  font-size: var(--value-size);
+  line-height: var(--leading-relaxed);
+  color: var(--text-secondary);
 }
 
 /* ── Skeleton loader ─────────────────────────────────────────────────────── */

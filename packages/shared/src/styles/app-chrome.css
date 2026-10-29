@@ -145,9 +145,10 @@
 }
 
 .wb-appbar__title {
-  font-size: var(--text-md);
+  font-size: var(--text-lg);
   font-weight: var(--weight-semibold);
   color: var(--text-primary);
+  letter-spacing: var(--tracking-title);
   line-height: 1.2;
   /* Довга назва обрізається одним рядом: вона не повинна витісняти дії. */
   overflow: hidden;
@@ -667,6 +668,20 @@
   flex-shrink: 0;
 }
 
+/* Підпис під знаком. Смуга має фіксовану висоту, тож підпис не росте й не
+   ламається: він або влізає цілим, або коротшає трикрапкою. 11px — підлога
+   читабельності на телефоні; менше вже не підпис, а шум. */
+.wb-tabbar-label {
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: var(--text-xs);
+  font-weight: var(--weight-medium);
+  line-height: 1.15;
+  letter-spacing: 0.01em;
+}
+
 /* Число непрочитаних: це **позначка стану**, а не кнопка — тому воно
    над знаком, а не замість нього, і не збільшує смугу (смуга фіксованої
    висоти, а пункт не має рухатися від того, що в нього щось з'явилось).
@@ -1120,8 +1135,9 @@
 
 .wb-profile {
   background: var(--card-bg);
+  border: 1px solid var(--card-border);
   border-radius: var(--card-radius);
-  box-shadow: var(--shadow-xs);
+  box-shadow: var(--card-shadow);
   padding: var(--card-pad);
   margin-bottom: var(--sp-4);
 }
@@ -1130,10 +1146,10 @@
   display: flex;
   align-items: center;
   gap: var(--sp-2);
-  margin: 0 0 var(--sp-3);
-  font-size: var(--text-lg);
-  font-weight: var(--weight-medium);
-  letter-spacing: 0.01em;
+  margin: 0 0 var(--sp-2);
+  font-size: var(--heading-card-size);
+  font-weight: var(--heading-card-weight);
+  letter-spacing: var(--tracking-title);
 }
 
 .wb-profile-fields {
@@ -1156,23 +1172,36 @@
   justify-content: space-between;
   align-items: baseline;
   gap: var(--sp-3);
-  padding: 9px 0;
+  padding: 11px 0;
 }
 
+/* Лінія між рядками — **волосина**, не розділювач картки: вона каже «це інше
+   поле» тим самим прийомом, що й таблиця, і не додає другої поверхні. Перший
+   рядок її не бере — він стоїть одразу під заголовком. */
+.wb-profile-field + .wb-profile-field {
+  border-top: 1px solid var(--hairline);
+}
+
+/* Підпис і значення — **два рівні**, а не один: підпис дрібніший і тихіший
+   (13px, другий колір), значення більше й головне (15px, основний). Поки
+   обидва були 14px і майже одного кольору, картка читалась як суцільний
+   сірий текст, у якому око не знаходить значень. */
 .wb-profile-label {
   display: flex;
   align-items: center;
   gap: 6px;
-  color: var(--text-muted);
-  font-size: var(--text-base);
+  color: var(--text-secondary);
+  font-size: var(--label-size);
 }
 
 /* `max-width` лишає підпису місце: довге значення переноситься саме собою, а не
    виштовхує підпис за край. */
 .wb-profile-value {
   max-width: 62%;
-  font-size: var(--text-base);
+  color: var(--text-primary);
+  font-size: var(--value-size);
   font-weight: var(--weight-medium);
+  letter-spacing: var(--tracking-title);
   text-align: right;
   word-break: break-word;
 }
@@ -1445,12 +1474,15 @@
   width: 26px;
   height: 26px;
   border-radius: var(--radius-full);
-  background: var(--surface);
+  background: var(--switch-knob);
   box-shadow: var(--shadow-xs);
   transition: transform var(--duration-fast) var(--ease);
 }
 
 .wb-switch--on .wb-switch-knob {
+  /* На залитому акценті кружечок беруть з інверсією: він мусить відриватись від
+     заливки в обох схемах, а не збігатись із нею за світлотою. */
+  background: var(--text-inverse);
   transform: translateX(20px);
 }
 

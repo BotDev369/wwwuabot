@@ -1,10 +1,10 @@
 // @vitest-environment jsdom
 /**
- * Футер платформи: **самі знаки**, активний один, бейдж — на «Акаунті».
+ * Футер платформи: знак **і підпис** під ним, активний один, бейдж — на «Акаунті».
  *
- * Перевіряється те, що легко зламати мовчки: підписів під іконками немає
- * (вони лишаються в `aria-label`), активний пункт рівно один, а число
- * непрочитаних стоїть на тому слоті, який його носить.
+ * Перевіряється те, що легко зламати мовчки: підпис стоїть у кожного слота
+ * (і його забирає `aria-label`, коли знак малює лише іконку), активний пункт
+ * рівно один, а число непрочитаних стоїть на тому слоті, який його носить.
  *
  * @module web-platform-dev/src/layout/PlatformTabBar.dom.test
  */
@@ -48,13 +48,16 @@ beforeEach(() => {
 });
 
 describe("футер платформи", () => {
-  it("п'ять слотів, і жодного видимого підпису під знаком", () => {
+  it("п'ять слотів, і в кожного — видимий підпис під знаком", () => {
     renderAt("/services");
 
     expect(slots()).toHaveLength(5);
     for (const slot of slots()) {
-      expect(slot.querySelector(".wb-tabbar-label")).toBeNull();
-      expect(slot.getAttribute("aria-label")).toBeTruthy();
+      const label = slot.querySelector(".wb-tabbar-label");
+      expect(label?.textContent).toBeTruthy();
+      // Підпис видимий, тож `aria-label` не дублює його для скрінрідера:
+      // розділ читається тим самим словом, що й на екрані.
+      expect(slot.getAttribute("aria-label")).toBe(label?.textContent);
     }
   });
 
