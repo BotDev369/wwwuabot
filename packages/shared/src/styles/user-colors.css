@@ -60,7 +60,6 @@ html[data-colors][data-colors-mode="dark"] {
 
   --accent: var(--user-accent);
   --accent-hover: color-mix(in srgb, var(--user-accent) 78%, var(--user-text));
-  --accent-dim: color-mix(in srgb, var(--user-accent) 18%, var(--user-bg));
   --accent-soft: color-mix(in srgb, var(--user-accent) 12%, transparent);
 
   --border: color-mix(in srgb, var(--user-text) 20%, var(--user-bg));
@@ -69,13 +68,6 @@ html[data-colors][data-colors-mode="dark"] {
   /* Поле вводу — той самий кирпичик, що й у схемах: колір трохи інший за
      поверхню, а межу тримає м'яка тінь (див. схеми нижче). */
   --field-bg: var(--bg-3);
-
-  /* Статуси: смисл (зелений / червоний / жовтий) лишається спільним, а
-     підкладка під них береться з фону — інакше плашка «успіх» на чужому тлі
-     виглядала б як приклеєна. */
-  --green-dim: color-mix(in srgb, var(--green) 18%, var(--user-bg));
-  --red-dim: color-mix(in srgb, var(--red) 18%, var(--user-bg));
-  --yellow-dim: color-mix(in srgb, var(--yellow) 20%, var(--user-bg));
 }
 
 /* ── Світлий фон: схема світла ───────────────────────────────────────────── */
@@ -85,7 +77,26 @@ html[data-colors][data-colors-mode="light"] {
   /* Фолбек без JS; з JS — світлота кожного підбирається під фон (`readable.ts`). */
   --green: #16a34a;
   --red: #dc2626;
-  --yellow: #ca8a04;
+  --yellow: #ca8a04; /* Підкладка йде ВІД тексту, а не до нього: домішка в бік кольору забирає
+     контраст, а тут текст темний. Частка тут — найслабша, що тримає AA на
+     будь-якому світлому фоні (фолбек без JS); `readablePlate()` піднімає її
+     до 18%, коли палітра має запас, і опускає, коли його немає. */
+  --green-dim: color-mix(
+    in srgb,
+    var(--green) 12%,
+    color-mix(in srgb, var(--user-bg) 14%, #ffffff)
+  );
+  --red-dim: color-mix(in srgb, var(--red) 12%, color-mix(in srgb, var(--user-bg) 14%, #ffffff));
+  --yellow-dim: color-mix(
+    in srgb,
+    var(--yellow) 12%,
+    color-mix(in srgb, var(--user-bg) 14%, #ffffff)
+  );
+  --accent-dim: color-mix(
+    in srgb,
+    var(--user-accent) 8%,
+    color-mix(in srgb, var(--user-bg) 14%, #ffffff)
+  );
 
   --surface-overlay: rgb(0 0 0 / 40%);
   --scrim: rgb(0 0 0 / 45%);
@@ -111,6 +122,13 @@ html[data-colors][data-colors-mode="dark"] {
   --green: #4ade80;
   --red: #f87171;
   --yellow: #facc15;
+
+  /* Тут текст світлий, тож підкладка йде в бік фону — вона й так темніша за
+     текст. Частку в темній палітрі запас дозволяє всю (див. `readablePlate`). */
+  --green-dim: color-mix(in srgb, var(--green) 18%, var(--user-bg));
+  --red-dim: color-mix(in srgb, var(--red) 18%, var(--user-bg));
+  --yellow-dim: color-mix(in srgb, var(--yellow) 18%, var(--user-bg));
+  --accent-dim: color-mix(in srgb, var(--user-accent) 18%, var(--user-bg));
 
   --surface-overlay: rgb(0 0 0 / 60%);
   --scrim: rgb(0 0 0 / 60%);

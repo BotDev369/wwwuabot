@@ -19,6 +19,15 @@ export const AAA_TEXT = 7;
 /** Сходинки поверхонь із `user-colors.css`: екран, `--bg-2`, `--bg-3`, `--bg-4`. */
 export const SURFACE_STEPS = [1, 0.95, 0.9, 0.86] as const;
 
+/** Частка кольору в підкладці, задумана в дизайні (бейдж, чип, вибраний рядок). */
+export const PLATE_SHARE = 0.18;
+
+/** Дрібніший крок розв'язку: підкладка слабшає на нього, доки текст не втримає AA. */
+const PLATE_STEP = 0.02;
+
+/** Нижче цієї частки підкладки вже немає — тоді її немає й у звіті, а не «майже». */
+const PLATE_MIN_SHARE = 2 * PLATE_STEP;
+
 /** Статусні кольори світлої й темної схеми — ті самі, що в `user-colors.css`. */
 const STATUS_LIGHT = { green: "#16a34a", red: "#dc2626", yellow: "#ca8a04" } as const;
 const STATUS_DARK = { green: "#4ade80", red: "#f87171", yellow: "#facc15" } as const;
@@ -35,6 +44,14 @@ export interface ReadablePalette {
   red: string;
   /** Попередження (`--yellow`). */
   yellow: string;
+  /** Підкладка під успіх (`--green-dim`). */
+  greenPlate: string;
+  /** Підкладка під небезпеку (`--red-dim`). */
+  redPlate: string;
+  /** Підкладка під попередження (`--yellow-dim`). */
+  yellowPlate: string;
+  /** Підкладка під акцент (`--accent-dim`). */
+  accentPlate: string;
 }
 
 /** Усі поверхні, на яких стоїть текст: екран і підняті сходинки над ним. */
@@ -83,6 +100,29 @@ export function readableStatus(seed: string, colors: UserColors): string {
 }
 
 /**
+ * Підкладка під кольором, що на ній написано (бейдж, чип, вибраний рядок).
+ * Іде **від** тексту, а не до нього: домішка в бік кольору забирає контраст, і на
+ * палітрі на межі AA будь-яка частка провалює текст (акцент «Піску» — 3.68:1).
+ * Частка слабшає, доки текст не втримає AA; колір людини не змінюється.
+ */
+export function readablePlate(color: string, colors: UserColors, share = PLATE_SHARE): string {
+  const base = isDarkColor(colors.bg) ? colors.bg : mixHex(colors.bg, "#ffffff", 0.86);
+  const weakest = mixHex(color, base, PLATE_MIN_SHARE);
+  if (contrastRatio(color, weakest) < AA_TEXT) return base;
+
+  // Контраст падає монотонно з часткою, тож ідемо від слабкої до задуманої й
+  // тримаємо останню, що ще проходить: сильніша підкладка вже читалась би гірше.
+  let best = weakest;
+  const steps = Math.round(share / PLATE_STEP);
+  for (let step = 2; step <= steps; step += 1) {
+    const candidate = mixHex(color, base, step * PLATE_STEP);
+    if (contrastRatio(color, candidate) < AA_TEXT) break;
+    best = candidate;
+  }
+  return best;
+}
+
+/**
  * Палітра людини з гарантією AA.
  *
  * Другий рівень цілиться в AAA: між основним і підказкою мусить бути видно
@@ -96,11 +136,19 @@ export function readablePalette(colors: UserColors): ReadablePalette {
   const secondary = worstRatio(strong, surfaces) > worstRatio(muted, surfaces) ? strong : muted;
 
   const seeds = isDarkColor(colors.bg) ? STATUS_DARK : STATUS_LIGHT;
+  const green = readableStatus(seeds.green, colors);
+  const red = readableStatus(seeds.red, colors);
+  const yellow = readableStatus(seeds.yellow, colors);
+
   return {
     secondary,
     muted,
-    green: readableStatus(seeds.green, colors),
-    red: readableStatus(seeds.red, colors),
-    yellow: readableStatus(seeds.yellow, colors),
+    green,
+    red,
+    yellow,
+    greenPlate: readablePlate(green, colors),
+    redPlate: readablePlate(red, colors),
+    yellowPlate: readablePlate(yellow, colors),
+    accentPlate: readablePlate(colors.accent, colors),
   };
 }

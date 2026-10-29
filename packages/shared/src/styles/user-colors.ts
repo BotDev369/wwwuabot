@@ -40,7 +40,17 @@ export type {
 
 /** CSS-змінна сідового кольору на `<html>` (їх читає `user-colors.css`). */
 /** Похідні токени, які ставить `readablePalette()`: без вибору їх треба зняти. */
-const DERIVED_PROPS = ["--text-secondary", "--text-muted", "--green", "--red", "--yellow"] as const;
+const DERIVED_PROPS = [
+  "--text-secondary",
+  "--text-muted",
+  "--green",
+  "--red",
+  "--yellow",
+  "--green-dim",
+  "--red-dim",
+  "--yellow-dim",
+  "--accent-dim",
+] as const;
 
 export function seedVariable(slot: ColorSlot): string {
   return `--user-${slot}`;
@@ -170,8 +180,8 @@ export function activeColorsFromDom(): UserColors | null {
  * Застосувати вибір до документа (або зняти його — `null`).
  * Значення летять у CSS-змінні на `<html>`, а решту палітри виводить `user-colors.css`.
  * Тому тут три сіди й ті похідні, які не можна вивести відсотком: `readablePalette()`
- * рахує відтінки тексту й статусів так, щоб кожен тримав AA на всіх поверхнях фону.
- * Решта (поверхні, межі, підкладки) лишається в CSS — там відсоток і є числом.
+ * рахує відтінки тексту, статусів **і підкладок під ними** так, щоб кожен тримав AA.
+ * Решта (поверхні, межі, акцентна підкладка під фокус) лишається в CSS.
  */
 export function applyColors(colors: UserColors | null): void {
   if (typeof document === "undefined") return;
@@ -199,6 +209,10 @@ export function applyColors(colors: UserColors | null): void {
   root.style.setProperty("--green", palette.green);
   root.style.setProperty("--red", palette.red);
   root.style.setProperty("--yellow", palette.yellow);
+  root.style.setProperty("--green-dim", palette.greenPlate);
+  root.style.setProperty("--red-dim", palette.redPlate);
+  root.style.setProperty("--yellow-dim", palette.yellowPlate);
+  root.style.setProperty("--accent-dim", palette.accentPlate);
 }
 
 /** Чи два вибори — це той самий вибір (щоб не малювати «незбережене» даремно). */
