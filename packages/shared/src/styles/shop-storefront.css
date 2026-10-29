@@ -38,7 +38,17 @@
    Токени успадковуються, і це тут головне: їх читають і блоки, які продавець
    написав у редакторі сторінки (вони малюються інлайновими `var(--bg-1)` /
    `var(--text-primary)`), тож набір оголошено на обох коренях, які ці блоки
-   бачать, — на вітрині й на сітці товарів. */
+   бачать, — на вітрині й на сітці товарів.
+
+   Папір свій, а **чорнило — сходинка теми** (`tokens.css` / `themes.css`):
+   папір білий, тож те саме чорнило тримає AA із запасом, і другого набору
+   сірих у продукті не з'являється. Власні сірі давали 2.7:1 на натиснутій
+   поверхні — «приглушене» не читалось зовсім.
+
+   Акцентну **підкладку** вітрина не оголошує навмисно: її частку розв'язує
+   `readablePlate()` під акцент людини, а будь-яка фіксована частка (12%, 22%)
+   тільки забирає контраст у напису на ній — на межі AA це 3.9:1. Тому
+   `--accent-dim` і `--accent-soft` успадковуються від теми або вибору людини. */
 .shop-store,
 .shop-catalog {
   --surface: #ffffff;
@@ -53,10 +63,8 @@
   --border: #dcdfe7;
   --border-subtle: #e8eaf0;
   --text-primary: #14161c;
-  --text-secondary: #5a6070;
-  --text-muted: #878d9c;
-  --accent-dim: color-mix(in srgb, var(--accent) 12%, #ffffff);
-  --accent-soft: color-mix(in srgb, var(--accent) 16%, transparent);
+  --text-secondary: #44464f;
+  --text-muted: #5c5f67;
 
   /* Тіні власні: у схемах вони розраховані на ледь помітний крок між тлом і
      поверхнею, а тут папір лежить на **кольоровому** тлі теми — без тіні він
@@ -92,9 +100,8 @@ html[data-colors-mode="dark"] .shop-catalog {
   --border: #333846;
   --border-subtle: #272c36;
   --text-primary: #f2f4f8;
-  --text-secondary: #a8aec0;
-  --text-muted: #7c8496;
-  --accent-dim: color-mix(in srgb, var(--accent) 22%, #191c25);
+  --text-secondary: #c7c5d0;
+  --text-muted: #a2a2ac;
   --shop-shadow: 0 1px 2px rgb(0 0 0 / 40%), 0 8px 24px rgb(0 0 0 / 45%);
   --shop-shadow-soft: 0 1px 2px rgb(0 0 0 / 30%), 0 4px 14px rgb(0 0 0 / 30%);
   --shop-hero: linear-gradient(158deg, #2b3142 0%, #1b1f2b 100%);

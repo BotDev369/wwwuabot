@@ -49,12 +49,20 @@ function rawToken(css: string, name: string): string {
 /**
  * Підкладка очима екрана: суцільний колір — як є, напівпрозорий шар — накладеним
  * на поверхню під ним. Бейдж стоїть на різних поверхнях, тож міряємо кожну.
+ * Обидва записи прозорості: `rgba(r, g, b, a)` і `rgb(r g b / a%)`.
  */
 function plateOn(color: string, surface: string): string {
   const rgba = color.match(/rgba?\(([^)]+)\)/);
   const under = hexToRgb(surface);
   if (!rgba || !under) return color;
-  const [r, g, b, alpha = 1] = rgba[1].split(",").map((part) => Number(part.trim()));
+  const parts = rgba[1]
+    .replace("/", " ")
+    .split(/[\s,]+/)
+    .filter(Boolean);
+  const [r, g, b] = parts.slice(0, 3).map(Number);
+  const raw = parts[3];
+  const alpha =
+    raw === undefined ? 1 : Number(raw.replace("%", "")) / (raw.endsWith("%") ? 100 : 1);
   return rgbToHex({
     r: r * alpha + under.r * (1 - alpha),
     g: g * alpha + under.g * (1 - alpha),
@@ -77,6 +85,22 @@ function channelDelta(a: string, b: string): number {
 /** Поверхні, на яких справді стоїть текст (градієнт `--surface` не входить). */
 const SURFACES = ["bg-0", "bg-2", "bg-3", "bg-4", "card-bg"] as const;
 
+/**
+ * Папір вітрини магазину (`shop-storefront.css`): її власні поверхні.
+ * `--surface-hover` і `--surface-active` теж тут: рядок товару й кнопка
+ * стають на них під курсором та під пальцем.
+ */
+const STOREFRONT_SURFACES = [
+  "surface",
+  "surface-hover",
+  "surface-active",
+  "bg-1",
+  "bg-2",
+  "bg-3",
+  "bg-4",
+  "field-bg",
+] as const;
+
 /** Рівні тексту й статуси: усе це — текст, а не заливка. */
 const TEXT_LEVELS = ["text-primary", "text-secondary", "text-muted"] as const;
 const STATUSES = ["green", "red", "yellow"] as const;
@@ -95,6 +119,20 @@ const MIN_PLATE_DELTA = 4;
 /** Найгірший контраст кольору з поверхнями: саме він і вирішує. */
 function worst(color: string, surfaces: readonly string[]): number {
   return Math.min(...surfaces.map((surface) => contrastRatio(color, surface)));
+}
+
+/**
+ * Тіло правила за селектором: палітра вітрини лежить двома блоками одного файлу —
+ * світлим і темним, і перевіряти треба саме їх, а не схему, яку вони перекривають.
+ * Маркер мусить закінчуватись на `{`.
+ */
+function ruleBody(css: string, selector: RegExp): string {
+  const match = selector.exec(css);
+  if (!match) {
+    throw new Error(`Селектор «${selector.source}» не знайдено: палітра вітрини переїхала?`);
+  }
+  const open = match.index + match[0].length - 1;
+  return css.slice(open + 1, css.indexOf("}", open));
 }
 
 function expectAa(color: string, surfaces: readonly string[], label: string): void {
@@ -170,6 +208,91 @@ describe("плашки статусів і бейджі читаються", () 
       const css = sheet(file);
       const ratio = contrastRatio(token(css, "text-secondary"), token(css, "surface-active"));
       expect(ratio, `${file}: neutral ${ratio.toFixed(2)}`).toBeGreaterThanOrEqual(AA_TEXT);
+    }
+  });
+});
+
+/**
+ * Вітрина магазину оголошує **власний папір** і не читає пару «поверхня / текст»
+ * із теми (`shop-storefront.css`): ціну читають на будь-якій палітрі людини, де
+ * фон і текст бувають сусідніми відтінками. Папір свій — пороги ті самі, і
+ * стосуються вони саме її блоків, а не схеми, яку вітрина перекриває.
+ */
+describe("вітрина магазину: власний папір тримає ті самі пороги", () => {
+  const storefront = sheet("shop-storefront.css");
+  const blocks = [
+    {
+      label: "світла",
+      body: ruleBody(storefront, /\.shop-store,\s*\.shop-catalog\s*\{/),
+      scheme: "tokens.css",
+    },
+    {
+      label: "темна",
+      body: ruleBody(storefront, /html\[data-colors-mode="dark"\] \.shop-catalog\s*\{/),
+      scheme: "themes.css",
+    },
+  ] as const;
+
+  for (const block of blocks) {
+    it(`${block.label}: текст на власному папері`, () => {
+      const surfaces = STOREFRONT_SURFACES.map((name) => token(block.body, name));
+
+      for (const level of TEXT_LEVELS) {
+        expectAa(token(block.body, level), surfaces, `вітрина (${block.label}): --${level}`);
+      }
+      // Другий рівень не зливається з підказкою: інакше це два однакові сірі.
+      expect(
+        worst(token(block.body, "text-secondary"), surfaces),
+        `вітрина (${block.label}): другий рівень не сильніший за підказку`,
+      ).toBeGreaterThan(worst(token(block.body, "text-muted"), surfaces));
+    });
+
+    it(`${block.label}: написи на плашках вітрини`, () => {
+      const scheme = sheet(block.scheme);
+      const accent = token(scheme, "accent");
+      const surfaces = STOREFRONT_SURFACES.map((name) => token(block.body, name));
+      // Клик кнопки картки, крок кількості й знак розділу беруть плашку з теми
+      // або з `readablePlate()` — саме тому її частка тут не оголошена.
+      const plates = [
+        { name: "акцентна плашка", ink: accent, plate: rawToken(scheme, "accent-dim") },
+        { name: "акцент під дотиком", ink: accent, plate: rawToken(scheme, "accent-soft") },
+        {
+          name: "плашка успіху",
+          ink: token(scheme, "green"),
+          plate: rawToken(scheme, "green-dim"),
+        },
+      ];
+
+      for (const { name, ink, plate } of plates) {
+        for (const surface of surfaces) {
+          const painted = plateOn(plate, surface);
+          const ratio = contrastRatio(ink, painted);
+          expect(
+            ratio,
+            `вітрина (${block.label}): ${name} над --${surface}: ${ratio.toFixed(2)}`,
+          ).toBeGreaterThanOrEqual(AA_TEXT);
+        }
+      }
+
+      // Суцільний акцент: кошик, лічильник кошика й знак розділу.
+      const onAccent = contrastRatio(token(scheme, "text-inverse"), accent);
+      expect(
+        onAccent,
+        `вітрина (${block.label}): підпис на акценті ${onAccent.toFixed(2)}`,
+      ).toBeGreaterThanOrEqual(AA_TEXT);
+    });
+  }
+
+  it("плашку акценту вітрина не вигадує своїм відсотком", () => {
+    // Фіксована частка забирала контраст у напису на ній: акцент на межі AA давав
+    // 3.9:1 замість 4.5. Плашка приходить із теми або з `readablePlate()`.
+    for (const block of blocks) {
+      expect(block.body, "вітрина: --accent-dim переїхав у власну палітру").not.toContain(
+        "--accent-dim",
+      );
+      expect(block.body, "вітрина: --accent-soft переїхав у власну палітру").not.toContain(
+        "--accent-soft",
+      );
     }
   });
 });
