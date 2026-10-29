@@ -495,10 +495,8 @@
 
 .wb-alerts-title {
   margin: 0 0 var(--sp-2);
-  /* `!important` — тільки проти брендового `h2`/`h3` («android.css»); розмір і
-     вага приходять токеном, як у решти заголовків частини сторінки. */
-  font-size: var(--heading-section-size) !important;
-  font-weight: var(--heading-section-weight) !important;
+  font-size: var(--heading-section-size);
+  font-weight: var(--heading-section-weight);
   line-height: 1.35;
   color: var(--text-primary);
 }
@@ -553,8 +551,8 @@
  */
 .wb-section-title {
   margin: 0 0 var(--sp-2);
-  font-size: var(--heading-section-size) !important;
-  font-weight: var(--heading-section-weight) !important;
+  font-size: var(--heading-section-size);
+  font-weight: var(--heading-section-weight);
   line-height: 1.35;
   color: var(--text-primary);
 }
@@ -632,8 +630,8 @@
    бал. Див. `.wb-section-title`. */
 .wb-scale-result-title {
   margin: 0 0 var(--sp-2);
-  font-size: var(--heading-section-size) !important;
-  font-weight: var(--heading-section-weight) !important;
+  font-size: var(--heading-section-size);
+  font-weight: var(--heading-section-weight);
   line-height: 1.35;
   color: var(--text-primary);
 }
@@ -669,8 +667,8 @@
 
 .wb-combined-title {
   margin: 0 0 var(--sp-1);
-  font-size: var(--heading-section-size) !important;
-  font-weight: var(--heading-section-weight) !important;
+  font-size: var(--heading-section-size);
+  font-weight: var(--heading-section-weight);
   line-height: 1.35;
   color: var(--text-primary);
 }

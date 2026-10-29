@@ -115,18 +115,16 @@ describe("заголовки всередині екрана — три ролі
     }
   });
 
-  it("заголовок усередині заголовка не перебиває бренд", () => {
-    // `h2`/`h3` у бренді піднімаються через `!important` (`android.css`), тож
-    // без нього токен просто не діє — і заголовок знову стає 22px.
+  it("заголовок частини сторінки не воює з брендом через `!important`", () => {
+    // Бренд типографіку елементів більше не піднімає (`typography.test.ts`),
+    // тож `!important` у заголовка — це вже борг, а не захист.
     for (const selector of [
       ".wb-section-title",
       ".wb-alerts-title",
       ".wb-scale-result-title",
       ".wb-combined-title",
     ]) {
-      expect(rule(css("assessments.css"), selector), selector).toContain(
-        "var(--heading-section-size) !important",
-      );
+      expect(rule(css("assessments.css"), selector), selector).not.toContain("!important");
     }
   });
 

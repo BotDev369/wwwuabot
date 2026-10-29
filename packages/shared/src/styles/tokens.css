@@ -75,6 +75,18 @@
   --font-mono: "JetBrains Mono", "Fira Code", ui-monospace, monospace;
   --font-display: "Space Grotesk", var(--font-ui);
 
+  /* Заголовки документа (`h1`–`h3`). Одна міра на продукт і **без** бренду:
+     розмір частини сторінки задає її власний клас (`.wb-section-title`), а
+     сам елемент дає лише типове значення — тому й без `!important`. Поки ці
+     числа жили в бренді з `!important`, будь-який заголовок усередині екрана
+     ставав 22px, і кожна сторінка мала свій вигляд. */
+  --h1-size: 1.75rem; /* 28px */
+  --h1-weight: var(--weight-normal);
+  --h2-size: 1.375rem; /* 22px */
+  --h2-weight: var(--weight-medium);
+  --h3-size: 1.125rem; /* 18px */
+  --h3-weight: var(--weight-medium);
+
   --text-xs: 0.75rem; /* 12px */
   --text-sm: 0.8125rem; /* 13px */
   --text-base: 0.875rem; /* 14px */
