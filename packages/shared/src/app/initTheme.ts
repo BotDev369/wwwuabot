@@ -21,10 +21,9 @@
  * No "system" mode — defaults to "dark" if nothing stored.
  */
 import { applyFont, readStoredFont } from "../styles/font-dom";
+import { readStoredScheme } from "../styles/registry";
 import { applyColors, readStoredColors } from "../styles/user-colors";
 import { initTelegramChrome } from "./telegram-chrome";
-
-const THEME_KEY = "wwwuabot-theme";
 
 /** Ключі вибору стилю, яких більше немає: прибираємо, а не читаємо. */
 const DEAD_STYLE_KEYS = ["wwwuabot-brand", "wwwuabot-style"];
@@ -35,9 +34,7 @@ export function initTheme(): void {
     for (const key of DEAD_STYLE_KEYS) localStorage.removeItem(key);
 
     // ── Resolve scheme (light/dark only, no system) ──────────────────
-    const raw = localStorage.getItem(THEME_KEY);
-    const scheme: "light" | "dark" = raw === "light" || raw === "dark" ? raw : "dark";
-    document.documentElement.setAttribute("data-theme", scheme);
+    document.documentElement.setAttribute("data-theme", readStoredScheme());
   } catch {
     /* ignore — localStorage may be unavailable */
   }

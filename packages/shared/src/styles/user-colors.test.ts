@@ -25,6 +25,7 @@ import { fileURLToPath } from "node:url";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { hexToHsl, hslToHex, normalizeHex } from "./color";
 import { readablePalette } from "./readable";
+import { SCHEME_KEY } from "./registry";
 import { COLOR_CHART, COLOR_SHADES, HUE_TRACK, channelTrack } from "./color-presets";
 import {
   COLORS_ATTR,
@@ -176,6 +177,8 @@ describe("applyColors ставить три сіди на <html>", () => {
     expect(root.props.get("--user-on-accent")).toBe(COMPLETE.bg);
     expect(root.attributes.get(COLORS_ATTR)).toBe("custom");
     expect(root.attributes.get(COLORS_MODE_ATTR)).toBe("dark");
+    // Схема — наслідок фону: збережена світла схема не сміє лишитися.
+    expect(root.attributes.get("data-theme")).toBe("dark");
   });
 
   it("ставить текстові рівні й статуси, пораховані під AA", () => {
@@ -191,12 +194,19 @@ describe("applyColors ставить три сіди на <html>", () => {
     expect(root.props.get("--yellow")).toBe(palette.yellow);
   });
 
-  it("прибирає все дочиста — інакше вибір не відпустити", () => {
+  it("прибирає палітру дочиста й вертає вибрану схему", () => {
+    // Без палітри лишається рівно один атрибут — схема з памʼяті. Якщо він
+    // лишиться від палітри, екран житиме у світлоті, якої людина не вибирала.
+    vi.stubGlobal("localStorage", {
+      getItem: (key: string) => (key === SCHEME_KEY ? "light" : null),
+    });
     const root = stubDocument();
     applyColors(COMPLETE);
-    applyColors(null);
+    expect(root.attributes.get("data-theme")).toBe("dark");
 
-    expect(root.attributes.size).toBe(0);
+    applyColors(null);
+    expect([...root.attributes.keys()]).toEqual(["data-theme"]);
+    expect(root.attributes.get("data-theme")).toBe("light");
     expect(root.props.size).toBe(0);
   });
 });

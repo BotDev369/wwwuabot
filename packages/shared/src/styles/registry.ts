@@ -16,3 +16,15 @@
 export type Scheme = "light" | "dark";
 
 export type Theme = Scheme;
+
+/** Ключ схеми в памʼяті пристрою — один на `initTheme`, `useStyleTheme` і палітру. */
+export const SCHEME_KEY = "wwwuabot-theme";
+
+/** Схема з памʼяті пристрою: усе, крім `light`, — темна (типова). */
+export function readStoredScheme(): Scheme {
+  try {
+    return localStorage.getItem(SCHEME_KEY) === "light" ? "light" : "dark";
+  } catch {
+    return "dark";
+  }
+}

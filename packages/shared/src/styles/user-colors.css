@@ -49,6 +49,16 @@ html[data-colors][data-colors-mode="dark"] {
   --surface-hover: var(--bg-3);
   --surface-active: var(--bg-4);
 
+  /* Папір і межа, яких схеми не виводять із сідових: картка — сходинка над
+     екраном, сайдбар — плита над ним, межа під курсором — темніша за типову.
+     Без них ці токени приходили зі СХЕМИ (`tokens.css` / `themes.css`), а
+     схема — це друга правда про світлоту: темна палітра зі збереженою світлою
+     схемою давала білу картку зі світлим текстом. Стежить `one-style.test.ts`. */
+  --card-bg: color-mix(in srgb, var(--user-bg) 94%, var(--user-text));
+  --sidebar-bg: color-mix(in srgb, var(--user-bg) 96%, var(--user-text));
+  --border-hover: color-mix(in srgb, var(--user-text) 45%, var(--user-bg));
+  --selection-bg: color-mix(in srgb, var(--user-text) 16%, transparent);
+
   /* Текст — три рівні одного кольору. Відсотки тут — фолбек без JS:
      `applyColors()` ставить точні відтінки, пораховані під AA на всіх
      поверхнях цього фону (`styles/readable.ts`). Фіксований відсоток не

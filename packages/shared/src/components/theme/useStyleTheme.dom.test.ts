@@ -19,6 +19,8 @@ const THEME_KEY = "wwwuabot-theme";
 beforeEach(() => {
   localStorage.clear();
   document.documentElement.removeAttribute("data-theme");
+  document.documentElement.removeAttribute("data-colors");
+  document.documentElement.removeAttribute("data-colors-mode");
 });
 
 describe("useStyleTheme", () => {
@@ -48,5 +50,26 @@ describe("useStyleTheme", () => {
     expect(result.current.scheme).toBe("light");
     act(() => result.current.toggleScheme());
     expect(result.current.scheme).toBe("dark");
+  });
+
+  it("палітра людини сильніша за схему: перемикач її не перебиває", () => {
+    // Саме так екран ставав нечитабельним: на темній палітрі лишалася
+    // збережена світла схема, і картка (`--card-bg`) приходила з неї — біла
+    // під білим текстом.
+    document.documentElement.setAttribute("data-colors", "custom");
+    document.documentElement.setAttribute("data-colors-mode", "dark");
+    document.documentElement.setAttribute("data-theme", "dark");
+
+    const { result } = renderHook(() => useStyleTheme());
+    expect(result.current.scheme).toBe("dark");
+
+    act(() => result.current.setScheme("light"));
+    expect(document.documentElement.getAttribute("data-theme")).toBe("dark");
+
+    // Палітру знято — схема знову має голос.
+    document.documentElement.removeAttribute("data-colors");
+    document.documentElement.removeAttribute("data-colors-mode");
+    act(() => result.current.setScheme("light"));
+    expect(document.documentElement.getAttribute("data-theme")).toBe("light");
   });
 });

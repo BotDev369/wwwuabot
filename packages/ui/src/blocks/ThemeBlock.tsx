@@ -52,23 +52,23 @@ export function ThemeBlock({ block }: BlockComponentProps) {
           style={{
             display: "inline-flex",
             alignItems: "center",
-            gap: 8,
-            padding: "6px 12px",
-            borderRadius: "var(--radius-full, 9999px)",
+            gap: "var(--sp-2)",
+            padding: "var(--sp-1) var(--sp-3)",
+            borderRadius: "var(--radius-full)",
             border: "1px solid var(--border)",
-            background: "var(--bg-2, rgba(128,128,128,0.08))",
+            background: "var(--bg-2)",
             color: "var(--text-primary)",
             cursor: "pointer",
-            fontSize: 13,
-            fontWeight: 500,
-            transition: "all 0.2s",
+            fontSize: "var(--text-sm)",
+            fontWeight: "var(--weight-medium)",
+            transition: "all var(--duration-fast) var(--ease)",
           }}
         >
           <span
             style={{
               display: "inline-flex",
               alignItems: "center",
-              color: "var(--accent, #6366f1)",
+              color: "var(--accent)",
             }}
           >
             {isDark ? icons["moon"] : icons["sun"]}
@@ -78,12 +78,12 @@ export function ThemeBlock({ block }: BlockComponentProps) {
             style={{
               width: 28,
               height: 16,
-              borderRadius: 8,
-              background: isDark ? "var(--accent, #6366f1)" : "var(--bg-4, #ccc)",
+              borderRadius: "var(--radius-full)",
+              background: isDark ? "var(--accent)" : "var(--bg-4)",
               display: "inline-flex",
               alignItems: "center",
               padding: 2,
-              transition: "background 0.2s",
+              transition: "background var(--duration-fast) var(--ease)",
             }}
           >
             <span
@@ -91,10 +91,10 @@ export function ThemeBlock({ block }: BlockComponentProps) {
                 width: 12,
                 height: 12,
                 borderRadius: "50%",
-                background: "#fff",
+                background: isDark ? "var(--text-inverse)" : "var(--surface)",
                 transform: isDark ? "translateX(12px)" : "translateX(0)",
-                transition: "transform 0.2s",
-                boxShadow: "0 1px 2px rgba(0,0,0,0.2)",
+                transition: "transform var(--duration-fast) var(--ease)",
+                boxShadow: "var(--shadow-xs)",
               }}
             />
           </span>
@@ -114,10 +114,10 @@ export function ThemeBlock({ block }: BlockComponentProps) {
             height: 36,
             borderRadius: "50%",
             border: "1px solid var(--border)",
-            background: "var(--bg-2, rgba(128,128,128,0.08))",
-            color: isDark ? "#fbbf24" : "#f59e0b",
+            background: "var(--bg-2)",
+            color: "var(--accent)",
             cursor: "pointer",
-            transition: "all 0.2s",
+            transition: "all var(--duration-fast) var(--ease)",
           }}
         >
           {isDark ? icons["moon"] : icons["sun"]}

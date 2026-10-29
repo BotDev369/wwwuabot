@@ -141,9 +141,9 @@ export function NavBlock({ block, zone, context }: BlockComponentProps) {
           ...base,
           padding: `${padY}px ${padX + 6}px`,
           borderRadius: "var(--radius-md, 6px)",
-          background: "var(--accent, #6366f1)",
-          color: "#fff",
-          boxShadow: "0 1px 2px rgba(0,0,0,0.05)",
+          background: "var(--accent)",
+          color: "var(--text-inverse)",
+          boxShadow: "var(--shadow-xs)",
         };
       case "underline":
         return {

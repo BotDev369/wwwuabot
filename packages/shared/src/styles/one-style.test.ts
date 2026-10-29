@@ -51,6 +51,16 @@ function sources(dir: string, out: string[] = []): string[] {
 
 const FILES = DIRS.flatMap((dir) => sources(dir)).filter((file) => file !== GUARD);
 
+/** Оголошені токени файлу: перше значення кожного імені. */
+function tokens(file: string): Record<string, string> {
+  const css = readFileSync(join(REPO_ROOT, file), "utf8");
+  const out: Record<string, string> = {};
+  for (const match of css.matchAll(/^\s*--([a-z0-9-]+)\s*:\s*([^;]+);/gm)) {
+    out[match[1]] ??= match[2].trim().replace(/\s+/g, " ");
+  }
+  return out;
+}
+
 describe("другого шару стилів немає", () => {
   it("атрибута вибору стилю й файлу-шару не згадує ні код, ні розмітка, ні документ", () => {
     // Правило існує тому, що шар повертається одним рядком: `android.css` у
@@ -64,6 +74,26 @@ describe("другого шару стилів немає", () => {
   it("у пакеті стилів немає файлу-шару", () => {
     const files = readdirSync(new URL(".", import.meta.url));
     expect(files.filter((name) => /^(?:android|apple|brand)\.css$/.test(name))).toEqual([]);
+  });
+
+  it("палітра людини задає кожен колір, у якому схеми розходяться", () => {
+    // Токен, про який світла й темна схема кажуть різне, — це колір світлоти.
+    // Якщо його не задає палітра, він приходить зі СХЕМИ, і темна палітра в
+    // збереженій світлій схемі отримує білу картку під світлим текстом: саме
+    // так екран «Акаунт» ставав нечитабельним. Тіні — не колір, а світло:
+    // їх глибину схема задає навмисно.
+    const SCHEME_OWNED = /^(?:shadow-|elevation-)|-shadow$/;
+
+    const light = tokens("packages/shared/src/styles/tokens.css");
+    const dark = tokens("packages/shared/src/styles/themes.css");
+    const palette = tokens("packages/shared/src/styles/user-colors.css");
+
+    const missing = Object.keys(dark)
+      .filter((name) => light[name] !== undefined && light[name] !== dark[name])
+      .filter((name) => !SCHEME_OWNED.test(name))
+      .filter((name) => palette[name] === undefined);
+
+    expect(missing, "колір мусить мати одну правду — палітру, а не схему").toEqual([]);
   });
 
   it("мірки оголошені РАЗ — у `tokens.css`", () => {

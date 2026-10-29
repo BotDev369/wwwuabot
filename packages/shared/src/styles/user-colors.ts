@@ -23,6 +23,7 @@
 
 import { contrastRatio, isDarkColor, isHexColor, normalizeHex } from "./color";
 import { readablePalette } from "./readable";
+import { readStoredScheme } from "./registry";
 // Слоти й типи — з DOM-вільного сусіда: їх імпортує й сервер (перевірка схеми).
 import { COLOR_SLOTS, COLORS_ATTR, COLORS_MODE_ATTR, USER_COLORS_KEY } from "./user-colors.types";
 import type { ColorDraft, ColorsMode, ColorSlot, UserColors } from "./user-colors.types";
@@ -193,11 +194,18 @@ export function applyColors(colors: UserColors | null): void {
     for (const { id } of COLOR_SLOTS) root.style.removeProperty(seedVariable(id));
     for (const name of DERIVED_PROPS) root.style.removeProperty(name);
     root.style.removeProperty("--user-on-accent");
+    // Схема вертається до вибраної руками — інакше після зняття палітри
+    // лишається світлота, яку задавав її фон.
+    root.setAttribute("data-theme", readStoredScheme());
     return;
   }
 
   root.setAttribute(COLORS_ATTR, "custom");
   root.setAttribute(COLORS_MODE_ATTR, colorsMode(colors.bg));
+  // Схема — наслідок фону, а не другий перемикач: поки на `<html>` стоїть
+  // палітра, `data-theme` мусить казати те саме, що `data-colors-mode`,
+  // інакше від схеми лишаються ті токени, яких палітра не виводить (тіні, хром).
+  root.setAttribute("data-theme", colorsMode(colors.bg));
   root.style.setProperty(seedVariable("bg"), colors.bg);
   root.style.setProperty(seedVariable("text"), colors.text);
   root.style.setProperty(seedVariable("accent"), colors.accent);

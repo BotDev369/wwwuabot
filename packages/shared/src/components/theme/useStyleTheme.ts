@@ -12,21 +12,29 @@
  */
 
 import { useCallback, useEffect, useState } from "react";
-import type { Scheme } from "../../styles/registry";
+import { SCHEME_KEY, readStoredScheme, type Scheme } from "../../styles/registry";
+import { COLORS_ATTR, COLORS_MODE_ATTR } from "../../styles/user-colors";
 
-const THEME_KEY = "wwwuabot-theme";
-
-function getStoredScheme(): Scheme {
-  try {
-    const raw = localStorage.getItem(THEME_KEY);
-    if (raw === "light" || raw === "dark") return raw;
-    return "dark";
-  } catch {
-    return "dark";
-  }
+/**
+ * Світлота, яку задає палітра людини, — або `null`, коли палітри немає.
+ *
+ * Поки три кольори стоять на `<html>`, `data-theme` до вигляду не має
+ * голосу: світлоту виводить фон (`applyColors` ставить обидва атрибути разом).
+ */
+function paletteScheme(): Scheme | null {
+  const root = document.documentElement;
+  if (!root.hasAttribute(COLORS_ATTR)) return null;
+  const mode = root.getAttribute(COLORS_MODE_ATTR);
+  return mode === "light" || mode === "dark" ? mode : null;
 }
 
+function getStoredScheme(): Scheme {
+  return paletteScheme() ?? readStoredScheme();
+}
+
+/** Схема не перебиває палітру: інакше перемикач на сторінці ламав би її мовчки. */
 function applyScheme(scheme: Scheme) {
+  if (paletteScheme()) return;
   document.documentElement.setAttribute("data-theme", scheme);
 }
 
@@ -37,7 +45,7 @@ export function useStyleTheme() {
   const setScheme = useCallback((next: Scheme) => {
     setSchemeState(next);
     try {
-      localStorage.setItem(THEME_KEY, next);
+      localStorage.setItem(SCHEME_KEY, next);
     } catch {
       /* ignore */
     }
