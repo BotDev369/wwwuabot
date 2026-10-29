@@ -61,8 +61,12 @@ describe("екран проходження", () => {
  */
 describe("заголовки секцій результату", () => {
   it("не піднімаються бренд-темою до розміру заголовка екрана", () => {
+    // Розмір — токен частини сторінки (`--heading-section-*`), а `!important`
+    // лишається єдиною причиною, чому брендовий `h2` не робить із нього 22px.
     for (const selector of [".wb-section-title", ".wb-alerts-title"]) {
-      expect(rule(selector), selector).toContain("font-size: 0.9375rem !important");
+      expect(rule(selector), selector).toContain(
+        "font-size: var(--heading-section-size) !important",
+      );
     }
   });
 });

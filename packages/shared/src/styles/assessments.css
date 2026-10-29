@@ -22,11 +22,10 @@
 .wb-test-card {
   display: flex;
   flex-direction: column;
-  gap: var(--sp-3);
-  padding: var(--sp-4);
-  background: var(--surface);
-  border: 1px solid var(--border-subtle);
-  border-radius: var(--radius-lg);
+  gap: var(--card-gap);
+  padding: var(--card-pad);
+  background: var(--card-bg);
+  border-radius: var(--card-radius);
 }
 
 /* Тіло розгорнутого рядка: опис, факт про людину й кнопка — одна колонка
@@ -152,8 +151,8 @@
 
 .wb-run-block-title {
   margin: 0;
-  font-size: 1.0625rem;
-  font-weight: var(--weight-bold);
+  font-size: var(--heading-section-size);
+  font-weight: var(--heading-section-weight);
   line-height: 1.3;
   color: var(--text-primary);
 }
@@ -273,7 +272,9 @@
 
 /* Розкид по сферах — головний зміст результату. Відділяється від балу
    відступом, бо це інша мова: бал про інструмент, це про людину. */
-.wb-profile {
+/* Клас НЕ `.wb-profile`: той уже зайнятий карткою акаунта (`app-chrome.css`),
+   і розкид по сферах успадковував її градієнт, тінь і 18px берегів. */
+.wb-spread {
   margin-top: var(--sp-3);
   padding-top: var(--sp-3);
   border-top: 1px solid var(--border-subtle);
@@ -282,19 +283,19 @@
 /* Питання — найважливіше на екрані, тому воно темніше за решта тексту й
    відокремлене рядком, а не кольором: колір не відділяє думку від поради. */
 
-.wb-profile-line {
+.wb-spread-line {
   font-size: 1rem;
   line-height: 1.5;
   color: var(--text-primary);
 }
 
-.wb-profile-line--weak {
+.wb-spread-line--weak {
   color: var(--text-secondary);
 }
 
 /* Питання до найслабшої сфери. Виділене, бо це те, що людина забирає
    з собою надовго — на відміну від балу, який цікавить до наступного разу. */
-.wb-profile-question {
+.wb-spread-question {
   margin-top: var(--sp-3);
   padding-top: var(--sp-3);
   border-top: 1px dashed var(--border);
@@ -305,12 +306,12 @@
 }
 
 /* Акордеон довідки: закритий за замовчуванням, у один дотик. */
-.wb-about {
+.wb-result-about {
   margin-top: var(--sp-3);
   border-top: 1px solid var(--border-subtle);
 }
 
-.wb-about-summary {
+.wb-result-about-summary {
   display: flex;
   align-items: center;
   gap: var(--sp-2);
@@ -321,27 +322,27 @@
   list-style: none;
 }
 
-.wb-about-summary::-webkit-details-marker {
+.wb-result-about-summary::-webkit-details-marker {
   display: none;
 }
 
-.wb-about-chevron {
+.wb-result-about-chevron {
   margin-left: auto;
   transition: transform 0.15s ease;
 }
 
-.wb-about[open] .wb-about-chevron {
+.wb-result-about[open] .wb-result-about-chevron {
   transform: rotate(180deg);
 }
 
-.wb-about-body {
+.wb-result-about-body {
   padding-bottom: var(--sp-2);
   font-size: 0.8125rem;
   line-height: 1.5;
   color: var(--text-secondary);
 }
 
-.wb-about-body > * + * {
+.wb-result-about-body > * + * {
   margin-top: var(--sp-2);
 }
 
@@ -387,8 +388,8 @@
   align-items: center;
   gap: var(--sp-2);
   margin: 0 0 var(--sp-2);
-  font-size: 1rem;
-  font-weight: var(--weight-bold);
+  font-size: var(--heading-section-size);
+  font-weight: var(--heading-section-weight);
   color: var(--text-primary);
 }
 
@@ -494,9 +495,10 @@
 
 .wb-alerts-title {
   margin: 0 0 var(--sp-2);
-  /* Див. `.wb-section-title`: те саме про `h2` у бренд-темах. */
-  font-size: 0.9375rem !important;
-  font-weight: var(--weight-bold);
+  /* `!important` — тільки проти брендового `h2`/`h3` («android.css»); розмір і
+     вага приходять токеном, як у решти заголовків частини сторінки. */
+  font-size: var(--heading-section-size) !important;
+  font-weight: var(--heading-section-weight) !important;
   line-height: 1.35;
   color: var(--text-primary);
 }
@@ -551,8 +553,8 @@
  */
 .wb-section-title {
   margin: 0 0 var(--sp-2);
-  font-size: 0.9375rem !important;
-  font-weight: var(--weight-bold);
+  font-size: var(--heading-section-size) !important;
+  font-weight: var(--heading-section-weight) !important;
   line-height: 1.35;
   color: var(--text-primary);
 }
@@ -630,8 +632,8 @@
    бал. Див. `.wb-section-title`. */
 .wb-scale-result-title {
   margin: 0 0 var(--sp-2);
-  font-size: 0.9375rem !important;
-  font-weight: var(--weight-bold);
+  font-size: var(--heading-section-size) !important;
+  font-weight: var(--heading-section-weight) !important;
   line-height: 1.35;
   color: var(--text-primary);
 }
@@ -653,10 +655,9 @@
 
 .wb-combined {
   margin-bottom: var(--sp-4);
-  padding: var(--sp-4);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-md);
-  background: var(--surface);
+  padding: var(--card-pad);
+  border-radius: var(--card-radius);
+  background: var(--card-bg);
 }
 
 .wb-combined-overline {
@@ -668,8 +669,8 @@
 
 .wb-combined-title {
   margin: 0 0 var(--sp-1);
-  font-size: 1.0625rem;
-  font-weight: var(--weight-bold);
+  font-size: var(--heading-section-size) !important;
+  font-weight: var(--heading-section-weight) !important;
   line-height: 1.35;
   color: var(--text-primary);
 }

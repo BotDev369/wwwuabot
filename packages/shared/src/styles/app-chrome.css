@@ -1088,10 +1088,10 @@
 /* ═══ Профіль — картка користувача (рендерить shared UserProfileCard) ══════ */
 
 .wb-profile {
-  background: var(--bg-home, var(--bg-1));
-  border-radius: var(--radius-md);
+  background: var(--card-bg);
+  border-radius: var(--card-radius);
   box-shadow: var(--shadow-xs);
-  padding: 18px;
+  padding: var(--card-pad);
   margin-bottom: var(--sp-4);
 }
 
@@ -1509,13 +1509,13 @@
 .wb-person {
   display: flex;
   align-items: flex-start;
-  gap: var(--sp-3);
+  gap: var(--card-gap);
   box-sizing: border-box;
   width: 100%;
-  padding: var(--sp-3);
+  padding: var(--card-pad);
   border: none;
-  border-radius: var(--radius-md);
-  background: var(--bg-home, var(--surface));
+  border-radius: var(--card-radius);
+  background: var(--card-bg);
   box-shadow: var(--shadow-xs);
   color: inherit;
   font: inherit;

@@ -104,13 +104,13 @@ export function AssessmentResultCard({
         </p>
       )}
 
-      <details className="wb-about">
-        <summary className="wb-about-summary">
+      <details className="wb-result-about">
+        <summary className="wb-result-about-summary">
           <Icon name="info" size={16} />
           Про цей тест
-          <Icon name="chevron-down" size={16} className="wb-about-chevron" />
+          <Icon name="chevron-down" size={16} className="wb-result-about-chevron" />
         </summary>
-        <div className="wb-about-body">
+        <div className="wb-result-about-body">
           <p>{test.about}</p>
           {test.disclaimerInline ? null : (
             <p

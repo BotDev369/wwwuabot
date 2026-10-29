@@ -68,12 +68,12 @@ export function AssessmentScaleResult({
 
       {band && <p className="wb-score-note">{band.label}</p>}
 
-      <div className="wb-profile">
-        <p className="wb-profile-line">{profile.strongest}</p>
+      <div className="wb-spread">
+        <p className="wb-spread-line">{profile.strongest}</p>
         {profile.weakest !== profile.strongest && (
-          <p className="wb-profile-line wb-profile-line--weak">{profile.weakest}</p>
+          <p className="wb-spread-line wb-spread-line--weak">{profile.weakest}</p>
         )}
-        {profile.question && <p className="wb-profile-question">{profile.question}</p>}
+        {profile.question && <p className="wb-spread-question">{profile.question}</p>}
         <p className="wb-scale-reading">{thresholdLine(test, scale, record)}</p>
       </div>
 

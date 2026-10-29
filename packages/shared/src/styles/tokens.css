@@ -133,6 +133,28 @@
   --row-icon-color: var(--text-secondary);
   --row-trailing-color: var(--text-muted);
 
+  /* ── Картка ──────────────────────────────────────────────────────────────
+     Одна мірка на всі поверхні-картки: тло, радіус, береги й крок вмісту.
+     Екран, який малює картку власними 18px і рамкою, дає той самий продукт
+     іншим виглядом — тому числа живуть ТУТ, а не в правилі екрана.
+     Стежить `styles/surfaces.test.ts`. */
+  --card-bg: var(--surface);
+  --card-radius: var(--radius-md);
+  --card-pad: var(--sp-4);
+  --card-gap: var(--sp-3);
+
+  /* ── Заголовки всередині екрана ──────────────────────────────────────────
+     Назву екрана дає шапка (`.wb-appbar__title`), тож усередині є рівно три
+     ролі: частина сторінки, назва картки й підпис групи — і кожної одна міра.
+     Поки «частина сторінки» була 15/700 в одному місці й 17/700 у другому, а
+     брендовий `h2` робив її ще 22/500, сторінки читались як різні продукти. */
+  --heading-section-size: var(--text-md);
+  --heading-section-weight: var(--weight-semibold);
+  --heading-card-size: var(--text-sm);
+  --heading-card-weight: var(--weight-semibold);
+  --heading-group-size: var(--text-xs);
+  --heading-group-weight: var(--weight-semibold);
+
   /* ── Border radius ─────────────────────────────────────────────────────── */
   --radius-xs: 2px;
   --radius-sm: 4px;

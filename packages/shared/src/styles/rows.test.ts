@@ -35,7 +35,6 @@ const components = css("components.css");
 const favorites = css("favorites.css");
 const trackers = css("trackers.css");
 const messages = css("messages.css");
-const contacts = css("contacts.css");
 
 const ROW_TOKENS = [
   "--row-bg",
