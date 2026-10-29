@@ -24,6 +24,7 @@ import { join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { hexToHsl, hslToHex, normalizeHex } from "./color";
+import { readablePalette } from "./readable";
 import { COLOR_CHART, COLOR_SHADES, HUE_TRACK, channelTrack } from "./color-presets";
 import {
   COLORS_ATTR,
@@ -175,6 +176,19 @@ describe("applyColors ставить три сіди на <html>", () => {
     expect(root.props.get("--user-on-accent")).toBe(COMPLETE.bg);
     expect(root.attributes.get(COLORS_ATTR)).toBe("custom");
     expect(root.attributes.get(COLORS_MODE_ATTR)).toBe("dark");
+  });
+
+  it("ставить текстові рівні й статуси, пораховані під AA", () => {
+    const root = stubDocument();
+    applyColors(COMPLETE);
+
+    const palette = readablePalette(COMPLETE);
+    // Відсоток із CSS тут не працює: відтінок мусить залежати від фону.
+    expect(root.props.get("--text-secondary")).toBe(palette.secondary);
+    expect(root.props.get("--text-muted")).toBe(palette.muted);
+    expect(root.props.get("--green")).toBe(palette.green);
+    expect(root.props.get("--red")).toBe(palette.red);
+    expect(root.props.get("--yellow")).toBe(palette.yellow);
   });
 
   it("прибирає все дочиста — інакше вибір не відпустити", () => {

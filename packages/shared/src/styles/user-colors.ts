@@ -22,6 +22,7 @@
  */
 
 import { contrastRatio, isDarkColor, isHexColor, normalizeHex } from "./color";
+import { readablePalette } from "./readable";
 // Слоти й типи — з DOM-вільного сусіда: їх імпортує й сервер (перевірка схеми).
 import { COLOR_SLOTS, COLORS_ATTR, COLORS_MODE_ATTR, USER_COLORS_KEY } from "./user-colors.types";
 import type { ColorDraft, ColorsMode, ColorSlot, UserColors } from "./user-colors.types";
@@ -38,6 +39,9 @@ export type {
 } from "./user-colors.types";
 
 /** CSS-змінна сідового кольору на `<html>` (їх читає `user-colors.css`). */
+/** Похідні токени, які ставить `readablePalette()`: без вибору їх треба зняти. */
+const DERIVED_PROPS = ["--text-secondary", "--text-muted", "--green", "--red", "--yellow"] as const;
+
 export function seedVariable(slot: ColorSlot): string {
   return `--user-${slot}`;
 }
@@ -164,10 +168,10 @@ export function activeColorsFromDom(): UserColors | null {
 
 /**
  * Застосувати вибір до документа (або зняти його — `null`).
- *
- * Значення летять у CSS-змінні на `<html>`, а всю решту палітри виводить
- * `user-colors.css`. Тому тут три кольори і дві похідні — і нічого більше:
- * друга таблиця «слот → токен» у TS розійшлася б із CSS на першій же правці.
+ * Значення летять у CSS-змінні на `<html>`, а решту палітри виводить `user-colors.css`.
+ * Тому тут три сіди й ті похідні, які не можна вивести відсотком: `readablePalette()`
+ * рахує відтінки тексту й статусів так, щоб кожен тримав AA на всіх поверхнях фону.
+ * Решта (поверхні, межі, підкладки) лишається в CSS — там відсоток і є числом.
  */
 export function applyColors(colors: UserColors | null): void {
   if (typeof document === "undefined") return;
@@ -177,6 +181,7 @@ export function applyColors(colors: UserColors | null): void {
     root.removeAttribute(COLORS_ATTR);
     root.removeAttribute(COLORS_MODE_ATTR);
     for (const { id } of COLOR_SLOTS) root.style.removeProperty(seedVariable(id));
+    for (const name of DERIVED_PROPS) root.style.removeProperty(name);
     root.style.removeProperty("--user-on-accent");
     return;
   }
@@ -187,6 +192,13 @@ export function applyColors(colors: UserColors | null): void {
   root.style.setProperty(seedVariable("text"), colors.text);
   root.style.setProperty(seedVariable("accent"), colors.accent);
   root.style.setProperty("--user-on-accent", onAccentColor(colors));
+
+  const palette = readablePalette(colors);
+  root.style.setProperty("--text-secondary", palette.secondary);
+  root.style.setProperty("--text-muted", palette.muted);
+  root.style.setProperty("--green", palette.green);
+  root.style.setProperty("--red", palette.red);
+  root.style.setProperty("--yellow", palette.yellow);
 }
 
 /** Чи два вибори — це той самий вибір (щоб не малювати «незбережене» даремно). */

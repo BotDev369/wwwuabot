@@ -32,7 +32,7 @@
 
   --text-primary: #1c1b1f; /* on-surface */
   --text-secondary: #44464f; /* on-surface-variant */
-  --text-muted: #63666e; /* outline; ≥4.5:1 на всіх світлих поверхнях (AA) */
+  --text-muted: #5c5f67; /* outline; ≥4.5:1 на всіх світлих поверхнях, зокрема --bg-4 (AA) */
   --text-inverse: #ffffff;
 
   --accent: #1c1b1f; /* теплий сірий, не чистий чорний */

@@ -88,6 +88,25 @@ export function contrastRatio(a: string, b: string): number {
   return (hi + 0.05) / (lo + 0.05);
 }
 
+/**
+ * Змішати два кольори в sRGB: `weight` — частка `a` (0…1).
+ *
+ * Та сама арифметика, що в `color-mix(in srgb, a w%, b)` зі стилів: палітру
+ * людини виводить CSS, а її читабельність рахує код (`styles/readable.ts`),
+ * і дві формули мусять давати те саме число.
+ */
+export function mixHex(a: string, b: string, weight: number): string {
+  const first = hexToRgb(a);
+  const second = hexToRgb(b);
+  if (!first || !second) return a;
+  const w = Math.max(0, Math.min(1, weight));
+  return rgbToHex({
+    r: first.r * w + second.r * (1 - w),
+    g: first.g * w + second.g * (1 - w),
+    b: first.b * w + second.b * (1 - w),
+  });
+}
+
 /** Темний колір — той, на якому слід писати світлим. */
 export function isDarkColor(value: string): boolean {
   return relativeLuminance(value) < 0.5;

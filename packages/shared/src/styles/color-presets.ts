@@ -57,7 +57,7 @@ export const COLOR_PRESETS: readonly ColorPreset[] = [
   preset("ocean", "Океан", "#0d1b2a", "#e0e1dd", "#48cae4"),
   preset("forest", "Ліс", "#14231a", "#e6f0e8", "#a3e635"),
   preset("wine", "Вино", "#2a1119", "#f7e9ec", "#f472b6"),
-  preset("cream", "Крем", "#f6f1e7", "#2b2620", "#b45309"),
+  preset("cream", "Крем", "#f6f1e7", "#2b2620", "#9a4300"),
   preset("sand", "Пісок", "#f3ece3", "#3a3229", "#0f766e"),
   preset("lavender", "Лаванда", "#f3f0ff", "#2b2350", "#6d28d9"),
   preset("paper", "Папір", "#ffffff", "#17181c", "#2563eb"),

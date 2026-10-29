@@ -49,8 +49,10 @@ html[data-colors][data-colors-mode="dark"] {
   --surface-hover: var(--bg-3);
   --surface-active: var(--bg-4);
 
-  /* Текст — три рівні одного кольору. `--text-inverse` рахує JS: він мусить
-     читатися на акцентній плашці, а вона будь-якого кольору. */
+  /* Текст — три рівні одного кольору. Відсотки тут — фолбек без JS:
+     `applyColors()` ставить точні відтінки, пораховані під AA на всіх
+     поверхнях цього фону (`styles/readable.ts`). Фіксований відсоток не
+     може бути правильним для будь-якого фону: на кремовому 48% давало 2.8:1. */
   --text-primary: var(--user-text);
   --text-secondary: color-mix(in srgb, var(--user-text) 70%, var(--user-bg));
   --text-muted: color-mix(in srgb, var(--user-text) 48%, var(--user-bg));
@@ -80,6 +82,7 @@ html[data-colors][data-colors-mode="dark"] {
 html[data-colors][data-colors-mode="light"] {
   color-scheme: light;
 
+  /* Фолбек без JS; з JS — світлота кожного підбирається під фон (`readable.ts`). */
   --green: #16a34a;
   --red: #dc2626;
   --yellow: #ca8a04;
@@ -104,6 +107,7 @@ html[data-colors][data-colors-mode="light"] {
 html[data-colors][data-colors-mode="dark"] {
   color-scheme: dark;
 
+  /* Фолбек без JS; з JS — світлота кожного підбирається під фон (`readable.ts`). */
   --green: #4ade80;
   --red: #f87171;
   --yellow: #facc15;
