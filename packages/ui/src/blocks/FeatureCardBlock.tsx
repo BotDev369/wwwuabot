@@ -69,7 +69,7 @@ export function FeatureCardBlock({ block }: BlockComponentProps) {
           {item.description && (
             <p
               className="wb-text-sm wb-text-secondary"
-              style={{ margin: 0, lineHeight: "var(--font-lineheight-3)" }}
+              style={{ margin: 0, lineHeight: "var(--leading-normal)" }}
             >
               {item.description}
             </p>

@@ -91,7 +91,7 @@ export function CodeBlock({ block }: BlockComponentProps) {
           overflowX: "auto",
           fontFamily: "var(--font-mono)",
           fontSize: "var(--text-sm)",
-          lineHeight: "var(--font-lineheight-3)",
+          lineHeight: "var(--leading-normal)",
           color: "var(--text-primary)",
         }}
       >

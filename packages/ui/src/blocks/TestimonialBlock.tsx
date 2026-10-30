@@ -59,7 +59,7 @@ export function TestimonialBlock({ block }: BlockComponentProps) {
         className="wb-text-primary"
         style={{
           fontStyle: "italic",
-          lineHeight: "var(--font-lineheight-3)",
+          lineHeight: "var(--leading-normal)",
           margin: 0,
         }}
       >

@@ -18,27 +18,14 @@
 
 /* ═══════════════════════════════════════════════════════════════════════════
  * IMPORT ORDER MATTERS:
- * 1. Open Props tokens (via :where(html) — zero specificity)
- * 2. Our design tokens + themes (via :root — override Tailwind's @layer theme)
- * 3. Reset + component classes (кирпичики, без `!important`)
+ * 1. Our design tokens + themes (via :root — override Tailwind's @layer theme)
+ * 2. Reset + component classes (кирпичики, без `!important`)
  *
  * IMPORTANT: Tailwind MUST be imported AFTER this file in each app's
  * index.css, so that our @layer theme variables override Tailwind's.
+ * Чужих довідників токенів тут немає: словник стилю — рівно `tokens.css` +
+ * `themes.css`, інакше в DevTools видно сотні змінних, яких ніхто не читає.
  * ═══════════════════════════════════════════════════════════════════════════ */
-
-/* ── Open Props: 400+ design tokens ── */
-@import "open-props/src/props.media.css";
-@import "open-props/src/props.fonts.css";
-@import "open-props/src/props.sizes.css";
-@import "open-props/src/props.easing.css";
-@import "open-props/src/props.zindex.css";
-@import "open-props/src/props.shadows.css";
-@import "open-props/src/props.aspects.css";
-@import "open-props/src/props.colors.css";
-@import "open-props/src/props.gradients.css";
-@import "open-props/src/props.animations.css";
-@import "open-props/src/props.borders.css";
-@import "open-props/src/props.palette.css";
 
 /* ── Родина продукту: файли в бандлі, а не запит до Google ── */
 @import "./font-faces.css";

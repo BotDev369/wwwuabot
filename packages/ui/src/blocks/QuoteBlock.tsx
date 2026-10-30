@@ -57,7 +57,7 @@ export function QuoteBlock({ block }: BlockComponentProps) {
         className="wb-block-quote__text"
         style={{
           fontStyle: "italic",
-          lineHeight: "var(--font-lineheight-3)",
+          lineHeight: "var(--leading-normal)",
           margin: 0,
           color: "var(--text-primary)",
         }}

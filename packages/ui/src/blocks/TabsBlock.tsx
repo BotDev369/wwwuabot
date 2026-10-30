@@ -80,7 +80,7 @@ export function TabsBlock({ block }: BlockComponentProps) {
       <div
         className="wb-block-tabs__content wb-text-primary"
         role="tabpanel"
-        style={{ fontSize: "var(--text-sm)", lineHeight: "var(--font-lineheight-3)" }}
+        style={{ fontSize: "var(--text-sm)", lineHeight: "var(--leading-normal)" }}
       >
         {activeTab?.content || ""}
       </div>

@@ -18,7 +18,7 @@ export function RichTextBlock({ block }: BlockComponentProps) {
     <div
       className="wb-block-richtext wb-text-primary"
       style={{
-        lineHeight: "var(--font-lineheight-3)",
+        lineHeight: "var(--leading-normal)",
         wordBreak: "break-word",
       }}
       dangerouslySetInnerHTML={{ __html: html }}

@@ -98,7 +98,7 @@ export function FaqBlock({ block }: BlockComponentProps) {
                 style={{
                   padding: "0 0 var(--sp-4) 0",
                   fontSize: "var(--text-sm)",
-                  lineHeight: "var(--font-lineheight-3)",
+                  lineHeight: "var(--leading-normal)",
                 }}
               >
                 {item.answer}
