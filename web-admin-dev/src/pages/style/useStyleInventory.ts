@@ -1,14 +1,14 @@
 /**
  * Стан інвентаря вигляду: що показати й з якими значеннями.
  *
- * Каталог приходить із CSS, живі значення — з `<html>`; тут лише вибір і
- * фільтр, жодного опису вигляду.
- *
+ * Каталог генерує `npm run doc:style`; у бандл він не входить — сторінка
+ * забирає його окремим ресурсом (бюджет бандла). Живі значення — з `<html>`;
+ * тут лише завантаження, вибір і фільтр.
  * @module web-admin-dev/src/pages/style/useStyleInventory
  */
 
 import { useEffect, useMemo, useState } from "react";
-import catalog from "@wwwuabot/shared/styles/catalog.json";
+import catalogUrl from "@wwwuabot/shared/styles/catalog.json?url";
 import { BRICKS, type BrickGroup } from "./previews";
 
 export interface StyleToken {
@@ -35,25 +35,83 @@ export interface ClassGroup {
 
 export type ClassesByFile = Record<string, ClassGroup[]>;
 
-const TOKENS = catalog.tokens as StyleToken[];
-const LOCALS = catalog.local as LocalToken[];
-const CLASSES = catalog.classes as ClassesByFile;
-const FILES = catalog.files as { file: string; tokens: number; classes: number }[];
+export interface CatalogFile {
+  file: string;
+  tokens: number;
+  classes: number;
+}
 
-export const CATALOG_FILES = FILES;
-export const CATALOG_TOKENS = TOKENS;
+export interface StyleCatalog {
+  tokens: StyleToken[];
+  locals: LocalToken[];
+  classes: ClassesByFile;
+  files: CatalogFile[];
+  /** Унікальні імена класів: один клас може жити у двох файлах. */
+  classNames: string[];
+}
 
-/** Скільки класів у системі насправді: один клас може жити у двох файлах. */
-export const CLASS_NAMES: string[] = [
-  ...new Set(Object.values(CLASSES).flatMap((groups) => groups.flatMap((g) => g.names))),
-].sort();
+/** Форма, у якій каталог лежить на диску (див. `scripts/lib/style-catalog.mjs`). */
+interface RawCatalog {
+  tokens: StyleToken[];
+  local: LocalToken[];
+  classes: ClassesByFile;
+  files: CatalogFile[];
+}
+
+export type CatalogState =
+  | { status: "loading"; catalog: null }
+  | { status: "error"; catalog: null }
+  | { status: "ready"; catalog: StyleCatalog };
+
+/** Кирпичики з живим прев'ю — статичні: це розмітка, а не каталог. */
+export const BRICK_GROUPS: BrickGroup[] = BRICKS;
 
 /** Класи, для яких є справжнє прев'ю, — щоб показати покриття, а не обіцянку. */
 export const PREVIEWED_CLASSES = new Set(
   BRICKS.flatMap((group) => group.items.flatMap((b) => b.classes)),
 );
 
-export const BRICK_GROUPS: BrickGroup[] = BRICKS;
+function toCatalog(raw: RawCatalog): StyleCatalog {
+  return {
+    tokens: raw.tokens,
+    locals: raw.local,
+    classes: raw.classes,
+    files: raw.files,
+    classNames: [
+      ...new Set(Object.values(raw.classes).flatMap((groups) => groups.flatMap((g) => g.names))),
+    ].sort(),
+  };
+}
+
+/**
+ * Каталог приходить ресурсом, а не модулем: 133 KB JSON у бандлі коштували б
+ * входу в адмінку, хоча довідник відкривають зрідка.
+ */
+export function useStyleCatalog(): CatalogState {
+  const [state, setState] = useState<CatalogState>({ status: "loading", catalog: null });
+
+  useEffect(() => {
+    let alive = true;
+
+    fetch(catalogUrl)
+      .then((response) => {
+        if (!response.ok) throw new Error(`каталог вигляду: HTTP ${response.status}`);
+        return response.json() as Promise<RawCatalog>;
+      })
+      .then((raw) => {
+        if (alive) setState({ status: "ready", catalog: toCatalog(raw) });
+      })
+      .catch(() => {
+        if (alive) setState({ status: "error", catalog: null });
+      });
+
+    return () => {
+      alive = false;
+    };
+  }, []);
+
+  return state;
+}
 
 /**
  * Живі значення токенів.
@@ -100,14 +158,14 @@ const SIZE_RE = /^-?[\d.]+\s*(px|rem|em|%|vh|vw|dvh|ch)$/;
  * `var(--x)` розкривається через каталог: без цього половина токенів (вони
  * посилаються один на одного) виглядала б як невідомий рядок.
  */
-export function swatchKind(value: string, depth = 0): SwatchKind {
+export function swatchKind(value: string, tokens: StyleToken[], depth = 0): SwatchKind {
   const text = value.trim();
   if (!text) return "text";
 
   const reference = /^var\((--[a-z0-9-]+)/i.exec(text);
   if (reference && depth < 4) {
-    const target = TOKENS.find((t) => t.name === reference[1]);
-    if (target) return swatchKind(target.light || target.dark || target.palette, depth + 1);
+    const target = tokens.find((t) => t.name === reference[1]);
+    if (target) return swatchKind(target.light || target.dark || target.palette, tokens, depth + 1);
   }
 
   // Градієнт показуємо заливкою: `background` приймає його так само, як колір.
@@ -131,29 +189,26 @@ export function groupTokens(tokens: StyleToken[]): { section: string; items: Sty
 }
 
 /** Пошук по всьому: ім'я токена, клас або файл — одне поле на три списки. */
-export function useFilter() {
+export function useFilter(catalog: StyleCatalog | null) {
   const [query, setQuery] = useState("");
   const needle = query.trim().toLowerCase();
 
-  const tokens = useMemo(
-    () =>
-      needle
-        ? TOKENS.filter(
-            (t) =>
-              t.name.toLowerCase().includes(needle) || t.section.toLowerCase().includes(needle),
-          )
-        : TOKENS,
-    [needle],
-  );
+  const tokens = useMemo(() => {
+    const all = catalog?.tokens ?? [];
+    if (!needle) return all;
+    return all.filter(
+      (t) => t.name.toLowerCase().includes(needle) || t.section.toLowerCase().includes(needle),
+    );
+  }, [catalog, needle]);
 
-  const locals = useMemo(
-    () => (needle ? LOCALS.filter((t) => t.name.toLowerCase().includes(needle)) : LOCALS),
-    [needle],
-  );
+  const locals = useMemo(() => {
+    const all = catalog?.locals ?? [];
+    return needle ? all.filter((t) => t.name.toLowerCase().includes(needle)) : all;
+  }, [catalog, needle]);
 
   const classes = useMemo(() => {
     const out: ClassesByFile = {};
-    for (const [file, groups] of Object.entries(CLASSES)) {
+    for (const [file, groups] of Object.entries(catalog?.classes ?? {})) {
       const filtered = groups
         .map((group) => ({
           section: group.section,
@@ -163,7 +218,7 @@ export function useFilter() {
       if (filtered.length) out[file] = filtered;
     }
     return out;
-  }, [needle]);
+  }, [catalog, needle]);
 
   const bricks = useMemo<BrickGroup[]>(() => {
     if (!needle) return BRICKS;

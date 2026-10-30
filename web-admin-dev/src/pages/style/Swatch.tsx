@@ -7,16 +7,18 @@
  */
 
 import type { CSSProperties } from "react";
-import { swatchKind } from "./useStyleInventory";
+import { swatchKind, type StyleToken } from "./useStyleInventory";
 
 interface SwatchProps {
   value: string;
+  /** Каталог токенів — щоб розкрити `var(--…)` у справжнє значення. */
+  tokens: StyleToken[];
   /** Шар, у якому рахувати `var(--…)`: світлий, темний або поточний. */
   scheme?: "light" | "dark";
 }
 
-export function Swatch({ value, scheme = "light" }: SwatchProps) {
-  const kind = swatchKind(value);
+export function Swatch({ value, tokens, scheme = "light" }: SwatchProps) {
+  const kind = swatchKind(value, tokens);
   const fill = { "--st-fill": value } as CSSProperties;
 
   if (!value) return <span className="st-swatch" aria-hidden="true" />;

@@ -13,6 +13,8 @@ import { groupTokens, type LocalToken, type StyleToken } from "./useStyleInvento
 interface TokenListProps {
   tokens: StyleToken[];
   locals: LocalToken[];
+  /** Повний каталог: зразок розкриває `var(--…)` і тоді, коли токен відфільтровано. */
+  allTokens: StyleToken[];
   live: Record<string, string>;
 }
 
@@ -35,7 +37,7 @@ function Value({
   );
 }
 
-export function TokenList({ tokens, locals, live }: TokenListProps) {
+export function TokenList({ tokens, locals, allTokens, live }: TokenListProps) {
   const groups = groupTokens(tokens);
 
   if (!groups.length) return <p className="st-empty">Нічого не знайдено.</p>;
@@ -48,7 +50,7 @@ export function TokenList({ tokens, locals, live }: TokenListProps) {
           <div className="st-tokens">
             {group.items.map((token) => (
               <div className="st-token" key={token.name}>
-                <Swatch value={token.light || token.dark || token.palette} />
+                <Swatch value={token.light || token.dark || token.palette} tokens={allTokens} />
                 <span className="st-token-name">{token.name}</span>
                 <span className="st-values">
                   <Value label="світла" value={token.light} />
@@ -81,7 +83,7 @@ export function TokenList({ tokens, locals, live }: TokenListProps) {
                 className="st-token"
                 key={`${token.file}:${token.selector}:${token.name}:${index}`}
               >
-                <Swatch value={token.value} />
+                <Swatch value={token.value} tokens={allTokens} />
                 <span className="st-token-name">{token.name}</span>
                 <span className="st-values">
                   <Value label="значення" value={token.value} />

@@ -9,7 +9,6 @@ import { BotSettingsPage } from "../pages/bot-settings/BotSettingsPage";
 import { ProfilePage } from "../pages/profile/ProfilePage";
 import { MonitoringPage } from "../pages/monitoring/MonitoringPage";
 import { AnalyticsPage } from "../pages/analytics/AnalyticsPage";
-import { StylePage } from "../pages/style/StylePage";
 
 /**
  * Маршрути web-admin.
@@ -45,7 +44,12 @@ export const router = createBrowserRouter([
       { path: "messages", element: <AccessRequestsPage /> },
       { path: "analytics", element: <AnalyticsPage /> },
       { path: "monitoring", element: <MonitoringPage /> },
-      { path: "style", element: <StylePage /> },
+      // Сторінка-довідник вантажиться ліниво: вхід в адмінку не має чекати на
+      // інвентар, який відкривають зрідка (`npm run check:bundle`).
+      {
+        path: "style",
+        lazy: () => import("../pages/style/StylePage").then((m) => ({ Component: m.StylePage })),
+      },
       { path: "bot-settings", element: <BotSettingsPage /> },
       { path: "profile", element: <ProfilePage /> },
     ],

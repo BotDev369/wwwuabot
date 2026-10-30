@@ -7,20 +7,26 @@
  * @module web-admin-dev/src/pages/style/ClassList
  */
 
-import { CLASS_NAMES, PREVIEWED_CLASSES, type ClassesByFile } from "./useStyleInventory";
+import { PREVIEWED_CLASSES, type ClassesByFile } from "./useStyleInventory";
 
-export function ClassList({ classes }: { classes: ClassesByFile }) {
+interface ClassListProps {
+  classes: ClassesByFile;
+  /** Усі імена класів застосунку — знаменник для «з живим прикладом». */
+  classNames: string[];
+}
+
+export function ClassList({ classes, classNames }: ClassListProps) {
   const files = Object.keys(classes).sort();
   // Лише ті прев'ю, що справді є класами: у списку кирпичиків стоять і теги
   // (`h1`), і вони не мають рахуватись як клас із прикладом.
-  const previewed = CLASS_NAMES.filter((name) => PREVIEWED_CLASSES.has(name)).length;
+  const previewed = classNames.filter((name) => PREVIEWED_CLASSES.has(name)).length;
 
   if (!files.length) return <p className="st-empty">Нічого не знайдено.</p>;
 
   return (
     <>
       <p className="st-stat-label">
-        Усього класів у CSS — {CLASS_NAMES.length}; з живим прикладом на вкладці «Кирпичики» —{" "}
+        Усього класів у CSS — {classNames.length}; з живим прикладом на вкладці «Кирпичики» —{" "}
         {previewed} (такі позначені точкою).
       </p>
 
