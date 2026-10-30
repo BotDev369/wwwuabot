@@ -1,15 +1,17 @@
--- Дослідження «У що вірить людство»: лендінг і 12 блоків MVP.
+-- Дослідження «вірування і невірування»: лендінг і 12 його підсторінок.
 --
 -- Згенеровано з `content/viruvannia/blocks/*.md` скриптом
 -- `scripts/research/build-pages.mjs` — правити треба markdown, а не цей файл.
 --
 -- Рядок = сторінка вебу (`page_data`), як у будь-якого контенту платформи.
--- `is_public = 1` ставить лендінг у «Публічні сторінки»; `owner_id` лишається
--- порожнім, бо це редакційний контент, а не сторінка людини.
+-- `is_public = 1` має **лише лендінг**: у «Публічних сторінках» дослідження —
+-- одна сторінка, а блоки — її підсторінки. Вони все одно відкриваються за
+-- адресою, бо `owner_id` порожній: гейт видимості в `scenarios.controller`
+-- пускає контент платформи незалежно від `is_public`, а сторінки людей — ні.
 -- Повторний запуск ідемпотентний: ON CONFLICT перезаписує ту саму адресу.
 
 INSERT INTO scenarios (slug, title, photo_url, page_data, is_active, is_public, updated_at)
-VALUES ('viruvannia', 'У що вірить людство', NULL, '{
+VALUES ('viruvannia', 'Дослідження: вірування і невірування', NULL, '{
   "version": 1,
   "visibleZones": [
     "header",
@@ -24,158 +26,516 @@ VALUES ('viruvannia', 'У що вірить людство', NULL, '{
         "type": "hero",
         "order": 0,
         "props": {
-          "title": "У що вірить людство",
-          "subtitle": "Розподіл 100% населення планети за віруваннями й невіруваннями: дані Pew Research Center і World Religion Database, кожен блок зі своїм джерелом.",
+          "title": "Вірування і невірування",
+          "subtitle": "Скільки людей на планеті вірять, у що саме і на чому тримаються ці цифри: розподіл населення в семи категоріях за Pew Research Center і World Religion Database.",
           "align": "center"
-        }
-      },
-      {
-        "id": "res-home-how",
-        "type": "text",
-        "order": 1,
-        "props": {
-          "title": "Як читати цю сторінку",
-          "level": "h2",
-          "content": "Кожен блок — окреме дослідження зі своєю датою й джерелом. Відсотки завжди в межах 100% і завжди з позначенням методології. «Нерелігійний» не означає «атеїст», а «християнин у переписі» — не означає «практикуючий»."
         }
       }
     ],
     "main": [
       {
+        "id": "res-home-figures",
+        "type": "feature-card",
+        "order": 0,
+        "props": {
+          "columns": "2",
+          "items": [
+            {
+              "title": "28,8%",
+              "description": "християни — найбільша група"
+            },
+            {
+              "title": "24,2%",
+              "description": "без релігійної ідентичності"
+            },
+            {
+              "title": "14,9%",
+              "description": "індуїсти"
+            },
+            {
+              "title": "+1,8 в.п.",
+              "description": "приріст ісламу за 2010–2020"
+            }
+          ]
+        }
+      },
+      {
+        "id": "res-home-how",
+        "type": "feature-card",
+        "order": 1,
+        "props": {
+          "columns": "1",
+          "items": [
+            {
+              "title": "Кожен блок — окреме дослідження",
+              "description": "Своя дата, своє джерело, свій статус даних: «перевірено», «оцінка» чи «у роботі»."
+            },
+            {
+              "title": "Відсотки завжди в межах 100%",
+              "description": "І завжди з методологією поруч: самоідентифікація («ким себе назвав») чи практика («до кого ходить»)."
+            },
+            {
+              "title": "«Нерелігійний» — не «атеїст»",
+              "description": "Як і «християнин у переписі» — не «практикуючий». Різницю показуємо, а не згладжуємо."
+            }
+          ]
+        }
+      },
+      {
         "id": "res-home-group-масштаб",
         "type": "text",
-        "order": 0,
+        "order": 2,
         "props": {
           "title": "Масштаб",
           "level": "h2"
         }
       },
       {
-        "id": "res-home-links-масштаб",
-        "type": "buttons",
-        "order": 1,
+        "id": "res-home-card-a1",
+        "type": "card",
+        "order": 3,
         "props": {
-          "layout": "column",
-          "items": [
-            {
-              "text": "Сто відсотків: як розподілене людство — Сім категорій, які в сумі дають 100% населення планети.",
-              "url": "/viruvannia-a1",
-              "variant": "secondary"
-            },
-            {
-              "text": "Дві правди: чому Pew і World Religion Database дають різні цифри — Той самий світ, дві методології — і 13 відсоткових пунктів розбіжності в одній категорії.",
-              "url": "/viruvannia-a2",
-              "variant": "secondary"
-            },
-            {
-              "text": "Хто росте, хто зменшується: десять років, які пересунули карту — Іслам додав 1,8 пункту, християнство втратило стільки ж, а буддизм — єдина велика група, що скоротилася.",
-              "url": "/viruvannia-a3",
-              "variant": "secondary"
+          "title": "Сто відсотків: як розподілене людство",
+          "description": "Сім категорій, які в сумі дають 100% населення планети.",
+          "padding": "md",
+          "bordered": true
+        },
+        "children": [
+          {
+            "id": "res-home-card-a1-meta",
+            "type": "text",
+            "order": 0,
+            "props": {
+              "content": "Дані: 2020 · Опубліковано: 09.06.2025 · 7 хв · перевірено"
             }
-          ]
-        }
+          },
+          {
+            "id": "res-home-card-a1-go",
+            "type": "link-button",
+            "order": 1,
+            "props": {
+              "text": "Читати блок",
+              "url": "/viruvannia-a1",
+              "target": "_self",
+              "variant": "secondary",
+              "size": "md",
+              "align": "full",
+              "icon": "arrow-right"
+            }
+          }
+        ]
+      },
+      {
+        "id": "res-home-card-a2",
+        "type": "card",
+        "order": 4,
+        "props": {
+          "title": "Дві правди: чому Pew і World Religion Database дають різні цифри",
+          "description": "Той самий світ, дві методології — і 13 відсоткових пунктів розбіжності в одній категорії.",
+          "padding": "md",
+          "bordered": true
+        },
+        "children": [
+          {
+            "id": "res-home-card-a2-meta",
+            "type": "text",
+            "order": 0,
+            "props": {
+              "content": "Дані: 2020 · Опубліковано: 09.06.2025 · 9 хв · перевірено"
+            }
+          },
+          {
+            "id": "res-home-card-a2-go",
+            "type": "link-button",
+            "order": 1,
+            "props": {
+              "text": "Читати блок",
+              "url": "/viruvannia-a2",
+              "target": "_self",
+              "variant": "secondary",
+              "size": "md",
+              "align": "full",
+              "icon": "arrow-right"
+            }
+          }
+        ]
+      },
+      {
+        "id": "res-home-card-a3",
+        "type": "card",
+        "order": 5,
+        "props": {
+          "title": "Хто росте, хто зменшується: десять років, які пересунули карту",
+          "description": "Іслам додав 1,8 пункту, християнство втратило стільки ж, а буддизм — єдина велика група, що скоротилася.",
+          "padding": "md",
+          "bordered": true
+        },
+        "children": [
+          {
+            "id": "res-home-card-a3-meta",
+            "type": "text",
+            "order": 0,
+            "props": {
+              "content": "Дані: 2010–2020 · Опубліковано: 09.06.2025 · 8 хв · перевірено"
+            }
+          },
+          {
+            "id": "res-home-card-a3-go",
+            "type": "link-button",
+            "order": 1,
+            "props": {
+              "text": "Читати блок",
+              "url": "/viruvannia-a3",
+              "target": "_self",
+              "variant": "secondary",
+              "size": "md",
+              "align": "full",
+              "icon": "arrow-right"
+            }
+          }
+        ]
       },
       {
         "id": "res-home-group-релігії",
         "type": "text",
-        "order": 2,
+        "order": 6,
         "props": {
           "title": "Релігії",
           "level": "h2"
         }
       },
       {
-        "id": "res-home-links-релігії",
-        "type": "buttons",
-        "order": 3,
+        "id": "res-home-card-b1",
+        "type": "card",
+        "order": 7,
         "props": {
-          "layout": "column",
-          "items": [
-            {
-              "text": "Християнство: 2,3 мільярда і зміна центру ваги — Найбільша релігія світу росте в людях, але падає у відсотках — і переїжджає з Європи в Африку.",
-              "url": "/viruvannia-b1",
-              "variant": "secondary"
-            },
-            {
-              "text": "Іслам: 2 мільярди, п''ять різних світів — Найшвидше зростаюча велика релігія росте не наверненням, а народжуваністю.",
-              "url": "/viruvannia-b2",
-              "variant": "secondary"
-            },
-            {
-              "text": "Індуїзм: 1,2 мільярда і парасолька замість релігії — Третя релігія світу не має засновника, єдиного тексту чи центру — і саме тому її так важко порахувати.",
-              "url": "/viruvannia-b3",
-              "variant": "secondary"
-            },
-            {
-              "text": "Буддизм: 324 мільйони, єдина велика група з мінусом — Єдина велика релігія, що скоротилася за десятиліття, — і найбільш залежна від того, як поставити питання.",
-              "url": "/viruvannia-b4",
-              "variant": "secondary"
-            },
-            {
-              "text": "Народні релігії: 2,2% або 9,2% — залежно від того, кого питати — Найбільший розрив між двома методологіями у світі — і категорія, яку люди майже ніколи не називають своєю.",
-              "url": "/viruvannia-b5",
-              "variant": "secondary"
+          "title": "Християнство: 2,3 мільярда і зміна центру ваги",
+          "description": "Найбільша релігія світу росте в людях, але падає у відсотках — і переїжджає з Європи в Африку.",
+          "padding": "md",
+          "bordered": true
+        },
+        "children": [
+          {
+            "id": "res-home-card-b1-meta",
+            "type": "text",
+            "order": 0,
+            "props": {
+              "content": "Дані: 2020 · Опубліковано: 09.06.2025 · 8 хв · перевірено"
             }
-          ]
-        }
+          },
+          {
+            "id": "res-home-card-b1-go",
+            "type": "link-button",
+            "order": 1,
+            "props": {
+              "text": "Читати блок",
+              "url": "/viruvannia-b1",
+              "target": "_self",
+              "variant": "secondary",
+              "size": "md",
+              "align": "full",
+              "icon": "arrow-right"
+            }
+          }
+        ]
+      },
+      {
+        "id": "res-home-card-b2",
+        "type": "card",
+        "order": 8,
+        "props": {
+          "title": "Іслам: 2 мільярди, п''ять різних світів",
+          "description": "Найшвидше зростаюча велика релігія росте не наверненням, а народжуваністю.",
+          "padding": "md",
+          "bordered": true
+        },
+        "children": [
+          {
+            "id": "res-home-card-b2-meta",
+            "type": "text",
+            "order": 0,
+            "props": {
+              "content": "Дані: 2020 · Опубліковано: 09.06.2025 · 8 хв · перевірено"
+            }
+          },
+          {
+            "id": "res-home-card-b2-go",
+            "type": "link-button",
+            "order": 1,
+            "props": {
+              "text": "Читати блок",
+              "url": "/viruvannia-b2",
+              "target": "_self",
+              "variant": "secondary",
+              "size": "md",
+              "align": "full",
+              "icon": "arrow-right"
+            }
+          }
+        ]
+      },
+      {
+        "id": "res-home-card-b3",
+        "type": "card",
+        "order": 9,
+        "props": {
+          "title": "Індуїзм: 1,2 мільярда і парасолька замість релігії",
+          "description": "Третя релігія світу не має засновника, єдиного тексту чи центру — і саме тому її так важко порахувати.",
+          "padding": "md",
+          "bordered": true
+        },
+        "children": [
+          {
+            "id": "res-home-card-b3-meta",
+            "type": "text",
+            "order": 0,
+            "props": {
+              "content": "Дані: 2020 · Опубліковано: 09.06.2025 · 8 хв · перевірено"
+            }
+          },
+          {
+            "id": "res-home-card-b3-go",
+            "type": "link-button",
+            "order": 1,
+            "props": {
+              "text": "Читати блок",
+              "url": "/viruvannia-b3",
+              "target": "_self",
+              "variant": "secondary",
+              "size": "md",
+              "align": "full",
+              "icon": "arrow-right"
+            }
+          }
+        ]
+      },
+      {
+        "id": "res-home-card-b4",
+        "type": "card",
+        "order": 10,
+        "props": {
+          "title": "Буддизм: 324 мільйони, єдина велика група з мінусом",
+          "description": "Єдина велика релігія, що скоротилася за десятиліття, — і найбільш залежна від того, як поставити питання.",
+          "padding": "md",
+          "bordered": true
+        },
+        "children": [
+          {
+            "id": "res-home-card-b4-meta",
+            "type": "text",
+            "order": 0,
+            "props": {
+              "content": "Дані: 2020 · Опубліковано: 09.06.2025 · 8 хв · перевірено"
+            }
+          },
+          {
+            "id": "res-home-card-b4-go",
+            "type": "link-button",
+            "order": 1,
+            "props": {
+              "text": "Читати блок",
+              "url": "/viruvannia-b4",
+              "target": "_self",
+              "variant": "secondary",
+              "size": "md",
+              "align": "full",
+              "icon": "arrow-right"
+            }
+          }
+        ]
+      },
+      {
+        "id": "res-home-card-b5",
+        "type": "card",
+        "order": 11,
+        "props": {
+          "title": "Народні релігії: 2,2% або 9,2% — залежно від того, кого питати",
+          "description": "Найбільший розрив між двома методологіями у світі — і категорія, яку люди майже ніколи не називають своєю.",
+          "padding": "md",
+          "bordered": true
+        },
+        "children": [
+          {
+            "id": "res-home-card-b5-meta",
+            "type": "text",
+            "order": 0,
+            "props": {
+              "content": "Дані: 2020/2025 · Опубліковано: 09.06.2025 · 8 хв · перевірено"
+            }
+          },
+          {
+            "id": "res-home-card-b5-go",
+            "type": "link-button",
+            "order": 1,
+            "props": {
+              "text": "Читати блок",
+              "url": "/viruvannia-b5",
+              "target": "_self",
+              "variant": "secondary",
+              "size": "md",
+              "align": "full",
+              "icon": "arrow-right"
+            }
+          }
+        ]
       },
       {
         "id": "res-home-group-нерелігійність",
         "type": "text",
-        "order": 4,
+        "order": 12,
         "props": {
           "title": "Нерелігійність",
           "level": "h2"
         }
       },
       {
-        "id": "res-home-links-нерелігійність",
-        "type": "buttons",
-        "order": 5,
+        "id": "res-home-card-c1",
+        "type": "card",
+        "order": 13,
         "props": {
-          "layout": "column",
-          "items": [
-            {
-              "text": "Хто такі «nones»: 1,9 мільярда без релігійної ідентичності — Третя за розміром категорія світу — і найбільш неправильно зрозуміла.",
-              "url": "/viruvannia-c1",
-              "variant": "secondary"
-            },
-            {
-              "text": "Атеїсти, агностики і «нічого конкретного»: три різні речі — 1,8% атеїстів, 9,3% агностиків і близько 13%, які просто не мають релігійної ідентичності.",
-              "url": "/viruvannia-c2",
-              "variant": "secondary"
-            },
-            {
-              "text": "Китай: 1,3 мільярда «нерелігійних» і парадокс народних культів — Одна країна визначає, чи у світі 24% нерелігійних, чи 11%.",
-              "url": "/viruvannia-c3",
-              "variant": "secondary"
+          "title": "Хто такі «nones»: 1,9 мільярда без релігійної ідентичності",
+          "description": "Третя за розміром категорія світу — і найбільш неправильно зрозуміла.",
+          "padding": "md",
+          "bordered": true
+        },
+        "children": [
+          {
+            "id": "res-home-card-c1-meta",
+            "type": "text",
+            "order": 0,
+            "props": {
+              "content": "Дані: 2020 · Опубліковано: 09.06.2025 · 7 хв · перевірено"
             }
-          ]
-        }
+          },
+          {
+            "id": "res-home-card-c1-go",
+            "type": "link-button",
+            "order": 1,
+            "props": {
+              "text": "Читати блок",
+              "url": "/viruvannia-c1",
+              "target": "_self",
+              "variant": "secondary",
+              "size": "md",
+              "align": "full",
+              "icon": "arrow-right"
+            }
+          }
+        ]
+      },
+      {
+        "id": "res-home-card-c2",
+        "type": "card",
+        "order": 14,
+        "props": {
+          "title": "Атеїсти, агностики і «нічого конкретного»: три різні речі",
+          "description": "1,8% атеїстів, 9,3% агностиків і близько 13%, які просто не мають релігійної ідентичності.",
+          "padding": "md",
+          "bordered": true
+        },
+        "children": [
+          {
+            "id": "res-home-card-c2-meta",
+            "type": "text",
+            "order": 0,
+            "props": {
+              "content": "Дані: 2025 · Опубліковано: 09.06.2025 · 8 хв · оцінка"
+            }
+          },
+          {
+            "id": "res-home-card-c2-go",
+            "type": "link-button",
+            "order": 1,
+            "props": {
+              "text": "Читати блок",
+              "url": "/viruvannia-c2",
+              "target": "_self",
+              "variant": "secondary",
+              "size": "md",
+              "align": "full",
+              "icon": "arrow-right"
+            }
+          }
+        ]
+      },
+      {
+        "id": "res-home-card-c3",
+        "type": "card",
+        "order": 15,
+        "props": {
+          "title": "Китай: 1,3 мільярда «нерелігійних» і парадокс народних культів",
+          "description": "Одна країна визначає, чи у світі 24% нерелігійних, чи 11%.",
+          "padding": "md",
+          "bordered": true
+        },
+        "children": [
+          {
+            "id": "res-home-card-c3-meta",
+            "type": "text",
+            "order": 0,
+            "props": {
+              "content": "Дані: 2020 · Опубліковано: 09.06.2025 · 8 хв · перевірено"
+            }
+          },
+          {
+            "id": "res-home-card-c3-go",
+            "type": "link-button",
+            "order": 1,
+            "props": {
+              "text": "Читати блок",
+              "url": "/viruvannia-c3",
+              "target": "_self",
+              "variant": "secondary",
+              "size": "md",
+              "align": "full",
+              "icon": "arrow-right"
+            }
+          }
+        ]
       },
       {
         "id": "res-home-group-порівняння",
         "type": "text",
-        "order": 6,
+        "order": 16,
         "props": {
           "title": "Порівняння",
           "level": "h2"
         }
       },
       {
-        "id": "res-home-links-порівняння",
-        "type": "buttons",
-        "order": 7,
+        "id": "res-home-card-d1",
+        "type": "card",
+        "order": 17,
         "props": {
-          "layout": "column",
-          "items": [
-            {
-              "text": "Матриця вірувань: десять питань, на які кожна традиція відповідає по-своєму — Бог, світ, смерть, мораль, текст, ритуал, духовенство, жінка, їжа — сім традицій в одній таблиці.",
-              "url": "/viruvannia-d1",
-              "variant": "secondary"
+          "title": "Матриця вірувань: десять питань, на які кожна традиція відповідає по-своєму",
+          "description": "Бог, світ, смерть, мораль, текст, ритуал, духовенство, жінка, їжа — сім традицій в одній таблиці.",
+          "padding": "md",
+          "bordered": true
+        },
+        "children": [
+          {
+            "id": "res-home-card-d1-meta",
+            "type": "text",
+            "order": 0,
+            "props": {
+              "content": "Дані: доктрини · Опубліковано: 30.10.2026 · 10 хв · доктрина"
             }
-          ]
-        }
+          },
+          {
+            "id": "res-home-card-d1-go",
+            "type": "link-button",
+            "order": 1,
+            "props": {
+              "text": "Читати блок",
+              "url": "/viruvannia-d1",
+              "target": "_self",
+              "variant": "secondary",
+              "size": "md",
+              "align": "full",
+              "icon": "arrow-right"
+            }
+          }
+        ]
       }
     ],
     "footer": [
@@ -210,7 +570,7 @@ ON CONFLICT(slug) DO UPDATE SET
   title = excluded.title,
   page_data = excluded.page_data,
   is_active = 1,
-  is_public = 1,
+  is_public = excluded.is_public,
   updated_at = datetime('now');
 
 INSERT INTO scenarios (slug, title, photo_url, page_data, is_active, is_public, updated_at)
@@ -246,7 +606,7 @@ VALUES ('viruvannia-a1', 'Сто відсотків: як розподілене
         "type": "text",
         "order": 2,
         "props": {
-          "content": "Дані: 2020 · Опубліковано: 2025-06-09 · Статус: verified · 7 хв"
+          "content": "Дані: 2020 · Опубліковано: 09.06.2025 · 7 хв · перевірено"
         }
       },
       {
@@ -716,6 +1076,10 @@ VALUES ('viruvannia-a1', 'Сто відсотків: як розподілене
         "props": {
           "text": "Усі блоки дослідження",
           "url": "/viruvannia",
+          "target": "_self",
+          "variant": "secondary",
+          "size": "md",
+          "align": "full",
           "icon": "arrow-left"
         }
       },
@@ -724,17 +1088,17 @@ VALUES ('viruvannia-a1', 'Сто відсотків: як розподілене
         "type": "text",
         "order": 3,
         "props": {
-          "content": "Це дослідження, а не оцінка істинності релігій: ми описуємо, як люди вірять, скільки їх і на чому це ґрунтується."
+          "content": "Ми не оцінюємо істинність релігій і не агітуємо за віру або атеїзм. Число без джерела й року — не дані, а думка."
         }
       }
     ]
   }
-}', 1, 1, datetime('now'))
+}', 1, 0, datetime('now'))
 ON CONFLICT(slug) DO UPDATE SET
   title = excluded.title,
   page_data = excluded.page_data,
   is_active = 1,
-  is_public = 1,
+  is_public = excluded.is_public,
   updated_at = datetime('now');
 
 INSERT INTO scenarios (slug, title, photo_url, page_data, is_active, is_public, updated_at)
@@ -770,7 +1134,7 @@ VALUES ('viruvannia-a2', 'Дві правди: чому Pew і World Religion Da
         "type": "text",
         "order": 2,
         "props": {
-          "content": "Дані: 2020 · Опубліковано: 2025-06-09 · Статус: verified · 9 хв"
+          "content": "Дані: 2020 · Опубліковано: 09.06.2025 · 9 хв · перевірено"
         }
       },
       {
@@ -1302,6 +1666,10 @@ VALUES ('viruvannia-a2', 'Дві правди: чому Pew і World Religion Da
         "props": {
           "text": "Усі блоки дослідження",
           "url": "/viruvannia",
+          "target": "_self",
+          "variant": "secondary",
+          "size": "md",
+          "align": "full",
           "icon": "arrow-left"
         }
       },
@@ -1310,17 +1678,17 @@ VALUES ('viruvannia-a2', 'Дві правди: чому Pew і World Religion Da
         "type": "text",
         "order": 3,
         "props": {
-          "content": "Це дослідження, а не оцінка істинності релігій: ми описуємо, як люди вірять, скільки їх і на чому це ґрунтується."
+          "content": "Ми не оцінюємо істинність релігій і не агітуємо за віру або атеїзм. Число без джерела й року — не дані, а думка."
         }
       }
     ]
   }
-}', 1, 1, datetime('now'))
+}', 1, 0, datetime('now'))
 ON CONFLICT(slug) DO UPDATE SET
   title = excluded.title,
   page_data = excluded.page_data,
   is_active = 1,
-  is_public = 1,
+  is_public = excluded.is_public,
   updated_at = datetime('now');
 
 INSERT INTO scenarios (slug, title, photo_url, page_data, is_active, is_public, updated_at)
@@ -1356,7 +1724,7 @@ VALUES ('viruvannia-a3', 'Хто росте, хто зменшується: де
         "type": "text",
         "order": 2,
         "props": {
-          "content": "Дані: 2010–2020 · Опубліковано: 2025-06-09 · Статус: verified · 8 хв"
+          "content": "Дані: 2010–2020 · Опубліковано: 09.06.2025 · 8 хв · перевірено"
         }
       },
       {
@@ -1776,6 +2144,10 @@ VALUES ('viruvannia-a3', 'Хто росте, хто зменшується: де
         "props": {
           "text": "Усі блоки дослідження",
           "url": "/viruvannia",
+          "target": "_self",
+          "variant": "secondary",
+          "size": "md",
+          "align": "full",
           "icon": "arrow-left"
         }
       },
@@ -1784,17 +2156,17 @@ VALUES ('viruvannia-a3', 'Хто росте, хто зменшується: де
         "type": "text",
         "order": 3,
         "props": {
-          "content": "Це дослідження, а не оцінка істинності релігій: ми описуємо, як люди вірять, скільки їх і на чому це ґрунтується."
+          "content": "Ми не оцінюємо істинність релігій і не агітуємо за віру або атеїзм. Число без джерела й року — не дані, а думка."
         }
       }
     ]
   }
-}', 1, 1, datetime('now'))
+}', 1, 0, datetime('now'))
 ON CONFLICT(slug) DO UPDATE SET
   title = excluded.title,
   page_data = excluded.page_data,
   is_active = 1,
-  is_public = 1,
+  is_public = excluded.is_public,
   updated_at = datetime('now');
 
 INSERT INTO scenarios (slug, title, photo_url, page_data, is_active, is_public, updated_at)
@@ -1830,7 +2202,7 @@ VALUES ('viruvannia-b1', 'Християнство: 2,3 мільярда і зм
         "type": "text",
         "order": 2,
         "props": {
-          "content": "Дані: 2020 · Опубліковано: 2025-06-09 · Статус: verified · 8 хв"
+          "content": "Дані: 2020 · Опубліковано: 09.06.2025 · 8 хв · перевірено"
         }
       },
       {
@@ -2216,6 +2588,10 @@ VALUES ('viruvannia-b1', 'Християнство: 2,3 мільярда і зм
         "props": {
           "text": "Усі блоки дослідження",
           "url": "/viruvannia",
+          "target": "_self",
+          "variant": "secondary",
+          "size": "md",
+          "align": "full",
           "icon": "arrow-left"
         }
       },
@@ -2224,17 +2600,17 @@ VALUES ('viruvannia-b1', 'Християнство: 2,3 мільярда і зм
         "type": "text",
         "order": 3,
         "props": {
-          "content": "Це дослідження, а не оцінка істинності релігій: ми описуємо, як люди вірять, скільки їх і на чому це ґрунтується."
+          "content": "Ми не оцінюємо істинність релігій і не агітуємо за віру або атеїзм. Число без джерела й року — не дані, а думка."
         }
       }
     ]
   }
-}', 1, 1, datetime('now'))
+}', 1, 0, datetime('now'))
 ON CONFLICT(slug) DO UPDATE SET
   title = excluded.title,
   page_data = excluded.page_data,
   is_active = 1,
-  is_public = 1,
+  is_public = excluded.is_public,
   updated_at = datetime('now');
 
 INSERT INTO scenarios (slug, title, photo_url, page_data, is_active, is_public, updated_at)
@@ -2270,7 +2646,7 @@ VALUES ('viruvannia-b2', 'Іслам: 2 мільярди, п''ять різни�
         "type": "text",
         "order": 2,
         "props": {
-          "content": "Дані: 2020 · Опубліковано: 2025-06-09 · Статус: verified · 8 хв"
+          "content": "Дані: 2020 · Опубліковано: 09.06.2025 · 8 хв · перевірено"
         }
       },
       {
@@ -2668,6 +3044,10 @@ VALUES ('viruvannia-b2', 'Іслам: 2 мільярди, п''ять різни�
         "props": {
           "text": "Усі блоки дослідження",
           "url": "/viruvannia",
+          "target": "_self",
+          "variant": "secondary",
+          "size": "md",
+          "align": "full",
           "icon": "arrow-left"
         }
       },
@@ -2676,17 +3056,17 @@ VALUES ('viruvannia-b2', 'Іслам: 2 мільярди, п''ять різни�
         "type": "text",
         "order": 3,
         "props": {
-          "content": "Це дослідження, а не оцінка істинності релігій: ми описуємо, як люди вірять, скільки їх і на чому це ґрунтується."
+          "content": "Ми не оцінюємо істинність релігій і не агітуємо за віру або атеїзм. Число без джерела й року — не дані, а думка."
         }
       }
     ]
   }
-}', 1, 1, datetime('now'))
+}', 1, 0, datetime('now'))
 ON CONFLICT(slug) DO UPDATE SET
   title = excluded.title,
   page_data = excluded.page_data,
   is_active = 1,
-  is_public = 1,
+  is_public = excluded.is_public,
   updated_at = datetime('now');
 
 INSERT INTO scenarios (slug, title, photo_url, page_data, is_active, is_public, updated_at)
@@ -2722,7 +3102,7 @@ VALUES ('viruvannia-b3', 'Індуїзм: 1,2 мільярда і парасол
         "type": "text",
         "order": 2,
         "props": {
-          "content": "Дані: 2020 · Опубліковано: 2025-06-09 · Статус: verified · 8 хв"
+          "content": "Дані: 2020 · Опубліковано: 09.06.2025 · 8 хв · перевірено"
         }
       },
       {
@@ -3193,6 +3573,10 @@ VALUES ('viruvannia-b3', 'Індуїзм: 1,2 мільярда і парасол
         "props": {
           "text": "Усі блоки дослідження",
           "url": "/viruvannia",
+          "target": "_self",
+          "variant": "secondary",
+          "size": "md",
+          "align": "full",
           "icon": "arrow-left"
         }
       },
@@ -3201,17 +3585,17 @@ VALUES ('viruvannia-b3', 'Індуїзм: 1,2 мільярда і парасол
         "type": "text",
         "order": 3,
         "props": {
-          "content": "Це дослідження, а не оцінка істинності релігій: ми описуємо, як люди вірять, скільки їх і на чому це ґрунтується."
+          "content": "Ми не оцінюємо істинність релігій і не агітуємо за віру або атеїзм. Число без джерела й року — не дані, а думка."
         }
       }
     ]
   }
-}', 1, 1, datetime('now'))
+}', 1, 0, datetime('now'))
 ON CONFLICT(slug) DO UPDATE SET
   title = excluded.title,
   page_data = excluded.page_data,
   is_active = 1,
-  is_public = 1,
+  is_public = excluded.is_public,
   updated_at = datetime('now');
 
 INSERT INTO scenarios (slug, title, photo_url, page_data, is_active, is_public, updated_at)
@@ -3247,7 +3631,7 @@ VALUES ('viruvannia-b4', 'Буддизм: 324 мільйони, єдина ве�
         "type": "text",
         "order": 2,
         "props": {
-          "content": "Дані: 2020 · Опубліковано: 2025-06-09 · Статус: verified · 8 хв"
+          "content": "Дані: 2020 · Опубліковано: 09.06.2025 · 8 хв · перевірено"
         }
       },
       {
@@ -3666,6 +4050,10 @@ VALUES ('viruvannia-b4', 'Буддизм: 324 мільйони, єдина ве�
         "props": {
           "text": "Усі блоки дослідження",
           "url": "/viruvannia",
+          "target": "_self",
+          "variant": "secondary",
+          "size": "md",
+          "align": "full",
           "icon": "arrow-left"
         }
       },
@@ -3674,17 +4062,17 @@ VALUES ('viruvannia-b4', 'Буддизм: 324 мільйони, єдина ве�
         "type": "text",
         "order": 3,
         "props": {
-          "content": "Це дослідження, а не оцінка істинності релігій: ми описуємо, як люди вірять, скільки їх і на чому це ґрунтується."
+          "content": "Ми не оцінюємо істинність релігій і не агітуємо за віру або атеїзм. Число без джерела й року — не дані, а думка."
         }
       }
     ]
   }
-}', 1, 1, datetime('now'))
+}', 1, 0, datetime('now'))
 ON CONFLICT(slug) DO UPDATE SET
   title = excluded.title,
   page_data = excluded.page_data,
   is_active = 1,
-  is_public = 1,
+  is_public = excluded.is_public,
   updated_at = datetime('now');
 
 INSERT INTO scenarios (slug, title, photo_url, page_data, is_active, is_public, updated_at)
@@ -3720,7 +4108,7 @@ VALUES ('viruvannia-b5', 'Народні релігії: 2,2% або 9,2% — з
         "type": "text",
         "order": 2,
         "props": {
-          "content": "Дані: 2020/2025 · Опубліковано: 2025-06-09 · Статус: verified · 8 хв"
+          "content": "Дані: 2020/2025 · Опубліковано: 09.06.2025 · 8 хв · перевірено"
         }
       },
       {
@@ -4104,6 +4492,10 @@ VALUES ('viruvannia-b5', 'Народні релігії: 2,2% або 9,2% — з
         "props": {
           "text": "Усі блоки дослідження",
           "url": "/viruvannia",
+          "target": "_self",
+          "variant": "secondary",
+          "size": "md",
+          "align": "full",
           "icon": "arrow-left"
         }
       },
@@ -4112,17 +4504,17 @@ VALUES ('viruvannia-b5', 'Народні релігії: 2,2% або 9,2% — з
         "type": "text",
         "order": 3,
         "props": {
-          "content": "Це дослідження, а не оцінка істинності релігій: ми описуємо, як люди вірять, скільки їх і на чому це ґрунтується."
+          "content": "Ми не оцінюємо істинність релігій і не агітуємо за віру або атеїзм. Число без джерела й року — не дані, а думка."
         }
       }
     ]
   }
-}', 1, 1, datetime('now'))
+}', 1, 0, datetime('now'))
 ON CONFLICT(slug) DO UPDATE SET
   title = excluded.title,
   page_data = excluded.page_data,
   is_active = 1,
-  is_public = 1,
+  is_public = excluded.is_public,
   updated_at = datetime('now');
 
 INSERT INTO scenarios (slug, title, photo_url, page_data, is_active, is_public, updated_at)
@@ -4158,7 +4550,7 @@ VALUES ('viruvannia-c1', 'Хто такі «nones»: 1,9 мільярда без
         "type": "text",
         "order": 2,
         "props": {
-          "content": "Дані: 2020 · Опубліковано: 2025-06-09 · Статус: verified · 7 хв"
+          "content": "Дані: 2020 · Опубліковано: 09.06.2025 · 7 хв · перевірено"
         }
       },
       {
@@ -4556,6 +4948,10 @@ VALUES ('viruvannia-c1', 'Хто такі «nones»: 1,9 мільярда без
         "props": {
           "text": "Усі блоки дослідження",
           "url": "/viruvannia",
+          "target": "_self",
+          "variant": "secondary",
+          "size": "md",
+          "align": "full",
           "icon": "arrow-left"
         }
       },
@@ -4564,17 +4960,17 @@ VALUES ('viruvannia-c1', 'Хто такі «nones»: 1,9 мільярда без
         "type": "text",
         "order": 3,
         "props": {
-          "content": "Це дослідження, а не оцінка істинності релігій: ми описуємо, як люди вірять, скільки їх і на чому це ґрунтується."
+          "content": "Ми не оцінюємо істинність релігій і не агітуємо за віру або атеїзм. Число без джерела й року — не дані, а думка."
         }
       }
     ]
   }
-}', 1, 1, datetime('now'))
+}', 1, 0, datetime('now'))
 ON CONFLICT(slug) DO UPDATE SET
   title = excluded.title,
   page_data = excluded.page_data,
   is_active = 1,
-  is_public = 1,
+  is_public = excluded.is_public,
   updated_at = datetime('now');
 
 INSERT INTO scenarios (slug, title, photo_url, page_data, is_active, is_public, updated_at)
@@ -4610,7 +5006,7 @@ VALUES ('viruvannia-c2', 'Атеїсти, агностики і «нічого �
         "type": "text",
         "order": 2,
         "props": {
-          "content": "Дані: 2025 · Опубліковано: 2025-06-09 · Статус: estimate · 8 хв"
+          "content": "Дані: 2025 · Опубліковано: 09.06.2025 · 8 хв · оцінка"
         }
       },
       {
@@ -5085,6 +5481,10 @@ VALUES ('viruvannia-c2', 'Атеїсти, агностики і «нічого �
         "props": {
           "text": "Усі блоки дослідження",
           "url": "/viruvannia",
+          "target": "_self",
+          "variant": "secondary",
+          "size": "md",
+          "align": "full",
           "icon": "arrow-left"
         }
       },
@@ -5093,17 +5493,17 @@ VALUES ('viruvannia-c2', 'Атеїсти, агностики і «нічого �
         "type": "text",
         "order": 3,
         "props": {
-          "content": "Це дослідження, а не оцінка істинності релігій: ми описуємо, як люди вірять, скільки їх і на чому це ґрунтується."
+          "content": "Ми не оцінюємо істинність релігій і не агітуємо за віру або атеїзм. Число без джерела й року — не дані, а думка."
         }
       }
     ]
   }
-}', 1, 1, datetime('now'))
+}', 1, 0, datetime('now'))
 ON CONFLICT(slug) DO UPDATE SET
   title = excluded.title,
   page_data = excluded.page_data,
   is_active = 1,
-  is_public = 1,
+  is_public = excluded.is_public,
   updated_at = datetime('now');
 
 INSERT INTO scenarios (slug, title, photo_url, page_data, is_active, is_public, updated_at)
@@ -5139,7 +5539,7 @@ VALUES ('viruvannia-c3', 'Китай: 1,3 мільярда «нерелігій�
         "type": "text",
         "order": 2,
         "props": {
-          "content": "Дані: 2020 · Опубліковано: 2025-06-09 · Статус: verified · 8 хв"
+          "content": "Дані: 2020 · Опубліковано: 09.06.2025 · 8 хв · перевірено"
         }
       },
       {
@@ -5554,6 +5954,10 @@ VALUES ('viruvannia-c3', 'Китай: 1,3 мільярда «нерелігій�
         "props": {
           "text": "Усі блоки дослідження",
           "url": "/viruvannia",
+          "target": "_self",
+          "variant": "secondary",
+          "size": "md",
+          "align": "full",
           "icon": "arrow-left"
         }
       },
@@ -5562,17 +5966,17 @@ VALUES ('viruvannia-c3', 'Китай: 1,3 мільярда «нерелігій�
         "type": "text",
         "order": 3,
         "props": {
-          "content": "Це дослідження, а не оцінка істинності релігій: ми описуємо, як люди вірять, скільки їх і на чому це ґрунтується."
+          "content": "Ми не оцінюємо істинність релігій і не агітуємо за віру або атеїзм. Число без джерела й року — не дані, а думка."
         }
       }
     ]
   }
-}', 1, 1, datetime('now'))
+}', 1, 0, datetime('now'))
 ON CONFLICT(slug) DO UPDATE SET
   title = excluded.title,
   page_data = excluded.page_data,
   is_active = 1,
-  is_public = 1,
+  is_public = excluded.is_public,
   updated_at = datetime('now');
 
 INSERT INTO scenarios (slug, title, photo_url, page_data, is_active, is_public, updated_at)
@@ -5608,7 +6012,7 @@ VALUES ('viruvannia-d1', 'Матриця вірувань: десять пита
         "type": "text",
         "order": 2,
         "props": {
-          "content": "Дані: доктрини · Опубліковано: 2026-10-30 · Статус: doctrinal · 10 хв"
+          "content": "Дані: доктрини · Опубліковано: 30.10.2026 · 10 хв · доктрина"
         }
       },
       {
@@ -6106,6 +6510,10 @@ VALUES ('viruvannia-d1', 'Матриця вірувань: десять пита
         "props": {
           "text": "Усі блоки дослідження",
           "url": "/viruvannia",
+          "target": "_self",
+          "variant": "secondary",
+          "size": "md",
+          "align": "full",
           "icon": "arrow-left"
         }
       },
@@ -6114,15 +6522,15 @@ VALUES ('viruvannia-d1', 'Матриця вірувань: десять пита
         "type": "text",
         "order": 3,
         "props": {
-          "content": "Це дослідження, а не оцінка істинності релігій: ми описуємо, як люди вірять, скільки їх і на чому це ґрунтується."
+          "content": "Ми не оцінюємо істинність релігій і не агітуємо за віру або атеїзм. Число без джерела й року — не дані, а думка."
         }
       }
     ]
   }
-}', 1, 1, datetime('now'))
+}', 1, 0, datetime('now'))
 ON CONFLICT(slug) DO UPDATE SET
   title = excluded.title,
   page_data = excluded.page_data,
   is_active = 1,
-  is_public = 1,
+  is_public = excluded.is_public,
   updated_at = datetime('now');

@@ -5,7 +5,7 @@
  */
 
 import type { ResearchBlock, ResearchCatalog } from "@wwwuabot/shared/research";
-import { RESEARCH_LANDING_SLUG } from "@wwwuabot/shared/research";
+import { RESEARCH_LANDING_SLUG, RESEARCH_TITLE } from "@wwwuabot/shared/research";
 import type { Env } from "../shared/types";
 
 /** Ключ каталогу в `CONTENT_KV`: одна версія, щоб стара форма не жила поруч. */
@@ -61,7 +61,7 @@ export async function readResearchCatalog(env: Env): Promise<ResearchCatalog | n
   if (rows.length === 0) return null;
 
   const catalog: ResearchCatalog = {
-    title: "У що вірить людство",
+    title: RESEARCH_TITLE,
     slug: RESEARCH_LANDING_SLUG,
     updatedAt: "",
     blocks: rows.map(blockFromRow),

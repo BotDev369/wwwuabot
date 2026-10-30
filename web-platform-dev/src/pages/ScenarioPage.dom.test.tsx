@@ -31,11 +31,13 @@ const replies = new Map<string, Reply>();
 let profile: Reply = { fail: true };
 
 const apiFetchRaw = vi.fn();
+const navigate = vi.fn();
 const catalog = { products: [] as unknown[], media: [] as unknown[], loading: false };
 
 vi.mock("react-router-dom", () => ({
   useParams: () => params,
   useLocation: () => ({ pathname }),
+  useNavigate: () => navigate,
 }));
 vi.mock("@wwwuabot/ui/nav", () => ({
   useScreenChrome: (value: typeof chrome) => {

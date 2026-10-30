@@ -7,6 +7,7 @@
  */
 
 import type { BlockComponentProps } from "@wwwuabot/shared/types/page-config";
+import { appLinkHandler } from "./link-nav";
 
 interface ButtonItem {
   text: string;
@@ -23,7 +24,7 @@ const VARIANT_CLASS: Record<string, string> = {
   ghost: "wb-btn wb-btn-ghost",
 };
 
-export function ButtonsBlock({ block }: BlockComponentProps) {
+export function ButtonsBlock({ block, context }: BlockComponentProps) {
   const { items = [], layout = "row" } = block.props as {
     items?: ButtonItem[];
     layout?: string;
@@ -55,6 +56,7 @@ export function ButtonsBlock({ block }: BlockComponentProps) {
               style={style}
               target="_blank"
               rel="noopener noreferrer"
+              onClick={appLinkHandler(btn.url, context.navigate)}
             >
               {btn.text}
             </a>

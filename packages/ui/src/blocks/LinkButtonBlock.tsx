@@ -10,6 +10,7 @@
 import type { CSSProperties } from "react";
 import type { BlockComponentProps } from "@wwwuabot/shared/types/page-config";
 import { icons, type IconName } from "@wwwuabot/shared";
+import { appLinkHandler } from "./link-nav";
 
 const VARIANT_CLASSES: Record<string, string> = {
   primary: "wb-btn wb-btn-primary",
@@ -24,7 +25,7 @@ const SIZE_STYLES: Record<string, CSSProperties> = {
   lg: { fontSize: 16, padding: "12px 24px" },
 };
 
-export function LinkButtonBlock({ block }: BlockComponentProps) {
+export function LinkButtonBlock({ block, context }: BlockComponentProps) {
   const {
     text = "Перейти за посиланням",
     url = "#",
@@ -76,6 +77,7 @@ export function LinkButtonBlock({ block }: BlockComponentProps) {
           width: isFull ? "100%" : undefined,
           ...sizeStyle,
         }}
+        onClick={appLinkHandler(url, context.navigate)}
       >
         {hasIcon && (
           <span

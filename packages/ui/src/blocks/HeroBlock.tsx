@@ -8,6 +8,7 @@
  */
 
 import type { BlockComponentProps } from "@wwwuabot/shared/types/page-config";
+import { appLinkHandler } from "./link-nav";
 
 interface HeroButton {
   text: string;
@@ -26,7 +27,7 @@ const ALIGN_CLASSES: Record<string, string> = {
   right: "wb-block-hero--right",
 };
 
-export function HeroBlock({ block }: BlockComponentProps) {
+export function HeroBlock({ block, context }: BlockComponentProps) {
   const {
     title = "",
     subtitle = "",
@@ -64,7 +65,12 @@ export function HeroBlock({ block }: BlockComponentProps) {
               const btnClass = isSecondary ? "wb-btn wb-btn-secondary" : "wb-btn wb-btn-primary";
 
               return btn.url ? (
-                <a key={i} href={btn.url} className={btnClass}>
+                <a
+                  key={i}
+                  href={btn.url}
+                  className={btnClass}
+                  onClick={appLinkHandler(btn.url, context.navigate)}
+                >
                   {btn.text}
                 </a>
               ) : (

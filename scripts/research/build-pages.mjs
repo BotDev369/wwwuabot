@@ -196,14 +196,56 @@ function bodyToBlocks(body, prefix) {
 
 /* ── Сторінки ─────────────────────────────────────────────────────── */
 
-function detailPage(block) {
-  const meta = [
-    `Дані: ${block.dataDate}`,
-    `Опубліковано: ${block.publishedDate}`,
-    `Статус: ${block.dataStatus}`,
-    `${block.readingTime} хв`,
-  ].join(" · ");
+const LANDING_TITLE = "Дослідження: вірування і невірування";
 
+/** Підпис статусу даних: у фронтматері ключ, на екрані — слово. */
+const STATUS_LABELS = {
+  verified: "перевірено",
+  estimate: "оцінка",
+  "in-progress": "у роботі",
+  doctrinal: "доктрина",
+};
+
+const NOTICE =
+  "Ми не оцінюємо істинність релігій і не агітуємо за віру або атеїзм. Число без джерела й року — не дані, а думка.";
+
+/** Ключові цифри лендінгу: чотири числа, з яких починається розповідь. */
+const HEADLINE_FIGURES = [
+  { value: "28,8%", label: "християни — найбільша група" },
+  { value: "24,2%", label: "без релігійної ідентичності" },
+  { value: "14,9%", label: "індуїсти" },
+  { value: "+1,8 в.п.", label: "приріст ісламу за 2010–2020" },
+];
+
+/** Дата `2025-06-09` → `09.06.2025`: так її читають в українському тексті. */
+function humanDate(iso) {
+  const match = /^(\d{4})-(\d{2})-(\d{2})$/.exec(String(iso ?? ""));
+  return match ? `${match[3]}.${match[2]}.${match[1]}` : String(iso ?? "");
+}
+
+/** Мета-рядок блоку — той самий у картці каталогу й на детальній сторінці. */
+function metaLine(block) {
+  return [
+    block.dataDate ? `Дані: ${block.dataDate}` : "",
+    block.publishedDate ? `Опубліковано: ${humanDate(block.publishedDate)}` : "",
+    block.readingTime ? `${block.readingTime} хв` : "",
+    STATUS_LABELS[block.dataStatus] ?? "",
+  ]
+    .filter(Boolean)
+    .join(" · ");
+}
+
+/** Посилання в тексті сторінки: веде в застосунку, а не новою вкладкою. */
+function linkProps(text, url, icon) {
+  return { text, url, target: "_self", variant: "secondary", size: "md", align: "full", icon };
+}
+
+/** Ключ для id блока-заголовка групи. */
+function groupKey(title) {
+  return title.replace(/\s+/g, "-").toLowerCase();
+}
+
+function detailPage(block) {
   const header = [
     {
       id: `res-${block.id}-h1`,
@@ -211,13 +253,8 @@ function detailPage(block) {
       order: 0,
       props: { title: block.title, level: "h1" },
     },
-    {
-      id: `res-${block.id}-lead`,
-      type: "text",
-      order: 1,
-      props: { content: block.oneLiner },
-    },
-    { id: `res-${block.id}-meta`, type: "text", order: 2, props: { content: meta } },
+    { id: `res-${block.id}-lead`, type: "text", order: 1, props: { content: block.oneLiner } },
+    { id: `res-${block.id}-meta`, type: "text", order: 2, props: { content: metaLine(block) } },
     { id: `res-${block.id}-hr`, type: "divider", order: 3, props: {} },
   ];
 
@@ -231,12 +268,7 @@ function detailPage(block) {
   const main = [...figures, ...bodyToBlocks(block.body, `res-${block.id}-m`)];
 
   const footer = [
-    {
-      id: `res-${block.id}-src`,
-      type: "text",
-      order: 0,
-      props: { title: "Джерела", level: "h3" },
-    },
+    { id: `res-${block.id}-src`, type: "text", order: 0, props: { title: "Джерела", level: "h3" } },
     {
       id: `res-${block.id}-srclist`,
       type: "list",
@@ -253,23 +285,50 @@ function detailPage(block) {
       id: `res-${block.id}-back`,
       type: "link-button",
       order: 2,
-      props: { text: "Усі блоки дослідження", url: `/${LANDING_SLUG}`, icon: "arrow-left" },
+      props: linkProps("Усі блоки дослідження", `/${LANDING_SLUG}`, "arrow-left"),
     },
-    {
-      id: `res-${block.id}-note`,
-      type: "text",
-      order: 3,
-      props: {
-        content:
-          "Це дослідження, а не оцінка істинності релігій: ми описуємо, як люди вірять, скільки їх і на чому це ґрунтується.",
-      },
-    },
+    { id: `res-${block.id}-note`, type: "text", order: 3, props: { content: NOTICE } },
   ];
 
   return {
     version: 1,
     visibleZones: ["header", "main", "footer"],
     zones: { sidebar: [], header, main, footer },
+  };
+}
+
+/**
+ * Картка каталогу: назва, одне речення, мета-рядок і перехід у блок.
+ *
+ * **`card`, а не `buttons`:** підпис кнопки має `white-space: nowrap`
+ * (`.wb-btn` у `components.css`), тож «назва — опис» вилазило за екран на
+ * телефоні. Картка переносить текст і тримає вигляд решти платформи.
+ */
+function catalogCard(block, order) {
+  return {
+    id: `res-home-card-${block.id}`,
+    type: "card",
+    order,
+    props: {
+      title: block.title,
+      description: block.oneLiner,
+      padding: "md",
+      bordered: true,
+    },
+    children: [
+      {
+        id: `res-home-card-${block.id}-meta`,
+        type: "text",
+        order: 0,
+        props: { content: metaLine(block) },
+      },
+      {
+        id: `res-home-card-${block.id}-go`,
+        type: "link-button",
+        order: 1,
+        props: linkProps("Читати блок", `/${MODULE}-${block.id}`, "arrow-right"),
+      },
+    ],
   };
 }
 
@@ -287,47 +346,62 @@ function landingPage(blocks) {
       type: "hero",
       order: 0,
       props: {
-        title: "У що вірить людство",
+        title: "Вірування і невірування",
         subtitle:
-          "Розподіл 100% населення планети за віруваннями й невіруваннями: дані Pew Research Center і World Religion Database, кожен блок зі своїм джерелом.",
+          "Скільки людей на планеті вірять, у що саме і на чому тримаються ці цифри: розподіл населення в семи категоріях за Pew Research Center і World Religion Database.",
         align: "center",
-      },
-    },
-    {
-      id: "res-home-how",
-      type: "text",
-      order: 1,
-      props: {
-        title: "Як читати цю сторінку",
-        level: "h2",
-        content:
-          "Кожен блок — окреме дослідження зі своєю датою й джерелом. Відсотки завжди в межах 100% і завжди з позначенням методології. «Нерелігійний» не означає «атеїст», а «християнин у переписі» — не означає «практикуючий».",
       },
     },
   ];
 
-  const main = [];
-  let order = 0;
-  for (const group of groups) {
-    main.push({
-      id: `res-home-group-${group.title.replace(/\s+/g, "-").toLowerCase()}`,
-      type: "text",
-      order: order++,
-      props: { title: group.title, level: "h2" },
-    });
-    main.push({
-      id: `res-home-links-${group.title.replace(/\s+/g, "-").toLowerCase()}`,
-      type: "buttons",
-      order: order++,
+  const main = [
+    {
+      id: "res-home-figures",
+      type: "feature-card",
+      order: 0,
       props: {
-        layout: "column",
-        items: group.items.map((block) => ({
-          text: `${block.title} — ${block.oneLiner}`,
-          url: `/${MODULE}-${block.id}`,
-          variant: "secondary",
+        columns: "2",
+        items: HEADLINE_FIGURES.map((figure) => ({
+          title: figure.value,
+          description: figure.label,
         })),
       },
+    },
+    {
+      id: "res-home-how",
+      type: "feature-card",
+      order: 1,
+      props: {
+        columns: "1",
+        items: [
+          {
+            title: "Кожен блок — окреме дослідження",
+            description:
+              "Своя дата, своє джерело, свій статус даних: «перевірено», «оцінка» чи «у роботі».",
+          },
+          {
+            title: "Відсотки завжди в межах 100%",
+            description:
+              "І завжди з методологією поруч: самоідентифікація («ким себе назвав») чи практика («до кого ходить»).",
+          },
+          {
+            title: "«Нерелігійний» — не «атеїст»",
+            description:
+              "Як і «християнин у переписі» — не «практикуючий». Різницю показуємо, а не згладжуємо.",
+          },
+        ],
+      },
+    },
+  ];
+
+  for (const group of groups) {
+    main.push({
+      id: `res-home-group-${groupKey(group.title)}`,
+      type: "text",
+      order: main.length,
+      props: { title: group.title, level: "h2" },
     });
+    for (const block of group.items) main.push(catalogCard(block, main.length));
   }
 
   const footer = [
@@ -343,15 +417,7 @@ function landingPage(blocks) {
           "Основний шар — Pew Research Center (публікація 09.06.2025, база 2020, 201 країна, самоідентифікація). Альтернативний — World Religion Database 2025 (Brill, «адепти» за практикою). Шари не змішуються в межах однієї таблиці.",
       },
     },
-    {
-      id: "res-home-note",
-      type: "text",
-      order: 2,
-      props: {
-        content:
-          "Ми не оцінюємо істинність релігій і не агітуємо за віру або атеїзм. Число без джерела й року — не дані, а думка.",
-      },
-    },
+    { id: "res-home-note", type: "text", order: 2, props: { content: NOTICE } },
   ];
 
   return {
@@ -394,27 +460,29 @@ function sqlText(value) {
   return `'${String(value).replace(/'/g, "''")}'`;
 }
 
-function insertRow({ slug, title, pageData, photoUrl = null }) {
+function insertRow({ slug, title, pageData, isPublic }) {
   const page = JSON.stringify(pageData, null, 2);
   return `INSERT INTO scenarios (slug, title, photo_url, page_data, is_active, is_public, updated_at)
-VALUES (${sqlText(slug)}, ${sqlText(title)}, ${sqlText(photoUrl)}, ${sqlText(page)}, 1, 1, datetime('now'))
+VALUES (${sqlText(slug)}, ${sqlText(title)}, NULL, ${sqlText(page)}, 1, ${isPublic ? 1 : 0}, datetime('now'))
 ON CONFLICT(slug) DO UPDATE SET
   title = excluded.title,
   page_data = excluded.page_data,
   is_active = 1,
-  is_public = 1,
+  is_public = excluded.is_public,
   updated_at = datetime('now');`;
 }
 
 function buildSql(rows) {
-  return `-- Дослідження «У що вірить людство»: лендінг і 12 блоків MVP.
+  return `-- Дослідження «вірування і невірування»: лендінг і 12 його підсторінок.
 --
 -- Згенеровано з \`content/viruvannia/blocks/*.md\` скриптом
 -- \`scripts/research/build-pages.mjs\` — правити треба markdown, а не цей файл.
 --
 -- Рядок = сторінка вебу (\`page_data\`), як у будь-якого контенту платформи.
--- \`is_public = 1\` ставить лендінг у «Публічні сторінки»; \`owner_id\` лишається
--- порожнім, бо це редакційний контент, а не сторінка людини.
+-- \`is_public = 1\` має **лише лендінг**: у «Публічних сторінках» дослідження —
+-- одна сторінка, а блоки — її підсторінки. Вони все одно відкриваються за
+-- адресою, бо \`owner_id\` порожній: гейт видимості в \`scenarios.controller\`
+-- пускає контент платформи незалежно від \`is_public\`, а сторінки людей — ні.
 -- Повторний запуск ідемпотентний: ON CONFLICT перезаписує ту саму адресу.
 
 ${rows.map((row) => insertRow(row)).join("\n\n")}
@@ -435,16 +503,22 @@ if (unknownStatus.length > 0) {
 }
 
 const rows = [
-  { slug: LANDING_SLUG, title: "У що вірить людство", pageData: landingPage(blockList) },
+  {
+    slug: LANDING_SLUG,
+    title: LANDING_TITLE,
+    pageData: landingPage(blockList),
+    isPublic: true,
+  },
   ...blockList.map((block) => ({
     slug: `${MODULE}-${block.id}`,
     title: block.title,
     pageData: detailPage(block),
+    isPublic: false,
   })),
 ];
 
 const catalog = {
-  title: "У що вірить людство",
+  title: LANDING_TITLE,
   slug: LANDING_SLUG,
   updatedAt: new Date().toISOString().slice(0, 10),
   blocks: blockList.map((block) => ({

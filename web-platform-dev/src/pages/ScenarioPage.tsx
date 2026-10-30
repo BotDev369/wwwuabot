@@ -11,7 +11,7 @@
  */
 
 import { useEffect, useMemo, useState } from "react";
-import { useParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import type { PageConfig, BlockContext, UserProfile } from "@wwwuabot/shared/types/page-config";
 import { parsePageConfig } from "@wwwuabot/shared/types/page-config";
 import { HOME_SLUG } from "@wwwuabot/shared/content";
@@ -83,6 +83,9 @@ function ErrorScreen({ message }: { message: string }) {
 }
 
 export function ScenarioPage() {
+  // Перехід усередині застосунку: посилання блоку не має перезавантажувати
+  // Mini App — інакше губиться стан, а «назад» веде з застосунку.
+  const navigate = useNavigate();
   // `*`-сплэт дає всю адресу; порожній шлях — головна.
   const { ["*"]: splat } = useParams<{ "*": string }>();
   const scenarioSlug = splat ?? HOME_SLUG;
@@ -213,8 +216,9 @@ export function ScenarioPage() {
       photoUrl: scenarioPhoto,
       user: userProfile ?? undefined,
       isOwner: userProfile?.role === "owner" || userProfile?.role === "admin",
+      navigate,
     }),
-    [pageSlug, scenarioTitle, scenarioPhoto, userProfile],
+    [pageSlug, scenarioTitle, scenarioPhoto, userProfile, navigate],
   );
 
   if (status === "loading") return <LoadingScreen />;
