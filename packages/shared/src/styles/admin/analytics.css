@@ -1,0 +1,283 @@
+/* ═══ Аналітика: журнал дій людей ═══════════════════════════════════════════
+   Екран показує поведінку, тож щільність важливіша за повітря: рядок події —
+   один погляд, а не картка. Кольори — лише токени; поверхня — та сама, що в
+   решти панелі. */
+
+/* Сторінка не має власних полів: їх задає шапка й вміст окремо, а липкий шар
+   мусить закривати всю ширину прокрутки. Бокова мірка — спільна з шапкою
+   застосунку (20px / 16px), інакше назва, знаки, чипи й картки стоять на
+   трьох різних лініях. */
+.ana-page {
+  --ana-gutter: var(--sp-5);
+  display: flex;
+  flex-direction: column;
+  overflow: auto;
+  flex: 1;
+  min-height: 0;
+}
+
+@media (max-width: 768px) {
+  .ana-page {
+    --ana-gutter: var(--sp-4);
+  }
+}
+
+/* Шапка, зведення й період — **один липкий шар**, а не три смуги. Окрема
+   заливка в кожної лишала б між ними шов, крізь який видно журнал: саме він і
+   читався як прозора дірка посеред екрана. Проміжок усередині шару закритий
+   тлом, тож між рядами немає нічого, крізь що могло б просвічувати. */
+.ana-pinned {
+  position: sticky;
+  top: 0;
+  z-index: var(--z-sticky);
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-3);
+  padding: var(--sp-3) var(--ana-gutter);
+  background: var(--bg-page, var(--bg-0));
+  border-bottom: 1px solid var(--border-subtle);
+}
+
+.ana-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--sp-2);
+  flex-wrap: wrap;
+}
+
+.ana-actions {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+  margin-left: auto;
+}
+
+/* Знаки оновлення й прибирання — своя група: на вузькому екрані вона їде до
+   правого краю, а режим і період лишаються поряд ліворуч. */
+.ana-tools {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+}
+
+/* На вузькому екрані назва й дії не вміщаються в один ряд, і дії з'їжджали б
+   униз купою справа. Там вони навмисно стають власною смугою по тих самих
+   двох лініях, що й назва та картки. */
+@media (max-width: 640px) {
+  .ana-actions {
+    flex: 1 1 100%;
+    margin-left: 0;
+  }
+
+  .ana-tools {
+    margin-left: auto;
+  }
+}
+
+/* Вага назви — не з `h1`: типовий `h1` тонкий, і тоді число зведення
+   переважало назву екрана. Розмір лишається типовим. */
+.ana-head-title {
+  font-weight: var(--weight-bold);
+  letter-spacing: -0.01em;
+}
+
+.ana-body {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-3);
+  /* + safe-area: футера більше немає, тож останній рядок мусить сам
+     відійти від індикатора дому. */
+  padding: var(--sp-3) var(--ana-gutter) calc(var(--sp-5) + var(--safe-bottom));
+}
+
+.ana-mode {
+  display: flex;
+  gap: 2px;
+  padding: 2px;
+  border-radius: var(--radius-full);
+  background: var(--bg-2);
+}
+
+/* Режим — квадрат-знак: підпис у `aria-label`, тож смуга не ширшає від двох
+   слів і лишається місце для дій. */
+/* Мірка та сама, що в кнопок-знаків: 36px мишею, 40px пальцем (з полем
+   пілюлі — 44). Різні висоти в одному ряду читались як «розміщено як попало». */
+.ana-mode-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  background: transparent;
+  color: var(--text-secondary);
+  min-width: 36px;
+  min-height: 32px;
+  padding: 0 8px;
+  border-radius: var(--radius-full);
+  cursor: pointer;
+}
+
+@media (hover: none) {
+  .ana-mode-btn {
+    min-width: 44px;
+    min-height: 40px;
+  }
+}
+
+.ana-mode-btn--active {
+  background: var(--accent);
+  color: var(--on-accent);
+}
+
+.ana-range {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: var(--sp-2);
+}
+
+.ana-field {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.ana-label {
+  font-size: var(--text-xs);
+  color: var(--text-muted);
+}
+
+.ana-input {
+  background: var(--field-bg);
+  box-shadow: var(--field-ring);
+  border: none;
+  border-radius: var(--radius-sm);
+  color: var(--text-primary);
+  font-size: var(--text-sm);
+  padding: 6px 8px;
+  min-width: 190px;
+}
+
+/* Період — кнопка в ряду дій: вона називає обране, а вибір живе в модалці.
+   Ряд чипів на екрані з'їдав місце в шапці й лишав ті самі слова на видноті. */
+.ana-period-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 36px;
+  padding-inline: 12px;
+  font-size: var(--text-sm);
+}
+
+@media (hover: none) {
+  .ana-period-btn {
+    min-height: 44px;
+    padding-inline: 14px;
+  }
+}
+
+/* Модалка періоду: готові проміжки й ручні межі в одній поверхні. */
+.ana-period-modal {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-4);
+}
+
+.ana-presets {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--sp-2);
+}
+
+.ana-preset {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  /* 13px, а не 11: підпис чипа — це те, що людина читає перед дотиком. */
+  font-size: var(--text-sm);
+  min-height: 36px;
+  padding: 0 12px;
+  border: 1px solid var(--border);
+  background: transparent;
+  color: var(--text-secondary);
+  border-radius: var(--radius-full);
+  cursor: pointer;
+}
+
+/* Палець — 44px: та сама межа, що в кнопок-знаків і пунктів футера. */
+@media (hover: none) {
+  .ana-preset {
+    min-height: 44px;
+    padding: 0 14px;
+  }
+}
+
+.ana-preset:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+.ana-preset--active {
+  border-color: var(--accent);
+  background: var(--accent-soft);
+  color: var(--accent);
+}
+
+/* Кнопка-знак: підпис живе в `aria-label` і підказці, тож місце тримає
+   квадрат, а не слово. Мінімум 44px — палець, а не курсор. */
+.ana-icon-btn {
+  min-width: 36px;
+  min-height: 36px;
+  padding-inline: 0;
+}
+
+@media (hover: none) {
+  .ana-icon-btn {
+    min-width: 44px;
+    min-height: 44px;
+  }
+}
+
+.ana-updated {
+  margin: 0;
+  font-size: var(--text-xs);
+  color: var(--text-muted);
+}
+
+/* Зведення — одна смуга з чотирьох рівних клітинок на всю ширину: край смуги
+   збігається з чипами періоду й картками, а не обривається посередині, як
+   окрема коробка. Розділювач — тонка лінія тла крізь `gap: 1px`, а не рамка
+   клітинки: подвійних контурів немає. */
+.ana-stats {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 1px;
+  background: var(--border-subtle);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+}
+
+.ana-stat {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-width: 0;
+  min-height: 44px;
+  padding: 4px 8px;
+  background: var(--bg-1);
+  color: var(--text-secondary);
+}
+
+.ana-stat svg {
+  stroke-width: 2.2;
+}
+
+.ana-stat-value {
+  font-family: var(--font-mono);
+  font-size: var(--text-xl);
+  font-weight: var(--weight-bold);
+  line-height: 1.1;
+  color: var(--text-primary);
+}

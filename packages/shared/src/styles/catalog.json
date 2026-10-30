@@ -1,0 +1,4989 @@
+{
+  "files": [
+    {
+      "file": "admin/analytics-people.css",
+      "tokens": 0,
+      "classes": 32
+    },
+    {
+      "file": "admin/analytics.css",
+      "tokens": 2,
+      "classes": 24
+    },
+    {
+      "file": "admin/bot-constructor.css",
+      "tokens": 0,
+      "classes": 27
+    },
+    {
+      "file": "admin/home.css",
+      "tokens": 0,
+      "classes": 8
+    },
+    {
+      "file": "admin/index.css",
+      "tokens": 0,
+      "classes": 0
+    },
+    {
+      "file": "admin/monitoring-report.css",
+      "tokens": 0,
+      "classes": 19
+    },
+    {
+      "file": "admin/monitoring.css",
+      "tokens": 0,
+      "classes": 34
+    },
+    {
+      "file": "admin/scenario-modal.css",
+      "tokens": 0,
+      "classes": 38
+    },
+    {
+      "file": "admin/scenario-tabs.css",
+      "tokens": 0,
+      "classes": 12
+    },
+    {
+      "file": "admin/scenarios-list.css",
+      "tokens": 0,
+      "classes": 9
+    },
+    {
+      "file": "admin/shell.css",
+      "tokens": 0,
+      "classes": 12
+    },
+    {
+      "file": "admin/style.css",
+      "tokens": 0,
+      "classes": 41
+    },
+    {
+      "file": "admin/telegram-preview.css",
+      "tokens": 0,
+      "classes": 11
+    },
+    {
+      "file": "admin/users-table.css",
+      "tokens": 0,
+      "classes": 32
+    },
+    {
+      "file": "ads.css",
+      "tokens": 0,
+      "classes": 16
+    },
+    {
+      "file": "app-chrome.css",
+      "tokens": 1,
+      "classes": 141
+    },
+    {
+      "file": "assessments.css",
+      "tokens": 0,
+      "classes": 88
+    },
+    {
+      "file": "components.css",
+      "tokens": 13,
+      "classes": 198
+    },
+    {
+      "file": "contacts.css",
+      "tokens": 0,
+      "classes": 39
+    },
+    {
+      "file": "contextbar.css",
+      "tokens": 2,
+      "classes": 6
+    },
+    {
+      "file": "date-analysis.css",
+      "tokens": 1,
+      "classes": 30
+    },
+    {
+      "file": "dates.css",
+      "tokens": 0,
+      "classes": 26
+    },
+    {
+      "file": "drawer.css",
+      "tokens": 0,
+      "classes": 4
+    },
+    {
+      "file": "favorites.css",
+      "tokens": 0,
+      "classes": 14
+    },
+    {
+      "file": "font-faces.css",
+      "tokens": 0,
+      "classes": 0
+    },
+    {
+      "file": "games.css",
+      "tokens": 82,
+      "classes": 63
+    },
+    {
+      "file": "index.css",
+      "tokens": 0,
+      "classes": 0
+    },
+    {
+      "file": "messages.css",
+      "tokens": 0,
+      "classes": 45
+    },
+    {
+      "file": "page-layout.css",
+      "tokens": 0,
+      "classes": 19
+    },
+    {
+      "file": "platform.css",
+      "tokens": 0,
+      "classes": 22
+    },
+    {
+      "file": "reset.css",
+      "tokens": 2,
+      "classes": 0
+    },
+    {
+      "file": "shop-storefront.css",
+      "tokens": 35,
+      "classes": 94
+    },
+    {
+      "file": "shop.css",
+      "tokens": 4,
+      "classes": 56
+    },
+    {
+      "file": "subbar.css",
+      "tokens": 0,
+      "classes": 10
+    },
+    {
+      "file": "text.css",
+      "tokens": 0,
+      "classes": 4
+    },
+    {
+      "file": "theme-pages.css",
+      "tokens": 0,
+      "classes": 8
+    },
+    {
+      "file": "theme-panel.css",
+      "tokens": 0,
+      "classes": 54
+    },
+    {
+      "file": "themes.css",
+      "tokens": 50,
+      "classes": 0
+    },
+    {
+      "file": "tokens.css",
+      "tokens": 157,
+      "classes": 0
+    },
+    {
+      "file": "trackers.css",
+      "tokens": 5,
+      "classes": 117
+    },
+    {
+      "file": "user-colors.css",
+      "tokens": 63,
+      "classes": 0
+    }
+  ],
+  "tokens": [
+    {
+      "name": "--accent",
+      "section": "Палітра світлої схеми (M3 surface containers)",
+      "light": "#9c3410",
+      "dark": "#ffa887",
+      "palette": "",
+      "paletteDark": "var(--user-accent)"
+    },
+    {
+      "name": "--accent-dim",
+      "section": "Палітра світлої схеми (M3 surface containers)",
+      "light": "rgba(156, 52, 16, 0.08)",
+      "dark": "rgba(255, 168, 135, 0.12)",
+      "palette": "color-mix(\n    in srgb,\n    var(--user-accent) 8%,\n    color-mix(in srgb, var(--user-bg) 14%, #ffffff)\n  )",
+      "paletteDark": "color-mix(in srgb, var(--user-accent) 18%, var(--user-bg))"
+    },
+    {
+      "name": "--accent-hover",
+      "section": "Палітра світлої схеми (M3 surface containers)",
+      "light": "#7d290b",
+      "dark": "#ffc4ad",
+      "palette": "",
+      "paletteDark": "color-mix(in srgb, var(--user-accent) 78%, var(--user-text))"
+    },
+    {
+      "name": "--accent-soft",
+      "section": "Палітра світлої схеми (M3 surface containers)",
+      "light": "rgba(156, 52, 16, 0.09)",
+      "dark": "rgba(255, 168, 135, 0.14)",
+      "palette": "",
+      "paletteDark": "color-mix(in srgb, var(--user-accent) 12%, transparent)"
+    },
+    {
+      "name": "--appbar-h",
+      "section": "Сайдбар: крок пункту й берег",
+      "light": "calc(var(--topbar-h) + var(--safe-top) + var(--sp-2))",
+      "dark": "",
+      "palette": "",
+      "paletteDark": ""
+    },
+    {
+      "name": "--bg-0",
+      "section": "Палітра світлої схеми (M3 surface containers)",
+      "light": "#f0f0f4",
+      "dark": "#0f1013",
+      "palette": "",
+      "paletteDark": "var(--user-bg)"
+    },
+    {
+      "name": "--bg-1",
+      "section": "Палітра світлої схеми (M3 surface containers)",
+      "light": "var(--bg-home, #f0f0f4)",
+      "dark": "#1b1b1f",
+      "palette": "",
+      "paletteDark": "var(--bg-home)"
+    },
+    {
+      "name": "--bg-2",
+      "section": "Палітра світлої схеми (M3 surface containers)",
+      "light": "#ededf0",
+      "dark": "#202024",
+      "palette": "",
+      "paletteDark": "color-mix(in srgb, var(--user-bg) 95%, var(--user-text))"
+    },
+    {
+      "name": "--bg-3",
+      "section": "Палітра світлої схеми (M3 surface containers)",
+      "light": "#e4e4e8",
+      "dark": "#2a2a2e",
+      "palette": "",
+      "paletteDark": "color-mix(in srgb, var(--user-bg) 90%, var(--user-text))"
+    },
+    {
+      "name": "--bg-4",
+      "section": "Палітра світлої схеми (M3 surface containers)",
+      "light": "#dcdce0",
+      "dark": "#353538",
+      "palette": "",
+      "paletteDark": "color-mix(in srgb, var(--user-bg) 86%, var(--user-text))"
+    },
+    {
+      "name": "--bg-home",
+      "section": "Палітра світлої схеми (M3 surface containers)",
+      "light": "radial-gradient(120% 90% at 12% 0%, #ffffff 0%, var(--bg-2) 55%, var(--bg-0) 100%)",
+      "dark": "radial-gradient(\n    120% 90% at 12% 0%,\n    var(--surface) 0%,\n    var(--bg-2) 55%,\n    var(--bg-0) 100%\n  )",
+      "palette": "",
+      "paletteDark": "radial-gradient(120% 90% at 12% 0%, var(--bg-3) 0%, var(--bg-2) 55%, var(--bg-0) 100%)"
+    },
+    {
+      "name": "--bg-page",
+      "section": "Фон екрана",
+      "light": "var(--chrome-header-bg)",
+      "dark": "",
+      "palette": "",
+      "paletteDark": "var(--user-bg)"
+    },
+    {
+      "name": "--border",
+      "section": "Палітра світлої схеми (M3 surface containers)",
+      "light": "#b0b0b8",
+      "dark": "#44464f",
+      "palette": "",
+      "paletteDark": "color-mix(in srgb, var(--user-text) 20%, var(--user-bg))"
+    },
+    {
+      "name": "--border-hover",
+      "section": "Палітра світлої схеми (M3 surface containers)",
+      "light": "#94949e",
+      "dark": "#5c5f6a",
+      "palette": "",
+      "paletteDark": "color-mix(in srgb, var(--user-text) 45%, var(--user-bg))"
+    },
+    {
+      "name": "--border-subtle",
+      "section": "Палітра світлої схеми (M3 surface containers)",
+      "light": "#c8c8d0",
+      "dark": "#38383d",
+      "palette": "",
+      "paletteDark": "color-mix(in srgb, var(--user-text) 10%, var(--user-bg))"
+    },
+    {
+      "name": "--btn-pad-x",
+      "section": "Button metrics",
+      "light": "16px",
+      "dark": "",
+      "palette": "",
+      "paletteDark": ""
+    },
+    {
+      "name": "--btn-pad-y",
+      "section": "Button metrics",
+      "light": "8px",
+      "dark": "",
+      "palette": "",
+      "paletteDark": ""
+    },
+    {
+      "name": "--btn-radius",
+      "section": "Button metrics",
+      "light": "20px",
+      "dark": "",
+      "palette": "",
+      "paletteDark": ""
+    },
+    {
+      "name": "--card-bg",
+      "section": "Картка",
+      "light": "#ffffff",
+      "dark": "#26262a",
+      "palette": "color-mix(in srgb, var(--user-bg) 86%, #ffffff)",
+      "paletteDark": "color-mix(in srgb, var(--user-bg) 94%, var(--user-text))"
+    },
+    {
+      "name": "--card-border",
+      "section": "Глибина поверхонь",
+      "light": "rgba(28, 27, 31, 0.06)",
+      "dark": "rgba(227, 226, 230, 0.07)",
+      "palette": "",
+      "paletteDark": "color-mix(in srgb, var(--user-text) 7%, transparent)"
+    },
+    {
+      "name": "--card-gap",
+      "section": "Картка",
+      "light": "var(--sp-3)",
+      "dark": "",
+      "palette": "",
+      "paletteDark": ""
+    },
+    {
+      "name": "--card-pad",
+      "section": "Картка",
+      "light": "var(--sp-4)",
+      "dark": "",
+      "palette": "",
+      "paletteDark": ""
+    },
+    {
+      "name": "--card-radius",
+      "section": "Картка",
+      "light": "20px",
+      "dark": "",
+      "palette": "",
+      "paletteDark": ""
+    },
+    {
+      "name": "--card-shadow",
+      "section": "Картка",
+      "light": "var(--shadow-card)",
+      "dark": "",
+      "palette": "",
+      "paletteDark": ""
+    },
+    {
+      "name": "--chrome-bottom-bg",
+      "section": "Нативний хром Telegram",
+      "light": "#f0f0f4",
+      "dark": "#1b1b1f",
+      "palette": "",
+      "paletteDark": "var(--user-bg)"
+    },
+    {
+      "name": "--chrome-header-bg",
+      "section": "Нативний хром Telegram",
+      "light": "#f0f0f4",
+      "dark": "#1b1b1f",
+      "palette": "",
+      "paletteDark": "var(--user-bg)"
+    },
+    {
+      "name": "--context-bar-h",
+      "section": "Сайдбар: крок пункту й берег",
+      "light": "var(--nav-bar-h)",
+      "dark": "",
+      "palette": "",
+      "paletteDark": ""
+    },
+    {
+      "name": "--duration",
+      "section": "Transitions",
+      "light": "200ms",
+      "dark": "",
+      "palette": "",
+      "paletteDark": ""
+    },
+    {
+      "name": "--duration-fast",
+      "section": "Transitions",
+      "light": "100ms",
+      "dark": "",
+      "palette": "",
+      "paletteDark": ""
+    },
+    {
+      "name": "--duration-slow",
+      "section": "Transitions",
+      "light": "400ms",
+      "dark": "",
+      "palette": "",
+      "paletteDark": ""
+    },
+    {
+      "name": "--ease",
+      "section": "Transitions",
+      "light": "cubic-bezier(0.2, 0, 0, 1)",
+      "dark": "",
+      "palette": "",
+      "paletteDark": ""
+    },
+    {
+      "name": "--ease-in",
+      "section": "Transitions",
+      "light": "cubic-bezier(0.2, 0, 1, 1)",
+      "dark": "",
+      "palette": "",
+      "paletteDark": ""
+    },
+    {
+      "name": "--ease-out",
+      "section": "Transitions",
+      "light": "cubic-bezier(0, 0, 0, 1)",
+      "dark": "",
+      "palette": "",
+      "paletteDark": ""
+    },
+    {
+      "name": "--ease-spring",
+      "section": "Transitions",
+      "light": "cubic-bezier(0.2, 0, 0, 1)",
+      "dark": "",
+      "palette": "",
+      "paletteDark": ""
+    },
+    {
+      "name": "--elevation-0",
+      "section": "Рівні підняття",
+      "light": "none",
+      "dark": "none",
+      "palette": "",
+      "paletteDark": ""
+    },
+    {
+      "name": "--elevation-1",
+      "section": "Рівні підняття",
+      "light": "0 1px 3px rgba(0, 0, 0, 0.12)",
+      "dark": "0 1px 3px rgba(0, 0, 0, 0.4)",
+      "palette": "",
+      "paletteDark": ""
+    },
+    {
+      "name": "--elevation-2",
+      "section": "Рівні підняття",
+      "light": "0 2px 6px rgba(0, 0, 0, 0.15)",
+      "dark": "0 2px 6px rgba(0, 0, 0, 0.5)",
+      "palette": "",
+      "paletteDark": ""
+    },
+    {
+      "name": "--elevation-3",
+      "section": "Рівні підняття",
+      "light": "0 4px 8px rgba(0, 0, 0, 0.18)",
+      "dark": "0 4px 8px rgba(0, 0, 0, 0.5)",
+      "palette": "",
+      "paletteDark": ""
+    },
+    {
+      "name": "--field-bg",
+      "section": "Поле вводу",
+      "light": "#e9e9ef",
+      "dark": "var(--bg-4)",
+      "palette": "",
+      "paletteDark": "var(--bg-3)"
+    },
+    {
+      "name": "--field-bg-raised",
+      "section": "Поле вводу",
+      "light": "#ffffff",
+      "dark": "#343a46",
+      "palette": "#ffffff",
+      "paletteDark": "color-mix(in srgb, var(--user-bg) 78%, var(--user-text))"
+    },
+    {
+      "name": "--field-pad-x",
+      "section": "Поле вводу",
+      "light": "16px",
+      "dark": "",
+      "palette": "",
+      "paletteDark": ""
+    },
+    {
+      "name": "--field-pad-y",
+      "section": "Поле вводу",
+      "light": "12px",
+      "dark": "",
+      "palette": "",
+      "paletteDark": ""
+    },
+    {
+      "name": "--field-ring",
+      "section": "Поле вводу",
+      "light": "0 1px 2px rgba(28, 27, 31, 0.05), 0 2px 6px rgba(28, 27, 31, 0.04)",
+      "dark": "0 1px 2px rgba(0, 0, 0, 0.45), 0 2px 6px rgba(0, 0, 0, 0.3)",
+      "palette": "0 1px 2px rgb(0 0 0 / 5%), 0 2px 6px rgb(0 0 0 / 4%)",
+      "paletteDark": "0 1px 2px rgb(0 0 0 / 45%), 0 2px 6px rgb(0 0 0 / 30%)"
+    },
+    {
+      "name": "--focus-ring-color",
+      "section": "Typography",
+      "light": "var(--accent)",
+      "dark": "",
+      "palette": "",
+      "paletteDark": ""
+    },
+    {
+      "name": "--focus-ring-offset",
+      "section": "Typography",
+      "light": "2px",
+      "dark": "",
+      "palette": "",
+      "paletteDark": ""
+    },
+    {
+      "name": "--focus-ring-width",
+      "section": "Typography",
+      "light": "2px",
+      "dark": "",
+      "palette": "",
+      "paletteDark": ""
+    },
+    {
+      "name": "--font-display",
+      "section": "Typography",
+      "light": "var(--font-ui)",
+      "dark": "",
+      "palette": "",
+      "paletteDark": ""
+    },
+    {
+      "name": "--font-mono",
+      "section": "Typography",
+      "light": "\"JetBrains Mono\", \"Fira Code\", ui-monospace, monospace",
+      "dark": "",
+      "palette": "",
+      "paletteDark": ""
+    },
+    {
+      "name": "--font-ui",
+      "section": "Typography",
+      "light": "\"Inter\", system-ui, -apple-system, \"Segoe UI\", sans-serif",
+      "dark": "",
+      "palette": "",
+      "paletteDark": ""
+    },
+    {
+      "name": "--green",
+      "section": "Палітра світлої схеми (M3 surface containers)",
+      "light": "#0a6e2a",
+      "dark": "#7bda90",
+      "palette": "#16a34a",
+      "paletteDark": "#4ade80"
+    },
+    {
+      "name": "--green-dim",
+      "section": "Палітра світлої схеми (M3 surface containers)",
+      "light": "#e2eee5",
+      "dark": "rgba(123, 218, 144, 0.12)",
+      "palette": "color-mix(\n    in srgb,\n    var(--green) 12%,\n    color-mix(in srgb, var(--user-bg) 14%, #ffffff)\n  )",
+      "paletteDark": "color-mix(in srgb, var(--green) 18%, var(--user-bg))"
+    },
+    {
+      "name": "--h1-size",
+      "section": "Typography",
+      "light": "1.75rem",
+      "dark": "",
+      "palette": "",
+      "paletteDark": ""
+    },
+    {
+      "name": "--h1-weight",
+      "section": "Typography",
+      "light": "var(--weight-normal)",
+      "dark": "",
+      "palette": "",
+      "paletteDark": ""
+    },
+    {
+      "name": "--h2-size",
+      "section": "Typography",
+      "light": "1.375rem",
+      "dark": "",
+      "palette": "",
+      "paletteDark": ""
+    },
+    {
+      "name": "--h2-weight",
+      "section": "Typography",
+      "light": "var(--weight-medium)",
+      "dark": "",
+      "palette": "",
+      "paletteDark": ""
+    },
+    {
+      "name": "--h3-size",
+      "section": "Typography",
+      "light": "1.125rem",
+      "dark": "",
+      "palette": "",
+      "paletteDark": ""
+    },
+    {
+      "name": "--h3-weight",
+      "section": "Typography",
+      "light": "var(--weight-medium)",
+      "dark": "",
+      "palette": "",
+      "paletteDark": ""
+    },
+    {
+      "name": "--hairline",
+      "section": "Глибина поверхонь",
+      "light": "rgba(28, 27, 31, 0.09)",
+      "dark": "rgba(227, 226, 230, 0.07)",
+      "palette": "",
+      "paletteDark": "color-mix(in srgb, var(--user-text) 7%, transparent)"
+    },
+    {
+      "name": "--heading-card-size",
+      "section": "Заголовки всередині екрана",
+      "light": "0.9375rem",
+      "dark": "",
+      "palette": "",
+      "paletteDark": ""
+    },
+    {
+      "name": "--heading-card-weight",
+      "section": "Заголовки всередині екрана",
+      "light": "var(--weight-semibold)",
+      "dark": "",
+      "palette": "",
+      "paletteDark": ""
+    },
+    {
+      "name": "--heading-group-size",
+      "section": "Заголовки всередині екрана",
+      "light": "var(--text-xs)",
+      "dark": "",
+      "palette": "",
+      "paletteDark": ""
+    },
+    {
+      "name": "--heading-group-weight",
+      "section": "Заголовки всередині екрана",
+      "light": "var(--weight-semibold)",
+      "dark": "",
+      "palette": "",
+      "paletteDark": ""
+    },
+    {
+      "name": "--heading-section-size",
+      "section": "Заголовки всередині екрана",
+      "light": "var(--text-md)",
+      "dark": "",
+      "palette": "",
+      "paletteDark": ""
+    },
+    {
+      "name": "--heading-section-weight",
+      "section": "Заголовки всередині екрана",
+      "light": "var(--weight-semibold)",
+      "dark": "",
+      "palette": "",
+      "paletteDark": ""
+    },
+    {
+      "name": "--label-size",
+      "section": "Typography",
+      "light": "var(--text-sm)",
+      "dark": "",
+      "palette": "",
+      "paletteDark": ""
+    },
+    {
+      "name": "--leading-normal",
+      "section": "Typography",
+      "light": "1.5",
+      "dark": "",
+      "palette": "",
+      "paletteDark": ""
+    },
+    {
+      "name": "--leading-relaxed",
+      "section": "Typography",
+      "light": "1.625",
+      "dark": "",
+      "palette": "",
+      "paletteDark": ""
+    },
+    {
+      "name": "--leading-tight",
+      "section": "Typography",
+      "light": "1.25",
+      "dark": "",
+      "palette": "",
+      "paletteDark": ""
+    },
+    {
+      "name": "--max-content",
+      "section": "Сайдбар: крок пункту й берег",
+      "light": "1200px",
+      "dark": "",
+      "palette": "",
+      "paletteDark": ""
+    },
+    {
+      "name": "--modal-scrim",
+      "section": "Глибина поверхонь",
+      "light": "rgba(0, 0, 0, 0.5)",
+      "dark": "",
+      "palette": "",
+      "paletteDark": ""
+    },
+    {
+      "name": "--nav-bar-h",
+      "section": "Сайдбар: крок пункту й берег",
+      "light": "60px",
+      "dark": "",
+      "palette": "",
+      "paletteDark": ""
+    },
+    {
+      "name": "--radius",
+      "section": "Border radius",
+      "light": "12px",
+      "dark": "",
+      "palette": "",
+      "paletteDark": ""
+    },
+    {
+      "name": "--radius-full",
+      "section": "Border radius",
+      "light": "9999px",
+      "dark": "",
+      "palette": "",
+      "paletteDark": ""
+    },
+    {
+      "name": "--radius-lg",
+      "section": "Border radius",
+      "light": "24px",
+      "dark": "",
+      "palette": "",
+      "paletteDark": ""
+    },
+    {
+      "name": "--radius-md",
+      "section": "Border radius",
+      "light": "16px",
+      "dark": "",
+      "palette": "",
+      "paletteDark": ""
+    },
+    {
+      "name": "--radius-sm",
+      "section": "Border radius",
+      "light": "8px",
+      "dark": "",
+      "palette": "",
+      "paletteDark": ""
+    },
+    {
+      "name": "--radius-xl",
+      "section": "Border radius",
+      "light": "28px",
+      "dark": "",
+      "palette": "",
+      "paletteDark": ""
+    },
+    {
+      "name": "--radius-xs",
+      "section": "Border radius",
+      "light": "4px",
+      "dark": "",
+      "palette": "",
+      "paletteDark": ""
+    },
+    {
+      "name": "--red",
+      "section": "Палітра світлої схеми (M3 surface containers)",
+      "light": "#ba1a1a",
+      "dark": "#ffb4ab",
+      "palette": "#dc2626",
+      "paletteDark": "#f87171"
+    },
+    {
+      "name": "--red-dim",
+      "section": "Палітра світлої схеми (M3 surface containers)",
+      "light": "#f7e4e4",
+      "dark": "rgba(255, 180, 171, 0.12)",
+      "palette": "color-mix(in srgb, var(--red) 12%, color-mix(in srgb, var(--user-bg) 14%, #ffffff))",
+      "paletteDark": "color-mix(in srgb, var(--red) 18%, var(--user-bg))"
+    },
+    {
+      "name": "--row-bg",
+      "section": "Рядок списку",
+      "light": "var(--field-bg)",
+      "dark": "",
+      "palette": "",
+      "paletteDark": ""
+    },
+    {
+      "name": "--row-gap",
+      "section": "Рядок списку",
+      "light": "var(--sp-3)",
+      "dark": "",
+      "palette": "",
+      "paletteDark": ""
+    },
+    {
+      "name": "--row-icon-color",
+      "section": "Рядок списку",
+      "light": "var(--text-secondary)",
+      "dark": "",
+      "palette": "",
+      "paletteDark": ""
+    },
+    {
+      "name": "--row-min-h",
+      "section": "Рядок списку",
+      "light": "52px",
+      "dark": "",
+      "palette": "",
+      "paletteDark": ""
+    },
+    {
+      "name": "--row-pad-x",
+      "section": "Рядок списку",
+      "light": "var(--sp-3)",
+      "dark": "",
+      "palette": "",
+      "paletteDark": ""
+    },
+    {
+      "name": "--row-pad-y",
+      "section": "Рядок списку",
+      "light": "var(--sp-2)",
+      "dark": "",
+      "palette": "",
+      "paletteDark": ""
+    },
+    {
+      "name": "--row-radius",
+      "section": "Рядок списку",
+      "light": "var(--radius-md)",
+      "dark": "",
+      "palette": "",
+      "paletteDark": ""
+    },
+    {
+      "name": "--row-title-color",
+      "section": "Рядок списку",
+      "light": "var(--text-primary)",
+      "dark": "",
+      "palette": "",
+      "paletteDark": ""
+    },
+    {
+      "name": "--row-title-size",
+      "section": "Рядок списку",
+      "light": "var(--text-base)",
+      "dark": "",
+      "palette": "",
+      "paletteDark": ""
+    },
+    {
+      "name": "--row-title-weight",
+      "section": "Рядок списку",
+      "light": "var(--weight-medium)",
+      "dark": "",
+      "palette": "",
+      "paletteDark": ""
+    },
+    {
+      "name": "--row-trailing-color",
+      "section": "Рядок списку",
+      "light": "var(--text-muted)",
+      "dark": "",
+      "palette": "",
+      "paletteDark": ""
+    },
+    {
+      "name": "--safe-bottom",
+      "section": "Сайдбар: крок пункту й берег",
+      "light": "max(\n    env(safe-area-inset-bottom, 0px),\n    var(--tg-safe-area-inset-bottom, 0px),\n    var(--tg-content-safe-area-inset-bottom, 0px),\n    var(--client-inset-bottom, 0px)\n  )",
+      "dark": "",
+      "palette": "",
+      "paletteDark": ""
+    },
+    {
+      "name": "--safe-top",
+      "section": "Сайдбар: крок пункту й берег",
+      "light": "max(\n    env(safe-area-inset-top, 0px),\n    var(--tg-safe-area-inset-top, 0px),\n    var(--tg-content-safe-area-inset-top, 0px),\n    var(--client-inset-top, 0px)\n  )",
+      "dark": "",
+      "palette": "",
+      "paletteDark": ""
+    },
+    {
+      "name": "--scrim",
+      "section": "Мобільна навігація",
+      "light": "rgba(0, 0, 0, 0.45)",
+      "dark": "",
+      "palette": "rgb(0 0 0 / 45%)",
+      "paletteDark": "rgb(0 0 0 / 60%)"
+    },
+    {
+      "name": "--selection-bg",
+      "section": "Глибина поверхонь",
+      "light": "rgba(28, 27, 31, 0.14)",
+      "dark": "rgba(227, 226, 230, 0.2)",
+      "palette": "",
+      "paletteDark": "color-mix(in srgb, var(--user-text) 16%, transparent)"
+    },
+    {
+      "name": "--shadow-card",
+      "section": "Глибина поверхонь",
+      "light": "0 1px 2px rgba(28, 27, 31, 0.05), 0 10px 30px -18px rgba(28, 27, 31, 0.35)",
+      "dark": "0 1px 1px rgba(0, 0, 0, 0.4), 0 14px 34px -20px rgba(0, 0, 0, 0.9)",
+      "palette": "",
+      "paletteDark": ""
+    },
+    {
+      "name": "--shadow-lg",
+      "section": "Shadows",
+      "light": "0 4px 8px rgba(0, 0, 0, 0.18), 0 2px 4px rgba(0, 0, 0, 0.12)",
+      "dark": "0 4px 8px rgba(0, 0, 0, 0.5), 0 2px 4px rgba(0, 0, 0, 0.4)",
+      "palette": "0 10px 15px -3px rgb(0 0 0 / 10%), 0 4px 6px -4px rgb(0 0 0 / 10%)",
+      "paletteDark": "0 10px 15px -3px rgb(0 0 0 / 30%), 0 4px 6px -4px rgb(0 0 0 / 20%)"
+    },
+    {
+      "name": "--shadow-md",
+      "section": "Shadows",
+      "light": "0 2px 6px rgba(0, 0, 0, 0.18), 0 1px 2px rgba(0, 0, 0, 0.12)",
+      "dark": "0 2px 6px rgba(0, 0, 0, 0.5), 0 1px 2px rgba(0, 0, 0, 0.4)",
+      "palette": "0 4px 6px -1px rgb(0 0 0 / 10%), 0 2px 4px -2px rgb(0 0 0 / 10%)",
+      "paletteDark": "0 4px 6px -1px rgb(0 0 0 / 30%), 0 2px 4px -2px rgb(0 0 0 / 20%)"
+    },
+    {
+      "name": "--shadow-sm",
+      "section": "Shadows",
+      "light": "0 1px 3px rgba(0, 0, 0, 0.18), 0 1px 2px rgba(0, 0, 0, 0.12)",
+      "dark": "0 1px 3px rgba(0, 0, 0, 0.5), 0 1px 2px rgba(0, 0, 0, 0.4)",
+      "palette": "0 1px 3px rgb(0 0 0 / 10%), 0 1px 2px rgb(0 0 0 / 6%)",
+      "paletteDark": "0 1px 3px rgb(0 0 0 / 30%), 0 1px 2px rgb(0 0 0 / 20%)"
+    },
+    {
+      "name": "--shadow-xl",
+      "section": "Shadows",
+      "light": "0 6px 10px rgba(0, 0, 0, 0.18), 0 2px 3px rgba(0, 0, 0, 0.12)",
+      "dark": "0 6px 10px rgba(0, 0, 0, 0.5), 0 2px 3px rgba(0, 0, 0, 0.4)",
+      "palette": "0 20px 25px -5px rgb(0 0 0 / 10%), 0 8px 10px -6px rgb(0 0 0 / 10%)",
+      "paletteDark": "0 20px 25px -5px rgb(0 0 0 / 30%), 0 8px 10px -6px rgb(0 0 0 / 20%)"
+    },
+    {
+      "name": "--shadow-xs",
+      "section": "Shadows",
+      "light": "0 1px 2px rgba(0, 0, 0, 0.15)",
+      "dark": "0 1px 2px rgba(0, 0, 0, 0.45)",
+      "palette": "0 1px 2px rgb(0 0 0 / 5%)",
+      "paletteDark": "0 1px 2px rgb(0 0 0 / 20%)"
+    },
+    {
+      "name": "--sidebar-bg",
+      "section": "Сайдбар: крок пункту й берег",
+      "light": "#e8e8ec",
+      "dark": "#16161a",
+      "palette": "",
+      "paletteDark": "color-mix(in srgb, var(--user-bg) 96%, var(--user-text))"
+    },
+    {
+      "name": "--sidebar-item-h",
+      "section": "Сайдбар: крок пункту й берег",
+      "light": "44px",
+      "dark": "",
+      "palette": "",
+      "paletteDark": ""
+    },
+    {
+      "name": "--sidebar-pad",
+      "section": "Сайдбар: крок пункту й берег",
+      "light": "var(--sp-2)",
+      "dark": "",
+      "palette": "",
+      "paletteDark": ""
+    },
+    {
+      "name": "--sidebar-shadow",
+      "section": "Сайдбар: крок пункту й берег",
+      "light": "4px 0 16px rgba(0, 0, 0, 0.08)",
+      "dark": "4px 0 16px rgba(0, 0, 0, 0.4)",
+      "palette": "",
+      "paletteDark": ""
+    },
+    {
+      "name": "--sidebar-w",
+      "section": "Layout",
+      "light": "240px",
+      "dark": "",
+      "palette": "",
+      "paletteDark": ""
+    },
+    {
+      "name": "--sidebar-w-collapsed",
+      "section": "Layout",
+      "light": "64px",
+      "dark": "",
+      "palette": "",
+      "paletteDark": ""
+    },
+    {
+      "name": "--sidebar-w-vw",
+      "section": "Layout",
+      "light": "80vw",
+      "dark": "",
+      "palette": "",
+      "paletteDark": ""
+    },
+    {
+      "name": "--sp-0",
+      "section": "Spacing scale (4px base)",
+      "light": "0",
+      "dark": "",
+      "palette": "",
+      "paletteDark": ""
+    },
+    {
+      "name": "--sp-1",
+      "section": "Spacing scale (4px base)",
+      "light": "0.25rem",
+      "dark": "",
+      "palette": "",
+      "paletteDark": ""
+    },
+    {
+      "name": "--sp-10",
+      "section": "Spacing scale (4px base)",
+      "light": "2.5rem",
+      "dark": "",
+      "palette": "",
+      "paletteDark": ""
+    },
+    {
+      "name": "--sp-12",
+      "section": "Spacing scale (4px base)",
+      "light": "3rem",
+      "dark": "",
+      "palette": "",
+      "paletteDark": ""
+    },
+    {
+      "name": "--sp-16",
+      "section": "Spacing scale (4px base)",
+      "light": "4rem",
+      "dark": "",
+      "palette": "",
+      "paletteDark": ""
+    },
+    {
+      "name": "--sp-2",
+      "section": "Spacing scale (4px base)",
+      "light": "0.5rem",
+      "dark": "",
+      "palette": "",
+      "paletteDark": ""
+    },
+    {
+      "name": "--sp-3",
+      "section": "Spacing scale (4px base)",
+      "light": "0.75rem",
+      "dark": "",
+      "palette": "",
+      "paletteDark": ""
+    },
+    {
+      "name": "--sp-4",
+      "section": "Spacing scale (4px base)",
+      "light": "1rem",
+      "dark": "",
+      "palette": "",
+      "paletteDark": ""
+    },
+    {
+      "name": "--sp-5",
+      "section": "Spacing scale (4px base)",
+      "light": "1.25rem",
+      "dark": "",
+      "palette": "",
+      "paletteDark": ""
+    },
+    {
+      "name": "--sp-6",
+      "section": "Spacing scale (4px base)",
+      "light": "1.5rem",
+      "dark": "",
+      "palette": "",
+      "paletteDark": ""
+    },
+    {
+      "name": "--sp-8",
+      "section": "Spacing scale (4px base)",
+      "light": "2rem",
+      "dark": "",
+      "palette": "",
+      "paletteDark": ""
+    },
+    {
+      "name": "--subbar-h",
+      "section": "Сайдбар: крок пункту й берег",
+      "light": "var(--nav-bar-h)",
+      "dark": "",
+      "palette": "",
+      "paletteDark": ""
+    },
+    {
+      "name": "--surface",
+      "section": "Палітра світлої схеми (M3 surface containers)",
+      "light": "var(--bg-home, #f0f0f4)",
+      "dark": "#1b1b1f",
+      "palette": "",
+      "paletteDark": "var(--bg-1)"
+    },
+    {
+      "name": "--surface-active",
+      "section": "Палітра світлої схеми (M3 surface containers)",
+      "light": "#e4e4e8",
+      "dark": "#353538",
+      "palette": "",
+      "paletteDark": "var(--bg-4)"
+    },
+    {
+      "name": "--surface-hover",
+      "section": "Палітра світлої схеми (M3 surface containers)",
+      "light": "#ededf0",
+      "dark": "#2a2a2e",
+      "palette": "",
+      "paletteDark": "var(--bg-3)"
+    },
+    {
+      "name": "--surface-modal",
+      "section": "Глибина поверхонь",
+      "light": "var(--surface)",
+      "dark": "var(--bg-3)",
+      "palette": "",
+      "paletteDark": "color-mix(in srgb, var(--user-bg) 93%, var(--user-text))"
+    },
+    {
+      "name": "--surface-overlay",
+      "section": "Глибина поверхонь",
+      "light": "rgba(0, 0, 0, 0.4)",
+      "dark": "rgba(0, 0, 0, 0.6)",
+      "palette": "rgb(0 0 0 / 40%)",
+      "paletteDark": "rgb(0 0 0 / 60%)"
+    },
+    {
+      "name": "--switch-knob",
+      "section": "Поле вводу",
+      "light": "#ffffff",
+      "dark": "#d9d7e0",
+      "palette": "",
+      "paletteDark": "color-mix(in srgb, var(--user-text) 82%, var(--user-bg))"
+    },
+    {
+      "name": "--tab-bar-h",
+      "section": "Сайдбар: крок пункту й берег",
+      "light": "calc(var(--nav-bar-h) + var(--safe-bottom))",
+      "dark": "",
+      "palette": "",
+      "paletteDark": ""
+    },
+    {
+      "name": "--text-2xl",
+      "section": "Typography",
+      "light": "1.75rem",
+      "dark": "",
+      "palette": "",
+      "paletteDark": ""
+    },
+    {
+      "name": "--text-3xl",
+      "section": "Typography",
+      "light": "2rem",
+      "dark": "",
+      "palette": "",
+      "paletteDark": ""
+    },
+    {
+      "name": "--text-4xl",
+      "section": "Typography",
+      "light": "2.25rem",
+      "dark": "",
+      "palette": "",
+      "paletteDark": ""
+    },
+    {
+      "name": "--text-5xl",
+      "section": "Typography",
+      "light": "2.5rem",
+      "dark": "",
+      "palette": "",
+      "paletteDark": ""
+    },
+    {
+      "name": "--text-6xl",
+      "section": "Typography",
+      "light": "3rem",
+      "dark": "",
+      "palette": "",
+      "paletteDark": ""
+    },
+    {
+      "name": "--text-base",
+      "section": "Typography",
+      "light": "0.875rem",
+      "dark": "",
+      "palette": "",
+      "paletteDark": ""
+    },
+    {
+      "name": "--text-inverse",
+      "section": "Палітра світлої схеми (M3 surface containers)",
+      "light": "#ffffff",
+      "dark": "#1b1b1f",
+      "palette": "",
+      "paletteDark": "var(--user-on-accent)"
+    },
+    {
+      "name": "--text-lg",
+      "section": "Typography",
+      "light": "1.125rem",
+      "dark": "",
+      "palette": "",
+      "paletteDark": ""
+    },
+    {
+      "name": "--text-md",
+      "section": "Typography",
+      "light": "1rem",
+      "dark": "",
+      "palette": "",
+      "paletteDark": ""
+    },
+    {
+      "name": "--text-muted",
+      "section": "Палітра світлої схеми (M3 surface containers)",
+      "light": "#5c5f67",
+      "dark": "#a2a2ac",
+      "palette": "",
+      "paletteDark": "color-mix(in srgb, var(--user-text) 48%, var(--user-bg))"
+    },
+    {
+      "name": "--text-primary",
+      "section": "Палітра світлої схеми (M3 surface containers)",
+      "light": "#1c1b1f",
+      "dark": "#e3e2e6",
+      "palette": "",
+      "paletteDark": "var(--user-text)"
+    },
+    {
+      "name": "--text-secondary",
+      "section": "Палітра світлої схеми (M3 surface containers)",
+      "light": "#44464f",
+      "dark": "#c7c5d0",
+      "palette": "",
+      "paletteDark": "color-mix(in srgb, var(--user-text) 70%, var(--user-bg))"
+    },
+    {
+      "name": "--text-sm",
+      "section": "Typography",
+      "light": "0.8125rem",
+      "dark": "",
+      "palette": "",
+      "paletteDark": ""
+    },
+    {
+      "name": "--text-xl",
+      "section": "Typography",
+      "light": "1.375rem",
+      "dark": "",
+      "palette": "",
+      "paletteDark": ""
+    },
+    {
+      "name": "--text-xs",
+      "section": "Typography",
+      "light": "0.6875rem",
+      "dark": "",
+      "palette": "",
+      "paletteDark": ""
+    },
+    {
+      "name": "--topbar-h",
+      "section": "Сайдбар: крок пункту й берег",
+      "light": "56px",
+      "dark": "",
+      "palette": "",
+      "paletteDark": ""
+    },
+    {
+      "name": "--tracking-title",
+      "section": "Typography",
+      "light": "-0.011em",
+      "dark": "",
+      "palette": "",
+      "paletteDark": ""
+    },
+    {
+      "name": "--value-size",
+      "section": "Typography",
+      "light": "0.9375rem",
+      "dark": "",
+      "palette": "",
+      "paletteDark": ""
+    },
+    {
+      "name": "--weight-bold",
+      "section": "Typography",
+      "light": "700",
+      "dark": "",
+      "palette": "",
+      "paletteDark": ""
+    },
+    {
+      "name": "--weight-medium",
+      "section": "Typography",
+      "light": "500",
+      "dark": "",
+      "palette": "",
+      "paletteDark": ""
+    },
+    {
+      "name": "--weight-normal",
+      "section": "Typography",
+      "light": "400",
+      "dark": "",
+      "palette": "",
+      "paletteDark": ""
+    },
+    {
+      "name": "--weight-semibold",
+      "section": "Typography",
+      "light": "600",
+      "dark": "",
+      "palette": "",
+      "paletteDark": ""
+    },
+    {
+      "name": "--yellow",
+      "section": "Палітра світлої схеми (M3 surface containers)",
+      "light": "#6d5700",
+      "dark": "#ddb948",
+      "palette": "#ca8a04",
+      "paletteDark": "#facc15"
+    },
+    {
+      "name": "--yellow-dim",
+      "section": "Палітра світлої схеми (M3 surface containers)",
+      "light": "#edebe0",
+      "dark": "rgba(221, 185, 72, 0.12)",
+      "palette": "color-mix(\n    in srgb,\n    var(--yellow) 12%,\n    color-mix(in srgb, var(--user-bg) 14%, #ffffff)\n  )",
+      "paletteDark": "color-mix(in srgb, var(--yellow) 18%, var(--user-bg))"
+    },
+    {
+      "name": "--z-dropdown",
+      "section": "Z-index scale",
+      "light": "100",
+      "dark": "",
+      "palette": "",
+      "paletteDark": ""
+    },
+    {
+      "name": "--z-modal",
+      "section": "Z-index scale",
+      "light": "400",
+      "dark": "",
+      "palette": "",
+      "paletteDark": ""
+    },
+    {
+      "name": "--z-overlay",
+      "section": "Z-index scale",
+      "light": "300",
+      "dark": "",
+      "palette": "",
+      "paletteDark": ""
+    },
+    {
+      "name": "--z-sticky",
+      "section": "Z-index scale",
+      "light": "200",
+      "dark": "",
+      "palette": "",
+      "paletteDark": ""
+    },
+    {
+      "name": "--z-tabbar",
+      "section": "Z-index scale",
+      "light": "1100",
+      "dark": "",
+      "palette": "",
+      "paletteDark": ""
+    },
+    {
+      "name": "--z-toast",
+      "section": "Z-index scale",
+      "light": "1200",
+      "dark": "",
+      "palette": "",
+      "paletteDark": ""
+    }
+  ],
+  "local": [
+    {
+      "name": "--ana-gutter",
+      "file": "admin/analytics.css",
+      "selector": ".ana-page",
+      "value": "var(--sp-5)",
+      "section": ""
+    },
+    {
+      "name": "--ana-gutter",
+      "file": "admin/analytics.css",
+      "selector": ".ana-page",
+      "value": "var(--sp-4)",
+      "section": ""
+    },
+    {
+      "name": "--bg-1",
+      "file": "shop-storefront.css",
+      "selector": ".shop-store,\n.shop-catalog",
+      "value": "#ffffff",
+      "section": "Палітра вітрини"
+    },
+    {
+      "name": "--bg-1",
+      "file": "shop-storefront.css",
+      "selector": "html[data-theme=\"dark\"] .shop-store,\nhtml[data-theme=\"dark\"] .shop-catalog,\nhtml[data-colors-mode=\"dark\"] .shop-store,\nhtml[data-colors-mode=\"dark\"] .shop-catalog",
+      "value": "#191c25",
+      "section": "Палітра вітрини"
+    },
+    {
+      "name": "--bg-2",
+      "file": "shop-storefront.css",
+      "selector": ".shop-store,\n.shop-catalog",
+      "value": "#f6f7fa",
+      "section": "Палітра вітрини"
+    },
+    {
+      "name": "--bg-2",
+      "file": "shop-storefront.css",
+      "selector": "html[data-theme=\"dark\"] .shop-store,\nhtml[data-theme=\"dark\"] .shop-catalog,\nhtml[data-colors-mode=\"dark\"] .shop-store,\nhtml[data-colors-mode=\"dark\"] .shop-catalog",
+      "value": "#20242d",
+      "section": "Палітра вітрини"
+    },
+    {
+      "name": "--bg-3",
+      "file": "shop-storefront.css",
+      "selector": ".shop-store,\n.shop-catalog",
+      "value": "#eff1f6",
+      "section": "Палітра вітрини"
+    },
+    {
+      "name": "--bg-3",
+      "file": "shop-storefront.css",
+      "selector": "html[data-theme=\"dark\"] .shop-store,\nhtml[data-theme=\"dark\"] .shop-catalog,\nhtml[data-colors-mode=\"dark\"] .shop-store,\nhtml[data-colors-mode=\"dark\"] .shop-catalog",
+      "value": "#262a34",
+      "section": "Палітра вітрини"
+    },
+    {
+      "name": "--bg-4",
+      "file": "shop-storefront.css",
+      "selector": ".shop-store,\n.shop-catalog",
+      "value": "#e9ecf3",
+      "section": "Палітра вітрини"
+    },
+    {
+      "name": "--bg-4",
+      "file": "shop-storefront.css",
+      "selector": "html[data-theme=\"dark\"] .shop-store,\nhtml[data-theme=\"dark\"] .shop-catalog,\nhtml[data-colors-mode=\"dark\"] .shop-store,\nhtml[data-colors-mode=\"dark\"] .shop-catalog",
+      "value": "#2d323c",
+      "section": "Палітра вітрини"
+    },
+    {
+      "name": "--bg-home",
+      "file": "shop-storefront.css",
+      "selector": ".shop-store,\n.shop-catalog",
+      "value": "var(--surface)",
+      "section": "Палітра вітрини"
+    },
+    {
+      "name": "--border",
+      "file": "shop-storefront.css",
+      "selector": ".shop-store,\n.shop-catalog",
+      "value": "#dcdfe7",
+      "section": "Палітра вітрини"
+    },
+    {
+      "name": "--border",
+      "file": "shop-storefront.css",
+      "selector": "html[data-theme=\"dark\"] .shop-store,\nhtml[data-theme=\"dark\"] .shop-catalog,\nhtml[data-colors-mode=\"dark\"] .shop-store,\nhtml[data-colors-mode=\"dark\"] .shop-catalog",
+      "value": "#333846",
+      "section": "Палітра вітрини"
+    },
+    {
+      "name": "--border-subtle",
+      "file": "shop-storefront.css",
+      "selector": ".shop-store,\n.shop-catalog",
+      "value": "#e8eaf0",
+      "section": "Палітра вітрини"
+    },
+    {
+      "name": "--border-subtle",
+      "file": "shop-storefront.css",
+      "selector": "html[data-theme=\"dark\"] .shop-store,\nhtml[data-theme=\"dark\"] .shop-catalog,\nhtml[data-colors-mode=\"dark\"] .shop-store,\nhtml[data-colors-mode=\"dark\"] .shop-catalog",
+      "value": "#272c36",
+      "section": "Палітра вітрини"
+    },
+    {
+      "name": "--cell",
+      "file": "components.css",
+      "selector": ".wb-tools-controls",
+      "value": "var(--tools-cell)",
+      "section": "Смуга керування колекцією (спільний кирпичик)"
+    },
+    {
+      "name": "--collection-cols",
+      "file": "components.css",
+      "selector": ".wb-collection--cols-1",
+      "value": "1",
+      "section": "Вигляд колекції (спільний кирпичик)"
+    },
+    {
+      "name": "--collection-cols",
+      "file": "components.css",
+      "selector": ".wb-collection--cols-2",
+      "value": "2",
+      "section": "Вигляд колекції (спільний кирпичик)"
+    },
+    {
+      "name": "--composer-cell",
+      "file": "components.css",
+      "selector": ".wb-composer",
+      "value": "46px",
+      "section": "Композер: швидке створення нотатки й оголошення"
+    },
+    {
+      "name": "--composer-col",
+      "file": "components.css",
+      "selector": ".wb-composer",
+      "value": "68px",
+      "section": "Композер: швидке створення нотатки й оголошення"
+    },
+    {
+      "name": "--composer-gap",
+      "file": "components.css",
+      "selector": ".wb-composer",
+      "value": "2px",
+      "section": "Композер: швидке створення нотатки й оголошення"
+    },
+    {
+      "name": "--composer-pad",
+      "file": "components.css",
+      "selector": ".wb-composer",
+      "value": "6px",
+      "section": "Композер: швидке створення нотатки й оголошення"
+    },
+    {
+      "name": "--context-bar-fill",
+      "file": "contextbar.css",
+      "selector": ".wb-contextbar",
+      "value": "color-mix(in srgb, var(--chrome-bottom-bg) 96%, black)",
+      "section": ""
+    },
+    {
+      "name": "--context-bar-fill",
+      "file": "contextbar.css",
+      "selector": "html[data-colors-mode=\"dark\"] .wb-contextbar,\nhtml[data-theme=\"dark\"] .wb-contextbar",
+      "value": "color-mix(in srgb, var(--chrome-bottom-bg) 96%, white)",
+      "section": ""
+    },
+    {
+      "name": "--depth",
+      "file": "trackers.css",
+      "selector": ".wb-trackers-page",
+      "value": "0",
+      "section": ""
+    },
+    {
+      "name": "--field-bg",
+      "file": "shop-storefront.css",
+      "selector": ".shop-store,\n.shop-catalog",
+      "value": "#f1f2f6",
+      "section": "Палітра вітрини"
+    },
+    {
+      "name": "--field-bg",
+      "file": "shop-storefront.css",
+      "selector": "html[data-theme=\"dark\"] .shop-store,\nhtml[data-theme=\"dark\"] .shop-catalog,\nhtml[data-colors-mode=\"dark\"] .shop-store,\nhtml[data-colors-mode=\"dark\"] .shop-catalog",
+      "value": "#262a34",
+      "section": "Палітра вітрини"
+    },
+    {
+      "name": "--game-accent",
+      "file": "games.css",
+      "selector": ".wb-game-stage",
+      "value": "var(--accent)",
+      "section": "Сцена"
+    },
+    {
+      "name": "--game-accent",
+      "file": "games.css",
+      "selector": ".wb-game-screen[data-game=\"tictactoe\"],\n.wb-game-stage[data-game=\"tictactoe\"]",
+      "value": "#c9552a",
+      "section": "Палітри ігор"
+    },
+    {
+      "name": "--game-accent",
+      "file": "games.css",
+      "selector": ".wb-game-screen[data-game=\"rps\"],\n.wb-game-stage[data-game=\"rps\"]",
+      "value": "#6d4dfa",
+      "section": "Палітри ігор"
+    },
+    {
+      "name": "--game-accent",
+      "file": "games.css",
+      "selector": ".wb-game-screen[data-game=\"guess\"],\n.wb-game-stage[data-game=\"guess\"]",
+      "value": "#12a594",
+      "section": "Палітри ігор"
+    },
+    {
+      "name": "--game-accent",
+      "file": "games.css",
+      "selector": ".wb-game-screen[data-game=\"2048\"],\n.wb-game-stage[data-game=\"2048\"]",
+      "value": "#3b62e8",
+      "section": "Палітри ігор"
+    },
+    {
+      "name": "--game-accent",
+      "file": "games.css",
+      "selector": ".wb-game-screen[data-game=\"memory\"],\n.wb-game-stage[data-game=\"memory\"]",
+      "value": "#e2607f",
+      "section": "Палітри ігор"
+    },
+    {
+      "name": "--game-accent-soft",
+      "file": "games.css",
+      "selector": ".wb-game-stage",
+      "value": "var(--accent-soft)",
+      "section": "Сцена"
+    },
+    {
+      "name": "--game-accent-soft",
+      "file": "games.css",
+      "selector": ".wb-game-screen[data-game=\"tictactoe\"],\n.wb-game-stage[data-game=\"tictactoe\"]",
+      "value": "rgba(201, 85, 42, 0.16)",
+      "section": "Палітри ігор"
+    },
+    {
+      "name": "--game-accent-soft",
+      "file": "games.css",
+      "selector": ".wb-game-screen[data-game=\"rps\"],\n.wb-game-stage[data-game=\"rps\"]",
+      "value": "rgba(109, 77, 250, 0.16)",
+      "section": "Палітри ігор"
+    },
+    {
+      "name": "--game-accent-soft",
+      "file": "games.css",
+      "selector": ".wb-game-screen[data-game=\"guess\"],\n.wb-game-stage[data-game=\"guess\"]",
+      "value": "rgba(18, 165, 148, 0.16)",
+      "section": "Палітри ігор"
+    },
+    {
+      "name": "--game-accent-soft",
+      "file": "games.css",
+      "selector": ".wb-game-screen[data-game=\"2048\"],\n.wb-game-stage[data-game=\"2048\"]",
+      "value": "rgba(59, 98, 232, 0.16)",
+      "section": "Палітри ігор"
+    },
+    {
+      "name": "--game-accent-soft",
+      "file": "games.css",
+      "selector": ".wb-game-screen[data-game=\"memory\"],\n.wb-game-stage[data-game=\"memory\"]",
+      "value": "rgba(226, 96, 127, 0.16)",
+      "section": "Палітри ігор"
+    },
+    {
+      "name": "--game-field",
+      "file": "games.css",
+      "selector": ".wb-game-stage",
+      "value": "var(--surface-hover)",
+      "section": "Сцена"
+    },
+    {
+      "name": "--game-field",
+      "file": "games.css",
+      "selector": ".wb-game-screen[data-game=\"tictactoe\"],\n.wb-game-stage[data-game=\"tictactoe\"]",
+      "value": "rgba(43, 47, 59, 0.06)",
+      "section": "Палітри ігор"
+    },
+    {
+      "name": "--game-field",
+      "file": "games.css",
+      "selector": ".wb-game-screen[data-game=\"rps\"],\n.wb-game-stage[data-game=\"rps\"]",
+      "value": "rgba(56, 32, 122, 0.06)",
+      "section": "Палітри ігор"
+    },
+    {
+      "name": "--game-field",
+      "file": "games.css",
+      "selector": ".wb-game-screen[data-game=\"guess\"],\n.wb-game-stage[data-game=\"guess\"]",
+      "value": "rgba(16, 58, 54, 0.06)",
+      "section": "Палітри ігор"
+    },
+    {
+      "name": "--game-field",
+      "file": "games.css",
+      "selector": ".wb-game-screen[data-game=\"2048\"],\n.wb-game-stage[data-game=\"2048\"]",
+      "value": "rgba(35, 64, 143, 0.06)",
+      "section": "Палітри ігор"
+    },
+    {
+      "name": "--game-field",
+      "file": "games.css",
+      "selector": ".wb-game-screen[data-game=\"memory\"],\n.wb-game-stage[data-game=\"memory\"]",
+      "value": "rgba(120, 44, 60, 0.06)",
+      "section": "Палітри ігор"
+    },
+    {
+      "name": "--game-foe",
+      "file": "games.css",
+      "selector": ".wb-game-stage",
+      "value": "var(--text-secondary)",
+      "section": "Сцена"
+    },
+    {
+      "name": "--game-foe",
+      "file": "games.css",
+      "selector": ".wb-game-screen[data-game=\"tictactoe\"],\n.wb-game-stage[data-game=\"tictactoe\"]",
+      "value": "#55607a",
+      "section": "Палітри ігор"
+    },
+    {
+      "name": "--game-foe",
+      "file": "games.css",
+      "selector": ".wb-game-screen[data-game=\"rps\"],\n.wb-game-stage[data-game=\"rps\"]",
+      "value": "#e0457f",
+      "section": "Палітри ігор"
+    },
+    {
+      "name": "--game-foe",
+      "file": "games.css",
+      "selector": ".wb-game-screen[data-game=\"guess\"],\n.wb-game-stage[data-game=\"guess\"]",
+      "value": "#d98212",
+      "section": "Палітри ігор"
+    },
+    {
+      "name": "--game-foe",
+      "file": "games.css",
+      "selector": ".wb-game-screen[data-game=\"2048\"],\n.wb-game-stage[data-game=\"2048\"]",
+      "value": "#d9633c",
+      "section": "Палітри ігор"
+    },
+    {
+      "name": "--game-foe",
+      "file": "games.css",
+      "selector": ".wb-game-screen[data-game=\"memory\"],\n.wb-game-stage[data-game=\"memory\"]",
+      "value": "#7d5bd6",
+      "section": "Палітри ігор"
+    },
+    {
+      "name": "--game-foe-soft",
+      "file": "games.css",
+      "selector": ".wb-game-stage",
+      "value": "var(--surface-hover)",
+      "section": "Сцена"
+    },
+    {
+      "name": "--game-foe-soft",
+      "file": "games.css",
+      "selector": ".wb-game-screen[data-game=\"tictactoe\"],\n.wb-game-stage[data-game=\"tictactoe\"]",
+      "value": "rgba(85, 96, 122, 0.12)",
+      "section": "Палітри ігор"
+    },
+    {
+      "name": "--game-foe-soft",
+      "file": "games.css",
+      "selector": ".wb-game-screen[data-game=\"rps\"],\n.wb-game-stage[data-game=\"rps\"]",
+      "value": "rgba(224, 69, 127, 0.14)",
+      "section": "Палітри ігор"
+    },
+    {
+      "name": "--game-foe-soft",
+      "file": "games.css",
+      "selector": ".wb-game-screen[data-game=\"guess\"],\n.wb-game-stage[data-game=\"guess\"]",
+      "value": "rgba(217, 130, 18, 0.14)",
+      "section": "Палітри ігор"
+    },
+    {
+      "name": "--game-foe-soft",
+      "file": "games.css",
+      "selector": ".wb-game-screen[data-game=\"2048\"],\n.wb-game-stage[data-game=\"2048\"]",
+      "value": "rgba(217, 99, 60, 0.14)",
+      "section": "Палітри ігор"
+    },
+    {
+      "name": "--game-foe-soft",
+      "file": "games.css",
+      "selector": ".wb-game-screen[data-game=\"memory\"],\n.wb-game-stage[data-game=\"memory\"]",
+      "value": "rgba(125, 91, 214, 0.14)",
+      "section": "Палітри ігор"
+    },
+    {
+      "name": "--game-font",
+      "file": "games.css",
+      "selector": ".wb-game-screen[data-game=\"rps\"],\n.wb-game-stage[data-game=\"rps\"]",
+      "value": "var(--font-display)",
+      "section": "Палітри ігор"
+    },
+    {
+      "name": "--game-font",
+      "file": "games.css",
+      "selector": ".wb-game-screen[data-game=\"guess\"],\n.wb-game-stage[data-game=\"guess\"]",
+      "value": "var(--font-mono)",
+      "section": "Палітри ігор"
+    },
+    {
+      "name": "--game-font",
+      "file": "games.css",
+      "selector": ".wb-game-screen[data-game=\"2048\"],\n.wb-game-stage[data-game=\"2048\"]",
+      "value": "var(--font-display)",
+      "section": "Палітри ігор"
+    },
+    {
+      "name": "--game-font",
+      "file": "games.css",
+      "selector": ".wb-game-screen[data-game=\"memory\"],\n.wb-game-stage[data-game=\"memory\"]",
+      "value": "var(--font-display)",
+      "section": "Палітри ігор"
+    },
+    {
+      "name": "--game-glow",
+      "file": "games.css",
+      "selector": ".wb-game-stage",
+      "value": "transparent",
+      "section": "Сцена"
+    },
+    {
+      "name": "--game-glow",
+      "file": "games.css",
+      "selector": ".wb-game-screen[data-game=\"tictactoe\"],\n.wb-game-stage[data-game=\"tictactoe\"]",
+      "value": "rgba(201, 85, 42, 0.2)",
+      "section": "Палітри ігор"
+    },
+    {
+      "name": "--game-glow",
+      "file": "games.css",
+      "selector": ".wb-game-screen[data-game=\"rps\"],\n.wb-game-stage[data-game=\"rps\"]",
+      "value": "rgba(109, 77, 250, 0.3)",
+      "section": "Палітри ігор"
+    },
+    {
+      "name": "--game-glow",
+      "file": "games.css",
+      "selector": ".wb-game-screen[data-game=\"guess\"],\n.wb-game-stage[data-game=\"guess\"]",
+      "value": "rgba(18, 165, 148, 0.3)",
+      "section": "Палітри ігор"
+    },
+    {
+      "name": "--game-glow",
+      "file": "games.css",
+      "selector": ".wb-game-screen[data-game=\"2048\"],\n.wb-game-stage[data-game=\"2048\"]",
+      "value": "rgba(59, 98, 232, 0.26)",
+      "section": "Палітри ігор"
+    },
+    {
+      "name": "--game-glow",
+      "file": "games.css",
+      "selector": ".wb-game-screen[data-game=\"memory\"],\n.wb-game-stage[data-game=\"memory\"]",
+      "value": "rgba(226, 96, 127, 0.28)",
+      "section": "Палітри ігор"
+    },
+    {
+      "name": "--game-highlight",
+      "file": "games.css",
+      "selector": ".wb-game-stage",
+      "value": "var(--accent-soft)",
+      "section": "Сцена"
+    },
+    {
+      "name": "--game-highlight",
+      "file": "games.css",
+      "selector": ".wb-game-screen[data-game=\"tictactoe\"],\n.wb-game-stage[data-game=\"tictactoe\"]",
+      "value": "rgba(240, 196, 60, 0.45)",
+      "section": "Палітри ігор"
+    },
+    {
+      "name": "--game-highlight",
+      "file": "games.css",
+      "selector": ".wb-game-screen[data-game=\"rps\"],\n.wb-game-stage[data-game=\"rps\"]",
+      "value": "rgba(109, 77, 250, 0.2)",
+      "section": "Палітри ігор"
+    },
+    {
+      "name": "--game-highlight",
+      "file": "games.css",
+      "selector": ".wb-game-screen[data-game=\"guess\"],\n.wb-game-stage[data-game=\"guess\"]",
+      "value": "rgba(18, 165, 148, 0.22)",
+      "section": "Палітри ігор"
+    },
+    {
+      "name": "--game-highlight",
+      "file": "games.css",
+      "selector": ".wb-game-screen[data-game=\"2048\"],\n.wb-game-stage[data-game=\"2048\"]",
+      "value": "rgba(59, 98, 232, 0.2)",
+      "section": "Палітри ігор"
+    },
+    {
+      "name": "--game-highlight",
+      "file": "games.css",
+      "selector": ".wb-game-screen[data-game=\"memory\"],\n.wb-game-stage[data-game=\"memory\"]",
+      "value": "rgba(226, 96, 127, 0.2)",
+      "section": "Палітри ігор"
+    },
+    {
+      "name": "--game-ink",
+      "file": "games.css",
+      "selector": ".wb-game-stage",
+      "value": "var(--text-primary)",
+      "section": "Сцена"
+    },
+    {
+      "name": "--game-ink",
+      "file": "games.css",
+      "selector": ".wb-game-screen[data-game=\"tictactoe\"],\n.wb-game-stage[data-game=\"tictactoe\"]",
+      "value": "#2b2f3b",
+      "section": "Палітри ігор"
+    },
+    {
+      "name": "--game-ink",
+      "file": "games.css",
+      "selector": ".wb-game-screen[data-game=\"rps\"],\n.wb-game-stage[data-game=\"rps\"]",
+      "value": "#251a4d",
+      "section": "Палітри ігор"
+    },
+    {
+      "name": "--game-ink",
+      "file": "games.css",
+      "selector": ".wb-game-screen[data-game=\"guess\"],\n.wb-game-stage[data-game=\"guess\"]",
+      "value": "#10302d",
+      "section": "Палітри ігор"
+    },
+    {
+      "name": "--game-ink",
+      "file": "games.css",
+      "selector": ".wb-game-screen[data-game=\"2048\"],\n.wb-game-stage[data-game=\"2048\"]",
+      "value": "#1b2a5e",
+      "section": "Палітри ігор"
+    },
+    {
+      "name": "--game-ink",
+      "file": "games.css",
+      "selector": ".wb-game-screen[data-game=\"memory\"],\n.wb-game-stage[data-game=\"memory\"]",
+      "value": "#4a1f2b",
+      "section": "Палітри ігор"
+    },
+    {
+      "name": "--game-line",
+      "file": "games.css",
+      "selector": ".wb-game-stage",
+      "value": "transparent",
+      "section": "Сцена"
+    },
+    {
+      "name": "--game-line",
+      "file": "games.css",
+      "selector": ".wb-game-screen[data-game=\"tictactoe\"],\n.wb-game-stage[data-game=\"tictactoe\"]",
+      "value": "rgba(43, 47, 59, 0.08)",
+      "section": "Палітри ігор"
+    },
+    {
+      "name": "--game-line",
+      "file": "games.css",
+      "selector": ".wb-game-screen[data-game=\"rps\"],\n.wb-game-stage[data-game=\"rps\"]",
+      "value": "rgba(37, 26, 77, 0.12)",
+      "section": "Палітри ігор"
+    },
+    {
+      "name": "--game-line",
+      "file": "games.css",
+      "selector": ".wb-game-screen[data-game=\"guess\"],\n.wb-game-stage[data-game=\"guess\"]",
+      "value": "rgba(16, 48, 45, 0.12)",
+      "section": "Палітри ігор"
+    },
+    {
+      "name": "--game-line",
+      "file": "games.css",
+      "selector": ".wb-game-screen[data-game=\"2048\"],\n.wb-game-stage[data-game=\"2048\"]",
+      "value": "rgba(27, 42, 94, 0.1)",
+      "section": "Палітри ігор"
+    },
+    {
+      "name": "--game-line",
+      "file": "games.css",
+      "selector": ".wb-game-screen[data-game=\"memory\"],\n.wb-game-stage[data-game=\"memory\"]",
+      "value": "rgba(74, 31, 43, 0.1)",
+      "section": "Палітри ігор"
+    },
+    {
+      "name": "--game-muted",
+      "file": "games.css",
+      "selector": ".wb-game-stage",
+      "value": "var(--text-muted)",
+      "section": "Сцена"
+    },
+    {
+      "name": "--game-muted",
+      "file": "games.css",
+      "selector": ".wb-game-screen[data-game=\"tictactoe\"],\n.wb-game-stage[data-game=\"tictactoe\"]",
+      "value": "rgba(43, 47, 59, 0.5)",
+      "section": "Палітри ігор"
+    },
+    {
+      "name": "--game-muted",
+      "file": "games.css",
+      "selector": ".wb-game-screen[data-game=\"rps\"],\n.wb-game-stage[data-game=\"rps\"]",
+      "value": "rgba(37, 26, 77, 0.55)",
+      "section": "Палітри ігор"
+    },
+    {
+      "name": "--game-muted",
+      "file": "games.css",
+      "selector": ".wb-game-screen[data-game=\"guess\"],\n.wb-game-stage[data-game=\"guess\"]",
+      "value": "rgba(16, 48, 45, 0.55)",
+      "section": "Палітри ігор"
+    },
+    {
+      "name": "--game-muted",
+      "file": "games.css",
+      "selector": ".wb-game-screen[data-game=\"2048\"],\n.wb-game-stage[data-game=\"2048\"]",
+      "value": "rgba(27, 42, 94, 0.55)",
+      "section": "Палітри ігор"
+    },
+    {
+      "name": "--game-muted",
+      "file": "games.css",
+      "selector": ".wb-game-screen[data-game=\"memory\"],\n.wb-game-stage[data-game=\"memory\"]",
+      "value": "rgba(74, 31, 43, 0.55)",
+      "section": "Палітри ігор"
+    },
+    {
+      "name": "--game-surface",
+      "file": "games.css",
+      "selector": ".wb-game-stage",
+      "value": "var(--field-bg)",
+      "section": "Сцена"
+    },
+    {
+      "name": "--game-surface",
+      "file": "games.css",
+      "selector": ".wb-game-screen[data-game=\"tictactoe\"],\n.wb-game-stage[data-game=\"tictactoe\"]",
+      "value": "#fbf7ee",
+      "section": "Палітри ігор"
+    },
+    {
+      "name": "--game-surface",
+      "file": "games.css",
+      "selector": ".wb-game-screen[data-game=\"rps\"],\n.wb-game-stage[data-game=\"rps\"]",
+      "value": "#f3efff",
+      "section": "Палітри ігор"
+    },
+    {
+      "name": "--game-surface",
+      "file": "games.css",
+      "selector": ".wb-game-screen[data-game=\"guess\"],\n.wb-game-stage[data-game=\"guess\"]",
+      "value": "#effaf7",
+      "section": "Палітри ігор"
+    },
+    {
+      "name": "--game-surface",
+      "file": "games.css",
+      "selector": ".wb-game-screen[data-game=\"2048\"],\n.wb-game-stage[data-game=\"2048\"]",
+      "value": "#f2f6ff",
+      "section": "Палітри ігор"
+    },
+    {
+      "name": "--game-surface",
+      "file": "games.css",
+      "selector": ".wb-game-screen[data-game=\"memory\"],\n.wb-game-stage[data-game=\"memory\"]",
+      "value": "#fff5f1",
+      "section": "Палітри ігор"
+    },
+    {
+      "name": "--num-1-bg",
+      "file": "games.css",
+      "selector": ".wb-game-screen[data-game=\"2048\"],\n.wb-game-stage[data-game=\"2048\"]",
+      "value": "rgba(59, 98, 232, 0.1)",
+      "section": "Палітри ігор"
+    },
+    {
+      "name": "--num-1-ink",
+      "file": "games.css",
+      "selector": ".wb-game-screen[data-game=\"2048\"],\n.wb-game-stage[data-game=\"2048\"]",
+      "value": "#23408f",
+      "section": "Палітри ігор"
+    },
+    {
+      "name": "--num-2-bg",
+      "file": "games.css",
+      "selector": ".wb-game-screen[data-game=\"2048\"],\n.wb-game-stage[data-game=\"2048\"]",
+      "value": "rgba(59, 98, 232, 0.2)",
+      "section": "Палітри ігор"
+    },
+    {
+      "name": "--num-2-ink",
+      "file": "games.css",
+      "selector": ".wb-game-screen[data-game=\"2048\"],\n.wb-game-stage[data-game=\"2048\"]",
+      "value": "#1e3791",
+      "section": "Палітри ігор"
+    },
+    {
+      "name": "--num-3-bg",
+      "file": "games.css",
+      "selector": ".wb-game-screen[data-game=\"2048\"],\n.wb-game-stage[data-game=\"2048\"]",
+      "value": "rgba(59, 98, 232, 0.34)",
+      "section": "Палітри ігор"
+    },
+    {
+      "name": "--num-3-ink",
+      "file": "games.css",
+      "selector": ".wb-game-screen[data-game=\"2048\"],\n.wb-game-stage[data-game=\"2048\"]",
+      "value": "#ffffff",
+      "section": "Палітри ігор"
+    },
+    {
+      "name": "--num-4-bg",
+      "file": "games.css",
+      "selector": ".wb-game-screen[data-game=\"2048\"],\n.wb-game-stage[data-game=\"2048\"]",
+      "value": "rgba(59, 98, 232, 0.52)",
+      "section": "Палітри ігор"
+    },
+    {
+      "name": "--num-4-ink",
+      "file": "games.css",
+      "selector": ".wb-game-screen[data-game=\"2048\"],\n.wb-game-stage[data-game=\"2048\"]",
+      "value": "#ffffff",
+      "section": "Палітри ігор"
+    },
+    {
+      "name": "--num-5-bg",
+      "file": "games.css",
+      "selector": ".wb-game-screen[data-game=\"2048\"],\n.wb-game-stage[data-game=\"2048\"]",
+      "value": "rgba(45, 78, 210, 0.76)",
+      "section": "Палітри ігор"
+    },
+    {
+      "name": "--num-5-ink",
+      "file": "games.css",
+      "selector": ".wb-game-screen[data-game=\"2048\"],\n.wb-game-stage[data-game=\"2048\"]",
+      "value": "#ffffff",
+      "section": "Палітри ігор"
+    },
+    {
+      "name": "--num-6-bg",
+      "file": "games.css",
+      "selector": ".wb-game-screen[data-game=\"2048\"],\n.wb-game-stage[data-game=\"2048\"]",
+      "value": "#2a49b8",
+      "section": "Палітри ігор"
+    },
+    {
+      "name": "--num-6-ink",
+      "file": "games.css",
+      "selector": ".wb-game-screen[data-game=\"2048\"],\n.wb-game-stage[data-game=\"2048\"]",
+      "value": "#ffffff",
+      "section": "Палітри ігор"
+    },
+    {
+      "name": "--order-tone",
+      "file": "shop.css",
+      "selector": ".shop-order--new",
+      "value": "var(--accent)",
+      "section": "Замовлення продавця"
+    },
+    {
+      "name": "--order-tone",
+      "file": "shop.css",
+      "selector": ".shop-order--work",
+      "value": "var(--yellow)",
+      "section": "Замовлення продавця"
+    },
+    {
+      "name": "--order-tone",
+      "file": "shop.css",
+      "selector": ".shop-order--done",
+      "value": "var(--green)",
+      "section": "Замовлення продавця"
+    },
+    {
+      "name": "--order-tone",
+      "file": "shop.css",
+      "selector": ".shop-order--cancelled",
+      "value": "var(--red)",
+      "section": "Замовлення продавця"
+    },
+    {
+      "name": "--page-add-size",
+      "file": "app-chrome.css",
+      "selector": ".wb-page-add",
+      "value": "36px",
+      "section": "Сторінка"
+    },
+    {
+      "name": "--param-views-h",
+      "file": "date-analysis.css",
+      "selector": ".wb-block-date-analysis",
+      "value": "calc(44px + var(--sp-3))",
+      "section": ""
+    },
+    {
+      "name": "--shop-hero",
+      "file": "shop-storefront.css",
+      "selector": ".shop-store,\n.shop-catalog",
+      "value": "linear-gradient(158deg, #1d2130 0%, #101320 100%)",
+      "section": "Палітра вітрини"
+    },
+    {
+      "name": "--shop-hero",
+      "file": "shop-storefront.css",
+      "selector": "html[data-theme=\"dark\"] .shop-store,\nhtml[data-theme=\"dark\"] .shop-catalog,\nhtml[data-colors-mode=\"dark\"] .shop-store,\nhtml[data-colors-mode=\"dark\"] .shop-catalog",
+      "value": "linear-gradient(158deg, #2b3142 0%, #1b1f2b 100%)",
+      "section": "Палітра вітрини"
+    },
+    {
+      "name": "--shop-scrim",
+      "file": "shop-storefront.css",
+      "selector": ".shop-store,\n.shop-catalog",
+      "value": "rgb(14 16 24 / 72%)",
+      "section": "Палітра вітрини"
+    },
+    {
+      "name": "--shop-scrim-strong",
+      "file": "shop-storefront.css",
+      "selector": ".shop-store,\n.shop-catalog",
+      "value": "rgb(14 16 24 / 88%)",
+      "section": "Палітра вітрини"
+    },
+    {
+      "name": "--shop-shadow",
+      "file": "shop-storefront.css",
+      "selector": ".shop-store,\n.shop-catalog",
+      "value": "0 1px 2px rgb(12 16 28 / 8%), 0 8px 24px rgb(12 16 28 / 12%)",
+      "section": "Палітра вітрини"
+    },
+    {
+      "name": "--shop-shadow",
+      "file": "shop-storefront.css",
+      "selector": "html[data-theme=\"dark\"] .shop-store,\nhtml[data-theme=\"dark\"] .shop-catalog,\nhtml[data-colors-mode=\"dark\"] .shop-store,\nhtml[data-colors-mode=\"dark\"] .shop-catalog",
+      "value": "0 1px 2px rgb(0 0 0 / 40%), 0 8px 24px rgb(0 0 0 / 45%)",
+      "section": "Палітра вітрини"
+    },
+    {
+      "name": "--shop-shadow-soft",
+      "file": "shop-storefront.css",
+      "selector": ".shop-store,\n.shop-catalog",
+      "value": "0 1px 2px rgb(12 16 28 / 6%), 0 4px 14px rgb(12 16 28 / 7%)",
+      "section": "Палітра вітрини"
+    },
+    {
+      "name": "--shop-shadow-soft",
+      "file": "shop-storefront.css",
+      "selector": "html[data-theme=\"dark\"] .shop-store,\nhtml[data-theme=\"dark\"] .shop-catalog,\nhtml[data-colors-mode=\"dark\"] .shop-store,\nhtml[data-colors-mode=\"dark\"] .shop-catalog",
+      "value": "0 1px 2px rgb(0 0 0 / 30%), 0 4px 14px rgb(0 0 0 / 30%)",
+      "section": "Палітра вітрини"
+    },
+    {
+      "name": "--surface",
+      "file": "shop-storefront.css",
+      "selector": ".shop-store,\n.shop-catalog",
+      "value": "#ffffff",
+      "section": "Палітра вітрини"
+    },
+    {
+      "name": "--surface",
+      "file": "shop-storefront.css",
+      "selector": "html[data-theme=\"dark\"] .shop-store,\nhtml[data-theme=\"dark\"] .shop-catalog,\nhtml[data-colors-mode=\"dark\"] .shop-store,\nhtml[data-colors-mode=\"dark\"] .shop-catalog",
+      "value": "#191c25",
+      "section": "Палітра вітрини"
+    },
+    {
+      "name": "--surface-active",
+      "file": "shop-storefront.css",
+      "selector": ".shop-store,\n.shop-catalog",
+      "value": "#e6e8ef",
+      "section": "Палітра вітрини"
+    },
+    {
+      "name": "--surface-active",
+      "file": "shop-storefront.css",
+      "selector": "html[data-theme=\"dark\"] .shop-store,\nhtml[data-theme=\"dark\"] .shop-catalog,\nhtml[data-colors-mode=\"dark\"] .shop-store,\nhtml[data-colors-mode=\"dark\"] .shop-catalog",
+      "value": "#2b303a",
+      "section": "Палітра вітрини"
+    },
+    {
+      "name": "--surface-hover",
+      "file": "shop-storefront.css",
+      "selector": ".shop-store,\n.shop-catalog",
+      "value": "#f1f2f6",
+      "section": "Палітра вітрини"
+    },
+    {
+      "name": "--surface-hover",
+      "file": "shop-storefront.css",
+      "selector": "html[data-theme=\"dark\"] .shop-store,\nhtml[data-theme=\"dark\"] .shop-catalog,\nhtml[data-colors-mode=\"dark\"] .shop-store,\nhtml[data-colors-mode=\"dark\"] .shop-catalog",
+      "value": "#22262f",
+      "section": "Палітра вітрини"
+    },
+    {
+      "name": "--tabs-h",
+      "file": "components.css",
+      "selector": ".wb-tabs",
+      "value": "36px",
+      "section": "Кирпичик «поле вводу»"
+    },
+    {
+      "name": "--tabs-h",
+      "file": "trackers.css",
+      "selector": ".wb-tracker-form .wb-tabs",
+      "value": "44px",
+      "section": "Новий трекер"
+    },
+    {
+      "name": "--text-muted",
+      "file": "shop-storefront.css",
+      "selector": ".shop-store,\n.shop-catalog",
+      "value": "#5c5f67",
+      "section": "Палітра вітрини"
+    },
+    {
+      "name": "--text-muted",
+      "file": "shop-storefront.css",
+      "selector": "html[data-theme=\"dark\"] .shop-store,\nhtml[data-theme=\"dark\"] .shop-catalog,\nhtml[data-colors-mode=\"dark\"] .shop-store,\nhtml[data-colors-mode=\"dark\"] .shop-catalog",
+      "value": "#a2a2ac",
+      "section": "Палітра вітрини"
+    },
+    {
+      "name": "--text-primary",
+      "file": "shop-storefront.css",
+      "selector": ".shop-store,\n.shop-catalog",
+      "value": "#14161c",
+      "section": "Палітра вітрини"
+    },
+    {
+      "name": "--text-primary",
+      "file": "shop-storefront.css",
+      "selector": "html[data-theme=\"dark\"] .shop-store,\nhtml[data-theme=\"dark\"] .shop-catalog,\nhtml[data-colors-mode=\"dark\"] .shop-store,\nhtml[data-colors-mode=\"dark\"] .shop-catalog",
+      "value": "#f2f4f8",
+      "section": "Палітра вітрини"
+    },
+    {
+      "name": "--text-secondary",
+      "file": "shop-storefront.css",
+      "selector": ".shop-store,\n.shop-catalog",
+      "value": "#44464f",
+      "section": "Палітра вітрини"
+    },
+    {
+      "name": "--text-secondary",
+      "file": "shop-storefront.css",
+      "selector": "html[data-theme=\"dark\"] .shop-store,\nhtml[data-theme=\"dark\"] .shop-catalog,\nhtml[data-colors-mode=\"dark\"] .shop-store,\nhtml[data-colors-mode=\"dark\"] .shop-catalog",
+      "value": "#c7c5d0",
+      "section": "Палітра вітрини"
+    },
+    {
+      "name": "--tools-cell",
+      "file": "components.css",
+      "selector": ".wb-tools-controls",
+      "value": "var(--tools-row-h)",
+      "section": "Смуга керування колекцією (спільний кирпичик)"
+    },
+    {
+      "name": "--tools-row-h",
+      "file": "components.css",
+      "selector": ".wb-tools-bar",
+      "value": "32px",
+      "section": "Смуга керування колекцією (спільний кирпичик)"
+    },
+    {
+      "name": "--tools-row-h",
+      "file": "components.css",
+      "selector": ".wb-tools-bar",
+      "value": "44px",
+      "section": "Смуга керування колекцією (спільний кирпичик)"
+    },
+    {
+      "name": "--tools-search-glow",
+      "file": "components.css",
+      "selector": ".wb-tools-search",
+      "value": "0 0 6px 1px var(--accent-soft), 0 0 16px 6px var(--accent-soft)",
+      "section": "Смуга керування колекцією (спільний кирпичик)"
+    },
+    {
+      "name": "--tools-search-w",
+      "file": "components.css",
+      "selector": ".wb-tools-search",
+      "value": "5rem",
+      "section": "Смуга керування колекцією (спільний кирпичик)"
+    },
+    {
+      "name": "--tracker-group-bg",
+      "file": "trackers.css",
+      "selector": ".wb-trackers-page",
+      "value": "color-mix(in srgb, var(--text-primary) 9%, transparent)",
+      "section": ""
+    },
+    {
+      "name": "--tracker-group-sub-bg",
+      "file": "trackers.css",
+      "selector": ".wb-trackers-page",
+      "value": "color-mix(in srgb, var(--text-primary) 5%, transparent)",
+      "section": ""
+    },
+    {
+      "name": "--tracker-step",
+      "file": "trackers.css",
+      "selector": ".wb-trackers-page",
+      "value": "var(--sp-3)",
+      "section": ""
+    }
+  ],
+  "classes": {
+    "admin/analytics-people.css": [
+      {
+        "section": "",
+        "names": [
+          "ana-cleanup",
+          "ana-cleanup-warn",
+          "ana-empty",
+          "ana-error",
+          "ana-event",
+          "ana-event-body",
+          "ana-event-details",
+          "ana-event-error",
+          "ana-event-meta",
+          "ana-event-surface",
+          "ana-event-surface--bot",
+          "ana-event-surface--platform",
+          "ana-event-time",
+          "ana-event-title",
+          "ana-event-user",
+          "ana-events",
+          "ana-loading",
+          "ana-more",
+          "ana-note",
+          "ana-picker",
+          "ana-picker-meta",
+          "ana-picker-name",
+          "ana-picker-row",
+          "ana-picker-row--active",
+          "ana-user",
+          "ana-user-body",
+          "ana-user-count",
+          "ana-user-head",
+          "ana-user-id",
+          "ana-user-meta",
+          "ana-user-name",
+          "ana-users"
+        ]
+      }
+    ],
+    "admin/analytics.css": [
+      {
+        "section": "",
+        "names": [
+          "ana-actions",
+          "ana-body",
+          "ana-field",
+          "ana-head",
+          "ana-head-title",
+          "ana-icon-btn",
+          "ana-input",
+          "ana-label",
+          "ana-mode",
+          "ana-mode-btn",
+          "ana-mode-btn--active",
+          "ana-page",
+          "ana-period-btn",
+          "ana-period-modal",
+          "ana-pinned",
+          "ana-preset",
+          "ana-preset--active",
+          "ana-presets",
+          "ana-range",
+          "ana-stat",
+          "ana-stat-value",
+          "ana-stats",
+          "ana-tools",
+          "ana-updated"
+        ]
+      }
+    ],
+    "admin/bot-constructor.css": [
+      {
+        "section": "",
+        "names": [
+          "kb-add-btn",
+          "kb-add-row",
+          "kb-btn",
+          "kb-editor",
+          "kb-empty",
+          "kb-json-error",
+          "kb-row",
+          "kb-row-actions",
+          "kb-row-buttons",
+          "kb-row-header",
+          "kb-row-label",
+          "kb-toggle",
+          "kb-toggle-btn",
+          "kb-toggle-btn--active"
+        ]
+      },
+      {
+        "section": "Footer block",
+        "names": [
+          "tg-footer"
+        ]
+      },
+      {
+        "section": "Blockquote block",
+        "names": [
+          "tg-blockquote"
+        ]
+      },
+      {
+        "section": "RichText field",
+        "names": [
+          "rt-btn",
+          "rt-field",
+          "rt-link",
+          "rt-marked",
+          "rt-preview",
+          "rt-toolbar",
+          "tg-paragraph"
+        ]
+      },
+      {
+        "section": "List block",
+        "names": [
+          "tg-list"
+        ]
+      },
+      {
+        "section": "Details block",
+        "names": [
+          "tg-details",
+          "tg-details-body",
+          "tg-details-summary"
+        ]
+      }
+    ],
+    "admin/home.css": [
+      {
+        "section": "",
+        "names": [
+          "home",
+          "home-date",
+          "home-greeting",
+          "home-line",
+          "home-sign",
+          "home-sign-note",
+          "home-star",
+          "home-text"
+        ]
+      }
+    ],
+    "admin/index.css": [],
+    "admin/monitoring-report.css": [
+      {
+        "section": "",
+        "names": [
+          "mon-bar",
+          "mon-bar-fill",
+          "mon-group",
+          "mon-scroll",
+          "mon-status",
+          "mon-status-error",
+          "mon-status-ok",
+          "mon-status-partial",
+          "mon-table",
+          "mon-table-num"
+        ]
+      },
+      {
+        "section": "Звіт колекторів",
+        "names": [
+          "mon-collector",
+          "mon-collector-head",
+          "mon-collector-label",
+          "mon-collector-meta",
+          "mon-collectors",
+          "mon-ref"
+        ]
+      },
+      {
+        "section": "Динаміка всіх показників",
+        "names": [
+          "mon-dyn-head",
+          "mon-dyn-label",
+          "mon-table-dynamics"
+        ]
+      }
+    ],
+    "admin/monitoring.css": [
+      {
+        "section": "",
+        "names": [
+          "mon",
+          "mon-note",
+          "mon-stamp",
+          "mon-status-line"
+        ]
+      },
+      {
+        "section": "Картки показників",
+        "names": [
+          "mon-kpi",
+          "mon-kpi-delta",
+          "mon-kpi-delta--down",
+          "mon-kpi-delta--flat",
+          "mon-kpi-delta--up",
+          "mon-kpi-group",
+          "mon-kpi-head",
+          "mon-kpi-hint",
+          "mon-kpi-label",
+          "mon-kpi-row",
+          "mon-kpi-value",
+          "mon-kpis"
+        ]
+      },
+      {
+        "section": "Панель",
+        "names": [
+          "mon-columns",
+          "mon-panel",
+          "mon-panel-body",
+          "mon-panel-head",
+          "mon-panel-title",
+          "mon-panel-tools",
+          "mon-panel-trigger"
+        ]
+      },
+      {
+        "section": "Графік",
+        "names": [
+          "mon-chart-area",
+          "mon-chart-dot",
+          "mon-chart-empty",
+          "mon-chart-foot",
+          "mon-chart-grid",
+          "mon-chart-line",
+          "mon-chart-note",
+          "mon-chart-svg",
+          "mon-chart-tools",
+          "mon-chip",
+          "mon-chip-active"
+        ]
+      }
+    ],
+    "admin/scenario-modal.css": [
+      {
+        "section": "",
+        "names": [
+          "app-drawer-overlay",
+          "page-hamburger",
+          "page-hamburger--floating",
+          "page-layout",
+          "page-sidebar-close",
+          "page-sidebar-header",
+          "page-zone",
+          "page-zone--footer",
+          "page-zone--header",
+          "page-zone--main",
+          "page-zone--sidebar",
+          "page-zone-group",
+          "page-zone-label",
+          "phone-frame",
+          "phone-frame-body"
+        ]
+      },
+      {
+        "section": "ScenarioCardModal — mobile responsive",
+        "names": [
+          "scn-hide-mobile",
+          "scn-modal",
+          "scn-subtabs",
+          "scn-tab",
+          "scn-tabs",
+          "wb-btn",
+          "wb-modal-body",
+          "wb-modal-footer",
+          "wb-modal-header",
+          "wb-modal-overlay",
+          "wb-modal-title"
+        ]
+      },
+      {
+        "section": "JSON textarea — ensure visibility on all themes",
+        "names": [
+          "scn-modal",
+          "wb-modal-body",
+          "wb-modal-footer",
+          "wb-textarea"
+        ]
+      },
+      {
+        "section": "Mobile modal: grid layout to pin footer",
+        "names": [
+          "scn-modal",
+          "scn-subtabs",
+          "scn-tabs",
+          "wb-btn",
+          "wb-modal-body",
+          "wb-modal-footer",
+          "wb-modal-header"
+        ]
+      },
+      {
+        "section": "Fullscreen Page Builder overlay",
+        "names": [
+          "pb-zone-editor",
+          "scn-fullscreen-builder"
+        ]
+      },
+      {
+        "section": "BlockEditor — compact accordion headers",
+        "names": [
+          "pb-be-actions",
+          "pb-be-add-btn",
+          "pb-be-cond-btn",
+          "pb-be-del-btn",
+          "pb-be-field",
+          "pb-be-field-input",
+          "pb-be-field-label",
+          "pb-be-header"
+        ]
+      },
+      {
+        "section": "Save / Close Action Bar Integration",
+        "names": [
+          "scn-modal",
+          "wb-modal-footer",
+          "wb-save-actions"
+        ]
+      }
+    ],
+    "admin/scenario-tabs.css": [
+      {
+        "section": "",
+        "names": [
+          "scn-tab",
+          "scn-tab--active",
+          "scn-tabs"
+        ]
+      },
+      {
+        "section": "SUB-TABS — підвкладки у ScenarioCardModal",
+        "names": [
+          "scn-subtab",
+          "scn-subtab--active",
+          "scn-subtabs"
+        ]
+      },
+      {
+        "section": "MOBILE FULL-SCREEN MODALS",
+        "names": [
+          "kb-add-btn",
+          "kb-add-row",
+          "kb-btn",
+          "kb-row-buttons",
+          "pb-block-editor",
+          "pb-zone-editor",
+          "scn-subtab",
+          "scn-subtabs",
+          "scn-tab",
+          "scn-tabs"
+        ]
+      }
+    ],
+    "admin/scenarios-list.css": [
+      {
+        "section": "",
+        "names": [
+          "scn-body",
+          "scn-count",
+          "scn-search",
+          "tg-btn",
+          "tg-btn-row",
+          "tg-buttons",
+          "tg-caption",
+          "tg-photo",
+          "tg-unknown"
+        ]
+      }
+    ],
+    "admin/shell.css": [
+      {
+        "section": "Page Builder: класи, які рендерила розмітка без правил",
+        "names": [
+          "pb-be-props",
+          "pb-sidebar-settings",
+          "tg-message",
+          "tg-message-placeholder"
+        ]
+      },
+      {
+        "section": "Empty state",
+        "names": [
+          "empty-state",
+          "empty-state-text"
+        ]
+      },
+      {
+        "section": "Block card header",
+        "names": [
+          "block-action-btn",
+          "block-action-btn--danger",
+          "block-row",
+          "block-type-badge",
+          "block-type-label",
+          "pb-block-move"
+        ]
+      }
+    ],
+    "admin/style.css": [
+      {
+        "section": "",
+        "names": [
+          "st"
+        ]
+      },
+      {
+        "section": "Зведення: скільки всього є в системі",
+        "names": [
+          "st-stat",
+          "st-stat-label",
+          "st-stat-value",
+          "st-summary"
+        ]
+      },
+      {
+        "section": "Смуга керування: вкладки й пошук",
+        "names": [
+          "st-bar",
+          "st-group",
+          "st-group-title",
+          "st-search"
+        ]
+      },
+      {
+        "section": "Токен: значення трьох шарів і поточне",
+        "names": [
+          "st-swatch",
+          "st-swatch--bar",
+          "st-swatch--shadow",
+          "st-swatch--text",
+          "st-token",
+          "st-token-name",
+          "st-tokens",
+          "st-value",
+          "st-value--live",
+          "st-value-key",
+          "st-values"
+        ]
+      },
+      {
+        "section": "Кирпичик: справжня розмітка в рамці",
+        "names": [
+          "st-brick",
+          "st-brick-classes",
+          "st-brick-demo",
+          "st-brick-head",
+          "st-brick-title",
+          "st-bricks",
+          "st-class-name",
+          "st-page-demo",
+          "st-row",
+          "st-stack",
+          "st-subbar",
+          "st-tabbar"
+        ]
+      },
+      {
+        "section": "Повний перелік класів",
+        "names": [
+          "st",
+          "st-bricks",
+          "st-empty",
+          "st-file",
+          "st-file-count",
+          "st-file-name",
+          "st-files",
+          "st-names",
+          "st-search",
+          "st-section-name",
+          "st-source",
+          "st-stat",
+          "st-summary",
+          "st-token",
+          "st-token-name",
+          "st-value--palette",
+          "st-values"
+        ]
+      }
+    ],
+    "admin/telegram-preview.css": [
+      {
+        "section": "",
+        "names": [
+          "tg-divider",
+          "tg-heading",
+          "tg-heading--h1",
+          "tg-heading--h2",
+          "tg-heading--h3",
+          "tg-heading--h4",
+          "tg-heading--h5",
+          "tg-heading--h6",
+          "tg-message",
+          "tg-paragraph",
+          "tg-placeholder"
+        ]
+      }
+    ],
+    "admin/users-table.css": [
+      {
+        "section": "",
+        "names": [
+          "usr-badge",
+          "usr-badge--active",
+          "usr-badge--blocked",
+          "usr-empty",
+          "usr-row",
+          "usr-row--blocked",
+          "usr-row--selected",
+          "usr-table",
+          "usr-table-wrap",
+          "usr-td-check",
+          "usr-td-date",
+          "usr-td-id",
+          "usr-td-menu",
+          "usr-td-name",
+          "usr-td-status",
+          "usr-td-sticky",
+          "usr-td-username",
+          "usr-th-arrow",
+          "usr-th-check",
+          "usr-th-menu",
+          "usr-th-sortable",
+          "usr-th-sticky"
+        ]
+      },
+      {
+        "section": "Row menu",
+        "names": [
+          "usr-menu-btn"
+        ]
+      },
+      {
+        "section": "Bulk bar",
+        "names": [
+          "usr-bulk-bar",
+          "usr-bulk-count"
+        ]
+      },
+      {
+        "section": "Card table",
+        "names": [
+          "usr-card-table",
+          "usr-card-td-field",
+          "usr-card-td-value",
+          "usr-card-th-field",
+          "usr-card-th-value",
+          "usr-th-status"
+        ]
+      },
+      {
+        "section": "Mobile adaptation",
+        "names": [
+          "scn-search",
+          "usr-bulk-bar",
+          "usr-table",
+          "usr-table-wrap",
+          "usr-td-name"
+        ]
+      }
+    ],
+    "ads.css": [
+      {
+        "section": "",
+        "names": [
+          "wb-ad",
+          "wb-ad-body",
+          "wb-ad-meta",
+          "wb-ad-meta-line",
+          "wb-ad-more",
+          "wb-ad-open",
+          "wb-ad-text",
+          "wb-ad-title",
+          "wb-collection--cards",
+          "wb-collection--rows"
+        ]
+      },
+      {
+        "section": "Поверхня «оголошення цілком»",
+        "names": [
+          "wb-ad-view",
+          "wb-ad-view-actions",
+          "wb-ad-view-body",
+          "wb-ad-view-flags",
+          "wb-ad-view-meta",
+          "wb-ad-view-title"
+        ]
+      }
+    ],
+    "app-chrome.css": [
+      {
+        "section": "Каркас застосунку",
+        "names": [
+          "wb-app",
+          "wb-app-header",
+          "wb-app-main",
+          "wb-app-title",
+          "wb-tabbar",
+          "wb-topbar"
+        ]
+      },
+      {
+        "section": "Глобальний хедер (.wb-appbar)",
+        "names": [
+          "wb-app-body",
+          "wb-app-hamburger",
+          "wb-app-logout",
+          "wb-appbar",
+          "wb-appbar__actions",
+          "wb-appbar__btn",
+          "wb-appbar__btn--on",
+          "wb-appbar__lead",
+          "wb-appbar__title"
+        ]
+      },
+      {
+        "section": "Меню (бічна навігація) — ЄДИНИЙ типовий сайдбар",
+        "names": [
+          "wb-nav",
+          "wb-nav-header",
+          "wb-nav-logo",
+          "wb-nav-title",
+          "wb-nav-toggle"
+        ]
+      },
+      {
+        "section": "Кнопка закриття сайдбара",
+        "names": [
+          "wb-app-logout",
+          "wb-nav--accent-icons",
+          "wb-nav--collapsed",
+          "wb-nav-close-row",
+          "wb-nav-dots",
+          "wb-nav-extra",
+          "wb-nav-footer",
+          "wb-nav-header",
+          "wb-nav-hint",
+          "wb-nav-icon",
+          "wb-nav-item",
+          "wb-nav-item--active",
+          "wb-nav-label",
+          "wb-nav-menu",
+          "wb-nav-more",
+          "wb-nav-section",
+          "wb-nav-section-title",
+          "wb-nav-text",
+          "wb-nav-toggle"
+        ]
+      },
+      {
+        "section": "Глобальний нижній футер (tab bar)",
+        "names": [
+          "wb-page-scroll",
+          "wb-tabbar",
+          "wb-tabbar-badge",
+          "wb-tabbar-icon",
+          "wb-tabbar-inner",
+          "wb-tabbar-item",
+          "wb-tabbar-item--active",
+          "wb-tabbar-item--primary",
+          "wb-tabbar-label",
+          "wb-tabbar-layout"
+        ]
+      },
+      {
+        "section": "Шапка сторінки (topbar)",
+        "names": [
+          "wb-topbar",
+          "wb-topbar-left",
+          "wb-topbar-right",
+          "wb-topbar-title"
+        ]
+      },
+      {
+        "section": "Сторінка",
+        "names": [
+          "wb-page",
+          "wb-page-actions",
+          "wb-page-add",
+          "wb-page-head",
+          "wb-page-sticky",
+          "wb-page-title",
+          "wb-tools-add"
+        ]
+      },
+      {
+        "section": "Splash — перший кадр, поки невідомо, хто користувач",
+        "names": [
+          "wb-splash",
+          "wb-splash-icon"
+        ]
+      },
+      {
+        "section": "Auth — вхід / «відкрийте в Telegram»",
+        "names": [
+          "wb-auth",
+          "wb-auth-card",
+          "wb-auth-error",
+          "wb-auth-field",
+          "wb-auth-form",
+          "wb-auth-input",
+          "wb-auth-input--error",
+          "wb-auth-label",
+          "wb-auth-logo",
+          "wb-auth-logo-icon",
+          "wb-auth-logo-text",
+          "wb-auth-message",
+          "wb-auth-sub",
+          "wb-auth-submit"
+        ]
+      },
+      {
+        "section": "Екран, а не картка-модалка",
+        "names": [
+          "wb-auth--page",
+          "wb-auth-card",
+          "wb-auth-contact",
+          "wb-auth-contact-title",
+          "wb-auth-form",
+          "wb-auth-sheet",
+          "wb-auth-stage",
+          "wb-stop-mark"
+        ]
+      },
+      {
+        "section": "Профіль — картка користувача (рендерить shared UserProfileCard)",
+        "names": [
+          "wb-handle",
+          "wb-handle-actions",
+          "wb-handle-badge",
+          "wb-handle-error",
+          "wb-handle-form",
+          "wb-handle-head",
+          "wb-handle-info",
+          "wb-handle-input",
+          "wb-handle-input-row",
+          "wb-handle-label",
+          "wb-handle-name",
+          "wb-handle-name--empty",
+          "wb-handle-sign",
+          "wb-input",
+          "wb-profile",
+          "wb-profile--handle",
+          "wb-profile-field",
+          "wb-profile-fields",
+          "wb-profile-label",
+          "wb-profile-lookup",
+          "wb-profile-note",
+          "wb-profile-title",
+          "wb-profile-value"
+        ]
+      },
+      {
+        "section": "Круг акаунта — фото, а як його немає, літера",
+        "names": [
+          "wb-account-head",
+          "wb-account-head-note",
+          "wb-account-head-text",
+          "wb-account-head-title",
+          "wb-account-initial",
+          "wb-account-photo",
+          "wb-account-photo--lg"
+        ]
+      },
+      {
+        "section": "Перемикач: стан, який триває",
+        "names": [
+          "wb-switch",
+          "wb-switch--on",
+          "wb-switch-fields",
+          "wb-switch-group",
+          "wb-switch-hint",
+          "wb-switch-knob",
+          "wb-switch-label",
+          "wb-switch-row",
+          "wb-switch-text"
+        ]
+      },
+      {
+        "section": "«Про себе»: блок, а не рядок",
+        "names": [
+          "wb-about",
+          "wb-about-actions",
+          "wb-about-count",
+          "wb-about-error",
+          "wb-about-foot",
+          "wb-about-form",
+          "wb-about-head",
+          "wb-about-input",
+          "wb-about-label",
+          "wb-about-text",
+          "wb-about-text--empty",
+          "wb-person",
+          "wb-person--full",
+          "wb-person--tappable",
+          "wb-person-about",
+          "wb-person-body",
+          "wb-person-facts",
+          "wb-person-initial",
+          "wb-person-more",
+          "wb-person-name",
+          "wb-person-photo"
+        ]
+      },
+      {
+        "section": "Композер: вибір виду оголошення",
+        "names": [
+          "wb-composer-kind",
+          "wb-composer-kind--active",
+          "wb-composer-kinds",
+          "wb-composer-pair"
+        ]
+      },
+      {
+        "section": "Мобільна адаптація каркаса",
+        "names": [
+          "wb-app-hamburger",
+          "wb-app-header",
+          "wb-app-title",
+          "wb-nav-close-row",
+          "wb-nav-toggle",
+          "wb-topbar"
+        ]
+      }
+    ],
+    "assessments.css": [
+      {
+        "section": "Список: рядок = згорнутий акордеон",
+        "names": [
+          "wb-test-body",
+          "wb-test-card",
+          "wb-test-lead",
+          "wb-test-meta"
+        ]
+      },
+      {
+        "section": "Бал і смуга",
+        "names": [
+          "wb-score",
+          "wb-score-band",
+          "wb-score-note",
+          "wb-score-value"
+        ]
+      },
+      {
+        "section": "Тренд",
+        "names": [
+          "wb-trend",
+          "wb-trend--down",
+          "wb-trend--flat",
+          "wb-trend--up"
+        ]
+      },
+      {
+        "section": "Проходження: одне питання на екран",
+        "names": [
+          "wb-run",
+          "wb-run-block",
+          "wb-run-block-lead",
+          "wb-run-block-title",
+          "wb-run-count",
+          "wb-run-period",
+          "wb-run-progress-fill",
+          "wb-run-progress-track",
+          "wb-run-question"
+        ]
+      },
+      {
+        "section": "Шкала відповідь",
+        "names": [
+          "wb-scale",
+          "wb-scale-btn",
+          "wb-scale-btn--active",
+          "wb-scale-dot"
+        ]
+      },
+      {
+        "section": "Застереження: це частина виводу, а не дрібний шрифт",
+        "names": [
+          "wb-btn",
+          "wb-btn-waiting",
+          "wb-notice",
+          "wb-notice--attention",
+          "wb-page-title--slim",
+          "wb-result-about",
+          "wb-result-about-body",
+          "wb-result-about-chevron",
+          "wb-result-about-summary",
+          "wb-run",
+          "wb-scale-reading",
+          "wb-source",
+          "wb-spread",
+          "wb-spread-line",
+          "wb-spread-line--weak",
+          "wb-spread-question"
+        ]
+      },
+      {
+        "section": "Протокол безпеки",
+        "names": [
+          "wb-safety",
+          "wb-safety-chevron",
+          "wb-safety-foot",
+          "wb-safety-help",
+          "wb-safety-help-name",
+          "wb-safety-help-note",
+          "wb-safety-help-number",
+          "wb-safety-help-title",
+          "wb-safety-more",
+          "wb-safety-more-summary",
+          "wb-safety-text",
+          "wb-safety-title"
+        ]
+      },
+      {
+        "section": "Персональні акценти",
+        "names": [
+          "wb-alerts",
+          "wb-alerts-impact",
+          "wb-alerts-label",
+          "wb-alerts-lead",
+          "wb-alerts-list",
+          "wb-alerts-note",
+          "wb-alerts-title",
+          "wb-level",
+          "wb-notice--required",
+          "wb-prose",
+          "wb-prose-group",
+          "wb-prose-label",
+          "wb-prose-list",
+          "wb-section-title"
+        ]
+      },
+      {
+        "section": "Результат однієї шкали",
+        "names": [
+          "wb-scale-result",
+          "wb-scale-result-flag",
+          "wb-scale-result-title"
+        ]
+      },
+      {
+        "section": "Спільний висновок за двома шкалами",
+        "names": [
+          "wb-combined",
+          "wb-combined-body",
+          "wb-combined-note",
+          "wb-combined-overline",
+          "wb-combined-scores",
+          "wb-combined-title"
+        ]
+      },
+      {
+        "section": "«Ти не один»: результат на фоні загального стану",
+        "names": [
+          "wb-peers",
+          "wb-peers-alongside",
+          "wb-peers-bar",
+          "wb-peers-count",
+          "wb-peers-fill",
+          "wb-peers-lead",
+          "wb-peers-list",
+          "wb-peers-name",
+          "wb-peers-note",
+          "wb-peers-place",
+          "wb-peers-privacy",
+          "wb-peers-row",
+          "wb-peers-row--mine"
+        ]
+      }
+    ],
+    "components.css": [
+      {
+        "section": "Button",
+        "names": [
+          "wb-btn",
+          "wb-btn-danger",
+          "wb-btn-ghost",
+          "wb-btn-primary",
+          "wb-btn-secondary",
+          "wb-btn-sm",
+          "wb-tabs-btn--active"
+        ]
+      },
+      {
+        "section": "Input / Select / Textarea",
+        "names": [
+          "wb-input",
+          "wb-select",
+          "wb-textarea"
+        ]
+      },
+      {
+        "section": "Label",
+        "names": [
+          "wb-field",
+          "wb-field-hint",
+          "wb-input-error",
+          "wb-label"
+        ]
+      },
+      {
+        "section": "Card",
+        "names": [
+          "wb-card",
+          "wb-card-body",
+          "wb-card-header",
+          "wb-card-title"
+        ]
+      },
+      {
+        "section": "Modal",
+        "names": [
+          "wb-modal",
+          "wb-modal-close",
+          "wb-modal-header",
+          "wb-modal-lg",
+          "wb-modal-overlay",
+          "wb-modal-title"
+        ]
+      },
+      {
+        "section": "Close Button (circular, themed)",
+        "names": [
+          "wb-close-btn"
+        ]
+      },
+      {
+        "section": "Move Buttons (for drag-reorder lists)",
+        "names": [
+          "wb-modal-body",
+          "wb-modal-divider",
+          "wb-modal-error",
+          "wb-modal-footer",
+          "wb-modal-loading",
+          "wb-modal-menu",
+          "wb-modal-menu-item",
+          "wb-modal-menu-item--danger",
+          "wb-move-btn"
+        ]
+      },
+      {
+        "section": "Dialog (alert / confirm / prompt)",
+        "names": [
+          "wb-dialog",
+          "wb-dialog-body",
+          "wb-dialog-btn",
+          "wb-dialog-error",
+          "wb-dialog-footer",
+          "wb-dialog-message"
+        ]
+      },
+      {
+        "section": "Футер застосунку завжди видно: модалка його не перекриває",
+        "names": [
+          "wb-modal-overlay",
+          "wb-modal-overlay--tight",
+          "wb-tabbar"
+        ]
+      },
+      {
+        "section": "Композер: швидке створення нотатки й оголошення",
+        "names": [
+          "wb-collection-tool",
+          "wb-composer",
+          "wb-composer-body",
+          "wb-composer-main",
+          "wb-composer-pane",
+          "wb-composer-tab",
+          "wb-composer-tab--active",
+          "wb-composer-tab-label",
+          "wb-composer-tabs",
+          "wb-composer-tool",
+          "wb-modal",
+          "wb-modal--card",
+          "wb-modal--full",
+          "wb-modal--screen",
+          "wb-modal-body",
+          "wb-modal-header",
+          "wb-modal-overlay--screen",
+          "wb-modal-overlay--tight",
+          "wb-sheet",
+          "wb-sheet-head",
+          "wb-tabbar",
+          "wb-tools-btn"
+        ]
+      },
+      {
+        "section": "Поля композера",
+        "names": [
+          "wb-composer-field",
+          "wb-composer-input",
+          "wb-composer-tag-input",
+          "wb-composer-tags"
+        ]
+      },
+      {
+        "section": "Кирпичик «поле вводу»",
+        "names": [
+          "wb-composer-error",
+          "wb-composer-input",
+          "wb-composer-plan",
+          "wb-composer-plan-item",
+          "wb-composer-soon",
+          "wb-composer-soon-text",
+          "wb-composer-soon-title",
+          "wb-composer-tag",
+          "wb-composer-tag-input",
+          "wb-composer-tag-remove",
+          "wb-composer-tags",
+          "wb-composer-tool",
+          "wb-composer-tools",
+          "wb-input",
+          "wb-page-sticky",
+          "wb-segmented",
+          "wb-segmented-btn",
+          "wb-segmented-btn--active",
+          "wb-select",
+          "wb-sheet-actions",
+          "wb-tabs",
+          "wb-tabs-btn",
+          "wb-tabs-btn--active",
+          "wb-textarea"
+        ]
+      },
+      {
+        "section": "Меню: поверхня зі списком пунктів",
+        "names": [
+          "wb-menu-block",
+          "wb-menu-block--soon",
+          "wb-menu-block-icon",
+          "wb-menu-block-label",
+          "wb-menu-blocks",
+          "wb-menu-body",
+          "wb-menu-hint",
+          "wb-menu-item",
+          "wb-menu-item--soon",
+          "wb-menu-item-check",
+          "wb-menu-item-hint",
+          "wb-menu-item-icon",
+          "wb-menu-item-label",
+          "wb-menu-item-more",
+          "wb-menu-item-text",
+          "wb-menu-list"
+        ]
+      },
+      {
+        "section": "«Поділитись»: посилання, месенджери, QR",
+        "names": [
+          "wb-share",
+          "wb-share__apps",
+          "wb-share__copy",
+          "wb-share__qr",
+          "wb-share__url"
+        ]
+      },
+      {
+        "section": "Вигляд колекції (спільний кирпичик)",
+        "names": [
+          "wb-collection",
+          "wb-collection--cards",
+          "wb-collection--cols-1",
+          "wb-collection--cols-2",
+          "wb-collection--rows",
+          "wb-collection-tool"
+        ]
+      },
+      {
+        "section": "Смуга керування колекцією (спільний кирпичик)",
+        "names": [
+          "wb-chip",
+          "wb-input",
+          "wb-note-card",
+          "wb-note-card-caret",
+          "wb-note-card-line",
+          "wb-note-card-stamp",
+          "wb-note-card-tags",
+          "wb-note-card-text",
+          "wb-note-group",
+          "wb-note-group-count",
+          "wb-note-group-title",
+          "wb-note-item",
+          "wb-note-item--open",
+          "wb-note-list",
+          "wb-note-tag",
+          "wb-note-tag--hit",
+          "wb-page-sticky",
+          "wb-tools",
+          "wb-tools-bar",
+          "wb-tools-btn",
+          "wb-tools-btn--on",
+          "wb-tools-btn--toggle",
+          "wb-tools-chip",
+          "wb-tools-chip-label",
+          "wb-tools-chips",
+          "wb-tools-controls",
+          "wb-tools-search",
+          "wb-tools-search--open",
+          "wb-tools-search-clear",
+          "wb-tools-search-icon",
+          "wb-tools-summary"
+        ]
+      },
+      {
+        "section": "Картки-превью: та сама розмітка, інша розкладка",
+        "names": [
+          "wb-collection--cards",
+          "wb-note-card",
+          "wb-note-card-body",
+          "wb-note-card-line",
+          "wb-note-card-tags",
+          "wb-note-card-text",
+          "wb-note-dates",
+          "wb-note-item",
+          "wb-note-text"
+        ]
+      },
+      {
+        "section": "Table",
+        "names": [
+          "wb-table",
+          "wb-table-wrap"
+        ]
+      },
+      {
+        "section": "Data table (complex: sticky, sort, select)",
+        "names": [
+          "selected",
+          "wb-data-table",
+          "wb-data-table-wrap"
+        ]
+      },
+      {
+        "section": "Закріплені рядок 1 і стовпець 1 — наскрізний стандарт таблиць",
+        "names": [
+          "wb-table"
+        ]
+      },
+      {
+        "section": "Badge",
+        "names": [
+          "wb-badge",
+          "wb-badge-accent",
+          "wb-badge-green",
+          "wb-badge-neutral",
+          "wb-badge-red",
+          "wb-badge-yellow"
+        ]
+      },
+      {
+        "section": "Chip / Tag",
+        "names": [
+          "wb-chip",
+          "wb-chip-sm"
+        ]
+      },
+      {
+        "section": "Tags input",
+        "names": [
+          "wb-input",
+          "wb-tag-remove",
+          "wb-tag-suggestions",
+          "wb-tags-input"
+        ]
+      },
+      {
+        "section": "Empty state",
+        "names": [
+          "wb-empty",
+          "wb-empty-icon",
+          "wb-empty-text"
+        ]
+      },
+      {
+        "section": "Skeleton loader",
+        "names": [
+          "wb-skeleton"
+        ]
+      },
+      {
+        "section": "Spacing utilities",
+        "names": [
+          "wb-mb-2",
+          "wb-mb-3",
+          "wb-mb-4",
+          "wb-mt-1",
+          "wb-mt-2"
+        ]
+      },
+      {
+        "section": "Text utilities",
+        "names": [
+          "wb-font-bold",
+          "wb-font-semibold",
+          "wb-text-base",
+          "wb-text-green",
+          "wb-text-md",
+          "wb-text-muted",
+          "wb-text-primary",
+          "wb-text-red",
+          "wb-text-secondary",
+          "wb-text-sm",
+          "wb-text-xs"
+        ]
+      },
+      {
+        "section": "Save / Close Action Bar",
+        "names": [
+          "wb-btn-sm",
+          "wb-save-actions",
+          "wb-save-actions--success",
+          "wb-save-actions-btn",
+          "wb-save-actions-btn--close",
+          "wb-save-actions-btn--primary",
+          "wb-save-actions-btn--saved",
+          "wb-save-actions-btn--secondary"
+        ]
+      },
+      {
+        "section": "Hero (блок сторінки)",
+        "names": [
+          "wb-block-hero",
+          "wb-block-hero--center",
+          "wb-block-hero--left",
+          "wb-block-hero--media",
+          "wb-block-hero--right",
+          "wb-block-hero__actions",
+          "wb-block-hero__body",
+          "wb-block-hero__scrim",
+          "wb-block-hero__subtitle",
+          "wb-block-hero__title",
+          "wb-btn"
+        ]
+      },
+      {
+        "section": "Блок сторінки-акордеон (`.wb-block-section`)",
+        "names": [
+          "wb-block-section",
+          "wb-block-section__body",
+          "wb-block-section__caret",
+          "wb-block-section__head",
+          "wb-block-section__icon",
+          "wb-block-section__meta",
+          "wb-block-section__toggle",
+          "wb-block-section__toggle--open"
+        ]
+      },
+      {
+        "section": "Блок як РЯДОК списку (`.wb-block-section--row`)",
+        "names": [
+          "wb-block-section--row",
+          "wb-block-section__body",
+          "wb-block-section__caret",
+          "wb-block-section__head",
+          "wb-block-section__icon",
+          "wb-block-section__title",
+          "wb-block-section__toggle"
+        ]
+      },
+      {
+        "section": "Системні режими, у яких поверхня мусить лишатись видимою",
+        "names": [
+          "wb-card",
+          "wb-composer-input",
+          "wb-input",
+          "wb-select",
+          "wb-textarea"
+        ]
+      }
+    ],
+    "contacts.css": [
+      {
+        "section": "Підсумкові числа (у шапці, поруч із назвою)",
+        "names": [
+          "wb-contact-stat",
+          "wb-contact-stat-label",
+          "wb-contact-stat-value",
+          "wb-contact-stat-word",
+          "wb-contact-stats"
+        ]
+      },
+      {
+        "section": "Список контактів",
+        "names": [
+          "wb-contact-card",
+          "wb-contact-group",
+          "wb-contact-group-count",
+          "wb-contact-group-title",
+          "wb-contact-head",
+          "wb-contact-item",
+          "wb-contact-item--open",
+          "wb-contact-line",
+          "wb-contact-list",
+          "wb-contact-name",
+          "wb-contact-number",
+          "wb-contact-open",
+          "wb-contact-stamp",
+          "wb-contact-state",
+          "wb-contact-tag",
+          "wb-contact-tag--hit",
+          "wb-contact-tags",
+          "wb-contact-twin",
+          "wb-contact-who"
+        ]
+      },
+      {
+        "section": "Тіло розкритого рядка",
+        "names": [
+          "wb-contact-body",
+          "wb-contact-dates",
+          "wb-contact-nested",
+          "wb-contact-note-text"
+        ]
+      },
+      {
+        "section": "Плитки: та сама розмітка, інша розкладка",
+        "names": [
+          "wb-collection--cards",
+          "wb-contact-card",
+          "wb-contact-head",
+          "wb-contact-item",
+          "wb-contact-line",
+          "wb-contact-name",
+          "wb-contact-tags"
+        ]
+      },
+      {
+        "section": "Форма контакту (поверхня за вмістом)",
+        "names": [
+          "wb-contact-joined",
+          "wb-contact-link",
+          "wb-contact-link-row",
+          "wb-contact-sheet",
+          "wb-contact-stage",
+          "wb-contact-stage--done",
+          "wb-contact-stage-label",
+          "wb-contact-stage-note",
+          "wb-contact-stage-value",
+          "wb-contact-stages"
+        ]
+      }
+    ],
+    "contextbar.css": [
+      {
+        "section": "",
+        "names": [
+          "wb-contextbar",
+          "wb-contextbar-btn",
+          "wb-contextbar-btn--primary",
+          "wb-contextbar-inner",
+          "wb-contextbar-label",
+          "wb-tabbar-layout"
+        ]
+      }
+    ],
+    "date-analysis.css": [
+      {
+        "section": "",
+        "names": [
+          "wb-analysis-systems__desc",
+          "wb-analysis-systems__head",
+          "wb-analysis-systems__history",
+          "wb-analysis-systems__name",
+          "wb-analysis-systems__soon",
+          "wb-analysis-views",
+          "wb-block-date-analysis",
+          "wb-block-date-analysis__title",
+          "wb-param-cell--toggle",
+          "wb-param-date",
+          "wb-param-date__name",
+          "wb-param-detail",
+          "wb-param-frame",
+          "wb-param-group",
+          "wb-param-head",
+          "wb-param-label",
+          "wb-param-note",
+          "wb-param-pin",
+          "wb-param-scroll",
+          "wb-param-table",
+          "wb-param-table--body",
+          "wb-param-table--compare",
+          "wb-param-table--measured",
+          "wb-param-toggle",
+          "wb-param-toggle--open",
+          "wb-param-toggle__caret",
+          "wb-param-value",
+          "wb-system-body",
+          "wb-system-params",
+          "wb-tabbar-layout"
+        ]
+      }
+    ],
+    "dates.css": [
+      {
+        "section": "",
+        "names": [
+          "wb-date-list",
+          "wb-date-sort"
+        ]
+      },
+      {
+        "section": "Дія й пошук",
+        "names": [
+          "wb-btn",
+          "wb-date-cell--pick",
+          "wb-date-list",
+          "wb-date-tools",
+          "wb-date-tools__search"
+        ]
+      },
+      {
+        "section": "Рядок керування вибіркою",
+        "names": [
+          "wb-btn",
+          "wb-date-bulk",
+          "wb-date-bulk__count"
+        ]
+      },
+      {
+        "section": "Голова картки — акордеон",
+        "names": [
+          "wb-date-cell--actions",
+          "wb-date-cell--notes",
+          "wb-date-edit",
+          "wb-date-name",
+          "wb-date-name-row",
+          "wb-date-name__caret",
+          "wb-date-name__meta",
+          "wb-date-name__text"
+        ]
+      },
+      {
+        "section": "Модалка дати",
+        "names": [
+          "wb-btn",
+          "wb-date-bulk",
+          "wb-date-bulk__count",
+          "wb-date-cell",
+          "wb-date-cell--actions",
+          "wb-date-cell--body",
+          "wb-date-cell--date",
+          "wb-date-cell--name",
+          "wb-date-cell--notes",
+          "wb-date-cell--pick",
+          "wb-date-edit",
+          "wb-date-head",
+          "wb-date-list",
+          "wb-date-modal-footer",
+          "wb-date-modal-footer__spacer",
+          "wb-date-name",
+          "wb-date-name-row",
+          "wb-date-name__caret",
+          "wb-date-name__meta",
+          "wb-date-row",
+          "wb-date-row--open",
+          "wb-date-sort",
+          "wb-table"
+        ]
+      }
+    ],
+    "drawer.css": [
+      {
+        "section": "Гамбургер",
+        "names": [
+          "hamburger"
+        ]
+      },
+      {
+        "section": "Скрим",
+        "names": [
+          "app-drawer-overlay"
+        ]
+      },
+      {
+        "section": "Мобільний drawer",
+        "names": [
+          "app-drawer",
+          "app-drawer--open",
+          "app-drawer-overlay"
+        ]
+      }
+    ],
+    "favorites.css": [
+      {
+        "section": "Підтвердження лайка",
+        "names": [
+          "wb-like-toast",
+          "wb-like-toast--off"
+        ]
+      },
+      {
+        "section": "Список обраного",
+        "names": [
+          "wb-favorites-count",
+          "wb-favorites-list",
+          "wb-favorites-meta",
+          "wb-favorites-more",
+          "wb-favorites-open",
+          "wb-favorites-photo",
+          "wb-favorites-remove",
+          "wb-favorites-row",
+          "wb-favorites-row--gone",
+          "wb-favorites-text",
+          "wb-favorites-thumb",
+          "wb-favorites-title"
+        ]
+      }
+    ],
+    "font-faces.css": [],
+    "games.css": [
+      {
+        "section": "Сцена",
+        "names": [
+          "wb-game-stage"
+        ]
+      },
+      {
+        "section": "Повноекранний екран партії",
+        "names": [
+          "wb-game",
+          "wb-game-arena",
+          "wb-game-choice",
+          "wb-game-hud",
+          "wb-game-name",
+          "wb-game-range",
+          "wb-game-range-mark",
+          "wb-game-screen",
+          "wb-game-stage",
+          "wb-game-tile"
+        ]
+      },
+      {
+        "section": "Кнопки всередині партії",
+        "names": [
+          "wb-btn",
+          "wb-btn-primary",
+          "wb-game"
+        ]
+      },
+      {
+        "section": "Палітри ігор",
+        "names": [
+          "wb-game",
+          "wb-game-screen",
+          "wb-game-stage"
+        ]
+      },
+      {
+        "section": "Рух",
+        "names": [
+          "wb-game-pop",
+          "wb-game-shake"
+        ]
+      },
+      {
+        "section": "Рахунок точками",
+        "names": [
+          "wb-game-pip",
+          "wb-game-pip--filled",
+          "wb-game-pip--foe",
+          "wb-game-pips",
+          "wb-game-pips-label",
+          "wb-game-pips-row"
+        ]
+      },
+      {
+        "section": "Арена («камінь, ножиці, папір»)",
+        "names": [
+          "wb-game-arena",
+          "wb-game-arena--clash",
+          "wb-game-tile",
+          "wb-game-tile--empty",
+          "wb-game-tile--foe",
+          "wb-game-tile--lost",
+          "wb-game-tile--mine",
+          "wb-game-tile--won",
+          "wb-game-tile-label",
+          "wb-game-versus"
+        ]
+      },
+      {
+        "section": "Рядок результату",
+        "names": [
+          "wb-game-result",
+          "wb-game-result--draw",
+          "wb-game-result--lose",
+          "wb-game-result--win"
+        ]
+      },
+      {
+        "section": "Вибір («камінь, ножиці, папір»)",
+        "names": [
+          "wb-game-choice",
+          "wb-game-choices"
+        ]
+      },
+      {
+        "section": "Дошка («хрестики-нулики»)",
+        "names": [
+          "wb-game-board",
+          "wb-game-cell",
+          "wb-game-cell--mine",
+          "wb-game-cell--win"
+        ]
+      },
+      {
+        "section": "Числа-підсумки («хрестики-нулики»)",
+        "names": [
+          "wb-game-score-chip",
+          "wb-game-score-chip--won",
+          "wb-game-score-chips"
+        ]
+      },
+      {
+        "section": "Смуга діапазону («вгадай число»)",
+        "names": [
+          "wb-game-range",
+          "wb-game-range-band",
+          "wb-game-range-labels",
+          "wb-game-range-mark"
+        ]
+      },
+      {
+        "section": "Вгадування",
+        "names": [
+          "wb-game-attempt",
+          "wb-game-attempt--hit",
+          "wb-game-attempts",
+          "wb-game-guess",
+          "wb-input"
+        ]
+      },
+      {
+        "section": "Дії партії",
+        "names": [
+          "wb-game-actions"
+        ]
+      },
+      {
+        "section": "Світло арени",
+        "names": [
+          "wb-game-screen"
+        ]
+      },
+      {
+        "section": "Дошка «2048»",
+        "names": [
+          "wb-game-screen",
+          "wb-num-board",
+          "wb-num-cell",
+          "wb-num-cell--l1",
+          "wb-num-cell--l2",
+          "wb-num-cell--l3",
+          "wb-num-cell--l4",
+          "wb-num-cell--l5",
+          "wb-num-cell--l6",
+          "wb-num-key",
+          "wb-num-pad"
+        ]
+      },
+      {
+        "section": "«Знайди пару»",
+        "names": [
+          "wb-game-screen",
+          "wb-memo-back",
+          "wb-memo-card",
+          "wb-memo-card--found",
+          "wb-memo-card--open",
+          "wb-memo-grid"
+        ]
+      },
+      {
+        "section": "Коли рух вимкнено системно",
+        "names": [
+          "wb-game-arena--clash",
+          "wb-game-cell--win",
+          "wb-game-pip",
+          "wb-game-pop",
+          "wb-game-range-band",
+          "wb-game-screen",
+          "wb-game-shake",
+          "wb-game-stage",
+          "wb-game-tile--foe",
+          "wb-game-tile--mine",
+          "wb-game-versus",
+          "wb-memo-card--open"
+        ]
+      }
+    ],
+    "index.css": [],
+    "messages.css": [
+      {
+        "section": "Список розмов",
+        "names": [
+          "wb-conv",
+          "wb-conv-avatar",
+          "wb-conv-group",
+          "wb-conv-group-count",
+          "wb-conv-group-title",
+          "wb-conv-item",
+          "wb-conv-last",
+          "wb-conv-list",
+          "wb-conv-main",
+          "wb-conv-meta",
+          "wb-conv-name",
+          "wb-conv-secondary",
+          "wb-conv-time",
+          "wb-conv-unread"
+        ]
+      },
+      {
+        "section": "Плитки: та сама розмітка, інша розкладка",
+        "names": [
+          "wb-collection--cards",
+          "wb-conv",
+          "wb-conv-item",
+          "wb-conv-last",
+          "wb-conv-main",
+          "wb-conv-meta",
+          "wb-conv-name"
+        ]
+      },
+      {
+        "section": "Стрічка розмови",
+        "names": [
+          "wb-bubble",
+          "wb-bubble--in",
+          "wb-bubble--out",
+          "wb-bubble-photo",
+          "wb-bubble-text",
+          "wb-bubble-time",
+          "wb-thread",
+          "wb-thread-action",
+          "wb-thread-actions",
+          "wb-thread-body",
+          "wb-thread-head",
+          "wb-thread-name",
+          "wb-thread-note",
+          "wb-thread-sub",
+          "wb-thread-system"
+        ]
+      },
+      {
+        "section": "Смуга вводу",
+        "names": [
+          "wb-thread-attach",
+          "wb-thread-bar",
+          "wb-thread-error",
+          "wb-thread-file",
+          "wb-thread-form",
+          "wb-thread-input",
+          "wb-thread-preview",
+          "wb-thread-preview-drop",
+          "wb-thread-preview-img",
+          "wb-thread-send"
+        ]
+      },
+      {
+        "section": "Форма нового повідомлення",
+        "names": [
+          "wb-compose",
+          "wb-compose-body",
+          "wb-compose-pick",
+          "wb-compose-pick-value",
+          "wb-compose-pick-value--empty"
+        ]
+      }
+    ],
+    "page-layout.css": [
+      {
+        "section": "",
+        "names": [
+          "page-error",
+          "page-hamburger",
+          "page-hamburger--floating",
+          "page-layout",
+          "page-loading",
+          "page-loading-spinner",
+          "page-sidebar-close",
+          "page-sidebar-header",
+          "page-sidebar-header--left",
+          "page-sidebar-header--right",
+          "page-zone",
+          "page-zone--footer",
+          "page-zone--header",
+          "page-zone--main",
+          "page-zone--sidebar",
+          "page-zone-blocks",
+          "page-zone-group",
+          "page-zone-label",
+          "wb-modal-overlay"
+        ]
+      }
+    ],
+    "platform.css": [
+      {
+        "section": "Main",
+        "names": [
+          "site-editor-icon-btn"
+        ]
+      },
+      {
+        "section": "СТОРІНКИ З ШАБЛОНУ — вибір шаблону з переглядом і правка тексту на ньому",
+        "names": [
+          "wb-btn-primary",
+          "wb-page-editor",
+          "wb-page-field",
+          "wb-page-field-input",
+          "wb-page-field-label",
+          "wb-page-field-value",
+          "wb-page-field-value--body",
+          "wb-page-settings",
+          "wb-page-settings-card",
+          "wb-page-settings-field",
+          "wb-template-actions",
+          "wb-template-back",
+          "wb-template-canvas",
+          "wb-template-lead",
+          "wb-template-list",
+          "wb-template-row",
+          "wb-template-row-action",
+          "wb-template-row-hint",
+          "wb-template-row-icon",
+          "wb-template-row-text",
+          "wb-template-row-title"
+        ]
+      }
+    ],
+    "reset.css": [],
+    "shop-storefront.css": [
+      {
+        "section": "Палітра вітрини",
+        "names": [
+          "shop-catalog",
+          "shop-store"
+        ]
+      },
+      {
+        "section": "Каталог: те, що бачить покупець під вітриною",
+        "names": [
+          "shop-card",
+          "shop-card-actions",
+          "shop-card-badge",
+          "shop-card-content",
+          "shop-card-details",
+          "shop-card-img",
+          "shop-card-img--empty",
+          "shop-card-incart",
+          "shop-card-media",
+          "shop-card-media--open",
+          "shop-card-order",
+          "shop-card-price",
+          "shop-card-qty",
+          "shop-card-qty-btn",
+          "shop-card-qty-value",
+          "shop-card-summary",
+          "shop-card-title",
+          "shop-catalog",
+          "shop-catalog-grid",
+          "shop-catalog-title",
+          "shop-detail-incart",
+          "shop-store"
+        ]
+      },
+      {
+        "section": "Форма замовлення покупця",
+        "names": [
+          "shop-order-form"
+        ]
+      },
+      {
+        "section": "Товар цілком: вступ, розділи опису й характеристики",
+        "names": [
+          "shop-detail",
+          "shop-detail-attr",
+          "shop-detail-attr-name",
+          "shop-detail-attr-value",
+          "shop-detail-attrs",
+          "shop-detail-buy",
+          "shop-detail-buy-price",
+          "shop-detail-buy-row",
+          "shop-detail-chevron",
+          "shop-detail-chip",
+          "shop-detail-chips",
+          "shop-detail-heading",
+          "shop-detail-kind",
+          "shop-detail-lead",
+          "shop-detail-list",
+          "shop-detail-note",
+          "shop-detail-price",
+          "shop-detail-section",
+          "shop-detail-sections",
+          "shop-detail-summary",
+          "shop-detail-text",
+          "shop-modal-desc",
+          "shop-order-form",
+          "shop-order-sent",
+          "shop-order-sent-icon",
+          "wb-btn"
+        ]
+      },
+      {
+        "section": "Вітрина: один екран магазину",
+        "names": [
+          "shop-search",
+          "shop-search-input",
+          "shop-section",
+          "shop-section-body",
+          "shop-section-head",
+          "shop-section-icon",
+          "shop-section-title",
+          "shop-store",
+          "shop-store--cart-open",
+          "shop-store-bar",
+          "shop-store-cart",
+          "shop-store-cart-count",
+          "shop-store-catalog",
+          "shop-store-catalog-count",
+          "shop-store-catalog-head",
+          "shop-store-catalog-title",
+          "shop-store-cover",
+          "shop-store-hero",
+          "shop-store-hero--cover",
+          "shop-store-hero-body",
+          "shop-store-info",
+          "shop-store-note",
+          "shop-store-note-icon",
+          "shop-store-tagline",
+          "shop-store-title",
+          "wb-block-divider",
+          "wb-block-text__content",
+          "wb-block-text__title"
+        ]
+      },
+      {
+        "section": "Переваги та довіра магазину",
+        "names": [
+          "shop-store",
+          "shop-store-trust",
+          "shop-trust-icon",
+          "shop-trust-item"
+        ]
+      },
+      {
+        "section": "Плаваючий закріплений бар кошика",
+        "names": [
+          "shop-sticky-cart",
+          "shop-sticky-cart-btn",
+          "shop-sticky-cart-count",
+          "shop-sticky-cart-info",
+          "shop-sticky-cart-total"
+        ]
+      },
+      {
+        "section": "Товар поверхнею: галерея, опис і кількість",
+        "names": [
+          "shop-cart-line-body",
+          "shop-cart-line-price",
+          "shop-cart-line-title",
+          "shop-gallery",
+          "shop-gallery-img",
+          "shop-gallery-thumb",
+          "shop-gallery-thumb--active",
+          "shop-gallery-thumbs",
+          "shop-modal-desc",
+          "shop-qty",
+          "shop-qty-btn",
+          "shop-qty-value"
+        ]
+      }
+    ],
+    "shop.css": [
+      {
+        "section": "Список товарів продавця",
+        "names": [
+          "shop-note",
+          "shop-product-main",
+          "shop-product-row",
+          "shop-products",
+          "shop-thumb",
+          "shop-thumb-img"
+        ]
+      },
+      {
+        "section": "Фото товару: галерея й бібліотека магазину",
+        "names": [
+          "shop-photo",
+          "shop-photo-add",
+          "shop-photo-add-text",
+          "shop-photo-badge",
+          "shop-photo-drop",
+          "shop-photo-grid",
+          "shop-photo-img",
+          "shop-photo-input",
+          "shop-photo-label",
+          "shop-photo-pick",
+          "shop-photo-pick--dim"
+        ]
+      },
+      {
+        "section": "Характеристики товару",
+        "names": [
+          "shop-attr",
+          "shop-attr-name"
+        ]
+      },
+      {
+        "section": "Вид товару",
+        "names": [
+          "shop-kind",
+          "shop-kind--active",
+          "shop-kinds"
+        ]
+      },
+      {
+        "section": "Збереження",
+        "names": [
+          "shop-form-actions",
+          "wb-btn"
+        ]
+      },
+      {
+        "section": "Замовлення продавця",
+        "names": [
+          "shop-order",
+          "shop-order--cancelled",
+          "shop-order--done",
+          "shop-order--new",
+          "shop-order--work",
+          "shop-order-actions",
+          "shop-order-contact",
+          "shop-order-head",
+          "shop-order-hint",
+          "shop-order-id",
+          "shop-order-items",
+          "shop-order-mine",
+          "shop-order-note",
+          "shop-order-statuses",
+          "shop-order-when",
+          "shop-status",
+          "shop-status--current",
+          "wb-btn"
+        ]
+      },
+      {
+        "section": "Черга замовлень: відбір і порядок",
+        "names": [
+          "shop-orders-bar",
+          "shop-pick"
+        ]
+      },
+      {
+        "section": "Список позицій замовлення",
+        "names": [
+          "shop-item",
+          "shop-item-hint",
+          "shop-item-qty",
+          "shop-item-qty-btn",
+          "shop-item-qty-value",
+          "shop-item-remove",
+          "shop-item-side",
+          "shop-item-text",
+          "shop-item-title",
+          "shop-items",
+          "shop-order-delete"
+        ]
+      },
+      {
+        "section": "Кирпичик магазину: вибір зі списком",
+        "names": [
+          "shop-pick",
+          "shop-pick-icon",
+          "shop-pick-label"
+        ]
+      }
+    ],
+    "subbar.css": [
+      {
+        "section": "",
+        "names": [
+          "wb-modal-overlay",
+          "wb-modal-overlay--screen",
+          "wb-modal-overlay--tight",
+          "wb-subbar",
+          "wb-subbar-icon",
+          "wb-subbar-inner",
+          "wb-subbar-item",
+          "wb-subbar-item--active",
+          "wb-subbar-label",
+          "wb-subbar-layout"
+        ]
+      }
+    ],
+    "text.css": [
+      {
+        "section": "",
+        "names": [
+          "wb-block-text__title",
+          "wb-text-2xl",
+          "wb-text-lg",
+          "wb-text-xl"
+        ]
+      }
+    ],
+    "theme-pages.css": [
+      {
+        "section": "Форма схеми (назва, шрифт, публічність)",
+        "names": [
+          "wb-font-picker",
+          "wb-theme-form",
+          "wb-theme-rows"
+        ]
+      },
+      {
+        "section": "Вибір шрифту",
+        "names": [
+          "wb-font-chip",
+          "wb-font-chip--active",
+          "wb-font-chips",
+          "wb-font-group",
+          "wb-font-group-label",
+          "wb-font-picker"
+        ]
+      }
+    ],
+    "theme-panel.css": [
+      {
+        "section": "Панель і секції",
+        "names": [
+          "wb-btn",
+          "wb-theme-actions",
+          "wb-theme-extra",
+          "wb-theme-hint",
+          "wb-theme-hint--warn",
+          "wb-theme-panel",
+          "wb-theme-status",
+          "wb-theme-status--saved"
+        ]
+      },
+      {
+        "section": "Картка теми",
+        "names": [
+          "wb-theme-card",
+          "wb-theme-card--on",
+          "wb-theme-card-badge",
+          "wb-theme-card-font",
+          "wb-theme-card-foot",
+          "wb-theme-card-hit",
+          "wb-theme-card-name",
+          "wb-theme-card-on",
+          "wb-theme-cards"
+        ]
+      },
+      {
+        "section": "Меню дій картки («···»)",
+        "names": [
+          "wb-theme-card-menu",
+          "wb-theme-card-menu-btn",
+          "wb-theme-card-menu-item",
+          "wb-theme-card-menu-item--danger",
+          "wb-theme-card-menu-list"
+        ]
+      },
+      {
+        "section": "Три кольори (редактор теми)",
+        "names": [
+          "wb-font-picker",
+          "wb-theme-row",
+          "wb-theme-row--open",
+          "wb-theme-row-body",
+          "wb-theme-row-caret",
+          "wb-theme-row-head",
+          "wb-theme-row-hint",
+          "wb-theme-row-label",
+          "wb-theme-row-swatch",
+          "wb-theme-row-swatch--empty",
+          "wb-theme-row-swatch--glyph",
+          "wb-theme-row-text",
+          "wb-theme-rows"
+        ]
+      },
+      {
+        "section": "Редактор кольору",
+        "names": [
+          "wb-theme-editor",
+          "wb-theme-picker",
+          "wb-theme-picker-hint",
+          "wb-theme-picker-input",
+          "wb-theme-picker-label",
+          "wb-theme-picker-swatch",
+          "wb-theme-picker-text"
+        ]
+      },
+      {
+        "section": "Зразки кольорів",
+        "names": [
+          "wb-theme-caption",
+          "wb-theme-chart",
+          "wb-theme-chip",
+          "wb-theme-chip--active",
+          "wb-theme-chips",
+          "wb-theme-chips--shades"
+        ]
+      },
+      {
+        "section": "Повзунки",
+        "names": [
+          "wb-theme-code",
+          "wb-theme-editor-foot",
+          "wb-theme-slider",
+          "wb-theme-slider-label",
+          "wb-theme-slider-row",
+          "wb-theme-slider-value"
+        ]
+      }
+    ],
+    "themes.css": [],
+    "tokens.css": [],
+    "trackers.css": [
+      {
+        "section": "",
+        "names": [
+          "wb-trackers-page"
+        ]
+      },
+      {
+        "section": "Закріплений шар: вкладки й шапка таблиці",
+        "names": [
+          "wb-trackers-head",
+          "wb-trackers-panel"
+        ]
+      },
+      {
+        "section": "Стрічка: акордеон груп + матриця днів",
+        "names": [
+          "wb-group",
+          "wb-group--sub",
+          "wb-group-actions",
+          "wb-group-body",
+          "wb-group-count",
+          "wb-group-head",
+          "wb-group-title",
+          "wb-group-toggle",
+          "wb-matrix",
+          "wb-matrix-cell",
+          "wb-matrix-cell--empty",
+          "wb-matrix-cell--goal",
+          "wb-matrix-head",
+          "wb-matrix-head-date",
+          "wb-matrix-head-day",
+          "wb-matrix-head-lead",
+          "wb-matrix-head-weekday",
+          "wb-matrix-icon",
+          "wb-matrix-list",
+          "wb-matrix-name",
+          "wb-matrix-number",
+          "wb-matrix-row",
+          "wb-matrix-title",
+          "wb-matrix-unit",
+          "wb-matrix-value",
+          "wb-trackers-tree"
+        ]
+      },
+      {
+        "section": "Запис дня",
+        "names": [
+          "wb-field",
+          "wb-tracker-block",
+          "wb-tracker-entry"
+        ]
+      },
+      {
+        "section": "Пріоритет: одна шкала на всі мірки",
+        "names": [
+          "wb-modal-title-btn",
+          "wb-modal-title-input",
+          "wb-priority-btn",
+          "wb-priority-btn--on",
+          "wb-priority-btn--wide",
+          "wb-priority-count",
+          "wb-priority-count--zero",
+          "wb-priority-grid",
+          "wb-priority-label"
+        ]
+      },
+      {
+        "section": "Запис у модалці (дотик на трекер)",
+        "names": [
+          "wb-btn",
+          "wb-btn-primary",
+          "wb-tracker-action",
+          "wb-tracker-action--wide",
+          "wb-tracker-action-label",
+          "wb-tracker-actions",
+          "wb-tracker-bottom"
+        ]
+      },
+      {
+        "section": "Звіт",
+        "names": [
+          "wb-tracker-analytics"
+        ]
+      },
+      {
+        "section": "Графіки аналітики: акордеони й колонки періодів",
+        "names": [
+          "wb-tp-bar",
+          "wb-tp-cell",
+          "wb-tp-cell--head",
+          "wb-tp-chart",
+          "wb-tp-dot",
+          "wb-tp-empty",
+          "wb-tp-goal",
+          "wb-tp-head",
+          "wb-tp-inner",
+          "wb-tp-note",
+          "wb-tp-panel",
+          "wb-tp-panel-body",
+          "wb-tp-panel-head",
+          "wb-tp-panel-title",
+          "wb-tp-plot",
+          "wb-tp-range",
+          "wb-tp-range-fields",
+          "wb-tp-scroll",
+          "wb-tp-slot",
+          "wb-tp-tools",
+          "wb-tp-void"
+        ]
+      },
+      {
+        "section": "Історія",
+        "names": [
+          "wb-tracker-history",
+          "wb-tracker-history-day",
+          "wb-tracker-history-note",
+          "wb-tracker-history-remove",
+          "wb-tracker-history-row",
+          "wb-tracker-history-time",
+          "wb-tracker-history-value"
+        ]
+      },
+      {
+        "section": "Новий трекер",
+        "names": [
+          "wb-field",
+          "wb-field-hint",
+          "wb-input",
+          "wb-label",
+          "wb-select",
+          "wb-tabs",
+          "wb-tracker-form",
+          "wb-tracker-form-error",
+          "wb-tracker-form-row",
+          "wb-tracker-form-zone",
+          "wb-tracker-form-zone-title"
+        ]
+      },
+      {
+        "section": "Вибір групи: дерево в модалці",
+        "names": [
+          "wb-group-picker-item",
+          "wb-group-picker-item--on",
+          "wb-group-picker-item-text",
+          "wb-group-picker-lead",
+          "wb-group-picker-list",
+          "wb-group-picker-pick",
+          "wb-group-picker-row",
+          "wb-group-picker-row--here",
+          "wb-group-picker-row--path",
+          "wb-group-picker-toggle",
+          "wb-group-picker-tools",
+          "wb-group-picker-trigger",
+          "wb-group-picker-value",
+          "wb-group-picker-value--empty",
+          "wb-tracker-form-actions",
+          "wb-tracker-form-buttons",
+          "wb-tracker-form-row",
+          "wb-tracker-form-submit",
+          "wb-tracker-form-summary",
+          "wb-tracker-form-summary-meta",
+          "wb-tracker-form-summary-name"
+        ]
+      },
+      {
+        "section": "Списки на читання: «Шаблони» й «Публічні»",
+        "names": [
+          "wb-library",
+          "wb-library-add",
+          "wb-library-icon",
+          "wb-library-list",
+          "wb-library-meta",
+          "wb-library-row",
+          "wb-library-search",
+          "wb-library-text",
+          "wb-library-title",
+          "wb-library-tree"
+        ]
+      }
+    ],
+    "user-colors.css": []
+  }
+}

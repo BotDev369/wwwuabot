@@ -1,0 +1,26 @@
+/*
+ * ═══════════════════════════════════════════════════════════════════════════
+ * СТИЛІ АДМІНКИ — у спільній папці стилів, а не в оболонці
+ * ═══════════════════════════════════════════════════════════════════════════
+ *
+ * CSS живе рівно в одному місці проєкту — `packages/shared/src/styles/`.
+ * Оболонка лише імпортує цей вхід; власних правил у `web-admin-dev/src/*.css`
+ * немає, і це стереже `npm run check:css`.
+ *
+ * Порядок імпортів — це порядок каскаду: файли йдуть від каркаса до екранів,
+ * тож пізніший перекриває ранній рівно там, де це задумано.
+ */
+
+@import "./shell.css";
+@import "./telegram-preview.css";
+@import "./home.css";
+@import "./scenarios-list.css";
+@import "./bot-constructor.css";
+@import "./users-table.css";
+@import "./scenario-tabs.css";
+@import "./scenario-modal.css";
+@import "./analytics.css";
+@import "./analytics-people.css";
+@import "./monitoring.css";
+@import "./monitoring-report.css";
+@import "./style.css";

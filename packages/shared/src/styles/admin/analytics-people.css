@@ -1,0 +1,258 @@
+.ana-users,
+.ana-events {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.ana-user {
+  border-radius: var(--radius-md);
+  background: var(--bg-1);
+  border: 1px solid var(--border-subtle);
+  overflow: hidden;
+}
+
+.ana-user-head {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+  width: 100%;
+  min-height: 44px;
+  padding: 8px 12px;
+  background: transparent;
+  border: none;
+  color: var(--text-primary);
+  text-align: left;
+  cursor: pointer;
+}
+
+.ana-user-name {
+  flex: 1 1 auto;
+  min-width: 0;
+  font-size: var(--text-sm);
+  font-weight: var(--weight-semibold);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.ana-user-meta {
+  flex: 0 1 auto;
+  min-width: 0;
+  font-size: var(--text-xs);
+  color: var(--text-muted);
+  font-family: var(--font-mono);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.ana-user-count {
+  min-width: 28px;
+  text-align: center;
+  font-size: var(--text-xs);
+  font-weight: var(--weight-semibold);
+  color: var(--accent);
+  background: var(--accent-dim);
+  border-radius: var(--radius-full);
+  padding: 2px 6px;
+}
+
+.ana-user-body {
+  padding: 4px 8px 10px;
+  border-top: 1px solid var(--border-subtle);
+}
+
+/* Номер людини — лише в розкритому акордеоні: закритий рядок обходиться
+   ім'ям і хендлом. */
+.ana-user-id {
+  margin: 6px 2px;
+  font-size: var(--text-xs);
+  color: var(--text-muted);
+  font-family: var(--font-mono);
+}
+
+/* Запис журналу: знак поверхні й текст зліва, час — у правому нижньому куті.
+   Сітка, а не три `flex`-колонки: час тоді не забирає ширину в назви, коли
+   назва довга. */
+.ana-event {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  grid-template-areas:
+    "icon body"
+    "icon time";
+  column-gap: var(--sp-2);
+  row-gap: 2px;
+  align-items: start;
+  padding: 7px 10px;
+  border-radius: var(--radius-sm);
+  background: var(--bg-1);
+  border: 1px solid var(--border-subtle);
+}
+
+.ana-user-body .ana-event {
+  background: var(--bg-2);
+}
+
+/* Знак поверхні зі своїм тлом: бот і застосунок відрізняються кольором, а не
+   підписом у рядку. */
+.ana-event-surface {
+  grid-area: icon;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: var(--radius-sm);
+}
+
+.ana-event-surface--bot {
+  background: var(--accent-dim);
+  color: var(--accent);
+}
+
+.ana-event-surface--platform {
+  background: var(--green-dim);
+  color: var(--green);
+}
+
+.ana-event-body {
+  grid-area: body;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.ana-event-title {
+  font-size: var(--text-sm);
+  font-weight: var(--weight-semibold);
+  word-break: break-word;
+}
+
+.ana-event-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  font-size: var(--text-xs);
+  color: var(--text-muted);
+}
+
+.ana-event-user {
+  font-weight: var(--weight-semibold);
+  color: var(--text-secondary);
+}
+
+.ana-event-time {
+  grid-area: time;
+  justify-self: end;
+  font-size: var(--text-xs);
+  color: var(--text-muted);
+  font-family: var(--font-mono);
+}
+
+.ana-event-details,
+.ana-note {
+  font-size: var(--text-xs);
+  color: var(--text-muted);
+}
+
+.ana-event-error {
+  font-size: var(--text-xs);
+  color: var(--red);
+}
+
+.ana-error {
+  margin: 0;
+  font-size: var(--text-sm);
+  color: var(--red);
+}
+
+.ana-loading,
+.ana-empty {
+  margin: 0;
+  padding: var(--sp-4);
+  text-align: center;
+  font-size: var(--text-sm);
+  color: var(--text-muted);
+}
+
+.ana-more {
+  align-self: center;
+}
+
+/* Прибирання журналу: поля одно під одним, бо це питання «кого / коли / що»,
+   а не довга форма — кроки читаються згори вниз. */
+.ana-cleanup {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-3);
+}
+
+.ana-cleanup-warn {
+  margin: 0;
+  font-size: var(--text-sm);
+  color: var(--text-muted);
+}
+
+/* Вибір людини з журналу: номер ніхто не знає, тож список із пошуком
+   замінює поле вводу. Обмежена висота — щоб модалка не росла з кожним новим
+   користувачем. */
+.ana-picker {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  max-height: 220px;
+  overflow: auto;
+  margin-top: var(--sp-2);
+}
+
+.ana-picker-row {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+  width: 100%;
+  padding: var(--sp-2);
+  border: none;
+  border-radius: var(--radius-sm);
+  background: transparent;
+  color: var(--text-primary);
+  text-align: left;
+  cursor: pointer;
+}
+
+.ana-picker-row:hover {
+  background: var(--bg-2);
+}
+
+.ana-picker-row--active {
+  background: var(--accent-soft);
+  color: var(--accent);
+}
+
+.ana-picker-name {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: var(--text-sm);
+}
+
+.ana-picker-meta {
+  font-size: var(--text-xs);
+  color: var(--text-muted);
+  white-space: nowrap;
+}
+
+/* Запис журналу вже сітка: на вузькому екрані час і так стоїть під текстом,
+   тож власних правил для телефона тут немає — лише трохи щільніші поля, щоб
+   рядок не ріс у висоту. */
+@media (max-width: 640px) {
+  .ana-event {
+    padding: 6px 8px;
+  }
+}

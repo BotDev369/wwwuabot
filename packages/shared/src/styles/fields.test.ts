@@ -24,7 +24,7 @@
 
 /// <reference types="node" />
 
-import { readFileSync } from "node:fs";
+import { readFileSync, readdirSync } from "node:fs";
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { describe, expect, it } from "vitest";
@@ -34,14 +34,22 @@ const REPO_ROOT = fileURLToPath(new URL("../../../../", import.meta.url));
 /** Мінімум, нижче якого iOS збільшує сторінку на фокусі. */
 const MIN_FIELD_FONT_PX = 16;
 
-/** Усі стилі продукту: спільний шар і власні файли оболонок. */
+/**
+ * Усі стилі продукту: спільний шар і файли екранів.
+ *
+ * Файлів екранів тут більше немає в оболонках — CSS живе рівно в одному місці
+ * (`packages/shared/src/styles/`), тож перелік складається з папки, а не з
+ * рукописного списку шляхів: список дрейфує першим.
+ */
 const CSS_FILES = [
   "packages/shared/src/styles/components.css",
   "packages/shared/src/styles/app-chrome.css",
   "packages/shared/src/styles/page-layout.css",
   "packages/shared/src/styles/drawer.css",
-  "web-platform-dev/src/index.css",
-  "web-admin-dev/src/index.css",
+  ...readdirSync(new URL("./admin/", import.meta.url))
+    .filter((name) => name.endsWith(".css"))
+    .map((name) => `packages/shared/src/styles/admin/${name}`),
+  "packages/shared/src/styles/platform.css",
 ];
 
 /** Винятки: селектор збігається на «поле» за назвою, але полем не є. */
@@ -168,7 +176,7 @@ describe("поля вводу: мірки — токен, і жоден файл
 
     // Пошук в адмінці — той самий кирпичик поля: своє число тут розвело б
     // його з полями решти продукту.
-    const search = read("web-admin-dev/src/index.css");
+    const search = read("packages/shared/src/styles/admin/scenarios-list.css");
     const start = search.indexOf("\n.scn-search {");
     expect(start, ".scn-search має існувати").toBeGreaterThan(-1);
     const rule = search.slice(start, search.indexOf("\n}", start));

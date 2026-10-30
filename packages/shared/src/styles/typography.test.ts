@@ -38,11 +38,12 @@ const reset = css("reset.css");
 const STYLE_FILES = readdirSync(new URL(".", import.meta.url))
   .filter((name) => name.endsWith(".css"))
   .map((name) => `packages/shared/src/styles/${name}`)
-  .concat([
-    "web-platform-dev/src/index.css",
-    "web-admin-dev/src/index.css",
-    "web-admin-dev/src/monitoring.css",
-  ]);
+  .concat(
+    readdirSync(new URL("./admin/", import.meta.url))
+      .filter((name) => name.endsWith(".css"))
+      .map((name) => `packages/shared/src/styles/admin/${name}`),
+    ["packages/shared/src/styles/platform.css"],
+  );
 
 describe("заголовки документа", () => {
   it("міряються токенами", () => {

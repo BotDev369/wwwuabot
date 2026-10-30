@@ -99,12 +99,9 @@ describe("другого шару стилів немає", () => {
   it("мірки оголошені РАЗ — у `tokens.css`", () => {
     // Друга копія числа — це друга правда: кнопка, поле й картка мірялись би
     // по-різному залежно від того, який файл переміг у каскаді.
-    const sheets = [
-      ...sources("packages/shared/src/styles"),
-      "web-platform-dev/src/index.css",
-      "web-admin-dev/src/index.css",
-      "web-admin-dev/src/monitoring.css",
-    ].filter((file) => file.endsWith(".css"));
+    // Стилі — лише з однієї папки: оболонки свого CSS більше не мають
+    // (`npm run check:css` не пропустить правило поза нею).
+    const sheets = sources("packages/shared/src/styles").filter((file) => file.endsWith(".css"));
 
     for (const token of [
       "--card-radius",

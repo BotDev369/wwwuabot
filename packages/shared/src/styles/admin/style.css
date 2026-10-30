@@ -1,0 +1,360 @@
+/* ═══ Інвентар вигляду (сторінка /style) ═══════════════════════════════════
+   Екран-довідник: показує токени, кирпичики й класи так, як вони є в CSS.
+   Власних кольорів і мірок тут немає — лише токени: інакше довідник почав би
+   жити своїм життям, а він для того й потрібен, щоб цього не було. */
+
+.st {
+  flex: 1;
+  min-height: 0;
+  overflow: auto;
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-4);
+  padding: var(--sp-5);
+}
+
+/* ── Зведення: скільки всього є в системі ─────────────────────────────────── */
+.st-summary {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(132px, 1fr));
+  gap: var(--sp-2);
+}
+
+.st-stat {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: var(--sp-3);
+  border-radius: var(--radius-md);
+  background: var(--card-bg);
+  box-shadow: var(--shadow-xs);
+}
+
+.st-stat-value {
+  font-family: var(--font-mono);
+  font-size: var(--text-xl);
+  font-weight: var(--weight-semibold);
+  color: var(--text-primary);
+}
+
+.st-stat-label {
+  font-size: var(--text-xs);
+  color: var(--text-muted);
+}
+
+/* ── Смуга керування: вкладки й пошук ────────────────────────────────────── */
+.st-bar {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+  flex-wrap: wrap;
+}
+
+/* Пошук — кирпичик смуги колекції: у спокої він завширшки з підпис і
+   росте сам на фокус, тож тут йому не можна задавати власну ширину. */
+.st-search {
+  flex: 0 1 auto;
+  min-width: 0;
+  margin-left: auto;
+}
+
+.st-group {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-2);
+}
+
+.st-group-title {
+  font-size: var(--text-xs);
+  font-weight: var(--weight-semibold);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+
+/* ── Токен: значення трьох шарів і поточне ───────────────────────────────── */
+.st-tokens {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.st-token {
+  display: grid;
+  grid-template-columns: 26px minmax(0, 1.1fr) minmax(0, 2fr);
+  align-items: center;
+  gap: var(--sp-2);
+  padding: 6px var(--sp-2);
+  border-radius: var(--radius-sm);
+}
+
+.st-token:nth-child(odd) {
+  background: var(--bg-2);
+}
+
+.st-token-name {
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  color: var(--text-primary);
+  overflow-wrap: anywhere;
+}
+
+.st-values {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px var(--sp-3);
+  min-width: 0;
+}
+
+.st-value {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  min-width: 0;
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  color: var(--text-secondary);
+  overflow-wrap: anywhere;
+}
+
+.st-value-key {
+  flex-shrink: 0;
+  font-size: var(--text-xs);
+  color: var(--text-muted);
+}
+
+.st-value--live {
+  color: var(--accent);
+}
+
+/* Зразок значення. Колір — заливка, мірка — смуга, тінь — коробка: одна
+   клітинка на всі три, бо це те саме питання «як це виглядає». */
+.st-swatch {
+  flex-shrink: 0;
+  width: 26px;
+  height: 26px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--radius-xs);
+  box-shadow: inset 0 0 0 1px var(--hairline);
+  background: var(--st-fill, transparent);
+  overflow: hidden;
+}
+
+.st-swatch--bar {
+  align-items: center;
+  box-shadow: none;
+  background: transparent;
+}
+
+.st-swatch--bar::before {
+  content: "";
+  display: block;
+  width: var(--st-fill, 0);
+  max-width: 100%;
+  height: 4px;
+  border-radius: var(--radius-full);
+  background: var(--text-secondary);
+}
+
+.st-swatch--shadow {
+  background: var(--card-bg);
+  box-shadow: var(--st-fill, none);
+}
+
+.st-swatch--text {
+  font-family: var(--font-ui);
+  font-size: var(--text-md);
+  color: var(--text-primary);
+}
+
+/* ── Кирпичик: справжня розмітка в рамці ─────────────────────────────────── */
+.st-bricks {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: var(--sp-3);
+  align-items: start;
+}
+
+.st-brick {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-2);
+  padding: var(--card-pad);
+  border-radius: var(--card-radius);
+  background: var(--card-bg);
+  box-shadow: var(--shadow-xs);
+  min-width: 0;
+}
+
+.st-brick-head {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.st-brick-title {
+  font-size: var(--heading-card-size);
+  font-weight: var(--heading-card-weight);
+  color: var(--text-primary);
+}
+
+.st-brick-classes {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+
+.st-class-name {
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  padding: 1px 6px;
+  border-radius: var(--radius-xs);
+  background: var(--bg-2);
+  color: var(--text-muted);
+  overflow-wrap: anywhere;
+}
+
+.st-brick-demo {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: var(--sp-2);
+  padding: var(--sp-3);
+  border-radius: var(--radius-md);
+  background: var(--bg-2);
+  min-width: 0;
+}
+
+/* Демо-рядок і демо-стовпчик усередині рамки кирпичика. */
+.st-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--sp-2);
+}
+
+.st-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 0;
+}
+
+/* Смуги — `position: fixed` у продукті (це хром екрана). У рамці вони
+   стоять у потоці, інакше прев'ю накрило б саму сторінку. */
+.st-tabbar,
+.st-subbar {
+  position: static;
+  height: auto;
+  inset: auto;
+  z-index: auto;
+  box-shadow: none;
+}
+
+.st-page-demo {
+  padding: 0;
+}
+
+/* ── Повний перелік класів ───────────────────────────────────────────────── */
+.st-files {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-3);
+}
+
+.st-file {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: var(--sp-3);
+  border-radius: var(--radius-md);
+  background: var(--card-bg);
+  box-shadow: var(--shadow-xs);
+}
+
+.st-file-name {
+  font-family: var(--font-mono);
+  font-size: var(--text-sm);
+  color: var(--text-primary);
+}
+
+.st-file-count {
+  font-size: var(--text-xs);
+  color: var(--text-muted);
+}
+
+.st-names {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+
+.st-section-name {
+  font-size: var(--text-xs);
+  color: var(--text-muted);
+  margin-top: 2px;
+}
+
+.st-empty {
+  padding: var(--sp-4);
+  text-align: center;
+  font-size: var(--text-sm);
+  color: var(--text-muted);
+}
+
+/* Палітра людини — велика формула (`color-mix`), і на вузькому екрані вона
+   з'їдає рядок цілком. Схема й поточне значення лишаються: вони короткі. */
+@media (max-width: 1024px) {
+  .st-value--palette {
+    display: none;
+  }
+}
+
+@media (max-width: 640px) {
+  .st {
+    padding: var(--sp-3);
+  }
+
+  .st-source {
+    display: none;
+  }
+
+  /* Пошук стає другим рядком — притиснутий до правого краю, він висів би
+     посеред порожнього рядка. */
+  .st-search {
+    margin-left: 0;
+  }
+
+  /* П'ять карток у два стовпці лишали б п'яту самотньою в порожньому рядку,
+     тож остання непарна займає ряд цілком. */
+  .st-summary {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .st-stat:last-child:nth-child(odd) {
+    grid-column: 1 / -1;
+  }
+
+  /* Вузький екран: зразок і ім'я — один рядок, значення — під ними на всю
+     ширину. Вирівнюємо по верху рядка, інакше зразок (26px) центрувався б
+     проти рядка підпису й «висів» над ним. */
+  .st-token {
+    grid-template-columns: 26px minmax(0, 1fr);
+    align-items: start;
+    gap: 4px var(--sp-2);
+  }
+
+  .st-token-name {
+    padding-top: 4px;
+  }
+
+  .st-values {
+    grid-column: 2;
+  }
+
+  .st-bricks {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}

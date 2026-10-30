@@ -18,6 +18,12 @@
  *      або в shared, або у ВЛАСНОМУ CSS цієї оболонки. Клас, узятий із CSS
  *      сусідньої оболонки, у ній не працює.
  *
+ *   4. outside (помилка) — CSS-правило поза `packages/shared/src/styles/`.
+ *      Стилі проєкту живуть рівно в одній папці, а оболонка лише імпортує
+ *      вхід: поки правило можна дописати в `index.css` однієї оболонки, та
+ *      сама деталь матиме два вигляди — і жоден гейт цього не побачить.
+ *      `@import` / `@font-face` / `@charset` правилами не є: це підключення.
+ *
  *   3. dead (попередження) — правила, яких немає в `src/` навіть підрядком,
  *      і яких не може створити динамічний фрагмент імені (`wb-trend--${…}`).
  *      Динаміка знімається окремо: інакше `wb-page-field-value--body` видаляли б
@@ -318,6 +324,27 @@ for (const [shell, used] of Object.entries(shellMarkup)) {
     if (inBaseline(patterns, c)) tolerated.push(c);
     else unresolved[shell].push(c);
   }
+}
+
+// 4. CSS поза спільною папкою стилів
+const foreignRules = [];
+for (const shell of Object.keys(SHELL_CODE)) {
+  for (const file of walk(`${shell}/src`, isCss)) {
+    const text = readFileSync(join(ROOT, file), "utf8");
+    const rules = text
+      // `@import` / `@font-face` / `@charset` — підключення, а не правило.
+      .replace(/@(?:import|charset|namespace)[^;]*;/g, "")
+      .replace(/@font-face\s*{[^}]*}/g, "")
+      .replace(/\/\*[\s\S]*?\*\//g, "");
+    if (rules.includes("{")) foreignRules.push(file);
+  }
+}
+
+if (foreignRules.length) {
+  errors.push(
+    `CSS поза ${SHARED_STYLES}/ — стилі живуть рівно в одній папці (${foreignRules.length}):\n` +
+      foreignRules.map((f) => `  ${f}`).join("\n"),
+  );
 }
 
 // 3. Мертвий CSS (нижня оцінка)

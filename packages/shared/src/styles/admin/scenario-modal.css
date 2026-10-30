@@ -1,0 +1,336 @@
+/* ═══ Phone-frame preview ══════════════════════════════════════════════ */
+.phone-frame {
+  max-width: min(375px, 100%);
+  margin: 0 auto;
+  border: 8px solid #1a1a2e;
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  background: #0f0f23;
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.3);
+}
+.phone-frame::before {
+  content: "";
+  display: block;
+  width: 80px;
+  height: 6px;
+  background: #333;
+  border-radius: var(--radius-full);
+  margin: 6px auto 4px;
+}
+/* Макет у рамці телефона мусить показувати те, що буде на екрані насправді:
+   плоске тло хрому і жодних обвідок у зонах (див. `app-chrome.css`,
+   `page-layout.css`). Інакше прев'ю «красивіше» за продукт і бреше. */
+.phone-frame-body {
+  min-height: 200px;
+  max-height: 400px;
+  overflow-y: auto;
+  background: var(--bg-page, var(--bg-0));
+  color: #1a1a2e;
+  -webkit-overflow-scrolling: touch;
+}
+.phone-frame-body .page-layout {
+  display: flex;
+  flex-direction: column;
+  min-height: 100%;
+  padding: 0;
+  gap: 0;
+}
+.phone-frame-body .page-zone {
+  padding: 12px;
+  border: none;
+  border-radius: 0;
+  background: transparent;
+  min-height: auto;
+}
+.phone-frame-body .page-zone--sidebar {
+  background: #f0f0f5;
+  border-bottom: 1px solid #e0e0e8;
+}
+.phone-frame-body .page-zone-group {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  gap: 0;
+}
+.phone-frame-body .page-zone--header {
+  padding: 12px 16px;
+  border: none;
+  background: transparent;
+}
+.phone-frame-body .page-zone--main {
+  flex: 1;
+  padding: 16px;
+  background: var(--bg-page, var(--bg-0));
+}
+.phone-frame-body .page-zone--footer {
+  padding: 12px 16px;
+  border: none;
+  background: transparent;
+  font-size: var(--text-xs);
+  color: #888;
+}
+.phone-frame-body .page-zone-label {
+  display: none;
+}
+/* Phone frame: sidebar displays in-flow without hiding */
+.phone-frame-body .page-hamburger,
+.phone-frame-body .page-hamburger--floating,
+.phone-frame-body .page-sidebar-header,
+.phone-frame-body .page-sidebar-close,
+.phone-frame-body .app-drawer-overlay {
+  display: none !important;
+}
+.phone-frame-body .page-zone--sidebar {
+  display: block !important;
+  position: static !important;
+  /* Прев'ю мусить бути однаковим за будь-якого вьюпорта: на телефоні
+     (≤768px) спільний `drawer.css` інакше зробив би цю зону виїзним
+     drawer'ом і зсунув би її за екран. */
+  inset: auto !important;
+  min-width: 0 !important;
+  width: 100% !important;
+  height: auto !important;
+  z-index: auto !important;
+  overflow: visible !important;
+  box-shadow: none !important;
+  transition: none !important;
+  background: #f0f0f5;
+  border-bottom: 1px solid #e0e0e8;
+  padding: 12px 16px;
+}
+
+@media (max-width: 640px) {
+  .phone-frame {
+    max-width: 100%;
+    border-width: 4px;
+    border-radius: var(--radius-md);
+  }
+  .phone-frame-body {
+    max-height: 300px;
+  }
+}
+
+/* ═══ ScenarioCardModal — mobile responsive ══════════════════════════════════ */
+@media (max-width: 640px) {
+  .scn-modal {
+    max-width: 100% !important;
+    width: 100% !important;
+    height: 100dvh !important;
+    max-height: 100dvh !important;
+    border-radius: 0 !important;
+    margin: 0 !important;
+    overflow: hidden !important;
+  }
+
+  .scn-modal .wb-modal-body {
+    min-height: 0 !important;
+    flex: 1 1 auto !important;
+    overflow-y: auto !important;
+    -webkit-overflow-scrolling: touch !important;
+  }
+
+  .scn-modal .wb-modal-footer {
+    flex-shrink: 0 !important;
+    padding: 8px 12px !important;
+    border-top: 1px solid var(--border) !important;
+    background: var(--surface, var(--bg-home)) !important;
+    z-index: 1 !important;
+  }
+
+  .wb-modal-overlay:has(.scn-modal) {
+    padding: 0 !important;
+  }
+
+  .scn-modal .wb-modal-header {
+    padding: 8px 12px !important;
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+
+  .scn-modal .wb-modal-header .wb-modal-title {
+    font-size: var(--text-sm) !important;
+  }
+
+  .scn-modal .scn-tabs {
+    padding: 4px 8px !important;
+    gap: 2px !important;
+  }
+
+  .scn-modal .scn-tab {
+    padding: 6px 8px !important;
+  }
+
+  .scn-modal .scn-subtabs {
+    padding: 4px 8px !important;
+    gap: 2px !important;
+  }
+
+  .scn-modal .wb-modal-body {
+    padding: 8px !important;
+  }
+
+  .scn-modal .wb-modal-footer {
+    padding: 8px 12px !important;
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+
+  .scn-modal .wb-modal-footer .wb-btn {
+    flex: 1;
+    min-width: 0;
+    text-align: center;
+  }
+
+  .scn-hide-mobile {
+    display: none !important;
+  }
+}
+
+/* ═══ JSON textarea — ensure visibility on all themes ══════════════════════════ */
+.scn-modal textarea.wb-textarea,
+.scn-modal textarea[style*="monospace"] {
+  background: var(--bg-primary, var(--bg-0)) !important;
+  color: var(--text-primary) !important;
+  border: 1px solid var(--border) !important;
+  caret-color: var(--text-primary) !important;
+}
+
+/* Ensure modal body doesn't push footer off-screen */
+.scn-modal .wb-modal-body {
+  min-height: 0 !important;
+  flex: 1 1 auto !important;
+  overflow-y: auto !important;
+}
+
+/* Mobile: full height modal */
+@media (max-width: 640px) {
+  .scn-modal {
+    height: 100vh !important;
+    height: 100dvh !important;
+    max-height: 100vh !important;
+    max-height: 100dvh !important;
+  }
+
+  .scn-modal .wb-modal-footer {
+    flex-shrink: 0;
+  }
+}
+
+/* ═══ Mobile modal: grid layout to pin footer ══════════════════════════════════ */
+@media (max-width: 640px) {
+  .scn-modal {
+    display: grid !important;
+    grid-template-rows: auto auto auto 1fr auto !important;
+    grid-template-columns: 1fr !important;
+    height: 100dvh !important;
+    max-height: 100dvh !important;
+  }
+
+  .scn-modal .wb-modal-header {
+    grid-row: 1;
+  }
+  .scn-modal .scn-tabs {
+    grid-row: 2;
+  }
+  .scn-modal .scn-subtabs {
+    grid-row: 3;
+  }
+
+  .scn-modal .wb-modal-body {
+    grid-row: 4;
+    overflow-y: auto !important;
+    -webkit-overflow-scrolling: touch !important;
+    min-height: 0 !important;
+  }
+
+  .scn-modal .wb-modal-footer {
+    grid-row: 5;
+    flex-shrink: 0 !important;
+    padding: 8px 12px !important;
+    border-top: 1px solid var(--border) !important;
+    background: var(--surface, var(--bg-home)) !important;
+    display: flex !important;
+    gap: 8px !important;
+    z-index: 10 !important;
+  }
+
+  .scn-modal .wb-modal-footer .wb-btn {
+    flex: 1 !important;
+    min-width: 0 !important;
+  }
+}
+
+/* ═══ Fullscreen Page Builder overlay ═════════════════════════════════════════ */
+.scn-fullscreen-builder {
+  animation: scn-fade-in 0.15s ease-out;
+}
+
+@keyframes scn-fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.scn-fullscreen-builder .pb-zone-editor {
+  margin-bottom: 8px;
+}
+
+@media (max-width: 640px) {
+  .scn-fullscreen-builder > div:last-child {
+    padding: 4px !important;
+  }
+}
+
+/* ═══ BlockEditor — compact accordion headers ════════════════════════════════ */
+@media (max-width: 640px) {
+  /* Header: single compact row, never wrap */
+  .pb-be-header {
+    flex-wrap: nowrap;
+    align-items: center;
+    overflow: hidden;
+    gap: 4px;
+    padding: 5px 8px;
+  }
+
+  /* Actions: shrink, never expand */
+  .pb-be-actions {
+    flex-shrink: 0 !important;
+  }
+
+  /* Condensed buttons on mobile */
+  .pb-be-cond-btn {
+    padding: 2px 4px !important;
+  }
+  .pb-be-del-btn {
+    padding: 2px 4px !important;
+  }
+
+  /* Props fields: stack vertically */
+  .pb-be-field {
+    flex-direction: column;
+    align-items: flex-start !important;
+    gap: 2px !important;
+  }
+  .pb-be-field-label {
+    min-width: 0 !important;
+    font-size: var(--text-xs) !important;
+  }
+  .pb-be-field-input {
+    width: 100% !important;
+  }
+
+  .pb-be-add-btn {
+    width: 100%;
+    text-align: center;
+  }
+}
+
+/* ── Save / Close Action Bar Integration ── */
+.wb-modal-footer > .wb-save-actions,
+.scn-modal .wb-modal-footer > .wb-save-actions {
+  flex: 1 1 100% !important;
+  width: 100% !important;
+}

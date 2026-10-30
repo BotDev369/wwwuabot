@@ -21,9 +21,9 @@ const SHEETS = [
   ...readdirSync(new URL(".", import.meta.url))
     .filter((name) => name.endsWith(".css"))
     .map((name) => `packages/shared/src/styles/${name}`),
-  "web-platform-dev/src/index.css",
-  "web-admin-dev/src/index.css",
-  "web-admin-dev/src/monitoring.css",
+  ...readdirSync(new URL("./admin/", import.meta.url))
+    .filter((name) => name.endsWith(".css"))
+    .map((name) => `packages/shared/src/styles/admin/${name}`),
 ];
 
 /** Власники значень: шкала оголошена там, і тільки там їй місце. */

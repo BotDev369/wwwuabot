@@ -14,10 +14,10 @@ import { describe, expect, it } from "vitest";
 
 const REPO_ROOT = fileURLToPath(new URL("../../../../", import.meta.url));
 
-const CSS = readFileSync(join(REPO_ROOT, "web-admin-dev/src/index.css"), "utf8").replace(
-  /\/\*[\s\S]*?\*\//g,
-  "",
-);
+const CSS = readFileSync(
+  join(REPO_ROOT, "packages/shared/src/styles/admin/analytics.css"),
+  "utf8",
+).replace(/\/\*[\s\S]*?\*\//g, "");
 
 /** Тіло правила без коментарів: у них ті самі слова, що в селекторах. */
 function body(selector: string): string {

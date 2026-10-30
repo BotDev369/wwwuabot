@@ -61,6 +61,9 @@ const DEFAULT_SECTIONS: AdminNavSection[] = [
       // (код, репозиторій), і це найчастіший привід відкрити панель без
       // конкретної задачі.
       { to: "/monitoring", label: "Моніторинг", icon: "bar-chart" },
+      // «Стиль» — довідник вигляду поруч із налаштуваннями: питання «а яка в нас
+      // кнопка» задають при правці інтерфейсу, а не при роботі з контентом.
+      { to: "/style", label: "Стиль", icon: "palette" },
       { to: "/bot-settings", label: "Налаштування бота", icon: "settings" },
       { to: "/profile", label: "Профіль", icon: "user" },
     ],

@@ -9,6 +9,7 @@ import { BotSettingsPage } from "../pages/bot-settings/BotSettingsPage";
 import { ProfilePage } from "../pages/profile/ProfilePage";
 import { MonitoringPage } from "../pages/monitoring/MonitoringPage";
 import { AnalyticsPage } from "../pages/analytics/AnalyticsPage";
+import { StylePage } from "../pages/style/StylePage";
 
 /**
  * Маршрути web-admin.
@@ -21,6 +22,8 @@ import { AnalyticsPage } from "../pages/analytics/AnalyticsPage";
  * /analytics          — Аналітика поведінки: журнал дій людей (бот і платформа),
  *                       по користувачах або за діапазоном часу
  * /monitoring         — Моніторинг проєкту: зрізи код/GitHub, динаміка, історія
+ * /style              — Інвентар вигляду: токени, кирпичики й класи так, як вони
+ *                       є в CSS (каталог генерує `npm run doc:style`)
  * /bot-settings       — Налаштування бота
  * /profile            — Профіль (акаунт панелі + профіль людини) — той самий
  *                       екран, що й у платформі, зі спільного `UserProfileCard`;
@@ -42,6 +45,7 @@ export const router = createBrowserRouter([
       { path: "messages", element: <AccessRequestsPage /> },
       { path: "analytics", element: <AnalyticsPage /> },
       { path: "monitoring", element: <MonitoringPage /> },
+      { path: "style", element: <StylePage /> },
       { path: "bot-settings", element: <BotSettingsPage /> },
       { path: "profile", element: <ProfilePage /> },
     ],

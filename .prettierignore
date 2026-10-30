@@ -5,3 +5,7 @@ package-lock.json
 bun.lock
 .wrangler
 *.md
+
+# Генерований каталог вигляду: його форматує сам генератор, а `check:style`
+# звіряє файл байт-у-байт — переформатування prettier зламало б гейт.
+packages/shared/src/styles/catalog.json
