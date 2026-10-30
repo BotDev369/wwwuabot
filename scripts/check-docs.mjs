@@ -82,10 +82,18 @@ const warnings = [];
 
 const docs = walk(".", (p) => p.endsWith(".md"));
 
+/**
+ * **`content/` — контент, а не документація.** Це імпортований пакет (markdown
+ * дослідження), який читають як дані: ділити його на теми означало б змінити
+ * джерело, з якого збираються сторінки. Бюджет лишається для документів
+ * проєкту, де його сенс — «файл мусить редагуватись».
+ */
+const CONTENT_DIR = "content/";
+
 // ── 1. Бюджет розміру ─────────────────────────────────────────────────────
 
 const sizes = docs
-  .filter((file) => !GENERATED[file])
+  .filter((file) => !GENERATED[file] && !file.startsWith(CONTENT_DIR))
   .map((file) => ({ file, lines: readLines(file).length, kb: statSize(file) / 1024 }))
   .sort((a, b) => b.lines - a.lines);
 

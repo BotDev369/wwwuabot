@@ -11,18 +11,21 @@
 
 import { useMemo, useState, type ReactElement } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import { DATE_ANALYSIS_PATH } from "@wwwuabot/shared/content";
+import { DATE_ANALYSIS_PATH, toWebPath } from "@wwwuabot/shared/content";
+import { RESEARCH_LANDING_SLUG } from "@wwwuabot/shared/research";
 import { assessmentRunPath } from "@/app/routes";
 import { useScreenChrome } from "@wwwuabot/ui/nav";
 import { AssessmentsPage } from "./AssessmentsPage";
 import { AssessmentRun } from "./AssessmentRun";
 import { useAssessments } from "./useAssessments";
+import { useResearchBlocks } from "./useResearchBlocks";
 
 export function AssessmentsScreen(): ReactElement {
   useScreenChrome({ title: "Розвиток" });
   const { key } = useParams();
   const navigate = useNavigate();
   const { tests, results, peers, loading, saving, error, submit, clearError } = useAssessments();
+  const researchBlocks = useResearchBlocks();
   const [started, setStarted] = useState<string | null>(null);
 
   // Тест береться з реєстру, а не з адреси: невідомий `key` — це «нема такого
@@ -57,6 +60,8 @@ export function AssessmentsScreen(): ReactElement {
         navigate(assessmentRunPath(testKey));
       }}
       onOpenDates={() => navigate(DATE_ANALYSIS_PATH)}
+      onOpenResearch={() => navigate(toWebPath(RESEARCH_LANDING_SLUG))}
+      researchBlocks={researchBlocks}
     />
   );
 }

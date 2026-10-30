@@ -1,0 +1,319 @@
+{
+  "title": "У що вірить людство",
+  "slug": "viruvannia",
+  "updatedAt": "2026-10-30",
+  "blocks": [
+    {
+      "id": "a1",
+      "slug": "viruvannia-a1",
+      "group": "A",
+      "groupTitle": "Масштаб",
+      "title": "Сто відсотків: як розподілене людство",
+      "oneLiner": "Сім категорій, які в сумі дають 100% населення планети.",
+      "dataDate": "2020",
+      "publishedDate": "2025-06-09",
+      "dataStatus": "verified",
+      "readingTime": 7,
+      "keyFigures": [
+        {
+          "label": "Християни",
+          "value": "28,8%"
+        },
+        {
+          "label": "Мусульмани",
+          "value": "25,6%"
+        },
+        {
+          "label": "Без релігії",
+          "value": "24,2%"
+        }
+      ]
+    },
+    {
+      "id": "a2",
+      "slug": "viruvannia-a2",
+      "group": "A",
+      "groupTitle": "Масштаб",
+      "title": "Дві правди: чому Pew і World Religion Database дають різні цифри",
+      "oneLiner": "Той самий світ, дві методології — і 13 відсоткових пунктів розбіжності в одній категорії.",
+      "dataDate": "2020",
+      "publishedDate": "2025-06-09",
+      "dataStatus": "verified",
+      "readingTime": 9,
+      "keyFigures": [
+        {
+          "label": "Християни: Pew / WRD",
+          "value": "28,8% / 32,2%"
+        },
+        {
+          "label": "Без релігії: Pew / WRD",
+          "value": "24,2% / 11,1%"
+        },
+        {
+          "label": "Народні релігії: Pew / WRD",
+          "value": "2,2% / 9,2%"
+        }
+      ]
+    },
+    {
+      "id": "a3",
+      "slug": "viruvannia-a3",
+      "group": "A",
+      "groupTitle": "Масштаб",
+      "title": "Хто росте, хто зменшується: десять років, які пересунули карту",
+      "oneLiner": "Іслам додав 1,8 пункту, християнство втратило стільки ж, а буддизм — єдина велика група, що скоротилася.",
+      "dataDate": "2010–2020",
+      "publishedDate": "2025-06-09",
+      "dataStatus": "verified",
+      "readingTime": 8,
+      "keyFigures": [
+        {
+          "label": "Мусульмани",
+          "value": "+1,8 в.п."
+        },
+        {
+          "label": "Християни",
+          "value": "−1,8 в.п."
+        },
+        {
+          "label": "Без релігії",
+          "value": "+0,98 в.п."
+        }
+      ]
+    },
+    {
+      "id": "b1",
+      "slug": "viruvannia-b1",
+      "group": "B",
+      "groupTitle": "Релігії",
+      "title": "Християнство: 2,3 мільярда і зміна центру ваги",
+      "oneLiner": "Найбільша релігія світу росте в людях, але падає у відсотках — і переїжджає з Європи в Африку.",
+      "dataDate": "2020",
+      "publishedDate": "2025-06-09",
+      "dataStatus": "verified",
+      "readingTime": 8,
+      "keyFigures": [
+        {
+          "label": "Частка світу",
+          "value": "28,8%"
+        },
+        {
+          "label": "Людей",
+          "value": "2,3 млрд"
+        },
+        {
+          "label": "Країн із більшістю",
+          "value": "120"
+        }
+      ]
+    },
+    {
+      "id": "b2",
+      "slug": "viruvannia-b2",
+      "group": "B",
+      "groupTitle": "Релігії",
+      "title": "Іслам: 2 мільярди, п'ять різних світів",
+      "oneLiner": "Найшвидше зростаюча велика релігія росте не наверненням, а народжуваністю.",
+      "dataDate": "2020",
+      "publishedDate": "2025-06-09",
+      "dataStatus": "verified",
+      "readingTime": 8,
+      "keyFigures": [
+        {
+          "label": "Частка світу",
+          "value": "25,6%"
+        },
+        {
+          "label": "Приріст 2010–2020",
+          "value": "+347 млн"
+        },
+        {
+          "label": "Країн із більшістю",
+          "value": "53"
+        }
+      ]
+    },
+    {
+      "id": "b3",
+      "slug": "viruvannia-b3",
+      "group": "B",
+      "groupTitle": "Релігії",
+      "title": "Індуїзм: 1,2 мільярда і парасолька замість релігії",
+      "oneLiner": "Третя релігія світу не має засновника, єдиного тексту чи центру — і саме тому її так важко порахувати.",
+      "dataDate": "2020",
+      "publishedDate": "2025-06-09",
+      "dataStatus": "verified",
+      "readingTime": 8,
+      "keyFigures": [
+        {
+          "label": "Частка світу",
+          "value": "14,9%"
+        },
+        {
+          "label": "Людей",
+          "value": "1,2 млрд"
+        },
+        {
+          "label": "В Індії",
+          "value": "≈79%"
+        }
+      ]
+    },
+    {
+      "id": "b4",
+      "slug": "viruvannia-b4",
+      "group": "B",
+      "groupTitle": "Релігії",
+      "title": "Буддизм: 324 мільйони, єдина велика група з мінусом",
+      "oneLiner": "Єдина велика релігія, що скоротилася за десятиліття, — і найбільш залежна від того, як поставити питання.",
+      "dataDate": "2020",
+      "publishedDate": "2025-06-09",
+      "dataStatus": "verified",
+      "readingTime": 8,
+      "keyFigures": [
+        {
+          "label": "Частка світу",
+          "value": "4,1%"
+        },
+        {
+          "label": "Людей",
+          "value": "324 млн"
+        },
+        {
+          "label": "Зміна 2010–2020",
+          "value": "−19 млн"
+        }
+      ]
+    },
+    {
+      "id": "b5",
+      "slug": "viruvannia-b5",
+      "group": "B",
+      "groupTitle": "Релігії",
+      "title": "Народні релігії: 2,2% або 9,2% — залежно від того, кого питати",
+      "oneLiner": "Найбільший розрив між двома методологіями у світі — і категорія, яку люди майже ніколи не називають своєю.",
+      "dataDate": "2020/2025",
+      "publishedDate": "2025-06-09",
+      "dataStatus": "verified",
+      "readingTime": 8,
+      "keyFigures": [
+        {
+          "label": "Pew: «інші релігії»",
+          "value": "2,2%"
+        },
+        {
+          "label": "WRD: народні + етнічні",
+          "value": "9,2%"
+        },
+        {
+          "label": "Розрив",
+          "value": "7 в.п."
+        }
+      ]
+    },
+    {
+      "id": "c1",
+      "slug": "viruvannia-c1",
+      "group": "C",
+      "groupTitle": "Нерелігійність",
+      "title": "Хто такі «nones»: 1,9 мільярда без релігійної ідентичності",
+      "oneLiner": "Третя за розміром категорія світу — і найбільш неправильно зрозуміла.",
+      "dataDate": "2020",
+      "publishedDate": "2025-06-09",
+      "dataStatus": "verified",
+      "readingTime": 7,
+      "keyFigures": [
+        {
+          "label": "Частка світу",
+          "value": "24,2%"
+        },
+        {
+          "label": "Людей",
+          "value": "1,9 млрд"
+        },
+        {
+          "label": "У Китаї",
+          "value": "2/3 усіх"
+        }
+      ]
+    },
+    {
+      "id": "c2",
+      "slug": "viruvannia-c2",
+      "group": "C",
+      "groupTitle": "Нерелігійність",
+      "title": "Атеїсти, агностики і «нічого конкретного»: три різні речі",
+      "oneLiner": "1,8% атеїстів, 9,3% агностиків і близько 13%, які просто не мають релігійної ідентичності.",
+      "dataDate": "2025",
+      "publishedDate": "2025-06-09",
+      "dataStatus": "estimate",
+      "readingTime": 8,
+      "keyFigures": [
+        {
+          "label": "Агностики",
+          "value": "9,3%"
+        },
+        {
+          "label": "Атеїсти",
+          "value": "1,8%"
+        },
+        {
+          "label": "«Нічого конкретного»",
+          "value": "≈13%"
+        }
+      ]
+    },
+    {
+      "id": "c3",
+      "slug": "viruvannia-c3",
+      "group": "C",
+      "groupTitle": "Нерелігійність",
+      "title": "Китай: 1,3 мільярда «нерелігійних» і парадокс народних культів",
+      "oneLiner": "Одна країна визначає, чи у світі 24% нерелігійних, чи 11%.",
+      "dataDate": "2020",
+      "publishedDate": "2025-06-09",
+      "dataStatus": "verified",
+      "readingTime": 8,
+      "keyFigures": [
+        {
+          "label": "Нерелігійних у Китаї",
+          "value": "1,3 млрд"
+        },
+        {
+          "label": "Частка населення",
+          "value": "90%"
+        },
+        {
+          "label": "Частка всіх nones світу",
+          "value": "2/3"
+        }
+      ]
+    },
+    {
+      "id": "d1",
+      "slug": "viruvannia-d1",
+      "group": "D",
+      "groupTitle": "Порівняння",
+      "title": "Матриця вірувань: десять питань, на які кожна традиція відповідає по-своєму",
+      "oneLiner": "Бог, світ, смерть, мораль, текст, ритуал, духовенство, жінка, їжа — сім традицій в одній таблиці.",
+      "dataDate": "доктрини",
+      "publishedDate": "2026-10-30",
+      "dataStatus": "doctrinal",
+      "readingTime": 10,
+      "keyFigures": [
+        {
+          "label": "Традицій",
+          "value": "7"
+        },
+        {
+          "label": "Вимірів",
+          "value": "10"
+        },
+        {
+          "label": "Рейтингів",
+          "value": "0"
+        }
+      ]
+    }
+  ]
+}

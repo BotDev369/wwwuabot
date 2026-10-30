@@ -31,6 +31,7 @@ import { latestByScale } from "./assessment-view";
 import { ASSESSMENTS_ROUTE } from "@/app/routes";
 
 const QUESTIONS: PluralForms = ["питання", "питання", "питань"];
+const BLOCKS: PluralForms = ["блок", "блоки", "блоків"];
 
 interface AssessmentsPageProps {
   tests: readonly AssessmentTest[];
@@ -38,6 +39,10 @@ interface AssessmentsPageProps {
   loading: boolean;
   onOpen: (testKey: string) => void;
   onOpenDates: () => void;
+  /** Дослідження — такий самий вхід розділу, як аналіз дат: власна сторінка. */
+  onOpenResearch?: () => void;
+  /** Скільки блоків опубліковано; `null` — каталог не дочитався. */
+  researchBlocks?: number | null;
 }
 
 /** Рядок списку: усе, що потрібне акордеону, і нічого понад те. */
@@ -77,6 +82,8 @@ export function AssessmentsPage({
   loading,
   onOpen,
   onOpenDates,
+  onOpenResearch,
+  researchBlocks = null,
 }: AssessmentsPageProps): ReactElement {
   const latest = useMemo(() => latestByScale(results), [results]);
 
@@ -88,6 +95,15 @@ export function AssessmentsPage({
       lead: "Ваші дати, їхнє порівняння й таблиця аналізу — за тими даними, що ви вже зберегли.",
       note: null,
       open: onOpenDates,
+    },
+    {
+      key: "research",
+      title: "Дослідження: вірування",
+      icon: "globe",
+      lead: "Розподіл людства за вірою й невірою: блоки з датами, джерелами й методологією.",
+      // Число береться з каталогу: вписане «12» старіє першим, а каталог росте.
+      note: researchBlocks === null ? null : `${researchBlocks} ${plural(researchBlocks, BLOCKS)}`,
+      open: onOpenResearch ?? (() => {}),
     },
     ...tests.map((test) => {
       const passed = lastPassed(latest, test);

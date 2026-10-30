@@ -227,10 +227,10 @@ export class PagesService {
   /**
    * Відкритий список: сторінки, які автори відкрили.
    *
-   * Три умови, і кожна щось відсікає: `is_public` — вибір автора, `owner_id`
-   * `NOT NULL` — контент платформи (він не «чужа сторінка»), а `is_blocked`
-   * прибирає людей, яких платформа заблокувала: це рішення про людину, і
-   * жоден її прапорець його не скасовує.
+   * Умови: `is_public` — вибір автора, `is_active` — зняте не показується,
+   * `is_blocked` — рішення про людину. Рядок без власника — контент
+   * платформи, а не «чужа сторінка»: так публікується дослідження
+   * (`docs/RESEARCH.md`), і підпис автора тоді дає платформа.
    */
   async listPublished(limit: unknown = PUBLIC_PAGE_SIZE): Promise<PublicPage[]> {
     await this.ensureSchema();
@@ -240,11 +240,10 @@ export class PagesService {
               u.user_id AS author_id, u.platform_username AS author_name,
               u.photo_url AS author_photo
          FROM scenarios s
-         JOIN users u ON u.user_id = s.owner_id
-        WHERE s.owner_id IS NOT NULL
-          AND COALESCE(s.is_public, 0) = 1
+         LEFT JOIN users u ON u.user_id = s.owner_id
+        WHERE COALESCE(s.is_public, 0) = 1
           AND s.is_active = 1
-          AND COALESCE(u.is_blocked, 0) = 0
+          AND (s.owner_id IS NULL OR COALESCE(u.is_blocked, 0) = 0)
         ORDER BY s.updated_at DESC, s.id DESC
         LIMIT ?`,
     )
@@ -259,7 +258,9 @@ export class PagesService {
         ? row.template_key
         : DEFAULT_PAGE_TEMPLATE) as PageTemplateKey,
       author: {
-        id: Number(row.author_id),
+        // Номер `0` — «автора немає, це контент платформи»: підпис тоді дає
+        // клієнт (`publicPageAuthor`), а не порожнє ім'я.
+        id: row.author_id === null || row.author_id === undefined ? 0 : Number(row.author_id),
         name: (row.author_name as string) ?? null,
         photoUrl: (row.author_photo as string) ?? null,
       },

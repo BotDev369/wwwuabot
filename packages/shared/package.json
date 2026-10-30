@@ -13,6 +13,7 @@
     "./trackers": "./src/trackers.ts",
     "./trackers/analytics": "./src/trackers/analytics.ts",
     "./contacts": "./src/contacts/index.ts",
+    "./research": "./src/research/index.ts",
     "./messages": "./src/messages/index.ts",
     "./files": "./src/files/index.ts",
     "./access-requests": "./src/access-requests/index.ts",

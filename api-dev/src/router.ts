@@ -58,6 +58,7 @@ import { handleNotes, handleAdminNotes } from "./controllers/notes.controller";
 import { handleFavorites } from "./controllers/favorites.controller";
 import { handleAssessments } from "./controllers/assessments.controller";
 import { handleUserPages, handlePublicPages } from "./controllers/pages.controller";
+import { handlePublicResearch } from "./controllers/research.controller";
 import { matchShopRoute } from "./routes/shop";
 import { matchTrackersRoute } from "./routes/trackers";
 import { handleContactLink, handleContacts } from "./controllers/contacts.controller";
@@ -377,6 +378,11 @@ export async function handleRequest(request: Request, env: Env): Promise<Respons
   // а приватна сторінка не дістається ні списком, ні за адресою.
   if (pathname === "/api/public/pages" && request.method === "GET") {
     return handlePublicPages(request, env);
+  }
+  // Каталог дослідження — публічний покажчик блоків: ні імен, ні приватних
+  // сторінок, лише назви й цифри, які видно на самому лендінгу.
+  if (pathname === "/api/public/research" && request.method === "GET") {
+    return handlePublicResearch(request, env);
   }
 
   // ── 404 ─────────────────────────────────────────────────────────

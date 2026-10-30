@@ -59,6 +59,9 @@ export function pageHint(page: Pick<UserPage, "isPublic" | "slug">): string {
  * рядок читався б як поламана картка.
  */
 export function publicPageAuthor(page: Pick<PublicPage, "author">): string {
+  // Номер `0` — рядок без власника: це сторінка продукту, і називати її
+  // «Без імені» означало б натякати, що автор просто не схотів підписатись.
+  if (page.author.id === 0) return "Платформа";
   return formatPlatformUsername(page.author.name) ?? "Без імені";
 }
 

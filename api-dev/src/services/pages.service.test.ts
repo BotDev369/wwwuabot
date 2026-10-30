@@ -318,10 +318,10 @@ describe("Відкриті сторінки: що там видно", () => {
     expect(sql).toMatch(/COALESCE\(s\.is_public, 0\) = 1/);
   });
 
-  it("контент платформи та заблоковані людини не показуються навіть з `is_public`", async () => {
+  it("контент платформи видно, а заблоковані людини — ні", async () => {
     const { env, statements } = makeEnv({
       rows: [
-        page({ id: 5, is_public: 1, owner_id: null }),
+        page({ id: 5, slug: "дослідження", is_public: 1, owner_id: null }),
         page({ id: 6, slug: "блокована", is_public: 1, owner_id: OWNER }),
         page({ id: 7, slug: "видима", is_public: 1, owner_id: OWNER }),
       ],
@@ -330,9 +330,13 @@ describe("Відкриті сторінки: що там видно", () => {
 
     const list = await new PagesService(env).listPublished();
 
-    expect(list.map((one) => one.slug)).toEqual(["видима"]);
+    expect(list.map((one) => one.slug)).toEqual(["дослідження", "видима"]);
+    // Сторінка продукту не має автора: `0` — це «підпис дає платформа».
+    expect(list.find((one) => one.slug === "дослідження")?.author.id).toBe(0);
+
     const sql = statements.map((s) => s.sql).join("\n");
-    expect(sql).toMatch(/owner_id IS NOT NULL/);
+    expect(sql).toMatch(/LEFT JOIN users/);
+    expect(sql).not.toMatch(/owner_id IS NOT NULL/);
     expect(sql).toMatch(/is_blocked/);
   });
 
