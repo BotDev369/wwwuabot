@@ -16,17 +16,8 @@ interface SchemaFieldProps {
 export function SchemaField({ props, schema, onChange }: SchemaFieldProps): React.ReactNode {
   if (!schema || typeof schema !== "object" || !schema.properties) {
     return Object.entries(props).map(([key, value]) => (
-      <div
-        key={key}
-        className="pb-be-field"
-        style={{ display: "flex", gap: 8, alignItems: "center" }}
-      >
-        <label
-          className="pb-be-field-label"
-          style={{ fontSize: 12, minWidth: 100, color: "var(--text-secondary)" }}
-        >
-          {key}
-        </label>
+      <div key={key} className="pb-be-field" style={{ display: "flex" }}>
+        <label className="pb-be-field-label">{key}</label>
         <input
           type="text"
           className="pb-be-field-input"
@@ -59,8 +50,6 @@ export function SchemaField({ props, schema, onChange }: SchemaFieldProps): Reac
     const currentValue = props[key];
     const title = (propSchema.title as string) ?? key;
     const type = propSchema.type as string;
-
-    const fieldStyle = { fontSize: 12, minWidth: 100, color: "var(--text-secondary)" } as const;
     const inputStyle = {
       flex: 1,
       fontSize: 13,
@@ -73,14 +62,8 @@ export function SchemaField({ props, schema, onChange }: SchemaFieldProps): Reac
 
     if (type === "boolean") {
       return (
-        <div
-          key={key}
-          className="pb-be-field"
-          style={{ display: "flex", gap: 8, alignItems: "center" }}
-        >
-          <label className="pb-be-field-label" style={fieldStyle}>
-            {title}
-          </label>
+        <div key={key} className="pb-be-field" style={{ display: "flex" }}>
+          <label className="pb-be-field-label">{title}</label>
           <input
             type="checkbox"
             checked={!!currentValue}
@@ -92,14 +75,8 @@ export function SchemaField({ props, schema, onChange }: SchemaFieldProps): Reac
 
     if (type === "string" && Array.isArray(propSchema.enum)) {
       return (
-        <div
-          key={key}
-          className="pb-be-field"
-          style={{ display: "flex", gap: 8, alignItems: "center" }}
-        >
-          <label className="pb-be-field-label" style={fieldStyle}>
-            {title}
-          </label>
+        <div key={key} className="pb-be-field" style={{ display: "flex" }}>
+          <label className="pb-be-field-label">{title}</label>
           <select
             className="pb-be-field-input"
             value={String(currentValue ?? propSchema.default ?? "")}
@@ -131,14 +108,8 @@ export function SchemaField({ props, schema, onChange }: SchemaFieldProps): Reac
 
     if (type === "number" || type === "integer") {
       return (
-        <div
-          key={key}
-          className="pb-be-field"
-          style={{ display: "flex", gap: 8, alignItems: "center" }}
-        >
-          <label className="pb-be-field-label" style={fieldStyle}>
-            {title}
-          </label>
+        <div key={key} className="pb-be-field" style={{ display: "flex" }}>
+          <label className="pb-be-field-label">{title}</label>
           <input
             type="number"
             className="pb-be-field-input"
@@ -154,14 +125,8 @@ export function SchemaField({ props, schema, onChange }: SchemaFieldProps): Reac
 
     // Default: text input
     return (
-      <div
-        key={key}
-        className="pb-be-field"
-        style={{ display: "flex", gap: 8, alignItems: "center" }}
-      >
-        <label className="pb-be-field-label" style={fieldStyle}>
-          {title}
-        </label>
+      <div key={key} className="pb-be-field" style={{ display: "flex" }}>
+        <label className="pb-be-field-label">{title}</label>
         <input
           type="text"
           className="pb-be-field-input"

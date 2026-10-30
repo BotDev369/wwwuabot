@@ -111,7 +111,7 @@ export function FullscreenBuilder({
           )}
         </div>
       </div>
-      <div style={{ flex: 1, overflow: "auto", padding: 8 }}>
+      <div className="scn-fullscreen-body">
         <PageBuilderInline
           config={cfg}
           onChange={(newCfg) => updateField("page_data", JSON.stringify(newCfg))}

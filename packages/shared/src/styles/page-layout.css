@@ -222,7 +222,7 @@
   }
 
   .page-sidebar-close {
-    display: inline-flex !important;
+    display: inline-flex;
   }
 
   /* Header with hamburger */

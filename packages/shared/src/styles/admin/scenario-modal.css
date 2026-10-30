@@ -36,7 +36,7 @@
   gap: 0;
 }
 .phone-frame-body .page-zone {
-  padding: 12px;
+  padding: var(--sp-3);
   border: none;
   border-radius: 0;
   background: transparent;
@@ -53,17 +53,17 @@
   gap: 0;
 }
 .phone-frame-body .page-zone--header {
-  padding: 12px 16px;
+  padding: var(--sp-3) var(--sp-4);
   border: none;
   background: transparent;
 }
 .phone-frame-body .page-zone--main {
   flex: 1;
-  padding: 16px;
+  padding: var(--sp-4);
   background: var(--bg-page, var(--bg-0));
 }
 .phone-frame-body .page-zone--footer {
-  padding: 12px 16px;
+  padding: var(--sp-3) var(--sp-4);
   border: none;
   background: transparent;
   font-size: var(--text-xs);
@@ -72,31 +72,31 @@
 .phone-frame-body .page-zone-label {
   display: none;
 }
-/* Phone frame: sidebar displays in-flow without hiding */
+/* Прев'ю мусить бути однаковим за будь-якого вьюпорта: на телефоні (≤768px)
+   спільний `drawer.css` зробив би сайдбар виїзним drawer'ом і зсунув би його
+   за екран. Селектори тут довші за `.page-*` і `aside.app-drawer` (0,2,0 проти
+   0,1,1), тож виграють без `!important`. */
 .phone-frame-body .page-hamburger,
 .phone-frame-body .page-hamburger--floating,
 .phone-frame-body .page-sidebar-header,
 .phone-frame-body .page-sidebar-close,
 .phone-frame-body .app-drawer-overlay {
-  display: none !important;
+  display: none;
 }
 .phone-frame-body .page-zone--sidebar {
-  display: block !important;
-  position: static !important;
-  /* Прев'ю мусить бути однаковим за будь-якого вьюпорта: на телефоні
-     (≤768px) спільний `drawer.css` інакше зробив би цю зону виїзним
-     drawer'ом і зсунув би її за екран. */
-  inset: auto !important;
-  min-width: 0 !important;
-  width: 100% !important;
-  height: auto !important;
-  z-index: auto !important;
-  overflow: visible !important;
-  box-shadow: none !important;
-  transition: none !important;
+  display: block;
+  position: static;
+  inset: auto;
+  min-width: 0;
+  width: 100%;
+  height: auto;
+  z-index: auto;
+  overflow: visible;
+  box-shadow: none;
+  transition: none;
   background: #f0f0f5;
   border-bottom: 1px solid #e0e0e8;
-  padding: 12px 16px;
+  padding: var(--sp-3) var(--sp-4);
 }
 
 @media (max-width: 640px) {
@@ -110,69 +110,66 @@
   }
 }
 
-/* ═══ ScenarioCardModal — mobile responsive ══════════════════════════════════ */
+/* ═══ ScenarioCardModal ══════════════════════════════════════════════════════
+
+   Мірки вікна живуть тут, а не інлайном у розмітці: інлайн-стиль перебиває
+   будь-яке правило, тож мобільній версії доводилось воювати `!important`.
+   Ширину, стовпчик і прокрутку тіла дає кирпичик `.wb-modal` — тут лишається
+   тільки своє для сценарію: ширше вікно й робоча висота. */
+.scn-modal {
+  max-width: 900px;
+  height: 90dvh;
+}
+
 @media (max-width: 640px) {
+  /* На телефоні це робоча поверхня, а не діалог: п'ять вкладок, підвкладки й
+     конструктор інакше не вміщаються. Тіло прокручується саме (кирпичик
+     `.wb-modal-body` тримає `flex: 1 1 auto` і `min-height: 0`), тому футер
+     з діями збереження лишається на місці без окремої сітки. */
   .scn-modal {
-    max-width: 100% !important;
-    width: 100% !important;
-    height: 100dvh !important;
-    max-height: 100dvh !important;
-    border-radius: 0 !important;
-    margin: 0 !important;
-    overflow: hidden !important;
-  }
-
-  .scn-modal .wb-modal-body {
-    min-height: 0 !important;
-    flex: 1 1 auto !important;
-    overflow-y: auto !important;
-    -webkit-overflow-scrolling: touch !important;
-  }
-
-  .scn-modal .wb-modal-footer {
-    flex-shrink: 0 !important;
-    padding: 8px 12px !important;
-    border-top: 1px solid var(--border) !important;
-    background: var(--surface, var(--bg-home)) !important;
-    z-index: 1 !important;
+    max-width: 100%;
+    height: 100vh;
+    height: 100dvh;
+    max-height: 100vh;
+    max-height: 100dvh;
+    margin: 0;
+    border-radius: 0;
   }
 
   .wb-modal-overlay:has(.scn-modal) {
-    padding: 0 !important;
+    padding: 0;
   }
 
   .scn-modal .wb-modal-header {
-    padding: 8px 12px !important;
+    padding: var(--sp-2) var(--sp-3);
     flex-wrap: wrap;
     gap: 6px;
   }
 
   .scn-modal .wb-modal-header .wb-modal-title {
-    font-size: var(--text-sm) !important;
+    font-size: var(--text-sm);
   }
 
-  .scn-modal .scn-tabs {
-    padding: 4px 8px !important;
-    gap: 2px !important;
+  .scn-modal .scn-tabs,
+  .scn-modal .scn-subtabs {
+    padding: var(--sp-1) var(--sp-2);
+    gap: 2px;
   }
 
   .scn-modal .scn-tab {
-    padding: 6px 8px !important;
-  }
-
-  .scn-modal .scn-subtabs {
-    padding: 4px 8px !important;
-    gap: 2px !important;
+    padding: 6px var(--sp-2);
   }
 
   .scn-modal .wb-modal-body {
-    padding: 8px !important;
+    padding: var(--sp-2);
   }
 
   .scn-modal .wb-modal-footer {
-    padding: 8px 12px !important;
+    padding: var(--sp-2) var(--sp-3);
+    border-top: 1px solid var(--border);
+    background: var(--surface, var(--bg-home));
     flex-wrap: wrap;
-    gap: 6px;
+    gap: var(--sp-2);
   }
 
   .scn-modal .wb-modal-footer .wb-btn {
@@ -182,82 +179,19 @@
   }
 
   .scn-hide-mobile {
-    display: none !important;
+    display: none;
   }
 }
 
-/* ═══ JSON textarea — ensure visibility on all themes ══════════════════════════ */
+/* Поле в сценарії стоїть на поверхні вікна, а не на формі: тло — площина
+   екрана, межа — `--border`. Токена `--bg-primary` у продукті немає, тож
+   фолбек на `--bg-0` і був значенням. */
 .scn-modal textarea.wb-textarea,
 .scn-modal textarea[style*="monospace"] {
-  background: var(--bg-primary, var(--bg-0)) !important;
-  color: var(--text-primary) !important;
-  border: 1px solid var(--border) !important;
-  caret-color: var(--text-primary) !important;
-}
-
-/* Ensure modal body doesn't push footer off-screen */
-.scn-modal .wb-modal-body {
-  min-height: 0 !important;
-  flex: 1 1 auto !important;
-  overflow-y: auto !important;
-}
-
-/* Mobile: full height modal */
-@media (max-width: 640px) {
-  .scn-modal {
-    height: 100vh !important;
-    height: 100dvh !important;
-    max-height: 100vh !important;
-    max-height: 100dvh !important;
-  }
-
-  .scn-modal .wb-modal-footer {
-    flex-shrink: 0;
-  }
-}
-
-/* ═══ Mobile modal: grid layout to pin footer ══════════════════════════════════ */
-@media (max-width: 640px) {
-  .scn-modal {
-    display: grid !important;
-    grid-template-rows: auto auto auto 1fr auto !important;
-    grid-template-columns: 1fr !important;
-    height: 100dvh !important;
-    max-height: 100dvh !important;
-  }
-
-  .scn-modal .wb-modal-header {
-    grid-row: 1;
-  }
-  .scn-modal .scn-tabs {
-    grid-row: 2;
-  }
-  .scn-modal .scn-subtabs {
-    grid-row: 3;
-  }
-
-  .scn-modal .wb-modal-body {
-    grid-row: 4;
-    overflow-y: auto !important;
-    -webkit-overflow-scrolling: touch !important;
-    min-height: 0 !important;
-  }
-
-  .scn-modal .wb-modal-footer {
-    grid-row: 5;
-    flex-shrink: 0 !important;
-    padding: 8px 12px !important;
-    border-top: 1px solid var(--border) !important;
-    background: var(--surface, var(--bg-home)) !important;
-    display: flex !important;
-    gap: 8px !important;
-    z-index: 10 !important;
-  }
-
-  .scn-modal .wb-modal-footer .wb-btn {
-    flex: 1 !important;
-    min-width: 0 !important;
-  }
+  background: var(--bg-0);
+  color: var(--text-primary);
+  border: 1px solid var(--border);
+  caret-color: var(--text-primary);
 }
 
 /* ═══ Fullscreen Page Builder overlay ═════════════════════════════════════════ */
@@ -274,52 +208,79 @@
   }
 }
 
+/* Прокрутка належить тілу конструктора, а не оверлею — інакше шапка з діями
+   збереження поїхала б разом зі списком блоків. */
+.scn-fullscreen-body {
+  flex: 1;
+  overflow: auto;
+  padding: var(--sp-2);
+}
+
 .scn-fullscreen-builder .pb-zone-editor {
   margin-bottom: 8px;
 }
 
 @media (max-width: 640px) {
-  .scn-fullscreen-builder > div:last-child {
-    padding: 4px !important;
+  .scn-fullscreen-body {
+    padding: var(--sp-1);
   }
 }
 
-/* ═══ BlockEditor — compact accordion headers ════════════════════════════════ */
+/* ═══ BlockEditor: шапка блока й поля властивостей ══════════════════════════
+   Мірки тут, а не інлайном у розмітці: компактна мобільна шапка мусить
+   перекривати їх правилом, а не `!important`. */
+.pb-be-header {
+  padding: 6px 10px;
+  gap: 6px;
+}
+
+.pb-be-field {
+  gap: var(--sp-2);
+  align-items: center;
+}
+
+.pb-be-field-label {
+  font-size: var(--text-xs);
+  min-width: 100px;
+  color: var(--text-secondary);
+}
+
+.pb-be-actions {
+  display: flex;
+  gap: 2px;
+  flex-shrink: 0;
+  margin-left: 2px;
+}
+
+.pb-be-cond-btn,
+.pb-be-del-btn {
+  padding: 2px 6px;
+}
+
 @media (max-width: 640px) {
-  /* Header: single compact row, never wrap */
+  /* Шапка блока — один рядок, що не переноситься: у згорнутому стані вона
+     показує іконку, назву, тип і дії, і перенос робив з неї два поверхи. */
   .pb-be-header {
     flex-wrap: nowrap;
     align-items: center;
     overflow: hidden;
-    gap: 4px;
-    padding: 5px 8px;
+    gap: var(--sp-1);
+    padding: 5px var(--sp-2);
   }
 
-  /* Actions: shrink, never expand */
-  .pb-be-actions {
-    flex-shrink: 0 !important;
-  }
-
-  /* Condensed buttons on mobile */
-  .pb-be-cond-btn {
-    padding: 2px 4px !important;
-  }
+  .pb-be-cond-btn,
   .pb-be-del-btn {
-    padding: 2px 4px !important;
+    padding: 2px var(--sp-1);
   }
 
-  /* Props fields: stack vertically */
   .pb-be-field {
     flex-direction: column;
-    align-items: flex-start !important;
-    gap: 2px !important;
+    align-items: flex-start;
+    gap: 2px;
   }
-  .pb-be-field-label {
-    min-width: 0 !important;
-    font-size: var(--text-xs) !important;
-  }
+
   .pb-be-field-input {
-    width: 100% !important;
+    width: 100%;
   }
 
   .pb-be-add-btn {
@@ -328,9 +289,10 @@
   }
 }
 
-/* ── Save / Close Action Bar Integration ── */
+/* Смуга дій у футері займає весь рядок: кнопки стоять поруч із «Закрити»
+   однаково в усіх вікнах адмінки. */
 .wb-modal-footer > .wb-save-actions,
 .scn-modal .wb-modal-footer > .wb-save-actions {
-  flex: 1 1 100% !important;
-  width: 100% !important;
+  flex: 1 1 100%;
+  width: 100%;
 }

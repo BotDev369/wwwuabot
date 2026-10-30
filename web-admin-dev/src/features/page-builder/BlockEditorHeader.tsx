@@ -64,8 +64,6 @@ export function BlockEditorHeader({
       style={{
         display: "flex",
         alignItems: "center",
-        gap: 6,
-        padding: "6px 10px",
         background: collapsed ? "var(--bg-3)" : "var(--bg-4)",
         cursor: "pointer",
         userSelect: "none",
@@ -193,17 +191,12 @@ export function BlockEditorHeader({
         </span>
       )}
 
-      <div
-        className="pb-be-actions"
-        style={{ display: "flex", gap: 2, flexShrink: 0, marginLeft: 2 }}
-        onClick={(e) => e.stopPropagation()}
-      >
+      <div className="pb-be-actions" onClick={(e) => e.stopPropagation()}>
         <button
           onClick={onToggleConditions}
           className="pb-be-cond-btn"
           style={{
             fontSize: 10,
-            padding: "2px 6px",
             borderRadius: 4,
             border: `1px solid ${showConditions ? "var(--accent)" : "var(--border)"}`,
             background: showConditions ? "var(--accent)" : "transparent",
@@ -221,7 +214,6 @@ export function BlockEditorHeader({
           onClick={onRemove}
           style={{
             fontSize: 10,
-            padding: "2px 6px",
             borderRadius: 4,
             border: "1px solid var(--border)",
             background: "transparent",

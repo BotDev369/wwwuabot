@@ -38,7 +38,7 @@
     {
       "file": "admin/scenario-modal.css",
       "tokens": 0,
-      "classes": 38
+      "classes": 39
     },
     {
       "file": "admin/scenario-tabs.css",
@@ -2741,7 +2741,7 @@
         ]
       },
       {
-        "section": "ScenarioCardModal — mobile responsive",
+        "section": "ScenarioCardModal",
         "names": [
           "scn-hide-mobile",
           "scn-modal",
@@ -2753,39 +2753,20 @@
           "wb-modal-footer",
           "wb-modal-header",
           "wb-modal-overlay",
-          "wb-modal-title"
-        ]
-      },
-      {
-        "section": "JSON textarea — ensure visibility on all themes",
-        "names": [
-          "scn-modal",
-          "wb-modal-body",
-          "wb-modal-footer",
+          "wb-modal-title",
           "wb-textarea"
-        ]
-      },
-      {
-        "section": "Mobile modal: grid layout to pin footer",
-        "names": [
-          "scn-modal",
-          "scn-subtabs",
-          "scn-tabs",
-          "wb-btn",
-          "wb-modal-body",
-          "wb-modal-footer",
-          "wb-modal-header"
         ]
       },
       {
         "section": "Fullscreen Page Builder overlay",
         "names": [
           "pb-zone-editor",
+          "scn-fullscreen-body",
           "scn-fullscreen-builder"
         ]
       },
       {
-        "section": "BlockEditor — compact accordion headers",
+        "section": "BlockEditor: шапка блока й поля властивостей",
         "names": [
           "pb-be-actions",
           "pb-be-add-btn",
@@ -2794,12 +2775,7 @@
           "pb-be-field",
           "pb-be-field-input",
           "pb-be-field-label",
-          "pb-be-header"
-        ]
-      },
-      {
-        "section": "Save / Close Action Bar Integration",
-        "names": [
+          "pb-be-header",
           "scn-modal",
           "wb-modal-footer",
           "wb-save-actions"
