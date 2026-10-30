@@ -379,8 +379,8 @@ export async function handleRequest(request: Request, env: Env): Promise<Respons
   if (pathname === "/api/public/pages" && request.method === "GET") {
     return handlePublicPages(request, env);
   }
-  // Каталог дослідження — публічний покажчик блоків: ні імен, ні приватних
-  // сторінок, лише назви й цифри, які видно на самому лендінгу.
+  // Каталог дослідження — без власника: ні імен, ні приватних сторінок, лише
+  // те, що й так видно на лендінгу.
   if (pathname === "/api/public/research" && request.method === "GET") {
     return handlePublicResearch(request, env);
   }
