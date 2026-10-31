@@ -18,8 +18,8 @@ export function UserBulkBar() {
   if (count === 0) return null;
 
   return (
-    <div className="usr-bulk-bar">
-      <span className="usr-bulk-count">Вибрано: {count}</span>
+    <div className="wb-bulk-bar">
+      <span className="wb-bulk-count">Вибрано: {count}</span>
       <button className="wb-btn wb-btn-secondary wb-btn-sm" onClick={() => void bulk("block")}>
         {ico("lock")} Заблокувати
       </button>

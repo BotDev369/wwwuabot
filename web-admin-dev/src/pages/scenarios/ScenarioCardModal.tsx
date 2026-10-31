@@ -33,7 +33,7 @@ export function ScenarioCardModal({ slug, onClose, onSaved, initialSubTab }: Pro
 
   return (
     <div className="wb-modal-overlay" onClick={onClose}>
-      <div className="wb-modal scn-modal" onClick={(e) => e.stopPropagation()}>
+      <div className="wb-modal wb-modal--scenario" onClick={(e) => e.stopPropagation()}>
         <ScenarioCardHeader slug={slug} rowId={card.allFields.id} onClose={onClose} />
 
         <MainTabs active={card.mainTab} onSelect={card.selectMainTab} />

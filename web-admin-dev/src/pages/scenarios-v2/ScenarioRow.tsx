@@ -40,11 +40,11 @@ export function ScenarioRow({ scenario, isSelected, onSelect, onOpen }: Scenario
 
   return (
     <tr
-      className={`usr-row${isSelected ? " usr-row--selected" : ""}`}
+      className={isSelected ? "selected" : undefined}
       onClick={onSelect}
       style={{ cursor: "pointer" }}
     >
-      <td className="usr-td-name">
+      <td className="wb-cell-name">
         <div style={{ display: "flex", flexDirection: "column", gap: 2 }}>
           <span style={{ fontWeight: 500 }}>{scenario.slug}</span>
           {hasTitle && (
@@ -80,7 +80,7 @@ export function ScenarioRow({ scenario, isSelected, onSelect, onOpen }: Scenario
           {ico(badge.icon, 12)} {badge.label}
         </span>
       </td>
-      <td className="usr-td-date" title={scenario.updated_at}>
+      <td className="wb-cell-nowrap wb-text-muted wb-text-xs" title={scenario.updated_at}>
         {relativeTime(scenario.updated_at)}
       </td>
       <td>

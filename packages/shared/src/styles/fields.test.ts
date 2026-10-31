@@ -174,12 +174,14 @@ describe("поля вводу: мірки — токен, і жоден файл
     ].map(([, axis, value]) => `--field-pad-${axis}: ${value.trim()}`);
     expect(declarations).toEqual(["--field-pad-y: 12px", "--field-pad-x: 16px"]);
 
-    // Пошук в адмінці — той самий кирпичик поля: своє число тут розвело б
-    // його з полями решти продукту.
+    // Пошук в адмінці — сам кирпичик поля: своє число тут розвело б його з
+    // полями решти продукту, тож `.wb-search` додає тільки ширину.
     const search = read("packages/shared/src/styles/admin/scenarios-list.css");
-    const start = search.indexOf("\n.scn-search {");
-    expect(start, ".scn-search має існувати").toBeGreaterThan(-1);
+    const start = search.indexOf("\n.wb-search {");
+    expect(start, ".wb-search має існувати").toBeGreaterThan(-1);
     const rule = search.slice(start, search.indexOf("\n}", start));
-    expect(rule).toContain("padding: var(--field-pad-y) var(--field-pad-x)");
+    expect(rule).not.toContain("padding:");
+    expect(rule).toContain("width: 220px");
+    expect(read("web-admin-dev/src/pages/users/UsersPage.tsx")).toContain("wb-input wb-search");
   });
 });

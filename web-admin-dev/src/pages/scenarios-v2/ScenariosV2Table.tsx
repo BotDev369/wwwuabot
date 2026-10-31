@@ -134,25 +134,21 @@ export function ScenariosV2Table() {
   function thSort(field: ScenariosSortField, label: string) {
     const arrow = sortField === field ? (sortDir === "asc" ? " ↑" : " ↓") : "";
     return (
-      <th
-        className="usr-th-sortable"
-        onClick={() => setSort(field)}
-        title={`Сортувати за ${label}`}
-      >
+      <th className="wb-th-sortable" onClick={() => setSort(field)} title={`Сортувати за ${label}`}>
         {label}
-        {arrow && <span className="usr-th-arrow">{arrow}</span>}
+        {arrow && <span className="wb-sort-arrow">{arrow}</span>}
       </th>
     );
   }
 
   return (
     <>
-      <div className="usr-table-wrap">
+      <div className="wb-data-table-wrap wb-data-table-wrap--inset">
         <div style={{ display: "flex", flexDirection: "column", gap: 8, marginBottom: 12 }}>
           <div style={{ display: "flex", alignItems: "center", gap: 12, flexWrap: "wrap" }}>
             <input
               type="text"
-              className="scn-search"
+              className="wb-input wb-search"
               placeholder="Пошук за slug або назвою…"
               value={query}
               onChange={(e) => setQuery(e.target.value)}
@@ -225,7 +221,7 @@ export function ScenariosV2Table() {
                       transition: "all 0.15s",
                     }}
                   >
-                    {ico(mode.icon, 14)} <span className="scn-hide-mobile">{mode.label}</span>
+                    {ico(mode.icon, 14)} <span className="wb-hide-mobile">{mode.label}</span>
                   </button>
                 );
               })}
@@ -233,7 +229,7 @@ export function ScenariosV2Table() {
           </div>
         </div>
 
-        <table className="usr-table">
+        <table className="wb-data-table wb-data-table--dense">
           <thead>
             <tr>
               {thSort("slug", "Назва")}
@@ -245,7 +241,7 @@ export function ScenariosV2Table() {
           <tbody>
             {filtered.length === 0 ? (
               <tr>
-                <td colSpan={4} className="usr-empty">
+                <td colSpan={4} className="wb-cell-empty">
                   {items.length === 0
                     ? "У базі ще немає сценаріїв."
                     : `Нічого не знайдено за «${query}».`}

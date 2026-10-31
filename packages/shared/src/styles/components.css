@@ -2183,6 +2183,16 @@ html:has(.wb-tabbar) .wb-modal-overlay--screen {
   color: var(--text-secondary);
 }
 
+/* Компактний бейдж — для щільних списків: колір стану той самий, але кут
+   менший і береги вужчі, бо стоїть він у рядку таблиці поруч із текстом. */
+.wb-badge--dense {
+  display: inline-block;
+  padding: 1px 6px;
+  border-radius: var(--radius-sm);
+  letter-spacing: 0.04em;
+  line-height: normal;
+}
+
 /* ── Chip / Tag ──────────────────────────────────────────────────────────── */
 
 .wb-chip svg {
@@ -2370,6 +2380,14 @@ button.wb-chip {
 }
 .wb-font-bold {
   font-weight: var(--weight-bold);
+}
+
+/* Утиліта ховання на телефоні: підпис, що не вміщається, зникає, а іконка
+   контрола лишається. */
+@media (max-width: 640px) {
+  .wb-hide-mobile {
+    display: none;
+  }
 }
 
 /* ── Save / Close Action Bar ─────────────────────────────────────────── */

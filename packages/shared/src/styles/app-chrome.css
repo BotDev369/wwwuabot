@@ -581,6 +581,17 @@
   -webkit-overflow-scrolling: touch;
 }
 
+/* Тіло екрана, що забирає лишок висоти: список прокручується сам, а шапка
+   сторінки лишається на місці. */
+.wb-page-body {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  min-height: 0;
+  background: var(--bg-2);
+}
+
 .wb-tabbar {
   position: fixed;
   left: 0;

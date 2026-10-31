@@ -1,199 +1,142 @@
-/* ═══════════════════════════════════════════════════════════════════════════════
-   USERS TABLE — список користувачів
-   ═══════════════════════════════════════════════════════════════════════════════ */
+/* ═══════════════════════════════════════════════════════════════════════════
+   USERS TABLE — тонкий шар над кирпичиком `.wb-data-table`
+   ═══════════════════════════════════════════════════════════════════════════
 
-.usr-table-wrap {
-  flex: 1;
-  overflow: auto;
+   Таблицю, закріплену шапку, вибраний рядок і перший закріплений стовпець
+   дає кирпичик (`components.css`). Тут лишається тільки те, чим список
+   користувачів щільніший за нього: компактні рядки, три закріплені стовпці
+   й ролі комірок. Числа — ті самі, що були в `usr-*`. */
+
+.wb-data-table-wrap--inset {
   padding: 10px 12px 16px;
   position: relative;
 }
-.usr-table {
-  width: 100%;
-  border-collapse: separate;
-  border-spacing: 0;
+
+/* Щільний варіант: рядок відділяє лінія, а не смуга — список довгий, і
+   порівнюють у ньому рядки, а не сканують їх. */
+.wb-data-table--dense {
+  min-width: 0;
   background: var(--bg-1);
-  border: none;
-  border-radius: var(--radius-md);
-  overflow: hidden;
-  font-size: var(--text-base);
 }
 
-.usr-table thead th {
-  position: sticky;
-  top: 0;
+.wb-data-table--dense th {
   z-index: 3;
-  background: var(--bg-1);
+  padding: var(--sp-3) var(--sp-4);
   border-bottom: 1px solid var(--border);
+  background: var(--bg-1);
   font-size: var(--text-xs);
-  font-weight: 600;
+  font-weight: var(--weight-semibold);
   letter-spacing: 0.06em;
   text-transform: uppercase;
   color: var(--text-muted);
   text-align: left;
-  padding: var(--sp-3) var(--sp-4);
-  white-space: nowrap;
 }
 
-/* Sticky header cells for columns 1-3 */
-.usr-th-sticky {
+.wb-data-table--dense td {
+  padding: 6px 8px;
+  border-top: 1px solid var(--border-subtle);
+  background: transparent;
+}
+
+.wb-data-table--dense tbody tr:nth-child(even) td {
+  background: transparent;
+}
+
+.wb-data-table--dense tbody tr:first-child td {
+  border-top: none;
+}
+
+.wb-row-blocked {
+  opacity: 0.55;
+}
+
+/* Закріплені стовпці мусять бути непрозорими, інакше крізь них видно те, що
+   проїжджає при горизонтальному скролі. */
+.wb-sticky-th {
   position: sticky;
   z-index: 4;
   background: var(--bg-1);
 }
 
-.usr-th-menu {
-  width: 32px;
-}
-
-.usr-th-check {
-  width: 32px;
-}
-
-.usr-th-sortable {
-  cursor: pointer;
-  user-select: none;
-  transition: color 0.12s;
-}
-
-.usr-th-sortable:hover {
-  color: var(--accent);
-}
-
-.usr-th-arrow {
-  color: var(--accent);
-  margin-left: 2px;
-}
-
-.usr-th-menu {
-  width: 36px;
-}
-
-.usr-th-check {
-  width: 36px;
-}
-
-.usr-table tbody tr td {
-  padding: 6px 8px;
-  border-top: 1px solid var(--border-subtle);
-}
-
-.usr-table tbody tr:first-child td {
-  border-top: none;
-}
-
-.usr-row {
-  transition: background 0.12s;
-}
-
-.usr-row:hover {
-  background: var(--surface-hover);
-}
-
-.usr-row--selected {
-  background: var(--accent-dim) !important;
-}
-
-.usr-row--selected td {
-  color: var(--accent-hover);
-}
-
-/* Sticky body cells for columns 1-3 */
-.usr-td-sticky {
+.wb-sticky-td {
   position: sticky;
   z-index: 1;
   background: var(--bg-1);
 }
 
-.usr-row:hover .usr-td-sticky {
+.wb-data-table--dense tbody tr:hover .wb-sticky-td {
   background: var(--bg-4);
 }
 
-.usr-row--selected .usr-td-sticky {
+.wb-data-table--dense tbody tr.selected .wb-sticky-td {
   background: var(--accent-dim);
 }
 
-.usr-row--blocked {
-  opacity: 0.55;
+/* ─── Колонки й комірки ────────────────────────────────────────────────── */
+
+.wb-col-tight {
+  width: 36px;
 }
 
-.usr-td-menu {
+.wb-col-status {
+  min-width: 90px;
+}
+
+.wb-th-sortable {
+  cursor: pointer;
+  user-select: none;
+  transition: color 0.12s;
+}
+
+.wb-th-sortable:hover {
+  color: var(--accent);
+}
+
+.wb-sort-arrow {
+  color: var(--accent);
+  margin-left: 2px;
+}
+
+.wb-cell-tight {
   width: 32px;
+}
+
+.wb-cell-center {
   text-align: center;
 }
 
-.usr-td-check {
-  width: 32px;
-  text-align: center;
-}
-
-.usr-td-check input[type="checkbox"] {
+.wb-cell-center input[type="checkbox"] {
   cursor: pointer;
   width: 14px;
   height: 14px;
 }
 
-.usr-td-name {
-  font-weight: 500;
+.wb-cell-name {
+  font-weight: var(--weight-medium);
   color: var(--text-primary);
   white-space: nowrap;
   min-width: 120px;
 }
 
-.usr-td-username {
-  color: var(--text-secondary);
+.wb-cell-mono {
   font-family: var(--font-mono);
   font-size: var(--text-xs);
 }
 
-.usr-td-id {
-  font-family: var(--font-mono);
-  font-size: var(--text-xs);
-  color: var(--text-muted);
-}
-
-.usr-td-date {
-  color: var(--text-muted);
-  font-size: var(--text-xs);
+.wb-cell-nowrap {
   white-space: nowrap;
 }
 
-.usr-td-status {
-  white-space: nowrap;
-}
-
-.usr-empty {
+.wb-data-table--dense td.wb-cell-empty {
+  padding: 28px 12px;
   text-align: center;
-  padding: 28px 12px !important;
   color: var(--text-muted);
   font-size: var(--text-xs);
 }
 
-.usr-badge {
-  display: inline-block;
-  border: none;
-  font-size: var(--text-xs);
-  font-weight: 500;
-  letter-spacing: 0.04em;
-  padding: 1px 6px;
-  border-radius: var(--radius-sm);
-}
+/* ─── Меню рядка ───────────────────────────────────────────────────────── */
 
-.usr-badge--active {
-  background: var(--green-dim);
-  color: var(--green);
-}
-
-.usr-badge--blocked {
-  background: var(--red-dim);
-  color: var(--red);
-}
-
-/* Note: .usr-badge uses var(--radius-full) — pill, not a fixed radius */
-
-/* ─── Row menu ─────────────────────────────────────────────────────────────── */
-
-.usr-menu-btn {
+.wb-row-menu-btn {
   width: 24px;
   height: 24px;
   border: none;
@@ -210,14 +153,14 @@
     color 0.1s;
 }
 
-.usr-menu-btn:hover {
+.wb-row-menu-btn:hover {
   background: var(--bg-4);
   color: var(--text-primary);
 }
 
-/* ─── Bulk bar ─────────────────────────────────────────────────────────────── */
+/* ─── Смуга масових дій ────────────────────────────────────────────────── */
 
-.usr-bulk-bar {
+.wb-bulk-bar {
   display: flex;
   align-items: center;
   gap: 8px;
@@ -227,24 +170,22 @@
   flex-shrink: 0;
 }
 
-.usr-bulk-count {
+.wb-bulk-count {
   font-size: var(--text-xs);
   font-weight: 600;
   color: var(--accent);
   margin-right: 4px;
 }
 
-/* .btn--sm moved to packages/shared/src/styles/components.css (.wb-btn-sm) */
+/* ─── Таблиця картки (поле → значення) ─────────────────────────────────── */
 
-/* ─── Card table ─────────────────────────────────────────────────────────── */
-
-.usr-card-table {
+.wb-card-table {
   width: 100%;
   border-collapse: collapse;
   font-size: var(--text-xs);
 }
 
-.usr-card-table thead th {
+.wb-card-table thead th {
   position: sticky;
   top: 0;
   z-index: 1;
@@ -259,7 +200,7 @@
   padding: 7px 12px;
 }
 
-.usr-card-td-field {
+.wb-card-td-field {
   position: sticky;
   left: 0;
   z-index: 1;
@@ -275,17 +216,17 @@
   min-width: 120px;
 }
 
-.usr-card-td-value {
+.wb-card-td-value {
   padding: 6px 12px;
   border-top: 1px solid var(--border-subtle);
   word-break: break-word;
   max-width: 400px;
 }
 
-/* Заголовки таблиць: класи стояли в розмітці без правил. `-field` мусить
-   «їхати» разом зі своїм `td` (той самий sticky-left), інакше перша колонка
-   відклеюється від заголовка при горизонтальному скролі. */
-.usr-card-th-field {
+/* Заголовок `-field` мусить «їхати» разом зі своїм `td` (той самий
+   sticky-left), інакше перша колонка відклеюється від заголовка при
+   горизонтальному скролі. */
+.wb-card-th-field {
   position: sticky;
   left: 0;
   z-index: 2;
@@ -293,49 +234,40 @@
   min-width: 120px;
 }
 
-.usr-card-th-value {
+.wb-card-th-value {
   min-width: 160px;
 }
 
-.usr-th-status {
-  min-width: 90px;
-}
-
-.usr-card-table tbody tr:first-child .usr-card-td-field,
-.usr-card-table tbody tr:first-child .usr-card-td-value {
+.wb-card-table tbody tr:first-child .wb-card-td-field,
+.wb-card-table tbody tr:first-child .wb-card-td-value {
   border-top: none;
 }
 
-/* ═══ Mobile adaptation ═══ */
+/* ═══ Телефон ═══ */
 @media (max-width: 768px) {
-  .usr-table-wrap {
+  .wb-data-table-wrap--inset {
     padding: 8px 4px 16px;
   }
 
-  .usr-table {
+  .wb-data-table--dense {
     font-size: var(--text-xs);
     min-width: 560px;
   }
 
-  .usr-table thead th {
-    padding: 6px 6px;
-    font-size: var(--text-xs);
+  .wb-data-table--dense th {
+    padding: 6px;
   }
 
-  .usr-table tbody tr td {
+  .wb-data-table--dense td {
     padding: 5px 6px;
   }
 
-  .usr-td-name {
+  .wb-cell-name {
     min-width: 100px;
   }
 
-  .usr-bulk-bar {
+  .wb-bulk-bar {
     flex-wrap: wrap;
     padding: 6px 8px;
-  }
-
-  .scn-search {
-    width: 100%;
   }
 }

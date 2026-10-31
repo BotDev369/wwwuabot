@@ -189,7 +189,6 @@ const name = await dialog.prompt("Назва:", { validate: (v) => (v.trim() ? n
 |---|---|
 | Скорочення коментарів до абзацу документа | `scripts/comment-baseline.mjs`, стандарт — `docs/COMMENTS.md` |
 | Логіка оболонок без тестів (клієнти API, хуки, помічники сторінок) | прогалини показує `npm run test:coverage`; початок домену — `api-dev/src/services/messages/greeting.ts`, далі `web-admin-dev/src/shared/api/*`; хукам потрібен `*.dom.test.*` (див. `docs/QUALITY_GATE.md`) |
-| `.usr-*` / `.scn-*` у адмінці → `.wb-*` | `grep -rn "usr-\|scn-" web-admin-dev/src` (леждером не відстежується: правила в них є, тож `check:css` мовчить) |
 | Завантаження свого фото на платформі (`photo_url` уже є) | `docs/VISIBILITY.md`, «чого тут ще немає» |
 | Cloudflare Access на адмінці, окремі домени, прод | §1, «чого ще немає» |
 

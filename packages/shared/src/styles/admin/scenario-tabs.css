@@ -1,26 +1,29 @@
-/* ═══════════════════════════════════════════════════════════════════════════════
-   SCENARIO EDIT MODAL — 4 Tabs (Shared, Bot, Bot Rich, Web)
-   ═══════════════════════════════════════════════════════════════════════════════ */
+/* ═══════════════════════════════════════════════════════════════════════════
+   LINE TABS — смуга з підкресленням (вікно сценарію)
+   ═══════════════════════════════════════════════════════════════════════════
 
-/* Tabs bar */
-.scn-tabs {
+   Це не `.wb-tabs`: там вибір — залита пілюля на доріжці, а тут підпис
+   підкреслений і стоїть на межі вікна, бо вкладки ділять саме вікно.
+   Підвкладки — та сама смуга, лише нижча й на тлі вікна. */
+
+.wb-line-tabs {
   display: flex;
   gap: 2px;
-  padding: 0 12px;
+  padding: 0 var(--sp-3);
   border-bottom: 1px solid var(--border);
   background: var(--bg-2);
 }
 
-.scn-tab {
+.wb-line-tab {
   display: flex;
   align-items: center;
   gap: 6px;
-  padding: 10px 16px;
+  padding: 10px var(--sp-4);
   border: none;
   background: none;
   color: var(--text-secondary);
   font-size: var(--text-sm);
-  font-weight: 500;
+  font-weight: var(--weight-medium);
   font-family: var(--font-ui);
   cursor: pointer;
   border-bottom: 2px solid transparent;
@@ -30,100 +33,67 @@
   margin-bottom: -1px;
 }
 
-.scn-tab:hover {
+.wb-line-tab:hover {
   color: var(--text-primary);
 }
 
-.scn-tab--active {
-  color: var(--accent);
-  border-bottom-color: var(--accent);
-}
-
-.scn-tab span:first-child {
-  font-size: var(--text-base);
-}
-
-@media (max-width: 640px) {
-  .scn-tab {
-    padding: 8px 10px;
-    font-size: var(--text-xs);
-  }
-}
-
-/* ═══════════════════════════════════════════════════════════════════════════════
-   SUB-TABS — підвкладки у ScenarioCardModal
-   ═══════════════════════════════════════════════════════════════════════════════ */
-.scn-subtabs {
-  display: flex;
-  gap: 2px;
-  padding: 0 12px;
-  border-bottom: 1px solid var(--border-subtle);
+.wb-line-tabs--sub {
+  border-bottom-color: var(--border-subtle);
   background: var(--bg-1);
 }
 
-.scn-subtab {
-  display: flex;
-  align-items: center;
+.wb-line-tab--sub {
   gap: 5px;
   padding: 7px 14px;
-  border: none;
-  background: none;
   color: var(--text-muted);
   font-size: var(--text-xs);
-  font-weight: 500;
-  font-family: var(--font-ui);
-  cursor: pointer;
-  border-bottom: 2px solid transparent;
-  transition:
-    color 0.12s,
-    border-color 0.12s;
-  margin-bottom: -1px;
 }
 
-.scn-subtab:hover {
+.wb-line-tab--sub:hover {
   color: var(--text-secondary);
 }
 
-.scn-subtab--active {
+/* Стан — спільний для обох смуг, тож стоїть після їхніх кольорів. */
+.wb-line-tab--active {
   color: var(--accent);
   border-bottom-color: var(--accent);
 }
 
-.scn-subtab span:first-child {
+.wb-line-tab span:first-child {
+  font-size: var(--text-base);
+}
+
+.wb-line-tab--sub span:first-child {
   font-size: var(--text-xs);
 }
 
-/* ═══════════════════════════════════════════════════════════════════════════════
-   MOBILE FULL-SCREEN MODALS
-   ═══════════════════════════════════════════════════════════════════════════════ */
-
 @media (max-width: 768px) {
-  /* Tabs — horizontal scroll on mobile */
-  .scn-tabs {
+  /* Смуга прокручується, а не стискає підписи: стиснутий підпис ламає слово. */
+  .wb-line-tabs {
     overflow-x: auto;
     -webkit-overflow-scrolling: touch;
-    padding: 0 8px;
+    padding: 0 var(--sp-2);
   }
 
-  .scn-tab {
+  .wb-line-tab {
     padding: 8px 12px;
     font-size: var(--text-sm);
     flex-shrink: 0;
   }
 
-  .scn-subtabs {
+  .wb-line-tabs--sub {
     overflow-x: auto;
     -webkit-overflow-scrolling: touch;
-    padding: 0 8px;
+    padding: 0 var(--sp-2);
   }
 
-  .scn-subtab {
+  .wb-line-tab--sub {
     padding: 6px 10px;
     font-size: var(--text-xs);
     flex-shrink: 0;
   }
 
-  /* Page Builder blocks — full width */
+  /* Блоки Page Builder — на всю ширину */
   .pb-zone-editor {
     border-radius: 0 !important;
     border-left: none !important;
@@ -136,7 +106,7 @@
     border-right: none !important;
   }
 
-  /* Keyboard buttons — stacked on mobile */
+  /* Кнопки клавіатури — у стовпчик */
   .kb-btn {
     flex-direction: column;
     gap: 4px;

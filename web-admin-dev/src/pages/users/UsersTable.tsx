@@ -119,17 +119,17 @@ export function UsersTable({ onMessage }: Props) {
 
   function thSort(field: SortField, label: string, left?: number) {
     const arrow = sortField === field ? (sortDir === "asc" ? " ↑" : " ↓") : "";
-    const stickyClass = left !== undefined ? " usr-th-sticky" : "";
+    const stickyClass = left !== undefined ? " wb-sticky-th" : "";
     const style = left !== undefined ? { left } : undefined;
     return (
       <th
-        className={`usr-th-sortable${stickyClass}`}
+        className={`wb-th-sortable${stickyClass}`}
         style={style}
         onClick={() => setSort(field)}
         title={`Сортувати за ${label}`}
       >
         {label}
-        {arrow && <span className="usr-th-arrow">{arrow}</span>}
+        {arrow && <span className="wb-sort-arrow">{arrow}</span>}
       </th>
     );
   }
@@ -138,12 +138,12 @@ export function UsersTable({ onMessage }: Props) {
 
   return (
     <>
-      <div className="usr-table-wrap">
-        <table className="usr-table">
+      <div className="wb-data-table-wrap wb-data-table-wrap--inset">
+        <table className="wb-data-table wb-data-table--dense">
           <thead>
             <tr>
-              <th className="usr-th-menu usr-th-sticky"></th>
-              <th className="usr-th-check usr-th-sticky" style={{ left: 36 }}>
+              <th className="wb-col-tight wb-sticky-th"></th>
+              <th className="wb-col-tight wb-sticky-th" style={{ left: 36 }}>
                 <input
                   type="checkbox"
                   checked={allSelected}
@@ -155,13 +155,13 @@ export function UsersTable({ onMessage }: Props) {
               {thSort("username", "Username")}
               {thSort("user_id", "ID")}
               {thSort("created_at", "Приєднання")}
-              <th className="usr-th-status">Статус</th>
+              <th className="wb-col-status">Статус</th>
             </tr>
           </thead>
           <tbody>
             {filtered.length === 0 ? (
               <tr>
-                <td colSpan={7} className="usr-empty">
+                <td colSpan={7} className="wb-cell-empty">
                   {items.length === 0
                     ? "У базі ще немає користувачів."
                     : `Нічого не знайдено за «${search}».`}
@@ -174,13 +174,13 @@ export function UsersTable({ onMessage }: Props) {
                 return (
                   <tr
                     key={u.user_id}
-                    className={`usr-row${blocked ? " usr-row--blocked" : ""}${isSelected ? " usr-row--selected" : ""}`}
+                    className={`${blocked ? "wb-row-blocked" : ""}${isSelected ? " selected" : ""}`.trim()}
                     onClick={() => setSelectedRow(isSelected ? null : u.user_id)}
                     style={{ cursor: "pointer" }}
                   >
-                    <td className="usr-td-menu usr-td-sticky" style={{ left: 0 }}>
+                    <td className="wb-cell-tight wb-cell-center wb-sticky-td" style={{ left: 0 }}>
                       <button
-                        className="usr-menu-btn"
+                        className="wb-row-menu-btn"
                         onClick={(e) => {
                           e.stopPropagation();
                           openMenu(u.user_id);
@@ -190,7 +190,7 @@ export function UsersTable({ onMessage }: Props) {
                         ☰
                       </button>
                     </td>
-                    <td className="usr-td-check usr-td-sticky" style={{ left: 36 }}>
+                    <td className="wb-cell-tight wb-cell-center wb-sticky-td" style={{ left: 36 }}>
                       <input
                         type="checkbox"
                         checked={selectedIds.has(u.user_id)}
@@ -198,23 +198,28 @@ export function UsersTable({ onMessage }: Props) {
                         onClick={(e) => e.stopPropagation()}
                       />
                     </td>
-                    <td className="usr-td-name usr-td-sticky" style={{ left: 72 }}>
+                    <td className="wb-cell-name wb-sticky-td" style={{ left: 72 }}>
                       {formatName(u)}
                     </td>
-                    <td className="usr-td-username">{u.username ? `@${u.username}` : "—"}</td>
-                    <td className="usr-td-id">{u.user_id}</td>
-                    <td className="usr-td-date" title={u.created_at ?? ""}>
+                    <td className="wb-cell-mono wb-text-secondary">
+                      {u.username ? `@${u.username}` : "—"}
+                    </td>
+                    <td className="wb-cell-mono wb-text-muted">{u.user_id}</td>
+                    <td
+                      className="wb-cell-nowrap wb-text-muted wb-text-xs"
+                      title={u.created_at ?? ""}
+                    >
                       {relativeTime(u.created_at)}
                     </td>
-                    <td className="usr-td-status">
+                    <td className="wb-cell-nowrap">
                       {blocked ? (
-                        <span className="usr-badge usr-badge--blocked">Заблоковано</span>
+                        <span className="wb-badge wb-badge--dense wb-badge-red">Заблоковано</span>
                       ) : (
-                        <span className="usr-badge usr-badge--active">Активний</span>
+                        <span className="wb-badge wb-badge--dense wb-badge-green">Активний</span>
                       )}
                       {u.role && u.role !== "user" && (
                         <span
-                          className="usr-badge"
+                          className="wb-badge wb-badge--dense"
                           style={{
                             marginLeft: 4,
                             background:
@@ -236,7 +241,7 @@ export function UsersTable({ onMessage }: Props) {
                       )}
                       {u.tariff && u.tariff !== "free" && (
                         <span
-                          className="usr-badge"
+                          className="wb-badge wb-badge--dense"
                           style={{ marginLeft: 4, background: "#dcfce7", color: "#166534" }}
                         >
                           {u.tariff}

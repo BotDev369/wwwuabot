@@ -91,7 +91,7 @@ export function WebConstructor({ fields, updateField, slug, onFullscreen }: WebC
             style={{ fontSize: 11, padding: "3px 8px" }}
             title="Відкрити конструктор на весь екран"
           >
-            {ico("eye", 14)} <span className="scn-hide-mobile">На весь екран</span>
+            {ico("eye", 14)} <span className="wb-hide-mobile">На весь екран</span>
           </button>
         )}
       </div>

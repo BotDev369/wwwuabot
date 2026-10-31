@@ -17,11 +17,11 @@ export function MainTabs({
   onSelect: (tab: MainTab) => void;
 }) {
   return (
-    <div className="scn-tabs">
+    <div className="wb-line-tabs">
       {MAIN_TABS.map((tab) => (
         <button
           key={tab.key}
-          className={`scn-tab${active === tab.key ? " scn-tab--active" : ""}`}
+          className={`wb-line-tab${active === tab.key ? " wb-line-tab--active" : ""}`}
           onClick={() => onSelect(tab.key)}
           title={tab.label}
         >
@@ -46,11 +46,11 @@ export function SubTabs({
   onOpenJson: () => void;
 }) {
   return (
-    <div className="scn-subtabs">
+    <div className="wb-line-tabs wb-line-tabs--sub">
       {SUB_TABS.map((st) => (
         <button
           key={st.key}
-          className={`scn-subtab${active === st.key ? " scn-subtab--active" : ""}`}
+          className={`wb-line-tab wb-line-tab--sub${active === st.key ? " wb-line-tab--active" : ""}`}
           onClick={() => (st.key === "json" ? onOpenJson() : onSelect(st.key))}
           title={st.label}
         >

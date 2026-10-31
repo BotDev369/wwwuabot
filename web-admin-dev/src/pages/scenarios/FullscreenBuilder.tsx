@@ -60,7 +60,7 @@ export function FullscreenBuilder({
 
   return (
     <div
-      className="scn-fullscreen-builder"
+      className="wb-fullscreen-builder"
       style={{
         position: "fixed",
         inset: 0,
@@ -111,7 +111,7 @@ export function FullscreenBuilder({
           )}
         </div>
       </div>
-      <div className="scn-fullscreen-body">
+      <div className="wb-fullscreen-body">
         <PageBuilderInline
           config={cfg}
           onChange={(newCfg) => updateField("page_data", JSON.stringify(newCfg))}

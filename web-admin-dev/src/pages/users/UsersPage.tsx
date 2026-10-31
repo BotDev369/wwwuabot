@@ -19,12 +19,12 @@ export function UsersPage() {
       <PageTopbar>
         <div className="wb-topbar-left">
           <h1 className="wb-topbar-title">Користувачі</h1>
-          {items.length > 0 && <span className="scn-count">{items.length}</span>}
+          {items.length > 0 && <span className="wb-count">{items.length}</span>}
         </div>
         <div className="wb-topbar-right">
           <input
             type="text"
-            className="scn-search"
+            className="wb-input wb-search"
             placeholder="Пошук за ім'ям або username…"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
@@ -34,7 +34,7 @@ export function UsersPage() {
 
       <UserBulkBar />
 
-      <div className="scn-body">
+      <div className="wb-page-body">
         {status === "loading" ? (
           <div className="empty-state">
             <p className="empty-state-text">Завантаження користувачів…</p>

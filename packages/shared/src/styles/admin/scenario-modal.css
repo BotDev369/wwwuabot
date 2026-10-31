@@ -116,7 +116,7 @@
    будь-яке правило, тож мобільній версії доводилось воювати `!important`.
    Ширину, стовпчик і прокрутку тіла дає кирпичик `.wb-modal` — тут лишається
    тільки своє для сценарію: ширше вікно й робоча висота. */
-.scn-modal {
+.wb-modal--scenario {
   max-width: 900px;
   height: 90dvh;
 }
@@ -126,7 +126,7 @@
      конструктор інакше не вміщаються. Тіло прокручується саме (кирпичик
      `.wb-modal-body` тримає `flex: 1 1 auto` і `min-height: 0`), тому футер
      з діями збереження лишається на місці без окремої сітки. */
-  .scn-modal {
+  .wb-modal--scenario {
     max-width: 100%;
     height: 100vh;
     height: 100dvh;
@@ -136,35 +136,35 @@
     border-radius: 0;
   }
 
-  .wb-modal-overlay:has(.scn-modal) {
+  .wb-modal-overlay:has(.wb-modal--scenario) {
     padding: 0;
   }
 
-  .scn-modal .wb-modal-header {
+  .wb-modal--scenario .wb-modal-header {
     padding: var(--sp-2) var(--sp-3);
     flex-wrap: wrap;
     gap: 6px;
   }
 
-  .scn-modal .wb-modal-header .wb-modal-title {
+  .wb-modal--scenario .wb-modal-header .wb-modal-title {
     font-size: var(--text-sm);
   }
 
-  .scn-modal .scn-tabs,
-  .scn-modal .scn-subtabs {
+  .wb-modal--scenario .wb-line-tabs,
+  .wb-modal--scenario .wb-line-tabs--sub {
     padding: var(--sp-1) var(--sp-2);
     gap: 2px;
   }
 
-  .scn-modal .scn-tab {
+  .wb-modal--scenario .wb-line-tabs:not(.wb-line-tabs--sub) .wb-line-tab {
     padding: 6px var(--sp-2);
   }
 
-  .scn-modal .wb-modal-body {
+  .wb-modal--scenario .wb-modal-body {
     padding: var(--sp-2);
   }
 
-  .scn-modal .wb-modal-footer {
+  .wb-modal--scenario .wb-modal-footer {
     padding: var(--sp-2) var(--sp-3);
     border-top: 1px solid var(--border);
     background: var(--surface, var(--bg-home));
@@ -172,22 +172,18 @@
     gap: var(--sp-2);
   }
 
-  .scn-modal .wb-modal-footer .wb-btn {
+  .wb-modal--scenario .wb-modal-footer .wb-btn {
     flex: 1;
     min-width: 0;
     text-align: center;
-  }
-
-  .scn-hide-mobile {
-    display: none;
   }
 }
 
 /* Поле в сценарії стоїть на поверхні вікна, а не на формі: тло — площина
    екрана, межа — `--border`. Токена `--bg-primary` у продукті немає, тож
    фолбек на `--bg-0` і був значенням. */
-.scn-modal textarea.wb-textarea,
-.scn-modal textarea[style*="monospace"] {
+.wb-modal--scenario textarea.wb-textarea,
+.wb-modal--scenario textarea[style*="monospace"] {
   background: var(--bg-0);
   color: var(--text-primary);
   border: 1px solid var(--border);
@@ -195,11 +191,11 @@
 }
 
 /* ═══ Fullscreen Page Builder overlay ═════════════════════════════════════════ */
-.scn-fullscreen-builder {
-  animation: scn-fade-in 0.15s ease-out;
+.wb-fullscreen-builder {
+  animation: wb-fade-in 0.15s ease-out;
 }
 
-@keyframes scn-fade-in {
+@keyframes wb-fade-in {
   from {
     opacity: 0;
   }
@@ -210,18 +206,18 @@
 
 /* Прокрутка належить тілу конструктора, а не оверлею — інакше шапка з діями
    збереження поїхала б разом зі списком блоків. */
-.scn-fullscreen-body {
+.wb-fullscreen-body {
   flex: 1;
   overflow: auto;
   padding: var(--sp-2);
 }
 
-.scn-fullscreen-builder .pb-zone-editor {
+.wb-fullscreen-builder .pb-zone-editor {
   margin-bottom: 8px;
 }
 
 @media (max-width: 640px) {
-  .scn-fullscreen-body {
+  .wb-fullscreen-body {
     padding: var(--sp-1);
   }
 }
@@ -292,7 +288,7 @@
 /* Смуга дій у футері займає весь рядок: кнопки стоять поруч із «Закрити»
    однаково в усіх вікнах адмінки. */
 .wb-modal-footer > .wb-save-actions,
-.scn-modal .wb-modal-footer > .wb-save-actions {
+.wb-modal--scenario .wb-modal-footer > .wb-save-actions {
   flex: 1 1 100%;
   width: 100%;
 }

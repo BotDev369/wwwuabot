@@ -47,12 +47,12 @@ export function AccessRequestsPage() {
       <PageTopbar>
         <div className="wb-topbar-left">
           <h1 className="wb-topbar-title">Повідомлення</h1>
-          {items.length > 0 && <span className="scn-count">{items.length}</span>}
+          {items.length > 0 && <span className="wb-count">{items.length}</span>}
         </div>
         <div className="wb-topbar-right">
           <input
             type="text"
-            className="scn-search"
+            className="wb-input wb-search"
             placeholder="Пошук за ім'ям або текстом…"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
@@ -63,7 +63,7 @@ export function AccessRequestsPage() {
         </div>
       </PageTopbar>
 
-      <div className="scn-body">
+      <div className="wb-page-body">
         {status === "loading" ? (
           <div className="empty-state">
             <p className="empty-state-text">Завантаження повідомлень…</p>

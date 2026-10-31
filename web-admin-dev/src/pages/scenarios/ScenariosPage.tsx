@@ -80,7 +80,7 @@ export function ScenariosPage() {
       <PageTopbar>
         <div className="wb-topbar-left">
           <h1 className="wb-topbar-title">Сценарії</h1>
-          {items.length > 0 && <span className="scn-count">{items.length}</span>}
+          {items.length > 0 && <span className="wb-count">{items.length}</span>}
         </div>
         <div className="wb-topbar-right">
           <button className="wb-btn wb-btn-primary" onClick={handleCreate} disabled={creating}>
@@ -89,7 +89,7 @@ export function ScenariosPage() {
         </div>
       </PageTopbar>
 
-      <div className="scn-body">
+      <div className="wb-page-body">
         {status === "loading" ? (
           <div className="empty-state">
             <p className="empty-state-text">Завантаження сценаріїв…</p>

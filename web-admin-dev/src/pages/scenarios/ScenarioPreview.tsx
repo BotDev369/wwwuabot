@@ -261,19 +261,19 @@ function BotPreview({ fields }: { fields: Record<string, unknown> }) {
 function SharedPreview({ fields }: { fields: Record<string, unknown> }) {
   return (
     <div style={{ padding: 16 }}>
-      <table className="usr-card-table" style={{ width: "100%" }}>
+      <table className="wb-card-table" style={{ width: "100%" }}>
         <thead>
           <tr>
-            <th className="usr-card-th-field">Поле</th>
-            <th className="usr-card-th-value">Значення</th>
+            <th className="wb-card-th-field">Поле</th>
+            <th className="wb-card-th-value">Значення</th>
           </tr>
         </thead>
         <tbody>
           {["slug", "title", "created_at", "updated_at"].map((key) => (
             <tr key={key}>
-              <td className="usr-card-td-field">{key}</td>
+              <td className="wb-card-td-field">{key}</td>
               <td
-                className="usr-card-td-value"
+                className="wb-card-td-value"
                 style={{ fontFamily: "var(--font-mono)", fontSize: 12 }}
               >
                 {fields[key] === null || fields[key] === undefined ? "—" : String(fields[key])}

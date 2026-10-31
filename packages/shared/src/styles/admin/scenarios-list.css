@@ -1,7 +1,7 @@
 /* ═══════════════════════════════════════════════════════════════════════════════
    SCENARIOS LIST — таблиця, пошук, бейджі (крок «Список сценаріїв»)
    ═══════════════════════════════════════════════════════════════════════════════ */
-.scn-count {
+.wb-count {
   font-size: var(--text-xs);
   font-weight: 500;
   color: var(--text-muted);
@@ -11,38 +11,18 @@
   padding: 2px 10px;
 }
 
-/* Пошук — той самий кирпичик поля, що й решта полів продукту (`--field-bg`
-   + `--field-ring` у shared): у нього немає рамки, тож і тут її не малюємо —
-   інакше адмінка виглядала б інакше за платформу. */
-.scn-search {
-  background: var(--field-bg);
-  box-shadow: var(--field-ring);
-  border: 0;
-  border-radius: var(--radius);
-  padding: var(--field-pad-y) var(--field-pad-x);
-  /* Не менше 16px: менший шрифт змушує iOS сам збільшувати сторінку на фокусі
-     (див. кирпичик «поле вводу» в `components.css`). Друга копія 16px з
-     `!important` тут не потрібна: базове правило мусить тримати ту саму межу —
-     інакше поле лишається єдиним винятком у продукті. */
-  font-size: max(16px, 1em);
-  color: var(--text-primary);
-  outline: none;
+/* Пошук — сам кирпичик поля (`.wb-input` у розмітці) плюс ширина смуги:
+   своїх мірок, кольору чи рамки тут немає, інакше адмінка розійшлася б із
+   платформою. */
+.wb-search {
   width: 220px;
-  transition: box-shadow 0.15s;
-}
-.scn-search:focus {
-  box-shadow:
-    var(--field-ring),
-    0 0 0 2px var(--accent-soft);
+  flex: 0 0 auto;
 }
 
-.scn-body {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  overflow: hidden;
-  min-height: 0;
-  background: var(--bg-2);
+@media (max-width: 768px) {
+  .wb-search {
+    width: 100%;
+  }
 }
 
 .tg-unknown {

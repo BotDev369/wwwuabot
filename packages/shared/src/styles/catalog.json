@@ -38,17 +38,17 @@
     {
       "file": "admin/scenario-modal.css",
       "tokens": 0,
-      "classes": 39
+      "classes": 38
     },
     {
       "file": "admin/scenario-tabs.css",
       "tokens": 0,
-      "classes": 12
+      "classes": 11
     },
     {
       "file": "admin/scenarios-list.css",
       "tokens": 0,
-      "classes": 9
+      "classes": 8
     },
     {
       "file": "admin/shell.css",
@@ -68,7 +68,7 @@
     {
       "file": "admin/users-table.css",
       "tokens": 0,
-      "classes": 32
+      "classes": 24
     },
     {
       "file": "ads.css",
@@ -78,7 +78,7 @@
     {
       "file": "app-chrome.css",
       "tokens": 1,
-      "classes": 141
+      "classes": 142
     },
     {
       "file": "assessments.css",
@@ -88,7 +88,7 @@
     {
       "file": "components.css",
       "tokens": 13,
-      "classes": 198
+      "classes": 200
     },
     {
       "file": "contacts.css",
@@ -2743,12 +2743,11 @@
       {
         "section": "ScenarioCardModal",
         "names": [
-          "scn-hide-mobile",
-          "scn-modal",
-          "scn-subtabs",
-          "scn-tab",
-          "scn-tabs",
           "wb-btn",
+          "wb-line-tab",
+          "wb-line-tabs",
+          "wb-line-tabs--sub",
+          "wb-modal--scenario",
           "wb-modal-body",
           "wb-modal-footer",
           "wb-modal-header",
@@ -2761,8 +2760,8 @@
         "section": "Fullscreen Page Builder overlay",
         "names": [
           "pb-zone-editor",
-          "scn-fullscreen-body",
-          "scn-fullscreen-builder"
+          "wb-fullscreen-body",
+          "wb-fullscreen-builder"
         ]
       },
       {
@@ -2776,7 +2775,7 @@
           "pb-be-field-input",
           "pb-be-field-label",
           "pb-be-header",
-          "scn-modal",
+          "wb-modal--scenario",
           "wb-modal-footer",
           "wb-save-actions"
         ]
@@ -2786,32 +2785,17 @@
       {
         "section": "",
         "names": [
-          "scn-tab",
-          "scn-tab--active",
-          "scn-tabs"
-        ]
-      },
-      {
-        "section": "SUB-TABS — підвкладки у ScenarioCardModal",
-        "names": [
-          "scn-subtab",
-          "scn-subtab--active",
-          "scn-subtabs"
-        ]
-      },
-      {
-        "section": "MOBILE FULL-SCREEN MODALS",
-        "names": [
           "kb-add-btn",
           "kb-add-row",
           "kb-btn",
           "kb-row-buttons",
           "pb-block-editor",
           "pb-zone-editor",
-          "scn-subtab",
-          "scn-subtabs",
-          "scn-tab",
-          "scn-tabs"
+          "wb-line-tab",
+          "wb-line-tab--active",
+          "wb-line-tab--sub",
+          "wb-line-tabs",
+          "wb-line-tabs--sub"
         ]
       }
     ],
@@ -2819,15 +2803,14 @@
       {
         "section": "",
         "names": [
-          "scn-body",
-          "scn-count",
-          "scn-search",
           "tg-btn",
           "tg-btn-row",
           "tg-buttons",
           "tg-caption",
           "tg-photo",
-          "tg-unknown"
+          "tg-unknown",
+          "wb-count",
+          "wb-search"
         ]
       }
     ],
@@ -2963,62 +2946,60 @@
       {
         "section": "",
         "names": [
-          "usr-badge",
-          "usr-badge--active",
-          "usr-badge--blocked",
-          "usr-empty",
-          "usr-row",
-          "usr-row--blocked",
-          "usr-row--selected",
-          "usr-table",
-          "usr-table-wrap",
-          "usr-td-check",
-          "usr-td-date",
-          "usr-td-id",
-          "usr-td-menu",
-          "usr-td-name",
-          "usr-td-status",
-          "usr-td-sticky",
-          "usr-td-username",
-          "usr-th-arrow",
-          "usr-th-check",
-          "usr-th-menu",
-          "usr-th-sortable",
-          "usr-th-sticky"
+          "selected",
+          "wb-data-table--dense",
+          "wb-data-table-wrap--inset",
+          "wb-row-blocked",
+          "wb-sticky-td",
+          "wb-sticky-th"
         ]
       },
       {
-        "section": "Row menu",
+        "section": "Колонки й комірки",
         "names": [
-          "usr-menu-btn"
+          "wb-cell-center",
+          "wb-cell-empty",
+          "wb-cell-mono",
+          "wb-cell-name",
+          "wb-cell-nowrap",
+          "wb-cell-tight",
+          "wb-col-status",
+          "wb-col-tight",
+          "wb-data-table--dense",
+          "wb-sort-arrow",
+          "wb-th-sortable"
         ]
       },
       {
-        "section": "Bulk bar",
+        "section": "Меню рядка",
         "names": [
-          "usr-bulk-bar",
-          "usr-bulk-count"
+          "wb-row-menu-btn"
         ]
       },
       {
-        "section": "Card table",
+        "section": "Смуга масових дій",
         "names": [
-          "usr-card-table",
-          "usr-card-td-field",
-          "usr-card-td-value",
-          "usr-card-th-field",
-          "usr-card-th-value",
-          "usr-th-status"
+          "wb-bulk-bar",
+          "wb-bulk-count"
         ]
       },
       {
-        "section": "Mobile adaptation",
+        "section": "Таблиця картки (поле → значення)",
         "names": [
-          "scn-search",
-          "usr-bulk-bar",
-          "usr-table",
-          "usr-table-wrap",
-          "usr-td-name"
+          "wb-card-table",
+          "wb-card-td-field",
+          "wb-card-td-value",
+          "wb-card-th-field",
+          "wb-card-th-value"
+        ]
+      },
+      {
+        "section": "Телефон",
+        "names": [
+          "wb-bulk-bar",
+          "wb-cell-name",
+          "wb-data-table--dense",
+          "wb-data-table-wrap--inset"
         ]
       }
     ],
@@ -3113,6 +3094,7 @@
       {
         "section": "Глобальний нижній футер (tab bar)",
         "names": [
+          "wb-page-body",
           "wb-page-scroll",
           "wb-tabbar",
           "wb-tabbar-badge",
@@ -3703,6 +3685,7 @@
         "section": "Badge",
         "names": [
           "wb-badge",
+          "wb-badge--dense",
           "wb-badge-accent",
           "wb-badge-green",
           "wb-badge-neutral",
@@ -3755,6 +3738,7 @@
         "names": [
           "wb-font-bold",
           "wb-font-semibold",
+          "wb-hide-mobile",
           "wb-text-base",
           "wb-text-green",
           "wb-text-md",
