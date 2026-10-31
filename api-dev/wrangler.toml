@@ -36,6 +36,13 @@ bucket_name = "wwwuabot-shop-dev"
 binding = "MESSAGE_MEDIA"
 bucket_name = "wwwuabot-shop-dev"
 
+# Сирі відповіді Є-data (`spending/contracts/…`, `spending/transactions/…`),
+# стиснуті gzip. Окремий бакет, а не префікс у магазинному: це архів джерела,
+# і його квота не має рахуватись як файли продукту (docs/SPENDING.md §4).
+[[r2_buckets]]
+binding = "SPENDING_SNAPSHOTS"
+bucket_name = "wwwuabot-spending-dev"
+
 [vars]
 # ADMIN_SECRET, BOT_TOKEN, SECRET_TOKEN, SENTRY_DSN, GITHUB_MONITOR_TOKEN і
 # CF_MONITOR_TOKEN — задаються через Cloudflare Dashboard (Secrets).
@@ -73,4 +80,7 @@ binding = "CF_VERSION_METADATA"
 # показники репозиторію з GitHub API; пропущені зрізи не біда — кожен
 # наступний міряє той самий проєкт заново.
 [triggers]
-crons = ["17 4 * * *"]
+# `17 4` — зріз моніторингу; `37 5` — збір Є-data за минулий місяць
+# (`SPENDING_CRON` у `api-dev/src/services/spending/config.ts`). Різні розклади — різна
+# частота й різний бюджет часу.
+crons = ["17 4 * * *", "37 5 * * *"]

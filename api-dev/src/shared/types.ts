@@ -26,6 +26,13 @@ export interface Env {
    * іншого. Необов'язковий, як `SHOP_MEDIA` (503, коли біндингу немає).
    */
   MESSAGE_MEDIA?: R2Bucket;
+  /**
+   * Сирі відповіді Є-data, стиснуті gzip (`spending/…`). Окремий простір
+   * ключів, як і в `MESSAGE_MEDIA`: архів джерела не змішується з файлами
+   * продукту. Необов'язковий — колектор падає з дорогою помилкою в звіті,
+   * якщо біндингу немає, а решта воркера працює (docs/SPENDING.md §4).
+   */
+  SPENDING_SNAPSHOTS?: R2Bucket;
   /** Токен Telegram бота — виклики api.telegram.org (налаштування вебхука). */
   BOT_TOKEN?: string;
   /** Секрет Telegram webhook — ставиться в secret_token при setWebhook. */

@@ -7,6 +7,8 @@ import { recordPlatformAction } from "./services/user-events.service";
 import { secureResponse } from "@wwwuabot/shared/security/headers";
 import { collectSnapshot } from "./services/monitoring/collect";
 import { saveSnapshot } from "./services/monitoring/store";
+import { runSpendingCollection } from "./services/spending/collect";
+import { SPENDING_CRON, previousMonthPeriod } from "./services/spending/config";
 import type { Env } from "./shared/types";
 
 /**
@@ -22,6 +24,22 @@ async function runScheduledCollection(env: Env): Promise<void> {
     await saveSnapshot(env, await collectSnapshot(env, "cron"), "cron");
   } catch (error) {
     apiLog.error("monitoring: збір за розкладом упав", error);
+    Sentry.captureException(error);
+  }
+}
+
+/**
+ * Збір Є-data за минулий місяць.
+ *
+ * Падіння не має валити воркера: причина лишається в логах і Sentry, а
+ * курсор у `spending_sync` дозволяє наступному запуску продовжити з того
+ * кроку, на якому обірвалося (docs/SPENDING.md §4).
+ */
+async function runSpendingJob(env: Env): Promise<void> {
+  try {
+    await runSpendingCollection(env, { period: previousMonthPeriod(new Date()) });
+  } catch (error) {
+    apiLog.error("spending: збір за розкладом упав", error);
     Sentry.captureException(error);
   }
 }
@@ -85,12 +103,16 @@ export default Sentry.withSentry(
       }
     },
 
-    /** Розклад із `[triggers]` — див. `runScheduledCollection`. */
+    /** Розклад із `[triggers]`: `controller.cron` каже, який саме спрацював. */
     async scheduled(
-      _controller: ScheduledController,
+      controller: ScheduledController,
       env: Env,
       ctx: ExecutionContext,
     ): Promise<void> {
+      if (controller.cron === SPENDING_CRON) {
+        ctx.waitUntil(runSpendingJob(env));
+        return;
+      }
       ctx.waitUntil(runScheduledCollection(env));
     },
   },

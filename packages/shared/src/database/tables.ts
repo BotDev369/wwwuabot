@@ -1117,6 +1117,115 @@ export const TABLES = {
       "CREATE INDEX IF NOT EXISTS idx_assessment_results_owner ON assessment_results(owner_id, test_key, scale_key, created_at)",
     ],
   },
+  /**
+   * Розпорядник Є-data: те, що джерело саме каже про себе (`orgName`,
+   * `kopfg`, `koatuu`). Не копія реєстру: тут лише ті, за ким справді є що
+   * імпортувати — тому школа з власним ЄДРПОУ сюди не потрапляє, якщо кошти
+   * проводить відділ освіти (docs/SPENDING.md §8).
+   */
+  spending_orgs: {
+    name: "spending_orgs",
+    owner: "api-dev",
+    purpose: "Розпорядники Є-data: назва, форма, kopfg, koatuu і КВЕД так, як їх віддає джерело.",
+    create: `CREATE TABLE IF NOT EXISTS spending_orgs (
+        edrpou TEXT PRIMARY KEY,
+        name TEXT NOT NULL DEFAULT '',
+        form TEXT NOT NULL DEFAULT '',
+        kopfg TEXT NOT NULL DEFAULT '',
+        koatuu TEXT NOT NULL DEFAULT '',
+        kved TEXT NOT NULL DEFAULT '',
+        first_seen_at TEXT NOT NULL DEFAULT (datetime('now')),
+        updated_at TEXT NOT NULL DEFAULT (datetime('now'))
+      )`,
+  },
+
+  /**
+   * Договір у тому вигляді, у якому його показують: сума, предмет, КПКВ і
+   * контрагенти. `id` — ідентифікатор джерела, тому повторний прогін
+   * оновлює рядок, а не додає другий.
+   *
+   * `contractors` — JSON, а не таблиця: контрагент без договору не існує, і
+   * другий рядок на кожного дав би друге правило «хто сторона договору».
+   */
+  spending_documents: {
+    name: "spending_documents",
+    owner: "api-dev",
+    purpose: "Договори розпорядників: номер, дати, сума, предмет, КПКВ і контрагенти (JSON).",
+    create: `CREATE TABLE IF NOT EXISTS spending_documents (
+        id TEXT PRIMARY KEY,
+        edrpou TEXT NOT NULL DEFAULT '',
+        kind TEXT NOT NULL DEFAULT 'contract',
+        number TEXT NOT NULL DEFAULT '',
+        document_date TEXT NOT NULL DEFAULT '',
+        sign_date TEXT NOT NULL DEFAULT '',
+        amount REAL NOT NULL DEFAULT 0,
+        currency TEXT NOT NULL DEFAULT 'UAH',
+        subject TEXT NOT NULL DEFAULT '',
+        cpv TEXT NOT NULL DEFAULT '',
+        contractors TEXT NOT NULL DEFAULT '[]',
+        fetched_at TEXT NOT NULL DEFAULT (datetime('now'))
+      )`,
+    indexes: [
+      "CREATE INDEX IF NOT EXISTS idx_spending_documents_org ON spending_documents(edrpou, document_date)",
+    ],
+  },
+
+  /**
+   * Платіж казначейства: хто, кому, коли, скільки і за якою класифікацією.
+   *
+   * `recipt_edrpou` — з друкарською помилкою в самому джерелі; колонка
+   * повторює його, щоб збіг з API був буквальним (docs/SPENDING.md §2).
+   * Порожній код означає «не оприлюднено», а не «не платили».
+   */
+  spending_transactions: {
+    name: "spending_transactions",
+    owner: "api-dev",
+    purpose: "Платежі Є-data: платник, отримувач, дата, сума, призначення, КЕКВ/КПК і договір.",
+    create: `CREATE TABLE IF NOT EXISTS spending_transactions (
+        id TEXT PRIMARY KEY,
+        payer_edrpou TEXT NOT NULL DEFAULT '',
+        payer_name TEXT NOT NULL DEFAULT '',
+        recipt_edrpou TEXT NOT NULL DEFAULT '',
+        recipt_name TEXT NOT NULL DEFAULT '',
+        trans_date TEXT NOT NULL DEFAULT '',
+        amount REAL NOT NULL DEFAULT 0,
+        currency TEXT NOT NULL DEFAULT 'UAH',
+        payment_details TEXT NOT NULL DEFAULT '',
+        kekv TEXT NOT NULL DEFAULT '',
+        kpk TEXT NOT NULL DEFAULT '',
+        budget_code TEXT NOT NULL DEFAULT '',
+        contract_id TEXT NOT NULL DEFAULT '',
+        contract_number TEXT NOT NULL DEFAULT '',
+        source_name TEXT NOT NULL DEFAULT '',
+        fetched_at TEXT NOT NULL DEFAULT (datetime('now'))
+      )`,
+    indexes: [
+      "CREATE INDEX IF NOT EXISTS idx_spending_transactions_payer ON spending_transactions(payer_edrpou, trans_date)",
+      "CREATE INDEX IF NOT EXISTS idx_spending_transactions_recipt ON spending_transactions(recipt_edrpou, trans_date)",
+    ],
+  },
+
+  /**
+   * Курсор прогону: рядок на крок (договори розпорядника, пачка платежів).
+   * Живе в баа¾, а не в пам'яті: обірваний прогін продовжується з нього, а
+   * стан видно адміну без читання логів. `error` лишається при рядку —
+   * наступний прогін його перезапише лише при спробі знову.
+   */
+  spending_sync: {
+    name: "spending_sync",
+    owner: "api-dev",
+    purpose: "Стан збору Є-data: крок, період, статус, кількість рядків і причина збою.",
+    create: `CREATE TABLE IF NOT EXISTS spending_sync (
+        key TEXT PRIMARY KEY,
+        kind TEXT NOT NULL DEFAULT '',
+        period TEXT NOT NULL DEFAULT '',
+        status TEXT NOT NULL DEFAULT 'pending',
+        rows INTEGER NOT NULL DEFAULT 0,
+        started_at TEXT NOT NULL DEFAULT (datetime('now')),
+        finished_at TEXT,
+        error TEXT NOT NULL DEFAULT ''
+      )`,
+  },
 } satisfies Record<string, TableDefinition>;
 
 /** Імена всіх оголошених таблиць. */
