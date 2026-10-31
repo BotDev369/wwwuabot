@@ -37,7 +37,14 @@ import {
   upsertOrgs,
   upsertTransactions,
 } from "./store";
-import { contractsUrl, disposerUrl, fetchJson, lastLoadUrl, pause, transactionsUrl } from "./source";
+import {
+  contractsUrl,
+  disposerUrl,
+  fetchJson,
+  lastLoadUrl,
+  pause,
+  transactionsUrl,
+} from "./source";
 
 export interface SpendingRunOptions {
   /** `YYYY-MM` — рівно один місяць: ширше джерело не віддає транзакцій. */

@@ -96,10 +96,7 @@ export async function upsertOrgs(db: D1Database, rows: readonly OrgRow[]): Promi
   await runBatched(db, statements);
 }
 
-export async function upsertDocuments(
-  db: D1Database,
-  rows: readonly DocumentRow[],
-): Promise<void> {
+export async function upsertDocuments(db: D1Database, rows: readonly DocumentRow[]): Promise<void> {
   const statements = rows.map((row) =>
     db
       .prepare(
@@ -170,11 +167,7 @@ export async function upsertTransactions(
 }
 
 /** Сира відповідь у R2: gzip, далі розбір не робить жодного запиту до джерела. */
-export async function archiveRaw(
-  bucket: R2Bucket,
-  key: string,
-  payload: unknown,
-): Promise<number> {
+export async function archiveRaw(bucket: R2Bucket, key: string, payload: unknown): Promise<number> {
   const body = new Response(JSON.stringify(payload)).body;
   if (!body) throw new Error(`R2: не вдалося стиснути «${key}».`);
   const gzipped = new Uint8Array(

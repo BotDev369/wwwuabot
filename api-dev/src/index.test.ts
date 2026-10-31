@@ -33,7 +33,20 @@ vi.mock("./router", () => ({ handleRequest: () => router.handler() }));
 const recordPlatform = vi.hoisted(() => vi.fn(async () => {}));
 vi.mock("./services/user-events.service", () => ({ recordPlatformAction: recordPlatform }));
 
+// Два розклади живуть в одному `scheduled`: який саме спрацював, каже
+// `controller.cron`. Підміняємо обидва збори, щоб перевірити саме розгалуження.
+const spending = vi.hoisted(() => ({ run: vi.fn(async () => ({ period: "2026-09" })) }));
+vi.mock("./services/spending/collect", () => ({ runSpendingCollection: spending.run }));
+
+const monitoring = vi.hoisted(() => ({
+  collect: vi.fn(async () => ({ at: "2026-09-30T00:00:00Z" })),
+  save: vi.fn(async () => {}),
+}));
+vi.mock("./services/monitoring/collect", () => ({ collectSnapshot: monitoring.collect }));
+vi.mock("./services/monitoring/store", () => ({ saveSnapshot: monitoring.save }));
+
 const { default: worker } = await import("./index");
+const { SPENDING_CRON } = await import("./services/spending/config");
 
 const env = {} as Env;
 
@@ -47,6 +60,15 @@ function executionContext(): { ctx: ExecutionContext; waited: Promise<unknown>[]
       passThroughOnException: () => {},
     } as unknown as ExecutionContext,
   };
+}
+
+/** `ScheduledController`, який має все, що читає обгортка Sentry (зокрема час). */
+function controller(cron: string): ScheduledController {
+  return {
+    cron,
+    scheduledTime: Date.parse("2026-10-31T05:37:00Z"),
+    noRetry: () => {},
+  } as unknown as ScheduledController;
 }
 
 describe("необроблений виняток", () => {
@@ -77,6 +99,48 @@ describe("необроблений виняток", () => {
     // Четвертий аргумент — час приходу запиту: журнал пишеться після відповіді,
     // тож без нього порядок історії задавав би той, хто швидше записав рядок.
     expect(recordPlatform).toHaveBeenCalledWith(request, env, 200, expect.any(Number));
+    await expect(Promise.all(waited)).resolves.toBeDefined();
+  });
+
+  it("збір Є-data впізнається за власним cron і йде у `waitUntil`", async () => {
+    const { ctx, waited } = executionContext();
+
+    await worker.scheduled(controller(SPENDING_CRON), env, ctx);
+
+    expect(spending.run).toHaveBeenCalledWith(
+      env,
+      expect.objectContaining({ period: expect.stringMatching(/^\d{4}-\d{2}$/) }),
+    );
+    expect(monitoring.collect).not.toHaveBeenCalled();
+    await expect(Promise.all(waited)).resolves.toBeDefined();
+  });
+
+  it("будь-який інший cron — це зріз моніторингу", async () => {
+    const { ctx, waited } = executionContext();
+
+    await worker.scheduled(controller("17 4 * * *"), env, ctx);
+
+    expect(monitoring.collect).toHaveBeenCalled();
+    expect(monitoring.save).toHaveBeenCalled();
+    expect(spending.run).not.toHaveBeenCalled();
+    await expect(Promise.all(waited)).resolves.toBeDefined();
+  });
+
+  it("падіння збору Є-data не валить воркера", async () => {
+    spending.run.mockRejectedValueOnce(new Error("Є-data недоступне"));
+    const { ctx, waited } = executionContext();
+
+    await worker.scheduled(controller(SPENDING_CRON), env, ctx);
+
+    await expect(Promise.all(waited)).resolves.toBeDefined();
+  });
+
+  it("падіння зрізу моніторингу теж не валить воркера", async () => {
+    monitoring.collect.mockRejectedValueOnce(new Error("D1 недоступна"));
+    const { ctx, waited } = executionContext();
+
+    await worker.scheduled(controller("17 4 * * *"), env, ctx);
+
     await expect(Promise.all(waited)).resolves.toBeDefined();
   });
 

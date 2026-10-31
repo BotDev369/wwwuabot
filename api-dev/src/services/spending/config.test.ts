@@ -3,7 +3,11 @@ import { chunk, monthWindow, previousMonthPeriod } from "./config";
 
 describe("вікно місяця", () => {
   it("дає перше й останнє число місяця", () => {
-    expect(monthWindow("2026-09")).toEqual({ period: "2026-09", from: "2026-09-01", to: "2026-09-30" });
+    expect(monthWindow("2026-09")).toEqual({
+      period: "2026-09",
+      from: "2026-09-01",
+      to: "2026-09-30",
+    });
   });
 
   it("рахує лютий у звичайному й високосному році", () => {
