@@ -17,27 +17,22 @@
 
 [data-theme="dark"] {
   /* ── Тло: M3 dark surface containers ─────────────────────────────────── */
-  --bg-home: radial-gradient(
-    120% 90% at 12% 0%,
-    var(--surface) 0%,
-    var(--bg-2) 55%,
-    var(--bg-0) 100%
-  );
-  --bg-0: #0f1013; /* surface-container-lowest */
-  --bg-1: #1b1b1f; /* surface */
-  --bg-2: #202024; /* surface-container-low */
-  --bg-3: #2a2a2e; /* surface-container */
-  --bg-4: #353538; /* surface-container-high */
+  --bg-home: var(--bg-0);
+  --bg-0: #0e0e11; /* surface-container-lowest */
+  --bg-1: #17171b; /* surface */
+  --bg-2: #1e1e23; /* surface-container-low */
+  --bg-3: #26262c; /* surface-container */
+  --bg-4: #313138; /* surface-container-high */
 
   /* ── Межі ─────────────────────────────────────────────────────────────── */
-  --border: #44464f;
-  --border-hover: #5c5f6a;
-  --border-subtle: #38383d;
+  --border: #3b3b45;
+  --border-hover: #54545f;
+  --border-subtle: #2f2f36;
 
   /* ── Текст ────────────────────────────────────────────────────────────── */
-  --text-primary: #e3e2e6;
-  --text-secondary: #c7c5d0;
-  --text-muted: #a2a2ac;
+  --text-primary: #e9e9ee;
+  --text-secondary: #bdbdc8;
+  --text-muted: #a5a5b0;
   --text-inverse: #1b1b1f;
 
   /* ── Акцент ───────────────────────────────────────────────────────────── */
@@ -58,18 +53,18 @@
   --yellow-dim: rgba(221, 185, 72, 0.12);
 
   /* ── Поверхні ─────────────────────────────────────────────────────────── */
-  --surface: #1b1b1f;
-  --surface-hover: #2a2a2e;
-  --surface-active: #353538;
+  --surface: #17171b;
+  --surface-hover: #26262c;
+  --surface-active: #313138;
   --surface-overlay: rgba(0, 0, 0, 0.6);
   --selection-bg: rgba(227, 226, 230, 0.2);
 
   /* Глибина в темній схемі: світла межа тут не працює (білий контур світиться),
      тому волосина — світлий колір із малою часткою, а тінь глибша й ширша:
      картка мусить відриватись від тла тінню, а не сяйвом краю. */
-  --hairline: rgba(227, 226, 230, 0.07);
-  --card-border: rgba(227, 226, 230, 0.07);
-  --shadow-card: 0 1px 1px rgba(0, 0, 0, 0.4), 0 14px 34px -20px rgba(0, 0, 0, 0.9);
+  --hairline: rgba(233, 233, 238, 0.07);
+  --card-border: rgba(233, 233, 238, 0.07);
+  --shadow-card: 0 1px 1px rgba(0, 0, 0, 0.4), 0 14px 34px -22px rgba(0, 0, 0, 0.85);
 
   /* Модалка — на сходинку вище за поверхню екрана (M3 surface-container):
      інакше вона того самого кольору, що й тло під скримом, і губиться. Поле
@@ -78,11 +73,11 @@
 
   /* Картка — та сама «заповнена поверхня», що й у світлій схемі, лише на
      сходинку вище за тло екрана. */
-  --card-bg: #26262a;
+  --card-bg: #222227;
 
   /* Сайдбар — плита на сходинку вище за тло, з глибшою тінню. */
-  --sidebar-bg: #16161a;
-  --sidebar-shadow: 4px 0 16px rgba(0, 0, 0, 0.4);
+  --sidebar-bg: #141418;
+  --sidebar-shadow: 1px 0 0 var(--hairline), 8px 0 24px -18px rgba(0, 0, 0, 0.6);
 
   /* ── Поле вводу ─────────────────────────────────────────────────────────
      Поле — світліше за поверхню (у темній схемі тінь країв не видно, тож
@@ -90,20 +85,20 @@
   --field-bg: var(--bg-4);
   --switch-knob: #d9d7e0;
   --field-bg-raised: #343a46;
-  --field-ring: 0 1px 2px rgba(0, 0, 0, 0.45), 0 2px 6px rgba(0, 0, 0, 0.3);
+  --field-ring: 0 0 0 1px rgba(233, 233, 238, 0.1);
 
   /* ── Нативний хром Telegram ──────────────────────────────────────────────
      Плоска форма --bg-1: шапка клієнта і смуга під футером зливаються з
      нашою шапкою й футером без шва. */
-  --chrome-header-bg: #1b1b1f;
-  --chrome-bottom-bg: #1b1b1f;
+  --chrome-header-bg: #17171b;
+  --chrome-bottom-bg: #17171b;
 
   /* ── Підняття й тіні: у темній схемі глибші ───────────────────────────── */
-  --shadow-xs: 0 1px 2px rgba(0, 0, 0, 0.45);
-  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.5), 0 1px 2px rgba(0, 0, 0, 0.4);
-  --shadow-md: 0 2px 6px rgba(0, 0, 0, 0.5), 0 1px 2px rgba(0, 0, 0, 0.4);
-  --shadow-lg: 0 4px 8px rgba(0, 0, 0, 0.5), 0 2px 4px rgba(0, 0, 0, 0.4);
-  --shadow-xl: 0 6px 10px rgba(0, 0, 0, 0.5), 0 2px 3px rgba(0, 0, 0, 0.4);
+  --shadow-xs: 0 1px 2px rgba(0, 0, 0, 0.35);
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.35), 0 1px 3px rgba(0, 0, 0, 0.3);
+  --shadow-md: 0 2px 4px rgba(0, 0, 0, 0.35), 0 4px 12px rgba(0, 0, 0, 0.35);
+  --shadow-lg: 0 4px 8px rgba(0, 0, 0, 0.35), 0 12px 28px rgba(0, 0, 0, 0.4);
+  --shadow-xl: 0 8px 16px rgba(0, 0, 0, 0.4), 0 24px 48px rgba(0, 0, 0, 0.5);
 
   --elevation-0: none;
   --elevation-1: 0 1px 3px rgba(0, 0, 0, 0.4);

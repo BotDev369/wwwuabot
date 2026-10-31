@@ -215,7 +215,7 @@
     {
       "name": "--accent",
       "section": "Палітра світлої схеми (M3 surface containers)",
-      "light": "#9c3410",
+      "light": "#a0330f",
       "dark": "#ffa887",
       "palette": "",
       "paletteDark": "var(--user-accent)"
@@ -223,7 +223,7 @@
     {
       "name": "--accent-dim",
       "section": "Палітра світлої схеми (M3 surface containers)",
-      "light": "rgba(156, 52, 16, 0.08)",
+      "light": "rgba(160, 51, 15, 0.08)",
       "dark": "rgba(255, 168, 135, 0.12)",
       "palette": "color-mix(\n    in srgb,\n    var(--user-accent) 8%,\n    color-mix(in srgb, var(--user-bg) 14%, #ffffff)\n  )",
       "paletteDark": "color-mix(in srgb, var(--user-accent) 18%, var(--user-bg))"
@@ -231,7 +231,7 @@
     {
       "name": "--accent-hover",
       "section": "Палітра світлої схеми (M3 surface containers)",
-      "light": "#7d290b",
+      "light": "#852a0c",
       "dark": "#ffc4ad",
       "palette": "",
       "paletteDark": "color-mix(in srgb, var(--user-accent) 78%, var(--user-text))"
@@ -239,7 +239,7 @@
     {
       "name": "--accent-soft",
       "section": "Палітра світлої схеми (M3 surface containers)",
-      "light": "rgba(156, 52, 16, 0.09)",
+      "light": "rgba(160, 51, 15, 0.1)",
       "dark": "rgba(255, 168, 135, 0.14)",
       "palette": "",
       "paletteDark": "color-mix(in srgb, var(--user-accent) 12%, transparent)"
@@ -255,48 +255,48 @@
     {
       "name": "--bg-0",
       "section": "Палітра світлої схеми (M3 surface containers)",
-      "light": "#f0f0f4",
-      "dark": "#0f1013",
+      "light": "#f6f6f7",
+      "dark": "#0e0e11",
       "palette": "",
       "paletteDark": "var(--user-bg)"
     },
     {
       "name": "--bg-1",
       "section": "Палітра світлої схеми (M3 surface containers)",
-      "light": "var(--bg-home, #f0f0f4)",
-      "dark": "#1b1b1f",
+      "light": "var(--bg-home, #f6f6f7)",
+      "dark": "#17171b",
       "palette": "",
       "paletteDark": "var(--bg-home)"
     },
     {
       "name": "--bg-2",
       "section": "Палітра світлої схеми (M3 surface containers)",
-      "light": "#ededf0",
-      "dark": "#202024",
+      "light": "#f1f1f3",
+      "dark": "#1e1e23",
       "palette": "",
       "paletteDark": "color-mix(in srgb, var(--user-bg) 95%, var(--user-text))"
     },
     {
       "name": "--bg-3",
       "section": "Палітра світлої схеми (M3 surface containers)",
-      "light": "#e4e4e8",
-      "dark": "#2a2a2e",
+      "light": "#e9e9ec",
+      "dark": "#26262c",
       "palette": "",
       "paletteDark": "color-mix(in srgb, var(--user-bg) 90%, var(--user-text))"
     },
     {
       "name": "--bg-4",
       "section": "Палітра світлої схеми (M3 surface containers)",
-      "light": "#dcdce0",
-      "dark": "#353538",
+      "light": "#e2e2e6",
+      "dark": "#313138",
       "palette": "",
       "paletteDark": "color-mix(in srgb, var(--user-bg) 86%, var(--user-text))"
     },
     {
       "name": "--bg-home",
       "section": "Палітра світлої схеми (M3 surface containers)",
-      "light": "radial-gradient(120% 90% at 12% 0%, #ffffff 0%, var(--bg-2) 55%, var(--bg-0) 100%)",
-      "dark": "radial-gradient(\n    120% 90% at 12% 0%,\n    var(--surface) 0%,\n    var(--bg-2) 55%,\n    var(--bg-0) 100%\n  )",
+      "light": "var(--bg-0)",
+      "dark": "var(--bg-0)",
       "palette": "",
       "paletteDark": "radial-gradient(120% 90% at 12% 0%, var(--bg-3) 0%, var(--bg-2) 55%, var(--bg-0) 100%)"
     },
@@ -311,24 +311,24 @@
     {
       "name": "--border",
       "section": "Палітра світлої схеми (M3 surface containers)",
-      "light": "#b0b0b8",
-      "dark": "#44464f",
+      "light": "#d6d6dd",
+      "dark": "#3b3b45",
       "palette": "",
       "paletteDark": "color-mix(in srgb, var(--user-text) 20%, var(--user-bg))"
     },
     {
       "name": "--border-hover",
       "section": "Палітра світлої схеми (M3 surface containers)",
-      "light": "#94949e",
-      "dark": "#5c5f6a",
+      "light": "#b4b4bf",
+      "dark": "#54545f",
       "palette": "",
       "paletteDark": "color-mix(in srgb, var(--user-text) 45%, var(--user-bg))"
     },
     {
       "name": "--border-subtle",
       "section": "Палітра світлої схеми (M3 surface containers)",
-      "light": "#c8c8d0",
-      "dark": "#38383d",
+      "light": "#e7e7eb",
+      "dark": "#2f2f36",
       "palette": "",
       "paletteDark": "color-mix(in srgb, var(--user-text) 10%, var(--user-bg))"
     },
@@ -343,7 +343,7 @@
     {
       "name": "--btn-pad-y",
       "section": "Button metrics",
-      "light": "8px",
+      "light": "10px",
       "dark": "",
       "palette": "",
       "paletteDark": ""
@@ -351,7 +351,7 @@
     {
       "name": "--btn-radius",
       "section": "Button metrics",
-      "light": "20px",
+      "light": "10px",
       "dark": "",
       "palette": "",
       "paletteDark": ""
@@ -360,15 +360,15 @@
       "name": "--card-bg",
       "section": "Картка",
       "light": "#ffffff",
-      "dark": "#26262a",
+      "dark": "#222227",
       "palette": "color-mix(in srgb, var(--user-bg) 86%, #ffffff)",
       "paletteDark": "color-mix(in srgb, var(--user-bg) 94%, var(--user-text))"
     },
     {
       "name": "--card-border",
       "section": "Глибина поверхонь",
-      "light": "rgba(28, 27, 31, 0.06)",
-      "dark": "rgba(227, 226, 230, 0.07)",
+      "light": "rgba(21, 21, 26, 0.05)",
+      "dark": "rgba(233, 233, 238, 0.07)",
       "palette": "",
       "paletteDark": "color-mix(in srgb, var(--user-text) 7%, transparent)"
     },
@@ -391,7 +391,7 @@
     {
       "name": "--card-radius",
       "section": "Картка",
-      "light": "20px",
+      "light": "14px",
       "dark": "",
       "palette": "",
       "paletteDark": ""
@@ -408,7 +408,7 @@
       "name": "--chrome-bottom-bg",
       "section": "Нативний хром Telegram",
       "light": "#f0f0f4",
-      "dark": "#1b1b1f",
+      "dark": "#17171b",
       "palette": "",
       "paletteDark": "var(--user-bg)"
     },
@@ -416,7 +416,7 @@
       "name": "--chrome-header-bg",
       "section": "Нативний хром Telegram",
       "light": "#f0f0f4",
-      "dark": "#1b1b1f",
+      "dark": "#17171b",
       "palette": "",
       "paletteDark": "var(--user-bg)"
     },
@@ -495,7 +495,7 @@
     {
       "name": "--elevation-1",
       "section": "Рівні підняття",
-      "light": "0 1px 3px rgba(0, 0, 0, 0.12)",
+      "light": "0 1px 2px rgba(21, 21, 26, 0.06), 0 1px 3px rgba(21, 21, 26, 0.08)",
       "dark": "0 1px 3px rgba(0, 0, 0, 0.4)",
       "palette": "",
       "paletteDark": ""
@@ -503,7 +503,7 @@
     {
       "name": "--elevation-2",
       "section": "Рівні підняття",
-      "light": "0 2px 6px rgba(0, 0, 0, 0.15)",
+      "light": "0 2px 4px rgba(21, 21, 26, 0.06), 0 4px 12px rgba(21, 21, 26, 0.08)",
       "dark": "0 2px 6px rgba(0, 0, 0, 0.5)",
       "palette": "",
       "paletteDark": ""
@@ -511,7 +511,7 @@
     {
       "name": "--elevation-3",
       "section": "Рівні підняття",
-      "light": "0 4px 8px rgba(0, 0, 0, 0.18)",
+      "light": "0 4px 8px rgba(21, 21, 26, 0.06), 0 12px 28px rgba(21, 21, 26, 0.1)",
       "dark": "0 4px 8px rgba(0, 0, 0, 0.5)",
       "palette": "",
       "paletteDark": ""
@@ -519,7 +519,7 @@
     {
       "name": "--field-bg",
       "section": "Поле вводу",
-      "light": "#e9e9ef",
+      "light": "#eeeef2",
       "dark": "var(--bg-4)",
       "palette": "",
       "paletteDark": "var(--bg-3)"
@@ -551,8 +551,8 @@
     {
       "name": "--field-ring",
       "section": "Поле вводу",
-      "light": "0 1px 2px rgba(28, 27, 31, 0.05), 0 2px 6px rgba(28, 27, 31, 0.04)",
-      "dark": "0 1px 2px rgba(0, 0, 0, 0.45), 0 2px 6px rgba(0, 0, 0, 0.3)",
+      "light": "0 0 0 1px rgba(21, 21, 26, 0.07)",
+      "dark": "0 0 0 1px rgba(233, 233, 238, 0.1)",
       "palette": "0 1px 2px rgb(0 0 0 / 5%), 0 2px 6px rgb(0 0 0 / 4%)",
       "paletteDark": "0 1px 2px rgb(0 0 0 / 45%), 0 2px 6px rgb(0 0 0 / 30%)"
     },
@@ -631,7 +631,7 @@
     {
       "name": "--h1-weight",
       "section": "Typography",
-      "light": "var(--weight-normal)",
+      "light": "var(--weight-semibold)",
       "dark": "",
       "palette": "",
       "paletteDark": ""
@@ -647,7 +647,7 @@
     {
       "name": "--h2-weight",
       "section": "Typography",
-      "light": "var(--weight-medium)",
+      "light": "var(--weight-semibold)",
       "dark": "",
       "palette": "",
       "paletteDark": ""
@@ -671,8 +671,8 @@
     {
       "name": "--hairline",
       "section": "Глибина поверхонь",
-      "light": "rgba(28, 27, 31, 0.09)",
-      "dark": "rgba(227, 226, 230, 0.07)",
+      "light": "rgba(21, 21, 26, 0.08)",
+      "dark": "rgba(233, 233, 238, 0.07)",
       "palette": "",
       "paletteDark": "color-mix(in srgb, var(--user-text) 7%, transparent)"
     },
@@ -783,7 +783,7 @@
     {
       "name": "--radius",
       "section": "Border radius",
-      "light": "12px",
+      "light": "10px",
       "dark": "",
       "palette": "",
       "paletteDark": ""
@@ -799,7 +799,7 @@
     {
       "name": "--radius-lg",
       "section": "Border radius",
-      "light": "24px",
+      "light": "16px",
       "dark": "",
       "palette": "",
       "paletteDark": ""
@@ -807,7 +807,7 @@
     {
       "name": "--radius-md",
       "section": "Border radius",
-      "light": "16px",
+      "light": "12px",
       "dark": "",
       "palette": "",
       "paletteDark": ""
@@ -823,7 +823,7 @@
     {
       "name": "--radius-xl",
       "section": "Border radius",
-      "light": "28px",
+      "light": "20px",
       "dark": "",
       "palette": "",
       "paletteDark": ""
@@ -975,56 +975,56 @@
     {
       "name": "--shadow-card",
       "section": "Глибина поверхонь",
-      "light": "0 1px 2px rgba(28, 27, 31, 0.05), 0 10px 30px -18px rgba(28, 27, 31, 0.35)",
-      "dark": "0 1px 1px rgba(0, 0, 0, 0.4), 0 14px 34px -20px rgba(0, 0, 0, 0.9)",
+      "light": "0 1px 2px rgba(21, 21, 26, 0.04), 0 8px 24px -16px rgba(21, 21, 26, 0.24)",
+      "dark": "0 1px 1px rgba(0, 0, 0, 0.4), 0 14px 34px -22px rgba(0, 0, 0, 0.85)",
       "palette": "",
       "paletteDark": ""
     },
     {
       "name": "--shadow-lg",
       "section": "Shadows",
-      "light": "0 4px 8px rgba(0, 0, 0, 0.18), 0 2px 4px rgba(0, 0, 0, 0.12)",
-      "dark": "0 4px 8px rgba(0, 0, 0, 0.5), 0 2px 4px rgba(0, 0, 0, 0.4)",
+      "light": "0 4px 8px rgba(21, 21, 26, 0.06), 0 12px 28px rgba(21, 21, 26, 0.1)",
+      "dark": "0 4px 8px rgba(0, 0, 0, 0.35), 0 12px 28px rgba(0, 0, 0, 0.4)",
       "palette": "0 10px 15px -3px rgb(0 0 0 / 10%), 0 4px 6px -4px rgb(0 0 0 / 10%)",
       "paletteDark": "0 10px 15px -3px rgb(0 0 0 / 30%), 0 4px 6px -4px rgb(0 0 0 / 20%)"
     },
     {
       "name": "--shadow-md",
       "section": "Shadows",
-      "light": "0 2px 6px rgba(0, 0, 0, 0.18), 0 1px 2px rgba(0, 0, 0, 0.12)",
-      "dark": "0 2px 6px rgba(0, 0, 0, 0.5), 0 1px 2px rgba(0, 0, 0, 0.4)",
+      "light": "0 2px 4px rgba(21, 21, 26, 0.06), 0 4px 12px rgba(21, 21, 26, 0.08)",
+      "dark": "0 2px 4px rgba(0, 0, 0, 0.35), 0 4px 12px rgba(0, 0, 0, 0.35)",
       "palette": "0 4px 6px -1px rgb(0 0 0 / 10%), 0 2px 4px -2px rgb(0 0 0 / 10%)",
       "paletteDark": "0 4px 6px -1px rgb(0 0 0 / 30%), 0 2px 4px -2px rgb(0 0 0 / 20%)"
     },
     {
       "name": "--shadow-sm",
       "section": "Shadows",
-      "light": "0 1px 3px rgba(0, 0, 0, 0.18), 0 1px 2px rgba(0, 0, 0, 0.12)",
-      "dark": "0 1px 3px rgba(0, 0, 0, 0.5), 0 1px 2px rgba(0, 0, 0, 0.4)",
+      "light": "0 1px 2px rgba(21, 21, 26, 0.06), 0 1px 3px rgba(21, 21, 26, 0.08)",
+      "dark": "0 1px 2px rgba(0, 0, 0, 0.35), 0 1px 3px rgba(0, 0, 0, 0.3)",
       "palette": "0 1px 3px rgb(0 0 0 / 10%), 0 1px 2px rgb(0 0 0 / 6%)",
       "paletteDark": "0 1px 3px rgb(0 0 0 / 30%), 0 1px 2px rgb(0 0 0 / 20%)"
     },
     {
       "name": "--shadow-xl",
       "section": "Shadows",
-      "light": "0 6px 10px rgba(0, 0, 0, 0.18), 0 2px 3px rgba(0, 0, 0, 0.12)",
-      "dark": "0 6px 10px rgba(0, 0, 0, 0.5), 0 2px 3px rgba(0, 0, 0, 0.4)",
+      "light": "0 8px 16px rgba(21, 21, 26, 0.08), 0 24px 48px rgba(21, 21, 26, 0.14)",
+      "dark": "0 8px 16px rgba(0, 0, 0, 0.4), 0 24px 48px rgba(0, 0, 0, 0.5)",
       "palette": "0 20px 25px -5px rgb(0 0 0 / 10%), 0 8px 10px -6px rgb(0 0 0 / 10%)",
       "paletteDark": "0 20px 25px -5px rgb(0 0 0 / 30%), 0 8px 10px -6px rgb(0 0 0 / 20%)"
     },
     {
       "name": "--shadow-xs",
       "section": "Shadows",
-      "light": "0 1px 2px rgba(0, 0, 0, 0.15)",
-      "dark": "0 1px 2px rgba(0, 0, 0, 0.45)",
+      "light": "0 1px 2px rgba(21, 21, 26, 0.06)",
+      "dark": "0 1px 2px rgba(0, 0, 0, 0.35)",
       "palette": "0 1px 2px rgb(0 0 0 / 5%)",
       "paletteDark": "0 1px 2px rgb(0 0 0 / 20%)"
     },
     {
       "name": "--sidebar-bg",
       "section": "Сайдбар: крок пункту й берег",
-      "light": "#e8e8ec",
-      "dark": "#16161a",
+      "light": "#fcfcfd",
+      "dark": "#141418",
       "palette": "",
       "paletteDark": "color-mix(in srgb, var(--user-bg) 96%, var(--user-text))"
     },
@@ -1047,8 +1047,8 @@
     {
       "name": "--sidebar-shadow",
       "section": "Сайдбар: крок пункту й берег",
-      "light": "4px 0 16px rgba(0, 0, 0, 0.08)",
-      "dark": "4px 0 16px rgba(0, 0, 0, 0.4)",
+      "light": "1px 0 0 var(--hairline), 8px 0 24px -20px rgba(21, 21, 26, 0.25)",
+      "dark": "1px 0 0 var(--hairline), 8px 0 24px -18px rgba(0, 0, 0, 0.6)",
       "palette": "",
       "paletteDark": ""
     },
@@ -1175,8 +1175,8 @@
     {
       "name": "--surface",
       "section": "Палітра світлої схеми (M3 surface containers)",
-      "light": "var(--bg-home, #f0f0f4)",
-      "dark": "#1b1b1f",
+      "light": "var(--bg-home, #f6f6f7)",
+      "dark": "#17171b",
       "palette": "",
       "paletteDark": "var(--bg-1)"
     },
@@ -1184,7 +1184,7 @@
       "name": "--surface-active",
       "section": "Палітра світлої схеми (M3 surface containers)",
       "light": "#e4e4e8",
-      "dark": "#353538",
+      "dark": "#313138",
       "palette": "",
       "paletteDark": "var(--bg-4)"
     },
@@ -1192,7 +1192,7 @@
       "name": "--surface-hover",
       "section": "Палітра світлої схеми (M3 surface containers)",
       "light": "#ededf0",
-      "dark": "#2a2a2e",
+      "dark": "#26262c",
       "palette": "",
       "paletteDark": "var(--bg-3)"
     },
@@ -1303,24 +1303,24 @@
     {
       "name": "--text-muted",
       "section": "Палітра світлої схеми (M3 surface containers)",
-      "light": "#5c5f67",
-      "dark": "#a2a2ac",
+      "light": "#5c5c67",
+      "dark": "#a5a5b0",
       "palette": "",
       "paletteDark": "color-mix(in srgb, var(--user-text) 48%, var(--user-bg))"
     },
     {
       "name": "--text-primary",
       "section": "Палітра світлої схеми (M3 surface containers)",
-      "light": "#1c1b1f",
-      "dark": "#e3e2e6",
+      "light": "#15151a",
+      "dark": "#e9e9ee",
       "palette": "",
       "paletteDark": "var(--user-text)"
     },
     {
       "name": "--text-secondary",
       "section": "Палітра світлої схеми (M3 surface containers)",
-      "light": "#44464f",
-      "dark": "#c7c5d0",
+      "light": "#45454f",
+      "dark": "#bdbdc8",
       "palette": "",
       "paletteDark": "color-mix(in srgb, var(--user-text) 70%, var(--user-bg))"
     },
@@ -1343,7 +1343,7 @@
     {
       "name": "--text-xs",
       "section": "Typography",
-      "light": "0.6875rem",
+      "light": "0.75rem",
       "dark": "",
       "palette": "",
       "paletteDark": ""
@@ -1359,7 +1359,7 @@
     {
       "name": "--tracking-title",
       "section": "Typography",
-      "light": "-0.011em",
+      "light": "-0.02em",
       "dark": "",
       "palette": "",
       "paletteDark": ""

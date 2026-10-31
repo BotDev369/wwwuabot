@@ -19,20 +19,20 @@
 
   /* ── Палітра світлої схеми (M3 surface containers) ──────────────────────
      Одна: темна схема — у `themes.css`, і більше жодного шару кольорів немає. */
-  --bg-home: radial-gradient(120% 90% at 12% 0%, #ffffff 0%, var(--bg-2) 55%, var(--bg-0) 100%);
-  --bg-0: #f0f0f4; /* surface-container-lowest — легкий холодний відтінок */
-  --bg-1: var(--bg-home, #f0f0f4); /* surface */
-  --bg-2: #ededf0; /* surface-container-low */
-  --bg-3: #e4e4e8; /* surface-container */
-  --bg-4: #dcdce0; /* surface-container-high */
+  --bg-home: var(--bg-0);
+  --bg-0: #f6f6f7; /* поверхня екрана */
+  --bg-1: var(--bg-home, #f6f6f7); /* surface */
+  --bg-2: #f1f1f3; /* surface-container-low */
+  --bg-3: #e9e9ec; /* surface-container */
+  --bg-4: #e2e2e6; /* surface-container-high */
 
-  --border: #b0b0b8;
-  --border-hover: #94949e; /* межа під курсором: темніша за типову */
-  --border-subtle: #c8c8d0;
+  --border: #d6d6dd;
+  --border-hover: #b4b4bf; /* межа під курсором: темніша за типову */
+  --border-subtle: #e7e7eb;
 
-  --text-primary: #1c1b1f; /* on-surface */
-  --text-secondary: #44464f; /* on-surface-variant */
-  --text-muted: #5c5f67; /* outline; ≥4.5:1 на всіх світлих поверхнях, зокрема --bg-4 (AA) */
+  --text-primary: #15151a; /* on-surface */
+  --text-secondary: #45454f; /* on-surface-variant */
+  --text-muted: #5c5c67; /* outline; ≥4.5:1 на всіх світлих поверхнях, зокрема --bg-4 (AA) */
   --text-inverse: #ffffff;
 
   /* Акцент — **теплий теракортовий**, а не сірий: сірий акцент робив усі
@@ -40,10 +40,10 @@
      кольору, що й текст, і продукт читався як один сірий аркуш. Значення
      підібране під AA з обох боків: білий текст на заливці й сам акцент як
      текст на світлих поверхнях. */
-  --accent: #9c3410;
-  --accent-dim: rgba(156, 52, 16, 0.08);
-  --accent-hover: #7d290b;
-  --accent-soft: rgba(156, 52, 16, 0.09);
+  --accent: #a0330f;
+  --accent-dim: rgba(160, 51, 15, 0.08);
+  --accent-hover: #852a0c;
+  --accent-soft: rgba(160, 51, 15, 0.1);
 
   /* Підкладка статусу світліша за будь-яку поверхню: текст на ній темний,
      тож іти в його бік означало б віддавати контраст (на `--bg-4` було 4.15:1).
@@ -55,7 +55,7 @@
   --yellow: #6d5700;
   --yellow-dim: #edebe0;
 
-  --surface: var(--bg-home, #f0f0f4);
+  --surface: var(--bg-home, #f6f6f7);
   --surface-hover: #ededf0;
   --surface-active: #e4e4e8;
 
@@ -64,9 +64,9 @@
      волосяна межа (тримає край на світлому тлі), м'яка тінь (піднімає картку
      над сторінкою) і лінія всередині (ділить рядки, не додаючи ще однієї
      картки). У темній схемі всі три глибші — `themes.css`. */
-  --hairline: rgba(28, 27, 31, 0.09);
-  --card-border: rgba(28, 27, 31, 0.06);
-  --shadow-card: 0 1px 2px rgba(28, 27, 31, 0.05), 0 10px 30px -18px rgba(28, 27, 31, 0.35);
+  --hairline: rgba(21, 21, 26, 0.08);
+  --card-border: rgba(21, 21, 26, 0.05);
+  --shadow-card: 0 1px 2px rgba(21, 21, 26, 0.04), 0 8px 24px -16px rgba(21, 21, 26, 0.24);
   /* Скрим і скрим модалки — різні речі: перший затемнює тло під панеллю,
      другий мусить гасити екран за діалогом в обох схемах однаково. */
   --surface-overlay: rgba(0, 0, 0, 0.4);
@@ -111,13 +111,13 @@
      розмір частини сторінки задає її власний клас (`.wb-section-title`), а
      сам елемент дає лише типове значення — тому й без `!important`. */
   --h1-size: 1.75rem; /* 28px */
-  --h1-weight: var(--weight-normal);
+  --h1-weight: var(--weight-semibold);
   --h2-size: 1.375rem; /* 22px */
-  --h2-weight: var(--weight-medium);
+  --h2-weight: var(--weight-semibold);
   --h3-size: 1.125rem; /* 18px */
   --h3-weight: var(--weight-medium);
 
-  --text-xs: 0.6875rem; /* 11px — label small */
+  --text-xs: 0.75rem; /* 12px — label small */
   --text-sm: 0.8125rem; /* 13px — label medium */
   --text-base: 0.875rem; /* 14px — body medium */
   --text-md: 1rem; /* 16px — body large */
@@ -135,7 +135,7 @@
      виділяв те, заради чого в нього дивляться. */
   --label-size: var(--text-sm); /* 13px */
   --value-size: 0.9375rem; /* 15px */
-  --tracking-title: -0.011em; /* великий кегль — трохи тугіше, як у Inter */
+  --tracking-title: -0.02em; /* великий кегль — тугіше, як у Inter Display */
 
   /* Клавіатурний фокус: одна рамка на продукт, щоб Tab було видно скрізь,
      а не лише в полях, які малюють кільце самі. */
@@ -169,9 +169,9 @@
      Саме ці міри роблять кнопку «великою». Вони живуть тут, а не в правилі
      кожного екрана: «зменшити кнопки» — це один рядок, і жоден екран не
      поверне їх назад своїм `padding` потай. */
-  --btn-pad-y: 8px;
+  --btn-pad-y: 10px;
   --btn-pad-x: 16px;
-  --btn-radius: 20px;
+  --btn-radius: 10px;
 
   /* ── Поле вводу ──────────────────────────────────────────────────────────
      Мірки контрола — тут, а колір і краї — по схемах: світла оголошена ТУТ,
@@ -182,12 +182,12 @@
      8×12 на одній сторінці й 12×16 на іншій. Стежить `styles/fields.test.ts`. */
   --field-pad-y: 12px;
   --field-pad-x: 16px;
-  --field-bg: #e9e9ef;
+  --field-bg: #eeeef2;
   --field-bg-raised: #ffffff;
   /* Папір перемикача: раніше кружечок брав `--surface` (у темній схемі це
      градієнт), і вимкнений перемикач ставав чорною плямою на чорній доріжці. */
   --switch-knob: #ffffff;
-  --field-ring: 0 1px 2px rgba(28, 27, 31, 0.05), 0 2px 6px rgba(28, 27, 31, 0.04);
+  --field-ring: 0 0 0 1px rgba(21, 21, 26, 0.07);
 
   /* ── Рядок списку ────────────────────────────────────────────────────────
      Геометрія рядка одна на весь продукт: пункт меню, акордеон «Розвитку»,
@@ -218,7 +218,7 @@
   --card-bg: #ffffff;
   /* 20px — м'якший за рядок і твердіший за модалку: картка мусить читатись як
      окрема плита, але не як «пігулка». */
-  --card-radius: 20px;
+  --card-radius: 14px;
   --card-pad: var(--sp-4);
   --card-gap: var(--sp-3);
   /* Тінь — теж мірка картки, а не прикраса правила: `none` означає
@@ -243,24 +243,24 @@
   /* ── Border radius ─────────────────────────────────────────────────────── */
   --radius-xs: 4px;
   --radius-sm: 8px;
-  --radius: 12px;
-  --radius-md: 16px;
-  --radius-lg: 24px;
-  --radius-xl: 28px;
+  --radius: 10px;
+  --radius-md: 12px;
+  --radius-lg: 16px;
+  --radius-xl: 20px;
   --radius-full: 9999px;
 
   /* ── Shadows ───────────────────────────────────────────────────────────── */
-  --shadow-xs: 0 1px 2px rgba(0, 0, 0, 0.15);
-  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.18), 0 1px 2px rgba(0, 0, 0, 0.12);
-  --shadow-md: 0 2px 6px rgba(0, 0, 0, 0.18), 0 1px 2px rgba(0, 0, 0, 0.12);
-  --shadow-lg: 0 4px 8px rgba(0, 0, 0, 0.18), 0 2px 4px rgba(0, 0, 0, 0.12);
-  --shadow-xl: 0 6px 10px rgba(0, 0, 0, 0.18), 0 2px 3px rgba(0, 0, 0, 0.12);
+  --shadow-xs: 0 1px 2px rgba(21, 21, 26, 0.06);
+  --shadow-sm: 0 1px 2px rgba(21, 21, 26, 0.06), 0 1px 3px rgba(21, 21, 26, 0.08);
+  --shadow-md: 0 2px 4px rgba(21, 21, 26, 0.06), 0 4px 12px rgba(21, 21, 26, 0.08);
+  --shadow-lg: 0 4px 8px rgba(21, 21, 26, 0.06), 0 12px 28px rgba(21, 21, 26, 0.1);
+  --shadow-xl: 0 8px 16px rgba(21, 21, 26, 0.08), 0 24px 48px rgba(21, 21, 26, 0.14);
 
   /* ── Рівні підняття ────────────────────────────────────────────────────── */
   --elevation-0: none;
-  --elevation-1: 0 1px 3px rgba(0, 0, 0, 0.12);
-  --elevation-2: 0 2px 6px rgba(0, 0, 0, 0.15);
-  --elevation-3: 0 4px 8px rgba(0, 0, 0, 0.18);
+  --elevation-1: 0 1px 2px rgba(21, 21, 26, 0.06), 0 1px 3px rgba(21, 21, 26, 0.08);
+  --elevation-2: 0 2px 4px rgba(21, 21, 26, 0.06), 0 4px 12px rgba(21, 21, 26, 0.08);
+  --elevation-3: 0 4px 8px rgba(21, 21, 26, 0.06), 0 12px 28px rgba(21, 21, 26, 0.1);
 
   /* ── Transitions ───────────────────────────────────────────────────────── */
   --duration-fast: 100ms;
@@ -309,8 +309,8 @@
   /* Поверхня сайдбара — плита, а не скло: його видно тлом і тінню праворуч,
      тож він не зливається з вмістом на телефоні. Одна пара значень на обидва
      місця (адмінка й панель розділів теми) — сайдбар у продукті один. */
-  --sidebar-bg: #e8e8ec;
-  --sidebar-shadow: 4px 0 16px rgba(0, 0, 0, 0.08);
+  --sidebar-bg: #fcfcfd;
+  --sidebar-shadow: 1px 0 0 var(--hairline), 8px 0 24px -20px rgba(21, 21, 26, 0.25);
   --topbar-h: 56px;
   /* Початкова висота закріпленого хедера. Справжню публікує сам хедер
      (`useAppBarHeight`): `min-height` — підлога, а назва у два рядки на
