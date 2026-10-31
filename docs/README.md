@@ -33,6 +33,7 @@
 | [`CONTENT_MODEL.md`](./CONTENT_MODEL.md) | контент сторінок: одне сховище (`scenarios`), адреса — одна сутність `slug` |
 | [`PAGES.md`](./PAGES.md) | сторінки з шаблону: три шаблони, власник і публічність, адреса з назви, створення з перегляду шаблону |
 | [`RESEARCH.md`](./RESEARCH.md) | дослідження «вірування і невірування»: звідки береться контент, як він стає рядками `scenarios`, каталог у KV і підсторінки |
+| [`SPENDING.md`](./SPENDING.md) | **Є-data (`spending.gov.ua`)**: що віддає відкрите API про публічні кошти, межі й пастки джерела, етапи збору в D1/KV/R2 |
 | [`SHOPS.md`](./SHOPS.md) | магазин: вітрина як рядок `scenarios`, адреса вітрини/товару/категорії, фото в R2, замовлення, статуси й оповіщення продавця |
 | [`PRODUCTS.md`](./PRODUCTS.md) | товар: рядок `shop_products`, розділ каталогу, ціна-текст і сума кошика, формат опису, види товару, картка товару — §3 і §4 магазину |
 | [`SHOP_UI.md`](./SHOP_UI.md) | екрани магазину: черга замовлень, вітрина й поверхні покупки, кошик і каталог, шлях продавця, чого в них ще немає |
@@ -73,6 +74,7 @@
 | Самооцінка «Розвиток» | [`ASSESSMENTS.md`](./ASSESSMENTS.md) | [`ASSESSMENT_PEERS.md`](./ASSESSMENT_PEERS.md) |
 | Заголовки безпеки, CORS, CSP | [`SECURITY.md`](./SECURITY.md), код — `packages/shared/src/security/headers.ts`, стережить `npm test` |
 | Доступ, адмін-гейт, ідентичність | [`API.md`](./API.md) (групи доступу), [`PLATFORM.md`](./PLATFORM.md) «Сервіси, акаунт і замовлення» | — |
+| Дані Є-data: договори, платежі, звіти | [`SPENDING.md`](./SPENDING.md) | [`DATA_MODEL.md`](./DATA_MODEL.md) — таблиці й власник, [`RECIPES.md`](./RECIPES.md) §1 — ендпоінт |
 | Мониторинг, падіння, зрізи | [`MONITORING.md`](./MONITORING.md) | [`QUALITY_GATE.md`](./QUALITY_GATE.md) |
 | Написати або винести правило | [`DOC_GROWTH.md`](./DOC_GROWTH.md) | [`AGENTS.md`](../AGENTS.md) — адреса, не копія |
 | Написати коментар у коді | [`COMMENTS.md`](./COMMENTS.md) | — |
