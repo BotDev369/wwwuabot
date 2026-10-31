@@ -65,7 +65,7 @@ describe("рядок списку стає карткою", () => {
     // довший — війни `!important` у проєкті немає.
     const cell = rule(phone, ".wb-date-list .wb-table td.wb-date-cell");
     expect(cell).toContain("display: flex");
-    expect(cell).toContain("padding: 2px 0");
+    expect(cell).toContain("padding: var(--sp-1) 0");
     expect(cell, "комірка картки — без `!important`").not.toContain("!important");
   });
 
@@ -119,7 +119,7 @@ describe("картка — акордеон", () => {
       "padding: var(--sp-1) var(--sp-2) var(--sp-1) var(--sp-3)",
     );
     expect(rule(phone, ".wb-date-list .wb-table td.wb-date-cell--name")).toContain(
-      "padding: 0 52px 0 0",
+      "padding: 0 var(--sp-12) 0 0",
     );
   });
 

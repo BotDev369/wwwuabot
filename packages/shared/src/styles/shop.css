@@ -139,7 +139,7 @@
   position: absolute;
   bottom: var(--sp-1);
   left: var(--sp-1);
-  padding: 2px var(--sp-2);
+  padding: var(--sp-1) var(--sp-2);
   font-size: var(--text-xs);
   color: var(--text-primary);
   background: var(--surface);

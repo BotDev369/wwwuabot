@@ -8,7 +8,7 @@
    й ролі комірок. Числа — ті самі, що були в `usr-*`. */
 
 .wb-data-table-wrap--inset {
-  padding: 10px 12px 16px;
+  padding: var(--sp-2) var(--sp-3) var(--sp-4);
   position: relative;
 }
 
@@ -33,7 +33,7 @@
 }
 
 .wb-data-table--dense td {
-  padding: 6px 8px;
+  padding: var(--sp-1) var(--sp-2);
   border-top: 1px solid var(--border-subtle);
   background: transparent;
 }
@@ -128,7 +128,7 @@
 }
 
 .wb-data-table--dense td.wb-cell-empty {
-  padding: 28px 12px;
+  padding: var(--sp-6) var(--sp-3);
   text-align: center;
   color: var(--text-muted);
   font-size: var(--text-xs);
@@ -164,7 +164,7 @@
   display: flex;
   align-items: center;
   gap: 8px;
-  padding: 8px 20px;
+  padding: var(--sp-2) var(--sp-5);
   background: var(--accent-dim);
   border-bottom: 1px solid var(--accent);
   flex-shrink: 0;
@@ -197,7 +197,7 @@
   text-transform: uppercase;
   color: var(--text-muted);
   text-align: left;
-  padding: 7px 12px;
+  padding: var(--sp-2) var(--sp-3);
 }
 
 .wb-card-td-field {
@@ -207,7 +207,7 @@
   background: var(--bg-1);
   font-weight: 500;
   color: var(--text-secondary);
-  padding: 6px 12px;
+  padding: var(--sp-1) var(--sp-3);
   border-top: 1px solid var(--border-subtle);
   white-space: nowrap;
   font-family: var(--font-mono);
@@ -217,7 +217,7 @@
 }
 
 .wb-card-td-value {
-  padding: 6px 12px;
+  padding: var(--sp-1) var(--sp-3);
   border-top: 1px solid var(--border-subtle);
   word-break: break-word;
   max-width: 400px;
@@ -246,7 +246,7 @@
 /* ═══ Телефон ═══ */
 @media (max-width: 768px) {
   .wb-data-table-wrap--inset {
-    padding: 8px 4px 16px;
+    padding: var(--sp-2) var(--sp-1) var(--sp-4);
   }
 
   .wb-data-table--dense {
@@ -255,11 +255,11 @@
   }
 
   .wb-data-table--dense th {
-    padding: 6px;
+    padding: var(--sp-1);
   }
 
   .wb-data-table--dense td {
-    padding: 5px 6px;
+    padding: var(--sp-1) var(--sp-1);
   }
 
   .wb-cell-name {
@@ -268,6 +268,6 @@
 
   .wb-bulk-bar {
     flex-wrap: wrap;
-    padding: 6px 8px;
+    padding: var(--sp-1) var(--sp-2);
   }
 }

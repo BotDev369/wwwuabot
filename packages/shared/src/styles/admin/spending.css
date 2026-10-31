@@ -7,7 +7,7 @@
 .spend {
   flex: 1;
   overflow: auto;
-  padding: 20px;
+  padding: var(--sp-5);
   display: flex;
   flex-direction: column;
   gap: 16px;
@@ -16,10 +16,11 @@
 /* Вибір періоду: 44px — тап-таргет на телефоні (AGENTS.md §3). */
 .spend-select {
   min-height: 44px;
-  padding: 0 10px;
-  border: 1px solid var(--border);
-  border-radius: var(--radius-md);
-  background: var(--bg-2);
+  padding: 0 var(--sp-2);
+  border: none;
+  border-radius: var(--radius);
+  background: var(--field-bg);
+  box-shadow: var(--field-ring);
   color: var(--text-primary);
   font-size: var(--text-sm);
   cursor: pointer;
@@ -42,7 +43,7 @@
    читають саме тоді, коли дивляться на дві колонки суми. */
 .spend-note {
   margin: 0;
-  padding: 10px 12px;
+  padding: var(--sp-2) var(--sp-3);
   border: 1px solid var(--border);
   border-left: 2px solid var(--accent);
   border-radius: var(--radius-md);
@@ -60,10 +61,11 @@
   display: flex;
   flex-direction: column;
   gap: 12px;
-  padding: 14px;
-  background: var(--bg-2);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-md);
+  padding: var(--card-pad);
+  background: var(--card-bg);
+  border: 1px solid var(--card-border);
+  border-radius: var(--card-radius);
+  box-shadow: var(--card-shadow);
 }
 
 /* Скрол — на самій таблиці, а не на сторінці: інакше разом із грошовими
@@ -79,7 +81,7 @@
 }
 
 .spend-table th {
-  padding: 8px 10px;
+  padding: var(--sp-2) var(--sp-2);
   border-bottom: 1px solid var(--border);
   font-size: var(--text-xs);
   font-weight: var(--weight-semibold);
@@ -91,7 +93,7 @@
 }
 
 .spend-table td {
-  padding: 8px 10px;
+  padding: var(--sp-2) var(--sp-2);
   border-top: 1px solid var(--border-subtle);
   vertical-align: top;
 }
@@ -155,7 +157,7 @@
 }
 
 .spend-empty {
-  padding: 24px 12px;
+  padding: var(--sp-6) var(--sp-3);
   text-align: center;
   color: var(--text-muted);
   font-size: var(--text-sm);
@@ -184,7 +186,7 @@
 
 .spend-tab {
   min-height: 44px;
-  padding: 0 14px;
+  padding: 0 var(--sp-3);
   border: 1px solid var(--border);
   border-radius: var(--radius-full);
   background: transparent;
@@ -216,7 +218,7 @@
 
 .spend-status {
   display: inline-block;
-  padding: 2px 8px;
+  padding: var(--sp-1) var(--sp-2);
   border-radius: var(--radius-full);
   background: var(--bg-4);
   font-size: var(--text-xs);
@@ -260,12 +262,12 @@
    і жодна з них не виїжджає за екран. */
 @media (max-width: 768px) {
   .spend {
-    padding: 12px;
+    padding: var(--sp-3);
     gap: 12px;
   }
 
   .spend-panel {
-    padding: 10px;
+    padding: var(--sp-2);
   }
 
   .spend-table-wrap {
@@ -291,7 +293,7 @@
   }
 
   .spend-table tbody tr {
-    padding: 10px 12px;
+    padding: var(--sp-2) var(--sp-3);
     border-bottom: 1px solid var(--border);
     background: var(--bg-1);
   }
@@ -308,7 +310,7 @@
     align-items: baseline;
     justify-content: space-between;
     gap: var(--sp-3);
-    padding: 3px 0;
+    padding: var(--sp-1) 0;
     border: 0;
     background: transparent;
     text-align: left;
@@ -342,7 +344,7 @@
   }
 
   .spend-empty {
-    padding: 8px 0;
+    padding: var(--sp-2) 0;
     text-align: left;
   }
 

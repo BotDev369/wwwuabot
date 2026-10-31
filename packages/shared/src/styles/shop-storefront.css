@@ -212,7 +212,7 @@ html[data-colors-mode="dark"] .shop-catalog {
   top: var(--sp-2);
   left: var(--sp-2);
   max-width: calc(100% - var(--sp-4));
-  padding: 3px var(--sp-2);
+  padding: var(--sp-1) var(--sp-2);
   overflow: hidden;
   font-size: var(--text-xs);
   font-weight: var(--weight-semibold);
@@ -621,7 +621,7 @@ html[data-colors-mode="dark"] .shop-catalog {
 }
 
 .shop-detail-chip {
-  padding: 3px var(--sp-2);
+  padding: var(--sp-1) var(--sp-2);
   font-size: var(--text-xs);
   color: var(--accent);
   background: var(--accent-dim);
@@ -1078,7 +1078,7 @@ html[data-colors-mode="dark"] .shop-catalog {
 
 .shop-store .shop-store-catalog-count {
   flex: 0 0 auto;
-  padding: 3px var(--sp-2);
+  padding: var(--sp-1) var(--sp-2);
   font-size: var(--text-xs);
   font-weight: var(--weight-semibold);
   font-variant-numeric: tabular-nums;

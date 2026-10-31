@@ -233,7 +233,7 @@
     display: flex;
     align-items: baseline;
     gap: var(--sp-3);
-    padding: 2px 0;
+    padding: var(--sp-1) 0;
     border: 0;
   }
 
@@ -302,7 +302,7 @@
   .wb-date-list .wb-table td.wb-date-cell--name {
     font-size: var(--text-md);
     font-weight: var(--weight-semibold);
-    padding: 0 52px 0 0;
+    padding: 0 var(--sp-12) 0 0;
   }
 
   .wb-date-cell--name::before,

@@ -9,9 +9,10 @@
 }
 
 .ana-user {
-  border-radius: var(--radius-md);
-  background: var(--bg-1);
-  border: 1px solid var(--border-subtle);
+  border-radius: var(--card-radius);
+  background: var(--card-bg);
+  border: 1px solid var(--card-border);
+  box-shadow: var(--card-shadow);
   overflow: hidden;
 }
 
@@ -21,7 +22,7 @@
   gap: var(--sp-2);
   width: 100%;
   min-height: 44px;
-  padding: 8px 12px;
+  padding: var(--sp-2) var(--sp-3);
   background: transparent;
   border: none;
   color: var(--text-primary);
@@ -58,11 +59,11 @@
   color: var(--accent);
   background: var(--accent-dim);
   border-radius: var(--radius-full);
-  padding: 2px 6px;
+  padding: var(--sp-1) var(--sp-1);
 }
 
 .ana-user-body {
-  padding: 4px 8px 10px;
+  padding: var(--sp-1) var(--sp-2) var(--sp-2);
   border-top: 1px solid var(--border-subtle);
 }
 
@@ -87,7 +88,7 @@
   column-gap: var(--sp-2);
   row-gap: 2px;
   align-items: start;
-  padding: 7px 10px;
+  padding: var(--sp-2) var(--sp-2);
   border-radius: var(--radius-sm);
   background: var(--bg-1);
   border: 1px solid var(--border-subtle);
@@ -253,6 +254,6 @@
    рядок не ріс у висоту. */
 @media (max-width: 640px) {
   .ana-event {
-    padding: 6px 8px;
+    padding: var(--sp-1) var(--sp-2);
   }
 }

@@ -18,7 +18,7 @@
   display: flex;
   align-items: center;
   gap: 6px;
-  padding: 10px var(--sp-4);
+  padding: var(--sp-2) var(--sp-4);
   border: none;
   background: none;
   color: var(--text-secondary);
@@ -44,7 +44,7 @@
 
 .wb-line-tab--sub {
   gap: 5px;
-  padding: 7px 14px;
+  padding: var(--sp-2) var(--sp-3);
   color: var(--text-muted);
   font-size: var(--text-xs);
 }
@@ -76,7 +76,7 @@
   }
 
   .wb-line-tab {
-    padding: 8px 12px;
+    padding: var(--sp-2) var(--sp-3);
     font-size: var(--text-sm);
     flex-shrink: 0;
   }
@@ -88,7 +88,7 @@
   }
 
   .wb-line-tab--sub {
-    padding: 6px 10px;
+    padding: var(--sp-1) var(--sp-2);
     font-size: var(--text-xs);
     flex-shrink: 0;
   }

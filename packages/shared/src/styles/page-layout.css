@@ -32,7 +32,7 @@
 }
 
 .page-zone {
-  padding: 16px;
+  padding: var(--sp-4);
 }
 
 /* Мітка зони — діагностичний режим PageRenderer (`showZoneLabels`).
@@ -67,7 +67,7 @@
    Telegram), а лінії-контури з них прибрано: обвідка робила шов помітним
    навіть тоді, коли кольори збігаються. */
 .page-zone--header {
-  padding: 16px 24px;
+  padding: var(--sp-4) var(--sp-6);
   background: transparent;
 }
 
@@ -84,7 +84,7 @@
   display: flex;
   flex-direction: column;
   gap: var(--sp-4);
-  padding: 24px;
+  padding: var(--sp-6);
   background: var(--bg-page, var(--bg-0));
 }
 
@@ -103,7 +103,7 @@
 }
 
 .page-zone--footer {
-  padding: 16px 24px;
+  padding: var(--sp-4) var(--sp-6);
   padding-bottom: calc(16px + var(--safe-bottom));
   background: transparent;
   font-size: var(--text-sm);
@@ -119,7 +119,7 @@
   justify-content: center;
   min-height: 60vh;
   text-align: center;
-  padding: 40px 20px;
+  padding: var(--sp-10) var(--sp-5);
 }
 
 .page-loading-spinner {
@@ -174,8 +174,8 @@
   /* Горизонтальні відступи вмісту drawer'а: у адмінці вони свої, тож
      вертикальні (safe-area + 16px) живуть у спільному `drawer.css`. */
   .page-zone--sidebar {
-    padding-left: 16px;
-    padding-right: 16px;
+    padding-left: var(--sp-4);
+    padding-right: var(--sp-4);
   }
 
   /* Hamburger inside header (visible on mobile when sidebar has content) */

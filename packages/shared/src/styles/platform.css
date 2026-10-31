@@ -196,7 +196,7 @@
 .wb-page-field-input {
   display: block;
   width: 100%;
-  padding: 0 0 2px;
+  padding: 0 0 var(--sp-1);
   border: 0;
   border-bottom: 1px dashed var(--border-subtle);
   border-radius: 0;
@@ -240,12 +240,12 @@
 @media (max-width: 768px) {
   main {
     /* + safe-area: останній рядок контенту не має ховатися під індикатором дому */
-    padding: 24px 16px calc(24px + var(--safe-bottom));
+    padding: var(--sp-6) var(--sp-4) calc(var(--sp-6) + var(--safe-bottom));
   }
 
   /* `footer` — зона footer спільного PageRenderer */
   footer {
-    padding: 14px 16px calc(14px + var(--safe-bottom));
+    padding: var(--sp-4) var(--sp-4) calc(var(--sp-4) + var(--safe-bottom));
     font-size: var(--text-sm);
   }
 }
@@ -253,6 +253,6 @@
 /* Very small screens (< 360px) */
 @media (max-width: 360px) {
   main {
-    padding: 20px 12px;
+    padding: var(--sp-5) var(--sp-3);
   }
 }

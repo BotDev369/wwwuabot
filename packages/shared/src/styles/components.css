@@ -747,7 +747,7 @@ html:has(.wb-tabbar) .wb-modal-overlay--screen {
   flex-direction: column;
   width: 100%;
   min-height: var(--composer-cell);
-  padding: 2px;
+  padding: var(--sp-1);
 }
 
 /* Вкладка композера — та сама пара, що в пункту сайдбара (правило 25):
@@ -922,7 +922,7 @@ html:has(.wb-tabbar) .wb-modal-overlay--screen {
   display: inline-flex;
   align-items: center;
   gap: 2px;
-  padding: 2px var(--sp-1) 2px var(--sp-2);
+  padding: var(--sp-1) var(--sp-1) var(--sp-1) var(--sp-2);
   border-radius: var(--radius-full);
   background: var(--accent-dim);
   color: var(--accent);
@@ -955,7 +955,7 @@ html:has(.wb-tabbar) .wb-modal-overlay--screen {
 .wb-composer-tag-input {
   flex: 1 1 6em;
   min-width: 6em;
-  padding: 2px 0;
+  padding: var(--sp-1) 0;
   border: none;
   background: none;
   color: var(--text-primary);
@@ -1141,7 +1141,7 @@ html:has(.wb-tabbar) .wb-modal-overlay--screen {
   /* Доріжка: два підписи без тла читаються як текст, а не як вибір, тож смуга
      — контрол із тлом поля (`--field-bg`), як у вводу (правило 25,
      виняток «смуга вкладок»). */
-  padding: 3px;
+  padding: var(--sp-1);
   background: var(--field-bg);
   border-radius: var(--radius-full);
   margin-bottom: var(--sp-3);
@@ -2151,7 +2151,7 @@ html:has(.wb-tabbar) .wb-modal-overlay--screen {
 .wb-badge {
   display: inline-flex;
   align-items: center;
-  padding: 2px var(--sp-2);
+  padding: var(--sp-1) var(--sp-2);
   font-size: var(--text-xs);
   font-weight: var(--weight-medium);
   border-radius: var(--radius-sm);
@@ -2187,7 +2187,7 @@ html:has(.wb-tabbar) .wb-modal-overlay--screen {
    менший і береги вужчі, бо стоїть він у рядку таблиці поруч із текстом. */
 .wb-badge--dense {
   display: inline-block;
-  padding: 1px 6px;
+  padding: var(--sp-1) var(--sp-1);
   border-radius: var(--radius-sm);
   letter-spacing: 0.04em;
   line-height: normal;
@@ -2204,7 +2204,7 @@ html:has(.wb-tabbar) .wb-modal-overlay--screen {
   display: inline-flex;
   align-items: center;
   gap: var(--sp-1);
-  padding: 6px 16px;
+  padding: var(--sp-1) var(--sp-4);
   font-size: var(--text-base);
   font-weight: var(--weight-medium);
   font-family: inherit;
@@ -2246,7 +2246,7 @@ button.wb-chip {
   background: none;
   border: none;
   cursor: pointer;
-  padding: 0 2px;
+  padding: 0 var(--sp-1);
   font-size: var(--text-xs);
   line-height: 1;
   color: inherit;
@@ -2410,7 +2410,7 @@ button.wb-chip {
   justify-content: center;
   gap: 6px;
   min-height: 38px;
-  padding: 8px 14px;
+  padding: var(--sp-2) var(--sp-3);
   font-size: var(--text-sm);
   font-weight: 500;
   border-radius: var(--radius);
@@ -2430,7 +2430,7 @@ button.wb-chip {
 
 .wb-save-actions-btn.wb-btn-sm {
   min-height: 30px;
-  padding: 4px 10px;
+  padding: var(--sp-1) var(--sp-2);
   font-size: var(--text-xs);
 }
 
@@ -2502,7 +2502,7 @@ button.wb-chip {
   .wb-save-actions .wb-save-actions-btn {
     width: 100%;
     min-width: 0;
-    padding: 8px 6px;
+    padding: var(--sp-2) var(--sp-1);
     font-size: var(--text-sm);
     justify-content: center;
   }

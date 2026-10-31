@@ -157,7 +157,7 @@
   }
 
   .wb-modal--scenario .wb-line-tabs:not(.wb-line-tabs--sub) .wb-line-tab {
-    padding: 6px var(--sp-2);
+    padding: var(--sp-1) var(--sp-2);
   }
 
   .wb-modal--scenario .wb-modal-body {
@@ -226,7 +226,7 @@
    Мірки тут, а не інлайном у розмітці: компактна мобільна шапка мусить
    перекривати їх правилом, а не `!important`. */
 .pb-be-header {
-  padding: 6px 10px;
+  padding: var(--sp-1) var(--sp-2);
   gap: 6px;
 }
 
@@ -250,7 +250,7 @@
 
 .pb-be-cond-btn,
 .pb-be-del-btn {
-  padding: 2px 6px;
+  padding: var(--sp-1) var(--sp-1);
 }
 
 @media (max-width: 640px) {
@@ -261,12 +261,12 @@
     align-items: center;
     overflow: hidden;
     gap: var(--sp-1);
-    padding: 5px var(--sp-2);
+    padding: var(--sp-1) var(--sp-2);
   }
 
   .pb-be-cond-btn,
   .pb-be-del-btn {
-    padding: 2px var(--sp-1);
+    padding: var(--sp-1) var(--sp-1);
   }
 
   .pb-be-field {
