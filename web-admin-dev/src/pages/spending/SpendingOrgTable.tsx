@@ -44,14 +44,22 @@ export function SpendingOrgTable({ orgs, selected, onSelect }: SpendingOrgTableP
                   className={selected === org.edrpou ? "spend-row spend-row-active" : "spend-row"}
                   onClick={() => onSelect(org.edrpou)}
                 >
-                  <td>
+                  <td data-label="">
                     <span className="spend-org-name">{org.name || "назви немає"}</span>
                     <span className="spend-org-code">{org.edrpou}</span>
                   </td>
-                  <td className="spend-form">{org.form || "—"}</td>
-                  <td className="spend-num">{totalsText(org.documents)}</td>
-                  <td className="spend-num">{totalsText(org.payments)}</td>
-                  <td className="spend-num">{totalsText(org.receipts)}</td>
+                  <td className="spend-form" data-label="Форма">
+                    {org.form || "—"}
+                  </td>
+                  <td className="spend-num" data-label="Договори">
+                    {totalsText(org.documents)}
+                  </td>
+                  <td className="spend-num" data-label="Сплати">
+                    {totalsText(org.payments)}
+                  </td>
+                  <td className="spend-num" data-label="Надходження">
+                    {totalsText(org.receipts)}
+                  </td>
                 </tr>
               ))
             )}

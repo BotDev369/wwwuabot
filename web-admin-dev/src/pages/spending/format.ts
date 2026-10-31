@@ -9,6 +9,7 @@
 
 import type {
   SpendingContractor,
+  SpendingOrg,
   SpendingRole,
   SpendingSyncRow,
   SpendingSyncStatus,
@@ -116,6 +117,74 @@ export function contractorNames(contractors: readonly SpendingContractor[]): str
       : contractor.name || contractor.identifier,
   );
   return names.filter(Boolean).join(", ") || "—";
+}
+
+/**
+ * Крок збору людською мовою. `kind` — ключ колектора (`contracts`), і в
+ * таблиці він не читається: адміну потрібен предмет, а не ім'я кроку в коді.
+ */
+const SYNC_KIND_LABELS: Readonly<Record<string, string>> = {
+  contracts: "Договори",
+  transactions: "Платежі",
+  payments: "Платежі",
+  orgs: "Розпорядники",
+  lastload: "Довідка джерела",
+};
+
+export function syncKindLabel(kind: string): string {
+  return SYNC_KIND_LABELS[kind] ?? kind;
+}
+
+/**
+ * Що саме збирав крок: розпорядник за ЄДРПОУ або пачка платежів.
+ *
+ * Ключ (`org:04360586:2026-09`) — адреса кроку в базі, а не підпис: людині
+ * потрібна назва розпорядника, і беремо її з того ж огляду, а не з ключа.
+ */
+export function syncStepSubject(row: SpendingSyncRow, orgs: readonly SpendingOrg[]): string {
+  const [head, ...rest] = row.key.split(":");
+
+  if (head === "org") {
+    const edrpou = rest[0] ?? "";
+    const org = orgs.find((item) => item.edrpou === edrpou);
+    return org?.name || `ЄДРПОУ ${edrpou || "—"}`;
+  }
+
+  if (head === "transactions" || head === "payments") {
+    const batch = (rest[1] ?? "").replace("batch-", "");
+    return batch ? `пачка ${batch}` : "усі пачки";
+  }
+
+  return "";
+}
+
+/** Джерело з відповіді `lastload`: назва й дата його останнього завантаження. */
+export interface LastLoadSource {
+  readonly name: string;
+  readonly date: string;
+}
+
+/**
+ * Розбір `lastload` у рядки «джерело → дата».
+ *
+ * Форму відповіді джерело не документує (`docs/SPENDING.md` §2), тож читаємо
+ * лише те, що впізнаємо: масив об'єктів із `sourceName` і `lastLoad`. Решта
+ * не вигадується й не показується сирим JSON.
+ */
+export function lastLoadSources(raw: unknown): LastLoadSource[] {
+  if (!Array.isArray(raw)) return [];
+
+  const rows: LastLoadSource[] = [];
+  for (const item of raw) {
+    if (typeof item !== "object" || item === null) continue;
+    const record = item as Record<string, unknown>;
+    const name = typeof record.sourceName === "string" ? record.sourceName : "";
+    const date = typeof record.lastLoad === "string" ? record.lastLoad : "";
+    if (!name && !date) continue;
+    rows.push({ name: name || "без назви", date });
+  }
+
+  return rows.sort((a, b) => b.date.localeCompare(a.date) || a.name.localeCompare(b.name));
 }
 
 /** Друга сторона платежу: залежно від ролі нею буде платник або отримувач. */

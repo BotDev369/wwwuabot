@@ -253,19 +253,11 @@
   cursor: pointer;
 }
 
-.spend-raw-body {
-  margin: 8px 0 0;
-  max-height: 240px;
-  overflow: auto;
-  padding: 10px;
-  border-radius: var(--radius-sm);
-  background: var(--bg-1);
-  font-family: var(--font-mono);
-  font-size: var(--text-xs);
-  color: var(--text-secondary);
-}
-
-/* ═══ Телефон ═══ */
+/* ═══ Телефон ═══
+   Таблиця стає списком карток — той самий прийом, що в `dates.css`:
+   розкладку ламаємо на всіх рівнях, а підпис стовпця несе `data-label`.
+   Горизонтального скролу тут немає: колонка грошей праворуч, підпис ліворуч,
+   і жодна з них не виїжджає за екран. */
 @media (max-width: 768px) {
   .spend {
     padding: 12px;
@@ -276,11 +268,92 @@
     padding: 10px;
   }
 
+  .spend-table-wrap {
+    overflow-x: visible;
+  }
+
+  .spend-table,
+  .spend-table tbody,
+  .spend-table tr,
+  .spend-table td {
+    display: block;
+    width: 100%;
+    min-width: 0;
+  }
+
   .spend-table {
-    min-width: 560px;
+    border-collapse: collapse;
+  }
+
+  /* Підписи стовпців замінені підписами картки — другий рядок шапки ні до чого. */
+  .spend-table thead {
+    display: none;
+  }
+
+  .spend-table tbody tr {
+    padding: 10px 12px;
+    border-bottom: 1px solid var(--border);
+    background: var(--bg-1);
+  }
+
+  /* Зебра таблиці вимкнена: картку відділяє лінія, тож підсвітка рядка
+     читається як вибір, а не як «парний рядок». */
+  .spend-table tbody tr:nth-child(even),
+  .spend-table tbody tr:nth-child(even) td {
+    background: var(--bg-1);
+  }
+
+  .spend-table td {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: var(--sp-3);
+    padding: 3px 0;
+    border: 0;
+    background: transparent;
+    text-align: left;
+  }
+
+  /* Перша комірка картки — її заголовок: підпису в неї немає, бо назва
+     розпорядника й так читається першою. */
+  .spend-table td[data-label=""] {
+    display: block;
+  }
+
+  .spend-table td::before {
+    content: attr(data-label);
+    flex: 0 0 38%;
+    color: var(--text-muted);
+    font-size: var(--text-xs);
+    line-height: 1.4;
+  }
+
+  .spend-table td[data-label=""]::before {
+    display: none;
+  }
+
+  .spend-num {
+    text-align: right;
   }
 
   .spend-subject {
-    max-width: 200px;
+    max-width: none;
+    text-align: right;
+  }
+
+  .spend-empty {
+    padding: 8px 0;
+    text-align: left;
+  }
+
+  .spend-row-active,
+  .spend-row-active:hover {
+    background: var(--accent-dim);
+  }
+
+  /* Список джерел — довідка, а не дані: висоту обмежуємо, інакше підвал
+     сторінки його не перекриє. */
+  .spend-lastload .spend-table tbody tr {
+    border-bottom: 1px solid var(--border-subtle);
   }
 }

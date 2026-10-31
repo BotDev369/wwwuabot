@@ -71,7 +71,11 @@ export function SpendingPage() {
                 показує лише те, що вже лежить у базі — чекати його тут не потрібно.
               </span>
             </div>
-            <SpendingSyncPanel rows={overview?.sync ?? []} lastLoad={overview?.lastLoad ?? null} />
+            <SpendingSyncPanel
+              rows={overview?.sync ?? []}
+              lastLoad={overview?.lastLoad ?? null}
+              orgs={overview?.orgs ?? []}
+            />
           </>
         ) : (
           <>
@@ -104,7 +108,11 @@ export function SpendingPage() {
               </p>
             )}
 
-            <SpendingSyncPanel rows={overview.sync} lastLoad={overview.lastLoad} />
+            <SpendingSyncPanel
+              rows={overview.sync}
+              lastLoad={overview.lastLoad}
+              orgs={overview.orgs}
+            />
           </>
         )}
       </section>

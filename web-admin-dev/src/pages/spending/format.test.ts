@@ -16,10 +16,13 @@ import {
   formatMoney,
   formatPeriod,
   formatStamp,
+  lastLoadSources,
   periodsOf,
   roleLabel,
   statusClass,
   statusLabel,
+  syncKindLabel,
+  syncStepSubject,
   totalsText,
 } from "./format";
 
@@ -112,6 +115,76 @@ describe("стан збору", () => {
     expect(statusClass("ok")).toBe("spend-status spend-status-ok");
     expect(statusClass("error")).toBe("spend-status spend-status-error");
     expect(statusClass("running")).toBe("spend-status spend-status-running");
+  });
+});
+
+describe("кроки збору", () => {
+  it("предмет кроку названий словом, а не кодом колектора", () => {
+    expect(syncKindLabel("contracts")).toBe("Договори");
+    expect(syncKindLabel("transactions")).toBe("Платежі");
+  });
+
+  it("невідомий код лишається як прийшов — він хоч щось та значить", () => {
+    expect(syncKindLabel("warmup")).toBe("warmup");
+  });
+
+  it("ключ кроку не показують: замість нього назва розпорядника", () => {
+    const row: SpendingSyncRow = {
+      ...syncRow("2026-09"),
+      key: "org:04360586:2026-09",
+      kind: "contracts",
+    };
+    const orgs = [
+      {
+        edrpou: "04360586",
+        name: "Бучанська міська рада",
+        form: "",
+        koatuu: "",
+        documents: { count: 0, amount: 0 },
+        payments: { count: 0, amount: 0 },
+        receipts: { count: 0, amount: 0 },
+      },
+    ];
+
+    expect(syncStepSubject(row, orgs)).toBe("Бучанська міська рада");
+  });
+
+  it("розпорядник без довідника називається за СДРПОУ, а не порожнечею", () => {
+    const row: SpendingSyncRow = { ...syncRow("2026-09"), key: "org:99999999:2026-09" };
+
+    expect(syncStepSubject(row, [])).toBe("ЄДРПОУ 99999999");
+  });
+
+  it("пачка платежів має номер, а не адресу рядка в базі", () => {
+    const row: SpendingSyncRow = { ...syncRow("2026-09"), key: "transactions:2026-09:batch-2" };
+
+    expect(syncStepSubject(row, [])).toBe("пачка 2");
+  });
+});
+
+describe("довідка джерела", () => {
+  it("стає списком «джерело → дата», а не сирим JSON", () => {
+    const rows = lastLoadSources([
+      { sourceId: 1, sourceName: "ПАТ УКРЗАЛІЗНИЦЯ", lastLoad: "2022-07-06" },
+      { sourceId: 2, sourceName: "КП МСЕЗ", lastLoad: "2026-10-13" },
+    ]);
+
+    expect(rows).toEqual([
+      { name: "КП МСЕЗ", date: "2026-10-13" },
+      { name: "ПАТ УКРЗАЛІЗНИЦЯ", date: "2022-07-06" },
+    ]);
+  });
+
+  it("чужа форма відповіді не валить рендер", () => {
+    expect(lastLoadSources({ organizations: [] })).toEqual([]);
+    expect(lastLoadSources(null)).toEqual([]);
+    expect(lastLoadSources(["рядок", 5, null])).toEqual([]);
+  });
+
+  it("запис без назви лишається з датою, а не зникає", () => {
+    expect(lastLoadSources([{ lastLoad: "2026-09-01" }])).toEqual([
+      { name: "без назви", date: "2026-09-01" },
+    ]);
   });
 });
 

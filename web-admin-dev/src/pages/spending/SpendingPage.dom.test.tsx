@@ -72,6 +72,34 @@ describe("зібрані дані", () => {
     view.unmount();
   });
 
+  it("⛔ не показує ключів кроків і сирого JSON джерела", async () => {
+    const view = render(<SpendingPage />);
+    await screen.findByText("Бучанська міська рада");
+
+    expect(screen.queryByText("payments:2026-09")).toBeNull();
+    expect(screen.queryByText(/sourceName/)).toBeNull();
+    expect(screen.getByText("Платежі")).toBeTruthy();
+    view.unmount();
+  });
+
+  it("довідка джерела читається списком «джерело → дата»", async () => {
+    api.fetchSpendingOverview.mockResolvedValue({
+      ...overview(),
+      lastLoad: {
+        fetchedAt: "2026-10-01T05:00:00.000Z",
+        raw: [{ sourceId: 7, sourceName: "КП МСЕЗ", lastLoad: "2026-10-13" }],
+      },
+    });
+
+    const view = render(<SpendingPage />);
+    await screen.findByText("Бучанська міська рада");
+
+    expect(screen.getByText(/1 джерел/)).toBeTruthy();
+    expect(screen.getByText("КП МСЕЗ")).toBeTruthy();
+    expect(screen.getByText("13.10.2026")).toBeTruthy();
+    view.unmount();
+  });
+
   it("⛔ не малює «всього громади»: сторони платежу не додаються", async () => {
     const view = render(<SpendingPage />);
     await screen.findByText("Бучанська міська рада");

@@ -48,11 +48,19 @@ function DocumentList({ edrpou, period }: { edrpou: string; period: string }) {
           <tbody>
             {list.items.map((document) => (
               <tr key={document.id} className="spend-row">
-                <td className="spend-date">{formatDate(document.documentDate)}</td>
-                <td>{document.number || "—"}</td>
-                <td className="spend-subject">{document.subject || "—"}</td>
-                <td className="spend-subject">{contractorNames(document.contractors)}</td>
-                <td className="spend-num">{formatMoney(document.amount, document.currency)}</td>
+                <td className="spend-date" data-label="Дата">
+                  {formatDate(document.documentDate)}
+                </td>
+                <td data-label="Номер">{document.number || "—"}</td>
+                <td className="spend-subject" data-label="Предмет">
+                  {document.subject || "—"}
+                </td>
+                <td className="spend-subject" data-label="Контрагенти">
+                  {contractorNames(document.contractors)}
+                </td>
+                <td className="spend-num" data-label="Сума">
+                  {formatMoney(document.amount, document.currency)}
+                </td>
               </tr>
             ))}
           </tbody>
@@ -110,11 +118,22 @@ function TransactionList({
           <tbody>
             {list.items.map((transaction) => (
               <tr key={transaction.id} className="spend-row">
-                <td className="spend-date">{formatDate(transaction.transDate)}</td>
-                <td className="spend-subject">{counterparty(transaction, role)}</td>
-                <td className="spend-subject">{transaction.paymentDetails || "—"}</td>
-                <td className="spend-code">{transaction.kekv || "—"}</td>
-                <td className="spend-num">
+                <td className="spend-date" data-label="Дата">
+                  {formatDate(transaction.transDate)}
+                </td>
+                <td
+                  className="spend-subject"
+                  data-label={role === "payer" ? "Отримувач" : "Платник"}
+                >
+                  {counterparty(transaction, role)}
+                </td>
+                <td className="spend-subject" data-label="Призначення">
+                  {transaction.paymentDetails || "—"}
+                </td>
+                <td className="spend-code" data-label="КЕКВ">
+                  {transaction.kekv || "—"}
+                </td>
+                <td className="spend-num" data-label="Сума">
                   {formatMoney(transaction.amount, transaction.currency)}
                 </td>
               </tr>
