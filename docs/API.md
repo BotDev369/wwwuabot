@@ -90,6 +90,11 @@
 | `POST` | `/api/admin/monitoring/collect` | `handleMonitoringCollect` |
 | `GET` | `/api/admin/monitoring/summary` | `handleMonitoringSummary` |
 | `ANY` | `/api/admin/notes` | `handleAdminNotes` |
+| `ANY` | `/api/admin/spending/documents` | `handleSpendingDocuments` |
+| `ANY` | `/api/admin/spending/overview` | `handleSpendingOverview` |
+| `ANY` | `/api/admin/spending/sync` | `handleSpendingSync` |
+| `ANY` | `/api/admin/spending/transactions` | `handleSpendingTransactions` |
+| `ANY` | `/api/admin/spending<…>` | `handleSpendingOverview` |
 | `POST` | `/api/admin/users/block` | `handleBlockUser` |
 | `POST` | `/api/admin/users/bulk` | `handleBulkUsers` |
 | `POST` | `/api/admin/users/delete` | `handleDeleteUser` |
@@ -116,4 +121,4 @@
 | `POST` | `/auth/login` | `handleLogin` |
 | `POST` | `/auth/logout` | `handleLogout` |
 
-Усього шляхів: **87**.
+Усього шляхів: **92**.

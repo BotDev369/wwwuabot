@@ -56,6 +56,11 @@
       "classes": 12
     },
     {
+      "file": "admin/spending.css",
+      "tokens": 0,
+      "classes": 33
+    },
+    {
       "file": "admin/style.css",
       "tokens": 0,
       "classes": 41
@@ -2840,6 +2845,55 @@
           "block-type-badge",
           "block-type-label",
           "pb-block-move"
+        ]
+      }
+    ],
+    "admin/spending.css": [
+      {
+        "section": "",
+        "names": [
+          "spend",
+          "spend-code",
+          "spend-date",
+          "spend-detail-head",
+          "spend-detail-title",
+          "spend-empty",
+          "spend-form",
+          "spend-list-note",
+          "spend-meta",
+          "spend-meta-item",
+          "spend-note",
+          "spend-num",
+          "spend-org-code",
+          "spend-org-name",
+          "spend-panel",
+          "spend-raw",
+          "spend-raw-body",
+          "spend-raw-summary",
+          "spend-row",
+          "spend-row-active",
+          "spend-select",
+          "spend-status",
+          "spend-status-error",
+          "spend-status-ok",
+          "spend-status-running",
+          "spend-subject",
+          "spend-sync",
+          "spend-tab",
+          "spend-tab-active",
+          "spend-table",
+          "spend-table-wrap",
+          "spend-tabs",
+          "spend-th-num"
+        ]
+      },
+      {
+        "section": "Телефон",
+        "names": [
+          "spend",
+          "spend-panel",
+          "spend-subject",
+          "spend-table"
         ]
       }
     ],

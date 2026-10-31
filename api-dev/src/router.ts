@@ -67,15 +67,15 @@ import {
   handleMonitoringCollect,
 } from "./controllers/monitoring.controller";
 import { matchEventsRoute } from "./routes/events";
+import { matchSpendingRoute } from "./routes/spending";
 import { handleUserEvent } from "./controllers/user-event.controller";
 
 /**
  * Префікси шляхів, доступ до яких вимагає адмінської cookie-сесії.
  *
- * Це ЄДИНЕ місце, де визначено межу адмін-доступу. Новий адмін-ендпоїнт
- * мусить бути під одним із цих префіксів — інакше він пройде **повз** гейт
- * і стане публічним мовчки (див. AGENTS.md §7). Межу перевіряє
- * `router.test.ts`.
+ * ЄДИНЕ місце, де визначено межу адмін-доступу: ендпоїнт поза цими префіксами
+ * проходить **повз** гейт і стає публічним мовчки (AGENTS.md §7). Межу
+ * перевіряє `router.test.ts`.
  */
 export const ADMIN_PATH_PREFIXES = ["/api/admin/", "/api/portal/", "/api/bot/"] as const;
 
@@ -115,10 +115,8 @@ export async function handleRequest(request: Request, env: Env): Promise<Respons
   }
 
   // ── Єдиний гейт допуску ─────────────────────────────────────────
-  // Продукт закритий за запрошеннями, і входів у нього два: чат і платформа.
-  // Поки гейт стояв лише в боті, посилання з кнопки «Відкрити сторінку» вело
-  // повз нього. Правило одне й спільне, перевірка — перед маршрутизацією, тож
-  // новий ендпоїнт за замовчуванням закритий (`shared/platform-gate.ts`).
+  // Платформа закрита за запрошеннями, входів два: чат і платформа. Правило
+  // спільне, перевірка — до маршрутизації (`shared/platform-gate.ts`).
   const denied = await enforcePlatformAccess(request, env, pathname);
   if (denied) return denied;
 
@@ -274,8 +272,7 @@ export async function handleRequest(request: Request, env: Env): Promise<Respons
   if (accessRequests) return accessRequests;
 
   // ── Admin: Моніторинг (зрізи показників проєкту) ───────────────
-  // Читання дешеве, а збір — ні (архів гілки + GitHub API), тому це два
-  // різні шляхи: сторінка не має платити за мережу, щоб просто відкритись.
+  // Читання дешеве, а збір — ні (архів гілки + GitHub API): різні шляхи.
   if (pathname === "/api/admin/monitoring/summary" && request.method === "GET") {
     return handleMonitoringSummary(request, env);
   }
@@ -284,12 +281,14 @@ export async function handleRequest(request: Request, env: Env): Promise<Respons
   }
 
   // ── Admin: журнал дій людей ────────────────────────────────────
-  // Зведення, список, люди й прибирання — один домен (`routes/events.ts`).
   const events = matchEventsRoute(request, env, pathname);
   if (events) return events;
 
+  // ── Admin: Є-data (зібране; розклад, а не запит) ────────────────
+  const spending = matchSpendingRoute(request, env, pathname);
+  if (spending) return spending;
+
   // ── Допуск: «чи бачу я платформу» ──────────────────────────────
-  // Єдиний платформенний шлях поза гейтом допуску — він і запитує його.
   if (pathname === "/api/user/access" && request.method === "GET") {
     return handleAccess(request, env);
   }

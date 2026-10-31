@@ -58,6 +58,7 @@
     "./pages": "./src/pages/index.ts",
     "./shop": "./src/shop/index.ts",
     "./monitoring": "./src/monitoring/index.ts",
+    "./spending": "./src/spending/index.ts",
     "./themes": "./src/themes/index.ts",
     "./themes/apply": "./src/themes/apply.ts",
     "./components/Icon": "./src/components/Icon.tsx",

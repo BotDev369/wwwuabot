@@ -8,6 +8,7 @@ import { PageBuilderPage } from "../features/page-builder/PageBuilderPage";
 import { BotSettingsPage } from "../pages/bot-settings/BotSettingsPage";
 import { ProfilePage } from "../pages/profile/ProfilePage";
 import { MonitoringPage } from "../pages/monitoring/MonitoringPage";
+import { SpendingPage } from "../pages/spending/SpendingPage";
 import { AnalyticsPage } from "../pages/analytics/AnalyticsPage";
 
 /**
@@ -21,6 +22,8 @@ import { AnalyticsPage } from "../pages/analytics/AnalyticsPage";
  * /analytics          — Аналітика поведінки: журнал дій людей (бот і платформа),
  *                       по користувачах або за діапазоном часу
  * /monitoring         — Моніторинг проєкту: зрізи код/GitHub, динаміка, історія
+ * /spending           — Є-data: зібране про видатки громади — розпорядники,
+ *                       договори, обидві сторони платежів і стан збору
  * /style              — Інвентар вигляду: токени, кирпичики й класи так, як вони
  *                       є в CSS (каталог генерує `npm run doc:style`)
  * /bot-settings       — Налаштування бота
@@ -44,6 +47,7 @@ export const router = createBrowserRouter([
       { path: "messages", element: <AccessRequestsPage /> },
       { path: "analytics", element: <AnalyticsPage /> },
       { path: "monitoring", element: <MonitoringPage /> },
+      { path: "spending", element: <SpendingPage /> },
       // Сторінка-довідник вантажиться ліниво: вхід в адмінку не має чекати на
       // інвентар, який відкривають зрідка (`npm run check:bundle`).
       {
