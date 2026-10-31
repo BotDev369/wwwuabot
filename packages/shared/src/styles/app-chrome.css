@@ -61,8 +61,8 @@
 .wb-app-header,
 .wb-topbar {
   /* фолбек для рушіїв без `color-mix()` — той самий колір, лише непрозорий */
-  background: var(--chrome-header-bg) !important;
-  background: color-mix(in srgb, var(--chrome-header-bg) 91%, transparent) !important;
+  background: var(--chrome-header-bg);
+  background: color-mix(in srgb, var(--chrome-header-bg) 91%, transparent);
   /* Обвідки й тіні немає: контур сам по собі малює шов між шапкою Telegram і
      нашою — навіть тоді, коли кольори вже збігаються. */
   border-bottom: none;
@@ -72,8 +72,8 @@
 }
 
 .wb-tabbar {
-  background: var(--chrome-bottom-bg) !important;
-  background: color-mix(in srgb, var(--chrome-bottom-bg) 91%, transparent) !important;
+  background: var(--chrome-bottom-bg);
+  background: color-mix(in srgb, var(--chrome-bottom-bg) 91%, transparent);
   /* Скло, як у шапки: без розмиття контент, що їде під смугою, читався крізь неї
      як текст під напівпрозорою плівкою. */
   -webkit-backdrop-filter: blur(14px) saturate(140%);

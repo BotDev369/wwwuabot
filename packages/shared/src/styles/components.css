@@ -2479,10 +2479,20 @@ button.wb-chip {
   }
 }
 
+/* Стан saved стоїть після secondary — цього досить, щоб перебити його без `!important`.
+   Hover лишається зеленим окремим правилом у медіазапиті: поза ним миша не живе. */
 .wb-save-actions-btn--saved {
-  background: var(--green-dim) !important;
-  color: var(--green) !important;
-  border-color: var(--green) !important;
+  background: var(--green-dim);
+  color: var(--green);
+  border-color: var(--green);
+}
+
+@media (hover: hover) {
+  .wb-save-actions-btn--saved:hover:not(:disabled) {
+    background: var(--green-dim);
+    color: var(--green);
+    border-color: var(--green);
+  }
 }
 
 /* Mobile responsive layout (max-width: 520px) */
