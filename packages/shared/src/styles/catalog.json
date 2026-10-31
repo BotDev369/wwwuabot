@@ -2868,7 +2868,6 @@
           "spend-org-name",
           "spend-panel",
           "spend-raw",
-          "spend-raw-body",
           "spend-raw-summary",
           "spend-row",
           "spend-row-active",
@@ -2891,9 +2890,14 @@
         "section": "Телефон",
         "names": [
           "spend",
+          "spend-empty",
+          "spend-lastload",
+          "spend-num",
           "spend-panel",
+          "spend-row-active",
           "spend-subject",
-          "spend-table"
+          "spend-table",
+          "spend-table-wrap"
         ]
       }
     ],
