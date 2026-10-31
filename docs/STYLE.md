@@ -52,6 +52,7 @@
 
 ## Хто стежить
 
-`styles/typography.test.ts` (типографіка без `!important`), `styles/rows.test.ts` і
-`styles/surfaces.test.ts` (мірки рядка й картки, один клас — один файл), `npm run check:css`
-(клас без правила) і `npm run check:quality` (емодзі, `100vh`, моноліти).
+`styles/typography.test.ts` (типографіка без `!important`), `styles/important.test.ts` (форс лише для
+`prefers-reduced-motion`), `styles/rows.test.ts` і `styles/surfaces.test.ts` (мірки рядка й картки,
+один клас — один файл), `npm run check:css` (клас без правила) і `npm run check:quality` (емодзі,
+`100vh`, моноліти).
