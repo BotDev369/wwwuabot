@@ -85,14 +85,10 @@ export function BlockEditor({
 
   return (
     <div
-      className="pb-block-editor"
+      className={depth > 0 ? "pb-block-editor pb-block-editor--nested" : "pb-block-editor"}
       style={{
-        border: hasConditions ? "1px solid var(--accent, #6366f1)" : "1px solid var(--border)",
-        borderRadius: 6,
-        marginBottom: 4,
-        marginLeft: depth * 12,
-        background: depth > 0 ? "var(--bg-tertiary, #f8f9fa)" : "var(--bg-primary)",
-        overflow: "hidden",
+        borderColor: hasConditions ? "var(--accent)" : undefined,
+        marginLeft: depth > 0 ? `calc(${depth} * var(--sp-3))` : undefined,
       }}
     >
       <BlockEditorHeader

@@ -43,7 +43,7 @@
     {
       "file": "admin/scenario-tabs.css",
       "tokens": 0,
-      "classes": 11
+      "classes": 12
     },
     {
       "file": "admin/scenarios-list.css",
@@ -2566,6 +2566,7 @@
           "kb-btn",
           "kb-row-buttons",
           "pb-block-editor",
+          "pb-block-editor--nested",
           "pb-zone-editor",
           "wb-line-tab",
           "wb-line-tab--active",

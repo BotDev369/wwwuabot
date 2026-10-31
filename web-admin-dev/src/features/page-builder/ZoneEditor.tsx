@@ -74,15 +74,7 @@ export function ZoneEditor({
   } = useZoneBlocks({ zone, blocks, onUpdateBlocks });
 
   return (
-    <div
-      className="pb-zone-editor"
-      style={{
-        border: "1px solid var(--border)",
-        borderRadius: 8,
-        marginBottom: 12,
-        overflow: "hidden",
-      }}
-    >
+    <div className="pb-zone-editor">
       {/* Zone header */}
       <div
         style={{
