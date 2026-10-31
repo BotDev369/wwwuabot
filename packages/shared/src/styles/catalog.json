@@ -162,7 +162,7 @@
     },
     {
       "file": "shop-storefront.css",
-      "tokens": 35,
+      "tokens": 0,
       "classes": 94
     },
     {
@@ -197,7 +197,7 @@
     },
     {
       "file": "tokens.css",
-      "tokens": 157,
+      "tokens": 159,
       "classes": 0
     },
     {
@@ -965,6 +965,14 @@
       "paletteDark": "rgb(0 0 0 / 60%)"
     },
     {
+      "name": "--scrim-strong",
+      "section": "Мобільна навігація",
+      "light": "rgba(0, 0, 0, 0.72)",
+      "dark": "",
+      "palette": "",
+      "paletteDark": ""
+    },
+    {
       "name": "--selection-bg",
       "section": "Глибина поверхонь",
       "light": "rgba(28, 27, 31, 0.14)",
@@ -1309,6 +1317,14 @@
       "paletteDark": "color-mix(in srgb, var(--user-text) 48%, var(--user-bg))"
     },
     {
+      "name": "--text-on-scrim",
+      "section": "Палітра світлої схеми (M3 surface containers)",
+      "light": "#ffffff",
+      "dark": "",
+      "palette": "",
+      "paletteDark": ""
+    },
+    {
       "name": "--text-primary",
       "section": "Палітра світлої схеми (M3 surface containers)",
       "light": "#15151a",
@@ -1485,97 +1501,6 @@
       "section": ""
     },
     {
-      "name": "--bg-1",
-      "file": "shop-storefront.css",
-      "selector": ".shop-store,\n.shop-catalog",
-      "value": "#ffffff",
-      "section": "Палітра вітрини"
-    },
-    {
-      "name": "--bg-1",
-      "file": "shop-storefront.css",
-      "selector": "html[data-theme=\"dark\"] .shop-store,\nhtml[data-theme=\"dark\"] .shop-catalog,\nhtml[data-colors-mode=\"dark\"] .shop-store,\nhtml[data-colors-mode=\"dark\"] .shop-catalog",
-      "value": "#191c25",
-      "section": "Палітра вітрини"
-    },
-    {
-      "name": "--bg-2",
-      "file": "shop-storefront.css",
-      "selector": ".shop-store,\n.shop-catalog",
-      "value": "#f6f7fa",
-      "section": "Палітра вітрини"
-    },
-    {
-      "name": "--bg-2",
-      "file": "shop-storefront.css",
-      "selector": "html[data-theme=\"dark\"] .shop-store,\nhtml[data-theme=\"dark\"] .shop-catalog,\nhtml[data-colors-mode=\"dark\"] .shop-store,\nhtml[data-colors-mode=\"dark\"] .shop-catalog",
-      "value": "#20242d",
-      "section": "Палітра вітрини"
-    },
-    {
-      "name": "--bg-3",
-      "file": "shop-storefront.css",
-      "selector": ".shop-store,\n.shop-catalog",
-      "value": "#eff1f6",
-      "section": "Палітра вітрини"
-    },
-    {
-      "name": "--bg-3",
-      "file": "shop-storefront.css",
-      "selector": "html[data-theme=\"dark\"] .shop-store,\nhtml[data-theme=\"dark\"] .shop-catalog,\nhtml[data-colors-mode=\"dark\"] .shop-store,\nhtml[data-colors-mode=\"dark\"] .shop-catalog",
-      "value": "#262a34",
-      "section": "Палітра вітрини"
-    },
-    {
-      "name": "--bg-4",
-      "file": "shop-storefront.css",
-      "selector": ".shop-store,\n.shop-catalog",
-      "value": "#e9ecf3",
-      "section": "Палітра вітрини"
-    },
-    {
-      "name": "--bg-4",
-      "file": "shop-storefront.css",
-      "selector": "html[data-theme=\"dark\"] .shop-store,\nhtml[data-theme=\"dark\"] .shop-catalog,\nhtml[data-colors-mode=\"dark\"] .shop-store,\nhtml[data-colors-mode=\"dark\"] .shop-catalog",
-      "value": "#2d323c",
-      "section": "Палітра вітрини"
-    },
-    {
-      "name": "--bg-home",
-      "file": "shop-storefront.css",
-      "selector": ".shop-store,\n.shop-catalog",
-      "value": "var(--surface)",
-      "section": "Палітра вітрини"
-    },
-    {
-      "name": "--border",
-      "file": "shop-storefront.css",
-      "selector": ".shop-store,\n.shop-catalog",
-      "value": "#dcdfe7",
-      "section": "Палітра вітрини"
-    },
-    {
-      "name": "--border",
-      "file": "shop-storefront.css",
-      "selector": "html[data-theme=\"dark\"] .shop-store,\nhtml[data-theme=\"dark\"] .shop-catalog,\nhtml[data-colors-mode=\"dark\"] .shop-store,\nhtml[data-colors-mode=\"dark\"] .shop-catalog",
-      "value": "#333846",
-      "section": "Палітра вітрини"
-    },
-    {
-      "name": "--border-subtle",
-      "file": "shop-storefront.css",
-      "selector": ".shop-store,\n.shop-catalog",
-      "value": "#e8eaf0",
-      "section": "Палітра вітрини"
-    },
-    {
-      "name": "--border-subtle",
-      "file": "shop-storefront.css",
-      "selector": "html[data-theme=\"dark\"] .shop-store,\nhtml[data-theme=\"dark\"] .shop-catalog,\nhtml[data-colors-mode=\"dark\"] .shop-store,\nhtml[data-colors-mode=\"dark\"] .shop-catalog",
-      "value": "#272c36",
-      "section": "Палітра вітрини"
-    },
-    {
       "name": "--cell",
       "file": "components.css",
       "selector": ".wb-tools-controls",
@@ -1644,20 +1569,6 @@
       "selector": ".wb-trackers-page",
       "value": "0",
       "section": ""
-    },
-    {
-      "name": "--field-bg",
-      "file": "shop-storefront.css",
-      "selector": ".shop-store,\n.shop-catalog",
-      "value": "#f1f2f6",
-      "section": "Палітра вітрини"
-    },
-    {
-      "name": "--field-bg",
-      "file": "shop-storefront.css",
-      "selector": "html[data-theme=\"dark\"] .shop-store,\nhtml[data-theme=\"dark\"] .shop-catalog,\nhtml[data-colors-mode=\"dark\"] .shop-store,\nhtml[data-colors-mode=\"dark\"] .shop-catalog",
-      "value": "#262a34",
-      "section": "Палітра вітрини"
     },
     {
       "name": "--game-accent",
@@ -2276,104 +2187,6 @@
       "section": ""
     },
     {
-      "name": "--shop-hero",
-      "file": "shop-storefront.css",
-      "selector": ".shop-store,\n.shop-catalog",
-      "value": "linear-gradient(158deg, #1d2130 0%, #101320 100%)",
-      "section": "Палітра вітрини"
-    },
-    {
-      "name": "--shop-hero",
-      "file": "shop-storefront.css",
-      "selector": "html[data-theme=\"dark\"] .shop-store,\nhtml[data-theme=\"dark\"] .shop-catalog,\nhtml[data-colors-mode=\"dark\"] .shop-store,\nhtml[data-colors-mode=\"dark\"] .shop-catalog",
-      "value": "linear-gradient(158deg, #2b3142 0%, #1b1f2b 100%)",
-      "section": "Палітра вітрини"
-    },
-    {
-      "name": "--shop-scrim",
-      "file": "shop-storefront.css",
-      "selector": ".shop-store,\n.shop-catalog",
-      "value": "rgb(14 16 24 / 72%)",
-      "section": "Палітра вітрини"
-    },
-    {
-      "name": "--shop-scrim-strong",
-      "file": "shop-storefront.css",
-      "selector": ".shop-store,\n.shop-catalog",
-      "value": "rgb(14 16 24 / 88%)",
-      "section": "Палітра вітрини"
-    },
-    {
-      "name": "--shop-shadow",
-      "file": "shop-storefront.css",
-      "selector": ".shop-store,\n.shop-catalog",
-      "value": "0 1px 2px rgb(12 16 28 / 8%), 0 8px 24px rgb(12 16 28 / 12%)",
-      "section": "Палітра вітрини"
-    },
-    {
-      "name": "--shop-shadow",
-      "file": "shop-storefront.css",
-      "selector": "html[data-theme=\"dark\"] .shop-store,\nhtml[data-theme=\"dark\"] .shop-catalog,\nhtml[data-colors-mode=\"dark\"] .shop-store,\nhtml[data-colors-mode=\"dark\"] .shop-catalog",
-      "value": "0 1px 2px rgb(0 0 0 / 40%), 0 8px 24px rgb(0 0 0 / 45%)",
-      "section": "Палітра вітрини"
-    },
-    {
-      "name": "--shop-shadow-soft",
-      "file": "shop-storefront.css",
-      "selector": ".shop-store,\n.shop-catalog",
-      "value": "0 1px 2px rgb(12 16 28 / 6%), 0 4px 14px rgb(12 16 28 / 7%)",
-      "section": "Палітра вітрини"
-    },
-    {
-      "name": "--shop-shadow-soft",
-      "file": "shop-storefront.css",
-      "selector": "html[data-theme=\"dark\"] .shop-store,\nhtml[data-theme=\"dark\"] .shop-catalog,\nhtml[data-colors-mode=\"dark\"] .shop-store,\nhtml[data-colors-mode=\"dark\"] .shop-catalog",
-      "value": "0 1px 2px rgb(0 0 0 / 30%), 0 4px 14px rgb(0 0 0 / 30%)",
-      "section": "Палітра вітрини"
-    },
-    {
-      "name": "--surface",
-      "file": "shop-storefront.css",
-      "selector": ".shop-store,\n.shop-catalog",
-      "value": "#ffffff",
-      "section": "Палітра вітрини"
-    },
-    {
-      "name": "--surface",
-      "file": "shop-storefront.css",
-      "selector": "html[data-theme=\"dark\"] .shop-store,\nhtml[data-theme=\"dark\"] .shop-catalog,\nhtml[data-colors-mode=\"dark\"] .shop-store,\nhtml[data-colors-mode=\"dark\"] .shop-catalog",
-      "value": "#191c25",
-      "section": "Палітра вітрини"
-    },
-    {
-      "name": "--surface-active",
-      "file": "shop-storefront.css",
-      "selector": ".shop-store,\n.shop-catalog",
-      "value": "#e6e8ef",
-      "section": "Палітра вітрини"
-    },
-    {
-      "name": "--surface-active",
-      "file": "shop-storefront.css",
-      "selector": "html[data-theme=\"dark\"] .shop-store,\nhtml[data-theme=\"dark\"] .shop-catalog,\nhtml[data-colors-mode=\"dark\"] .shop-store,\nhtml[data-colors-mode=\"dark\"] .shop-catalog",
-      "value": "#2b303a",
-      "section": "Палітра вітрини"
-    },
-    {
-      "name": "--surface-hover",
-      "file": "shop-storefront.css",
-      "selector": ".shop-store,\n.shop-catalog",
-      "value": "#f1f2f6",
-      "section": "Палітра вітрини"
-    },
-    {
-      "name": "--surface-hover",
-      "file": "shop-storefront.css",
-      "selector": "html[data-theme=\"dark\"] .shop-store,\nhtml[data-theme=\"dark\"] .shop-catalog,\nhtml[data-colors-mode=\"dark\"] .shop-store,\nhtml[data-colors-mode=\"dark\"] .shop-catalog",
-      "value": "#22262f",
-      "section": "Палітра вітрини"
-    },
-    {
       "name": "--tabs-h",
       "file": "components.css",
       "selector": ".wb-tabs",
@@ -2386,48 +2199,6 @@
       "selector": ".wb-tracker-form .wb-tabs",
       "value": "44px",
       "section": "Новий трекер"
-    },
-    {
-      "name": "--text-muted",
-      "file": "shop-storefront.css",
-      "selector": ".shop-store,\n.shop-catalog",
-      "value": "#5c5f67",
-      "section": "Палітра вітрини"
-    },
-    {
-      "name": "--text-muted",
-      "file": "shop-storefront.css",
-      "selector": "html[data-theme=\"dark\"] .shop-store,\nhtml[data-theme=\"dark\"] .shop-catalog,\nhtml[data-colors-mode=\"dark\"] .shop-store,\nhtml[data-colors-mode=\"dark\"] .shop-catalog",
-      "value": "#a2a2ac",
-      "section": "Палітра вітрини"
-    },
-    {
-      "name": "--text-primary",
-      "file": "shop-storefront.css",
-      "selector": ".shop-store,\n.shop-catalog",
-      "value": "#14161c",
-      "section": "Палітра вітрини"
-    },
-    {
-      "name": "--text-primary",
-      "file": "shop-storefront.css",
-      "selector": "html[data-theme=\"dark\"] .shop-store,\nhtml[data-theme=\"dark\"] .shop-catalog,\nhtml[data-colors-mode=\"dark\"] .shop-store,\nhtml[data-colors-mode=\"dark\"] .shop-catalog",
-      "value": "#f2f4f8",
-      "section": "Палітра вітрини"
-    },
-    {
-      "name": "--text-secondary",
-      "file": "shop-storefront.css",
-      "selector": ".shop-store,\n.shop-catalog",
-      "value": "#44464f",
-      "section": "Палітра вітрини"
-    },
-    {
-      "name": "--text-secondary",
-      "file": "shop-storefront.css",
-      "selector": "html[data-theme=\"dark\"] .shop-store,\nhtml[data-theme=\"dark\"] .shop-catalog,\nhtml[data-colors-mode=\"dark\"] .shop-store,\nhtml[data-colors-mode=\"dark\"] .shop-catalog",
-      "value": "#c7c5d0",
-      "section": "Палітра вітрини"
     },
     {
       "name": "--tools-cell",
@@ -4434,13 +4205,6 @@
     "reset.css": [],
     "shop-storefront.css": [
       {
-        "section": "Палітра вітрини",
-        "names": [
-          "shop-catalog",
-          "shop-store"
-        ]
-      },
-      {
         "section": "Каталог: те, що бачить покупець під вітриною",
         "names": [
           "shop-card",
@@ -4532,7 +4296,7 @@
           "shop-store-note-icon",
           "shop-store-tagline",
           "shop-store-title",
-          "wb-block-divider",
+          "wb-block-card",
           "wb-block-text__content",
           "wb-block-text__title"
         ]
