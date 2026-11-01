@@ -542,6 +542,25 @@
   color: var(--accent);
 }
 
+/* Сторінка про відсотки мусить показувати відсоток, а не лише називати його.
+   Довжина смуги приходить зі значення (28,8% = 28,8% доріжки), тож око
+   порівнює частки раніше, ніж дочитує підпис. */
+.wb-block-features__share {
+  display: block;
+  height: 6px;
+  margin-top: var(--sp-3);
+  border-radius: var(--radius-full);
+  background: var(--accent-dim);
+  overflow: hidden;
+}
+
+.wb-block-features__share-fill {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: var(--accent);
+}
+
 .wb-block-features__desc {
   margin: 0;
   font-size: var(--text-sm);

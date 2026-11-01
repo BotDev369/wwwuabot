@@ -26,6 +26,16 @@ function isFigure(item: FeatureItem): boolean {
   return FIGURE.test(item.title.trim());
 }
 
+/** Відсоток із підпису — єдине, що з нього можна намалювати: «28,8%» → 28.8. */
+const PERCENT = /^([\d\s.,]+)\s*%$/u;
+
+function share(item: FeatureItem): number | null {
+  const match = PERCENT.exec(item.title.trim());
+  if (!match) return null;
+  const value = Number(match[1].replace(/\s/g, "").replace(",", "."));
+  return Number.isFinite(value) ? Math.min(100, Math.max(0, value)) : null;
+}
+
 export function FeatureCardBlock({ block }: BlockComponentProps) {
   const { items = [] } = block.props as { items?: FeatureItem[] };
 
@@ -36,17 +46,28 @@ export function FeatureCardBlock({ block }: BlockComponentProps) {
 
   return (
     <div className={className}>
-      {items.map((item, i) => (
-        <div key={i} className="wb-block-features__card">
-          {item.icon && (
-            <span className="wb-block-features__icon" aria-hidden="true">
-              {item.icon}
-            </span>
-          )}
-          <h4 className="wb-block-features__title">{item.title}</h4>
-          {item.description && <p className="wb-block-features__desc">{item.description}</p>}
-        </div>
-      ))}
+      {items.map((item, i) => {
+        const percent = share(item);
+
+        return (
+          <div key={i} className="wb-block-features__card">
+            {item.icon && (
+              <span className="wb-block-features__icon" aria-hidden="true">
+                {item.icon}
+              </span>
+            )}
+            <h4 className="wb-block-features__title">{item.title}</h4>
+            {item.description && <p className="wb-block-features__desc">{item.description}</p>}
+            {percent !== null && (
+              <span className="wb-block-features__share" aria-hidden="true">
+                {/* Довжина — з підпису показника: смуга росте рівно з цифрою.
+                    Значення вже є в заголовку, тож від читача воно сховане. */}
+                <span className="wb-block-features__share-fill" style={{ width: `${percent}%` }} />
+              </span>
+            )}
+          </div>
+        );
+      })}
     </div>
   );
 }

@@ -56,6 +56,11 @@ describe("FeatureCardBlock", () => {
       />,
     );
     expect(figures.container.querySelector(".wb-block-features--figures")).toBeTruthy();
+    // Смуга — лише там, де підпис справді відсоток: «+1,8 в.п.» малювати нічим.
+    expect(figures.container.querySelectorAll(".wb-block-features__share")).toHaveLength(1);
+    // І її довжина — з цифри над нею, а не з місця в рядку.
+    const fill = figures.container.querySelector(".wb-block-features__share-fill") as HTMLElement;
+    expect(fill.style.width).toBe("28.8%");
     figures.unmount();
 
     const prose = render(

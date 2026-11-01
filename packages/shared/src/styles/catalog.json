@@ -103,7 +103,7 @@
     {
       "file": "blocks.css",
       "tokens": 0,
-      "classes": 213
+      "classes": 215
     },
     {
       "file": "components.css",
@@ -3511,6 +3511,8 @@
           "wb-block-features__card",
           "wb-block-features__desc",
           "wb-block-features__icon",
+          "wb-block-features__share",
+          "wb-block-features__share-fill",
           "wb-block-features__title"
         ]
       },
