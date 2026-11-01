@@ -27,14 +27,18 @@ function source(...parts: string[]): string {
 }
 
 describe("склад ігор", () => {
-  it("кожна гра має унікальний ключ і підпис", () => {
-    // Знака в пункту немає навмисно: рядок списку — вміст, а вміст
-    // знаків не носить (правило 23). Див. `GameOption`.
+  it("кожна гра має унікальний ключ, підпис і **свій** глиф", () => {
+    // Глиф — тотожність гри в списку (правило 23), тож він мусить бути
+    // і не повторюватись: два однакові знаки нічого не розрізняють, і рядки
+    // знову стають смугами тексту.
     const keys = GAMES.map((game) => game.key);
     expect(new Set(keys).size).toBe(keys.length);
     for (const game of GAMES) {
       expect(game.label, game.key).toBeTruthy();
+      expect(game.icon, game.key).toBeTruthy();
     }
+    const icons = GAMES.map((game) => game.icon);
+    expect(new Set(icons).size).toBe(icons.length);
   });
 
   it("ключі — латиниця: вони ж сегменти адреси, а не підписи", () => {

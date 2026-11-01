@@ -120,17 +120,21 @@ function render(
 }
 
 describe("ContactList — закритий рядок", () => {
-  it("нумерує контакти порядково, і в групах номер продовжується", () => {
-    const first = group([contact(7), contact(9)], "Сьогодні");
+  it("рядок несе ініціал людини, а не порядковий номер", () => {
+    const first = group([contact(7, { name: "Олег" }), contact(9, { name: "марія" })], "Сьогодні");
     const second: ContactsGroup = {
       key: "day:yesterday",
       label: "Вчора",
-      contacts: [contact(11)],
+      contacts: [contact(11, { name: "Ініян" })],
     };
     const html = render([], { groups: [first, second] });
-    const numbers = [...html.matchAll(/wb-contact-number">(\d+)</g)].map((match) => match[1]);
 
-    expect(numbers).toEqual(["1", "2", "3"]);
+    // Тотожність, а не лічба: ініціал великою літерою й порожній рядок
+    // номерів — бо номер тепер нічого не каже про людину.
+    expect(
+      [...html.matchAll(/wb-contact-avatar" aria-hidden="true">\s*(\S)\s*</g)].map((m) => m[1]),
+    ).toEqual(["О", "М", "І"]);
+    expect(html).not.toContain("wb-contact-number");
     // Заголовок групи каже, скільки в ній записів: «тут 2» мусить бути видно,
     // не рахуючи очима.
     expect(html).toContain("Сьогодні");

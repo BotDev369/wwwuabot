@@ -4201,6 +4201,7 @@
       {
         "section": "Список контактів",
         "names": [
+          "wb-contact-avatar",
           "wb-contact-card",
           "wb-contact-group",
           "wb-contact-group-count",
@@ -4211,7 +4212,6 @@
           "wb-contact-line",
           "wb-contact-list",
           "wb-contact-name",
-          "wb-contact-number",
           "wb-contact-open",
           "wb-contact-stamp",
           "wb-contact-state",

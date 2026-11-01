@@ -22,10 +22,9 @@
  * запису стоїть підпис «та сама людина, що …». Мовчазний близнюк читався б як
  * помилка даних, а це правда: лінків два, людини одна.
  *
- * **Номер — порядковий**, а не колонка в базі: він каже, скільком записам
- * відповідає рядок, і зникає разом із контактом, а не переписується в кожному
- * рядку при кожному видаленні. Рахується він **у видимому порядку**, тож у
- * групах продовжується, а не починається з одиниці.
+ * **Обличчя — ініціал, а не порядковий номер.** Номер був колонкою для
+ * лічби й нічого не казав про людину; ініціал — та сама тотожність у рядку, що
+ * аватар у чатах (правило 23), і око чіпляється за нього, гортаючи список.
  *
  * Розкритість — стан **оболонки** (`openIds` + `onToggle`), а не рядка:
  * «розгорнути всі» приходить ззовні, і стан мусить бути один. Дії рядок не
@@ -160,9 +159,9 @@ export function ContactList({
   // екрана, а її число — те, що вже показано плашкою «Всього». Титул має сенс
   // лише там, де груп справді кілька.
   const untitled = groups.length === 1 && groups[0].key === "all";
-  // Порядковий номер — у видимому порядку: у групах він продовжується, бо
-  // групи ділять список, а не починають його заново.
-  let number = 0;
+  // Єдина група `all` — це «без груп»: титул такої групи повторював би назву
+  // екрана, а її число — те, що вже показано плашкою «Всього». Титул має сенс
+  // лише там, де груп справді кілька.
 
   return (
     <>
@@ -183,8 +182,10 @@ export function ContactList({
             )}
             <ul className={`wb-contact-list ${collectionViewClass(collection)}`}>
               {group.contacts.map((contact) => {
-                number += 1;
                 const stage = contactStage(contact);
+                // Перша літера імені — та сама тотожність, що аватар у чатах.
+                // Ім'я поруч, тож для скрінрідера ініціал зайвий і схований.
+                const initial = contact.name.trim().charAt(0).toUpperCase() || "?";
                 const who = identity(contact);
                 const twin = twins.get(contact.id);
                 const isOpen = open.has(contact.id);
@@ -207,7 +208,9 @@ export function ContactList({
                       onClick={() => onToggle(contact.id)}
                     >
                       <span className="wb-contact-head">
-                        <span className="wb-contact-number">{number}</span>
+                        <span className="wb-contact-avatar" aria-hidden="true">
+                          {initial}
+                        </span>
                         <span className="wb-contact-name">{contact.name}</span>
                         <span className="wb-contact-stamp">{formatStamp(contact.updatedAt)}</span>
                         <span className="wb-contact-open">
