@@ -6,9 +6,8 @@
  * Зменшувати — і є планом: кожен прибраний інлайн знижує число, нуль — ціль.
  */
 export const BASELINE = {
-  total: 285,
+  total: 263,
   files: {
-    "web-admin-dev/src/pages/bot-settings/BotSettingsPage.tsx": 22,
     "web-admin-dev/src/features/page-builder/ConditionsPanel.tsx": 19,
     "web-admin-dev/src/pages/scenarios/BotRichConstructor.tsx": 17,
     "web-admin-dev/src/features/page-builder/AddBlockModal.tsx": 15,

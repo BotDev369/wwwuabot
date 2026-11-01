@@ -135,13 +135,13 @@ export function BotSettingsPage() {
         </div>
       </PageTopbar>
 
-      <section style={{ flex: 1, overflow: "auto", padding: 20 }}>
+      <section className="bs-body">
         {loading ? (
           <div className="empty-state">
             <span className="empty-state-text">Завантаження...</span>
           </div>
         ) : (
-          <div style={{ maxWidth: 640, display: "flex", flexDirection: "column", gap: 16 }}>
+          <div className="bs-stack">
             {/* Повідомлення */}
             {message && (
               <div
@@ -162,22 +162,14 @@ export function BotSettingsPage() {
                   <span className="wb-badge wb-badge-green">Активний</span>
                 </div>
                 <div className="wb-card-body">
-                  <div className="block-row" style={{ gap: 12 }}>
-                    <div style={{ flex: 1 }}>
-                      <div style={{ fontSize: 11, color: "var(--text-muted)", marginBottom: 2 }}>
-                        Username
-                      </div>
-                      <div style={{ fontFamily: "var(--font-mono)", fontSize: 13 }}>
-                        @{botInfo.result.username}
-                      </div>
+                  <div className="bs-cols">
+                    <div className="bs-col">
+                      <div className="bs-label">Username</div>
+                      <div className="bs-value">@{botInfo.result.username}</div>
                     </div>
-                    <div style={{ flex: 1 }}>
-                      <div style={{ fontSize: 11, color: "var(--text-muted)", marginBottom: 2 }}>
-                        ID
-                      </div>
-                      <div style={{ fontFamily: "var(--font-mono)", fontSize: 13 }}>
-                        {String(botInfo.result.id)}
-                      </div>
+                    <div className="bs-col">
+                      <div className="bs-label">ID</div>
+                      <div className="bs-value">{String(botInfo.result.id)}</div>
                     </div>
                   </div>
                 </div>
@@ -200,66 +192,34 @@ export function BotSettingsPage() {
                 )}
               </div>
               <div className="wb-card-body">
-                <div style={{ marginBottom: 12 }}>
-                  <div style={{ fontSize: 11, color: "var(--text-muted)", marginBottom: 2 }}>
-                    URL
-                  </div>
-                  <div
-                    style={{
-                      fontFamily: "var(--font-mono)",
-                      fontSize: 12,
-                      background: "var(--bg-2)",
-                      border: "1px solid var(--border)",
-                      borderRadius: "var(--radius-sm)",
-                      padding: "6px 10px",
-                      wordBreak: "break-all",
-                      color: webhookInfo?.url ? "var(--text-primary)" : "var(--text-muted)",
-                    }}
-                  >
+                <div className="bs-field">
+                  <div className="bs-label">URL</div>
+                  <div className={`bs-mono-box${webhookInfo?.url ? "" : " bs-mono-box--empty"}`}>
                     {webhookInfo?.url || "Не встановлено"}
                   </div>
                 </div>
 
-                <div className="block-row" style={{ gap: 16, marginBottom: 12 }}>
+                <div className="bs-stats">
                   <div>
-                    <span style={{ fontSize: 11, color: "var(--text-muted)" }}>Очікуючі: </span>
-                    <span style={{ fontSize: 13 }}>{webhookInfo?.pending_update_count ?? 0}</span>
+                    <span className="bs-stat__label">Очікуючі: </span>
+                    <span className="bs-stat__value">{webhookInfo?.pending_update_count ?? 0}</span>
                   </div>
                   <div>
-                    <span style={{ fontSize: 11, color: "var(--text-muted)" }}>SSL: </span>
-                    <span style={{ fontSize: 13 }}>
+                    <span className="bs-stat__label">SSL: </span>
+                    <span className="bs-stat__value">
                       {webhookInfo?.has_custom_certificate ? "✅" : "❌"}
                     </span>
                   </div>
                 </div>
 
                 {webhookInfo?.last_error_message && (
-                  <div
-                    style={{
-                      background: "var(--red-dim)",
-                      border: "1px solid var(--red)",
-                      borderRadius: "var(--radius-sm)",
-                      padding: "8px 10px",
-                      marginBottom: 12,
-                    }}
-                  >
-                    <div
-                      style={{
-                        fontSize: 11,
-                        color: "var(--red)",
-                        fontWeight: 600,
-                        marginBottom: 2,
-                      }}
-                    >
-                      Остання помилка:
-                    </div>
-                    <div style={{ fontSize: 12, color: "var(--text-secondary)" }}>
-                      {webhookInfo.last_error_message}
-                    </div>
+                  <div className="bs-error-box">
+                    <div className="bs-error-box__title">Остання помилка:</div>
+                    <div className="bs-error-box__text">{webhookInfo.last_error_message}</div>
                   </div>
                 )}
 
-                <div className="block-row" style={{ gap: 8 }}>
+                <div className="bs-actions">
                   <button
                     className="wb-btn wb-btn-primary"
                     onClick={setupWebhook}
@@ -293,24 +253,7 @@ export function BotSettingsPage() {
                   )}
                 </div>
                 <div className="wb-card-body">
-                  <pre
-                    style={{
-                      fontFamily: "var(--font-mono)",
-                      fontSize: 11,
-                      background: "var(--bg-2)",
-                      border: "1px solid var(--border)",
-                      borderRadius: "var(--radius-sm)",
-                      padding: "10px",
-                      overflow: "auto",
-                      maxHeight: 300,
-                      color: "var(--text-primary)",
-                      whiteSpace: "pre-wrap",
-                      wordBreak: "break-word",
-                      margin: 0,
-                    }}
-                  >
-                    {JSON.stringify(telegramResponse, null, 2)}
-                  </pre>
+                  <pre className="bs-json">{JSON.stringify(telegramResponse, null, 2)}</pre>
                 </div>
               </div>
             )}

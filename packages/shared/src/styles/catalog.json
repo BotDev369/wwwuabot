@@ -16,6 +16,11 @@
       "classes": 27
     },
     {
+      "file": "admin/bot-settings.css",
+      "tokens": 0,
+      "classes": 17
+    },
+    {
       "file": "admin/home.css",
       "tokens": 0,
       "classes": 8
@@ -2394,6 +2399,30 @@
           "tg-details",
           "tg-details-body",
           "tg-details-summary"
+        ]
+      }
+    ],
+    "admin/bot-settings.css": [
+      {
+        "section": "",
+        "names": [
+          "bs-actions",
+          "bs-body",
+          "bs-col",
+          "bs-cols",
+          "bs-error-box",
+          "bs-error-box__text",
+          "bs-error-box__title",
+          "bs-field",
+          "bs-json",
+          "bs-label",
+          "bs-mono-box",
+          "bs-mono-box--empty",
+          "bs-stack",
+          "bs-stat__label",
+          "bs-stat__value",
+          "bs-stats",
+          "bs-value"
         ]
       }
     ],

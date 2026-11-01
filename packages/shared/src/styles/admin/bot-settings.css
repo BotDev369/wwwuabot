@@ -1,0 +1,120 @@
+/*
+ * Bot Settings — вигляд екрана «Налаштування бота».
+ *
+ * Раніше кожен рядок цього екрана ніс свій `style={{}}`: підпис 11px, значення
+ * 13px, рамка 1px, відступ 20. Тепер це ролі — підпис, значення, моно-поле,
+ * смуга помилки, — і всі вони беруть мірку зі шкали токенів. Другий екран із
+ * тими самими ролями просто повторить класи, а не числа.
+ */
+
+.bs-body {
+  flex: 1;
+  overflow: auto;
+  padding: var(--sp-5);
+}
+
+/* Одна колонка налаштувань: довший рядок важче читати, ніж сканувати. */
+.bs-stack {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-4);
+  max-width: 60ch;
+}
+
+.bs-cols {
+  display: flex;
+  gap: var(--sp-3);
+}
+
+.bs-col {
+  flex: 1;
+  min-width: 0;
+}
+
+.bs-field {
+  margin-bottom: var(--sp-1);
+}
+
+/* Підпис ролі й значення ролі — пара, яка повторюється по всьому екрану. */
+.bs-label {
+  margin-bottom: var(--sp-1);
+  font-size: var(--text-xs);
+  color: var(--text-muted);
+}
+
+.bs-value {
+  font-family: var(--font-mono);
+  font-size: var(--text-sm);
+}
+
+/* Моно-поле: URL вебхука й сирий JSON виглядають однаково — це дані, не текст. */
+.bs-mono-box {
+  padding: var(--sp-1) var(--sp-3);
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  color: var(--text-primary);
+  word-break: break-all;
+  background: var(--bg-2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+}
+
+.bs-mono-box--empty {
+  color: var(--text-muted);
+}
+
+.bs-stats {
+  display: flex;
+  gap: var(--sp-4);
+  margin-bottom: var(--sp-3);
+}
+
+.bs-stat__label {
+  font-size: var(--text-xs);
+  color: var(--text-muted);
+}
+
+.bs-stat__value {
+  font-size: var(--text-sm);
+}
+
+/* Смуга помилки Telegram: та сама роль, що `.pb-error`, але з заголовком. */
+.bs-error-box {
+  margin-bottom: var(--sp-3);
+  padding: var(--sp-2) var(--sp-3);
+  background: var(--red-dim, var(--color-error-bg, #fef2f2));
+  border: 1px solid var(--red, var(--color-error, #ef4444));
+  border-radius: var(--radius-sm);
+}
+
+.bs-error-box__title {
+  margin-bottom: var(--sp-1);
+  font-size: var(--text-xs);
+  font-weight: var(--weight-semibold);
+  color: var(--red, var(--color-error, #ef4444));
+}
+
+.bs-error-box__text {
+  font-size: var(--text-sm);
+  color: var(--text-secondary);
+}
+
+.bs-actions {
+  display: flex;
+  gap: var(--sp-2);
+}
+
+.bs-json {
+  max-height: 300px;
+  margin: 0;
+  padding: var(--sp-3);
+  overflow: auto;
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  color: var(--text-primary);
+  white-space: pre-wrap;
+  word-break: break-word;
+  background: var(--bg-2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+}
