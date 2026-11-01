@@ -91,9 +91,14 @@
       "classes": 88
     },
     {
+      "file": "blocks.css",
+      "tokens": 0,
+      "classes": 50
+    },
+    {
       "file": "components.css",
       "tokens": 13,
-      "classes": 200
+      "classes": 199
     },
     {
       "file": "contacts.css",
@@ -3244,6 +3249,128 @@
         ]
       }
     ],
+    "blocks.css": [
+      {
+        "section": "Текст",
+        "names": [
+          "wb-block-text__content"
+        ]
+      },
+      {
+        "section": "Список",
+        "names": [
+          "wb-block-list",
+          "wb-block-list--ordered",
+          "wb-block-list__desc",
+          "wb-block-list__item"
+        ]
+      },
+      {
+        "section": "Показник",
+        "names": [
+          "wb-block-stat",
+          "wb-block-stat__desc",
+          "wb-block-stat__head",
+          "wb-block-stat__icon",
+          "wb-block-stat__label",
+          "wb-block-stat__row",
+          "wb-block-stat__trend",
+          "wb-block-stat__trend--down",
+          "wb-block-stat__trend--up",
+          "wb-block-stat__value"
+        ]
+      },
+      {
+        "section": "Картка-контейнер",
+        "names": [
+          "wb-block-card",
+          "wb-block-card__desc",
+          "wb-block-card__header",
+          "wb-block-card__title"
+        ]
+      },
+      {
+        "section": "Чипи статусу",
+        "names": [
+          "wb-block-badges"
+        ]
+      },
+      {
+        "section": "Група кнопок",
+        "names": [
+          "wb-block-buttons"
+        ]
+      },
+      {
+        "section": "Кнопка-посилання",
+        "names": [
+          "wb-block-link-button",
+          "wb-block-link-button-wrapper",
+          "wb-block-link-button__icon"
+        ]
+      },
+      {
+        "section": "Зображення",
+        "names": [
+          "wb-block-image",
+          "wb-block-image__caption",
+          "wb-block-image__img"
+        ]
+      },
+      {
+        "section": "Часті питання",
+        "names": [
+          "wb-block-faq__answer",
+          "wb-block-faq__chevron",
+          "wb-block-faq__item",
+          "wb-block-faq__item--open",
+          "wb-block-faq__question",
+          "wb-block-faq__title"
+        ]
+      },
+      {
+        "section": "Вкладки",
+        "names": [
+          "wb-block-tabs__content",
+          "wb-block-tabs__header",
+          "wb-block-tabs__icon",
+          "wb-block-tabs__tab",
+          "wb-block-tabs__tab--active"
+        ]
+      },
+      {
+        "section": "Таблиця",
+        "names": [
+          "wb-block-table"
+        ]
+      },
+      {
+        "section": "Розділювач і просвіт",
+        "names": [
+          "wb-block-divider",
+          "wb-block-spacer"
+        ]
+      },
+      {
+        "section": "Цитата",
+        "names": [
+          "wb-block-quote",
+          "wb-block-quote__attribution",
+          "wb-block-quote__role",
+          "wb-block-quote__text"
+        ]
+      },
+      {
+        "section": "Картки переваг",
+        "names": [
+          "wb-block-features",
+          "wb-block-features__card",
+          "wb-block-features__desc",
+          "wb-block-features__icon",
+          "wb-block-features__title"
+        ]
+      }
+    ],
     "components.css": [
       {
         "section": "Button",
@@ -3558,7 +3685,6 @@
         "names": [
           "wb-mb-2",
           "wb-mb-3",
-          "wb-mb-4",
           "wb-mt-1",
           "wb-mt-2"
         ]
