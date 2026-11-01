@@ -2,6 +2,10 @@
  * AddBlockModal — модалка вибору типу блоку для додавання.
  *
  * Підтримує пошук, фільтрацію за категоріями, сумісність із зонами.
+ *
+ * Раніше картка блоку підсвічувалась через `onMouseEnter` із записом у `style`
+ * — тепер це звичайний `:hover` у CSS під `@media (hover: hover)`, тож на тачі
+ * картка не «залипає» підсвіченою.
  */
 
 import { useMemo, useState, useEffect } from "react";
@@ -11,19 +15,7 @@ import { icons, type IconName } from "@wwwuabot/shared";
 
 // ── Icon helper ───────────────────────────────────────────────────
 
-const ico = (name: IconName, size = 16) => (
-  <span
-    style={{
-      display: "inline-flex",
-      alignItems: "center",
-      width: size,
-      height: size,
-      flexShrink: 0,
-    }}
-  >
-    {icons[name]}
-  </span>
-);
+const ico = (name: IconName) => <span className="pb-icon">{icons[name]}</span>;
 
 const ZONE_LABELS: Record<BlockZone, string> = {
   header: "Header",
@@ -88,18 +80,8 @@ export function AddBlockModal({ onSelect, onClose, targetZone }: AddBlockModalPr
   }, [onClose]);
 
   return (
-    <div className="wb-modal-overlay" onClick={onClose} style={{ zIndex: 1000 }}>
-      <div
-        className="wb-modal"
-        onClick={(e) => e.stopPropagation()}
-        style={{
-          maxWidth: 520,
-          width: "100%",
-          maxHeight: "80vh",
-          display: "flex",
-          flexDirection: "column",
-        }}
-      >
+    <div className="wb-modal-overlay pb-modal-overlay--top" onClick={onClose}>
+      <div className="wb-modal pb-modal-add" onClick={(e) => e.stopPropagation()}>
         <div className="wb-modal-header">
           <span className="wb-modal-title">
             {ico("blocks")} Додати блок{targetZone ? ` → ${ZONE_LABELS[targetZone]}` : ""}
@@ -110,42 +92,30 @@ export function AddBlockModal({ onSelect, onClose, targetZone }: AddBlockModalPr
         </div>
 
         {/* Search */}
-        <div style={{ padding: "8px 16px", borderBottom: "1px solid var(--border)" }}>
+        <div className="pb-modal-add__search">
           <input
             type="text"
-            className="wb-input"
+            className="wb-input pb-modal-add__input"
             placeholder="Пошук блоку…"
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             autoFocus
-            style={{ width: "100%", fontSize: 13 }}
           />
         </div>
 
         {/* Category pills */}
-        <div
-          style={{
-            display: "flex",
-            gap: 6,
-            padding: "8px 16px",
-            borderBottom: "1px solid var(--border)",
-            overflowX: "auto",
-            flexShrink: 0,
-          }}
-        >
+        <div className="pb-modal-add__pills">
           <button
-            className={`kb-toggle-btn${selectedCategory === null ? " kb-toggle-btn--active" : ""}`}
+            className={`kb-toggle-btn pb-modal-add__pill${selectedCategory === null ? " kb-toggle-btn--active" : ""}`}
             onClick={() => setSelectedCategory(null)}
-            style={{ fontSize: 12, whiteSpace: "nowrap" }}
           >
             Усі
           </button>
           {categories.map((cat) => (
             <button
               key={cat}
-              className={`kb-toggle-btn${selectedCategory === cat ? " kb-toggle-btn--active" : ""}`}
+              className={`kb-toggle-btn pb-modal-add__pill pb-modal-add__pill--capitalize${selectedCategory === cat ? " kb-toggle-btn--active" : ""}`}
               onClick={() => setSelectedCategory(cat)}
-              style={{ fontSize: 12, whiteSpace: "nowrap", textTransform: "capitalize" }}
             >
               {cat}
             </button>
@@ -153,60 +123,23 @@ export function AddBlockModal({ onSelect, onClose, targetZone }: AddBlockModalPr
         </div>
 
         {/* Block list */}
-        <div className="wb-modal-body" style={{ flex: 1, overflow: "auto", padding: "8px 16px" }}>
+        <div className="wb-modal-body pb-modal-add__body">
           {filtered.length === 0 ? (
-            <div
-              style={{
-                textAlign: "center",
-                padding: 24,
-                color: "var(--text-secondary)",
-                fontSize: 13,
-              }}
-            >
-              Нічого не знайдено
-            </div>
+            <div className="pb-modal-add__empty">Нічого не знайдено</div>
           ) : (
-            <div
-              style={{
-                display: "grid",
-                gridTemplateColumns: "repeat(auto-fill, minmax(150px, 1fr))",
-                gap: 8,
-              }}
-            >
+            <div className="pb-modal-add__grid">
               {filtered.map((def) => (
                 <button
                   key={def.type}
                   onClick={() => onSelect(def.type)}
-                  style={{
-                    display: "flex",
-                    flexDirection: "column",
-                    alignItems: "flex-start",
-                    gap: 4,
-                    padding: "12px 14px",
-                    border: "1px solid var(--border)",
-                    borderRadius: 8,
-                    background: "var(--bg-primary)",
-                    cursor: "pointer",
-                    textAlign: "left",
-                    transition: "border-color 0.15s, background 0.15s",
-                  }}
-                  onMouseEnter={(e) => {
-                    e.currentTarget.style.borderColor = "var(--accent, #6366f1)";
-                    e.currentTarget.style.background = "var(--bg-secondary, #f1f5f9)";
-                  }}
-                  onMouseLeave={(e) => {
-                    e.currentTarget.style.borderColor = "var(--border)";
-                    e.currentTarget.style.background = "var(--bg-primary)";
-                  }}
+                  className="pb-modal-add__card"
                 >
-                  <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
-                    {def.icon ? ico(def.icon, 16) : ico("blocks", 16)}
-                    <span style={{ fontWeight: 600, fontSize: 13 }}>{def.label}</span>
+                  <div className="pb-modal-add__card-head">
+                    {def.icon ? ico(def.icon) : ico("blocks")}
+                    <span className="pb-modal-add__card-title">{def.label}</span>
                   </div>
                   {def.description && (
-                    <span style={{ fontSize: 11, color: "var(--text-secondary)", lineHeight: 1.3 }}>
-                      {def.description}
-                    </span>
+                    <span className="pb-modal-add__card-desc">{def.description}</span>
                   )}
                 </button>
               ))}

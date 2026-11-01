@@ -6,13 +6,9 @@
  * Зменшувати — і є планом: кожен прибраний інлайн знижує число, нуль — ціль.
  */
 export const BASELINE = {
-  total: 263,
+  total: 200,
   files: {
-    "web-admin-dev/src/features/page-builder/ConditionsPanel.tsx": 19,
     "web-admin-dev/src/pages/scenarios/BotRichConstructor.tsx": 17,
-    "web-admin-dev/src/features/page-builder/AddBlockModal.tsx": 15,
-    "web-admin-dev/src/features/page-builder/ArrayFieldEditor.tsx": 15,
-    "web-admin-dev/src/features/page-builder/ZoneEditor.tsx": 14,
     "web-admin-dev/src/pages/scenarios-v2/ScenariosV2Table.tsx": 13,
     "web-admin-dev/src/pages/scenarios/ScenarioPreview.tsx": 13,
     "web-admin-dev/src/features/page-builder/BlockEditorHeader.tsx": 11,

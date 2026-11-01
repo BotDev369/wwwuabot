@@ -1,5 +1,7 @@
 /**
  * Zone Editor — редактор однієї зони (sidebar, header, main, footer).
+ *
+ * Вигляд — класи `pb-zone*` у `styles/admin/page-builder.css`.
  */
 
 import { useMemo, useState } from "react";
@@ -76,57 +78,27 @@ export function ZoneEditor({
   return (
     <div className="pb-zone-editor">
       {/* Zone header */}
-      <div
-        style={{
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "space-between",
-          padding: "8px 12px",
-          background: "var(--bg-3)",
-          cursor: "pointer",
-          userSelect: "none",
-        }}
-        onClick={handleToggle}
-      >
-        <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-          <span style={{ fontSize: 14 }}>{collapsed ? "▸" : "▾"}</span>
-          <span style={{ fontWeight: 600, fontSize: 14 }}>{ZONE_LABELS[zone]}</span>
-          <span
-            style={{
-              fontSize: 12,
-              color: "var(--text-secondary)",
-              background: "var(--bg-4)",
-              padding: "1px 6px",
-              borderRadius: 10,
-            }}
-          >
-            {blocks.length}
-          </span>
+      <div className="pb-zone__head" onClick={handleToggle}>
+        <div className="pb-zone__head-left">
+          <span className="pb-zone__caret">{collapsed ? "▸" : "▾"}</span>
+          <span className="pb-zone__title">{ZONE_LABELS[zone]}</span>
+          <span className="pb-zone__count">{blocks.length}</span>
         </div>
       </div>
 
       {/* Zone content */}
       {!collapsed && (
-        <div style={{ padding: 12 }}>
+        <div className="pb-zone__body">
           {zone === "sidebar" && onUpdateSidebarSettings && (
             <SidebarSettingsPanel settings={sidebarSettings} onUpdate={onUpdateSidebarSettings} />
           )}
 
           {sortedBlocks.length === 0 ? (
-            <div
-              style={{
-                textAlign: "center",
-                padding: 20,
-                color: "var(--text-secondary)",
-                fontSize: 13,
-              }}
-            >
-              Зона порожня. Додайте блок нижче.
-            </div>
+            <div className="pb-zone__empty">Зона порожня. Додайте блок нижче.</div>
           ) : (
-            <div style={{ display: "flex", flexDirection: "column" }}>
+            <div className="pb-zone__list">
               {sortedBlocks.map((block, index) => (
-                <div key={block.id} style={{ display: "flex", gap: 4 }}>
+                <div key={block.id} className="pb-zone__row">
                   <div className="pb-block-move">
                     <button
                       type="button"
@@ -147,7 +119,7 @@ export function ZoneEditor({
                       {icons["chevron-down"]}
                     </button>
                   </div>
-                  <div style={{ flex: 1 }}>
+                  <div className="pb-zone__block">
                     <BlockEditor
                       block={block}
                       zone={zone}
@@ -170,31 +142,21 @@ export function ZoneEditor({
           )}
 
           {/* Add block button */}
-          <div
-            style={{
-              marginTop: 8,
-              paddingTop: 8,
-              borderTop: "1px dashed var(--border)",
-              display: "flex",
-              justifyContent: "center",
-            }}
-          >
+          <div className="pb-zone__add">
             {onAddBlock ? (
               <button
-                className="wb-btn wb-btn-secondary"
+                className="wb-btn wb-btn-secondary pb-zone__add-btn"
                 onClick={() => onAddBlock(zone)}
-                style={{ fontSize: 12, padding: "6px 16px" }}
               >
                 + Додати блок
               </button>
             ) : (
-              <div style={{ display: "flex", gap: 6, flexWrap: "wrap", justifyContent: "center" }}>
+              <div className="pb-zone__add-list">
                 {availableTypes.map((def) => (
                   <button
                     key={def.type}
                     className="wb-btn wb-btn-secondary"
                     onClick={() => handleAddBlock(def.type)}
-                    style={{ fontSize: 12, padding: "4px 10px" }}
                     title={def.description}
                   >
                     + {def.label}

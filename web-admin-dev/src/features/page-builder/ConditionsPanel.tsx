@@ -2,6 +2,9 @@
  * ConditionsPanel — панель редагування умов показу блоку.
  *
  * Дозволяє налаштувати: role, tariff, status, minDiscount, permissions.
+ *
+ * Вигляд живе в `styles/admin/page-builder.css` (класи `pb-cond*`): панель,
+ * пігулки й числове поле — це ролі, а не числа конкретного екрана.
  */
 
 import { icons, type IconName } from "@wwwuabot/shared";
@@ -9,19 +12,7 @@ import type { BlockConditions } from "@wwwuabot/shared/types/page-config";
 
 // ── Icon helper ───────────────────────────────────────────────────
 
-const ico = (name: IconName, size = 14) => (
-  <span
-    style={{
-      display: "inline-flex",
-      alignItems: "center",
-      width: size,
-      height: size,
-      flexShrink: 0,
-    }}
-  >
-    {icons[name]}
-  </span>
-);
+const ico = (name: IconName) => <span className="pb-icon">{icons[name]}</span>;
 
 // ── Constants ─────────────────────────────────────────────────────
 
@@ -66,38 +57,17 @@ export function ConditionsPanel({ conditions, onUpdate }: ConditionsPanelProps) 
   }
 
   return (
-    <div
-      style={{
-        marginBottom: 12,
-        padding: 10,
-        border: "1px solid var(--border)",
-        borderRadius: 6,
-        background: "var(--bg-secondary, #f9fafb)",
-      }}
-    >
-      <div
-        style={{
-          fontSize: 12,
-          fontWeight: 600,
-          marginBottom: 8,
-          display: "flex",
-          alignItems: "center",
-          gap: 4,
-        }}
-      >
-        {ico("eye")} Умови показу блоку
-      </div>
-      <div style={{ fontSize: 11, color: "var(--text-secondary)", marginBottom: 8 }}>
+    <div className="pb-cond">
+      <div className="pb-cond__title">{ico("eye")} Умови показу блоку</div>
+      <div className="pb-cond__hint">
         Блок показується тільки якщо ВСІ умови виконуються. Якщо жодна не вказана — блок показується
         завжди.
       </div>
 
       {/* Role */}
-      <div style={{ marginBottom: 8 }}>
-        <label style={{ fontSize: 11, fontWeight: 600, display: "block", marginBottom: 4 }}>
-          Роль
-        </label>
-        <div style={{ display: "flex", flexWrap: "wrap", gap: 4 }}>
+      <div className="pb-cond__field">
+        <label className="pb-cond__label">Роль</label>
+        <div className="pb-cond__pills">
           {AVAILABLE_ROLES.map((r) => (
             <ToggleButton
               key={r}
@@ -110,11 +80,9 @@ export function ConditionsPanel({ conditions, onUpdate }: ConditionsPanelProps) 
       </div>
 
       {/* Tariff */}
-      <div style={{ marginBottom: 8 }}>
-        <label style={{ fontSize: 11, fontWeight: 600, display: "block", marginBottom: 4 }}>
-          Тариф
-        </label>
-        <div style={{ display: "flex", flexWrap: "wrap", gap: 4 }}>
+      <div className="pb-cond__field">
+        <label className="pb-cond__label">Тариф</label>
+        <div className="pb-cond__pills">
           {AVAILABLE_TARIFFS.map((t) => (
             <ToggleButton
               key={t}
@@ -127,11 +95,9 @@ export function ConditionsPanel({ conditions, onUpdate }: ConditionsPanelProps) 
       </div>
 
       {/* Status */}
-      <div style={{ marginBottom: 8 }}>
-        <label style={{ fontSize: 11, fontWeight: 600, display: "block", marginBottom: 4 }}>
-          Статус
-        </label>
-        <div style={{ display: "flex", flexWrap: "wrap", gap: 4 }}>
+      <div className="pb-cond__field">
+        <label className="pb-cond__label">Статус</label>
+        <div className="pb-cond__pills">
           {AVAILABLE_STATUSES.map((s) => (
             <ToggleButton
               key={s}
@@ -144,8 +110,8 @@ export function ConditionsPanel({ conditions, onUpdate }: ConditionsPanelProps) 
       </div>
 
       {/* Min Discount */}
-      <div style={{ marginBottom: 8, display: "flex", alignItems: "center", gap: 8 }}>
-        <label style={{ fontSize: 11, fontWeight: 600, minWidth: 80 }}>Мін. знижка (%)</label>
+      <div className="pb-cond__row">
+        <label className="pb-cond__label pb-cond__label--inline">Мін. знижка (%)</label>
         <input
           type="number"
           min={0}
@@ -156,22 +122,14 @@ export function ConditionsPanel({ conditions, onUpdate }: ConditionsPanelProps) 
             const v = Number(e.target.value);
             updateConditions({ minDiscount: v > 0 ? v : undefined });
           }}
-          style={{
-            width: 60,
-            fontSize: 12,
-            padding: "2px 6px",
-            border: "1px solid var(--border)",
-            borderRadius: 4,
-          }}
+          className="pb-cond__number"
         />
       </div>
 
       {/* Permissions */}
-      <div>
-        <label style={{ fontSize: 11, fontWeight: 600, display: "block", marginBottom: 4 }}>
-          Дозволи
-        </label>
-        <div style={{ display: "flex", flexWrap: "wrap", gap: 4 }}>
+      <div className="pb-cond__field">
+        <label className="pb-cond__label">Дозволи</label>
+        <div className="pb-cond__pills">
           {AVAILABLE_PERMISSIONS.map((p) => (
             <ToggleButton
               key={p}
@@ -201,15 +159,8 @@ function ToggleButton({
     <button
       type="button"
       onClick={onClick}
-      style={{
-        fontSize: 11,
-        padding: "2px 8px",
-        borderRadius: 4,
-        border: `1px solid ${isActive ? "var(--accent, #6366f1)" : "var(--border)"}`,
-        background: isActive ? "var(--accent, #6366f1)" : "transparent",
-        color: isActive ? "#fff" : "var(--text-secondary)",
-        cursor: "pointer",
-      }}
+      aria-pressed={isActive}
+      className={`pb-cond__toggle${isActive ? " pb-cond__toggle--active" : ""}`}
     >
       {label}
     </button>

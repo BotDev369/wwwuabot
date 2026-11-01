@@ -2,6 +2,9 @@
  * ArrayFieldEditor — візуальний редактор списків об'єктів для JSON Schema.
  *
  * Підтримує form mode (кожен елемент — рядок полів) та JSON mode (textarea).
+ *
+ * Вигляд — класи `pb-array*`: рядок елемента, поле, вибір і кнопка режиму
+ * мають ту саму мірку, що й решта конструктора.
  */
 
 import { useState } from "react";
@@ -64,28 +67,11 @@ export function ArrayFieldEditor({
   // JSON mode or non-object items
   if (!isObjectItems || mode === "json") {
     return (
-      <div
-        key={fieldKey}
-        style={{ display: "flex", gap: 6, flexDirection: "column", marginTop: 4 }}
-      >
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-          <label style={{ fontSize: 12, fontWeight: 500, color: "var(--text-secondary)" }}>
-            {title}
-          </label>
+      <div key={fieldKey} className="pb-array">
+        <div className="pb-array__head">
+          <label className="pb-array__label">{title}</label>
           {isObjectItems && (
-            <button
-              type="button"
-              onClick={() => setMode("form")}
-              style={{
-                fontSize: 11,
-                padding: "2px 6px",
-                borderRadius: 4,
-                border: "1px solid var(--border)",
-                background: "var(--bg-2, #f3f4f6)",
-                color: "var(--text-primary)",
-                cursor: "pointer",
-              }}
-            >
+            <button type="button" onClick={() => setMode("form")} className="pb-array__mode">
               Форма
             </button>
           )}
@@ -104,15 +90,7 @@ export function ArrayFieldEditor({
             }
           }}
           rows={4}
-          style={{
-            fontSize: 12,
-            fontFamily: "monospace",
-            padding: "6px 8px",
-            border: "1px solid var(--border)",
-            borderRadius: 4,
-            background: "var(--bg-primary, var(--bg-0))",
-            color: "var(--text-primary)",
-          }}
+          className="pb-array__json"
         />
       </div>
     );
@@ -121,49 +99,29 @@ export function ArrayFieldEditor({
   const subProperties = itemSchema.properties as Record<string, Record<string, unknown>>;
 
   return (
-    <div key={fieldKey} style={{ display: "flex", gap: 8, flexDirection: "column", marginTop: 4 }}>
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-        <label style={{ fontSize: 12, fontWeight: 500, color: "var(--text-secondary)" }}>
+    <div key={fieldKey} className="pb-array pb-array--form">
+      <div className="pb-array__head">
+        <label className="pb-array__label">
           {title} ({itemsArray.length})
         </label>
         <button
           type="button"
           onClick={() => setMode("json")}
-          style={{
-            fontSize: 11,
-            padding: "2px 6px",
-            borderRadius: 4,
-            border: "1px solid var(--border)",
-            background: "transparent",
-            color: "var(--text-secondary)",
-            cursor: "pointer",
-          }}
+          className="pb-array__mode pb-array__mode--ghost"
           title="Редагувати як JSON"
         >
           JSON
         </button>
       </div>
 
-      <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+      <div className="pb-array__items">
         {itemsArray.map((item, index) => {
           const itemObj = (typeof item === "object" && item !== null ? item : {}) as Record<
             string,
             unknown
           >;
           return (
-            <div
-              key={index}
-              style={{
-                display: "flex",
-                gap: 6,
-                alignItems: "center",
-                padding: "6px 8px",
-                background: "var(--bg-2, rgba(128,128,128,0.05))",
-                border: "1px solid var(--border, #e5e7eb)",
-                borderRadius: 6,
-                flexWrap: "wrap",
-              }}
-            >
+            <div key={index} className="pb-array__item">
               {Object.entries(subProperties).map(([propName, propDef]) => {
                 const pTitle = (propDef.title as string) || propName;
                 const pVal = itemObj[propName] ?? "";
@@ -176,14 +134,7 @@ export function ArrayFieldEditor({
                       value={String(pVal || propDef.default || "")}
                       onChange={(e) => handleItemChange(index, propName, e.target.value)}
                       title={pTitle}
-                      style={{
-                        fontSize: 12,
-                        padding: "4px 6px",
-                        border: "1px solid var(--border)",
-                        borderRadius: 4,
-                        background: "var(--bg-primary, var(--bg-0))",
-                        color: "var(--text-primary)",
-                      }}
+                      className="pb-array__select"
                     >
                       {(propDef.enum as string[]).map((opt) => (
                         <option key={opt} value={opt}>
@@ -202,31 +153,14 @@ export function ArrayFieldEditor({
                     title={pTitle}
                     value={String(pVal)}
                     onChange={(e) => handleItemChange(index, propName, e.target.value)}
-                    style={{
-                      flex: propName === "url" ? 2 : 1,
-                      minWidth: 80,
-                      fontSize: 12,
-                      padding: "4px 6px",
-                      border: "1px solid var(--border)",
-                      borderRadius: 4,
-                      background: "var(--bg-primary, var(--bg-0))",
-                      color: "var(--text-primary)",
-                    }}
+                    className={`pb-array__input${propName === "url" ? " pb-array__input--wide" : ""}`}
                   />
                 );
               })}
               <button
                 type="button"
                 onClick={() => handleDeleteItem(index)}
-                style={{
-                  border: "none",
-                  background: "transparent",
-                  color: "var(--danger, #ef4444)",
-                  cursor: "pointer",
-                  padding: "2px 6px",
-                  fontSize: 0,
-                  lineHeight: 1,
-                }}
+                className="pb-array__remove"
                 title="Видалити пункт"
               >
                 {icons["close"]}
@@ -237,8 +171,7 @@ export function ArrayFieldEditor({
         <button
           type="button"
           onClick={handleAddItem}
-          className="wb-btn wb-btn-secondary"
-          style={{ fontSize: 11, padding: "4px 10px", alignSelf: "flex-start", cursor: "pointer" }}
+          className="wb-btn wb-btn-secondary pb-array__add"
         >
           + Додати пункт
         </button>

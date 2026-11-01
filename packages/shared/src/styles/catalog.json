@@ -43,7 +43,7 @@
     {
       "file": "admin/page-builder.css",
       "tokens": 0,
-      "classes": 17
+      "classes": 70
     },
     {
       "file": "admin/scenario-modal.css",
@@ -2555,6 +2555,84 @@
           "pb-title",
           "pb-zones__bar",
           "pb-zones__count"
+        ]
+      },
+      {
+        "section": "Іконка в рядку тексту",
+        "names": [
+          "pb-icon"
+        ]
+      },
+      {
+        "section": "Умови показу блоку",
+        "names": [
+          "pb-cond",
+          "pb-cond__field",
+          "pb-cond__hint",
+          "pb-cond__label",
+          "pb-cond__label--inline",
+          "pb-cond__number",
+          "pb-cond__pills",
+          "pb-cond__row",
+          "pb-cond__title",
+          "pb-cond__toggle",
+          "pb-cond__toggle--active"
+        ]
+      },
+      {
+        "section": "Зона",
+        "names": [
+          "pb-zone__add",
+          "pb-zone__add-btn",
+          "pb-zone__add-list",
+          "pb-zone__block",
+          "pb-zone__body",
+          "pb-zone__caret",
+          "pb-zone__count",
+          "pb-zone__empty",
+          "pb-zone__head",
+          "pb-zone__head-left",
+          "pb-zone__list",
+          "pb-zone__row",
+          "pb-zone__title"
+        ]
+      },
+      {
+        "section": "Модалка «Додати блок»",
+        "names": [
+          "pb-modal-add",
+          "pb-modal-add__body",
+          "pb-modal-add__card",
+          "pb-modal-add__card-desc",
+          "pb-modal-add__card-head",
+          "pb-modal-add__card-title",
+          "pb-modal-add__empty",
+          "pb-modal-add__grid",
+          "pb-modal-add__input",
+          "pb-modal-add__pill",
+          "pb-modal-add__pill--capitalize",
+          "pb-modal-add__pills",
+          "pb-modal-add__search",
+          "pb-modal-overlay--top"
+        ]
+      },
+      {
+        "section": "Редактор списку об'єктів",
+        "names": [
+          "pb-array",
+          "pb-array--form",
+          "pb-array__add",
+          "pb-array__head",
+          "pb-array__input",
+          "pb-array__input--wide",
+          "pb-array__item",
+          "pb-array__items",
+          "pb-array__json",
+          "pb-array__label",
+          "pb-array__mode",
+          "pb-array__mode--ghost",
+          "pb-array__remove",
+          "pb-array__select"
         ]
       }
     ],
