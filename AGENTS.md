@@ -97,6 +97,10 @@ const name = await dialog.prompt("Назва:", { validate: (v) => (v.trim() ? n
 
 ---
 
+### Очі агента
+
+Правки вигляду — не наосліп: `npm run shots` знімає дев-воркери справжнім Chromium у двох ширинах. Сторінки платформи поза Telegram порожні (чекають `initData`). Інлайн у адмінці рахує `npm run check:inline`.
+
 ## 5. Де що шукати
 
 **Дані:**

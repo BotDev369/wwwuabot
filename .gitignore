@@ -42,6 +42,7 @@ Thumbs.db
 
 # Playwright (прев'ю — знімки екранів і звіти, не код)
 e2e-artifacts/
+artifacts/
 playwright-report/
 test-results/
 

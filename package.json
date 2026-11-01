@@ -28,6 +28,7 @@
     "eslint": "^10.6.0",
     "globals": "^17.7.0",
     "jsdom": "^30.1.1",
+    "playwright": "^1.49.1",
     "prettier": "^3.5.0",
     "typescript-eslint": "^8.62.0",
     "vitest": "^5.0.0"
@@ -49,6 +50,8 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "check:bundle": "node scripts/check-bundle.mjs",
+    "shots": "node scripts/shots.mjs",
+    "check:inline": "node scripts/check-inline-styles.mjs",
     "test:coverage": "vitest run --coverage",
     "check:coverage": "node scripts/check-coverage.mjs",
     "clean:tmp": "node scripts/clean-tmp.mjs"
