@@ -20,7 +20,7 @@
  */
 
 import type { CSSProperties, ReactElement } from "react";
-import { fontLabel, STYLE_FONT_LABEL } from "../../styles/fonts";
+import { fontLabel, fontStack } from "../../styles/fonts";
 import { onAccentColor, type UserColors } from "../../styles/user-colors";
 import { Icon } from "../Icon";
 import { ThemeCardMenu, type ThemeCardAction } from "./ThemeCardMenu";
@@ -53,6 +53,11 @@ export function ThemeCard({
   actions,
   onAction,
 }: ThemeCardProps): ReactElement {
+  // Шрифт показує себе зразком, а назву пише лише тоді, коли тема його
+  // змінює: «Як у стилі» на кожній картці повторювало те саме слово.
+  const family = fontStack(font);
+  const familyLabel = fontLabel(font);
+
   // Чотири змінні: решта картки малюється лише ними (`theme-panel.css`).
   const look = {
     "--scheme-bg": colors.bg,
@@ -69,8 +74,13 @@ export function ThemeCard({
         <span className="wb-theme-card-name">{name}</span>
 
         <span className="wb-theme-card-foot">
-          {/* Акцент — на підписі шрифту: так видно і сам шрифт, і третій колір. */}
-          <span className="wb-theme-card-font">{fontLabel(font) ?? STYLE_FONT_LABEL}</span>
+          {/* Акцент лишається тут: це третій колір теми. */}
+          <span className="wb-theme-card-font" style={family ? { fontFamily: family } : undefined}>
+            <span className="wb-theme-card-glyph" aria-hidden="true">
+              Аа
+            </span>
+            {familyLabel && <span className="wb-theme-card-family">{familyLabel}</span>}
+          </span>
 
           {badge && <span className="wb-theme-card-badge">{badge}</span>}
 

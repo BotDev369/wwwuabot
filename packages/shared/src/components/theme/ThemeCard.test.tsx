@@ -42,14 +42,25 @@ describe("картка теми", () => {
     expect(html).not.toContain("Застосувати");
   });
 
-  it("підпис шрифту існує навіть без вибраної родини", () => {
+  it("⛔ «як у стилі» на кожній картці — шум; шрифт показує себе зразком", () => {
     const html = renderToStaticMarkup(
       <ThemeCard name="Ніч" colors={NIGHT} font="" onApply={() => undefined} />,
     );
 
-    // Порожній шрифт — «як у стилі», а не порожній рядок: картка мусить
-    // показати, що шрифт у темі є.
-    expect(html).toContain("Як у стилі");
+    // Одинадцять однакових підписів повторювали те саме слово. Зразок «Аа»
+    // каже це формою й лишає акцентний колір на місці.
+    expect(html).not.toContain("Як у стилі");
+    expect(html).toContain("wb-theme-card-glyph");
+  });
+
+  it("свою родину картка називає й набирає нею", () => {
+    const html = renderToStaticMarkup(
+      <ThemeCard name="Ніч" colors={NIGHT} font="lora" onApply={() => undefined} />,
+    );
+
+    // Назва потрібна тоді, коли вона щось розрізняє: тема зі своїм шрифтом.
+    expect(html).toContain("Lora");
+    expect(html).toContain("font-family");
   });
 
   it("⛔ меню дій є лише у власної теми", () => {

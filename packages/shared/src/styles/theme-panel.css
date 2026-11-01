@@ -151,9 +151,23 @@
   min-width: 0;
 }
 
+/* Зразок шрифту: «Аа» набране ним, а назва родини — лише коли тема її міняє.
+   Одинадцять однакових підписів «Як у стилі» були шумом, а не фактом. */
 .wb-theme-card-font {
+  display: inline-flex;
+  align-items: baseline;
+  gap: var(--sp-1);
+  min-width: 0;
   font-size: var(--text-xs);
   color: var(--scheme-accent);
+}
+
+.wb-theme-card-glyph {
+  font-size: var(--text-sm);
+  line-height: 1;
+}
+
+.wb-theme-card-family {
   overflow: hidden;
   white-space: nowrap;
   text-overflow: ellipsis;

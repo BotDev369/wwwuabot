@@ -9,8 +9,8 @@
  *
  *   1. **Коментарний блок довший за `LONG_LINES` рядків — це документація.**
  *      Рахується скільки їх лишилося і порівнюється з `scripts/comment-baseline.mjs`:
- *      більше ніж у леджері — помилка. Леджер уміє лише меншати, тому
- *      правило не можна виконати «раз і забути».
+ *      більше ніж у леджері — помилка, і тоді гейт називає файли й рядки, а не
+ *      саме число: без адреси причину доводиться шукати порівнянням із базою.
  *   2. **Шлях, згаданий у коментарі, мусить існувати.** Коментар із назвою
  *      файлу — це та сама обіцянка, що й посилання в документі: файлу
  *      перейменували, а коментар лишився і бреше.
@@ -67,11 +67,16 @@ const TOOL_DIRS = /^(?:packages|docs|scripts|bot-dev|api-dev|web-platform-dev|we
 
 const files = allSourceFiles();
 let longBlocks = 0;
+/** Довгі блоки — щоб у звіті була адреса, а не тільки число. */
+const longOnes = [];
 
 for (const file of files) {
   const lines = readLines(file);
   for (const block of commentBlocks(lines)) {
-    if (block.lines > LONG_LINES) longBlocks++;
+    if (block.lines > LONG_LINES) {
+      longBlocks++;
+      longOnes.push({ file, start: block.start, lines: block.lines });
+    }
 
     for (let i = block.start - 1; i < Math.min(block.start - 1 + block.lines, lines.length); i++) {
       for (const m of lines[i].matchAll(/`([^`\n]+)`/g)) {
@@ -91,6 +96,11 @@ if (longBlocks > BASELINE.longBlocks) {
   errors.push(
     `Коментарних блоків довших за ${LONG_LINES} рядків — ${longBlocks}, у базі ${BASELINE.longBlocks}: ` +
       `пояснення їде в документ теми, у коді лишається рядок-адреса. Не піднімай базу — зменшуй.`,
+  );
+  const worst = [...longOnes].sort((a, b) => b.lines - a.lines).slice(0, 8);
+  errors.push(
+    "Найдовші блоки — з них і починати:\n" +
+      worst.map((b) => `    ${b.file}:${b.start} — ${b.lines} рядків`).join("\n"),
   );
 } else if (longBlocks < BASELINE.longBlocks) {
   errors.push(

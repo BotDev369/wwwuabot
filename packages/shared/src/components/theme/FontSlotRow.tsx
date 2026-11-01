@@ -17,7 +17,7 @@
 
 import type { CSSProperties, ReactElement } from "react";
 import { Icon } from "../Icon";
-import { fontLabel, fontStack } from "../../styles/fonts";
+import { STYLE_FONT_LABEL, fontLabel, fontStack } from "../../styles/fonts";
 import { FontPicker } from "./FontPicker";
 
 interface FontSlotRowProps {
@@ -35,7 +35,7 @@ export function FontSlotRow({
   onChange,
 }: FontSlotRowProps): ReactElement {
   // Значення рядка — **назва**, а не id: людина бачить «Lora», а не «lora».
-  const label = fontLabel(value) ?? "Як у стилі";
+  const label = fontLabel(value) ?? STYLE_FONT_LABEL;
 
   return (
     <div className={`wb-theme-row${expanded ? " wb-theme-row--open" : ""}`}>
