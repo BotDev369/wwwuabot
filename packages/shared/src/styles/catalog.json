@@ -103,7 +103,7 @@
     {
       "file": "blocks.css",
       "tokens": 0,
-      "classes": 209
+      "classes": 213
     },
     {
       "file": "components.css",
@@ -3390,7 +3390,10 @@
         "section": "Текст",
         "names": [
           "wb-block-list__item",
-          "wb-block-text__content"
+          "wb-block-text__content",
+          "wb-block-text__title",
+          "wb-text-2xl",
+          "wb-text-xl"
         ]
       },
       {
@@ -3504,6 +3507,7 @@
         "section": "Картки переваг",
         "names": [
           "wb-block-features",
+          "wb-block-features--figures",
           "wb-block-features__card",
           "wb-block-features__desc",
           "wb-block-features__icon",

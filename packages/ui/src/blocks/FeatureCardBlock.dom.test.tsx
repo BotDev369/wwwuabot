@@ -43,4 +43,31 @@ describe("FeatureCardBlock", () => {
     expect(grid.getAttribute("style")).toBeNull();
     expect(grid.querySelectorAll(".wb-block-features__card")).toHaveLength(2);
   });
+
+  it("показники стає парою, а прозові картки — одним стовпцем", () => {
+    const figures = render(
+      <FeatureCardBlock
+        {...block({
+          items: [
+            { title: "28,8%", description: "християни" },
+            { title: "+1,8 в.п.", description: "приріст ісламу" },
+          ],
+        })}
+      />,
+    );
+    expect(figures.container.querySelector(".wb-block-features--figures")).toBeTruthy();
+    figures.unmount();
+
+    const prose = render(
+      <FeatureCardBlock
+        {...block({
+          items: [
+            { title: "Кожен блок — окреме дослідження", description: "Своя дата." },
+            { title: "Відсотки завжди в межах 100%", description: "І методологія поруч." },
+          ],
+        })}
+      />,
+    );
+    expect(prose.container.querySelector(".wb-block-features--figures")).toBeNull();
+  });
 });

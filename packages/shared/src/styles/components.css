@@ -2519,17 +2519,55 @@ button.wb-chip {
   position: relative;
 }
 
+/* Hero без фото — перша плита сторінки, а не порожній аркуш: тепла заливка
+   від акценту, волосина по контуру й повітря по берегах. Заголовок раніше
+   висів у порожнечі, і сторінка починалась нізвідки. */
+.wb-block-hero:not(.wb-block-hero--media) {
+  padding: var(--sp-5) var(--sp-4);
+  border-radius: var(--radius-lg);
+  background-color: var(--card-bg);
+  background-image: radial-gradient(140% 130% at 50% -20%, var(--accent-soft), transparent 62%);
+  box-shadow: 0 0 0 1px var(--card-border);
+}
+
 .wb-block-hero__body {
   position: relative;
   z-index: 1;
 }
 
-/* Заголовок hero — це `h2`, і розмір йому дає `reset.css` із токенів.
-   Власного розміру тут немає навмисно: інакше заголовок блока сперечався б із
-   типовим значенням за той самий тег. */
+/* Заголовок hero — найгучніший рядок сторінки, тому кегль зі шкали вище за
+   типовий `h2`: інакше банер не відрізнявся від заголовка розділу. Риска під
+   ним тримає берег: по центру, ліворуч або праворуч, як і весь блок. */
 .wb-block-hero__title {
   margin: 0;
+  font-family: var(--font-display);
+  font-size: var(--text-2xl);
+  line-height: var(--leading-tight);
+  letter-spacing: -0.02em;
+  text-wrap: balance;
   color: var(--text-primary);
+}
+
+.wb-block-hero__title::after {
+  content: "";
+  display: block;
+  width: var(--sp-8);
+  height: 3px;
+  margin: var(--sp-3) auto 0;
+  border-radius: var(--radius-full);
+  background: var(--accent);
+}
+
+.wb-block-hero--left .wb-block-hero__title::after {
+  margin-inline: 0 auto;
+}
+
+.wb-block-hero--right .wb-block-hero__title::after {
+  margin-inline: auto 0;
+}
+
+.wb-block-hero--media .wb-block-hero__title::after {
+  display: none;
 }
 
 .wb-block-hero__subtitle {

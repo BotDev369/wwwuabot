@@ -14,6 +14,19 @@
   white-space: pre-wrap;
 }
 
+/* Підпис розділу починається короткою акцентною рискою: сторінка ділиться на
+   частини, а не тече одним полотном однакових заголовків. */
+.wb-block-text__title.wb-text-xl::before,
+.wb-block-text__title.wb-text-2xl::before {
+  content: "";
+  display: block;
+  width: var(--sp-6);
+  height: 3px;
+  margin-bottom: var(--sp-3);
+  border-radius: var(--radius-full);
+  background: var(--accent);
+}
+
 /* Довге слово — не привід гортати сторінку вбік: URL джерела (Pew, 120
    символів) розпирав екран на 35px і обрізав сусідні блоки. */
 .wb-block-text__content,
@@ -55,7 +68,10 @@
   flex-direction: column;
   gap: var(--sp-1);
   padding: var(--card-pad);
-  background: var(--card-bg);
+  background-color: var(--card-bg);
+  /* Та сама тепла заливка, що й у плитки показника: показник — одна сім'я
+     карток, а не білий прямокутник в одному місці й теплий в іншому. */
+  background-image: linear-gradient(180deg, var(--accent-soft), transparent 62%);
   border-radius: var(--card-radius);
   box-shadow: var(--card-shadow);
 }
@@ -86,12 +102,16 @@
 
 /* Значення — головне на картці: кегль зі шкали, а не власне число. Раніше тут
    стояв `--text-3`, якого в словнику немає, тож розмір просто не діяв. */
+/* Значення — єдине кольорове пляма картки: цифра в акценті читається як
+   показник, а не як ще один рядок тексту. */
 .wb-block-stat__value {
   font-family: var(--font-display);
   font-size: var(--text-3xl);
   font-weight: var(--weight-bold);
+  font-variant-numeric: tabular-nums;
   line-height: var(--leading-tight);
-  color: var(--text-primary);
+  letter-spacing: -0.02em;
+  color: var(--accent);
 }
 
 .wb-block-stat__trend {
@@ -118,7 +138,11 @@
   padding: var(--card-pad);
   background: var(--card-bg);
   border-radius: var(--card-radius);
-  box-shadow: var(--card-shadow);
+  /* Волосина по контуру: на світлому тлі сама тінь не відділяла картку від
+     полотна, і сторінка виглядала злитим аркушем. */
+  box-shadow:
+    0 0 0 1px var(--card-border),
+    var(--card-shadow);
 }
 
 .wb-block-card__header {
@@ -450,22 +474,40 @@
 
 .wb-block-features {
   display: grid;
-  /* 148px — не «на око»: на екрані 360px у зоні лишається 352px, і два
-     стовпці з просвітом 12px дають рівно 308. З колишніми 180px пара не
-     влазила, тож чотири цифри дослідження ставали чотирма поверхами
-     порожніх плиток замість плитки 2×2. */
-  grid-template-columns: repeat(auto-fit, minmax(148px, 1fr));
+  /* Один стовпець за замовчуванням: абзац у половині 352-піксельної зони
+     рветься на п'ять рядків по три слова — саме так читались «Кожен блок —
+     окреме дослідження». Пару задає `columns` у самому блоці. */
+  grid-template-columns: 1fr;
   gap: var(--card-gap);
 }
 
+/* Показники — парою навіть на телефоні: вони короткі, і пара читається як
+   зведення, а не як чотири поверхи. */
+.wb-block-features--figures {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
 .wb-block-features__card {
+  position: relative;
   display: flex;
   flex-direction: column;
   gap: var(--sp-2);
   padding: var(--card-pad);
-  background: var(--card-bg);
+  background-color: var(--card-bg);
+  /* Тепла заливка зверху від акценту: плитка показника перестає бути ще
+     одним білим прямокутником тієї самої тіні. */
+  background-image: linear-gradient(180deg, var(--accent-soft), transparent 62%);
   border-radius: var(--card-radius);
   box-shadow: var(--card-shadow);
+}
+
+/* Коротка риска над підписом — позначка показника, а не ще одна лінія. */
+.wb-block-features__card::before {
+  content: "";
+  width: var(--sp-6);
+  height: 3px;
+  border-radius: var(--radius-full);
+  background: var(--accent);
 }
 
 .wb-block-features__icon {
@@ -482,9 +524,22 @@
 
 .wb-block-features__title {
   margin: 0;
+  font-family: var(--font-display);
   font-size: var(--heading-card-size);
   font-weight: var(--heading-card-weight);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.01em;
   color: var(--text-primary);
+}
+
+/* Цифра — головне в плитці показника: акцентний кегль `2xl` замість кегля
+   карткового заголовка. Раніше «28,8%» було того самого розміру, що й
+   підпис під ним, і чотири цифри читались як чотири рядки тексту. */
+.wb-block-features--figures .wb-block-features__title {
+  font-size: var(--text-2xl);
+  font-weight: var(--weight-bold);
+  letter-spacing: -0.03em;
+  color: var(--accent);
 }
 
 .wb-block-features__desc {
