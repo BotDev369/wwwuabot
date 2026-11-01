@@ -1,10 +1,9 @@
 /*
  * БЛОКИ СТОРІНКИ — кирпичики Page Builder (`packages/ui/src/blocks/*`).
  *
- * Доти блоки малювали себе інлайном у TSX, і `data-theme` / `data-colors` до
- * них не доходили: кожен блок тримав власний колір і власну геометрію. Тепер
- * вигляд живе тут, міряється токенами й підкоряється спільним схемам.
- * Зовнішніх відступів блок не має — просвіт тримає зона (правило 14).
+ * Доти блоки малювали себе інлайном у TSX, і `data-theme` / `data-colors` до них
+ * не доходили. Тепер вигляд живе тут, міряється токенами й підкоряється схемам;
+ * зовнішніх відступів блок не має — просвіт тримає зона (правило 14).
  */
 
 /* ── Текст ──────────────────────────────────────────────────────────────────
@@ -382,4 +381,426 @@
   font-size: var(--text-sm);
   line-height: var(--leading-normal);
   color: var(--text-secondary);
+}
+
+/* ── Акордеон ─────────────────────────────────────────────────────────────
+   Рядки ділить волосина (правило 15); тап-таргет — `--row-min-h`. */
+
+.wb-block-accordion__item {
+  border-bottom: 1px solid var(--hairline);
+}
+
+.wb-block-accordion__trigger {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--sp-3);
+  width: 100%;
+  min-height: var(--row-min-h);
+  padding: var(--sp-3) 0;
+  background: transparent;
+  border: none;
+  font-size: var(--text-sm);
+  font-weight: var(--weight-semibold);
+  color: var(--text-primary);
+  text-align: left;
+  cursor: pointer;
+}
+
+.wb-block-accordion__chevron {
+  flex-shrink: 0;
+  color: var(--text-secondary);
+  transition: transform var(--duration-fast) var(--ease);
+}
+
+.wb-block-accordion__item--open .wb-block-accordion__chevron {
+  transform: rotate(180deg);
+}
+
+.wb-block-accordion__content {
+  padding: 0 0 var(--sp-3);
+  font-size: var(--text-sm);
+  line-height: var(--leading-normal);
+  color: var(--text-secondary);
+  white-space: pre-wrap;
+}
+
+/* ── Ціни ────────────────────────────────────────────────────────────────
+   Картка плану — той самий кирпичик поверхні; «популярний» каже акцентна
+   заливка, а не друга рамка. */
+
+.wb-block-pricing {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: var(--card-gap);
+}
+
+.wb-block-pricing__card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-3);
+  padding: var(--card-pad);
+  background: var(--card-bg);
+  border-radius: var(--card-radius);
+  box-shadow: var(--card-shadow);
+}
+
+.wb-block-pricing__card--on {
+  background: var(--accent-dim);
+}
+
+.wb-block-pricing__badge {
+  position: absolute;
+  top: var(--sp-3);
+  right: var(--sp-3);
+}
+
+.wb-block-pricing__name {
+  margin: 0;
+  font-size: var(--text-lg);
+  font-weight: var(--weight-semibold);
+  color: var(--text-primary);
+}
+
+.wb-block-pricing__price-row {
+  display: flex;
+  align-items: baseline;
+  gap: var(--sp-1);
+  margin-top: var(--sp-2);
+}
+
+.wb-block-pricing__price {
+  font-family: var(--font-display);
+  font-size: var(--text-3xl);
+  font-weight: var(--weight-bold);
+  line-height: var(--leading-tight);
+  color: var(--text-primary);
+}
+
+.wb-block-pricing__list {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: var(--sp-2);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.wb-block-pricing__feature {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+  font-size: var(--text-sm);
+  color: var(--text-primary);
+}
+
+.wb-block-pricing__check {
+  color: var(--green);
+}
+
+.wb-block-pricing__cta {
+  width: 100%;
+  margin-top: var(--sp-2);
+}
+
+/* ── Відгук ─────────────────────────────────────────────────────────────── */
+
+.wb-block-testimonial {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-3);
+  padding: var(--card-pad);
+  background: var(--card-bg);
+  border-radius: var(--card-radius);
+  box-shadow: var(--card-shadow);
+}
+
+.wb-block-testimonial__stars,
+.wb-block-rating__stars {
+  display: flex;
+  gap: 2px;
+}
+
+.wb-block-testimonial__star {
+  font-size: var(--text-lg);
+  line-height: 1;
+  color: var(--border);
+}
+
+.wb-block-testimonial__star--on,
+.wb-block-rating__star--on {
+  color: var(--yellow);
+}
+
+.wb-block-testimonial__text {
+  margin: 0;
+  font-style: italic;
+  line-height: var(--leading-normal);
+  color: var(--text-primary);
+}
+
+.wb-block-testimonial__author {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-3);
+}
+
+.wb-block-testimonial__avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: var(--radius-full);
+  object-fit: cover;
+}
+
+.wb-block-testimonial__name {
+  font-size: var(--text-sm);
+  font-weight: var(--weight-semibold);
+}
+
+/* ── Рейтинг ─────────────────────────────────────────────────────────────
+   Зірка — знак стану: залита жовта або порожня. Кегль один, а не вибір із
+   props: у ряду зірки мусять бути одного розміру. */
+
+.wb-block-rating {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-1);
+}
+
+.wb-block-rating__star {
+  font-size: var(--text-xl);
+  line-height: 1;
+  color: var(--border);
+}
+
+/* ── Прогрес ─────────────────────────────────────────────────────────────
+   Ширина заливки — єдине значення з даних (відсоток), тож воно лишається
+   інлайном; усе інше — тут. */
+
+.wb-block-progress__header {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: var(--sp-2);
+}
+
+.wb-block-progress__track {
+  height: 8px;
+  background: var(--field-bg);
+  border-radius: var(--radius-full);
+  overflow: hidden;
+}
+
+.wb-block-progress__fill {
+  height: 100%;
+  background: var(--accent);
+  border-radius: var(--radius-full);
+  transition: width var(--duration) var(--ease);
+}
+
+.wb-block-progress__fill--green {
+  background: var(--green);
+}
+
+.wb-block-progress__fill--yellow {
+  background: var(--yellow);
+}
+
+.wb-block-progress__fill--red {
+  background: var(--red);
+}
+
+/* ── Галерея ─────────────────────────────────────────────────────────────
+   Колонки добирає сітка: число з props ламало телефон. */
+
+.wb-block-gallery {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: var(--sp-3);
+}
+
+.wb-block-gallery__img {
+  display: block;
+  width: 100%;
+  height: 200px;
+  border-radius: var(--radius-md);
+  object-fit: cover;
+}
+
+.wb-block-gallery__caption {
+  margin-top: var(--sp-1);
+  color: var(--text-muted);
+}
+
+/* ── Відео ───────────────────────────────────────────────────────────────
+   Пропорція 16:9 — для вбудови; пряме відео міряє себе саме. */
+
+.wb-block-video__title {
+  margin: 0 0 var(--sp-2);
+}
+
+.wb-block-video__wrapper {
+  position: relative;
+  aspect-ratio: 16 / 9;
+  overflow: hidden;
+  background: var(--bg-2);
+  border-radius: var(--radius-md);
+}
+
+.wb-block-video__wrapper--direct {
+  aspect-ratio: auto;
+}
+
+.wb-block-video__frame {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  border: none;
+}
+
+.wb-block-video__player {
+  display: block;
+  width: 100%;
+  border-radius: var(--radius-md);
+}
+
+.wb-block-video__caption {
+  margin-top: var(--sp-2);
+  color: var(--text-muted);
+}
+
+/* ── Код ─────────────────────────────────────────────────────────────────
+   Міру кнопки копіювання задають `--btn-*`, як у решти кнопок (правило 16). */
+
+.wb-block-code {
+  background: var(--bg-2);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+}
+
+.wb-block-code__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--sp-2) var(--sp-3);
+  border-bottom: 1px solid var(--hairline);
+  font-size: var(--text-xs);
+}
+
+.wb-block-code__copy {
+  padding: var(--sp-1) var(--sp-2);
+  font-size: var(--text-xs);
+}
+
+.wb-block-code__pre {
+  margin: 0;
+  padding: var(--sp-3);
+  overflow-x: auto;
+  font-family: var(--font-mono);
+  font-size: var(--text-sm);
+  line-height: var(--leading-normal);
+  color: var(--text-primary);
+}
+
+.wb-block-code__line {
+  display: flex;
+}
+
+.wb-block-code__no {
+  min-width: 2em;
+  margin-right: var(--sp-3);
+  text-align: right;
+  color: var(--text-muted);
+  user-select: none;
+}
+
+/* ── Форматований текст і HTML ───────────────────────────────────────────── */
+
+.wb-block-richtext {
+  line-height: var(--leading-normal);
+  overflow-wrap: break-word;
+}
+
+.wb-block-html--sandbox {
+  padding: var(--sp-2);
+  border: 1px dashed var(--hairline);
+  border-radius: var(--radius-sm);
+  font-size: var(--text-sm);
+}
+
+/* ── Колонки ─────────────────────────────────────────────────────────────
+   На телефоні колонки стають стовпчиком: дві половини екрана по 160px — це
+   не розкладка, а тіснота. */
+
+.wb-block-columns {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--sp-4);
+}
+
+@media (min-width: 720px) {
+  .wb-block-columns--2 {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .wb-block-columns--3 {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+/* ── Поля форми ──────────────────────────────────────────────────────────
+   Поле займає ширину блока: міру самого контрола дає кирпичик `.wb-input`
+   / `.wb-select` / `.wb-textarea`, тут лише стек «підпис → поле». */
+
+.wb-block-input,
+.wb-block-select,
+.wb-block-textarea,
+.wb-block-date-input {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-1);
+}
+
+.wb-block-date-input {
+  gap: var(--sp-3);
+}
+
+.wb-block-input .wb-input,
+.wb-block-select .wb-select,
+.wb-block-textarea .wb-textarea,
+.wb-block-date-input .wb-input {
+  width: 100%;
+}
+
+.wb-block-textarea .wb-textarea {
+  resize: vertical;
+}
+
+.wb-block-field-required {
+  margin-left: 2px;
+  color: var(--red);
+}
+
+/* ── Перемикач схеми ─────────────────────────────────────────────────────
+   Пласка поверхня поля замість рамки: це контрол, а не картка (правило 15). */
+
+.wb-block-theme-toggle {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--sp-2);
+  width: fit-content;
+  padding: var(--sp-2) var(--sp-3);
+  background: var(--field-bg);
+  border: none;
+  border-radius: var(--radius);
+  color: var(--text-secondary);
+  font-size: var(--text-sm);
+  cursor: pointer;
+}
+
+.wb-block-theme-toggle__icon {
+  display: inline-flex;
 }

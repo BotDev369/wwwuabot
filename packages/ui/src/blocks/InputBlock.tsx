@@ -24,14 +24,15 @@ export function InputBlock({ block }: BlockComponentProps) {
   };
 
   return (
-    <div
-      className="wb-block-input"
-      style={{ display: "flex", flexDirection: "column", gap: "var(--sp-1)" }}
-    >
+    <div className="wb-block-input">
       {label && (
         <label className="wb-label" htmlFor={name || undefined}>
           {label}
-          {required && <span style={{ color: "var(--red)", marginLeft: "2px" }}>*</span>}
+          {required && (
+            <span className="wb-block-field-required" aria-hidden="true">
+              *
+            </span>
+          )}
         </label>
       )}
       <input
@@ -42,7 +43,6 @@ export function InputBlock({ block }: BlockComponentProps) {
         name={name || undefined}
         id={name || undefined}
         data-block-field={name || undefined}
-        style={{ width: "100%" }}
       />
     </div>
   );

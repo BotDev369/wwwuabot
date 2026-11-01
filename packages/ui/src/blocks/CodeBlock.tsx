@@ -43,34 +43,15 @@ export function CodeBlock({ block }: BlockComponentProps) {
   const lines = code.split("\n");
 
   return (
-    <div
-      className="wb-block-code"
-      style={{
-        borderRadius: "var(--radius-md)",
-        background: "var(--bg-2)",
-        border: "1px solid var(--border-subtle)",
-        overflow: "hidden",
-      }}
-    >
+    <div className="wb-block-code">
       {(title || language !== "plain") && (
-        <div
-          className="wb-block-code__header"
-          style={{
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "space-between",
-            padding: "var(--sp-2) var(--sp-3)",
-            borderBottom: "1px solid var(--border-subtle)",
-            fontSize: "var(--text-xs)",
-          }}
-        >
+        <div className="wb-block-code__header">
           <span className="wb-text-secondary">{title || language}</span>
           {copyable && (
             <button
               type="button"
               onClick={handleCopy}
-              className="wb-btn wb-btn-ghost"
-              style={{ padding: "2px var(--sp-2)", fontSize: "var(--text-xs)" }}
+              className="wb-btn wb-btn-ghost wb-block-code__copy"
             >
               {copied ? (
                 "✓ Скопійовано"
@@ -83,31 +64,12 @@ export function CodeBlock({ block }: BlockComponentProps) {
           )}
         </div>
       )}
-      <pre
-        className="wb-block-code__pre"
-        style={{
-          margin: 0,
-          padding: "var(--sp-3)",
-          overflowX: "auto",
-          fontFamily: "var(--font-mono)",
-          fontSize: "var(--text-sm)",
-          lineHeight: "var(--leading-normal)",
-          color: "var(--text-primary)",
-        }}
-      >
+      <pre className="wb-block-code__pre">
         <code>
           {showLineNumbers
             ? lines.map((line, i) => (
-                <div key={i} style={{ display: "flex" }}>
-                  <span
-                    style={{
-                      userSelect: "none",
-                      color: "var(--text-muted)",
-                      marginRight: "var(--sp-3)",
-                      minWidth: "2em",
-                      textAlign: "right",
-                    }}
-                  >
+                <div key={i} className="wb-block-code__line">
+                  <span className="wb-block-code__no" aria-hidden="true">
                     {i + 1}
                   </span>
                   <span>{line}</span>

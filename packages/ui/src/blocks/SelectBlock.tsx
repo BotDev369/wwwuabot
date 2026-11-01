@@ -1,7 +1,7 @@
 /**
  * Page Builder — Select Block.
  *
- * A dropdown select field with configurable options and placeholder.
+ * A select field with configurable options and placeholder.
  *
  * @module packages/ui/src/blocks/SelectBlock
  */
@@ -29,14 +29,15 @@ export function SelectBlock({ block }: BlockComponentProps) {
   };
 
   return (
-    <div
-      className="wb-block-select"
-      style={{ display: "flex", flexDirection: "column", gap: "var(--sp-1)" }}
-    >
+    <div className="wb-block-select">
       {label && (
         <label className="wb-label" htmlFor={name || undefined}>
           {label}
-          {required && <span style={{ color: "var(--red)", marginLeft: "2px" }}>*</span>}
+          {required && (
+            <span className="wb-block-field-required" aria-hidden="true">
+              *
+            </span>
+          )}
         </label>
       )}
       <select
@@ -45,7 +46,6 @@ export function SelectBlock({ block }: BlockComponentProps) {
         name={name || undefined}
         id={name || undefined}
         data-block-field={name || undefined}
-        style={{ width: "100%" }}
       >
         <option value="" disabled>
           {placeholder}

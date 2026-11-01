@@ -24,29 +24,14 @@ export function TestimonialBlock({ block }: BlockComponentProps) {
   };
 
   return (
-    <div
-      className="wb-block-testimonial"
-      style={{
-        padding: "var(--sp-5)",
-        background: "var(--bg-1)",
-        border: "1px solid var(--border-subtle)",
-        borderRadius: "var(--radius-lg)",
-        display: "flex",
-        flexDirection: "column",
-        gap: "var(--sp-3)",
-      }}
-    >
-      {/* Stars */}
+    <div className="wb-block-testimonial">
       {rating > 0 && (
-        <div style={{ display: "flex", gap: "2px" }}>
+        <div className="wb-block-testimonial__stars">
           {Array.from({ length: 5 }, (_, i) => (
             <span
               key={i}
-              style={{
-                color: i < Math.round(rating) ? "var(--yellow)" : "var(--border-subtle)",
-                fontSize: "var(--text-lg)",
-                lineHeight: 1,
-              }}
+              className={`wb-block-testimonial__star${i < Math.round(rating) ? " wb-block-testimonial__star--on" : ""}`}
+              aria-hidden="true"
             >
               ★
             </span>
@@ -54,36 +39,14 @@ export function TestimonialBlock({ block }: BlockComponentProps) {
         </div>
       )}
 
-      {/* Quote */}
-      <p
-        className="wb-text-primary"
-        style={{
-          fontStyle: "italic",
-          lineHeight: "var(--leading-normal)",
-          margin: 0,
-        }}
-      >
-        &ldquo;{text}&rdquo;
-      </p>
+      <p className="wb-block-testimonial__text">&ldquo;{text}&rdquo;</p>
 
-      {/* Author */}
-      <div style={{ display: "flex", alignItems: "center", gap: "var(--sp-3)" }}>
+      <div className="wb-block-testimonial__author">
         {avatar && (
-          <img
-            src={avatar}
-            alt={author}
-            style={{
-              width: "40px",
-              height: "40px",
-              borderRadius: "var(--radius-full)",
-              objectFit: "cover",
-            }}
-          />
+          <img className="wb-block-testimonial__avatar" src={avatar} alt={author} loading="lazy" />
         )}
         <div>
-          <div className="wb-text-sm" style={{ fontWeight: "var(--weight-semibold)" }}>
-            {author}
-          </div>
+          <div className="wb-block-testimonial__name">{author}</div>
           {role && <div className="wb-text-xs wb-text-secondary">{role}</div>}
         </div>
       </div>

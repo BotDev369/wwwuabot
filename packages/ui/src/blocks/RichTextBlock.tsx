@@ -1,8 +1,8 @@
 /**
  * Page Builder — Rich Text Block.
  *
- * Renders formatted HTML content with support for bold, italic, links, inline code, and lists.
- * Uses dangerouslySetInnerHTML — only admins should input this content.
+ * Renders formatted HTML content. Uses dangerouslySetInnerHTML — only admins
+ * should input this content.
  *
  * @module packages/ui/src/blocks/RichTextBlock
  */
@@ -15,13 +15,6 @@ export function RichTextBlock({ block }: BlockComponentProps) {
   if (!html) return null;
 
   return (
-    <div
-      className="wb-block-richtext wb-text-primary"
-      style={{
-        lineHeight: "var(--leading-normal)",
-        wordBreak: "break-word",
-      }}
-      dangerouslySetInnerHTML={{ __html: html }}
-    />
+    <div className="wb-block-richtext wb-text-primary" dangerouslySetInnerHTML={{ __html: html }} />
   );
 }

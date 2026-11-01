@@ -1,19 +1,14 @@
 /**
  * Page Builder — Progress Block.
  *
- * Displays a progress bar with configurable label, percentage, and color.
+ * Displays a progress bar with label, percentage, and a semantic tone.
  *
  * @module packages/ui/src/blocks/ProgressBlock
  */
 
 import type { BlockComponentProps } from "@wwwuabot/shared/types/page-config";
 
-const COLOR_MAP: Record<string, string> = {
-  accent: "var(--accent)",
-  green: "var(--green)",
-  yellow: "var(--yellow)",
-  red: "var(--red)",
-};
+const TONES = ["accent", "green", "yellow", "red"];
 
 export function ProgressBlock({ block }: BlockComponentProps) {
   const {
@@ -31,18 +26,13 @@ export function ProgressBlock({ block }: BlockComponentProps) {
   };
 
   const percent = Math.min(100, Math.max(0, (value / max) * 100));
+  const tone =
+    TONES.includes(color) && color !== "accent" ? ` wb-block-progress__fill--${color}` : "";
 
   return (
     <div className="wb-block-progress">
       {(label || showPercent) && (
-        <div
-          className="wb-block-progress__header"
-          style={{
-            display: "flex",
-            justifyContent: "space-between",
-            marginBottom: "var(--sp-2)",
-          }}
-        >
+        <div className="wb-block-progress__header">
           {label && <span className="wb-text-sm wb-text-primary">{label}</span>}
           {showPercent && (
             <span className="wb-text-sm wb-text-secondary">{Math.round(percent)}%</span>
@@ -50,25 +40,9 @@ export function ProgressBlock({ block }: BlockComponentProps) {
         </div>
       )}
 
-      <div
-        className="wb-block-progress__track"
-        style={{
-          height: "8px",
-          background: "var(--bg-3)",
-          borderRadius: "var(--radius-full)",
-          overflow: "hidden",
-        }}
-      >
-        <div
-          className="wb-block-progress__fill"
-          style={{
-            height: "100%",
-            width: `${percent}%`,
-            background: COLOR_MAP[color] ?? COLOR_MAP.accent,
-            borderRadius: "var(--radius-full)",
-            transition: "width var(--duration-normal) var(--ease)",
-          }}
-        />
+      <div className="wb-block-progress__track">
+        {/* Ширина — єдине значення з даних: відсоток народжується з `value`/`max`. */}
+        <div className={`wb-block-progress__fill${tone}`} style={{ width: `${percent}%` }} />
       </div>
     </div>
   );

@@ -93,12 +93,12 @@
     {
       "file": "blocks.css",
       "tokens": 0,
-      "classes": 50
+      "classes": 114
     },
     {
       "file": "components.css",
       "tokens": 13,
-      "classes": 199
+      "classes": 196
     },
     {
       "file": "contacts.css",
@@ -3369,6 +3369,130 @@
           "wb-block-features__icon",
           "wb-block-features__title"
         ]
+      },
+      {
+        "section": "Акордеон",
+        "names": [
+          "wb-block-accordion__chevron",
+          "wb-block-accordion__content",
+          "wb-block-accordion__item",
+          "wb-block-accordion__item--open",
+          "wb-block-accordion__trigger"
+        ]
+      },
+      {
+        "section": "Ціни",
+        "names": [
+          "wb-block-pricing",
+          "wb-block-pricing__badge",
+          "wb-block-pricing__card",
+          "wb-block-pricing__card--on",
+          "wb-block-pricing__check",
+          "wb-block-pricing__cta",
+          "wb-block-pricing__feature",
+          "wb-block-pricing__list",
+          "wb-block-pricing__name",
+          "wb-block-pricing__price",
+          "wb-block-pricing__price-row"
+        ]
+      },
+      {
+        "section": "Відгук",
+        "names": [
+          "wb-block-rating__star--on",
+          "wb-block-rating__stars",
+          "wb-block-testimonial",
+          "wb-block-testimonial__author",
+          "wb-block-testimonial__avatar",
+          "wb-block-testimonial__name",
+          "wb-block-testimonial__star",
+          "wb-block-testimonial__star--on",
+          "wb-block-testimonial__stars",
+          "wb-block-testimonial__text"
+        ]
+      },
+      {
+        "section": "Рейтинг",
+        "names": [
+          "wb-block-rating",
+          "wb-block-rating__star"
+        ]
+      },
+      {
+        "section": "Прогрес",
+        "names": [
+          "wb-block-progress__fill",
+          "wb-block-progress__fill--green",
+          "wb-block-progress__fill--red",
+          "wb-block-progress__fill--yellow",
+          "wb-block-progress__header",
+          "wb-block-progress__track"
+        ]
+      },
+      {
+        "section": "Галерея",
+        "names": [
+          "wb-block-gallery",
+          "wb-block-gallery__caption",
+          "wb-block-gallery__img"
+        ]
+      },
+      {
+        "section": "Відео",
+        "names": [
+          "wb-block-video__caption",
+          "wb-block-video__frame",
+          "wb-block-video__player",
+          "wb-block-video__title",
+          "wb-block-video__wrapper",
+          "wb-block-video__wrapper--direct"
+        ]
+      },
+      {
+        "section": "Код",
+        "names": [
+          "wb-block-code",
+          "wb-block-code__copy",
+          "wb-block-code__header",
+          "wb-block-code__line",
+          "wb-block-code__no",
+          "wb-block-code__pre"
+        ]
+      },
+      {
+        "section": "Форматований текст і HTML",
+        "names": [
+          "wb-block-html--sandbox",
+          "wb-block-richtext"
+        ]
+      },
+      {
+        "section": "Колонки",
+        "names": [
+          "wb-block-columns",
+          "wb-block-columns--2",
+          "wb-block-columns--3"
+        ]
+      },
+      {
+        "section": "Поля форми",
+        "names": [
+          "wb-block-date-input",
+          "wb-block-field-required",
+          "wb-block-input",
+          "wb-block-select",
+          "wb-block-textarea",
+          "wb-input",
+          "wb-select",
+          "wb-textarea"
+        ]
+      },
+      {
+        "section": "Перемикач схеми",
+        "names": [
+          "wb-block-theme-toggle",
+          "wb-block-theme-toggle__icon"
+        ]
       }
     ],
     "components.css": [
@@ -3683,10 +3807,7 @@
       {
         "section": "Spacing utilities",
         "names": [
-          "wb-mb-2",
-          "wb-mb-3",
-          "wb-mt-1",
-          "wb-mt-2"
+          "wb-mb-3"
         ]
       },
       {

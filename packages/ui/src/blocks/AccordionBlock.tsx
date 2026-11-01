@@ -55,55 +55,17 @@ export function AccordionBlock({ block }: BlockComponentProps) {
         return (
           <div
             key={i}
-            className="wb-block-accordion__item"
-            style={{
-              borderBottom: "1px solid var(--border-subtle)",
-            }}
+            className={`wb-block-accordion__item${isOpen ? " wb-block-accordion__item--open" : ""}`}
           >
-            <button
-              type="button"
-              onClick={() => toggle(i)}
-              className="wb-block-accordion__trigger"
-              style={{
-                width: "100%",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "space-between",
-                padding: "var(--sp-3) 0",
-                background: "transparent",
-                border: "none",
-                cursor: "pointer",
-                textAlign: "left",
-                fontWeight: "var(--weight-semibold)",
-                fontSize: "var(--text-sm)",
-                color: "var(--text-primary)",
-              }}
-            >
+            <button type="button" onClick={() => toggle(i)} className="wb-block-accordion__trigger">
               <span>{item.title}</span>
-              <span
-                style={{
-                  transition: "transform var(--duration-fast) var(--ease)",
-                  transform: isOpen ? "rotate(180deg)" : "rotate(0)",
-                  color: "var(--text-secondary)",
-                  flexShrink: 0,
-                }}
-              >
+              <span className="wb-block-accordion__chevron" aria-hidden="true">
                 ▾
               </span>
             </button>
 
             {isOpen && (
-              <div
-                className="wb-block-accordion__content wb-text-secondary"
-                style={{
-                  padding: "0 0 var(--sp-3) 0",
-                  fontSize: "var(--text-sm)",
-                  lineHeight: "var(--leading-normal)",
-                  whiteSpace: "pre-wrap",
-                }}
-              >
-                {item.content}
-              </div>
+              <div className="wb-block-accordion__content wb-text-secondary">{item.content}</div>
             )}
           </div>
         );

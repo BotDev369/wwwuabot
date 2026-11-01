@@ -2,7 +2,6 @@
  * Page Builder — Video Block.
  *
  * Embeds video from YouTube, Vimeo, or direct URL (.mp4/.webm).
- * Auto-detects platform and renders appropriate iframe/embed.
  *
  * @module packages/ui/src/blocks/VideoBlock
  */
@@ -72,48 +71,29 @@ export function VideoBlock({ block }: BlockComponentProps) {
 
   return (
     <figure className="wb-block-video">
-      {title && <h4 className="wb-block-video__title wb-font-semibold wb-mb-2">{title}</h4>}
+      {title && <h4 className="wb-block-video__title wb-font-semibold">{title}</h4>}
       <div
-        className="wb-block-video__wrapper"
-        style={{
-          position: "relative",
-          paddingBottom: isDirect ? 0 : "56.25%", // 16:9
-          height: isDirect ? "auto" : 0,
-          overflow: "hidden",
-          borderRadius: "var(--radius-md)",
-          background: "var(--bg-2)",
-        }}
+        className={`wb-block-video__wrapper${isDirect ? " wb-block-video__wrapper--direct" : ""}`}
       >
         {isDirect ? (
           <video
+            className="wb-block-video__player"
             src={embedUrl}
             controls
             autoPlay={autoplay}
             loop={loop}
-            style={{ width: "100%", borderRadius: "var(--radius-md)" }}
           />
         ) : (
           <iframe
+            className="wb-block-video__frame"
             src={embedUrl}
             title={title || "Video"}
             allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
             allowFullScreen
-            style={{
-              position: "absolute",
-              top: 0,
-              left: 0,
-              width: "100%",
-              height: "100%",
-              border: "none",
-            }}
           />
         )}
       </div>
-      {caption && (
-        <figcaption className="wb-block-video__caption wb-text-sm wb-text-muted wb-mt-2">
-          {caption}
-        </figcaption>
-      )}
+      {caption && <figcaption className="wb-block-video__caption wb-text-sm">{caption}</figcaption>}
     </figure>
   );
 }

@@ -2,10 +2,8 @@
  * ═══════════════════════════════════════════════════════════════════════════
  * COMPONENT CLASSES — Reusable UI building blocks
  * ═══════════════════════════════════════════════════════════════════════════
- *
  * Framework-agnostic CSS classes. Use in React, plain HTML, or any renderer.
  * Import tokens.css + themes.css before this file.
- *
  * Naming convention: .wb-* (wwwuabot) to avoid conflicts with Tailwind/etc.
  */
 
@@ -100,7 +98,6 @@
  * щільність на широкому екрані корисніша за великі пальці. На телефоні те саме
  * число — це половина потрібного: палець не влучає в те, що видно, й кнопка
  * «не працює» без жодної видимої причини.
- *
  * Стеля 44px — та сама, що в `buttons.test.ts` (`MAX_MIN_HEIGHT_PX`), тож
  * екран, який захоче зробити кнопку ще вищою на дотику, гейт зупинить.
  */
@@ -2330,15 +2327,6 @@ button.wb-chip {
    Цю родину вживають спільні блоки (`packages/ui/src/blocks/*`). Без неї
    клас у розмітці є, а правила — немає, тому відступ просто не з'являвся. */
 
-.wb-mt-1 {
-  margin-top: var(--sp-1);
-}
-.wb-mt-2 {
-  margin-top: var(--sp-2);
-}
-.wb-mb-2 {
-  margin-bottom: var(--sp-2);
-}
 .wb-mb-3 {
   margin-bottom: var(--sp-3);
 }

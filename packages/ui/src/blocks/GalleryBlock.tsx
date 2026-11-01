@@ -1,7 +1,8 @@
 /**
  * Page Builder — Gallery Block.
  *
- * Displays a grid of images with configurable columns, gap, and rounded corners.
+ * Displays a grid of images. Кількість колонок добирає сітка від ширини зони:
+ * число з props ламало телефон.
  *
  * @module packages/ui/src/blocks/GalleryBlock
  */
@@ -15,51 +16,17 @@ interface GalleryImage {
 }
 
 export function GalleryBlock({ block }: BlockComponentProps) {
-  const {
-    images = [],
-    columns = "2",
-    rounded = true,
-    gap = "md",
-  } = block.props as {
-    images?: GalleryImage[];
-    columns?: string;
-    rounded?: boolean;
-    gap?: string;
-  };
+  const { images = [] } = block.props as { images?: GalleryImage[] };
 
   if (!images || images.length === 0) return null;
 
-  const gapMap: Record<string, string> = {
-    sm: "var(--sp-2)",
-    md: "var(--sp-3)",
-    lg: "var(--sp-5)",
-  };
-
   return (
-    <div
-      className="wb-block-gallery"
-      style={{
-        display: "grid",
-        gridTemplateColumns: `repeat(${columns}, 1fr)`,
-        gap: gapMap[gap] ?? gapMap.md,
-      }}
-    >
+    <div className="wb-block-gallery">
       {images.map((img, i) => (
-        <figure key={i} className="wb-block-gallery__item" style={{ margin: 0 }}>
-          <img
-            src={img.src}
-            alt={img.alt || ""}
-            loading="lazy"
-            style={{
-              width: "100%",
-              height: "200px",
-              objectFit: "cover",
-              borderRadius: rounded ? "var(--radius-md)" : undefined,
-              display: "block",
-            }}
-          />
+        <figure key={i} className="wb-block-gallery__item">
+          <img className="wb-block-gallery__img" src={img.src} alt={img.alt || ""} loading="lazy" />
           {img.caption && (
-            <figcaption className="wb-text-xs wb-text-muted wb-mt-1">{img.caption}</figcaption>
+            <figcaption className="wb-block-gallery__caption wb-text-xs">{img.caption}</figcaption>
           )}
         </figure>
       ))}

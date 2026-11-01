@@ -33,10 +33,7 @@ export function DateInputBlock({ block }: BlockComponentProps) {
   const ready = isValidDate(date);
 
   return (
-    <div
-      className="wb-block-date-input"
-      style={{ display: "flex", flexDirection: "column", gap: "var(--sp-3)" }}
-    >
+    <div className="wb-block-date-input">
       <label className="wb-label" htmlFor="dateanalysis-date">
         {label}
       </label>
@@ -49,13 +46,11 @@ export function DateInputBlock({ block }: BlockComponentProps) {
         min={min}
         max={max}
         onChange={(e) => setDate(e.target.value)}
-        style={{ width: "100%" }}
       />
       <button
         type="button"
-        className="wb-btn wb-btn-primary"
+        className="wb-btn wb-btn-primary wb-block-date-input__action"
         disabled={!ready}
-        style={{ width: "100%" }}
         onClick={() => {
           // Те саме, що робить `compare-setup`: повна адреса, а не `pushState`,
           // бо ціль — інший рядок контенту, а не стан цього екрана.
