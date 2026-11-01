@@ -1,0 +1,146 @@
+/*
+ * Page Builder — вигляд сторінки конструктора сторінок.
+ *
+ * Числа тут — тільки токени: кегль, проміжок, радіус і тривалість беруться зі
+ * `tokens.css`, тож конструктор виглядає так само, як решта адмінки, і
+ * перемикається темою разом із нею.
+ */
+
+.pb-page {
+  padding: 0 var(--sp-5) var(--sp-5);
+}
+
+.pb-page--empty {
+  padding: var(--sp-5);
+}
+
+.pb-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--sp-4);
+  margin-bottom: var(--sp-4);
+  padding: var(--sp-4) 0 var(--sp-3);
+  border-bottom: 1px solid var(--border);
+}
+
+.pb-title {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+  margin: 0;
+  font-size: var(--heading-section-size);
+  font-weight: var(--weight-semibold);
+}
+
+.pb-subtitle {
+  margin-top: var(--sp-1);
+  font-size: var(--text-sm);
+  color: var(--text-secondary);
+}
+
+.pb-head__actions {
+  display: flex;
+  gap: var(--sp-2);
+}
+
+/* Кнопки шапки — щільніші за решту: їх тут чотири поспіль. */
+.pb-btn-sm {
+  font-size: var(--text-sm);
+}
+
+.pb-error {
+  margin-bottom: var(--sp-3);
+  padding: var(--sp-2) var(--sp-3);
+  font-size: var(--text-sm);
+  color: var(--color-error, #ef4444);
+  background: var(--color-error-bg, #fef2f2);
+  border: 1px solid var(--color-error, #ef4444);
+  border-radius: var(--radius-sm);
+}
+
+.pb-loading {
+  padding: var(--sp-10);
+  text-align: center;
+  color: var(--text-secondary);
+}
+
+.pb-json__actions {
+  display: flex;
+  gap: var(--sp-2);
+  margin-bottom: var(--sp-2);
+}
+
+.pb-json__error {
+  margin-bottom: var(--sp-2);
+  font-size: var(--text-sm);
+  color: var(--color-error, #ef4444);
+}
+
+.pb-json__editor {
+  width: 100%;
+  min-height: 500px;
+  padding: var(--sp-3);
+  font-family: var(--font-mono);
+  font-size: var(--text-sm);
+  tab-size: 2;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  resize: vertical;
+}
+
+.pb-zones__bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: var(--sp-2);
+  margin-bottom: var(--sp-2);
+}
+
+.pb-zones__count {
+  font-size: var(--text-sm);
+  font-weight: var(--weight-medium);
+  color: var(--text-secondary);
+}
+
+.pb-segment {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sp-1);
+  padding: var(--sp-1);
+  background: var(--bg-secondary, #f1f5f9);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+}
+
+.pb-segment__btn {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sp-1);
+  padding: var(--sp-1) var(--sp-2);
+  font-size: var(--text-xs);
+  color: var(--text-secondary);
+  background: transparent;
+  border: none;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition:
+    background var(--duration) var(--ease),
+    color var(--duration) var(--ease);
+}
+
+/* Наведення — лише мишею: на тачі `:hover` лишається на останньому торкнутому
+   елементі й перебиває стан вибору. */
+@media (hover: hover) {
+  .pb-segment__btn:not(.pb-segment__btn--active):hover {
+    color: var(--text-primary);
+    background: var(--surface-active);
+  }
+}
+
+.pb-segment__btn--active {
+  font-weight: var(--weight-semibold);
+  color: var(--text-inverse);
+  background: var(--accent);
+}

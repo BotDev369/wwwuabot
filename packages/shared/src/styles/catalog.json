@@ -36,6 +36,11 @@
       "classes": 34
     },
     {
+      "file": "admin/page-builder.css",
+      "tokens": 0,
+      "classes": 17
+    },
+    {
       "file": "admin/scenario-modal.css",
       "tokens": 0,
       "classes": 38
@@ -2497,6 +2502,30 @@
           "mon-chart-tools",
           "mon-chip",
           "mon-chip-active"
+        ]
+      }
+    ],
+    "admin/page-builder.css": [
+      {
+        "section": "",
+        "names": [
+          "pb-btn-sm",
+          "pb-error",
+          "pb-head",
+          "pb-head__actions",
+          "pb-json__actions",
+          "pb-json__editor",
+          "pb-json__error",
+          "pb-loading",
+          "pb-page",
+          "pb-page--empty",
+          "pb-segment",
+          "pb-segment__btn",
+          "pb-segment__btn--active",
+          "pb-subtitle",
+          "pb-title",
+          "pb-zones__bar",
+          "pb-zones__count"
         ]
       }
     ],
