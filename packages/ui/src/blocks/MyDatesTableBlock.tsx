@@ -106,32 +106,19 @@ export function MyDatesTableBlock({ block }: BlockComponentProps) {
         )}
 
         {/* Error */}
-        {error && (
-          <p className="wb-text-sm" style={{ color: "var(--color-danger, #ef4444)" }}>
-            {error}
-          </p>
-        )}
+        {error && <p className="wb-text-sm wb-date-error">{error}</p>}
 
         {/* Active filters */}
         {Object.entries(columnFilters)
           .filter(([, v]) => v.length > 0)
           .map(([field, values]) => (
-            <div
-              key={field}
-              style={{
-                display: "flex",
-                alignItems: "center",
-                gap: "var(--sp-2)",
-                marginBottom: "var(--sp-2)",
-              }}
-            >
+            <div key={field} className="wb-date-filters">
               <span className="wb-text-sm wb-text-muted">{field}:</span>
               {values.map((v) => (
                 <button
                   key={v}
-                  className="wb-chip wb-chip-sm"
+                  className="wb-chip wb-chip-sm wb-date-filter-chip"
                   onClick={() => toggleColumnFilter(field, v)}
-                  style={{ cursor: "pointer" }}
                 >
                   {v} {icons["close"]}
                 </button>
@@ -208,10 +195,10 @@ export function MyDatesTableBlock({ block }: BlockComponentProps) {
         {/* Table */}
         {!loading && dates.length > 0 && (
           <div className="wb-date-list">
-            <table className="wb-table" style={{ width: "100%" }}>
+            <table className="wb-table wb-date-table">
               <thead>
                 <tr className="wb-date-head">
-                  <th style={{ width: 40 }}>
+                  <th className="wb-date-head__pick">
                     <input
                       type="checkbox"
                       checked={
@@ -222,21 +209,12 @@ export function MyDatesTableBlock({ block }: BlockComponentProps) {
                   </th>
                   {columns.map((col) => (
                     <th key={col.key}>
-                      <div
-                        style={{
-                          cursor: "pointer",
-                          userSelect: "none",
-                          display: "flex",
-                          alignItems: "center",
-                          gap: 4,
-                        }}
-                        onClick={() => toggleSort(col.key)}
-                      >
+                      <div className="wb-date-sort-head" onClick={() => toggleSort(col.key)}>
                         {col.label}
                         {sortField === col.key && <span>{sortOrder === "asc" ? "▲" : "▼"}</span>}
                         {showTypeFilter && col.key === "type" && (
                           <select
-                            style={{ fontSize: 10, padding: 0, marginLeft: 4 }}
+                            className="wb-date-filter-select"
                             onClick={(e) => e.stopPropagation()}
                             onChange={(e) => {
                               if (e.target.value) toggleColumnFilter("type", e.target.value);
@@ -264,10 +242,9 @@ export function MyDatesTableBlock({ block }: BlockComponentProps) {
                   return (
                     <tr
                       key={d.id}
-                      className={`wb-date-row${open ? " wb-date-row--open" : ""}`}
-                      style={
-                        selectedIds.has(d.id) ? { background: "var(--bg-2, #f8fafc)" } : undefined
-                      }
+                      className={`wb-date-row${open ? " wb-date-row--open" : ""}${
+                        selectedIds.has(d.id) ? " wb-date-row--picked" : ""
+                      }`}
                       onDoubleClick={() => openEdit(d)}
                     >
                       <td className="wb-date-cell wb-date-cell--pick">
@@ -312,7 +289,7 @@ export function MyDatesTableBlock({ block }: BlockComponentProps) {
                       </td>
                       <td className="wb-date-cell wb-date-cell--body" data-label="Теги">
                         {(d.tags || []).length > 0 ? (
-                          <div style={{ display: "flex", flexWrap: "wrap", gap: 4 }}>
+                          <div className="wb-date-tags">
                             {d.tags.map((tag) => (
                               <span
                                 key={tag}

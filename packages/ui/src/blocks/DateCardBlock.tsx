@@ -1,8 +1,10 @@
 /**
- * Page Builder — Date Card Block.
+ * Page Builder — картка дати.
  *
- * Displays an astrology date card with zodiac sign, element, and numerology data.
- * Uses the user's birthday from BlockContext.user or a custom date.
+ * Дата береться з даних (своя або день народження людини), а знак, стихія й
+ * число життєвого шляху рахуються з неї — це зміст, не оформлення. Три подання
+ * (повна картка, компактна, рядок) — варіант; мірки й розмір знака —
+ * `styles/blocks.css`.
  *
  * @module packages/ui/src/blocks/DateCardBlock
  */
@@ -26,7 +28,9 @@ const ZODIAC_SIGNS = [
 
 function getZodiacSign(month: number, day: number): (typeof ZODIAC_SIGNS)[0] {
   const cutoffs = [20, 19, 20, 20, 21, 21, 22, 22, 22, 23, 22, 21];
-  const idx = day > cutoffs[month - 1] ? month : (month + 10) % 12;
+  // До межі знак попередній (січень — Козеріг), після — наступний; грудень
+  // за межою завертає коло на Козеріга, а не за кінець списку.
+  const idx = day > cutoffs[month - 1] ? month % 12 : month - 1;
   return ZODIAC_SIGNS[idx];
 }
 
@@ -56,13 +60,11 @@ export function DateCardBlock({ block, context }: BlockComponentProps) {
     layout?: string;
   };
 
-  // Determine the date to use
   let date: Date | null = null;
 
   if (dateSource === "custom" && customDate) {
     date = new Date(customDate);
   } else if (context.user) {
-    // Try to get from user profile (my_dates.birthday or fieldMatch)
     const birthday = context.user["birthday"] as string | undefined;
     if (birthday) {
       date = new Date(birthday);
@@ -82,82 +84,53 @@ export function DateCardBlock({ block, context }: BlockComponentProps) {
   const year = date.getFullYear();
   const zodiac = getZodiacSign(month, day);
   const lifePath = reduceToSingleDigit(year + month + day);
+  const variant = layout === "minimal" || layout === "compact" ? layout : "full";
 
-  if (layout === "minimal") {
+  if (variant === "minimal") {
     return (
-      <div
-        className="wb-block-date-card"
-        style={{ display: "flex", alignItems: "center", gap: "var(--sp-3)" }}
-      >
-        {showZodiac && <span style={{ fontSize: "var(--text-3xl)" }}>{zodiac.symbol}</span>}
+      <div className="wb-block-date-card wb-block-date-card--minimal">
+        {showZodiac && <span className="wb-block-date-card__symbol">{zodiac.symbol}</span>}
         <div>
-          {showZodiac && <div className="wb-font-semibold">{zodiac.name}</div>}
-          {showZodiac && <div className="wb-text-xs wb-text-secondary">{zodiac.dates}</div>}
+          {showZodiac && <div className="wb-block-date-card__name">{zodiac.name}</div>}
+          {showZodiac && <div className="wb-block-date-card__dates">{zodiac.dates}</div>}
         </div>
       </div>
     );
   }
 
-  if (layout === "compact") {
+  if (variant === "compact") {
     return (
-      <div
-        className="wb-block-date-card"
-        style={{
-          padding: "var(--sp-3)",
-          background: "var(--bg-1)",
-          border: "1px solid var(--border-subtle)",
-          borderRadius: "var(--radius-md)",
-          textAlign: "center",
-        }}
-      >
-        <div style={{ fontSize: "var(--text-2xl)" }}>{zodiac.symbol}</div>
-        <div className="wb-font-semibold wb-text-sm">{zodiac.name}</div>
-        <div className="wb-text-xs wb-text-muted">{date.toLocaleDateString("uk-UA")}</div>
+      <div className="wb-block-date-card wb-block-date-card--compact">
+        <div className="wb-block-date-card__symbol">{zodiac.symbol}</div>
+        <div className="wb-block-date-card__name">{zodiac.name}</div>
+        <div className="wb-block-date-card__date">{date.toLocaleDateString("uk-UA")}</div>
       </div>
     );
   }
 
-  // full layout
   return (
-    <div
-      className="wb-block-date-card"
-      style={{
-        padding: "var(--sp-5)",
-        background: "var(--bg-1)",
-        border: "1px solid var(--border-subtle)",
-        borderRadius: "var(--radius-lg)",
-        display: "flex",
-        flexDirection: "column",
-        alignItems: "center",
-        gap: "var(--sp-3)",
-        textAlign: "center",
-      }}
-    >
-      {showZodiac && <div style={{ fontSize: "48px", lineHeight: 1 }}>{zodiac.symbol}</div>}
+    <div className="wb-block-date-card wb-block-date-card--full">
+      {showZodiac && <div className="wb-block-date-card__symbol">{zodiac.symbol}</div>}
 
-      {showZodiac && (
-        <div style={{ fontWeight: "var(--weight-bold)", fontSize: "var(--text-lg)" }}>
-          {zodiac.name}
-        </div>
-      )}
+      {showZodiac && <div className="wb-block-date-card__name">{zodiac.name}</div>}
 
-      {showZodiac && <div className="wb-text-sm wb-text-secondary">{zodiac.dates}</div>}
+      {showZodiac && <div className="wb-block-date-card__dates">{zodiac.dates}</div>}
 
-      <div className="wb-text-sm" style={{ color: "var(--text-muted)" }}>
+      <div className="wb-block-date-card__date">
         {date.toLocaleDateString("uk-UA", { day: "numeric", month: "long", year: "numeric" })}
       </div>
 
-      <div style={{ display: "flex", gap: "var(--sp-4)", marginTop: "var(--sp-2)" }}>
+      <div className="wb-block-date-card__meta">
         {showElement && (
-          <div style={{ textAlign: "center" }}>
-            <div className="wb-text-xs wb-text-muted">Стихія</div>
-            <div className="wb-text-sm wb-font-semibold">{zodiac.element}</div>
+          <div className="wb-block-date-card__meta-item">
+            <div className="wb-block-date-card__meta-label">Стихія</div>
+            <div className="wb-block-date-card__meta-value">{zodiac.element}</div>
           </div>
         )}
         {showNumerology && (
-          <div style={{ textAlign: "center" }}>
-            <div className="wb-text-xs wb-text-muted">Число</div>
-            <div className="wb-text-sm wb-font-semibold">{lifePath}</div>
+          <div className="wb-block-date-card__meta-item">
+            <div className="wb-block-date-card__meta-label">Число</div>
+            <div className="wb-block-date-card__meta-value">{lifePath}</div>
           </div>
         )}
       </div>

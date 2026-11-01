@@ -1,8 +1,8 @@
 /**
- * Page Builder — User Profile Block.
+ * Page Builder — профіль користувача.
  *
- * Displays the current Telegram user's profile info (avatar, name, username, ID)
- * from the BlockContext.user data.
+ * Які поля видно — з даних; як вони стоять (картка, рядок, компактний рядок) —
+ * варіант; мірки й розмір аватара — `styles/blocks.css`.
  *
  * @module packages/ui/src/blocks/UserProfileBlock
  */
@@ -36,105 +36,52 @@ export function UserProfileBlock({ block, context }: BlockComponentProps) {
 
   const displayName = [user.firstName, user.lastName].filter(Boolean).join(" ") || "—";
   const avatarUrl = `https://t.me/i/userpic/320/${user.username || ""}`;
+  const variant = layout === "compact" || layout === "inline" ? layout : "card";
+  const avatarSize = variant === "compact" ? "sm" : variant === "inline" ? "md" : "lg";
 
-  if (layout === "compact") {
+  const avatar = showAvatar && user.username && (
+    <img
+      src={avatarUrl}
+      alt=""
+      className={`wb-block-user-profile__avatar wb-block-user-profile__avatar--${avatarSize}`}
+    />
+  );
+
+  const username = showUsername && user.username && (
+    <span className="wb-block-user-profile__username">@{user.username}</span>
+  );
+
+  const id = showId && <span className="wb-block-user-profile__id">ID: {user.id}</span>;
+
+  if (variant === "compact") {
     return (
-      <div
-        className="wb-block-user-profile"
-        style={{ display: "flex", alignItems: "center", gap: "var(--sp-2)" }}
-      >
-        {showAvatar && user.username && (
-          <img
-            src={avatarUrl}
-            alt=""
-            style={{
-              width: "28px",
-              height: "28px",
-              borderRadius: "var(--radius-full)",
-              objectFit: "cover",
-            }}
-          />
-        )}
-        <span className="wb-text-sm" style={{ fontWeight: "var(--weight-semibold)" }}>
-          {showName && displayName}
-        </span>
-        {showUsername && user.username && (
-          <span className="wb-text-xs wb-text-secondary">@{user.username}</span>
-        )}
+      <div className="wb-block-user-profile wb-block-user-profile--compact">
+        {avatar}
+        {showName && <span className="wb-block-user-profile__name">{displayName}</span>}
+        {username}
       </div>
     );
   }
 
-  if (layout === "inline") {
+  if (variant === "inline") {
     return (
-      <div
-        className="wb-block-user-profile"
-        style={{ display: "flex", alignItems: "center", gap: "var(--sp-3)" }}
-      >
-        {showAvatar && user.username && (
-          <img
-            src={avatarUrl}
-            alt=""
-            style={{
-              width: "40px",
-              height: "40px",
-              borderRadius: "var(--radius-full)",
-              objectFit: "cover",
-            }}
-          />
-        )}
-        <div>
-          {showName && (
-            <div className="wb-text-sm" style={{ fontWeight: "var(--weight-semibold)" }}>
-              {displayName}
-            </div>
-          )}
-          {showUsername && user.username && (
-            <div className="wb-text-xs wb-text-secondary">@{user.username}</div>
-          )}
-          {showId && <div className="wb-text-xs wb-text-muted">ID: {user.id}</div>}
+      <div className="wb-block-user-profile wb-block-user-profile--inline">
+        {avatar}
+        <div className="wb-block-user-profile__body">
+          {showName && <span className="wb-block-user-profile__name">{displayName}</span>}
+          {username}
+          {id}
         </div>
       </div>
     );
   }
 
-  // card layout (default)
   return (
-    <div
-      className="wb-block-user-profile"
-      style={{
-        padding: "var(--sp-4)",
-        background: "var(--bg-1)",
-        border: "1px solid var(--border-subtle)",
-        borderRadius: "var(--radius-lg)",
-        display: "flex",
-        flexDirection: "column",
-        alignItems: "center",
-        gap: "var(--sp-3)",
-        textAlign: "center",
-      }}
-    >
-      {showAvatar && user.username && (
-        <img
-          src={avatarUrl}
-          alt=""
-          style={{
-            width: "64px",
-            height: "64px",
-            borderRadius: "var(--radius-full)",
-            objectFit: "cover",
-          }}
-        />
-      )}
-      {showName && (
-        <div style={{ fontWeight: "var(--weight-bold)", fontSize: "var(--text-lg)" }}>
-          {displayName}
-        </div>
-      )}
-      {showUsername && user.username && (
-        <div className="wb-text-sm wb-text-secondary">@{user.username}</div>
-      )}
-      {showId && <div className="wb-text-xs wb-text-muted">ID: {user.id}</div>}
+    <div className="wb-block-user-profile wb-block-user-profile--card">
+      {avatar}
+      {showName && <div className="wb-block-user-profile__name">{displayName}</div>}
+      {username}
+      {id}
     </div>
   );
 }

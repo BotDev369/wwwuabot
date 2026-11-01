@@ -2,7 +2,7 @@
  * Page Builder — кирпичик «системи та параметри».
  *
  * Це крок, а не екран: його рендерить той екран, який спитав дати, а підписи й
- * адресу дає господар — тому друга копія вибору не потрібна.
+ * адресу дає господар. Вигляд — у `styles/blocks.css`.
  *
  * @module packages/ui/src/blocks/systems-picker/SystemsPicker
  */
@@ -48,39 +48,22 @@ export function SystemsPicker({
 
   return (
     <div className={className}>
-      <h2>{title}</h2>
-      <p className="wb-text-sm wb-text-muted" style={{ marginBottom: "var(--sp-4)" }}>
-        {lead}
-      </p>
+      <h2 className="wb-block-systems-picker__title">{title}</h2>
+      <p className="wb-text-sm wb-text-muted wb-block-systems-picker__lead">{lead}</p>
 
-      <div
-        style={{
-          display: "flex",
-          flexDirection: "column",
-          gap: "var(--sp-4)",
-          marginBottom: "var(--sp-4)",
-        }}
-      >
+      <div className="wb-block-systems-picker__list">
         {picker.systems.map((system) => {
           const on = system.implemented && picker.isSystemSelected(system.id);
           return (
             <div
               key={system.id}
-              style={{
-                padding: "var(--sp-4)",
-                background: "var(--bg-1, var(--bg-home, #f0f2f5))",
-                border: "1px solid var(--border-subtle, #e2e8f0)",
-                borderRadius: "var(--radius-md)",
-              }}
+              className={
+                on
+                  ? "wb-block-systems-picker__card wb-block-systems-picker__card--on"
+                  : "wb-block-systems-picker__card"
+              }
             >
-              <label
-                style={{
-                  display: "flex",
-                  alignItems: "center",
-                  gap: "var(--sp-2)",
-                  cursor: "pointer",
-                }}
-              >
+              <label className="wb-block-systems-picker__system">
                 <input
                   type="checkbox"
                   checked={on}
@@ -92,25 +75,9 @@ export function SystemsPicker({
               </label>
 
               {on && (
-                <div
-                  style={{
-                    display: "flex",
-                    flexWrap: "wrap",
-                    gap: "var(--sp-3)",
-                    marginTop: "var(--sp-3)",
-                    paddingLeft: "var(--sp-6)",
-                  }}
-                >
+                <div className="wb-block-systems-picker__params">
                   {(system.parameters ?? []).map((parameter) => (
-                    <label
-                      key={parameter.key}
-                      style={{
-                        display: "flex",
-                        alignItems: "center",
-                        gap: "var(--sp-1)",
-                        cursor: "pointer",
-                      }}
-                    >
+                    <label key={parameter.key} className="wb-block-systems-picker__param">
                       <input
                         type="checkbox"
                         checked={!!picker.selected[system.id]?.[parameter.key]}
@@ -129,10 +96,9 @@ export function SystemsPicker({
       </div>
 
       <button
-        className="wb-btn wb-btn-primary"
+        className="wb-btn wb-btn-primary wb-block-systems-picker__action"
         onClick={picker.confirm}
         disabled={!picker.ready}
-        style={{ width: "100%" }}
       >
         {confirmLabel}
       </button>

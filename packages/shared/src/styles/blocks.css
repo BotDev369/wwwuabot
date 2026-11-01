@@ -804,3 +804,619 @@
 .wb-block-theme-toggle__icon {
   display: inline-flex;
 }
+
+/* ── Меню ──────────────────────────────────────────────────────────────────
+   Меню — список посилань, а не набір кнопок: тон задає посилання, а місце —
+   зона, у якій воно стоїть. */
+
+.wb-block-nav {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--sp-2);
+  margin: 0;
+  padding: 0;
+}
+
+.wb-block-nav--vertical {
+  flex-direction: column;
+  flex-wrap: nowrap;
+  align-items: stretch;
+  gap: var(--sp-1);
+}
+
+.wb-block-nav--empty {
+  padding: var(--sp-2) var(--sp-3);
+  border: 1px dashed var(--border);
+  border-radius: var(--radius-sm);
+  color: var(--text-muted);
+  font-size: var(--text-sm);
+  text-align: center;
+}
+
+.wb-block-nav__item,
+.wb-block-nav__link {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sp-2);
+  min-height: var(--row-min-h);
+  padding: var(--sp-1) var(--sp-2);
+  border-radius: var(--radius-sm);
+  color: var(--text-secondary);
+  font-size: var(--text-sm);
+  font-weight: var(--weight-medium);
+  line-height: var(--leading-normal);
+  text-decoration: none;
+}
+
+/* Підсвітка пункту — тільки там, де є миша: на дотику її тримає `:active`. */
+@media (hover: hover) {
+  .wb-block-nav__link:hover {
+    background: var(--surface-hover);
+    color: var(--text-primary);
+  }
+}
+
+.wb-block-nav__icon {
+  display: inline-flex;
+  flex-shrink: 0;
+  width: 18px;
+  height: 18px;
+  color: currentColor;
+}
+
+/* ── Перемикач схеми (варіанти «toggle» і «compact») ───────────────────────
+   Схема — це стан, тож її показує клас `--on`, а не колір у розмітці. */
+
+.wb-block-theme {
+  display: flex;
+  align-items: center;
+}
+
+.wb-block-theme__toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sp-2);
+  padding: var(--sp-1) var(--sp-3);
+  background: var(--field-bg);
+  border: none;
+  border-radius: var(--radius-full);
+  color: var(--text-primary);
+  font-size: var(--text-sm);
+  font-weight: var(--weight-medium);
+  cursor: pointer;
+  transition: background var(--duration-fast) var(--ease);
+}
+
+.wb-block-theme__icon {
+  display: inline-flex;
+  color: var(--accent);
+}
+
+.wb-block-theme__track {
+  display: inline-flex;
+  align-items: center;
+  width: 28px;
+  height: 16px;
+  padding: calc(var(--sp-1) / 2);
+  background: var(--bg-4);
+  border-radius: var(--radius-full);
+  transition: background var(--duration-fast) var(--ease);
+}
+
+.wb-block-theme__toggle--on .wb-block-theme__track {
+  background: var(--accent);
+}
+
+.wb-block-theme__knob {
+  width: 12px;
+  height: 12px;
+  background: var(--surface);
+  border-radius: 50%;
+  box-shadow: var(--shadow-xs);
+  transition: transform var(--duration-fast) var(--ease);
+}
+
+.wb-block-theme__toggle--on .wb-block-theme__knob {
+  background: var(--text-inverse);
+  transform: translateX(12px);
+}
+
+.wb-block-theme__compact {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  background: var(--field-bg);
+  border: none;
+  border-radius: var(--radius-full);
+  color: var(--accent);
+  cursor: pointer;
+}
+
+/* ── Профіль користувача ──────────────────────────────────────────────────
+   Три подання однієї людини: картка, рядок і компактний рядок. Розмір аватара
+   — частина подання, а не число в розмітці. */
+
+.wb-block-user-profile {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--sp-3);
+  text-align: center;
+}
+
+.wb-block-user-profile--card {
+  padding: var(--card-pad);
+  background: var(--card-bg);
+  border-radius: var(--card-radius);
+  box-shadow: var(--card-shadow);
+}
+
+.wb-block-user-profile--compact,
+.wb-block-user-profile--inline {
+  flex-direction: row;
+  align-items: center;
+  gap: var(--sp-2);
+  text-align: left;
+}
+
+.wb-block-user-profile__avatar {
+  flex-shrink: 0;
+  border-radius: var(--radius-full);
+  object-fit: cover;
+}
+
+.wb-block-user-profile__avatar--sm {
+  width: 28px;
+  height: 28px;
+}
+
+.wb-block-user-profile__avatar--md {
+  width: 40px;
+  height: 40px;
+}
+
+.wb-block-user-profile__avatar--lg {
+  width: 64px;
+  height: 64px;
+}
+
+.wb-block-user-profile__body {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-1);
+}
+
+.wb-block-user-profile__name {
+  font-weight: var(--weight-semibold);
+}
+
+.wb-block-user-profile--card .wb-block-user-profile__name {
+  font-size: var(--text-lg);
+  font-weight: var(--weight-bold);
+}
+
+.wb-block-user-profile__username {
+  color: var(--text-secondary);
+  font-size: var(--text-xs);
+}
+
+.wb-block-user-profile__id {
+  color: var(--text-muted);
+  font-size: var(--text-xs);
+}
+
+/* ── Графік ───────────────────────────────────────────────────────────────
+   Числа (кут сектора, висота стовпця, колір із даних) лишаються інлайном —
+   це дані. Усе інше — тут. */
+
+.wb-block-chart {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-3);
+}
+
+.wb-block-chart__title {
+  margin: 0;
+  font-size: var(--heading-card-size);
+  font-weight: var(--heading-card-weight);
+}
+
+.wb-block-chart__pie-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--sp-5);
+}
+
+.wb-block-chart__pie {
+  flex-shrink: 0;
+  width: 160px;
+  height: 160px;
+  border-radius: var(--radius-full);
+}
+
+.wb-block-chart__legend {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-2);
+}
+
+.wb-block-chart__legend-item {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+}
+
+.wb-block-chart__dot {
+  flex-shrink: 0;
+  width: 12px;
+  height: 12px;
+  border-radius: var(--radius-sm);
+}
+
+.wb-block-chart__pct {
+  color: var(--text-muted);
+  font-size: var(--text-xs);
+}
+
+.wb-block-chart__bars {
+  display: flex;
+  align-items: flex-end;
+  gap: var(--sp-2);
+  height: 160px;
+  padding: 0 var(--sp-1);
+}
+
+.wb-block-chart__bar-col {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-end;
+  gap: var(--sp-1);
+  height: 100%;
+}
+
+.wb-block-chart__bar {
+  width: 100%;
+  max-width: 40px;
+  border-radius: var(--radius-sm) var(--radius-sm) 0 0;
+  transition: height var(--duration) var(--ease);
+}
+
+.wb-block-chart__axis-label {
+  max-height: 40px;
+  overflow: hidden;
+  color: var(--text-secondary);
+  font-size: var(--text-xs);
+  white-space: nowrap;
+  writing-mode: vertical-lr;
+  text-orientation: mixed;
+  transform: rotate(180deg);
+}
+
+/* ── Картка дати ──────────────────────────────────────────────────────────
+   Повна картка міряється токенами картки: це той самий папір, що й решта
+   поверхонь, а не четвертий різновид плитки. */
+
+.wb-block-date-card {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-3);
+}
+
+.wb-block-date-card--full {
+  align-items: center;
+  padding: var(--card-pad);
+  background: var(--card-bg);
+  border-radius: var(--card-radius);
+  box-shadow: var(--card-shadow);
+  text-align: center;
+}
+
+.wb-block-date-card--compact {
+  padding: var(--sp-3);
+  background: var(--card-bg);
+  border-radius: var(--radius-md);
+  text-align: center;
+}
+
+.wb-block-date-card--minimal {
+  flex-direction: row;
+  align-items: center;
+  gap: var(--sp-3);
+}
+
+.wb-block-date-card__symbol {
+  font-size: var(--text-3xl);
+  line-height: 1;
+}
+
+.wb-block-date-card--compact .wb-block-date-card__symbol {
+  font-size: var(--text-2xl);
+}
+
+.wb-block-date-card--full .wb-block-date-card__symbol {
+  font-size: var(--text-5xl);
+}
+
+.wb-block-date-card__name {
+  font-weight: var(--weight-semibold);
+}
+
+.wb-block-date-card--full .wb-block-date-card__name {
+  font-size: var(--text-lg);
+  font-weight: var(--weight-bold);
+}
+
+.wb-block-date-card__dates {
+  color: var(--text-secondary);
+  font-size: var(--text-sm);
+}
+
+.wb-block-date-card__date {
+  color: var(--text-muted);
+  font-size: var(--text-sm);
+}
+
+.wb-block-date-card__meta {
+  display: flex;
+  gap: var(--sp-4);
+}
+
+.wb-block-date-card__meta-item {
+  text-align: center;
+}
+
+.wb-block-date-card__meta-label {
+  color: var(--text-muted);
+  font-size: var(--text-xs);
+}
+
+.wb-block-date-card__meta-value {
+  font-size: var(--text-sm);
+  font-weight: var(--weight-semibold);
+}
+
+/* ── Введення дат для аналізу ─────────────────────────────────────────────── */
+
+.wb-block-compare-setup {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-3);
+}
+
+.wb-block-compare-setup__title {
+  margin: 0;
+}
+
+.wb-block-compare-setup__lead {
+  margin: 0;
+}
+
+.wb-block-compare-setup__row {
+  display: flex;
+  gap: var(--sp-3);
+}
+
+.wb-block-compare-setup__input {
+  flex: 1;
+}
+
+.wb-block-compare-setup__list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-2);
+}
+
+.wb-block-compare-setup__item {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-3);
+  padding: var(--sp-3);
+  background: var(--bg-1);
+  border-radius: var(--radius-md);
+}
+
+.wb-block-compare-setup__date {
+  flex: 1;
+  font-weight: var(--weight-medium);
+}
+
+.wb-block-compare-setup__action {
+  width: 100%;
+}
+
+/* ── Крок вибору систем ───────────────────────────────────────────────────── */
+
+.wb-block-systems-picker {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-3);
+}
+
+.wb-block-systems-picker__title {
+  margin: 0;
+}
+
+.wb-block-systems-picker__lead {
+  margin: 0;
+}
+
+.wb-block-systems-picker__list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-4);
+}
+
+.wb-block-systems-picker__card {
+  padding: var(--sp-4);
+  background: var(--card-bg);
+  border-radius: var(--radius-md);
+}
+
+.wb-block-systems-picker__system {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+  cursor: pointer;
+}
+
+.wb-block-systems-picker__params {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--sp-3);
+  margin-top: var(--sp-3);
+  padding-left: var(--sp-6);
+}
+
+.wb-block-systems-picker__param {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-1);
+  cursor: pointer;
+}
+
+.wb-block-systems-picker__action {
+  width: 100%;
+}
+
+/* ── Корені блоків ────────────────────────────────────────────────────────
+   Корінь блока — теж кирпичик, а не порожній хук: саме він тримає просвіт між
+   частинами. Без правила клас у розмітці нічого не робив, і гейт цього не
+   бачив. */
+
+.wb-block-text {
+  display: block;
+}
+
+.wb-block-html {
+  display: block;
+}
+
+.wb-block-accordion {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-1);
+}
+
+.wb-block-faq {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-2);
+}
+
+.wb-block-tabs {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-3);
+}
+
+.wb-block-video {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-2);
+}
+
+.wb-block-progress {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-2);
+}
+
+.wb-block-card__body {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-2);
+}
+
+.wb-block-list__text {
+  display: block;
+}
+
+.wb-block-faq__answer--open {
+  display: block;
+}
+
+.wb-block-pricing__period {
+  color: var(--text-secondary);
+  font-size: var(--text-sm);
+}
+
+.wb-block-gallery__item {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-1);
+  margin: 0;
+}
+
+.wb-block-date-input__action {
+  flex-shrink: 0;
+}
+
+.wb-block-columns__col {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-2);
+  min-width: 0;
+}
+
+/* ── Екран дат: дрібні частини таблиці ─────────────────────────────────────
+   Одна таблиця, два подання — тому тон, береги й ширина першої колонки тут, а
+   не числом у розмітці. */
+
+.wb-date-error {
+  color: var(--red);
+}
+
+.wb-date-filters {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--sp-2);
+  margin-bottom: var(--sp-2);
+}
+
+.wb-date-filter-chip {
+  cursor: pointer;
+}
+
+.wb-date-table {
+  width: 100%;
+}
+
+.wb-date-head__pick {
+  width: 40px;
+}
+
+.wb-date-sort-head {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-1);
+  cursor: pointer;
+  user-select: none;
+}
+
+.wb-date-filter-select {
+  margin-left: var(--sp-1);
+  padding: var(--sp-0);
+  font-size: var(--text-xs);
+}
+
+.wb-date-row.wb-date-row--picked {
+  background: var(--bg-2);
+}
+
+.wb-date-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--sp-1);
+}
+
+/* Обрана система на кроці вибору: стан, а не колір у розмітці. */
+.wb-block-systems-picker__card--on {
+  background: var(--accent-soft);
+}

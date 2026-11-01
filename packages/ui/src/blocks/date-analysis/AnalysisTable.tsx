@@ -90,11 +90,7 @@ function DatesHead({ rows }: { rows: AnalysisRow[] }) {
 function EmptyRow({ colSpan }: { colSpan: number }) {
   return (
     <tr>
-      <td
-        colSpan={colSpan}
-        className="wb-text-sm wb-text-muted"
-        style={{ textAlign: "center", padding: "var(--sp-4)" }}
-      >
+      <td colSpan={colSpan} className="wb-text-sm wb-text-muted wb-param-empty">
         Немає даних для відображення
       </td>
     </tr>
@@ -214,7 +210,8 @@ function DatesRows({
 /**
  * Спільні ширини стовпців: останній власної не має — він добирає залишок,
  * коли таблиця вужча за рамку. Числа дає `usePinnedHead`: обидві таблиці
- * міряються разом, інакше вони розійшлися б стовпцями.
+ * міряються разом, інакше вони розійшлися б стовпцями. Інлайн лишається тільки
+ * на виміряній ширині: це число з виміру, а не оформлення.
  */
 function ColumnWidths({ widths }: { widths: number[] }) {
   return (

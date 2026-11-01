@@ -82,7 +82,7 @@ describe("PageRenderer", () => {
     expect(html).not.toContain("page-zone--sidebar");
   });
 
-  it("applies sidebarSettings fontSize and spacing to nav menu inside sidebar", () => {
+  it("меню бічної панелі стає вертикальним, а кегль не приходить із налаштувань", () => {
     const config: PageConfig = {
       version: 1,
       zones: {
@@ -91,14 +91,10 @@ describe("PageRenderer", () => {
         main: [],
         footer: [],
       },
-      sidebarSettings: {
-        fontSize: "lg",
-        itemSpacing: "md",
-      },
     };
     const html = renderToStaticMarkup(<PageRenderer config={config} context={dummyContext} />);
-    expect(html).toContain("font-size:18px");
-    expect(html).toContain("gap:12px");
+    expect(html).toContain("wb-block-nav--vertical");
+    expect(html).not.toContain("font-size:18px");
     expect(html).toContain("Nav Item 1");
   });
 

@@ -93,7 +93,7 @@
     {
       "file": "blocks.css",
       "tokens": 0,
-      "classes": 114
+      "classes": 206
     },
     {
       "file": "components.css",
@@ -113,7 +113,7 @@
     {
       "file": "date-analysis.css",
       "tokens": 1,
-      "classes": 30
+      "classes": 32
     },
     {
       "file": "dates.css",
@@ -3493,6 +3493,143 @@
           "wb-block-theme-toggle",
           "wb-block-theme-toggle__icon"
         ]
+      },
+      {
+        "section": "Меню",
+        "names": [
+          "wb-block-nav",
+          "wb-block-nav--empty",
+          "wb-block-nav--vertical",
+          "wb-block-nav__icon",
+          "wb-block-nav__item",
+          "wb-block-nav__link"
+        ]
+      },
+      {
+        "section": "Перемикач схеми (варіанти «toggle» і «compact»)",
+        "names": [
+          "wb-block-theme",
+          "wb-block-theme__compact",
+          "wb-block-theme__icon",
+          "wb-block-theme__knob",
+          "wb-block-theme__toggle",
+          "wb-block-theme__toggle--on",
+          "wb-block-theme__track"
+        ]
+      },
+      {
+        "section": "Профіль користувача",
+        "names": [
+          "wb-block-user-profile",
+          "wb-block-user-profile--card",
+          "wb-block-user-profile--compact",
+          "wb-block-user-profile--inline",
+          "wb-block-user-profile__avatar",
+          "wb-block-user-profile__avatar--lg",
+          "wb-block-user-profile__avatar--md",
+          "wb-block-user-profile__avatar--sm",
+          "wb-block-user-profile__body",
+          "wb-block-user-profile__id",
+          "wb-block-user-profile__name",
+          "wb-block-user-profile__username"
+        ]
+      },
+      {
+        "section": "Графік",
+        "names": [
+          "wb-block-chart",
+          "wb-block-chart__axis-label",
+          "wb-block-chart__bar",
+          "wb-block-chart__bar-col",
+          "wb-block-chart__bars",
+          "wb-block-chart__dot",
+          "wb-block-chart__legend",
+          "wb-block-chart__legend-item",
+          "wb-block-chart__pct",
+          "wb-block-chart__pie",
+          "wb-block-chart__pie-row",
+          "wb-block-chart__title"
+        ]
+      },
+      {
+        "section": "Картка дати",
+        "names": [
+          "wb-block-date-card",
+          "wb-block-date-card--compact",
+          "wb-block-date-card--full",
+          "wb-block-date-card--minimal",
+          "wb-block-date-card__date",
+          "wb-block-date-card__dates",
+          "wb-block-date-card__meta",
+          "wb-block-date-card__meta-item",
+          "wb-block-date-card__meta-label",
+          "wb-block-date-card__meta-value",
+          "wb-block-date-card__name",
+          "wb-block-date-card__symbol"
+        ]
+      },
+      {
+        "section": "Введення дат для аналізу",
+        "names": [
+          "wb-block-compare-setup",
+          "wb-block-compare-setup__action",
+          "wb-block-compare-setup__date",
+          "wb-block-compare-setup__input",
+          "wb-block-compare-setup__item",
+          "wb-block-compare-setup__lead",
+          "wb-block-compare-setup__list",
+          "wb-block-compare-setup__row",
+          "wb-block-compare-setup__title"
+        ]
+      },
+      {
+        "section": "Крок вибору систем",
+        "names": [
+          "wb-block-systems-picker",
+          "wb-block-systems-picker__action",
+          "wb-block-systems-picker__card",
+          "wb-block-systems-picker__lead",
+          "wb-block-systems-picker__list",
+          "wb-block-systems-picker__param",
+          "wb-block-systems-picker__params",
+          "wb-block-systems-picker__system",
+          "wb-block-systems-picker__title"
+        ]
+      },
+      {
+        "section": "Корені блоків",
+        "names": [
+          "wb-block-accordion",
+          "wb-block-card__body",
+          "wb-block-columns__col",
+          "wb-block-date-input__action",
+          "wb-block-faq",
+          "wb-block-faq__answer--open",
+          "wb-block-gallery__item",
+          "wb-block-html",
+          "wb-block-list__text",
+          "wb-block-pricing__period",
+          "wb-block-progress",
+          "wb-block-tabs",
+          "wb-block-text",
+          "wb-block-video"
+        ]
+      },
+      {
+        "section": "Екран дат: дрібні частини таблиці",
+        "names": [
+          "wb-block-systems-picker__card--on",
+          "wb-date-error",
+          "wb-date-filter-chip",
+          "wb-date-filter-select",
+          "wb-date-filters",
+          "wb-date-head__pick",
+          "wb-date-row",
+          "wb-date-row--picked",
+          "wb-date-sort-head",
+          "wb-date-table",
+          "wb-date-tags"
+        ]
       }
     ],
     "components.css": [
@@ -3988,11 +4125,13 @@
           "wb-analysis-systems__soon",
           "wb-analysis-views",
           "wb-block-date-analysis",
+          "wb-block-date-analysis__error",
           "wb-block-date-analysis__title",
           "wb-param-cell--toggle",
           "wb-param-date",
           "wb-param-date__name",
           "wb-param-detail",
+          "wb-param-empty",
           "wb-param-frame",
           "wb-param-group",
           "wb-param-head",

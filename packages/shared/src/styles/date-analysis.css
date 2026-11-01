@@ -414,3 +414,14 @@
   border-top-left-radius: var(--radius-md);
   border-top-right-radius: var(--radius-md);
 }
+
+/* Порожній рядок таблиці: підпис по центру, береги — крок шкали. */
+.wb-param-empty {
+  padding: var(--sp-4);
+  text-align: center;
+}
+
+/* Помилка кроку: тон — семантичний токен, а не колір у розмітці. */
+.wb-block-date-analysis__error {
+  color: var(--red);
+}

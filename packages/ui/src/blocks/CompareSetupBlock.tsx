@@ -3,7 +3,7 @@
  *
  * Другий вхід у той самий функціонал (перший — чекбокси на екрані дат):
  * людина додає дати, міняє їхній порядок і йде на аналіз — стовпці таблиці
- * стоять у тому ж порядку.
+ * стоять у тому ж порядку. Вигляд — у `styles/blocks.css`.
  *
  * @module packages/ui/src/blocks/CompareSetupBlock
  */
@@ -13,8 +13,6 @@ import { icons } from "@wwwuabot/shared";
 import { DATE_ANALYSIS_RESULT_PATH } from "@wwwuabot/shared/content";
 import type { BlockComponentProps } from "@wwwuabot/shared/types/page-config";
 import { formatDate } from "@wwwuabot/shared/utils/mydate-helpers";
-
-// ── Main Block Component ──────────────────────────────────────────
 
 export function CompareSetupBlock({ block }: BlockComponentProps) {
   const {
@@ -62,19 +60,15 @@ export function CompareSetupBlock({ block }: BlockComponentProps) {
 
   return (
     <div className="wb-block-compare-setup">
-      <h2>{title}</h2>
-      <p className="wb-text-sm wb-text-muted" style={{ marginBottom: "var(--sp-4)" }}>
-        {description}
-      </p>
+      <h2 className="wb-block-compare-setup__title">{title}</h2>
+      <p className="wb-text-sm wb-text-muted wb-block-compare-setup__lead">{description}</p>
 
-      {/* Date input */}
-      <div style={{ display: "flex", gap: "var(--sp-3)", marginBottom: "var(--sp-4)" }}>
+      <div className="wb-block-compare-setup__row">
         <input
           type="date"
           value={input}
           onChange={(e) => setInput(e.target.value)}
-          className="wb-input"
-          style={{ flex: 1 }}
+          className="wb-input wb-block-compare-setup__input"
           onKeyDown={(e) => {
             if (e.key === "Enter") {
               e.preventDefault();
@@ -91,30 +85,11 @@ export function CompareSetupBlock({ block }: BlockComponentProps) {
         </button>
       </div>
 
-      {/* Date list */}
       {dates.length > 0 && (
-        <div
-          style={{
-            display: "flex",
-            flexDirection: "column",
-            gap: "var(--sp-2)",
-            marginBottom: "var(--sp-4)",
-          }}
-        >
+        <div className="wb-block-compare-setup__list">
           {dates.map((d, i) => (
-            <div
-              key={`${d}-${i}`}
-              style={{
-                display: "flex",
-                alignItems: "center",
-                gap: "var(--sp-3)",
-                padding: "var(--sp-3)",
-                background: "var(--bg-1, var(--bg-home, #f0f2f5))",
-                border: "1px solid var(--border-subtle, #e2e8f0)",
-                borderRadius: "var(--radius-md)",
-              }}
-            >
-              <span style={{ flex: 1, fontWeight: 500 }}>{formatDate(d)}</span>
+            <div key={`${d}-${i}`} className="wb-block-compare-setup__item">
+              <span className="wb-block-compare-setup__date">{formatDate(d)}</span>
               <button
                 type="button"
                 className="wb-move-btn"
@@ -146,12 +121,10 @@ export function CompareSetupBlock({ block }: BlockComponentProps) {
         </div>
       )}
 
-      {/* Action button */}
       <button
-        className="wb-btn wb-btn-primary"
+        className="wb-btn wb-btn-primary wb-block-compare-setup__action"
         onClick={goNext}
         disabled={dates.length === 0}
-        style={{ width: "100%" }}
       >
         {dates.length === 0
           ? "Додайте хоча б одну дату"

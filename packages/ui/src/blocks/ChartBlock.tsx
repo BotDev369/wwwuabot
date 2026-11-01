@@ -1,7 +1,8 @@
 /**
- * Page Builder — Chart Block.
+ * Page Builder — графік.
  *
- * Displays a simple bar or pie chart using pure CSS (no external libraries).
+ * Інлайн лишається рівно на трьох речах, і всі три — дані: кут сектора
+ * (`conic-gradient`), висота стовпця й колір, який автор задав у даних.
  *
  * @module packages/ui/src/blocks/ChartBlock
  */
@@ -44,7 +45,7 @@ export function ChartBlock({ block }: BlockComponentProps) {
   if (data.length === 0) return null;
 
   if (type === "pie") {
-    // Simple CSS pie chart using conic-gradient
+    // Сектор — це кут у градусах: єдине, що справді народжується з даних.
     const total = data.reduce((s, d) => s + d.value, 0);
     let accumulated = 0;
     const gradientParts: string[] = [];
@@ -59,34 +60,22 @@ export function ChartBlock({ block }: BlockComponentProps) {
 
     return (
       <div className="wb-block-chart">
-        {title && <h4 className="wb-font-semibold wb-mb-3">{title}</h4>}
-        <div
-          style={{ display: "flex", alignItems: "center", gap: "var(--sp-5)", flexWrap: "wrap" }}
-        >
+        {title && <h4 className="wb-block-chart__title">{title}</h4>}
+        <div className="wb-block-chart__pie-row">
           <div
-            style={{
-              width: "160px",
-              height: "160px",
-              borderRadius: "var(--radius-full)",
-              background: `conic-gradient(${gradientParts.join(", ")})`,
-              flexShrink: 0,
-            }}
+            className="wb-block-chart__pie"
+            style={{ background: `conic-gradient(${gradientParts.join(", ")})` }}
           />
-          <div style={{ display: "flex", flexDirection: "column", gap: "var(--sp-2)" }}>
+          <div className="wb-block-chart__legend">
             {data.map((item, i) => (
-              <div key={i} style={{ display: "flex", alignItems: "center", gap: "var(--sp-2)" }}>
+              <div key={i} className="wb-block-chart__legend-item">
                 <span
-                  style={{
-                    width: "12px",
-                    height: "12px",
-                    borderRadius: "var(--radius-sm)",
-                    background: item.color || PALETTE[i % PALETTE.length],
-                    flexShrink: 0,
-                  }}
+                  className="wb-block-chart__dot"
+                  style={{ background: item.color || PALETTE[i % PALETTE.length] }}
                 />
                 <span className="wb-text-sm">{item.label}</span>
                 {showLabels && (
-                  <span className="wb-text-xs wb-text-muted">
+                  <span className="wb-block-chart__pct">
                     {Math.round((item.value / total) * 100)}%
                   </span>
                 )}
@@ -98,61 +87,23 @@ export function ChartBlock({ block }: BlockComponentProps) {
     );
   }
 
-  // Bar chart (default)
+  // Стовпчики: висота — частка від найбільшого значення, тобто теж дані.
   return (
     <div className="wb-block-chart">
-      {title && <h4 className="wb-font-semibold wb-mb-3">{title}</h4>}
-      <div
-        className="wb-block-chart__bars"
-        style={{
-          display: "flex",
-          alignItems: "flex-end",
-          gap: "var(--sp-2)",
-          height: "160px",
-          padding: "0 var(--sp-1)",
-        }}
-      >
+      {title && <h4 className="wb-block-chart__title">{title}</h4>}
+      <div className="wb-block-chart__bars">
         {data.map((item, i) => {
           const heightPercent = (item.value / maxValue) * 100;
           const color = item.color || PALETTE[i % PALETTE.length];
 
           return (
-            <div
-              key={i}
-              style={{
-                flex: 1,
-                display: "flex",
-                flexDirection: "column",
-                alignItems: "center",
-                gap: "var(--sp-1)",
-                height: "100%",
-                justifyContent: "flex-end",
-              }}
-            >
-              {showLabels && <span className="wb-text-xs wb-text-muted">{item.value}</span>}
+            <div key={i} className="wb-block-chart__bar-col">
+              {showLabels && <span className="wb-block-chart__pct">{item.value}</span>}
               <div
-                style={{
-                  width: "100%",
-                  maxWidth: "40px",
-                  height: `${heightPercent}%`,
-                  background: color,
-                  borderRadius: "var(--radius-sm) var(--radius-sm) 0 0",
-                  transition: "height var(--duration-normal) var(--ease)",
-                }}
+                className="wb-block-chart__bar"
+                style={{ height: `${heightPercent}%`, background: color }}
               />
-              <span
-                className="wb-text-xs wb-text-secondary"
-                style={{
-                  writingMode: "vertical-lr",
-                  textOrientation: "mixed",
-                  transform: "rotate(180deg)",
-                  maxHeight: "40px",
-                  overflow: "hidden",
-                  whiteSpace: "nowrap",
-                }}
-              >
-                {item.label}
-              </span>
+              <span className="wb-block-chart__axis-label">{item.label}</span>
             </div>
           );
         })}
