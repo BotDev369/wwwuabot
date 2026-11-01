@@ -22,6 +22,7 @@
 import type { ReactElement } from "react";
 import { useNavigate } from "react-router-dom";
 import { Icon } from "@wwwuabot/shared";
+import { MenuList, type MenuItem } from "@wwwuabot/ui/menu";
 import { useScreenChrome } from "@wwwuabot/ui/nav";
 import { shopOrdersPath } from "@/app/routes";
 import { useUserPages } from "@/pages/user-pages/useUserPages";
@@ -67,29 +68,18 @@ export function ProfileOrdersPage(): ReactElement {
       )}
 
       {!loading && !error && shops.length > 0 && (
-        <div className="wb-menu-list">
-          {shops.map((shop) => (
-            <button
-              key={shop.id}
-              type="button"
-              className="wb-menu-item"
-              onClick={() => void navigate(shopOrdersPath(shop.id))}
-            >
-              <span className="wb-menu-item-icon">
-                <Icon name="tag" size={20} />
-              </span>
-              <span className="wb-menu-item-text">
-                <span className="wb-menu-item-label">{shop.title}</span>
-                <span className="wb-menu-item-hint">
-                  {shop.role === "owner" ? "Ви власник" : "Ви адміністратор"}
-                </span>
-              </span>
-              <span className="wb-menu-item-icon">
-                <Icon name="chevron-right" size={18} />
-              </span>
-            </button>
-          ))}
-        </div>
+        // Рядок малює спільний `MenuList`: власна копія розмітки тут давала
+        // другий шеврон в акцентній плитці й розходилась із мірками списку.
+        <MenuList
+          items={shops.map((shop): MenuItem => ({
+            key: String(shop.id),
+            label: shop.title,
+            icon: "tag",
+            meta: shop.role === "owner" ? "Ви власник" : "Ви адміністратор",
+            trailing: true,
+            onSelect: () => void navigate(shopOrdersPath(shop.id)),
+          }))}
+        />
       )}
     </div>
   );

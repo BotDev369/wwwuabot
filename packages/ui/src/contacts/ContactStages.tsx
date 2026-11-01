@@ -7,8 +7,8 @@
  * сховати саме цю різницю.
  *
  * Дати ставить не власник: вхід у бота фіксує бот (`ctx.from`), вхід на
- * платформу — `api-dev`, за підписаним `initData`. Тому id людини тут **видно**,
- * але не редаговано (AGENTS.md §7).
+ * платформу — `api-dev`, за підписаним `initData`. Сам Telegram-`id` тут **не**
+ * показується: це номер із бази, а не підпис кроку, і власник його не знає.
  *
  * @module @wwwuabot/ui/contacts
  */
@@ -56,7 +56,6 @@ export function ContactStages({ contact }: { contact: Contact }): ReactElement {
         done={contact.joinedBotAt !== null}
         label="Зайшов у бота"
         value={contact.joinedBotAt ? formatStamp(contact.joinedBotAt) : "ще ні"}
-        note={contact.joinedUserId !== null ? `· id ${contact.joinedUserId}` : undefined}
       />
       <StageRow
         done={contact.joinedPlatformAt !== null}

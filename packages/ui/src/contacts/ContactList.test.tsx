@@ -161,7 +161,8 @@ describe("ContactList — закритий рядок", () => {
     ]);
 
     expect(html).toContain("зайшов у бота");
-    expect(html).toContain("id 555");
+    // Telegram-id у рядку не показується: це номер із бази, а не підпис людини.
+    expect(html).not.toContain("id 555");
     expect(html).not.toContain("приєднався");
   });
 

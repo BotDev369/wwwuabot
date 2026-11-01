@@ -41,9 +41,12 @@ function MenuRow({ item }: { item: MenuItem }): ReactElement {
       )}
       <span className="wb-menu-item-text">
         <span className="wb-menu-item-label">{item.label}</span>
-        {/* Пояснення є лише в тому, чого ще немає: у готового пункту його
-            роботу видно за назвою, а зайвий рядок лише з'їдає висоту. */}
-        {soon && item.hint && <span className="wb-menu-item-hint">{item.hint}</span>}
+        {/* Другий рядок буває двох родів, і вони не змішуються: `hint`
+            пояснює пункт, якого ще немає, а `meta` каже факт про наявний
+            (чия це сторінка) — тож у готового пункту стоїть `meta`, а не hint. */}
+        {(soon ? item.hint : item.meta) && (
+          <span className="wb-menu-item-hint">{soon ? item.hint : item.meta}</span>
+        )}
       </span>
       {item.selected && (
         <span className="wb-menu-item-check">
