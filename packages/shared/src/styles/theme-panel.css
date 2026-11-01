@@ -113,6 +113,49 @@
     0 0 0 3px color-mix(in srgb, var(--scheme-accent) 22%, transparent);
 }
 
+/* Мініатюра — справжній шматок інтерфейсу в цій темі: дві репліки переписки.
+   Одинадцять плоских плашок різнилися тлом і більше нічим, тож вибір теми
+   читався як палітра, а не як те, що буде на екрані.
+
+   Слова, а не смужки: сірі лінійки читаються як «завантаження», а не як тема,
+   і не показують нічого про шрифт. */
+.wb-theme-card-preview {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--sp-1);
+  width: 100%;
+  margin-bottom: var(--sp-2);
+  font-size: var(--text-xs);
+  line-height: 1.35;
+}
+
+.wb-theme-card-bubble {
+  max-width: 88%;
+  padding: var(--sp-0) var(--sp-2);
+  overflow: hidden;
+  border-radius: var(--radius-md);
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+/* Вхідне — поверхня з кольору теми: окремого токена поверхні в теми немає, тож
+   його роль грає її власний текст, розведений до 12%. */
+.wb-theme-card-bubble--in {
+  background: color-mix(in srgb, var(--scheme-text) 12%, transparent);
+  border-bottom-left-radius: var(--radius-sm);
+  color: var(--scheme-text);
+}
+
+/* Вихідне — акцент із інверсним підписом: саме так тема показує кнопку, і саме
+   цього не було видно на плоскій плашці. */
+.wb-theme-card-bubble--out {
+  align-self: flex-end;
+  background: var(--scheme-accent);
+  border-bottom-right-radius: var(--radius-sm);
+  color: var(--scheme-on-accent);
+}
+
 /* Картка-кнопка: дотик до неї і є застосуванням. Вона займає всю картку, тож
    тап-таргет дорівнює видимій площі, а не рядкові назві. */
 .wb-theme-card-hit {

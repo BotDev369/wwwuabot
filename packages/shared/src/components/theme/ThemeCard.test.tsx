@@ -63,6 +63,18 @@ describe("картка теми", () => {
     expect(html).toContain("font-family");
   });
 
+  it("показує шматок інтерфейсу, а не саму плашку", () => {
+    const html = renderToStaticMarkup(
+      <ThemeCard name="Ніч" colors={NIGHT} font="" onApply={() => undefined} />,
+    );
+
+    // Мініатюра — доказ теми: вхідне й вихідне повідомлення її кольорами.
+    expect(html).toContain("wb-theme-card-preview");
+    expect(html).toContain("wb-theme-card-bubble--out");
+    // Вона декоративна: читачеві екрана мініатюра нічого не додає.
+    expect(html).toContain('aria-hidden="true"');
+  });
+
   it("⛔ меню дій є лише у власної теми", () => {
     const own = renderToStaticMarkup(
       <ThemeCard

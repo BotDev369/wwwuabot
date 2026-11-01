@@ -203,7 +203,7 @@
     {
       "file": "theme-panel.css",
       "tokens": 0,
-      "classes": 56
+      "classes": 60
     },
     {
       "file": "themes.css",
@@ -5057,6 +5057,9 @@
           "wb-theme-card",
           "wb-theme-card--on",
           "wb-theme-card-badge",
+          "wb-theme-card-bubble",
+          "wb-theme-card-bubble--in",
+          "wb-theme-card-bubble--out",
           "wb-theme-card-family",
           "wb-theme-card-font",
           "wb-theme-card-foot",
@@ -5064,6 +5067,7 @@
           "wb-theme-card-hit",
           "wb-theme-card-name",
           "wb-theme-card-on",
+          "wb-theme-card-preview",
           "wb-theme-cards"
         ]
       },
