@@ -6,6 +6,8 @@
  * а не в розмітці. У блоках сторінок це вже так; в інтерфейсі адмінки лишився
  * борг, який цей скрипт рахує, не дає йому вирости й показує, скільки лишилось.
  *
+ * Тести не рахуються: інлайн у тесті описує перевірку, а не вигляд.
+ *
  * `scripts/inline-styles-baseline.mjs` — знімок боргу: файл не може мати
  * більше `style={{`, ніж записано, новий файл із ними — помилка. Прибираєш
  * інлайн — зменшуй число в базі, інакше гейт попередить, що база застаріла.
@@ -22,7 +24,7 @@ function walk(dir) {
   for (const entry of readdirSync(dir)) {
     const path = join(dir, entry);
     if (statSync(path).isDirectory()) out.push(...walk(path));
-    else if (path.endsWith(".tsx")) out.push(path);
+    else if (path.endsWith(".tsx") && !path.endsWith(".test.tsx")) out.push(path);
   }
   return out;
 }
