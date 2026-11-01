@@ -193,8 +193,6 @@ describe("ZoneEditor", () => {
     const onUpdate = vi.fn();
     const settings: SidebarSettings = {
       closeButtonPosition: "left",
-      fontSize: "sm",
-      itemSpacing: "sm",
     };
     setup({
       zone: "sidebar",

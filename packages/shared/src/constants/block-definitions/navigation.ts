@@ -18,7 +18,6 @@ export const navigationBlocks: BlockDefinition[] = [
         { label: s("Назва вкладки"), icon: s("Іконка"), content: s("Текстовий вміст") },
         ["label"],
       ),
-      style: e("Стиль", ["underline", "pills", "enclosed"], { default: "underline" }),
     },
     required: ["tabs"],
     defaultProps: {
@@ -26,7 +25,6 @@ export const navigationBlocks: BlockDefinition[] = [
         { label: "Вкладка 1", content: "" },
         { label: "Вкладка 2", content: "" },
       ],
-      style: "underline",
     },
   }),
   block({
@@ -54,15 +52,6 @@ export const navigationBlocks: BlockDefinition[] = [
     description: "Навігаційне меню з посиланнями",
     props: {
       items: oa("Пункти меню", { text: s("Текст"), url: s("URL"), icon: s("Іконка") }, ["text"]),
-      direction: e("Напрямок", ["horizontal", "vertical"], { default: "horizontal" }),
-      align: e("Вирівнювання", ["left", "center", "right", "space-between"], { default: "left" }),
-      style: e("Стиль відображення", ["links", "pills", "buttons", "underline"], {
-        default: "links",
-      }),
-      fontSize: e("Розмір тексту", ["xs", "sm", "base", "lg", "xl"], { default: "sm" }),
-      itemSpacing: e("Відступ між пунктами", ["none", "xs", "sm", "md", "lg", "xl"], {
-        default: "sm",
-      }),
     },
     required: ["items"],
     defaultProps: {
@@ -71,11 +60,6 @@ export const navigationBlocks: BlockDefinition[] = [
         { text: "Про нас", url: "#" },
         { text: "Контакти", url: "#" },
       ],
-      direction: "horizontal",
-      align: "left",
-      style: "links",
-      fontSize: "sm",
-      itemSpacing: "sm",
     },
   }),
   block({
@@ -88,8 +72,7 @@ export const navigationBlocks: BlockDefinition[] = [
       variant: e("Вид перемикача", ["modal", "toggle", "compact"], { default: "modal" }),
       label: s("Текст кнопки", { default: "Тема" }),
       showLabel: b("Показувати назву", { default: true }),
-      align: e("Вирівнювання", ["left", "center", "right"], { default: "left" }),
     },
-    defaultProps: { variant: "modal", label: "Тема", showLabel: true, align: "left" },
+    defaultProps: { variant: "modal", label: "Тема", showLabel: true },
   }),
 ];

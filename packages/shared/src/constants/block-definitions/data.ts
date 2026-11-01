@@ -57,11 +57,9 @@ export const dataBlocks: BlockDefinition[] = [
     props: {
       headers: sa("Заголовки"),
       rows: { type: "array", title: "Рядки", items: { type: "array", items: { type: "string" } } },
-      striped: b("Зебра-рядки", { default: true }),
-      bordered: b("З рамкою", { default: true }),
     },
     required: ["headers", "rows"],
-    defaultProps: { headers: [], rows: [], striped: true, bordered: true },
+    defaultProps: { headers: [], rows: [] },
   }),
   block({
     type: "rating",
@@ -74,9 +72,8 @@ export const dataBlocks: BlockDefinition[] = [
       value: n("Рейтинг", { default: 0 }),
       max: n("Максимум", { default: 5 }),
       label: s("Мітка"),
-      size: e("Розмір", ["sm", "md", "lg"], { default: "md" }),
     },
     required: ["value"],
-    defaultProps: { value: 0, max: 5, label: "", size: "md" },
+    defaultProps: { value: 0, max: 5, label: "" },
   }),
 ];

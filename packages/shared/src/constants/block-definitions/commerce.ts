@@ -3,7 +3,7 @@
  */
 
 import type { BlockDefinition } from "../../types/page-config";
-import { block, s, n, b, e, sa, oa } from "./helpers";
+import { block, s, n, b, sa, oa } from "./helpers";
 
 export const commerceBlocks: BlockDefinition[] = [
   block({
@@ -37,10 +37,9 @@ export const commerceBlocks: BlockDefinition[] = [
         },
         ["name", "price"],
       ),
-      columns: e("Кількість колонок", ["auto", "2", "3"], { default: "auto" }),
     },
     required: ["plans"],
-    defaultProps: { plans: [], columns: "auto" },
+    defaultProps: { plans: [] },
   }),
   block({
     type: "testimonial",
@@ -69,10 +68,9 @@ export const commerceBlocks: BlockDefinition[] = [
       items: oa("Фічі", { icon: s("Іконка"), title: s("Заголовок"), description: s("Опис") }, [
         "title",
       ]),
-      columns: e("Кількість колонок", ["2", "3"], { default: "2" }),
     },
     required: ["items"],
-    defaultProps: { items: [], columns: "2" },
+    defaultProps: { items: [] },
   }),
   block({
     type: "faq",

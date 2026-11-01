@@ -138,9 +138,7 @@ export interface SidebarSettings {
   /** Позиція кнопки закриття: 'left' (зліва) або 'right' (справа) */
   closeButtonPosition?: "left" | "right";
   /** Розмір тексту для пунктів меню в сайдбарі */
-  fontSize?: string;
   /** Відступ між пунктами меню в сайдбарі */
-  itemSpacing?: string;
 }
 
 export interface PageConfig {

@@ -19,8 +19,6 @@ export const layoutBlocks: BlockDefinition[] = [
       variant: e("Стиль кнопки", ["primary", "secondary", "outline", "ghost"], {
         default: "primary",
       }),
-      size: e("Розмір", ["sm", "md", "lg"], { default: "md" }),
-      align: e("Вирівнювання", ["left", "center", "right", "full"], { default: "left" }),
       icon: s("Іконка (опціонально)"),
     },
     required: ["text", "url"],
@@ -29,8 +27,6 @@ export const layoutBlocks: BlockDefinition[] = [
       url: "https://",
       target: "_blank",
       variant: "primary",
-      size: "md",
-      align: "left",
     },
   }),
   block({
@@ -51,10 +47,9 @@ export const layoutBlocks: BlockDefinition[] = [
         },
         ["text"],
       ),
-      layout: e("Розташування", ["row", "column", "grid"], { default: "row" }),
     },
     required: ["items"],
-    defaultProps: { items: [{ text: "Кнопка", url: "#", variant: "primary" }], layout: "row" },
+    defaultProps: { items: [{ text: "Кнопка", url: "#", variant: "primary" }] },
   }),
   block({
     type: "list",
@@ -80,11 +75,8 @@ export const layoutBlocks: BlockDefinition[] = [
     icon: "divider",
     category: "layout",
     description: "Горизонтальна лінія-розділювач",
-    props: {
-      style: e("Стиль лінії", ["solid", "dashed", "dotted", "gradient"], { default: "solid" }),
-      spacing: e("Відступи", ["none", "sm", "md", "lg"], { default: "md" }),
-    },
-    defaultProps: { style: "solid", spacing: "md" },
+    props: {},
+    defaultProps: {},
   }),
   block({
     type: "spacer",
@@ -92,8 +84,8 @@ export const layoutBlocks: BlockDefinition[] = [
     icon: "spacer",
     category: "layout",
     description: "Вертикальний відступ між блоками",
-    props: { height: e("Висота", ["xs", "sm", "md", "lg", "xl", "2xl"], { default: "md" }) },
-    defaultProps: { height: "md" },
+    props: {},
+    defaultProps: {},
   }),
   block({
     type: "columns",
@@ -103,13 +95,10 @@ export const layoutBlocks: BlockDefinition[] = [
     description: "Контейнер з 2 або 3 колонками (діти блоки в кожній)",
     props: {
       count: e("Кількість стовпців", ["2", "3"], { default: "2" }),
-      gap: e("Відстань", ["sm", "md", "lg"], { default: "md" }),
-      columns: oa("Колонки", {
-        width: e("Ширина", ["auto", "1/3", "1/2", "2/3"], { default: "auto" }),
-      }),
+      columns: oa("Колонки", {}),
     },
     required: ["columns"],
-    defaultProps: { count: "2", gap: "md", columns: [{ width: "auto" }, { width: "auto" }] },
+    defaultProps: { count: "2", columns: [{}, {}] },
   }),
   block({
     type: "card",
@@ -121,11 +110,8 @@ export const layoutBlocks: BlockDefinition[] = [
     props: {
       title: s("Заголовок"),
       description: s("Опис"),
-      padding: e("Внутрішній відступ", ["sm", "md", "lg"], { default: "md" }),
-      bordered: b("З рамкою", { default: true }),
-      elevated: b("З тінню"),
     },
-    defaultProps: { title: "", description: "", padding: "md", bordered: true, elevated: false },
+    defaultProps: { title: "", description: "" },
   }),
   block({
     type: "hero",
