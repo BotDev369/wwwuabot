@@ -103,7 +103,7 @@
     {
       "file": "blocks.css",
       "tokens": 0,
-      "classes": 207
+      "classes": 209
     },
     {
       "file": "components.css",
@@ -3389,6 +3389,7 @@
       {
         "section": "Текст",
         "names": [
+          "wb-block-list__item",
           "wb-block-text__content"
         ]
       },
@@ -3440,9 +3441,11 @@
       {
         "section": "Кнопка-посилання",
         "names": [
+          "wb-block-card",
           "wb-block-link-button",
           "wb-block-link-button-wrapper",
-          "wb-block-link-button__icon"
+          "wb-block-link-button__icon",
+          "wb-btn-secondary"
         ]
       },
       {
@@ -3477,7 +3480,8 @@
       {
         "section": "Таблиця",
         "names": [
-          "wb-block-table"
+          "wb-block-table",
+          "wb-data-table"
         ]
       },
       {

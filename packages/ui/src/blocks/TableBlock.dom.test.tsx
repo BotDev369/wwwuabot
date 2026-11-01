@@ -38,6 +38,19 @@ describe("TableBlock", () => {
     expect(screen.getByText("1,2 млрд").tagName).toBe("TD");
   });
 
+  it("несе підпис стовпця в комірку — на телефоні шапки не видно", () => {
+    // Шапку ховає `@media` у `blocks.css`, а картка рядка показує підпис із
+    // `data-label`: без нього цифра лишається без назви (той самий прийом,
+    // що в «Датах» і «Видатках»).
+    const { container } = render(
+      <TableBlock {...block({ headers: ["Група", "Частка"], rows: [["Християни", "28,8%"]] })} />,
+    );
+
+    const cells = container.querySelectorAll("td");
+    expect(cells[0].getAttribute("data-label")).toBe("Група");
+    expect(cells[1].getAttribute("data-label")).toBe("Частка");
+  });
+
   it("не тримає власного вигляду в розмітці", () => {
     const { container } = render(
       <TableBlock {...block({ headers: ["Один"], rows: [["1"]], striped: false })} />,

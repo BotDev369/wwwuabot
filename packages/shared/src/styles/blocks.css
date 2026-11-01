@@ -14,6 +14,13 @@
   white-space: pre-wrap;
 }
 
+/* Довге слово — не привід гортати сторінку вбік: URL джерела (Pew, 120
+   символів) розпирав екран на 35px і обрізав сусідні блоки. */
+.wb-block-text__content,
+.wb-block-list__item {
+  overflow-wrap: break-word;
+}
+
 /* ── Список ─────────────────────────────────────────────────────────────────
    Маркер малює сам список, тож берег під нього — `--sp-5`, як у решті
    продукту; просвіт між пунктами — крок списку, а не власне число блока. */
@@ -165,6 +172,24 @@
   text-decoration: none;
 }
 
+/* Посилання в картці — не друга плитка.
+   `--surface-active` на картці відрізнявся від її тла на два тони: дванадцять
+   «Читати блок» читались як вимкнені. Акцент і стрілка кажуть «це перехід»,
+   а поверхня в картці лишається одна — тло, а не тло в тлі. */
+.wb-block-card .wb-block-link-button.wb-btn-secondary {
+  padding-inline: 0;
+  background: transparent;
+  color: var(--accent);
+  box-shadow: none;
+}
+
+@media (hover: hover) {
+  .wb-block-card .wb-block-link-button.wb-btn-secondary:hover {
+    background: transparent;
+    color: var(--accent-hover);
+  }
+}
+
 .wb-block-link-button__icon {
   display: inline-flex;
   align-items: center;
@@ -292,6 +317,88 @@
   overflow-x: auto;
   border: 1px solid var(--hairline);
   border-radius: var(--card-radius);
+  /* Широка таблиця гортається тут, а не розтягує сторінку: без цієї межі
+     обгортка брала ширину таблиці (580–700px) і на телефоні обрізала весь
+     екран праворуч. */
+  min-width: 0;
+  max-width: 100%;
+}
+
+/* Телефон: таблиця блоку стає списком карток, а не гортанням убік.
+   580px у 352px показували півтори колонки й ховали саме те, за чим таблицю
+   читають. Прийом той самий, що в «Датах» і «Видатках»: шапка ховається,
+   рядок стає карткою, підпис їде в комірку через `data-label`. */
+@media (max-width: 560px) {
+  /* Розкладку ламаємо на всіх рівнях — інакше лишається таблична сітка. */
+  .wb-block-table .wb-data-table,
+  .wb-block-table .wb-data-table tbody,
+  .wb-block-table .wb-data-table tr,
+  .wb-block-table .wb-data-table td {
+    display: block;
+    width: 100%;
+  }
+
+  .wb-block-table .wb-data-table {
+    min-width: 0;
+    font-size: var(--text-sm);
+  }
+
+  .wb-block-table .wb-data-table thead {
+    display: none;
+  }
+
+  /* Рядок — картка: волосина між ними замінює смугу зебри. */
+  .wb-block-table .wb-data-table tbody tr {
+    padding: var(--sp-3) var(--sp-4);
+    border-bottom: 1px solid var(--hairline);
+  }
+
+  .wb-block-table .wb-data-table tbody tr:last-child {
+    border-bottom: none;
+  }
+
+  .wb-block-table .wb-data-table td {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: var(--sp-3);
+    padding: var(--sp-1) 0;
+    background: transparent;
+    border: 0;
+    position: static;
+    white-space: normal;
+    overflow-wrap: break-word;
+  }
+
+  /* Підпис стовпця — зліва, значення — справа: так рядок читається парою.
+     Ширина підписа стала (та сама 42%, що в «Датах»): з `auto` він стискався
+     до найдовшого слова і «Що входить» рвалося на два рядки. */
+  .wb-block-table .wb-data-table td::before {
+    content: attr(data-label);
+    flex: 0 0 40%;
+    color: var(--text-muted);
+    font-size: var(--text-xs);
+  }
+
+  .wb-block-table .wb-data-table td {
+    align-items: baseline;
+  }
+
+  /* Перша комірка — назва картки, а не пара «підпис — значення». */
+  .wb-block-table .wb-data-table td:first-child {
+    padding-top: 0;
+    padding-bottom: var(--sp-2);
+    font-weight: var(--weight-semibold);
+    color: var(--text-primary);
+  }
+
+  .wb-block-table .wb-data-table td:first-child::before {
+    content: none;
+  }
+
+  .wb-block-table .wb-data-table tbody tr:nth-child(even) td {
+    background: transparent;
+  }
 }
 
 /* ── Розділювач і просвіт ─────────────────────────────────────────────────
@@ -343,7 +450,11 @@
 
 .wb-block-features {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  /* 148px — не «на око»: на екрані 360px у зоні лишається 352px, і два
+     стовпці з просвітом 12px дають рівно 308. З колишніми 180px пара не
+     влазила, тож чотири цифри дослідження ставали чотирма поверхами
+     порожніх плиток замість плитки 2×2. */
+  grid-template-columns: repeat(auto-fit, minmax(148px, 1fr));
   gap: var(--card-gap);
 }
 

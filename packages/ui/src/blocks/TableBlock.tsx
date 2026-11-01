@@ -1,7 +1,7 @@
 /**
- * Page Builder — Table Block.
- *
- * Displays a data table on the shared `.wb-data-table` brick.
+ * Page Builder — Table Block: таблиця на спільному `.wb-data-table`. На
+ * телефоні вона стає списком карток, тож кожна комірка несе `data-label`
+ * (той самий прийом, що в `MyDatesTableBlock` та «Видатках»).
  *
  * @module packages/ui/src/blocks/TableBlock
  */
@@ -30,7 +30,9 @@ export function TableBlock({ block }: BlockComponentProps) {
           {rows.map((row, ri) => (
             <tr key={ri}>
               {row.map((cell, ci) => (
-                <td key={ci}>{cell}</td>
+                <td key={ci} data-label={headers[ci] ?? ""}>
+                  {cell}
+                </td>
               ))}
             </tr>
           ))}
