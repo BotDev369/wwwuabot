@@ -39,70 +39,22 @@ export function FaqBlock({ block }: BlockComponentProps) {
 
   return (
     <div className="wb-block-faq">
-      {title && (
-        <h3
-          className="wb-block-faq__title wb-font-bold wb-mb-4"
-          style={{ fontSize: "var(--text-xl)" }}
-        >
-          {title}
-        </h3>
-      )}
+      {title && <h3 className="wb-block-faq__title">{title}</h3>}
 
       {items.map((item, i) => {
         const isOpen = openSet.has(i);
 
         return (
-          <div
-            key={i}
-            className="wb-block-faq__item"
-            style={{
-              borderBottom: "1px solid var(--border-subtle)",
-            }}
-          >
-            <button
-              type="button"
-              onClick={() => toggle(i)}
-              className="wb-block-faq__question"
-              style={{
-                width: "100%",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "space-between",
-                padding: "var(--sp-4) 0",
-                background: "transparent",
-                border: "none",
-                cursor: "pointer",
-                textAlign: "left",
-                fontWeight: "var(--weight-semibold)",
-                fontSize: "var(--text-base)",
-                color: "var(--text-primary)",
-                gap: "var(--sp-3)",
-              }}
-            >
+          <div key={i} className={`wb-block-faq__item${isOpen ? " wb-block-faq__item--open" : ""}`}>
+            <button type="button" onClick={() => toggle(i)} className="wb-block-faq__question">
               <span>{item.question}</span>
-              <span
-                style={{
-                  transition: "transform var(--duration-fast) var(--ease)",
-                  transform: isOpen ? "rotate(180deg)" : "rotate(0)",
-                  color: "var(--text-secondary)",
-                  flexShrink: 0,
-                }}
-              >
+              <span className="wb-block-faq__chevron" aria-hidden="true">
                 ▾
               </span>
             </button>
 
             {isOpen && (
-              <div
-                className="wb-block-faq__answer wb-text-secondary"
-                style={{
-                  padding: "0 0 var(--sp-4) 0",
-                  fontSize: "var(--text-sm)",
-                  lineHeight: "var(--leading-normal)",
-                }}
-              >
-                {item.answer}
-              </div>
+              <div className="wb-block-faq__answer wb-block-faq__answer--open">{item.answer}</div>
             )}
           </div>
         );

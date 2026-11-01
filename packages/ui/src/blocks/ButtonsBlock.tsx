@@ -1,7 +1,7 @@
 /**
  * Page Builder — Buttons Block.
  *
- * Displays a group of action buttons (links or actions) with configurable layout.
+ * Displays a group of action buttons (links or actions).
  *
  * @module packages/ui/src/blocks/ButtonsBlock
  */
@@ -25,27 +25,14 @@ const VARIANT_CLASS: Record<string, string> = {
 };
 
 export function ButtonsBlock({ block, context }: BlockComponentProps) {
-  const { items = [], layout = "row" } = block.props as {
-    items?: ButtonItem[];
-    layout?: string;
-  };
+  const { items = [] } = block.props as { items?: ButtonItem[] };
 
   if (!items || items.length === 0) return null;
 
   return (
-    <div
-      className="wb-block-buttons"
-      style={{
-        display: "flex",
-        flexDirection: layout === "column" ? "column" : "row",
-        flexWrap: layout === "row" ? "wrap" : undefined,
-        gap: "var(--sp-2)",
-        justifyContent: layout === "grid" ? "center" : undefined,
-      }}
-    >
+    <div className="wb-block-buttons">
       {items.map((btn, i) => {
         const className = VARIANT_CLASS[btn.variant ?? "primary"] ?? "wb-btn wb-btn-primary";
-        const style = layout === "grid" ? { flex: "1 1 0", justifyContent: "center" } : {};
 
         if (btn.url) {
           return (
@@ -53,7 +40,6 @@ export function ButtonsBlock({ block, context }: BlockComponentProps) {
               key={i}
               href={btn.url}
               className={className}
-              style={style}
               target="_blank"
               rel="noopener noreferrer"
               onClick={appLinkHandler(btn.url, context.navigate)}
@@ -64,13 +50,7 @@ export function ButtonsBlock({ block, context }: BlockComponentProps) {
         }
 
         return (
-          <button
-            key={i}
-            type="button"
-            className={className}
-            style={style}
-            data-action={btn.action}
-          >
+          <button key={i} type="button" className={className} data-action={btn.action}>
             {btn.text}
           </button>
         );

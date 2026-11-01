@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 /**
- * Цитата: підпис автора, роль і варіанти оформлення.
+ * Цитата: підпис автора, роль і один канонічний вигляд.
  *
  * @module packages/ui/src/blocks/QuoteBlock.dom.test
  */
@@ -38,16 +38,12 @@ describe("QuoteBlock", () => {
     expect(screen.getByText(/дослідниця/)).toBeTruthy();
   });
 
-  it("варіант оформлення змінює рамку, а не текст", () => {
-    const bordered = render(<QuoteBlock {...block({ text: "Слова" })} />);
-    const left = bordered.container.querySelector("blockquote") as HTMLElement;
-    expect(left.style.borderLeft).toContain("3px solid");
-    bordered.unmount();
+  it("вигляд один: рамку малює клас, а не значення з props", () => {
+    const { container } = render(<QuoteBlock {...block({ text: "Слова", style: "filled" })} />);
+    const quote = container.querySelector("blockquote") as HTMLElement;
 
-    const filled = render(<QuoteBlock {...block({ text: "Слова", style: "filled" })} />);
-    const box = filled.container.querySelector("blockquote") as HTMLElement;
-    expect(box.style.borderLeft).toBe("");
-    expect(box.style.background).toContain("var(--bg-2)");
+    expect(quote.className).toContain("wb-block-quote");
+    expect(quote.getAttribute("style")).toBeNull();
     expect(screen.getByText("Слова")).toBeTruthy();
   });
 });

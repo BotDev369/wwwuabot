@@ -1,7 +1,7 @@
 /**
  * Page Builder — List Block.
  *
- * Displays an ordered or unordered list of items with optional icons and descriptions.
+ * Displays an ordered or unordered list of items with optional descriptions.
  *
  * @module packages/ui/src/blocks/ListBlock
  */
@@ -25,21 +25,12 @@ export function ListBlock({ block }: BlockComponentProps) {
   const Tag = ordered ? "ol" : "ul";
 
   return (
-    <Tag
-      className="wb-block-list"
-      style={{
-        listStyle: ordered ? "decimal" : "disc",
-        paddingLeft: "var(--sp-5)",
-        display: "flex",
-        flexDirection: "column",
-        gap: "var(--sp-2)",
-      }}
-    >
+    <Tag className={`wb-block-list${ordered ? " wb-block-list--ordered" : ""}`}>
       {items.map((item, i) => (
         <li key={i} className="wb-block-list__item">
           <span className="wb-block-list__text wb-text-primary">{item.text}</span>
           {item.description && (
-            <span className="wb-block-list__desc wb-text-sm wb-text-secondary">
+            <span className="wb-block-list__desc wb-text-sm">
               {" — "}
               {item.description}
             </span>

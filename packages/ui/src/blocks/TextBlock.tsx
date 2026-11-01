@@ -1,7 +1,7 @@
 /**
  * Page Builder — Text Block.
  *
- * Displays a title and/or text content with configurable heading level and alignment.
+ * Displays a title and/or text content with configurable heading level.
  *
  * @module packages/ui/src/blocks/TextBlock
  */
@@ -25,40 +25,23 @@ export const TEXT_LEVEL_CLASSES: Record<string, string> = {
   body: "wb-text-base",
 };
 
-const ALIGN_CLASSES: Record<string, string> = {
-  left: "wb-text-left",
-  center: "wb-text-center",
-  right: "wb-text-right",
-};
-
 export function TextBlock({ block }: BlockComponentProps) {
   const {
     title = "",
     content = "",
     level = "body",
-    align = "left",
   } = block.props as {
     title?: string;
     content?: string;
     level?: string;
-    align?: string;
   };
 
   return (
-    <div className={`wb-block-text ${ALIGN_CLASSES[align] ?? ""}`}>
+    <div className="wb-block-text">
       {title && (
-        <h3 className={`wb-block-text__title ${TEXT_LEVEL_CLASSES[level] ?? ""} wb-mb-2`}>
-          {title}
-        </h3>
+        <h3 className={`wb-block-text__title ${TEXT_LEVEL_CLASSES[level] ?? ""}`}>{title}</h3>
       )}
-      {content && (
-        <div
-          className="wb-block-text__content wb-text-secondary"
-          style={{ whiteSpace: "pre-wrap" }}
-        >
-          {content}
-        </div>
-      )}
+      {content && <div className="wb-block-text__content wb-text-secondary">{content}</div>}
     </div>
   );
 }

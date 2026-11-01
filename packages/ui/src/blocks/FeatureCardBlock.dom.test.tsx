@@ -35,14 +35,12 @@ describe("FeatureCardBlock", () => {
     expect(screen.getByText("Дешево")).toBeTruthy();
   });
 
-  it("кількість колонок — із props, за замовчуванням дві", () => {
-    const two = render(<FeatureCardBlock {...block({ items: ITEMS })} />);
-    const grid = two.container.querySelector(".wb-block-features") as HTMLElement;
-    expect(grid.style.gridTemplateColumns).toBe("repeat(2, 1fr)");
-    two.unmount();
+  it("сітку міряє CSS, а не число колонок із props", () => {
+    const { container } = render(<FeatureCardBlock {...block({ items: ITEMS, columns: "3" })} />);
+    const grid = container.querySelector(".wb-block-features") as HTMLElement;
 
-    const three = render(<FeatureCardBlock {...block({ items: ITEMS, columns: "3" })} />);
-    const wide = three.container.querySelector(".wb-block-features") as HTMLElement;
-    expect(wide.style.gridTemplateColumns).toBe("repeat(3, 1fr)");
+    expect(grid.className).toContain("wb-block-features");
+    expect(grid.getAttribute("style")).toBeNull();
+    expect(grid.querySelectorAll(".wb-block-features__card")).toHaveLength(2);
   });
 });

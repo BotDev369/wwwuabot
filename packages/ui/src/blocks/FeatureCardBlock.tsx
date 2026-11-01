@@ -15,65 +15,21 @@ interface FeatureItem {
 }
 
 export function FeatureCardBlock({ block }: BlockComponentProps) {
-  const { items = [], columns = "2" } = block.props as {
-    items?: FeatureItem[];
-    columns?: string;
-  };
+  const { items = [] } = block.props as { items?: FeatureItem[] };
 
   if (items.length === 0) return null;
 
   return (
-    <div
-      className="wb-block-features"
-      style={{
-        display: "grid",
-        gridTemplateColumns: `repeat(${columns}, 1fr)`,
-        gap: "var(--sp-4)",
-      }}
-    >
+    <div className="wb-block-features">
       {items.map((item, i) => (
-        <div
-          key={i}
-          className="wb-block-features__card"
-          style={{
-            padding: "var(--sp-4)",
-            background: "var(--bg-1)",
-            border: "1px solid var(--border-subtle)",
-            borderRadius: "var(--radius-md)",
-            display: "flex",
-            flexDirection: "column",
-            gap: "var(--sp-2)",
-          }}
-        >
+        <div key={i} className="wb-block-features__card">
           {item.icon && (
-            <span
-              className="wb-block-features__icon"
-              style={{
-                width: "40px",
-                height: "40px",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                borderRadius: "var(--radius-md)",
-                background: "var(--accent-dim)",
-                color: "var(--accent)",
-                fontSize: "var(--text-lg)",
-              }}
-            >
+            <span className="wb-block-features__icon" aria-hidden="true">
               {item.icon}
             </span>
           )}
-          <h4 className="wb-font-semibold" style={{ margin: 0 }}>
-            {item.title}
-          </h4>
-          {item.description && (
-            <p
-              className="wb-text-sm wb-text-secondary"
-              style={{ margin: 0, lineHeight: "var(--leading-normal)" }}
-            >
-              {item.description}
-            </p>
-          )}
+          <h4 className="wb-block-features__title">{item.title}</h4>
+          {item.description && <p className="wb-block-features__desc">{item.description}</p>}
         </div>
       ))}
     </div>

@@ -1,0 +1,385 @@
+/*
+ * БЛОКИ СТОРІНКИ — кирпичики Page Builder (`packages/ui/src/blocks/*`).
+ *
+ * Доти блоки малювали себе інлайном у TSX, і `data-theme` / `data-colors` до
+ * них не доходили: кожен блок тримав власний колір і власну геометрію. Тепер
+ * вигляд живе тут, міряється токенами й підкоряється спільним схемам.
+ * Зовнішніх відступів блок не має — просвіт тримає зона (правило 14).
+ */
+
+/* ── Текст ──────────────────────────────────────────────────────────────────
+   Рівні заголовка й береги — у `text.css`: цей блок ділить їх з редагованим
+   полем редактора сторінки. Тут лише те, чого в того поля немає. */
+
+.wb-block-text__content {
+  white-space: pre-wrap;
+}
+
+/* ── Список ─────────────────────────────────────────────────────────────────
+   Маркер малює сам список, тож берег під нього — `--sp-5`, як у решті
+   продукту; просвіт між пунктами — крок списку, а не власне число блока. */
+
+.wb-block-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-2);
+  margin: 0;
+  padding-left: var(--sp-5);
+  list-style: disc;
+}
+
+.wb-block-list--ordered {
+  list-style: decimal;
+}
+
+.wb-block-list__item {
+  line-height: var(--leading-relaxed);
+}
+
+.wb-block-list__desc {
+  color: var(--text-secondary);
+}
+
+/* ── Показник ───────────────────────────────────────────────────────────────
+   Картка — той самий кирпичик, що й усі поверхні: білий папір, м'яка тінь і
+   одна міра (`--card-*`). Власна рамка робила з неї четвертий різновид плитки. */
+
+.wb-block-stat {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-1);
+  padding: var(--card-pad);
+  background: var(--card-bg);
+  border-radius: var(--card-radius);
+  box-shadow: var(--card-shadow);
+}
+
+.wb-block-stat__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--sp-2);
+}
+
+.wb-block-stat__label {
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--text-secondary);
+}
+
+.wb-block-stat__icon {
+  display: inline-flex;
+  color: var(--text-secondary);
+}
+
+.wb-block-stat__row {
+  display: flex;
+  align-items: baseline;
+  gap: var(--sp-2);
+}
+
+/* Значення — головне на картці: кегль зі шкали, а не власне число. Раніше тут
+   стояв `--text-3`, якого в словнику немає, тож розмір просто не діяв. */
+.wb-block-stat__value {
+  font-family: var(--font-display);
+  font-size: var(--text-3xl);
+  font-weight: var(--weight-bold);
+  line-height: var(--leading-tight);
+  color: var(--text-primary);
+}
+
+.wb-block-stat__trend {
+  color: var(--text-secondary);
+}
+
+.wb-block-stat__trend--up {
+  color: var(--green);
+}
+
+.wb-block-stat__trend--down {
+  color: var(--red);
+}
+
+.wb-block-stat__desc {
+  color: var(--text-muted);
+}
+
+/* ── Картка-контейнер ─────────────────────────────────────────────────────
+   Одна поверхня на весь продукт (`--card-*`): тло, радіус, береги й тінь
+   беруться з токенів, а не з props. */
+
+.wb-block-card {
+  padding: var(--card-pad);
+  background: var(--card-bg);
+  border-radius: var(--card-radius);
+  box-shadow: var(--card-shadow);
+}
+
+.wb-block-card__header {
+  margin-bottom: var(--card-gap);
+}
+
+.wb-block-card__title {
+  margin: 0;
+  font-size: var(--heading-card-size);
+  font-weight: var(--heading-card-weight);
+  color: var(--text-primary);
+}
+
+.wb-block-card__desc {
+  margin: var(--sp-1) 0 0;
+  color: var(--text-secondary);
+}
+
+/* ── Чипи статусу ────────────────────────────────────────────────────────
+   Сам чип і його тони — кирпичик `.wb-badge*` (`components.css`); блок лише
+   ставить їх у ряд. Тон — зміст («успіх», «помилка»), не вибір кольору. */
+
+.wb-block-badges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--sp-2);
+}
+
+/* ── Група кнопок ─────────────────────────────────────────────────────────
+   Міру кнопки задає кирпичик `.wb-btn` зі своїх токенів (правило 16); блок
+   лише ставить їх у ряд. */
+
+.wb-block-buttons {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  gap: var(--sp-2);
+}
+
+/* ── Кнопка-посилання ─────────────────────────────────────────────────────
+   Розмір — через `--btn-*`, а не власний `padding`: «зменшити кнопки» мусить
+   лишатись одним рядком у словнику. */
+
+.wb-block-link-button-wrapper {
+  display: flex;
+  width: 100%;
+}
+
+.wb-block-link-button {
+  gap: var(--sp-2);
+  text-decoration: none;
+}
+
+.wb-block-link-button__icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: 1em;
+  height: 1em;
+}
+
+/* ── Зображення ───────────────────────────────────────────────────────────
+   Розтягується на ширину зони; радіус і обрізання — одна пара значень, як у
+   картки. */
+
+.wb-block-image {
+  margin: 0;
+}
+
+.wb-block-image__img {
+  display: block;
+  width: 100%;
+  height: auto;
+  border-radius: var(--card-radius);
+  object-fit: cover;
+}
+
+.wb-block-image__caption {
+  margin-top: var(--sp-2);
+  color: var(--text-muted);
+}
+
+/* ── Часті питання ────────────────────────────────────────────────────────
+   Рядки ділить волосина (правило 15), а не рамка навколо кожного: інакше
+   список читається як стос карток. */
+
+.wb-block-faq__title {
+  margin: 0 0 var(--sp-4);
+  font-size: var(--text-xl);
+  font-weight: var(--weight-bold);
+  color: var(--text-primary);
+}
+
+.wb-block-faq__item {
+  border-bottom: 1px solid var(--hairline);
+}
+
+.wb-block-faq__question {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--sp-3);
+  width: 100%;
+  min-height: var(--row-min-h);
+  padding: var(--sp-3) 0;
+  background: transparent;
+  border: none;
+  font-size: var(--text-base);
+  font-weight: var(--weight-semibold);
+  color: var(--text-primary);
+  text-align: left;
+  cursor: pointer;
+}
+
+.wb-block-faq__chevron {
+  flex-shrink: 0;
+  color: var(--text-secondary);
+  transition: transform var(--duration-fast) var(--ease);
+}
+
+.wb-block-faq__item--open .wb-block-faq__chevron {
+  transform: rotate(180deg);
+}
+
+.wb-block-faq__answer {
+  padding: 0 0 var(--sp-4);
+  font-size: var(--text-sm);
+  line-height: var(--leading-normal);
+  color: var(--text-secondary);
+}
+
+/* ── Вкладки ──────────────────────────────────────────────────────────────
+   Обрана вкладка каже себе підписом і вагою (правило 25), а не заливкою:
+   доріжка вкладок продукту — виняток, і він один на весь продукт. */
+
+.wb-block-tabs__header {
+  display: flex;
+  gap: var(--sp-1);
+  margin-bottom: var(--sp-3);
+  border-bottom: 1px solid var(--hairline);
+  overflow-x: auto;
+}
+
+.wb-block-tabs__tab {
+  min-height: 44px;
+  padding: var(--sp-2) var(--sp-3);
+  background: transparent;
+  border: none;
+  border-bottom: 2px solid transparent;
+  font-size: var(--text-sm);
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: color var(--duration-fast) var(--ease);
+}
+
+.wb-block-tabs__tab--active {
+  border-bottom-color: var(--accent);
+  font-weight: var(--weight-semibold);
+  color: var(--accent);
+}
+
+.wb-block-tabs__icon {
+  margin-right: var(--sp-1);
+}
+
+.wb-block-tabs__content {
+  font-size: var(--text-sm);
+  line-height: var(--leading-normal);
+  color: var(--text-primary);
+}
+
+/* ── Таблиця ──────────────────────────────────────────────────────────────
+   Сітку клітинок малює кирпичик `.wb-data-table` (він же тримає закріплені
+   рядок і стовпець, правило 27); блок дає лише вільну ширину й край. */
+
+.wb-block-table {
+  overflow-x: auto;
+  border: 1px solid var(--hairline);
+  border-radius: var(--card-radius);
+}
+
+/* ── Розділювач і просвіт ─────────────────────────────────────────────────
+   Розділювач — волосина, а не штрих (правило 15). Просвіт між блоками тримає
+   зона, тож обидва блоки мають рівно одну міру. */
+
+.wb-block-divider {
+  margin: 0;
+  border: none;
+  border-top: 1px solid var(--hairline);
+}
+
+.wb-block-spacer {
+  height: var(--sp-8);
+}
+
+/* ── Цитата ───────────────────────────────────────────────────────────────
+   Один вигляд: акцентна волосина зліва. Варіанти «справа», «залита»,
+   «обведена» були чотирма різними деталями одного змісту. */
+
+.wb-block-quote {
+  margin: 0;
+  padding-left: var(--sp-4);
+  border-left: 3px solid var(--accent);
+}
+
+.wb-block-quote__text {
+  margin: 0;
+  font-style: italic;
+  line-height: var(--leading-normal);
+  color: var(--text-primary);
+}
+
+.wb-block-quote__attribution {
+  margin-top: var(--sp-2);
+  font-size: var(--text-sm);
+  font-style: normal;
+  color: var(--text-secondary);
+}
+
+.wb-block-quote__role {
+  font-size: var(--text-xs);
+  color: var(--text-muted);
+}
+
+/* ── Картки переваг ───────────────────────────────────────────────────────
+   Сітка сама добирає кількість стовпців від ширини зони: число стовпців із
+   props ламало телефон, де дві картки ставали по 140px. */
+
+.wb-block-features {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: var(--card-gap);
+}
+
+.wb-block-features__card {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-2);
+  padding: var(--card-pad);
+  background: var(--card-bg);
+  border-radius: var(--card-radius);
+  box-shadow: var(--card-shadow);
+}
+
+.wb-block-features__icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  background: var(--accent-dim);
+  border-radius: var(--radius-md);
+  font-size: var(--text-lg);
+  color: var(--accent);
+}
+
+.wb-block-features__title {
+  margin: 0;
+  font-size: var(--heading-card-size);
+  font-weight: var(--heading-card-weight);
+  color: var(--text-primary);
+}
+
+.wb-block-features__desc {
+  margin: 0;
+  font-size: var(--text-sm);
+  line-height: var(--leading-normal);
+  color: var(--text-secondary);
+}

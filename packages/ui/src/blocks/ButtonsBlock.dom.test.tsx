@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 /**
- * Кнопки блоку: адреса, варіант, розкладка й перехід у застосунку.
+ * Кнопки блоку: адреса, варіант, одна розкладка й перехід у застосунку.
  *
  * @module packages/ui/src/blocks/ButtonsBlock.dom.test
  */
@@ -58,12 +58,11 @@ describe("ButtonsBlock", () => {
     expect(screen.getByRole("button", { name: "Тиха" }).className).toContain("wb-btn-ghost");
   });
 
-  it("колонка ставить пункти в стовпчик, рядок — у рядок", () => {
+  it("розкладка одна на продукт — з props вона не змінюється", () => {
     const column = draw({ layout: "column", items: [{ text: "Один" }] });
-    expect((column.container.firstChild as HTMLElement).style.flexDirection).toBe("column");
-
-    const row = draw({ items: [{ text: "Два" }] });
-    expect((row.container.firstChild as HTMLElement).style.flexWrap).toBe("wrap");
+    const columnRow = column.container.firstChild as HTMLElement;
+    expect(columnRow.className).toContain("wb-block-buttons");
+    expect(columnRow.getAttribute("style")).toBeNull();
   });
 
   it("внутрішню адресу віддає роутеру", () => {

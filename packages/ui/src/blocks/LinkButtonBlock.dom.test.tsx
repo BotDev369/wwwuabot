@@ -1,6 +1,10 @@
 // @vitest-environment jsdom
 /**
- * Кнопка-посилання: розмір, вирівнювання, іконка й перехід у застосунку.
+ * Кнопка-посилання: підпис, адреса, знак і перехід у застосунку.
+ *
+ * Вигляд тут не перевіряється інлайном: міру кнопки задає кирпичик `.wb-btn`
+ * із `--btn-*` (`blocks.css`), тож тест тримає **клас** — інакше він тримав би
+ * копію стилю, яка й була причиною сорока різних виглядів.
  *
  * @module packages/ui/src/blocks/LinkButtonBlock.dom.test
  */
@@ -55,22 +59,24 @@ describe("LinkButtonBlock", () => {
     expect(withoutIcon.container.querySelector("a span svg")).toBeNull();
   });
 
-  it("вирівнювання `full` розтягує кнопку на всю ширину", () => {
-    const full = draw({ text: "Широка", url: "/viruvannia", align: "full" });
-    expect((screen.getByRole("link", { name: "Широка" }) as HTMLElement).style.width).toBe("100%");
+  it("бере міру й берег зі спільних кирпичиків, а не з props", () => {
+    draw({ text: "Широка", url: "/viruvannia", align: "full", size: "lg" });
 
-    full.unmount();
-    draw({ text: "Центрована", url: "/viruvannia", align: "center" });
-    const wrapper = screen.getByRole("link", { name: "Центрована" }).parentElement as HTMLElement;
-    expect(wrapper.style.justifyContent).toBe("center");
+    const link = screen.getByRole("link", { name: "Широка" });
+    expect(link.className).toContain("wb-block-link-button");
+    expect(link.className).toContain("wb-btn");
+    expect(link.getAttribute("style")).toBeNull();
+
+    const wrapper = link.parentElement as HTMLElement;
+    expect(wrapper.className).toContain("wb-block-link-button-wrapper");
   });
 
-  it("розмір `lg` дає більший кегль, ніж типовий", () => {
-    draw({ text: "Велика", url: "/viruvannia", size: "lg" });
+  it("варіант лишається тоном дії: основна й тиха", () => {
+    draw({ text: "Основна", url: "/viruvannia" });
+    expect(screen.getByRole("link", { name: "Основна" }).className).toContain("wb-btn-primary");
 
-    expect((screen.getByRole("link", { name: "Велика" }) as HTMLElement).style.fontSize).toBe(
-      "16px",
-    );
+    draw({ text: "Тиха", url: "/viruvannia", variant: "ghost" });
+    expect(screen.getByRole("link", { name: "Тиха" }).className).toContain("wb-btn-ghost");
   });
 
   it("внутрішню адресу віддає роутеру, а не браузеру", () => {

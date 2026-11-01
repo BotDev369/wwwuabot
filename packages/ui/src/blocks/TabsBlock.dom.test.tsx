@@ -53,17 +53,20 @@ describe("TabsBlock", () => {
     expect(screen.getByRole("tab").textContent).toContain("★");
   });
 
-  it("варіант `pills` підсвічує активну вкладку фоном", async () => {
+  it("обрану називає клас, а не власний фон у розмітці", async () => {
     const user = userEvent.setup();
-    render(<TabsBlock {...block({ tabs: TABS, style: "pills" })} />);
+    render(<TabsBlock {...block({ tabs: TABS })} />);
 
-    expect((screen.getByRole("tab", { name: "Перша" }) as HTMLElement).style.background).toContain(
-      "var(--accent-dim)",
-    );
+    const first = screen.getByRole("tab", { name: "Перша" });
+    expect(first.className).toContain("wb-block-tabs__tab--active");
+    expect(first.getAttribute("style")).toBeNull();
 
     await user.click(screen.getByRole("tab", { name: "Друга" }));
-    expect((screen.getByRole("tab", { name: "Друга" }) as HTMLElement).style.background).toContain(
-      "var(--accent-dim)",
+    expect(screen.getByRole("tab", { name: "Друга" }).className).toContain(
+      "wb-block-tabs__tab--active",
+    );
+    expect(screen.getByRole("tab", { name: "Перша" }).className).not.toContain(
+      "wb-block-tabs__tab--active",
     );
   });
 });
