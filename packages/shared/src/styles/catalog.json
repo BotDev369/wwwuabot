@@ -93,7 +93,7 @@
     {
       "file": "blocks.css",
       "tokens": 0,
-      "classes": 206
+      "classes": 207
     },
     {
       "file": "components.css",
@@ -3629,6 +3629,28 @@
           "wb-date-sort-head",
           "wb-date-table",
           "wb-date-tags"
+        ]
+      },
+      {
+        "section": "Дизайн-прохід",
+        "names": [
+          "wb-block-card",
+          "wb-block-chart__title",
+          "wb-block-compare-setup__lead",
+          "wb-block-compare-setup__title",
+          "wb-block-date-card--full",
+          "wb-block-faq__title",
+          "wb-block-features__card",
+          "wb-block-pricing__card",
+          "wb-block-pricing__name",
+          "wb-block-stat",
+          "wb-block-systems-picker__lead",
+          "wb-block-systems-picker__title",
+          "wb-block-testimonial",
+          "wb-block-testimonial__name",
+          "wb-block-user-profile--card",
+          "wb-block-video__title",
+          "wb-btn"
         ]
       }
     ],

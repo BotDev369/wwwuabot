@@ -1420,3 +1420,70 @@
 .wb-block-systems-picker__card--on {
   background: var(--accent-soft);
 }
+
+/* ══ Дизайн-прохід ═════════════════════════════════════════════════════════
+   Три речі, які роблять сторінку схожою на продукт, а не на набір блоків:
+   один рівень заголовка блока, одна глибина картки й один стан контрола. */
+
+/* Заголовок блока — одна роль на всі блоки: тихий кегль, щільний трекінг,
+   короткий рядок. Доти той самий рівень був 22px/700 в FAQ, 15px/600 у
+   картках і типовим `<h2>` браузера в решті — сторінка читалась як різні
+   сторінки, склеєні в одну. */
+
+.wb-block-faq__title,
+.wb-block-video__title,
+.wb-block-chart__title,
+.wb-block-compare-setup__title,
+.wb-block-systems-picker__title {
+  margin: 0 0 var(--sp-3);
+  color: var(--text-primary);
+  font-size: var(--text-lg);
+  font-weight: var(--weight-semibold);
+  letter-spacing: var(--tracking-title);
+  line-height: var(--leading-tight);
+  text-wrap: balance;
+}
+
+/* Підпис під заголовком блока — один рядок, не абзац: міра обмежена, щоб
+   око не бігло на всю ширину екрана. */
+.wb-block-compare-setup__lead,
+.wb-block-systems-picker__lead {
+  max-width: 60ch;
+  text-wrap: pretty;
+}
+
+/* Назва всередині картки — рівень нижчий за заголовок блока: картка не
+   конкурує зі сторінкою за увагу. */
+.wb-block-pricing__name,
+.wb-block-testimonial__name {
+  color: var(--text-primary);
+  font-size: var(--heading-card-size);
+  font-weight: var(--heading-card-weight);
+  letter-spacing: normal;
+  line-height: var(--leading-tight);
+}
+
+/* Глибина: картка тримається не лише тінню, а й волосяною межею — на світлому
+   тлі тінь сама по собі не показує край, і плитка зливається зі сторінкою.
+   Межа — токен, тож у темній схемі вона глибша разом із рештою. */
+.wb-block-stat,
+.wb-block-card,
+.wb-block-features__card,
+.wb-block-pricing__card,
+.wb-block-testimonial,
+.wb-block-date-card--full,
+.wb-block-user-profile--card {
+  box-shadow:
+    0 0 0 1px var(--card-border),
+    var(--card-shadow);
+}
+
+/* Вимкнений контрол: не «напівпрозора кнопка», а стан — без тіні й без
+   натискання, бо натискати нічого. */
+.wb-btn:disabled,
+.wb-btn[aria-disabled="true"] {
+  box-shadow: none;
+  cursor: not-allowed;
+  opacity: 0.5;
+  transform: none;
+}
