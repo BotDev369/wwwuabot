@@ -97,49 +97,44 @@
   background: var(--text-muted);
 }
 
-/* Шість стовпців — усі кольори даних, а не перший-ліпший. */
-.wb-theme-card-bars {
+/* Шість зразків — усі кольори даних, а не перший-ліпший. Висоти в них немає:
+   стовпці різної висоти малювали графік, однаковий у кожній темі, тож
+   показували самі себе. Зразок однієї висоти каже рівно те, що міняється. */
+.wb-theme-card-swatches {
   display: flex;
-  align-items: flex-end;
   gap: var(--sp-1);
-  height: 34px;
   margin-top: var(--sp-1);
 }
 
-.wb-theme-card-bar {
+.wb-theme-card-swatch {
   flex: 1 1 0;
   min-width: 0;
+  height: 8px;
   border-radius: var(--radius-xs);
   background: var(--data-1);
 }
 
-.wb-theme-card-bar--1 {
-  height: 48%;
+.wb-theme-card-swatch--1 {
   background: var(--data-1);
 }
 
-.wb-theme-card-bar--2 {
-  height: 72%;
+.wb-theme-card-swatch--2 {
   background: var(--data-2);
 }
 
-.wb-theme-card-bar--3 {
-  height: 56%;
+.wb-theme-card-swatch--3 {
   background: var(--data-3);
 }
 
-.wb-theme-card-bar--4 {
-  height: 88%;
+.wb-theme-card-swatch--4 {
   background: var(--data-4);
 }
 
-.wb-theme-card-bar--5 {
-  height: 40%;
+.wb-theme-card-swatch--5 {
   background: var(--data-5);
 }
 
-.wb-theme-card-bar--6 {
-  height: 64%;
+.wb-theme-card-swatch--6 {
   background: var(--data-6);
 }
 

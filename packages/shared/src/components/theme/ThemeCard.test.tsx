@@ -26,11 +26,13 @@ describe("ThemeCard", () => {
     expect(screen.queryByText(paper.hint)).toBeNull();
   });
 
-  it("показує всі шість кольорів даних і три статуси", () => {
+  it("показує всі шість кольорів даних і три статуси, без діаграми", () => {
     const { container } = render(<ThemeCard theme={paper} onApply={() => {}} />);
 
-    expect(container.querySelectorAll(".wb-theme-card-bar")).toHaveLength(6);
+    expect(container.querySelectorAll(".wb-theme-card-swatch")).toHaveLength(6);
     expect(container.querySelectorAll(".wb-theme-card-dot")).toHaveLength(3);
+    // Діаграма однакова в кожній темі, тож її на картці немає.
+    expect(container.querySelector(".wb-theme-card-bar")).toBeNull();
   });
 
   it("називає тему для читача екрана й каже, чи вона обрана", () => {

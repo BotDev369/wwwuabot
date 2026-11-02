@@ -1,5 +1,5 @@
 {
-  "version": "78d77ff",
+  "version": "3367ca2",
   "files": [
     {
       "file": "admin/analytics-people.css",
@@ -5163,14 +5163,6 @@
           "wb-theme-card--on",
           "wb-theme-card-action",
           "wb-theme-card-actions",
-          "wb-theme-card-bar",
-          "wb-theme-card-bar--1",
-          "wb-theme-card-bar--2",
-          "wb-theme-card-bar--3",
-          "wb-theme-card-bar--4",
-          "wb-theme-card-bar--5",
-          "wb-theme-card-bar--6",
-          "wb-theme-card-bars",
           "wb-theme-card-dot",
           "wb-theme-card-dot--green",
           "wb-theme-card-dot--red",
@@ -5182,6 +5174,14 @@
           "wb-theme-card-on",
           "wb-theme-card-scene",
           "wb-theme-card-sheet",
+          "wb-theme-card-swatch",
+          "wb-theme-card-swatch--1",
+          "wb-theme-card-swatch--2",
+          "wb-theme-card-swatch--3",
+          "wb-theme-card-swatch--4",
+          "wb-theme-card-swatch--5",
+          "wb-theme-card-swatch--6",
+          "wb-theme-card-swatches",
           "wb-theme-cards",
           "wb-theme-panel"
         ]
