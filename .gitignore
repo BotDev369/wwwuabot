@@ -28,6 +28,9 @@ web-admin/dist/
 
 # Logs
 *.log
+
+# Дампі бази для відкату — це дані, не код
+backups/
 *.tmp
 
 # Editor/IDE files

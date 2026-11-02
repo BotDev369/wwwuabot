@@ -623,6 +623,10 @@ const rows = [
     title: LANDING_TITLE,
     pageData: landingPage(blockList),
     isPublic: true,
+    // Обкладинка — сторінка платформи: каркас збирає цей генератор, полів у неї
+    // немає, і в списку шаблонів для людей вона не з'являється
+    // (`packages/shared/src/pages/platform-templates.ts`).
+    templateKey: "research",
   },
   ...blockList.map((block) => ({
     slug: `${MODULE}-${block.id}`,

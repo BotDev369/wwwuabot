@@ -62,6 +62,12 @@ export {
   pageTitle,
   primaryField,
 } from "./templates";
+export {
+  PLATFORM_PAGE_KEYS,
+  PLATFORM_PAGE_TEMPLATES,
+  isPlatformPageKey,
+} from "./platform-templates";
+export type { PlatformPageTemplate } from "./platform-templates";
 export type {
   PageBlockSpec,
   PageField,
