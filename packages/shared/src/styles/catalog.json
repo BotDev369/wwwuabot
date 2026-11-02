@@ -1,5 +1,5 @@
 {
-  "version": "85ed909",
+  "version": "78d77ff",
   "files": [
     {
       "file": "admin/analytics-people.css",
@@ -204,7 +204,7 @@
     {
       "file": "theme-panel.css",
       "tokens": 0,
-      "classes": 14
+      "classes": 25
     },
     {
       "file": "themes.css",
@@ -5161,17 +5161,28 @@
         "names": [
           "wb-theme-card",
           "wb-theme-card--on",
-          "wb-theme-card-bubble",
-          "wb-theme-card-bubble--in",
-          "wb-theme-card-bubble--out",
-          "wb-theme-card-foot",
-          "wb-theme-card-hint",
+          "wb-theme-card-action",
+          "wb-theme-card-actions",
+          "wb-theme-card-bar",
+          "wb-theme-card-bar--1",
+          "wb-theme-card-bar--2",
+          "wb-theme-card-bar--3",
+          "wb-theme-card-bar--4",
+          "wb-theme-card-bar--5",
+          "wb-theme-card-bar--6",
+          "wb-theme-card-bars",
+          "wb-theme-card-dot",
+          "wb-theme-card-dot--green",
+          "wb-theme-card-dot--red",
+          "wb-theme-card-dot--yellow",
+          "wb-theme-card-dots",
           "wb-theme-card-hit",
-          "wb-theme-card-name",
+          "wb-theme-card-line",
+          "wb-theme-card-line--short",
           "wb-theme-card-on",
-          "wb-theme-card-preview",
+          "wb-theme-card-scene",
+          "wb-theme-card-sheet",
           "wb-theme-cards",
-          "wb-theme-hint",
           "wb-theme-panel"
         ]
       }

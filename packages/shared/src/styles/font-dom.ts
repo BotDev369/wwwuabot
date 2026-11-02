@@ -111,23 +111,3 @@ export function applyFont(id: string | null): void {
   ensurePreconnect();
   setLink(FONT_LINK_ID, stack && id ? [id] : []);
 }
-
-/**
- * Шрифт **заголовків** — те, що дає темі характер, не роблячи простирадло
- * з основного тексту.
- *
- * Тема задає лише `--font-display`: дрібний текст лишається родиною продукту,
- * бо читабельність на телефоні важливіша за настрій. Порожній id знімає
- * інлайнову змінну — і заголовки вертаються до `tokens.css`.
- */
-export function applyDisplayFont(id: string | null): void {
-  if (typeof document === "undefined") return;
-  const root = document.documentElement;
-  const stack = fontStack(id ?? "");
-
-  if (!stack) root.style.removeProperty("--font-display");
-  else root.style.setProperty("--font-display", stack);
-
-  ensurePreconnect();
-  setLink(FONT_LINK_ID, stack && id ? [id] : []);
-}

@@ -9,6 +9,10 @@
  * Картка ставить на себе `data-theme` теми, яку показує, тож усередині неї
  * `var(--…)` — це **та сама палітра**, яку отримає екран. Тому жодного кольору
  * в розмітці немає, а прев'ю не розходиться з темою.
+ *
+ * Картка — **мікро-демо, без назви й опису**: шість плиток поруч уже кажуть,
+ * що вони міняють. Текст на картці повторював би те, що видно, і забирав
+ * місце в палітри.
  */
 
 .wb-theme-panel {
@@ -17,15 +21,8 @@
   gap: var(--sp-3);
 }
 
-.wb-theme-hint {
-  margin: 0;
-  font-size: var(--text-xs);
-  line-height: 1.5;
-  color: var(--text-muted);
-}
-
 /* Дві картки в рядку: їх шість, і в одному стовпці список ставав довгим
-   простирадлом, а в трьох — картка ставала замалою для назви й підказки. */
+   простирадлом, а в трьох картка ставала замалою для мініятюри. */
 .wb-theme-cards {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -51,12 +48,10 @@
 
 /* Дотик — по всій площі картки, а не по рядку назви. */
 .wb-theme-card-hit {
-  display: flex;
-  flex-direction: column;
-  gap: var(--sp-2);
+  position: relative;
+  display: block;
   width: 100%;
-  min-height: 108px;
-  padding: var(--sp-3);
+  padding: var(--sp-2);
   border: none;
   border-radius: inherit;
   background: none;
@@ -66,68 +61,131 @@
   cursor: pointer;
 }
 
-.wb-theme-card-preview {
+/* Мініятюра екрана: власна поверхня під аркушем — так видно, що тема задає
+   не один фон, а кілька рівнів. */
+.wb-theme-card-scene {
   display: flex;
   flex-direction: column;
-  align-items: flex-start;
-  gap: var(--sp-1);
-  font-size: var(--text-xs);
-  line-height: 1.35;
-}
-
-/* Заголовок картки — тим самим шрифтом, який тема дає заголовкам: так видно
-   не лише колір, а й характер типографіки. */
-.wb-theme-card-name {
-  display: block;
-  width: 100%;
-  font-size: var(--text-md);
-  font-weight: var(--weight-semibold);
-  line-height: 1.2;
-  overflow: hidden;
-  white-space: nowrap;
-  text-overflow: ellipsis;
-}
-
-/* Дві репліки: поверхня й акцент з інверсним підписом. */
-.wb-theme-card-bubble {
-  max-width: 86%;
-  padding: var(--sp-1) var(--sp-2);
-  overflow: hidden;
+  gap: var(--sp-2);
+  padding: var(--sp-2);
   border-radius: var(--radius-md);
-  white-space: nowrap;
-  text-overflow: ellipsis;
+  background: var(--bg-2);
 }
 
-.wb-theme-card-bubble--in {
-  background: var(--surface-active);
-  border-bottom-left-radius: var(--radius-xs);
-  color: var(--text-secondary);
+/* Аркуш усередині: картка на поверхні, з волосиною замість рамки. */
+.wb-theme-card-sheet {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-1);
+  padding: var(--sp-2);
+  border-radius: var(--radius-md);
+  background: var(--card-bg);
+  box-shadow: inset 0 0 0 1px var(--hairline);
 }
 
-.wb-theme-card-bubble--out {
-  align-self: flex-end;
-  background: var(--accent);
-  border-bottom-right-radius: var(--radius-xs);
-  color: var(--text-inverse);
+/* Рядки тексту: основний і приглушений — два рівні, які тема задає окремо. */
+.wb-theme-card-line {
+  display: block;
+  width: 78%;
+  height: 4px;
+  border-radius: var(--radius-xs);
+  background: var(--text-primary);
 }
 
-.wb-theme-card-foot {
+.wb-theme-card-line--short {
+  width: 46%;
+  background: var(--text-muted);
+}
+
+/* Шість стовпців — усі кольори даних, а не перший-ліпший. */
+.wb-theme-card-bars {
+  display: flex;
+  align-items: flex-end;
+  gap: var(--sp-1);
+  height: 34px;
+  margin-top: var(--sp-1);
+}
+
+.wb-theme-card-bar {
+  flex: 1 1 0;
+  min-width: 0;
+  border-radius: var(--radius-xs);
+  background: var(--data-1);
+}
+
+.wb-theme-card-bar--1 {
+  height: 48%;
+  background: var(--data-1);
+}
+
+.wb-theme-card-bar--2 {
+  height: 72%;
+  background: var(--data-2);
+}
+
+.wb-theme-card-bar--3 {
+  height: 56%;
+  background: var(--data-3);
+}
+
+.wb-theme-card-bar--4 {
+  height: 88%;
+  background: var(--data-4);
+}
+
+.wb-theme-card-bar--5 {
+  height: 40%;
+  background: var(--data-5);
+}
+
+.wb-theme-card-bar--6 {
+  height: 64%;
+  background: var(--data-6);
+}
+
+/* Нижній рядок: акцентна дія й три статуси — решта палітри теми. */
+.wb-theme-card-actions {
   display: flex;
   align-items: center;
+  justify-content: space-between;
   gap: var(--sp-2);
-  margin-top: auto;
-  min-width: 0;
 }
 
-.wb-theme-card-hint {
-  flex: 1 1 auto;
-  min-width: 0;
-  font-size: var(--text-xs);
-  color: var(--text-muted);
+.wb-theme-card-action {
+  width: 42px;
+  height: 14px;
+  border-radius: var(--radius-lg);
+  background: var(--accent);
 }
 
-.wb-theme-card-on {
+.wb-theme-card-dots {
   display: flex;
-  flex-shrink: 0;
+  gap: var(--sp-1);
+}
+
+.wb-theme-card-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+}
+
+.wb-theme-card-dot--green {
+  background: var(--green);
+}
+
+.wb-theme-card-dot--yellow {
+  background: var(--yellow);
+}
+
+.wb-theme-card-dot--red {
+  background: var(--red);
+}
+
+/* Позначка обраної: кут картки, а не рядок під мініятюрою. */
+.wb-theme-card-on {
+  position: absolute;
+  top: var(--sp-1);
+  right: var(--sp-1);
+  display: flex;
   color: var(--accent);
 }

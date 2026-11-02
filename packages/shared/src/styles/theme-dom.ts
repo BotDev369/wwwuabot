@@ -1,18 +1,19 @@
 /**
- * Тема на екрані: атрибут на `<html>`, шрифт заголовків і памʼять пристрою.
+ * Тема на екрані: атрибут на `<html>` і памʼять пристрою.
  *
- * **Одна дія на всю тему.** Колір і шрифт не мають права розійтися: поки їх
- * застосовували два різні виклики, екран міг отримати нову палітру зі старою
- * типографікою. Тому `applyTheme()` ставить атрибут **і** шрифт, а зберігає
- * вибір лише після цього.
+ * **Одна дія на всю тему.** `applyTheme()` ставить атрибут `data-theme` і
+ * зберігає вибір лише після цього, тож палітра й памʼять не розійдуться.
+ *
+ * **Шрифт тема не чіпає.** Типографіку продукту задає `tokens.css` одна на всі
+ * теми: тема з власним шрифтом заголовків робила той самий екран іншим
+ * продуктом, і вибір настрою непомітно міняв ще й читабельність.
  *
  * Тема живе атрибутом, а не JS-стилями: CSS читає `data-theme`, тож жодного
  * кольору в розмітці немає, а картка-прев'ю може показати тему, поставивши
  * той самий атрибут на собі.
  */
 
-import { applyDisplayFont } from "./font-dom";
-import { DEFAULT_THEME, isThemeId, THEME_KEY, themeById, type Scheme } from "./registry";
+import { DEFAULT_THEME, isThemeId, THEME_KEY, type Scheme } from "./registry";
 
 /** Сміття від попередніх моделей вигляду: більше не читаємо, лише прибираємо. */
 const DEAD_KEYS = ["wwwuabot-colors", "wwwuabot-font"] as const;
@@ -37,7 +38,7 @@ function saveStoredTheme(theme: Scheme): void {
 }
 
 /**
- * Застосувати тему: атрибут, шрифт заголовків, памʼять.
+ * Застосувати тему: атрибут і памʼять.
  *
  * `data-colors*` знімаються навмисно: вони лишились від трьох кольорів
  * людини, і теперішня палітра не мусить програвати мертвому селекторові.
@@ -49,7 +50,6 @@ export function applyTheme(theme: Scheme): void {
   root.setAttribute("data-theme", theme);
   root.removeAttribute("data-colors");
   root.removeAttribute("data-colors-mode");
-  applyDisplayFont(themeById(theme).display);
   saveStoredTheme(theme);
 }
 
