@@ -22,7 +22,20 @@
   flex-direction: column;
   gap: var(--sp-5);
   padding: var(--sp-6) 0 var(--sp-8);
-  border-bottom: 1px solid var(--border-subtle);
+  /* Світло з лівого кута: воно дає шапці глибину, не додаючи ні ще однієї
+     картки, ні рамки — спершу око має побачити розділ, а не коробку. */
+  background-image: var(--gradient-wash);
+}
+
+/* Нижня межа — градієнтна волосина: акцент переходить у спектр і тане, тож
+   шапка відділена, але не відрізана смугою на всю ширину. */
+.wb-research-hero::after {
+  content: "";
+  position: absolute;
+  inset-inline: 0;
+  bottom: 0;
+  height: 1px;
+  background: linear-gradient(90deg, var(--accent), var(--data-4) 55%, transparent 92%);
 }
 
 /* Рубрика — рядок із рискою: вона каже «це розділ», а не «це заголовок». */
@@ -40,9 +53,10 @@
 
 .wb-research-kicker::before {
   content: "";
-  width: var(--sp-6);
-  height: 1px;
-  background: var(--accent);
+  width: var(--sp-8);
+  height: 2px;
+  background: var(--gradient-accent);
+  border-radius: var(--radius-full);
 }
 
 /* Заголовок дослідження — найбільший щабель у продукті й шрифт теми:
@@ -55,7 +69,12 @@
   font-weight: var(--weight-semibold);
   line-height: var(--leading-tight);
   letter-spacing: var(--tracking-title);
-  color: var(--text-primary);
+  /* Текст лишається текстом, але останні слова переходять у колір даних:
+     заголовок каже, що це дослідження, у якому є цифри. */
+  color: transparent;
+  background-image: linear-gradient(100deg, var(--text-primary) 52%, var(--data-4) 94%);
+  -webkit-background-clip: text;
+  background-clip: text;
   text-wrap: balance;
 }
 
@@ -401,6 +420,22 @@
   max-width: none;
   margin: 0;
   gap: var(--sp-4);
+}
+
+/* Шапка статті й показники отримують теплі підкладки: папір той самий, але
+   сторінка перестає бути білою плямою з чорним текстом. */
+.wb-article .wb-block-card {
+  background-image: linear-gradient(180deg, var(--tint-1), transparent 58%);
+}
+
+.wb-article .wb-block-stat {
+  background-image: linear-gradient(180deg, var(--tint-2), transparent 70%);
+}
+
+/* Джерела — довідка, а не ще одна картка історії: прохолодна підкладка
+   відрізняє їх від шапки й показників. */
+.wb-article .page-zone-footer .wb-block-card {
+  background-image: linear-gradient(180deg, var(--tint-3), transparent 64%);
 }
 
 .wb-article .page-zone--main {

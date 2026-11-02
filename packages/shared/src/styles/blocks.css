@@ -111,7 +111,13 @@
   font-variant-numeric: tabular-nums;
   line-height: var(--leading-tight);
   letter-spacing: -0.02em;
-  color: var(--accent);
+  /* Цифра несе градієнт-зв'язку, а не один акцент: показник — початок історії,
+     і його колір мусить вести до кольорів решти сторінки (правило 25 — вибір
+     тут не позначається, це вміст). */
+  color: transparent;
+  background-image: var(--gradient-accent);
+  -webkit-background-clip: text;
+  background-clip: text;
 }
 
 .wb-block-stat__trend {
@@ -447,6 +453,9 @@
   margin: 0;
   padding-left: var(--sp-4);
   border-left: 3px solid var(--accent);
+  /* Смуга цитати теж зв'язка: від акцента до кольору даних. `border-image`
+     малює лише ту межу, яка є, тож ліворуч лишається та сама волосина-стрічка. */
+  border-image: linear-gradient(180deg, var(--accent), var(--data-4)) 1;
 }
 
 .wb-block-quote__text {
@@ -1204,9 +1213,24 @@
 }
 
 .wb-block-chart__title {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
   margin: 0;
   font-size: var(--heading-card-size);
   font-weight: var(--heading-card-weight);
+}
+
+/* Штрих перед назвою — та сама зв'язка кольорів, що й у графіку: спершу
+   акцент, далі спектр. 24px досить, щоб прочитати градієнт, і замало, щоб
+   він сперечався із заголовком. */
+.wb-block-chart__title::before {
+  content: "";
+  flex-shrink: 0;
+  width: var(--sp-6);
+  height: 3px;
+  background: var(--gradient-accent);
+  border-radius: var(--radius-full);
 }
 
 .wb-block-chart__pie-row {
@@ -1216,11 +1240,16 @@
   gap: var(--sp-5);
 }
 
+/* Пончик, а не диск: отвір у центрі дає оку точку опори й місце для підпису,
+   а маска бере колір теми — тло під нею лишається тлом. */
 .wb-block-chart__pie {
   flex-shrink: 0;
   width: 160px;
   height: 160px;
   border-radius: var(--radius-full);
+  box-shadow: var(--shadow-md);
+  -webkit-mask-image: radial-gradient(circle, transparent 53%, var(--text-primary) 54%);
+  mask-image: radial-gradient(circle, transparent 53%, var(--text-primary) 54%);
 }
 
 .wb-block-chart__legend {
@@ -1268,7 +1297,13 @@
 .wb-block-chart__bar {
   width: 100%;
   max-width: 40px;
+  background-image: linear-gradient(
+    180deg,
+    color-mix(in srgb, var(--card-bg) 40%, transparent),
+    transparent 62%
+  );
   border-radius: var(--radius-sm) var(--radius-sm) 0 0;
+  box-shadow: inset 0 1px 0 color-mix(in srgb, var(--card-bg) 45%, transparent);
   transition: height var(--duration) var(--ease);
 }
 
@@ -1311,8 +1346,16 @@
 }
 
 .wb-block-chart__slope-line {
-  stroke-width: 2;
+  stroke-width: 3;
   stroke-linecap: round;
+}
+
+/* Точка обведена папером: дві лінії, що перетинаються, без обводу зливались
+   у вузол, і було не видно, де закінчується одна серія й починається інша. */
+.wb-block-chart__slope-dot {
+  stroke: var(--card-bg);
+  stroke-width: 2;
+  paint-order: stroke;
 }
 
 /* ── Теплова карта: насиченість клітинки — дані, сітка — вигляд ─────────── */
@@ -1335,8 +1378,10 @@
 .wb-block-chart__heat td {
   padding: var(--sp-2);
   color: var(--text-primary);
+  font-variant-numeric: tabular-nums;
   text-align: center;
   border-radius: var(--radius-sm);
+  box-shadow: inset 0 0 0 1px var(--card-border);
 }
 
 /* ── Картка дати ──────────────────────────────────────────────────────────

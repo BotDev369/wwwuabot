@@ -36,7 +36,7 @@ describe("ChartBlock", () => {
     expect(bars).toHaveLength(2);
     expect(bars[0].style.height).toBe("100%");
     expect(bars[1].style.height).toBe("50%");
-    expect(bars[1].style.background).toContain("255, 0, 0");
+    expect(bars[1].style.backgroundColor).toContain("255, 0, 0");
   });
 
   it("підпис значення можна вимкнути", () => {

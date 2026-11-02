@@ -103,7 +103,7 @@
     {
       "file": "blocks.css",
       "tokens": 0,
-      "classes": 221
+      "classes": 222
     },
     {
       "file": "components.css",
@@ -173,7 +173,7 @@
     {
       "file": "research.css",
       "tokens": 0,
-      "classes": 45
+      "classes": 48
     },
     {
       "file": "reset.css",
@@ -207,12 +207,12 @@
     },
     {
       "file": "themes.css",
-      "tokens": 220,
+      "tokens": 265,
       "classes": 0
     },
     {
       "file": "tokens.css",
-      "tokens": 159,
+      "tokens": 170,
       "classes": 0
     },
     {
@@ -439,6 +439,54 @@
       "paletteDark": ""
     },
     {
+      "name": "--data-1",
+      "section": "Спектр",
+      "light": "#a0330f",
+      "dark": "#f0a97c",
+      "palette": "",
+      "paletteDark": ""
+    },
+    {
+      "name": "--data-2",
+      "section": "Спектр",
+      "light": "#1d6b53",
+      "dark": "#8ee0a4",
+      "palette": "",
+      "paletteDark": ""
+    },
+    {
+      "name": "--data-3",
+      "section": "Спектр",
+      "light": "#8a6100",
+      "dark": "#f0cf80",
+      "palette": "",
+      "paletteDark": ""
+    },
+    {
+      "name": "--data-4",
+      "section": "Спектр",
+      "light": "#3d4c96",
+      "dark": "#b6a4ff",
+      "palette": "",
+      "paletteDark": ""
+    },
+    {
+      "name": "--data-5",
+      "section": "Спектр",
+      "light": "#8a2a56",
+      "dark": "#ff9fc4",
+      "palette": "",
+      "paletteDark": ""
+    },
+    {
+      "name": "--data-6",
+      "section": "Спектр",
+      "light": "#1c6b83",
+      "dark": "#8fd0e8",
+      "palette": "",
+      "paletteDark": ""
+    },
+    {
       "name": "--duration",
       "section": "Transitions",
       "light": "200ms",
@@ -615,8 +663,24 @@
       "paletteDark": ""
     },
     {
+      "name": "--gradient-accent",
+      "section": "Спектр",
+      "light": "linear-gradient(\n    115deg,\n    var(--accent) 0%,\n    var(--data-4) 55%,\n    var(--data-5) 100%\n  )",
+      "dark": "",
+      "palette": "",
+      "paletteDark": ""
+    },
+    {
+      "name": "--gradient-wash",
+      "section": "Спектр",
+      "light": "radial-gradient(120% 80% at 0% 0%, var(--accent-soft), transparent 62%)",
+      "dark": "",
+      "palette": "",
+      "paletteDark": ""
+    },
+    {
       "name": "--green",
-      "section": "Палітра світлої схеми (M3 surface containers)",
+      "section": "Спектр",
       "light": "#0a6e2a",
       "dark": "#8ee0a4",
       "palette": "",
@@ -624,7 +688,7 @@
     },
     {
       "name": "--green-dim",
-      "section": "Палітра світлої схеми (M3 surface containers)",
+      "section": "Спектр",
       "light": "#e2eee5",
       "dark": "rgba(142, 224, 164, 0.14)",
       "palette": "",
@@ -848,7 +912,7 @@
     },
     {
       "name": "--red",
-      "section": "Палітра світлої схеми (M3 surface containers)",
+      "section": "Спектр",
       "light": "#ba1a1a",
       "dark": "#ffb1ae",
       "palette": "",
@@ -856,7 +920,7 @@
     },
     {
       "name": "--red-dim",
-      "section": "Палітра світлої схеми (M3 surface containers)",
+      "section": "Спектр",
       "light": "#f7e4e4",
       "dark": "rgba(255, 177, 174, 0.14)",
       "palette": "",
@@ -1192,7 +1256,7 @@
     },
     {
       "name": "--surface",
-      "section": "Палітра світлої схеми (M3 surface containers)",
+      "section": "Спектр",
       "light": "var(--bg-home, #f6f6f7)",
       "dark": "#191220",
       "palette": "",
@@ -1200,7 +1264,7 @@
     },
     {
       "name": "--surface-active",
-      "section": "Палітра світлої схеми (M3 surface containers)",
+      "section": "Спектр",
       "light": "#e4e4e8",
       "dark": "#32253e",
       "palette": "",
@@ -1208,7 +1272,7 @@
     },
     {
       "name": "--surface-hover",
-      "section": "Палітра світлої схеми (M3 surface containers)",
+      "section": "Спектр",
       "light": "#ededf0",
       "dark": "#291e33",
       "palette": "",
@@ -1375,6 +1439,30 @@
       "paletteDark": ""
     },
     {
+      "name": "--tint-1",
+      "section": "Спектр",
+      "light": "#fdf2ec",
+      "dark": "#261a1c",
+      "palette": "",
+      "paletteDark": ""
+    },
+    {
+      "name": "--tint-2",
+      "section": "Спектр",
+      "light": "#edf4f0",
+      "dark": "#172420",
+      "palette": "",
+      "paletteDark": ""
+    },
+    {
+      "name": "--tint-3",
+      "section": "Спектр",
+      "light": "#eef1f9",
+      "dark": "#221a2e",
+      "palette": "",
+      "paletteDark": ""
+    },
+    {
       "name": "--topbar-h",
       "section": "Сайдбар: крок пункту й берег",
       "light": "56px",
@@ -1432,7 +1520,7 @@
     },
     {
       "name": "--yellow",
-      "section": "Палітра світлої схеми (M3 surface containers)",
+      "section": "Спектр",
       "light": "#6d5700",
       "dark": "#f0cf80",
       "palette": "",
@@ -1440,7 +1528,7 @@
     },
     {
       "name": "--yellow-dim",
-      "section": "Палітра світлої схеми (M3 surface containers)",
+      "section": "Спектр",
       "light": "#edebe0",
       "dark": "rgba(240, 207, 128, 0.14)",
       "palette": "",
@@ -3690,6 +3778,7 @@
         "names": [
           "wb-block-chart__slope",
           "wb-block-chart__slope-caption",
+          "wb-block-chart__slope-dot",
           "wb-block-chart__slope-line",
           "wb-block-chart__slope-name",
           "wb-block-chart__slope-value"
@@ -4808,6 +4897,7 @@
           "page-layout",
           "page-zone--main",
           "page-zone-blocks",
+          "page-zone-footer",
           "wb-article",
           "wb-article--page",
           "wb-article-back",
@@ -4816,6 +4906,8 @@
           "wb-article-bar__meta",
           "wb-article-bar__track",
           "wb-article-body",
+          "wb-block-card",
+          "wb-block-stat",
           "wb-block-text__content",
           "wb-block-text__title",
           "wb-table"

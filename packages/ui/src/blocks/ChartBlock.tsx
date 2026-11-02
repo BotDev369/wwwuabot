@@ -30,16 +30,28 @@ interface HeatRow {
   cells: number[];
 }
 
+/** Палітра даних — токени теми: серія має власний голос, а не колір сусідньої. */
 const PALETTE = [
-  "var(--accent)",
-  "var(--green)",
-  "var(--yellow)",
-  "var(--red)",
-  "#7c3aed",
-  "#06b6d4",
-  "#f97316",
-  "#ec4899",
+  "var(--data-1)",
+  "var(--data-2)",
+  "var(--data-3)",
+  "var(--data-4)",
+  "var(--data-5)",
+  "var(--data-6)",
 ];
+
+/**
+ * Колір клітинки теплової карти: холодний тон на малих значеннях, теплий — на
+ * великих, а насиченість росте разом із часткою. Два кольори — це шкала, один
+ * колір — це пляма, у якій не видно, де більше.
+ */
+function heatColor(value: number, max: number): string {
+  const share = max > 0 ? value / max : 0;
+  const ramp = ["var(--data-6)", "var(--data-3)", "var(--data-1)"];
+  const step = Math.min(ramp.length - 1, Math.floor(share * ramp.length));
+  const strength = 18 + Math.round(share * 40);
+  return `color-mix(in srgb, ${ramp[step]} ${strength}%, var(--card-bg))`;
+}
 
 interface SlopeProps {
   items: SlopeItem[];
@@ -102,8 +114,20 @@ function Slope({ items, title, fromLabel, toLabel, showLabels }: SlopeProps) {
               stroke={color}
               className="wb-block-chart__slope-line"
             />
-            <circle cx={plotLeft} cy={yFrom} r={4} fill={color} />
-            <circle cx={plotRight} cy={yTo} r={4} fill={color} />
+            <circle
+              cx={plotLeft}
+              cy={yFrom}
+              r={4}
+              fill={color}
+              className="wb-block-chart__slope-dot"
+            />
+            <circle
+              cx={plotRight}
+              cy={yTo}
+              r={4}
+              fill={color}
+              className="wb-block-chart__slope-dot"
+            />
             <text x={0} y={yFrom + 4} className="wb-block-chart__slope-name">
               {item.label}
             </text>
@@ -169,15 +193,8 @@ function Heatmap({ rows, columns, unit }: HeatmapProps) {
               const value = row.cells[i];
               if (value === undefined) return <td key={i} />;
 
-              // Насиченість — частка від найбільшого значення, тобто теж дані.
-              const tint = Math.round((value / max) * 55);
               return (
-                <td
-                  key={i}
-                  style={{
-                    background: `color-mix(in srgb, var(--accent) ${tint}%, var(--surface-2))`,
-                  }}
-                >
+                <td key={i} style={{ background: heatColor(value, max) }}>
                   {value}
                   {unit}
                 </td>
@@ -298,7 +315,7 @@ export function ChartBlock({ block }: BlockComponentProps) {
               {showLabels && <span className="wb-block-chart__pct">{item.value}</span>}
               <div
                 className="wb-block-chart__bar"
-                style={{ height: `${heightPercent}%`, background: color }}
+                style={{ height: `${heightPercent}%`, backgroundColor: color }}
               />
               <span className="wb-block-chart__axis-label">{item.label}</span>
             </div>
