@@ -18,6 +18,7 @@ import {
   NOTES_PATH,
   ORDERS_PATH,
   PAGES_PATH,
+  RESEARCH_PATH,
   USERS_PATH,
 } from "../app/routes";
 
@@ -35,6 +36,7 @@ export interface ServiceEntry {
  * один екран означають, що за один із них забудуть.
  */
 export const SERVICES: readonly ServiceEntry[] = [
+  { key: "research", label: "Дослідження", icon: "book", to: RESEARCH_PATH },
   { key: "ads", label: "Оголошення", icon: "announce", to: ADS_PATH },
   { key: "pages", label: "Сторінки", icon: "page", to: PAGES_PATH },
   { key: "games", label: "Ігри", icon: "game", to: GAMES_PATH },

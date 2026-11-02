@@ -8,15 +8,16 @@
 умови показу. Людині, яка хоче «сторінку про себе», потрібні не вони, а три поля тексту. Тому
 структуру задає **шаблон**, а людина заповнює текст.
 
-## 1. Три шаблони, і структура — це дані
+## 1. Чотири шаблони, і структура — це дані
 
-`PAGE_TEMPLATES` (`packages/shared/src/pages/template-list.ts`) описує три готові види:
+`PAGE_TEMPLATES` (`packages/shared/src/pages/template-list.ts`) описує чотири готові види:
 
 | Ключ | Підпис | Для чого |
 |---|---|---|
 | `card` | **Візитка** | про себе: ім'я, кілька слів, як зв'язатися |
 | `event` | **Подія** | що, коли, де — і за яких умов берете участь |
 | `shop` | **Магазин** | товари, замовлення й розділи магазину — окремий власник: [`SHOPS.md`](./SHOPS.md) |
+| `article` | **Стаття** | контентна сторінка: рубрика, заголовок, лід, текст, цитата й джерела |
 
 **Шаблон — це каркас, а не список полів.** У ньому лежить `layout`: готова будова сторінки —
 **картка-заголовок** (назва найбільшим щаблем і рядок під нею), **картки-розділи** (підпис у
@@ -158,7 +159,7 @@
 
 | Файл | Призначення |
 |---|---|
-| `packages/shared/src/pages/` | `template-list.ts` (три шаблони: каркас `layout`, поля, `preview`), `templates.ts` (`buildPageConfig` / `readPageValues`), `address.ts`, `rules.ts`, `api.ts` |
+| `packages/shared/src/pages/` | `template-list.ts` (чотири шаблони: каркас `layout`, поля, `preview`), `templates.ts` (`buildPageConfig` / `readPageValues`), `address.ts`, `rules.ts`, `api.ts` |
 | `api-dev/src/services/pages.service.ts`, `api-dev/src/controllers/pages.controller.ts` | сторінки, які людина веде (власник і адміни), і список відкритих; роль ухвалює `pageRole`, запит лише звужує відбір |
 | `web-platform-dev/src/pages/user-pages/` | екран `/pages` (погляди «Мої» / «Публічні»), перегляд (сторінка цілком + липка смуга керування), **створення** (`PageCreatePage` → `PageTemplatePicker` + `PageTemplatePreview` + `PageEditor`), правка (`/pages/:id/edit`) |
 | `packages/ui/src/hooks/useAutoGrowField.ts` | поле, яке росте за текстом — спільне для композера й редактора сторінки |

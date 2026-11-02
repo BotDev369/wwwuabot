@@ -171,6 +171,11 @@
       "classes": 22
     },
     {
+      "file": "research.css",
+      "tokens": 0,
+      "classes": 44
+    },
+    {
       "file": "reset.css",
       "tokens": 2,
       "classes": 0
@@ -4737,6 +4742,80 @@
           "wb-template-row-icon",
           "wb-template-row-text",
           "wb-template-row-title"
+        ]
+      }
+    ],
+    "research.css": [
+      {
+        "section": "Лендінг: шапка",
+        "names": [
+          "wb-research",
+          "wb-research-facts",
+          "wb-research-hero",
+          "wb-research-kicker",
+          "wb-research-lead",
+          "wb-research-title"
+        ]
+      },
+      {
+        "section": "Лендінг: розділи й рядки блоків",
+        "names": [
+          "wb-research-card",
+          "wb-research-card__figures",
+          "wb-research-card__id",
+          "wb-research-card__lead",
+          "wb-research-card__main",
+          "wb-research-card__meta",
+          "wb-research-card__title",
+          "wb-research-chapter",
+          "wb-research-chapter__count",
+          "wb-research-chapter__head",
+          "wb-research-chapter__no",
+          "wb-research-chapter__title",
+          "wb-research-figure",
+          "wb-research-figure__label",
+          "wb-research-figure__value",
+          "wb-research-footer",
+          "wb-research-list"
+        ]
+      },
+      {
+        "section": "Стан завантаження: три рядки тієї самої висоти, що картки",
+        "names": [
+          "wb-research-loading",
+          "wb-research-skeleton"
+        ]
+      },
+      {
+        "section": "Читання контентної сторінки",
+        "names": [
+          "page-layout",
+          "page-zone--main",
+          "page-zone-blocks",
+          "wb-article",
+          "wb-article-back",
+          "wb-article-bar",
+          "wb-article-bar__fill",
+          "wb-article-bar__meta",
+          "wb-article-bar__track",
+          "wb-article-body",
+          "wb-block-text__content",
+          "wb-block-text__title",
+          "wb-table"
+        ]
+      },
+      {
+        "section": "Кінець тексту: що читати далі",
+        "names": [
+          "wb-article-next",
+          "wb-article-next__label",
+          "wb-article-next__link",
+          "wb-article-next__link--next",
+          "wb-article-next__link--prev",
+          "wb-article-next__title",
+          "wb-research-card",
+          "wb-research-facts",
+          "wb-research-title"
         ]
       }
     ],

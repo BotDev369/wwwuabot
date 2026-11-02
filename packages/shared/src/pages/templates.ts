@@ -43,7 +43,7 @@
 import { PAGE_TEMPLATES } from "./template-list";
 
 /** Ключі шаблонів — закритий список: ним же підписано `scenarios.template_key`. */
-export const PAGE_TEMPLATE_KEYS = ["card", "event", "shop"] as const;
+export const PAGE_TEMPLATE_KEYS = ["card", "event", "shop", "article"] as const;
 
 export type PageTemplateKey = (typeof PAGE_TEMPLATE_KEYS)[number];
 
@@ -146,7 +146,7 @@ export interface PageTemplate {
 }
 
 /**
- * Три готові шаблони — **дані**, тож живуть окремим файлом: дописати четвертий
+ * Готові шаблони — **дані**, тож живуть окремим файлом: дописати ще один
  * означає додати рядок у таблицю констант, а не змінити цей код. Передруковуються
  * звідси, щоб споживач бачив один модуль — `./templates`.
  */

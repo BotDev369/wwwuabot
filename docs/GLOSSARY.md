@@ -50,7 +50,7 @@
   4 зони: sidebar, header, main, footer. Блоки рекурсивні, автономні. Типи:
   `packages/shared/src/types/page-config.ts`. Реєстр: `packages/shared/src/constants/block-definitions/`.
   React-компоненти: `packages/ui/src/blocks/`.
-- **Сторінка з шаблону** — сторінка, яку людина створила сама, змінюючи **лише текст**: три шаблони
+- **Сторінка з шаблону** — сторінка, яку людина створила сама, змінюючи **лише текст**: чотири шаблони
   («Візитка», «Подія», «Магазин»), структуру задає шаблон, а `buildPageConfig` / `readPageValues` переводять
   значення в `page_data` і назад (`packages/shared/src/pages/`). Це **той самий** рядок `scenarios`,
   лише з власником (`owner_id`), прапорцем видимості (`is_public`, типово приватна) і ключем шаблону

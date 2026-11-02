@@ -18,6 +18,7 @@ const PAGE_TEMPLATE_ICONS: Record<PageTemplateKey, IconName> = {
   card: "card",
   event: "calendar",
   shop: "shop",
+  article: "page",
 };
 
 export function pageTemplateIcon(key: PageTemplateKey): IconName {

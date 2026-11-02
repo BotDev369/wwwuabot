@@ -1,0 +1,511 @@
+/*
+ * «Дослідження»: редакційний лендінг і читання контентної сторінки.
+ *
+ * Лендінг — зміст книжки (шапка, розділи, рядки блоків), текст — сторінка з
+ * міркою рядка. Один файл на дві поверхні, бо це один досвід читання.
+ *
+ * Тільки токени: жодного хардкоду кольору (`check:css`).
+ */
+
+/* ── Лендінг: шапка ──────────────────────────────────────────────────── */
+
+.wb-research {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-10);
+  padding-bottom: var(--sp-10);
+}
+
+.wb-research-hero {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-5);
+  padding: var(--sp-6) 0 var(--sp-8);
+  border-bottom: 1px solid var(--border-subtle);
+}
+
+/* Рубрика — рядок із рискою: вона каже «це розділ», а не «це заголовок». */
+.wb-research-kicker {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sp-3);
+  margin: 0;
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--accent);
+}
+
+.wb-research-kicker::before {
+  content: "";
+  width: var(--sp-6);
+  height: 1px;
+  background: var(--accent);
+}
+
+/* Заголовок дослідження — найбільший щабель у продукті й шрифт теми:
+   саме він робить розділ упізнаваним, а не «ще один список». */
+.wb-research-title {
+  max-width: 22ch;
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: var(--text-3xl);
+  font-weight: var(--weight-semibold);
+  line-height: var(--leading-tight);
+  letter-spacing: var(--tracking-title);
+  color: var(--text-primary);
+  text-wrap: balance;
+}
+
+.wb-research-lead {
+  max-width: 62ch;
+  margin: 0;
+  font-size: var(--text-md);
+  line-height: var(--leading-relaxed);
+  color: var(--text-secondary);
+}
+
+/* Масштаб — три числа в рядок: вони відповідають на «скільки тут читати». */
+.wb-research-facts {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--sp-6);
+  margin: var(--sp-2) 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.wb-research-facts li {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-1);
+  padding-right: var(--sp-6);
+  border-right: 1px solid var(--border-subtle);
+}
+
+.wb-research-facts li:last-child {
+  padding-right: 0;
+  border-right: 0;
+}
+
+.wb-research-facts strong {
+  font-family: var(--font-display);
+  font-size: var(--text-xl);
+  font-weight: var(--weight-semibold);
+  color: var(--text-primary);
+}
+
+.wb-research-facts span {
+  font-size: var(--text-xs);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+
+/* ── Лендінг: розділи й рядки блоків ─────────────────────────────────── */
+
+.wb-research-chapter {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-4);
+}
+
+/* Номер розділу — в колонці ліворуч від підпису: так розділи читаються як
+   частини однієї книжки, а не як незалежні секції. */
+.wb-research-chapter__head {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: baseline;
+  gap: var(--sp-3);
+  padding-bottom: var(--sp-3);
+  border-bottom: 1px solid var(--border);
+}
+
+.wb-research-chapter__no {
+  font-family: var(--font-mono);
+  font-size: var(--text-sm);
+  color: var(--accent);
+}
+
+.wb-research-chapter__title {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: var(--text-xl);
+  font-weight: var(--weight-semibold);
+  line-height: var(--leading-tight);
+  letter-spacing: var(--tracking-title);
+  color: var(--text-primary);
+}
+
+.wb-research-chapter__count {
+  font-size: var(--text-xs);
+  color: var(--text-muted);
+}
+
+.wb-research-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-3);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+/* Рядок блоку — **кнопка цілком**: дотик у будь-якому місці веде в текст, і
+   жодного «посилання в реченні», яке на телефоні важко влучити. */
+.wb-research-card {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  gap: var(--sp-4);
+  align-items: start;
+  width: 100%;
+  padding: var(--sp-4);
+  text-align: left;
+  color: inherit;
+  background: var(--card-bg);
+  border: 1px solid var(--card-border);
+  border-radius: var(--card-radius);
+  cursor: pointer;
+  transition:
+    border-color 0.18s ease,
+    background 0.18s ease,
+    transform 0.18s ease,
+    box-shadow 0.18s ease;
+}
+
+/* Підсвітка — лише для миші: на тачі `:hover` залипав би після одного тапу. */
+@media (hover: hover) {
+  .wb-research-card:hover {
+    background: var(--surface-hover);
+    border-color: var(--border-hover);
+    box-shadow: var(--shadow-card);
+    transform: translateY(-1px);
+  }
+}
+
+.wb-research-card:focus-visible {
+  outline: var(--focus-ring-width) solid var(--focus-ring-color);
+  outline-offset: var(--focus-ring-offset);
+}
+
+.wb-research-card > svg {
+  margin-top: var(--sp-1);
+  color: var(--text-muted);
+}
+
+.wb-research-card__id {
+  padding: var(--sp-1) var(--sp-2);
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  letter-spacing: 0.08em;
+  color: var(--accent);
+  background: var(--accent-dim);
+  border-radius: var(--card-radius);
+}
+
+.wb-research-card__main {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-2);
+  min-width: 0;
+}
+
+.wb-research-card__title {
+  font-family: var(--font-display);
+  font-size: var(--text-lg);
+  font-weight: var(--weight-semibold);
+  line-height: var(--leading-tight);
+  color: var(--text-primary);
+}
+
+.wb-research-card__lead {
+  font-size: var(--text-base);
+  line-height: var(--leading-normal);
+  color: var(--text-secondary);
+}
+
+/* Ключові цифри — не бейджі: число велике, підпис дрібний. Так рядок показує
+   те, заради чого блок відкривають. */
+.wb-research-card__figures {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--sp-4);
+  margin-top: var(--sp-1);
+}
+
+.wb-research-figure {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-1);
+}
+
+.wb-research-figure__value {
+  font-family: var(--font-display);
+  font-size: var(--text-lg);
+  font-weight: var(--weight-semibold);
+  color: var(--text-primary);
+}
+
+.wb-research-figure__label {
+  font-size: var(--text-xs);
+  color: var(--text-muted);
+}
+
+.wb-research-card__meta {
+  margin-top: var(--sp-1);
+  font-size: var(--text-xs);
+  letter-spacing: 0.02em;
+  color: var(--text-muted);
+}
+
+.wb-research-footer {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--sp-4);
+  padding: var(--sp-6);
+  background: var(--bg-2);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--card-radius);
+}
+
+.wb-research-footer p {
+  max-width: 58ch;
+  margin: 0;
+  font-size: var(--text-base);
+  line-height: var(--leading-normal);
+  color: var(--text-secondary);
+}
+
+/* ── Стан завантаження: три рядки тієї самої висоти, що картки ───────── */
+
+.wb-research-loading {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-3);
+}
+
+.wb-research-skeleton {
+  height: var(--sp-12);
+  background: var(--bg-3);
+  border-radius: var(--card-radius);
+  opacity: 0.6;
+}
+
+/* ── Читання контентної сторінки ─────────────────────────────────────── */
+
+.wb-article {
+  display: flex;
+  flex-direction: column;
+  min-height: 100dvh;
+}
+
+/* Смуга липка: у довгому тексті «назад» мусить бути під рукою на будь-якій
+   глибині, а не лише на початку. */
+.wb-article-bar {
+  position: sticky;
+  top: 0;
+  z-index: 5;
+  display: flex;
+  align-items: center;
+  gap: var(--sp-3);
+  padding: var(--sp-2) var(--sp-4);
+  background: var(--chrome-header-bg);
+  border-bottom: 1px solid var(--hairline);
+}
+
+.wb-article-back {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sp-2);
+  margin-left: calc(var(--sp-2) * -1);
+  padding: var(--sp-1) var(--sp-2);
+  font-size: var(--text-sm);
+  font-weight: var(--weight-medium);
+  color: var(--text-secondary);
+  background: transparent;
+  border: 0;
+  border-radius: var(--card-radius);
+  cursor: pointer;
+}
+
+@media (hover: hover) {
+  .wb-article-back:hover {
+    color: var(--text-primary);
+    background: var(--surface-hover);
+  }
+}
+
+.wb-article-back:focus-visible {
+  outline: var(--focus-ring-width) solid var(--focus-ring-color);
+  outline-offset: var(--focus-ring-offset);
+}
+
+.wb-article-bar__meta {
+  min-width: 0;
+  overflow: hidden;
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  color: var(--text-muted);
+}
+
+.wb-article-bar__track {
+  flex-shrink: 0;
+  width: 96px;
+  height: 3px;
+  margin-left: auto;
+  overflow: hidden;
+  background: var(--hairline);
+  border-radius: var(--radius-full);
+}
+
+.wb-article-bar__fill {
+  display: block;
+  height: 100%;
+  background: var(--accent);
+  border-radius: inherit;
+  transition: width 0.15s linear;
+}
+
+.wb-article-body {
+  flex: 1;
+}
+
+.wb-article .page-layout {
+  min-height: auto;
+}
+
+/* Мірка рядка — головна різниця між «сторінкою» й «текстом»: 74ch тримає око
+   на рядку, тоді як гумова ширина робить абзац на пів екрана. */
+.wb-article .page-zone-blocks {
+  width: 100%;
+  max-width: 74ch;
+  margin-inline: auto;
+  gap: var(--sp-8);
+}
+
+/* Вкладені блоки (усередині картки) мірки не потребують: вони вже в ній. */
+.wb-article .page-zone-blocks .page-zone-blocks {
+  max-width: none;
+  margin: 0;
+  gap: var(--sp-4);
+}
+
+.wb-article .page-zone--main {
+  padding: var(--sp-6) var(--sp-4) var(--sp-10);
+}
+
+.wb-article .wb-block-text__content {
+  font-size: var(--text-md);
+  line-height: 1.75;
+  color: var(--text-secondary);
+}
+
+.wb-article .wb-block-text__title {
+  letter-spacing: var(--tracking-title);
+}
+
+.wb-article .wb-table {
+  font-size: var(--text-sm);
+}
+
+/* ── Кінець тексту: що читати далі ───────────────────────────────────── */
+
+.wb-article-next {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--sp-3);
+  width: 100%;
+  max-width: 74ch;
+  margin: 0 auto var(--sp-10);
+  padding: 0 var(--sp-4);
+  box-sizing: border-box;
+}
+
+.wb-article-next__link {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-1);
+  padding: var(--sp-4);
+  text-align: left;
+  color: inherit;
+  background: var(--card-bg);
+  border: 1px solid var(--card-border);
+  border-radius: var(--card-radius);
+  cursor: pointer;
+  transition:
+    border-color 0.18s ease,
+    background 0.18s ease;
+}
+
+@media (hover: hover) {
+  .wb-article-next__link:hover {
+    background: var(--surface-hover);
+    border-color: var(--border-hover);
+  }
+}
+
+.wb-article-next__link:focus-visible {
+  outline: var(--focus-ring-width) solid var(--focus-ring-color);
+  outline-offset: var(--focus-ring-offset);
+}
+
+.wb-article-next__link--prev {
+  text-align: left;
+}
+
+.wb-article-next__link--next {
+  text-align: right;
+}
+
+.wb-article-next__label {
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--accent);
+}
+
+.wb-article-next__title {
+  font-family: var(--font-display);
+  font-size: var(--text-md);
+  line-height: var(--leading-tight);
+  color: var(--text-primary);
+}
+
+@media (max-width: 640px) {
+  .wb-research-title {
+    max-width: none;
+    font-size: var(--text-2xl);
+  }
+
+  .wb-research-facts {
+    gap: var(--sp-4);
+  }
+
+  .wb-research-facts li {
+    padding-right: var(--sp-4);
+  }
+
+  .wb-research-card {
+    grid-template-columns: auto 1fr;
+  }
+
+  .wb-research-card > svg {
+    display: none;
+  }
+
+  .wb-article-next {
+    grid-template-columns: 1fr;
+  }
+
+  .wb-article-next__link--next {
+    text-align: left;
+  }
+}

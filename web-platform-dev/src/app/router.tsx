@@ -38,6 +38,7 @@ import {
   PAGE_EDIT_ROUTE,
   PAGES_NEW_ROUTE,
   PAGES_ROUTE,
+  RESEARCH_ROUTE,
   SHOP_ORDERS_ROUTE,
   SHOP_PRODUCTS_ROUTE,
   SERVICES_ROUTE,
@@ -54,6 +55,7 @@ import { NotesPage } from "@/pages/NotesPage";
 import { ProfileAccountPage } from "@/pages/ProfileAccountPage";
 import { ProfileOrdersPage } from "@/pages/ProfileOrdersPage";
 import { ServicesPage } from "@/pages/ServicesPage";
+import { ResearchPage } from "@/pages/research/ResearchPage";
 import { ScenarioPage } from "@/pages/ScenarioPage";
 import { UsersPage } from "@/pages/UsersPage";
 import { GamePage } from "@/pages/games/GamePage";
@@ -143,6 +145,10 @@ export const router = createBrowserRouter([
       // Повідомлення — переписка людей (таблиці `conversations`/`messages`).
       // Адреса зі спільного складу футера: пункт і маршрут — один факт.
       { path: MESSAGES_PATH, element: <MessagesPage /> },
+      // Дослідження — власний розділ контенту: лендінг блоків, а сам блок
+      // відкривається за своєю адресою нижче (`viruvannia-a1`). Маршрут стоїть
+      // перед catch-all, інакше `*` зʼїв би його як сторінку.
+      { path: RESEARCH_ROUTE, element: <ResearchPage /> },
       // Catch-all: сторінка за її адресою
       { path: "*", element: <ScenarioPage /> },
     ],

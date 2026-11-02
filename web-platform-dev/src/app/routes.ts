@@ -145,6 +145,7 @@ export const userPagePath = (id: number): string => `${PAGES_PATH}/${id}`;
  */
 export const PAGES_NEW_ROUTE = "new";
 export const PAGES_NEW_PATH = `${PAGES_PATH}/${PAGES_NEW_ROUTE}`;
+export { RESEARCH_PATH, RESEARCH_ROUTE } from "@/pages/research/route";
 
 /**
  * Редактор уже наявної сторінки — теж екран.

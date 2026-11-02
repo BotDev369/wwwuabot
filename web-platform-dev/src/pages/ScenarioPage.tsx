@@ -16,12 +16,14 @@ import type { PageConfig, BlockContext, UserProfile } from "@wwwuabot/shared/typ
 import { parsePageConfig } from "@wwwuabot/shared/types/page-config";
 import { HOME_SLUG } from "@wwwuabot/shared/content";
 import { favoriteTargetId } from "@wwwuabot/shared/favorites";
+import { isResearchBlockSlug } from "@wwwuabot/shared/research";
 import { PageRenderer } from "@wwwuabot/ui/PageRenderer";
 import { apiFetchRaw } from "@/shared/api/client";
 import { useShopCatalog } from "@/pages/shop/useShopCatalog";
 import { ShopStore } from "@/pages/shop/store/ShopStore";
 import { registerAllBlocks } from "@wwwuabot/ui/blocks";
 import { useScreenChrome } from "@wwwuabot/ui/nav";
+import { ResearchArticleFrame } from "@/pages/research/ResearchArticleFrame";
 
 registerAllBlocks();
 
@@ -248,13 +250,19 @@ export function ScenarioPage() {
     );
   }
 
-  return (
-    <>
-      <PageRenderer
-        config={activeConfig}
-        context={status === "fallback" ? { slug: HOME_SLUG, title: null, photoUrl: null } : context}
-        className="page-layout"
-      />
-    </>
+  const rendered = (
+    <PageRenderer
+      config={activeConfig}
+      context={status === "fallback" ? { slug: HOME_SLUG, title: null, photoUrl: null } : context}
+      className="page-layout"
+    />
   );
+
+  // Блок дослідження читається в рамці: назад у розділ, прогрес і сусіди. Саму
+  // сторінку це не міняє — рамка лише додає те, чого в `page_data` немає.
+  if (status === "ready" && isResearchBlockSlug(pageSlug)) {
+    return <ResearchArticleFrame slug={pageSlug}>{rendered}</ResearchArticleFrame>;
+  }
+
+  return rendered;
 }
