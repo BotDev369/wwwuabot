@@ -1,11 +1,7 @@
 // @vitest-environment jsdom
 /**
- * Схема на `<html>`: **перемикається атрибут, а не стиль**.
- *
- * Хук лишає собі рівно одну річ — світлоту (`data-theme`), бо стиль продукту
- * вибирати не можна. Помилка тут виглядає як «натиснув — нічого не сталось»
- * або як вибір, що не переживає перезавантаження, і в `node`-тестах її не
- * видно: там немає ні `localStorage`, ні `document`.
+ * Хук теми: вибір діє одразу, переживає перезавантаження й не лишає
+ * мертвих атрибутів трьох кольорів.
  *
  * @module packages/shared/src/components/theme/useStyleTheme.dom.test
  */
@@ -13,8 +9,11 @@
 import { act, renderHook } from "@testing-library/react";
 import { beforeEach, describe, expect, it } from "vitest";
 import { useStyleTheme } from "./useStyleTheme";
+import { THEME_KEY } from "../../styles/registry";
 
-const THEME_KEY = "wwwuabot-theme";
+function theme(): string | null {
+  return document.documentElement.getAttribute("data-theme");
+}
 
 beforeEach(() => {
   localStorage.clear();
@@ -24,52 +23,49 @@ beforeEach(() => {
 });
 
 describe("useStyleTheme", () => {
-  it("без збереженого значення — темна схема", () => {
+  it("без вибору починає з ночі", () => {
     const { result } = renderHook(() => useStyleTheme());
-    expect(result.current.scheme).toBe("dark");
-    expect(document.documentElement.getAttribute("data-theme")).toBe("dark");
-  });
 
-  it("бере збережену схему й ставить її на `<html>`", () => {
-    localStorage.setItem(THEME_KEY, "light");
-    const { result } = renderHook(() => useStyleTheme());
-    expect(result.current.scheme).toBe("light");
-    expect(document.documentElement.getAttribute("data-theme")).toBe("light");
-  });
-
-  it("вибір схеми переживає перезавантаження", () => {
-    const { result } = renderHook(() => useStyleTheme());
-    act(() => result.current.setScheme("light"));
-    expect(localStorage.getItem(THEME_KEY)).toBe("light");
-    expect(document.documentElement.getAttribute("data-theme")).toBe("light");
-  });
-
-  it("перемикач міняє схему на протилежну", () => {
-    const { result } = renderHook(() => useStyleTheme());
-    act(() => result.current.toggleScheme());
-    expect(result.current.scheme).toBe("light");
-    act(() => result.current.toggleScheme());
     expect(result.current.scheme).toBe("dark");
   });
 
-  it("палітра людини сильніша за схему: перемикач її не перебиває", () => {
-    // Саме так екран ставав нечитабельним: на темній палітрі лишалася
-    // збережена світла схема, і картка (`--card-bg`) приходила з неї — біла
-    // під білим текстом.
+  it("ставит збережену тему на екран", () => {
+    localStorage.setItem(THEME_KEY, "forest");
+
+    const { result } = renderHook(() => useStyleTheme());
+
+    expect(result.current.scheme).toBe("forest");
+    expect(theme()).toBe("forest");
+  });
+
+  it("вибір застосовується й запамʼятовується одразу", () => {
+    const { result } = renderHook(() => useStyleTheme());
+
+    act(() => result.current.setScheme("plum"));
+
+    expect(result.current.scheme).toBe("plum");
+    expect(theme()).toBe("plum");
+    expect(localStorage.getItem(THEME_KEY)).toBe("plum");
+  });
+
+  it("перемикач веде між днем і ніччю", () => {
+    const { result } = renderHook(() => useStyleTheme());
+
+    act(() => result.current.toggleScheme());
+    expect(theme()).toBe("light");
+
+    act(() => result.current.toggleScheme());
+    expect(theme()).toBe("dark");
+  });
+
+  it("застосування теми знімає атрибути трьох кольорів", () => {
     document.documentElement.setAttribute("data-colors", "custom");
-    document.documentElement.setAttribute("data-colors-mode", "dark");
-    document.documentElement.setAttribute("data-theme", "dark");
+    document.documentElement.setAttribute("data-colors-mode", "light");
 
     const { result } = renderHook(() => useStyleTheme());
-    expect(result.current.scheme).toBe("dark");
+    act(() => result.current.setScheme("paper"));
 
-    act(() => result.current.setScheme("light"));
-    expect(document.documentElement.getAttribute("data-theme")).toBe("dark");
-
-    // Палітру знято — схема знову має голос.
-    document.documentElement.removeAttribute("data-colors");
-    document.documentElement.removeAttribute("data-colors-mode");
-    act(() => result.current.setScheme("light"));
-    expect(document.documentElement.getAttribute("data-theme")).toBe("light");
+    expect(document.documentElement.hasAttribute("data-colors")).toBe(false);
+    expect(document.documentElement.hasAttribute("data-colors-mode")).toBe(false);
   });
 });

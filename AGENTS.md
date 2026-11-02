@@ -45,8 +45,8 @@ packages/ui/      Спільні React-компоненти Page Builder (@wwwua
 - **Вид товару** — фізичний / цифровий / послуга: **закритий** перелік у коді (`PRODUCT_KINDS`), бо вид — це поведінка, а не слово.
 - **Замовлення** — `shop_orders` + знімок (`shop_order_items`); `status` — **ключ**, не текст. Оповіщення продавцю — розмова платформи, а не друга система.
 - **Conditional Rendering** — умовний показ блоків за role/tariff/status/permissions.
-- **Design System** — **один** стиль продукту (світла й темна схема, `styles/tokens.css` + `styles/themes.css`; вибору стилю немає) і **три кольори людини** (фон / основний / акцент) через `data-colors`.
-- **Схема теми** — три кольори + шрифт, таблиця `theme_schemes`; «публічно» виносить її в бібліотеку публічних кольорів.
+- **Design System** — **один** стиль продукту й **шість авторських тем** (`styles/tokens.css` + `styles/themes.css`; вибору стилю немає). Тему задає `data-theme` на `<html>`: повний набір токенів, а не три кольори людини.
+- **Тема** — авторський набір (палітра, глибина, акцент, шрифт заголовків) у `styles/themes.css` і `styles/registry.ts`. Власних тем, публічності й `theme_schemes` у коді більше немає.
 - **Notes / Contacts** — дві колекції на **спільних** кирпичиках (`@wwwuabot/ui/collection`).
 - **Розвиток** — четвертий слот футера: самооцінка (тести, бал рахує сервер; тест може мати кілька **шкал**, рядок бази — на шкалу) і вхід в **аналіз дат**. `docs/ASSESSMENTS.md`.
 - **Повідомлення** — переписка між людьми платформи, без бота; адреса розмови `/messages?peer=<id>` — одна на бота й платформу.
@@ -111,7 +111,7 @@ const name = await dialog.prompt("Назва:", { validate: (v) => (v.trim() ? n
 | Контент сторінки: одна модель, адреса, діплінк | `packages/shared/src/content/` — `ContentPage`, `pickContentPage`, `toWebPath` / `toBotPayload` / `buildShareLinks`; правила — `docs/CONTENT_MODEL.md` |
 | Адреса: одна сутність `slug`, два подання (веб / бот) | `packages/shared/src/content/resolve.ts` (`toWebPath`, `toBotPayload`, `isValidSlug`) |
 | Сторінки з шаблону: шаблони, назва → адреса, підпис бота | `packages/shared/src/pages/`; правила — `docs/PAGES.md` |
-| Тема (три кольори + шрифт), бібліотека схем | `docs/THEMES.md`, `packages/shared/src/themes/`, `packages/shared/src/styles/fonts.ts` |
+| Тема (авторський набір токенів) | `docs/THEMES.md`, `packages/shared/src/styles/registry.ts`, `themes.css` |
 | Авто-добір колонок; перебудова таблиці | `packages/shared/src/database/auto-migrate.ts`; `scripts/migrations/*.sql` (2 кроки: копія + заміна) |
 
 **Бот:** конвеєр апдейта, `ctx.screen`, рендер, нотифікації, контакти — `bot-dev/README.md`. Орієнтири: HTTP — `src/api/router.ts`, потоки — `src/core/router/`, middleware — `src/core/middleware/`, домен — `src/modules/<domain>/`, тексти — `src/shared/config/texts.ts`.

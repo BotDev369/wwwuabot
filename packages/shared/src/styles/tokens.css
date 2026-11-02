@@ -3,8 +3,8 @@
  * DESIGN TOKENS — wwwuabot shared design system
  * ═══════════════════════════════════════════════════════════════════════════
  *
- * Single source of truth for all visual values: светла схема й мірки тут,
- * темна — у `themes.css`. Другого стилю немає й бути не може.
+ * Single source of truth for all visual values: світла тема («День») і мірки
+ * тут, решта тем — у `themes.css`. Ролі кольору одні, значення — різні.
  *
  * Usage:
  *   import "@wwwuabot/shared/styles/index.css";
@@ -12,7 +12,8 @@
  *   import "@wwwuabot/shared/styles/tokens.css";
  */
 
-:root {
+:root,
+[data-theme="light"] {
   /* Нативні контроли й смуги прокрутки малює сама ОС: без цього в темній
      схемі `<select>` і календар лишались білими плитками на темному екрані. */
   color-scheme: light;

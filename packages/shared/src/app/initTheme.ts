@@ -1,54 +1,37 @@
 /**
- * Applies the saved scheme **and the user's three colors** before the first
- * render to prevent flash.
+ * Застосовує вибрану тему **до першого рендера** — щоб екран не мигнув іншим
+ * настроєм.
  *
- * Called in main.tsx of each worker BEFORE createRoot().render().
- * Uses localStorage + CSS attributes only — works without React.
+ * Викликається в `main.tsx` кожної оболонки перед `createRoot().render()`.
+ * Працює на `localStorage` і CSS-атрибуті — без React, без мережі.
  *
- * Attribute format:
- *   <html data-theme="light|dark"
- *         data-colors="custom" data-colors-mode="light|dark">
+ * Формат на `<html>`:
+ *   `data-theme="light|paper|dark|ocean|forest|plum"`
  *
- * Стиль продукту вибирати не можна й не треба: він один і живе в CSS
- * (`styles/tokens.css` + `styles/themes.css`). Старі ключі вибору стилю
- * (`wwwuabot-brand`, `wwwuabot-style`) прибираємо, щоб мертвий вибір не
- * читався знову.
+ * **Тема — авторська.** Три кольори людини, редактор і бібліотеки тем
+ * прибрані: вибір тепер між наборами, які малює дизайн-система. Тому тут
+ * лишилась рівно одна дія — `applyTheme()`, яка ставить палітру й шрифт
+ * заголовків разом.
  *
- * `data-colors*` появляється лише тоді, коли людина зберегла всі три кольори
- * («порожніх не буває» — див. `../styles/user-colors`): без атрибута працює
- * палітра стилю, а з ним її перекриває `user-colors.css`.
- *
- * No "system" mode — defaults to "dark" if nothing stored.
+ * Старі ключі вибору (`wwwuabot-colors`, `wwwuabot-font`, `wwwuabot-brand`,
+ * `wwwuabot-style`) прибираються, щоб мертвий вибір не читався знову.
  */
-import { applyFont, readStoredFont } from "../styles/font-dom";
-import { readStoredScheme } from "../styles/registry";
-import { applyColors, readStoredColors } from "../styles/user-colors";
+import { readStoredTheme } from "../styles/theme-dom";
+import { applyTheme } from "../styles/theme-dom";
 import { initTelegramChrome } from "./telegram-chrome";
 
-/** Ключі вибору стилю, яких більше немає: прибираємо, а не читаємо. */
-const DEAD_STYLE_KEYS = ["wwwuabot-brand", "wwwuabot-style"];
+/** Ключі попередніх моделей вигляду: їх більше немає — прибираємо. */
+const DEAD_KEYS = ["wwwuabot-brand", "wwwuabot-style", "wwwuabot-colors", "wwwuabot-font"];
 
 export function initTheme(): void {
   try {
-    // ── Стиль продукту — один і в CSS: вибору немає ───────────────────────
-    for (const key of DEAD_STYLE_KEYS) localStorage.removeItem(key);
-
-    // ── Resolve scheme (light/dark only, no system) ──────────────────
-    document.documentElement.setAttribute("data-theme", readStoredScheme());
+    for (const key of DEAD_KEYS) localStorage.removeItem(key);
   } catch {
-    /* ignore — localStorage may be unavailable */
+    /* localStorage може бути недоступним — тема все одно застосується */
   }
 
-  // ── Три кольори користувача ──────────────────────────────────────
-  // Тут, а не в React: палітра мусить стояти на `<html>` ДО першого рендера,
-  // інакше екран мигне базовою темою. Немає вибору — немає атрибута, і працює
-  // палітра стилю (див. `../styles/user-colors`).
-  applyColors(readStoredColors());
-
-  // ── Шрифт вибраної схеми ─────────────────────────────────────────
-  // Теж тут і теж до першого рендера: інакше текст мигне типовою родиною
-  // стилю (див. `../styles/fonts`).
-  applyFont(readStoredFont());
+  // Палітра й шрифт заголовків — однією дією, до першого рендера.
+  applyTheme(readStoredTheme());
 
   // Нативний хром Telegram (шапка/низ клієнта) — у кольорах цієї теми.
   // Поза Telegram — no-op. Див. `./telegram-chrome`.

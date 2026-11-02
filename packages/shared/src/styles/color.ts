@@ -10,7 +10,7 @@
  * Це чисті функції без DOM: ними користуються і браузер, і тести, і жодна
  * з них не читає `window`. Помилка тут виглядає не як зламаний код, а як
  * «щось нечитабельне на екрані» — саме тому вони під тестами
- * (`user-colors.test.ts`).
+ * (`contrast.test.ts`).
  *
  * @module packages/shared/src/styles/color
  */
@@ -92,7 +92,7 @@ export function contrastRatio(a: string, b: string): number {
  * Змішати два кольори в sRGB: `weight` — частка `a` (0…1).
  *
  * Та сама арифметика, що в `color-mix(in srgb, a w%, b)` зі стилів: палітру
- * людини виводить CSS, а її читабельність рахує код (`styles/readable.ts`),
+ * теми виводить CSS, а її читабельність рахує код (`styles/contrast.test.ts`),
  * і дві формули мусять давати те саме число.
  */
 export function mixHex(a: string, b: string, weight: number): string {

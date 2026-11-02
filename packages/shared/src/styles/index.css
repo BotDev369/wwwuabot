@@ -8,12 +8,13 @@
  * Usage in any worker:
  *   import "@wwwuabot/shared/styles/index.css";
  *
- * Стиль продукту — ОДИН: `tokens.css` (світла схема й мірки), `themes.css`
- * (темна схема), `reset.css` + `components.css` (кирпичики). Другого шару
- * стилів немає — тому й атрибута вибору стилю немає.
+ * Стиль продукту — ОДИН, а тем шість: `tokens.css` (світла тема «День» і
+ * мірки), `themes.css` (решта авторських тем), `reset.css` + `components.css`
+ * (кирпичики). Другого шару стилів немає — тому й атрибута вибору стилю немає.
  *
  * Apply via HTML attribute:
- *   <html data-theme="light|dark"> — схема (ставить `shared/app/initTheme.ts`)
+ *   <html data-theme="light|paper|dark|ocean|forest|plum"> — тема
+ *   (ставить `shared/app/initTheme.ts`)
  */
 
 /* ═══════════════════════════════════════════════════════════════════════════
@@ -33,13 +34,6 @@
 /* ── Our design tokens + themes ── */
 @import "./tokens.css";
 @import "./themes.css";
-
-/* ── Три кольори користувача ──────────────────────────────────────────────
-   Палітра, виведена з `--user-bg` / `--user-text` / `--user-accent`, які
-   ставить `applyColors()` (`styles/user-colors.ts`). Імпорт ПІСЛЯ токенів:
-   селектор тут — `html[data-colors][data-colors-mode=…]` (0,2,1), тож схема
-   (`[data-theme]` — 0,1,0) його не перекриває. */
-@import "./user-colors.css";
 
 /* ── Reset + component classes ── */
 @import "./reset.css";
@@ -88,10 +82,6 @@
    видимість гамбургера (`.page-hamburger` — прихований на десктопі), а
    рівні за специфічністю правила виграє той, хто йде пізніше. */
 @import "./drawer.css";
-
-/* ── Теми: картки схем і форми теми (бібліотека, редактор) ──────────────────
-   Теж окремим файлом, як `theme-panel.css`: цілісна деталь зі своїми класами. */
-@import "./theme-pages.css";
 
 /* ── Ігри (дошка, вибір, спроби) ──────────────────────────────────────────
    Той самий випадок, що й тема: сторінки — в оболонці, а вигляд деталі — тут. */

@@ -23,7 +23,6 @@
 | `GET` | `/api/public/research` | `handlePublicResearch` |
 | `POST` | `/api/public/shop/orders` | `handlePublicShopOrders` |
 | `GET` | `/api/public/shop/products` | `handlePublicShopProducts` |
-| `GET` | `/api/public/themes` | `handlePublicThemes` |
 | `GET` | `/api/public/users` | `handlePublicUsers` |
 | `GET` | `/api/public/users/<…>` | `handlePublicUser` |
 | `ANY` | `/api/scenario/<…>` | `handleScenario` |
@@ -64,7 +63,6 @@
 | `ANY` | `/api/user/shop/orders/status` | `handleUserShopOrders` |
 | `ANY` | `/api/user/shop/products` | `handleUserShopProducts` |
 | `GET` | `/api/user/shop/statuses` | `handleUserShopStatuses` |
-| `ANY` | `/api/user/themes` | `handleUserThemes` |
 | `ANY` | `/api/user/trackers` | `handleTrackers` |
 | `ANY` | `/api/user/trackers/entry` | `handleTrackerEntry` |
 | `ANY` | `/api/user/trackers/group` | `handleTrackerGroups` |
@@ -121,4 +119,4 @@
 | `POST` | `/auth/login` | `handleLogin` |
 | `POST` | `/auth/logout` | `handleLogout` |
 
-Усього шляхів: **92**.
+Усього шляхів: **90**.

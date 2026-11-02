@@ -44,12 +44,11 @@ import type { TelegramChromeColor, TelegramWebApp } from "../types/telegram";
 const THEME_CHANGED_EVENT = "themeChanged";
 
 /**
- * DOM-атрибути, за якими ми стежимо — їх ставлять `initTheme()` / `useStyleTheme()`
- * і вибір трьох кольорів (`applyColors`: `data-colors` / `data-colors-mode`).
- * Без останніх двох хром не перефарбувався б, доки людина рухає повзунок у
- * панелі теми — а саме тоді це видніше за все.
+ * DOM-атрибут, за яким ми стежимо: його ставлять `initTheme()` / `useStyleTheme()`
+ * при кожному виборі теми. Кожна тема несе власні `--chrome-*`, тож саме зміна
+ * цього атрибута і є моментом, коли хром клієнта мусить перефарбуватись.
  */
-const OBSERVED_ATTRS = ["data-theme", "data-colors", "data-colors-mode"] as const;
+const OBSERVED_ATTRS = ["data-theme"] as const;
 
 /**
  * Зчитує плоский колір з CSS-змінної на `<html>`.

@@ -139,7 +139,7 @@ export function useLiveTokens(names: string[]): Record<string, string> {
     const observer = new MutationObserver(read);
     observer.observe(document.documentElement, {
       attributes: true,
-      attributeFilter: ["data-theme", "data-colors", "data-colors-mode", "style"],
+      attributeFilter: ["data-theme", "style"],
     });
     return () => observer.disconnect();
   }, [key]);

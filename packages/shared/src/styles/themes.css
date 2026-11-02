@@ -1,109 +1,316 @@
 /*
  * ═══════════════════════════════════════════════════════════════════════════
- * THEMES — темна схема
+ * THEMES — авторські теми, а не «світла й темна»
  * ═══════════════════════════════════════════════════════════════════════════
  *
- * Світла схема — це типові значення `tokens.css` (`:root`), і вона тут НЕ
- * повторюється: поки світла палітра жила двома копіями, правка в одній не
- * доходила до іншої.
+ * **Тема тут — повний набір токенів.** Світла («День») живе в `tokens.css`
+ * (селектор `:root, [data-theme="light"]`, тож її можна показати й у картці),
+ * а кожен блок нижче задає **весь** колірний набір: палітру, глибину, акцент,
+ * статуси й нативний хром Telegram. Половина теми читалась би як чужа
+ * палітра на нашому екрані.
  *
- * Темна — не «інший стиль», а та сама: ті самі ролі кольору, лише інші
- * значення (M3 dark surface containers). Перемикає її рівно один атрибут —
- * `data-theme="dark"` на `<html>` (ставить `shared/app/initTheme.ts`).
+ * **Ролі ті самі, характер різний.** Міняються значення, не ролі: `--text-primary`
+ * усюди текст, `--accent` усюди дія. Тому нова тема не ламає жодного екрана —
+ * і саме тому її можна додати, не чіпаючи компонентів.
  *
- * «Системної» схеми немає: світлоту виводить вибір кольорів людини
- * (`shared/styles/user-colors`), тож `prefers-color-scheme` тут не читається.
+ * **Контраст перевіряється, а не «виглядає добре»**: кожен блок читає
+ * `styles/contrast.test.ts` (WCAG AA на всіх поверхнях).
+ *
+ * Світлоту виводить сама тема (`color-scheme`), а не система: `prefers-color-scheme`
+ * тут не читається — людина вибрала настрій руками.
  */
 
+/* ── Ніч: вугілля й теплий теракортовий акцент ───────────────────────────── */
 [data-theme="dark"] {
-  /* ── Тло: M3 dark surface containers ─────────────────────────────────── */
   --bg-home: var(--bg-0);
-  --bg-0: #0e0e11; /* surface-container-lowest */
-  --bg-1: #17171b; /* surface */
-  --bg-2: #1e1e23; /* surface-container-low */
-  --bg-3: #26262c; /* surface-container */
-  --bg-4: #313138; /* surface-container-high */
+  --bg-0: #0e0e11;
+  --bg-1: #17171b;
+  --bg-2: #1e1e23;
+  --bg-3: #26262c;
+  --bg-4: #313138;
 
-  /* ── Межі ─────────────────────────────────────────────────────────────── */
   --border: #3b3b45;
   --border-hover: #54545f;
   --border-subtle: #2f2f36;
 
-  /* ── Текст ────────────────────────────────────────────────────────────── */
   --text-primary: #e9e9ee;
   --text-secondary: #bdbdc8;
   --text-muted: #a5a5b0;
   --text-inverse: #1b1b1f;
+  --text-on-scrim: #ffffff;
 
-  /* ── Акцент ───────────────────────────────────────────────────────────── */
-  /* Той самий теплий акцент, лише світліший: на темному тлі теракота мусить
-     світитись, інакше вона читається як коричнева пляма. Підпис на заливці —
-     `--text-inverse` (темний), тож контраст тримається в обох напрямках. */
   --accent: #ffa887;
-  --accent-dim: rgba(255, 168, 135, 0.12);
+  --accent-dim: rgba(255, 168, 135, 0.14);
   --accent-hover: #ffc4ad;
-  --accent-soft: rgba(255, 168, 135, 0.14);
+  --accent-soft: rgba(255, 168, 135, 0.16);
 
-  /* ── Статусні кольори ─────────────────────────────────────────────────── */
   --green: #7bda90;
-  --green-dim: rgba(123, 218, 144, 0.12);
+  --green-dim: rgba(123, 218, 144, 0.14);
   --red: #ffb4ab;
-  --red-dim: rgba(255, 180, 171, 0.12);
-  --yellow: #ddb948;
-  --yellow-dim: rgba(221, 185, 72, 0.12);
+  --red-dim: rgba(255, 180, 171, 0.14);
+  --yellow: #e7c860;
+  --yellow-dim: rgba(231, 200, 96, 0.14);
 
-  /* ── Поверхні ─────────────────────────────────────────────────────────── */
   --surface: #17171b;
   --surface-hover: #26262c;
   --surface-active: #313138;
   --surface-overlay: rgba(0, 0, 0, 0.6);
   --selection-bg: rgba(227, 226, 230, 0.2);
 
-  /* Глибина в темній схемі: світла межа тут не працює (білий контур світиться),
-     тому волосина — світлий колір із малою часткою, а тінь глибша й ширша:
-     картка мусить відриватись від тла тінню, а не сяйвом краю. */
   --hairline: rgba(233, 233, 238, 0.07);
   --card-border: rgba(233, 233, 238, 0.07);
   --shadow-card: 0 1px 1px rgba(0, 0, 0, 0.4), 0 14px 34px -22px rgba(0, 0, 0, 0.85);
 
-  /* Модалка — на сходинку вище за поверхню екрана (M3 surface-container):
-     інакше вона того самого кольору, що й тло під скримом, і губиться. Поле
-     всередині (`--field-bg` = `--bg-4`) лишається ще вищим за неї. */
   --surface-modal: var(--bg-3);
-
-  /* Картка — та сама «заповнена поверхня», що й у світлій схемі, лише на
-     сходинку вище за тло екрана. */
   --card-bg: #222227;
-
-  /* Сайдбар — плита на сходинку вище за тло, з глибшою тінню. */
   --sidebar-bg: #141418;
   --sidebar-shadow: 1px 0 0 var(--hairline), 8px 0 24px -18px rgba(0, 0, 0, 0.6);
 
-  /* ── Поле вводу ─────────────────────────────────────────────────────────
-     Поле — світліше за поверхню (у темній схемі тінь країв не видно, тож
-     межі тримає сам колір, а тінь дає об'єм). */
   --field-bg: var(--bg-4);
-  --switch-knob: #d9d7e0;
   --field-bg-raised: #343a46;
+  --switch-knob: #d9d7e0;
   --field-ring: 0 0 0 1px rgba(233, 233, 238, 0.1);
 
-  /* ── Нативний хром Telegram ──────────────────────────────────────────────
-     Плоска форма --bg-1: шапка клієнта і смуга під футером зливаються з
-     нашою шапкою й футером без шва. */
   --chrome-header-bg: #17171b;
   --chrome-bottom-bg: #17171b;
+  --bg-page: var(--chrome-header-bg);
+  --modal-scrim: rgba(0, 0, 0, 0.5);
 
-  /* ── Підняття й тіні: у темній схемі глибші ───────────────────────────── */
-  --shadow-xs: 0 1px 2px rgba(0, 0, 0, 0.35);
-  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.35), 0 1px 3px rgba(0, 0, 0, 0.3);
-  --shadow-md: 0 2px 4px rgba(0, 0, 0, 0.35), 0 4px 12px rgba(0, 0, 0, 0.35);
-  --shadow-lg: 0 4px 8px rgba(0, 0, 0, 0.35), 0 12px 28px rgba(0, 0, 0, 0.4);
-  --shadow-xl: 0 8px 16px rgba(0, 0, 0, 0.4), 0 24px 48px rgba(0, 0, 0, 0.5);
+  color-scheme: dark;
+}
 
-  --elevation-0: none;
-  --elevation-1: 0 1px 3px rgba(0, 0, 0, 0.4);
-  --elevation-2: 0 2px 6px rgba(0, 0, 0, 0.5);
-  --elevation-3: 0 4px 8px rgba(0, 0, 0, 0.5);
+/* ── Папір: крем, туш і книжкові засічки ─────────────────────────────────── */
+[data-theme="paper"] {
+  --bg-home: var(--bg-0);
+  --bg-0: #f3ede3;
+  --bg-1: #f8f3ea;
+  --bg-2: #efe8dc;
+  --bg-3: #e8dfd1;
+  --bg-4: #ddd2c1;
+
+  --border: #cbbfad;
+  --border-hover: #a99880;
+  --border-subtle: #e3dacb;
+
+  --text-primary: #241d14;
+  --text-secondary: #4a4034;
+  --text-muted: #5f5346;
+  --text-inverse: #fffdf8;
+  --text-on-scrim: #ffffff;
+
+  --accent: #7a3b18;
+  --accent-dim: rgba(122, 59, 24, 0.1);
+  --accent-hover: #5f2c11;
+  --accent-soft: rgba(122, 59, 24, 0.12);
+
+  --green: #295228;
+  --green-dim: #dfe8da;
+  --red: #8f2b21;
+  --red-dim: #f0dcd6;
+  --yellow: #6a4f04;
+  --yellow-dim: #efe5cc;
+
+  --surface: #f8f3ea;
+  --surface-hover: #efe8dc;
+  --surface-active: #e8dfd1;
+  --surface-overlay: rgba(0, 0, 0, 0.4);
+  --selection-bg: rgba(36, 29, 20, 0.16);
+
+  --hairline: rgba(36, 29, 20, 0.1);
+  --card-border: rgba(36, 29, 20, 0.08);
+  --shadow-card: 0 1px 2px rgba(36, 29, 20, 0.05), 0 10px 24px -18px rgba(36, 29, 20, 0.28);
+
+  --surface-modal: var(--bg-3);
+  --card-bg: #fbf7f1;
+  --sidebar-bg: #efe8dc;
+  --sidebar-shadow: 1px 0 0 var(--hairline), 8px 0 24px -18px rgba(36, 29, 20, 0.24);
+
+  --field-bg: #e9e1d4;
+  --field-bg-raised: #fffdf8;
+  --switch-knob: #fffdf8;
+  --field-ring: 0 0 0 1px rgba(36, 29, 20, 0.08);
+
+  --chrome-header-bg: #f3ede3;
+  --chrome-bottom-bg: #f3ede3;
+  --bg-page: var(--chrome-header-bg);
+  --modal-scrim: rgba(0, 0, 0, 0.5);
+
+  color-scheme: light;
+}
+
+/* ── Океан: синя глибина, бірюзовий акцент ───────────────────────────────── */
+[data-theme="ocean"] {
+  --bg-home: var(--bg-0);
+  --bg-0: #08111c;
+  --bg-1: #0e1a28;
+  --bg-2: #132234;
+  --bg-3: #18293d;
+  --bg-4: #1e334a;
+
+  --border: #2b4460;
+  --border-hover: #3d5d80;
+  --border-subtle: #1e3348;
+
+  --text-primary: #e8f1f8;
+  --text-secondary: #b9cddd;
+  --text-muted: #9db4c7;
+  --text-inverse: #06121c;
+  --text-on-scrim: #ffffff;
+
+  --accent: #6fd6e8;
+  --accent-dim: rgba(111, 214, 232, 0.14);
+  --accent-hover: #9ae7f4;
+  --accent-soft: rgba(111, 214, 232, 0.16);
+
+  --green: #7fe0a3;
+  --green-dim: rgba(127, 224, 163, 0.14);
+  --red: #ffb0b0;
+  --red-dim: rgba(255, 176, 176, 0.14);
+  --yellow: #f2d274;
+  --yellow-dim: rgba(242, 210, 116, 0.14);
+
+  --surface: #0e1a28;
+  --surface-hover: #1e334a;
+  --surface-active: #24405c;
+  --surface-overlay: rgba(0, 0, 0, 0.6);
+  --selection-bg: rgba(232, 241, 248, 0.22);
+
+  --hairline: rgba(232, 241, 248, 0.08);
+  --card-border: rgba(232, 241, 248, 0.07);
+  --shadow-card: 0 1px 1px rgba(0, 0, 0, 0.4), 0 14px 34px -22px rgba(0, 0, 0, 0.85);
+
+  --surface-modal: var(--bg-3);
+  --card-bg: #122032;
+  --sidebar-bg: #0b1622;
+  --sidebar-shadow: 1px 0 0 var(--hairline), 8px 0 24px -18px rgba(0, 0, 0, 0.65);
+
+  --field-bg: #1a2c40;
+  --field-bg-raised: #22384f;
+  --switch-knob: #cfe3f2;
+  --field-ring: 0 0 0 1px rgba(232, 241, 248, 0.1);
+
+  --chrome-header-bg: #0e1a28;
+  --chrome-bottom-bg: #0e1a28;
+  --bg-page: var(--chrome-header-bg);
+  --modal-scrim: rgba(0, 0, 0, 0.5);
+
+  color-scheme: dark;
+}
+
+/* ── Хвоя: мох, кора й лаймовий акцент ───────────────────────────────────── */
+[data-theme="forest"] {
+  --bg-home: var(--bg-0);
+  --bg-0: #0a120d;
+  --bg-1: #101a13;
+  --bg-2: #16241a;
+  --bg-3: #1b2c20;
+  --bg-4: #223627;
+
+  --border: #2f4737;
+  --border-hover: #436451;
+  --border-subtle: #22362a;
+
+  --text-primary: #e9f2e9;
+  --text-secondary: #bfd1bf;
+  --text-muted: #a4baa4;
+  --text-inverse: #10190e;
+  --text-on-scrim: #ffffff;
+
+  --accent: #cde27a;
+  --accent-dim: rgba(205, 226, 122, 0.14);
+  --accent-hover: #dced9a;
+  --accent-soft: rgba(205, 226, 122, 0.16);
+
+  --green: #8fe0a0;
+  --green-dim: rgba(143, 224, 160, 0.14);
+  --red: #ffb4a8;
+  --red-dim: rgba(255, 180, 168, 0.14);
+  --yellow: #f0cf74;
+  --yellow-dim: rgba(240, 207, 116, 0.14);
+
+  --surface: #101a13;
+  --surface-hover: #1b2c20;
+  --surface-active: #223627;
+  --surface-overlay: rgba(0, 0, 0, 0.6);
+  --selection-bg: rgba(233, 242, 233, 0.2);
+
+  --hairline: rgba(233, 242, 233, 0.08);
+  --card-border: rgba(233, 242, 233, 0.07);
+  --shadow-card: 0 1px 1px rgba(0, 0, 0, 0.4), 0 14px 34px -22px rgba(0, 0, 0, 0.85);
+
+  --surface-modal: var(--bg-3);
+  --card-bg: #142019;
+  --sidebar-bg: #0d1711;
+  --sidebar-shadow: 1px 0 0 var(--hairline), 8px 0 24px -18px rgba(0, 0, 0, 0.62);
+
+  --field-bg: #1c2e21;
+  --field-bg-raised: #263c2c;
+  --switch-knob: #d6e5d6;
+  --field-ring: 0 0 0 1px rgba(233, 242, 233, 0.1);
+
+  --chrome-header-bg: #101a13;
+  --chrome-bottom-bg: #101a13;
+  --bg-page: var(--chrome-header-bg);
+  --modal-scrim: rgba(0, 0, 0, 0.5);
+
+  color-scheme: dark;
+}
+
+/* ── Слива: оксамитова аврора й мідний акцент ────────────────────────────── */
+[data-theme="plum"] {
+  --bg-home: var(--bg-0);
+  --bg-0: #120c14;
+  --bg-1: #191220;
+  --bg-2: #211828;
+  --bg-3: #291e33;
+  --bg-4: #32253e;
+
+  --border: #463451;
+  --border-hover: #5f4870;
+  --border-subtle: #362a44;
+
+  --text-primary: #f0e8f3;
+  --text-secondary: #d1c2d8;
+  --text-muted: #b9a8c2;
+  --text-inverse: #1a0f16;
+  --text-on-scrim: #ffffff;
+
+  --accent: #f0a97c;
+  --accent-dim: rgba(240, 169, 124, 0.14);
+  --accent-hover: #f7c3a2;
+  --accent-soft: rgba(240, 169, 124, 0.16);
+
+  --green: #8ee0a4;
+  --green-dim: rgba(142, 224, 164, 0.14);
+  --red: #ffb1ae;
+  --red-dim: rgba(255, 177, 174, 0.14);
+  --yellow: #f0cf80;
+  --yellow-dim: rgba(240, 207, 128, 0.14);
+
+  --surface: #191220;
+  --surface-hover: #291e33;
+  --surface-active: #32253e;
+  --surface-overlay: rgba(0, 0, 0, 0.6);
+  --selection-bg: rgba(240, 232, 243, 0.22);
+
+  --hairline: rgba(240, 232, 243, 0.08);
+  --card-border: rgba(240, 232, 243, 0.07);
+  --shadow-card: 0 1px 1px rgba(0, 0, 0, 0.4), 0 14px 34px -22px rgba(0, 0, 0, 0.85);
+
+  --surface-modal: var(--bg-3);
+  --card-bg: #1d1524;
+  --sidebar-bg: #150f1b;
+  --sidebar-shadow: 1px 0 0 var(--hairline), 8px 0 24px -18px rgba(0, 0, 0, 0.65);
+
+  --field-bg: #251a2e;
+  --field-bg-raised: #30223c;
+  --switch-knob: #e2d6e8;
+  --field-ring: 0 0 0 1px rgba(240, 232, 243, 0.1);
+
+  --chrome-header-bg: #191220;
+  --chrome-bottom-bg: #191220;
+  --bg-page: var(--chrome-header-bg);
+  --modal-scrim: rgba(0, 0, 0, 0.5);
 
   color-scheme: dark;
 }

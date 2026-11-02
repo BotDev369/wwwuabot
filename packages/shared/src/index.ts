@@ -1,59 +1,14 @@
 // ── Theme / Colors ───────────────────────────────────────────────────
-export { ThemeButton, useStyleTheme } from "./components/StyleToggle";
+export { ThemeButton } from "./components/StyleToggle";
 // Legacy — deprecated
 export { StylePicker, ThemeToggle } from "./components/StyleToggle";
 
-// ── Три кольори користувача (фон / основний / акцент) ────────────────
-export {
-  ColorSlotRow,
-  FontPicker,
-  FontSlotRow,
-  THEME_OWN_ACTIONS,
-  ThemeCard,
-  ThemeCardMenu,
-  ThemeColorPanel,
-  ThemeSheet,
-  useFontChoice,
-  useUserColors,
-} from "./components/theme";
-export type {
-  FontPickerProps,
-  ThemeCardAction,
-  ThemeCardMenuProps,
-  ThemeCardProps,
-  ThemeColorPanelProps,
-  UseFontChoiceResult,
-  UseUserColorsResult,
-} from "./components/theme";
-export { COLOR_PRESETS, isPresetActive, PRESET_FONT } from "./styles/color-presets";
-export type { ColorPreset } from "./styles/color-presets";
-export {
-  COLOR_SLOTS,
-  COLORS_ATTR,
-  COLORS_MODE_ATTR,
-  USER_COLORS_KEY,
-  applyColors,
-  clearStoredColors,
-  colorsMode,
-  contrastWarning,
-  displayColor,
-  isCompleteColors,
-  isSameColors,
-  missingLabels,
-  missingSlots,
-  onAccentColor,
-  parseStoredColors,
-  readStoredColors,
-  saveStoredColors,
-  seedVariable,
-} from "./styles/user-colors";
-export type {
-  ColorDraft,
-  ColorSlot,
-  ColorSlotDefinition,
-  ColorsMode,
-  UserColors,
-} from "./styles/user-colors";
+// ── Тема: авторський набір токенів, а не три кольори людини ──────────
+export { ThemeCard, ThemeColorPanel, ThemeSheet, useStyleTheme } from "./components/theme";
+export type { ThemeCardProps } from "./components/theme";
+export { DEFAULT_THEME, THEMES, THEME_KEY, isThemeId, themeById } from "./styles/registry";
+export type { ThemeDefinition, ThemeMode } from "./styles/registry";
+export { applyTheme, clearStoredTheme, readStoredTheme } from "./styles/theme-dom";
 export { contrastRatio, hexToHsl, hexToRgb, hslToHex, rgbToHex } from "./styles/color";
 export type { Hsl, Rgb } from "./styles/color";
 

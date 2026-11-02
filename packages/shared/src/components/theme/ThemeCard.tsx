@@ -1,103 +1,46 @@
 /**
- * `ThemeCard` — **єдина картка теми на весь продукт**: шаблони, свої теми,
- * публічні теми й спільна бібліотека показують її.
+ * `ThemeCard` — картка авторської теми, і вона ж її прев'ю.
  *
- * **Картка і є прев'ю.** Тло — фон теми, назва — її основний колір, а шрифт
- * підписом акцентним: це і є її три кольори, побачені в одному дотику, без жодної
- * смуги зі зразками. Зверху — мініатюра справжнього шматка інтерфейсу (вхідне й
- * вихідне повідомлення), бо плоский колір казав лише тло. Значення приходять
- * чотирма змінними (`--scheme-*`), тож у розмітці немає жодного кольору
- * (`theme-panel.css`).
+ * **Показує справжні токени, а не смужки зразків.** Картка ставить на себе
+ * `data-theme` теми, яку показує, тож кожен рядок усередині — це та сама
+ * палітра, яку отримає екран: поверхня, текст, акцент і його інверсний підпис.
+ * Окрема таблиця «колір для прев'ю» розійшлася б із CSS на першій же правці.
  *
- * **Дотик до картки — це застосування.** Окремої кнопки «Застосувати» немає й
- * не було б чого робити: вибір і так стає поточним (`useUserColors`).
- *
- * **Розмір однак усюди** — три в рядку, як шаблони: список тем і список шаблонів
- * читаються однаково, а не «сітка дрібних плиток» поруч із «великими картками».
- *
- * **Меню дій — лише у власної теми.** Чужа й шаблонна не мають чого змінювати:
- * кнопка, яка гарантовано не працює, — це обіцянка, а не дія (`AGENTS.md` §7).
+ * **Дотик — це застосування.** Окремої кнопки немає: вибір і так стає поточним.
  *
  * @module packages/shared/src/components/theme/ThemeCard
  */
 
-import type { CSSProperties, ReactElement } from "react";
-import { fontLabel, fontStack } from "../../styles/fonts";
-import { onAccentColor, type UserColors } from "../../styles/user-colors";
+import type { ReactElement } from "react";
+import { fontStack } from "../../styles/fonts";
+import type { ThemeDefinition } from "../../styles/registry";
 import { Icon } from "../Icon";
-import { ThemeCardMenu, type ThemeCardAction } from "./ThemeCardMenu";
 
 export interface ThemeCardProps {
-  /** Назва теми або шаблону. */
-  name: string;
-  /** Три кольори теми — з них і тло, і підписи. */
-  colors: UserColors;
-  /** Шрифт теми (`""` — «як у стилі»). */
-  font: string;
-  /** Вона діє на екрані просто зараз. */
+  theme: ThemeDefinition;
+  /** Ця тема діє на екрані просто зараз. */
   applied?: boolean;
-  /** Застосувати: дотик до картки. */
   onApply: () => void;
-  /** Чип стану («Публічна») — теж кольорами теми. */
-  badge?: string;
-  /** Дії в меню «···». Немає — картка без кутка (шаблони й чужі теми). */
-  actions?: readonly ThemeCardAction[];
-  onAction?: (key: string) => void;
 }
 
-export function ThemeCard({
-  name,
-  colors,
-  font,
-  applied = false,
-  onApply,
-  badge,
-  actions,
-  onAction,
-}: ThemeCardProps): ReactElement {
-  // Шрифт показує себе зразком, а назву пише лише тоді, коли тема його
-  // змінює: «Як у стилі» на кожній картці повторювало те саме слово.
-  const family = fontStack(font);
-  const familyLabel = fontLabel(font);
-
-  // Чотири змінні: решта картки малюється лише ними (`theme-panel.css`).
-  const look = {
-    "--scheme-bg": colors.bg,
-    "--scheme-text": colors.text,
-    "--scheme-accent": colors.accent,
-    "--scheme-on-accent": onAccentColor(colors),
-  } as CSSProperties;
+export function ThemeCard({ theme, applied = false, onApply }: ThemeCardProps): ReactElement {
+  const family = fontStack(theme.display);
 
   return (
-    <div className={`wb-theme-card${applied ? " wb-theme-card--on" : ""}`} style={look}>
-      {/* Картка-кнопка: дотик до неї і є застосуванням. Меню — **сусід**, а не
-          дитина: кнопка в кнопці некоректна розмітка, а меню мусить бути поверх. */}
+    <div className={`wb-theme-card${applied ? " wb-theme-card--on" : ""}`} data-theme={theme.id}>
       <button type="button" className="wb-theme-card-hit" onClick={onApply}>
-        {/* Мініатюра — не прикраса, а доказ: дві репліки в цій темі показують,
-            як вона тримає текст, поверхню й акцент разом. Плоский колір казав
-            тільки тло, а смужки замість слів читалися як «завантаження». */}
-        <span
-          className="wb-theme-card-preview"
-          aria-hidden="true"
-          style={family ? { fontFamily: family } : undefined}
-        >
+        {/* Мініатюра — доказ, а не прикраса: дві репліки показують поверхню,
+            текст і акцент разом, а заголовок — ще й шрифт теми. */}
+        <span className="wb-theme-card-preview" aria-hidden="true">
+          <span className="wb-theme-card-name" style={family ? { fontFamily: family } : undefined}>
+            {theme.label}
+          </span>
           <span className="wb-theme-card-bubble wb-theme-card-bubble--in">Привіт</span>
           <span className="wb-theme-card-bubble wb-theme-card-bubble--out">Ок</span>
         </span>
 
-        <span className="wb-theme-card-name">{name}</span>
-
         <span className="wb-theme-card-foot">
-          {/* Акцент лишається тут: це третій колір теми. */}
-          <span className="wb-theme-card-font" style={family ? { fontFamily: family } : undefined}>
-            <span className="wb-theme-card-glyph" aria-hidden="true">
-              Аа
-            </span>
-            {familyLabel && <span className="wb-theme-card-family">{familyLabel}</span>}
-          </span>
-
-          {badge && <span className="wb-theme-card-badge">{badge}</span>}
-
+          <span className="wb-theme-card-hint">{theme.hint}</span>
           {applied && (
             <span className="wb-theme-card-on">
               <Icon name="check" size={14} />
@@ -105,16 +48,6 @@ export function ThemeCard({
           )}
         </span>
       </button>
-
-      {actions && actions.length > 0 && onAction && (
-        <ThemeCardMenu label={`Дії теми «${name}»`} actions={actions} onSelect={onAction} />
-      )}
     </div>
   );
 }
-
-/** Дії власної теми: змінити й прибрати. Ключі — стабільні, а не індекси. */
-export const THEME_OWN_ACTIONS: readonly ThemeCardAction[] = [
-  { key: "edit", label: "Змінити", icon: "edit" },
-  { key: "remove", label: "Прибрати", icon: "trash", danger: true },
-];

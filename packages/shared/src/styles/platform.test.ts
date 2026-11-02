@@ -94,7 +94,8 @@ describe("поведінка під пристрій", () => {
     // Без цього `<select>`, календар і смуги прокрутки малює ОС у своїй схемі.
     expect(read("packages/shared/src/styles/tokens.css")).toContain("color-scheme: light");
     expect(read("packages/shared/src/styles/themes.css")).toContain("color-scheme: dark");
-    expect(read("packages/shared/src/styles/user-colors.css")).toContain("color-scheme: dark");
+    // Світлі теми (їх дві) теж мусять сказати ОС свою світлоту.
+    expect(read("packages/shared/src/styles/themes.css")).toContain("color-scheme: light");
   });
 
   it("поле, автозаповнення й дотик — однакові в iOS, Android і на десктопі", () => {

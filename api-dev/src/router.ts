@@ -40,7 +40,6 @@ import {
   handleUserVisibility,
 } from "./controllers/public-profile.controller";
 import { handlePublicAds, handleUserAds } from "./controllers/ads.controller";
-import { handlePublicThemes, handleUserThemes } from "./controllers/themes.controller";
 import {
   handleListUsers,
   handleReadUser,
@@ -334,11 +333,6 @@ export async function handleRequest(request: Request, env: Env): Promise<Respons
   if (pathname === "/api/user/ads") {
     return handleUserAds(request, env);
   }
-  // Схеми теми — теж власні дані людини: `GET` — свої, `POST` — зберегти,
-  // `DELETE` — прибрати. Власника додає сервер із підписаного `initData`.
-  if (pathname === "/api/user/themes") {
-    return handleUserThemes(request, env);
-  }
   // Сторінки людини — рядки `scenarios` з власником: `GET` — свої (разом із
   // приватними), `POST` — зберегти, `DELETE` — прибрати. Публічність тут не
   // запит, а колонка: її відбирає `WHERE` у сервісі.
@@ -368,10 +362,6 @@ export async function handleRequest(request: Request, env: Env): Promise<Respons
   // Дошка оголошень — теж публічна: показане відбирає запит до бази.
   if (pathname === "/api/public/ads" && request.method === "GET") {
     return handlePublicAds(request, env);
-  }
-  // Спільна бібліотека схем теми: `is_public = 1` відбирає запит до бази.
-  if (pathname === "/api/public/themes" && request.method === "GET") {
-    return handlePublicThemes(request, env);
   }
   // Публічні сторінки — теж публічно: `is_public = 1` відбирає запит до бази,
   // а приватна сторінка не дістається ні списком, ні за адресою.

@@ -5,10 +5,10 @@
  * лише ті, хто малює: воркери (перевірка схеми) беруть `./fonts`, і жодного
  * `document` у збірку не затягують.
  *
- * **Значення летять інлайном на `<html>`**, як і три кольори
- * (`./user-colors`): `--font-ui` оголошує `tokens.css` на `:root`, і
- * перекрити його можна лише стилем елемента. Порожній вибір **знімає**
- * інлайнові змінні — тоді працює типографіка продукту, а не «шрифт-пустушка».
+ * **Значення летять інлайном на `<html>`**, як і палітра (`./theme-dom`):
+ * `--font-ui` / `--font-display` оголошує `tokens.css` на `:root`, і перекрити
+ * їх можна лише стилем елемента. Порожній вибір **знімає** інлайнові змінні —
+ * тоді працює типографіка продукту, а не «шрифт-пустушка».
  *
  * @module packages/shared/src/styles/font-dom
  */
@@ -107,6 +107,26 @@ export function applyFont(id: string | null): void {
     // екрані, а не лише в дрібному тексті.
     root.style.setProperty("--font-display", stack);
   }
+
+  ensurePreconnect();
+  setLink(FONT_LINK_ID, stack && id ? [id] : []);
+}
+
+/**
+ * Шрифт **заголовків** — те, що дає темі характер, не роблячи простирадло
+ * з основного тексту.
+ *
+ * Тема задає лише `--font-display`: дрібний текст лишається родиною продукту,
+ * бо читабельність на телефоні важливіша за настрій. Порожній id знімає
+ * інлайнову змінну — і заголовки вертаються до `tokens.css`.
+ */
+export function applyDisplayFont(id: string | null): void {
+  if (typeof document === "undefined") return;
+  const root = document.documentElement;
+  const stack = fontStack(id ?? "");
+
+  if (!stack) root.style.removeProperty("--font-display");
+  else root.style.setProperty("--font-display", stack);
 
   ensurePreconnect();
   setLink(FONT_LINK_ID, stack && id ? [id] : []);

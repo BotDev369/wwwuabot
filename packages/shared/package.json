@@ -59,8 +59,6 @@
     "./shop": "./src/shop/index.ts",
     "./monitoring": "./src/monitoring/index.ts",
     "./spending": "./src/spending/index.ts",
-    "./themes": "./src/themes/index.ts",
-    "./themes/apply": "./src/themes/apply.ts",
     "./components/Icon": "./src/components/Icon.tsx",
     "./components/SaveActionButtons": "./src/components/SaveActionButtons.tsx",
     "./security/headers": "./src/security/headers.ts",

@@ -38,16 +38,11 @@
   height: var(--subbar-h);
   display: flex;
   justify-content: center;
-  /* Глибша за тло екрана — і це єдине, чим вона відділена */
+  /* Крок від тла екрана — єдине, чим смуга відділена. Напрям кроку задає
+     сам текст теми: у світлій він темнішає, у темній — світлішає. Так правило
+     працює для будь-якої теми, а не для одної з шести. */
   background: var(--bg-page);
-  background: color-mix(in srgb, var(--bg-page) 91%, black);
-}
-
-/* Темне тло: крок угору. Два селектори — бо темну схему задають і токени
-   схеми (`data-theme`), і вибір трьох кольорів (`data-colors-mode`). */
-html[data-colors-mode="dark"] .wb-subbar,
-html[data-theme="dark"] .wb-subbar {
-  background: color-mix(in srgb, var(--bg-page) 91%, white);
+  background: color-mix(in srgb, var(--bg-page) 91%, var(--text-primary));
 }
 
 /* На десктопі смуга не розповзається на всю ширину вікна — як футер */

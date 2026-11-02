@@ -23,7 +23,7 @@
 .wb-trackers-page {
   /* Заливка заголовка: підмішаний основний колір замість окремого кольору —
      напрямок мішанини виходить сам, тож один токен працює і на світлому, і
-     на темному, і на трьох кольорах людини (як у `user-colors.css`). */
+     на темному, і в кожній темі (`themes.css`). */
   --tracker-group-bg: color-mix(in srgb, var(--text-primary) 9%, transparent);
   --tracker-group-sub-bg: color-mix(in srgb, var(--text-primary) 5%, transparent);
   /* Крок вкладеності: одна цифра на всі рівні — сходинка мусить бути

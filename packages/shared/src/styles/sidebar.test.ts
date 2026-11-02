@@ -114,7 +114,6 @@ const SHEET = (name: string): string => `packages/shared/src/styles/${name}`;
 
 const TOKENS = topLevel(css(SHEET("tokens.css")));
 const NAV = topLevel(css(SHEET("app-chrome.css")));
-const THEME_PAGES = topLevel(css(SHEET("theme-pages.css")));
 
 /** Місця, де сайдбар є в продукті, і файл, який його рендерить. */
 const SITES = [
@@ -126,14 +125,16 @@ describe("сайдбар один — і мірки в нього одні", () 
   it("крок пункту оголошено **раз** — у токенах, а не в кожному місці", () => {
     // Друга копія цього числа розвела б сайдбар і смугу керування: обидві
     // беруть «44px», але мусять брати його з одного файлу.
-    expect(rule(TOKENS, ":root")?.body).toContain("--sidebar-item-h: 44px");
-    expect(rule(TOKENS, ":root")?.body).toContain("--sidebar-pad: var(--sp-2)");
+    // Світла тема оголошена двома селекторами — корінь і `[data-theme="light"]`:
+    // другий потрібен картці-прев'ю, тож мірки читаємо з усього шару токенів.
+    expect(TOKENS).toContain("--sidebar-item-h: 44px");
+    expect(TOKENS).toContain("--sidebar-pad: var(--sp-2)");
 
-    for (const file of ["app-chrome.css", "theme-pages.css"]) {
+    for (const file of ["app-chrome.css"]) {
       // Читати можна (`var(--sidebar-item-h)`), оголошувати — ні.
       expect(css(SHEET(file)), file).not.toMatch(/--sidebar-item-h\s*:/);
     }
-    for (const file of ["app-chrome.css", "theme-pages.css", "page-layout.css"]) {
+    for (const file of ["app-chrome.css", "page-layout.css"]) {
       expect(css(SHEET(file)), file).not.toMatch(/--sidebar-item-h\s*:/);
       expect(css(SHEET(file)), file).not.toMatch(/--sidebar-pad\s*:/);
     }
@@ -197,7 +198,6 @@ describe("сайдбари рендерить один компонент", () =
     // `.wb-theme-nav*` був сайдбаром-двійником: свої мірки (рядок 64px, плишка
     // `--field-bg`, підпис 18px) і свій знак акцентом. Доки він існує, «єдиний
     // сайдбар» — це побажання, а не факт.
-    expect(THEME_PAGES).not.toContain("wb-theme-nav");
     for (const path of SITES) {
       expect(source(...path.split("/")), path).not.toContain("wb-theme-nav");
     }
@@ -228,7 +228,7 @@ describe("сайдбар-поверхня: ширина, кут і вихід", 
     // На телефоні сайдбар виїжджає поверх вмісту, тож його ширина читається від
     // екрана, а не від теми: своє число в кожному місці зробило б той самий
     // сайдбар на тому самому екрані двічі різним.
-    expect(rule(TOKENS, ":root")?.body).toContain("--sidebar-w-vw: 80vw");
+    expect(TOKENS).toContain("--sidebar-w-vw: 80vw");
     expect(TOKENS.match(/--sidebar-w-vw\s*:/g)?.length, "оголошень мусить бути одне").toBe(1);
 
     for (const name of ["drawer.css"]) {

@@ -51,16 +51,6 @@ function sources(dir: string, out: string[] = []): string[] {
 
 const FILES = DIRS.flatMap((dir) => sources(dir)).filter((file) => file !== GUARD);
 
-/** Оголошені токени файлу: перше значення кожного імені. */
-function tokens(file: string): Record<string, string> {
-  const css = readFileSync(join(REPO_ROOT, file), "utf8");
-  const out: Record<string, string> = {};
-  for (const match of css.matchAll(/^\s*--([a-z0-9-]+)\s*:\s*([^;]+);/gm)) {
-    out[match[1]] ??= match[2].trim().replace(/\s+/g, " ");
-  }
-  return out;
-}
-
 describe("другого шару стилів немає", () => {
   it("атрибута вибору стилю й файлу-шару не згадує ні код, ні розмітка, ні документ", () => {
     // Правило існує тому, що шар повертається одним рядком: `android.css` у
@@ -76,24 +66,73 @@ describe("другого шару стилів немає", () => {
     expect(files.filter((name) => /^(?:android|apple|brand)\.css$/.test(name))).toEqual([]);
   });
 
-  it("палітра людини задає кожен колір, у якому схеми розходяться", () => {
-    // Токен, про який світла й темна схема кажуть різне, — це колір світлоти.
-    // Якщо його не задає палітра, він приходить зі СХЕМИ, і темна палітра в
-    // збереженій світлій схемі отримує білу картку під світлим текстом: саме
-    // так екран «Акаунт» ставав нечитабельним. Тіні — не колір, а світло:
-    // їх глибину схема задає навмисно.
-    const SCHEME_OWNED = /^(?:shadow-|elevation-)|-shadow$/;
+  it("кожна тема задає весь колірний набір, а не половину", () => {
+    // Тема, яка перевизначила три кольори, а решту лишила від світлої,
+    // показує світлу картку під темним текстом — саме так екран «Акаунт»
+    // ставав нечитабельним. Ролі перелічені явно: мірки (відступи, кеглі,
+    // радіуси) тема не повторює, а кожен колір мусить задати сама.
+    const COLOR_ROLES = [
+      "bg-home",
+      "bg-0",
+      "bg-1",
+      "bg-2",
+      "bg-3",
+      "bg-4",
+      "border",
+      "border-hover",
+      "border-subtle",
+      "text-primary",
+      "text-secondary",
+      "text-muted",
+      "text-inverse",
+      "text-on-scrim",
+      "accent",
+      "accent-dim",
+      "accent-hover",
+      "accent-soft",
+      "green",
+      "green-dim",
+      "red",
+      "red-dim",
+      "yellow",
+      "yellow-dim",
+      "surface",
+      "surface-hover",
+      "surface-active",
+      "surface-overlay",
+      "surface-modal",
+      "selection-bg",
+      "hairline",
+      "card-bg",
+      "card-border",
+      "sidebar-bg",
+      "sidebar-shadow",
+      "field-bg",
+      "field-bg-raised",
+      "switch-knob",
+      "field-ring",
+      "chrome-header-bg",
+      "chrome-bottom-bg",
+      "bg-page",
+      "modal-scrim",
+    ] as const;
 
-    const light = tokens("packages/shared/src/styles/tokens.css");
-    const dark = tokens("packages/shared/src/styles/themes.css");
-    const palette = tokens("packages/shared/src/styles/user-colors.css");
+    const light = readFileSync(join(REPO_ROOT, "packages/shared/src/styles/tokens.css"), "utf8");
+    for (const role of COLOR_ROLES) {
+      expect(light, `світла тема: --${role}`).toMatch(new RegExp(`--${role}\\s*:`));
+    }
 
-    const missing = Object.keys(dark)
-      .filter((name) => light[name] !== undefined && light[name] !== dark[name])
-      .filter((name) => !SCHEME_OWNED.test(name))
-      .filter((name) => palette[name] === undefined);
+    const css = readFileSync(join(REPO_ROOT, "packages/shared/src/styles/themes.css"), "utf8");
+    const blocks = [...css.matchAll(/\[data-theme="([a-z]+)"\]\s*\{([\s\S]*?)\n\}/g)];
+    expect(blocks.map((block) => block[1])).toEqual(["dark", "paper", "ocean", "forest", "plum"]);
 
-    expect(missing, "колір мусить мати одну правду — палітру, а не схему").toEqual([]);
+    for (const [, id, body] of blocks) {
+      const declared = new Set(
+        [...body.matchAll(/^\s*--([a-z0-9-]+)\s*:/gm)].map((match) => match[1]),
+      );
+      const missing = COLOR_ROLES.filter((name) => !declared.has(name));
+      expect(missing, `тема «${id}» лишила роль від світлої теми`).toEqual([]);
+    }
   });
 
   it("мірки оголошені РАЗ — у `tokens.css`", () => {

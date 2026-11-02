@@ -117,7 +117,7 @@
     },
     {
       "file": "contextbar.css",
-      "tokens": 2,
+      "tokens": 1,
       "classes": 6
     },
     {
@@ -196,18 +196,13 @@
       "classes": 4
     },
     {
-      "file": "theme-pages.css",
-      "tokens": 0,
-      "classes": 8
-    },
-    {
       "file": "theme-panel.css",
       "tokens": 0,
-      "classes": 60
+      "classes": 14
     },
     {
       "file": "themes.css",
-      "tokens": 50,
+      "tokens": 220,
       "classes": 0
     },
     {
@@ -219,11 +214,6 @@
       "file": "trackers.css",
       "tokens": 5,
       "classes": 117
-    },
-    {
-      "file": "user-colors.css",
-      "tokens": 63,
-      "classes": 0
     }
   ],
   "tokens": [
@@ -231,33 +221,33 @@
       "name": "--accent",
       "section": "Палітра світлої схеми (M3 surface containers)",
       "light": "#a0330f",
-      "dark": "#ffa887",
+      "dark": "#f0a97c",
       "palette": "",
-      "paletteDark": "var(--user-accent)"
+      "paletteDark": ""
     },
     {
       "name": "--accent-dim",
       "section": "Палітра світлої схеми (M3 surface containers)",
       "light": "rgba(160, 51, 15, 0.08)",
-      "dark": "rgba(255, 168, 135, 0.12)",
-      "palette": "color-mix(\n    in srgb,\n    var(--user-accent) 8%,\n    color-mix(in srgb, var(--user-bg) 14%, #ffffff)\n  )",
-      "paletteDark": "color-mix(in srgb, var(--user-accent) 18%, var(--user-bg))"
+      "dark": "rgba(240, 169, 124, 0.14)",
+      "palette": "",
+      "paletteDark": ""
     },
     {
       "name": "--accent-hover",
       "section": "Палітра світлої схеми (M3 surface containers)",
       "light": "#852a0c",
-      "dark": "#ffc4ad",
+      "dark": "#f7c3a2",
       "palette": "",
-      "paletteDark": "color-mix(in srgb, var(--user-accent) 78%, var(--user-text))"
+      "paletteDark": ""
     },
     {
       "name": "--accent-soft",
       "section": "Палітра світлої схеми (M3 surface containers)",
       "light": "rgba(160, 51, 15, 0.1)",
-      "dark": "rgba(255, 168, 135, 0.14)",
+      "dark": "rgba(240, 169, 124, 0.16)",
       "palette": "",
-      "paletteDark": "color-mix(in srgb, var(--user-accent) 12%, transparent)"
+      "paletteDark": ""
     },
     {
       "name": "--appbar-h",
@@ -271,41 +261,41 @@
       "name": "--bg-0",
       "section": "Палітра світлої схеми (M3 surface containers)",
       "light": "#f6f6f7",
-      "dark": "#0e0e11",
+      "dark": "#120c14",
       "palette": "",
-      "paletteDark": "var(--user-bg)"
+      "paletteDark": ""
     },
     {
       "name": "--bg-1",
       "section": "Палітра світлої схеми (M3 surface containers)",
       "light": "var(--bg-home, #f6f6f7)",
-      "dark": "#17171b",
+      "dark": "#191220",
       "palette": "",
-      "paletteDark": "var(--bg-home)"
+      "paletteDark": ""
     },
     {
       "name": "--bg-2",
       "section": "Палітра світлої схеми (M3 surface containers)",
       "light": "#f1f1f3",
-      "dark": "#1e1e23",
+      "dark": "#211828",
       "palette": "",
-      "paletteDark": "color-mix(in srgb, var(--user-bg) 95%, var(--user-text))"
+      "paletteDark": ""
     },
     {
       "name": "--bg-3",
       "section": "Палітра світлої схеми (M3 surface containers)",
       "light": "#e9e9ec",
-      "dark": "#26262c",
+      "dark": "#291e33",
       "palette": "",
-      "paletteDark": "color-mix(in srgb, var(--user-bg) 90%, var(--user-text))"
+      "paletteDark": ""
     },
     {
       "name": "--bg-4",
       "section": "Палітра світлої схеми (M3 surface containers)",
       "light": "#e2e2e6",
-      "dark": "#313138",
+      "dark": "#32253e",
       "palette": "",
-      "paletteDark": "color-mix(in srgb, var(--user-bg) 86%, var(--user-text))"
+      "paletteDark": ""
     },
     {
       "name": "--bg-home",
@@ -313,39 +303,39 @@
       "light": "var(--bg-0)",
       "dark": "var(--bg-0)",
       "palette": "",
-      "paletteDark": "radial-gradient(120% 90% at 12% 0%, var(--bg-3) 0%, var(--bg-2) 55%, var(--bg-0) 100%)"
+      "paletteDark": ""
     },
     {
       "name": "--bg-page",
       "section": "Фон екрана",
       "light": "var(--chrome-header-bg)",
-      "dark": "",
+      "dark": "var(--chrome-header-bg)",
       "palette": "",
-      "paletteDark": "var(--user-bg)"
+      "paletteDark": ""
     },
     {
       "name": "--border",
       "section": "Палітра світлої схеми (M3 surface containers)",
       "light": "#d6d6dd",
-      "dark": "#3b3b45",
+      "dark": "#463451",
       "palette": "",
-      "paletteDark": "color-mix(in srgb, var(--user-text) 20%, var(--user-bg))"
+      "paletteDark": ""
     },
     {
       "name": "--border-hover",
       "section": "Палітра світлої схеми (M3 surface containers)",
       "light": "#b4b4bf",
-      "dark": "#54545f",
+      "dark": "#5f4870",
       "palette": "",
-      "paletteDark": "color-mix(in srgb, var(--user-text) 45%, var(--user-bg))"
+      "paletteDark": ""
     },
     {
       "name": "--border-subtle",
       "section": "Палітра світлої схеми (M3 surface containers)",
       "light": "#e7e7eb",
-      "dark": "#2f2f36",
+      "dark": "#362a44",
       "palette": "",
-      "paletteDark": "color-mix(in srgb, var(--user-text) 10%, var(--user-bg))"
+      "paletteDark": ""
     },
     {
       "name": "--btn-pad-x",
@@ -375,17 +365,17 @@
       "name": "--card-bg",
       "section": "Картка",
       "light": "#ffffff",
-      "dark": "#222227",
-      "palette": "color-mix(in srgb, var(--user-bg) 86%, #ffffff)",
-      "paletteDark": "color-mix(in srgb, var(--user-bg) 94%, var(--user-text))"
+      "dark": "#1d1524",
+      "palette": "",
+      "paletteDark": ""
     },
     {
       "name": "--card-border",
       "section": "Глибина поверхонь",
       "light": "rgba(21, 21, 26, 0.05)",
-      "dark": "rgba(233, 233, 238, 0.07)",
+      "dark": "rgba(240, 232, 243, 0.07)",
       "palette": "",
-      "paletteDark": "color-mix(in srgb, var(--user-text) 7%, transparent)"
+      "paletteDark": ""
     },
     {
       "name": "--card-gap",
@@ -423,17 +413,17 @@
       "name": "--chrome-bottom-bg",
       "section": "Нативний хром Telegram",
       "light": "#f0f0f4",
-      "dark": "#17171b",
+      "dark": "#191220",
       "palette": "",
-      "paletteDark": "var(--user-bg)"
+      "paletteDark": ""
     },
     {
       "name": "--chrome-header-bg",
       "section": "Нативний хром Telegram",
       "light": "#f0f0f4",
-      "dark": "#17171b",
+      "dark": "#191220",
       "palette": "",
-      "paletteDark": "var(--user-bg)"
+      "paletteDark": ""
     },
     {
       "name": "--context-bar-h",
@@ -503,7 +493,7 @@
       "name": "--elevation-0",
       "section": "Рівні підняття",
       "light": "none",
-      "dark": "none",
+      "dark": "",
       "palette": "",
       "paletteDark": ""
     },
@@ -511,7 +501,7 @@
       "name": "--elevation-1",
       "section": "Рівні підняття",
       "light": "0 1px 2px rgba(21, 21, 26, 0.06), 0 1px 3px rgba(21, 21, 26, 0.08)",
-      "dark": "0 1px 3px rgba(0, 0, 0, 0.4)",
+      "dark": "",
       "palette": "",
       "paletteDark": ""
     },
@@ -519,7 +509,7 @@
       "name": "--elevation-2",
       "section": "Рівні підняття",
       "light": "0 2px 4px rgba(21, 21, 26, 0.06), 0 4px 12px rgba(21, 21, 26, 0.08)",
-      "dark": "0 2px 6px rgba(0, 0, 0, 0.5)",
+      "dark": "",
       "palette": "",
       "paletteDark": ""
     },
@@ -527,7 +517,7 @@
       "name": "--elevation-3",
       "section": "Рівні підняття",
       "light": "0 4px 8px rgba(21, 21, 26, 0.06), 0 12px 28px rgba(21, 21, 26, 0.1)",
-      "dark": "0 4px 8px rgba(0, 0, 0, 0.5)",
+      "dark": "",
       "palette": "",
       "paletteDark": ""
     },
@@ -535,17 +525,17 @@
       "name": "--field-bg",
       "section": "Поле вводу",
       "light": "#eeeef2",
-      "dark": "var(--bg-4)",
+      "dark": "#251a2e",
       "palette": "",
-      "paletteDark": "var(--bg-3)"
+      "paletteDark": ""
     },
     {
       "name": "--field-bg-raised",
       "section": "Поле вводу",
       "light": "#ffffff",
-      "dark": "#343a46",
-      "palette": "#ffffff",
-      "paletteDark": "color-mix(in srgb, var(--user-bg) 78%, var(--user-text))"
+      "dark": "#30223c",
+      "palette": "",
+      "paletteDark": ""
     },
     {
       "name": "--field-pad-x",
@@ -567,9 +557,9 @@
       "name": "--field-ring",
       "section": "Поле вводу",
       "light": "0 0 0 1px rgba(21, 21, 26, 0.07)",
-      "dark": "0 0 0 1px rgba(233, 233, 238, 0.1)",
-      "palette": "0 1px 2px rgb(0 0 0 / 5%), 0 2px 6px rgb(0 0 0 / 4%)",
-      "paletteDark": "0 1px 2px rgb(0 0 0 / 45%), 0 2px 6px rgb(0 0 0 / 30%)"
+      "dark": "0 0 0 1px rgba(240, 232, 243, 0.1)",
+      "palette": "",
+      "paletteDark": ""
     },
     {
       "name": "--focus-ring-color",
@@ -623,17 +613,17 @@
       "name": "--green",
       "section": "Палітра світлої схеми (M3 surface containers)",
       "light": "#0a6e2a",
-      "dark": "#7bda90",
-      "palette": "#16a34a",
-      "paletteDark": "#4ade80"
+      "dark": "#8ee0a4",
+      "palette": "",
+      "paletteDark": ""
     },
     {
       "name": "--green-dim",
       "section": "Палітра світлої схеми (M3 surface containers)",
       "light": "#e2eee5",
-      "dark": "rgba(123, 218, 144, 0.12)",
-      "palette": "color-mix(\n    in srgb,\n    var(--green) 12%,\n    color-mix(in srgb, var(--user-bg) 14%, #ffffff)\n  )",
-      "paletteDark": "color-mix(in srgb, var(--green) 18%, var(--user-bg))"
+      "dark": "rgba(142, 224, 164, 0.14)",
+      "palette": "",
+      "paletteDark": ""
     },
     {
       "name": "--h1-size",
@@ -687,9 +677,9 @@
       "name": "--hairline",
       "section": "Глибина поверхонь",
       "light": "rgba(21, 21, 26, 0.08)",
-      "dark": "rgba(233, 233, 238, 0.07)",
+      "dark": "rgba(240, 232, 243, 0.08)",
       "palette": "",
-      "paletteDark": "color-mix(in srgb, var(--user-text) 7%, transparent)"
+      "paletteDark": ""
     },
     {
       "name": "--heading-card-size",
@@ -783,7 +773,7 @@
       "name": "--modal-scrim",
       "section": "Глибина поверхонь",
       "light": "rgba(0, 0, 0, 0.5)",
-      "dark": "",
+      "dark": "rgba(0, 0, 0, 0.5)",
       "palette": "",
       "paletteDark": ""
     },
@@ -855,17 +845,17 @@
       "name": "--red",
       "section": "Палітра світлої схеми (M3 surface containers)",
       "light": "#ba1a1a",
-      "dark": "#ffb4ab",
-      "palette": "#dc2626",
-      "paletteDark": "#f87171"
+      "dark": "#ffb1ae",
+      "palette": "",
+      "paletteDark": ""
     },
     {
       "name": "--red-dim",
       "section": "Палітра світлої схеми (M3 surface containers)",
       "light": "#f7e4e4",
-      "dark": "rgba(255, 180, 171, 0.12)",
-      "palette": "color-mix(in srgb, var(--red) 12%, color-mix(in srgb, var(--user-bg) 14%, #ffffff))",
-      "paletteDark": "color-mix(in srgb, var(--red) 18%, var(--user-bg))"
+      "dark": "rgba(255, 177, 174, 0.14)",
+      "palette": "",
+      "paletteDark": ""
     },
     {
       "name": "--row-bg",
@@ -976,8 +966,8 @@
       "section": "Мобільна навігація",
       "light": "rgba(0, 0, 0, 0.45)",
       "dark": "",
-      "palette": "rgb(0 0 0 / 45%)",
-      "paletteDark": "rgb(0 0 0 / 60%)"
+      "palette": "",
+      "paletteDark": ""
     },
     {
       "name": "--scrim-strong",
@@ -991,9 +981,9 @@
       "name": "--selection-bg",
       "section": "Глибина поверхонь",
       "light": "rgba(28, 27, 31, 0.14)",
-      "dark": "rgba(227, 226, 230, 0.2)",
+      "dark": "rgba(240, 232, 243, 0.22)",
       "palette": "",
-      "paletteDark": "color-mix(in srgb, var(--user-text) 16%, transparent)"
+      "paletteDark": ""
     },
     {
       "name": "--shadow-card",
@@ -1007,49 +997,49 @@
       "name": "--shadow-lg",
       "section": "Shadows",
       "light": "0 4px 8px rgba(21, 21, 26, 0.06), 0 12px 28px rgba(21, 21, 26, 0.1)",
-      "dark": "0 4px 8px rgba(0, 0, 0, 0.35), 0 12px 28px rgba(0, 0, 0, 0.4)",
-      "palette": "0 10px 15px -3px rgb(0 0 0 / 10%), 0 4px 6px -4px rgb(0 0 0 / 10%)",
-      "paletteDark": "0 10px 15px -3px rgb(0 0 0 / 30%), 0 4px 6px -4px rgb(0 0 0 / 20%)"
+      "dark": "",
+      "palette": "",
+      "paletteDark": ""
     },
     {
       "name": "--shadow-md",
       "section": "Shadows",
       "light": "0 2px 4px rgba(21, 21, 26, 0.06), 0 4px 12px rgba(21, 21, 26, 0.08)",
-      "dark": "0 2px 4px rgba(0, 0, 0, 0.35), 0 4px 12px rgba(0, 0, 0, 0.35)",
-      "palette": "0 4px 6px -1px rgb(0 0 0 / 10%), 0 2px 4px -2px rgb(0 0 0 / 10%)",
-      "paletteDark": "0 4px 6px -1px rgb(0 0 0 / 30%), 0 2px 4px -2px rgb(0 0 0 / 20%)"
+      "dark": "",
+      "palette": "",
+      "paletteDark": ""
     },
     {
       "name": "--shadow-sm",
       "section": "Shadows",
       "light": "0 1px 2px rgba(21, 21, 26, 0.06), 0 1px 3px rgba(21, 21, 26, 0.08)",
-      "dark": "0 1px 2px rgba(0, 0, 0, 0.35), 0 1px 3px rgba(0, 0, 0, 0.3)",
-      "palette": "0 1px 3px rgb(0 0 0 / 10%), 0 1px 2px rgb(0 0 0 / 6%)",
-      "paletteDark": "0 1px 3px rgb(0 0 0 / 30%), 0 1px 2px rgb(0 0 0 / 20%)"
+      "dark": "",
+      "palette": "",
+      "paletteDark": ""
     },
     {
       "name": "--shadow-xl",
       "section": "Shadows",
       "light": "0 8px 16px rgba(21, 21, 26, 0.08), 0 24px 48px rgba(21, 21, 26, 0.14)",
-      "dark": "0 8px 16px rgba(0, 0, 0, 0.4), 0 24px 48px rgba(0, 0, 0, 0.5)",
-      "palette": "0 20px 25px -5px rgb(0 0 0 / 10%), 0 8px 10px -6px rgb(0 0 0 / 10%)",
-      "paletteDark": "0 20px 25px -5px rgb(0 0 0 / 30%), 0 8px 10px -6px rgb(0 0 0 / 20%)"
+      "dark": "",
+      "palette": "",
+      "paletteDark": ""
     },
     {
       "name": "--shadow-xs",
       "section": "Shadows",
       "light": "0 1px 2px rgba(21, 21, 26, 0.06)",
-      "dark": "0 1px 2px rgba(0, 0, 0, 0.35)",
-      "palette": "0 1px 2px rgb(0 0 0 / 5%)",
-      "paletteDark": "0 1px 2px rgb(0 0 0 / 20%)"
+      "dark": "",
+      "palette": "",
+      "paletteDark": ""
     },
     {
       "name": "--sidebar-bg",
       "section": "Сайдбар: крок пункту й берег",
       "light": "#fcfcfd",
-      "dark": "#141418",
+      "dark": "#150f1b",
       "palette": "",
-      "paletteDark": "color-mix(in srgb, var(--user-bg) 96%, var(--user-text))"
+      "paletteDark": ""
     },
     {
       "name": "--sidebar-item-h",
@@ -1071,7 +1061,7 @@
       "name": "--sidebar-shadow",
       "section": "Сайдбар: крок пункту й берег",
       "light": "1px 0 0 var(--hairline), 8px 0 24px -20px rgba(21, 21, 26, 0.25)",
-      "dark": "1px 0 0 var(--hairline), 8px 0 24px -18px rgba(0, 0, 0, 0.6)",
+      "dark": "1px 0 0 var(--hairline), 8px 0 24px -18px rgba(0, 0, 0, 0.65)",
       "palette": "",
       "paletteDark": ""
     },
@@ -1199,25 +1189,25 @@
       "name": "--surface",
       "section": "Палітра світлої схеми (M3 surface containers)",
       "light": "var(--bg-home, #f6f6f7)",
-      "dark": "#17171b",
+      "dark": "#191220",
       "palette": "",
-      "paletteDark": "var(--bg-1)"
+      "paletteDark": ""
     },
     {
       "name": "--surface-active",
       "section": "Палітра світлої схеми (M3 surface containers)",
       "light": "#e4e4e8",
-      "dark": "#313138",
+      "dark": "#32253e",
       "palette": "",
-      "paletteDark": "var(--bg-4)"
+      "paletteDark": ""
     },
     {
       "name": "--surface-hover",
       "section": "Палітра світлої схеми (M3 surface containers)",
       "light": "#ededf0",
-      "dark": "#26262c",
+      "dark": "#291e33",
       "palette": "",
-      "paletteDark": "var(--bg-3)"
+      "paletteDark": ""
     },
     {
       "name": "--surface-modal",
@@ -1225,23 +1215,23 @@
       "light": "var(--surface)",
       "dark": "var(--bg-3)",
       "palette": "",
-      "paletteDark": "color-mix(in srgb, var(--user-bg) 93%, var(--user-text))"
+      "paletteDark": ""
     },
     {
       "name": "--surface-overlay",
       "section": "Глибина поверхонь",
       "light": "rgba(0, 0, 0, 0.4)",
       "dark": "rgba(0, 0, 0, 0.6)",
-      "palette": "rgb(0 0 0 / 40%)",
-      "paletteDark": "rgb(0 0 0 / 60%)"
+      "palette": "",
+      "paletteDark": ""
     },
     {
       "name": "--switch-knob",
       "section": "Поле вводу",
       "light": "#ffffff",
-      "dark": "#d9d7e0",
+      "dark": "#e2d6e8",
       "palette": "",
-      "paletteDark": "color-mix(in srgb, var(--user-text) 82%, var(--user-bg))"
+      "paletteDark": ""
     },
     {
       "name": "--tab-bar-h",
@@ -1303,9 +1293,9 @@
       "name": "--text-inverse",
       "section": "Палітра світлої схеми (M3 surface containers)",
       "light": "#ffffff",
-      "dark": "#1b1b1f",
+      "dark": "#1a0f16",
       "palette": "",
-      "paletteDark": "var(--user-on-accent)"
+      "paletteDark": ""
     },
     {
       "name": "--text-lg",
@@ -1327,15 +1317,15 @@
       "name": "--text-muted",
       "section": "Палітра світлої схеми (M3 surface containers)",
       "light": "#5c5c67",
-      "dark": "#a5a5b0",
+      "dark": "#b9a8c2",
       "palette": "",
-      "paletteDark": "color-mix(in srgb, var(--user-text) 48%, var(--user-bg))"
+      "paletteDark": ""
     },
     {
       "name": "--text-on-scrim",
       "section": "Палітра світлої схеми (M3 surface containers)",
       "light": "#ffffff",
-      "dark": "",
+      "dark": "#ffffff",
       "palette": "",
       "paletteDark": ""
     },
@@ -1343,17 +1333,17 @@
       "name": "--text-primary",
       "section": "Палітра світлої схеми (M3 surface containers)",
       "light": "#15151a",
-      "dark": "#e9e9ee",
+      "dark": "#f0e8f3",
       "palette": "",
-      "paletteDark": "var(--user-text)"
+      "paletteDark": ""
     },
     {
       "name": "--text-secondary",
       "section": "Палітра світлої схеми (M3 surface containers)",
       "light": "#45454f",
-      "dark": "#bdbdc8",
+      "dark": "#d1c2d8",
       "palette": "",
-      "paletteDark": "color-mix(in srgb, var(--user-text) 70%, var(--user-bg))"
+      "paletteDark": ""
     },
     {
       "name": "--text-sm",
@@ -1439,17 +1429,17 @@
       "name": "--yellow",
       "section": "Палітра світлої схеми (M3 surface containers)",
       "light": "#6d5700",
-      "dark": "#ddb948",
-      "palette": "#ca8a04",
-      "paletteDark": "#facc15"
+      "dark": "#f0cf80",
+      "palette": "",
+      "paletteDark": ""
     },
     {
       "name": "--yellow-dim",
       "section": "Палітра світлої схеми (M3 surface containers)",
       "light": "#edebe0",
-      "dark": "rgba(221, 185, 72, 0.12)",
-      "palette": "color-mix(\n    in srgb,\n    var(--yellow) 12%,\n    color-mix(in srgb, var(--user-bg) 14%, #ffffff)\n  )",
-      "paletteDark": "color-mix(in srgb, var(--yellow) 18%, var(--user-bg))"
+      "dark": "rgba(240, 207, 128, 0.14)",
+      "palette": "",
+      "paletteDark": ""
     },
     {
       "name": "--z-dropdown",
@@ -1568,14 +1558,7 @@
       "name": "--context-bar-fill",
       "file": "contextbar.css",
       "selector": ".wb-contextbar",
-      "value": "color-mix(in srgb, var(--chrome-bottom-bg) 96%, black)",
-      "section": ""
-    },
-    {
-      "name": "--context-bar-fill",
-      "file": "contextbar.css",
-      "selector": "html[data-colors-mode=\"dark\"] .wb-contextbar,\nhtml[data-theme=\"dark\"] .wb-contextbar",
-      "value": "color-mix(in srgb, var(--chrome-bottom-bg) 96%, white)",
+      "value": "color-mix(in srgb, var(--chrome-bottom-bg) 96%, var(--text-primary))",
       "section": ""
     },
     {
@@ -5026,121 +5009,24 @@
         ]
       }
     ],
-    "theme-pages.css": [
-      {
-        "section": "Форма схеми (назва, шрифт, публічність)",
-        "names": [
-          "wb-font-picker",
-          "wb-theme-form",
-          "wb-theme-rows"
-        ]
-      },
-      {
-        "section": "Вибір шрифту",
-        "names": [
-          "wb-font-chip",
-          "wb-font-chip--active",
-          "wb-font-chips",
-          "wb-font-group",
-          "wb-font-group-label",
-          "wb-font-picker"
-        ]
-      }
-    ],
     "theme-panel.css": [
       {
-        "section": "Панель і секції",
-        "names": [
-          "wb-btn",
-          "wb-theme-actions",
-          "wb-theme-extra",
-          "wb-theme-hint",
-          "wb-theme-hint--warn",
-          "wb-theme-panel",
-          "wb-theme-status",
-          "wb-theme-status--saved"
-        ]
-      },
-      {
-        "section": "Картка теми",
+        "section": "",
         "names": [
           "wb-theme-card",
           "wb-theme-card--on",
-          "wb-theme-card-badge",
           "wb-theme-card-bubble",
           "wb-theme-card-bubble--in",
           "wb-theme-card-bubble--out",
-          "wb-theme-card-family",
-          "wb-theme-card-font",
           "wb-theme-card-foot",
-          "wb-theme-card-glyph",
+          "wb-theme-card-hint",
           "wb-theme-card-hit",
           "wb-theme-card-name",
           "wb-theme-card-on",
           "wb-theme-card-preview",
-          "wb-theme-cards"
-        ]
-      },
-      {
-        "section": "Меню дій картки («···»)",
-        "names": [
-          "wb-theme-card-menu",
-          "wb-theme-card-menu-btn",
-          "wb-theme-card-menu-item",
-          "wb-theme-card-menu-item--danger",
-          "wb-theme-card-menu-list"
-        ]
-      },
-      {
-        "section": "Три кольори (редактор теми)",
-        "names": [
-          "wb-font-picker",
-          "wb-theme-row",
-          "wb-theme-row--open",
-          "wb-theme-row-body",
-          "wb-theme-row-caret",
-          "wb-theme-row-head",
-          "wb-theme-row-hint",
-          "wb-theme-row-label",
-          "wb-theme-row-swatch",
-          "wb-theme-row-swatch--empty",
-          "wb-theme-row-swatch--glyph",
-          "wb-theme-row-text",
-          "wb-theme-rows"
-        ]
-      },
-      {
-        "section": "Редактор кольору",
-        "names": [
-          "wb-theme-editor",
-          "wb-theme-picker",
-          "wb-theme-picker-hint",
-          "wb-theme-picker-input",
-          "wb-theme-picker-label",
-          "wb-theme-picker-swatch",
-          "wb-theme-picker-text"
-        ]
-      },
-      {
-        "section": "Зразки кольорів",
-        "names": [
-          "wb-theme-caption",
-          "wb-theme-chart",
-          "wb-theme-chip",
-          "wb-theme-chip--active",
-          "wb-theme-chips",
-          "wb-theme-chips--shades"
-        ]
-      },
-      {
-        "section": "Повзунки",
-        "names": [
-          "wb-theme-code",
-          "wb-theme-editor-foot",
-          "wb-theme-slider",
-          "wb-theme-slider-label",
-          "wb-theme-slider-row",
-          "wb-theme-slider-value"
+          "wb-theme-cards",
+          "wb-theme-hint",
+          "wb-theme-panel"
         ]
       }
     ],
@@ -5326,7 +5212,6 @@
           "wb-library-tree"
         ]
       }
-    ],
-    "user-colors.css": []
+    ]
   }
 }
