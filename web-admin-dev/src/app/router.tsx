@@ -24,8 +24,9 @@ import { AnalyticsPage } from "../pages/analytics/AnalyticsPage";
  * /monitoring         — Моніторинг проєкту: зрізи код/GitHub, динаміка, історія
  * /spending           — Є-data: зібране про видатки громади — розпорядники,
  *                       договори, обидві сторони платежів і стан збору
- * /style              — Інвентар вигляду: токени, кирпичики й класи так, як вони
- *                       є в CSS (каталог генерує `npm run doc:style`)
+ * /style              — Візуал: одна демосторінка продукту — шапка, блоки,
+ *                       графіки, поля, навігація й перемикач тем, плюс
+ *                       відбиток CSS, що каже про оновлення вигляду
  * /bot-settings       — Налаштування бота
  * /profile            — Профіль (акаунт панелі + профіль людини) — той самий
  *                       екран, що й у платформі, зі спільного `UserProfileCard`;
@@ -48,8 +49,8 @@ export const router = createBrowserRouter([
       { path: "analytics", element: <AnalyticsPage /> },
       { path: "monitoring", element: <MonitoringPage /> },
       { path: "spending", element: <SpendingPage /> },
-      // Сторінка-довідник вантажиться ліниво: вхід в адмінку не має чекати на
-      // інвентар, який відкривають зрідка (`npm run check:bundle`).
+      // Сторінка-демо вантажиться ліниво: вхід в адмінку не має чекати на
+      // полотно, яке відкривають зрідка (`npm run check:bundle`).
       {
         path: "style",
         lazy: () => import("../pages/style/StylePage").then((m) => ({ Component: m.StylePage })),

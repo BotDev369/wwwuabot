@@ -78,7 +78,7 @@ packages/ui/      Спільні React-компоненти Page Builder (@wwwua
 ## 4. Іконки та дизайн
 
 > **Емоджі в UI ЗАБОРОНЕНІ. Використовувати `<Icon />` з shared.** Виняток — тексти бота (`bot-dev/src/shared/config/texts.ts`): їх малює Telegram, `<Icon />` там немає; поза `check:quality`.
-> **Стилі — рівно в `packages/shared/src/styles/`; інвентар із прев'ю — сторінка `/style`** (каталог: `npm run doc:style`, свіжість: `npm run check:style`).
+> **Стилі — рівно в `packages/shared/src/styles/`; демосторінка візуалу — `/style`** (каталог для версії вигляду: `npm run doc:style`, свіжість: `npm run check:style`).
 > **Меню — модалка над скримом (не дропдаун): висоту їй дає вміст, і стоїть вона по центру екрана; виняток — дропдаун дій картки («···»).**
 > **Нативні `alert` / `confirm` / `prompt` ЗАБОРОНЕНІ. Використовувати `useDialog()`.**
 

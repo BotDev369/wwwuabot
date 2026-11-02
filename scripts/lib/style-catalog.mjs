@@ -13,6 +13,7 @@
  * @module scripts/lib/style-catalog
  */
 
+import { createHash } from "node:crypto";
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import { isCss, ROOT, walk } from "./files.mjs";
@@ -173,8 +174,14 @@ export function buildCatalog() {
   const locals = [];
   const files = [];
   const classes = {};
+  const sources = styleFiles();
+  // Версія — відбиток самого вигляду, а не дата збірки: сторінка `/style`
+  // порівнює його з побаченим і каже «оновлено» лише тоді, коли CSS справді
+  // інший. Дата змушувала б її кричати про оновлення щодня.
+  const version = createHash("sha1");
+  for (const file of sources) version.update(file).update(readFileSync(join(ROOT, file), "utf8"));
 
-  for (const file of styleFiles()) {
+  for (const file of sources) {
     const short = file.slice(STYLES_DIR.length + 1);
     const parsed = parseCss(readFileSync(join(ROOT, file), "utf8"));
     const layer = LAYERS[short];
@@ -242,6 +249,7 @@ export function buildCatalog() {
   }
 
   return {
+    version: version.digest("hex").slice(0, 7),
     files,
     tokens: [...tokensByName.values()].sort((a, b) => (a.name < b.name ? -1 : 1)),
     local: locals.sort((a, b) => (a.name < b.name ? -1 : 1)),

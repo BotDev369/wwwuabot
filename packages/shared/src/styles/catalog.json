@@ -1,4 +1,5 @@
 {
+  "version": "85ed909",
   "files": [
     {
       "file": "admin/analytics-people.css",
@@ -73,7 +74,7 @@
     {
       "file": "admin/style.css",
       "tokens": 0,
-      "classes": 41
+      "classes": 19
     },
     {
       "file": "admin/telegram-preview.css",
@@ -2898,76 +2899,33 @@
         ]
       },
       {
-        "section": "Зведення: скільки всього є в системі",
+        "section": "Смуга керування й версія",
         "names": [
-          "st-stat",
-          "st-stat-label",
-          "st-stat-value",
-          "st-summary"
-        ]
-      },
-      {
-        "section": "Смуга керування: вкладки й пошук",
-        "names": [
+          "st-banner",
+          "st-banner-text",
+          "st-banner-title",
           "st-bar",
-          "st-group",
-          "st-group-title",
-          "st-search"
+          "st-note",
+          "st-version",
+          "st-version-key"
         ]
       },
       {
-        "section": "Токен: значення трьох шарів і поточне",
-        "names": [
-          "st-swatch",
-          "st-swatch--bar",
-          "st-swatch--shadow",
-          "st-swatch--text",
-          "st-token",
-          "st-token-name",
-          "st-tokens",
-          "st-value",
-          "st-value--live",
-          "st-value-key",
-          "st-values"
-        ]
-      },
-      {
-        "section": "Кирпичик: справжня розмітка в рамці",
-        "names": [
-          "st-brick",
-          "st-brick-classes",
-          "st-brick-demo",
-          "st-brick-head",
-          "st-brick-title",
-          "st-bricks",
-          "st-class-name",
-          "st-page-demo",
-          "st-row",
-          "st-stack",
-          "st-subbar",
-          "st-tabbar"
-        ]
-      },
-      {
-        "section": "Повний перелік класів",
+        "section": "Полотно: одна колонка, як справжня сторінка",
         "names": [
           "st",
-          "st-bricks",
-          "st-empty",
-          "st-file",
-          "st-file-count",
-          "st-file-name",
-          "st-files",
-          "st-names",
-          "st-search",
-          "st-section-name",
-          "st-source",
-          "st-stat",
-          "st-summary",
-          "st-token",
-          "st-token-name",
-          "st-value--palette",
-          "st-values"
+          "st-charts",
+          "st-demo",
+          "st-footnote",
+          "st-grid",
+          "st-note",
+          "st-panel",
+          "st-row",
+          "st-section",
+          "st-section-title",
+          "st-stats",
+          "st-subbar",
+          "st-tabbar"
         ]
       }
     ],
