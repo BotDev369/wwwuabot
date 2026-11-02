@@ -1,9 +1,9 @@
 /**
- * ANALYTICS — аналітичні блоки (стовпчиковий, круговий графіки).
+ * ANALYTICS — аналітичні блоки (стовпчиковий, круговий, нахил, теплова карта).
  */
 
 import type { BlockDefinition } from "../../types/page-config";
-import { block, e, s, n, b, oa } from "./helpers";
+import { block, e, s, n, b, oa, sa } from "./helpers";
 
 export const analyticsBlocks: BlockDefinition[] = [
   block({
@@ -12,17 +12,32 @@ export const analyticsBlocks: BlockDefinition[] = [
     icon: "bar-chart",
     category: "analytics",
     compatibleZones: ["main"],
-    description: "Простий стовпчиковий або круговий графік",
+    description: "Стовпчики, сектори, нахил «було → стало» або теплова карта",
     props: {
-      type: e("Тип графіка", ["bar", "pie"], { default: "bar" }),
-      data: oa("Дані", { label: s("Мітка"), value: n("Значення"), color: s("Колір (hex)") }, [
-        "label",
-        "value",
-      ]),
+      type: e("Тип графіка", ["bar", "pie", "slope", "heatmap"], { default: "bar" }),
+      data: oa(
+        "Дані",
+        {
+          label: s("Мітка"),
+          value: n("Значення"),
+          from: n("Було"),
+          to: n("Стало"),
+          color: s("Колір (hex)"),
+        },
+        ["label"],
+      ),
+      rows: oa("Рядки теплової карти", {
+        label: s("Мітка"),
+        cells: { type: "array", title: "Значення по колонках", items: { type: "number" } },
+      }),
+      columns: sa("Колонки теплової карти"),
+      fromLabel: s("Підпис «було»"),
+      toLabel: s("Підпис «стало»"),
+      unit: s("Одиниця (%, хв)"),
       title: s("Заголовок"),
       showLabels: b("Показувати мітки значень", { default: true }),
     },
-    required: ["data"],
+    required: ["type"],
     defaultProps: { type: "bar", data: [], title: "", showLabels: true },
   }),
 ];

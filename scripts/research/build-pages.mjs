@@ -121,12 +121,73 @@ function inlineText(raw) {
     .trim();
 }
 
+/** Маркер перед таблицею: `<!-- chart: slope -->` — графік поруч із таблицею. */
+const CHART_MARKER = /^<!--\s*chart:\s*(slope|heatmap)\s*-->$/;
+
+/** Одне число з клітинки: `−1,8 в.п.` → `-1.8`, `5,46% + 3,75%` → `null`. */
+function numberFromCell(cell) {
+  const text = String(cell ?? "")
+    .replace(/\u2212/g, "-")
+    .replace(/,/g, ".")
+    .replace(/\s/g, "");
+  const matches = text.match(/-?\d+(?:\.\d+)?/g) ?? [];
+  if (matches.length !== 1 || text.includes("=")) return null;
+  return Number(matches[0]);
+}
+
+/**
+ * Таблиця → дані графіка.
+ *
+ * Числа беруться з тієї самої таблиці, а не з окремого списку: інакше графік і
+ * текст розійшлися б тихо. Форма не та — `null`, і таблиця лишається сама.
+ */
+function chartFromTable(kind, headers, rows) {
+  if (kind === "slope") {
+    const toIndex = headers.findIndex((header) => /частка/i.test(header) && /2020/.test(header));
+    const changeIndex = headers.findIndex(
+      (header) => /зміна/i.test(header) && /частк/i.test(header),
+    );
+    if (toIndex < 0 || changeIndex < 0) return null;
+
+    const data = rows
+      .map((row) => {
+        const to = numberFromCell(row[toIndex]);
+        const change = numberFromCell(row[changeIndex]);
+        if (to === null || change === null) return null;
+        return { label: row[0], from: Math.round((to - change) * 10) / 10, to };
+      })
+      .filter(Boolean);
+
+    return data.length >= 2 ? { type: "slope", fromLabel: "2010", toLabel: "2020", data } : null;
+  }
+
+  if (kind === "heatmap") {
+    const metric = headers
+      .map((header, i) => ({ header, i }))
+      .filter(({ header, i }) => i > 0 && !/різниц|змін/i.test(header));
+    const columns = metric.map(({ header }) => header);
+
+    const heatRows = rows
+      .filter((row) => !/^разом$/i.test(row[0]))
+      .map((row) => {
+        const cells = metric.map(({ i }) => numberFromCell(row[i]));
+        return cells.every((value) => value !== null) ? { label: row[0], cells } : null;
+      })
+      .filter(Boolean);
+
+    return heatRows.length >= 2 ? { type: "heatmap", columns, unit: "%", rows: heatRows } : null;
+  }
+
+  return null;
+}
+
 /** Тіло блоку → масив блоків Page Builder, у тому порядку, що в тексті. */
 function bodyToBlocks(body, prefix) {
   const blocks = [];
   const lines = body.split("\n");
   let index = 0;
   let order = 0;
+  let pendingChart = null;
 
   const push = (type, props) => {
     blocks.push({ id: `${prefix}-${order}`, type, order, props });
@@ -153,6 +214,13 @@ function bodyToBlocks(body, prefix) {
       continue;
     }
 
+    const marker = CHART_MARKER.exec(line.trim());
+    if (marker) {
+      pendingChart = marker[1];
+      index += 1;
+      continue;
+    }
+
     if (isTableRow(line) && isTableRule(lines[index + 1] ?? "")) {
       const headers = cellsOf(line).map(inlineText);
       index += 2;
@@ -163,7 +231,23 @@ function bodyToBlocks(body, prefix) {
       }
       const width = Math.max(headers.length, ...rows.map((row) => row.length));
       const padded = (row) => [...row, ...Array(width - row.length).fill("")];
+      const chart = chartFromTable(pendingChart, headers, rows);
+      if (chart) push("chart", chart);
+      pendingChart = null;
       push("table", { headers: padded(headers), rows: rows.map(padded), striped: true });
+      continue;
+    }
+
+    // Цитата — не абзац із «>» на початку: на сторінці вона стоїть окремим
+    // блоком, бо це пауза в читанні, а не ще одне речення.
+    if (/^>\s?/.test(line)) {
+      const quote = [];
+      while (index < lines.length && /^>\s?/.test(lines[index])) {
+        quote.push(lines[index].replace(/^>\s?/, ""));
+        index += 1;
+      }
+      const text = inlineText(quote.join(" "));
+      if (text) push("quote", { text });
       continue;
     }
 
@@ -246,17 +330,40 @@ function groupKey(title) {
 }
 
 function detailPage(block) {
-  const header = [
-    {
-      id: `res-${block.id}-h1`,
-      type: "text",
-      order: 0,
-      props: { title: block.title, level: "h1" },
-    },
-    { id: `res-${block.id}-lead`, type: "text", order: 1, props: { content: block.oneLiner } },
-    { id: `res-${block.id}-meta`, type: "text", order: 2, props: { content: metaLine(block) } },
-    { id: `res-${block.id}-hr`, type: "divider", order: 3, props: {} },
-  ];
+  // Шапка — як у шаблоні «Стаття»: рубрика, заголовок, лід і мета-рядок в одній
+  // картці. Рубрика тут не прикраса: вона каже, у якому розділі людина.
+  const head = {
+    id: `res-${block.id}-head`,
+    type: "card",
+    order: 0,
+    props: { padding: "lg", elevated: true },
+    children: [
+      {
+        id: `res-${block.id}-kicker`,
+        type: "text",
+        order: 0,
+        props: {
+          title: [block.groupTitle, String(block.id).toUpperCase()].filter(Boolean).join(" · "),
+          level: "h4",
+        },
+      },
+      {
+        id: `res-${block.id}-h1`,
+        type: "text",
+        order: 1,
+        props: { title: block.title, level: "h1" },
+      },
+      { id: `res-${block.id}-lead`, type: "text", order: 2, props: { content: block.oneLiner } },
+      {
+        id: `res-${block.id}-meta`,
+        type: "text",
+        order: 3,
+        props: { content: metaLine(block) },
+      },
+    ],
+  };
+
+  const header = [head];
 
   const figures = block.keyFigures.map((figure, i) => ({
     id: `res-${block.id}-fig${i}`,
@@ -268,26 +375,33 @@ function detailPage(block) {
   const main = [...figures, ...bodyToBlocks(block.body, `res-${block.id}-m`)];
 
   const footer = [
-    { id: `res-${block.id}-src`, type: "text", order: 0, props: { title: "Джерела", level: "h3" } },
     {
-      id: `res-${block.id}-srclist`,
-      type: "list",
-      order: 1,
-      props: {
-        ordered: true,
-        items: block.sources.map((source) => ({
-          text: `${source.name} — ${source.title}`,
-          description: `${source.year}${source.url ? ` · ${source.url}` : ""}`,
-        })),
-      },
+      id: `res-${block.id}-src`,
+      type: "card",
+      order: 0,
+      props: { title: "Джерела" },
+      children: [
+        {
+          id: `res-${block.id}-srclist`,
+          type: "list",
+          order: 0,
+          props: {
+            ordered: true,
+            items: block.sources.map((source) => ({
+              text: `${source.name} — ${source.title}`,
+              description: `${source.year}${source.url ? ` · ${source.url}` : ""}`,
+            })),
+          },
+        },
+      ],
     },
     {
       id: `res-${block.id}-back`,
       type: "link-button",
-      order: 2,
-      props: linkProps("Усі блоки дослідження", `/${LANDING_SLUG}`, "arrow-left"),
+      order: 1,
+      props: linkProps("Методологія й джерела", `/${LANDING_SLUG}`, "arrow-left"),
     },
-    { id: `res-${block.id}-note`, type: "text", order: 3, props: { content: NOTICE } },
+    { id: `res-${block.id}-note`, type: "text", order: 2, props: { content: NOTICE } },
   ];
 
   return {
@@ -460,13 +574,14 @@ function sqlText(value) {
   return `'${String(value).replace(/'/g, "''")}'`;
 }
 
-function insertRow({ slug, title, pageData, isPublic }) {
+function insertRow({ slug, title, pageData, isPublic, templateKey }) {
   const page = JSON.stringify(pageData, null, 2);
-  return `INSERT INTO scenarios (slug, title, photo_url, page_data, is_active, is_public, updated_at)
-VALUES (${sqlText(slug)}, ${sqlText(title)}, NULL, ${sqlText(page)}, 1, ${isPublic ? 1 : 0}, datetime('now'))
+  return `INSERT INTO scenarios (slug, title, photo_url, page_data, template_key, is_active, is_public, updated_at)
+VALUES (${sqlText(slug)}, ${sqlText(title)}, NULL, ${sqlText(page)}, ${sqlText(templateKey ?? null)}, 1, ${isPublic ? 1 : 0}, datetime('now'))
 ON CONFLICT(slug) DO UPDATE SET
   title = excluded.title,
   page_data = excluded.page_data,
+  template_key = excluded.template_key,
   is_active = 1,
   is_public = excluded.is_public,
   updated_at = datetime('now');`;
@@ -514,6 +629,9 @@ const rows = [
     title: block.title,
     pageData: detailPage(block),
     isPublic: false,
+    // Шаблон — не косметика: за ним платформа знає, що це стаття, і читає її
+    // з міркою рядка (`ScenarioPage`).
+    templateKey: "article",
   })),
 ];
 

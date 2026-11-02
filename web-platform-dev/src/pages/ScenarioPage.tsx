@@ -264,5 +264,15 @@ export function ScenarioPage() {
     return <ResearchArticleFrame slug={pageSlug}>{rendered}</ResearchArticleFrame>;
   }
 
+  // Шаблон «Стаття» — це не інший набір блоків, а інший спосіб читати: та сама
+  // сторінка стає текстом із міркою рядка. Дослідження мають ще й рамку вище.
+  if (status === "ready" && templateKey === "article") {
+    return (
+      <div className="wb-article wb-article--page">
+        <div className="wb-article-body">{rendered}</div>
+      </div>
+    );
+  }
+
   return rendered;
 }

@@ -103,7 +103,7 @@
     {
       "file": "blocks.css",
       "tokens": 0,
-      "classes": 215
+      "classes": 221
     },
     {
       "file": "components.css",
@@ -173,7 +173,7 @@
     {
       "file": "research.css",
       "tokens": 0,
-      "classes": 44
+      "classes": 45
     },
     {
       "file": "reset.css",
@@ -3686,6 +3686,22 @@
         ]
       },
       {
+        "section": "Нахил: частка «було» → «стало»",
+        "names": [
+          "wb-block-chart__slope",
+          "wb-block-chart__slope-caption",
+          "wb-block-chart__slope-line",
+          "wb-block-chart__slope-name",
+          "wb-block-chart__slope-value"
+        ]
+      },
+      {
+        "section": "Теплова карта: насиченість клітинки — дані, сітка — вигляд",
+        "names": [
+          "wb-block-chart__heat"
+        ]
+      },
+      {
         "section": "Картка дати",
         "names": [
           "wb-block-date-card",
@@ -4793,6 +4809,7 @@
           "page-zone--main",
           "page-zone-blocks",
           "wb-article",
+          "wb-article--page",
           "wb-article-back",
           "wb-article-bar",
           "wb-article-bar__fill",
