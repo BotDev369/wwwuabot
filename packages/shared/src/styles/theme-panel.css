@@ -10,9 +10,9 @@
  * `var(--…)` — це **та сама палітра**, яку отримає екран. Тому жодного кольору
  * в розмітці немає, а прев'ю не розходиться з темою.
  *
- * Картка — **мікро-демо, без назви й опису**: шість плиток поруч уже кажуть,
- * що вони міняють. Текст на картці повторював би те, що видно, і забирав
- * місце в палітри.
+ * Картка — **палітра, а не макет екрана**: назви, опису, рядків-заглушок,
+ * діаграми й рамок у ній немає. У шести темах вони однакові, тобто малювали б
+ * самі себе; відрізняється лише колір, і картка показує тільки його.
  */
 
 .wb-theme-panel {
@@ -22,7 +22,7 @@
 }
 
 /* Дві картки в рядку: їх шість, і в одному стовпці список ставав довгим
-   простирадлом, а в трьох картка ставала замалою для мініятюри. */
+   простирадлом, а в трьох картка ставала замалою для палітри. */
 .wb-theme-cards {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -61,122 +61,145 @@
   cursor: pointer;
 }
 
-/* Мініятюра екрана: власна поверхня під аркушем — так видно, що тема задає
-   не один фон, а кілька рівнів. */
-.wb-theme-card-scene {
-  display: flex;
-  flex-direction: column;
-  gap: var(--sp-2);
-  padding: var(--sp-2);
-  border-radius: var(--radius-md);
-  background: var(--bg-2);
+/* Палітра: шість зразків у рядку — рівна сітка, яка на вузькому екрані
+   лишається палітрою, а не списком кольорів. Зразків стільки, скільки
+   **різних** кольорів у теми (`theme-palette.json`), тож останній ряд може
+   бути коротшим: повторений колір стояв би двома однаковими плитками. */
+.wb-theme-card-palette {
+  display: grid;
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  gap: var(--sp-1);
 }
 
-/* Аркуш усередині: картка на поверхні, з волосиною замість рамки. */
-.wb-theme-card-sheet {
-  display: flex;
-  flex-direction: column;
-  gap: var(--sp-1);
-  padding: var(--sp-2);
-  border-radius: var(--radius-md);
-  background: var(--card-bg);
+/* Зразок: колір токена й волосина по краю — без неї сусідні тла (bg-0 і
+   sidebar-bg) зливалися б в одну пляму. */
+.wb-theme-card-chip {
+  height: 12px;
+  border-radius: var(--radius-xs);
   box-shadow: inset 0 0 0 1px var(--hairline);
 }
 
-/* Рядки тексту: основний і приглушений — два рівні, які тема задає окремо. */
-.wb-theme-card-line {
-  display: block;
-  width: 78%;
-  height: 4px;
-  border-radius: var(--radius-xs);
+.wb-theme-card-chip--bg-0 {
+  background: var(--bg-0);
+}
+
+.wb-theme-card-chip--bg-1 {
+  background: var(--bg-1);
+}
+
+.wb-theme-card-chip--bg-2 {
+  background: var(--bg-2);
+}
+
+.wb-theme-card-chip--bg-3 {
+  background: var(--bg-3);
+}
+
+.wb-theme-card-chip--bg-4 {
+  background: var(--bg-4);
+}
+
+.wb-theme-card-chip--card-bg {
+  background: var(--card-bg);
+}
+
+.wb-theme-card-chip--sidebar-bg {
+  background: var(--sidebar-bg);
+}
+
+.wb-theme-card-chip--field-bg {
+  background: var(--field-bg);
+}
+
+.wb-theme-card-chip--field-bg-raised {
+  background: var(--field-bg-raised);
+}
+
+.wb-theme-card-chip--border {
+  background: var(--border);
+}
+
+.wb-theme-card-chip--border-hover {
+  background: var(--border-hover);
+}
+
+.wb-theme-card-chip--border-subtle {
+  background: var(--border-subtle);
+}
+
+.wb-theme-card-chip--text-primary {
   background: var(--text-primary);
 }
 
-.wb-theme-card-line--short {
-  width: 46%;
+.wb-theme-card-chip--text-secondary {
+  background: var(--text-secondary);
+}
+
+.wb-theme-card-chip--text-muted {
   background: var(--text-muted);
 }
 
-/* Шість зразків — усі кольори даних, а не перший-ліпший. Висоти в них немає:
-   стовпці різної висоти малювали графік, однаковий у кожній темі, тож
-   показували самі себе. Зразок однієї висоти каже рівно те, що міняється. */
-.wb-theme-card-swatches {
-  display: flex;
-  gap: var(--sp-1);
-  margin-top: var(--sp-1);
+.wb-theme-card-chip--text-inverse {
+  background: var(--text-inverse);
 }
 
-.wb-theme-card-swatch {
-  flex: 1 1 0;
-  min-width: 0;
-  height: 8px;
-  border-radius: var(--radius-xs);
-  background: var(--data-1);
-}
-
-.wb-theme-card-swatch--1 {
-  background: var(--data-1);
-}
-
-.wb-theme-card-swatch--2 {
-  background: var(--data-2);
-}
-
-.wb-theme-card-swatch--3 {
-  background: var(--data-3);
-}
-
-.wb-theme-card-swatch--4 {
-  background: var(--data-4);
-}
-
-.wb-theme-card-swatch--5 {
-  background: var(--data-5);
-}
-
-.wb-theme-card-swatch--6 {
-  background: var(--data-6);
-}
-
-/* Нижній рядок: акцентна дія й три статуси — решта палітри теми. */
-.wb-theme-card-actions {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: var(--sp-2);
-}
-
-.wb-theme-card-action {
-  width: 42px;
-  height: 14px;
-  border-radius: var(--radius-lg);
+.wb-theme-card-chip--accent {
   background: var(--accent);
 }
 
-.wb-theme-card-dots {
-  display: flex;
-  gap: var(--sp-1);
+.wb-theme-card-chip--accent-hover {
+  background: var(--accent-hover);
 }
 
-.wb-theme-card-dot {
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
+.wb-theme-card-chip--data-1 {
+  background: var(--data-1);
 }
 
-.wb-theme-card-dot--green {
+.wb-theme-card-chip--data-2 {
+  background: var(--data-2);
+}
+
+.wb-theme-card-chip--data-3 {
+  background: var(--data-3);
+}
+
+.wb-theme-card-chip--data-4 {
+  background: var(--data-4);
+}
+
+.wb-theme-card-chip--data-5 {
+  background: var(--data-5);
+}
+
+.wb-theme-card-chip--data-6 {
+  background: var(--data-6);
+}
+
+.wb-theme-card-chip--green {
   background: var(--green);
 }
 
-.wb-theme-card-dot--yellow {
+.wb-theme-card-chip--yellow {
   background: var(--yellow);
 }
 
-.wb-theme-card-dot--red {
+.wb-theme-card-chip--red {
   background: var(--red);
 }
 
-/* Позначка обраної: кут картки, а не рядок під мініятюрою. */
+.wb-theme-card-chip--tint-1 {
+  background: var(--tint-1);
+}
+
+.wb-theme-card-chip--tint-2 {
+  background: var(--tint-2);
+}
+
+.wb-theme-card-chip--tint-3 {
+  background: var(--tint-3);
+}
+
+/* Позначка обраної: кут картки, а не рядок під палітрою. */
 .wb-theme-card-on {
   position: absolute;
   top: var(--sp-1);

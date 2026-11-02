@@ -1,20 +1,20 @@
 /**
- * `ThemeCard` — картка авторської теми, і вона ж її мікро-демо.
+ * `ThemeCard` — картка авторської теми, і вона ж її палітра.
  *
- * **Показує справжні токени, а не підпис.** Картка ставить на себе `data-theme`
- * теми, яку показує, тож кожен елемент усередині — це та сама палітра, яку
- * отримає екран. Назви й опису на картці немає: вигляд і є доказом, а слово
- * «Папір» над кремовою плиткою лише повторювало те, що видно.
+ * **На картці лише колір.** Ні назви, ні опису, ні рядків-заглушок, ні рамок
+ * екрана: у шести темах вони однакові, тобто малювали б самі себе. Між темами
+ * відрізняється рівно одне — колір, і картка показує тільки його.
  *
- * **Видно всі кольори теми, а не два.** Мініятюра — це маленький екран: два
- * рядки тексту (основний і приглушений), акцентна дія, шість зразків даних і
- * три статуси. Поверхні показують самі плитки — картка, аркуш усередині й
- * смуга під ними. Тому з картки читається вся палітра, а не «привіт — ок».
+ * **Кожен колір теми — рівно один зразок.** Не «один зразок на токен»: у межах
+ * теми частина ролей має той самий колір (`--accent` = `--data-1`, `--bg-1` →
+ * `--bg-0`), і два однакові зразки читались як помилка. Тому зразки приходять
+ * із `theme-palette.json`, який виводить `npm run doc:style`: повторений колір
+ * лишає на картці одного представника.
  *
- * **Діаграми немає, бо вона однакова в кожній темі.** Стовпці різної висоти
- * малювали графік, якого ніхто не читав: геометрія в усіх темах та сама, а
- * різниця — лише в кольорі. Тому дані показують зразки однієї висоти — вони
- * кажуть тільки те, що справді відрізняється.
+ * **Чого в палітрі немає.** Токени-посилання показані раз, своїм джерелом;
+ * прозорі шари (`--hairline`, `*-dim`, `--modal-scrim`) окремим зразком нічого
+ * не кажуть — під ними мусить бути поверхня; хром контролів і скріма
+ * (`--switch-knob`, `--text-on-scrim`) — не палітра екрана.
  *
  * **Шрифт не показуємо, бо тема його не міняє:** типографіка продукту одна на
  * всі теми, і картка не має натякати на вибір, якого немає.
@@ -28,6 +28,7 @@
 
 import type { ReactElement } from "react";
 import type { ThemeDefinition } from "../../styles/registry";
+import palette from "../../styles/theme-palette.json";
 import { Icon } from "../Icon";
 
 export interface ThemeCardProps {
@@ -37,11 +38,19 @@ export interface ThemeCardProps {
   onApply: () => void;
 }
 
-/** Зразки даних: шість ролей палітри стоять у кожній темі. */
-const DATA_SWATCHES = [1, 2, 3, 4, 5, 6] as const;
+const ROLES = palette.roles as readonly string[];
+const SWATCHES = palette.themes as Record<string, readonly string[]>;
 
-/** Статуси: три кольори, які тема задає окремо від даних. */
-const STATUS_DOTS = ["green", "yellow", "red"] as const;
+/**
+ * Зразки теми: кожен її колір рівно раз.
+ *
+ * Тема без палітри в CSS (нова в реєстрі, ще не пофарбована) показує всі ролі —
+ * картка мусить лишитись палітрою, а не порожнечею. Те, що кожна тема реєстру
+ * має свій набір, стереже `ThemeCard.test.tsx`.
+ */
+export function themeSwatches(themeId: string): readonly string[] {
+  return SWATCHES[themeId] ?? ROLES;
+}
 
 export function ThemeCard({ theme, applied = false, onApply }: ThemeCardProps): ReactElement {
   return (
@@ -53,30 +62,12 @@ export function ThemeCard({ theme, applied = false, onApply }: ThemeCardProps): 
         aria-pressed={applied}
         aria-label={`Тема «${theme.label}»`}
       >
-        {/* Мініятюра — доказ, а не прикраса: вона показує поверхні, текст,
-            шість кольорів даних, акцент і статуси, і нічого понад це. */}
-        <span className="wb-theme-card-scene" aria-hidden="true">
-          <span className="wb-theme-card-sheet">
-            <span className="wb-theme-card-line" />
-            <span className="wb-theme-card-line wb-theme-card-line--short" />
-            <span className="wb-theme-card-swatches">
-              {DATA_SWATCHES.map((swatch) => (
-                <span
-                  key={swatch}
-                  className={`wb-theme-card-swatch wb-theme-card-swatch--${swatch}`}
-                />
-              ))}
-            </span>
-          </span>
-
-          <span className="wb-theme-card-actions">
-            <span className="wb-theme-card-action" />
-            <span className="wb-theme-card-dots">
-              {STATUS_DOTS.map((dot) => (
-                <span key={dot} className={`wb-theme-card-dot wb-theme-card-dot--${dot}`} />
-              ))}
-            </span>
-          </span>
+        {/* Палітра — доказ, а не прикраса: кожен зразок це справжній токен
+            теми, і понад кольори на картці нічого немає. */}
+        <span className="wb-theme-card-palette" aria-hidden="true">
+          {themeSwatches(theme.id).map((token) => (
+            <span key={token} className={`wb-theme-card-chip wb-theme-card-chip--${token}`} />
+          ))}
         </span>
 
         {applied && (
