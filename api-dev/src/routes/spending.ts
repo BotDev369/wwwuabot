@@ -11,6 +11,7 @@ import type { Env } from "../shared/types";
 import {
   handleSpendingDocuments,
   handleSpendingOverview,
+  handleSpendingRefresh,
   handleSpendingSync,
   handleSpendingTransactions,
 } from "../controllers/spending-admin.controller";
@@ -22,6 +23,10 @@ export function matchSpendingRoute(
   pathname: string,
 ): Promise<Response> | null {
   if (!pathname.startsWith("/api/admin/spending")) return null;
+
+  if (pathname === "/api/admin/spending/refresh") {
+    return request.method === "POST" ? handleSpendingRefresh(request, env) : null;
+  }
   if (request.method !== "GET") return null;
 
   if (pathname === "/api/admin/spending/overview") {

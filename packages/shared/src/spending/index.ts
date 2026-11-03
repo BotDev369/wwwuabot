@@ -111,6 +111,18 @@ export interface SpendingSyncView {
   readonly lastLoad: SpendingLastLoad | null;
 }
 
+/** Звіт ручного перезбору: скільки прийшло, що пропущено й на чому спинились. */
+export interface SpendingRefreshReport {
+  readonly period: string;
+  readonly orgs: number;
+  readonly documents: number;
+  readonly transactions: number;
+  readonly archivedBytes: number;
+  readonly skipped: readonly string[];
+  readonly failed: readonly string[];
+  readonly stopped: string | null;
+}
+
 /**
  * Роль розпорядника в платежі. Третій варіант («будь-яка») навмисно не
  * заведений: змішати платника й отримувача в одному списку — це подвоїти суму

@@ -117,6 +117,15 @@ describe("схема й курсор", () => {
     expect(await isSettled(fakeDb(() => null).db, "k")).toBe(false);
   });
 
+  it("застаріле `ok` не закриває крок: джерело дописує рядки із запізненням", async () => {
+    const fresh = new Date().toISOString();
+    const old = new Date(Date.now() - 48 * 60 * 60 * 1000).toISOString();
+    const withDate = (finished: string) => fakeDb(() => ({ status: "ok", finished_at: finished }));
+
+    expect(await isSettled(withDate(fresh).db, "k", 20 * 60 * 60 * 1000)).toBe(true);
+    expect(await isSettled(withDate(old).db, "k", 20 * 60 * 60 * 1000)).toBe(false);
+  });
+
   it("`running` не ставить дату завершення, а `ok` — ставить", async () => {
     const running = fakeDb();
     await markSync(running.db, {
@@ -184,7 +193,9 @@ describe("архів і картка", () => {
     const bytes = await archiveRaw(
       { put } as unknown as R2Bucket,
       "spending/contracts/04360586/2026-09.json.gz",
-      { documents: Array.from({ length: 40 }, () => ({ id: "x", subject: "Паливо" })) },
+      new TextEncoder().encode(
+        JSON.stringify({ documents: Array.from({ length: 40 }, () => ({ id: "x" })) }),
+      ),
     );
 
     expect(put).toHaveBeenCalledTimes(1);

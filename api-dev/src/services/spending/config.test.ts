@@ -1,5 +1,12 @@
 import { describe, expect, it } from "vitest";
-import { chunk, monthWindow, previousMonthPeriod } from "./config";
+import {
+  batchKey,
+  chunk,
+  monthWindow,
+  previousMonthPeriod,
+  recentPeriods,
+  splitRange,
+} from "./config";
 
 describe("вікно місяця", () => {
   it("дає перше й останнє число місяця", () => {
@@ -26,6 +33,39 @@ describe("попередній місяць", () => {
   it("переходить через межу року", () => {
     expect(previousMonthPeriod(new Date("2026-01-15T00:00:00Z"))).toBe("2025-12");
     expect(previousMonthPeriod(new Date("2026-10-31T00:00:00Z"))).toBe("2026-09");
+  });
+});
+
+describe("глибина перечитування", () => {
+  it("бере останні завершені місяці від нового до старого", () => {
+    expect(recentPeriods(new Date("2026-01-10T00:00:00Z"), 2)).toEqual(["2025-12", "2025-11"]);
+  });
+
+  it("відмовляється від порожнього списку", () => {
+    expect(() => recentPeriods(new Date("2026-01-10T00:00:00Z"), 0)).toThrow();
+  });
+});
+
+describe("ключ пачки", () => {
+  it("не залежить від порядку кодів: набір той самий — ключ той самий", () => {
+    expect(batchKey("2026-09", ["2", "1"])).toBe(batchKey("2026-09", ["1", "2"]));
+  });
+
+  it("різний склад дає різний ключ, а не той самий номер", () => {
+    expect(batchKey("2026-09", ["1", "2"])).not.toBe(batchKey("2026-09", ["1", "2", "3"]));
+  });
+});
+
+describe("дроблення вікна", () => {
+  it("ділить місяць навпіл без втраченого дня", () => {
+    expect(splitRange("2026-09-01", "2026-09-30")).toEqual({
+      left: ["2026-09-01", "2026-09-15"],
+      right: ["2026-09-16", "2026-09-30"],
+    });
+  });
+
+  it("відмовляється від перевернутого вікна", () => {
+    expect(() => splitRange("2026-09-30", "2026-09-01")).toThrow();
   });
 });
 

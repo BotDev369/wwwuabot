@@ -8,7 +8,7 @@ import { secureResponse } from "@wwwuabot/shared/security/headers";
 import { collectSnapshot } from "./services/monitoring/collect";
 import { saveSnapshot } from "./services/monitoring/store";
 import { runSpendingCollection } from "./services/spending/collect";
-import { SPENDING_CRON, previousMonthPeriod } from "./services/spending/config";
+import { REFRESH_MONTHS, SPENDING_CRON, recentPeriods } from "./services/spending/config";
 import type { Env } from "./shared/types";
 
 /**
@@ -29,18 +29,20 @@ async function runScheduledCollection(env: Env): Promise<void> {
 }
 
 /**
- * Збір Є-data за минулий місяць.
+ * Збір Є-data за два останні місяці: джерело доопубліковує із запізненням, а
+ * `ok` без перечитування закрив би місяць назавжди (docs/SPENDING.md §9).
  *
- * Падіння не має валити воркера: причина лишається в логах і Sentry, а
- * курсор у `spending_sync` дозволяє наступному запуску продовжити з того
- * кроку, на якому обірвалося (docs/SPENDING.md §4).
+ * Падіння не має валити воркера: курсор у `spending_sync` дозволяє наступному
+ * запуску продовжити з того кроку, на якому обірвалося (§4).
  */
 async function runSpendingJob(env: Env): Promise<void> {
-  try {
-    await runSpendingCollection(env, { period: previousMonthPeriod(new Date()) });
-  } catch (error) {
-    apiLog.error("spending: збір за розкладом упав", error);
-    Sentry.captureException(error);
+  for (const period of recentPeriods(new Date(), REFRESH_MONTHS)) {
+    try {
+      await runSpendingCollection(env, { period });
+    } catch (error) {
+      apiLog.error(`spending: збір за ${period} упав`, error);
+      Sentry.captureException(error);
+    }
   }
 }
 

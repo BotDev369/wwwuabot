@@ -33,8 +33,9 @@ export function SpendingSyncPanel({ rows, lastLoad, orgs }: SpendingSyncPanelPro
     <div className="spend-panel spend-sync">
       <h2 className="spend-detail-title">Стан збору</h2>
       <p className="spend-list-note">
-        Збір іде за розкладом (05:37 UTC), а не з цієї сторінки. Час у таблиці — коли завершився наш
-        крок, а не дата даних у джерелі.
+        Збір іде за розкладом (05:37 UTC) — останні два місяці перечитуються щодня, бо джерело
+        дописує рядки із запізненням. Кнопка «Зібрати зараз» перечитує вибраний місяць одразу. Час у
+        таблиці — коли завершився наш крок, а не дата даних у джерелі.
       </p>
 
       {rows.length === 0 ? (

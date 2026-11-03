@@ -24,9 +24,15 @@ export class SourceError extends Error {
   }
 }
 
+/** Стеля тіла відповіді: більше за це — вже не наш запит, а збій джерела. */
+const MAX_BODY_BYTES = 24 * 1024 * 1024;
+
 export interface FetchOptions {
   readonly timeoutMs?: number;
   readonly retries?: number;
+  /** Сирі байти до розбору: архів пише саме те, що прийшло. */
+  readonly onBody?: (body: Uint8Array) => Promise<void> | void;
+  readonly maxBytes?: number;
 }
 
 /** Пауза між запитами: тримає нас нижче межі джерела. */
@@ -42,7 +48,7 @@ export function pause(ms: number): Promise<void> {
  * звіт прогону називав причину, а не «щось пішло не так».
  */
 export async function fetchJson<T>(url: string, options: FetchOptions = {}): Promise<T> {
-  const { timeoutMs = 30_000, retries = 3 } = options;
+  const { timeoutMs = 30_000, retries = 3, maxBytes = MAX_BODY_BYTES } = options;
   let lastError: unknown = null;
 
   for (let attempt = 0; attempt <= retries; attempt += 1) {
@@ -55,13 +61,24 @@ export async function fetchJson<T>(url: string, options: FetchOptions = {}): Pro
       });
 
       if (!response.ok) {
-        const error = new SourceError(`Є-data відповіло ${response.status}`, response.status);
+        const error = new SourceError(
+          `Є-data відповіло ${response.status} на ${url}`,
+          response.status,
+        );
         if (!RETRY_STATUSES.has(response.status)) throw error;
         lastError = error;
         continue;
       }
 
-      return (await response.json()) as T;
+      const body = new Uint8Array(await response.arrayBuffer());
+      if (body.byteLength > maxBytes) {
+        throw new SourceError(
+          `Є-data віддало ${body.byteLength} байтів на ${url} — більше за стелю ${maxBytes}`,
+          0,
+        );
+      }
+      await options.onBody?.(body);
+      return JSON.parse(new TextDecoder().decode(body)) as T;
     } catch (error) {
       if (error instanceof SourceError && !RETRY_STATUSES.has(error.status)) throw error;
       lastError = error;

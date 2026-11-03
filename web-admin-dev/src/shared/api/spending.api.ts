@@ -1,9 +1,9 @@
 /**
- * Читання зібраного Є-data з панелі.
+ * Читання зібраного Є-data з панелі та перезбір місяця.
  *
  * Ті самі `/api/admin/*`-шляхи, що й у решти адмінки: cookie-сесія їде
- * автоматично, а 401 обробляє спільний `apiFetch`. Запису тут немає — збір іде
- * розкладом, тож сторінка не має способу запустити його з браузера.
+ * автоматично, а 401 обробляє спільний `apiFetch`. Запис рівно один —
+ * `refresh`: місяць, до якого джерело дописало рядки, треба вміти перечитати.
  * @module web-admin-dev/src/shared/api/spending.api
  */
 
@@ -12,6 +12,7 @@ import type {
   SpendingOverview,
   SpendingPage,
   SpendingRole,
+  SpendingRefreshReport,
   SpendingSyncView,
   SpendingTransaction,
 } from "@wwwuabot/shared/spending";
@@ -57,6 +58,17 @@ export function fetchSpendingDocuments(
       limit: query.limit,
     }),
   );
+}
+
+/**
+ * Перезбір місяця: запит живе, доки прогін не скінчиться (до кількох хвилин),
+ * бо результат — це звіт про те, що саме вдалося, а не «прийнято».
+ */
+export function refreshSpending(period: string): Promise<{ report: SpendingRefreshReport }> {
+  return apiFetch<{ report: SpendingRefreshReport }>("/api/admin/spending/refresh", {
+    method: "POST",
+    body: JSON.stringify({ period }),
+  });
 }
 
 export function fetchSpendingTransactions(

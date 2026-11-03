@@ -39,23 +39,32 @@ export interface SyncUpdate {
   readonly error?: string;
 }
 
-export async function isSettled(db: D1Database, key: string): Promise<boolean> {
+/**
+ * Чи крок уже закритий. З `maxAgeMs` крок закритий лише доти, доки його
+ * завершення свіже: інакше доопубліковані джерелом рядки не доїдуть ніколи.
+ */
+export async function isSettled(db: D1Database, key: string, maxAgeMs?: number): Promise<boolean> {
   const row = await db
-    .prepare("SELECT status FROM spending_sync WHERE key = ?")
+    .prepare("SELECT status, finished_at FROM spending_sync WHERE key = ?")
     .bind(key)
-    .first<{ status: string }>();
-  return row?.status === "ok";
+    .first<{ status: string; finished_at: string | null }>();
+  if (row?.status !== "ok") return false;
+  if (maxAgeMs === undefined) return true;
+  const finished = row.finished_at ? Date.parse(row.finished_at) : Number.NaN;
+  return Number.isFinite(finished) && Date.now() - finished <= maxAgeMs;
 }
 
 export async function markSync(db: D1Database, update: SyncUpdate): Promise<void> {
-  const finishedAt = update.status === "running" ? null : new Date().toISOString();
+  const now = new Date().toISOString();
+  const finishedAt = update.status === "running" ? null : now;
   await db
     .prepare(
-      `INSERT INTO spending_sync (key, kind, period, status, rows, finished_at, error)
-       VALUES (?, ?, ?, ?, ?, ?, ?)
+      `INSERT INTO spending_sync (key, kind, period, status, rows, started_at, finished_at, error)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?)
        ON CONFLICT(key) DO UPDATE SET
          status = excluded.status,
          rows = excluded.rows,
+         started_at = excluded.started_at,
          finished_at = excluded.finished_at,
          error = excluded.error`,
     )
@@ -65,6 +74,7 @@ export async function markSync(db: D1Database, update: SyncUpdate): Promise<void
       update.period,
       update.status,
       update.rows ?? 0,
+      now,
       finishedAt,
       update.error ?? "",
     )
@@ -104,6 +114,11 @@ export async function upsertDocuments(db: D1Database, rows: readonly DocumentRow
            (id, edrpou, kind, number, document_date, sign_date, amount, currency, subject, cpv, contractors)
          VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
          ON CONFLICT(id) DO UPDATE SET
+           edrpou = excluded.edrpou,
+           kind = excluded.kind,
+           number = excluded.number,
+           document_date = excluded.document_date,
+           currency = excluded.currency,
            amount = excluded.amount,
            sign_date = excluded.sign_date,
            subject = excluded.subject,
@@ -140,9 +155,20 @@ export async function upsertTransactions(
             payment_details, kekv, kpk, budget_code, contract_id, contract_number, source_name)
          VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
          ON CONFLICT(id) DO UPDATE SET
+           payer_edrpou = excluded.payer_edrpou,
+           payer_name = excluded.payer_name,
+           recipt_edrpou = excluded.recipt_edrpou,
+           recipt_name = excluded.recipt_name,
+           trans_date = excluded.trans_date,
+           currency = excluded.currency,
            amount = excluded.amount,
            payment_details = excluded.payment_details,
+           kekv = excluded.kekv,
+           kpk = excluded.kpk,
+           budget_code = excluded.budget_code,
            contract_id = excluded.contract_id,
+           contract_number = excluded.contract_number,
+           source_name = excluded.source_name,
            fetched_at = datetime('now')`,
       )
       .bind(
@@ -166,12 +192,17 @@ export async function upsertTransactions(
   await runBatched(db, statements);
 }
 
-/** Сира відповідь у R2: gzip, далі розбір не робить жодного запиту до джерела. */
-export async function archiveRaw(bucket: R2Bucket, key: string, payload: unknown): Promise<number> {
-  const body = new Response(JSON.stringify(payload)).body;
-  if (!body) throw new Error(`R2: не вдалося стиснути «${key}».`);
+/**
+ * Сира відповідь у R2: ті самі байти, що прийшли, без повторної серіалізації.
+ *
+ * Раніше тіло парсилось, а потім серіалізувалось назад: на великому
+ * розпоряднику це дві зайві копії в пам'яті воркера (стеля 128 МБ).
+ */
+export async function archiveRaw(bucket: R2Bucket, key: string, body: Uint8Array): Promise<number> {
+  const stream = new Response(body).body;
+  if (!stream) throw new Error(`R2: не вдалося стиснути «${key}».`);
   const gzipped = new Uint8Array(
-    await new Response(body.pipeThrough(new CompressionStream("gzip"))).arrayBuffer(),
+    await new Response(stream.pipeThrough(new CompressionStream("gzip"))).arrayBuffer(),
   );
   await bucket.put(key, gzipped, {
     httpMetadata: { contentType: "application/json", contentEncoding: "gzip" },

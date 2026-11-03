@@ -10,11 +10,27 @@
  * @module api-dev/src/controllers/spending-admin.controller.test
  */
 
-import { describe, expect, it } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 import type { Env } from "../shared/types";
+
+const collectMock = vi.hoisted(() =>
+  vi.fn(async () => ({
+    period: "2026-09",
+    orgs: 12,
+    documents: 1,
+    transactions: 2,
+    archivedBytes: 10,
+    skipped: [],
+    failed: [],
+    stopped: null,
+  })),
+);
+vi.mock("../services/spending/collect", () => ({ runSpendingCollection: collectMock }));
+
 import {
   handleSpendingDocuments,
   handleSpendingOverview,
+  handleSpendingRefresh,
   handleSpendingSync,
   handleSpendingTransactions,
 } from "./spending-admin.controller";
@@ -239,6 +255,49 @@ describe("договори", () => {
 
     const select = statements.find((s) => s.sql.includes("FROM spending_documents"));
     expect(select?.binds.at(-1)).toBe(200);
+  });
+});
+
+describe("ручний перезбір", () => {
+  const post = (body: unknown): Request =>
+    new Request("https://api.test/api/admin/spending/refresh", {
+      method: "POST",
+      body: JSON.stringify(body),
+    });
+
+  beforeEach(() => {
+    collectMock.mockClear();
+  });
+
+  it("перечитує місяць із `force` і повертає звіт прогону", async () => {
+    const { env } = makeEnv();
+
+    const res = await handleSpendingRefresh(post({ period: "2026-09" }), env);
+    const body = (await res.json()) as { report: { period: string; transactions: number } };
+
+    expect(res.status).toBe(200);
+    expect(body.report).toMatchObject({ period: "2026-09", transactions: 2 });
+    expect(collectMock).toHaveBeenCalledWith(env, { period: "2026-09", force: true });
+  });
+
+  it("⛔ кривий період — 400 без жодного запиту до джерела", async () => {
+    const { env } = makeEnv();
+
+    const res = await handleSpendingRefresh(post({ period: "вересень" }), env);
+
+    expect(res.status).toBe(400);
+    expect(collectMock).not.toHaveBeenCalled();
+  });
+
+  it("⛔ майбутній місяць не збирається: у джерелі він порожній", async () => {
+    const { env } = makeEnv();
+    const future = new Date(Date.now() + 90 * 24 * 60 * 60 * 1000);
+    const period = `${future.getUTCFullYear()}-${String(future.getUTCMonth() + 1).padStart(2, "0")}`;
+
+    const res = await handleSpendingRefresh(post({ period }), env);
+
+    expect(res.status).toBe(400);
+    expect(collectMock).not.toHaveBeenCalled();
   });
 });
 

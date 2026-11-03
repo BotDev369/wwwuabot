@@ -62,10 +62,17 @@ export function formatDate(value: string | null): string {
   return match ? `${match[3]}.${match[2]}.${match[1]}` : "—";
 }
 
-/** Час із повною позначкою: `capturedAt` — це момент збору, не дата даних. */
+/**
+ * Час із повною позначкою: `capturedAt` — це момент збору, не дата даних.
+ *
+ * Старі рядки `spending_sync` мають `datetime('now')` без зони, і браузер
+ * читав би їх як місцевий час — тобто зсував на 2–3 години від сусіднього
+ * поля з `Z` у тому самому рядку.
+ */
 export function formatStamp(value: string | null): string {
   if (!value) return "—";
-  const date = new Date(value);
+  const zoned = /([zZ]|[+-]\d{2}:?\d{2})$/.test(value) ? value : `${value.replace(" ", "T")}Z`;
+  const date = new Date(zoned);
   if (Number.isNaN(date.getTime())) return "—";
   return date.toLocaleString("uk-UA", {
     day: "2-digit",
@@ -150,10 +157,7 @@ export function syncStepSubject(row: SpendingSyncRow, orgs: readonly SpendingOrg
     return org?.name || `ЄДРПОУ ${edrpou || "—"}`;
   }
 
-  if (head === "transactions" || head === "payments") {
-    const batch = (rest[1] ?? "").replace("batch-", "");
-    return batch ? `пачка ${batch}` : "усі пачки";
-  }
+  if (head === "transactions" || head === "payments") return "пачка платежів";
 
   return "";
 }

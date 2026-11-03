@@ -77,6 +77,23 @@ describe("fetchJson", () => {
     expect(calls).toBe(2);
   });
 
+  it("віддає сирі байти до розбору: архів пише те, що прийшло", async () => {
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(async () => ok({ documents: [{ id: "d-1" }] })),
+    );
+    const seen: string[] = [];
+
+    await fetchJson("https://example.test/5", {
+      onBody: (body) => {
+        seen.push(new TextDecoder().decode(body));
+      },
+    });
+
+    expect(seen).toHaveLength(1);
+    expect(seen[0]).toContain('"d-1"');
+  });
+
   it("мережевий збій доходить назовні, а не стає порожніми даними", async () => {
     vi.stubGlobal(
       "fetch",

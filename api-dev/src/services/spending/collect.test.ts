@@ -2,9 +2,8 @@
  * Прогін колектора на підставних сховищах: порядок кроків, курсор і звіт.
  *
  * Перевіряється те, чого не видно з модульних тестів: що сирий архів лягає
- * раніше за рядки, що повторний прогін нічого не пише, а збій одного
- * розпорядника не зупиняє решту.
- *
+ * раніше за рядки, що свіжий прогін нічого не пише, що обрізану відповідь
+ * добираємо вужчими вікнами, а збій одного розпорядника не зупиняє решту.
  * @module api-dev/src/services/spending/collect.test
  */
 
@@ -15,6 +14,7 @@ const ensureTablesMock = vi.hoisted(() => vi.fn(async () => {}));
 vi.mock("@wwwuabot/shared/database/ensure-tables", () => ({ ensureTables: ensureTablesMock }));
 
 const { runSpendingCollection } = await import("./collect");
+const { batchKey } = await import("./config");
 
 const PERIOD = "2026-09";
 const ORG = "04360586";
@@ -68,7 +68,9 @@ function fakeDb(): { db: D1Database; settled: Set<string>; statements: string[] 
         },
         first: async () => {
           if (sql.includes("FROM spending_sync")) {
-            return settled.has(String(args[0])) ? { status: "ok" } : null;
+            return settled.has(String(args[0]))
+              ? { status: "ok", finished_at: new Date().toISOString() }
+              : null;
           }
           if (sql.includes("FROM spending_orgs")) return null;
           return { count: 1, amount: 500 };
@@ -110,6 +112,9 @@ function envWith(parts: { db: D1Database; kv: KVNamespace; bucket?: R2Bucket }):
   return { DB: parts.db, CONTENT_KV: parts.kv, SPENDING_SNAPSHOTS: parts.bucket } as unknown as Env;
 }
 
+/** Підпис пачки в назві архіву — той самий, що в ключі кроку. */
+const batchSignature = batchKey(PERIOD, [ORG]).split(":").at(-1) ?? "";
+
 beforeEach(() => {
   vi.spyOn(globalThis, "setTimeout");
 });
@@ -145,21 +150,22 @@ describe("прогін за місяць", () => {
       documents: 1,
       transactions: 1,
       failed: [],
+      stopped: null,
     });
     expect(report.archivedBytes).toBeGreaterThan(0);
     expect(keys).toEqual([
       `spending/contracts/${ORG}/${PERIOD}.json.gz`,
-      `spending/transactions/${PERIOD}/batch-1.json.gz`,
+      `spending/transactions/${PERIOD}/${batchSignature}.json.gz`,
     ]);
     expect(written).toContain(`spending:org:${ORG}:v1`);
     expect(written.some((key) => key.includes("lastload"))).toBe(true);
   });
 
-  it("повторний прогін того самого місяця нічого не пише", async () => {
+  it("свіжий повторний прогін того самого місяця нічого не пише", async () => {
     const { db, settled } = fakeDb();
     const { kv } = fakeKv();
     const { bucket, keys } = fakeBucket();
-    settled.add(`org:${ORG}:${PERIOD}`).add(`transactions:${PERIOD}:batch-1`);
+    settled.add(`org:${ORG}:${PERIOD}`).add(batchKey(PERIOD, [ORG]));
     const fetchMock = vi.fn(async () => json({ lastload: 1 }));
     vi.stubGlobal("fetch", fetchMock);
 
@@ -173,6 +179,44 @@ describe("прогін за місяць", () => {
     expect(keys).toEqual([]);
     // Єдиний дозволений запит — дата останнього завантаження.
     expect(fetchMock).toHaveBeenCalledTimes(1);
+  });
+
+  it("обрізані джерелом договори добирає двома вужчими вікнами", async () => {
+    const { db } = fakeDb();
+    const { kv } = fakeKv();
+    const { bucket, keys } = fakeBucket();
+    const ranges: string[] = [];
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(async (url: string) => {
+        if (url.includes("/disposers/contracts")) {
+          const from = /documentDateFrom=([\d-]+)/.exec(url)?.[1] ?? "";
+          const to = /documentDateTo=([\d-]+)/.exec(url)?.[1] ?? "";
+          ranges.push(`${from}..${to}`);
+          // Перше вікно (весь місяць) обрізане, кожне з половин — повне.
+          const truncated = from === "2026-09-01" && to === "2026-09-30";
+          return json(
+            truncated
+              ? { documents: [CONTRACTS.documents[0]], count: 1200, moreThenCount: true }
+              : { documents: [CONTRACTS.documents[0]], count: 1 },
+          );
+        }
+        if (url.includes("/api/transactions/lastload")) return json({ lastload: 1 });
+        if (url.includes("/api/transactions/")) return json(TRANSACTIONS);
+        return json(DISPOSER);
+      }),
+    );
+
+    const report = await runSpendingCollection(envWith({ db, kv, bucket }), {
+      period: PERIOD,
+      orgs: [ORG],
+    });
+
+    expect(ranges[0]).toBe("2026-09-01..2026-09-30");
+    expect(ranges).toHaveLength(3);
+    expect(report.documents).toBe(2);
+    expect(keys).toContain(`spending/contracts/${ORG}/${PERIOD}.2026-09-01_2026-09-15.json.gz`);
+    expect(keys).toContain(`spending/contracts/${ORG}/${PERIOD}.2026-09-16_2026-09-30.json.gz`);
   });
 
   it("збій розпорядника лишає причину при кроці, а прогін іде далі", async () => {
@@ -199,7 +243,24 @@ describe("прогін за місяць", () => {
     expect(statements.some((sql) => sql.includes("ON CONFLICT(key)"))).toBe(true);
   });
 
-  it("без біндингу архіву прогін не вдає, що все гаразд", async () => {
+  it("три збої поспіль зупиняють прогін, щоб не дзвонити в мертве джерело", async () => {
+    const { db } = fakeDb();
+    const { kv } = fakeKv();
+    const { bucket } = fakeBucket();
+    const fetchMock = vi.fn(async () => new Response("", { status: 404 }));
+    vi.stubGlobal("fetch", fetchMock);
+
+    const report = await runSpendingCollection(envWith({ db, kv, bucket }), {
+      period: PERIOD,
+      orgs: ["1", "2", "3", "4", "5"],
+    });
+
+    expect(report.failed).toHaveLength(3);
+    expect(report.stopped).toContain("збої поспіль");
+    expect(fetchMock).toHaveBeenCalledTimes(3);
+  });
+
+  it("без биндингу архіву прогін не вдає, що все гаразд", async () => {
     const { db } = fakeDb();
     const { kv } = fakeKv();
 

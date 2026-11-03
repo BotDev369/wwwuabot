@@ -98,6 +98,13 @@ describe("дати", () => {
     expect(formatStamp("2026-10-01T05:38:00.000Z")).toMatch(/01\.10\.2026/);
   });
 
+  it("час D1 без зони читається як UTC, а не як місцевий", () => {
+    const naive = formatStamp("2026-10-01 05:38:00");
+    const zoned = formatStamp("2026-10-01T05:38:00.000Z");
+
+    expect(naive).toBe(zoned);
+  });
+
   it("зіпсований час — прочерк, а не «Invalid Date»", () => {
     expect(formatStamp("2026-13-45")).toBe("—");
     expect(formatStamp(null)).toBe("—");
@@ -155,10 +162,10 @@ describe("кроки збору", () => {
     expect(syncStepSubject(row, [])).toBe("ЄДРПОУ 99999999");
   });
 
-  it("пачка платежів має номер, а не адресу рядка в базі", () => {
-    const row: SpendingSyncRow = { ...syncRow("2026-09"), key: "transactions:2026-09:batch-2" };
+  it("пачка платежів підписана предметом, а не підписом набору кодів", () => {
+    const row: SpendingSyncRow = { ...syncRow("2026-09"), key: "transactions:2026-09:1f2e3d4c" };
 
-    expect(syncStepSubject(row, [])).toBe("пачка 2");
+    expect(syncStepSubject(row, [])).toBe("пачка платежів");
   });
 });
 

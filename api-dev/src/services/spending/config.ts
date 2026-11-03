@@ -41,6 +41,21 @@ export const SEED_ORGS = [
 /** Гарячі картки живуть добу: далі їх перезбирає наступний прогін. */
 export const CARD_TTL_SECONDS = 86_400;
 
+/** Скільки останніх місяців перечитуємо: джерело доопубліковує із запізненням. */
+export const REFRESH_MONTHS = 2;
+
+/** Зібране молодше за добу не перечитуємо: інакше два прогони поспіль роблять ту саму роботу. */
+export const REFRESH_AFTER_MS = 20 * 60 * 60 * 1000;
+
+/** Стеля прогону: Cron Trigger живе 15 хвилин, тож 9 лишають запас на запис. */
+export const RUN_BUDGET_MS = 9 * 60 * 1000;
+
+/** Кількість збоїв поспіль, після якої прогін зупиняється: це «джерело лежить». */
+export const MAX_CONSECUTIVE_FAILURES = 3;
+
+/** Стеля договорів за відповідь: ширше джерело не віддає (§2). */
+export const DOCUMENTS_CAP = 1000;
+
 /** Ключ, під яким лежить дата останнього завантаження джерела. */
 export const LASTLOAD_KEY = "spending:meta:lastload:v1";
 
@@ -68,8 +83,59 @@ export function monthWindow(period: string): MonthWindow {
 
 /** Місяць, що передує `now`: збір за розкладом бере саме його. */
 export function previousMonthPeriod(now: Date): string {
-  const first = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth() - 1, 1));
+  return periodShift(now, 1);
+}
+
+/** `count` останніх завершених місяців, від нового до старого. */
+export function recentPeriods(now: Date, count: number): string[] {
+  if (count < 1) throw new Error("Кількість місяців мусить бути додатною.");
+  return Array.from({ length: count }, (_, index) => periodShift(now, index + 1));
+}
+
+function periodShift(now: Date, monthsBack: number): string {
+  const first = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth() - monthsBack, 1));
   return `${first.getUTCFullYear()}-${String(first.getUTCMonth() + 1).padStart(2, "0")}`;
+}
+
+/**
+ * Ключ пачки платежів: підпис із складених ЄДРПОУ, а не позиція в списку.
+ *
+ * Позиційний ключ (`batch-1`) ламається від будь-якої зміни набору: доданий
+ * код зсуває пачки, а старий `ok` назавжди ховає його платежі (§9).
+ */
+export function batchKey(period: string, codes: readonly string[]): string {
+  return `transactions:${period}:${signature(codes)}`;
+}
+
+/** FNV-1a: короткий стабільний підпис, який не залежить від порядку кодів. */
+function signature(codes: readonly string[]): string {
+  let hash = 0x811c9dc5;
+  for (const char of [...codes].sort().join(",")) {
+    hash ^= char.charCodeAt(0);
+    hash = Math.imul(hash, 0x01000193) >>> 0;
+  }
+  return hash.toString(16).padStart(8, "0");
+}
+
+/** Ділить вікно навпіл: обрізану відповідь добираємо двома вужчими. */
+export function splitRange(
+  from: string,
+  to: string,
+): { left: [string, string]; right: [string, string] } {
+  const start = Date.parse(`${from}T00:00:00Z`);
+  const end = Date.parse(`${to}T00:00:00Z`);
+  if (!Number.isFinite(start) || !Number.isFinite(end) || end < start) {
+    throw new Error(`Вікно «${from}…${to}» не ділиться.`);
+  }
+  const days = Math.round((end - start) / 86_400_000);
+  const middle = start + Math.floor(days / 2) * 86_400_000;
+  const left: [string, string] = [from, isoDay(middle)];
+  const right: [string, string] = [isoDay(middle + 86_400_000), to];
+  return { left, right };
+}
+
+function isoDay(time: number): string {
+  return new Date(time).toISOString().slice(0, 10);
 }
 
 /** Ріже список на частини не довші за `size`. */

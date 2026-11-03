@@ -17,7 +17,7 @@ import { formatDate, formatPeriod, formatStamp, periodsOf } from "./format";
 import { useSpending } from "./useSpending";
 
 export function SpendingPage() {
-  const { overview, loading, error, reload, selectPeriod } = useSpending();
+  const { overview, loading, error, refreshing, reload, selectPeriod, refresh } = useSpending();
   const [selected, setSelected] = useState<string | null>(null);
 
   const periods = useMemo(() => periodsOf(overview?.sync ?? []), [overview]);
@@ -42,6 +42,14 @@ export function SpendingPage() {
               ))}
             </select>
           )}
+          <button
+            className="wb-btn wb-btn-ghost wb-btn-sm"
+            disabled={refreshing || !overview?.period}
+            onClick={() => overview?.period && void refresh(overview.period)}
+          >
+            <Icon name="refresh" size={14} />
+            {refreshing ? "Збираємо…" : "Зібрати зараз"}
+          </button>
           <button className="wb-btn wb-btn-ghost wb-btn-sm" onClick={() => void reload()}>
             <Icon name="refresh" size={14} />
             Оновити

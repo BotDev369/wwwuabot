@@ -1,9 +1,9 @@
 /**
- * Є-data в адмінці: читання зібраного за період.
+ * Є-data в адмінці: читання зібраного й ручний перезбір місяця.
  *
- * Шляхи — під `/api/admin/`, тож єдиний адмін-гейт стоїть до них. Ні запису,
- * ні ручного запуску збору: це етап 4 (`docs/SPENDING.md` §3), а поки що
- * панель показує те, що приніс розклад.
+ * Шляхи — під `/api/admin/`, тож єдиний адмін-гейт стоїть до них. Ручний
+ * запуск `POST` потрібен саме тому, що `ok` більше не є вічним: місяць, до
+ * якого джерело дописало рядки, можна перезібрати з екрана, а не з wrangler.
  * @module api-dev/src/controllers/spending-admin.controller
  */
 
@@ -21,6 +21,7 @@ import {
   readSyncRows,
   readTransactions,
 } from "../services/spending/read";
+import { runSpendingCollection } from "../services/spending/collect";
 import { monthWindow } from "../services/spending/config";
 import { ensureSpendingTables } from "../services/spending/store";
 import { apiLog } from "../shared/logger";
@@ -141,6 +142,31 @@ export function handleSpendingDocuments(request: Request, env: Env): Promise<Res
     if (cursor === false) return badRequest("Курсор не розібрано");
 
     return json(await readDocuments(env.DB, { edrpou, period, limit: limitOf(params), cursor }));
+  });
+}
+
+/**
+ * `POST /api/admin/spending/refresh` — перезібрати один місяць.
+ *
+ * Той самий шлях, що й у розкладу, лише з `force`: місяць уже може бути
+ * `ok`, і саме тому його й перечитують. Майбутній місяць відсікається:
+ * джерело віддає його порожнім, і `ok` на ньому був би брехнею.
+ */
+export async function handleSpendingRefresh(request: Request, env: Env): Promise<Response> {
+  return guard(env, async () => {
+    const body: unknown = await request.json().catch(() => null);
+    const period =
+      typeof body === "object" && body !== null ? (body as { period?: unknown }).period : null;
+    if (typeof period !== "string" || !isPeriod(period.trim())) {
+      return badRequest("Період має бути YYYY-MM");
+    }
+
+    const now = new Date();
+    const current = `${now.getUTCFullYear()}-${String(now.getUTCMonth() + 1).padStart(2, "0")}`;
+    if (period.trim() > current) return badRequest("Майбутній місяць ще не має даних у джерелі");
+
+    const report = await runSpendingCollection(env, { period: period.trim(), force: true });
+    return json({ report });
   });
 }
 
