@@ -28,6 +28,16 @@ export interface ServiceEntry {
   icon: IconName;
   /** Адреса екрана сервісу в межах платформи. */
   to: string;
+  /**
+   * Підпис групи: сусідні входи з тим самим підписом стоять під ним.
+   *
+   * Групи тут не заради краси: дев'ять однакових рядків поспіль не давали
+   * оку зачепитись, і людина читала список щоразу з початку. Три групи по три
+   * входи відповідають на «з ким», «що» і «для себе» — і кожна влазить в екран.
+   */
+  group: string;
+  /** Номер голосу зі спектра теми (`--data-1…6`), а не конкретний колір. */
+  tone: number;
 }
 
 /**
@@ -36,13 +46,44 @@ export interface ServiceEntry {
  * один екран означають, що за один із них забудуть.
  */
 export const SERVICES: readonly ServiceEntry[] = [
-  { key: "research", label: "Дослідження", icon: "book", to: RESEARCH_PATH },
-  { key: "ads", label: "Оголошення", icon: "announce", to: ADS_PATH },
-  { key: "pages", label: "Сторінки", icon: "page", to: PAGES_PATH },
-  { key: "games", label: "Ігри", icon: "game", to: GAMES_PATH },
-  { key: "notes", label: "Нотатки", icon: "text", to: NOTES_PATH },
-  { key: "contacts", label: "Контакти", icon: "contact", to: CONTACTS_PATH },
-  { key: "messages", label: "Повідомлення", icon: "message-square", to: MESSAGES_PATH },
-  { key: "users", label: "Користувачі", icon: "users", to: USERS_PATH },
-  { key: "orders", label: "Замовлення", icon: "tag", to: ORDERS_PATH },
+  // Спільнота: люди й те, що між ними.
+  {
+    key: "users",
+    group: "Спільнота",
+    tone: 1,
+    label: "Користувачі",
+    icon: "users",
+    to: USERS_PATH,
+  },
+  {
+    key: "contacts",
+    group: "Спільнота",
+    tone: 2,
+    label: "Контакти",
+    icon: "contact",
+    to: CONTACTS_PATH,
+  },
+  {
+    key: "messages",
+    group: "Спільнота",
+    tone: 3,
+    label: "Повідомлення",
+    icon: "message-square",
+    to: MESSAGES_PATH,
+  },
+  // Контент: те, що людина публікує й читає.
+  { key: "pages", group: "Контент", tone: 4, label: "Сторінки", icon: "page", to: PAGES_PATH },
+  { key: "ads", group: "Контент", tone: 5, label: "Оголошення", icon: "announce", to: ADS_PATH },
+  {
+    key: "research",
+    group: "Контент",
+    tone: 6,
+    label: "Дослідження",
+    icon: "book",
+    to: RESEARCH_PATH,
+  },
+  // Особисте: власні записи, робота й дозвілля.
+  { key: "notes", group: "Особисте", tone: 1, label: "Нотатки", icon: "text", to: NOTES_PATH },
+  { key: "orders", group: "Особисте", tone: 2, label: "Замовлення", icon: "tag", to: ORDERS_PATH },
+  { key: "games", group: "Особисте", tone: 3, label: "Ігри", icon: "game", to: GAMES_PATH },
 ];

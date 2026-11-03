@@ -28,7 +28,6 @@ import { formatDay } from "@wwwuabot/shared/utils/datetime";
 import { plural, type PluralForms } from "@wwwuabot/shared/utils/plural";
 import { CollapsibleSection } from "@wwwuabot/ui/blocks/collapsible-section";
 import { latestByScale } from "./assessment-view";
-import { ASSESSMENTS_ROUTE } from "@/app/routes";
 
 const QUESTIONS: PluralForms = ["питання", "питання", "питань"];
 
@@ -49,6 +48,8 @@ interface Entry {
   readonly lead: string;
   /** Факт про людину (скільки питань, коли проходила) — або `null`. */
   readonly note: string | null;
+  /** Голос зі спектра теми: сусідні входи мусять різнитись на око. */
+  readonly tone: number;
   readonly open: () => void;
 }
 
@@ -87,9 +88,10 @@ export function AssessmentsPage({
       icon: "my-dates",
       lead: "Люди, події та їхнє порівняння — за датами, які ви вже зберегли.",
       note: null,
+      tone: 1,
       open: onOpenDates,
     },
-    ...tests.map((test) => {
+    ...tests.map((test, index) => {
       const passed = lastPassed(latest, test);
       const questions = `${questionCount(test)} ${plural(questionCount(test), QUESTIONS)}`;
       return {
@@ -98,6 +100,8 @@ export function AssessmentsPage({
         icon: test.icon,
         lead: test.lead,
         note: passed ? `${questions} · востаннє ${passed}` : questions,
+        // Перший тест бере другий голос: перший уже зайняв аналіз людей і подій.
+        tone: (index % 6) + 2,
         open: () => onOpen(test.key),
       };
     }),
@@ -110,7 +114,13 @@ export function AssessmentsPage({
           кирпичики, що в «Сервісах»: екран не має власної геометрії списку. */}
       <div className="wb-menu-list">
         {entries.map((entry) => (
-          <CollapsibleSection key={entry.key} title={entry.title} icon={entry.icon} surface>
+          <CollapsibleSection
+            key={entry.key}
+            title={entry.title}
+            icon={entry.icon}
+            tone={entry.tone}
+            surface
+          >
             <div className="wb-test-body">
               <p className="wb-test-lead">{entry.lead}</p>
               {entry.note && <p className="wb-test-meta">{entry.note}</p>}
@@ -132,11 +142,6 @@ export function AssessmentsPage({
           <p className="wb-empty-text">Тут поки немає жодного тесту.</p>
         </div>
       )}
-
-      <p className="wb-source">
-        Це самооцінка, а не діагноз. Результати приватні: їх не видно у публічному профілі й ніде,
-        крім «Розвитку». Адреса розділу — {ASSESSMENTS_ROUTE}.
-      </p>
     </div>
   );
 }

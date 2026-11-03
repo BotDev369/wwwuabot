@@ -2745,6 +2745,45 @@ button.wb-chip {
   color: var(--row-icon-color);
 }
 
+/* Знак рядка з власним голосом спектра: підкладка його ж тону, колір знака —
+   сам `--data-*`. Той самий кирпичик, що у входах хаба, тож список «Розвитку»
+   й «Сервіси» читаються одним продуктом. Без `tone` рядок лишається
+   приглушеним, як і був. */
+.wb-block-section--row[data-tone="1"] {
+  --section-tone: var(--data-1);
+}
+
+.wb-block-section--row[data-tone="2"] {
+  --section-tone: var(--data-2);
+}
+
+.wb-block-section--row[data-tone="3"] {
+  --section-tone: var(--data-3);
+}
+
+.wb-block-section--row[data-tone="4"] {
+  --section-tone: var(--data-4);
+}
+
+.wb-block-section--row[data-tone="5"] {
+  --section-tone: var(--data-5);
+}
+
+.wb-block-section--row[data-tone="6"] {
+  --section-tone: var(--data-6);
+}
+
+.wb-block-section--row[data-tone] .wb-block-section__icon {
+  display: grid;
+  flex: 0 0 auto;
+  place-items: center;
+  width: var(--sp-10);
+  height: var(--sp-10);
+  border-radius: var(--radius-md);
+  background: color-mix(in srgb, var(--section-tone) 14%, transparent);
+  color: var(--section-tone);
+}
+
 .wb-block-section--row .wb-block-section__caret {
   color: var(--row-trailing-color);
 }

@@ -1,5 +1,5 @@
 {
-  "version": "3840ec0",
+  "version": "ed33734",
   "files": [
     {
       "file": "admin/analytics-people.css",
@@ -113,7 +113,7 @@
     },
     {
       "file": "components.css",
-      "tokens": 13,
+      "tokens": 19,
       "classes": 196
     },
     {
@@ -173,8 +173,8 @@
     },
     {
       "file": "platform.css",
-      "tokens": 0,
-      "classes": 22
+      "tokens": 7,
+      "classes": 29
     },
     {
       "file": "research.css",
@@ -2207,6 +2207,55 @@
       "section": "Палітри ігор"
     },
     {
+      "name": "--hub-tone",
+      "file": "platform.css",
+      "selector": ".wb-hub__tile",
+      "value": "var(--data-1)",
+      "section": "Хаб «Сервіси»: сітка входів, а не довгий список"
+    },
+    {
+      "name": "--hub-tone",
+      "file": "platform.css",
+      "selector": ".wb-hub__tile[data-tone=\"1\"]",
+      "value": "var(--data-1)",
+      "section": "Хаб «Сервіси»: сітка входів, а не довгий список"
+    },
+    {
+      "name": "--hub-tone",
+      "file": "platform.css",
+      "selector": ".wb-hub__tile[data-tone=\"2\"]",
+      "value": "var(--data-2)",
+      "section": "Хаб «Сервіси»: сітка входів, а не довгий список"
+    },
+    {
+      "name": "--hub-tone",
+      "file": "platform.css",
+      "selector": ".wb-hub__tile[data-tone=\"3\"]",
+      "value": "var(--data-3)",
+      "section": "Хаб «Сервіси»: сітка входів, а не довгий список"
+    },
+    {
+      "name": "--hub-tone",
+      "file": "platform.css",
+      "selector": ".wb-hub__tile[data-tone=\"4\"]",
+      "value": "var(--data-4)",
+      "section": "Хаб «Сервіси»: сітка входів, а не довгий список"
+    },
+    {
+      "name": "--hub-tone",
+      "file": "platform.css",
+      "selector": ".wb-hub__tile[data-tone=\"5\"]",
+      "value": "var(--data-5)",
+      "section": "Хаб «Сервіси»: сітка входів, а не довгий список"
+    },
+    {
+      "name": "--hub-tone",
+      "file": "platform.css",
+      "selector": ".wb-hub__tile[data-tone=\"6\"]",
+      "value": "var(--data-6)",
+      "section": "Хаб «Сервіси»: сітка входів, а не довгий список"
+    },
+    {
       "name": "--num-1-bg",
       "file": "games.css",
       "selector": ".wb-game-screen[data-game=\"2048\"],\n.wb-game-stage[data-game=\"2048\"]",
@@ -2333,6 +2382,48 @@
       "section": ""
     },
     {
+      "name": "--section-tone",
+      "file": "components.css",
+      "selector": ".wb-block-section--row[data-tone=\"1\"]",
+      "value": "var(--data-1)",
+      "section": "Блок як РЯДОК списку (`.wb-block-section--row`)"
+    },
+    {
+      "name": "--section-tone",
+      "file": "components.css",
+      "selector": ".wb-block-section--row[data-tone=\"2\"]",
+      "value": "var(--data-2)",
+      "section": "Блок як РЯДОК списку (`.wb-block-section--row`)"
+    },
+    {
+      "name": "--section-tone",
+      "file": "components.css",
+      "selector": ".wb-block-section--row[data-tone=\"3\"]",
+      "value": "var(--data-3)",
+      "section": "Блок як РЯДОК списку (`.wb-block-section--row`)"
+    },
+    {
+      "name": "--section-tone",
+      "file": "components.css",
+      "selector": ".wb-block-section--row[data-tone=\"4\"]",
+      "value": "var(--data-4)",
+      "section": "Блок як РЯДОК списку (`.wb-block-section--row`)"
+    },
+    {
+      "name": "--section-tone",
+      "file": "components.css",
+      "selector": ".wb-block-section--row[data-tone=\"5\"]",
+      "value": "var(--data-5)",
+      "section": "Блок як РЯДОК списку (`.wb-block-section--row`)"
+    },
+    {
+      "name": "--section-tone",
+      "file": "components.css",
+      "selector": ".wb-block-section--row[data-tone=\"6\"]",
+      "value": "var(--data-6)",
+      "section": "Блок як РЯДОК списку (`.wb-block-section--row`)"
+    },
+    {
       "name": "--tabs-h",
       "file": "components.css",
       "selector": ".wb-tabs",
@@ -2385,14 +2476,14 @@
       "name": "--tracker-group-bg",
       "file": "trackers.css",
       "selector": ".wb-trackers-page",
-      "value": "color-mix(in srgb, var(--text-primary) 9%, transparent)",
+      "value": "var(--card-bg)",
       "section": ""
     },
     {
       "name": "--tracker-group-sub-bg",
       "file": "trackers.css",
       "selector": ".wb-trackers-page",
-      "value": "color-mix(in srgb, var(--text-primary) 5%, transparent)",
+      "value": "var(--bg-2)",
       "section": ""
     },
     {
@@ -4895,6 +4986,18 @@
           "wb-template-row-icon",
           "wb-template-row-text",
           "wb-template-row-title"
+        ]
+      },
+      {
+        "section": "Хаб «Сервіси»: сітка входів, а не довгий список",
+        "names": [
+          "wb-hub",
+          "wb-hub__grid",
+          "wb-hub__group",
+          "wb-hub__group-title",
+          "wb-hub__icon",
+          "wb-hub__label",
+          "wb-hub__tile"
         ]
       }
     ],

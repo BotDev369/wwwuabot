@@ -24,6 +24,12 @@ export interface CollapsibleSectionProps {
    * в пункту меню. Розділ сторінки лишається без поверхні (правило 12).
    */
   surface?: boolean;
+  /**
+   * Голос зі спектра теми (`1…6`) для знака рядка — та сама деталь, що мають
+   * входи хаба (`--data-*`). Без нього сусідні рядки списку одного ваги й
+   * кольору читались як чекліст: око не має за що зачепитись.
+   */
+  tone?: number;
   children: ReactNode;
 }
 
@@ -32,6 +38,7 @@ export function CollapsibleSection({
   icon,
   meta,
   surface = false,
+  tone,
   children,
 }: CollapsibleSectionProps) {
   const { open, toggle } = useCollapse();
@@ -42,7 +49,7 @@ export function CollapsibleSection({
   const sectionClass = surface ? "wb-block-section wb-block-section--row" : "wb-block-section";
 
   return (
-    <section className={sectionClass}>
+    <section className={sectionClass} data-tone={tone}>
       <h2 className="wb-block-section__head">
         <button
           type="button"
