@@ -19,6 +19,8 @@ export interface SystemsPickerTarget {
   targetUrl: string;
   systemParam: string;
   parameterParam: string;
+  /** Параметри, які переходять далі без змін (вид суб'єкта, підписи, «себе»). */
+  forward?: Record<string, string>;
 }
 
 export interface SystemsPickerState {
@@ -33,7 +35,7 @@ export interface SystemsPickerState {
 }
 
 export function useSystemsPicker(target: SystemsPickerTarget): SystemsPickerState {
-  const { valueParam, values, targetUrl, systemParam, parameterParam } = target;
+  const { valueParam, values, targetUrl, systemParam, parameterParam, forward } = target;
 
   const [systems, setSystems] = useState<AnalysisSystem[]>([]);
   const [selected, setSelected] = useState<Record<string, Record<string, boolean>>>({});
@@ -97,8 +99,12 @@ export function useSystemsPicker(target: SystemsPickerTarget): SystemsPickerStat
     query.set(valueParam, values);
     if (chosenSystems.length) query.set(systemParam, chosenSystems.join(","));
     if (chosenParams.length) query.set(parameterParam, chosenParams.join(","));
+    for (const [name, value] of Object.entries(forward ?? {})) {
+      if (value) query.set(name, value);
+    }
     window.location.href = `${targetUrl}?${query.toString()}`;
   }, [
+    forward,
     isSystemSelected,
     parameterParam,
     selected,

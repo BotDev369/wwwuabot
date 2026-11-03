@@ -1485,11 +1485,24 @@
 
 .wb-block-compare-setup__row {
   display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
   gap: var(--sp-3);
 }
 
-.wb-block-compare-setup__input {
-  flex: 1;
+/* Поле з підписом — стовпчик: підпис над інпутом, а не збоку, інакше на
+   телефоні три поля стискаються до нечитабельних смужок. */
+.wb-block-compare-setup__field {
+  display: flex;
+  flex: 1 1 12rem;
+  flex-direction: column;
+  gap: var(--sp-1);
+  min-width: 0;
+}
+
+.wb-block-compare-setup__kind {
+  flex: 0 0 auto;
+  width: auto;
 }
 
 .wb-block-compare-setup__list {

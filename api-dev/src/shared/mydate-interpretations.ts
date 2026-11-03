@@ -33,7 +33,8 @@ function planets(...names: string[]): Record<string, string> {
   return Object.fromEntries(names.map((name) => [name, PLANETS[name]]));
 }
 
-interface ParameterMeaning {
+/** Одна стаття словника: що визначає параметр і що означає його значення. */
+export interface ParameterMeaning {
   /** Що визначає сам параметр: які якості міряє і в яких межах. */
   about: string;
   /** Трактування конкретних значень. */

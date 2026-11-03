@@ -7,6 +7,12 @@
 
 import { Fragment, type ReactNode } from "react";
 import { Icon } from "@wwwuabot/shared";
+import {
+  scopeColumnTitle,
+  scopeOf,
+  type AnalysisScope,
+  type SubjectKind,
+} from "@wwwuabot/shared/content";
 import { useExpansion, type UseExpansionReturn } from "@wwwuabot/ui/hooks";
 import { formatDate } from "@wwwuabot/shared/utils/mydate-helpers";
 import type { CompareDetails, CompareMatrix } from "./api";
@@ -18,6 +24,8 @@ export type AnalysisView = "params" | "dates";
 
 interface TableData {
   dates: string[];
+  /** Вид кожного суб'єкта — у тому ж порядку, що й `dates`. */
+  kinds: SubjectKind[];
   rows: AnalysisRow[];
   matrix: CompareMatrix;
   details: CompareDetails;
@@ -51,14 +59,33 @@ function RowToggle({
   );
 }
 
-/** Шапка вигляду «рядками параметри»: стовпець — дата. */
-function ParamsHead({ dates, names }: { dates: string[]; names: Record<string, string> }) {
+/**
+ * Шапка вигляду «рядками параметри»: стовпець — суб'єкт.
+ *
+ * Коли в таблиці стоять і люди, і події, над іменем є слово виду: без нього
+ * трактування події читалося б як характеристика людини.
+ */
+function ParamsHead({
+  dates,
+  names,
+  kinds,
+}: {
+  dates: string[];
+  names: Record<string, string>;
+  kinds: SubjectKind[];
+}) {
+  const mixed = scopeOf(kinds) === "mixed";
   return (
     <thead>
       <tr>
         <th scope="col">Параметр</th>
-        {dates.map((date) => (
+        {dates.map((date, index) => (
           <th key={date} scope="col">
+            {mixed ? (
+              <span className="wb-param-date__kind">
+                {scopeColumnTitle(kinds[index] ?? "person")}
+              </span>
+            ) : null}
             <span className="wb-param-date">{formatDate(date)}</span>
             {names[date] ? <span className="wb-param-date__name">{names[date]}</span> : null}
           </th>
@@ -68,12 +95,12 @@ function ParamsHead({ dates, names }: { dates: string[]; names: Record<string, s
   );
 }
 
-/** Шапка вигляду «рядками дати»: стовпець — система й параметр. */
-function DatesHead({ rows }: { rows: AnalysisRow[] }) {
+/** Шапка вигляду «рядками суб'єкти»: стовпець — система й параметр. */
+function DatesHead({ rows, scope }: { rows: AnalysisRow[]; scope: AnalysisScope }) {
   return (
     <thead>
       <tr>
-        <th scope="col">Дата</th>
+        <th scope="col">{scopeColumnTitle(scope)}</th>
         {rows.map((row, index) => (
           <th key={`${row.systemId}:${row.key}`} scope="col">
             {index === 0 || rows[index - 1].systemId !== row.systemId ? (
@@ -104,7 +131,7 @@ function ParamsRows({
   details,
   isExpanded,
   toggleExpanded,
-}: TableData & UseExpansionReturn) {
+}: Omit<TableData, "kinds" | "names"> & UseExpansionReturn) {
   return (
     <tbody>
       {rows.map((row, index) => {
@@ -155,6 +182,7 @@ function DatesRows({
   matrix,
   details,
   names,
+  kinds,
   isExpanded,
   toggleExpanded,
 }: TableData & UseExpansionReturn) {
@@ -173,7 +201,12 @@ function DatesRows({
                   onToggle={toggleExpanded}
                   label={
                     <>
-                      {formatDate(date)}
+                      {scopeOf(kinds) === "mixed" ? (
+                        <span className="wb-param-date__kind">
+                          {scopeColumnTitle(kinds[dates.indexOf(date)] ?? "person")}
+                        </span>
+                      ) : null}
+                      <span className="wb-param-date">{formatDate(date)}</span>
                       {names[date] ? (
                         <span className="wb-param-date__name">{names[date]}</span>
                       ) : null}
@@ -232,6 +265,7 @@ export function AnalysisTable({ view, ...data }: { view: AnalysisView } & TableD
   const expansion = useExpansion();
   const head = usePinnedHead();
 
+  const scope = scopeOf(data.kinds);
   const columns = (view === "dates" ? data.rows.length : data.dates.length) + 1;
   // Міра з попереднього вигляду до нової таблиці не належить: поки кількість
   // ширин не збіглася з кількістю стовпців, таблиці лишаються на розкладці за
@@ -251,9 +285,9 @@ export function AnalysisTable({ view, ...data }: { view: AnalysisView } & TableD
           <table className={className} style={style} ref={head.copyRef}>
             {measured && <ColumnWidths widths={head.widths} />}
             {view === "dates" ? (
-              <DatesHead rows={data.rows} />
+              <DatesHead rows={data.rows} scope={scope} />
             ) : (
-              <ParamsHead dates={data.dates} names={data.names} />
+              <ParamsHead dates={data.dates} names={data.names} kinds={data.kinds} />
             )}
           </table>
         </div>

@@ -110,12 +110,14 @@ export async function compareDates(
   dates: string[],
   systemIds?: string[],
   parameterKeys?: string[],
+  /** Вид на кожну дату: одне слово або перелік `person,event`. */
+  kind?: string,
 ): Promise<CompareResult> {
   const data = await json(
     await fetch("/api/mydate/compare", {
       method: "POST",
       headers: { "Content-Type": "application/json", ...telegramAuthHeaders() },
-      body: JSON.stringify({ dates, systemIds, parameterKeys }),
+      body: JSON.stringify({ dates, systemIds, parameterKeys, kind }),
     }),
   );
   if (!data.ok) throw new Error((data.error as string) ?? "Помилка аналізу");

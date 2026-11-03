@@ -20,6 +20,25 @@ export {
   type ShareLinksInput,
 } from "./link";
 export {
+  SUBJECT_KINDS,
+  SUBJECT_LABELS_QUERY,
+  SUBJECT_QUERY,
+  SELF_QUERY,
+  encodeLabels,
+  encodeScopes,
+  isSubjectKind,
+  parseLabels,
+  parseScope,
+  parseScopes,
+  scopeColumnTitle,
+  scopeLead,
+  scopeOf,
+  scopePlural,
+  scopeTitle,
+  type AnalysisScope,
+  type SubjectKind,
+} from "./analysis-subject";
+export {
   DATE_ANALYSIS_PATH,
   DATE_ANALYSIS_RESULT_PATH,
   DATE_ANALYSIS_RESULT_SLUG,

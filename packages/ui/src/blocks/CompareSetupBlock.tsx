@@ -1,100 +1,158 @@
 /**
- * Page Builder — CompareSetupBlock: ручне введення дат для аналізу.
- *
- * Другий вхід у той самий функціонал (перший — чекбокси на екрані дат):
- * людина додає дати, міняє їхній порядок і йде на аналіз — стовпці таблиці
- * стоять у тому ж порядку. Вигляд — у `styles/blocks.css`.
+ * Page Builder — CompareSetupBlock: крок «кого або що аналізуємо».
+ * Один крок на всі входи: питає ім'я та дату, а вид задає сторінка. Виняток —
+ * порівняння людей із подіями: там вид стоїть у рядку, інакше таблиця не знала б,
+ * як читати стовпець.
  *
  * @module packages/ui/src/blocks/CompareSetupBlock
  */
 
-import { useState, useCallback } from "react";
 import { icons } from "@wwwuabot/shared";
-import { DATE_ANALYSIS_RESULT_PATH } from "@wwwuabot/shared/content";
+import {
+  DATE_ANALYSIS_RESULT_PATH,
+  parseScope,
+  type AnalysisScope,
+} from "@wwwuabot/shared/content";
 import type { BlockComponentProps } from "@wwwuabot/shared/types/page-config";
 import { formatDate } from "@wwwuabot/shared/utils/mydate-helpers";
+import { isMixedScope, useSubjectSetup, type SubjectRow } from "./compare-setup/useSubjectSetup";
 
-export function CompareSetupBlock({ block }: BlockComponentProps) {
+/** Підпис виду в рядку таблиці: те саме слово, що й у шапці результату. */
+function kindLabel(kind: SubjectRow["kind"]): string {
+  return kind === "event" ? "Подія" : "Людина";
+}
+
+export function CompareSetupBlock({ block, context }: BlockComponentProps) {
   const {
-    title = "Аналіз дат",
-    description = "Вкажіть дати для аналізу. Дати можна переміщати — це визначить порядок стовпців у таблиці.",
-    maxDates = 10,
+    title = "Аналіз людини",
+    description,
+    maxDates = 1,
     nextUrl = DATE_ANALYSIS_RESULT_PATH,
+    kind: rawScope = "person",
+    selfMode = false,
   } = block.props as {
     title?: string;
     description?: string;
     maxDates?: number;
     nextUrl?: string;
+    kind?: string;
+    selfMode?: boolean;
   };
 
-  const [input, setInput] = useState("");
-  const [dates, setDates] = useState<string[]>([]);
+  const scope: AnalysisScope = parseScope(rawScope);
+  const mixed = isMixedScope(scope);
+  const subjectWord = scope === "event" ? "подію" : "людину";
 
-  const addDate = useCallback(() => {
-    if (!input) return;
-    if (dates.includes(input)) return;
-    if (dates.length >= maxDates) return;
-    setDates((prev) => [...prev, input]);
-    setInput("");
-  }, [input, dates, maxDates]);
+  const setup = useSubjectSetup({
+    scope,
+    nextUrl,
+    maxRows: mixed || !selfMode ? Math.max(1, maxDates) : 1,
+    selfMode,
+    initialName: context.user?.firstName ?? context.user?.username,
+  });
 
-  const move = useCallback((index: number, dir: -1 | 1) => {
-    setDates((prev) => {
-      const target = index + dir;
-      if (target < 0 || target >= prev.length) return prev;
-      const next = [...prev];
-      [next[index], next[target]] = [next[target], next[index]];
-      return next;
-    });
-  }, []);
+  const lead =
+    description ??
+    (selfMode
+      ? "Вкажіть свою дату народження — решта даних уже є в профілі."
+      : mixed
+        ? "Додайте людей і події в тому порядку, у якому хочете їх порівняти. Для кожного рядка вкажіть, хто це."
+        : `Вкажіть ${subjectWord} для аналізу: ім'я та дату. Ім'я підпише стовпець у таблиці.`);
 
-  const remove = useCallback((index: number) => {
-    setDates((prev) => prev.filter((_, i) => i !== index));
-  }, []);
-
-  const goNext = useCallback(() => {
-    if (dates.length === 0) return;
-    const url = `${nextUrl}?dates=${encodeURIComponent(dates.join(","))}`;
-    window.location.href = url;
-  }, [dates, nextUrl]);
+  /** Вид одного суб'єкта: у змішаному режимі — вибір, інакше — підпис. */
+  const kindField = (row: SubjectRow, index: number) =>
+    mixed ? (
+      <select
+        className="wb-input wb-block-compare-setup__kind"
+        value={row.kind}
+        aria-label="Що це"
+        onChange={(event) =>
+          setup.update(index, { kind: event.target.value === "event" ? "event" : "person" })
+        }
+      >
+        <option value="person">Людина</option>
+        <option value="event">Подія</option>
+      </select>
+    ) : (
+      <span className="wb-text-sm wb-text-muted">{kindLabel(row.kind)}</span>
+    );
 
   return (
     <div className="wb-block-compare-setup">
       <h2 className="wb-block-compare-setup__title">{title}</h2>
-      <p className="wb-text-sm wb-text-muted wb-block-compare-setup__lead">{description}</p>
+      <p className="wb-text-sm wb-text-muted wb-block-compare-setup__lead">{lead}</p>
 
       <div className="wb-block-compare-setup__row">
-        <input
-          type="date"
-          value={input}
-          onChange={(e) => setInput(e.target.value)}
-          className="wb-input wb-block-compare-setup__input"
-          onKeyDown={(e) => {
-            if (e.key === "Enter") {
-              e.preventDefault();
-              addDate();
+        {mixed && (
+          <label className="wb-block-compare-setup__field">
+            <span className="wb-label">Хто це</span>
+            <select
+              className="wb-input"
+              value={setup.draftKind}
+              onChange={(event) =>
+                setup.setDraftKind(event.target.value === "event" ? "event" : "person")
+              }
+            >
+              <option value="person">Людина</option>
+              <option value="event">Подія</option>
+            </select>
+          </label>
+        )}
+
+        <label className="wb-block-compare-setup__field">
+          <span className="wb-label">Ім'я</span>
+          <input
+            type="text"
+            className="wb-input"
+            value={selfMode ? (setup.rows[0]?.name ?? "") : setup.draftName}
+            placeholder={scope === "event" ? "Наприклад, весілля" : "Наприклад, Олена"}
+            onChange={(event) =>
+              selfMode
+                ? setup.update(0, { name: event.target.value })
+                : setup.setDraftName(event.target.value)
             }
-          }}
-        />
-        <button
-          className="wb-btn wb-btn-primary"
-          onClick={addDate}
-          disabled={!input || dates.length >= maxDates}
-        >
-          Додати дату
-        </button>
+          />
+        </label>
+
+        <label className="wb-block-compare-setup__field">
+          <span className="wb-label">{scope === "event" ? "Дата події" : "Дата народження"}</span>
+          <input
+            type="date"
+            className="wb-input"
+            value={selfMode ? (setup.rows[0]?.date ?? "") : setup.draftDate}
+            onChange={(event) =>
+              selfMode
+                ? setup.update(0, { date: event.target.value })
+                : setup.setDraftDate(event.target.value)
+            }
+          />
+        </label>
+
+        {!selfMode && (
+          <button className="wb-btn wb-btn-secondary" onClick={setup.add} disabled={!setup.canAdd}>
+            {setup.addLabel}
+          </button>
+        )}
       </div>
 
-      {dates.length > 0 && (
+      {!selfMode && setup.rows.length > 0 && (
         <div className="wb-block-compare-setup__list">
-          {dates.map((d, i) => (
-            <div key={`${d}-${i}`} className="wb-block-compare-setup__item">
-              <span className="wb-block-compare-setup__date">{formatDate(d)}</span>
+          {setup.rows.map((row, index) => (
+            <div key={`${row.date}-${index}`} className="wb-block-compare-setup__item">
+              <span className="wb-block-compare-setup__date">
+                {row.name ? <strong>{row.name}</strong> : null}
+                <span className={row.name ? "wb-text-sm wb-text-muted" : undefined}>
+                  {formatDate(row.date)}
+                </span>
+              </span>
+
+              {kindField(row, index)}
+
               <button
                 type="button"
                 className="wb-move-btn"
-                onClick={() => move(i, -1)}
-                disabled={i === 0}
+                onClick={() => setup.move(index, -1)}
+                disabled={index === 0}
                 title="Вгору"
               >
                 {icons["chevron-up"]}
@@ -102,8 +160,8 @@ export function CompareSetupBlock({ block }: BlockComponentProps) {
               <button
                 type="button"
                 className="wb-move-btn"
-                onClick={() => move(i, 1)}
-                disabled={i === dates.length - 1}
+                onClick={() => setup.move(index, 1)}
+                disabled={index === setup.rows.length - 1}
                 title="Вниз"
               >
                 {icons["chevron-down"]}
@@ -111,7 +169,7 @@ export function CompareSetupBlock({ block }: BlockComponentProps) {
               <button
                 type="button"
                 className="wb-close-btn"
-                onClick={() => remove(i)}
+                onClick={() => setup.remove(index)}
                 title="Видалити"
               >
                 {icons["close"]}
@@ -123,12 +181,10 @@ export function CompareSetupBlock({ block }: BlockComponentProps) {
 
       <button
         className="wb-btn wb-btn-primary wb-block-compare-setup__action"
-        onClick={goNext}
-        disabled={dates.length === 0}
+        onClick={setup.goNext}
+        disabled={!setup.canGo}
       >
-        {dates.length === 0
-          ? "Додайте хоча б одну дату"
-          : `Обрати системи для аналізу (${dates.length})`}
+        {setup.canGo ? "Обрати системи аналізу" : "Вкажіть дату"}
       </button>
     </div>
   );

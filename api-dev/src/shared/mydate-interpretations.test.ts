@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { SYSTEM_CALCULATORS, type SystemAnalysisResult } from "./mydate-helpers";
+import { EVENT_MEANINGS } from "./mydate-event-meanings";
 import { MEANINGS } from "./mydate-interpretations";
 import {
   aboutFor,
@@ -112,6 +113,35 @@ describe("довідник трактувань", () => {
         }
       }
     }
+  });
+
+  /**
+   * Подія читається тим самим розрахунком, але іншим словником: якщо тексту
+   * події немає, параметр тихо віддає текст людини — і саме так зникає різниця,
+   * заради якої все робилося. Тож перевіряємо не «щось є», а власний текст.
+   */
+  it("кожне значення події має власне трактування, а не людини", () => {
+    const missing: string[] = [];
+    for (const systemId of Object.keys(SYSTEM_CALCULATORS)) {
+      for (const { key, value } of everyValue(systemId)) {
+        const article = EVENT_MEANINGS[systemId]?.[key];
+        const own = article?.values?.[value] ?? article?.general;
+        if (!own || !own.trim()) missing.push(`${systemId}.${key} = ${value}`);
+      }
+    }
+
+    expect(missing).toEqual([]);
+  });
+
+  it("той самий знак читається по-різному для людини й для події", () => {
+    const person = meaningFor("western", "sunSign", "Овен");
+    const event = meaningFor("western", "sunSign", "Овен", "event");
+
+    expect(person).toBeTruthy();
+    expect(event).toBeTruthy();
+    expect(event).not.toBe(person);
+    expect(event).toContain("Подія");
+    expect(aboutFor("western", "sunSign", "event")).not.toBe(aboutFor("western", "sunSign"));
   });
 
   it("дописує пояснення й трактування копією, а не в знімку, який іде в D1", () => {

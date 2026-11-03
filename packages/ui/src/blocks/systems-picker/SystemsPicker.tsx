@@ -22,6 +22,11 @@ export interface SystemsPickerProps {
   targetUrl: string;
   systemParam?: string;
   parameterParam?: string;
+  /**
+   * Що перенести на наступний крок без змін: вид суб'єкта та його підписи.
+   * Без цього результат відкрився б як аналіз людини, навіть якщо читали подію.
+   */
+  forward?: Record<string, string>;
 }
 
 export function SystemsPicker({
@@ -35,8 +40,16 @@ export function SystemsPicker({
   targetUrl,
   systemParam = "sys",
   parameterParam = "p",
+  forward,
 }: SystemsPickerProps) {
-  const picker = useSystemsPicker({ valueParam, values, targetUrl, systemParam, parameterParam });
+  const picker = useSystemsPicker({
+    valueParam,
+    values,
+    targetUrl,
+    systemParam,
+    parameterParam,
+    forward,
+  });
 
   if (values === "") {
     return (

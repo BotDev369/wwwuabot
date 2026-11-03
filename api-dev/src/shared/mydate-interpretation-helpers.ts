@@ -7,12 +7,34 @@
  * @module api-dev/src/shared/mydate-interpretation-helpers
  */
 
-import { MEANINGS, SYSTEM_HISTORY } from "./mydate-interpretations";
+import type { SubjectKind } from "@wwwuabot/shared/content";
+import { EVENT_MEANINGS } from "./mydate-event-meanings";
+import { MEANINGS, SYSTEM_HISTORY, type ParameterMeaning } from "./mydate-interpretations";
 import type { SystemAnalysisResult } from "./mydate-helpers";
 
+/**
+ * Стаття словника для предмета аналізу.
+ *
+ * Подія має власний словник, але не кожен параметр у ньому переписано: там, де
+ * тексту події немає, повертаємо текст людини — краще загальне пояснення, ніж
+ * порожня клітинка в таблиці.
+ */
+function meaningArticle(
+  systemId: string,
+  key: string,
+  kind: SubjectKind,
+): ParameterMeaning | undefined {
+  const forKind = kind === "event" ? EVENT_MEANINGS[systemId]?.[key] : undefined;
+  return forKind ?? MEANINGS[systemId]?.[key];
+}
+
 /** Що визначає параметр: його пояснення; `undefined` — довідник його не знає. */
-export function aboutFor(systemId: string, key: string): string | undefined {
-  return MEANINGS[systemId]?.[key]?.about;
+export function aboutFor(
+  systemId: string,
+  key: string,
+  kind: SubjectKind = "person",
+): string | undefined {
+  return meaningArticle(systemId, key, kind)?.about;
 }
 
 /** Історія системи для розкритого акордеона; `undefined` — довідник її не знає. */
@@ -57,8 +79,13 @@ export function withParameterAbout(
 }
 
 /** Трактування одного значення; `undefined` — довідник його не знає. */
-export function meaningFor(systemId: string, key: string, value: unknown): string | undefined {
-  const parameter = MEANINGS[systemId]?.[key];
+export function meaningFor(
+  systemId: string,
+  key: string,
+  value: unknown,
+  kind: SubjectKind = "person",
+): string | undefined {
+  const parameter = meaningArticle(systemId, key, kind);
   if (!parameter) return undefined;
   return parameter.values?.[String(value)] ?? parameter.general;
 }
@@ -70,13 +97,17 @@ export function meaningFor(systemId: string, key: string, value: unknown): strin
  * Повертає **нові** об'єкти: результат іде і в `saveAnalysis`, тож дописані на
  * місці тексти осіли б у знімку в D1 і пережили б правку довідника.
  */
-export function withMeanings(systemId: string, result: SystemAnalysisResult): SystemAnalysisResult {
+export function withMeanings(
+  systemId: string,
+  result: SystemAnalysisResult,
+  kind: SubjectKind = "person",
+): SystemAnalysisResult {
   const parameters = Array.isArray(result.parameters) ? result.parameters : [];
   return {
     ...result,
     parameters: parameters.map((parameter) => {
-      const about = aboutFor(systemId, parameter.key);
-      const meaning = meaningFor(systemId, parameter.key, parameter.value);
+      const about = aboutFor(systemId, parameter.key, kind);
+      const meaning = meaningFor(systemId, parameter.key, parameter.value, kind);
       return {
         ...parameter,
         ...(about ? { about } : {}),

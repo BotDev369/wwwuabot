@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { parseScopes } from "@wwwuabot/shared/content";
 import type { Env } from "../shared/types";
 import { readBody } from "../shared/body";
 import { apiLog } from "../shared/logger";
@@ -26,6 +27,7 @@ const compareBody = z
     dates: z.array(z.string()).optional(),
     systemIds: z.array(z.string()).optional(),
     parameterKeys: z.array(z.string()).optional(),
+    kind: z.string().optional(),
   })
   .passthrough();
 
@@ -131,6 +133,11 @@ export async function handleCompare(request: Request, env: Env): Promise<Respons
       return json({ ok: false, error: "Too many dates, max 30" }, 400);
     }
 
+    // Вид — на кожну дату: `kind=person` для всієї таблиці, `kind=person,event`
+    // там, де порівнюють людей із подіями. Словник обирається для кожного
+    // стовпця окремо, інакше подія читалася б як характер людини.
+    const kinds = parseScopes(parsed.body.kind, validDates.length);
+
     // Назви дат — для шапки таблиці: без ідентичності вони просто не приїжджають,
     // а порівняння лишається робочим (дата — те, що показано в рядку шапки).
     const userId = await tryResolveUserId(request, env);
@@ -148,7 +155,8 @@ export async function handleCompare(request: Request, env: Env): Promise<Respons
       Record<string, Record<string, { about?: string; meaning?: string }>>
     > = {};
 
-    for (const date of validDates) {
+    for (const [index, date] of validDates.entries()) {
+      const kind = kinds[index] ?? "person";
       const analysis = await getAnalysis(env.DB, env.CONTENT_KV, date);
       const perSystem: Record<string, Record<string, unknown>> = {};
       const perDetails: Record<string, Record<string, { about?: string; meaning?: string }>> = {};
@@ -161,7 +169,7 @@ export async function handleCompare(request: Request, env: Env): Promise<Respons
           result = calculator(date);
           await saveAnalysis(env.DB, env.CONTENT_KV, date, sys.id, result);
         }
-        const params = withMeanings(sys.id, result).parameters ?? [];
+        const params = withMeanings(sys.id, result, kind).parameters ?? [];
         const selected = parameterKeys
           ? params.filter((p) => parameterKeys.includes(p.key))
           : params;
@@ -178,6 +186,7 @@ export async function handleCompare(request: Request, env: Env): Promise<Respons
     return json({
       ok: true,
       dates: validDates,
+      kinds,
       systems: targetSystems.map((s) => s.id),
       matrix,
       details,

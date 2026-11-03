@@ -8,24 +8,27 @@
  */
 
 import type { ReactElement } from "react";
+import { scopePlural, type AnalysisScope } from "@wwwuabot/shared/content";
 import type { AnalysisView } from "./AnalysisTable";
-
-const OPTIONS: readonly { key: AnalysisView; label: string }[] = [
-  { key: "params", label: "Параметри" },
-  { key: "dates", label: "Дати" },
-];
 
 export function AnalysisViewSwitch({
   view,
   onChange,
+  scope,
 }: {
   view: AnalysisView;
   onChange: (view: AnalysisView) => void;
+  /** Вид суб'єкта: другий вигляд називається його словом, а не «Дати». */
+  scope: AnalysisScope;
 }): ReactElement {
+  const options: readonly { key: AnalysisView; label: string }[] = [
+    { key: "params", label: "Параметри" },
+    { key: "dates", label: scopePlural(scope) },
+  ];
   return (
     <div className="wb-analysis-views">
       <div className="wb-segmented" role="group" aria-label="Вигляд результатів">
-        {OPTIONS.map((option) => {
+        {options.map((option) => {
           const active = option.key === view;
           return (
             <button

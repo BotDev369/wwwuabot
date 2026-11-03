@@ -128,10 +128,10 @@ describe("DateAnalysisBlock — без дат", () => {
   it("каже, що дат немає, і дає шлях до їхнього списку", () => {
     window.history.replaceState({}, "", "/dateanalysis/analysis");
     render(<DateAnalysisBlock {...props({ backUrl: "/dateanalysis" })} />);
-    expect(screen.getByText("Немає дат для аналізу.")).toBeTruthy();
-    expect(screen.getByRole("link", { name: "Обрати дати" }).getAttribute("href")).toBe(
-      "/dateanalysis",
-    );
+    expect(screen.getByText("Немає суб'єктів для аналізу.")).toBeTruthy();
+    expect(
+      screen.getByRole("link", { name: "Обрати, кого аналізувати" }).getAttribute("href"),
+    ).toBe("/dateanalysis");
     expect(screen.queryByRole("table")).toBeNull();
   });
 });
@@ -145,7 +145,7 @@ describe("DateAnalysisBlock — крок вибору систем", () => {
 
     expect(screen.getByText("Оберіть системи та параметри")).toBeTruthy();
     // Дат може бути більше однієї — крок каже, скільки їх насправді.
-    expect(screen.getByText("Дат в аналізі: 2")).toBeTruthy();
+    expect(screen.getByText(/Люди в аналізі: 2/)).toBeTruthy();
     expect(screen.getByRole("button", { name: "Аналізувати" })).toBeTruthy();
     expect(screen.queryByRole("table")).toBeNull();
   });
@@ -170,8 +170,10 @@ describe("DateAnalysisBlock — крок вибору систем", () => {
     await user.click(screen.getByRole("button", { name: "Аналізувати" }));
 
     // Дати — параметром, а не сегментом: `ScenarioPage` бере весь splat як slug.
+    // `kind` їде разом із вибором: без нього результат читався б як людина,
+    // навіть коли питали про подію.
     expect(nav.value()).toBe(
-      "/dateanalysis/analysis?dates=1980-03-03&sys=western&p=sunSign%2Celement",
+      "/dateanalysis/analysis?dates=1980-03-03&sys=western&p=sunSign%2Celement&kind=person",
     );
   });
 
@@ -181,7 +183,7 @@ describe("DateAnalysisBlock — крок вибору систем", () => {
     render(<DateAnalysisBlock {...props()} />);
     await settle();
 
-    expect(screen.getByText("Дат в аналізі: 1")).toBeTruthy();
+    expect(screen.getByText(/Люди в аналізі: 1/)).toBeTruthy();
   });
 });
 
@@ -248,15 +250,15 @@ describe("DateAnalysisBlock — таблиця", () => {
     // Типово рядками йдуть параметри: шапка підписує стовпець-дату.
     expect(screen.getByRole("columnheader", { name: "Параметр" })).toBeTruthy();
 
-    await user.click(screen.getByRole("button", { name: "Дати" }));
+    await user.click(screen.getByRole("button", { name: "Люди" }));
 
-    // Дати стали рядками, а системи й параметри — стовпцями.
-    expect(screen.getByRole("columnheader", { name: "Дата" })).toBeTruthy();
+    // Суб'єкти стали рядками, а системи й параметри — стовпцями.
+    expect(screen.getByRole("columnheader", { name: "Людина" })).toBeTruthy();
     expect(screen.queryByRole("columnheader", { name: "Параметр" })).toBeNull();
     expect(screen.getByText("Знак Сонця")).toBeTruthy();
   });
 
-  it("у вигляді «Дати» трактування стоїть у стовпці свого параметра", async () => {
+  it("у вигляді «Люди» трактування стоїть у стовпці свого параметра", async () => {
     window.history.replaceState(
       {},
       "",
@@ -277,7 +279,7 @@ describe("DateAnalysisBlock — таблиця", () => {
     render(<DateAnalysisBlock {...props()} />);
     await settle();
 
-    await user.click(screen.getByRole("button", { name: "Дати" }));
+    await user.click(screen.getByRole("button", { name: "Люди" }));
     expect(screen.queryByText("Дія, старт.")).toBeNull();
 
     await user.click(screen.getByRole("button", { name: /03\.03\.1980/ }));

@@ -41,6 +41,8 @@ export function useAnalysisTable(
   dates: string[],
   systemIds: string[],
   parameterKeys: string[],
+  /** Вид суб'єкта для словника: одне слово або перелік на кожну дату. */
+  kind = "person",
 ): AnalysisTableState {
   const [systems, setSystems] = useState<AnalysisSystem[]>([]);
   const [matrix, setMatrix] = useState<CompareMatrix>({});
@@ -64,6 +66,7 @@ export function useAnalysisTable(
           dates,
           systemIds.length ? systemIds : undefined,
           parameterKeys.length ? parameterKeys : undefined,
+          kind,
         );
       })
       .then((result) => {
@@ -86,7 +89,7 @@ export function useAnalysisTable(
     return () => {
       cancelled = true;
     };
-  }, [dates, parameterKeys, systemIds]);
+  }, [dates, kind, parameterKeys, systemIds]);
 
   const rows = useMemo(() => {
     const visible = systemIds.length

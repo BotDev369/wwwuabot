@@ -296,6 +296,54 @@ describe("розрахунок і порівняння", () => {
     expect(body.names).toEqual({ "1980-03-03": "Мама" });
   });
 
+  /**
+   * Вид суб'єкта доходить до словника: інакше подія отримує опис характеру, і
+   * саме це було дефектом. Перевіряємо `details`, бо значення в `matrix` від
+   * виду не залежать (формула одна) — залежить тлумачення.
+   */
+  it("вид суб'єкта обирає словник трактувань", async () => {
+    const person = await handleCompare(
+      request("/api/mydate/compare", { dates: ["1980-03-03"] }),
+      makeEnv(),
+    );
+    const event = await handleCompare(
+      request("/api/mydate/compare", { dates: ["1980-03-03"], kind: "event" }),
+      makeEnv(),
+    );
+
+    type Body = {
+      kinds: string[];
+      matrix: Record<string, Record<string, Record<string, unknown>>>;
+      details: Record<string, Record<string, Record<string, { meaning?: string }>>>;
+    };
+    const personBody = (await person.json()) as Body;
+    const eventBody = (await event.json()) as Body;
+
+    expect(eventBody.kinds).toEqual(["event"]);
+    expect(personBody.kinds).toEqual(["person"]);
+    // Формула та сама — різниця тільки в текстах.
+    expect(eventBody.matrix).toEqual(personBody.matrix);
+    expect(eventBody.details["1980-03-03"].western.sunSign.meaning).toContain("Подія");
+  });
+
+  it("`kind=person,event` дає різні словники в одній таблиці", async () => {
+    const res = await handleCompare(
+      request("/api/mydate/compare", {
+        dates: ["1980-03-03", "2004-10-07"],
+        kind: "person,event",
+      }),
+      makeEnv(),
+    );
+    const body = (await res.json()) as {
+      kinds: string[];
+      details: Record<string, Record<string, Record<string, { meaning?: string }>>>;
+    };
+
+    expect(body.kinds).toEqual(["person", "event"]);
+    expect(body.details["2004-10-07"].western.sunSign.meaning).toContain("Подія");
+    expect(body.details["1980-03-03"].western.sunSign.meaning).not.toContain("Подія");
+  });
+
   it("без підписаного `initData` назв немає, а таблиця лишається", async () => {
     const res = await handleCompare(
       request("/api/mydate/compare", { dates: ["1980-03-03"] }),
