@@ -1,13 +1,12 @@
 /**
  * Page Builder — AnalysisEntriesBlock: перелік входів розділу «Аналіз людей та подій».
- * Сім входів — сім різних питань, тож рядок — картка з назвою й одним реченням,
- * а група задає вибір: один субʼєкт чи порівняння.
+ * Рядок — картка зі знаком, назвою й шевроном: пояснювати входи не потрібно,
+ * назва вже каже, кого читаємо. Знак і тон роблять сім входів різними на око.
  *
  * @module packages/ui/src/blocks/AnalysisEntriesBlock
  */
 
-import { Fragment } from "react";
-import { Icon } from "@wwwuabot/shared";
+import { Icon, type IconName } from "@wwwuabot/shared";
 import type { BlockComponentProps } from "@wwwuabot/shared/types/page-config";
 import { appLinkHandler } from "./link-nav";
 
@@ -15,8 +14,10 @@ interface EntryItem {
   /** Підпис групи; сусідні входи з тим самим підписом стоять під ним. */
   group?: string;
   title: string;
-  lead?: string;
   url: string;
+  icon?: IconName;
+  /** Номер голосу зі спектра теми (`--data-1…6`), а не конкретний колір. */
+  tone?: number;
   badge?: string;
 }
 
@@ -46,24 +47,24 @@ export function AnalysisEntriesBlock({ block, context }: BlockComponentProps) {
           {group.title && <h3 className="wb-entries-group__title">{group.title}</h3>}
 
           {group.items.map((item) => (
-            <Fragment key={`${item.title}-${item.url}`}>
-              <a
-                href={item.url}
-                className="wb-entry"
-                onClick={appLinkHandler(item.url, context.navigate)}
-              >
-                <span className="wb-entry__body">
-                  <span className="wb-entry__title">
-                    {item.title}
-                    {item.badge && <span className="wb-entry__badge">{item.badge}</span>}
-                  </span>
-                  {item.lead && <span className="wb-entry__lead">{item.lead}</span>}
-                </span>
-                <span className="wb-entry__chevron" aria-hidden="true">
-                  <Icon name="chevron-right" size={18} />
-                </span>
-              </a>
-            </Fragment>
+            <a
+              key={`${item.title}-${item.url}`}
+              href={item.url}
+              className="wb-entry"
+              data-tone={item.tone ?? 1}
+              onClick={appLinkHandler(item.url, context.navigate)}
+            >
+              <span className="wb-entry__icon" aria-hidden="true">
+                <Icon name={item.icon ?? "page"} size={20} />
+              </span>
+              <span className="wb-entry__title">
+                {item.title}
+                {item.badge && <span className="wb-entry__badge">{item.badge}</span>}
+              </span>
+              <span className="wb-entry__chevron" aria-hidden="true">
+                <Icon name="chevron-right" size={18} />
+              </span>
+            </a>
           ))}
         </div>
       ))}

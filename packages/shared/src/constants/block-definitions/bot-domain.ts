@@ -122,14 +122,15 @@ export const botDomainBlocks: BlockDefinition[] = [
     label: "Входи аналізу",
     icon: "list",
     category: "bot-domain",
-    description: "Картки-переходи розділу: один субʼєкт чи порівняння — з поясненням у рядку",
+    description: "Картки-переходи розділу: один субʼєкт чи порівняння, кожен зі своїм знаком",
     props: {
       title: s("Заголовок"),
       items: oa("Входи", {
         group: s("Група"),
         title: s("Назва"),
-        lead: s("Одне речення під назвою"),
         url: s("Адреса"),
+        icon: s("Знак"),
+        tone: s("Тон 1–6"),
         badge: s("Плашка стану"),
       }),
     },

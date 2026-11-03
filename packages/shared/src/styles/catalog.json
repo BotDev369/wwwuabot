@@ -1,5 +1,5 @@
 {
-  "version": "b3b546b",
+  "version": "3840ec0",
   "files": [
     {
       "file": "admin/analytics-people.css",
@@ -93,8 +93,8 @@
     },
     {
       "file": "analysis-entries.css",
-      "tokens": 0,
-      "classes": 10
+      "tokens": 7,
+      "classes": 9
     },
     {
       "file": "app-chrome.css",
@@ -1668,6 +1668,55 @@
       "section": ""
     },
     {
+      "name": "--entry-tone",
+      "file": "analysis-entries.css",
+      "selector": ".wb-entry",
+      "value": "var(--data-1)",
+      "section": ""
+    },
+    {
+      "name": "--entry-tone",
+      "file": "analysis-entries.css",
+      "selector": ".wb-entry[data-tone=\"1\"]",
+      "value": "var(--data-1)",
+      "section": ""
+    },
+    {
+      "name": "--entry-tone",
+      "file": "analysis-entries.css",
+      "selector": ".wb-entry[data-tone=\"2\"]",
+      "value": "var(--data-2)",
+      "section": ""
+    },
+    {
+      "name": "--entry-tone",
+      "file": "analysis-entries.css",
+      "selector": ".wb-entry[data-tone=\"3\"]",
+      "value": "var(--data-3)",
+      "section": ""
+    },
+    {
+      "name": "--entry-tone",
+      "file": "analysis-entries.css",
+      "selector": ".wb-entry[data-tone=\"4\"]",
+      "value": "var(--data-4)",
+      "section": ""
+    },
+    {
+      "name": "--entry-tone",
+      "file": "analysis-entries.css",
+      "selector": ".wb-entry[data-tone=\"5\"]",
+      "value": "var(--data-5)",
+      "section": ""
+    },
+    {
+      "name": "--entry-tone",
+      "file": "analysis-entries.css",
+      "selector": ".wb-entry[data-tone=\"6\"]",
+      "value": "var(--data-6)",
+      "section": ""
+    },
+    {
       "name": "--game-accent",
       "file": "games.css",
       "selector": ".wb-game-stage",
@@ -3051,9 +3100,8 @@
           "wb-entries-group__title",
           "wb-entry",
           "wb-entry__badge",
-          "wb-entry__body",
           "wb-entry__chevron",
-          "wb-entry__lead",
+          "wb-entry__icon",
           "wb-entry__title"
         ]
       }

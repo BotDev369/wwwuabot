@@ -1,9 +1,9 @@
 // @vitest-environment jsdom
 /**
- * Входи розділу: групи й місце, куди ведуть картки.
+ * Входи розділу: групи, місце, куди ведуть картки, і знак кожного входу.
  *
- * Один вхід — одне питання: картка мусить нести і назву, і речення, інакше
- * знову виходять плитки «Аналізувати себе», де не сказано, що саме читають.
+ * Один вхід — одне питання, і пояснень під назвою немає: речення під кожною
+ * карткою подвоювало рядок і робило список сірим. Різницю тримають знак і тон.
  *
  * @module packages/ui/src/blocks/analysis-entries.dom.test
  */
@@ -22,13 +22,25 @@ function block(items: unknown[], title?: string): BlockComponentProps {
 }
 
 describe("AnalysisEntriesBlock", () => {
-  it("групує входи за підписом і показує речення", () => {
-    render(
+  it("групує входи за підписом і показує знак кожного", () => {
+    const { container } = render(
       <AnalysisEntriesBlock
         {...block(
           [
-            { group: "Один субʼєкт", title: "Аналізувати себе", lead: "Ваша дата", url: "/self" },
-            { group: "Один субʼєкт", title: "Аналізувати інших", lead: "Чужа дата", url: "/p" },
+            {
+              group: "Один субʼєкт",
+              title: "Аналізувати себе",
+              url: "/self",
+              icon: "user",
+              tone: "2",
+            },
+            {
+              group: "Один субʼєкт",
+              title: "Аналізувати інших",
+              url: "/p",
+              icon: "users",
+              tone: "4",
+            },
             { group: "Порівняння", title: "Порівняння людей", url: "/c" },
           ],
           "Входи",
@@ -42,7 +54,12 @@ describe("AnalysisEntriesBlock", () => {
     expect(screen.getByRole("link", { name: /Аналізувати себе/ }).getAttribute("href")).toBe(
       "/self",
     );
-    expect(screen.getByText("Чужа дата")).toBeTruthy();
+
+    const entries = container.querySelectorAll(".wb-entry");
+    expect(entries).toHaveLength(3);
+    expect(entries[0].getAttribute("data-tone")).toBe("2");
+    expect(entries[0].querySelector("svg")).toBeTruthy();
+    expect(entries[2].getAttribute("data-tone")).toBe("1");
   });
 
   it("порожній список не малює порожню секцію", () => {

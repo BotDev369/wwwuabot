@@ -1,14 +1,20 @@
 /* ── Входи розділу «Аналіз людей та подій» ─────────────────────────────
    Входи — картки, а не плитки кнопок: їх сім, і кожен відповідає на інше
-   питання, тож назва мусить нести друге речення — «кого саме читаємо».
-   Плитки в один рядок цього не вміщали й ламались на два-три рядки різної
-   ширини.
+   питання. Пояснень під назвою немає: назва вже каже, кого читаємо, а
+   пояснення лише подвоювало рядок і робило список сірим.
+   Різницю між входами тримають знак і тон зі спектра теми — кожен вхід має
+   власний голос, як серії на графіку.
    Група — це вибір, а не розділ довідки: «один субʼєкт» проти «порівняння». */
 
 .wb-block-entries {
   display: flex;
   flex-direction: column;
-  gap: var(--sp-4);
+  gap: var(--sp-5);
+  padding: var(--sp-4);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-xl);
+  background: var(--card-bg);
+  background-image: var(--gradient-wash);
 }
 
 .wb-block-entries__title {
@@ -21,9 +27,12 @@
   gap: var(--sp-2);
 }
 
-/* Підпис групи — дрібний і приглушений: він ділить список, а не змагається з
-   назвами входів за увагу. Літери розріджені, бо це рядок-ярлик, а не текст. */
+/* Підпис групи — рядок-ярлик із лінією до краю: лінія тримає список одним
+   блоком, а не трьома окремими списками з різними відступами. */
 .wb-entries-group__title {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
   margin: 0;
   color: var(--text-muted);
   font-size: var(--text-xs);
@@ -32,25 +41,64 @@
   text-transform: uppercase;
 }
 
+.wb-entries-group__title::after {
+  content: "";
+  flex: 1;
+  height: 1px;
+  background: var(--border-subtle);
+}
+
 /* Вхід — посилання на всю ширину: палець має влучати в будь-яке місце рядка,
    а не лише в назву. */
 .wb-entry {
+  --entry-tone: var(--data-1);
+
   display: flex;
   align-items: center;
   gap: var(--sp-3);
   padding: var(--sp-3);
-  background: var(--card-bg);
   border: 1px solid var(--card-border);
-  border-radius: var(--card-radius);
-  box-shadow: var(--card-shadow);
+  border-radius: var(--radius-lg);
+  background: var(--card-bg);
+  box-shadow: var(--shadow-xs);
   color: inherit;
   text-decoration: none;
-  transition: border-color 0.15s ease;
+  transition:
+    border-color var(--duration) ease,
+    box-shadow var(--duration) ease,
+    transform var(--duration) ease;
+}
+
+/* Тон входу — номер голосу спектра, а не колір: тема сама вирішує значення. */
+.wb-entry[data-tone="1"] {
+  --entry-tone: var(--data-1);
+}
+
+.wb-entry[data-tone="2"] {
+  --entry-tone: var(--data-2);
+}
+
+.wb-entry[data-tone="3"] {
+  --entry-tone: var(--data-3);
+}
+
+.wb-entry[data-tone="4"] {
+  --entry-tone: var(--data-4);
+}
+
+.wb-entry[data-tone="5"] {
+  --entry-tone: var(--data-5);
+}
+
+.wb-entry[data-tone="6"] {
+  --entry-tone: var(--data-6);
 }
 
 @media (hover: hover) {
   .wb-entry:hover {
-    border-color: var(--border-hover);
+    border-color: color-mix(in srgb, var(--entry-tone) 40%, var(--card-border));
+    box-shadow: var(--shadow-md);
+    transform: translateY(-1px);
   }
 }
 
@@ -59,28 +107,28 @@
   outline-offset: 2px;
 }
 
-.wb-entry__body {
-  display: flex;
-  flex: 1;
-  flex-direction: column;
-  gap: 2px;
-  min-width: 0;
+/* Знак — не прикраса: підкладка його ж тону задає картці характер, а колір
+   знака лишається читабельним як текст, бо це той самий `--data-*`. */
+.wb-entry__icon {
+  display: grid;
+  flex: 0 0 auto;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  border-radius: var(--radius-md);
+  background: color-mix(in srgb, var(--entry-tone) 14%, transparent);
+  color: var(--entry-tone);
 }
 
 .wb-entry__title {
   display: flex;
+  flex: 1;
   align-items: center;
   gap: var(--sp-2);
+  min-width: 0;
   font-size: var(--text-md);
   font-weight: var(--weight-semibold);
   line-height: var(--leading-tight);
-}
-
-.wb-entry__lead {
-  color: var(--text-secondary);
-  font-size: var(--text-sm);
-  line-height: var(--leading-relaxed);
-  text-wrap: pretty;
 }
 
 /* Плашка стану («скоро») — на крок темніша за картку, інакше губилась. */
