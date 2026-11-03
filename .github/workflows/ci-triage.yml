@@ -19,6 +19,16 @@ on:
   workflow_run:
     workflows: [Deploy]
     types: [completed]
+  # Ручний запуск — для історії, а не для поточного прогону: розібрати, що
+  # падало останнім часом, не чекаючи нового падіння.
+  workflow_dispatch:
+    inputs:
+      mode:
+        description: "report — тільки звіт; open — створити/оновити нитку; close — закрити"
+        required: true
+        default: report
+        type: choice
+        options: [report, open, close]
 
 permissions:
   actions: write
@@ -50,6 +60,29 @@ jobs:
           GITHUB_TOKEN: ${{ github.token }}
           GITHUB_REPOSITORY: ${{ github.repository }}
         run: node scripts/ci-triage.mjs --runs 20 --logs --issue --retry
+
+  manual:
+    if: github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 22
+      - name: Розібрати історію
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+          GITHUB_REPOSITORY: ${{ github.repository }}
+          MODE: ${{ inputs.mode }}
+        run: |
+          if [ "$MODE" = "close" ]; then
+            node scripts/ci-triage.mjs --close
+          elif [ "$MODE" = "open" ]; then
+            node scripts/ci-triage.mjs --runs 20 --logs --issue
+          else
+            node scripts/ci-triage.mjs --runs 20 --logs
+          fi
 
   close:
     if: >-
