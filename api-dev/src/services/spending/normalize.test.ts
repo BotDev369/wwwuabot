@@ -1,5 +1,14 @@
 import { describe, expect, it } from "vitest";
-import { documentRow, num, orgRow, str, transactionRow } from "./normalize";
+import {
+  documentCounterparties,
+  documentRow,
+  num,
+  orgRow,
+  paymentCounterparties,
+  regionRow,
+  str,
+  transactionRow,
+} from "./normalize";
 
 describe("терпиме читання полів", () => {
   it("порожнє й дивне дає порожньо або нуль, а не NaN", () => {
@@ -22,13 +31,45 @@ describe("довідник розпорядника", () => {
         koatuu: "UA32080070010087821",
         kved: "84.11",
       }),
-    ).toEqual({
+    ).toMatchObject({
       edrpou: "04360586",
       name: "Бучанська міська рада",
       form: "Орган місцевого самоврядування",
       kopfg: "420",
       koatuu: "UA32080070010087821",
       kved: "84.11",
+    });
+  });
+
+  it("бере тип, головного розпорядника й контакти — без них немає ієрархії", () => {
+    const row = orgRow({
+      edrpou: "42081684",
+      orgName: "КНП Бучанський ЦПМСД",
+      orgType: ["Одержувач бюджетних коштiв", "Комунальне пiдприємство"],
+      generalDisposer: { edrpou: "04360586", fullName: "БУЧАНСЬКА МІСЬКА РАДА" },
+      address: { regionName: "Київська обл", city: "м. Буча", street: "Енергетиків", house: "12" },
+      phone: "+380459748934",
+      email: "buchacpmsd@ukr.com",
+      registrationDate: "2023-07-28",
+    });
+
+    expect(row).toMatchObject({
+      orgType: "Одержувач бюджетних коштiв, Комунальне пiдприємство",
+      parentEdrpou: "04360586",
+      region: "Київська обл",
+      city: "м. Буча",
+      address: "Енергетиків 12",
+      email: "buchacpmsd@ukr.com",
+      registeredAt: "2023-07-28",
+    });
+  });
+
+  it("без адреси й типу лишає порожньо, а не падає", () => {
+    expect(orgRow({ edrpou: "1" })).toMatchObject({
+      orgType: "",
+      parentEdrpou: "",
+      address: "",
+      city: "",
     });
   });
 
@@ -102,5 +143,61 @@ describe("платіж", () => {
   it("обрізає довге призначення платежу, а не губить його", () => {
     const row = transactionRow({ id: 1, payment_details: "x".repeat(5000) });
     expect(row?.paymentDetails.length).toBe(2000);
+  });
+
+  it("тримає код області: без нього довідник `/regions` не зв'язати з платежем", () => {
+    expect(transactionRow({ id: 2, region_id: 10 })?.regionCode).toBe("10");
+    expect(transactionRow({ id: 3 })?.regionCode).toBe("");
+  });
+});
+
+describe("довідник областей і контрагенти", () => {
+  it("область без коду не вигадується", () => {
+    expect(regionRow({ regionCode: 10, regionName: "Київська обл", koatuu: "3200000000" })).toEqual(
+      { code: "10", name: "Київська обл", koatuu: "3200000000" },
+    );
+    expect(regionRow({ regionName: "Без коду" })).toBeNull();
+  });
+
+  it("контрагент договору бере місто, а HIDDEN у каталог не потрапляє", () => {
+    const rows = documentCounterparties({
+      contractors: [
+        {
+          identifier: "40733817",
+          name: "ТОВ БУЧАНСЬКИЙ ЗАВОД БРУКІВКИ",
+          contractorType: 2,
+          address: { city: "с. Блиставиця", regionName: "Київська обл" },
+        },
+        { identifier: "HIDDEN", name: "ФОП", contractorType: 1 },
+      ],
+    });
+
+    expect(rows).toEqual([
+      {
+        edrpou: "40733817",
+        name: "ТОВ БУЧАНСЬКИЙ ЗАВОД БРУКІВКИ",
+        city: "с. Блиставиця",
+        region: "Київська обл",
+      },
+    ]);
+  });
+
+  it("обидві сторони платежу стають контрагентами, крім порожніх і прихованих", () => {
+    const row = transactionRow({
+      id: "t",
+      payer_edrpou: "04360586",
+      payer_name: "БМР",
+      recipt_edrpou: "33699425",
+      recipt_name: "Бучабудзамовник",
+    });
+
+    expect(row && paymentCounterparties(row).map((item) => item.edrpou)).toEqual([
+      "04360586",
+      "33699425",
+    ]);
+    const hidden = transactionRow({ id: "h", payer_edrpou: "HIDDEN", recipt_edrpou: "33699425" });
+    expect(hidden && paymentCounterparties(hidden).map((item) => item.edrpou)).toEqual([
+      "33699425",
+    ]);
   });
 });

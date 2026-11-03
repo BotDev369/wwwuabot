@@ -15,6 +15,8 @@ import {
   fetchJson,
   lastLoadUrl,
   pause,
+  receiptsUrl,
+  regionsUrl,
   transactionsUrl,
 } from "./source";
 
@@ -38,6 +40,13 @@ describe("адреси джерела", () => {
     const transactions = transactionsUrl(["04360586", "34357364"], "2026-09-01", "2026-09-30");
     expect(transactions).toContain("/api/transactions/?");
     expect(transactions).toContain("payers_edrpous=04360586%2C34357364");
+
+    // Надходження — той самий список, але за отримувачем; `recipient_` не працює.
+    const receipts = receiptsUrl(["04360586"], "2026-09-01", "2026-09-30");
+    expect(receipts).toContain("recipt_edrpous=04360586");
+    expect(receipts).not.toContain("recipient");
+
+    expect(regionsUrl()).toBe("https://api.spending.gov.ua/api/v2/regions");
 
     expect(lastLoadUrl()).toContain("/api/transactions/lastload");
   });

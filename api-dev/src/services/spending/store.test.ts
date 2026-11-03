@@ -8,17 +8,15 @@
  */
 
 import { describe, expect, it, vi } from "vitest";
+import { SPENDING_TABLES, archiveRaw, ensureSpendingTables, isSettled, markSync } from "./store";
 import {
-  SPENDING_TABLES,
-  archiveRaw,
-  buildOrgCard,
-  ensureSpendingTables,
-  isSettled,
-  markSync,
+  upsertCounterparties,
   upsertDocuments,
   upsertOrgs,
+  upsertRegions,
   upsertTransactions,
-} from "./store";
+} from "./upserts";
+import { buildOrgCard } from "./card";
 import type { DocumentRow, OrgRow, TransactionRow } from "./normalize";
 
 const ensureTablesMock = vi.hoisted(() => vi.fn(async () => {}));
@@ -68,6 +66,14 @@ const ORG: OrgRow = {
   kopfg: "1",
   koatuu: "3210800000",
   kved: "84.11",
+  orgType: "Головний розпорядник бюджетних коштiв",
+  parentEdrpou: "",
+  region: "Київська обл",
+  city: "Буча",
+  address: "Енергетиків 12",
+  phone: "+380459749359",
+  email: "buchazvit@ukr.net",
+  registeredAt: "2016-02-03",
 };
 
 const DOC: DocumentRow = {
@@ -100,6 +106,7 @@ const TX: TransactionRow = {
   contractId: "d-1",
   contractNumber: "12",
   sourceName: "Є-data",
+  regionCode: "10",
 };
 
 describe("схема й курсор", () => {
@@ -108,7 +115,7 @@ describe("схема й курсор", () => {
     await ensureSpendingTables(db);
 
     expect(ensureTablesMock).toHaveBeenCalledWith(db, SPENDING_TABLES);
-    expect(SPENDING_TABLES).toHaveLength(4);
+    expect(SPENDING_TABLES).toHaveLength(6);
   });
 
   it("зібраний період упізнається як `ok`, незібраний — ні", async () => {
@@ -174,6 +181,19 @@ describe("рядки", () => {
     expect(sqls[0]).toContain("ON CONFLICT(edrpou)");
     expect(sqls[1]).toContain("ON CONFLICT(id)");
     expect(bound[2].slice(0, 3)).toEqual(["t-1", "04360586", "Бучанська міська рада"]);
+  });
+
+  it("довідники пишуться тим самим шляхом, а порожнє поле не затирає відоме", async () => {
+    const { db, sqls } = fakeDb();
+    await upsertRegions(db, [{ code: "10", name: "Київська обл", koatuu: "3200000000" }]);
+    await upsertCounterparties(db, [
+      { edrpou: "40733817", name: "ТОВ БРУКІВКА", city: "с. Блиставиця", region: "Київська обл" },
+    ]);
+
+    expect(sqls[0]).toContain("ON CONFLICT(code)");
+    expect(sqls[1]).toContain("ON CONFLICT(edrpou)");
+    // Місто з договору не має зникати після платежу, де його немає.
+    expect(sqls[1]).toContain("CASE WHEN excluded.city <> ''");
   });
 
   it("ріже пачку по 50: більша D1 рве по таймауту", async () => {

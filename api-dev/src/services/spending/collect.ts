@@ -1,5 +1,5 @@
 /**
- * Прогін колектора Є-data за один місяць: договори, платежі, архів, картки.
+ * Прогін колектора Є-data за один місяць: довідники, договори, платежі, архів.
  *
  * Порядок кроків навмисний: спершу сира відповідь їде в R2, потім рядки в D1,
  * і лише наприкінці — картки в KV. Обірваний прогін лишає `error` у
@@ -11,11 +11,11 @@ import { apiLog } from "../../shared/logger";
 import type { Env } from "../../shared/types";
 import {
   CARD_TTL_SECONDS,
-  DOCUMENTS_CAP,
   LASTLOAD_KEY,
   MAX_CONSECUTIVE_FAILURES,
   MAX_PAYERS_PER_REQUEST,
   REFRESH_AFTER_MS,
+  REGIONS_SYNC_KEY,
   RUN_BUDGET_MS,
   SEED_ORGS,
   SOURCE_PAUSE_MS,
@@ -24,35 +24,30 @@ import {
   cardKey,
   chunk,
   monthWindow,
-  splitRange,
+  receiptsKey,
 } from "./config";
+import { buildOrgCard } from "./card";
+import { collectContracts } from "./documents";
 import {
-  type DocumentRow,
+  type CounterpartyRow,
   type RawRecord,
-  type TransactionRow,
-  documentRow,
-  num,
   orgRow,
+  paymentCounterparties,
+  regionRow,
   transactionRow,
 } from "./normalize";
+import { saveCounterparties } from "./parties";
 import {
-  archiveRaw,
-  buildOrgCard,
-  ensureSpendingTables,
-  isSettled,
-  markSync,
-  upsertDocuments,
-  upsertOrgs,
-  upsertTransactions,
-} from "./store";
-import {
-  contractsUrl,
   disposerUrl,
   fetchJson,
   lastLoadUrl,
   pause,
+  receiptsUrl,
+  regionsUrl,
   transactionsUrl,
 } from "./source";
+import { archiveRaw, ensureSpendingTables, isSettled, markSync } from "./store";
+import { upsertDocuments, upsertOrgs, upsertRegions, upsertTransactions } from "./upserts";
 
 export interface SpendingRunOptions {
   /** `YYYY-MM` — рівно один місяць: ширше джерело не віддає транзакцій. */
@@ -68,6 +63,7 @@ export interface SpendingRunReport {
   readonly orgs: number;
   readonly documents: number;
   readonly transactions: number;
+  readonly receipts: number;
   readonly archivedBytes: number;
   readonly skipped: readonly string[];
   readonly failed: readonly string[];
@@ -77,17 +73,15 @@ export interface SpendingRunReport {
 
 interface RunState {
   readonly deadline: number;
+  /** Скільки живе зібране; `undefined` — ручний запуск перечитує все. */
+  readonly settledFor: number | undefined;
   consecutiveFailures: number;
   stopped: string | null;
   documents: number;
   transactions: number;
+  receipts: number;
   archivedBytes: number;
-}
-
-interface ContractsPayload {
-  readonly documents?: RawRecord[];
-  readonly count?: unknown;
-  readonly moreThenCount?: unknown;
+  parties: CounterpartyRow[];
 }
 
 function failure(error: unknown): string {
@@ -100,13 +94,6 @@ function asRows(payload: unknown): RawRecord[] {
     throw new Error("Є-data віддало не масив — причину шукати в тілі відповіді.");
   }
   return payload as RawRecord[];
-}
-
-/** Джерело обрізало відповідь: рядків більше, ніж влазить у `DOCUMENTS_CAP`. */
-function truncated(payload: ContractsPayload, raw: readonly RawRecord[]): boolean {
-  if (raw.length >= DOCUMENTS_CAP) return true;
-  if (num(payload.moreThenCount) > 0) return true;
-  return num(payload.count) > raw.length;
 }
 
 function outOfBudget(state: RunState): boolean {
@@ -122,54 +109,114 @@ function noteFailure(state: RunState, message: string): void {
   }
 }
 
-/** Архів лежить один на місяць; роздроблене вікно додає свої межі до назви. */
-function contractsArchiveKey(
-  edrpou: string,
+/**
+ * Довідник областей: 27 рядків, один запит на прогін.
+ *
+ * Збій довідника не рахується як збій прогону: платежі з `region_code` і без
+ * назви області лишаються читабельними, а наступний прогін добере довідник.
+ */
+async function collectRegions(env: Env, state: RunState, window: MonthWindow): Promise<void> {
+  if (await isSettled(env.DB, REGIONS_SYNC_KEY, state.settledFor)) return;
+  await markSync(env.DB, {
+    key: REGIONS_SYNC_KEY,
+    kind: "regions",
+    period: window.period,
+    status: "running",
+  });
+
+  try {
+    const payload = await fetchJson<unknown>(regionsUrl());
+    const rows = asRows(payload)
+      .map(regionRow)
+      .filter((row): row is { code: string; name: string; koatuu: string } => row !== null);
+    await upsertRegions(env.DB, rows);
+    await markSync(env.DB, {
+      key: REGIONS_SYNC_KEY,
+      kind: "regions",
+      period: window.period,
+      status: "ok",
+      rows: rows.length,
+    });
+  } catch (error) {
+    apiLog.error("spending: довідник областей не прийшов", error);
+    await markSync(env.DB, {
+      key: REGIONS_SYNC_KEY,
+      kind: "regions",
+      period: window.period,
+      status: "error",
+      error: failure(error),
+    });
+  }
+}
+
+/** Договори й картка розпорядника: власний `try` на кожного, щоб один не з'їв решту. */
+async function collectOrg(
+  env: Env,
+  bucket: R2Bucket,
+  state: RunState,
   window: MonthWindow,
-  from: string,
-  to: string,
-): string {
-  const scope =
-    from === window.from && to === window.to ? window.period : `${window.period}.${from}_${to}`;
-  return `spending/contracts/${edrpou}/${scope}.json.gz`;
+  edrpou: string,
+): Promise<void> {
+  const key = `org:${edrpou}:${window.period}`;
+  await markSync(env.DB, { key, kind: "contracts", period: window.period, status: "running" });
+
+  const org = orgRow(await fetchJson<RawRecord>(disposerUrl(edrpou)));
+  const contracts = await collectContracts(bucket, state, edrpou, window, window.from, window.to);
+
+  if (org) await upsertOrgs(env.DB, [org]);
+  await upsertDocuments(env.DB, contracts.documents);
+  state.parties.push(...contracts.parties);
+  state.documents += contracts.documents.length;
+  await markSync(env.DB, {
+    key,
+    kind: "contracts",
+    period: window.period,
+    status: "ok",
+    rows: contracts.documents.length,
+  });
 }
 
 /**
- * Договори за вікно з добором обрізаного: джерело віддає не більше
- * `DOCUMENTS_CAP` за відповідь, тож місяць ділиться навпіл, доки влазить.
+ * Пачка платежів за один бік: `payers_edrpous` — сплати, `recipt_edrpous` —
+ * надходження. Рядки лягають в одну таблицю: `id` у джерела той самий, тож
+ * платіж усередині громади не задвоїться.
  */
-async function collectContracts(
+async function collectPayments(
+  env: Env,
   bucket: R2Bucket,
   state: RunState,
-  edrpou: string,
   window: MonthWindow,
-  from: string,
-  to: string,
-): Promise<DocumentRow[]> {
-  const key = contractsArchiveKey(edrpou, window, from, to);
-  const payload = await fetchJson<ContractsPayload>(contractsUrl(edrpou, from, to), {
+  batch: readonly string[],
+  key: string,
+  kind: "transactions" | "receipts",
+): Promise<number> {
+  const url =
+    kind === "receipts"
+      ? receiptsUrl(batch, window.from, window.to)
+      : transactionsUrl(batch, window.from, window.to);
+  const signature = key.split(":").at(-1) ?? "batch";
+  const archiveKey = `spending/${kind === "receipts" ? "recipts" : "transactions"}/${window.period}/${signature}.json.gz`;
+
+  await markSync(env.DB, { key, kind, period: window.period, status: "running" });
+  const payload = await fetchJson<unknown>(url, {
     onBody: async (body) => {
-      state.archivedBytes += await archiveRaw(bucket, key, body);
+      state.archivedBytes += await archiveRaw(bucket, archiveKey, body);
     },
   });
 
-  const raw = payload.documents ?? [];
-  if (!truncated(payload, raw)) {
-    return raw.map((item) => documentRow(item, "contract")).filter((row) => row !== null);
-  }
-  if (from === to) {
-    throw new Error(
-      `Є-data обрізало договори за ${from} (понад ${DOCUMENTS_CAP}) — повне вивантаження цього дня неможливе`,
-    );
-  }
-
-  const { left, right } = splitRange(from, to);
-  const parts: DocumentRow[] = [];
-  for (const [start, end] of [left, right]) {
-    await pause(SOURCE_PAUSE_MS);
-    parts.push(...(await collectContracts(bucket, state, edrpou, window, start, end)));
-  }
-  return parts;
+  const rows = asRows(payload)
+    .map(transactionRow)
+    .filter((row) => row !== null);
+  await upsertTransactions(env.DB, rows);
+  state.parties.push(...rows.flatMap(paymentCounterparties));
+  await markSync(env.DB, {
+    key,
+    kind,
+    period: window.period,
+    status: "ok",
+    rows: rows.length,
+  });
+  return rows.length;
 }
 
 export async function runSpendingCollection(
@@ -189,40 +236,30 @@ export async function runSpendingCollection(
   const failed: string[] = [];
   const state: RunState = {
     deadline: Date.now() + RUN_BUDGET_MS,
+    settledFor: options.force ? undefined : REFRESH_AFTER_MS,
     consecutiveFailures: 0,
     stopped: null,
     documents: 0,
     transactions: 0,
+    receipts: 0,
     archivedBytes: 0,
+    parties: [],
   };
-  /* Свіже не перечитуємо, застаріле — так: джерело доопубліковує із запізненням. */
-  const settledFor = options.force ? undefined : REFRESH_AFTER_MS;
+
+  await collectRegions(env, state, window);
 
   for (const edrpou of orgs) {
     if (state.stopped || outOfBudget(state)) break;
 
     const key = `org:${edrpou}:${window.period}`;
-    if (await isSettled(env.DB, key, settledFor)) {
+    if (await isSettled(env.DB, key, state.settledFor)) {
       skipped.push(edrpou);
       continue;
     }
 
-    await markSync(env.DB, { key, kind: "contracts", period: window.period, status: "running" });
     try {
-      const org = orgRow(await fetchJson<RawRecord>(disposerUrl(edrpou)));
-      const rows = await collectContracts(bucket, state, edrpou, window, window.from, window.to);
-
-      if (org) await upsertOrgs(env.DB, [org]);
-      await upsertDocuments(env.DB, rows);
-      state.documents += rows.length;
+      await collectOrg(env, bucket, state, window, edrpou);
       state.consecutiveFailures = 0;
-      await markSync(env.DB, {
-        key,
-        kind: "contracts",
-        period: window.period,
-        status: "ok",
-        rows: rows.length,
-      });
     } catch (error) {
       failed.push(edrpou);
       apiLog.error(`spending: договори ${edrpou} за ${window.period} не зібрано`, error);
@@ -240,56 +277,39 @@ export async function runSpendingCollection(
   }
 
   const batches = chunk(orgs, MAX_PAYERS_PER_REQUEST);
-  for (const batch of batches) {
-    if (state.stopped || outOfBudget(state)) break;
+  for (const kind of ["transactions", "receipts"] as const) {
+    for (const batch of batches) {
+      if (state.stopped || outOfBudget(state)) break;
 
-    const key = batchKey(window.period, batch);
-    if (await isSettled(env.DB, key, settledFor)) {
-      skipped.push(key);
-      continue;
+      const key =
+        kind === "receipts" ? receiptsKey(window.period, batch) : batchKey(window.period, batch);
+      if (await isSettled(env.DB, key, state.settledFor)) {
+        skipped.push(key);
+        continue;
+      }
+
+      try {
+        const count = await collectPayments(env, bucket, state, window, batch, key, kind);
+        state[kind] += count;
+        state.consecutiveFailures = 0;
+      } catch (error) {
+        failed.push(key);
+        apiLog.error(`spending: ${kind} ${key} не зібрано`, error);
+        const reason = `${batch.join(",")}: ${failure(error)}`;
+        await markSync(env.DB, {
+          key,
+          kind,
+          period: window.period,
+          status: "error",
+          error: reason,
+        });
+        noteFailure(state, reason);
+      }
+      await pause(SOURCE_PAUSE_MS);
     }
-
-    await markSync(env.DB, { key, kind: "transactions", period: window.period, status: "running" });
-    try {
-      const payload = await fetchJson<unknown>(transactionsUrl(batch, window.from, window.to), {
-        onBody: async (body) => {
-          state.archivedBytes += await archiveRaw(
-            bucket,
-            `spending/transactions/${window.period}/${key.split(":").at(-1) ?? "batch"}.json.gz`,
-            body,
-          );
-        },
-      });
-
-      const rows = asRows(payload)
-        .map(transactionRow)
-        .filter((row): row is TransactionRow => row !== null);
-
-      await upsertTransactions(env.DB, rows);
-      state.transactions += rows.length;
-      state.consecutiveFailures = 0;
-      await markSync(env.DB, {
-        key,
-        kind: "transactions",
-        period: window.period,
-        status: "ok",
-        rows: rows.length,
-      });
-    } catch (error) {
-      failed.push(key);
-      apiLog.error(`spending: платежі ${key} не зібрано`, error);
-      const reason = `${batch.join(",")}: ${failure(error)}`;
-      await markSync(env.DB, {
-        key,
-        kind: "transactions",
-        period: window.period,
-        status: "error",
-        error: reason,
-      });
-      noteFailure(state, reason);
-    }
-    await pause(SOURCE_PAUSE_MS);
   }
+
+  const counterparties = await saveCounterparties(env.DB, state.parties);
 
   if (!state.stopped) {
     for (const edrpou of orgs) {
@@ -315,11 +335,12 @@ export async function runSpendingCollection(
     orgs: orgs.length,
     documents: state.documents,
     transactions: state.transactions,
+    receipts: state.receipts,
     archivedBytes: state.archivedBytes,
     skipped,
     failed,
     stopped: state.stopped,
   };
-  apiLog.info("spending: прогін завершено", { ...report, skipped: skipped.length });
+  apiLog.info("spending: прогін завершено", { ...report, skipped: skipped.length, counterparties });
   return report;
 }

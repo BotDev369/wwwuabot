@@ -113,6 +113,26 @@ export function transactionsUrl(codes: readonly string[], from: string, to: stri
   return `${SPENDING_BASE_URL}/api/transactions/?${params.toString()}`;
 }
 
+/**
+ * Надходження: той самий список платежів, але вибірка за отримувачем.
+ *
+ * `recipt_edrpous` — з друкарською помилкою в самому API; правильне
+ * `recipient_edrpous` джерело тихо ігнорує й відповідає `400` (§2).
+ */
+export function receiptsUrl(codes: readonly string[], from: string, to: string): string {
+  const params = new URLSearchParams({
+    recipt_edrpous: codes.join(","),
+    startdate: from,
+    enddate: to,
+  });
+  return `${SPENDING_BASE_URL}/api/transactions/?${params.toString()}`;
+}
+
+/** Довідник областей: 27 рядків із кодом, назвою й КОАТУУ. */
+export function regionsUrl(): string {
+  return `${SPENDING_BASE_URL}/regions`;
+}
+
 /** Дата останнього завантаження по кожному джерелу. */
 export function lastLoadUrl(): string {
   return `${SPENDING_BASE_URL}/api/transactions/lastload`;

@@ -41,6 +41,24 @@ export interface OrgRow {
   readonly kopfg: string;
   readonly koatuu: string;
   readonly kved: string;
+  readonly orgType: string;
+  readonly parentEdrpou: string;
+  readonly region: string;
+  readonly city: string;
+  readonly address: string;
+  readonly phone: string;
+  readonly email: string;
+  readonly registeredAt: string;
+}
+
+/** Об'єкт у сирому записі: `null` і масиви сюди не належать. */
+function isRecord(value: unknown): value is RawRecord {
+  return typeof value === "object" && value !== null && !Array.isArray(value);
+}
+
+/** Адреса одним рядком: джерело розкладає її на поля, а порожні не пише. */
+function addressLine(raw: RawRecord): string {
+  return [raw.street, raw.house, raw.housing, raw.office].map(str).filter(Boolean).join(" ");
 }
 
 export interface DocumentRow {
@@ -73,6 +91,7 @@ export interface TransactionRow {
   readonly contractId: string;
   readonly contractNumber: string;
   readonly sourceName: string;
+  readonly regionCode: string;
 }
 
 /** Контрагент договору: `identifier` буває `HIDDEN` — це ознака джерела, не дефект. */
@@ -88,6 +107,10 @@ function contractorRow(raw: RawRecord): { identifier: string; name: string; kind
 export function orgRow(raw: RawRecord): OrgRow | null {
   const edrpou = str(raw.edrpou);
   if (!edrpou) return null;
+  const address = isRecord(raw.address) ? raw.address : {};
+  const parent = isRecord(raw.generalDisposer) ? raw.generalDisposer : null;
+  const types = Array.isArray(raw.orgType) ? raw.orgType.map(str).filter(Boolean) : [];
+
   return {
     edrpou,
     name: str(raw.orgName),
@@ -95,7 +118,69 @@ export function orgRow(raw: RawRecord): OrgRow | null {
     kopfg: str(raw.kopfg),
     koatuu: str(raw.koatuu),
     kved: str(raw.kved),
+    orgType: types.join(", "),
+    parentEdrpou: parent ? str(parent.edrpou) : "",
+    region: str(address.regionName),
+    city: str(address.city),
+    address: addressLine(address),
+    phone: str(raw.phone),
+    email: str(raw.email),
+    registeredAt: str(raw.registrationDate),
   };
+}
+
+/** Область довідника `/regions`; `null`, коли немає коду чи назви. */
+export function regionRow(raw: RawRecord): { code: string; name: string; koatuu: string } | null {
+  const code = str(raw.regionCode);
+  if (!code) return null;
+  return { code, name: str(raw.regionName), koatuu: str(raw.koatuu) };
+}
+
+/** Контрагент у каталозі: код, назва й місце; `HIDDEN` кодом не є. */
+export interface CounterpartyRow {
+  readonly edrpou: string;
+  readonly name: string;
+  readonly city: string;
+  readonly region: string;
+}
+
+/** ЄДРПОУ — 8 цифр, ІПН фізособи — 10; решта (`HIDDEN`, порожнеча) не код. */
+function contractorCode(value: unknown): string {
+  const code = str(value).trim();
+  return /^\d{8}(\d{2})?$/.test(code) ? code : "";
+}
+
+/** Контрагенти договору: саме тут джерело віддає ще й місто та область. */
+export function documentCounterparties(raw: RawRecord): CounterpartyRow[] {
+  const list = Array.isArray(raw.contractors) ? raw.contractors : [];
+  const rows: CounterpartyRow[] = [];
+
+  for (const item of list) {
+    if (!isRecord(item)) continue;
+    const edrpou = contractorCode(item.identifier) || contractorCode(item.edrpou);
+    if (!edrpou) continue;
+    const address = isRecord(item.address) ? item.address : {};
+    rows.push({
+      edrpou,
+      name: str(item.name),
+      city: str(address.city),
+      region: str(address.regionName),
+    });
+  }
+
+  return rows;
+}
+
+/** Сторони платежу: місця джерело тут не дає — тільки код і назву. */
+export function paymentCounterparties(row: TransactionRow): CounterpartyRow[] {
+  const rows: CounterpartyRow[] = [];
+  const payer = contractorCode(row.payerEdrpou);
+  const recipt = contractorCode(row.reciptEdrpou);
+  if (payer) rows.push({ edrpou: payer, name: row.payerName, city: "", region: "" });
+  if (recipt && recipt !== payer) {
+    rows.push({ edrpou: recipt, name: row.reciptName, city: "", region: "" });
+  }
+  return rows;
 }
 
 /** Договір (або інший документ тієї самої форми); `null`, коли немає `id`. */
@@ -144,5 +229,6 @@ export function transactionRow(raw: RawRecord): TransactionRow | null {
     contractId: str(raw.contractId) || str(raw.contract_id),
     contractNumber: str(raw.contractNumber) || str(raw.contract_number),
     sourceName: str(raw.source_name),
+    regionCode: str(raw.region_id),
   };
 }

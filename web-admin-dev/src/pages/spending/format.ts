@@ -134,6 +134,8 @@ const SYNC_KIND_LABELS: Readonly<Record<string, string>> = {
   contracts: "Договори",
   transactions: "Платежі",
   payments: "Платежі",
+  receipts: "Надходження",
+  regions: "Довідник областей",
   orgs: "Розпорядники",
   lastload: "Довідка джерела",
 };
@@ -158,6 +160,7 @@ export function syncStepSubject(row: SpendingSyncRow, orgs: readonly SpendingOrg
   }
 
   if (head === "transactions" || head === "payments") return "пачка платежів";
+  if (head === "recipts") return "пачка надходжень";
 
   return "";
 }

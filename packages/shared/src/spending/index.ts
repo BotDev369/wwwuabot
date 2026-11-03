@@ -117,6 +117,8 @@ export interface SpendingRefreshReport {
   readonly orgs: number;
   readonly documents: number;
   readonly transactions: number;
+  /** Надходження: платежі, де отримувач — розпорядник громади. */
+  readonly receipts: number;
   readonly archivedBytes: number;
   readonly skipped: readonly string[];
   readonly failed: readonly string[];

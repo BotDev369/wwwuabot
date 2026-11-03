@@ -107,6 +107,14 @@ export function batchKey(period: string, codes: readonly string[]): string {
   return `transactions:${period}:${signature(codes)}`;
 }
 
+/** Ключ пачки надходжень: той самий набір, але інший бік платежу. */
+export function receiptsKey(period: string, codes: readonly string[]): string {
+  return `recipts:${period}:${signature(codes)}`;
+}
+
+/** Довідник областей — один крок на прогін, не на період. */
+export const REGIONS_SYNC_KEY = "ref:regions";
+
 /** FNV-1a: короткий стабільний підпис, який не залежить від порядку кодів. */
 function signature(codes: readonly string[]): string {
   let hash = 0x811c9dc5;

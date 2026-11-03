@@ -1099,7 +1099,8 @@ export const TABLES = {
   spending_orgs: {
     name: "spending_orgs",
     owner: "api-dev",
-    purpose: "Розпорядники Є-data: назва, форма, kopfg, koatuu і КВЕД так, як їх віддає джерело.",
+    purpose:
+      "Розпорядники Є-data: назва, форма, kopfg, koatuu, КВЕД, тип, головний розпорядник і контакти.",
     create: `CREATE TABLE IF NOT EXISTS spending_orgs (
         edrpou TEXT PRIMARY KEY,
         name TEXT NOT NULL DEFAULT '',
@@ -1107,6 +1108,50 @@ export const TABLES = {
         kopfg TEXT NOT NULL DEFAULT '',
         koatuu TEXT NOT NULL DEFAULT '',
         kved TEXT NOT NULL DEFAULT '',
+        org_type TEXT NOT NULL DEFAULT '',
+        parent_edrpou TEXT NOT NULL DEFAULT '',
+        region TEXT NOT NULL DEFAULT '',
+        city TEXT NOT NULL DEFAULT '',
+        address TEXT NOT NULL DEFAULT '',
+        phone TEXT NOT NULL DEFAULT '',
+        email TEXT NOT NULL DEFAULT '',
+        registered_at TEXT NOT NULL DEFAULT '',
+        first_seen_at TEXT NOT NULL DEFAULT (datetime('now')),
+        updated_at TEXT NOT NULL DEFAULT (datetime('now'))
+      )`,
+  },
+
+  /**
+   * Довідник областей із `/regions`: 27 рядків, які джерело віддає одним
+   * запитом. `code` — `regionCode` із платежу (`region_id`), тож це єдина
+   * ланка між платежем і областю.
+   */
+  spending_regions: {
+    name: "spending_regions",
+    owner: "api-dev",
+    purpose: "Довідник областей Є-data: код джерела, назва й КОАТУУ.",
+    create: `CREATE TABLE IF NOT EXISTS spending_regions (
+        code TEXT PRIMARY KEY,
+        name TEXT NOT NULL DEFAULT '',
+        koatuu TEXT NOT NULL DEFAULT '',
+        synced_at TEXT NOT NULL DEFAULT (datetime('now'))
+      )`,
+  },
+
+  /**
+   * Контрагенти, зібрані з договорів і платежів: окремого довідника джерело
+   * не має, тож каталог будується з того, що прийшло. `HIDDEN` не пишемо —
+   * це не код, а ознака приховування.
+   */
+  spending_counterparties: {
+    name: "spending_counterparties",
+    owner: "api-dev",
+    purpose: "Контрагенти з договорів і платежів: ЄДРПОУ, назва, місто й область.",
+    create: `CREATE TABLE IF NOT EXISTS spending_counterparties (
+        edrpou TEXT PRIMARY KEY,
+        name TEXT NOT NULL DEFAULT '',
+        city TEXT NOT NULL DEFAULT '',
+        region TEXT NOT NULL DEFAULT '',
         first_seen_at TEXT NOT NULL DEFAULT (datetime('now')),
         updated_at TEXT NOT NULL DEFAULT (datetime('now'))
       )`,
@@ -1170,6 +1215,7 @@ export const TABLES = {
         contract_id TEXT NOT NULL DEFAULT '',
         contract_number TEXT NOT NULL DEFAULT '',
         source_name TEXT NOT NULL DEFAULT '',
+        region_code TEXT NOT NULL DEFAULT '',
         fetched_at TEXT NOT NULL DEFAULT (datetime('now'))
       )`,
     indexes: [
@@ -1180,7 +1226,7 @@ export const TABLES = {
 
   /**
    * Курсор прогону: рядок на крок (договори розпорядника, пачка платежів).
-   * Живе в баа¾, а не в пам'яті: обірваний прогін продовжується з нього, а
+   * Живе в базі, а не в пам'яті: обірваний прогін продовжується з нього, а
    * стан видно адміну без читання логів. `error` лишається при рядку —
    * наступний прогін його перезапише лише при спробі знову.
    */

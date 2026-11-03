@@ -14,7 +14,7 @@ const ensureTablesMock = vi.hoisted(() => vi.fn(async () => {}));
 vi.mock("@wwwuabot/shared/database/ensure-tables", () => ({ ensureTables: ensureTablesMock }));
 
 const { runSpendingCollection } = await import("./collect");
-const { batchKey } = await import("./config");
+const { REGIONS_SYNC_KEY, batchKey, receiptsKey } = await import("./config");
 
 const PERIOD = "2026-09";
 const ORG = "04360586";
@@ -55,6 +55,7 @@ function fakeDb(): { db: D1Database; settled: Set<string>; statements: string[] 
     prepare(sql: string) {
       let args: unknown[] = [];
       const statement = {
+        sql,
         bind: (...next: unknown[]) => {
           args = next;
           return statement;
@@ -78,7 +79,11 @@ function fakeDb(): { db: D1Database; settled: Set<string>; statements: string[] 
       };
       return statement;
     },
-    batch: async () => [],
+    /** Пачка не пише, але SQL кожного твердження лишає в тому самому списку. */
+    batch: async (list: { sql: string }[]) => {
+      for (const item of list) statements.push(item.sql);
+      return [];
+    },
   };
   return { db: db as unknown as D1Database, settled, statements };
 }
@@ -114,6 +119,7 @@ function envWith(parts: { db: D1Database; kv: KVNamespace; bucket?: R2Bucket }):
 
 /** Підпис пачки в назві архіву — той самий, що в ключі кроку. */
 const batchSignature = batchKey(PERIOD, [ORG]).split(":").at(-1) ?? "";
+const REGIONS = [{ regionCode: 10, regionName: "Київська обл", koatuu: "3200000000" }];
 
 beforeEach(() => {
   vi.spyOn(globalThis, "setTimeout");
@@ -133,6 +139,7 @@ describe("прогін за місяць", () => {
       "fetch",
       vi.fn(async (url: string) => {
         if (url.includes("/disposers/contracts")) return json(CONTRACTS);
+        if (url.includes("/regions")) return json(REGIONS);
         if (url.includes("/api/transactions/lastload")) return json({ lastload: 1 });
         if (url.includes("/api/transactions/")) return json(TRANSACTIONS);
         return json(DISPOSER);
@@ -149,6 +156,7 @@ describe("прогін за місяць", () => {
       orgs: 1,
       documents: 1,
       transactions: 1,
+      receipts: 1,
       failed: [],
       stopped: null,
     });
@@ -156,6 +164,7 @@ describe("прогін за місяць", () => {
     expect(keys).toEqual([
       `spending/contracts/${ORG}/${PERIOD}.json.gz`,
       `spending/transactions/${PERIOD}/${batchSignature}.json.gz`,
+      `spending/recipts/${PERIOD}/${batchSignature}.json.gz`,
     ]);
     expect(written).toContain(`spending:org:${ORG}:v1`);
     expect(written.some((key) => key.includes("lastload"))).toBe(true);
@@ -165,7 +174,11 @@ describe("прогін за місяць", () => {
     const { db, settled } = fakeDb();
     const { kv } = fakeKv();
     const { bucket, keys } = fakeBucket();
-    settled.add(`org:${ORG}:${PERIOD}`).add(batchKey(PERIOD, [ORG]));
+    settled
+      .add(`org:${ORG}:${PERIOD}`)
+      .add(batchKey(PERIOD, [ORG]))
+      .add(receiptsKey(PERIOD, [ORG]))
+      .add(REGIONS_SYNC_KEY);
     const fetchMock = vi.fn(async () => json({ lastload: 1 }));
     vi.stubGlobal("fetch", fetchMock);
 
@@ -174,8 +187,8 @@ describe("прогін за місяць", () => {
       orgs: [ORG],
     });
 
-    expect(report).toMatchObject({ documents: 0, transactions: 0, archivedBytes: 0 });
-    expect(report.skipped).toHaveLength(2);
+    expect(report).toMatchObject({ documents: 0, transactions: 0, receipts: 0, archivedBytes: 0 });
+    expect(report.skipped).toHaveLength(3);
     expect(keys).toEqual([]);
     // Єдиний дозволений запит — дата останнього завантаження.
     expect(fetchMock).toHaveBeenCalledTimes(1);
@@ -201,6 +214,7 @@ describe("прогін за місяць", () => {
               : { documents: [CONTRACTS.documents[0]], count: 1 },
           );
         }
+        if (url.includes("/regions")) return json(REGIONS);
         if (url.includes("/api/transactions/lastload")) return json({ lastload: 1 });
         if (url.includes("/api/transactions/")) return json(TRANSACTIONS);
         return json(DISPOSER);
@@ -227,6 +241,7 @@ describe("прогін за місяць", () => {
       "fetch",
       vi.fn(async (url: string) => {
         if (url.includes("/disposers/contracts")) return new Response("", { status: 404 });
+        if (url.includes("/regions")) return json(REGIONS);
         if (url.includes("/api/transactions/lastload")) return json({ lastload: 1 });
         if (url.includes("/api/transactions/")) return json({ errorMessage: "не масив" });
         return json(DISPOSER);
@@ -238,7 +253,7 @@ describe("прогін за місяць", () => {
       orgs: [ORG],
     });
 
-    expect(report.failed).toHaveLength(2);
+    expect(report.failed).toHaveLength(3);
     expect(report.documents).toBe(0);
     expect(statements.some((sql) => sql.includes("ON CONFLICT(key)"))).toBe(true);
   });
@@ -257,7 +272,35 @@ describe("прогін за місяць", () => {
 
     expect(report.failed).toHaveLength(3);
     expect(report.stopped).toContain("збої поспіль");
-    expect(fetchMock).toHaveBeenCalledTimes(3);
+    // Три збої договорів плюс невдалий довідник областей — і жодного зайвого.
+    expect(fetchMock).toHaveBeenCalledTimes(4);
+  });
+
+  it("бере надходження окремим запитом і пише обидва довідники", async () => {
+    const { db, statements } = fakeDb();
+    const { kv } = fakeKv();
+    const { bucket } = fakeBucket();
+    const urls: string[] = [];
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(async (url: string) => {
+        urls.push(url);
+        if (url.includes("/disposers/contracts")) return json(CONTRACTS);
+        if (url.includes("/regions")) return json(REGIONS);
+        if (url.includes("/api/transactions/lastload")) return json({ lastload: 1 });
+        if (url.includes("/api/transactions/")) return json(TRANSACTIONS);
+        return json(DISPOSER);
+      }),
+    );
+
+    await runSpendingCollection(envWith({ db, kv, bucket }), { period: PERIOD, orgs: [ORG] });
+
+    expect(urls.some((url) => url.includes("payers_edrpous=04360586"))).toBe(true);
+    expect(urls.some((url) => url.includes("recipt_edrpous=04360586"))).toBe(true);
+    expect(statements.some((sql) => sql.includes("INSERT INTO spending_regions"))).toBe(true);
+    expect(statements.some((sql) => sql.includes("INSERT INTO spending_counterparties"))).toBe(
+      true,
+    );
   });
 
   it("без биндингу архіву прогін не вдає, що все гаразд", async () => {

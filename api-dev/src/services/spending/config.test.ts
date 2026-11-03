@@ -4,9 +4,19 @@ import {
   chunk,
   monthWindow,
   previousMonthPeriod,
+  receiptsKey,
   recentPeriods,
+  REGIONS_SYNC_KEY,
   splitRange,
 } from "./config";
+
+describe("ключі кроків", () => {
+  it("пачка надходжень не збігається з пачкою сплат", () => {
+    expect(receiptsKey("2026-09", ["04360586"])).not.toBe(batchKey("2026-09", ["04360586"]));
+    expect(receiptsKey("2026-09", ["04360586"])).toMatch(/^recipts:2026-09:[0-9a-f]{8}$/);
+    expect(REGIONS_SYNC_KEY).not.toContain("2026");
+  });
+});
 
 describe("вікно місяця", () => {
   it("дає перше й останнє число місяця", () => {
