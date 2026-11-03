@@ -69,7 +69,7 @@ function dateField(container: HTMLElement): HTMLInputElement {
 
 beforeEach(() => {
   restoreLocation();
-  window.history.replaceState({}, "", "/dateanalysis/compare/setup");
+  window.history.replaceState({}, "", "/dateanalysis/compare");
 });
 
 afterEach(() => {
