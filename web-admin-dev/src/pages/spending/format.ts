@@ -32,6 +32,17 @@ const MONTHS = [
   "грудень",
 ];
 
+/** Підпис точки ряду: місяць — «жов 26», день — `30.10`. */
+export function formatBucket(key: string): string {
+  const parts = key.split("-");
+  const year = parts[0]?.slice(2) ?? "";
+  if (parts.length === 2) {
+    const name = MONTHS[Number(parts[1]) - 1];
+    return name ? `${name.slice(0, 3)} ${year}` : key;
+  }
+  return parts.length === 3 ? `${parts[2]}.${parts[1]}` : key;
+}
+
 /** `2026-09` → «вересень 2026»; невідомий формат лишається як прийшов. */
 export function formatPeriod(period: string | null): string {
   if (!period) return "—";
@@ -49,6 +60,25 @@ export function formatMoney(amount: number, currency = "UAH"): string {
     minimumFractionDigits: 2,
     maximumFractionDigits: 2,
   }).format(amount);
+}
+
+/**
+ * Сума для підпису осі й плитки: «194,7 млн ₴» замість двадцяти цифр.
+ * Розряд обирає сама величина, а не колонка: мільйони й тисячі стоять поруч.
+ */
+export function formatCompactMoney(amount: number): string {
+  const abs = Math.abs(amount);
+  const format = (value: number) =>
+    new Intl.NumberFormat("uk-UA", { maximumFractionDigits: 1 }).format(value);
+  if (abs >= 1_000_000) return `${format(amount / 1_000_000)} млн ₴`;
+  if (abs >= 1_000) return `${format(amount / 1_000)} тис. ₴`;
+  return `${format(amount)} ₴`;
+}
+
+/** Частка від цілого; дільник нуль дає прочерк, а не `NaN%`. */
+export function formatShare(part: number, total: number): string {
+  if (!total) return "—";
+  return `${new Intl.NumberFormat("uk-UA", { maximumFractionDigits: 1 }).format((part / total) * 100)}%`;
 }
 
 export function formatCount(count: number): string {

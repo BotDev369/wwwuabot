@@ -8,8 +8,11 @@
  */
 
 import type {
+  SpendingCodes,
   SpendingDocument,
   SpendingOverview,
+  SpendingRecipients,
+  SpendingScope,
   SpendingPage,
   SpendingRole,
   SpendingRefreshReport,
@@ -33,6 +36,15 @@ function withQuery(path: string, params: Readonly<Record<string, Param>>): strin
 
 export function fetchSpendingOverview(period?: string | null): Promise<SpendingOverview> {
   return apiFetch<SpendingOverview>(withQuery("/api/admin/spending/overview", { period }));
+}
+
+export function fetchSpendingCodes(period?: string | null): Promise<SpendingCodes> {
+  return apiFetch<SpendingCodes>(withQuery("/api/admin/spending/codes", { period }));
+}
+
+/** Розріз за отримувачами: вікно задає `scope`, а не адреса екрана. */
+export function fetchSpendingRecipients(scope: SpendingScope): Promise<SpendingRecipients> {
+  return apiFetch<SpendingRecipients>(withQuery("/api/admin/spending/recipients", { scope }));
 }
 
 export function fetchSpendingSync(period?: string | null): Promise<SpendingSyncView> {

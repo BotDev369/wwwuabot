@@ -1,5 +1,5 @@
 {
-  "version": "ed33734",
+  "version": "9a84cad",
   "files": [
     {
       "file": "admin/analytics-people.css",
@@ -69,7 +69,7 @@
     {
       "file": "admin/spending.css",
       "tokens": 0,
-      "classes": 33
+      "classes": 46
     },
     {
       "file": "admin/style.css",
@@ -3022,17 +3022,33 @@
         ]
       },
       {
-        "section": "Телефон",
+        "section": "Аналізи: коди платежів і отримувачі",
         "names": [
           "spend",
+          "spend-analytics",
+          "spend-analytics-panel",
+          "spend-analytics-table",
+          "spend-chart",
+          "spend-chart-axis",
+          "spend-chart-bar",
+          "spend-chart-caption",
+          "spend-chart-svg",
+          "spend-chart-tick",
           "spend-empty",
           "spend-lastload",
+          "spend-meter",
+          "spend-meter-fill",
           "spend-num",
           "spend-panel",
           "spend-row-active",
+          "spend-share",
+          "spend-share-cell",
           "spend-subject",
+          "spend-tab",
+          "spend-tab-active",
           "spend-table",
-          "spend-table-wrap"
+          "spend-table-wrap",
+          "spend-tabs"
         ]
       }
     ],

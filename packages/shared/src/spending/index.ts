@@ -125,6 +125,58 @@ export interface SpendingRefreshReport {
   readonly stopped: string | null;
 }
 
+/** Код платежу — та класифікація, за якою бюджет веде видатки. */
+export type SpendingCodeKind = "kekv" | "kpk" | "budget";
+
+/** Рядок розрізу: порожній `code` — джерело код не оприлюднило. */
+export interface SpendingCodeRow {
+  readonly code: string;
+  readonly count: number;
+  readonly amount: number;
+}
+
+/** Три незалежні класифікації одного місяця: КЕКВ, КПК і бюджетна програма. */
+export interface SpendingCodes {
+  readonly period: string | null;
+  readonly from: string | null;
+  readonly to: string | null;
+  readonly totals: SpendingTotals;
+  readonly kekv: readonly SpendingCodeRow[];
+  readonly kpk: readonly SpendingCodeRow[];
+  readonly budget: readonly SpendingCodeRow[];
+}
+
+/**
+ * Вікно розрізу за отримувачами. `day` — останній день, за який джерело вже
+ * опублікувало платежі: «сьогодні» без даних показало б порожній екран.
+ */
+export type SpendingScope = "all" | "year" | "month" | "day";
+
+/** Точка часового ряду: місяць або день, порожні заповнюються нулем. */
+export interface SpendingBucket {
+  readonly key: string;
+  readonly count: number;
+  readonly amount: number;
+}
+
+export interface SpendingRecipientRow {
+  readonly edrpou: string;
+  readonly name: string;
+  readonly count: number;
+  readonly amount: number;
+}
+
+/** Розріз за отримувачами: ряд за вікном і топ отримувачів за сумою. */
+export interface SpendingRecipients {
+  readonly scope: SpendingScope;
+  readonly from: string | null;
+  readonly to: string | null;
+  readonly bucket: "month" | "day";
+  readonly totals: SpendingTotals & { readonly recipients: number };
+  readonly buckets: readonly SpendingBucket[];
+  readonly rows: readonly SpendingRecipientRow[];
+}
+
 /**
  * Роль розпорядника в платежі. Третій варіант («будь-яка») навмисно не
  * заведений: змішати платника й отримувача в одному списку — це подвоїти суму

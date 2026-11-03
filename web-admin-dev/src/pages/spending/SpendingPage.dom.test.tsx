@@ -16,6 +16,8 @@ const api = vi.hoisted(() => ({
   fetchSpendingOverview: vi.fn(),
   fetchSpendingDocuments: vi.fn(),
   fetchSpendingTransactions: vi.fn(),
+  fetchSpendingCodes: vi.fn(),
+  fetchSpendingRecipients: vi.fn(),
 }));
 
 vi.mock("../../shared/api/spending.api", () => api);
@@ -60,6 +62,24 @@ beforeEach(() => {
   api.fetchSpendingOverview.mockResolvedValue(overview());
   api.fetchSpendingDocuments.mockResolvedValue({ items: [], nextCursor: null });
   api.fetchSpendingTransactions.mockResolvedValue({ items: [], nextCursor: null });
+  api.fetchSpendingCodes.mockResolvedValue({
+    period: "2026-09",
+    from: "2026-09-01",
+    to: "2026-09-30",
+    totals: { count: 3, amount: 900 },
+    kekv: [{ code: "2111", count: 3, amount: 900 }],
+    kpk: [],
+    budget: [],
+  });
+  api.fetchSpendingRecipients.mockResolvedValue({
+    scope: "month",
+    from: "2026-09-01",
+    to: "2026-09-30",
+    bucket: "day",
+    totals: { count: 3, amount: 900, recipients: 1 },
+    buckets: [{ key: "2026-09-10", count: 3, amount: 900 }],
+    rows: [{ edrpou: "39894111", name: "ТОВ", count: 3, amount: 900 }],
+  });
 });
 
 describe("зібрані дані", () => {

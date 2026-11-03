@@ -12,9 +12,12 @@ import type { SpendingSyncRow } from "@wwwuabot/shared/spending";
 import {
   contractorNames,
   counterparty,
+  formatBucket,
+  formatCompactMoney,
   formatDate,
   formatMoney,
   formatPeriod,
+  formatShare,
   formatStamp,
   lastLoadSources,
   periodsOf,
@@ -233,5 +236,25 @@ describe("сторони й контрагенти", () => {
     expect(counterparty(transaction, "payer")).toBe("Ліцей");
     expect(counterparty(transaction, "recipt")).toBe("Рада");
     expect(counterparty({ ...transaction, reciptName: "" }, "payer")).toBe("—");
+  });
+});
+
+describe("аналізи: підписи розрізів", () => {
+  it("сума вибирає розряд, а не колонку", () => {
+    expect(plain(formatCompactMoney(194_730_420.5))).toBe("194,7 млн ₴");
+    expect(plain(formatCompactMoney(12_345))).toBe("12,3 тис. ₴");
+    expect(plain(formatCompactMoney(940))).toBe("940 ₴");
+    expect(plain(formatCompactMoney(-2_000_000))).toBe("-2 млн ₴");
+  });
+
+  it("частка від нуля — прочерк, а не `NaN%`", () => {
+    expect(formatShare(0, 0)).toBe("—");
+    expect(plain(formatShare(21.1, 100))).toBe("21,1%");
+  });
+
+  it("точка ряду: місяць скорочено, день — `дд.мм`", () => {
+    expect(formatBucket("2026-10")).toBe("жов 26");
+    expect(formatBucket("2026-10-30")).toBe("30.10");
+    expect(formatBucket("2026-13")).toBe("2026-13");
   });
 });

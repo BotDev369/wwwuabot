@@ -12,7 +12,9 @@ import {
   isPeriod,
   type SpendingCursor,
   type SpendingRole,
+  type SpendingScope,
 } from "@wwwuabot/shared/spending";
+import { readCodes, readRecipients } from "../services/spending/analytics";
 import {
   latestPeriod,
   readDocuments,
@@ -112,6 +114,27 @@ export function handleSpendingOverview(request: Request, env: Env): Promise<Resp
       orgs,
       sync,
     });
+  });
+}
+
+const SCOPES: readonly SpendingScope[] = ["all", "year", "month", "day"];
+
+/** `GET /api/admin/spending/codes` — розріз за КЕКВ, КПК і програмою. */
+export function handleSpendingCodes(request: Request, env: Env): Promise<Response> {
+  return guard(env, async () => {
+    const period = periodOf(new URL(request.url).searchParams);
+    if (period === undefined) return badRequest("Період має бути YYYY-MM");
+    return json(await readCodes(env.DB, period ?? (await latestPeriod(env.DB))));
+  });
+}
+
+/** `GET /api/admin/spending/recipients?scope=…` — розріз за отримувачами. */
+export function handleSpendingRecipients(request: Request, env: Env): Promise<Response> {
+  return guard(env, async () => {
+    const raw = new URL(request.url).searchParams.get("scope");
+    const scope = raw === null || raw === "" ? "month" : raw;
+    if (!SCOPES.includes(scope as SpendingScope)) return badRequest("Невідомий розріз");
+    return json(await readRecipients(env.DB, scope as SpendingScope));
   });
 }
 

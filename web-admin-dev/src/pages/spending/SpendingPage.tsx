@@ -10,6 +10,7 @@
 import { useMemo, useState } from "react";
 import { Icon } from "@wwwuabot/shared";
 import { PageTopbar } from "../../layout/PageTopbar";
+import { SpendingAnalytics } from "./SpendingAnalytics";
 import { SpendingOrgDetail } from "./SpendingOrgDetail";
 import { SpendingOrgTable } from "./SpendingOrgTable";
 import { SpendingSyncPanel } from "./SpendingSyncPanel";
@@ -115,6 +116,8 @@ export function SpendingPage() {
                 Обери розпорядника в таблиці — нижче з'являться його договори й платежі.
               </p>
             )}
+
+            <SpendingAnalytics period={overview.period} />
 
             <SpendingSyncPanel
               rows={overview.sync}

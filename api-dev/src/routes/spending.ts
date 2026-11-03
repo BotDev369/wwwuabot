@@ -9,8 +9,10 @@
 
 import type { Env } from "../shared/types";
 import {
+  handleSpendingCodes,
   handleSpendingDocuments,
   handleSpendingOverview,
+  handleSpendingRecipients,
   handleSpendingRefresh,
   handleSpendingSync,
   handleSpendingTransactions,
@@ -34,6 +36,12 @@ export function matchSpendingRoute(
   }
   if (pathname === "/api/admin/spending/sync") {
     return handleSpendingSync(request, env);
+  }
+  if (pathname === "/api/admin/spending/codes") {
+    return handleSpendingCodes(request, env);
+  }
+  if (pathname === "/api/admin/spending/recipients") {
+    return handleSpendingRecipients(request, env);
   }
   if (pathname === "/api/admin/spending/documents") {
     return handleSpendingDocuments(request, env);

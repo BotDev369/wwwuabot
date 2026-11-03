@@ -89,8 +89,10 @@
 | `POST` | `/api/admin/monitoring/collect` | `handleMonitoringCollect` |
 | `GET` | `/api/admin/monitoring/summary` | `handleMonitoringSummary` |
 | `ANY` | `/api/admin/notes` | `handleAdminNotes` |
+| `ANY` | `/api/admin/spending/codes` | `handleSpendingCodes` |
 | `ANY` | `/api/admin/spending/documents` | `handleSpendingDocuments` |
 | `ANY` | `/api/admin/spending/overview` | `handleSpendingOverview` |
+| `ANY` | `/api/admin/spending/recipients` | `handleSpendingRecipients` |
 | `ANY` | `/api/admin/spending/refresh` | `—` |
 | `ANY` | `/api/admin/spending/sync` | `handleSpendingSync` |
 | `ANY` | `/api/admin/spending/transactions` | `handleSpendingTransactions` |
@@ -121,4 +123,4 @@
 | `POST` | `/auth/login` | `handleLogin` |
 | `POST` | `/auth/logout` | `handleLogout` |
 
-Усього шляхів: **92**.
+Усього шляхів: **94**.

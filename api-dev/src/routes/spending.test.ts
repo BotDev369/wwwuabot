@@ -15,6 +15,8 @@ const handlers = {
   handleSpendingSync: vi.fn(),
   handleSpendingDocuments: vi.fn(),
   handleSpendingTransactions: vi.fn(),
+  handleSpendingCodes: vi.fn(),
+  handleSpendingRecipients: vi.fn(),
 };
 
 vi.mock("../controllers/spending-admin.controller", () => ({
@@ -22,6 +24,8 @@ vi.mock("../controllers/spending-admin.controller", () => ({
   handleSpendingSync: handlers.handleSpendingSync,
   handleSpendingDocuments: handlers.handleSpendingDocuments,
   handleSpendingTransactions: handlers.handleSpendingTransactions,
+  handleSpendingCodes: handlers.handleSpendingCodes,
+  handleSpendingRecipients: handlers.handleSpendingRecipients,
 }));
 
 const { matchSpendingRoute } = await import("./spending");
@@ -31,7 +35,7 @@ const request = (method: string, path: string): Request =>
   new Request(`https://api.test${path}`, { method });
 
 describe("читання Є-data", () => {
-  it("огляд, стан, договори й платежі ведуть кожен у свій контролер", async () => {
+  it("огляд, стан, договори, платежі й розрізи ведуть кожен у свій контролер", async () => {
     for (const handler of Object.values(handlers)) handler.mockReturnValue(new Response("ok"));
 
     for (const [path, handler] of [
@@ -39,6 +43,8 @@ describe("читання Є-data", () => {
       ["/api/admin/spending/sync", handlers.handleSpendingSync],
       ["/api/admin/spending/documents", handlers.handleSpendingDocuments],
       ["/api/admin/spending/transactions", handlers.handleSpendingTransactions],
+      ["/api/admin/spending/codes", handlers.handleSpendingCodes],
+      ["/api/admin/spending/recipients", handlers.handleSpendingRecipients],
     ] as const) {
       const req = request("GET", path);
       const response = await matchSpendingRoute(req, ENV, path);
