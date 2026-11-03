@@ -45,6 +45,15 @@ content/viruvannia/
 контракт ([`URL.md`](./URL.md)): плоского `viruvannia-a1` більше немає, а старі адреси
 лишились у `slug_aliases` і ведуть `301`-ом на нові.
 
+**Каталог у KV — окремий крок.** Згенерований `catalog.json` треба ще покласти в
+`CONTENT_KV` під `research:catalog:v2`; без цього сервіс збере його з рядків бази, і в
+ньому не буде `oneLiner`, груп і часу читання — тобто назавжди лишиться бідний каталог:
+
+```
+npx wrangler kv key put research:catalog:v2 --path content/viruvannia/catalog.json \
+  --namespace-id <id> --remote
+```
+
 ## 2. Публічність: одна сторінка й підсторінки
 
 Дослідження — **одна публічна сторінка** `viruvannia`; блоки — її підсторінки
