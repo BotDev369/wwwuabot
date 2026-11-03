@@ -15,7 +15,9 @@ const ROOT = "content/viruvannia";
 const BLOCKS = join(ROOT, "blocks");
 const LANDING_SLUG = "viruvannia";
 const MODULE = "viruvannia";
-const MIGRATION = "scripts/migrations/2026-10-30-scenarios-04-research.sql";
+// Генератор пише **новий** файл, а не править застосований раніше: історія
+// адрес — це міграції, а не перезапис історії (`docs/URL.md`).
+const MIGRATION = "scripts/migrations/2026-11-02-scenarios-05-research-addresses.sql";
 const CATALOG = join(ROOT, "catalog.json");
 
 /* ── Фронтматер ───────────────────────────────────────────────────── */
@@ -440,7 +442,7 @@ function catalogCard(block, order) {
         id: `res-home-card-${block.id}-go`,
         type: "link-button",
         order: 1,
-        props: linkProps("Читати блок", `/${MODULE}-${block.id}`, "arrow-right"),
+        props: linkProps("Читати блок", `/${blockSlug(block)}`, "arrow-right"),
       },
     ],
   };
@@ -587,8 +589,23 @@ ON CONFLICT(slug) DO UPDATE SET
   updated_at = datetime('now');`;
 }
 
+/**
+ * Адреса блоку — `viruvannia/<address>`, два сегменти, як вимагає контракт
+ * (`docs/URL.md`). `address` пише автор у frontmatter: адреса — рішення
+ * редактора, а не наслідок літери групи, тож `viruvannia-a1` більше немає.
+ */
+function blockSlug(block) {
+  const address = String(block.address ?? "").trim();
+  if (!/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(address)) {
+    throw new Error(
+      `Блок ${block.id}: «address» мусить бути одним сегментом латиницею (зараз: «${address}»)`,
+    );
+  }
+  return `${MODULE}/${address}`;
+}
+
 function buildSql(rows) {
-  return `-- Дослідження «вірування і невірування»: лендінг і 12 його підсторінок.
+  return `-- Дослідження «вірування і невірування»: лендінг і його підсторінки.
 --
 -- Згенеровано з \`content/viruvannia/blocks/*.md\` скриптом
 -- \`scripts/research/build-pages.mjs\` — правити треба markdown, а не цей файл.
@@ -629,7 +646,7 @@ const rows = [
     templateKey: "research",
   },
   ...blockList.map((block) => ({
-    slug: `${MODULE}-${block.id}`,
+    slug: blockSlug(block),
     title: block.title,
     pageData: detailPage(block),
     isPublic: false,
@@ -645,7 +662,7 @@ const catalog = {
   updatedAt: new Date().toISOString().slice(0, 10),
   blocks: blockList.map((block) => ({
     id: block.id,
-    slug: `${MODULE}-${block.id}`,
+    slug: blockSlug(block),
     group: block.group,
     groupTitle: block.groupTitle,
     title: block.title,

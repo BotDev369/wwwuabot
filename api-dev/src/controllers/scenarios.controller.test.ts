@@ -11,19 +11,35 @@ interface FakeStatement {
   bind: (...args: unknown[]) => FakeStatement;
   run: () => Promise<{ meta: { changes: number } }>;
   all: () => Promise<{ results: ScenarioRow[] }>;
+  first: () => Promise<ScenarioRow | null>;
 }
 
-function fakeD1(state: FakeState): D1Database {
+function fakeD1(
+  state: FakeState,
+  log: string[] = [],
+  aliases: Record<string, string> = {},
+): D1Database {
   const columns = ["id", "slug", "title", "photo_url", "page_data", "is_active"];
   const db = {
     prepare(sql: string) {
+      log.push(sql);
+      let args: unknown[] = [];
       const statement: FakeStatement = {
-        bind: () => statement,
+        bind: (...bound: unknown[]) => {
+          args = bound;
+          return statement;
+        },
         run: async () => ({ meta: { changes: 1 } }),
         all: async () =>
           sql.startsWith("PRAGMA table_info")
             ? { results: columns.map((name) => ({ name })) }
             : { results: state.rows },
+        // Стара адреса: `slug_aliases` віддає ціль, якщо alias відомий.
+        first: async () => {
+          if (!/JOIN scenarios/.test(sql)) return null;
+          const target = aliases[String(args[0])];
+          return target === undefined ? null : { slug: target };
+        },
       };
       return statement;
     },
@@ -31,7 +47,14 @@ function fakeD1(state: FakeState): D1Database {
   return db as unknown as D1Database;
 }
 
-const envWith = (rows: ScenarioRow[]): Env => ({ DB: fakeD1({ rows }) }) as unknown as Env;
+const envWith = (rows: ScenarioRow[], aliases: Record<string, string> = {}): Env =>
+  ({ DB: fakeD1({ rows }, [], aliases) }) as unknown as Env;
+
+/** Те саме, але з журналом SQL: читання не має права нічого писати в базу. */
+function envWithLog(rows: ScenarioRow[]): { env: Env; sql: string[] } {
+  const sql: string[] = [];
+  return { env: { DB: fakeD1({ rows }, sql) } as unknown as Env, sql };
+}
 
 const pageData = (title: string) =>
   JSON.stringify({
@@ -123,6 +146,32 @@ describe("GET /api/scenario/:slug", () => {
     expect(res.status).toBe(200);
     expect(body.ok).toBe(true);
     expect(body.pageData).toBeNull();
+  });
+
+  it("стара адреса відкриває сторінку, яка переїхала", async () => {
+    const body = await bodyOf(
+      await call(
+        envWith([{ slug: "viruvannia/sto-vidsotkiv", page_data: pageData("Нова"), is_active: 1 }], {
+          "viruvannia-a1": "viruvannia/sto-vidsotkiv",
+        }),
+        "viruvannia-a1",
+      ),
+    );
+
+    expect(body.scenario.slug).toBe("viruvannia/sto-vidsotkiv");
+    expect(body.pageData?.zones.main[0]?.props.title).toBe("Нова");
+  });
+
+  it("читання не створює порожню домашню сторінку", async () => {
+    const { env, sql } = envWithLog([]);
+
+    const body = await bodyOf(
+      await handleScenario(new Request("https://api.example.com/api/scenario/nema"), env, "nema"),
+    );
+
+    expect(body.scenario.slug).toBe(HOME_SLUG);
+    expect(body.pageData).toBeNull();
+    expect(sql.some((query) => /INSERT INTO scenarios/i.test(query))).toBe(false);
   });
 
   it("розбирає legacy slots тим самим shared-адаптером", async () => {

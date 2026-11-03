@@ -56,7 +56,8 @@ import { matchAccessRequestAdminRoute } from "./routes/access-requests";
 import { handleNotes, handleAdminNotes } from "./controllers/notes.controller";
 import { handleFavorites } from "./controllers/favorites.controller";
 import { handleAssessments } from "./controllers/assessments.controller";
-import { handleUserPages, handlePublicPages } from "./controllers/pages.controller";
+import { handlePublicPages, handleUserPages } from "./controllers/pages.controller";
+import { handlePublicRedirect } from "./controllers/redirect.controller";
 import { handlePublicResearch } from "./controllers/research.controller";
 import { matchShopRoute } from "./routes/shop";
 import { matchTrackersRoute } from "./routes/trackers";
@@ -367,6 +368,12 @@ export async function handleRequest(request: Request, env: Env): Promise<Respons
   // а приватна сторінка не дістається ні списком, ні за адресою.
   if (pathname === "/api/public/pages" && request.method === "GET") {
     return handlePublicPages(request, env);
+  }
+  // Куди веде стара адреса — питає веб-воркер, щоб віддати 301 до застосунку
+  // (`web-platform-dev/src/worker.ts`). Питає без підпису: відповідь — лише
+  // шлях, а «чи є така сторінка» вирішує вже `handleScenario`.
+  if (pathname === "/api/public/redirect" && request.method === "GET") {
+    return handlePublicRedirect(request, env);
   }
   // Каталог дослідження — без власника: ні імен, ні приватних сторінок, лише
   // те, що й так видно на лендінгу.

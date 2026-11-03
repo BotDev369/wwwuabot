@@ -35,6 +35,44 @@ function fixAssetHeaders(res: Response, url: string): Response {
   );
 }
 
+/**
+ * Перехід по документу: `GET`, без розширення файла, браузер чекає HTML.
+ * Асети й виклики `/api/` редирект не питають — інакше кожен файл збірки
+ * робив би зайвий похід у мережу.
+ */
+function isDocumentRequest(request: Request, url: URL): boolean {
+  if (request.method !== "GET") return false;
+  if (url.pathname === "/") return false;
+  if (/\.[a-z0-9]+$/i.test(url.pathname)) return false;
+  return (request.headers.get("Accept") ?? "").includes("text/html");
+}
+
+/**
+ * 301, якщо ця адреса — стара адреса існуючої сторінки (`slug_aliases`).
+ *
+ * Бази в цього воркера немає, тож адресу питає `api-dev` через service
+ * binding. Невдача (мережа, 500, дивна відповідь) не ламає сторінку: тоді
+ * віддаємо застосунок, як раніше.
+ */
+async function pageRedirect(request: Request, env: Env, url: URL): Promise<Response | null> {
+  if (!isDocumentRequest(request, url)) return null;
+
+  const probe = new URL("/api/public/redirect", url.origin);
+  probe.searchParams.set("path", url.pathname);
+
+  try {
+    const response = await env.API.fetch(
+      new Request(probe, { headers: { Accept: "application/json" } }),
+    );
+    if (!response.ok) return null;
+    const body = (await response.json()) as { to?: unknown };
+    if (typeof body.to !== "string" || body.to === url.pathname) return null;
+    return Response.redirect(`${url.origin}${body.to}${url.search}`, 301);
+  } catch {
+    return null;
+  }
+}
+
 export default {
   async fetch(request: Request, env: Env): Promise<Response> {
     const url = new URL(request.url);
@@ -43,6 +81,13 @@ export default {
     if (url.pathname.startsWith("/api/")) {
       return secureResponse(await env.API.fetch(request), { url: url.toString() });
     }
+
+    // Адреса — контракт: переїзд сторінки лишає за собою 301, а не 404
+    // (`docs/URL.md`). Перевірка коштує один виклик у `api-dev` і лише на
+    // переходах по документу.
+    const redirect = await pageRedirect(request, env, url);
+    if (redirect) return redirect;
+
     return fixAssetHeaders(await env.ASSETS.fetch(request), url.toString());
   },
 };

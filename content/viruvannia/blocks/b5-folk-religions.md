@@ -1,5 +1,6 @@
 ---
 id: b5
+address: narodni-relihii
 group: B
 groupTitle: "Релігії"
 version: mvp

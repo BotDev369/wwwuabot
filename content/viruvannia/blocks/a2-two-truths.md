@@ -1,5 +1,6 @@
 ---
 id: a2
+address: dvi-pravdy
 group: A
 groupTitle: "Масштаб"
 version: mvp

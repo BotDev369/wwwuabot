@@ -2,6 +2,7 @@ import { ensureTables } from "@wwwuabot/shared/database/ensure-tables";
 import {
   HOME_SLUG,
   contentPageFromScenario,
+  type ContentPage,
   normalizeSlug,
   pickContentPage,
   resolveContentRoute,
@@ -9,6 +10,7 @@ import {
 } from "@wwwuabot/shared/content";
 import type { Env } from "../shared/types";
 import { apiLog } from "../shared/logger";
+import { redirectTargetFor } from "../services/aliases.service";
 
 function json(body: unknown, status = 200): Response {
   return new Response(JSON.stringify(body), {
@@ -19,26 +21,19 @@ function json(body: unknown, status = 200): Response {
 
 // ── ensureBase ──────────────────────────────────────────────────────
 /**
- * Гарантує наявність таблиці `scenarios` і домашньої сторінки (порожній `slug`).
+ * Гарантує наявність таблиці `scenarios`.
  *
- * DDL більше не живе тут: схема оголошена в реєстрі
- * (`@wwwuabot/shared/database/tables`), як і всі інші таблиці. Раніше цей
- * контролер створював `scenarios` **без** `IF NOT EXISTS` і за неатомною
- * перевіркою `sqlite_master` — тобто двоє одночасних запитів на чистій базі
- * могли отримати помилку «table already exists».
+ * DDL живе в реєстрі (`@wwwuabot/shared/database/tables`), не тут.
  *
- * `slug` — єдина адреса сторінки: за нею рядок шукають, її ж віддаємо
- * клієнту. `id` — номер рядка: адресу редагують, а номер лишається тим самим.
+ * **Порожнього рядка-домашньої сторінки більше немає.** Раніше цей шлях
+ * створював рядок із `slug = ''`, і той самий рядок ставав «сторінкою без
+ * шаблону»: без назви, без `page_data` і без `template_key`, яку ніхто не
+ * створював і ніхто не бачив. Корінь продукту — екран акаунта, а не рядок
+ * контенту; невідома адреса й так показує фолбек. Правило: **сторінка без
+ * шаблону не існує** (`docs/PAGES.md` §7).
  */
 async function ensureBase(db: D1Database): Promise<void> {
   await ensureTables(db, ["scenarios"]);
-
-  await db
-    .prepare(
-      `INSERT OR IGNORE INTO scenarios (slug, is_active)
-       VALUES ('', 1)`,
-    )
-    .run();
 }
 
 /**
@@ -52,6 +47,16 @@ async function ensureBase(db: D1Database): Promise<void> {
  * за яким адресу можна відрізнити після редагування.
  */
 const PAGE_COLUMNS = "id, slug, title, photo_url, page_data, template_key, is_active";
+
+/** Сторінка, на яку вказує alias старої адреси; немає — `null`. */
+async function movedPage(
+  pages: readonly ContentPage[],
+  db: D1Database,
+  slug: string,
+): Promise<ContentPage | null> {
+  const target = await redirectTargetFor(db, slug);
+  return target === null ? null : (resolveContentRoute(pages, target)?.page ?? null);
+}
 
 // ── resolveScenario ─────────────────────────────────────────────────
 async function resolveScenario(db: D1Database, ref: string) {
@@ -73,7 +78,11 @@ async function resolveScenario(db: D1Database, ref: string) {
     )
     .all<ScenarioContentRow>();
   const pages = (rows.results ?? []).map(contentPageFromScenario);
-  const page = resolveContentRoute(pages, slug)?.page ?? pickContentPage(pages, slug);
+
+  // Стара адреса веде на сторінку, яка переїхала (`docs/URL.md` §4): інакше
+  // кнопка, надіслана в чат до переїзду, показувала б фолбек замість статті.
+  const direct = resolveContentRoute(pages, slug)?.page ?? null;
+  const page = direct ?? (await movedPage(pages, db, slug)) ?? pickContentPage(pages, slug);
 
   return {
     scenario: {

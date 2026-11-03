@@ -20,6 +20,7 @@
 | `ANY` | `/api/mydate/systems` | `handleSystems` |
 | `GET` | `/api/public/ads` | `handlePublicAds` |
 | `GET` | `/api/public/pages` | `handlePublicPages` |
+| `GET` | `/api/public/redirect` | `handlePublicRedirect` |
 | `GET` | `/api/public/research` | `handlePublicResearch` |
 | `POST` | `/api/public/shop/orders` | `handlePublicShopOrders` |
 | `GET` | `/api/public/shop/products` | `handlePublicShopProducts` |
@@ -119,4 +120,4 @@
 | `POST` | `/auth/login` | `handleLogin` |
 | `POST` | `/auth/logout` | `handleLogout` |
 
-Усього шляхів: **90**.
+Усього шляхів: **91**.

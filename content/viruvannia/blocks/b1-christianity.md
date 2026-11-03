@@ -1,5 +1,6 @@
 ---
 id: b1
+address: khrystyianstvo
 group: B
 groupTitle: "Релігії"
 version: mvp

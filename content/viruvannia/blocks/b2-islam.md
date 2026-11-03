@@ -1,5 +1,6 @@
 ---
 id: b2
+address: islam
 group: B
 groupTitle: "Релігії"
 version: mvp

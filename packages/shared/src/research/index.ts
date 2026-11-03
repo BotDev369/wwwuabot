@@ -15,7 +15,7 @@ export interface ResearchFigure {
 export interface ResearchBlock {
   /** Літера групи + номер: `a1`, `d1`. */
   id: string;
-  /** Адреса сторінки блоку — рядок `scenarios` (`viruvannia-a1`). */
+  /** Адреса сторінки блоку — рядок `scenarios` (`viruvannia/sto-vidsotkiv`). */
   slug: string;
   /** Ключ групи: `A`–`F`. */
   group: string;
@@ -47,8 +47,13 @@ export const RESEARCH_LANDING_SLUG = "viruvannia";
 /** Назва дослідження — та сама, що в рядка `scenarios` і в каталозі. */
 export const RESEARCH_TITLE = "Дослідження: вірування і невірування";
 
-/** Префікс адрес блоків: лендінг — `viruvannia`, блок — `viruvannia-a1`. */
-export const RESEARCH_BLOCK_PREFIX = `${RESEARCH_LANDING_SLUG}-`;
+/**
+ * Префікс адрес блоків: лендінг — `viruvannia`, блок — `viruvannia/sto-vidsotkiv`.
+ *
+ * Слеш, а не дефіс: блок — це **підсторінка** дослідження, і адреса це
+ * показує (`docs/URL.md`, два сегменти).
+ */
+export const RESEARCH_BLOCK_PREFIX = `${RESEARCH_LANDING_SLUG}/`;
 
 /** Чи це адреса блоку дослідження — за нею відкривається контентна сторінка. */
 export function isResearchBlockSlug(slug: string): boolean {

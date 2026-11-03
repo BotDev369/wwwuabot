@@ -1,5 +1,6 @@
 ---
 id: d1
+address: matrytsia-viruvan
 group: D
 groupTitle: "Порівняння"
 version: mvp

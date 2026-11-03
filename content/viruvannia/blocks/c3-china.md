@@ -1,5 +1,6 @@
 ---
 id: c3
+address: kytai
 group: C
 groupTitle: "Нерелігійність"
 version: mvp

@@ -1,5 +1,6 @@
 ---
 id: c1
+address: nones
 group: C
 groupTitle: "Нерелігійність"
 version: mvp

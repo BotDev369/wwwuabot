@@ -1,5 +1,6 @@
 ---
 id: a3
+address: khto-roste-khto-zmenshuietsia
 group: A
 groupTitle: "Масштаб"
 version: mvp

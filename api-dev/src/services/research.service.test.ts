@@ -15,7 +15,7 @@ const CACHED = {
   blocks: [
     {
       id: "a1",
-      slug: "viruvannia-a1",
+      slug: "viruvannia/sto-vidsotkiv",
       group: "A",
       groupTitle: "Масштаб",
       title: "Сто відсотків",
@@ -60,17 +60,20 @@ describe("каталог дослідження", () => {
   it("на промаху збирає каталог із рядків бази й кладе в KV", async () => {
     const { env, put, bind } = envWith({
       rows: [
-        { slug: "viruvannia-a1", title: "Сто відсотків" },
-        { slug: "viruvannia-d1", title: "Матриця вірувань" },
+        { slug: "viruvannia/sto-vidsotkiv", title: "Сто відсотків" },
+        { slug: "viruvannia/matrytsia-viruvan", title: "Матриця вірувань" },
       ],
     });
 
     const catalog = await readResearchCatalog(env);
 
-    expect(catalog?.blocks.map((block) => block.slug)).toEqual(["viruvannia-a1", "viruvannia-d1"]);
-    expect(catalog?.blocks[0].id).toBe("a1");
+    expect(catalog?.blocks.map((block) => block.slug)).toEqual([
+      "viruvannia/sto-vidsotkiv",
+      "viruvannia/matrytsia-viruvan",
+    ]);
+    expect(catalog?.blocks[0].id).toBe("sto-vidsotkiv");
     expect(catalog?.slug).toBe("viruvannia");
-    expect(bind).toHaveBeenCalledWith("viruvannia-%");
+    expect(bind).toHaveBeenCalledWith("viruvannia/%");
     expect(put).toHaveBeenCalledWith(RESEARCH_CATALOG_KEY, expect.any(String));
   });
 

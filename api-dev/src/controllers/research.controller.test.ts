@@ -18,7 +18,7 @@ const CATALOG = {
   blocks: [
     {
       id: "a1",
-      slug: "viruvannia-a1",
+      slug: "viruvannia/sto-vidsotkiv",
       group: "A",
       groupTitle: "Масштаб",
       title: "Сто відсотків",

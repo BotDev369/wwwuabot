@@ -1,5 +1,6 @@
 ---
 id: b4
+address: buddyzm
 group: B
 groupTitle: "Релігії"
 version: mvp

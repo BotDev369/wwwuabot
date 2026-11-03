@@ -1,5 +1,6 @@
 ---
 id: b3
+address: induizm
 group: B
 groupTitle: "Релігії"
 version: mvp

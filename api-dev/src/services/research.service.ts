@@ -8,11 +8,16 @@ import type { ResearchBlock, ResearchCatalog } from "@wwwuabot/shared/research";
 import { RESEARCH_LANDING_SLUG, RESEARCH_TITLE } from "@wwwuabot/shared/research";
 import type { Env } from "../shared/types";
 
-/** Ключ каталогу в `CONTENT_KV`: одна версія, щоб стара форма не жила поруч. */
-export const RESEARCH_CATALOG_KEY = "research:catalog:v1";
+/**
+ * Ключ каталогу в `CONTENT_KV`: одна версія, щоб стара форма не жила поруч.
+ *
+ * `v2` — бо адреси блоків змінилися (`viruvannia-a1` → `viruvannia/<address>`):
+ * каталог `v1` у KV містить старі адреси й веде на редиректи замість сторінок.
+ */
+export const RESEARCH_CATALOG_KEY = "research:catalog:v2";
 
-/** Префікс адрес блоків: лендінг — `viruvannia`, блоки — `viruvannia-a1`. */
-const BLOCK_PREFIX = `${RESEARCH_LANDING_SLUG}-`;
+/** Префікс адрес блоків: лендінг — `viruvannia`, блок — `viruvannia/sto-vidsotkiv`. */
+const BLOCK_PREFIX = `${RESEARCH_LANDING_SLUG}/`;
 
 /** Рядок, якого досить, коли каталогу в KV немає. */
 interface BlockRow {
@@ -25,7 +30,8 @@ interface BlockRow {
  *
  * Порожні поля тут — не недогляд: назва й адреса є завжди, решта приходить із
  * каталогу. Вигадувати `oneLiner` із нічого означало б показати людині текст,
- * якого ніхто не писав.
+ * якого ніхто не писав. `id` тут — адреса без префікса: справжній ключ групи
+ * (`a1`) живе в каталозі, а з рядка бази його не видно.
  */
 function blockFromRow(row: BlockRow): ResearchBlock {
   const slug = String(row.slug);

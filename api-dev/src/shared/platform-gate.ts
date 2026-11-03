@@ -41,13 +41,19 @@ const ADMIN_PATH_PREFIXES = ["/api/admin/", "/api/portal/", "/api/bot/"] as cons
  * - `/api/messages/media/` — файли листування, **та сама причина** в третій
  *   поверхні: знімок у бульбашці теж береться тегом `<img>`. Слеш у кінці
  *   важливий — він відкриває лише читання байтів, а саме завантаження
- *   (`POST /api/messages/media`) лишається закритим і підписаним.
+ *   (`POST /api/messages/media`) лишається закритим і підписаним;
+ * - `/api/public/redirect` — куди веде стара адреса сторінки. Питає **воркер
+ *   вебу**, у якого немає ні бази, ні `initData` людини: відкриття старого
+ *   посилання не має залежати від того, чи браузер уже в контексті Telegram.
+ *   У відповіді — лише шлях; чи сторінка існує і чи вона публічна, вирішує
+ *   `handleScenario` зі своїм гейтом.
  */
 export const PLATFORM_EXEMPT_PATHS = [
   "/api/user/access",
   "/api/user/access-request",
   "/api/shop/media/",
   "/api/messages/media/",
+  "/api/public/redirect",
 ] as const;
 
 function denied(): Response {

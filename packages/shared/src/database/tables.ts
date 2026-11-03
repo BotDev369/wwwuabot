@@ -235,6 +235,25 @@ export const TABLES = {
   },
 
   /**
+   * Адреси, які сторінка мала раніше: `alias` → `slug`.
+   *
+   * Адреса — контракт, тож переїзд лишає по собі рядок, а не 404: за ним
+   * веде `api-dev/src/services/aliases.service.ts` (301 у `web-platform-dev`
+   * через `/api/public/redirect`). Рядок не видаляється ніколи.
+   */
+  slug_aliases: {
+    name: "slug_aliases",
+    owner: "api-dev",
+    purpose:
+      "Старі адреси сторінок: `alias` → `slug`. Читає api-dev (редирект), пише він же при перейменуванні й міграціях.",
+    create: `CREATE TABLE IF NOT EXISTS slug_aliases (
+        alias TEXT PRIMARY KEY,
+        slug TEXT NOT NULL,
+        created_at TEXT NOT NULL DEFAULT (datetime('now'))
+      )`,
+  },
+
+  /**
    * Нотатки — чернетки, а не контент: `text` і `tags` людини в платформі
    * (`scope = 'user'`) та нотатки про проєкт з адмінки (`scope = 'admin'`).
    *

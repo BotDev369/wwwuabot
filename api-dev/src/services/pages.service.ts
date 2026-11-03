@@ -51,6 +51,7 @@ import {
 } from "@wwwuabot/shared/pages";
 import type { Env } from "../shared/types";
 import { PAGE_COLUMNS, ownerOf, pageStaffIdList, toManagedPage, type PageRow } from "./pages-rows";
+import { moveAliases, rememberAlias } from "./aliases.service";
 
 /** Стеля списку: сторінок у людини не буває тисяча. */
 const MANAGED_LIMIT = 100;
@@ -189,6 +190,14 @@ export class PagesService {
       )
         .bind(input.address, title, pageData, template.key, isPublic, admins, now, id)
         .run();
+
+      // Адреса — контракт: стара лишається рядком у `slug_aliases`, і за нею
+      // веде редирект, а не 404 (`docs/URL.md`). Спершу переносимо цілі, потім
+      // додаємо саму стару адресу — інакше ланцюжок `a → b → c` обірвався б.
+      if (current.slug !== input.address) {
+        await moveAliases(this.env.DB, current.slug, input.address);
+        await rememberAlias(this.env.DB, current.slug, input.address);
+      }
 
       const page = await this.readManaged(id, userId);
       return page ? { kind: "saved", page } : { kind: "not_found" };

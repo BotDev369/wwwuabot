@@ -45,8 +45,8 @@ const BLOCKS = [
 
 describe("адреса блоку", () => {
   it("префікс відрізняє контентну сторінку дослідження від решти", () => {
-    expect(RESEARCH_BLOCK_PREFIX).toBe("viruvannia-");
-    expect(isResearchBlockSlug("viruvannia-a1")).toBe(true);
+    expect(RESEARCH_BLOCK_PREFIX).toBe("viruvannia/");
+    expect(isResearchBlockSlug("viruvannia/sto-vidsotkiv")).toBe(true);
     expect(isResearchBlockSlug("viruvannia")).toBe(false);
     expect(isResearchBlockSlug("card-about")).toBe(false);
   });
@@ -54,11 +54,11 @@ describe("адреса блоку", () => {
 
 describe("блок за адресою", () => {
   it("знаходить потрібний", () => {
-    expect(researchBlockBySlug(BLOCKS, "viruvannia-a2")?.title).toBe("Блок a2");
+    expect(researchBlockBySlug(BLOCKS, "viruvannia/a2")?.title).toBe("Блок a2");
   });
 
   it("невідома адреса — `null`, а не перший-ліпший блок", () => {
-    expect(researchBlockBySlug(BLOCKS, "viruvannia-z9")).toBeNull();
+    expect(researchBlockBySlug(BLOCKS, "viruvannia/z9")).toBeNull();
   });
 });
 
@@ -79,24 +79,24 @@ describe("розділи", () => {
 
 describe("сусіди", () => {
   it("краї не мають сусіда з того боку", () => {
-    expect(researchNeighbours(BLOCKS, "viruvannia-a1")).toEqual({
+    expect(researchNeighbours(BLOCKS, "viruvannia/a1")).toEqual({
       previous: null,
       next: BLOCKS[1],
     });
-    expect(researchNeighbours(BLOCKS, "viruvannia-b1")).toEqual({
+    expect(researchNeighbours(BLOCKS, "viruvannia/b1")).toEqual({
       previous: BLOCKS[1],
       next: null,
     });
   });
 
   it("середина має обох", () => {
-    const { previous, next } = researchNeighbours(BLOCKS, "viruvannia-a2");
+    const { previous, next } = researchNeighbours(BLOCKS, "viruvannia/a2");
     expect(previous?.id).toBe("a1");
     expect(next?.id).toBe("b1");
   });
 
   it("невідомий блок — без сусідів: рамка не веде навмання", () => {
-    expect(researchNeighbours(BLOCKS, "viruvannia-z9")).toEqual({ previous: null, next: null });
+    expect(researchNeighbours(BLOCKS, "viruvannia/z9")).toEqual({ previous: null, next: null });
   });
 });
 

@@ -1,5 +1,6 @@
 ---
 id: a1
+address: sto-vidsotkiv
 group: A
 groupTitle: "Масштаб"
 version: mvp

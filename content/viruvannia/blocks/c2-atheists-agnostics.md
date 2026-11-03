@@ -1,5 +1,6 @@
 ---
 id: c2
+address: ateisty-ahnostyky
 group: C
 groupTitle: "Нерелігійність"
 version: mvp

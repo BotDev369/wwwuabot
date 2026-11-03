@@ -1,11 +1,11 @@
 {
   "title": "Дослідження: вірування і невірування",
   "slug": "viruvannia",
-  "updatedAt": "2026-11-02",
+  "updatedAt": "2026-11-03",
   "blocks": [
     {
       "id": "a1",
-      "slug": "viruvannia-a1",
+      "slug": "viruvannia/sto-vidsotkiv",
       "group": "A",
       "groupTitle": "Масштаб",
       "title": "Сто відсотків: як розподілене людство",
@@ -31,7 +31,7 @@
     },
     {
       "id": "a2",
-      "slug": "viruvannia-a2",
+      "slug": "viruvannia/dvi-pravdy",
       "group": "A",
       "groupTitle": "Масштаб",
       "title": "Дві правди: чому Pew і World Religion Database дають різні цифри",
@@ -57,7 +57,7 @@
     },
     {
       "id": "a3",
-      "slug": "viruvannia-a3",
+      "slug": "viruvannia/khto-roste-khto-zmenshuietsia",
       "group": "A",
       "groupTitle": "Масштаб",
       "title": "Хто росте, хто зменшується: десять років, які пересунули карту",
@@ -83,7 +83,7 @@
     },
     {
       "id": "b1",
-      "slug": "viruvannia-b1",
+      "slug": "viruvannia/khrystyianstvo",
       "group": "B",
       "groupTitle": "Релігії",
       "title": "Християнство: 2,3 мільярда і зміна центру ваги",
@@ -109,7 +109,7 @@
     },
     {
       "id": "b2",
-      "slug": "viruvannia-b2",
+      "slug": "viruvannia/islam",
       "group": "B",
       "groupTitle": "Релігії",
       "title": "Іслам: 2 мільярди, п'ять різних світів",
@@ -135,7 +135,7 @@
     },
     {
       "id": "b3",
-      "slug": "viruvannia-b3",
+      "slug": "viruvannia/induizm",
       "group": "B",
       "groupTitle": "Релігії",
       "title": "Індуїзм: 1,2 мільярда і парасолька замість релігії",
@@ -161,7 +161,7 @@
     },
     {
       "id": "b4",
-      "slug": "viruvannia-b4",
+      "slug": "viruvannia/buddyzm",
       "group": "B",
       "groupTitle": "Релігії",
       "title": "Буддизм: 324 мільйони, єдина велика група з мінусом",
@@ -187,7 +187,7 @@
     },
     {
       "id": "b5",
-      "slug": "viruvannia-b5",
+      "slug": "viruvannia/narodni-relihii",
       "group": "B",
       "groupTitle": "Релігії",
       "title": "Народні релігії: 2,2% або 9,2% — залежно від того, кого питати",
@@ -213,7 +213,7 @@
     },
     {
       "id": "c1",
-      "slug": "viruvannia-c1",
+      "slug": "viruvannia/nones",
       "group": "C",
       "groupTitle": "Нерелігійність",
       "title": "Хто такі «nones»: 1,9 мільярда без релігійної ідентичності",
@@ -239,7 +239,7 @@
     },
     {
       "id": "c2",
-      "slug": "viruvannia-c2",
+      "slug": "viruvannia/ateisty-ahnostyky",
       "group": "C",
       "groupTitle": "Нерелігійність",
       "title": "Атеїсти, агностики і «нічого конкретного»: три різні речі",
@@ -265,7 +265,7 @@
     },
     {
       "id": "c3",
-      "slug": "viruvannia-c3",
+      "slug": "viruvannia/kytai",
       "group": "C",
       "groupTitle": "Нерелігійність",
       "title": "Китай: 1,3 мільярда «нерелігійних» і парадокс народних культів",
@@ -291,7 +291,7 @@
     },
     {
       "id": "d1",
-      "slug": "viruvannia-d1",
+      "slug": "viruvannia/matrytsia-viruvan",
       "group": "D",
       "groupTitle": "Порівняння",
       "title": "Матриця вірувань: десять питань, на які кожна традиція відповідає по-своєму",
