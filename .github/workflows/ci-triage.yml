@@ -1,0 +1,70 @@
+name: CI triage
+
+# Червоний деплой розбирає окремий воркфлоу, а не пам'ять людини.
+#
+# `workflow_run` — єдиний тригер, який бачить **результат** іншого воркфлоу:
+# у `Deploy` цей крок стояв би після `if: failure()`, але тоді він жив би в
+# тому самому прогоні, який упав на правах і на таймауті. Тут — окремий прогін
+# на транзієнтному раннері: падіння розбору не ховає падіння деплою й навпаки.
+#
+# Що робить:
+#   • failure `Deploy` → класифікує падіння, оновлює одну нитку в issues і
+#     перезапускає **тільки** транзієнтні падіння на голові `main`;
+#   • success `Deploy` → закриває нитку: відкрита нитка означає «зараз червоно».
+#
+# Права — під задачу: `actions: write` потрібен перезапуску невдалих джоб,
+# `issues: write` — нитці, `contents: read` — скрипту в чекауті.
+
+on:
+  workflow_run:
+    workflows: [Deploy]
+    types: [completed]
+
+permissions:
+  actions: write
+  contents: read
+  issues: write
+
+concurrency:
+  group: ci-triage
+  cancel-in-progress: false
+
+jobs:
+  triage:
+    if: >-
+      github.event.workflow_run.conclusion == 'failure' &&
+      github.event.workflow_run.event == 'push' &&
+      github.event.workflow_run.head_branch == 'main'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 22
+      # Без `npm ci`: скрипт живе на вбудованих модулях Node, і йому потрібен
+      # лише `fetch`. Ставити 1.5 тисячі пакетів заради розбору логу — це та
+      # сама ціна, через яку `checks` і так іде сім хвилин.
+      - name: Розібрати падіння
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+          GITHUB_REPOSITORY: ${{ github.repository }}
+        run: node scripts/ci-triage.mjs --runs 20 --logs --issue --retry
+
+  close:
+    if: >-
+      github.event.workflow_run.conclusion == 'success' &&
+      github.event.workflow_run.event == 'push' &&
+      github.event.workflow_run.head_branch == 'main'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 22
+      - name: Закрити нитку
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+          GITHUB_REPOSITORY: ${{ github.repository }}
+        run: node scripts/ci-triage.mjs --close

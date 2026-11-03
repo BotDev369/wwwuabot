@@ -47,6 +47,7 @@
     "doc:style": "node scripts/build-style-catalog.mjs",
     "check:style": "node scripts/build-style-catalog.mjs --check",
     "check:quality": "node scripts/check-quality.mjs",
+    "ci:triage": "node scripts/ci-triage.mjs",
     "test": "vitest run",
     "test:watch": "vitest",
     "check:bundle": "node scripts/check-bundle.mjs",

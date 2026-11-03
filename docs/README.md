@@ -48,6 +48,7 @@
 | [`DB_LEGACY.md`](./DB_LEGACY.md) | легасі-хвіст дев-бази: що лишилося після видалення доменів, чому ще не прибрано |
 | [`PLATFORM.md`](./PLATFORM.md) | платформа: дві оболонки одного продукту, мобільний пріоритет, резинова верстка, safe-area, drawer, екран і хром |
 | [`QUALITY_GATE.md`](./QUALITY_GATE.md) | планка в CI: чотири правила, бюджет розміру, леджер боргу, чого ще немає |
+| [`CI_TRIAGE.md`](./CI_TRIAGE.md) | **розбір падінь деплою**: `workflow_run` після кожного прогону, класи «причина + лікування», хвіст логу, одна нитка в issues, перезапуск лише транзієнтних падінь на голові `main` |
 | [`MONITORING.md`](./MONITORING.md) | health, логи, Sentry, UptimeRobot; зрізи показників проєкту (код, GitHub) на `/monitoring`; що робити при падінні |
 | [`../bot-dev/README.md`](../bot-dev/README.md) | бот як система: конвеєр апдейта, `ctx.screen`, рендер, черга нотифікацій, контакти |
 | [`HOME_PAGE_DATA.json`](./HOME_PAGE_DATA.json) | дані головної сторінки (вміст `page_data`) для міграції `2026-09-14-scenarios-03-home-page.sql` |
