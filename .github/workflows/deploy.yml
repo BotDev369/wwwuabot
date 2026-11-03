@@ -97,6 +97,13 @@ jobs:
         run: npm run check:db
       - name: Comments
         run: npm run check:comments
+      # Покриття - перед збірками: пропущений тест нового файлу - найчастіша
+      # причина червоного прогону, і дізнатися про неї за дві хвилини дешевше,
+      # ніж за сім після обох збірок і бюджету бандла.
+      - name: Coverage floor
+        run: |
+          npm run test:coverage
+          npm run check:coverage
       - name: Build shells (bundle budget needs dist)
         run: |
           npm run build --workspace web-platform-dev
@@ -105,10 +112,6 @@ jobs:
         run: npm run check:bundle
       - name: Unit tests
         run: npm test
-      - name: Coverage floor
-        run: |
-          npm run test:coverage
-          npm run check:coverage
 
   # Тег — `$GITHUB_SHA`: без нього `wrangler deployments status` показує лише
   # час, і «що зараз живе на воркері» доводиться вгадувати.

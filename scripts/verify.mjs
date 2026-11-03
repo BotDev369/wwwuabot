@@ -26,13 +26,14 @@ const STEPS = [
   { name: "check:docs", cmd: "npm run check:docs" },
   { name: "check:db", cmd: "npm run check:db" },
   { name: "check:comments", cmd: "npm run check:comments" },
+  // Покриття — перед збірками: забутий тест нового файлу червоніє першим.
+  { name: "test:coverage", cmd: "npm run test:coverage" },
+  { name: "check:coverage", cmd: "npm run check:coverage" },
   // Бюджет бандла читає `dist/`, тож обидві збірки стоять перед ним.
   { name: "build:web-platform", cmd: "npm run build --workspace web-platform-dev" },
   { name: "build:web-admin", cmd: "npm run build --workspace web-admin-dev" },
   { name: "check:bundle", cmd: "npm run check:bundle" },
   { name: "test", cmd: "npm test" },
-  { name: "test:coverage", cmd: "npm run test:coverage" },
-  { name: "check:coverage", cmd: "npm run check:coverage" },
 ];
 
 const args = process.argv.slice(2);
