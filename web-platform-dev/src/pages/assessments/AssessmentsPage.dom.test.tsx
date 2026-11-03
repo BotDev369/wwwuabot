@@ -31,7 +31,7 @@ describe("екран «Розвиток»", () => {
   it("рядки згорнуті за замовчуванням: видно лише назву, без опису й кнопки", () => {
     page();
 
-    for (const entry of ["Аналіз дат", ...ASSESSMENTS.map((test) => test.title)]) {
+    for (const entry of ["Аналіз людей та подій", ...ASSESSMENTS.map((test) => test.title)]) {
       expect(screen.getByRole("button", { name: entry }).getAttribute("aria-expanded")).toBe(
         "false",
       );
@@ -59,7 +59,7 @@ describe("екран «Розвиток»", () => {
     const onOpenDates = vi.fn();
     page({ onOpen, onOpenDates });
 
-    await userEvent.click(screen.getByRole("button", { name: "Аналіз дат" }));
+    await userEvent.click(screen.getByRole("button", { name: "Аналіз людей та подій" }));
     await userEvent.click(screen.getByRole("button", { name: ASSESSMENTS[1].title }));
 
     // Обидва рядки розгорнуті: кнопки йдуть у порядку списку.

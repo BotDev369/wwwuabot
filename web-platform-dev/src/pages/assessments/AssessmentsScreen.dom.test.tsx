@@ -46,7 +46,7 @@ describe("екран «Розвиток»", () => {
   it("аналіз дат відкривається своєю адресою", async () => {
     render(<AssessmentsScreen />);
 
-    await userEvent.click(screen.getByRole("button", { name: "Аналіз дат" }));
+    await userEvent.click(screen.getByRole("button", { name: "Аналіз людей та подій" }));
     await userEvent.click(screen.getByRole("button", { name: "Відкрити" }));
 
     expect(mocks.navigate).toHaveBeenCalledWith(DATE_ANALYSIS_PATH);

@@ -83,9 +83,9 @@ export function AssessmentsPage({
   const entries: Entry[] = [
     {
       key: "dates",
-      title: "Аналіз дат",
+      title: "Аналіз людей та подій",
       icon: "my-dates",
-      lead: "Ваші дати, їхнє порівняння й таблиця аналізу — за тими даними, що ви вже зберегли.",
+      lead: "Люди, події та їхнє порівняння — за датами, які ви вже зберегли.",
       note: null,
       open: onOpenDates,
     },
