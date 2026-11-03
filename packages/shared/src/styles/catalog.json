@@ -1,5 +1,5 @@
 {
-  "version": "b1b1e66",
+  "version": "b3b546b",
   "files": [
     {
       "file": "admin/analytics-people.css",
@@ -92,6 +92,11 @@
       "classes": 16
     },
     {
+      "file": "analysis-entries.css",
+      "tokens": 0,
+      "classes": 10
+    },
+    {
       "file": "app-chrome.css",
       "tokens": 1,
       "classes": 142
@@ -104,7 +109,7 @@
     {
       "file": "blocks.css",
       "tokens": 0,
-      "classes": 223
+      "classes": 234
     },
     {
       "file": "components.css",
@@ -3036,6 +3041,23 @@
         ]
       }
     ],
+    "analysis-entries.css": [
+      {
+        "section": "",
+        "names": [
+          "wb-block-entries",
+          "wb-block-entries__title",
+          "wb-entries-group",
+          "wb-entries-group__title",
+          "wb-entry",
+          "wb-entry__badge",
+          "wb-entry__body",
+          "wb-entry__chevron",
+          "wb-entry__lead",
+          "wb-entry__title"
+        ]
+      }
+    ],
     "app-chrome.css": [
       {
         "section": "Каркас застосунку",
@@ -3770,14 +3792,31 @@
         "names": [
           "wb-block-compare-setup",
           "wb-block-compare-setup__action",
+          "wb-block-compare-setup__actions",
           "wb-block-compare-setup__date",
           "wb-block-compare-setup__field",
+          "wb-block-compare-setup__field--wide",
           "wb-block-compare-setup__item",
           "wb-block-compare-setup__kind",
           "wb-block-compare-setup__lead",
           "wb-block-compare-setup__list",
+          "wb-block-compare-setup__panel",
+          "wb-block-compare-setup__remember",
           "wb-block-compare-setup__row",
-          "wb-block-compare-setup__title"
+          "wb-block-compare-setup__title",
+          "wb-btn"
+        ]
+      },
+      {
+        "section": "Збережені дати на кроці суб'єкта",
+        "names": [
+          "wb-subject-chip",
+          "wb-subject-chip__date",
+          "wb-subject-chip__name",
+          "wb-subject-new",
+          "wb-subject-saved",
+          "wb-subject-saved__list",
+          "wb-subject-saved__title"
         ]
       },
       {

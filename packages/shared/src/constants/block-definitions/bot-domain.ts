@@ -4,7 +4,7 @@
 
 import { DATE_ANALYSIS_PATH, DATE_ANALYSIS_RESULT_PATH } from "../../content/sections";
 import type { BlockDefinition } from "../../types/page-config";
-import { block, s, n, b, e } from "./helpers";
+import { block, s, n, b, e, oa } from "./helpers";
 
 export const botDomainBlocks: BlockDefinition[] = [
   block({
@@ -116,6 +116,24 @@ export const botDomainBlocks: BlockDefinition[] = [
       maxDates: 1,
       nextUrl: DATE_ANALYSIS_RESULT_PATH,
     },
+  }),
+  block({
+    type: "analysis-entries",
+    label: "Входи аналізу",
+    icon: "list",
+    category: "bot-domain",
+    description: "Картки-переходи розділу: один субʼєкт чи порівняння — з поясненням у рядку",
+    props: {
+      title: s("Заголовок"),
+      items: oa("Входи", {
+        group: s("Група"),
+        title: s("Назва"),
+        lead: s("Одне речення під назвою"),
+        url: s("Адреса"),
+        badge: s("Плашка стану"),
+      }),
+    },
+    defaultProps: { items: [] },
   }),
   block({
     type: "analysis-systems",

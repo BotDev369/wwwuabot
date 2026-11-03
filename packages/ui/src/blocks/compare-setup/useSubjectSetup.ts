@@ -6,7 +6,7 @@
  * @module packages/ui/src/blocks/compare-setup/useSubjectSetup
  */
 
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   SELF_QUERY,
   SUBJECT_LABELS_QUERY,
@@ -35,6 +35,8 @@ export interface SubjectSetupOptions {
   selfMode: boolean;
   /** Ім'я з профілю для режиму «себе»; без нього лишається поле. */
   initialName?: string;
+  /** Збережена власна дата: підставляється, поки поле порожнє. */
+  prefill?: { date: string; name: string; notes: string } | null;
 }
 
 export interface SubjectSetupState {
@@ -42,10 +44,16 @@ export interface SubjectSetupState {
   draftDate: string;
   draftName: string;
   draftKind: SubjectKind;
+  /** Нотатка до власної дати: час, місто — те, що знадобиться пізніше. */
+  notes: string;
+  setNotes: (value: string) => void;
   setDraftDate: (value: string) => void;
   setDraftName: (value: string) => void;
   setDraftKind: (value: SubjectKind) => void;
-  add: () => void;
+  /** Додає набраного суб'єкта; повертає рядок, щоб його можна було зберегти. */
+  add: () => SubjectRow | undefined;
+  /** Додає готового суб'єкта — так обирають зі збережених. */
+  addSubject: (row: SubjectRow) => void;
   /** Правка одного суб'єкта: у режимі «себе» рядок один, але він той самий. */
   update: (index: number, patch: Partial<SubjectRow>) => void;
   move: (index: number, direction: -1 | 1) => void;
@@ -65,7 +73,7 @@ export function isMixedScope(scope: AnalysisScope): boolean {
 }
 
 export function useSubjectSetup(options: SubjectSetupOptions): SubjectSetupState {
-  const { scope, nextUrl, maxRows, selfMode, initialName } = options;
+  const { scope, nextUrl, maxRows, selfMode, initialName, prefill } = options;
   const mixed = isMixedScope(scope);
   const fixedKind: SubjectKind = scope === "event" ? "event" : "person";
 
@@ -75,18 +83,40 @@ export function useSubjectSetup(options: SubjectSetupOptions): SubjectSetupState
   const [draftDate, setDraftDate] = useState("");
   const [draftName, setDraftName] = useState("");
   const [draftKind, setDraftKind] = useState<SubjectKind>(fixedKind);
+  const [notes, setNotes] = useState("");
+  const prefilled = useRef(false);
+
+  // Власну дату зберігають один раз, а питають щоразу: тому збережене
+  // підставляється лише в порожнє поле, і правка людини його не перебиває.
+  useEffect(() => {
+    if (!prefill || prefilled.current || !isValidDate(prefill.date)) return;
+    prefilled.current = true;
+    setRows((previous) => {
+      if (previous[0]?.date) return previous;
+      return [{ date: prefill.date, name: prefill.name, kind: fixedKind }];
+    });
+    setNotes(prefill.notes);
+  }, [fixedKind, prefill]);
+
+  const addSubject = useCallback(
+    (row: SubjectRow) => {
+      if (rows.length >= maxRows) return;
+      // Та сама дата — це той самий суб'єкт: два однакові стовпці нічого не додають.
+      if (rows.some((item) => item.date === row.date)) return;
+      setRows([...rows, row]);
+    },
+    [maxRows, rows],
+  );
 
   const add = useCallback(() => {
-    if (!isValidDate(draftDate)) return;
-    setRows((previous) => {
-      if (previous.length >= maxRows) return previous;
-      // Та сама дата — це той самий суб'єкт: два однакові стовпці нічого не додають.
-      if (previous.some((row) => row.date === draftDate)) return previous;
-      return [...previous, { date: draftDate, name: draftName.trim(), kind: draftKind }];
-    });
+    if (!isValidDate(draftDate)) return undefined;
+    if (rows.length >= maxRows || rows.some((item) => item.date === draftDate)) return undefined;
+    const row: SubjectRow = { date: draftDate, name: draftName.trim(), kind: draftKind };
+    setRows([...rows, row]);
     setDraftDate("");
     setDraftName("");
-  }, [draftDate, draftKind, draftName, maxRows]);
+    return row;
+  }, [draftDate, draftKind, draftName, maxRows, rows]);
 
   const update = useCallback((index: number, patch: Partial<SubjectRow>) => {
     setRows((previous) => previous.map((row, i) => (i === index ? { ...row, ...patch } : row)));
@@ -134,6 +164,9 @@ export function useSubjectSetup(options: SubjectSetupOptions): SubjectSetupState
     draftDate,
     draftName,
     draftKind: mixed ? draftKind : fixedKind,
+    notes,
+    setNotes,
+    addSubject,
     setDraftDate,
     setDraftName,
     setDraftKind,

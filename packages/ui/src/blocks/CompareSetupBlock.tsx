@@ -1,13 +1,14 @@
 /**
- * Page Builder — CompareSetupBlock: крок «кого або що аналізуємо».
- * Один крок на всі входи: питає ім'я та дату, а вид задає сторінка. Виняток —
- * порівняння людей із подіями: там вид стоїть у рядку, інакше таблиця не знала б,
- * як читати стовпець.
+ * Page Builder — CompareSetupBlock: крок «кого або що аналізуємо». Питає, хто це і
+ * коли, і тягне збережені дати — власна дата зберігається разом із нотаткою.
+ * Вид задає сторінка; виняток — порівняння людей із подіями.
  *
  * @module packages/ui/src/blocks/CompareSetupBlock
  */
 
+import { useState } from "react";
 import { icons } from "@wwwuabot/shared";
+import type { MyDate } from "@wwwuabot/shared/types/mydate";
 import {
   DATE_ANALYSIS_RESULT_PATH,
   parseScope,
@@ -16,10 +17,12 @@ import {
 import type { BlockComponentProps } from "@wwwuabot/shared/types/page-config";
 import { formatDate } from "@wwwuabot/shared/utils/mydate-helpers";
 import { isMixedScope, useSubjectSetup, type SubjectRow } from "./compare-setup/useSubjectSetup";
+import { useSavedDates } from "./compare-setup/useSavedDates";
 
-/** Підпис виду в рядку таблиці: те саме слово, що й у шапці результату. */
-function kindLabel(kind: SubjectRow["kind"]): string {
-  return kind === "event" ? "Подія" : "Людина";
+/** Збережена дата, яку можна обрати: те, що показує список під формою. */
+function savedKind(date: MyDate, scope: AnalysisScope): SubjectRow["kind"] {
+  if (scope !== "mixed") return scope === "event" ? "event" : "person";
+  return date.type === "event" ? "event" : "person";
 }
 
 export function CompareSetupBlock({ block, context }: BlockComponentProps) {
@@ -41,7 +44,17 @@ export function CompareSetupBlock({ block, context }: BlockComponentProps) {
 
   const scope: AnalysisScope = parseScope(rawScope);
   const mixed = isMixedScope(scope);
-  const subjectWord = scope === "event" ? "подію" : "людину";
+  const noun = scope === "event" ? "подію" : scope === "mixed" ? "субʼєкта" : "людину";
+
+  const saved = useSavedDates();
+  const [remember, setRemember] = useState(true);
+  const [savedNow, setSavedNow] = useState(false);
+
+  // Свою дату зберігають один раз — далі вона приходить звідси, а не з памʼяті
+  // браузера: так вона є й на іншому пристрої.
+  const own = selfMode
+    ? (saved.dates.find((date) => date.type === "person" && date.date) ?? null)
+    : null;
 
   const setup = useSubjectSetup({
     scope,
@@ -49,22 +62,55 @@ export function CompareSetupBlock({ block, context }: BlockComponentProps) {
     maxRows: mixed || !selfMode ? Math.max(1, maxDates) : 1,
     selfMode,
     initialName: context.user?.firstName ?? context.user?.username,
+    prefill: own ? { date: own.date, name: own.name, notes: own.notes } : null,
   });
+
+  const row = setup.rows[0];
+  const available = saved.dates.filter((date) =>
+    mixed ? true : date.type === (scope === "event" ? "event" : "person"),
+  );
 
   const lead =
     description ??
     (selfMode
-      ? "Вкажіть свою дату народження — решта даних уже є в профілі."
+      ? "Дата народження — і все: решта вже в профілі. Нотатка поруч знадобиться пізніше — час, місто, уточнення."
       : mixed
-        ? "Додайте людей і події в тому порядку, у якому хочете їх порівняти. Для кожного рядка вкажіть, хто це."
-        : `Вкажіть ${subjectWord} для аналізу: ім'я та дату. Ім'я підпише стовпець у таблиці.`);
+        ? "Оберіть зі збережених або додайте нове. Для кожного рядка вкажіть, людина це чи подія."
+        : `Оберіть ${noun} зі збережених або додайте нову: імʼя підпише стовпець у таблиці.`);
 
-  /** Вид одного суб'єкта: у змішаному режимі — вибір, інакше — підпис. */
-  const kindField = (row: SubjectRow, index: number) =>
+  /** Зберегти поточну дату кроку в бібліотеку — разом із нотаткою. */
+  async function saveOwn(): Promise<void> {
+    if (!row || !row.date) return;
+    const ok = await saved.remember({
+      date: row.date,
+      name: row.name,
+      notes: setup.notes,
+      type: "person",
+    });
+    setSavedNow(ok);
+  }
+
+  /** Додати набраного субʼєкта, а за бажанням — і запамʼятати його. */
+  function addDraft(): void {
+    const added = setup.add();
+    if (!added || !remember) return;
+    void saved.remember({
+      date: added.date,
+      name: added.name,
+      notes: "",
+      type: added.kind === "event" ? "event" : "person",
+    });
+  }
+
+  function pickSaved(date: MyDate): void {
+    setup.addSubject({ date: date.date, name: date.name, kind: savedKind(date, scope) });
+  }
+
+  const kindField = (item: SubjectRow, index: number) =>
     mixed ? (
       <select
         className="wb-input wb-block-compare-setup__kind"
-        value={row.kind}
+        value={item.kind}
         aria-label="Що це"
         onChange={(event) =>
           setup.update(index, { kind: event.target.value === "event" ? "event" : "person" })
@@ -73,119 +119,216 @@ export function CompareSetupBlock({ block, context }: BlockComponentProps) {
         <option value="person">Людина</option>
         <option value="event">Подія</option>
       </select>
-    ) : (
-      <span className="wb-text-sm wb-text-muted">{kindLabel(row.kind)}</span>
-    );
+    ) : null;
 
   return (
     <div className="wb-block-compare-setup">
       <h2 className="wb-block-compare-setup__title">{title}</h2>
       <p className="wb-text-sm wb-text-muted wb-block-compare-setup__lead">{lead}</p>
 
-      <div className="wb-block-compare-setup__row">
-        {mixed && (
+      {selfMode ? (
+        <div className="wb-block-compare-setup__panel">
           <label className="wb-block-compare-setup__field">
-            <span className="wb-label">Хто це</span>
-            <select
+            <span className="wb-label">Імʼя</span>
+            <input
+              type="text"
               className="wb-input"
-              value={setup.draftKind}
-              onChange={(event) =>
-                setup.setDraftKind(event.target.value === "event" ? "event" : "person")
-              }
-            >
-              <option value="person">Людина</option>
-              <option value="event">Подія</option>
-            </select>
+              value={row?.name ?? ""}
+              onChange={(event) => setup.update(0, { name: event.target.value })}
+            />
           </label>
-        )}
 
-        <label className="wb-block-compare-setup__field">
-          <span className="wb-label">Ім'я</span>
-          <input
-            type="text"
-            className="wb-input"
-            value={selfMode ? (setup.rows[0]?.name ?? "") : setup.draftName}
-            placeholder={scope === "event" ? "Наприклад, весілля" : "Наприклад, Олена"}
-            onChange={(event) =>
-              selfMode
-                ? setup.update(0, { name: event.target.value })
-                : setup.setDraftName(event.target.value)
-            }
-          />
-        </label>
+          <label className="wb-block-compare-setup__field">
+            <span className="wb-label">Дата народження</span>
+            <input
+              type="date"
+              className="wb-input"
+              value={row?.date ?? ""}
+              onChange={(event) => setup.update(0, { date: event.target.value })}
+            />
+          </label>
 
-        <label className="wb-block-compare-setup__field">
-          <span className="wb-label">{scope === "event" ? "Дата події" : "Дата народження"}</span>
-          <input
-            type="date"
-            className="wb-input"
-            value={selfMode ? (setup.rows[0]?.date ?? "") : setup.draftDate}
-            onChange={(event) =>
-              selfMode
-                ? setup.update(0, { date: event.target.value })
-                : setup.setDraftDate(event.target.value)
-            }
-          />
-        </label>
+          <label className="wb-block-compare-setup__field wb-block-compare-setup__field--wide">
+            <span className="wb-label">Нотатка до дати</span>
+            <textarea
+              className="wb-input"
+              rows={2}
+              value={setup.notes}
+              placeholder="Час і місто народження, уточнення — те, що знадобиться для точніших розрахунків"
+              onChange={(event) => {
+                setup.setNotes(event.target.value);
+                setSavedNow(false);
+              }}
+            />
+          </label>
+        </div>
+      ) : (
+        <>
+          {(available.length > 0 || saved.loading) && (
+            <section className="wb-subject-saved">
+              <h3 className="wb-subject-saved__title">Зі збережених</h3>
 
-        {!selfMode && (
-          <button className="wb-btn wb-btn-secondary" onClick={setup.add} disabled={!setup.canAdd}>
-            {setup.addLabel}
-          </button>
-        )}
-      </div>
+              {saved.loading ? (
+                <p className="wb-text-sm wb-text-muted">Завантажуємо…</p>
+              ) : (
+                <div className="wb-subject-saved__list">
+                  {available.map((date) => {
+                    const picked = setup.rows.some((item) => item.date === date.date);
+                    return (
+                      <button
+                        key={date.id}
+                        type="button"
+                        className="wb-subject-chip"
+                        disabled={picked}
+                        title={picked ? "Уже в списку" : "Додати до аналізу"}
+                        onClick={() => pickSaved(date)}
+                      >
+                        <span className="wb-subject-chip__name">
+                          {date.name || formatDate(date.date)}
+                        </span>
+                        <span className="wb-subject-chip__date">{formatDate(date.date)}</span>
+                      </button>
+                    );
+                  })}
+                </div>
+              )}
+            </section>
+          )}
 
-      {!selfMode && setup.rows.length > 0 && (
-        <div className="wb-block-compare-setup__list">
-          {setup.rows.map((row, index) => (
-            <div key={`${row.date}-${index}`} className="wb-block-compare-setup__item">
-              <span className="wb-block-compare-setup__date">
-                {row.name ? <strong>{row.name}</strong> : null}
-                <span className={row.name ? "wb-text-sm wb-text-muted" : undefined}>
-                  {formatDate(row.date)}
+          <section className="wb-subject-new">
+            <h3 className="wb-subject-saved__title">
+              {scope === "event" ? "Нова подія" : mixed ? "Новий субʼєкт" : "Нова людина"}
+            </h3>
+
+            <div className="wb-block-compare-setup__row">
+              {mixed && (
+                <label className="wb-block-compare-setup__field">
+                  <span className="wb-label">Хто це</span>
+                  <select
+                    className="wb-input"
+                    value={setup.draftKind}
+                    onChange={(event) =>
+                      setup.setDraftKind(event.target.value === "event" ? "event" : "person")
+                    }
+                  >
+                    <option value="person">Людина</option>
+                    <option value="event">Подія</option>
+                  </select>
+                </label>
+              )}
+
+              <label className="wb-block-compare-setup__field">
+                <span className="wb-label">Імʼя</span>
+                <input
+                  type="text"
+                  className="wb-input"
+                  value={setup.draftName}
+                  placeholder={scope === "event" ? "Наприклад, весілля" : "Наприклад, Олена"}
+                  onChange={(event) => setup.setDraftName(event.target.value)}
+                />
+              </label>
+
+              <label className="wb-block-compare-setup__field">
+                <span className="wb-label">
+                  {scope === "event" ? "Дата події" : "Дата народження"}
                 </span>
-              </span>
+                <input
+                  type="date"
+                  className="wb-input"
+                  value={setup.draftDate}
+                  onChange={(event) => setup.setDraftDate(event.target.value)}
+                />
+              </label>
 
-              {kindField(row, index)}
-
               <button
-                type="button"
-                className="wb-move-btn"
-                onClick={() => setup.move(index, -1)}
-                disabled={index === 0}
-                title="Вгору"
+                className="wb-btn wb-btn-secondary"
+                onClick={addDraft}
+                disabled={!setup.canAdd}
               >
-                {icons["chevron-up"]}
-              </button>
-              <button
-                type="button"
-                className="wb-move-btn"
-                onClick={() => setup.move(index, 1)}
-                disabled={index === setup.rows.length - 1}
-                title="Вниз"
-              >
-                {icons["chevron-down"]}
-              </button>
-              <button
-                type="button"
-                className="wb-close-btn"
-                onClick={() => setup.remove(index)}
-                title="Видалити"
-              >
-                {icons["close"]}
+                Додати
               </button>
             </div>
-          ))}
-        </div>
+
+            <label className="wb-block-compare-setup__remember">
+              <input
+                type="checkbox"
+                checked={remember}
+                onChange={(event) => setRemember(event.target.checked)}
+              />
+              <span>Запамʼятати — наступного разу буде в списку</span>
+            </label>
+          </section>
+
+          {setup.rows.length > 0 && (
+            <div className="wb-block-compare-setup__list">
+              {setup.rows.map((item, index) => (
+                <div key={`${item.date}-${index}`} className="wb-block-compare-setup__item">
+                  <span className="wb-block-compare-setup__date">
+                    {item.name ? <strong>{item.name}</strong> : null}
+                    <span className={item.name ? "wb-text-sm wb-text-muted" : undefined}>
+                      {formatDate(item.date)}
+                    </span>
+                  </span>
+
+                  {kindField(item, index)}
+
+                  <button
+                    type="button"
+                    className="wb-move-btn"
+                    onClick={() => setup.move(index, -1)}
+                    disabled={index === 0}
+                    title="Вгору"
+                  >
+                    {icons["chevron-up"]}
+                  </button>
+                  <button
+                    type="button"
+                    className="wb-move-btn"
+                    onClick={() => setup.move(index, 1)}
+                    disabled={index === setup.rows.length - 1}
+                    title="Вниз"
+                  >
+                    {icons["chevron-down"]}
+                  </button>
+                  <button
+                    type="button"
+                    className="wb-close-btn"
+                    onClick={() => setup.remove(index)}
+                    title="Видалити"
+                  >
+                    {icons["close"]}
+                  </button>
+                </div>
+              ))}
+            </div>
+          )}
+        </>
       )}
 
-      <button
-        className="wb-btn wb-btn-primary wb-block-compare-setup__action"
-        onClick={setup.goNext}
-        disabled={!setup.canGo}
-      >
-        {setup.canGo ? "Обрати системи аналізу" : "Вкажіть дату"}
-      </button>
+      {saved.error && <p className="wb-text-sm wb-date-error">{saved.error}</p>}
+
+      {selfMode ? (
+        <div className="wb-block-compare-setup__actions">
+          <button
+            className="wb-btn wb-btn-secondary"
+            onClick={() => void saveOwn()}
+            disabled={!setup.canGo || saved.saving}
+          >
+            {savedNow ? "Збережено" : "Зберегти дату"}
+          </button>
+          <button className="wb-btn wb-btn-primary" onClick={setup.goNext} disabled={!setup.canGo}>
+            Обрати системи аналізу
+          </button>
+        </div>
+      ) : (
+        <button
+          className="wb-btn wb-btn-primary wb-block-compare-setup__action"
+          onClick={setup.goNext}
+          disabled={!setup.canGo}
+        >
+          {setup.canGo ? "Обрати системи аналізу" : "Вкажіть дату"}
+        </button>
+      )}
     </div>
   );
 }

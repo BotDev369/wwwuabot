@@ -7,7 +7,7 @@
  * @module packages/ui/src/blocks/date-analysis-setup.dom.test
  */
 
-import { afterEach, beforeEach, describe, expect, it } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import type { BlockComponentProps } from "@wwwuabot/shared/types/page-config";
@@ -74,13 +74,28 @@ function nameField(container: HTMLElement): HTMLInputElement {
   return input;
 }
 
+/** Збережені дати: порожній список, якщо тест не сказав іншого. */
+function stubSaved(dates: unknown[] = []): ReturnType<typeof vi.fn> {
+  const mock = vi.fn(
+    async () =>
+      new Response(JSON.stringify({ ok: true, dates }), {
+        status: 200,
+        headers: { "Content-Type": "application/json" },
+      }),
+  );
+  vi.stubGlobal("fetch", mock);
+  return mock;
+}
+
 beforeEach(() => {
   restoreLocation();
+  stubSaved();
   window.history.replaceState({}, "", "/dateanalysis/person");
 });
 
 afterEach(() => {
   restoreLocation();
+  vi.unstubAllGlobals();
 });
 
 describe("CompareSetupBlock", () => {
@@ -202,6 +217,85 @@ describe("CompareSetupBlock", () => {
     await user.click(screen.getByTitle("Видалити"));
     expect(screen.queryByText("03.03.1980")).toBeNull();
     expect(screen.getByRole("button", { name: "Вкажіть дату" })).toBeTruthy();
+  });
+
+  it("збережену дату додає одним дотиком, без форми", async () => {
+    stubSaved([
+      {
+        id: "1",
+        user_id: 7,
+        date: "1980-03-03",
+        type: "person",
+        name: "Олена",
+        tags: [],
+        notes: "",
+        created_at: "2026-01-01",
+        updated_at: "2026-01-01",
+      },
+    ]);
+    const nav = captureNavigation();
+    const user = userEvent.setup();
+    render(<CompareSetupBlock {...props({ maxDates: 1 })} />);
+
+    const chip = await screen.findByRole("button", { name: /Олена/ });
+    await user.click(chip);
+    await user.click(screen.getByRole("button", { name: /Обрати системи/ }));
+
+    const url = new URL(nav.value(), "https://example.test");
+    expect(url.searchParams.get("dates")).toBe("1980-03-03");
+    expect(url.searchParams.get("labels")).toBe("Олена");
+  });
+
+  it("власна дата зберігається разом із нотаткою", async () => {
+    const api = stubSaved();
+    const user = userEvent.setup();
+    const { container } = render(
+      <CompareSetupBlock
+        {...props({ kind: "person", selfMode: true, maxDates: 1 })}
+        context={{ user: { id: 1, firstName: "Олена" } } as BlockComponentProps["context"]}
+      />,
+    );
+
+    await user.type(dateField(container), "1980-03-03");
+    await user.type(container.querySelector("textarea")!, "06:40, Львів");
+    await user.click(screen.getByRole("button", { name: "Зберегти дату" }));
+
+    const post = api.mock.calls.find(
+      ([url, init]) =>
+        String(url).includes("my-dates") && (init as RequestInit | undefined)?.method === "POST",
+    );
+    expect(post).toBeTruthy();
+    const body = JSON.parse((post![1] as RequestInit).body as string);
+    expect(body).toMatchObject({
+      date: "1980-03-03",
+      type: "person",
+      notes: "06:40, Львів",
+    });
+  });
+
+  it("збережену власну дату підставляє у поле", async () => {
+    stubSaved([
+      {
+        id: "1",
+        user_id: 7,
+        date: "1980-03-03",
+        type: "person",
+        name: "Олена",
+        tags: [],
+        notes: "06:40, Львів",
+        created_at: "2026-01-01",
+        updated_at: "2026-01-01",
+      },
+    ]);
+    const { container } = render(
+      <CompareSetupBlock
+        {...props({ kind: "person", selfMode: true, maxDates: 1 })}
+        context={{ user: { id: 1, firstName: "Олена" } } as BlockComponentProps["context"]}
+      />,
+    );
+
+    await screen.findByDisplayValue("06:40, Львів");
+    expect(dateField(container).value).toBe("1980-03-03");
   });
 
   it("не переростає ліміт суб'єктів", async () => {
