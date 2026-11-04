@@ -214,7 +214,9 @@ export interface DocumentQuery {
   readonly cursor: SpendingCursor | null;
 }
 
-export interface TransactionQuery extends DocumentQuery {
+export interface TransactionQuery extends Omit<DocumentQuery, "edrpou"> {
+  /** `null` — усі розпорядники громади, а не один: так читає наскрізний список. */
+  readonly edrpou: string | null;
   readonly role: SpendingRole;
 }
 
@@ -283,8 +285,14 @@ export async function readTransactions(
   query: TransactionQuery,
 ): Promise<SpendingPage<SpendingTransaction>> {
   const column = query.role === "recipt" ? "recipt_edrpou" : "payer_edrpou";
-  const where = [`${column} = ?`];
-  const args: unknown[] = [query.edrpou];
+  // Громада — це довідник розпорядників, а не шаблон ЄДРПОУ: без нього у
+  // наскрізний список потрапили б сторонні платники з тих самих таблиць.
+  const where = [
+    query.edrpou
+      ? `${column} = ?`
+      : `${column} IN (SELECT edrpou FROM spending_orgs WHERE edrpou <> '')`,
+  ];
+  const args: unknown[] = query.edrpou ? [query.edrpou] : [];
   if (query.period) {
     const window = monthWindow(query.period);
     where.push("trans_date >= ? AND trans_date <= ?");

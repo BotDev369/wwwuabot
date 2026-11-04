@@ -88,3 +88,18 @@ export function useSpendingTransactions(
   );
   return usePagedList(load);
 }
+
+/**
+ * Усі сплати громади за період: `edrpou` немає, тож сервер бере довідник
+ * розпорядників, а не кожен ЄДРПОУ з таблиці платежів.
+ */
+export function useSpendingCommunityPayments(
+  period: string,
+): SpendingListState<SpendingTransaction> {
+  const load = useCallback(
+    (cursor: string | null) =>
+      fetchSpendingTransactions({ edrpou: null, role: "payer", period, cursor, limit: PAGE_SIZE }),
+    [period],
+  );
+  return usePagedList(load);
+}

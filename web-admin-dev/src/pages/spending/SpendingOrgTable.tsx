@@ -7,8 +7,22 @@
  * @module web-admin-dev/src/pages/spending/SpendingOrgTable
  */
 
-import type { SpendingOrg } from "@wwwuabot/shared/spending";
-import { totalsText } from "./format";
+import type { SpendingOrg, SpendingTotals } from "@wwwuabot/shared/spending";
+import { formatCount, formatMoney } from "./format";
+
+/**
+ * Число й сума в одній клітинці — двома рядками: «18 · 240 000,00 грн» читалось
+ * як одне незрозуміле число, а стовпчик і без того вузький.
+ */
+function TotalsCell({ totals }: { readonly totals: SpendingTotals }) {
+  if (totals.count === 0) return <span className="spend-totals-empty">не оприлюднено</span>;
+  return (
+    <span className="spend-totals">
+      <span className="spend-totals-count">{formatCount(totals.count)}</span>
+      <span className="spend-totals-sum">{formatMoney(totals.amount)}</span>
+    </span>
+  );
+}
 
 interface SpendingOrgTableProps {
   orgs: readonly SpendingOrg[];
@@ -52,13 +66,13 @@ export function SpendingOrgTable({ orgs, selected, onSelect }: SpendingOrgTableP
                     {org.form || "—"}
                   </td>
                   <td className="spend-num" data-label="Договори">
-                    {totalsText(org.documents)}
+                    <TotalsCell totals={org.documents} />
                   </td>
                   <td className="spend-num" data-label="Сплати">
-                    {totalsText(org.payments)}
+                    <TotalsCell totals={org.payments} />
                   </td>
                   <td className="spend-num" data-label="Надходження">
-                    {totalsText(org.receipts)}
+                    <TotalsCell totals={org.receipts} />
                   </td>
                 </tr>
               ))

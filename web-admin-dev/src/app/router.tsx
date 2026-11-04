@@ -8,7 +8,12 @@ import { PageBuilderPage } from "../features/page-builder/PageBuilderPage";
 import { BotSettingsPage } from "../pages/bot-settings/BotSettingsPage";
 import { ProfilePage } from "../pages/profile/ProfilePage";
 import { MonitoringPage } from "../pages/monitoring/MonitoringPage";
-import { SpendingPage } from "../pages/spending/SpendingPage";
+import { SpendingHubPage } from "../pages/spending/SpendingHubPage";
+import { SpendingOrgsPage } from "../pages/spending/SpendingOrgsPage";
+import { SpendingPaymentsPage } from "../pages/spending/SpendingPaymentsPage";
+import { SpendingCodesPage } from "../pages/spending/SpendingCodesPage";
+import { SpendingRecipientsPage } from "../pages/spending/SpendingRecipientsPage";
+import { SpendingSyncPage } from "../pages/spending/SpendingSyncPage";
 import { AnalyticsPage } from "../pages/analytics/AnalyticsPage";
 
 /**
@@ -22,8 +27,13 @@ import { AnalyticsPage } from "../pages/analytics/AnalyticsPage";
  * /analytics          — Аналітика поведінки: журнал дій людей (бот і платформа),
  *                       по користувачах або за діапазоном часу
  * /monitoring         — Моніторинг проєкту: зрізи код/GitHub, динаміка, історія
- * /spending           — Є-data: зібране про видатки громади — розпорядники,
- *                       договори, обидві сторони платежів і стан збору
+ * /spending           — Є-data: хаб можливостей — картки ведуть на власні
+ *                       сторінки, а не збирають усе в одну таблицю
+ * /spending/orgs      — розпорядники й договори обраного розпорядника
+ * /spending/payments   — наскрізний список сплат громади за період
+ * /spending/codes     — КЕКВ, КПК і бюджетна програма
+ * /spending/recipients — отримувачі: топ за сумою у вибраному вікні
+ * /spending/sync      — стан збору: кроки, помилки, довідка джерела
  * /style              — Візуал: одна демосторінка продукту — шапка, блоки,
  *                       графіки, поля, навігація й перемикач тем, плюс
  *                       відбиток CSS, що каже про оновлення вигляду
@@ -48,7 +58,12 @@ export const router = createBrowserRouter([
       { path: "messages", element: <AccessRequestsPage /> },
       { path: "analytics", element: <AnalyticsPage /> },
       { path: "monitoring", element: <MonitoringPage /> },
-      { path: "spending", element: <SpendingPage /> },
+      { path: "spending", element: <SpendingHubPage /> },
+      { path: "spending/orgs", element: <SpendingOrgsPage /> },
+      { path: "spending/payments", element: <SpendingPaymentsPage /> },
+      { path: "spending/codes", element: <SpendingCodesPage /> },
+      { path: "spending/recipients", element: <SpendingRecipientsPage /> },
+      { path: "spending/sync", element: <SpendingSyncPage /> },
       // Сторінка-демо вантажиться ліниво: вхід в адмінку не має чекати на
       // полотно, яке відкривають зрідка (`npm run check:bundle`).
       {

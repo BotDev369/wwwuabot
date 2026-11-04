@@ -1,5 +1,5 @@
 {
-  "version": "9a84cad",
+  "version": "b689ef7",
   "files": [
     {
       "file": "admin/analytics-people.css",
@@ -69,7 +69,7 @@
     {
       "file": "admin/spending.css",
       "tokens": 0,
-      "classes": 46
+      "classes": 71
     },
     {
       "file": "admin/style.css",
@@ -3018,7 +3018,11 @@
           "spend-table",
           "spend-table-wrap",
           "spend-tabs",
-          "spend-th-num"
+          "spend-th-num",
+          "spend-totals",
+          "spend-totals-count",
+          "spend-totals-empty",
+          "spend-totals-sum"
         ]
       },
       {
@@ -3049,6 +3053,32 @@
           "spend-table",
           "spend-table-wrap",
           "spend-tabs"
+        ]
+      },
+      {
+        "section": "Є-data: хаб",
+        "names": [
+          "spend-back",
+          "spend-card",
+          "spend-card-foot",
+          "spend-card-icon",
+          "spend-card-open",
+          "spend-card-soon",
+          "spend-card-text",
+          "spend-card-title",
+          "spend-cards",
+          "spend-hero",
+          "spend-hero-kicker",
+          "spend-hero-text",
+          "spend-hero-title",
+          "spend-inline-link",
+          "spend-kpi",
+          "spend-kpi-hint",
+          "spend-kpi-label",
+          "spend-kpi-value",
+          "spend-kpis",
+          "spend-more",
+          "spend-section-title"
         ]
       }
     ],

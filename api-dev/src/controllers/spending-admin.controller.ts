@@ -193,12 +193,20 @@ export async function handleSpendingRefresh(request: Request, env: Env): Promise
   });
 }
 
-/** `GET /api/admin/spending/transactions?edrpou=…&role=payer|recipt`. */
+/**
+ * `GET /api/admin/spending/transactions?edrpou=…&role=payer|recipt`.
+ *
+ * Без `edrpou` шлях віддає платежі всіх розпорядників громади — це наскрізний
+ * список, а не «всі платежі світу».
+ */
 export function handleSpendingTransactions(request: Request, env: Env): Promise<Response> {
   return guard(env, async () => {
     const params = new URL(request.url).searchParams;
-    const edrpou = (params.get("edrpou") ?? "").trim();
-    if (!/^\d{8,10}$/.test(edrpou)) return badRequest("Потрібен ЄДРПОУ розпорядника");
+    const rawEdrpou = (params.get("edrpou") ?? "").trim();
+    if (rawEdrpou !== "" && !/^\d{8,10}$/.test(rawEdrpou)) {
+      return badRequest("ЄДРПОУ розпорядника — 8-10 цифр");
+    }
+    const edrpou = rawEdrpou === "" ? null : rawEdrpou;
 
     const rawRole = params.get("role") ?? "payer";
     if (rawRole !== "payer" && rawRole !== "recipt") {

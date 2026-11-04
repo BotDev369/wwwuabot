@@ -34,6 +34,7 @@ export function SpendingRecipientsPanel() {
   const listed = rows.reduce((sum, row) => sum + row.amount, 0);
   const rest = Math.max(total - listed, 0);
   const restCount = Math.max((view?.totals.recipients ?? 0) - rows.length, 0);
+  const top = Math.max(rows[0]?.amount ?? 0, rest, 0);
 
   return (
     <div className="spend-analytics-panel">
@@ -65,7 +66,7 @@ export function SpendingRecipientsPanel() {
             платежів на <strong>{formatCount(view.totals.recipients)}</strong> отримувачів
           </p>
 
-          <SpendingBarChart points={view.buckets} label={formatBucket} total={total} />
+          <SpendingBarChart points={view.buckets} label={formatBucket} />
 
           <div className="spend-table-wrap">
             <table className="wb-data-table spend-table spend-analytics-table">
@@ -86,7 +87,7 @@ export function SpendingRecipientsPanel() {
                     </td>
                     <td data-label="Частка">
                       <span className="spend-share-cell">
-                        <SpendingMeter share={total > 0 ? row.amount / total : 0} />
+                        <SpendingMeter share={top > 0 ? row.amount / top : 0} />
                         <span className="spend-share">{formatShare(row.amount, total)}</span>
                       </span>
                     </td>
@@ -106,7 +107,7 @@ export function SpendingRecipientsPanel() {
                     </td>
                     <td data-label="Частка">
                       <span className="spend-share-cell">
-                        <SpendingMeter share={total > 0 ? rest / total : 0} />
+                        <SpendingMeter share={top > 0 ? rest / top : 0} />
                         <span className="spend-share">{formatShare(rest, total)}</span>
                       </span>
                     </td>

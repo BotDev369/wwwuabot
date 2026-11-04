@@ -134,17 +134,11 @@ describe("отримувачі", () => {
 
 describe("діаграма", () => {
   it("порожній або нульовий ряд називає причину, а не малює вісь", () => {
-    const empty = render(<SpendingBarChart points={[]} label={(key) => key} total={0} />);
+    const empty = render(<SpendingBarChart points={[]} label={(key) => key} />);
     expect(screen.getByText(/Ряд порожній/)).toBeTruthy();
     empty.unmount();
 
-    render(
-      <SpendingBarChart
-        points={[{ key: "2026-09-01", amount: 0 }]}
-        label={(key) => key}
-        total={0}
-      />,
-    );
+    render(<SpendingBarChart points={[{ key: "2026-09-01", amount: 0 }]} label={(key) => key} />);
     expect(screen.getByText(/Ряд порожній/)).toBeTruthy();
   });
 
@@ -156,12 +150,11 @@ describe("діаграма", () => {
           { key: "2026-09-02", amount: 600 },
         ]}
         label={(key) => key.slice(8)}
-        total={1000}
       />,
     );
 
     expect(screen.getByText(/^01: 400/)).toBeTruthy();
-    expect(screen.getAllByText(/^1 тис\./).length).toBeGreaterThan(0);
+    expect(screen.getByText(/^02: 600/)).toBeTruthy();
   });
 });
 

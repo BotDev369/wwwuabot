@@ -52,7 +52,8 @@ export function fetchSpendingSync(period?: string | null): Promise<SpendingSyncV
 }
 
 export interface SpendingListQuery {
-  readonly edrpou: string;
+  /** Порожній — наскрізний список громади; порожні параметри не їдуть в адресу. */
+  readonly edrpou?: string | null;
   readonly period?: string | null;
   readonly role?: SpendingRole;
   readonly cursor?: string | null;

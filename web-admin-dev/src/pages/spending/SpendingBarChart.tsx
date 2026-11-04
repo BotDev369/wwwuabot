@@ -17,13 +17,12 @@ interface ChartPoint {
 interface SpendingBarChartProps {
   readonly points: readonly ChartPoint[];
   readonly label: (key: string) => string;
-  readonly total: number;
 }
 
 /** Скільки підписів по осі: решта — шум, який не читають. */
 const TICKS = 6;
 
-export function SpendingBarChart({ points, label, total }: SpendingBarChartProps) {
+export function SpendingBarChart({ points, label }: SpendingBarChartProps) {
   const max = Math.max(...points.map((point) => point.amount), 0);
   const step = points.length > 0 ? 100 / points.length : 100;
   const ticks = points.filter(
@@ -43,9 +42,6 @@ export function SpendingBarChart({ points, label, total }: SpendingBarChartProps
 
   return (
     <div className="spend-chart">
-      <p className="spend-chart-caption">
-        Усього за вікно: <strong>{formatCompactMoney(total)}</strong>
-      </p>
       <svg
         className="spend-chart-svg"
         viewBox="0 0 100 100"

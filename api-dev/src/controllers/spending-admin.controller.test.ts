@@ -334,4 +334,26 @@ describe("платежі", () => {
     const select = statements.find((s) => s.sql.includes("FROM spending_transactions"));
     expect(select?.sql).toMatch(/recipt_edrpou = \?/);
   });
+
+  it("без ЄДРПОУ читає громаду з довідника, а не всіх платників таблиці", async () => {
+    const { env, statements } = makeEnv();
+
+    await handleSpendingTransactions(url("/api/admin/spending/transactions"), env);
+
+    const select = statements.find((s) => s.sql.includes("FROM spending_transactions"));
+    expect(select?.sql).toMatch(/payer_edrpou IN \(SELECT edrpou FROM spending_orgs/);
+    expect(select?.sql).not.toMatch(/payer_edrpou = \?/);
+  });
+
+  it("⛔ ЄДРПОУ зі знаками не стає запитом до бази", async () => {
+    const { env, statements } = makeEnv();
+
+    const res = await handleSpendingTransactions(
+      url("/api/admin/spending/transactions?edrpou=0436%20OR%201=1"),
+      env,
+    );
+
+    expect(res.status).toBe(400);
+    expect(statements.some((s) => s.sql.includes("FROM spending_transactions"))).toBe(false);
+  });
 });

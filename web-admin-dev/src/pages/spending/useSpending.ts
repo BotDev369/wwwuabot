@@ -1,12 +1,14 @@
 /**
  * Стан екрана Є-data: читання огляду, вибір періоду й ручний перезбір.
  *
- * Компонент не робить запитів сам (AGENTS.md §3) — і саме тому період живе
- * тут, а не в розмітці: вибір місяця це стан запиту, а не вигляд.
+ * Період живе в адресі (`?period=`), а не в стані компонента: інакше перехід
+ * із хаба на підсторінку скидав би вибраний місяць назад до останнього. Запит
+ * робить хук, а не розмітка — AGENTS.md §3.
  * @module web-admin-dev/src/pages/spending/useSpending
  */
 
 import { useCallback, useEffect, useState } from "react";
+import { useSearchParams } from "react-router-dom";
 import type { SpendingOverview } from "@wwwuabot/shared/spending";
 import { fetchSpendingOverview, refreshSpending } from "../../shared/api/spending.api";
 
@@ -22,8 +24,9 @@ export interface SpendingState {
 }
 
 export function useSpending(): SpendingState {
+  const [params, setParams] = useSearchParams();
+  const selected = params.get("period");
   const [overview, setOverview] = useState<SpendingOverview | null>(null);
-  const [period, setPeriod] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -40,14 +43,20 @@ export function useSpending(): SpendingState {
     }
   }, []);
 
-  const reload = useCallback(() => load(period), [load, period]);
+  const reload = useCallback(() => load(selected), [load, selected]);
 
   const selectPeriod = useCallback(
-    (next: string) => {
-      setPeriod(next);
-      return load(next);
+    async (next: string) => {
+      setParams(
+        (previous) => {
+          const copy = new URLSearchParams(previous);
+          copy.set("period", next);
+          return copy;
+        },
+        { replace: true },
+      );
     },
-    [load],
+    [setParams],
   );
 
   const refresh = useCallback(
@@ -68,8 +77,8 @@ export function useSpending(): SpendingState {
 
   useEffect(() => {
     // eslint-disable-next-line react-hooks/set-state-in-effect -- асинхронне завантаження: setState усередині load()
-    void load(null);
-  }, [load]);
+    void load(selected);
+  }, [load, selected]);
 
   return { overview, loading, error, refreshing, reload, selectPeriod, refresh };
 }
