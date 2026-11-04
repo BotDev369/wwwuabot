@@ -16,6 +16,7 @@ import {
   groupsOf,
   type MetricValue,
 } from "@wwwuabot/shared/monitoring";
+import { DataTable, type DataTableColumn } from "@wwwuabot/ui/table";
 
 interface WorkspaceTableProps {
   values: readonly MetricValue[];
@@ -37,44 +38,61 @@ export function WorkspaceTable({ values }: WorkspaceTableProps) {
     return <p className="mon-chart-empty">У цьому зрізі немає розбивки по воркспейсах.</p>;
   }
 
-  return (
-    <table className="mon-table">
-      <thead>
-        <tr>
-          <th>Воркспейс</th>
-          <th className="mon-table-num">Розмір</th>
-          <th className="mon-table-num">Рядків</th>
-          <th className="mon-table-num">Коду</th>
-          <th className="mon-table-num">Файлів</th>
-        </tr>
-      </thead>
-      <tbody>
-        {rows.map(({ group, values: row }) => {
-          const bytes = row["code.size_bytes"] ?? 0;
-          const share = totalBytes > 0 ? Math.round((bytes / totalBytes) * 100) : 0;
+  const columns: readonly DataTableColumn<{ group: string; values: Record<string, number> }>[] = [
+    {
+      key: "group",
+      header: "Воркспейс",
+      width: 220,
+      render: ({ group, values: row }) => {
+        const bytes = row["code.size_bytes"] ?? 0;
+        const share = totalBytes > 0 ? Math.round((bytes / totalBytes) * 100) : 0;
+        return (
+          <>
+            <span className="mon-group">{group}</span>
+            <span className="mon-bar">
+              <span className="mon-bar-fill" style={{ width: `${share}%` }} />
+            </span>
+          </>
+        );
+      },
+    },
+    {
+      key: "size",
+      header: "Розмір",
+      className: "wb-col-num",
+      width: 110,
+      render: ({ values: row }) => formatMetric("code.size_bytes", row["code.size_bytes"] ?? 0),
+    },
+    {
+      key: "lines",
+      header: "Рядків",
+      className: "wb-col-num",
+      width: 100,
+      render: ({ values: row }) => formatMetric("code.lines", row["code.lines"] ?? 0),
+    },
+    {
+      key: "code",
+      header: "Коду",
+      className: "wb-col-num",
+      width: 100,
+      render: ({ values: row }) => formatMetric("code.code_lines", row["code.code_lines"] ?? 0),
+    },
+    {
+      key: "files",
+      header: "Файлів",
+      className: "wb-col-num",
+      width: 100,
+      render: ({ values: row }) => formatMetric("code.files", row["code.files"] ?? 0),
+    },
+  ];
 
-          return (
-            <tr key={group}>
-              <td>
-                <span className="mon-group">{group}</span>
-                <span className="mon-bar">
-                  <span className="mon-bar-fill" style={{ width: `${share}%` }} />
-                </span>
-              </td>
-              <td className="mon-table-num">{formatMetric("code.size_bytes", bytes)}</td>
-              <td className="mon-table-num">
-                {formatMetric("code.lines", row["code.lines"] ?? 0)}
-              </td>
-              <td className="mon-table-num">
-                {formatMetric("code.code_lines", row["code.code_lines"] ?? 0)}
-              </td>
-              <td className="mon-table-num">
-                {formatMetric("code.files", row["code.files"] ?? 0)}
-              </td>
-            </tr>
-          );
-        })}
-      </tbody>
-    </table>
+  return (
+    <DataTable
+      columns={columns}
+      rows={rows}
+      rowKey={(row) => row.group}
+      empty="У цьому зрізі немає розбивки по воркспейсах."
+      minWidth={720}
+    />
   );
 }

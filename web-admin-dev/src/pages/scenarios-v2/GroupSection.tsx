@@ -67,17 +67,7 @@ export function GroupSection({
   return (
     <>
       <tr onClick={() => setCollapsed(!collapsed)} style={{ cursor: "pointer" }}>
-        <td
-          colSpan={4}
-          style={{
-            padding: "8px 12px",
-            fontWeight: 600,
-            fontSize: 13,
-            background: "var(--bg-secondary, #f1f5f9)",
-            borderBottom: "1px solid var(--border)",
-            userSelect: "none",
-          }}
-        >
+        <td colSpan={4} className="wb-table-group">
           <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
             <span style={{ fontSize: 10, color: "var(--text-secondary)" }}>
               {collapsed ? "▸" : "▾"}

@@ -77,3 +77,14 @@
   overflow: hidden;
   text-overflow: ellipsis;
 }
+
+/* ─── Список сценаріїв ───────────────────────────────────────────────────────
+   Таблиця — та сама `DataTable`: ширина полотна вирішує, коли вона їде вбік. */
+
+.wb-scenarios {
+  padding: var(--sp-2) var(--sp-3) var(--sp-4);
+}
+
+.wb-scenarios-table {
+  --wb-table-min: 760px;
+}

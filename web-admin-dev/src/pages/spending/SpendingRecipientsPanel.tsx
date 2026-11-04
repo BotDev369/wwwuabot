@@ -8,7 +8,7 @@
  */
 
 import type { SpendingRecipientRow, SpendingScope } from "@wwwuabot/shared/spending";
-import { DataTable, type DataTableColumn } from "../../shared/components/DataTable";
+import { DataTable, type DataTableColumn } from "@wwwuabot/ui/table";
 import { SpendingBarChart } from "./SpendingBarChart";
 import {
   formatBucket,
@@ -140,16 +140,6 @@ export function SpendingRecipientsPanel() {
             rows={tableRows}
             rowKey={(row) => row.edrpou}
             tableClassName="spend-table--recipients"
-            mobileMeta={(row) => (
-              <>
-                <dt>Частка</dt>
-                <dd>{formatShare(row.amount, total)}</dd>
-                <dt>Платежів</dt>
-                <dd>{row.count === null ? "—" : formatCount(row.count)}</dd>
-                <dt>Сума</dt>
-                <dd>{formatMoney(row.amount)}</dd>
-              </>
-            )}
             empty="За це вікно отримувачів немає."
           />
 

@@ -12,6 +12,7 @@ import { PageRenderer } from "@wwwuabot/ui";
 import type { PageConfig, BlockContext } from "@wwwuabot/shared/types/page-config";
 import { parsePageConfig } from "@wwwuabot/shared/types/page-config";
 import type { MainTab } from "./scenario-modal-types";
+import { DataTable, type DataTableColumn } from "@wwwuabot/ui/table";
 
 // ── Icon helper ───────────────────────────────────────────────────
 
@@ -258,30 +259,39 @@ function BotPreview({ fields }: { fields: Record<string, unknown> }) {
 
 // ── Shared Preview ────────────────────────────────────────────────
 
+const SHARED_COLUMNS: readonly DataTableColumn<{ key: string; value: string }>[] = [
+  {
+    key: "field",
+    header: "Поле",
+    className: "wb-cell-mono wb-cell-nowrap",
+    width: 120,
+    render: (row) => row.key,
+  },
+  {
+    key: "value",
+    header: "Значення",
+    className: "wb-cell-mono",
+    width: 200,
+    render: (row) => row.value,
+  },
+];
+
 function SharedPreview({ fields }: { fields: Record<string, unknown> }) {
+  const rows = ["slug", "title", "created_at", "updated_at"].map((key) => ({
+    key,
+    value: fields[key] === null || fields[key] === undefined ? "—" : String(fields[key]),
+  }));
+
   return (
     <div style={{ padding: 16 }}>
-      <table className="wb-card-table" style={{ width: "100%" }}>
-        <thead>
-          <tr>
-            <th className="wb-card-th-field">Поле</th>
-            <th className="wb-card-th-value">Значення</th>
-          </tr>
-        </thead>
-        <tbody>
-          {["slug", "title", "created_at", "updated_at"].map((key) => (
-            <tr key={key}>
-              <td className="wb-card-td-field">{key}</td>
-              <td
-                className="wb-card-td-value"
-                style={{ fontFamily: "var(--font-mono)", fontSize: 12 }}
-              >
-                {fields[key] === null || fields[key] === undefined ? "—" : String(fields[key])}
-              </td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
+      <DataTable
+        columns={SHARED_COLUMNS}
+        rows={rows}
+        rowKey={(row) => row.key}
+        empty="Полів немає."
+        minWidth={320}
+        maxHeight="240px"
+      />
     </div>
   );
 }

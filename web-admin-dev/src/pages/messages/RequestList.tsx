@@ -10,6 +10,7 @@
 
 import type { AccessRequestItem } from "@wwwuabot/shared/access-requests";
 import { accessRequestAuthor } from "@wwwuabot/shared/access-requests";
+import { DataTable, type DataTableColumn } from "@wwwuabot/ui/table";
 import { formatWhen, whenTitle } from "./formatWhen";
 
 interface RequestListProps {
@@ -27,40 +28,42 @@ function preview(text: string): string {
   return flat.length > PREVIEW ? `${flat.slice(0, PREVIEW)}…` : flat;
 }
 
+const COLUMNS: readonly DataTableColumn<AccessRequestItem>[] = [
+  {
+    key: "author",
+    header: "Автор",
+    width: 200,
+    render: (item) => (
+      <>
+        <span className="wb-cell-title">{accessRequestAuthor(item)}</span>
+        <span className="wb-badge wb-badge-neutral">{item.user_id}</span>
+      </>
+    ),
+  },
+  {
+    key: "text",
+    header: "Повідомлення",
+    width: 320,
+    render: (item) => preview(item.text),
+  },
+  {
+    key: "when",
+    header: "Коли",
+    className: "wb-cell-nowrap",
+    width: 140,
+    render: (item) => <span title={whenTitle(item.created_at)}>{formatWhen(item.created_at)}</span>,
+  },
+];
+
 export function RequestList({ items, emptyText, onOpen }: RequestListProps) {
   return (
-    <div className="wb-table-wrap">
-      <table className="wb-table">
-        <thead>
-          <tr>
-            <th>Автор</th>
-            <th>Повідомлення</th>
-            <th>Коли</th>
-          </tr>
-        </thead>
-        <tbody>
-          {items.length === 0 ? (
-            <tr>
-              <td colSpan={3}>
-                <div className="wb-empty">
-                  <p className="wb-empty-text">{emptyText}</p>
-                </div>
-              </td>
-            </tr>
-          ) : (
-            items.map((item) => (
-              <tr key={item.id} onClick={() => onOpen(item.id)} style={{ cursor: "pointer" }}>
-                <td>
-                  <div>{accessRequestAuthor(item)}</div>
-                  <div className="wb-badge wb-badge-neutral">{item.user_id}</div>
-                </td>
-                <td>{preview(item.text)}</td>
-                <td title={whenTitle(item.created_at)}>{formatWhen(item.created_at)}</td>
-              </tr>
-            ))
-          )}
-        </tbody>
-      </table>
-    </div>
+    <DataTable
+      columns={COLUMNS}
+      rows={items}
+      rowKey={(item) => String(item.id)}
+      onRowClick={(item) => onOpen(item.id)}
+      empty={emptyText}
+      minWidth={680}
+    />
   );
 }

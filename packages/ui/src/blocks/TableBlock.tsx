@@ -1,12 +1,18 @@
 /**
- * Page Builder — Table Block: таблиця на спільному `.wb-data-table`. На
- * телефоні вона стає списком карток, тож кожна комірка несе `data-label`
- * (той самий прийом, що в `MyDatesTableBlock` та «Видатках»).
+ * Page Builder — Table Block. Малює ту саму таблицю, що й адмінка: окремих
+ * таблиць у продукті немає (`DataTable`).
  *
  * @module packages/ui/src/blocks/TableBlock
  */
 
 import type { BlockComponentProps } from "@wwwuabot/shared/types/page-config";
+import { DataTable, type DataTableColumn } from "../table/DataTable";
+
+/** Рядок блока: комірки в порядку заголовків. */
+interface TableRow {
+  readonly id: number;
+  readonly cells: readonly string[];
+}
 
 export function TableBlock({ block }: BlockComponentProps) {
   const { headers = [], rows = [] } = block.props as {
@@ -16,28 +22,22 @@ export function TableBlock({ block }: BlockComponentProps) {
 
   if (headers.length === 0) return null;
 
+  const columns: readonly DataTableColumn<TableRow>[] = headers.map((header, index) => ({
+    key: `${index}`,
+    header,
+    width: 120,
+    render: (row) => row.cells[index] ?? "",
+  }));
+
   return (
     <div className="wb-block-table">
-      <table className="wb-data-table">
-        <thead>
-          <tr>
-            {headers.map((h, i) => (
-              <th key={i}>{h}</th>
-            ))}
-          </tr>
-        </thead>
-        <tbody>
-          {rows.map((row, ri) => (
-            <tr key={ri}>
-              {row.map((cell, ci) => (
-                <td key={ci} data-label={headers[ci] ?? ""}>
-                  {cell}
-                </td>
-              ))}
-            </tr>
-          ))}
-        </tbody>
-      </table>
+      <DataTable
+        columns={columns}
+        rows={rows.map((cells, id) => ({ id, cells }))}
+        rowKey={(row) => String(row.id)}
+        empty="Таблиця без рядків."
+        minWidth={headers.length * 120}
+      />
     </div>
   );
 }

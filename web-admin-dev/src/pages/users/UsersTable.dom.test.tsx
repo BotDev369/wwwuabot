@@ -174,12 +174,14 @@ describe("UsersTable", () => {
 
   it("рядок вибирається кліком і знімається повторним", () => {
     render(<UsersTable onMessage={vi.fn()} />);
-    const row = screen.getByText("Сергій Дискант").closest("tr") as HTMLElement;
+    const row = (): HTMLElement => screen.getByText("Сергій Дискант").closest("tr") as HTMLElement;
 
-    fireEvent.click(row);
-    expect(row.className).toContain("selected");
+    fireEvent.click(row());
+    // Спільна таблиця позначає вибір класом `wb-table-row--on` — тим самим,
+    // що й «Розпорядники»: смуга акценту зліва, без заливки рядка.
+    expect(row().className).toContain("wb-table-row--on");
 
-    fireEvent.click(row);
-    expect(row.className).not.toContain("selected");
+    fireEvent.click(row());
+    expect(row().className).not.toContain("wb-table-row--on");
   });
 });

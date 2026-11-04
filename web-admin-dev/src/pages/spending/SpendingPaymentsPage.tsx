@@ -8,7 +8,7 @@
 
 import { useMemo } from "react";
 import type { SpendingTransaction } from "@wwwuabot/shared/spending";
-import { DataTable, type DataTableColumn } from "../../shared/components/DataTable";
+import { DataTable, type DataTableColumn } from "@wwwuabot/ui/table";
 import { SpendingPeriodControls, SpendingTopbar } from "./SpendingTopbar";
 import { formatCompactMoney, formatCount, formatDate, formatMoney, periodsOf } from "./format";
 import { useSpending } from "./useSpending";
@@ -74,18 +74,6 @@ function CommunityPayments({ period }: { readonly period: string }) {
         rows={list.items}
         rowKey={(payment) => payment.id}
         tableClassName="spend-table--payments"
-        mobileMeta={(payment) => (
-          <>
-            <dt className="wb-table-meta-wide">Призначення</dt>
-            <dd className="wb-table-meta-wide">{payment.paymentDetails || "—"}</dd>
-            <dt>Дата</dt>
-            <dd>{formatDate(payment.transDate)}</dd>
-            <dt>КЕКВ</dt>
-            <dd>{payment.kekv || "—"}</dd>
-            <dt>Сума</dt>
-            <dd>{formatMoney(payment.amount, payment.currency || "UAH")}</dd>
-          </>
-        )}
         caption={`Показано ${formatCount(list.items.length)} сплат`}
         empty="За цей місяць платежів немає."
       />

@@ -1,5 +1,5 @@
 {
-  "version": "5e87471",
+  "version": "d85c69e",
   "files": [
     {
       "file": "admin/analytics-people.css",
@@ -34,7 +34,7 @@
     {
       "file": "admin/monitoring-report.css",
       "tokens": 0,
-      "classes": 19
+      "classes": 15
     },
     {
       "file": "admin/monitoring.css",
@@ -58,8 +58,8 @@
     },
     {
       "file": "admin/scenarios-list.css",
-      "tokens": 0,
-      "classes": 8
+      "tokens": 1,
+      "classes": 10
     },
     {
       "file": "admin/shell.css",
@@ -68,8 +68,8 @@
     },
     {
       "file": "admin/spending.css",
-      "tokens": 2,
-      "classes": 75
+      "tokens": 10,
+      "classes": 73
     },
     {
       "file": "admin/style.css",
@@ -84,7 +84,7 @@
     {
       "file": "admin/users-table.css",
       "tokens": 0,
-      "classes": 24
+      "classes": 11
     },
     {
       "file": "ads.css",
@@ -109,12 +109,12 @@
     {
       "file": "blocks.css",
       "tokens": 0,
-      "classes": 234
+      "classes": 233
     },
     {
       "file": "components.css",
-      "tokens": 23,
-      "classes": 209
+      "tokens": 20,
+      "classes": 203
     },
     {
       "file": "contacts.css",
@@ -133,8 +133,8 @@
     },
     {
       "file": "dates.css",
-      "tokens": 0,
-      "classes": 26
+      "tokens": 1,
+      "classes": 24
     },
     {
       "file": "drawer.css",
@@ -2508,32 +2508,81 @@
       "section": ""
     },
     {
-      "name": "--wb-table-head",
-      "file": "components.css",
-      "selector": ".wb-table-scroll",
-      "value": "var(--bg-2)",
-      "section": "Таблиця даних: один шаблон на всі таблиці (DataTable)"
+      "name": "--wb-table-min",
+      "file": "admin/scenarios-list.css",
+      "selector": ".wb-scenarios-table",
+      "value": "760px",
+      "section": "Список сценаріїв"
     },
     {
-      "name": "--wb-table-head",
-      "file": "components.css",
-      "selector": ".wb-table-scroll",
-      "value": "color-mix(in srgb, var(--text-primary) 5%, var(--card-bg))",
-      "section": "Таблиця даних: один шаблон на всі таблиці (DataTable)"
+      "name": "--wb-table-min",
+      "file": "admin/spending.css",
+      "selector": ".spend-table--orgs",
+      "value": "720px",
+      "section": ""
     },
     {
-      "name": "--wb-table-pin",
-      "file": "components.css",
-      "selector": ".wb-table-scroll",
-      "value": "var(--bg-2)",
-      "section": "Таблиця даних: один шаблон на всі таблиці (DataTable)"
+      "name": "--wb-table-min",
+      "file": "admin/spending.css",
+      "selector": ".spend-table--payments",
+      "value": "780px",
+      "section": ""
     },
     {
-      "name": "--wb-table-pin",
+      "name": "--wb-table-min",
+      "file": "admin/spending.css",
+      "selector": ".spend-table--codes",
+      "value": "640px",
+      "section": ""
+    },
+    {
+      "name": "--wb-table-min",
+      "file": "admin/spending.css",
+      "selector": ".spend-table--recipients",
+      "value": "640px",
+      "section": ""
+    },
+    {
+      "name": "--wb-table-min",
+      "file": "admin/spending.css",
+      "selector": ".spend-table--sync",
+      "value": "820px",
+      "section": ""
+    },
+    {
+      "name": "--wb-table-min",
+      "file": "admin/spending.css",
+      "selector": ".spend-table--documents",
+      "value": "780px",
+      "section": ""
+    },
+    {
+      "name": "--wb-table-min",
+      "file": "admin/spending.css",
+      "selector": ".spend-table--transactions",
+      "value": "780px",
+      "section": ""
+    },
+    {
+      "name": "--wb-table-min",
+      "file": "admin/spending.css",
+      "selector": ".spend-table--sources",
+      "value": "480px",
+      "section": ""
+    },
+    {
+      "name": "--wb-table-min",
+      "file": "dates.css",
+      "selector": ".wb-date-list .wb-date-table",
+      "value": "760px",
+      "section": ""
+    },
+    {
+      "name": "--wb-table-surface",
       "file": "components.css",
       "selector": ".wb-table-scroll",
-      "value": "color-mix(in srgb, var(--text-primary) 3%, var(--card-bg))",
-      "section": "Таблиця даних: один шаблон на всі таблиці (DataTable)"
+      "value": "var(--card-bg)",
+      "section": "Таблиця"
     }
   ],
   "classes": {
@@ -2713,13 +2762,10 @@
           "mon-bar",
           "mon-bar-fill",
           "mon-group",
-          "mon-scroll",
           "mon-status",
           "mon-status-error",
           "mon-status-ok",
-          "mon-status-partial",
-          "mon-table",
-          "mon-table-num"
+          "mon-status-partial"
         ]
       },
       {
@@ -2737,8 +2783,7 @@
         "section": "Динаміка всіх показників",
         "names": [
           "mon-dyn-head",
-          "mon-dyn-label",
-          "mon-table-dynamics"
+          "mon-dyn-label"
         ]
       }
     ],
@@ -2994,6 +3039,13 @@
           "wb-count",
           "wb-search"
         ]
+      },
+      {
+        "section": "Список сценаріїв",
+        "names": [
+          "wb-scenarios",
+          "wb-scenarios-table"
+        ]
       }
     ],
     "admin/shell.css": [
@@ -3071,14 +3123,12 @@
           "spend",
           "spend-analytics",
           "spend-analytics-panel",
-          "spend-analytics-table",
           "spend-chart",
           "spend-chart-axis",
           "spend-chart-bar",
           "spend-chart-caption",
           "spend-chart-svg",
           "spend-chart-tick",
-          "spend-lastload",
           "spend-panel",
           "spend-rank",
           "spend-rank-bar",
@@ -3182,28 +3232,14 @@
       {
         "section": "",
         "names": [
-          "selected",
-          "wb-data-table--dense",
-          "wb-data-table-wrap--inset",
-          "wb-row-blocked",
-          "wb-sticky-td",
-          "wb-sticky-th"
-        ]
-      },
-      {
-        "section": "Колонки й комірки",
-        "names": [
           "wb-cell-center",
-          "wb-cell-empty",
           "wb-cell-mono",
           "wb-cell-name",
-          "wb-cell-nowrap",
-          "wb-cell-tight",
-          "wb-col-status",
           "wb-col-tight",
-          "wb-data-table--dense",
+          "wb-row-blocked",
           "wb-sort-arrow",
-          "wb-th-sortable"
+          "wb-th-sortable",
+          "wb-users-table"
         ]
       },
       {
@@ -3217,25 +3253,6 @@
         "names": [
           "wb-bulk-bar",
           "wb-bulk-count"
-        ]
-      },
-      {
-        "section": "Таблиця картки (поле → значення)",
-        "names": [
-          "wb-card-table",
-          "wb-card-td-field",
-          "wb-card-td-value",
-          "wb-card-th-field",
-          "wb-card-th-value"
-        ]
-      },
-      {
-        "section": "Телефон",
-        "names": [
-          "wb-bulk-bar",
-          "wb-cell-name",
-          "wb-data-table--dense",
-          "wb-data-table-wrap--inset"
         ]
       }
     ],
@@ -3764,8 +3781,7 @@
       {
         "section": "Таблиця",
         "names": [
-          "wb-block-table",
-          "wb-data-table"
+          "wb-block-table"
         ]
       },
       {
@@ -4363,48 +4379,20 @@
         ]
       },
       {
-        "section": "Table",
+        "section": "Таблиця",
         "names": [
-          "wb-table",
-          "wb-table-wrap"
-        ]
-      },
-      {
-        "section": "Data table (complex: sticky, sort, select)",
-        "names": [
-          "selected",
-          "wb-data-table",
-          "wb-data-table-wrap"
-        ]
-      },
-      {
-        "section": "Таблиця даних: один шаблон на всі таблиці (DataTable)",
-        "names": [
-          "wb-cell-num",
+          "wb-cell-nowrap",
           "wb-cell-sub",
           "wb-cell-title",
           "wb-col-num",
-          "wb-table--grid",
+          "wb-table",
           "wb-table-caption",
           "wb-table-empty",
+          "wb-table-group",
+          "wb-table-pin",
           "wb-table-row--click",
           "wb-table-row--on",
           "wb-table-scroll"
-        ]
-      },
-      {
-        "section": "Телефон: рядок лишає один підпис, числа йдуть під нього",
-        "names": [
-          "wb-cell-title",
-          "wb-table--stack",
-          "wb-table-meta",
-          "wb-table-meta-wide"
-        ]
-      },
-      {
-        "section": "Закріплені рядок 1 і стовпець 1 — наскрізний стандарт таблиць",
-        "names": [
-          "wb-table"
         ]
       },
       {
@@ -4667,8 +4655,15 @@
       {
         "section": "",
         "names": [
+          "wb-date-cell",
+          "wb-date-cell--body",
+          "wb-date-cell--date",
+          "wb-date-cell--name",
           "wb-date-list",
-          "wb-date-sort"
+          "wb-date-name",
+          "wb-date-row--open",
+          "wb-date-sort",
+          "wb-date-table"
         ]
       },
       {
@@ -4708,26 +4703,9 @@
           "wb-btn",
           "wb-date-bulk",
           "wb-date-bulk__count",
-          "wb-date-cell",
-          "wb-date-cell--actions",
-          "wb-date-cell--body",
-          "wb-date-cell--date",
-          "wb-date-cell--name",
-          "wb-date-cell--notes",
-          "wb-date-cell--pick",
-          "wb-date-edit",
-          "wb-date-head",
-          "wb-date-list",
           "wb-date-modal-footer",
           "wb-date-modal-footer__spacer",
-          "wb-date-name",
-          "wb-date-name-row",
-          "wb-date-name__caret",
-          "wb-date-name__meta",
-          "wb-date-row",
-          "wb-date-row--open",
-          "wb-date-sort",
-          "wb-table"
+          "wb-date-sort"
         ]
       }
     ],

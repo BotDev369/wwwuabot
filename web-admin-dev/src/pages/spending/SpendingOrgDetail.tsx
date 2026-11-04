@@ -9,7 +9,7 @@
 
 import { useState } from "react";
 import type { SpendingDocument, SpendingOrg, SpendingTransaction } from "@wwwuabot/shared/spending";
-import { DataTable, type DataTableColumn } from "../../shared/components/DataTable";
+import { DataTable, type DataTableColumn } from "@wwwuabot/ui/table";
 import { contractorNames, counterparty, formatCount, formatDate, formatMoney } from "./format";
 import { useSpendingDocuments, useSpendingTransactions } from "./useSpendingList";
 
@@ -80,18 +80,6 @@ function DocumentList({ edrpou, period }: { edrpou: string; period: string }) {
         rows={list.items}
         rowKey={(document) => document.id}
         tableClassName="spend-table--documents"
-        mobileMeta={(document) => (
-          <>
-            <dt className="wb-table-meta-wide">Контрагенти</dt>
-            <dd className="wb-table-meta-wide">{contractorNames(document.contractors)}</dd>
-            <dt>Дата</dt>
-            <dd>{formatDate(document.documentDate)}</dd>
-            <dt>Номер</dt>
-            <dd>{document.number || "—"}</dd>
-            <dt>Сума</dt>
-            <dd>{formatMoney(document.amount, document.currency)}</dd>
-          </>
-        )}
         empty="Договорів немає."
       />
       {list.nextCursor && (
@@ -178,16 +166,6 @@ function TransactionList({
         rows={list.items}
         rowKey={(item) => item.id}
         tableClassName="spend-table--transactions"
-        mobileMeta={(transaction) => (
-          <>
-            <dt className="wb-table-meta-wide">Призначення</dt>
-            <dd className="wb-table-meta-wide">{transaction.paymentDetails || "—"}</dd>
-            <dt>КЕКВ</dt>
-            <dd>{transaction.kekv || "—"}</dd>
-            <dt>Сума</dt>
-            <dd>{formatMoney(transaction.amount, transaction.currency)}</dd>
-          </>
-        )}
         empty="Записів немає."
       />
       <p className="spend-list-note">

@@ -1,5 +1,6 @@
 /**
- * Сторож картки «Дати» на телефоні (`dates.css`).
+ * Сторож списку дат (`dates.css`): це та сама спільна таблиця, що й усюди —
+ * рамка скролить, шапка й перший стовпець закріплені, без карток на телефоні.
  *
  * Читається як текст: розбору CSS у тестовому середовищі немає
  * (`environment: node`) — так само, як у `chrome.test.ts`.
@@ -18,173 +19,46 @@ const css = readFileSync(new URL("./dates.css", import.meta.url), "utf8").replac
 /** Телефонна частина файлу — усе, що стоїть після маркера медіазапиту. */
 const [wide, phone = ""] = css.split("@media (max-width: 520px)");
 
-/** Тіло блоку від `{` до парної `}` — разом із вкладеними, як у CSSOM. */
-function body(scope: string, open: number): string {
-  let depth = 0;
-  for (let i = open; i < scope.length; i++) {
-    if (scope[i] === "{") depth++;
-    else if (scope[i] === "}" && --depth === 0) return scope.slice(open, i);
-  }
-  throw new Error("блок не закритий");
-}
-
-/**
- * Блок правила. Пошук чіпляється за межу блоку (`}` або початок області), а не
- * за рядок: у списку селекторів (`.wb-date-list,\n  .wb-date-row {`) останній
- * рядок — не окреме правило, і без цієї межі береться чуже тіло.
- */
-function block(scope: string, match: (head: string) => boolean): string {
-  const pattern = /(?:^|[{}])\s*([^{}\s][^{}]*?)\s*\{/g;
-  const found = [...scope.matchAll(pattern)].find(([, head]) => match(head.trim()));
-  expect(found, "блок мусить існувати").toBeDefined();
-  return body(scope, scope.indexOf("{", found?.index));
-}
-
-/** Правило з одним селектором. */
+/** Тіло правила від першої `{` після селектора до першої `}`. */
 function rule(scope: string, selector: string): string {
-  return block(scope, (head) => head === selector);
+  const start = scope.indexOf(selector);
+  expect(start, `правило ${selector} має існувати`).toBeGreaterThan(-1);
+  const open = scope.indexOf("{", start + selector.length - 1);
+  const close = scope.indexOf("}", open);
+  return scope.slice(open, close);
 }
 
-/** Блок групового селектора: `selector` — один із пунктів списку. */
-function group(scope: string, selector: string): string {
-  return block(scope, (head) => head.split(",").some((part) => part.trim() === selector));
-}
-
-describe("рядок списку стає карткою", () => {
-  it("таблиця ламається на всіх рівнях, а не лише на `tr`", () => {
-    // `display: block` тільки на `tr`/`td` лишає табличну розкладку, і колонки
-    // роз'їжджаються — це була перша версія картки.
-    for (const selector of [".wb-date-list", ".wb-date-list > table", ".wb-date-list tbody"]) {
-      expect(group(phone, selector), selector).toContain("display: block");
-    }
-    expect(group(phone, ".wb-date-row"), ".wb-date-row").toContain("display: block");
-  });
-
-  it("комірка бере свої береги довшим селектором, а не `!important`", () => {
-    // Мірки `td` належать таблиці; картка стає карткою тому, що її селектор
-    // довший — війни `!important` у проєкті немає.
-    const cell = rule(phone, ".wb-date-list .wb-table td.wb-date-cell");
-    expect(cell).toContain("display: flex");
-    expect(cell).toContain("padding: var(--sp-1) 0");
-    expect(cell, "комірка картки — без `!important`").not.toContain("!important");
-  });
-
-  it("назва картки більша за поля — токеном, без `!important`", () => {
-    const name = rule(phone, ".wb-date-list .wb-table td.wb-date-cell--name");
-    expect(name).toContain("font-size: var(--text-md)");
-    expect(name).not.toContain("!important");
-  });
-
-  it("зебра таблиці не фарбує картку: тло лишається за вибраним рядком", () => {
-    // У `components.css` зебра стоїть на `td`, тож у картці це була окрема
-    // смуга під кожним полем плюс пляма за чекбоксом — і вона вилазила за межі.
-    expect(rule(phone, ".wb-date-list tbody tr:nth-child(even) td")).toContain(
-      "background: transparent",
-    );
-  });
-});
-
-describe("картка — акордеон", () => {
-  it("згорнута картка показує лише голову", () => {
-    // Селектор довший за правило комірки (`display: flex`) — інакше тіло
-    // згорнутої картки лишалось би видимим.
-    expect(
-      rule(phone, ".wb-date-list .wb-date-row:not(.wb-date-row--open) .wb-date-cell--body"),
-    ).toContain("display: none");
-  });
-
-  it("дату показує голова, а не окрема комірка картки", () => {
-    expect(rule(phone, ".wb-date-list .wb-table td.wb-date-cell--date")).toContain("display: none");
-  });
-
-  it("дата й каретка існують лише в картці", () => {
-    // У таблиці вони сховані одним правилом на два селектори — звідси `group`.
-    for (const selector of [".wb-date-name__meta", ".wb-date-name__caret"]) {
-      expect(group(wide, selector), selector).toContain("display: none");
-      expect(rule(phone, selector), selector).not.toContain("display: none");
+describe("список дат — та сама таблиця, що й усюди", () => {
+  it("на телефоні рядок лишається рядком, а не стає карткою", () => {
+    // Картка ламала таблицю на всіх рівнях (`table`, `tbody`, `tr`, `td`).
+    // Це був другий вигляд таблиці в продукті — рівно те, чого бути не має.
+    for (const selector of [".wb-date-list", ".wb-date-row", ".wb-date-cell"]) {
+      expect(phone, selector).not.toContain(`${selector} {\n  display: block`);
+      expect(phone, selector).not.toContain("display: block;\n  width: 100%");
     }
   });
 
-  it("у таблиці правка — окремою кнопкою, у картці — у тілі", () => {
-    // Одна дія, два місця: що саме видно, вирішує ширина екрана.
-    expect(rule(wide, ".wb-date-edit")).toContain("inline-flex");
-    expect(rule(phone, ".wb-date-edit")).toContain("display: none");
-    expect(rule(wide, ".wb-date-cell--actions")).toContain("display: none");
-    expect(rule(phone, ".wb-date-cell--actions")).toContain("flex-end");
+  it("шапку не ховають: закріплений рядок і є підписом стовпця", () => {
+    expect(phone).not.toContain(".wb-date-head {\n  display: none");
+    expect(phone).not.toContain("thead,");
   });
 
-  it("картка не роздувається відступами — висоту задає голова", () => {
-    // Згорнута картка = рядок + голова 44px; відступи лише обрамляють її.
-    expect(rule(phone, ".wb-date-row")).toContain(
-      "padding: var(--sp-1) var(--sp-2) var(--sp-1) var(--sp-3)",
-    );
-    expect(rule(phone, ".wb-date-list .wb-table td.wb-date-cell--name")).toContain(
-      "padding: 0 var(--sp-12) 0 0",
-    );
+  it("мінімальна ширина задана — інакше шість колонок стискаються в кашу", () => {
+    expect(rule(wide, ".wb-date-list .wb-date-table")).toContain("--wb-table-min: 760px");
   });
 
-  it("текст не тулиться до лівого краю картки, а чекбокс — по центру її висоти", () => {
-    // Сам чекбокс висить по центру: жорсткий `top` на нижчій картці виглядав би
-    // зсунутим (розмір поля — у сторожі «чекбокс добору»).
-    const pick = rule(phone, ".wb-date-cell--pick");
-    expect(pick).toContain("top: 50%");
-    expect(pick).toContain("translateY(-50%)");
+  it("рамка списку скролить обома осями через спільний клас", () => {
+    // Скрол і закріплення дає `.wb-table-scroll` у `components.css`; власного
+    // `overflow` файл дат не заводить, щоб не з'явився другий скролпорт.
+    expect(css).not.toContain(".wb-date-list {\n  overflow-x: auto");
   });
 
-  it("відкриту картку видно за акцентною кареткою", () => {
-    expect(rule(phone, ".wb-date-row--open .wb-date-name__caret")).toContain("var(--accent)");
-  });
-});
-
-describe("чекбокс добору", () => {
-  it("має розмір знака, а не 44px квадрат", () => {
-    const box = rule(wide, '.wb-date-list input[type="checkbox"]');
-    expect(box).toContain("width: 22px");
-    expect(box).toContain("height: 22px");
-    expect(box).not.toContain("44px");
-  });
-
-  it("у картці стоїть у власному полі 44×44 і не наїжджає на поля", () => {
-    const pick = rule(phone, ".wb-date-cell--pick");
-    expect(pick).toContain("position: absolute");
-    expect(pick).toContain("right: var(--sp-2)");
-    expect(pick).toContain("width: 44px");
-    expect(pick).toContain("height: 44px");
-    // Абсолютна комірка чіпляється до рядка — той мусить бути контейнером.
-    expect(rule(phone, ".wb-date-row")).toContain("position: relative");
-  });
-
-  it("перекриває наскрізний стандарт таблиць: це кнопка в куті, а не стовпець", () => {
-    // Стандарт (`components.css` §27) закріплює першу комірку через `left: 0`
-    // і фарбує її — у картці це вибивало чекбокс у потік і малювало під ним
-    // квадрат. Обидва скидання мусять лишатись, інакше досить зникнути
-    // одному рядку — і картка знову стане вдвічі вищою.
-    const pick = rule(phone, ".wb-date-cell--pick");
-    expect(pick).toContain("left: auto");
-    expect(pick).toContain("background: none");
-  });
-});
-
-describe("нотатки", () => {
-  it("на десктопі — один рядок із багатокрапкою", () => {
-    expect(rule(wide, ".wb-date-cell--notes")).toContain("max-width: 200px");
-  });
-
-  it("у картці обрізання знімається — інакше картка звужується до 200px", () => {
-    const notes = rule(phone, ".wb-date-cell--notes");
-    expect(notes).toContain("max-width: none");
-    expect(notes).toContain("white-space: normal");
-  });
-});
-
-describe("керування списком", () => {
-  it("панель вибірки переноситься, а не обрізається праворуч", () => {
-    expect(rule(wide, ".wb-date-bulk")).toContain("flex-wrap: wrap");
-    expect(rule(phone, ".wb-date-bulk__count")).toContain("flex: 0 0 100%");
-  });
-
-  it("сортування на телефоні — власний рядок, бо заголовків колонок немає", () => {
-    expect(rule(wide, ".wb-date-sort")).toContain("display: none");
-    expect(rule(phone, ".wb-date-sort")).toContain("display: flex");
+  it("на телефоні лишаються лише правила сортування, модалки й вибірки", () => {
+    for (const selector of [".wb-date-sort", ".wb-date-modal-footer", ".wb-date-bulk"]) {
+      expect(phone, selector).toContain(selector);
+    }
+    // Тап-таргет 44px — не косметика (AGENTS.md §3).
+    expect(rule(phone, ".wb-date-sort > select")).toContain("min-height: 44px");
+    expect(rule(wide, ".wb-date-modal-footer > .wb-btn")).toContain("min-height: 44px");
   });
 });

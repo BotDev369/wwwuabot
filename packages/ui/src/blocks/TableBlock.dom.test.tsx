@@ -2,8 +2,8 @@
 /**
  * Таблиця сторінки: шапка, рядки й те, що вона не малює без шапки.
  *
- * Сітку клітинок тримає кирпичик `.wb-data-table`, тож тест перевіряє, що блок
- * ставить саме його, а не малює власні комірки.
+ * Блок ставить ту саму `DataTable`, що й адмінка: окремих таблиць у продукті
+ * немає, тож тест перевіряє спільні класи, а не власну розмітку комірок.
  *
  * @module packages/ui/src/blocks/TableBlock.dom.test
  */
@@ -27,28 +27,28 @@ describe("TableBlock", () => {
     expect(container.firstChild).toBeNull();
   });
 
-  it("ставить кирпичик таблиці, а не власну розмітку комірок", () => {
+  it("ставить спільну таблицю, а не власну розмітку комірок", () => {
     const { container } = render(
       <TableBlock {...block({ headers: ["Країна", "Частка"], rows: [["Індія", "1,2 млрд"]] })} />,
     );
 
     expect(container.querySelector(".wb-block-table")).toBeTruthy();
-    expect(container.querySelector("table")?.className).toContain("wb-data-table");
+    // Рамка скролить в обидва боки, шапка й перший стовпець закріплені —
+    // це дає `DataTable`, а не блок.
+    expect(container.querySelector(".wb-table-scroll")).toBeTruthy();
+    expect(container.querySelector("table")?.className).toContain("wb-table");
     expect(screen.getByText("Країна").tagName).toBe("TH");
     expect(screen.getByText("1,2 млрд").tagName).toBe("TD");
   });
 
-  it("несе підпис стовпця в комірку — на телефоні шапки не видно", () => {
-    // Шапку ховає `@media` у `blocks.css`, а картка рядка показує підпис із
-    // `data-label`: без нього цифра лишається без назви (той самий прийом,
-    // що в «Датах» і «Видатках»).
+  it("рядок без комірок не ламає таблицю", () => {
     const { container } = render(
-      <TableBlock {...block({ headers: ["Група", "Частка"], rows: [["Християни", "28,8%"]] })} />,
+      <TableBlock {...block({ headers: ["Група", "Частка"], rows: [["Християни"]] })} />,
     );
 
     const cells = container.querySelectorAll("td");
-    expect(cells[0].getAttribute("data-label")).toBe("Група");
-    expect(cells[1].getAttribute("data-label")).toBe("Частка");
+    expect(cells).toHaveLength(2);
+    expect(cells[1].textContent).toBe("");
   });
 
   it("не тримає власного вигляду в розмітці", () => {
@@ -56,7 +56,6 @@ describe("TableBlock", () => {
       <TableBlock {...block({ headers: ["Один"], rows: [["1"]], striped: false })} />,
     );
 
-    expect((container.querySelector("table") as HTMLElement).getAttribute("style")).toBeNull();
     expect(
       (container.querySelector(".wb-block-table") as HTMLElement).getAttribute("style"),
     ).toBeNull();

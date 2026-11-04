@@ -134,16 +134,22 @@ export function ScenariosV2Table() {
   function thSort(field: ScenariosSortField, label: string) {
     const arrow = sortField === field ? (sortDir === "asc" ? " ↑" : " ↓") : "";
     return (
-      <th className="wb-th-sortable" onClick={() => setSort(field)} title={`Сортувати за ${label}`}>
-        {label}
-        {arrow && <span className="wb-sort-arrow">{arrow}</span>}
+      <th>
+        <span
+          className="wb-th-sortable"
+          onClick={() => setSort(field)}
+          title={`Сортувати за ${label}`}
+        >
+          {label}
+          {arrow && <span className="wb-sort-arrow">{arrow}</span>}
+        </span>
       </th>
     );
   }
 
   return (
     <>
-      <div className="wb-data-table-wrap wb-data-table-wrap--inset">
+      <div className="wb-scenarios">
         <div style={{ display: "flex", flexDirection: "column", gap: 8, marginBottom: 12 }}>
           <div style={{ display: "flex", alignItems: "center", gap: 12, flexWrap: "wrap" }}>
             <input
@@ -229,49 +235,51 @@ export function ScenariosV2Table() {
           </div>
         </div>
 
-        <table className="wb-data-table wb-data-table--dense">
-          <thead>
-            <tr>
-              {thSort("slug", "Назва")}
-              {thSort("rich_message", "Тип")}
-              {thSort("updated_at", "Оновлено")}
-              <th style={{ width: 80 }}>Дії</th>
-            </tr>
-          </thead>
-          <tbody>
-            {filtered.length === 0 ? (
+        <div className="wb-table-scroll">
+          <table className="wb-table wb-scenarios-table">
+            <thead>
               <tr>
-                <td colSpan={4} className="wb-cell-empty">
-                  {items.length === 0
-                    ? "У базі ще немає сценаріїв."
-                    : `Нічого не знайдено за «${query}».`}
-                </td>
+                {thSort("slug", "Назва")}
+                {thSort("rich_message", "Тип")}
+                {thSort("updated_at", "Оновлено")}
+                <th className="wb-cell-nowrap">Дії</th>
               </tr>
-            ) : groups ? (
-              groups.map(([groupKey, groupItems]) => (
-                <GroupSection
-                  key={groupKey}
-                  groupKey={groupKey}
-                  groupMode={groupBy}
-                  items={groupItems}
-                  selectedRow={selectedRow}
-                  onSelect={setSelectedRow}
-                  onOpen={setCardCodeword}
-                />
-              ))
-            ) : (
-              filtered.map((s) => (
-                <ScenarioRow
-                  key={s.slug}
-                  scenario={s}
-                  isSelected={selectedRow === s.slug}
-                  onSelect={() => setSelectedRow(selectedRow === s.slug ? null : s.slug)}
-                  onOpen={() => setCardCodeword(s.slug)}
-                />
-              ))
-            )}
-          </tbody>
-        </table>
+            </thead>
+            <tbody>
+              {filtered.length === 0 ? (
+                <tr>
+                  <td colSpan={4} className="wb-table-empty">
+                    {items.length === 0
+                      ? "У базі ще немає сценаріїв."
+                      : `Нічого не знайдено за «${query}».`}
+                  </td>
+                </tr>
+              ) : groups ? (
+                groups.map(([groupKey, groupItems]) => (
+                  <GroupSection
+                    key={groupKey}
+                    groupKey={groupKey}
+                    groupMode={groupBy}
+                    items={groupItems}
+                    selectedRow={selectedRow}
+                    onSelect={setSelectedRow}
+                    onOpen={setCardCodeword}
+                  />
+                ))
+              ) : (
+                filtered.map((s) => (
+                  <ScenarioRow
+                    key={s.slug}
+                    scenario={s}
+                    isSelected={selectedRow === s.slug}
+                    onSelect={() => setSelectedRow(selectedRow === s.slug ? null : s.slug)}
+                    onOpen={() => setCardCodeword(s.slug)}
+                  />
+                ))
+              )}
+            </tbody>
+          </table>
+        </div>
       </div>
 
       {cardCodeword !== null && (

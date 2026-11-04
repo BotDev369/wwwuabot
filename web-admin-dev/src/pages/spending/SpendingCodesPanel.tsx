@@ -9,7 +9,7 @@
 
 import { useState } from "react";
 import type { SpendingCodeKind, SpendingCodeRow } from "@wwwuabot/shared/spending";
-import { DataTable, type DataTableColumn } from "../../shared/components/DataTable";
+import { DataTable, type DataTableColumn } from "@wwwuabot/ui/table";
 import { SpendingRankChart } from "./SpendingRankChart";
 import { formatCompactMoney, formatCount, formatMoney, formatShare } from "./format";
 import { useSpendingCodes } from "./useSpendingAnalytics";
@@ -109,16 +109,6 @@ export function SpendingCodesPanel({ period }: SpendingCodesPanelProps) {
             rows={rows}
             rowKey={(row) => row.code || "none"}
             tableClassName="spend-table--codes"
-            mobileMeta={(row) => (
-              <>
-                <dt>Частка суми</dt>
-                <dd>{formatShare(row.amount, total)}</dd>
-                <dt>Платежів</dt>
-                <dd>{formatCount(row.count)}</dd>
-                <dt>Сума</dt>
-                <dd>{formatMoney(row.amount)}</dd>
-              </>
-            )}
             empty="За цей місяць кодів немає."
           />
         </>

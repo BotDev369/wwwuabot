@@ -15,6 +15,7 @@ import {
   valueKey,
   type SnapshotPoint,
 } from "@wwwuabot/shared/monitoring";
+import { DataTable, type DataTableColumn } from "@wwwuabot/ui/table";
 import { formatStamp, shortRef, statusClass, statusLabel, triggerLabel } from "./format";
 
 interface SnapshotHistoryProps {
@@ -29,44 +30,69 @@ export function SnapshotHistory({ history }: SnapshotHistoryProps) {
   const metricOf = (point: SnapshotPoint, metric: string): number =>
     point.totals[valueKey(TOTAL_GROUP, metric)] ?? 0;
 
+  const columns: readonly DataTableColumn<SnapshotPoint>[] = [
+    {
+      key: "when",
+      header: "Коли",
+      className: "wb-cell-nowrap",
+      width: 150,
+      render: (point) => formatStamp(point.collectedAt),
+    },
+    {
+      key: "trigger",
+      header: "Збір",
+      className: "wb-cell-nowrap",
+      width: 120,
+      render: (point) => triggerLabel(point.trigger),
+    },
+    {
+      key: "status",
+      header: "Стан",
+      className: "wb-cell-nowrap",
+      width: 130,
+      render: (point) => (
+        <span className={`mon-status ${statusClass(point.status)}`}>
+          {statusLabel(point.status)}
+        </span>
+      ),
+    },
+    {
+      key: "size",
+      header: "Розмір",
+      className: "wb-col-num",
+      width: 110,
+      render: (point) => formatMetric("code.size_bytes", metricOf(point, "code.size_bytes")),
+    },
+    {
+      key: "lines",
+      header: "Рядків",
+      className: "wb-col-num",
+      width: 100,
+      render: (point) => formatMetric("code.lines", metricOf(point, "code.lines")),
+    },
+    {
+      key: "files",
+      header: "Файлів",
+      className: "wb-col-num",
+      width: 100,
+      render: (point) => formatMetric("code.files", metricOf(point, "code.files")),
+    },
+    {
+      key: "ref",
+      header: "Коміт",
+      className: "wb-cell-nowrap",
+      width: 90,
+      render: (point) => <span className="mon-ref">{shortRef(point.ref)}</span>,
+    },
+  ];
+
   return (
-    <table className="mon-table">
-      <thead>
-        <tr>
-          <th>Коли</th>
-          <th>Збір</th>
-          <th>Стан</th>
-          <th className="mon-table-num">Розмір</th>
-          <th className="mon-table-num">Рядків</th>
-          <th className="mon-table-num">Файлів</th>
-          <th>Коміт</th>
-        </tr>
-      </thead>
-      <tbody>
-        {history.map((point) => (
-          <tr key={point.id}>
-            <td>{formatStamp(point.collectedAt)}</td>
-            <td>{triggerLabel(point.trigger)}</td>
-            <td>
-              <span className={`mon-status ${statusClass(point.status)}`}>
-                {statusLabel(point.status)}
-              </span>
-            </td>
-            <td className="mon-table-num">
-              {formatMetric("code.size_bytes", metricOf(point, "code.size_bytes"))}
-            </td>
-            <td className="mon-table-num">
-              {formatMetric("code.lines", metricOf(point, "code.lines"))}
-            </td>
-            <td className="mon-table-num">
-              {formatMetric("code.files", metricOf(point, "code.files"))}
-            </td>
-            <td>
-              <span className="mon-ref">{shortRef(point.ref)}</span>
-            </td>
-          </tr>
-        ))}
-      </tbody>
-    </table>
+    <DataTable
+      columns={columns}
+      rows={history}
+      rowKey={(point) => String(point.id)}
+      empty="Зрізів ще немає."
+      minWidth={820}
+    />
   );
 }

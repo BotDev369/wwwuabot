@@ -28,6 +28,7 @@ import {
   sortPoints,
   type SnapshotPoint,
 } from "@wwwuabot/shared/monitoring";
+import { DataTable, type DataTableColumn } from "@wwwuabot/ui/table";
 import { MonPanel } from "./MonPanel";
 import { deltaClass, shortRef, stampParts } from "./format";
 
@@ -35,6 +36,12 @@ interface MetricDynamicsProps {
   history: readonly SnapshotPoint[];
   open: boolean;
   onToggle: () => void;
+}
+
+/** Рядок таблиці: показник і його значення по зрізах, у тому ж порядку. */
+interface DynamicsRow {
+  readonly metric: (typeof METRICS)[number];
+  readonly series: readonly (number | undefined)[];
 }
 
 export function MetricDynamics({ history, open, onToggle }: MetricDynamicsProps) {
@@ -46,6 +53,50 @@ export function MetricDynamics({ history, open, onToggle }: MetricDynamicsProps)
     series: metricValues(points, metric.key, TOTAL_GROUP),
   })).filter((row) => row.series.some((value) => value !== undefined));
 
+  const columns: readonly DataTableColumn<DynamicsRow>[] = [
+    {
+      key: "metric",
+      header: "Показник",
+      className: "wb-cell-nowrap",
+      width: 190,
+      render: ({ metric }) => <span className="mon-dyn-label">{metric.label}</span>,
+    },
+    ...points.map((point) => {
+      const [date, time] = stampParts(point.collectedAt);
+      const column: DataTableColumn<DynamicsRow> = {
+        key: `point-${point.id}`,
+        header: (
+          <>
+            <span className="mon-dyn-head">{date}</span>
+            <span className="mon-dyn-head">{time}</span>
+            <span className="mon-ref">{shortRef(point.ref)}</span>
+          </>
+        ),
+        className: "wb-col-num",
+        width: 104,
+        render: ({ metric, series }) => {
+          const value = series[points.indexOf(point)];
+          return value === undefined ? "—" : formatMetric(metric.key, value);
+        },
+      };
+      return column;
+    }),
+    {
+      key: "delta",
+      header: "Δ за період",
+      className: "wb-col-num",
+      width: 120,
+      render: ({ metric }) => {
+        const delta = periodDelta(points, metric.key, TOTAL_GROUP);
+        return (
+          <span className={`mon-kpi-delta ${deltaClass(metric.trend, delta)}`}>
+            {delta === undefined ? "—" : formatDelta(metric.key, delta)}
+          </span>
+        );
+      },
+    },
+  ];
+
   return (
     <MonPanel title="Всі показники в динаміці" open={open} onToggle={onToggle}>
       {rows.length === 0 ? (
@@ -54,50 +105,14 @@ export function MetricDynamics({ history, open, onToggle }: MetricDynamicsProps)
         </p>
       ) : (
         <>
-          <div className="mon-scroll">
-            <table className="mon-table mon-table-dynamics">
-              <thead>
-                <tr>
-                  <th>Показник</th>
-                  {points.map((point) => {
-                    const [date, time] = stampParts(point.collectedAt);
-                    return (
-                      <th key={point.id} className="mon-table-num">
-                        <span className="mon-dyn-head">{date}</span>
-                        <span className="mon-dyn-head">{time}</span>
-                        <span className="mon-ref">{shortRef(point.ref)}</span>
-                      </th>
-                    );
-                  })}
-                  <th className="mon-table-num">Δ за період</th>
-                </tr>
-              </thead>
-              <tbody>
-                {rows.map(({ metric, series }) => {
-                  const delta = periodDelta(points, metric.key, TOTAL_GROUP);
-                  return (
-                    <tr key={metric.key}>
-                      <td>
-                        <span className="mon-dyn-label">{metric.label}</span>
-                      </td>
-                      {series.map((value, index) => (
-                        <td key={points[index].id} className="mon-table-num">
-                          {value === undefined ? "—" : formatMetric(metric.key, value)}
-                        </td>
-                      ))}
-                      <td className="mon-table-num">
-                        {/* Клас зміни — той самий `deltaClass`, що й у картках:
-                            «нейтральний» показник не фарбується зеленим. */}
-                        <span className={`mon-kpi-delta ${deltaClass(metric.trend, delta)}`}>
-                          {delta === undefined ? "—" : formatDelta(metric.key, delta)}
-                        </span>
-                      </td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
-          </div>
+          <DataTable
+            columns={columns}
+            rows={rows}
+            rowKey={(row) => row.metric.key}
+            empty="Зрізів поки немає."
+            tableClassName="mon-dynamics"
+            minWidth={points.length * 104 + 320}
+          />
 
           <p className="mon-chart-note">
             Колонка на кожен зріз, у хронологічному порядку; під часом — коміт, на який зріз знято.

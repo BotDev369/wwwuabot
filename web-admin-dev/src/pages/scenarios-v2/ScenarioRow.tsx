@@ -40,27 +40,14 @@ export function ScenarioRow({ scenario, isSelected, onSelect, onOpen }: Scenario
 
   return (
     <tr
-      className={isSelected ? "selected" : undefined}
+      className={`wb-table-row--click${isSelected ? " wb-table-row--on" : ""}`}
       onClick={onSelect}
-      style={{ cursor: "pointer" }}
+      aria-current={isSelected ? "true" : undefined}
     >
       <td className="wb-cell-name">
         <div style={{ display: "flex", flexDirection: "column", gap: 2 }}>
           <span style={{ fontWeight: 500 }}>{scenario.slug}</span>
-          {hasTitle && (
-            <span
-              style={{
-                fontSize: 12,
-                color: "var(--text-secondary)",
-                overflow: "hidden",
-                textOverflow: "ellipsis",
-                whiteSpace: "nowrap",
-                maxWidth: 200,
-              }}
-            >
-              {title}
-            </span>
-          )}
+          {hasTitle && <span className="wb-cell-sub">{title}</span>}
         </div>
       </td>
       <td>

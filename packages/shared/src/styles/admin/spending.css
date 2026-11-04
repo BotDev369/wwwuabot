@@ -5,8 +5,6 @@
    лишається те, чим грошові колонки щільніші за нього. */
 
 .spend {
-  /* Мірка відступу — одна: на неї ж спирається закріплена шапка таблиці,
-     інакше вона липала на 20px нижче краю й над нею видно рядки. */
   --spend-pad: var(--sp-5);
   flex: 1;
   overflow: auto;
@@ -71,13 +69,42 @@
   box-shadow: var(--card-shadow);
 }
 
-/* Таблиці Є-data збираються з одного шаблону (`wb-table--grid` у
-   `components.css`): закріплені шапка й перший стовпець, тло тільки в них.
-   Тут лишається те, чого шаблон не знає: ширина колонок і грошові підписи.
+/* Таблиці Є-data — це та сама спільна таблиця (`DataTable`): закріплені шапка
+   й перший стовпець, скрол рамки в обидва боки, без заливок у комірок.
+   Тут лишається тільки ширина колонок і грошові підписи; `--wb-table-min` —
+   та межа, після якої таблиця їде вбік, а не стискає дані. */
 
-   Ширини — у відсотках і з розрахунком на телефон: перші дві колонки
-   вміщуються повністю, третя лишається наполовину — так видно, що таблиця
-   гортається вбік, і підпис рядка не губиться. */
+.spend-table--orgs {
+  --wb-table-min: 720px;
+}
+
+.spend-table--payments {
+  --wb-table-min: 780px;
+}
+
+.spend-table--codes {
+  --wb-table-min: 640px;
+}
+
+.spend-table--recipients {
+  --wb-table-min: 640px;
+}
+
+.spend-table--sync {
+  --wb-table-min: 820px;
+}
+
+.spend-table--documents {
+  --wb-table-min: 780px;
+}
+
+.spend-table--transactions {
+  --wb-table-min: 780px;
+}
+
+.spend-table--sources {
+  --wb-table-min: 480px;
+}
 .spend-table--orgs th:nth-child(1) {
   width: 30%;
 }
@@ -513,8 +540,15 @@
   font-variant-numeric: tabular-nums;
 }
 
-.spend-analytics-table td {
-  vertical-align: middle;
+@media (max-width: 860px) {
+  /* Підпис рядка лишається закріпленим, але не займає пів екрана: інакше
+     закріплений стовпець закриває саме ті дані, заради яких таблицю гортають.
+     Ширина — у `vw`, бо відсотки рахуються від ширини полотна (720+px). */
+  .spend-table th:first-child,
+  .spend-table td:first-child {
+    width: 44vw;
+    max-width: 44vw;
+  }
 }
 
 @media (max-width: 768px) {
@@ -537,12 +571,6 @@
 
   .spend-panel {
     padding: var(--sp-2);
-  }
-
-  /* Список джерел — довідка, а не дані: висоту обмежуємо, інакше підвал
-     сторінки його не перекриє. */
-  .spend-lastload .spend-table tbody tr {
-    border-bottom: 1px solid var(--border-subtle);
   }
 }
 

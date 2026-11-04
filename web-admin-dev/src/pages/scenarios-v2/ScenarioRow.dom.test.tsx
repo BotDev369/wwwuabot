@@ -57,7 +57,7 @@ describe("ScenarioRow", () => {
     row(PHOTO, { isSelected: true });
     const tr = screen.getByText("viruvannia").closest("tr") as HTMLElement;
 
-    expect(tr.className).toBe("selected");
+    expect(tr.className).toContain("wb-table-row--on");
   });
 
   it("клік по рядку вибирає, кнопка відкриває й не вибирає", () => {

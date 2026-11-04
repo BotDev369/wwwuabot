@@ -1,85 +1,18 @@
-/* ═══════════════════════════════════════════════════════════════════════════
-   USERS TABLE — тонкий шар над кирпичиком `.wb-data-table`
-   ═══════════════════════════════════════════════════════════════════════════
+/* ─── Список користувачів ─────────────────────────────────────────────────────
+   Саму таблицю малює `DataTable` (docs/DESIGN_SYSTEM.md §27). Тут лишається
+   те, чим користувачі щільніші за неї: комірки, сортування, меню рядка й
+   смуга масових дій. */
 
-   Таблицю, закріплену шапку, вибраний рядок і перший закріплений стовпець
-   дає кирпичик (`components.css`). Тут лишається тільки те, чим список
-   користувачів щільніший за нього: компактні рядки, три закріплені стовпці
-   й ролі комірок. Числа — ті самі, що були в `usr-*`. */
-
-.wb-data-table-wrap--inset {
+.wb-users-table {
   padding: var(--sp-2) var(--sp-3) var(--sp-4);
-  position: relative;
-}
-
-/* Щільний варіант: рядок відділяє лінія, а не смуга — список довгий, і
-   порівнюють у ньому рядки, а не сканують їх. */
-.wb-data-table--dense {
-  min-width: 0;
-  background: var(--bg-1);
-}
-
-.wb-data-table--dense th {
-  z-index: 3;
-  padding: var(--sp-3) var(--sp-4);
-  border-bottom: 1px solid var(--border);
-  background: var(--bg-1);
-  font-size: var(--text-xs);
-  font-weight: var(--weight-semibold);
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-  color: var(--text-muted);
-  text-align: left;
-}
-
-.wb-data-table--dense td {
-  padding: var(--sp-1) var(--sp-2);
-  border-top: 1px solid var(--border-subtle);
-  background: transparent;
-}
-
-.wb-data-table--dense tbody tr:nth-child(even) td {
-  background: transparent;
-}
-
-.wb-data-table--dense tbody tr:first-child td {
-  border-top: none;
 }
 
 .wb-row-blocked {
   opacity: 0.55;
 }
 
-/* Закріплені стовпці мусять бути непрозорими, інакше крізь них видно те, що
-   проїжджає при горизонтальному скролі. */
-.wb-sticky-th {
-  position: sticky;
-  z-index: 4;
-  background: var(--bg-1);
-}
-
-.wb-sticky-td {
-  position: sticky;
-  z-index: 1;
-  background: var(--bg-1);
-}
-
-.wb-data-table--dense tbody tr:hover .wb-sticky-td {
-  background: var(--bg-4);
-}
-
-.wb-data-table--dense tbody tr.selected .wb-sticky-td {
-  background: var(--accent-dim);
-}
-
-/* ─── Колонки й комірки ────────────────────────────────────────────────── */
-
 .wb-col-tight {
   width: 36px;
-}
-
-.wb-col-status {
-  min-width: 90px;
 }
 
 .wb-th-sortable {
@@ -97,10 +30,6 @@
   margin-left: 2px;
 }
 
-.wb-cell-tight {
-  width: 32px;
-}
-
 .wb-cell-center {
   text-align: center;
 }
@@ -114,23 +43,10 @@
 .wb-cell-name {
   font-weight: var(--weight-medium);
   color: var(--text-primary);
-  white-space: nowrap;
-  min-width: 120px;
 }
 
 .wb-cell-mono {
   font-family: var(--font-mono);
-  font-size: var(--text-xs);
-}
-
-.wb-cell-nowrap {
-  white-space: nowrap;
-}
-
-.wb-data-table--dense td.wb-cell-empty {
-  padding: var(--sp-6) var(--sp-3);
-  text-align: center;
-  color: var(--text-muted);
   font-size: var(--text-xs);
 }
 
@@ -175,99 +91,4 @@
   font-weight: 600;
   color: var(--accent);
   margin-right: 4px;
-}
-
-/* ─── Таблиця картки (поле → значення) ─────────────────────────────────── */
-
-.wb-card-table {
-  width: 100%;
-  border-collapse: collapse;
-  font-size: var(--text-xs);
-}
-
-.wb-card-table thead th {
-  position: sticky;
-  top: 0;
-  z-index: 1;
-  background: var(--bg-2);
-  border-bottom: 1px solid var(--border);
-  font-size: var(--text-xs);
-  font-weight: 600;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-  color: var(--text-muted);
-  text-align: left;
-  padding: var(--sp-2) var(--sp-3);
-}
-
-.wb-card-td-field {
-  position: sticky;
-  left: 0;
-  z-index: 1;
-  background: var(--bg-1);
-  font-weight: 500;
-  color: var(--text-secondary);
-  padding: var(--sp-1) var(--sp-3);
-  border-top: 1px solid var(--border-subtle);
-  white-space: nowrap;
-  font-family: var(--font-mono);
-  font-size: var(--text-xs);
-  width: 140px;
-  min-width: 120px;
-}
-
-.wb-card-td-value {
-  padding: var(--sp-1) var(--sp-3);
-  border-top: 1px solid var(--border-subtle);
-  word-break: break-word;
-  max-width: 400px;
-}
-
-/* Заголовок `-field` мусить «їхати» разом зі своїм `td` (той самий
-   sticky-left), інакше перша колонка відклеюється від заголовка при
-   горизонтальному скролі. */
-.wb-card-th-field {
-  position: sticky;
-  left: 0;
-  z-index: 2;
-  width: 140px;
-  min-width: 120px;
-}
-
-.wb-card-th-value {
-  min-width: 160px;
-}
-
-.wb-card-table tbody tr:first-child .wb-card-td-field,
-.wb-card-table tbody tr:first-child .wb-card-td-value {
-  border-top: none;
-}
-
-/* ═══ Телефон ═══ */
-@media (max-width: 768px) {
-  .wb-data-table-wrap--inset {
-    padding: var(--sp-2) var(--sp-1) var(--sp-4);
-  }
-
-  .wb-data-table--dense {
-    font-size: var(--text-xs);
-    min-width: 560px;
-  }
-
-  .wb-data-table--dense th {
-    padding: var(--sp-1);
-  }
-
-  .wb-data-table--dense td {
-    padding: var(--sp-1) var(--sp-1);
-  }
-
-  .wb-cell-name {
-    min-width: 100px;
-  }
-
-  .wb-bulk-bar {
-    flex-wrap: wrap;
-    padding: var(--sp-1) var(--sp-2);
-  }
 }

@@ -1,42 +1,6 @@
 /* ── Таблиці ─────────────────────────────────────────────────────────────── */
-/* Широкі таблиці скроляться самі: на телефоні «показник × зріз» не влізе,
-   і стискати колонки до нечитабельності — не вихід. */
-.mon-scroll {
-  overflow-x: auto;
-}
-
-.mon-table {
-  width: 100%;
-  border-collapse: collapse;
-  font-size: var(--text-xs);
-}
-
-.mon-table th {
-  padding: var(--sp-1) var(--sp-2);
-  text-align: left;
-  font-size: var(--text-xs);
-  font-weight: 600;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-  color: var(--text-muted);
-  border-bottom: 1px solid var(--border);
-}
-
-.mon-table td {
-  padding: var(--sp-2);
-  border-bottom: 1px solid var(--border);
-  color: var(--text-secondary);
-  font-variant-numeric: tabular-nums;
-  vertical-align: middle;
-}
-
-.mon-table tr:last-child td {
-  border-bottom: none;
-}
-
-.mon-table-num {
-  text-align: right;
-}
+/* «Показник × зріз» будує `DataTable`: широка таблиця гортається рамкою, а не
+   стискає колонки до нечитабельності. Тут — лише вміст комірок. */
 
 .mon-group {
   display: block;
@@ -125,17 +89,6 @@
 }
 
 /* ── Динаміка всіх показників ────────────────────────────────────────────── */
-/* Перший стовпчик їде разом зі скролом — і тоді через екран проходять голі
-   числа без підпису: саме тому він липкий і з власним тлом. */
-.mon-table-dynamics th:first-child,
-.mon-table-dynamics td:first-child {
-  position: sticky;
-  left: 0;
-  z-index: 1;
-  background: var(--bg-2);
-  white-space: nowrap;
-  text-align: left;
-}
 
 .mon-dyn-label {
   font-weight: 600;

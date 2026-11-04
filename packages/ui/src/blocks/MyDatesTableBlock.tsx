@@ -194,10 +194,10 @@ export function MyDatesTableBlock({ block }: BlockComponentProps) {
 
         {/* Table */}
         {!loading && dates.length > 0 && (
-          <div className="wb-date-list">
+          <div className="wb-date-list wb-table-scroll">
             <table className="wb-table wb-date-table">
               <thead>
-                <tr className="wb-date-head">
+                <tr>
                   <th className="wb-date-head__pick">
                     <input
                       type="checkbox"

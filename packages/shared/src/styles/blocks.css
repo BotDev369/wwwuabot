@@ -340,95 +340,13 @@
 }
 
 /* ── Таблиця ──────────────────────────────────────────────────────────────
-   Сітку клітинок малює кирпичик `.wb-data-table` (він же тримає закріплені
-   рядок і стовпець, правило 27); блок дає лише вільну ширину й край. */
+   Та сама спільна таблиця (`DataTable`, правило 27): рамка скролить у обидва
+   боки, шапка й перший стовпець закріплені. Блок дає лише відступ — власного
+   вигляду чи карток на телефоні в нього немає. */
 
 .wb-block-table {
-  overflow-x: auto;
-  border: 1px solid var(--hairline);
-  border-radius: var(--card-radius);
-  /* Широка таблиця гортається тут, а не розтягує сторінку: без цієї межі
-     обгортка брала ширину таблиці (580–700px) і на телефоні обрізала весь
-     екран праворуч. */
+  margin: var(--sp-3) 0;
   min-width: 0;
-  max-width: 100%;
-}
-
-/* Телефон: таблиця блоку стає списком карток, а не гортанням убік.
-   580px у 352px показували півтори колонки й ховали саме те, за чим таблицю
-   читають. Прийом той самий, що в «Датах» і «Видатках»: шапка ховається,
-   рядок стає карткою, підпис їде в комірку через `data-label`. */
-@media (max-width: 560px) {
-  /* Розкладку ламаємо на всіх рівнях — інакше лишається таблична сітка. */
-  .wb-block-table .wb-data-table,
-  .wb-block-table .wb-data-table tbody,
-  .wb-block-table .wb-data-table tr,
-  .wb-block-table .wb-data-table td {
-    display: block;
-    width: 100%;
-  }
-
-  .wb-block-table .wb-data-table {
-    min-width: 0;
-    font-size: var(--text-sm);
-  }
-
-  .wb-block-table .wb-data-table thead {
-    display: none;
-  }
-
-  /* Рядок — картка: волосина між ними замінює смугу зебри. */
-  .wb-block-table .wb-data-table tbody tr {
-    padding: var(--sp-3) var(--sp-4);
-    border-bottom: 1px solid var(--hairline);
-  }
-
-  .wb-block-table .wb-data-table tbody tr:last-child {
-    border-bottom: none;
-  }
-
-  .wb-block-table .wb-data-table td {
-    display: flex;
-    align-items: baseline;
-    justify-content: space-between;
-    gap: var(--sp-3);
-    padding: var(--sp-1) 0;
-    background: transparent;
-    border: 0;
-    position: static;
-    white-space: normal;
-    overflow-wrap: break-word;
-  }
-
-  /* Підпис стовпця — зліва, значення — справа: так рядок читається парою.
-     Ширина підписа стала (та сама 42%, що в «Датах»): з `auto` він стискався
-     до найдовшого слова і «Що входить» рвалося на два рядки. */
-  .wb-block-table .wb-data-table td::before {
-    content: attr(data-label);
-    flex: 0 0 40%;
-    color: var(--text-muted);
-    font-size: var(--text-xs);
-  }
-
-  .wb-block-table .wb-data-table td {
-    align-items: baseline;
-  }
-
-  /* Перша комірка — назва картки, а не пара «підпис — значення». */
-  .wb-block-table .wb-data-table td:first-child {
-    padding-top: 0;
-    padding-bottom: var(--sp-2);
-    font-weight: var(--weight-semibold);
-    color: var(--text-primary);
-  }
-
-  .wb-block-table .wb-data-table td:first-child::before {
-    content: none;
-  }
-
-  .wb-block-table .wb-data-table tbody tr:nth-child(even) td {
-    background: transparent;
-  }
 }
 
 /* ── Розділювач і просвіт ─────────────────────────────────────────────────
