@@ -2137,7 +2137,8 @@ html:has(.wb-tabbar) .wb-modal-overlay--screen {
 
 .wb-table--grid td {
   padding: var(--sp-2) var(--sp-3);
-  border-bottom: 1px solid var(--border-subtle);
+  /* Лінія, а не смуга: дані без заливки, тож рядок тримає межа. */
+  border-bottom: 1px solid var(--border);
   background: transparent;
   vertical-align: middle;
   overflow: hidden;

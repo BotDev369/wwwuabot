@@ -76,23 +76,21 @@
    вміщуються повністю, третя лишається наполовину — так видно, що таблиця
    гортається вбік, і підпис рядка не губиться. */
 .spend-table--orgs {
-  min-width: 780px;
+  min-width: 720px;
 }
 
 .spend-table--orgs th:nth-child(1) {
-  width: 24%;
+  width: 22%;
 }
 
-/* Форма — найдовший текст таблиці («Орган місцевого самоврядування»),
-   тож їй ширше місце, ніж грошам: сума з переносами не потребує ширини. */
 .spend-table--orgs th:nth-child(2) {
-  width: 26%;
+  width: 22%;
 }
 
 .spend-table--orgs th:nth-child(3),
 .spend-table--orgs th:nth-child(4),
 .spend-table--orgs th:nth-child(5) {
-  width: 16.66%;
+  width: 18.66%;
 }
 
 .spend-table--payments {
@@ -160,15 +158,15 @@
 }
 
 .spend-table--sync {
-  min-width: 840px;
+  min-width: 780px;
 }
 
 .spend-table--sync th:nth-child(1) {
-  width: 34%;
+  width: 28%;
 }
 
 .spend-table--sync th:nth-child(2) {
-  width: 10%;
+  width: 12%;
 }
 
 .spend-table--sync th:nth-child(3) {
@@ -184,7 +182,7 @@
 }
 
 .spend-table--sync th:nth-child(6) {
-  width: 22%;
+  width: 26%;
 }
 
 .spend-table--documents {
@@ -235,16 +233,14 @@
   width: 22%;
 }
 
-.spend-table--sources {
-  min-width: 420px;
-}
-
+/* Дві колонки — обидві мусять уміститися на телефоні, тож ширина таблиці
+   не більша за контейнер: назва джерела обрізається, дата стоїть поруч. */
 .spend-table--sources th:nth-child(1) {
-  width: 70%;
+  width: 62%;
 }
 
 .spend-table--sources th:nth-child(2) {
-  width: 30%;
+  width: 38%;
 }
 
 /* Число й сума один під одним: два рядки в одній клітинці читаються як

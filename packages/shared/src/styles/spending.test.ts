@@ -29,6 +29,9 @@ const TABLES: Readonly<Record<string, number>> = {
   sources: 2,
 };
 
+/** Таблиці, які на телефоні їдуть убік; `sources` — дві колонки, обидві видні. */
+const SCROLLING = Object.keys(TABLES).filter((table) => table !== "sources");
+
 /** Ширини колонок таблиці: `th:nth-child(n)`, зокрема в групових селекторах. */
 function columnWidths(table: string): number[] {
   const widths = new Map<number, number>();
@@ -45,9 +48,13 @@ function columnWidths(table: string): number[] {
 
 describe("таблиці Є-data", () => {
   it("мають ширину, від якої їдуть убік, а не стискаються в ніщо", () => {
-    for (const table of Object.keys(TABLES)) {
+    for (const table of SCROLLING) {
       expect(wide, table).toMatch(new RegExp(`\\.spend-table--${table} \\{\\s*min-width: \\d+px;`));
     }
+  });
+
+  it("джерела вміщуються цілком: обидві колонки видні на телефоні", () => {
+    expect(wide).not.toMatch(/\.spend-table--sources \{[^}]*min-width/);
   });
 
   it("ширини колонок складаються у 100% і покривають кожну колонку", () => {
