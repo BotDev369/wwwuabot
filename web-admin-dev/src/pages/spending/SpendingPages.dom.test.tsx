@@ -226,7 +226,7 @@ describe("коди, отримувачі, стан збору", () => {
   it("коди показують КЕКВ за вибраний місяць", async () => {
     const view = renderPage(<SpendingCodesPage />);
 
-    expect(await screen.findByText("2111")).toBeTruthy();
+    expect((await screen.findAllByText("2111")).length).toBeGreaterThan(0);
     expect(api.fetchSpendingCodes).toHaveBeenCalledWith("2026-09");
     view.unmount();
   });

@@ -49,6 +49,14 @@ describe("рядок 1 і стовпець 1 закріплені у кожні�
     );
   });
 
+  it("шаблон таблиці даних: тло тільки в шапки й першого стовпця", () => {
+    expect(rule(".wb-table--grid th")).toContain("background: var(--bg-2)");
+    expect(rule(".wb-table--grid td")).toContain("background: transparent");
+    expect(rule(".wb-table--grid td:first-child")).toContain("background: var(--bg-2)");
+    expect(rule(".wb-table--grid thead th:first-child")).toContain("background: var(--bg-3)");
+    expect(rule(".wb-table-scroll")).toContain("overflow: auto");
+  });
+
   it("стандарт — значення за замовчуванням, а не диктат над розкладкою таблиці", () => {
     // `:where()` дає нульову специфічність: таблиця, у якої комірка має власну
     // розкладку, перекриває стандарт простим правилом. Без цього він забирав

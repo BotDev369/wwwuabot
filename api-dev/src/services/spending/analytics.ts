@@ -31,9 +31,12 @@ const CODE_COLUMNS: Readonly<Record<SpendingCodeKind, string>> = {
 
 const ZERO: SpendingTotals = { count: 0, amount: 0 };
 
+/** Межі даних. Імена без `from`/`to`: це ключові слова SQL, і псевдонім
+ * `AS from` валить запит у D1 (`near "from": syntax error`), а не повертає
+ * порожнечу — саме так розріз за отримувачами віддавав 500 на проді. */
 interface RangeRow {
-  from: string | null;
-  to: string | null;
+  first_date: string | null;
+  last_date: string | null;
 }
 
 interface CodeDbRow {
@@ -58,10 +61,12 @@ interface RecipientDbRow {
 /** Остання дата платежу в базі; `null` — таблиця порожня. */
 export async function dataRange(db: D1Database): Promise<{ from: string; to: string } | null> {
   const row = await db
-    .prepare("SELECT MIN(trans_date) AS from, MAX(trans_date) AS to FROM spending_transactions")
+    .prepare(
+      "SELECT MIN(trans_date) AS first_date, MAX(trans_date) AS last_date FROM spending_transactions",
+    )
     .first<RangeRow>();
-  if (!row?.from || !row?.to) return null;
-  return { from: row.from, to: row.to };
+  if (!row?.first_date || !row?.last_date) return null;
+  return { from: row.first_date, to: row.last_date };
 }
 
 /** Перший день місяця, у якому стоїть дата. */

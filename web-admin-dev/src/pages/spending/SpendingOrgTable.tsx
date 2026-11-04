@@ -8,6 +8,7 @@
  */
 
 import type { SpendingOrg, SpendingTotals } from "@wwwuabot/shared/spending";
+import { DataTable, type DataTableColumn } from "../../shared/components/DataTable";
 import { formatCount, formatMoney } from "./format";
 
 /**
@@ -24,62 +25,64 @@ function TotalsCell({ totals }: { readonly totals: SpendingTotals }) {
   );
 }
 
+const COLUMNS: readonly DataTableColumn<SpendingOrg>[] = [
+  {
+    key: "org",
+    header: "Розпорядник",
+    className: "spend-col-org",
+    render: (org) => (
+      <>
+        <span className="wb-cell-title" title={org.name || undefined}>
+          {org.name || "назви немає"}
+        </span>
+        <span className="wb-cell-sub">{org.edrpou}</span>
+      </>
+    ),
+  },
+  {
+    key: "form",
+    header: "Форма",
+    className: "spend-col-form",
+    render: (org) => org.form || "—",
+  },
+  {
+    key: "documents",
+    header: "Договори",
+    className: "spend-col-num wb-col-num",
+    render: (org) => <TotalsCell totals={org.documents} />,
+  },
+  {
+    key: "payments",
+    header: "Сплати",
+    className: "spend-col-num wb-col-num",
+    render: (org) => <TotalsCell totals={org.payments} />,
+  },
+  {
+    key: "receipts",
+    header: "Надходження",
+    className: "spend-col-num wb-col-num",
+    render: (org) => <TotalsCell totals={org.receipts} />,
+  },
+];
+
 interface SpendingOrgTableProps {
-  orgs: readonly SpendingOrg[];
-  selected: string | null;
-  onSelect: (edrpou: string) => void;
+  readonly orgs: readonly SpendingOrg[];
+  readonly selected: string | null;
+  readonly onSelect: (edrpou: string) => void;
 }
 
 export function SpendingOrgTable({ orgs, selected, onSelect }: SpendingOrgTableProps) {
   return (
     <div className="spend-panel">
-      <div className="spend-table-wrap">
-        <table className="wb-data-table spend-table">
-          <thead>
-            <tr>
-              <th>Розпорядник</th>
-              <th>Форма</th>
-              <th className="spend-th-num">Договори</th>
-              <th className="spend-th-num">Сплати</th>
-              <th className="spend-th-num">Надходження</th>
-            </tr>
-          </thead>
-          <tbody>
-            {orgs.length === 0 ? (
-              <tr>
-                <td className="spend-empty" colSpan={5}>
-                  За цей період у базі немає жодного розпорядника — збір ще не приніс довідник.
-                </td>
-              </tr>
-            ) : (
-              orgs.map((org) => (
-                <tr
-                  key={org.edrpou}
-                  className={selected === org.edrpou ? "spend-row spend-row-active" : "spend-row"}
-                  onClick={() => onSelect(org.edrpou)}
-                >
-                  <td data-label="">
-                    <span className="spend-org-name">{org.name || "назви немає"}</span>
-                    <span className="spend-org-code">{org.edrpou}</span>
-                  </td>
-                  <td className="spend-form" data-label="Форма">
-                    {org.form || "—"}
-                  </td>
-                  <td className="spend-num" data-label="Договори">
-                    <TotalsCell totals={org.documents} />
-                  </td>
-                  <td className="spend-num" data-label="Сплати">
-                    <TotalsCell totals={org.payments} />
-                  </td>
-                  <td className="spend-num" data-label="Надходження">
-                    <TotalsCell totals={org.receipts} />
-                  </td>
-                </tr>
-              ))
-            )}
-          </tbody>
-        </table>
-      </div>
+      <DataTable
+        columns={COLUMNS}
+        rows={orgs}
+        rowKey={(org) => org.edrpou}
+        selectedKey={selected}
+        tableClassName="spend-table--orgs"
+        onRowClick={(org) => onSelect(org.edrpou)}
+        empty="За цей період у базі немає жодного розпорядника — збір ще не приніс довідник."
+      />
     </div>
   );
 }

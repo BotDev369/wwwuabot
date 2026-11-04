@@ -44,13 +44,21 @@ const RANGE = "FROM spending_transactions";
 
 describe("dataRange", () => {
   it("бере межі з бази, а не з годинника", async () => {
-    const { db } = fakeDb(() => ({ row: { from: "2026-09-01", to: "2026-10-30" } }));
+    const { db } = fakeDb(() => ({ row: { first_date: "2026-09-01", last_date: "2026-10-30" } }));
     expect(await dataRange(db)).toEqual({ from: "2026-09-01", to: "2026-10-30" });
   });
 
   it("порожня таблиця — `null`, а не дата сьогодні", async () => {
-    const { db } = fakeDb(() => ({ row: { from: null, to: null } }));
+    const { db } = fakeDb(() => ({ row: { first_date: null, last_date: null } }));
     expect(await dataRange(db)).toBeNull();
+  });
+
+  it("не позичає в псевдоніма ключове слово SQL — інакше D1 валить запит", async () => {
+    // `AS from` — синтаксична помилка D1, а не порожній результат: саме через це
+    // розріз за отримувачами віддавав 500, хоч локальний фейк мовчав.
+    const { db, statements } = fakeDb(() => ({ row: null }));
+    await dataRange(db);
+    expect(statements[0]?.sql).not.toMatch(/\bAS\s+(from|to|where|group|order)\b/i);
   });
 });
 
@@ -93,7 +101,9 @@ describe("readCodes", () => {
 describe("readRecipients", () => {
   it("місяць — це дні календаря, а не лише дні з платежами", async () => {
     const { db } = fakeDb((sql) => {
-      if (sql.includes("MIN(trans_date)")) return { row: { from: "2026-09-01", to: "2026-10-30" } };
+      if (sql.includes("MIN(trans_date)")) {
+        return { row: { first_date: "2026-09-01", last_date: "2026-10-30" } };
+      }
       if (sql.includes("COUNT(DISTINCT recipt_edrpou)")) {
         return { row: { count: 2, amount: 300, recipients: 1 } };
       }
@@ -115,7 +125,9 @@ describe("readRecipients", () => {
 
   it("рік — дванадцять місяців назад від останньої дати, з нулями", async () => {
     const { db } = fakeDb((sql) => {
-      if (sql.includes("MIN(trans_date)")) return { row: { from: "2025-01-05", to: "2026-10-30" } };
+      if (sql.includes("MIN(trans_date)")) {
+        return { row: { first_date: "2025-01-05", last_date: "2026-10-30" } };
+      }
       if (sql.includes("COUNT(DISTINCT recipt_edrpou)")) {
         return { row: { count: 5, amount: 500, recipients: 2 } };
       }
@@ -136,7 +148,9 @@ describe("readRecipients", () => {
 
   it("«останній день» — одна дата, і вона ж кінець вікна", async () => {
     const { db } = fakeDb((sql) => {
-      if (sql.includes("MIN(trans_date)")) return { row: { from: "2026-09-01", to: "2026-10-30" } };
+      if (sql.includes("MIN(trans_date)")) {
+        return { row: { first_date: "2026-09-01", last_date: "2026-10-30" } };
+      }
       if (sql.includes("COUNT(DISTINCT recipt_edrpou)")) {
         return { row: { count: 1, amount: 50, recipients: 1 } };
       }
@@ -152,7 +166,7 @@ describe("readRecipients", () => {
   });
 
   it("порожня база — нулі й жодного запиту по діапазону", async () => {
-    const { db, statements } = fakeDb(() => ({ row: { from: null, to: null } }));
+    const { db, statements } = fakeDb(() => ({ row: { first_date: null, last_date: null } }));
     const view = await readRecipients(db, "all");
     expect(statements).toHaveLength(1);
     expect(statements[0]?.sql).toContain(RANGE);

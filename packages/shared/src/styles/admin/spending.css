@@ -68,54 +68,205 @@
   box-shadow: var(--card-shadow);
 }
 
-/* Скрол — на самій таблиці, а не на сторінці: інакше разом із грошовими
-   колонками їхала б і шапка екрана. */
-.spend-table-wrap {
-  overflow-x: auto;
+/* Таблиці Є-data збираються з одного шаблону (`wb-table--grid` у
+   `components.css`): закріплені шапка й перший стовпець, тло тільки в них.
+   Тут лишається те, чого шаблон не знає: ширина колонок і грошові підписи.
+
+   Ширини — у відсотках і з розрахунком на телефон: перші дві колонки
+   вміщуються повністю, третя лишається наполовину — так видно, що таблиця
+   гортається вбік, і підпис рядка не губиться. */
+.spend-table--orgs {
+  min-width: 780px;
 }
 
-.spend-table {
-  width: 100%;
-  border-collapse: collapse;
-  font-size: var(--text-xs);
+.spend-table--orgs th:nth-child(1) {
+  width: 24%;
 }
 
-.spend-table th {
-  padding: var(--sp-2) var(--sp-2);
-  border-bottom: 1px solid var(--border);
+/* Форма — найдовший текст таблиці («Орган місцевого самоврядування»),
+   тож їй ширше місце, ніж грошам: сума з переносами не потребує ширини. */
+.spend-table--orgs th:nth-child(2) {
+  width: 26%;
+}
+
+.spend-table--orgs th:nth-child(3),
+.spend-table--orgs th:nth-child(4),
+.spend-table--orgs th:nth-child(5) {
+  width: 16.66%;
+}
+
+.spend-table--payments {
+  min-width: 860px;
+}
+
+.spend-table--payments th:nth-child(1) {
+  width: 11%;
+}
+
+.spend-table--payments th:nth-child(2) {
+  width: 24%;
+}
+
+.spend-table--payments th:nth-child(3) {
+  width: 35%;
+}
+
+.spend-table--payments th:nth-child(4) {
+  width: 10%;
+}
+
+.spend-table--payments th:nth-child(5) {
+  width: 20%;
+}
+
+.spend-table--codes {
+  min-width: 620px;
+}
+
+.spend-table--codes th:nth-child(1) {
+  width: 22%;
+}
+
+.spend-table--codes th:nth-child(2) {
+  width: 24%;
+}
+
+.spend-table--codes th:nth-child(3) {
+  width: 22%;
+}
+
+.spend-table--codes th:nth-child(4) {
+  width: 32%;
+}
+
+.spend-table--recipients {
+  min-width: 720px;
+}
+
+.spend-table--recipients th:nth-child(1) {
+  width: 32%;
+}
+
+.spend-table--recipients th:nth-child(2) {
+  width: 20%;
+}
+
+.spend-table--recipients th:nth-child(3) {
+  width: 18%;
+}
+
+.spend-table--recipients th:nth-child(4) {
+  width: 30%;
+}
+
+.spend-table--sync {
+  min-width: 840px;
+}
+
+.spend-table--sync th:nth-child(1) {
+  width: 34%;
+}
+
+.spend-table--sync th:nth-child(2) {
+  width: 10%;
+}
+
+.spend-table--sync th:nth-child(3) {
+  width: 13%;
+}
+
+.spend-table--sync th:nth-child(4) {
+  width: 12%;
+}
+
+.spend-table--sync th:nth-child(5) {
+  width: 9%;
+}
+
+.spend-table--sync th:nth-child(6) {
+  width: 22%;
+}
+
+.spend-table--documents {
+  min-width: 860px;
+}
+
+.spend-table--documents th:nth-child(1) {
+  width: 12%;
+}
+
+.spend-table--documents th:nth-child(2) {
+  width: 14%;
+}
+
+.spend-table--documents th:nth-child(3) {
+  width: 30%;
+}
+
+.spend-table--documents th:nth-child(4) {
+  width: 24%;
+}
+
+.spend-table--documents th:nth-child(5) {
+  width: 20%;
+}
+
+.spend-table--transactions {
+  min-width: 880px;
+}
+
+.spend-table--transactions th:nth-child(1) {
+  width: 11%;
+}
+
+.spend-table--transactions th:nth-child(2) {
+  width: 23%;
+}
+
+.spend-table--transactions th:nth-child(3) {
+  width: 34%;
+}
+
+.spend-table--transactions th:nth-child(4) {
+  width: 10%;
+}
+
+.spend-table--transactions th:nth-child(5) {
+  width: 22%;
+}
+
+.spend-table--sources {
+  min-width: 420px;
+}
+
+.spend-table--sources th:nth-child(1) {
+  width: 70%;
+}
+
+.spend-table--sources th:nth-child(2) {
+  width: 30%;
+}
+
+/* Число й сума один під одним: два рядки в одній клітинці читаються як
+   «скільки» і «на скільки», а не як одне довге число. */
+.spend-totals {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 1px;
+}
+
+.spend-totals-count {
   font-size: var(--text-xs);
-  font-weight: var(--weight-semibold);
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
   color: var(--text-muted);
-  text-align: left;
+}
+
+.spend-totals-sum {
   white-space: nowrap;
 }
 
-.spend-table td {
-  padding: var(--sp-2) var(--sp-2);
-  border-top: 1px solid var(--border-subtle);
-  vertical-align: top;
-}
-
-.spend-row {
-  cursor: pointer;
-  transition: background var(--duration-fast) var(--ease);
-}
-
-.spend-row:hover {
-  background: var(--bg-3);
-}
-
-.spend-row-active,
-.spend-row-active:hover {
-  background: var(--accent-dim);
-}
-
-.spend-org-name {
-  display: block;
-  font-weight: var(--weight-medium);
-  color: var(--text-primary);
+.spend-totals-empty {
+  color: var(--text-muted);
 }
 
 .spend-org-code {
@@ -126,63 +277,19 @@
   color: var(--text-muted);
 }
 
-.spend-form {
-  color: var(--text-secondary);
-}
-
-/* Суми — моноширинні й праворуч: їх порівнюють оком, а не пошуком коми. */
-/* Число й сума один під одним: два рядки в одній клітинці читаються як
-   «скільки» і «на скільки», а не як одне довге число. */
-.spend-totals {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-end;
-  gap: 2px;
-}
-
-.spend-totals-count {
-  font-size: var(--text-xs);
-  color: var(--text-muted);
-}
-
-.spend-totals-sum {
-  font-variant-numeric: tabular-nums;
-}
-
-.spend-totals-empty {
-  color: var(--text-muted);
-}
-
-.spend-th-num,
-.spend-num {
-  text-align: right;
-  white-space: nowrap;
-  font-variant-numeric: tabular-nums;
-  font-family: var(--font-mono);
-}
-
-.spend-num {
-  color: var(--text-primary);
-}
-
-.spend-date,
 .spend-code {
-  white-space: nowrap;
   font-family: var(--font-mono);
   color: var(--text-secondary);
 }
 
+/* Довгий текст у рядку — одна лінія з крапками й підказкою: рядок однакової
+   висоти дає порівнювати платежі оком, а не гортанням. */
 .spend-subject {
-  max-width: 320px;
+  display: block;
+  overflow: hidden;
   color: var(--text-secondary);
-  line-height: 1.45;
-}
-
-.spend-empty {
-  padding: var(--sp-6) var(--sp-3);
-  text-align: center;
-  color: var(--text-muted);
-  font-size: var(--text-sm);
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .spend-detail-head {
@@ -374,23 +481,62 @@
   white-space: nowrap;
 }
 
-.spend-meter {
+/* Рейтинг: смуга довжиною від найбільшого, підпис ліворуч, сума й частка
+   праворуч. Довжину задає атрибут `width` усередині `viewBox`, а не інлайн-стиль:
+   інлайн-стилі в адмінці заборонені, вигляд живе в CSS. */
+.spend-rank {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-2);
+  margin: 0;
+}
+
+.spend-rank-caption {
+  color: var(--text-muted);
+  font-size: var(--text-xs);
+}
+
+.spend-rank-row {
+  display: grid;
+  grid-template-columns: minmax(56px, 96px) 1fr auto;
+  align-items: center;
+  gap: var(--sp-3);
+}
+
+.spend-rank-label {
+  overflow: hidden;
+  color: var(--text-secondary);
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.spend-rank-bar {
   display: block;
   width: 100%;
-  max-width: 120px;
-  height: 6px;
+  height: 8px;
 }
 
-.spend-meter-fill {
+.spend-rank-fill {
   fill: var(--accent);
-  opacity: 0.55;
+  opacity: 0.75;
 }
 
-.spend-share-cell {
-  display: flex;
-  align-items: center;
-  gap: var(--sp-2);
-  min-width: 120px;
+.spend-rank-value {
+  color: var(--text-primary);
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  font-variant-numeric: tabular-nums;
+  text-align: right;
+  white-space: nowrap;
+}
+
+.spend-rank-share {
+  min-width: 44px;
+  margin-left: var(--sp-2);
+  color: var(--text-muted);
+  text-align: right;
 }
 
 .spend-share {
@@ -417,11 +563,6 @@
     flex-wrap: wrap;
   }
 
-  .spend-share-cell {
-    min-width: 0;
-    max-width: 160px;
-  }
-
   .spend-tab {
     min-height: 44px;
   }
@@ -430,87 +571,11 @@
     padding: var(--sp-2);
   }
 
-  .spend-table-wrap {
-    overflow-x: visible;
-  }
-
-  .spend-table,
-  .spend-table tbody,
-  .spend-table tr,
-  .spend-table td {
-    display: block;
-    width: 100%;
-    min-width: 0;
-  }
-
-  .spend-table {
-    border-collapse: collapse;
-  }
-
-  /* Підписи стовпців замінені підписами картки — другий рядок шапки ні до чого. */
-  .spend-table thead {
-    display: none;
-  }
-
-  .spend-table tbody tr {
-    padding: var(--sp-2) var(--sp-3);
-    border-bottom: 1px solid var(--border);
-    background: var(--bg-1);
-  }
-
-  /* Зебра таблиці вимкнена: картку відділяє лінія, тож підсвітка рядка
-     читається як вибір, а не як «парний рядок». */
-  .spend-table tbody tr:nth-child(even),
-  .spend-table tbody tr:nth-child(even) td {
-    background: var(--bg-1);
-  }
-
-  .spend-table td {
-    display: flex;
-    align-items: baseline;
-    justify-content: space-between;
-    gap: var(--sp-3);
-    padding: var(--sp-1) 0;
-    border: 0;
-    background: transparent;
-    text-align: left;
-  }
-
-  /* Перша комірка картки — її заголовок: підпису в неї немає, бо назва
-     розпорядника й так читається першою. */
-  .spend-table td[data-label=""] {
-    display: block;
-  }
-
-  .spend-table td::before {
-    content: attr(data-label);
-    flex: 0 0 38%;
-    color: var(--text-muted);
-    font-size: var(--text-xs);
-    line-height: 1.4;
-  }
-
-  .spend-table td[data-label=""]::before {
-    display: none;
-  }
-
-  .spend-num {
-    text-align: right;
-  }
-
-  .spend-subject {
-    max-width: none;
-    text-align: right;
-  }
-
-  .spend-empty {
-    padding: var(--sp-2) 0;
-    text-align: left;
-  }
-
-  .spend-row-active,
-  .spend-row-active:hover {
-    background: var(--accent-dim);
+  /* Таблиця лишається таблицею й на телефоні: закріплений перший стовпець
+     тримає підпис рядка, решта їде вбік. Картки ховали саме те, що робить
+     рядки порівнюваними. */
+  .wb-table-scroll {
+    max-height: none;
   }
 
   /* Список джерел — довідка, а не дані: висоту обмежуємо, інакше підвал

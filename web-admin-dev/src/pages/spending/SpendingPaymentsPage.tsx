@@ -1,17 +1,62 @@
 /**
- * Платежі громади за місяць: наскрізний список, а не сума по розпорядниках.
+ * Платежі громади за місяць: наскрізний список сплат розпорядників.
  *
- * Список читають як історію: новіші дати зверху, «Показати ще» дописує
- * наступну сторінку за курсором. Призначення платежу — головний текст рядка,
- * бо саме за ним шукають очима; суми й дати стоять праворуч і ліворуч.
+ * Рядок однієї висоти: довге призначення обрізається з підказкою, інакше
+ * десяток платежів не порівняти оком. «Показати ще» дописує сторінку.
  * @module web-admin-dev/src/pages/spending/SpendingPaymentsPage
  */
 
 import { useMemo } from "react";
+import type { SpendingTransaction } from "@wwwuabot/shared/spending";
+import { DataTable, type DataTableColumn } from "../../shared/components/DataTable";
 import { SpendingPeriodControls, SpendingTopbar } from "./SpendingTopbar";
 import { formatCompactMoney, formatCount, formatDate, formatMoney, periodsOf } from "./format";
 import { useSpending } from "./useSpending";
 import { useSpendingCommunityPayments } from "./useSpendingList";
+
+const COLUMNS: readonly DataTableColumn<SpendingTransaction>[] = [
+  {
+    key: "date",
+    header: "Дата",
+    className: "spend-col-date",
+    render: (payment) => formatDate(payment.transDate),
+  },
+  {
+    key: "recipient",
+    header: "Отримувач",
+    className: "spend-col-party",
+    render: (payment) => (
+      <>
+        <span className="wb-cell-title" title={payment.reciptName || undefined}>
+          {payment.reciptName || "без назви"}
+        </span>
+        <span className="wb-cell-sub">{payment.reciptEdrpou || "—"}</span>
+      </>
+    ),
+  },
+  {
+    key: "subject",
+    header: "Призначення",
+    className: "spend-col-subject",
+    render: (payment) => (
+      <span className="spend-subject" title={payment.paymentDetails || undefined}>
+        {payment.paymentDetails || "—"}
+      </span>
+    ),
+  },
+  {
+    key: "kekv",
+    header: "КЕКВ",
+    className: "spend-col-code",
+    render: (payment) => payment.kekv || "—",
+  },
+  {
+    key: "amount",
+    header: "Сума",
+    className: "spend-col-sum wb-col-num",
+    render: (payment) => formatMoney(payment.amount, payment.currency || "UAH"),
+  },
+];
 
 function CommunityPayments({ period }: { readonly period: string }) {
   const list = useSpendingCommunityPayments(period);
@@ -30,44 +75,14 @@ function CommunityPayments({ period }: { readonly period: string }) {
 
   return (
     <div className="spend-panel">
-      <p className="spend-chart-caption">
-        Показано <strong>{formatCount(list.items.length)}</strong> сплат
-      </p>
-      <div className="spend-table-wrap">
-        <table className="wb-data-table spend-table">
-          <thead>
-            <tr>
-              <th>Дата</th>
-              <th>Отримувач</th>
-              <th>Призначення</th>
-              <th>КЕКВ</th>
-              <th className="spend-th-num">Сума</th>
-            </tr>
-          </thead>
-          <tbody>
-            {list.items.map((payment) => (
-              <tr key={payment.id} className="spend-row">
-                <td className="spend-date" data-label="Дата">
-                  {formatDate(payment.transDate)}
-                </td>
-                <td data-label="Отримувач">
-                  <span className="spend-org-name">{payment.reciptName || "без назви"}</span>
-                  <span className="spend-org-code">{payment.reciptEdrpou || "—"}</span>
-                </td>
-                <td className="spend-subject" data-label="Призначення">
-                  {payment.paymentDetails || "—"}
-                </td>
-                <td className="spend-code" data-label="КЕКВ">
-                  {payment.kekv || "—"}
-                </td>
-                <td className="spend-num" data-label="Сума">
-                  {formatMoney(payment.amount, payment.currency || "UAH")}
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
+      <DataTable
+        columns={COLUMNS}
+        rows={list.items}
+        rowKey={(payment) => payment.id}
+        tableClassName="spend-table--payments"
+        caption={`Показано ${formatCount(list.items.length)} сплат`}
+        empty="За цей місяць платежів немає."
+      />
       {list.nextCursor && (
         <button
           className="wb-btn wb-btn-ghost wb-btn-sm spend-more"

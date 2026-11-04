@@ -1,6 +1,7 @@
 /**
- * Сторож телефонної версії `spending.css`: таблиця мусить стати карткою, а не
- * виїхати колонками за екран (розбір CSS як тексту — `dates.test.ts`).
+ * Сторож таблиць Є-data: вони лишаються таблицями на будь-якій ширині, а
+ * ширини колонок складаються у 100% — інакше перші дві колонки не вміщуються
+ * й закріплений підпис рядка втрачає сенс (розбір CSS як тексту — `dates.test.ts`).
  *
  * @module packages/shared/src/styles/spending.test
  */
@@ -16,61 +17,61 @@ const css = readFileSync(new URL("./admin/spending.css", import.meta.url), "utf8
 /** Телефонна частина файлу — усе, що стоїть після маркера медіазапиту. */
 const [wide, phone = ""] = css.split("@media (max-width: 768px)");
 
-/** Тіло блоку від `{` до парної `}` — разом із вкладеними, як у CSSOM. */
-function body(scope: string, open: number): string {
-  let depth = 0;
-  for (let i = open; i < scope.length; i++) {
-    if (scope[i] === "{") depth++;
-    else if (scope[i] === "}" && --depth === 0) return scope.slice(open, i);
-  }
-  throw new Error("блок не закритий");
-}
+/** Скільки колонок у кожній таблиці — щоб сума ширини дорівнювала 100%. */
+const TABLES: Readonly<Record<string, number>> = {
+  orgs: 5,
+  payments: 5,
+  codes: 4,
+  recipients: 4,
+  sync: 6,
+  documents: 5,
+  transactions: 5,
+  sources: 2,
+};
 
-/** Блок правила: пошук чіпляється за межу блоку, а не за рядок списку селекторів. */
-function block(scope: string, match: (head: string) => boolean): string {
-  const pattern = /(?:^|[{}])\s*([^{}\s][^{}]*?)\s*\{/g;
-  const found = [...scope.matchAll(pattern)].find(([, head]) => match(head.trim()));
-  expect(found, "блок мусить існувати").toBeDefined();
-  return body(scope, scope.indexOf("{", found?.index));
-}
-
-/** Блок групового селектора: `selector` — один із пунктів списку. */
-function group(scope: string, selector: string): string {
-  return block(scope, (head) => head.split(",").some((part) => part.trim() === selector));
-}
-
-/** Правило з одним селектором — не зі списку, де той самий селектор лише пункт. */
-function rule(scope: string, selector: string): string {
-  return block(scope, (head) => head === selector);
-}
-
-describe("таблиця Є-data на телефоні", () => {
-  it("ламається на всіх рівнях, а не лише на `tr`", () => {
-    for (const selector of [".spend-table", ".spend-table tbody", ".spend-table tr"]) {
-      expect(group(phone, selector), selector).toContain("display: block");
+/** Ширини колонок таблиці: `th:nth-child(n)`, зокрема в групових селекторах. */
+function columnWidths(table: string): number[] {
+  const widths = new Map<number, number>();
+  for (const [, head, body] of css.matchAll(/([^{}]+)\{([^{}]*)\}/g)) {
+    if (!head.includes(`.spend-table--${table}`) || !head.includes("nth-child")) continue;
+    const width = Number(body.match(/width:\s*([\d.]+)%/)?.[1]);
+    if (!width) continue;
+    for (const [, index] of head.matchAll(/nth-child\((\d+)\)/g)) {
+      widths.set(Number(index), width);
     }
-    // Сама комірка — рядок картки: підпис ліворуч, значення праворуч.
-    expect(rule(phone, ".spend-table td")).toContain("display: flex");
+  }
+  return [...widths.values()];
+}
+
+describe("таблиці Є-data", () => {
+  it("мають ширину, від якої їдуть убік, а не стискаються в ніщо", () => {
+    for (const table of Object.keys(TABLES)) {
+      expect(wide, table).toMatch(new RegExp(`\\.spend-table--${table} \\{\\s*min-width: \\d+px;`));
+    }
   });
 
-  it("⛔ не тримає ширину таблиці: саме вона виносила колонки за екран", () => {
-    expect(group(phone, ".spend-table")).toContain("min-width: 0");
-    expect(phone).not.toContain("min-width: 560px");
+  it("ширини колонок складаються у 100% і покривають кожну колонку", () => {
+    for (const [table, count] of Object.entries(TABLES)) {
+      const widths = columnWidths(table);
+      expect(widths, table).toHaveLength(count);
+      const sum = widths.reduce((total, width) => total + width, 0);
+      expect(sum, table).toBeGreaterThan(99);
+      expect(sum, table).toBeLessThan(101);
+    }
   });
 
-  it("підпис стовпця переїжджає в комірку через `data-label`", () => {
-    expect(rule(phone, ".spend-table td::before")).toContain("content: attr(data-label)");
+  it("на телефоні таблиця лишається таблицею: шапка й підпис не ховаються", () => {
+    expect(phone).not.toContain("display: none");
+    expect(phone).not.toContain("attr(data-label)");
+    expect(phone).not.toContain("min-width: 0");
   });
 
-  it("шапка таблиці на телефоні не малюється", () => {
-    expect(rule(phone, ".spend-table thead")).toContain("display: none");
+  it("на телефоні висоту дає сторінка, а не окрема скрол-рамка", () => {
+    expect(phone).toContain(".wb-table-scroll");
+    expect(phone).toContain("max-height: none");
   });
 
-  it("горизонтальний скрол контейнера вимкнений — вміст уміщується в ширину", () => {
-    expect(rule(phone, ".spend-table-wrap")).toContain("overflow-x: visible");
-  });
-
-  it("на широкому екрані картка не вмикається", () => {
+  it("на широкому екрані карткова розкладка не вмикається", () => {
     expect(wide).not.toContain("attr(data-label)");
     expect(wide).not.toContain("overflow-x: visible");
   });

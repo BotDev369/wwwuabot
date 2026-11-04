@@ -1,5 +1,5 @@
 {
-  "version": "b689ef7",
+  "version": "5d2df18",
   "files": [
     {
       "file": "admin/analytics-people.css",
@@ -69,7 +69,7 @@
     {
       "file": "admin/spending.css",
       "tokens": 0,
-      "classes": 71
+      "classes": 76
     },
     {
       "file": "admin/style.css",
@@ -114,7 +114,7 @@
     {
       "file": "components.css",
       "tokens": 19,
-      "classes": 196
+      "classes": 206
     },
     {
       "file": "contacts.css",
@@ -2989,23 +2989,16 @@
         "names": [
           "spend",
           "spend-code",
-          "spend-date",
           "spend-detail-head",
           "spend-detail-title",
-          "spend-empty",
-          "spend-form",
           "spend-list-note",
           "spend-meta",
           "spend-meta-item",
           "spend-note",
-          "spend-num",
           "spend-org-code",
-          "spend-org-name",
           "spend-panel",
           "spend-raw",
           "spend-raw-summary",
-          "spend-row",
-          "spend-row-active",
           "spend-select",
           "spend-status",
           "spend-status-error",
@@ -3015,10 +3008,15 @@
           "spend-sync",
           "spend-tab",
           "spend-tab-active",
-          "spend-table",
-          "spend-table-wrap",
+          "spend-table--codes",
+          "spend-table--documents",
+          "spend-table--orgs",
+          "spend-table--payments",
+          "spend-table--recipients",
+          "spend-table--sources",
+          "spend-table--sync",
+          "spend-table--transactions",
           "spend-tabs",
-          "spend-th-num",
           "spend-totals",
           "spend-totals-count",
           "spend-totals-empty",
@@ -3038,21 +3036,22 @@
           "spend-chart-caption",
           "spend-chart-svg",
           "spend-chart-tick",
-          "spend-empty",
           "spend-lastload",
-          "spend-meter",
-          "spend-meter-fill",
-          "spend-num",
           "spend-panel",
-          "spend-row-active",
+          "spend-rank",
+          "spend-rank-bar",
+          "spend-rank-caption",
+          "spend-rank-fill",
+          "spend-rank-label",
+          "spend-rank-row",
+          "spend-rank-share",
+          "spend-rank-value",
           "spend-share",
-          "spend-share-cell",
-          "spend-subject",
           "spend-tab",
           "spend-tab-active",
           "spend-table",
-          "spend-table-wrap",
-          "spend-tabs"
+          "spend-tabs",
+          "wb-table-scroll"
         ]
       },
       {
@@ -4335,6 +4334,21 @@
           "selected",
           "wb-data-table",
           "wb-data-table-wrap"
+        ]
+      },
+      {
+        "section": "Таблиця даних: один шаблон на всі таблиці (DataTable)",
+        "names": [
+          "wb-cell-num",
+          "wb-cell-sub",
+          "wb-cell-title",
+          "wb-col-num",
+          "wb-table--grid",
+          "wb-table-caption",
+          "wb-table-empty",
+          "wb-table-row--click",
+          "wb-table-row--on",
+          "wb-table-scroll"
         ]
       },
       {

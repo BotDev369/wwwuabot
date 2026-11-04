@@ -2097,6 +2097,148 @@ html:has(.wb-tabbar) .wb-modal-overlay--screen {
   color: var(--accent-hover);
 }
 
+/* ── Таблиця даних: один шаблон на всі таблиці (DataTable) ────────────────
+   Шапка й перший стовпець — підписи: вони лишаються на місці, коли таблиця
+   їде вбік і вниз. Скрол живе в самій рамці, тож шапка не їде разом зі
+   сторінкою. Тло має тільки шапка й перший стовпець; дані прозорі — інакше
+   смуги рядків сперечаються з числом, яке читають. */
+
+.wb-table-scroll {
+  position: relative;
+  overflow: auto;
+  max-height: clamp(320px, calc(100dvh - 320px), 880px);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  background: var(--card-bg);
+  overscroll-behavior: contain;
+}
+
+.wb-table--grid {
+  width: 100%;
+  min-width: 100%;
+  table-layout: fixed;
+  border-collapse: separate;
+  border-spacing: 0;
+  font-size: var(--text-sm);
+}
+
+.wb-table--grid th {
+  padding: var(--sp-2) var(--sp-3);
+  border-bottom: 1px solid var(--border);
+  background: var(--bg-2);
+  color: var(--text-muted);
+  font-size: var(--text-xs);
+  font-weight: var(--weight-semibold);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  text-align: left;
+  white-space: nowrap;
+}
+
+.wb-table--grid td {
+  padding: var(--sp-2) var(--sp-3);
+  border-bottom: 1px solid var(--border-subtle);
+  background: transparent;
+  vertical-align: middle;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.wb-table--grid tbody tr:last-child td {
+  border-bottom: none;
+}
+
+/* Закріплене мусить бути непрозорим: інакше крізь нього видно те, що проїжджає.
+   Перетин шапки й першого стовпця має власне тло, тож лінії не «пливуть». */
+.wb-table--grid thead th:first-child {
+  background: var(--bg-3);
+}
+
+.wb-table--grid td:first-child {
+  background: var(--bg-2);
+}
+
+.wb-table--grid th:first-child,
+.wb-table--grid td:first-child {
+  box-shadow: inset -1px 0 0 var(--border);
+}
+
+@media (hover: hover) {
+  .wb-table--grid tbody tr:hover td {
+    background: var(--surface-hover);
+  }
+
+  .wb-table--grid tbody tr:hover td:first-child {
+    background: var(--bg-3);
+  }
+}
+
+/* Вибір рядка — акцент на підписі й смуга зліва, а не заливка даних. */
+.wb-table--grid tbody tr.wb-table-row--on td:first-child {
+  background: var(--accent-dim);
+  box-shadow: inset 2px 0 0 var(--accent);
+}
+
+.wb-table--grid tbody tr.wb-table-row--on td:first-child .wb-cell-title {
+  color: var(--accent);
+}
+
+.wb-table-row--click {
+  cursor: pointer;
+}
+
+/* Підпис рядка — два рядки: назва й код під нею. Обидва обрізаються, щоб
+   довга назва не розсувала колонку й не виносила числа за екран. */
+.wb-table--grid .wb-cell-title {
+  display: block;
+  overflow: hidden;
+  font-weight: var(--weight-medium);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.wb-table--grid .wb-cell-sub {
+  display: block;
+  overflow: hidden;
+  margin-top: 1px;
+  color: var(--text-muted);
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Числова колонка: праворуч і моноширинно — числа порівнюють оком, а не комою. */
+.wb-table--grid .wb-col-num {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+  text-align: right;
+}
+
+.wb-table--grid .wb-cell-num {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+  text-align: right;
+}
+
+.wb-table--grid .wb-table-caption {
+  padding: var(--sp-2) var(--sp-3);
+  background: var(--card-bg);
+  color: var(--text-muted);
+  font-size: var(--text-xs);
+  text-align: left;
+}
+
+.wb-table--grid td.wb-table-empty {
+  padding: var(--sp-6) var(--sp-3);
+  background: transparent;
+  color: var(--text-muted);
+  font-size: var(--text-sm);
+  text-align: center;
+  white-space: normal;
+}
+
 /* ── Закріплені рядок 1 і стовпець 1 — наскрізний стандарт таблиць ────────
    Таблицю читають, гортаючи її вбік: шапка лишається підписом стовпця,
    перший стовпець — підписом рядка. Правило — на **елементі**, а не на класі:

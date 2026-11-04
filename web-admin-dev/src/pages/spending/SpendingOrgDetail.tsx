@@ -8,8 +8,9 @@
  */
 
 import { useState } from "react";
-import type { SpendingOrg } from "@wwwuabot/shared/spending";
-import { contractorNames, counterparty, formatDate, formatMoney, formatCount } from "./format";
+import type { SpendingDocument, SpendingOrg, SpendingTransaction } from "@wwwuabot/shared/spending";
+import { DataTable, type DataTableColumn } from "../../shared/components/DataTable";
+import { contractorNames, counterparty, formatCount, formatDate, formatMoney } from "./format";
 import { useSpendingDocuments, useSpendingTransactions } from "./useSpendingList";
 
 type DetailTab = "documents" | "payer" | "recipt";
@@ -18,6 +19,47 @@ const TABS: readonly { key: DetailTab; label: string }[] = [
   { key: "documents", label: "Договори" },
   { key: "payer", label: "Сплати" },
   { key: "recipt", label: "Надходження" },
+];
+
+const DOCUMENT_COLUMNS: readonly DataTableColumn<SpendingDocument>[] = [
+  {
+    key: "date",
+    header: "Дата",
+    className: "spend-col-date",
+    render: (document) => formatDate(document.documentDate),
+  },
+  {
+    key: "number",
+    header: "Номер",
+    className: "spend-col-code",
+    render: (document) => document.number || "—",
+  },
+  {
+    key: "subject",
+    header: "Предмет",
+    className: "spend-col-subject",
+    render: (document) => (
+      <span className="spend-subject" title={document.subject || undefined}>
+        {document.subject || "—"}
+      </span>
+    ),
+  },
+  {
+    key: "contractors",
+    header: "Контрагенти",
+    className: "spend-col-party",
+    render: (document) => (
+      <span className="spend-subject" title={contractorNames(document.contractors)}>
+        {contractorNames(document.contractors)}
+      </span>
+    ),
+  },
+  {
+    key: "amount",
+    header: "Сума",
+    className: "spend-col-sum wb-col-num",
+    render: (document) => formatMoney(document.amount, document.currency),
+  },
 ];
 
 function DocumentList({ edrpou, period }: { edrpou: string; period: string }) {
@@ -34,38 +76,13 @@ function DocumentList({ edrpou, period }: { edrpou: string; period: string }) {
 
   return (
     <>
-      <div className="spend-table-wrap">
-        <table className="wb-data-table spend-table">
-          <thead>
-            <tr>
-              <th>Дата</th>
-              <th>Номер</th>
-              <th>Предмет</th>
-              <th>Контрагенти</th>
-              <th className="spend-th-num">Сума</th>
-            </tr>
-          </thead>
-          <tbody>
-            {list.items.map((document) => (
-              <tr key={document.id} className="spend-row">
-                <td className="spend-date" data-label="Дата">
-                  {formatDate(document.documentDate)}
-                </td>
-                <td data-label="Номер">{document.number || "—"}</td>
-                <td className="spend-subject" data-label="Предмет">
-                  {document.subject || "—"}
-                </td>
-                <td className="spend-subject" data-label="Контрагенти">
-                  {contractorNames(document.contractors)}
-                </td>
-                <td className="spend-num" data-label="Сума">
-                  {formatMoney(document.amount, document.currency)}
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
+      <DataTable
+        columns={DOCUMENT_COLUMNS}
+        rows={list.items}
+        rowKey={(document) => document.id}
+        tableClassName="spend-table--documents"
+        empty="Договорів немає."
+      />
       {list.nextCursor && (
         <button
           type="button"
@@ -90,6 +107,48 @@ function TransactionList({
   role: "payer" | "recipt";
 }) {
   const list = useSpendingTransactions(edrpou, period, role);
+  const party = role === "payer" ? "Отримувач" : "Платник";
+
+  const columns: readonly DataTableColumn<SpendingTransaction>[] = [
+    {
+      key: "date",
+      header: "Дата",
+      className: "spend-col-date",
+      render: (transaction) => formatDate(transaction.transDate),
+    },
+    {
+      key: "party",
+      header: party,
+      className: "spend-col-party",
+      render: (transaction) => (
+        <span className="spend-subject" title={counterparty(transaction, role)}>
+          {counterparty(transaction, role)}
+        </span>
+      ),
+    },
+    {
+      key: "subject",
+      header: "Призначення",
+      className: "spend-col-subject",
+      render: (transaction) => (
+        <span className="spend-subject" title={transaction.paymentDetails || undefined}>
+          {transaction.paymentDetails || "—"}
+        </span>
+      ),
+    },
+    {
+      key: "kekv",
+      header: "КЕКВ",
+      className: "spend-col-code",
+      render: (transaction) => transaction.kekv || "—",
+    },
+    {
+      key: "amount",
+      header: "Сума",
+      className: "spend-col-sum wb-col-num",
+      render: (transaction) => formatMoney(transaction.amount, transaction.currency),
+    },
+  ];
 
   if (list.loading && list.items.length === 0)
     return <p className="spend-list-note">Завантаження…</p>;
@@ -104,43 +163,13 @@ function TransactionList({
 
   return (
     <>
-      <div className="spend-table-wrap">
-        <table className="wb-data-table spend-table">
-          <thead>
-            <tr>
-              <th>Дата</th>
-              <th>{role === "payer" ? "Отримувач" : "Платник"}</th>
-              <th>Призначення</th>
-              <th>КЕКВ</th>
-              <th className="spend-th-num">Сума</th>
-            </tr>
-          </thead>
-          <tbody>
-            {list.items.map((transaction) => (
-              <tr key={transaction.id} className="spend-row">
-                <td className="spend-date" data-label="Дата">
-                  {formatDate(transaction.transDate)}
-                </td>
-                <td
-                  className="spend-subject"
-                  data-label={role === "payer" ? "Отримувач" : "Платник"}
-                >
-                  {counterparty(transaction, role)}
-                </td>
-                <td className="spend-subject" data-label="Призначення">
-                  {transaction.paymentDetails || "—"}
-                </td>
-                <td className="spend-code" data-label="КЕКВ">
-                  {transaction.kekv || "—"}
-                </td>
-                <td className="spend-num" data-label="Сума">
-                  {formatMoney(transaction.amount, transaction.currency)}
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
+      <DataTable
+        columns={columns}
+        rows={list.items}
+        rowKey={(item) => item.id}
+        tableClassName="spend-table--transactions"
+        empty="Записів немає."
+      />
       <p className="spend-list-note">
         Показано {formatCount(list.items.length)} записів із зібраних; решта — за кнопкою нижче.
       </p>

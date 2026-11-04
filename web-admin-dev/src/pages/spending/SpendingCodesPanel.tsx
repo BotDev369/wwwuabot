@@ -8,8 +8,9 @@
  */
 
 import { useState } from "react";
-import type { SpendingCodeKind } from "@wwwuabot/shared/spending";
-import { SpendingMeter } from "./SpendingMeter";
+import type { SpendingCodeKind, SpendingCodeRow } from "@wwwuabot/shared/spending";
+import { DataTable, type DataTableColumn } from "../../shared/components/DataTable";
+import { SpendingRankChart } from "./SpendingRankChart";
 import { formatCompactMoney, formatCount, formatMoney, formatShare } from "./format";
 import { useSpendingCodes } from "./useSpendingAnalytics";
 
@@ -19,6 +20,13 @@ const KINDS: readonly { kind: SpendingCodeKind; label: string; hint: string }[] 
   { kind: "budget", label: "Програма", hint: "код бюджетної програми" },
 ];
 
+/** Скільки кодів показує рейтинг: решта — хвіст, який читають у таблиці. */
+const RANK_ROWS = 8;
+
+function codeLabel(code: string): string {
+  return code || "без коду";
+}
+
 interface SpendingCodesPanelProps {
   readonly period: string | null;
 }
@@ -27,9 +35,35 @@ export function SpendingCodesPanel({ period }: SpendingCodesPanelProps) {
   const { view, loading, error } = useSpendingCodes(period);
   const [kind, setKind] = useState<SpendingCodeKind>("kekv");
   const active = KINDS.find((item) => item.kind === kind) ?? KINDS[0];
-  const rows = view ? view[kind] : [];
-  const max = rows.reduce((top, row) => Math.max(top, row.amount), 0);
+  const rows: readonly SpendingCodeRow[] = view ? view[kind] : [];
   const total = view?.totals.amount ?? 0;
+
+  const columns: readonly DataTableColumn<SpendingCodeRow>[] = [
+    {
+      key: "code",
+      header: "Код",
+      className: "spend-col-code",
+      render: (row) => <span className="spend-code">{codeLabel(row.code)}</span>,
+    },
+    {
+      key: "share",
+      header: "Частка суми",
+      className: "spend-col-share",
+      render: (row) => <span className="spend-share">{formatShare(row.amount, total)}</span>,
+    },
+    {
+      key: "count",
+      header: "Платежів",
+      className: "spend-col-count wb-col-num",
+      render: (row) => formatCount(row.count),
+    },
+    {
+      key: "amount",
+      header: "Сума",
+      className: "spend-col-sum wb-col-num",
+      render: (row) => formatMoney(row.amount),
+    },
+  ];
 
   return (
     <div className="spend-analytics-panel">
@@ -60,39 +94,23 @@ export function SpendingCodesPanel({ period }: SpendingCodesPanelProps) {
             <strong>{formatCompactMoney(total)}</strong> за {formatCount(view.totals.count)}{" "}
             платежів
           </p>
-          <div className="spend-table-wrap">
-            <table className="wb-data-table spend-table spend-analytics-table">
-              <thead>
-                <tr>
-                  <th>Код</th>
-                  <th>Частка</th>
-                  <th className="spend-th-num">Платежів</th>
-                  <th className="spend-th-num">Сума</th>
-                </tr>
-              </thead>
-              <tbody>
-                {rows.map((row) => (
-                  <tr key={row.code || "none"} className="spend-row">
-                    <td data-label="Код">
-                      <span className="spend-code">{row.code || "без коду"}</span>
-                    </td>
-                    <td data-label="Частка">
-                      <span className="spend-share-cell">
-                        <SpendingMeter share={max > 0 ? row.amount / max : 0} />
-                        <span className="spend-share">{formatShare(row.amount, total)}</span>
-                      </span>
-                    </td>
-                    <td className="spend-num" data-label="Платежів">
-                      {formatCount(row.count)}
-                    </td>
-                    <td className="spend-num" data-label="Сума">
-                      {formatMoney(row.amount)}
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+
+          <SpendingRankChart
+            rows={rows.slice(0, RANK_ROWS).map((row) => ({
+              key: row.code || "none",
+              label: codeLabel(row.code),
+              amount: row.amount,
+            }))}
+            total={total}
+          />
+
+          <DataTable
+            columns={columns}
+            rows={rows}
+            rowKey={(row) => row.code || "none"}
+            tableClassName="spend-table--codes"
+            empty="За цей місяць кодів немає."
+          />
         </>
       )}
     </div>

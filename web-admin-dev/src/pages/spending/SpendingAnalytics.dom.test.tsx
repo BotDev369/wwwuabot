@@ -65,11 +65,12 @@ describe("коди платежів", () => {
   it("називає підсумок і перемикає класифікацію", async () => {
     render(<SpendingCodesPanel period="2026-09" />);
 
-    expect(await screen.findByText("2111")).toBeTruthy();
-    expect(screen.getByText("без коду")).toBeTruthy();
+    // Код є і в рейтингу, і в таблиці — беремо перший (рейтинг стоїть вище).
+    expect((await screen.findAllByText("2111")).length).toBeGreaterThan(0);
+    expect(screen.getAllByText("без коду").length).toBeGreaterThan(0);
 
     fireEvent.click(screen.getByRole("tab", { name: "КПК" }));
-    expect(await screen.findByText("1010")).toBeTruthy();
+    expect((await screen.findAllByText("1010")).length).toBeGreaterThan(0);
     expect(screen.queryByText("2111")).toBeNull();
   });
 
@@ -161,7 +162,7 @@ describe("діаграма", () => {
 describe("вкладки аналізів", () => {
   it("перемикає коди й отримувачів", async () => {
     render(<SpendingAnalytics period="2026-09" />);
-    expect(await screen.findByText("2111")).toBeTruthy();
+    expect((await screen.findAllByText("2111")).length).toBeGreaterThan(0);
 
     fireEvent.click(screen.getByRole("tab", { name: "Отримувачі" }));
     expect(await screen.findByText("ТОВ «Буд»")).toBeTruthy();
