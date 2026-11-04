@@ -103,7 +103,7 @@ describe("отримувачі", () => {
     expect(await screen.findByText("ТОВ «Буд»")).toBeTruthy();
     expect(screen.getByText("Інші")).toBeTruthy();
     expect(screen.getByText(/4 отримувачів/)).toBeTruthy();
-    expect(screen.getByText(/^700,00/)).toBeTruthy();
+    expect(screen.getAllByText(/^700,00/).length).toBeGreaterThan(0);
     expect(screen.getAllByText(/01\.09|30\.09/).length).toBeGreaterThan(0);
   });
 

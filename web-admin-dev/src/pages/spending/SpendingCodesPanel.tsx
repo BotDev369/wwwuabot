@@ -36,7 +36,7 @@ export function SpendingCodesPanel({ period }: SpendingCodesPanelProps) {
   const [kind, setKind] = useState<SpendingCodeKind>("kekv");
   const active = KINDS.find((item) => item.kind === kind) ?? KINDS[0];
   const rows: readonly SpendingCodeRow[] = view ? view[kind] : [];
-  const total = view?.totals.amount ?? 0;
+  const total = view?.totals?.amount ?? 0;
 
   const columns: readonly DataTableColumn<SpendingCodeRow>[] = [
     {
@@ -85,7 +85,7 @@ export function SpendingCodesPanel({ period }: SpendingCodesPanelProps) {
         <p className="spend-list-note">{error}</p>
       ) : loading ? (
         <p className="spend-list-note">Завантаження…</p>
-      ) : !view || view.totals.count === 0 ? (
+      ) : !view || !view.totals || view.totals.count === 0 ? (
         <p className="spend-list-note">За цей місяць платежів у базі немає.</p>
       ) : (
         <>
@@ -109,6 +109,16 @@ export function SpendingCodesPanel({ period }: SpendingCodesPanelProps) {
             rows={rows}
             rowKey={(row) => row.code || "none"}
             tableClassName="spend-table--codes"
+            mobileMeta={(row) => (
+              <>
+                <dt>Частка суми</dt>
+                <dd>{formatShare(row.amount, total)}</dd>
+                <dt>Платежів</dt>
+                <dd>{formatCount(row.count)}</dd>
+                <dt>Сума</dt>
+                <dd>{formatMoney(row.amount)}</dd>
+              </>
+            )}
             empty="За цей місяць кодів немає."
           />
         </>

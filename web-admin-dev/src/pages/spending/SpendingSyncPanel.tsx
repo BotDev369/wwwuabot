@@ -138,6 +138,28 @@ export function SpendingSyncPanel({ rows, lastLoad, orgs }: SpendingSyncPanelPro
         rows={views}
         rowKey={(view) => view.key}
         tableClassName="spend-table--sync"
+        mobileMeta={(view) => (
+          <>
+            <dt>Крок</dt>
+            <dd>{view.step}</dd>
+            <dt>Період</dt>
+            <dd>{view.row.period ? formatPeriod(view.row.period) : "—"}</dd>
+            <dt>Стан</dt>
+            <dd>
+              <span className={statusClass(view.row.status)}>{statusLabel(view.row.status)}</span>
+            </dd>
+            <dt>Рядків</dt>
+            <dd>{formatCount(view.row.rows)}</dd>
+            <dt>Завершено</dt>
+            <dd>{formatStamp(view.row.finishedAt)}</dd>
+            {view.row.error && (
+              <>
+                <dt>Помилка</dt>
+                <dd>{view.row.error}</dd>
+              </>
+            )}
+          </>
+        )}
         empty="Кроків збору ще немає: колектор не запускався."
       />
 

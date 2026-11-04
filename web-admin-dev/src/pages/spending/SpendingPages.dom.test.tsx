@@ -173,7 +173,8 @@ describe("розпорядники", () => {
     const view = renderPage(<SpendingOrgsPage />);
 
     expect(await screen.findByText("Бучанська міська рада")).toBeTruthy();
-    expect(screen.getByText("не оприлюднено")).toBeTruthy();
+    // «не оприлюднено» стоятиме і в колонці, і в телефонному підписі рядка.
+    expect(screen.getAllByText("не оприлюднено").length).toBeGreaterThan(0);
 
     fireEvent.click(screen.getByText("Бучанська міська рада"));
     expect(await screen.findByText(/Договорів за цей період немає/)).toBeTruthy();
@@ -182,7 +183,7 @@ describe("розпорядники", () => {
     );
 
     fireEvent.click(screen.getByRole("button", { name: "Сплати" }));
-    expect(await screen.findByText("Ремонт дороги")).toBeTruthy();
+    expect((await screen.findAllByText("Ремонт дороги")).length).toBeGreaterThan(0);
     fireEvent.click(screen.getByRole("button", { name: "Надходження" }));
     await waitFor(() =>
       expect(api.fetchSpendingTransactions).toHaveBeenCalledWith(
@@ -198,7 +199,7 @@ describe("платежі", () => {
     const view = renderPage(<SpendingPaymentsPage />);
 
     expect(await screen.findByText("ТОВ Будівельник")).toBeTruthy();
-    expect(screen.getByText("Ремонт дороги")).toBeTruthy();
+    expect(screen.getAllByText("Ремонт дороги").length).toBeGreaterThan(0);
     expect(api.fetchSpendingTransactions).toHaveBeenCalledWith(
       expect.objectContaining({ edrpou: null, role: "payer", period: "2026-09" }),
     );

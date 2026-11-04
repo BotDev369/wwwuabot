@@ -9,7 +9,7 @@
 
 import type { SpendingOrg, SpendingTotals } from "@wwwuabot/shared/spending";
 import { DataTable, type DataTableColumn } from "../../shared/components/DataTable";
-import { formatCount, formatMoney } from "./format";
+import { formatCount, formatMoney, totalsText } from "./format";
 
 /**
  * Число й сума в одній клітинці — двома рядками: «18 · 240 000,00 грн» читалось
@@ -80,6 +80,18 @@ export function SpendingOrgTable({ orgs, selected, onSelect }: SpendingOrgTableP
         rowKey={(org) => org.edrpou}
         selectedKey={selected}
         tableClassName="spend-table--orgs"
+        mobileMeta={(org) => (
+          <>
+            <dt>Форма</dt>
+            <dd>{org.form || "—"}</dd>
+            <dt>Договори</dt>
+            <dd>{totalsText(org.documents)}</dd>
+            <dt>Сплати</dt>
+            <dd>{totalsText(org.payments)}</dd>
+            <dt>Надходження</dt>
+            <dd>{totalsText(org.receipts)}</dd>
+          </>
+        )}
         onRowClick={(org) => onSelect(org.edrpou)}
         empty="За цей період у базі немає жодного розпорядника — збір ще не приніс довідник."
       />

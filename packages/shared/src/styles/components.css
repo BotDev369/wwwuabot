@@ -2098,24 +2098,29 @@ html:has(.wb-tabbar) .wb-modal-overlay--screen {
 }
 
 /* ── Таблиця даних: один шаблон на всі таблиці (DataTable) ────────────────
-   Шапка й перший стовпець — підписи: вони лишаються на місці, коли таблиця
-   їде вбік і вниз. Скрол живе в самій рамці, тож шапка не їде разом зі
-   сторінкою. Тло має тільки шапка й перший стовпець; дані прозорі — інакше
-   смуги рядків сперечаються з числом, яке читають. */
+   Скрол живе на сторінці (`.spend` — це скрол-контейнер), а не в рамці:
+   вкладена прокрутка забирала жест у сторінки, і «закріплена» шапка їхала
+   разом із вмістом. Тло має тільки шапка й перший стовпець, і обидва —
+   легкий тон поверх картки, а не сіра заливка: дані читаються як дані.
+
+   Комірки переносять текст. Обрізання крапками коштувало найдорожчого:
+   назва ставала «Комунальне підпр…», і за нею вже нічого не впізнати. */
 
 .wb-table-scroll {
+  /* Тони закріплених зон: кілька відсотків тексту поверх картки — помітно
+     в обох темах, але без окремої «табличної» сірої поверхні. */
+  --wb-table-head: var(--bg-2);
+  --wb-table-head: color-mix(in srgb, var(--text-primary) 5%, var(--card-bg));
+  --wb-table-pin: var(--bg-2);
+  --wb-table-pin: color-mix(in srgb, var(--text-primary) 3%, var(--card-bg));
   position: relative;
-  overflow: auto;
-  max-height: clamp(320px, calc(100dvh - 320px), 880px);
   border: 1px solid var(--border-subtle);
   border-radius: var(--radius-md);
   background: var(--card-bg);
-  overscroll-behavior: contain;
 }
 
 .wb-table--grid {
   width: 100%;
-  min-width: 100%;
   table-layout: fixed;
   border-collapse: separate;
   border-spacing: 0;
@@ -2123,27 +2128,33 @@ html:has(.wb-tabbar) .wb-modal-overlay--screen {
 }
 
 .wb-table--grid th {
+  position: sticky;
+  /* Мінус відступ скрол-контейнера: інакше шапка липне на його padding
+     нижче й над нею видно рядки, що проїжджають. */
+  top: calc(-1 * var(--spend-pad, 0px));
+  z-index: 2;
   padding: var(--sp-2) var(--sp-3);
   border-bottom: 1px solid var(--border);
-  background: var(--bg-2);
+  background: var(--wb-table-head);
   color: var(--text-muted);
   font-size: var(--text-xs);
   font-weight: var(--weight-semibold);
-  letter-spacing: 0.04em;
+  letter-spacing: 0.06em;
   text-transform: uppercase;
   text-align: left;
   white-space: nowrap;
+  user-select: none;
 }
 
 .wb-table--grid td {
   padding: var(--sp-2) var(--sp-3);
   /* Лінія, а не смуга: дані без заливки, тож рядок тримає межа. */
-  border-bottom: 1px solid var(--border);
+  border-bottom: 1px solid var(--border-subtle);
   background: transparent;
-  vertical-align: middle;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+  color: var(--text-primary);
+  line-height: 1.45;
+  vertical-align: top;
+  overflow-wrap: break-word;
 }
 
 .wb-table--grid tbody tr:last-child td {
@@ -2153,25 +2164,35 @@ html:has(.wb-tabbar) .wb-modal-overlay--screen {
 /* Закріплене мусить бути непрозорим: інакше крізь нього видно те, що проїжджає.
    Перетин шапки й першого стовпця має власне тло, тож лінії не «пливуть». */
 .wb-table--grid thead th:first-child {
-  background: var(--bg-3);
+  background: var(--wb-table-head);
+}
+
+.wb-table--grid thead th:first-child {
+  border-top-left-radius: calc(var(--radius-md) - 1px);
+}
+
+.wb-table--grid thead th:last-child {
+  border-top-right-radius: calc(var(--radius-md) - 1px);
 }
 
 .wb-table--grid td:first-child {
-  background: var(--bg-2);
+  background: var(--wb-table-pin);
 }
 
 .wb-table--grid th:first-child,
 .wb-table--grid td:first-child {
-  box-shadow: inset -1px 0 0 var(--border);
+  box-shadow: inset -1px 0 0 var(--border-subtle);
 }
 
 @media (hover: hover) {
   .wb-table--grid tbody tr:hover td {
     background: var(--surface-hover);
+    background: color-mix(in srgb, var(--text-primary) 4%, var(--card-bg));
   }
 
   .wb-table--grid tbody tr:hover td:first-child {
     background: var(--bg-3);
+    background: color-mix(in srgb, var(--text-primary) 7%, var(--card-bg));
   }
 }
 
@@ -2189,25 +2210,19 @@ html:has(.wb-tabbar) .wb-modal-overlay--screen {
   cursor: pointer;
 }
 
-/* Підпис рядка — два рядки: назва й код під нею. Обидва обрізаються, щоб
-   довга назва не розсувала колонку й не виносила числа за екран. */
+/* Підпис рядка — два рядки: назва й код під нею. Обидва переносяться:
+   довга назва розпорядника — це і є дані, її не можна ховати в крапки. */
 .wb-table--grid .wb-cell-title {
   display: block;
-  overflow: hidden;
   font-weight: var(--weight-medium);
-  text-overflow: ellipsis;
-  white-space: nowrap;
 }
 
 .wb-table--grid .wb-cell-sub {
   display: block;
-  overflow: hidden;
-  margin-top: 1px;
+  margin-top: 2px;
   color: var(--text-muted);
   font-family: var(--font-mono);
   font-size: var(--text-xs);
-  text-overflow: ellipsis;
-  white-space: nowrap;
 }
 
 /* Числова колонка: праворуч і моноширинно — числа порівнюють оком, а не комою. */
@@ -2215,6 +2230,11 @@ html:has(.wb-tabbar) .wb-modal-overlay--screen {
   font-family: var(--font-mono);
   font-variant-numeric: tabular-nums;
   text-align: right;
+}
+
+/* Гроші не рвуться посередині: перенос у числі читався б як два числа. */
+.wb-table--grid td.wb-col-num {
+  white-space: nowrap;
 }
 
 .wb-table--grid .wb-cell-num {
@@ -2238,6 +2258,68 @@ html:has(.wb-tabbar) .wb-modal-overlay--screen {
   font-size: var(--text-sm);
   text-align: center;
   white-space: normal;
+}
+
+/* ── Телефон: рядок лишає один підпис, числа йдуть під нього ──────────────
+   Горизонтальна прокрутка на телефоні не працює: повзунок тонкий, а жест
+   забирає сторінка. Тому на вузькому екрані видимий один стовпець — підпис
+   рядка, а дані решти стовпців переходять у `dl` просто під ним: пара
+   «підпис → значення» замість обрізаного «не…». Нічого не ховається й не
+   обрізається: усе переноситься, як і просили. */
+
+.wb-table-meta {
+  display: none;
+}
+
+@media (max-width: 860px) {
+  .wb-table--stack {
+    table-layout: auto;
+  }
+
+  .wb-table--stack thead th:first-child {
+    width: auto;
+  }
+
+  .wb-table--stack thead th:nth-child(n + 2),
+  .wb-table--stack tbody td:nth-child(n + 2) {
+    display: none;
+  }
+
+  .wb-table--stack tbody td:first-child {
+    padding: var(--sp-3);
+    background: var(--card-bg);
+    box-shadow: none;
+  }
+
+  .wb-table--stack tbody tr:not(:last-child) td:first-child {
+    border-bottom: 1px solid var(--border);
+  }
+
+  .wb-table--stack .wb-cell-title {
+    font-size: var(--text-base);
+  }
+
+  .wb-table-meta {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr);
+    gap: 3px var(--sp-3);
+    margin: var(--sp-2) 0 0;
+    padding-top: var(--sp-2);
+    border-top: 1px solid var(--border-subtle);
+    font-size: var(--text-xs);
+    text-align: left;
+  }
+
+  .wb-table-meta dt {
+    color: var(--text-muted);
+  }
+
+  .wb-table-meta dd {
+    margin: 0;
+    color: var(--text-primary);
+    font-variant-numeric: tabular-nums;
+    text-align: right;
+  }
 }
 
 /* ── Закріплені рядок 1 і стовпець 1 — наскрізний стандарт таблиць ────────

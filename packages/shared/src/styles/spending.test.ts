@@ -1,7 +1,7 @@
 /**
- * Сторож таблиць Є-data: вони лишаються таблицями на будь-якій ширині, а
- * ширини колонок складаються у 100% — інакше перші дві колонки не вміщуються
- * й закріплений підпис рядка втрачає сенс (розбір CSS як тексту — `dates.test.ts`).
+ * Сторож таблиць Є-data: таблиця тягнеться на всю ширину картки (без скролу
+ * вбік), а ширини колонок складаються у 100% — інакше числа виносять підпис за
+ * екран (розбір CSS як тексту — `dates.test.ts`).
  *
  * @module packages/shared/src/styles/spending.test
  */
@@ -29,9 +29,6 @@ const TABLES: Readonly<Record<string, number>> = {
   sources: 2,
 };
 
-/** Таблиці, які на телефоні їдуть убік; `sources` — дві колонки, обидві видні. */
-const SCROLLING = Object.keys(TABLES).filter((table) => table !== "sources");
-
 /** Ширини колонок таблиці: `th:nth-child(n)`, зокрема в групових селекторах. */
 function columnWidths(table: string): number[] {
   const widths = new Map<number, number>();
@@ -47,14 +44,13 @@ function columnWidths(table: string): number[] {
 }
 
 describe("таблиці Є-data", () => {
-  it("мають ширину, від якої їдуть убік, а не стискаються в ніщо", () => {
-    for (const table of SCROLLING) {
-      expect(wide, table).toMatch(new RegExp(`\\.spend-table--${table} \\{\\s*min-width: \\d+px;`));
-    }
+  it("таблиця тягнеться на всю ширину картки: жодного `min-width` для скролу вбік", () => {
+    expect(wide).not.toMatch(/\.spend-table--[\w-]+ \{[^}]*min-width/);
   });
 
-  it("джерела вміщуються цілком: обидві колонки видні на телефоні", () => {
-    expect(wide).not.toMatch(/\.spend-table--sources \{[^}]*min-width/);
+  it("на телефоні відступ сторінки — єдина мірка, на неї спирається липка шапка", () => {
+    expect(css).toContain("--spend-pad: var(--sp-5)");
+    expect(phone).toContain("--spend-pad: var(--sp-3)");
   });
 
   it("ширини колонок складаються у 100% і покривають кожну колонку", () => {
@@ -67,15 +63,10 @@ describe("таблиці Є-data", () => {
     }
   });
 
-  it("на телефоні таблиця лишається таблицею: шапка й підпис не ховаються", () => {
-    expect(phone).not.toContain("display: none");
+  it("на телефоні немає карткової розкладки й горизонтального скролу", () => {
     expect(phone).not.toContain("attr(data-label)");
-    expect(phone).not.toContain("min-width: 0");
-  });
-
-  it("на телефоні висоту дає сторінка, а не окрема скрол-рамка", () => {
-    expect(phone).toContain(".wb-table-scroll");
-    expect(phone).toContain("max-height: none");
+    expect(phone).not.toContain("overflow-x");
+    expect(phone).not.toContain(".wb-table-scroll");
   });
 
   it("на широкому екрані карткова розкладка не вмикається", () => {

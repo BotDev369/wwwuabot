@@ -1,5 +1,5 @@
 {
-  "version": "3a4a22f",
+  "version": "0132105",
   "files": [
     {
       "file": "admin/analytics-people.css",
@@ -68,8 +68,8 @@
     },
     {
       "file": "admin/spending.css",
-      "tokens": 0,
-      "classes": 76
+      "tokens": 2,
+      "classes": 75
     },
     {
       "file": "admin/style.css",
@@ -113,8 +113,8 @@
     },
     {
       "file": "components.css",
-      "tokens": 19,
-      "classes": 206
+      "tokens": 23,
+      "classes": 208
     },
     {
       "file": "contacts.css",
@@ -2424,6 +2424,20 @@
       "section": "Блок як РЯДОК списку (`.wb-block-section--row`)"
     },
     {
+      "name": "--spend-pad",
+      "file": "admin/spending.css",
+      "selector": ".spend",
+      "value": "var(--sp-5)",
+      "section": ""
+    },
+    {
+      "name": "--spend-pad",
+      "file": "admin/spending.css",
+      "selector": ".spend",
+      "value": "var(--sp-3)",
+      "section": "Аналізи: коди платежів і отримувачі"
+    },
+    {
       "name": "--tabs-h",
       "file": "components.css",
       "selector": ".wb-tabs",
@@ -2492,6 +2506,34 @@
       "selector": ".wb-trackers-page",
       "value": "var(--sp-3)",
       "section": ""
+    },
+    {
+      "name": "--wb-table-head",
+      "file": "components.css",
+      "selector": ".wb-table-scroll",
+      "value": "var(--bg-2)",
+      "section": "Таблиця даних: один шаблон на всі таблиці (DataTable)"
+    },
+    {
+      "name": "--wb-table-head",
+      "file": "components.css",
+      "selector": ".wb-table-scroll",
+      "value": "color-mix(in srgb, var(--text-primary) 5%, var(--card-bg))",
+      "section": "Таблиця даних: один шаблон на всі таблиці (DataTable)"
+    },
+    {
+      "name": "--wb-table-pin",
+      "file": "components.css",
+      "selector": ".wb-table-scroll",
+      "value": "var(--bg-2)",
+      "section": "Таблиця даних: один шаблон на всі таблиці (DataTable)"
+    },
+    {
+      "name": "--wb-table-pin",
+      "file": "components.css",
+      "selector": ".wb-table-scroll",
+      "value": "color-mix(in srgb, var(--text-primary) 3%, var(--card-bg))",
+      "section": "Таблиця даних: один шаблон на всі таблиці (DataTable)"
     }
   ],
   "classes": {
@@ -3050,8 +3092,7 @@
           "spend-tab",
           "spend-tab-active",
           "spend-table",
-          "spend-tabs",
-          "wb-table-scroll"
+          "spend-tabs"
         ]
       },
       {
@@ -4349,6 +4390,14 @@
           "wb-table-row--click",
           "wb-table-row--on",
           "wb-table-scroll"
+        ]
+      },
+      {
+        "section": "Телефон: рядок лишає один підпис, числа йдуть під нього",
+        "names": [
+          "wb-cell-title",
+          "wb-table--stack",
+          "wb-table-meta"
         ]
       },
       {

@@ -50,11 +50,34 @@ describe("рядок 1 і стовпець 1 закріплені у кожні�
   });
 
   it("шаблон таблиці даних: тло тільки в шапки й першого стовпця", () => {
-    expect(rule(".wb-table--grid th")).toContain("background: var(--bg-2)");
+    expect(rule(".wb-table--grid th")).toContain("background: var(--wb-table-head)");
     expect(rule(".wb-table--grid td")).toContain("background: transparent");
-    expect(rule(".wb-table--grid td:first-child")).toContain("background: var(--bg-2)");
-    expect(rule(".wb-table--grid thead th:first-child")).toContain("background: var(--bg-3)");
-    expect(rule(".wb-table-scroll")).toContain("overflow: auto");
+    expect(rule(".wb-table--grid td:first-child")).toContain("background: var(--wb-table-pin)");
+    expect(rule(".wb-table--grid thead th:first-child")).toContain(
+      "background: var(--wb-table-head)",
+    );
+  });
+
+  it("дані в комірках переносяться, а не обрізаються крапками", () => {
+    const cell = rule(".wb-table--grid td");
+    expect(cell).toContain("overflow-wrap: break-word");
+    expect(cell).not.toContain("text-overflow");
+    expect(rule(".wb-table--grid .wb-cell-title")).not.toContain("text-overflow");
+  });
+
+  it("скрол живе на сторінці, а не в рамці таблиці", () => {
+    // Рамка таблиці, що сама скролить, лишає `sticky` без скролпорту — шапка
+    // їхала разом із вмістом, і «закріпленість» була лише на словах.
+    const box = rule(".wb-table-scroll");
+    expect(box).not.toContain("overflow: auto");
+    expect(box).not.toContain("max-height");
+    expect(rule(".wb-table--grid th")).toContain("top: calc(-1 * var(--spend-pad");
+  });
+
+  it("на телефоні рядок лишає підпис, а числа переходять у пари `dt`/`dd`", () => {
+    expect(css).toContain(".wb-table--stack tbody td:nth-child(n + 2)");
+    expect(css).toContain("grid-template-columns: auto minmax(0, 1fr)");
+    expect(rule(".wb-table-meta")).toContain("display: none");
   });
 
   it("стандарт — значення за замовчуванням, а не диктат над розкладкою таблиці", () => {

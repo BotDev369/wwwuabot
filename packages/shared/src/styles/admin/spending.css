@@ -5,9 +5,12 @@
    лишається те, чим грошові колонки щільніші за нього. */
 
 .spend {
+  /* Мірка відступу — одна: на неї ж спирається закріплена шапка таблиці,
+     інакше вона липала на 20px нижче краю й над нею видно рядки. */
+  --spend-pad: var(--sp-5);
   flex: 1;
   overflow: auto;
-  padding: var(--sp-5);
+  padding: var(--spend-pad);
   display: flex;
   flex-direction: column;
   gap: 16px;
@@ -75,12 +78,8 @@
    Ширини — у відсотках і з розрахунком на телефон: перші дві колонки
    вміщуються повністю, третя лишається наполовину — так видно, що таблиця
    гортається вбік, і підпис рядка не губиться. */
-.spend-table--orgs {
-  min-width: 720px;
-}
-
 .spend-table--orgs th:nth-child(1) {
-  width: 22%;
+  width: 30%;
 }
 
 .spend-table--orgs th:nth-child(2) {
@@ -90,39 +89,31 @@
 .spend-table--orgs th:nth-child(3),
 .spend-table--orgs th:nth-child(4),
 .spend-table--orgs th:nth-child(5) {
-  width: 18.66%;
-}
-
-.spend-table--payments {
-  min-width: 860px;
+  width: 16%;
 }
 
 .spend-table--payments th:nth-child(1) {
-  width: 11%;
+  width: 28%;
 }
 
 .spend-table--payments th:nth-child(2) {
-  width: 24%;
+  width: 34%;
 }
 
 .spend-table--payments th:nth-child(3) {
-  width: 35%;
+  width: 10%;
 }
 
 .spend-table--payments th:nth-child(4) {
-  width: 10%;
+  width: 8%;
 }
 
 .spend-table--payments th:nth-child(5) {
   width: 20%;
 }
 
-.spend-table--codes {
-  min-width: 620px;
-}
-
 .spend-table--codes th:nth-child(1) {
-  width: 22%;
+  width: 20%;
 }
 
 .spend-table--codes th:nth-child(2) {
@@ -130,19 +121,15 @@
 }
 
 .spend-table--codes th:nth-child(3) {
-  width: 22%;
+  width: 20%;
 }
 
 .spend-table--codes th:nth-child(4) {
-  width: 32%;
-}
-
-.spend-table--recipients {
-  min-width: 720px;
+  width: 36%;
 }
 
 .spend-table--recipients th:nth-child(1) {
-  width: 32%;
+  width: 36%;
 }
 
 .spend-table--recipients th:nth-child(2) {
@@ -150,27 +137,23 @@
 }
 
 .spend-table--recipients th:nth-child(3) {
-  width: 18%;
+  width: 16%;
 }
 
 .spend-table--recipients th:nth-child(4) {
-  width: 30%;
-}
-
-.spend-table--sync {
-  min-width: 780px;
-}
-
-.spend-table--sync th:nth-child(1) {
   width: 28%;
 }
 
+.spend-table--sync th:nth-child(1) {
+  width: 30%;
+}
+
 .spend-table--sync th:nth-child(2) {
-  width: 12%;
+  width: 14%;
 }
 
 .spend-table--sync th:nth-child(3) {
-  width: 13%;
+  width: 14%;
 }
 
 .spend-table--sync th:nth-child(4) {
@@ -178,63 +161,55 @@
 }
 
 .spend-table--sync th:nth-child(5) {
-  width: 9%;
+  width: 10%;
 }
 
 .spend-table--sync th:nth-child(6) {
-  width: 26%;
-}
-
-.spend-table--documents {
-  min-width: 860px;
+  width: 20%;
 }
 
 .spend-table--documents th:nth-child(1) {
-  width: 12%;
-}
-
-.spend-table--documents th:nth-child(2) {
-  width: 14%;
-}
-
-.spend-table--documents th:nth-child(3) {
   width: 30%;
 }
 
+.spend-table--documents th:nth-child(2) {
+  width: 28%;
+}
+
+.spend-table--documents th:nth-child(3) {
+  width: 12%;
+}
+
 .spend-table--documents th:nth-child(4) {
-  width: 24%;
+  width: 10%;
 }
 
 .spend-table--documents th:nth-child(5) {
   width: 20%;
 }
 
-.spend-table--transactions {
-  min-width: 880px;
-}
-
 .spend-table--transactions th:nth-child(1) {
-  width: 11%;
+  width: 26%;
 }
 
 .spend-table--transactions th:nth-child(2) {
-  width: 23%;
+  width: 32%;
 }
 
 .spend-table--transactions th:nth-child(3) {
-  width: 34%;
+  width: 11%;
 }
 
 .spend-table--transactions th:nth-child(4) {
-  width: 10%;
+  width: 9%;
 }
 
 .spend-table--transactions th:nth-child(5) {
   width: 22%;
 }
 
-/* Дві колонки — обидві мусять уміститися на телефоні, тож ширина таблиці
-   не більша за контейнер: назва джерела обрізається, дата стоїть поруч. */
+/* Дві колонки — обидві мусять уміститися й на телефоні: назва джерела
+   переноситься, дата стоїть праворуч. */
 .spend-table--sources th:nth-child(1) {
   width: 62%;
 }
@@ -278,14 +253,11 @@
   color: var(--text-secondary);
 }
 
-/* Довгий текст у рядку — одна лінія з крапками й підказкою: рядок однакової
-   висоти дає порівнювати платежі оком, а не гортанням. */
+/* Текст у рядку — з переносом: обрізане призначення («Оплата за …») не
+   відрізнити від сусіднього, а це і є дані. */
 .spend-subject {
   display: block;
-  overflow: hidden;
   color: var(--text-secondary);
-  text-overflow: ellipsis;
-  white-space: nowrap;
 }
 
 .spend-detail-head {
@@ -547,7 +519,7 @@
 
 @media (max-width: 768px) {
   .spend {
-    padding: var(--sp-3);
+    --spend-pad: var(--sp-3);
     gap: 12px;
   }
 
@@ -565,13 +537,6 @@
 
   .spend-panel {
     padding: var(--sp-2);
-  }
-
-  /* Таблиця лишається таблицею й на телефоні: закріплений перший стовпець
-     тримає підпис рядка, решта їде вбік. Картки ховали саме те, що робить
-     рядки порівнюваними. */
-  .wb-table-scroll {
-    max-height: none;
   }
 
   /* Список джерел — довідка, а не дані: висоту обмежуємо, інакше підвал

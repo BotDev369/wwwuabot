@@ -16,20 +16,12 @@ import { useSpendingCommunityPayments } from "./useSpendingList";
 
 const COLUMNS: readonly DataTableColumn<SpendingTransaction>[] = [
   {
-    key: "date",
-    header: "Дата",
-    className: "spend-col-date",
-    render: (payment) => formatDate(payment.transDate),
-  },
-  {
     key: "recipient",
     header: "Отримувач",
     className: "spend-col-party",
     render: (payment) => (
       <>
-        <span className="wb-cell-title" title={payment.reciptName || undefined}>
-          {payment.reciptName || "без назви"}
-        </span>
+        <span className="wb-cell-title">{payment.reciptName || "без назви"}</span>
         <span className="wb-cell-sub">{payment.reciptEdrpou || "—"}</span>
       </>
     ),
@@ -38,11 +30,13 @@ const COLUMNS: readonly DataTableColumn<SpendingTransaction>[] = [
     key: "subject",
     header: "Призначення",
     className: "spend-col-subject",
-    render: (payment) => (
-      <span className="spend-subject" title={payment.paymentDetails || undefined}>
-        {payment.paymentDetails || "—"}
-      </span>
-    ),
+    render: (payment) => <span className="spend-subject">{payment.paymentDetails || "—"}</span>,
+  },
+  {
+    key: "date",
+    header: "Дата",
+    className: "spend-col-date",
+    render: (payment) => formatDate(payment.transDate),
   },
   {
     key: "kekv",
@@ -80,6 +74,18 @@ function CommunityPayments({ period }: { readonly period: string }) {
         rows={list.items}
         rowKey={(payment) => payment.id}
         tableClassName="spend-table--payments"
+        mobileMeta={(payment) => (
+          <>
+            <dt>Призначення</dt>
+            <dd>{payment.paymentDetails || "—"}</dd>
+            <dt>Дата</dt>
+            <dd>{formatDate(payment.transDate)}</dd>
+            <dt>КЕКВ</dt>
+            <dd>{payment.kekv || "—"}</dd>
+            <dt>Сума</dt>
+            <dd>{formatMoney(payment.amount, payment.currency || "UAH")}</dd>
+          </>
+        )}
         caption={`Показано ${formatCount(list.items.length)} сплат`}
         empty="За цей місяць платежів немає."
       />

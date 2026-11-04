@@ -49,10 +49,10 @@ function toRow(row: SpendingRecipientRow): RecipientRow {
 export function SpendingRecipientsPanel() {
   const { view, loading, error, selectScope } = useSpendingRecipients("month");
   const rows = view?.rows ?? [];
-  const total = view?.totals.amount ?? 0;
+  const total = view?.totals?.amount ?? 0;
   const listed = rows.reduce((sum, row) => sum + row.amount, 0);
   const rest = Math.max(total - listed, 0);
-  const restCount = Math.max((view?.totals.recipients ?? 0) - rows.length, 0);
+  const restCount = Math.max((view?.totals?.recipients ?? 0) - rows.length, 0);
 
   const tableRows: RecipientRow[] = [
     ...rows.map(toRow),
@@ -123,7 +123,7 @@ export function SpendingRecipientsPanel() {
         <p className="spend-list-note">{error}</p>
       ) : loading ? (
         <p className="spend-list-note">Завантаження…</p>
-      ) : !view || view.totals.count === 0 ? (
+      ) : !view || !view.totals || view.totals.count === 0 ? (
         <p className="spend-list-note">За це вікно платежів у базі немає.</p>
       ) : (
         <>
@@ -140,6 +140,16 @@ export function SpendingRecipientsPanel() {
             rows={tableRows}
             rowKey={(row) => row.edrpou}
             tableClassName="spend-table--recipients"
+            mobileMeta={(row) => (
+              <>
+                <dt>Частка</dt>
+                <dd>{formatShare(row.amount, total)}</dd>
+                <dt>Платежів</dt>
+                <dd>{row.count === null ? "—" : formatCount(row.count)}</dd>
+                <dt>Сума</dt>
+                <dd>{formatMoney(row.amount)}</dd>
+              </>
+            )}
             empty="За це вікно отримувачів немає."
           />
 

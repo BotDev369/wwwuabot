@@ -23,6 +23,25 @@ const TABS: readonly { key: DetailTab; label: string }[] = [
 
 const DOCUMENT_COLUMNS: readonly DataTableColumn<SpendingDocument>[] = [
   {
+    key: "subject",
+    header: "Предмет",
+    className: "spend-col-subject",
+    render: (document) => (
+      <>
+        <span className="wb-cell-title">{document.subject || "—"}</span>
+        {document.number && <span className="wb-cell-sub">№ {document.number}</span>}
+      </>
+    ),
+  },
+  {
+    key: "contractors",
+    header: "Контрагенти",
+    className: "spend-col-party",
+    render: (document) => (
+      <span className="spend-subject">{contractorNames(document.contractors)}</span>
+    ),
+  },
+  {
     key: "date",
     header: "Дата",
     className: "spend-col-date",
@@ -33,26 +52,6 @@ const DOCUMENT_COLUMNS: readonly DataTableColumn<SpendingDocument>[] = [
     header: "Номер",
     className: "spend-col-code",
     render: (document) => document.number || "—",
-  },
-  {
-    key: "subject",
-    header: "Предмет",
-    className: "spend-col-subject",
-    render: (document) => (
-      <span className="spend-subject" title={document.subject || undefined}>
-        {document.subject || "—"}
-      </span>
-    ),
-  },
-  {
-    key: "contractors",
-    header: "Контрагенти",
-    className: "spend-col-party",
-    render: (document) => (
-      <span className="spend-subject" title={contractorNames(document.contractors)}>
-        {contractorNames(document.contractors)}
-      </span>
-    ),
   },
   {
     key: "amount",
@@ -81,6 +80,18 @@ function DocumentList({ edrpou, period }: { edrpou: string; period: string }) {
         rows={list.items}
         rowKey={(document) => document.id}
         tableClassName="spend-table--documents"
+        mobileMeta={(document) => (
+          <>
+            <dt>Контрагенти</dt>
+            <dd>{contractorNames(document.contractors)}</dd>
+            <dt>Дата</dt>
+            <dd>{formatDate(document.documentDate)}</dd>
+            <dt>Номер</dt>
+            <dd>{document.number || "—"}</dd>
+            <dt>Сума</dt>
+            <dd>{formatMoney(document.amount, document.currency)}</dd>
+          </>
+        )}
         empty="Договорів немає."
       />
       {list.nextCursor && (
@@ -111,19 +122,14 @@ function TransactionList({
 
   const columns: readonly DataTableColumn<SpendingTransaction>[] = [
     {
-      key: "date",
-      header: "Дата",
-      className: "spend-col-date",
-      render: (transaction) => formatDate(transaction.transDate),
-    },
-    {
       key: "party",
       header: party,
       className: "spend-col-party",
       render: (transaction) => (
-        <span className="spend-subject" title={counterparty(transaction, role)}>
-          {counterparty(transaction, role)}
-        </span>
+        <>
+          <span className="wb-cell-title">{counterparty(transaction, role)}</span>
+          <span className="wb-cell-sub">{formatDate(transaction.transDate)}</span>
+        </>
       ),
     },
     {
@@ -131,10 +137,14 @@ function TransactionList({
       header: "Призначення",
       className: "spend-col-subject",
       render: (transaction) => (
-        <span className="spend-subject" title={transaction.paymentDetails || undefined}>
-          {transaction.paymentDetails || "—"}
-        </span>
+        <span className="spend-subject">{transaction.paymentDetails || "—"}</span>
       ),
+    },
+    {
+      key: "date",
+      header: "Дата",
+      className: "spend-col-date",
+      render: (transaction) => formatDate(transaction.transDate),
     },
     {
       key: "kekv",
@@ -168,6 +178,16 @@ function TransactionList({
         rows={list.items}
         rowKey={(item) => item.id}
         tableClassName="spend-table--transactions"
+        mobileMeta={(transaction) => (
+          <>
+            <dt>Призначення</dt>
+            <dd>{transaction.paymentDetails || "—"}</dd>
+            <dt>КЕКВ</dt>
+            <dd>{transaction.kekv || "—"}</dd>
+            <dt>Сума</dt>
+            <dd>{formatMoney(transaction.amount, transaction.currency)}</dd>
+          </>
+        )}
         empty="Записів немає."
       />
       <p className="spend-list-note">

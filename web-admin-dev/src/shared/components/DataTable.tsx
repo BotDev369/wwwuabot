@@ -1,7 +1,7 @@
 /**
- * Єдина таблиця адмінки: розмітка, що вмикає наскрізне правило закріплених
- * шапки й першого стовпця (`components.css`), і власна скрол-рамка — інакше
- * шапка їде разом зі сторінкою. Ширина колонок — клас конкретної таблиці.
+ * Єдина таблиця адмінки: закріплені шапка й перший стовпець (`components.css`)
+ * і телефонний режим, де рядок лишає підпис, а числа переходять у `dl` під ним.
+ * Ширина колонок — клас конкретної таблиці.
  * @module web-admin-dev/src/shared/components/DataTable
  */
 
@@ -29,6 +29,14 @@ export interface DataTableProps<T> {
   readonly caption?: string;
   /** Клас таблиці: ширина колонок — рішення конкретної таблиці. */
   readonly tableClassName?: string;
+  /**
+   * Підпис рядка на телефоні: пари `<dt>`/`<dd>` під назвою.
+   *
+   * На вузькому екрані стовпці не влазять, а горизонтальний скрол на телефоні
+   * не працює — тож числа переїжджають під назву, а не обрізаються. Без цього
+   * пропу таблиця лишається звичайною і переносить текст у клітинках.
+   */
+  readonly mobileMeta?: (row: T) => ReactNode;
 }
 
 export function DataTable<T>({
@@ -40,10 +48,15 @@ export function DataTable<T>({
   selectedKey,
   caption,
   tableClassName,
+  mobileMeta,
 }: DataTableProps<T>) {
   return (
     <div className="wb-table-scroll">
-      <table className={`wb-table wb-table--grid ${tableClassName ?? ""}`.trim()}>
+      <table
+        className={`wb-table wb-table--grid${mobileMeta ? " wb-table--stack" : ""} ${
+          tableClassName ?? ""
+        }`.trim()}
+      >
         {caption && <caption className="wb-table-caption">{caption}</caption>}
         <thead>
           <tr>
@@ -85,9 +98,12 @@ export function DataTable<T>({
                       : undefined
                   }
                 >
-                  {columns.map((column) => (
+                  {columns.map((column, index) => (
                     <td key={column.key} className={column.className}>
                       {column.render(row)}
+                      {index === 0 && mobileMeta && (
+                        <dl className="wb-table-meta">{mobileMeta(row)}</dl>
+                      )}
                     </td>
                   ))}
                 </tr>

@@ -38,6 +38,44 @@ describe("DataTable", () => {
     expect(screen.getByRole("cell", { name: "2" })).toBeTruthy();
   });
 
+  it("телефонний підпис стає другим рядком першої комірки", () => {
+    const { container } = render(
+      <DataTable
+        columns={COLUMNS}
+        rows={ROWS}
+        rowKey={(row) => row.id}
+        empty="порожньо"
+        mobileMeta={(row) => (
+          <>
+            <dt>Код</dt>
+            <dd>{row.id}</dd>
+          </>
+        )}
+      />,
+    );
+
+    // Клас вмикає телефонну розкладку: один видимий стовпець плюс `dl`.
+    const table = container.querySelector("table.wb-table--grid");
+    expect(table?.classList.contains("wb-table--stack")).toBe(true);
+
+    const firstCells = container.querySelectorAll("tbody td:first-child");
+    expect(firstCells).toHaveLength(2);
+    expect(firstCells[0]?.querySelector("dl.wb-table-meta dd")?.textContent).toBe("1");
+    // Підпис є тільки в першій комірці: інакше телефон показав би його двічі.
+    expect(container.querySelectorAll("dl.wb-table-meta")).toHaveLength(2);
+  });
+
+  it("без підпису таблиця не вмикає телефонну розкладку", () => {
+    const { container } = render(
+      <DataTable columns={COLUMNS} rows={ROWS} rowKey={(row) => row.id} empty="порожньо" />,
+    );
+
+    expect(
+      container.querySelector("table.wb-table--grid")?.classList.contains("wb-table--stack"),
+    ).toBe(false);
+    expect(container.querySelector("dl.wb-table-meta")).toBeNull();
+  });
+
   it("порожній стан займає всю ширину таблиці й каже причину", () => {
     render(<DataTable columns={COLUMNS} rows={[]} rowKey={(row) => row.id} empty="Даних немає" />);
 
