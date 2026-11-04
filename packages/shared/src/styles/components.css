@@ -2320,6 +2320,18 @@ html:has(.wb-tabbar) .wb-modal-overlay--screen {
     font-variant-numeric: tabular-nums;
     text-align: right;
   }
+
+  /* Довгий текст (призначення платежу, контрагенти) не вирівнюють праворуч:
+     абзац із рваним лівим краєм не читається. Така пара займає весь рядок. */
+  .wb-table-meta .wb-table-meta-wide {
+    grid-column: 1 / -1;
+  }
+
+  .wb-table-meta dd.wb-table-meta-wide {
+    margin-top: 1px;
+    color: var(--text-secondary);
+    text-align: left;
+  }
 }
 
 /* ── Закріплені рядок 1 і стовпець 1 — наскрізний стандарт таблиць ────────

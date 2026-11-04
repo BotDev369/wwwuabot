@@ -76,8 +76,8 @@ function CommunityPayments({ period }: { readonly period: string }) {
         tableClassName="spend-table--payments"
         mobileMeta={(payment) => (
           <>
-            <dt>Призначення</dt>
-            <dd>{payment.paymentDetails || "—"}</dd>
+            <dt className="wb-table-meta-wide">Призначення</dt>
+            <dd className="wb-table-meta-wide">{payment.paymentDetails || "—"}</dd>
             <dt>Дата</dt>
             <dd>{formatDate(payment.transDate)}</dd>
             <dt>КЕКВ</dt>

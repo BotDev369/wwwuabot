@@ -154,8 +154,8 @@ export function SpendingSyncPanel({ rows, lastLoad, orgs }: SpendingSyncPanelPro
             <dd>{formatStamp(view.row.finishedAt)}</dd>
             {view.row.error && (
               <>
-                <dt>Помилка</dt>
-                <dd>{view.row.error}</dd>
+                <dt className="wb-table-meta-wide">Помилка</dt>
+                <dd className="wb-table-meta-wide">{view.row.error}</dd>
               </>
             )}
           </>

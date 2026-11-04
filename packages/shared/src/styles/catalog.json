@@ -1,5 +1,5 @@
 {
-  "version": "0132105",
+  "version": "5e87471",
   "files": [
     {
       "file": "admin/analytics-people.css",
@@ -114,7 +114,7 @@
     {
       "file": "components.css",
       "tokens": 23,
-      "classes": 208
+      "classes": 209
     },
     {
       "file": "contacts.css",
@@ -4397,7 +4397,8 @@
         "names": [
           "wb-cell-title",
           "wb-table--stack",
-          "wb-table-meta"
+          "wb-table-meta",
+          "wb-table-meta-wide"
         ]
       },
       {

@@ -82,8 +82,8 @@ function DocumentList({ edrpou, period }: { edrpou: string; period: string }) {
         tableClassName="spend-table--documents"
         mobileMeta={(document) => (
           <>
-            <dt>Контрагенти</dt>
-            <dd>{contractorNames(document.contractors)}</dd>
+            <dt className="wb-table-meta-wide">Контрагенти</dt>
+            <dd className="wb-table-meta-wide">{contractorNames(document.contractors)}</dd>
             <dt>Дата</dt>
             <dd>{formatDate(document.documentDate)}</dd>
             <dt>Номер</dt>
@@ -180,8 +180,8 @@ function TransactionList({
         tableClassName="spend-table--transactions"
         mobileMeta={(transaction) => (
           <>
-            <dt>Призначення</dt>
-            <dd>{transaction.paymentDetails || "—"}</dd>
+            <dt className="wb-table-meta-wide">Призначення</dt>
+            <dd className="wb-table-meta-wide">{transaction.paymentDetails || "—"}</dd>
             <dt>КЕКВ</dt>
             <dd>{transaction.kekv || "—"}</dd>
             <dt>Сума</dt>
