@@ -51,6 +51,7 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "check:bundle": "node scripts/check-bundle.mjs",
+    "check:deploy": "node scripts/check-deploy.mjs",
     "shots": "node scripts/shots.mjs",
     "check:inline": "node scripts/check-inline-styles.mjs",
     "test:coverage": "vitest run --coverage",
