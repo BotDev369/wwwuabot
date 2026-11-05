@@ -1,5 +1,5 @@
 {
-  "version": "d85c69e",
+  "version": "6c39abb",
   "files": [
     {
       "file": "admin/analytics-people.css",
@@ -114,7 +114,7 @@
     {
       "file": "components.css",
       "tokens": 20,
-      "classes": 203
+      "classes": 204
     },
     {
       "file": "contacts.css",
@@ -4392,7 +4392,8 @@
           "wb-table-pin",
           "wb-table-row--click",
           "wb-table-row--on",
-          "wb-table-scroll"
+          "wb-table-scroll",
+          "wb-table-scroll--capped"
         ]
       },
       {

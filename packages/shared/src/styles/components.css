@@ -1990,14 +1990,25 @@ html:has(.wb-tabbar) .wb-modal-overlay--screen {
   /* Тло закріплених клітинок мусить збігатися з тим, на чому стоїть таблиця,
      інакше крізь них просвічує те, що проїжджає. */
   --wb-table-surface: var(--card-bg);
-  overflow: auto;
-  max-height: var(--wb-table-max, 70vh);
-  overscroll-behavior: contain;
-  -webkit-overflow-scrolling: touch;
-  touch-action: pan-x pan-y;
+  /* Скролить лише горизонталь. `overflow-y: clip` — не `visible`, але й не
+     скролпорт: з `auto` на X рамка ставала скролпортом і для Y, тож шапка
+     липла до її верху на 70vh, а сторінка не горталась. Тепер таблиця росте
+     на всю висоту, екран гортається як звичайна сторінка, а `top: 0` шапки
+     рахується від того, що справді скролить сторінку. */
+  overflow-x: auto;
+  overflow-y: clip;
   border: 1px solid var(--border);
   border-radius: var(--radius-md);
   background: var(--wb-table-surface);
+}
+
+/* Висоту задає той, хто вклав таблицю в обмежену рамку (прев'ю в картці):
+   там вертикальна прокрутка лишається всередині, бо інакше прев'ю розтягне
+   картку на всю його довжину. */
+.wb-table-scroll--capped {
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  -webkit-overflow-scrolling: touch;
 }
 
 /* Повзунок товстий і видимий: тонкий на телефоні не вхопити пальцем. */
@@ -2040,7 +2051,10 @@ html:has(.wb-tabbar) .wb-modal-overlay--screen {
 
 .wb-table th {
   position: sticky;
-  top: 0;
+  /* `sticky` липне під `padding-top` того, що гортає сторінку, — тоді над
+     шапкою лишається смуга з рядками, що проїжджають. Компонент міряє цей
+     відступ і віддає його мінусом у змінній (`useStickTop`). */
+  top: var(--wb-table-stick-top, 0px);
   z-index: 3;
   padding: var(--sp-2) var(--sp-3);
   border-bottom: 1px solid var(--border);

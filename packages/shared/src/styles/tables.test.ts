@@ -25,12 +25,20 @@ function rule(selector: string): string {
 }
 
 describe("одна таблиця на весь продукт", () => {
-  it("рамка скролить в обидва боки", () => {
+  it("рамка скролить лише вбік, а висоту дає сторінка", () => {
     const box = rule(".wb-table-scroll");
-    expect(box).toContain("overflow: auto");
-    expect(box).toContain("max-height");
-    expect(box).toContain("overscroll-behavior: contain");
-    expect(box).toContain("touch-action: pan-x pan-y");
+    expect(box).toContain("overflow-x: auto");
+    /* `clip` не робить із рамки скролпорт по вертикалі: інакше шапка липне
+       до рамки, а не до верху екрана, і таблиця ніколи не буває вищою за неї. */
+    expect(box).toContain("overflow-y: clip");
+    expect(box).not.toContain("max-height");
+    expect(box).not.toContain("overflow: auto");
+  });
+
+  it("обмежена висота — окремий випадок, а не типова поведінка", () => {
+    const capped = rule(".wb-table-scroll--capped");
+    expect(capped).toContain("overflow-y: auto");
+    expect(css).not.toContain("--wb-table-max");
   });
 
   it("повзунок товстий: тонкий на телефоні не вхопити пальцем", () => {
@@ -38,10 +46,12 @@ describe("одна таблиця на весь продукт", () => {
     expect(css).toContain("scrollbar-width: auto");
   });
 
-  it("шапка липне до верху рамки", () => {
+  it("шапка липне до верху, коли до неї догорнули", () => {
     const head = rule(".wb-table th");
     expect(head).toContain("position: sticky");
-    expect(head).toContain("top: 0");
+    /* Нуль лише за замовчуванням: відступ контейнера зсуває точку прилипання,
+       інакше над шапкою лишається смуга з рядками, що проїжджають. */
+    expect(head).toContain("top: var(--wb-table-stick-top, 0px)");
   });
 
   it("перший стовпець липне до лівого краю", () => {

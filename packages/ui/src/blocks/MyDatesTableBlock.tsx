@@ -7,7 +7,10 @@
  * @module packages/ui/src/blocks/MyDatesTableBlock
  */
 
+import { useRef } from "react";
+
 import { Icon, icons } from "@wwwuabot/shared";
+import { useStickTop } from "../table";
 import type { BlockComponentProps } from "@wwwuabot/shared/types/page-config";
 import { CollapsibleSection } from "./collapsible-section";
 import { useMyDates } from "./my-dates-table/useMyDates";
@@ -15,6 +18,8 @@ import { DateModal } from "./my-dates-table/DateModal";
 import { formatDate, getTypeConfig, getTagColor } from "./my-dates-table/constants";
 
 export function MyDatesTableBlock({ block }: BlockComponentProps) {
+  const frame = useRef<HTMLDivElement>(null);
+  useStickTop(frame);
   const {
     showSearch = true,
     showTypeFilter = true,
@@ -194,7 +199,7 @@ export function MyDatesTableBlock({ block }: BlockComponentProps) {
 
         {/* Table */}
         {!loading && dates.length > 0 && (
-          <div className="wb-date-list wb-table-scroll">
+          <div className="wb-date-list wb-table-scroll" ref={frame}>
             <table className="wb-table wb-date-table">
               <thead>
                 <tr>

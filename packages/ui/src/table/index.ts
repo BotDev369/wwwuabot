@@ -5,3 +5,4 @@
  */
 
 export { DataTable, type DataTableColumn, type DataTableProps } from "./DataTable";
+export { useStickTop } from "./useStickTop";

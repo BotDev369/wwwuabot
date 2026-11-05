@@ -2,7 +2,8 @@
  * ScenariosV2Table — покращена таблиця сценаріїв з фільтрами, групуванням та модалкою.
  */
 
-import { useMemo, useState, useEffect, useCallback } from "react";
+import { useMemo, useRef, useState, useEffect, useCallback } from "react";
+import { useStickTop } from "@wwwuabot/ui/table";
 import {
   useScenariosStore,
   type ScenariosSortField,
@@ -64,6 +65,8 @@ export function ScenariosV2Table() {
 
   const [query, setQuery] = useState("");
   const [selectedRow, setSelectedRow] = useState<string | null>(null);
+  const frame = useRef<HTMLDivElement>(null);
+  useStickTop(frame);
   const [cardCodeword, setCardCodeword] = useState<string | null>(null);
   const closeAll = useCallback(() => {
     setCardCodeword(null);
@@ -235,7 +238,7 @@ export function ScenariosV2Table() {
           </div>
         </div>
 
-        <div className="wb-table-scroll">
+        <div className="wb-table-scroll" ref={frame}>
           <table className="wb-table wb-scenarios-table">
             <thead>
               <tr>

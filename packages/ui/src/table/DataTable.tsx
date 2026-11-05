@@ -5,7 +5,9 @@
  * @module packages/ui/src/table/DataTable
  */
 
-import type { CSSProperties, ReactNode } from "react";
+import { type CSSProperties, type ReactNode, useRef } from "react";
+
+import { useStickTop } from "./useStickTop";
 
 export interface DataTableColumn<T> {
   /** Ім'я колонки: ключ для React, не підпис. */
@@ -36,7 +38,10 @@ export interface DataTableProps<T> {
   readonly tableClassName?: string;
   /** Мінімальна ширина полотна: вужче — їде горизонтальний скрол. */
   readonly minWidth?: number;
-  /** Висота скрол-рамки; типово — третина екрана з шапкою на місці. */
+  /**
+   * Висота рамки для таблиці в обмеженому місці (прев'ю в картці). Типово
+   * висоти немає: таблиця росте на всю довжину, а гортається сторінка.
+   */
   readonly maxHeight?: string;
   readonly rowClassName?: (row: T) => string;
 }
@@ -54,8 +59,15 @@ export function DataTable<T>({
   maxHeight,
   rowClassName,
 }: DataTableProps<T>) {
+  const frame = useRef<HTMLDivElement>(null);
+  useStickTop(frame);
+
   return (
-    <div className="wb-table-scroll" style={maxHeight ? { maxHeight } : undefined}>
+    <div
+      ref={frame}
+      className={maxHeight ? "wb-table-scroll wb-table-scroll--capped" : "wb-table-scroll"}
+      style={maxHeight ? { maxHeight } : undefined}
+    >
       <table
         className={`wb-table${tableClassName ? ` ${tableClassName}` : ""}`}
         style={minWidth ? { minWidth } : undefined}
