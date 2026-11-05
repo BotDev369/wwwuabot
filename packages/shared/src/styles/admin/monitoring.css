@@ -151,7 +151,11 @@
   border: 1px solid var(--card-border);
   border-radius: var(--card-radius);
   box-shadow: var(--card-shadow);
-  overflow: hidden;
+  /* Жодного обрізання: `overflow: hidden` робить панель скролпортом для
+     `position: sticky`, тож шапка таблиці в ній липла до панелі, а не до
+     `.mon`, і їхала разом зі сторінкою. Кут тримає `border-radius`, а
+     зайвого вмісту тут немає — всередині лише шапка-кнопка й тіло. */
+  overflow: visible;
 }
 
 /* Шапка — це кнопка-акордеон: увесь рядок клікабельний, і жодного відступу,

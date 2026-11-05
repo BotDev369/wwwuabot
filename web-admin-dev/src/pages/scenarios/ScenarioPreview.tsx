@@ -290,7 +290,6 @@ function SharedPreview({ fields }: { fields: Record<string, unknown> }) {
         rowKey={(row) => row.key}
         empty="Полів немає."
         minWidth={320}
-        maxHeight="240px"
       />
     </div>
   );

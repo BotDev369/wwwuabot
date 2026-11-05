@@ -582,12 +582,16 @@
 }
 
 /* Тіло екрана, що забирає лишок висоти: список прокручується сам, а шапка
-   сторінки лишається на місці. */
+   сторінки лишається на місці. Прокрутка — **ця**, а не рамка таблиці:
+   `overflow: hidden` робив із тіла пастку — таблиця росла, а побачити її
+   хвіст було нічим. */
 .wb-page-body {
   flex: 1;
   display: flex;
   flex-direction: column;
-  overflow: hidden;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  -webkit-overflow-scrolling: touch;
   min-height: 0;
   background: var(--bg-2);
 }

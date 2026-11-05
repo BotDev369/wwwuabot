@@ -116,6 +116,19 @@ describe("одна таблиця на весь продукт", () => {
     expect(css).not.toContain("wb-table--stack");
   });
 
+  it("скролер сторінки — той, що над таблицею, і без обрізання", () => {
+    /* Панель із `overflow: hidden` стає скролпортом для `sticky`: шапка липне
+       до неї, а не до екрана, і їде разом зі сторінкою. */
+    const chrome = readFileSync(new URL("./app-chrome.css", import.meta.url), "utf8");
+    const body = chrome.slice(chrome.indexOf(".wb-page-body {"));
+    const bodyRule = body.slice(0, body.indexOf("}"));
+    expect(bodyRule).toContain("overflow-y: auto");
+    const monitoring = readFileSync(new URL("./admin/monitoring.css", import.meta.url), "utf8");
+    const panel = monitoring.slice(monitoring.indexOf(".mon-panel {"));
+    const panelRule = panel.slice(0, panel.indexOf("}"));
+    expect(panelRule).toContain("overflow: visible");
+  });
+
   it("стандарт діє й на таблиці поза компонентом — нульовою специфічністю", () => {
     expect(rule(":where(table thead th)")).toContain("position: sticky");
     expect(rule(":where(table th:first-child, table td:first-child)")).toContain("left: 0");
