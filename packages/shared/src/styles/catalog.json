@@ -1,5 +1,5 @@
 {
-  "version": "6c39abb",
+  "version": "b6ae7cd",
   "files": [
     {
       "file": "admin/analytics-people.css",
@@ -113,8 +113,8 @@
     },
     {
       "file": "components.css",
-      "tokens": 20,
-      "classes": 204
+      "tokens": 22,
+      "classes": 208
     },
     {
       "file": "contacts.css",
@@ -2508,6 +2508,20 @@
       "section": ""
     },
     {
+      "name": "--wb-table-head-bg",
+      "file": "components.css",
+      "selector": ".wb-table-scroll",
+      "value": "color-mix(in srgb, var(--text-primary) 11%, var(--wb-table-surface))",
+      "section": "Таблиця"
+    },
+    {
+      "name": "--wb-table-lead-bg",
+      "file": "components.css",
+      "selector": ".wb-table-scroll",
+      "value": "color-mix(in srgb, var(--text-primary) 6%, var(--wb-table-surface))",
+      "section": "Таблиця"
+    },
+    {
       "name": "--wb-table-min",
       "file": "admin/scenarios-list.css",
       "selector": ".wb-scenarios-table",
@@ -4381,6 +4395,9 @@
       {
         "section": "Таблиця",
         "names": [
+          "spend-code",
+          "spend-col-code",
+          "spend-col-date",
           "wb-cell-nowrap",
           "wb-cell-sub",
           "wb-cell-title",
@@ -4393,7 +4410,8 @@
           "wb-table-row--click",
           "wb-table-row--on",
           "wb-table-scroll",
-          "wb-table-scroll--capped"
+          "wb-table-scroll--capped",
+          "wb-table-scroll--fallback"
         ]
       },
       {

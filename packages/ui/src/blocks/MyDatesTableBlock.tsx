@@ -10,7 +10,7 @@
 import { useRef } from "react";
 
 import { Icon, icons } from "@wwwuabot/shared";
-import { useStickTop } from "../table";
+import { useStickyHeader } from "../table";
 import type { BlockComponentProps } from "@wwwuabot/shared/types/page-config";
 import { CollapsibleSection } from "./collapsible-section";
 import { useMyDates } from "./my-dates-table/useMyDates";
@@ -19,7 +19,7 @@ import { formatDate, getTypeConfig, getTagColor } from "./my-dates-table/constan
 
 export function MyDatesTableBlock({ block }: BlockComponentProps) {
   const frame = useRef<HTMLDivElement>(null);
-  useStickTop(frame);
+  useStickyHeader(frame);
   const {
     showSearch = true,
     showTypeFilter = true,

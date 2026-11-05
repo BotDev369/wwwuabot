@@ -1,7 +1,7 @@
 /**
  * Наскрізний стандарт таблиць (`docs/DESIGN_SYSTEM.md` §27): одна таблиця на
- * весь продукт — рамка скролить у обидва боки, шапка й перший стовпець
- * закріплені, у комірок немає заливки.
+ * весь продукт — гортається сторінка, рамка скролить лише вбік, шапка й перший
+ * стовпець закріплені та залиті, комірки даних без заливки.
  *
  * Тест читає CSS як текст: розбору стилів у тестовому середовищі немає.
  * Вартовий потрібен тому, що «одну таблицю» найлегше зламати, завівши
@@ -16,8 +16,8 @@ import { describe, expect, it } from "vitest";
 const css = readFileSync(new URL("./components.css", import.meta.url), "utf8");
 
 /** Тіло правила від першої `{` після селектора до першої `}`. */
-function rule(selector: string): string {
-  const start = css.indexOf(selector);
+function rule(selector: string, from = 0): string {
+  const start = css.indexOf(selector, from);
   expect(start, `правило ${selector} має існувати`).toBeGreaterThan(-1);
   const open = css.indexOf("{", start + selector.length - 1);
   const close = css.indexOf("}", open);
@@ -35,6 +35,14 @@ describe("одна таблиця на весь продукт", () => {
     expect(box).not.toContain("overflow: auto");
   });
 
+  it("без `clip` шапка однаково видима — прокрутка переходить усередину рамки", () => {
+    const guard = css.slice(css.indexOf("@supports not (overflow-y: clip)"));
+    expect(guard).toContain("overflow-y: auto");
+    expect(guard).toContain("max-height: 70dvh");
+    /* Рантайм-підстраховка на випадок, коли `clip` є, а `sticky` не тримається. */
+    expect(rule(".wb-table-scroll.wb-table-scroll--fallback")).toContain("overflow-y: auto");
+  });
+
   it("обмежена висота — окремий випадок, а не типова поведінка", () => {
     const capped = rule(".wb-table-scroll--capped");
     expect(capped).toContain("overflow-y: auto");
@@ -49,9 +57,16 @@ describe("одна таблиця на весь продукт", () => {
   it("шапка липне до верху, коли до неї догорнули", () => {
     const head = rule(".wb-table th");
     expect(head).toContain("position: sticky");
-    /* Нуль лише за замовчуванням: відступ контейнера зсуває точку прилипання,
-       інакше над шапкою лишається смуга з рядками, що проїжджають. */
+    /* Зсув точки прилипання обмежений компонентом, тож шапка не поїде за екран. */
     expect(head).toContain("top: var(--wb-table-stick-top, 0px)");
+  });
+
+  it("рядок 1 і стовпець 1 залиті — це видно з першого погляду", () => {
+    expect(rule(".wb-table-scroll")).toContain("--wb-table-head-bg:");
+    expect(rule(".wb-table-scroll")).toContain("--wb-table-lead-bg:");
+    expect(rule(".wb-table th")).toContain("background: var(--wb-table-head-bg)");
+    expect(rule(".wb-table th:first-child,")).toContain("background: var(--wb-table-lead-bg)");
+    expect(rule(".wb-table thead th:first-child")).toContain("background: var(--wb-table-head-bg)");
   });
 
   it("перший стовпець липне до лівого краю", () => {
@@ -64,16 +79,24 @@ describe("одна таблиця на весь продукт", () => {
     expect(rule(".wb-table thead th:first-child")).toContain("z-index: 4");
   });
 
-  it("у комірок немає заливки — рядок тримає межа", () => {
+  it("шапка й комірки стоять однаково: числа праворуч, текст ліворуч", () => {
+    expect(rule(".wb-table td")).toContain("text-align: left");
+    expect(rule(".wb-table th.wb-col-num")).toContain("text-align: right");
+    expect(css).toMatch(/\.wb-table \.wb-col-num \{[^}]*text-align: right/);
+  });
+
+  it("у комірок даних немає заливки — рядок тримає межа", () => {
     const cell = rule(".wb-table td");
     expect(cell).toContain("background: transparent");
     expect(cell).toContain("border-bottom");
     expect(css).not.toContain("nth-child(even) td {\n  background");
   });
 
-  it("закріплене непрозоре — інакше видно те, що проїжджає", () => {
-    expect(rule(".wb-table-scroll")).toContain("--wb-table-surface: var(--card-bg)");
-    expect(rule(".wb-table th:first-child,")).toContain("var(--wb-table-surface)");
+  it("на телефоні таблицю не роздуває до ширини десктопа", () => {
+    const phone = css.slice(css.indexOf("@media (max-width: 640px)"));
+    expect(phone).toContain("min-width: 0");
+    expect(phone).toContain("overflow-wrap: anywhere");
+    expect(phone).toContain(".wb-table .wb-col-num");
   });
 
   it("дані переносяться, а не обрізаються крапками", () => {

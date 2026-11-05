@@ -3,7 +3,7 @@
  */
 
 import { useMemo, useRef, useState, useEffect, useCallback } from "react";
-import { useStickTop } from "@wwwuabot/ui/table";
+import { useStickyHeader } from "@wwwuabot/ui/table";
 import {
   useScenariosStore,
   type ScenariosSortField,
@@ -66,7 +66,7 @@ export function ScenariosV2Table() {
   const [query, setQuery] = useState("");
   const [selectedRow, setSelectedRow] = useState<string | null>(null);
   const frame = useRef<HTMLDivElement>(null);
-  useStickTop(frame);
+  useStickyHeader(frame);
   const [cardCodeword, setCardCodeword] = useState<string | null>(null);
   const closeAll = useCallback(() => {
     setCardCodeword(null);

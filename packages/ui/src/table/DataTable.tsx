@@ -7,7 +7,7 @@
 
 import { type CSSProperties, type ReactNode, useRef } from "react";
 
-import { useStickTop } from "./useStickTop";
+import { useStickyHeader } from "./useStickyHeader";
 
 export interface DataTableColumn<T> {
   /** Ім'я колонки: ключ для React, не підпис. */
@@ -60,7 +60,7 @@ export function DataTable<T>({
   rowClassName,
 }: DataTableProps<T>) {
   const frame = useRef<HTMLDivElement>(null);
-  useStickTop(frame);
+  useStickyHeader(frame);
 
   return (
     <div

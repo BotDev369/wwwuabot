@@ -105,144 +105,148 @@
 .spend-table--sources {
   --wb-table-min: 480px;
 }
-.spend-table--orgs th:nth-child(1) {
-  width: 30%;
-}
+/* Ширини — для стола: на телефоні колонки беруть ширину зі вмісту
+   (див. §27 у `components.css`), інакше 780px розтягує їх на пів екрана. */
+@media (min-width: 641px) {
+  .spend-table--orgs th:nth-child(1) {
+    width: 30%;
+  }
 
-.spend-table--orgs th:nth-child(2) {
-  width: 22%;
-}
+  .spend-table--orgs th:nth-child(2) {
+    width: 22%;
+  }
 
-.spend-table--orgs th:nth-child(3),
-.spend-table--orgs th:nth-child(4),
-.spend-table--orgs th:nth-child(5) {
-  width: 16%;
-}
+  .spend-table--orgs th:nth-child(3),
+  .spend-table--orgs th:nth-child(4),
+  .spend-table--orgs th:nth-child(5) {
+    width: 16%;
+  }
 
-.spend-table--payments th:nth-child(1) {
-  width: 28%;
-}
+  .spend-table--payments th:nth-child(1) {
+    width: 28%;
+  }
 
-.spend-table--payments th:nth-child(2) {
-  width: 34%;
-}
+  .spend-table--payments th:nth-child(2) {
+    width: 34%;
+  }
 
-.spend-table--payments th:nth-child(3) {
-  width: 10%;
-}
+  .spend-table--payments th:nth-child(3) {
+    width: 10%;
+  }
 
-.spend-table--payments th:nth-child(4) {
-  width: 8%;
-}
+  .spend-table--payments th:nth-child(4) {
+    width: 8%;
+  }
 
-.spend-table--payments th:nth-child(5) {
-  width: 20%;
-}
+  .spend-table--payments th:nth-child(5) {
+    width: 20%;
+  }
 
-.spend-table--codes th:nth-child(1) {
-  width: 20%;
-}
+  .spend-table--codes th:nth-child(1) {
+    width: 20%;
+  }
 
-.spend-table--codes th:nth-child(2) {
-  width: 24%;
-}
+  .spend-table--codes th:nth-child(2) {
+    width: 24%;
+  }
 
-.spend-table--codes th:nth-child(3) {
-  width: 20%;
-}
+  .spend-table--codes th:nth-child(3) {
+    width: 20%;
+  }
 
-.spend-table--codes th:nth-child(4) {
-  width: 36%;
-}
+  .spend-table--codes th:nth-child(4) {
+    width: 36%;
+  }
 
-.spend-table--recipients th:nth-child(1) {
-  width: 36%;
-}
+  .spend-table--recipients th:nth-child(1) {
+    width: 36%;
+  }
 
-.spend-table--recipients th:nth-child(2) {
-  width: 20%;
-}
+  .spend-table--recipients th:nth-child(2) {
+    width: 20%;
+  }
 
-.spend-table--recipients th:nth-child(3) {
-  width: 16%;
-}
+  .spend-table--recipients th:nth-child(3) {
+    width: 16%;
+  }
 
-.spend-table--recipients th:nth-child(4) {
-  width: 28%;
-}
+  .spend-table--recipients th:nth-child(4) {
+    width: 28%;
+  }
 
-.spend-table--sync th:nth-child(1) {
-  width: 30%;
-}
+  .spend-table--sync th:nth-child(1) {
+    width: 30%;
+  }
 
-.spend-table--sync th:nth-child(2) {
-  width: 14%;
-}
+  .spend-table--sync th:nth-child(2) {
+    width: 14%;
+  }
 
-.spend-table--sync th:nth-child(3) {
-  width: 14%;
-}
+  .spend-table--sync th:nth-child(3) {
+    width: 14%;
+  }
 
-.spend-table--sync th:nth-child(4) {
-  width: 12%;
-}
+  .spend-table--sync th:nth-child(4) {
+    width: 12%;
+  }
 
-.spend-table--sync th:nth-child(5) {
-  width: 10%;
-}
+  .spend-table--sync th:nth-child(5) {
+    width: 10%;
+  }
 
-.spend-table--sync th:nth-child(6) {
-  width: 20%;
-}
+  .spend-table--sync th:nth-child(6) {
+    width: 20%;
+  }
 
-.spend-table--documents th:nth-child(1) {
-  width: 30%;
-}
+  .spend-table--documents th:nth-child(1) {
+    width: 30%;
+  }
 
-.spend-table--documents th:nth-child(2) {
-  width: 28%;
-}
+  .spend-table--documents th:nth-child(2) {
+    width: 28%;
+  }
 
-.spend-table--documents th:nth-child(3) {
-  width: 12%;
-}
+  .spend-table--documents th:nth-child(3) {
+    width: 12%;
+  }
 
-.spend-table--documents th:nth-child(4) {
-  width: 10%;
-}
+  .spend-table--documents th:nth-child(4) {
+    width: 10%;
+  }
 
-.spend-table--documents th:nth-child(5) {
-  width: 20%;
-}
+  .spend-table--documents th:nth-child(5) {
+    width: 20%;
+  }
 
-.spend-table--transactions th:nth-child(1) {
-  width: 26%;
-}
+  .spend-table--transactions th:nth-child(1) {
+    width: 26%;
+  }
 
-.spend-table--transactions th:nth-child(2) {
-  width: 32%;
-}
+  .spend-table--transactions th:nth-child(2) {
+    width: 32%;
+  }
 
-.spend-table--transactions th:nth-child(3) {
-  width: 11%;
-}
+  .spend-table--transactions th:nth-child(3) {
+    width: 11%;
+  }
 
-.spend-table--transactions th:nth-child(4) {
-  width: 9%;
-}
+  .spend-table--transactions th:nth-child(4) {
+    width: 9%;
+  }
 
-.spend-table--transactions th:nth-child(5) {
-  width: 22%;
-}
+  .spend-table--transactions th:nth-child(5) {
+    width: 22%;
+  }
 
-/* Дві колонки — обидві мусять уміститися й на телефоні: назва джерела
-   переноситься, дата стоїть праворуч. */
-.spend-table--sources th:nth-child(1) {
-  width: 62%;
-}
+  /* Дві колонки — обидві мусять уміститися й на телефоні: назва джерела
+     переноситься, дата стоїть праворуч. */
+  .spend-table--sources th:nth-child(1) {
+    width: 62%;
+  }
 
-.spend-table--sources th:nth-child(2) {
-  width: 38%;
+  .spend-table--sources th:nth-child(2) {
+    width: 38%;
+  }
 }
 
 /* Число й сума один під одним: два рядки в одній клітинці читаються як
@@ -379,11 +383,6 @@
   cursor: pointer;
 }
 
-/* ═══ Телефон ═══
-   Таблиця стає списком карток — той самий прийом, що в `dates.css`:
-   розкладку ламаємо на всіх рівнях, а підпис стовпця несе `data-label`.
-   Горизонтального скролу тут немає: колонка грошей праворуч, підпис ліворуч,
-   і жодна з них не виїжджає за екран. */
 /* ─── Аналізи: коди платежів і отримувачі ────────────────────────────────────
    Стовпчик показує форму ряду, число стоїть поруч у таблиці: панель не має
    двох джерел правди про одну суму. Лінійку частки малює SVG, тож довжина
