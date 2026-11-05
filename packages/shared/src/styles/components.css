@@ -2075,10 +2075,9 @@ html:has(.wb-tabbar) .wb-modal-overlay--screen {
    дійшла туди, і залита своїм тоном, щоб її видно було як окрему смугу. */
 .wb-table th {
   position: sticky;
-  /* Мінус відступ контейнера: без нього `sticky` липне під його `padding-top`,
-     і над шапкою лишається смуга з рядками, що проїжджають. Зсув рахує
-     `useStickyHeader` і не віддає більше за висоту самої шапки. */
-  top: var(--wb-table-stick-top, 0px);
+  /* Рівно верх видимої області. Жодних від'ємних зсувів: шапка зі зсувом
+     ховалася під верхньою панеллю — і виглядала як відсутня. */
+  top: 0;
   z-index: 3;
   padding: var(--sp-2) var(--sp-3);
   border-bottom: 1px solid var(--border);
@@ -2111,6 +2110,21 @@ html:has(.wb-tabbar) .wb-modal-overlay--screen {
 
 .wb-table tbody tr:last-child td {
   border-bottom: none;
+}
+
+/* Вертикальні лінії між колонками — те, чим таблиця й читається як таблиця:
+   без них сусідні числа зливаються в одне довге число. Лінію малює кожна
+   комірка, крім першої; у шапці вона контрастніша, бо відділяє рядок 1. */
+.wb-table th + th,
+.wb-table td + td,
+.wb-param-table th + th,
+.wb-param-table td + td {
+  border-left: 1px solid var(--border-subtle);
+}
+
+.wb-table th + th,
+.wb-param-table th + th {
+  border-left-color: var(--border);
 }
 
 /* Перший стовпець — підпис рядка: він лишається на місці, коли таблицю

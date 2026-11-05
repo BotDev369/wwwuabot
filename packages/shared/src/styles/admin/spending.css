@@ -8,10 +8,17 @@
   --spend-pad: var(--sp-5);
   flex: 1;
   overflow: auto;
-  padding: var(--spend-pad);
+  /* Верхнього відступу немає: у скролера `padding-top` відсуває точку
+     прилипання шапки вниз, і над нею лишається смуга з рядками. Місце зверху
+     дає `margin-top` першої дитини — воно прокручується разом із вмістом. */
+  padding: 0 var(--spend-pad) var(--spend-pad);
   display: flex;
   flex-direction: column;
   gap: 16px;
+}
+
+.spend > :first-child {
+  margin-top: var(--spend-pad);
 }
 
 /* Вибір періоду: 44px — тап-таргет на телефоні (AGENTS.md §3). */

@@ -54,11 +54,20 @@ describe("одна таблиця на весь продукт", () => {
     expect(css).toContain("scrollbar-width: auto");
   });
 
-  it("шапка липне до верху, коли до неї догорнули", () => {
+  it("шапка липне рівно до верху, без зсувів", () => {
     const head = rule(".wb-table th");
     expect(head).toContain("position: sticky");
-    /* Зсув точки прилипання обмежений компонентом, тож шапка не поїде за екран. */
-    expect(head).toContain("top: var(--wb-table-stick-top, 0px)");
+    /* Від'ємний зсув ховав шапку під верхньою панеллю — виглядало як відсутня. */
+    expect(head).toContain("top: 0");
+    expect(css).not.toContain("--wb-table-stick-top");
+  });
+
+  it("між колонками є вертикальні лінії — інакше числа зливаються", () => {
+    const grid = rule(".wb-table th + th,");
+    expect(grid).toContain("border-left: 1px solid var(--border-subtle)");
+    expect(css).toMatch(/\.wb-param-table td \+ td \{[^}]*border-left/);
+    /* Перший стовпець лінію малює сам: його межа мусить їхати разом із ним. */
+    expect(rule(".wb-table th:first-child,")).toContain("inset -1px 0 0 var(--border)");
   });
 
   it("рядок 1 і стовпець 1 залиті — це видно з першого погляду", () => {

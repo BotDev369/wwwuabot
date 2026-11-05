@@ -209,7 +209,13 @@
 .wb-fullscreen-body {
   flex: 1;
   overflow: auto;
-  padding: var(--sp-2);
+  /* Без верхнього поля: воно відсуває липку шапку таблиці від краю прокрутки
+     й лишає над нею смугу з рядками (docs/DESIGN_SYSTEM.md §27). */
+  padding: 0 var(--sp-2) var(--sp-2);
+}
+
+.wb-fullscreen-body > :first-child {
+  margin-top: var(--sp-2);
 }
 
 .wb-fullscreen-builder .pb-zone-editor {
@@ -218,7 +224,11 @@
 
 @media (max-width: 640px) {
   .wb-fullscreen-body {
-    padding: var(--sp-1);
+    padding: 0 var(--sp-1) var(--sp-1);
+  }
+
+  .wb-fullscreen-body > :first-child {
+    margin-top: var(--sp-1);
   }
 }
 
