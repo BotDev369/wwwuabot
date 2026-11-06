@@ -24,6 +24,7 @@ export type {
 // ── Re-export utils ───────────────────────────────────────────────
 export {
   ALL_ZONES,
+  PAGE_DATA_VERSION,
   createEmptyPageConfig,
   parsePageConfig,
   normalizePageConfig,

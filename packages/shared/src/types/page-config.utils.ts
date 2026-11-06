@@ -11,12 +11,21 @@ import type { BlockZone, PageBlock, PageConfig } from "./page-config.types";
 /** Усі зони як масив (для ітерації). */
 export const ALL_ZONES: readonly BlockZone[] = ["sidebar", "header", "main", "footer"] as const;
 
+/**
+ * Версія формату `page_data` — **контракт**, а не «місце для майбутнього».
+ *
+ * Пише її тільки наш конструктор, тож більше число означає рядок, зроблений
+ * новішим кодом: таку сторінку не рендеримо (краще «сторінки немає», ніж
+ * половина блоків) і лишаємо слід у консолі. Правило — `docs/PAGES.md` §2.
+ */
+export const PAGE_DATA_VERSION = 1;
+
 // ── Функції ───────────────────────────────────────────────────────
 
 /** Порожня конфігурація сторінки (дефолт при створенні нового сценарію). */
 export function createEmptyPageConfig(): PageConfig {
   return {
-    version: 1,
+    version: PAGE_DATA_VERSION,
     zones: {
       sidebar: [],
       header: [],
@@ -43,6 +52,11 @@ export function parsePageConfig(raw: string | null): PageConfig | null {
 
     // Новий формат (Page Builder)
     if ("version" in parsed && "zones" in parsed) {
+      const version = (parsed as Record<string, unknown>).version;
+      if (!isKnownVersion(version)) {
+        warnUnknownVersion(version);
+        return null;
+      }
       return normalizePageConfig(parsed as Record<string, unknown>);
     }
 
@@ -78,14 +92,38 @@ export function normalizePageConfig(input: PageConfig | Record<string, unknown>)
     ? ([...new Set(input.visibleZones)] as BlockZone[]).filter((zone) => ALL_ZONES.includes(zone))
     : [];
 
-  const version =
-    typeof input.version === "number" && Number.isFinite(input.version) ? input.version : 1;
-
-  const config: PageConfig = { version, zones, visibleZones };
-  if (source.sidebarSettings && typeof source.sidebarSettings === "object") {
+  /* Результат нормалізації — завжди поточний формат: версію ставить код, а не
+     вхідні дані, інакше `normalizePageConfig` повертав би «майбутній» конфіг,
+     який ніхто не вміє рендерити. */
+  const config: PageConfig = { version: PAGE_DATA_VERSION, zones, visibleZones };
+  /* Порожній `sidebarSettings: {}` — шум у кожному рядку, а не налаштування:
+     копіюємо лише тоді, коли там справді щось є. */
+  if (
+    source.sidebarSettings &&
+    typeof source.sidebarSettings === "object" &&
+    Object.keys(source.sidebarSettings as object).length > 0
+  ) {
     config.sidebarSettings = source.sidebarSettings as PageConfig["sidebarSettings"];
   }
   return config;
+}
+
+/** Версії вже попереджені — щоб одне бите поле не залило консоль. */
+const warnedVersions = new Set<string>();
+
+/** Версія `page_data`, яку ми вміємо читати: рівно поточна, числами. */
+function isKnownVersion(value: unknown): boolean {
+  return value === PAGE_DATA_VERSION;
+}
+
+/** Один рядок у консоль на невідому версію: мовчазний `null` не діагностується. */
+function warnUnknownVersion(value: unknown): void {
+  const key = String(value);
+  if (warnedVersions.has(key)) return;
+  warnedVersions.add(key);
+  console.warn(
+    `[page_data] версія ${key} невідома (цей код читає ${PAGE_DATA_VERSION}) — сторінку не рендеримо`,
+  );
 }
 
 /** Блоки зони: лише об'єкти з типом, з числовим порядком і нормалізованими дітьми. */
@@ -174,7 +212,7 @@ function convertOldFormat(old: Record<string, unknown>): PageConfig {
   });
 
   return {
-    version: 1,
+    version: PAGE_DATA_VERSION,
     zones: {
       sidebar: [],
       header: [],

@@ -49,11 +49,24 @@ const VIEWPORT = Number(process.env.VIEWPORT ?? 360);
 const ONLY_PAGE = process.env.PAGE ?? "";
 
 // ── база сценаріїв ─────────────────────────────────────────────────
+/* Берéмо **найновіший дамп, у якому справді є `page_data`**, а не просто
+   найновіший файл із схожою назвою: поруч можуть лежати звіти (`SELECT id,
+   slug`), і тоді перевірка тихо аудирувала б менше поверхонь, ніж є сторінок. */
 const BACKUP = readdirSync("backups")
   .filter((n) => /^dev-scenarios-.*\.json$/.test(n))
   .sort()
-  .at(-1);
+  .reverse()
+  .find((name) => {
+    try {
+      const rows = JSON.parse(readFileSync(`backups/${name}`, "utf8"))[0]?.results ?? [];
+      return rows.length > 0 && rows.some((row) => "page_data" in row);
+    } catch {
+      return false;
+    }
+  });
+if (!BACKUP) throw new Error("немає дампу scenarios з page_data — спершу `wrangler d1 execute`");
 const scenarioRows = JSON.parse(readFileSync(`backups/${BACKUP}`, "utf8"))[0].results;
+console.log(`база: backups/${BACKUP} — рядків ${scenarioRows.length}`);
 
 /** Рядки, у яких є сторінка (`page_data`), — саме вони й аудируються. */
 const scenarioPages = scenarioRows

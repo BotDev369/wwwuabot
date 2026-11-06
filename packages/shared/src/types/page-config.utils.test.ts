@@ -5,8 +5,13 @@
  * @module packages/shared/src/types/page-config.utils.test
  */
 
-import { describe, expect, it } from "vitest";
-import { createEmptyPageConfig, normalizePageConfig, parsePageConfig } from "./page-config.utils";
+import { describe, expect, it, vi } from "vitest";
+import {
+  PAGE_DATA_VERSION,
+  createEmptyPageConfig,
+  normalizePageConfig,
+  parsePageConfig,
+} from "./page-config.utils";
 
 describe("parsePageConfig", () => {
   it("доповнює відсутні зони порожніми масивами", () => {
@@ -106,6 +111,38 @@ describe("parsePageConfig", () => {
 
     expect(parsePageConfig(JSON.stringify(page))).toEqual(page);
     expect(normalizePageConfig(page)).toEqual(page);
+  });
+
+  it("не рендерить формат, якого не знає: версія — контракт", () => {
+    const warn = vi.spyOn(console, "warn").mockImplementation(() => {});
+
+    expect(parsePageConfig(JSON.stringify({ version: 2, zones: {} }))).toBeNull();
+    expect(parsePageConfig(JSON.stringify({ version: "1", zones: {} }))).toBeNull();
+    expect(warn).toHaveBeenCalled();
+    warn.mockRestore();
+  });
+
+  it("нормалізована сторінка завжди поточної версії", () => {
+    const config = normalizePageConfig({ zones: {} });
+
+    expect(config.version).toBe(PAGE_DATA_VERSION);
+    expect(createEmptyPageConfig().version).toBe(PAGE_DATA_VERSION);
+  });
+
+  it("не тягне порожній sidebarSettings у кожен рядок", () => {
+    expect(
+      parsePageConfig(JSON.stringify({ version: 1, zones: {}, sidebarSettings: {} })),
+    ).not.toHaveProperty("sidebarSettings");
+
+    expect(
+      parsePageConfig(
+        JSON.stringify({
+          version: 1,
+          zones: {},
+          sidebarSettings: { closeButtonPosition: "right" },
+        }),
+      )?.sidebarSettings,
+    ).toEqual({ closeButtonPosition: "right" });
   });
 
   it("повертає null на битих даних, а не кидає", () => {
