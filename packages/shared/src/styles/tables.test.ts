@@ -92,7 +92,9 @@ describe("одна таблиця на весь продукт", () => {
   it("шапка по центру, числа в даних — праворуч, текст — ліворуч", () => {
     expect(rule(".wb-table th")).toContain("text-align: center");
     expect(rule(".wb-table td")).toContain("text-align: left");
-    expect(css).toMatch(/\.wb-table \.wb-col-num \{[^}]*text-align: right/);
+    /* Праворуч — лише дані: підпис числової колонки теж по центру. */
+    expect(css).toMatch(/\.wb-table td\.wb-col-num \{[^}]*text-align: right/);
+    expect(css).not.toMatch(/\.wb-table \.wb-col-num \{[^}]*text-align: right/);
   });
 
   it("під таблицею немає картки — ні на моніторингу, ні у витратах", () => {
