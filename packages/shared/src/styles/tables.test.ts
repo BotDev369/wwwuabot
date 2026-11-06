@@ -71,12 +71,24 @@ describe("одна таблиця на весь продукт", () => {
     expect(rule(".wb-table th:first-child,")).toContain("inset -1px 0 0 var(--border)");
   });
 
-  it("рядок 1 і стовпець 1 залиті — це видно з першого погляду", () => {
-    expect(rule(".wb-table-scroll")).toContain("--wb-table-head-bg:");
-    expect(rule(".wb-table-scroll")).toContain("--wb-table-lead-bg:");
-    expect(rule(".wb-table th")).toContain("background: var(--wb-table-head-bg)");
-    expect(rule(".wb-table th:first-child,")).toContain("background: var(--wb-table-lead-bg)");
-    expect(rule(".wb-table thead th:first-child")).toContain("background: var(--wb-table-head-bg)");
+  it("рядок 1 і стовпець 1 залиті в обох родинах таблиць", () => {
+    /* Одна каркасна вимога для адмінки й платформи: без спільного правила
+       матриця аналізу лишалась із прозорим першим стовпцем, і значення
+       просвічували крізь підписи. */
+    const lead = rule(
+      [
+        ".wb-table th:first-child,",
+        ".wb-table td:first-child,",
+        ".wb-param-table th:first-child,",
+        ".wb-param-table td:first-child",
+      ].join("\n"),
+    );
+    expect(lead).toContain("position: sticky");
+    expect(lead).toMatch(/background: color-mix\(in srgb, var\(--data-1\) 12%/);
+    /* Запасна поверхня — щоб заливка не стала прозорою там, де поверхню не
+       задано, інакше крізь неї видно текст сусідньої колонки. */
+    expect(lead).toContain("var(--wb-table-surface, var(--bg-2))");
+    expect(rule(".wb-table thead th:first-child,")).toContain("background: color-mix");
   });
 
   it("перший стовпець липне до лівого краю", () => {
@@ -113,10 +125,24 @@ describe("одна таблиця на весь продукт", () => {
     }
   });
 
-  it("шапка залита акцентом теми, а не сірим", () => {
-    const box = rule(".wb-table-scroll");
-    expect(box).toContain("--wb-table-head-bg: color-mix(in srgb, var(--accent)");
-    expect(box).toContain("--wb-table-lead-bg: color-mix(in srgb, var(--accent)");
+  it("шапка залита спектром теми: кожна колонка — своя барва з палітри", () => {
+    /* Акцент — це дія (кнопка, посилання, вибір). Шапка, залита ним, робила
+       таблицю однотонною, хоча в кожній темі шість власних барв. */
+    const head = rule(".wb-table th").replace(/\s+/g, " ");
+    expect(head).toContain(
+      "background: color-mix( in srgb, var(--wb-table-hue, var(--data-1)) 28%, var(--wb-table-surface, var(--bg-2)) )",
+    );
+    expect(head).not.toContain("--accent");
+    /* Шість барв ідуть по колу, а не одна на всю шапку. */
+    for (let i = 1; i <= 5; i += 1) {
+      expect(css).toMatch(
+        new RegExp(`:nth-child\\(6n \\+ ${i}\\),[^{]*\\{\\s*--wb-table-hue: var\\(--data-${i}\\)`),
+      );
+    }
+    expect(css).toMatch(/:nth-child\(6n\),[^{]*\{\s*--wb-table-hue: var\(--data-6\)/);
+    /* Поверхня-носій задає, на чому лежить таблиця: закріплені клітинки
+       мусять збігатися з нею, інакше крізь них просвічує вміст. */
+    expect(rule(".wb-table-scroll")).toContain("--wb-table-surface: var(--bg-2)");
   });
 
   it("у комірок даних немає заливки — рядок тримає межа", () => {

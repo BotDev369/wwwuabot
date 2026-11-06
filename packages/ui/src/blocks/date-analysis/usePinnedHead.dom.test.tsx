@@ -7,8 +7,10 @@
  * підпис, у тіла значення — вони різні), розкладки немає — міри немає, і зсув
  * тіла повторює смуга.
  *
- * Розкладки в jsdom немає (`getBoundingClientRect` — нулі), тож міра комірок
- * задається розміткою: `data-w` — і є ширина комірки.
+ * Розкладки в jsdom немає (`getBoundingClientRect` — нулі), тож міра
+ * задається розміткою: `data-w` — це ширина тексту в комірці. Хук міряє саме
+ * текст (він не залежить від поточної розкладки), тому комірки мусять бути
+ * `nowrap` — інакше вони міри не дають.
  *
  * @module packages/ui/src/blocks/date-analysis/usePinnedHead.dom.test
  */
@@ -28,7 +30,11 @@ function Harness({ head, body }: { head: number[]; body: number[] }) {
           <thead>
             <tr>
               {head.map((width, index) => (
-                <th key={index} data-w={width} />
+                <th
+                  key={index}
+                  data-w={width}
+                  style={{ whiteSpace: "nowrap", padding: 0, borderWidth: 0 }}
+                />
               ))}
             </tr>
           </thead>
@@ -39,7 +45,11 @@ function Harness({ head, body }: { head: number[]; body: number[] }) {
           <tbody>
             <tr>
               {body.map((width, index) => (
-                <td key={index} data-w={width} />
+                <td
+                  key={index}
+                  data-w={width}
+                  style={{ whiteSpace: "nowrap", padding: 0, borderWidth: 0 }}
+                />
               ))}
             </tr>
           </tbody>
@@ -56,6 +66,16 @@ function stubLayout(): void {
   ): DOMRect {
     const width = Number(this.getAttribute("data-w") ?? 0);
     return { width, height: 0, top: 0, left: 0, right: width, bottom: 0 } as DOMRect;
+  });
+  /* Хук міряє текст діапазоном: у jsdom такого методу немає зовсім, тож
+     ширину беремо з тієї самої розмітки комірки, на вміст якої вказує діапазон. */
+  Object.defineProperty(Range.prototype, "getBoundingClientRect", {
+    configurable: true,
+    value: function (this: Range): DOMRect {
+      const cell = this.startContainer as Element;
+      const width = Number(cell?.getAttribute?.("data-w") ?? 0);
+      return { width, height: 0, top: 0, left: 0, right: width, bottom: 0 } as DOMRect;
+    },
   });
 }
 
@@ -78,6 +98,7 @@ beforeEach(stubLayout);
 
 afterEach(() => {
   vi.restoreAllMocks();
+  delete (Range.prototype as { getBoundingClientRect?: unknown }).getBoundingClientRect;
 });
 
 function mount(

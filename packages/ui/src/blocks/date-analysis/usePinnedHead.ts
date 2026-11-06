@@ -25,19 +25,56 @@ export interface PinnedHead {
 }
 
 /**
- * Ширини комірок першого рядка: у стовпці таблиці одна ширина на всіх, тож
- * перший рядок описує всю таблицю. `null` — міри немає (розкладки немає або
- * рядків немає).
+ * Ширина вмісту, який не переноситься: текст плюс береги й межі.
+ * `scrollWidth` не годиться — він дорівнює наявній ширині комірки, тож міра
+ * залежала б від попередньої міри. Комірки, що переносяться, міру не дають.
+ * Деталі — `DESIGN_SYSTEM` §27.
  */
-function rowWidths(table: HTMLTableElement | null, cells: string): number[] | null {
-  const found = table?.querySelectorAll<HTMLElement>(cells);
-  if (!found || found.length === 0) return null;
+function contentWidth(cell: HTMLElement): number | null {
+  const style = getComputedStyle(cell);
+  if (style.whiteSpace !== "nowrap") return null;
+  const range = document.createRange();
+  range.selectNodeContents(cell);
+  const ink = range.getBoundingClientRect().width;
+  if (!ink) return null;
+  const pad = (parseFloat(style.paddingLeft) || 0) + (parseFloat(style.paddingRight) || 0);
+  const border =
+    (parseFloat(style.borderLeftWidth) || 0) + (parseFloat(style.borderRightWidth) || 0);
+  return Math.ceil(ink + pad + border);
+}
 
-  const widths = Array.from(found, (cell) => Math.round(cell.getBoundingClientRect().width));
+/**
+ * Ширини стовпців за найдовшим незмінним вмістом. `colspan`-комірки
+ * пропускаємо: назва системи на всю ширину дала б одну міру на всю таблицю.
+ * `null` — міри немає (розкладки немає або рядків немає).
+ */
+function rowWidths(table: HTMLTableElement | null, rows: string): number[] | null {
+  const list = table ? [...table.querySelectorAll<HTMLTableRowElement>(rows)] : [];
+  if (list.length === 0) return null;
 
-  // Нуль у кожній комірці — це «розкладки немає», а не нульова ширина: така
-  // міра не міра, і публікувати її означало б скласти таблицю в нуль.
-  return widths.some((width) => width > 0) ? widths : null;
+  const widths: number[] = [];
+  let measured = false;
+  for (const row of list) {
+    let index = 0;
+    for (const cell of row.children) {
+      const span = Math.max(1, (cell as HTMLTableCellElement).colSpan || 1);
+      if (span === 1) {
+        const width = contentWidth(cell as HTMLElement);
+        if (width) {
+          widths[index] = Math.max(widths[index] ?? 0, width);
+          measured = true;
+        } else if (widths[index] === undefined) {
+          widths[index] = 0;
+        }
+      }
+      index += span;
+    }
+  }
+
+  /* Масив мусить бути щільним: `map` по дірах дає `NaN`, а `NaN !== NaN` —
+     і стан оновлювався б на кожному рендері (нескінченний цикл). Нуль тут
+     означає «міри немає», а не нульову ширину. */
+  return measured ? Array.from({ length: widths.length }, (_, i) => widths[i] ?? 0) : null;
 }
 
 /** Більша з двох мір — по стовпцях. Різна довжина буває лише в порожнього тіла. */
@@ -45,7 +82,7 @@ function widest(head: number[] | null, body: number[] | null): number[] {
   if (!head) return body ?? [];
   if (!body) return head;
   if (head.length !== body.length) return head.length > body.length ? head : body;
-  return head.map((width, index) => Math.max(width, body[index]));
+  return head.map((width, index) => Math.max(width, body[index] ?? 0));
 }
 
 /** Рівність мір: без неї кожен рендер оновлював би стан — і рендерив би вічно. */
@@ -71,9 +108,19 @@ export function usePinnedHead(): PinnedHead {
   // Зайвих рендерів це не додає — однакова міра не оновлює стан.
   useLayoutEffect(() => {
     const next = widest(
-      rowWidths(copyRef.current, "thead tr:first-child > th"),
-      rowWidths(bodyRef.current, "tbody tr:first-child > td"),
+      rowWidths(copyRef.current, "thead tr"),
+      rowWidths(bodyRef.current, "tbody tr"),
     );
+    /* Стовпець підписів не може бути вужчим за свій мінімум: підпис
+       переноситься, тож по вмісту його не зміряти (шапка дала б ширину слова
+       «Параметр», і підписи вилазили б у значення). Мінімум задає `CSS` —
+       а під `table-layout: fixed` `min-width` комірки не діє, тому передаємо
+       його колонці явно. */
+    if (next.length) {
+      const cell = bodyRef.current?.querySelector<HTMLElement>("tbody tr > *:first-child");
+      const min = cell ? Math.round(parseFloat(getComputedStyle(cell).minWidth) || 0) : 0;
+      if (min > 0) next[0] = Math.max(next[0] ?? 0, min);
+    }
     setWidths((prev) => (same(prev, next) ? prev : next));
     // Смуга шапки гортається програмою, і після переміру її зсув збитий:
     // повертаємо його на місце тіла.

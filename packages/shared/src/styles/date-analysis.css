@@ -174,11 +174,12 @@
      (`components.css` §27), і саме він ставить перетин шапки з першим стовпцем
      вище за решту шапки. */
   padding: var(--sp-2) var(--sp-3);
-  /* Шапка — та сама смуга, що й у таблицях адмінки: акцент теми, а не сіре
-     тло панелі. */
-  background: var(
-    --wb-table-head-bg,
-    color-mix(in srgb, var(--accent) 26%, var(--wb-table-surface, var(--bg-2)))
+  /* Шапка — та сама смуга, що й у таблицях адмінки: барва зі спектру теми
+     (`--data-1…6`, тон задає колонка), а не сіре тло панелі. */
+  background: color-mix(
+    in srgb,
+    var(--wb-table-hue, var(--data-1)) 28%,
+    var(--wb-table-surface, var(--bg-2))
   );
   color: var(--text-primary);
   font-size: var(--text-xs);
@@ -186,23 +187,24 @@
   text-align: center;
   vertical-align: top;
   white-space: nowrap;
-  border-bottom: 1px solid color-mix(in srgb, var(--accent) 45%, var(--border));
+  border-bottom: 1px solid color-mix(in srgb, var(--wb-table-hue, var(--data-1)) 55%, var(--border));
 }
 
-/* Обвідки в рамки немає — тож внутрішній радіус дорівнює зовнішньому: кут
-   шапки повторює кут рамки, не покладаючись на обрізання. */
-.wb-param-table thead th:first-child {
-  border-top-left-radius: var(--radius-md);
-}
-
+/* Кутів у шапки немає: вона — смуга на тлі сторінки, а не картка (`рамки
+   навколо таблиці теж немає), тож заокруглений кут читався б обрізаною
+   пігулкою посеред екрана. */
+.wb-param-table thead th:first-child,
 .wb-param-table thead th:last-child {
-  border-top-right-radius: var(--radius-md);
+  border-top-left-radius: 0;
+  border-top-right-radius: 0;
 }
 
 /* Дата — сам підпис стовпця, а назва дати — другий рядок під нею: людина знає
    свої дати за назвою, а не за числом. */
 .wb-param-date {
   display: block;
+  /* Дата — одне число: воно не рветься ні на дві частини, ні на два рядки. */
+  white-space: nowrap;
   color: var(--text-secondary);
 }
 
@@ -379,10 +381,13 @@
 
 /* Аналіз: дат стільки, скільки людина обрала, тож стовпці **не діляться**
    шириною екрана, а роз'їжджаються вбік — кожен тримає свою ширину, а рамка
-   гортає таблицю. Значення тоді не рвуться по складах посеред слова. */
-.wb-param-table--compare thead th,
+   гортає таблицю.
+   Значення не переносяться, і стовпець за ними міряє `usePinnedHead`; дата
+   в шапці не рветься ніколи, а назва дати під нею — може. */
 .wb-param-table--compare .wb-param-value {
   white-space: nowrap;
+  hyphens: none;
+  overflow-wrap: normal;
 }
 
 /* Підпис рядка — кістяк таблиці: він лишається на екрані при гортанні вбік,

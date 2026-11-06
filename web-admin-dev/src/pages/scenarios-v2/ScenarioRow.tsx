@@ -52,6 +52,7 @@ export function ScenarioRow({ scenario, isSelected, onSelect, onOpen }: Scenario
       </td>
       <td>
         <span
+          className="wb-table-badge"
           style={{
             display: "inline-flex",
             alignItems: "center",

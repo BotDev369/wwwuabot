@@ -1,5 +1,5 @@
 {
-  "version": "414452a",
+  "version": "b71cfa2",
   "files": [
     {
       "file": "admin/analytics-people.css",
@@ -113,8 +113,8 @@
     },
     {
       "file": "components.css",
-      "tokens": 23,
-      "classes": 209
+      "tokens": 27,
+      "classes": 210
     },
     {
       "file": "contacts.css",
@@ -2508,17 +2508,45 @@
       "section": ""
     },
     {
-      "name": "--wb-table-head-bg",
+      "name": "--wb-table-hue",
       "file": "components.css",
-      "selector": ".wb-table-scroll",
-      "value": "color-mix(in srgb, var(--accent) 26%, var(--wb-table-surface))",
+      "selector": ".wb-table thead tr > :nth-child(6n + 1),\n.wb-param-table thead tr > :nth-child(6n + 1)",
+      "value": "var(--data-1)",
       "section": "Таблиця"
     },
     {
-      "name": "--wb-table-lead-bg",
+      "name": "--wb-table-hue",
       "file": "components.css",
-      "selector": ".wb-table-scroll",
-      "value": "color-mix(in srgb, var(--accent) 8%, var(--wb-table-surface))",
+      "selector": ".wb-table thead tr > :nth-child(6n + 2),\n.wb-param-table thead tr > :nth-child(6n + 2)",
+      "value": "var(--data-2)",
+      "section": "Таблиця"
+    },
+    {
+      "name": "--wb-table-hue",
+      "file": "components.css",
+      "selector": ".wb-table thead tr > :nth-child(6n + 3),\n.wb-param-table thead tr > :nth-child(6n + 3)",
+      "value": "var(--data-3)",
+      "section": "Таблиця"
+    },
+    {
+      "name": "--wb-table-hue",
+      "file": "components.css",
+      "selector": ".wb-table thead tr > :nth-child(6n + 4),\n.wb-param-table thead tr > :nth-child(6n + 4)",
+      "value": "var(--data-4)",
+      "section": "Таблиця"
+    },
+    {
+      "name": "--wb-table-hue",
+      "file": "components.css",
+      "selector": ".wb-table thead tr > :nth-child(6n + 5),\n.wb-param-table thead tr > :nth-child(6n + 5)",
+      "value": "var(--data-5)",
+      "section": "Таблиця"
+    },
+    {
+      "name": "--wb-table-hue",
+      "file": "components.css",
+      "selector": ".wb-table thead tr > :nth-child(6n),\n.wb-param-table thead tr > :nth-child(6n)",
+      "value": "var(--data-6)",
       "section": "Таблиця"
     },
     {
@@ -4433,12 +4461,15 @@
           "spend-code",
           "spend-col-code",
           "spend-col-date",
+          "wb-badge",
           "wb-cell-nowrap",
           "wb-cell-sub",
           "wb-cell-title",
+          "wb-chip",
           "wb-col-num",
           "wb-param-table",
           "wb-table",
+          "wb-table-badge",
           "wb-table-caption",
           "wb-table-empty",
           "wb-table-group",

@@ -250,7 +250,7 @@ function ColumnWidths({ widths }: { widths: number[] }) {
   return (
     <colgroup>
       {widths.map((width, index) => (
-        <col key={index} style={index === widths.length - 1 ? undefined : { width }} />
+        <col key={index} style={index === widths.length - 1 || !width ? undefined : { width }} />
       ))}
     </colgroup>
   );

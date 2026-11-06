@@ -157,18 +157,23 @@ describe("шапка закріплена, а тіло гортає себе в�
     expect(rule(".wb-block-date-analysis__title")).toContain("margin-bottom: var(--sp-4)");
   });
 
-  it("кути шапки повторюють заокруглення рамки", () => {
-    // Прямокутник шапки з непрозорим тлом вилазив за заокруглені кути рамки.
-    expect(rule(".wb-param-table thead th:first-child")).toContain("border-top-left-radius");
-    expect(rule(".wb-param-table thead th:last-child")).toContain("border-top-right-radius");
+  it("шапка — смуга без кутів, бо під таблицею немає картки", () => {
+    // Заокруглений кут мав сенс, доки шапка закривала кут рамки. Рамки немає —
+    // і кут читався б пігулкою посеред екрана.
+    const corners = rule(
+      ".wb-param-table thead th:first-child,\n.wb-param-table thead th:last-child",
+    );
+    expect(corners).toContain("border-top-left-radius: 0");
+    expect(corners).toContain("border-top-right-radius: 0");
   });
 
-  it("стовпці аналізу роз'їжджаються вбік, а не рвуть значення", () => {
-    // `fixed` стискав усі дати в екран — значення ламались по складах. Тепер
-    // ширину дає вміст, а зайве гортає рамка.
-    expect(
-      rule(".wb-param-table--compare thead th,\n.wb-param-table--compare .wb-param-value"),
-    ).toContain("white-space: nowrap");
+  it("значення й дата не рвуться, назва дати — може", () => {
+    // Значення міряє `usePinnedHead`, тож стовпець не вужчий за найдовше з
+    // них; дата в шапці — одне число й не рветься ніколи, а назва дати під
+    // нею — підпис, їй переноситись можна.
+    expect(rule(".wb-param-table--compare .wb-param-value")).toContain("white-space: nowrap");
+    expect(rule(".wb-param-date")).toContain("white-space: nowrap");
+    expect(rule(".wb-param-date__name")).toContain("white-space: normal");
     expect(rule(".wb-param-table--compare thead th + th")).toContain("min-width: 5.5rem");
   });
 });
