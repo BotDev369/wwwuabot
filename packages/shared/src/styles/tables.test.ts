@@ -25,18 +25,25 @@ function rule(selector: string, from = 0): string {
 }
 
 describe("одна таблиця на весь продукт", () => {
-  it("під таблицею немає підкладки, і вона не гортає себе", () => {
+  it("рамка сама гортає таблицю в обидва боки — як аркуш Excel", () => {
     const box = rule(".wb-table-scroll");
-    /* Будь-який `overflow`, крім `visible`, робить із рамки скролпорт: шапка
-       липне до неї, тобто їде разом зі сторінкою. Саме так вона й зникала на
-       телефоні — і в адмінці, і в таблицях сторінок платформи. */
-    expect(box).toContain("overflow: visible");
-    expect(box).not.toContain("overflow-y");
-    expect(box).not.toContain("max-height");
+    /* Одна прокрутка на таблицю: рамка. Коли гортала сторінка, вбік їхав весь
+       екран разом із хромом, а шапка липла до сторінки й ховалась під смугою
+       вікна. Власна висота тримає шапку в рамці, власна ширина — в екрані. */
+    expect(box).toContain("overflow: auto");
+    expect(box).toContain("max-height:");
+    expect(box).toContain("max-width: 100%");
+    expect(box).toContain("overscroll-behavior: contain");
     /* Ні рамки, ні тла, ні тіні: таблиця лежить просто на тлі сторінки чи вікна. */
     expect(box).toContain("background: transparent");
     expect(box).toContain("border: 0");
     expect(box).toContain("border-radius: 0");
+  });
+
+  it("хром сторінки не підмінює прокрутку таблиці", () => {
+    /* Підписи над таблицею лишались на місці хаком `sticky left: 0` — і саме
+       він вилазив за екран. Гортає лише рамка таблиці. */
+    expect(css).not.toContain(":not(:has(table))");
   });
 
   it("підстраховка вмикає прокрутку всередині рамки, якщо `sticky` не тримається", () => {
@@ -96,10 +103,14 @@ describe("одна таблиця на весь продукт", () => {
     );
   });
 
-  it("перший стовпець липне до лівого краю", () => {
+  it("перший стовпець липне до лівого краю на будь-якій ширині", () => {
     const first = rule(".wb-table th:first-child,");
     expect(first).toContain("position: sticky");
     expect(first).toContain("left: 0");
+    /* Телефон не виняток: підпис рядка — орієнтир, без нього сума вїжджає
+       в порожнечу, і людина не знає, чиї це гроші. */
+    expect(css).not.toMatch(/th:first-child[^{]*\{[^}]*left: auto/);
+    expect(css).not.toMatch(/td:first-child[^{]*\{[^}]*position: static/);
   });
 
   it("перетин шапки й першого стовпця лежить вище за обидва", () => {

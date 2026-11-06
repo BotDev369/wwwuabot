@@ -1,5 +1,5 @@
 {
-  "version": "e59c5cf",
+  "version": "524be16",
   "files": [
     {
       "file": "admin/analytics-people.css",
@@ -4531,6 +4531,7 @@
           "wb-cell-title",
           "wb-chip",
           "wb-col-num",
+          "wb-modal-body",
           "wb-param-table",
           "wb-table",
           "wb-table-badge",

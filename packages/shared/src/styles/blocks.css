@@ -404,7 +404,7 @@
   /* Один стовпець за замовчуванням: абзац у половині 352-піксельної зони
      рветься на п'ять рядків по три слова — саме так читались «Кожен блок —
      окреме дослідження». Пару задає `columns` у самому блоці. */
-  grid-template-columns: 1fr;
+  grid-template-columns: minmax(0, 1fr);
   gap: var(--card-gap);
 }
 
@@ -848,7 +848,7 @@
 
 .wb-block-columns {
   display: grid;
-  grid-template-columns: 1fr;
+  grid-template-columns: minmax(0, 1fr);
   gap: var(--sp-4);
 }
 

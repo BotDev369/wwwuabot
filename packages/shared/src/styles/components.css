@@ -2000,12 +2000,17 @@ html:has(.wb-tabbar) .wb-modal-overlay--screen {
      залита шапка, таблиця читається одним тоном — попри те що кожна тема має
      шість власних барв. Тон колонки задає `--wb-table-hue` (див. нижче). */
   --wb-table-surface: var(--bg-2);
-  /* Під таблицею немає нічого свого: ні рамки, ні тла, ні тіні — вона лежить
-     просто на поверхні сторінки чи вікна. І **жодного `overflow`**: будь-яке
-     значення, крім `visible`, робить цю рамку скролпортом, і шапка липне до
-     неї (тобто їде разом зі сторінкою), а не до екрана. Саме так шапка й
-     зникала на телефоні. */
-  overflow: visible;
+  /* Рамка — це і є та панель, у якій таблиця гортається, як аркуш Excel: убік
+     і вниз. Без власної прокрутки широка таблиця тягла за собою весь екран, і
+     вбік їхав хром сторінки; без власної висоти шапка липла до сторінки й
+     ховалась під смугою вікна. Тла, рамки й тіні немає: таблиця лежить на
+     поверхні сторінки чи вікна. */
+  position: relative;
+  max-width: 100%;
+  max-height: min(78dvh, 48rem);
+  overflow: auto;
+  overscroll-behavior: contain;
+  -webkit-overflow-scrolling: touch;
   background: transparent;
   border: 0;
   border-radius: 0;
@@ -2018,6 +2023,12 @@ html:has(.wb-tabbar) .wb-modal-overlay--screen {
   overflow-y: auto;
   overscroll-behavior: contain;
   -webkit-overflow-scrolling: touch;
+}
+
+/* У вікні над рамкою є ще смуга закриття й підписи: рамка бере менше
+   висоти, щоб шапка лишалась видимою, а не ховалась під смугою. */
+.wb-modal-body .wb-table-scroll {
+  max-height: min(60dvh, 34rem);
 }
 
 /* Повзунок товстий і видимий: тонкий на телефоні не вхопити пальцем. */
@@ -2148,27 +2159,12 @@ html:has(.wb-tabbar) .wb-modal-overlay--screen {
   --wb-table-lead-bg: color-mix(in srgb, var(--data-1) 12%, var(--wb-table-surface, var(--bg-2)));
   background: var(--wb-table-lead-bg);
   box-shadow: inset -1px 0 0 var(--border);
-}
-
-/* Шов зліва. Коли таблицю гортають убік, закріплена колонка липне до
-   внутрішнього краю прокрутки, а в смузі берега скролера (він має власний
-   `padding`) проїжджає сусід. Видно було обривки слів у два пікселі завширшки
-   — екран виглядав поламаним. Колонка добирає собі той берег підкладкою
-   зліва: жоден рядок не проїжджає під нею, а розкладка не зсувається. */
-@media (min-width: 641px) {
-  .wb-table th:first-child::before,
-  .wb-table td:first-child::before,
-  .wb-param-table th:first-child::before,
-  .wb-param-table td:first-child::before {
-    content: "";
-    position: absolute;
-    top: 0;
-    bottom: 0;
-    right: 100%;
-    width: 20px;
-    background: inherit;
-    pointer-events: none;
-  }
+  /* Підпис рядка переноситься, але слово, довше за колонку, не має де
+     перенестись і обрізається краєм комірки — читається половинкою. Перенос
+     із дефісом — остання межа: краще «Кардиналь-ний», ніж «Кардиналь».
+     Числа й дати лишаються цілими — у них `nowrap`. */
+  overflow-wrap: break-word;
+  hyphens: auto;
 }
 
 /* Лівий верхній кут — це шапка, а не стовпець: він тримає тон рядка 1. */
@@ -2196,12 +2192,15 @@ html:has(.wb-tabbar) .wb-modal-overlay--screen {
     padding: var(--sp-2);
   }
 
-  /* Підпис рядка — третина екрана як орієнтир, але не менше за власний текст:
-     саме `min-width` тримає колонку від стискання. */
+  /* Підпис рядка — закріплена колонка, і на телефоні вона теж закріплена:
+     7rem лишають сусіднім графам понад половину екрана, тож сума проїжджає
+     повз підпис цілою, а не виглядає з-під нього половинкою. Ширина мусить
+     бути обмежена: без неї довга назва розтягла б закріплену колонку на
+     пів екрана. */
   .wb-table th:first-child,
   .wb-table td:first-child {
-    min-width: 8rem;
-    max-width: 12rem;
+    min-width: 7rem;
+    max-width: 11rem;
   }
 
   /* `break-word` звужує рядок, але не мінімальну ширину комірки; `anywhere`
@@ -3145,31 +3144,4 @@ button.wb-chip {
 .wb-table tbody tr:nth-child(even) > td:not(:first-child),
 .wb-param-table tbody tr:nth-child(even) > td:not(:first-child) {
   background: color-mix(in srgb, var(--data-1) 5%, transparent);
-}
-
-/* Телефон: широку таблицю гортають убік, і гортається **лише вона**. Підписи
-   над нею (період, примітка, підсумок) лишаються на місці: інакше разом із
-   таблицею вбік їхав увесь екран, і він виглядав поламаним. `:has(table)`
-   виключає самі таблиці — їхні рамки мусять рухатись. */
-@media (max-width: 640px) {
-  :is(.spend, .mon, .wb-page-body, .wb-page-scroll) > :not(:has(table)) {
-    position: sticky;
-    left: 0;
-    z-index: 1;
-  }
-
-  /* Перший стовпець не закріплений **по горизонталі**: закріплені 128px із 360
-     лишають таблиці 230px, і при гортанні вбік суми ховались під підписом —
-     число видно половинкою, а це не гортання, а обрізане число. По вертикалі
-     шапка тримається як завжди (`top` лишається), і ліва верхня комірка їде
-     вбік разом зі своєю колонкою — інакше підпис стояв би над чужою графою. */
-  .wb-table th:first-child,
-  .wb-param-table th:first-child {
-    left: auto;
-  }
-
-  .wb-table td:first-child,
-  .wb-param-table td:first-child {
-    position: static;
-  }
 }

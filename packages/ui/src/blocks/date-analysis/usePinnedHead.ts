@@ -77,6 +77,31 @@ function rowWidths(table: HTMLTableElement | null, rows: string): number[] | nul
   return measured ? Array.from({ length: widths.length }, (_, i) => widths[i] ?? 0) : null;
 }
 
+/**
+ * Найдовше слово в комірці — міра, яку перенос не зменшує. Підпис колонки
+ * переноситься, тож ширини по всьому тексту не взяти, але одне слово, довше за
+ * колонку, обрізалось би; його міряє невидимий зразок. `0` — слів немає.
+ */
+function longestWord(cell: HTMLElement | null): number {
+  const text = (cell?.textContent ?? "").trim();
+  if (!cell || !text) return 0;
+
+  const probe = document.createElement("span");
+  probe.style.cssText =
+    "position:absolute;left:-9999px;top:0;visibility:hidden;white-space:nowrap;pointer-events:none";
+  let width = 0;
+  try {
+    cell.appendChild(probe);
+    for (const part of text.split(/\s+/)) {
+      probe.textContent = part;
+      width = Math.max(width, probe.getBoundingClientRect().width);
+    }
+  } finally {
+    probe.remove();
+  }
+  return Math.ceil(width);
+}
+
 /** Більша з двох мір — по стовпцях. Різна довжина буває лише в порожнього тіла. */
 function widest(head: number[] | null, body: number[] | null): number[] {
   if (!head) return body ?? [];
@@ -120,6 +145,19 @@ export function usePinnedHead(): PinnedHead {
       const cell = bodyRef.current?.querySelector<HTMLElement>("tbody tr > *:first-child");
       const min = cell ? Math.round(parseFloat(getComputedStyle(cell).minWidth) || 0) : 0;
       if (min > 0) next[0] = Math.max(next[0] ?? 0, min);
+      /* Підпис, який не має де перенестись, ширину задає сам: слово довже за
+         `min-width` під `table-layout: fixed` обрізалось краєм комірки — текст
+         видно половинкою, а колонку вже не розтягнути. Міряємо найдовше слово
+         в колонці й беремо його разом із берегами. */
+      if (cell) {
+        const style = getComputedStyle(cell);
+        const pad = (parseFloat(style.paddingLeft) || 0) + (parseFloat(style.paddingRight) || 0);
+        let word = 0;
+        for (const row of bodyRef.current?.querySelectorAll("tbody tr") ?? []) {
+          word = Math.max(word, longestWord(row.querySelector<HTMLElement>(":scope > *")));
+        }
+        if (word > 0) next[0] = Math.max(next[0] ?? 0, Math.ceil(word + pad));
+      }
     }
     setWidths((prev) => (same(prev, next) ? prev : next));
     // Смуга шапки гортається програмою, і після переміру її зсув збитий:

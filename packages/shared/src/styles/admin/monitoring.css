@@ -231,7 +231,10 @@
 
 @media (max-width: 900px) {
   .mon-columns {
-    grid-template-columns: 1fr;
+    /* `minmax(0, 1fr)`, а не `1fr`: у `1fr` нижня межа — це min-content
+       вмісту, і таблиця на 720px розтягувала колонку разом із собою. Рамка
+       таблиці має гортати себе, а не ширину екрана. */
+    grid-template-columns: minmax(0, 1fr);
   }
 }
 
