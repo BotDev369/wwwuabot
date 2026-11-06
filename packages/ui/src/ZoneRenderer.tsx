@@ -27,7 +27,10 @@ interface ZoneRendererProps {
  * Рендерер зони — відсортований список блоків з рекурсією та контролем доступу.
  */
 export function ZoneRenderer({ blocks, zone, context, className }: ZoneRendererProps) {
-  const sorted = [...blocks].sort((a, b) => a.order - b.order);
+  /* `parsePageConfig` уже доповнює зони, але прев'ю й конструктор можуть
+     віддати конфіг, зібраний у пам'яті, — тож зона без масиву має лишитись
+     порожньою, а не валити весь рендер. */
+  const sorted = [...(blocks ?? [])].sort((a, b) => a.order - b.order);
   if (sorted.length === 0) return null;
 
   return (

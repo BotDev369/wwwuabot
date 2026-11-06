@@ -29,7 +29,6 @@ export const BASELINE = {
     "web-admin-dev/src/pages/scenarios/SharedFieldsEditor.tsx": 5,
     "web-admin-dev/src/pages/scenarios/WebConstructor.tsx": 5,
     "web-admin-dev/src/pages/users/UserEditModal.tsx": 5,
-    "web-admin-dev/src/pages/home/HomePage.tsx": 4,
     "web-admin-dev/src/pages/scenarios/ScenarioCardBody.tsx": 3,
     "web-admin-dev/src/pages/users/user-edit/ExtraFieldsCard.tsx": 3,
     "web-admin-dev/src/pages/scenarios/ScenarioCardHeader.tsx": 2,

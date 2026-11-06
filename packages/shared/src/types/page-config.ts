@@ -26,5 +26,6 @@ export {
   ALL_ZONES,
   createEmptyPageConfig,
   parsePageConfig,
+  normalizePageConfig,
   generateBlockId,
 } from "./page-config.utils";

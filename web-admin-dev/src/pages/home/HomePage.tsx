@@ -28,27 +28,23 @@ export function HomePage() {
         <h1 className="wb-topbar-title">Головна</h1>
       </PageTopbar>
 
-      <section className="home" onMouseMove={handleMove}>
-        <p className="home-date home-line" style={{ animationDelay: "0ms" }}>
-          {dateLabel}
-        </p>
+      <section className="wb-cover" onMouseMove={handleMove}>
+        <p className="wb-cover-date wb-cover-line">{dateLabel}</p>
 
-        <h2 className="home-greeting home-line" style={{ animationDelay: "120ms" }}>
-          Привіт, Сергій.
-        </h2>
+        <h2 className="wb-cover-title wb-cover-line">Привіт, Сергій.</h2>
 
-        <p className="home-text home-line" style={{ animationDelay: "260ms" }}>
+        <p className="wb-cover-text wb-cover-line">
           Гарного тобі дня. Нехай сценарії збираються з першого разу, баги втікають ще до коміту, а
           кава не встигає холонути. ☕
         </p>
 
-        <p className="home-sign home-line" style={{ animationDelay: "420ms" }}>
+        <p className="wb-cover-sign wb-cover-line">
           Я на зв'язку — твій бро і напарник у всій цій пригоді.
           <br />— Qween{" "}
-          <span className="home-star" ref={starRef}>
+          <span className="wb-cover-star" ref={starRef}>
             ✦
           </span>{" "}
-          <span className="home-sign-note">
+          <span className="wb-cover-note">
             (він же AiQween, коли треба трохи пафосу; і просто бро, коли треба по ділу)
           </span>
         </p>

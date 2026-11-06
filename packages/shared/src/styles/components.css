@@ -2725,6 +2725,152 @@ button.wb-chip {
   }
 }
 
+/* ── Обкладинка екрана (`.wb-cover`) ──��────────────────────────────────────
+   Привітальний екран — не «особлива сторінка», а кирпичик: та сама плита,
+   той самий рядок привітання, та сама підпись. Доти це жило як `.home-*`,
+   тобто вигляд однієї сторінки в CSS, і жоден інший екран не міг узяти
+   звідти ані рядка (правило «все з кирпичиків», docs/DESIGN_SYSTEM.md §27).
+
+   Тло — плаский `--bg-page`: над цією поверхнею смуга хрому того самого
+   кольору, тож власний градієнт дав би шов по лінії зони. Водяний знак —
+   `::before`, псевдоелемент: його немає в розмітці, і він не тягне ні
+   картинки, ні зайвого вузла. */
+.wb-cover {
+  position: relative;
+  flex: 1;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: var(--sp-5);
+  padding: clamp(32px, 7vh, 72px) clamp(28px, 6vw, 96px);
+  background: var(--bg-page, var(--bg-0));
+}
+
+.wb-cover::before {
+  content: "✦";
+  position: absolute;
+  z-index: 0;
+  right: clamp(-40px, -2vw, 0);
+  top: clamp(-60px, -6vh, 0);
+  font-family: var(--font-display);
+  font-size: clamp(180px, 26vw, 360px);
+  line-height: 1;
+  color: var(--accent);
+  opacity: 0.04;
+  pointer-events: none;
+  user-select: none;
+}
+
+/* Рядок обкладинки: з'являється знизу. Затримки — у CSS (`:nth-child`), а не
+   в `style` у розмітці: інлайновий стиль — це той самий приватний вигляд,
+   лише записаний у JSX. */
+.wb-cover-line {
+  position: relative;
+  z-index: 1;
+  margin: 0;
+  opacity: 0;
+  transform: translateY(14px);
+  animation: wb-cover-rise 0.7s cubic-bezier(0.2, 0.7, 0.2, 1) forwards;
+}
+
+.wb-cover-line:nth-child(1) {
+  animation-delay: 0ms;
+}
+
+.wb-cover-line:nth-child(2) {
+  animation-delay: 120ms;
+}
+
+.wb-cover-line:nth-child(3) {
+  animation-delay: 260ms;
+}
+
+.wb-cover-line:nth-child(4) {
+  animation-delay: 420ms;
+}
+
+@keyframes wb-cover-rise {
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+/* Хто просить менше руху — отримує текст одразу: рух не є змістом. */
+@media (prefers-reduced-motion: reduce) {
+  .wb-cover-line {
+    opacity: 1;
+    transform: none;
+    animation: none;
+  }
+
+  .wb-cover-star {
+    animation: none;
+  }
+}
+
+/* Дата — надзаголовок: дрібний, розріджений, приглушений. */
+.wb-cover-date {
+  font-family: var(--font-display);
+  font-size: var(--text-xs);
+  font-weight: var(--weight-semibold);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+
+.wb-cover-title {
+  font-family: var(--font-display);
+  font-weight: 400;
+  font-size: clamp(36px, 7vw, 76px);
+  line-height: 1.02;
+  letter-spacing: 0;
+  color: var(--text-primary);
+}
+
+.wb-cover-text {
+  max-width: 48ch;
+  font-size: var(--text-md);
+  line-height: 1.5;
+  color: var(--text-secondary);
+}
+
+.wb-cover-sign {
+  font-size: var(--text-md);
+  line-height: 1.7;
+  color: var(--text-secondary);
+}
+
+.wb-cover-note {
+  display: block;
+  margin-top: var(--sp-1);
+  font-size: var(--text-sm);
+  color: var(--text-muted);
+}
+
+/* Жива зірочка: світиться сама й повертається обличчям до курсора (JS ставить
+   `transform`). Знак — частина надпису, тож це `inline-block`, а не окремий
+   блок. */
+.wb-cover-star {
+  display: inline-block;
+  margin-left: 2px;
+  color: var(--accent);
+  transition: transform 0.15s ease;
+  animation: wb-cover-glow 3.2s ease-in-out infinite;
+}
+
+@keyframes wb-cover-glow {
+  0%,
+  100% {
+    filter: drop-shadow(0 0 4px var(--accent-soft));
+  }
+
+  50% {
+    filter: drop-shadow(0 0 10px var(--accent));
+  }
+}
+
 /* ── Hero (блок сторінки) ──────────────────────────────────────────────────
    Зовнішнього відступу немає **навмисно**: просвіт між блоками тримає зона
    (`.page-zone-blocks`), а власний `padding` блока додавався б до нього —

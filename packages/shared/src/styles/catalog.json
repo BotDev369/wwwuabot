@@ -1,5 +1,5 @@
 {
-  "version": "7644990",
+  "version": "ac54455",
   "files": [
     {
       "file": "admin/analytics-people.css",
@@ -20,11 +20,6 @@
       "file": "admin/bot-settings.css",
       "tokens": 0,
       "classes": 17
-    },
-    {
-      "file": "admin/home.css",
-      "tokens": 0,
-      "classes": 8
     },
     {
       "file": "admin/index.css",
@@ -114,7 +109,7 @@
     {
       "file": "components.css",
       "tokens": 36,
-      "classes": 218
+      "classes": 226
     },
     {
       "file": "contacts.css",
@@ -2879,21 +2874,6 @@
         ]
       }
     ],
-    "admin/home.css": [
-      {
-        "section": "",
-        "names": [
-          "home",
-          "home-date",
-          "home-greeting",
-          "home-line",
-          "home-sign",
-          "home-sign-note",
-          "home-star",
-          "home-text"
-        ]
-      }
-    ],
     "admin/index.css": [],
     "admin/monitoring-report.css": [
       {
@@ -4628,6 +4608,19 @@
           "wb-save-actions-btn--primary",
           "wb-save-actions-btn--saved",
           "wb-save-actions-btn--secondary"
+        ]
+      },
+      {
+        "section": "Обкладинка екрана (`.wb-cover`) ��",
+        "names": [
+          "wb-cover",
+          "wb-cover-date",
+          "wb-cover-line",
+          "wb-cover-note",
+          "wb-cover-sign",
+          "wb-cover-star",
+          "wb-cover-text",
+          "wb-cover-title"
         ]
       },
       {

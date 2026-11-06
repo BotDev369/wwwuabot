@@ -85,6 +85,7 @@ const pageData: PageConfig = {
     main: [{ id: "b1", type: "text", order: 0, props: { content: "Привіт" } }],
     footer: [],
   },
+  visibleZones: ["main"],
 };
 
 /** Відповідь на запит сторінки; `ok: false` — статус, решта — тіло. */
