@@ -57,6 +57,7 @@
     "test:coverage": "vitest run --coverage",
     "check:coverage": "node scripts/check-coverage.mjs",
     "audit:pages": "node scripts/page-inventory.mjs",
+    "audit:bricks": "node scripts/audit-bricks.mjs",
     "verify": "node scripts/verify.mjs",
     "clean:tmp": "node scripts/clean-tmp.mjs"
   }

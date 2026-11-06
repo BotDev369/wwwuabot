@@ -34,12 +34,6 @@
   text-align: center;
 }
 
-.wb-cell-center input[type="checkbox"] {
-  cursor: pointer;
-  width: 14px;
-  height: 14px;
-}
-
 .wb-cell-name {
   font-weight: var(--weight-medium);
   color: var(--text-primary);

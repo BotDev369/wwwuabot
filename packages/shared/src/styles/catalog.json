@@ -1,5 +1,5 @@
 {
-  "version": "524be16",
+  "version": "7644990",
   "files": [
     {
       "file": "admin/analytics-people.css",
@@ -114,7 +114,7 @@
     {
       "file": "components.css",
       "tokens": 36,
-      "classes": 217
+      "classes": 218
     },
     {
       "file": "contacts.css",
@@ -4292,6 +4292,12 @@
           "wb-input",
           "wb-select",
           "wb-textarea"
+        ]
+      },
+      {
+        "section": "Чекбокс",
+        "names": [
+          "wb-check"
         ]
       },
       {

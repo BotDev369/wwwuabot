@@ -66,6 +66,7 @@ export function SchemaField({ props, schema, onChange }: SchemaFieldProps): Reac
           <label className="pb-be-field-label">{title}</label>
           <input
             type="checkbox"
+            className="wb-check"
             checked={!!currentValue}
             onChange={(e) => onChange(key, e.target.checked)}
           />

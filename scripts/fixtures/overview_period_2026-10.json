@@ -1,0 +1,478 @@
+{
+  "period": "2026-10",
+  "from": "2026-10-01",
+  "to": "2026-10-31",
+  "capturedAt": "2026-11-04T05:37:55.651Z",
+  "lastLoad": {
+    "fetchedAt": "2026-11-04T07:24:50.584Z",
+    "raw": [
+      { "sourceId": 0, "sourceName": "ТЕСТТЕСТ \"Тест2\"", "lastLoad": "2019-11-01" },
+      { "sourceId": 1, "sourceName": "ПАТ \"УКРЗАЛІЗНИЦЯ\"", "lastLoad": "2022-07-06" },
+      {
+        "sourceId": 2,
+        "sourceName": "ДЕРЖАВНА КАЗНАЧЕЙСЬКА СЛУЖБА УКРАЇНИ",
+        "lastLoad": "2026-11-02"
+      },
+      { "sourceId": 3, "sourceName": "ДУ \"ВПФ\"", "lastLoad": "2019-09-13" },
+      {
+        "sourceId": 403,
+        "sourceName": "КНП \"Центр ПМД\" Вижницької міської ради",
+        "lastLoad": "2019-03-21"
+      },
+      {
+        "sourceId": 583,
+        "sourceName": "Вінницький державний педагогічний університет імені Михайла Коцюбинського",
+        "lastLoad": "2026-10-02"
+      },
+      {
+        "sourceId": 1603,
+        "sourceName": "КНП \"ЦМКЛ\" Дружківської міської ради",
+        "lastLoad": "2019-08-01"
+      },
+      {
+        "sourceId": 2023,
+        "sourceName": "Печеніжинська селищна рада ОТГ",
+        "lastLoad": "2023-07-24"
+      },
+      {
+        "sourceId": 2443,
+        "sourceName": "Відділ культури і туризму Печеніжинської селищної ради ОТГ",
+        "lastLoad": "2023-05-04"
+      },
+      { "sourceId": 2447, "sourceName": "КП \"ПІД ЗАМКОМ\"", "lastLoad": "2022-02-10" },
+      { "sourceId": 2543, "sourceName": "КП \"Міська лікарня\"", "lastLoad": "2021-06-23" },
+      { "sourceId": 2727, "sourceName": "ОСББ \"К - 304\"", "lastLoad": "2019-11-05" },
+      {
+        "sourceId": 2926,
+        "sourceName": "КНП \"ЦПМСД Бобринецького району\"",
+        "lastLoad": "2019-11-27"
+      },
+      { "sourceId": 3123, "sourceName": "ДП \"ПЗНП\"", "lastLoad": "2020-01-02" },
+      { "sourceId": 3263, "sourceName": "ОСББ \"АРСЕНАЛ\"", "lastLoad": "2020-01-24" },
+      { "sourceId": 3683, "sourceName": "КП \"Міська ЖТІ\" НМР", "lastLoad": "2025-09-02" },
+      { "sourceId": 4244, "sourceName": "УЖКГ Подільської РДА", "lastLoad": "2020-06-30" },
+      { "sourceId": 4704, "sourceName": "ОСББ \"ГАГАРІНА 12\"", "lastLoad": "2020-09-09" },
+      { "sourceId": 4706, "sourceName": "ОСББ \"ГАГАРІНА 10 Н\"", "lastLoad": "2020-09-09" },
+      { "sourceId": 4707, "sourceName": "ОСББ \"СОНЕТ-28\"", "lastLoad": "2020-10-21" },
+      { "sourceId": 6944, "sourceName": "КНП \"МОКЛ\" МОР", "lastLoad": "2021-07-14" },
+      {
+        "sourceId": 7264,
+        "sourceName": "КНП КОР \"Київська обласна клінічна лікарня\"",
+        "lastLoad": "2021-08-28"
+      },
+      { "sourceId": 7284, "sourceName": "ТВО Хортицького району", "lastLoad": "2021-09-01" },
+      { "sourceId": 7344, "sourceName": "ТВО Заводського району", "lastLoad": "2021-09-08" },
+      { "sourceId": 7464, "sourceName": "ПК МІОЦ", "lastLoad": "2021-09-29" },
+      { "sourceId": 7564, "sourceName": "КП \"ЦУІТ\"", "lastLoad": "2024-01-22" },
+      { "sourceId": 7646, "sourceName": "КП \"ЧЕЛУАШ\"", "lastLoad": "2022-02-21" },
+      { "sourceId": 7724, "sourceName": "СЛОБІДСЬКА ГІМНАЗІЯ", "lastLoad": "2023-01-31" },
+      { "sourceId": 8286, "sourceName": "МКП Херсонтеплоенерго", "lastLoad": "2022-01-28" },
+      { "sourceId": 8425, "sourceName": "МАЛОКЛЮЧІВСЬКА ГІМНАЗІЯ", "lastLoad": "2022-07-15" },
+      { "sourceId": 8545, "sourceName": "КИЙДАНЕЦЬКА ГІМНАЗІЯ", "lastLoad": "2022-08-05" },
+      { "sourceId": 8585, "sourceName": "МАРКІВСЬКА ГІМНАЗІЯ", "lastLoad": "2023-04-12" },
+      { "sourceId": 8665, "sourceName": "РУНГУРСЬКИЙ ЛІЦЕЙ", "lastLoad": "2022-02-22" },
+      {
+        "sourceId": 8825,
+        "sourceName": "КУ ЦКД ПРИЮТІВСЬКОЇ СЕЛИЩНОЇ РАДИ",
+        "lastLoad": "2026-11-02"
+      },
+      { "sourceId": 9745, "sourceName": "КП \"ЦЗО\" ДМР", "lastLoad": "2023-06-08" },
+      { "sourceId": 9885, "sourceName": "КП \"АРЦИЗЬКЕ БТІ\"", "lastLoad": "2023-03-22" },
+      { "sourceId": 10106, "sourceName": "КНП \"Новосанжарська ЦЛ\"", "lastLoad": "2023-06-02" },
+      {
+        "sourceId": 10166,
+        "sourceName": "МИСТЕЦЬКА ШКОЛА ПРИЮТІВСЬКОЇ СЕЛИЩНОЇ РАДИ",
+        "lastLoad": "2025-09-30"
+      },
+      {
+        "sourceId": 10225,
+        "sourceName": "КНП \"ЦПМСД Великоолександрівського району\"",
+        "lastLoad": "2023-05-16"
+      },
+      {
+        "sourceId": 10385,
+        "sourceName": "Відділ культури, спорту, сім'ї та молоді Часовоярської міської ради",
+        "lastLoad": "2023-11-13"
+      },
+      {
+        "sourceId": 10766,
+        "sourceName": "Управління цифрової трансформації Полтавської обласної державної адміністрації",
+        "lastLoad": "2023-08-31"
+      },
+      { "sourceId": 10865, "sourceName": "ТОВ \"КК - НАШ ДІМ\"", "lastLoad": "2023-09-29" },
+      {
+        "sourceId": 11025,
+        "sourceName": "КНП \"Тальнівська багатопрофільна лікарня\" ТМР",
+        "lastLoad": "2024-01-03"
+      },
+      { "sourceId": 11086, "sourceName": "КП \"БЕРШАДЬВОДОКАНАЛ\"", "lastLoad": "2026-04-02" },
+      {
+        "sourceId": 11165,
+        "sourceName": "ПЗ \"КИЇВСЬКА ГІМНАЗІЯ \"СПІЛЬНОШКОЛА\"",
+        "lastLoad": "2023-12-26"
+      },
+      { "sourceId": 11245, "sourceName": "Буське ПВКГ", "lastLoad": "2024-01-08" },
+      {
+        "sourceId": 11425,
+        "sourceName": "Головне управління Держпродспоживслужби в Сумській області",
+        "lastLoad": "2024-01-31"
+      },
+      { "sourceId": 11485, "sourceName": "КП ММР \"Захист\"", "lastLoad": "2024-01-26" },
+      { "sourceId": 11565, "sourceName": "УКБ Боярської міської ради", "lastLoad": "2024-03-11" },
+      {
+        "sourceId": 11605,
+        "sourceName": "Кз \"Спорт для всіх\" Тальнівської МР",
+        "lastLoad": "2026-08-01"
+      },
+      { "sourceId": 11609, "sourceName": "ВСП СПЕФК ЧДТУ", "lastLoad": "2026-07-08" },
+      { "sourceId": 11625, "sourceName": "ліцей \"Школа екстернів\"", "lastLoad": "2026-11-03" },
+      { "sourceId": 11745, "sourceName": "ТЮГ", "lastLoad": "2026-10-30" },
+      { "sourceId": 11785, "sourceName": "ЗФПО \"КФМК № 3\"", "lastLoad": "2024-02-19" },
+      {
+        "sourceId": 11907,
+        "sourceName": "НМЦ ПТО у Полтавській області",
+        "lastLoad": "2024-03-14"
+      },
+      {
+        "sourceId": 11950,
+        "sourceName": "КЗ ЦНСП Куликівської селищної ради",
+        "lastLoad": "2024-03-26"
+      },
+      { "sourceId": 12026, "sourceName": "КЗПО \"ЦДЮТ \"Крок\" ДМР", "lastLoad": "2026-10-29" },
+      { "sourceId": 12185, "sourceName": "Відділ освіти Варвинської СР", "lastLoad": "2024-10-23" },
+      {
+        "sourceId": 12425,
+        "sourceName": "ДП \"Великоанадольський лісгосп\"",
+        "lastLoad": "2025-04-09"
+      },
+      { "sourceId": 12446, "sourceName": "ДП \"СЛОВ’ЯНСЬКИЙ ЛІСГОСП\"", "lastLoad": "2024-10-14" },
+      { "sourceId": 13525, "sourceName": "КУ \"МЦЧ\"", "lastLoad": "2025-02-13" },
+      { "sourceId": 13645, "sourceName": "ЗДО №1 \"Дзвіночок\"", "lastLoad": "2025-03-11" },
+      {
+        "sourceId": 13785,
+        "sourceName": "Департамент освіти і науки Запорізької міської ради",
+        "lastLoad": "2026-10-19"
+      },
+      { "sourceId": 14107, "sourceName": "ВІДДІЛ ОСВІТИ", "lastLoad": "2026-06-16" },
+      { "sourceId": 14585, "sourceName": "КАПУСТЯНСЬКИЙ ЛІЦЕЙ", "lastLoad": "2025-09-16" },
+      {
+        "sourceId": 14631,
+        "sourceName": "ВСП \"ОФК ім.І.Піддубного НУФВСУ\"",
+        "lastLoad": "2025-09-08"
+      },
+      { "sourceId": 14745, "sourceName": "Управління економіки ЮМР", "lastLoad": "2025-10-13" },
+      { "sourceId": 15005, "sourceName": "Відділ ПВП Пологівської РДА", "lastLoad": "2026-10-07" },
+      { "sourceId": 15045, "sourceName": "КП БМР \"Спецкомбінат\"", "lastLoad": "2025-12-01" },
+      { "sourceId": 15325, "sourceName": "ЗДО №42 \"Джерельце\"", "lastLoad": "2026-07-22" },
+      { "sourceId": 15646, "sourceName": "КРАСНОПІЛЬСЬКИЙ ЛІЦЕЙ №1", "lastLoad": "2026-07-14" },
+      { "sourceId": 15686, "sourceName": "ОКНП \"ЧОМДРЦ\"", "lastLoad": "2026-09-25" },
+      { "sourceId": 16146, "sourceName": "НРГК", "lastLoad": "2026-08-31" },
+      { "sourceId": 16306, "sourceName": "Міський відділ культури", "lastLoad": "2026-08-26" },
+      { "sourceId": 16345, "sourceName": "КП \"МСЄЗ\" КМР\"", "lastLoad": "2026-11-02" },
+      { "sourceId": 16505, "sourceName": "КП \"ЖВК\"ДОР\"", "lastLoad": "2026-09-23" },
+      { "sourceId": 16845, "sourceName": "ГВІЗДСЬКИЙ ЛІЦЕЙ", "lastLoad": "2026-11-04" }
+    ]
+  },
+  "orgs": [
+    {
+      "edrpou": "42225911",
+      "name": "Архівний відділ Бучанської міської ради",
+      "form": "Орган місцевого самоврядування",
+      "koatuu": "UA32080070000050759",
+      "documents": { "count": 0, "amount": 0 },
+      "payments": { "count": 18, "amount": 372920.97 },
+      "receipts": { "count": 3, "amount": 215132.27 }
+    },
+    {
+      "edrpou": "04360586",
+      "name": "Бучанська міська рада",
+      "form": "Орган місцевого самоврядування",
+      "koatuu": "UA32080070010087821",
+      "documents": { "count": 0, "amount": 0 },
+      "payments": { "count": 134, "amount": 41743204.46 },
+      "receipts": { "count": 3, "amount": 70357.43 }
+    },
+    {
+      "edrpou": "42538580",
+      "name": "ВІДДІЛ МОЛОДІ ТА СПОРТУ БУЧАНСЬКОЇ МІСЬКОЇ РАДИ",
+      "form": "Комунальна організація (установа, заклад)",
+      "koatuu": "UA32080070010087821",
+      "documents": { "count": 0, "amount": 0 },
+      "payments": { "count": 90, "amount": 1426958.03 },
+      "receipts": { "count": 16, "amount": 476112.20999999996 }
+    },
+    {
+      "edrpou": "26473919",
+      "name": "Відділ культури та спорту виконавчого комітету Бучанської міської ради",
+      "form": "комунальна організація",
+      "koatuu": "UA32080070010087821",
+      "documents": { "count": 14, "amount": 528546.53 },
+      "payments": { "count": 117, "amount": 3776110.7399999998 },
+      "receipts": { "count": 16, "amount": 1888930 }
+    },
+    {
+      "edrpou": "34357364",
+      "name": "Відділ освіти Бучанської міської ради",
+      "form": "Орган освіти",
+      "koatuu": "3210800000",
+      "documents": { "count": 0, "amount": 0 },
+      "payments": { "count": 254, "amount": 44681272.48 },
+      "receipts": { "count": 25, "amount": 16591423.67 }
+    },
+    {
+      "edrpou": "42081684",
+      "name": "КОМУНАЛЬНЕ НЕКОМЕРЦІЙНЕ ПІДПРИЄМСТВО \"БУЧАНСЬКИЙ ЦЕНТР ПЕРВИННОЇ МЕДИКО-САНІТАРНОЇ ДОПОМОГИ\" БУЧАНСЬКОЇ МІСЬКОЇ РАДИ",
+      "form": "",
+      "koatuu": "UA32080070010087821",
+      "documents": { "count": 0, "amount": 0 },
+      "payments": { "count": 33, "amount": 520346.87 },
+      "receipts": { "count": 26, "amount": 4441733.25 }
+    },
+    {
+      "edrpou": "33699425",
+      "name": "Комунальне підприємство \"Бучабудзамовник\" Бучанської міської ради",
+      "form": "Комунальне підприємство",
+      "koatuu": "3210800000",
+      "documents": { "count": 0, "amount": 0 },
+      "payments": { "count": 0, "amount": 0 },
+      "receipts": { "count": 23, "amount": 430371.27999999997 }
+    },
+    {
+      "edrpou": "41141202",
+      "name": "Комунальне підприємство \"Бучазеленбуд\" Бучанської міської ради",
+      "form": "150",
+      "koatuu": "3210800000",
+      "documents": { "count": 22, "amount": 13205707.19 },
+      "payments": { "count": 96, "amount": 7754166.95 },
+      "receipts": { "count": 22, "amount": 2990884.89 }
+    },
+    {
+      "edrpou": "44908597",
+      "name": "Комунальне підприємство \"Бучатранссервіс\" Бучанської міської ради",
+      "form": "",
+      "koatuu": "UA32080070010087821",
+      "documents": { "count": 2, "amount": 51907.02 },
+      "payments": { "count": 29, "amount": 2742668.28 },
+      "receipts": { "count": 31, "amount": 766793.94 }
+    },
+    {
+      "edrpou": "25689882",
+      "name": "Комунальне підрприємство \"Бучанське управління житлово-комунального господарства\" Бучанської міської ради",
+      "form": "комунальне підприємство",
+      "koatuu": "3210800000",
+      "documents": { "count": 0, "amount": 0 },
+      "payments": { "count": 62, "amount": 80820448.84 },
+      "receipts": { "count": 68, "amount": 11321071.61 }
+    },
+    {
+      "edrpou": "34357702",
+      "name": "Управління соціальної політики Бучанської міської радии",
+      "form": "Орган місцевого самоврядування",
+      "koatuu": "UA32080070010087821",
+      "documents": { "count": 0, "amount": 0 },
+      "payments": { "count": 151, "amount": 8124716.0200000005 },
+      "receipts": { "count": 0, "amount": 0 }
+    },
+    {
+      "edrpou": "43907812",
+      "name": "Фінансове управління Бучанської міської ради",
+      "form": "",
+      "koatuu": "UA32080070010087821",
+      "documents": { "count": 0, "amount": 0 },
+      "payments": { "count": 25, "amount": 2026731.4 },
+      "receipts": { "count": 0, "amount": 0 }
+    }
+  ],
+  "sync": [
+    {
+      "key": "org:04360586:2026-10",
+      "kind": "contracts",
+      "period": "2026-10",
+      "status": "ok",
+      "rows": 0,
+      "startedAt": "2026-11-04T05:37:15.029Z",
+      "finishedAt": "2026-11-04T05:37:15.029Z",
+      "error": ""
+    },
+    {
+      "key": "org:25689882:2026-10",
+      "kind": "contracts",
+      "period": "2026-10",
+      "status": "ok",
+      "rows": 0,
+      "startedAt": "2026-11-04T05:37:34.565Z",
+      "finishedAt": "2026-11-04T05:37:34.565Z",
+      "error": ""
+    },
+    {
+      "key": "org:26473919:2026-10",
+      "kind": "contracts",
+      "period": "2026-10",
+      "status": "ok",
+      "rows": 14,
+      "startedAt": "2026-11-04T05:37:29.806Z",
+      "finishedAt": "2026-11-04T05:37:29.806Z",
+      "error": ""
+    },
+    {
+      "key": "org:33699425:2026-10",
+      "kind": "contracts",
+      "period": "2026-10",
+      "status": "ok",
+      "rows": 0,
+      "startedAt": "2026-11-04T05:37:36.970Z",
+      "finishedAt": "2026-11-04T05:37:36.970Z",
+      "error": ""
+    },
+    {
+      "key": "org:34357364:2026-10",
+      "kind": "contracts",
+      "period": "2026-10",
+      "status": "ok",
+      "rows": 0,
+      "startedAt": "2026-11-04T05:37:20.051Z",
+      "finishedAt": "2026-11-04T05:37:20.051Z",
+      "error": ""
+    },
+    {
+      "key": "org:34357702:2026-10",
+      "kind": "contracts",
+      "period": "2026-10",
+      "status": "ok",
+      "rows": 0,
+      "startedAt": "2026-11-04T05:37:23.316Z",
+      "finishedAt": "2026-11-04T05:37:23.316Z",
+      "error": ""
+    },
+    {
+      "key": "org:41141202:2026-10",
+      "kind": "contracts",
+      "period": "2026-10",
+      "status": "ok",
+      "rows": 22,
+      "startedAt": "2026-11-04T05:37:40.097Z",
+      "finishedAt": "2026-11-04T05:37:40.097Z",
+      "error": ""
+    },
+    {
+      "key": "org:42081684:2026-10",
+      "kind": "contracts",
+      "period": "2026-10",
+      "status": "ok",
+      "rows": 0,
+      "startedAt": "2026-11-04T05:37:45.024Z",
+      "finishedAt": "2026-11-04T05:37:45.024Z",
+      "error": ""
+    },
+    {
+      "key": "org:42225911:2026-10",
+      "kind": "contracts",
+      "period": "2026-10",
+      "status": "ok",
+      "rows": 0,
+      "startedAt": "2026-11-04T05:37:25.805Z",
+      "finishedAt": "2026-11-04T05:37:25.805Z",
+      "error": ""
+    },
+    {
+      "key": "org:42538580:2026-10",
+      "kind": "contracts",
+      "period": "2026-10",
+      "status": "ok",
+      "rows": 0,
+      "startedAt": "2026-11-04T05:37:32.209Z",
+      "finishedAt": "2026-11-04T05:37:32.209Z",
+      "error": ""
+    },
+    {
+      "key": "org:43907812:2026-10",
+      "kind": "contracts",
+      "period": "2026-10",
+      "status": "ok",
+      "rows": 0,
+      "startedAt": "2026-11-04T05:37:17.641Z",
+      "finishedAt": "2026-11-04T05:37:17.641Z",
+      "error": ""
+    },
+    {
+      "key": "org:44908597:2026-10",
+      "kind": "contracts",
+      "period": "2026-10",
+      "status": "ok",
+      "rows": 2,
+      "startedAt": "2026-11-04T05:37:42.534Z",
+      "finishedAt": "2026-11-04T05:37:42.534Z",
+      "error": ""
+    },
+    {
+      "key": "recipts:2026-10:8f878dea",
+      "kind": "receipts",
+      "period": "2026-10",
+      "status": "ok",
+      "rows": 57,
+      "startedAt": "2026-11-04T05:37:55.651Z",
+      "finishedAt": "2026-11-04T05:37:55.651Z",
+      "error": ""
+    },
+    {
+      "key": "recipts:2026-10:e9f4b2b3",
+      "kind": "receipts",
+      "period": "2026-10",
+      "status": "ok",
+      "rows": 176,
+      "startedAt": "2026-11-04T05:37:53.335Z",
+      "finishedAt": "2026-11-04T05:37:53.335Z",
+      "error": ""
+    },
+    {
+      "key": "ref:regions",
+      "kind": "regions",
+      "period": "2026-10",
+      "status": "ok",
+      "rows": 27,
+      "startedAt": "2026-11-04T05:37:12.371Z",
+      "finishedAt": "2026-11-04T05:37:12.371Z",
+      "error": ""
+    },
+    {
+      "key": "transactions:2026-10:8f878dea",
+      "kind": "transactions",
+      "period": "2026-10",
+      "status": "ok",
+      "rows": 62,
+      "startedAt": "2026-11-04T05:37:50.598Z",
+      "finishedAt": "2026-11-04T05:37:50.598Z",
+      "error": ""
+    },
+    {
+      "key": "transactions:2026-10:batch-1",
+      "kind": "transactions",
+      "period": "2026-10",
+      "status": "ok",
+      "rows": 947,
+      "startedAt": "2026-11-01 05:37:42",
+      "finishedAt": "2026-11-01T05:37:47.078Z",
+      "error": ""
+    },
+    {
+      "key": "transactions:2026-10:batch-2",
+      "kind": "transactions",
+      "period": "2026-10",
+      "status": "ok",
+      "rows": 62,
+      "startedAt": "2026-11-01 05:37:47",
+      "finishedAt": "2026-11-01T05:37:48.628Z",
+      "error": ""
+    },
+    {
+      "key": "transactions:2026-10:e9f4b2b3",
+      "kind": "transactions",
+      "period": "2026-10",
+      "status": "ok",
+      "rows": 947,
+      "startedAt": "2026-11-04T05:37:49.030Z",
+      "finishedAt": "2026-11-04T05:37:49.030Z",
+      "error": ""
+    }
+  ]
+}

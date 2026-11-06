@@ -252,6 +252,7 @@ export function CompareSetupBlock({ block, context }: BlockComponentProps) {
             <label className="wb-block-compare-setup__remember">
               <input
                 type="checkbox"
+                className="wb-check"
                 checked={remember}
                 onChange={(event) => setRemember(event.target.checked)}
               />

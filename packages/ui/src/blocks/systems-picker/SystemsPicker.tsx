@@ -79,6 +79,7 @@ export function SystemsPicker({
               <label className="wb-block-systems-picker__system">
                 <input
                   type="checkbox"
+                  className="wb-check"
                   checked={on}
                   disabled={!system.implemented}
                   onChange={(e) => picker.toggleSystem(system.id, e.target.checked)}
@@ -93,6 +94,7 @@ export function SystemsPicker({
                     <label key={parameter.key} className="wb-block-systems-picker__param">
                       <input
                         type="checkbox"
+                        className="wb-check"
                         checked={!!picker.selected[system.id]?.[parameter.key]}
                         onChange={(e) =>
                           picker.toggleParam(system.id, parameter.key, e.target.checked)

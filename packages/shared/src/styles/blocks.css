@@ -1225,9 +1225,10 @@
   transition: height var(--duration) var(--ease);
 }
 
+/* Підпис осі не обрізаємо: `max-height` + `overflow: hidden` ховали кінець
+   довшого підпису («Християни» на стовпчиках) без жодної підказки. Висоту
+   задає сама колонка графіка, а текст лишається читабельним повністю. */
 .wb-block-chart__axis-label {
-  max-height: 40px;
-  overflow: hidden;
   color: var(--text-secondary);
   font-size: var(--text-xs);
   white-space: nowrap;

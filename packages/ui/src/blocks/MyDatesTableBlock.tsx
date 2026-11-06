@@ -206,6 +206,7 @@ export function MyDatesTableBlock({ block }: BlockComponentProps) {
                   <th className="wb-date-head__pick">
                     <input
                       type="checkbox"
+                      className="wb-check"
                       checked={
                         processedDates.length > 0 && selectedIds.size === processedDates.length
                       }
@@ -255,6 +256,7 @@ export function MyDatesTableBlock({ block }: BlockComponentProps) {
                       <td className="wb-date-cell wb-date-cell--pick">
                         <input
                           type="checkbox"
+                          className="wb-check"
                           checked={selectedIds.has(d.id)}
                           onChange={() => toggleSelect(d.id)}
                         />

@@ -168,6 +168,7 @@ export function UsersTable({ onMessage }: Props) {
       header: (
         <input
           type="checkbox"
+          className="wb-check"
           checked={allSelected}
           onChange={() => selectAll(allIds)}
           onClick={(event) => event.stopPropagation()}
@@ -180,6 +181,7 @@ export function UsersTable({ onMessage }: Props) {
       render: (u) => (
         <input
           type="checkbox"
+          className="wb-check"
           checked={selectedIds.has(u.user_id)}
           onChange={() => toggleSelect(u.user_id)}
           onClick={(event) => event.stopPropagation()}

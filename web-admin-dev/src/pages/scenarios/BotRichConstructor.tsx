@@ -56,6 +56,7 @@ export function BotRichConstructor({ fields, updateField }: BotRichConstructorPr
           >
             <input
               type="checkbox"
+              className="wb-check"
               checked={fields.rich_message === "true" || fields.rich_message === "1"}
               onChange={(e) => updateField("rich_message", e.target.checked ? "true" : "false")}
             />
