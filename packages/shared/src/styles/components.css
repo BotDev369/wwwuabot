@@ -2122,37 +2122,13 @@ html:has(.wb-tabbar) .wb-modal-overlay--screen {
   border-left-color: color-mix(in srgb, var(--wb-table-hue, var(--data-1)) 40%, var(--border));
 }
 
-/* Спектр у шапці: кожна колонка бере наступну барву теми, тож шапка показує
-   всю палітру, а не одну смугу. Шість барв ідуть по колу — сьома колонка
-   знову перша, і рядок лишається рівним. */
-.wb-table thead tr > :nth-child(6n + 1),
-.wb-param-table thead tr > :nth-child(6n + 1) {
+/* Шапка — **одна смуга одного кольору** на всю таблицю, а не веселка по
+   колонках: рядок 1 озаглавлює таблицю цілком, і шість різних барв у ньому
+   читались новорічною гірляндою замість заголовка. Барва — з палітри теми
+   (`--data-1`), та сама, що й у підписі рядків, тільки щільніша. */
+.wb-table thead tr,
+.wb-param-table thead tr {
   --wb-table-hue: var(--data-1);
-}
-
-.wb-table thead tr > :nth-child(6n + 2),
-.wb-param-table thead tr > :nth-child(6n + 2) {
-  --wb-table-hue: var(--data-2);
-}
-
-.wb-table thead tr > :nth-child(6n + 3),
-.wb-param-table thead tr > :nth-child(6n + 3) {
-  --wb-table-hue: var(--data-3);
-}
-
-.wb-table thead tr > :nth-child(6n + 4),
-.wb-param-table thead tr > :nth-child(6n + 4) {
-  --wb-table-hue: var(--data-4);
-}
-
-.wb-table thead tr > :nth-child(6n + 5),
-.wb-param-table thead tr > :nth-child(6n + 5) {
-  --wb-table-hue: var(--data-5);
-}
-
-.wb-table thead tr > :nth-child(6n),
-.wb-param-table thead tr > :nth-child(6n) {
-  --wb-table-hue: var(--data-6);
 }
 
 /* Перший стовпець — підпис рядка: він лишається на місці, коли таблицю
@@ -2169,8 +2145,30 @@ html:has(.wb-tabbar) .wb-modal-overlay--screen {
   position: sticky;
   left: 0;
   z-index: 2;
-  background: color-mix(in srgb, var(--data-1) 12%, var(--wb-table-surface, var(--bg-2)));
+  --wb-table-lead-bg: color-mix(in srgb, var(--data-1) 12%, var(--wb-table-surface, var(--bg-2)));
+  background: var(--wb-table-lead-bg);
   box-shadow: inset -1px 0 0 var(--border);
+}
+
+/* Шов зліва. Коли таблицю гортають убік, закріплена колонка липне до
+   внутрішнього краю прокрутки, а в смузі берега скролера (він має власний
+   `padding`) проїжджає сусід. Видно було обривки слів у два пікселі завширшки
+   — екран виглядав поламаним. Колонка добирає собі той берег підкладкою
+   зліва: жоден рядок не проїжджає під нею, а розкладка не зсувається. */
+@media (min-width: 641px) {
+  .wb-table th:first-child::before,
+  .wb-table td:first-child::before,
+  .wb-param-table th:first-child::before,
+  .wb-param-table td:first-child::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    right: 100%;
+    width: 20px;
+    background: inherit;
+    pointer-events: none;
+  }
 }
 
 /* Лівий верхній кут — це шапка, а не стовпець: він тримає тон рядка 1. */
@@ -2178,11 +2176,16 @@ html:has(.wb-tabbar) .wb-modal-overlay--screen {
 .wb-param-table thead th:first-child {
   z-index: 4;
   /* Кут — це шапка, а не стовпець: тон рядка 1, а не м'який тон стовпця. */
-  background: color-mix(in srgb, var(--data-1) 28%, var(--wb-table-surface, var(--bg-2)));
+  --wb-table-lead-bg: color-mix(in srgb, var(--data-1) 28%, var(--wb-table-surface, var(--bg-2)));
+  background: var(--wb-table-lead-bg);
 }
 
-/* Телефон: ніщо не роздуває таблицю до 780px — колонки беруть ширину зі
-   вмісту, підпис рядка — третина екрана, числа — рівно під свої цифри. */
+/* Телефон: таблиця **не стискається** до нечитабельних смужок. Колонка бере
+   ширину зі свого вмісту, а коли сумарно не влізає — таблиця ширша за екран і
+   її гортають убік (гортає тіло сторінки, тож хром лишається на місці).
+   Раніше тут стояло `min-width: 0` і частки екрана на колонку: шість колонок
+   ділили 360px, числа не вміщались і **обрізались краєм екрана** — побачити їх
+   було нічим, а таблиця виглядала розсипаною. */
 @media (max-width: 640px) {
   .wb-table {
     min-width: 0;
@@ -2193,10 +2196,12 @@ html:has(.wb-tabbar) .wb-modal-overlay--screen {
     padding: var(--sp-2);
   }
 
+  /* Підпис рядка — третина екрана як орієнтир, але не менше за власний текст:
+     саме `min-width` тримає колонку від стискання. */
   .wb-table th:first-child,
   .wb-table td:first-child {
-    width: 32%;
-    min-width: 7rem;
+    min-width: 8rem;
+    max-width: 12rem;
   }
 
   /* `break-word` звужує рядок, але не мінімальну ширину комірки; `anywhere`
@@ -2220,9 +2225,11 @@ html:has(.wb-tabbar) .wb-modal-overlay--screen {
     white-space: nowrap;
   }
 
+  /* Числова колонка тримає ширину свого найдовшого числа — інакше сума
+     вилазила б за екран замість того, щоб таблиця поїхала вбік. */
   .wb-table .wb-col-num {
-    width: 1%;
-    min-width: 4.5rem;
+    width: auto;
+    min-width: 6.5rem;
   }
 }
 
@@ -2962,6 +2969,17 @@ button.wb-chip {
   --section-tone: var(--data-4);
 }
 
+/* Секція-рядок заливається своїм тоном: `--section-tone` (коли компонент
+   передав `data-tone`) або тон блока з палітри. Це межа частини екрана, а не
+   прикраса — за заливкою видно, де починається наступна. */
+.wb-block-section--row {
+  background: color-mix(
+    in srgb,
+    var(--section-tone, var(--block-hue, var(--data-1))) 10%,
+    var(--row-bg)
+  );
+}
+
 .wb-block-section--row[data-tone="5"] {
   --section-tone: var(--data-5);
 }
@@ -3012,5 +3030,146 @@ button.wb-chip {
   .wb-textarea:focus {
     outline: 2px solid Highlight;
     outline-offset: 1px;
+  }
+}
+
+/* ── Барви теми в компонентах ──────────────────────────────────────────────
+   Палітра теми — не оздоблення шапки таблиці. Раніше з неї в екран потрапляли
+   лише акцент і нейтральні поверхні, тож хоч би яку тему людина ввімкнула,
+   продукт виглядав однаково сірим — «калькулятор». Тут палітра (`--data-1…6`)
+   роздається структурам: карткам, плашкам, кнопкам, рядкам таблиці.
+
+   Два правила, щоб вийшла система, а не веселка: **один тон на блок** (сусідні
+   блоки беруть наступний тон по колу, усередині блока барва не міняється) і
+   **колір — носій, а не текст** (заливка бере кілька відсотків тону, підпис —
+   тон, змішаний з основним кольором тексту, тому контраст лишається в нормі). */
+
+/* Тон блока: сусідні блоки в контейнері йдуть по колу палітри. */
+:is(.spend, .mon, .wb-page-body, .wb-page-scroll, .wb-analysis) > :nth-child(6n + 1) {
+  --block-hue: var(--data-1);
+}
+
+:is(.spend, .mon, .wb-page-body, .wb-page-scroll, .wb-analysis) > :nth-child(6n + 2) {
+  --block-hue: var(--data-2);
+}
+
+:is(.spend, .mon, .wb-page-body, .wb-page-scroll, .wb-analysis) > :nth-child(6n + 3) {
+  --block-hue: var(--data-3);
+}
+
+:is(.spend, .mon, .wb-page-body, .wb-page-scroll, .wb-analysis) > :nth-child(6n + 4) {
+  --block-hue: var(--data-4);
+}
+
+:is(.spend, .mon, .wb-page-body, .wb-page-scroll, .wb-analysis) > :nth-child(6n + 5) {
+  --block-hue: var(--data-5);
+}
+
+:is(.spend, .mon, .wb-page-body, .wb-page-scroll, .wb-analysis) > :nth-child(6n) {
+  --block-hue: var(--data-6);
+}
+
+/* Той самий цикл для самих блоків: картки й панелі лежать у різних обгортках, і
+   «сусід» у контейнері — не завжди прямий нащадок. Барва береться від позиції
+   серед братів, тож два сусідні блоки ніколи не одного тону. */
+.wb-card:nth-child(6n + 1),
+.spend-panel:nth-child(6n + 1),
+.mon-panel:nth-child(6n + 1) {
+  --block-hue: var(--data-1);
+}
+
+.wb-card:nth-child(6n + 2),
+.spend-panel:nth-child(6n + 2),
+.mon-panel:nth-child(6n + 2) {
+  --block-hue: var(--data-2);
+}
+
+.wb-card:nth-child(6n + 3),
+.spend-panel:nth-child(6n + 3),
+.mon-panel:nth-child(6n + 3) {
+  --block-hue: var(--data-3);
+}
+
+.wb-card:nth-child(6n + 4),
+.spend-panel:nth-child(6n + 4),
+.mon-panel:nth-child(6n + 4) {
+  --block-hue: var(--data-4);
+}
+
+.wb-card:nth-child(6n + 5),
+.spend-panel:nth-child(6n + 5),
+.mon-panel:nth-child(6n + 5) {
+  --block-hue: var(--data-5);
+}
+
+.wb-card:nth-child(6n),
+.spend-panel:nth-child(6n),
+.mon-panel:nth-child(6n) {
+  --block-hue: var(--data-6);
+}
+
+/* Картка тримає свою барву краєм і шапкою: край каже, що це окремий блок, а
+   тонована шапка — де він починається. */
+.wb-card {
+  border-color: color-mix(in srgb, var(--block-hue, var(--data-1)) 30%, var(--card-border));
+}
+
+.wb-card-header {
+  border-bottom: 1px solid color-mix(in srgb, var(--block-hue, var(--data-1)) 22%, transparent);
+  border-radius: var(--card-radius) var(--card-radius) 0 0;
+  background: color-mix(in srgb, var(--block-hue, var(--data-1)) 12%, transparent);
+}
+
+.wb-card-title,
+.spend-panel > h2 {
+  color: color-mix(in srgb, var(--block-hue, var(--data-1)) 68%, var(--text-primary));
+}
+
+/* Плашка без стану — тон палітри, а не сіра пігулка: стани (`-green`, `-red`,
+   `-yellow`) лишаються семантичними й задані нижче в цьому ж файлі. */
+.wb-badge {
+  background: color-mix(in srgb, var(--data-3) 16%, transparent);
+  color: color-mix(in srgb, var(--data-3) 78%, var(--text-primary));
+}
+
+/* Другорядна кнопка — тон палітри в заливці: дій у продукті багато, і всі на
+   одному акценті читались як одна кнопка, повторена багато разів. */
+.wb-btn-secondary {
+  background: color-mix(in srgb, var(--data-2) 12%, var(--surface-active));
+  color: color-mix(in srgb, var(--data-2) 40%, var(--text-primary));
+}
+
+/* Парні рядки таблиці — ледь помітний тон теми: око веде рядок, не чіпляючись
+   за лінійку. Закріплений перший стовпець виключений: його заливка мусить
+   лишатись непрозорою, інакше крізь нього проїжджають сусіди. */
+.wb-table tbody tr:nth-child(even) > td:not(:first-child),
+.wb-param-table tbody tr:nth-child(even) > td:not(:first-child) {
+  background: color-mix(in srgb, var(--data-1) 5%, transparent);
+}
+
+/* Телефон: широку таблицю гортають убік, і гортається **лише вона**. Підписи
+   над нею (період, примітка, підсумок) лишаються на місці: інакше разом із
+   таблицею вбік їхав увесь екран, і він виглядав поламаним. `:has(table)`
+   виключає самі таблиці — їхні рамки мусять рухатись. */
+@media (max-width: 640px) {
+  :is(.spend, .mon, .wb-page-body, .wb-page-scroll) > :not(:has(table)) {
+    position: sticky;
+    left: 0;
+    z-index: 1;
+  }
+
+  /* Перший стовпець не закріплений **по горизонталі**: закріплені 128px із 360
+     лишають таблиці 230px, і при гортанні вбік суми ховались під підписом —
+     число видно половинкою, а це не гортання, а обрізане число. По вертикалі
+     шапка тримається як завжди (`top` лишається), і ліва верхня комірка їде
+     вбік разом зі своєю колонкою — інакше підпис стояв би над чужою графою. */
+  .wb-table th:first-child,
+  .wb-param-table th:first-child {
+    left: auto;
+  }
+
+  .wb-table td:first-child,
+  .wb-param-table td:first-child {
+    position: static;
   }
 }

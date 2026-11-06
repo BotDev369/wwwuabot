@@ -84,11 +84,16 @@ describe("одна таблиця на весь продукт", () => {
       ].join("\n"),
     );
     expect(lead).toContain("position: sticky");
-    expect(lead).toMatch(/background: color-mix\(in srgb, var\(--data-1\) 12%/);
+    /* Колір рахується в тому ж правилі: тон теми над поверхнею-носієм. */
+    expect(lead).toMatch(/\(in srgb, var\(--data-1\) 12%/);
+    expect(lead).toContain("background: var(--wb-table-lead-bg)");
     /* Запасна поверхня — щоб заливка не стала прозорою там, де поверхню не
        задано, інакше крізь неї видно текст сусідньої колонки. */
     expect(lead).toContain("var(--wb-table-surface, var(--bg-2))");
-    expect(rule(".wb-table thead th:first-child,")).toContain("background: color-mix");
+    /* Верхній лівий кут — шапка, а не стовпець: у нього тон рядка 1. */
+    expect(rule(".wb-table thead th:first-child,")).toContain(
+      "background: var(--wb-table-lead-bg)",
+    );
   });
 
   it("перший стовпець липне до лівого краю", () => {
@@ -125,21 +130,18 @@ describe("одна таблиця на весь продукт", () => {
     }
   });
 
-  it("шапка залита спектром теми: кожна колонка — своя барва з палітри", () => {
-    /* Акцент — це дія (кнопка, посилання, вибір). Шапка, залита ним, робила
-       таблицю однотонною, хоча в кожній темі шість власних барв. */
+  it("шапка залита одним кольором теми, а не веселкою по колонках", () => {
+    /* Рядок 1 озаглавлює таблицю цілком. Шість барв у ньому читались
+       новорічною гірляндою замість заголовка, тож тон один — з палітри теми,
+       не акцент (акцент означає дію, а не заголовок). */
     const head = rule(".wb-table th").replace(/\s+/g, " ");
     expect(head).toContain(
       "background: color-mix( in srgb, var(--wb-table-hue, var(--data-1)) 28%, var(--wb-table-surface, var(--bg-2)) )",
     );
     expect(head).not.toContain("--accent");
-    /* Шість барв ідуть по колу, а не одна на всю шапку. */
-    for (let i = 1; i <= 5; i += 1) {
-      expect(css).toMatch(
-        new RegExp(`:nth-child\\(6n \\+ ${i}\\),[^{]*\\{\\s*--wb-table-hue: var\\(--data-${i}\\)`),
-      );
-    }
-    expect(css).toMatch(/:nth-child\(6n\),[^{]*\{\s*--wb-table-hue: var\(--data-6\)/);
+    /* Один тон на всю шапку: жодного перебору барв по колонках. */
+    expect(rule(".wb-table thead tr,")).toContain("--wb-table-hue: var(--data-1)");
+    expect(css).not.toMatch(/--wb-table-hue: var\(--data-[2-6]\)/);
     /* Поверхня-носій задає, на чому лежить таблиця: закріплені клітинки
        мусять збігатися з нею, інакше крізь них просвічує вміст. */
     expect(rule(".wb-table-scroll")).toContain("--wb-table-surface: var(--bg-2)");

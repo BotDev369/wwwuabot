@@ -204,7 +204,9 @@
   font-weight: 600;
   letter-spacing: 0.08em;
   text-transform: uppercase;
-  color: var(--text-muted);
+  /* Підпис панелі — тон панелі з палітри теми, а не сірий: сірих підписів на
+     екрані вже стільки, що за ними не видно, де яка частина. */
+  color: color-mix(in srgb, var(--block-hue, var(--data-1)) 55%, var(--text-secondary));
 }
 
 /* Керування в шапці: на вузькому екрані чіпи переносяться другим рядком,

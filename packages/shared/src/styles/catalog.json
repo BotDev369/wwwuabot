@@ -1,5 +1,5 @@
 {
-  "version": "b71cfa2",
+  "version": "e59c5cf",
   "files": [
     {
       "file": "admin/analytics-people.css",
@@ -113,8 +113,8 @@
     },
     {
       "file": "components.css",
-      "tokens": 27,
-      "classes": 210
+      "tokens": 36,
+      "classes": 217
     },
     {
       "file": "contacts.css",
@@ -1605,6 +1605,90 @@
       "section": ""
     },
     {
+      "name": "--block-hue",
+      "file": "components.css",
+      "selector": ":is(.spend, .mon, .wb-page-body, .wb-page-scroll, .wb-analysis) > :nth-child(6n + 1)",
+      "value": "var(--data-1)",
+      "section": "Барви теми в компонентах"
+    },
+    {
+      "name": "--block-hue",
+      "file": "components.css",
+      "selector": ":is(.spend, .mon, .wb-page-body, .wb-page-scroll, .wb-analysis) > :nth-child(6n + 2)",
+      "value": "var(--data-2)",
+      "section": "Барви теми в компонентах"
+    },
+    {
+      "name": "--block-hue",
+      "file": "components.css",
+      "selector": ":is(.spend, .mon, .wb-page-body, .wb-page-scroll, .wb-analysis) > :nth-child(6n + 3)",
+      "value": "var(--data-3)",
+      "section": "Барви теми в компонентах"
+    },
+    {
+      "name": "--block-hue",
+      "file": "components.css",
+      "selector": ":is(.spend, .mon, .wb-page-body, .wb-page-scroll, .wb-analysis) > :nth-child(6n + 4)",
+      "value": "var(--data-4)",
+      "section": "Барви теми в компонентах"
+    },
+    {
+      "name": "--block-hue",
+      "file": "components.css",
+      "selector": ":is(.spend, .mon, .wb-page-body, .wb-page-scroll, .wb-analysis) > :nth-child(6n + 5)",
+      "value": "var(--data-5)",
+      "section": "Барви теми в компонентах"
+    },
+    {
+      "name": "--block-hue",
+      "file": "components.css",
+      "selector": ":is(.spend, .mon, .wb-page-body, .wb-page-scroll, .wb-analysis) > :nth-child(6n)",
+      "value": "var(--data-6)",
+      "section": "Барви теми в компонентах"
+    },
+    {
+      "name": "--block-hue",
+      "file": "components.css",
+      "selector": ".wb-card:nth-child(6n + 1),\n.spend-panel:nth-child(6n + 1),\n.mon-panel:nth-child(6n + 1)",
+      "value": "var(--data-1)",
+      "section": "Барви теми в компонентах"
+    },
+    {
+      "name": "--block-hue",
+      "file": "components.css",
+      "selector": ".wb-card:nth-child(6n + 2),\n.spend-panel:nth-child(6n + 2),\n.mon-panel:nth-child(6n + 2)",
+      "value": "var(--data-2)",
+      "section": "Барви теми в компонентах"
+    },
+    {
+      "name": "--block-hue",
+      "file": "components.css",
+      "selector": ".wb-card:nth-child(6n + 3),\n.spend-panel:nth-child(6n + 3),\n.mon-panel:nth-child(6n + 3)",
+      "value": "var(--data-3)",
+      "section": "Барви теми в компонентах"
+    },
+    {
+      "name": "--block-hue",
+      "file": "components.css",
+      "selector": ".wb-card:nth-child(6n + 4),\n.spend-panel:nth-child(6n + 4),\n.mon-panel:nth-child(6n + 4)",
+      "value": "var(--data-4)",
+      "section": "Барви теми в компонентах"
+    },
+    {
+      "name": "--block-hue",
+      "file": "components.css",
+      "selector": ".wb-card:nth-child(6n + 5),\n.spend-panel:nth-child(6n + 5),\n.mon-panel:nth-child(6n + 5)",
+      "value": "var(--data-5)",
+      "section": "Барви теми в компонентах"
+    },
+    {
+      "name": "--block-hue",
+      "file": "components.css",
+      "selector": ".wb-card:nth-child(6n),\n.spend-panel:nth-child(6n),\n.mon-panel:nth-child(6n)",
+      "value": "var(--data-6)",
+      "section": "Барви теми в компонентах"
+    },
+    {
       "name": "--cell",
       "file": "components.css",
       "selector": ".wb-tools-controls",
@@ -2510,43 +2594,22 @@
     {
       "name": "--wb-table-hue",
       "file": "components.css",
-      "selector": ".wb-table thead tr > :nth-child(6n + 1),\n.wb-param-table thead tr > :nth-child(6n + 1)",
+      "selector": ".wb-table thead tr,\n.wb-param-table thead tr",
       "value": "var(--data-1)",
       "section": "Таблиця"
     },
     {
-      "name": "--wb-table-hue",
+      "name": "--wb-table-lead-bg",
       "file": "components.css",
-      "selector": ".wb-table thead tr > :nth-child(6n + 2),\n.wb-param-table thead tr > :nth-child(6n + 2)",
-      "value": "var(--data-2)",
+      "selector": ".wb-table th:first-child,\n.wb-table td:first-child,\n.wb-param-table th:first-child,\n.wb-param-table td:first-child",
+      "value": "color-mix(in srgb, var(--data-1) 12%, var(--wb-table-surface, var(--bg-2)))",
       "section": "Таблиця"
     },
     {
-      "name": "--wb-table-hue",
+      "name": "--wb-table-lead-bg",
       "file": "components.css",
-      "selector": ".wb-table thead tr > :nth-child(6n + 3),\n.wb-param-table thead tr > :nth-child(6n + 3)",
-      "value": "var(--data-3)",
-      "section": "Таблиця"
-    },
-    {
-      "name": "--wb-table-hue",
-      "file": "components.css",
-      "selector": ".wb-table thead tr > :nth-child(6n + 4),\n.wb-param-table thead tr > :nth-child(6n + 4)",
-      "value": "var(--data-4)",
-      "section": "Таблиця"
-    },
-    {
-      "name": "--wb-table-hue",
-      "file": "components.css",
-      "selector": ".wb-table thead tr > :nth-child(6n + 5),\n.wb-param-table thead tr > :nth-child(6n + 5)",
-      "value": "var(--data-5)",
-      "section": "Таблиця"
-    },
-    {
-      "name": "--wb-table-hue",
-      "file": "components.css",
-      "selector": ".wb-table thead tr > :nth-child(6n),\n.wb-param-table thead tr > :nth-child(6n)",
-      "value": "var(--data-6)",
+      "selector": ".wb-table thead th:first-child,\n.wb-param-table thead th:first-child",
+      "value": "color-mix(in srgb, var(--data-1) 28%, var(--wb-table-surface, var(--bg-2)))",
       "section": "Таблиця"
     },
     {
@@ -3610,6 +3673,7 @@
           "wb-app-title",
           "wb-nav-close-row",
           "wb-nav-toggle",
+          "wb-page-title",
           "wb-topbar"
         ]
       }
@@ -4608,6 +4672,25 @@
           "wb-input",
           "wb-select",
           "wb-textarea"
+        ]
+      },
+      {
+        "section": "Барви теми в компонентах",
+        "names": [
+          "mon",
+          "mon-panel",
+          "spend",
+          "spend-panel",
+          "wb-analysis",
+          "wb-badge",
+          "wb-btn-secondary",
+          "wb-card",
+          "wb-card-header",
+          "wb-card-title",
+          "wb-page-body",
+          "wb-page-scroll",
+          "wb-param-table",
+          "wb-table"
         ]
       }
     ],
