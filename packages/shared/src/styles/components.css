@@ -403,9 +403,14 @@
 /* `flex-basis: auto`, а не `0`: у вікні за вмістом базова висота — це і є
    вміст тіла. З нулем тіло лишалось би без міри й згорталось у нуль. */
 .wb-modal-body {
+  /* Поверхня вікна — те, на чому лежать його таблиці, і їхні закріплені
+     клітинки мають бути того самого кольору. */
+  --wb-table-surface: var(--surface-modal, var(--surface));
   padding: var(--sp-5);
   overflow-y: auto;
-  overflow-x: hidden;
+  /* `auto`, а не `hidden`: широка таблиця в тісному вікні має їхати вбік, а не
+     обрізатися правим краєм без жодної надії дочитати колонку. */
+  overflow-x: auto;
   flex: 1 1 auto;
   min-height: 0;
   min-width: 0;
@@ -1981,28 +1986,28 @@ html:has(.wb-tabbar) .wb-modal-overlay--screen {
 }
 
 /* ── Таблиця ───────────────────────────────────────────────────────────────
-   Одна таблиця на весь продукт (docs/DESIGN_SYSTEM.md §27). Рамка скролить у
-   обидва боки, шапка й перший стовпець закріплені, у комірок немає заливки —
-   рядок тримає межа. Тло мають лише закріплені клітинки, і це тло поверхні,
-   а не сіра смуга: інакше дані читаються як виділені. */
+   Одна таблиця на весь продукт (docs/DESIGN_SYSTEM.md §27). Шапка й перший
+   стовпець закріплені, у комірок немає заливки — рядок тримає межа. Тло
+   мають лише закріплені клітинки: шапка (рядок 1) і підпис рядка (стовпець
+   1), і це тло поверхні, на якій таблиця лежить. */
 
 .wb-table-scroll {
   /* Тло закріплених клітинок мусить збігатися з тим, на чому стоїть таблиця,
-     інакше крізь них просвічує те, що проїжджає. Шапка й перший стовпець
-     залиті своїм тоном — це і є та смуга, яку видно в Excel. */
-  --wb-table-surface: var(--card-bg);
-  --wb-table-head-bg: color-mix(in srgb, var(--text-primary) 11%, var(--wb-table-surface));
-  --wb-table-lead-bg: color-mix(in srgb, var(--text-primary) 6%, var(--wb-table-surface));
-  /* Скролить лише горизонталь. `overflow-y: clip` — не `visible`, але й не
-     скролпорт: з `auto` на X рамка ставала скролпортом і для Y, тож шапка
-     липла до її верху на 70vh, а сторінка не горталась. Тепер таблиця росте
-     на всю висоту, екран гортається як звичайна сторінка, а `top: 0` шапки
-     рахується від того, що справді скролить сторінку. */
-  overflow-x: auto;
-  overflow-y: clip;
-  border: 1px solid var(--border);
-  border-radius: var(--radius-md);
-  background: var(--wb-table-surface);
+     інакше крізь них просвічує те, що проїжджає. Задає його поверхня-носій
+     (`.wb-page-body`, `.wb-modal`), а шапка бере акцент теми — у кожній темі
+     свій, і саме він робить таблицю кольоровою, а не сірою. */
+  --wb-table-surface: var(--bg-2);
+  --wb-table-head-bg: color-mix(in srgb, var(--accent) 26%, var(--wb-table-surface));
+  --wb-table-lead-bg: color-mix(in srgb, var(--accent) 8%, var(--wb-table-surface));
+  /* Під таблицею немає нічого свого: ні рамки, ні тла, ні тіні — вона лежить
+     просто на поверхні сторінки чи вікна. І **жодного `overflow`**: будь-яке
+     значення, крім `visible`, робить цю рамку скролпортом, і шапка липне до
+     неї (тобто їде разом зі сторінкою), а не до екрана. Саме так шапка й
+     зникала на телефоні. */
+  overflow: visible;
+  background: transparent;
+  border: 0;
+  border-radius: 0;
 }
 
 /* Висоту задає той, хто вклав таблицю в обмежену рамку (прев'ю в картці):
@@ -2033,17 +2038,6 @@ html:has(.wb-tabbar) .wb-modal-overlay--screen {
 @media (hover: hover) {
   .wb-table-scroll::-webkit-scrollbar-thumb:hover {
     background: var(--text-muted);
-  }
-}
-
-@supports not (overflow-y: clip) {
-  /* Без `clip` рамка стає скролпортом і по Y, і шапка липне до неї, а не до
-     сторінки — тобто не тримається зовсім. Тоді краще прокрутка всередині
-     рамки: шапка видима, хай ціною висоти. */
-  .wb-table-scroll {
-    overflow-y: auto;
-    max-height: 70dvh;
-    overscroll-behavior: contain;
   }
 }
 
@@ -2080,22 +2074,18 @@ html:has(.wb-tabbar) .wb-modal-overlay--screen {
   top: 0;
   z-index: 3;
   padding: var(--sp-2) var(--sp-3);
-  border-bottom: 1px solid var(--border);
+  border-bottom: 1px solid color-mix(in srgb, var(--accent) 45%, var(--border));
   background: var(--wb-table-head-bg);
-  color: var(--text-secondary);
+  color: var(--text-primary);
   font-size: var(--text-xs);
   font-weight: var(--weight-semibold);
   letter-spacing: 0.06em;
   text-transform: uppercase;
-  text-align: left;
+  /* Підпис колонки читають як заголовок графи, а не як рядок даних: він
+     стоїть по центру над своєю колонкою в будь-якій таблиці. */
+  text-align: center;
   white-space: nowrap;
   user-select: none;
-}
-
-/* Заголовок і комірки стоять однаково: числа притиснуті праворуч в обох,
-   текст — ліворуч. */
-.wb-table th.wb-col-num {
-  text-align: right;
 }
 
 .wb-table td {

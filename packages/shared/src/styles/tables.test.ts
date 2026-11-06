@@ -25,22 +25,23 @@ function rule(selector: string, from = 0): string {
 }
 
 describe("одна таблиця на весь продукт", () => {
-  it("рамка скролить лише вбік, а висоту дає сторінка", () => {
+  it("під таблицею немає підкладки, і вона не гортає себе", () => {
     const box = rule(".wb-table-scroll");
-    expect(box).toContain("overflow-x: auto");
-    /* `clip` не робить із рамки скролпорт по вертикалі: інакше шапка липне
-       до рамки, а не до верху екрана, і таблиця ніколи не буває вищою за неї. */
-    expect(box).toContain("overflow-y: clip");
+    /* Будь-який `overflow`, крім `visible`, робить із рамки скролпорт: шапка
+       липне до неї, тобто їде разом зі сторінкою. Саме так вона й зникала на
+       телефоні — і в адмінці, і в таблицях сторінок платформи. */
+    expect(box).toContain("overflow: visible");
+    expect(box).not.toContain("overflow-y");
     expect(box).not.toContain("max-height");
-    expect(box).not.toContain("overflow: auto");
+    /* Ні рамки, ні тла, ні тіні: таблиця лежить просто на тлі сторінки чи вікна. */
+    expect(box).toContain("background: transparent");
+    expect(box).toContain("border: 0");
+    expect(box).toContain("border-radius: 0");
   });
 
-  it("без `clip` шапка однаково видима — прокрутка переходить усередину рамки", () => {
-    const guard = css.slice(css.indexOf("@supports not (overflow-y: clip)"));
-    expect(guard).toContain("overflow-y: auto");
-    expect(guard).toContain("max-height: 70dvh");
-    /* Рантайм-підстраховка на випадок, коли `clip` є, а `sticky` не тримається. */
+  it("підстраховка вмикає прокрутку всередині рамки, якщо `sticky` не тримається", () => {
     expect(rule(".wb-table-scroll.wb-table-scroll--fallback")).toContain("overflow-y: auto");
+    expect(rule(".wb-table-scroll.wb-table-scroll--fallback")).toContain("max-height: 70dvh");
   });
 
   it("обмежена висота — окремий випадок, а не типова поведінка", () => {
@@ -88,10 +89,32 @@ describe("одна таблиця на весь продукт", () => {
     expect(rule(".wb-table thead th:first-child")).toContain("z-index: 4");
   });
 
-  it("шапка й комірки стоять однаково: числа праворуч, текст ліворуч", () => {
+  it("шапка по центру, числа в даних — праворуч, текст — ліворуч", () => {
+    expect(rule(".wb-table th")).toContain("text-align: center");
     expect(rule(".wb-table td")).toContain("text-align: left");
-    expect(rule(".wb-table th.wb-col-num")).toContain("text-align: right");
     expect(css).toMatch(/\.wb-table \.wb-col-num \{[^}]*text-align: right/);
+  });
+
+  it("під таблицею немає картки — ні на моніторингу, ні у витратах", () => {
+    /* Таблиця лежить на тлі екрана: картка навколо читається підкладкою, якої
+       під таблицею бути не має. */
+    for (const [file, selector] of [
+      ["./admin/monitoring.css", ".mon-panel {"],
+      ["./admin/spending.css", ".spend-panel {"],
+    ] as const) {
+      const source = readFileSync(new URL(file, import.meta.url), "utf8");
+      const start = source.indexOf(selector);
+      expect(start, `${selector} має існувати`).toBeGreaterThan(-1);
+      const body = source.slice(start, source.indexOf("}", start));
+      expect(body).toContain("background: transparent");
+      expect(body).toContain("box-shadow: none");
+    }
+  });
+
+  it("шапка залита акцентом теми, а не сірим", () => {
+    const box = rule(".wb-table-scroll");
+    expect(box).toContain("--wb-table-head-bg: color-mix(in srgb, var(--accent)");
+    expect(box).toContain("--wb-table-lead-bg: color-mix(in srgb, var(--accent)");
   });
 
   it("у комірок даних немає заливки — рядок тримає межа", () => {

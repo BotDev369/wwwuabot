@@ -70,10 +70,14 @@
   flex-direction: column;
   gap: 12px;
   padding: var(--card-pad);
-  background: var(--card-bg);
-  border: 1px solid var(--card-border);
-  border-radius: var(--card-radius);
-  box-shadow: var(--card-shadow);
+  /* Панель — це відступ навколо таблиці, а не картка під нею: таблиці
+     лежать на тлі сторінки, без підкладки. */
+  background: transparent;
+  border: 0;
+  border-radius: 0;
+  box-shadow: none;
+  /* Таблиці всередині закріплюють клітинки — їм потрібен колір поверхні. */
+  --wb-table-surface: var(--bg-2);
 }
 
 /* Таблиці Є-data — це та сама спільна таблиця (`DataTable`): закріплені шапка

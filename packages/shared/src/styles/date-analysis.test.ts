@@ -80,7 +80,7 @@ describe("шапка закріплена, а тіло гортає себе в�
     // площину екрана, смуга шапки — тло шапки, на якому стоять її заокруглені
     // кути (інше тло читалося б вирізом посеред сторінки).
     expect(rule(".wb-analysis-views")).toContain("background: var(--bg-page");
-    expect(rule(".wb-param-pin")).toContain("background: var(--bg-2)");
+    expect(rule(".wb-param-pin")).toContain("background: var(--wb-table-surface");
   });
 
   it("спільні ширини стовпців ставить спільна міра, а не вміст", () => {
@@ -125,10 +125,11 @@ describe("шапка закріплена, а тіло гортає себе в�
     const frame = rule(".wb-param-frame");
     expect(frame).not.toContain("border:");
     expect(frame).not.toContain("border-top");
-    expect(frame).toContain("box-shadow");
-    // Тла в рамки немає: поверхню несе рядок, а полотно під ним робило з опису
-    // системи ще один рядок.
-    expect(frame).not.toContain("background");
+    /* Ні тіні, ні тла: підкладинки під таблицею немає, вона лежить на тлі
+       сторінки чи вікна. */
+    expect(frame).not.toContain("box-shadow");
+    expect(frame).not.toContain("border-radius");
+    expect(frame).toContain("--wb-table-surface:");
   });
 
   it("крайні рядки повторюють заокруглений кут рамки своїм тлом", () => {
@@ -180,10 +181,12 @@ describe("тло належить рядкам", () => {
     expect(rule(".wb-param-group > td .wb-param-toggle--open")).toContain(
       "background: var(--accent-soft)",
     );
-    expect(rule(".wb-param-table td")).toContain("background: var(--bg-2)");
+    /* Рядки теж без власного тла: підкладинки під таблицею немає, поверхня —
+       тло сторінки; залиті лише закріплені клітинки (шапка й перший стовпець). */
+    expect(rule(".wb-param-table td")).toContain("background: transparent");
     expect(
       rule(".wb-system-params > .wb-param-toggle,\n.wb-system-params > .wb-param-label"),
-    ).toContain("background: var(--bg-2)");
+    ).toContain("background: transparent");
     expect(rule(".wb-system-body > td")).toContain("background: transparent");
   });
 

@@ -1,5 +1,5 @@
 {
-  "version": "e92a48d",
+  "version": "5ff7cac",
   "files": [
     {
       "file": "admin/analytics-people.css",
@@ -38,7 +38,7 @@
     },
     {
       "file": "admin/monitoring.css",
-      "tokens": 0,
+      "tokens": 1,
       "classes": 34
     },
     {
@@ -68,7 +68,7 @@
     },
     {
       "file": "admin/spending.css",
-      "tokens": 10,
+      "tokens": 11,
       "classes": 73
     },
     {
@@ -98,7 +98,7 @@
     },
     {
       "file": "app-chrome.css",
-      "tokens": 1,
+      "tokens": 2,
       "classes": 142
     },
     {
@@ -113,7 +113,7 @@
     },
     {
       "file": "components.css",
-      "tokens": 22,
+      "tokens": 23,
       "classes": 209
     },
     {
@@ -128,8 +128,8 @@
     },
     {
       "file": "date-analysis.css",
-      "tokens": 1,
-      "classes": 34
+      "tokens": 2,
+      "classes": 35
     },
     {
       "file": "dates.css",
@@ -2511,14 +2511,14 @@
       "name": "--wb-table-head-bg",
       "file": "components.css",
       "selector": ".wb-table-scroll",
-      "value": "color-mix(in srgb, var(--text-primary) 11%, var(--wb-table-surface))",
+      "value": "color-mix(in srgb, var(--accent) 26%, var(--wb-table-surface))",
       "section": "Таблиця"
     },
     {
       "name": "--wb-table-lead-bg",
       "file": "components.css",
       "selector": ".wb-table-scroll",
-      "value": "color-mix(in srgb, var(--text-primary) 6%, var(--wb-table-surface))",
+      "value": "color-mix(in srgb, var(--accent) 8%, var(--wb-table-surface))",
       "section": "Таблиця"
     },
     {
@@ -2593,10 +2593,45 @@
     },
     {
       "name": "--wb-table-surface",
+      "file": "admin/monitoring.css",
+      "selector": ".mon-panel",
+      "value": "var(--bg-2)",
+      "section": "Панель"
+    },
+    {
+      "name": "--wb-table-surface",
+      "file": "admin/spending.css",
+      "selector": ".spend-panel",
+      "value": "var(--bg-2)",
+      "section": ""
+    },
+    {
+      "name": "--wb-table-surface",
+      "file": "app-chrome.css",
+      "selector": ".wb-page-body",
+      "value": "var(--bg-2)",
+      "section": "Глобальний нижній футер (tab bar)"
+    },
+    {
+      "name": "--wb-table-surface",
+      "file": "components.css",
+      "selector": ".wb-modal-body",
+      "value": "var(--surface-modal, var(--surface))",
+      "section": "Move Buttons (for drag-reorder lists)"
+    },
+    {
+      "name": "--wb-table-surface",
       "file": "components.css",
       "selector": ".wb-table-scroll",
-      "value": "var(--card-bg)",
+      "value": "var(--bg-2)",
       "section": "Таблиця"
+    },
+    {
+      "name": "--wb-table-surface",
+      "file": "date-analysis.css",
+      "selector": ".wb-param-frame",
+      "value": "var(--bg-page, var(--bg-0))",
+      "section": ""
     }
   ],
   "classes": {
@@ -4644,6 +4679,7 @@
           "wb-block-date-analysis__error",
           "wb-block-date-analysis__lead",
           "wb-block-date-analysis__title",
+          "wb-modal",
           "wb-param-cell--toggle",
           "wb-param-date",
           "wb-param-date__kind",

@@ -594,6 +594,9 @@
   -webkit-overflow-scrolling: touch;
   min-height: 0;
   background: var(--bg-2);
+  /* Таблиці лежать на цьому тлі — і закріплені клітинки мають бути його ж
+     кольору, інакше крізь них видно рядки, що проїжджають. */
+  --wb-table-surface: var(--bg-2);
 }
 
 .wb-tabbar {

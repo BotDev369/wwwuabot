@@ -51,15 +51,30 @@ export function formatPeriod(period: string | null): string {
   return name ? `${name} ${year}` : period;
 }
 
+/**
+ * Вузький нерозривний пробіл між розрядами.
+ *
+ * `Intl` для `uk-UA` ставить звичайний (або `\u00a0`) — на телефоні він читається
+ * як провалля між групами цифр, і число розсипається на три числа. `\u202f`
+ * лишається нерозривним, але вужчий — розряд видно, а місця він не з'їдає.
+ */
+const NARROW_SPACE = "\u202f";
+
+function narrow(value: string): string {
+  return value.replace(/\s/g, NARROW_SPACE);
+}
+
 /** Сума в гривні джерела; валюта приходить колонкою, тож її й показуємо. */
 export function formatMoney(amount: number, currency = "UAH"): string {
   const code = /^[A-Z]{3}$/.test(currency) ? currency : "UAH";
-  return new Intl.NumberFormat("uk-UA", {
-    style: "currency",
-    currency: code,
-    minimumFractionDigits: 2,
-    maximumFractionDigits: 2,
-  }).format(amount);
+  return narrow(
+    new Intl.NumberFormat("uk-UA", {
+      style: "currency",
+      currency: code,
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2,
+    }).format(amount),
+  );
 }
 
 /**
@@ -69,7 +84,7 @@ export function formatMoney(amount: number, currency = "UAH"): string {
 export function formatCompactMoney(amount: number): string {
   const abs = Math.abs(amount);
   const format = (value: number) =>
-    new Intl.NumberFormat("uk-UA", { maximumFractionDigits: 1 }).format(value);
+    narrow(new Intl.NumberFormat("uk-UA", { maximumFractionDigits: 1 }).format(value));
   if (abs >= 1_000_000) return `${format(amount / 1_000_000)} млн ₴`;
   if (abs >= 1_000) return `${format(amount / 1_000)} тис. ₴`;
   return `${format(amount)} ₴`;
@@ -78,11 +93,12 @@ export function formatCompactMoney(amount: number): string {
 /** Частка від цілого; дільник нуль дає прочерк, а не `NaN%`. */
 export function formatShare(part: number, total: number): string {
   if (!total) return "—";
-  return `${new Intl.NumberFormat("uk-UA", { maximumFractionDigits: 1 }).format((part / total) * 100)}%`;
+  const share = new Intl.NumberFormat("uk-UA", { maximumFractionDigits: 1 });
+  return `${narrow(share.format((part / total) * 100))}%`;
 }
 
 export function formatCount(count: number): string {
-  return new Intl.NumberFormat("uk-UA").format(count);
+  return narrow(new Intl.NumberFormat("uk-UA").format(count));
 }
 
 /** `2026-09-10` → `10.09.2026`; рядок ріжеться вручну, щоб не зсунути день. */
