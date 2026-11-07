@@ -1,39 +1,61 @@
 /**
- * Сервіси — входи платформи плитками й групами.
+ * Сервіси — входи платформи плитками й групами; кожне слово приходить із рядка
+ * `scenarios`, у коді лишаються ключі (`docs/SCREEN_TEXTS.md`).
  *
- * Дев'ять однакових рядків читались як чекліст і не влазили в екран; плитка
- * несе знак на підкладці свого голосу (`--data-1…6`), як у входах «Аналізу
- * людей та подій».
  * @module web-platform-dev/src/pages/ServicesPage
  */
 
-import type { ReactElement } from "react";
+import { useMemo, type ReactElement } from "react";
 import { useNavigate } from "react-router-dom";
 import { Icon } from "@wwwuabot/shared";
 import { useScreenChrome } from "@wwwuabot/ui/nav";
-import { SERVICES, type ServiceEntry } from "./services-list";
+import type { ScreenTexts } from "@wwwuabot/shared/screens";
+import { screenText } from "@wwwuabot/shared/screens";
+import { useScreenTexts } from "./screen-texts/useScreenTexts";
+import {
+  SERVICES,
+  SERVICES_SCREEN_KEY,
+  SERVICES_TITLE_KEY,
+  serviceGroupKey,
+  serviceLabelKey,
+  type ServiceEntry,
+} from "./services-list";
 
-/** Групи в порядку появи: порядок у списку — це порядок читання. */
-function groupServices(
-  entries: readonly ServiceEntry[],
-): { title: string; items: ServiceEntry[] }[] {
-  const groups: { title: string; items: ServiceEntry[] }[] = [];
+interface LabeledService extends ServiceEntry {
+  label: string;
+}
+
+interface ServiceGroup {
+  title: string;
+  items: LabeledService[];
+}
+
+/** Групи в порядку появи; сервіс без підпису не стає порожньою плиткою. */
+function groupServices(entries: readonly ServiceEntry[], texts: ScreenTexts): ServiceGroup[] {
+  const groups: ServiceGroup[] = [];
   for (const entry of entries) {
+    const label = screenText(texts, serviceLabelKey(entry.key));
+    if (!label) continue;
+    const title = screenText(texts, serviceGroupKey(entry.group));
     const last = groups[groups.length - 1];
-    if (last && last.title === entry.group) last.items.push(entry);
-    else groups.push({ title: entry.group, items: [entry] });
+    if (last && last.title === title) last.items.push({ ...entry, label });
+    else groups.push({ title, items: [{ ...entry, label }] });
   }
   return groups;
 }
 
 export function ServicesPage(): ReactElement {
-  useScreenChrome({ title: "Сервіси" });
+  const { texts, ready } = useScreenTexts(SERVICES_SCREEN_KEY);
+  useScreenChrome({ title: screenText(texts, SERVICES_TITLE_KEY) });
   const navigate = useNavigate();
+  const groups = useMemo(() => groupServices(SERVICES, texts), [texts]);
+
+  if (!ready) return <div className="wb-page wb-page-scroll" />;
 
   return (
     <div className="wb-page wb-page-scroll">
       <div className="wb-hub">
-        {groupServices(SERVICES).map((group) => (
+        {groups.map((group) => (
           <section key={group.title} className="wb-hub__group">
             <h2 className="wb-hub__group-title">{group.title}</h2>
 

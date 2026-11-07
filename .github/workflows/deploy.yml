@@ -97,6 +97,8 @@ jobs:
         run: npm run check:db
       - name: Comments
         run: npm run check:comments
+      - name: Screen texts
+        run: npm run check:texts
       # Покриття - перед збірками: пропущений тест нового файлу - найчастіша
       # причина червоного прогону, і дізнатися про неї за дві хвилини дешевше,
       # ніж за сім після обох збірок і бюджету бандла.

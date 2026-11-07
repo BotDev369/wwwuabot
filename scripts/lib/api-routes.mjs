@@ -51,6 +51,9 @@ const GROUPS = [
     prefixes: [
       "/health",
       "/api/scenario/",
+      // `/api/screens/` — слова екранів платформи (docs/SCREEN_TEXTS.md): це
+      // підписи інтерфейсу, а не приватні дані людини.
+      "/api/screens/",
       "/api/mydate/",
       "/api/public/",
       "/api/shop/",

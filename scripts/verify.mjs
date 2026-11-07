@@ -26,6 +26,7 @@ const STEPS = [
   { name: "check:docs", cmd: "npm run check:docs" },
   { name: "check:db", cmd: "npm run check:db" },
   { name: "check:comments", cmd: "npm run check:comments" },
+  { name: "check:texts", cmd: "npm run check:texts" },
   // Покриття — перед збірками: забутий тест нового файлу червоніє першим.
   { name: "test:coverage", cmd: "npm run test:coverage" },
   { name: "check:coverage", cmd: "npm run check:coverage" },

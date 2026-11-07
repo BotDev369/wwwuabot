@@ -1,9 +1,7 @@
 // @vitest-environment jsdom
 /**
- * Екран «Сервіси»: список сервісів веде на **існуючі** екрани.
- *
- * Перевіряється той дрот, який ламається мовчки: кожен рядок даних мусить стати
- * кнопкою, а дотик — переходом саме туди, а не в нікуди.
+ * Екран «Сервіси»: підписи приходять із рядка `scenarios`, а кожен рядок даних
+ * веде на **існуючий** екран. Перевіряється той дріт, який ламається мовчки.
  *
  * @module web-platform-dev/src/pages/ServicesPage.dom.test
  */
@@ -11,15 +9,28 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
+import type { ScreenTexts } from "@wwwuabot/shared/screens";
 import { DATE_ANALYSIS_PATH } from "@wwwuabot/shared/content";
 import { ASSESSMENTS_PATH, TRACKERS_PATH } from "@/app/routes";
-import { SERVICES } from "./services-list";
+import { SERVICES, serviceGroupKey, serviceLabelKey } from "./services-list";
 
 const hooks = { navigate: vi.fn(), dialog: { alert: vi.fn() } };
+
+/** Ті самі ключі, що в рядку `services`: екран читає їх, а не літерали. */
+const texts: ScreenTexts = {
+  "services.title": "Сервіси",
+  "services.group.community": "Спільнота",
+  "services.group.content": "Контент",
+  "services.group.personal": "Особисте",
+  ...Object.fromEntries(SERVICES.map((service) => [serviceLabelKey(service.key), service.key])),
+};
 
 vi.mock("react-router-dom", () => ({ useNavigate: () => hooks.navigate }));
 vi.mock("@wwwuabot/ui/nav", () => ({ useScreenChrome: () => {} }));
 vi.mock("@wwwuabot/ui/dialog", () => ({ useDialog: () => hooks.dialog }));
+vi.mock("./screen-texts/useScreenTexts", () => ({
+  useScreenTexts: () => ({ texts, ready: true }),
+}));
 
 const { ServicesPage } = await import("./ServicesPage");
 
@@ -28,13 +39,19 @@ beforeEach(() => {
 });
 
 describe("список сервісів", () => {
-  it("кожен сервіс — окрема кнопка зі своїм підписом", () => {
+  it("кожен сервіс — окрема кнопка зі своїм підписом із бази", () => {
     render(<ServicesPage />);
 
-    const labels = SERVICES.map((service) => service.label);
-    expect(labels.length).toBeGreaterThan(0);
-    for (const label of labels) {
-      expect(screen.getByRole("button", { name: label })).toBeTruthy();
+    for (const service of SERVICES) {
+      expect(screen.getByRole("button", { name: service.key })).toBeTruthy();
+    }
+  });
+
+  it("групи стоять під своїми підписами", () => {
+    render(<ServicesPage />);
+
+    for (const group of new Set(SERVICES.map((service) => service.group))) {
+      expect(screen.getByText(texts[serviceGroupKey(group)] ?? "")).toBeTruthy();
     }
   });
 
@@ -42,7 +59,7 @@ describe("список сервісів", () => {
     render(<ServicesPage />);
 
     const first = SERVICES[0];
-    await userEvent.click(screen.getByRole("button", { name: first.label }));
+    await userEvent.click(screen.getByRole("button", { name: first.key }));
 
     expect(hooks.navigate).toHaveBeenCalledWith(first.to);
   });

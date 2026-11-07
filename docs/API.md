@@ -27,6 +27,7 @@
 | `GET` | `/api/public/users` | `handlePublicUsers` |
 | `GET` | `/api/public/users/<…>` | `handlePublicUser` |
 | `ANY` | `/api/scenario/<…>` | `handleScenario` |
+| `ANY` | `/api/screens/<…>` | `handleScreenTexts` |
 | `ANY` | `/api/shop/media/<…>` | `handleShopMediaFile` |
 | `ANY` | `/health` | `handleHealth` |
 | `ANY` | `/health/deep` | `handleDeepHealth` |
@@ -123,4 +124,4 @@
 | `POST` | `/auth/login` | `handleLogin` |
 | `POST` | `/auth/logout` | `handleLogout` |
 
-Усього шляхів: **94**.
+Усього шляхів: **95**.

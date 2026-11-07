@@ -42,6 +42,7 @@
     "check:css": "node scripts/check-css-classes.mjs",
     "check:docs": "node scripts/check-docs.mjs",
     "check:comments": "node scripts/check-comments.mjs",
+    "check:texts": "node scripts/check-texts.mjs",
     "check:db": "node scripts/check-db.mjs",
     "doc:api": "node scripts/doc-api.mjs",
     "doc:style": "node scripts/build-style-catalog.mjs",

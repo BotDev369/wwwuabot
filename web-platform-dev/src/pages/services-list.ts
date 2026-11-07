@@ -1,10 +1,8 @@
 /**
- * Сервіси платформи — **дані**, а не розмітка: кожен рядок веде на екран, який
- * уже існує, а знак той самий, що в рядках акаунта.
- *
- * **Розділу-обгортки тут немає.** Оголошення, ігри й користувачі — власні
- * екрани з власними адресами, а не вкладки однієї сторінки: список входів
- * лишається списком, а не другою навігацією.
+ * Сервіси платформи — **входи, а не слова**: кожен рядок веде на екран, який уже
+ * існує, а підпис і назви груп беруться з рядка `scenarios` за ключем
+ * (`docs/SCREEN_TEXTS.md`). Розділу-обгортки немає: оголошення, ігри й
+ * користувачі — власні екрани, а не вкладки однієї сторінки.
  *
  * @module web-platform-dev/src/pages/services-list
  */
@@ -24,66 +22,41 @@ import {
 
 export interface ServiceEntry {
   key: string;
-  label: string;
+  /** Ключ групи (`community`, `content`, `personal`) — підпис групи живе в базі. */
+  group: string;
   icon: IconName;
   /** Адреса екрана сервісу в межах платформи. */
   to: string;
-  /**
-   * Підпис групи: сусідні входи з тим самим підписом стоять під ним.
-   *
-   * Групи тут не заради краси: дев'ять однакових рядків поспіль не давали
-   * оку зачепитись, і людина читала список щоразу з початку. Три групи по три
-   * входи відповідають на «з ким», «що» і «для себе» — і кожна влазить в екран.
-   */
-  group: string;
   /** Номер голосу зі спектра теми (`--data-1…6`), а не конкретний колір. */
   tone: number;
 }
 
+/** Рядок `scenarios`, у якому лежать слова екрана «Сервіси». */
+export const SERVICES_SCREEN_KEY = "services";
+export const SERVICES_TITLE_KEY = "services.title";
+
+/** Ключ підпису сервісу: `services.item.<key>`. */
+export function serviceLabelKey(key: string): string {
+  return `services.item.${key}`;
+}
+
+/** Ключ підпису групи: `services.group.<group>`. */
+export function serviceGroupKey(group: string): string {
+  return `services.group.${group}`;
+}
+
 /**
- * **Список входів — те, що не має свого пункту в футері.** Трекери, розвиток
- * і аналіз дат стоять у смузі, тож рядками тут не повторюються: два входи в
- * один екран означають, що за один із них забудуть.
+ * Список входів — те, що не має свого пункту в футері: трекери, розвиток і
+ * аналіз дат стоять у смузі, тож рядками тут не повторюються.
  */
 export const SERVICES: readonly ServiceEntry[] = [
-  // Спільнота: люди й те, що між ними.
-  {
-    key: "users",
-    group: "Спільнота",
-    tone: 1,
-    label: "Користувачі",
-    icon: "users",
-    to: USERS_PATH,
-  },
-  {
-    key: "contacts",
-    group: "Спільнота",
-    tone: 2,
-    label: "Контакти",
-    icon: "contact",
-    to: CONTACTS_PATH,
-  },
-  {
-    key: "messages",
-    group: "Спільнота",
-    tone: 3,
-    label: "Повідомлення",
-    icon: "message-square",
-    to: MESSAGES_PATH,
-  },
-  // Контент: те, що людина публікує й читає.
-  { key: "pages", group: "Контент", tone: 4, label: "Сторінки", icon: "page", to: PAGES_PATH },
-  { key: "ads", group: "Контент", tone: 5, label: "Оголошення", icon: "announce", to: ADS_PATH },
-  {
-    key: "research",
-    group: "Контент",
-    tone: 6,
-    label: "Дослідження",
-    icon: "book",
-    to: RESEARCH_PATH,
-  },
-  // Особисте: власні записи, робота й дозвілля.
-  { key: "notes", group: "Особисте", tone: 1, label: "Нотатки", icon: "text", to: NOTES_PATH },
-  { key: "orders", group: "Особисте", tone: 2, label: "Замовлення", icon: "tag", to: ORDERS_PATH },
-  { key: "games", group: "Особисте", tone: 3, label: "Ігри", icon: "game", to: GAMES_PATH },
+  { key: "users", group: "community", tone: 1, icon: "users", to: USERS_PATH },
+  { key: "contacts", group: "community", tone: 2, icon: "contact", to: CONTACTS_PATH },
+  { key: "messages", group: "community", tone: 3, icon: "message-square", to: MESSAGES_PATH },
+  { key: "pages", group: "content", tone: 4, icon: "page", to: PAGES_PATH },
+  { key: "ads", group: "content", tone: 5, icon: "announce", to: ADS_PATH },
+  { key: "research", group: "content", tone: 6, icon: "book", to: RESEARCH_PATH },
+  { key: "notes", group: "personal", tone: 1, icon: "text", to: NOTES_PATH },
+  { key: "orders", group: "personal", tone: 2, icon: "tag", to: ORDERS_PATH },
+  { key: "games", group: "personal", tone: 3, icon: "game", to: GAMES_PATH },
 ];

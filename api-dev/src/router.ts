@@ -11,6 +11,7 @@ import {
   handleCompare,
 } from "./controllers/astrology.controller";
 import { handleScenario } from "./controllers/scenarios.controller";
+import { matchScreensRoute } from "./routes/screens";
 import { handleMyDates } from "./controllers/my-dates.controller";
 import {
   handleWebhookInfo as handleBotWebhookInfo,
@@ -169,6 +170,9 @@ export async function handleRequest(request: Request, env: Env): Promise<Respons
     if (slug === null) return badRequest();
     return handleScenario(request, env, slug);
   }
+
+  const screens = matchScreensRoute(env, pathname);
+  if (screens) return screens;
 
   // ── My-Dates CRUD ───────────────────────────────────────────────
   if (pathname === "/api/my-dates") {

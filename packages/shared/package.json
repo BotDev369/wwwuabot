@@ -57,6 +57,7 @@
     "./ads": "./src/ads/index.ts",
     "./assessments": "./src/assessments/index.ts",
     "./pages": "./src/pages/index.ts",
+    "./screens": "./src/screens/index.ts",
     "./shop": "./src/shop/index.ts",
     "./monitoring": "./src/monitoring/index.ts",
     "./spending": "./src/spending/index.ts",
