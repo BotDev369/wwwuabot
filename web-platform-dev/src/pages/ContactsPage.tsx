@@ -53,6 +53,7 @@
 import { useEffect, useRef, useState, type ReactElement } from "react";
 import { Icon } from "@wwwuabot/shared";
 import { sanitizeContactName, type Contact, type ContactInput } from "@wwwuabot/shared/contacts";
+import { formatScreenText, screenText } from "@wwwuabot/shared/screens";
 import { useScreenChrome } from "@wwwuabot/ui/nav";
 import {
   ContactList,
@@ -68,7 +69,10 @@ import {
 } from "@wwwuabot/ui/contacts";
 import { useDialog } from "@wwwuabot/ui/dialog";
 import { useCreateForm } from "@/app/useCreateForm";
+import { useScreenTexts } from "./screen-texts/useScreenTexts";
 import { useContacts } from "./useContacts";
+
+const SCREEN_KEY = "contacts";
 
 /** Скільки тримається «Скопійовано» на кнопці. */
 const COPIED_MS = 2000;
@@ -79,7 +83,8 @@ function newContact(name: string): ContactInput {
 }
 
 export function ContactsPage(): ReactElement {
-  useScreenChrome({ title: "Контакти" });
+  const { texts, ready } = useScreenTexts(SCREEN_KEY);
+  useScreenChrome({ title: screenText(texts, "contacts.title") });
   const { contacts, loading, error, create, update, makeLink, remove } = useContacts();
   const dialog = useDialog();
   const [view, setView] = useState<ContactsView>(DEFAULT_CONTACTS_VIEW);
@@ -142,9 +147,9 @@ export function ContactsPage(): ReactElement {
   async function tellLinkFailure(contact: Contact, what: string): Promise<void> {
     await dialog.alert(
       contact.deepLink
-        ? `${what} не вдалося — візьміть посилання з розкритого контакту.`
-        : "Бот ще не знає свого імені — посилання не склалося. Оновіть екран і спробуйте ще раз.",
-      { title: "Скопіюйте вручну" },
+        ? formatScreenText(texts, "contacts.copy.failed", { what })
+        : screenText(texts, "contacts.copy.noLink"),
+      { title: screenText(texts, "contacts.copy.title") },
     );
   }
 
@@ -159,11 +164,11 @@ export function ContactsPage(): ReactElement {
    * потім.
    */
   async function addContact(): Promise<void> {
-    const answer = await dialog.prompt("Як звати людину, якій ви надсилаєте посилання?", {
-      title: "Додати контакт",
-      placeholder: "Ім'я контакту",
+    const answer = await dialog.prompt(screenText(texts, "contacts.add.prompt"), {
+      title: screenText(texts, "contacts.add.promptTitle"),
+      placeholder: screenText(texts, "contacts.add.placeholder"),
       validate: (value) =>
-        sanitizeContactName(value) === "" ? "Ім'я не може бути порожнім" : null,
+        sanitizeContactName(value) === "" ? screenText(texts, "contacts.add.emptyName") : null,
     });
     if (answer === null) return;
 
@@ -173,11 +178,13 @@ export function ContactsPage(): ReactElement {
       setEditingId(created.id);
 
       const linked = await makeLink(created.id);
-      if (!(await copyLink(linked))) await tellLinkFailure(linked, "Скопіювати");
+      if (!(await copyLink(linked)))
+        await tellLinkFailure(linked, screenText(texts, "contacts.copy.action"));
     } catch (e: unknown) {
-      await dialog.alert(e instanceof Error ? e.message : "Не вдалося додати контакт", {
-        title: "Помилка",
-      });
+      await dialog.alert(
+        e instanceof Error ? e.message : screenText(texts, "contacts.add.failed"),
+        { title: screenText(texts, "contacts.error.title") },
+      );
     }
   }
 
@@ -200,9 +207,10 @@ export function ContactsPage(): ReactElement {
       await update(id, input);
       setEditingId(null);
     } catch (e: unknown) {
-      await dialog.alert(e instanceof Error ? e.message : "Не вдалося зберегти контакт", {
-        title: "Помилка",
-      });
+      await dialog.alert(
+        e instanceof Error ? e.message : screenText(texts, "contacts.save.failed"),
+        { title: screenText(texts, "contacts.error.title") },
+      );
     }
   }
 
@@ -210,25 +218,30 @@ export function ContactsPage(): ReactElement {
   async function createLink(id: number): Promise<void> {
     try {
       const linked = await makeLink(id);
-      if (!(await copyLink(linked))) await tellLinkFailure(linked, "Скопіювати");
+      if (!(await copyLink(linked)))
+        await tellLinkFailure(linked, screenText(texts, "contacts.copy.action"));
     } catch (e: unknown) {
-      await dialog.alert(e instanceof Error ? e.message : "Не вдалося скласти лінк", {
-        title: "Помилка",
-      });
+      await dialog.alert(
+        e instanceof Error ? e.message : screenText(texts, "contacts.link.failed"),
+        { title: screenText(texts, "contacts.error.title") },
+      );
     }
   }
 
   async function copyFromRow(contact: Contact): Promise<void> {
     if (await copyLink(contact)) return;
-    await tellLinkFailure(contact, "Скопіювати");
+    await tellLinkFailure(contact, screenText(texts, "contacts.copy.action"));
   }
 
   async function deleteContact(contact: Contact): Promise<void> {
-    const confirmed = await dialog.confirm(`Прибрати контакт «${contact.name}»?`, {
-      title: "Видалення",
-      tone: "danger",
-      confirmText: "Прибрати",
-    });
+    const confirmed = await dialog.confirm(
+      formatScreenText(texts, "contacts.delete.confirm", { name: contact.name }),
+      {
+        title: screenText(texts, "contacts.delete.title"),
+        tone: "danger",
+        confirmText: screenText(texts, "contacts.delete.confirmText"),
+      },
+    );
     if (!confirmed) return;
 
     try {
@@ -242,11 +255,15 @@ export function ContactsPage(): ReactElement {
         return next;
       });
     } catch (e: unknown) {
-      await dialog.alert(e instanceof Error ? e.message : "Не вдалося прибрати контакт", {
-        title: "Помилка",
-      });
+      await dialog.alert(
+        e instanceof Error ? e.message : screenText(texts, "contacts.delete.failed"),
+        { title: screenText(texts, "contacts.error.title") },
+      );
     }
   }
+
+  // Поки слів немає, екран не малює ні їх, ні заглушок: рядок у базі — джерело.
+  if (!ready) return <div className="wb-page" />;
 
   return (
     <div className="wb-page">
@@ -268,7 +285,7 @@ export function ContactsPage(): ReactElement {
             type="button"
             className="wb-btn wb-btn-primary wb-page-add"
             onClick={() => void addContact()}
-            aria-label="Додати контакт"
+            aria-label={screenText(texts, "contacts.add")}
           >
             <Icon name="plus" size={20} />
           </button>
@@ -290,7 +307,7 @@ export function ContactsPage(): ReactElement {
       {loading && (
         <div className="wb-empty">
           <div className="wb-skeleton" style={{ width: 160, height: 20 }} />
-          <p className="wb-text-muted">Завантаження контактів…</p>
+          <p className="wb-text-muted">{screenText(texts, "contacts.loading")}</p>
         </div>
       )}
 
@@ -308,13 +325,10 @@ export function ContactsPage(): ReactElement {
           <span className="wb-empty-icon">
             <Icon name="contact" size={32} />
           </span>
-          <p className="wb-empty-text">Ще немає жодного контакту.</p>
+          <p className="wb-empty-text">{screenText(texts, "contacts.empty.title")}</p>
           {/* Кажемо, як контакт з'являється: без цього порожній екран —
               глухий кут. */}
-          <p className="wb-empty-text">
-            Натисніть «+» угорі — посилання скопіюється саме. Надішліть його людині в Telegram: коли
-            вона приєднається, контакт закріпиться за вами й з'явиться тут.
-          </p>
+          <p className="wb-empty-text">{screenText(texts, "contacts.empty.hint")}</p>
         </div>
       )}
 
@@ -337,14 +351,14 @@ export function ContactsPage(): ReactElement {
             <span className="wb-empty-icon">
               <Icon name="search" size={32} />
             </span>
-            <p className="wb-empty-text">Нічого не знайдено за цим запитом.</p>
+            <p className="wb-empty-text">{screenText(texts, "contacts.search.empty")}</p>
             <button
               type="button"
               className="wb-btn wb-btn-secondary"
               onClick={() => setView(DEFAULT_CONTACTS_VIEW)}
             >
               <Icon name="refresh" size={16} />
-              Скинути пошук і фільтри
+              {screenText(texts, "contacts.search.reset")}
             </button>
           </div>
         ))}
