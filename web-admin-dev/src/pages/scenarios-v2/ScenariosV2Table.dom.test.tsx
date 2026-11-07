@@ -74,7 +74,7 @@ describe("ScenariosV2Table", () => {
   it("пошук звужує список і каже, скільки лишилось", () => {
     store.state = state({ items: [] });
     const first = render(<ScenariosV2Table />);
-    expect(screen.getByText("У базі ще немає сценаріїв.")).toBeTruthy();
+    expect(screen.getByText("У базі ще немає записів.")).toBeTruthy();
     first.unmount();
 
     store.state = state();

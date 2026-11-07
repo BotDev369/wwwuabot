@@ -6,7 +6,9 @@
  * 1. **Видимість.** Приватна сторінка (`owner_id` є, `is_public = 0`) не має
  *    бути досяжною і в боті — бот такий самий публічний вхід, як веб, тож
  *    «приватна» сторінка з діплінком була б кнопкою, яка бреше
- *    (`docs/VISIBILITY.md`). Умова живе в SQL, її легко зняти одним рядком.
+ *    (`docs/VISIBILITY.md`). Рішення ухвалює `pageVisibleTo`, а не SQL: окрім
+ *    публічності, є список глядачів (`viewer_ids`), і в JSON-колонці SQL його
+ *    не перевірити.
  * 2. **Розбір чужого JSON.** `buttons` і `rich_data` приходять із редактора
  *    людини: зіпсований рядок не має роняти весь екран — має стати порожнім
  *    масивом із записом у лог. Мовчазно проглочений JSON навпаки виглядає як
@@ -57,8 +59,20 @@ function row(overrides: Partial<ScenarioRow> = {}): ScenarioRow {
   };
 }
 
+/** Колонки видимості, яких немає в `ScenarioRow`: їх читає гейт, а не екран. */
+type GateRow = {
+  owner_id?: number | null;
+  is_public?: number | null;
+  viewer_ids?: string | null;
+};
+
+/** Рядок із колонками видимості: `row()` лишається чистим рядком екрана. */
+function gated(base: ScenarioRow, gate: GateRow = {}): ScenarioRow & GateRow {
+  return { ...base, ...gate };
+}
+
 /** Фейковий D1: запам'ятовує SQL і віддає підготовлені рядки. */
-function makeDb(rows: ScenarioRow[], contentRows?: Partial<ScenarioRow>[]) {
+function makeDb(rows: (ScenarioRow & GateRow)[], contentRows?: Partial<ScenarioRow & GateRow>[]) {
   const queries: string[] = [];
   const db = {
     prepare(sql: string) {
@@ -78,6 +92,9 @@ function makeDb(rows: ScenarioRow[], contentRows?: Partial<ScenarioRow>[]) {
             page_data: one.page_data ?? null,
             template_key: one.template_key ?? null,
             is_active: 1,
+            owner_id: one.owner_id ?? null,
+            is_public: one.is_public ?? null,
+            viewer_ids: one.viewer_ids ?? null,
           })),
         }),
       };
@@ -87,8 +104,8 @@ function makeDb(rows: ScenarioRow[], contentRows?: Partial<ScenarioRow>[]) {
 }
 
 function makeRepo(
-  rows: ScenarioRow[],
-  contentRows?: Partial<ScenarioRow>[],
+  rows: (ScenarioRow & GateRow)[],
+  contentRows?: Partial<ScenarioRow & GateRow>[],
 ): {
   repo: ScenarioRepository;
   queries: string[];
@@ -99,24 +116,29 @@ function makeRepo(
 }
 
 describe("ScenarioRepository — видимість", () => {
-  it("⛔ приватна сторінка не віддається назовні: умова в кожному запиті", async () => {
-    const { repo, queries } = makeRepo([row()]);
+  it("⛔ приватна сторінка не віддається назовні — ні за адресою, ні з payload", async () => {
+    const privateRow = gated(row(), { owner_id: 5, is_public: 0, viewer_ids: null });
+    const { repo } = makeRepo([privateRow]);
 
-    await repo.getScenario("shop");
-    await repo.getScenarioByBotPayload("shop");
-
-    // Три запити: сторінка за адресою, список кандидатів для payload і та сама
-    // адреса вже з маршруту.
-    expect(queries).toHaveLength(3);
-    for (const sql of queries) {
-      expect(sql).toContain("owner_id IS NULL OR COALESCE(is_public, 0) = 1");
-    }
+    expect(await repo.getScenario("shop")).toBeNull();
+    expect(await repo.getScenarioByBotPayload("shop")).toBeNull();
   });
 
-  it("головна сторінка теж проходить ту саму умову", async () => {
-    const { repo, queries } = makeRepo([row({ slug: "" })]);
-    await repo.getScenario("");
-    expect(queries[0]).toContain("COALESCE(is_public, 0) = 1");
+  it("публічна сторінка й контент платформи проходять", async () => {
+    const publicRow = gated(row({ slug: "olena" }), { owner_id: 5, is_public: 1 });
+    expect((await makeRepo([publicRow]).repo.getScenario("olena"))?.slug).toBe("olena");
+
+    const platform = gated(row({ slug: "" }), { owner_id: null });
+    expect((await makeRepo([platform]).repo.getScenario(""))?.slug).toBe("");
+  });
+
+  it("доданий глядач бачить приватну сторінку, чужий — ні", async () => {
+    const invited = gated(row(), { owner_id: 5, is_public: 0, viewer_ids: "[7]" });
+    const { repo } = makeRepo([invited]);
+
+    expect((await repo.getScenario("shop", 7))?.slug).toBe("shop");
+    expect(await repo.getScenario("shop", 8)).toBeNull();
+    expect(await repo.getScenario("shop", null)).toBeNull();
   });
 });
 

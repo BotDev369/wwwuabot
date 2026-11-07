@@ -15,9 +15,10 @@
  *   обов'язкова лише назва, `isPublic` типово `false`;
  * - `bot.ts` — підпис для бота (`pageBotText`): назва й короткі поля
  *   шаблону, виведені з `page_data`;
- * - `access.ts` — **хто веде сторінку**: власник і адміни
- *   (`scenarios.admin_ids`), роль людини (`pageRole`) і ті, кому йдуть
- *   замовлення та повідомлення (`pageStaffIds`);
+ * - `access.ts` — **хто веде й хто бачить**: власник і адміни
+ *   (`scenarios.admin_ids`), роль людини (`pageRole`), ті, кому йдуть
+ *   замовлення (`pageStaffIds`), і глядачі приватної сторінки
+ *   (`scenarios.viewer_ids`, `pageVisibleTo`);
  * - `types.ts` — `UserPage`, `PageDraft`, `PageStaff`, публічне подання `PublicPage`;
  * - `api.ts` — форма запиту до **двох** поверхонь: свої (`/api/user/pages`) і
  *   опубліковані (`/api/public/pages`).
@@ -41,14 +42,19 @@ export type { PageAddressResult } from "./address";
 export { pageBotText } from "./bot";
 export {
   PAGE_ADMINS_MAX,
+  PAGE_VIEWERS_MAX,
   adminIdError,
   adminIdsJson,
   cleanAdminIds,
+  cleanViewerIds,
   isPageManager,
   pageAdminIds,
   pageAdminsOf,
   pageRole,
   pageStaffIds,
+  pageViewerIds,
+  pageVisibleTo,
+  viewerIdsJson,
 } from "./access";
 export { cleanPageValue, pageDraft, sanitizePageValues, validatePageDraft } from "./rules";
 export type { PageDraftInput, PageValidation } from "./rules";

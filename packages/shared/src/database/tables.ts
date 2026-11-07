@@ -229,7 +229,8 @@ export const TABLES = {
         owner_id TEXT,
         is_public INTEGER DEFAULT 0,
         template_key TEXT,
-        admin_ids TEXT
+        admin_ids TEXT,
+        viewer_ids TEXT
       )`,
     indexes: ["CREATE INDEX IF NOT EXISTS idx_scenarios_owner ON scenarios(owner_id)"],
   },

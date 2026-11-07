@@ -284,20 +284,6 @@ describe("адреса сторінки", () => {
     expect(wrotePages(statements)).toBe(false);
   });
 
-  it("при створенні зайняту адресу обходять: сторінки ще немає", async () => {
-    const { env, statements } = makeEnv({
-      rows: [page({ id: 6, slug: "taken", owner_id: OWNER })],
-    });
-    const service = new PagesService(env);
-
-    const outcome = await service.save(OWNER, draft({ address: "taken" }));
-
-    expect(outcome.kind).toBe("saved");
-    const insert = sqlOf(statements, /^INSERT INTO/);
-    expect(insert?.binds[0]).not.toBe("taken");
-    expect(String(insert?.binds[0])).toMatch(/^taken/);
-  });
-
   it("не змінили адресу — не питаємо нікого про зайнятість", async () => {
     const { env, statements } = makeEnv({ rows: [page({ slug: "olena" })] });
     await new PagesService(env).save(OWNER, draft({ address: "olena" }), 5);

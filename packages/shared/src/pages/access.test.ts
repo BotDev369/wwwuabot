@@ -13,19 +13,65 @@
 import { describe, expect, it } from "vitest";
 import {
   PAGE_ADMINS_MAX,
+  PAGE_VIEWERS_MAX,
   adminIdError,
   adminIdsJson,
   cleanAdminIds,
+  cleanViewerIds,
   isPageManager,
   pageAdminIds,
   pageAdminsOf,
   pageRole,
   pageStaffIds,
+  pageViewerIds,
+  pageVisibleTo,
+  viewerIdsJson,
 } from "./access";
 import type { UserPage } from "./types";
 
 const OWNER = 372567448;
 const GALYA = 1049272067;
+
+const NO_VIEWERS: number[] = [];
+
+describe("видимість сторінки: публічна й за списком", () => {
+  it("контент платформи бачать усі — власника в нього немає", () => {
+    expect(pageVisibleTo(null, false, NO_VIEWERS, null)).toBe(true);
+    expect(pageVisibleTo(null, false, NO_VIEWERS, GALYA)).toBe(true);
+  });
+
+  it("чужа приватна сторінка закрита навіть для того, хто назвався", () => {
+    expect(pageVisibleTo(OWNER, false, NO_VIEWERS, GALYA)).toBe(false);
+    expect(pageVisibleTo(OWNER, false, NO_VIEWERS, null)).toBe(false);
+  });
+
+  it("доданий глядач бачить, недоданий — ні", () => {
+    expect(pageVisibleTo(OWNER, false, [GALYA], GALYA)).toBe(true);
+    expect(pageVisibleTo(OWNER, false, [GALYA], 42)).toBe(false);
+  });
+
+  it("публічна сторінка відкрита й без підпису", () => {
+    expect(pageVisibleTo(OWNER, true, NO_VIEWERS, null)).toBe(true);
+  });
+});
+
+describe("колонка `viewer_ids`", () => {
+  it("сміття читається як порожній список", () => {
+    expect(pageViewerIds(null)).toEqual([]);
+    expect(pageViewerIds("{не json}")).toEqual([]);
+    expect(pageViewerIds('["ж", 0, -5, null]')).toEqual([]);
+  });
+
+  it("дублі й не-числа не проходять, а стеля обрізає список", () => {
+    expect(cleanViewerIds([GALYA, GALYA, "7", 0])).toEqual([GALYA, 7]);
+    const many = Array.from({ length: PAGE_VIEWERS_MAX + 10 }, (_, i) => i + 1);
+    expect(cleanViewerIds(many)).toHaveLength(PAGE_VIEWERS_MAX);
+  });
+
+  it("запис у колонку — той самий список, який потім читається", () => {
+    expect(pageViewerIds(viewerIdsJson([GALYA, GALYA]))).toEqual([GALYA]);
+  });
+});
 
 describe("колонка `admin_ids`", () => {
   it("`NULL` — це «адмінів немає», а не помилка: колонку додано наявній таблиці", () => {

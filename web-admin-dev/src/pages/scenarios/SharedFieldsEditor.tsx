@@ -22,6 +22,7 @@ import {
   toBotPayload,
   toWebPath,
 } from "@wwwuabot/shared/content";
+import { ViewerPicker } from "./ViewerPicker";
 
 interface Props {
   fields: Record<string, unknown>;
@@ -89,6 +90,8 @@ export function SharedFieldsEditor({ fields, updateField }: Props) {
           Заголовок бачать блоки сторінки (`context.title`); у боті він не показується.
         </p>
       </label>
+
+      <ViewerPicker fields={fields} updateField={updateField} />
 
       <p style={hintStyle}>
         Номер рядка: <strong>{String(fields.id ?? "—")}</strong>. Адресу можна міняти — номер

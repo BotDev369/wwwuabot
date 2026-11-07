@@ -76,14 +76,14 @@ describe("власні сторінки", () => {
     expect(h.pages.listManaged).toHaveBeenCalledWith(777);
   });
 
-  it("POST зберігає й віддає сторінку", async () => {
+  it("POST без номера не створює сторінку — 403", async () => {
     const res = await handleUserPages(
       request("POST", "/api/user/pages", { title: "Про мене" }),
       ENV,
     );
 
-    expect(await res.json()).toEqual({ ok: true, page: PAGE });
-    expect(h.pages.save).toHaveBeenCalledWith(777, { title: "Про мене" }, undefined);
+    expect(res.status).toBe(403);
+    expect(h.pages.save).not.toHaveBeenCalled();
   });
 
   it("POST із номером править саме його", async () => {
@@ -101,7 +101,7 @@ describe("власні сторінки", () => {
 
   it("зайнята адреса — 409, бо людина може обрати іншу", async () => {
     h.pages.save.mockResolvedValue({ kind: "address_taken" });
-    const res = await handleUserPages(request("POST", "/api/user/pages", {}), ENV);
+    const res = await handleUserPages(request("POST", "/api/user/pages", { id: 5 }), ENV);
 
     expect(res.status).toBe(409);
   });

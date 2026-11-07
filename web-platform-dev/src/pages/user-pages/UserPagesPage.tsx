@@ -10,23 +10,16 @@
  * списку з одним дотиком на рядок друга дія змушувала б угадувати, котра з
  * двох спрацювала.
  *
- * **Створення тут — адреса, а не поверхня.** «+» веде на `/pages/new`, де
- * спершу видно шаблон, а потім на ньому правлять текст. Це той самий вибір, що
- * в решти розділів давно зроблений на користь сторінки (`AGENTS.md` §7).
- *
- * **`?new=1` лишається робочим і веде туди ж.** Намір створити — частина
- * адреси (`withCreateIntent`), і за посиланням `…/pages?new=1` зі старої версії
- * мусить відкриватись створення, а не список, який мовчки нічого не робить.
- * Тому намір **переадресовує** (`replace`), а не відкриває форму вдруге.
- *
+ * **Створення тут немає.** Нові сторінки заводить платформа: людина веде те,
+ * що їй дали, і не може додати собі рядок. Тому ні «+», ні `/pages/new` тут не
+ * лишилось — лише список і перегляд.
  * @module web-platform-dev/src/pages/user-pages
  */
 
 import { useState, type ReactElement } from "react";
-import { Navigate, useNavigate } from "react-router-dom";
-import { useCreateForm } from "@/app/useCreateForm";
+import { useNavigate } from "react-router-dom";
 import { Icon } from "@wwwuabot/shared";
-import { PAGES_NEW_PATH, userPagePath } from "@/app/routes";
+import { userPagePath } from "@/app/routes";
 import { Tabs, tabId, tabPanelId } from "@wwwuabot/ui/tabs";
 import { useScreenChrome } from "@wwwuabot/ui/nav";
 import { PublicPagesTab } from "./PublicPagesTab";
@@ -39,30 +32,9 @@ export function UserPagesPage(): ReactElement {
   const navigate = useNavigate();
   const [view, setView] = useState<PagesView>(DEFAULT_PAGES_VIEW);
   const { pages, loading, error } = useUserPages();
-  const form = useCreateForm();
-
-  // Намір, що прийшов адресою: створення тепер має власний екран.
-  if (form.open) return <Navigate to={PAGES_NEW_PATH} replace />;
 
   return (
     <div className="wb-page">
-      <div className="wb-page-head">
-        <div className="wb-page-actions">
-          {/* Створення живе лише в погляді «Мої»: у списку чужих сторінок «+»
-              обіцяв би створити чужу. */}
-          {view === "mine" && (
-            <button
-              type="button"
-              className="wb-btn wb-btn-primary wb-page-add"
-              onClick={() => void navigate(PAGES_NEW_PATH)}
-              aria-label="Створити сторінку"
-            >
-              <Icon name="plus" size={20} />
-            </button>
-          )}
-        </div>
-      </div>
-
       {/* Два погляди — двома рівними половинами рядка: обидва видно одразу, і
           планка пальця в кожного своя. Смугу складає спільний кирпичик. */}
       <Tabs options={PAGES_VIEWS} value={view} onChange={setView} label="Погляд на сторінки" />
@@ -94,11 +66,10 @@ export function UserPagesPage(): ReactElement {
                   <Icon name="page" size={32} />
                 </span>
                 <p className="wb-empty-text">Ще немає жодної сторінки.</p>
-                {/* Кажемо, як створити, і що саме від людини вимагається —
-                    текст: без цього порожній екран лишається глухим кутом. */}
+                {/* Порожній екран без пояснення читався б як поломка, тож
+                    кажемо, звідки сторінка береться тепер. */}
                 <p className="wb-empty-text">
-                  Натисніть «+» угорі, подивіться готові шаблони, оберіть той, що підходить, і
-                  впишіть свій текст.
+                  Сторінки заводить платформа. Коли ваша сторінка з'явиться, вона буде тут.
                 </p>
               </div>
             )}

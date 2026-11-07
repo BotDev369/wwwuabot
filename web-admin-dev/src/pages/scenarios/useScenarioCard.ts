@@ -40,13 +40,16 @@ export function useScenarioCard({
   onSaved,
   onClose,
   initialSubTab,
+  initialMainTab,
 }: {
   slug: string;
   onSaved: () => void;
   onClose: () => void;
   initialSubTab?: SubTab;
+  /** З якої вкладки відкрити: «Платформа» показує сторінку, «Бот» — подання. */
+  initialMainTab?: MainTab;
 }): ScenarioCardController {
-  const [mainTab, setMainTab] = useState<MainTab>("web");
+  const [mainTab, setMainTab] = useState<MainTab>(initialMainTab ?? "web");
   const [subTab, setSubTab] = useState<SubTab>(initialSubTab ?? "preview");
   const [allFields, setAllFields] = useState<Record<string, unknown>>({});
   const [loading, setLoading] = useState(true);

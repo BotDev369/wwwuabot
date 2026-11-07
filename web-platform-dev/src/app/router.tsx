@@ -36,7 +36,6 @@ import {
   NOTES_ROUTE,
   ORDERS_ROUTE,
   PAGE_EDIT_ROUTE,
-  PAGES_NEW_ROUTE,
   PAGES_ROUTE,
   RESEARCH_ROUTE,
   SHOP_ORDERS_ROUTE,
@@ -60,7 +59,6 @@ import { ScenarioPage } from "@/pages/ScenarioPage";
 import { UsersPage } from "@/pages/UsersPage";
 import { GamePage } from "@/pages/games/GamePage";
 import { GamesPage } from "@/pages/games/GamesPage";
-import { PageCreatePage } from "@/pages/user-pages/PageCreatePage";
 import { PageEditPage } from "@/pages/user-pages/PageEditPage";
 import { ShopOrderPage } from "@/pages/shop/ShopOrderPage";
 import { ShopOrdersPage } from "@/pages/shop/ShopOrdersPage";
@@ -104,13 +102,9 @@ export const router = createBrowserRouter([
       { path: USERS_ROUTE, element: <UsersPage /> },
       { path: ADS_ROUTE, element: <AdsPage /> },
       // Сторінки людини — теж не рядок контенту, а екран: список власних
-      // сторінок, перегляд однієї, її правка й створення. Сам контент сторінки
-      // відкривається за її `slug` (catch-all нижче) — і то лише тоді, коли
-      // вона публічна. Довший шлях іде першим — та сама причина, що
-      // у `/games/:key`; а `new` мусить стояти **перед** `:id`, бо `:id`
-      // з'їв би його як номер сторінки, і замість вибору шаблону відкрився б
-      // «Такої сторінки немає».
-      { path: `${PAGES_ROUTE}/${PAGES_NEW_ROUTE}`, element: <PageCreatePage /> },
+      // сторінок, перегляд однієї й її правка. Сам контент відкривається за
+      // `slug` (catch-all нижче) — і то лише тоді, коли він їй видимий.
+      // Нових сторінок людина не заводить: рядок створює платформа.
       // Товари магазину — **під своєю сторінкою**: `shop_products` належить
       // рядку `scenarios`, тож і адреса стоїть під ним (`/pages/7/products`).
       // `new` мусить стояти перед `:productId` — інакше номер з'їв би його, і

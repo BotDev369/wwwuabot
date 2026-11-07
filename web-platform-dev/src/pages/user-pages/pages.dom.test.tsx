@@ -106,12 +106,14 @@ describe("екран «Сторінки»", () => {
     await waitFor(() => expect(screen.getByText("Чужа подія")).toBeTruthy());
   });
 
-  it("порожній список своїх каже, як створити сторінку", async () => {
+  it("порожній список своїх каже, звідки береться сторінка", async () => {
     pages.listOwn.mockResolvedValue([]);
 
     renderAt(<UserPagesPage />);
 
     expect(await screen.findByText("Ще немає жодної сторінки.")).toBeTruthy();
-    expect(screen.getByRole("button", { name: "Створити сторінку" })).toBeTruthy();
+    expect(screen.getByText(/Сторінки заводить платформа/)).toBeTruthy();
+    // Створення з платформи прибрано: кнопки, яка вела на `/pages/new`, немає.
+    expect(screen.queryByRole("button", { name: "Створити сторінку" })).toBeNull();
   });
 });

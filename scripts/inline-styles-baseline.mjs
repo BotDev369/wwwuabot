@@ -32,6 +32,7 @@ export const BASELINE = {
     "web-admin-dev/src/pages/scenarios/ScenarioCardBody.tsx": 3,
     "web-admin-dev/src/pages/users/user-edit/ExtraFieldsCard.tsx": 3,
     "web-admin-dev/src/pages/scenarios/ScenarioCardHeader.tsx": 2,
+    "web-admin-dev/src/pages/scenarios/ViewerPicker.tsx": 2,
     "web-admin-dev/src/features/page-builder/BlockEditor.tsx": 1,
     "web-admin-dev/src/features/page-builder/PageBuilderPage.tsx": 1,
     "web-admin-dev/src/pages/monitoring/WorkspaceTable.tsx": 1,

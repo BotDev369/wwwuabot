@@ -109,6 +109,65 @@ export function pageAdminsOf(page: UserPage): number[] {
   return page.staff.filter((member: PageStaff) => member.role === "admin").map((m) => m.id);
 }
 
+/** Стеля тих, кому відкрито сторінку: це окремі люди, а не аудиторія. */
+export const PAGE_VIEWERS_MAX = 50;
+
+/**
+ * Telegram-id з колонки `viewer_ids` — ті, кому автор відкрив приватну сторінку.
+ *
+ * Друга колонка, а не третій «вид» адмінів: адмін **веде** сторінку (товари,
+ * замовлення), а глядач лише бачить її. Змішати їх означало б дати глядачеві
+ * права на магазин.
+ */
+export function pageViewerIds(raw: unknown): number[] {
+  if (typeof raw !== "string" || !raw.trim()) return [];
+  let parsed: unknown;
+  try {
+    parsed = JSON.parse(raw);
+  } catch {
+    return [];
+  }
+  return cleanViewerIds(parsed);
+}
+
+/** Список глядачів із форми або колонки: цілі id, без дублів і в межах стелі. */
+export function cleanViewerIds(raw: unknown): number[] {
+  const source = Array.isArray(raw) ? raw : [];
+  const ids: number[] = [];
+  for (const entry of source) {
+    const id = Number(entry);
+    if (!Number.isInteger(id) || id <= 0) continue;
+    if (ids.includes(id)) continue;
+    ids.push(id);
+    if (ids.length >= PAGE_VIEWERS_MAX) break;
+  }
+  return ids;
+}
+
+/** Колонка `viewer_ids` зі списку: те саме, що читає `pageViewerIds`. */
+export function viewerIdsJson(ids: readonly number[]): string {
+  return JSON.stringify(cleanViewerIds(ids));
+}
+
+/**
+ * Чи бачить людина сторінку.
+ *
+ * Одне правило на три читачі — веб, бот і публічний список: контент платформи
+ * (`ownerId === null`) видно всім, сторінку людини — коли вона публічна або
+ * коли цю людину додали глядачем. `userId === null` — анонім, тобто лише
+ * публічне.
+ */
+export function pageVisibleTo(
+  ownerId: number | null,
+  isPublic: boolean,
+  viewerIds: readonly number[],
+  userId: number | null,
+): boolean {
+  if (ownerId === null) return true;
+  if (isPublic) return true;
+  return userId !== null && viewerIds.includes(userId);
+}
+
 /**
  * Перевірка поля «Telegram ID» — те, що показує діалог; `null` — значення годиться.
  *

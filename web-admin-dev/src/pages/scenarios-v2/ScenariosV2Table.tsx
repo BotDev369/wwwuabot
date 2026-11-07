@@ -12,7 +12,7 @@ import {
 } from "../../features/scenarios/store";
 import { ScenarioCardModal } from "../scenarios/ScenarioCardModal";
 import { icons, type IconName } from "@wwwuabot/shared";
-import { scenarioType, extractPrefix } from "./helpers";
+import { scenarioType, extractPrefix, hasBotPresentation, type ScenarioSurface } from "./helpers";
 import { ScenarioRow } from "./ScenarioRow";
 import { GroupSection } from "./GroupSection";
 
@@ -59,7 +59,7 @@ const GROUP_MODES: GroupModeOption[] = [
 
 // ─── Main Component ─────────────────────────────────────────────────
 
-export function ScenariosV2Table() {
+export function ScenariosV2Table({ surface = "platform" }: { surface?: ScenarioSurface }) {
   const { items, sortField, sortDir, setSort, filter, setFilter, groupBy, setGroupBy } =
     useScenariosStore();
 
@@ -85,6 +85,9 @@ export function ScenariosV2Table() {
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase();
     let list = items;
+    // «Платформа» — рядки зі сторінкою, «Бот» — ті, у яких заповнене подання
+    // в боті. Рядок буває в обох списках: це два боки одного запису.
+    if (surface === "bot") list = list.filter(hasBotPresentation);
     if (filter !== "all") list = list.filter((s) => scenarioType(s) === filter);
     if (q)
       list = list.filter(
@@ -111,7 +114,7 @@ export function ScenariosV2Table() {
       return 0;
     });
     return list;
-  }, [items, query, sortField, sortDir, filter]);
+  }, [items, query, sortField, sortDir, filter, surface]);
 
   const groups = useMemo(() => {
     if (groupBy === "none") return null;
@@ -124,6 +127,10 @@ export function ScenariosV2Table() {
     }
     return Array.from(map.entries()).sort(([a], [b]) => a.localeCompare(b));
   }, [filtered, groupBy]);
+
+  // На «Ботові» типи (photo/rich/page) нічого не ділять: там усі рядки —
+  // повідомлення. Лишаємо лише «Усі», щоб не показувати порожні фільтри.
+  const chips = surface === "bot" ? FILTER_CHIPS.slice(0, 1) : FILTER_CHIPS;
 
   const stats = useMemo(() => {
     const total = items.length;
@@ -171,7 +178,7 @@ export function ScenariosV2Table() {
           </div>
           <div style={{ display: "flex", alignItems: "center", gap: 12, flexWrap: "wrap" }}>
             <div style={{ display: "flex", gap: 4, flexWrap: "wrap" }}>
-              {FILTER_CHIPS.map((chip) => {
+              {chips.map((chip) => {
                 const count =
                   chip.key === "all"
                     ? stats.total
@@ -253,8 +260,10 @@ export function ScenariosV2Table() {
                 <tr>
                   <td colSpan={4} className="wb-table-empty">
                     {items.length === 0
-                      ? "У базі ще немає сценаріїв."
-                      : `Нічого не знайдено за «${query}».`}
+                      ? "У базі ще немає записів."
+                      : query
+                        ? `Нічого не знайдено за «${query}».`
+                        : "Тут ще немає рядків для цього боку."}
                   </td>
                 </tr>
               ) : groups ? (
@@ -288,6 +297,7 @@ export function ScenariosV2Table() {
       {cardCodeword !== null && (
         <ScenarioCardModal
           slug={cardCodeword}
+          initialMainTab={surface === "bot" ? "bot" : "web"}
           onClose={closeAll}
           onSaved={() => void useScenariosStore.getState().load(true)}
         />

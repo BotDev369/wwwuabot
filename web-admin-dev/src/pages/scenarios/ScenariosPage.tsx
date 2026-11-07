@@ -13,10 +13,13 @@ import { readScenario, saveScenarioFields } from "../../shared/api/scenarios.api
 import { isValidSlug, normalizeSlug } from "@wwwuabot/shared/content";
 import { PageTopbar } from "../../layout/PageTopbar";
 import { ScenariosV2Table } from "../scenarios-v2/ScenariosV2Table";
+import type { ScenarioSurface } from "../scenarios-v2/helpers";
 import { ScenarioCardModal } from "./ScenarioCardModal";
 import { useDialog } from "@wwwuabot/ui/dialog";
 
-export function ScenariosPage() {
+export type { ScenarioSurface } from "../scenarios-v2/helpers";
+
+export function ScenariosPage({ surface = "platform" }: { surface?: ScenarioSurface }) {
   const { items, status, errorMsg, load } = useScenariosStore();
   const [creating, setCreating] = useState(false);
   const [openedSlug, setOpenedSlug] = useState<string | null>(null);
@@ -79,7 +82,7 @@ export function ScenariosPage() {
     <>
       <PageTopbar>
         <div className="wb-topbar-left">
-          <h1 className="wb-topbar-title">Сценарії</h1>
+          <h1 className="wb-topbar-title">{surface === "platform" ? "Платформа" : "Бот"}</h1>
           {items.length > 0 && <span className="wb-count">{items.length}</span>}
         </div>
         <div className="wb-topbar-right">
@@ -102,7 +105,7 @@ export function ScenariosPage() {
             </button>
           </div>
         ) : (
-          <ScenariosV2Table />
+          <ScenariosV2Table surface={surface} />
         )}
       </div>
 

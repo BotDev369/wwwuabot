@@ -29,7 +29,7 @@
 |---|---|---|
 | `pages/ScenarioPage` (`*`) | `page_data` рядка `scenarios` | фолбек, «Завантаження…», обгортки шаблону |
 | `pages/user-pages/UserPageView` | та сама сторінка через `buildPageConfig` | видимість, доступ, видалення, товари |
-| `pages/user-pages/PageEditor`, `PageTemplatePreview` | полотно сторінки | поля, липка смуга, кроки створення |
+| `pages/user-pages/PageEditor` | полотно сторінки | поля й липка смуга правки |
 | `pages/shop/store/ShopStore` | текст продавця з `page_data` | каркас вітрини, кошик, замовлення |
 
 Обгортка — не другий рендерер: вона додає те, чого в `page_data` немає (кошик, рамка дослідження,

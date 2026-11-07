@@ -155,4 +155,20 @@ describe("⛔ тіло, з яким ми не працюємо", () => {
     expect(body.error).not.toBe("Invalid body");
     expect(wrotePages(db)).toBe(false);
   });
+
+  // Створення пішло з платформи: API не має лишатися єдиним входом, який це
+  // дозволяє, — інакше зникнення кнопки було б лише косметикою.
+  it("правильна чернетка без id — 403, а не нова сторінка", async () => {
+    const db = makeDb();
+    const res = await handleUserPages(
+      request({ template: "card", values: { title: "Тестова" } }, await signedInitData()),
+      db.env,
+    );
+
+    expect(res.status).toBe(403);
+    expect((await res.json()) as { error?: string }).toMatchObject({
+      error: "Сторінки створює платформа",
+    });
+    expect(wrotePages(db)).toBe(false);
+  });
 });

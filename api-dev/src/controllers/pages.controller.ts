@@ -4,9 +4,13 @@
  * Дві поверхні, і різниця між ними принципова:
  *
  *   GET    /api/user/pages   — сторінки, які людина веде (разом із приватними)
- *   POST   /api/user/pages   — зберегти (без `id` — нова, з `id` — правка)
+ *   POST   /api/user/pages   — правка наявної; без `id` — `403`
  *   DELETE /api/user/pages   — прибрати свою за номером (тільки власник)
  *   GET    /api/public/pages  — сторінки, які автори відкрили
+ *
+ * **Нових сторінок людина не заводить.** Рядок створює платформа (адмінка й
+ * міграції), тож `POST` без `id` — це не «нова сторінка», а відмова: інакше
+ * зникнення кнопки в інтерфейсі лишалося б єдиною перепоною на шляху API.
  *
  * **Список — це «що я веду», а не «що я створив».** Адмін стоїть у
  * `scenarios.admin_ids` і отримує ту саму сторінку — разом із магазином,
@@ -66,12 +70,14 @@ export async function handleUserPages(request: Request, env: Env): Promise<Respo
       const validated = validatePageDraft(parsed.body);
       if (!validated.ok) return json({ ok: false, error: validated.message }, 400);
 
+      // Спершу зміст, потім «чи це правка»: причина відмови змісту корисніша
+      // за «немає id», і саме її людина має побачити.
       const id = parsed.body.id;
-      const outcome = await service.save(
-        identity.userId,
-        validated.value,
-        typeof id === "number" && id > 0 ? id : undefined,
-      );
+      if (typeof id !== "number" || !Number.isInteger(id) || id <= 0) {
+        return json({ ok: false, error: "Сторінки створює платформа" }, 403);
+      }
+
+      const outcome = await service.save(identity.userId, validated.value, id);
 
       if (outcome.kind === "not_found") return json({ ok: false, error: "Not found" }, 404);
       if (outcome.kind === "address_taken") {

@@ -4,6 +4,9 @@
 
 import type { IconName } from "@wwwuabot/shared";
 
+/** Бік рядка, який показує список: сторінку (`page_data`) чи бот. */
+export type ScenarioSurface = "platform" | "bot";
+
 export function relativeTime(value: string | null): string {
   if (!value) return "—";
   const date = new Date(value.replace(" ", "T") + (value.includes("Z") ? "" : "Z"));
@@ -30,6 +33,21 @@ export function scenarioType(s: {
   if (Boolean(s.page_data) && s.page_data !== "null") return "page";
   if (s.rich_message === "true" || s.rich_message === "1") return "rich";
   return "photo";
+}
+
+/**
+ * Чи має рядок **подання в боті**: підпис, фото або rich-розмітку.
+ *
+ * Це не «тип рядка», а другий бік того самого запису: сторінка може бути
+ * одночасно й повідомленням. Список «Бот» показує саме ті рядки, у яких цей бік
+ * заповнений, а не окрему таблицю.
+ */
+export function hasBotPresentation(s: Record<string, unknown>): boolean {
+  const filled = ["caption_top", "caption_mid", "caption_bot", "photo_url"].some(
+    (key) => typeof s[key] === "string" && (s[key] as string).trim() !== "",
+  );
+  if (filled) return true;
+  return s.rich_message === "true" || s.rich_message === "1";
 }
 
 export function getTypeBadge(s: { rich_message: string | null; page_data?: string | null }): {

@@ -16,7 +16,7 @@ import { ScenarioCardBody } from "./ScenarioCardBody";
 import { ScenarioCardHeader } from "./ScenarioCardHeader";
 import { MainTabs, SubTabs } from "./ScenarioCardTabs";
 import { useScenarioCard } from "./useScenarioCard";
-import type { SubTab } from "./scenario-modal-types";
+import type { MainTab, SubTab } from "./scenario-modal-types";
 
 // Блоки Page Builder реєструються один раз на завантаженні модуля.
 registerAllBlocks();
@@ -26,10 +26,18 @@ interface Props {
   onClose: () => void;
   onSaved: () => void;
   initialSubTab?: SubTab;
+  /** Вхід, з якого відкрили картку: «Платформа» чи «Бот». */
+  initialMainTab?: MainTab;
 }
 
-export function ScenarioCardModal({ slug, onClose, onSaved, initialSubTab }: Props) {
-  const card = useScenarioCard({ slug, onSaved, onClose, initialSubTab });
+export function ScenarioCardModal({
+  slug,
+  onClose,
+  onSaved,
+  initialSubTab,
+  initialMainTab,
+}: Props) {
+  const card = useScenarioCard({ slug, onSaved, onClose, initialSubTab, initialMainTab });
 
   return (
     <div className="wb-modal-overlay" onClick={onClose}>

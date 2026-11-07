@@ -1,4 +1,4 @@
-import { createBrowserRouter } from "react-router-dom";
+import { createBrowserRouter, Navigate } from "react-router-dom";
 import { AppShell } from "../layout/AppShell";
 import { HomePage } from "../pages/home/HomePage";
 import { ScenariosPage } from "../pages/scenarios/ScenariosPage";
@@ -19,7 +19,9 @@ import { AnalyticsPage } from "../pages/analytics/AnalyticsPage";
 /**
  * Маршрути web-admin.
  *
- * /scenarios          — Сценарії
+ * /platform           — Платформа: сторінки й екрани (блоки `page_data`)
+ * /bot                — Бот: повідомлення, фото, кнопки, rich-розмітка
+ * /scenarios          — стара адреса списку; веде на «Платформу»
  * /page-builder/:cw   — Конструктор сторінок
  * /users              — Користувачі
  * /messages           — Повідомлення: звернення зі сторінки відмови, повний
@@ -52,7 +54,11 @@ export const router = createBrowserRouter([
     element: <AppShell />,
     children: [
       { index: true, element: <HomePage /> },
-      { path: "scenarios", element: <ScenariosPage /> },
+      { path: "platform", element: <ScenariosPage surface="platform" /> },
+      { path: "bot", element: <ScenariosPage surface="bot" /> },
+      // Старе посилання не має вести на 404: рядки ті самі, змінився лише
+      // вхід. `replace` — щоб «назад» не вертало на переадресацію.
+      { path: "scenarios", element: <Navigate to="/platform" replace /> },
       { path: "page-builder/:slug", element: <PageBuilderPage /> },
       { path: "users", element: <UsersPage /> },
       { path: "messages", element: <AccessRequestsPage /> },

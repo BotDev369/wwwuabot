@@ -5,46 +5,63 @@ import {
   toWebPath,
   type ScenarioContentRow,
 } from "@wwwuabot/shared/content";
+import { pageViewerIds, pageVisibleTo } from "@wwwuabot/shared/pages";
 import { pageBotCaption } from "../shared/utils/page-caption";
 import type { Scenario, ScenarioRow } from "../shared/types/scenario";
 
 /**
  * Видно назовні лише те, що показано.
  *
- * Сторінки, які створила людина, живуть у тій самій таблиці (`owner_id`,
- * `is_public`), і приватна мусить бути недосяжною **і в боті**: бот — такий
- * самий публічний вхід, як і веб, тож «приватна» сторінка, яка відкривається
- * діплінком, була б кнопкою, яка бреше (`docs/VISIBILITY.md`). Умова та сама, що в
- * `api-dev/src/controllers/scenarios.controller.ts`.
- *
- * `COALESCE` потрібен тому, що колонку додано наявній таблиці: `ensureTables`
- * ставить її як `DEFAULT NULL`, і просте `is_public = 1` відкинуло б контент
- * платформи цілком.
+ * Сторінки людини живуть у тій самій таблиці (`owner_id`, `is_public`), і
+ * приватна мусить бути недосяжною **і в боті**: бот — такий самий публічний
+ * вхід, як і веб, тож «приватна» сторінка, яка відкривається діплінком, була б
+ * кнопкою, яка бреше (`docs/VISIBILITY.md`). Умова та сама, що в
+ * `api-dev/src/controllers/scenarios.controller.ts`, і ухвалює її спільний
+ * `pageVisibleTo`: `viewer_ids` — JSON-колонка, тож SQL лише звужує вибірку.
  */
-const PUBLICLY_VISIBLE = "(owner_id IS NULL OR COALESCE(is_public, 0) = 1)";
+interface GatedScenarioRow extends ScenarioRow {
+  owner_id?: number | null;
+  is_public?: number | null;
+  viewer_ids?: string | null;
+}
+
+function visibleTo(row: GatedScenarioRow, userId: number | null): boolean {
+  return pageVisibleTo(
+    row.owner_id ?? null,
+    row.is_public === 1,
+    pageViewerIds(row.viewer_ids),
+    userId,
+  );
+}
 
 export class ScenarioRepository extends DatabaseRepository {
-  async getScenario(slug: string): Promise<Scenario | null> {
+  async getScenario(slug: string, userId: number | null = null): Promise<Scenario | null> {
     const row = await this.db
-      .prepare(`SELECT * FROM scenarios WHERE slug = ? AND ${PUBLICLY_VISIBLE}`)
+      .prepare("SELECT * FROM scenarios WHERE slug = ?")
       .bind(slug)
-      .first<ScenarioRow>();
-    return row ? this.parse(row) : null;
+      .first<GatedScenarioRow>();
+    if (!row || !visibleTo(row, userId)) return null;
+    return this.parse(row);
   }
 
-  async getScenarioByBotPayload(payload: string): Promise<Scenario | null> {
+  async getScenarioByBotPayload(
+    payload: string,
+    userId: number | null = null,
+  ): Promise<Scenario | null> {
     const result = await this.db
       .prepare(
-        `SELECT id, slug, title, photo_url, page_data, is_active
+        `SELECT id, slug, title, photo_url, page_data, is_active, owner_id, is_public, viewer_ids
          FROM scenarios
-         WHERE is_active = 1 AND ${PUBLICLY_VISIBLE}`,
+         WHERE is_active = 1`,
       )
-      .all<ScenarioContentRow>();
-    const pages = (result.results ?? []).map(contentPageFromScenario);
+      .all<ScenarioContentRow & GatedScenarioRow>();
+    const pages = ((result.results ?? []) as GatedScenarioRow[])
+      .filter((row) => visibleTo(row, userId))
+      .map(contentPageFromScenario);
     const route = resolveBotPayload(pages, payload);
     if (!route) return null;
 
-    const scenario = await this.getScenario(route.page.slug);
+    const scenario = await this.getScenario(route.page.slug, userId);
     if (scenario) {
       scenario.web_path = toWebPath(route.page.slug, route.params);
     }

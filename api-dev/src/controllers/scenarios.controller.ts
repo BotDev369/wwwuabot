@@ -8,8 +8,10 @@ import {
   resolveContentRoute,
   type ScenarioContentRow,
 } from "@wwwuabot/shared/content";
+import { pageViewerIds, pageVisibleTo } from "@wwwuabot/shared/pages";
 import type { Env } from "../shared/types";
 import { apiLog } from "../shared/logger";
+import { tryResolveUserId } from "../shared/identity";
 import { redirectTargetFor } from "../services/aliases.service";
 
 function json(body: unknown, status = 200): Response {
@@ -46,7 +48,15 @@ async function ensureBase(db: D1Database): Promise<void> {
  * `slug` — єдина адреса сторінки, яку повертаємо клієнту; `id` — номер рядка,
  * за яким адресу можна відрізнити після редагування.
  */
-const PAGE_COLUMNS = "id, slug, title, photo_url, page_data, template_key, is_active";
+const PAGE_COLUMNS =
+  "id, slug, title, photo_url, page_data, template_key, is_active, owner_id, is_public, viewer_ids";
+
+/** Рядок з колонками видимості: рішення ухвалює `pageVisibleTo`, а не SQL. */
+interface GatedScenarioRow extends ScenarioContentRow {
+  owner_id?: number | null;
+  is_public?: number | null;
+  viewer_ids?: string | null;
+}
 
 /** Сторінка, на яку вказує alias старої адреси; немає — `null`. */
 async function movedPage(
@@ -59,25 +69,34 @@ async function movedPage(
 }
 
 // ── resolveScenario ─────────────────────────────────────────────────
-async function resolveScenario(db: D1Database, ref: string) {
+async function resolveScenario(db: D1Database, ref: string, viewerId: number | null) {
   await ensureBase(db);
 
   const slug = normalizeSlug(ref);
 
-  // Друга умова — про сторінки, які створила людина: назовні видно лише ті,
-  // що автор відкрив (`is_public = 1`). Контент платформи впізнається за
-  // порожнім власником, тож він доступний як і раніше. Фільтр тут, у запиті,
-  // а не в розмітці: інакше приватну сторінку дістали б прямим посиланням
-  // (`docs/VISIBILITY.md`). `COALESCE` — бо колонка додана наявній таблиці й у
-  // старих рядків вона `NULL`, а не `0`.
+  // Видимість відбирає запит, а не розмітка: контент платформи (`owner_id`
+  // порожній) відкритий, сторінка людини — коли публічна або коли цю людину
+  // додано глядачем. Точну умову ухвалює `pageVisibleTo`: `viewer_ids` —
+  // JSON-колонка, і SQL не знає, чи збігся id, чи це підрядок чужого.
+  // `COALESCE` — бо колонку додано наявній таблиці й у старих рядків там `NULL`.
   const rows = await db
     .prepare(
       `SELECT ${PAGE_COLUMNS} FROM scenarios
        WHERE is_active = 1
-         AND (owner_id IS NULL OR COALESCE(is_public, 0) = 1)`,
+         AND (owner_id IS NULL OR COALESCE(is_public, 0) = 1
+              OR (owner_id IS NOT NULL AND viewer_ids IS NOT NULL))`,
     )
-    .all<ScenarioContentRow>();
-  const pages = (rows.results ?? []).map(contentPageFromScenario);
+    .all<GatedScenarioRow>();
+  const pages = ((rows.results ?? []) as GatedScenarioRow[])
+    .filter((row) =>
+      pageVisibleTo(
+        row.owner_id ?? null,
+        row.is_public === 1,
+        pageViewerIds(row.viewer_ids),
+        viewerId,
+      ),
+    )
+    .map(contentPageFromScenario);
 
   // Стара адреса веде на сторінку, яка переїхала (`docs/URL.md` §4): інакше
   // кнопка, надіслана в чат до переїзду, показувала б фолбек замість статті.
@@ -103,7 +122,8 @@ async function resolveScenario(db: D1Database, ref: string) {
 // ── GET /api/scenario/:slug ─────────────────────────────────────────
 export async function handleScenario(request: Request, env: Env, slug: string): Promise<Response> {
   try {
-    const { scenario, pageData } = await resolveScenario(env.DB, slug);
+    const viewerId = await tryResolveUserId(request, env);
+    const { scenario, pageData } = await resolveScenario(env.DB, slug, viewerId);
     return json({
       ok: true,
       scenario,

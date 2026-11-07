@@ -138,7 +138,10 @@ export async function botRouter(ctx: AppContext): Promise<void> {
       return;
     }
 
-    const currentScenario = await repo.getScenario(ctx.user.active_scenario || "");
+    const currentScenario = await repo.getScenario(
+      ctx.user.active_scenario || "",
+      ctx.user.user_id,
+    );
 
     if (currentScenario?.awaits_input === "text") {
       const result = handleTextInput(text!, currentScenario);
@@ -233,7 +236,7 @@ async function loadAndRenderScenario(
   repo: ScenarioRepository,
   slug: string,
 ): Promise<void> {
-  const scenario = await repo.getScenario(slug);
+  const scenario = await repo.getScenario(slug, ctx.user?.user_id ?? null);
   if (!scenario) {
     log("ROUTER", "scenario not found", { slug });
     return;

@@ -1,5 +1,5 @@
 /**
- * Сторінки, які створила людина: те, що вона веде, і те, що показано у відкритому списку.
+ * Сторінки, які веде людина: те, що їй дали, і те, що показано у відкритому списку.
  *
  * **Сховище — `scenarios`, тобто та сама таблиця контенту.** Сторінка людини не
  * окрема сутність: у неї та сама адреса (`slug`) і те саме `page_data`, яке
@@ -34,10 +34,8 @@ import { peerLabel, type MessagePeer } from "@wwwuabot/shared/messages";
 import { formatSqliteDatetime } from "@wwwuabot/shared/utils/datetime";
 import {
   DEFAULT_PAGE_TEMPLATE,
-  PAGE_SLUG_MAX,
   adminIdsJson,
   buildPageConfig,
-  cleanAdminIds,
   isPageManager,
   isPageTemplateKey,
   pageAdminIds,
@@ -142,13 +140,15 @@ export class PagesService {
   }
 
   /**
-   * Запис: `id` є — правка, немає — нова.
+   * Правка наявної сторінки; `id` обов'язковий.
+   *
+   * **Нових рядків тут немає.** Сторінку створює платформа (адмінка й
+   * міграції), тож спроба записати без номера — це відмова в контролері, а не
+   * «нова сторінка»: інакше кнопка в інтерфейсі була б єдиною перепоною.
    *
    * **Адресу не підмінюємо мовчки.** Якщо людина змінила адресу на зайняту,
    * це відмова (`address_taken`), а не «…-2»: посилання, яке вона запам'ятала,
-   * повело б в інше місце. А от коли адреса вільна — зайняти її можна: саме
-   * тому при **створенні** вільний варіант шукає `uniqueAddress`, а не
-   * відмова.
+   * повело б в інше місце.
    *
    * **Склад адмінів міняє лише власник.** Адмін веде сторінку й магазин, але
    * доступ роздає той, кому вона належить: інакше запрошений міг би звузити
@@ -156,7 +156,7 @@ export class PagesService {
    * (`PageDraftInput.admins === null`) склад не чіпає взагалі — нею ходять
    * перемикач публічності й редактор тексту.
    */
-  async save(userId: number, input: PageDraftInput, id?: number): Promise<PageSaveOutcome> {
+  async save(userId: number, input: PageDraftInput, id: number): Promise<PageSaveOutcome> {
     await this.ensureSchema();
 
     const template = pageTemplate(input.template);
@@ -165,7 +165,7 @@ export class PagesService {
     const pageData = JSON.stringify(buildPageConfig(template, input.values));
     const isPublic = input.isPublic ? 1 : 0;
 
-    if (id !== undefined) {
+    {
       const current = await this.rowById(id);
       const role = current
         ? pageRole(ownerOf(current), pageAdminIds(current.admin_ids), userId)
@@ -202,19 +202,6 @@ export class PagesService {
       const page = await this.readManaged(id, userId);
       return page ? { kind: "saved", page } : { kind: "not_found" };
     }
-
-    const slug = await this.uniqueAddress(input.address);
-    const admins = cleanAdminIds(input.admins ?? []);
-    const inserted = await this.env.DB.prepare(
-      `INSERT INTO scenarios
-         (slug, title, page_data, template_key, is_public, owner_id, admin_ids, is_active, created_at, updated_at)
-       VALUES (?, ?, ?, ?, ?, ?, ?, 1, ?, ?)`,
-    )
-      .bind(slug, title, pageData, template.key, isPublic, userId, adminIdsJson(admins), now, now)
-      .run();
-
-    const page = await this.readManaged(Number(inserted.meta?.last_row_id ?? 0), userId);
-    return page ? { kind: "saved", page } : { kind: "not_found" };
   }
 
   /**
@@ -327,21 +314,5 @@ export class PagesService {
       .first<{ id: number }>();
 
     return row ? Number(row.id) : null;
-  }
-
-  /**
-   * Вільна адреса для нової сторінки.
-   *
-   * Хвіст додається, доки адреса зайнята, і **не подовжує** її за стелю
-   * (`PAGE_SLUG_MAX`): обрізаний Telegram-payload веде в нікуди, і дізнатись
-   * про це нічим.
-   */
-  private async uniqueAddress(base: string): Promise<string> {
-    for (let attempt = 1; attempt <= 50; attempt++) {
-      const suffix = attempt === 1 ? "" : `-${attempt}`;
-      const candidate = `${base.slice(0, PAGE_SLUG_MAX - suffix.length)}${suffix}`;
-      if ((await this.addressOwner(candidate)) === null) return candidate;
-    }
-    return `${base.slice(0, PAGE_SLUG_MAX - 6)}-${Date.now() % 100000}`;
   }
 }
