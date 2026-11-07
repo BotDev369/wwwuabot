@@ -5,5 +5,5 @@
  * @module @wwwuabot/shared/screens
  */
 
-export { missingScreenTexts, readScreenTexts, screenText } from "./texts";
+export { formatScreenText, missingScreenTexts, readScreenTexts, screenText } from "./texts";
 export type { ScreenTexts } from "./texts";

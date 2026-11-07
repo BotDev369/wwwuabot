@@ -9,6 +9,25 @@ import { describe, expect, it, vi } from "vitest";
 import { render, screen } from "@testing-library/react";
 import { MemoryRouter } from "react-router-dom";
 
+/** Ті самі ключі, що в рядку `research`: екран читає їх, а не літерали. */
+const texts = vi.hoisted(() => ({
+  "research.title": "Дослідження",
+  "research.kicker": "Дослідження",
+  "research.lead": "Кожен блок — окрема сторінка з датами й джерелами.",
+  "research.fact.blocks": "блоків",
+  "research.fact.chapters": "розділів",
+  "research.fact.minutes": "хвилин читання",
+  "research.readingMinutes": "{n} хв читання",
+  "research.meta.data": "дані {date}",
+  "research.empty": "Дослідження ще не опубліковане.",
+  "research.footer.text": "Кожен блок посилається на першоджерело.",
+  "research.footer.cta": "Методологія й джерела",
+}));
+
+vi.mock("../screen-texts/useScreenTexts", () => ({
+  useScreenTexts: () => ({ texts, ready: true }),
+}));
+
 vi.mock("./useResearchCatalog", () => ({
   useResearchCatalog: () => ({
     loading: false,
@@ -76,6 +95,7 @@ describe("ResearchPage", () => {
     expect(screen.getByText("Сто відсотків")).toBeTruthy();
     expect(screen.getByText("28,8%")).toBeTruthy();
     expect(screen.getByText("Перевірено за джерелом", { exact: false })).toBeTruthy();
+    expect(screen.getByText("7 хв читання", { exact: false })).toBeTruthy();
   });
 
   it("веде до методології", () => {

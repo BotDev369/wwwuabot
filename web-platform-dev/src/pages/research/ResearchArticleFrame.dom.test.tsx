@@ -9,6 +9,18 @@ import { describe, expect, it, vi } from "vitest";
 import { render, screen } from "@testing-library/react";
 import { MemoryRouter } from "react-router-dom";
 
+/** Ті самі ключі, що в рядку `research`: рамка читає їх, а не літерали. */
+const texts = vi.hoisted(() => ({
+  "research.article.back": "Дослідження",
+  "research.article.aria": "Далі в дослідженні",
+  "research.article.prev": "Назад",
+  "research.article.next": "Далі",
+}));
+
+vi.mock("../screen-texts/useScreenTexts", () => ({
+  useScreenTexts: () => ({ texts, ready: true }),
+}));
+
 vi.mock("./useResearchCatalog", () => ({
   useResearchCatalog: () => ({
     loading: false,

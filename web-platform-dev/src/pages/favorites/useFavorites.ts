@@ -1,5 +1,4 @@
 import { useCallback, useEffect, useRef, useState } from "react";
-import { useDialog } from "@wwwuabot/ui/dialog";
 import { setFavoritesNewCount } from "@wwwuabot/ui/favorites";
 import type { FavoriteItem, FavoriteSort, FavoritesResponse } from "@wwwuabot/shared/favorites";
 import { apiFetch } from "@/shared/api/client";
@@ -7,19 +6,20 @@ import { apiFetch } from "@/shared/api/client";
 interface FavoritesState {
   items: FavoriteItem[];
   loading: boolean;
-  error: string | null;
+  /** Причина — код, а не речення: слова екрана живуть у його рядку `scenarios`. */
+  error: "load" | null;
   busy: string | null;
   sort: FavoriteSort;
   setSort: (sort: FavoriteSort) => void;
   reload: () => Promise<void>;
-  remove: (item: FavoriteItem) => Promise<void>;
+  /** `true` — рядок прибрано; `false` — ні, і причина вже є в екрана. */
+  remove: (item: FavoriteItem) => Promise<boolean>;
 }
 
 export function useFavorites(): FavoritesState {
-  const dialog = useDialog();
   const [items, setItems] = useState<FavoriteItem[]>([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const [error, setError] = useState<"load" | null>(null);
   const [busy, setBusy] = useState<string | null>(null);
   // Порядок — стан екрана, а не запис: сервер віддає обране найновішим першим,
   // і саме він лишається типовим (див. `sortFavorites`).
@@ -39,7 +39,7 @@ export function useFavorites(): FavoritesState {
         setError(null);
       }
     } catch {
-      if (request === generation.current) setError("Не вдалося завантажити обране.");
+      if (request === generation.current) setError("load");
     } finally {
       if (request === generation.current) setLoading(false);
     }
@@ -61,8 +61,8 @@ export function useFavorites(): FavoritesState {
     return load();
   }
 
-  async function remove(item: FavoriteItem) {
-    if (locked.current) return;
+  async function remove(item: FavoriteItem): Promise<boolean> {
+    if (locked.current) return false;
     locked.current = true;
     setBusy(`${item.kind}:${item.targetId}`);
     try {
@@ -74,12 +74,14 @@ export function useFavorites(): FavoritesState {
       setItems((current) =>
         current.filter((value) => value.kind !== item.kind || value.targetId !== item.targetId),
       );
+      return true;
     } catch {
-      await dialog.alert("Не вдалося прибрати лайк.", { tone: "danger" });
+      return false;
     } finally {
       locked.current = false;
       setBusy(null);
     }
   }
+
   return { items, loading, error, busy, sort, setSort, reload, remove };
 }

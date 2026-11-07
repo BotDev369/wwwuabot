@@ -33,13 +33,40 @@ const favorites = {
   remove: vi.fn(),
 };
 
+const dialog = vi.hoisted(() => ({ alert: vi.fn() }));
+
+/** Ті самі ключі, що в рядку `favorites`: екран читає їх, а не літерали. */
+const texts = vi.hoisted(() => ({
+  "favorites.title": "Обране",
+  "favorites.sort.date": "Спочатку нові",
+  "favorites.sort.name": "За назвою",
+  "favorites.sort.bar": "Дії обраного",
+  "favorites.kind.page": "Сторінка",
+  "favorites.kind.user": "Людина",
+  "favorites.meta.added": "додано {date}",
+  "favorites.loading": "Завантаження…",
+  "favorites.retry": "Повторити",
+  "favorites.empty.title": "Тут буде все, що ви вподобали.",
+  "favorites.empty.hint": "Натисніть «Лайк» на сторінці.",
+  "favorites.count": "{n} у обраному",
+  "favorites.gone": "Контент видалено або доступ закрито.",
+  "favorites.remove": "Прибрати з обраного",
+  "favorites.remove.named": "Прибрати з обраного: {title}",
+  "favorites.error.load": "Не вдалося завантажити обране.",
+  "favorites.error.remove": "Не вдалося прибрати лайк.",
+}));
+
 vi.mock("react-router-dom", () => ({ useNavigate: () => navigate }));
 // Хедер малює каркас, а контекстний футер — сам екран: він лишається справжнім.
 vi.mock("@wwwuabot/ui/nav", async (importOriginal) => ({
   ...(await importOriginal<typeof import("@wwwuabot/ui/nav")>()),
   useScreenChrome: () => {},
 }));
+vi.mock("@wwwuabot/ui/dialog", () => ({ useDialog: () => dialog }));
 vi.mock("./useFavorites", () => ({ useFavorites: () => favorites }));
+vi.mock("../screen-texts/useScreenTexts", () => ({
+  useScreenTexts: () => ({ texts, ready: true }),
+}));
 
 const { FavoritesPage } = await import("./FavoritesPage");
 
@@ -60,6 +87,8 @@ beforeEach(() => {
   favorites.error = null;
   favorites.busy = null;
   favorites.sort = "date";
+  favorites.remove = vi.fn(async () => true);
+  dialog.alert.mockResolvedValue(undefined);
 });
 
 describe("стани екрана", () => {
@@ -71,10 +100,10 @@ describe("стани екрана", () => {
   });
 
   it("помилка називає причину й дає повторити", async () => {
-    favorites.error = "Немає доступу";
+    favorites.error = "load";
     render(<FavoritesPage />);
 
-    expect(screen.getByText("Немає доступу")).toBeTruthy();
+    expect(screen.getByText("Не вдалося завантажити обране.")).toBeTruthy();
     await userEvent.click(screen.getByRole("button", { name: "Повторити" }));
 
     expect(favorites.reload).toHaveBeenCalled();
@@ -114,6 +143,16 @@ describe("рядок обраного", () => {
     await userEvent.click(screen.getByRole("button", { name: /Прибрати з обраного/ }));
 
     expect(favorites.remove).toHaveBeenCalledWith(first);
+  });
+
+  it("невдале прибирання каже причину словами екрана", async () => {
+    favorites.items = [item()];
+    favorites.remove = vi.fn(async () => false);
+    render(<FavoritesPage />);
+
+    await userEvent.click(screen.getByRole("button", { name: /Прибрати з обраного/ }));
+
+    expect(dialog.alert).toHaveBeenCalledWith("Не вдалося прибрати лайк.", { tone: "danger" });
   });
 
   it("знак прибирання — смітник, а не друге серце", () => {

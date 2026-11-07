@@ -12,7 +12,9 @@ import { useNavigate } from "react-router-dom";
 import { Icon } from "@wwwuabot/shared";
 import { toWebPath } from "@wwwuabot/shared/content";
 import { researchBlockBySlug, researchNeighbours } from "@wwwuabot/shared/research";
+import { screenText } from "@wwwuabot/shared/screens";
 import { RESEARCH_PATH } from "@/app/routes";
+import { useScreenTexts } from "../screen-texts/useScreenTexts";
 import { useResearchCatalog } from "./useResearchCatalog";
 
 /** Скільки відсотків сторінки прочитано — від прокрутки документа. */
@@ -47,6 +49,9 @@ interface ResearchArticleFrameProps {
 export function ResearchArticleFrame({ slug, children }: ResearchArticleFrameProps): ReactElement {
   const navigate = useNavigate();
   const { catalog } = useResearchCatalog();
+  // Слова рамки — з рядка `research`; поки вони їдуть, діти вже видно, а
+  // підписи лишаються порожніми: стаття важливіша за напис над нею.
+  const { texts } = useScreenTexts("research");
   const progress = useReadingProgress();
 
   const blocks = catalog?.blocks ?? [];
@@ -58,11 +63,12 @@ export function ResearchArticleFrame({ slug, children }: ResearchArticleFramePro
       <div className="wb-article-bar">
         <button type="button" className="wb-article-back" onClick={() => navigate(RESEARCH_PATH)}>
           <Icon name="arrow-left" size={16} />
-          <span>Дослідження</span>
+          <span>{screenText(texts, "research.article.back")}</span>
         </button>
         {block && (
           <span className="wb-article-bar__meta">
-            {block.groupTitle || "Дослідження"} · {block.id.toUpperCase()}
+            {block.groupTitle || screenText(texts, "research.article.back")} ·{" "}
+            {block.id.toUpperCase()}
           </span>
         )}
         <span className="wb-article-bar__track" aria-hidden="true">
@@ -73,14 +79,16 @@ export function ResearchArticleFrame({ slug, children }: ResearchArticleFramePro
       <div className="wb-article-body">{children}</div>
 
       {(previous || next) && (
-        <nav className="wb-article-next" aria-label="Далі в дослідженні">
+        <nav className="wb-article-next" aria-label={screenText(texts, "research.article.aria")}>
           {previous ? (
             <button
               type="button"
               className="wb-article-next__link wb-article-next__link--prev"
               onClick={() => navigate(toWebPath(previous.slug))}
             >
-              <span className="wb-article-next__label">Назад</span>
+              <span className="wb-article-next__label">
+                {screenText(texts, "research.article.prev")}
+              </span>
               <span className="wb-article-next__title">{previous.title}</span>
             </button>
           ) : (
@@ -92,7 +100,9 @@ export function ResearchArticleFrame({ slug, children }: ResearchArticleFramePro
               className="wb-article-next__link wb-article-next__link--next"
               onClick={() => navigate(toWebPath(next.slug))}
             >
-              <span className="wb-article-next__label">Далі</span>
+              <span className="wb-article-next__label">
+                {screenText(texts, "research.article.next")}
+              </span>
               <span className="wb-article-next__title">{next.title}</span>
             </button>
           )}

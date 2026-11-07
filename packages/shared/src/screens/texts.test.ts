@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { missingScreenTexts, readScreenTexts, screenText } from "./texts";
+import { formatScreenText, missingScreenTexts, readScreenTexts, screenText } from "./texts";
 
 const page = (main: unknown[], header: unknown[] = []): string =>
   JSON.stringify({
@@ -79,5 +79,21 @@ describe("screenText і missingScreenTexts", () => {
 
   it("звіт називає саме ті ключі, яких немає", () => {
     expect(missingScreenTexts({ a: "А" }, ["a", "b"])).toEqual(["b"]);
+  });
+});
+
+describe("formatScreenText", () => {
+  it("підставляє значення з даних у текст із бази", () => {
+    expect(formatScreenText({ count: "{n} у обраному" }, "count", { n: "3" })).toBe("3 у обраному");
+  });
+
+  it("кілька підстановок і повторене ім'я — усі замінюються", () => {
+    expect(
+      formatScreenText({ line: "{n} з {total}, ще {n}" }, "line", { n: "1", total: "3" }),
+    ).toBe("1 з 3, ще 1");
+  });
+
+  it("немає ключа — порожньо, а не підстановки самі по собі", () => {
+    expect(formatScreenText({}, "count", { n: "3" })).toBe("");
   });
 });

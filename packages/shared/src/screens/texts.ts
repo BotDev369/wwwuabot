@@ -31,6 +31,21 @@ export function screenText(texts: ScreenTexts, key: string): string {
   return texts[key] ?? "";
 }
 
+/**
+ * Текст із підстановками: `{n}`, `{date}` — значення приходить із даних, а не з коду.
+ * Порожній ключ лишається порожнім: екран не вигадує слів замість бази.
+ */
+export function formatScreenText(
+  texts: ScreenTexts,
+  key: string,
+  values: Record<string, string>,
+): string {
+  return Object.entries(values).reduce(
+    (out, [name, value]) => out.split(`{${name}}`).join(value),
+    screenText(texts, key),
+  );
+}
+
 /** Ключі, яких у рядку немає: звіт для дампу й тестів, а не для екрана. */
 export function missingScreenTexts(texts: ScreenTexts, keys: readonly string[]): string[] {
   return keys.filter((key) => screenText(texts, key) === "");

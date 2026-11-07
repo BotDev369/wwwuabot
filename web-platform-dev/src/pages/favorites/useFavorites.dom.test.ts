@@ -13,10 +13,9 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import type { FavoriteItem } from "@wwwuabot/shared/favorites";
 import { favoritesNewCount, setFavoritesNewCount } from "@wwwuabot/ui/favorites";
 
-const mocks = vi.hoisted(() => ({ request: vi.fn(), alert: vi.fn() }));
+const mocks = vi.hoisted(() => ({ request: vi.fn() }));
 
 vi.mock("@/shared/api/client", () => ({ apiFetch: mocks.request }));
-vi.mock("@wwwuabot/ui/dialog", () => ({ useDialog: () => ({ alert: mocks.alert }) }));
 
 const { useFavorites } = await import("./useFavorites");
 
@@ -32,7 +31,6 @@ const item = (overrides: Partial<FavoriteItem> = {}): FavoriteItem => ({
 
 beforeEach(() => {
   vi.clearAllMocks();
-  mocks.alert.mockResolvedValue(undefined);
   setFavoritesNewCount(0);
 });
 
@@ -50,13 +48,13 @@ describe("читання списку", () => {
     expect(favoritesNewCount()).toBe(0);
   });
 
-  it("помилка називає причину, а не порожній список", async () => {
+  it("помилка приходить кодом, а не реченням: слова — в екрана", async () => {
     mocks.request.mockRejectedValueOnce(new Error("мережа"));
     const view = renderHook(() => useFavorites());
 
     await waitFor(() => expect(view.result.current.loading).toBe(false));
 
-    expect(view.result.current.error).toBe("Не вдалося завантажити обране.");
+    expect(view.result.current.error).toBe("load");
   });
 
   it("«Повторити» перечитує список", async () => {
@@ -79,8 +77,12 @@ describe("зняття лайка", () => {
     await waitFor(() => expect(view.result.current.items).toHaveLength(1));
 
     mocks.request.mockResolvedValueOnce({ ok: true, liked: false });
-    await act(() => view.result.current.remove(item()));
+    let removed = false;
+    await act(async () => {
+      removed = await view.result.current.remove(item());
+    });
 
+    expect(removed).toBe(true);
     expect(view.result.current.items).toEqual([]);
     // Рядок у списку вже побачений — новим він не стає і зникнення його не знімає.
     expect(favoritesNewCount()).toBe(0);
@@ -90,16 +92,19 @@ describe("зняття лайка", () => {
     );
   });
 
-  it("невдача зберігає рядок і каже про неї", async () => {
+  it("невдача зберігає рядок і каже про неї результатом", async () => {
     mocks.request.mockResolvedValueOnce({ ok: true, items: [item()] });
     const view = renderHook(() => useFavorites());
     await waitFor(() => expect(view.result.current.items).toHaveLength(1));
 
     mocks.request.mockRejectedValueOnce(new Error("HTTP 500"));
-    await act(() => view.result.current.remove(item()));
+    let removed = true;
+    await act(async () => {
+      removed = await view.result.current.remove(item());
+    });
 
+    expect(removed).toBe(false);
     expect(view.result.current.items).toHaveLength(1);
-    expect(mocks.alert).toHaveBeenCalledWith("Не вдалося прибрати лайк.", { tone: "danger" });
   });
 });
 

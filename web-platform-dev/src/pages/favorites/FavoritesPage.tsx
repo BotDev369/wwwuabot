@@ -1,9 +1,8 @@
 /**
- * «Обране» — список збереженого з двох видів порядку: дата або назва. Сам
- * вибір порядку живе в контекстному футері (`ContextBar`), а не над списком.
- *
- * Ліва частина рядка відкриває сторінку, знак праворуч знімає лайк: дві кнопки
- * з підписами читались як форма. Порядок рахує чиста `sortFavorites`.
+ * «Обране» — список збереженого з двох порядків: дата або назва, і порядок
+ * живе в контекстному футері (`ContextBar`), а не над списком. Слова екрана
+ * приходять із рядка `scenarios` (`docs/SCREEN_TEXTS.md`), а рядок відкриває
+ * сторінку й прибирає лайк знаком — дві кнопки з підписами читались як форма.
  * @module web-platform-dev/src/pages/favorites/FavoritesPage
  */
 
@@ -12,21 +11,32 @@ import { useNavigate } from "react-router-dom";
 import { Icon, type IconName } from "@wwwuabot/shared";
 import { formatDay } from "@wwwuabot/shared/utils/datetime";
 import { sortFavorites, type FavoriteItem, type FavoriteSort } from "@wwwuabot/shared/favorites";
+import type { ScreenTexts } from "@wwwuabot/shared/screens";
+import { formatScreenText, screenText } from "@wwwuabot/shared/screens";
 import { ContextBar, useScreenChrome } from "@wwwuabot/ui/nav";
+import { useDialog } from "@wwwuabot/ui/dialog";
+import { useScreenTexts } from "../screen-texts/useScreenTexts";
 import { useFavorites } from "./useFavorites";
 
-/** Два порядки — з тим самим підписом, що й у смузі дій (`aria-label`). */
-const SORTS: readonly { key: FavoriteSort; label: string; icon: IconName }[] = [
-  { key: "date", label: "Спочатку нові", icon: "calendar" },
-  { key: "name", label: "За назвою", icon: "text" },
+const SCREEN_KEY = "favorites";
+
+/** Два порядки: підпис — ключ у рядку екрана, знак — той самий, що в смузі дій. */
+const SORTS: readonly { key: FavoriteSort; textKey: string; icon: IconName }[] = [
+  { key: "date", textKey: "favorites.sort.date", icon: "calendar" },
+  { key: "name", textKey: "favorites.sort.name", icon: "text" },
 ];
 
-const KIND_LABELS = { page: "Сторінка", user: "Людина" } as const;
-
 /** Підпис під назвою: вид і коли додали — те, за чим порядок і вибирають. */
-function metaLabel(item: FavoriteItem): string {
-  const kind = KIND_LABELS[item.kind];
-  return item.savedAt ? `${kind} · додано ${formatDay(item.savedAt)}` : kind;
+function metaLabel(item: FavoriteItem, texts: ScreenTexts): string {
+  const kind = screenText(
+    texts,
+    item.kind === "user" ? "favorites.kind.user" : "favorites.kind.page",
+  );
+  if (!item.savedAt) return kind;
+  const added = formatScreenText(texts, "favorites.meta.added", {
+    date: formatDay(item.savedAt),
+  });
+  return `${kind} · ${added}`;
 }
 
 function FavoriteThumb({ item }: { item: FavoriteItem }): ReactElement {
@@ -42,20 +52,34 @@ function FavoriteThumb({ item }: { item: FavoriteItem }): ReactElement {
 }
 
 export function FavoritesPage(): ReactElement {
-  useScreenChrome({ title: "Обране" });
+  const { texts, ready } = useScreenTexts(SCREEN_KEY);
+  useScreenChrome({ title: screenText(texts, "favorites.title") });
   const favorites = useFavorites();
+  const dialog = useDialog();
   const navigate = useNavigate();
   const items = sortFavorites(favorites.items, favorites.sort);
   const showList = !favorites.loading && !favorites.error && items.length > 0;
+  const removeLabel = screenText(texts, "favorites.remove");
+
+  /** Прибирання — дія рядка; причина невдачі приходить словами екрана. */
+  async function remove(item: FavoriteItem): Promise<void> {
+    if (await favorites.remove(item)) return;
+    await dialog.alert(screenText(texts, "favorites.error.remove"), { tone: "danger" });
+  }
+
+  // Поки слів немає, екран не малює ні їх, ні заглушок: рядок у базі — джерело.
+  if (!ready) return <div className="wb-page" />;
 
   return (
     <div className="wb-page">
-      {favorites.loading && <p className="wb-text-muted">Завантаження…</p>}
+      {favorites.loading && (
+        <p className="wb-text-muted">{screenText(texts, "favorites.loading")}</p>
+      )}
       {favorites.error && (
         <div className="wb-empty">
-          <p className="wb-empty-text">{favorites.error}</p>
+          <p className="wb-empty-text">{screenText(texts, "favorites.error.load")}</p>
           <button className="wb-btn wb-btn-secondary" onClick={() => void favorites.reload()}>
-            Повторити
+            {screenText(texts, "favorites.retry")}
           </button>
         </div>
       )}
@@ -64,12 +88,16 @@ export function FavoritesPage(): ReactElement {
           <span className="wb-empty-icon">
             <Icon name="thumbs-up" size={32} />
           </span>
-          <p className="wb-empty-text">Тут буде все, що ви вподобали.</p>
-          <p className="wb-text-muted">Натисніть «Лайк» на сторінці.</p>
+          <p className="wb-empty-text">{screenText(texts, "favorites.empty.title")}</p>
+          <p className="wb-text-muted">{screenText(texts, "favorites.empty.hint")}</p>
         </div>
       )}
 
-      {showList && <p className="wb-favorites-count">{items.length} у обраному</p>}
+      {showList && (
+        <p className="wb-favorites-count">
+          {formatScreenText(texts, "favorites.count", { n: String(items.length) })}
+        </p>
+      )}
 
       <div className="wb-favorites-list">
         {showList &&
@@ -87,7 +115,7 @@ export function FavoritesPage(): ReactElement {
                   <FavoriteThumb item={item} />
                   <span className="wb-favorites-text">
                     <span className="wb-favorites-title">{item.title}</span>
-                    <span className="wb-favorites-meta">{metaLabel(item)}</span>
+                    <span className="wb-favorites-meta">{metaLabel(item, texts)}</span>
                   </span>
                   <span className="wb-favorites-more">
                     <Icon name="chevron-right" size={18} />
@@ -100,7 +128,7 @@ export function FavoritesPage(): ReactElement {
                     <span className="wb-favorites-title">{item.title}</span>
                     {/* Зниклий контент каже про це словами: рядок без адреси
                         інакше обіцяв би перехід, якого немає. */}
-                    <span className="wb-favorites-meta">Контент видалено або доступ закрито.</span>
+                    <span className="wb-favorites-meta">{screenText(texts, "favorites.gone")}</span>
                   </span>
                 </div>
               )}
@@ -112,11 +140,13 @@ export function FavoritesPage(): ReactElement {
                 type="button"
                 className="wb-favorites-remove"
                 aria-label={
-                  item.href ? `Прибрати з обраного: ${item.title}` : "Прибрати з обраного"
+                  item.href
+                    ? formatScreenText(texts, "favorites.remove.named", { title: item.title })
+                    : removeLabel
                 }
-                title="Прибрати з обраного"
+                title={removeLabel}
                 disabled={favorites.busy !== null}
-                onClick={() => void favorites.remove(item)}
+                onClick={() => void remove(item)}
               >
                 <Icon name="trash" size={18} />
               </button>
@@ -128,10 +158,10 @@ export function FavoritesPage(): ReactElement {
           забирав рядок над першою ж карткою. */}
       {showList && (
         <ContextBar
-          label="Дії обраного"
+          label={screenText(texts, "favorites.sort.bar")}
           actions={SORTS.map((option) => ({
             key: option.key,
-            label: option.label,
+            label: screenText(texts, option.textKey),
             icon: option.icon,
             active: favorites.sort === option.key,
             onSelect: () => favorites.setSort(option.key),
