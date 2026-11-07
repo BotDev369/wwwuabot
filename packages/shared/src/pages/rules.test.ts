@@ -100,9 +100,9 @@ describe("шаблон ↔ page_data", () => {
     });
     const [head, about, divider, contact] = config.zones.main;
 
-    // Заголовок — це картка з підняттям і найбільшим щаблем: саме там видно ім'я.
+    // Заголовок — це картка з найбільшим щаблем: саме там видно ім'я.
+    // Підняття й відступ — вигляд, його задає CSS, а не `props`.
     expect(head.type).toBe("card");
-    expect(head.props.elevated).toBe(true);
     expect(head.children?.[0].props.title).toBe("Оксана");
     expect(head.children?.[0].props.level).toBe("h1");
     // А порожній рядок про себе не лишає по собі блока взагалі.

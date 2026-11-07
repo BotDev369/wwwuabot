@@ -56,6 +56,7 @@
     "check:inline": "node scripts/check-inline-styles.mjs",
     "test:coverage": "vitest run --coverage",
     "check:coverage": "node scripts/check-coverage.mjs",
+    "check:pages": "vitest run packages/shared/src/types/page-data.dump.test.ts",
     "audit:pages": "node scripts/page-inventory.mjs",
     "audit:bricks": "node scripts/audit-bricks.mjs",
     "verify": "node scripts/verify.mjs",

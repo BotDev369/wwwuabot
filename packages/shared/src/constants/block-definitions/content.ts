@@ -17,7 +17,8 @@ export const contentBlocks: BlockDefinition[] = [
       content: s("Текст"),
       level: e("Рівень заголовка", ["h1", "h2", "h3", "h4", "body"], { default: "body" }),
     },
-    required: ["content"],
+    /* Нічого обов'язкового: заголовок сторінки — це `title` без `content`
+       (146 таких блоків у базі), і вимога вмісту робила їх «порушенням» схеми. */
     defaultProps: { title: "", content: "", level: "body" },
   }),
   block({

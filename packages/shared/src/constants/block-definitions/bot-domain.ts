@@ -104,7 +104,9 @@ export const botDomainBlocks: BlockDefinition[] = [
     props: {
       title: s("Заголовок", { default: "Аналіз людини" }),
       description: s("Опис"),
-      kind: e("Що аналізуємо", ["person", "event"], { default: "person" }),
+      /* `mixed` — аналіз і людей, і подій: компонент це вміє (`isMixedScope`),
+         а список значень його не знав і робив справжню сторінку «порушенням». */
+      kind: e("Що аналізуємо", ["person", "event", "mixed"], { default: "person" }),
       selfMode: b("Аналіз себе"),
       maxDates: n("Максимум суб'єктів", { default: 1 }),
       nextUrl: s("URL наступного кроку", { default: DATE_ANALYSIS_RESULT_PATH }),

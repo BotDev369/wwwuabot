@@ -6,6 +6,7 @@
   "exports": {
     ".": "./src/index.ts",
     "./types/page-config": "./src/types/page-config.ts",
+    "./types/page-config.validate": "./src/types/page-config.validate.ts",
     "./content": "./src/content/index.ts",
     "./notes": "./src/notes/index.ts",
     "./favorites": "./src/favorites.ts",

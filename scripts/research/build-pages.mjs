@@ -338,7 +338,7 @@ function detailPage(block) {
     id: `res-${block.id}-head`,
     type: "card",
     order: 0,
-    props: { padding: "lg", elevated: true },
+    props: {},
     children: [
       {
         id: `res-${block.id}-kicker`,
@@ -425,12 +425,7 @@ function catalogCard(block, order) {
     id: `res-home-card-${block.id}`,
     type: "card",
     order,
-    props: {
-      title: block.title,
-      description: block.oneLiner,
-      padding: "md",
-      bordered: true,
-    },
+    props: { title: block.title, description: block.oneLiner },
     children: [
       {
         id: `res-home-card-${block.id}-meta`,

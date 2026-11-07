@@ -91,7 +91,7 @@ export const PAGE_TEMPLATES: readonly PageTemplate[] = [
         // **ім'я** — а його читають першим.
         id: "head",
         type: "card",
-        props: { padding: "lg", elevated: true },
+        props: {},
         children: [
           { id: "head-title", type: "text", props: { title: "{{title}}", level: "h1" } },
           // Рядок про себе — щаблем нижче за ім'я: це той самий `lead`, яким
@@ -176,7 +176,7 @@ export const PAGE_TEMPLATES: readonly PageTemplate[] = [
       {
         id: "head",
         type: "card",
-        props: { padding: "lg", elevated: true },
+        props: {},
         children: [
           { id: "head-title", type: "text", props: { title: "{{title}}", level: "h1" } },
           // Дата — окремим щаблем, а не приглушеним тілом: у події «коли» — це
@@ -271,7 +271,7 @@ export const PAGE_TEMPLATES: readonly PageTemplate[] = [
       {
         id: "head",
         type: "card",
-        props: { padding: "lg", elevated: true },
+        props: {},
         children: [
           { id: "head-title", type: "text", props: { title: "{{title}}", level: "h1" } },
           { id: "head-tagline", type: "text", props: { title: "{{tagline}}", level: "h3" } },
@@ -385,7 +385,7 @@ export const PAGE_TEMPLATES: readonly PageTemplate[] = [
         // Разом вони читаються як обкладинка, окремо — як три різні блоки.
         id: "head",
         type: "card",
-        props: { padding: "lg", elevated: true },
+        props: {},
         children: [
           { id: "head-kicker", type: "text", props: { title: "{{kicker}}", level: "h4" } },
           { id: "head-title", type: "text", props: { title: "{{title}}", level: "h1" } },
@@ -396,7 +396,7 @@ export const PAGE_TEMPLATES: readonly PageTemplate[] = [
       {
         id: "body",
         type: "card",
-        props: { padding: "md" },
+        props: {},
         children: [{ id: "body-text", type: "text", props: { content: "{{body}}" } }],
       },
       // Цитата стоїть **поміж** текстом і джерелами: винесена фраза — це
