@@ -1,5 +1,22 @@
-import { describe, it, expect } from "vitest";
+import { describe, it, expect, vi } from "vitest";
 import { resolveUserId, tryResolveUserId } from "./identity";
+
+/**
+ * Лічильник перевірок підпису — обгортка над справжньою функцією, не заміна:
+ * якби підпис підмінили заглушкою, тест «один HMAC на запит» нічого не довів.
+ */
+const checks = vi.hoisted(() => ({ count: 0 }));
+
+vi.mock("@wwwuabot/shared/security/telegram", async (importOriginal) => {
+  const actual = await importOriginal<typeof import("@wwwuabot/shared/security/telegram")>();
+  return {
+    ...actual,
+    verifyInitDataPayload: async (initData: string, botToken: string) => {
+      checks.count += 1;
+      return actual.verifyInitDataPayload(initData, botToken);
+    },
+  };
+});
 
 const BOT_TOKEN = "123456:TEST-BOT-TOKEN";
 
@@ -100,6 +117,19 @@ describe("resolveUserId", () => {
     const result = await resolveUserId(req, {});
     expect(result.ok).toBe(false);
     if (!result.ok) expect(result.response.status).toBe(503);
+  });
+});
+
+describe("один підпис на запит", () => {
+  it("рахує HMAC раз, скільки б разів його не питали", async () => {
+    const req = request({ "X-Telegram-Init-Data": await makeInitData(42) });
+    checks.count = 0;
+
+    await tryResolveUserId(req, env);
+    await tryResolveUserId(req, env);
+    await resolveUserId(req, env);
+
+    expect(checks.count).toBe(1);
   });
 });
 

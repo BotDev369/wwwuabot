@@ -23,7 +23,7 @@
  */
 
 import type { Env } from "./types";
-import { INIT_DATA_HEADER, verifyInitData } from "@wwwuabot/shared/security/telegram";
+import { readVerifiedPayload } from "./identity";
 import { markPlatformEntry } from "../services/contacts.service";
 import { apiLog } from "./logger";
 
@@ -37,11 +37,13 @@ const marked = new Set<number>();
  * після неї (без `waitUntil` Cloudflare міг би вбити воркер разом із запитом).
  */
 export async function markEntryFromRequest(request: Request, env: Env): Promise<void> {
-  const initData = request.headers.get(INIT_DATA_HEADER);
-  if (!initData || !env.BOT_TOKEN) return;
+  // Підпис той самий, що й у гейті та контролері, тож HMAC уже може бути
+  // порахований — `readVerifiedPayload` віддає готовий результат.
+  const payload = await readVerifiedPayload(request, env);
+  if (payload === null) return;
 
-  const userId = await verifyInitData(initData, env.BOT_TOKEN);
-  if (userId === null || marked.has(userId)) return;
+  const userId = payload.userId;
+  if (marked.has(userId)) return;
 
   try {
     await markPlatformEntry(env, userId);

@@ -15,7 +15,6 @@
 import type { Env } from "./types";
 import {
   INIT_DATA_HEADER,
-  verifyInitData,
   verifyInitDataPayload,
   type InitDataPayload,
 } from "@wwwuabot/shared/security/telegram";
@@ -35,6 +34,37 @@ function json(data: unknown, status = 200): Response {
 }
 
 /**
+ * Один HMAC на запит: підпис перевіряють відмітка входу, гейт і контролер
+ * (чому саме так — `docs/CLOUDFLARE_AUDIT.md`, C4).
+ *
+ * Кеш — на об'єкті `Request`: перший, хто спитав, рахує, решта чекає ту саму
+ * обіцянку, а `WeakMap` зникає разом із запитом — між запитами й людьми кешу
+ * немає.
+ */
+const verified = new WeakMap<Request, Promise<InitDataPayload | null>>();
+
+/**
+ * Перевірений `initData` запиту — єдина точка, де рахується підпис.
+ *
+ * `null` означає «ідентичності немає»: нема рядка, нема токена або підпис не
+ * зійшовся. Саме це й потрібно гейту, відмітці входу та контролерам.
+ */
+export function readVerifiedPayload(
+  request: Request,
+  env: Pick<Env, "BOT_TOKEN">,
+): Promise<InitDataPayload | null> {
+  const cached = verified.get(request);
+  if (cached) return cached;
+
+  const initData = request.headers.get(INIT_DATA_HEADER);
+  const botToken = env.BOT_TOKEN;
+  const check =
+    initData && botToken ? verifyInitDataPayload(initData, botToken) : Promise.resolve(null);
+  verified.set(request, check);
+  return check;
+}
+
+/**
  * Ідентичність, якщо запит її має. Для публічних ендпоїнтів, які лише
  * збагачують відповідь для власника (напр. `GET /api/scenario/:slug`).
  */
@@ -42,9 +72,7 @@ export async function tryResolveUserId(
   request: Request,
   env: Pick<Env, "BOT_TOKEN">,
 ): Promise<number | null> {
-  const initData = request.headers.get(INIT_DATA_HEADER);
-  if (!initData || !env.BOT_TOKEN) return null;
-  return verifyInitData(initData, env.BOT_TOKEN);
+  return (await readVerifiedPayload(request, env))?.userId ?? null;
 }
 
 /**
@@ -70,7 +98,7 @@ export async function resolveInitDataIdentity(
     return { ok: false, response: json({ error: "Unauthorized" }, 401) };
   }
 
-  const payload = await verifyInitDataPayload(initData, env.BOT_TOKEN);
+  const payload = await readVerifiedPayload(request, env);
   if (payload === null) {
     return { ok: false, response: json({ error: "Invalid initData" }, 401) };
   }
