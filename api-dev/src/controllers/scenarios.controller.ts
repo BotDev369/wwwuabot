@@ -4,7 +4,6 @@ import {
   contentPageFromScenario,
   type ContentPage,
   normalizeSlug,
-  pickContentPage,
   resolveContentRoute,
   type ScenarioContentRow,
 } from "@wwwuabot/shared/content";
@@ -58,36 +57,55 @@ interface GatedScenarioRow extends ScenarioContentRow {
   viewer_ids?: string | null;
 }
 
-/** Сторінка, на яку вказує alias старої адреси; немає — `null`. */
-async function movedPage(
-  pages: readonly ContentPage[],
-  db: D1Database,
-  slug: string,
-): Promise<ContentPage | null> {
-  const target = await redirectTargetFor(db, slug);
-  return target === null ? null : (resolveContentRoute(pages, target)?.page ?? null);
+/**
+ * Скільки сегментів адреси взагалі має сенс питати в базі.
+ *
+ * Довша адреса — це вже параметри маршруту (дата, сторінка списку), а не шлях
+ * у сховищі. Обмеження тримає запит у межах кількох `?`, навіть якщо клієнт
+ * приніс шлях із сотнею сегментів.
+ */
+const MAX_ROUTE_SEGMENTS = 8;
+
+/**
+ * Адреси-кандидати для цього шляху: сам шлях і всі його префікси.
+ *
+ * Сторінка з параметрами (`dateanalysis/1980-03-03/today`) у базі лежить як
+ * `dateanalysis`, тобто рядок, чия адреса є префіксом запиту. Тому кандидатів
+ * рівно стільки, скільки сегментів, а не скільки сторінок у базі.
+ */
+function routeCandidates(slug: string): string[] {
+  if (slug === HOME_SLUG) return [HOME_SLUG];
+  const segments = slug.split("/");
+  const depth = Math.min(segments.length, MAX_ROUTE_SEGMENTS);
+  const candidates: string[] = [];
+  for (let length = depth; length > 0; length -= 1) {
+    candidates.push(segments.slice(0, length).join("/"));
+  }
+  return candidates;
 }
 
-// ── resolveScenario ─────────────────────────────────────────────────
-async function resolveScenario(db: D1Database, ref: string, viewerId: number | null) {
-  await ensureBase(db);
-
-  const slug = normalizeSlug(ref);
-
-  // Видимість відбирає запит, а не розмітка: контент платформи (`owner_id`
-  // порожній) відкритий, сторінка людини — коли публічна або коли цю людину
-  // додано глядачем. Точну умову ухвалює `pageVisibleTo`: `viewer_ids` —
-  // JSON-колонка, і SQL не знає, чи збігся id, чи це підрядок чужого.
-  // `COALESCE` — бо колонку додано наявній таблиці й у старих рядків там `NULL`.
+/**
+ * Рядки `scenarios` за цими адресами, які бачить цей глядач.
+ *
+ * Видимість відбирає код, а не SQL: контент платформи (`owner_id` порожній)
+ * відкритий, сторінка людини — коли публічна або коли цю людину додано
+ * глядачем. Точну умову ухвалює `pageVisibleTo`: `viewer_ids` — JSON-колонка, і
+ * SQL не знає, чи збігся id, чи це підрядок чужого.
+ */
+async function visiblePages(
+  db: D1Database,
+  slugs: readonly string[],
+  viewerId: number | null,
+): Promise<ContentPage[]> {
+  if (slugs.length === 0) return [];
+  const placeholders = slugs.map(() => "?").join(", ");
   const rows = await db
     .prepare(
-      `SELECT ${PAGE_COLUMNS} FROM scenarios
-       WHERE is_active = 1
-         AND (owner_id IS NULL OR COALESCE(is_public, 0) = 1
-              OR (owner_id IS NOT NULL AND viewer_ids IS NOT NULL))`,
+      `SELECT ${PAGE_COLUMNS} FROM scenarios WHERE is_active = 1 AND slug IN (${placeholders})`,
     )
+    .bind(...slugs)
     .all<GatedScenarioRow>();
-  const pages = ((rows.results ?? []) as GatedScenarioRow[])
+  return ((rows.results ?? []) as GatedScenarioRow[])
     .filter((row) =>
       pageVisibleTo(
         row.owner_id ?? null,
@@ -97,11 +115,51 @@ async function resolveScenario(db: D1Database, ref: string, viewerId: number | n
       ),
     )
     .map(contentPageFromScenario);
+}
 
-  // Стара адреса веде на сторінку, яка переїхала (`docs/URL.md` §4): інакше
-  // кнопка, надіслана в чат до переїзду, показувала б фолбек замість статті.
-  const direct = resolveContentRoute(pages, slug)?.page ?? null;
-  const page = direct ?? (await movedPage(pages, db, slug)) ?? pickContentPage(pages, slug);
+/** Головна сторінка, якщо вона є й видима цьому глядачу. */
+async function homePage(db: D1Database, viewerId: number | null): Promise<ContentPage | null> {
+  const pages = await visiblePages(db, [HOME_SLUG], viewerId);
+  return pages[0] ?? null;
+}
+
+/**
+ * Сторінка, на яку вказує alias старої адреси; немає — `null`.
+ *
+ * Читається **лише коли** пряма адреса нікуди не веде: зайвий запит на кожен
+ * перехід сторінки, яка нікуди не переїжджала, не потрібен.
+ */
+async function movedPage(
+  db: D1Database,
+  slug: string,
+  viewerId: number | null,
+): Promise<ContentPage | null> {
+  const target = await redirectTargetFor(db, slug);
+  if (target === null) return null;
+  const pages = await visiblePages(db, [normalizeSlug(target)], viewerId);
+  return pages[0] ?? null;
+}
+
+// ── resolveScenario ─────────────────────────────────────────────────
+async function resolveScenario(db: D1Database, ref: string, viewerId: number | null) {
+  await ensureBase(db);
+
+  const slug = normalizeSlug(ref);
+
+  // Спершу — сама адреса та її префікси. Раніше тут читались **усі** активні
+  // сторінки (28 рядків, ≈148 КБ `page_data`) і кожен рядок розбирався в JSON,
+  // щоб знайти один. Адреса унікальна (`slug UNIQUE`), тож пошук за нею — це
+  // один рядок за індексом.
+  const pages = await visiblePages(db, routeCandidates(slug), viewerId);
+  let page = resolveContentRoute(pages, slug)?.page ?? null;
+
+  if (page === null && slug !== HOME_SLUG) {
+    // Стара адреса веде на сторінку, яка переїхала (`docs/URL.md` §4): інакше
+    // кнопка, надіслана в чат до переїзду, показувала б фолбек замість статті.
+    // А далі — фолбек на головну, і теж окремим запитом: глибока сторінка не
+    // мусить тягнути `page_data` головної лише тому, що та існує.
+    page = (await movedPage(db, slug, viewerId)) ?? (await homePage(db, viewerId));
+  }
 
   return {
     scenario: {

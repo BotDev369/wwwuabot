@@ -14,31 +14,49 @@ interface FakeStatement {
   first: () => Promise<ScenarioRow | null>;
 }
 
+/** Запит разом із його `?` — щоб тест бачив, ЩО саме воркер питав у бази. */
+interface BoundQuery {
+  sql: string;
+  args: unknown[];
+}
+
 function fakeD1(
   state: FakeState,
   log: string[] = [],
   aliases: Record<string, string> = {},
+  bound: BoundQuery[] = [],
 ): D1Database {
   const columns = ["id", "slug", "title", "photo_url", "page_data", "is_active"];
+  // Фейк відтворює WHERE: без цього тест не побачив би різниці між «читаємо
+  // один рядок за адресою» і «читаємо всі рядки й фільтруємо в пам'яті».
+  const rowsFor = (sql: string, args: unknown[]): ScenarioRow[] => {
+    if (/slug IN \(/i.test(sql)) return state.rows.filter((row) => args.includes(row.slug));
+    if (/slug = \?/i.test(sql)) return state.rows.filter((row) => row.slug === args[0]);
+    return state.rows;
+  };
   const db = {
     prepare(sql: string) {
       log.push(sql);
       let args: unknown[] = [];
       const statement: FakeStatement = {
-        bind: (...bound: unknown[]) => {
-          args = bound;
+        bind: (...boundArgs: unknown[]) => {
+          args = boundArgs;
+          bound.push({ sql, args: boundArgs });
           return statement;
         },
         run: async () => ({ meta: { changes: 1 } }),
         all: async () =>
           sql.startsWith("PRAGMA table_info")
             ? { results: columns.map((name) => ({ name })) }
-            : { results: state.rows },
+            : { results: /FROM scenarios/i.test(sql) ? rowsFor(sql, args) : state.rows },
         // Стара адреса: `slug_aliases` віддає ціль, якщо alias відомий.
         first: async () => {
-          if (!/JOIN scenarios/.test(sql)) return null;
-          const target = aliases[String(args[0])];
-          return target === undefined ? null : { slug: target };
+          if (/JOIN scenarios/.test(sql)) {
+            const target = aliases[String(args[0])];
+            return target === undefined ? null : { slug: target };
+          }
+          if (!/FROM scenarios/i.test(sql)) return null;
+          return rowsFor(sql, args)[0] ?? null;
         },
       };
       return statement;
@@ -49,6 +67,12 @@ function fakeD1(
 
 const envWith = (rows: ScenarioRow[], aliases: Record<string, string> = {}): Env =>
   ({ DB: fakeD1({ rows }, [], aliases) }) as unknown as Env;
+
+/** Те саме, але з журналом усіх `?`: які саме адреси пішли в базу. */
+function envWithTraffic(rows: ScenarioRow[]): { env: Env; bound: BoundQuery[] } {
+  const bound: BoundQuery[] = [];
+  return { env: { DB: fakeD1({ rows }, [], {}, bound) } as unknown as Env, bound };
+}
 
 /** Те саме, але з журналом SQL: читання не має права нічого писати в базу. */
 function envWithLog(rows: ScenarioRow[]): { env: Env; sql: string[] } {
@@ -134,6 +158,49 @@ describe("GET /api/scenario/:slug", () => {
 
     expect(body.scenario.slug).toBe("mydate/today");
     expect(body.pageData?.zones.main[0]?.props.title).toBe("Сьогодні");
+  });
+
+  it("читає лише адресу та її префікси, а не всі сторінки", async () => {
+    const { env, bound } = envWithTraffic([
+      { slug: "", page_data: pageData("Головна"), is_active: 1 },
+      { slug: "viruvannia", page_data: pageData("Вірування"), is_active: 1 },
+      { slug: "viruvannia/sto-vidsotkiv", page_data: pageData("Сто відсотків"), is_active: 1 },
+      { slug: "dateanalysis", page_data: pageData("Дата"), is_active: 1 },
+    ]);
+
+    const body = await bodyOf(await call(env, "viruvannia/sto-vidsotkiv/nova"));
+
+    expect(body.scenario.slug).toBe("viruvannia/sto-vidsotkiv");
+    const scenarioReads = bound.filter((query) => /FROM scenarios/i.test(query.sql));
+    expect(scenarioReads).toHaveLength(1);
+    expect(scenarioReads[0]?.args).toEqual([
+      "viruvannia/sto-vidsotkiv/nova",
+      "viruvannia/sto-vidsotkiv",
+      "viruvannia",
+    ]);
+  });
+
+  it("не віддає приватну сторінку іншої людини", async () => {
+    const body = await bodyOf(
+      await call(
+        envWith([
+          {
+            slug: "chuzha",
+            title: "Чужа",
+            owner_id: 99,
+            is_public: 0,
+            viewer_ids: null,
+            page_data: pageData("Чужа"),
+            is_active: 1,
+          },
+          { slug: "", title: "Головна", page_data: pageData("Головна"), is_active: 1 },
+        ]),
+        "chuzha",
+      ),
+    );
+
+    expect(body.scenario.slug).toBe(HOME_SLUG);
+    expect(body.pageData?.zones.main[0]?.props.title).toBe("Головна");
   });
 
   it("битий page_data не пробиває помилку назовні", async () => {
