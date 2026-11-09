@@ -59,6 +59,7 @@
     "check:coverage": "node scripts/check-coverage.mjs",
     "check:pages": "vitest run packages/shared/src/types/page-data.dump.test.ts",
     "audit:pages": "node scripts/page-inventory.mjs",
+    "audit:cloudflare": "node scripts/audit-cloudflare.mjs",
     "audit:bricks": "node scripts/audit-bricks.mjs",
     "verify": "node scripts/verify.mjs",
     "clean:tmp": "node scripts/clean-tmp.mjs"

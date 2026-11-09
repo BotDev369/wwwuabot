@@ -11,6 +11,9 @@ Cloudflare GraphQL, датасет `d1QueriesAdaptiveGroups`: він має ви
 датасети й різна затримка, тому змішувати їх не можна. Аналітика відстає приблизно на добу: свіжі
 запити поточного дня в ній ще не видні.
 
+Повторний зріз — `npm run audit:cloudflare` (тиждень за замовчуванням, `-- --days=14` для довшого вікна):
+той самий запит до всіх чотирьох датасетів за один запуск.
+
 ```graphql
 { viewer { accounts(filter: {accountTag: "…"}) {
   d1QueriesAdaptiveGroups(limit: 500, filter: {date_geq: "2026-11-02", date_leq: "2026-11-09"}) {
