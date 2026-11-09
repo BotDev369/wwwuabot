@@ -148,6 +148,22 @@ function oneLine(sql) {
   return text.length > 88 ? `${text.slice(0, 87)}…` : text;
 }
 
+/** Форми запитів до `spending_transactions`: старий `GROUP BY` — це регрес. */
+const LEGACY_AGGREGATE =
+  /GROUP BY (kekv|kpk|budget_code|payer_edrpou|recipt_edrpou|trans_date AS key)|COUNT\(DISTINCT|MIN\(trans_date\)/i;
+
+function spendingShapes(queries) {
+  const shapes = { window: 0, legacy: 0, other: 0 };
+  for (const row of queries) {
+    const sql = String(row.dimensions.query ?? "");
+    if (!sql.includes("spending_transactions")) continue;
+    if (/ORDER BY rowid/i.test(sql)) shapes.window += row.count;
+    else if (LEGACY_AGGREGATE.test(sql)) shapes.legacy += row.count;
+    else shapes.other += row.count;
+  }
+  return shapes;
+}
+
 function printD1(rows, queries) {
   let read = 0;
   let written = 0;
@@ -187,6 +203,17 @@ function printD1(rows, queries) {
   for (const [sql, one] of top) {
     console.log(
       `    ${number.format(one.rows).padStart(10)} / ${String(one.runs).padStart(5)} зап. | ${oneLine(sql)}`,
+    );
+  }
+
+  // Після перебудови розрізів це єдине число, яке треба глянути: старі форми
+  // не мусять повертатися, інакше тижневий `rows_read` знову стрибне.
+  const shapes = spendingShapes(queries);
+  if (shapes.window + shapes.legacy > 0) {
+    const legacy = shapes.legacy ? `, ⚠ стара форма — ${shapes.legacy} вик.` : "";
+    console.log(
+      `  розрізи витрат: вікно (один прохід) — ${shapes.window} вик.${legacy}; ` +
+        `без розрізу — ${shapes.other} вик.`,
     );
   }
 }
