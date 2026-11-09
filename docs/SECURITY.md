@@ -21,9 +21,9 @@
 
 **Асети — другий шар, і в нього свої правила.** Наявні файли (`/`, `/assets/*`) шар асетів віддає
 **повз воркер**, тож `secureResponse` до них не доходить. Ті самі заголовки для них лежать у
-`web-platform-dev/public/_headers`: Vite кладе його в `dist/client/`, шар асетів застосовує правила
-до відповідей, а сам файл не віддає. Значення там не «на око»: `web-platform-dev/src/assets-headers.test.ts`
-падає, якщо `_headers` розійшовся з `applySecurityHeaders`.
+`public/_headers` обох оболонок: Vite кладе його в `dist/client/`, шар асетів застосовує правила до
+відповідей, а сам файл не віддає. Значення там не «на око»: `assets-headers.test.ts` кожної
+оболонки падає, якщо її `_headers` розійшовся з `applySecurityHeaders`.
 
 ## CORS — не «*»
 

@@ -91,6 +91,9 @@
 старий бандл — причина в `worker.ts`), і це рішення не про безпеку. Міряно живим воркером до
 зміни: `/` і `/assets/index-BKacYij9.js` мали лише `cache-control: public, max-age=0,
  must-revalidate`, без CSP і `X-Frame-Options`.
+**Адмінка — те саме, 09.11.2026.** `web-admin-dev/public/_headers` із тим самим правилом `/*` і
+своїм `assets-headers.test.ts`. До зміни її `/` мав лише `cache-control: public, max-age=0,
+ must-revalidate` без CSP, а `no-store` у її воркері діяв лише на HTML — асети лишалися `public`.
 
 **C3. Сторінка контенту читає всі сторінки (P0).** `handleScenario` вибирає
 `SELECT id, slug, title, photo_url, page_data, … FROM scenarios WHERE is_active = 1 AND (…)` без
