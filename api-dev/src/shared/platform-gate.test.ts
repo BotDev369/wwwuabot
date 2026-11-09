@@ -49,23 +49,33 @@ async function makeInitData(userId: number): Promise<string> {
   return params.toString();
 }
 
-/** D1, який на `SELECT inviter_id` відповідає заданим значенням. */
-function fakeDb(inviterId: number | null | Error): D1Database {
-  const statement = {
-    bind: () => statement,
-    first: async () => {
-      if (inviterId instanceof Error) throw inviterId;
-      return { inviter_id: inviterId };
-    },
-    all: async () => ({ results: [] }),
-    run: async () => ({ meta: { changes: 0 } }),
-  } as unknown as D1PreparedStatement;
-  return { prepare: () => statement } as unknown as D1Database;
+/** Скільки разів гейт спитав базу про допуск. */
+interface Reads {
+  count: number;
 }
 
-function makeEnv(inviterId: number | null | Error = null): Env {
+/** D1, який на `SELECT inviter_id` відповідає заданим значенням. */
+function fakeDb(inviterId: number | null | Error, reads: Reads = { count: 0 }): D1Database {
   return {
-    DB: fakeDb(inviterId),
+    prepare: (sql: string) => {
+      const statement = {
+        bind: () => statement,
+        first: async () => {
+          if (/inviter_id/.test(sql)) reads.count += 1;
+          if (inviterId instanceof Error) throw inviterId;
+          return { inviter_id: inviterId };
+        },
+        all: async () => ({ results: [] }),
+        run: async () => ({ meta: { changes: 0 } }),
+      } as unknown as D1PreparedStatement;
+      return statement;
+    },
+  } as unknown as D1Database;
+}
+
+function makeEnv(inviterId: number | null | Error = null, reads?: Reads): Env {
+  return {
+    DB: fakeDb(inviterId, reads),
     CONTENT_KV: {
       get: async () => null,
       put: async () => undefined,
@@ -189,6 +199,32 @@ describe("гейт допуску на платформі", () => {
       const res = await post("/api/user/access-request", makeEnv(null), body, initData);
       expect(res.status).toBe(400);
     }
+  });
+
+  it("дозвіл не читає базу щоразу: кеш живе секунди", async () => {
+    const initData = await makeInitData(42);
+    const reads: Reads = { count: 0 };
+    const env = makeEnv(7, reads);
+
+    await call("/api/public/users", env, { "X-Telegram-Init-Data": initData });
+    await call("/api/public/users", env, { "X-Telegram-Init-Data": initData });
+
+    expect(reads.count).toBe(1);
+  });
+
+  it("відмова не кешується — нове запрошення видно зразу", async () => {
+    const initData = await makeInitData(42);
+    const reads: Reads = { count: 0 };
+    const env = makeEnv(null, reads);
+
+    expect(
+      (await call("/api/public/users", env, { "X-Telegram-Init-Data": initData })).status,
+    ).toBe(403);
+    expect(
+      (await call("/api/public/users", env, { "X-Telegram-Init-Data": initData })).status,
+    ).toBe(403);
+
+    expect(reads.count).toBe(2);
   });
 
   it("health не проходить гейт (його опитує монітор без підпису)", async () => {

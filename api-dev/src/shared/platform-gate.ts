@@ -70,16 +70,37 @@ function needsAccess(pathname: string): boolean {
   return !PLATFORM_EXEMPT_PATHS.some((prefix) => pathname.startsWith(prefix));
 }
 
+/** Скільки живе дозвіл у пам'яті інстансу. */
+const ACCESS_TTL_MS = 15_000;
+
+/** Стеля на інстанс: людей мало, але кеш не мусить рости безкінечно. */
+const ACCESS_CACHE_LIMIT = 1_000;
+
+/** Дозволи, які вже перевірили, — окремо для кожної бази інстансу. */
+const accessCache = new WeakMap<D1Database, Map<number, number>>();
+
+function accessCacheFor(db: D1Database): Map<number, number> {
+  const existing = accessCache.get(db);
+  if (existing) return existing;
+  const created = new Map<number, number>();
+  accessCache.set(db, created);
+  return created;
+}
+
 /**
  * Чи можу віддати запит далі.
  *
  * `null` — можна. `Response` — не можна: 401 (немає підпису) або 403 (людина не
  * запрошена).
  *
- * **Рядок читається з таблиці `users`**, а не з кешу: `inviter_id` пише бот у
- * момент переходу за лінком, і людина, яка щойно прийшла, має отримати доступ
- * без перезавантаження Mini App. Власник (`ADMIN_TELEGRAM_ID`) проходить без
- * `inviter_id`: йому нема ким бути запрошеним.
+ * **Дозвіл запам'ятовується на 15 с, відмова — ніколи.** `inviter_id` пише бот у
+ * момент переходу за лінком, тож «ні» завжди читається з таблиці: людину, яку
+ * щойно запросили, гейт має пустити зразу. «Так» може прийти з пам'яті
+ * інстансу — ключ кешу — сам `env.DB`, і живе він рівно стільки, скільки живе
+ * інстанс.
+ *
+ * Власник (`ADMIN_TELEGRAM_ID`) проходить без `inviter_id`: йому нема ким бути
+ * запрошеним.
  */
 async function hasAccessToPlatform(
   request: Request,
@@ -88,11 +109,20 @@ async function hasAccessToPlatform(
   const identity = await resolveUserId(request, env);
   if (!identity.ok) return { ok: false, response: identity.response };
 
+  const cache = accessCacheFor(env.DB);
+  const now = Date.now();
+  const expiresAt = cache.get(identity.userId);
+  if (expiresAt !== undefined && expiresAt > now) return { ok: true };
+
   try {
     const row = await env.DB.prepare("SELECT user_id, inviter_id FROM users WHERE user_id = ?")
       .bind(identity.userId)
       .first<{ user_id: number; inviter_id: number | null }>();
-    if (hasAccess(row, env.ADMIN_TELEGRAM_ID)) return { ok: true };
+    if (hasAccess(row, env.ADMIN_TELEGRAM_ID)) {
+      if (cache.size >= ACCESS_CACHE_LIMIT) cache.clear();
+      cache.set(identity.userId, now + ACCESS_TTL_MS);
+      return { ok: true };
+    }
   } catch (error: unknown) {
     // База недоступна — це не привід відкрити продукт: закритий продукт
     // лишається закритим, доки не зможемо перевірити.
