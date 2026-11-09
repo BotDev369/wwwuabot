@@ -20,6 +20,7 @@ import {
   type SpendingTransaction,
 } from "@wwwuabot/shared/spending";
 import { LASTLOAD_KEY, monthWindow } from "./config";
+import { groupRows, loadWindow, type WindowGroup } from "./window";
 
 /** Стеля стану збору: кроків на період десятки, а не тисячі. */
 const SYNC_LIMIT = 200;
@@ -143,13 +144,14 @@ async function grouped(
 }
 
 /**
- * Картки всіх розпорядників за період: три згруповані запити, а не три на
- * кожного — інакше дванадцять кодів дали б тридцять шість запитів на екран.
+ * Картки всіх розпорядників за період: довідник, документи й **одне** читання
+ * платежів, з якого рахуються обидві сторони. Окремі `GROUP BY` на платника й
+ * отримувача читали ту саму таблицю місяця двічі.
  */
 export async function readOrgs(db: D1Database, period: string): Promise<SpendingOrg[]> {
   const window = monthWindow(period);
   const range = [window.from, window.to];
-  const [orgs, documents, payments, receipts] = await Promise.all([
+  const [orgs, documents, rows] = await Promise.all([
     db.prepare("SELECT edrpou, name, form, koatuu FROM spending_orgs ORDER BY name").all<{
       edrpou: string;
       name: string;
@@ -163,21 +165,17 @@ export async function readOrgs(db: D1Database, period: string): Promise<Spending
         GROUP BY edrpou`,
       range,
     ),
-    grouped(
-      db,
-      `SELECT payer_edrpou AS edrpou, COUNT(*) AS count, COALESCE(SUM(amount), 0) AS amount
-        FROM spending_transactions WHERE trans_date >= ? AND trans_date <= ?
-        GROUP BY payer_edrpou`,
-      range,
-    ),
-    grouped(
-      db,
-      `SELECT recipt_edrpou AS edrpou, COUNT(*) AS count, COALESCE(SUM(amount), 0) AS amount
-        FROM spending_transactions WHERE trans_date >= ? AND trans_date <= ? AND recipt_edrpou <> ''
-        GROUP BY recipt_edrpou`,
-      range,
-    ),
+    loadWindow(db, window.from, window.to),
   ]);
+
+  // Порожній ЄДРПОУ отримувача — «не оприлюднено», а не розпорядник.
+  const payments = groupRows(rows, (row) => row.payerEdrpou);
+  const receipts = groupRows(
+    rows.filter((row) => row.reciptEdrpou !== ""),
+    (row) => row.reciptEdrpou,
+  );
+  const totalsIn = (one: WindowGroup | undefined): SpendingTotals =>
+    one ? { count: one.count, amount: one.amount } : ZERO;
 
   return (orgs.results ?? []).map((org) => ({
     edrpou: org.edrpou,
@@ -185,8 +183,8 @@ export async function readOrgs(db: D1Database, period: string): Promise<Spending
     form: org.form,
     koatuu: org.koatuu,
     documents: documents.get(org.edrpou) ?? ZERO,
-    payments: payments.get(org.edrpou) ?? ZERO,
-    receipts: receipts.get(org.edrpou) ?? ZERO,
+    payments: totalsIn(payments.get(org.edrpou)),
+    receipts: totalsIn(receipts.get(org.edrpou)),
   }));
 }
 

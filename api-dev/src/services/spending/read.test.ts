@@ -103,6 +103,20 @@ describe("стан збору", () => {
 });
 
 describe("картки розпорядників", () => {
+  /** Ті самі рядки, що їх віддає `loadWindow`: платник, отримувач, сума. */
+  const payment = (over: Record<string, unknown>): Record<string, unknown> => ({
+    trans_date: "2026-09-10",
+    amount: 100,
+    kekv: "",
+    kpk: "",
+    budget_code: "",
+    payer_edrpou: "04360586",
+    payer_name: "Бучанська міська рада",
+    recipt_edrpou: "43907812",
+    recipt_name: "Ліцей",
+    ...over,
+  });
+
   const rowsFor = (sql: string): unknown[] => {
     if (sql.includes("FROM spending_orgs")) {
       return [
@@ -113,10 +127,11 @@ describe("картки розпорядників", () => {
     if (sql.includes("FROM spending_documents")) {
       return [{ edrpou: "04360586", count: 29, amount: 1500.5 }];
     }
-    if (sql.includes("payer_edrpou AS edrpou")) {
-      return [{ edrpou: "04360586", count: 649, amount: 90000 }];
-    }
-    return [{ edrpou: "04360586", count: 3, amount: 250 }];
+    return [
+      payment({ amount: 90000 }),
+      payment({ amount: 200, recipt_edrpou: "04360586", recipt_name: "Бучанська міська рада" }),
+      payment({ amount: 50, recipt_edrpou: "", recipt_name: "" }),
+    ];
   };
 
   it("зливає три суми за ЄДРПОУ, а порожній зріз лишає нулем", async () => {
@@ -127,13 +142,14 @@ describe("картки розпорядників", () => {
     expect(orgs[0]).toMatchObject({
       edrpou: "04360586",
       documents: { count: 29, amount: 1500.5 },
-      payments: { count: 649, amount: 90000 },
-      receipts: { count: 3, amount: 250 },
+      payments: { count: 3, amount: 90250 },
+      receipts: { count: 1, amount: 200 },
     });
     expect(orgs[1]).toMatchObject({
       name: "Ліцей",
       documents: { count: 0, amount: 0 },
       payments: { count: 0, amount: 0 },
+      receipts: { count: 1, amount: 90000 },
     });
   });
 
@@ -144,6 +160,16 @@ describe("картки розпорядників", () => {
 
     const documents = statements.find((s) => s.sql.includes("FROM spending_documents"));
     expect(documents?.binds).toEqual(["2026-09-01", "2026-09-30"]);
+  });
+
+  it("читає платежі місяця один раз — на обидві сторони", async () => {
+    const { db, statements } = fakeDb((sql) => ({ rows: rowsFor(sql) }));
+
+    await readOrgs(db, "2026-09");
+
+    const reads = statements.filter((s) => s.sql.includes("FROM spending_transactions"));
+    expect(reads).toHaveLength(1);
+    expect(reads[0]?.binds).toEqual(["2026-09-01", "2026-09-30"]);
   });
 });
 

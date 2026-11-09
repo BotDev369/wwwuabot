@@ -16,6 +16,22 @@ interface Captured {
   binds: unknown[];
 }
 
+/** Рядок платежу в тому вигляді, у якому його віддає D1. */
+function windowRow(over: Record<string, unknown> = {}): Record<string, unknown> {
+  return {
+    trans_date: "2026-10-30",
+    amount: 100,
+    kekv: "2111",
+    kpk: "0118240",
+    budget_code: "1051500000",
+    payer_edrpou: "04360586",
+    payer_name: "Бучанська рада",
+    recipt_edrpou: "39894111",
+    recipt_name: "ТОВ",
+    ...over,
+  };
+}
+
 /** D1 у мініатюрі: відповідь залежить від SQL, а не від порядку виклику. */
 function fakeDb(handler: (sql: string) => { rows?: unknown[]; row?: unknown }): {
   db: D1Database;
@@ -63,22 +79,17 @@ describe("dataRange", () => {
 });
 
 describe("readCodes", () => {
-  it("три класифікації читаються окремо, порожній код лишається рядком", async () => {
-    const { db } = fakeDb((sql) => {
-      if (sql.includes("COUNT(DISTINCT")) return { row: { count: 3, amount: 600 } };
-      if (sql.includes("kekv")) {
-        return {
-          rows: [
-            { code: "2111", count: 2, amount: 500 },
-            { code: "", count: 1, amount: 100 },
-          ],
-        };
-      }
-      if (sql.includes("kpk")) return { rows: [{ code: "0118240", count: 3, amount: 600 }] };
-      return { rows: [{ code: "1051500000", count: 3, amount: 600 }] };
-    });
+  it("три класифікації — з одного проходу, порожній код лишається рядком", async () => {
+    const { db, statements } = fakeDb(() => ({
+      rows: [
+        windowRow({ kekv: "2111", amount: 300 }),
+        windowRow({ kekv: "2111", amount: 200 }),
+        windowRow({ kekv: "", amount: 100 }),
+      ],
+    }));
 
     const codes = await readCodes(db, "2026-10");
+
     expect(codes.period).toBe("2026-10");
     expect(codes.from).toBe("2026-10-01");
     expect(codes.to).toBe("2026-10-31");
@@ -86,8 +97,14 @@ describe("readCodes", () => {
       { code: "2111", count: 2, amount: 500 },
       { code: "", count: 1, amount: 100 },
     ]);
-    expect(codes.kpk).toHaveLength(1);
+    expect(codes.totals).toEqual({ count: 3, amount: 600 });
+    expect(codes.kpk).toEqual([{ code: "0118240", count: 3, amount: 600 }]);
     expect(codes.budget[0]?.code).toBe("1051500000");
+
+    // Один запит на весь розріз: раніше їх було чотири, і кожен читав таблицю.
+    expect(statements).toHaveLength(1);
+    expect(statements[0]?.sql).toMatch(/ORDER BY rowid/);
+    expect(statements[0]?.binds).toEqual(["2026-10-01", "2026-10-31"]);
   });
 
   it("без періоду база не читається взагалі", async () => {
@@ -100,42 +117,41 @@ describe("readCodes", () => {
 
 describe("readRecipients", () => {
   it("місяць — це дні календаря, а не лише дні з платежами", async () => {
-    const { db } = fakeDb((sql) => {
-      if (sql.includes("MIN(trans_date)")) {
-        return { row: { first_date: "2026-09-01", last_date: "2026-10-30" } };
-      }
-      if (sql.includes("COUNT(DISTINCT recipt_edrpou)")) {
-        return { row: { count: 2, amount: 300, recipients: 1 } };
-      }
-      if (sql.includes("GROUP BY trans_date")) {
-        return { rows: [{ key: "2026-10-30", count: 2, amount: 300 }] };
-      }
-      return { rows: [{ edrpou: "39894111", name: "ТОВ", count: 2, amount: 300 }] };
-    });
+    const { db } = fakeDb((sql) =>
+      sql.includes("MIN(trans_date)")
+        ? { row: { first_date: "2026-09-01", last_date: "2026-10-30" } }
+        : {
+            rows: [
+              windowRow({ trans_date: "2026-10-30", amount: 200 }),
+              windowRow({ trans_date: "2026-10-30", amount: 100 }),
+              windowRow({
+                trans_date: "2026-10-30",
+                amount: 50,
+                recipt_edrpou: "",
+                recipt_name: "",
+              }),
+            ],
+          },
+    );
 
     const view = await readRecipients(db, "month");
     expect(view.from).toBe("2026-10-01");
     expect(view.to).toBe("2026-10-31");
     expect(view.bucket).toBe("day");
     expect(view.buckets).toHaveLength(31);
-    expect(view.buckets[29]).toEqual({ key: "2026-10-30", count: 2, amount: 300 });
+    expect(view.buckets[29]).toEqual({ key: "2026-10-30", count: 3, amount: 350 });
     expect(view.buckets[0]).toEqual({ key: "2026-10-01", count: 0, amount: 0 });
-    expect(view.rows[0]).toEqual({ edrpou: "39894111", name: "ТОВ", count: 2, amount: 300 });
+    expect(view.totals).toEqual({ count: 3, amount: 350, recipients: 2 });
+    // Порожній ЄДРПОУ в топ не потрапляє, хоч у підсумок вікна входить.
+    expect(view.rows).toEqual([{ edrpou: "39894111", name: "ТОВ", count: 2, amount: 300 }]);
   });
 
   it("рік — дванадцять місяців назад від останньої дати, з нулями", async () => {
-    const { db } = fakeDb((sql) => {
-      if (sql.includes("MIN(trans_date)")) {
-        return { row: { first_date: "2025-01-05", last_date: "2026-10-30" } };
-      }
-      if (sql.includes("COUNT(DISTINCT recipt_edrpou)")) {
-        return { row: { count: 5, amount: 500, recipients: 2 } };
-      }
-      if (sql.includes("substr(trans_date, 1, 7)")) {
-        return { rows: [{ key: "2026-10", count: 5, amount: 500 }] };
-      }
-      return { rows: [] };
-    });
+    const { db } = fakeDb((sql) =>
+      sql.includes("MIN(trans_date)")
+        ? { row: { first_date: "2025-01-05", last_date: "2026-10-30" } }
+        : { rows: [windowRow({ trans_date: "2026-10-30", amount: 500 })] },
+    );
 
     const view = await readRecipients(db, "year");
     expect(view.from).toBe("2025-11-01");
@@ -143,22 +159,15 @@ describe("readRecipients", () => {
     expect(view.bucket).toBe("month");
     expect(view.buckets).toHaveLength(12);
     expect(view.buckets[0]).toEqual({ key: "2025-11", count: 0, amount: 0 });
-    expect(view.buckets[11]).toEqual({ key: "2026-10", count: 5, amount: 500 });
+    expect(view.buckets[11]).toEqual({ key: "2026-10", count: 1, amount: 500 });
   });
 
   it("«останній день» — одна дата, і вона ж кінець вікна", async () => {
-    const { db } = fakeDb((sql) => {
-      if (sql.includes("MIN(trans_date)")) {
-        return { row: { first_date: "2026-09-01", last_date: "2026-10-30" } };
-      }
-      if (sql.includes("COUNT(DISTINCT recipt_edrpou)")) {
-        return { row: { count: 1, amount: 50, recipients: 1 } };
-      }
-      if (sql.includes("GROUP BY trans_date")) {
-        return { rows: [{ key: "2026-10-30", count: 1, amount: 50 }] };
-      }
-      return { rows: [] };
-    });
+    const { db } = fakeDb((sql) =>
+      sql.includes("MIN(trans_date)")
+        ? { row: { first_date: "2026-09-01", last_date: "2026-10-30" } }
+        : { rows: [windowRow({ trans_date: "2026-10-30", amount: 50 })] },
+    );
 
     const view = await readRecipients(db, "day");
     expect(view).toMatchObject({ from: "2026-10-30", to: "2026-10-30", bucket: "day" });

@@ -1,9 +1,9 @@
 /**
  * Аналітика платежів: розріз за кодами й за отримувачами.
  *
- * Читає ті самі рядки, що вже зібрав колектор, і не робить жодного запиту до
- * джерела. Вікно рахується від останньої дати в базі, а не від годинника:
- * інакше між cron і відповіддю джерела панель показувала б нулі.
+ * Читає ті самі рядки, що вже зібрав колектор; вікно рахується від останньої
+ * дати в базі, а не від годинника, інакше між cron і відповіддю джерела
+ * панель показувала б нулі. Розрізи рахуються в пам'яті з одного читання.
  * @module api-dev/src/services/spending/analytics
  */
 
@@ -18,15 +18,24 @@ import type {
   SpendingTotals,
 } from "@wwwuabot/shared/spending";
 import { monthWindow } from "./config";
+import {
+  bucketTotals,
+  distinctCount,
+  groupRows,
+  loadWindow,
+  type SpendingWindowRow,
+  topGroups,
+  totalsOf,
+} from "./window";
 
 /** Стеля рядків розрізу: решта коду — хвіст, який все одно не читають. */
 const CODE_LIMIT = 100;
 const RECIPIENT_LIMIT = 25;
 
-const CODE_COLUMNS: Readonly<Record<SpendingCodeKind, string>> = {
-  kekv: "kekv",
-  kpk: "kpk",
-  budget: "budget_code",
+const CODE_OF: Readonly<Record<SpendingCodeKind, (row: SpendingWindowRow) => string>> = {
+  kekv: (row) => row.kekv,
+  kpk: (row) => row.kpk,
+  budget: (row) => row.budgetCode,
 };
 
 const ZERO: SpendingTotals = { count: 0, amount: 0 };
@@ -37,25 +46,6 @@ const ZERO: SpendingTotals = { count: 0, amount: 0 };
 interface RangeRow {
   first_date: string | null;
   last_date: string | null;
-}
-
-interface CodeDbRow {
-  code: string;
-  count: number;
-  amount: number;
-}
-
-interface BucketDbRow {
-  key: string;
-  count: number;
-  amount: number;
-}
-
-interface RecipientDbRow {
-  edrpou: string;
-  name: string;
-  count: number;
-  amount: number;
 }
 
 /** Остання дата платежу в базі; `null` — таблиця порожня. */
@@ -102,39 +92,6 @@ function nextDay(date: string): string {
   return new Date(Date.UTC(year, month - 1, day + 1)).toISOString().slice(0, 10);
 }
 
-async function totalsOf(db: D1Database, from: string, to: string): Promise<SpendingTotals> {
-  const row = await db
-    .prepare(
-      `SELECT COUNT(*) AS count, COALESCE(SUM(amount), 0) AS amount
-        FROM spending_transactions WHERE trans_date >= ? AND trans_date <= ?`,
-    )
-    .bind(from, to)
-    .first<{ count: number; amount: number }>();
-  return { count: Number(row?.count ?? 0), amount: Number(row?.amount ?? 0) };
-}
-
-async function codeRows(
-  db: D1Database,
-  kind: SpendingCodeKind,
-  from: string,
-  to: string,
-): Promise<SpendingCodeRow[]> {
-  const column = CODE_COLUMNS[kind];
-  const result = await db
-    .prepare(
-      `SELECT ${column} AS code, COUNT(*) AS count, COALESCE(SUM(amount), 0) AS amount
-        FROM spending_transactions WHERE trans_date >= ? AND trans_date <= ?
-        GROUP BY ${column} ORDER BY amount DESC LIMIT ?`,
-    )
-    .bind(from, to, CODE_LIMIT)
-    .all<CodeDbRow>();
-  return (result.results ?? []).map((row) => ({
-    code: row.code ?? "",
-    count: Number(row.count ?? 0),
-    amount: Number(row.amount ?? 0),
-  }));
-}
-
 /** Розріз за кодами платежу за конкретний місяць. */
 export async function readCodes(db: D1Database, period: string | null): Promise<SpendingCodes> {
   if (!period) {
@@ -150,14 +107,23 @@ export async function readCodes(db: D1Database, period: string | null): Promise<
   }
 
   const window = monthWindow(period);
-  const [totals, kekv, kpk, budget] = await Promise.all([
-    totalsOf(db, window.from, window.to),
-    codeRows(db, "kekv", window.from, window.to),
-    codeRows(db, "kpk", window.from, window.to),
-    codeRows(db, "budget", window.from, window.to),
-  ]);
+  const rows = await loadWindow(db, window.from, window.to);
+  const codesOf = (kind: SpendingCodeKind): SpendingCodeRow[] =>
+    topGroups(groupRows(rows, CODE_OF[kind]), CODE_LIMIT).map(({ key, totals }) => ({
+      code: key,
+      count: totals.count,
+      amount: totals.amount,
+    }));
 
-  return { period, from: window.from, to: window.to, totals, kekv, kpk, budget };
+  return {
+    period,
+    from: window.from,
+    to: window.to,
+    totals: totalsOf(rows),
+    kekv: codesOf("kekv"),
+    kpk: codesOf("kpk"),
+    budget: codesOf("budget"),
+  };
 }
 
 /** Вікно розрізу: для одного дня межа — дата, для решти — діапазон із базовим кроком. */
@@ -179,31 +145,10 @@ function windowOf(
   }
 }
 
-async function bucketRows(
-  db: D1Database,
-  from: string,
-  to: string,
-  bucket: "month" | "day",
-): Promise<Map<string, SpendingTotals>> {
-  const key = bucket === "month" ? "substr(trans_date, 1, 7)" : "trans_date";
-  const result = await db
-    .prepare(
-      `SELECT ${key} AS key, COUNT(*) AS count, COALESCE(SUM(amount), 0) AS amount
-        FROM spending_transactions WHERE trans_date >= ? AND trans_date <= ? GROUP BY ${key}`,
-    )
-    .bind(from, to)
-    .all<BucketDbRow>();
-  const map = new Map<string, SpendingTotals>();
-  for (const row of result.results ?? []) {
-    map.set(row.key, { count: Number(row.count ?? 0), amount: Number(row.amount ?? 0) });
-  }
-  return map;
-}
-
 /** Дні й місяці без платежів лишаються в ряду нулями: пропуск читався б як розрив збору. */
 function fillBuckets(
   keys: readonly string[],
-  values: Map<string, SpendingTotals>,
+  values: Map<string, { count: number; amount: number }>,
 ): SpendingBucket[] {
   return keys.map((key) => {
     const totals = values.get(key) ?? ZERO;
@@ -230,32 +175,21 @@ export async function readRecipients(
   }
 
   const window = windowOf(scope, range);
-  const [totalsRow, buckets, rows] = await Promise.all([
-    db
-      .prepare(
-        `SELECT COUNT(*) AS count, COALESCE(SUM(amount), 0) AS amount,
-          COUNT(DISTINCT recipt_edrpou) AS recipients
-          FROM spending_transactions WHERE trans_date >= ? AND trans_date <= ?`,
-      )
-      .bind(window.from, window.to)
-      .first<{ count: number; amount: number; recipients: number }>(),
-    bucketRows(db, window.from, window.to, window.bucket),
-    db
-      .prepare(
-        `SELECT recipt_edrpou AS edrpou, MAX(recipt_name) AS name, COUNT(*) AS count,
-          COALESCE(SUM(amount), 0) AS amount
-          FROM spending_transactions
-          WHERE trans_date >= ? AND trans_date <= ? AND recipt_edrpou <> ''
-          GROUP BY recipt_edrpou ORDER BY amount DESC LIMIT ?`,
-      )
-      .bind(window.from, window.to, RECIPIENT_LIMIT)
-      .all<RecipientDbRow>(),
-  ]);
+  const rows = await loadWindow(db, window.from, window.to);
 
   const keys =
     window.bucket === "month"
       ? monthsBetween(window.from, window.to)
       : daysBetween(window.from, window.to);
+
+  // Порожній ЄДРПОУ — це «не оприлюднено», а не отримувач: SQL відсікав його
+  // умовою `recipt_edrpou <> ''`, і саме тому він не потрапляє в топ.
+  const withRecipient = rows.filter((row) => row.reciptEdrpou !== "");
+  const grouped = groupRows(
+    withRecipient,
+    (row) => row.reciptEdrpou,
+    (row) => row.reciptName,
+  );
 
   return {
     scope,
@@ -263,16 +197,15 @@ export async function readRecipients(
     to: window.to,
     bucket: window.bucket,
     totals: {
-      count: Number(totalsRow?.count ?? 0),
-      amount: Number(totalsRow?.amount ?? 0),
-      recipients: Number(totalsRow?.recipients ?? 0),
+      ...totalsOf(rows),
+      recipients: distinctCount(rows, (row) => row.reciptEdrpou),
     },
-    buckets: fillBuckets(keys, buckets),
-    rows: (rows.results ?? []).map((row) => ({
-      edrpou: row.edrpou,
-      name: row.name ?? "",
-      count: Number(row.count ?? 0),
-      amount: Number(row.amount ?? 0),
+    buckets: fillBuckets(keys, bucketTotals(rows, window.bucket)),
+    rows: topGroups(grouped, RECIPIENT_LIMIT).map(({ key, totals }) => ({
+      edrpou: key,
+      name: totals.max,
+      count: totals.count,
+      amount: totals.amount,
     })) satisfies SpendingRecipientRow[],
   };
 }

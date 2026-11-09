@@ -127,7 +127,31 @@ describe("огляд", () => {
         if (sql.includes("FROM spending_documents")) {
           return [{ edrpou: "04360586", count: 29, amount: 1500 }];
         }
-        return [{ edrpou: "04360586", count: 649, amount: 90000 }];
+        // Платежі місяця: обидва — платник 04360586, другий ще й без отримувача.
+        return [
+          {
+            trans_date: "2026-09-10",
+            amount: 90000,
+            kekv: "2111",
+            kpk: "",
+            budget_code: "",
+            payer_edrpou: "04360586",
+            payer_name: "Бучанська міська рада",
+            recipt_edrpou: "43907812",
+            recipt_name: "Ліцей",
+          },
+          {
+            trans_date: "2026-09-11",
+            amount: 200,
+            kekv: "",
+            kpk: "",
+            budget_code: "",
+            payer_edrpou: "04360586",
+            payer_name: "Бучанська міська рада",
+            recipt_edrpou: "",
+            recipt_name: "",
+          },
+        ];
       },
     });
 
@@ -144,7 +168,7 @@ describe("огляд", () => {
     expect(body).toMatchObject({ period: "2026-09", from: "2026-09-01", to: "2026-09-30" });
     expect(body.capturedAt).toBe("2026-10-01T05:38:00.000Z");
     expect(body.orgs[0].documents.count).toBe(29);
-    expect(body.orgs[0].payments.count).toBe(649);
+    expect(body.orgs[0].payments.count).toBe(2);
     expect(body.sync).toHaveLength(1);
   });
 
