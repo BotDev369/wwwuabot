@@ -83,6 +83,14 @@
 `<meta http-equiv="Cache-Control">` в `index.html` не працює взагалі. Лікування: заголовки в
 `_headers` у теці асетів (його читає шар асетів) — CSP і `no-store` для документів,
 `immutable` для `/assets/*`; код у воркері лишити для фолбеку.
+**Виправлено 09.11.2026.** `web-platform-dev/public/_headers` з одним правилом `/*`: CSP,
+`X-Frame-Options`, `nosniff`, `Referrer-Policy`, `Permissions-Policy`, COOP, HSTS і `no-store` —
+значення ті самі, що в `secureResponse`, і `web-platform-dev/src/assets-headers.test.ts` падає,
+якщо файл із функцією розійдуться. Воркер лишився для SPA-фолбеку й `/api/*`. `immutable` для
+`/assets/*` не ставимо: воркер свідомо тримає `no-store` на всьому (Telegram WebView показував
+старий бандл — причина в `worker.ts`), і це рішення не про безпеку. Міряно живим воркером до
+зміни: `/` і `/assets/index-BKacYij9.js` мали лише `cache-control: public, max-age=0,
+ must-revalidate`, без CSP і `X-Frame-Options`.
 
 **C3. Сторінка контенту читає всі сторінки (P0).** `handleScenario` вибирає
 `SELECT id, slug, title, photo_url, page_data, … FROM scenarios WHERE is_active = 1 AND (…)` без
@@ -165,8 +173,8 @@ C4. ETag/304 є лише в списку сценаріїв (`scenarios-portal.c
 
 ## 6. Порядок роботи
 
-1. **C1** — зроблено: мап немає, статика впʼятеро легша. **C2** — далі, і це вже безпека, а не
-   вага: заголовки перенести в шар асетів.
+1. **C1** — зроблено: мап немає, статика впʼятеро легша. **C2** — зроблено: заголовки в шарі
+   асетів, воркер лишився для фолбеку.
 2. **C3** — запит сторінки за `slug`; міряти `rows_read` до і після (D1 query analytics).
 3. **C4, C5** — ідентичність один раз на запит; «Обране» одним запитом.
 4. **C6** — інтервал бейджа; перевірити, скільки запитів знімає одна зміна.

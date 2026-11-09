@@ -19,6 +19,12 @@
 | `Permissions-Policy` | `geolocation/microphone/camera = ()` | Mini App не потребує жодного з них |
 | `Strict-Transport-Security` | `max-age=31536000` | лише на HTTPS: на `http://localhost` браузер заблокував би сервер уперше |
 
+**Асети — другий шар, і в нього свої правила.** Наявні файли (`/`, `/assets/*`) шар асетів віддає
+**повз воркер**, тож `secureResponse` до них не доходить. Ті самі заголовки для них лежать у
+`web-platform-dev/public/_headers`: Vite кладе його в `dist/client/`, шар асетів застосовує правила
+до відповідей, а сам файл не віддає. Значення там не «на око»: `web-platform-dev/src/assets-headers.test.ts`
+падає, якщо `_headers` розійшовся з `applySecurityHeaders`.
+
 ## CORS — не «*»
 
 `Access-Control-Allow-Origin: *` стояв в **обох оболонках, зокрема на HTML адмінки**: будь-який
