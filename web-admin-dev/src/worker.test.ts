@@ -15,7 +15,9 @@ import {
   signSessionToken,
 } from "@wwwuabot/shared/security/session";
 
-import worker, { type Env } from "./worker";
+// Розширення `.js` обовʼязкове: файл входить до `tsconfig.node.json` (модулі
+// `nodenext`), а vitest за тим самим правилом підхоплює `worker.ts`.
+import worker, { type Env } from "./worker.js";
 
 const SECRET = "test-secret";
 
