@@ -53,6 +53,9 @@ export default defineConfig({
   },
   build: {
     outDir: "dist",
-    sourcemap: true,
+    // Мапи не потрібні: браузерного Sentry немає, а шар асетів віддає все, що
+    // лежить у `dist`, тож `.map` став би публічним файлом на 4 МБ (C1 в
+    // `docs/CLOUDFLARE_AUDIT.md`). Джерела й так у репозиторії.
+    sourcemap: false,
   },
 });
