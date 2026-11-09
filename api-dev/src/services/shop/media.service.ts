@@ -30,6 +30,7 @@ import {
 } from "@wwwuabot/shared/shop";
 import type { Env } from "../../shared/types";
 import { ensureShopSchema, managedShopId } from "./shops";
+import { dropCachedMedia } from "../media-cache";
 
 /** Стеля власної бібліотеки: стільки файлів продавець і не гортає. */
 export const MEDIA_LIMIT = 300;
@@ -173,6 +174,7 @@ export class ShopMediaService {
 
     const bucket = this.bucket();
     if (bucket) await bucket.delete(row.r2_key);
+    await dropCachedMedia(row.r2_key);
 
     return true;
   }

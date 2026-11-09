@@ -11,6 +11,7 @@ import type { Env } from "../shared/types";
 import { apiLog } from "../shared/logger";
 import { resolveUserId } from "../shared/identity";
 import { readMessageMedia, uploadMessageMedia } from "../services/messages/media";
+import { serveCachedMedia } from "../services/media-cache";
 
 function json(body: unknown, status = 200): Response {
   return new Response(JSON.stringify(body), {
@@ -78,20 +79,12 @@ export async function handleMessageMediaUpload(request: Request, env: Env): Prom
  *
  * Ключ приходить з адреси цілком (він містить слеші), і його форму перевіряє
  * сервіс. `Cache-Control: immutable` — не прикраса: ключ видається разом із
- * завантаженням і не змінюється ніколи.
+ * завантаженням і не змінюється ніколи, тож відповідь кладеться в кеш межі
+ * (`serveCachedMedia`) і повторний показ фото вже не читає R2.
  */
 export async function handleMessageMediaFile(env: Env, key: string): Promise<Response> {
   try {
-    const object = await readMessageMedia(env, key);
-    if (!object) return new Response("Not Found", { status: 404 });
-
-    const headers = new Headers();
-    object.writeHttpMetadata(headers);
-    headers.set("ETag", object.httpEtag);
-    headers.set("Cache-Control", "public, max-age=31536000, immutable");
-    if (!headers.has("Content-Type")) headers.set("Content-Type", "application/octet-stream");
-
-    return new Response(object.body, { headers });
+    return await serveCachedMedia(key, (name) => readMessageMedia(env, name));
   } catch (e: unknown) {
     apiLog.error("Message media read error", e);
     return new Response("Internal error", { status: 500 });

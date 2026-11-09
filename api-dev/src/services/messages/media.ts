@@ -17,6 +17,7 @@ import { formatSqliteDatetime } from "@wwwuabot/shared/utils/datetime";
 import type { Env } from "../../shared/types";
 import { areLinked } from "./links";
 import { ensureMessagesSchema } from "./schema";
+import { dropCachedMedia } from "../media-cache";
 
 /** Рядок обліку файлу — те, що база знає про файл. */
 export interface MessageMedia {
@@ -175,6 +176,8 @@ export async function dropThreadMedia(env: Env, conversationId: number): Promise
     .run();
 
   const target = bucket(env);
-  if (!target) return;
-  for (const row of rows) await target.delete(row.r2_key);
+  for (const row of rows) {
+    if (target) await target.delete(row.r2_key);
+    await dropCachedMedia(row.r2_key);
+  }
 }

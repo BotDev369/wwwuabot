@@ -22,6 +22,7 @@ import type { Env } from "../shared/types";
 import { apiLog } from "../shared/logger";
 import { resolveUserId } from "../shared/identity";
 import { ShopMediaService } from "../services/shop/media.service";
+import { serveCachedMedia } from "../services/media-cache";
 
 function json(body: unknown, status = 200): Response {
   return new Response(JSON.stringify(body), {
@@ -116,21 +117,13 @@ async function acceptUpload(
  *
  * Ключ приходить із адреси цілком (він містить слеші), і його форму перевіряє
  * сервіс. `Cache-Control: immutable` — не прикраса: ключ видається разом із
- * завантаженням і не змінюється ніколи, тож повторне питання про той самий файл
- * завжди дало б ту саму відповідь.
+ * завантаженням і не змінюється ніколи, тож відповідь кладеться в кеш межі
+ * (`serveCachedMedia`) і повторний показ фото вже не читає R2.
  */
 export async function handleShopMediaFile(env: Env, key: string): Promise<Response> {
+  const service = new ShopMediaService(env);
   try {
-    const object = await new ShopMediaService(env).read(key);
-    if (!object) return new Response("Not Found", { status: 404 });
-
-    const headers = new Headers();
-    object.writeHttpMetadata(headers);
-    headers.set("ETag", object.httpEtag);
-    headers.set("Cache-Control", "public, max-age=31536000, immutable");
-    if (!headers.has("Content-Type")) headers.set("Content-Type", "application/octet-stream");
-
-    return new Response(object.body, { headers });
+    return await serveCachedMedia(key, (name) => service.read(name));
   } catch (e: unknown) {
     apiLog.error("Shop media read error", e);
     return new Response("Internal error", { status: 500 });
