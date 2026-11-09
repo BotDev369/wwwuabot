@@ -61,9 +61,17 @@ async function serveSpa(url: URL, request: Request, env: Env): Promise<Response>
 export default {
   async fetch(request: Request, env: Env): Promise<Response> {
     const url = new URL(request.url);
-    const authed = await hasValidSession(request, env.ADMIN_SECRET);
     // Усі відповіді нижче йдуть через `json()` / `fixAssetHeaders()` / проксі,
     // тож заголовки накладаються в одному місці кожного з них.
+
+    // Сесію перевіряємо лише там, де від неї залежить рішення. Документ
+    // однаковий для всіх: власнику й невідомому віддається той самий
+    // `index.html`, а невідому відсіює React (LoginScreen) і гейт `api-dev`
+    // на `/api/*`. HMAC на переході по сторінці нічого не змінював.
+    const authed =
+      url.pathname.startsWith("/api/") || AUTH_PATHS.has(url.pathname)
+        ? await hasValidSession(request, env.ADMIN_SECRET)
+        : false;
 
     // /auth/check сам звітує про стан сесії, решта auth-шляхів проходять як є.
     if (AUTH_PATHS.has(url.pathname)) {
@@ -73,23 +81,14 @@ export default {
       return secureResponse(await env.API.fetch(request), { url: url.toString() });
     }
 
-    if (!authed) {
-      if (url.pathname.startsWith("/api/")) {
-        return json({ error: "Unauthorized" }, 401, url.toString());
-      }
-      // Неавторизовані отримують SPA — React покаже LoginScreen.
-      return serveSpa(url, request, env);
-    }
-
     if (url.pathname.startsWith("/api/")) {
+      if (!authed) return json({ error: "Unauthorized" }, 401, url.toString());
       return secureResponse(await env.API.fetch(request), { url: url.toString() });
     }
 
-    // SPA fallback: маршрути без розширення → index.html
-    const assetRes = await env.ASSETS.fetch(request);
-    if (assetRes.status === 404 && !url.pathname.includes(".")) {
-      return serveSpa(url, request, env);
-    }
-    return fixAssetHeaders(assetRes, url.toString());
+    // SPA: маршрут без розширення — це документ (index.html), решта — файл
+    // асетів. Документ віддається одразу, без попереднього походу в 404.
+    if (!url.pathname.includes(".")) return serveSpa(url, request, env);
+    return fixAssetHeaders(await env.ASSETS.fetch(request), url.toString());
   },
 };
