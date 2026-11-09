@@ -72,6 +72,11 @@ function queryOf(from, to, account) {
       sum { rowsRead rowsWritten }
       dimensions { date }
     }
+    d1Queries: d1QueriesAdaptiveGroups(limit: 1000, ${filter}) {
+      count
+      sum { rowsRead }
+      dimensions { query }
+    }
     r2: r2OperationsAdaptiveGroups(limit: 5000, ${filter}) {
       sum { requests responseBytes }
       dimensions { actionType date }
@@ -137,7 +142,13 @@ function printWorkers(rows) {
   );
 }
 
-function printD1(rows) {
+/** SQL одним рядком: у звіті він має бути підписом, а не полотном. */
+function oneLine(sql) {
+  const text = String(sql).replace(/\s+/g, " ").trim();
+  return text.length > 88 ? `${text.slice(0, 87)}…` : text;
+}
+
+function printD1(rows, queries) {
   let read = 0;
   let written = 0;
   const perDay = new Map();
@@ -154,6 +165,30 @@ function printD1(rows) {
     `  пік читання ${number.format(peak.value)} за ${asDate(peak.day)} — ` +
       `${share(peak.value, QUOTA.d1RowsReadPerDay)} від 5 000 000 на добу`,
   );
+
+  // Той самий рядок `rows_read` може з'їсти один запит — без розрізу пік
+  // виглядає як «база багато читає», і шукати причину доводиться руками.
+  const byQuery = new Map();
+  for (const row of queries) {
+    const one = byQuery.get(row.dimensions.query) ?? { rows: 0, runs: 0 };
+    one.rows += row.sum.rowsRead;
+    one.runs += row.count;
+    byQuery.set(row.dimensions.query, one);
+  }
+  const list = [...byQuery.entries()].sort((a, b) => b[1].rows - a[1].rows);
+  if (list.length === 0) return;
+
+  const top = list.slice(0, 8);
+  const topRows = top.reduce((sum, [, one]) => sum + one.rows, 0);
+  const part = read ? ((topRows / read) * 100).toFixed(1) : "0.0";
+  console.log(
+    `  топ-${top.length} розрізів: ${number.format(topRows)} рядків — ${part} % усіх читань`,
+  );
+  for (const [sql, one] of top) {
+    console.log(
+      `    ${number.format(one.rows).padStart(10)} / ${String(one.runs).padStart(5)} зап. | ${oneLine(sql)}`,
+    );
+  }
 }
 
 function printR2(rows) {
@@ -209,7 +244,7 @@ async function main() {
   );
   printWorkers(scope.workers ?? []);
   console.log("");
-  printD1(scope.d1 ?? []);
+  printD1(scope.d1 ?? [], scope.d1Queries ?? []);
   console.log("");
   printR2(scope.r2 ?? []);
   console.log("");
