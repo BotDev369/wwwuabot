@@ -4,11 +4,11 @@ import { handleFavorites } from "./favorites.controller";
 import { resolveFavorite } from "../services/favorites.service";
 import { favoriteTarget } from "@wwwuabot/shared/favorites";
 
-const mocks = vi.hoisted(() => ({ identity: vi.fn(), publicProfile: vi.fn() }));
+const mocks = vi.hoisted(() => ({ identity: vi.fn(), publicProfiles: vi.fn() }));
 vi.mock("../shared/identity", () => ({ resolveUserId: mocks.identity }));
 vi.mock("../services/public-profile.service", () => ({
   PublicProfileService: class {
-    readPublic = mocks.publicProfile;
+    readPublicMany = mocks.publicProfiles;
   },
 }));
 
@@ -24,7 +24,19 @@ function database(row: unknown = null, rows: unknown[] = []) {
           return statement;
         },
         first: async () => row,
-        all: async () => ({ results: sql.startsWith("PRAGMA") ? [] : rows }),
+        // `favorites` віддає список, `scenarios` — лише запитані id (вони числа),
+        // решта — або задані рядки, або один рядок.
+        all: async () => {
+          if (sql.startsWith("PRAGMA")) return { results: [] };
+          if (sql.includes("FROM favorites")) return { results: rows };
+          const candidates = row ? [row] : [];
+          const ids = call.values.filter((value): value is number => typeof value === "number");
+          return {
+            results: ids.length
+              ? candidates.filter((candidate) => ids.includes((candidate as { id: number }).id))
+              : candidates,
+          };
+        },
         run: async () => ({ meta: { changes: 1 } }),
       };
       return statement;
@@ -41,7 +53,7 @@ function request(method: string, body?: unknown) {
 beforeEach(() => {
   vi.clearAllMocks();
   mocks.identity.mockResolvedValue({ ok: true, userId: 777 });
-  mocks.publicProfile.mockResolvedValue(null);
+  mocks.publicProfiles.mockResolvedValue(new Map());
 });
 
 describe("особисте обране", () => {
@@ -78,7 +90,7 @@ describe("особисте обране", () => {
     expect(db.calls.some((call) => call.sql.startsWith("INSERT"))).toBe(false);
   });
   it("повторний лайк не створює дублів і не записує клієнтський текст", async () => {
-    mocks.publicProfile.mockResolvedValue({ id: 5, platformUsername: "friend" });
+    mocks.publicProfiles.mockResolvedValue(new Map([[5, { id: 5, platformUsername: "friend" }]]));
     const db = database();
     const response = await handleFavorites(
       request("POST", { kind: "user", targetId: 5, title: "fake" }),
@@ -92,7 +104,7 @@ describe("особисте обране", () => {
   });
   it("номер сторінки приходить рядком від контенту й лягає в базу числом", async () => {
     const db = database({
-      id: 5,
+      id: 34,
       slug: "pageslay",
       title: "PageSlay",
       owner_id: null,
@@ -137,6 +149,28 @@ describe("особисте обране", () => {
       ],
     });
   });
+  it("список читає базу за видом цілі, а не за рядком", async () => {
+    const page = {
+      id: 1,
+      slug: "one",
+      title: "One",
+      owner_id: null,
+      admin_ids: null,
+      is_public: 1,
+    };
+    const db = database(page, [
+      { kind: "page", target_id: 1, created_at: null },
+      { kind: "page", target_id: 2, created_at: null },
+      { kind: "page", target_id: 3, created_at: null },
+    ]);
+
+    expect((await handleFavorites(request("GET"), db.env)).status).toBe(200);
+    const selects = db.calls.filter((call) => /FROM scenarios/.test(call.sql));
+    expect(selects).toHaveLength(1);
+    // Три id в одному `IN (…)`, а не три запити по одному id.
+    expect(selects[0]?.values.slice(0, 3)).toEqual([1, 2, 3]);
+  });
+
   it("видимість сторінки перевіряється в SQL до повернення метаданих", async () => {
     const db = database();
     expect(await resolveFavorite(db.env, 777, { kind: "page", targetId: 5 })).toBeNull();

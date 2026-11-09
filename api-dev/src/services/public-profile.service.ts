@@ -45,6 +45,9 @@ export interface PublicProfileSettings {
 export const PUBLIC_PAGE_SIZE = 60;
 const PUBLIC_PAGE_MAX = 100;
 
+/** Скільки id в одному `IN (…)`: D1 має межу на зв'язані параметри запиту. */
+const IDS_PER_QUERY = 50;
+
 /** Колонки **власного** профілю: без Telegram — щоб витік не залежав від уваги. */
 const OWN_COLUMNS = "about, profile_public, profile_public_fields";
 
@@ -159,6 +162,38 @@ export class PublicProfileService {
     return (rows.results ?? []).map((row) =>
       publicProfileView(toSource(row), parsePublicFields(row.profile_public_fields)),
     );
+  }
+
+  /**
+   * Кілька публічних профілів одним запитом на пачку id: «Обране» та інші
+   * списки не мають ходити в базу за кожним рядком. Закриті, заблоковані й
+   * відсутні сюди не потрапляють — тими самими умовами, що й `readPublic`.
+   */
+  async readPublicMany(userIds: readonly number[]): Promise<Map<number, PublicProfile>> {
+    const found = new Map<number, PublicProfile>();
+    const unique = [...new Set(userIds)];
+    if (unique.length === 0) return found;
+    await this.ensureSchema();
+
+    for (let start = 0; start < unique.length; start += IDS_PER_QUERY) {
+      const part = unique.slice(start, start + IDS_PER_QUERY);
+      const placeholders = part.map(() => "?").join(", ");
+      const rows = await this.env.DB.prepare(
+        `SELECT ${PUBLIC_COLUMNS} FROM users
+          WHERE user_id IN (${placeholders}) AND profile_public = 1 AND is_blocked = 0`,
+      )
+        .bind(...part)
+        .all<Record<string, unknown>>();
+
+      for (const row of rows.results ?? []) {
+        const profile = publicProfileView(
+          toSource(row),
+          parsePublicFields(row.profile_public_fields),
+        );
+        found.set(profile.id, profile);
+      }
+    }
+    return found;
   }
 
   /** Профіль однієї людини — або `null`, якщо вона закрита чи її немає. */
