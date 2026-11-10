@@ -196,6 +196,17 @@ describe("рядки", () => {
     expect(sqls[1]).toContain("CASE WHEN excluded.city <> ''");
   });
 
+  it("незмінений платіж не пише: `WHERE` у `DO UPDATE` відсікає перезапис", async () => {
+    const { db, sqls } = fakeDb();
+    await upsertTransactions(db, [TX]);
+
+    expect(sqls[0]).toContain("ON CONFLICT(id) DO UPDATE SET");
+    expect(sqls[0]).toContain("spending_transactions.amount IS NOT excluded.amount");
+    expect(sqls[0]).toContain("spending_transactions.region_code IS NOT excluded.region_code");
+    // `fetched_at` теж під `WHERE`: він означає момент зміни, а не прогону.
+    expect(sqls[0].indexOf("WHERE")).toBeGreaterThan(sqls[0].indexOf("fetched_at"));
+  });
+
   it("ріже пачку по 50: більша D1 рве по таймауту", async () => {
     const { db, batches } = fakeDb();
     await upsertTransactions(

@@ -1,9 +1,9 @@
 /**
  * Рядки домену в D1: розпорядники, довідники, договори й платежі.
  *
- * Кожен запис — `INSERT … ON CONFLICT DO UPDATE`: ключ — ідентифікатор
- * джерела (`id` документа, `id` платежу, `edrpou`), тож повторний прогін
- * оновлює рядок. Порожнє поле ніколи не затирає відоме.
+ * Запис — `INSERT … ON CONFLICT DO UPDATE` за ключем джерела (`id`, `edrpou`),
+ * порожнє поле не затирає відоме. Платіж пише лише зміни: `WHERE` у
+ * `DO UPDATE` лишає незмінений рядок без жодного запису.
  * @module api-dev/src/services/spending/upserts
  */
 
@@ -138,54 +138,55 @@ export async function upsertDocuments(db: D1Database, rows: readonly DocumentRow
   await runBatched(db, statements);
 }
 
+/**
+ * Колонки платежу й поля рядка: один список живить і `SET`, і `WHERE`.
+ *
+ * Дві копії списку розійшлися б на першій же новій колонці: рядок або
+ * перестав би оновлюватись, або писався б дарма при кожному прогоні.
+ */
+const TRANSACTION_FIELDS = [
+  ["payer_edrpou", "payerEdrpou"],
+  ["payer_name", "payerName"],
+  ["recipt_edrpou", "reciptEdrpou"],
+  ["recipt_name", "reciptName"],
+  ["trans_date", "transDate"],
+  ["currency", "currency"],
+  ["amount", "amount"],
+  ["payment_details", "paymentDetails"],
+  ["kekv", "kekv"],
+  ["kpk", "kpk"],
+  ["budget_code", "budgetCode"],
+  ["contract_id", "contractId"],
+  ["contract_number", "contractNumber"],
+  ["source_name", "sourceName"],
+  ["region_code", "regionCode"],
+] as const satisfies readonly (readonly [string, keyof TransactionRow])[];
+
+const TRANSACTION_COLUMNS = TRANSACTION_FIELDS.map(([column]) => column);
+
+const TRANSACTION_INSERT = `INSERT INTO spending_transactions
+           (id, ${TRANSACTION_COLUMNS.join(", ")})
+         VALUES (?, ${TRANSACTION_COLUMNS.map(() => "?").join(", ")})
+         ON CONFLICT(id) DO UPDATE SET
+           ${TRANSACTION_COLUMNS.map((column) => `${column} = excluded.${column}`).join(",\n           ")},
+           fetched_at = datetime('now')
+         WHERE ${TRANSACTION_COLUMNS.map(
+           (column) => `spending_transactions.${column} IS NOT excluded.${column}`,
+         ).join("\n            OR ")}`;
+
+/**
+ * Платіж лягає в базу, лише коли його поля справді змінились: `WHERE` у
+ * `DO UPDATE` робить незмінений рядок нульовою ціною. `fetched_at` тут —
+ * момент останньої **зміни** рядка джерелом, а не останнього прогону.
+ */
 export async function upsertTransactions(
   db: D1Database,
   rows: readonly TransactionRow[],
 ): Promise<void> {
   const statements = rows.map((row) =>
     db
-      .prepare(
-        `INSERT INTO spending_transactions
-           (id, payer_edrpou, payer_name, recipt_edrpou, recipt_name, trans_date, amount, currency,
-            payment_details, kekv, kpk, budget_code, contract_id, contract_number, source_name,
-            region_code)
-         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-         ON CONFLICT(id) DO UPDATE SET
-           payer_edrpou = excluded.payer_edrpou,
-           payer_name = excluded.payer_name,
-           recipt_edrpou = excluded.recipt_edrpou,
-           recipt_name = excluded.recipt_name,
-           trans_date = excluded.trans_date,
-           currency = excluded.currency,
-           amount = excluded.amount,
-           payment_details = excluded.payment_details,
-           kekv = excluded.kekv,
-           kpk = excluded.kpk,
-           budget_code = excluded.budget_code,
-           contract_id = excluded.contract_id,
-           contract_number = excluded.contract_number,
-           source_name = excluded.source_name,
-           region_code = excluded.region_code,
-           fetched_at = datetime('now')`,
-      )
-      .bind(
-        row.id,
-        row.payerEdrpou,
-        row.payerName,
-        row.reciptEdrpou,
-        row.reciptName,
-        row.transDate,
-        row.amount,
-        row.currency,
-        row.paymentDetails,
-        row.kekv,
-        row.kpk,
-        row.budgetCode,
-        row.contractId,
-        row.contractNumber,
-        row.sourceName,
-        row.regionCode,
-      ),
+      .prepare(TRANSACTION_INSERT)
+      .bind(row.id, ...TRANSACTION_FIELDS.map(([, field]) => row[field] as string | number)),
   );
   await runBatched(db, statements);
 }
