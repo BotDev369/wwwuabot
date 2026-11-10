@@ -127,6 +127,11 @@
 | `POST /api/user/event` | екран (`{ screen, title?, at }`), модалка (`{ kind: "modal", screen, page, title }`) або дія (`{ kind: "click"\|"input", screen, page, label, field?, at }`) |
 | `POST /api/admin/events/delete` | прибирання: `userId`, `from`/`to`, `surface`, `kind`; `dryRun` лише рахує, `all` стирає все |
 
+**Зведення — один прохід.** `GET /api/admin/events/summary` бере рядки вікна одним `SELECT` із
+`LEFT JOIN users` і згортає поверхні та людей у пам'яті: раніше це були три запити по тому самому
+діапазону (`COUNT(*)`, `GROUP BY surface`, `GROUP BY user_id`), кожен сканував добу заново.
+Заміряно на живій базі (09.11, 154 події за добу): **926 → 308** `rows_read`.
+
 Діапазон задають `from`/`to` (ISO або формат SQLite); незадана межа добирається — доба від іншої
 (`resolveEventRange`), а переставлені місцями межі міняються назад. Обидва шляхи — під адмін-гейтом
 префікса `/api/admin/`, як і решта панелі.

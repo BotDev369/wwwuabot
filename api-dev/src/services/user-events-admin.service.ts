@@ -97,53 +97,78 @@ interface SummaryRow {
   username: string | null;
 }
 
-/** Зведення за діапазон: скільки всього, звідки й хто найактивніший. */
+/** Рядок вікна журналу: одна подія з іменем людини, без агрегатів SQL. */
+interface SummaryEventRow {
+  user_id: number;
+  surface: EventSurface;
+  created_at: string;
+  first_name: string | null;
+  last_name: string | null;
+  username: string | null;
+}
+
+/** Згортка по одній людині під час проходу. */
+interface TallyRow {
+  userId: number;
+  count: number;
+  lastAt: string;
+  firstName: string | null;
+  lastName: string | null;
+  username: string | null;
+}
+
+/**
+ * Зведення за діапазон: один прохід і згортка в пам'яті.
+ *
+ * Раніше це були три запити по тому самому діапазону (`COUNT(*)`,
+ * `GROUP BY surface`, `GROUP BY user_id` з `JOIN`) — кожен сканував добу
+ * заново, тож екран «Аналітика» коштував найдорожче з усіх (`docs/EVENTS.md`).
+ */
 export async function readEventSummary(env: Env, range: EventRange): Promise<EventSummary> {
   await ensureTables(env.DB, ["user_events"]);
 
-  const totalRow = await env.DB.prepare(
-    "SELECT COUNT(*) AS total FROM user_events WHERE created_at BETWEEN ? AND ?",
-  )
-    .bind(range.from, range.to)
-    .first<{ total: number }>();
-
-  const surfaceRows = await env.DB.prepare(
-    "SELECT surface, COUNT(*) AS count FROM user_events WHERE created_at BETWEEN ? AND ? GROUP BY surface",
-  )
-    .bind(range.from, range.to)
-    .all<{ surface: EventSurface; count: number }>();
-
-  const userRows = await env.DB.prepare(
-    `SELECT e.user_id AS user_id, COUNT(*) AS count, MAX(e.created_at) AS last_at,
+  const rows = await env.DB.prepare(
+    `SELECT e.user_id AS user_id, e.surface AS surface, e.created_at AS created_at,
             u.first_name AS first_name, u.last_name AS last_name, u.username AS username
        FROM user_events e
        LEFT JOIN users u ON u.user_id = e.user_id
-      WHERE e.created_at BETWEEN ? AND ?
-      GROUP BY e.user_id
-      ORDER BY count DESC, last_at DESC
-      LIMIT ?`,
+      WHERE e.created_at BETWEEN ? AND ?`,
   )
-    .bind(range.from, range.to, SUMMARY_USERS_LIMIT)
-    .all<SummaryRow>();
+    .bind(range.from, range.to)
+    .all<SummaryEventRow>();
 
   const bySurface: Record<EventSurface, number> = { bot: 0, platform: 0 };
-  for (const row of surfaceRows.results ?? []) {
-    if (row.surface === "bot" || row.surface === "platform") bySurface[row.surface] = row.count;
+  const byUser = new Map<number, TallyRow>();
+  let total = 0;
+
+  for (const row of rows.results ?? []) {
+    total += 1;
+    if (row.surface === "bot" || row.surface === "platform") bySurface[row.surface] += 1;
+    const one = byUser.get(row.user_id);
+    if (!one) {
+      byUser.set(row.user_id, {
+        userId: row.user_id,
+        count: 1,
+        lastAt: row.created_at,
+        firstName: row.first_name,
+        lastName: row.last_name,
+        username: row.username,
+      });
+      continue;
+    }
+    one.count += 1;
+    if (row.created_at > one.lastAt) one.lastAt = row.created_at;
   }
 
-  return {
-    ...range,
-    total: totalRow?.total ?? 0,
-    bySurface,
-    users: (userRows.results ?? []).map((row) => ({
-      userId: row.user_id,
-      firstName: row.first_name,
-      lastName: row.last_name,
-      username: row.username,
-      count: row.count,
-      lastAt: row.last_at,
-    })),
-  };
+  const users = [...byUser.values()]
+    .sort(
+      (a, b) =>
+        b.count - a.count ||
+        (a.lastAt === b.lastAt ? a.userId - b.userId : a.lastAt < b.lastAt ? 1 : -1),
+    )
+    .slice(0, SUMMARY_USERS_LIMIT);
+
+  return { ...range, total, bySurface, users };
 }
 
 /**

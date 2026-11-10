@@ -11,6 +11,8 @@ interface FakeRows {
   total?: number;
   surfaces?: unknown[];
   users?: unknown[];
+  /** Рядки вікна для зведення: одна подія = один рядок. */
+  summaryRows?: unknown[];
   events?: unknown[];
 }
 
@@ -30,6 +32,10 @@ function database(data: FakeRows = {}) {
           if (sql.startsWith("PRAGMA")) return { results: [] };
           if (sql.includes("GROUP BY surface")) return { results: data.surfaces ?? [] };
           if (sql.includes("GROUP BY e.user_id")) return { results: data.users ?? [] };
+          // Зведення читає вікно без `ORDER BY`; список — з ним.
+          if (sql.includes("FROM user_events e") && !sql.includes("ORDER BY")) {
+            return { results: data.summaryRows ?? [] };
+          }
           return { results: data.events ?? [] };
         },
         run: async () => ({ meta: { changes: 1 } }),
@@ -171,21 +177,24 @@ describe("журнал дій платформи", () => {
 describe("читання журналу", () => {
   const range = { from: "2026-10-01 00:00:00", to: "2026-10-02 00:00:00" };
 
-  it("зведення рахує поверхні й бере імена з рядка users", async () => {
+  it("зведення рахується одним проходом, імена — з рядка users", async () => {
+    const person = {
+      first_name: "Сергій",
+      last_name: "Дискант",
+      username: "DiskantSergiy",
+    };
     const db = database({
-      total: 3,
-      surfaces: [
-        { surface: "bot", count: 2 },
-        { surface: "platform", count: 1 },
-      ],
-      users: [
+      summaryRows: [
+        { user_id: 7, surface: "bot", created_at: "2026-10-01 09:00:00", ...person },
+        { user_id: 7, surface: "bot", created_at: "2026-10-01 10:00:00", ...person },
+        { user_id: 7, surface: "platform", created_at: "2026-10-01 12:00:00", ...person },
         {
-          user_id: 7,
-          count: 3,
-          last_at: "2026-10-01 12:00:00",
-          first_name: "Сергій",
-          last_name: "Дискант",
-          username: "DiskantSergiy",
+          user_id: 9,
+          surface: "platform",
+          created_at: "2026-10-01 11:00:00",
+          first_name: null,
+          last_name: null,
+          username: null,
         },
       ],
     });
@@ -194,8 +203,8 @@ describe("читання журналу", () => {
 
     expect(summary).toEqual({
       ...range,
-      total: 3,
-      bySurface: { bot: 2, platform: 1 },
+      total: 4,
+      bySurface: { bot: 2, platform: 2 },
       users: [
         {
           userId: 7,
@@ -205,10 +214,24 @@ describe("читання журналу", () => {
           count: 3,
           lastAt: "2026-10-01 12:00:00",
         },
+        {
+          userId: 9,
+          firstName: null,
+          lastName: null,
+          username: null,
+          count: 1,
+          lastAt: "2026-10-01 11:00:00",
+        },
       ],
     });
-    const summarySql = db.calls.find((call) => call.sql.includes("GROUP BY e.user_id"));
-    expect(summarySql?.sql).toContain("LEFT JOIN users");
+
+    // Один запит на зведення: раніше тут були `COUNT`, `GROUP BY surface` і `GROUP BY user_id`.
+    const windowCalls = db.calls.filter(
+      (call) => call.sql.includes("FROM user_events e") && !call.sql.includes("ORDER BY"),
+    );
+    expect(windowCalls).toHaveLength(1);
+    expect(windowCalls[0]?.sql).toContain("LEFT JOIN users");
+    expect(db.calls.some((call) => call.sql.includes("GROUP BY"))).toBe(false);
   });
 
   it("список однієї людини звужений у SQL, а не в памʼяті", async () => {
