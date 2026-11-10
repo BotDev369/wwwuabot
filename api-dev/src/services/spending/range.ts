@@ -27,14 +27,17 @@ function parse(raw: unknown): DataRange | null {
 }
 
 /**
- * Скан таблиці. Імена без `from`/`to`: це ключові слова SQL, і псевдонім
- * `AS from` валить запит у D1 (`near "from": syntax error`), а не повертає
- * порожнечу — саме так розріз за отримувачами віддавав 500 на проді.
+ * Скан таблиці. Імена без `from`/`to` — ключові слова SQL: `AS from` валить
+ * запит у D1 (`near "from": syntax error`), і розріз віддавав 500 на проді.
+ *
+ * Два скалярні підзапити, а не `MIN(...), MAX(...)`: спільний агрегат іде як
+ * `SCAN … USING COVERING INDEX` і читає 1 789 рядків, а скалярний — 1 рядок
+ * (`SEARCH … USING COVERING INDEX`).
  */
 async function scan(db: D1Database): Promise<DataRange | null> {
   const row = await db
     .prepare(
-      "SELECT MIN(trans_date) AS first_date, MAX(trans_date) AS last_date FROM spending_transactions",
+      "SELECT (SELECT MIN(trans_date) FROM spending_transactions) AS first_date, (SELECT MAX(trans_date) FROM spending_transactions) AS last_date",
     )
     .first<{ first_date: string | null; last_date: string | null }>();
   if (!row?.first_date || !row?.last_date) return null;

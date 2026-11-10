@@ -90,6 +90,17 @@ describe("readRange", () => {
     expect(calls.some((call) => call.startsWith("put:"))).toBe(false);
   });
 
+  it("межі шукаються двома скалярними підзапитами — спільний MIN/MAX сканує таблицю", async () => {
+    // Один `MIN(...), MAX(...)` SQLite не вміє стрибнути в обидва кінці індексу:
+    // він читає всі 1 789 рядків навіть з індексом по `trans_date`.
+    const { db, statements } = fakeDb({ first_date: "2026-09-01", last_date: "2026-10-30" });
+
+    await readRange(envOf(db));
+
+    expect(statements[0]).toMatch(/\(SELECT MIN\(trans_date\)/);
+    expect(statements[0]).toMatch(/\(SELECT MAX\(trans_date\)/);
+  });
+
   it("не позичає в псевдоніма ключове слово SQL — інакше D1 валить запит", async () => {
     // `AS from` — синтаксична помилка D1, а не порожній результат: саме через це
     // розріз за отримувачами віддавав 500, хоч локальний фейк мовчав.

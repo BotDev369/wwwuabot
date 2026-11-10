@@ -1223,6 +1223,8 @@ export const TABLES = {
     indexes: [
       "CREATE INDEX IF NOT EXISTS idx_spending_transactions_payer ON spending_transactions(payer_edrpou, trans_date)",
       "CREATE INDEX IF NOT EXISTS idx_spending_transactions_recipt ON spending_transactions(recipt_edrpou, trans_date)",
+      // Межі дат: без індексу кожен промах кеша читав усю таблицю (див. range.ts).
+      "CREATE INDEX IF NOT EXISTS idx_spending_transactions_date ON spending_transactions(trans_date)",
     ],
   },
 
