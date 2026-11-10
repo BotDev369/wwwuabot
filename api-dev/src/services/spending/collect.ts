@@ -336,7 +336,7 @@ export async function runSpendingCollection(
     try {
       await refreshRange(env);
     } catch (error) {
-      apiLog.error("spending: межі дат у KV не оновлено", error);
+      apiLog.error("spending: range cache refresh failed", error);
     }
   }
 
