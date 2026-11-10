@@ -9,7 +9,8 @@
  */
 
 import { describe, expect, it } from "vitest";
-import { dataRange, readCodes, readRecipients } from "./analytics";
+import type { Env } from "../../shared/types";
+import { readCodes, readRecipients } from "./analytics";
 
 interface Captured {
   sql: string;
@@ -58,25 +59,8 @@ function fakeDb(handler: (sql: string) => { rows?: unknown[]; row?: unknown }): 
 
 const RANGE = "FROM spending_transactions";
 
-describe("dataRange", () => {
-  it("бере межі з бази, а не з годинника", async () => {
-    const { db } = fakeDb(() => ({ row: { first_date: "2026-09-01", last_date: "2026-10-30" } }));
-    expect(await dataRange(db)).toEqual({ from: "2026-09-01", to: "2026-10-30" });
-  });
-
-  it("порожня таблиця — `null`, а не дата сьогодні", async () => {
-    const { db } = fakeDb(() => ({ row: { first_date: null, last_date: null } }));
-    expect(await dataRange(db)).toBeNull();
-  });
-
-  it("не позичає в псевдоніма ключове слово SQL — інакше D1 валить запит", async () => {
-    // `AS from` — синтаксична помилка D1, а не порожній результат: саме через це
-    // розріз за отримувачами віддавав 500, хоч локальний фейк мовчав.
-    const { db, statements } = fakeDb(() => ({ row: null }));
-    await dataRange(db);
-    expect(statements[0]?.sql).not.toMatch(/\bAS\s+(from|to|where|group|order)\b/i);
-  });
-});
+/** Env без KV: межі тоді сканує сам розріз — саме це й перевіряють тести. */
+const envOf = (db: D1Database): Env => ({ DB: db }) as unknown as Env;
 
 describe("readCodes", () => {
   it("три класифікації — з одного проходу, порожній код лишається рядком", async () => {
@@ -134,7 +118,7 @@ describe("readRecipients", () => {
           },
     );
 
-    const view = await readRecipients(db, "month");
+    const view = await readRecipients(envOf(db), "month");
     expect(view.from).toBe("2026-10-01");
     expect(view.to).toBe("2026-10-31");
     expect(view.bucket).toBe("day");
@@ -153,7 +137,7 @@ describe("readRecipients", () => {
         : { rows: [windowRow({ trans_date: "2026-10-30", amount: 500 })] },
     );
 
-    const view = await readRecipients(db, "year");
+    const view = await readRecipients(envOf(db), "year");
     expect(view.from).toBe("2025-11-01");
     expect(view.to).toBe("2026-10-30");
     expect(view.bucket).toBe("month");
@@ -169,14 +153,14 @@ describe("readRecipients", () => {
         : { rows: [windowRow({ trans_date: "2026-10-30", amount: 50 })] },
     );
 
-    const view = await readRecipients(db, "day");
+    const view = await readRecipients(envOf(db), "day");
     expect(view).toMatchObject({ from: "2026-10-30", to: "2026-10-30", bucket: "day" });
     expect(view.buckets).toEqual([{ key: "2026-10-30", count: 1, amount: 50 }]);
   });
 
   it("порожня база — нулі й жодного запиту по діапазону", async () => {
     const { db, statements } = fakeDb(() => ({ row: { first_date: null, last_date: null } }));
-    const view = await readRecipients(db, "all");
+    const view = await readRecipients(envOf(db), "all");
     expect(statements).toHaveLength(1);
     expect(statements[0]?.sql).toContain(RANGE);
     expect(view).toMatchObject({ from: null, totals: { count: 0, amount: 0, recipients: 0 } });

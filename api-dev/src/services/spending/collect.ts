@@ -27,6 +27,7 @@ import {
   receiptsKey,
 } from "./config";
 import { buildOrgCard } from "./card";
+import { refreshRange } from "./range";
 import { collectContracts } from "./documents";
 import {
   type CounterpartyRow,
@@ -327,6 +328,15 @@ export async function runSpendingCollection(
       );
     } catch (error) {
       apiLog.error("spending: дата останнього завантаження не прийшла", error);
+    }
+  }
+
+  // Межі дат зсуваються лише від нових рядків, тож кеш оновлює синк, а не екран.
+  if (!state.stopped) {
+    try {
+      await refreshRange(env);
+    } catch (error) {
+      apiLog.error("spending: межі дат у KV не оновлено", error);
     }
   }
 

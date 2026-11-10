@@ -91,9 +91,11 @@ function fakeDb(): { db: D1Database; settled: Set<string>; statements: string[] 
 function fakeKv(): { kv: KVNamespace; written: string[] } {
   const written: string[] = [];
   const kv = {
+    get: async () => null,
     put: async (key: string) => {
       written.push(key);
     },
+    delete: async () => {},
   };
   return { kv: kv as unknown as KVNamespace, written };
 }

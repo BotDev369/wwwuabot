@@ -18,6 +18,8 @@ import type {
   SpendingTotals,
 } from "@wwwuabot/shared/spending";
 import { monthWindow } from "./config";
+import { readRange } from "./range";
+import type { Env } from "../../shared/types";
 import {
   bucketTotals,
   distinctCount,
@@ -39,25 +41,6 @@ const CODE_OF: Readonly<Record<SpendingCodeKind, (row: SpendingWindowRow) => str
 };
 
 const ZERO: SpendingTotals = { count: 0, amount: 0 };
-
-/** Межі даних. Імена без `from`/`to`: це ключові слова SQL, і псевдонім
- * `AS from` валить запит у D1 (`near "from": syntax error`), а не повертає
- * порожнечу — саме так розріз за отримувачами віддавав 500 на проді. */
-interface RangeRow {
-  first_date: string | null;
-  last_date: string | null;
-}
-
-/** Остання дата платежу в базі; `null` — таблиця порожня. */
-export async function dataRange(db: D1Database): Promise<{ from: string; to: string } | null> {
-  const row = await db
-    .prepare(
-      "SELECT MIN(trans_date) AS first_date, MAX(trans_date) AS last_date FROM spending_transactions",
-    )
-    .first<RangeRow>();
-  if (!row?.first_date || !row?.last_date) return null;
-  return { from: row.first_date, to: row.last_date };
-}
 
 /** Перший день місяця, у якому стоїть дата. */
 function monthStart(date: string): string {
@@ -157,11 +140,8 @@ function fillBuckets(
 }
 
 /** Розріз за отримувачами: ряд у часі й топ за сумою, без пагінації. */
-export async function readRecipients(
-  db: D1Database,
-  scope: SpendingScope,
-): Promise<SpendingRecipients> {
-  const range = await dataRange(db);
+export async function readRecipients(env: Env, scope: SpendingScope): Promise<SpendingRecipients> {
+  const range = await readRange(env);
   if (!range) {
     return {
       scope,
@@ -175,7 +155,7 @@ export async function readRecipients(
   }
 
   const window = windowOf(scope, range);
-  const rows = await loadWindow(db, window.from, window.to);
+  const rows = await loadWindow(env.DB, window.from, window.to);
 
   const keys =
     window.bucket === "month"

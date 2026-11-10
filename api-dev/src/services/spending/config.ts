@@ -59,6 +59,9 @@ export const DOCUMENTS_CAP = 1000;
 /** Ключ, під яким лежить дата останнього завантаження джерела. */
 export const LASTLOAD_KEY = "spending:meta:lastload:v1";
 
+/** Ключ меж даних (`range.ts`): їх оновлює синк, а не кожне відкриття екрана. */
+export const DATA_RANGE_KEY = "spending:meta:range:v1";
+
 /** Ключ картки розпорядника в `CONTENT_KV`. */
 export function cardKey(edrpou: string): string {
   return `spending:org:${edrpou}:v1`;

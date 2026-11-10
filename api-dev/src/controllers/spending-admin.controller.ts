@@ -134,7 +134,7 @@ export function handleSpendingRecipients(request: Request, env: Env): Promise<Re
     const raw = new URL(request.url).searchParams.get("scope");
     const scope = raw === null || raw === "" ? "month" : raw;
     if (!SCOPES.includes(scope as SpendingScope)) return badRequest("Невідомий розріз");
-    return json(await readRecipients(env.DB, scope as SpendingScope));
+    return json(await readRecipients(env, scope as SpendingScope));
   });
 }
 
