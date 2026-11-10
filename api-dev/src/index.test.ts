@@ -42,11 +42,21 @@ const monitoring = vi.hoisted(() => ({
   collect: vi.fn(async () => ({ at: "2026-09-30T00:00:00Z" })),
   save: vi.fn(async () => {}),
 }));
+
+// Третій розклад — прибирання журналу: перевіряємо, що він не потрапляє ані в
+// збір Є-data, ані в зріз моніторингу.
+const retention = vi.hoisted(() => ({ prune: vi.fn(async () => 0) }));
+vi.mock("./services/user-events-retention", () => ({
+  pruneOldEvents: retention.prune,
+  EVENT_RETENTION_DAYS: 180,
+  EVENTS_CRON: "23 3 * * *",
+}));
 vi.mock("./services/monitoring/collect", () => ({ collectSnapshot: monitoring.collect }));
 vi.mock("./services/monitoring/store", () => ({ saveSnapshot: monitoring.save }));
 
 const { default: worker } = await import("./index");
 const { SPENDING_CRON } = await import("./services/spending/config");
+const { EVENTS_CRON } = await import("./services/user-events-retention");
 
 const env = {} as Env;
 
@@ -123,6 +133,26 @@ describe("необроблений виняток", () => {
     expect(monitoring.collect).toHaveBeenCalled();
     expect(monitoring.save).toHaveBeenCalled();
     expect(spending.run).not.toHaveBeenCalled();
+    await expect(Promise.all(waited)).resolves.toBeDefined();
+  });
+
+  it("прибирання журналу впізнається за власним cron і йде у `waitUntil`", async () => {
+    const { ctx, waited } = executionContext();
+
+    await worker.scheduled(controller(EVENTS_CRON), env, ctx);
+
+    expect(retention.prune).toHaveBeenCalledWith(env);
+    expect(monitoring.collect).not.toHaveBeenCalled();
+    expect(spending.run).not.toHaveBeenCalled();
+    await expect(Promise.all(waited)).resolves.toBeDefined();
+  });
+
+  it("падіння прибирання журналу не валить воркера", async () => {
+    retention.prune.mockRejectedValueOnce(new Error("D1 недоступна"));
+    const { ctx, waited } = executionContext();
+
+    await worker.scheduled(controller(EVENTS_CRON), env, ctx);
+
     await expect(Promise.all(waited)).resolves.toBeDefined();
   });
 

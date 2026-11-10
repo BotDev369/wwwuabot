@@ -4,6 +4,11 @@ import { handleRequest } from "./router";
 import { apiLog } from "./shared/logger";
 import { markEntryFromRequest } from "./shared/platform-entry";
 import { recordPlatformAction } from "./services/user-events.service";
+import {
+  EVENT_RETENTION_DAYS,
+  EVENTS_CRON,
+  pruneOldEvents,
+} from "./services/user-events-retention";
 import { secureResponse } from "@wwwuabot/shared/security/headers";
 import { collectSnapshot } from "./services/monitoring/collect";
 import { saveSnapshot } from "./services/monitoring/store";
@@ -43,6 +48,21 @@ async function runSpendingJob(env: Env): Promise<void> {
       apiLog.error(`spending: збір за ${period} упав`, error);
       Sentry.captureException(error);
     }
+  }
+}
+
+/**
+ * Прибирання журналу дій за розкладом: усе, старше за півроку, зникає, щоб
+ * адмінка не читала всю історію проєкту, показуючи одну добу. `DELETE` іде
+ * індексом `created_at`, а падіння не валить воркера — наступна доба спробує.
+ */
+async function runEventRetention(env: Env): Promise<void> {
+  try {
+    const removed = await pruneOldEvents(env);
+    if (removed > 0) apiLog.info("events retention", { removed, days: EVENT_RETENTION_DAYS });
+  } catch (error) {
+    apiLog.error("events retention failed", error);
+    Sentry.captureException(error);
   }
 }
 
@@ -113,6 +133,10 @@ export default Sentry.withSentry(
     ): Promise<void> {
       if (controller.cron === SPENDING_CRON) {
         ctx.waitUntil(runSpendingJob(env));
+        return;
+      }
+      if (controller.cron === EVENTS_CRON) {
+        ctx.waitUntil(runEventRetention(env));
         return;
       }
       ctx.waitUntil(runScheduledCollection(env));
