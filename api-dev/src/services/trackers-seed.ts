@@ -1,6 +1,6 @@
 /**
  * Сів тематик стрічки й мапінг рядка бази в доменну мірку. Тематики сіються
- * при кожному вході (дерево існує завжди), а мірки — ні: їх додає людина
+ * на першому вході (дерево існує завжди), а мірки — ні: їх додає людина
  * (`docs/TRACKERS.md`).
  *
  * @module api-dev/src/services/trackers-seed
@@ -70,13 +70,26 @@ export function toTracker(row: TrackerRow): Tracker {
   };
 }
 
+/** Карта «ключ → id рядка»: нею трекери прив'язуються до своїх тематик. */
+async function readThemes(env: Env, userId: number): Promise<Map<string, number>> {
+  const rows = await env.DB.prepare(
+    `SELECT id, key FROM tracker_groups WHERE owner_id = ? AND key IS NOT NULL ORDER BY id`,
+  )
+    .bind(String(userId))
+    .all<{ id: number; key: string }>();
+  return new Map((rows.results ?? []).map((row) => [row.key, Number(row.id)]));
+}
+
 /**
- * Тематики каталогу сіються при кожному вході так само, як і трекери:
- * `INSERT OR IGNORE` + `UNIQUE (owner_id, key)` — ідемпотентно, перейменована
- * людиною група не повертається, прибрана — не воскресає. Повертає карту
- * «ключ → id рядка» — вона й прив'язує трекери до своїх тематик.
+ * Тематики каталогу сіються **один раз** на людину: спершу читаємо наявні
+ * ключі, і лише коли набору бракує — батч `INSERT OR IGNORE` (ідемпотентний
+ * через `UNIQUE (owner_id, key)`). Читання не зайве: той самий `SELECT` і
+ * повертає карту «ключ → id», яку раніше брали після вставок.
  */
 export async function seedGroups(env: Env, userId: number): Promise<Map<string, number>> {
+  const themes = await readThemes(env, userId);
+  if (TRACKER_CATALOG_GROUPS.every((group) => themes.has(group.key))) return themes;
+
   const now = formatSqliteDatetime();
   await env.DB.batch(
     TRACKER_CATALOG_GROUPS.map((group, index) =>
@@ -86,10 +99,5 @@ export async function seedGroups(env: Env, userId: number): Promise<Map<string, 
       ).bind(String(userId), group.key, group.title, (index + 1) * 10, now),
     ),
   );
-  const rows = await env.DB.prepare(
-    `SELECT id, key FROM tracker_groups WHERE owner_id = ? AND key IS NOT NULL ORDER BY id`,
-  )
-    .bind(String(userId))
-    .all<{ id: number; key: string }>();
-  return new Map((rows.results ?? []).map((row) => [row.key, Number(row.id)]));
+  return readThemes(env, userId);
 }

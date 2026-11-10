@@ -51,6 +51,8 @@ function database(
   // рядок на порожній базі, і повторне додавання виглядало б як перше.
   // Ключі — окремо: у пачці другий трекер не має знайти рядок першого.
   const keys = new Set<string>();
+  // Засіяні тематики: з'являються тільки після батчу — як у справжній базі.
+  const seeded: string[] = [];
   const db = {
     prepare(sql: string) {
       const call = { sql, values: [] as unknown[] };
@@ -71,17 +73,13 @@ function database(
           }
           return null;
         },
-        // Сів груп читає їх назад із бази — мок віддає щойно «сіяні» ключі.
+        // Сів груп читає їх назад із бази — мок віддає лише те, що справді
+        // записав батч: на порожній базі ключів ще немає.
         all: async () => {
           if (options.throwOn && sql.includes(options.throwOn)) throw new Error("D1 недоступна");
           if (sql.includes("FROM tracker_groups")) {
             if (options.groupRows) return { results: options.groupRows };
-            return {
-              results: TRACKER_CATALOG_GROUPS.map((group, index) => ({
-                id: index + 1,
-                key: group.key,
-              })),
-            };
+            return { results: seeded.map((key, index) => ({ id: index + 1, key })) };
           }
           if (sql.includes("FROM trackers") && options.listTrackers) {
             return { results: options.listTrackers };
@@ -93,10 +91,18 @@ function database(
           return { meta: { changes: options.changes ?? 1, last_row_id: options.lastRowId ?? 21 } };
         },
       };
+      Object.assign(statement, { call });
       return statement;
     },
     batch: async (statements: unknown[]) => {
       batches.push(statements.length);
+      for (const one of statements as { call?: { sql: string; values: unknown[] } }[]) {
+        const call = one.call;
+        if (call?.sql.includes("INSERT OR IGNORE INTO tracker_groups")) {
+          const key = String(call.values[1]);
+          if (!seeded.includes(key)) seeded.push(key);
+        }
+      }
       return [];
     },
   };
