@@ -1046,6 +1046,7 @@ export const TABLES = {
       )`,
     indexes: [
       "CREATE INDEX IF NOT EXISTS idx_metrics_values_metric ON metrics_values(metric, group_key)",
+      "CREATE INDEX IF NOT EXISTS idx_metrics_values_group ON metrics_values(group_key, snapshot_id)",
     ],
   },
 

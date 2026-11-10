@@ -62,7 +62,7 @@ DDL не живе в контролерах і репозиторіях: кож�
 `idx_messages_unread`), `message_media` (`idx_message_media_owner` — квота файлів однієї людини),
 `ads` (`idx_ads_owner`, `idx_ads_doska` — дошка за `(is_active, id)`),
 `theme_schemes` (`idx_themes_owner`, `idx_themes_public`), `metrics_values`
-(`idx_metrics_values_metric` — історія одного показника за часом) і п'ять таблиць магазину:
+(`idx_metrics_values_metric` — історія одного показника за часом, `idx_metrics_values_group` — історія групи за зрізами) і п'ять таблиць магазину:
 `shop_products` (`idx_shop_products_shop` — товари за `(shop_id, is_active, id)`), `shop_media`,
 `shop_orders` (`idx_shop_orders_shop` і `idx_shop_orders_buyer` — список покупця), `shop_order_items`,
 `shop_order_statuses` (кожна — за своїм `shop_id` чи `order_id`). Унікальність `contacts.code`,
