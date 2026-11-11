@@ -10,13 +10,13 @@
 import { useMemo } from "react";
 import { Link } from "react-router-dom";
 import { Icon } from "@wwwuabot/shared";
-import { SpendingTopbar } from "./SpendingTopbar";
-import { formatCompactMoney, formatCount, formatPeriod, periodsOf } from "./format";
+import { SpendingPeriodControls, SpendingTopbar } from "./SpendingTopbar";
+import { formatCompactMoney, formatCount, periodsOf } from "./format";
 import { useSpending } from "./useSpending";
 import { SPENDING_CAPABILITIES } from "./capabilities";
 
 export function SpendingHubPage() {
-  const { overview, loading, error, reload, selectPeriod } = useSpending();
+  const { overview, loading, error, refreshing, reload, selectPeriod, refresh } = useSpending();
   const periods = useMemo(() => periodsOf(overview?.sync ?? []), [overview]);
 
   const totals = useMemo(() => {
@@ -43,24 +43,14 @@ export function SpendingHubPage() {
   return (
     <>
       <SpendingTopbar title="Є-data">
-        {overview?.period && (
-          <select
-            className="spend-select"
-            aria-label="Період"
-            value={overview.period}
-            onChange={(event) => void selectPeriod(event.target.value)}
-          >
-            {periods.map((period) => (
-              <option key={period} value={period}>
-                {formatPeriod(period)}
-              </option>
-            ))}
-          </select>
-        )}
-        <button className="wb-btn wb-btn-ghost wb-btn-sm" onClick={() => void reload()}>
-          <Icon name="refresh" size={14} />
-          Оновити
-        </button>
+        <SpendingPeriodControls
+          periods={periods}
+          period={overview?.period ?? null}
+          onSelect={(period) => void selectPeriod(period)}
+          onRefresh={() => overview?.period && void refresh(overview.period)}
+          refreshing={refreshing}
+          capturedAt={overview?.capturedAt ?? null}
+        />
       </SpendingTopbar>
 
       <section className="spend">
@@ -78,8 +68,8 @@ export function SpendingHubPage() {
           <h2 className="spend-hero-title">Видатки громади з Є-data</h2>
           <p className="spend-hero-text">
             Що громада витратила, кому й на що — з даних, які органи місцевого самоврядування
-            оприлюднюють на data.gov.ua. Збір іде щодня; наступні кроки — закупівлі, бюджет і вся
-            Україна.
+            оприлюднюють на data.gov.ua. Збір — лише за кнопкою «Оновити»; наступні кроки —
+            закупівлі, бюджет і вся Україна.
           </p>
         </header>
 
@@ -91,8 +81,8 @@ export function SpendingHubPage() {
           <div className="spend-panel">
             <h3 className="spend-detail-title">Зібраних даних ще немає</h3>
             <p className="spend-list-note">
-              Колектор пише перший місяць за розкладом, а ця сторінка показує лише те, що вже лежить
-              у базі. Кроки збору й помилки джерела — у розділі «Стан збору».
+              Колектор пише місяць лише за кнопкою «Оновити», а ця сторінка показує те, що вже
+              лежить у базі. Кроки збору й помилки джерела — у розділі «Стан збору».
             </p>
             <Link className="wb-btn wb-btn-primary wb-btn-sm spend-inline-link" to="/spending/sync">
               Стан збору

@@ -103,6 +103,7 @@ export function SpendingPaymentsPage() {
           onSelect={(period) => void selectPeriod(period)}
           onRefresh={() => overview?.period && void refresh(overview.period)}
           refreshing={refreshing}
+          capturedAt={overview?.capturedAt ?? null}
         />
       </SpendingTopbar>
 

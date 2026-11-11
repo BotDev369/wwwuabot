@@ -232,7 +232,7 @@ describe("коди, отримувачі, стан збору", () => {
     view.unmount();
   });
 
-  it("коди: місяць обирається в шапці, а «Зібрати зараз» перечитує його", async () => {
+  it("коди: місяць у шапці, дата оновлення поруч, «Оновити» перечитує місяць", async () => {
     api.fetchSpendingOverview.mockResolvedValue({
       ...overview(),
       sync: [SYNC, { ...SYNC, key: "payments:2026-10", period: "2026-10" }],
@@ -243,7 +243,8 @@ describe("коди, отримувачі, стан збору", () => {
     fireEvent.change(select, { target: { value: "2026-10" } });
     await waitFor(() => expect(api.fetchSpendingOverview).toHaveBeenCalledWith("2026-10"));
 
-    fireEvent.click(screen.getByRole("button", { name: /Зібрати зараз/ }));
+    expect(screen.getByText(/зібрано:/)).toBeTruthy();
+    fireEvent.click(screen.getByRole("button", { name: /Оновити/ }));
     await waitFor(() => expect(api.refreshSpending).toHaveBeenCalled());
     view.unmount();
   });

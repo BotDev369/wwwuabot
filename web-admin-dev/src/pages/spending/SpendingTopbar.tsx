@@ -1,9 +1,8 @@
 /**
- * Шапка сторінок Є-data: назад до хабу, назва й керування періодом.
+ * Шапка сторінок Є-data: назад до хабу, назва, місяць, дата збору й «Оновити».
  *
- * Вибір місяця й «Зібрати зараз» стоять в одному місці, бо це дія над даними
- * періоду, а не над таблицею чи графіком. Адреси карток і підсторінок — у
- * `app/router.tsx`, тут лише вигляд.
+ * Дія над даними періоду стоїть при періоді, а не при таблиці. Адреси карток і
+ * підсторінок — у `app/router.tsx`, тут лише вигляд.
  * @module web-admin-dev/src/pages/spending/SpendingTopbar
  */
 
@@ -11,7 +10,7 @@ import type { ReactNode } from "react";
 import { Link, useSearchParams } from "react-router-dom";
 import { Icon } from "@wwwuabot/shared";
 import { PageTopbar } from "../../layout/PageTopbar";
-import { formatPeriod } from "./format";
+import { formatPeriod, formatStamp } from "./format";
 
 interface SpendingTopbarProps {
   readonly title: string;
@@ -53,6 +52,8 @@ interface SpendingPeriodControlsProps {
   readonly onSelect: (period: string) => void;
   readonly onRefresh: () => void;
   readonly refreshing: boolean;
+  /** Коли цей місяць востаннє збирали; `null` — ще жодного разу. */
+  readonly capturedAt?: string | null;
 }
 
 export function SpendingPeriodControls({
@@ -61,6 +62,7 @@ export function SpendingPeriodControls({
   onSelect,
   onRefresh,
   refreshing,
+  capturedAt = null,
 }: SpendingPeriodControlsProps) {
   return (
     <>
@@ -78,13 +80,14 @@ export function SpendingPeriodControls({
           ))}
         </select>
       )}
+      <span className="spend-meta-item">зібрано: {capturedAt ? formatStamp(capturedAt) : "—"}</span>
       <button
         className="wb-btn wb-btn-ghost wb-btn-sm"
         disabled={refreshing || !period}
         onClick={onRefresh}
       >
         <Icon name="refresh" size={14} />
-        {refreshing ? "Збираємо…" : "Зібрати зараз"}
+        {refreshing ? "Завантаження…" : "Оновити"}
       </button>
     </>
   );
