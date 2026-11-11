@@ -1,6 +1,8 @@
 import { DatabaseRepository } from "../core/database.repository";
 import {
+  WEB_SEPARATOR,
   contentPageFromScenario,
+  normalizeSlug,
   resolveBotPayload,
   toWebPath,
   type ScenarioContentRow,
@@ -59,7 +61,18 @@ export class ScenarioRepository extends DatabaseRepository {
       .filter((row) => visibleTo(row, userId))
       .map(contentPageFromScenario);
     const route = resolveBotPayload(pages, payload);
-    if (!route) return null;
+    if (!route) {
+      // Порожній payload — це `/start`: головна сторінка. Якщо головної ще не
+      // створили, мовчання читається як «бот зламався», тож показуємо першу
+      // видиму сторінку верхнього рівня. Діплінк із невідомою адресою і далі
+      // лишається без відповіді: це бите посилання, а не вхід у бота.
+      if (payload.trim() !== "") return null;
+      const first = pages.find((page) => !normalizeSlug(page.slug).includes(WEB_SEPARATOR));
+      if (!first) return null;
+      const scenario = await this.getScenario(first.slug, userId);
+      if (scenario) scenario.web_path = toWebPath(first.slug);
+      return scenario;
+    }
 
     const scenario = await this.getScenario(route.page.slug, userId);
     if (scenario) {

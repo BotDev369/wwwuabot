@@ -8,14 +8,17 @@ function ctx(update: Record<string, unknown>, from: Record<string, unknown> | nu
 }
 
 describe("подія з оновлення Telegram", () => {
-  it("команда пишеться без бота-адресата й без аргументів", () => {
-    const event = buildUserEvent(ctx({ message: { text: "/start@wwwuabot payload" } }), "ok");
+  it("команда пишеться з діплінком: адресат геть, хвіст лишається", () => {
+    const event = buildUserEvent(
+      ctx({ message: { text: "/start@wwwuabot dateanalysis_1980-03-03_inv-8f3k2q" } }),
+      "ok",
+    );
 
     expect(event).toMatchObject({
       userId: 7,
       surface: "bot",
       kind: "command",
-      action: "/start",
+      action: "/start dateanalysis_1980-03-03_inv-8f3k2q",
       status: "ok",
     });
   });

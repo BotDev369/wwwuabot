@@ -47,7 +47,10 @@ export function buildUserEvent(ctx: AppContext, status: "ok" | "error"): UserEve
 
     if (text) {
       kind = text.startsWith("/") ? "command" : "message";
-      action = text.startsWith("/") ? (text.split(" ")[0] ?? text).split("@")[0] : text;
+      // Команда пишеться цілком: хвіст `/start` — це діплінк, і без нього не
+      // сказати, за яким посиланням прийшла людина. Прибирається лише адресат
+      // (`@bot`), а не аргументи.
+      action = text.startsWith("/") ? text.replace(/^(\/[^\s@]+)@[^\s]+/, "$1") : text;
     } else if (caption) {
       action = caption;
       details = attachmentOf(message);
