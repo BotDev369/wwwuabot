@@ -10,9 +10,6 @@
 /** Повна адреса джерела: шляхи з §2 документа рахуються відносно неї. */
 export const SPENDING_BASE_URL = "https://api.spending.gov.ua/api/v2";
 
-/** Окремий розклад: не той, що знімає зріз моніторингу (`17 4 * * *`). */
-export const SPENDING_CRON = "37 5 * * *";
-
 /** Стеля масиву `payers_edrpous`: 11 кодів уже дають 400. */
 export const MAX_PAYERS_PER_REQUEST = 10;
 
@@ -41,13 +38,10 @@ export const SEED_ORGS = [
 /** Гарячі картки живуть добу: далі їх перезбирає наступний прогін. */
 export const CARD_TTL_SECONDS = 86_400;
 
-/** Скільки останніх місяців перечитуємо: джерело доопубліковує із запізненням. */
-export const REFRESH_MONTHS = 2;
-
 /** Зібране молодше за добу не перечитуємо: інакше два прогони поспіль роблять ту саму роботу. */
 export const REFRESH_AFTER_MS = 20 * 60 * 60 * 1000;
 
-/** Стеля прогону: Cron Trigger живе 15 хвилин, тож 9 лишають запас на запис. */
+/** Стеля прогону: ручний перезбір іде через HTTP, а 9 хвилин лишають запас на запис. */
 export const RUN_BUDGET_MS = 9 * 60 * 1000;
 
 /** Кількість збоїв поспіль, після якої прогін зупиняється: це «джерело лежить». */
@@ -82,22 +76,6 @@ export function monthWindow(period: string): MonthWindow {
   if (month < 1 || month > 12) throw new Error(`Місяця «${month}» не існує.`);
   const lastDay = new Date(Date.UTC(year, month, 0)).getUTCDate();
   return { period, from: `${period}-01`, to: `${period}-${String(lastDay).padStart(2, "0")}` };
-}
-
-/** Місяць, що передує `now`: збір за розкладом бере саме його. */
-export function previousMonthPeriod(now: Date): string {
-  return periodShift(now, 1);
-}
-
-/** `count` останніх завершених місяців, від нового до старого. */
-export function recentPeriods(now: Date, count: number): string[] {
-  if (count < 1) throw new Error("Кількість місяців мусить бути додатною.");
-  return Array.from({ length: count }, (_, index) => periodShift(now, index + 1));
-}
-
-function periodShift(now: Date, monthsBack: number): string {
-  const first = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth() - monthsBack, 1));
-  return `${first.getUTCFullYear()}-${String(first.getUTCMonth() + 1).padStart(2, "0")}`;
 }
 
 /**

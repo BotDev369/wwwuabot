@@ -14,7 +14,7 @@
 | R2 | 7 | фото магазину 3, фото листування 3, архів Є-data 1 |
 | Cache API | 2 | `match` і `put` в одному місці — `media-cache.ts` |
 | Мережа | 10 | Telegram API (усі десять), плюс GitHub і Є-data поза цим ліком |
-| Розклади | 2 | `17 4 * * *` зріз, `37 5 * * *` Є-data |
+| Розклади | 1 | `17 4 * * *` зріз; Є-data — лише руками |
 
 **Найгустіші файли:** `trackers.service.ts` 19 точок, `users.service.ts` 12, `contacts.service.ts` 9,
 `trackers-library.ts` 8, `spending/read.ts` 7, `pages.service.ts` 7, `messages/thread.ts` 7.

@@ -1,14 +1,5 @@
 import { describe, expect, it } from "vitest";
-import {
-  batchKey,
-  chunk,
-  monthWindow,
-  previousMonthPeriod,
-  receiptsKey,
-  recentPeriods,
-  REGIONS_SYNC_KEY,
-  splitRange,
-} from "./config";
+import { batchKey, chunk, monthWindow, receiptsKey, REGIONS_SYNC_KEY, splitRange } from "./config";
 
 describe("ключі кроків", () => {
   it("пачка надходжень не збігається з пачкою сплат", () => {
@@ -36,23 +27,6 @@ describe("вікно місяця", () => {
     expect(() => monthWindow("2026-9")).toThrow();
     expect(() => monthWindow("вересень")).toThrow();
     expect(() => monthWindow("2026-13")).toThrow();
-  });
-});
-
-describe("попередній місяць", () => {
-  it("переходить через межу року", () => {
-    expect(previousMonthPeriod(new Date("2026-01-15T00:00:00Z"))).toBe("2025-12");
-    expect(previousMonthPeriod(new Date("2026-10-31T00:00:00Z"))).toBe("2026-09");
-  });
-});
-
-describe("глибина перечитування", () => {
-  it("бере останні завершені місяці від нового до старого", () => {
-    expect(recentPeriods(new Date("2026-01-10T00:00:00Z"), 2)).toEqual(["2025-12", "2025-11"]);
-  });
-
-  it("відмовляється від порожнього списку", () => {
-    expect(() => recentPeriods(new Date("2026-01-10T00:00:00Z"), 0)).toThrow();
   });
 });
 
