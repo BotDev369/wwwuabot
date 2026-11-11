@@ -33,16 +33,7 @@ vi.mock("./router", () => ({ handleRequest: () => router.handler() }));
 const recordPlatform = vi.hoisted(() => vi.fn(async () => {}));
 vi.mock("./services/user-events.service", () => ({ recordPlatformAction: recordPlatform }));
 
-// Єдиний розклад — прибирання журналу.
-const retention = vi.hoisted(() => ({ prune: vi.fn(async () => 0) }));
-vi.mock("./services/user-events-retention", () => ({
-  pruneOldEvents: retention.prune,
-  EVENT_RETENTION_DAYS: 180,
-  EVENTS_CRON: "23 3 * * *",
-}));
-
 const { default: worker } = await import("./index");
-const { EVENTS_CRON } = await import("./services/user-events-retention");
 
 const env = {} as Env;
 
@@ -56,15 +47,6 @@ function executionContext(): { ctx: ExecutionContext; waited: Promise<unknown>[]
       passThroughOnException: () => {},
     } as unknown as ExecutionContext,
   };
-}
-
-/** `ScheduledController`, який має все, що читає обгортка Sentry (зокрема час). */
-function controller(cron: string): ScheduledController {
-  return {
-    cron,
-    scheduledTime: Date.parse("2026-10-31T05:37:00Z"),
-    noRetry: () => {},
-  } as unknown as ScheduledController;
 }
 
 describe("необроблений виняток", () => {
@@ -95,33 +77,6 @@ describe("необроблений виняток", () => {
     // Четвертий аргумент — час приходу запиту: журнал пишеться після відповіді,
     // тож без нього порядок історії задавав би той, хто швидше записав рядок.
     expect(recordPlatform).toHaveBeenCalledWith(request, env, 200, expect.any(Number));
-    await expect(Promise.all(waited)).resolves.toBeDefined();
-  });
-
-  it("будь-який інший cron не робить нічого", async () => {
-    const { ctx, waited } = executionContext();
-
-    await worker.scheduled(controller("17 4 * * *"), env, ctx);
-
-    expect(retention.prune).not.toHaveBeenCalled();
-    await expect(Promise.all(waited)).resolves.toBeDefined();
-  });
-
-  it("прибирання журналу впізнається за власним cron і йде у `waitUntil`", async () => {
-    const { ctx, waited } = executionContext();
-
-    await worker.scheduled(controller(EVENTS_CRON), env, ctx);
-
-    expect(retention.prune).toHaveBeenCalledWith(env);
-    await expect(Promise.all(waited)).resolves.toBeDefined();
-  });
-
-  it("падіння прибирання журналу не валить воркера", async () => {
-    retention.prune.mockRejectedValueOnce(new Error("D1 недоступна"));
-    const { ctx, waited } = executionContext();
-
-    await worker.scheduled(controller(EVENTS_CRON), env, ctx);
-
     await expect(Promise.all(waited)).resolves.toBeDefined();
   });
 

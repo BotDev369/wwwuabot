@@ -4,28 +4,8 @@ import { handleRequest } from "./router";
 import { apiLog } from "./shared/logger";
 import { markEntryFromRequest } from "./shared/platform-entry";
 import { recordPlatformAction } from "./services/user-events.service";
-import {
-  EVENT_RETENTION_DAYS,
-  EVENTS_CRON,
-  pruneOldEvents,
-} from "./services/user-events-retention";
 import { secureResponse } from "@wwwuabot/shared/security/headers";
 import type { Env } from "./shared/types";
-
-/**
- * Прибирання журналу дій за розкладом: усе, старше за півроку, зникає, щоб
- * адмінка не читала всю історію проєкту, показуючи одну добу. `DELETE` іде
- * індексом `created_at`, а падіння не валить воркера — наступна доба спробує.
- */
-async function runEventRetention(env: Env): Promise<void> {
-  try {
-    const removed = await pruneOldEvents(env);
-    if (removed > 0) apiLog.info("events retention", { removed, days: EVENT_RETENTION_DAYS });
-  } catch (error) {
-    apiLog.error("events retention failed", error);
-    Sentry.captureException(error);
-  }
-}
 
 /**
  * API Worker — unified REST gateway for wwwuabot.
@@ -84,20 +64,6 @@ export default Sentry.withSentry(
           { url: request.url },
         );
       }
-    },
-
-    /**
-     * Розклад із `[triggers]`: єдиний — прибирання журналу дій. Збір зрізу
-     * й Є-data тут не живуть: обидва запускає людина кнопкою, тож будь-який
-     * інший `controller.cron` не робить нічого.
-     */
-    async scheduled(
-      controller: ScheduledController,
-      env: Env,
-      ctx: ExecutionContext,
-    ): Promise<void> {
-      if (controller.cron !== EVENTS_CRON) return;
-      ctx.waitUntil(runEventRetention(env));
     },
   },
 );

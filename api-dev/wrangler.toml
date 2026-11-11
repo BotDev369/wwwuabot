@@ -74,12 +74,7 @@ invocation_logs = false
 [version_metadata]
 binding = "CF_VERSION_METADATA"
 
-[triggers]
-# `23 3` — прибирання журналу дій старшого за півроку против (`EVENTS_CRON` у
-# `services/user-events-retention.ts`). Це видалення, а не імпорт.
-#
-# Ні зрізу моніторингу, ні Є-data тут немає навмисно: обидва збираються лише
-# кнопкою (`POST /api/admin/monitoring/collect` і
-# `POST /api/admin/spending/refresh`). Зібрані місяці не змінюються, а зріз
-# за розкладом платив квотою за ту саму відповідь.
-crons = ["23 3 * * *"]
+# Розкладів немає навмисно. Зріз моніторингу й Є-data збираються кнопкою
+# (`POST /api/admin/monitoring/collect`, `POST /api/admin/spending/refresh`),
+# а журнал дій прибирає людина в адмінці. Крон за розкладом платив квотою за
+# відповідь, яку ніхто не замовляв.

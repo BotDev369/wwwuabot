@@ -26,7 +26,7 @@ export interface MetricValue {
   readonly value: number;
 }
 
-/** Хто запустив збір: людина з панелі чи розклад (`crons` у `wrangler.toml`). */
+/** Хто запустив збір: людина з панелі чи крон (старі зрізи). */
 export type CollectTrigger = "manual" | "cron";
 
 /**
