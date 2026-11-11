@@ -31,14 +31,19 @@ function TreeBranch({
   return (
     <ul className="ana-users">
       {nodes.map((node) => (
-        <li className="ana-user" key={node.key} style={{ marginLeft: depth * 14 }}>
+        <li className="ana-user" key={node.key}>
           <div className="ana-user-head">
             <span className="ana-user-name">{node.label}</span>
             <span className="ana-user-count" title={node.key}>
               {node.count}
             </span>
           </div>
-          {node.children.length > 0 && <TreeBranch nodes={node.children} depth={depth + 1} />}
+          {/* Відступ дає наявний клас списку: новий стиль тут не потрібен. */}
+          {node.children.length > 0 && (
+            <div className="ana-user-body">
+              <TreeBranch nodes={node.children} depth={depth + 1} />
+            </div>
+          )}
         </li>
       ))}
     </ul>
