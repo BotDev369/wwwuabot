@@ -17,6 +17,7 @@ import {
 } from "@wwwuabot/shared/events";
 import { ensureTables } from "@wwwuabot/shared/database/ensure-tables";
 import type { Env } from "../shared/types";
+import { checkpointTree, type CheckpointNode } from "./events-checkpoints";
 
 /** Скільки людей показує зведення: більше — вже не «огляд», а список. */
 const SUMMARY_USERS_LIMIT = 200;
@@ -172,6 +173,27 @@ export async function readEventSummary(env: Env, range: EventRange): Promise<Eve
 }
 
 /**
+ * Дерево чек-поінтів за діапазон: лічба рядків журналу по вузлах.
+ *
+ * Скелет дерева приходить із реєстру, а не з даних: екран без відвідувань
+ * мусить бути видно як порожній вузол, інакше «мертві гілки» ніколи не
+ * знайдуться.
+ */
+export async function readEventTree(env: Env, range: EventRange): Promise<CheckpointNode[]> {
+  await ensureTables(env.DB, ["user_events"]);
+
+  const rows = await env.DB.prepare(
+    `SELECT node AS node, COUNT(*) AS count FROM user_events
+      WHERE node IS NOT NULL AND created_at BETWEEN ? AND ? GROUP BY node`,
+  )
+    .bind(range.from, range.to)
+    .all<{ node: string; count: number }>();
+
+  const counts = new Map((rows.results ?? []).map((row) => [row.node, row.count]));
+  return checkpointTree(counts);
+}
+
+/**
  * Люди, які вже є в журналі — для вибору в адмінці: номер ніхто не тримає в
  * голові, а список мусить бути з того самого журналу, а не з усіх `users`.
  *
@@ -221,6 +243,7 @@ interface EventRow {
   kind: UserEvent["kind"];
   action: string;
   details: string | null;
+  node: string | null;
   status: UserEvent["status"];
   created_at: string;
   first_name: string | null;
@@ -249,7 +272,7 @@ export async function readEvents(
 
   const rows = await env.DB.prepare(
     `SELECT e.id AS id, e.user_id AS user_id, e.surface AS surface, e.kind AS kind,
-            e.action AS action, e.details AS details, e.status AS status,
+            e.action AS action, e.details AS details, e.node AS node, e.status AS status,
             e.created_at AS created_at,
             u.first_name AS first_name, u.last_name AS last_name, u.username AS username
        FROM user_events e
@@ -271,6 +294,7 @@ export async function readEvents(
       kind: row.kind,
       action: row.action,
       details: row.details,
+      node: row.node,
       status: row.status,
       createdAt: row.created_at,
       firstName: row.first_name,

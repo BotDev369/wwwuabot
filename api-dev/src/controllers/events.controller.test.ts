@@ -64,12 +64,13 @@ describe("журнал дій платформи", () => {
 
     const insert = db.calls.find((call) => call.sql.startsWith("INSERT INTO user_events"));
     // Query не пишеться: поведінку описує дія, а не те, що людина шукала.
-    expect(insert?.values.slice(0, 6)).toEqual([
+    expect(insert?.values.slice(0, 7)).toEqual([
       777,
       "platform",
       "request",
       "POST /api/user/trackers",
       null,
+      "platform.trackers.trackers.create",
       "ok",
     ]);
   });
@@ -99,8 +100,15 @@ describe("журнал дій платформи", () => {
     const insert = db.calls.find((call) => call.sql.startsWith("INSERT INTO user_events"));
     // Подробиць немає: назва екрана вже каже, що відкрили, а «сторінка» поруч
     // була б другим словом про те саме.
-    expect(insert?.values.slice(0, 6)).toEqual([777, "platform", "view", "Трекери", null, "ok"]);
-    expect(insert?.values[6]).toBe("2026-10-24 12:17:25.000");
+    expect(insert?.values.slice(0, 6)).toEqual([
+      777,
+      "platform",
+      "view",
+      "Трекери",
+      null,
+      "platform.trackers",
+    ]);
+    expect(insert?.values[7]).toBe("2026-10-24 12:17:25.000");
   });
 
   it("час події береться з моменту запиту й пише мілісекунди", async () => {
@@ -116,7 +124,7 @@ describe("журнал дій платформи", () => {
 
     const insert = db.calls.find((call) => call.sql.startsWith("INSERT INTO user_events"));
     // Секунди — занадто груба сітка: два дотики в одну секунду мінялися б місцями.
-    expect(insert?.values[6]).toBe("2026-09-22 22:13:20.123");
+    expect(insert?.values[7]).toBe("2026-09-22 22:13:20.123");
   });
 
   it("⛔ адмінка, бот і портал у журнал людей не потрапляють", async () => {
@@ -170,7 +178,7 @@ describe("журнал дій платформи", () => {
     );
 
     const insert = db.calls.find((call) => call.sql.startsWith("INSERT INTO user_events"));
-    expect(insert?.values[5]).toBe("error");
+    expect(insert?.values[6]).toBe("error");
   });
 });
 

@@ -14,6 +14,7 @@ import {
 } from "@wwwuabot/shared/events";
 import { recordUserEvent } from "@wwwuabot/shared/database/user-events";
 import type { Env } from "../shared/types";
+import { checkpointActionKey, viewCheckpointKey } from "./events-checkpoints";
 import { tryResolveUserId } from "../shared/identity";
 import { apiLog } from "../shared/logger";
 
@@ -35,6 +36,11 @@ export async function recordPlatformAction(
     const userId = await tryResolveUserId(request, env);
     if (userId === null) return;
 
+    // Пишеться лише оголошене місце: решта змін стану — не чек-поінт, а шум,
+    // який робив журнал потоком незрозумілих `METHOD /path`.
+    const node = checkpointActionKey(request.method, pathname);
+    if (node === null) return;
+
     await recordUserEvent(
       env.DB,
       {
@@ -42,6 +48,7 @@ export async function recordPlatformAction(
         surface: "platform",
         kind: "request",
         action: platformAction(request.method, pathname),
+        node,
         status: status < 400 ? "ok" : "error",
       },
       at,
@@ -71,6 +78,7 @@ export async function recordPlatformView(
       kind: "view",
       // Назва екрана з хедера — те, що людина бачить; без неї лишається ключ.
       action: title?.trim() || screen,
+      node: viewCheckpointKey(screen),
     },
     at,
   );

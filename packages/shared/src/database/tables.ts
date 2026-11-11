@@ -338,6 +338,7 @@ export const TABLES = {
         kind TEXT NOT NULL,
         action TEXT NOT NULL,
         details TEXT,
+        node TEXT,
         status TEXT NOT NULL DEFAULT 'ok',
         created_at TEXT NOT NULL DEFAULT (datetime('now'))
       )`,

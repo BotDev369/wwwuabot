@@ -25,7 +25,7 @@ export async function recordUserEvent(
   await ensureTables(db, ["user_events"]);
   await db
     .prepare(
-      "INSERT INTO user_events (user_id, surface, kind, action, details, status, created_at) VALUES (?, ?, ?, ?, ?, ?, ?)",
+      "INSERT INTO user_events (user_id, surface, kind, action, details, node, status, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
     )
     .bind(
       event.userId,
@@ -33,6 +33,7 @@ export async function recordUserEvent(
       event.kind,
       event.action,
       event.details ?? null,
+      event.node ?? null,
       event.status ?? "ok",
       formatSqliteDatetimeMs(at === undefined ? undefined : new Date(at)),
     )

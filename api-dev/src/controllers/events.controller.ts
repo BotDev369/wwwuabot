@@ -20,6 +20,7 @@ import { readBody } from "../shared/body";
 import {
   cleanupEvents,
   readEventSummary,
+  readEventTree,
   readEventUsers,
   readEvents,
   type EventCleanupFilter,
@@ -65,6 +66,21 @@ export async function handleEventSummary(request: Request, env: Env): Promise<Re
   } catch (error) {
     apiLog.error("events: зведення", error);
     return json({ error: "Не вдалось прочитати журнал" }, 500);
+  }
+}
+
+/**
+ * `GET /api/admin/events/tree` — дерево чек-поінтів за діапазон.
+ *
+ * Скелет дерева сталий (поверхня → екран → дія), тож відповідь каже не лише
+ * «куди заходили», а й «куди не заходив ніхто».
+ */
+export async function handleEventTree(request: Request, env: Env): Promise<Response> {
+  try {
+    return json(await readEventTree(env, rangeOf(request)));
+  } catch (error) {
+    apiLog.error("events: дерево", error);
+    return json({ error: "Не вдалось прочитати дерево" }, 500);
   }
 }
 

@@ -12,6 +12,7 @@ import {
   handleEventCleanup,
   handleEventList,
   handleEventSummary,
+  handleEventTree,
   handleEventUsers,
 } from "../controllers/events.controller";
 
@@ -28,6 +29,9 @@ export function matchEventsRoute(
   }
   if (pathname === "/api/admin/events/users" && request.method === "GET") {
     return handleEventUsers(request, env);
+  }
+  if (pathname === "/api/admin/events/tree" && request.method === "GET") {
+    return handleEventTree(request, env);
   }
   if (pathname === "/api/admin/events" && request.method === "GET") {
     return handleEventList(request, env);

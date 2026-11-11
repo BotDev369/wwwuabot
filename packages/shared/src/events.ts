@@ -42,13 +42,17 @@ export interface UserEventInput {
   action: string;
   /** Подробиці, які не влізли в `action` (напр. вид файлу); іноді `null`. */
   details?: string | null;
+  /** Чек-поінт дерева (`platform.trackers.trackers.entry`); `null` — не оголошений. */
+  node?: string | null;
   status?: EventStatus;
 }
 
 /** Подія разом із тим, ким людина була на момент показу (з рядка `users`). */
-export interface UserEvent extends Required<Omit<UserEventInput, "details">> {
+export interface UserEvent extends Required<Omit<UserEventInput, "details" | "node">> {
   id: number;
   details: string | null;
+  /** Чек-поінт дерева; `null` — рядок, записаний до появи дерева. */
+  node?: string | null;
   createdAt: string;
   firstName: string | null;
   lastName: string | null;
@@ -178,6 +182,7 @@ const PLATFORM_WRITE_LABELS: Record<string, string> = {
   "POST /api/user/themes": "Зберіг тему",
   "POST /api/user/access-request": "Попросив доступ",
   "POST /api/mydate/compare": "Порівняв дати",
+  "POST /api/my-dates": "Зберіг дату",
   "POST /api/ads": "Зберіг оголошення",
 };
 

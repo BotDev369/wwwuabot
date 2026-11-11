@@ -57,7 +57,6 @@ export function AnalyticsPage(): ReactElement {
                   role="tab"
                   aria-selected={a.mode === "users"}
                   aria-label="По користувачах"
-                  title="По користувачах"
                   className={`ana-mode-btn${a.mode === "users" ? " ana-mode-btn--active" : ""}`}
                   onClick={() => a.setMode("users")}
                 >
@@ -68,7 +67,6 @@ export function AnalyticsPage(): ReactElement {
                   role="tab"
                   aria-selected={a.mode === "time"}
                   aria-label="За часом"
-                  title="За часом"
                   className={`ana-mode-btn${a.mode === "time" ? " ana-mode-btn--active" : ""}`}
                   onClick={() => a.setMode("time")}
                 >
@@ -94,7 +92,6 @@ export function AnalyticsPage(): ReactElement {
                   disabled={a.loading}
                   aria-busy={a.loading}
                   aria-label={a.loading ? "Оновлюю…" : "Оновити"}
-                  title="Оновити"
                 >
                   <Icon name="refresh" size={16} />
                 </button>
@@ -103,7 +100,6 @@ export function AnalyticsPage(): ReactElement {
                   className="wb-btn wb-btn-secondary ana-icon-btn"
                   onClick={a.openCleanup}
                   aria-label="Очистити журнал"
-                  title="Очистити журнал"
                 >
                   <Icon name="trash" size={16} />
                 </button>

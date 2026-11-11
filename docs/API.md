@@ -85,6 +85,7 @@
 | `GET` | `/api/admin/events` | `handleEventList` |
 | `POST` | `/api/admin/events/delete` | `handleEventCleanup` |
 | `GET` | `/api/admin/events/summary` | `handleEventSummary` |
+| `GET` | `/api/admin/events/tree` | `handleEventTree` |
 | `GET` | `/api/admin/events/users` | `handleEventUsers` |
 | `ANY` | `/api/admin/events<…>` | `handleEventSummary` |
 | `POST` | `/api/admin/monitoring/collect` | `handleMonitoringCollect` |
@@ -124,4 +125,4 @@
 | `POST` | `/auth/login` | `handleLogin` |
 | `POST` | `/auth/logout` | `handleLogout` |
 
-Усього шляхів: **95**.
+Усього шляхів: **96**.
