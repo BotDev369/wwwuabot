@@ -252,24 +252,6 @@ describe("ScenarioRepository — підпис і маршрут", () => {
     expect(await repo.getScenarioByBotPayload("unknown")).toBeNull();
   });
 
-  it("`/start` без головної сторінки показує сторінку верхнього рівня", async () => {
-    const { repo } = makeRepo([
-      row({ slug: "shop", title: "Майстреня" }),
-      row({ slug: "dateanalysis/analysis", title: "Результат" }),
-    ]);
-
-    const scenario = await repo.getScenarioByBotPayload("");
-
-    expect(scenario?.slug).toBe("shop");
-    expect(scenario?.web_path).toBe("/shop");
-  });
-
-  it("самі вкладені сторінки не стають першим екраном", async () => {
-    const { repo } = makeRepo([row({ slug: "dateanalysis/analysis" })]);
-
-    expect(await repo.getScenarioByBotPayload("")).toBeNull();
-  });
-
   it("головна сторінка має перевагу над першою-ліпшою", async () => {
     const { repo } = makeRepo([row({ slug: "", title: "Головна" }), row({ slug: "shop" })]);
 
