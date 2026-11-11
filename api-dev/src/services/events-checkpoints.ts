@@ -6,7 +6,9 @@
  */
 
 import {
+  EVENT_KINDS,
   PLATFORM_SCREENS,
+  eventKindLabel,
   platformAction,
   platformActionLabel,
   screenLabel,
@@ -99,8 +101,16 @@ function skeleton(): SkeletonNode[] {
     })),
   }));
 
+  // Бот пише вузол виду оновлення (`bot.command`, `bot.message`): меню його
+  // поки не описане, але «команда», «натискання», «правка» вже мають місце.
+  const bot: SkeletonNode[] = EVENT_KINDS.map((kind) => ({
+    key: `bot.${kind}`,
+    label: eventKindLabel(kind),
+    children: [],
+  }));
+
   return [
-    { key: "bot", label: surfaceLabel("bot"), children: [] },
+    { key: "bot", label: surfaceLabel("bot"), children: bot },
     { key: "platform", label: surfaceLabel("platform"), children: platform },
   ];
 }

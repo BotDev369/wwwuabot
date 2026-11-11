@@ -17,7 +17,7 @@ import {
   type UserEvent,
 } from "@wwwuabot/shared/events";
 
-export type AnalyticsMode = "users" | "time";
+export type AnalyticsMode = "users" | "time" | "tree";
 
 /** Готові проміжки: «остання доба / тиждень / місяць». */
 export const EVENT_PRESETS = [
@@ -107,7 +107,7 @@ export function parseAnalyticsView(raw: string | null): AnalyticsView | null {
       : "day";
 
   return {
-    mode: saved.mode === "time" ? "time" : "users",
+    mode: saved.mode === "time" || saved.mode === "tree" ? (saved.mode as AnalyticsMode) : "users",
     period,
     range: { from, to },
     expandedUserId: typeof saved.expandedUserId === "number" ? saved.expandedUserId : null,

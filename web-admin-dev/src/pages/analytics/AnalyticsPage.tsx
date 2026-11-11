@@ -8,11 +8,42 @@
 
 import type { ReactElement } from "react";
 import { Icon, type IconName } from "@wwwuabot/shared";
+import type { CheckpointNode } from "../../shared/api/events.api";
 import { clockStamp, userLabel } from "./analytics-view";
 import { CleanupModal } from "./CleanupModal";
 import { EventRows } from "./EventRows";
 import { PeriodModal } from "./PeriodModal";
 import { useAnalytics } from "./useAnalytics";
+
+/**
+ * Гілка дерева чек-поінтів: назва вузла й лічба, нащадки — з відступом.
+ *
+ * Порожній вузол лишається з нулем: «сюди не заходив ніхто» — це відповідь, а
+ * не привід ховати рядок.
+ */
+function TreeBranch({
+  nodes,
+  depth = 0,
+}: {
+  nodes: CheckpointNode[];
+  depth?: number;
+}): ReactElement {
+  return (
+    <ul className="ana-users">
+      {nodes.map((node) => (
+        <li className="ana-user" key={node.key} style={{ marginLeft: depth * 14 }}>
+          <div className="ana-user-head">
+            <span className="ana-user-name">{node.label}</span>
+            <span className="ana-user-count" title={node.key}>
+              {node.count}
+            </span>
+          </div>
+          {node.children.length > 0 && <TreeBranch nodes={node.children} depth={depth + 1} />}
+        </li>
+      ))}
+    </ul>
+  );
+}
 
 /** Зведення: одна смуга, чотири рівні клітинки — число й знак, підпис у підказці. */
 interface StatCell {
@@ -71,6 +102,16 @@ export function AnalyticsPage(): ReactElement {
                   onClick={() => a.setMode("time")}
                 >
                   <Icon name="clock" size={16} />
+                </button>
+                <button
+                  type="button"
+                  role="tab"
+                  aria-selected={a.mode === "tree"}
+                  aria-label="Дерево"
+                  className={`ana-mode-btn${a.mode === "tree" ? " ana-mode-btn--active" : ""}`}
+                  onClick={() => a.setMode("tree")}
+                >
+                  <Icon name="expand" size={16} />
                 </button>
               </div>
               {/* Період — кнопка, а не ряд чипів: обране вона й називає. */}
@@ -137,6 +178,8 @@ export function AnalyticsPage(): ReactElement {
 
           {a.loading && !a.summary && <p className="ana-loading">Завантаження журналу…</p>}
 
+          {a.summary && a.mode === "tree" && <TreeBranch nodes={a.tree} />}
+
           {a.summary &&
             (a.mode === "users" ? (
               <ul className="ana-users">
@@ -157,9 +200,7 @@ export function AnalyticsPage(): ReactElement {
                       >
                         <span className="ana-user-name">{userLabel(user)}</span>
                         {user.username && <span className="ana-user-meta">@{user.username}</span>}
-                        <span className="ana-user-count" title="подій за діапазон">
-                          {user.count}
-                        </span>
+                        <span className="ana-user-count">{user.count}</span>
                         <Icon name={open ? "chevron-down" : "chevron-right"} size={16} />
                       </button>
 

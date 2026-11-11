@@ -73,6 +73,8 @@ export function buildUserEvent(ctx: AppContext, status: "ok" | "error"): UserEve
     kind,
     action: truncateEventText(action),
     details,
+    // Вузол дерева: бот пише місце виду оновлення, а не потік тексту.
+    node: `bot.${kind}`,
     status,
   };
 }

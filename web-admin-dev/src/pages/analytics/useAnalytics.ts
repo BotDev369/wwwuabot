@@ -9,7 +9,12 @@
 
 import { useCallback, useEffect, useState } from "react";
 import type { EventSummary, UserEvent } from "@wwwuabot/shared/events";
-import { fetchEvents, fetchEventSummary } from "../../shared/api/events.api";
+import {
+  fetchEvents,
+  fetchEventSummary,
+  fetchEventTree,
+  type CheckpointNode,
+} from "../../shared/api/events.api";
 import {
   EVENT_PAGE_SIZE,
   mergeEvents,
@@ -44,6 +49,8 @@ export interface AnalyticsState {
   applyRange: (from: string, to: string) => void;
   range: EventRangeInput;
   summary: EventSummary | null;
+  /** Дерево чек-поінтів — лише в режимі дерева. */
+  tree: CheckpointNode[];
   events: UserEvent[];
   listTotal: number;
   expandedUserId: number | null;
@@ -74,6 +81,7 @@ export function useAnalytics(): AnalyticsState {
   const [periodOpen, setPeriodOpen] = useState(false);
 
   const [summary, setSummary] = useState<EventSummary | null>(null);
+  const [tree, setTree] = useState<CheckpointNode[]>([]);
   const [events, setEvents] = useState<UserEvent[]>([]);
   const [listTotal, setListTotal] = useState(0);
   const [expandedUserId, setExpandedUserId] = useState<number | null>(
@@ -101,7 +109,13 @@ export function useAnalytics(): AnalyticsState {
         const list = await fetchEvents({ ...range, limit: EVENT_PAGE_SIZE });
         setEvents(list.items);
         setListTotal(list.total);
+        setTree([]);
+      } else if (mode === "tree") {
+        setTree(await fetchEventTree(range));
+        setEvents([]);
+        setListTotal(0);
       } else {
+        setTree([]);
         setEvents([]);
         setListTotal(0);
       }
@@ -228,6 +242,7 @@ export function useAnalytics(): AnalyticsState {
     applyRange,
     range,
     summary,
+    tree,
     events,
     listTotal,
     expandedUserId,
