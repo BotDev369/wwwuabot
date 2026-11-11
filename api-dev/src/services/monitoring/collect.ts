@@ -28,16 +28,6 @@ import { fetchRepoStats } from "./github";
 /** Репозиторій за замовчуванням — значення для `MONITOR_GITHUB_REPO`. */
 export const DEFAULT_REPO = "BotDev369/wwwuabot";
 
-/**
- * Розклад автоматичного збору.
- *
- * Той самий рядок стоїть у `[triggers]` `api-dev/wrangler.toml`: тут він для
- * того, щоб сторінка могла показати його людині, не читаючи конфіг. Розійтись
- * вони можуть — тож розклад показується як **заявлений**, а коли зріз справді
- * прийде за розкладом, це видно в його `trigger`.
- */
-export const CRON_SCHEDULE = "17 4 * * *";
-
 export interface CollectionOutcome {
   readonly status: SnapshotStatus;
   readonly ref: string | null;

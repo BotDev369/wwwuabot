@@ -208,7 +208,6 @@ const MON = {
     repo: "BotDev369/wwwuabot",
     githubTokenConfigured: false,
     cloudflareConfigured: true,
-    cronSchedule: "0 3 * * *",
   },
   latest: {
     id: 9,

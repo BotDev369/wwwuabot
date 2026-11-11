@@ -42,11 +42,10 @@
 відкривалась одним дешевим читанням). Форма й реєстр показників — у `@wwwuabot/shared/monitoring`,
 збір — в `api-dev/src/services/monitoring/`.
 
-**Два шляхи збору, одна реалізація:** кнопка «Зібрати зріз» на сторінці
-(`POST /api/admin/monitoring/collect`) і розклад `17 4 * * *` UTC (`[triggers]` у
-`api-dev/wrangler.toml`, обробник — `scheduled` в `api-dev/src/index.ts`). Читання —
-`GET /api/admin/monitoring/summary`. Обидва шляхи під адмін-гейтом (`/api/admin/`), тож окремої
-авторизації моніторинг не має — як і решта адмінки.
+**Збір — лише кнопкою.** «Зібрати зріз» на сторінці (`POST /api/admin/monitoring/collect`) —
+єдиний шлях: розкладу немає, а `scheduled` в `api-dev/src/index.ts` займається тільки прибиранням
+журналу дій. Читання — `GET /api/admin/monitoring/summary`. Запити під адмін-гейтом (`/api/admin/`),
+тож окремої авторизації моніторинг не має — як і решта адмінки.
 
 **Історія читається індексом, а не сканом.** `PRIMARY KEY (snapshot_id, group_key, metric)` обслуговує
 «усі значення зрізу», але не «усі `total` за останні 30 зрізів»: цей запит ішов по `snapshot_id`

@@ -10,26 +10,7 @@ import {
   pruneOldEvents,
 } from "./services/user-events-retention";
 import { secureResponse } from "@wwwuabot/shared/security/headers";
-import { collectSnapshot } from "./services/monitoring/collect";
-import { saveSnapshot } from "./services/monitoring/store";
 import type { Env } from "./shared/types";
-
-/**
- * Збір зрізу моніторингу за розкладом (`[triggers]` у `wrangler.toml`).
- *
- * Шлях той самий, що й у кнопки в панелі, — збирає й пише та сама пара
- * функцій. Падіння тут не має валити воркера: воно лишає слід у логах і
- * Sentry, а кожен наступний запуск спробує знову. Через `waitUntil`
- * платформа дочекається запису, а не обірве його разом із викликом.
- */
-async function runScheduledCollection(env: Env): Promise<void> {
-  try {
-    await saveSnapshot(env, await collectSnapshot(env, "cron"), "cron");
-  } catch (error) {
-    apiLog.error("monitoring: збір за розкладом упав", error);
-    Sentry.captureException(error);
-  }
-}
 
 /**
  * Прибирання журналу дій за розкладом: усе, старше за півроку, зникає, щоб
@@ -105,17 +86,18 @@ export default Sentry.withSentry(
       }
     },
 
-    /** Розклад із `[triggers]`: `controller.cron` каже, який саме спрацював. */
+    /**
+     * Розклад із `[triggers]`: єдиний — прибирання журналу дій. Збір зрізу
+     * й Є-data тут не живуть: обидва запускає людина кнопкою, тож будь-який
+     * інший `controller.cron` не робить нічого.
+     */
     async scheduled(
       controller: ScheduledController,
       env: Env,
       ctx: ExecutionContext,
     ): Promise<void> {
-      if (controller.cron === EVENTS_CRON) {
-        ctx.waitUntil(runEventRetention(env));
-        return;
-      }
-      ctx.waitUntil(runScheduledCollection(env));
+      if (controller.cron !== EVENTS_CRON) return;
+      ctx.waitUntil(runEventRetention(env));
     },
   },
 );

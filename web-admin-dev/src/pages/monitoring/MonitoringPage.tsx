@@ -69,8 +69,7 @@ export function MonitoringPage() {
             <span>
               Токен GitHub не доданий — репозиторій <code>{summary.sources.repo}</code> читається
               анонімно (60 запитів/год). Для приватного репо додай секрет{" "}
-              <code>GITHUB_MONITOR_TOKEN</code> на воркері <code>api-dev</code>. Розклад збору:{" "}
-              <code>{summary.sources.cronSchedule ?? "—"}</code> (UTC).
+              <code>GITHUB_MONITOR_TOKEN</code> на воркері <code>api-dev</code>.
             </span>
           </div>
         )}

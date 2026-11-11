@@ -22,7 +22,7 @@ import {
 } from "@wwwuabot/shared/monitoring";
 import { ensureTables } from "@wwwuabot/shared/database/ensure-tables";
 import type { Env } from "../../shared/types";
-import { CRON_SCHEDULE, repoSlug } from "./collect";
+import { repoSlug } from "./collect";
 import { LATEST_KEY } from "./store";
 import {
   SNAPSHOT_COLUMNS,
@@ -114,7 +114,6 @@ export function readSources(env: Env): MonitoringSources {
     repo: repoSlug(env),
     githubTokenConfigured: Boolean(env.GITHUB_MONITOR_TOKEN),
     cloudflareConfigured: Boolean(env.CF_MONITOR_TOKEN && env.MONITOR_CF_ACCOUNT_ID),
-    cronSchedule: CRON_SCHEDULE,
   };
 }
 

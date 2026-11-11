@@ -33,21 +33,13 @@ vi.mock("./router", () => ({ handleRequest: () => router.handler() }));
 const recordPlatform = vi.hoisted(() => vi.fn(async () => {}));
 vi.mock("./services/user-events.service", () => ({ recordPlatformAction: recordPlatform }));
 
-const monitoring = vi.hoisted(() => ({
-  collect: vi.fn(async () => ({ at: "2026-09-30T00:00:00Z" })),
-  save: vi.fn(async () => {}),
-}));
-
-// Другий розклад — прибирання журналу: перевіряємо, що він не потрапляє в зріз
-// моніторингу.
+// Єдиний розклад — прибирання журналу.
 const retention = vi.hoisted(() => ({ prune: vi.fn(async () => 0) }));
 vi.mock("./services/user-events-retention", () => ({
   pruneOldEvents: retention.prune,
   EVENT_RETENTION_DAYS: 180,
   EVENTS_CRON: "23 3 * * *",
 }));
-vi.mock("./services/monitoring/collect", () => ({ collectSnapshot: monitoring.collect }));
-vi.mock("./services/monitoring/store", () => ({ saveSnapshot: monitoring.save }));
 
 const { default: worker } = await import("./index");
 const { EVENTS_CRON } = await import("./services/user-events-retention");
@@ -106,13 +98,12 @@ describe("необроблений виняток", () => {
     await expect(Promise.all(waited)).resolves.toBeDefined();
   });
 
-  it("будь-який інший cron — це зріз моніторингу", async () => {
+  it("будь-який інший cron не робить нічого", async () => {
     const { ctx, waited } = executionContext();
 
     await worker.scheduled(controller("17 4 * * *"), env, ctx);
 
-    expect(monitoring.collect).toHaveBeenCalled();
-    expect(monitoring.save).toHaveBeenCalled();
+    expect(retention.prune).not.toHaveBeenCalled();
     await expect(Promise.all(waited)).resolves.toBeDefined();
   });
 
@@ -122,7 +113,6 @@ describe("необроблений виняток", () => {
     await worker.scheduled(controller(EVENTS_CRON), env, ctx);
 
     expect(retention.prune).toHaveBeenCalledWith(env);
-    expect(monitoring.collect).not.toHaveBeenCalled();
     await expect(Promise.all(waited)).resolves.toBeDefined();
   });
 
@@ -131,15 +121,6 @@ describe("необроблений виняток", () => {
     const { ctx, waited } = executionContext();
 
     await worker.scheduled(controller(EVENTS_CRON), env, ctx);
-
-    await expect(Promise.all(waited)).resolves.toBeDefined();
-  });
-
-  it("падіння зрізу моніторингу теж не валить воркера", async () => {
-    monitoring.collect.mockRejectedValueOnce(new Error("D1 недоступна"));
-    const { ctx, waited } = executionContext();
-
-    await worker.scheduled(controller("17 4 * * *"), env, ctx);
 
     await expect(Promise.all(waited)).resolves.toBeDefined();
   });

@@ -41,8 +41,9 @@ R2 і кладеться на рік (`immutable`). Ключ синтетичн�
 Облік файлів — рядки `shop_media` / `message_media` у D1: байти без рядка невидимі, рядок без байтів —
 бита картинка.
 
-**Інші ресурси.** Один розклад: `17 4 * * *` — зріз моніторингу. Є-data збирається лише вручну
-(`POST /api/admin/spending/refresh`), бо зібрані місяці не змінюються. Оболонки `web-platform-dev` і `web-admin-dev` проксують `/api/*` через service
+**Інші ресурси.** Один розклад: `23 3 * * *` — прибирання журналу дій. Зріз моніторингу й Є-data
+збираються лише вручну (`POST /api/admin/monitoring/collect`, `POST /api/admin/spending/refresh`),
+бо зібрані місяці не змінюються. Оболонки `web-platform-dev` і `web-admin-dev` проксують `/api/*` через service
 binding — окремого запиту до `api-dev` це не додає. Зовнішні виклики: Telegram (`getMe`,
 `sendMessage`, `sendPhoto`, `setWebhook`), GitHub (архів гілки й показники репозиторію), відкрите API
 Є-data, Sentry (вимкнений без `SENTRY_DSN`). Логи воркерів увімкнені, службовий лог кожного запиту —
