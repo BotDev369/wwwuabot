@@ -55,6 +55,8 @@ export async function writeScenario(
 
 export interface ScenarioListRow {
   slug: string;
+  /** Команда, якою екран відкривається в чаті; у головної — `/start`. */
+  bot_command?: string | null;
   rich_message: string | null;
   updated_at: string;
   [key: string]: unknown;

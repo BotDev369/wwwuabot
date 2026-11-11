@@ -273,6 +273,7 @@ export function ScenariosV2Table({ surface = "platform" }: { surface?: ScenarioS
                     groupKey={groupKey}
                     groupMode={groupBy}
                     items={groupItems}
+                    surface={surface}
                     selectedRow={selectedRow}
                     onSelect={setSelectedRow}
                     onOpen={setCardCodeword}
@@ -283,6 +284,7 @@ export function ScenariosV2Table({ surface = "platform" }: { surface?: ScenarioS
                   <ScenarioRow
                     key={s.slug}
                     scenario={s}
+                    surface={surface}
                     isSelected={selectedRow === s.slug}
                     onSelect={() => setSelectedRow(selectedRow === s.slug ? null : s.slug)}
                     onOpen={() => setCardCodeword(s.slug)}

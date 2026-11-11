@@ -2,6 +2,8 @@ export interface ScenarioRow {
   /** Номер рядка в `scenarios`: адресу редагують, номер — ні. */
   id?: number | null;
   slug: string;
+  /** Команда, якою екран відкривається в чаті; у головної — `/start`. */
+  bot_command?: string | null;
   title: string | null;
   photo_url: string;
   caption_top: string | null;
@@ -36,6 +38,8 @@ export interface Scenario {
   /** Номер рядка в `scenarios`; `null`, якщо читач його не вибрав. */
   id: number | null;
   slug: string;
+  /** Команда, якою екран відкривається в чаті; у головної — `/start`. */
+  bot_command?: string | null;
   title: string | null;
   photo_url: string;
   caption_top: string | null;

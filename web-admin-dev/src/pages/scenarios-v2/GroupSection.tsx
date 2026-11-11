@@ -6,6 +6,7 @@ import { useState } from "react";
 import type { IconName } from "@wwwuabot/shared";
 import { icons } from "@wwwuabot/shared";
 import { ScenarioRow } from "./ScenarioRow";
+import type { ScenarioSurface } from "./helpers";
 import type { ScenarioGroupMode } from "../../features/scenarios/store";
 
 const ico = (name: IconName, size = 18) => (
@@ -27,10 +28,13 @@ interface GroupSectionProps {
   groupMode: ScenarioGroupMode;
   items: Array<{
     slug: string;
+    /** Команда, якою екран відкривається в чаті; у головної — `/start`. */
+    bot_command?: string | null;
     rich_message: string | null;
     page_data?: string | null;
     updated_at: string;
   }>;
+  surface: ScenarioSurface;
   selectedRow: string | null;
   onSelect: (slug: string) => void;
   onOpen: (slug: string) => void;
@@ -40,6 +44,7 @@ export function GroupSection({
   groupKey,
   groupMode,
   items,
+  surface,
   selectedRow,
   onSelect,
   onOpen,
@@ -93,6 +98,7 @@ export function GroupSection({
           <ScenarioRow
             key={s.slug}
             scenario={s}
+            surface={surface}
             isSelected={selectedRow === s.slug}
             onSelect={() => onSelect(s.slug)}
             onOpen={() => onOpen(s.slug)}

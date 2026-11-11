@@ -35,6 +35,7 @@ function row(overrides: Partial<ScenarioRow> = {}): ScenarioRow {
   return {
     id: 7,
     slug: "shop",
+    bot_command: null,
     title: "Майстерня",
     photo_url: "https://cdn.example/photo.jpg",
     caption_top: null,
@@ -256,6 +257,17 @@ describe("ScenarioRepository — підпис і маршрут", () => {
     const { repo } = makeRepo([row({ slug: "", title: "Головна" }), row({ slug: "shop" })]);
 
     expect((await repo.getScenarioByBotPayload(""))?.slug).toBe("");
+  });
+
+  it("`/start` читається з `bot_command`, а не з порожньої адреси", async () => {
+    const { repo, queries } = makeRepo([
+      row({ slug: "", bot_command: "/start", title: "Головна" }),
+      row({ slug: "shop" }),
+    ]);
+
+    const scenario = await repo.getScenarioByBotPayload("");
+    expect(scenario?.bot_command).toBe("/start");
+    expect(queries[0]).toContain("bot_command = ?");
   });
 
   it("payload знаходить сторінку й дописує повний веб-шлях", async () => {

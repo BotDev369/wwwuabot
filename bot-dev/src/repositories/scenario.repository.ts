@@ -34,6 +34,9 @@ function visibleTo(row: GatedScenarioRow, userId: number | null): boolean {
   );
 }
 
+/** Команда головного екрана: нею відкривається бот без діплінка. */
+export const START_COMMAND = "/start";
+
 export class ScenarioRepository extends DatabaseRepository {
   async getScenario(slug: string, userId: number | null = null): Promise<Scenario | null> {
     const row = await this.db
@@ -48,6 +51,18 @@ export class ScenarioRepository extends DatabaseRepository {
     payload: string,
     userId: number | null = null,
   ): Promise<Scenario | null> {
+    // `/start` без діплінка — це команда, а не порожня адреса: головну шукаємо
+    // за `bot_command`, і саме тому в базі вона записана як `/start`. Якщо
+    // команду ще не проставили (старий рядок), працює старий пошук за
+    // `HOME_SLUG` — бот не має мовчати через відсутню колонку в даних.
+    if (payload.trim() === "") {
+      const landing = await this.db
+        .prepare("SELECT * FROM scenarios WHERE is_active = 1 AND bot_command = ? LIMIT 1")
+        .bind(START_COMMAND)
+        .first<GatedScenarioRow>();
+      if (landing && visibleTo(landing, userId)) return this.parse(landing);
+    }
+
     const result = await this.db
       .prepare(
         `SELECT id, slug, title, photo_url, page_data, is_active, owner_id, is_public, viewer_ids
@@ -105,6 +120,7 @@ export class ScenarioRepository extends DatabaseRepository {
     return {
       id: row.id ?? null,
       slug: page.slug,
+      bot_command: row.bot_command ?? null,
       title: page.title,
       photo_url: row.photo_url,
       // Сторінка з шаблону не має власного підпису — його виводить

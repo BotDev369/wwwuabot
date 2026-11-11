@@ -4,7 +4,7 @@
 
 import type { IconName } from "@wwwuabot/shared";
 import { icons } from "@wwwuabot/shared";
-import { relativeTime, getTypeBadge, getTitle } from "./helpers";
+import { relativeTime, getTypeBadge, getTitle, type ScenarioSurface } from "./helpers";
 
 const ico = (name: IconName, size = 18) => (
   <span
@@ -23,20 +23,26 @@ const ico = (name: IconName, size = 18) => (
 interface ScenarioRowProps {
   scenario: {
     slug: string;
+    /** Команда, якою екран відкривається в чаті; у головної — `/start`. */
+    bot_command?: string | null;
     rich_message: string | null;
     page_data?: string | null;
     updated_at: string;
     title?: string | null;
   };
+  surface: ScenarioSurface;
   isSelected: boolean;
   onSelect: () => void;
   onOpen: () => void;
 }
 
-export function ScenarioRow({ scenario, isSelected, onSelect, onOpen }: ScenarioRowProps) {
+export function ScenarioRow({ scenario, surface, isSelected, onSelect, onOpen }: ScenarioRowProps) {
   const badge = getTypeBadge(scenario);
   const title = getTitle(scenario as Record<string, unknown>);
-  const hasTitle = title !== scenario.slug;
+  // У бота рядок називається командою: головна має порожній `slug` (адреса
+  // веб-кореня), і без `bot_command` її рядок виглядав порожнім.
+  const address = surface === "bot" ? scenario.bot_command?.trim() || scenario.slug : scenario.slug;
+  const hasTitle = title !== address;
 
   return (
     <tr
@@ -46,7 +52,7 @@ export function ScenarioRow({ scenario, isSelected, onSelect, onOpen }: Scenario
     >
       <td className="wb-cell-name">
         <div style={{ display: "flex", flexDirection: "column", gap: 2 }}>
-          <span style={{ fontWeight: 500 }}>{scenario.slug}</span>
+          <span style={{ fontWeight: 500 }}>{address}</span>
           {hasTitle && <span className="wb-cell-sub">{title}</span>}
         </div>
       </td>

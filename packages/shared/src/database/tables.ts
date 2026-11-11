@@ -193,6 +193,13 @@ export const TABLES = {
    * `permissions` у `users`. Ролі читає `pageRole` / `pageStaffIds`
    * (`@wwwuabot/shared/pages`), а не SQL: адміни лежать JSON-ом.
    *
+   * **`bot_command` — команда, якою екран відкривається в чаті.** Доти єдиний
+   * вхід у бота — `/start` — ніде не був записаний: головна сторінка має
+   * порожній `slug` (це `HOME_SLUG`, адреса веб-кореня), і в базі рядок
+   * виглядав просто порожнім. Тепер у нього є явна команда `/start`, і бот
+   * шукає головну саме за нею, а не за порожнім рядком. `slug` лишається
+   * адресою сторінки: `/start` — вхід у бот, а не адреса вебу.
+   *
    * **`COALESCE(is_public, 0)` — не перестраховка.** Колонка додана наявній
    * таблиці, а `ensureTables` додає її як `DEFAULT NULL` (`ensure-tables.ts`),
    * тож у рядках платформи там `NULL`, і просте `is_public = 1` мовчки
@@ -206,6 +213,7 @@ export const TABLES = {
     create: `CREATE TABLE IF NOT EXISTS "scenarios" (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         slug TEXT NOT NULL UNIQUE,
+        bot_command TEXT,
         photo_url TEXT,
         caption_top TEXT,
         caption_mid TEXT,
