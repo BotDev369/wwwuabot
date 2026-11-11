@@ -10,6 +10,7 @@
 import type {
   EventKind,
   EventList,
+  EventMatrix,
   EventSurface,
   EventSummary,
   EventUserSummary,
