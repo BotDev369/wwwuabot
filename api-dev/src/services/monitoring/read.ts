@@ -114,6 +114,9 @@ export function readSources(env: Env): MonitoringSources {
     repo: repoSlug(env),
     githubTokenConfigured: Boolean(env.GITHUB_MONITOR_TOKEN),
     cloudflareConfigured: Boolean(env.CF_MONITOR_TOKEN && env.MONITOR_CF_ACCOUNT_ID),
+    // Розкладу немає: зріз збирає людина кнопкою, і «заявлений» час був би
+    // обіцянкою, якої ніхто не виконує.
+    cronSchedule: null,
   };
 }
 

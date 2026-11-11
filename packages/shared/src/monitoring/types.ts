@@ -86,6 +86,8 @@ export interface MonitoringSources {
   readonly githubTokenConfigured: boolean;
   /** Секрет Cloudflare — знадобиться для збору по D1/KV/воркерах (етап 2). */
   readonly cloudflareConfigured: boolean;
+  /** Розклад збору з `wrangler.toml`; `null` — збір лише кнопкою. */
+  readonly cronSchedule: string | null;
 }
 
 /** Те, що сторінка моніторингу отримує одним запитом. */
