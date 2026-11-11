@@ -1,50 +1,41 @@
 /**
- * Реєстр чек-поінтів: ключі, підписи й лічба дерева. Перевіряється не форма
- * об'єкта, а те, від чого залежить аналітика: неоголошене не пишеться,
- * підпис — слово, а порожній вузол лишається у дереві.
+ * Реєстр чек-поінтів: ключі, підписи й місце події в таблиці. Перевіряється не
+ * форма об'єкта, а те, від чого залежить аналітика: неоголошене не рахується,
+ * підпис — слово, а старий рядок знаходить своє місце без колонки `node`.
  * @module api-dev/src/services/events-checkpoints.test
  */
 
 import { describe, expect, it } from "vitest";
-import { platformActionLabel, screenLabel, surfaceLabel } from "@wwwuabot/shared/events";
-import {
-  CHECKPOINT_ACTIONS,
-  checkpointActionKey,
-  checkpointLabel,
-  checkpointTree,
-  viewCheckpointKey,
-} from "./events-checkpoints";
+import { CHECKPOINT_ACTIONS, checkpointActionKey, checkpointRowOf } from "./events-checkpoints";
 
 describe("checkpoints", () => {
-  it("declared writes, undeclared never, empty nodes stay in the tree", () => {
+  it("declared writes map to rows, undeclared and bot events are ignored", () => {
     expect(checkpointActionKey("POST", "/api/user/trackers/entry")).toBe(
       "platform.trackers.trackers.entry",
     );
     expect(checkpointActionKey("POST", "/api/user/whatever")).toBeNull();
 
-    expect(checkpointLabel("platform")).toBe(surfaceLabel("platform"));
-    expect(checkpointLabel(viewCheckpointKey("trackers"))).toBe(screenLabel("trackers"));
     for (const item of CHECKPOINT_ACTIONS) {
-      const label = checkpointLabel(`platform.${item.screen}.${item.key}`);
-      expect(label).toBe(platformActionLabel(item.action));
-      expect(label).not.toContain("/api/");
+      const row = checkpointRowOf({ surface: "platform", kind: "request", action: item.action });
+      expect(row?.label).not.toContain("/api/");
+      expect(row?.parent).toBe(`platform.${item.screen}`);
     }
 
-    const tree = checkpointTree(
-      new Map([
-        ["platform.trackers", 10],
-        ["platform.trackers.trackers.entry", 4],
-        ["platform.unknown", 3],
-      ]),
-    );
-    const platform = tree.find((node) => node.key === "platform");
-    const trackers = platform?.children.find((node) => node.key === "platform.trackers");
-
-    expect(trackers?.count).toBe(14);
-    expect(trackers?.children[0]?.count).toBe(4);
-    expect((platform?.children.filter((node) => node.count === 0) ?? []).length).toBeGreaterThan(0);
-    expect(platform?.children.find((node) => node.key === "platform.unknown")).toMatchObject({
-      count: 3,
+    // Старий рядок без `node` теж знаходить місце — назвою екрана з шапки.
+    expect(checkpointRowOf({ surface: "platform", kind: "view", action: "Трекери" })).toEqual({
+      key: "platform.trackers",
+      label: "Трекери",
+      parent: null,
     });
+    expect(
+      checkpointRowOf({ surface: "platform", kind: "view", action: "trackers" }),
+    ).toMatchObject({ key: "platform.trackers" });
+
+    // Дотик, ботівське й неоголошений запис у таблицю не потрапляють.
+    expect(checkpointRowOf({ surface: "platform", kind: "click", action: "Додати" })).toBeNull();
+    expect(checkpointRowOf({ surface: "bot", kind: "message", action: "привіт" })).toBeNull();
+    expect(
+      checkpointRowOf({ surface: "platform", kind: "request", action: "POST /api/unknown" }),
+    ).toBeNull();
   });
 });

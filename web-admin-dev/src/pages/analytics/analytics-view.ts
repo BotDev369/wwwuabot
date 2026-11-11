@@ -17,7 +17,7 @@ import {
   type UserEvent,
 } from "@wwwuabot/shared/events";
 
-export type AnalyticsMode = "users" | "time" | "tree";
+export type AnalyticsMode = "users" | "time" | "matrix";
 
 /** Готові проміжки: «остання доба / тиждень / місяць». */
 export const EVENT_PRESETS = [
@@ -107,7 +107,13 @@ export function parseAnalyticsView(raw: string | null): AnalyticsView | null {
       : "day";
 
   return {
-    mode: saved.mode === "time" || saved.mode === "tree" ? (saved.mode as AnalyticsMode) : "users",
+    // `tree` — старий збережений вигляд; таблиця динаміки прийшла йому на заміну.
+    mode:
+      saved.mode === "time" || saved.mode === "matrix" || saved.mode === "tree"
+        ? saved.mode === "tree"
+          ? "matrix"
+          : (saved.mode as AnalyticsMode)
+        : "users",
     period,
     range: { from, to },
     expandedUserId: typeof saved.expandedUserId === "number" ? saved.expandedUserId : null,
@@ -140,6 +146,23 @@ export function rememberAnalyticsView(view: AnalyticsView): void {
 export function periodLabel(period: AnalyticsPeriod): string {
   if (period === "period") return "Період";
   return EVENT_PRESETS.find((preset) => preset.key === period)?.label ?? EVENT_PRESETS[0].label;
+}
+
+/**
+ * День тижня шапки таблиці: «пт» — по ньому й шукають стовпчик.
+ *
+ * Локалізація береться з оточення: власний масив назв додав би сім текстів у
+ * код, які нічого не кажуть про продукт.
+ */
+export function matrixWeekday(day: string): string {
+  const date = new Date(`${day}T00:00:00Z`);
+  if (Number.isNaN(date.getTime())) return "";
+  return date.toLocaleDateString("uk-UA", { weekday: "short", timeZone: "UTC" });
+}
+
+/** Число місяця шапки таблиці: «22» — другий рядок під днем тижня. */
+export function matrixDayNumber(day: string): string {
+  return day.slice(8, 10);
 }
 
 /** Мітка «коли оновлено» — лише час: дату видно в діапазоні. */

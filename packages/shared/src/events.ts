@@ -42,7 +42,7 @@ export interface UserEventInput {
   action: string;
   /** Подробиці, які не влізли в `action` (напр. вид файлу); іноді `null`. */
   details?: string | null;
-  /** Чек-поінт дерева (`platform.trackers.trackers.entry`); `null` — не оголошений. */
+  /** Чек-поінт (`platform.trackers.trackers.entry`); `null` — не оголошений. */
   node?: string | null;
   status?: EventStatus;
 }
@@ -51,7 +51,7 @@ export interface UserEventInput {
 export interface UserEvent extends Required<Omit<UserEventInput, "details" | "node">> {
   id: number;
   details: string | null;
-  /** Чек-поінт дерева; `null` — рядок, записаний до появи дерева. */
+  /** Чек-поінт; `null` — рядок, записаний до його появи. */
   node?: string | null;
   createdAt: string;
   firstName: string | null;
@@ -82,6 +82,26 @@ export interface EventList {
   to: string;
   total: number;
   items: UserEvent[];
+}
+
+/** Рядок таблиці динаміки: місце й лічба по днях, у тому ж порядку, що `days`. */
+export interface EventMatrixRow {
+  key: string;
+  label: string;
+  /** `0` — екран, `1` — дія під ним. */
+  depth: 0 | 1;
+  total: number;
+  counts: number[];
+}
+
+/** Динаміка журналу: що відбувалося і в які дні — таблиця, а не одне число. */
+export interface EventMatrix {
+  from: string;
+  to: string;
+  /** Дні діапазону, старіший першим. */
+  days: string[];
+  rows: EventMatrixRow[];
+  total: number;
 }
 
 export const SURFACE_LABELS: Record<EventSurface, string> = {

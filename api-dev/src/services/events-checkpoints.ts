@@ -1,18 +1,15 @@
 /**
- * Чек-поінти журналу: три рівні — поверхня, екран, важлива дія. Ключі —
- * латиниця й крапки, підписи — з наявних словників (`events`), тож другого
- * списку слів не з'являється; неоголошене в журнал не пишеться.
+ * Чек-поінти журналу: місце в продукті, за яким ми стежимо. Ключі — латиниця
+ * й крапки, підписи — з наявних словників (`events`), тож другого списку слів
+ * не з'являється; неоголошене в журнал не пишеться.
  * @module api-dev/src/services/events-checkpoints
  */
 
 import {
-  EVENT_KINDS,
   PLATFORM_SCREENS,
-  eventKindLabel,
   platformAction,
   platformActionLabel,
   screenLabel,
-  surfaceLabel,
 } from "@wwwuabot/shared/events";
 
 /** Третій рівень: важлива дія всередині екрана і шлях, який її означає. */
@@ -41,7 +38,7 @@ export const CHECKPOINT_ACTIONS: readonly CheckpointAction[] = [
   { key: "ads.save", screen: "ads", action: "POST /api/ads" },
 ];
 
-/** Другий рівень дерева: екран, у який людина зайшла. */
+/** Другий рівень: екран, у який людина зайшла. */
 export function viewCheckpointKey(screen: string): string {
   return `platform.${screen}`;
 }
@@ -56,101 +53,45 @@ export function checkpointActionKey(method: string, pathname: string): string | 
   return found ? `platform.${found.screen}.${found.key}` : null;
 }
 
-/** Підпис вузла: поверхня, екран або дія — з наявних словників. */
-export function checkpointLabel(key: string): string {
-  const [surface, screen, ...rest] = key.split(".");
-  if (!screen) return surfaceLabel(surface);
-  // Ключ дії складається з кількох частин (`trackers.entry`), тож решта
-  // збирається назад: інакше підпис губкав другу половину й повертався ключ.
-  if (rest.length === 0) return screenLabel(screen);
-  const action = rest.join(".");
-  const found = CHECKPOINT_ACTIONS.find((item) => item.screen === screen && item.key === action);
-  return found ? platformActionLabel(found.action) : key;
-}
-
-/** Вузол дерева з кількістю відвідувань за діапазон. */
-export interface CheckpointNode {
+/** Рядок таблиці, до якого належить подія журналу; `null` — не наш чек-поінт. */
+export interface CheckpointRowRef {
   readonly key: string;
   readonly label: string;
-  /** Лічба разом із нащадками: `count` змінюється, коли додається чужий ключ. */
-  count: number;
-  readonly children: CheckpointNode[];
-}
-
-/** Вузол скелета: ті самі поля, але без лічби — її дає журнал. */
-interface SkeletonNode {
-  readonly key: string;
-  readonly label: string;
-  readonly children: SkeletonNode[];
+  /** Екран цієї дії; `null` — рядок сам і є екраном. */
+  readonly parent: string | null;
 }
 
 /**
- * Скелет дерева: поверхня → екран → оголошені дії.
+ * Місце події в таблиці.
  *
- * Скелет, а не те, що знайшлось у журналі: екран без відвідувань — це теж
- * відповідь («сюди ніхто не заходить»), а не привід його ховати.
+ * Рахуємо з полів, які є в журналі **завжди** (`surface`, `kind`, `action`), а
+ * не з пізнішої колонки `node`: інакше вся історія до її появи дала б нулі —
+ * що вже сталося й виглядало як «нічого не відбувається».
  */
-function skeleton(): SkeletonNode[] {
-  const platform: SkeletonNode[] = PLATFORM_SCREENS.map((screen) => ({
-    key: viewCheckpointKey(screen.key),
-    label: screenLabel(screen.key),
-    children: CHECKPOINT_ACTIONS.filter((item) => item.screen === screen.key).map((item) => ({
-      key: `platform.${item.screen}.${item.key}`,
-      label: platformActionLabel(item.action),
-      children: [],
-    })),
-  }));
+export function checkpointRowOf(event: {
+  surface: string;
+  kind: string;
+  action: string;
+}): CheckpointRowRef | null {
+  if (event.surface !== "platform") return null;
+  const action = event.action.trim();
 
-  // Бот пише вузол виду оновлення (`bot.command`, `bot.message`): меню його
-  // поки не описане, але «команда», «натискання», «правка» вже мають місце.
-  const bot: SkeletonNode[] = EVENT_KINDS.map((kind) => ({
-    key: `bot.${kind}`,
-    label: eventKindLabel(kind),
-    children: [],
-  }));
-
-  return [
-    { key: "bot", label: surfaceLabel("bot"), children: bot },
-    { key: "platform", label: surfaceLabel("platform"), children: platform },
-  ];
-}
-
-/** Вузол дерева разом із кількістю: скелет плюс лічба журналу. */
-function withCounts(node: SkeletonNode, counts: ReadonlyMap<string, number>): CheckpointNode {
-  const children = node.children.map((child) => withCounts(child, counts));
-  const own = counts.get(node.key) ?? 0;
-  return {
-    key: node.key,
-    label: node.label,
-    count: own + children.reduce((sum, child) => sum + child.count, 0),
-    children,
-  };
-}
-
-/**
- * Дерево з лічбою за діапазон.
- *
- * Ключі, яких немає в скелеті (старі рядки, нові екрани), не губляться: вони
- * стають додатковими дітьми своєї поверхні, тож «дивний» рядок видно, а не
- * викинуто з очей.
- */
-export function checkpointTree(counts: ReadonlyMap<string, number>): CheckpointNode[] {
-  const tree = skeleton().map((node) => withCounts(node, counts));
-  const known = new Set<string>();
-  const collect = (node: CheckpointNode): void => {
-    known.add(node.key);
-    node.children.forEach(collect);
-  };
-  tree.forEach(collect);
-
-  for (const [key, count] of counts) {
-    if (known.has(key)) continue;
-    const [surface] = key.split(".");
-    const parent = tree.find((node) => node.key === surface);
-    if (!parent) continue;
-    parent.children.push({ key, label: checkpointLabel(key), count, children: [] });
-    parent.count += count;
+  if (event.kind === "view") {
+    // Відкриття екрана: у `action` — назва з шапки, у старих рядках — ключ.
+    const screen = PLATFORM_SCREENS.find((item) => item.key === action || item.label === action);
+    if (!screen) return null;
+    return { key: viewCheckpointKey(screen.key), label: screenLabel(screen.key), parent: null };
   }
 
-  return tree;
+  if (event.kind === "request") {
+    const found = CHECKPOINT_ACTIONS.find((item) => item.action === action);
+    if (!found) return null;
+    return {
+      key: `platform.${found.screen}.${found.key}`,
+      label: platformActionLabel(found.action),
+      parent: viewCheckpointKey(found.screen),
+    };
+  }
+
+  return null;
 }

@@ -9,6 +9,7 @@ const api = vi.hoisted(() => ({
   events: vi.fn(),
   cleanup: vi.fn(),
   users: vi.fn(),
+  matrix: vi.fn(),
 }));
 
 vi.mock("../../shared/api/events.api", () => ({
@@ -16,6 +17,7 @@ vi.mock("../../shared/api/events.api", () => ({
   fetchEvents: api.events,
   cleanupEvents: api.cleanup,
   fetchEventUsers: api.users,
+  fetchEventMatrix: api.matrix,
 }));
 
 const { AnalyticsPage } = await import("./AnalyticsPage");
@@ -66,6 +68,22 @@ beforeEach(() => {
   sessionStorage.clear();
   api.summary.mockResolvedValue(SUMMARY);
   api.events.mockResolvedValue(list([botEvent]));
+  api.matrix.mockResolvedValue({
+    from: SUMMARY.from,
+    to: SUMMARY.to,
+    days: ["2026-10-01", "2026-10-02"],
+    total: 12,
+    rows: [
+      { key: "platform.trackers", label: "Трекери", depth: 0, total: 8, counts: [5, 3] },
+      {
+        key: "platform.trackers.trackers.entry",
+        label: "Записав трекер",
+        depth: 1,
+        total: 4,
+        counts: [4, 0],
+      },
+    ],
+  });
   api.users.mockResolvedValue([
     { ...PERSON, count: 3, lastAt: "2026-10-01 12:00:00" },
     { userId: 9, firstName: null, lastName: null, username: null, count: 1, lastAt: "—" },
@@ -134,6 +152,22 @@ describe("екран «Аналітика»", () => {
     // Обидві події — однієї людини, тож ім'я в кожному рядку.
     expect(screen.getAllByText("Сергій Дискант")).toHaveLength(2);
     expect(api.events.mock.calls[0]?.[0]).not.toHaveProperty("userId");
+  });
+
+  it("«Таблиця» показує динаміку по днях, а не одне число", async () => {
+    render(<AnalyticsPage />);
+    await screen.findByText("Сергій Дискант");
+
+    await userEvent.click(screen.getByRole("tab", { name: "Таблиця" }));
+
+    const table = await screen.findByRole("table");
+    // Числа стоять під своїми датами: стовпчиків стільки ж, скільки днів.
+    expect(within(table).getAllByRole("row")).toHaveLength(3);
+    expect(within(table).getByText("Записав трекер")).toBeTruthy();
+    expect(within(table).getByText("Усього")).toBeTruthy();
+    expect(api.matrix).toHaveBeenCalledWith(
+      expect.objectContaining({ from: expect.any(String), to: expect.any(String) }),
+    );
   });
 
   it("період вибирають у модалці, а кнопка називає обране", async () => {

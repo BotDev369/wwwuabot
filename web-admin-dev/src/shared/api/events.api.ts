@@ -27,17 +27,9 @@ export interface EventCleanupRequest {
   kind?: EventKind;
 }
 
-/** Вузол дерева чек-поінтів: лічба включає нащадків. */
-export interface CheckpointNode {
-  key: string;
-  label: string;
-  count: number;
-  children: CheckpointNode[];
-}
-
-/** Дерево чек-поінтів за діапазон — разом із порожніми вузлами. */
-export function fetchEventTree(range: { from: string; to: string }): Promise<CheckpointNode[]> {
-  return apiFetch<CheckpointNode[]>(`/api/admin/events/tree?${rangeQuery(range)}`);
+/** Динаміка журналу за діапазон: місця по днях, а не одне число. */
+export function fetchEventMatrix(range: { from: string; to: string }): Promise<EventMatrix> {
+  return apiFetch<EventMatrix>(`/api/admin/events/matrix?${rangeQuery(range)}`);
 }
 
 function rangeQuery(range: { from: string; to: string }): string {

@@ -8,45 +8,55 @@
 
 import type { ReactElement } from "react";
 import { Icon, type IconName } from "@wwwuabot/shared";
-import type { CheckpointNode } from "../../shared/api/events.api";
-import { clockStamp, userLabel } from "./analytics-view";
+import type { EventMatrix } from "@wwwuabot/shared/events";
+import { clockStamp, matrixDayNumber, matrixWeekday, userLabel } from "./analytics-view";
 import { CleanupModal } from "./CleanupModal";
 import { EventRows } from "./EventRows";
 import { PeriodModal } from "./PeriodModal";
 import { useAnalytics } from "./useAnalytics";
 
 /**
- * Гілка дерева чек-поінтів: назва вузла й лічба, нащадки — з відступом.
+ * Таблиця динаміки: рядок — місце, стовпчик — день, клітинка — скільки разів.
  *
- * Порожній вузол лишається з нулем: «сюди не заходив ніхто» — це відповідь, а
- * не привід ховати рядок.
+ * Так само, як у трекерах: числа стоять під своїми датами, тож видно не
+ * «скільки всього», а коли саме це відбувалося. Порожня клітинка — не нуль, а
+ * «цього дня не було»: око чіпляється за значення, а не за нулі.
  */
-function TreeBranch({
-  nodes,
-  depth = 0,
-}: {
-  nodes: CheckpointNode[];
-  depth?: number;
-}): ReactElement {
+function MatrixTable({ matrix }: { matrix: EventMatrix }): ReactElement {
   return (
-    <ul className="ana-users">
-      {nodes.map((node) => (
-        <li className="ana-user" key={node.key}>
-          <div className="ana-user-head">
-            <span className="ana-user-name">{node.label}</span>
-            <span className="ana-user-count" title={node.key}>
-              {node.count}
-            </span>
-          </div>
-          {/* Відступ дає наявний клас списку: новий стиль тут не потрібен. */}
-          {node.children.length > 0 && (
-            <div className="ana-user-body">
-              <TreeBranch nodes={node.children} depth={depth + 1} />
-            </div>
-          )}
-        </li>
-      ))}
-    </ul>
+    <div className="ana-matrix">
+      <table className="ana-matrix-table">
+        <thead>
+          <tr>
+            <th className="ana-matrix-head" scope="col" />
+            {matrix.days.map((day) => (
+              <th key={day} className="ana-matrix-head" scope="col">
+                <span className="ana-matrix-weekday">{matrixWeekday(day)}</span>
+                <span className="ana-matrix-date">{matrixDayNumber(day)}</span>
+              </th>
+            ))}
+            <th className="ana-matrix-head" scope="col">
+              Усього
+            </th>
+          </tr>
+        </thead>
+        <tbody>
+          {matrix.rows.map((row) => (
+            <tr key={row.key} className={row.depth === 1 ? "ana-matrix-row--child" : undefined}>
+              <th className="ana-matrix-label" scope="row">
+                {row.label}
+              </th>
+              {row.counts.map((count, position) => (
+                <td key={matrix.days[position] ?? position} className="ana-matrix-value">
+                  {count === 0 ? "" : count}
+                </td>
+              ))}
+              <td className="ana-matrix-total">{row.total}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
   );
 }
 
@@ -111,10 +121,10 @@ export function AnalyticsPage(): ReactElement {
                 <button
                   type="button"
                   role="tab"
-                  aria-selected={a.mode === "tree"}
-                  aria-label="Дерево"
-                  className={`ana-mode-btn${a.mode === "tree" ? " ana-mode-btn--active" : ""}`}
-                  onClick={() => a.setMode("tree")}
+                  aria-selected={a.mode === "matrix"}
+                  aria-label="Таблиця"
+                  className={`ana-mode-btn${a.mode === "matrix" ? " ana-mode-btn--active" : ""}`}
+                  onClick={() => a.setMode("matrix")}
                 >
                   <Icon name="expand" size={16} />
                 </button>
@@ -125,7 +135,6 @@ export function AnalyticsPage(): ReactElement {
                 className="wb-btn wb-btn-secondary ana-period-btn"
                 onClick={a.openPeriod}
                 aria-haspopup="dialog"
-                title="Змінити період"
               >
                 <Icon name="calendar" size={16} />
                 <span>{a.periodText}</span>
@@ -183,7 +192,7 @@ export function AnalyticsPage(): ReactElement {
 
           {a.loading && !a.summary && <p className="ana-loading">Завантаження журналу…</p>}
 
-          {a.summary && a.mode === "tree" && <TreeBranch nodes={a.tree} />}
+          {a.summary && a.mode === "matrix" && a.matrix && <MatrixTable matrix={a.matrix} />}
 
           {a.summary &&
             (a.mode === "users" ? (

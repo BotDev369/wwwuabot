@@ -1,5 +1,5 @@
 {
-  "version": "ac54455",
+  "version": "7c25cc6",
   "files": [
     {
       "file": "admin/analytics-people.css",
@@ -9,7 +9,7 @@
     {
       "file": "admin/analytics.css",
       "tokens": 2,
-      "classes": 24
+      "classes": 33
     },
     {
       "file": "admin/bot-constructor.css",
@@ -2772,6 +2772,15 @@
           "ana-icon-btn",
           "ana-input",
           "ana-label",
+          "ana-matrix",
+          "ana-matrix-date",
+          "ana-matrix-head",
+          "ana-matrix-label",
+          "ana-matrix-row--child",
+          "ana-matrix-table",
+          "ana-matrix-total",
+          "ana-matrix-value",
+          "ana-matrix-weekday",
           "ana-mode",
           "ana-mode-btn",
           "ana-mode-btn--active",

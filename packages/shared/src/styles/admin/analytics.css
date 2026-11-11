@@ -281,3 +281,75 @@
   line-height: 1.1;
   color: var(--text-primary);
 }
+
+.ana-matrix {
+  overflow-x: auto;
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  background: var(--bg-1);
+}
+
+.ana-matrix-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: var(--text-sm);
+}
+
+.ana-matrix-head {
+  padding: var(--sp-1) var(--sp-2);
+  border-bottom: 1px solid var(--border);
+  color: var(--text-secondary);
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  font-weight: var(--weight-bold);
+  text-align: center;
+  white-space: nowrap;
+}
+
+.ana-matrix-weekday {
+  display: block;
+  color: var(--text-muted);
+}
+
+.ana-matrix-date {
+  display: block;
+  color: var(--text-primary);
+}
+
+.ana-matrix-label {
+  position: sticky;
+  left: 0;
+  z-index: 1;
+  max-width: 160px;
+  padding: var(--sp-2);
+  background: var(--bg-1);
+  color: var(--text-primary);
+  font-weight: var(--weight-bold);
+  text-align: left;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.ana-matrix-row--child .ana-matrix-label {
+  padding-left: var(--sp-4);
+  color: var(--text-secondary);
+  font-weight: normal;
+}
+
+.ana-matrix-value {
+  padding: var(--sp-2);
+  color: var(--text-primary);
+  font-family: var(--font-mono);
+  text-align: center;
+  white-space: nowrap;
+}
+
+.ana-matrix-total {
+  padding: var(--sp-2);
+  border-left: 1px solid var(--border-subtle);
+  color: var(--accent);
+  font-family: var(--font-mono);
+  font-weight: var(--weight-bold);
+  text-align: center;
+}

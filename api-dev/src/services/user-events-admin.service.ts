@@ -7,8 +7,12 @@
  */
 
 import {
+  PLATFORM_SCREENS,
   resolveEventRange,
+  screenLabel,
   type EventList,
+  type EventMatrix,
+  type EventMatrixRow,
   type EventRange,
   type EventSurface,
   type EventSummary,
@@ -17,7 +21,7 @@ import {
 } from "@wwwuabot/shared/events";
 import { ensureTables } from "@wwwuabot/shared/database/ensure-tables";
 import type { Env } from "../shared/types";
-import { checkpointTree, type CheckpointNode } from "./events-checkpoints";
+import { CHECKPOINT_ACTIONS, checkpointRowOf } from "./events-checkpoints";
 
 /** Скільки людей показує зведення: більше — вже не «огляд», а список. */
 const SUMMARY_USERS_LIMIT = 200;
@@ -172,25 +176,113 @@ export async function readEventSummary(env: Env, range: EventRange): Promise<Eve
   return { ...range, total, bySurface, users };
 }
 
+/** Дні діапазону за зростанням; довший за місяць — обрізається з початку. */
+function daysOf(range: EventRange, limit = 31): string[] {
+  const start = new Date(`${range.from.slice(0, 10)}T00:00:00Z`);
+  const end = new Date(`${range.to.slice(0, 10)}T00:00:00Z`);
+  if (Number.isNaN(start.getTime()) || Number.isNaN(end.getTime())) return [];
+
+  const days: string[] = [];
+  for (let at = start.getTime(); at <= end.getTime(); at += 86_400_000) {
+    days.push(new Date(at).toISOString().slice(0, 10));
+  }
+  return days.slice(-limit);
+}
+
+/** Лічба одного місця по днях до того, як воно стане рядком таблиці. */
+interface RowTally {
+  readonly key: string;
+  readonly label: string;
+  readonly parent: string | null;
+  total: number;
+  counts: number[];
+}
+
 /**
- * Дерево чек-поінтів за діапазон: лічба рядків журналу по вузлах.
+ * Таблиця динаміки: рядок — місце (екран або дія), стовпчик — день.
  *
- * Скелет дерева приходить із реєстру, а не з даних: екран без відвідувань
- * мусить бути видно як порожній вузол, інакше «мертві гілки» ніколи не
- * знайдуться.
+ * Рахується з `surface`/`kind`/`action`, які є в журналі з першого дня, тож
+ * історія до появи колонки `node` теж показується. Порожні рядки не виводяться:
+ * таблиця — про те, що відбувалося, а не про нулі.
  */
-export async function readEventTree(env: Env, range: EventRange): Promise<CheckpointNode[]> {
+export async function readEventMatrix(env: Env, range: EventRange): Promise<EventMatrix> {
   await ensureTables(env.DB, ["user_events"]);
 
+  const days = daysOf(range);
+  const index = new Map(days.map((day, position) => [day, position]));
+
   const rows = await env.DB.prepare(
-    `SELECT node AS node, COUNT(*) AS count FROM user_events
-      WHERE node IS NOT NULL AND created_at BETWEEN ? AND ? GROUP BY node`,
+    `SELECT surface AS surface, kind AS kind, action AS action,
+            substr(created_at, 1, 10) AS day, COUNT(*) AS count
+       FROM user_events
+      WHERE created_at BETWEEN ? AND ?
+      GROUP BY surface, kind, action, day`,
   )
     .bind(range.from, range.to)
-    .all<{ node: string; count: number }>();
+    .all<{
+      surface: EventSurface;
+      kind: UserEvent["kind"];
+      action: string;
+      day: string;
+      count: number;
+    }>();
 
-  const counts = new Map((rows.results ?? []).map((row) => [row.node, row.count]));
-  return checkpointTree(counts);
+  const tallies = new Map<string, RowTally>();
+  for (const row of rows.results ?? []) {
+    const ref = checkpointRowOf(row);
+    if (!ref) continue;
+    const position = index.get(row.day);
+    if (position === undefined) continue;
+
+    let tally = tallies.get(ref.key);
+    if (!tally) {
+      tally = {
+        key: ref.key,
+        label: ref.label,
+        parent: ref.parent,
+        total: 0,
+        counts: days.map(() => 0),
+      };
+      tallies.set(ref.key, tally);
+    }
+    tally.total += row.count;
+    tally.counts[position] = (tally.counts[position] ?? 0) + row.count;
+  }
+
+  const result: EventMatrixRow[] = [];
+  let total = 0;
+  for (const screen of PLATFORM_SCREENS) {
+    const parentKey = `platform.${screen.key}`;
+    const parent = tallies.get(parentKey);
+    const children = CHECKPOINT_ACTIONS.filter((item) => item.screen === screen.key)
+      .map((item) => tallies.get(`platform.${item.screen}.${item.key}`))
+      .filter((tally): tally is RowTally => tally !== undefined)
+      .sort((a, b) => b.total - a.total);
+
+    const screenTotal =
+      (parent?.total ?? 0) + children.reduce((sum, child) => sum + child.total, 0);
+    if (screenTotal === 0) continue;
+
+    result.push({
+      key: parentKey,
+      label: screenLabel(screen.key),
+      depth: 0,
+      total: parent?.total ?? 0,
+      counts: parent?.counts ?? days.map(() => 0),
+    });
+    for (const child of children) {
+      result.push({
+        key: child.key,
+        label: child.label,
+        depth: 1,
+        total: child.total,
+        counts: child.counts,
+      });
+    }
+    total += screenTotal;
+  }
+
+  return { from: range.from, to: range.to, days, rows: result, total };
 }
 
 /**

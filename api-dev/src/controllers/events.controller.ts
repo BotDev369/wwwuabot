@@ -20,7 +20,7 @@ import { readBody } from "../shared/body";
 import {
   cleanupEvents,
   readEventSummary,
-  readEventTree,
+  readEventMatrix,
   readEventUsers,
   readEvents,
   type EventCleanupFilter,
@@ -70,17 +70,17 @@ export async function handleEventSummary(request: Request, env: Env): Promise<Re
 }
 
 /**
- * `GET /api/admin/events/tree` — дерево чек-поінтів за діапазон.
+ * `GET /api/admin/events/matrix` — динаміка журналу по днях.
  *
- * Скелет дерева сталий (поверхня → екран → дія), тож відповідь каже не лише
- * «куди заходили», а й «куди не заходив ніхто».
+ * Рядок — екран або оголошена дія, стовпчик — день діапазону: одне число за
+ * весь період не каже, чи місце живе, чи це один сплеск.
  */
-export async function handleEventTree(request: Request, env: Env): Promise<Response> {
+export async function handleEventMatrix(request: Request, env: Env): Promise<Response> {
   try {
-    return json(await readEventTree(env, rangeOf(request)));
+    return json(await readEventMatrix(env, rangeOf(request)));
   } catch (error) {
-    apiLog.error("events: дерево", error);
-    return json({ error: "Не вдалось прочитати дерево" }, 500);
+    apiLog.error("events: динаміка", error);
+    return json({ error: "Не вдалось прочитати динаміку" }, 500);
   }
 }
 
