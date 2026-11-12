@@ -211,8 +211,8 @@ describe("правка сторінки платформи", () => {
     expect((await handlePlatformPageUpdate(post({ id: 2 }), env)).status).toBe(400);
 
     const missing = makeDb({ changes: 0 });
-    expect(
-      (await handlePlatformPageUpdate(post({ id: 2, title: "x" }), missing.env)).status,
-    ).toBe(404);
+    expect((await handlePlatformPageUpdate(post({ id: 2, title: "x" }), missing.env)).status).toBe(
+      404,
+    );
   });
 });

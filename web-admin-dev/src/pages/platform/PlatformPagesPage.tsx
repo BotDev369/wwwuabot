@@ -69,8 +69,7 @@ export function PlatformPagesPage() {
     const q = query.trim().toLowerCase();
     if (!q) return items;
     return items.filter(
-      (item) =>
-        item.slug.toLowerCase().includes(q) || (item.title ?? "").toLowerCase().includes(q),
+      (item) => item.slug.toLowerCase().includes(q) || (item.title ?? "").toLowerCase().includes(q),
     );
   }, [items, query]);
 
@@ -176,7 +175,10 @@ export function PlatformPagesPage() {
                       <td>{Number(item.is_public ?? 0) === 1 ? "Так" : "Ні"}</td>
                       <td className="wb-text-muted wb-text-xs">{item.updated_at}</td>
                       <td>
-                        <button className="wb-btn wb-btn-secondary" onClick={() => void open(item.id)}>
+                        <button
+                          className="wb-btn wb-btn-secondary"
+                          onClick={() => void open(item.id)}
+                        >
                           Відкрити
                         </button>
                       </td>
@@ -262,7 +264,11 @@ export function PlatformPagesPage() {
               <button className="wb-btn wb-btn-secondary" onClick={() => setDraft(null)}>
                 Скасувати
               </button>
-              <button className="wb-btn wb-btn-primary" onClick={() => void save()} disabled={saving}>
+              <button
+                className="wb-btn wb-btn-primary"
+                onClick={() => void save()}
+                disabled={saving}
+              >
                 {saving ? "Збереження…" : "Зберегти"}
               </button>
             </div>

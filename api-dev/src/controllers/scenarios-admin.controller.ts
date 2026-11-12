@@ -124,7 +124,10 @@ const BOT_SELECT = `SELECT b.id, b.slug, b.bot_command, b.keyboard_type, b.is_ac
   FROM bot_scenarios b LEFT JOIN platform_pages p ON p.slug = b.slug`;
 
 async function botItem(db: D1Database, id: number): Promise<Record<string, unknown> | null> {
-  return db.prepare(`SELECT * FROM bot_scenarios WHERE id = ?`).bind(id).first<Record<string, unknown>>();
+  return db
+    .prepare(`SELECT * FROM bot_scenarios WHERE id = ?`)
+    .bind(id)
+    .first<Record<string, unknown>>();
 }
 
 /** `GET /api/admin/bot-scenarios` — екрани бота з назвою їхньої сторінки. */
@@ -217,7 +220,10 @@ export async function handlePlatformPagesList(_request: Request, env: Env): Prom
 }
 
 async function pageItem(db: D1Database, id: number): Promise<Record<string, unknown> | null> {
-  return db.prepare("SELECT * FROM platform_pages WHERE id = ?").bind(id).first<Record<string, unknown>>();
+  return db
+    .prepare("SELECT * FROM platform_pages WHERE id = ?")
+    .bind(id)
+    .first<Record<string, unknown>>();
 }
 
 /** `POST /api/admin/platform-pages/read` — усі поля сторінки. */

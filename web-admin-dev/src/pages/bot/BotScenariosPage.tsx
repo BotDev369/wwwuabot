@@ -191,7 +191,10 @@ export function BotScenariosPage() {
                       <td>{item.title || "—"}</td>
                       <td className="wb-text-muted wb-text-xs">{item.updated_at}</td>
                       <td>
-                        <button className="wb-btn wb-btn-secondary" onClick={() => void open(item.id)}>
+                        <button
+                          className="wb-btn wb-btn-secondary"
+                          onClick={() => void open(item.id)}
+                        >
                           Відкрити
                         </button>
                       </td>
@@ -313,7 +316,11 @@ export function BotScenariosPage() {
               <button className="wb-btn wb-btn-secondary" onClick={() => setDraft(null)}>
                 Скасувати
               </button>
-              <button className="wb-btn wb-btn-primary" onClick={() => void save()} disabled={saving}>
+              <button
+                className="wb-btn wb-btn-primary"
+                onClick={() => void save()}
+                disabled={saving}
+              >
                 {saving ? "Збереження…" : "Зберегти"}
               </button>
             </div>
