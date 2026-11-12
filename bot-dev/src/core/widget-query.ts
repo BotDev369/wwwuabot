@@ -7,7 +7,7 @@
 
 import { ScenarioRepository } from "../repositories/scenario.repository";
 import { UserRepository } from "../modules/users/user.repository";
-import { sendRichMessage, sendWidget, answerWidgetQuery } from "../shared/telegram/widgets";
+import { sendWidget, answerWidgetQuery } from "../shared/telegram/widgets";
 import { hasAccess } from "@wwwuabot/shared/security/access";
 import { ACCESS_DENIED } from "../shared/config/texts";
 import type { Env } from "../shared/types/env";
@@ -29,7 +29,7 @@ export async function handleWidgetQuery(env: Env, query: WidgetQuery): Promise<v
 
   const user = await new UserRepository(env).getUser(query.from.id);
   if (!user || !hasAccess(user, env.ADMIN_TELEGRAM_ID)) {
-    await sendRich(env, chatId, ACCESS_DENIED);
+    await sendDenied(env, chatId);
     return;
   }
 
@@ -37,19 +37,14 @@ export async function handleWidgetQuery(env: Env, query: WidgetQuery): Promise<v
   if (!scenario) return;
 
   try {
-    const sent =
-      scenario.kind === "widget" && scenario.widget_html
-        ? await sendWidget(env.BOT_TOKEN, {
-            chatId,
-            html: scenario.widget_html,
-            caption: scenario.caption,
-            chatData: scenario.widget_data,
-            allowQueries: true,
-          })
-        : scenario.rich_html
-          ? await sendRichMessage(env.BOT_TOKEN, chatId, scenario.rich_html)
-          : null;
-    if (!sent) return;
+    if (scenario.kind !== "widget" || !scenario.widget_html) return;
+    const sent = await sendWidget(env.BOT_TOKEN, {
+      chatId,
+      html: scenario.widget_html,
+      caption: scenario.caption,
+      chatData: scenario.widget_data,
+      allowQueries: true,
+    });
 
     const old = user.message_id;
     if (typeof old === "number" && old !== sent.message_id) {
@@ -68,8 +63,16 @@ export async function handleWidgetQuery(env: Env, query: WidgetQuery): Promise<v
   }
 }
 
-async function sendRich(env: Env, chatId: number, text: string): Promise<void> {
-  await sendRichMessage(env.BOT_TOKEN, chatId, `<p>${text}</p>`).catch(() => undefined);
+/** Відмова — теж віджет: у приватному чаті інших повідомлень не показуємо. */
+async function sendDenied(env: Env, chatId: number): Promise<void> {
+  const text = ACCESS_DENIED.split("\n")
+    .filter(Boolean)
+    .map((line) => `<p>${line.replace(/&/g, "&amp;").replace(/</g, "&lt;")}</p>`)
+    .join("");
+  const html =
+    '<style>body{margin:0;padding:18px 16px;background:#fdf7ea;color:#16233a;font:15px/1.5 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif}p{margin:0 0 10px}</style>' +
+    text;
+  await sendWidget(env.BOT_TOKEN, { chatId, html, allowQueries: false }).catch(() => undefined);
 }
 
 async function deleteMessage(env: Env, chatId: number, messageId: number): Promise<void> {

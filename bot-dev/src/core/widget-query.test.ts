@@ -75,11 +75,15 @@ describe("handleWidgetQuery", () => {
     expect(mocks.save).toHaveBeenCalledWith(7, 9, "w", "about", "{}");
   });
 
-  it("без допуску показує rich-відмову", async () => {
+  it("без допуску показує віджет-відмову", async () => {
     mocks.access.mockReturnValue(false);
     await handleWidgetQuery(env, { id: "q2", from: { id: 7 }, data: "about", chat: { id: 7 } });
 
-    expect(mocks.rich).toHaveBeenCalledWith("token", 7, expect.stringContaining("за запрошеннями"));
+    expect(mocks.widget).toHaveBeenCalledWith(
+      "token",
+      expect.objectContaining({ chatId: 7, html: expect.stringContaining("запрошеннями") }),
+    );
+    expect(mocks.rich).not.toHaveBeenCalled();
     expect(mocks.find).not.toHaveBeenCalled();
   });
 

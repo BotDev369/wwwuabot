@@ -1,6 +1,6 @@
 /**
- * Рендер сценарію: віджет у приватному чаті, rich у групі, запасний rich на
- * помилку віджета, видалення попереднього екрана й збереження стану.
+ * Рендер сценарію: віджет у приватному чаті, rich у групі, видалення
+ * попереднього екрана й збереження стану.
  *
  * @module bot-dev/src/shared/utils/scenario-screen.test
  */
@@ -84,25 +84,25 @@ describe("renderScenario", () => {
     expect(fetchMock.mock.calls[0][0]).toContain("/sendRichMessage");
   });
 
-  it("⛔ помилка віджета переходить на rich, а без rich — на false", async () => {
-    const fetchMock = vi
-      .fn()
-      .mockResolvedValueOnce(new Response(JSON.stringify({ ok: false, description: "too big" })))
-      .mockResolvedValueOnce(
-        new Response(JSON.stringify({ ok: true, result: { message_id: 13 } })),
-      );
+  it("⛔ rich у приватному чаті не показується", async () => {
+    const fetchMock = vi.fn(respond(true, { message_id: 13 }));
     vi.stubGlobal("fetch", fetchMock);
-    const first = context();
+    const { ctx } = context();
 
-    expect(await renderScenario(first.ctx, scenario({ rich_html: "<b>rich</b>" }))).toBe(true);
-    expect(fetchMock.mock.calls[1][0]).toContain("/sendRichMessage");
-
-    vi.stubGlobal(
-      "fetch",
-      vi.fn(async () => new Response(JSON.stringify({ ok: false }))),
+    expect(await renderScenario(ctx, scenario({ kind: "rich", rich_html: "<b>x</b>" }))).toBe(
+      false,
     );
-    const second = context();
-    expect(await renderScenario(second.ctx, scenario())).toBe(false);
+    expect(fetchMock).not.toHaveBeenCalled();
+  });
+
+  it("⛔ помилка віджета не переходить на rich", async () => {
+    const fetchMock = vi.fn(async () => new Response(JSON.stringify({ ok: false })));
+    vi.stubGlobal("fetch", fetchMock);
+    const { ctx } = context();
+
+    expect(await renderScenario(ctx, scenario({ rich_html: "<b>rich</b>" }))).toBe(false);
+    const urls = fetchMock.mock.calls.map((call) => String((call as unknown[])[0] ?? ""));
+    expect(urls.some((url) => url.includes("sendRichMessage"))).toBe(false);
   });
 
   it("⛔ без chat немає рендера", async () => {

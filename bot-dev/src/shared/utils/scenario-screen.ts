@@ -1,8 +1,7 @@
 /**
- * Рендер сценарію бота: віджет або rich-повідомлення.
+ * Рендер сценарію бота: у приватному чаті — лише віджет, у групі — лише rich.
  *
- * Віджет живе лише в приватному чаті (так у проді), тому для групи потрібен
- * `rich_html`. Обидва варіанти несуть кнопки в тілі повідомлення.
+ * Rich у приваті не показуємо: це інший жанр, для груп і службових екранів.
  *
  * @module bot-dev/src/shared/utils/scenario-screen
  */
@@ -16,8 +15,11 @@ import { log } from "./debug";
 export async function renderScenario(ctx: AppContext, scenario: BotScenario): Promise<boolean> {
   if (!ctx.chat?.id) return false;
 
-  const useWidget = scenario.kind === "widget" && ctx.chat.type === "private";
-  const sent = useWidget
+  const isPrivate = ctx.chat.type === "private";
+  if (isPrivate && scenario.kind !== "widget") return false;
+  if (!isPrivate && !scenario.rich_html) return false;
+
+  const sent = isPrivate
     ? await sendWidgetSafely(ctx, scenario)
     : await sendRichSafely(ctx, scenario);
 
@@ -28,7 +30,7 @@ export async function renderScenario(ctx: AppContext, scenario: BotScenario): Pr
   if (ctx.user) {
     ctx.user.message_id = sent.message_id;
     ctx.userDirty = true;
-    if (ctx.chat.type === "private") {
+    if (isPrivate) {
       await new ScenarioRepository(ctx.env)
         .saveMessageState(
           ctx.user.user_id,
@@ -41,7 +43,7 @@ export async function renderScenario(ctx: AppContext, scenario: BotScenario): Pr
     }
   }
 
-  log("SCENARIO", "rendered", { lookup: scenario.lookup, kind: useWidget ? "widget" : "rich" });
+  log("SCENARIO", "rendered", { lookup: scenario.lookup, kind: isPrivate ? "widget" : "rich" });
   return true;
 }
 
@@ -60,10 +62,9 @@ async function sendWidgetSafely(
     });
     return { message_id: sent.message_id, widgetId: sent.widget?.id ?? null };
   } catch (error: unknown) {
+    // Запасного rich немає: у приваті він заборонений, тож збій лишає старий екран.
     log("SCENARIO", "sendWidget failed", { lookup: scenario.lookup, error: String(error) });
-    // Віджет не пішов — це реальна помилка API (ліміт, HTML). Rich — запасний
-    // варіант того самого екрана, якщо він записаний.
-    return scenario.rich_html ? await sendRichSafely(ctx, scenario) : null;
+    return null;
   }
 }
 
