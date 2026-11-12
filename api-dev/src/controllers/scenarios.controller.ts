@@ -22,7 +22,7 @@ function json(body: unknown, status = 200): Response {
 
 // ── ensureBase ──────────────────────────────────────────────────────
 /**
- * Гарантує наявність таблиці `scenarios`.
+ * Гарантує наявність таблиці `platform_pages`.
  *
  * DDL живе в реєстрі (`@wwwuabot/shared/database/tables`), не тут.
  *
@@ -34,7 +34,7 @@ function json(body: unknown, status = 200): Response {
  * шаблону не існує** (`docs/PAGES.md` §7).
  */
 async function ensureBase(db: D1Database): Promise<void> {
-  await ensureTables(db, ["scenarios"]);
+  await ensureTables(db, ["platform_pages"]);
 }
 
 /**
@@ -101,7 +101,7 @@ async function visiblePages(
   const placeholders = slugs.map(() => "?").join(", ");
   const rows = await db
     .prepare(
-      `SELECT ${PAGE_COLUMNS} FROM scenarios WHERE is_active = 1 AND slug IN (${placeholders})`,
+      `SELECT ${PAGE_COLUMNS} FROM platform_pages WHERE is_active = 1 AND slug IN (${placeholders})`,
     )
     .bind(...slugs)
     .all<GatedScenarioRow>();

@@ -1,28 +1,61 @@
+/**
+ * Екран бота: рядок `bot_scenarios` разом із його сторінкою `platform_pages`.
+ *
+ * **Дві таблиці, один екран.** Подання в чаті (підписи, фото, кнопки,
+ * rich-розмітка) лежить в `bot_scenarios`, а контент, назва й видимість — у
+ * `platform_pages`. Читаються вони одним `JOIN` за `slug`: адреса в обох
+ * таблицях та сама, і саме вона веде людину з чату на сторінку.
+ *
+ * **Сторінка без екрана — не помилка.** Діплінк на сторінку, у якої немає
+ * власного подання в боті, показує універсальну картку: назву й фото бере
+ * сторінка, кнопка одна — «Відкрити сторінку».
+ *
+ * **Приватна сторінка недосяжна і в боті.** Рішення ухвалює спільний
+ * `pageVisibleTo` (visitor + `viewer_ids`), а не SQL: список глядачів — JSON.
+ *
+ * @module bot-dev/src/repositories/scenario.repository
+ */
+
 import { DatabaseRepository } from "../core/database.repository";
 import {
   contentPageFromScenario,
   resolveBotPayload,
   toWebPath,
+  type ContentPage,
   type ScenarioContentRow,
 } from "@wwwuabot/shared/content";
 import { pageViewerIds, pageVisibleTo } from "@wwwuabot/shared/pages";
 import { pageBotCaption } from "../shared/utils/page-caption";
 import type { Scenario, ScenarioRow } from "../shared/types/scenario";
 
+/** Команда головного екрана: нею відкривається бот без діплінка. */
+export const START_COMMAND = "/start";
+
 /**
- * Видно назовні лише те, що показано.
+ * Колонки екрана й сторінки одним списком.
  *
- * Сторінки людини живуть у тій самій таблиці (`owner_id`, `is_public`), і
- * приватна мусить бути недосяжною **і в боті**: бот — такий самий публічний
- * вхід, як і веб, тож «приватна» сторінка, яка відкривається діплінком, була б
- * кнопкою, яка бреше (`docs/VISIBILITY.md`). Умова та сама, що в
- * `api-dev/src/controllers/scenarios.controller.ts`, і ухвалює її спільний
- * `pageVisibleTo`: `viewer_ids` — JSON-колонка, тож SQL лише звужує вибірку.
+ * `photo_url` належить екрану (банер у чаті), фото сторінки їде окремим
+ * псевдонімом — воно потрібне лише картці діплінка.
  */
+const SCREEN_COLUMNS = `
+  b.id AS id, b.slug AS slug, b.bot_command AS bot_command,
+  b.photo_url AS photo_url, b.caption_top AS caption_top, b.caption_mid AS caption_mid,
+  b.caption_bot AS caption_bot, b.keyboard_type AS keyboard_type, b.buttons AS buttons,
+  b.awaits_input AS awaits_input, b.input_path AS input_path, b.input_next AS input_next,
+  b.price AS price, b.qty_options AS qty_options, b.notify_groups AS notify_groups,
+  b.notify_template AS notify_template, b.rich_message AS rich_message,
+  b.rich_data AS rich_data, b.is_active AS is_active,
+  p.title AS title, p.photo_url AS page_photo_url, p.page_data AS page_data,
+  p.template_key AS template_key, p.owner_id AS owner_id, p.is_public AS is_public,
+  p.viewer_ids AS viewer_ids`;
+
+const SCREEN_FROM = "FROM bot_scenarios b LEFT JOIN platform_pages p ON p.slug = b.slug";
+
 interface GatedScenarioRow extends ScenarioRow {
   owner_id?: number | null;
   is_public?: number | null;
   viewer_ids?: string | null;
+  page_photo_url?: string | null;
 }
 
 function visibleTo(row: GatedScenarioRow, userId: number | null): boolean {
@@ -34,13 +67,10 @@ function visibleTo(row: GatedScenarioRow, userId: number | null): boolean {
   );
 }
 
-/** Команда головного екрана: нею відкривається бот без діплінка. */
-export const START_COMMAND = "/start";
-
 export class ScenarioRepository extends DatabaseRepository {
   async getScenario(slug: string, userId: number | null = null): Promise<Scenario | null> {
     const row = await this.db
-      .prepare("SELECT * FROM scenarios WHERE slug = ?")
+      .prepare(`SELECT ${SCREEN_COLUMNS} ${SCREEN_FROM} WHERE b.slug = ?`)
       .bind(slug)
       .first<GatedScenarioRow>();
     if (!row || !visibleTo(row, userId)) return null;
@@ -52,12 +82,13 @@ export class ScenarioRepository extends DatabaseRepository {
     userId: number | null = null,
   ): Promise<Scenario | null> {
     // `/start` без діплінка — це команда, а не порожня адреса: головну шукаємо
-    // за `bot_command`, і саме тому в базі вона записана як `/start`. Якщо
-    // команду ще не проставили (старий рядок), працює старий пошук за
-    // `HOME_SLUG` — бот не має мовчати через відсутню колонку в даних.
+    // за `bot_command`. Якщо команду ще не проставили (старий рядок), працює
+    // пошук за `HOME_SLUG` — бот не має мовчати через відсутні дані.
     if (payload.trim() === "") {
       const landing = await this.db
-        .prepare("SELECT * FROM scenarios WHERE is_active = 1 AND bot_command = ? LIMIT 1")
+        .prepare(
+          `SELECT ${SCREEN_COLUMNS} ${SCREEN_FROM} WHERE b.is_active = 1 AND b.bot_command = ? LIMIT 1`,
+        )
         .bind(START_COMMAND)
         .first<GatedScenarioRow>();
       if (landing && visibleTo(landing, userId)) return this.parse(landing);
@@ -66,7 +97,7 @@ export class ScenarioRepository extends DatabaseRepository {
     const result = await this.db
       .prepare(
         `SELECT id, slug, title, photo_url, page_data, is_active, owner_id, is_public, viewer_ids
-         FROM scenarios
+         FROM platform_pages
          WHERE is_active = 1`,
       )
       .all<ScenarioContentRow & GatedScenarioRow>();
@@ -79,11 +110,41 @@ export class ScenarioRepository extends DatabaseRepository {
     const scenario = await this.getScenario(route.page.slug, userId);
     if (scenario) {
       scenario.web_path = toWebPath(route.page.slug, route.params);
+      return scenario;
     }
-    return scenario;
+
+    // Подання в боті немає — сторінка все одно відкривається карткою.
+    return this.pageCard(route.page, route.params);
   }
 
-  private parse(row: ScenarioRow): Scenario {
+  /** Картка сторінки без власного екрана: назва й фото — зі сторінки. */
+  private pageCard(page: ContentPage, params: readonly string[]): Scenario {
+    return {
+      id: page.id === "" ? null : Number(page.id),
+      slug: page.slug,
+      bot_command: null,
+      title: page.title,
+      photo_url: page.photoUrl ?? "",
+      caption_top: null,
+      caption_mid: null,
+      caption_bot: null,
+      keyboard_type: "static",
+      buttons: [],
+      awaits_input: null,
+      input_path: null,
+      input_next: null,
+      price: null,
+      qty_options: null,
+      notify_groups: null,
+      notify_template: null,
+      rich_message: false,
+      rich_data: null,
+      page_data: page.content as Record<string, unknown> | null,
+      web_path: toWebPath(page.slug, params),
+    };
+  }
+
+  private parse(row: GatedScenarioRow): Scenario {
     let buttons: Scenario["buttons"] = [];
     try {
       const parsed: unknown = JSON.parse(row.buttons);
@@ -112,7 +173,7 @@ export class ScenarioRepository extends DatabaseRepository {
       id: row.id ?? null,
       slug: row.slug,
       title: row.title,
-      photo_url: row.photo_url,
+      photo_url: row.page_photo_url ?? null,
       page_data: row.page_data,
       is_active: 1,
     } satisfies ScenarioContentRow);

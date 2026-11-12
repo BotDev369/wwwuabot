@@ -251,7 +251,7 @@ describe("UsersService", () => {
       mockDb.prepare.mockImplementation((sql: string) => {
         if (sql.includes("LIMIT 0")) return schemaProbe;
         if (sql.startsWith("UPDATE")) return updateStatement;
-        if (sql.includes("FROM scenarios")) return scenarioStatement;
+        if (sql.includes("FROM bot_scenarios")) return scenarioStatement;
         return currentStatement;
       });
       const fetchMock = vi.fn().mockResolvedValue({ ok: true });
@@ -289,7 +289,7 @@ describe("UsersService", () => {
       mockDb.prepare.mockImplementation((sql: string) => {
         if (sql.includes("LIMIT 0")) return schemaProbe;
         if (sql.startsWith("UPDATE")) return updateStatement;
-        if (sql.includes("FROM scenarios")) return scenarioStatement;
+        if (sql.includes("FROM bot_scenarios")) return scenarioStatement;
         return currentStatement;
       });
       const fetchMock = vi

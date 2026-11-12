@@ -16,7 +16,8 @@ DDL не живе в контролерах і репозиторіях: кож�
 |---|---|---|---|---|
 | `users` | `bot-dev` | bot-dev, `createUser` | bot-dev (стан, профіль, блокування, `telegram_json`); api-dev (адмін-CRUD, `/api/user/profile`, `platform_username`, `my_dates`, публічний профіль — `photo_url` / `about` / `profile_public*`) | стан користувача Telegram: профіль, роль, тариф, блокування, **ім'я на платформі**. Профіль і видимість — [`VISIBILITY.md`](./VISIBILITY.md). `created_at` ставить `createUser`: у живій базі колонка `NOT NULL` без значення за замовчуванням, а `ensureTables` констрейнтів не переписує |
 | `settings` | `bot-dev` | bot-dev, `SettingsRepository.initialize` | bot-dev | один рядок (`id = 1`): `chat_id` груп, прапорець активності |
-| `scenarios` | `api-dev` | api-dev (`ensureBase`, `scenarios-portal.controller`) | **bot-dev читає**; api-dev редагує (`/api/portal/scenarios/*`, сторінки людини — `/api/user/pages`); платформа рендерить (`/api/scenario/:slug`) | **єдине сховище контенту:** рядок = сторінка вебу (`page_data`) + її подання в боті (`caption_*`, `buttons`, `rich_*`). Сторінка людини — той самий рядок із `owner_id`/`admin_ids`/`is_public`/`template_key` ([`PAGES.md`](./PAGES.md)) |
+| `platform_pages` | `api-dev` | api-dev (`ensureBase`, `ensureTables` у `PagesService`) | api-dev (сторінки людини — `/api/user/pages`, рендер — `/api/scenario/:slug`); **bot-dev читає** для назви й видимості | **сторінка платформи:** `slug`, `page_data`, `template_key`, `owner_id`/`admin_ids`/`is_public`/`viewer_ids`, `is_active`. Одна сторінка — один рядок ([`PAGES.md`](./PAGES.md)) |
+| `bot_scenarios` | `api-dev` | api-dev (`ensureTables`) | **bot-dev читає** | **екран бота:** `bot_command` (`/start`), `caption_*`, `photo_url`, `buttons`, `awaits_input`, `rich_*`, `notify_*`. Зв'язок зі сторінкою — `slug`; екран без сторінки не існує, сторінка без екрана рендериться карткою |
 | `slug_aliases` | `api-dev` | api-dev (`ensureTables` у `aliases.service`) | api-dev: `/api/public/redirect` (питає веб-воркер); пише `PagesService.save` при перейменуванні й міграції контенту | **старі адреси сторінок:** `alias` → `slug`. Адреса незмінна після публікації, тож переїзд лишає рядок назавжди, а за ним веде `301` ([`URL.md`](./URL.md)) |
 | `favorites` | `api-dev` | api-dev (`ensureTables` у `favorites.controller`) | api-dev: `/api/favorites` | особисті лайки: лише посилання на сутність, назва й доступ перевіряються при читанні ([`FAVORITES.md`](./FAVORITES.md)) |
 | `user_events` | `api-dev` | api-dev (`ensureTables` у спільному `recordUserEvent`); **bot-dev пише** тим самим `recordUserEvent` | адмінка: `/api/admin/events`, `/api/admin/events/summary` | **журнал дій людей:** рядок на дію — `surface` (бот / платформа), `kind`, `action` (текст, `callback_data` або `METHOD /api/…`), `status`. Імена не копіюються — беруться `JOIN`-ом із `users`. Правила — [`EVENTS.md`](./EVENTS.md) |
@@ -30,7 +31,7 @@ DDL не живе в контролерах і репозиторіях: кож�
 | `message_media` | `api-dev` | api-dev, `ensureTables` у `services/messages/schema.ts` | api-dev: завантаження — `/api/messages/media`, сам файл — `/api/messages/media/<…>` | облік фото переписки; байти в R2 — [`MESSAGES.md`](./MESSAGES.md) |
 | `message_drafts` | `api-dev` | api-dev (`ensureTables` у `messages.controller`) | api-dev: `/api/messages/compose`, `/api/messages/draft` | приватні чернетки переписки — [`MESSAGES.md`](./MESSAGES.md) |
 | `ads` | `api-dev` | api-dev (`ensureTables` у `ads.service`) | api-dev: своє — `/api/user/ads`, дошка — `/api/public/ads` | **оголошення дошки:** вид, заголовок, текст, ціна й місто (обидва — **текст**). `is_active` — не «чи опубліковано», а **показати на дошці**: вимкнене лишається в списку власника чернеткою. Правила — [`ADS.md`](./ADS.md) |
-| `shop_products` | `api-dev` | api-dev, `ensureTables` у `services/shop/shops.ts` | api-dev: своє — `/api/user/shop/products`, каталог — `/api/public/shop/products` | **товар магазину:** `shop_id` — **номер рядка `scenarios`** (магазин і є сторінка), `slug` унікальний **у межах магазину**, `kind` — ключ із `PRODUCT_KINDS`, `price` — **текст**, `images` — номери `shop_media`, `category` — **розділ каталогу назвою**. Правила — [`PRODUCTS.md`](./PRODUCTS.md) |
+| `shop_products` | `api-dev` | api-dev, `ensureTables` у `services/shop/shops.ts` | api-dev: своє — `/api/user/shop/products`, каталог — `/api/public/shop/products` | **товар магазину:** `shop_id` — **номер рядка `platform_pages`** (магазин і є сторінка), `slug` унікальний **у межах магазину**, `kind` — ключ із `PRODUCT_KINDS`, `price` — **текст**, `images` — номери `shop_media`, `category` — **розділ каталогу назвою**. Правила — [`PRODUCTS.md`](./PRODUCTS.md) |
 | `shop_media` | `api-dev` | api-dev, `ensureTables` у `services/shop/shops.ts` | api-dev: своє — `/api/user/shop/media`, сам файл — `/api/shop/media/<…>` | **облік файлів R2:** рядок на файл, `r2_key` = `shop/<shop_id>/<випадкове>-<ім'я>` (`UNIQUE` — два облікові рядки на один файл зробили б ключ мертвим при видаленні одного з них). Байти — в R2, тут — ключ: товар посилається на **номери рядків** |
 | `shop_orders` | `api-dev` | api-dev, `ensureTables` у `services/shop/shops.ts` | api-dev: замовлення — `/api/public/shop/orders`, черга продавця — `/api/user/shop/orders` (`GET`/`POST`/`DELETE`) | **замовлення магазину:** `status` — **ключ**, а не підпис (перейменування статусу не має переписувати історію), `contact` — JSON (склад полів залежить від виду товару), `note` — **примітка покупця**, `seller_note` — **внутрішній коментар продавця** (покупцеві його не показують — про це каже розмова), позиції — знімком поруч. Замовлення не живе ні в `users`, ні в тексті листування |
 | `shop_order_items` | `api-dev` | api-dev, `ensureTables` у `services/shop/shops.ts` | api-dev: позиції пише й читає `services/shop/orders.service.ts` (окремого шляху в них немає — вони частина замовлення) | **знімок позиції:** `title`, `price`, `kind` **копіюються** на момент замовлення — інакше правка ціни заднім числом переписувала б історію, а видалений товар зникав би з уже прийнятого замовлення. `product_id` лишається посиланням, і `NOT NULL` у нього немає |
@@ -51,8 +52,10 @@ DDL не живе в контролерах і репозиторіях: кож�
 `npm run check:db` друкує той самий список, що видно в дашборді Cloudflare. Розбіжність означає,
 що таблицю створили повз реєстр.
 
-**`scenarios`.** Дві різні речі, і плутати їх не можна: **`id`** — номер рядка (`PRIMARY KEY`), тобто
+**`platform_pages` і `bot_scenarios`.** Дві різні речі, і плутати їх не можна: **`id`** — номер рядка (`PRIMARY KEY`), тобто
 ідентичність, яка не змінюється ніколи; **`slug`** — адреса (`NOT NULL UNIQUE`), яку редагують вільно.
+`platform_pages.id` зберіг номери колишньої `scenarios` — на нього посилаються `shop_orders.shop_id` і
+`favorites.target_id`; `bot_scenarios.id` — власний номер екрана. Зв'язок між таблицями — `slug`.
 
 **Індекси** (`indexes`) живуть поруч із таблицею, щоб не «губились» окремо від неї.
 Їх оголошують п'ятнадцять таблиць — `trackers` (`idx_trackers_owner_key`, `idx_trackers_owner_active`, `idx_trackers_public`),
@@ -66,7 +69,7 @@ DDL не живе в контролерах і репозиторіях: кож�
 `shop_products` (`idx_shop_products_shop` — товари за `(shop_id, is_active, id)`), `shop_media`,
 `shop_orders` (`idx_shop_orders_shop` і `idx_shop_orders_buyer` — список покупця), `shop_order_items`,
 `shop_order_statuses` (кожна — за своїм `shop_id` чи `order_id`). Унікальність `contacts.code`,
-`scenarios.slug`, `shop_products (shop_id, slug)`, `shop_media.r2_key` і
+`platform_pages.slug`, `bot_scenarios.slug`, `shop_products (shop_id, slug)`, `shop_media.r2_key` і
 `shop_order_statuses (shop_id, key)` тримає `UNIQUE` у самому `CREATE TABLE`, а не іменований індекс:
 імена індексів у SQLite **глобальні для бази**, тому однойменний `CREATE UNIQUE INDEX IF NOT EXISTS`
 на другій таблиці — не помилка, а **порожня дія**, і таблиця лишилась би без унікальності, не сказавши

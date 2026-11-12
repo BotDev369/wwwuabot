@@ -59,7 +59,7 @@ export async function areLinked(db: D1Database, a: number, b: number): Promise<b
 /**
  * Чи замовляв один в одного — те саме, що лінк, але для магазину.
  *
- * `scenarios` тут тому, що продавця й адмінів знає **вона**: магазин — це її
+ * `platform_pages` тут тому, що продавця й адмінів знає **вона**: магазин — це її
  * рядок (`owner_id`, `admin_ids`), і другий стовпець «хто продавець» у
  * замовленні був би другим поданням того самого факту (`AGENTS.md` §7).
  * Питаємо в **обидва** боки: у розмові замовлення мають право обидві сторони,
@@ -75,7 +75,7 @@ async function hasShopOrder(db: D1Database, a: number, b: number): Promise<boole
     .prepare(
       `SELECT o.buyer_id AS buyer_id, s.owner_id AS owner_id, s.admin_ids AS admin_ids
          FROM shop_orders o
-         JOIN scenarios s ON s.id = o.shop_id
+         JOIN platform_pages s ON s.id = o.shop_id
         WHERE o.buyer_id IN (?, ?)
         GROUP BY o.buyer_id, s.id`,
     )

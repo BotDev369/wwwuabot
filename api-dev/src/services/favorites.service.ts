@@ -21,7 +21,7 @@ function chunksOf(ids: readonly number[]): number[][] {
   return parts;
 }
 
-/** Рядок `scenarios`, якого досить для картки; зайвих колонок не читаємо. */
+/** Рядок `platform_pages`, якого досить для картки; зайвих колонок не читаємо. */
 interface ScenarioRow {
   id: number;
   slug: string;
@@ -45,12 +45,12 @@ async function resolvePages(
 ): Promise<Map<number, ResolvedFavorite>> {
   const found = new Map<number, ResolvedFavorite>();
   if (ids.length === 0) return found;
-  await ensureTables(env.DB, ["scenarios"]);
+  await ensureTables(env.DB, ["platform_pages"]);
 
   for (const part of chunksOf(ids)) {
     const placeholders = part.map(() => "?").join(", ");
     const rows = await env.DB.prepare(
-      `SELECT id, slug, title, photo_url, owner_id, admin_ids, is_public FROM scenarios
+      `SELECT id, slug, title, photo_url, owner_id, admin_ids, is_public FROM platform_pages
        WHERE id IN (${placeholders}) AND is_active = 1
          AND (owner_id IS NULL OR COALESCE(is_public, 0) = 1 OR owner_id = ? OR admin_ids LIKE ?)`,
     )

@@ -56,7 +56,7 @@ export async function readResearchCatalog(env: Env): Promise<ResearchCatalog | n
   if (cached && Array.isArray(cached.blocks) && cached.blocks.length > 0) return cached;
 
   const result = await env.DB.prepare(
-    `SELECT slug, title FROM scenarios
+    `SELECT slug, title FROM platform_pages
       WHERE slug LIKE ? AND is_active = 1
       ORDER BY id`,
   )

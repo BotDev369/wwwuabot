@@ -184,7 +184,7 @@ export class UsersService {
     let photoUrl = "";
 
     try {
-      const row = await this.env.DB.prepare("SELECT * FROM scenarios WHERE slug = ?")
+      const row = await this.env.DB.prepare("SELECT * FROM bot_scenarios WHERE slug = ?")
         .bind(slug)
         .first();
 

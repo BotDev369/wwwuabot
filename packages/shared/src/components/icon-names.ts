@@ -25,7 +25,6 @@
 export const ICON_NAMES = [
   // ── Навігація й розділи ───────────────────────────────────────────────
   "home",
-  "scenarios",
   "users",
   "bot",
   "my-dates",
@@ -60,7 +59,6 @@ export const ICON_NAMES = [
   "check",
   "close",
   "refresh",
-  "download",
   "upload",
   "link",
   "external-link",
@@ -90,7 +88,6 @@ export const ICON_NAMES = [
   "image",
   "camera",
   "video",
-  "keyboard",
   "text",
   "list",
   "divider",

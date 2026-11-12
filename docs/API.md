@@ -110,12 +110,6 @@
 | `GET` | `/api/bot/info` | `handleBotInfo` |
 | `POST` | `/api/bot/setup-webhook` | `handleBotSetupWebhook` |
 | `GET` | `/api/bot/webhook-info` | `handleBotWebhookInfo` |
-| `POST` | `/api/portal/scenarios/delete` | `handlePortalDelete` |
-| `GET` | `/api/portal/scenarios/list` | `handlePortalList` |
-| `POST` | `/api/portal/scenarios/read` | `handlePortalRead` |
-| `POST` | `/api/portal/scenarios/read-all` | `handlePortalReadAll` |
-| `POST` | `/api/portal/scenarios/update` | `handlePortalUpdate` |
-| `POST` | `/api/portal/scenarios/write` | `handlePortalWrite` |
 
 ## Сесія адміна — ставить або знімає cookie
 
@@ -125,4 +119,4 @@
 | `POST` | `/auth/login` | `handleLogin` |
 | `POST` | `/auth/logout` | `handleLogout` |
 
-Усього шляхів: **96**.
+Усього шляхів: **90**.

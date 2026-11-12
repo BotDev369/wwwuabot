@@ -48,14 +48,14 @@ function fakeD1(
         all: async () =>
           sql.startsWith("PRAGMA table_info")
             ? { results: columns.map((name) => ({ name })) }
-            : { results: /FROM scenarios/i.test(sql) ? rowsFor(sql, args) : state.rows },
+            : { results: /FROM platform_pages/i.test(sql) ? rowsFor(sql, args) : state.rows },
         // Стара адреса: `slug_aliases` віддає ціль, якщо alias відомий.
         first: async () => {
-          if (/JOIN scenarios/.test(sql)) {
+          if (/JOIN platform_pages/.test(sql)) {
             const target = aliases[String(args[0])];
             return target === undefined ? null : { slug: target };
           }
-          if (!/FROM scenarios/i.test(sql)) return null;
+          if (!/FROM platform_pages/i.test(sql)) return null;
           return rowsFor(sql, args)[0] ?? null;
         },
       };
@@ -171,7 +171,7 @@ describe("GET /api/scenario/:slug", () => {
     const body = await bodyOf(await call(env, "viruvannia/sto-vidsotkiv/nova"));
 
     expect(body.scenario.slug).toBe("viruvannia/sto-vidsotkiv");
-    const scenarioReads = bound.filter((query) => /FROM scenarios/i.test(query.sql));
+    const scenarioReads = bound.filter((query) => /FROM platform_pages/i.test(query.sql));
     expect(scenarioReads).toHaveLength(1);
     expect(scenarioReads[0]?.args).toEqual([
       "viruvannia/sto-vidsotkiv/nova",
@@ -238,7 +238,7 @@ describe("GET /api/scenario/:slug", () => {
 
     expect(body.scenario.slug).toBe(HOME_SLUG);
     expect(body.pageData).toBeNull();
-    expect(sql.some((query) => /INSERT INTO scenarios/i.test(query))).toBe(false);
+    expect(sql.some((query) => /INSERT INTO platform_pages/i.test(query))).toBe(false);
   });
 
   it("розбирає legacy slots тим самим shared-адаптером", async () => {

@@ -31,7 +31,7 @@ const OWNER = 100;
 const ADMIN = 200;
 const STRANGER = 300;
 
-/** Колонки `scenarios`, щоб `ensureTables` не вигадував `ALTER` на кожен прогін. */
+/** Колонки `platform_pages`, щоб `ensureTables` не вигадував `ALTER` на кожен прогін. */
 const SCENARIO_COLUMNS = [
   "id",
   "slug",
@@ -107,7 +107,7 @@ function makeEnv(options: {
         },
         first: async () => {
           if (/PRAGMA/i.test(sql)) return null;
-          if (/SELECT id FROM scenarios WHERE slug/.test(sql)) {
+          if (/SELECT id FROM platform_pages WHERE slug/.test(sql)) {
             const [slug, exceptId] = record.binds;
             const hit = rows.find((row) => row.slug === slug && row.id !== exceptId);
             return hit ? { id: hit.id } : null;
@@ -143,7 +143,7 @@ function makeEnv(options: {
           }
           if (/^\s*INSERT/i.test(sql)) {
             if (taken.has(String(record.binds[0]))) {
-              throw new Error("UNIQUE constraint failed: scenarios.slug");
+              throw new Error("UNIQUE constraint failed: platform_pages.slug");
             }
             // Запис справді з'явився: сервіс одразу читає його назад.
             const [slug, title, pageData, templateKey, isPublic, ownerId, adminIds] = record.binds;
@@ -185,7 +185,7 @@ function draft(overrides: Partial<PageDraftInput> = {}): PageDraftInput {
 /** Чи змінив сервіс рядок сторінок (DDL і прагми не рахуємо). */
 function wrotePages(statements: Captured[]): boolean {
   return statements.some((s) =>
-    /^(INSERT INTO|UPDATE|DELETE FROM)\s+scenarios\b/i.test(s.sql.trimStart()),
+    /^(INSERT INTO|UPDATE|DELETE FROM)\s+platform_pages\b/i.test(s.sql.trimStart()),
   );
 }
 
@@ -240,7 +240,7 @@ describe("право на зміну", () => {
     // Умова лишається в самому `DELETE`: перевіряти до нього — значить забути.
     expect(
       own.statements.some((s) =>
-        /DELETE FROM scenarios WHERE id = \? AND owner_id = \?/i.test(s.sql),
+        /DELETE FROM platform_pages WHERE id = \? AND owner_id = \?/i.test(s.sql),
       ),
     ).toBe(true);
   });
@@ -287,7 +287,7 @@ describe("адреса сторінки", () => {
   it("не змінили адресу — не питаємо нікого про зайнятість", async () => {
     const { env, statements } = makeEnv({ rows: [page({ slug: "olena" })] });
     await new PagesService(env).save(OWNER, draft({ address: "olena" }), 5);
-    expect(statements.some((s) => /FROM scenarios WHERE slug = \?/i.test(s.sql))).toBe(false);
+    expect(statements.some((s) => /FROM platform_pages WHERE slug = \?/i.test(s.sql))).toBe(false);
   });
 });
 

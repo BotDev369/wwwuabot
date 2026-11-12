@@ -1,10 +1,8 @@
-import { createBrowserRouter, Navigate } from "react-router-dom";
+import { createBrowserRouter } from "react-router-dom";
 import { AppShell } from "../layout/AppShell";
 import { HomePage } from "../pages/home/HomePage";
-import { ScenariosPage } from "../pages/scenarios/ScenariosPage";
 import { UsersPage } from "../pages/users/UsersPage";
 import { AccessRequestsPage } from "../pages/messages/AccessRequestsPage";
-import { PageBuilderPage } from "../features/page-builder/PageBuilderPage";
 import { BotSettingsPage } from "../pages/bot-settings/BotSettingsPage";
 import { ProfilePage } from "../pages/profile/ProfilePage";
 import { MonitoringPage } from "../pages/monitoring/MonitoringPage";
@@ -19,10 +17,6 @@ import { AnalyticsPage } from "../pages/analytics/AnalyticsPage";
 /**
  * Маршрути web-admin.
  *
- * /platform           — Платформа: сторінки й екрани (блоки `page_data`)
- * /bot                — Бот: повідомлення, фото, кнопки, rich-розмітка
- * /scenarios          — стара адреса списку; веде на «Платформу»
- * /page-builder/:cw   — Конструктор сторінок
  * /users              — Користувачі
  * /messages           — Повідомлення: звернення зі сторінки відмови, повний
  *                       CRUD з панелі (`/api/admin/access-requests`)
@@ -44,22 +38,16 @@ import { AnalyticsPage } from "../pages/analytics/AnalyticsPage";
  *                       екран, що й у платформі, зі спільного `UserProfileCard`;
  *                       не рядок контенту, тому не `/:slug`.
  *
- * Маршрутів «сайтів» (`/sites`, `/sites/moderation`) і «шаблонів» тут більше
- * немає: таблиці `sites`, `site_pages`, `templates` видалено 13.09.2026, бо
- * вони дублювали `scenarios`. Контент живе в одному рядку `scenarios` —
- * сторінка вебу разом із її поданням у боті.
+ * Розділів «Платформа» й «Бот» тут більше немає: старий перегляд і
+ * редагування сценаріїв видалено 12.11.2026 разом із `scenarios`. Дані тепер
+ * у двох таблицях — `platform_pages` і `bot_scenarios`; нові екрани для них
+ * з'являться окремо.
  */
 export const router = createBrowserRouter([
   {
     element: <AppShell />,
     children: [
       { index: true, element: <HomePage /> },
-      { path: "platform", element: <ScenariosPage surface="platform" /> },
-      { path: "bot", element: <ScenariosPage surface="bot" /> },
-      // Старе посилання не має вести на 404: рядки ті самі, змінився лише
-      // вхід. `replace` — щоб «назад» не вертало на переадресацію.
-      { path: "scenarios", element: <Navigate to="/platform" replace /> },
-      { path: "page-builder/:slug", element: <PageBuilderPage /> },
       { path: "users", element: <UsersPage /> },
       { path: "messages", element: <AccessRequestsPage /> },
       { path: "analytics", element: <AnalyticsPage /> },

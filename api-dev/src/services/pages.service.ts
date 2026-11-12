@@ -1,9 +1,9 @@
 /**
  * Сторінки, які веде людина: те, що їй дали, і те, що показано у відкритому списку.
  *
- * **Сховище — `scenarios`, тобто та сама таблиця контенту.** Сторінка людини не
+ * **Сховище — `platform_pages`, тобто таблиця сторінок платформи.** Сторінка людини не
  * окрема сутність: у неї та сама адреса (`slug`) і те саме `page_data`, яке
- * рендерить `PageRenderer` і читає бот. Друга таблиця дала б друге сховище
+ * рендерить `PageRenderer`; екран бота читає її окремим `JOIN`-ом. Друга таблиця дала б друге сховище
  * одного `PageConfig` і другу реалізацію правила «яка сторінка для цього URL»
  * (`AGENTS.md` §7). Тому тут немає жодного `CREATE TABLE` — лише робота з
  * колонками `owner_id`, `admin_ids`, `is_public` і `template_key`.
@@ -103,7 +103,7 @@ export class PagesService {
   constructor(private env: Env) {}
 
   private async ensureSchema(): Promise<void> {
-    await ensureTables(this.env.DB, ["scenarios"]);
+    await ensureTables(this.env.DB, ["platform_pages"]);
   }
 
   /** Сторінки, які веде людина, — разом із приватними: вона має їх бачити. */
@@ -111,7 +111,7 @@ export class PagesService {
     await this.ensureSchema();
 
     const result = await this.env.DB.prepare(
-      `SELECT ${PAGE_COLUMNS} FROM scenarios
+      `SELECT ${PAGE_COLUMNS} FROM platform_pages
         WHERE owner_id = ? OR admin_ids LIKE ?
         ORDER BY updated_at DESC, id DESC LIMIT ?`,
     )
@@ -183,7 +183,7 @@ export class PagesService {
           : adminIdsJson(pageAdminIds(current.admin_ids));
 
       await this.env.DB.prepare(
-        `UPDATE scenarios
+        `UPDATE platform_pages
             SET slug = ?, title = ?, page_data = ?, template_key = ?, is_public = ?,
                 admin_ids = ?, updated_at = ?
           WHERE id = ?`,
@@ -213,7 +213,9 @@ export class PagesService {
   async remove(id: number, userId: number): Promise<boolean> {
     await this.ensureSchema();
 
-    const result = await this.env.DB.prepare("DELETE FROM scenarios WHERE id = ? AND owner_id = ?")
+    const result = await this.env.DB.prepare(
+      "DELETE FROM platform_pages WHERE id = ? AND owner_id = ?",
+    )
       .bind(id, userId)
       .run();
 
@@ -235,7 +237,7 @@ export class PagesService {
       `SELECT s.id, s.slug, s.title, s.template_key, s.updated_at,
               u.user_id AS author_id, u.platform_username AS author_name,
               u.photo_url AS author_photo
-         FROM scenarios s
+         FROM platform_pages s
          LEFT JOIN users u ON u.user_id = s.owner_id
         WHERE COALESCE(s.is_public, 0) = 1
           AND s.is_active = 1
@@ -265,7 +267,7 @@ export class PagesService {
   }
 
   private async rowById(id: number): Promise<PageRow | null> {
-    return await this.env.DB.prepare(`SELECT ${PAGE_COLUMNS} FROM scenarios WHERE id = ?`)
+    return await this.env.DB.prepare(`SELECT ${PAGE_COLUMNS} FROM platform_pages WHERE id = ?`)
       .bind(id)
       .first<PageRow>();
   }
@@ -307,8 +309,8 @@ export class PagesService {
   private async addressOwner(slug: string, exceptId?: number): Promise<number | null> {
     const row = await this.env.DB.prepare(
       exceptId === undefined
-        ? "SELECT id FROM scenarios WHERE slug = ? LIMIT 1"
-        : "SELECT id FROM scenarios WHERE slug = ? AND id <> ? LIMIT 1",
+        ? "SELECT id FROM platform_pages WHERE slug = ? LIMIT 1"
+        : "SELECT id FROM platform_pages WHERE slug = ? AND id <> ? LIMIT 1",
     )
       .bind(...(exceptId === undefined ? [slug] : [slug, exceptId]))
       .first<{ id: number }>();

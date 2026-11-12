@@ -24,7 +24,7 @@ function database(row: unknown = null, rows: unknown[] = []) {
           return statement;
         },
         first: async () => row,
-        // `favorites` віддає список, `scenarios` — лише запитані id (вони числа),
+        // `favorites` віддає список, `platform_pages` — лише запитані id (вони числа),
         // решта — або задані рядки, або один рядок.
         all: async () => {
           if (sql.startsWith("PRAGMA")) return { results: [] };
@@ -165,7 +165,7 @@ describe("особисте обране", () => {
     ]);
 
     expect((await handleFavorites(request("GET"), db.env)).status).toBe(200);
-    const selects = db.calls.filter((call) => /FROM scenarios/.test(call.sql));
+    const selects = db.calls.filter((call) => /FROM platform_pages/.test(call.sql));
     expect(selects).toHaveLength(1);
     // Три id в одному `IN (…)`, а не три запити по одному id.
     expect(selects[0]?.values.slice(0, 3)).toEqual([1, 2, 3]);
@@ -174,7 +174,7 @@ describe("особисте обране", () => {
   it("видимість сторінки перевіряється в SQL до повернення метаданих", async () => {
     const db = database();
     expect(await resolveFavorite(db.env, 777, { kind: "page", targetId: 5 })).toBeNull();
-    const select = db.calls.find((call) => call.sql.includes("FROM scenarios"));
+    const select = db.calls.find((call) => call.sql.includes("FROM platform_pages"));
     expect(select?.sql).toContain("is_active = 1");
     expect(select?.sql).toContain("COALESCE(is_public, 0) = 1");
     expect(select?.sql).toContain("owner_id = ?");

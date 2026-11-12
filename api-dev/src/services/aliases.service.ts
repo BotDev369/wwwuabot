@@ -28,7 +28,7 @@ export async function redirectTargetFor(db: D1Database, path: unknown): Promise<
   const row = await db
     .prepare(
       `SELECT a.slug AS slug FROM slug_aliases a
-         JOIN scenarios s ON s.slug = a.slug
+         JOIN platform_pages s ON s.slug = a.slug
         WHERE a.alias = ? AND s.is_active = 1
         LIMIT 1`,
     )

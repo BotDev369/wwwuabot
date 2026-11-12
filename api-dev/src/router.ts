@@ -27,14 +27,6 @@ import {
   isAuthenticated,
 } from "./controllers/auth.controller";
 import {
-  handleRead as handlePortalRead,
-  handleWrite as handlePortalWrite,
-  handleList as handlePortalList,
-  handleReadAll as handlePortalReadAll,
-  handleUpdate as handlePortalUpdate,
-  handleDelete as handlePortalDelete,
-} from "./controllers/scenarios-portal.controller";
-import {
   handlePublicUser,
   handlePublicUsers,
   handleUserAbout,
@@ -219,26 +211,6 @@ export async function handleRequest(request: Request, env: Env): Promise<Respons
   }
   if (pathname === "/auth/check") {
     return handleCookieAuthCheck(request, env);
-  }
-
-  // ── Portal: Scenarios CRUD (єдина таблиця scenarios) ───────────
-  if (pathname === "/api/portal/scenarios/read" && request.method === "POST") {
-    return handlePortalRead(request, env);
-  }
-  if (pathname === "/api/portal/scenarios/write" && request.method === "POST") {
-    return handlePortalWrite(request, env);
-  }
-  if (pathname === "/api/portal/scenarios/list" && request.method === "GET") {
-    return handlePortalList(request, env);
-  }
-  if (pathname === "/api/portal/scenarios/read-all" && request.method === "POST") {
-    return handlePortalReadAll(request, env);
-  }
-  if (pathname === "/api/portal/scenarios/update" && request.method === "POST") {
-    return handlePortalUpdate(request, env);
-  }
-  if (pathname === "/api/portal/scenarios/delete" && request.method === "POST") {
-    return handlePortalDelete(request, env);
   }
 
   // ── Admin: Users CRUD ──────────────────────────────────────────

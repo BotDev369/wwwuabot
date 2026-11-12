@@ -40,7 +40,7 @@ export interface ShopScope {
  */
 export async function ensureShopSchema(db: D1Database): Promise<void> {
   await ensureTables(db, [
-    "scenarios",
+    "platform_pages",
     "shop_products",
     "shop_media",
     "shop_orders",
@@ -56,7 +56,7 @@ export async function managedShopId(
   userId: number,
 ): Promise<number | null> {
   const row = await db
-    .prepare("SELECT id, owner_id, admin_ids FROM scenarios WHERE id = ?")
+    .prepare("SELECT id, owner_id, admin_ids FROM platform_pages WHERE id = ?")
     .bind(shopId)
     .first<{ id: number; owner_id: string | number | null; admin_ids: string | null }>();
   if (!row) return null;
@@ -95,7 +95,7 @@ export async function publicShopBySlug(db: D1Database, slug: string): Promise<Sh
   const row = await db
     .prepare(
       `SELECT s.id, s.slug, s.title, s.owner_id, s.admin_ids
-         FROM scenarios s
+         FROM platform_pages s
          JOIN users u ON u.user_id = s.owner_id
         WHERE s.slug = ?
           AND s.owner_id IS NOT NULL

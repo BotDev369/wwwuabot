@@ -1,5 +1,5 @@
 /**
- * `GET /api/screens/:key` — тексти екрана платформи з його рядка `scenarios`.
+ * `GET /api/screens/:key` — тексти екрана платформи з його рядка `platform_pages`.
  *
  * Окремо від `/api/scenario/:slug`, бо там віддається **сторінка**, а екрану
  * потрібні лише слова (`docs/SCREEN_TEXTS.md`).
@@ -28,7 +28,7 @@ export async function handleScreenTexts(env: Env, key: string): Promise<Response
   try {
     // Читання не пише: жодного `ensureTables` тут немає (AGENTS.md §2).
     const row = await env.DB.prepare(
-      `SELECT page_data FROM scenarios
+      `SELECT page_data FROM platform_pages
        WHERE slug = ? AND is_active = 1 AND owner_id IS NULL
        LIMIT 1`,
     )

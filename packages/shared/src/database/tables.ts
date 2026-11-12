@@ -205,12 +205,51 @@ export const TABLES = {
    * тож у рядках платформи там `NULL`, і просте `is_public = 1` мовчки
    * відкинуло б усе.
    */
-  scenarios: {
-    name: "scenarios",
+  platform_pages: {
+    name: "platform_pages",
     owner: "api-dev",
     purpose:
-      "Єдине сховище контенту: рядок = сторінка вебу (`page_data`) + її подання в боті. Читає bot-dev, редагує адмінка (/api/portal/scenarios/*).",
-    create: `CREATE TABLE IF NOT EXISTS "scenarios" (
+      "Сторінки платформи: адреса (`slug`), контент (`page_data`), шаблон, власник і видимість. Читають веб і бот, редагують сторінки людини (/api/user/pages).",
+    create: `CREATE TABLE IF NOT EXISTS "platform_pages" (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        slug TEXT NOT NULL UNIQUE,
+        title TEXT,
+        photo_url TEXT,
+        page_data TEXT DEFAULT NULL,
+        template_key TEXT,
+        owner_id TEXT,
+        admin_ids TEXT,
+        is_public INTEGER DEFAULT 0,
+        viewer_ids TEXT,
+        is_active INTEGER DEFAULT 1,
+        created_at TEXT NOT NULL DEFAULT (datetime('now')),
+        updated_at TEXT NOT NULL DEFAULT (datetime('now'))
+      )`,
+    indexes: ["CREATE INDEX IF NOT EXISTS idx_platform_pages_owner ON platform_pages(owner_id)"],
+  },
+
+  /**
+   * Екран бота — **окремо від сторінки**, бо це різні речі: у вебсторінки є
+   * `page_data` і шаблон, у екрана бота — команда, підписи, фото, кнопки й
+   * rich-розмітка. Доти вони лежали в одному рядку `scenarios`, і кожна таблиця
+   * тягла чужі колонки: адмінка показувала ботові поля у списку сторінок, а
+   * бот читав `page_data`, щоб дістати заголовок.
+   *
+   * **Зв'язок — `slug`, а не номер.** Адреса однакова в обох таблицях і є тим,
+   * за чим ходять і веб, і бот. Номерів два: `platform_pages.id` — ідентичність
+   * сторінки (її знають магазини й обране), `bot_scenarios.id` — ідентичність
+   * екрана. `slug` у `bot_scenarios` унікальний: один екран на адресу.
+   *
+   * **`bot_command` — вхід у бот.** `/start` записаний саме тут; головна
+   * сторінка має порожній `slug` (адреса веб-кореня), і без команди її рядок
+   * виглядав би порожнім.
+   */
+  bot_scenarios: {
+    name: "bot_scenarios",
+    owner: "api-dev",
+    purpose:
+      "Екран бота для адреси сторінки: команда, підписи, фото, кнопки, очікування вводу й rich-розмітка. Читає bot-dev.",
+    create: `CREATE TABLE IF NOT EXISTS "bot_scenarios" (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         slug TEXT NOT NULL UNIQUE,
         bot_command TEXT,
@@ -220,27 +259,20 @@ export const TABLES = {
         caption_bot TEXT,
         keyboard_type TEXT NOT NULL DEFAULT 'static',
         buttons TEXT NOT NULL DEFAULT '[]',
-        created_at TEXT NOT NULL DEFAULT (datetime('now')),
-        updated_at TEXT NOT NULL DEFAULT (datetime('now')),
-        price TEXT,
-        qty_options TEXT,
         awaits_input TEXT,
         input_path TEXT,
         input_next TEXT,
-        title TEXT,
+        price TEXT,
+        qty_options TEXT,
         notify_groups TEXT,
         notify_template TEXT,
         rich_message TEXT,
         rich_data TEXT,
-        page_data TEXT DEFAULT NULL,
         is_active INTEGER DEFAULT 1,
-        owner_id TEXT,
-        is_public INTEGER DEFAULT 0,
-        template_key TEXT,
-        admin_ids TEXT,
-        viewer_ids TEXT
+        created_at TEXT NOT NULL DEFAULT (datetime('now')),
+        updated_at TEXT NOT NULL DEFAULT (datetime('now'))
       )`,
-    indexes: ["CREATE INDEX IF NOT EXISTS idx_scenarios_owner ON scenarios(owner_id)"],
+    indexes: ["CREATE INDEX IF NOT EXISTS idx_bot_scenarios_slug ON bot_scenarios(slug)"],
   },
 
   /**

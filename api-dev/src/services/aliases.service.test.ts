@@ -26,7 +26,7 @@ function fakeDb(joined: { slug: string } | null = null) {
           record.binds = args;
           return statement;
         },
-        first: async () => (sql.includes("JOIN scenarios") ? joined : null),
+        first: async () => (sql.includes("JOIN platform_pages") ? joined : null),
         all: async () => ({
           results: sql.includes("PRAGMA")
             ? ["alias", "slug", "created_at"].map((name) => ({ name }))
@@ -49,7 +49,7 @@ describe("redirectTargetFor", () => {
       "viruvannia/sto-vidsotkiv",
     );
 
-    const lookup = statements.find((item) => item.sql.includes("JOIN scenarios"));
+    const lookup = statements.find((item) => item.sql.includes("JOIN platform_pages"));
     expect(lookup?.binds).toEqual(["viruvannia-a1"]);
   });
 

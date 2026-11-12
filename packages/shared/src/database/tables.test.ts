@@ -41,7 +41,8 @@ function fakeDb(columns: string[]) {
   return { db, statements };
 }
 
-const scenarioColumns = declaredColumns(TABLES.scenarios).map((c) => c.name);
+const pageColumns = declaredColumns(TABLES.platform_pages).map((c) => c.name);
+const botColumns = declaredColumns(TABLES.bot_scenarios).map((c) => c.name);
 
 describe("реєстр таблиць: інваріанти", () => {
   it("кожна таблиця оголошена під своїм іменем", () => {
@@ -142,15 +143,21 @@ describe("колонки виводяться з DDL", () => {
     }
   });
 
-  it("сценарії мають саме ті колонки, яких потребує код", () => {
-    // API і bot читають canonical slug; web/app поля лишаються в одному рядку.
-    for (const column of ["id", "slug", "is_active", "page_data", "qty_options", "notify_groups"]) {
-      expect(scenarioColumns).toContain(column);
+  it("сторінка має контент і видимість, екран бота — подання в чаті", () => {
+    // Сторінка: адреса, контент, шаблон і видимість.
+    for (const column of ["id", "slug", "is_active", "page_data", "template_key", "viewer_ids"]) {
+      expect(pageColumns).toContain(column);
     }
-    // `web_config` оголошувався в старому DDL, але його не вживає ніхто;
-    // `codeword`/`web_slug` були другою колонкою тієї самої адреси.
-    for (const gone of ["web_config", "codeword", "web_slug"]) {
-      expect(scenarioColumns).not.toContain(gone);
+    // Екран: команда, підписи, кнопки й очікування вводу.
+    for (const column of ["bot_command", "caption_top", "buttons", "awaits_input", "rich_data"]) {
+      expect(botColumns).toContain(column);
+    }
+    // Ботового подання в сторінці немає — саме заради цього таблиці й розділені.
+    for (const gone of ["caption_top", "buttons", "rich_data"]) {
+      expect(pageColumns).not.toContain(gone);
+    }
+    for (const gone of ["page_data", "template_key", "owner_id"]) {
+      expect(botColumns).not.toContain(gone);
     }
   });
 
@@ -160,28 +167,30 @@ describe("колонки виводяться з DDL", () => {
    * `UNIQUE`, а без нього падає з «does not match any PRIMARY KEY or UNIQUE
    * constraint» — причому лише на шляху запису.
    */
-  it("номер рядка — PRIMARY KEY, адреса — UNIQUE", () => {
-    expect(TABLES.scenarios.create).toMatch(/id INTEGER PRIMARY KEY AUTOINCREMENT/);
-    expect(TABLES.scenarios.create).toMatch(/slug TEXT NOT NULL UNIQUE/);
+  it("номер рядка — PRIMARY KEY, адреса — UNIQUE в обох таблицях", () => {
+    for (const table of [TABLES.platform_pages, TABLES.bot_scenarios]) {
+      expect(table.create).toMatch(/id INTEGER PRIMARY KEY AUTOINCREMENT/);
+      expect(table.create).toMatch(/slug TEXT NOT NULL UNIQUE/);
+    }
   });
 });
 
 describe("ensureTables", () => {
   it("створює таблицю і не чіпає колонки, якщо вони вже є", async () => {
-    const { db, statements } = fakeDb(scenarioColumns);
-    await ensureTables(db, ["scenarios"]);
+    const { db, statements } = fakeDb(pageColumns);
+    await ensureTables(db, ["platform_pages"]);
 
-    expect(statements[0]).toMatch(/^CREATE TABLE IF NOT EXISTS "scenarios"/);
+    expect(statements[0]).toMatch(/^CREATE TABLE IF NOT EXISTS "platform_pages"/);
     expect(statements.filter((s) => s.startsWith("ALTER TABLE"))).toEqual([]);
   });
 
   it("додає рівно ті колонки, яких немає", async () => {
-    const without = scenarioColumns.filter((name) => name !== "slug");
+    const without = pageColumns.filter((name) => name !== "slug");
     const { db, statements } = fakeDb(without);
-    await ensureTables(db, ["scenarios"]);
+    await ensureTables(db, ["platform_pages"]);
 
     const alters = statements.filter((s) => s.startsWith("ALTER TABLE"));
-    expect(alters).toEqual(['ALTER TABLE "scenarios" ADD COLUMN slug TEXT DEFAULT NULL']);
+    expect(alters).toEqual(['ALTER TABLE "platform_pages" ADD COLUMN slug TEXT DEFAULT NULL']);
   });
 
   it("створює і самі таблиці, а не тільки колонки", async () => {
@@ -201,11 +210,11 @@ describe("ensureTables", () => {
   });
 
   it("повторний виклик нічого не додає (пам'ять на об'єкті db)", async () => {
-    const { db, statements } = fakeDb(scenarioColumns);
-    await ensureTables(db, ["scenarios"]);
+    const { db, statements } = fakeDb(pageColumns);
+    await ensureTables(db, ["platform_pages"]);
     const afterFirst = statements.length;
 
-    await ensureTables(db, ["scenarios"]);
+    await ensureTables(db, ["platform_pages"]);
     expect(statements.length).toBe(afterFirst);
   });
 });
