@@ -14,9 +14,11 @@ export const postMiddleware: MiddlewareFn<AppContext> = async (ctx) => {
 
   if (ctx.scenario) {
     const shown = await renderScenario(ctx, ctx.scenario);
+    // Правило: вхідне зникає лише після того, як відповідь уже пішла.
     if (shown) await deleteIncomingMessage(ctx);
   } else {
     log("POST", "no scenario set, skipping render");
+    await dropUnexpected(ctx);
   }
 
   if (ctx.scenario?.notify_groups && ctx.scenario?.notify_template) {
@@ -38,3 +40,20 @@ export const postMiddleware: MiddlewareFn<AppContext> = async (ctx) => {
     await repo.updateUser(ctx.from.id, updates);
   }
 };
+
+/**
+ * Те, чого бот не чекав, у приваті не лишається.
+ *
+ * Подія вже записана в журнал людини (`buildUserEvent`), тож тут лише
+ * короткий слід для розбору й прибирання: інакше кожне зайве «привіт»
+ * осідає в чаті назавжди. У групах чужі повідомлення не чіпаємо.
+ */
+async function dropUnexpected(ctx: AppContext): Promise<void> {
+  if (!ctx.message || ctx.chat?.type !== "private") return;
+  const text = ctx.message.text;
+  log("POST", "unexpected input dropped", {
+    kind: text ? (text.startsWith("/") ? "command" : "text") : "attachment",
+    chars: text?.length ?? 0,
+  });
+  await deleteIncomingMessage(ctx);
+}

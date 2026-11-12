@@ -51,7 +51,6 @@ beforeEach(() => {
     kind: "widget",
     widget_html: "<b>x</b>",
     widget_data: "{}",
-    caption: null,
     rich_html: null,
   });
   mocks.widget.mockResolvedValue({ message_id: 9, widget: { id: "w" } });

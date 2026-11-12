@@ -40,7 +40,6 @@ export interface SentWidget {
 export interface SendWidgetInput {
   chatId: number;
   html: string;
-  caption?: string | null;
   chatData?: string | null;
   allowQueries?: boolean;
 }
@@ -49,7 +48,6 @@ export function sendWidget(token: string, input: SendWidgetInput): Promise<SentW
   return call<SentWidget>(token, "sendWidget", {
     chat_id: input.chatId,
     html: input.html,
-    ...(input.caption ? { caption: input.caption } : {}),
     ...(input.chatData ? { chat_data: input.chatData } : {}),
     ...(input.allowQueries ? { allow_queries: true } : {}),
   });

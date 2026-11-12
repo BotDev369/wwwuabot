@@ -15,7 +15,6 @@ function scenario(overrides: Partial<BotScenario> = {}): BotScenario {
     id: 1,
     lookup: "/start",
     kind: "widget",
-    caption: "ПАЛЯНИЦЯ",
     widget_html: "<h1>ПАЛЯНИЦЯ</h1>",
     widget_data: "{}",
     rich_html: null,

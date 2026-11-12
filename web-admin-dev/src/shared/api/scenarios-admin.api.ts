@@ -15,7 +15,6 @@ export interface BotScenarioListItem {
   id: number;
   lookup: string;
   kind: ScenarioKind;
-  caption: string | null;
   is_active: number | null;
   updated_at: string;
 }

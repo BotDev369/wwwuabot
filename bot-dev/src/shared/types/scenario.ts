@@ -15,8 +15,6 @@ export interface BotScenario {
   /** Ключ пошуку як отримано: `/start`, callback-data, діплінк або текст. */
   lookup: string;
   kind: ScenarioKind;
-  /** Підпис під віджетом; на старих клієнтах він і є весь екран. */
-  caption: string | null;
   widget_html: string | null;
   /** Початковий `chat_data` віджета. */
   widget_data: string | null;
@@ -29,7 +27,6 @@ export interface ScenarioRow {
   id: number;
   lookup: string;
   kind: string;
-  caption: string | null;
   widget_html: string | null;
   widget_data: string | null;
   rich_html: string | null;

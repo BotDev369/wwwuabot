@@ -253,7 +253,6 @@ export const TABLES = {
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         lookup TEXT NOT NULL UNIQUE,
         kind TEXT NOT NULL CHECK (kind IN ('widget', 'rich')),
-        caption TEXT,
         widget_html TEXT,
         widget_data TEXT,
         rich_html TEXT,

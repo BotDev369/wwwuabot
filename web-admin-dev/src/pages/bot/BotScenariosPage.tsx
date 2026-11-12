@@ -24,7 +24,6 @@ interface Draft {
   id: number;
   lookup: string;
   kind: ScenarioKind;
-  caption: string;
   widget_html: string;
   widget_data: string;
   rich_html: string;
@@ -38,7 +37,6 @@ function draftOf(record: BotScenarioRecord): Draft {
     id: record.id,
     lookup: record.lookup,
     kind: record.kind,
-    caption: record.caption ?? "",
     widget_html: record.widget_html ?? "",
     widget_data: record.widget_data ?? "",
     rich_html: record.rich_html ?? "",
@@ -75,7 +73,7 @@ export function BotScenariosPage() {
   const filtered = useMemo(() => {
     const q = query.trim();
     if (q === "") return items;
-    return items.filter((item) => item.lookup.includes(q) || (item.caption ?? "").includes(q));
+    return items.filter((item) => item.lookup.includes(q));
   }, [items, query]);
 
   async function open(id: number): Promise<void> {
@@ -97,7 +95,6 @@ export function BotScenariosPage() {
     try {
       await updateBotScenario(draft.id, {
         kind: draft.kind,
-        caption: draft.caption,
         widget_html: draft.widget_html,
         widget_data: draft.widget_data,
         rich_html: draft.rich_html,
@@ -125,7 +122,7 @@ export function BotScenariosPage() {
           <input
             type="text"
             className="wb-input wb-search"
-            placeholder="Пошук за ключем або підписом…"
+            placeholder="Пошук за ключем…"
             value={query}
             onChange={(e) => setQuery(e.target.value)}
           />
@@ -157,7 +154,6 @@ export function BotScenariosPage() {
                 <tr>
                   <th>Ключ</th>
                   <th>Тип</th>
-                  <th>Підпис</th>
                   <th>Оновлено</th>
                   <th>Дії</th>
                 </tr>
@@ -165,7 +161,7 @@ export function BotScenariosPage() {
               <tbody>
                 {filtered.length === 0 ? (
                   <tr>
-                    <td colSpan={5} className="wb-table-empty">
+                    <td colSpan={4} className="wb-table-empty">
                       {items.length === 0
                         ? "Сценаріїв бота ще немає."
                         : `Нічого не знайдено за «${query}».`}
@@ -176,7 +172,6 @@ export function BotScenariosPage() {
                     <tr key={item.id} className="wb-table-row--click">
                       <td className="wb-cell-mono">{item.lookup}</td>
                       <td>{item.kind === "widget" ? "Віджет" : "Rich"}</td>
-                      <td>{item.caption || "—"}</td>
                       <td className="wb-text-muted wb-text-xs">{item.updated_at}</td>
                       <td>
                         <button
@@ -215,15 +210,6 @@ export function BotScenariosPage() {
                   <option value="widget">Віджет (приватний чат)</option>
                   <option value="rich">Rich (службовий, групи)</option>
                 </select>
-              </label>
-              <label className="wb-admin-field">
-                <span className="wb-admin-label">Підпис під віджетом</span>
-                <textarea
-                  className="wb-textarea"
-                  rows={2}
-                  value={draft.caption}
-                  onChange={(e) => change("caption", e.target.value)}
-                />
               </label>
               <label className="wb-admin-field">
                 <span className="wb-admin-label">HTML віджета</span>

@@ -21,13 +21,12 @@ function stub(payload: unknown) {
 }
 
 describe("віджети", () => {
-  it("sendWidget везе html, підпис і дозвіл запитів", async () => {
+  it("sendWidget везе html, стан і дозвіл запитів", async () => {
     const calls = stub({ ok: true, result: { message_id: 5, widget: { id: "w" } } });
 
     const sent = await sendWidget("token", {
       chatId: 7,
       html: "<b>x</b>",
-      caption: "підпис",
       chatData: "{}",
       allowQueries: true,
     });
@@ -36,7 +35,6 @@ describe("віджети", () => {
     expect(calls[0].body).toEqual({
       chat_id: 7,
       html: "<b>x</b>",
-      caption: "підпис",
       chat_data: "{}",
       allow_queries: true,
     });

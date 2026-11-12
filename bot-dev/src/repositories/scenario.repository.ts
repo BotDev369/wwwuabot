@@ -18,7 +18,7 @@ export class ScenarioRepository extends DatabaseRepository {
   async findByLookup(lookup: string): Promise<BotScenario | null> {
     const row = await this.db
       .prepare(
-        `SELECT id, lookup, kind, caption, widget_html, widget_data, rich_html,
+        `SELECT id, lookup, kind, widget_html, widget_data, rich_html,
                 notify_groups, notify_template
            FROM bot_scenarios
           WHERE lookup = ? AND is_active = 1`,
@@ -30,7 +30,6 @@ export class ScenarioRepository extends DatabaseRepository {
       id: row.id,
       lookup: row.lookup,
       kind: kindOf(row.kind),
-      caption: row.caption,
       widget_html: row.widget_html,
       widget_data: row.widget_data,
       rich_html: row.rich_html,

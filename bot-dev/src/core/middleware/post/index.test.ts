@@ -62,6 +62,26 @@ describe("postMiddleware", () => {
     expect(mocks.render).not.toHaveBeenCalled();
   });
 
+  it("неочікуване в приваті зносить", async () => {
+    const ctx = context({
+      chat: { id: 7, type: "private" },
+      message: { message_id: 4, text: "привіт" },
+    });
+    await postMiddleware(ctx, async () => undefined);
+
+    expect(mocks.deleteIncoming).toHaveBeenCalledWith(ctx);
+  });
+
+  it("у групі чужі повідомлення лишаються", async () => {
+    const ctx = context({
+      chat: { id: -5, type: "supergroup" },
+      message: { message_id: 4, text: "привіт" },
+    });
+    await postMiddleware(ctx, async () => undefined);
+
+    expect(mocks.deleteIncoming).not.toHaveBeenCalled();
+  });
+
   it("нотифікації йдуть, коли сценарій їх налаштував", async () => {
     const scenario = { notify_groups: "main", notify_template: "${user_name}" };
     await postMiddleware(

@@ -56,7 +56,6 @@ async function sendWidgetSafely(
     const sent = await sendWidget(ctx.env.BOT_TOKEN, {
       chatId: ctx.chat!.id,
       html: scenario.widget_html,
-      caption: scenario.caption,
       chatData: scenario.widget_data,
       allowQueries: true,
     });

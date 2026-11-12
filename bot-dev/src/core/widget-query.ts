@@ -41,7 +41,6 @@ export async function handleWidgetQuery(env: Env, query: WidgetQuery): Promise<v
     const sent = await sendWidget(env.BOT_TOKEN, {
       chatId,
       html: scenario.widget_html,
-      caption: scenario.caption,
       chatData: scenario.widget_data,
       allowQueries: true,
     });

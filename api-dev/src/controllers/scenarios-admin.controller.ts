@@ -17,7 +17,6 @@ const LIST_LIMIT = 300;
 const HTML_LIMIT = 32768;
 const FIELDS = [
   "kind",
-  "caption",
   "widget_html",
   "widget_data",
   "rich_html",
@@ -94,7 +93,7 @@ export async function handleBotScenariosList(_request: Request, env: Env): Promi
   try {
     await ensureTables(env.DB, ["bot_scenarios"]);
     const result = await env.DB.prepare(
-      `SELECT id, lookup, kind, caption, is_active, updated_at
+      `SELECT id, lookup, kind, is_active, updated_at
          FROM bot_scenarios ORDER BY lookup LIMIT ?`,
     )
       .bind(LIST_LIMIT)
