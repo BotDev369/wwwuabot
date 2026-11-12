@@ -69,6 +69,8 @@ const DEFAULT_SECTIONS: AdminNavSection[] = [
       // «Стиль» — довідник вигляду поруч із налаштуваннями: питання «а яка в нас
       // кнопка» задають при правці інтерфейсу, а не при роботі з контентом.
       { to: "/style", label: "Стиль", icon: "palette" },
+      { to: "/platform", label: "Платформа", icon: "globe" },
+      { to: "/bot", label: "Бот", icon: "bot" },
       { to: "/bot-settings", label: "Налаштування бота", icon: "settings" },
       { to: "/profile", label: "Профіль", icon: "user" },
     ],

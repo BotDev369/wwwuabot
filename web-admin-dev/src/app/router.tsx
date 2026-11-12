@@ -1,6 +1,8 @@
 import { createBrowserRouter } from "react-router-dom";
 import { AppShell } from "../layout/AppShell";
 import { HomePage } from "../pages/home/HomePage";
+import { PlatformPagesPage } from "../pages/platform/PlatformPagesPage";
+import { BotScenariosPage } from "../pages/bot/BotScenariosPage";
 import { UsersPage } from "../pages/users/UsersPage";
 import { AccessRequestsPage } from "../pages/messages/AccessRequestsPage";
 import { BotSettingsPage } from "../pages/bot-settings/BotSettingsPage";
@@ -38,16 +40,19 @@ import { AnalyticsPage } from "../pages/analytics/AnalyticsPage";
  *                       екран, що й у платформі, зі спільного `UserProfileCard`;
  *                       не рядок контенту, тому не `/:slug`.
  *
- * Розділів «Платформа» й «Бот» тут більше немає: старий перегляд і
- * редагування сценаріїв видалено 12.11.2026 разом із `scenarios`. Дані тепер
- * у двох таблицях — `platform_pages` і `bot_scenarios`; нові екрани для них
- * з'являться окремо.
+ * /platform  — сторінки платформи (`platform_pages`): список і правка
+ * /bot       — екрани чату (`bot_scenarios`): список і правка
+ *
+ * Старий перегляд і редагування `scenarios` видалено 12.11.2026; ці два розділи
+ * читають уже розділені таблиці.
  */
 export const router = createBrowserRouter([
   {
     element: <AppShell />,
     children: [
       { index: true, element: <HomePage /> },
+      { path: "platform", element: <PlatformPagesPage /> },
+      { path: "bot", element: <BotScenariosPage /> },
       { path: "users", element: <UsersPage /> },
       { path: "messages", element: <AccessRequestsPage /> },
       { path: "analytics", element: <AnalyticsPage /> },

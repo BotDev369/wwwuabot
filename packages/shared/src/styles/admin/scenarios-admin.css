@@ -1,0 +1,51 @@
+/* ═══ Нові екрани «Платформа» і «Бот» ═══════════════════════════════════════
+   Дві прості форми: список і картка одного рядка. Ширину, прокрутку й футер
+   дають кирпичики `.wb-modal*`, `.wb-table*` і `.wb-input` — тут лише те, чого
+   в них немає: форма, підписи, чекбокси й моноширинний текст JSON.
+   ══════════════════════════════════════════════════════════════════════════ */
+
+.wb-admin-modal {
+  width: min(760px, 94vw);
+}
+
+.wb-admin-form {
+  display: grid;
+  gap: 12px;
+}
+
+.wb-admin-field {
+  display: grid;
+  gap: 4px;
+}
+
+.wb-admin-label {
+  font-size: var(--text-xs);
+  color: var(--text-secondary);
+}
+
+.wb-admin-check {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: var(--text-sm);
+}
+
+.wb-admin-json {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: var(--text-xs);
+}
+
+.wb-admin-json--page {
+  min-height: 260px;
+}
+
+.wb-admin-error {
+  margin: 0;
+  font-size: var(--text-sm);
+  color: var(--danger);
+}
+
+.wb-cell-mono {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: var(--text-xs);
+}

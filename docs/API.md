@@ -82,6 +82,9 @@
 | `POST` | `/api/admin/access-requests` | `handleAccessRequestCreate` |
 | `DELETE` | `/api/admin/access-requests` | `handleAccessRequestDelete` |
 | `POST` | `/api/admin/access-requests/update` | `handleAccessRequestUpdate` |
+| `GET` | `/api/admin/bot-scenarios` | `handleBotScenariosList` |
+| `POST` | `/api/admin/bot-scenarios/read` | `handleBotScenarioRead` |
+| `POST` | `/api/admin/bot-scenarios/update` | `handleBotScenarioUpdate` |
 | `GET` | `/api/admin/events` | `handleEventList` |
 | `POST` | `/api/admin/events/delete` | `handleEventCleanup` |
 | `GET` | `/api/admin/events/matrix` | `handleEventMatrix` |
@@ -91,6 +94,9 @@
 | `POST` | `/api/admin/monitoring/collect` | `handleMonitoringCollect` |
 | `GET` | `/api/admin/monitoring/summary` | `handleMonitoringSummary` |
 | `ANY` | `/api/admin/notes` | `handleAdminNotes` |
+| `GET` | `/api/admin/platform-pages` | `handlePlatformPagesList` |
+| `POST` | `/api/admin/platform-pages/read` | `handlePlatformPageRead` |
+| `POST` | `/api/admin/platform-pages/update` | `handlePlatformPageUpdate` |
 | `ANY` | `/api/admin/spending/codes` | `handleSpendingCodes` |
 | `ANY` | `/api/admin/spending/documents` | `handleSpendingDocuments` |
 | `ANY` | `/api/admin/spending/overview` | `handleSpendingOverview` |
@@ -119,4 +125,4 @@
 | `POST` | `/auth/login` | `handleLogin` |
 | `POST` | `/auth/logout` | `handleLogout` |
 
-Усього шляхів: **90**.
+Усього шляхів: **96**.

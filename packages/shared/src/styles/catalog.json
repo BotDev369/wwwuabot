@@ -1,5 +1,5 @@
 {
-  "version": "4e8d5a9",
+  "version": "4bc503b",
   "files": [
     {
       "file": "admin/analytics-people.css",
@@ -50,6 +50,11 @@
       "file": "admin/scenario-tabs.css",
       "tokens": 0,
       "classes": 12
+    },
+    {
+      "file": "admin/scenarios-admin.css",
+      "tokens": 0,
+      "classes": 9
     },
     {
       "file": "admin/scenarios-list.css",
@@ -3152,6 +3157,22 @@
           "wb-line-tab--sub",
           "wb-line-tabs",
           "wb-line-tabs--sub"
+        ]
+      }
+    ],
+    "admin/scenarios-admin.css": [
+      {
+        "section": "",
+        "names": [
+          "wb-admin-check",
+          "wb-admin-error",
+          "wb-admin-field",
+          "wb-admin-form",
+          "wb-admin-json",
+          "wb-admin-json--page",
+          "wb-admin-label",
+          "wb-admin-modal",
+          "wb-cell-mono"
         ]
       }
     ],

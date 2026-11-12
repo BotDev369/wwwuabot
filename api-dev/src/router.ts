@@ -11,6 +11,14 @@ import {
   handleCompare,
 } from "./controllers/astrology.controller";
 import { handleScenario } from "./controllers/scenarios.controller";
+import {
+  handleBotScenariosList,
+  handleBotScenarioRead,
+  handleBotScenarioUpdate,
+  handlePlatformPagesList,
+  handlePlatformPageRead,
+  handlePlatformPageUpdate,
+} from "./controllers/scenarios-admin.controller";
 import { matchScreensRoute } from "./routes/screens";
 import { handleMyDates } from "./controllers/my-dates.controller";
 import {
@@ -211,6 +219,26 @@ export async function handleRequest(request: Request, env: Env): Promise<Respons
   }
   if (pathname === "/auth/check") {
     return handleCookieAuthCheck(request, env);
+  }
+
+  // ── Admin: контент — бот і платформа окремо ───────────────────
+  if (pathname === "/api/admin/bot-scenarios" && request.method === "GET") {
+    return handleBotScenariosList(request, env);
+  }
+  if (pathname === "/api/admin/bot-scenarios/read" && request.method === "POST") {
+    return handleBotScenarioRead(request, env);
+  }
+  if (pathname === "/api/admin/bot-scenarios/update" && request.method === "POST") {
+    return handleBotScenarioUpdate(request, env);
+  }
+  if (pathname === "/api/admin/platform-pages" && request.method === "GET") {
+    return handlePlatformPagesList(request, env);
+  }
+  if (pathname === "/api/admin/platform-pages/read" && request.method === "POST") {
+    return handlePlatformPageRead(request, env);
+  }
+  if (pathname === "/api/admin/platform-pages/update" && request.method === "POST") {
+    return handlePlatformPageUpdate(request, env);
   }
 
   // ── Admin: Users CRUD ──────────────────────────────────────────
