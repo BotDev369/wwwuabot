@@ -1,287 +1,97 @@
+/**
+ * Маршрутизація бота за єдиним ключем `lookup`.
+ *
+ * Пріоритет: службовий діалог допуску → команда → callback → текст.
+ * Ключ шукається точно, без нормалізації: `/start` без payload — це `/start`,
+ * `/start dateanalysis` — `dateanalysis` (payload і є ключем), callback — його
+ * `data` як є.
+ *
+ * @module bot-dev/src/core/router/bot-router
+ */
+
 import type { AppContext } from "../../shared/types/env";
 import { ScenarioRepository } from "../../repositories/scenario.repository";
+import { renderScenario } from "../../shared/utils/scenario-screen";
+import { deleteIncomingMessage } from "../../shared/utils/message";
 import { log } from "../../shared/utils/debug";
-import { handleTextInput } from "./text-input";
+import { hasAccess } from "@wwwuabot/shared/security/access";
 import { applyContactPayload } from "../../modules/contacts/contact-link";
 import { showInviteScreen } from "../../modules/contacts/invite-screen";
 import { showAccessDenied } from "../../modules/access/denied";
 import { handleContactFlow } from "../../modules/access/contact/reply";
 import { handleContactCallback } from "../../modules/access/contact/panel";
-import { deleteIncomingMessage } from "../../shared/utils/message";
 import { splitInviteCode } from "../../modules/access/payload";
-import { isValidBotPayload, isValidSlug, toWebPath } from "@wwwuabot/shared/content";
-import { pageCardBlocks } from "../../shared/utils/page-card";
-import type { Scenario } from "../../shared/types/scenario";
-import { hasAccess } from "@wwwuabot/shared/security/access";
 
-/**
- * Головний роутер бота.
- * Бот — pure renderer: бере контент із таблиці scenarios і показує.
- *
- * Потоки:
- * 1. /start <payload> → код запрошення (екран вітання з першого переходу) або
- *    shared resolver → сторінка → рендер
- * 2. /start без payload → головна сторінка: **одне** повідомлення (банер, підпис
- *    і рядок екранів платформи), бо окреме повідомлення з реплай-клавіатурою
- *    плодило б у чаті друге ніби без причини
- * 3. callback_data → slug → рендер
- * 4. текст → ТІЛЬКИ якщо awaits_input, інакше видаляємо; для людини без допуску
- *    звичайний текст теж просто зникає — жодної відмови на нього немає
- *
- * **Видаляється лише те, що не показано.** Порядок один: спершу бот щось
- * показує, потім зникає повідомлення людини. Якщо екран не вдалося надіслати,
- * `/start` і діплінк лишаються в чаті — інакше людина натискає «Старт», бачить
- * порожнечу й не розуміє, чи це помилка. Те саме стосується несподіваних
- * повідомлень (невідома команда, текст без сценарію): вони зникають мовчки, без
- * відмови — їм не відповідають, їх просто прибирають.
- *
- * **Код запрошення перевіряється першим.** Він теж проходить
- * `isValidBotPayload` (це адреса, яку приймає Telegram), тож відрізнити його
- * від slug можна лише запитом. Якщо колись з'явиться сторінка зі slug, що
- * збігається з чужим кодом, переможе запрошення — код складає сервер, і
- * людина його не обирає, а от slug людина пише сама.
- *
- * **Вітаємо лише з першого переходу.** Друге відкриття того самого лінка — це
- * вже звичайний вхід у бота, і показувати на нього «вас щойно запросили» було б
- * неправдою (розрізняє їх `applyContactPayload`).
- *
- * **Бот закритий за запрошеннями**, тому кожен шлях до контенту проходить
- * `renderOrDeny`. Правило допуску спільне з платформою
- * (`@wwwuabot/shared/security/access`): закритий продукт закритий для обох
- * входів, інакше відмова в чаті оминається посиланням; виняток власника
- * (`ADMIN_TELEGRAM_ID`) тому ж спільний. Фільтр стоїть **після**
- * розбору payload: код запрошення в хвості — це і є допуск, і перевіряти раніше
- * значило б відмовити тому, хто щойно прийшов за лінком.
- */
 export async function botRouter(ctx: AppContext): Promise<void> {
   if (!ctx.user) return;
 
-  // Діалог з адміном — окремий шлях: він перехоплює кнопки реплай-клавіатури,
-  // inline-кнопки панелі та фото/стікери, яких текстовий шлях не бачить. І
-  // тільки для людини без допуску: у кого є доступ, цього діалогу не існує.
   if (!hasAccess(ctx.user, ctx.env.ADMIN_TELEGRAM_ID)) {
     if (ctx.callbackQuery && (await handleContactCallback(ctx))) return;
     if (await handleContactFlow(ctx)) return;
   }
 
-  const repo = new ScenarioRepository(ctx.env);
   const text = ctx.message?.text;
-  const isCallback = !!ctx.callbackQuery;
-  const isCommand = !!text?.startsWith("/");
-  const isPlainText = !isCallback && !isCommand && !!text;
-
-  if (!isCallback && !isCommand && !isPlainText) {
-    log("ROUTER", "ignored | no actionable content");
+  if (ctx.callbackQuery) {
+    await show(ctx, ctx.callbackQuery.data ?? "");
     return;
   }
 
-  if (isCommand) {
-    const command = text!.split(" ")[0].split("@")[0];
-    log("ROUTER", "command", { command });
-    if (command === "/start") {
-      const payload = text!.split(" ")[1]?.trim() ?? "";
-      if (payload && !isValidBotPayload(payload)) {
-        log("ROUTER", "deep link rejected | invalid payload", { payload });
-        // Нічого не показано, тож нічого й не зносимо: адреса, яку не вдалося
-        // розібрати, лишається видимою — так видно, що посилання бите.
-        return;
-      }
-      log("ROUTER", "deep link", { payload, user_id: ctx.from?.id });
-
-      // Код запрошення — хвіст payload, а не весь payload: посилання зі
-      // сторінкою й кодом (`buildShareLinks`) має вести і туди, і сюди.
-      const { inviteCode, pagePayload } = splitInviteCode(payload);
-
-      // Особистий лінк веде не на сторінку контенту: код не є адресою, і
-      // шукати сторінку з таким «slug» нема чого. Головна — для тих переходів,
-      // де вітати нічого (вдруге, свій лінк, лінк без адреси платформи).
-      if (inviteCode) {
-        const contacted = await applyContactPayload(ctx, inviteCode);
-        if (contacted.kind !== "unknown") {
-          if (contacted.kind !== "invited" || !(await showInviteScreen(ctx, contacted.ownerId))) {
-            await renderOrDeny(ctx, () => loadAndRenderPayload(ctx, repo, pagePayload));
-          }
-          return;
-        }
-      }
-
-      await renderOrDeny(ctx, () => loadAndRenderPayload(ctx, repo, pagePayload));
-      return;
-    }
-
-    // Невідома команда: ми нічого не показуємо, тож і не зносимо нічого, крім
-    // самого повідомлення — воно не наш адрес і не наш сценарій.
-    await deleteIncomingMessage(ctx);
-    return;
-  }
-
-  if (isCallback) {
-    let slug = ctx.callbackQuery!.data || "";
-    if (slug.includes("#")) slug = slug.split("#")[0];
-
-    if (isValidSlug(slug)) {
-      log("ROUTER", "callback navigation", { slug });
-      await renderOrDeny(ctx, () => loadAndRenderScenario(ctx, repo, slug));
-    } else {
-      log("ROUTER", "callback rejected | invalid slug", { data: ctx.callbackQuery!.data });
-    }
-    return;
-  }
-
-  if (isPlainText) {
-    // Написаний у чат текст — не запит і не помилка: бот нічого не чекає і
-    // нічого не пояснює, тож просто прибирає його. Відмова вже стоїть у чаті
-    // екраном (з кнопкою «Написати адміну»), і друга вона б лише заважала.
-    if (!hasAccess(ctx.user, ctx.env.ADMIN_TELEGRAM_ID)) {
-      log("ACCESS", "plain text ignored | no access", { user_id: ctx.user.user_id });
+  if (text?.startsWith("/")) {
+    const [command, payload = ""] = text.split(" ");
+    if (command.split("@")[0] !== "/start") {
       await deleteIncomingMessage(ctx);
       return;
     }
 
-    const currentScenario = await repo.getScenario(
-      ctx.user.active_scenario || "",
-      ctx.user.user_id,
-    );
-
-    if (currentScenario?.awaits_input === "text") {
-      const result = handleTextInput(text!, currentScenario);
-      if (result.type === "accept") {
-        log("ROUTER", "text input accepted", { value: result.value });
-        await renderOrDeny(ctx, () => loadAndRenderScenario(ctx, repo, currentScenario.slug));
+    const { inviteCode, pagePayload } = splitInviteCode(payload.trim());
+    if (inviteCode) {
+      const contacted = await applyContactPayload(ctx, inviteCode);
+      if (contacted.kind !== "unknown") {
+        if (contacted.kind !== "invited" || !(await showInviteScreen(ctx, contacted.ownerId))) {
+          await show(ctx, pagePayload, true);
+        }
         return;
       }
     }
-
-    log("ROUTER", "text input ignored | no awaits_input", {
-      text: text!.substring(0, 50),
-      active_scenario: ctx.user.active_scenario,
-    });
-    await deleteIncomingMessage(ctx);
+    await show(ctx, pagePayload, true);
+    return;
   }
+
+  if (text) {
+    if (!hasAccess(ctx.user, ctx.env.ADMIN_TELEGRAM_ID)) {
+      await deleteIncomingMessage(ctx);
+      return;
+    }
+    await show(ctx, text);
+    return;
+  }
+
+  log("ROUTER", "ignored | no actionable content");
 }
 
-/**
- * Єдина точка, де контент або стає видимим, або ні.
- *
- * Відмова не «помилка», а відповідь: тому вона й має бути тут, а не в кожному
- * місці, де роутер вирішує показати сценарій. Повідомлення людини видаляється
- * тим самим способом, яким видаляється нерозбране, — у чаті лишається лише
- * відповідь бота.
- *
- * `render` — саме той спосіб, яким цей шлях показує екран: адреса з `?start=`
- * шукається як payload, а callback — як slug. Різниця лишається в тих, хто
- * показує; рішення «показувати чи ні» — спільне.
- */
-async function renderOrDeny(ctx: AppContext, render: () => Promise<void>): Promise<void> {
+/** Показати сценарій за ключем; відмова — теж відповідь, а не помилка. */
+async function show(ctx: AppContext, lookup: string, dropIncoming = false): Promise<void> {
   if (!hasAccess(ctx.user, ctx.env.ADMIN_TELEGRAM_ID)) {
-    log("ACCESS", "denied", { user_id: ctx.user?.user_id });
-    // Відмова — теж «показ», тож `/start` зникає лише після неї.
     if (await showAccessDenied(ctx)) await deleteIncomingMessage(ctx);
     return;
   }
 
-  await render();
+  if (!lookup) {
+    await deleteIncomingMessage(ctx);
+    return;
+  }
 
-  // Екран надішлет `postMiddleware`, тож прапорець «знести повідомлення людини»
-  // ставимо тут: видалення станеться лише після вдалого рендеру.
-  ctx.dropIncomingAfterRender = true;
-}
-
-async function loadAndRenderPayload(
-  ctx: AppContext,
-  repo: ScenarioRepository,
-  payload: string,
-): Promise<void> {
-  const scenario = await repo.getScenarioByBotPayload(payload);
+  const scenario = await new ScenarioRepository(ctx.env).findByLookup(lookup);
   if (!scenario) {
-    log("ROUTER", "scenario not found", { payload });
+    log("ROUTER", "scenario not found", { lookup });
+    await deleteIncomingMessage(ctx);
     return;
   }
-  // Порожній payload — це перший екран (`/start` без діплінка): під ним лише
-  // рядок екранів платформи, а не кнопки сторінки.
-  if (!payload) {
-    setScenarioScreen(ctx, scenario, scenario.web_path, true);
-    return;
+
+  const shown = await renderScenario(ctx, scenario);
+  if (shown && (dropIncoming || ctx.callbackQuery)) {
+    // Повідомлення людини зносить сам рендер; для `callback_query` вхідного
+    // повідомлення немає.
+    ctx.dropIncomingAfterRender = false;
   }
-  setPageCardScreen(ctx, scenario);
-}
-
-/**
- * Діплінк — **універсальна картка сторінки**, без даних сценарію: назву й фото
- * бере сама сторінка, а кнопка одна — «Відкрити сторінку» (`buildScreenButtons`).
- */
-function setPageCardScreen(ctx: AppContext, scenario: Scenario): void {
-  log("ROUTER", "page card", { slug: scenario.slug });
-
-  if (ctx.user && ctx.user.active_scenario !== scenario.slug) {
-    ctx.user.active_scenario = scenario.slug;
-    ctx.userDirty = true;
-  }
-
-  ctx.screen = {
-    slug: scenario.slug,
-    title: scenario.title,
-    // Фото живе в блоках: другим шляхом його б не бачив ніхто.
-    photo_url: "",
-    caption: {},
-    buttons: [],
-    rich_message: true,
-    rich_data: pageCardBlocks(scenario.title, scenario.photo_url),
-    web_path: scenario.web_path ?? toWebPath(scenario.slug),
-  };
-}
-
-async function loadAndRenderScenario(
-  ctx: AppContext,
-  repo: ScenarioRepository,
-  slug: string,
-): Promise<void> {
-  const scenario = await repo.getScenario(slug, ctx.user?.user_id ?? null);
-  if (!scenario) {
-    log("ROUTER", "scenario not found", { slug });
-    return;
-  }
-  setScenarioScreen(ctx, scenario);
-}
-
-function setScenarioScreen(
-  ctx: AppContext,
-  scenario: Scenario,
-  webPath?: string,
-  landing?: boolean,
-): void {
-  log("ROUTER", "scenario loaded", {
-    slug: scenario.slug,
-    keyboard_type: scenario.keyboard_type,
-    buttons_rows: scenario.buttons.length,
-    awaits_input: scenario.awaits_input,
-    rich_message: scenario.rich_message,
-  });
-
-  if (ctx.user && ctx.user.active_scenario !== scenario.slug) {
-    ctx.user.active_scenario = scenario.slug;
-    ctx.userDirty = true;
-  }
-
-  const routePath = webPath ?? toWebPath(scenario.slug);
-
-  ctx.screen = {
-    slug: scenario.slug,
-    title: scenario.title,
-    photo_url: scenario.photo_url,
-    caption: {
-      top: scenario.caption_top ?? undefined,
-      mid: scenario.caption_mid ?? undefined,
-      bot: scenario.caption_bot ?? undefined,
-    },
-    buttons: scenario.buttons,
-    qty_options: scenario.qty_options,
-    price: scenario.price,
-    notify_groups: scenario.notify_groups,
-    notify_template: scenario.notify_template,
-    rich_message: scenario.rich_message,
-    rich_data: scenario.rich_data,
-    web_path: routePath,
-    landing,
-  };
 }

@@ -17,7 +17,8 @@ DDL не живе в контролерах і репозиторіях: кож�
 | `users` | `bot-dev` | bot-dev, `createUser` | bot-dev (стан, профіль, блокування, `telegram_json`); api-dev (адмін-CRUD, `/api/user/profile`, `platform_username`, `my_dates`, публічний профіль — `photo_url` / `about` / `profile_public*`) | стан користувача Telegram: профіль, роль, тариф, блокування, **ім'я на платформі**. Профіль і видимість — [`VISIBILITY.md`](./VISIBILITY.md). `created_at` ставить `createUser`: у живій базі колонка `NOT NULL` без значення за замовчуванням, а `ensureTables` констрейнтів не переписує |
 | `settings` | `bot-dev` | bot-dev, `SettingsRepository.initialize` | bot-dev | один рядок (`id = 1`): `chat_id` груп, прапорець активності |
 | `platform_pages` | `api-dev` | api-dev (`ensureBase`, `ensureTables` у `PagesService`) | api-dev (сторінки людини — `/api/user/pages`, рендер — `/api/scenario/:slug`); **bot-dev читає** для назви й видимості | **сторінка платформи:** `slug`, `page_data`, `template_key`, `owner_id`/`admin_ids`/`is_public`/`viewer_ids`, `is_active`. Одна сторінка — один рядок ([`PAGES.md`](./PAGES.md)) |
-| `bot_scenarios` | `api-dev` | api-dev (`ensureTables`) | **bot-dev читає** | **екран бота:** `bot_command` (`/start`), `caption_*`, `photo_url`, `buttons`, `awaits_input`, `rich_*`, `notify_*`. Зв'язок зі сторінкою — `slug`; екран без сторінки не існує, сторінка без екрана рендериться карткою |
+| `bot_scenarios` | `api-dev` | api-dev (`ensureTables`) | **bot-dev читає** | **сценарій бота:** `lookup` (ключ: команда, callback, діплінк або текст), `kind` (`widget` або `rich`), `widget_html`/`widget_data`, `rich_html`, `notify_*`. З платформою не пов'язаний |
+| `bot_widget_messages` | `bot-dev` | bot-dev | **bot-dev пише й читає** | **повідомлення-віджет:** `user_id` → `message_id`, `widget_id`, `lookup`, `chat_data`. Потрібне, щоб тап знав, який екран зараз у чаті |
 | `slug_aliases` | `api-dev` | api-dev (`ensureTables` у `aliases.service`) | api-dev: `/api/public/redirect` (питає веб-воркер); пише `PagesService.save` при перейменуванні й міграції контенту | **старі адреси сторінок:** `alias` → `slug`. Адреса незмінна після публікації, тож переїзд лишає рядок назавжди, а за ним веде `301` ([`URL.md`](./URL.md)) |
 | `favorites` | `api-dev` | api-dev (`ensureTables` у `favorites.controller`) | api-dev: `/api/favorites` | особисті лайки: лише посилання на сутність, назва й доступ перевіряються при читанні ([`FAVORITES.md`](./FAVORITES.md)) |
 | `user_events` | `api-dev` | api-dev (`ensureTables` у спільному `recordUserEvent`); **bot-dev пише** тим самим `recordUserEvent` | адмінка: `/api/admin/events`, `/api/admin/events/summary` | **журнал дій людей:** рядок на дію — `surface` (бот / платформа), `kind`, `action` (текст, `callback_data` або `METHOD /api/…`), `status`. Імена не копіюються — беруться `JOIN`-ом із `users`. Правила — [`EVENTS.md`](./EVENTS.md) |
@@ -52,10 +53,12 @@ DDL не живе в контролерах і репозиторіях: кож�
 `npm run check:db` друкує той самий список, що видно в дашборді Cloudflare. Розбіжність означає,
 що таблицю створили повз реєстр.
 
-**`platform_pages` і `bot_scenarios`.** Дві різні речі, і плутати їх не можна: **`id`** — номер рядка (`PRIMARY KEY`), тобто
-ідентичність, яка не змінюється ніколи; **`slug`** — адреса (`NOT NULL UNIQUE`), яку редагують вільно.
-`platform_pages.id` зберіг номери колишньої `scenarios` — на нього посилаються `shop_orders.shop_id` і
-`favorites.target_id`; `bot_scenarios.id` — власний номер екрана. Зв'язок між таблицями — `slug`.
+**`platform_pages` і `bot_scenarios`.** Дві **незалежні** речі, і плутати їх не можна: **`id`** — номер рядка
+(`PRIMARY KEY`), тобто ідентичність, яка не змінюється ніколи; **`slug`** — адреса сторінки
+(`NOT NULL UNIQUE`), яку редагують вільно. `platform_pages.id` зберіг номери колишньої `scenarios` — на
+нього посилаються `shop_orders.shop_id` і `favorites.target_id`. У `bot_scenarios` адреси немає:
+є лише `lookup`, і жодного зв'язку зі сторінкою платформи немає — `/start` у боті й головна
+сторінка вебу це різні речі.
 
 **Індекси** (`indexes`) живуть поруч із таблицею, щоб не «губились» окремо від неї.
 Їх оголошують п'ятнадцять таблиць — `trackers` (`idx_trackers_owner_key`, `idx_trackers_owner_active`, `idx_trackers_public`),
@@ -69,7 +72,7 @@ DDL не живе в контролерах і репозиторіях: кож�
 `shop_products` (`idx_shop_products_shop` — товари за `(shop_id, is_active, id)`), `shop_media`,
 `shop_orders` (`idx_shop_orders_shop` і `idx_shop_orders_buyer` — список покупця), `shop_order_items`,
 `shop_order_statuses` (кожна — за своїм `shop_id` чи `order_id`). Унікальність `contacts.code`,
-`platform_pages.slug`, `bot_scenarios.slug`, `shop_products (shop_id, slug)`, `shop_media.r2_key` і
+`platform_pages.slug`, `bot_scenarios.lookup`, `shop_products (shop_id, slug)`, `shop_media.r2_key` і
 `shop_order_statuses (shop_id, key)` тримає `UNIQUE` у самому `CREATE TABLE`, а не іменований індекс:
 імена індексів у SQLite **глобальні для бази**, тому однойменний `CREATE UNIQUE INDEX IF NOT EXISTS`
 на другій таблиці — не помилка, а **порожня дія**, і таблиця лишилась би без унікальності, не сказавши

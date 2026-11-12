@@ -1,6 +1,8 @@
 /**
- * «Бот» — екрани чату з таблиці `bot_scenarios`: список і картка правки.
- * Контент сторінки живе в `platform_pages` і має власний екран.
+ * «Бот» — сценарії за ключем `lookup`: віджет або rich.
+ *
+ * Один екран = один ключ. HTML віджета й rich-розмітки зберігається як є; панель
+ * лише перевіряє розмір і не дає зберегти порожній варіант.
  *
  * @module web-admin-dev/src/pages/bot/BotScenariosPage
  */
@@ -13,41 +15,35 @@ import {
   updateBotScenario,
   type BotScenarioListItem,
   type BotScenarioRecord,
+  type ScenarioKind,
 } from "../../shared/api/scenarios-admin.api";
 
 type Status = "loading" | "idle" | "error";
 
-/** Те, що картка тримає в полях; `buttons` і `rich_data` — JSON-текстом. */
-interface BotDraft {
+interface Draft {
   id: number;
-  slug: string;
-  bot_command: string;
-  photo_url: string;
-  caption_top: string;
-  caption_mid: string;
-  caption_bot: string;
-  keyboard_type: string;
-  buttons: string;
-  awaits_input: string;
-  rich_message: boolean;
-  rich_data: string;
+  lookup: string;
+  kind: ScenarioKind;
+  caption: string;
+  widget_html: string;
+  widget_data: string;
+  rich_html: string;
+  notify_groups: string;
+  notify_template: string;
   is_active: boolean;
 }
 
-function draftOf(record: BotScenarioRecord): BotDraft {
+function draftOf(record: BotScenarioRecord): Draft {
   return {
     id: record.id,
-    slug: record.slug,
-    bot_command: record.bot_command ?? "",
-    photo_url: record.photo_url ?? "",
-    caption_top: record.caption_top ?? "",
-    caption_mid: record.caption_mid ?? "",
-    caption_bot: record.caption_bot ?? "",
-    keyboard_type: record.keyboard_type,
-    buttons: record.buttons || "[]",
-    awaits_input: record.awaits_input ?? "",
-    rich_message: record.rich_message === "true" || record.rich_message === "1",
-    rich_data: record.rich_data ?? "",
+    lookup: record.lookup,
+    kind: record.kind,
+    caption: record.caption ?? "",
+    widget_html: record.widget_html ?? "",
+    widget_data: record.widget_data ?? "",
+    rich_html: record.rich_html ?? "",
+    notify_groups: record.notify_groups ?? "",
+    notify_template: record.notify_template ?? "",
     is_active: Number(record.is_active ?? 1) === 1,
   };
 }
@@ -57,7 +53,7 @@ export function BotScenariosPage() {
   const [status, setStatus] = useState<Status>("loading");
   const [error, setError] = useState("");
   const [query, setQuery] = useState("");
-  const [draft, setDraft] = useState<BotDraft | null>(null);
+  const [draft, setDraft] = useState<Draft | null>(null);
   const [saving, setSaving] = useState(false);
   const [saveError, setSaveError] = useState("");
 
@@ -77,14 +73,9 @@ export function BotScenariosPage() {
   }, [load]);
 
   const filtered = useMemo(() => {
-    const q = query.trim().toLowerCase();
-    if (!q) return items;
-    return items.filter(
-      (item) =>
-        item.slug.toLowerCase().includes(q) ||
-        (item.bot_command ?? "").toLowerCase().includes(q) ||
-        (item.title ?? "").toLowerCase().includes(q),
-    );
+    const q = query.trim();
+    if (q === "") return items;
+    return items.filter((item) => item.lookup.includes(q) || (item.caption ?? "").includes(q));
   }, [items, query]);
 
   async function open(id: number): Promise<void> {
@@ -95,7 +86,7 @@ export function BotScenariosPage() {
     }
   }
 
-  function change<K extends keyof BotDraft>(key: K, value: BotDraft[K]): void {
+  function change<K extends keyof Draft>(key: K, value: Draft[K]): void {
     setDraft((current) => (current ? { ...current, [key]: value } : current));
   }
 
@@ -105,16 +96,13 @@ export function BotScenariosPage() {
     setSaveError("");
     try {
       await updateBotScenario(draft.id, {
-        bot_command: draft.bot_command,
-        photo_url: draft.photo_url,
-        caption_top: draft.caption_top,
-        caption_mid: draft.caption_mid,
-        caption_bot: draft.caption_bot,
-        keyboard_type: draft.keyboard_type,
-        buttons: draft.buttons,
-        awaits_input: draft.awaits_input,
-        rich_message: draft.rich_message ? "true" : "false",
-        rich_data: draft.rich_data,
+        kind: draft.kind,
+        caption: draft.caption,
+        widget_html: draft.widget_html,
+        widget_data: draft.widget_data,
+        rich_html: draft.rich_html,
+        notify_groups: draft.notify_groups,
+        notify_template: draft.notify_template,
         is_active: draft.is_active ? 1 : 0,
       });
       setDraft(null);
@@ -137,7 +125,7 @@ export function BotScenariosPage() {
           <input
             type="text"
             className="wb-input wb-search"
-            placeholder="Пошук за командою, адресою або назвою…"
+            placeholder="Пошук за ключем або підписом…"
             value={query}
             onChange={(e) => setQuery(e.target.value)}
           />
@@ -147,7 +135,7 @@ export function BotScenariosPage() {
       <div className="wb-page-body">
         {status === "loading" ? (
           <div className="empty-state">
-            <p className="empty-state-text">Завантаження екранів бота…</p>
+            <p className="empty-state-text">Завантаження сценаріїв бота…</p>
           </div>
         ) : status === "error" ? (
           <div className="empty-state">
@@ -167,9 +155,9 @@ export function BotScenariosPage() {
             <table className="wb-table">
               <thead>
                 <tr>
-                  <th>Команда</th>
-                  <th>Адреса</th>
-                  <th>Назва</th>
+                  <th>Ключ</th>
+                  <th>Тип</th>
+                  <th>Підпис</th>
                   <th>Оновлено</th>
                   <th>Дії</th>
                 </tr>
@@ -179,16 +167,16 @@ export function BotScenariosPage() {
                   <tr>
                     <td colSpan={5} className="wb-table-empty">
                       {items.length === 0
-                        ? "У базі ще немає екранів бота."
+                        ? "Сценаріїв бота ще немає."
                         : `Нічого не знайдено за «${query}».`}
                     </td>
                   </tr>
                 ) : (
                   filtered.map((item) => (
                     <tr key={item.id} className="wb-table-row--click">
-                      <td className="wb-cell-mono">{item.bot_command || "—"}</td>
-                      <td className="wb-cell-mono">{item.slug || "—"}</td>
-                      <td>{item.title || "—"}</td>
+                      <td className="wb-cell-mono">{item.lookup}</td>
+                      <td>{item.kind === "widget" ? "Віджет" : "Rich"}</td>
+                      <td>{item.caption || "—"}</td>
                       <td className="wb-text-muted wb-text-xs">{item.updated_at}</td>
                       <td>
                         <button
@@ -211,96 +199,75 @@ export function BotScenariosPage() {
         <div className="wb-modal-overlay" onClick={() => setDraft(null)}>
           <div className="wb-modal wb-admin-modal" onClick={(e) => e.stopPropagation()}>
             <div className="wb-modal-header">
-              <h2 className="wb-modal-title">{draft.bot_command || draft.slug || "Екран"}</h2>
+              <h2 className="wb-modal-title">{draft.lookup}</h2>
               <button className="wb-btn wb-btn-secondary" onClick={() => setDraft(null)}>
                 Закрити
               </button>
             </div>
             <div className="wb-modal-body wb-admin-form">
               <label className="wb-admin-field">
-                <span className="wb-admin-label">Команда (напр. /start)</span>
-                <input
+                <span className="wb-admin-label">Тип повідомлення</span>
+                <select
                   className="wb-input"
-                  value={draft.bot_command}
-                  onChange={(e) => change("bot_command", e.target.value)}
+                  value={draft.kind}
+                  onChange={(e) => change("kind", e.target.value as ScenarioKind)}
+                >
+                  <option value="widget">Віджет (приватний чат)</option>
+                  <option value="rich">Rich (службовий, групи)</option>
+                </select>
+              </label>
+              <label className="wb-admin-field">
+                <span className="wb-admin-label">Підпис під віджетом</span>
+                <textarea
+                  className="wb-textarea"
+                  rows={2}
+                  value={draft.caption}
+                  onChange={(e) => change("caption", e.target.value)}
                 />
               </label>
               <label className="wb-admin-field">
-                <span className="wb-admin-label">Підпис зверху</span>
+                <span className="wb-admin-label">HTML віджета</span>
+                <textarea
+                  className="wb-textarea wb-admin-json wb-admin-json--page"
+                  rows={14}
+                  value={draft.widget_html}
+                  onChange={(e) => change("widget_html", e.target.value)}
+                />
+              </label>
+              <label className="wb-admin-field">
+                <span className="wb-admin-label">Стан віджета (chat_data, JSON)</span>
+                <textarea
+                  className="wb-textarea wb-admin-json"
+                  rows={3}
+                  value={draft.widget_data}
+                  onChange={(e) => change("widget_data", e.target.value)}
+                />
+              </label>
+              <label className="wb-admin-field">
+                <span className="wb-admin-label">HTML rich-повідомлення</span>
+                <textarea
+                  className="wb-textarea wb-admin-json wb-admin-json--page"
+                  rows={10}
+                  value={draft.rich_html}
+                  onChange={(e) => change("rich_html", e.target.value)}
+                />
+              </label>
+              <label className="wb-admin-field">
+                <span className="wb-admin-label">Групи для нотифікацій (через кому)</span>
+                <input
+                  className="wb-input"
+                  value={draft.notify_groups}
+                  onChange={(e) => change("notify_groups", e.target.value)}
+                />
+              </label>
+              <label className="wb-admin-field">
+                <span className="wb-admin-label">Шаблон нотифікації</span>
                 <textarea
                   className="wb-textarea"
                   rows={3}
-                  value={draft.caption_top}
-                  onChange={(e) => change("caption_top", e.target.value)}
+                  value={draft.notify_template}
+                  onChange={(e) => change("notify_template", e.target.value)}
                 />
-              </label>
-              <label className="wb-admin-field">
-                <span className="wb-admin-label">Підпис посередині</span>
-                <textarea
-                  className="wb-textarea"
-                  rows={2}
-                  value={draft.caption_mid}
-                  onChange={(e) => change("caption_mid", e.target.value)}
-                />
-              </label>
-              <label className="wb-admin-field">
-                <span className="wb-admin-label">Підпис знизу</span>
-                <textarea
-                  className="wb-textarea"
-                  rows={2}
-                  value={draft.caption_bot}
-                  onChange={(e) => change("caption_bot", e.target.value)}
-                />
-              </label>
-              <label className="wb-admin-field">
-                <span className="wb-admin-label">Фото (URL)</span>
-                <input
-                  className="wb-input"
-                  value={draft.photo_url}
-                  onChange={(e) => change("photo_url", e.target.value)}
-                />
-              </label>
-              <label className="wb-admin-field">
-                <span className="wb-admin-label">Тип клавіатури</span>
-                <input
-                  className="wb-input"
-                  value={draft.keyboard_type}
-                  onChange={(e) => change("keyboard_type", e.target.value)}
-                />
-              </label>
-              <label className="wb-admin-field">
-                <span className="wb-admin-label">Кнопки (JSON-масив)</span>
-                <textarea
-                  className="wb-textarea wb-admin-json"
-                  rows={6}
-                  value={draft.buttons}
-                  onChange={(e) => change("buttons", e.target.value)}
-                />
-              </label>
-              <label className="wb-admin-field">
-                <span className="wb-admin-label">Очікує вводу</span>
-                <input
-                  className="wb-input"
-                  value={draft.awaits_input}
-                  onChange={(e) => change("awaits_input", e.target.value)}
-                />
-              </label>
-              <label className="wb-admin-field">
-                <span className="wb-admin-label">Rich-розмітка (JSON-масив)</span>
-                <textarea
-                  className="wb-textarea wb-admin-json"
-                  rows={6}
-                  value={draft.rich_data}
-                  onChange={(e) => change("rich_data", e.target.value)}
-                />
-              </label>
-              <label className="wb-admin-check">
-                <input
-                  type="checkbox"
-                  checked={draft.rich_message}
-                  onChange={(e) => change("rich_message", e.target.checked)}
-                />
-                <span>Rich-повідомлення</span>
               </label>
               <label className="wb-admin-check">
                 <input
@@ -308,7 +275,7 @@ export function BotScenariosPage() {
                   checked={draft.is_active}
                   onChange={(e) => change("is_active", e.target.checked)}
                 />
-                <span>Екран активний</span>
+                <span>Сценарій активний</span>
               </label>
               {saveError && <p className="wb-admin-error">{saveError}</p>}
             </div>

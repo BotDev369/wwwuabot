@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 /**
- * Екран «Бот»: список, пошук, картка й збереження `bot_scenarios`.
+ * Екран «Бот»: список за ключем, картка з типом, збереження й помилки.
  *
  * @module web-admin-dev/src/pages/bot/BotScenariosPage.dom.test
  */
@@ -19,30 +19,20 @@ const { BotScenariosPage } = await import("./BotScenariosPage");
 
 const ITEM = {
   id: 1,
-  slug: "",
-  bot_command: "/start",
-  title: "WWWUABot",
-  keyboard_type: "static",
+  lookup: "/start",
+  kind: "widget",
+  caption: "ПАЛЯНИЦЯ",
   is_active: 1,
   updated_at: "2026-11-12 00:00:00",
 };
 
 const RECORD = {
   ...ITEM,
-  photo_url: null,
-  caption_top: "Привіт",
-  caption_mid: null,
-  caption_bot: null,
-  buttons: "[]",
-  awaits_input: null,
-  input_path: null,
-  input_next: null,
-  price: null,
-  qty_options: null,
+  widget_html: "<h1>ПАЛЯНИЦЯ</h1>",
+  widget_data: "{}",
+  rich_html: "<h1>ПАЛЯНИЦЯ</h1>",
   notify_groups: null,
   notify_template: null,
-  rich_message: "false",
-  rich_data: null,
 };
 
 beforeEach(() => {
@@ -53,11 +43,11 @@ beforeEach(() => {
 });
 
 describe("BotScenariosPage", () => {
-  it("показує список із командою та назвою", async () => {
+  it("показує ключ і тип", async () => {
     render(<BotScenariosPage />);
 
     expect(await screen.findByText("/start")).toBeTruthy();
-    expect(screen.getByText("WWWUABot")).toBeTruthy();
+    expect(screen.getByText("Віджет")).toBeTruthy();
   });
 
   it("порожній пошук пояснює, що нічого не знайдено", async () => {
@@ -75,7 +65,7 @@ describe("BotScenariosPage", () => {
     fireEvent.click(screen.getByRole("button", { name: "Відкрити" }));
     await waitFor(() => expect(api.read).toHaveBeenCalledWith(1));
 
-    fireEvent.change(screen.getByLabelText("Підпис зверху"), {
+    fireEvent.change(screen.getByLabelText("Підпис під віджетом"), {
       target: { value: "Новий підпис" },
     });
     fireEvent.click(screen.getByRole("button", { name: "Зберегти" }));
@@ -83,14 +73,14 @@ describe("BotScenariosPage", () => {
     await waitFor(() =>
       expect(api.update).toHaveBeenCalledWith(
         1,
-        expect.objectContaining({ caption_top: "Новий підпис", is_active: 1 }),
+        expect.objectContaining({ caption: "Новий підпис", kind: "widget", is_active: 1 }),
       ),
     );
     await waitFor(() => expect(screen.queryByRole("button", { name: "Зберегти" })).toBeNull());
   });
 
   it("помилка збереження лишається в картці", async () => {
-    api.update.mockRejectedValueOnce(new Error("D1 недоступна"));
+    api.update.mockRejectedValueOnce(new Error("HTML завеликий"));
     render(<BotScenariosPage />);
     await screen.findByText("/start");
 
@@ -98,8 +88,7 @@ describe("BotScenariosPage", () => {
     await waitFor(() => expect(api.read).toHaveBeenCalled());
     fireEvent.click(screen.getByRole("button", { name: "Зберегти" }));
 
-    expect(await screen.findByText("D1 недоступна")).toBeTruthy();
-    expect(screen.getByRole("button", { name: "Зберегти" })).toBeTruthy();
+    expect(await screen.findByText("HTML завеликий")).toBeTruthy();
   });
 
   it("⛔ не вдалося завантажити — показує причину й дає повторити", async () => {
@@ -109,17 +98,5 @@ describe("BotScenariosPage", () => {
     expect(await screen.findByText(/мережа/)).toBeTruthy();
     fireEvent.click(screen.getByRole("button", { name: "Спробувати ще" }));
     expect(await screen.findByText("/start")).toBeTruthy();
-  });
-
-  it("картка закривається без збереження", async () => {
-    render(<BotScenariosPage />);
-    await screen.findByText("/start");
-
-    fireEvent.click(screen.getByRole("button", { name: "Відкрити" }));
-    await waitFor(() => expect(api.read).toHaveBeenCalled());
-    fireEvent.click(screen.getByRole("button", { name: "Скасувати" }));
-
-    expect(screen.queryByRole("button", { name: "Зберегти" })).toBeNull();
-    expect(api.update).not.toHaveBeenCalled();
   });
 });

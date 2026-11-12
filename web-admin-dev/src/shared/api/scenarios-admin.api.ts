@@ -1,35 +1,31 @@
 /**
- * API двох таблиць контенту для адмінки: `bot_scenarios` і `platform_pages`.
- * Важкі поля (`page_data`, `rich_data`) приходять лише при відкритті запису.
+ * API сценаріїв бота (віджет або rich) і сторінок платформи.
+ *
+ * Сценарій бота шукається одним ключем `lookup` і не пов'язаний зі сторінками
+ * платформи: це два незалежні екрани адмінки.
+ *
+ * @module web-admin-dev/src/shared/api/scenarios-admin.api
  */
 
 import { apiFetch } from "./client";
 
+export type ScenarioKind = "widget" | "rich";
+
 export interface BotScenarioListItem {
   id: number;
-  slug: string;
-  bot_command: string | null;
-  title: string | null;
-  keyboard_type: string;
+  lookup: string;
+  kind: ScenarioKind;
+  caption: string | null;
   is_active: number | null;
   updated_at: string;
 }
 
 export interface BotScenarioRecord extends BotScenarioListItem {
-  photo_url: string | null;
-  caption_top: string | null;
-  caption_mid: string | null;
-  caption_bot: string | null;
-  buttons: string;
-  awaits_input: string | null;
-  input_path: string | null;
-  input_next: string | null;
-  price: string | null;
-  qty_options: string | null;
+  widget_html: string | null;
+  widget_data: string | null;
+  rich_html: string | null;
   notify_groups: string | null;
   notify_template: string | null;
-  rich_message: string | null;
-  rich_data: string | null;
 }
 
 export interface PlatformPageListItem {

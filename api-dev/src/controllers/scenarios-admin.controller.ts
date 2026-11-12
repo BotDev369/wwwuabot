@@ -1,8 +1,9 @@
 /**
- * Правка двох таблиць контенту з панелі: `bot_scenarios` і `platform_pages`.
+ * Правка сценаріїв бота з панелі: `lookup` — один ключ на екран, `kind` —
+ * віджет або rich. З платформою сценарій не пов'язаний.
  *
- * Писати можна лише колонки зі списку нижче: ім'я колонки йде в SQL, тож воно
- * мусить бути з коду, а не з тіла запиту. Обидва JSON-поля перевіряються тут.
+ * HTML перевіряється до запису: 32768 байт — межа Telegram, і краще відмовити в
+ * панелі, ніж зберегти екран, який не надішлеться.
  *
  * @module api-dev/src/controllers/scenarios-admin.controller
  */
@@ -12,39 +13,17 @@ import { formatSqliteDatetime } from "@wwwuabot/shared/utils/datetime";
 import type { Env } from "../shared/types";
 import { apiLog } from "../shared/logger";
 
-/** Стеля списку: панель показує огляд, а не всю базу. */
 const LIST_LIMIT = 300;
-
-/** Що можна змінити в екрані бота. */
-const BOT_FIELDS = [
-  "bot_command",
-  "photo_url",
-  "caption_top",
-  "caption_mid",
-  "caption_bot",
-  "keyboard_type",
-  "buttons",
-  "awaits_input",
-  "input_path",
-  "input_next",
-  "price",
-  "qty_options",
+const HTML_LIMIT = 32768;
+const FIELDS = [
+  "kind",
+  "caption",
+  "widget_html",
+  "widget_data",
+  "rich_html",
   "notify_groups",
   "notify_template",
-  "rich_message",
-  "rich_data",
   "is_active",
-] as const;
-
-/** Що можна змінити в сторінці платформи. */
-const PAGE_FIELDS = [
-  "slug",
-  "title",
-  "photo_url",
-  "page_data",
-  "template_key",
-  "is_active",
-  "is_public",
 ] as const;
 
 function json(body: unknown, status = 200): Response {
@@ -68,21 +47,13 @@ function readId(body: Record<string, unknown>): number | null {
   return Number.isInteger(id) && id > 0 ? id : null;
 }
 
-/** Лише оголошені ключі; решта тіла до SQL не доходить. */
-function pickFields(
-  allowed: readonly string[],
-  body: Record<string, unknown>,
-): Record<string, string | number | null> {
+function pickFields(body: Record<string, unknown>): Record<string, string | number | null> {
   const fields: Record<string, string | number | null> = {};
-  for (const key of allowed) {
+  for (const key of FIELDS) {
     if (!(key in body)) continue;
     const value = body[key];
-    if (key === "is_active" || key === "is_public") {
+    if (key === "is_active") {
       fields[key] = value ? 1 : 0;
-      continue;
-    }
-    if (key === "rich_message") {
-      fields[key] = value === true || value === "true" || value === 1 ? "true" : "false";
       continue;
     }
     fields[key] = typeof value === "string" ? value : value === null ? null : String(value);
@@ -90,53 +61,44 @@ function pickFields(
   return fields;
 }
 
-/** JSON-колонки: зламаний текст не має доходити до бази. */
-function validJsonColumn(value: string | number | null, kind: "array" | "object"): boolean {
-  if (value === null) return true;
-  const text = String(value).trim();
-  if (text === "") return true;
-  try {
-    const parsed: unknown = JSON.parse(text);
-    return kind === "array"
-      ? Array.isArray(parsed)
-      : !!parsed && typeof parsed === "object" && !Array.isArray(parsed);
-  } catch {
-    return false;
+function bytes(text: string): number {
+  return new TextEncoder().encode(text).length;
+}
+
+function validScenario(fields: Record<string, string | number | null>): string | null {
+  const kind = String(fields.kind ?? "");
+  if (kind !== "widget" && kind !== "rich") return "kind: потрібен widget або rich";
+
+  if (kind === "widget") {
+    const html = String(fields.widget_html ?? "");
+    if (!html.trim()) return "widget_html: порожній HTML";
+    if (bytes(html) > HTML_LIMIT) return "widget_html: більше 32768 байт";
   }
+  if (kind === "rich") {
+    const html = String(fields.rich_html ?? "");
+    if (!html.trim()) return "rich_html: порожній HTML";
+    if (bytes(html) > HTML_LIMIT) return "rich_html: більше 32768 байт";
+  }
+  return null;
 }
 
-async function ensure(env: Env): Promise<void> {
-  await ensureTables(env.DB, ["bot_scenarios", "platform_pages"]);
-}
-
-interface BotListRow {
-  id: number;
-  slug: string;
-  bot_command: string | null;
-  title: string | null;
-  keyboard_type: string;
-  is_active: number | null;
-  updated_at: string;
-}
-
-const BOT_SELECT = `SELECT b.id, b.slug, b.bot_command, b.keyboard_type, b.is_active,
-    b.updated_at, p.title
-  FROM bot_scenarios b LEFT JOIN platform_pages p ON p.slug = b.slug`;
-
-async function botItem(db: D1Database, id: number): Promise<Record<string, unknown> | null> {
+async function scenario(db: D1Database, id: number): Promise<Record<string, unknown> | null> {
   return db
-    .prepare(`SELECT * FROM bot_scenarios WHERE id = ?`)
+    .prepare("SELECT * FROM bot_scenarios WHERE id = ?")
     .bind(id)
     .first<Record<string, unknown>>();
 }
 
-/** `GET /api/admin/bot-scenarios` — екрани бота з назвою їхньої сторінки. */
+/** `GET /api/admin/bot-scenarios` — усі сценарії без важкого HTML. */
 export async function handleBotScenariosList(_request: Request, env: Env): Promise<Response> {
   try {
-    await ensure(env);
-    const result = await env.DB.prepare(`${BOT_SELECT} ORDER BY b.id LIMIT ?`)
+    await ensureTables(env.DB, ["bot_scenarios"]);
+    const result = await env.DB.prepare(
+      `SELECT id, lookup, kind, caption, is_active, updated_at
+         FROM bot_scenarios ORDER BY lookup LIMIT ?`,
+    )
       .bind(LIST_LIMIT)
-      .all<BotListRow>();
+      .all();
     return json({ ok: true, items: result.results ?? [] });
   } catch (error: unknown) {
     apiLog.error("bot scenarios list error", error);
@@ -144,13 +106,13 @@ export async function handleBotScenariosList(_request: Request, env: Env): Promi
   }
 }
 
-/** `POST /api/admin/bot-scenarios/read` — усі поля екрана. */
+/** `POST /api/admin/bot-scenarios/read` — один сценарій із HTML. */
 export async function handleBotScenarioRead(request: Request, env: Env): Promise<Response> {
   try {
-    await ensure(env);
+    await ensureTables(env.DB, ["bot_scenarios"]);
     const id = readId(await readJsonObject(request));
     if (id === null) return json({ ok: false, error: "id required" }, 400);
-    const item = await botItem(env.DB, id);
+    const item = await scenario(env.DB, id);
     return item ? json({ ok: true, item }) : json({ ok: false, error: "Not found" }, 404);
   } catch (error: unknown) {
     apiLog.error("bot scenario read error", error);
@@ -158,25 +120,22 @@ export async function handleBotScenarioRead(request: Request, env: Env): Promise
   }
 }
 
-/** `POST /api/admin/bot-scenarios/update` — зберегти поля екрана. */
+/** `POST /api/admin/bot-scenarios/update` — зберегти екран. */
 export async function handleBotScenarioUpdate(request: Request, env: Env): Promise<Response> {
   try {
-    await ensure(env);
+    await ensureTables(env.DB, ["bot_scenarios"]);
     const body = await readJsonObject(request);
     const id = readId(body);
     if (id === null) return json({ ok: false, error: "id required" }, 400);
 
-    const fields = pickFields(BOT_FIELDS, body);
-    if (!validJsonColumn(fields.buttons ?? null, "array")) {
-      return json({ ok: false, error: "buttons: потрібен JSON-масив" }, 400);
-    }
-    if (!validJsonColumn(fields.rich_data ?? null, "array")) {
-      return json({ ok: false, error: "rich_data: потрібен JSON-масив" }, 400);
+    const fields = pickFields(body);
+    if (Object.keys(fields).length === 0) return json({ ok: false, error: "no fields" }, 400);
+    if ("kind" in fields) {
+      const problem = validScenario(fields);
+      if (problem) return json({ ok: false, error: problem }, 400);
     }
 
     const keys = Object.keys(fields);
-    if (keys.length === 0) return json({ ok: false, error: "no fields" }, 400);
-
     const result = await env.DB.prepare(
       `UPDATE bot_scenarios SET ${keys.map((key) => `${key} = ?`).join(", ")}, updated_at = ?
         WHERE id = ?`,
@@ -185,33 +144,61 @@ export async function handleBotScenarioUpdate(request: Request, env: Env): Promi
       .run();
     if ((result.meta?.changes ?? 0) === 0) return json({ ok: false, error: "Not found" }, 404);
 
-    return json({ ok: true, item: await botItem(env.DB, id) });
+    return json({ ok: true, item: await scenario(env.DB, id) });
   } catch (error: unknown) {
     apiLog.error("bot scenario update error", error);
     return json({ ok: false, error: "Internal error" }, 500);
   }
 }
 
-interface PageListRow {
-  id: number;
-  slug: string;
-  title: string | null;
-  template_key: string | null;
-  is_public: number | null;
-  owner_id: string | null;
-  updated_at: string;
+/* ── Сторінки платформи: окрема таблиця, окремий екран, з ботом не пов'язані ── */
+
+const PAGE_FIELDS = [
+  "slug",
+  "title",
+  "photo_url",
+  "page_data",
+  "template_key",
+  "is_active",
+  "is_public",
+] as const;
+
+function pickPageFields(body: Record<string, unknown>): Record<string, string | number | null> {
+  const fields: Record<string, string | number | null> = {};
+  for (const key of PAGE_FIELDS) {
+    if (!(key in body)) continue;
+    const value = body[key];
+    if (key === "is_active" || key === "is_public") {
+      fields[key] = value ? 1 : 0;
+      continue;
+    }
+    fields[key] = typeof value === "string" ? value : value === null ? null : String(value);
+  }
+  return fields;
+}
+
+function validPage(fields: Record<string, string | number | null>): boolean {
+  if (!("page_data" in fields)) return true;
+  const text = String(fields.page_data ?? "").trim();
+  if (text === "") return true;
+  try {
+    const parsed: unknown = JSON.parse(text);
+    return !!parsed && typeof parsed === "object" && !Array.isArray(parsed);
+  } catch {
+    return false;
+  }
 }
 
 /** `GET /api/admin/platform-pages` — сторінки платформи без `page_data`. */
 export async function handlePlatformPagesList(_request: Request, env: Env): Promise<Response> {
   try {
-    await ensure(env);
+    await ensureTables(env.DB, ["platform_pages"]);
     const result = await env.DB.prepare(
       `SELECT id, slug, title, template_key, is_public, owner_id, updated_at
          FROM platform_pages ORDER BY id LIMIT ?`,
     )
       .bind(LIST_LIMIT)
-      .all<PageListRow>();
+      .all();
     return json({ ok: true, items: result.results ?? [] });
   } catch (error: unknown) {
     apiLog.error("platform pages list error", error);
@@ -229,7 +216,7 @@ async function pageItem(db: D1Database, id: number): Promise<Record<string, unkn
 /** `POST /api/admin/platform-pages/read` — усі поля сторінки. */
 export async function handlePlatformPageRead(request: Request, env: Env): Promise<Response> {
   try {
-    await ensure(env);
+    await ensureTables(env.DB, ["platform_pages"]);
     const id = readId(await readJsonObject(request));
     if (id === null) return json({ ok: false, error: "id required" }, 400);
     const item = await pageItem(env.DB, id);
@@ -243,15 +230,14 @@ export async function handlePlatformPageRead(request: Request, env: Env): Promis
 /** `POST /api/admin/platform-pages/update` — зберегти поля сторінки. */
 export async function handlePlatformPageUpdate(request: Request, env: Env): Promise<Response> {
   try {
-    await ensure(env);
+    await ensureTables(env.DB, ["platform_pages"]);
     const body = await readJsonObject(request);
     const id = readId(body);
     if (id === null) return json({ ok: false, error: "id required" }, 400);
 
-    const fields = pickFields(PAGE_FIELDS, body);
-    if (!validJsonColumn(fields.page_data ?? null, "object")) {
+    const fields = pickPageFields(body);
+    if (!validPage(fields))
       return json({ ok: false, error: "page_data: потрібен JSON-об'єкт" }, 400);
-    }
 
     const keys = Object.keys(fields);
     if (keys.length === 0) return json({ ok: false, error: "no fields" }, 400);

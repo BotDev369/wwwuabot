@@ -1,62 +1,38 @@
+/**
+ * Сценарій бота: один `lookup` — один екран.
+ *
+ * `kind` каже, чим екран показується: `widget` (HTML у повідомленні, лише
+ * приватний чат) або `rich` (HTML із кнопками в тілі, для службових екранів і
+ * груп). Стан віджета зберігається окремо — `bot_widget_messages`.
+ *
+ * @module bot-dev/src/shared/types/scenario
+ */
+
+export type ScenarioKind = "widget" | "rich";
+
+export interface BotScenario {
+  id: number;
+  /** Ключ пошуку як отримано: `/start`, callback-data, діплінк або текст. */
+  lookup: string;
+  kind: ScenarioKind;
+  /** Підпис під віджетом; на старих клієнтах він і є весь екран. */
+  caption: string | null;
+  widget_html: string | null;
+  /** Початковий `chat_data` віджета. */
+  widget_data: string | null;
+  rich_html: string | null;
+  notify_groups: string | null;
+  notify_template: string | null;
+}
+
 export interface ScenarioRow {
-  /** Номер рядка в `scenarios`: адресу редагують, номер — ні. */
-  id?: number | null;
-  slug: string;
-  /** Команда, якою екран відкривається в чаті; у головної — `/start`. */
-  bot_command?: string | null;
-  title: string | null;
-  photo_url: string;
-  caption_top: string | null;
-  caption_mid: string | null;
-  caption_bot: string | null;
-  keyboard_type: string;
-  buttons: string;
-  awaits_input: string | null;
-  input_path: string | null;
-  input_next: string | null;
-  price: string | null;
-  qty_options: string | null;
+  id: number;
+  lookup: string;
+  kind: string;
+  caption: string | null;
+  widget_html: string | null;
+  widget_data: string | null;
+  rich_html: string | null;
   notify_groups: string | null;
   notify_template: string | null;
-  rich_message: string | null; // ← NEW: "true"/"false" або 1/0
-  rich_data: string | null; // ← NEW: JSON-рядок з масивом блоків
-  page_data: string | null; // ← NEW: JSON-рядок конфігурації веб-сторінки (Page Builder)
-  /** З якого шаблону зроблено сторінку людини; `NULL` — контент платформи. */
-  template_key: string | null;
-  created_at: string;
-  updated_at: string;
-}
-
-export interface ScenarioButton {
-  text: string;
-  callback_data?: string;
-  url?: string;
-  web_app?: { url: string };
-}
-
-export interface Scenario {
-  /** Номер рядка в `scenarios`; `null`, якщо читач його не вибрав. */
-  id: number | null;
-  slug: string;
-  /** Команда, якою екран відкривається в чаті; у головної — `/start`. */
-  bot_command?: string | null;
-  title: string | null;
-  photo_url: string;
-  caption_top: string | null;
-  caption_mid: string | null;
-  caption_bot: string | null;
-  keyboard_type: string;
-  buttons: ScenarioButton[][];
-  awaits_input: string | null;
-  input_path: string | null;
-  input_next: string | null;
-  price: number | null;
-  qty_options: string | null;
-  notify_groups: string | null;
-  notify_template: string | null;
-  rich_message: boolean; // ← NEW
-  rich_data: Record<string, unknown>[] | null; // ← NEW: масив блоків
-  page_data: Record<string, unknown> | null; // ← NEW: конфігурація веб-сторінки (Page Builder)
-  /** Повний шлях поточного маршруту; заповнюється для Telegram deep link. */
-  web_path?: string;
 }

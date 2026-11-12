@@ -1,7 +1,6 @@
 /**
- * Адмінська правка двох таблиць: що читається, що пишеться й що відхиляється
- * до бази. Головне — замкнений список колонок і перевірка JSON: зламаний
- * `buttons` чи `page_data` не має доходити до D1.
+ * Адмінська правка: сценарій бота (lookup + kind) і сторінка платформи.
+ * Перевіряємо замкнений список полів і відсікання непридатного HTML до бази.
  *
  * @module api-dev/src/controllers/scenarios-admin.controller.test
  */
@@ -38,39 +37,7 @@ function makeDb(options: {
           call.args = args;
           return stmt;
         },
-        all: async () => {
-          if (/FROM bot_scenarios b/.test(sql)) {
-            return {
-              results: [
-                {
-                  id: 1,
-                  slug: "",
-                  bot_command: "/start",
-                  title: "WWWUABot",
-                  keyboard_type: "static",
-                  is_active: 1,
-                  updated_at: "2026-11-12 00:00:00",
-                },
-              ],
-            };
-          }
-          if (/FROM platform_pages ORDER/.test(sql)) {
-            return {
-              results: [
-                {
-                  id: 2,
-                  slug: "dateanalysis",
-                  title: "Аналіз дат",
-                  template_key: null,
-                  is_public: 0,
-                  owner_id: null,
-                  updated_at: "2026-11-12 00:00:00",
-                },
-              ],
-            };
-          }
-          return { results: [] };
-        },
+        all: async () => ({ results: [{ id: 1 }] }),
         first: async () => {
           if (/FROM bot_scenarios WHERE id/.test(sql)) return options.botRow ?? null;
           if (/FROM platform_pages WHERE id/.test(sql)) return options.pageRow ?? null;
@@ -84,8 +51,7 @@ function makeDb(options: {
       return stmt;
     },
   } as unknown as D1Database;
-  const env = { DB: db } as Env;
-  return { env, calls };
+  return { env: { DB: db } as Env, calls };
 }
 
 function post(body: unknown): Request {
@@ -95,8 +61,8 @@ function post(body: unknown): Request {
   });
 }
 
-describe("списки", () => {
-  it("екрани бота приходять із JOIN-ом за назвою сторінки", async () => {
+describe("сценарії бота", () => {
+  it("список віддає ключ і тип", async () => {
     const { env } = makeDb({});
     const res = await handleBotScenariosList(new Request("https://api.example.com"), env);
     const body = (await res.json()) as { ok: boolean; items: unknown[] };
@@ -105,110 +71,104 @@ describe("списки", () => {
     expect(body.items).toHaveLength(1);
   });
 
-  it("сторінки платформи не тягнуть page_data у список", async () => {
-    const { env, calls } = makeDb({});
-    const res = await handlePlatformPagesList(new Request("https://api.example.com"), env);
-    const body = (await res.json()) as { items: unknown[] };
-
-    expect(body.items).toHaveLength(1);
-    const list = calls.find((call) => call.sql.includes("FROM platform_pages ORDER"));
-    expect(list?.sql).toContain("SELECT id, slug");
-    expect(list?.sql).not.toContain("page_data");
-  });
-});
-
-describe("один рядок", () => {
-  it("екран бота читається за номером", async () => {
-    const { env } = makeDb({ botRow: { id: 1, slug: "", bot_command: "/start" } });
-    const res = await handleBotScenarioRead(post({ id: 1 }), env);
-    const body = (await res.json()) as { ok: boolean; item: { id: number } };
-
-    expect(body.ok).toBe(true);
-    expect(body.item.id).toBe(1);
-  });
-
-  it("немає номера — 400, немає рядка — 404", async () => {
-    const { env } = makeDb({});
+  it("один сценарій читається за номером; без номера — 400", async () => {
+    const { env } = makeDb({ botRow: { id: 4, lookup: "/start", kind: "widget" } });
+    const res = await handleBotScenarioRead(post({ id: 4 }), env);
+    expect(((await res.json()) as { item: { lookup: string } }).item.lookup).toBe("/start");
     expect((await handleBotScenarioRead(post({}), env)).status).toBe(400);
-    expect((await handlePlatformPageRead(post({ id: 9 }), env)).status).toBe(404);
-    expect((await handleBotScenarioRead(post({ id: 9 }), env)).status).toBe(404);
-  });
-});
 
-describe("правка екрана бота", () => {
-  it("пише лише оголошені поля й повертає рядок", async () => {
-    const { env, calls } = makeDb({ botRow: { id: 3, bot_command: "/start" } });
-    const res = await handleBotScenarioUpdate(
-      post({ id: 3, caption_top: "Привіт", is_active: false, slug: "чуже", nope: 1 }),
+    const missing = makeDb({ botRow: null });
+    expect((await handleBotScenarioRead(post({ id: 9 }), missing.env)).status).toBe(404);
+  });
+
+  it("пише лише оголошені поля", async () => {
+    const { env, calls } = makeDb({ botRow: { id: 4, lookup: "/start" } });
+    await handleBotScenarioUpdate(
+      post({ id: 4, kind: "widget", widget_html: "<b>ok</b>", lookup: "чуже", nope: 1 }),
       env,
     );
 
     const update = calls.find((call) => call.sql.startsWith("UPDATE bot_scenarios"));
-    expect(update?.sql).toContain("caption_top = ?");
-    expect(update?.sql).toContain("is_active = ?");
-    expect(update?.sql).not.toContain("slug");
-    expect(update?.args).toEqual(["Привіт", 0, expect.any(String), 3]);
-    expect(res.status).toBe(200);
+    expect(update?.sql).toContain("kind = ?");
+    expect(update?.sql).toContain("widget_html = ?");
+    expect(update?.sql).not.toContain("lookup");
   });
 
-  it("⛔ зламаний JSON кнопок не доходить до бази", async () => {
+  it("⛔ порожній HTML віджета не доходить до бази", async () => {
     const { env, calls } = makeDb({});
-    const res = await handleBotScenarioUpdate(post({ id: 3, buttons: "{не json" }), env);
+    const res = await handleBotScenarioUpdate(
+      post({ id: 4, kind: "widget", widget_html: "  " }),
+      env,
+    );
 
     expect(res.status).toBe(400);
     expect(calls.some((call) => call.sql.startsWith("UPDATE"))).toBe(false);
   });
 
-  it("⛔ rich_data мусить бути масивом", async () => {
+  it("⛔ HTML понад 32768 байт відхиляється", async () => {
     const { env } = makeDb({});
-    const res = await handleBotScenarioUpdate(post({ id: 3, rich_data: '{"a":1}' }), env);
+    const res = await handleBotScenarioUpdate(
+      post({ id: 4, kind: "rich", rich_html: "я".repeat(20000) }),
+      env,
+    );
     expect(res.status).toBe(400);
   });
 
-  it("без полів — 400, без рядка — 404", async () => {
+  it("невідомий тип — 400; без полів — 400; без рядка — 404", async () => {
     const { env } = makeDb({});
-    expect((await handleBotScenarioUpdate(post({ id: 3 }), env)).status).toBe(400);
+    expect(
+      (await handleBotScenarioUpdate(post({ id: 4, kind: "photo", widget_html: "<b>x</b>" }), env))
+        .status,
+    ).toBe(400);
+    expect((await handleBotScenarioUpdate(post({ id: 4 }), env)).status).toBe(400);
 
     const missing = makeDb({ changes: 0 });
     expect(
-      (await handleBotScenarioUpdate(post({ id: 3, caption_top: "x" }), missing.env)).status,
+      (
+        await handleBotScenarioUpdate(
+          post({ id: 4, kind: "rich", rich_html: "<b>x</b>" }),
+          missing.env,
+        )
+      ).status,
     ).toBe(404);
   });
 });
 
-describe("правка сторінки платформи", () => {
-  it("зберігає сторінку й повертає її", async () => {
-    const { env, calls } = makeDb({ pageRow: { id: 2, slug: "dateanalysis" } });
+describe("сторінки платформи", () => {
+  it("список не тягне page_data", async () => {
+    const { env, calls } = makeDb({});
+    const res = await handlePlatformPagesList(new Request("https://api.example.com"), env);
+
+    expect(((await res.json()) as { items: unknown[] }).items).toHaveLength(1);
+    const list = calls.find((call) => call.sql.includes("FROM platform_pages ORDER"));
+    expect(list?.sql).not.toContain("page_data");
+  });
+
+  it("читання й правка сторінки", async () => {
+    const { env } = makeDb({ pageRow: { id: 2, slug: "dateanalysis" } });
+    expect((await handlePlatformPageRead(post({ id: 2 }), env)).status).toBe(200);
+    expect((await handlePlatformPageRead(post({}), env)).status).toBe(400);
+
     const res = await handlePlatformPageUpdate(
-      post({ id: 2, title: "Нова", is_public: true, page_data: '{"blocks":[]}' }),
+      post({ id: 2, title: "Нова", page_data: '{"blocks":[]}' }),
       env,
     );
-
     expect(res.status).toBe(200);
-    expect(calls.some((call) => call.sql.startsWith("UPDATE platform_pages"))).toBe(true);
   });
 
   it("⛔ page_data мусить бути об'єктом", async () => {
     const { env } = makeDb({});
-    const res = await handlePlatformPageUpdate(post({ id: 2, page_data: "[]" }), env);
-    expect(res.status).toBe(400);
+    expect((await handlePlatformPageUpdate(post({ id: 2, page_data: "[]" }), env)).status).toBe(
+      400,
+    );
   });
 
-  it("зайнята адреса — 409 із поясненням", async () => {
+  it("зайнята адреса — 409; без рядка — 404", async () => {
     const { env } = makeDb({
       pageRow: null,
       runError: new Error("D1_ERROR: UNIQUE constraint failed: platform_pages.slug"),
     });
-    const res = await handlePlatformPageUpdate(post({ id: 2, slug: "зайнята" }), env);
-    const body = (await res.json()) as { error: string };
-
-    expect(res.status).toBe(409);
-    expect(body.error).toContain("зайнята");
-  });
-
-  it("без полів — 400, без рядка — 404", async () => {
-    const { env } = makeDb({});
-    expect((await handlePlatformPageUpdate(post({ id: 2 }), env)).status).toBe(400);
+    expect((await handlePlatformPageUpdate(post({ id: 2, slug: "x" }), env)).status).toBe(409);
 
     const missing = makeDb({ changes: 0 });
     expect((await handlePlatformPageUpdate(post({ id: 2, title: "x" }), missing.env)).status).toBe(

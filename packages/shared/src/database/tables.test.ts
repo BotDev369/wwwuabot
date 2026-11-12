@@ -143,21 +143,19 @@ describe("колонки виводяться з DDL", () => {
     }
   });
 
-  it("сторінка має контент і видимість, екран бота — подання в чаті", () => {
-    // Сторінка: адреса, контент, шаблон і видимість.
+  it("сторінка має контент і видимість, сценарій бота — ключ і два типи", () => {
     for (const column of ["id", "slug", "is_active", "page_data", "template_key", "viewer_ids"]) {
       expect(pageColumns).toContain(column);
     }
-    // Екран: команда, підписи, кнопки й очікування вводу.
-    for (const column of ["bot_command", "caption_top", "buttons", "awaits_input", "rich_data"]) {
+    for (const column of ["lookup", "kind", "widget_html", "widget_data", "rich_html"]) {
       expect(botColumns).toContain(column);
     }
-    // Ботового подання в сторінці немає — саме заради цього таблиці й розділені.
-    for (const gone of ["caption_top", "buttons", "rich_data"]) {
-      expect(pageColumns).not.toContain(gone);
-    }
-    for (const gone of ["page_data", "template_key", "owner_id"]) {
+    // Бот не знає нічого про сторінку — саме заради цього таблиці й розділені.
+    for (const gone of ["slug", "page_data", "template_key", "owner_id"]) {
       expect(botColumns).not.toContain(gone);
+    }
+    for (const gone of ["lookup", "widget_html", "rich_html"]) {
+      expect(pageColumns).not.toContain(gone);
     }
   });
 
@@ -167,11 +165,11 @@ describe("колонки виводяться з DDL", () => {
    * `UNIQUE`, а без нього падає з «does not match any PRIMARY KEY or UNIQUE
    * constraint» — причому лише на шляху запису.
    */
-  it("номер рядка — PRIMARY KEY, адреса — UNIQUE в обох таблицях", () => {
-    for (const table of [TABLES.platform_pages, TABLES.bot_scenarios]) {
-      expect(table.create).toMatch(/id INTEGER PRIMARY KEY AUTOINCREMENT/);
-      expect(table.create).toMatch(/slug TEXT NOT NULL UNIQUE/);
-    }
+  it("номер рядка — PRIMARY KEY; адреса сторінки й ключ бота — UNIQUE", () => {
+    expect(TABLES.platform_pages.create).toMatch(/id INTEGER PRIMARY KEY AUTOINCREMENT/);
+    expect(TABLES.platform_pages.create).toMatch(/slug TEXT NOT NULL UNIQUE/);
+    expect(TABLES.bot_scenarios.create).toMatch(/id INTEGER PRIMARY KEY AUTOINCREMENT/);
+    expect(TABLES.bot_scenarios.create).toMatch(/lookup TEXT NOT NULL UNIQUE/);
   });
 });
 

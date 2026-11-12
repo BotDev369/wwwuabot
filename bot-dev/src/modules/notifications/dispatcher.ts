@@ -14,9 +14,9 @@ export async function dispatchNotification(
   ctx: AppContext,
   data: Record<string, unknown>,
 ): Promise<void> {
-  const screen = ctx.screen;
+  const screen = ctx.scenario;
   if (!screen) {
-    log("DISPATCHER", "no screen context");
+    log("DISPATCHER", "no scenario context");
     return;
   }
 
@@ -69,7 +69,7 @@ export async function dispatchNotification(
       const adminChatId = await settingsRepo.getChatId("group_admin");
       if (adminChatId) {
         const adminTopicId = await getOrCreateTopic(ctx, "group_admin", adminChatId);
-        const errorText = `Помилка нотифікації для сценарію ${screen.slug}:\n${errMsg}`;
+        const errorText = `Помилка нотифікації для сценарію ${screen.lookup}:\n${errMsg}`;
         await sendNotification(ctx, adminChatId, errorText, adminTopicId || undefined);
       } else {
         log("DISPATCHER", "CRITICAL: group_admin not found in settings");

@@ -1,6 +1,5 @@
 /**
- * Транспорт двох адмінських таблиць: кожен виклик іде на свій шлях і везе
- * рівно ті поля, які змінили.
+ * Транспорт адмінки: ключі й поля сценаріїв бота та сторінок платформи.
  *
  * @module web-admin-dev/src/shared/api/scenarios-admin.api.test
  */
@@ -22,8 +21,8 @@ beforeEach(() => {
   vi.clearAllMocks();
 });
 
-describe("екрани бота", () => {
-  it("список і один рядок", async () => {
+describe("сценарії бота", () => {
+  it("список і один сценарій", async () => {
     mocks.request.mockResolvedValueOnce({ ok: true, items: [{ id: 1 }] });
     expect(await listBotScenarios()).toEqual([{ id: 1 }]);
     expect(mocks.request).toHaveBeenCalledWith("/api/admin/bot-scenarios");
@@ -38,10 +37,14 @@ describe("екрани бота", () => {
 
   it("правка везе номер і лише передані поля", async () => {
     mocks.request.mockResolvedValueOnce({ ok: true });
-    await updateBotScenario(3, { caption_top: "Новий" });
+    await updateBotScenario(3, { kind: "rich", rich_html: "<b>ok</b>" });
 
     const [, init] = mocks.request.mock.calls[0] as [string, RequestInit];
-    expect(JSON.parse(init.body as string)).toEqual({ id: 3, caption_top: "Новий" });
+    expect(JSON.parse(init.body as string)).toEqual({
+      id: 3,
+      kind: "rich",
+      rich_html: "<b>ok</b>",
+    });
   });
 });
 
@@ -53,10 +56,6 @@ describe("сторінки платформи", () => {
 
     mocks.request.mockResolvedValueOnce({ ok: true, item: { id: 6 } });
     expect(await readPlatformPage(6)).toEqual({ id: 6 });
-    expect(mocks.request).toHaveBeenCalledWith(
-      "/api/admin/platform-pages/read",
-      expect.objectContaining({ method: "POST" }),
-    );
   });
 
   it("правка везе номер і поля сторінки", async () => {

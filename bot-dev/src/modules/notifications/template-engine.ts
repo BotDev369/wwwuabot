@@ -38,7 +38,7 @@ export function buildTemplateContext(
     user_name: userName,
     user_username: userUsername,
     datetime,
-    slug: ctx.screen?.slug,
+    slug: ctx.scenario?.lookup,
     ...extraData,
   };
 

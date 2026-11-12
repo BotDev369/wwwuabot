@@ -29,10 +29,10 @@
  */
 
 import { messagesPeerPath, peerPublicLabel, type MessagePeer } from "@wwwuabot/shared/messages";
-import type { AppContext, ScreenState } from "../../shared/types/env";
+import type { AppContext } from "../../shared/types/env";
 import { INVITE_BUTTON, INVITE_GREETING } from "../../shared/config/texts";
 import { log } from "../../shared/utils/debug";
-import { buildWebAppUrl } from "../../shared/utils/screen";
+import { buildWebAppUrl, sendServiceScreen } from "../../shared/utils/service-screen";
 import { getPhoto } from "../../shared/utils/photo";
 import { escapeHtml } from "../security/input-validation";
 
@@ -101,21 +101,13 @@ export async function showInviteScreen(ctx: AppContext, ownerId: number): Promis
     log("INVITE", "inviter lookup failed", { owner_id: ownerId, error: String(e) });
   }
 
-  // Банер беремо той самий, що й на головній: він сталий (без імені в тексті),
-  // а отже не залежить від того, чи намалює Cloudinary кирилицю.
-  const screen: ScreenState = {
-    // Це не адреса контенту: рядка з таким `slug` у `scenarios` немає й мусить
-    // не бути. Значення потрібне рендеру (банер і лог) і нікуди не записується.
-    slug: "invite",
-    photo_url: await getPhoto("", null, ctx.env),
-    caption: { top: INVITE_GREETING(name === null ? null : escapeHtml(name)) },
+  // Банер той самий, що й на головній: він сталий (без імені в тексті).
+  const shown = await sendServiceScreen(ctx, {
+    photoUrl: await getPhoto("", null, ctx.env),
+    caption: INVITE_GREETING(name === null ? null : escapeHtml(name)),
     buttons: [[{ text: INVITE_BUTTON, web_app: { url: chatUrl } }]],
-    // `web_path` не задаємо навмисно: інакше рендер додав би другу кнопку
-    // («Відкрити сторінку») на той самий екран — тут дія одна.
-    rich_message: false,
-  };
+  });
 
-  ctx.screen = screen;
   log("INVITE", "invitation screen shown", { owner_id: ownerId, chat_url: chatUrl });
-  return true;
+  return shown;
 }

@@ -3,8 +3,8 @@
 **Джерело правди про код:** `packages/shared/src/content/` і `packages/shared/src/database/tables.ts`
 · **схема таблиць:** [`DATA_MODEL.md`](./DATA_MODEL.md) · **гейт адреси:** `resolve.test.ts`
 
-Сторінку вебу зберігає `platform_pages`, екран бота — `bot_scenarios`. Зв'язок — `slug`: адреса
-однакова для обох входів, і саме вона веде людину з чату на сторінку.
+Сторінку вебу зберігає `platform_pages`, сценарій бота — `bot_scenarios`. **Зв'язку між ними немає:**
+у бота свій ключ `lookup`, і `/start` у чаті — не головна сторінка вебу.
 
 ## 1. Дві таблиці — кожна зі своїми полями
 
@@ -12,17 +12,18 @@
 |---|---|---|
 | сторінка вебу | `platform_pages` | `page_data` — `PageConfig`, який рендерить `PageRenderer`; `title`, `photo_url`, `template_key`, `is_active` |
 | видимість сторінки | `platform_pages` | `owner_id`, `admin_ids`, `is_public`, `viewer_ids` |
-| екран бота | `bot_scenarios` | `bot_command` (`/start`), `caption_top/mid/bot`, `photo_url`, `buttons`, `keyboard_type`, `rich_message`, `rich_data`, `price`, `awaits_input`, `notify_*` |
+| сценарій бота | `bot_scenarios` | `lookup` (ключ пошуку), `kind` (`widget` / `rich`), `widget_html`, `widget_data`, `rich_html`, `notify_*` |
 | номер рядка | обидві | `id` — `PRIMARY KEY`: ідентичність, яка **не** змінюється |
-| адреса | обидві | `slug` — `NOT NULL UNIQUE`; веб і бот будують із нього свої подання, і його можна редагувати |
+| адреса | лише сторінка | `slug` — `NOT NULL UNIQUE`; у бота адреси немає, є ключ `lookup` |
 
 `template_key` їде клієнту разом із метаданими (`/api/scenario/:slug`), бо ним сторінка
 **відрізняється від решти**: під вітриною магазину стоїть каталог із своєї таблиці, і без цього
 ключа клієнт не знав би, що його треба спитати (`SHOPS.md` §2). Сам показ іде з `page_data` —
 ключ шаблону нічого не рендерить.
 
-**bot-dev** читає `bot_scenarios` разом із `platform_pages` (один `JOIN` за `slug`) і показує екран;
-якщо подання в боті немає — будує картку зі сторінки. **api-dev** віддає сторінку платформі
+**bot-dev** читає `bot_scenarios` за `lookup` і показує екран віджетом (приватний чат) або
+rich-повідомленням (службові екрани й групи). Сторінки платформи бот не читає взагалі.
+**api-dev** віддає сторінку платформі
 (`/api/scenario/:slug`) і пише сторінки людини (`/api/user/pages`); **платформа** рендерить
 `page_data`.
 

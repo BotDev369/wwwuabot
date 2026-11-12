@@ -1,0 +1,97 @@
+/**
+ * Рендер сценарію бота: віджет або rich-повідомлення.
+ *
+ * Віджет живе лише в приватному чаті (так у проді), тому для групи потрібен
+ * `rich_html`. Обидва варіанти несуть кнопки в тілі повідомлення.
+ *
+ * @module bot-dev/src/shared/utils/scenario-screen
+ */
+
+import type { AppContext } from "../types/env";
+import type { BotScenario } from "../types/scenario";
+import { ScenarioRepository } from "../../repositories/scenario.repository";
+import { sendRichMessage, sendWidget } from "../telegram/widgets";
+import { log } from "./debug";
+
+export async function renderScenario(ctx: AppContext, scenario: BotScenario): Promise<boolean> {
+  if (!ctx.chat?.id) return false;
+
+  const useWidget = scenario.kind === "widget" && ctx.chat.type === "private";
+  const sent = useWidget
+    ? await sendWidgetSafely(ctx, scenario)
+    : await sendRichSafely(ctx, scenario);
+
+  if (!sent) return false;
+
+  await deletePrevious(ctx, sent.message_id);
+
+  if (ctx.user) {
+    ctx.user.message_id = sent.message_id;
+    ctx.userDirty = true;
+    if (ctx.chat.type === "private") {
+      await new ScenarioRepository(ctx.env)
+        .saveMessageState(
+          ctx.user.user_id,
+          sent.message_id,
+          sent.widgetId,
+          scenario.lookup,
+          scenario.widget_data,
+        )
+        .catch((error: unknown) => log("SCENARIO", "state save failed", { error: String(error) }));
+    }
+  }
+
+  log("SCENARIO", "rendered", { lookup: scenario.lookup, kind: useWidget ? "widget" : "rich" });
+  return true;
+}
+
+async function sendWidgetSafely(
+  ctx: AppContext,
+  scenario: BotScenario,
+): Promise<{ message_id: number; widgetId: string | null } | null> {
+  if (!scenario.widget_html) return null;
+  try {
+    const sent = await sendWidget(ctx.env.BOT_TOKEN, {
+      chatId: ctx.chat!.id,
+      html: scenario.widget_html,
+      caption: scenario.caption,
+      chatData: scenario.widget_data,
+      allowQueries: true,
+    });
+    return { message_id: sent.message_id, widgetId: sent.widget?.id ?? null };
+  } catch (error: unknown) {
+    log("SCENARIO", "sendWidget failed", { lookup: scenario.lookup, error: String(error) });
+    // Віджет не пішов — це реальна помилка API (ліміт, HTML). Rich — запасний
+    // варіант того самого екрана, якщо він записаний.
+    return scenario.rich_html ? await sendRichSafely(ctx, scenario) : null;
+  }
+}
+
+async function sendRichSafely(
+  ctx: AppContext,
+  scenario: BotScenario,
+): Promise<{ message_id: number; widgetId: string | null } | null> {
+  if (!scenario.rich_html) return null;
+  try {
+    const sent = await sendRichMessage(ctx.env.BOT_TOKEN, ctx.chat!.id, scenario.rich_html);
+    return { message_id: sent.message_id, widgetId: null };
+  } catch (error: unknown) {
+    log("SCENARIO", "sendRichMessage failed", { lookup: scenario.lookup, error: String(error) });
+    return null;
+  }
+}
+
+/** У чаті лишається один екран бота: попередній і повідомлення людини зникають. */
+async function deletePrevious(ctx: AppContext, keepId: number): Promise<void> {
+  const ids: number[] = [];
+  const old = ctx.user?.message_id;
+  if (typeof old === "number" && old !== keepId) ids.push(old);
+  if (ctx.message?.message_id) ids.push(ctx.message.message_id);
+  if (ids.length === 0) return;
+
+  try {
+    await ctx.api.deleteMessages(ctx.chat!.id, ids);
+  } catch (error: unknown) {
+    log("SCENARIO", "old messages not deleted", { error: String(error), ids });
+  }
+}

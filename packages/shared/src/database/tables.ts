@@ -248,31 +248,41 @@ export const TABLES = {
     name: "bot_scenarios",
     owner: "api-dev",
     purpose:
-      "Екран бота для адреси сторінки: команда, підписи, фото, кнопки, очікування вводу й rich-розмітка. Читає bot-dev.",
+      "Сценарій бота за ключем lookup: віджет (HTML) або rich-повідомлення. З платформою не пов'язаний.",
     create: `CREATE TABLE IF NOT EXISTS "bot_scenarios" (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
-        slug TEXT NOT NULL UNIQUE,
-        bot_command TEXT,
-        photo_url TEXT,
-        caption_top TEXT,
-        caption_mid TEXT,
-        caption_bot TEXT,
-        keyboard_type TEXT NOT NULL DEFAULT 'static',
-        buttons TEXT NOT NULL DEFAULT '[]',
-        awaits_input TEXT,
-        input_path TEXT,
-        input_next TEXT,
-        price TEXT,
-        qty_options TEXT,
+        lookup TEXT NOT NULL UNIQUE,
+        kind TEXT NOT NULL CHECK (kind IN ('widget', 'rich')),
+        caption TEXT,
+        widget_html TEXT,
+        widget_data TEXT,
+        rich_html TEXT,
         notify_groups TEXT,
         notify_template TEXT,
-        rich_message TEXT,
-        rich_data TEXT,
-        is_active INTEGER DEFAULT 1,
+        is_active INTEGER NOT NULL DEFAULT 1,
         created_at TEXT NOT NULL DEFAULT (datetime('now')),
+        updated_at TEXT NOT NULL DEFAULT (datetime('now')),
+        CHECK (
+          (kind = 'widget' AND widget_html IS NOT NULL AND length(trim(widget_html)) > 0)
+          OR
+          (kind = 'rich' AND rich_html IS NOT NULL AND length(trim(rich_html)) > 0)
+        )
+      )`,
+  },
+
+  bot_widget_messages: {
+    name: "bot_widget_messages",
+    owner: "bot-dev",
+    purpose:
+      "Повідомлення-віджет у чаті: координати, widget_id і стан, щоб тап знав, що саме оновити.",
+    create: `CREATE TABLE IF NOT EXISTS "bot_widget_messages" (
+        user_id INTEGER PRIMARY KEY,
+        message_id INTEGER NOT NULL,
+        widget_id TEXT,
+        lookup TEXT NOT NULL,
+        chat_data TEXT,
         updated_at TEXT NOT NULL DEFAULT (datetime('now'))
       )`,
-    indexes: ["CREATE INDEX IF NOT EXISTS idx_bot_scenarios_slug ON bot_scenarios(slug)"],
   },
 
   /**

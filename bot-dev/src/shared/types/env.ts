@@ -1,5 +1,5 @@
 import { Context } from "grammy";
-import type { ScenarioButton } from "./scenario";
+import type { BotScenario } from "./scenario";
 
 export interface BotUser {
   user_id: number;
@@ -7,30 +7,19 @@ export interface BotUser {
   last_name?: string;
   username?: string;
   language?: string;
-  /**
-   * Усе, що Telegram віддав про користувача (`ctx.from` як JSON) — щоб
-   * профіль показував справжні дані, а не перелік, який ми самі склали.
-   */
   telegram_json?: string;
-  /** Ім'я на платформі (wwwuabot) — його обирає сам користувач, не Telegram. */
   platform_username?: string;
   is_blocked?: number | boolean;
   rate_limit_json?: string;
+  /** Останній ключ сценарію, який бачила людина. */
   active_scenario?: string | null;
+  /** Останнє повідомлення бота — його замінює наступний екран. */
   message_id?: number;
   my_dates?: string;
-  /**
-   * Хто запросив людину (`users.user_id`); `null` — ніхто. Нульова ознака
-   * «сюди можна»: бот закритий за запрошеннями (`modules/access`).
-   */
   inviter_id?: number | null;
-  /** Діалог із адміном відкритий (`modules/access/contact`). */
   admin_dialog_open?: number | null;
-  /** Накопичений текст зверчення людини без допуску. */
   admin_dialog_text?: string | null;
-  /** Скільки повідомлень вона вже написала — показуємо лічильником. */
   admin_dialog_count?: number | null;
-  /** Повідомлення з inline-кнопками діалогу: його редагуємо, а не плодимо нове. */
   admin_panel_id?: number | null;
   created_at?: string;
   updated_at?: string;
@@ -44,48 +33,11 @@ export interface Env {
   ENVIRONMENT: string;
   DB: D1Database;
   CLOUDINARY_CLOUD_NAME: string;
-  /** Публічна база Mini App; без неї бот не додає автоматичну web_app-кнопку. */
+  /** Публічна база Mini App; без неї бот не додає web_app-кнопок. */
   WEB_PLATFORM_URL?: string;
-  /**
-   * Telegram-id власника продукту (Cloudflare Secret). Його не може запросити
-   * ніхто, тож він єдиний виняток із допуску за запрошеннями
-   * (`@wwwuabot/shared/security/access`), і саме йому падають звернення
-   * (`modules/access/contact`). Без секрету винячку немає, а звернення лишаються
-   * в `access_requests` — їх видно в панелі.
-   */
   ADMIN_TELEGRAM_ID?: string;
-  /**
-   * DSN із Sentry. Задається як Cloudflare Secret. Без нього Sentry вимкнено
-   * — бот працює як звичайно.
-   */
   SENTRY_DSN?: string;
-  /** Binding Cloudflare `CF_VERSION_METADATA` — дає `id` релізу для Sentry. */
   CF_VERSION_METADATA?: { id?: string };
-}
-
-export interface ScreenState {
-  slug: string;
-  title?: string | null;
-  photo_url: string;
-  caption: {
-    top?: string;
-    mid?: string;
-    bot?: string;
-  };
-  buttons: ScenarioButton[][];
-  qty_options?: string | null;
-  price?: number | null;
-  notify_groups?: string | null;
-  notify_template?: string | null;
-  rich_message?: boolean;
-  rich_data?: Record<string, unknown>[] | null;
-  /** Повний шлях поточного маршруту; заповнюється для Telegram deep link. */
-  web_path?: string;
-  /**
-   * Перший екран (`/start` без діплінка): під ним лише рядок екранів
-   * платформи, без кнопок сторінки — вони ведуть у сценарії, яких ще немає.
-   */
-  landing?: boolean;
 }
 
 export type AppContext = Context & {
@@ -93,13 +45,11 @@ export type AppContext = Context & {
   user?: BotUser;
   userDirty?: boolean;
   menuDirty?: boolean;
-  screen?: ScreenState;
-  liveMessageSent?: boolean;
+  /** Сценарій, який треба показати цим апдейтом. */
+  scenario?: BotScenario;
   /**
-   * Повідомлення людини треба знести **після** того, як бот успішно показав
-   * свій екран. Тому роутер лише ставить прапорець, а `postMiddleware` зносить
-   * повідомлення після вдалого рендеру: видалити раніше — значить зникнути
-   * назавжди, не показавши нічого.
+   * Повідомлення людини зноситься **після** успішного показу екрана: видалити
+   * раніше — значить зникнути, не показавши нічого.
    */
   dropIncomingAfterRender?: boolean;
   pickTarget?: string;

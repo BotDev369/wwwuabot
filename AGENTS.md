@@ -39,7 +39,7 @@ packages/ui/      Спільні React-компоненти Page Builder (@wwwua
 - **Сервіси** — список входів у екрани платформи (п'ятий слот футера): кожен рядок веде на екран зі **власною** адресою, а не на `slug` рядка `platform_pages`. Окремої сторінки-обгортки над ними немає; екран зі своїм слотом футера рядком тут не повторюється.
 - **Публічний профіль** — поля, які людина відкрила **сама**; фільтр стоїть у **запиті до бази**, тож приватний профіль не дістати й прямим посиланням.
 - **Page Builder** — блочна система: сторінка = рядок `platform_pages` (колонка `page_data`), 4 зони, блоки рекурсивні.
-- **Сторінка з шаблону** — рядок `platform_pages` з власником (`owner_id`), видимістю (`is_public`) і ключем шаблону (`template_key`); екран бота — окремий рядок `bot_scenarios` за тим самим `slug`.
+- **Сторінка з шаблону** — рядок `platform_pages` з власником (`owner_id`), видимістю (`is_public`) і ключем шаблону (`template_key`); сценарій бота — `bot_scenarios` за `lookup`, без зв'язку з платформою.
 - **Магазин** — сторінка з шаблону «Магазин» (той самий рядок); товари — `shop_products`, замовлення — `shop_orders` зі **знімком** позицій.
 - **Трекер** — щоденний ряд «день → число» (одиниця, крок, ціль): один механізм на всі мірки, не окремий вид на кожну.
 - **Вид товару** — фізичний / цифровий / послуга: **закритий** перелік у коді (`PRODUCT_KINDS`), бо вид — це поведінка, а не слово.
@@ -114,7 +114,7 @@ const name = await dialog.prompt("Назва:", { validate: (v) => (v.trim() ? n
 | Тема (авторський набір токенів) | `docs/THEMES.md`, `packages/shared/src/styles/registry.ts`, `themes.css` |
 | Авто-добір колонок; перебудова таблиці | `packages/shared/src/database/auto-migrate.ts`; `scripts/migrations/*.sql` (2 кроки: копія + заміна) |
 
-**Бот:** конвеєр апдейта, `ctx.screen`, рендер, нотифікації, контакти — `bot-dev/README.md`. Орієнтири: HTTP — `src/api/router.ts`, потоки — `src/core/router/`, middleware — `src/core/middleware/`, домен — `src/modules/<domain>/`, тексти — `src/shared/config/texts.ts`.
+**Бот:** конвеєр апдейта, `ctx.scenario`, рендер, нотифікації, контакти — `bot-dev/README.md`. Орієнтири: HTTP — `src/api/router.ts`, потоки — `src/core/router/`, middleware — `src/core/middleware/`, домен — `src/modules/<domain>/`, тексти — `src/shared/config/texts.ts`.
 
 **Ідентичність і безпека:**
 
@@ -155,7 +155,7 @@ const name = await dialog.prompt("Назва:", { validate: (v) => (v.trim() ? n
 - Не додавай колонку, реагуючи на помилку SQLite (`no such column` → `ALTER TABLE`): так схема починає залежати від того, що надіслав клієнт. Колонка додається рядком у реєстрі.
 - Не покладайся на унікальність **імені індексу**: у SQLite імена індексів глобальні для бази, тому `CREATE UNIQUE INDEX IF NOT EXISTS` з тим самим ім'ям на другій таблиці — не помилка, а **порожня дія**, і таблиця лишається без унікальності. Стереже `tables.test.ts`.
 - SQL у коді пиши **великими літерами** (`SELECT … FROM users`), інакче `check:db` не відрізнить таблицю від `from "react"`. Не роби `SELECT *` на таблицях з важкими JSON-колонками (`users`) **там, де читають не одну людину** — лише рядок за `user_id = ?` має право на `SELECT *`, бо аватар приходить із `telegram_json`; стереже `check:db`. Не забувай `[[d1_databases]]` на top-level `wrangler.toml`. Не змішуй prod/dev бази — різні `database_id`.
-- Не створюй **другу таблицю під той самий контент**: сторінка — `platform_pages` (`page_data`), екран бота — `bot_scenarios` (`caption_*`/`buttons`/`rich_*`), зв'язок — `slug`; нова ознака = колонка, а не таблиця поруч. Не тримай замовлення магазину ні в рядку користувача, ні в тексті повідомлення — воно живе в `shop_orders` зі **знімком** позицій. Деталі — `docs/CONTENT_MODEL.md`, `docs/SHOPS.md`.
+- Не створюй **другу таблицю під той самий контент**: сторінка — `platform_pages` (`page_data`), сценарій бота — `bot_scenarios` (`lookup`, `kind`, `widget_html`/`rich_html`); нова ознака = колонка, а не таблиця поруч. Не тримай замовлення магазину ні в рядку користувача, ні в тексті повідомлення — воно живе в `shop_orders` зі **знімком** позицій. Деталі — `docs/CONTENT_MODEL.md`, `docs/SHOPS.md`.
 - Перенос даних між таблицями — окремим SQL, який **тільки додає** (`INSERT`, ніколи `DELETE`/`DROP`/`UPDATE`), ідемпотентний і **називає у звіті** все, що пропустив: вибрати за власника «правильний» рядок — це тихо втратити чужий контент.
 - Не читай тіло запиту як `await c.req.json() as { … }`: це твердження, яке компілятор не перевіряє. Бери `readBody(request, schema)` з `api-dev/src/shared/body.ts` (зразок — `contacts.controller.ts`, `docs/RECIPES.md` §1a).
 - Не створюй API-ендпоїнти поза `api-dev/`. Не довіряй `X-Telegram-User-Id`, cookie `user_id` чи `?user_id=` — ідентичність лише з підписаного `initData` (`api-dev/src/shared/identity.ts`).
@@ -180,7 +180,7 @@ const name = await dialog.prompt("Назва:", { validate: (v) => (v.trim() ? n
 
 - **Структурно:** шість воркспейсів; 0 `any`, `tsc` чистий.
 - **Тести:** Vitest; червоний тест блокує деплой. Покриття друкує `npm run test:coverage`, а межі (загальна й для нового коду) тримає `npm run check:coverage`. Під дотиком — `*.dom.test.*` (див. `docs/QUALITY_GATE.md`).
-- **Дані й контент:** усі таблиці — в одному реєстрі, поза ним таблиць немає; контент — `platform_pages`, екран бота — `bot_scenarios`, де `id` — ідентичність, а `slug` — адреса. Карта — `docs/DATA_MODEL.md`, легасі-хвіст — `docs/DB_LEGACY.md`.
+- **Дані й контент:** усі таблиці — в одному реєстрі, поза ним таблиць немає; контент — `platform_pages` (`slug`), бот — `bot_scenarios` (`lookup`, без зв'язку). Карта — `docs/DATA_MODEL.md`, легасі-хвіст — `docs/DB_LEGACY.md`.
 - **Ідентичність і адмін:** єдине джерело користувача — підписаний Telegram `initData`; адмін-авторизація — тільки cookie `admin_session`. Секретів у заголовках і легасі-поверхонь (`/db-proxy`, `/setup-webhook`) не існує.
 - **Поверхні** описані власними документами — `docs/SURFACES.md` (аркуш і композер), `docs/MESSAGES.md` (повідомлення), `docs/PLATFORM.md` (екран, хром, сервіси, акаунт і замовлення), `docs/VISIBILITY.md`, `docs/ASSESSMENTS.md` + `specs/`, `docs/THEMES.md`, `docs/PAGES.md`, `docs/SHOPS.md` + `docs/SHOP_UI.md` + `docs/PRODUCTS.md`, `docs/ADS.md`, `docs/GAMES.md`, `docs/TRACKERS.md`, `docs/DATA_MODEL.md` + `docs/D1_OPS.md`, `docs/DESIGN_SYSTEM.md` + `docs/TOKENS.md`, `docs/MONITORING.md`. Тут лишається тільки те, що не має іншого дому.
 - **Моніторинг:** `/health` (liveness) і `/health/deep` (D1 + KV, **503** при деградації) — саме другий опитує зовнішній монітор; Sentry є в `api-dev` і `bot-dev`, без секрету він у no-op.
