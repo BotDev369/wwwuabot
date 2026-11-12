@@ -26,8 +26,28 @@ const PAGE = {
   title: null,
 };
 
-function row(scenario: typeof PHOTO | typeof PAGE, overrides: Record<string, unknown> = {}) {
-  const props = { scenario, isSelected: false, onSelect: vi.fn(), onOpen: vi.fn(), ...overrides };
+/** Головна: адреса веб-кореня порожня, а вхід у бот — команда `/start`. */
+const HOME = {
+  slug: "",
+  bot_command: "/start",
+  rich_message: null,
+  page_data: '{"blocks":[]}',
+  updated_at: "2026-11-11 23:23:13",
+  title: "WWWUABot",
+};
+
+function row(
+  scenario: typeof PHOTO | typeof PAGE | typeof HOME,
+  overrides: Record<string, unknown> = {},
+) {
+  const props = {
+    scenario,
+    surface: "platform",
+    isSelected: false,
+    onSelect: vi.fn(),
+    onOpen: vi.fn(),
+    ...overrides,
+  };
   render(
     <table>
       <tbody>
@@ -70,6 +90,12 @@ describe("ScenarioRow", () => {
     fireEvent.click(screen.getByRole("button", { name: /Відкрити/ }));
     expect(props.onOpen).toHaveBeenCalledTimes(1);
     expect(props.onSelect).toHaveBeenCalledTimes(1);
+  });
+
+  it("у боті головна називається командою /start, а не порожнім рядком", () => {
+    row(HOME, { surface: "bot" });
+
+    expect(screen.getByText("/start")).toBeTruthy();
   });
 
   it("тип видно значком, а не лише кольором", () => {
