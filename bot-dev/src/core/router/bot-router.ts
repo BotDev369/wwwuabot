@@ -48,12 +48,12 @@ export async function botRouter(ctx: AppContext): Promise<void> {
       const contacted = await applyContactPayload(ctx, inviteCode);
       if (contacted.kind !== "unknown") {
         if (contacted.kind !== "invited" || !(await showInviteScreen(ctx, contacted.ownerId))) {
-          await show(ctx, pagePayload, true);
+          await show(ctx, pagePayload || "/start", true);
         }
         return;
       }
     }
-    await show(ctx, pagePayload, true);
+    await show(ctx, pagePayload || "/start", true);
     return;
   }
 
