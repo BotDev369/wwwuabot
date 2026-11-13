@@ -6,9 +6,12 @@
  * @module bot-dev/src/shared/utils/scenario-screen
  */
 
+import type { InlineKeyboardButton } from "grammy/types";
 import type { AppContext } from "../types/env";
 import type { BotScenario } from "../types/scenario";
 import { appChatData, type AppView } from "../config/app-views";
+import { BRAND } from "../config/texts";
+import { screenLabel } from "@wwwuabot/shared/events";
 import { ScenarioRepository } from "../../repositories/scenario.repository";
 import { sendRichMessage, sendWidget } from "../telegram/widgets";
 import { applyPlatformUrl } from "./widget-html";
@@ -65,20 +68,36 @@ async function sendWidgetSafely(
   chatData: string | null,
 ): Promise<{ message_id: number; widgetId: string | null } | null> {
   if (!scenario.widget_html) return null;
-  try {
-    const sent = await sendWidget(ctx.env.BOT_TOKEN, {
-      chatId: ctx.chat!.id,
-      html: applyPlatformUrl(scenario.widget_html, ctx.env.WEB_PLATFORM_URL),
-      chatData,
-      allowQueries: true,
-    });
-    return { message_id: sent.message_id, widgetId: sent.widget?.id ?? null };
-  } catch (error: unknown) {
-    // Запасного rich немає: у приваті він заборонений, тож збій лишає старий екран.
-    log("SCENARIO", "sendWidget failed", { lookup: scenario.lookup, error: String(error) });
-    await recordSendFailure(ctx, String(error));
-    return null;
+  const html = applyPlatformUrl(scenario.widget_html, ctx.env.WEB_PLATFORM_URL);
+  const chatId = ctx.chat!.id;
+  const attempts: { label: string; input: Parameters<typeof sendWidget>[1] }[] = [
+    { label: "full", input: { chatId, html, chatData, allowQueries: true } },
+    { label: "no-queries", input: { chatId, html, chatData } },
+    { label: "bare", input: { chatId, html } },
+  ];
+
+  const failures: string[] = [];
+  for (const attempt of attempts) {
+    try {
+      const sent = await sendWidget(ctx.env.BOT_TOKEN, attempt.input);
+      if (attempt.label !== "full") {
+        log("SCENARIO", "sendWidget passed on retry", { attempt: attempt.label });
+      }
+      return { message_id: sent.message_id, widgetId: sent.widget?.id ?? null };
+    } catch (error: unknown) {
+      failures.push(`${attempt.label}: ${String(error)}`);
+      log("SCENARIO", "sendWidget attempt failed", {
+        lookup: scenario.lookup,
+        attempt: attempt.label,
+        error: String(error),
+      });
+    }
   }
+
+  await recordSendFailure(ctx, `${ctx.chat?.type ?? "?"} | ${failures.join(" | ")}`);
+  // Віджетів може не бути в цьому чаті (INPUT_MEDIA_WIDGET_NOT_ALLOWED): тоді
+  // краще картка з тими самими входами, ніж тиша.
+  return sendTextFallback(ctx);
 }
 
 async function sendRichSafely(
@@ -91,6 +110,43 @@ async function sendRichSafely(
     return { message_id: sent.message_id, widgetId: null };
   } catch (error: unknown) {
     log("SCENARIO", "sendRichMessage failed", { lookup: scenario.lookup, error: String(error) });
+    return null;
+  }
+}
+
+/**
+ * Той самий старт без віджета: бренд-рядок і кнопки в розділи платформи.
+ * Використовується лише тоді, коли сервер відмовив у надсиланні віджета.
+ */
+async function sendTextFallback(
+  ctx: AppContext,
+): Promise<{ message_id: number; widgetId: string | null } | null> {
+  const platform = ctx.env.WEB_PLATFORM_URL?.replace(/\/+$/, "");
+  // Підписи — зі спільних назв екранів, а не нові рядки: той самий словник,
+  // що й у журналі платформи, тож кнопка й екран звуться однаково.
+  const rows: InlineKeyboardButton[][] = [];
+  if (platform) {
+    rows.push(
+      [
+        { text: screenLabel("trackers"), url: `${platform}/trackers` },
+        { text: screenLabel("services"), url: `${platform}/services` },
+      ],
+      [
+        { text: screenLabel("assessments"), url: `${platform}/assessments` },
+        { text: screenLabel("favorites"), url: `${platform}/favorites` },
+      ],
+    );
+  }
+  rows.push([{ text: screenLabel("contacts"), callback_data: "contacts" }]);
+
+  try {
+    const sent = await ctx.api.sendMessage(ctx.chat!.id, `${BRAND.name} — ${BRAND.tagline}`, {
+      reply_markup: { inline_keyboard: rows },
+    });
+    log("SCENARIO", "text fallback sent", { message_id: sent.message_id });
+    return { message_id: sent.message_id, widgetId: null };
+  } catch (error: unknown) {
+    log("SCENARIO", "text fallback failed", { error: String(error) });
     return null;
   }
 }
