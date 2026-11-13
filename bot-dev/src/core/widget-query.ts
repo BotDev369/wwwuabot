@@ -18,6 +18,7 @@ import {
 import { APP_LOOKUP, appChatData, isAppView, type AppView } from "../shared/config/app-views";
 import { hasAccess } from "@wwwuabot/shared/security/access";
 import { ACCESS_DENIED } from "../shared/config/texts";
+import { applyPlatformUrl } from "../shared/utils/widget-html";
 import { log } from "../shared/utils/debug";
 import type { Env } from "../shared/types/env";
 import type { BotScenario } from "../shared/types/scenario";
@@ -96,7 +97,7 @@ async function openView(
 
   const sent = await sendWidget(env.BOT_TOKEN, {
     chatId,
-    html: app.widget_html,
+    html: applyPlatformUrl(app.widget_html, env.WEB_PLATFORM_URL),
     chatData,
     allowQueries: true,
   });
@@ -117,7 +118,7 @@ async function sendScreen(
 
   const sent = await sendWidget(env.BOT_TOKEN, {
     chatId,
-    html: scenario.widget_html,
+    html: applyPlatformUrl(scenario.widget_html, env.WEB_PLATFORM_URL),
     chatData,
     allowQueries: true,
   });

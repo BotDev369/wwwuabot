@@ -11,6 +11,7 @@ import type { BotScenario } from "../types/scenario";
 import { appChatData, type AppView } from "../config/app-views";
 import { ScenarioRepository } from "../../repositories/scenario.repository";
 import { sendRichMessage, sendWidget } from "../telegram/widgets";
+import { applyPlatformUrl } from "./widget-html";
 import { log } from "./debug";
 
 /**
@@ -65,7 +66,7 @@ async function sendWidgetSafely(
   try {
     const sent = await sendWidget(ctx.env.BOT_TOKEN, {
       chatId: ctx.chat!.id,
-      html: scenario.widget_html,
+      html: applyPlatformUrl(scenario.widget_html, ctx.env.WEB_PLATFORM_URL),
       chatData,
       allowQueries: true,
     });
