@@ -13,7 +13,7 @@ import { appChatData, type AppView } from "../config/app-views";
 import { BRAND } from "../config/texts";
 import { screenLabel } from "@wwwuabot/shared/events";
 import { ScenarioRepository } from "../../repositories/scenario.repository";
-import { sendRichMessage, sendWidget } from "../telegram/widgets";
+import { sendRichMessage, sendWidget, sendWidgetBeta } from "../telegram/widgets";
 import { applyPlatformUrl } from "./widget-html";
 import { buildUserEvent } from "../../modules/logging/builder";
 import { recordUserEvent } from "@wwwuabot/shared/database/user-events";
@@ -70,17 +70,19 @@ async function sendWidgetSafely(
   if (!scenario.widget_html) return null;
   const html = applyPlatformUrl(scenario.widget_html, ctx.env.WEB_PLATFORM_URL);
   const chatId = ctx.chat!.id;
-  const attempts: { label: string; input: Parameters<typeof sendWidget>[1] }[] = [
-    { label: "full", input: { chatId, html, chatData, allowQueries: true } },
-    { label: "no-queries", input: { chatId, html, chatData } },
-    { label: "bare", input: { chatId, html } },
+  const input = { chatId, html, chatData, allowQueries: true };
+  const attempts: { label: string; send: () => Promise<{ message_id: number; widget?: { id?: string } }> }[] = [
+    { label: "prod", send: () => sendWidget(ctx.env.BOT_TOKEN, input) },
+    { label: "beta", send: () => sendWidgetBeta(ctx.env.BOT_TOKEN, input) },
+    { label: "no-queries", send: () => sendWidget(ctx.env.BOT_TOKEN, { chatId, html, chatData }) },
+    { label: "bare", send: () => sendWidget(ctx.env.BOT_TOKEN, { chatId, html }) },
   ];
 
   const failures: string[] = [];
   for (const attempt of attempts) {
     try {
-      const sent = await sendWidget(ctx.env.BOT_TOKEN, attempt.input);
-      if (attempt.label !== "full") {
+      const sent = await attempt.send();
+      if (attempt.label !== "prod") {
         log("SCENARIO", "sendWidget passed on retry", { attempt: attempt.label });
       }
       return { message_id: sent.message_id, widgetId: sent.widget?.id ?? null };
