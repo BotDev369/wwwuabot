@@ -82,6 +82,17 @@ describe("postMiddleware", () => {
     expect(mocks.deleteIncoming).not.toHaveBeenCalled();
   });
 
+  it("коли роутер уже відповідав, вхід не вважається зайвим", async () => {
+    const ctx = context({
+      chat: { id: 7, type: "private" },
+      message: { message_id: 4, text: "/start" },
+      screenHandled: true,
+    });
+    await postMiddleware(ctx, async () => undefined);
+
+    expect(mocks.deleteIncoming).not.toHaveBeenCalled();
+  });
+
   it("нотифікації йдуть, коли сценарій їх налаштував", async () => {
     const scenario = { notify_groups: "main", notify_template: "${user_name}" };
     await postMiddleware(

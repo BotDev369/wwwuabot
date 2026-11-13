@@ -12,6 +12,8 @@ import { appChatData, type AppView } from "../config/app-views";
 import { ScenarioRepository } from "../../repositories/scenario.repository";
 import { sendRichMessage, sendWidget } from "../telegram/widgets";
 import { applyPlatformUrl } from "./widget-html";
+import { buildUserEvent } from "../../modules/logging/builder";
+import { recordUserEvent } from "@wwwuabot/shared/database/user-events";
 import { log } from "./debug";
 
 /**
@@ -74,6 +76,7 @@ async function sendWidgetSafely(
   } catch (error: unknown) {
     // Запасного rich немає: у приваті він заборонений, тож збій лишає старий екран.
     log("SCENARIO", "sendWidget failed", { lookup: scenario.lookup, error: String(error) });
+    await recordSendFailure(ctx, String(error));
     return null;
   }
 }
@@ -90,6 +93,18 @@ async function sendRichSafely(
     log("SCENARIO", "sendRichMessage failed", { lookup: scenario.lookup, error: String(error) });
     return null;
   }
+}
+
+/**
+ * Збій надсилання видно в журналі людини: `wrangler tail` живе хвилини, а
+ * причина мусить лишитися, інакше «бот мовчить» неможливо розібрати.
+ */
+async function recordSendFailure(ctx: AppContext, error: string): Promise<void> {
+  const event = buildUserEvent(ctx, "error");
+  if (!event) return;
+  await recordUserEvent(ctx.env.DB, { ...event, details: error.slice(0, 300) }, Date.now()).catch(
+    () => undefined,
+  );
 }
 
 /** У чаті лишається один екран бота: попередній і повідомлення людини зникають. */

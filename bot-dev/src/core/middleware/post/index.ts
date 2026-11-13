@@ -16,8 +16,8 @@ export const postMiddleware: MiddlewareFn<AppContext> = async (ctx) => {
     const shown = await renderScenario(ctx, ctx.scenario);
     // Правило: вхідне зникає лише після того, як відповідь уже пішла.
     if (shown) await deleteIncomingMessage(ctx);
-  } else {
-    log("POST", "no scenario set, skipping render");
+  } else if (!ctx.screenHandled) {
+    log("POST", "nothing handled the update, dropping input");
     await dropUnexpected(ctx);
   }
 

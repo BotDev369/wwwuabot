@@ -52,6 +52,8 @@ export type AppContext = Context & {
    * раніше — значить зникнути, не показавши нічого.
    */
   dropIncomingAfterRender?: boolean;
+  /** Роутер уже відповів на це оновлення: вхідне не вважаємо несподіваним. */
+  screenHandled?: boolean;
   pickTarget?: string;
   pendingNotification?: { data: Record<string, unknown> };
 };

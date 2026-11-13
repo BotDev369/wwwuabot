@@ -93,6 +93,9 @@ async function show(ctx: AppContext, lookup: string, dropIncoming = false): Prom
     return;
   }
 
+  // Спроба показати екран — уже відповідь: невдача не робить вхід «зайвим»,
+  // інакше повідомлення людини зникає без жодного екрана на заміну.
+  ctx.screenHandled = true;
   const shown = await renderScenario(ctx, scenario, view);
   if (shown && (dropIncoming || ctx.callbackQuery)) {
     // Повідомлення людини зносить сам рендер; для `callback_query` вхідного
