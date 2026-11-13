@@ -11,6 +11,7 @@
 
 import type { AppContext } from "../../shared/types/env";
 import { ScenarioRepository } from "../../repositories/scenario.repository";
+import { APP_LOOKUP, isAppView, type AppView } from "../../shared/config/app-views";
 import { renderScenario } from "../../shared/utils/scenario-screen";
 import { deleteIncomingMessage } from "../../shared/utils/message";
 import { log } from "../../shared/utils/debug";
@@ -81,14 +82,18 @@ async function show(ctx: AppContext, lookup: string, dropIncoming = false): Prom
     return;
   }
 
-  const scenario = await new ScenarioRepository(ctx.env).findByLookup(lookup);
+  const repo = new ScenarioRepository(ctx.env);
+  // `about` і `contacts` — це види головного віджета, а не окремі сценарії:
+  // документ один, тож і шукаємо його, а вид віддаємо стартовим станом.
+  const view: AppView | undefined = isAppView(lookup) ? lookup : undefined;
+  const scenario = await repo.findByLookup(view ? APP_LOOKUP : lookup);
   if (!scenario) {
     log("ROUTER", "scenario not found", { lookup });
     await deleteIncomingMessage(ctx);
     return;
   }
 
-  const shown = await renderScenario(ctx, scenario);
+  const shown = await renderScenario(ctx, scenario, view);
   if (shown && (dropIncoming || ctx.callbackQuery)) {
     // Повідомлення людини зносить сам рендер; для `callback_query` вхідного
     // повідомлення немає.

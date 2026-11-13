@@ -8,7 +8,12 @@
  */
 
 import { DatabaseRepository } from "../core/database.repository";
-import type { BotScenario, ScenarioKind, ScenarioRow } from "../shared/types/scenario";
+import type {
+  BotScenario,
+  ScenarioKind,
+  ScenarioRow,
+  WidgetMessageState,
+} from "../shared/types/scenario";
 
 function kindOf(value: string): ScenarioKind {
   return value === "rich" ? "rich" : "widget";
@@ -36,6 +41,18 @@ export class ScenarioRepository extends DatabaseRepository {
       notify_groups: row.notify_groups,
       notify_template: row.notify_template,
     };
+  }
+
+  /** Поточний віджет людини: тап по ньому міняє стан, а не надсилає новий. */
+  async getMessageState(userId: number): Promise<WidgetMessageState | null> {
+    const row = await this.db
+      .prepare(
+        `SELECT message_id, widget_id, lookup, chat_data
+           FROM bot_widget_messages WHERE user_id = ?`,
+      )
+      .bind(userId)
+      .first<WidgetMessageState>();
+    return row ?? null;
   }
 
   /** Запам'ятати повідомлення-віджет, щоб наступний тап знав його координати. */

@@ -66,17 +66,27 @@ describe("botRouter", () => {
     await botRouter(context({ message: { text: "/start", message_id: 3 } }));
 
     expect(mocks.find).toHaveBeenCalledWith("/start");
-    expect(mocks.render).toHaveBeenCalledWith(expect.anything(), SCENARIO);
+    expect(mocks.render).toHaveBeenCalledWith(expect.anything(), SCENARIO, undefined);
   });
 
-  it("/start з payload шукає payload", async () => {
+  it("/start з payload відкриває вид документа", async () => {
     await botRouter(context({ message: { text: "/start about", message_id: 3 } }));
-    expect(mocks.find).toHaveBeenCalledWith("about");
+
+    // `about` — не окремий сценарій, а вид головного віджета.
+    expect(mocks.find).toHaveBeenCalledWith("/start");
+    expect(mocks.render).toHaveBeenCalledWith(expect.anything(), SCENARIO, "about");
   });
 
-  it("callback_data — точний ключ", async () => {
+  it("callback_data виду теж веде в головний документ", async () => {
     await botRouter(context({ callbackQuery: { data: "about" } }));
-    expect(mocks.find).toHaveBeenCalledWith("about");
+    expect(mocks.find).toHaveBeenCalledWith("/start");
+    expect(mocks.render).toHaveBeenCalledWith(expect.anything(), SCENARIO, "about");
+  });
+
+  it("довільний ключ лишається окремим сценарієм", async () => {
+    await botRouter(context({ callbackQuery: { data: "secret" } }));
+    expect(mocks.find).toHaveBeenCalledWith("secret");
+    expect(mocks.render).toHaveBeenCalledWith(expect.anything(), SCENARIO, undefined);
   });
 
   it("текст шукається як є", async () => {

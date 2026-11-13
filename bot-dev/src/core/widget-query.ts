@@ -1,16 +1,26 @@
 /**
- * Тап у віджеті: `widget_query` до grammY. Відповідаємо одразу (межа — 15 с),
- * потім показуємо сценарій за `data` — це і є ключ `lookup`.
+ * Тап у віджеті: `widget_query` до grammY. Відповідаємо одразу (межа — 15 с).
  *
+ * Навігація в головному документі не надсилає нічого нового: бот міняє
+ * `chat_data`, і віджет перемальовує вид. Якщо повідомлення вже немає —
+ * документ надсилається з потрібним видом як стартовим станом.
  * @module bot-dev/src/core/widget-query
  */
 
 import { ScenarioRepository } from "../repositories/scenario.repository";
 import { UserRepository } from "../modules/users/user.repository";
-import { sendWidget, answerWidgetQuery } from "../shared/telegram/widgets";
+import {
+  sendWidget,
+  answerWidgetQuery,
+  editMessageWidgetData,
+  type SentWidget,
+} from "../shared/telegram/widgets";
+import { APP_LOOKUP, appChatData, isAppView, type AppView } from "../shared/config/app-views";
 import { hasAccess } from "@wwwuabot/shared/security/access";
 import { ACCESS_DENIED } from "../shared/config/texts";
+import { log } from "../shared/utils/debug";
 import type { Env } from "../shared/types/env";
+import type { BotScenario } from "../shared/types/scenario";
 
 interface WidgetQuery {
   id: string;
@@ -18,6 +28,7 @@ interface WidgetQuery {
   data?: string;
   chat?: { id: number; type?: string };
   message_id?: number;
+  inline_message_id?: string;
 }
 
 export async function handleWidgetQuery(env: Env, query: WidgetQuery): Promise<void> {
@@ -33,33 +44,102 @@ export async function handleWidgetQuery(env: Env, query: WidgetQuery): Promise<v
     return;
   }
 
-  const scenario = await new ScenarioRepository(env).findByLookup(data);
-  if (!scenario) return;
-
+  const repo = new ScenarioRepository(env);
   try {
-    if (scenario.kind !== "widget" || !scenario.widget_html) return;
-    const sent = await sendWidget(env.BOT_TOKEN, {
-      chatId,
-      html: scenario.widget_html,
-      chatData: scenario.widget_data,
-      allowQueries: true,
-    });
-
-    const old = user.message_id;
-    if (typeof old === "number" && old !== sent.message_id) {
-      await deleteMessage(env, chatId, old);
+    if (isAppView(data)) {
+      await openView(env, repo, user.user_id, chatId, data as AppView, query);
+      return;
     }
-    await new UserRepository(env).updateUser(user.user_id, { message_id: sent.message_id });
-    await new ScenarioRepository(env).saveMessageState(
-      user.user_id,
-      sent.message_id,
-      "widget" in sent ? ((sent as { widget?: { id?: string } }).widget?.id ?? null) : null,
-      scenario.lookup,
-      scenario.widget_data,
-    );
+
+    const scenario = await repo.findByLookup(data);
+    if (!scenario) return;
+    await sendScreen(env, repo, user, chatId, scenario, scenario.widget_data);
   } catch {
     // Відповідь уже пішла; мовчазний збій лишає старий екран, а не ламає апдейт.
   }
+}
+
+/** Вид головного віджета: спершу правимо стан наявного повідомлення. */
+async function openView(
+  env: Env,
+  repo: ScenarioRepository,
+  userId: number,
+  chatId: number,
+  view: AppView,
+  query: WidgetQuery,
+): Promise<void> {
+  const app = await repo.findByLookup(APP_LOOKUP);
+  if (!app?.widget_html) return;
+
+  const chatData = appChatData(view);
+  const state = await repo.getMessageState(userId);
+
+  if (state?.lookup === APP_LOOKUP && !query.inline_message_id) {
+    const edited = await editMessageWidgetData(
+      env.BOT_TOKEN,
+      chatId,
+      state.message_id,
+      chatData,
+    ).then(
+      () => true,
+      (error: unknown) => {
+        log("WIDGET", "state edit failed, sending anew", { error: String(error) });
+        return false;
+      },
+    );
+    if (edited) {
+      await repo.saveMessageState(userId, state.message_id, state.widget_id, APP_LOOKUP, chatData);
+      log("WIDGET", "view changed in place", { view });
+      return;
+    }
+  }
+
+  const sent = await sendWidget(env.BOT_TOKEN, {
+    chatId,
+    html: app.widget_html,
+    chatData,
+    allowQueries: true,
+  });
+  await remember(env, repo, userId, chatId, sent, APP_LOOKUP, chatData);
+  log("WIDGET", "view sent as new widget", { view });
+}
+
+/** Окремий сценарій: новий екран і прибирання попереднього після успіху. */
+async function sendScreen(
+  env: Env,
+  repo: ScenarioRepository,
+  user: { user_id: number; message_id?: number | null },
+  chatId: number,
+  scenario: BotScenario,
+  chatData: string | null,
+): Promise<void> {
+  if (!scenario.widget_html) return;
+
+  const sent = await sendWidget(env.BOT_TOKEN, {
+    chatId,
+    html: scenario.widget_html,
+    chatData,
+    allowQueries: true,
+  });
+  await remember(env, repo, user.user_id, chatId, sent, scenario.lookup, chatData);
+  log("WIDGET", "screen sent", { lookup: scenario.lookup });
+}
+
+async function remember(
+  env: Env,
+  repo: ScenarioRepository,
+  userId: number,
+  chatId: number,
+  sent: SentWidget,
+  lookup: string,
+  chatData: string | null,
+): Promise<void> {
+  const old = (await new UserRepository(env).getUser(userId))?.message_id;
+  if (typeof old === "number" && old !== sent.message_id) {
+    await deleteMessage(env, chatId, old);
+  }
+  await new UserRepository(env).updateUser(userId, { message_id: sent.message_id });
+  await repo.saveMessageState(userId, sent.message_id, sent.widget?.id ?? null, lookup, chatData);
 }
 
 /** Відмова — теж віджет: у приватному чаті інших повідомлень не показуємо. */

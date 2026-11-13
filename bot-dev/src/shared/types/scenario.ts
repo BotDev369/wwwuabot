@@ -23,6 +23,14 @@ export interface BotScenario {
   notify_template: string | null;
 }
 
+/** Де в чаті лежить поточний віджет людини і який вид у ньому відкритий. */
+export interface WidgetMessageState {
+  message_id: number;
+  widget_id: string | null;
+  lookup: string;
+  chat_data: string | null;
+}
+
 export interface ScenarioRow {
   id: number;
   lookup: string;

@@ -8,11 +8,20 @@
 
 import type { AppContext } from "../types/env";
 import type { BotScenario } from "../types/scenario";
+import { appChatData, type AppView } from "../config/app-views";
 import { ScenarioRepository } from "../../repositories/scenario.repository";
 import { sendRichMessage, sendWidget } from "../telegram/widgets";
 import { log } from "./debug";
 
-export async function renderScenario(ctx: AppContext, scenario: BotScenario): Promise<boolean> {
+/**
+ * Показати сценарій. `view` задає відкритий вид головного віджета: той самий
+ * документ, інший стартовий стан.
+ */
+export async function renderScenario(
+  ctx: AppContext,
+  scenario: BotScenario,
+  view?: AppView,
+): Promise<boolean> {
   if (!ctx.chat?.id) return false;
 
   const isPrivate = ctx.chat.type === "private";
@@ -20,7 +29,7 @@ export async function renderScenario(ctx: AppContext, scenario: BotScenario): Pr
   if (!isPrivate && !scenario.rich_html) return false;
 
   const sent = isPrivate
-    ? await sendWidgetSafely(ctx, scenario)
+    ? await sendWidgetSafely(ctx, scenario, view ? appChatData(view) : scenario.widget_data)
     : await sendRichSafely(ctx, scenario);
 
   if (!sent) return false;
@@ -50,13 +59,14 @@ export async function renderScenario(ctx: AppContext, scenario: BotScenario): Pr
 async function sendWidgetSafely(
   ctx: AppContext,
   scenario: BotScenario,
+  chatData: string | null,
 ): Promise<{ message_id: number; widgetId: string | null } | null> {
   if (!scenario.widget_html) return null;
   try {
     const sent = await sendWidget(ctx.env.BOT_TOKEN, {
       chatId: ctx.chat!.id,
       html: scenario.widget_html,
-      chatData: scenario.widget_data,
+      chatData,
       allowQueries: true,
     });
     return { message_id: sent.message_id, widgetId: sent.widget?.id ?? null };
