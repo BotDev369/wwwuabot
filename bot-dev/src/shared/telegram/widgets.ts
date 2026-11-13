@@ -58,11 +58,7 @@ export function sendWidgetBeta(token: string, input: SendWidgetInput): Promise<S
   return sendWidgetAt(token, input, API_BETA);
 }
 
-function sendWidgetAt(
-  token: string,
-  input: SendWidgetInput,
-  base?: string,
-): Promise<SentWidget> {
+function sendWidgetAt(token: string, input: SendWidgetInput, base?: string): Promise<SentWidget> {
   return call<SentWidget>(
     token,
     "sendWidget",

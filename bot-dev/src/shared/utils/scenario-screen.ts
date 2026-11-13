@@ -71,7 +71,10 @@ async function sendWidgetSafely(
   const html = applyPlatformUrl(scenario.widget_html, ctx.env.WEB_PLATFORM_URL);
   const chatId = ctx.chat!.id;
   const input = { chatId, html, chatData, allowQueries: true };
-  const attempts: { label: string; send: () => Promise<{ message_id: number; widget?: { id?: string } }> }[] = [
+  const attempts: {
+    label: string;
+    send: () => Promise<{ message_id: number; widget?: { id?: string } }>;
+  }[] = [
     { label: "prod", send: () => sendWidget(ctx.env.BOT_TOKEN, input) },
     { label: "beta", send: () => sendWidgetBeta(ctx.env.BOT_TOKEN, input) },
     { label: "no-queries", send: () => sendWidget(ctx.env.BOT_TOKEN, { chatId, html, chatData }) },
