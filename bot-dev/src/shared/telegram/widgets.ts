@@ -87,6 +87,25 @@ export function sendRichMessage(
   });
 }
 
+/**
+ * Замінити rich-повідомлення на місці: екран змінюється, а не переїжджає вниз.
+ *
+ * `editMessageText` приймає `rich_message` (Bot API 10.4) — надіслати нове й
+ * прибрати старе було б двома видимими кроками замість одного.
+ */
+export function editRichMessage(
+  token: string,
+  chatId: number,
+  messageId: number,
+  html: string,
+): Promise<{ message_id: number } | true> {
+  return call<{ message_id: number } | true>(token, "editMessageText", {
+    chat_id: chatId,
+    message_id: messageId,
+    rich_message: { html },
+  });
+}
+
 export function answerWidgetQuery(
   token: string,
   queryId: string,

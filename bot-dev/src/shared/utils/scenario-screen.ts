@@ -12,7 +12,13 @@ import { appChatData, type AppView } from "../config/app-views";
 import { BRAND } from "../config/texts";
 import { screenLabel } from "@wwwuabot/shared/events";
 import { ScenarioRepository } from "../../repositories/scenario.repository";
-import { getChat, getMe, sendRichMessage, sendWidget } from "../telegram/widgets";
+import {
+  editRichMessage,
+  getChat,
+  getMe,
+  sendRichMessage,
+  sendWidget,
+} from "../telegram/widgets";
 import { applyPlatformUrl } from "./widget-html";
 import { buildUserEvent } from "../../modules/logging/builder";
 import { recordUserEvent } from "@wwwuabot/shared/database/user-events";
@@ -111,11 +117,36 @@ async function sendRichSafely(
   scenario: BotScenario,
 ): Promise<{ message_id: number; widgetId: string | null } | null> {
   if (!scenario.rich_html) return null;
+  return deliverRich(ctx, scenario.rich_html);
+}
+
+/**
+ * Rich-екран живе одним повідомленням: попередній екран бота **редагується**,
+ * а не замінюється новим. Відмову редагування (екран видалили руками, або ж він
+ * віджет) лікує звичайна відправка — тому шлях запасний, а не єдиний.
+ */
+async function deliverRich(
+  ctx: AppContext,
+  html: string,
+): Promise<{ message_id: number; widgetId: string | null } | null> {
+  const chatId = ctx.chat!.id;
+  const previous = ctx.user?.message_id;
+  if (typeof previous === "number") {
+    try {
+      await editRichMessage(ctx.env.BOT_TOKEN, chatId, previous, html);
+      log("SCENARIO", "rich edited", { message_id: previous });
+      return { message_id: previous, widgetId: null };
+    } catch (error: unknown) {
+      log("SCENARIO", "rich edit refused", { message_id: previous, error: String(error) });
+    }
+  }
+
   try {
-    const sent = await sendRichMessage(ctx.env.BOT_TOKEN, ctx.chat!.id, scenario.rich_html);
+    const sent = await sendRichMessage(ctx.env.BOT_TOKEN, chatId, html);
+    log("SCENARIO", "rich sent", { message_id: sent.message_id });
     return { message_id: sent.message_id, widgetId: null };
   } catch (error: unknown) {
-    log("SCENARIO", "sendRichMessage failed", { lookup: scenario.lookup, error: String(error) });
+    log("SCENARIO", "rich send failed", { error: String(error) });
     return null;
   }
 }
@@ -128,37 +159,51 @@ async function sendRichSafely(
 async function sendRichFallback(
   ctx: AppContext,
 ): Promise<{ message_id: number; widgetId: string | null } | null> {
-  const platform = ctx.env.WEB_PLATFORM_URL?.replace(/\/+$/, "");
-  const link = (label: string, path: string): string =>
-    `<tg-button type="url" url="${platform}${path}">${label}</tg-button>`;
-  const rows: string[] = [];
-  if (platform) {
-    rows.push(
-      `<tg-button-row>${link(screenLabel("trackers"), "/trackers")}${link(
-        screenLabel("services"),
-        "/services",
-      )}</tg-button-row>`,
-      `<tg-button-row>${link(screenLabel("assessments"), "/assessments")}${link(
-        screenLabel("favorites"),
-        "/favorites",
-      )}</tg-button-row>`,
-    );
-  }
-  rows.push(
-    `<tg-button-row><tg-button type="callback_data" style="link" data="contacts">${screenLabel(
-      "contacts",
-    )}</tg-button></tg-button-row>`,
-  );
+  return deliverRich(ctx, startScreenHtml(ctx.env.WEB_PLATFORM_URL));
+}
 
-  const html = `<h1>${BRAND.name}</h1><p>${BRAND.tagline}</p>${rows.join("")}`;
-  try {
-    const sent = await sendRichMessage(ctx.env.BOT_TOKEN, ctx.chat!.id, html);
-    log("SCENARIO", "rich fallback sent", { message_id: sent.message_id });
-    return { message_id: sent.message_id, widgetId: null };
-  } catch (error: unknown) {
-    log("SCENARIO", "rich fallback failed", { error: String(error) });
-    return null;
-  }
+/**
+ * Стартовий екран без віджета: шапка бренду, лінія, сітка 2×2 у розділи
+ * платформи й «Контакти» окремо. Палітру rich несе `style` кнопок: зелений
+ * бренду на розділах, синій на контактах. Кнопки — `web_app`, не `url`:
+ * людина вже в Telegram, розділ відкривається екраном, а не браузером.
+ */
+function startScreenHtml(platformUrl: string | undefined): string {
+  const platform = platformUrl?.replace(/\/+$/, "");
+  const button = (key: string, path: string, style: string): string =>
+    `<tg-button type="web_app" style="${style}" url="${platform}${path}">` +
+    `${screenLabel(key)}</tg-button>`;
+  const sections: [string, string][] = [
+    ["trackers", "/trackers"],
+    ["services", "/services"],
+    ["assessments", "/assessments"],
+    ["favorites", "/favorites"],
+  ];
+
+  const head =
+    `<h1>${BRAND.name}</h1>` +
+    `<p><i>${BRAND.tagline}</i></p>` +
+    `<hr/>`;
+  if (!platform) return head;
+
+  const grid = [0, 2]
+    .map(
+      (start) =>
+        `<tg-button-row align="center">` +
+        sections
+          .slice(start, start + 2)
+          .map(([key, path]) => button(key, path, "success"))
+          .join("") +
+        `</tg-button-row>`,
+    )
+    .join("");
+
+  return (
+    head +
+    grid +
+    `<hr/>` +
+    `<tg-button-row align="center">${button("contacts", "/contacts", "primary")}</tg-button-row>`
+  );
 }
 
 /**

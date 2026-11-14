@@ -36,7 +36,7 @@ function context(options: { chatType?: string; oldMessage?: number } = {}) {
     }),
   };
   const ctx = {
-    env: { BOT_TOKEN: "token", DB: db },
+    env: { BOT_TOKEN: "token", DB: db, WEB_PLATFORM_URL: "https://platform.test" },
     chat: { id: 5, type: options.chatType ?? "private" },
     user: { user_id: 7, message_id: options.oldMessage },
     api: {
@@ -107,6 +107,49 @@ describe("renderScenario", () => {
     const urls = fetchMock.mock.calls.map((call) => String((call as unknown[])[0] ?? ""));
     expect(urls.some((url) => url.includes("sendRichMessage"))).toBe(true);
     expect(urls.some((url) => url.includes("/sendMessage"))).toBe(false);
+  });
+
+  it("при відмові віджета править попередній екран, а не шле новий", async () => {
+    const fetchMock = vi.fn(async (url: string) => {
+      if (url.includes("editMessageText")) {
+        return new Response(JSON.stringify({ ok: true, result: { message_id: 9 } }));
+      }
+      if (url.includes("sendRichMessage")) {
+        return new Response(JSON.stringify({ ok: true, result: { message_id: 21 } }));
+      }
+      return new Response(JSON.stringify({ ok: false, description: "NOT_ALLOWED" }));
+    });
+    vi.stubGlobal("fetch", fetchMock);
+    const { ctx, deleted } = context({ oldMessage: 9 });
+
+    expect(await renderScenario(ctx, scenario())).toBe(true);
+    const urls = fetchMock.mock.calls.map((call) => String((call as unknown[])[0] ?? ""));
+    expect(urls.some((url) => url.includes("/editMessageText"))).toBe(true);
+    expect(urls.some((url) => url.includes("/sendRichMessage"))).toBe(false);
+    expect(deleted).toEqual([]);
+    expect(ctx.user?.message_id).toBe(9);
+  });
+
+  it("стартовий rich-екран веде в розділи web_app-кнопками", async () => {
+    const bodies: string[] = [];
+    const fetchMock = vi.fn(async (url: string, init: RequestInit) => {
+      if (url.includes("sendRichMessage")) {
+        bodies.push(String(init.body));
+        return new Response(JSON.stringify({ ok: true, result: { message_id: 21 } }));
+      }
+      return new Response(JSON.stringify({ ok: false, description: "NOT_ALLOWED" }));
+    });
+    vi.stubGlobal("fetch", fetchMock);
+    const { ctx } = context();
+
+    expect(await renderScenario(ctx, scenario())).toBe(true);
+    const html = (JSON.parse(bodies[0] ?? "{}") as { rich_message?: { html?: string } })
+      .rich_message?.html;
+    expect(html).toContain('type="web_app"');
+    expect(html).not.toContain('type="url"');
+    for (const path of ["/trackers", "/services", "/assessments", "/favorites", "/contacts"]) {
+      expect(html).toContain(`https://platform.test${path}`);
+    }
   });
 
   it("⛔ без chat немає рендера", async () => {
