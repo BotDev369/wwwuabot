@@ -9,8 +9,6 @@
  */
 
 const API = "https://api.telegram.org";
-/** Бета-поверхня Bot API: віджети там приймають той самий токен. */
-const API_BETA = "https://api.telegram.org/beta";
 
 interface TelegramResponse<T> {
   ok: boolean;
@@ -19,8 +17,8 @@ interface TelegramResponse<T> {
   error_code?: number;
 }
 
-async function call<T>(token: string, method: string, body: unknown, base = API): Promise<T> {
-  const response = await fetch(`${base}/bot${token}/${method}`, {
+async function call<T>(token: string, method: string, body: unknown): Promise<T> {
+  const response = await fetch(`${API}/bot${token}/${method}`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(body),
@@ -47,29 +45,33 @@ export interface SendWidgetInput {
 }
 
 export function sendWidget(token: string, input: SendWidgetInput): Promise<SentWidget> {
-  return sendWidgetAt(token, input);
+  return call<SentWidget>(token, "sendWidget", {
+    chat_id: input.chatId,
+    html: input.html,
+    ...(input.chatData ? { chat_data: input.chatData } : {}),
+    ...(input.allowQueries ? { allow_queries: true } : {}),
+  });
+}
+
+/** Хто цей бот із точки зору Telegram: потрібно, коли віджет відмовлено. */
+export interface BotIdentity {
+  id: number;
+  username?: string;
+  is_bot: boolean;
+  can_join_groups?: boolean;
+  has_topics_enabled?: boolean;
+}
+
+export function getMe(token: string): Promise<BotIdentity> {
+  return call<BotIdentity>(token, "getMe", {});
 }
 
 /**
- * Той самий `sendWidget`, але через бета-поверхню: прод відповідає
- * `INPUT_MEDIA_WIDGET_NOT_ALLOWED`, а бета приймає звичайний токен.
+ * Чат очима Telegram: тип, форумність, права. Саме цим видно, чи це звичайна
+ * лістка з ботом, чи контекст, де віджети заборонені.
  */
-export function sendWidgetBeta(token: string, input: SendWidgetInput): Promise<SentWidget> {
-  return sendWidgetAt(token, input, API_BETA);
-}
-
-function sendWidgetAt(token: string, input: SendWidgetInput, base?: string): Promise<SentWidget> {
-  return call<SentWidget>(
-    token,
-    "sendWidget",
-    {
-      chat_id: input.chatId,
-      html: input.html,
-      ...(input.chatData ? { chat_data: input.chatData } : {}),
-      ...(input.allowQueries ? { allow_queries: true } : {}),
-    },
-    base,
-  );
+export function getChat(token: string, chatId: number): Promise<Record<string, unknown>> {
+  return call<Record<string, unknown>>(token, "getChat", { chat_id: chatId });
 }
 
 export function sendRichMessage(

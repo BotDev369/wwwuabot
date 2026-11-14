@@ -13,7 +13,7 @@ import { appChatData, type AppView } from "../config/app-views";
 import { BRAND } from "../config/texts";
 import { screenLabel } from "@wwwuabot/shared/events";
 import { ScenarioRepository } from "../../repositories/scenario.repository";
-import { sendRichMessage, sendWidget, sendWidgetBeta } from "../telegram/widgets";
+import { getChat, getMe, sendRichMessage, sendWidget } from "../telegram/widgets";
 import { applyPlatformUrl } from "./widget-html";
 import { buildUserEvent } from "../../modules/logging/builder";
 import { recordUserEvent } from "@wwwuabot/shared/database/user-events";
@@ -71,13 +71,13 @@ async function sendWidgetSafely(
   const html = applyPlatformUrl(scenario.widget_html, ctx.env.WEB_PLATFORM_URL);
   const chatId = ctx.chat!.id;
   const input = { chatId, html, chatData, allowQueries: true };
+  // Дві спроби: повна й без стану та запитів. Більше — це вже вгадування
+  // параметрів, а відмова завжди приходить однакова.
   const attempts: {
     label: string;
     send: () => Promise<{ message_id: number; widget?: { id?: string } }>;
   }[] = [
     { label: "prod", send: () => sendWidget(ctx.env.BOT_TOKEN, input) },
-    { label: "beta", send: () => sendWidgetBeta(ctx.env.BOT_TOKEN, input) },
-    { label: "no-queries", send: () => sendWidget(ctx.env.BOT_TOKEN, { chatId, html, chatData }) },
     { label: "bare", send: () => sendWidget(ctx.env.BOT_TOKEN, { chatId, html }) },
   ];
 
@@ -99,7 +99,9 @@ async function sendWidgetSafely(
     }
   }
 
-  await recordSendFailure(ctx, `${ctx.chat?.type ?? "?"} | ${failures.join(" | ")}`);
+  const diagnostic = await describeRefusal(ctx, failures);
+  log("SCENARIO", "widget refused", { diagnostic });
+  await recordSendFailure(ctx, diagnostic);
   // Віджетів може не бути в цьому чаті (INPUT_MEDIA_WIDGET_NOT_ALLOWED): тоді
   // краще картка з тими самими входами, ніж тиша.
   return sendTextFallback(ctx);
@@ -163,9 +165,41 @@ async function sendTextFallback(
 async function recordSendFailure(ctx: AppContext, error: string): Promise<void> {
   const event = buildUserEvent(ctx, "error");
   if (!event) return;
-  await recordUserEvent(ctx.env.DB, { ...event, details: error.slice(0, 300) }, Date.now()).catch(
+  await recordUserEvent(ctx.env.DB, { ...event, details: error.slice(0, 900) }, Date.now()).catch(
     () => undefined,
   );
+}
+
+/**
+ * Чому Telegram відмовив у віджеті — у словах, а не в здогадках: хто бот, що за
+ * чат і чи несуть апдейт `message_thread_id` або `business_connection_id`.
+ * Саме ці два поля роблять контекст таким, де віджети заборонені.
+ */
+async function describeRefusal(ctx: AppContext, failures: string[]): Promise<string> {
+  const message = ctx.message ?? ctx.editedMessage;
+  const thread = (message as { message_thread_id?: number } | undefined)?.message_thread_id;
+  const isTopic = (message as { is_topic_message?: boolean } | undefined)?.is_topic_message;
+  const update = ctx.update as { business_connection_id?: string } | undefined;
+  const business =
+    update?.business_connection_id ??
+    (message as { business_connection_id?: string } | undefined)?.business_connection_id;
+
+  const where =
+    `chat=${ctx.chat?.id ?? "?"}/${ctx.chat?.type ?? "?"}` +
+    ` thread=${thread ?? "-"}` +
+    ` topic=${isTopic ? 1 : 0}` +
+    ` business=${business ?? "-"}`;
+
+  const me = await getMe(ctx.env.BOT_TOKEN).then(
+    (bot) => `bot=${bot.id}@${bot.username ?? "-"} topics=${bot.has_topics_enabled ? 1 : 0}`,
+    (error: unknown) => `getMe: ${String(error)}`,
+  );
+  const chat = await getChat(ctx.env.BOT_TOKEN, ctx.chat!.id).then(
+    (info) => `getChat type=${String(info.type)} id=${String(info.id)}`,
+    (error: unknown) => `getChat: ${String(error)}`,
+  );
+
+  return [where, me, chat, ...failures].join(" | ");
 }
 
 /** У чаті лишається один екран бота: попередній і повідомлення людини зникають. */
