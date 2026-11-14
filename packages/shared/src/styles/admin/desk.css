@@ -1,0 +1,383 @@
+/* ─── Стіл (макет сторінки /desk) ────────────────────────────────────────────
+   Три колонки: групи, теми, тема зі стрічкою. Кольори — тільки токени, тож
+   світла й темна схема діють і тут. Поки це макет: правила описують вигляд,
+   а не дані, і зникають разом із `desk-mock.json`, коли з'явиться справжня
+   сторінка. */
+
+.desk {
+  display: grid;
+  grid-template-columns: 208px minmax(260px, 340px) minmax(0, 1fr);
+  gap: var(--sp-3);
+  min-height: 0;
+  height: 100%;
+  padding: var(--sp-4);
+}
+
+/* ── Групи ── */
+
+.desk-groups {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-height: 0;
+  overflow: auto;
+}
+
+.desk-brand {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 0 var(--sp-2) var(--sp-3);
+}
+
+.desk-brand b {
+  font-size: var(--text-lg);
+  color: var(--text-primary);
+}
+
+.desk-brand span {
+  font-size: var(--text-xs);
+  color: var(--text-muted);
+}
+
+.desk-group {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--sp-2);
+  min-height: 36px;
+  padding: 0 var(--sp-2);
+  border: none;
+  border-radius: var(--radius-sm);
+  background: transparent;
+  color: var(--text-secondary);
+  font: inherit;
+  font-size: var(--text-sm);
+  cursor: pointer;
+  text-align: left;
+}
+
+.desk-group:hover {
+  background: var(--bg-2);
+  color: var(--text-primary);
+}
+
+.desk-group--active {
+  background: var(--accent-soft);
+  color: var(--text-primary);
+  font-weight: 600;
+}
+
+.desk-group b {
+  font-size: var(--text-xs);
+  color: var(--text-muted);
+  font-weight: 600;
+}
+
+.desk-note {
+  margin: var(--sp-3) var(--sp-2) 0;
+  font-size: var(--text-xs);
+  line-height: 1.4;
+  color: var(--text-muted);
+}
+
+/* ── Список тем ── */
+
+.desk-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-2);
+  min-height: 0;
+  overflow: hidden;
+}
+
+.desk-list-head {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-2);
+}
+
+.desk-search {
+  min-height: 40px;
+  padding: 0 var(--sp-3);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: var(--field-bg);
+  color: var(--text-primary);
+  font: inherit;
+  font-size: var(--text-sm);
+}
+
+.desk-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.desk-chip--on {
+  background: var(--accent-soft);
+  border-color: var(--accent);
+  color: var(--text-primary);
+}
+
+.desk-threads {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-2);
+  min-height: 0;
+  overflow: auto;
+  padding-right: 2px;
+}
+
+.desk-thread {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: var(--sp-3);
+  border: 1px solid var(--card-border);
+  border-radius: var(--card-radius);
+  background: var(--card-bg);
+  color: var(--text-primary);
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.desk-thread:hover {
+  border-color: var(--border-hover);
+}
+
+.desk-thread--active {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 1px var(--accent);
+}
+
+.desk-thread-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--sp-2);
+}
+
+.desk-thread-when {
+  font-size: var(--text-xs);
+  color: var(--text-muted);
+}
+
+.desk-thread-title {
+  font-size: var(--text-sm);
+  font-weight: 600;
+  line-height: 1.35;
+}
+
+.desk-thread-meta {
+  font-size: var(--text-xs);
+  color: var(--text-secondary);
+}
+
+.desk-thread-tags,
+.desk-room-tags {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+}
+
+.desk-tag {
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: var(--bg-2);
+  color: var(--text-muted);
+  font-size: var(--text-xs);
+}
+
+.desk-empty {
+  margin: var(--sp-4) 0;
+  color: var(--text-muted);
+  font-size: var(--text-sm);
+  text-align: center;
+}
+
+/* ── Тема ── */
+
+.desk-room {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  border: 1px solid var(--card-border);
+  border-radius: var(--card-radius);
+  background: var(--card-bg);
+  overflow: hidden;
+}
+
+.desk-room-head {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: var(--sp-3) var(--sp-4);
+  border-bottom: 1px solid var(--border-subtle);
+}
+
+.desk-room-path {
+  font-size: var(--text-xs);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+
+.desk-room-title {
+  margin: 0;
+  font-size: var(--text-lg);
+  line-height: 1.25;
+  color: var(--text-primary);
+}
+
+.desk-feed {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-3);
+  flex: 1;
+  min-height: 0;
+  overflow: auto;
+  padding: var(--sp-4);
+}
+
+.desk-entry {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  max-width: 88%;
+  padding: var(--sp-3);
+  border-radius: var(--card-radius);
+  background: var(--bg-2);
+}
+
+.desk-entry--buffy {
+  align-self: flex-end;
+  background: var(--accent-soft);
+}
+
+.desk-entry-head {
+  display: flex;
+  align-items: baseline;
+  gap: var(--sp-2);
+  font-size: var(--text-xs);
+  color: var(--text-muted);
+}
+
+.desk-entry-author {
+  font-size: var(--text-xs);
+  color: var(--text-primary);
+}
+
+.desk-entry-when {
+  margin-left: auto;
+  font-size: var(--text-xs);
+  color: var(--text-muted);
+}
+
+.desk-entry-kind {
+  padding: 1px 7px;
+  border-radius: 999px;
+  background: var(--bg-3);
+  color: var(--text-secondary);
+}
+
+.desk-entry-body {
+  margin: 0;
+  font-size: var(--text-sm);
+  line-height: 1.5;
+  color: var(--text-primary);
+  white-space: pre-wrap;
+}
+
+.desk-files {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.desk-file {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  background: var(--bg-1);
+  font-size: var(--text-xs);
+}
+
+.desk-file-name {
+  color: var(--text-primary);
+}
+
+.desk-file-size {
+  color: var(--text-muted);
+}
+
+.desk-composer {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-2);
+  padding: var(--sp-3) var(--sp-4) var(--sp-4);
+  border-top: 1px solid var(--border-subtle);
+}
+
+.desk-composer-input {
+  min-height: 72px;
+  padding: var(--sp-2) var(--sp-3);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: var(--field-bg);
+  color: var(--text-primary);
+  font: inherit;
+  font-size: var(--text-sm);
+  line-height: 1.5;
+  resize: vertical;
+}
+
+.desk-composer-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--sp-2);
+}
+
+.desk-composer-tools {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+  min-width: 0;
+}
+
+.desk-composer-kind {
+  min-height: 32px;
+  padding: 0 var(--sp-2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: var(--field-bg);
+  color: var(--text-primary);
+  font: inherit;
+  font-size: var(--text-xs);
+}
+
+.desk-hint {
+  overflow: hidden;
+  color: var(--text-muted);
+  font-size: var(--text-xs);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Вузький екран: групи ховаємо, лишаються теми й тема — розмова головніша
+   за дерево, яке й так дублюється тегами. */
+@media (max-width: 1180px) {
+  .desk {
+    grid-template-columns: minmax(220px, 300px) minmax(0, 1fr);
+  }
+
+  .desk-groups {
+    display: none;
+  }
+}

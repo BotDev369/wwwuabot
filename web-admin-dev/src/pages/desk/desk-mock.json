@@ -1,0 +1,216 @@
+{
+  "labels": {
+    "nav": "Стіл",
+    "title": "Стіл",
+    "subtitle": "спільний простір — Сергій і Buffy",
+    "mock": "Макет: теми вигадані, нічого не зберігається",
+    "search": "Пошук теми або тега",
+    "allThreads": "Усі теми",
+    "feedTitle": "Стрічка",
+    "composerPlaceholder": "Написати в тему…",
+    "composerHint": "Cmd+Enter — надіслати, файл можна перетягнути",
+    "send": "Надіслати",
+    "attach": "Файл",
+    "kindLabel": "Вид",
+    "empty": "Немає тем за цим фільтром",
+    "queue": "Черга",
+    "now": "зараз"
+  },
+  "statuses": {
+    "open": "Відкрите",
+    "doing": "У роботі",
+    "waitingSerhii": "Чекає на Сергія",
+    "waitingBuffy": "Чекає на Buffy",
+    "done": "Зроблено"
+  },
+  "kinds": {
+    "note": "Нотатка",
+    "question": "Питання",
+    "answer": "Відповідь",
+    "decision": "Рішення",
+    "plan": "План",
+    "debt": "Борг",
+    "file": "Файл"
+  },
+  "authors": {
+    "serhii": "Сергій",
+    "buffy": "Buffy"
+  },
+  "groups": [
+    { "key": "all", "label": "Усі теми", "count": 7 },
+    { "key": "plan", "label": "Плани", "count": 3 },
+    { "key": "task", "label": "Задачі", "count": 2 },
+    { "key": "debt", "label": "Борги", "count": 1 },
+    { "key": "question", "label": "Питання", "count": 1 },
+    { "key": "file", "label": "Файли", "count": 1 }
+  ],
+  "filters": [
+    { "key": "all", "label": "Усі" },
+    { "key": "waitingBuffy", "label": "Чекає на Buffy" },
+    { "key": "waitingSerhii", "label": "Чекає на Сергія" },
+    { "key": "doing", "label": "У роботі" },
+    { "key": "done", "label": "Зроблено" }
+  ],
+  "threads": [
+    {
+      "id": "desk-ui",
+      "group": "plan",
+      "subgroup": "Адмінка",
+      "title": "Стіл: макет, який зараз на екрані",
+      "status": "waitingSerhii",
+      "tags": ["desk", "admin", "ui"],
+      "updated": "14.11 10:40",
+      "entries": [
+        {
+          "author": "serhii",
+          "when": "14.11 10:12",
+          "kind": "plan",
+          "body": "Хочу простір, де ми обмінюємось файлами, думками, планами й боргами. Зручніше в адмінці, ніж у чаті: чат губить контекст.",
+          "files": []
+        },
+        {
+          "author": "buffy",
+          "when": "14.11 10:26",
+          "kind": "answer",
+          "body": "Пропоную одну сторінку: групи зліва, теми посередині, тема зі стрічкою справа. Кожна тема має статус і «чия черга» — це головне, бо половина наших питань висить саме тому, що не видно, на кому воно.",
+          "files": []
+        },
+        {
+          "author": "serhii",
+          "when": "14.11 10:40",
+          "kind": "question",
+          "body": "А якщо тема стосується двох груп одразу — планів і боргів?",
+          "files": []
+        }
+      ]
+    },
+    {
+      "id": "r2-space",
+      "group": "task",
+      "subgroup": "Зберігання",
+      "title": "R2-бакет для обміну файлами",
+      "status": "waitingBuffy",
+      "tags": ["r2", "files"],
+      "updated": "14.11 09:40",
+      "entries": [
+        {
+          "author": "serhii",
+          "when": "14.11 09:12",
+          "kind": "question",
+          "body": "Хочу окремий бакет: документи, «від Сергія», «від Buffy», архів. Питання — як це краще скласти, щоб не вийшло звалище.",
+          "files": [{ "name": "schema-draft.png", "size": "84 КБ" }]
+        },
+        {
+          "author": "buffy",
+          "when": "14.11 09:40",
+          "kind": "answer",
+          "body": "Папки в R2 — це префікси, тому потрібен індекс у D1: без нього не видно ні розмірів, ні того, хто що поклав. Пропоную desk/<тема>/<id> і таблицю з описом.",
+          "files": [
+            { "name": "bucket-plan.md", "size": "12 КБ" },
+            { "name": "keys.csv", "size": "3 КБ" }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "widgets-private",
+      "group": "debt",
+      "subgroup": "Бот",
+      "title": "Віджет не приймається у приватній лістці",
+      "status": "open",
+      "tags": ["bot", "telegram"],
+      "updated": "13.11 21:05",
+      "entries": [
+        {
+          "author": "buffy",
+          "when": "13.11 21:05",
+          "kind": "debt",
+          "body": "Telegram відповідає INPUT_MEDIA_WIDGET_NOT_ALLOWED навіть у приватному чаті: ні тема, ні business-контекст не винні. Поки що старт іде rich-екраном, віджет пробуємо при кожному показі.",
+          "files": []
+        }
+      ]
+    },
+    {
+      "id": "reports-red",
+      "group": "question",
+      "subgroup": "CI",
+      "title": "Чи слати звіт про червоний деплой?",
+      "status": "done",
+      "tags": ["ci", "reports"],
+      "updated": "14.11 07:20",
+      "entries": [
+        {
+          "author": "serhii",
+          "when": "14.11 07:02",
+          "kind": "question",
+          "body": "Звіт — це добре, але чи не буде шуму, коли деплой падає на гейтах?",
+          "files": []
+        },
+        {
+          "author": "buffy",
+          "when": "14.11 07:20",
+          "kind": "decision",
+          "body": "Слати завжди: саме червоний прогін і треба бачити. Джоба report має continue-on-error, тож звіт не робить деплой червонішим.",
+          "files": []
+        }
+      ]
+    },
+    {
+      "id": "photos-oct",
+      "group": "file",
+      "subgroup": "Архів",
+      "title": "Фото за жовтень: вигрузка й архів",
+      "status": "waitingBuffy",
+      "tags": ["files", "archive"],
+      "updated": "12.11 18:30",
+      "entries": [
+        {
+          "author": "serhii",
+          "when": "12.11 18:30",
+          "kind": "file",
+          "body": "Склав усе, що назбиралось за жовтень. Треба розібрати й лишити тільки те, що справді потрібне.",
+          "files": [
+            { "name": "october-photos.zip", "size": "48 МБ" },
+            { "name": "index.txt", "size": "1 КБ" }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "dark-contrast",
+      "group": "plan",
+      "subgroup": "Дизайн",
+      "title": "Темна тема: контраст кнопок",
+      "status": "doing",
+      "tags": ["design", "tokens"],
+      "updated": "12.11 14:15",
+      "entries": [
+        {
+          "author": "buffy",
+          "when": "12.11 14:15",
+          "kind": "note",
+          "body": "На темній темі другорядна кнопка майже зливається з поверхнею. Перевірю контраст на трьох сторінках і запропоную значення токена.",
+          "files": [{ "name": "contrast-check.png", "size": "156 КБ" }]
+        }
+      ]
+    },
+    {
+      "id": "docs-vault",
+      "group": "plan",
+      "subgroup": "Документація",
+      "title": "Що переїде в R2, а що лишиться в git",
+      "status": "open",
+      "tags": ["docs", "r2"],
+      "updated": "14.11 09:55",
+      "entries": [
+        {
+          "author": "serhii",
+          "when": "14.11 09:55",
+          "kind": "plan",
+          "body": "Документацію поки не чіпаємо. Але треба вирішити, що з неї з часом поїде в бакет, а що лишиться контрактом у репозиторії.",
+          "files": []
+        }
+      ]
+    }
+  ]
+}

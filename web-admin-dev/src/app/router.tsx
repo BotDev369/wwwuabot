@@ -15,6 +15,7 @@ import { SpendingCodesPage } from "../pages/spending/SpendingCodesPage";
 import { SpendingRecipientsPage } from "../pages/spending/SpendingRecipientsPage";
 import { SpendingSyncPage } from "../pages/spending/SpendingSyncPage";
 import { AnalyticsPage } from "../pages/analytics/AnalyticsPage";
+import { DeskPage } from "../pages/desk/DeskPage";
 
 /**
  * Маршрути web-admin.
@@ -24,6 +25,7 @@ import { AnalyticsPage } from "../pages/analytics/AnalyticsPage";
  *                       CRUD з панелі (`/api/admin/access-requests`)
  * /analytics          — Аналітика поведінки: журнал дій людей (бот і платформа),
  *                       по користувачах або за діапазоном часу
+ * /desk               — Стіл: спільний простір Сергія й Buffy (поки макет без бази)
  * /monitoring         — Моніторинг проєкту: зрізи код/GitHub, динаміка, історія
  * /spending           — Є-data: хаб можливостей — картки ведуть на власні
  *                       сторінки, а не збирають усе в одну таблицю
@@ -56,6 +58,7 @@ export const router = createBrowserRouter([
       { path: "users", element: <UsersPage /> },
       { path: "messages", element: <AccessRequestsPage /> },
       { path: "analytics", element: <AnalyticsPage /> },
+      { path: "desk", element: <DeskPage /> },
       { path: "monitoring", element: <MonitoringPage /> },
       { path: "spending", element: <SpendingHubPage /> },
       { path: "spending/orgs", element: <SpendingOrgsPage /> },

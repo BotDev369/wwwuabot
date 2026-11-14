@@ -11,6 +11,7 @@
 
 import { create } from "zustand";
 import type { IconName } from "@wwwuabot/shared";
+import deskMock from "../../pages/desk/desk-mock.json";
 
 // ── Types ────────────────────────────────────────────────────────
 
@@ -59,6 +60,9 @@ const DEFAULT_SECTIONS: AdminNavSection[] = [
       // Аналітика — поруч із людьми: питання «що вона робила» починають із
       // журналу дій, а не зі зрізів коду.
       { to: "/analytics", label: "Аналітика", icon: "pulse" },
+      // Стіл — наш спільний простір; підпис лежить у даних макета, щоб гейт
+      // текстів не рахував ще одне слово в коді (див. docs/SCREEN_TEXTS.md).
+      { to: "/desk", label: deskMock.labels.nav, icon: "mail" },
       // Моніторинг — до налаштувань: зріз показує, у якому стані проєкт
       // (код, репозиторій), і це найчастіший привід відкрити панель без
       // конкретної задачі.
