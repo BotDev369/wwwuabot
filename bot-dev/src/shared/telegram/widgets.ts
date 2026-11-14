@@ -79,7 +79,12 @@ export function sendRichMessage(
   chatId: number,
   html: string,
 ): Promise<{ message_id: number }> {
-  return call<{ message_id: number }>(token, "sendRichMessage", { chat_id: chatId, html });
+  // Bot API чекає `rich_message: { html }`, а не плоске `html`: з плоским
+  // сервер бачить порожнє повідомлення й відповідає «must be non-empty».
+  return call<{ message_id: number }>(token, "sendRichMessage", {
+    chat_id: chatId,
+    rich_message: { html },
+  });
 }
 
 export function answerWidgetQuery(
