@@ -111,7 +111,7 @@ async function sendRichSafely(
   scenario: BotScenario,
 ): Promise<{ message_id: number; widgetId: string | null } | null> {
   if (!scenario.rich_html) return null;
-  return deliverRich(ctx, scenario.rich_html);
+  return deliverRichScreen(ctx, scenario.rich_html);
 }
 
 /**
@@ -119,7 +119,7 @@ async function sendRichSafely(
  * а не замінюється новим. Відмову редагування (екран видалили руками, або ж він
  * віджет) лікує звичайна відправка — тому шлях запасний, а не єдиний.
  */
-async function deliverRich(
+export async function deliverRichScreen(
   ctx: AppContext,
   html: string,
 ): Promise<{ message_id: number; widgetId: string | null } | null> {
@@ -153,7 +153,7 @@ async function deliverRich(
 async function sendRichFallback(
   ctx: AppContext,
 ): Promise<{ message_id: number; widgetId: string | null } | null> {
-  return deliverRich(ctx, startScreenHtml(ctx.env.WEB_PLATFORM_URL));
+  return deliverRichScreen(ctx, startScreenHtml(ctx.env.WEB_PLATFORM_URL));
 }
 
 /**

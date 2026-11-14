@@ -21,6 +21,7 @@ import { showInviteScreen } from "../../modules/contacts/invite-screen";
 import { showAccessDenied } from "../../modules/access/denied";
 import { handleContactFlow } from "../../modules/access/contact/reply";
 import { handleContactCallback } from "../../modules/access/contact/panel";
+import { handleReportCommand } from "../../modules/reports/history";
 import { splitInviteCode } from "../../modules/access/payload";
 
 export async function botRouter(ctx: AppContext): Promise<void> {
@@ -32,12 +33,25 @@ export async function botRouter(ctx: AppContext): Promise<void> {
   }
 
   const text = ctx.message?.text;
+
+  // Звіти агента — службовий екран власника, не сценарій: кнопка «Історія» в
+  // звіті веде саме сюди, а не в контент.
+  if (ctx.callbackQuery?.data === "reports") {
+    ctx.screenHandled = true;
+    if (await handleReportCommand(ctx, "/reports")) return;
+  }
+
   if (ctx.callbackQuery) {
     await show(ctx, ctx.callbackQuery.data ?? "");
     return;
   }
 
   if (text?.startsWith("/")) {
+    if (text === "/reports" || text.startsWith("/report ")) {
+      ctx.screenHandled = true;
+      if (await handleReportCommand(ctx, text)) return;
+    }
+
     const [command, payload = ""] = text.split(" ");
     if (command.split("@")[0] !== "/start") {
       await deleteIncomingMessage(ctx);

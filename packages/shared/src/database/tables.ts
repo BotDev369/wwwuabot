@@ -269,6 +269,34 @@ export const TABLES = {
       )`,
   },
 
+  /**
+   * Deploy reports written by the agent and sent into the owner's chat.
+   *
+   * `run_id` is unique: a re-run of the same pipeline updates its row instead of
+   * adding a second one. `html` keeps the exact rich source that was sent, so the
+   * history screen replays it without re-rendering from older data.
+   */
+  agent_reports: {
+    name: "agent_reports",
+    owner: "bot-dev",
+    purpose:
+      "Agent deploy reports: status, checks, commit and the exact rich message that was sent.",
+    create: `CREATE TABLE IF NOT EXISTS agent_reports (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        run_id TEXT NOT NULL,
+        created_at TEXT NOT NULL,
+        status TEXT NOT NULL,
+        sha TEXT,
+        branch TEXT,
+        html TEXT NOT NULL,
+        message_id INTEGER
+      )`,
+    indexes: [
+      "CREATE UNIQUE INDEX IF NOT EXISTS idx_agent_reports_run ON agent_reports(run_id)",
+      "CREATE INDEX IF NOT EXISTS idx_agent_reports_time ON agent_reports(created_at)",
+    ],
+  },
+
   bot_widget_messages: {
     name: "bot_widget_messages",
     owner: "bot-dev",

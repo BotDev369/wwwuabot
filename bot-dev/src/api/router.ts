@@ -1,4 +1,5 @@
 import { handleTelegramWebhook } from "./controllers/telegram.controller";
+import { handleReportsRequest } from "./controllers/reports.controller";
 import type { Env } from "../shared/types/env";
 
 /**
@@ -16,6 +17,12 @@ export async function handleRequest(
 
   if (request.method === "POST" && url.pathname === "/webhook") {
     return handleTelegramWebhook(request, env);
+  }
+
+  // Службовий канал CI: закритий ключем, тому окремий шлях, а не черга
+  // апдейтів. Див. `docs/AGENT_REPORTS.md`.
+  if (url.pathname === "/reports") {
+    return handleReportsRequest(request, env);
   }
 
   return new Response("Not Found", { status: 404 });

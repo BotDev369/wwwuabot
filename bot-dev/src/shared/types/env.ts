@@ -36,6 +36,11 @@ export interface Env {
   /** Публічна база Mini App; без неї бот не додає web_app-кнопок. */
   WEB_PLATFORM_URL?: string;
   ADMIN_TELEGRAM_ID?: string;
+  /**
+   * Ключ, яким CI підписує звіт про деплой (`POST /reports`). Немає ключа —
+   * немає звітів: ендпоінт відповідає `503`, а не приймає будь-кого.
+   */
+  AGENT_REPORT_KEY?: string;
   SENTRY_DSN?: string;
   CF_VERSION_METADATA?: { id?: string };
 }

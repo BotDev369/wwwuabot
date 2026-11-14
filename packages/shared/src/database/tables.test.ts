@@ -202,7 +202,8 @@ describe("ensureTables", () => {
     // `notes`): перевірка стежить, щоб вони справді виконувались.
     const declaredIndexes = TABLE_NAMES.flatMap((name) => tableDefinition(name)?.indexes ?? []);
     expect(declaredIndexes.length).toBeGreaterThan(0);
-    expect(statements.filter((s) => s.startsWith("CREATE INDEX"))).toHaveLength(
+    // `CREATE UNIQUE INDEX` теж індекс: `agent_reports.run_id` тримає саме він.
+    expect(statements.filter((s) => /^CREATE (UNIQUE )?INDEX/.test(s))).toHaveLength(
       declaredIndexes.length,
     );
   });

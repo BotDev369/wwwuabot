@@ -186,3 +186,33 @@ jobs:
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+
+  # Звіт агента про деплой — після всіх воркерів і навіть тоді, коли деплой
+  # червоний: саме тоді він і потрібен. Токена бота тут немає, лише
+  # `AGENT_REPORT_KEY`, який відкриває один ендпоінт бота з єдиним одержувачем
+  # (`ADMIN_TELEGRAM_ID`). Провал звіту не робить деплой червоним.
+  report:
+    needs: [checks, deploy-bot, deploy-api, deploy-web, deploy-web-admin]
+    if: always() && github.event_name != 'pull_request'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    continue-on-error: true
+    # `id-token: write` — право попросити OIDC-токен джоби; саме він, а не
+    # секрет у репозиторії, доводить воркеру, що звіт прийшов із цього репо.
+    permissions:
+      contents: read
+      id-token: write
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          # Два коміти: `git diff --shortstat HEAD~1 HEAD` — обсяг цього деплою.
+          fetch-depth: 2
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 22
+      - name: Send report
+        env:
+          REPORT_URL: https://bot-dev.diskomate.workers.dev/reports
+          PLATFORM_URL: https://web-platform-dev.diskomate.workers.dev
+          NEEDS_JSON: ${{ toJSON(needs) }}
+        run: node scripts/deploy-report.mjs
