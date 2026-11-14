@@ -126,7 +126,7 @@
   gap: var(--sp-2);
   min-height: 0;
   overflow: auto;
-  padding-right: 2px;
+  padding-right: var(--sp-1);
 }
 
 .desk-thread {
@@ -184,8 +184,8 @@
 }
 
 .desk-tag {
-  padding: 2px 8px;
-  border-radius: 999px;
+  padding: 0 var(--sp-2);
+  border-radius: var(--radius-full);
   background: var(--bg-2);
   color: var(--text-muted);
   font-size: var(--text-xs);
@@ -277,8 +277,8 @@
 }
 
 .desk-entry-kind {
-  padding: 1px 7px;
-  border-radius: 999px;
+  padding: 0 var(--sp-2);
+  border-radius: var(--radius-full);
   background: var(--bg-3);
   color: var(--text-secondary);
 }
@@ -301,9 +301,9 @@
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  padding: 4px 10px;
+  padding: var(--sp-1) var(--sp-3);
   border: 1px solid var(--border);
-  border-radius: 999px;
+  border-radius: var(--radius-full);
   background: var(--bg-1);
   font-size: var(--text-xs);
 }
