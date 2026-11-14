@@ -12,13 +12,7 @@ import { appChatData, type AppView } from "../config/app-views";
 import { BRAND } from "../config/texts";
 import { screenLabel } from "@wwwuabot/shared/events";
 import { ScenarioRepository } from "../../repositories/scenario.repository";
-import {
-  editRichMessage,
-  getChat,
-  getMe,
-  sendRichMessage,
-  sendWidget,
-} from "../telegram/widgets";
+import { editRichMessage, getChat, getMe, sendRichMessage, sendWidget } from "../telegram/widgets";
 import { applyPlatformUrl } from "./widget-html";
 import { buildUserEvent } from "../../modules/logging/builder";
 import { recordUserEvent } from "@wwwuabot/shared/database/user-events";
@@ -180,10 +174,7 @@ function startScreenHtml(platformUrl: string | undefined): string {
     ["favorites", "/favorites"],
   ];
 
-  const head =
-    `<h1>${BRAND.name}</h1>` +
-    `<p><i>${BRAND.tagline}</i></p>` +
-    `<hr/>`;
+  const head = `<h1>${BRAND.name}</h1>` + `<p><i>${BRAND.tagline}</i></p>` + `<hr/>`;
   if (!platform) return head;
 
   const grid = [0, 2]
