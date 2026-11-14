@@ -94,14 +94,19 @@ describe("renderScenario", () => {
     expect(fetchMock).not.toHaveBeenCalled();
   });
 
-  it("⛔ помилка віджета не переходить на rich", async () => {
-    const fetchMock = vi.fn(async () => new Response(JSON.stringify({ ok: false })));
+  it("помилка віджета віддає старт rich-повідомленням, без тексту", async () => {
+    const fetchMock = vi.fn(async (url: string) =>
+      url.includes("sendRichMessage")
+        ? new Response(JSON.stringify({ ok: true, result: { message_id: 21 } }))
+        : new Response(JSON.stringify({ ok: false })),
+    );
     vi.stubGlobal("fetch", fetchMock);
     const { ctx } = context();
 
-    expect(await renderScenario(ctx, scenario({ rich_html: "<b>rich</b>" }))).toBe(false);
+    expect(await renderScenario(ctx, scenario())).toBe(true);
     const urls = fetchMock.mock.calls.map((call) => String((call as unknown[])[0] ?? ""));
-    expect(urls.some((url) => url.includes("sendRichMessage"))).toBe(false);
+    expect(urls.some((url) => url.includes("sendRichMessage"))).toBe(true);
+    expect(urls.some((url) => url.includes("/sendMessage"))).toBe(false);
   });
 
   it("⛔ без chat немає рендера", async () => {

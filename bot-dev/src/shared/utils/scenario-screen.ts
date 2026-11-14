@@ -6,7 +6,6 @@
  * @module bot-dev/src/shared/utils/scenario-screen
  */
 
-import type { InlineKeyboardButton } from "grammy/types";
 import type { AppContext } from "../types/env";
 import type { BotScenario } from "../types/scenario";
 import { appChatData, type AppView } from "../config/app-views";
@@ -103,8 +102,8 @@ async function sendWidgetSafely(
   log("SCENARIO", "widget refused", { diagnostic });
   await recordSendFailure(ctx, diagnostic);
   // Віджетів може не бути в цьому чаті (INPUT_MEDIA_WIDGET_NOT_ALLOWED): тоді
-  // краще картка з тими самими входами, ніж тиша.
-  return sendTextFallback(ctx);
+  // той самий старт rich-повідомленням — без звичайного тексту.
+  return sendRichFallback(ctx);
 }
 
 async function sendRichSafely(
@@ -122,38 +121,42 @@ async function sendRichSafely(
 }
 
 /**
- * Той самий старт без віджета: бренд-рядок і кнопки в розділи платформи.
- * Використовується лише тоді, коли сервер відмовив у надсиланні віджета.
+ * Стартовий екран без віджета — rich-повідомленням: заголовок, бренд-рядок і
+ * кнопки в розділи платформи просто в тілі. Звичайного тексту тут немає
+ * взагалі: у чаті продукту кожен екран має вигляд екрана.
  */
-async function sendTextFallback(
+async function sendRichFallback(
   ctx: AppContext,
 ): Promise<{ message_id: number; widgetId: string | null } | null> {
   const platform = ctx.env.WEB_PLATFORM_URL?.replace(/\/+$/, "");
-  // Підписи — зі спільних назв екранів, а не нові рядки: той самий словник,
-  // що й у журналі платформи, тож кнопка й екран звуться однаково.
-  const rows: InlineKeyboardButton[][] = [];
+  const link = (label: string, path: string): string =>
+    `<tg-button type="url" url="${platform}${path}">${label}</tg-button>`;
+  const rows: string[] = [];
   if (platform) {
     rows.push(
-      [
-        { text: screenLabel("trackers"), url: `${platform}/trackers` },
-        { text: screenLabel("services"), url: `${platform}/services` },
-      ],
-      [
-        { text: screenLabel("assessments"), url: `${platform}/assessments` },
-        { text: screenLabel("favorites"), url: `${platform}/favorites` },
-      ],
+      `<tg-button-row>${link(screenLabel("trackers"), "/trackers")}${link(
+        screenLabel("services"),
+        "/services",
+      )}</tg-button-row>`,
+      `<tg-button-row>${link(screenLabel("assessments"), "/assessments")}${link(
+        screenLabel("favorites"),
+        "/favorites",
+      )}</tg-button-row>`,
     );
   }
-  rows.push([{ text: screenLabel("contacts"), callback_data: "contacts" }]);
+  rows.push(
+    `<tg-button-row><tg-button type="callback_data" style="link" data="contacts">${screenLabel(
+      "contacts",
+    )}</tg-button></tg-button-row>`,
+  );
 
+  const html = `<h1>${BRAND.name}</h1><p>${BRAND.tagline}</p>${rows.join("")}`;
   try {
-    const sent = await ctx.api.sendMessage(ctx.chat!.id, `${BRAND.name} — ${BRAND.tagline}`, {
-      reply_markup: { inline_keyboard: rows },
-    });
-    log("SCENARIO", "text fallback sent", { message_id: sent.message_id });
+    const sent = await sendRichMessage(ctx.env.BOT_TOKEN, ctx.chat!.id, html);
+    log("SCENARIO", "rich fallback sent", { message_id: sent.message_id });
     return { message_id: sent.message_id, widgetId: null };
   } catch (error: unknown) {
-    log("SCENARIO", "text fallback failed", { error: String(error) });
+    log("SCENARIO", "rich fallback failed", { error: String(error) });
     return null;
   }
 }
