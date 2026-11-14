@@ -1,5 +1,5 @@
 {
-  "version": "4bc503b",
+  "version": "0d5e649",
   "files": [
     {
       "file": "admin/analytics-people.css",
@@ -20,6 +20,11 @@
       "file": "admin/bot-settings.css",
       "tokens": 0,
       "classes": 17
+    },
+    {
+      "file": "admin/desk.css",
+      "tokens": 0,
+      "classes": 44
     },
     {
       "file": "admin/index.css",
@@ -2885,6 +2890,74 @@
           "bs-stat__value",
           "bs-stats",
           "bs-value"
+        ]
+      }
+    ],
+    "admin/desk.css": [
+      {
+        "section": "",
+        "names": [
+          "desk"
+        ]
+      },
+      {
+        "section": "Групи",
+        "names": [
+          "desk-brand",
+          "desk-group",
+          "desk-group--active",
+          "desk-groups",
+          "desk-note"
+        ]
+      },
+      {
+        "section": "Список тем",
+        "names": [
+          "desk-chip--on",
+          "desk-chips",
+          "desk-empty",
+          "desk-list",
+          "desk-list-head",
+          "desk-room-tags",
+          "desk-search",
+          "desk-tag",
+          "desk-thread",
+          "desk-thread--active",
+          "desk-thread-meta",
+          "desk-thread-tags",
+          "desk-thread-title",
+          "desk-thread-top",
+          "desk-thread-when",
+          "desk-threads"
+        ]
+      },
+      {
+        "section": "Тема",
+        "names": [
+          "desk",
+          "desk-composer",
+          "desk-composer-input",
+          "desk-composer-kind",
+          "desk-composer-row",
+          "desk-composer-tools",
+          "desk-entry",
+          "desk-entry--buffy",
+          "desk-entry-author",
+          "desk-entry-body",
+          "desk-entry-head",
+          "desk-entry-kind",
+          "desk-entry-when",
+          "desk-feed",
+          "desk-file",
+          "desk-file-name",
+          "desk-file-size",
+          "desk-files",
+          "desk-groups",
+          "desk-hint",
+          "desk-room",
+          "desk-room-head",
+          "desk-room-path",
+          "desk-room-title"
         ]
       }
     ],
