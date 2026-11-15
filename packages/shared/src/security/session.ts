@@ -20,6 +20,23 @@ export const ADMIN_COOKIE_NAME = "admin_session";
 /** Час життя сесії — 8 годин. */
 export const ADMIN_SESSION_TTL_SECONDS = 60 * 60 * 8;
 
+/**
+ * Другий вхід — для Buffy: окрема cookie й окремий префікс payload.
+ *
+ * Cookie різна, щоб вихід з одного входу не вибивав інший; префікс різний,
+ * щоб адмінський токен не можна було підсунути як «стільний» і навпаки.
+ */
+export const DESK_COOKIE_NAME = "desk_session";
+
+/** Довгий термін: стіл — щоденна поверхня, а не разова дія. */
+export const DESK_SESSION_TTL_SECONDS = 60 * 60 * 24 * 90;
+
+/** Префікс payload для входу стола. */
+export const DESK_PAYLOAD_PREFIX = "buffy:";
+
+/** Чия це сесія. `serhii` — уся панель, `buffy` — лише стіл. */
+export type SessionSide = "serhii" | "buffy";
+
 /** Розбиває заголовок `Cookie` на пари ключ/значення. */
 export function parseCookies(header: string | null): Record<string, string> {
   if (!header) return {};
@@ -123,6 +140,58 @@ export async function hasValidSession(
   const token = parseCookies(request.headers.get("Cookie"))[ADMIN_COOKIE_NAME];
   if (!token) return false;
   return verifySessionToken(token, secret);
+}
+
+/**
+ * Чия сесія в цього запиту. `null` — жодної валідної.
+ *
+ * Підпис перевіряється **до** того, як повірити префіксу: інакше cookie з
+ * чужим payload виглядала б як вхід.
+ */
+export async function sessionSide(
+  request: Request,
+  secret: string | undefined,
+): Promise<SessionSide | null> {
+  if (!secret) return null;
+  const cookies = parseCookies(request.headers.get("Cookie"));
+
+  const admin = cookies[ADMIN_COOKIE_NAME];
+  if (admin && payloadOf(admin).startsWith("admin:")) {
+    if (await verifySessionToken(admin, secret)) return "serhii";
+  }
+
+  const desk = cookies[DESK_COOKIE_NAME];
+  if (desk && payloadOf(desk).startsWith(DESK_PAYLOAD_PREFIX)) {
+    if (await verifySessionToken(desk, secret)) return "buffy";
+  }
+
+  return null;
+}
+
+/** Payload токена без підпису: рішення про бік ухвалює лише після перевірки. */
+function payloadOf(token: string): string {
+  const lastDot = token.lastIndexOf(".");
+  return lastDot === -1 ? token : token.slice(0, lastDot);
+}
+
+/** Значення заголовка `Set-Cookie` для входу в стіл. */
+export function buildDeskSessionCookie(
+  token: string,
+  ttlSeconds = DESK_SESSION_TTL_SECONDS,
+): string {
+  return [
+    `${DESK_COOKIE_NAME}=${token}`,
+    "HttpOnly",
+    "Secure",
+    "SameSite=Strict",
+    "Path=/",
+    `Max-Age=${ttlSeconds}`,
+  ].join("; ");
+}
+
+/** Значення заголовка `Set-Cookie`, що гасить вхід у стіл. */
+export function buildClearedDeskSessionCookie(): string {
+  return `${DESK_COOKIE_NAME}=; HttpOnly; Secure; SameSite=Strict; Path=/; Max-Age=0`;
 }
 
 /** Значення заголовка `Set-Cookie` для видачі сесії. */

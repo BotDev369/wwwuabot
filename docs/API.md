@@ -85,11 +85,12 @@
 | `GET` | `/api/admin/bot-scenarios` | `handleBotScenariosList` |
 | `POST` | `/api/admin/bot-scenarios/read` | `handleBotScenarioRead` |
 | `POST` | `/api/admin/bot-scenarios/update` | `handleBotScenarioUpdate` |
-| `ANY` | `/api/admin/desk/entry` | `handleDesk` |
-| `ANY` | `/api/admin/desk/file` | `handleDesk` |
-| `ANY` | `/api/admin/desk/read` | `handleDesk` |
-| `ANY` | `/api/admin/desk/thread` | `handleDesk` |
-| `ANY` | `/api/admin/desk/threads` | `handleDesk` |
+| `ANY` | `/api/admin/desk/<…>` | `—` |
+| `ANY` | `/api/admin/desk/entry` | `—` |
+| `ANY` | `/api/admin/desk/file` | `—` |
+| `ANY` | `/api/admin/desk/read` | `—` |
+| `ANY` | `/api/admin/desk/thread` | `—` |
+| `ANY` | `/api/admin/desk/threads` | `—` |
 | `GET` | `/api/admin/events` | `handleEventList` |
 | `POST` | `/api/admin/events/delete` | `handleEventCleanup` |
 | `GET` | `/api/admin/events/matrix` | `handleEventMatrix` |
@@ -130,4 +131,4 @@
 | `POST` | `/auth/login` | `handleLogin` |
 | `POST` | `/auth/logout` | `handleLogout` |
 
-Усього шляхів: **101**.
+Усього шляхів: **102**.

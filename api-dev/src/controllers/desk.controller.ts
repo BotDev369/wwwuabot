@@ -350,10 +350,14 @@ async function markRead(request: Request, env: Env, side: DeskSide): Promise<Res
 
 /**
  * `/api/admin/desk/*`: один домен — один модуль, як `routes/trackers.ts`.
- * Підшлях приходить уже без префікса (розбір — у `routes/desk.ts`).
+ * Підшлях приходить без префікса, а бік — із сесії (розбір — `routes/desk.ts`).
  */
-export async function handleDesk(request: Request, env: Env, sub: string): Promise<Response> {
-  const side: DeskSide = "serhii";
+export async function handleDesk(
+  request: Request,
+  env: Env,
+  sub: string,
+  side: DeskSide,
+): Promise<Response> {
   try {
     await ensureTables(env.DB, ["desk_threads", "desk_entries", "desk_files", "desk_reads"]);
 

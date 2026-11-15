@@ -190,7 +190,12 @@ describe("список тем", () => {
     const db = makeDb({
       rows: [THREAD_ROW],
     });
-    const res = await handleDesk(jsonRequest("threads", undefined, "GET"), db.env, "threads");
+    const res = await handleDesk(
+      jsonRequest("threads", undefined, "GET"),
+      db.env,
+      "threads",
+      "serhii",
+    );
     const body = (await res.json()) as { ok: boolean; threads: DeskThread[]; total: number };
 
     expect(res.status).toBe(200);
@@ -210,6 +215,7 @@ describe("список тем", () => {
       jsonRequest("threads?group=task&status=doing&turn=buffy&q=r2", undefined, "GET"),
       db.env,
       "threads",
+      "serhii",
     );
 
     const select = db.statements.find((item) => item.sql.includes("FROM desk_threads"))!;
@@ -234,13 +240,23 @@ describe("список тем", () => {
 describe("тема", () => {
   it("GET без id — 400", async () => {
     const db = makeDb();
-    const res = await handleDesk(jsonRequest("thread", undefined, "GET"), db.env, "thread");
+    const res = await handleDesk(
+      jsonRequest("thread", undefined, "GET"),
+      db.env,
+      "thread",
+      "serhii",
+    );
     expect(res.status).toBe(400);
   });
 
   it("GET неіснуючої теми — 404", async () => {
     const db = makeDb({ row: null });
-    const res = await handleDesk(jsonRequest("thread?id=99", undefined, "GET"), db.env, "thread");
+    const res = await handleDesk(
+      jsonRequest("thread?id=99", undefined, "GET"),
+      db.env,
+      "thread",
+      "serhii",
+    );
     expect(res.status).toBe(404);
   });
 
@@ -280,7 +296,12 @@ describe("тема", () => {
       return statement;
     };
 
-    const res = await handleDesk(jsonRequest("thread?id=5", undefined, "GET"), db.env, "thread");
+    const res = await handleDesk(
+      jsonRequest("thread?id=5", undefined, "GET"),
+      db.env,
+      "thread",
+      "serhii",
+    );
     const body = (await res.json()) as {
       entries: DeskEntry[];
       files: Array<{ name: string }>;
@@ -291,7 +312,7 @@ describe("тема", () => {
 
   it("POST без заголовка — 400 і жодного INSERT", async () => {
     const db = makeDb();
-    const res = await handleDesk(jsonRequest("thread", { title: " " }), db.env, "thread");
+    const res = await handleDesk(jsonRequest("thread", { title: " " }), db.env, "thread", "serhii");
     expect(res.status).toBe(400);
     expect(db.statements.some((item) => item.sql.startsWith("INSERT"))).toBe(false);
   });
@@ -307,6 +328,7 @@ describe("тема", () => {
       }),
       db.env,
       "thread",
+      "serhii",
     );
 
     const insert = db.statements.find((item) => item.sql.includes("INTO desk_threads"))!;
@@ -325,13 +347,19 @@ describe("запис", () => {
       jsonRequest("entry", { thread_id: 5, body: " " }),
       db.env,
       "entry",
+      "serhii",
     );
     expect(res.status).toBe(400);
   });
 
   it("без теми — 400", async () => {
     const db = makeDb();
-    const res = await handleDesk(jsonRequest("entry", { body: "текст" }), db.env, "entry");
+    const res = await handleDesk(
+      jsonRequest("entry", { body: "текст" }),
+      db.env,
+      "entry",
+      "serhii",
+    );
     expect(res.status).toBe(400);
   });
 
@@ -341,6 +369,7 @@ describe("запис", () => {
       jsonRequest("entry", { thread_id: 5, body: "текст" }),
       db.env,
       "entry",
+      "serhii",
     );
     expect(res.status).toBe(404);
   });
@@ -351,6 +380,7 @@ describe("запис", () => {
       jsonRequest("entry", { thread_id: 5, body: "  Привіт  ", kind: "question" }),
       db.env,
       "entry",
+      "serhii",
     );
 
     const insert = last(db.statements, "INSERT");
@@ -368,6 +398,7 @@ describe("запис", () => {
       jsonRequest("entry", { thread_id: 5, id: 3, body: "Виправлено" }),
       db.env,
       "entry",
+      "serhii",
     );
     expect(db.statements.some((item) => item.sql.includes("edited_at"))).toBe(true);
     // Правка не має рухати стрічку: UPDATE з `last_entry_at` не існує.
@@ -383,7 +414,12 @@ describe("запис", () => {
     const db = makeDb({ rows: [{ id: 1, r2_key: "desk/5/abc-x.pdf" }] });
     const env = { ...db.env, DESK_FILES: bucket } as Env;
 
-    const res = await handleDesk(jsonRequest("entry?id=3", undefined, "DELETE"), env, "entry");
+    const res = await handleDesk(
+      jsonRequest("entry?id=3", undefined, "DELETE"),
+      env,
+      "entry",
+      "serhii",
+    );
     expect(res.status).toBe(200);
     expect(deleted).toEqual(["desk/5/abc-x.pdf"]);
   });
@@ -396,6 +432,7 @@ describe("прочитане", () => {
       jsonRequest("read", { thread_id: 5, last_seen_entry_id: 12 }),
       db.env,
       "read",
+      "serhii",
     );
     expect(res.status).toBe(200);
     const upsert = last(db.statements, "INSERT");
@@ -417,6 +454,7 @@ describe("файли", () => {
       new Request("https://api.example.com/api/admin/desk/file", { method: "POST", body: form }),
       env,
       "file",
+      "serhii",
     );
   }
 
@@ -454,7 +492,7 @@ describe("файли", () => {
     });
     const env = { ...db.env, DESK_FILES: bucket } as Env;
 
-    const res = await handleDesk(jsonRequest("file?id=9", undefined, "GET"), env, "file");
+    const res = await handleDesk(jsonRequest("file?id=9", undefined, "GET"), env, "file", "serhii");
     expect(res.status).toBe(200);
     expect(res.headers.get("Content-Type")).toBe("application/pdf");
     expect(res.headers.get("Cache-Control")).toContain("private");
@@ -467,7 +505,7 @@ describe("файли", () => {
     const db = makeDb({ row: { name: "x", mime: "", r2_key: "desk/5/gone" } });
     const env = { ...db.env, DESK_FILES: bucket } as Env;
 
-    const res = await handleDesk(jsonRequest("file?id=9", undefined, "GET"), env, "file");
+    const res = await handleDesk(jsonRequest("file?id=9", undefined, "GET"), env, "file", "serhii");
     expect(res.status).toBe(404);
   });
 
@@ -476,7 +514,12 @@ describe("файли", () => {
     const db = makeDb({ row: { r2_key: "desk/5/abc-x.pdf" } });
     const env = { ...db.env, DESK_FILES: bucket } as Env;
 
-    const res = await handleDesk(jsonRequest("file?id=9", undefined, "DELETE"), env, "file");
+    const res = await handleDesk(
+      jsonRequest("file?id=9", undefined, "DELETE"),
+      env,
+      "file",
+      "serhii",
+    );
     expect(res.status).toBe(200);
     expect(db.statements.some((item) => item.sql.startsWith("DELETE FROM desk_files"))).toBe(true);
     expect(deleted).toEqual(["desk/5/abc-x.pdf"]);
@@ -486,13 +529,18 @@ describe("файли", () => {
 describe("маршрути", () => {
   it("невідомий підшлях — 404", async () => {
     const db = makeDb();
-    const res = await handleDesk(jsonRequest("nope", undefined, "GET"), db.env, "nope");
+    const res = await handleDesk(jsonRequest("nope", undefined, "GET"), db.env, "nope", "serhii");
     expect(res.status).toBe(404);
   });
 
   it("чужий метод на темах — 405", async () => {
     const db = makeDb();
-    const res = await handleDesk(jsonRequest("thread", undefined, "DELETE"), db.env, "thread");
+    const res = await handleDesk(
+      jsonRequest("thread", undefined, "DELETE"),
+      db.env,
+      "thread",
+      "serhii",
+    );
     expect(res.status).toBe(405);
   });
 });

@@ -177,3 +177,27 @@ describe("користувацькі маршрути вимагають initDat
     expect((await call("GET", "/api/my-dates")).status).toBe(401);
   });
 });
+
+// ── Другий вхід: стіл ────────────────────────────────────────────
+
+describe("сесія Buffy", () => {
+  async function buffyCookie(): Promise<Record<string, string>> {
+    const token = await signSessionToken(`buffy:${Date.now() + 60_000}`, ADMIN_SECRET);
+    return { Cookie: `desk_session=${token}` };
+  }
+
+  it("пускає стіл — і тільки його", async () => {
+    const cookie = await buffyCookie();
+    const desk = await call("GET", "/api/admin/desk/thread?id=abc", makeEnv(), cookie);
+    expect(desk.status).not.toBe(401);
+
+    const users = await call("GET", "/api/admin/users/list", makeEnv(), cookie);
+    expect(users.status).toBe(401);
+  });
+
+  it("⛔ адмінський токен у cookie столу не робить її стільною", async () => {
+    const cookie = { Cookie: `desk_session=${await validToken()}` };
+    const res = await call("GET", "/api/admin/desk/thread?id=abc", makeEnv(), cookie);
+    expect(res.status).toBe(401);
+  });
+});

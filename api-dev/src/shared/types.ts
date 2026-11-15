@@ -55,6 +55,11 @@ export interface Env {
    */
   ADMIN_SECRET?: string;
   /**
+   * Пароль другого входу — Buffy. Пускає лише в стіл (`/api/admin/desk/*`) і
+   * ставить cookie `desk_session`, а не адмінську. Без нього входу немає.
+   */
+  DESK_BUFFY_SECRET?: string;
+  /**
    * Telegram-id власника продукту (Cloudflare Secret) — єдиний виняток із
    * допуску за запрошеннями, бо його не може запросити ніхто. Те саме значення,
    * що й у `bot-dev`: правило допуску спільне

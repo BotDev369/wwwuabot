@@ -14,14 +14,19 @@ import { readBody } from "../shared/body";
 import {
   ADMIN_COOKIE_NAME,
   ADMIN_SESSION_TTL_SECONDS,
+  DESK_COOKIE_NAME,
+  DESK_PAYLOAD_PREFIX,
+  DESK_SESSION_TTL_SECONDS,
+  buildClearedDeskSessionCookie,
   buildClearedSessionCookie,
+  buildDeskSessionCookie,
   buildSessionCookie,
   hasValidSession,
   parseCookies,
   sessionExpiresAt,
+  sessionSide,
   sessionTokenExpiresAt,
   signSessionToken,
-  verifySessionToken,
 } from "@wwwuabot/shared/security/session";
 
 /**
@@ -79,7 +84,14 @@ export async function handleLogin(request: Request, env: Env): Promise<Response>
   const parsed = await readBody(request, loginBody);
   if (!parsed.ok) return parsed.response;
 
-  if (parsed.body.password !== secret) {
+  // Пароль Buffy — окремий секрет і окрема cookie: вона входить тим самим
+  // екраном, але дістає лише стіл. Порівнюємо обидва варіанти до лічильника
+  // невдач, щоб друга спроба не виглядала як перша.
+  const buffySecret = env.DESK_BUFFY_SECRET;
+  const isAdmin = parsed.body.password === secret;
+  const isBuffy = Boolean(buffySecret) && parsed.body.password === buffySecret;
+
+  if (!isAdmin && !isBuffy) {
     await env.CONTENT_KV.put(rateKey, String(attempts + 1), {
       expirationTtl: LOGIN_WINDOW_SECONDS,
     });
@@ -88,9 +100,23 @@ export async function handleLogin(request: Request, env: Env): Promise<Response>
 
   await env.CONTENT_KV.delete(rateKey);
 
+  if (isBuffy) {
+    const deskToken = await signSessionToken(
+      `${DESK_PAYLOAD_PREFIX}${sessionExpiresAt(DESK_SESSION_TTL_SECONDS)}`,
+      secret,
+    );
+    return new Response(JSON.stringify({ ok: true, side: "buffy" }), {
+      status: 200,
+      headers: {
+        "Content-Type": "application/json",
+        "Set-Cookie": buildDeskSessionCookie(deskToken, DESK_SESSION_TTL_SECONDS),
+      },
+    });
+  }
+
   const token = await signSessionToken(`admin:${sessionExpiresAt()}`, secret);
 
-  return new Response(JSON.stringify({ ok: true }), {
+  return new Response(JSON.stringify({ ok: true, side: "serhii" }), {
     status: 200,
     headers: {
       "Content-Type": "application/json",
@@ -99,15 +125,12 @@ export async function handleLogin(request: Request, env: Env): Promise<Response>
   });
 }
 
-/** POST /auth/logout — видалення cookie. */
+/** POST /auth/logout — гасить обидва входи: чужий cookie не лишається жити. */
 export async function handleLogout(): Promise<Response> {
-  return new Response(JSON.stringify({ ok: true }), {
-    status: 200,
-    headers: {
-      "Content-Type": "application/json",
-      "Set-Cookie": buildClearedSessionCookie(),
-    },
-  });
+  const headers = new Headers({ "Content-Type": "application/json" });
+  headers.append("Set-Cookie", buildClearedSessionCookie());
+  headers.append("Set-Cookie", buildClearedDeskSessionCookie());
+  return new Response(JSON.stringify({ ok: true }), { status: 200, headers });
 }
 
 /**
@@ -118,13 +141,14 @@ export async function handleLogout(): Promise<Response> {
  * нічого зайвого. Термін береться лише з перевіреного токена.
  */
 export async function handleAuthCheck(request: Request, env: Env): Promise<Response> {
-  const token = parseCookies(request.headers.get("Cookie"))[ADMIN_COOKIE_NAME];
-  if (!token || !env.ADMIN_SECRET) {
-    return json({ authenticated: false, expiresAt: null });
-  }
-  const valid = await verifySessionToken(token, env.ADMIN_SECRET);
+  const cookies = parseCookies(request.headers.get("Cookie"));
+  const side = await sessionSide(request, env.ADMIN_SECRET);
+  if (!side) return json({ authenticated: false, side: null, expiresAt: null });
+
+  const token = side === "buffy" ? cookies[DESK_COOKIE_NAME] : cookies[ADMIN_COOKIE_NAME];
   return json({
-    authenticated: valid,
-    expiresAt: valid ? sessionTokenExpiresAt(token) : null,
+    authenticated: true,
+    side,
+    expiresAt: token ? sessionTokenExpiresAt(token) : null,
   });
 }

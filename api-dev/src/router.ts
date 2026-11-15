@@ -23,11 +23,11 @@ import {
   handleBotInfo,
 } from "./controllers/bot-settings.controller";
 import { handleBotUsername } from "./controllers/bot-username.controller";
+import { sessionSide } from "@wwwuabot/shared/security/session";
 import {
   handleLogin,
   handleLogout,
   handleAuthCheck as handleCookieAuthCheck,
-  isAuthenticated,
 } from "./controllers/auth.controller";
 import {
   handlePublicUser,
@@ -102,7 +102,11 @@ export async function handleRequest(request: Request, env: Env): Promise<Respons
   // Це ЄДИНИЙ спосіб авторизувати адмін-дію: секрети в заголовках
   // (X-Admin-Secret, X-Bot-Token) не існують — див. AGENTS.md §5 і §7.
   if (ADMIN_PATH_PREFIXES.some((prefix) => pathname.startsWith(prefix))) {
-    const authed = await isAuthenticated(request, env);
+    // Стіл має другий вхід: сесія Buffy пускає рівно `/api/admin/desk/*` —
+    // решта адмін-шляхів для неї закрита, як і для аноніма.
+    const side = await sessionSide(request, env.ADMIN_SECRET);
+    const authed =
+      side === "serhii" || (side === "buffy" && pathname.startsWith("/api/admin/desk/"));
     if (!authed) {
       return new Response(JSON.stringify({ error: "Unauthorized" }), {
         status: 401,

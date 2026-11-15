@@ -1,7 +1,11 @@
 import { apiFetch } from "./client";
 
+export type SessionSide = "serhii" | "buffy";
+
 export interface AdminSession {
   authenticated: boolean;
+  /** Чий це вхід: `buffy` бачить лише стіл, `serhii` — усю панель. */
+  side: SessionSide | null;
   /** Коли спливає сесія (мс від епохи); `null` — невідомо або не авторизовано. */
   expiresAt: number | null;
 }
@@ -19,11 +23,20 @@ export async function logout(): Promise<void> {
 
 /** Стан сесії панелі разом із терміном дії — для екрана профілю. */
 export async function fetchAdminSession(): Promise<AdminSession> {
-  const res = await apiFetch<{ authenticated: boolean; expiresAt?: number | null }>("/auth/check");
-  return { authenticated: res.authenticated, expiresAt: res.expiresAt ?? null };
+  const res = await apiFetch<{
+    authenticated: boolean;
+    side?: SessionSide | null;
+    expiresAt?: number | null;
+  }>("/auth/check");
+  return {
+    authenticated: res.authenticated,
+    side: res.side ?? null,
+    expiresAt: res.expiresAt ?? null,
+  };
 }
 
-export async function checkAuth(): Promise<boolean> {
+/** Чий вхід — або `null`, якщо сесії немає. */
+export async function checkAuth(): Promise<SessionSide | null> {
   const session = await fetchAdminSession();
-  return session.authenticated;
+  return session.authenticated ? (session.side ?? "serhii") : null;
 }

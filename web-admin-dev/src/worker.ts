@@ -15,7 +15,7 @@
  * @module web-admin-dev/src/worker
  */
 
-import { hasValidSession } from "@wwwuabot/shared/security/session";
+import { sessionSide } from "@wwwuabot/shared/security/session";
 import { secureResponse } from "@wwwuabot/shared/security/headers";
 
 export interface Env {
@@ -68,14 +68,15 @@ export default {
     // однаковий для всіх: власнику й невідомому віддається той самий
     // `index.html`, а невідому відсіює React (LoginScreen) і гейт `api-dev`
     // на `/api/*`. HMAC на переході по сторінці нічого не змінював.
-    const authed =
-      url.pathname.startsWith("/api/") || AUTH_PATHS.has(url.pathname)
-        ? await hasValidSession(request, env.ADMIN_SECRET)
-        : false;
+    // Два входи: адмінська сесія бачить усе, сесія Buffy — лише стіл.
+    const side = await sessionSide(request, env.ADMIN_SECRET);
+    const deskPath =
+      url.pathname.startsWith("/api/admin/desk/") || url.pathname.startsWith("/api/desk/");
+    const authed = side !== null && (side === "serhii" || deskPath);
 
     // /auth/check сам звітує про стан сесії, решта auth-шляхів проходять як є.
     if (AUTH_PATHS.has(url.pathname)) {
-      if (url.pathname === "/auth/check" && !authed) {
+      if (url.pathname === "/auth/check" && side === null) {
         return json({ authenticated: false }, 200, url.toString());
       }
       return secureResponse(await env.API.fetch(request), { url: url.toString() });
