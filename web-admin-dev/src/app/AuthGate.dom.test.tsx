@@ -8,7 +8,6 @@
 
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { render, screen, waitFor } from "@testing-library/react";
-import { useSession } from "../shared/session.store";
 
 const auth = vi.hoisted(() => ({ side: null as "serhii" | "buffy" | null }));
 
@@ -23,7 +22,6 @@ const { AuthGate } = await import("./AuthGate");
 describe("AuthGate", () => {
   beforeEach(() => {
     auth.side = null;
-    useSession.setState({ side: null });
     window.history.replaceState({}, "", "/desk");
   });
 
@@ -47,10 +45,9 @@ describe("AuthGate", () => {
     );
 
     await waitFor(() => expect(screen.getByText("панель")).toBeTruthy());
-    expect(useSession.getState().side).toBe("serhii");
   });
 
-  it("Buffy на своїй адресі бачить стіл", async () => {
+  it("вхід Buffy теж бачить панель — бік впливає лише на авторство", async () => {
     auth.side = "buffy";
     render(
       <AuthGate>
@@ -59,6 +56,5 @@ describe("AuthGate", () => {
     );
 
     await waitFor(() => expect(screen.getByText("стіл")).toBeTruthy());
-    expect(useSession.getState().side).toBe("buffy");
   });
 });

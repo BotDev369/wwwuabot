@@ -114,6 +114,28 @@
   gap: 6px;
 }
 
+/* Пошук і «Нова тема» — одним рядком: кнопка поруч із полем, а не в чипах
+   фільтрів, де вона читається як ще один фільтр. */
+.desk-search-row {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+}
+
+.desk-search-row .desk-search {
+  flex: 1;
+  min-width: 0;
+}
+
+.desk-newbtn {
+  flex: 0 0 auto;
+  white-space: nowrap;
+}
+
+.desk-chip--reset {
+  border-style: dashed;
+}
+
 .desk-chip--on {
   background: var(--accent-soft);
   border-color: var(--accent);
@@ -531,14 +553,30 @@
     padding: var(--sp-2);
   }
 
+  /* Смуга груп — один рядок фіксованої висоти. Без `align-content: start`
+     порожній список розтягував auto-рядки сітки, і чипи групи ставали
+     високими плитками на пів екрана. */
+  .desk {
+    grid-template-rows: auto minmax(0, 1fr);
+    align-content: start;
+  }
+
   .desk-groups {
     display: flex;
+    flex: 0 0 auto;
     flex-direction: row;
+    align-items: center;
+    align-self: start;
     gap: 6px;
     overflow-x: auto;
     overflow-y: hidden;
     padding-bottom: var(--sp-1);
     scrollbar-width: none;
+  }
+
+  /* Чип групи — по своїй висоті, а не по висоті рядка */
+  .desk-group {
+    align-self: center;
   }
 
   .desk-brand,

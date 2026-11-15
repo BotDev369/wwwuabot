@@ -1,12 +1,12 @@
 /**
  * «Стіл» — спільний простір Сергія й Buffy на живих даних: список, тема,
- * композер і файли. Відкрита тема позначається вичитаною; мобільна логіка та
- * сама (одна панель, «До тем»).
+ * композер і файли. Фільтри питають сервер і не ховають причину порожнечі:
+ * коли нічого не знайдено, видно, що саме стоїть і як його скинути.
  *
  * @module web-admin-dev/src/pages/desk/DeskPage
  */
 
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import {
   addDeskEntry,
   deleteDeskEntry,
@@ -54,8 +54,18 @@ export function DeskPage() {
   const [newGroup, setNewGroup] = useState("plan");
 
   const refresh = useCallback(() => setReload((current) => current + 1), []);
+  const hasFilters = group !== "all" || status !== "all" || query.trim() !== "";
+
+  function resetFilters(): void {
+    setGroup("all");
+    setStatus("all");
+    setQuery("");
+  }
 
   // Список: пошук із паузи, щоб набір не бив по серверу на кожну літеру.
+  // Старі теми лишаються на екрані, доки їдуть нові: інакше на повільній
+  // мережі «порожньо» показувалось би раніше за відповідь і читалось як
+  // помилка фільтра.
   useEffect(() => {
     let alive = true;
     const timer = setTimeout(
@@ -103,11 +113,6 @@ export function DeskPage() {
       alive = false;
     };
   }, [activeId, reload]);
-
-  const active = useMemo(
-    () => threads.find((thread) => thread.id === activeId) ?? null,
-    [threads, activeId],
-  );
 
   async function send(text: string, kind: string, files: File[]): Promise<void> {
     const threadId = room?.thread.id;
@@ -171,6 +176,7 @@ export function DeskPage() {
       const saved = await saveDeskThread({ title, group: newGroup });
       setNewTitle("");
       setNewOpen(false);
+      resetFilters();
       setActiveId(saved.thread.id);
       setRoomOpen(true);
       refresh();
@@ -211,6 +217,7 @@ export function DeskPage() {
             key={item.key}
             type="button"
             className={`desk-group${item.key === group ? " desk-group--active" : ""}`}
+            aria-pressed={item.key === group}
             onClick={() => setGroup(item.key)}
           >
             <span>{item.label}</span>
@@ -222,31 +229,44 @@ export function DeskPage() {
 
       <div className="desk-list">
         <div className="desk-list-head">
-          <input
-            className="desk-search"
-            value={query}
-            onChange={(event) => setQuery(event.target.value)}
-            placeholder={labels.search}
-            aria-label={labels.search}
-          />
+          <div className="desk-search-row">
+            <input
+              className="desk-search"
+              value={query}
+              onChange={(event) => setQuery(event.target.value)}
+              placeholder={labels.search}
+              aria-label={labels.search}
+            />
+            <button
+              type="button"
+              className="wb-btn wb-btn-ghost wb-btn-sm desk-newbtn"
+              aria-pressed={newOpen}
+              onClick={() => setNewOpen((current) => !current)}
+            >
+              {labels.newThread}
+            </button>
+          </div>
           <div className="desk-chips">
             {labels.statusFilters.map((filter) => (
               <button
                 key={filter.key}
                 type="button"
                 className={`wb-chip desk-chip${filter.key === status ? " desk-chip--on" : ""}`}
+                aria-pressed={filter.key === status}
                 onClick={() => setStatus(filter.key)}
               >
                 {filter.label}
               </button>
             ))}
-            <button
-              type="button"
-              className="wb-chip desk-chip desk-chip--new"
-              onClick={() => setNewOpen((current) => !current)}
-            >
-              {labels.newThread}
-            </button>
+            {hasFilters && (
+              <button
+                type="button"
+                className="wb-chip desk-chip desk-chip--reset"
+                onClick={resetFilters}
+              >
+                {labels.resetFilters}
+              </button>
+            )}
           </div>
           {newOpen && (
             <div className="desk-newform">
@@ -285,10 +305,9 @@ export function DeskPage() {
           )}
         </div>
 
-        <div className="desk-threads">
-          {threads.length === 0 && (
-            <p className="desk-empty">{loading ? labels.loading : labels.empty}</p>
-          )}
+        <div className="desk-threads" aria-busy={loading}>
+          {loading && threads.length === 0 && <p className="desk-empty">{labels.loading}</p>}
+          {!loading && threads.length === 0 && <p className="desk-empty">{labels.empty}</p>}
           {threads.map((thread) => (
             <button
               key={thread.id}
@@ -337,7 +356,7 @@ export function DeskPage() {
         />
       ) : (
         <div className="desk-room desk-room--empty">
-          <p className="desk-empty">{active ? labels.loading : labels.empty}</p>
+          <p className="desk-empty">{labels.empty}</p>
         </div>
       )}
     </section>

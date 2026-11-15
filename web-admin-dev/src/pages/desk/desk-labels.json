@@ -59,16 +59,44 @@
     "mb": "МБ"
   },
   "groups": [
-    { "key": "all", "label": "Усі теми" },
-    { "key": "plan", "label": "Плани" },
-    { "key": "task", "label": "Задачі" },
-    { "key": "debt", "label": "Борги" },
-    { "key": "question", "label": "Питання" },
-    { "key": "file", "label": "Файли" }
+    {
+      "key": "all",
+      "label": "Усі теми"
+    },
+    {
+      "key": "plan",
+      "label": "Плани"
+    },
+    {
+      "key": "task",
+      "label": "Задачі"
+    },
+    {
+      "key": "debt",
+      "label": "Борги"
+    },
+    {
+      "key": "question",
+      "label": "Питання"
+    },
+    {
+      "key": "file",
+      "label": "Файли"
+    }
   ],
   "statusFilters": [
-    { "key": "all", "label": "Усі" },
-    { "key": "doing", "label": "В роботі" },
-    { "key": "done", "label": "Зроблено" }
-  ]
+    {
+      "key": "all",
+      "label": "Усі"
+    },
+    {
+      "key": "doing",
+      "label": "В роботі"
+    },
+    {
+      "key": "done",
+      "label": "Зроблено"
+    }
+  ],
+  "resetFilters": "Скинути фільтри"
 }

@@ -68,11 +68,10 @@ export default {
     // однаковий для всіх: власнику й невідомому віддається той самий
     // `index.html`, а невідому відсіює React (LoginScreen) і гейт `api-dev`
     // на `/api/*`. HMAC на переході по сторінці нічого не змінював.
-    // Два входи: адмінська сесія бачить усе, сесія Buffy — лише стіл.
+    // Два входи — одна межа: і адмінська сесія, і стільна бачать панель.
+    // Різниця між ними лише в тому, від чийого імені піде запис у стіл.
     const side = await sessionSide(request, env.ADMIN_SECRET);
-    const deskPath =
-      url.pathname.startsWith("/api/admin/desk/") || url.pathname.startsWith("/api/desk/");
-    const authed = side !== null && (side === "serhii" || deskPath);
+    const authed = side !== null;
 
     // /auth/check сам звітує про стан сесії, решта auth-шляхів проходять як є.
     if (AUTH_PATHS.has(url.pathname)) {

@@ -11,11 +11,7 @@
 
 import { useLocation, useNavigate } from "react-router-dom";
 import { SideBarMenu, isTabActive } from "@wwwuabot/ui/nav";
-import { useSession } from "../../shared/session.store";
 import { useAdminNav } from "./adminNav.store";
-
-/** Куди пускає вхід Buffy: стіл і більше нічого. */
-const DESK_ONLY_PATHS = new Set(["/desk"]);
 
 interface SidebarNavProps {
   collapsed: boolean;
@@ -25,7 +21,6 @@ interface SidebarNavProps {
 
 export function SidebarNav({ collapsed, onNavigate }: SidebarNavProps) {
   const sections = useAdminNav((state) => state.sections);
-  const side = useSession((state) => state.side);
   const navigate = useNavigate();
   const { pathname } = useLocation();
 
@@ -39,21 +34,19 @@ export function SidebarNav({ collapsed, onNavigate }: SidebarNavProps) {
       sections={sections.map((section, index) => ({
         key: section.title ?? `section-${index}`,
         title: section.title ?? undefined,
-        items: section.items
-          .filter((item) => side !== "buffy" || DESK_ONLY_PATHS.has(item.to))
-          .map((item) => ({
-            key: item.to,
-            label: item.label,
-            icon: item.icon,
-            href: item.to,
-            active: isTabActive(pathname, item.to),
-            onSelect: () => {
-              // Навігацію робить оболонка (react-router): повне перезавантаження
-              // в TWA — це втрачений стан і біла вспишка.
-              navigate(item.to);
-              onNavigate?.();
-            },
-          })),
+        items: section.items.map((item) => ({
+          key: item.to,
+          label: item.label,
+          icon: item.icon,
+          href: item.to,
+          active: isTabActive(pathname, item.to),
+          onSelect: () => {
+            // Навігацію робить оболонка (react-router): повне перезавантаження
+            // в TWA — це втрачений стан і біла вспишка.
+            navigate(item.to);
+            onNavigate?.();
+          },
+        })),
       }))}
     />
   );

@@ -323,6 +323,32 @@ describe("DeskPage на живих даних", () => {
     await waitFor(() => expect(screen.queryByText("bucket-plan.md")).toBeNull());
   });
 
+  it("порожній фільтр каже, що фільтр стоїть, і скидається однією кнопкою", async () => {
+    render(<DeskPage />);
+    await waitFor(() => expect(threadTitles()).toHaveLength(2));
+
+    fireEvent.click(screen.getByText("Борги"));
+    await waitFor(() => expect(screen.getByText("Немає тем за цим фільтром")).toBeTruthy());
+
+    fireEvent.click(screen.getByRole("button", { name: "Скинути фільтри" }));
+    await waitFor(() => expect(threadTitles()).toHaveLength(2));
+  });
+
+  it("новий запис теми не скидає вибраний фільтр", async () => {
+    render(<DeskPage />);
+    await waitFor(() => expect(threadTitles()).toHaveLength(2));
+
+    fireEvent.click(screen.getByText("Задачі"));
+    await waitFor(() => expect(threadTitles()).toEqual(["R2-бакет для обміну файлами"]));
+
+    fireEvent.change(screen.getByLabelText("Написати в тему…"), {
+      target: { value: "Пишу в тему" },
+    });
+    fireEvent.click(screen.getByRole("button", { name: "Надіслати" }));
+    await waitFor(() => expect(screen.getByText("Пишу в тему")).toBeTruthy());
+    expect(threadTitles()).toEqual(["R2-бакет для обміну файлами"]);
+  });
+
   it("нова тема створюється й стає активною", async () => {
     render(<DeskPage />);
     await waitFor(() => expect(threadTitles()).toHaveLength(2));

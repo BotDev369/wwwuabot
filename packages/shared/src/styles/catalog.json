@@ -1,5 +1,5 @@
 {
-  "version": "258ff10",
+  "version": "9950e26",
   "files": [
     {
       "file": "admin/analytics-people.css",
@@ -24,7 +24,7 @@
     {
       "file": "admin/desk.css",
       "tokens": 0,
-      "classes": 59
+      "classes": 62
     },
     {
       "file": "admin/index.css",
@@ -2914,12 +2914,15 @@
         "section": "Список тем",
         "names": [
           "desk-chip--on",
+          "desk-chip--reset",
           "desk-chips",
           "desk-empty",
           "desk-list",
           "desk-list-head",
+          "desk-newbtn",
           "desk-room-tags",
           "desk-search",
+          "desk-search-row",
           "desk-tag",
           "desk-thread",
           "desk-thread--active",
