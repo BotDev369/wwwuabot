@@ -379,7 +379,7 @@ describe("DeskPage на живих даних", () => {
     const { container } = render(<DeskPage />);
     await waitFor(() => expect(container.querySelectorAll(".desk-entry")).toHaveLength(2));
 
-    fireEvent.click(screen.getByRole("button", { name: "Редагувати тему" }));
+    fireEvent.click(await screen.findByRole("button", { name: "Редагувати тему" }));
     const title = screen.getByLabelText("Назва") as HTMLInputElement;
     expect(title.value).toBe("R2-бакет для обміну файлами");
     fireEvent.change(title, { target: { value: "R2-бакет: оновлено" } });
@@ -396,12 +396,12 @@ describe("DeskPage на живих даних", () => {
     render(<DeskPage />);
     await waitFor(() => expect(threadTitles()).toHaveLength(2));
 
-    fireEvent.click(screen.getByRole("button", { name: "Архівувати тему" }));
+    fireEvent.click(await screen.findByRole("button", { name: "Архівувати тему" }));
     await waitFor(() => expect(threadTitles()).toEqual(["Темна тема: контраст кнопок"]));
 
-    fireEvent.click(screen.getByRole("button", { name: "Архів" }));
+    fireEvent.click(await screen.findByRole("button", { name: "Архів" }));
     await waitFor(() => expect(threadTitles()).toEqual(["R2-бакет для обміну файлами"]));
-    fireEvent.click(screen.getByRole("button", { name: /R2-бакет/ }));
+    fireEvent.click(await screen.findByRole("button", { name: /R2-бакет/ }));
     expect(await screen.findByRole("button", { name: "Повернути тему з архіву" })).toBeTruthy();
   });
 
