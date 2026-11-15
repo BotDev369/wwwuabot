@@ -339,6 +339,18 @@ export function DeskPage() {
                   }}
                 />
               ))}
+              {/* На телефоні груп і фільтрів немає: архів — один рядок у кінці
+                  списку, а не постійна смуга над ним. */}
+              <button
+                type="button"
+                className="desk-archive-toggle"
+                onClick={() => {
+                  setArchivedOnly((current) => !current);
+                  setGroup("all");
+                }}
+              >
+                {archivedOnly ? labels.toActive : labels.showArchive}
+              </button>
             </div>
           </div>
 

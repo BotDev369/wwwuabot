@@ -8,6 +8,7 @@ import labels from "./desk-labels.json";
 import { statusTone, type DeskThreadView } from "./desk-view";
 
 const STATUSES = labels.statuses as Record<string, string>;
+const GROUP_LABELS = new Map(labels.groups.map((item) => [item.key, item.label]));
 
 interface DeskThreadCardProps {
   thread: DeskThreadView;
@@ -32,7 +33,7 @@ export function DeskThreadCard({ thread, active, onOpen }: DeskThreadCardProps) 
       </span>
       <span className="desk-thread-title">{thread.title}</span>
       <span className="desk-thread-meta">
-        {thread.subgroup || labels.allThreads} · {thread.entries}
+        {thread.subgroup || GROUP_LABELS.get(thread.group) || thread.group} · {thread.entries}
       </span>
       <span className="desk-thread-tags">
         {thread.tags.map((tag) => (

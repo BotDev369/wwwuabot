@@ -397,13 +397,14 @@ describe("DeskPage на живих даних", () => {
   });
 
   it("тему можна відправити в архів і повернути звідти", async () => {
-    render(<DeskPage />);
+    const { container } = render(<DeskPage />);
     await waitFor(() => expect(threadTitles()).toHaveLength(2));
 
     fireEvent.click(await screen.findByRole("button", { name: "Архівувати тему" }));
     await waitFor(() => expect(threadTitles()).toEqual(["Темна тема: контраст кнопок"]));
 
-    fireEvent.click(await screen.findByRole("button", { name: "Архів" }));
+    await waitFor(() => expect(container.querySelector(".desk-archive-toggle")).toBeTruthy());
+    fireEvent.click(container.querySelector(".desk-archive-toggle") as HTMLButtonElement);
     await waitFor(() => expect(threadTitles()).toEqual(["R2-бакет для обміну файлами"]));
     fireEvent.click(await screen.findByRole("button", { name: /R2-бакет/ }));
     expect(await screen.findByRole("button", { name: "Повернути тему з архіву" })).toBeTruthy();

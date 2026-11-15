@@ -128,5 +128,7 @@
   "unarchiveThreadAria": "Повернути тему з архіву",
   "editEntryAria": "Редагувати запис",
   "deleteEntryAria": "Видалити запис",
-  "pickThread": "Обери тему зі списку"
+  "pickThread": "Обери тему зі списку",
+  "showArchive": "Архів",
+  "toActive": "До активних тем"
 }

@@ -91,14 +91,23 @@
   gap: 6px;
 }
 
+.desk-chip {
+  flex: 0 0 auto;
+  font-size: var(--text-xs);
+  white-space: nowrap;
+}
+
+/* «Скинути фільтри» — не окремий фільтр, а дія: без рамки чипа */
+.desk-chip--reset {
+  border-color: transparent;
+  background: transparent;
+  color: var(--text-muted);
+}
+
 .desk-chip--on {
   background: var(--accent-soft);
   border-color: var(--accent);
   color: var(--text-primary);
-}
-
-.desk-chip--reset {
-  border-style: dashed;
 }
 
 .desk-threads {
@@ -174,6 +183,11 @@
 
 .desk-tag {
   font-size: var(--text-xs);
+}
+
+/* Вхід в архів на телефоні — рядок у кінці списку, не смуга над ним */
+.desk-archive-toggle {
+  display: none;
 }
 
 .desk-empty {
@@ -492,21 +506,30 @@
 
   /* Один рядок, що скролиться, з м'яким краєм: обрізаний посередині чип
      читався як зламана смуга, а перенос на три ряди з'їдав пів екрана. */
-  .desk-groups {
-    display: flex;
-    flex-direction: row;
-    flex-wrap: nowrap;
-    align-items: center;
-    align-self: start;
-    gap: 6px;
-    overflow-x: auto;
-    overflow-y: hidden;
-    scrollbar-width: none;
-    mask-image: linear-gradient(to right, #000 calc(100% - 28px), transparent);
+  /* Телефон: без бічної смуги груп і без рядка фільтрів — список і пошук.
+     Фільтрує пошук, а не набір чипів над списком. */
+  .desk-groups,
+  .desk-list-head {
+    display: none;
   }
 
-  .desk-groups::-webkit-scrollbar {
-    display: none;
+  /* Останнє поле форми має прокручуватись вище за кнопки, а не ховатись під
+     ними: без цього «Теги» виглядали обрізаними. */
+  .desk-modal .wb-modal-body {
+    padding: var(--sp-4) var(--sp-4) calc(var(--sp-5) + var(--sp-4));
+  }
+
+  .desk-archive-toggle {
+    display: block;
+    width: 100%;
+    padding: var(--sp-3);
+    border: none;
+    border-top: 1px solid var(--border-subtle);
+    background: transparent;
+    color: var(--text-muted);
+    font: inherit;
+    font-size: var(--text-xs);
+    cursor: pointer;
   }
 
   /* Шапка сторінки на телефоні: пошук і «Нова тема» в одному рядку, інакше
@@ -526,28 +549,8 @@
     flex: 0 0 auto;
   }
 
-  .desk-group {
-    flex: 0 0 auto;
-    align-self: center;
-    min-height: 32px;
-    padding: 0 var(--sp-3);
-    border: 1px solid var(--border);
-    border-radius: var(--radius-full);
-    white-space: nowrap;
-  }
-
   .desk-list {
     min-height: 0;
-  }
-
-  .desk-chips {
-    flex-wrap: wrap;
-    overflow: visible;
-  }
-
-  .desk-chip {
-    flex: 0 0 auto;
-    white-space: nowrap;
   }
 
   .desk-threads {

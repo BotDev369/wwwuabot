@@ -1,5 +1,5 @@
 {
-  "version": "717a46f",
+  "version": "256ae78",
   "files": [
     {
       "file": "admin/analytics-people.css",
@@ -24,7 +24,7 @@
     {
       "file": "admin/desk.css",
       "tokens": 0,
-      "classes": 62
+      "classes": 65
     },
     {
       "file": "admin/index.css",
@@ -2913,6 +2913,8 @@
       {
         "section": "Список тем",
         "names": [
+          "desk-archive-toggle",
+          "desk-chip",
           "desk-chip--on",
           "desk-chip--reset",
           "desk-chips",
@@ -2972,10 +2974,9 @@
         "names": [
           "desk",
           "desk--room",
+          "desk-archive-toggle",
           "desk-attach-icon",
           "desk-attach-text",
-          "desk-chip",
-          "desk-chips",
           "desk-composer",
           "desk-composer-files",
           "desk-composer-input",
@@ -2985,10 +2986,11 @@
           "desk-feed",
           "desk-file-chip",
           "desk-file-drop",
-          "desk-group",
           "desk-groups",
           "desk-list",
+          "desk-list-head",
           "desk-loose",
+          "desk-modal",
           "desk-room",
           "desk-room-actions",
           "desk-room-head",
@@ -2998,6 +3000,7 @@
           "desk-topbar",
           "desk-topbar--hidden",
           "wb-btn",
+          "wb-modal-body",
           "wb-search",
           "wb-select",
           "wb-topbar-right"

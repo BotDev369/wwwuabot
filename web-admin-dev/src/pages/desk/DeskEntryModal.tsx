@@ -26,7 +26,7 @@ export function DeskEntryModal({ entry, busy, error, onClose, onSave }: DeskEntr
 
   return (
     <div className="wb-modal-overlay" onClick={onClose}>
-      <div className="wb-modal" onClick={(event) => event.stopPropagation()}>
+      <div className="wb-modal desk-modal" onClick={(event) => event.stopPropagation()}>
         <div className="wb-modal-header">
           <h3 className="wb-modal-title">{labels.editEntryTitle}</h3>
           <button className="wb-modal-close" onClick={onClose} disabled={busy}>

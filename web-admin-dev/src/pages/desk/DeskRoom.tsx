@@ -14,6 +14,7 @@ const STATUSES = labels.statuses as Record<string, string>;
 const TURNS = labels.turns as Record<string, string>;
 const KINDS = labels.kinds as Record<string, string>;
 const AUTHORS = labels.authors as Record<string, string>;
+const GROUP_LABELS = new Map(labels.groups.map((item) => [item.key, item.label]));
 
 interface DeskRoomProps {
   room: DeskRoomView;
@@ -66,7 +67,9 @@ export function DeskRoom({
           <button type="button" className="wb-btn wb-btn-ghost wb-btn-sm" onClick={onBack}>
             {labels.back}
           </button>
-          <span className="desk-room-path">{thread.subgroup || labels.allThreads}</span>
+          <span className="desk-room-path">
+            {thread.subgroup || GROUP_LABELS.get(thread.group) || thread.group}
+          </span>
         </div>
         <h1 className="desk-room-title">{thread.title}</h1>
         <div className="desk-room-tags">
