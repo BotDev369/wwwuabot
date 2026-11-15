@@ -85,7 +85,6 @@
 | `GET` | `/api/admin/bot-scenarios` | `handleBotScenariosList` |
 | `POST` | `/api/admin/bot-scenarios/read` | `handleBotScenarioRead` |
 | `POST` | `/api/admin/bot-scenarios/update` | `handleBotScenarioUpdate` |
-| `ANY` | `/api/admin/desk/<…>` | `—` |
 | `ANY` | `/api/admin/desk/entry` | `—` |
 | `ANY` | `/api/admin/desk/file` | `—` |
 | `ANY` | `/api/admin/desk/read` | `—` |
@@ -131,4 +130,4 @@
 | `POST` | `/auth/login` | `handleLogin` |
 | `POST` | `/auth/logout` | `handleLogout` |
 
-Усього шляхів: **102**.
+Усього шляхів: **101**.

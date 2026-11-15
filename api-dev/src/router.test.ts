@@ -186,13 +186,14 @@ describe("сесія Buffy", () => {
     return { Cookie: `desk_session=${token}` };
   }
 
-  it("пускає стіл — і тільки його", async () => {
+  it("пускає всю адмінку, як і адмінська сесія", async () => {
     const cookie = await buffyCookie();
     const desk = await call("GET", "/api/admin/desk/thread?id=abc", makeEnv(), cookie);
     expect(desk.status).not.toBe(401);
 
-    const users = await call("GET", "/api/admin/users/list", makeEnv(), cookie);
-    expect(users.status).toBe(401);
+    // Межа доступу спільна: різниця між входами лише в авторстві, не в правах.
+    const access = await call("GET", "/api/admin/access-requests", makeEnv(), cookie);
+    expect(access.status).not.toBe(401);
   });
 
   it("⛔ адмінський токен у cookie столу не робить її стільною", async () => {

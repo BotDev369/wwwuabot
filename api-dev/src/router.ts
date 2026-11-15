@@ -102,11 +102,10 @@ export async function handleRequest(request: Request, env: Env): Promise<Respons
   // Це ЄДИНИЙ спосіб авторизувати адмін-дію: секрети в заголовках
   // (X-Admin-Secret, X-Bot-Token) не існують — див. AGENTS.md §5 і §7.
   if (ADMIN_PATH_PREFIXES.some((prefix) => pathname.startsWith(prefix))) {
-    // Стіл має другий вхід: сесія Buffy пускає рівно `/api/admin/desk/*` —
-    // решта адмін-шляхів для неї закрита, як і для аноніма.
+    // Два входи, одна межа: і адмінська сесія, і стільна пускають адмін-шляхи.
+    // Бік сесії не обмежує доступ — він вирішує лише авторство записів столу.
     const side = await sessionSide(request, env.ADMIN_SECRET);
-    const authed =
-      side === "serhii" || (side === "buffy" && pathname.startsWith("/api/admin/desk/"));
+    const authed = side !== null;
     if (!authed) {
       return new Response(JSON.stringify({ error: "Unauthorized" }), {
         status: 401,
