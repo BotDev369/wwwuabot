@@ -1,0 +1,74 @@
+{
+  "title": "Стіл",
+  "subtitle": "спільний простір — Сергій і Buffy",
+  "search": "Пошук теми або тега",
+  "allThreads": "Усі теми",
+  "composerPlaceholder": "Написати в тему…",
+  "composerHint": "Cmd+Enter — надіслати; файлів можна додати скільки завгодно",
+  "send": "Надіслати",
+  "attach": "Прикріпити файли",
+  "kindLabel": "Вид",
+  "empty": "Немає тем за цим фільтром",
+  "feedEmpty": "Тут ще немає записів",
+  "back": "До тем",
+  "loading": "Завантаження…",
+  "newThread": "Нова тема",
+  "newTitle": "Назва теми",
+  "newSubgroup": "Підгрупа",
+  "create": "Створити",
+  "cancel": "Скасувати",
+  "groupLabel": "Група",
+  "statusLabel": "Статус",
+  "turnLabel": "Чия черга",
+  "removeFile": "Прибрати",
+  "deleteEntry": "Видалити запис",
+  "deleteFile": "Видалити файл",
+  "uploading": "Завантажую файли…",
+  "sending": "Надсилаю…",
+  "failed": "Не вдалося зберегти",
+  "filesTitle": "Файли теми",
+  "unread": "нове",
+  "turnsTitle": "черга",
+  "statuses": {
+    "open": "Відкрите",
+    "doing": "В роботі",
+    "done": "Зроблено",
+    "dropped": "Знято"
+  },
+  "turns": {
+    "serhii": "Чекає на Сергія",
+    "buffy": "Чекає на Buffy",
+    "none": "Черга вільна"
+  },
+  "kinds": {
+    "note": "Нотатка",
+    "question": "Питання",
+    "answer": "Відповідь",
+    "decision": "Рішення",
+    "plan": "План",
+    "debt": "Борг",
+    "file": "Файл"
+  },
+  "authors": {
+    "serhii": "Сергій",
+    "buffy": "Buffy"
+  },
+  "units": {
+    "b": "Б",
+    "kb": "КБ",
+    "mb": "МБ"
+  },
+  "groups": [
+    { "key": "all", "label": "Усі теми" },
+    { "key": "plan", "label": "Плани" },
+    { "key": "task", "label": "Задачі" },
+    { "key": "debt", "label": "Борги" },
+    { "key": "question", "label": "Питання" },
+    { "key": "file", "label": "Файли" }
+  ],
+  "statusFilters": [
+    { "key": "all", "label": "Усі" },
+    { "key": "doing", "label": "В роботі" },
+    { "key": "done", "label": "Зроблено" }
+  ]
+}

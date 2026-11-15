@@ -1,133 +1,338 @@
 // @vitest-environment jsdom
 /**
- * Макет «Стола» в адмінці: групи, фільтри, стрічка, композер.
+ * «Стіл» на живих даних: список, тема, композер, файли й черга.
+ *
+ * Мережа тут — підмінений модуль `desk.api` з маленьким сховищем у пам'яті:
+ * тест перевіряє, що сторінка правильно читає відповіді й надсилає потрібне,
+ * а не те, як працює `fetch`.
  *
  * @module web-admin-dev/src/pages/desk/DeskPage.dom.test
  */
 
-import { describe, expect, it } from "vitest";
-import { fireEvent, render, screen, within } from "@testing-library/react";
-import { DeskPage } from "./DeskPage";
+import { beforeEach, describe, expect, it, vi } from "vitest";
+import { fireEvent, render, screen, waitFor } from "@testing-library/react";
+import type { DeskEntry, DeskFile, DeskSide, DeskThread } from "@wwwuabot/shared/desk/model";
 
-/** Кнопка теми в середній колонці шукається за заголовком усередині неї. */
-function threadButton(title: RegExp): HTMLElement {
-  const button = screen
-    .getAllByRole("button")
-    .find((item) => item.className.includes("desk-thread") && title.test(item.textContent ?? ""));
-  if (!button) throw new Error(`немає теми ${title}`);
-  return button;
+const state = vi.hoisted(() => ({
+  threads: [] as DeskThread[],
+  entries: [] as DeskEntry[],
+  files: [] as DeskFile[],
+  read: [] as Array<[number, number]>,
+  uploads: [] as string[],
+}));
+
+vi.mock("./desk.api", async () => {
+  const readRoom = (id: number) => ({
+    ok: true,
+    thread: state.threads.find((thread) => thread.id === id)!,
+    entries: state.entries.filter((entry) => entry.thread_id === id),
+    files: state.files.filter((file) => file.thread_id === id),
+  });
+
+  return {
+    deskFileUrl: (id: number) => `/api/admin/desk/file?id=${id}`,
+    fetchDeskThreads: async (query: { group?: string; status?: string; q?: string } = {}) => {
+      const list = state.threads.filter((thread) => {
+        if (query.group && query.group !== "all" && thread.group !== query.group) return false;
+        if (query.status && query.status !== "all" && thread.status !== query.status) return false;
+        if (query.q && !thread.title.toLowerCase().includes(query.q.toLowerCase())) return false;
+        return true;
+      });
+      const counts: Record<string, number> = {};
+      for (const thread of state.threads) counts[thread.group] = (counts[thread.group] ?? 0) + 1;
+      return { ok: true, threads: list, counts, total: list.length };
+    },
+    fetchDeskThread: async (id: number) => readRoom(id),
+    saveDeskThread: async (input: Record<string, unknown>) => {
+      const id = Number(input.id);
+      const existing = state.threads.find((thread) => thread.id === id);
+      if (!existing) {
+        const created: DeskThread = {
+          ...(state.threads[0] as DeskThread),
+          id: 99,
+          title: String(input.title),
+          group: String(input.group),
+          status: "open",
+          turn: "none",
+          entries: 0,
+          unread: 0,
+        };
+        state.threads.push(created);
+        return readRoom(99);
+      }
+      Object.assign(existing, input);
+      return readRoom(existing.id);
+    },
+    addDeskEntry: async (input: Record<string, unknown>) => {
+      const threadId = Number(input.thread_id);
+      state.entries.push({
+        id: (last(state.entries)?.id ?? 100) + 1,
+        thread_id: threadId,
+        author: "serhii" as DeskSide,
+        kind: String(input.kind),
+        body: String(input.body),
+        meta: {},
+        reply_to: null,
+        created_at: "2026-11-15 11:00:00",
+        edited_at: null,
+      });
+      return readRoom(threadId);
+    },
+    deleteDeskEntry: async (id: number) => {
+      state.entries = state.entries.filter((entry) => entry.id !== id);
+      return { ok: true };
+    },
+    deleteDeskFile: async (id: number) => {
+      state.files = state.files.filter((file) => file.id !== id);
+      return { ok: true };
+    },
+    markDeskRead: async (threadId: number, seen: number) => {
+      state.read.push([threadId, seen]);
+      return { ok: true };
+    },
+    uploadDeskFile: async (threadId: number, entryId: number | null, file: File) => {
+      state.uploads.push(file.name);
+      const saved: DeskFile = {
+        id: 500 + state.uploads.length,
+        thread_id: threadId,
+        entry_id: entryId,
+        author: "serhii",
+        name: file.name,
+        mime: file.type,
+        bytes: file.size,
+        created_at: "2026-11-15 11:00:00",
+      };
+      state.files.push(saved);
+      return saved;
+    },
+  };
+});
+
+const { DeskPage } = await import("./DeskPage");
+
+function seed(): void {
+  state.threads = [
+    {
+      id: 1,
+      group: "task",
+      subgroup: "Зберігання",
+      title: "R2-бакет для обміну файлами",
+      status: "open",
+      turn: "buffy",
+      tags: ["r2"],
+      due_at: null,
+      priority: 0,
+      created_at: "2026-11-15 09:00:00",
+      updated_at: "2026-11-15 09:40:00",
+      last_entry_at: "2026-11-15 09:40:00",
+      archived: false,
+      entries: 2,
+      unread: 0,
+    },
+    {
+      id: 2,
+      group: "plan",
+      subgroup: "Дизайн",
+      title: "Темна тема: контраст кнопок",
+      status: "doing",
+      turn: "serhii",
+      tags: ["design"],
+      due_at: null,
+      priority: 0,
+      created_at: "2026-11-12 14:00:00",
+      updated_at: "2026-11-12 14:15:00",
+      last_entry_at: "2026-11-12 14:15:00",
+      archived: false,
+      entries: 1,
+      unread: 1,
+    },
+  ];
+  state.entries = [
+    {
+      id: 10,
+      thread_id: 1,
+      author: "serhii",
+      kind: "question",
+      body: "Хочу окремий бакет для документів",
+      meta: {},
+      reply_to: null,
+      created_at: "2026-11-15 09:12:00",
+      edited_at: null,
+    },
+    {
+      id: 11,
+      thread_id: 1,
+      author: "buffy",
+      kind: "answer",
+      body: "Папки в R2 — це префікси, потрібен індекс у D1",
+      meta: {},
+      reply_to: null,
+      created_at: "2026-11-15 09:40:00",
+      edited_at: null,
+    },
+  ];
+  state.files = [
+    {
+      id: 20,
+      thread_id: 1,
+      entry_id: 11,
+      author: "buffy",
+      name: "bucket-plan.md",
+      mime: "text/markdown",
+      bytes: 12_000,
+      created_at: "2026-11-15 09:40:00",
+    },
+  ];
+  state.read = [];
+  state.uploads = [];
 }
 
-describe("DeskPage", () => {
-  it("малює групи, теми й стрічку першої теми", () => {
+function last<T>(list: T[]): T | undefined {
+  return list.length > 0 ? list[list.length - 1] : undefined;
+}
+
+function threadTitles(): string[] {
+  return [...document.querySelectorAll(".desk-thread-title")].map((el) => el.textContent ?? "");
+}
+
+describe("DeskPage на живих даних", () => {
+  beforeEach(() => seed());
+
+  it("малює групи з лічильниками й теми з сервера", async () => {
     const { container } = render(<DeskPage />);
 
+    await waitFor(() => expect(threadTitles()).toHaveLength(2));
     const groups = container.querySelector(".desk-groups") as HTMLElement;
-    expect(within(groups).getByText("Усі теми")).toBeTruthy();
-    expect(within(groups).getByText("Плани")).toBeTruthy();
-
-    expect(container.querySelectorAll(".desk-thread")).toHaveLength(7);
-    // Перша тема відкрита: її заголовок стоїть у шапці справа й у списку.
-    expect(container.querySelectorAll(".desk-room-title")).toHaveLength(1);
-    expect(container.querySelectorAll(".desk-entry").length).toBeGreaterThan(0);
-    expect(container.querySelectorAll(".desk-entry--serhii").length).toBeGreaterThan(0);
-    expect(container.querySelectorAll(".desk-entry--buffy").length).toBeGreaterThan(0);
+    expect(groups.textContent).toContain("Плани");
+    expect(groups.textContent).toContain("Задачі");
+    // Перша тема відкривається сама; непрочитане позначене чипом.
+    await waitFor(() =>
+      expect(container.querySelector(".desk-room-title")?.textContent).toBe(
+        "R2-бакет для обміну файлами",
+      ),
+    );
+    // Відкрита тема вже вичитана, а друга — ще ні: чип лишається на ній.
+    expect(screen.getByText("нове")).toBeTruthy();
   });
 
-  it("клік по групі лишає тільки її теми", () => {
-    const { container } = render(<DeskPage />);
+  it("відкрита тема позначається вичитаною до останнього запису", async () => {
+    render(<DeskPage />);
+    await waitFor(() => expect(state.read.length).toBeGreaterThan(0));
+    expect(state.read[0]).toEqual([1, 11]);
+  });
+
+  it("група й пошук питають сервер і лишають свої теми", async () => {
+    render(<DeskPage />);
+    await waitFor(() => expect(threadTitles()).toHaveLength(2));
 
     fireEvent.click(screen.getByText("Плани"));
-    const titles = [...container.querySelectorAll(".desk-thread-title")].map(
-      (el) => el.textContent,
-    );
-    expect(titles).toHaveLength(3);
-    expect(titles.every((title) => /Стіл|онтраст|R2/.test(title ?? ""))).toBe(true);
+    await waitFor(() => expect(threadTitles()).toEqual(["Темна тема: контраст кнопок"]));
+
+    fireEvent.change(screen.getByLabelText("Пошук теми або тега"), {
+      target: { value: "жодна" },
+    });
+    await waitFor(() => expect(screen.getByText("Немає тем за цим фільтром")).toBeTruthy());
   });
 
-  it("чип статусу фільтрує за «чиєю чергою»", () => {
+  it("тема показує стрічку, автора, файл-посилання й керування чергою", async () => {
     const { container } = render(<DeskPage />);
 
-    fireEvent.click(screen.getByRole("button", { name: "Чекає на Buffy" }));
-    const badges = [...container.querySelectorAll(".desk-thread .wb-badge")].map(
-      (el) => el.textContent,
-    );
-    expect(badges).toHaveLength(2);
-    expect(new Set(badges)).toEqual(new Set(["Чекає на Buffy"]));
+    await waitFor(() => expect(container.querySelectorAll(".desk-entry")).toHaveLength(2));
+    expect(container.querySelector(".desk-entry--buffy")).toBeTruthy();
+    const link = screen.getByText("bucket-plan.md") as HTMLAnchorElement;
+    expect(link.getAttribute("href")).toBe("/api/admin/desk/file?id=20");
+    expect(screen.getByLabelText("Чия черга")).toBeTruthy();
   });
 
-  it("пошук знаходить тему за тегом і каже, коли нічого немає", () => {
+  it("зміна черги зберігається через API й перемальовує шапку", async () => {
     const { container } = render(<DeskPage />);
-    const search = screen.getByLabelText("Пошук теми або тега");
+    await waitFor(() => expect(container.querySelectorAll(".desk-entry")).toHaveLength(2));
 
-    // «R2» є і в назві теми, і в назві теми про переїзд документації.
-    fireEvent.change(search, { target: { value: "r2" } });
-    expect(container.querySelectorAll(".desk-thread")).toHaveLength(2);
-
-    fireEvent.change(search, { target: { value: "telegram" } });
-    expect(container.querySelectorAll(".desk-thread")).toHaveLength(1);
-
-    fireEvent.change(search, { target: { value: "нічого-нема" } });
-    expect(container.querySelectorAll(".desk-thread")).toHaveLength(0);
-    expect(screen.getByText("Немає тем за цим фільтром")).toBeTruthy();
+    fireEvent.change(screen.getByLabelText("Чия черга"), { target: { value: "serhii" } });
+    await waitFor(() => expect(state.threads[0].turn).toBe("serhii"));
+    expect(container.querySelector(".desk-room-tags")?.textContent).toContain("Чекає на Сергія");
   });
 
-  it("вибір теми показує її стрічку й файли", () => {
+  it("композер додає запис, а Cmd+Enter надсилає з клавіатури", async () => {
     const { container } = render(<DeskPage />);
+    await waitFor(() => expect(container.querySelectorAll(".desk-entry")).toHaveLength(2));
 
-    fireEvent.click(threadButton(/R2-бакет/));
-
-    expect((container.querySelector(".desk-room-title") as HTMLElement).textContent).toBe(
-      "R2-бакет для обміну файлами",
-    );
-    // Автор запису — чип з іменем сторони, а не папка.
-    const authors = [...container.querySelectorAll(".desk-entry-author")].map(
-      (el) => el.textContent,
-    );
-    expect(authors).toContain("Buffy");
-    expect(container.querySelectorAll(".desk-file").length).toBe(3);
-  });
-
-  it("композер додає запис у стрічку й очищається", () => {
-    const { container } = render(<DeskPage />);
-    const before = container.querySelectorAll(".desk-entry").length;
     const input = screen.getByLabelText("Написати в тему…");
-
-    fireEvent.change(input, { target: { value: "  Перевірка макета  " } });
-    fireEvent.click(screen.getByRole("button", { name: "Надіслати" }));
-
-    const entries = [...container.querySelectorAll(".desk-entry-body")].map((el) => el.textContent);
-    expect(entries).toContain("Перевірка макета");
-    expect(container.querySelectorAll(".desk-entry")).toHaveLength(before + 1);
-    expect((input as HTMLTextAreaElement).value).toBe("");
-  });
-
-  it("порожнє поле нічого не надсилає, а Cmd+Enter надсилає", () => {
-    const { container } = render(<DeskPage />);
-    const before = container.querySelectorAll(".desk-entry").length;
-    const input = screen.getByLabelText("Написати в тему…");
-
-    fireEvent.click(screen.getByRole("button", { name: "Надіслати" }));
-    expect(container.querySelectorAll(".desk-entry")).toHaveLength(before);
-
-    fireEvent.change(input, { target: { value: "Через клавіші" } });
+    fireEvent.change(input, { target: { value: "  Перевірка живих даних  " } });
     fireEvent.keyDown(input, { key: "Enter", metaKey: true });
-    expect(container.querySelectorAll(".desk-entry")).toHaveLength(before + 1);
 
-    fireEvent.change(input, { target: { value: "Без модифікатора" } });
-    fireEvent.keyDown(input, { key: "Enter" });
-    expect(container.querySelectorAll(".desk-entry")).toHaveLength(before + 1);
+    await waitFor(() => expect(container.querySelectorAll(".desk-entry")).toHaveLength(3));
+    expect(screen.getByText("Перевірка живих даних")).toBeTruthy();
+    expect((input as HTMLTextAreaElement).value).toBe("");
+    expect(last(state.entries)?.body).toBe("Перевірка живих даних");
   });
 
-  it("вид запису змінюється селектом", () => {
+  it("файлів можна прикріпити скільки завгодно — усі їдуть у тему", async () => {
     const { container } = render(<DeskPage />);
-    const select = screen.getByLabelText("Вид") as HTMLSelectElement;
+    await waitFor(() => expect(container.querySelectorAll(".desk-entry")).toHaveLength(2));
 
-    fireEvent.change(select, { target: { value: "debt" } });
-    fireEvent.change(screen.getByLabelText("Написати в тему…"), { target: { value: "Борг" } });
+    const picker = container.querySelector('input[type="file"]') as HTMLInputElement;
+    const files = [
+      new File(["a"], "one.txt", { type: "text/plain" }),
+      new File(["b"], "two.txt", { type: "text/plain" }),
+      new File(["c"], "three.txt", { type: "text/plain" }),
+    ];
+    fireEvent.change(picker, { target: { files } });
+    expect(container.querySelectorAll(".desk-file-chip")).toHaveLength(3);
+
+    fireEvent.change(screen.getByLabelText("Написати в тему…"), {
+      target: { value: "Три файли" },
+    });
     fireEvent.click(screen.getByRole("button", { name: "Надіслати" }));
 
-    const kinds = [...container.querySelectorAll(".desk-entry-kind")].map((el) => el.textContent);
-    expect(kinds).toContain("Борг");
+    await waitFor(() => expect(state.uploads).toEqual(["one.txt", "two.txt", "three.txt"]));
+    await waitFor(() =>
+      expect([...document.querySelectorAll(".desk-file-name")].map((el) => el.textContent)).toEqual(
+        expect.arrayContaining(["bucket-plan.md", "one.txt", "two.txt", "three.txt"]),
+      ),
+    );
+    expect(container.querySelectorAll(".desk-file-chip")).toHaveLength(0);
+  });
+
+  it("без тексту але з файлом запис усе одно створюється", async () => {
+    const { container } = render(<DeskPage />);
+    await waitFor(() => expect(container.querySelectorAll(".desk-entry")).toHaveLength(2));
+
+    const picker = container.querySelector('input[type="file"]') as HTMLInputElement;
+    fireEvent.change(picker, { target: { files: [new File(["a"], "photo.png")] } });
+    fireEvent.click(screen.getByRole("button", { name: "Надіслати" }));
+
+    await waitFor(() => expect(state.uploads).toEqual(["photo.png"]));
+    expect(last(state.entries)).toMatchObject({ body: "photo.png", kind: "file" });
+  });
+
+  it("запис можна видалити — він зникає зі стрічки", async () => {
+    const { container } = render(<DeskPage />);
+    await waitFor(() => expect(container.querySelectorAll(".desk-entry")).toHaveLength(2));
+
+    fireEvent.click(screen.getAllByLabelText("Видалити запис")[1]);
+    await waitFor(() => expect(container.querySelectorAll(".desk-entry")).toHaveLength(1));
+    expect(state.entries.map((entry) => entry.id)).toEqual([10]);
+  });
+
+  it("файл можна прибрати з теми", async () => {
+    render(<DeskPage />);
+    await waitFor(() => expect(screen.getByText("bucket-plan.md")).toBeTruthy());
+
+    fireEvent.click(screen.getByLabelText("Видалити файл: bucket-plan.md"));
+    await waitFor(() => expect(screen.queryByText("bucket-plan.md")).toBeNull());
+  });
+
+  it("нова тема створюється й стає активною", async () => {
+    render(<DeskPage />);
+    await waitFor(() => expect(threadTitles()).toHaveLength(2));
+
+    fireEvent.click(screen.getByText("Нова тема"));
+    fireEvent.change(screen.getByLabelText("Назва теми"), {
+      target: { value: "Борг за жовтень" },
+    });
+    fireEvent.click(screen.getByRole("button", { name: "Створити" }));
+
+    await waitFor(() => expect(threadTitles()).toContain("Борг за жовтень"));
   });
 });
