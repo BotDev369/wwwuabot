@@ -1327,6 +1327,106 @@ export const TABLES = {
         error TEXT NOT NULL DEFAULT ''
       )`,
   },
+
+  // ── Стіл: спільний простір двох сторін ────────────────────────────────
+
+  /**
+   * Тема «Стола» — одиниця розмови, а не папка. `turn` — **рішення**, а не
+   * висновок з останнього запису: нотатка перекидала б хід без питання.
+   * `tags` — JSON, `archived_at` ховає тему, не стираючи історію.
+   */
+  desk_threads: {
+    name: "desk_threads",
+    owner: "api-dev",
+    purpose: "Теми «Стола»: група й підгрупа, статус, чия черга, теги, строк боргу й архів.",
+    create: `CREATE TABLE IF NOT EXISTS desk_threads (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        group_key TEXT NOT NULL DEFAULT 'plan',
+        subgroup TEXT NOT NULL DEFAULT '',
+        title TEXT NOT NULL,
+        status TEXT NOT NULL DEFAULT 'open',
+        turn TEXT NOT NULL DEFAULT 'none',
+        tags TEXT NOT NULL DEFAULT '[]',
+        due_at TEXT,
+        priority INTEGER NOT NULL DEFAULT 0,
+        created_at TEXT NOT NULL DEFAULT (datetime('now')),
+        updated_at TEXT NOT NULL DEFAULT (datetime('now')),
+        last_entry_at TEXT NOT NULL DEFAULT (datetime('now')),
+        archived_at TEXT
+      )`,
+    indexes: [
+      "CREATE INDEX IF NOT EXISTS idx_desk_threads_group ON desk_threads(group_key, status)",
+      "CREATE INDEX IF NOT EXISTS idx_desk_threads_turn ON desk_threads(turn, last_entry_at)",
+      "CREATE INDEX IF NOT EXISTS idx_desk_threads_last ON desk_threads(last_entry_at)",
+    ],
+  },
+
+  /**
+   * Запис стрічки: `author` — **сторона** (`serhii`/`buffy`), не користувач, і
+   * саме з нього робиться чип «від кого». `meta` — те, що не текст.
+   */
+  desk_entries: {
+    name: "desk_entries",
+    owner: "api-dev",
+    purpose: "Записи стрічки «Стола»: сторона-автор, вид, текст і знімок додаткових полів.",
+    create: `CREATE TABLE IF NOT EXISTS desk_entries (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        thread_id INTEGER NOT NULL,
+        author TEXT NOT NULL DEFAULT 'serhii',
+        kind TEXT NOT NULL DEFAULT 'note',
+        body TEXT NOT NULL DEFAULT '',
+        meta TEXT NOT NULL DEFAULT '{}',
+        reply_to INTEGER,
+        created_at TEXT NOT NULL DEFAULT (datetime('now')),
+        edited_at TEXT
+      )`,
+    indexes: ["CREATE INDEX IF NOT EXISTS idx_desk_entries_thread ON desk_entries(thread_id, id)"],
+  },
+
+  /**
+   * Файли «Стола»: рядок на файл, байти — в R2 під `desk/<thread_id>/…`.
+   * `r2_key` унікальний у `CREATE TABLE`; `entry_id` порожній, коли файл
+   * прикріплено до теми без запису.
+   */
+  desk_files: {
+    name: "desk_files",
+    owner: "api-dev",
+    purpose: "Файли «Стола»: ім'я, тип, розмір і ключ R2; байти лежать у бакеті, не в базі.",
+    create: `CREATE TABLE IF NOT EXISTS desk_files (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        thread_id INTEGER NOT NULL,
+        entry_id INTEGER,
+        author TEXT NOT NULL DEFAULT 'serhii',
+        name TEXT NOT NULL,
+        mime TEXT NOT NULL DEFAULT '',
+        bytes INTEGER NOT NULL DEFAULT 0,
+        r2_key TEXT NOT NULL UNIQUE,
+        sha256 TEXT NOT NULL DEFAULT '',
+        created_at TEXT NOT NULL DEFAULT (datetime('now'))
+      )`,
+    indexes: [
+      "CREATE INDEX IF NOT EXISTS idx_desk_files_thread ON desk_files(thread_id, id)",
+      "CREATE INDEX IF NOT EXISTS idx_desk_files_entry ON desk_files(entry_id)",
+    ],
+  },
+
+  /**
+   * Прочитане по сторонах: до якого запису тема вичитана. Ключ
+   * `(side, thread_id)` — сторін рівно дві, і «нове з твого візиту» має сенс
+   * лише для них.
+   */
+  desk_reads: {
+    name: "desk_reads",
+    owner: "api-dev",
+    purpose: "До якого запису кожна сторона вичитала тему — для позначки «нове».",
+    create: `CREATE TABLE IF NOT EXISTS desk_reads (
+        side TEXT NOT NULL,
+        thread_id INTEGER NOT NULL,
+        last_seen_entry_id INTEGER NOT NULL DEFAULT 0,
+        seen_at TEXT NOT NULL DEFAULT (datetime('now')),
+        PRIMARY KEY (side, thread_id)
+      )`,
+  },
 } satisfies Record<string, TableDefinition>;
 
 /** Імена всіх оголошених таблиць. */

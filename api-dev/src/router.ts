@@ -4,12 +4,7 @@ import { enforcePlatformAccess } from "./shared/platform-gate";
 import { handleAccess } from "./controllers/access.controller";
 import { handleAccessRequest } from "./controllers/access-request.controller";
 import { handleHealth, handleDeepHealth } from "./controllers/health.controller";
-import {
-  handleAnalyze,
-  handleAnalysisRead,
-  handleSystems,
-  handleCompare,
-} from "./controllers/astrology.controller";
+import { matchMyDateRoute } from "./routes/mydate";
 import { handleScenario } from "./controllers/scenarios.controller";
 import {
   handleBotScenariosList,
@@ -55,6 +50,7 @@ import {
 import { matchMessagesRoute } from "./routes/messages";
 import { matchAccessRequestAdminRoute } from "./routes/access-requests";
 import { handleNotes, handleAdminNotes } from "./controllers/notes.controller";
+import { matchDeskRoute } from "./routes/desk";
 import { handleFavorites } from "./controllers/favorites.controller";
 import { handleAssessments } from "./controllers/assessments.controller";
 import { handlePublicPages, handleUserPages } from "./controllers/pages.controller";
@@ -142,27 +138,9 @@ export async function handleRequest(request: Request, env: Env): Promise<Respons
     return handleBotUsername(env);
   }
 
-  // ── MyDate: analysis by date ────────────────────────────────────
-  if (pathname.startsWith("/api/mydate/analysis/")) {
-    const date = decodePathSegment(pathname.replace("/api/mydate/analysis/", ""));
-    if (date === null) return badRequest();
-    return handleAnalysisRead(request, env, date);
-  }
-
-  // ── MyDate: analyze (POST) ──────────────────────────────────────
-  if (pathname === "/api/mydate/analyze" && request.method === "POST") {
-    return handleAnalyze(request, env);
-  }
-
-  // ── MyDate: systems registry ────────────────────────────────────
-  if (pathname === "/api/mydate/systems") {
-    return handleSystems(env);
-  }
-
-  // ── MyDate: compare (POST) ──────────────────────────────────────
-  if (pathname === "/api/mydate/compare" && request.method === "POST") {
-    return handleCompare(request, env);
-  }
+  // MyDate — одним модулем (`routes/mydate.ts`), як трекери й переписка.
+  const mydate = matchMyDateRoute(request, env, pathname);
+  if (mydate) return mydate;
 
   // ── Scenario by slug ────────────────────────────────────────────
   if (pathname.startsWith("/api/scenario/")) {
@@ -268,6 +246,9 @@ export async function handleRequest(request: Request, env: Env): Promise<Respons
   if (pathname === "/api/admin/notes") {
     return handleAdminNotes(request, env);
   }
+
+  const desk = matchDeskRoute(request, env, pathname);
+  if (desk) return desk;
 
   // ── Admin: пошта про звернення зі сторінки відмови ─────────────
   // Список, створення, правка й видалення — усі під адмін-гейтом, як і сам

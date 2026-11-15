@@ -36,6 +36,13 @@ bucket_name = "wwwuabot-shop-dev"
 binding = "MESSAGE_MEDIA"
 bucket_name = "wwwuabot-shop-dev"
 
+# Файли «Стола»: **той самий бакет**, окремий простір ключів (`desk/<thread_id>/…`).
+# Окремий бакет — разом із прод-воркером (AGENTS.md §1), доти розділені ключі,
+# а не сховище. Стежить `packages/shared/src/config/wrangler-env.test.ts`.
+[[r2_buckets]]
+binding = "DESK_FILES"
+bucket_name = "wwwuabot-shop-dev"
+
 # Сирі відповіді Є-data (`spending/contracts/…`, `spending/transactions/…`),
 # стиснуті gzip. Окремий бакет, а не префікс у магазинному: це архів джерела,
 # і його квота не має рахуватись як файли продукту (docs/SPENDING.md §4).
